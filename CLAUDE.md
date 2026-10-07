@@ -21,11 +21,17 @@ keep the dictionary updated when a meaning is confirmed or corrected. Solution s
 - `src/Kichikuou.Core` — engine-independent rules library (`net10.0`, warnings are errors).
   `Sys3/` holds exact reproductions of System 3 / xsystem35 semantics: `Sys3Int` (16-bit
   saturating arithmetic — use it for every value that comes from the script),
-  `Mt19937Legacy` + `XSystem35Random` (`Y 4,n`), and `IScriptRandom` for injecting recorded draws.
+  `Mt19937Legacy` + `XSystem35Random` (`Y 4,n`), `IScriptRandom` for injecting recorded draws,
+  and `ScriptMemory` (variables, array pages, strings in the original engine's layout).
+  `State/GameState` is the typed view over it: `GameState.g.cs` is **generated** by
+  `python tools/codegen/gen_state.py` from `docs/variables.tsv` — never edit it by hand;
+  re-run the generator after changing the dictionary. Rule code addresses records explicitly
+  (`state.Units[state.Unit_Cur].Troops`) to keep the script's cursor quirks visible.
 - `tests/Kichikuou.Core.Tests` — xUnit tests for the core.
 - `godot/` — Godot 4.7.2 .NET project (`Kichikuou.csproj`, namespace `Kichikuou.Game`);
   presentation only. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
-- `tools/analysis/` — Python scripts for reading the decompiled scenario.
+- `tools/analysis/` — Python scripts for reading the decompiled scenario; `tools/codegen/` —
+  generators for committed C# sources.
 - `docs/` — brief, spike findings, variable dictionary.
 
 ## Commands
