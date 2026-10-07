@@ -147,4 +147,9 @@ The options that were weighed:
   old screens).
 
 Still to decide: how golden tests get deterministic RNG (patched xsystem35 with a fixed seed vs.
-recorded `Y 4` draws).
+recorded `Y 4` draws). Both are now possible: the core reproduces xsystem35's generator and
+`Y 4` bit-for-bit (verified against its `mt19937-1.c` compiled with gcc), and rule code draws
+through `IScriptRandom`, so recorded draws can be injected instead.
+
+Done so far: variable dictionary; solution skeleton (`Kichikuou.Core` + tests + Godot 4.7.2
+project on `net10.0`, verified building and running headless).

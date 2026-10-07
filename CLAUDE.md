@@ -13,7 +13,27 @@ No game code yet. Spike surface analysis done — see [docs/spike-findings.md](d
 for measurements, data model, local paths of the game and tools. Porting strategy decided
 (hybrid, see "Next step" in the brief). The variable dictionary [docs/variables.tsv](docs/variables.tsv)
 is done; when reading the scenario, use the renamed copy (`tools/analysis/rename_vars.py`) and
-keep the dictionary updated when a meaning is confirmed or corrected. Next: solution skeleton.
+keep the dictionary updated when a meaning is confirmed or corrected. Solution skeleton done
+(System 3 integer and RNG primitives). Next: port battle (`FIGT*.ADV`) as the first rules slice.
+
+## Layout
+
+- `src/Kichikuou.Core` — engine-independent rules library (`net10.0`, warnings are errors).
+  `Sys3/` holds exact reproductions of System 3 / xsystem35 semantics: `Sys3Int` (16-bit
+  saturating arithmetic — use it for every value that comes from the script),
+  `Mt19937Legacy` + `XSystem35Random` (`Y 4,n`), and `IScriptRandom` for injecting recorded draws.
+- `tests/Kichikuou.Core.Tests` — xUnit tests for the core.
+- `godot/` — Godot 4.7.2 .NET project (`Kichikuou.csproj`, namespace `Kichikuou.Game`);
+  presentation only. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
+- `tools/analysis/` — Python scripts for reading the decompiled scenario.
+- `docs/` — brief, spike findings, variable dictionary.
+
+## Commands
+
+- Tests: `dotnet test tests/Kichikuou.Core.Tests`
+- Build everything: `dotnet build Kichikuou.sln`
+- Run the game headless (smoke test): `<Godot console exe> --headless --path godot --quit-after 30`;
+  the editor path is in `docs/spike-findings.md`. Commit the `*.uid` files Godot creates.
 
 ## Rules
 
