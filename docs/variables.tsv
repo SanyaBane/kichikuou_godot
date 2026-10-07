@@ -83,12 +83,12 @@ VAR0080	Unit_DefAtkMod	unit	Situational troop attack modifier when defending (0-
 VAR0081	Unit_DefDefMod	unit	Situational troop defense modifier when defending (same encoding).	C	SET.ADV:169, Cﾌﾞｶ.ADV:1209, FIGT.ADV:1733
 VAR0082	Unit_DgnAtkMod	unit	Situational troop attack modifier in dungeons (same encoding).	C	SET.ADV:155, Cﾌﾞｶ.ADV:1223, FIGT.ADV:1736
 VAR0083	Unit_DgnDefMod	unit	Situational troop defense modifier in dungeons (same encoding).	C	SET.ADV:156, Cﾌﾞｶ.ADV:1235, FIGT.ADV:1737
-VAR0084	Unit_CurAtkMod	unit	Troop attack modifier active in the current battle, copied from 0078/0080/0082 by situation VAR0581 (1 offense, 2 defense, 3 dungeon).	C	FIGT.ADV:1728, FIGT.ADV:2451
-VAR0085	Unit_CurDefMod	unit	Troop defense modifier active in the current battle, copied from 0079/0081/0083 by VAR0581.	C	FIGT.ADV:1729, FIGT.ADV:2468
+VAR0084	Unit_CurAtkMod	unit	Troop attack modifier active in the current battle, copied from 0078/0080/0082 by situation VAR0581 (1 offense, 2 defense, 3 dungeon); 0-9 = +n, 10 = none, 11-19 = -(n-10); applied only to player troop attack (troops vs commander, troops vs troops).	C	FIGT.ADV:1728, FIGT.ADV:2451-2455
+VAR0085	Unit_CurDefMod	unit	Troop defense modifier active in the current battle, copied from 0079/0081/0083 by VAR0581; 0-9 = +n, 10 = none, 11-19 = -(n-10); applied only to player troop defense against enemy troops and enemy commanders' physical attacks.	C	FIGT.ADV:1729, FIGT.ADV:2468-2472
 VAR0086	Unit_Class	unit	Troop class: 0 Assault, 1 Archers, 2 Mages, 3 Magic Warriors, 4 Phantom Beasts, 10 Demon Assault, 11 Demon Magic; >=10 = demon (HP immune to non-demons unless attacker holds Chaos/Nikkou).	C	Sｱｲﾃﾑ.ADV:557, Sﾌﾞﾀｲ.ADV:557, FIGT.ADV:2416
 VAR0087	Unit_Atk	unit	Commander attack; item effect 1 adds to it.	C	SET.ADV:147, Cﾌﾞｶ.ADV:1130, FIGT.ADV:2566
 VAR0088	Unit_Def	unit	Commander defense; item effect 2 adds to it.	C	SET.ADV:148, Cﾌﾞｶ.ADV:1133
-VAR0089	Unit_Attacks	unit	Number of attacks; commander-vs-troops shots = rnd(n) + n/2.	C	Cﾌﾞｶ.ADV:1161, FIGT.ADV:2592
+VAR0089	Unit_Attacks	unit	Number of attacks; commander-vs-troops shots = rnd(n) + n/2; commander-vs-commander shots = rnd(n/5) (0 -> 1, >5 -> rnd(6)); +1 per level-up.	C	Cﾌﾞｶ.ADV:1161, FIGT.ADV:2592, FIGT.ADV:2648-2656, FIGT.ADV:3054
 VAR0090	Unit_HP	unit	Commander HP; reaching 0 in battle sets Unit_Status = 0 (defeated).	C	Cﾌﾞｶ.ADV:745, FIGT.ADV:1893
 VAR0091	Unit_MaxHP	unit	Commander max HP; HP refills to it weekly in the prologue, +2/week afterwards.	C	Cﾌﾞｶ.ADV:748, MAIN.ADV:153
 VAR0092	Unit_Strategy	unit	Successful strategy chance in percent; item effect 6 adds to it.	C	Cﾌﾞｶ.ADV:1152, FIGT.ADV:3162
@@ -102,15 +102,15 @@ VAR0099	Unit_Recovery	unit	Weekly troop replenishment base: troops += rnd(1..2n)
 VAR0100	Unit_DeployCost	unit	Base war expense to deploy (x100K GOLD); total = n + troops/300.	C	Sﾌﾞﾀｲ.ADV:347, Sﾌﾞﾀｲ.ADV:531
 VAR0101	Unit_Item	unit	Equipped item index (Item_Cur), 0 = none; item 48 drains troops and item 50 adds troops weekly.	C	Cﾌﾞｶ.ADV:1276, MAIN.ADV:141, Sｱｲﾃﾑ.ADV:585
 VAR0102	Unit_Status	unit	0 = not in army (absent or defeated), 1 = ready, 2 = deployed this week (greyed; reset to 1 at week start).	C	Sﾌﾞﾀｲ.ADV:192, MAIN.ADV:151, FIGT.ADV:1894
-VAR0103	Unit_Partner	unit	Partner unit index; when both are in the party: 'Surging with power', random +1/+2 to atk and def rolls.	C	FIGT.ADV:1001, FIGT.ADV:2457, SET_CHR.ADV:37
+VAR0103	Unit_Partner	unit	Partner unit index; when the partner is in a battle slot: 'Surging with power', rnd(3) gives +2/+1/+0 to player troop attack and troop defense rolls (not to the commander).	C	FIGT.ADV:1001, FIGT.ADV:2457-2465, FIGT.ADV:2474-2482, SET_CHR.ADV:37
 VAR0104	Unit_Exp	unit	Experience points; next level at 100 + level*30.	C	Cﾌﾞｶ.ADV:1137, FIGT.ADV:3046
 VAR0105	Unit_Level	unit	Battle LV; added to own hit chance and subtracted from the enemy's.	C	Cﾌﾞｶ.ADV:1118, FIGT.ADV:2507
 VAR0106	Cmdr_Troops	cmdr	Enemy commander current troops.	C	SET.ADV:172, FIGT.ADV:1061, MAIN.ADV:337
 VAR0107	Cmdr_MaxTroops	cmdr	Enemy commander maximum troops.	C	SET.ADV:173, MAIN.ADV:338
 VAR0108	Cmdr_TroopAtk	cmdr	Enemy troop attack.	C	SET.ADV:175, FIGT.ADV:1065, FIGT.ADV:2673
 VAR0109	Cmdr_TroopDef	cmdr	Enemy troop defense.	C	SET.ADV:176, FIGT.ADV:1080, FIGT.ADV:2531
-VAR0110	Cmdr_TroopAtkMod	cmdr	Enemy troop attack modifier (0-9 = +n, 11-19 = -(n-10)); copied from a unit's on-defense modifier when a unit turns enemy.	C	FIGT.ADV:1066, FIGT.ADV:2673, Gｻﾃﾗ.ADV:3411
-VAR0111	Cmdr_TroopDefMod	cmdr	Enemy troop defense modifier (same encoding).	C	FIGT.ADV:1081, FIGT.ADV:2531, Gｻﾃﾗ.ADV:3412
+VAR0110	Cmdr_TroopAtkMod	cmdr	Enemy troop attack modifier, added raw to enemy troop attack/magic in battle (no +-n decoding); data values 0-2, or copied from a unit's on-defense modifier when a unit turns enemy (11/12 then act as +11/+12).	C	FIGT.ADV:1066, FIGT.ADV:2673, FIGT.ADV:2716, Gｻﾃﾗ.ADV:3411
+VAR0111	Cmdr_TroopDefMod	cmdr	Enemy troop defense modifier, added raw to enemy troop defense/magic in battle (no +-n decoding); same sources as VAR0110.	C	FIGT.ADV:1081, FIGT.ADV:2531, FIGT.ADV:2544, FIGT.ADV:2570, Gｻﾃﾗ.ADV:3412
 VAR0112	Cmdr_Class	cmdr	Enemy troop class, same codes as Unit_Class; drives in-battle AI front/back choice and demon immunity.	C	FIGT.ADV:1429, FIGT.ADV:2428, Gｻﾃﾗ.ADV:3413
 VAR0113	Cmdr_Atk	cmdr	Enemy commander attack.	C	FIGT.ADV:1050, Gｻﾃﾗ.ADV:3414
 VAR0114	Cmdr_Def	cmdr	Enemy commander defense.	C	FIGT.ADV:1054, FIGT.ADV:2491
@@ -151,7 +151,7 @@ VAR0148	Dgn_SavedFloor	dungeon	Floor where the last search ended (0 = start from
 VAR0149	Dgn_Prov	dungeon	Province the dungeon is in; enterable when that province is player-owned (0 = always).	C	SET_MAP.ADV:2188, COMMAND.ADV:149
 VAR0150	Item_Holder	item	0 = not owned, 100 = owned and unequipped, 1-50 = index of the unit equipping it.	C	Sｱｲﾃﾑ.ADV:605, Sｱｲﾃﾑ.ADV:146
 VAR0151	Item_Amount	item	Bonus amount of the item effect.	C	Cﾌﾞｶ.ADV:1287, FIGT.ADV:2488
-VAR0152	Item_Effect	item	Effect: 0 unequippable, 1 cmdr atk, 2 cmdr def, 3 troop atk, 4 troop def, 5 magic atk, 6 strategy, 8 magic def, 9 equippable without stat (special-cased by item id).	C	Cﾌﾞｶ.ADV:1284, Sｱｲﾃﾑ.ADV:598, FIGT.ADV:2692
+VAR0152	Item_Effect	item	Effect: 0 unequippable, 1 cmdr atk, 2 cmdr def, 3 troop atk, 4 troop def, 5 magic atk (also the commander's magic defense against enemy magic), 6 strategy, 8 magic def, 9 equippable without stat (special-cased by item id).	C	Cﾌﾞｶ.ADV:1284, Sｱｲﾃﾑ.ADV:598, FIGT.ADV:2692, FIGT.ADV:2689-2691, FIGT.ADV:2822-2824
 VAR0153	Unit_Count	unit	Unit record stride = 52 (slots 1-50 real; 51 is a temporary slot for scripted battles).	C	SET.ADV:125, SET.ADV:137
 VAR0154	Unit_Cur	unit	Cursor selecting the current player unit record (1-based).	C	SET.ADV:138, SET_CHR.ADV:5
 VAR0155	Cmdr_Count	cmdr	Enemy commander record stride = 220.	C	SET.ADV:127
@@ -179,7 +179,7 @@ VAR0176		unused	Alias of VAR0169 at index VAR0171; bound but never used.	C	SET.A
 VAR0177		unused	Alias of VAR0170 at index VAR0171; bound but never used.	C	SET.ADV:255
 VAR0178	Buf_Count	array	Size of the scratch-buffer section of page 3 = 1000.	C	SET.ADV:256
 VAR0179	Buf_Cur	array	Cursor into scratch array VAR0180.	C	SET.ADV:272, FIGT_SEL.ADV:42
-VAR0180	Buf_Val	array	General scratch array (page 3): battle-command enable flags, harem roster copy, save/restore of VAR0021.. .	C	FIGT_SEL.ADV:43, Sﾊｰﾚﾑ.ADV:23, Cﾃｷﾄｼ.ADV:201
+VAR0180	Buf_Val	array	General scratch array (page 3): FIGT_SEL clears entries 0-99 and writes battle-command enable flags that are never read; harem roster copy, save/restore of VAR0021.. .	C	FIGT_SEL.ADV:6, FIGT_SEL.ADV:43, Sﾊｰﾚﾑ.ADV:23, Cﾃｷﾄｼ.ADV:201
 VAR0181		unused	Second cursor bound to the same scratch array; never used.	C	SET.ADV:273
 VAR0182		unused	Alias of VAR0180 under cursor VAR0181; never used.	C	SET.ADV:273
 VAR0183	Ui_BtnCount	ui	Stride of the button-rectangle table = 1000.	C	SET.ADV:261
@@ -321,7 +321,7 @@ VAR0318	Ev_GodRear5F_Unit3	event	God dungeon (Iｶﾐ) 5F rearguard: unit 3 left
 VAR0319	Ev_GodRear5F_Unit4	event	God dungeon (Iｶﾐ) 5F rearguard: unit 4 left behind to hold the floor (copy of party slot VAR0572); rewritten with survivors after the giant kaiju assault	C	Iｶﾐ.ADV:744; Iｶﾐ.ADV:4802
 VAR0320	F_Chizuko_State	story	Chizuko arc state: 2=died (Zeth Four Lords leader), 3=joined Rance, 4-6 later scenes; >2 harem, >3 good ending	I	Gﾁｽﾞｺ.ADV:3907; Gﾁｽﾞｺ.ADV:4265; OVER.ADV:1107
 VAR0321	F_Ruberan_State	story	Ruberan arc: 0=not captured, 1-6 captive in dungeon scene progression (>3 harem), 100=released (good ending, reunited with Merim)	I	Gﾙｰﾍﾞﾗﾝ.ADV:20; Gﾙｰﾍﾞﾗﾝ.ADV:2223; OVER.ADV:1050
-VAR0322	Bt_IsDuel	battle	1 while a scripted duel battle runs (FIGT shows Duel header and duel battle limit); set by scenes around FIGT calls, reset after	C	FIGT.ADV:116; Gｹｯｾﾙ.ADV:2433; Cﾒｲｷｭｳ.ADV:3223
+VAR0322	Bt_IsDuel	battle	1 while a duel runs (scripted duels and dungeon bosses): Duel header, troop limit forced to 5000 every round unless dungeon, rounds never run out; FIGT_A then forces Prov_Cur = Bt_TargetProv = 1; set by the callers, reset after	C	FIGT.ADV:116-121; FIGT.ADV:448; FIGT_A.ADV:150-153; Gｹｯｾﾙ.ADV:2433; Cﾒｲｷｭｳ.ADV:2903
 VAR0323	F_HQMeeting_Done	story	HQ war-council event (Iｼﾚｲﾌﾞ) done; set together with StoryStage=3; COM triggers it while 0 at stage 2	I	COM.ADV:192; Iｼﾚｲﾌﾞ.ADV:1528; Iｼﾚｲﾌﾞ.ADV:1713
 VAR0324	F_Sayori_Fate	story	Sayori ending: 1=let go, returned to M Land (good), 2=married Shinoda (bad)	C	IMﾗﾝﾄﾞ.ADV:1793; Gｼﾉﾀﾞ.ADV:1743; OVER.ADV:718
 VAR0325	F_Japan_State	story	JAPAN arc: 0=not started (fires when province 28 is owned), 1=at war (MAIN runs JAPAN phase), 2/3=alliance/negotiation variants, 10=JAPAN subjugated, Kouhime obtained	I	COM.ADV:102; MAIN.ADV:348; IJAPAN.ADV:6198
@@ -331,7 +331,7 @@ VAR0328	F_ShangriLa_State	story	Shangri-La / Shariela arc state 0-7 (4=Shangri-L
 VAR0329	F_Thieves_State	story	Thieves (Bound's gang) arc state: 1 joined thieves' hideout events, 2, 3, 4; 10=Bound scene done; >1 enables Anasel harem	I	Iﾄｳｿﾞｸ.ADV:188; Iﾄｳｿﾞｸ.ADV:1085; Gﾊﾞｳﾝﾄﾞ.ADV:106
 VAR0330	F_Anasel_Fate	story	Anasel: 1=captured once then escaped (good ending), 2=recaptured by Rance (bad ending, harem)	C	Iﾄｳｿﾞｸ.ADV:730; Gｱﾅｾﾙ.ADV:24; OVER.ADV:524
 VAR0331	F_Miki_InCastle	story	Miki staying in the Demon Lord's Room of Leazas Castle (enables that castle menu entry); 2 and 0 set when she leaves	I	Iﾏｼﾞﾝ.ADV:85; Cｼﾊｲﾄｼ.ADV:137; Gﾐｷ.ADV:2045
-VAR0332	F_Kentarou_State	story	Kentarou arc: 1 met, 2 event pending (COM), 3=Kentarou and Miki joined Rance, 4-8 later scenes	I	Iﾏｼﾞﾝ.ADV:86; Gｹﾝﾀﾛｳ.ADV:1647; COM.ADV:117
+VAR0332	F_Kentarou_State	story	Kentarou arc: 1 met, 2 event pending (COM), 3=Kentarou and Miki joined Rance, 4-8 later scenes; >7 lets Kentarou (unit 31) use Rance Attack in battle	I	Iﾏｼﾞﾝ.ADV:86; Gｹﾝﾀﾛｳ.ADV:1647; COM.ADV:117; FIGT_SEL.ADV:580
 VAR0333		story	Set to 2 in the demon-war intro when the first FIGT_B battle result branches; never tested	G	Iﾏｼﾞﾝ.ADV:1570
 VAR0334	F_DemonWar_Stage	story	Demon war (Hornet vs Kayblis) chapter 0-12, also 1-10 on the Demon Lord Miki route; MAIN dispatches the chapter scenes; 20=Kayblis invades the human realm (gates the Kayblis army turn)	I	Iﾏｼﾞﾝ.ADV:3325; MAIN.ADV:933; Gｹｲﾌﾞﾘｽ.ADV:2105
 VAR0335	F_Seizel_State	story	Hawzel/Seizel sisters arc: 1-2 set by demon war, 2=Hawzel ally, 7=Seizel joined, 20=both became La Vaswald (bad ending)	I	Gｻｲｾﾞﾙ.ADV:1443; Gｻｲｾﾞﾙ.ADV:2294; OVER.ADV:2061
@@ -450,7 +450,7 @@ VAR0447	F_Sheila_Flag	story	Sheila side flag 0-2; Helman turn checks it with VAR
 VAR0448		story	Miki scene flag (2 after goodbye scene), tested in Gﾐｷ	G	Gﾐｷ.ADV:2254; Gﾐｷ.ADV:786
 VAR0449	F_Satella_State	story	Satella arc 1-12 (6-9 night scenes), 10=conquered world with Miki (good), 11 set by Kayblis, 12=became Kayblis's (bad)	C	Gｻﾃﾗ.ADV:1991; Gｻﾃﾗ.ADV:4651; OVER.ADV:908
 VAR0450	F_Sieg_State	story	Sieg arc 1-4 (MAIN Camilla/Sieg turn dispatch); 4 after Sieg battle text	I	Gｼﾞｰｸ.ADV:225; MAIN.ADV:715; FIGT_M.ADV:10091
-VAR0451	F_Sieg_Defeated	story	Sieg beaten in battle (set by FIGT_M when commander 93 falls)	I	FIGT_M.ADV:10092; Gｾﾙ.ADV:2884; Iｶﾝｶﾞｴ.ADV:507
+VAR0451	F_Sieg_Defeated	story	Sieg beaten: set by FIGT_M when Rance engages commander 93 while F_Sieg_State is 2/3 (before the damage, together with F_Sieg_State = 4 and Chaos to Rance), not when 93 falls	C	FIGT_M.ADV:8957-8959; FIGT_M.ADV:10092; Gｾﾙ.ADV:2884; Iｶﾝｶﾞｴ.ADV:507
 VAR0452	N_Sieg_Impersonations	story	Times Sieg went to Leazas Castle in Rance's form (1-5)	I	Gｼﾞｰｸ.ADV:1019; Gｼﾞｰｸ.ADV:930
 VAR0453	Freya_TargetProv	prov	Province id for Freya's current ninja mission (5,6,8,9,11,12,15,16), 0=none	C	Gﾌﾚｲｱ.ADV:2415; Cｼﾊｲﾄｼ.ADV:897; Gﾌﾚｲｱ.ADV:251
 VAR0454	N_Freya_Missions	story	Count of Freya missions; milestones at 3/6/9/12; >2 enables COM/G1 events	C	Gﾌﾚｲｱ.ADV:2445; COM.ADV:858
@@ -528,7 +528,7 @@ VAR0525	Ui_PortraitR	ui	CG of the portrait shown at right (0 = none).	C	WAO_SUB.
 VAR0526	Ui_CenterCg	ui	CG shown in the centre picture box (layers in VAR0673-0676).	C	WAO_SUB.ADV:397
 VAR0527	Ev_PhaseNation	event	Owner code of the nation whose phase is running (2 rebels,3,4 Helman,5 Patton,6 JAPAN,7 Zeth,8 Kayblis,10 Angels (Creator phase),11 ALism (AL Church phase)); becomes Prov_Owner when it takes a city.	C	Tﾍﾙﾏﾝ.ADV:1; FIGT_B.ADV:772
 VAR0528	Ev_WeeklyEventDone	event	1 once a weekly/army event has fired this week; later checks are skipped.	C	COM.ADV:85; COM.ADV:301
-VAR0529	Bt_EnemyRetreatMode	battle	Enemy retreat rule: 1 fight on, 2 retreat when a commander dies, 3 at 50% losses, 4 at 25% losses, 5 when its commander takes HP damage, 6 3-round battle, 20/50 retreat triggered, 101 Tami.	C	FIGT.ADV:106; FIGT.ADV:1904; FIGT.ADV:19
+VAR0529	Bt_EnemyRetreatMode	battle	Enemy retreat rule, set by the caller and never reset per battle: 0/1 fight on, 2 retreat when a commander dies, 3 at >50% losses (round start) or on a commander death, 4 at >25% losses (round start) or on a commander death, 5 when an enemy commander takes HP damage from the player in any exchange, 6 3-round battle; FIGT writes 20 (commander died, modes 2-4) / 50 (mode 5) = retreat after the current exchange; 101 (Tami) is tested at timeout but never assigned.	C	FIGT.ADV:19; FIGT.ADV:106-111; FIGT.ADV:478; FIGT.ADV:1884-1905; FIGT.ADV:1610
 VAR0530	Bt_EnemyParty1	battle	Enemy commander id for battle slot 1 (0 = none), set by AI/city defence before FIGT; read after battle for capture events.	C	FIGT.ADV:5; MAIN.ADV:708; 死亡捕獲.ADV:45
 VAR0531	Bt_EnemyParty2	battle	Enemy commander id for battle slot 2 (0 = none), set by AI/city defence before FIGT; read after battle for capture events.	C	FIGT.ADV:6; MAIN.ADV:709; 死亡捕獲.ADV:45
 VAR0532	Bt_EnemyParty3	battle	Enemy commander id for battle slot 3 (0 = none), set by AI/city defence before FIGT; read after battle for capture events.	C	FIGT.ADV:7; MAIN.ADV:710; 死亡捕獲.ADV:45
@@ -555,10 +555,10 @@ VAR0552	Bld_Hospital	economy	General Hospital: 0 none, 2 building, 1 built.	C	C�
 VAR0553	Bld_SMTower	economy	S&M Tower: 0 none, 2 building, 1 built.	C	Cﾃｲﾄ.ADV:117; COMMAND.ADV:597
 VAR0554	Bld_MariaLab	economy	Maria Research Institute: 0 none, 2 building, 1 built.	C	Cﾃｲﾄ.ADV:121; COMMAND.ADV:603
 VAR0555	Bld_MagicLab	economy	Magic Research Institute: 0 none, 2 building, 1 built.	C	Cﾃｲﾄ.ADV:125; COMMAND.ADV:609
-VAR0556	F_Kanami_NinjaUsed	battle	Kanami as ninja this week: 0 available, 1 used, 99 unavailable (reset weekly).	C	COM.ADV:11; FIGT_B.ADV:395; FIGT.ADV:1917
-VAR0557	F_Freya_NinjaUsed	battle	Freya as ninja this week: 0 available, 1 used, 99 unavailable.	C	COM.ADV:12; COM.ADV:22
-VAR0558	F_Kaoru_NinjaUsed	battle	Kaoru as ninja this week: 0 available, 1 used, 99 unavailable.	C	COM.ADV:13; COM.ADV:25
-VAR0559	F_Wichita_NinjaUsed	battle	Wichita as ninja this week: 0 available, 1 used, 99 unavailable.	C	COM.ADV:14; COM.ADV:28
+VAR0556	F_Kanami_NinjaUsed	battle	Kanami as ninja this week: 0 available, 1 used, 99 unavailable (reset weekly); the battle follow-up only requires 0 and never sets it.	C	COM.ADV:11; FIGT_B.ADV:395; FIGT.ADV:1917
+VAR0557	F_Freya_NinjaUsed	battle	Freya as ninja this week: 0 available, 1 used, 99 unavailable; the battle follow-up only requires 0 and never sets it.	C	COM.ADV:12; COM.ADV:22; FIGT.ADV:1930
+VAR0558	F_Kaoru_NinjaUsed	battle	Kaoru as ninja this week: 0 available, 1 used, 99 unavailable; the battle follow-up only requires 0 and never sets it.	C	COM.ADV:13; COM.ADV:25; FIGT.ADV:1944
+VAR0559	F_Wichita_NinjaUsed	battle	Wichita as ninja this week: 0 available, 1 used, 99 unavailable; the battle follow-up only requires 0 and never sets it.	C	COM.ADV:14; COM.ADV:28; FIGT.ADV:1957
 VAR0560	N_Melfeis_Stage	story	Melfeis event progression; counts up weekly 1..10, then 11-13, 100.	I	COM.ADV:36; Gﾒﾙﾌｪｲｽ.ADV:651
 VAR0561	N_Isoroku_Stage	story	Isoroku event progression 0-6 (5 advances to 6 weekly).	I	COM.ADV:39; Gｲｿﾛｸ.ADV:17
 VAR0562	N_Aviator_StudyWeeks	story	Weeks Aviator must still study at the military academy (decremented weekly).	I	COM.ADV:42; Gｱﾋﾞｧﾄｰﾙ.ADV:1106; Gｱﾋﾞｧﾄｰﾙ.ADV:2228
@@ -580,11 +580,11 @@ VAR0577	Ui_ItemSel	ui	Selected item id on the item screen.	C	Sｱｲﾃﾑ.ADV:1
 VAR0578	Ui_ItemUnitSel	ui	Selected unit on the item screen (receives the item).	C	Sｱｲﾃﾑ.ADV:98; Sｱｲﾃﾑ.ADV:156
 VAR0579	N_JapanInv_Stage	story	JAPAN campaign event progress 0-3 when attacking provinces 55/56.	I	FIGT_A.ADV:9; FIGT_A.ADV:155
 VAR0580	Bt_TroopLimit	battle	Battle limit: max troops per unit that engage (plains 5000, city = Prov VAR0134, dungeon/scripted values).	C	FIGT.ADV:164; FIGT.ADV:2247; FIGT_B.ADV:182
-VAR0581	Bt_Kind	battle	Battle kind: 0 none, 1 offensive, 2 defensive, 3 dungeon.	C	FIGT_A.ADV:68; FIGT_B.ADV:242; Cﾒｲｷｭｳ.ADV:1281
+VAR0581	Bt_Kind	battle	Battle kind: 0 none, 1 offensive (FIGT_A), 2 defensive (FIGT_B), 3 dungeon (Cﾒｲｷｭｳ and the God-dungeon garrison battles of Iｶﾐ); the caller resets it to 0 after the battle.	C	FIGT_A.ADV:68; FIGT_B.ADV:242; Cﾒｲｷｭｳ.ADV:1281; Iｶﾐ.ADV:4606; FIGT_A.ADV:148
 VAR0582	N_Olhound_Stage	story	Olhound event progression (0,1,2,100).	I	Gｵｰﾙﾊｳﾝﾄ.ADV:8; Gｽﾃｯｾﾙ.ADV:3203
 VAR0583	Tmp0583	scratch	Temp: saved province in FIGT_B, endurance counter in Tougen minigame.	C	FIGT_B.ADV:283; Gﾄｳｹﾞﾝ.ADV:1498
 VAR0584	Bt_WallBonus	battle	Defender wall level (Prov VAR0133) in city battles, 0 on plains; attacker hit chance -2*value, shown as defender advantage.	C	FIGT_B.ADV:183; FIGT.ADV:2549
-VAR0585	Bt_ScoutNinja	battle	Ninja sent to scout an attacking army: 1 Kanami, 2 Freya, 3 Kaoru, 4 Wichita, 5 Saitou.	C	FIGT_B.ADV:394
+VAR0585	Bt_ScoutNinja	battle	Ninja sent on a mission: 1 Kanami, 2 Freya, 3 Kaoru, 4 Wichita, 5 Saitou; set by FIGT_B scouting (display only there: the capture branch reading it, FIGT_B.ADV:673-713, is unreachable) and by the Cﾆﾝｼﾞｬ ninja missions.	C	FIGT_B.ADV:394; FIGT_B.ADV:536; Cﾆﾝｼﾞｬ.ADV:93
 VAR0586	N_Freya_State	story	Freya status (10 captured, 20 = available as ninja, others event steps).	I	COM.ADV:21; FIGT_B.ADV:693
 VAR0587	N_Kaoru_State	story	Kaoru status (0 captured; >2 and not 100 = available as ninja).	I	COM.ADV:24; FIGT_B.ADV:699
 VAR0588	N_Wichita_State	story	Wichita status (0 captured; >2 = available as ninja).	I	COM.ADV:27; FIGT_B.ADV:705
@@ -601,37 +601,37 @@ VAR0598	Bt_PSlot1Focus	battle	Focus charges of player slot 1: +1 per Focus comma
 VAR0599	Bt_PSlot2Focus	battle	Focus charges of player slot 2: +1 per Focus command, consumed by special attacks.	C	FIGT.ADV:10; FIGT.ADV:1298; FIGT.ADV:1270
 VAR0600	Bt_PSlot3Focus	battle	Focus charges of player slot 3: +1 per Focus command, consumed by special attacks.	C	FIGT.ADV:11; FIGT.ADV:1301; FIGT.ADV:1273
 VAR0601	Bt_PSlot4Focus	battle	Focus charges of player slot 4: +1 per Focus command, consumed by special attacks.	C	FIGT.ADV:12; FIGT.ADV:1304; FIGT.ADV:1276
-VAR0602	Bt_RoundsLeft	battle	Rounds remaining: 3+rnd(2) (3 if mode 6), -1 per round, 0 = timeout.	C	FIGT.ADV:18; FIGT.ADV:449
+VAR0602	Bt_RoundsLeft	battle	Rounds remaining: 3 + rnd(2) = 4 or 5 at battle start (3 if retreat mode 6); -1 at each round end except in duels (a duel never times out); Fog Card sets 0; 0 = timeout.	C	FIGT.ADV:17-21; FIGT.ADV:448-450; FIGT.ADV:1234
 VAR0603		unused	Zeroed at battle start, never read.	C	FIGT.ADV:22
-VAR0604	Bt_PlayerLosses	battle	Player troops lost this battle (+1 per fallen unit); shown in result, added to stats.	C	FIGT.ADV:1875; FIGT.ADV:3004
-VAR0605	Bt_EnemyLosses	battle	Enemy troops lost this battle (+1 per fallen commander); drives retreat modes 3/4.	C	FIGT.ADV:1881; FIGT.ADV:106
+VAR0604	Bt_PlayerLosses	battle	Player troops killed this battle + 1 per fallen player commander; shown in the result, added to Hist_Casualties.	C	FIGT.ADV:1875-1895; FIGT.ADV:3043
+VAR0605	Bt_EnemyLosses	battle	Enemy troops killed this battle + 1 per fallen enemy commander (can exceed real losses); drives retreat modes 3/4; > 200 counts a garrison hit.	C	FIGT.ADV:1881-1907; FIGT.ADV:106; FIGT.ADV:3023
 VAR0606	Bt_StrategyResult	battle	Pre-battle strategy outcome: 0 none, 1/2 player success (troop damage taken -10%/-50%, dealt +10%/+50%), 11/12 enemy success.	C	FIGT作.ADV:43; FIGT.ADV:187
-VAR0607	Bt_SpecialAtk	battle	Special attack id for the current exchange: 0 normal, 1 Rance Attack/By la Way, 2 beam, 3 Highspeed/ninja, 4 Vanish Bomb, 5 War Dance, 6 Chuhai, 7 T2 wave, 10 Goliath, 100 Cheater Beam.	C	FIGT.ADV:1566; FIGT.ADV:1581
+VAR0607	Bt_SpecialAtk	battle	Special attack id for the current exchange: 0 normal, 1 Rance Attack/By la Way, 2 White/Black Destruction Beam and EPO Light, 3 Highspeed/Whirlwind Shot/ninja follow-up, 4 Vanish Bomb, 5 C. War Dance, 6 Chuhai, 7 T2 Soaring Wave, 10 T2 Goliath, 100 Cheater Beam; reset to 0 at every action.	C	FIGT.ADV:1507-1585; FIGT.ADV:1141; FIGT.ADV:1980; FIGT.ADV:2324-2413
 VAR0608	Bt_PlayerTroopsStart	battle	Player total troops at battle start (written, never read).	C	FIGT.ADV:29
 VAR0609	Bt_EnemyTroopsStart	battle	Enemy total troops at battle start; base for retreat-by-losses.	C	FIGT.ADV:32; FIGT.ADV:106
 VAR0610	Bt_EnemyRetreat	battle	Set 3 when retreat mode reached 20/50: enemy withdraws at the next round step.	C	FIGT.ADV:1611
-VAR0611	Bt_PlayerStrategist	battle	Player unit with the best strategy value (VAR0092 + item bonus); rolls the pre-battle strategy.	C	FIGT.ADV:44; FIGT作.ADV:13
+VAR0611	Bt_PlayerStrategist	battle	Player unit with the best strategy value (VAR0092 + amount of an item with effect 6; ties keep the earlier slot); rolls the pre-battle strategy.	C	FIGT.ADV:44-66; FIGT.ADV:3161-3168; FIGT作.ADV:13
 VAR0612	Bt_EnemyStrategist	battle	Enemy commander with the best strategy value (VAR0118).	C	FIGT.ADV:71
 VAR0613	Bt_PlayerActSlot	battle	Player slot 1-4 acting or being attacked (slots 1-2 front row may melee).	C	FIGT.ADV:392; FIGT_SEL.ADV:41
 VAR0614	Bt_EnemyActSlot	battle	Enemy slot 1-4 acting or targeted.	C	FIGT.ADV:424; FIGT.ADV:1361
 VAR0615	Bt_ActFocus	battle	Focus charges of the acting player slot, passed to FIGT_SEL to gate specials.	C	FIGT.ADV:394
 VAR0616	Bt_PlayerAtkType	battle	Acting unit's attack type from unit type VAR0086: 0 melee, 1 bow, 2 magic.	C	FIGT.ADV:619
 VAR0617		unused	Copy of VAR0613 before FIGT_SEL, never read.	C	FIGT.ADV:625
-VAR0618	Bt_MsgMode	battle	Flavour-text mode for FIGT_M: 1 player magic, 2 magic vs magic, 3 player physical, 4 enemy initiative.	C	FIGT.ADV:1376; FIGT_M.ADV:2
+VAR0618	Bt_MsgMode	battle	Flavour-text side for FIGT_M, persists between actions: 1 player magic (also enemy magic on entry via L_025a0), 2 enemy magic (written by FIGT_M when 1 and enemy action 2), 3 player physical, 4 enemy physical; 2/4 block the ninja follow-up; 0 at new game.	C	FIGT.ADV:1376; FIGT.ADV:1449; FIGT.ADV:1606; FIGT_M.ADV:2-17; FIGT.ADV:1916
 VAR0619	Bt_EnemyAction	battle	Enemy side action in the exchange: 0 direct, 1 indirect, 2 magic, 99 defend.	C	FIGT.ADV:1143; FIGT.ADV:1499
 VAR0620	Bt_PlayerAction	battle	Player side action in the exchange: 0 direct, 1 indirect, 2 magic, 99 defend.	C	FIGT.ADV:1378; FIGT.ADV:1503
-VAR0621	Tmp0621	scratch	Temp: Sﾌﾞﾀｲ return code in FIGT_B, saved province, minigame counters, event choice.	C	FIGT_B.ADV:81; Gﾄｳｹﾞﾝ.ADV:743
+VAR0621	Tmp0621	scratch	Temp: Sﾌﾞﾀｲ return code in FIGT_B, saved province, minigame counters, event choice; zeroed at FIGT_M entry.	C	FIGT_B.ADV:81; Gﾄｳｹﾞﾝ.ADV:743; FIGT_M.ADV:1
 VAR0622	Bt_HitChance	battle	Hit chance % of the current attack (formula L_0347f, clamped 1..100).	C	FIGT.ADV:2139; FIGT.ADV:2507
-VAR0623	Bt_RoundStep	battle	Actions taken this round; at 10 the round ends; also temp in damage spread.	C	FIGT.ADV:330; FIGT.ADV:331
+VAR0623	Bt_RoundStep	battle	Idle passes of the actor search: reset to 0 after every action, +1 per pass, 10 = round over (nobody left to act); also clobbered as a temp by the damage spread L_03502.	C	FIGT.ADV:318; FIGT.ADV:330-333; FIGT.ADV:2169
 VAR0624	Bt_PlayerAllEngaged	battle	1 if acting player unit's troops <= battle limit, else 0 (excess troops idle).	C	FIGT.ADV:2248
 VAR0625	Bt_EnemyAllEngaged	battle	1 if target enemy troops <= battle limit, else 0.	C	FIGT.ADV:2252
 VAR0626	Bt_PlayerEngaged	battle	Player troops engaging = min(troops, battle limit).	C	FIGT.ADV:2247
 VAR0627	Bt_EnemyEngaged	battle	Enemy troops engaging = min(troops, battle limit).	C	FIGT.ADV:2251
-VAR0628	Bt_PlayerSlotDef	battle	Acting player slot's state value (VAR0047-0050), subtracted from enemy hit chance.	C	FIGT.ADV:2223; FIGT.ADV:2697
-VAR0629	Bt_EnemySlotDef	battle	Target enemy slot's state value (VAR0051-0054), subtracted from player hit chance.	C	FIGT.ADV:2235; FIGT.ADV:2507
-VAR0630	Bt_PlayerCmdrShield	battle	Player commander protection: 1 if unit type >9 (no damage from enemy troops or commander), 2 if enemy also >9 (commander-vs-commander allowed).	C	FIGT.ADV:2417
+VAR0628	Bt_PlayerSlotDef	battle	State value (VAR0047-0050) of the engaged player slot (the actor, or the enemy's target), subtracted from enemy hit chance.	C	FIGT.ADV:2222-2233; FIGT.ADV:2697
+VAR0629	Bt_EnemySlotDef	battle	State value (VAR0051-0054) of the engaged enemy slot (1 when it is the actor, 20 if it defended), subtracted from player hit chance.	C	FIGT.ADV:2234-2245; FIGT.ADV:2507
+VAR0630	Bt_PlayerCmdrShield	battle	Player commander protection: 1 if unit type >9 (no damage from enemy troops or commander), 2 if enemy also >9 (commander-vs-commander allowed); forced to 0 against commanders 146, 147 and 187-190.	C	FIGT.ADV:2417; FIGT.ADV:2422-2427
 VAR0631	Bt_EnemyCmdrShield	battle	Enemy commander protection (enemy type >9); 2 when player type >9 or item 1/2 equipped.	C	FIGT.ADV:2429
-VAR0632	Bt_ExpBonusNext	battle	Set by Rebecca: next battle EXP = rnd(50) instead of 5+rnd(15), then cleared.	C	Gﾚﾍﾞｯｶ.ADV:14; FIGT.ADV:2980
+VAR0632	Bt_ExpBonusNext	battle	Set by Rebecca: next battle EXP = rnd(50) (the usual rnd(15) is still drawn first and discarded), then cleared.	C	Gﾚﾍﾞｯｶ.ADV:14; FIGT.ADV:2978-2983
 VAR0633		unused	Only reset to 0, never used.	C	SET_VER.ADV:530
 VAR0634	F_Satella_LineCmdr91	battle	One-shot Satella battle line vs enemy commander 91 already shown.	I	FIGT_M.ADV:1255; FIGT_M.ADV:9678
 VAR0635	F_Satella_LineCmdr92	battle	One-shot Satella battle line vs enemy commander 92 already shown.	I	FIGT_M.ADV:1258; FIGT_M.ADV:9756
@@ -640,7 +640,7 @@ VAR0637		story	Kayblis event flag set when commander 135 joins; changes Kayblis 
 VAR0638	N_Freak_Stage	story	Freak event progression 0-7 (1 set by a battle line).	I	FIGT_M.ADV:9902; Gﾌﾘｰｸ.ADV:580; COM.ADV:403
 VAR0639	F_MercA_Lost	unit	Mercenary A (unit 49) died; can no longer be hired.	C	死亡捕獲.ADV:17; Cｼｮｳﾆﾝ.ADV:111
 VAR0640	F_MercB_Lost	unit	Mercenary B (unit 50) died; can no longer be hired.	C	死亡捕獲.ADV:23; Cｼｮｳﾆﾝ.ADV:118
-VAR0641	N_Rance_BattlesSinceSomita	story	Battles Rance fought (and survived) since Somita joined; reset to 0 when she joins; >5 picks the alternative branch when Somita dies and becomes an angel	I	死亡捕獲.ADV:43, Gｶﾗｰ.ADV:5757, Gｿﾐｰﾀ.ADV:1306
+VAR0641	N_Somita_BattlesSurvived	story	Battles Somita (unit 46) was deployed in and survived (counted by 死亡捕獲 after each battle); reset to 0 when she joins; >5 selects the alternative branch when Somita dies and becomes an angel.	C	死亡捕獲.ADV:40-44, Gｶﾗｰ.ADV:5757, Gｿﾐｰﾀ.ADV:1306
 VAR0642	F_Nero_Helman4thState	story	Helman 4th Army (Nero, cmdr 44) state: 0=dormant, 1-3=mobilising (+1 per Helman turn; at 3 Nero scene 2 sets 4), 4=Nero plan seen, 5=Cream (cmdr 45) scene played, 6=Cream takes over after Nero falls while Helman stands, 100=Nero defeated	I	Tﾍﾙﾏﾝ.ADV:349, Gﾈﾛ.ADV:622, 死亡捕獲.ADV:96
 VAR0643	Ui_SaveLoadDirect	ui	1 when the save/load screen was entered directly in save (0) or load (1) mode, so cancel closes it and returns; 0 when entered via the combined menu	I	ﾛｰﾄﾞｾｰﾌﾞ.ADV:1, ﾛｰﾄﾞｾｰﾌﾞ.ADV:234
 VAR0644	F_LeazasRebels_State	story	Leazas rebel army (Ex): 0=Slave arc not yet started (COM starts it in stage 1), 1=rebellion begun at end of Slave arc, 2=Ex's rebel-HQ scene seen (start-menu skip sets 2)	C	Iｼﾚｲﾌﾞ.ADV:2119, TCﾘｰｻﾞｽ.ADV:5, COM.ADV:91
@@ -690,16 +690,16 @@ VAR0687	Kaiju_AmoebaAttacks	item	Capsule kaiju Amoeba (item 27 C. Kaiju B): atta
 VAR0688	F_Sill_MassageSeen	story	Sill shoulder-massage scene (Gｼｨﾙ2 scene 1, stage 2) seen	C	COM.ADV:371
 VAR0689	F_Gandhi_TravelStop3Seen	story	Gandhi travel scene at prov 20 (VAR0455=3) seen	C	COM.ADV:682
 VAR0690	Tmp0690	scratch	Copy of a Y 4 roll used to pick a dialogue/flavour-text variant (mostly battle quips in FIGT_M); set and tested locally	C	FIGT_M.ADV:115, Gﾏｼﾞｯｸ.ADV:109
-VAR0691	Bt_TargetProv	battle	Province being fought over, saved at battle start and restored into VAR0158 after death/capture processing; 0 when idle	C	FIGT_B.ADV:8, FIGT_A.ADV:190, Cﾃｷﾄｼ.ADV:3
-VAR0692		unused	Only decremented (saturating from 0) on a 1/2 roll in one enemy-attack branch; never read	C	FIGT_B.ADV:188
+VAR0691	Bt_TargetProv	battle	Province being fought over, saved at battle start and restored into VAR0158 after death/capture processing; 0 when idle; forced to 1 after a duel (FIGT_A); FIGT_B 'Abandon City' sets 0 before Ex's last stand, which then runs with 0	C	FIGT_B.ADV:8, FIGT_A.ADV:150-153, FIGT_B.ADV:720, Cﾃｷﾄｼ.ADV:3
+VAR0692		unused	Only decremented (saturating from 0) on a 1/2 roll when the player defends an enemy attack inside the city (FIGT_B city branch); never read	C	FIGT_B.ADV:186-189
 VAR0693	Bt_PlayerOrder1	battle	Standing order for player slot 1: 0=none (ask each turn), 1=keep attacking, 2=keep defending; shifted when slots compact	C	FIGT.ADV:719, FIGT.ADV:1345, FIGT.ADV:2862
 VAR0694	Bt_PlayerOrder2	battle	Standing order for player slot 2 (0=none, 1=attack, 2=defend)	C	FIGT.ADV:722, FIGT.ADV:1348
 VAR0695	Bt_PlayerOrder3	battle	Standing order for player slot 3 (0=none, 1=attack, 2=defend)	C	FIGT.ADV:725, FIGT.ADV:1351
 VAR0696	Bt_PlayerOrder4	battle	Standing order for player slot 4 (0=none, 1=attack, 2=defend)	C	FIGT.ADV:728, FIGT.ADV:1354
-VAR0697	Bt_CurOrder	battle	Standing order of the acting player unit (copied from VAR0693-0696; 1=attack, 2=defend); non-zero skips the command menu	C	FIGT.ADV:395, FIGT.ADV:614, FIGT.ADV:1316
+VAR0697	Bt_CurOrder	battle	Standing order of the acting player unit (copied from VAR0693-0696 at actor selection, or set by command-popup codes 8/9; 1=attack, 2=defend); non-zero skips the command menu	C	FIGT.ADV:395, FIGT.ADV:614, FIGT.ADV:1316, FIGT.ADV:1330
 VAR0698	FogCard_Price	economy	Merchant price (x100 GOLD) of item 28 Fog Card; 0=not for sale; 120 once found in dungeon 24; +10% each time it is used in battle	C	Cﾒｲｷｭｳ.ADV:1877, FIGT.ADV:1238, Cｼｮｳﾆﾝ.ADV:1137
 VAR0699	N_Hubert_FreyaUses	story	Times Hubert (unit 21) used ninja Freya in battle; between 6 and 48 triggers Hubert scene 1, which sets 50	I	FIGT.ADV:1931, COM.ADV:654, Gﾋｭｰﾊﾞｰﾄ.ADV:8
-VAR0700	F_Asuka_State	story	Asuka Cadmium (unit 11) arc with Chaka/Mill: 1=triggered in battle with Mill, 2-8 scenes (3=Asuka removed, 8=Asuka back), 0 when Asuka dies; >7 unlocks Asuka's CW Dance	I	Gｶﾄﾞﾐｭｳﾑ.ADV:913, FIGT_SEL.ADV:671, FIGTﾐｶDE.ADV:228
+VAR0700	F_Asuka_State	story	Asuka Cadmium (unit 11) arc with Chaka/Mill: 1=triggered in battle with Mill, 2-8 scenes (3=Asuka removed, 8=Asuka back), 0 when Asuka dies; >7 unlocks Asuka's Chuhai special	I	Gｶﾄﾞﾐｭｳﾑ.ADV:913, FIGT_SEL.ADV:671, FIGTﾐｶDE.ADV:228
 VAR0701	N_Cream_Tactics	story	Battle-strategy uses by Cream (unit 28); >10 changes her line and gives her good ending	C	FIGT作.ADV:215, OVER.ADV:1020
 VAR0702	F_Sill_Died	story	Sill (unit 2) death: 1=died in battle (grave scene pending), 2=grave scene seen	C	FIGTﾐｶDE.ADV:90, COMMAND.ADV:380, Gｼｨﾙ2.ADV:23
 VAR0703	Ai_BabolatAtk	battle	Babolat Unit weekly attack state: 0=not yet, 10=attacked, 11=extra re-attack used after a timed-out battle the player held (VAR0602=0, VAR0589=2); reset each Kayblis turn	C	Tｹｲﾌﾞﾘｽ.ADV:13, Tｹｲﾌﾞﾘｽ.ADV:814, Tｹｲﾌﾞﾘｽ.ADV:826
@@ -777,7 +777,7 @@ VAR0774	F_Chizuko_Fate	story	2=Chizuko gangraped to death by slave troops (bad e
 VAR0775	N_WaoBooth_Visits	story	Visits to WAO's booth (printed in dialogue; every 5th/10th visit special)	C	Gﾜｵ.ADV:238, Gﾜｵ.ADV:107
 VAR0776	F_Mumiso_State	story	Mumiso: 0=not met, 1=met, 2=offer declined	I	Gﾑﾐｿ.ADV:1, Gﾑﾐｿ.ADV:130
 VAR0777		unused	Only reset by SET_VER/start; never used	C	
-VAR0778	Bt_SkillSfx	battle	Special skill used this action (1=Rance Attack, 2=By la Way, 4=White Destruction Beam, 5=Highspeed, 6=Chuhai, 3/7-9 other skills); picks its sound effects, then reset	C	FIGT.ADV:1514, FIGTATTK.ADV:301
+VAR0778	Bt_SkillSfx	battle	Sound set of the special used this action: 1 Rance Attack, 2 By la Way, 3 T2 Soaring Wave, 4 beams/EPO Light, 5 Highspeed/Whirlwind Shot, 6 Chuhai, 7 Vanish Bomb, 8 C. War Dance, 9 Cheater Beam; 0 for Direct/Bow/Magic; reset to 0 by FIGTATTK	C	FIGT.ADV:1495-1584, FIGTATTK.ADV:301-337
 VAR0779	Bt_SfxAtk1	battle	Sound effect number for the attacker's first hit, from attack type VAR0620 / skill VAR0778	C	FIGTATTK.ADV:257, FIGTATTK.ADV:344
 VAR0780	Bt_SfxAtk2	battle	Sound effect number for the attacker's second sound	C	FIGTATTK.ADV:258, FIGTATTK.ADV:350
 VAR0781	Bt_SfxDef1	battle	Sound effect number for the defender side (from VAR0619), played with VAR0779	C	FIGTATTK.ADV:259, FIGTATTK.ADV:344
@@ -787,8 +787,8 @@ VAR0784	F_Boss_Marder	dungeon	Boss Marder (dungeon 2, floor 5) encountered	C	C�
 VAR0785	F_Boss_HawKyu	dungeon	Boss Haw Kyu (dungeon 10, floor 10) encountered	C	Cﾒｲｷｭｳ.ADV:1047, Cﾒｲｷｭｳ.ADV:3095
 VAR0786	F_Boss_Musashibou	dungeon	Boss Musashibou (dungeon 14, floor 12) encountered	C	Cﾒｲｷｭｳ.ADV:1050, Cﾒｲｷｭｳ.ADV:3127
 VAR0787	F_Boss_JapaneseSoldier	dungeon	Boss Japanese Soldier (dungeon 30, floor 100) encountered	C	Cﾒｲｷｭｳ.ADV:1053, Cﾒｲｷｭｳ.ADV:3159
-VAR0788	Bt_PlayerSlotsUsed	battle	Number of occupied player battle slots (0-4, last non-empty of VAR0590-0593)	C	FIGT_SEL.ADV:7, FIGT_SEL.ADV:502
-VAR0789	Bt_EnemySlotsUsed	battle	Number of occupied enemy battle slots (0-4, last non-empty of VAR0594-0597)	C	FIGT_SEL.ADV:24, FIGT_SEL.ADV:517
+VAR0788	Bt_PlayerSlotsUsed	battle	Number of occupied player battle slots (0-4, last non-empty of VAR0590-0593); computed only by FIGT_SEL for hit-testing	C	FIGT_SEL.ADV:7, FIGT_SEL.ADV:502
+VAR0789	Bt_EnemySlotsUsed	battle	Number of occupied enemy battle slots (0-4, last non-empty of VAR0594-0597); computed only by FIGT_SEL for hit-testing	C	FIGT_SEL.ADV:24, FIGT_SEL.ADV:517
 VAR0790	F_Boss_ShimoJoe	dungeon	Boss SHIMO-JOE (dungeon 20, floor 10) encountered	C	Cﾒｲｷｭｳ.ADV:1056, Cﾒｲｷｭｳ.ADV:2935
 VAR0791	F_Boss_Vevetar	dungeon	Boss Vevetar (dungeon 21, floor 15) encountered	C	Cﾒｲｷｭｳ.ADV:1059, Cﾒｲｷｭｳ.ADV:2967
 VAR0792	F_Boss_GGCaterpillar	dungeon	Boss GG Caterpillar (dungeon 22, floor 13) encountered	C	Cﾒｲｷｭｳ.ADV:1062, Cﾒｲｷｭｳ.ADV:2999

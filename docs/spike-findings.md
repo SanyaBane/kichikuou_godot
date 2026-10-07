@@ -82,8 +82,10 @@ rebels, JAPAN, Helman, Patton, Zeth, Kayblis, Creator, …), each gated by a war
 
 ## Battle
 
+Full specification: [battle/](battle/README.md).
+
 `FIGT_A` (player attacks) / `FIGT_B` (enemy attacks) → core `FIGT.ADV` **[C]**. 4 vs 4 slots,
-3 + rnd(2) rounds, lowest-troop unit acts first, attacker loses on timeout. Hit chance
+3 + rnd(2) = 4–5 rounds (`rnd(n)` is 1..n), lowest-troop unit acts first, attacker loses on timeout. Hit chance
 `(atk-def)*8` if atk > def, else `8+atk-def`, adjusted by level / walls, clamped to 1..100.
 ≤80 attacks: one roll each; >80: expected hits ± random spread. Separate exchanges for troops vs
 commander, troops vs troops, commander vs troops, commander vs commander; counterattack mirrors it.
@@ -98,7 +100,11 @@ one attack per army per week **[C]**. Story triggers mixed in. In-battle AI: ran
 
 ## Randomness
 
-- `Y 4, n:` → `VAR0000` = 1..n (n ≤ 1 returns n); 370 uses, 92 of them in battle flavour text **[C]**.
+- `Y 4, n:` → `VAR0000` = 1..n (n ≤ 1 returns n without drawing); 370 uses, 92 of them in
+  battle flavour text **[C]**.
+- `Y 4` is the **only** consumer of the generator in this game: `Y 3` is a wait, and the other
+  `genrand()` callers in xsystem35 (`ZR`, DLL modules such as screen quake) are not used by the
+  scenario **[C, xsystem35 source]**.
 - xsystem35: **MT19937 (1998 `mt19937-1.c`)**, `genrand()` on the closed [0,1] (so `n+1` is
   possible in rare cases), result `(int)(genrand()*n)+1`; seed = `getpid()`, not configurable **[C]**.
 - The original `system39.exe` likely uses a different generator **[G]** — exact sequences can
