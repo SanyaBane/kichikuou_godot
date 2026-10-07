@@ -9,8 +9,9 @@ reasoning, rejected alternatives, unverified facts about the source game, and th
 
 ## Status
 
-No code yet. Next step is the **spike**: unpack the game, decompile the scenario, measure it
-(see "Next step" in the brief).
+No code yet. Spike surface analysis done — see [docs/spike-findings.md](docs/spike-findings.md)
+for measurements, data model, local paths of the game and tools. Next: decide how to port the
+logic (see "Next step" in the brief).
 
 ## Rules
 

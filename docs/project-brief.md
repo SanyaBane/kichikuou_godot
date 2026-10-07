@@ -61,19 +61,22 @@ the rules.
 - **Video:** built-in playback is Ogg Theora only **(unverified for 4.6/4.7)**. Modern codecs
   need a third-party FFmpeg-based extension. Matters only for a remake.
 
-## What is known about the source game (all unverified — confirm in the spike)
+## What is known about the source game
 
-- AliceSoft released Kichikuou Rance as freeware.
-- It runs on System 3.x. **xsystem35** is an open-source reimplementation; GitHub user
-  *kichikuou* maintains **xsystem35-sdl2** (incl. a web port) and **xsys35c**, a System 3.x
-  scenario compiler with a decompiler (`xsys35dc`).
-- Resources are in `.ALD` archives (CG in formats like QNT/PMS/VSP; music likely MIDI/CD audio).
-  Unpackers exist; `alice-tools` is checked out locally at `F:\sources\Rance\alice-tools`
-  (read-only reference — do not modify).
-- Original resolution 640×480, 256 colours.
-- **Game logic lives in the scenario script**, not in the executable: damage formulas, AI, battle
-  flow and event conditions should all be readable after decompilation.
-- An English fan translation exists — usable as a text source besides the Japanese.
+The spike's surface analysis (2026-10-07) confirmed most of this; details, measurements and
+local paths are in [spike-findings.md](spike-findings.md).
+
+- AliceSoft released Kichikuou Rance as freeware. **(unverified)**
+- **Source is the English fan translation only.** The Japanese original is out of scope. Write
+  code so that localisation stays possible later, without going out of the way for it.
+- It runs on **System 3.9** (confirmed). **xsys35c 1.13** (`xsys35dc`) decompiles the scenario
+  cleanly; xsystem35 2.20 supports the English version.
+- Resources are in `.ALD` archives: 1222 PMS CGs (8 bpp), 51 WAV effects; music is 28 MP3
+  tracks played through `_inmm` (confirmed). `alice-tools` 0.13 and xsys35c's `ald`/`pms`
+  unpack and convert them. `F:\sources\Rance\alice-tools` stays a read-only reference.
+- Original resolution 640×480, 256 colours. **(unverified)**
+- **Game logic lives in the scenario script**, not in the executable: no DLLs, no library calls;
+  battle formulas, AI, turn order and event conditions are all readable (confirmed).
 
 ## Complexity assessment
 
@@ -123,10 +126,19 @@ quality-of-life patch in weeks, but capped by System 3 limits (resolution, palet
 
 ## Next step
 
-The spike. Open questions it must answer:
+The spike's surface analysis is done (see [spike-findings.md](spike-findings.md)): game files
+live outside the repo; System 3.9 decompiles cleanly; ≈650–700 scenes, 126k message lines,
+66 distinct commands; battle, AI and turn order located; RNG is MT19937 in xsystem35, seeded
+from the process id.
 
-- Where the game files will live locally (they must stay out of version control).
-- Exact System 3.x version and whether xsys35dc decompiles the scenario cleanly.
-- Size of the scenario: number of events, dialogue lines, distinct commands used.
-- How battle, AI and turn order are structured in the script.
-- How randomness is generated, and whether it can be reproduced.
+Decision now pending — **how to port the logic**:
+
+- Dialogue/event files (`G*`, `I*`, ≈85% of the scenario) are linear text plus flags, CG and
+  BGM commands — a natural fit for an automatic converter into our own event format.
+- Rule files (`MAIN`, `COMMAND`, `C*`, `T*`, `FIGT*`, `SET_*`, ≈1 MB) can either be
+  hand-ported to C# (clean model, swappable modules, verified by golden tests) or run through an
+  interpreter for the small command subset (fastest fidelity, but the script also drives the
+  old screens).
+
+Also to decide: how golden tests get deterministic RNG (patched xsystem35 with a fixed seed vs.
+recorded `Y 4` draws).
