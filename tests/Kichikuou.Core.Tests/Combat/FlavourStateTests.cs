@@ -105,14 +105,14 @@ public class FlavourStateTests
     }
 
     [Fact]
-    public async Task Unit_30_vs_commander_93_sets_F_Satella_LineCmdr93()
+    public async Task Unit_30_vs_commander_93_sets_F_Meglass_LineCmdr93()
     {
         var rig = new FlavourRig(1, 1).Player(unit: 30, cmdr: 93);
         rig.State.StoryStage = 2;
 
         await rig.RunAsync();
 
-        Assert.Equal(1, rig.State.F_Satella_LineCmdr93.Value);
+        Assert.Equal(1, rig.State.F_Meglass_LineCmdr93.Value);
         Assert.Equal(9830, rig.Lines[0]);
     }
 
@@ -121,7 +121,7 @@ public class FlavourStateTests
     {
         var rig = new FlavourRig(1, 1).Player(unit: 30, cmdr: 93);
         rig.State.StoryStage = 2;
-        rig.State.F_Satella_LineCmdr93 = 1;
+        rig.State.F_Meglass_LineCmdr93 = 1;
 
         await rig.RunAsync();
 

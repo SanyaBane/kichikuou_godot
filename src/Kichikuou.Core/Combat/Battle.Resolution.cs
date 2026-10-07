@@ -1607,7 +1607,9 @@ public sealed partial class Battle
             Cmdr.Troops != 0 && Cmdr.Troops - State.Bt_PTroopVsTroopDmg - State.Bt_PCmdrVsTroopDmg == 0,
             Unit.HP != 0 && Unit.HP - State.Bt_ETroopVsCmdrDmg - State.Bt_ECmdrVsCmdrDmg == 0,
             Cmdr.HP != 0 && Cmdr.HP - State.Bt_PTroopVsCmdrDmg - State.Bt_PCmdrVsCmdrDmg == 0));
-        await View.ShowAsync(new KeyWaitEvent()); // :247 IK 0
+        await View.ShowAsync(new KeyWaitEvent());
+        Sys3Int key = await Input.WaitForKeyAsync(); // :247 IK 0
+        State.RetVal = key;
     }
 
     /// <summary>

@@ -320,7 +320,7 @@ MENU:                                                                # L_00105 (
 
   "Ninja Scout":                                                     # L_00727 (:311)
     if F_Kanami_NinjaUsed ≠ 0 and F_Freya_NinjaUsed ≠ 0 and F_Kaoru_NinjaUsed ≠ 0
-       and F_Wichita_NinjaUsed ≠ 0 and Ninja_Saitou ≠ 0:
+       and F_Wichita_NinjaUsed ≠ 0 and F_Saitou_NinjaUsed ≠ 0:
         Msg(no ninjas available); goto MENU
     pick := Menu[each ninja whose flag = 0: Kanami, Freya, Kaoru, Wichita, Saitou; "None"]
     "None": Msg; goto MENU

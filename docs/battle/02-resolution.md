@@ -438,7 +438,7 @@ U28 :1136   C=22 | C=32 | C=33 | C=39 | C=44 | C=50 | else RND(3)@1215
 U29 :1254   StoryStage<3 and C=91 and F_Satella_LineCmdr91=0 → set flag, scene
             | StoryStage<3 and C=92 and F_Satella_LineCmdr92=0 → set flag, scene
             | C=72 | C=90 | C=91 | C=92 | C=93 | C=98 | C=129 | C=130 | C=135 | else RND(3)@1375
-U30 :1414   StoryStage<3 and C=93 and F_Satella_LineCmdr93=0 → set flag, scene
+U30 :1414   StoryStage<3 and C=93 and F_Meglass_LineCmdr93=0 → set flag, scene
             | Spec!=0 | C=135 | fixed
 U31 :1441   Spec=1 | C=135 | else RND(3)@1464
 U32 :1493   Spec!=0 | C=135 | else RND(3)@1512

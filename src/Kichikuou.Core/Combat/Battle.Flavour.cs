@@ -101,9 +101,9 @@ public sealed partial class Battle
         State.Ui_WaoOp = 11;
         if (State.Ui_WinType == 0)
             return; // WAO_SUB.ADV:511-512 (the error text after \0: is unreachable)
-        var wait = new FlavourKeyWaitEvent();
-        await View.ShowAsync(wait); // IK 0
-        State.RetVal = wait.KeyCode; // QUIRK: Q13 / README O1 — IK 0 overwrites RetVal
+        await View.ShowAsync(new FlavourKeyWaitEvent());
+        Sys3Int key = await Input.WaitForKeyAsync(); // IK 0
+        State.RetVal = key; // QUIRK: Q13 / README O1 — IK 0 overwrites RetVal
         // Y 1, 1 and G Ui_WinFrameCg, 40: clear the text (display only).
     }
 

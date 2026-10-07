@@ -1600,8 +1600,8 @@ public sealed partial class GameState
     /// <summary>VAR0635 [I] — One-shot Satella battle line vs enemy commander 92 already shown.</summary>
     public ref Sys3Int F_Satella_LineCmdr92 => ref Memory.Var(635);
 
-    /// <summary>VAR0636 [I] — One-shot Satella battle line vs enemy commander 93 already shown.</summary>
-    public ref Sys3Int F_Satella_LineCmdr93 => ref Memory.Var(636);
+    /// <summary>VAR0636 [C] — One-shot battle line of unit 30 (Meglass) vs enemy commander 93 already shown.</summary>
+    public ref Sys3Int F_Meglass_LineCmdr93 => ref Memory.Var(636);
 
     /// <summary>VAR0637 [G] — Kayblis event flag set when commander 135 joins; changes Kayblis AI branches.</summary>
     public ref Sys3Int VAR0637 => ref Memory.Var(637);
@@ -1739,7 +1739,7 @@ public sealed partial class GameState
     public ref Sys3Int TangeDog_UsedThisWeek => ref Memory.Var(681);
 
     /// <summary>VAR0682 [C] — Saitou as ninja this week: 99=unavailable, 0=available (needs VAR0678&gt;1), 1=used</summary>
-    public ref Sys3Int Ninja_Saitou => ref Memory.Var(682);
+    public ref Sys3Int F_Saitou_NinjaUsed => ref Memory.Var(682);
 
     /// <summary>VAR0683 [C] — Province whose monster garrison (Kayblis cmdrs 86-89 / Zeth) was last generated this week; reset weekly</summary>
     public ref Sys3Int Bt_GarrisonProv => ref Memory.Var(683);

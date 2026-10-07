@@ -635,7 +635,7 @@ VAR0632	Bt_ExpBonusNext	battle	Set by Rebecca: next battle EXP = rnd(50) (the us
 VAR0633		unused	Only reset to 0, never used.	C	SET_VER.ADV:530
 VAR0634	F_Satella_LineCmdr91	battle	One-shot Satella battle line vs enemy commander 91 already shown.	I	FIGT_M.ADV:1255; FIGT_M.ADV:9678
 VAR0635	F_Satella_LineCmdr92	battle	One-shot Satella battle line vs enemy commander 92 already shown.	I	FIGT_M.ADV:1258; FIGT_M.ADV:9756
-VAR0636	F_Satella_LineCmdr93	battle	One-shot Satella battle line vs enemy commander 93 already shown.	I	FIGT_M.ADV:1415; FIGT_M.ADV:9827
+VAR0636	F_Meglass_LineCmdr93	battle	One-shot battle line of unit 30 (Meglass) vs enemy commander 93 already shown.	C	FIGT_M.ADV:1414-1415; FIGT_M.ADV:9827
 VAR0637		story	Kayblis event flag set when commander 135 joins; changes Kayblis AI branches.	G	Gｹｲﾌﾞﾘｽ.ADV:368; Tｹｲﾌﾞﾘｽ.ADV:1360
 VAR0638	N_Freak_Stage	story	Freak event progression 0-7 (1 set by a battle line).	I	FIGT_M.ADV:9902; Gﾌﾘｰｸ.ADV:580; COM.ADV:403
 VAR0639	F_MercA_Lost	unit	Mercenary A (unit 49) died; can no longer be hired.	C	死亡捕獲.ADV:17; Cｼｮｳﾆﾝ.ADV:111
@@ -681,7 +681,7 @@ VAR0678	F_Saitou_State	story	Mika Saitou: 1=met (enables G2 scene 3), 2=Marimo p
 VAR0679	CmdAvail_SubTroops	time	Subordinates > Replenish/Add Troops still available this week (1); reset to 1 every week	C	COMMAND.ADV:45, Cﾌﾞｶ.ADV:810, Cﾌﾞｶ.ADV:934
 VAR0680	CmdAvail_SubTalk	time	Subordinates > Talk still available this week (1); reset every week; both 0 greys out the Subordinates menu	C	COMMAND.ADV:46, Cﾌﾞｶ.ADV:834, Cﾌﾞｶ.ADV:969
 VAR0681	TangeDog_UsedThisWeek	item	Tange Dog (item 34) revive used this week; it lifts its holder from wounded (status 2) to 1 once per week; reset weekly	C	COMMAND.ADV:388, COM.ADV:70
-VAR0682	Ninja_Saitou	unit	Saitou as ninja this week: 99=unavailable, 0=available (needs VAR0678>1), 1=used	C	COM.ADV:15, COM.ADV:31, Cﾆﾝｼﾞｬ.ADV:223
+VAR0682	F_Saitou_NinjaUsed	unit	Saitou as ninja this week: 99=unavailable, 0=available (needs VAR0678>1), 1=used	C	COM.ADV:15, COM.ADV:31, Cﾆﾝｼﾞｬ.ADV:223
 VAR0683	Bt_GarrisonProv	battle	Province whose monster garrison (Kayblis cmdrs 86-89 / Zeth) was last generated this week; reset weekly	C	Tｹｲﾌﾞﾘｽ2.ADV:5, Tｾﾞｽ2.ADV:11, COM.ADV:19
 VAR0684	Bt_GarrisonHits	battle	Player attacks this week on VAR0683 that dealt >200 damage; each shrinks the regenerated garrison (troops = max/(4+2n)+rnd)	C	FIGT.ADV:3023, Tｹｲﾌﾞﾘｽ2.ADV:16, COM.ADV:20
 VAR0685	Goliath_State	item	T2 Goliath (Maria's machine): 0=none, 1=ready, 2=used this week (reset to 1 weekly); joins battles at prov VAR0758; enables the Special Room at prov 2	C	Gﾏﾘｱ.ADV:3908, FIGT.ADV:327, FIGT.ADV:1121

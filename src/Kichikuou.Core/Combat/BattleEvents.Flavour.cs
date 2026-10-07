@@ -30,16 +30,11 @@ public enum FlavourWindow
 public sealed record FlavourWindowOpenEvent(FlavourWindow Window, Sys3Int FrameCg) : BattleEvent;
 
 /// <summary>
-/// <c>IK 0</c> after a message (<c>WAO_SUB.ADV:515</c>): the battle waits for the player to
-/// acknowledge the text. The engine stores the key code in <c>RetVal</c>, and FIGT_M sometimes
-/// tests <c>RetVal</c> afterwards (C83/C84/unit 3, spec 02 Q13), so the view reports the key in
-/// <see cref="KeyCode"/> before completing; it stays 0 (as while message skip is on) otherwise.
+/// <c>IK 0</c> after a message (<c>WAO_SUB.ADV:515</c>): the text is complete and the battle is
+/// about to wait for the player (<see cref="IBattleInput.WaitForKeyAsync"/>). The key code goes
+/// to <c>RetVal</c>, which FIGT_M sometimes tests afterwards (C83/C84/unit 3, spec 02 Q13).
 /// </summary>
-public sealed record FlavourKeyWaitEvent : BattleEvent
-{
-    /// <summary>The System 3 key code that closed the message (0 = skipped).</summary>
-    public Sys3Int KeyCode { get; set; }
-}
+public sealed record FlavourKeyWaitEvent : BattleEvent;
 
 /// <summary>The flavour-text window closes (<c>WAO_SUB.ADV</c> <c>L_00cb9</c>).</summary>
 public sealed record FlavourWindowCloseEvent : BattleEvent;

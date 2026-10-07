@@ -9,10 +9,12 @@ internal sealed class ResolutionFixture
     private ResolutionFixture(int[] draws)
     {
         Random = new ScriptedRandom(draws);
-        Battle = new Battle(State, Random, View, new NoInput(), Story);
+        Battle = new Battle(State, Random, View, Input, Story);
     }
 
     public GameState State { get; } = new();
+
+    public ScriptedInput Input { get; } = new();
 
     public ScriptedRandom Random { get; }
 
@@ -53,7 +55,5 @@ internal sealed class ResolutionFixture
                 || (e is InvalidOperationException && e.Message.StartsWith("Unexpected draw", StringComparison.Ordinal)),
             $"Stopped by {e.GetType().Name}: {e.Message}");
     }
-
-    private sealed class NoInput : IBattleInput;
 }
 

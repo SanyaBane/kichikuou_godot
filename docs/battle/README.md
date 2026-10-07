@@ -29,7 +29,13 @@ the same variables the script sets before the call).
 | **R2** flavour text | 02 §5 | `Battle.Flavour.cs`, `BattleEvents.Flavour.cs`, tests `Combat/Flavour*Tests.cs` | `FlavourTextAsync()` (call of `FIGT_M.ADV`) |
 | **F** flow | 01 (all but §9 internals) | `Battle.Flow.cs` (may split into `Battle.Flow.*.cs`), `BattleInput.cs`, `BattleEvents.Flow.cs`, tests `Combat/Flow*Tests.cs` | public entry points (`FIGT_A`, `FIGT_B`, direct `FIGT`), everything in 01 |
 
-Nobody edits `Battle.cs`, `BattleEvents.cs` or another part's files. A part that needs a seam
-method of another part that is not merged yet adds a throwing stub in
-`Battle.Stubs.<Part>.cs` (e.g. `Battle.Stubs.Flavour.cs`) with the exact signature above; stubs
-are deleted when the parts are merged.
+The three parts are merged (2026-10-08); there are no stubs left. Notes on the merged code:
+
+- `Battle.Flavour.g.cs` is **generated** from the user's raw decompile by
+  `python tools/codegen/gen_figt_m.py <_extract\scenario>` (`--check` verifies it is current);
+  never edit it by hand. Re-run it after renaming a variable in the dictionary.
+- Every `IK 0` goes through `IBattleInput.WaitForKeyAsync()` and stores the key in `RetVal`;
+  the `*KeyWaitEvent` records only mark the point for the presentation.
+- A jump out of the battle (game over to `OVER.ADV`) throws `ScenarioJumpException`.
+- Flow entry points: `FightAsync` (direct `FIGT`), `AttackProvinceAsync` (`FIGT_A`),
+  `DefendProvinceAsync` (`FIGT_B`), `DeathCaptureAsync` (`死亡捕獲`).

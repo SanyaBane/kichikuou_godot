@@ -91,8 +91,8 @@ public sealed record ExchangeResultsEvent : BattleEvent;
 public sealed record WipedOutMarksEvent(bool PlayerTroops, bool EnemyTroops, bool PlayerCmdr, bool EnemyCmdr) : BattleEvent;
 
 /// <summary>
-/// <c>IK 0</c> at <c>FIGTATTK.ADV:247</c> — waits for a key. The original stores the key code
-/// in <c>RetVal</c>; every path overwrites <c>RetVal</c> before reading it, so it is not modelled.
+/// <c>IK 0</c> at <c>FIGTATTK.ADV:247</c>: the exchange animation is complete and the battle is
+/// about to wait for a key (<see cref="IBattleInput.WaitForKeyAsync"/>, result in <c>RetVal</c>).
 /// </summary>
 public sealed record KeyWaitEvent : BattleEvent;
 

@@ -180,8 +180,10 @@ internal sealed class FlavourRig
     public FlavourRig(int[] rolls, int[] keys)
     {
         Random = new ScriptedRandom(rolls);
-        View = new FlavourView(State, keys);
-        Battle = new Battle(State, Random, View, new FlavourNoInput(), Story);
+        View = new FlavourView(State);
+        foreach (int key in keys)
+            Input.Keys.Enqueue(key);
+        Battle = new Battle(State, Random, View, Input, Story);
     }
 
     public GameState State { get; } = new();
@@ -189,6 +191,8 @@ internal sealed class FlavourRig
     public ScriptedRandom Random { get; }
 
     public FlavourView View { get; }
+
+    public ScriptedInput Input { get; } = new();
 
     public RecordingStory Story { get; } = new();
 
@@ -213,11 +217,9 @@ internal sealed class FlavourRig
     public FlavourRig Enemy(int cmdr, int unit, int mode = 4) => Player(unit, cmdr, mode);
 }
 
-/// <summary>Records events, the window state at each one, and answers key waits.</summary>
-internal sealed class FlavourView(GameState state, int[] keys) : IBattleView
+/// <summary>Records events and the window state at each one.</summary>
+internal sealed class FlavourView(GameState state) : IBattleView
 {
-    private readonly Queue<int> _keys = new(keys);
-
     public List<BattleEvent> Events { get; } = [];
 
     /// <summary>(<c>Ui_WaoOp</c>, <c>Ui_WinFrameCg</c>, <c>Ui_WinType</c>) when each event was shown.</summary>
@@ -225,12 +227,9 @@ internal sealed class FlavourView(GameState state, int[] keys) : IBattleView
 
     public Task ShowAsync(BattleEvent battleEvent)
     {
-        if (battleEvent is FlavourKeyWaitEvent wait && _keys.Count > 0)
-            wait.KeyCode = (Sys3Int)_keys.Dequeue();
         Events.Add(battleEvent);
         Snapshots.Add((state.Ui_WaoOp.Value, state.Ui_WinFrameCg.Value, state.Ui_WinType.Value));
         return Task.CompletedTask;
     }
 }
 
-internal sealed class FlavourNoInput : IBattleInput;

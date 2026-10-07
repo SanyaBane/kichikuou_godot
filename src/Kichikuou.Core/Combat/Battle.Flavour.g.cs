@@ -584,7 +584,7 @@ public sealed partial class Battle
     /// </summary>
     private async Task FlavourUnit30Async()
     {
-        if (State.StoryStage < 3 && State.Cmdr_Cur == 93 && State.F_Satella_LineCmdr93 == 0) // :1415
+        if (State.StoryStage < 3 && State.Cmdr_Cur == 93 && State.F_Meglass_LineCmdr93 == 0) // :1415
         {
             await FlavourUnit30VsCmdr93Async(); // @L_0bc93
             return;
@@ -3074,11 +3074,11 @@ public sealed partial class Battle
     }
 
     /// <summary>
-    /// FlavourText — unit 30 vs commander 93, one-shot scene (sets <c>F_Satella_LineCmdr93</c>) (<c>L_0bc93</c>): <c>FIGT_M.ADV:9826-9899</c> (spec 02 §5.4).
+    /// FlavourText — unit 30 vs commander 93, one-shot scene (sets <c>F_Meglass_LineCmdr93</c>) (<c>L_0bc93</c>): <c>FIGT_M.ADV:9826-9899</c> (spec 02 §5.4).
     /// </summary>
     private async Task FlavourUnit30VsCmdr93Async()
     {
-        State.F_Satella_LineCmdr93 = 1; // :9827
+        State.F_Meglass_LineCmdr93 = 1; // :9827
         await SayAsync(FlavourWindow.Left, 9830);
         await SayAsync(FlavourWindow.Right, 9835);
         await SayAsync(FlavourWindow.Left, 9844);
