@@ -11,6 +11,7 @@ Confidence: **[C]** confirmed by reading code / disassembly, **[I]** strong infe
 | xsystem35 2.20.0 (Windows build) | `E:\Modding games\Modding Rance\Kichikou\xsystem35-2.20.0-windows-64bit` |
 | xsys35c 1.13.0 (`xsys35dc`, `ald`, `pms`, …) | `E:\Modding games\Modding Rance\Kichikou\xsys35c-1.13.0-64bit` |
 | alice-tools 0.13.0 | `E:\Modding games\Modding Rance\alice-tools\alice-tools-0.13.0` |
+| Godot 4.7.2 .NET (portable) | `E:\Install PORTABLE\Godot_v4.7.2-stable_mono_win64` |
 | Extracted data | `E:\Modding games\Modding Rance\Kichikou\_extract\` — `scenario\` (decompiled `.ADV`), `aindump\`, `cg_pms\`, `cg_png\`, `wav\` |
 
 Tool quirk: `xsys35dc -o` and `ald extract -d` fail on absolute paths with a drive letter
@@ -112,9 +113,47 @@ one attack per army per week **[C]**. Story triggers mixed in. In-battle AI: ran
 - Array pages with aliasing (`DC/DS/DF/NB/NC`), inline data tables (`F1/F3`), `US/UG`.
 - Everything else (`G`, `CC`, `CS`, `PF*`, `IM`, …) is display/input.
 
+## Variable dictionary
+
+[variables.tsv](variables.tsv) names and describes all 806 variables (`var, name, group,
+meaning, confidence, refs`): 748 named, 652 at C, 144 at I, 10 at G (unnamed). Naming:
+`Unit_*`, `Cmdr_*`, `Prov_*`, `Dgn_*`, `Item_*`, `Hist_*` record fields; `Bt_*` battle;
+`Ui_*` UI; `F_<Subject>_<What>` story flags; `N_*` counters; `Ev_*` event dispatch;
+`Tmp<N>` scratch. A readable copy of the scenario is produced with
+
+```
+python tools/analysis/rename_vars.py <_extract\scenario> <_extract\scenario_named>
+```
+
+and `tools/analysis/varusage.py` profiles where each variable is written and tested.
+
+Facts the dictionary pass added **[C unless marked]**:
+
+- **Owner codes** (`Prov_Owner`, from the labels in `Cﾃｷﾄｼ2.ADV:69-107`): 1 Leazas (player),
+  2 Rebel Army, 3 Independent City-States, 4 Helman, 5 Patton, 6 JAPAN, 7 Zeth, 8 Kayblis,
+  9 Hornet, 10 Angels, 11 ALism. `VAR0527` holds the code of the nation whose phase runs.
+- **Troop class**: 0 Assault, 1 Archers, 2 Mages, 3 Magic Warriors, 4 Phantom Beasts,
+  10 Demon Assault, 11 Demon Magic. Demon commanders take HP damage only from demons or
+  item 1/2 holders (`FIGT.ADV:2416-2446`).
+- **Province** also has girls left for Temporary Levy (`0131`), up to five adjacent provinces
+  (`0137-0141`) and map position (`0142-0143`).
+- **Battle**: slot state values (0 not acted, 1 acted, 2-21 player defending = defence bonus,
+  20 AI defending, 100 empty); enemy retreat rule `VAR0529`; per-slot standing orders
+  `VAR0693-0696`; partner bonus via `Unit_Partner`; duel flag `VAR0322`.
+- **Item ownership**: `0150` 0 not owned, 100 owned unequipped, 1-50 equipped by that unit.
+- **Weekly mechanics hidden in scene/dispatcher files**: AL Church raider pools (`GAL.ADV`),
+  Lady Caravan moving between provinces, monster garrison regeneration, capsule kaiju growth,
+  Helman/Zeth sub-army state machines advanced by counters and 1-in-N rolls. These belong to
+  the rules port, not the event converter.
+- **RNG gotcha**: some draws are discarded (`FIGT_M.ADV:5`) but still consume the sequence.
+- **Persistent data**: array page 4 survives across save slots (endings record, clear counter,
+  CG gallery, start-menu unlocks); `OVER.ADV` (epilogue) tests each character's fate flag and
+  is a ground-truth decoder for story-flag values.
+- Benchmark vars `VAR0670-0672` (XSPEC) and debug mode `VAR0057` are irrelevant to the core.
+
 ## Open questions
 
-- Meaning of owner codes 3, 6, 9, 11 and several province/unit fields.
+- The 10 G-level variables and the 144 I-level ones — confirm when the code that uses them is ported.
 - Whether the fan translation changed any logic (it was a script hack) — compare only if a
   discrepancy shows up; the Japanese original is out of scope.
 - How to port: hand-written C# rules vs. translating/interpreting the script (see the brief).

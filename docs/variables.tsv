@@ -1,0 +1,807 @@
+var	name	group	meaning	confidence	refs
+VAR0000	RetVal	system	Engine result register: Y 4,n random 1..n, IM mouse button, menu/sub-file return codes; also reused as a temp.	C	FIGT.ADV:18; FIGT.ADV:1386; WAO_MAP.ADV:8
+VAR0001	Tmp0001	scratch	General temporary (date calc in L_01881, damage maths, AI commander-id lists passed to T* subroutines, loop counters); no persistent meaning.	C	MAIN.ADV:1063; FIGT.ADV:2295
+VAR0002	Tmp0002	scratch	General temporary (date calc in L_01881, damage maths, AI commander-id lists passed to T* subroutines, loop counters); no persistent meaning.	C	MAIN.ADV:1068; FIGT.ADV:180
+VAR0003	Tmp0003	scratch	General temporary (date calc in L_01881, damage maths, AI commander-id lists passed to T* subroutines, loop counters); no persistent meaning.	C	MAIN.ADV:1072
+VAR0004	Tmp0004	scratch	General temporary (date calc in L_01881, damage maths, AI commander-id lists passed to T* subroutines, loop counters); no persistent meaning.	C	MAIN.ADV:1062; FIGT.ADV:2175
+VAR0005	Tmp0005	scratch	General temporary (date calc in L_01881, damage maths, AI commander-id lists passed to T* subroutines, loop counters); no persistent meaning.	C	MAIN.ADV:1061; FIGT.ADV:3085
+VAR0006	Tmp0006	scratch	General temporary (date calc in L_01881, damage maths, AI commander-id lists passed to T* subroutines, loop counters); no persistent meaning.	C	CG.ADV:6
+VAR0007	Tmp0007	scratch	General temporary (date calc in L_01881, damage maths, AI commander-id lists passed to T* subroutines, loop counters); no persistent meaning.	C	CG.ADV:7
+VAR0008	Tmp0008	scratch	General temporary (date calc in L_01881, damage maths, AI commander-id lists passed to T* subroutines, loop counters); no persistent meaning.	C	CG.ADV:8
+VAR0009	Tmp0009	scratch	General temporary (date calc in L_01881, damage maths, AI commander-id lists passed to T* subroutines, loop counters); no persistent meaning.	C	CG.ADV:9
+VAR0010	Tmp0010	scratch	Temporary (FIGT_SEL frame colour, HAPPY_C/opening counters, secret-click counter before Alice debug unlock).	C	FIGT_SEL.ADV:163; Iｱﾘｽ.ADV:118
+VAR0011	Tmp0011	scratch	UI temporary (rectangle x/y/w/h in CG viewer and OVER, MMODE indices).	C	CG.ADV:226; OVER.ADV:99
+VAR0012	Tmp0012	scratch	UI temporary (rectangle x/y/w/h in CG viewer and OVER, MMODE indices).	C	CG.ADV:226; OVER.ADV:100
+VAR0013	Tmp0013	scratch	UI temporary (rectangle x/y/w/h in CG viewer and OVER, MMODE indices).	C	CG.ADV:226; OVER.ADV:101
+VAR0014	Tmp0014	scratch	UI temporary (rectangle x/y/w/h in CG viewer and OVER, MMODE indices).	C	CG.ADV:226; OVER.ADV:88
+VAR0015	Tmp0015	scratch	UI temporary (rectangle x/y/w/h in CG viewer and OVER, MMODE indices).	C	CG.ADV:15; OVER.ADV:98
+VAR0016	Tmp0016	scratch	UI temporary (rectangle x/y/w/h in CG viewer and OVER, MMODE indices).	C	CG.ADV:16; OVER.ADV:102
+VAR0017	Tmp0017	scratch	UI temporary (rectangle x/y/w/h in CG viewer and OVER, MMODE indices).	C	CG.ADV:17; OVER.ADV:103
+VAR0018	Tmp0018	scratch	UI temporary (rectangle x/y/w/h in CG viewer and OVER, MMODE indices).	C	CG.ADV:18; OVER.ADV:104
+VAR0019	Tmp0019	scratch	UI temporary; in FIGT_SEL the selected battle command code (1 direct,2 bow,3 magic,10+ specials) returned via VAR0000.	C	FIGT_SEL.ADV:62; FIGT_SEL.ADV:77
+VAR0020	Tmp0020	scratch	Temporary (FIGT_SEL highlight colour, saved cursor in FIGT stat popups).	C	FIGT_SEL.ADV:63; FIGT.ADV:835
+VAR0021	Tmp0021	scratch	Temporary also used as call arguments (M.ADV/WAO_MAP x,y; Sﾌﾞﾀｲ max units/mode; digit drawing in FIGT).	C	M.ADV:3; FIGT_B.ADV:78; FIGT.ADV:3177
+VAR0022	Tmp0022	scratch	Temporary also used as call arguments (M.ADV/WAO_MAP x,y; Sﾌﾞﾀｲ max units/mode; digit drawing in FIGT).	C	M.ADV:4; FIGT_B.ADV:79; FIGT.ADV:3182
+VAR0023	Tmp0023	scratch	Temporary also used as call arguments (M.ADV/WAO_MAP x,y; Sﾌﾞﾀｲ max units/mode; digit drawing in FIGT).	C	M.ADV:56; FIGT.ADV:3162
+VAR0024	Tmp0024	scratch	Temporary also used as call arguments (M.ADV/WAO_MAP x,y; Sﾌﾞﾀｲ max units/mode; digit drawing in FIGT).	C	M.ADV:68; FIGT.ADV:3178
+VAR0025	Tmp0025	scratch	Temporary also used as call arguments (M.ADV/WAO_MAP x,y; Sﾌﾞﾀｲ max units/mode; digit drawing in FIGT).	C	M.ADV:163; FIGT.ADV:3176
+VAR0026	Tmp0026	scratch	UI temporary (status-screen layout x/y/step, list cursors, camera deltas).	C	Sｱｲﾃﾑ.ADV:455; M.ADV:164
+VAR0027	Tmp0027	scratch	UI temporary (status-screen layout x/y/step, list cursors, camera deltas).	C	Sｱｲﾃﾑ.ADV:458
+VAR0028	Tmp0028	scratch	UI temporary (status-screen layout x/y/step, list cursors, camera deltas).	C	Sｱｲﾃﾑ.ADV:458
+VAR0029	Tmp0029	scratch	UI temporary (status-screen layout x/y/step, list cursors, camera deltas).	C	Sｱｲﾃﾑ.ADV:461; M.ADV:47
+VAR0030	Tmp0030	scratch	UI temporary (status-screen layout x/y/step, list cursors, camera deltas).	C	Sｱｲﾃﾑ.ADV:511; M.ADV:48
+VAR0031	Tmp0031	scratch	UI temporary (status-screen layout x/y/step, list cursors, camera deltas).	C	Sｱｲﾃﾑ.ADV:458
+VAR0032	Tmp0032	scratch	UI temporary (status-screen layout x/y/step, list cursors, camera deltas).	C	Sｱｲﾃﾑ.ADV:466
+VAR0033	Tmp0033	scratch	UI temporary (status-screen layout x/y/step, list cursors, camera deltas).	C	Sｱｲﾃﾑ.ADV:457
+VAR0034	Tmp0034	scratch	UI temporary (status-screen layout x/y/step, list cursors, camera deltas).	C	Sｱｲﾃﾑ.ADV:174
+VAR0035	Tmp0035	scratch	UI temporary (status-screen layout x/y/step, list cursors, camera deltas).	C	Sｱｲﾃﾑ.ADV:175
+VAR0036	Tmp0036	scratch	UI temporary (status-screen layout x/y/step, list cursors, camera deltas).	C	MMODE.ADV:275
+VAR0037	Tmp0037	scratch	UI temporary (status-screen layout x/y/step, list cursors, camera deltas).	C	MMODE.ADV:265
+VAR0038	Tmp0038	scratch	UI temporary (status-screen layout x/y/step, list cursors, camera deltas).	C	MMODE.ADV:281
+VAR0039	Tmp0039	scratch	Temporary; M.ADV saves the scroll target X here during a camera pan (also MMODE/save-load cursor).	C	M.ADV:21; M.ADV:117
+VAR0040	Tmp0040	scratch	Temporary; M.ADV saves target Y; Sﾌﾞﾀｲ max deployable units; save-load cursor.	C	M.ADV:22; Sﾌﾞﾀｲ.ADV:5
+VAR0041		unused	Set once to 1280 at boot, never read.	C	ｽﾀｰﾄ.ADV:869
+VAR0042		unused	Set once to 200 at boot, never read.	C	ｽﾀｰﾄ.ADV:870
+VAR0043	MapCamX	ui	Strategic map camera centre X (map 1920 wide; view left = X-320, clamped).	C	M.ADV:3; WAO_SUB.ADV:438
+VAR0044	MapCamY	ui	Strategic map camera centre Y (map 800 high; view top = Y-200, clamped).	C	M.ADV:4; WAO_SUB.ADV:445
+VAR0045	MapTargetX	ui	Camera pan target X (usually Prov_X VAR0142); M.ADV op 1 scrolls MapCamX toward it; op 10 blinks a marker there.	C	M.ADV:21; MAIN.ADV:27
+VAR0046	MapTargetY	ui	Camera pan target Y (usually Prov_Y VAR0143).	C	M.ADV:22; MAIN.ADV:28
+VAR0047	Bt_PSlot1State	battle	Player battle slot 1 round state: 0 not acted yet, 1 acted, 2-21 defending (value = defence bonus, 1+rnd20), 100 empty slot; reset each round; subtracted from enemy hit chance.	C	FIGT.ADV:282; FIGT.ADV:1386; FIGT.ADV:2223
+VAR0048	Bt_PSlot2State	battle	Player battle slot 2 round state: 0 not acted yet, 1 acted, 2-21 defending (value = defence bonus, 1+rnd20), 100 empty slot; reset each round; subtracted from enemy hit chance.	C	FIGT.ADV:283; FIGT.ADV:1389; FIGT.ADV:2226
+VAR0049	Bt_PSlot3State	battle	Player battle slot 3 round state: 0 not acted yet, 1 acted, 2-21 defending (value = defence bonus, 1+rnd20), 100 empty slot; reset each round; subtracted from enemy hit chance.	C	FIGT.ADV:284; FIGT.ADV:1392; FIGT.ADV:2229
+VAR0050	Bt_PSlot4State	battle	Player battle slot 4 round state: 0 not acted yet, 1 acted, 2-21 defending (value = defence bonus, 1+rnd20), 100 empty slot; reset each round; subtracted from enemy hit chance.	C	FIGT.ADV:285; FIGT.ADV:1395; FIGT.ADV:2232
+VAR0051	Bt_ESlot1State	battle	Enemy battle slot 1 round state: 0 not acted, 1 acted, 20 AI chose to defend (troops < max/5, 1/3 chance), 100 empty; subtracted from player hit chance.	C	FIGT.ADV:286; FIGT.ADV:1453; FIGT.ADV:2235
+VAR0052	Bt_ESlot2State	battle	Enemy battle slot 2 round state: 0 not acted, 1 acted, 20 AI chose to defend (troops < max/5, 1/3 chance), 100 empty; subtracted from player hit chance.	C	FIGT.ADV:287; FIGT.ADV:1456; FIGT.ADV:2238
+VAR0053	Bt_ESlot3State	battle	Enemy battle slot 3 round state: 0 not acted, 1 acted, 20 AI chose to defend (troops < max/5, 1/3 chance), 100 empty; subtracted from player hit chance.	C	FIGT.ADV:288; FIGT.ADV:1459; FIGT.ADV:2241
+VAR0054	Bt_ESlot4State	battle	Enemy battle slot 4 round state: 0 not acted, 1 acted, 20 AI chose to defend (troops < max/5, 1/3 chance), 100 empty; subtracted from player hit chance.	C	FIGT.ADV:289; FIGT.ADV:1462; FIGT.ADV:2244
+VAR0055		unused	Write-only tally: starts 100, += plundered gold, -= wall-repair cost in own-city menu; never read.	C	SET.ADV:13; Cｼﾊｲﾄｼ.ADV:894; Cｼﾊｲﾄｼ.ADV:1607
+VAR0056	FadeSpeed	system	Constant 4: speed argument of every PF/PW fade command (~1300 uses).	C	SET.ADV:14; MAIN.ADV:74
+VAR0057	DebugMode	debug	Cheat/debug mode: 0 off, 1 on (secret in Alice info menu); enables TADA->TEST.ADV, chapter-select start, 3x construction speed, extra FIGT_SEL options.	C	Iｱﾘｽ.ADV:119; COMMAND.ADV:24; ｽﾀMENU.ADV:246
+VAR0058	N_Kanami_State	story	Kanami status (init 1, Gｶﾅﾐ sets 3/2/0); nonzero = Kanami available as ninja scout.	I	COM.ADV:16; Gｶﾅﾐ.ADV:23; Gｶﾅﾐ.ADV:2777
+VAR0059	F_Helman_War	story	Helman war state: 0 peace, 1 at war (Helman phase runs), 2 Helman fallen.	C	MAIN.ADV:401; Gｽﾃｯｾﾙ.ADV:651; Gﾐﾈﾊﾞ.ADV:1708
+VAR0060	F_Zeth_War	story	Zeth war state: 0 peace, 1 at war (Zeth phase runs), 2 Zeth fallen.	C	MAIN.ADV:507; Tｾﾞｽ2.ADV:46; Iｾﾞｽ.ADV:1127
+VAR0061	N_Warg_Stage	story	Warg (Lassie) event progression 0/1/2; 0 lets the Warg event fire and gates Kayblis turns.	I	COM.ADV:96; Gﾜｰｸﾞ.ADV:3525; Tｹｲﾌﾞﾘｽ.ADV:149
+VAR0062	N_Miri_DeadlineWeek	story	Week number after which a Miri event fires (set Week+20, Cell extends +20); 0 = no deadline.	I	Gﾐﾘ.ADV:1357; COM.ADV:525; Gｾﾙ.ADV:6012
+VAR0063		story	Mixed flag: 0/1 first cancel-attack dialogue seen in Cﾃｷﾄｼ; 2 set by Papaia/Kayblis events, tested in Zeth AI.	G	Cﾃｷﾄｼ.ADV:381; Tｾﾞｽ2.ADV:92
+VAR0064	LadyCaravan_Prov	story	Province where Lady Caravan currently is (random walk +-1 each week, start 40); after capture (VAR0365=10/11) reused as weeks-since counter.	I	COM.ADV:56; Cｼﾊｲﾄｼ.ADV:287; Gｶﾌｪ.ADV:2451
+VAR0065	N_Amiran_Stage	story	Amiran/Lelyukov event progression (0,1,2,3,90,100).	I	Gｱﾐﾗﾝ.ADV:15; Gﾚﾘｭｰｺﾌ.ADV:1456; COM.ADV:711
+VAR0066	N_Cell_Stage	story	Cell event progression 0/1/2.	I	Gｾﾙ.ADV:4192; Gｾﾙ.ADV:4588
+VAR0067	N_Shizuka_Stage	story	Shizuka event progression 0-7 (6 = loop state, 7 tested in OVER ending).	I	Gｼｽﾞｶ.ADV:17; Gｼｽﾞｶ.ADV:1159; OVER.ADV:580
+VAR0068		story	Secondary Shizuka event flag 0/1/2.	G	Gｼｽﾞｶ.ADV:37; Gｼｽﾞｶ.ADV:2877
+VAR0069		story	Nagi-Shizuka joint event flag 0/1/2 (set in Gﾅｷﾞ, read in Gｼｽﾞｶ).	G	Gﾅｷﾞ.ADV:3990; Gｼｽﾞｶ.ADV:14
+VAR0070	Bt_BackgroundCg	battle	Battle background CG number: 900 plains (default), 902 city, 904/908/910/918 special; +1 = overlay.	C	FIGT_A.ADV:53; FIGT.ADV:1631; FIGT.ADV:1717
+VAR0071	BgmEnabled	system	Music flag, always 1 (set in SET); gates every SS/SR0 music command.	I	SET.ADV:29; MAIN.ADV:16
+VAR0072	Ui_ItemViewMode	ui	Item screen view toggle 0/1 (list by unit vs by item).	I	Sｱｲﾃﾑ.ADV:7; Sｱｲﾃﾑ.ADV:56
+VAR0073		unused	Tested =0 in the opening but never set nonzero.	C	ｵｰﾌﾟﾆﾝｸﾞ.ADV:1415
+VAR0074	Unit_Troops	unit	Current troop count of the unit; prologue +2/week, later + rnd(1..2*Recovery)+Recovery weekly, capped at max.	C	SET.ADV:138, Cﾌﾞｶ.ADV:752, MAIN.ADV:161
+VAR0075	Unit_MaxTroops	unit	Maximum troop count (shown as Max); raised by Add New Troops; 0 = commander without troops.	C	SET.ADV:139, Cﾌﾞｶ.ADV:1261, Cﾌﾞｶ.ADV:941
+VAR0076	Unit_TroopAtk	unit	Troop attack, fixed per troop type (Thieves 6, Soldiers 8, Knights 10, Mages 3); item effect 3 adds to it.	C	SET.ADV:140, Cﾌﾞｶ.ADV:1266, FIGT.ADV:2488
+VAR0077	Unit_TroopDef	unit	Troop defense, fixed per troop type.	C	SET.ADV:141, Cﾌﾞｶ.ADV:1269
+VAR0078	Unit_OffAtkMod	unit	Situational troop attack modifier when attacking: 0-9 = +n, 11-19 = -(n-10).	C	SET.ADV:166, Cﾌﾞｶ.ADV:1171, FIGT.ADV:1728
+VAR0079	Unit_OffDefMod	unit	Situational troop defense modifier when attacking (same +n / 10+n encoding).	C	SET.ADV:168, Cﾌﾞｶ.ADV:1183, FIGT.ADV:1729
+VAR0080	Unit_DefAtkMod	unit	Situational troop attack modifier when defending (0-9 = +n, 11-19 = -(n-10)).	C	SET.ADV:167, Cﾌﾞｶ.ADV:1197, FIGT.ADV:1732
+VAR0081	Unit_DefDefMod	unit	Situational troop defense modifier when defending (same encoding).	C	SET.ADV:169, Cﾌﾞｶ.ADV:1209, FIGT.ADV:1733
+VAR0082	Unit_DgnAtkMod	unit	Situational troop attack modifier in dungeons (same encoding).	C	SET.ADV:155, Cﾌﾞｶ.ADV:1223, FIGT.ADV:1736
+VAR0083	Unit_DgnDefMod	unit	Situational troop defense modifier in dungeons (same encoding).	C	SET.ADV:156, Cﾌﾞｶ.ADV:1235, FIGT.ADV:1737
+VAR0084	Unit_CurAtkMod	unit	Troop attack modifier active in the current battle, copied from 0078/0080/0082 by situation VAR0581 (1 offense, 2 defense, 3 dungeon).	C	FIGT.ADV:1728, FIGT.ADV:2451
+VAR0085	Unit_CurDefMod	unit	Troop defense modifier active in the current battle, copied from 0079/0081/0083 by VAR0581.	C	FIGT.ADV:1729, FIGT.ADV:2468
+VAR0086	Unit_Class	unit	Troop class: 0 Assault, 1 Archers, 2 Mages, 3 Magic Warriors, 4 Phantom Beasts, 10 Demon Assault, 11 Demon Magic; >=10 = demon (HP immune to non-demons unless attacker holds Chaos/Nikkou).	C	Sｱｲﾃﾑ.ADV:557, Sﾌﾞﾀｲ.ADV:557, FIGT.ADV:2416
+VAR0087	Unit_Atk	unit	Commander attack; item effect 1 adds to it.	C	SET.ADV:147, Cﾌﾞｶ.ADV:1130, FIGT.ADV:2566
+VAR0088	Unit_Def	unit	Commander defense; item effect 2 adds to it.	C	SET.ADV:148, Cﾌﾞｶ.ADV:1133
+VAR0089	Unit_Attacks	unit	Number of attacks; commander-vs-troops shots = rnd(n) + n/2.	C	Cﾌﾞｶ.ADV:1161, FIGT.ADV:2592
+VAR0090	Unit_HP	unit	Commander HP; reaching 0 in battle sets Unit_Status = 0 (defeated).	C	Cﾌﾞｶ.ADV:745, FIGT.ADV:1893
+VAR0091	Unit_MaxHP	unit	Commander max HP; HP refills to it weekly in the prologue, +2/week afterwards.	C	Cﾌﾞｶ.ADV:748, MAIN.ADV:153
+VAR0092	Unit_Strategy	unit	Successful strategy chance in percent; item effect 6 adds to it.	C	Cﾌﾞｶ.ADV:1152, FIGT.ADV:3162
+VAR0093	Unit_Magic	unit	Magic attack/defense value; item effects 5 (attack) and 8 (magic defense) add to it.	C	Cﾌﾞｶ.ADV:1157, FIGT.ADV:2580
+VAR0094	Unit_CgFull	unit	Battle sprite CG when troops >= battle area (troop-type sprite shared per troop type).	C	SET.ADV:162, FIGT.ADV:1647
+VAR0095	Unit_CgPartial	unit	Battle sprite CG when 0 < troops < battle area.	C	SET.ADV:163, FIGT.ADV:1651
+VAR0096	Unit_CgAlone	unit	Battle sprite CG when troops = 0 (commander alone).	C	SET.ADV:164, FIGT.ADV:1655
+VAR0097	Unit_FaceCg	unit	Face CG shown in dialogue and battle windows (Rance = 1).	C	SET_CHR.ADV:11, Cﾌﾞｶ.ADV:721, WAO_SUB.ADV:318
+VAR0098	Unit_PortraitCg	unit	Status-screen portrait CG (600 + unit index).	C	SET_CHR.ADV:23, Sﾌﾞﾀｲ.ADV:467
+VAR0099	Unit_Recovery	unit	Weekly troop replenishment base: troops += rnd(1..2n) + n; +1 each time new troops are bought.	C	MAIN.ADV:160, Cﾌﾞｶ.ADV:942
+VAR0100	Unit_DeployCost	unit	Base war expense to deploy (x100K GOLD); total = n + troops/300.	C	Sﾌﾞﾀｲ.ADV:347, Sﾌﾞﾀｲ.ADV:531
+VAR0101	Unit_Item	unit	Equipped item index (Item_Cur), 0 = none; item 48 drains troops and item 50 adds troops weekly.	C	Cﾌﾞｶ.ADV:1276, MAIN.ADV:141, Sｱｲﾃﾑ.ADV:585
+VAR0102	Unit_Status	unit	0 = not in army (absent or defeated), 1 = ready, 2 = deployed this week (greyed; reset to 1 at week start).	C	Sﾌﾞﾀｲ.ADV:192, MAIN.ADV:151, FIGT.ADV:1894
+VAR0103	Unit_Partner	unit	Partner unit index; when both are in the party: 'Surging with power', random +1/+2 to atk and def rolls.	C	FIGT.ADV:1001, FIGT.ADV:2457, SET_CHR.ADV:37
+VAR0104	Unit_Exp	unit	Experience points; next level at 100 + level*30.	C	Cﾌﾞｶ.ADV:1137, FIGT.ADV:3046
+VAR0105	Unit_Level	unit	Battle LV; added to own hit chance and subtracted from the enemy's.	C	Cﾌﾞｶ.ADV:1118, FIGT.ADV:2507
+VAR0106	Cmdr_Troops	cmdr	Enemy commander current troops.	C	SET.ADV:172, FIGT.ADV:1061, MAIN.ADV:337
+VAR0107	Cmdr_MaxTroops	cmdr	Enemy commander maximum troops.	C	SET.ADV:173, MAIN.ADV:338
+VAR0108	Cmdr_TroopAtk	cmdr	Enemy troop attack.	C	SET.ADV:175, FIGT.ADV:1065, FIGT.ADV:2673
+VAR0109	Cmdr_TroopDef	cmdr	Enemy troop defense.	C	SET.ADV:176, FIGT.ADV:1080, FIGT.ADV:2531
+VAR0110	Cmdr_TroopAtkMod	cmdr	Enemy troop attack modifier (0-9 = +n, 11-19 = -(n-10)); copied from a unit's on-defense modifier when a unit turns enemy.	C	FIGT.ADV:1066, FIGT.ADV:2673, Gｻﾃﾗ.ADV:3411
+VAR0111	Cmdr_TroopDefMod	cmdr	Enemy troop defense modifier (same encoding).	C	FIGT.ADV:1081, FIGT.ADV:2531, Gｻﾃﾗ.ADV:3412
+VAR0112	Cmdr_Class	cmdr	Enemy troop class, same codes as Unit_Class; drives in-battle AI front/back choice and demon immunity.	C	FIGT.ADV:1429, FIGT.ADV:2428, Gｻﾃﾗ.ADV:3413
+VAR0113	Cmdr_Atk	cmdr	Enemy commander attack.	C	FIGT.ADV:1050, Gｻﾃﾗ.ADV:3414
+VAR0114	Cmdr_Def	cmdr	Enemy commander defense.	C	FIGT.ADV:1054, FIGT.ADV:2491
+VAR0115	Cmdr_Attacks	cmdr	Enemy number of attacks.	C	FIGT.ADV:1101, FIGT.ADV:2784
+VAR0116	Cmdr_HP	cmdr	Enemy commander HP; reaching 0 in battle sets Cmdr_Status = 0.	C	FIGT.ADV:1044, FIGT.ADV:1902
+VAR0117	Cmdr_MaxHP	cmdr	Enemy commander max HP; HP refilled weekly in nation phases.	C	MAIN.ADV:336, Gｻﾃﾗ.ADV:3418
+VAR0118	Cmdr_Strategy	cmdr	Enemy strategy success chance in percent.	C	FIGT.ADV:70, Gｻﾃﾗ.ADV:3419
+VAR0119	Cmdr_Magic	cmdr	Enemy magic attack/defense.	C	FIGT.ADV:1097, FIGT.ADV:2544
+VAR0120	Cmdr_CgFull	cmdr	Enemy battle sprite CG when troops >= battle area.	C	FIGT.ADV:1634, SET_CHR.ADV:1958
+VAR0121	Cmdr_CgPartial	cmdr	Enemy battle sprite CG when 0 < troops < battle area.	C	FIGT.ADV:1638
+VAR0122	Cmdr_CgAlone	cmdr	Enemy battle sprite CG when troops = 0.	C	FIGT.ADV:1642
+VAR0123	Cmdr_FaceCg	cmdr	Enemy commander face CG (0 = none).	C	FIGT.ADV:1723, Gｻﾃﾗ.ADV:3405
+VAR0124	Cmdr_Recovery	cmdr	Enemy weekly troop recovery; troops += 3n per week (n in some Kayblis-phase steps).	C	SET.ADV:174, MAIN.ADV:337, Tｹｲﾌﾞﾘｽ.ADV:356
+VAR0125	Cmdr_Item	cmdr	Item index held by the enemy commander (copied from Unit_Item when a unit defects); effectively write-only.	I	Gｻﾃﾗ.ADV:3421, Gｼﾞｰｸ.ADV:238
+VAR0126		unused	Commander record field 16; only ever zeroed.	C	SET.ADV:188, G1.ADV:1128
+VAR0127		unused	Commander record field 17; only ever zeroed.	C	SET.ADV:189, G1.ADV:1129
+VAR0128	Cmdr_Status	cmdr	0 = defeated/out of play, 1 = active, 2 = active after a scripted spare (Zeth); nonzero is reset to 1 weekly.	C	FIGT.ADV:1906, MAIN.ADV:335, 死亡捕獲.ADV:232
+VAR0129		unused	Commander record field 19; only ever zeroed.	C	SET.ADV:191, G1.ADV:1130
+VAR0130	Prov_Owner	prov	Owner: 1 Leazas (player), 2 Rebel Army, 3 Independent City-States, 4 Helman, 5 Patton Army, 6 JAPAN, 7 Zeth, 8 Kayblis, 9 Hornet, 10 Angels, 11 ALism; flag CG = owner+819.	C	Cﾃｷﾄｼ2.ADV:69, SET_MAP.ADV:5, MAIN.ADV:119
+VAR0131	Prov_Girls	prov	Girls still findable by Temporary Levy in this city (0-5); decremented on each find.	C	SET_MAP.ADV:6, Cｼﾊｲﾄｼ.ADV:1055
+VAR0132	Prov_Economy	prov	Economy: weekly income in 100K GOLD; a levy yields rnd(10n).	C	Cｼﾊｲﾄｼ.ADV:24, MAIN.ADV:120, Cｼﾊｲﾄｼ.ADV:885
+VAR0133	Prov_Defense	prov	Defense (walls): attacker hit chance -2 per point; Bolster Defense +1 costs 20n.	C	Cｼﾊｲﾄｼ.ADV:27, FIGT_B.ADV:183, Cｼﾊｲﾄｼ.ADV:1609
+VAR0134	Prov_BattleArea	prov	Battle Area: max troops that fight at once in a city battle (field battles use 5000).	C	Cｼﾊｲﾄｼ.ADV:31, FIGT_A.ADV:44, FIGT_B.ADV:182
+VAR0135	Prov_BgCg	prov	Background CG of the city screen (1001 Leazas Castle, 1003 Leazas towns, 1004 free cities, 1007 Helman, ...).	C	SET_MAP.ADV:10, Cｼﾊｲﾄｼ.ADV:2, FIGT_B.ADV:16
+VAR0136		unused	Province record field 6; always 0.	C	SET.ADV:204, SET_MAP.ADV:11
+VAR0137	Prov_Adj1	prov	Adjacent province 1 (0 = none).	C	SET_MAP.ADV:12, COMMAND.ADV:531
+VAR0138	Prov_Adj2	prov	Adjacent province 2 (0 = none).	C	SET_MAP.ADV:13, COMMAND.ADV:540
+VAR0139	Prov_Adj3	prov	Adjacent province 3 (0 = none).	C	SET_MAP.ADV:14, COMMAND.ADV:549
+VAR0140	Prov_Adj4	prov	Adjacent province 4 (0 = none).	C	SET_MAP.ADV:15, COMMAND.ADV:558
+VAR0141	Prov_Adj5	prov	Adjacent province 5 (0 = none).	C	SET_MAP.ADV:16, COMMAND.ADV:567
+VAR0142	Prov_MapX	prov	Map X of the province (from an inline F3 table); used to centre the map and hit-test clicks.	C	SET_MAP.ADV:18, COMMAND.ADV:138
+VAR0143	Prov_MapY	prov	Map Y of the province.	C	SET_MAP.ADV:19, COMMAND.ADV:138
+VAR0144		unused	Province record field 14; never set.	C	SET.ADV:212
+VAR0145	Dgn_MapX	dungeon	Dungeon map X.	C	SET_MAP.ADV:2178, COMMAND.ADV:148
+VAR0146	Dgn_MapY	dungeon	Dungeon map Y.	C	SET_MAP.ADV:2179, COMMAND.ADV:148
+VAR0147	Dgn_State	dungeon	0 = unsearched, 1 = search in progress, 2 = fully searched.	C	Cﾒｲｷｭｳ.ADV:248, Cﾒｲｷｭｳ.ADV:474
+VAR0148	Dgn_SavedFloor	dungeon	Floor where the last search ended (0 = start from the top); resume point.	C	Cﾒｲｷｭｳ.ADV:626, Cﾒｲｷｭｳ.ADV:863
+VAR0149	Dgn_Prov	dungeon	Province the dungeon is in; enterable when that province is player-owned (0 = always).	C	SET_MAP.ADV:2188, COMMAND.ADV:149
+VAR0150	Item_Holder	item	0 = not owned, 100 = owned and unequipped, 1-50 = index of the unit equipping it.	C	Sｱｲﾃﾑ.ADV:605, Sｱｲﾃﾑ.ADV:146
+VAR0151	Item_Amount	item	Bonus amount of the item effect.	C	Cﾌﾞｶ.ADV:1287, FIGT.ADV:2488
+VAR0152	Item_Effect	item	Effect: 0 unequippable, 1 cmdr atk, 2 cmdr def, 3 troop atk, 4 troop def, 5 magic atk, 6 strategy, 8 magic def, 9 equippable without stat (special-cased by item id).	C	Cﾌﾞｶ.ADV:1284, Sｱｲﾃﾑ.ADV:598, FIGT.ADV:2692
+VAR0153	Unit_Count	unit	Unit record stride = 52 (slots 1-50 real; 51 is a temporary slot for scripted battles).	C	SET.ADV:125, SET.ADV:137
+VAR0154	Unit_Cur	unit	Cursor selecting the current player unit record (1-based).	C	SET.ADV:138, SET_CHR.ADV:5
+VAR0155	Cmdr_Count	cmdr	Enemy commander record stride = 220.	C	SET.ADV:127
+VAR0156	Cmdr_Cur	cmdr	Cursor selecting the current enemy commander record.	C	SET.ADV:172, SET_CHR.ADV:1955
+VAR0157	Prov_Count	prov	Province record stride = 100 (91 used); loop bound for weekly income.	C	SET.ADV:129, MAIN.ADV:123
+VAR0158	Prov_Cur	prov	Cursor selecting the current province record.	C	SET.ADV:198, SET_MAP.ADV:1
+VAR0159	Item_Count	item	Item record stride = 50.	C	SET.ADV:131
+VAR0160	Item_Cur	item	Cursor selecting the current item record.	C	SET.ADV:215, SET_ITEM.ADV:1
+VAR0161	Dgn_Count	dungeon	Dungeon record stride = 30 (1-26 from SET_MAP; 30 = the own-city Dungeon facility).	C	SET.ADV:133, Cｼﾊｲﾄｼ.ADV:539
+VAR0162	Dgn_Cur	dungeon	Cursor selecting the current dungeon record.	C	SET.ADV:220, Cﾒｲｷｭｳ.ADV:282
+VAR0163	Hist_Count	history	History page length = 300 weeks.	C	SET.ADV:226, SET.ADV:241
+VAR0164	Hist_Cur	history	Cursor into page 2: week index (0 = this week) for stat graphs; also the harem girl index for 0169/0170.	C	各種DATA.ADV:75, Cﾊｰﾚﾑ.ADV:560
+VAR0165	Hist_Funds	history	Weekly snapshot of national funds (set to Gold at the command phase); 'All Funds' graph.	C	MAIN.ADV:171, 各種DATA.ADV:79
+VAR0166	Hist_SundryExp	history	Sundry/special expenses this week (donations, merchant, etc.).	C	MAIN.ADV:192, 各種DATA.ADV:154
+VAR0167	Hist_MilitaryExp	history	Military spending this week (deploy costs, troop purchases).	C	Sﾌﾞﾀｲ.ADV:207, 各種DATA.ADV:203
+VAR0168	Hist_Casualties	history	Player troops lost this week ('All Damages' graph).	C	FIGT.ADV:3043, 各種DATA.ADV:252
+VAR0169	Harem_SexCount	history	Per-girl harem sex count (cursor VAR0164 = harem girl index).	C	Cﾊｰﾚﾑ.ADV:561, Sﾊｰﾚﾑ.ADV:236
+VAR0170	Harem_LastWeek	history	Absolute week the harem girl was last summoned (0 = never).	C	Cﾊｰﾚﾑ.ADV:222, Sﾊｰﾚﾑ.ADV:229
+VAR0171	Hist_PrevCur	history	Cursor for the shifted history aliases; always 1 (= last week).	C	SET.ADV:234, MAIN.ADV:7
+VAR0172	Hist_PrevFunds	history	Alias of Hist_Funds at index VAR0171; target of the weekly 299-entry NB shift.	C	SET.ADV:250, MAIN.ADV:8
+VAR0173	Hist_PrevSundryExp	history	Alias of Hist_SundryExp at index VAR0171; weekly shift target.	C	SET.ADV:251, MAIN.ADV:9
+VAR0174	Hist_PrevMilitaryExp	history	Alias of Hist_MilitaryExp at index VAR0171; weekly shift target.	C	SET.ADV:252, MAIN.ADV:10
+VAR0175	Hist_PrevCasualties	history	Alias of Hist_Casualties at index VAR0171; weekly shift target.	C	SET.ADV:253, MAIN.ADV:11
+VAR0176		unused	Alias of VAR0169 at index VAR0171; bound but never used.	C	SET.ADV:254
+VAR0177		unused	Alias of VAR0170 at index VAR0171; bound but never used.	C	SET.ADV:255
+VAR0178	Buf_Count	array	Size of the scratch-buffer section of page 3 = 1000.	C	SET.ADV:256
+VAR0179	Buf_Cur	array	Cursor into scratch array VAR0180.	C	SET.ADV:272, FIGT_SEL.ADV:42
+VAR0180	Buf_Val	array	General scratch array (page 3): battle-command enable flags, harem roster copy, save/restore of VAR0021.. .	C	FIGT_SEL.ADV:43, Sﾊｰﾚﾑ.ADV:23, Cﾃｷﾄｼ.ADV:201
+VAR0181		unused	Second cursor bound to the same scratch array; never used.	C	SET.ADV:273
+VAR0182		unused	Alias of VAR0180 under cursor VAR0181; never used.	C	SET.ADV:273
+VAR0183	Ui_BtnCount	ui	Stride of the button-rectangle table = 1000.	C	SET.ADV:261
+VAR0184	Ui_BtnCur	ui	Cursor: button index in the hit-rectangle table.	C	FIGT.ADV:602, ｽﾀMENU.ADV:41
+VAR0185	Ui_BtnX1	ui	Button left X (loaded from an inline F3 table).	C	FIGT.ADV:604, FIGT_SEL.ADV:511
+VAR0186	Ui_BtnY1	ui	Button top Y.	C	FIGT.ADV:605, FIGT_SEL.ADV:511
+VAR0187	Ui_BtnX2	ui	Button right X = X1 + width.	C	FIGT.ADV:608, FIGT_SEL.ADV:511
+VAR0188	Ui_BtnY2	ui	Button bottom Y = Y1 + height.	C	FIGT.ADV:609, FIGT_SEL.ADV:511
+VAR0189	Ui_BtnW	ui	Button width.	C	FIGT.ADV:606, FIGT_SEL.ADV:175
+VAR0190	Ui_BtnH	ui	Button height.	C	FIGT.ADV:607, FIGT_SEL.ADV:175
+VAR0191	Glob_FateCur	system	Cursor into persistent fate table VAR0195 (character index in the completion report; 79 = clear counter).	C	OVER.ADV:2, OVER.ADV:232
+VAR0192	Glob_CgCur	system	Cursor = CG number into the persistent CG-seen flags VAR0196.	C	CG.ADV:234, TEST.ADV:104
+VAR0193	Glob_MenuCur	system	Cursor = start-menu item index into VAR0197.	C	ｽﾀMENU.ADV:53, ｽﾀMENU.ADV:112
+VAR0194		unused	Saved/loaded with the persistent page across all save slots but never set.	C	ﾛｰﾄﾞｾｰﾌﾞ.ADV:521, SET.ADV:286
+VAR0195	Glob_Fate	system	Persistent per-character ending record: 0 none, 1 fortune seen, 10 misfortune seen, 100 both; index 79 = number of clears.	C	OVER.ADV:2088, OVER.ADV:3, HAPPY_C.ADV:259
+VAR0196	Glob_CgSeen	system	Persistent CG-viewed flag (registered with ZG; 1 = seen) for the CG gallery.	C	SET.ADV:297, CG.ADV:235
+VAR0197	Glob_MenuItem	system	Start-menu item state: 0 hidden, 1 enabled and highlightable, 2 shown (unlocks depend on clears).	I	ｽﾀMENU.ADV:54, ｽﾀMENU.ADV:113
+VAR0198	Unit_StrBase	unit	String-table base for unit strings (3 per unit: name, troop type, extra) = 20.	C	SET.ADV:298, SET_CHR.ADV:6
+VAR0199	Cmdr_StrBase	cmdr	String-table base for commander strings (3 per commander).	C	SET.ADV:299, SET_CHR.ADV:1956
+VAR0200	Prov_StrBase	prov	String-table base for province names.	C	SET.ADV:300, SET_MAP.ADV:4
+VAR0201	Item_StrBase	item	String-table base for item names.	C	SET.ADV:301, SET_ITEM.ADV:4
+VAR0202	Ui_MouseX	ui	Mouse X from IM; also reused as draw X for number sprites.	C	WAO_MAP.ADV:21, FIGTATTK.ADV:5
+VAR0203	Ui_MouseY	ui	Mouse Y from IM; also reused as draw Y.	C	WAO_MAP.ADV:21, FIGTATTK.ADV:6
+VAR0204	Ui_DragX	ui	Map drag anchor mouse X.	C	WAO_MAP.ADV:11, COMMAND.ADV:84
+VAR0205	Ui_DragY	ui	Map drag anchor mouse Y.	C	WAO_MAP.ADV:11, COMMAND.ADV:85
+VAR0206	Ui_DragPending	ui	1 = drag already started by COMMAND (skip re-reading the anchor).	C	WAO_MAP.ADV:7, COMMAND.ADV:86
+VAR0207		unused	Only zeroed at init.	C	SET.ADV:307
+VAR0208		unused	Only zeroed at init.	C	SET.ADV:308
+VAR0209	Ui_FaceOverMap	ui	Face-window erase mode: 0 = clear to black, 1 = restore from the scrolled map background.	C	WAO_SUB.ADV:308, WAO_SUB.ADV:323
+VAR0210	Ui_MarkCur	ui	Cursor into the map marker list (page 10).	C	SET.ADV:321, WAO_MAP.ADV:99
+VAR0211	Ui_MarkCg	ui	Marker CG (owner flag; values > 10000 are drawn 18 px higher).	C	WAO_MAP.ADV:104, 各種DATA.ADV:8
+VAR0212	Ui_MarkCount	ui	Number of map markers in the list.	C	WAO_MAP.ADV:121, WAO_MAP.ADV:101
+VAR0213	Ui_MarkX	ui	Marker map X.	C	WAO_MAP.ADV:102, WAO_MAP.ADV:118
+VAR0214	Ui_MarkY	ui	Marker map Y.	C	WAO_MAP.ADV:103, WAO_MAP.ADV:119
+VAR0215	Ui_MarkNextCur	ui	Second marker cursor (= MarkCur+1) used to delete a marker by block shift.	C	WAO_MAP.ADV:127
+VAR0216	Ui_MarkNextCg	ui	Marker CG alias under VAR0215 (shift source).	C	SET.ADV:324, WAO_MAP.ADV:130
+VAR0217	Ui_MarkNextX	ui	Marker X alias under VAR0215.	C	SET.ADV:325, WAO_MAP.ADV:128
+VAR0218	Ui_MarkNextY	ui	Marker Y alias under VAR0215.	C	SET.ADV:326, WAO_MAP.ADV:129
+VAR0219	Ui_MapCgTopL	ui	World map tile CG, top-left (812).	C	SET.ADV:333, WAO_MAP.ADV:88
+VAR0220	Ui_MapCgBotL	ui	World map tile CG, bottom-left (801).	C	SET.ADV:334, WAO_MAP.ADV:94
+VAR0221	Ui_MapCgTopM	ui	World map tile CG, top-middle (802).	C	SET.ADV:335, WAO_MAP.ADV:90
+VAR0222	Ui_MapCgBotM	ui	World map tile CG, bottom-middle (803).	C	SET.ADV:336, WAO_MAP.ADV:96
+VAR0223	Ui_MapCgTopR	ui	World map tile CG, top-right (804).	C	SET.ADV:337, WAO_MAP.ADV:92
+VAR0224	Ui_MapCgBotR	ui	World map tile CG, bottom-right (805).	C	SET.ADV:338, WAO_MAP.ADV:98
+VAR0225	Ui_ScrollWait	ui	Animation wait ticks 0-2 for map scrolling/effects, chosen from a boot timing benchmark (VAR0671/VAR0670).	C	SET.ADV:341, WAO_MAP.ADV:40
+VAR0226	Tmp0226	scratch	Scene-local temporary (replenish cost in Cﾌﾞｶ, minigame value in Gﾄｳｹﾞﾝ, divisor in Tｹｲﾌﾞﾘｽ2, flag in Iｶﾐ/Tｾﾞｽ2).	C	Cﾌﾞｶ.ADV:1006, Gﾄｳｹﾞﾝ.ADV:319, Tｹｲﾌﾞﾘｽ2.ADV:4
+VAR0227	Tmp0227	scratch	Scene-local temporary (Gﾄｳｹﾞﾝ minigame counter, Iｶﾐ flag).	C	Gﾄｳｹﾞﾝ.ADV:962, Iｶﾐ.ADV:4643
+VAR0228	Tmp0228	scratch	Scene-local temporary (Gﾄｳｹﾞﾝ minigame chance, Iｶﾐ flag).	C	Gﾄｳｹﾞﾝ.ADV:963, Iｶﾐ.ADV:4706
+VAR0229	Tmp0229	scratch	Scene-local temporary (saved cursor in FIGT/Tｹｲﾌﾞﾘｽ, Gﾄｳｹﾞﾝ counter, Iｶﾐ flag).	C	FIGT.ADV:1804, Tｹｲﾌﾞﾘｽ.ADV:918, Gﾄｳｹﾞﾝ.ADV:744
+VAR0230		unused	Only zeroed at reset.	C	SET_VER.ADV:5
+VAR0231	Ui_CityScouted	ui	1 = ninjas scouted the enemy city, so Economy/Defense/Battle Area are shown instead of ??; reset on entering.	C	Cﾃｷﾄｼ.ADV:26, Cﾆﾝｼﾞｬ.ADV:432
+VAR0232	Bt_PTroopVsCmdrShots	battle	Exchange: player troops' shots at the enemy commander (only when enemy troops fit in the battle area).	C	FIGT.ADV:2255, FIGTATTK.ADV:52
+VAR0233	Bt_PTroopVsCmdrDmg	battle	Exchange: HP damage to the enemy commander from player troops.	C	FIGT.ADV:2512, FIGT.ADV:1883
+VAR0234	Bt_PTroopVsTroopShots	battle	Exchange: player troops' shots at enemy troops.	C	FIGT.ADV:2552, FIGTATTK.ADV:44
+VAR0235	Bt_PTroopVsTroopDmg	battle	Exchange: enemy troops killed by player troops.	C	FIGT.ADV:2555, FIGT.ADV:1887
+VAR0236	Bt_PCmdrVsTroopShots	battle	Exchange: player commander's shots at enemy troops (rnd(attacks) + attacks/2).	C	FIGT.ADV:2605, FIGTATTK.ADV:60
+VAR0237	Bt_PCmdrVsTroopDmg	battle	Exchange: enemy troops killed by the player commander.	C	FIGT.ADV:2609, FIGT.ADV:1888
+VAR0238	Bt_PCmdrVsCmdrShots	battle	Exchange: player commander's shots at the enemy commander.	C	FIGT.ADV:2656, FIGTATTK.ADV:68
+VAR0239	Bt_PCmdrVsCmdrDmg	battle	Exchange: HP damage to the enemy commander from the player commander.	C	FIGT.ADV:2660, FIGT.ADV:1889
+VAR0240	Bt_ETroopVsCmdrShots	battle	Counter-exchange: enemy troops' shots at the player commander.	C	FIGT.ADV:2275, FIGTATTK.ADV:84
+VAR0241	Bt_ETroopVsCmdrDmg	battle	Counter-exchange: HP damage to the player commander from enemy troops.	C	FIGT.ADV:2702, FIGT.ADV:1877
+VAR0242	Bt_ETroopVsTroopShots	battle	Counter-exchange: enemy troops' shots at player troops.	C	FIGT.ADV:2745, FIGTATTK.ADV:76
+VAR0243	Bt_ETroopVsTroopDmg	battle	Counter-exchange: player troops killed by enemy troops.	C	FIGT.ADV:2748, FIGT.ADV:1878
+VAR0244	Bt_ECmdrVsTroopShots	battle	Counter-exchange: enemy commander's shots at player troops.	C	FIGT.ADV:2786, FIGTATTK.ADV:92
+VAR0245	Bt_ECmdrVsTroopDmg	battle	Counter-exchange: player troops killed by the enemy commander.	C	FIGT.ADV:2790, FIGT.ADV:1879
+VAR0246	Bt_ECmdrVsCmdrShots	battle	Counter-exchange: enemy commander's shots at the player commander.	C	FIGT.ADV:2843, FIGTATTK.ADV:100
+VAR0247	Bt_ECmdrVsCmdrDmg	battle	Counter-exchange: HP damage to the player commander from the enemy commander.	C	FIGT.ADV:2847, FIGT.ADV:1880
+VAR0248	Harem_ExpReward	event	EXP Rance gains after a harem/character scene; each scene sets it, harem command prints it and adds to Rance EXP, 0=no reward	C	Cﾊｰﾚﾑ.ADV:557; Cﾊｰﾚﾑ.ADV:574; Gｱｵｲ.ADV:14
+VAR0249	HaremAvail_Sill	ui	Harem menu entry index 1 (Gｼｨﾙ) available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:40; Cﾊｰﾚﾑ.ADV:57; Cﾊｰﾚﾑ.ADV:38
+VAR0250	HaremAvail_Lia	ui	Harem menu entry index 2 (Gﾘｱ) available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:47; Cﾊｰﾚﾑ.ADV:38
+VAR0251	HaremAvail_Maris	ui	Harem menu entry index 3 (Gﾏﾘｽ) available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:48; Cﾊｰﾚﾑ.ADV:38
+VAR0252	HaremAvail_Suzume	ui	Harem menu entry index 4, needs VAR0709=1 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:50; Cﾊｰﾚﾑ.ADV:38
+VAR0253	HaremAvail_Wendy	ui	Harem menu entry index 5, needs VAR0669=1 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:53; Cﾊｰﾚﾑ.ADV:38
+VAR0254	HaremAvail_Kanami	ui	Harem menu entry index 6, needs VAR0058 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:64; Cﾊｰﾚﾑ.ADV:38
+VAR0255	HaremAvail_Leila	ui	Harem menu entry index 7, unit 5 present and VAR0415>0 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:68; Cﾊｰﾚﾑ.ADV:38
+VAR0256	HaremAvail_Menad	ui	Harem menu entry index 8 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:75; Cﾊｰﾚﾑ.ADV:38
+VAR0257	HaremAvail_Haurein	ui	Harem menu entry index 9 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:79; Cﾊｰﾚﾑ.ADV:38
+VAR0258	HaremAvail_Melfeis	ui	Harem menu entry index 10 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:83; Cﾊｰﾚﾑ.ADV:38
+VAR0259	HaremAvail_Soul	ui	Harem menu entry index 11 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:41; Cﾊｰﾚﾑ.ADV:61; Cﾊｰﾚﾑ.ADV:38
+VAR0260	HaremAvail_Anasel	ui	Harem menu entry index 12, VAR0329>1 or VAR0330>1 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:43; Cﾊｰﾚﾑ.ADV:86; Cﾊｰﾚﾑ.ADV:38
+VAR0261	HaremAvail_Leila2	ui	Harem menu entry index 13 (second Leila scene set, VAR0415>1) available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:71; Cﾊｰﾚﾑ.ADV:38
+VAR0262	HaremAvail_Maria	ui	Harem menu entry index 14 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:90; Cﾊｰﾚﾑ.ADV:38
+VAR0263	HaremAvail_Shizuka	ui	Harem menu entry index 15 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:94; Cﾊｰﾚﾑ.ADV:38
+VAR0264	HaremAvail_Ran	ui	Harem menu entry index 16 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:98; Cﾊｰﾚﾑ.ADV:38
+VAR0265	HaremAvail_Milli	ui	Harem menu entry index 17 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:102; Cﾊｰﾚﾑ.ADV:38
+VAR0266	HaremAvail_Mill	ui	Harem menu entry index 18 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:106; Cﾊｰﾚﾑ.ADV:38
+VAR0267	HaremAvail_Mokomoko	ui	Harem menu entry index 19 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:109; Cﾊｰﾚﾑ.ADV:38
+VAR0268	HaremAvail_Sayori	ui	Harem menu entry index 20 (Gｳﾝｶﾞ) available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:112; Cﾊｰﾚﾑ.ADV:38
+VAR0269	HaremAvail_Merim	ui	Harem menu entry index 21 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:115; Cﾊｰﾚﾑ.ADV:38
+VAR0270	HaremAvail_Raylee	ui	Harem menu entry index 22 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:118; Cﾊｰﾚﾑ.ADV:38
+VAR0271	HaremAvail_Aoi	ui	Harem menu entry index 23 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:121; Cﾊｰﾚﾑ.ADV:38
+VAR0272	HaremAvail_Shariela	ui	Harem menu entry index 24 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:124; Cﾊｰﾚﾑ.ADV:38
+VAR0273	HaremAvail_CowSill	ui	Harem menu entry index 25, Sill while VAR0401=7/8 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:127; Cﾊｰﾚﾑ.ADV:38
+VAR0274	HaremAvail_Amiran	ui	Harem menu entry index 26 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:130; Cﾊｰﾚﾑ.ADV:38
+VAR0275	HaremAvail_Katyusha	ui	Harem menu entry index 27 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:133; Cﾊｰﾚﾑ.ADV:38
+VAR0276	HaremAvail_Saulnia	ui	Harem menu entry index 28 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:136; Cﾊｰﾚﾑ.ADV:38
+VAR0277	HaremAvail_Satella	ui	Harem menu entry index 29 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:140; Cﾊｰﾚﾑ.ADV:38
+VAR0278	HaremAvail_Julia	ui	Harem menu entry index 30 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:144; Cﾊｰﾚﾑ.ADV:38
+VAR0279	HaremAvail_Rafalia	ui	Harem menu entry index 31 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:148; Cﾊｰﾚﾑ.ADV:38
+VAR0280	HaremAvail_Arlcoate	ui	Harem menu entry index 32 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:152; Cﾊｰﾚﾑ.ADV:38
+VAR0281	HaremAvail_Cream	ui	Harem menu entry index 33 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:156; Cﾊｰﾚﾑ.ADV:38
+VAR0282	HaremAvail_Ruberan	ui	Harem menu entry index 34 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:159; Cﾊｰﾚﾑ.ADV:38
+VAR0283	HaremAvail_Sheila	ui	Harem menu entry index 35 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:163; Cﾊｰﾚﾑ.ADV:38
+VAR0284	HaremAvail_Chizuko	ui	Harem menu entry index 36 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:166; Cﾊｰﾚﾑ.ADV:38
+VAR0285	HaremAvail_Magic	ui	Harem menu entry index 37 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:170; Cﾊｰﾚﾑ.ADV:38
+VAR0286	HaremAvail_Nagi	ui	Harem menu entry index 38 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:174; Cﾊｰﾚﾑ.ADV:38
+VAR0287	HaremAvail_Makoto	ui	Harem menu entry index 39 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:177; Cﾊｰﾚﾑ.ADV:38
+VAR0288	HaremAvail_Warg	ui	Harem menu entry index 40 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:180; Cﾊｰﾚﾑ.ADV:38
+VAR0289	HaremAvail_Kaoru	ui	Harem menu entry index 41 (Gｶｸｻﾝ) available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:183; Cﾊｰﾚﾑ.ADV:38
+VAR0290	HaremAvail_Wichita	ui	Harem menu entry index 42 (Gｽｹｻﾝ) available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:186; Cﾊｰﾚﾑ.ADV:38
+VAR0291	HaremAvail_Elisabeth	ui	Harem menu entry index 43 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:189; Cﾊｰﾚﾑ.ADV:38
+VAR0292	HaremAvail_Isoroku	ui	Harem menu entry index 44 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:193; Cﾊｰﾚﾑ.ADV:38
+VAR0293	HaremAvail_Merci	ui	Harem menu entry index 45 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:196; Cﾊｰﾚﾑ.ADV:38
+VAR0294	HaremAvail_Kou	ui	Harem menu entry index 46 (Kouhime) available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:199; Cﾊｰﾚﾑ.ADV:38
+VAR0295	HaremAvail_Rebecca	ui	Harem menu entry index 47 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:202; Cﾊｰﾚﾑ.ADV:38
+VAR0296	HaremAvail_Annis	ui	Harem menu entry index 48 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:205; Cﾊｰﾚﾑ.ADV:38
+VAR0297	HaremAvail_Elena	ui	Harem menu entry index 49 available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:208; Cﾊｰﾚﾑ.ADV:38
+VAR0298	HaremAvail_Saitou	ui	Harem menu entry index 50 (Gｻｲﾄｳ), needs VAR0678>1, available this visit; whole block cleared (NC) and rebuilt each harem command	C	Cﾊｰﾚﾑ.ADV:211; Cﾊｰﾚﾑ.ADV:38
+VAR0299	F_YellowDragon_Beaten	dungeon	Dungeon 11 floor-5 boss Yellow Dragon defeated (forces battle on that floor while 0)	C	Cﾒｲｷｭｳ.ADV:1023; Cﾒｲｷｭｳ.ADV:3222
+VAR0300	F_RedDragon_Beaten	dungeon	Dungeon 11 floor-10 boss Red Dragon defeated	C	Cﾒｲｷｭｳ.ADV:1026; Cﾒｲｷｭｳ.ADV:3254
+VAR0301	F_GreenDragon_Beaten	dungeon	Dungeon 11 floor-15 boss Green Dragon defeated	C	Cﾒｲｷｭｳ.ADV:1029; Cﾒｲｷｭｳ.ADV:3286
+VAR0302	F_BlueDragon_Beaten	dungeon	Dungeon 11 floor-20 boss Blue Dragon defeated	C	Cﾒｲｷｭｳ.ADV:1032; Cﾒｲｷｭｳ.ADV:3318
+VAR0303	F_BlackDragon_Beaten	dungeon	Dungeon 11 floor-25 boss Black Dragon defeated	C	Cﾒｲｷｭｳ.ADV:1035; Cﾒｲｷｭｳ.ADV:3350
+VAR0304	Ev_GodRear2F_Unit1	event	God dungeon (Iｶﾐ) 2F rearguard: unit 1 left behind to hold the floor (copy of party slot VAR0569); rewritten with survivors after the giant kaiju assault	C	Iｶﾐ.ADV:180; Iｶﾐ.ADV:4610
+VAR0305	Ev_GodRear2F_Unit2	event	God dungeon (Iｶﾐ) 2F rearguard: unit 2 left behind to hold the floor (copy of party slot VAR0570); rewritten with survivors after the giant kaiju assault	C	Iｶﾐ.ADV:181; Iｶﾐ.ADV:4611
+VAR0306	Ev_GodRear2F_Unit3	event	God dungeon (Iｶﾐ) 2F rearguard: unit 3 left behind to hold the floor (copy of party slot VAR0571); rewritten with survivors after the giant kaiju assault	C	Iｶﾐ.ADV:182; Iｶﾐ.ADV:4612
+VAR0307	Ev_GodRear2F_Unit4	event	God dungeon (Iｶﾐ) 2F rearguard: unit 4 left behind to hold the floor (copy of party slot VAR0572); rewritten with survivors after the giant kaiju assault	C	Iｶﾐ.ADV:183; Iｶﾐ.ADV:4613
+VAR0308	Ev_GodRear3F_Unit1	event	God dungeon (Iｶﾐ) 3F rearguard: unit 1 left behind to hold the floor (copy of party slot VAR0569); rewritten with survivors after the giant kaiju assault	C	Iｶﾐ.ADV:398; Iｶﾐ.ADV:4673
+VAR0309	Ev_GodRear3F_Unit2	event	God dungeon (Iｶﾐ) 3F rearguard: unit 2 left behind to hold the floor (copy of party slot VAR0570); rewritten with survivors after the giant kaiju assault	C	Iｶﾐ.ADV:399; Iｶﾐ.ADV:4674
+VAR0310	Ev_GodRear3F_Unit3	event	God dungeon (Iｶﾐ) 3F rearguard: unit 3 left behind to hold the floor (copy of party slot VAR0571); rewritten with survivors after the giant kaiju assault	C	Iｶﾐ.ADV:400; Iｶﾐ.ADV:4675
+VAR0311	Ev_GodRear3F_Unit4	event	God dungeon (Iｶﾐ) 3F rearguard: unit 4 left behind to hold the floor (copy of party slot VAR0572); rewritten with survivors after the giant kaiju assault	C	Iｶﾐ.ADV:401; Iｶﾐ.ADV:4676
+VAR0312	Ev_GodRear4F_Unit1	event	God dungeon (Iｶﾐ) 4F rearguard: unit 1 left behind to hold the floor (copy of party slot VAR0569); rewritten with survivors after the giant kaiju assault	C	Iｶﾐ.ADV:550; Iｶﾐ.ADV:4736
+VAR0313	Ev_GodRear4F_Unit2	event	God dungeon (Iｶﾐ) 4F rearguard: unit 2 left behind to hold the floor (copy of party slot VAR0570); rewritten with survivors after the giant kaiju assault	C	Iｶﾐ.ADV:551; Iｶﾐ.ADV:4737
+VAR0314	Ev_GodRear4F_Unit3	event	God dungeon (Iｶﾐ) 4F rearguard: unit 3 left behind to hold the floor (copy of party slot VAR0571); rewritten with survivors after the giant kaiju assault	C	Iｶﾐ.ADV:552; Iｶﾐ.ADV:4738
+VAR0315	Ev_GodRear4F_Unit4	event	God dungeon (Iｶﾐ) 4F rearguard: unit 4 left behind to hold the floor (copy of party slot VAR0572); rewritten with survivors after the giant kaiju assault	C	Iｶﾐ.ADV:553; Iｶﾐ.ADV:4739
+VAR0316	Ev_GodRear5F_Unit1	event	God dungeon (Iｶﾐ) 5F rearguard: unit 1 left behind to hold the floor (copy of party slot VAR0569); rewritten with survivors after the giant kaiju assault	C	Iｶﾐ.ADV:741; Iｶﾐ.ADV:4799
+VAR0317	Ev_GodRear5F_Unit2	event	God dungeon (Iｶﾐ) 5F rearguard: unit 2 left behind to hold the floor (copy of party slot VAR0570); rewritten with survivors after the giant kaiju assault	C	Iｶﾐ.ADV:742; Iｶﾐ.ADV:4800
+VAR0318	Ev_GodRear5F_Unit3	event	God dungeon (Iｶﾐ) 5F rearguard: unit 3 left behind to hold the floor (copy of party slot VAR0571); rewritten with survivors after the giant kaiju assault	C	Iｶﾐ.ADV:743; Iｶﾐ.ADV:4801
+VAR0319	Ev_GodRear5F_Unit4	event	God dungeon (Iｶﾐ) 5F rearguard: unit 4 left behind to hold the floor (copy of party slot VAR0572); rewritten with survivors after the giant kaiju assault	C	Iｶﾐ.ADV:744; Iｶﾐ.ADV:4802
+VAR0320	F_Chizuko_State	story	Chizuko arc state: 2=died (Zeth Four Lords leader), 3=joined Rance, 4-6 later scenes; >2 harem, >3 good ending	I	Gﾁｽﾞｺ.ADV:3907; Gﾁｽﾞｺ.ADV:4265; OVER.ADV:1107
+VAR0321	F_Ruberan_State	story	Ruberan arc: 0=not captured, 1-6 captive in dungeon scene progression (>3 harem), 100=released (good ending, reunited with Merim)	I	Gﾙｰﾍﾞﾗﾝ.ADV:20; Gﾙｰﾍﾞﾗﾝ.ADV:2223; OVER.ADV:1050
+VAR0322	Bt_IsDuel	battle	1 while a scripted duel battle runs (FIGT shows Duel header and duel battle limit); set by scenes around FIGT calls, reset after	C	FIGT.ADV:116; Gｹｯｾﾙ.ADV:2433; Cﾒｲｷｭｳ.ADV:3223
+VAR0323	F_HQMeeting_Done	story	HQ war-council event (Iｼﾚｲﾌﾞ) done; set together with StoryStage=3; COM triggers it while 0 at stage 2	I	COM.ADV:192; Iｼﾚｲﾌﾞ.ADV:1528; Iｼﾚｲﾌﾞ.ADV:1713
+VAR0324	F_Sayori_Fate	story	Sayori ending: 1=let go, returned to M Land (good), 2=married Shinoda (bad)	C	IMﾗﾝﾄﾞ.ADV:1793; Gｼﾉﾀﾞ.ADV:1743; OVER.ADV:718
+VAR0325	F_Japan_State	story	JAPAN arc: 0=not started (fires when province 28 is owned), 1=at war (MAIN runs JAPAN phase), 2/3=alliance/negotiation variants, 10=JAPAN subjugated, Kouhime obtained	I	COM.ADV:102; MAIN.ADV:348; IJAPAN.ADV:6198
+VAR0326	F_Leila_NobunagaWife	story	Leila became Nobunaga's wife in the JAPAN arc (bad ending for Leila)	C	IJAPAN.ADV:1597; OVER.ADV:393; Gﾘｯｸ.ADV:16
+VAR0327	F_Kou_State	story	Kouhime (Kou) relationship state 0-11; 3 set by IJAPAN, 4-8 bedroom scenes, 10 after Rudrasaum scene; >2 harem	I	IJAPAN.ADV:5565; Gｺｳﾋﾒ.ADV:338; Gﾙﾄﾞﾗ.ADV:548
+VAR0328	F_ShangriLa_State	story	Shangri-La / Shariela arc state 0-7 (4=Shangri-La became a ghost town); >2 harem	I	Iｼｬﾝｸﾞﾘﾗ.ADV:1106; Iｼｬﾝｸﾞﾘﾗ.ADV:5188; Cﾊｰﾚﾑ.ADV:123
+VAR0329	F_Thieves_State	story	Thieves (Bound's gang) arc state: 1 joined thieves' hideout events, 2, 3, 4; 10=Bound scene done; >1 enables Anasel harem	I	Iﾄｳｿﾞｸ.ADV:188; Iﾄｳｿﾞｸ.ADV:1085; Gﾊﾞｳﾝﾄﾞ.ADV:106
+VAR0330	F_Anasel_Fate	story	Anasel: 1=captured once then escaped (good ending), 2=recaptured by Rance (bad ending, harem)	C	Iﾄｳｿﾞｸ.ADV:730; Gｱﾅｾﾙ.ADV:24; OVER.ADV:524
+VAR0331	F_Miki_InCastle	story	Miki staying in the Demon Lord's Room of Leazas Castle (enables that castle menu entry); 2 and 0 set when she leaves	I	Iﾏｼﾞﾝ.ADV:85; Cｼﾊｲﾄｼ.ADV:137; Gﾐｷ.ADV:2045
+VAR0332	F_Kentarou_State	story	Kentarou arc: 1 met, 2 event pending (COM), 3=Kentarou and Miki joined Rance, 4-8 later scenes	I	Iﾏｼﾞﾝ.ADV:86; Gｹﾝﾀﾛｳ.ADV:1647; COM.ADV:117
+VAR0333		story	Set to 2 in the demon-war intro when the first FIGT_B battle result branches; never tested	G	Iﾏｼﾞﾝ.ADV:1570
+VAR0334	F_DemonWar_Stage	story	Demon war (Hornet vs Kayblis) chapter 0-12, also 1-10 on the Demon Lord Miki route; MAIN dispatches the chapter scenes; 20=Kayblis invades the human realm (gates the Kayblis army turn)	I	Iﾏｼﾞﾝ.ADV:3325; MAIN.ADV:933; Gｹｲﾌﾞﾘｽ.ADV:2105
+VAR0335	F_Seizel_State	story	Hawzel/Seizel sisters arc: 1-2 set by demon war, 2=Hawzel ally, 7=Seizel joined, 20=both became La Vaswald (bad ending)	I	Gｻｲｾﾞﾙ.ADV:1443; Gｻｲｾﾞﾙ.ADV:2294; OVER.ADV:2061
+VAR0336	F_RagarlRitual_State	story	Zeth / Ragarl LV30-mage sacrifice plot (Nagi, Papaya): 1-5 drive Zeth-turn events, 6=Annis used as ingredient, 7=Shizuka sacrificed	I	Tｾﾞｽ.ADV:4; Gﾊﾟﾊﾟｲｱ.ADV:3805; OVER.ADV:594
+VAR0337	F_ButtonRoom_A	event	Button A pushed in the five-button room (one-time Atk+Def +1)	C	G1.ADV:944; G1.ADV:947
+VAR0338	F_ButtonRoom_B	event	Button B pushed (one-time Atk +1)	C	G1.ADV:982; G1.ADV:987
+VAR0339	F_ButtonRoom_C	event	Button C pushed (one-time max HP +2)	C	G1.ADV:1010; G1.ADV:1015
+VAR0340	F_ButtonRoom_D	event	Button D pushed (gives item Capsule Kaiju A)	C	G1.ADV:1038; G1.ADV:1041
+VAR0341	F_ButtonRoom_E	event	Button E pushed (one-time)	C	G1.ADV:1069; G1.ADV:1072
+VAR0342	F_Battleship_Door	dungeon	Giant battleship (dungeon 16) door: 0=not tried, 1=opened with the Giant Battleship Key, 2=locked, turned back	C	G1.ADV:1156; G1.ADV:1175; Cﾒｲｷｭｳ.ADV:223
+VAR0343	F_Arcy_State	dungeon	Arcy (dungeon 15 floor 4): 1=found her notice sign, 2=met Arcy, 3=asked for a solution	I	G1.ADV:2950; G1.ADV:2928; Cﾒｲｷｭｳ.ADV:755
+VAR0344	F_Arcy_HasSweets	event	Arcy has been given sweets and will answer one question; reset to 0 after each answer	I	G1.ADV:1845; G1.ADV:1922; G1.ADV:2159
+VAR0345	F_Elena_State	story	Elena Flower: 1=entered harem, 2-8 later scenes; >6 harem and good ending	C	Gｴﾚﾅ.ADV:1891; Cﾊｰﾚﾑ.ADV:207; OVER.ADV:1444
+VAR0346	N_Kapala_Rank	story	Kapala idol ranking progress 1-12, displayed rank = 13-value, 12=#1 (good ending if VAR0347=0); raised by gold sponsorship	C	Gｶﾊﾟｰﾗ.ADV:2255; Gｶﾊﾟｰﾗ.ADV:2132; OVER.ADV:1586
+VAR0347	F_Kapala_State	story	Kapala relationship: 1, 2=gave herself to Rance, 3=raped by Rance (bad ending)	I	Gｶﾊﾟｰﾗ.ADV:666; Gｶﾊﾟｰﾗ.ADV:1037; OVER.ADV:1598
+VAR0348	Ev_KapalaReport	event	Pending Kapala sponsorship result scene; COM fires and clears it	I	Gｶﾊﾟｰﾗ.ADV:2035; COM.ADV:453
+VAR0349	F_Annis_State	story	Annis Sawatari arc 0-6; 6=good ending (living under Rance); nonzero enables harem	I	Gｱﾆｽ.ADV:2358; Gｱﾆｽ.ADV:619; OVER.ADV:1414
+VAR0350	F_Tougen_State	event	Peach Blossom Spring (Tougen) bunny contest: 0=first visit, 1=visited, 3=contest held	I	Gﾄｳｹﾞﾝ.ADV:13; Gﾄｳｹﾞﾝ.ADV:635
+VAR0351	N_Tougen_Record	event	Best Tougen contest record (number of girls made to climax, from VAR0229)	C	Gﾄｳｹﾞﾝ.ADV:1607; Gﾄｳｹﾞﾝ.ADV:1639
+VAR0352	Tougen_RecordUnit	event	Unit index (VAR0154) holding the Tougen contest record	C	Gﾄｳｹﾞﾝ.ADV:1623; Gﾄｳｹﾞﾝ.ADV:1630
+VAR0353	F_Somita_State	story	Somita Kalar: 1=joined Rance, 2-4 later scenes	C	Gｶﾗｰ.ADV:5754; Gｿﾐｰﾀ.ADV:787; Gｿﾐｰﾀ.ADV:511
+VAR0354	F_Somita_Fate	story	Somita ending: 1=became an angel (good), 2=became a devil, kalar unit left (bad)	C	Gｿﾐｰﾀ.ADV:1309; Gｿﾐｰﾀ.ADV:1992; OVER.ADV:1730
+VAR0355	F_Pastel_State	story	Pastel Kalar / Kalar village relations 0-5; >4 good ending (trusts humans), 0 bad	C	Gｶﾗｰ.ADV:1738; Gｶﾗｰ.ADV:2046; OVER.ADV:1757
+VAR0356	Pastel_NextVisitWeek	time	Week (VAR0517+12) before the next Kalar village visit scene is allowed	C	Gｶﾗｰ.ADV:1739; Gｶﾗｰ.ADV:313
+VAR0357	Somita_EventWeek	time	Week (join week+16) after which the Somita event in COM may fire	C	Gｶﾗｰ.ADV:5758; COM.ADV:735
+VAR0358	F_Code_State	story	Kanami's Gｺｰﾄﾞ arc state 1-5 (2=ran away at night, 4-5 later scenes); tested by ninja command and COM	I	Gｺｰﾄﾞ.ADV:316; Gｺｰﾄﾞ.ADV:1864; Cﾆﾝｼﾞｬ.ADV:351
+VAR0359	F_Silky_State	story	Silky arc: 1 start, 2-6 demons' blood souls absorbed, 8 captured, 9, 10=put under Kayblis's control; gates Kayblis-turn Silky events	I	Gｼﾙｷｨ.ADV:1006; Gｼﾙｷｨ.ADV:3019; Tｹｲﾌﾞﾘｽ.ADV:140
+VAR0360	F_SoulRedeye	story	Redeye/Rona demon's blood soul: 1=freed (Redeye ended), 2=absorbed by Silky	I	Gﾚｯﾄﾞｱｲ.ADV:3897; Gｼﾙｷｨ.ADV:149; Tｹｲﾌﾞﾘｽ.ADV:115
+VAR0361	F_SoulPiar	story	Piar's blood soul: 1=freed (Piar died), 2=absorbed by Silky	I	Gﾊﾟｲｱｰﾙ.ADV:3026; Gｼﾙｷｨ.ADV:300; Tｹｲﾌﾞﾘｽ.ADV:120
+VAR0362	F_SoulMedusa	story	Medusa/Seizel blood soul: 1=freed, 2=absorbed by Silky	I	Gﾒﾃﾞｨｳｻ.ADV:507; Gｻｲｾﾞﾙ.ADV:2821; Gｼﾙｷｨ.ADV:462
+VAR0363	F_SoulKesselring	story	Kesselring's blood soul: 1=freed (Kesselring died), 2=absorbed by Silky	I	Gｹｯｾﾙ.ADV:2834; Gｼﾙｷｨ.ADV:715; Tｹｲﾌﾞﾘｽ.ADV:130
+VAR0364	Silky_NextEventWeek	time	Week (VAR0517+12) before the next Silky absorption event in the Kayblis turn	C	Gｼﾙｷｨ.ADV:1016; Tｹｲﾌﾞﾘｽ.ADV:140
+VAR0365	F_Cafe_State	story	Cafe arc: 1-5 caravan scenes, 10/11=Lady (Cafe) captured as prostitute (bad), 20/21=Cafe and Carfeknights joined (good)	C	Gｶﾌｪ.ADV:2450; Gｶﾌｪ.ADV:6992; OVER.ADV:1615
+VAR0366	F_Merci_State	story	Merci: 1=seen (thieves arc), 2-3=captured into harem (bad ending); <2 good	C	Iﾄｳｿﾞｸ.ADV:1086; Gﾒﾙｼｨ.ADV:257; OVER.ADV:1333
+VAR0367	F_Elisabeth_State	story	Elisabeth (AL Church): 1-2 serving Rance (good ending), 10=died in the fall of the AL Church	C	GAL.ADV:3871; GAL.ADV:1665; OVER.ADV:1276
+VAR0368	N_Paruot_Troops	history	AL Church raider Paruot troop pool: set 1000, +rnd(500) weekly, raids (copied to VAR0106) when >800 on a 1/2 roll, 10 after defeat, 0 inactive	C	GAL.ADV:2605; GAL.ADV:2866; GAL.ADV:2976
+VAR0369	N_Seconaot_Troops	history	AL Church raider Seconaot troop pool (same rules as VAR0368)	C	GAL.ADV:2606; GAL.ADV:2882; GAL.ADV:2979
+VAR0370	N_Contaot_Troops	history	AL Church raider Contaot troop pool (same rules as VAR0368)	C	GAL.ADV:2607; GAL.ADV:2898; GAL.ADV:2982
+VAR0371	N_Beckdoran_Troops	history	AL Church raider Beckdoran troop pool (same rules as VAR0368)	C	GAL.ADV:2608; GAL.ADV:2914; GAL.ADV:2985
+VAR0372	F_SpecialRoom_Visited	event	Special Room (Gﾄｸﾍﾞﾂ) first-visit scene seen	C	Gﾄｸﾍﾞﾂ.ADV:14
+VAR0373	F_PG9_State	story	PG-9 (Gﾊﾟｲｱｰﾙ) state 1-3; dungeon 9 is closed unless it is 2	I	Gﾊﾟｲｱｰﾙ.ADV:1113; Gﾊﾟｲｱｰﾙ.ADV:1222; Cﾒｲｷｭｳ.ADV:14
+VAR0374	Ev_KayblisAssault	event	Pending: Kayblis monster army will assault the humans (set when Miki leaves or Piar returns home), consumed by the Kayblis turn	I	Gﾐｷ.ADV:429; Gｹｲﾌﾞﾘｽ.ADV:761; Tｹｲﾌﾞﾘｽ.ADV:9
+VAR0375	F_Medusa_State	story	Medusa: 0=active (Kayblis turn may fire her event), 1=her blood soul sleeps in apostle Alefgard, 10=Medusa/Seizel gone	I	Gﾒﾃﾞｨｳｻ.ADV:737; Gﾒﾃﾞｨｳｻ.ADV:508; Tｹｲﾌﾞﾘｽ.ADV:63
+VAR0376	F_Kesselring_State	story	Kesselring (Elite Four demon): 1 met, 2 began to move, 3 later scenes, 10=died	I	Gｹｯｾﾙ.ADV:308; Gｹｯｾﾙ.ADV:2833; Tｹｲﾌﾞﾘｽ.ADV:1275
+VAR0377	F_Martina_State	story	Martina arc 1-6; 100=raped by Rance (bad ending)	C	Gﾏﾙﾁﾅ.ADV:17; Gﾏﾙﾁﾅ.ADV:2136; OVER.ADV:1918
+VAR0378	F_Galtia_State	story	Galtia (demon) arc: 1, 2 poison prepared, 3 ate the food, 4 food bait left, 5, 10=rampaged into a mansion	I	Gｶﾞﾙﾃｨｱ.ADV:425; Gｶﾞﾙﾃｨｱ.ADV:769; Tｹｲﾌﾞﾘｽ.ADV:220
+VAR0379	Galtia_BaitProv	prov	Province (VAR0158) where food bait for Galtia was left	C	Gｶﾞﾙﾃｨｱ.ADV:716; Gｶﾞﾙﾃｨｱ.ADV:308
+VAR0380	F_Calory_State	story	Kite/Calory arc 1-5; 6=Calory cured of greening disease (good), 10=not cured (bad)	C	Gｶｲﾄ.ADV:214; Gｷｬﾛﾘ.ADV:236; OVER.ADV:1644
+VAR0381	F_KiteCalory_Met	event	First Kite/Calory scene seen	I	Gｶｲﾄ.ADV:31; Gｷｬﾛﾘ.ADV:20
+VAR0382	F_Babolat_State	story	Babolat arc: 1 accepted task, 2 attempts, 3 trap prepared, 10=Babolat defeated	I	Gﾊﾞﾎﾞﾗ.ADV:244; Gﾊﾞﾎﾞﾗ.ADV:2248; Tｹｲﾌﾞﾘｽ.ADV:193
+VAR0383	N_Babolat_PitfallStep	story	Pitfall plan step 1-5 against Babolat; reset to 0 when the location is chosen	I	Gﾊﾞﾎﾞﾗ.ADV:421; Gﾊﾞﾎﾞﾗ.ADV:1467; Gﾊﾞﾎﾞﾗ.ADV:1568
+VAR0384	Babolat_PitfallProv	prov	Province (VAR0158) chosen for the Babolat pitfall; Kayblis turn checks it	C	Gﾊﾞﾎﾞﾗ.ADV:1728; Tｹｲﾌﾞﾘｽ.ADV:808
+VAR0385	F_Kayblis_War	story	Kayblis conflict: 0=demon war ongoing, 1=Miki/Kentarou route resolved, 2=Monster Army assaulted the humans (at war with Kayblis)	I	Gｹｲﾌﾞﾘｽ.ADV:760; Gﾐｷ.ADV:3753; MAIN.ADV:594
+VAR0386		story	Set after a Kayblis subordinate ran away (Gｹｲﾌﾞﾘｽ); enables a Miki event in COM	G	Gｹｲﾌﾞﾘｽ.ADV:2550; COM.ADV:552
+VAR0387	F_Hornet_Joined	story	Hornet joined Rance	C	Gｹｲﾌﾞﾘｽ.ADV:3110; COM.ADV:817
+VAR0388	N_Xacalite_KillsLeft	story	Lives still needed for demon Xacalite's contract with Magic (starts 800, reduced by each attack)	C	Gﾏｼﾞｯｸ.ADV:4993; Gﾏｼﾞｯｸ.ADV:2398; MAIN.ADV:926
+VAR0389	F_Magic_State	story	Magic arc: 1 Xacalite appears, 2-3 contract active (MAIN attacks), 4-5, 6=reunited with Alex (good), 99 saved, 100=soul taken by devil (bad)	C	Gﾏｼﾞｯｸ.ADV:4992; Gﾏｼﾞｯｸ.ADV:2462; OVER.ADV:1137
+VAR0390	F_Ex_State	story	Ex (White General): 1-3 scene branch, 4=imprisoned for life, 5=reinstated, 6, 100=dead/finished	I	Gｴｸｽ.ADV:811; Gｴｸｽ.ADV:3000; FIGT_A.ADV:1
+VAR0391	F_Maris_State	story	Maris event chain 1-5, COM fires next step after week 15/20/21	I	COM.ADV:909; Gﾏﾘｽ.ADV:1651; Gﾏﾘｽ.ADV:751
+VAR0392		unused	Set to 1 in a Maris scene, never tested	C	Gﾏﾘｽ.ADV:965
+VAR0393	F_Maris_State2	story	Second Maris scene chain 0-2	I	Gﾏﾘｽ.ADV:2016; Gﾏﾘｽ.ADV:2425; Iｶﾝｶﾞｴ.ADV:93
+VAR0394	F_Suzume_State	story	Suzume Katou arc 1-5; 5=good ending (escaped her father), <4 bad	C	Gｽｽﾞﾒ.ADV:1077; Gﾊﾞﾚｽ.ADV:198; OVER.ADV:287
+VAR0395	F_Wendy_State	story	Wendy arc 1-4; <2 bad ending (ordinary maid)	C	Gｳｪﾝﾃﾞｨ.ADV:37; Gｳｪﾝﾃﾞｨ.ADV:307; OVER.ADV:331
+VAR0396		unused	Set to 0 in a Wendy scene, never tested	C	Gｳｪﾝﾃﾞｨ.ADV:1745
+VAR0397	F_Sill_State	story	Sill relationship state 1-4 (1 after rescue from prison, then 2-4 scenes); 1 makes Sill harem-available	I	Gｼｨﾙ.ADV:5769; Gｼｨﾙ.ADV:1026; Cﾊｰﾚﾑ.ADV:56
+VAR0398		story	Set by Sill/Soul scenes; required for the thieves arc step 1->2	G	Gｼｨﾙ.ADV:2599; Gｿｳﾙ.ADV:3063; Iﾄｳｿﾞｸ.ADV:599
+VAR0399	F_SillKidnap_Stage	story	Sill kidnapping by Madame Gorch: 0-7 advance on week thresholds (MAIN, >10..>50), 70/80/90/100 rescue outcomes (80=Sill and Soul rescued)	C	MAIN.ADV:897; Gｼｨﾙ.ADV:5946; Gｼｨﾙ.ADV:5275
+VAR0400	F_Soul_Fate	story	Soul: 1=saved by Rance (good ending), 2=killed by Madame Gorch (bad)	C	Gｿｳﾙ.ADV:174; Gｼｨﾙ.ADV:3457; OVER.ADV:496
+VAR0401	F_SillCow_State	story	Sill's later arc (Lia's scheme): 1-6 scenes, 7/8=Sill turned into a cow (harem Cow Sill, Natural Foe's Cave), 100=sold, 0=reset	I	Gﾘｱ.ADV:2535; Gｼｨﾙ.ADV:6977; G1.ADV:2376
+VAR0402	F_Lia_State	story	Lia relationship state 1-6 (6=Lia's plot against Sill); used with VAR0660 jealousy counter	I	Gﾘｱ.ADV:35; Gﾘｱ.ADV:2850; COM.ADV:162
+VAR0403	F_Rebecca_State	story	Rebecca: 1 met, 2-3 freed from Pluepet into harem (good), 100=committed suicide (bad)	C	Gﾚﾍﾞｯｶ.ADV:158; Gﾚﾍﾞｯｶ.ADV:1159; OVER.ADV:1386
+VAR0404	F_LeilaRick_State	story	Leila/Rick arc 1-7; >5 good ending (expressed feelings to Rick)	C	Gﾚｲﾗ.ADV:786; Gﾚｲﾗ.ADV:1345; OVER.ADV:381
+VAR0405	F_Menad_State	story	Menad arc 1-8: 4=Menad perished, 6=with Zarak, 8=good ending	C	Gﾒﾅﾄﾞ.ADV:477; Gﾒﾅﾄﾞ.ADV:4012; OVER.ADV:411
+VAR0406	F_Menad_Flag	story	Menad side flag set in a later scene; selects scene branch and an Iｶﾝｶﾞｴ hint	I	Gﾒﾅﾄﾞ.ADV:3673; Gﾒﾅﾄﾞ.ADV:32
+VAR0407	F_Menad_Fate	story	Menad: 1=becoming a good woman, 2=betrayed by Zarak (bad ending)	C	Gﾒﾅﾄﾞ.ADV:4013; Gﾒﾅﾄﾞ.ADV:61; OVER.ADV:425
+VAR0408	F_Kinkaid_Done	story	Kinkaid scene done; disables his battle trigger	C	Gｷﾝｹｰﾄﾞ.ADV:260; FIGT_A.ADV:171
+VAR0409	F_Haurein_Arc	story	Haurein/Barres arc 1-3	I	Gﾊﾞﾚｽ.ADV:208; Gﾊｳﾚｰﾝ.ADV:2430; COM.ADV:355
+VAR0410	F_Haurein_State2	story	Second Haurein scene chain 0-2	I	Gﾊｳﾚｰﾝ.ADV:2715; Gﾊｳﾚｰﾝ.ADV:3567
+VAR0411	F_Kanami_Scene1	story	Kanami scene 1 seen (checked by the Gｺｰﾄﾞ arc)	C	Gｶﾅﾐ.ADV:191; Gｺｰﾄﾞ.ADV:1448
+VAR0412	F_Kanami_Scene2	story	Kanami scene 2 seen	C	Gｶﾅﾐ.ADV:844; Gｺｰﾄﾞ.ADV:1445
+VAR0413	F_Kanami_Scene3	story	Kanami scene 3 seen	C	Gｶﾅﾐ.ADV:2374; Gｺｰﾄﾞ.ADV:1451
+VAR0414	F_Kanami_Scene4	story	Kanami scene 4 seen	C	Gｶﾅﾐ.ADV:2631; Gｺｰﾄﾞ.ADV:1454
+VAR0415	F_Leila_State	story	Leila relationship 1-4; >1 enables second harem entry	I	Gﾚｲﾗ.ADV:3249; Gﾚｲﾗ.ADV:4752; Cﾊｰﾚﾑ.ADV:70
+VAR0416	F_Leila_Flag	story	Leila side flag selecting scene branches	I	Gﾚｲﾗ.ADV:5803; Gﾚｲﾗ.ADV:174
+VAR0417	F_Melfeis_Fate	story	Melfeis: 1=broke curse and married (good), 2=joined Rance (bad)	C	Gﾒﾙﾌｪｲｽ.ADV:3707; Gﾒﾙﾌｪｲｽ.ADV:1741; OVER.ADV:467
+VAR0418	F_Fururu_State	story	Fururu (Cordoba's wife): 1-3 visits, 10/11 after Cordoba's death (11=bad ending)	C	Gｺﾙﾄﾞﾊﾞ.ADV:124; Gｺﾙﾄﾞﾊﾞ.ADV:167; OVER.ADV:1859
+VAR0419	F_Merim_Relation	story	Merim relationship: 1=joined after Sanakia battle, 2-8 scenes (cycles 8->2), 0=taken by Mars	I	Gｻｰﾅｷｱ.ADV:586; Gﾒﾘﾑ.ADV:1115; Gｶｾｲ.ADV:2024
+VAR0420	F_Raylee_State	story	Raylee (Lazeal mayor): 1-5 scenes (2=Lazeal merged, 5=slave, bad), 10=submitted/lives with Amuro (good)	C	Gﾚｨﾘｨ.ADV:2191; Gﾚｨﾘｨ.ADV:998; OVER.ADV:770
+VAR0421	F_Aoi_State	story	Aoi (sex slave): 1=seen at DX Association, 2=taken as slave (bad ending), 10-13 rehabilitation scenes with Maris, 100=rehabilitated (good)	C	GDX.ADV:803; Gｱｵｲ.ADV:1495; OVER.ADV:1502
+VAR0422	F_Katyusha_State	story	Katyusha (DX Association witch): 1, 2, 3, 10=resolved at DX, 11; 1-8 harem-available; 0=taken by Mars	I	Gｶﾁｭｰｼｬ.ADV:292; GDX.ADV:1419; Cﾊｰﾚﾑ.ADV:132
+VAR0423	F_Katyusha_Fate	story	Katyusha ending: 1=escaped with money (good), 2=sold to the DX Association (bad)	C	Gﾛﾚｯｸｽ.ADV:1816; GDX.ADV:1420; OVER.ADV:852
+VAR0424	F_Saulnia_State	story	Saulnia (DX Association witch): 1, 2, 10=resolved at DX, 11; 1-8 harem-available; 0=taken by Mars	I	Gｿﾙﾆｱ.ADV:339; GDX.ADV:1479; Cﾊｰﾚﾑ.ADV:135
+VAR0425	F_Saulnia_Fate	story	Saulnia ending: 1=escaped with money (good), 2=sold to the DX Association (bad)	C	Gﾛﾚｯｸｽ.ADV:1854; GDX.ADV:1480; OVER.ADV:880
+VAR0426	F_Maria_State	story	Maria relationship 1-7 (3-5 Genius Hospital / Aya scenes), 100=killed in explosion	I	Gﾏﾘｱ.ADV:1034; Gｱｰﾔ.ADV:866; Gﾏﾘｱ.ADV:5113
+VAR0427		story	Quest chain for Mill (Aya, Cell/Chaos, Milfi, Milli scenes) 0-4	G	Gｱｰﾔ.ADV:991; Gｾﾙ.ADV:6011; Gﾐﾘ.ADV:918
+VAR0428	F_Maria_Tulip	story	Maria's tulip/reactor research progress 1-15 (+1 per work session), 100=killed by reactor explosion (bad ending)	C	Gﾏﾘｱ.ADV:3464; Gﾏﾘｱ.ADV:5025; OVER.ADV:564
+VAR0429	F_Maria_Flag1	story	Maria side flag (eavesdropping scene, 2=confession)	I	Gﾏﾘｱ.ADV:5418; Gﾏﾘｱ.ADV:4866
+VAR0430	F_Maria_Flag2	story	Maria side flag (1=Rance noticed something, 2=resolved)	I	Gﾏﾘｱ.ADV:5512; Gﾏﾘｱ.ADV:4908
+VAR0431	F_Mill_State	story	Mill Yorks: 1=still a child (bad ending), 2, 3=grew up (good ending if >2)	C	Gﾐﾙ.ADV:263; Gﾐﾙ.ADV:1408; OVER.ADV:663
+VAR0432	F_Milli_Flag1	story	Milli scene flag (grave scene)	I	Gﾐﾘ.ADV:1768; Gﾐﾘ.ADV:23
+VAR0433	F_Milli_Flag2	story	Milli training scenes 0-2	I	Gﾐﾘ.ADV:2451; Gﾐﾘ.ADV:3072
+VAR0434	F_Ran_State	story	Eleanor Ran arc 1-5 (4-5 after sex); 0=good ending (never had sex)	C	Gﾗﾝ.ADV:1193; Gﾗﾝ.ADV:1735; OVER.ADV:609
+VAR0435	F_Cell_Arc	story	Cell (priestess) arc 1-5: 3=Rance left in anger, 4-5 seduced; >4 with VAR0761 bad ending; drives Sieg events	I	Gｾﾙ.ADV:3496; Gｾﾙ.ADV:2109; MAIN.ADV:692
+VAR0436	Mars_Target	story	Girl currently targeted by Mars the Great (1-7: Sill?,Merim,Merim,Isoroku,Ran,Saulnia,Raylee); 0 after the abduction resolves	I	Gｶｾｲ.ADV:472; Gｶｾｲ.ADV:2121; Gｶｾｲ.ADV:2747
+VAR0437	F_Isoroku_Flag	story	Isoroku scene flag (Rance's concern scene)	I	Gｲｿﾛｸ.ADV:2399
+VAR0438	Isoroku_BirthWeek	time	Week (VAR0517+40) when the Isoroku child event fires in COM; 0 cleared	I	Gｲｿﾛｸ.ADV:2402; COM.ADV:173; Gｲｿﾛｸ.ADV:2820
+VAR0439	F_Amiran_Fate	story	Amiran: 1=good ending (after fall of Helman), 2=Rance's toy (bad)	C	Gｱﾐﾗﾝ.ADV:21; Gｱﾐﾗﾝ.ADV:396; OVER.ADV:823
+VAR0440	F_Cream_State	story	Cream: 10/11 scene states, counts up weekly while Cream is unit with VAR0102=1 (>19 fires next scene), 99, 100=released or added to forces	I	Gｸﾘｰﾑ.ADV:1694; MAIN.ADV:128; MAIN.ADV:225
+VAR0441	F_Stessel_State	story	Stessel arc: 1=Helman collapsed, 2-4 Stessel flees (province menu checks), 5-6 Warg scenes; Kayblis turn uses 4/5	I	Gﾐﾈﾊﾞ.ADV:2468; Gｽﾃｯｾﾙ.ADV:296; Tｹｲﾌﾞﾘｽ.ADV:149
+VAR0442	F_StesselSheila_Stage	story	Stessel/Sheila scene stage 1-5, advanced in the Helman turn by weeks since VAR0443	C	Gｽﾃｯｾﾙ.ADV:650; Tﾍﾙﾏﾝ.ADV:20; Gｽﾃｯｾﾙ.ADV:3048
+VAR0443	Stessel_StartWeek	time	Week the Stessel/Sheila chain started; thresholds +2/+6/+9/+15 weeks	C	Gｽﾃｯｾﾙ.ADV:652; Tﾍﾙﾏﾝ.ADV:5
+VAR0444	F_Patton_State	story	Patton/Hanty arc: 1-3 scenes, 10=treaty/rebel state, 11-12 campaign, 20=dealt with; Helman turn and enemy-city checks	I	Gﾊﾟｯﾄﾝ.ADV:3415; Gﾊﾟｯﾄﾝ.ADV:4591; Tﾍﾙﾏﾝ.ADV:55
+VAR0445	F_PattonArmy_State	story	Patton's army: nonzero makes MAIN run the Patton nation phase; 1-7 select Tﾊﾟｯﾄﾝ events	C	MAIN.ADV:454; Tﾊﾟｯﾄﾝ.ADV:6; Gﾊﾟｯﾄﾝ.ADV:4728
+VAR0446	F_Sheila_State	story	Sheila Helman: 1 captured, 10 drugged, 2, 5=drug addiction worsened (bad), 11=protected by Aristoles (good)	C	Gｼｰﾗ.ADV:837; Gｱﾘｽﾄﾚｽ.ADV:212; OVER.ADV:1080
+VAR0447	F_Sheila_Flag	story	Sheila side flag 0-2; Helman turn checks it with VAR0446	I	Gｼｰﾗ.ADV:22; Gｼｰﾗ.ADV:516; Tﾍﾙﾏﾝ2.ADV:13
+VAR0448		story	Miki scene flag (2 after goodbye scene), tested in Gﾐｷ	G	Gﾐｷ.ADV:2254; Gﾐｷ.ADV:786
+VAR0449	F_Satella_State	story	Satella arc 1-12 (6-9 night scenes), 10=conquered world with Miki (good), 11 set by Kayblis, 12=became Kayblis's (bad)	C	Gｻﾃﾗ.ADV:1991; Gｻﾃﾗ.ADV:4651; OVER.ADV:908
+VAR0450	F_Sieg_State	story	Sieg arc 1-4 (MAIN Camilla/Sieg turn dispatch); 4 after Sieg battle text	I	Gｼﾞｰｸ.ADV:225; MAIN.ADV:715; FIGT_M.ADV:10091
+VAR0451	F_Sieg_Defeated	story	Sieg beaten in battle (set by FIGT_M when commander 93 falls)	I	FIGT_M.ADV:10092; Gｾﾙ.ADV:2884; Iｶﾝｶﾞｴ.ADV:507
+VAR0452	N_Sieg_Impersonations	story	Times Sieg went to Leazas Castle in Rance's form (1-5)	I	Gｼﾞｰｸ.ADV:1019; Gｼﾞｰｸ.ADV:930
+VAR0453	Freya_TargetProv	prov	Province id for Freya's current ninja mission (5,6,8,9,11,12,15,16), 0=none	C	Gﾌﾚｲｱ.ADV:2415; Cｼﾊｲﾄｼ.ADV:897; Gﾌﾚｲｱ.ADV:251
+VAR0454	N_Freya_Missions	story	Count of Freya missions; milestones at 3/6/9/12; >2 enables COM/G1 events	C	Gﾌﾚｲｱ.ADV:2445; COM.ADV:858
+VAR0455	F_Gandhi_State	story	Gandhi party (Kaoru, Wichita) arc 1-5 (1-3 province hints, 4 Red city), 99=Gandhi died, 100=Kaoru/Wichita kept travelling with Gandhi	C	Gｶﾞﾝｼﾞｰ.ADV:704; Gﾊﾟﾊﾟｲｱ.ADV:5730; OVER.ADV:1220
+VAR0456	Gandhi_NextEventWeek	time	Week (VAR0517+5) before the next Gandhi-party COM event	C	Gｶﾞﾝｼﾞｰ.ADV:705; COM.ADV:668
+VAR0457	F_Nagi_State	story	Nagi/Shizuka arc 1-14: 3/10=Shizuka withdrew, 4=Nagi sought demons (bad), 5 Kesselring-related, >10 harem / good ending	C	Gﾅｷﾞ.ADV:6459; Gﾅｷﾞ.ADV:1510; OVER.ADV:1164
+VAR0458	Papaya_EventWeek	time	Week (VAR0517+5) when the Papaya event in COM fires	C	Gﾊﾟﾊﾟｲｱ.ADV:2687; COM.ADV:187
+VAR0459	F_SoulCamilla	story	Camilla's blood soul for Silky: 1=freed, 2=absorbed by Silky	I	Gｶﾐｰﾗ.ADV:2163; Gｼﾙｷｨ.ADV:848; Tｹｲﾌﾞﾘｽ.ADV:135
+VAR0460	F_Camilla_State	story	Camilla: 1 resisted Kayblis, 2 Reincock kneels, 10=perished with apostle, 11-12; Kayblis turn dispatch	I	Gｶﾐｰﾗ.ADV:3091; Gｶﾐｰﾗ.ADV:1463; Tｹｲﾌﾞﾘｽ.ADV:92
+VAR0461	F_Julia_State	story	Julia Lindum 1-3 (>1 harem; 3 + troops good ending), 10=Hanny King's pet (bad)	C	Gｼﾞｭﾘｱ.ADV:299; Gﾊﾆｰ.ADV:81; OVER.ADV:937
+VAR0462	F_Aviator_State	story	Aviator (military academy) 1-6, 10, 11=back to Royal Guard (bad), 100=got two students (good)	C	Gｱﾋﾞｧﾄｰﾙ.ADV:1105; Gｱﾋﾞｧﾄｰﾙ.ADV:2298; OVER.ADV:1530
+VAR0463	F_Rafalia_State	story	Rafalia: 1=chosen as Aviator's student, 2-3 later; nonzero good ending, >1 harem	C	Gｱﾋﾞｧﾄｰﾙ.ADV:2299; Gﾗﾌｧﾘｱ.ADV:1460; OVER.ADV:966
+VAR0464	F_Arlcoate_State	story	Arlcoate: 1=chosen as student, 2-7 scenes (>6 good ending), 10=raped by Rance (bad)	C	Gｱﾋﾞｧﾄｰﾙ.ADV:5533; Gｱｰﾙｺｰﾄ.ADV:1518; OVER.ADV:993
+VAR0465	Maken_Project	story	Magic research institute (Curtis) project: 0 none, 1, 2=destroy Zeth's barrier, 100+unit=magic boost for that unit	C	Gﾏｹﾝ.ADV:339; Gﾏｹﾝ.ADV:510; Gﾏｹﾝ.ADV:677
+VAR0466	Maken_DoneWeek	time	Week when the current research project completes	C	Gﾏｹﾝ.ADV:340; Gﾏｹﾝ.ADV:55
+VAR0467	F_SillClothes_State	story	Clothes for Sill: 0=not bought (merchant offers), 1=bought, 2 scene pending in COM, 3 done	I	Cｼｮｳﾆﾝ.ADV:1198; COM.ADV:361; Gｼｨﾙ.ADV:956
+VAR0468	F_Merchant_State	story	Merchant / Portugal: 1, 2=Portugal merged with Leazas, 3-4 later merchant stages	I	Cﾃｷﾄｼ.ADV:2432; Cｼｮｳﾆﾝ.ADV:1595; Cｼｮｳﾆﾝ.ADV:19
+VAR0469		debug	Error counter in the unit-status code (abnormal item data)	I	Cﾌﾞｶ.ADV:1339
+VAR0470	F_Mokomoko_State	story	Mokomoko: 11=toll collected at province 4, 12-14 scenes, 15=lives at Rance's side (good), 2=captured by DX (bad)	C	Cｼﾊｲﾄｼ.ADV:910; Gﾓｺﾓｺ.ADV:1680; OVER.ADV:692
+VAR0471	F_Makoto_State	story	Makoto: 0=lives in Osaka (good), 1=captured at province 56, 2 later (bad)	C	Cｼﾊｲﾄｼ.ADV:916; Gﾏｺﾄ.ADV:418; OVER.ADV:1194
+VAR0472	N_SpecialRoom_Girls	story	Number of girls kept in the Special Room (enables the castle menu entry)	C	Cｼﾊｲﾄｼ.ADV:1057; Gﾄｸﾍﾞﾂ.ADV:107; Gｶｾｲ.ADV:2593
+VAR0473	F_Warg_State	story	Warg: 1=joined Rance, 2-3 scenes (>1 harem)	C	Gﾜｰｸﾞ.ADV:4085; Gﾜｰｸﾞ.ADV:3604; Cﾊｰﾚﾑ.ADV:179
+VAR0474	N_Mars_Score	story	Mars the Great: 1=active (province 22, MAIN music), incremented per abduction (score shown x10); 0 when Mars dies	I	Gｶｾｲ.ADV:1942; Gｶｾｲ.ADV:1893; Gｶｾｲ.ADV:3096
+VAR0475	F_DX_State	story	DX Association: 1=negotiations with Rockearth failed, 2 left estate, 3 took Aoi, 100=settled/destroyed	I	Cﾃｷﾄｼ.ADV:1324; GDX.ADV:1103; GDX.ADV:37
+VAR0476	DXTalk_RetryWeek	time	Week (VAR0517+4) before negotiations can be retried after a failed conference	I	Cﾃｷﾄｼ.ADV:1696; Cﾃｷﾄｼ.ADV:1537
+VAR0477	F_Sayori_State	story	Sayori: 1=met (enemy-city scene), 2 scene; 0 cleared on her fate	C	Cﾃｷﾄｼ.ADV:3078; Gｳﾝｶﾞ.ADV:14; IMﾗﾝﾄﾞ.ADV:1792
+VAR0478	F_MLand_Funded	economy	M Land amusement park funded: costs 20 gold units (2000K GOLD) every week, adds Amusement Park to province 25	C	MAIN.ADV:190; Cｼﾊｲﾄｼ.ADV:185; Cﾃｷﾄｼ.ADV:3079
+VAR0479	F_Shinoda_State	story	Shinoda: 1 paid, 2-3 scenes	I	Cﾃｷﾄｼ.ADV:3541; Gｼﾉﾀﾞ.ADV:18
+VAR0480	DgnRun_MerimInParty	dungeon	Merim in the current dungeon party: 0=no, 1=yes, 2=injured or died this run; reset when the dungeon command starts	C	Cﾒｲｷｭｳ.ADV:5503; Cﾒｲｷｭｳ.ADV:1342; Cﾒｲｷｭｳ.ADV:7
+VAR0481	DgnRun_Floor	dungeon	Current floor during dungeon exploration (+1 per step, stored to Dgn field VAR0148)	C	Cﾒｲｷｭｳ.ADV:1001; Cﾒｲｷｭｳ.ADV:863; Cﾒｲｷｭｳ.ADV:680
+VAR0482	DgnRun_MaxFloor	dungeon	Deepest floor of the current dungeon (set per dungeon id)	C	Cﾒｲｷｭｳ.ADV:478; Cﾒｲｷｭｳ.ADV:870
+VAR0483	DgnRun_FloorMode	dungeon	Floor numbering mode of the current dungeon (1 or 2; 2 used by two dungeons)	I	Cﾒｲｷｭｳ.ADV:479; Cﾒｲｷｭｳ.ADV:514; Cﾒｲｷｭｳ.ADV:864
+VAR0484	DgnRun_MonsterPower	dungeon	Monster strength of the current dungeon; random encounter troops = value/3 + rnd(value)	C	Cﾒｲｷｭｳ.ADV:482; Cﾒｲｷｭｳ.ADV:1193; Cﾒｲｷｭｳ.ADV:1194
+VAR0485	Ev_CommandMode	event	Forced command mode: 1=Cafe guides Rance (dungeon trip via Gｶﾌｪ), 2=Maria tulip attack, 0=normal	I	Gｶﾌｪ.ADV:5879; Gﾏﾘｱ.ADV:117; COMMAND.ADV:175
+VAR0486	F_Merim_Dungeon	story	Merim dungeon companion: 1=available ('Bring Merim'), 2=critically injured, 3=died in a dungeon (bad ending), 0=gone	C	Cﾒｲｷｭｳ.ADV:270; Cﾒｲｷｭｳ.ADV:1344; OVER.ADV:756
+VAR0487	F_GodsDoor_Found	dungeon	God's Door found in dungeon 30 (adds the God's Door menu entry)	C	Cﾒｲｷｭｳ.ADV:3501; Cﾒｲｷｭｳ.ADV:288
+VAR0488	F_Statue_Gourd	dungeon	Gourd statue placed before God's Door	C	Cﾒｲｷｭｳ.ADV:3950; Cﾒｲｷｭｳ.ADV:3963
+VAR0489	F_Statue_Monkey	dungeon	Monkey statue placed before God's Door	C	Cﾒｲｷｭｳ.ADV:3970; Cﾒｲｷｭｳ.ADV:3963
+VAR0490	F_Statue_Sunflower	dungeon	Sunflower statue placed before God's Door	C	Cﾒｲｷｭｳ.ADV:3990; Cﾒｲｷｭｳ.ADV:3963
+VAR0491	F_Statue_Bonsai	dungeon	Bonsai statue placed before God's Door	C	Cﾒｲｷｭｳ.ADV:4010; Cﾒｲｷｭｳ.ADV:3963
+VAR0492	F_GodsDoor_Quest	story	God's Door quest (Ho Raga, British): 1 told by Ho Raga, 2 British plea, 3 got gold statue, 4 door failed to open, 5, 6=door opened	I	Gﾎﾗｶﾞ.ADV:1492; Gﾎﾗｶﾞ.ADV:511; Cﾒｲｷｭｳ.ADV:4052
+VAR0493	N_Merim_Inscriptions	story	Progress 0-12 of Merim deciphering dungeon inscriptions (random while she is in the party); >5 Merim good ending	C	Cﾒｲｷｭｳ.ADV:4558; Gﾒﾘﾑ.ADV:373; OVER.ADV:744
+VAR0494		unused	Cleared in the Gﾜｵ scene, never otherwise used	C	Gﾜｵ.ADV:333
+VAR0495	F_Wao_State	event	Gﾜｵ (staff/joke) scene progress 0-3	I	Gﾜｵ.ADV:408; Gﾜｵ.ADV:474; Gﾜｵ.ADV:361
+VAR0496		unused	Cleared in the Gﾜｵ scene, never otherwise used	C	Gﾜｵ.ADV:335
+VAR0497		unused	Cleared in the Gﾜｵ scene, never otherwise used	C	Gﾜｵ.ADV:336
+VAR0498		unused	Cleared in the Gﾜｵ scene, never otherwise used	C	Gﾜｵ.ADV:337
+VAR0499	Ui_MoneyGraphDiv	ui	Y-axis divisor for the funds/expenses/military history graphs (init 4095/300=13, user-adjustable)	C	各種DATA.ADV:13; 各種DATA.ADV:79; 各種DATA.ADV:135
+VAR0500	Ui_DamageGraphDiv	ui	Y-axis divisor for the All Damages history graph	C	各種DATA.ADV:17; 各種DATA.ADV:252; 各種DATA.ADV:282
+VAR0501	Ui_MoneyGraphScale	ui	Displayed scale label of the money graphs (init 16)	C	各種DATA.ADV:14; 各種DATA.ADV:72; 各種DATA.ADV:136
+VAR0502	Ui_DamageGraphScale	ui	Displayed scale label of the damages graph (init 16)	C	各種DATA.ADV:18; 各種DATA.ADV:245
+VAR0503		unused	Only reset by SET_VER / start	C	SET_VER.ADV:279
+VAR0504		unused	Only reset by SET_VER / start	C	SET_VER.ADV:280
+VAR0505		unused	Only reset by SET_VER / start	C	SET_VER.ADV:281
+VAR0506		unused	Only reset by SET_VER / start	C	SET_VER.ADV:282
+VAR0507		unused	Only reset by SET_VER / start	C	SET_VER.ADV:283
+VAR0508		unused	Only reset by SET_VER / start	C	SET_VER.ADV:284
+VAR0509		unused	Only reset by SET_VER / start	C	SET_VER.ADV:285
+VAR0510		unused	Only reset by SET_VER / start	C	SET_VER.ADV:286
+VAR0511		unused	Only reset by SET_VER / start	C	SET_VER.ADV:287
+VAR0512		unused	Only reset by SET_VER / start	C	SET_VER.ADV:288
+VAR0513	Harem_LastPick	ui	Harem menu index last chosen; used as harem record cursor (VAR0164) to update sex count and last-summoned week	C	Cﾊｰﾚﾑ.ADV:221; Cﾊｰﾚﾑ.ADV:560
+VAR0514	F_OpeningSeen	system	Opening movie watched; persisted via LP global load and enables 'Watch Opening' in the info menu	C	ｵｰﾌﾟﾆﾝｸﾞ.ADV:2; Iｱﾘｽ.ADV:19; Iｱﾘｽ.ADV:53
+VAR0515	CurrentBgm	system	Current BGM track number; SS VAR0515 (re)plays it, e.g. after battle music	C	MAIN.ADV:23; MAIN.ADV:24; Iｶﾐ.ADV:3
+VAR0516	CallArg	system	General argument/return register for sub-files: M.ADV/WAO_MAP op code, WAO_SUB portrait CG, FIGT slot index or troop sum, Sﾌﾞﾀｲ result; never persistent.	C	M.ADV:1; WAO_SUB.ADV:319; FIGT.ADV:2930
+VAR0517	Week	time	Absolute week counter, +1 per MAIN loop; date = LP (3+(w-1)/48), month, week (4 per month).	C	MAIN.ADV:5; MAIN.ADV:1061
+VAR0518	StoryStage	time	Story stage: 0 thieves prologue, 1 Leazas, 2, 3 (Kayblis phase), 4, 99 = pending switch to stage 1.	C	MAIN.ADV:19; COMMAND.ADV:423; Iｼﾚｲﾌﾞ.ADV:1527
+VAR0519	Gold	economy	Treasury in units of 100K GOLD (shown as N then '00K GOLD').	C	MAIN.ADV:170; COMMAND.ADV:446
+VAR0520	Ev_Entry	event	Entry selector read by the dispatch table at the top of every event file.	C	Gｼｨﾙ.ADV:1; MAIN.ADV:898
+VAR0521	Ui_WaoOp	ui	WAO_SUB.ADV opcode: 0 close,1 wait,2 clear,111-123 open windows,131 fullscreen,311/312 left portrait,321/322 right,331-333 centre CG,10/11 and 141-253 battle windows.	C	WAO_SUB.ADV:1; WAO_SUB.ADV:49
+VAR0522	Ui_WinFrameCg	ui	CG number of the currently open message-window frame (807-898).	C	WAO_SUB.ADV:172
+VAR0523	Ui_WinType	ui	Currently open window kind: 0 none, 11/12 top, 21/22 bottom, 31 fullscreen, 41-43 and 51/52 centre/battle.	C	WAO_SUB.ADV:177
+VAR0524	Ui_PortraitL	ui	CG of the portrait shown at left (0 = none).	C	WAO_SUB.ADV:319
+VAR0525	Ui_PortraitR	ui	CG of the portrait shown at right (0 = none).	C	WAO_SUB.ADV:358
+VAR0526	Ui_CenterCg	ui	CG shown in the centre picture box (layers in VAR0673-0676).	C	WAO_SUB.ADV:397
+VAR0527	Ev_PhaseNation	event	Owner code of the nation whose phase is running (2 rebels,3,4 Helman,5 Patton,6 JAPAN,7 Zeth,8 Kayblis,10 Angels (Creator phase),11 ALism (AL Church phase)); becomes Prov_Owner when it takes a city.	C	Tﾍﾙﾏﾝ.ADV:1; FIGT_B.ADV:772
+VAR0528	Ev_WeeklyEventDone	event	1 once a weekly/army event has fired this week; later checks are skipped.	C	COM.ADV:85; COM.ADV:301
+VAR0529	Bt_EnemyRetreatMode	battle	Enemy retreat rule: 1 fight on, 2 retreat when a commander dies, 3 at 50% losses, 4 at 25% losses, 5 when its commander takes HP damage, 6 3-round battle, 20/50 retreat triggered, 101 Tami.	C	FIGT.ADV:106; FIGT.ADV:1904; FIGT.ADV:19
+VAR0530	Bt_EnemyParty1	battle	Enemy commander id for battle slot 1 (0 = none), set by AI/city defence before FIGT; read after battle for capture events.	C	FIGT.ADV:5; MAIN.ADV:708; 死亡捕獲.ADV:45
+VAR0531	Bt_EnemyParty2	battle	Enemy commander id for battle slot 2 (0 = none), set by AI/city defence before FIGT; read after battle for capture events.	C	FIGT.ADV:6; MAIN.ADV:709; 死亡捕獲.ADV:45
+VAR0532	Bt_EnemyParty3	battle	Enemy commander id for battle slot 3 (0 = none), set by AI/city defence before FIGT; read after battle for capture events.	C	FIGT.ADV:7; MAIN.ADV:710; 死亡捕獲.ADV:45
+VAR0533	Bt_EnemyParty4	battle	Enemy commander id for battle slot 4 (0 = none), set by AI/city defence before FIGT; read after battle for capture events.	C	FIGT.ADV:8; MAIN.ADV:711; 死亡捕獲.ADV:45
+VAR0534	N_Rei_Stage	story	Rei event progression (0,1,2,10,11); 0/1 gate Camilla-unit attacks.	I	Gﾚｲ.ADV:11; MAIN.ADV:754
+VAR0535	N_Camilla_Stage	story	Majin/Camilla invasion stage: 0 none, 1 armed, 2-6 progression (Camilla Unit phase while >1), 100 finished.	I	MAIN.ADV:631; Iﾏｼﾞﾝ.ADV:84; Gｹｲﾌﾞﾘｽ.ADV:2106
+VAR0536	N_Majin_EventTimer	story	Weeks until the next Majin (Iﾏｼﾞﾝ/Iﾏｼﾞﾝ2) event; decremented each week.	I	MAIN.ADV:932; Iﾏｼﾞﾝ.ADV:3318
+VAR0537	DateYear	time	Displayed LP year derived from Week.	C	COMMAND.ADV:634; ﾛｰﾄﾞｾｰﾌﾞ.ADV:307
+VAR0538	DateMonth	time	Displayed month 1-12 derived from Week.	C	COMMAND.ADV:635; COMMAND.ADV:455
+VAR0539	DateWeek	time	Displayed week of month 1-4.	C	COMMAND.ADV:636; COMMAND.ADV:458
+VAR0540	BuildWeeksLeft	economy	Weeks until the current construction completes (16 = 4 months); 0 = idle; debug mode decrements 3x.	C	COMMAND.ADV:18; Cﾃｲﾄ.ADV:372
+VAR0541		story	Week number stored at an Iｼﾚｲﾌﾞ event; Miri event fires 12+ weeks later.	G	Iｼﾚｲﾌﾞ.ADV:3060; COM.ADV:520
+VAR0542	Ui_CmdHaremAvail	ui	Harem command available this week (reset to 1 each week).	C	COMMAND.ADV:38; Cﾊｰﾚﾑ.ADV:25
+VAR0543	Ui_CmdSubordAvail	ui	Subordinates command available this week.	C	COMMAND.ADV:39; Cﾌﾞｶ.ADV:717
+VAR0544	Ui_CmdOwnCityAvail	ui	Own-city action available this week (0 after acting in an own province).	C	COMMAND.ADV:40; Cｼﾊｲﾄｼ.ADV:39
+VAR0545	Ui_CmdBuildAvail	ui	Construction command available this week.	C	COMMAND.ADV:41; Cﾃｲﾄ.ADV:374
+VAR0546	Ui_CmdAttackAvail	ui	Attack on an enemy city still allowed this week (0 after an attack).	C	COMMAND.ADV:42; Cﾃｷﾄｼ.ADV:112
+VAR0547	Ui_CmdMerchantAvail	ui	Merchant command available this week.	C	COMMAND.ADV:43; Cｼｮｳﾆﾝ.ADV:131
+VAR0548	Ui_CmdDungeonAvail	ui	Dungeon exploration available this week.	C	COMMAND.ADV:44; Cﾒｲｷｭｳ.ADV:4
+VAR0549	Ui_ClickedProv	ui	Province clicked on the map, saved while resolving which command file to run.	C	COMMAND.ADV:515
+VAR0550	Bld_GirlsAcademy	economy	Girls' Military Academy: 0 not built, 2 under construction, 1 built.	C	Cﾃｲﾄ.ADV:373; COMMAND.ADV:579
+VAR0551	Bld_Library	economy	New Library: 0 none, 2 building, 1 built.	C	Cﾃｲﾄ.ADV:109; COMMAND.ADV:585
+VAR0552	Bld_Hospital	economy	General Hospital: 0 none, 2 building, 1 built.	C	Cﾃｲﾄ.ADV:113; COMMAND.ADV:591
+VAR0553	Bld_SMTower	economy	S&M Tower: 0 none, 2 building, 1 built.	C	Cﾃｲﾄ.ADV:117; COMMAND.ADV:597
+VAR0554	Bld_MariaLab	economy	Maria Research Institute: 0 none, 2 building, 1 built.	C	Cﾃｲﾄ.ADV:121; COMMAND.ADV:603
+VAR0555	Bld_MagicLab	economy	Magic Research Institute: 0 none, 2 building, 1 built.	C	Cﾃｲﾄ.ADV:125; COMMAND.ADV:609
+VAR0556	F_Kanami_NinjaUsed	battle	Kanami as ninja this week: 0 available, 1 used, 99 unavailable (reset weekly).	C	COM.ADV:11; FIGT_B.ADV:395; FIGT.ADV:1917
+VAR0557	F_Freya_NinjaUsed	battle	Freya as ninja this week: 0 available, 1 used, 99 unavailable.	C	COM.ADV:12; COM.ADV:22
+VAR0558	F_Kaoru_NinjaUsed	battle	Kaoru as ninja this week: 0 available, 1 used, 99 unavailable.	C	COM.ADV:13; COM.ADV:25
+VAR0559	F_Wichita_NinjaUsed	battle	Wichita as ninja this week: 0 available, 1 used, 99 unavailable.	C	COM.ADV:14; COM.ADV:28
+VAR0560	N_Melfeis_Stage	story	Melfeis event progression; counts up weekly 1..10, then 11-13, 100.	I	COM.ADV:36; Gﾒﾙﾌｪｲｽ.ADV:651
+VAR0561	N_Isoroku_Stage	story	Isoroku event progression 0-6 (5 advances to 6 weekly).	I	COM.ADV:39; Gｲｿﾛｸ.ADV:17
+VAR0562	N_Aviator_StudyWeeks	story	Weeks Aviator must still study at the military academy (decremented weekly).	I	COM.ADV:42; Gｱﾋﾞｧﾄｰﾙ.ADV:1106; Gｱﾋﾞｧﾄｰﾙ.ADV:2228
+VAR0563	N_Miki_Timer	story	Weekly countdown for Miki/Kentarou events (stops at 5; 30/31 set).	I	COM.ADV:43; Gｹﾝﾀﾛｳ.ADV:1648; Gﾐｷ.ADV:3591
+VAR0564	N_Aaya_Stage	story	Aaya (hospital) event progression 0-8; 1-3 count up weekly.	I	COM.ADV:46; Gｱｰﾔ.ADV:608
+VAR0565	N_Saizel_Weeks	story	Weeks since a Saizel event (counts up weekly while nonzero; >40 triggers).	I	COM.ADV:49; Gｻｲｾﾞﾙ.ADV:1446
+VAR0566	N_ALChurch_Stage	story	AL Church relation stage: <19 Leazas pays a weekly donation, 20 broken, 21/100 AL Church army phase active, 50/51 later stages.	I	MAIN.ADV:186; MAIN.ADV:260; GAL.ADV:1131
+VAR0567	N_Soul_Stage	story	Soul event progression (1-6, counts up weekly once >5; 200 = closed).	I	COM.ADV:67; Gｿｳﾙ.ADV:173
+VAR0568	N_Miki_Stage	story	Miki event progression 0-8.	I	Gﾐｷ.ADV:256; MAIN.ADV:685; COM.ADV:557
+VAR0569	Bt_PlayerParty1	battle	Player unit id in deploy slot 1 (0 = empty), chosen in Sﾌﾞﾀｲ; copied into Bt_PlayerSlot1; slot 1 also used for single-unit picks.	C	Sﾌﾞﾀｲ.ADV:1; FIGT.ADV:1
+VAR0570	Bt_PlayerParty2	battle	Player unit id in deploy slot 2 (0 = empty), chosen in Sﾌﾞﾀｲ; copied into Bt_PlayerSlot2; slot 1 also used for single-unit picks.	C	Sﾌﾞﾀｲ.ADV:2; FIGT.ADV:2
+VAR0571	Bt_PlayerParty3	battle	Player unit id in deploy slot 3 (0 = empty), chosen in Sﾌﾞﾀｲ; copied into Bt_PlayerSlot3; slot 1 also used for single-unit picks.	C	Sﾌﾞﾀｲ.ADV:3; FIGT.ADV:3
+VAR0572	Bt_PlayerParty4	battle	Player unit id in deploy slot 4 (0 = empty), chosen in Sﾌﾞﾀｲ; copied into Bt_PlayerSlot4; slot 1 also used for single-unit picks.	C	Sﾌﾞﾀｲ.ADV:4; FIGT.ADV:4
+VAR0573	Ui_SquadMode	ui	Squad screen mode: 1 attack, 2 defend (plains/city), 3 dungeon search.	C	Sﾌﾞﾀｲ.ADV:105
+VAR0574	Ui_SquadChoice	ui	Saved squad-screen button (501 go/plains, 502 city, 503 stop), returned via VAR0516.	C	Sﾌﾞﾀｲ.ADV:160; Sﾌﾞﾀｲ.ADV:209
+VAR0575	Tmp0575	scratch	Squad-screen temp: current slot filled flag while drawing.	C	Sﾌﾞﾀｲ.ADV:275
+VAR0576	Ui_SubordMode	ui	Subordinates screen mode passed in via VAR0516 (0-5).	C	Sﾌﾞｶ.ADV:1
+VAR0577	Ui_ItemSel	ui	Selected item id on the item screen.	C	Sｱｲﾃﾑ.ADV:115; Sｱｲﾃﾑ.ADV:154
+VAR0578	Ui_ItemUnitSel	ui	Selected unit on the item screen (receives the item).	C	Sｱｲﾃﾑ.ADV:98; Sｱｲﾃﾑ.ADV:156
+VAR0579	N_JapanInv_Stage	story	JAPAN campaign event progress 0-3 when attacking provinces 55/56.	I	FIGT_A.ADV:9; FIGT_A.ADV:155
+VAR0580	Bt_TroopLimit	battle	Battle limit: max troops per unit that engage (plains 5000, city = Prov VAR0134, dungeon/scripted values).	C	FIGT.ADV:164; FIGT.ADV:2247; FIGT_B.ADV:182
+VAR0581	Bt_Kind	battle	Battle kind: 0 none, 1 offensive, 2 defensive, 3 dungeon.	C	FIGT_A.ADV:68; FIGT_B.ADV:242; Cﾒｲｷｭｳ.ADV:1281
+VAR0582	N_Olhound_Stage	story	Olhound event progression (0,1,2,100).	I	Gｵｰﾙﾊｳﾝﾄ.ADV:8; Gｽﾃｯｾﾙ.ADV:3203
+VAR0583	Tmp0583	scratch	Temp: saved province in FIGT_B, endurance counter in Tougen minigame.	C	FIGT_B.ADV:283; Gﾄｳｹﾞﾝ.ADV:1498
+VAR0584	Bt_WallBonus	battle	Defender wall level (Prov VAR0133) in city battles, 0 on plains; attacker hit chance -2*value, shown as defender advantage.	C	FIGT_B.ADV:183; FIGT.ADV:2549
+VAR0585	Bt_ScoutNinja	battle	Ninja sent to scout an attacking army: 1 Kanami, 2 Freya, 3 Kaoru, 4 Wichita, 5 Saitou.	C	FIGT_B.ADV:394
+VAR0586	N_Freya_State	story	Freya status (10 captured, 20 = available as ninja, others event steps).	I	COM.ADV:21; FIGT_B.ADV:693
+VAR0587	N_Kaoru_State	story	Kaoru status (0 captured; >2 and not 100 = available as ninja).	I	COM.ADV:24; FIGT_B.ADV:699
+VAR0588	N_Wichita_State	story	Wichita status (0 captured; >2 = available as ninja).	I	COM.ADV:27; FIGT_B.ADV:705
+VAR0589	Bt_Result	battle	Battle result: 1 player lost/retreated, 2 player won; timeout = attacker loses.	C	FIGT.ADV:490; FIGT.ADV:510
+VAR0590	Bt_PlayerSlot1	battle	Live player unit id in battle slot 1 (0 empty); slots compact when a unit falls.	C	FIGT.ADV:1; FIGT.ADV:2860
+VAR0591	Bt_PlayerSlot2	battle	Live player unit id in battle slot 2 (0 empty); slots compact when a unit falls.	C	FIGT.ADV:2; FIGT.ADV:2860
+VAR0592	Bt_PlayerSlot3	battle	Live player unit id in battle slot 3 (0 empty); slots compact when a unit falls.	C	FIGT.ADV:3; FIGT.ADV:2864
+VAR0593	Bt_PlayerSlot4	battle	Live player unit id in battle slot 4 (0 empty); slots compact when a unit falls.	C	FIGT.ADV:4; FIGT.ADV:2868
+VAR0594	Bt_EnemySlot1	battle	Live enemy commander id in battle slot 1 (0 empty); slots compact when one falls.	C	FIGT.ADV:5; FIGT.ADV:2907
+VAR0595	Bt_EnemySlot2	battle	Live enemy commander id in battle slot 2 (0 empty); slots compact when one falls.	C	FIGT.ADV:6; FIGT.ADV:2907
+VAR0596	Bt_EnemySlot3	battle	Live enemy commander id in battle slot 3 (0 empty); slots compact when one falls.	C	FIGT.ADV:7; FIGT.ADV:2909
+VAR0597	Bt_EnemySlot4	battle	Live enemy commander id in battle slot 4 (0 empty); slots compact when one falls.	C	FIGT.ADV:8; FIGT.ADV:2911
+VAR0598	Bt_PSlot1Focus	battle	Focus charges of player slot 1: +1 per Focus command, consumed by special attacks.	C	FIGT.ADV:9; FIGT.ADV:1295; FIGT.ADV:1267
+VAR0599	Bt_PSlot2Focus	battle	Focus charges of player slot 2: +1 per Focus command, consumed by special attacks.	C	FIGT.ADV:10; FIGT.ADV:1298; FIGT.ADV:1270
+VAR0600	Bt_PSlot3Focus	battle	Focus charges of player slot 3: +1 per Focus command, consumed by special attacks.	C	FIGT.ADV:11; FIGT.ADV:1301; FIGT.ADV:1273
+VAR0601	Bt_PSlot4Focus	battle	Focus charges of player slot 4: +1 per Focus command, consumed by special attacks.	C	FIGT.ADV:12; FIGT.ADV:1304; FIGT.ADV:1276
+VAR0602	Bt_RoundsLeft	battle	Rounds remaining: 3+rnd(2) (3 if mode 6), -1 per round, 0 = timeout.	C	FIGT.ADV:18; FIGT.ADV:449
+VAR0603		unused	Zeroed at battle start, never read.	C	FIGT.ADV:22
+VAR0604	Bt_PlayerLosses	battle	Player troops lost this battle (+1 per fallen unit); shown in result, added to stats.	C	FIGT.ADV:1875; FIGT.ADV:3004
+VAR0605	Bt_EnemyLosses	battle	Enemy troops lost this battle (+1 per fallen commander); drives retreat modes 3/4.	C	FIGT.ADV:1881; FIGT.ADV:106
+VAR0606	Bt_StrategyResult	battle	Pre-battle strategy outcome: 0 none, 1/2 player success (troop damage taken -10%/-50%, dealt +10%/+50%), 11/12 enemy success.	C	FIGT作.ADV:43; FIGT.ADV:187
+VAR0607	Bt_SpecialAtk	battle	Special attack id for the current exchange: 0 normal, 1 Rance Attack/By la Way, 2 beam, 3 Highspeed/ninja, 4 Vanish Bomb, 5 War Dance, 6 Chuhai, 7 T2 wave, 10 Goliath, 100 Cheater Beam.	C	FIGT.ADV:1566; FIGT.ADV:1581
+VAR0608	Bt_PlayerTroopsStart	battle	Player total troops at battle start (written, never read).	C	FIGT.ADV:29
+VAR0609	Bt_EnemyTroopsStart	battle	Enemy total troops at battle start; base for retreat-by-losses.	C	FIGT.ADV:32; FIGT.ADV:106
+VAR0610	Bt_EnemyRetreat	battle	Set 3 when retreat mode reached 20/50: enemy withdraws at the next round step.	C	FIGT.ADV:1611
+VAR0611	Bt_PlayerStrategist	battle	Player unit with the best strategy value (VAR0092 + item bonus); rolls the pre-battle strategy.	C	FIGT.ADV:44; FIGT作.ADV:13
+VAR0612	Bt_EnemyStrategist	battle	Enemy commander with the best strategy value (VAR0118).	C	FIGT.ADV:71
+VAR0613	Bt_PlayerActSlot	battle	Player slot 1-4 acting or being attacked (slots 1-2 front row may melee).	C	FIGT.ADV:392; FIGT_SEL.ADV:41
+VAR0614	Bt_EnemyActSlot	battle	Enemy slot 1-4 acting or targeted.	C	FIGT.ADV:424; FIGT.ADV:1361
+VAR0615	Bt_ActFocus	battle	Focus charges of the acting player slot, passed to FIGT_SEL to gate specials.	C	FIGT.ADV:394
+VAR0616	Bt_PlayerAtkType	battle	Acting unit's attack type from unit type VAR0086: 0 melee, 1 bow, 2 magic.	C	FIGT.ADV:619
+VAR0617		unused	Copy of VAR0613 before FIGT_SEL, never read.	C	FIGT.ADV:625
+VAR0618	Bt_MsgMode	battle	Flavour-text mode for FIGT_M: 1 player magic, 2 magic vs magic, 3 player physical, 4 enemy initiative.	C	FIGT.ADV:1376; FIGT_M.ADV:2
+VAR0619	Bt_EnemyAction	battle	Enemy side action in the exchange: 0 direct, 1 indirect, 2 magic, 99 defend.	C	FIGT.ADV:1143; FIGT.ADV:1499
+VAR0620	Bt_PlayerAction	battle	Player side action in the exchange: 0 direct, 1 indirect, 2 magic, 99 defend.	C	FIGT.ADV:1378; FIGT.ADV:1503
+VAR0621	Tmp0621	scratch	Temp: Sﾌﾞﾀｲ return code in FIGT_B, saved province, minigame counters, event choice.	C	FIGT_B.ADV:81; Gﾄｳｹﾞﾝ.ADV:743
+VAR0622	Bt_HitChance	battle	Hit chance % of the current attack (formula L_0347f, clamped 1..100).	C	FIGT.ADV:2139; FIGT.ADV:2507
+VAR0623	Bt_RoundStep	battle	Actions taken this round; at 10 the round ends; also temp in damage spread.	C	FIGT.ADV:330; FIGT.ADV:331
+VAR0624	Bt_PlayerAllEngaged	battle	1 if acting player unit's troops <= battle limit, else 0 (excess troops idle).	C	FIGT.ADV:2248
+VAR0625	Bt_EnemyAllEngaged	battle	1 if target enemy troops <= battle limit, else 0.	C	FIGT.ADV:2252
+VAR0626	Bt_PlayerEngaged	battle	Player troops engaging = min(troops, battle limit).	C	FIGT.ADV:2247
+VAR0627	Bt_EnemyEngaged	battle	Enemy troops engaging = min(troops, battle limit).	C	FIGT.ADV:2251
+VAR0628	Bt_PlayerSlotDef	battle	Acting player slot's state value (VAR0047-0050), subtracted from enemy hit chance.	C	FIGT.ADV:2223; FIGT.ADV:2697
+VAR0629	Bt_EnemySlotDef	battle	Target enemy slot's state value (VAR0051-0054), subtracted from player hit chance.	C	FIGT.ADV:2235; FIGT.ADV:2507
+VAR0630	Bt_PlayerCmdrShield	battle	Player commander protection: 1 if unit type >9 (no damage from enemy troops or commander), 2 if enemy also >9 (commander-vs-commander allowed).	C	FIGT.ADV:2417
+VAR0631	Bt_EnemyCmdrShield	battle	Enemy commander protection (enemy type >9); 2 when player type >9 or item 1/2 equipped.	C	FIGT.ADV:2429
+VAR0632	Bt_ExpBonusNext	battle	Set by Rebecca: next battle EXP = rnd(50) instead of 5+rnd(15), then cleared.	C	Gﾚﾍﾞｯｶ.ADV:14; FIGT.ADV:2980
+VAR0633		unused	Only reset to 0, never used.	C	SET_VER.ADV:530
+VAR0634	F_Satella_LineCmdr91	battle	One-shot Satella battle line vs enemy commander 91 already shown.	I	FIGT_M.ADV:1255; FIGT_M.ADV:9678
+VAR0635	F_Satella_LineCmdr92	battle	One-shot Satella battle line vs enemy commander 92 already shown.	I	FIGT_M.ADV:1258; FIGT_M.ADV:9756
+VAR0636	F_Satella_LineCmdr93	battle	One-shot Satella battle line vs enemy commander 93 already shown.	I	FIGT_M.ADV:1415; FIGT_M.ADV:9827
+VAR0637		story	Kayblis event flag set when commander 135 joins; changes Kayblis AI branches.	G	Gｹｲﾌﾞﾘｽ.ADV:368; Tｹｲﾌﾞﾘｽ.ADV:1360
+VAR0638	N_Freak_Stage	story	Freak event progression 0-7 (1 set by a battle line).	I	FIGT_M.ADV:9902; Gﾌﾘｰｸ.ADV:580; COM.ADV:403
+VAR0639	F_MercA_Lost	unit	Mercenary A (unit 49) died; can no longer be hired.	C	死亡捕獲.ADV:17; Cｼｮｳﾆﾝ.ADV:111
+VAR0640	F_MercB_Lost	unit	Mercenary B (unit 50) died; can no longer be hired.	C	死亡捕獲.ADV:23; Cｼｮｳﾆﾝ.ADV:118
+VAR0641	N_Rance_BattlesSinceSomita	story	Battles Rance fought (and survived) since Somita joined; reset to 0 when she joins; >5 picks the alternative branch when Somita dies and becomes an angel	I	死亡捕獲.ADV:43, Gｶﾗｰ.ADV:5757, Gｿﾐｰﾀ.ADV:1306
+VAR0642	F_Nero_Helman4thState	story	Helman 4th Army (Nero, cmdr 44) state: 0=dormant, 1-3=mobilising (+1 per Helman turn; at 3 Nero scene 2 sets 4), 4=Nero plan seen, 5=Cream (cmdr 45) scene played, 6=Cream takes over after Nero falls while Helman stands, 100=Nero defeated	I	Tﾍﾙﾏﾝ.ADV:349, Gﾈﾛ.ADV:622, 死亡捕獲.ADV:96
+VAR0643	Ui_SaveLoadDirect	ui	1 when the save/load screen was entered directly in save (0) or load (1) mode, so cancel closes it and returns; 0 when entered via the combined menu	I	ﾛｰﾄﾞｾｰﾌﾞ.ADV:1, ﾛｰﾄﾞｾｰﾌﾞ.ADV:234
+VAR0644	F_LeazasRebels_State	story	Leazas rebel army (Ex): 0=Slave arc not yet started (COM starts it in stage 1), 1=rebellion begun at end of Slave arc, 2=Ex's rebel-HQ scene seen (start-menu skip sets 2)	C	Iｼﾚｲﾌﾞ.ADV:2119, TCﾘｰｻﾞｽ.ADV:5, COM.ADV:91
+VAR0645	N_Gekkou_Attempts	story	JAPAN: Gekkou assassination-attempt counter; set 1 at end of JAPAN arc, +1 per attempt scene, at 5 the final branch plays; 0 or 5 disables the attempts	I	IJAPAN.ADV:4727, TJAPAN.ADV:1961, TJAPAN.ADV:2156
+VAR0646	F_Aristoles_Helman2ndState	story	Helman 2nd Army (Aristoles, cmdr 32): 0=dormant (starts when VAR0444>11), 1-3=mobilising (+1 per Helman turn, scene 5 at 3), 4=army destroyed, 10=sided with Patton (>9 adds cmdr 32 to Patton defence), 20/21=later scenes, 100=Convert scene	I	Tﾍﾙﾏﾝ.ADV:55, Tﾍﾙﾏﾝ.ADV:212, Gﾊﾟｯﾄﾝ.ADV:4852
+VAR0647	F_Rolex_State	story	Helman army under Rolex (cmdr 50, prov 39): 0->1->2 by 1/2 rolls per Helman turn (forced to 2 if player owns prov 39), 3=Rolex scene 1 once week>VAR0443+8, 4=Rolex scene 2, army active; <4 means the army does not attack	C	Tﾍﾙﾏﾝ.ADV:420, Tﾍﾙﾏﾝ.ADV:433, Tﾍﾙﾏﾝ2.ADV:237
+VAR0648	F_Mineva_State	story	Mineva (cmdr 39) army: 0=dormant, 1=triggered when the player takes prov 42/44/48, 2=Mineva scene 1 seen, army active	C	Tﾍﾙﾏﾝ2.ADV:6, Tﾍﾙﾏﾝ.ADV:271, Gﾐﾈﾊﾞ.ADV:14
+VAR0649	F_Lelyukov_State	story	Lelyukov (cmdr 22, prov 36): 1=joined Rance, 2=last-stand scene, 3=refused recruitment and executed, 4=imprisoned, 10=Helman garrison reset at prov 36, 90=released (enables Amiran scene), 100=driven away	I	Gﾚﾘｭｰｺﾌ.ADV:752, Gﾚﾘｭｰｺﾌ.ADV:1798, Tﾍﾙﾏﾝ.ADV:41
+VAR0650	F_Zeth_State	story	Zeth arc state: 1/2/4/5/6=arc progress (Tｾﾞｽ plays Iｾﾞｽ scenes), 8/9=Zeth allied (9=Magic with Rance; changes BGM), 10=Zeth fallen after Gandhi/Papaya events, 11=Zeth fell to Kayblis; while <8 Gandhi (unit 37) refuses to attack Zeth	I	Iｾﾞｽ.ADV:1512, Tｾﾞｽ.ADV:20, Cﾃｷﾄｼ.ADV:239
+VAR0651	F_Papaya_State	story	Papaya (cmdr 104) arc: 1-3 early, 5-8 imprisonment/torture rounds, 10=freed researcher (good ending), 11=sex slave (bad ending), 12=other variant	I	Gﾊﾟﾊﾟｲｱ.ADV:745, Tｾﾞｽ.ADV:189, OVER.ADV:1786
+VAR0652	N_Medusa_Events	story	Medusa (cmdr 134) event counter: +1 on a 1-in-5 roll per Kayblis turn; at 2/4/6 Medusa scenes 2/3/4 play	C	Tｹｲﾌﾞﾘｽ.ADV:72, Tｹｲﾌﾞﾘｽ.ADV:74
+VAR0653	F_Piar_State	story	Piar / PG sisters (cmdr 136/137) arc: 0=not started (starts once 3 of cmdrs 130-132 are dead), 1-5=progress (Kayblis turns advance 2->3, 4->5), 6=PG-9 scene, 100=finished	I	Tｹｲﾌﾞﾘｽ.ADV:262, Tｹｲﾌﾞﾘｽ.ADV:710, Gﾊﾟｲｱｰﾙ.ADV:2239
+VAR0654	F_Redeye_State	story	Redeye (cmdr 130) / Rona arc: 1-8 progress (Kayblis turns advance odd steps), 10=Redeye destroyed but Rona still cursed, 11/12=Freak variants, 13=Rona escaped the curse; >9 enables Freak scenes	I	Tｹｲﾌﾞﾘｽ.ADV:919, Gﾚｯﾄﾞｱｲ.ADV:3256, OVER.ADV:1986
+VAR0655	N_Rudrasaum_Turns	story	Creator (Rudrasaum) phase counter: 1 after the first Rudrasaum scene in stage 4, +1 every Creator turn; >5 enables random attacks	C	Tﾙﾄﾞﾗ.ADV:1, Tﾙﾄﾞﾗ.ADV:5, Tﾙﾄﾞﾗ.ADV:119
+VAR0656	F_Pool_Built	economy	Own-city construction: pool ordered/built (2); with VAR0550-0555 all 2 the all-built message plays	I	Cﾃｲﾄ.ADV:639, Cﾃｲﾄ.ADV:1
+VAR0657	F_Zoo_DogGirlSeen	story	Gｱﾘｽ2 zoo menu: Dog Girl visited (hides the option)	C	Gｱﾘｽ2.ADV:1299, Gｱﾘｽ2.ADV:1532
+VAR0658	F_Zoo_CowGirlSeen	story	Gｱﾘｽ2 zoo menu: Cow Girl visited	C	Gｱﾘｽ2.ADV:1305, Gｱﾘｽ2.ADV:2804
+VAR0659	F_Zoo_LizardGirlSeen	story	Gｱﾘｽ2 zoo menu: Lizard Girl visited; all three set closes the zoo	C	Gｱﾘｽ2.ADV:1311, Gｱﾘｽ2.ADV:3736
+VAR0660	N_Lia_Neglect	story	Lia jealousy counter: +1 per harem visit while VAR0402=1 (cap 10) or per Sill visit while VAR0402=3; reset when Lia is called; 10 (or >4) triggers Lia scenes 1/2	C	Cﾊｰﾚﾑ.ADV:30, Cﾊｰﾚﾑ.ADV:408, COM.ADV:162
+VAR0661	F_AliceBldg_Visited	story	AliceSoft building intro seen (first visit)	C	Gｱﾘｽ.ADV:3, Gｱﾘｽ.ADV:9293
+VAR0662	F_Youko_AxeEventDone	story	One-shot scene at prov 20 (old aluminium axe, Youko's lake) done; grants item 46	C	Cｼﾊｲﾄｼ.ADV:1024, G1.ADV:323
+VAR0663	F_Fuuka_State	story	Fuuka / Orochi arc (Nagasaki): 1-3 shrine scenes, 9=Orochi sacrifice night pending, 10-13 rescue scenes, 19=Fuuka sacrificed (bad end), 20/21=Orochi killed, Fuuka saved	C	Gﾌｳｶ.ADV:23, Gﾌｳｶ.ADV:3177, OVER.ADV:1816
+VAR0664	F_Fuuka_ShrineVisited	story	1 once Rance met Fuuka at the Nagasaki shrine; selects the Orochi-night variant and a dungeon 14 event	I	Gﾌｳｶ.ADV:579, Gﾌｳｶ.ADV:24, Cﾒｲｷｭｳ.ADV:740
+VAR0665	F_Maris_RebelTalk	story	1=set in the bandit-arc deployment tutorial (and at the prologue defeat), enabling Maris scene 15 about the rebellion; 2=that scene seen	I	Iﾄｳｿﾞｸ.ADV:11, Gﾏﾘｽ.ADV:404, COM.ADV:86
+VAR0666	F_HannyKing_State	story	Titi Lake / Hanny King / Julia quest: 1-2 Titi Lake (Youko) events, 3-7 Hanny King steps, 8=Hanny King left; >5 gives Julia's good ending	I	G1.ADV:266, Gﾊﾆｰ.ADV:1224, OVER.ADV:937
+VAR0667	F_Gandhi_TravelStop2Seen	story	Gandhi travel scene at prov 23 (VAR0455=2) seen	C	COM.ADV:675
+VAR0668	F_Gandhi_TravelStop1Seen	story	Gandhi travel scene at prov 24 (VAR0455=1) seen	C	COM.ADV:668
+VAR0669	F_Wendy_Met	story	Wendy's first random harem-visit scene seen; adds her to the harem list (VAR0253)	C	Cﾊｰﾚﾑ.ADV:13, Cﾊｰﾚﾑ.ADV:52
+VAR0670	SpecBaseline	system	XSPEC benchmark reference value (45); quality level is chosen from VAR0671/VAR0670	C	XSPEC.ADV:4, SET.ADV:342
+VAR0671	SpecGraphics	system	GA-spec benchmark result (timer ticks, higher=slower); shown as GAspec; ratio >2 or >3 to baseline lowers effect level VAR0225	C	XSPEC.ADV:20, SET.ADV:342, ｽﾀMENU.ADV:730
+VAR0672	SpecCpu	system	CPU-spec benchmark result; shown as CPUspec; tunes opening animation speed	C	XSPEC.ADV:47, ｽﾀMENU.ADV:734, ｵｰﾌﾟﾆﾝｸﾞ.ADV:248
+VAR0673	Ui_CenterOverlay1	ui	CG of overlay layer 1 drawn (transparent colour 40) over the centre-window image VAR0526; 0=none; redrawn on refresh	C	WAO_SUB.ADV:418, WAO_SUB.ADV:332
+VAR0674	Ui_CenterOverlay2	ui	CG of overlay layer 2 over the centre-window image; 0=none	C	WAO_SUB.ADV:419, WAO_SUB.ADV:336
+VAR0675	Ui_CenterOverlay3	ui	CG of overlay layer 3 over the centre-window image; 0=none	C	WAO_SUB.ADV:420, WAO_SUB.ADV:340
+VAR0676	Ui_CenterOverlay4	ui	CG of overlay layer 4 over the centre-window image; 0=none	C	WAO_SUB.ADV:421, WAO_SUB.ADV:344
+VAR0677	Ui_StartMenuLastPick	ui	Previous result of a start-menu random pick; rerolled so the same value is not chosen twice	I	ｽﾀMENU.ADV:198, ｽﾀMENU.ADV:202
+VAR0678	F_Saitou_State	story	Mika Saitou: 1=met (enables G2 scene 3), 2=Marimo pet scene, usable as ninja (>1), 3=later scene; reset to 0 when captured	I	Gｻｲﾄｳ.ADV:8, G2.ADV:2118, COM.ADV:30
+VAR0679	CmdAvail_SubTroops	time	Subordinates > Replenish/Add Troops still available this week (1); reset to 1 every week	C	COMMAND.ADV:45, Cﾌﾞｶ.ADV:810, Cﾌﾞｶ.ADV:934
+VAR0680	CmdAvail_SubTalk	time	Subordinates > Talk still available this week (1); reset every week; both 0 greys out the Subordinates menu	C	COMMAND.ADV:46, Cﾌﾞｶ.ADV:834, Cﾌﾞｶ.ADV:969
+VAR0681	TangeDog_UsedThisWeek	item	Tange Dog (item 34) revive used this week; it lifts its holder from wounded (status 2) to 1 once per week; reset weekly	C	COMMAND.ADV:388, COM.ADV:70
+VAR0682	Ninja_Saitou	unit	Saitou as ninja this week: 99=unavailable, 0=available (needs VAR0678>1), 1=used	C	COM.ADV:15, COM.ADV:31, Cﾆﾝｼﾞｬ.ADV:223
+VAR0683	Bt_GarrisonProv	battle	Province whose monster garrison (Kayblis cmdrs 86-89 / Zeth) was last generated this week; reset weekly	C	Tｹｲﾌﾞﾘｽ2.ADV:5, Tｾﾞｽ2.ADV:11, COM.ADV:19
+VAR0684	Bt_GarrisonHits	battle	Player attacks this week on VAR0683 that dealt >200 damage; each shrinks the regenerated garrison (troops = max/(4+2n)+rnd)	C	FIGT.ADV:3023, Tｹｲﾌﾞﾘｽ2.ADV:16, COM.ADV:20
+VAR0685	Goliath_State	item	T2 Goliath (Maria's machine): 0=none, 1=ready, 2=used this week (reset to 1 weekly); joins battles at prov VAR0758; enables the Special Room at prov 2	C	Gﾏﾘｱ.ADV:3908, FIGT.ADV:327, FIGT.ADV:1121
+VAR0686	Kaiju_JagiJagiAttacks	item	Capsule kaiju Jagi Jagi (item 26 C. Kaiju A): attacks +50 per week while owned (cap 2000); used when summoned, then reset to 80	C	COM.ADV:73, FIGT.ADV:1220
+VAR0687	Kaiju_AmoebaAttacks	item	Capsule kaiju Amoeba (item 27 C. Kaiju B): attacks +60 per week while owned (cap 2000); used when summoned, then reset to 100	C	COM.ADV:80, FIGT.ADV:1178
+VAR0688	F_Sill_MassageSeen	story	Sill shoulder-massage scene (Gｼｨﾙ2 scene 1, stage 2) seen	C	COM.ADV:371
+VAR0689	F_Gandhi_TravelStop3Seen	story	Gandhi travel scene at prov 20 (VAR0455=3) seen	C	COM.ADV:682
+VAR0690	Tmp0690	scratch	Copy of a Y 4 roll used to pick a dialogue/flavour-text variant (mostly battle quips in FIGT_M); set and tested locally	C	FIGT_M.ADV:115, Gﾏｼﾞｯｸ.ADV:109
+VAR0691	Bt_TargetProv	battle	Province being fought over, saved at battle start and restored into VAR0158 after death/capture processing; 0 when idle	C	FIGT_B.ADV:8, FIGT_A.ADV:190, Cﾃｷﾄｼ.ADV:3
+VAR0692		unused	Only decremented (saturating from 0) on a 1/2 roll in one enemy-attack branch; never read	C	FIGT_B.ADV:188
+VAR0693	Bt_PlayerOrder1	battle	Standing order for player slot 1: 0=none (ask each turn), 1=keep attacking, 2=keep defending; shifted when slots compact	C	FIGT.ADV:719, FIGT.ADV:1345, FIGT.ADV:2862
+VAR0694	Bt_PlayerOrder2	battle	Standing order for player slot 2 (0=none, 1=attack, 2=defend)	C	FIGT.ADV:722, FIGT.ADV:1348
+VAR0695	Bt_PlayerOrder3	battle	Standing order for player slot 3 (0=none, 1=attack, 2=defend)	C	FIGT.ADV:725, FIGT.ADV:1351
+VAR0696	Bt_PlayerOrder4	battle	Standing order for player slot 4 (0=none, 1=attack, 2=defend)	C	FIGT.ADV:728, FIGT.ADV:1354
+VAR0697	Bt_CurOrder	battle	Standing order of the acting player unit (copied from VAR0693-0696; 1=attack, 2=defend); non-zero skips the command menu	C	FIGT.ADV:395, FIGT.ADV:614, FIGT.ADV:1316
+VAR0698	FogCard_Price	economy	Merchant price (x100 GOLD) of item 28 Fog Card; 0=not for sale; 120 once found in dungeon 24; +10% each time it is used in battle	C	Cﾒｲｷｭｳ.ADV:1877, FIGT.ADV:1238, Cｼｮｳﾆﾝ.ADV:1137
+VAR0699	N_Hubert_FreyaUses	story	Times Hubert (unit 21) used ninja Freya in battle; between 6 and 48 triggers Hubert scene 1, which sets 50	I	FIGT.ADV:1931, COM.ADV:654, Gﾋｭｰﾊﾞｰﾄ.ADV:8
+VAR0700	F_Asuka_State	story	Asuka Cadmium (unit 11) arc with Chaka/Mill: 1=triggered in battle with Mill, 2-8 scenes (3=Asuka removed, 8=Asuka back), 0 when Asuka dies; >7 unlocks Asuka's CW Dance	I	Gｶﾄﾞﾐｭｳﾑ.ADV:913, FIGT_SEL.ADV:671, FIGTﾐｶDE.ADV:228
+VAR0701	N_Cream_Tactics	story	Battle-strategy uses by Cream (unit 28); >10 changes her line and gives her good ending	C	FIGT作.ADV:215, OVER.ADV:1020
+VAR0702	F_Sill_Died	story	Sill (unit 2) death: 1=died in battle (grave scene pending), 2=grave scene seen	C	FIGTﾐｶDE.ADV:90, COMMAND.ADV:380, Gｼｨﾙ2.ADV:23
+VAR0703	Ai_BabolatAtk	battle	Babolat Unit weekly attack state: 0=not yet, 10=attacked, 11=extra re-attack used after a timed-out battle the player held (VAR0602=0, VAR0589=2); reset each Kayblis turn	C	Tｹｲﾌﾞﾘｽ.ADV:13, Tｹｲﾌﾞﾘｽ.ADV:814, Tｹｲﾌﾞﾘｽ.ADV:826
+VAR0704	Ai_KiteAtk	battle	Kite Unit weekly attack state (0/10/11, as VAR0703)	C	Tｹｲﾌﾞﾘｽ.ADV:14, Tｹｲﾌﾞﾘｽ.ADV:1079, Tｹｲﾌﾞﾘｽ.ADV:1087
+VAR0705	Ai_RedeyeAtk	battle	Redeye Unit weekly attack state (0/10/11, as VAR0703)	C	Tｹｲﾌﾞﾘｽ.ADV:15, Tｹｲﾌﾞﾘｽ.ADV:937, Tｹｲﾌﾞﾘｽ.ADV:945
+VAR0706	Ai_GaltiaAtk	battle	Galtia Unit weekly attack state (0/10/11, as VAR0703)	C	Tｹｲﾌﾞﾘｽ.ADV:16, Tｹｲﾌﾞﾘｽ.ADV:1192, Tｹｲﾌﾞﾘｽ.ADV:1200
+VAR0707	Kesselring_LastProv	story	Province Kesselring's unit last attacked; after Kesselring scene 2 (Rance forced to retreat) it advances along 1->4->23->19->61->70 and the province is taken	I	Tｹｲﾌﾞﾘｽ.ADV:1273, Gｹｯｾﾙ.ADV:2992, Gｹｯｾﾙ.ADV:3012
+VAR0708	F_Helman_FallCause	story	How the Helman Empire fell (with VAR0059=2): 1=destroyed by Kayblis, 2=Mineva's crystal-army coup; gates Patton scene 6 and a harem flag	I	Tｹｲﾌﾞﾘｽ.ADV:1718, Gﾐﾈﾊﾞ.ADV:1709, COM.ADV:223
+VAR0709	F_Suzume_Met	story	Suzume's first random harem-visit scene seen; adds her to the harem list (VAR0252)	C	Cﾊｰﾚﾑ.ADV:8, Cﾊｰﾚﾑ.ADV:49
+VAR0710	F_Louis_HiredBefore	story	Mercenary Louis hired at least once from the merchant; shortens repeat dialogue	C	Cｼｮｳﾆﾝ.ADV:304, Cｼｮｳﾆﾝ.ADV:378
+VAR0711	F_Cecil_HiredBefore	story	Mercenary Cecil hired at least once from the merchant; shortens repeat dialogue	C	Cｼｮｳﾆﾝ.ADV:641, Cｼｮｳﾆﾝ.ADV:725
+VAR0712	F_Merim_MillArc	story	Merim/Mill arc: 1=Merim scene, 2=Merim joins the fight, 3=Mill not called (Mill dungeon scene pending), 4=Mill scene done	I	Gﾒﾘﾑ.ADV:284, Gﾐﾙ.ADV:917, Cﾒｲｷｭｳ.ADV:990
+VAR0713	DungeonBgCg	dungeon	Background CG number of the current dungeon (1008/1016/1017/1025/...), passed to the display routine	C	Cﾒｲｷｭｳ.ADV:28, Cﾒｲｷｭｳ.ADV:239
+VAR0714	DungeonMonsterCmdr	dungeon	Enemy commander record (83/84/85/100) used for random monster encounters in the current dungeon; copied to enemy slot VAR0530	C	Cﾒｲｷｭｳ.ADV:481, Cﾒｲｷｭｳ.ADV:1158
+VAR0715	F_Gunagan_State	dungeon	Boss Gunagan (dungeon 30, floor 1000): 0=not met, 1=battle started, 2=defeated (treasure found)	C	Cﾒｲｷｭｳ.ADV:3191, Cﾒｲｷｭｳ.ADV:1300
+VAR0716	F_Sill_Fate	story	Sill ending: 1=on another adventure with Rance (set in the God-arc ending where Rance leaves with Sill), 2=killed by Madame Gorch	C	Iｶﾐ.ADV:3726, Gｼｨﾙ.ADV:5276, OVER.ADV:207
+VAR0717	F_Ending_LiaRoute	story	Final route: 1=Rance stayed and Lia had his child, 2=Rance ran away with Sill; selects Lia/Maris epilogues	C	Iｶﾐ.ADV:4314, Iｶﾐ.ADV:3727, OVER.ADV:235
+VAR0718	Ev_JapanNextWeek	event	Earliest week (VAR0517) for the next JAPAN-arc scene 2; set to week+4	C	IJAPAN.ADV:266, COM.ADV:127
+VAR0719	F_Kouhime_Dead	story	2=Kouhime died (JAPAN retreat or Rudrasaum scene); bad epilogue, drops her harem flag	C	IJAPAN.ADV:5534, Gﾙﾄﾞﾗ.ADV:470, OVER.ADV:1372
+VAR0720	F_KaijuPrince_State	story	Kaiju Prince: 1=available after the Shangri-La arc (Helman and Zeth both down), 2=joined (unit 48)	I	Iｼｬﾝｸﾞﾘﾗ.ADV:930, Gｵｳｼﾞ.ADV:322, COM.ADV:938
+VAR0721	Tmp0721	scratch	Saves Rance's troop count during a Shangri-La scene and restores it afterwards	C	Iｼｬﾝｸﾞﾘﾗ.ADV:3696, Iｼｬﾝｸﾞﾘﾗ.ADV:3781
+VAR0722	F_Kabachahn_EstateSeen	story	Zeth scene 7 (Kabachahn's estate, prov 65) seen	C	Cｼﾊｲﾄｼ.ADV:1029, Iｾﾞｽ.ADV:376
+VAR0723	F_Uspira_Fate	story	Uspira ending: 1=double suicide with Saias, 2=raped by Rance	C	Iｾﾞｽ.ADV:6352, Iｾﾞｽ.ADV:5858, OVER.ADV:1560
+VAR0724	F_Rance_StiffShouldersSeen	story	G2 scene 10 (Rance's stiff shoulders, needs VAR0060=2) seen	C	COM.ADV:853, G2.ADV:41
+VAR0725	F_NewYearFeastSeen	story	G2 scene 9 (New Year feast, month 1 week 1) seen	C	COM.ADV:320, G2.ADV:479
+VAR0726	F_FieldHQReportSeen	story	G2 scene 8 (field-HQ report at prov 47) seen	C	Cｼﾊｲﾄｼ.ADV:989, G2.ADV:1062
+VAR0727	F_Wenlina_State	story	Wenlina: 0=not met, 1=met, 2=second visit	C	G2.ADV:2421, G2.ADV:2499, G2.ADV:2833
+VAR0728	F_Wenlina_CureMilli	story	1=Wenlina agreed to cure Milli; enables the Milli dungeon scene	I	G2.ADV:3004, Cﾒｲｷｭｳ.ADV:1808
+VAR0729	F_Athena2_IntroSeen	story	Athena 2 house intro seen	C	Gｱﾃﾅ2.ADV:38, Gｱﾃﾅ2.ADV:55
+VAR0730	Unit48_Identity	unit	Who holds unit slot 48: 1=Hanny King, 2=Kaiju Prince	C	Gﾊﾆｰ.ADV:343, Gｵｳｼﾞ.ADV:321, Cﾌﾞｶ.ADV:706
+VAR0731	F_LibraryGhost_State	story	Library Ghost: 0-5 progress (Cｼﾊｲﾄｼ/COM scenes), 6=passed on (good ending)	C	Gﾕｳﾚｲ.ADV:26, Gﾕｳﾚｲ.ADV:1742, OVER.ADV:1960
+VAR0732	F_LibraryGhost_BookReq	story	Book type the Library Ghost asked for (1-4); 0=none/delivered	I	Gﾕｳﾚｲ.ADV:1334, Gﾕｳﾚｲ.ADV:1462
+VAR0733	F_Kaybwan_State	story	Kaybwan arc: 1-5 progress (3=at prov 86, Dungeon menu entry while 1-4), 6=closed by Kayblis scene	I	Gｹｲﾌﾞﾜﾝ.ADV:17, Gｹｲﾌﾞﾜﾝ.ADV:788, Gｹｲﾌﾞﾘｽ.ADV:2111
+VAR0734	F_Kaybnyan_State	story	Kaybnyan arc: 1-5 progress (3=at prov 85, Blue House menu entry while 1-4), 6=closed by Kayblis scene	I	Gｹｲﾌﾞﾆｬﾝ.ADV:17, Gｹｲﾌﾞﾆｬﾝ.ADV:589, Gｹｲﾌﾞﾘｽ.ADV:2112
+VAR0735	F_Cafe_JoinMode	story	How Cafe (unit 45) joined: 1=with the Carfeknights, 2=with the Lady as hostage; changes battle and God-arc lines	I	Gｶﾌｪ.ADV:6995, Gｶﾌｪ.ADV:4085, Iｶﾐ.ADV:5592
+VAR0736	F_British_State	story	British arc: 0-3 progress (1/2 by dialogue choice, 3=help-me scene); >2 enables random British scene 2	I	Gﾌﾞﾘﾃｨ.ADV:819, Gﾌﾞﾘﾃｨ.ADV:471, COM.ADV:887
+VAR0737	LaVaswald_Prov	story	Province shown/attacked in the La Vaswald (cmdr 98) phase; set from Seizel scenes (84 after Seizel flies away)	I	Gｻｲｾﾞﾙ.ADV:482, Gｻｲｾﾞﾙ.ADV:2817, MAIN.ADV:855
+VAR0738	F_Medusa_IntroSeen	story	Medusa's first scene (prov 84) seen	I	Gﾒﾃﾞｨｳｻ.ADV:29, Gﾒﾃﾞｨｳｻ.ADV:139
+VAR0739	F_Isoroku_Fate	story	2=Isoroku captured by Medusa (bad epilogue, unit 27 removed)	C	Gﾒﾃﾞｨｳｻ.ADV:1512, OVER.ADV:1319
+VAR0740	F_Kaoru_Fate	story	2=Kaoru killed by Medusa (bad epilogue; Kaoru ninja removed)	C	Gﾒﾃﾞｨｳｻ.ADV:1898, OVER.ADV:1234
+VAR0741	F_Kite_Ev8Seen	story	Kite (cmdr 132) scene 8 seen (needs VAR0380>2)	C	COM.ADV:437, Gｶｲﾄ.ADV:29
+VAR0742	F_Redeye_Ev7Seen	story	Redeye scene 7 seen (needs VAR0654!=0)	C	COM.ADV:431, Gﾚｯﾄﾞｱｲ.ADV:1085
+VAR0743	F_Babolat_Ev6Seen	story	Babolat scene 6 (Barres audience) seen	C	COM.ADV:425, Gﾊﾞﾎﾞﾗ.ADV:23
+VAR0744	F_Galtia_JoinedKayblis	story	Galtia joined Kayblis (Kayblis scene 4); enables Waag scene 2	C	Gｹｲﾌﾞﾘｽ.ADV:504, Tｹｲﾌﾞﾘｽ2.ADV:125, COM.ADV:96
+VAR0745	F_Kayblis_Moved	story	Kayblis began to move (Kayblis scene 3, played once the player owns prov 81/89)	C	Gｹｲﾌﾞﾘｽ.ADV:659, Tｹｲﾌﾞﾘｽ.ADV:190, Tｹｲﾌﾞﾘｽ.ADV:276
+VAR0746	F_Maris_DemonTalkSeen	story	Maris scene 17 (stage 3, war on the demons) seen	C	COM.ADV:284, Gﾏﾘｽ.ADV:53
+VAR0747	F_Maris_KesselringTalkSeen	story	Maris scene 16 (Rance fuming about Kesselring, VAR0376=2) seen	C	COM.ADV:812, Gﾏﾘｽ.ADV:241
+VAR0748	F_Wendy_BedroomSeen	story	Wendy scene 4 (cleaning Rance's bedroom) seen; 1 gives Wendy's good epilogue	C	Cﾊｰﾚﾑ.ADV:18, Gｳｪﾝﾃﾞｨ.ADV:46, OVER.ADV:317
+VAR0749	F_Sill_SocksSeen	story	Sill scene 4 (knitting socks, Helman war) seen	C	COM.ADV:366, Gｼｨﾙ2.ADV:158
+VAR0750	F_Sill_SMTowerVisited	story	First S&M Tower visit with Sill done	C	Gｼｨﾙ2.ADV:341
+VAR0751	F_Menad_TrainingSeen	story	Menad training scene seen once; later visits jump to the short variant	I	Gﾒﾅﾄﾞ.ADV:3217, Gﾒﾅﾄﾞ.ADV:3220
+VAR0752	F_Haurein_Fate	story	Haurein: 1=scene 1 (good epilogue: praised by her father), 2=impregnated and ran away (bad); scene 2 triggers after a won battle at level >3 while 0	C	Gﾊｳﾚｰﾝ.ADV:191, Gﾊｳﾚｰﾝ.ADV:564, 死亡捕獲.ADV:436
+VAR0753	F_Kanami_Dismissed	story	2=Kanami dismissed as ninja (VAR0058=0); bad epilogue	C	Gｶﾅﾐ.ADV:2778, OVER.ADV:357
+VAR0754	F_Melfeis_Ev7Seen	story	Melfeis scene 7 (hallway with Cordoba) seen	C	COM.ADV:503, Gﾒﾙﾌｪｲｽ.ADV:37
+VAR0755	F_Asuka_IntroSeen	story	Asuka/Chaka intro scene seen	C	Gｶﾄﾞﾐｭｳﾑ.ADV:27, Gｶﾄﾞﾐｭｳﾑ.ADV:35
+VAR0756	F_AliceBldg_CardBooth	story	AliceSoft building card booth: 0=not visited, 1=visited, 2=booth girl killed	I	Gｱﾘｽ.ADV:5748, Gｱﾘｽ.ADV:5968
+VAR0757	N_AliceBldg_BearBooth	story	AliceSoft building bear booth visit stage 0-5; 5=booth destroyed	C	Gｱﾘｽ.ADV:6813, Gｱﾘｽ.ADV:8164
+VAR0758	Goliath_Prov	item	Province where T2 Goliath is deployed (joins battles there); 1 when built	C	Gﾏﾘｱ.ADV:122, Gﾏﾘｱ.ADV:3909, FIGT.ADV:327
+VAR0759	F_Milli_Fate	story	2=Milli died of disease (bad epilogue)	C	Gﾐﾘ.ADV:1379, OVER.ADV:648
+VAR0760	F_EleanorRan_Fate	story	2=Eleanor Ran committed suicide (bad epilogue)	C	Gﾗﾝ.ADV:34, OVER.ADV:621
+VAR0761	F_Cell_ChurchArc	story	Cell arc: 10-12 church scenes (prov 23), 13=taken away and sold, 1=after-arc state; <12 keeps Mars's Palace menu entry	I	Gｾﾙ.ADV:32, Gｾﾙ.ADV:773, COM.ADV:780
+VAR0762	Shariela_EvWeek	story	Week (VAR0517) of Shariela's last scene; next scenes wait 40/42 weeks	C	Gｼｬﾘｴﾗ.ADV:18, COM.ADV:868
+VAR0763	F_Shariela_State	story	Shariela: 1-3 progress (3 reverts to 2 on revisit), 4=turned back into a doll (bad epilogue)	C	Gｼｬﾘｴﾗ.ADV:19, Gｼｬﾘｴﾗ.ADV:37, OVER.ADV:796
+VAR0764	F_Cream_Fate	story	2=Cream stealth-attacked by her allies (bad epilogue)	C	Gｸﾘｰﾑ.ADV:1451, OVER.ADV:1034
+VAR0765	F_Rolex_GraveSeen	story	Rolex graveyard scene (prov 42) seen	C	Cｼﾊｲﾄｼ.ADV:949, Gﾛﾚｯｸｽ.ADV:610
+VAR0766	F_Lelyukov_PattonTalkSeen	story	Patton scene 13 (Lelyukov and Patton) seen	C	COM.ADV:648, Gﾊﾟｯﾄﾝ.ADV:41
+VAR0767	F_Freak_TalkSeen	story	Freak scene 20 seen once; later visits use the short variant	C	Gﾌﾘｰｸ.ADV:20
+VAR0768	F_Hubert_TalkSeen	story	Hubert audience scene seen once; later visits use the short variant	C	Gﾋｭｰﾊﾞｰﾄ.ADV:325
+VAR0769	F_Miki_Ev11Seen	story	Miki scene 11 (afraid of God's army) seen	C	COM.ADV:552, Gﾐｷ.ADV:44
+VAR0770	F_Satella_Ev3Seen	story	Satella scene 3 (God attacking) seen	C	COM.ADV:817, Gｻﾃﾗ.ADV:52
+VAR0771	F_LovePotion_Used	story	Love Potion from the Magic Research Institute used on Shizuka; hides the option	C	Gﾏｹﾝ.ADV:237, Gﾏｹﾝ.ADV:1101
+VAR0772	F_MagicInstitute_Visited	story	Magic Research Institute intro seen	C	Gﾏｹﾝ.ADV:35, Gﾏｹﾝ.ADV:2193
+VAR0773	F_ChizukoTower_IntroSeen	story	Chizuko's tower command-room intro seen (also set when Zeth falls)	I	Gﾁｽﾞｺ.ADV:152, Gﾁｽﾞｺ.ADV:158
+VAR0774	F_Chizuko_Fate	story	2=Chizuko gangraped to death by slave troops (bad epilogue)	C	Gﾁｽﾞｺ.ADV:3539, OVER.ADV:1120
+VAR0775	N_WaoBooth_Visits	story	Visits to WAO's booth (printed in dialogue; every 5th/10th visit special)	C	Gﾜｵ.ADV:238, Gﾜｵ.ADV:107
+VAR0776	F_Mumiso_State	story	Mumiso: 0=not met, 1=met, 2=offer declined	I	Gﾑﾐｿ.ADV:1, Gﾑﾐｿ.ADV:130
+VAR0777		unused	Only reset by SET_VER/start; never used	C	
+VAR0778	Bt_SkillSfx	battle	Special skill used this action (1=Rance Attack, 2=By la Way, 4=White Destruction Beam, 5=Highspeed, 6=Chuhai, 3/7-9 other skills); picks its sound effects, then reset	C	FIGT.ADV:1514, FIGTATTK.ADV:301
+VAR0779	Bt_SfxAtk1	battle	Sound effect number for the attacker's first hit, from attack type VAR0620 / skill VAR0778	C	FIGTATTK.ADV:257, FIGTATTK.ADV:344
+VAR0780	Bt_SfxAtk2	battle	Sound effect number for the attacker's second sound	C	FIGTATTK.ADV:258, FIGTATTK.ADV:350
+VAR0781	Bt_SfxDef1	battle	Sound effect number for the defender side (from VAR0619), played with VAR0779	C	FIGTATTK.ADV:259, FIGTATTK.ADV:344
+VAR0782	Bt_SfxDef2	battle	Second defender-side sound effect, played with VAR0780	C	FIGTATTK.ADV:260, FIGTATTK.ADV:350
+VAR0783	F_Boss_StoneGuardian	dungeon	Boss Stone Guardian (dungeon 8, floor 10) encountered; one-time encounter	C	Cﾒｲｷｭｳ.ADV:1041, Cﾒｲｷｭｳ.ADV:3031
+VAR0784	F_Boss_Marder	dungeon	Boss Marder (dungeon 2, floor 5) encountered	C	Cﾒｲｷｭｳ.ADV:1044, Cﾒｲｷｭｳ.ADV:3063
+VAR0785	F_Boss_HawKyu	dungeon	Boss Haw Kyu (dungeon 10, floor 10) encountered	C	Cﾒｲｷｭｳ.ADV:1047, Cﾒｲｷｭｳ.ADV:3095
+VAR0786	F_Boss_Musashibou	dungeon	Boss Musashibou (dungeon 14, floor 12) encountered	C	Cﾒｲｷｭｳ.ADV:1050, Cﾒｲｷｭｳ.ADV:3127
+VAR0787	F_Boss_JapaneseSoldier	dungeon	Boss Japanese Soldier (dungeon 30, floor 100) encountered	C	Cﾒｲｷｭｳ.ADV:1053, Cﾒｲｷｭｳ.ADV:3159
+VAR0788	Bt_PlayerSlotsUsed	battle	Number of occupied player battle slots (0-4, last non-empty of VAR0590-0593)	C	FIGT_SEL.ADV:7, FIGT_SEL.ADV:502
+VAR0789	Bt_EnemySlotsUsed	battle	Number of occupied enemy battle slots (0-4, last non-empty of VAR0594-0597)	C	FIGT_SEL.ADV:24, FIGT_SEL.ADV:517
+VAR0790	F_Boss_ShimoJoe	dungeon	Boss SHIMO-JOE (dungeon 20, floor 10) encountered	C	Cﾒｲｷｭｳ.ADV:1056, Cﾒｲｷｭｳ.ADV:2935
+VAR0791	F_Boss_Vevetar	dungeon	Boss Vevetar (dungeon 21, floor 15) encountered	C	Cﾒｲｷｭｳ.ADV:1059, Cﾒｲｷｭｳ.ADV:2967
+VAR0792	F_Boss_GGCaterpillar	dungeon	Boss GG Caterpillar (dungeon 22, floor 13) encountered	C	Cﾒｲｷｭｳ.ADV:1062, Cﾒｲｷｭｳ.ADV:2999
+VAR0793	F_AliceBldg_DollRoom	story	AliceSoft building doll-room girl: 0-5 visit stages (each gated by month VAR0538), 254/255 final scenes	I	Gｱﾘｽ.ADV:1485, Gｱﾘｽ.ADV:2248
+VAR0794	F_WaoBooth_SuzuMet	story	WAO's mascot Suzu introduced; cleared by the booth's reset option	C	Gﾜｵ.ADV:665, Gﾜｵ.ADV:725
+VAR0795	Nagi_EvWeek	story	Week (VAR0517) of Nagi's last scene; next scenes wait 9/19 weeks depending on VAR0457	C	Gﾅｷﾞ.ADV:6009, COM.ADV:754
+VAR0796		unused	Only reset by SET_VER/start; never used	C	
+VAR0797		unused	Only reset by SET_VER/start; never used	C	
+VAR0798		unused	Only reset by SET_VER/start; never used	C	
+VAR0799		unused	Only reset by SET_VER/start; never used	C	
+VAR0800		unused	Only reset by SET_VER/start; never used	C	
+VAR0801		unused	Only reset by SET_VER/start; never used	C	
+VAR0802		unused	Only reset by SET_VER/start; never used	C	
+VAR0803		unused	Only reset by SET_VER/start; never used	C	
+VAR0804		unused	Only reset by SET_VER/start; never used	C	
+VAR0805	EndingId	story	Game-over/ending number 1-14 (1=Rance died, 2=castle lost, 9-13=God-arc endings, ...); OVER shows CG 269+id and chooses the epilogue roster	C	死亡捕獲.ADV:30, Iｶﾐ.ADV:3728, OVER.ADV:33

@@ -9,9 +9,11 @@ reasoning, rejected alternatives, unverified facts about the source game, and th
 
 ## Status
 
-No code yet. Spike surface analysis done — see [docs/spike-findings.md](docs/spike-findings.md)
-for measurements, data model, local paths of the game and tools. Next: decide how to port the
-logic (see "Next step" in the brief).
+No game code yet. Spike surface analysis done — see [docs/spike-findings.md](docs/spike-findings.md)
+for measurements, data model, local paths of the game and tools. Porting strategy decided
+(hybrid, see "Next step" in the brief). The variable dictionary [docs/variables.tsv](docs/variables.tsv)
+is done; when reading the scenario, use the renamed copy (`tools/analysis/rename_vars.py`) and
+keep the dictionary updated when a meaning is confirmed or corrected. Next: solution skeleton.
 
 ## Rules
 

@@ -131,7 +131,13 @@ live outside the repo; System 3.9 decompiles cleanly; ≈650–700 scenes, 126k 
 66 distinct commands; battle, AI and turn order located; RNG is MT19937 in xsystem35, seeded
 from the process id.
 
-Decision now pending — **how to port the logic**:
+**Decided (2026-10-07): hybrid.** Dialogue/event files go through an automatic converter into
+our own event format; rule files are hand-ported to C# in `Kichikuou.Core` and verified by golden
+tests. Work order: variable dictionary ([variables.tsv](variables.tsv)) → solution skeleton
+(saturating 16-bit integer type, MT19937-1998 port) → battle as the first rules slice → golden-test
+harness on a patched xsystem35; an event-converter prototype runs in parallel with the battle slice.
+
+The options that were weighed:
 
 - Dialogue/event files (`G*`, `I*`, ≈85% of the scenario) are linear text plus flags, CG and
   BGM commands — a natural fit for an automatic converter into our own event format.
@@ -140,5 +146,5 @@ Decision now pending — **how to port the logic**:
   interpreter for the small command subset (fastest fidelity, but the script also drives the
   old screens).
 
-Also to decide: how golden tests get deterministic RNG (patched xsystem35 with a fixed seed vs.
+Still to decide: how golden tests get deterministic RNG (patched xsystem35 with a fixed seed vs.
 recorded `Y 4` draws).
