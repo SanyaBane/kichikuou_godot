@@ -15,3 +15,21 @@ Open questions (merged from 01 §14 and 02 §11):
 6. Can `Bt_MsgMode` be outside 1..4 at a Goliath strike (0 at new game), letting `FIGT_M.ADV:5`'s draw pick the side? — `FIGT.ADV:1144`, `FIGT_M.ADV:5-23`, `SET_VER.ADV:515`.
 7. Who restores Rance's `Unit_Status` after a prologue defeat? — `FIGTﾐｶDE.ADV:1-21`, `死亡捕獲.ADV:26-39`.
 8. Can `Sﾌﾞﾀｲ` return a code other than 501/502/503 to FIGT_B (falls through to plains)? — `FIGT_B.ADV:160-163`.
+
+## Port: how the C# code is split (`src/Kichikuou.Core/Combat/`)
+
+`Battle` is one partial class written by three parts. Follow
+[../porting-conventions.md](../porting-conventions.md). Seam methods are `internal`,
+parameterless and read their inputs from `GameState` exactly as the script does (callers set
+the same variables the script sets before the call).
+
+| Part | Spec | Files it owns | Seam methods it implements |
+|---|---|---|---|
+| **R1** resolution | 02 §1-4, §6-7, §9, plus `L_03058`/`L_0320f` state effects (01 §9.4) | `Battle.Resolution.cs`, `Battle.Display.cs`, `BattleEvents.Resolution.cs`, tests `Combat/Resolution*Tests.cs` | `PlayerAttackAsync()` (RetVal = attack command 1-3, 10-21: setter → `ManualAttackPrelude` → `Resolve`/`ResolveMagic`), `ResolveAsync()` (`L_025d7`), `ResolveMagicAsync()` (`L_025a0`), `GoliathStrikeAsync()` (`L_01abd`), `RedrawAsync()` (`L_03058`), `HighlightAsync()` (`L_0320f`), `SpendFocus()` (`L_01dd3`), `CompactPlayer()` / `CompactEnemy()` (`L_04762` / `L_04864`, slot argument in the variable the script uses) |
+| **R2** flavour text | 02 §5 | `Battle.Flavour.cs`, `BattleEvents.Flavour.cs`, tests `Combat/Flavour*Tests.cs` | `FlavourTextAsync()` (call of `FIGT_M.ADV`) |
+| **F** flow | 01 (all but §9 internals) | `Battle.Flow.cs` (may split into `Battle.Flow.*.cs`), `BattleInput.cs`, `BattleEvents.Flow.cs`, tests `Combat/Flow*Tests.cs` | public entry points (`FIGT_A`, `FIGT_B`, direct `FIGT`), everything in 01 |
+
+Nobody edits `Battle.cs`, `BattleEvents.cs` or another part's files. A part that needs a seam
+method of another part that is not merged yet adds a throwing stub in
+`Battle.Stubs.<Part>.cs` (e.g. `Battle.Stubs.Flavour.cs`) with the exact signature above; stubs
+are deleted when the parts are merged.
