@@ -329,7 +329,7 @@ public sealed class GoldenReplay
         }
     }
 
-    private sealed class Input(GoldenReplay replay) : IBattleInput, ISceneInput
+    private sealed class Input(GoldenReplay replay) : IGameInput
     {
         public Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
         {

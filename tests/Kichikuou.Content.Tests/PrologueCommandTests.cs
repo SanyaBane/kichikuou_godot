@@ -1,4 +1,5 @@
 using Kichikuou.Content.Scripts;
+using Kichikuou.Core.Combat;
 using Kichikuou.Core.Script;
 using Kichikuou.Core.Setup;
 using Kichikuou.Core.State;
@@ -12,9 +13,10 @@ namespace Kichikuou.Content.Tests;
 /// A prologue week's player phase on the world the boot and the new game build, with the rule
 /// files routed by <see cref="StrategyRules"/> and the scenes run from the player's decompile by
 /// <see cref="SceneRunner"/>: Pillage on province 34, a talk with Bound, a visit to Sill, the
-/// hideout, Turn END. The pickers run as ports and are answered with clicks on their grids and
-/// bars; the battle is not ported into the router yet and answers through a recording hook.
-/// Skipped without the decompile.
+/// hideout, Turn END; the week loop around it; the prologue's end. The pickers run as ports and
+/// are answered with clicks on their grids and bars. The battle runs in the router as well; the
+/// tests about the commands and the story stub it (<see cref="StubbedFiles"/>) to choose its
+/// outcome, and one fights it. Skipped without the decompile.
 /// </summary>
 public class PrologueCommandTests(ITestOutputHelper output)
 {
@@ -23,21 +25,8 @@ public class PrologueCommandTests(ITestOutputHelper output)
     {
         if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
             return;
-        var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
-        var state = new GameState();
-        var random = new QueuedRandom { DefaultToOne = true };
-        var view = new RecordingView();
-        var input = new PlayerInput(state);
-        var unported = new RecordingRules { State = state };
-        var rules = new StrategyRules(scripts, unported);
-        var runner = new SceneRunner(scripts, rules);
-        var script = new ScriptContext(state, random, view, input, runner);
-        runner.Bind(script);
-        rules.Bind(script);
-        var setup = new GameSetup(script, scripts);
-        await setup.BootAsync();
-        await setup.NewGameAsync();
-        unported.Calls.Clear();
+        var game = await NewGameAsync(stubBattle: true);
+        var (state, script, input, view, unported, random) = (game.State, game.Script, game.Input, game.View, game.Unported, game.Random);
 
         state.Week = 10;                                                // MAIN's week + 1 and more: COM plays Gｿｳﾙ 4
         unported.Effects["FIGT_A.ADV"] = s => s.Bt_Result = 2;
@@ -79,6 +68,41 @@ public class PrologueCommandTests(ITestOutputHelper output)
         // The raid's banter (Iﾄｳｿﾞｸ:342), Bound's talk (Gﾊﾞｳﾝﾄﾞ:9), the hideout's banter (Cﾒｲｷｭｳ:2804).
         Assert.Equal([4, 2, 3], random.Draws);
         Assert.Contains(view.Events, e => e is MessageEvent { Text.File: "Cﾒｲｷｭｳ.ADV" });
+    }
+
+    /// <summary>
+    /// Pillage on province 34 fought for real: <c>Iﾄｳｿﾞｸ</c> calls <c>FIGT_A</c>, which the router runs
+    /// as the battle on the game's context and input (owner's decision 7), so nothing reaches the
+    /// unported hooks.
+    /// </summary>
+    [Fact]
+    public async Task A_pillage_is_fought_as_a_battle_through_the_router()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var game = await NewGameAsync();
+        var state = game.State;
+        state.Week = 10;
+        int gold = state.Gold.Value;
+        int expenses = (state.Units[1].DeployCost + state.Units[1].Troops / 300).Value;
+        game.Input.Province(34);
+        game.Input.Pick(1);                                             // Sﾌﾞﾀｲ: Rance,
+        game.Input.Button(1);                                           // Attack
+        game.Input.Menu(5);                                             // Turn END
+
+        await game.Script.CallFileAsync("COMMAND.ADV");
+
+        output.WriteLine($"result {state.Bt_Result}, gold {gold} -> {state.Gold}, draws {game.Random.Draws.Count}, " +
+                         $"commands {game.Input.BattleCommands}, Rance HP {state.Units[1].HP}/{state.Units[1].MaxHP}, troops {state.Units[1].Troops}");
+        Assert.Empty(game.Unported.Calls);
+        Assert.Equal(0, game.Input.Pending);
+        Assert.True(game.Input.BattleCommands > 0);
+        Assert.Contains(game.View.Events, e => e is RoundHeaderEvent);
+        Assert.Equal(2, state.Bt_Result.Value);                         // with every draw 1, Rance wins
+        Assert.Equal(gold - expenses + 1, state.Gold.Value);            // and the raid brings one gold
+        Assert.Equal(0, state.Bt_Kind.Value);                           // FIGT_A's exit
+        Assert.Equal(1, state.F_Thieves_State.Value);
+        Assert.Equal(0, state.Ui_CmdAttackAvail.Value);
     }
 
     /// <summary>
@@ -125,7 +149,7 @@ public class PrologueCommandTests(ITestOutputHelper output)
     {
         if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
             return;
-        var game = await NewGameAsync();
+        var game = await NewGameAsync(stubBattle: true);
         game.State.Week = 22;
         game.Unported.Effects["FIGT_A.ADV"] = s => s.Bt_Result = 1;     // the duel is lost
         game.Input.Menu(5);                                             // Turn END
@@ -142,26 +166,39 @@ public class PrologueCommandTests(ITestOutputHelper output)
         Assert.Equal(25, game.State.Week.Value);                        // 23, Iﾊﾝﾗﾝ's + 1, the next week's + 1
     }
 
-    private sealed record Game(GameState State, ScriptContext Script, PlayerInput Input, RecordingView View, RecordingRules Unported);
+    private sealed record Game(
+        GameState State, ScriptContext Script, PlayerInput Input, RecordingView View, RecordingRules Unported, QueuedRandom Random);
 
-    /// <summary>The boot and the new game with the rule files routed and the scenes run from the decompile.</summary>
-    private static async Task<Game> NewGameAsync()
+    /// <summary>
+    /// The boot and the new game with the rule files routed and the scenes run from the decompile;
+    /// with <paramref name="stubBattle"/> <c>FIGT_A</c> goes to the recording hooks instead of the
+    /// router (its outcome set by the test), every draw is 1.
+    /// </summary>
+    private static async Task<Game> NewGameAsync(bool stubBattle = false)
     {
         var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
         var state = new GameState();
+        var random = new QueuedRandom { DefaultToOne = true };
         var view = new RecordingView();
         var input = new PlayerInput(state);
         var unported = new RecordingRules { State = state };
         var rules = new StrategyRules(scripts, unported);
-        var runner = new SceneRunner(scripts, rules);
-        var script = new ScriptContext(state, new QueuedRandom { DefaultToOne = true }, view, input, runner);
+        var runner = new SceneRunner(scripts, stubBattle ? new StubbedFiles(rules, unported, "FIGT_A.ADV") : rules);
+        var script = new ScriptContext(state, random, view, input, runner);
         runner.Bind(script);
         rules.Bind(script);
         var setup = new GameSetup(script, scripts);
         await setup.BootAsync();
         await setup.NewGameAsync();
         unported.Calls.Clear();
-        return new Game(state, script, input, view, unported);
+        return new Game(state, script, input, view, unported, random);
+    }
+
+    /// <summary>The router, but the given files go to the stubs.</summary>
+    private sealed class StubbedFiles(IStoryHooks rules, IStoryHooks stubs, params string[] files) : IStoryHooks
+    {
+        public Task RunEventAsync(string file, Sys3Int entry) =>
+            files.Contains(file) ? stubs.RunEventAsync(file, entry) : rules.RunEventAsync(file, entry);
     }
 
     private sealed class WeekOverException : Exception;
@@ -171,8 +208,28 @@ public class PrologueCommandTests(ITestOutputHelper output)
     /// after three reads at rest since the last gesture or other input, and menu answers by file:
     /// the command menu from a queue, Pillage in <c>Cﾃｷﾄｼ</c>, the first item anywhere else.
     /// </summary>
-    private sealed class PlayerInput(GameState state) : ISceneInput
+    private sealed class PlayerInput(GameState state) : IGameInput
     {
+        /// <summary>FIGT_SEL answers given: each unit attacks the first enemy it may, or defends.</summary>
+        public int BattleCommands { get; private set; }
+
+        public Task<FigtSelChoice> SelectCommandAsync(FigtSelMenu menu)
+        {
+            BattleCommands++;
+            _rests = 0;
+            var direct = menu.Find(FigtSelCommand.Direct);
+            return Task.FromResult(direct is { Arguments.Count: > 0 }
+                ? new FigtSelChoice(FigtSelCommand.Direct, direct.Arguments[0])
+                : new FigtSelChoice(FigtSelCommand.Defend, menu.Find(FigtSelCommand.Defend)!.Arguments[0]));
+        }
+
+        /// <summary>A battle menu: its first option.</summary>
+        public Task<Sys3Int?> ChooseAsync(BattleMenu menu)
+        {
+            _rests = 0;
+            return Task.FromResult<Sys3Int?>(menu.Options[0].Code);
+        }
+
         private readonly Queue<Func<MouseState[]>> _gestures = new();
         private readonly Queue<int> _commands = new();
         private MouseState[]? _current;

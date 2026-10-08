@@ -1,4 +1,6 @@
+using Kichikuou.Core.Combat;
 using Kichikuou.Core.Script;
+using Kichikuou.Core.Strategy;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Tests.Script;
@@ -7,9 +9,10 @@ namespace Kichikuou.Core.Tests.Script;
 /// Answers the scene inputs: the pointer from a <see cref="PointerScript"/>, menus from a queue
 /// (failing when it is empty), keys and pauses with 0, the cursor as the engine's static. Fails
 /// once the pointer has been read at rest <see cref="RestBudget"/> times in a row, so a test whose
-/// gestures run out stops instead of polling forever.
+/// gestures run out stops instead of polling forever. As the game's input it also answers the
+/// battle from its own queues, failing when they are empty.
 /// </summary>
-public sealed class ScriptedSceneInput : ISceneInput
+public sealed class ScriptedSceneInput : IGameInput
 {
     private int _restReads;
 
@@ -89,4 +92,25 @@ public sealed class ScriptedSceneInput : ISceneInput
     public Task<IReadOnlyList<Sys3Int>> GetCdPositionAsync() => throw new InvalidOperationException("Unexpected SC.");
 
     public Task<Sys3Int> GetMidiTrackAsync() => throw new InvalidOperationException("Unexpected SR 1.");
+
+    /// <summary>The battle's FIGT_SEL answers.</summary>
+    public Queue<FigtSelChoice> BattleCommands { get; } = new();
+
+    /// <summary>The battle's menu answers: an option's code, <c>null</c> = cancel.</summary>
+    public Queue<int?> BattleChoices { get; } = new();
+
+    public Task<FigtSelChoice> SelectCommandAsync(FigtSelMenu menu)
+    {
+        if (BattleCommands.Count == 0)
+            throw new InvalidOperationException("Unexpected FIGT_SEL.");
+        return Task.FromResult(BattleCommands.Dequeue());
+    }
+
+    public Task<Sys3Int?> ChooseAsync(BattleMenu menu)
+    {
+        if (BattleChoices.Count == 0)
+            throw new InvalidOperationException($"Unexpected battle menu {menu.Kind}.");
+        int? answer = BattleChoices.Dequeue();
+        return Task.FromResult(answer is null ? (Sys3Int?)null : (Sys3Int)answer.Value);
+    }
 }

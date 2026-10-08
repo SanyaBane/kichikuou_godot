@@ -1,3 +1,4 @@
+using Kichikuou.Core.Combat;
 using Kichikuou.Core.Script;
 using Kichikuou.Core.Setup;
 using Kichikuou.Core.Sys3;
@@ -5,20 +6,22 @@ using Kichikuou.Core.Sys3;
 namespace Kichikuou.Core.Strategy;
 
 /// <summary>
-/// The strategic rule files as story hooks: a call of <c>MAIN.ADV</c> (the week loop, which never
-/// returns; the game enters it by the jump <c>&amp;#MAIN.ADV:</c>), <c>COM.ADV</c>, <c>COMMAND.ADV</c>, one of
-/// the ported command files or one of their picker screens runs its port on the bound context;
-/// every other file goes to the hooks it wraps (the battle, the save screen — whatever is not
-/// ported here). Given to a
-/// <see cref="SceneRunner"/> as its rule hooks, so a scene that calls a rule file and a rule file
-/// that calls a scene both work:
+/// The ported rule files as story hooks: a call of <c>MAIN.ADV</c> (the week loop, which never
+/// returns; the game enters it by the jump <c>&amp;#MAIN.ADV:</c>), <c>COM.ADV</c>, <c>COMMAND.ADV</c>,
+/// one of the ported command files or one of their picker screens, or a battle file
+/// (<c>FIGT_A</c>, <c>FIGT_B</c>, <c>FIGT</c>, <c>死亡捕獲</c>, run as a <see cref="Battle"/>) runs its
+/// port on the bound context; every other file goes to the hooks it wraps (the save screen —
+/// whatever is not ported). Given to a <see cref="SceneRunner"/> as its rule hooks, so a scene that
+/// calls a rule file and a rule file that calls a scene both work:
 /// <code>
 /// var rules = new StrategyRules(scenario, unported);
 /// var runner = new SceneRunner(scenes, rules);
-/// var script = new ScriptContext(state, random, view, input, runner);
+/// var script = new ScriptContext(state, random, view, input, runner);   // input: an IGameInput
 /// runner.Bind(script);
 /// rules.Bind(script);
 /// </code>
+/// The battle and the screens it calls (the party picker of <c>FIGT_B</c>) share the context's
+/// input, so it must answer both: <see cref="IGameInput"/>, checked when the router is bound.
 /// </summary>
 public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported) : IStoryHooks
 {
@@ -28,19 +31,27 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
     public static readonly IReadOnlySet<string> PortedFiles = new HashSet<string>(StringComparer.Ordinal)
     {
         "MAIN.ADV", "COM.ADV", "COMMAND.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV", "Cﾒｲｷｭｳ.ADV",
-        "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sﾊｰﾚﾑ.ADV",
+        "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sﾊｰﾚﾑ.ADV", "FIGT_A.ADV", "FIGT_B.ADV", "FIGT.ADV", "死亡捕獲.ADV",
     };
 
     /// <summary>The context the rule files run on; set once with <see cref="Bind"/>.</summary>
     public ScriptContext Script => _script ?? throw new InvalidOperationException("The strategic rules are not bound to a context.");
 
-    /// <summary>Binds the router to the context whose hooks it serves (built after it, so bound afterwards).</summary>
+    /// <summary>
+    /// Binds the router to the context whose hooks it serves (built after it, so bound afterwards).
+    /// The context's input must be an <see cref="IGameInput"/>: the battles run here.
+    /// </summary>
     public void Bind(ScriptContext script)
     {
         if (_script is not null && !ReferenceEquals(_script, script))
             throw new InvalidOperationException("The strategic rules are already bound to another context.");
+        if (script.Input is not IGameInput)
+            throw new ArgumentException("The game's input must answer the battles and the scenes (IGameInput).", nameof(script));
         _script = script;
     }
+
+    /// <summary>A battle on the bound context, with its input.</summary>
+    private Battle Battle => new(Script, (IGameInput)Script.Input);
 
     /// <inheritdoc />
     public Task RunEventAsync(string file, Sys3Int entry) => file switch
@@ -56,6 +67,10 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
         "Sﾌﾞﾀｲ.ADV" => new DeploymentScreen(Script, scenario).RunAsync(),
         "Sﾌﾞｶ.ADV" => new SubordinateScreen(Script, scenario).RunAsync(),
         "Sﾊｰﾚﾑ.ADV" => new HaremScreen(Script, scenario).RunAsync(),
+        "FIGT_A.ADV" => Battle.AttackProvinceAsync(),
+        "FIGT_B.ADV" => Battle.DefendProvinceAsync(),
+        "FIGT.ADV" => Battle.FightAsync(),
+        "死亡捕獲.ADV" => Battle.DeathCaptureAsync(),
         _ => unported.RunEventAsync(file, entry),
     };
 }

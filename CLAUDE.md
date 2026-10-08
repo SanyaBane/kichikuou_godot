@@ -36,9 +36,10 @@ command files `Cﾃｷﾄｼ`, `Cﾃｷﾄｼ2`, `Cﾌﾞｶ`, `Cﾊｰﾚﾑ`, 
 `NotSupportedException`), and so are the pickers `Sﾌﾞﾀｲ`, `Sﾌﾞｶ`, `Sﾊｰﾚﾑ`
 (`Strategy/*Screen.cs` on `PickerScreen`), all routed by `Strategy/StrategyRules`. W2 is done
 for stage 0: `MAIN.ADV` (the week loop) is `Strategy/WeekLoop` up to the thieves' week (the
-Leazas week throws `NotSupportedException`); the autosave stays a `ﾛｰﾄﾞｾｰﾌﾞ` hook until G0. Next
-the battle joins the router (owner's decision 7 in `docs/strategy/README.md`), then G0 (the
-Godot screens).
+Leazas week throws `NotSupportedException`); the autosave stays a `ﾛｰﾄﾞｾｰﾌﾞ` hook until G0. The battle
+runs in the router too (`FIGT_A`/`FIGT_B`/`FIGT`/`死亡捕獲`), so the game's input is an
+`Strategy/IGameInput` (battle + scenes; owner's decisions 6-7 in `docs/strategy/README.md`).
+Next is G0 (the Godot screens).
 
 ## Layout
 
