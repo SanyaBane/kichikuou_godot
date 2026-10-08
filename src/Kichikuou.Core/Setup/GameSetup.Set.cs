@@ -1,12 +1,14 @@
 using Kichikuou.Core.Script;
+using Kichikuou.Core.State;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Setup;
 
-// SET.ADV, the boot procedure, ported line by line (docs/strategy/survey-data.md §2.2). The DC /
-// DS lines are the memory layout, which GameState generates (tools/codegen/gen_state.py); they are
+// SET.ADV, the boot procedure, ported line by line (docs/strategy/survey-data.md §2.2). The DS
+// lines are the memory layout, which GameState generates (tools/codegen/gen_state.py); they are
 // left out, with the RetVal / Tmp0001 arithmetic between them kept because its last values are
-// what the script leaves. Assignments to record fields before their DS write the plain variable
+// what the script leaves. DC and DF run (a boot replay starts before any page exists); the
+// pages' save flags matter for save/load only and are noted. Assignments to record fields before their DS write the plain variable
 // slots (QUIRK: DAT-01). The three record files are read from the player's decompile.
 public sealed partial class GameSetup
 {
@@ -140,7 +142,7 @@ public sealed partial class GameSetup
         State.Item_Cur = (Sys3Int)0; // :132
         State.Dgn_Count = (Sys3Int)30; // :133
         State.Dgn_Cur = (Sys3Int)0; // :134
-        // :135 DC 1, 10000 * 2, 1: — the layout (GameState.AllocatePages); fresh pages are zero
+        Dc(1, (Sys3Int)10000 * (Sys3Int)2); // :135 (saved)
         State.RetVal = (Sys3Int)0; // :136
         State.Tmp0001 = State.Unit_Count; // :137
         State.RetVal = State.RetVal + State.Tmp0001 * (Sys3Int)32; // :170
@@ -151,7 +153,7 @@ public sealed partial class GameSetup
         State.Tmp0001 = State.Item_Count; // :214
         State.RetVal = State.RetVal + State.Tmp0001 * (Sys3Int)3; // :218
         State.Tmp0001 = State.Dgn_Count; // :219
-        // :225 DF Unit_Troops, 10000 * 2, 0: — the layout (GameState.AllocatePages); fresh pages are zero
+        Df(74, (Sys3Int)10000 * (Sys3Int)2, 0); // :225 DF Unit_Troops
         State.Hist_Count = (Sys3Int)300; // :226
         State.Hist_Cur = (Sys3Int)0; // :227
         State.Memory.Var(165) = (Sys3Int)0; // :228 Hist_Funds (plain slot, not bound yet)
@@ -167,7 +169,7 @@ public sealed partial class GameSetup
         State.Memory.Var(175) = (Sys3Int)0; // :238 Hist_PrevCasualties (plain slot, not bound yet)
         State.Memory.Var(176) = (Sys3Int)0; // :239 VAR0176 (plain slot, not bound yet)
         State.Memory.Var(177) = (Sys3Int)0; // :240 VAR0177 (plain slot, not bound yet)
-        // :241 DC 2, Hist_Count * 6, 1: — the layout (GameState.AllocatePages); fresh pages are zero
+        Dc(2, State.Hist_Count * (Sys3Int)6); // :241 (saved)
         State.RetVal = (Sys3Int)0; // :242
         State.Tmp0001 = State.Hist_Count; // :243
         State.Buf_Count = (Sys3Int)1000; // :256
@@ -183,12 +185,12 @@ public sealed partial class GameSetup
         State.Memory.Var(188) = (Sys3Int)0; // :266 Ui_BtnY2 (plain slot, not bound yet)
         State.Memory.Var(189) = (Sys3Int)0; // :267 Ui_BtnW (plain slot, not bound yet)
         State.Memory.Var(190) = (Sys3Int)0; // :268 Ui_BtnH (plain slot, not bound yet)
-        // :269 DC 3, 7000, 0: — the layout (GameState.AllocatePages); fresh pages are zero
+        Dc(3, 7000); // :269 (not saved)
         State.RetVal = (Sys3Int)0; // :270
         State.Tmp0001 = State.Buf_Count; // :271
         State.RetVal = State.RetVal + State.Tmp0001 * (Sys3Int)1; // :274
         State.Tmp0001 = State.Ui_BtnCount; // :275
-        // :282 DC 4, 80 + 2000 + 20, 1: — the layout (GameState.AllocatePages); fresh pages are zero
+        Dc(4, (Sys3Int)80 + (Sys3Int)2000 + (Sys3Int)20); // :282 (saved)
         State.Glob_FateCur = (Sys3Int)0; // :283
         State.Glob_CgCur = (Sys3Int)0; // :284
         State.Glob_MenuCur = (Sys3Int)0; // :285
@@ -199,7 +201,7 @@ public sealed partial class GameSetup
         State.Glob_FateCur = (Sys3Int)0; // :293
         State.Glob_CgCur = (Sys3Int)0; // :294
         State.Glob_MenuCur = (Sys3Int)0; // :295
-        // :296 DF Glob_Fate, 2100, 0: — the layout (GameState.AllocatePages); fresh pages are zero
+        Df(195, 2100, 0); // :296 DF Glob_Fate
         // :297 ZG Glob_CgSeen: — the engine counts CG loads in Glob_CgSeen (not modelled; ignored by the golden comparison)
         State.Unit_StrBase = (Sys3Int)20; // :298
         State.Cmdr_StrBase = (Sys3Int)20 + State.Unit_Count * (Sys3Int)3; // :299
@@ -223,8 +225,8 @@ public sealed partial class GameSetup
         State.Memory.Var(217) = (Sys3Int)0; // :317 Ui_MarkNextX (plain slot, not bound yet)
         State.Memory.Var(218) = (Sys3Int)0; // :318 Ui_MarkNextY (plain slot, not bound yet)
         State.RetVal = (Sys3Int)100; // :319
-        // :320 DC 10, RetVal * 3, 1: — the layout (GameState.AllocatePages); fresh pages are zero
-        // :327 DF Ui_MarkCg, RetVal * 3, 0: — the layout (GameState.AllocatePages); fresh pages are zero
+        Dc(10, State.RetVal * (Sys3Int)3); // :320 (saved)
+        Df(211, State.RetVal * (Sys3Int)3, 0); // :327 DF Ui_MarkCg
         await Script.RunAsync(Scenario.ReadFile("SET_MAP.ADV")); // :328
         await Script.RunAsync(Scenario.ReadFile("SET_CHR.ADV")); // :329
         await Script.RunAsync(Scenario.ReadFile("SET_ITEM.ADV")); // :330
@@ -243,6 +245,18 @@ public sealed partial class GameSetup
             State.Ui_ScrollWait = (Sys3Int)1; // :343  QUIRK: DAT-04
         if (State.SpecGraphics / State.SpecBaseline > (Sys3Int)3) // :345
             State.Ui_ScrollWait = (Sys3Int)0; // :346
+    }
+
+    /// <summary><c>DC page, maxindex, save</c>: allocates <c>maxindex + 1</c> slots (xsystem35 <c>cmdd.c</c>).</summary>
+    private void Dc(int page, Sys3Int maxIndex) => State.Memory.AllocatePage(page, maxIndex.Value + 1);
+
+    /// <summary><c>DF var, count, value</c>: fills <paramref name="count"/> slots from bound variable <paramref name="var"/>'s slot.</summary>
+    private void Df(int var, Sys3Int count, Sys3Int value)
+    {
+        var b = VariableCatalog.Bindings.First(x => x.Var == var);
+        int start = b.Offset + State.Memory.Var(b.Cursor).Value;
+        for (int i = 0; i < count.Value; i++)
+            State.Memory.WritePage(b.Page, start + i, value);
     }
 
     /// <summary><c>MS n, "text":</c> at <c>SET.ADV:line</c>, with the text from the player's files.</summary>

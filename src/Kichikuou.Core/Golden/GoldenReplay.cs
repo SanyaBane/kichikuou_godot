@@ -113,27 +113,34 @@ public sealed class GoldenReplay
     /// receives the battle's presentation events (none are shown by default), so a screen can
     /// play a capture back as it happened; <paramref name="started"/> gets the replay's state
     /// once the entry memory is loaded (story-scene dumps are loaded into the same object).
+    /// <paramref name="entryPoint"/> runs the root through code outside the battle (e.g. the boot,
+    /// which needs the player's scenario files), on the replay's context; without it the root
+    /// must be one of <see cref="ReplayableRoots"/>.
     /// </summary>
     public static async Task<GoldenReport> RunAsync(
         GoldenCapture capture,
         GoldenFilter? filter = null,
         IScriptView? view = null,
-        Action<GameState>? started = null)
+        Action<GameState>? started = null,
+        Func<ScriptContext, Task>? entryPoint = null)
     {
         var replay = new GoldenReplay(capture, filter ?? GoldenFilter.For(capture));
-        await replay.RunAsync(view ?? new NullView(), started);
+        await replay.RunAsync(view ?? new NullView(), started, entryPoint);
         return replay._report;
     }
 
-    private async Task RunAsync(IScriptView view, Action<GameState>? started)
+    private async Task RunAsync(IScriptView view, Action<GameState>? started, Func<ScriptContext, Task>? entryPoint)
     {
         try
         {
-            CheckLayout(_capture.Enter);
+            // A boot capture enters SET.ADV before its DS lines: the layout is checked on the exit dump.
+            CheckLayout(_capture.Enter.Bindings.Count > 0 ? _capture.Enter : _capture.Exit);
             _capture.Enter.ApplyTo(_state.Memory);
             started?.Invoke(_state);
             var battle = new Battle(_state, new Random(this), view, new Input(this), new Hooks(this));
-            Func<Task> entry = !CanReplay(_capture.Header)
+            Func<Task> entry = entryPoint is not null
+                ? () => entryPoint(battle.Script)
+                : !CanReplay(_capture.Header)
                 ? throw new GoldenFormatException($"No entry point for root {_capture.Header.RootName} (group {_capture.Group}).")
                 : _capture.Root switch
                 {

@@ -264,7 +264,7 @@ here with its reason, never as a blanket rule.
 | 14 more: captures with `死亡捕獲` hooks, ten dungeon battles (root `FIGT.ADV`), the `Iﾏｼﾞﾝ` defences, a game over (2026-10-08) | none — all match | — |
 | enemy info and the player's retreat (2026-10-08) | none — matches | — |
 | F2: the weekly command flags, the harem list, `Ui_ClickedProv`, `Ui_CityScouted` and the page-10 markers compared (2026-10-08) | none — all 37 battle captures still match | — |
-| F2: boot capture (`SET.ADV`, windowless run to the title, 2026-10-08) | no draws, no input; one hook (`ﾛｰﾄﾞｾｰﾌﾞ` with `RetVal 10`); the exit dump has the generated layout (`GoldenPendingTests`) | — (replay waits for F1) |
+| F2: boot capture (`SET.ADV`, windowless run to the title, 2026-10-08) | no draws, no input; one hook (`ﾛｰﾄﾞｾｰﾌﾞ` with `RetVal 10`); the exit dump has the generated layout (`GoldenPendingTests`) | replayed through `GameSetup.SetAsync` with the player's `SET_*` files (`PlayerBootTests` in the content tests, `GoldenReplay.RunAsync(entryPoint:)`): 0 differences at the hook and at the exit; the layout is checked on the exit dump, since SET's own `DC`/`DS` create it |
 
 ## Harness configuration
 

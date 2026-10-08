@@ -163,6 +163,27 @@ public class PlayerBootTests(ITestOutputHelper output)
         Assert.Equal(500, s.Memory.Var(134).Value);
     }
 
+    /// <summary>
+    /// The boot captures (group <c>boot</c>, root <c>SET.ADV</c>) replayed through
+    /// <c>GameSetup.SetAsync</c> with the record files from the player's decompile.
+    /// </summary>
+    [Fact]
+    public async Task The_boot_captures_replay_through_SET()
+    {
+        string dir = Path.Combine(LocalData.GoldenDirectory, "boot");
+        if (!Directory.Exists(dir) || !File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var captures = Directory.EnumerateFiles(dir, "*.golden").Order(StringComparer.Ordinal).ToList();
+        foreach (string path in captures)
+        {
+            var report = await GoldenReplay.RunAsync(GoldenCapture.Load(path),
+                entryPoint: script => new GameSetup(script, new ScenarioScripts(LocalData.ScenarioDirectory)).SetAsync());
+            output.WriteLine($"{Path.GetFileName(path)}:");
+            output.WriteLine(report.Describe(maxLines: 200));
+            Assert.True(report.Passed, report.Describe());
+        }
+    }
+
     private static void Is(int expected, Sys3Int actual) => Assert.Equal(expected, (int)actual);
 
     private sealed class NoRandom : IScriptRandom
