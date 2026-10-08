@@ -3,8 +3,10 @@
 Starts the golden-test harness (patched xsystem35, branch golden-harness) on Kichikuou Rance.
 
 .DESCRIPTION
-Every battle played in this session is written to OutDir as one .golden file
-(docs/golden-tests.md). Captures contain game data: keep them outside the repository.
+Every run of a configured root (tools/golden/classes.txt) in this session is written as one
+.golden file: battles to OutDir, the other groups to subfolders named after them (boot, week,
+command, ...). See docs/golden-tests.md. Captures contain game data: keep them outside the
+repository.
 
 .EXAMPLE
 powershell -ExecutionPolicy Bypass -File tools\golden\capture.ps1

@@ -38,6 +38,27 @@ public sealed record MusicRecord(int Line, GoldenLocation Where, int Track) : Go
 public sealed record PickRecord(int Line, GoldenLocation Where, int RetVal, int Tmp0001) : GoldenRecord(Line, Where);
 
 /// <summary>
+/// <c>mouse button x y count</c>: <paramref name="Count"/> consecutive <c>IM x, y</c> at one place
+/// with the same result: <paramref name="Button"/> stored in <c>RetVal</c>, the pointer position in
+/// the two variables.
+/// </summary>
+public sealed record MouseRecord(int Line, GoldenLocation Where, int Button, int X, int Y, long Count)
+    : GoldenRecord(Line, Where);
+
+/// <summary><c>cursor new old</c>: an <c>IC new, var</c> that stored <paramref name="Old"/> (the engine's previous cursor).</summary>
+public sealed record CursorRecord(int Line, GoldenLocation Where, int Cursor, int Old) : GoldenRecord(Line, Where);
+
+/// <summary><c>cdpos track minute second frame</c>: an <c>SC var</c> (CD position; 999 ×4 when nothing plays).</summary>
+public sealed record CdPosRecord(int Line, GoldenLocation Where, int Track, int Minute, int Second, int Frame)
+    : GoldenRecord(Line, Where);
+
+/// <summary><c>date y mo d h mi s wd</c>: a <c>ZT 0, var</c> (the wall clock into <c>var..var+6</c>).</summary>
+public sealed record DateRecord(int Line, GoldenLocation Where, IReadOnlyList<int> Values) : GoldenRecord(Line, Where);
+
+/// <summary><c>timer n value</c>: a <c>ZT n, var</c> (n = 2..5) that stored <paramref name="Value"/>.</summary>
+public sealed record TimerRecord(int Line, GoldenLocation Where, int Command, int Value) : GoldenRecord(Line, Where);
+
+/// <summary>
 /// <c>call file</c> … <c>ret file</c>: a call into a hook file with the memory at entry and at
 /// return.
 /// </summary>
@@ -47,14 +68,49 @@ public sealed record HookRecord(int Line, GoldenLocation Where, string File, Mem
 /// <summary><c>jump file</c>: the battle left by a page jump; the capture's last event.</summary>
 public sealed record JumpRecord(int Line, GoldenLocation Where, string File) : GoldenRecord(Line, Where);
 
+/// <summary>How a capture's root was entered.</summary>
+public enum GoldenRootKind
+{
+    /// <summary>A page call into the root file; <see cref="GoldenCapture.RootCall"/> is the call site.</summary>
+    PageCall,
+
+    /// <summary>Arrival at a label of the root file; <see cref="GoldenCapture.RootCall"/> is the label.</summary>
+    Label,
+}
+
 /// <summary>
-/// One battle recorded by the harness (<c>docs/golden-tests.md</c>): the memory at entry and
-/// exit and every draw, input and hook call in between.
+/// The first lines of a capture (<c>golden</c>, <c>seed</c>, <c>root</c>, <c>group</c>), read
+/// without the dumps: enough to decide which test replays it.
+/// </summary>
+public sealed record GoldenHeader(int Version, string Root, GoldenLocation RootCall, GoldenRootKind RootKind, string Group)
+{
+    /// <summary>The root as the docs write it: <c>FIGT_A.ADV</c>, or <c>MAIN.ADV@20</c> for a label root.</summary>
+    public string RootName => RootKind == GoldenRootKind.Label ? RootCall.ToString() : Root;
+}
+
+/// <summary>
+/// One run of a root recorded by the harness (<c>docs/golden-tests.md</c>): the memory at entry
+/// and exit and every draw, input and hook call in between.
 /// </summary>
 public sealed class GoldenCapture
 {
-    /// <summary>The format version this parser reads.</summary>
-    public const int FormatVersion = 1;
+    /// <summary>The newest format version this parser reads (it reads every version from 1).</summary>
+    public const int FormatVersion = 2;
+
+    /// <summary>The group of format-1 captures, which were all battles.</summary>
+    public const string BattleGroup = "battle";
+
+    /// <summary>The capture's format version.</summary>
+    public int Version { get; init; } = FormatVersion;
+
+    /// <summary>The harness group (<c>tools/golden/classes.txt</c>) whose class table the capture used.</summary>
+    public string Group { get; init; } = BattleGroup;
+
+    /// <summary>Whether the root was a page call or a label.</summary>
+    public GoldenRootKind RootKind { get; init; } = GoldenRootKind.PageCall;
+
+    /// <summary>The capture of a label root ended at the next arrival at the label (<c>end label</c>).</summary>
+    public bool EndsAtLabel { get; init; }
 
     /// <summary>Where the capture was read from (file name or a description).</summary>
     public required string Source { get; init; }
@@ -62,10 +118,10 @@ public sealed class GoldenCapture
     /// <summary>The <c>sgenrand()</c> seed of the session.</summary>
     public required uint Seed { get; init; }
 
-    /// <summary>The root file the battle entered (<c>FIGT_A.ADV</c>, <c>FIGT_B.ADV</c>, <c>FIGT.ADV</c>).</summary>
+    /// <summary>The root file (<c>FIGT_A.ADV</c>, <c>COMMAND.ADV</c>, <c>MAIN.ADV</c> …).</summary>
     public required string Root { get; init; }
 
-    /// <summary>The call site of the root in its caller.</summary>
+    /// <summary>The call site of the root in its caller, or the label of a label root.</summary>
     public required GoldenLocation RootCall { get; init; }
 
     /// <summary>Memory right after the root call.</summary>
@@ -74,11 +130,40 @@ public sealed class GoldenCapture
     /// <summary>The events in order.</summary>
     public required IReadOnlyList<GoldenRecord> Records { get; init; }
 
-    /// <summary>Memory after the return (or at the jump).</summary>
+    /// <summary>Memory after the return (or at the jump, or at the label).</summary>
     public required MemoryDump Exit { get; init; }
 
-    /// <summary>The file the battle jumped to, or <c>null</c> when it returned.</summary>
+    /// <summary>The file the capture jumped to, or <c>null</c> when it returned (or reached its label).</summary>
     public required string? JumpTarget { get; init; }
+
+    /// <summary>The header fields.</summary>
+    public GoldenHeader Header => new(Version, Root, RootCall, RootKind, Group);
+
+    /// <summary>
+    /// Reads only the header of a capture file. <c>.part</c> files and aborted captures are not
+    /// detected here (the header comes first); <see cref="Load"/> rejects them.
+    /// </summary>
+    public static GoldenHeader ReadHeader(string path)
+    {
+        using var text = new StreamReader(path, System.Text.Encoding.UTF8);
+        var reader = new CaptureReader(text, Path.GetFileName(path));
+        int version = reader.Version();
+        string? root = null;
+        GoldenLocation rootCall = default;
+        var kind = GoldenRootKind.PageCall;
+        string group = BattleGroup;
+        while (reader.Next() is { } line)
+        {
+            var t = line.Split(' ');
+            if (t[0] == "root")
+                (root, rootCall, kind) = reader.Root(t);
+            else if (t[0] == "group")
+                group = t[1];
+            else if (t[0] != "seed")
+                break;
+        }
+        return new GoldenHeader(version, root ?? throw reader.Error("no root record"), rootCall, kind, group);
+    }
 
     /// <summary>Reads a capture file.</summary>
     public static GoldenCapture Load(string path)
@@ -91,14 +176,14 @@ public sealed class GoldenCapture
     public static GoldenCapture Parse(TextReader text, string source)
     {
         var reader = new CaptureReader(text, source);
-        var header = reader.Next() ?? throw reader.Error("empty capture");
-        var h = header.Split(' ');
-        if (h[0] != "golden" || h.Length != 2 || reader.Int(h[1]) != FormatVersion)
-            throw reader.Error($"expected 'golden {FormatVersion}'");
+        int version = reader.Version();
 
         uint seed = 0;
         string? root = null;
         GoldenLocation rootCall = default;
+        var rootKind = GoldenRootKind.PageCall;
+        string group = BattleGroup;
+        bool endsAtLabel = false;
         MemoryDump? enter = null;
         MemoryDump? exit = null;
         string? jumpTarget = null;
@@ -117,8 +202,10 @@ public sealed class GoldenCapture
                     seed = uint.Parse(t[1], CultureInfo.InvariantCulture);
                     break;
                 case "root":
-                    root = t[1];
-                    rootCall = reader.Where(t[2]);
+                    (root, rootCall, rootKind) = reader.Root(t);
+                    break;
+                case "group":
+                    group = t[1];
                     break;
                 case "mem":
                 {
@@ -165,6 +252,23 @@ public sealed class GoldenCapture
                 case "pick":
                     records.Add(new PickRecord(n, reader.Where(t[3]), reader.Int(t[1]), reader.Int(t[2])));
                     break;
+                case "mouse":
+                    records.Add(new MouseRecord(n, reader.Where(t[5]), reader.Int(t[1]), reader.Int(t[2]), reader.Int(t[3]),
+                        reader.Long(t[4])));
+                    break;
+                case "cursor":
+                    records.Add(new CursorRecord(n, reader.Where(t[3]), reader.Int(t[1]), reader.Int(t[2])));
+                    break;
+                case "cdpos":
+                    records.Add(new CdPosRecord(n, reader.Where(t[5]), reader.Int(t[1]), reader.Int(t[2]), reader.Int(t[3]),
+                        reader.Int(t[4])));
+                    break;
+                case "date":
+                    records.Add(new DateRecord(n, reader.Where(t[8]), t[1..8].Select(reader.Int).ToArray()));
+                    break;
+                case "timer":
+                    records.Add(new TimerRecord(n, reader.Where(t[3]), reader.Int(t[1]), reader.Int(t[2])));
+                    break;
                 case "call":
                     if (openHook is not null)
                         throw reader.Error("nested hook call");
@@ -179,6 +283,8 @@ public sealed class GoldenCapture
                 case "end":
                     if (t[1] == "jump")
                         jumpTarget = t[2];
+                    else if (t[1] == "label" && rootKind == GoldenRootKind.Label)
+                        endsAtLabel = true;
                     else if (t[1] != "return")
                         throw reader.Error($"capture ended with '{line}'");
                     ended = true;
@@ -194,6 +300,10 @@ public sealed class GoldenCapture
             throw reader.Error("capture ends inside a hook");
         return new GoldenCapture
         {
+            Version = version,
+            Group = group,
+            RootKind = rootKind,
+            EndsAtLabel = endsAtLabel,
             Source = source,
             Seed = seed,
             Root = root ?? throw reader.Error("no root record"),
@@ -228,6 +338,30 @@ internal sealed class CaptureReader(TextReader text, string source)
 
     public int Int(string s) =>
         int.TryParse(s, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out int v) ? v : throw Error($"bad number '{s}'");
+
+    public long Long(string s) =>
+        long.TryParse(s, NumberStyles.None, CultureInfo.InvariantCulture, out long v) ? v : throw Error($"bad count '{s}'");
+
+    /// <summary>Reads the <c>golden n</c> line and checks the version.</summary>
+    public int Version()
+    {
+        var header = Next() ?? throw Error("empty capture");
+        var h = header.Split(' ');
+        if (h[0] != "golden" || h.Length != 2 || !int.TryParse(h[1], NumberStyles.None, CultureInfo.InvariantCulture, out int version)
+            || version < 1 || version > GoldenCapture.FormatVersion)
+        {
+            throw Error($"expected 'golden 1' … 'golden {GoldenCapture.FormatVersion}'");
+        }
+        return version;
+    }
+
+    /// <summary>Parses <c>root file where [label]</c>.</summary>
+    public (string Root, GoldenLocation Where, GoldenRootKind Kind) Root(string[] t)
+    {
+        if (t.Length is not (3 or 4) || (t.Length == 4 && t[3] != "label"))
+            throw Error("expected 'root <file> <file@address> [label]'");
+        return (t[1], Where(t[2]), t.Length == 4 ? GoldenRootKind.Label : GoldenRootKind.PageCall);
+    }
 
     public ushort UShort(string s) =>
         ushort.TryParse(s, NumberStyles.None, CultureInfo.InvariantCulture, out ushort v) ? v : throw Error($"bad value '{s}'");

@@ -62,6 +62,75 @@ public class GoldenCaptureTests
     }
 
     [Fact]
+    public void Parses_a_label_root_with_its_group_and_the_format_2_input_records()
+    {
+        string text =
+            "golden 2\nseed 5\nroot MAIN.ADV MAIN.ADV@20 label\ngroup week\n" + Dump("enter") +
+            "mouse 16 320 200 4711 COMMAND.ADV@171\ncursor 6 1 COMMAND.ADV@1c8\ncdpos 999 999 999 999 ｵｰﾌﾟﾆﾝｸﾞ.ADV@3a\n" +
+            "date 2026 10 8 19 45 0 5 Gﾜｵ.ADV@1234\ntimer 5 12 XSPEC.ADV@162\n" +
+            Dump("exit") + "end label\n";
+
+        var capture = Parse(text);
+
+        Assert.Equal(2, capture.Version);
+        Assert.Equal("week", capture.Group);
+        Assert.Equal(GoldenRootKind.Label, capture.RootKind);
+        Assert.Equal("MAIN.ADV@20", capture.Header.RootName);
+        Assert.True(capture.EndsAtLabel);
+        Assert.Null(capture.JumpTarget);
+        Assert.Collection(capture.Records,
+            r => Assert.Equal(new MouseRecord(r.Line, new GoldenLocation("COMMAND.ADV", 0x171), 16, 320, 200, 4711), r),
+            r => Assert.Equal((6, 1), (Assert.IsType<CursorRecord>(r).Cursor, ((CursorRecord)r).Old)),
+            r => Assert.Equal(999, Assert.IsType<CdPosRecord>(r).Frame),
+            r => Assert.Equal([2026, 10, 8, 19, 45, 0, 5], Assert.IsType<DateRecord>(r).Values),
+            r => Assert.Equal((5, 12), (Assert.IsType<TimerRecord>(r).Command, ((TimerRecord)r).Value)));
+    }
+
+    [Fact]
+    public void A_format_1_capture_is_a_battle_and_a_page_call()
+    {
+        var capture = Parse("golden 1\nseed 1\nroot FIGT.ADV Cﾒｲｷｭｳ.ADV@10\n" + Dump("enter") + Dump("exit") + "end return\n");
+
+        Assert.Equal(1, capture.Version);
+        Assert.Equal(GoldenCapture.BattleGroup, capture.Group);
+        Assert.Equal(GoldenRootKind.PageCall, capture.RootKind);
+        Assert.True(GoldenReplay.CanReplay(capture.Header));
+    }
+
+    [Fact]
+    public void Only_a_label_root_ends_at_its_label()
+    {
+        string text = "golden 2\nseed 1\nroot COM.ADV COMMAND.ADV@10\ngroup com\n" + Dump("enter") + Dump("exit") + "end label\n";
+
+        Assert.Throws<GoldenFormatException>(() => Parse(text));
+    }
+
+    [Fact]
+    public void The_header_is_read_without_the_dumps()
+    {
+        string path = Path.Combine(Path.GetTempPath(), $"golden-header-{Guid.NewGuid():N}.golden");
+        File.WriteAllText(path, "golden 2\nseed 9\nroot COMMAND.ADV MAIN.ADV@6a1\ngroup command\n" + Dump("enter") + "rnd 3 1 X.ADV@0\n");
+        try
+        {
+            var header = GoldenCapture.ReadHeader(path);
+
+            Assert.Equal(new GoldenHeader(2, "COMMAND.ADV", new GoldenLocation("MAIN.ADV", 0x6a1), GoldenRootKind.PageCall, "command"), header);
+            Assert.False(GoldenReplay.CanReplay(header));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
+    public void A_newer_format_is_rejected()
+    {
+        var e = Assert.Throws<GoldenFormatException>(() => Parse("golden 3\nseed 1\n"));
+        Assert.Contains("golden 1", e.Message);
+    }
+
+    [Fact]
     public void An_incomplete_capture_is_rejected()
     {
         string text = "golden 1\nseed 1\nroot FIGT.ADV Cﾒｲｷｭｳ.ADV@10\n" + Dump("enter") + "rnd 2 1 FIGT.ADV@6f\n";

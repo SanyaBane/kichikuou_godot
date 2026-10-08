@@ -16,35 +16,65 @@ public readonly record struct MemoryDifference(string Location, string Expected,
 }
 
 /// <summary>
-/// Which locations a golden comparison of a battle ignores (<c>docs/golden-tests.md</c>, "What
-/// the comparison ignores"): the <c>ui</c> group of the dictionary, variables and page fields,
-/// except the variables that are rule state despite the prefix; plus single variables whose
-/// values the port cannot know, each with its reason in the document.
+/// Which locations a golden comparison ignores (<c>docs/golden-tests.md</c>, "What the comparison
+/// ignores"): the <c>ui</c> group of the dictionary, variables and page fields, except the ones
+/// that are rule state despite the group; plus single variables whose values the port cannot know,
+/// each with its reason in the document.
 /// </summary>
 public sealed class GoldenFilter
 {
-    /// <summary><c>ui</c>-group variables that rules read, so they are compared.</summary>
-    public static readonly IReadOnlySet<string> RuleStateUiVariables = new HashSet<string> { "Ui_CmdAttackAvail" };
+    /// <summary>
+    /// <c>ui</c>-group variables that are rule state, so they are compared: the weekly command
+    /// flags (reset by <c>COMMAND.ADV:38-44</c>, cleared by the commands, read by the command menu),
+    /// the harem availability list and the harem pick (a record cursor, <c>Cﾊｰﾚﾑ.ADV:560</c>), the
+    /// clicked province (routes the command, <c>COMMAND.ADV:515</c>), the ninja-scouted flag, and
+    /// the map marker list on page 10 with its cursors and count (the owner flags; the port
+    /// reproduces it through the map operations).
+    /// </summary>
+    public static readonly IReadOnlySet<string> RuleStateUiVariables = new HashSet<string>(
+    [
+        "Ui_CmdHaremAvail", "Ui_CmdSubordAvail", "Ui_CmdOwnCityAvail", "Ui_CmdBuildAvail", "Ui_CmdAttackAvail",
+        "Ui_CmdMerchantAvail", "Ui_CmdDungeonAvail",
+        "Harem_LastPick", "Ui_ClickedProv", "Ui_CityScouted",
+        "Ui_MarkCur", "Ui_MarkCg", "Ui_MarkCount", "Ui_MarkX", "Ui_MarkY",
+        "Ui_MarkNextCur", "Ui_MarkNextCg", "Ui_MarkNextX", "Ui_MarkNextY",
+        .. VariableCatalog.Variables.Select(v => v.Name).Where(n => n.StartsWith("HaremAvail_", StringComparison.Ordinal)),
+    ]);
 
     /// <summary>
-    /// Variables outside the <c>ui</c> group that are ignored: the engine's CG load counters
-    /// (<c>Glob_CgSeen</c>, counted on CG-cache misses) and <c>FIGT_SEL.ADV</c>'s pointer scratch
-    /// (<c>Tmp0010-0015</c>).
+    /// Variables outside the <c>ui</c> group that every comparison ignores: the engine's CG load
+    /// counters (<c>Glob_CgSeen</c>, counted on CG-cache misses).
     /// </summary>
-    public static readonly IReadOnlySet<string> IgnoredVariables = new HashSet<string>
+    public static readonly IReadOnlySet<string> IgnoredVariables = new HashSet<string> { "Glob_CgSeen" };
+
+    /// <summary>
+    /// Ignored in battle captures only: <c>FIGT_SEL.ADV</c>'s pointer scratch (<c>Tmp0010-0015</c>),
+    /// which no other file of a battle uses. Outside the battle <c>FIGT_SEL</c> runs inside a hook.
+    /// </summary>
+    public static readonly IReadOnlySet<string> IgnoredBattleVariables = new HashSet<string>
     {
-        "Glob_CgSeen", "Tmp0010", "Tmp0011", "Tmp0012", "Tmp0013", "Tmp0014", "Tmp0015",
+        "Tmp0010", "Tmp0011", "Tmp0012", "Tmp0013", "Tmp0014", "Tmp0015",
     };
 
     private readonly bool[] _ignoredVars;
 
     private GoldenFilter(bool[] ignoredVars) => _ignoredVars = ignoredVars;
 
-    /// <summary>The filter the golden tests use.</summary>
-    public static GoldenFilter Default { get; } = new(
+    private static GoldenFilter Build(IReadOnlySet<string> extra) => new(
         VariableCatalog.Variables
-            .Select(v => (v.Group == "ui" && !RuleStateUiVariables.Contains(v.Name)) || IgnoredVariables.Contains(v.Name))
+            .Select(v => (v.Group == "ui" && !RuleStateUiVariables.Contains(v.Name)) || IgnoredVariables.Contains(v.Name)
+                || extra.Contains(v.Name))
             .ToArray());
+
+    /// <summary>The filter of battle captures.</summary>
+    public static GoldenFilter Default { get; } = Build(IgnoredBattleVariables);
+
+    /// <summary>The filter of every other capture.</summary>
+    public static GoldenFilter Strategic { get; } = Build(new HashSet<string>());
+
+    /// <summary>The filter for a capture: <see cref="Default"/> for the battle group, <see cref="Strategic"/> otherwise.</summary>
+    public static GoldenFilter For(GoldenCapture capture) =>
+        capture.Group == GoldenCapture.BattleGroup ? Default : Strategic;
 
     /// <summary>Compares everything.</summary>
     public static GoldenFilter None { get; } = new(new bool[ScriptMemory.VariableCount]);

@@ -73,6 +73,20 @@ public sealed class GoldenReport(GoldenCapture capture)
 /// </summary>
 public sealed class GoldenReplay
 {
+    /// <summary>The roots the replay has an entry point for (page calls into the battle).</summary>
+    public static readonly IReadOnlySet<string> ReplayableRoots = new HashSet<string> { "FIGT_A.ADV", "FIGT_B.ADV", "FIGT.ADV" };
+
+    /// <summary>Whether a capture with this header can be replayed (its root has an entry point).</summary>
+    public static bool CanReplay(GoldenHeader header) =>
+        header.RootKind == GoldenRootKind.PageCall && ReplayableRoots.Contains(header.Root);
+
+    /// <summary>
+    /// Records the battle port does not consume: <c>IM</c> in the battle only waits for the
+    /// button's release (<c>FIGT.ADV:829</c>, <c>FIGT_B.ADV:47</c>, …; <c>RetVal</c> ends 0, the
+    /// position goes to the ignored <c>Ui_MouseX/Y</c>), and the battle files never set the cursor.
+    /// </summary>
+    private static bool IsPassive(GoldenRecord record) => record is MouseRecord or CursorRecord;
+
     private readonly GoldenCapture _capture;
     private readonly GoldenFilter _filter;
     private readonly GoldenReport _report;
@@ -106,7 +120,7 @@ public sealed class GoldenReplay
         IScriptView? view = null,
         Action<GameState>? started = null)
     {
-        var replay = new GoldenReplay(capture, filter ?? GoldenFilter.Default);
+        var replay = new GoldenReplay(capture, filter ?? GoldenFilter.For(capture));
         await replay.RunAsync(view ?? new NullView(), started);
         return replay._report;
     }
@@ -119,13 +133,14 @@ public sealed class GoldenReplay
             _capture.Enter.ApplyTo(_state.Memory);
             started?.Invoke(_state);
             var battle = new Battle(_state, new Random(this), view, new Input(this), new Hooks(this));
-            Func<Task> entry = _capture.Root switch
-            {
-                "FIGT_A.ADV" => battle.AttackProvinceAsync,
-                "FIGT_B.ADV" => battle.DefendProvinceAsync,
-                "FIGT.ADV" => battle.FightAsync,
-                _ => throw new GoldenFormatException($"No entry point for root {_capture.Root}."),
-            };
+            Func<Task> entry = !CanReplay(_capture.Header)
+                ? throw new GoldenFormatException($"No entry point for root {_capture.Header.RootName} (group {_capture.Group}).")
+                : _capture.Root switch
+                {
+                    "FIGT_A.ADV" => battle.AttackProvinceAsync,
+                    "FIGT_B.ADV" => battle.DefendProvinceAsync,
+                    _ => battle.FightAsync,
+                };
 
             string? jumped = null;
             try
@@ -182,8 +197,13 @@ public sealed class GoldenReplay
     // The event stream, shared by the random source, the input and the hooks
     // ---------------------------------------------------------------------------------------
 
-    /// <summary>The next record the core must meet, not consumed.</summary>
-    private GoldenRecord? NextRecord() => _next < _capture.Records.Count ? _capture.Records[_next] : null;
+    /// <summary>The next record the core must meet, not consumed (passive records are skipped).</summary>
+    private GoldenRecord? NextRecord()
+    {
+        while (_next < _capture.Records.Count && IsPassive(_capture.Records[_next]))
+            _next++;
+        return _next < _capture.Records.Count ? _capture.Records[_next] : null;
+    }
 
     private T Take<T>(string what) where T : GoldenRecord
     {
@@ -221,6 +241,11 @@ public sealed class GoldenReplay
         PickRecord p => $"FIGT_SEL → ({p.RetVal}, {p.Tmp0001}) at {p.Where} (line {p.Line})",
         HookRecord h => $"call {h.File} at {h.Where} (line {h.Line})",
         JumpRecord j => $"jump to {j.File} at {j.Where} (line {j.Line})",
+        MouseRecord m => $"IM → button {m.Button} at ({m.X}, {m.Y}) ×{m.Count} at {m.Where} (line {m.Line})",
+        CursorRecord c => $"IC {c.Cursor} → {c.Old} at {c.Where} (line {c.Line})",
+        CdPosRecord c => $"SC → {c.Track} {c.Minute}:{c.Second}.{c.Frame} at {c.Where} (line {c.Line})",
+        DateRecord d => $"ZT 0 → {string.Join(' ', d.Values)} at {d.Where} (line {d.Line})",
+        TimerRecord t => $"ZT {t.Command} → {t.Value} at {t.Where} (line {t.Line})",
         _ => record.ToString(),
     };
 

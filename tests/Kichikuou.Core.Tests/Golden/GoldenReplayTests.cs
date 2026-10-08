@@ -172,6 +172,34 @@ public class GoldenReplayTests
     }
 
     [Fact]
+    public async Task Mouse_and_cursor_records_are_passive_in_a_battle()
+    {
+        var capture = Parse(await RecordPlainsAttackAsync());
+        var records = capture.Records.ToList();
+        int i = records.FindIndex(r => r is RndRecord);
+        records.Insert(i, new MouseRecord(records[i].Line, new GoldenLocation("FIGT.ADV", 0x13c0), 0, 100, 50, 3));
+        records.Add(new CursorRecord(records[^1].Line + 1, new GoldenLocation("WAO_MAP.ADV", 0x9a), 6, 1));
+
+        var report = await GoldenReplay.RunAsync(WithRecords(capture, records));
+
+        Assert.True(report.Passed, report.Describe());
+    }
+
+    [Fact]
+    public async Task A_root_without_an_entry_point_is_a_format_error()
+    {
+        var c = Parse(await RecordPlainsAttackAsync());
+        var capture = new GoldenCapture
+        {
+            Source = c.Source, Seed = c.Seed, Root = "COM.ADV", RootCall = c.RootCall, Enter = c.Enter,
+            Records = [], Exit = c.Exit, JumpTarget = null, Group = "com",
+        };
+
+        var e = await Assert.ThrowsAsync<GoldenFormatException>(() => GoldenReplay.RunAsync(capture));
+        Assert.Contains("No entry point for root COM.ADV", e.Message);
+    }
+
+    [Fact]
     public async Task Capture_text_round_trips_through_the_parser()
     {
         string text = await RecordPlainsAttackAsync();

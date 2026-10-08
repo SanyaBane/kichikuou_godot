@@ -1,58 +1,112 @@
-# Golden tests — the battle port against the original game
+# Golden tests — the port against the original game
 
 Golden tests prove that a ported rule file behaves like the original scenario, variable by
-variable. A patched xsystem35 (the "harness") records what happens when the owner plays a
-battle; the core replays the same battle from the same memory, with the same random draws and
-the same player inputs, and its memory must end up equal to the original's.
+variable. A patched xsystem35 (the "harness") records what happens when the owner plays; the
+core replays the same run of a file from the same memory, with the same random draws and the
+same player inputs, and its memory must end up equal to the original's. The battle was the first
+part verified this way (37 captures); since F2 the harness also records the strategic layer —
+the boot data, the week loop, the player phase, `COM`, the nation turns, the dungeon, the
+commands, the screens and the prologue scenes — in the same play session.
 
 ## Pieces
 
 | Piece | Where |
 |---|---|
 | Harness (patched xsystem35) | `F:\sources\Rance\xsystem35-sdl2`, branch `golden-harness`, `src/golden.c` |
-| Capture launcher | `tools/golden/capture.ps1` |
-| Captures (game data — never committed) | `E:\Modding games\Modding Rance\Kichikou\_extract\golden\` |
+| Capture launcher, page classes, summary tool | `tools/golden/capture.ps1`, `classes.txt`, `describe.py` |
+| Captures (game data — never committed) | `E:\Modding games\Modding Rance\Kichikou\_extract\golden\`: battles in the folder itself, every other group in a subfolder named after it (`boot\`, `week\`, `command\`, …) |
 | Capture parser, replay doubles, memory comparison | `src/Kichikuou.Core/Golden/` |
 | Golden tests (skip when no captures exist) | `tests/Kichikuou.Core.Tests/Golden/` |
 
-## Scope of one capture
+The battle screen (`godot/Main.cs`) and the Content tests list only the top folder, so they see
+battles only.
 
-A capture is one **battle**: a page call into a *root* file (`FIGT_A.ADV`, `FIGT_B.ADV`, or
-`FIGT.ADV` called directly by the dungeon / God dungeon) made while no battle is being
-captured, up to the return from that call, or up to a page jump (`&`) out of it (game over).
+## Roots, groups and nesting
 
-While a battle is captured, every page call falls into one of three classes (configured by the
-launcher, see "Harness configuration"):
+A capture records one run of a **root**:
 
-- **inner** — files the core ports or treats as presentation: the `FIGT*` files, `死亡捕獲.ADV`,
-  and the UI helpers `WAO_SUB.ADV`, `M.ADV`, `WAO_MAP.ADV`, `PCMPLAY.ADV`. Calls into them are
-  transparent; their draws and inputs are logged.
-- **pick** — `FIGT_SEL.ADV`, which the core models as one input call
-  (`IBattleInput.SelectCommandAsync`). Inputs inside it are not logged; at its return the
-  harness logs the result pair `RetVal` (`VAR0000`) and `Tmp0001` (`VAR0001`).
-- **hook** — every other file (story scenes, `Sﾌﾞﾀｲ.ADV`, `Gﾀﾐ.ADV`, …), which the core calls
-  through `IStoryHooks`. The harness dumps memory when the hook is entered and when it returns,
-  and logs nothing inside it. The replay checks the core's memory against the first dump and
-  then loads the second one, so the test needs no port of the story scene.
+- a **page-call root** — a page call (`%#FILE`) into the root file, up to the return from that
+  call (`end return`) or a page jump (`&`) out of it (`end jump`, e.g. a game over);
+- a **label root** (`FILE@ADDR`) — the arrival at a command address of the file, up to the next
+  arrival there (`end label`), a return below the depth it started at, or a page jump. One week of
+  `MAIN.ADV` is the label root `MAIN.ADV@20` (`L_00020`, the top of the week loop; `&#MAIN.ADV`
+  enters the file there too). The harness checks the address before every command of a file
+  that holds a label root (one integer compare per command elsewhere).
+
+Roots are configured in **groups** ([tools/golden/classes.txt](../tools/golden/classes.txt)). A
+group is a class table: while one of its captures is open, every page call falls into one of
+three classes:
+
+- **inner** — files the port reproduces: calls into them are transparent; their draws and
+  inputs are logged. The group's own roots are inner to it, and the UI helpers `WAO_SUB.ADV`,
+  `M.ADV`, `WAO_MAP.ADV`, `PCMPLAY.ADV` are inner in every group (their state effects are ported
+  in `Kichikuou.Core.Script`).
+- **pick** — a file the core models as one input call (`FIGT_SEL.ADV`:
+  `IBattleInput.SelectCommandAsync`). Inputs inside it are not logged; at its return the harness
+  logs the result pair `RetVal` (`VAR0000`) and `Tmp0001` (`VAR0001`).
+- **hook** — every file the group does not list (story scenes, `Sﾌﾞﾀｲ.ADV`, `ﾛｰﾄﾞｾｰﾌﾞ.ADV`, …),
+  which the core calls through `IStoryHooks` or an interface of its own. The harness dumps memory
+  when the hook is entered and when it returns, and logs nothing inside it. The replay checks the
+  core's memory against the first dump and then loads the second one, so the test needs no port
+  of the callee.
+
+**Nesting.** Several captures may be open at once. A call into a root starts a new capture
+unless an open capture of the same group logs that call as an inner one (so `FIGT_A` calling
+`FIGT` stays one battle). The usual case is a root called inside another capture's hook: the
+outer capture dumps around the call and logs nothing inside, the inner capture logs inside it —
+e.g. week ⊃ `COMMAND` ⊃ `Cﾃｷﾄｼ` ⊃ `Iﾄｳｿﾞｸ` ⊃ `FIGT_A` (five files, each with its own events).
+Each open capture classifies calls by its own table; draws and inputs go to every open capture
+that is not inside one of its hooks or picks; a page jump ends every capture that is not inside
+a hook (a scene may jump and still return, as before). Loading a save or a reset aborts every
+open capture (`end abort <reason>`, left as `.part`); a label capture still open inside a hook
+when its label is reached again is aborted (`end abort reentered`: a jump left it). Up to 16
+captures may be open.
+
+### Groups and their classes
+
+Hooks are everything not listed; "helpers" = the four UI helpers above.
+
+| Group (folder) | Roots | Inner besides the roots and helpers | Pick | Notable hooks — why |
+|---|---|---|---|---|
+| `battle` (top folder) | `FIGT_A`, `FIGT_B`, `FIGT` | `FIGTATTK`, `FIGT_M`, `FIGT作`, `FIGTﾃｷDE`, `FIGTﾐｶDE`, `死亡捕獲` | `FIGT_SEL` | `Sﾌﾞﾀｲ`, scenes — unchanged since the first harness |
+| `boot` | `SET` | `SET_MAP`, `SET_CHR`, `SET_ITEM`, `ﾓｼﾞｷｬｯｼｭ` (display only; the port drops the call) | — | `ﾛｰﾄﾞｾｰﾌﾞ` (mode 10: page 4 from the save files) |
+| `week` | `MAIN.ADV@20` | — | — | `COMMAND`, every `T*`, `FIGT_B`, `ﾛｰﾄﾞｾｰﾌﾞ` (the autosave at `MAIN.ADV:20` is a hook call inside the week), `Iﾊﾝﾗﾝ`, `Iﾏｼﾞﾝ`, `GAL`, every `G*` |
+| `command` | `COMMAND` | — | — | `COM`, every `C*`, `ﾛｰﾄﾞｾｰﾌﾞ`, `各種DATA`, `Iｶﾝｶﾞｴ`, `Iﾄｳｿﾞｸ`, `ｵｰﾌﾟﾆﾝｸﾞ`, `TEST`, scenes — the sequence of hook calls (with `Prov_Cur` / `Ui_ClickedProv` / `Dgn_Cur` in the hook-enter dump) is the player's choice; the map clicks are in the `mouse` records |
+| `com` | `COM` | — | — | every scene (`Iｼﾚｲﾌﾞ`, `Gｿｳﾙ`, …) |
+| `nations` | `TCﾘｰｻﾞｽ`, `TJAPAN`, `Tｹｲﾌﾞﾘｽ`, `Tｾﾞｽ`, `Tﾊﾟｯﾄﾝ`, `Tﾍﾙﾏﾝ`, `Tﾙﾄﾞﾗ` and the defender pickers `TCﾘｰｻﾞｽ2`, `TJAPAN2`, `Tｹｲﾌﾞﾘｽ2`, `Tｾﾞｽ2`, `Tﾍﾙﾏﾝ2`, `Tﾙﾄﾞﾗ2` | — | — | `FIGT_B` (verified separately), scenes. No `T*` file calls another |
+| `dungeon` | `Cﾒｲｷｭｳ` | `死亡捕獲` (ported in `Combat`; the dungeon calls it directly) | — | `FIGT` (a battle capture of its own), `Sﾌﾞﾀｲ`, scenes, `Iｶﾐ` |
+| `commands` | `Cﾃｷﾄｼ`, `Cﾃｷﾄｼ2`, `Cﾌﾞｶ`, `Cﾊｰﾚﾑ` | — | — | the `S*` screens, `FIGT_A`, the `T*2` pickers, `Cﾆﾝｼﾞｬ`, `Iﾄｳｿﾞｸ`, `Iｼﾚｲﾌﾞ`, `ｵｰﾌﾟﾆﾝｸﾞ`, scenes — each has its own capture or part |
+| `screens` | `Sﾌﾞﾀｲ`, `Sﾌﾞｶ`, `Sﾊｰﾚﾑ` | — | — | none reached (only the helpers inside) |
+| `scenes` | `Iﾄｳｿﾞｸ`, `Iﾌﾟﾛﾛｰｸﾞ`, `Iｼﾚｲﾌﾞ`, `Iﾊﾝﾗﾝ`, `ｵｰﾌﾟﾆﾝｸﾞ`, `Gｼｨﾙ`, `Gｿｳﾙ`, `Gﾊﾞｳﾝﾄﾞ`, `Gｱﾅｾﾙ` | — | — | `FIGT_A`, `Sﾌﾞﾀｲ`, `Gｴｸｽ`, `Gｼｨﾙ2` |
+
+Several roots share a group only where none of them calls another (checked against the
+decompiled call graph, 2026-10-08): inside a group a root is inner, so a call between two of
+them would not get its own capture. Not roots (yet): `COMMAND`'s other `C*` files, `Sｱｲﾃﾑ`,
+`各種DATA`, the other scenes — add them to a group when their part is ported.
 
 ## Capture file format
 
-One UTF-8 text file per battle, LF line ends, one record per line, tokens separated by single
-spaces. The harness writes `<stamp>-<seq>-<root>.golden.part` and renames it to `.golden` when the
-battle ends normally; a battle interrupted by loading a save, a reset or a crash keeps the
-`.part` suffix and is ignored by the tests.
+One UTF-8 text file per run of a root, LF line ends, one record per line, tokens separated by
+single spaces. The harness writes `<group folder>\<stamp>-<seq>-<root>.golden.part` (`<root>` is
+the file name without `.ADV`, plus `@<address>` for a label root, e.g. `MAIN@20`; `<seq>` counts
+the session's captures) and renames it to `.golden` when the run ends normally; a run interrupted
+by loading a save, a reset, a crash or the end of the session keeps the `.part` suffix and is
+ignored by the tests. File names are written through the wide Windows API, so `Cﾃｷﾄｼ` stays
+readable.
 
 `<where>` is `<file>@<address>`: the scenario file (name from `xsys35dc.hed`) and the hex byte
 address of the command inside it (the decompiler's `L_xxxxx` labels use the same addresses).
 
 ```
-golden 1                                  # format version
+golden 2                                  # format version (1 = battle captures before F2; the parser reads both)
 seed <n>                                  # sgenrand() seed of this session (XSYS35_SEED or the pid)
-root <file> <where>                       # battle entry: callee, and the call site in the caller
-mem enter … end-mem                       # memory right after the root call
+root <file> <where>                       # page-call root: callee, and the call site in the caller
+root <file> <where> label                 #   or label root: the file and the label (<where> = <file>@<address>)
+group <name>                              # the classes.txt group (absent in format 1: battle)
+mem enter … end-mem                       # memory right after the root call / before the label's command
 …events…
-mem exit … end-mem                        # memory after the return (or at the jump)
-end return | end jump <file>              # how the battle left (end abort <reason>: dropped, stays .part)
+mem exit … end-mem                        # memory after the return (or at the jump, or at the next arrival at the label)
+end return | end jump <file> | end label  # how the run left (end abort <reason>: dropped, stays .part)
 ```
 
 ### Events
@@ -65,12 +119,27 @@ end return | end jump <file>              # how the battle left (end abort <reas
 | `menu <choice> <count> <where>` | every menu (`]`) | `choice` = 1-based index among the `count` items that were registered, 0 = cancelled (right click) |
 | `music <track> <where>` | every `SR 0, var` | the track number stored in `var` |
 | `pick <retval> <tmp0001> <where>` | the return (`%0`) of a pick file | the pair the core's `SelectCommandAsync` must return |
+| `mouse <button> <x> <y> <count> <where>` | every `IM x, y` (format 2) | `button` stored in `RetVal` (16 = left, 32 = right, 48 = both; xsystem35 `event.c`), the pointer position stored in the two variables. The map and screens poll `IM` in tight loops (`COMMAND.ADV:63-77`), so `count` consecutive `IM` at the same `<where>` with the same three results form one record; the count is timing, not script behaviour |
+| `cursor <new> <old> <where>` | every `IC new, var` (format 2) | `old` = the cursor shape set before, stored in `var`: an engine static (starts at 1), not in the memory dump (`COMMAND.ADV:80-92`, `WAO_MAP.ADV:19, 46`) |
+| `cdpos <track> <min> <sec> <frame> <where>` | every `SC var` (format 2) | the CD position stored in `var..var+3` (`999` ×4 when nothing plays); `ｵｰﾌﾟﾆﾝｸﾞ.ADV:18`, `MMODE.ADV:262` |
+| `date <y> <mo> <d> <h> <mi> <s> <wd> <where>` | every `ZT 0, var` (format 2) | the wall clock stored in `var..var+6`; only `Gﾜｵ.ADV:555` |
+| `timer <n> <value> <where>` | every `ZT n, var`, n = 2..5 (format 2) | the timer value stored in `var`; only `XSPEC.ADV` (machine benchmark, before `SET`) uses `ZT 5` |
 | `call <file> <where>` | page call into a hook file | followed by `mem hook-enter … end-mem` |
 | `ret <file> <where>` | return from that hook | preceded by `mem hook-exit … end-mem` |
-| `jump <file> <where>` | page jump (`&`) anywhere in the battle | the capture ends (`mem exit`, `end jump <file>`) |
+| `jump <file> <where>` | page jump (`&`) anywhere in the run | the capture ends (`mem exit`, `end jump <file>`) |
 
 Inside a hook nothing is logged, so a hook's draws and inputs are invisible to the replay; the
 hook-exit dump carries the generator state after them.
+
+**Which commands hand the script a value.** Every command of the decompiled scenario (201
+files) that stores something the script did not compute itself was checked (2026-10-08): `Y 3`,
+`Y 4`, `IK 0`, the menus, `SR 0`, `IM`, `IC`, `SC`, `ZT 0`, `ZT 5` are logged as above (`ZT 2-4`
+too, though unused). Not logged, because the scenario never uses them: `IK 2-6` (input state into
+`RetVal`), `IX` (message-skip state), `IG` (raw keys). Everything else that writes variables
+is computed from memory (`NB`, `NC`, `MH`, `US`/`UG`, …) or runs only inside `ﾛｰﾄﾞｾｰﾌﾞ`, which
+is always a hook (`LP`, `LT`, `LD`, `QC`, …). `IZ` moves the pointer and stores nothing (its effect
+shows in the next `mouse` record). `MAIN`, `COMMAND`, the `C*` and `S*` files and `Cﾒｲｷｭｳ` use
+only `IM`, `IC`, `IZ`, `Y 4` and menus; `IK 0` and `Y 3` come from the helpers.
 
 ### Memory dump
 
@@ -115,19 +184,47 @@ numbers are the engine's (`MS n` writes string n).
    the replay goes on), then the `hook-exit` dump is loaded, generator state included. A hook
    whose capture ends in `jump` throws `ScenarioJumpException` after loading the final dump.
 5. **Entry point.** `FIGT_A.ADV` → `AttackProvinceAsync`, `FIGT_B.ADV` → `DefendProvinceAsync`,
-   `FIGT.ADV` → `FightAsync`.
+   `FIGT.ADV` → `FightAsync` (`GoldenReplay.ReplayableRoots`, `CanReplay`). Every other root has no
+   entry point yet: `GoldenBattleTests` replays only captures whose header (`GoldenCapture.ReadHeader`)
+   names a replayable root; the others are parsed and loaded by
+   `GoldenPendingTests.Capture_awaiting_its_port_is_well_formed`, and
+   `Every_capture_has_a_replay_entry_point` is skipped with the list of waiting roots and counts.
+   A part that ports a root adds its entry point here and to `ReplayableRoots`.
 6. **Result.** After the entry point returns (or throws `ScenarioJumpException` for a capture
    that ends in `jump` to the same file), every record must have been consumed and the memory is
    compared with the `exit` dump.
+7. **Passive records.** In a battle, `mouse` and `cursor` records are skipped: the battle's `IM`
+   loops only wait for the button's release (`FIGT.ADV:829, 1006, 1016, 1105, 1115`,
+   `FIGT_B.ADV:47, 341`; `RetVal` ends 0, the position goes to the ignored `Ui_MouseX/Y`) and no
+   battle file sets the cursor. Ports of mouse-driven files (the map, the screens) consume them.
 
 ### What the comparison ignores, and why
 
-Compared: all variables 0..805, every slot of every page, every string variable, the generator
-state. Ignored — and listed in the report as "ignored" so they stay visible:
+Compared: all variables 0..805, every slot of every page — page 2 (the weekly history) and
+page 10 (the map marker list) included — every string variable (string 10 included), the
+generator state. Ignored — and listed in the report as "ignored" so they stay visible
+(`GoldenFilter`):
 
 - **The `ui` group of [variables.tsv](variables.tsv)** (variables and page fields), except the
-  ones that are rule state despite the prefix: `Ui_CmdAttackAvail` (written by `FIGT_A`, read by
-  the command menu, Q-2). Reasons: (1) these are the internals of the message windows, the map
+  ones that are rule state despite the group (`GoldenFilter.RuleStateUiVariables`):
+  - the weekly command flags `Ui_CmdHaremAvail`, `Ui_CmdSubordAvail`, `Ui_CmdOwnCityAvail`,
+    `Ui_CmdBuildAvail`, `Ui_CmdAttackAvail`, `Ui_CmdMerchantAvail`, `Ui_CmdDungeonAvail` — reset each
+    week (`COMMAND.ADV:38-44`), cleared by the commands (`FIGT_A` on a conquest, BFL-02; the top of `Cﾒｲｷｭｳ`), read by
+    the command menu. (`CmdAvail_SubTroops`/`CmdAvail_SubTalk` are in the `time` group and were
+    always compared.)
+  - the harem list `HaremAvail_*` (rebuilt by `Cﾊｰﾚﾑ` each visit from story state) and
+    `Harem_LastPick` (used as the history record cursor, `Cﾊｰﾚﾑ.ADV:560`);
+  - `Ui_ClickedProv` (routes the click to a command file, `COMMAND.ADV:515`) and
+    `Ui_CityScouted` (the ninja-scouted flag);
+  - the marker list on page 10 (`Ui_MarkCg/X/Y` and their `Next` aliases) with `Ui_MarkCur`,
+    `Ui_MarkNextCur`, `Ui_MarkCount`: the owner flags of the provinces, which the port keeps
+    through the map operations (`M`/`WAO_MAP` op 4, `SET_MAP`).
+  Un-ignoring all of them (F2, 2026-10-08) left the 37 battle captures matching. Still ignored
+  among the `ui` variables that are not plain pointer/window state: `Ui_SquadMode`,
+  `Ui_SquadChoice`, `Ui_SubordMode`, `Ui_ItemSel`, `Ui_ItemUnitSel` — the internals of the
+  `Sﾌﾞﾀｲ`/`Sﾌﾞｶ`/`Sｱｲﾃﾑ` screens; revisit when P2 decides how the screens are ported (only their
+  results, e.g. `Tmp0001`/`RetVal`, are certainly rule state). `Ui_ScrollWait` comes from the
+  machine benchmark in `XSPEC.ADV` (`ZT 5`) and must stay ignored. Reasons for the rest: (1) these are the internals of the message windows, the map
   and the pointer (`WAO_SUB`, `M`, `WAO_MAP`, `FIGT_SEL`), which the Godot layer replaces, so a
   port would be dead code (the map and window operations are ported anyway, for the non-`ui`
   scratch values they leave and because the window state decides whether a key wait happens —
@@ -142,9 +239,11 @@ state. Ignored — and listed in the report as "ignored" so they stay visible:
   between 101 and 862) and in the start menu (CG 240), and no CG a battle can show is among them
   (checked against every unit, commander and province CG field and the constants in `FIGT` and
   `FIGT_SEL`). The first capture showed 17 battle CGs (frames, sprites, portraits) counted.
-- **`Tmp0010`-`Tmp0015`**: `FIGT_SEL.ADV`'s target-frame colour and popup rectangle, computed
-  from the hovered button and the pointer position. Inside a battle no other file uses them, and
-  `FIGT_SEL` writes them before reading them.
+- **`Tmp0010`-`Tmp0015`, in battle captures only** (`GoldenFilter.Default`; every other group
+  uses `GoldenFilter.Strategic`, chosen by `GoldenFilter.For`): `FIGT_SEL.ADV`'s target-frame
+  colour and popup rectangle, computed from the hovered button and the pointer position. Inside a
+  battle no other file uses them, and `FIGT_SEL` writes them before reading them. Outside the
+  battle `FIGT_SEL` runs inside a hook, and other files use these scratch variables.
 - Nothing else. A scratch variable (`Tmp*`, `RetVal`) that differs is a finding: the script has
   no locals and stale scratch values are observable (porting conventions).
 
@@ -164,6 +263,8 @@ here with its reason, never as a blanket rule.
 | 3 more: Focus, Rance Attack and By la Way in an attack that runs out of rounds; two FIGT_B on Ys (2026-10-08) | none — all match | — |
 | 14 more: captures with `死亡捕獲` hooks, ten dungeon battles (root `FIGT.ADV`), the `Iﾏｼﾞﾝ` defences, a game over (2026-10-08) | none — all match | — |
 | enemy info and the player's retreat (2026-10-08) | none — matches | — |
+| F2: the weekly command flags, the harem list, `Ui_ClickedProv`, `Ui_CityScouted` and the page-10 markers compared (2026-10-08) | none — all 37 battle captures still match | — |
+| F2: boot capture (`SET.ADV`, windowless run to the title, 2026-10-08) | no draws, no input; one hook (`ﾛｰﾄﾞｾｰﾌﾞ` with `RetVal 10`); the exit dump has the generated layout (`GoldenPendingTests`) | — (replay waits for F1) |
 
 ## Harness configuration
 
@@ -174,13 +275,37 @@ here with its reason, never as a blanket rule.
 | `XSYS35_SEED` | decimal seed for `sgenrand()` instead of the process id |
 | `XSYS35_GOLDEN_DIR` | output folder; capture is off when unset |
 | `XSYS35_GOLDEN_HED` | path of `xsys35dc.hed`: page `n` is the `n`-th file name after the `#SYSTEM35` line |
-| `XSYS35_GOLDEN_CLASSES` | [tools/golden/classes.txt](../tools/golden/classes.txt): lines `root\|inner\|pick <file> …` (a UTF-8 file, because the names are not ASCII and Windows hands the environment to the program in the ANSI code page) |
-| `XSYS35_GOLDEN_TRACE` | `1` = also append every page call/return/jump of the session to `trace.log` |
+| `XSYS35_GOLDEN_CLASSES` | [tools/golden/classes.txt](../tools/golden/classes.txt), the groups (format below; a UTF-8 file, because the names are not ASCII and Windows hands the environment to the program in the ANSI code page) |
+| `XSYS35_GOLDEN_TRACE` | `1` = also append every page call/return/jump and label arrival of the session to `trace.log` |
+
+`classes.txt`, one directive per line, `#` starts a comment line:
+
+```
+inner|pick <file> …          before the first group: defaults of every group (the UI helpers)
+group <name> [<dir>]         starts a group; its captures go to <dir> under the output folder
+                             (default <name>; "." = the output folder itself — the battle group)
+root <file> …                page-call roots of the group (inner to it)
+root <file>@<hexaddress>     a label root (one per group)
+inner|pick <file> …          the group's own classes; within a group the last line naming a file wins
+```
 
 The harness's hooks are `src/golden.c` plus one call at each logged command (`cmdy.c` `Y 3/4`,
-`cmdi.c` `IK`, `selection.c` menus, `cmds.c` `SR`, `cmd_check.c` `&`) and two observers in
-`scenario.c` (page call entered, page return resumed). Loading a save (`savedata.c`) or a reset
-drops the open capture with `end abort <reason>` (left as `.part`).
+`cmdi.c` `IK`, `IM`, `IC`, `selection.c` menus, `cmds.c` `SR`, `SC`, `cmdz.c` `ZT 0/2-5`,
+`cmd_check.c` `&`), two observers in `scenario.c` (page call entered, page return resumed) and
+the label check in `nact.c` (before each command of a page that holds a label root). Loading a
+save (`savedata.c`) or a reset drops every open capture with `end abort <reason>` (left as
+`.part`).
+
+Verified without playing (F2, 2026-10-08; windowless runs to the title menu with a fixed seed):
+the shipped `classes.txt` yields exactly one complete capture, `boot\…-SET.golden`, and no `.part`
+file; a test configuration (SET with `SET_MAP` as a hook, `SET_MAP` and `M` as roots of their own,
+`XSPEC` as a page-call root and `XSPEC.ADV@e4` — its benchmark loop — as a label root) gave the
+expected nesting: `SET` with two hook calls, `SET_MAP` with 90 `M` hook calls, 90 `M` captures,
+one `XSPEC` capture with 2704 `rnd` and 8 `timer` records, and 52 label captures, 51 ending in
+`end label` and the last in `end return`; a katakana root (`ﾌﾟﾛﾛｰｸﾞ`) got a readable file name,
+and a label root on the title menu's `IM` loop logged `mouse 0 0 0 1 ｽﾀMENU.ADV@26f`. Nothing of
+the strategic layer could be played this way (it needs input): the first real captures come
+from the owner's session below.
 
 Verified on the real game (2026-10-08), with `SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy` for a
 windowless run: the trace names the boot sequence correctly (`ｽﾀｰﾄ.ADV` calls `XSPEC.ADV`, then
@@ -239,6 +364,55 @@ powershell -ExecutionPolicy Bypass -File tools\golden\capture.ps1
 ```
 
 and play normally; loading a save before a battle is fine (the capture starts at the battle's
-page call). `python tools/golden/describe.py <file>` prints what a capture holds (province,
-parties before and after, result, commands) to check it against what was played. Run the tests with `dotnet test tests/Kichikuou.Core.Tests`; a failing capture prints
-the divergence (with the original's `file@address`) or the differing variables by name.
+page call). `python tools/golden/describe.py <file> …` prints what a capture holds (root, group,
+week / stage / gold / province before and after, hooks, event counts, mouse presses; for a battle
+also the parties, result and commands) to check it against what was played. Run the tests with
+`dotnet test tests/Kichikuou.Core.Tests`; a failing capture prints the divergence (with the
+original's `file@address`) or the differing variables by name.
+
+## Capturing the prologue (milestone 1) — checklist for the owner
+
+One session of `capture.ps1` records every root at once; nothing needs switching. Quit the game
+normally at the end (open captures stay `.part`; that is expected). What to play so that every
+root of milestone 1 ([strategy/README.md](strategy/README.md), "What the prologue reaches") is
+captured at least once — the captures named after each step are what to look for afterwards
+(`describe.py`):
+
+1. **Start the game and begin a new game** (title button 6). Captures: `boot\…-SET` (at start-up),
+   `scenes\…-Iﾌﾟﾛﾛｰｸﾞ`, then a `week\…-MAIN@20` per week from here on.
+2. **Week 9 (the first week).** `COM` plays `Iｼﾚｲﾌﾞ` 10 by itself (`com\…-COM` with an
+   `Iｼﾚｲﾌﾞ` hook, `scenes\…-Iｼﾚｲﾌﾞ`). In later weeks `COM` plays `Gｿｳﾙ` 4.
+3. **In the first weeks, every command once** (each week offers each command once):
+   - **Harem** with Sill (`Gｼｨﾙ` 10) one week and Soul (`Gｿｳﾙ` 10) another — `commands\…-Cﾊｰﾚﾑ`,
+     `screens\…-Sﾊｰﾚﾑ`, `scenes\…-Gｼｨﾙ`/`Gｿｳﾙ`. Either sets the flag Anasel's capture needs.
+   - **Subordinates**: talk to Bound, Soul and Rance (one talk per week; also Sill if time
+     allows), and open the status view once after a talk — `commands\…-Cﾌﾞｶ`, `screens\…-Sﾌﾞｶ`,
+     `scenes\…-Gﾊﾞｳﾝﾄﾞ`/`Gｿｳﾙ`.
+   - **Click the thieves' hideout** (dungeon 1; the banter draws `Y 4, 3`) and once each of the
+     dungeon spots 2/3/15 if they show — `dungeon\…-Cﾒｲｷｭｳ`. Also use the menu item
+     "→Thieves' Hideout" once (camera pan only).
+   - **Click a province other than 33/34** (view only) — `commands\…-Cﾃｷﾄｼ2`.
+   - **Pillage Vladivostok (33)**, win; another week **pillage Golak (34) and lose** (a weak party
+     or retreat); once **cancel the party screen** instead of choosing a party —
+     `commands\…-Cﾃｷﾄｼ`, `scenes\…-Iﾄｳｿﾞｸ`, `screens\…-Sﾌﾞﾀｲ`, battle captures in the top folder.
+   - **Click near the top-left map corner** once (open item 2 of the prologue sweep: the hit test
+     starts at index 0).
+4. **Anasel.** After a Sill or Soul harem scene, **win a pillage of Golak** → Anasel is captured
+   (`Iﾄｳｿﾞｸ`, `F_Thieves_State` 1 → 2). Then **Harem with Anasel** (`scenes\…-Gｱﾅｾﾙ`, state 2 → 3).
+5. **Save** (menu Load/Save → save to a slot): `ﾛｰﾄﾞｾｰﾌﾞ` appears as a hook in the `COMMAND`
+   capture. Note the week.
+6. **Path B (Merci).** **Win a pillage of Golak** again → the Merci path, the duel against
+   commander 31 — **lose it** (the story continues; winning is game over, ending 14) →
+   `ｵｰﾌﾟﾆﾝｸﾞ`, then `MAIN` sets stage 1 and plays `Iﾊﾝﾗﾝ` (`scenes\…-ｵｰﾌﾟﾆﾝｸﾞ`, `…-Iﾊﾝﾗﾝ`; the
+   week capture of that week shows both). **Play the first Leazas week to its Turn END**: income,
+   `COM` with stage 1, the nation turns (`nations\…-T*`), a full `MAIN@20` week.
+7. **Load** the save from step 5 (the load aborts the open captures — expected — and the week
+   capture restarts at the next week). **Path A**: do not pillage Golak again; **Turn END every
+   week until week 23** → `Iﾄｳｿﾞｸ` 2 and the duel (no `Prov_Cur` is set first — open item 1 of
+   the sweep: note which province was clicked last), **lose it** → `ｵｰﾌﾟﾆﾝｸﾞ`, `Iﾊﾝﾗﾝ`.
+8. **Optional:** load again and **win the duel** once (game over, ending 14: `Iﾄｳｿﾞｸ` ends in
+   `jump OVER.ADV`; the game quits itself). A battle in the dungeon is not part of the prologue.
+
+Afterwards run `dotnet test tests/Kichikuou.Core.Tests`: the battles must still match, the new
+captures are parsed (`GoldenPendingTests`) and listed as waiting for their ports; and
+`describe.py` on the `week\` captures to check the weeks against what was played.

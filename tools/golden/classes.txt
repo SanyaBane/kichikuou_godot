@@ -1,6 +1,70 @@
-# Page classes for the golden-test harness (XSYS35_GOLDEN_CLASSES); see docs/golden-tests.md.
-# Every file not listed here is a hook: memory is dumped around calls into it.
-root FIGT_A.ADV FIGT_B.ADV FIGT.ADV
-inner FIGT_SEL.ADV FIGTATTK.ADV FIGT_M.ADV FIGT作.ADV FIGTﾃｷDE.ADV FIGTﾐｶDE.ADV 死亡捕獲.ADV
+# Page classes for the golden-test harness (XSYS35_GOLDEN_CLASSES); see docs/golden-tests.md,
+# "Harness configuration". UTF-8.
+#
+#   inner|pick FILE ...      before the first group: defaults of every group
+#   group NAME [DIR]         starts a group (its own class table); its captures go to the
+#                            subfolder DIR of the output folder (default NAME; "." = the folder)
+#   root FILE ...            page-call roots: a call into FILE starts a capture
+#   root FILE@ADDR           label root: arriving at hex address ADDR of FILE starts one
+#   inner|pick FILE ...      the group's classes
+#
+# Roots are inner to their own group. Every file a group does not list is a hook: memory is
+# dumped around calls into it and nothing inside is logged. A call into a root starts a capture
+# unless an open capture of the same group logs that call as an inner one.
+
+# UI helpers, inner everywhere (their state effects are ported in Kichikuou.Core.Script).
 inner WAO_SUB.ADV M.ADV WAO_MAP.ADV PCMPLAY.ADV
+
+# The battle (ported, 37 captures match). Unchanged since the first harness; its captures stay in
+# the top folder, where the battle screen and the Content tests look for them.
+group battle .
+root FIGT_A.ADV FIGT_B.ADV FIGT.ADV
+inner FIGTATTK.ADV FIGT_M.ADV FIGT作.ADV FIGTﾃｷDE.ADV FIGTﾐｶDE.ADV 死亡捕獲.ADV
 pick FIGT_SEL.ADV
+
+# Boot data (F1). ﾓｼﾞｷｬｯｼｭ only warms the glyph cache (display only; the port drops the call);
+# ﾛｰﾄﾞｾｰﾌﾞ (mode 10: page 4 from the save files) stays a hook.
+group boot
+root SET.ADV
+inner SET_MAP.ADV SET_CHR.ADV SET_ITEM.ADV ﾓｼﾞｷｬｯｼｭ.ADV
+
+# One MAIN week (W2): from the top of the week loop to the next arrival there. COMMAND, the
+# nation turns, FIGT_B, ﾛｰﾄﾞｾｰﾌﾞ (the autosave) and every scene are hooks.
+group week
+root MAIN.ADV@20
+
+# The player phase (W3). COM, every C* command file, ﾛｰﾄﾞｾｰﾌﾞ, 各種DATA, Iｶﾝｶﾞｴ and the scenes
+# are hooks: the sequence of hook calls is the player's input.
+group command
+root COMMAND.ADV
+
+# Weekly upkeep and story triggers (W1); every scene is a hook.
+group com
+root COM.ADV
+
+# Nation turns (N1-N3) and the defender pickers the player's attacks call (T*2). FIGT_B and the
+# scenes are hooks. No T* file calls another.
+group nations
+root TCﾘｰｻﾞｽ.ADV TJAPAN.ADV Tｹｲﾌﾞﾘｽ.ADV Tｾﾞｽ.ADV Tﾊﾟｯﾄﾝ.ADV Tﾍﾙﾏﾝ.ADV Tﾙﾄﾞﾗ.ADV
+root TCﾘｰｻﾞｽ2.ADV TJAPAN2.ADV Tｹｲﾌﾞﾘｽ2.ADV Tｾﾞｽ2.ADV Tﾍﾙﾏﾝ2.ADV Tﾙﾄﾞﾗ2.ADV
+
+# The dungeon (D1). FIGT is a hook (the battle has its own captures); 死亡捕獲 is inner because
+# it is already ported (Combat) and the dungeon calls it directly; Sﾌﾞﾀｲ and scenes are hooks.
+group dungeon
+root Cﾒｲｷｭｳ.ADV
+inner 死亡捕獲.ADV
+
+# Command files of the prologue (P3, P6, P7). The S* screens, FIGT_A, the T*2 pickers, Cﾆﾝｼﾞｬ,
+# Iﾄｳｿﾞｸ, ｵｰﾌﾟﾆﾝｸﾞ and the scenes are hooks. No root of this group calls another.
+group commands
+root Cﾃｷﾄｼ.ADV Cﾃｷﾄｼ2.ADV Cﾌﾞｶ.ADV Cﾊｰﾚﾑ.ADV
+
+# Army, subordinate and harem screens (P2, P6, P7): mouse-driven; only PCMPLAY/WAO_SUB inside.
+group screens
+root Sﾌﾞﾀｲ.ADV Sﾌﾞｶ.ADV Sﾊｰﾚﾑ.ADV
+
+# Prologue scenes (E1/E2). FIGT_A, Sﾌﾞﾀｲ, Gｴｸｽ, Gｼｨﾙ2 are hooks. No root of this group calls
+# another.
+group scenes
+root Iﾄｳｿﾞｸ.ADV Iﾌﾟﾛﾛｰｸﾞ.ADV Iｼﾚｲﾌﾞ.ADV Iﾊﾝﾗﾝ.ADV ｵｰﾌﾟﾆﾝｸﾞ.ADV
+root Gｼｨﾙ.ADV Gｿｳﾙ.ADV Gﾊﾞｳﾝﾄﾞ.ADV Gｱﾅｾﾙ.ADV
