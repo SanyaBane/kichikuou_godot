@@ -27,8 +27,9 @@ public sealed partial class Battle
         if (State.Bt_Result == 1)
             State.Tmp0001 = State.Tmp0001 / 3;
         await FlowWindowAsync(143);
-        await FlowValueTextAsync(FigtFile, State.StoryStage != 0 ? 2994 : 2999,
-            State.Bt_PlayerLosses, State.Bt_EnemyLosses, State.Tmp0001);
+        // :2992-3001 picks the heading line, then one text run with the numbers continues at :3003.
+        await FlowTextAsync(FigtFile, State.StoryStage != 0 ? 2994 : 2999);
+        await FlowValueTextAsync(FigtFile, 3003, State.Bt_PlayerLosses, State.Bt_EnemyLosses, State.Tmp0001);
         await FlowWaitKeyAsync();
         await FlowWindowAsync(10);
         if (State.Bt_GarrisonProv == State.Prov_Cur && State.Bt_EnemyLosses > 200)

@@ -137,7 +137,8 @@ public class FlowExpTests
         Is(133, rig.State.History[0].Casualties);
         Assert.Equal([15], rig.Random.Draws);
         var shown = Assert.Single(rig.View.Events.OfType<FlowValueMessageEvent>());
-        Assert.Equal(2999, shown.Text.Line);
+        Assert.Equal(3003, shown.Text.Line);
+        Assert.Equal([2999, 3003], rig.Lines);
         Is(33, shown.Values[0]);
         Is(15, shown.Values[2]);
     }
@@ -152,7 +153,7 @@ public class FlowExpTests
         Is(40, rig.State.Tmp0001);
         Is(0, rig.State.Bt_ExpBonusNext);
         Assert.Equal([15, 50], rig.Random.Draws);
-        Assert.Equal([2994], rig.Lines);
+        Assert.Equal([2994, 3003], rig.Lines);
     }
 
     [Theory]

@@ -389,7 +389,8 @@ public sealed partial class Battle
             }
         }
         await FlowWindowAsync(143);
-        await FlowTextAsync(FigtFile, 801);
+        // :801 X Unit_StrBase + (Tmp0002 - 1) * 3 — the name of the unit that got the order.
+        await View.ShowAsync(new MessageEvent(new ScriptRef(FigtFile, 801), [UnitNameString(State.Tmp0002)]));
         if (State.RetVal == 50)
         {
             await FlowTextAsync(FigtFile, 805);

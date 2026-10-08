@@ -37,6 +37,10 @@ the port with a regression test.
   (`state.Units[state.Unit_Cur].Troops`) to keep the script's cursor quirks visible.
   `Golden/` parses harness captures and replays them through the port (`GoldenReplay`);
   `State/VariableCatalog.g.cs` (names, groups, page bindings) is generated with `GameState.g.cs`.
+- `src/Kichikuou.Content` — engine-independent access to the player's own game data (never
+  part of the repository): `ScenarioText` reads message texts from the decompiled scenario by
+  `ScriptRef`. Tests in `tests/Kichikuou.Content.Tests` (the golden part resolves every text
+  the captured battles show; `KICHIKUOU_SCENARIO_DIR` overrides the scenario folder).
 - `tests/Kichikuou.Core.Tests` — xUnit tests for the core. `Golden/GoldenBattleTests` replays the
   captures in `E:\Modding games\Modding Rance\Kichikou\_extract\golden` (or
   `KICHIKUOU_GOLDEN_DIR`) and is skipped when there are none.
@@ -48,7 +52,7 @@ the port with a regression test.
 
 ## Commands
 
-- Tests: `dotnet test tests/Kichikuou.Core.Tests`
+- Tests: `dotnet test tests/Kichikuou.Core.Tests` and `dotnet test tests/Kichikuou.Content.Tests`
 - Build everything: `dotnet build Kichikuou.sln`
 - Run the game headless (smoke test): `<Godot console exe> --headless --path godot --quit-after 30`;
   the editor path is in `docs/spike-findings.md`. Commit the `*.uid` files Godot creates.

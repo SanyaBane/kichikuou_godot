@@ -290,7 +290,7 @@ public class FlowExitTests
         Is(0, rig.State.Bt_Result);
         Assert.Equal([15], rig.Random.Draws);
         Is(1, rig.State.Units[1].Exp);
-        Assert.Equal([453, 465, 2999], rig.Lines.Take(3));
+        Assert.Equal([453, 465, 2999, 3003], rig.Lines.Take(4));
         Assert.IsType<FlowClearScreenEvent>(rig.View.Events[^1]);
     }
 
@@ -303,7 +303,7 @@ public class FlowExitTests
         Assert.Equal(FigtLabel.End, await rig.Battle.PlayerAnnihilatedAsync());
         Is(1, rig.State.Bt_Result);
         Is(5, rig.State.Tmp0001);
-        Assert.Equal([498, 2999], rig.Lines);
+        Assert.Equal([498, 2999, 3003], rig.Lines);
         Assert.DoesNotContain(rig.View.Events, e => e is FlowMapEvent);
     }
 
@@ -315,7 +315,7 @@ public class FlowExitTests
         Assert.Equal(FigtLabel.End, await rig.Battle.EnemyAnnihilatedAsync());
         Is(2, rig.State.Bt_Result);
         Assert.IsType<FlowMapEvent>(rig.View.Events[0]);
-        Assert.Equal([2999], rig.Lines);
+        Assert.Equal([2999, 3003], rig.Lines);
     }
 
     [Fact]
@@ -324,7 +324,7 @@ public class FlowExitTests
         var rig = Rig(1);
         Assert.Equal(FigtLabel.End, await rig.Battle.EnemyAnnihilatedAsync());
         Is(2, rig.State.Bt_Result);
-        Assert.Equal([518, 2999], rig.Lines);
+        Assert.Equal([518, 2999, 3003], rig.Lines);
     }
 
     [Fact]
