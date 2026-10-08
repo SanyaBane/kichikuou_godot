@@ -72,6 +72,19 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
 3. **Strategic screens first reproduce the original layout**, like the battle screen; a
    Sengoku Rance–style redesign comes later with the owner. The look need not be pixel-exact
    (mechanics must be).
+4. **The UI is swappable** (owner's wish): the original-layout UI stays when our own is written,
+   and the player picks one at the start of a game, ideally also during play. Consequences for
+   the design: the core only raises `ScriptEvent`s and awaits `IScriptInput`-based calls, so a
+   UI is one implementation of those interfaces; everything a screen needs must be
+   reconstructable from `GameState` (the `ui` variables: window, portraits, camera, markers) so
+   a UI taking over mid-game can redraw; a switch happens at a safe point (a key wait or the
+   command loop), through a view/input proxy that forwards to the current UI. A redesigned UI
+   may need meaning the low-level events lack (who speaks, which province) — derive it in the
+   presentation layer from the event and the state, or add semantic events next to the
+   low-level ones; never move rules into the UI.
+5. **Quirks are reproduced and registered** (2026-10-08): every bug or oddity of the original
+   is ported as is and recorded in [../quirks.md](../quirks.md), so some can be offered as
+   fixes later.
 
 ## Milestone 1 — the prologue
 

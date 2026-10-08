@@ -8,7 +8,9 @@ Open questions (merged from 01 §14 and 02 §11):
    sets `RetVal` to the pressed key code, or 0 while message skip is on. So the extra flavour
    lines for C83/C84/U3 depend on which key the player pressed; display only, no draws —
    `FIGT_M.ADV:5014-5077`, `8859-8888`; `WAO_SUB.ADV:292-294`, `510-519`.
-2. Operator precedence of the Asuka/Mill test (both specs read `*` before `+`) — confirm in the bytecode: `FIGT_M.ADV:8326`.
+2. ~~Operator precedence of the Asuka/Mill test?~~ **Resolved (bytecode, RPN in `FIGT_M.SCO` at
+   0xa07d):** `*` binds before `+`, so the Mill-state test applies to slot 4 only — quirk BTX-04
+   ([../quirks.md](../quirks.md)); `FIGT_M.ADV:8326`.
 3. Content of unit record 51 before any kaiju is summoned (drives Goliath/ninja draws) — `FIGT.ADV:1126-1137`, `1972-1979`, `2592`, `2648`.
 4. Can the original `system39.exe` `Y 4` return n+1 like xsystem35? — every `Y 4` site, e.g. `FIGT.ADV:2178`.
 5. Background overlay test `Bt_EnemyParty1 ≠ 1137` is always true (probably meant `Cmdr_CgFull`) — `FIGT.ADV:1715`.

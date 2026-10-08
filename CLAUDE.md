@@ -82,6 +82,9 @@ F0 is done: the shared services (message windows, map, sound, scene calls) live 
 - **Faithful port first.** Reproduce the original's mechanics and balance one-to-one; modernise
   only the interface. Do not "improve" rules. A Sengoku-mechanics hybrid comes later, on a
   separate branch, only after the full port.
+- **Register every quirk.** Bugs and oddities of the original are reproduced as is and each one is
+  recorded in [docs/quirks.md](docs/quirks.md) (stable ID, cited as `// QUIRK: <ID>`), so some can
+  be offered as optional fixes later.
 - **Engine-independent core.** Game rules live in `Kichikuou.Core`, a .NET class library with no
   Godot references, covered by unit tests. The Godot project only renders state and forwards input.
   Never put rules in UI code.

@@ -66,6 +66,11 @@ part uses are in `IScriptInput`; a part's own decisions extend it (`IBattleInput
 
 ## Quirks and tests
 
-- Reproduce every quirk listed in the spec. Mark it in code with `// QUIRK: <spec ref>`.
+- Reproduce every quirk of the original as is — bugs and odd decisions included; fixes come later,
+  as options. Every quirk has an entry in the register [quirks.md](quirks.md): a quirk found while
+  surveying, specifying or porting is added there first (next free ID in its area, with what it
+  does, its effect on play, kind, where, fix candidate), in the same commit. Mark the reproducing
+  code with `// QUIRK: <ID>` (older markers cite spec refs, which the register lists next to
+  the IDs) and cite the ID in the spec.
 - Each procedure gets unit tests built from the spec: set up state, feed scripted random
   values (`ScriptedRandom`), assert on state and on the exact sequence of draws.
