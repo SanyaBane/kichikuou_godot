@@ -47,12 +47,13 @@ The three parts are merged (2026-10-08); there are no stubs left. Notes on the m
 
 ### Known gaps for the golden-test harness
 
-- The message-window internals (`WAO_SUB.ADV`) are not ported:
-  the flow and resolution parts emit events and set only `Ui_WaoOp` / `CallArg`, while the
-  flavour part also tracks `Ui_WinType` / `Ui_WinFrameCg`. These UI variables match the
-  original after each window closes but not while one is open, and other `Ui_*` writes of
-  those files are missing. Decided (2026-10-08): the golden comparison ignores the `ui` group
-  (except `Ui_CmdAttackAvail`) instead of porting them — reasons in
+- The message-window helper `WAO_SUB.ADV` is ported for its state effects in `Battle.Wao.cs`
+  (`WaoSubAsync`, called by the flow and resolution window helpers; the flavour part keeps its
+  own equivalent open/wait/close): window type and frame, the portraits and centre picture,
+  `Tmp0021/0022` left by every picture removal (FIGT_B), and the key waits of ops 1/11, which
+  do nothing while no window is open. Its drawing is the event each caller raises. The `ui`
+  writes of `FIGT_SEL` (button cursors, pointer) are not ported; the golden comparison ignores
+  the `ui` group (except `Ui_CmdAttackAvail`) — reasons in
   [../golden-tests.md](../golden-tests.md), "What the comparison ignores".
 - `EndToEndBattleTests` (14 tests) run whole battles through all three parts with hand-derived
   draw sequences; they check internal consistency, not equality with the original game.

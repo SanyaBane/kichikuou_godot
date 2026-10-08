@@ -152,11 +152,12 @@ public sealed partial class Battle
     /// <summary>The first string variable of the record selected by <c>Cmdr_Cur</c> (its name).</summary>
     private Sys3Int CmdrNameString(Sys3Int cmdr) => State.Cmdr_StrBase + (cmdr - 1) * 3;
 
-    /// <summary><c>Ui_WaoOp := op; call WAO_SUB.ADV</c> for a window operation.</summary>
-    private Task FlowWindowAsync(Sys3Int op)
+    /// <summary><c>Ui_WaoOp := op; call WAO_SUB.ADV</c> for a window operation (state effects in <see cref="WaoSubAsync"/>).</summary>
+    private async Task FlowWindowAsync(Sys3Int op)
     {
         State.Ui_WaoOp = op;
-        return View.ShowAsync(new FlowWindowEvent(op, State.CallArg));
+        await View.ShowAsync(new FlowWindowEvent(op, State.CallArg));
+        await WaoSubAsync();
     }
 
     /// <summary>A text run of <paramref name="file"/> starting at <paramref name="line"/>.</summary>
@@ -168,23 +169,22 @@ public sealed partial class Battle
 
     /// <summary>
     /// <c>Ui_WaoOp := 11; call WAO_SUB.ADV</c> (<c>WAO_SUB.ADV:510-519</c>): waits with
-    /// <c>IK 0</c>, which leaves the key code in <c>RetVal</c>.
+    /// <c>IK 0</c>, which leaves the key code in <c>RetVal</c> (nothing while no window is open).
     /// </summary>
-    private async Task FlowWaitKeyAsync()
+    private Task FlowWaitKeyAsync()
     {
         State.Ui_WaoOp = 11;
-        var answer = await Input.WaitForKeyAsync();
-        State.RetVal = answer;
+        return WaoSubAsync();
     }
 
     /// <summary>
     /// <c>Ui_WaoOp := 1; call WAO_SUB.ADV</c> (<c>WAO_SUB.ADV:286-294</c>): waits with
-    /// <c>US RetVal; IK 0; UG RetVal</c>, so <c>RetVal</c> is preserved.
+    /// <c>US RetVal; IK 0; UG RetVal</c>, so <c>RetVal</c> is preserved (nothing while no window is open).
     /// </summary>
-    private async Task FlowWaitKeyKeepRetValAsync()
+    private Task FlowWaitKeyKeepRetValAsync()
     {
         State.Ui_WaoOp = 1;
-        _ = await Input.WaitForKeyAsync();
+        return WaoSubAsync();
     }
 
     /// <summary>

@@ -129,8 +129,9 @@ state. Ignored — and listed in the report as "ignored" so they stay visible:
   ones that are rule state despite the prefix: `Ui_CmdAttackAvail` (written by `FIGT_A`, read by
   the command menu, Q-2). Reasons: (1) these are the internals of the message windows, the map
   and the pointer (`WAO_SUB`, `M`, `WAO_MAP`, `FIGT_SEL`), which the Godot layer replaces, so a
-  port would be dead code (the map operations are ported anyway, for the non-`ui` scratch values
-  they leave — see "Findings so far" — so the map's `ui` variables usually match too); (2) several depend on the physical pointer and on timing (`IM` writes
+  port would be dead code (the map and window operations are ported anyway, for the non-`ui`
+  scratch values they leave and because the window state decides whether a key wait happens —
+  see "Findings so far" — so their `ui` variables usually match too; `FIGT_SEL`'s are not); (2) several depend on the physical pointer and on timing (`IM` writes
   `Ui_MouseX/Y`; drag anchors, button cursors), which no input record can reproduce; (3) no rule
   in the battle reads them; (4) the hook-exit dumps resynchronise them, so a difference cannot
   leak into later rule state through a story scene.
@@ -157,6 +158,7 @@ here with its reason, never as a blanket rule.
 | boot-time smoke dump | `DC page, n` allocates `n + 1` slots | generator, `GameStateLayoutTests` |
 | FIGT_A, prologue victory at Golak (2026-10-08) | `M.ADV` / `WAO_MAP.ADV` leave scratch values (`Tmp0021-0026`, …) that FIGT_A returns to its caller; `Y 3` stores the key that cut the pause short in `RetVal` | `Battle.Map.cs` ports the map operations the battle reaches; every `Y 3` goes through `IBattleInput.PauseAsync` (`FlowMapTests`) |
 | same | `Glob_CgSeen` counters, `Tmp0010` | ignored (above) |
+| static audit of `WAO_SUB.ADV` ahead of a FIGT_B capture (2026-10-08) | FIGT_B shows and removes portraits (ops 311/312/321/322/331/332); every removal runs `L_00b0f`, which leaves the clamped camera in `Tmp0021/0022`; the key waits (ops 1/11) skip `IK 0` while no window is open | `Battle.Wao.cs` ports `WAO_SUB`'s state effects (`FlowWaoTests`); the FIGT_A capture still matches, and its `ui` variables now match too except `Ui_BtnCur` (FIGT_SEL) |
 
 ## Harness configuration
 
