@@ -219,7 +219,17 @@ covered), Fog Card, the kaiju summons, Goliath, the ninja follow-up, the Land of
 defence refusal branch, `RaiseModifierAsync`.
 
 Still wanted: one of the player's units with a bow attack type using Bow (FIGT_SEL 2); other
-specials, a kaiju summon or Fog Card when available. A battle starts with focus 0 and the specials are
+specials, a kaiju summon or Fog Card when available.
+
+The uncaptured paths were checked line by line against the decompiled scenario instead
+(2026-10-08), with no difference found: the kaiju summons and Fog Card (`FIGT.ADV:1149-1256`,
+the dispatch `:641-775`, `L_00e0d` keeping `Unit_Cur = 51`), Goliath (`:1120-1148` and its
+trigger `:327`), the ninja follow-up (`:1915-1986`, the nested `L_02d45` with its own R14 draw),
+the Land of Death (`:217-281`, `L_04eba`), every special setter (`:2339-2528`), the special
+overrides of the exchange (`:2324-2413`) and `L_03f93`'s beam/Chuhai lines (`:2564-2622`), the
+attack sounds (`FIGTATTK.ADV:256-345`), the defence refusal and `L_01270` (`FIGT_B.ADV:84-150`,
+`:884-901`) and the modifier roll (`FIGT.ADV:3100-3160`). A capture of any of them still
+supersedes this check. A battle starts with focus 0 and the specials are
 listed only with focus > 0 (01-flow §8.2), so Focus ("Wait") comes first.
 
 Start the harness with
