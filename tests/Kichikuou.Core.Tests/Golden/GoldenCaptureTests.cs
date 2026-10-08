@@ -115,7 +115,7 @@ public class GoldenCaptureTests
             var header = GoldenCapture.ReadHeader(path);
 
             Assert.Equal(new GoldenHeader(2, "COMMAND.ADV", new GoldenLocation("MAIN.ADV", 0x6a1), GoldenRootKind.PageCall, "command"), header);
-            Assert.False(GoldenReplay.CanReplay(header));
+            Assert.True(GoldenReplay.CanReplay(header));
         }
         finally
         {

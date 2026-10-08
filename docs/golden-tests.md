@@ -184,8 +184,10 @@ numbers are the engine's (`MS n` writes string n).
    the replay goes on), then the `hook-exit` dump is loaded, generator state included. A hook
    whose capture ends in `jump` throws `ScenarioJumpException` after loading the final dump.
 5. **Entry point.** `FIGT_A.ADV` → `AttackProvinceAsync`, `FIGT_B.ADV` → `DefendProvinceAsync`,
-   `FIGT.ADV` → `FightAsync`, `COM.ADV` → `WeeklyEvents.RunAsync` (`GoldenReplay.ReplayableRoots`,
-   `CanReplay`). Every other root has no entry point yet: `GoldenBattleTests.Capture_matches_the_original`
+   `FIGT.ADV` → `FightAsync`, `COM.ADV` → `WeeklyEvents.RunAsync`, `COMMAND.ADV` →
+   `CommandPhase.RunAsync` (`GoldenReplay.ReplayableRoots`, `CanReplay`). The player phase reads
+   the pointer as the script does, so a `command` replay answers `GetMouseAsync` from `mouse` and
+   `SetCursorAsync` from `cursor` (the shape must match); in battle captures both stay passive. Every other root has no entry point yet: `GoldenBattleTests.Capture_matches_the_original`
    replays only captures whose header (`GoldenCapture.ReadHeader`)
    names a replayable root; the others are parsed and loaded by
    `GoldenPendingTests.Capture_awaiting_its_port_is_well_formed`, and
@@ -195,7 +197,7 @@ numbers are the engine's (`MS n` writes string n).
    s.CallFileAsync(root), scenes: hooks => new SceneRunner(scripts, hooks, roots.Contains))` —
    the group's roots run from the player's decompile, every other file stays a hook, and the
    input also answers `SelectAsync` from `menu` (the item count must match), `GetMouseAsync`
-   from `mouse` (one record answers `count` reads), `GetTimerAsync` from `timer`, `GetDateAsync`
+   from `mouse` (one record answers `count` reads), `SetCursorAsync` from `cursor`, `GetTimerAsync` from `timer`, `GetDateAsync`
    from `date` and `GetCdPositionAsync` from `cdpos` (`SceneReplayTests`).
 6. **Result.** After the entry point returns (or throws `ScenarioJumpException` for a capture
    that ends in `jump` to the same file), every record must have been consumed and the memory is

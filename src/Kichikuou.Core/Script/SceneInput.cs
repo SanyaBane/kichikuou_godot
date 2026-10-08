@@ -19,6 +19,13 @@ public interface ISceneInput : IScriptInput
     /// <summary><c>IM x, y:</c> — the button state (the script's <c>RetVal</c>) and the cursor position.</summary>
     Task<MouseState> GetMouseAsync();
 
+    /// <summary>
+    /// <c>IC shape, var:</c> — sets the mouse cursor to <paramref name="shape"/> and returns the
+    /// shape set before (an engine static that starts at 1 and is not in the memory; the harness
+    /// records it as <c>cursor</c>).
+    /// </summary>
+    Task<Sys3Int> SetCursorAsync(Sys3Int shape);
+
     /// <summary><c>ZT0 var:</c> — year, month, day, hour, minute, second, weekday (1 = Sunday).</summary>
     Task<IReadOnlyList<Sys3Int>> GetDateAsync();
 

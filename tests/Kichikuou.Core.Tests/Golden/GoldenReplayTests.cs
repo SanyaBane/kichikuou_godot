@@ -224,12 +224,12 @@ public class GoldenReplayTests
         var c = Parse(await RecordPlainsAttackAsync());
         var capture = new GoldenCapture
         {
-            Source = c.Source, Seed = c.Seed, Root = "COMMAND.ADV", RootCall = c.RootCall, Enter = c.Enter,
-            Records = [], Exit = c.Exit, JumpTarget = null, Group = "command",
+            Source = c.Source, Seed = c.Seed, Root = "Tﾍﾙﾏﾝ.ADV", RootCall = c.RootCall, Enter = c.Enter,
+            Records = [], Exit = c.Exit, JumpTarget = null, Group = "nations",
         };
 
         var e = await Assert.ThrowsAsync<GoldenFormatException>(() => GoldenReplay.RunAsync(capture));
-        Assert.Contains("No entry point for root COMMAND.ADV", e.Message);
+        Assert.Contains("No entry point for root Tﾍﾙﾏﾝ.ADV", e.Message);
     }
 
     [Fact]

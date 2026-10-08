@@ -30,7 +30,127 @@ public sealed partial class ScriptContext
     {
         State.CallArg = mode;
         await View.ShowAsync(new WaoMapEvent(mode));
-        MapWaoMap();
+        if (State.CallArg == 1)
+            await MapDragAsync();
+        else
+            MapWaoMap();
+    }
+
+    /// <summary>
+    /// <c>WAO_MAP.ADV:5-81</c> (op 1, the map loop of <c>COMMAND.ADV:61</c>): while the left button
+    /// is held the map moves with the pointer (a redraw and a
+    /// <c>Y 3, Ui_ScrollWait</c> per step); after the release it coasts on, the step decaying
+    /// to 5/10 then 8/10 of the last until it stops — a new press restarts the drag. Starts from
+    /// the anchor <c>COMMAND</c> set (<c>Ui_DragPending</c>) or from a fresh <c>IM</c>, which
+    /// returns at once unless the left button is down. The camera here is the view's corner.
+    /// Leaves <c>Tmp0021/0022</c> at 0, <c>Tmp0027-0030</c> and the pointer in <c>Ui_Mouse*</c>.
+    /// </summary>
+    private async Task MapDragAsync()
+    {
+        var input = Input as ISceneInput
+            ?? throw new InvalidOperationException("WAO_MAP op 1 reads the mouse: the context's input must be an ISceneInput.");
+        while (true)
+        {
+            // L_0004f (:6-19)
+            if (State.Ui_DragPending != 0)
+                State.RetVal = 16;
+            if (State.Ui_DragPending == 0)
+            {
+                var anchor = await input.GetMouseAsync();
+                State.RetVal = anchor.Button;
+                State.Ui_DragX = anchor.X;
+                State.Ui_DragY = anchor.Y;
+            }
+            State.Ui_DragPending = 0;
+            State.Tmp0029 = State.MapCamX;
+            State.Tmp0030 = State.MapCamY;
+            if (State.RetVal != 16)
+                break;
+            var shape = await input.SetCursorAsync(6);
+            State.Tmp0027 = shape;
+            while (true)
+            {
+                // L_0009d (:20-44): follow the pointer.
+                await MapPointerAsync(input);
+                if (State.RetVal == 0)
+                    break;
+                if (State.RetVal != 16)
+                {
+                    State.MapCamX = State.Tmp0029;          // another button: back where the drag began
+                    State.MapCamY = State.Tmp0030;
+                    break;
+                }
+                if (State.Ui_DragX != State.Ui_MouseX || State.Ui_DragY != State.Ui_MouseY)
+                {
+                    State.MapCamX = State.MapCamX + (State.Ui_DragX - State.Ui_MouseX) - (State.Ui_MouseX - State.Ui_DragX);
+                    if (State.MapCamX > 1280)
+                        State.MapCamX = 1280;
+                    State.MapCamY = State.MapCamY + (State.Ui_DragY - State.Ui_MouseY) - (State.Ui_MouseY - State.Ui_DragY);
+                    if (State.MapCamY > 400)
+                        State.MapCamY = 400;
+                    await MapScrollStepAsync();
+                }
+            }
+            // L_0015b (:45-51): the last movement, for the coasting.
+            shape = await input.SetCursorAsync(State.Tmp0027);
+            State.RetVal = shape;
+            State.Tmp0021 = State.Ui_DragX - State.Ui_MouseX;
+            State.Tmp0022 = State.Ui_DragY - State.Ui_MouseY;
+            State.Tmp0023 = State.Ui_MouseX - State.Ui_DragX;
+            State.Tmp0024 = State.Ui_MouseY - State.Ui_DragY;
+            State.Tmp0028 = 3;
+            bool pressedAgain = false;
+            while (true)
+            {
+                // L_00185 (:52-77)
+                await MapPointerAsync(input);
+                if (State.RetVal != 0)
+                {
+                    pressedAgain = true;
+                    break;
+                }
+                if (State.Tmp0021 + State.Tmp0022 + State.Tmp0023 + State.Tmp0024 == 0)
+                    break;
+                State.MapCamX = State.MapCamX + State.Tmp0021 - State.Tmp0023;
+                if (State.MapCamX > 1280)
+                    State.MapCamX = 1280;
+                State.MapCamY = State.MapCamY + State.Tmp0022 - State.Tmp0024;
+                if (State.MapCamY > 400)
+                    State.MapCamY = 400;
+                await MapScrollStepAsync();
+                State.Tmp0021 = State.Tmp0021 * (8 - State.Tmp0028) / 10;
+                State.Tmp0022 = State.Tmp0022 * (8 - State.Tmp0028) / 10;
+                State.Tmp0023 = State.Tmp0023 * (8 - State.Tmp0028) / 10;
+                State.Tmp0024 = State.Tmp0024 * (8 - State.Tmp0028) / 10;
+                State.Tmp0028 = State.Tmp0028 - 10;
+            }
+            if (!pressedAgain)
+                break;
+        }
+        // L_00247 (:78-81)
+        State.Tmp0021 = State.Tmp0029 - State.MapCamX + (State.MapCamX - State.Tmp0029);
+        State.Tmp0022 = State.Tmp0030 - State.MapCamY + (State.MapCamY - State.Tmp0030);
+    }
+
+    /// <summary><c>IM Ui_MouseX, Ui_MouseY:</c> — the button into <c>RetVal</c>.</summary>
+    private async Task MapPointerAsync(ISceneInput input)
+    {
+        var m = await input.GetMouseAsync();
+        State.RetVal = m.Button;
+        State.Ui_MouseX = m.X;
+        State.Ui_MouseY = m.Y;
+    }
+
+    /// <summary>
+    /// One scroll step of the drag (<c>WAO_MAP.ADV:39-42, 68-71</c>): the view redrawn at the
+    /// camera, <c>Y 3, Ui_ScrollWait</c>, and the anchor moved to the pointer.
+    /// </summary>
+    private async Task MapScrollStepAsync()
+    {
+        await View.ShowAsync(new EngineEvent("CC", [State.MapCamX + 1280, State.MapCamY, (Sys3Int)640, (Sys3Int)400, Sys3Int.Zero, Sys3Int.Zero]));
+        await PauseAsync(State.Ui_ScrollWait);
+        State.Ui_DragX = State.Ui_MouseX;
+        State.Ui_DragY = State.Ui_MouseY;
     }
 
     /// <summary><c>%#M.ADV</c> with the operation in <c>CallArg</c> (<c>M.ADV:1-242</c>).</summary>

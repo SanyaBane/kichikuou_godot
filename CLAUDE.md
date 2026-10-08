@@ -29,7 +29,10 @@ whole prologue, playable. Record data and scenes are read at run time from the p
 F0 is done: the shared services (message windows, map, sound, scene calls) live in
 `src/Kichikuou.Core/Script`. E1 and E2 are done: every scene file reads as a goto program
 (`ScriptProgram`) and `SceneRunner` runs it as the context's story hooks. W1 is done: `COM.ADV`
-(weekly upkeep and story triggers) is `Strategy/WeeklyEvents`; next is W3 (`COMMAND`).
+(weekly upkeep and story triggers) is `Strategy/WeeklyEvents`. W3 is under way: `COMMAND.ADV`
+(the player phase) is `Strategy/CommandPhase`, reading the pointer as the script does
+(`ISceneInput`, `Script/PointerScript` for gesture-level UIs); next are the prologue paths of
+the command files.
 
 ## Layout
 
@@ -51,7 +54,8 @@ F0 is done: the shared services (message windows, map, sound, scene calls) live 
   decompile line for line (`ScriptProgram`, one statement per engine command, jumps resolved,
   no idiom rewritten); `RunAsync` runs the straight-line `SET_*` data files and `SceneRunner`
   runs scene programs (`ISceneInput` adds menus, mouse and clock to the inputs). `Setup/GameSetup` is the boot (`SET.ADV`) and the new game.
-  `Strategy/` holds the strategic rule files: `WeeklyEvents` is `COM.ADV`.
+  `Strategy/` holds the strategic rule files: `WeeklyEvents` is `COM.ADV`, `CommandPhase` is
+  `COMMAND.ADV`.
 - `src/Kichikuou.Content` — engine-independent access to the player's own game data (never
   part of the repository): `ScenarioText` reads message texts from the decompiled scenario by
   `ScriptRef`; `Scripts/ScenarioScripts` reads the data files' statements and whole files as programs

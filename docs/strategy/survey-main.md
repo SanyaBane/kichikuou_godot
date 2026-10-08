@@ -178,8 +178,8 @@ after `Week += 1`, history shift and BGM stop, at the start of the player phase"
 | `M` op use (whole scenario) | op 0 ×2184, 1 ×298, 10 ×296, 4 ×152, 3 ×46, 11/12 ×3, 13 ×1; op 5 never [C, `CallArg` set on the line before the call] |
 
 `M` and `WAO_MAP` ops 0, 1, 3, 4, 10-13 are ported for state in
-`src/Kichikuou.Core/Script/ScriptContext.Map.cs`; not ported: `WAO_MAP` op 1 (drag-scroll input,
-`WAO_MAP.ADV:5-82`, used only by `COMMAND`), op 5 (marker delete, never reached) and op 100
+`src/Kichikuou.Core/Script/ScriptContext.Map.cs`, `WAO_MAP` op 1 (the drag-scroll, `WAO_MAP.ADV:5-81`,
+used only by `COMMAND`) with W3; not ported: op 5 (marker delete, never reached) and op 100
 (debug coordinate picker, only in dead code `ｽﾀMENU.ADV:558`).
 
 ## 4. State

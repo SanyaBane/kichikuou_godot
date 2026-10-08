@@ -322,4 +322,42 @@ public class ScenarioProgramSweepTests(ITestOutputHelper output)
         output.WriteLine($"{programs.Count} files, {programs.Values.Sum(p => p.Statements.Count)} statements, "
             + $"{programs.Values.Sum(p => p.Statements.Count(s => s is MessageStatement))} messages.");
     }
+
+    /// <summary>
+    /// The rule files of the strategic layer read as programs too, so the differential tests can
+    /// run them against their ports (<c>COM</c>, <c>COMMAND</c>) and the unported ones can run
+    /// as programs while a part is checked.
+    /// </summary>
+    [Fact]
+    public void The_strategic_rule_files_read_as_programs_and_their_texts_resolve()
+    {
+        if (!Directory.Exists(LocalData.ScenarioDirectory))
+            return;
+        string[] files =
+        [
+            "MAIN.ADV", "COMMAND.ADV", "COM.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV",
+            "Cﾒｲｷｭｳ.ADV", "Cｼﾊｲﾄｼ.ADV", "Cｼｮｳﾆﾝ.ADV", "Cﾆﾝｼﾞｬ.ADV", "Cﾃｲﾄ.ADV", "Cﾀｶﾗ.ADV",
+            "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sｱｲﾃﾑ.ADV", "M.ADV", "WAO_MAP.ADV", "WAO_SUB.ADV",
+            // Not yet: Sﾊｰﾚﾑ (a data table, `#L_00848, 1:`), 各種DATA (ZB), PCMPLAY (SP).
+        ];
+        var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
+        var text = new ScenarioText(LocalData.ScenarioDirectory);
+        var failures = new List<string>();
+        foreach (string file in files)
+        {
+            try
+            {
+                var program = scripts.ReadProgram(file);
+                foreach (var t in program.Statements.OfType<MessageStatement>().Select(m => m.Text))
+                    text.Read(t.Start);
+            }
+            catch (Exception e) when (e is ScenarioFormatException or ScenarioTextException)
+            {
+                failures.Add(e.Message);
+            }
+        }
+        foreach (string f in failures)
+            output.WriteLine(f);
+        Assert.Empty(failures);
+    }
 }

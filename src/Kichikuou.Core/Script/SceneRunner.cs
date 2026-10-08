@@ -207,6 +207,9 @@ public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<str
                         State.WriteVariable(s.YVar, mouse.Y);
                         break;
                     }
+                case CursorStatement s:
+                    State.WriteVariable(s.Var, await Input.SetCursorAsync(Eval(s.Shape)));
+                    break;
                 case PauseStatement s:
                     await Script.PauseAsync(Eval(s.Ticks));
                     break;

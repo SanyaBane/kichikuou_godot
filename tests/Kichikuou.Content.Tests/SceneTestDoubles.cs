@@ -72,7 +72,20 @@ public sealed class ScriptedSceneInput : ISceneInput
         return Answer(Choices.Count > 0 ? Choices.Dequeue() : 1);
     }
 
-    public Task<MouseState> GetMouseAsync() => Answer(Mouse.Count > 0 ? Mouse.Dequeue() : default);
+    /// <summary>Gestures read after <see cref="Mouse"/> runs out (the pointer at rest when both are empty).</summary>
+    public PointerScript Pointer { get; } = new();
+
+    /// <summary>The cursor shape <c>IC</c> set last (the engine starts at 1).</summary>
+    public int Cursor { get; private set; } = 1;
+
+    public Task<MouseState> GetMouseAsync() => Answer(Mouse.Count > 0 ? Mouse.Dequeue() : Pointer.Next(out _));
+
+    public Task<Sys3Int> SetCursorAsync(Sys3Int shape)
+    {
+        int old = Cursor;
+        Cursor = shape.Value;
+        return Answer((Sys3Int)old);
+    }
 
     public Task<IReadOnlyList<Sys3Int>> GetDateAsync() =>
         Answer<IReadOnlyList<Sys3Int>>([(Sys3Int)2026, (Sys3Int)10, (Sys3Int)8, (Sys3Int)12, Sys3Int.Zero, Sys3Int.Zero, (Sys3Int)5]);

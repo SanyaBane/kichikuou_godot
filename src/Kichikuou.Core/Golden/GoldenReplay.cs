@@ -74,20 +74,22 @@ public sealed class GoldenReport(GoldenCapture capture)
 /// </summary>
 public sealed class GoldenReplay
 {
-    /// <summary>The roots the replay has an entry point for (page calls into the battle and <c>COM.ADV</c>).</summary>
-    public static readonly IReadOnlySet<string> ReplayableRoots = new HashSet<string> { "FIGT_A.ADV", "FIGT_B.ADV", "FIGT.ADV", "COM.ADV" };
+    /// <summary>The roots the replay has an entry point for (page calls into the battle, <c>COM.ADV</c> and <c>COMMAND.ADV</c>).</summary>
+    public static readonly IReadOnlySet<string> ReplayableRoots =
+        new HashSet<string> { "FIGT_A.ADV", "FIGT_B.ADV", "FIGT.ADV", "COM.ADV", "COMMAND.ADV" };
 
     /// <summary>Whether a capture with this header can be replayed (its root has an entry point).</summary>
     public static bool CanReplay(GoldenHeader header) =>
         header.RootKind == GoldenRootKind.PageCall && ReplayableRoots.Contains(header.Root);
 
     /// <summary>
-    /// Records the core does not consume: <c>IM</c> in the battle only waits for the button's
-    /// release (<c>FIGT.ADV:829</c>, <c>FIGT_B.ADV:47</c>, …; <c>RetVal</c> ends 0, the position goes
-    /// to the ignored <c>Ui_MouseX/Y</c>), and no ported file sets the cursor. Scenes run their
-    /// <c>IM</c> statements, so a replay through a <see cref="SceneRunner"/> consumes the mouse.
+    /// Records the core does not consume: <c>IM</c> and <c>IC</c> in the battle only wait for the
+    /// button's release (<c>FIGT.ADV:829</c>, <c>FIGT_B.ADV:47</c>, …; <c>RetVal</c> ends 0, the
+    /// position goes to the ignored <c>Ui_MouseX/Y</c>). The player phase reads the pointer as the
+    /// script does, and scenes run their <c>IM</c>/<c>IC</c> statements, so a replay of
+    /// <c>COMMAND.ADV</c> or through a <see cref="SceneRunner"/> consumes them.
     /// </summary>
-    private bool IsPassive(GoldenRecord record) => record is CursorRecord || (record is MouseRecord && !_scenes);
+    private bool IsPassive(GoldenRecord record) => record is CursorRecord or MouseRecord && !_pointer;
 
     private readonly GoldenCapture _capture;
     private readonly GoldenFilter _filter;
@@ -96,7 +98,7 @@ public sealed class GoldenReplay
     private readonly List<GoldenRecord> _consumed = [];
     private int _next;
     private long _mouseRepeats;
-    private bool _scenes;
+    private bool _pointer;
     private Mt19937Legacy _generator;
     private XSystem35Random _random;
 
@@ -147,7 +149,7 @@ public sealed class GoldenReplay
             started?.Invoke(_state);
             var hooks = new Hooks(this);
             var runner = scenes?.Invoke(hooks);
-            _scenes = runner is not null;
+            _pointer = runner is not null || _capture.Root == "COMMAND.ADV";
             var battle = new Battle(_state, new Random(this), view, new Input(this), runner ?? (IStoryHooks)hooks);
             runner?.Bind(battle.Script);
             Func<Task> entry = entryPoint is not null
@@ -159,6 +161,7 @@ public sealed class GoldenReplay
                     "FIGT_A.ADV" => battle.AttackProvinceAsync,
                     "FIGT_B.ADV" => battle.DefendProvinceAsync,
                     "COM.ADV" => new WeeklyEvents(battle.Script).RunAsync,
+                    "COMMAND.ADV" => new CommandPhase(battle.Script).RunAsync,
                     _ => battle.FightAsync,
                 };
 
@@ -317,6 +320,14 @@ public sealed class GoldenReplay
         {
             var record = replay.TakeMouse();
             return Task.FromResult(new MouseState((Sys3Int)record.Button, (Sys3Int)record.X, (Sys3Int)record.Y));
+        }
+
+        public Task<Sys3Int> SetCursorAsync(Sys3Int shape)
+        {
+            var record = replay.Take<CursorRecord>($"the cursor (IC {shape})");
+            if (record.Cursor != shape.Value)
+                throw replay.Diverged($"the core set the cursor to {shape} where the original set {record.Cursor} at {record.Where} (line {record.Line})");
+            return Task.FromResult((Sys3Int)record.Old);
         }
 
         public Task<IReadOnlyList<Sys3Int>> GetDateAsync() =>

@@ -228,6 +228,8 @@ public sealed class SceneReplayTests(ITestOutputHelper output) : IDisposable
                 return m;
             }
 
+            public Task<Sys3Int> SetCursorAsync(Sys3Int shape) => throw new NotSupportedException();
+
             public Task<IReadOnlyList<Sys3Int>> GetDateAsync() => throw new NotSupportedException();
 
             public Task ResetTimerAsync(Sys3Int value) => r.Input.ResetTimerAsync(value);

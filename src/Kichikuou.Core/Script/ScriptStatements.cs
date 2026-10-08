@@ -164,6 +164,12 @@ public sealed record KeyWaitStatement(ScriptRef At) : ScriptStatement(At);
 /// </summary>
 public sealed record MouseStatement(ScriptRef At, int XVar, int YVar) : ScriptStatement(At);
 
+/// <summary>
+/// <c>IC shape, var:</c> — sets the mouse cursor's shape and stores the shape set before in the
+/// variable (an engine static, <see cref="ISceneInput.SetCursorAsync"/>).
+/// </summary>
+public sealed record CursorStatement(ScriptRef At, ScriptExpr Shape, int Var) : ScriptStatement(At);
+
 /// <summary><c>Y 3, n:</c> — a pause of n ticks that a key cuts short; <c>RetVal</c> := that key (0 when it ran out).</summary>
 public sealed record PauseStatement(ScriptRef At, ScriptExpr Ticks) : ScriptStatement(At);
 
@@ -213,7 +219,8 @@ public sealed record QuitStatement(ScriptRef At, ScriptExpr Mode) : ScriptStatem
 /// placement (<c>G</c>, <c>J0</c>, <c>J1</c>, <c>PC</c>), fades and palette (<c>PF0</c>, <c>PF1</c>,
 /// <c>PW0</c>, <c>PW1</c>), screen copies and fills (<c>EC</c>, <c>CB</c>, <c>CC</c>, <c>CF</c>,
 /// <c>CL</c>, <c>CM</c>, <c>CS</c>), window and text layout (<c>B1</c>-<c>B4</c>, <c>T</c>, <c>WV</c>,
-/// <c>ZC</c>, <c>ZM</c>), the next track's loop count (<c>SL</c>). The presentation interprets them;
+/// <c>ZC</c>, <c>ZM</c>), the next track's loop count (<c>SL</c>), the pointer warp (<c>IZ x, y</c>,
+/// whose effect shows in the next <c>IM</c>). The presentation interprets them;
 /// <paramref name="Args"/> are evaluated when the statement runs.
 /// </summary>
 public sealed record EngineStatement(ScriptRef At, string Command, IReadOnlyList<ScriptExpr> Args) : ScriptStatement(At);
