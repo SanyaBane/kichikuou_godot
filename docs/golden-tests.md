@@ -161,6 +161,7 @@ here with its reason, never as a blanket rule.
 | static audit of `WAO_SUB.ADV` ahead of a FIGT_B capture (2026-10-08) | FIGT_B shows and removes portraits (ops 311/312/321/322/331/332); every removal runs `L_00b0f`, which leaves the clamped camera in `Tmp0021/0022`; the key waits (ops 1/11) skip `IK 0` while no window is open | `Battle.Wao.cs` ports `WAO_SUB`'s state effects (`FlowWaoTests`); the FIGT_A capture still matches, and its `ui` variables now match too except `Ui_BtnCur` (FIGT_SEL) |
 | 5 more prologue FIGT_A, the Ruberan duel, FIGT_B city and plains intercepts with `Sﾌﾞﾀｲ`/`Gｴｸｽ` hooks (2026-10-08) | none — all match | — |
 | 10 stage-1 battles: city attacks that take a province, `Gｴｸｽ` inside FIGT_A, an abandoned and a lost defence (2026-10-08) | none — all match | — |
+| 3 more: Focus, Rance Attack and By la Way in an attack that runs out of rounds; two FIGT_B on Ys (2026-10-08) | none — all match | — |
 
 ## Harness configuration
 
@@ -201,17 +202,19 @@ Each `.golden` file becomes one test case. Captured so far (all match the origin
 | `105900-04` | FIGT_A from `Cﾃｷﾄｼ` on Ys with the `Gｴｸｽ` hook; no command chosen | story hook inside FIGT_A, Rance's level-up |
 | `110203-06` | FIGT_B on Ys, defence abandoned, province lost without a fight | abandon branch, `ProvinceLostAsync` |
 | `110240-07` | FIGT_B on North with Asuka alone, defeat, province lost, Asuka dies | lost defence, player commander death |
+| `111109-01` | FIGT_A from `Cﾃｷﾄｼ` on Oaks with the `Gｴｸｽ` hook; the rounds run out (`Bt_Result = 1`) | Focus, Rance Attack, By la Way, slot order 50, unit info, enemy commander death (Pegasus), attacker lost |
+| `111501-02`, `111600-03` | FIGT_B on Ys: a victory, then a defeat that loses the province (Kinkaid dies) | intercepts, lost defence |
 
 Coverage of the battle code by these replays (2026-10-08, `--collect "Code Coverage"` on
-`GoldenBattleTests`, 19 captures): never reached are the special attacks (Rance Attack, By la
-Way, the beams, High Speed, Chuhai, Vanish Bomb, War Dance, Soaring Wave) and `SpendFocus`,
-Focus, Fog Card, the kaiju summons, Goliath, the ninja follow-up, the player's retreat, the Land
-of Death, the defence refusal branch, unit / enemy info, `RaiseModifierAsync`.
+`GoldenBattleTests`, 22 captures): never reached are the other specials (beams, High Speed,
+Chuhai, Vanish Bomb, War Dance, Soaring Wave), bow attacks, Fog Card, the kaiju summons,
+Goliath, the ninja follow-up, the player's retreat, the Land of Death, the defence refusal
+branch, enemy info, `RaiseModifierAsync`.
 
-Still wanted: Focus ("Wait") and then a special attack — a battle starts with focus 0 and the
-specials are listed only with focus > 0, Rance Attack / By la Way only for slots 1-2
-(01-flow §8.2); the player retreating; a dungeon battle (root `FIGT.ADV`); a game over (jump to
-`OVER.ADV`); a kaiju summon or Fog Card when available.
+Still wanted: the player retreating; a dungeon battle (root `FIGT.ADV`); a game over (jump to
+`OVER.ADV`); a bow unit attacking; enemy info (right click on an enemy panel); other specials,
+a kaiju summon or Fog Card when available. A battle starts with focus 0 and the specials are
+listed only with focus > 0 (01-flow §8.2), so Focus ("Wait") comes first.
 
 Start the harness with
 
