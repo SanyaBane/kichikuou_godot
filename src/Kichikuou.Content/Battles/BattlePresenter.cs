@@ -119,7 +119,11 @@ public sealed partial class BattlePresenter
             case FlavourWindowOpenEvent e: Window((int)e.Window, 0); break;
             case FlavourKeyWaitEvent: Window(11, 0); break;
             case FlavourWindowCloseEvent: Window(10, 0); break;
-            case MessageEvent e: Writer.Print(Read(e.Text, [], e.StringVariables)); break;
+            case MessageEvent e:
+                if (e.Text == OrderMessage)
+                    _orderMessage = true;
+                Writer.Print(Read(e.Text, [], e.StringVariables));
+                break;
             case FlowValueMessageEvent e: Writer.Print(Read(e.Text, e.Values, null)); break;
             case PrintStringEvent e: PrintString(e.Slot.Value); break;
             case FlowErrorEvent e: Error(e.Text); break;
@@ -325,6 +329,10 @@ public sealed partial class BattlePresenter
     private int _portraitL, _portraitR, _centerCg;
     private bool _infoBox;
 
+    /// <summary>The first line of an order message (<c>L_0129e</c>, <c>FIGT.ADV:801</c>).</summary>
+    private static readonly ScriptRef OrderMessage = new("FIGT.ADV", 801);
+    private bool _orderMessage;
+
     private void Window(int op, int callArg)
     {
         switch (op)
@@ -438,6 +446,12 @@ public sealed partial class BattlePresenter
             _infoBox = false;
             Writer.Color = 22;
             Writer.Size = 24;
+        }
+        if (_orderMessage)
+        {
+            // FIGT.ADV:827 after the order message closes.
+            _orderMessage = false;
+            Writer.Color = 22;
         }
     }
 

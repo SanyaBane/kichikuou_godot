@@ -219,6 +219,25 @@ public class BattlePresenterGameDataTests(ITestOutputHelper output)
     }
 
     [CaptureFact]
+    public async Task Closing_an_order_message_restores_colour_22_and_other_windows_leave_15()
+    {
+        var presenter = NewPresenter();
+        await GoldenReplay.RunAsync(GoldenCapture.Load(LocalData.Captures.First()), view: new DelegateView(presenter.Show), started: presenter.Start);
+        var name = presenter.State!.Unit_StrBase;
+
+        // L_0129e: window 143, the order message, op 10 (ZC 1, 15), then FIGT.ADV:827 ZC 1, 22.
+        presenter.Show(new FlowWindowEvent(143, 0));
+        presenter.Show(new MessageEvent(new ScriptRef("FIGT.ADV", 801), [name]));
+        presenter.Show(new FlowWindowEvent(10, 0));
+        Assert.Equal(22, presenter.Writer.Color);
+
+        presenter.Show(new FlowWindowEvent(143, 0));
+        presenter.Show(new MessageEvent(new ScriptRef("FIGT.ADV", 805)));
+        presenter.Show(new FlowWindowEvent(10, 0));
+        Assert.Equal(15, presenter.Writer.Color);
+    }
+
+    [CaptureFact]
     public void FigtSel_targets_frames_and_popups()
     {
         var presenter = NewPresenter();

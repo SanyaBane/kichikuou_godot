@@ -234,7 +234,10 @@ never does either (wrapper tables below).
 | 332 | `L_00a9b` `:423-436` | erase centre picture: `Ui_FaceOverMap = 0`: `CF 288, 192, 176, 96, 0` — fills only (288,192)-(464,288) black (arguments appear swapped against the picture rectangle 176,96,288,192 — script quirk, the rest of the picture stays); `= 1`: `CC` from the map → (176,96) 288×192 |
 | 333 | `L_00a25` `:403-422` | centre picture + overlays Tmp0001-0004 (not used by the battle) |
 
-`Ui_FaceOverMap` during a battle: **unknown** (set by ops 3/4 outside the battle files).
+`Ui_FaceOverMap` during a battle: whatever the map screens left (ops 3/4 run only outside the
+battle files, so the battle never changes it). At battle entry it is 1 in 27 of the 37 golden
+captures and 0 in 10 (`VAR0209` in each capture's `mem enter`); the presenter reads it from the
+state, so both cases are exact.
 
 ### 2.5 Which file uses which op (live wrapper labels)
 
@@ -361,7 +364,9 @@ When the hovered button changes (`:172-191`):
    own panels (0-3), `Tmp0010` for enemy panels.
 
 For "no button" (99) the same code runs with the rectangle stored at index 99 of the button
-arrays; its contents are **unknown** (presumably 0 → no visible effect). Because a mode change
+arrays (page 3 at 1099 / 2099 / 3099 / 4099 / 5099 / 6099, bound in `SET.ADV:276-281`). It is 0
+in every golden capture and the script never loads it, so every `CC`/`CF` has a zero width or
+height: no visible effect. Because a mode change
 resets the previous-button marker to 98, a frame drawn before a popup is not erased afterwards
 (script quirk).
 
@@ -716,9 +721,8 @@ Unknown / unverified:
 
 1. Glyph metrics: the face is MS Gothic (fixed-pitch half-width cells of 12 px at 24, 8 px at
    16); whether the original's synthetic bold changes the advance is unverified.
-2. `Ui_FaceOverMap` during battles (decides whether portrait/centre erases show black or the map).
-3. Contents of button index 99 used by the "no button" hover restore/frame in `FIGT_SEL.ADV:175,
-   185-188` (presumably zero → nothing drawn).
+2. ~~`Ui_FaceOverMap` during battles~~ — resolved: taken from the state, both values occur (§2.4).
+3. ~~Contents of button index 99~~ — resolved: zero in every capture, nothing drawn (§4.2).
 4. That `#L_05126, 1` selects `L_0512e` (as the core assumes) — the panel geometry depends on it;
    `L_0516e` is never selected.
 5. Exact `EC 0` fill size in the original (xsystem35: 639×399 without `patch_ec`).
