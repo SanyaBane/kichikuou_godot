@@ -12,7 +12,19 @@ Confidence: **[C]** confirmed by reading code / disassembly, **[I]** strong infe
 | xsys35c 1.13.0 (`xsys35dc`, `ald`, `pms`, …) | `E:\Modding games\Modding Rance\Kichikou\xsys35c-1.13.0-64bit` |
 | alice-tools 0.13.0 | `E:\Modding games\Modding Rance\alice-tools\alice-tools-0.13.0` |
 | Godot 4.7.2 .NET (portable) | `E:\Install PORTABLE\Godot_v4.7.2-stable_mono_win64` |
+| xsystem35-sdl2 source (golden-test harness, branch `golden-harness`) | `F:\sources\Rance\xsystem35-sdl2` |
+| MSYS2 (toolchain for xsystem35) | `C:\msys64` |
 | Extracted data | `E:\Modding games\Modding Rance\Kichikou\_extract\` — `scenario\` (decompiled `.ADV`), `aindump\`, `cg_pms\`, `cg_png\`, `wav\` |
+
+Building xsystem35 (verified 2026-10-08, commit `82c8b76`): the README's `pacman` list lacks
+`make`, so use Ninja, which ships with the MSYS2 cmake package. From any shell:
+
+```
+MSYSTEM=UCRT64 /c/msys64/usr/bin/bash.exe -lc 'cd /f/sources/Rance/xsystem35-sdl2 && mkdir -p out/debug && cd out/debug && cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug ../.. && ninja'
+```
+
+Output: `out/debug/src/xsystem35.exe` (run it with `C:\msys64\ucrt64\bin` on `PATH` for the DLLs).
+`bash -lc` starts in the MSYS2 home directory, so always `cd` explicitly.
 
 Tool quirk: `xsys35dc -o` and `ald extract -d` fail on absolute paths with a drive letter
 (`cannot create directory E:`). Run them from `_extract\` with relative paths.
