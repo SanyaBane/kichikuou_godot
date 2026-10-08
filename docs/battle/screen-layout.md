@@ -584,12 +584,16 @@ after the first line uses 24, later ones 16 (pitch 18), 8 px cells (30 per line)
 | 224 | `  Strategy: ` + `Manual Attack` / `Auto Attack` / `Auto Defense` (order) (`:860-872`) | `  HP: ` + HP (`:1043-1044`) |
 | 242 | `  Battle LV: ` + level | troops = 0: `  Commander Attack: ` Atk; else `  Troops: ` n |
 | 260 | `  HP: ` + HP | troops = 0: `  Commander Defense: ` Def; else `  Troop Attack: ` TroopAtk + mod |
-| 278 | troops = 0: `  Commander Attack: ` Atk; else `  Troops: ` n (`:883-899`) | troops ≠ 0: `  Troop Defense: ` TroopDef + mod |
-| 296 | troops = 0: `  Commander Defense: ` Def; else `  Troop Attack: ` TroopAtk + mod (`:900-943`) | `  Magic Attack/Defense: ` Magic (troops = 0: at 278) (`:1096-1097`) |
-| 314 | troops ≠ 0: `  Troop Defense: ` TroopDef + mod (`:946-989`) | `  # of Attacks: ` Attacks (troops = 0: at 296) (`:1100-1101`) |
-| next | `  Magic Attack/Defense: ` Magic (`:993-994`) | |
-| next | `  # of Attacks: ` Attacks (`:997-998`) | |
-| next | `  Surging with power` if the partner is deployed (`:1001-1004`) | |
+| 278 | troops = 0: `  Commander Attack: ` Atk; else `  Troops: ` n (`:883-899`) | troops ≠ 0: `  Troop Defense: ` TroopDef + mod; troops = 0: empty |
+| 296 | troops = 0: `  Commander Defense: ` Def; else `  Troop Attack: ` TroopAtk + mod (`:900-943`) | `  Magic Attack/Defense: ` Magic (`:1096-1097`) |
+| 314 | troops ≠ 0: `  Troop Defense: ` TroopDef + mod (`:946-989`); troops = 0: empty | `  # of Attacks: ` Attacks (`:1100-1101`) |
+| 332 | `  Magic Attack/Defense: ` Magic (`:993-994`) | |
+| 350 | `  # of Attacks: ` Attacks (`:997-998`) | |
+| 368 | `  Surging with power` if the partner is deployed (`:1001-1004`) | |
+
+The `R` that ends the troops block (`:992`, `:1095`) stands outside it, so with no troops the
+commander block's own last `R` plus this one leave an empty line; Magic and Attacks keep their
+rows either way.
 
 "mod" = the modifier for the battle kind (`Unit_Off/Def/DgnAtkMod`, `…DefMod`; enemy
 `Cmdr_TroopAtkMod/DefMod`): > 10 → `(-` + (mod − 10) + `)`, < 10 → `(+` + mod + `)`, = 10 → only
