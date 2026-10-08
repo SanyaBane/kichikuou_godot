@@ -189,14 +189,21 @@ numbers are the engine's (`MS n` writes string n).
    names a replayable root; the others are parsed and loaded by
    `GoldenPendingTests.Capture_awaiting_its_port_is_well_formed`, and
    `Every_capture_has_a_replay_entry_point` is skipped with the list of waiting roots and counts.
-   A part that ports a root adds its entry point here and to `ReplayableRoots`.
+   A part that ports a root adds its entry point here and to `ReplayableRoots`. Scene captures
+   (group `scenes`) replay through the scene runtime: `RunAsync(capture, entryPoint: s =>
+   s.CallFileAsync(root), scenes: hooks => new SceneRunner(scripts, hooks, roots.Contains))` —
+   the group's roots run from the player's decompile, every other file stays a hook, and the
+   input also answers `SelectAsync` from `menu` (the item count must match), `GetMouseAsync`
+   from `mouse` (one record answers `count` reads), `GetTimerAsync` from `timer`, `GetDateAsync`
+   from `date` and `GetCdPositionAsync` from `cdpos` (`SceneReplayTests`).
 6. **Result.** After the entry point returns (or throws `ScenarioJumpException` for a capture
    that ends in `jump` to the same file), every record must have been consumed and the memory is
    compared with the `exit` dump.
 7. **Passive records.** In a battle, `mouse` and `cursor` records are skipped: the battle's `IM`
    loops only wait for the button's release (`FIGT.ADV:829, 1006, 1016, 1105, 1115`,
    `FIGT_B.ADV:47, 341`; `RetVal` ends 0, the position goes to the ignored `Ui_MouseX/Y`) and no
-   battle file sets the cursor. Ports of mouse-driven files (the map, the screens) consume them.
+   battle file sets the cursor. Ports of mouse-driven files (the map, the screens) consume them;
+   a replay through the scene runtime consumes `mouse`.
 
 ### What the comparison ignores, and why
 

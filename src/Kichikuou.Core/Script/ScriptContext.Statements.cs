@@ -94,10 +94,32 @@ public sealed partial class ScriptContext
     }
 
     /// <summary>
+    /// <c>MA dst, src</c>: appends string variable <paramref name="source"/> to
+    /// <paramref name="target"/> (<c>cmdm.c</c>, <c>svar_append</c>). A target outside the string
+    /// table is ignored; a source outside it reads as empty.
+    /// </summary>
+    public void AppendString(Sys3Int target, Sys3Int source)
+    {
+        var strings = State.Strings;
+        if (target.Value < strings.Length)
+            strings[target.Value] += source.Value < strings.Length ? strings[source.Value] : string.Empty;
+    }
+
+    /// <summary>
+    /// <c>MH slot, width, value</c>: string variable <paramref name="slot"/> := the value in
+    /// full-width digits (<c>cmdm.c</c>, <c>format_number_zenkaku</c>).
+    /// </summary>
+    public void NumberToString(Sys3Int slot, Sys3Int width, Sys3Int value)
+    {
+        if (slot.Value < State.Strings.Length)
+            State.Strings[slot.Value] = Sys3Text.FormatNumber(value.Value, width.Value, fullWidth: true);
+    }
+
+    /// <summary>
     /// <c>%#file:</c> from a statement list: the helper files run their ports with the arguments
     /// the statements left in <c>CallArg</c> / <c>Ui_WaoOp</c>; any other file is a hook.
     /// </summary>
-    private Task CallAsync(string file) => file switch
+    internal Task CallAsync(string file) => file switch
     {
         "M.ADV" => MapCallAsync(State.CallArg),
         "WAO_MAP.ADV" => WaoMapCallAsync(State.CallArg),

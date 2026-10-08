@@ -111,11 +111,11 @@ public sealed record JumpFileStatement(ScriptRef At, string File) : ScriptStatem
 /// <summary>
 /// A text run of the script: the consecutive text commands starting at <paramref name="Start"/>
 /// (the presentation layer reads them from the player's files, <c>ScenarioText</c>), with the
-/// values the presentation cannot compute: the expressions printed by <c>H</c>/<c>HH</c>
-/// (<paramref name="Numbers"/>) and the variable numbers of <c>X</c> commands whose argument is
-/// not a constant (<paramref name="ComputedStrings"/>), each in order.
+/// values only the script can compute: the expressions printed by <c>H</c>/<c>HH</c>
+/// (<paramref name="Numbers"/>) and the string variable of every <c>X</c>/<c>MP</c>
+/// (<paramref name="Strings"/>, constants included), each in order.
 /// </summary>
-public sealed record ScriptText(ScriptRef Start, IReadOnlyList<ScriptExpr> Numbers, IReadOnlyList<ScriptExpr> ComputedStrings);
+public sealed record ScriptText(ScriptRef Start, IReadOnlyList<ScriptExpr> Numbers, IReadOnlyList<ScriptExpr> Strings);
 
 /// <summary>A text run printed into the message window.</summary>
 public sealed record MessageStatement(ScriptRef At, ScriptText Text) : ScriptStatement(At);
@@ -173,8 +173,8 @@ public sealed record PauseStatement(ScriptRef At, ScriptExpr Ticks) : ScriptStat
 public sealed record MusicStatement(ScriptRef At, ScriptExpr Track) : ScriptStatement(At);
 
 /// <summary>
-/// <c>SR device, var:</c> — music state of device 0 (CD) / 1 (MIDI) into four variables from
-/// <paramref name="Var"/> on: track (0 when stopped), loop count, position, fading (<c>cmds.c</c>).
+/// <c>SR device, var:</c> — the variable := the track playing on device 0 (CD; 0 when stopped) or
+/// 1 (MIDI, <c>OVER.ADV:160</c> polls it until the ending music stops) (<c>cmds.c</c>).
 /// </summary>
 public sealed record MusicInfoStatement(ScriptRef At, int Device, int Var) : ScriptStatement(At);
 

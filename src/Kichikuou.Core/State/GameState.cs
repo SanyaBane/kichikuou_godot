@@ -44,6 +44,12 @@ public sealed partial class GameState
             Memory.Var(number) = value;
     }
 
+    /// <summary>
+    /// True when variable <paramref name="number"/> is bound to a page through <c>DS</c>, so it is
+    /// not the plain slot that commands addressing a run of variables (<c>NC</c>, <c>US</c>, …) start from.
+    /// </summary>
+    public static bool IsBound(int number) => BindingOf(number) is not null;
+
     private static readonly PageBinding?[] BindingByVar = BuildBindingIndex();
 
     private static PageBinding? BindingOf(int number) =>

@@ -145,8 +145,11 @@ internal static partial class ScenarioParser
                 case NumberSlot:
                     _numbers.Add(Expr(at, Args(at, line, line.StartsWith("HH", StringComparison.Ordinal) ? "HH" : "H", 2)[1]));
                     break;
-                case StringSlot { Variable: null }:
+                case StringSlot { Chars: null }:
                     _strings.Add(Expr(at, Args(at, line, "X", 1)[0]));
+                    break;
+                case StringSlot:
+                    _strings.Add(Expr(at, Args(at, line, "MP", 2)[0]));
                     break;
             }
             _hasText = true;

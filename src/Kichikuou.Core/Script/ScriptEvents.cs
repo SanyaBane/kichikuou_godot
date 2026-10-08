@@ -17,8 +17,29 @@ namespace Kichikuou.Core.Script;
 /// </param>
 public sealed record MessageEvent(ScriptRef Text, IReadOnlyList<Sys3Int>? StringVariables = null) : ScriptEvent;
 
-/// <summary>A message that prints numbers; <paramref name="Values"/> are the printed values in order.</summary>
-public sealed record ValueMessageEvent(ScriptRef Text, IReadOnlyList<Sys3Int> Values) : ScriptEvent;
+/// <summary>
+/// A message that prints numbers; <paramref name="Values"/> are the printed values in order
+/// (<paramref name="StringVariables"/> as for <see cref="MessageEvent"/>).
+/// </summary>
+public sealed record ValueMessageEvent(ScriptRef Text, IReadOnlyList<Sys3Int> Values, IReadOnlyList<Sys3Int>? StringVariables = null) : ScriptEvent;
+
+/// <summary><c>R</c> outside a text run (e.g. between menu items): a line break in the message window.</summary>
+public sealed record LineBreakEvent : ScriptEvent;
+
+/// <summary>
+/// The message window is cleared and its text position reset (<c>msg_nextPage(true)</c>): after
+/// <c>A</c> and after every menu choice.
+/// </summary>
+public sealed record MessageClearEvent : ScriptEvent;
+
+/// <summary><c>Y 1, mode:</c> — mode 0 clears the message area, 1 only moves the text position to the top left.</summary>
+public sealed record MessageResetEvent(Sys3Int Mode) : ScriptEvent;
+
+/// <summary>
+/// A presentation-only engine command (<c>EngineStatement</c>: <c>G</c>, <c>PF0</c>, <c>CC</c>, <c>ZM</c>,
+/// …) with its evaluated arguments; the presentation interprets it.
+/// </summary>
+public sealed record EngineEvent(string Command, IReadOnlyList<Sys3Int> Args) : ScriptEvent;
 
 /// <summary><c>MP slot, width</c> — prints string variable <paramref name="Slot"/> into the message window.</summary>
 public sealed record PrintStringEvent(Sys3Int Slot) : ScriptEvent;

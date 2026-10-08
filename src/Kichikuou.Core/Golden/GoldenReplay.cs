@@ -81,11 +81,12 @@ public sealed class GoldenReplay
         header.RootKind == GoldenRootKind.PageCall && ReplayableRoots.Contains(header.Root);
 
     /// <summary>
-    /// Records the battle port does not consume: <c>IM</c> in the battle only waits for the
-    /// button's release (<c>FIGT.ADV:829</c>, <c>FIGT_B.ADV:47</c>, …; <c>RetVal</c> ends 0, the
-    /// position goes to the ignored <c>Ui_MouseX/Y</c>), and the battle files never set the cursor.
+    /// Records the core does not consume: <c>IM</c> in the battle only waits for the button's
+    /// release (<c>FIGT.ADV:829</c>, <c>FIGT_B.ADV:47</c>, …; <c>RetVal</c> ends 0, the position goes
+    /// to the ignored <c>Ui_MouseX/Y</c>), and no ported file sets the cursor. Scenes run their
+    /// <c>IM</c> statements, so a replay through a <see cref="SceneRunner"/> consumes the mouse.
     /// </summary>
-    private static bool IsPassive(GoldenRecord record) => record is MouseRecord or CursorRecord;
+    private bool IsPassive(GoldenRecord record) => record is CursorRecord || (record is MouseRecord && !_scenes);
 
     private readonly GoldenCapture _capture;
     private readonly GoldenFilter _filter;
@@ -93,6 +94,8 @@ public sealed class GoldenReplay
     private readonly GameState _state = new();
     private readonly List<GoldenRecord> _consumed = [];
     private int _next;
+    private long _mouseRepeats;
+    private bool _scenes;
     private Mt19937Legacy _generator;
     private XSystem35Random _random;
 
@@ -115,21 +118,25 @@ public sealed class GoldenReplay
     /// once the entry memory is loaded (story-scene dumps are loaded into the same object).
     /// <paramref name="entryPoint"/> runs the root through code outside the battle (e.g. the boot,
     /// which needs the player's scenario files), on the replay's context; without it the root
-    /// must be one of <see cref="ReplayableRoots"/>.
+    /// must be one of <see cref="ReplayableRoots"/>. <paramref name="scenes"/> makes the scene
+    /// runtime from the replay's hooks (the files it does not run as scenes stay hooks): the
+    /// context then runs scene files, and the replay answers menus, the mouse and the clock.
     /// </summary>
     public static async Task<GoldenReport> RunAsync(
         GoldenCapture capture,
         GoldenFilter? filter = null,
         IScriptView? view = null,
         Action<GameState>? started = null,
-        Func<ScriptContext, Task>? entryPoint = null)
+        Func<ScriptContext, Task>? entryPoint = null,
+        Func<IStoryHooks, SceneRunner>? scenes = null)
     {
         var replay = new GoldenReplay(capture, filter ?? GoldenFilter.For(capture));
-        await replay.RunAsync(view ?? new NullView(), started, entryPoint);
+        await replay.RunAsync(view ?? new NullView(), started, entryPoint, scenes);
         return replay._report;
     }
 
-    private async Task RunAsync(IScriptView view, Action<GameState>? started, Func<ScriptContext, Task>? entryPoint)
+    private async Task RunAsync(
+        IScriptView view, Action<GameState>? started, Func<ScriptContext, Task>? entryPoint, Func<IStoryHooks, SceneRunner>? scenes)
     {
         try
         {
@@ -137,7 +144,11 @@ public sealed class GoldenReplay
             CheckLayout(_capture.Enter.Bindings.Count > 0 ? _capture.Enter : _capture.Exit);
             _capture.Enter.ApplyTo(_state.Memory);
             started?.Invoke(_state);
-            var battle = new Battle(_state, new Random(this), view, new Input(this), new Hooks(this));
+            var hooks = new Hooks(this);
+            var runner = scenes?.Invoke(hooks);
+            _scenes = runner is not null;
+            var battle = new Battle(_state, new Random(this), view, new Input(this), runner ?? (IStoryHooks)hooks);
+            runner?.Bind(battle.Script);
             Func<Task> entry = entryPoint is not null
                 ? () => entryPoint(battle.Script)
                 : !CanReplay(_capture.Header)
@@ -226,6 +237,20 @@ public sealed class GoldenReplay
         return match;
     }
 
+    /// <summary>One <c>IM</c>: a mouse record answers as many reads as its count.</summary>
+    private MouseRecord TakeMouse()
+    {
+        if (NextRecord() is not MouseRecord record)
+            return Take<MouseRecord>("the mouse (IM)");
+        if (++_mouseRepeats >= record.Count)
+        {
+            _mouseRepeats = 0;
+            _next++;
+            _consumed.Add(record);
+        }
+        return record;
+    }
+
     private GoldenDivergenceException Diverged(string message)
     {
         var sb = new StringBuilder(message).Append('.');
@@ -273,8 +298,48 @@ public sealed class GoldenReplay
         }
     }
 
-    private sealed class Input(GoldenReplay replay) : IBattleInput
+    private sealed class Input(GoldenReplay replay) : IBattleInput, ISceneInput
     {
+        public Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
+        {
+            var record = replay.Take<MenuRecord>("a menu choice");
+            if (record.Count != items.Count)
+            {
+                throw replay.Diverged(
+                    $"the menu has {items.Count} items in the core and {record.Count} in the original at {record.Where} (line {record.Line})");
+            }
+            return Task.FromResult(record.Choice);
+        }
+
+        public Task<MouseState> GetMouseAsync()
+        {
+            var record = replay.TakeMouse();
+            return Task.FromResult(new MouseState((Sys3Int)record.Button, (Sys3Int)record.X, (Sys3Int)record.Y));
+        }
+
+        public Task<IReadOnlyList<Sys3Int>> GetDateAsync() =>
+            Task.FromResult<IReadOnlyList<Sys3Int>>(replay.Take<DateRecord>("the date (ZT 0)").Values.Select(v => (Sys3Int)v).ToArray());
+
+        /// <summary><c>ZT 1</c> is not recorded: the timer reads after it carry the values.</summary>
+        public Task ResetTimerAsync(Sys3Int value) => Task.CompletedTask;
+
+        public Task<Sys3Int> GetTimerAsync(int mode)
+        {
+            var record = replay.Take<TimerRecord>($"the timer (ZT {mode})");
+            if (record.Command != mode)
+                throw replay.Diverged($"the core read ZT {mode} where the original read ZT {record.Command} at {record.Where} (line {record.Line})");
+            return Task.FromResult((Sys3Int)record.Value);
+        }
+
+        public Task<IReadOnlyList<Sys3Int>> GetCdPositionAsync()
+        {
+            var r = replay.Take<CdPosRecord>("the CD position (SC)");
+            return Task.FromResult<IReadOnlyList<Sys3Int>>([(Sys3Int)r.Track, (Sys3Int)r.Minute, (Sys3Int)r.Second, (Sys3Int)r.Frame]);
+        }
+
+        /// <summary><c>SR 1</c> (MIDI) is not recorded; the original plays CD audio, so no MIDI track plays.</summary>
+        public Task<Sys3Int> GetMidiTrackAsync() => Task.FromResult(Sys3Int.Zero);
+
         public Task<Sys3Int> WaitForKeyAsync() =>
             Task.FromResult((Sys3Int)replay.Take<KeyRecord>("a key (IK)").Code);
 

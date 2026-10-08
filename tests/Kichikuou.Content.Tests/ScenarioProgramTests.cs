@@ -86,7 +86,7 @@ public sealed class ScenarioProgramTests : IDisposable
             "\t\\0:");
 
         Assert.Equal(
-            new MessageStatement(At(2), new ScriptText(At(2), [new BinaryExpr("+", V(1), C(2))], [V(154)])),
+            new MessageStatement(At(2), new ScriptText(At(2), [new BinaryExpr("+", V(1), C(2))], [C(1), V(154)])),
             p.Statements[0],
             new MessageComparer());
         Assert.Equal(new EngineStatement(At(8), "ZM", [C(24)]), p.Statements[1], new EngineComparer());
@@ -243,7 +243,7 @@ public sealed class ScenarioProgramTests : IDisposable
     {
         public bool Equals(ScriptStatement? x, ScriptStatement? y) =>
             x is MessageStatement a && y is MessageStatement b && a.At == b.At && a.Text.Start == b.Text.Start
-            && a.Text.Numbers.SequenceEqual(b.Text.Numbers) && a.Text.ComputedStrings.SequenceEqual(b.Text.ComputedStrings);
+            && a.Text.Numbers.SequenceEqual(b.Text.Numbers) && a.Text.Strings.SequenceEqual(b.Text.Strings);
 
         public int GetHashCode(ScriptStatement obj) => 0;
     }
@@ -297,8 +297,9 @@ public class ScenarioProgramSweepTests(ITestOutputHelper output)
                 foreach (var t in program.Statements.OfType<MessageStatement>().Select(m => m.Text))
                 {
                     var run = text.Read(t.Start);
-                    if (run.NumberCount != t.Numbers.Count || run.ComputedStringCount != t.ComputedStrings.Count)
-                        failures.Add($"{t.Start}: run prints {run.NumberCount} numbers / {run.ComputedStringCount} computed strings, the statement has {t.Numbers.Count} / {t.ComputedStrings.Count}");
+                    int strings = run.Segments.Count(s => s is StringSlot);
+                    if (run.NumberCount != t.Numbers.Count || strings != t.Strings.Count)
+                        failures.Add($"{t.Start}: run prints {run.NumberCount} numbers / {strings} strings, the statement has {t.Numbers.Count} / {t.Strings.Count}");
                 }
             }
             catch (Exception e) when (e is ScenarioFormatException or ScenarioTextException)
