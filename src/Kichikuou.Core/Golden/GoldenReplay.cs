@@ -55,6 +55,11 @@ public sealed class GoldenReport(GoldenCapture capture)
                 sb.Append($"  {d}\n");
             if (failures.Count > maxLines)
                 sb.Append($"  … {failures.Count - maxLines} more\n");
+            var ignoredList = checkpoint.Differences.Where(d => d.Ignored).ToList();
+            foreach (var d in ignoredList.Take(maxLines))
+                sb.Append($"  {d}\n");
+            if (ignoredList.Count > maxLines)
+                sb.Append($"  … {ignoredList.Count - maxLines} more ignored\n");
         }
         return sb.ToString();
     }
