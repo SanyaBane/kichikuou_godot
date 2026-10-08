@@ -249,7 +249,7 @@ public class FlowStrategyTests
         await rig.Battle.StrategyAsync();
         Assert.Equal(line, rig.Lines[1]);
         var windows = rig.View.Events.OfType<FlowWindowEvent>().Select(w => (int)w.Op).ToList();
-        Assert.Equal([143, 10, op, 10, 143, 10], windows);
+        Assert.Equal([143, 11, 10, op, 11, 10, 143, 11, 10], windows);
     }
 
     [Fact]

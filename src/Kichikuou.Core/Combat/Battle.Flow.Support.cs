@@ -171,21 +171,13 @@ public sealed partial class Battle
     /// <c>Ui_WaoOp := 11; call WAO_SUB.ADV</c> (<c>WAO_SUB.ADV:510-519</c>): waits with
     /// <c>IK 0</c>, which leaves the key code in <c>RetVal</c> (nothing while no window is open).
     /// </summary>
-    private Task FlowWaitKeyAsync()
-    {
-        State.Ui_WaoOp = 11;
-        return WaoSubAsync();
-    }
+    private Task FlowWaitKeyAsync() => FlowWindowAsync(11);
 
     /// <summary>
     /// <c>Ui_WaoOp := 1; call WAO_SUB.ADV</c> (<c>WAO_SUB.ADV:286-294</c>): waits with
     /// <c>US RetVal; IK 0; UG RetVal</c>, so <c>RetVal</c> is preserved (nothing while no window is open).
     /// </summary>
-    private Task FlowWaitKeyKeepRetValAsync()
-    {
-        State.Ui_WaoOp = 1;
-        return WaoSubAsync();
-    }
+    private Task FlowWaitKeyKeepRetValAsync() => FlowWindowAsync(1);
 
     /// <summary>
     /// The FIGT message box: <c>\L_0509c</c> (open, op 143), the text, <c>\L_05119</c> (wait,
