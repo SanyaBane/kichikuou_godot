@@ -17,10 +17,10 @@ keep the dictionary updated when a meaning is confirmed or corrected.
 
 The **battle** (`FIGT*.ADV`) is ported to `src/Kichikuou.Core/Combat` following
 [docs/porting-conventions.md](docs/porting-conventions.md) and the spec in
-[docs/battle/](docs/battle/README.md); unit tests per procedure pass, but no end-to-end battle
-test and no comparison with the original game exist yet. Next: review of the battle port and
-end-to-end tests, then the golden-test harness on a patched xsystem35
-(`F:\sources\Rance\xsystem35-sdl2`, built with MSYS2).
+[docs/battle/](docs/battle/README.md); it has been reviewed against the script and has unit and
+end-to-end tests, but no comparison with the original game exists yet. Next: the golden-test
+harness on a patched xsystem35 (`F:\sources\Rance\xsystem35-sdl2`, branch `golden-harness`,
+built with MSYS2 — see `docs/spike-findings.md`).
 
 ## Layout
 
