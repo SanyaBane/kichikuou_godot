@@ -61,12 +61,24 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
 | **D1 / D2** | Dungeon flow / dungeon scenes with state | dungeon | P2, E2 |
 | **G0** | Godot: strategic map screen, command menus, scene player, save/load | — | W3, E2 |
 
-## Decisions
+## Decisions (owner, 2026-10-08)
 
-Open — to be decided by the owner (see the session of 2026-10-08):
+1. **Record data and scenes are read at run time from the player's own files** (the decompiled
+   scenario today, like `ScenarioText`; reading the original archive directly may replace the
+   decompile step later). Nothing derived from the game is committed — no generated tables of
+   stats, no converted scene IR. Hand-ported rule code stays committed as before.
+2. **First milestone: the whole prologue is playable** — new game → the thieves weeks → the
+   prologue battles (already captured and verified) → the end of the prologue, with save/load.
+3. **Strategic screens first reproduce the original layout**, like the battle screen; a
+   Sengoku Rance–style redesign comes later with the owner. The look need not be pixel-exact
+   (mechanics must be).
 
-1. Record data (`SET_*`) and scenes: read at run time from the player's decompiled scenario,
-   or generated into committed C#?
-2. First playable milestone.
-3. Look of the strategic screens during the port (the owner does not need a pixel-exact copy of
-   the original; mechanics stay exact).
+## Milestone 1 — the prologue
+
+Order: **F0** → **F1** and **F2** (parallel) → **E1** → **E2** → **W1** → **W3** + the prologue
+paths of the commands (`StoryStage = 0`: Pillage in `Cﾃｷﾄｼ`, `Cﾃｷﾄｼ2`, subordinate talk in
+`Cﾌﾞｶ`, the stage-0 harem) → **W2** (the thieves-only week and the Leazas-phase skeleton) →
+**G0** (map, command menus, scene player, save/load in the original layout). Each part is
+verified by golden captures of prologue weeks (F2). Which scenes and commands the prologue
+reaches exactly is the first thing to establish (start from `ｽﾀMENU.ADV:287-289`, `MAIN.ADV`'s
+thieves week and `COMMAND.ADV:516-526`).

@@ -151,5 +151,10 @@ every memory dump of the patched xsystem35 (no reseeding, so the patched game pl
 unpatched one); the core restores it and must produce every recorded `Y 4` draw itself, which
 also proves the generator port. Design and format: [golden-tests.md](golden-tests.md).
 
+Decided (2026-10-08, after the battle port): the strategic layer is surveyed in
+[strategy/](strategy/README.md); record data and scenes are read at run time from the player's
+files (nothing derived from the game is committed); the first milestone is the whole prologue,
+playable; strategic screens first reproduce the original layout.
+
 Done so far: variable dictionary; solution skeleton (`Kichikuou.Core` + tests + Godot 4.7.2
 project on `net10.0`, verified building and running headless).

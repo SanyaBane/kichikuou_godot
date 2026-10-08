@@ -21,8 +21,11 @@ The **battle** (`FIGT*.ADV`) is ported to `src/Kichikuou.Core/Combat` following
 end-to-end tests. The golden-test harness is built ([docs/golden-tests.md](docs/golden-tests.md)):
 a patched xsystem35 (`F:\sources\Rance\xsystem35-sdl2`, branch `golden-harness`, built with
 MSYS2 — see `docs/spike-findings.md`) records battles, `src/Kichikuou.Core/Golden` replays them.
-Next: the owner captures battles (`tools/golden/capture.ps1`), then every mismatch is fixed in
-the port with a regression test.
+37 captured battles match; the battle screen reproduces the original layout at 1280×800.
+
+Now: the **strategic layer** (week loop, commands, nation turns, data, scenes). Surveys, parts
+and the owner's decisions are in [docs/strategy/](docs/strategy/README.md); milestone 1 is the
+whole prologue, playable. Record data and scenes are read at run time from the player's files.
 
 ## Layout
 
