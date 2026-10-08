@@ -163,6 +163,7 @@ here with its reason, never as a blanket rule.
 | 10 stage-1 battles: city attacks that take a province, `Gｴｸｽ` inside FIGT_A, an abandoned and a lost defence (2026-10-08) | none — all match | — |
 | 3 more: Focus, Rance Attack and By la Way in an attack that runs out of rounds; two FIGT_B on Ys (2026-10-08) | none — all match | — |
 | 14 more: captures with `死亡捕獲` hooks, ten dungeon battles (root `FIGT.ADV`), the `Iﾏｼﾞﾝ` defences, a game over (2026-10-08) | none — all match | — |
+| enemy info and the player's retreat (2026-10-08) | none — matches | — |
 
 ## Harness configuration
 
@@ -208,16 +209,17 @@ Each `.golden` file becomes one test case. Captured so far (all match the origin
 | `113558-01` | FIGT_A from `Cﾃｷﾄｼ` on Oaks, victory; Melfeis and Haurein captured, then `Iｼﾚｲﾌﾞ` | hooks from `死亡捕獲` (`Gﾒﾙﾌｪｲｽ`, `Gﾊｳﾚｰﾝ`) and FIGT_A's slave-event hook, story stage changes |
 | `114046-02` … `114217-11` | `FIGT.ADV` called by `Cﾒｲｷｭｳ` (dungeon): Rance alone vs Sergeant Hanny, and the boss Marder (`-03`) | dungeon battles (root `FIGT.ADV`), commander already at status 0 |
 | `114319-12`, `114531-13` | FIGT_B called by `Iﾏｼﾞﾝ` on Leazas Castle: Monster Generals, then La Seizel | monster army defence, long battle (966 draws) |
-| `115148-14` | FIGT_A from `Cﾃｷﾄｼ` on Log B, Rance alone vs the Helman army, dies | game over: the capture ends with `jump OVER.ADV` |
+| `115148-14` | FIGT_A from `Cﾃｷﾄｼ` on Log B, Rance alone vs the Helman army, dies | game over: the capture ends with `jump OVER.ADV`; enemy bow attacks |
+| `125124-01` | FIGT_A on Log B again: enemy info twice (FIGT_SEL 54, slots 1 and 3), then the player retreats | enemy info, player retreat and its confirmation menu |
 
 Coverage of the battle code by these replays (2026-10-08, `--collect "Code Coverage"` on
-`GoldenBattleTests`, 36 captures): never reached are the other specials (beams, High Speed,
-Chuhai, Vanish Bomb, War Dance, Soaring Wave), bow attacks, Fog Card, the kaiju summons,
-Goliath, the ninja follow-up, the player's retreat, the Land of Death, the defence refusal
-branch, enemy info, `RaiseModifierAsync`.
+`GoldenBattleTests`, 37 captures): never reached are the other specials (beams, High Speed,
+Chuhai, Vanish Bomb, War Dance, Soaring Wave), the player's bow attacks (enemy bow attacks are
+covered), Fog Card, the kaiju summons, Goliath, the ninja follow-up, the Land of Death, the
+defence refusal branch, `RaiseModifierAsync`.
 
-Still wanted: the player retreating; a bow unit attacking; enemy info (right click on an enemy
-panel); other specials, a kaiju summon or Fog Card when available. A battle starts with focus 0 and the specials are
+Still wanted: one of the player's units with a bow attack type using Bow (FIGT_SEL 2); other
+specials, a kaiju summon or Fog Card when available. A battle starts with focus 0 and the specials are
 listed only with focus > 0 (01-flow §8.2), so Focus ("Wait") comes first.
 
 Start the harness with
