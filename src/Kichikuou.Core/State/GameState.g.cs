@@ -1099,8 +1099,8 @@ public sealed partial class GameState
     /// <summary>VAR0468 [I] — Merchant / Portugal: 1, 2=Portugal merged with Leazas, 3-4 later merchant stages</summary>
     public ref Sys3Int F_Merchant_State => ref Memory.Var(468);
 
-    /// <summary>VAR0469 [I] — Error counter in the unit-status code (abnormal item data)</summary>
-    public ref Sys3Int VAR0469 => ref Memory.Var(469);
+    /// <summary>VAR0469 [C] — Times Rance picked himself in the subordinate talk (Cﾌﾞｶ L_01cf3); picks the monologue line (&lt;10, &lt;20, else)</summary>
+    public ref Sys3Int N_RanceSelfTalk => ref Memory.Var(469);
 
     /// <summary>VAR0470 [C] — Mokomoko: 11=toll collected at province 4, 12-14 scenes, 15=lives at Rance's side (good), 2=captured by DX (bad)</summary>
     public ref Sys3Int F_Mokomoko_State => ref Memory.Var(470);

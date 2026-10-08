@@ -476,7 +476,7 @@ public static partial class VariableCatalog
         new("Maken_DoneWeek", "time"),
         new("F_SillClothes_State", "story"),
         new("F_Merchant_State", "story"),
-        new("VAR0469", "debug"),
+        new("N_RanceSelfTalk", "story"),
         new("F_Mokomoko_State", "story"),
         new("F_Makoto_State", "story"),
         new("N_SpecialRoom_Girls", "story"),

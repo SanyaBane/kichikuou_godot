@@ -154,7 +154,7 @@ feast) and the `*_EventWeek` timers.
 | New game | `Start` → `WAO_MAP` 3, `M` 0, `Week := 8`, `StoryStage := 0`, `Gold := 50`, `Iﾌﾟﾛﾛｰｸﾞ`, `&MAIN` | `ｽﾀMENU.ADV:244-291` |
 | Debug starts | `DebugMode = 1` → menu "From 1-4": week 12/stage 1 (`Iﾊﾝﾗﾝ`), week 16/stage 2 (`Iｼﾚｲﾌﾞ` 2, units set), week 77 late-game preset (≈40 flags, provinces 2-77 to Leazas, 78-83/89 to Kayblis) | `:292-546` |
 | First week | `Week` 9 → `COM` plays `Iｼﾚｲﾌﾞ` 10 | `COM.ADV:1-5` |
-| Prologue end | Turn END with `Week > 22` (or `Cﾃｷﾄｼ` win on 33/34) → `Iﾄｳｿﾞｸ`, `ｵｰﾌﾟﾆﾝｸﾞ`, `StoryStage := 99` → MAIN sets 1 and plays `Iﾊﾝﾗﾝ` | `COMMAND.ADV:419-424`, `MAIN.ADV:70-73` |
+| Prologue end | the lost duel in `Iﾄｳｿﾞｸ` writes `StoryStage := 99` (`:1841`); reached by Turn END with `Week > 22` (`Iﾄｳｿﾞｸ` 2) or by the Merci path (Pillage on 34 with `F_Thieves_State = 3`) → `ｵｰﾌﾟﾆﾝｸﾞ` → MAIN sets 1 and plays `Iﾊﾝﾗﾝ`; see README "What the prologue reaches" | `COMMAND.ADV:419-424`, `Cﾃｷﾄｼ.ADV:99-108`, `MAIN.ADV:70-73` |
 | Autosave | each week at phase start: `QD 1` (slot 1), then page 4 to all slots | `MAIN.ADV:20,83`, `ﾛｰﾄﾞｾｰﾌﾞ.ADV:30-58` |
 | Manual save | `QC n,1` = **copy of this week's autosave** into slot 2-10, `QP n, Tmp0022` patches the slot number in | `ﾛｰﾄﾞｾｰﾌﾞ.ADV:325-512` |
 | Load | page 4 from all slots, `QC 1,n` (autosave := chosen slot), `LD n` → resumes after `QD 1` with `RetVal 0` → "Load Complete", `SS CurrentBgm`, returns into `MAIN` at the phase start | `ﾛｰﾄﾞｾｰﾌﾞ.ADV:105-299,59-81` |

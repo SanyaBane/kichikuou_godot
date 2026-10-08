@@ -468,7 +468,7 @@ VAR0465	Maken_Project	story	Magic research institute (Curtis) project: 0 none, 1
 VAR0466	Maken_DoneWeek	time	Week when the current research project completes	C	Gﾏｹﾝ.ADV:340; Gﾏｹﾝ.ADV:55
 VAR0467	F_SillClothes_State	story	Clothes for Sill: 0=not bought (merchant offers), 1=bought, 2 scene pending in COM, 3 done	I	Cｼｮｳﾆﾝ.ADV:1198; COM.ADV:361; Gｼｨﾙ.ADV:956
 VAR0468	F_Merchant_State	story	Merchant / Portugal: 1, 2=Portugal merged with Leazas, 3-4 later merchant stages	I	Cﾃｷﾄｼ.ADV:2432; Cｼｮｳﾆﾝ.ADV:1595; Cｼｮｳﾆﾝ.ADV:19
-VAR0469		debug	Error counter in the unit-status code (abnormal item data)	I	Cﾌﾞｶ.ADV:1339
+VAR0469	N_RanceSelfTalk	story	Times Rance picked himself in the subordinate talk (Cﾌﾞｶ L_01cf3); picks the monologue line (<10, <20, else)	C	Cﾌﾞｶ.ADV:1339
 VAR0470	F_Mokomoko_State	story	Mokomoko: 11=toll collected at province 4, 12-14 scenes, 15=lives at Rance's side (good), 2=captured by DX (bad)	C	Cｼﾊｲﾄｼ.ADV:910; Gﾓｺﾓｺ.ADV:1680; OVER.ADV:692
 VAR0471	F_Makoto_State	story	Makoto: 0=lives in Osaka (good), 1=captured at province 56, 2 later (bad)	C	Cｼﾊｲﾄｼ.ADV:916; Gﾏｺﾄ.ADV:418; OVER.ADV:1194
 VAR0472	N_SpecialRoom_Girls	story	Number of girls kept in the Special Room (enables the castle menu entry)	C	Cｼﾊｲﾄｼ.ADV:1057; Gﾄｸﾍﾞﾂ.ADV:107; Gｶｾｲ.ADV:2593
