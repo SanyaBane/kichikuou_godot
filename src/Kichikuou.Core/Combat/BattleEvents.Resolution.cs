@@ -9,7 +9,8 @@ namespace Kichikuou.Core.Combat;
 
 /// <summary>
 /// A call of a <c>WAO_SUB.ADV</c> window operation (<c>Ui_WaoOp</c>), e.g. 141/151 open a
-/// speaker window, 143 a narration window, 11 waits for a click, 10 closes the window.
+/// speaker window, 143 a narration window, 11 marks a click wait (the wait itself is the
+/// <see cref="IBattleInput.WaitForKeyAsync"/> call that follows), 10 closes the window.
 /// <c>WAO_SUB.ADV</c>'s own UI-variable writes are not ported (presentation).
 /// </summary>
 public sealed record WaoCallEvent(Sys3Int Op) : BattleEvent;

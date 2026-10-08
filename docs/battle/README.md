@@ -39,3 +39,14 @@ The three parts are merged (2026-10-08); there are no stubs left. Notes on the m
 - A jump out of the battle (game over to `OVER.ADV`) throws `ScenarioJumpException`.
 - Flow entry points: `FightAsync` (direct `FIGT`), `AttackProvinceAsync` (`FIGT_A`),
   `DefendProvinceAsync` (`FIGT_B`), `DeathCaptureAsync` (`死亡捕獲`).
+
+### Known gaps for the golden-test harness
+
+- The message-window and map internals (`WAO_SUB.ADV`, `M.ADV`, `WAO_MAP.ADV`) are not ported:
+  the flow and resolution parts emit events and set only `Ui_WaoOp` / `CallArg`, while the
+  flavour part also tracks `Ui_WinType` / `Ui_WinFrameCg`. These UI variables match the
+  original after each window closes but not while one is open, and other `Ui_*` writes of
+  those files are missing. A variable-by-variable comparison must either port them or exclude
+  the `ui` group of `variables.tsv` (decide when building the harness).
+- `EndToEndBattleTests` (14 tests) run whole battles through all three parts with hand-derived
+  draw sequences; they check internal consistency, not equality with the original game.

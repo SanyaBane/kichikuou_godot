@@ -1843,11 +1843,20 @@ public sealed partial class Battle
 
     /// <summary>
     /// A call of a window label (<c>!Ui_WaoOp : op! %#WAO_SUB.ADV:</c>) — sets <c>Ui_WaoOp</c> and
-    /// shows the window operation; <c>WAO_SUB.ADV</c>'s own UI writes are not ported.
+    /// shows the window operation; <c>WAO_SUB.ADV</c>'s own UI writes are not ported. Op 11 is
+    /// the click wait: <c>WAO_SUB.ADV:510-519</c> (<c>L_00ce1</c>) runs <c>IK 0</c>, which stores the
+    /// key in <c>RetVal</c>, so it goes through <see cref="IBattleInput.WaitForKeyAsync"/> like every
+    /// other <c>IK 0</c> of the battle (every R1 call site has a window open, so the
+    /// <c>Ui_WinType = 0</c> early return of <c>:511</c> never applies).
     /// </summary>
     private async Task WaoAsync(Sys3Int op)
     {
         State.Ui_WaoOp = op;
         await View.ShowAsync(new WaoCallEvent(op));
+        if (op == 11)
+        {
+            Sys3Int key = await Input.WaitForKeyAsync(); // WAO_SUB.ADV:516 IK 0
+            State.RetVal = key;
+        }
     }
 }
