@@ -159,6 +159,7 @@ here with its reason, never as a blanket rule.
 | FIGT_A, prologue victory at Golak (2026-10-08) | `M.ADV` / `WAO_MAP.ADV` leave scratch values (`Tmp0021-0026`, …) that FIGT_A returns to its caller; `Y 3` stores the key that cut the pause short in `RetVal` | `Battle.Map.cs` ports the map operations the battle reaches; every `Y 3` goes through `IBattleInput.PauseAsync` (`FlowMapTests`) |
 | same | `Glob_CgSeen` counters, `Tmp0010` | ignored (above) |
 | static audit of `WAO_SUB.ADV` ahead of a FIGT_B capture (2026-10-08) | FIGT_B shows and removes portraits (ops 311/312/321/322/331/332); every removal runs `L_00b0f`, which leaves the clamped camera in `Tmp0021/0022`; the key waits (ops 1/11) skip `IK 0` while no window is open | `Battle.Wao.cs` ports `WAO_SUB`'s state effects (`FlowWaoTests`); the FIGT_A capture still matches, and its `ui` variables now match too except `Ui_BtnCur` (FIGT_SEL) |
+| 5 more prologue FIGT_A, the Ruberan duel, FIGT_B city and plains intercepts with `Sﾌﾞﾀｲ`/`Gｴｸｽ` hooks (2026-10-08) | none — all match | — |
 
 ## Harness configuration
 
@@ -186,9 +187,25 @@ which the core did not do (fixed in `tools/codegen/gen_state.py`).
 
 ## Battles to capture
 
-Plains attack, city attack, an enemy attack intercepted (plains and city), a special attack
-(Rance Attack or a beam), a commander death on each side, a battle with a story hook (e.g.
-the Ex fight, JAPAN invasion). Each `.golden` file becomes one test case.
+Each `.golden` file becomes one test case. Captured so far (all match the original):
+
+| Capture | Battle | What it exercises |
+|---|---|---|
+| `095048-01`, `102936-01` … `103255-05` | FIGT_A from `Iﾄｳｿﾞｸ`, prologue: Rance's party vs the Civilian General at Golak / Vladivostok, victory | direct and magic attacks, enemy commander death, EXP, `M.ADV` map ops |
+| `103304-06` | FIGT_A from `Iﾄｳｿﾞｸ@198f`, scripted duel vs Ruberan, defeat (`Bt_IsDuel = 1`) | slot orders (FIGT_SEL 51), player commander deaths, `死亡捕獲`, `Prov_Cur := 1` |
+| `103751-07` | FIGT_B, Pegasus/Dodge/Melfeis attack North, `Sﾌﾞﾀｲ` returns 502 (city defence) | intercept setup, portraits, city walls, victory |
+| `103847-08` | FIGT_B, Ex's army attacks Wes; hooks `Gｴｸｽ`, then `Sﾌﾞﾀｲ` returning 501 (plains) | story hook before the battle, plains intercept, slot order 52, player commander death (Rick) |
+
+Coverage of the battle code by these replays (2026-10-08, `--collect "Code Coverage"` on
+`GoldenBattleTests`): never reached are the special attacks (Rance Attack, By la Way, the beams,
+High Speed, Chuhai, Vanish Bomb, War Dance, Soaring Wave) and `SpendFocus`, Focus, Fog Card,
+the kaiju summons, Goliath, the ninja follow-up and ninja scouting, the player's retreat, the
+Land of Death, the defence refusal / abandon branches and the loss of a province
+(`ProvinceLostAsync`), unit / enemy info, `RaiseModifierAsync`.
+
+Still wanted: a special attack (Rance Attack, a beam), Focus, a city attack after the prologue
+(province changes owner), a lost defence (province lost), the player retreating, a dungeon battle
+(root `FIGT.ADV`), a game over (jump to `OVER.ADV`), a kaiju summon or Fog Card when available.
 
 Start the harness with
 
