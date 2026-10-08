@@ -31,6 +31,30 @@ public static class GameData
         }
     }
 
+    /// <summary>The player's game folder (music: <c>_inmm.ini</c>, <c>bgm\</c>).</summary>
+    public static string GameDirectory
+    {
+        get
+        {
+            var config = new ConfigFile();
+            return config.Load(SettingsPath) == Error.Ok
+                ? (string)config.GetValue("data", "game_dir", DefaultGame)
+                : DefaultGame;
+        }
+        set
+        {
+            var config = new ConfigFile();
+            config.Load(SettingsPath);
+            config.SetValue("data", "game_dir", value);
+            config.Save(SettingsPath);
+        }
+    }
+
+    private const string DefaultGame = @"E:\Modding games\Modding Rance\Kichikou\Kichikuou Rance";
+
+    /// <summary>The sound effects (<c>.WAV</c> files named as in the archive).</summary>
+    public static string WavDirectory => System.IO.Path.Combine(ExtractDirectory, "wav");
+
     /// <summary>The decompiled scenario (<c>.ADV</c> files).</summary>
     public static string ScenarioDirectory => System.IO.Path.Combine(ExtractDirectory, "scenario");
 

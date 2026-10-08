@@ -208,6 +208,10 @@ public class BattlePresenterGameDataTests(ITestOutputHelper output)
             // The redraw before the highlight copied the back buffer up: the frame CG 836 of
             // panel 1 sits at (5, 1), the same pixels as in the back buffer.
             Assert.Equal(presenter.Surface.PixelAt(10, 404), presenter.Surface.PixelAt(10, 4));
+            // The highlighted panel's first character ("[", a box glyph) is in colour 240 on screen.
+            var (x, y, _, _) = BattlePresenter.Panels[h.Panel.Value - 1];
+            var p = presenter.Surface.StoredPixelAt(x * Surface.Scale + 1, (y + 2) * Surface.Scale + 2);
+            Assert.Equal((0xdc, 0xff, 0x91), ((int)p.R, (int)p.G, (int)p.B));
             checkedRedraw = true;
         });
         await GoldenReplay.RunAsync(capture, view: view, started: presenter.Start);
@@ -257,6 +261,83 @@ public class BattlePresenterGameDataTests(ITestOutputHelper output)
         again.MouseMove(500, 50);
         again.MouseDown(MouseButton.Left, 500, 50);
         Assert.Equal(new FigtSelChoice(FigtSelCommand.Direct, 4), again.Result);
+    }
+
+    /// <summary>
+    /// Live battles fought through the screens with the mouse: the first valid enemy panel is
+    /// clicked, or else "Defend" is chosen from the command popup; script menus take their first
+    /// item. Checks that the FIGT_SEL screen answers every real menu the core asks.
+    /// </summary>
+    [CaptureTheory]
+    [MemberData(nameof(Captures))]
+    public async Task Live_battles_can_be_fought_with_the_mouse(string file)
+    {
+        var capture = GoldenCapture.Load(Path.Combine(LocalData.GoldenDirectory, file));
+        var presenter = NewPresenter();
+        var input = new MouseInput(presenter);
+        var view = new DelegateView(presenter.Show);
+
+        var (state, jump) = await BattleSandbox.RunLiveAsync(capture, view, input, seed: 1, started: presenter.Start);
+
+        output.WriteLine($"{input.Selections} selections ({input.Popups} by popup), result {state.Bt_Result}, jump {jump}");
+        Assert.True(presenter.Unresolved.Count == 0, string.Join("\n", presenter.Unresolved.Distinct()));
+    }
+
+    private sealed class MouseInput(BattlePresenter presenter) : IBattleInput
+    {
+        public int Selections { get; private set; }
+        public int Popups { get; private set; }
+
+        public Task<Sys3Int> WaitForKeyAsync()
+        {
+            presenter.Flush();
+            presenter.AfterKey();
+            return Task.FromResult((Sys3Int)16);
+        }
+
+        public Task<Sys3Int> PauseAsync(Sys3Int ticks) => Task.FromResult(Sys3Int.Zero);
+
+        public Task<FigtSelChoice> SelectCommandAsync(FigtSelMenu menu)
+        {
+            if (++Selections > 300)
+                throw new InvalidOperationException("The battle does not end.");
+            presenter.Flush();
+            var screen = new FigtSelScreen(presenter, menu);
+            foreach (var target in menu.Find(menu.InitialMode)?.Arguments ?? [])
+            {
+                var (x, y, w, h) = BattlePresenter.Panels[target.Value];
+                Click(screen, MouseButton.Left, x + w / 2, y + h / 2);
+                if (screen.Result is { } chosen)
+                    return Task.FromResult(chosen);
+            }
+            Popups++;
+            Click(screen, MouseButton.Right, 320, 380);
+            var popup = screen.Popup ?? throw new InvalidOperationException("No popup.");
+            int item = popup.Items.ToList().FindIndex(i => i.Trim() == "Defend");
+            Assert.True(item >= 0, string.Join("|", popup.Items));
+            Click(screen, MouseButton.Left, popup.X + 10, popup.Y + item * 18 + 5);
+            return Task.FromResult(screen.Result ?? throw new InvalidOperationException("Defend did not answer."));
+        }
+
+        public Task<Sys3Int?> ChooseAsync(BattleMenu menu)
+        {
+            presenter.Flush();
+            var screen = new BattleMenuScreen(presenter, menu);
+            screen.MouseMove(260, 55);
+            screen.MouseDown(MouseButton.Left, 260, 55);
+            screen.MouseUp(MouseButton.Left, 260, 55);
+            Assert.True(screen.IsDone);
+            return Task.FromResult(screen.Result);
+        }
+
+        public Task<Sys3Int> GetPlayingTrackAsync() => Task.FromResult(Sys3Int.Zero);
+
+        private static void Click(FigtSelScreen screen, MouseButton button, int x, int y)
+        {
+            screen.MouseMove(x, y);
+            screen.MouseDown(button, x, y);
+            screen.MouseUp(button, x, y);
+        }
     }
 
     private static (int, int, int) Rgb((byte R, byte G, byte B, byte A) p) => (p.R, p.G, p.B);

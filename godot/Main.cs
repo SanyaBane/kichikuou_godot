@@ -63,7 +63,8 @@ public partial class Main : Control
 
     /// <summary>
     /// Development switches after <c>--</c>: <c>--play FILE</c> / <c>--watch FILE</c> open a capture
-    /// at once; <c>--fast</c> drops the watch delays; <c>--quit</c> exits when the battle ends.
+    /// at once; <c>--fast</c> drops the watch delays; <c>--quit</c> exits when the battle ends;
+    /// <c>--shots DIR</c> saves the screen at every key wait.
     /// </summary>
     private bool StartFromCommandLine()
     {
@@ -76,6 +77,7 @@ public partial class Main : Control
         {
             Fast = args.Contains("--fast"),
             QuitWhenDone = args.Contains("--quit"),
+            ScreenshotDirectory = Array.IndexOf(args, "--shots") is int s and >= 0 && s + 1 < args.Length ? args[s + 1] : null,
         };
         Callable.From(() => Open(screen)).CallDeferred();   // the tree is busy during _Ready
         return true;

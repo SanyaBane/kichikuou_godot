@@ -60,6 +60,9 @@ public sealed class FigtSelScreen
     /// <summary>The answer once the player has chosen; the screen is restored by then.</summary>
     public FigtSelChoice? Result { get; private set; }
 
+    /// <summary>The open popup, if any.</summary>
+    public SelectionBox? Popup => _state is State.SlotPopup or State.CommandPopup ? _box : null;
+
     private int FrameColor => _mode >= 10 ? 249 : 255; // Tmp0020
 
     /// <summary><c>L_001bb</c> (<c>:64-159</c>): the prompt box and its text.</summary>

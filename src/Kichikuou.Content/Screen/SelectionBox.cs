@@ -56,6 +56,9 @@ public sealed class SelectionBox
     /// <summary>Item text colour.</summary>
     public int TextColor { get; }
 
+    /// <summary>The item texts.</summary>
+    public IReadOnlyList<string> Items => _items;
+
     /// <summary>The hovered item, or −1.</summary>
     public int Hovered { get; private set; } = -1;
 

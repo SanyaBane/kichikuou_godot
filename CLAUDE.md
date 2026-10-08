@@ -41,13 +41,21 @@ the port with a regression test.
   part of the repository): `ScenarioText` reads message texts from the decompiled scenario by
   `ScriptRef`; `Graphics/` decodes the CGs keeping palette indices (`IndexedPng`, `Pms`,
   `CgLibrary`, `Palette` with the engine's reserved entries; `ToRgba(40)` = `G n, 40`);
-  `Audio/` maps sound and music numbers to files. Tests in `tests/Kichikuou.Content.Tests` (the golden part resolves every text
-  the captured battles show; `KICHIKUOU_SCENARIO_DIR` overrides the scenario folder).
+  `Audio/` maps sound and music numbers to files. `Screen/` emulates the engine's drawing
+  surface (3200×800 at 2× RGBA, `G`/`CC`/`CS`/`CF`), message text and selection windows;
+  `Battles/BattlePresenter` draws every core event the way the original does
+  ([docs/battle/screen-layout.md](docs/battle/screen-layout.md)), `FigtSelScreen` /
+  `BattleMenuScreen` are the mouse-driven input screens. Tests in
+  `tests/Kichikuou.Content.Tests` (the golden part draws and plays every capture and resolves
+  every text; `KICHIKUOU_SCENARIO_DIR` / `KICHIKUOU_EXTRACT_DIR` / `KICHIKUOU_GAME_DIR`
+  override the local folders).
 - `tests/Kichikuou.Core.Tests` — xUnit tests for the core. `Golden/GoldenBattleTests` replays the
   captures in `E:\Modding games\Modding Rance\Kichikou\_extract\golden` (or
   `KICHIKUOU_GOLDEN_DIR`) and is skipped when there are none.
 - `godot/` — Godot 4.7.2 .NET project (`Kichikuou.csproj`, namespace `Kichikuou.Game`);
-  presentation only. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
+  presentation only: `Main` picks a capture, `Battles/BattleScreen` shows the presenter's
+  surface and forwards mouse/keys, `GodotGlyphRenderer` (MS Gothic via TextServer),
+  `BattleAudio`. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
 - `tools/analysis/` — Python scripts for reading the decompiled scenario; `tools/codegen/` —
   generators for committed C# sources; `tools/golden/` — harness launcher and page classes.
 - `docs/` — brief, spike findings, variable dictionary.
@@ -58,6 +66,8 @@ the port with a regression test.
 - Build everything: `dotnet build Kichikuou.sln`
 - Run the game headless (smoke test): `<Godot console exe> --headless --path godot --quit-after 30`;
   the editor path is in `docs/spike-findings.md`. Commit the `*.uid` files Godot creates.
+- Watch a capture headless and save the screen at every key wait and long pause:
+  `<Godot console exe> --headless --path godot -- --watch <capture> --fast --quit --shots <dir>`.
 
 ## Rules
 

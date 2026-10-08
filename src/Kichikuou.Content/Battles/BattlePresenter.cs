@@ -194,7 +194,13 @@ public sealed partial class BattlePresenter
     // ------------------------------------------------------------------ battlefield (§1)
 
     private bool _redrawing;
-    private (int Panel, Sys3Int Record)? _pendingPanel;
+
+    /// <summary>
+    /// The last panel event, drawn once the next event shows its colour: 240 when a highlight
+    /// follows, else the colour in force. Its texts are taken when the event arrives, because
+    /// the core rewrites strings 1/2 or 4/5 and the cursors for every panel.
+    /// </summary>
+    private (int Panel, string Name, string Kind, Sys3Int Troops)? _pendingPanel;
 
     /// <summary>The panel rectangles of <c>L_0512e</c> (<c>FIGT.ADV:3268</c>), panels 1-8.</summary>
     internal static readonly (int X, int Y, int W, int H)[] Panels =
@@ -220,25 +226,29 @@ public sealed partial class BattlePresenter
         Writer.Color = 18; // FIGT.ADV:2011
     }
 
-    /// <summary><c>L_03236</c> (§1.3): drawn now in a redraw; a highlight's panel waits for its colour.</summary>
+    /// <summary><c>L_03236</c> (§1.3): kept until the next event decides its colour.</summary>
     private void SlotPanel(Sys3Int panel, Sys3Int record)
     {
-        if (_redrawing)
-            DrawPanel(panel.Value);
-        else
-        {
-            FinishPendingPanel();
-            _pendingPanel = (panel.Value, record);
-        }
+        FinishPendingPanel();
+        if (State is not { } s || panel.Value is < 1 or > 8)
+            return;
+        bool player = panel.Value <= 4;
+        Sys3Int troops = player ? s.Units[s.Unit_Cur].Troops : s.Cmdrs[s.Cmdr_Cur].Troops;
+        _pendingPanel = (panel.Value, StringVar(player ? 1 : 4), StringVar(player ? 2 : 5), troops);
     }
 
-    /// <summary><c>L_0320f</c> (§1.4): the panel in colour 240, copied to the screen alone.</summary>
+    /// <summary>
+    /// <c>L_0320f</c> (§1.4): the caller sets <c>ZC 1, 240</c>, the panel is drawn and copied to the
+    /// screen alone, then <c>ZC 1, 22</c>. A redraw right before it is finished first.
+    /// </summary>
     private void Highlight(Sys3Int panel)
     {
-        Writer.Color = 240;
-        if (_pendingPanel is { } p)
-            DrawPanel(p.Panel);
+        var pending = _pendingPanel;
         _pendingPanel = null;
+        FinishRedraw();
+        Writer.Color = 240;
+        if (pending is { } p)
+            DrawPanel(p);
         if (panel.Value is >= 1 and <= 8)
         {
             var (x, y, w, h) = Panels[panel.Value - 1];
@@ -250,7 +260,7 @@ public sealed partial class BattlePresenter
     private void FinishPendingPanel()
     {
         if (_pendingPanel is { } p)
-            DrawPanel(p.Panel);
+            DrawPanel(p);
         _pendingPanel = null;
     }
 
@@ -264,20 +274,15 @@ public sealed partial class BattlePresenter
         Surface.Copy(0, 400, 640, 400, 0, 0); // L_031f9
     }
 
-    /// <summary>One panel into the back buffer, from the strings the core put in 1/2 or 4/5.</summary>
-    private void DrawPanel(int panel)
+    /// <summary>One panel into the back buffer in the current text colour.</summary>
+    private void DrawPanel((int Panel, string Name, string Kind, Sys3Int Troops) panel)
     {
-        if (State is not { } s || panel is < 1 or > 8)
-            return;
-        var (x, y, w, h) = Panels[panel - 1];
+        var (x, y, w, h) = Panels[panel.Panel - 1];
         Writer.Open(x, y + 400, w, h);
         GAt(836, x - 7, y - 7 + 400, keyed: true);
-        bool player = panel <= 4;
-        string name = StringVar(player ? 1 : 4), kind = StringVar(player ? 2 : 5);
-        Sys3Int troops = player ? s.Units[s.Unit_Cur].Troops : s.Cmdrs[s.Cmdr_Cur].Troops;
-        Writer.Print(Hankaku.ToHalfWidth("［" + TextRun.FormatString(name, 13) + "］") + "\n");
-        if (troops != 0)
-            Writer.Print(Hankaku.ToHalfWidth(" " + TextRun.FormatString(kind, 14)) + "\n " + troops.Value);
+        Writer.Print(Hankaku.ToHalfWidth("［" + TextRun.FormatString(panel.Name, 13) + "］") + "\n");
+        if (panel.Troops != 0)
+            Writer.Print(Hankaku.ToHalfWidth(" " + TextRun.FormatString(panel.Kind, 14)) + "\n " + panel.Troops.Value);
     }
 
     // ------------------------------------------------------------------ round header (§3)
