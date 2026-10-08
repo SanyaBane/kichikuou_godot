@@ -63,10 +63,13 @@ public sealed class ScriptedSceneInput : ISceneInput
         return Task.FromResult(Choices.Dequeue());
     }
 
+    /// <summary>Key answers (e.g. 32 for a right click); 0 once empty.</summary>
+    public Queue<int> Keys { get; } = new();
+
     public Task<Sys3Int> WaitForKeyAsync()
     {
         Pointer.Interrupt();
-        return Task.FromResult(Sys3Int.Zero);
+        return Task.FromResult((Sys3Int)(Keys.Count > 0 ? Keys.Dequeue() : 0));
     }
 
     public Task<Sys3Int> PauseAsync(Sys3Int ticks)

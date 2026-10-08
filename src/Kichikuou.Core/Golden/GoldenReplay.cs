@@ -74,9 +74,21 @@ public sealed class GoldenReport(GoldenCapture capture)
 /// </summary>
 public sealed class GoldenReplay
 {
-    /// <summary>The roots the replay has an entry point for (page calls into the battle, <c>COM.ADV</c> and <c>COMMAND.ADV</c>).</summary>
-    public static readonly IReadOnlySet<string> ReplayableRoots =
-        new HashSet<string> { "FIGT_A.ADV", "FIGT_B.ADV", "FIGT.ADV", "COM.ADV", "COMMAND.ADV" };
+    /// <summary>
+    /// The roots the replay has an entry point for: page calls into the battle, <c>COM.ADV</c>,
+    /// <c>COMMAND.ADV</c> and the command files of the prologue (<c>Cﾒｲｷｭｳ.ADV</c> reads its
+    /// strings from the player's files, so its replay is given as an entry point).
+    /// </summary>
+    public static readonly IReadOnlySet<string> ReplayableRoots = new HashSet<string>
+    {
+        "FIGT_A.ADV", "FIGT_B.ADV", "FIGT.ADV", "COM.ADV", "COMMAND.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV",
+    };
+
+    /// <summary>The roots that read the pointer as the script does (the player phase and the command files).</summary>
+    private static readonly IReadOnlySet<string> PointerRoots = new HashSet<string>
+    {
+        "COMMAND.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV", "Cﾒｲｷｭｳ.ADV",
+    };
 
     /// <summary>Whether a capture with this header can be replayed (its root has an entry point).</summary>
     public static bool CanReplay(GoldenHeader header) =>
@@ -85,9 +97,9 @@ public sealed class GoldenReplay
     /// <summary>
     /// Records the core does not consume: <c>IM</c> and <c>IC</c> in the battle only wait for the
     /// button's release (<c>FIGT.ADV:829</c>, <c>FIGT_B.ADV:47</c>, …; <c>RetVal</c> ends 0, the
-    /// position goes to the ignored <c>Ui_MouseX/Y</c>). The player phase reads the pointer as the
-    /// script does, and scenes run their <c>IM</c>/<c>IC</c> statements, so a replay of
-    /// <c>COMMAND.ADV</c> or through a <see cref="SceneRunner"/> consumes them.
+    /// position goes to the ignored <c>Ui_MouseX/Y</c>). The player phase and the command files
+    /// read the pointer as the script does, and scenes run their <c>IM</c>/<c>IC</c> statements, so
+    /// a replay of those roots or through a <see cref="SceneRunner"/> consumes them.
     /// </summary>
     private bool IsPassive(GoldenRecord record) => record is CursorRecord or MouseRecord && !_pointer;
 
@@ -149,7 +161,7 @@ public sealed class GoldenReplay
             started?.Invoke(_state);
             var hooks = new Hooks(this);
             var runner = scenes?.Invoke(hooks);
-            _pointer = runner is not null || _capture.Root == "COMMAND.ADV";
+            _pointer = runner is not null || PointerRoots.Contains(_capture.Root);
             var battle = new Battle(_state, new Random(this), view, new Input(this), runner ?? (IStoryHooks)hooks);
             runner?.Bind(battle.Script);
             Func<Task> entry = entryPoint is not null
@@ -162,6 +174,10 @@ public sealed class GoldenReplay
                     "FIGT_B.ADV" => battle.DefendProvinceAsync,
                     "COM.ADV" => new WeeklyEvents(battle.Script).RunAsync,
                     "COMMAND.ADV" => new CommandPhase(battle.Script).RunAsync,
+                    "Cﾃｷﾄｼ.ADV" => new EnemyCityCommand(battle.Script).RunAsync,
+                    "Cﾃｷﾄｼ2.ADV" => new DistantCityCommand(battle.Script).RunAsync,
+                    "Cﾌﾞｶ.ADV" => new SubordinatesCommand(battle.Script).RunAsync,
+                    "Cﾊｰﾚﾑ.ADV" => new HaremCommand(battle.Script).RunAsync,
                     _ => battle.FightAsync,
                 };
 

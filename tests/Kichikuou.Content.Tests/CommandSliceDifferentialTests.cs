@@ -1,0 +1,533 @@
+using System.Text;
+using Kichikuou.Content.Scripts;
+using Kichikuou.Core.Script;
+using Kichikuou.Core.State;
+using Kichikuou.Core.Strategy;
+using Kichikuou.Core.Sys3;
+using Xunit.Abstractions;
+
+namespace Kichikuou.Content.Tests;
+
+/// <summary>
+/// The hand-ported prologue slices of the command files (<see cref="EnemyCityCommand"/>,
+/// <see cref="DistantCityCommand"/>, <see cref="SubordinatesCommand"/>, <see cref="HaremCommand"/>,
+/// <see cref="DungeonCommand"/>) against the files themselves run from the player's decompile by
+/// <see cref="SceneRunner"/>, on random states (mostly the prologue, <c>StoryStage</c> 0) and
+/// random input: both runs must make the same input requests, call the same files with the same
+/// <c>Ev_Entry</c>, draw the same rolls, show the same events and leave the same memory. Every other
+/// file is a hook that scribbles over cursors, scratch and the variables the slice reads after it
+/// (the pickers answer a unit or a girl). Where the port reaches a path it does not port yet it
+/// fails with <see cref="NotSupportedException"/>; the run is then checked up to that point
+/// (the original's log must begin with the port's). Skipped without the decompile.
+/// </summary>
+public class CommandSliceDifferentialTests(ITestOutputHelper output)
+{
+    private const int Cases = 1500;
+
+    [Fact]
+    public Task The_enemy_city_runs_exactly_as_Cﾃｷﾄｼ() =>
+        CompareAsync(
+            "Cﾃｷﾄｼ.ADV",
+            (script, _) => new EnemyCityCommand(script).RunAsync(),
+            (state, rng) =>
+            {
+                state.Prov_Cur = (Sys3Int)(rng.Next(10) switch { < 6 => 33 + rng.Next(2), 6 => 77, _ => rng.Next(0, 100) });
+                state.N_ALChurch_Stage = (Sys3Int)rng.Next(0, 25);
+            },
+            Scribble,
+            ["call Iﾄｳｿﾞｸ.ADV", "call ｵｰﾌﾟﾆﾝｸﾞ.ADV", "call Cﾆﾝｼﾞｬ.ADV", "call GAL.ADV", "call Gｶﾌｪ.ADV", "call Gﾏﾘｱ.ADV",
+             "text 28", "text 34", "text 4368", "text 4404", "item 52", "item 58", "item 64", "item 70", "item 76", "IZ", "M 0", "unported"]);
+
+    [Fact]
+    public Task The_distant_city_runs_exactly_as_Cﾃｷﾄｼ2() =>
+        CompareAsync(
+            "Cﾃｷﾄｼ2.ADV",
+            (script, _) => new DistantCityCommand(script).RunAsync(),
+            (state, rng) => state.Prov_Cur = (Sys3Int)rng.Next(0, 100),
+            Scribble,
+            ["call Cﾆﾝｼﾞｬ.ADV", "call Gｶﾌｪ.ADV", "call Gﾏﾘｱ.ADV", "text 26", "text 32", "text 71", "text 107", "item 50", "item 55", "IZ"]);
+
+    [Fact]
+    public Task The_subordinates_command_runs_exactly_as_Cﾌﾞｶ() =>
+        CompareAsync(
+            "Cﾌﾞｶ.ADV",
+            (script, _) => new SubordinatesCommand(script).RunAsync(),
+            (state, rng) =>
+            {
+                state.Ui_CmdSubordAvail = (Sys3Int)rng.Next(0, 2);
+                state.F_SillCow_State = (Sys3Int)(rng.Next(6) == 0 ? 3 : 0);
+                state.N_RanceSelfTalk = (Sys3Int)rng.Next(0, 25);
+                state.Unit48_Identity = (Sys3Int)rng.Next(0, 3);
+            },
+            Scribble,
+            ["call Sﾌﾞｶ.ADV", "call Gｼｨﾙ.ADV", "call Gﾊﾞｳﾝﾄﾞ.ADV", "call Gｿｳﾙ.ADV", "call Gﾖｳﾍｲ.ADV", "call Gﾊﾆｰ.ADV",
+             "call Gｵｳｼﾞ.ADV", "call Gﾛﾚｯｸｽ.ADV", "text 1348", "text 1357", "text 1374", "text 1116", "text 1149",
+             "text 1174", "text 1179", "text 1254", "text 1280", "text 1286", "text 1328", "text 199", "unported"]);
+
+    [Fact]
+    public Task The_harem_runs_exactly_as_Cﾊｰﾚﾑ() =>
+        CompareAsync(
+            "Cﾊｰﾚﾑ.ADV",
+            (script, _) => new HaremCommand(script).RunAsync(),
+            (state, rng) =>
+            {
+                state.F_SillCow_State = (Sys3Int)(rng.Next(8) switch { 0 => 5, 1 => 7, 2 => 8, _ => 0 });
+                state.F_Lia_State = (Sys3Int)(rng.Next(4) switch { 0 => 1, 1 => 3, _ => 0 });
+                state.N_Lia_Neglect = (Sys3Int)rng.Next(0, 12);
+                state.F_Thieves_State = (Sys3Int)rng.Next(0, 4);
+                state.Ui_CmdHaremAvail = (Sys3Int)rng.Next(0, 3);
+            },
+            Scribble,
+            ["call Sﾊｰﾚﾑ.ADV", "call Gｼｨﾙ.ADV", "call Gｿｳﾙ.ADV", "call Gｱﾅｾﾙ.ADV", "call Gﾘｱ.ADV", "call Gﾚｲﾗ.ADV",
+             "call Gｻｲﾄｳ.ADV", "text 376", "text 566", "M 0", "unported"]);
+
+    [Fact]
+    public Task The_dungeon_entry_runs_exactly_as_Cﾒｲｷｭｳ() =>
+        CompareAsync(
+            "Cﾒｲｷｭｳ.ADV",
+            (script, scenario) => new DungeonCommand(script, scenario).RunAsync(),
+            (state, rng) =>
+            {
+                state.Dgn_Cur = (Sys3Int)(rng.Next(10) switch { < 3 => 1, 3 => 2, 4 => 3, 5 => 15, _ => rng.Next(0, 32) });
+                state.Ui_CmdDungeonAvail = (Sys3Int)rng.Next(0, 2);
+                state.F_Merim_MillArc = (Sys3Int)rng.Next(0, 5);
+                state.Cmdr_Cur = (Sys3Int)rng.Next(0, 221);
+                if (rng.Next(4) == 0)
+                    state.Cmdrs[state.Cmdr_Cur].CgFull = 1137;
+                state.F_PG9_State = (Sys3Int)rng.Next(0, 4);
+                state.N_Soul_Stage = (Sys3Int)(rng.Next(4) == 0 ? 5 : rng.Next(0, 5));
+                state.F_HannyKing_State = (Sys3Int)rng.Next(0, 4);
+                if (rng.Next(4) == 0)
+                    state.Dgns[5].State = Sys3Int.Zero;
+            },
+            Scribble,
+            ["draw 3", "call Gﾊﾞｳﾝﾄﾞ.ADV", "call Gﾎﾗｶﾞ.ADV", "call Gｶﾌｪ.ADV", "text 2763", "text 2795", "text 2811",
+             "text 2827", "text 2852", "M 1", "M 10", "unported"]);
+
+    // ---------------------------------------------------------------------------------------
+    // The comparison
+    // ---------------------------------------------------------------------------------------
+
+    private delegate Task Port(ScriptContext script, ScenarioScripts scenario);
+
+    private async Task CompareAsync(string file, Port port, Action<GameState, Random> shape, Scribbler scribble, string[] expected)
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, file)))
+            return;
+        var scenario = new ScenarioScripts(LocalData.ScenarioDirectory);
+        var program = scenario.ReadProgram(file);
+        var seen = new Dictionary<string, int>(StringComparer.Ordinal);
+        int stopped = 0, unported = 0;
+
+        for (int seed = 1; seed <= Cases; seed++)
+        {
+            var rng = new Random(seed);
+            var state = RandomState(rng);
+            shape(state, rng);
+            var mine = await RunAsync(Copy(state), seed, file, null, port, scenario, scribble);
+            var original = await RunAsync(Copy(state), seed, file, program, port, scenario, scribble);
+
+            if (mine.Unported is not null)
+            {
+                unported++;
+                seen["unported"] = seen.GetValueOrDefault("unported") + 1;
+                int prefix = FirstDifference(original.Log.Take(mine.Log.Count).ToList(), mine.Log);
+                Assert.True(prefix < 0, $"seed {seed}: the runs differ at entry {prefix} before the port's '{mine.Unported}'\n{Around(file, original.Log, mine.Log, prefix)}");
+                continue;
+            }
+            Assert.True(original.Unported is null, $"seed {seed}: the port finished, the decompile failed: {original.Unported}");
+            int at = FirstDifference(original.Log, mine.Log);
+            Assert.True(at < 0, $"seed {seed}: the runs differ at entry {at}\n{Around(file, original.Log, mine.Log, at)}");
+            Assert.Equal(original.Stopped, mine.Stopped);
+            var differences = Differences(file, original.State.Memory, mine.State.Memory).Take(10).ToList();
+            Assert.True(differences.Count == 0, $"seed {seed}: memory differs\n  " + string.Join("\n  ", differences));
+            if (mine.Stopped)
+                stopped++;
+            foreach (string feature in Features(file, mine.Log).Distinct())
+                seen[feature] = seen.GetValueOrDefault(feature) + 1;
+        }
+
+        output.WriteLine($"{file}: {Cases} runs, {stopped} stopped by the input budget, {unported} reached an unported path");
+        foreach (var (feature, count) in seen.OrderBy(f => f.Key, StringComparer.Ordinal))
+            output.WriteLine($"  {feature}: {count}");
+        var missed = expected.Where(e => !seen.ContainsKey(e)).ToList();
+        Assert.True(missed.Count == 0, "never reached: " + string.Join(", ", missed));
+        Assert.True(unported < Cases / 3, $"{unported} of {Cases} runs reached an unported path");
+    }
+
+    private sealed record Run(GameState State, List<string> Log, bool Stopped, string? Unported);
+
+    private static async Task<Run> RunAsync(
+        GameState state, int seed, string file, ScriptProgram? program, Port port, ScenarioScripts scenario, Scribbler scribble)
+    {
+        var log = new List<string>();
+        var hooks = new ScribblingHooks(state, seed, log, scribble);
+        var input = new RandomInput(seed, log, hooks);
+        var view = new LoggingView(log);
+        var random = new LoggingRandom(seed, log);
+        bool stopped = false;
+        string? unported = null;
+        try
+        {
+            if (program is null)
+            {
+                var script = new ScriptContext(state, random, view, input, hooks);
+                await port(script, scenario);
+            }
+            else
+            {
+                var runner = new SceneRunner(new OneProgram(program), hooks, f => f == file);
+                var script = new ScriptContext(state, random, view, input, runner);
+                runner.Bind(script);
+                await runner.RunFileAsync(file);
+            }
+            log.Add("end");
+        }
+        catch (InputBudgetException)
+        {
+            stopped = true;
+        }
+        catch (NotSupportedException e)
+        {
+            // The port: a path of a later part. The decompile run past that point may meet
+            // forms the scene runtime does not run (e.g. NB on bound variables); only the part
+            // before the port's stop is compared then.
+            unported = e.Message;
+        }
+        catch (InvalidOperationException e) when (program is not null)
+        {
+            unported = e.Message;
+        }
+        return new Run(state, log, stopped, unported);
+    }
+
+    private static IEnumerable<string> Features(string file, List<string> log)
+    {
+        foreach (string entry in log)
+        {
+            if (entry.StartsWith("call ", StringComparison.Ordinal))
+                yield return entry[..entry.IndexOf(" entry", StringComparison.Ordinal)];
+            else if (entry.StartsWith("draw ", StringComparison.Ordinal))
+                yield return entry[..entry.IndexOf(" ->", StringComparison.Ordinal)];
+            else if (entry.StartsWith("EngineEvent IZ", StringComparison.Ordinal))
+                yield return "IZ";
+            else if (entry.StartsWith("MapEvent", StringComparison.Ordinal))
+                yield return $"M {entry[(entry.IndexOf("Mode = ", StringComparison.Ordinal) + 7)..].TrimEnd(' ', '}')}";
+            else if (entry.StartsWith("menu ", StringComparison.Ordinal))
+            {
+                foreach (var part in entry.Split(file + ":").Skip(1))
+                    yield return $"item {new string(part.TakeWhile(char.IsAsciiDigit).ToArray())}";
+            }
+            else if (entry.Contains(file + ":", StringComparison.Ordinal) && entry.Contains("MessageEvent", StringComparison.Ordinal))
+            {
+                int i = entry.IndexOf(file + ":", StringComparison.Ordinal) + file.Length + 1;
+                yield return $"text {new string(entry[i..].TakeWhile(char.IsAsciiDigit).ToArray())}";
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // States
+    // ---------------------------------------------------------------------------------------
+
+    /// <summary>
+    /// Every unbound variable and the record page random (the page around 10, where the status
+    /// page's modifiers change sign), the strings named, the prologue most of the time.
+    /// </summary>
+    private static GameState RandomState(Random rng)
+    {
+        var state = new GameState();
+        double zero = rng.NextDouble() * 0.6;
+        for (int v = 0; v < ScriptMemory.VariableCount; v++)
+            if (!GameState.IsBound(v))
+                state.Memory.Var(v) = (Sys3Int)(rng.NextDouble() < zero ? 0 : rng.Next(5) == 0 ? rng.Next(0, 3000) : rng.Next(0, 12));
+        for (int i = 0; i < state.Memory.PageSize(1); i++)
+            state.Memory.WritePage(1, i, (Sys3Int)(rng.NextDouble() < zero ? 0 : rng.Next(8) == 0 ? rng.Next(0, 3000) : rng.Next(0, 21)));
+        for (int i = 0; i < state.Memory.PageSize(2); i++)
+            state.Memory.WritePage(2, i, (Sys3Int)rng.Next(0, 5));
+        for (int s = 0; s < state.Strings.Length; s++)
+            state.Strings[s] = $"s{s}";
+        state.StoryStage = (Sys3Int)(rng.Next(6) == 0 ? rng.Next(1, 5) : 0);
+        state.Ev_CommandMode = (Sys3Int)(rng.Next(12) == 0 ? rng.Next(1, 3) : 0);
+        state.Week = (Sys3Int)rng.Next(9, 30);
+        for (int u = 1; u <= 50; u++)
+            state.Units[u].Status = (Sys3Int)rng.Next(0, 3);
+        for (int p = 0; p <= 100; p++)
+            state.Provs[p].Owner = (Sys3Int)rng.Next(0, 13);
+        for (int k = 1; k <= 50; k++)
+            state.Items[k].Effect = (Sys3Int)rng.Next(0, 8);
+        return state;
+    }
+
+    private static GameState Copy(GameState source)
+    {
+        var copy = new GameState();
+        for (int v = 0; v < ScriptMemory.VariableCount; v++)
+            copy.Memory.Var(v) = source.Memory.Var(v);
+        foreach (int page in source.Memory.AllocatedPages)
+            for (int i = 0; i < source.Memory.PageSize(page); i++)
+                copy.Memory.WritePage(page, i, source.Memory.ReadPage(page, i));
+        Array.Copy(source.Strings, copy.Strings, source.Strings.Length);
+        return copy;
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // The hooks
+    // ---------------------------------------------------------------------------------------
+
+    /// <summary>What a hook call writes, decided by (seed, call) so both runs get the same writes.</summary>
+    private delegate void Scribbler(string file, GameState state, Random rng, bool tired);
+
+    /// <summary>
+    /// The other files' writes: cursors, scratch, <c>RetVal</c>; the pickers answer (a cancel once
+    /// the run is long); scenes move the story stage, the talk and harem variables, the camera.
+    /// </summary>
+    private static void Scribble(string file, GameState state, Random rng, bool tired)
+    {
+        if (rng.Next(2) == 0)
+            state.Unit_Cur = (Sys3Int)rng.Next(0, 52);
+        if (rng.Next(3) == 0)
+            state.Prov_Cur = (Sys3Int)rng.Next(0, 100);
+        if (rng.Next(3) == 0)
+            state.Dgn_Cur = (Sys3Int)rng.Next(0, 31);
+        if (rng.Next(3) == 0)
+            state.Item_Cur = (Sys3Int)rng.Next(0, 50);
+        if (rng.Next(3) == 0)
+            state.Hist_Cur = (Sys3Int)rng.Next(0, 60);
+        if (rng.Next(2) == 0)
+            state.RetVal = (Sys3Int)rng.Next(0, 40);
+        if (rng.Next(3) == 0)
+            state.Tmp0001 = (Sys3Int)rng.Next(0, 3);
+        if (rng.Next(3) == 0)
+            state.Tmp0019 = (Sys3Int)rng.Next(0, 640);
+        if (rng.Next(3) == 0)
+            state.Ui_WinType = (Sys3Int)(rng.Next(0, 2) * 43);
+        if (rng.Next(4) == 0)
+            state.Ev_Entry = (Sys3Int)rng.Next(0, 30);
+        if (state.Ev_CommandMode != 0 && rng.Next(2) == 0)
+            state.Ev_CommandMode = Sys3Int.Zero;
+        switch (file)
+        {
+            case "Sﾌﾞｶ.ADV":
+                if (state.CallArg == 1)
+                {
+                    int pick = tired ? 0 : rng.Next(10) switch
+                    {
+                        < 4 => rng.Next(1, 5),
+                        4 => 0,
+                        5 => 503,
+                        6 => rng.Next(51, 60),
+                        7 => rng.Next(48, 51),
+                        _ => rng.Next(5, 51),
+                    };
+                    state.CallArg = (Sys3Int)pick;
+                    state.Unit_Cur = (Sys3Int)(pick is >= 1 and <= 50 && rng.Next(4) != 0 ? pick : rng.Next(0, 52));
+                }
+                else if (rng.Next(3) == 0)
+                    state.CallArg = (Sys3Int)rng.Next(0, 60);
+                break;
+            case "Sﾊｰﾚﾑ.ADV":
+                state.CallArg = (Sys3Int)(tired ? 0 : rng.Next(10) switch
+                {
+                    0 => 0,
+                    < 4 => rng.Next(3) switch { 0 => 1, 1 => 11, _ => 12 },
+                    < 8 => rng.Next(1, 51),
+                    8 => rng.Next(51, 501),
+                    _ => rng.Next(501, 600),
+                });
+                break;
+            case "Iﾄｳｿﾞｸ.ADV":
+                if (rng.Next(2) == 0)
+                    state.StoryStage = 99;
+                break;
+            case "Cﾆﾝｼﾞｬ.ADV":
+                state.Ui_CityScouted = (Sys3Int)rng.Next(0, 2);
+                break;
+            default:
+                if (rng.Next(2) == 0)
+                    state.Harem_ExpReward = (Sys3Int)rng.Next(0, 7);
+                if (rng.Next(4) == 0)
+                    state.Unit48_Identity = (Sys3Int)rng.Next(0, 3);
+                if (rng.Next(4) == 0)
+                    state.F_SillCow_State = (Sys3Int)rng.Next(0, 9);
+                if (rng.Next(4) == 0)
+                    state.CurrentBgm = (Sys3Int)rng.Next(0, 30);
+                if (rng.Next(4) == 0)
+                    state.Harem_LastPick = (Sys3Int)rng.Next(0, 60);
+                break;
+        }
+    }
+
+    private sealed class ScribblingHooks(GameState state, int seed, List<string> log, Scribbler scribble) : IStoryHooks
+    {
+        public int Calls { get; private set; }
+
+        public bool Tired => Calls > 40;
+
+        public Task RunEventAsync(string file, Sys3Int entry)
+        {
+            if (state.Ev_Entry != entry)
+                throw new InvalidOperationException($"{file}: Ev_Entry {state.Ev_Entry.Value}, entry {entry.Value}");
+            log.Add($"call {file} entry {entry} RetVal {state.RetVal} CallArg {state.CallArg} Unit_Cur {state.Unit_Cur} "
+                + $"Prov_Cur {state.Prov_Cur} Dgn_Cur {state.Dgn_Cur} Tmp0001 {state.Tmp0001} Hist_Cur {state.Hist_Cur}");
+            var rng = new Random(seed * 1000 + ++Calls);
+            scribble(file, state, rng, Tired);
+            return Task.CompletedTask;
+        }
+    }
+
+    /// <summary>The slice's file, read once; every other file is a hook.</summary>
+    private sealed class OneProgram(ScriptProgram program) : ISceneSource
+    {
+        public ScriptProgram ReadProgram(string file) =>
+            file == program.File ? program : throw new InvalidOperationException($"{file} is a hook here.");
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // Input, draws, view
+    // ---------------------------------------------------------------------------------------
+
+    private sealed class InputBudgetException() : Exception("The input budget ran out.");
+
+    /// <summary>
+    /// The player at random: the pointer mostly at rest (now and then a button still down, for
+    /// the release waits), random menu choices (the last item — Return — once the run is long),
+    /// keys that are sometimes a right click (32), which closes the status pages.
+    /// </summary>
+    private sealed class RandomInput(int seed, List<string> log, ScribblingHooks hooks) : ISceneInput
+    {
+        private readonly Random _rng = new(seed * 31 + 7);
+        private int _answers;
+        private int _cursor = 1;
+
+        private bool Tired => hooks.Tired || _answers > 300;
+
+        public Task<MouseState> GetMouseAsync()
+        {
+            Spend();
+            int r = _rng.Next(10);
+            var m = new MouseState((Sys3Int)(r < 8 ? 0 : r == 8 ? 16 : 32), (Sys3Int)_rng.Next(0, 640), (Sys3Int)_rng.Next(0, 400));
+            log.Add($"IM {m.Button} {m.X} {m.Y}");
+            return Task.FromResult(m);
+        }
+
+        public Task<Sys3Int> SetCursorAsync(Sys3Int shape)
+        {
+            Spend();
+            int old = _cursor;
+            _cursor = shape.Value;
+            log.Add($"IC {shape} {old}");
+            return Task.FromResult((Sys3Int)old);
+        }
+
+        public Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
+        {
+            Spend();
+            int choice = items.Count == 0 ? 0 : Tired ? items.Count : _rng.Next(6) == 0 ? 0 : _rng.Next(1, items.Count + 1);
+            log.Add($"menu {string.Join(" | ", items.Select(Format))} -> {choice}");
+            return Task.FromResult(choice);
+        }
+
+        public Task<Sys3Int> WaitForKeyAsync()
+        {
+            Spend();
+            var key = (Sys3Int)(_rng.Next(5) switch { 0 => 32, 1 => 13, _ => 0 });
+            log.Add($"key {key}");
+            return Task.FromResult(key);
+        }
+
+        public Task<Sys3Int> PauseAsync(Sys3Int ticks)
+        {
+            Spend();
+            log.Add($"wait {ticks}");
+            return Task.FromResult(Sys3Int.Zero);
+        }
+
+        public Task<Sys3Int> GetPlayingTrackAsync() => throw new InvalidOperationException("SR 0");
+
+        public Task<IReadOnlyList<Sys3Int>> GetDateAsync() => throw new InvalidOperationException("ZT 0");
+
+        public Task ResetTimerAsync(Sys3Int value) => throw new InvalidOperationException("ZT 1");
+
+        public Task<Sys3Int> GetTimerAsync(int mode) => throw new InvalidOperationException("ZT n");
+
+        public Task<IReadOnlyList<Sys3Int>> GetCdPositionAsync() => throw new InvalidOperationException("SC");
+
+        public Task<Sys3Int> GetMidiTrackAsync() => throw new InvalidOperationException("SR 1");
+
+        private void Spend()
+        {
+            if (++_answers > 2000)
+                throw new InputBudgetException();
+        }
+
+        private static string Format(SceneMenuItem item) =>
+            $"{item.At} {string.Join(",", item.Texts.Select(t => $"{t.Text}[{string.Join(",", t.Numbers)}][{string.Join(",", t.Strings)}]"))}";
+    }
+
+    /// <summary>Draws 1..n from a seeded generator, logged.</summary>
+    private sealed class LoggingRandom(int seed, List<string> log) : IScriptRandom
+    {
+        private readonly Random _rng = new(seed * 7 + 1);
+
+        public Sys3Int Next(Sys3Int n)
+        {
+            var value = (Sys3Int)(n.Value <= 1 ? n.Value : _rng.Next(1, n.Value + 1));
+            log.Add($"draw {n} -> {value}");
+            return value;
+        }
+    }
+
+    /// <summary>Logs every event with its lists spelled out.</summary>
+    private sealed class LoggingView(List<string> log) : IScriptView
+    {
+        public Task ShowAsync(ScriptEvent e)
+        {
+            log.Add(e switch
+            {
+                ValueMessageEvent v => $"ValueMessageEvent {v.Text} [{string.Join(",", v.Values)}] [{string.Join(",", v.StringVariables ?? [])}]",
+                MessageEvent m => $"MessageEvent {m.Text} [{string.Join(",", m.StringVariables ?? [])}]",
+                EngineEvent g => $"EngineEvent {g.Command} [{string.Join(",", g.Args)}]",
+                _ => e.ToString(),
+            });
+            return Task.CompletedTask;
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // Reports
+    // ---------------------------------------------------------------------------------------
+
+    private static int FirstDifference(List<string> a, List<string> b)
+    {
+        for (int i = 0; i < Math.Min(a.Count, b.Count); i++)
+            if (a[i] != b[i])
+                return i;
+        return a.Count == b.Count ? -1 : Math.Min(a.Count, b.Count);
+    }
+
+    private static string Around(string file, List<string> original, List<string> port, int at)
+    {
+        var sb = new StringBuilder();
+        for (int i = Math.Max(0, at - 8); i < at + 3; i++)
+        {
+            sb.Append($"  {i,5} {file}: {(i < original.Count ? original[i] : "-")}\n");
+            sb.Append($"  {i,5} port: {(i < port.Count ? port[i] : "-")}\n");
+        }
+        return sb.ToString();
+    }
+
+    private static IEnumerable<string> Differences(string file, ScriptMemory expected, ScriptMemory actual)
+    {
+        for (int v = 0; v < ScriptMemory.VariableCount; v++)
+            if (expected.Var(v) != actual.Var(v))
+                yield return $"VAR{v:D4} {VariableCatalog.Variables[v].Name}: {file} {expected.Var(v).Value}, port {actual.Var(v).Value}";
+        foreach (int page in expected.AllocatedPages)
+            for (int i = 0; i < expected.PageSize(page); i++)
+                if (expected.ReadPage(page, i) != actual.ReadPage(page, i))
+                    yield return $"page {page}[{i}]: {file} {expected.ReadPage(page, i).Value}, port {actual.ReadPage(page, i).Value}";
+        for (int s = 0; s < expected.Strings.Length; s++)
+            if (expected.Strings[s] != actual.Strings[s])
+                yield return $"string {s}: {file} \"{expected.Strings[s]}\", port \"{actual.Strings[s]}\"";
+    }
+}

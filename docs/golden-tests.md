@@ -185,9 +185,14 @@ numbers are the engine's (`MS n` writes string n).
    whose capture ends in `jump` throws `ScenarioJumpException` after loading the final dump.
 5. **Entry point.** `FIGT_A.ADV` → `AttackProvinceAsync`, `FIGT_B.ADV` → `DefendProvinceAsync`,
    `FIGT.ADV` → `FightAsync`, `COM.ADV` → `WeeklyEvents.RunAsync`, `COMMAND.ADV` →
-   `CommandPhase.RunAsync` (`GoldenReplay.ReplayableRoots`, `CanReplay`). The player phase reads
-   the pointer as the script does, so a `command` replay answers `GetMouseAsync` from `mouse` and
-   `SetCursorAsync` from `cursor` (the shape must match); in battle captures both stay passive. Every other root has no entry point yet: `GoldenBattleTests.Capture_matches_the_original`
+   `CommandPhase.RunAsync`, the `commands` group's `Cﾃｷﾄｼ.ADV`, `Cﾃｷﾄｼ2.ADV`, `Cﾌﾞｶ.ADV`,
+   `Cﾊｰﾚﾑ.ADV` → `EnemyCityCommand`, `DistantCityCommand`, `SubordinatesCommand`, `HaremCommand`
+   (`GoldenReplay.ReplayableRoots`, `CanReplay`; their paths beyond the prologue throw
+   `NotSupportedException`). `Cﾒｲｷｭｳ.ADV` reads its `MS` strings from the player's files, so its
+   replay is `RunAsync(capture, entryPoint: s => new DungeonCommand(s, scripts).RunAsync())`. The
+   player phase and the command files read the pointer as the script does, so their replays answer
+   `GetMouseAsync` from `mouse` and `SetCursorAsync` from `cursor` (the shape must match); in
+   battle captures both stay passive. Every other root has no entry point yet: `GoldenBattleTests.Capture_matches_the_original`
    replays only captures whose header (`GoldenCapture.ReadHeader`)
    names a replayable root; the others are parsed and loaded by
    `GoldenPendingTests.Capture_awaiting_its_port_is_well_formed`, and

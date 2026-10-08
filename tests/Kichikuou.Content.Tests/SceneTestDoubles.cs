@@ -60,15 +60,24 @@ public sealed class ScriptedSceneInput : ISceneInput
 
     public int Answers { get; private set; }
 
-    public Task<Sys3Int> WaitForKeyAsync() => Answer((Sys3Int)(Keys.Count > 0 ? Keys.Dequeue() : 0));
+    public Task<Sys3Int> WaitForKeyAsync()
+    {
+        Pointer.Interrupt();
+        return Answer((Sys3Int)(Keys.Count > 0 ? Keys.Dequeue() : 0));
+    }
 
-    public Task<Sys3Int> PauseAsync(Sys3Int ticks) => Answer(Sys3Int.Zero);
+    public Task<Sys3Int> PauseAsync(Sys3Int ticks)
+    {
+        Pointer.Interrupt();
+        return Answer(Sys3Int.Zero);
+    }
 
     public Task<Sys3Int> GetPlayingTrackAsync() => Answer(Sys3Int.Zero);
 
     public Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
     {
         Menus.Add(items);
+        Pointer.Interrupt();
         return Answer(Choices.Count > 0 ? Choices.Dequeue() : 1);
     }
 
