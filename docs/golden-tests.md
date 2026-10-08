@@ -195,5 +195,6 @@ powershell -ExecutionPolicy Bypass -File tools\golden\capture.ps1
 ```
 
 and play normally; loading a save before a battle is fine (the capture starts at the battle's
-page call). Run the tests with `dotnet test tests/Kichikuou.Core.Tests`; a failing capture prints
+page call). `python tools/golden/describe.py <file>` prints what a capture holds (province,
+parties before and after, result, commands) to check it against what was played. Run the tests with `dotnet test tests/Kichikuou.Core.Tests`; a failing capture prints
 the divergence (with the original's `file@address`) or the differing variables by name.
