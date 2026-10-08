@@ -729,3 +729,8 @@ Unknown / unverified:
 6. Frame pacing of the four slide steps (`FIGT.ADV:1816-1827` has no pause between them).
 7. The run-time `ZC 1` value for each individual message was derived from the write sites listed
    in §2.6, not traced message by message.
+
+Items 1, 5 and 6 are purely visual and will not be pursued: the owner decided (2026-10-08) that
+the port's look need not match the original pixel for pixel — mechanics stay exact, the
+interface may be our own. Item 4 stays open because the panel rectangles are also the click
+targets.
