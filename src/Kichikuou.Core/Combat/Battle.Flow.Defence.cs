@@ -492,11 +492,11 @@ public sealed partial class Battle
         await FlowWindowAsync(0);
         await FlowWindowAsync(322);
         await FlowWindowAsync(113);
-        await FlowTextAsync(FigtBFile, 525);
+        await FlowTextAsync(FigtBFile, 524);
         await FlowWaitKeyKeepRetValAsync();
-        await FlowTextAsync(FigtBFile, 529);
+        await FlowTextAsync(FigtBFile, 528);
         await FlowWaitKeyKeepRetValAsync();
-        await FlowTextAsync(FigtBFile, 533);
+        await FlowTextAsync(FigtBFile, 532);
         await FlowWaitKeyKeepRetValAsync();
         await FlowWindowAsync(0);
         foreach (var n in Ninjas)

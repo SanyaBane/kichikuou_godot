@@ -45,6 +45,10 @@ model can be layered on later (e.g. for the hybrid branch).
 - Text is never embedded. A message is identified by its location in the decompiled scenario
   (`ScriptRef("FIGT_M.ADV", line)`); the presentation layer resolves it from the player's own
   game files. This keeps original assets out of the repository and makes localisation possible.
+  The line is the run's **first text command**, which may be an `R`: when a run starts with a
+  line break (e.g. `MP 4, 18:` / `R` / `'fell in battle.'`, the name being a separate event),
+  point at the `R`, or the break is lost. `ScenarioText.Read` rejects a reference that follows
+  an `R` it would leave out.
 - Presentation routines that also change state (e.g. the battle redraw moving cursors) are
   ported for their state effects, and emit an event for the visual part.
 

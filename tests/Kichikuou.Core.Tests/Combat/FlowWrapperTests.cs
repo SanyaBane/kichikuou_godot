@@ -512,7 +512,7 @@ public class FlowDefenceTests
         rig.Input.MenuAnswers.Enqueue(5);
         await rig.Battle.DefenceNinjaScoutAsync();
         Is(1, rig.State.F_Saitou_NinjaUsed);
-        Assert.Equal([314, 494, 502, 509, 518, 525, 529, 533, 581, 587, 613, 629, 644], rig.Lines);
+        Assert.Equal([314, 494, 502, 509, 518, 524, 528, 532, 581, 587, 613, 629, 644], rig.Lines);
     }
 
     [Fact]

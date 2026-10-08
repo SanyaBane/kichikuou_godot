@@ -309,8 +309,7 @@ public sealed partial class BattlePresenter
             Writer.Print(Read(155));
         if (e.TroopLimit != 5000 && e.Kind == 3 && e.IsDuel == 0)
             Writer.Print(Read(159));
-        Writer.NewLine();
-        Writer.Print(Read(163, e.TroopLimit));
+        Writer.Print(Read(162, e.TroopLimit));
         Writer.Print(Read(169));
         Writer.Print(Read(200, e.PlayerAdvantage, e.EnemyAdvantage));
         if (e.IsDuel == 0)
@@ -533,8 +532,7 @@ public sealed partial class BattlePresenter
             Writer.Print(Read(867));
         if (order == 2)
             Writer.Print(Read(871));
-        Writer.NewLine();
-        Writer.Print(Read(875, unit.Level, unit.HP)); // Battle LV and HP, one run
+        Writer.Print(Read(874, unit.Level, unit.HP)); // Battle LV and HP, one run
         int kind = s.Bt_Kind.Value;
         if (unit.Troops == 0)
         {
@@ -545,14 +543,12 @@ public sealed partial class BattlePresenter
             Writer.Print(Read(896, unit.Troops, unit.TroopAtk));
             if (kind is >= 1 and <= 3)
                 Modifier(kind switch { 1 => unit.OffAtkMod, 2 => unit.DefAtkMod, _ => unit.DgnAtkMod }, 905 + (kind - 1) * 14);
-            Writer.NewLine();
-            Writer.Print(Read(946, unit.TroopDef));
+            Writer.Print(Read(945, unit.TroopDef));
             if (kind is >= 1 and <= 3)
                 Modifier(kind switch { 1 => unit.OffDefMod, 2 => unit.DefDefMod, _ => unit.DgnDefMod }, 951 + (kind - 1) * 14);
         }
         // :992 — outside the troops branch: with no troops it leaves an empty line.
-        Writer.NewLine();
-        Writer.Print(Read(993, unit.Magic, unit.Attacks));
+        Writer.Print(Read(992, unit.Magic, unit.Attacks));
         Sys3Int partner = unit.Partner;
         if (partner != 0 && (partner == s.Bt_PlayerSlot1 || partner == s.Bt_PlayerSlot2 || partner == s.Bt_PlayerSlot3 || partner == s.Bt_PlayerSlot4))
             Writer.Print(Read(1003));
@@ -595,8 +591,7 @@ public sealed partial class BattlePresenter
             Modifier(cmdr.TroopDefMod, 1083);
         }
         // :1095 — outside the troops branch: with no troops it leaves an empty line.
-        Writer.NewLine();
-        Writer.Print(Read(1096, cmdr.Magic, cmdr.Attacks));
+        Writer.Print(Read(1095, cmdr.Magic, cmdr.Attacks));
     }
 
     // ------------------------------------------------------------------ scout report (§6.3)

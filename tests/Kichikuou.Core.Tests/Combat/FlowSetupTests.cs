@@ -208,7 +208,7 @@ public class FlowStrategyTests
         Is(1, rig.State.Bt_StrategyResult);
         Is(0, rig.State.Tmp0021);
         Is(3, rig.State.Unit_Cur);
-        Assert.Equal([38, 315, 321, 327], rig.Lines);   // generic line for unit 3
+        Assert.Equal([37, 315, 321, 327], rig.Lines);   // generic line for unit 3
         var screen = Assert.IsType<StrategyScreenEvent>(rig.View.Events.First(e => e is StrategyScreenEvent));
         Is(1, screen.Side);
         Is(3, screen.Strategist);

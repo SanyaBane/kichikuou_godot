@@ -472,7 +472,7 @@ public sealed partial class Battle
         }
         await WaoAsync(143); // L_00e4e
         await View.ShowAsync(new PrintStringEvent(1));
-        await MessageAsync("FIGTﾐｶDE.ADV", 725);
+        await MessageAsync("FIGTﾐｶDE.ADV", 724);
         await WaoAsync(11); // L_00ecb
         await WaoAsync(10); // L_00ebe
         return; // FIGTﾐｶDE.ADV:728
@@ -483,7 +483,7 @@ public sealed partial class Battle
     {
         await WaoAsync(143); // L_00e4e
         await View.ShowAsync(new PrintStringEvent(1));
-        await MessageAsync("FIGTﾐｶDE.ADV", 734);
+        await MessageAsync("FIGTﾐｶDE.ADV", 733);
         await WaoAsync(11); // L_00ecb
         await WaoAsync(10); // L_00ebe
         return; // FIGTﾐｶDE.ADV:739
@@ -1880,7 +1880,7 @@ public sealed partial class Battle
         }
         await WaoAsync(143); // L_025db
         await View.ShowAsync(new PrintStringEvent(4));
-        await MessageAsync("FIGTﾃｷDE.ADV", 1808);
+        await MessageAsync("FIGTﾃｷDE.ADV", 1807);
         await WaoAsync(11); // L_02658
         await EnemyCommanderDefeatedScene_L_0259bAsync(); // FIGTﾃｷDE.ADV:1810
         return;
@@ -1892,7 +1892,7 @@ public sealed partial class Battle
         await WaoAsync(10); // L_0264b
         await WaoAsync(153); // L_0262f
         await View.ShowAsync(new PrintStringEvent(4));
-        await MessageAsync("FIGTﾃｷDE.ADV", 1817);
+        await MessageAsync("FIGTﾃｷDE.ADV", 1816);
         await WaoAsync(11); // L_02658
         await EnemyCommanderDefeatedScene_L_0259bAsync(); // FIGTﾃｷDE.ADV:1821
         return;
@@ -1904,7 +1904,7 @@ public sealed partial class Battle
         await WaoAsync(10); // L_0264b
         await WaoAsync(153); // L_0262f
         await View.ShowAsync(new PrintStringEvent(4));
-        await MessageAsync("FIGTﾃｷDE.ADV", 1828);
+        await MessageAsync("FIGTﾃｷDE.ADV", 1827);
         await WaoAsync(11); // L_02658
         await EnemyCommanderDefeatedScene_L_0259bAsync(); // FIGTﾃｷDE.ADV:1830
         return;
@@ -1916,7 +1916,7 @@ public sealed partial class Battle
         await WaoAsync(10); // L_0264b
         await WaoAsync(153); // L_0262f
         await View.ShowAsync(new PrintStringEvent(4));
-        await MessageAsync("FIGTﾃｷDE.ADV", 1837);
+        await MessageAsync("FIGTﾃｷDE.ADV", 1836);
         await WaoAsync(11); // L_02658
         await EnemyCommanderDefeatedScene_L_0259bAsync(); // FIGTﾃｷDE.ADV:1841
         return;

@@ -94,8 +94,7 @@ public sealed class FigtSelScreen
                 w.Print(_p.Read(new ScriptRef(Sel, 155), []));
                 break;
         }
-        w.NewLine();
-        w.Print(_p.Read(new ScriptRef(Sel, 159), []));
+        w.Print(_p.Read(new ScriptRef(Sel, 158), []));
     }
 
     // ------------------------------------------------------------------ input

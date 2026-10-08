@@ -35,9 +35,7 @@ public sealed partial class BattlePresenter
         Writer.Print(Read(1741));
         if (e.PlayerLabel is { } player)
             Writer.Print(Read(player, []));
-        Writer.NewLine(); // :1769
-        Writer.NewLine(); // :1770
-        Writer.Print(Read(1771));
+        Writer.Print(Read(1769));
         if (e.EnemyLabel is { } enemy)
             Writer.Print(Read(enemy, []));
     }

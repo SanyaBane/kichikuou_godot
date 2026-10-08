@@ -159,7 +159,7 @@ public class ResolutionApplyExchangeTests
             [
                 new WaoCallEvent(151), new MessageEvent(new ScriptRef("FIGTﾃｷDE.ADV", 37)), new WaoCallEvent(11),
                 new WaoCallEvent(10), new WaoCallEvent(153), new PrintStringEvent(4),
-                new MessageEvent(new ScriptRef("FIGTﾃｷDE.ADV", 1817)), new WaoCallEvent(11), new WaoCallEvent(10),
+                new MessageEvent(new ScriptRef("FIGTﾃｷDE.ADV", 1816)), new WaoCallEvent(11), new WaoCallEvent(10),
             ],
             scene);
         Assert.Equal(
@@ -268,7 +268,7 @@ public class ResolutionApplyExchangeTests
         await fx.Battle.ApplyExchangeAsync();
         Assert.Equal(0, (int)fx.State.F_Asuka_State);
         Assert.Equal(
-            [231, 238, 725],
+            [231, 238, 724],
             fx.Events<MessageEvent>().Select(e => e.Text.Line));
         Assert.Contains(new PrintStringEvent(1), fx.View.Events);
     }

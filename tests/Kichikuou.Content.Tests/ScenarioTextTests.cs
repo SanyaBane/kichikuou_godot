@@ -61,6 +61,21 @@ public class ScenarioTextTests : IDisposable
     }
 
     [Fact]
+    public void A_run_may_start_with_a_line_break_but_not_right_after_one()
+    {
+        // FIGTﾃｷDE.ADV:1805-1808: the name is a separate PrintStringEvent, then R + text.
+        var text = Write(
+            "\tMP 4, 18:",
+            "\tZH 1:",
+            "\tR",
+            "\tZH 1:",
+            "\t'fell in battle.'");
+
+        Assert.Equal("\nfell in battle.", text.Read(new ScriptRef("TEST.ADV", 3)).Format());
+        Assert.Throws<ScenarioTextException>(() => text.Read(new ScriptRef("TEST.ADV", 5)));
+    }
+
+    [Fact]
     public void Missing_numbers_are_an_error()
     {
         var text = Write("\tH 2, VAR0001:");

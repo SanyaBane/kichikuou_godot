@@ -49,7 +49,7 @@ public sealed partial class Battle
         FlowCopyString(1, UnitNameString(State.Unit_Cur));
         await View.ShowAsync(new StrategyScreenEvent(1, State.Unit_Cur));
         State.Tmp0021 = State.Tmp0021 - State.RetVal;
-        await StrategyBoxAsync(143, 38);
+        await StrategyBoxAsync(143, 37);
         State.Bt_StrategyResult = 1;
         if (State.Tmp0021 > 50)
             State.Bt_StrategyResult = 2;

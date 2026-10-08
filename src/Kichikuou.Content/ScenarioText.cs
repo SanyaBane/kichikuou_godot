@@ -139,12 +139,24 @@ public sealed class ScenarioText(string directory)
     public string Directory { get; } = directory;
 
     /// <summary>The text run that starts at <paramref name="source"/>.</summary>
-    /// <exception cref="ScenarioTextException">The location holds no text command.</exception>
+    /// <exception cref="ScenarioTextException">
+    /// The location holds no text command, or it follows an <c>R</c> (only <c>ZH</c> switches in
+    /// between) that the run leaves out: that line break would be lost, or printed twice if an
+    /// earlier run reaches it, so the reference must point at the <c>R</c>.
+    /// </exception>
     public TextRun Read(ScriptRef source)
     {
         string[] lines = Lines(source.File);
         if (source.Line < 1 || source.Line > lines.Length)
             throw new ScenarioTextException($"{source}: the file has {lines.Length} lines.");
+        for (int i = source.Line - 2; i >= 0; i--)
+        {
+            string before = lines[i].Trim();
+            if (before == "R")
+                throw new ScenarioTextException($"{source}: the run starts after the line break at line {i + 1}; point the reference at it.");
+            if (!(before.StartsWith("ZH ", StringComparison.Ordinal) && before.EndsWith(':')))
+                break;
+        }
         var segments = new List<TextSegment>();
         for (int i = source.Line - 1; i < lines.Length; i++)
         {
