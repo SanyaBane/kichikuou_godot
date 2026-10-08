@@ -39,7 +39,9 @@ the port with a regression test.
   `State/VariableCatalog.g.cs` (names, groups, page bindings) is generated with `GameState.g.cs`.
 - `src/Kichikuou.Content` — engine-independent access to the player's own game data (never
   part of the repository): `ScenarioText` reads message texts from the decompiled scenario by
-  `ScriptRef`. Tests in `tests/Kichikuou.Content.Tests` (the golden part resolves every text
+  `ScriptRef`; `Graphics/` decodes the CGs keeping palette indices (`IndexedPng`, `Pms`,
+  `CgLibrary`, `Palette` with the engine's reserved entries; `ToRgba(40)` = `G n, 40`);
+  `Audio/` maps sound and music numbers to files. Tests in `tests/Kichikuou.Content.Tests` (the golden part resolves every text
   the captured battles show; `KICHIKUOU_SCENARIO_DIR` overrides the scenario folder).
 - `tests/Kichikuou.Core.Tests` — xUnit tests for the core. `Golden/GoldenBattleTests` replays the
   captures in `E:\Modding games\Modding Rance\Kichikou\_extract\golden` (or

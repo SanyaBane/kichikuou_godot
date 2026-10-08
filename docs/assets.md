@@ -130,6 +130,11 @@ no game data, but they are not committed.
 
 ### What a Godot loader must do
 
+Implemented engine-independently in `src/Kichikuou.Content/Graphics` (`IndexedPng` decodes the
+PNG itself, `CgImage.ToRgba(transparentIndex: 40)`, `Palette` with `initPal`); the test
+`GameDataAssetTests.Every_png_matches_its_pms` checks all 1222 PNGs against their PMS files
+(indices, palette, position, mask) — identical. Godot's own PNG import is therefore not used.
+
 1. Keep the **index**, not the RGB. Godot's PNG loader expands indexed PNGs to RGB(A)
    **[unverified — from Godot's `png_driver_common.cpp`, not checked against 4.7.2]**; then
    only the colour remains. Keying by the RGB of `PLTE[40]` works for 877 of the 883 CGs that

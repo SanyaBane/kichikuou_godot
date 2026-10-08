@@ -8,15 +8,24 @@ namespace Kichikuou.Content.Tests;
 /// <summary>
 /// Local game data: the decompiled scenario and the golden captures (docs/golden-tests.md). Both
 /// stay outside the repository; <c>KICHIKUOU_SCENARIO_DIR</c> / <c>KICHIKUOU_GOLDEN_DIR</c>
-/// override the defaults.
+/// override the defaults; <c>KICHIKUOU_EXTRACT_DIR</c> moves the whole extracted folder
+/// (CGs, sounds) and <c>KICHIKUOU_GAME_DIR</c> the game folder (music).
 /// </summary>
 public static class LocalData
 {
-    private const string Extract = @"E:\Modding games\Modding Rance\Kichikou\_extract";
+    private static string Extract => Env("KICHIKUOU_EXTRACT_DIR") ?? @"E:\Modding games\Modding Rance\Kichikou\_extract";
 
     public static string ScenarioDirectory => Env("KICHIKUOU_SCENARIO_DIR") ?? Path.Combine(Extract, "scenario");
 
     public static string GoldenDirectory => Env("KICHIKUOU_GOLDEN_DIR") ?? Path.Combine(Extract, "golden");
+
+    public static string CgDirectory => Path.Combine(Extract, "cg_png");
+
+    public static string PmsDirectory => Path.Combine(Extract, "cg_pms");
+
+    public static string WavDirectory => Path.Combine(Extract, "wav");
+
+    public static string GameDirectory => Env("KICHIKUOU_GAME_DIR") ?? @"E:\Modding games\Modding Rance\Kichikou\Kichikuou Rance";
 
     public static IEnumerable<string> Captures =>
         Directory.Exists(GoldenDirectory)
