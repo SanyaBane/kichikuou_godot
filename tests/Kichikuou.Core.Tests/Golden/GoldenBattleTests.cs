@@ -42,18 +42,18 @@ public sealed class GoldenTheoryAttribute : TheoryAttribute
     public GoldenTheoryAttribute()
     {
         if (!GoldenData.Replayable.Any())
-            Skip = $"No battle captures in {GoldenData.Directory} (play battles with tools/golden/capture.ps1).";
+            Skip = $"No replayable captures in {GoldenData.Directory} (play with tools/golden/capture.ps1).";
     }
 }
 
-/// <summary>Every captured battle of the original game, replayed through the battle port.</summary>
+/// <summary>Every capture of the original game whose root is ported (the battle, <c>COM</c>), replayed through the port.</summary>
 public class GoldenBattleTests(ITestOutputHelper output)
 {
     public static IEnumerable<object[]> Captures => GoldenData.Replayable.Select(f => new object[] { GoldenData.Relative(f) });
 
     [GoldenTheory]
     [MemberData(nameof(Captures))]
-    public async Task Battle_matches_the_original(string file)
+    public async Task Capture_matches_the_original(string file)
     {
         var capture = GoldenCapture.Load(Path.Combine(GoldenData.Directory, file));
 

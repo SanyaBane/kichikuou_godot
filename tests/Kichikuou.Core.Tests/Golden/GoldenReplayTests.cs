@@ -1,5 +1,6 @@
 using Kichikuou.Core.Golden;
 using Kichikuou.Core.State;
+using Kichikuou.Core.Strategy;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Tests.Golden;
@@ -85,6 +86,38 @@ public class GoldenReplayTests
         Assert.Equal(capture.Records.Count, report.ConsumedRecords);
         Assert.Contains(capture.Records, r => r is WaitRecord);
         Assert.Contains(capture.Records, r => r is PickRecord);
+    }
+
+    /// <summary>
+    /// A <c>COM</c> capture (group <c>com</c>) replays through <see cref="WeeklyEvents"/>:
+    /// the caravan's roll, then one tier-1 scene as a hook whose exit dump moves a flag.
+    /// </summary>
+    [Fact]
+    public async Task A_COM_capture_replays_through_the_weekly_events()
+    {
+        var recorder = new CaptureRecorder(777)
+        {
+            OnHook = (file, state, _) =>
+            {
+                if (file == "Gｹﾝﾀﾛｳ.ADV")
+                    state.N_Miki_Stage = 3;
+            },
+        };
+        var s = recorder.State;
+        s.StoryStage = 2;
+        s.Week = 10;
+        s.N_ALChurch_Stage = 50;
+        s.F_Cafe_State = 3;
+        s.LadyCaravan_Prov = 40;
+        s.F_Kentarou_State = 2;
+        var capture = Parse(await recorder.RecordAsync("COM.ADV", b => new WeeklyEvents(b.Script).RunAsync()));
+
+        var report = await GoldenReplay.RunAsync(capture);
+
+        Assert.True(report.Passed, report.Describe());
+        Assert.Equal(capture.Records.Count, report.ConsumedRecords);
+        Assert.Single(capture.Records.OfType<HookRecord>());
+        Assert.Equal(2, report.ConsumedRecords);   // the roll and the hook
     }
 
     [Fact]
@@ -191,12 +224,12 @@ public class GoldenReplayTests
         var c = Parse(await RecordPlainsAttackAsync());
         var capture = new GoldenCapture
         {
-            Source = c.Source, Seed = c.Seed, Root = "COM.ADV", RootCall = c.RootCall, Enter = c.Enter,
-            Records = [], Exit = c.Exit, JumpTarget = null, Group = "com",
+            Source = c.Source, Seed = c.Seed, Root = "COMMAND.ADV", RootCall = c.RootCall, Enter = c.Enter,
+            Records = [], Exit = c.Exit, JumpTarget = null, Group = "command",
         };
 
         var e = await Assert.ThrowsAsync<GoldenFormatException>(() => GoldenReplay.RunAsync(capture));
-        Assert.Contains("No entry point for root COM.ADV", e.Message);
+        Assert.Contains("No entry point for root COMMAND.ADV", e.Message);
     }
 
     [Fact]

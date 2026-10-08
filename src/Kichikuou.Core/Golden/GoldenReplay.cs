@@ -2,6 +2,7 @@ using System.Text;
 using Kichikuou.Core.Combat;
 using Kichikuou.Core.Script;
 using Kichikuou.Core.State;
+using Kichikuou.Core.Strategy;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Golden;
@@ -73,8 +74,8 @@ public sealed class GoldenReport(GoldenCapture capture)
 /// </summary>
 public sealed class GoldenReplay
 {
-    /// <summary>The roots the replay has an entry point for (page calls into the battle).</summary>
-    public static readonly IReadOnlySet<string> ReplayableRoots = new HashSet<string> { "FIGT_A.ADV", "FIGT_B.ADV", "FIGT.ADV" };
+    /// <summary>The roots the replay has an entry point for (page calls into the battle and <c>COM.ADV</c>).</summary>
+    public static readonly IReadOnlySet<string> ReplayableRoots = new HashSet<string> { "FIGT_A.ADV", "FIGT_B.ADV", "FIGT.ADV", "COM.ADV" };
 
     /// <summary>Whether a capture with this header can be replayed (its root has an entry point).</summary>
     public static bool CanReplay(GoldenHeader header) =>
@@ -157,6 +158,7 @@ public sealed class GoldenReplay
                 {
                     "FIGT_A.ADV" => battle.AttackProvinceAsync,
                     "FIGT_B.ADV" => battle.DefendProvinceAsync,
+                    "COM.ADV" => new WeeklyEvents(battle.Script).RunAsync,
                     _ => battle.FightAsync,
                 };
 

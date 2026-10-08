@@ -139,7 +139,7 @@ script count]. Callers set `Ev_Entry` and page-call the file; there is no centra
 | Tier 1 "all that apply" | `:85-300` | 38 calls; each sets `Ev_WeeklyEventDone := 1` and execution **continues**, so several scenes may play in one week; `:301-303` return if any fired |
 | Tier 2 "first match" | `:304-946` | 111 calls; each followed by `%0`, except 5 that fall through (`Gﾕｳﾚｲ` 6 `:400`, `Gﾌﾘｰｸ` 2 `:406`, `Gｱﾋﾞｧﾄｰﾙ` 3 `:662`, `Gｱｰﾔ` 3 `:666`, `Gｵｳｼﾞ` 1 `:940`); 11 random rolls interleaved (§5); `N_Miki_Stage 4 → 5` returns without a scene (`:557-560`) |
 
-`COM` reaches 142 distinct (file, entry) pairs in 73 files; `MAIN` 47; `COMMAND` 9 (building
+`COM` reaches 149 distinct (file, entry) pairs in 73 files (151 call sites; recounted from the port, 2026-10-08); `MAIN` 47; `COMMAND` 9 (building
 scenes, `Gｶﾌｪ` 30, `Gｼｨﾙ2` 5, `Iﾄｳｿﾞｸ` 2). Other event callers: `C*` 241 calls, `T*` 147,
 `死亡捕獲` 41, `CG` 139, `FIGT_A/B` 23 [C, script count]. Conditions are pure reads of story
 flags, unit/commander status via cursors, `Week`, `DateMonth/DateWeek` (`:320`, New Year

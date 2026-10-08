@@ -184,8 +184,9 @@ numbers are the engine's (`MS n` writes string n).
    the replay goes on), then the `hook-exit` dump is loaded, generator state included. A hook
    whose capture ends in `jump` throws `ScenarioJumpException` after loading the final dump.
 5. **Entry point.** `FIGT_A.ADV` → `AttackProvinceAsync`, `FIGT_B.ADV` → `DefendProvinceAsync`,
-   `FIGT.ADV` → `FightAsync` (`GoldenReplay.ReplayableRoots`, `CanReplay`). Every other root has no
-   entry point yet: `GoldenBattleTests` replays only captures whose header (`GoldenCapture.ReadHeader`)
+   `FIGT.ADV` → `FightAsync`, `COM.ADV` → `WeeklyEvents.RunAsync` (`GoldenReplay.ReplayableRoots`,
+   `CanReplay`). Every other root has no entry point yet: `GoldenBattleTests.Capture_matches_the_original`
+   replays only captures whose header (`GoldenCapture.ReadHeader`)
    names a replayable root; the others are parsed and loaded by
    `GoldenPendingTests.Capture_awaiting_its_port_is_well_formed`, and
    `Every_capture_has_a_replay_entry_point` is skipped with the list of waiting roots and counts.
