@@ -129,6 +129,23 @@ public class FlowPlayerTests
         var menu = rig.Battle.BuildFigtSelMenu();
         Assert.Null(menu.Find(FigtSelCommand.Direct));
         Assert.NotNull(menu.Find(FigtSelCommand.Defend));
+        Assert.Equal([FigtSelCommand.Direct], menu.ListedModes!.Select(m => m.Value));
+    }
+
+    [Fact]
+    public void Popup_lists_modes_and_items_in_script_order_without_cheat()
+    {
+        var rig = Acting(17, 2, slot: 1);
+        rig.State.Bt_PlayerSlotsUsed = 2;
+        rig.State.Bt_EnemySlotsUsed = 2;
+        rig.State.Bt_ActFocus = 1;
+        rig.State.DebugMode = 1;
+        rig.State.Units[17].Item = 28;
+        var menu = rig.Battle.BuildFigtSelMenu();
+        Assert.Equal(
+            [FigtSelCommand.Direct, FigtSelCommand.Magic, FigtSelCommand.FogCard, FigtSelCommand.WhiteBeam],
+            menu.ListedModes!.Select(m => m.Value));
+        Assert.NotNull(menu.Find(FigtSelCommand.CheaterBeam));
     }
 
     [Fact]

@@ -67,13 +67,22 @@ public sealed record FigtSelOption(Sys3Int Command, IReadOnlyList<Sys3Int> Argum
 /// <param name="PlayerSlotsUsed"><c>Bt_PlayerSlotsUsed</c>: own panels that can be clicked.</param>
 /// <param name="EnemySlotsUsed"><c>Bt_EnemySlotsUsed</c>: enemy panels that can be hovered.</param>
 /// <param name="Options">Every allowed command, in the order the script lists them.</param>
+/// <param name="ListedModes">
+/// The mode and item entries of the command popup (<c>L_00bc0</c>, <c>FIGT_SEL.ADV:521-698</c>)
+/// in script order, including modes without a valid target, which <paramref name="Options"/>
+/// leaves out: the popup still offers them, and every enemy panel is then an invalid target.
+/// The popup shows a mode only while it is not the current one, and the specials only while the
+/// mode is 1-3. The debug Cheat entry is not part of it. <c>null</c> = the modes of
+/// <paramref name="Options"/>.
+/// </param>
 public sealed record FigtSelMenu(
     Sys3Int ActingSlot,
     Sys3Int AttackType,
     Sys3Int InitialMode,
     Sys3Int PlayerSlotsUsed,
     Sys3Int EnemySlotsUsed,
-    IReadOnlyList<FigtSelOption> Options)
+    IReadOnlyList<FigtSelOption> Options,
+    IReadOnlyList<Sys3Int>? ListedModes = null)
 {
     /// <summary>Whether the script could return this pair.</summary>
     public bool Allows(FigtSelChoice choice) =>

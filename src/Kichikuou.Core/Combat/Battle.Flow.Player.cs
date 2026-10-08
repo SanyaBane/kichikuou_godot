@@ -178,8 +178,14 @@ public sealed partial class Battle
         for (int s = 1; s <= State.Bt_PlayerSlotsUsed.Value; s++)
             ownSlots.Add((Sys3Int)s);
 
+        // L_00bc0 (:521-698): the mode and item entries of the command popup, listed even when
+        // no target is valid (the player can switch to the mode, every target is then grey).
+        var listed = new List<Sys3Int>();
+
         void AddMode(ushort mode)
         {
+            if (mode != FigtSelCommand.CheaterBeam)
+                listed.Add(mode);
             var targets = new List<Sys3Int>();
             for (int s = 1; s <= State.Bt_EnemySlotsUsed.Value; s++)
             {
@@ -197,11 +203,20 @@ public sealed partial class Battle
         if (State.Bt_PlayerAtkType == 2)
             AddMode(FigtSelCommand.Magic);
         if (Unit.Item == 27)
+        {
+            listed.Add(FigtSelCommand.Amoeba);
             options.Add(new FigtSelOption(FigtSelCommand.Amoeba, hovered));
+        }
         if (Unit.Item == 26)
+        {
+            listed.Add(FigtSelCommand.JagiJagi);
             options.Add(new FigtSelOption(FigtSelCommand.JagiJagi, hovered));
+        }
         if (State.Bt_IsDuel == 0 && Unit.Item == 28)
+        {
+            listed.Add(FigtSelCommand.FogCard);
             options.Add(new FigtSelOption(FigtSelCommand.FogCard, hovered));
+        }
         if (State.Bt_ActFocus != 0)
         {
             if (State.Bt_PlayerActSlot == 1 || State.Bt_PlayerActSlot == 2)
@@ -247,7 +262,7 @@ public sealed partial class Battle
         options.Add(new FigtSelOption(FigtSelCommand.OrderDefend, ownSlots));
         options.RemoveAll(o => o.Arguments.Count == 0);
         return new FigtSelMenu(State.Bt_PlayerActSlot, State.Bt_PlayerAtkType, State.Bt_PlayerAtkType + 1,
-            State.Bt_PlayerSlotsUsed, State.Bt_EnemySlotsUsed, options);
+            State.Bt_PlayerSlotsUsed, State.Bt_EnemySlotsUsed, options, listed);
     }
 
     /// <summary>
