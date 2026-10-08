@@ -387,8 +387,9 @@ Dependencies: EV1 → EV2 → EV3; RULE parts need EV2 only for their dialogue f
 
 1. Does a gallery replay (`Ev_Entry` 300-304) write story state before its guard, and does
    `CG.ADV` restore anything afterwards? — `CG.ADV:2322-2349`, e.g. `Gｴﾚﾅ.ADV:25-27, 1157`.
-2. xsystem35 semantics of `%0:` while local calls are pending (`Gﾄｳｹﾞﾝ.ADV:905-964`) — check
-   `sl_retFar` in `F:\sources\Rance\xsystem35-sdl2\src`.
+2. ~~xsystem35 semantics of `%0:` while local calls are pending (`Gﾄｳｹﾞﾝ.ADV:905-964`)~~ —
+   answered (E1): `sl_retFar` (`scenario.c`) drops every pending label call down to the page
+   call, so `%0:` returns from the page at any call depth.
 3. `Gｻｲｾﾞﾙ.ADV:474-478` at `Tmp0621 = 0`: owner of province record 0; reachable at all?
 4. Who calls `Gｶﾌｪ` with the entry that reaches the Lady-unit battle (`Gｶﾌｪ.ADV:2019`)? Unknown.
 5. Is the date calculation `Iｼｬﾝｸﾞﾘﾗ.ADV:5309-5325` identical to `MAIN`'s `L_01881`?

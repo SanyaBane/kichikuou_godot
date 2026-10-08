@@ -49,16 +49,75 @@ public class StatementTests
 
         await rig.Script.RunAsync(
         [
-            new AssignStatement(At, 1, new BinaryExpr('-', V(519), C(9))),                                 // 5 - 9 = 0
-            new AssignStatement(At, 2, new BinaryExpr('*', C(1000), C(1000))),                            // caps at 65535
-            new AssignStatement(At, 3, new BinaryExpr('+', C(2), new BinaryExpr('*', C(3), C(4)))),       // 14
-            new AssignStatement(At, 4, new BinaryExpr('/', C(7), C(0))),                                  // 0
+            new AssignStatement(At, 1, new BinaryExpr("-", V(519), C(9))),                                 // 5 - 9 = 0
+            new AssignStatement(At, 2, new BinaryExpr("*", C(1000), C(1000))),                            // caps at 65535
+            new AssignStatement(At, 3, new BinaryExpr("+", C(2), new BinaryExpr("*", C(3), C(4)))),       // 14
+            new AssignStatement(At, 4, new BinaryExpr("/", C(7), C(0))),                                  // 0
         ]);
 
         Is(0, rig.State.Tmp0001);
         Is(65535, rig.State.Tmp0002);
         Is(14, rig.State.Tmp0003);
         Is(0, rig.State.Tmp0004);
+    }
+
+    [Theory]
+    [InlineData("%", 7, 3, 1)]
+    [InlineData("%", 7, 0, 0)]
+    [InlineData("&", 6, 3, 2)]
+    [InlineData("|", 6, 3, 7)]
+    [InlineData("^", 6, 3, 5)]
+    [InlineData("<", 2, 3, 1)]
+    [InlineData("<", 3, 3, 0)]
+    [InlineData(">", 4, 3, 1)]
+    [InlineData("<=", 3, 3, 1)]
+    [InlineData(">=", 2, 3, 0)]
+    [InlineData("=", 3, 3, 1)]
+    [InlineData("=", 2, 3, 0)]
+    [InlineData("\\", 2, 3, 1)]
+    [InlineData("\\", 3, 3, 0)]
+    public void Operators_follow_the_engine(string op, int left, int right, int expected)
+    {
+        var rig = new ScriptRig();
+
+        Is(expected, rig.Script.Evaluate(new BinaryExpr(op, C(left), C(right))));
+    }
+
+    [Fact]
+    public void Comparisons_combine_as_numbers()
+    {
+        var rig = new ScriptRig();
+        rig.State.Gold = 5;
+
+        // (Gold = 5) * (Gold \ 3) + (Gold > 9): the script's AND/OR written as arithmetic.
+        var expr = new BinaryExpr("+",
+            new BinaryExpr("*", new BinaryExpr("=", V(519), C(5)), new BinaryExpr("\\", V(519), C(3))),
+            new BinaryExpr(">", V(519), C(9)));
+
+        Is(1, rig.Script.Evaluate(expr));
+    }
+
+    [Fact]
+    public void A_scene_program_lists_its_dispatch_table()
+    {
+        var entry = V(520);
+        var program = new ScriptProgram("G.ADV",
+        [
+            new AssignStatement(At, 154, C(1)),                                            // 0: before the table (Gﾌﾞﾘﾃｨ)
+            new IfStatement(At, new BinaryExpr("=", entry, C(1)), 4),                      // 1
+            new AssignStatement(At, 395, C(2)),                                            // 2: a flag before the jump (Gｳｪﾝﾃﾞｨ)
+            new GotoStatement(At, "L_a", 8),                                               // 3
+            new IfStatement(At, new BinaryExpr("=", entry, C(300)), 6),                    // 4
+            new ReturnStatement(At),                                                       // 5: a guard, no entry
+            new IfStatement(At, new BinaryExpr("=", entry, C(20)), 8),                     // 6
+            new GotoStatement(At, "L_b", 9),                                               // 7
+            new ReturnStatement(At),                                                       // 8: L_a
+            new IfStatement(At, new BinaryExpr("=", entry, C(2)), 11),                     // 9: L_b, after the first label
+            new GotoStatement(At, "L_a", 8),                                               // 10
+        ],
+        new Dictionary<string, int> { ["L_a"] = 8, ["L_b"] = 9 });
+
+        Assert.Equal([new SceneEntry(1, "L_a", 8), new SceneEntry(20, "L_b", 9)], program.Entries);
     }
 
     [Fact]
@@ -72,7 +131,7 @@ public class StatementTests
         [
             new SetStringStatement(At, 1, "Sill"),
             // MM Unit_StrBase + (Unit_Cur - 1) * 3 + 0, 1
-            new CopyStringStatement(At, new BinaryExpr('+', new BinaryExpr('+', V(198), new BinaryExpr('*', new BinaryExpr('-', V(154), C(1)), C(3))), C(0)), C(1)),
+            new CopyStringStatement(At, new BinaryExpr("+", new BinaryExpr("+", V(198), new BinaryExpr("*", new BinaryExpr("-", V(154), C(1)), C(3))), C(0)), C(1)),
         ]);
 
         Assert.Equal("Sill", rig.State.Strings[1]);
@@ -88,8 +147,8 @@ public class StatementTests
         await rig.Script.RunAsync(
         [
             new SetDataTableStatement(At, [(Sys3Int)10, (Sys3Int)11, (Sys3Int)20, (Sys3Int)21]),
-            new ReadDataStatement(At, 142, new BinaryExpr('*', new BinaryExpr('-', V(158), C(1)), C(2))),
-            new ReadDataStatement(At, 143, new BinaryExpr('+', new BinaryExpr('*', new BinaryExpr('-', V(158), C(1)), C(2)), C(1))),
+            new ReadDataStatement(At, 142, new BinaryExpr("*", new BinaryExpr("-", V(158), C(1)), C(2))),
+            new ReadDataStatement(At, 143, new BinaryExpr("+", new BinaryExpr("*", new BinaryExpr("-", V(158), C(1)), C(2)), C(1))),
         ]);
 
         Is(20, rig.State.Provs[2].MapX);

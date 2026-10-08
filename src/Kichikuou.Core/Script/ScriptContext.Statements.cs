@@ -53,12 +53,31 @@ public sealed partial class ScriptContext
     {
         ConstExpr c => c.Value,
         VarExpr v => State.ReadVariable(v.Var),
-        BinaryExpr { Op: '+' } b => Evaluate(b.Left) + Evaluate(b.Right),
-        BinaryExpr { Op: '-' } b => Evaluate(b.Left) - Evaluate(b.Right),
-        BinaryExpr { Op: '*' } b => Evaluate(b.Left) * Evaluate(b.Right),
-        BinaryExpr { Op: '/' } b => Evaluate(b.Left) / Evaluate(b.Right),
+        BinaryExpr b => Apply(b.Op, Evaluate(b.Left), Evaluate(b.Right)),
         _ => throw new ScenarioFormatException($"Expression {expr} is not supported."),
     };
+
+    /// <summary>One operator of the engine's expressions (xsystem35 <c>cali.c</c>): comparisons yield 1 or 0.</summary>
+    private static Sys3Int Apply(string op, Sys3Int a, Sys3Int b) => op switch
+    {
+        "+" => a + b,
+        "-" => a - b,
+        "*" => a * b,
+        "/" => a / b,
+        "%" => a % b,
+        "&" => a & b,
+        "|" => a | b,
+        "^" => a ^ b,
+        "<" => Bool(a < b),
+        ">" => Bool(a > b),
+        "<=" => Bool(a <= b),
+        ">=" => Bool(a >= b),
+        "=" => Bool(a == b),
+        "\\" => Bool(a != b),
+        _ => throw new ScenarioFormatException($"Operator {op} is not supported."),
+    };
+
+    private static Sys3Int Bool(bool value) => value ? (Sys3Int)1 : Sys3Int.Zero;
 
     /// <summary><c>MS n, "text"</c>: sets string variable <paramref name="slot"/>.</summary>
     public void SetString(int slot, string text) => State.Strings[slot] = text;

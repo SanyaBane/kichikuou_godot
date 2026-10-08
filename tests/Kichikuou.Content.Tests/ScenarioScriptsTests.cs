@@ -1,4 +1,4 @@
-using Kichikuou.Content.Setup;
+using Kichikuou.Content.Scripts;
 using Kichikuou.Core.Golden;
 using Kichikuou.Core.Script;
 using Kichikuou.Core.Setup;
@@ -49,11 +49,11 @@ public sealed class ScenarioScriptsTests : IDisposable
         Assert.Equal(new AssignStatement(new("DATA.ADV", 1), 158, new ConstExpr(2)), statements[0]);
         Assert.Equal(new SetStringStatement(new("DATA.ADV", 3), 8, "Custom Castle"), statements[1]);
         var mm = Assert.IsType<CopyStringStatement>(statements[2]);
-        Assert.Equal(new BinaryExpr('-', new BinaryExpr('+', new VarExpr(200), new VarExpr(158)), new ConstExpr(1)), mm.Target);
+        Assert.Equal(new BinaryExpr("-", new BinaryExpr("+", new VarExpr(200), new VarExpr(158)), new ConstExpr(1)), mm.Target);
         Assert.Equal([(Sys3Int)5, (Sys3Int)6, (Sys3Int)7, (Sys3Int)8], Assert.IsType<SetDataTableStatement>(statements[3]).Words);
         var f3 = Assert.IsType<ReadDataStatement>(statements[4]);
-        Assert.Equal(new BinaryExpr('+',
-            new BinaryExpr('*', new BinaryExpr('-', new VarExpr(158), new ConstExpr(1)), new ConstExpr(2)),
+        Assert.Equal(new BinaryExpr("+",
+            new BinaryExpr("*", new BinaryExpr("-", new VarExpr(158), new ConstExpr(1)), new ConstExpr(2)),
             new ConstExpr(1)), f3.Index);
         Assert.Equal("M.ADV", Assert.IsType<CallFileStatement>(statements[5]).File);
         Assert.IsType<ReturnStatement>(statements[6]);
@@ -61,7 +61,7 @@ public sealed class ScenarioScriptsTests : IDisposable
 
     [Theory]
     [InlineData("\t{VAR0001 = 1:")]
-    [InlineData("\t!VAR0001 : VAR0002 = 3!")]
+    [InlineData("\t!VAR0001 : VAR0002 && 3!")]
     [InlineData("\tY 4, 3:")]
     [InlineData("\t'A message'")]
     public void Rejects_anything_else_with_its_location(string line)
