@@ -19,8 +19,10 @@ public sealed record WaoCallEvent(Sys3Int Op) : BattleEvent;
 public sealed record PrintStringEvent(Sys3Int Slot) : BattleEvent;
 
 /// <summary>
-/// <c>L_0320f</c> (<c>FIGT.ADV:2057-2060</c>) — a frame around battlefield panel
-/// <paramref name="Panel"/> (1-4 player slots, 5-8 enemy slots).
+/// <c>L_0320f</c> (<c>FIGT.ADV:2057-2060</c>) — battlefield panel <paramref name="Panel"/> (1-4
+/// player slots, 5-8 enemy slots), just redrawn by the preceding <see cref="SlotPanelEvent"/>, is
+/// copied to the screen alone. The highlight is the panel's text colour (<c>ZC 1, 240</c>, set by
+/// the caller); no frame is drawn (docs/battle/screen-layout.md §1.4).
 /// </summary>
 public sealed record PanelHighlightEvent(Sys3Int Panel) : BattleEvent;
 

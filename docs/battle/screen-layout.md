@@ -53,7 +53,8 @@ scratch space; nothing outside (0,0)-(640,400) is ever visible directly.
   battle `B3`), no clear; the cursor goes to (x, y + 2) (`message.c:165-202`, `LineIncrement` = 2
   at `message.c:73`). The visible frame is a CG drawn by the script.
 - Text is drawn at the cursor in colour `ZC 1` (palette index) and size `ZM` (pixel height)
-  (`cmdz.c:64-101`, `message.c:110-127`). Default and battle size: `ZM 24` (`ｽﾀｰﾄ.ADV:854`).
+  (`cmdz.c:64-101`, `message.c:110-127`). The engine default is 16 (`message.c:63`); the
+  scenario sets `ZM 24` at start (`ｽﾀｰﾄ.ADV:854`), which is the battle size.
 - `R` = new line: x back to the window x, y += size + 2, using the size in force at the `R`
   (`message.c:148-163`). Text is never wrapped; a string longer than the window simply runs past
   its right edge.
@@ -63,8 +64,9 @@ scratch space; nothing outside (0,0)-(640,400) is ever visible directly.
 - `ZH 1` (emitted before every string by the decompiler) makes every printed string half-width
   (`cmdz.c:122-129`, `nact.c:76-88`): full-width letters, digits, brackets and the full-width
   space become ASCII. Every character of battle text therefore occupies one half-width cell.
-  This document assumes a monospaced font with cell width = size / 2 (12 px at 24, 8 px at 16),
-  as in the original's Japanese system font; **unverified** (xsystem35 uses FreeType advances).
+  The font is MS Gothic ([../assets.md](../assets.md) §6), whose half-width glyphs are fixed
+  pitch at half the em, so a cell is size / 2 wide (12 px at 24, 8 px at 16). Whether the
+  synthetic bold (§7.1) widens the advance in the original is **unverified**.
 - `H w, v` prints v in decimal; w = 0: no padding; w > 0: right-aligned in w cells, space padded,
   and only the last w digits are kept when the number is wider (`cmdh.c:33-43`,
   `hankaku.c:385-404`). The battle uses `H 0` everywhere except the round header (`H 2`).
@@ -451,9 +453,10 @@ script continues after `]`.
 
 ### 5.1 EngagementSceneEvent — `L_02609` (`FIGT.ADV:1624-1725`)
 
-Dungeon battles first blank the screen with `EC 0` (`:1625-1627`, `FlowClearScreenEvent` is not
-raised for this one — the event itself implies it). Then a 640×512 scene S is composed off-screen
-at (640, 0) (S coordinates below = off-screen x − 640, y):
+Dungeon battles first blank the screen with `EC 0` (`:1625-1627`; the core raises no event for
+it, and step 8 below overwrites the whole screen right after, so at most a black flash is seen).
+Then a 640×512 scene S is composed off-screen at (640, 0) (S coordinates below = off-screen
+x − 640, y):
 
 | Order | Command | Placed in S | Notes |
 |---|---|---|---|
@@ -582,8 +585,8 @@ after the first line uses 24, later ones 16 (pitch 18), 8 px cells (30 per line)
 | 242 | `  Battle LV: ` + level | troops = 0: `  Commander Attack: ` Atk; else `  Troops: ` n |
 | 260 | `  HP: ` + HP | troops = 0: `  Commander Defense: ` Def; else `  Troop Attack: ` TroopAtk + mod |
 | 278 | troops = 0: `  Commander Attack: ` Atk; else `  Troops: ` n (`:883-899`) | troops ≠ 0: `  Troop Defense: ` TroopDef + mod |
-| 296 | troops = 0: `  Commander Defense: ` Def; else `  Troop Attack: ` TroopAtk + mod (`:900-943`) | `  Magic Attack/Defense: ` Magic (or one line up when troops = 0) |
-| 314 | troops ≠ 0: `  Troop Defense: ` TroopDef + mod (`:946-989`) | `  # of Attacks: ` Attacks |
+| 296 | troops = 0: `  Commander Defense: ` Def; else `  Troop Attack: ` TroopAtk + mod (`:900-943`) | `  Magic Attack/Defense: ` Magic (troops = 0: at 278) (`:1096-1097`) |
+| 314 | troops ≠ 0: `  Troop Defense: ` TroopDef + mod (`:946-989`) | `  # of Attacks: ` Attacks (troops = 0: at 296) (`:1100-1101`) |
 | next | `  Magic Attack/Defense: ` Magic (`:993-994`) | |
 | next | `  # of Attacks: ` Attacks (`:997-998`) | |
 | next | `  Surging with power` if the partner is deployed (`:1001-1004`) | |
@@ -660,17 +663,22 @@ Battle use: `FIGT_A.ADV:72` (0), `:111-116` (4, 3, 0), `:124-125` (13); `FIGT_B.
 | `ZM` | 16 | `FIGT.ADV:858, 1041` | info boxes after the first line |
 | `ZS` (selection) | 16 | `ｽﾀｰﾄ.ADV:855` | popups and script menus |
 
-Line pitch = size + 2; selection item pitch = size + 2 (`selection.c:274, 307`). No bold
-(`ZB` not used in battle) and no text shadow (`ZA` never used; `ags.c:139` default none). The font
-face of the original is **unknown** (Japanese system font; MS Gothic assumed for the 12/8 px cell
-widths).
+Line pitch = size + 2; selection item pitch = size + 2 (`selection.c:274, 307`). Text is
+**bold**: the engine's default weight is bold (`ags.c:141`), and the only `ZB` commands in the
+scenario (`各種DATA.ADV:116-272`, small chart labels) switch to thin and back to `ZB 7` (bold)
+right away. No text shadow (`ZA` never used; `ags.c:139` default none). The face is **MS Gothic**:
+`system39.exe` names `ＭＳ ゴシック`, and xsystem35 on Windows opens `msgothic.ttc` face 0 (all text is
+gothic, the mincho switch never occurs) — [../assets.md](../assets.md) §6.
 
 ### 7.2 Palette indices used by the battle
 
 Indices 10-245 come from the last CG drawn; every CG the battle draws (UI 807-899, faces,
 sprites, backgrounds, map tiles, province pictures) has identical values at the indices below
 (checked over all 1222 PMS files: only the 640×294 event CGs 101-240 etc. and CGs 806/862 differ,
-CG 396/815 load no palette). 0-9 and 246-255 are fixed (`ags.c:58-81`).
+CG 396/815 load no palette). 0-9 and 246-255 are fixed (`ags.c:58-81`). The test
+`GameDataAssetTests.Battle_text_colours_agree_over_the_battle_cgs` re-checks this table over
+CGs 1-100, 801-919, 1001-1064 and 1100-1530 (806/862 excluded: dungeon and gallery screens,
+never drawn by the battle).
 
 | Index | RGB | Use (set by) |
 |---|---|---|
@@ -696,14 +704,14 @@ Script behaviour without a matching core event (the UI must reproduce it from co
 
 - the full-screen copy that ends every `RedrawAsync` (`FIGT.ADV:2055`);
 - the removal of the "UNABLE TO FIGHT" marks after the exchange key (`FIGTATTK.ADV:248-253`);
-- the `EC 0` before a dungeon engagement (`FIGT.ADV:1626`);
+- the `EC 0` before a dungeon engagement (`FIGT.ADV:1626`, immediately overdrawn);
 - all drawing inside `FIGT_SEL.ADV` (prompt, hover frames, popups) and in script menus;
 - the window text colour (`ZC 1` history, §2.6).
 
 Unknown / unverified:
 
-1. Glyph metrics: 12 px (size 24) / 8 px (size 16) per half-width cell assumes the original's
-   monospaced system font; the font face itself is unknown.
+1. Glyph metrics: the face is MS Gothic (fixed-pitch half-width cells of 12 px at 24, 8 px at
+   16); whether the original's synthetic bold changes the advance is unverified.
 2. `Ui_FaceOverMap` during battles (decides whether portrait/centre erases show black or the map).
 3. Contents of button index 99 used by the "no button" hover restore/frame in `FIGT_SEL.ADV:175,
    185-188` (presumably zero → nothing drawn).

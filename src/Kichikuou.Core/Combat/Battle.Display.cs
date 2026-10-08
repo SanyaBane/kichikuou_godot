@@ -110,7 +110,8 @@ public sealed partial class Battle
 
     /// <summary>
     /// <c>L_0320f</c> (<c>FIGT.ADV:2057-2060</c>) — draws panel <c>CallArg</c> (1-8) through
-    /// <c>L_03236</c> and frames it. Same state effects as <c>L_03236</c>. 01 §9.4.
+    /// <c>L_03236</c> and copies just that panel to the screen (the highlight is the text colour
+    /// the caller set). Same state effects as <c>L_03236</c>. 01 §9.4.
     /// </summary>
     internal async Task HighlightAsync()
     {
