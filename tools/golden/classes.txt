@@ -1,0 +1,6 @@
+# Page classes for the golden-test harness (XSYS35_GOLDEN_CLASSES); see docs/golden-tests.md.
+# Every file not listed here is a hook: memory is dumped around calls into it.
+root FIGT_A.ADV FIGT_B.ADV FIGT.ADV
+inner FIGT_SEL.ADV FIGTATTK.ADV FIGT_M.ADV FIGT作.ADV FIGTﾃｷDE.ADV FIGTﾐｶDE.ADV 死亡捕獲.ADV
+inner WAO_SUB.ADV M.ADV WAO_MAP.ADV PCMPLAY.ADV
+pick FIGT_SEL.ADV

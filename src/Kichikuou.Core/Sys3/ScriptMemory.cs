@@ -29,7 +29,10 @@ public sealed class ScriptMemory
     /// <summary>A numbered variable (page 0).</summary>
     public ref Sys3Int Var(int number) => ref _vars[number];
 
-    /// <summary><c>DC page, size</c>: allocates (or resizes, keeping contents) an array page.</summary>
+    /// <summary>
+    /// Allocates (or resizes, keeping contents) an array page of <paramref name="size"/> slots.
+    /// <c>DC page, maxindex</c> allocates <c>maxindex + 1</c> slots (xsystem35 <c>cmdd.c</c>).
+    /// </summary>
     public void AllocatePage(int page, int size)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(page, 1);
@@ -44,8 +47,24 @@ public sealed class ScriptMemory
             Array.Resize(ref _pages[page], size);
     }
 
+    /// <summary>Releases an array page (the state before its <c>DC</c>).</summary>
+    public void FreePage(int page) => _pages[page] = null;
+
     /// <summary>Size of an array page, or 0 if it is not allocated.</summary>
     public int PageSize(int page) => _pages[page]?.Length ?? 0;
+
+    /// <summary>The numbers of the allocated array pages, ascending.</summary>
+    public IEnumerable<int> AllocatedPages
+    {
+        get
+        {
+            for (int page = 1; page < PageLimit; page++)
+            {
+                if (_pages[page] is not null)
+                    yield return page;
+            }
+        }
+    }
 
     /// <summary>
     /// Reads <c>page[index]</c>. Outside the page the original engine resolves the reference to

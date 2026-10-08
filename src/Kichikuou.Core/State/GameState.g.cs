@@ -9,11 +9,11 @@ public sealed partial class GameState
 {
     private static void AllocatePages(ScriptMemory memory)
     {
-        memory.AllocatePage(1, 20000);
-        memory.AllocatePage(2, 1800);
-        memory.AllocatePage(3, 7000);
-        memory.AllocatePage(4, 2100);
-        memory.AllocatePage(10, 300);
+        memory.AllocatePage(1, 20001);
+        memory.AllocatePage(2, 1801);
+        memory.AllocatePage(3, 7001);
+        memory.AllocatePage(4, 2101);
+        memory.AllocatePage(10, 301);
     }
 
     /// <summary>VAR0000 [C] — Engine result register: Y 4,n random 1..n, IM mouse button, menu/sub-file return codes; also reused as a temp.</summary>

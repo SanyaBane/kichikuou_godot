@@ -146,10 +146,10 @@ The options that were weighed:
   interpreter for the small command subset (fastest fidelity, but the script also drives the
   old screens).
 
-Still to decide: how golden tests get deterministic RNG (patched xsystem35 with a fixed seed vs.
-recorded `Y 4` draws). Both are now possible: the core reproduces xsystem35's generator and
-`Y 4` bit-for-bit (verified against its `mt19937-1.c` compiled with gcc), and rule code draws
-through `IScriptRandom`, so recorded draws can be injected instead.
+Decided (2026-10-08): golden tests get deterministic RNG from the generator **state** recorded in
+every memory dump of the patched xsystem35 (no reseeding, so the patched game plays like the
+unpatched one); the core restores it and must produce every recorded `Y 4` draw itself, which
+also proves the generator port. Design and format: [golden-tests.md](golden-tests.md).
 
 Done so far: variable dictionary; solution skeleton (`Kichikuou.Core` + tests + Godot 4.7.2
 project on `net10.0`, verified building and running headless).

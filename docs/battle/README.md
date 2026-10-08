@@ -46,7 +46,10 @@ The three parts are merged (2026-10-08); there are no stubs left. Notes on the m
   the flow and resolution parts emit events and set only `Ui_WaoOp` / `CallArg`, while the
   flavour part also tracks `Ui_WinType` / `Ui_WinFrameCg`. These UI variables match the
   original after each window closes but not while one is open, and other `Ui_*` writes of
-  those files are missing. A variable-by-variable comparison must either port them or exclude
-  the `ui` group of `variables.tsv` (decide when building the harness).
+  those files are missing. Decided (2026-10-08): the golden comparison ignores the `ui` group
+  (except `Ui_CmdAttackAvail`) instead of porting them — reasons in
+  [../golden-tests.md](../golden-tests.md), "What the comparison ignores".
 - `EndToEndBattleTests` (14 tests) run whole battles through all three parts with hand-derived
   draw sequences; they check internal consistency, not equality with the original game.
+  Equality is checked by `Golden/GoldenBattleTests` on captured battles
+  ([../golden-tests.md](../golden-tests.md)).

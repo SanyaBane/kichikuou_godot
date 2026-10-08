@@ -18,9 +18,11 @@ keep the dictionary updated when a meaning is confirmed or corrected.
 The **battle** (`FIGT*.ADV`) is ported to `src/Kichikuou.Core/Combat` following
 [docs/porting-conventions.md](docs/porting-conventions.md) and the spec in
 [docs/battle/](docs/battle/README.md); it has been reviewed against the script and has unit and
-end-to-end tests, but no comparison with the original game exists yet. Next: the golden-test
-harness on a patched xsystem35 (`F:\sources\Rance\xsystem35-sdl2`, branch `golden-harness`,
-built with MSYS2 — see `docs/spike-findings.md`).
+end-to-end tests. The golden-test harness is built ([docs/golden-tests.md](docs/golden-tests.md)):
+a patched xsystem35 (`F:\sources\Rance\xsystem35-sdl2`, branch `golden-harness`, built with
+MSYS2 — see `docs/spike-findings.md`) records battles, `src/Kichikuou.Core/Golden` replays them.
+Next: the owner captures battles (`tools/golden/capture.ps1`), then every mismatch is fixed in
+the port with a regression test.
 
 ## Layout
 
@@ -33,11 +35,15 @@ built with MSYS2 — see `docs/spike-findings.md`).
   `python tools/codegen/gen_state.py` from `docs/variables.tsv` — never edit it by hand;
   re-run the generator after changing the dictionary. Rule code addresses records explicitly
   (`state.Units[state.Unit_Cur].Troops`) to keep the script's cursor quirks visible.
-- `tests/Kichikuou.Core.Tests` — xUnit tests for the core.
+  `Golden/` parses harness captures and replays them through the port (`GoldenReplay`);
+  `State/VariableCatalog.g.cs` (names, groups, page bindings) is generated with `GameState.g.cs`.
+- `tests/Kichikuou.Core.Tests` — xUnit tests for the core. `Golden/GoldenBattleTests` replays the
+  captures in `E:\Modding games\Modding Rance\Kichikou\_extract\golden` (or
+  `KICHIKUOU_GOLDEN_DIR`) and is skipped when there are none.
 - `godot/` — Godot 4.7.2 .NET project (`Kichikuou.csproj`, namespace `Kichikuou.Game`);
   presentation only. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
 - `tools/analysis/` — Python scripts for reading the decompiled scenario; `tools/codegen/` —
-  generators for committed C# sources.
+  generators for committed C# sources; `tools/golden/` — harness launcher and page classes.
 - `docs/` — brief, spike findings, variable dictionary.
 
 ## Commands

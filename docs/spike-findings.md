@@ -129,6 +129,8 @@ one attack per army per week **[C]**. Story triggers mixed in. In-battle AI: ran
 - **16-bit unsigned saturating arithmetic**: `a-b` floors at 0, `+`/`*` cap at 65535, `/ 0` and
   `% 0` give 0. The script relies on it (`|a-b|` is written `a-b + (b-a)`) **[C]**.
 - Array pages with aliasing (`DC/DS/DF/NB/NC`), inline data tables (`F1/F3`), `US/UG`.
+  `DC page, n` allocates `n + 1` slots: `n` is the highest index (xsystem35 `cmdd.c`; confirmed
+  by a memory dump of the running game) **[C]**.
 - Everything else (`G`, `CC`, `CS`, `PF*`, `IM`, …) is display/input.
 
 ## Variable dictionary

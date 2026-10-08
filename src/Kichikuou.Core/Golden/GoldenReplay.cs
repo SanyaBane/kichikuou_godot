@@ -1,0 +1,287 @@
+using System.Text;
+using Kichikuou.Core.Combat;
+using Kichikuou.Core.State;
+using Kichikuou.Core.Sys3;
+
+namespace Kichikuou.Core.Golden;
+
+/// <summary>
+/// The core stopped matching the original's event stream (a draw, an input or a hook call
+/// arrived where the original did something else); the replay cannot go on.
+/// </summary>
+public sealed class GoldenDivergenceException(string message) : Exception(message);
+
+/// <summary>The differences found at one point of a replay.</summary>
+/// <param name="Name">Where: <c>exit</c>, or <c>hook-enter Gｴｸｽ.ADV (line 812)</c>.</param>
+/// <param name="Differences">Every difference, ignored ones included.</param>
+public sealed record GoldenCheckpoint(string Name, IReadOnlyList<MemoryDifference> Differences)
+{
+    /// <summary>The differences that count.</summary>
+    public IEnumerable<MemoryDifference> Failures => Differences.Where(d => !d.Ignored);
+}
+
+/// <summary>The outcome of replaying one capture.</summary>
+public sealed class GoldenReport(GoldenCapture capture)
+{
+    /// <summary>The replayed capture.</summary>
+    public GoldenCapture Capture { get; } = capture;
+
+    /// <summary>Memory comparisons in replay order (hook entries, then the exit).</summary>
+    public List<GoldenCheckpoint> Checkpoints { get; } = [];
+
+    /// <summary>Why the replay stopped early, or <c>null</c>.</summary>
+    public string? Divergence { get; set; }
+
+    /// <summary>Events consumed before the end or the divergence (for context).</summary>
+    public int ConsumedRecords { get; set; }
+
+    /// <summary>The replay ran to the end and every compared location matched.</summary>
+    public bool Passed => Divergence is null && Checkpoints.All(c => !c.Failures.Any());
+
+    /// <summary>A readable account: the divergence, then each checkpoint's failures (capped).</summary>
+    public string Describe(int maxLines = 60)
+    {
+        var sb = new StringBuilder();
+        sb.Append($"{Capture.Source}: {Capture.Root}, {Capture.Records.Count} events, seed {Capture.Seed}");
+        sb.Append(Passed ? " — matches the original.\n" : " — DIFFERS from the original.\n");
+        if (Divergence is not null)
+            sb.Append($"Diverged after {ConsumedRecords} events: {Divergence}\n");
+        foreach (var checkpoint in Checkpoints)
+        {
+            var failures = checkpoint.Failures.ToList();
+            int ignored = checkpoint.Differences.Count - failures.Count;
+            sb.Append($"[{checkpoint.Name}] {failures.Count} differences, {ignored} ignored\n");
+            foreach (var d in failures.Take(maxLines))
+                sb.Append($"  {d}\n");
+            if (failures.Count > maxLines)
+                sb.Append($"  … {failures.Count - maxLines} more\n");
+        }
+        return sb.ToString();
+    }
+}
+
+/// <summary>
+/// Replays a <see cref="GoldenCapture"/> through the battle port (<c>docs/golden-tests.md</c>,
+/// "Replay in the core"): loads the entry memory, answers draws, inputs and hook calls from the
+/// recorded events, and compares the memory with the original at each hook entry and at the end.
+/// </summary>
+public sealed class GoldenReplay
+{
+    private readonly GoldenCapture _capture;
+    private readonly GoldenFilter _filter;
+    private readonly GoldenReport _report;
+    private readonly GameState _state = new();
+    private readonly List<GoldenRecord> _consumed = [];
+    private int _next;
+    private Mt19937Legacy _generator;
+    private XSystem35Random _random;
+
+    private GoldenReplay(GoldenCapture capture, GoldenFilter filter)
+    {
+        _capture = capture;
+        _filter = filter;
+        _report = new GoldenReport(capture);
+        _generator = capture.Enter.CreateGenerator();
+        _random = new XSystem35Random(_generator);
+    }
+
+    /// <summary>The state the replay runs on (after the run: the core's final memory).</summary>
+    public GameState State => _state;
+
+    /// <summary>Replays a capture and reports how the core compares with the original.</summary>
+    public static async Task<GoldenReport> RunAsync(GoldenCapture capture, GoldenFilter? filter = null)
+    {
+        var replay = new GoldenReplay(capture, filter ?? GoldenFilter.Default);
+        await replay.RunAsync();
+        return replay._report;
+    }
+
+    private async Task RunAsync()
+    {
+        try
+        {
+            CheckLayout(_capture.Enter);
+            _capture.Enter.ApplyTo(_state.Memory);
+            var battle = new Battle(_state, new Random(this), new NullView(), new Input(this), new Hooks(this));
+            Func<Task> entry = _capture.Root switch
+            {
+                "FIGT_A.ADV" => battle.AttackProvinceAsync,
+                "FIGT_B.ADV" => battle.DefendProvinceAsync,
+                "FIGT.ADV" => battle.FightAsync,
+                _ => throw new GoldenFormatException($"No entry point for root {_capture.Root}."),
+            };
+
+            string? jumped = null;
+            try
+            {
+                await entry();
+            }
+            catch (ScenarioJumpException e)
+            {
+                jumped = e.File;
+            }
+
+            if (jumped is not null)
+            {
+                var jump = Take<JumpRecord>($"jump to {jumped}");
+                if (jump.File != jumped)
+                    throw Diverged($"the core jumped to {jumped}, the original to {jump.File} at {jump.Where}");
+            }
+            if (NextRecord() is { } left)
+                throw Diverged($"the core's battle ended ({jumped ?? "return"}), but the original went on with {Describe(left)}");
+            if (_capture.JumpTarget != jumped)
+                throw Diverged($"the core ended with {jumped ?? "return"}, the original with {_capture.JumpTarget ?? "return"}");
+
+            _report.Checkpoints.Add(new GoldenCheckpoint("exit",
+                MemoryComparison.Compare(_capture.Exit, _state.Memory, _generator, _filter)));
+        }
+        catch (GoldenDivergenceException e)
+        {
+            _report.Divergence = e.Message;
+        }
+        _report.ConsumedRecords = _consumed.Count;
+    }
+
+    /// <summary>The dump's <c>DS</c> bindings must be the ones the generated <see cref="GameState"/> assumes.</summary>
+    private static void CheckLayout(MemoryDump dump)
+    {
+        var expected = VariableCatalog.Bindings.Select(b => new DumpBinding(b.Var, b.Page, b.Offset, b.Cursor)).ToHashSet();
+        var actual = dump.Bindings.ToHashSet();
+        var missing = expected.Except(actual).ToList();
+        var extra = actual.Except(expected).ToList();
+        if (missing.Count > 0 || extra.Count > 0)
+        {
+            throw new GoldenFormatException(
+                "The original's array bindings differ from the generated GameState layout: core only "
+                + string.Join(", ", missing) + "; original only " + string.Join(", ", extra) + ".");
+        }
+        foreach (var (page, size) in VariableCatalog.Pages)
+        {
+            if (!dump.Pages.TryGetValue(page, out var values) || values.Length != size)
+                throw new GoldenFormatException($"Page {page} has size {values?.Length ?? 0} in the original, {size} in the core.");
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // The event stream, shared by the random source, the input and the hooks
+    // ---------------------------------------------------------------------------------------
+
+    /// <summary>The next record the core must meet (diagnostic <c>wait</c> records skipped), not consumed.</summary>
+    private GoldenRecord? NextRecord()
+    {
+        while (_next < _capture.Records.Count && _capture.Records[_next] is WaitRecord)
+            _next++;
+        return _next < _capture.Records.Count ? _capture.Records[_next] : null;
+    }
+
+    private T Take<T>(string what) where T : GoldenRecord
+    {
+        var record = NextRecord();
+        if (record is not T match)
+        {
+            throw Diverged(record is null
+                ? $"the core asked for {what}, but the original's battle had ended"
+                : $"the core asked for {what}, but the original's next event is {Describe(record)}");
+        }
+        _next++;
+        _consumed.Add(match);
+        return match;
+    }
+
+    private GoldenDivergenceException Diverged(string message)
+    {
+        var sb = new StringBuilder(message).Append('.');
+        if (_consumed.Count > 0)
+        {
+            sb.Append(" Last events matched:");
+            foreach (var r in _consumed.TakeLast(5))
+                sb.Append($"\n    {Describe(r)}");
+        }
+        return new GoldenDivergenceException(sb.ToString());
+    }
+
+    private static string Describe(GoldenRecord record) => record switch
+    {
+        RndRecord r => $"Y 4,{r.N} → {r.Result} at {r.Where} (line {r.Line})",
+        KeyRecord k => $"IK → {k.Code} at {k.Where} (line {k.Line})",
+        MenuRecord m => $"menu choice {m.Choice}/{m.Count} at {m.Where} (line {m.Line})",
+        MusicRecord m => $"SR 0 → {m.Track} at {m.Where} (line {m.Line})",
+        PickRecord p => $"FIGT_SEL → ({p.RetVal}, {p.Tmp0001}) at {p.Where} (line {p.Line})",
+        HookRecord h => $"call {h.File} at {h.Where} (line {h.Line})",
+        JumpRecord j => $"jump to {j.File} at {j.Where} (line {j.Line})",
+        _ => record.ToString(),
+    };
+
+    private sealed class Random(GoldenReplay replay) : IScriptRandom
+    {
+        public Sys3Int Next(Sys3Int n)
+        {
+            var record = replay.Take<RndRecord>($"Y 4,{n}");
+            if (record.N != n.Value)
+                throw replay.Diverged($"the core drew Y 4,{n} where the original drew Y 4,{record.N} at {record.Where} (line {record.Line})");
+            var value = replay._random.Next(n);
+            if (value.Value != record.Result)
+            {
+                throw replay.Diverged(
+                    $"Y 4,{n} gave {value} in the core and {record.Result} in the original at {record.Where} (line {record.Line}): the generator is out of step");
+            }
+            return value;
+        }
+    }
+
+    private sealed class Input(GoldenReplay replay) : IBattleInput
+    {
+        public Task<Sys3Int> WaitForKeyAsync() =>
+            Task.FromResult((Sys3Int)replay.Take<KeyRecord>("a key (IK)").Code);
+
+        public Task<FigtSelChoice> SelectCommandAsync(FigtSelMenu menu)
+        {
+            var record = replay.Take<PickRecord>("a FIGT_SEL result");
+            var choice = new FigtSelChoice((Sys3Int)record.RetVal, (Sys3Int)record.Tmp0001);
+            if (!menu.Allows(choice))
+            {
+                throw replay.Diverged(
+                    $"FIGT_SEL returned ({record.RetVal}, {record.Tmp0001}) at {record.Where} (line {record.Line}), which the core's menu does not offer");
+            }
+            return Task.FromResult(choice);
+        }
+
+        public Task<Sys3Int?> ChooseAsync(BattleMenu menu)
+        {
+            var record = replay.Take<MenuRecord>($"a choice in the {menu.Kind} menu");
+            if (record.Count != menu.Options.Count)
+            {
+                throw replay.Diverged(
+                    $"the {menu.Kind} menu has {menu.Options.Count} items in the core and {record.Count} in the original at {record.Where} (line {record.Line})");
+            }
+            return Task.FromResult(record.Choice == 0 ? null : (Sys3Int?)menu.Options[record.Choice - 1].Code);
+        }
+
+        public Task<Sys3Int> GetPlayingTrackAsync() =>
+            Task.FromResult((Sys3Int)replay.Take<MusicRecord>("the playing track (SR 0)").Track);
+    }
+
+    private sealed class Hooks(GoldenReplay replay) : IStoryHooks
+    {
+        public Task RunEventAsync(string file, Sys3Int entry)
+        {
+            var record = replay.Take<HookRecord>($"a call of {file} (entry {entry})");
+            if (record.File != file)
+                throw replay.Diverged($"the core called {file} where the original called {record.File} at {record.Where} (line {record.Line})");
+
+            replay._report.Checkpoints.Add(new GoldenCheckpoint(
+                $"hook-enter {record.File} at {record.Where} (line {record.Line})",
+                MemoryComparison.Compare(record.Enter, replay._state.Memory, replay._generator, replay._filter)));
+
+            record.Exit.ApplyTo(replay._state.Memory);
+            replay._generator = record.Exit.CreateGenerator();
+            replay._random = new XSystem35Random(replay._generator);
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class NullView : IBattleView
+    {
+        public Task ShowAsync(BattleEvent battleEvent) => Task.CompletedTask;
+    }
+}

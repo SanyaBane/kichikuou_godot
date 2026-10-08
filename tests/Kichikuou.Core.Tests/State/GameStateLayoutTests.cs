@@ -9,12 +9,14 @@ public class GameStateLayoutTests
     [Fact]
     public void Pages_are_allocated_as_in_SET_ADV()
     {
+        // DC page, maxindex allocates maxindex + 1 slots (xsystem35 cmdd.c); found by the
+        // golden-test harness, whose dumps show page 1 with 20001 slots.
         var memory = new GameState().Memory;
-        Assert.Equal(20000, memory.PageSize(1));
-        Assert.Equal(1800, memory.PageSize(2));
-        Assert.Equal(7000, memory.PageSize(3));
-        Assert.Equal(2100, memory.PageSize(4));
-        Assert.Equal(300, memory.PageSize(10));
+        Assert.Equal(20001, memory.PageSize(1));
+        Assert.Equal(1801, memory.PageSize(2));
+        Assert.Equal(7001, memory.PageSize(3));
+        Assert.Equal(2101, memory.PageSize(4));
+        Assert.Equal(301, memory.PageSize(10));
     }
 
     [Fact]
@@ -67,8 +69,8 @@ public class GameStateLayoutTests
     public void Outside_the_page_reads_zero_and_writes_are_ignored()
     {
         var state = new GameState();
-        state.Memory.WritePage(1, 20000, 5);
-        Assert.Equal(Sys3Int.Zero, state.Memory.ReadPage(1, 20000));
+        state.Memory.WritePage(1, 20001, 5);
+        Assert.Equal(Sys3Int.Zero, state.Memory.ReadPage(1, 20001));
         Assert.Equal(Sys3Int.Zero, state.Memory.ReadPage(7, 0));
     }
 

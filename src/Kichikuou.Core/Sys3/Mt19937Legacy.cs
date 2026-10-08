@@ -23,8 +23,36 @@ public sealed class Mt19937Legacy
     private readonly uint[] _mt = new uint[N];
     private int _mti;
 
+    /// <summary>Number of words in the state vector (<c>N</c>).</summary>
+    public const int StateSize = N;
+
     /// <summary>Creates a generator seeded like <c>sgenrand(seed)</c>.</summary>
     public Mt19937Legacy(uint seed) => Seed(seed);
+
+    private Mt19937Legacy()
+    {
+    }
+
+    /// <summary>
+    /// Creates a generator in a recorded state: the state vector <c>mt[0..623]</c> and the index
+    /// <c>mti</c> of <c>mt19937-1.c</c> (0..624, or 625 = never seeded).
+    /// </summary>
+    public static Mt19937Legacy FromState(ReadOnlySpan<uint> state, int index)
+    {
+        ArgumentOutOfRangeException.ThrowIfNotEqual(state.Length, N);
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(index, N + 1);
+        var generator = new Mt19937Legacy();
+        state.CopyTo(generator._mt);
+        generator._mti = index;
+        return generator;
+    }
+
+    /// <summary>The index <c>mti</c> into the state vector.</summary>
+    public int StateIndex => _mti;
+
+    /// <summary>A copy of the state vector <c>mt[0..623]</c>.</summary>
+    public uint[] CopyState() => (uint[])_mt.Clone();
 
     /// <summary>Reseeds, equivalent to <c>sgenrand(seed)</c>.</summary>
     public void Seed(uint seed)
@@ -37,6 +65,8 @@ public sealed class Mt19937Legacy
     /// <summary>The next tempered 32-bit output.</summary>
     public uint NextUInt32()
     {
+        if (_mti == N + 1)
+            Seed(4357);   // genrand() before any sgenrand() uses the default seed
         if (_mti >= N)
             Twist();
 
