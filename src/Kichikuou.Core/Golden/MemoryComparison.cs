@@ -16,14 +16,25 @@ public readonly record struct MemoryDifference(string Location, string Expected,
 }
 
 /// <summary>
-/// Which locations a golden comparison ignores (<c>docs/golden-tests.md</c>, "What the comparison
-/// ignores"): the <c>ui</c> group of the dictionary, variables and page fields, except the
-/// variables that are rule state despite the prefix.
+/// Which locations a golden comparison of a battle ignores (<c>docs/golden-tests.md</c>, "What
+/// the comparison ignores"): the <c>ui</c> group of the dictionary, variables and page fields,
+/// except the variables that are rule state despite the prefix; plus single variables whose
+/// values the port cannot know, each with its reason in the document.
 /// </summary>
 public sealed class GoldenFilter
 {
     /// <summary><c>ui</c>-group variables that rules read, so they are compared.</summary>
     public static readonly IReadOnlySet<string> RuleStateUiVariables = new HashSet<string> { "Ui_CmdAttackAvail" };
+
+    /// <summary>
+    /// Variables outside the <c>ui</c> group that are ignored: the engine's CG load counters
+    /// (<c>Glob_CgSeen</c>, counted on CG-cache misses) and <c>FIGT_SEL.ADV</c>'s pointer scratch
+    /// (<c>Tmp0010-0015</c>).
+    /// </summary>
+    public static readonly IReadOnlySet<string> IgnoredVariables = new HashSet<string>
+    {
+        "Glob_CgSeen", "Tmp0010", "Tmp0011", "Tmp0012", "Tmp0013", "Tmp0014", "Tmp0015",
+    };
 
     private readonly bool[] _ignoredVars;
 
@@ -32,7 +43,7 @@ public sealed class GoldenFilter
     /// <summary>The filter the golden tests use.</summary>
     public static GoldenFilter Default { get; } = new(
         VariableCatalog.Variables
-            .Select(v => v.Group == "ui" && !RuleStateUiVariables.Contains(v.Name))
+            .Select(v => (v.Group == "ui" && !RuleStateUiVariables.Contains(v.Name)) || IgnoredVariables.Contains(v.Name))
             .ToArray());
 
     /// <summary>Compares everything.</summary>

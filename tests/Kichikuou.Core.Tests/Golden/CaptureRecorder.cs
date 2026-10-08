@@ -80,7 +80,12 @@ public sealed class CaptureRecorder
         public Task<Sys3Int> WaitForKeyAsync()
         {
             recorder.Add("key 0 WAO_SUB.ADV@1fe");
-            recorder.Add("wait 10 0 FIGT.ADV@7a0");   // a diagnostic record the replay skips
+            return Task.FromResult(Sys3Int.Zero);
+        }
+
+        public Task<Sys3Int> PauseAsync(Sys3Int ticks)
+        {
+            recorder.Add($"wait {ticks} 0 M.ADV@5aa");
             return Task.FromResult(Sys3Int.Zero);
         }
 

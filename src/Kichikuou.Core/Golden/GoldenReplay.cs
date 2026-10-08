@@ -166,13 +166,8 @@ public sealed class GoldenReplay
     // The event stream, shared by the random source, the input and the hooks
     // ---------------------------------------------------------------------------------------
 
-    /// <summary>The next record the core must meet (diagnostic <c>wait</c> records skipped), not consumed.</summary>
-    private GoldenRecord? NextRecord()
-    {
-        while (_next < _capture.Records.Count && _capture.Records[_next] is WaitRecord)
-            _next++;
-        return _next < _capture.Records.Count ? _capture.Records[_next] : null;
-    }
+    /// <summary>The next record the core must meet, not consumed.</summary>
+    private GoldenRecord? NextRecord() => _next < _capture.Records.Count ? _capture.Records[_next] : null;
 
     private T Take<T>(string what) where T : GoldenRecord
     {
@@ -203,6 +198,7 @@ public sealed class GoldenReplay
     private static string Describe(GoldenRecord record) => record switch
     {
         RndRecord r => $"Y 4,{r.N} → {r.Result} at {r.Where} (line {r.Line})",
+        WaitRecord w => $"Y 3,{w.Ticks} → {w.Code} at {w.Where} (line {w.Line})",
         KeyRecord k => $"IK → {k.Code} at {k.Where} (line {k.Line})",
         MenuRecord m => $"menu choice {m.Choice}/{m.Count} at {m.Where} (line {m.Line})",
         MusicRecord m => $"SR 0 → {m.Track} at {m.Where} (line {m.Line})",
@@ -233,6 +229,14 @@ public sealed class GoldenReplay
     {
         public Task<Sys3Int> WaitForKeyAsync() =>
             Task.FromResult((Sys3Int)replay.Take<KeyRecord>("a key (IK)").Code);
+
+        public Task<Sys3Int> PauseAsync(Sys3Int ticks)
+        {
+            var record = replay.Take<WaitRecord>($"a pause (Y 3,{ticks})");
+            if (record.Ticks != ticks.Value)
+                throw replay.Diverged($"the core paused Y 3,{ticks} where the original paused Y 3,{record.Ticks} at {record.Where} (line {record.Line})");
+            return Task.FromResult((Sys3Int)record.Code);
+        }
 
         public Task<FigtSelChoice> SelectCommandAsync(FigtSelMenu menu)
         {

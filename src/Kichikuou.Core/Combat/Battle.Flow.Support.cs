@@ -206,11 +206,26 @@ public sealed partial class Battle
         return View.ShowAsync(new FlowSoundEvent(State.CallArg, State.RetVal));
     }
 
-    /// <summary><c>!CallArg : mode! %#M.ADV</c>: a strategic-map call.</summary>
-    private Task FlowMapAsync(Sys3Int mode)
+    /// <summary>
+    /// <c>!CallArg : mode! %#M.ADV</c>: a strategic-map call — the event for the presentation,
+    /// then <c>M.ADV</c>'s state effects (<see cref="MapAsync"/>).
+    /// </summary>
+    private async Task FlowMapAsync(Sys3Int mode)
     {
         State.CallArg = mode;
-        return View.ShowAsync(new FlowMapEvent(mode));
+        await View.ShowAsync(new FlowMapEvent(mode));
+        await MapAsync();
+    }
+
+    /// <summary>
+    /// <c>Y 3, n</c>: a timed pause. The engine stores the key that cut it short (0 if none) in
+    /// <c>RetVal</c> (xsystem35 <c>cmdy.c</c>), so the pause is an input.
+    /// </summary>
+    private async Task PauseAsync(Sys3Int ticks)
+    {
+        await View.ShowAsync(new PauseEvent(ticks));
+        var key = await Input.PauseAsync(ticks);
+        State.RetVal = key;
     }
 
     /// <summary>

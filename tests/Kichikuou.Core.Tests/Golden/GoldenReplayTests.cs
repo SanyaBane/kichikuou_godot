@@ -82,7 +82,8 @@ public class GoldenReplayTests
         Assert.True(report.Passed, report.Describe());
         Assert.Equal(["hook-enter Gｴｸｽ.ADV at FIGT_A.ADV@40 (line " + capture.Records.OfType<HookRecord>().Single().Line + ")", "exit"],
             report.Checkpoints.Select(c => c.Name));
-        Assert.Equal(capture.Records.Count(r => r is not WaitRecord), report.ConsumedRecords);
+        Assert.Equal(capture.Records.Count, report.ConsumedRecords);
+        Assert.Contains(capture.Records, r => r is WaitRecord);
         Assert.Contains(capture.Records, r => r is PickRecord);
     }
 

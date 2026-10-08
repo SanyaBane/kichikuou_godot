@@ -34,6 +34,11 @@ The three parts are merged (2026-10-08); there are no stubs left. Notes on the m
 - `Battle.Flavour.g.cs` is **generated** from the user's raw decompile by
   `python tools/codegen/gen_figt_m.py <_extract\scenario>` (`--check` verifies it is current);
   never edit it by hand. Re-run it after renaming a variable in the dictionary.
+- The strategic-map helpers (`M.ADV` and the `WAO_MAP.ADV` operations it reaches: ops 0, 1, 3,
+  4, 10-13) are ported for their state effects in `Battle.Map.cs` (camera, scratch
+  `Tmp0021-0030`/`Tmp0039-0040`, marker list on page 10); `FlowMapAsync` raises the event first.
+  Every `Y 3` pause goes through `IBattleInput.PauseAsync()`, which returns the key that cut it
+  short; the engine stores it in `RetVal`. Both found by the first golden capture.
 - Every `IK 0` goes through `IBattleInput.WaitForKeyAsync()` and stores the key in `RetVal`;
   the `*KeyWaitEvent` records only mark the point for the presentation.
 - A jump out of the battle (game over to `OVER.ADV`) throws `ScenarioJumpException`.
@@ -42,7 +47,7 @@ The three parts are merged (2026-10-08); there are no stubs left. Notes on the m
 
 ### Known gaps for the golden-test harness
 
-- The message-window and map internals (`WAO_SUB.ADV`, `M.ADV`, `WAO_MAP.ADV`) are not ported:
+- The message-window internals (`WAO_SUB.ADV`) are not ported:
   the flow and resolution parts emit events and set only `Ui_WaoOp` / `CallArg`, while the
   flavour part also tracks `Ui_WinType` / `Ui_WinFrameCg`. These UI variables match the
   original after each window closes but not while one is open, and other `Ui_*` writes of

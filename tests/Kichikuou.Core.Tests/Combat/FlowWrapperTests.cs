@@ -101,7 +101,9 @@ public class FlowAttackTests
         await rig.Battle.AttackAftermathAsync();
         Is(1, rig.State.Provs[20].Owner);
         Is(0, rig.State.Ui_CmdAttackAvail);
-        Is(819 + 1, rig.State.Tmp0021);
+        // The owner's flag (Tmp0021 = owner + 819) becomes a map marker (M.ADV op 4, 10000 + CG).
+        Is(1, rig.State.Ui_MarkCount);
+        Is(10000 + 819 + 1, rig.State.Marks[0].Cg);
         Is(0, rig.State.Bt_Kind);
         Is(900, rig.State.Bt_BackgroundCg);
         Is(20, rig.State.Prov_Cur);
@@ -393,7 +395,8 @@ public class FlowDefenceTests
         rig.State.Bt_TargetProv = 35;
         await rig.Battle.DefenceAftermathAsync();
         Is(4, rig.State.Provs[35].Owner);
-        Is(4 + 819, rig.State.Tmp0021);
+        Is(1, rig.State.Ui_MarkCount);
+        Is(10000 + 819 + 4, rig.State.Marks[0].Cg);
         Assert.Empty(rig.Random.Draws);
         Assert.Equal([840, 843], rig.Lines);
     }

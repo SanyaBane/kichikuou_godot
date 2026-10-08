@@ -14,7 +14,7 @@ public sealed partial class Battle
         FlowCopyString(4, CmdrNameString(State.Cmdr_Cur));
         State.CallArg = State.Bt_EnemyActSlot + 4;
         await HighlightAsync();
-        await View.ShowAsync(new PauseEvent(15));
+        await PauseAsync(15);
         EnemyChooseTarget();
         State.CallArg = State.RetVal;
         await HighlightAsync();

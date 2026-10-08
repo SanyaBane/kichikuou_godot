@@ -26,8 +26,9 @@ public sealed record FlowMusicEvent(Sys3Int Track) : BattleEvent;
 
 /// <summary>
 /// A call of <c>M.ADV</c> (strategic map) with <c>CallArg</c> = <paramref name="Mode"/>
-/// (0 redraw, 1/10 centre on the target, 3/4 province marker, 13 …). The map screen's own
-/// state (camera, its scratch variables) belongs to the map port.
+/// (0 redraw, 1 scroll to the target, 3/4 province markers, 10/13 blink the target, 11/12
+/// pause). Raised before the call's state effects (camera, scratch variables, markers), which
+/// <c>Battle.Map.cs</c> ports; its pauses follow as <see cref="IBattleInput.PauseAsync"/> calls.
 /// </summary>
 public sealed record FlowMapEvent(Sys3Int Mode) : BattleEvent;
 

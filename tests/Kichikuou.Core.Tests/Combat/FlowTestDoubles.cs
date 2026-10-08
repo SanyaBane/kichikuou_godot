@@ -34,6 +34,18 @@ public sealed class ScriptedInput : IBattleInput
         return Task.FromResult(Keys.Count > 0 ? (Sys3Int)Keys.Dequeue() : Sys3Int.Zero);
     }
 
+    /// <summary>Keys that cut <c>Y 3</c> pauses short; 0 (ran out) once empty.</summary>
+    public Queue<int> PauseKeys { get; } = new();
+
+    /// <summary>The ticks of every <c>Y 3</c> pause, in order.</summary>
+    public List<int> Pauses { get; } = [];
+
+    public Task<Sys3Int> PauseAsync(Sys3Int ticks)
+    {
+        Pauses.Add(ticks.Value);
+        return Task.FromResult(PauseKeys.Count > 0 ? (Sys3Int)PauseKeys.Dequeue() : Sys3Int.Zero);
+    }
+
     public Task<FigtSelChoice> SelectCommandAsync(FigtSelMenu menu)
     {
         CommandMenus.Add(menu);

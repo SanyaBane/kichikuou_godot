@@ -17,6 +17,12 @@ public interface IBattleInput
     Task<Sys3Int> WaitForKeyAsync();
 
     /// <summary>
+    /// <c>Y 3, n</c>: a timed pause of <paramref name="ticks"/> × 16 ms that a key or click cuts
+    /// short; returns the key code the engine stores in <c>RetVal</c> (0 when the pause ran out).
+    /// </summary>
+    Task<Sys3Int> PauseAsync(Sys3Int ticks);
+
+    /// <summary>
     /// <c>FIGT_SEL.ADV</c>: the command and target selection of a player unit. Returns the
     /// script's result pair (<c>RetVal</c>, <c>Tmp0001</c>); it must be allowed by
     /// <see cref="FigtSelMenu.Allows"/>.

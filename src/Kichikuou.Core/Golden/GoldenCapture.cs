@@ -25,7 +25,7 @@ public sealed record RndRecord(int Line, GoldenLocation Where, int N, int Result
 /// <summary><c>key code</c>: an <c>IK 0</c>/<c>IK 1</c> that stored <paramref name="Code"/>.</summary>
 public sealed record KeyRecord(int Line, GoldenLocation Where, int Code) : GoldenRecord(Line, Where);
 
-/// <summary><c>wait ticks code</c>: a timed <c>Y 3</c> (diagnostic only; the core has no input for it).</summary>
+/// <summary><c>wait ticks code</c>: a timed <c>Y 3</c> that stored <paramref name="Code"/> (the key that cut it short).</summary>
 public sealed record WaitRecord(int Line, GoldenLocation Where, int Ticks, int Code) : GoldenRecord(Line, Where);
 
 /// <summary><c>menu choice count</c>: a menu; <paramref name="Choice"/> is 1-based, 0 = cancelled.</summary>

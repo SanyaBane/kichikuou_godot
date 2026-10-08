@@ -61,7 +61,7 @@ end return | end jump <file>              # how the battle left (end abort <reas
 |---|---|---|
 | `rnd <n> <result> <where>` | every `Y 4, n:` (also n = 0/1, which draw nothing) | the value stored in `RetVal` |
 | `key <code> <where>` | every `IK 0`/`IK 1` | the key code stored in `RetVal` (0 while message skip is on) |
-| `wait <ticks> <code> <where>` | every timed `Y 3, n:` | the key that ended the pause, stored in `RetVal`; diagnostic only, the core has no input for it |
+| `wait <ticks> <code> <where>` | every timed `Y 3, n:` | the key that ended the pause (0 = ran out), stored in `RetVal` |
 | `menu <choice> <count> <where>` | every menu (`]`) | `choice` = 1-based index among the `count` items that were registered, 0 = cancelled (right click) |
 | `music <track> <where>` | every `SR 0, var` | the track number stored in `var` |
 | `pick <retval> <tmp0001> <where>` | the return (`%0`) of a pick file | the pair the core's `SelectCommandAsync` must return |
@@ -106,9 +106,10 @@ numbers are the engine's (`MS n` writes string n).
    unpatched one.
 3. **Input.** `ReplayBattleInput` answers `WaitForKeyAsync` from `key`, `ChooseAsync` from
    `menu` (index → the menu's option list; the core's list must have `count` items),
-   `GetPlayingTrackAsync` from `music`, and `SelectCommandAsync` from `pick`. Records are consumed
-   in log order by all consumers together, so a draw where the original waited for a key (or the
-   other way round) is reported as a divergence. `wait` records are skipped.
+   `GetPlayingTrackAsync` from `music`, `PauseAsync` from `wait` (the ticks must match) and
+   `SelectCommandAsync` from `pick`. Records are consumed in log order by all consumers together,
+   so a draw where the original waited for a key (or the other way round) is reported as a
+   divergence.
 4. **Hooks.** `ReplayStoryHooks` meets each `call` record: the file must match, the core's memory
    is compared with the `hook-enter` dump (differences are reported as a checkpoint failure but
    the replay goes on), then the `hook-exit` dump is loaded, generator state included. A hook
@@ -128,16 +129,34 @@ state. Ignored — and listed in the report as "ignored" so they stay visible:
   ones that are rule state despite the prefix: `Ui_CmdAttackAvail` (written by `FIGT_A`, read by
   the command menu, Q-2). Reasons: (1) these are the internals of the message windows, the map
   and the pointer (`WAO_SUB`, `M`, `WAO_MAP`, `FIGT_SEL`), which the Godot layer replaces, so a
-  port would be dead code; (2) several depend on the physical pointer and on timing (`IM` writes
+  port would be dead code (the map operations are ported anyway, for the non-`ui` scratch values
+  they leave — see "Findings so far" — so the map's `ui` variables usually match too); (2) several depend on the physical pointer and on timing (`IM` writes
   `Ui_MouseX/Y`; drag anchors, button cursors), which no input record can reproduce; (3) no rule
   in the battle reads them; (4) the hook-exit dumps resynchronise them, so a difference cannot
   leak into later rule state through a story scene.
+- **`Glob_CgSeen`** (page 4, `CgSeen[n]` at `80 + n`). `SET.ADV:297` registers it with `ZG`,
+  and the engine adds 1 to `CgSeen[n]` whenever CG `n` is read from the archive — only on a
+  CG-cache miss (xsystem35 `cg.c:262-278`). Exact counts depend on the engine's cache, not on the
+  script. The scenario reads them only as "≠ 0" in the CG gallery (`CG.ADV`, 150 CG numbers
+  between 101 and 862) and in the start menu (CG 240), and no CG a battle can show is among them
+  (checked against every unit, commander and province CG field and the constants in `FIGT` and
+  `FIGT_SEL`). The first capture showed 17 battle CGs (frames, sprites, portraits) counted.
+- **`Tmp0010`-`Tmp0015`**: `FIGT_SEL.ADV`'s target-frame colour and popup rectangle, computed
+  from the hovered button and the pointer position. Inside a battle no other file uses them, and
+  `FIGT_SEL` writes them before reading them.
 - Nothing else. A scratch variable (`Tmp*`, `RetVal`) that differs is a finding: the script has
   no locals and stale scratch values are observable (porting conventions).
 
-If real captures show further pointer-dependent values (e.g. `FIGT_SEL` scratch written from
-the pointer position), each one is added to the ignore list here with its reason, never as a
-blanket rule.
+If real captures show further pointer-dependent values, each one is added to the ignore list
+here with its reason, never as a blanket rule.
+
+### Findings so far
+
+| Capture | Finding | Fix |
+|---|---|---|
+| boot-time smoke dump | `DC page, n` allocates `n + 1` slots | generator, `GameStateLayoutTests` |
+| FIGT_A, prologue victory at Golak (2026-10-08) | `M.ADV` / `WAO_MAP.ADV` leave scratch values (`Tmp0021-0026`, …) that FIGT_A returns to its caller; `Y 3` stores the key that cut the pause short in `RetVal` | `Battle.Map.cs` ports the map operations the battle reaches; every `Y 3` goes through `IBattleInput.PauseAsync` (`FlowMapTests`) |
+| same | `Glob_CgSeen` counters, `Tmp0010` | ignored (above) |
 
 ## Harness configuration
 

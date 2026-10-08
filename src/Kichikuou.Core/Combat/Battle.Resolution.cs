@@ -1408,7 +1408,7 @@ public sealed partial class Battle
             // QUIRK: 01 Q-27 — the redraw leaves Unit_Cur/Cmdr_Cur on the last occupied slots;
             // the enemy-death and ninja tests below run on those records.
             await RedrawAsync();
-            await View.ShowAsync(new PauseEvent(10));
+            await PauseAsync(10);
             State.CallArg = State.Bt_PlayerActSlot;
             CompactPlayer();
         }
@@ -1422,7 +1422,7 @@ public sealed partial class Battle
             State.Bt_EnemyLosses = State.Bt_EnemyLosses + 1;
             await EnemyCommanderDefeatedSceneAsync(); // %#FIGTﾃｷDE.ADV
             await RedrawAsync();
-            await View.ShowAsync(new PauseEvent(10));
+            await PauseAsync(10);
             State.CallArg = State.Bt_EnemyActSlot;
             CompactEnemy();
             return;
@@ -1566,13 +1566,13 @@ public sealed partial class Battle
             DrawShotsOrDamage(
                 State.Bt_ECmdrVsCmdrShots, (Sys3Int)640 + State.Tmp0005, 300, State.Bt_ECmdrVsCmdrShots);
             await View.ShowAsync(new ShotsFrameEvent(State.Tmp0002));
-            await View.ShowAsync(new PauseEvent(1)); // :127
+            await PauseAsync(1); // :127
             State.Tmp0002 = State.Tmp0002 + 40;
         }
         while (State.Tmp0002 < 400);
 
         State.Tmp0002 = State.Tmp0002 - 40;
-        await View.ShowAsync(new PauseEvent(40)); // :133
+        await PauseAsync(40); // :133
 
         // :135 \L_009b8 — second pair of sounds
         State.CallArg = 10; // %#PCMPLAY.ADV with 10 writes nothing
