@@ -60,17 +60,19 @@ public static class BattleSandbox
     /// scenes cannot run yet: one called before the first round header (deployment
     /// <c>Sﾌﾞﾀｲ</c>, pre-battle scenes) is replaced by its recorded outcome when the capture
     /// called the same scene there; any other is skipped and reported to
-    /// <paramref name="onSceneSkipped"/>. Returns the final state and the jump target (game over),
-    /// if any.
+    /// <paramref name="onSceneSkipped"/>. <paramref name="started"/> gets the state before the
+    /// battle begins. Returns the final state and the jump target (game over), if any.
     /// </summary>
     public static async Task<(GameState State, string? JumpTarget)> RunLiveAsync(
         GoldenCapture capture,
         IBattleView view,
         IBattleInput input,
         uint? seed = null,
-        Func<string, Task>? onSceneSkipped = null)
+        Func<string, Task>? onSceneSkipped = null,
+        Action<GameState>? started = null)
     {
         var state = Load(capture.Enter);
+        started?.Invoke(state);
         IScriptRandom random = seed is uint s ? new XSystem35Random(s) : new XSystem35Random(capture.Enter.CreateGenerator());
         var tracking = new RoundTrackingView(view);
         var hooks = new RecordedSceneHooks(capture, state, tracking, onSceneSkipped);

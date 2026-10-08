@@ -37,7 +37,7 @@ public class ScenarioTextTests : IDisposable
         Assert.Equal(1, run.NumberCount);
         Assert.Equal(1, run.ComputedStringCount);
         Assert.Equal(
-            "The Popularity\ntroops by ５０.RanRanceBound",
+            "The Popularity\ntroops by 50.RanRanceBound",
             run.Format([(Sys3Int)50], v => v switch { 4 => "Rance", 9 => "Bound", _ => "?" }, [(Sys3Int)9]));
         Assert.Throws<ArgumentException>(() => run.Format([(Sys3Int)50], _ => ""));
     }
@@ -76,6 +76,13 @@ public class ScenarioTextTests : IDisposable
     [InlineData(5, 2, true, "　５")]
     public void Numbers_are_formatted_like_xsystem35(int value, int width, bool fullWidth, string expected) =>
         Assert.Equal(expected, TextRun.FormatNumber(value, width, fullWidth));
+
+    [Theory]
+    [InlineData("　（１２３４）：", " (1234):")]
+    [InlineData("It’s ＡＢＣ　ｱﾞ", "It's ABC ｱﾞ")]
+    [InlineData("ガア～＂", "ガｱ～＂")]   // voiced kana and the characters zen2han_utf8 has no case for stay
+    public void Messages_are_converted_to_half_width_like_ZH_1(string text, string expected) =>
+        Assert.Equal(expected, Hankaku.ToHalfWidth(text));
 
     [Theory]
     [InlineData("Rance", 3, "Ran")]

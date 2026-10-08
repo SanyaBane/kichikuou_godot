@@ -45,7 +45,9 @@ public sealed record TextRun(ScriptRef Source, IReadOnlyList<TextSegment> Segmen
     /// (formatted like xsystem35 <c>format_number</c>/<c>format_number_zenkaku</c>), string
     /// variables read with <paramref name="strings"/> (the computed ones numbered by
     /// <paramref name="stringVariables"/> in order; <c>MP</c> cuts and pads like
-    /// <c>commandMP</c>), line breaks as <c>\n</c>.
+    /// <c>commandMP</c>), line breaks as <c>\n</c>. Everything then goes through the engine's
+    /// full-width → half-width conversion (<see cref="Hankaku"/>): the scenario sets only
+    /// <c>ZH 1</c>, so it is on for every message (<c>nact.c</c> <c>sys_addMsg</c>).
     /// </summary>
     public string Format(
         IReadOnlyList<Sys3Int>? numbers = null,
@@ -83,7 +85,7 @@ public sealed record TextRun(ScriptRef Source, IReadOnlyList<TextSegment> Segmen
                     break;
             }
         }
-        return sb.ToString();
+        return Hankaku.ToHalfWidth(sb.ToString());
     }
 
     /// <summary>

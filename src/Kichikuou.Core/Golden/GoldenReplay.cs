@@ -96,21 +96,27 @@ public sealed class GoldenReplay
     /// <summary>
     /// Replays a capture and reports how the core compares with the original. <paramref name="view"/>
     /// receives the battle's presentation events (none are shown by default), so a screen can
-    /// play a capture back as it happened.
+    /// play a capture back as it happened; <paramref name="started"/> gets the replay's state
+    /// once the entry memory is loaded (story-scene dumps are loaded into the same object).
     /// </summary>
-    public static async Task<GoldenReport> RunAsync(GoldenCapture capture, GoldenFilter? filter = null, IBattleView? view = null)
+    public static async Task<GoldenReport> RunAsync(
+        GoldenCapture capture,
+        GoldenFilter? filter = null,
+        IBattleView? view = null,
+        Action<GameState>? started = null)
     {
         var replay = new GoldenReplay(capture, filter ?? GoldenFilter.Default);
-        await replay.RunAsync(view ?? new NullView());
+        await replay.RunAsync(view ?? new NullView(), started);
         return replay._report;
     }
 
-    private async Task RunAsync(IBattleView view)
+    private async Task RunAsync(IBattleView view, Action<GameState>? started)
     {
         try
         {
             CheckLayout(_capture.Enter);
             _capture.Enter.ApplyTo(_state.Memory);
+            started?.Invoke(_state);
             var battle = new Battle(_state, new Random(this), view, new Input(this), new Hooks(this));
             Func<Task> entry = _capture.Root switch
             {
