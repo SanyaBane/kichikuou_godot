@@ -14,7 +14,8 @@ Open questions (merged from 01 §14 and 02 §11):
 5. Background overlay test `Bt_EnemyParty1 ≠ 1137` is always true (probably meant `Cmdr_CgFull`) — `FIGT.ADV:1715`.
 6. Can `Bt_MsgMode` be outside 1..4 at a Goliath strike (0 at new game), letting `FIGT_M.ADV:5`'s draw pick the side? — `FIGT.ADV:1144`, `FIGT_M.ADV:5-23`, `SET_VER.ADV:515`.
 7. Who restores Rance's `Unit_Status` after a prologue defeat? — `FIGTﾐｶDE.ADV:1-21`, `死亡捕獲.ADV:26-39`.
-8. Can `Sﾌﾞﾀｲ` return a code other than 501/502/503 to FIGT_B (falls through to plains)? — `FIGT_B.ADV:160-163`.
+8. ~~Can `Sﾌﾞﾀｲ` return a code other than 501/502/503 to FIGT_B?~~ **Resolved:** no — it returns only
+   501, 502 (mode 2) or 503 (`Sﾌﾞﾀｲ.ADV:106-149`); the plains fall-through is unreachable.
 
 ## Port: how the C# code is split (`src/Kichikuou.Core/Combat/`)
 

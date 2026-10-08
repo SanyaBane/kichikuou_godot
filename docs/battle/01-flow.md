@@ -111,7 +111,7 @@ wrapper: result messages, ownership change, story hooks, 死亡捕獲.ADV (reviv
 1. `Bt_TargetProv := Prov_Cur` at file entry (`Cﾃｷﾄｼ.ADV:3`).
 2. Blocked if `Ui_CmdAttackAvail = 0` (`:112`). Story stage 0 → prologue file instead (`:101-108`).
 3. Max party size `Tmp0021 := 4`; mountain passes: attacking province 32 or 31 allows only **1 unit**
-   unless the player owns one of the listed neighbours (`:172-199`: 32 needs 33/34/31, 31 needs 36/32).
+   unless the player owns one of the listed neighbours (`:172-199`: 32 needs 33/34/31, 31 needs 36/32/30 — `:192`).
 4. `Sﾌﾞﾀｲ.ADV` (party picker, mode `Tmp0022 = 1`): fills `PParty[]`; only units with
    `Unit_Status = 1` are selectable; on "Go" it requires `PParty[1] ≠ 0` and
    `Gold ≥ Σ (Unit_DeployCost + Unit_Troops / 300)` over the party, then sets each
@@ -1350,8 +1350,9 @@ Still open:
 
 1. Rance's death in the prologue (`FIGTﾐｶDE.ADV:1-21`, `StoryStage = 0`) leaves `Unit_Status = 0`
    and 死亡捕獲 does not revive him (only Sill, `死亡捕獲.ADV:36-39`); who restores him?
-2. `Sﾌﾞﾀｲ` return codes other than 501/502/503 fall through to the plains setup
-   (`FIGT_B.ADV:160-163`); can it return anything else (e.g. 999 never leaves)?
+2. ~~`Sﾌﾞﾀｲ` return codes other than 501/502/503 fall through to the plains setup~~ — resolved:
+   `Sﾌﾞﾀｲ` returns only 501, 502 (mode 2) or 503 (`Sﾌﾞﾀｲ.ADV:106-149`,
+   [../strategy/survey-commands.md](../strategy/survey-commands.md)); the fall-through (`FIGT_B.ADV:160-163`) is unreachable.
 3. `FIGT.ADV:1715` draws the background overlay unless `EParty[1] = 1137` — a commander id never
    exceeds 220, so the condition is always true. 1137 is Gunagan's `Cmdr_CgFull` (Cﾒｲｷｭｳ tests
    `Cmdr_CgFull = 1137`), so the intended test was probably on the CG. Presentation only.
