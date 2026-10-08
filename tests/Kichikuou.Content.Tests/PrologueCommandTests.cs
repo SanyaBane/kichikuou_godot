@@ -82,6 +82,91 @@ public class PrologueCommandTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// The new game enters the week loop (<c>&amp;#MAIN.ADV:</c>, routed by <see cref="StrategyRules"/>):
+    /// week 9 opens with Sill's scene, week 10 with Soul's message, each week autosaves, refreshes
+    /// the thieves and runs the player phase to Turn END.
+    /// </summary>
+    [Fact]
+    public async Task The_first_prologue_weeks_run_through_the_week_loop()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var game = await NewGameAsync();
+        int saves = 0;
+        game.Unported.Effects["ﾛｰﾄﾞｾｰﾌﾞ.ADV"] = _ =>
+        {
+            if (++saves == 3)
+                throw new WeekOverException();
+        };
+        var bound = game.State.Units[3];
+        bound.Troops = bound.MaxTroops - 1;
+        game.Input.Menu(5);                                             // week 9: Turn END
+        game.Input.Menu(5);                                             // week 10: Turn END
+
+        await Assert.ThrowsAsync<WeekOverException>(() => game.Script.CallFileAsync("MAIN.ADV"));
+
+        Assert.Equal(["ﾛｰﾄﾞｾｰﾌﾞ.ADV", "ﾛｰﾄﾞｾｰﾌﾞ.ADV", "ﾛｰﾄﾞｾｰﾌﾞ.ADV"], game.Unported.Calls.Select(c => c.File));
+        Assert.Equal(0, game.Input.Pending);
+        Assert.Equal(11, game.State.Week.Value);
+        Assert.Equal(0, game.State.StoryStage.Value);
+        Assert.Equal(bound.MaxTroops.Value, bound.Troops.Value);        // +2 a week, capped
+        Assert.Contains(game.View.Events, e => e is MessageEvent { Text.File: "Iｼﾚｲﾌﾞ.ADV" });
+        Assert.Contains(game.View.Events, e => e is MessageEvent { Text.File: "Gｿｳﾙ.ADV" });
+        Assert.Equal(2, game.View.Events.Count(e => e is MessageEvent { Text: { File: "MAIN.ADV", Line: 77 } }));
+    }
+
+    /// <summary>
+    /// Turn END after week 22 ends the prologue: the thieves' last fight (<c>Iﾄｳｿﾞｸ</c> 2, the duel
+    /// lost), the opening, <c>StoryStage 99 → 1</c> and <c>Iﾊﾝﾗﾝ</c> in the week loop; the next week
+    /// is Leazas's, which is not ported yet.
+    /// </summary>
+    [Fact]
+    public async Task Turn_END_in_week_23_ends_the_prologue_through_the_week_loop()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var game = await NewGameAsync();
+        game.State.Week = 22;
+        game.Unported.Effects["FIGT_A.ADV"] = s => s.Bt_Result = 1;     // the duel is lost
+        game.Input.Menu(5);                                             // Turn END
+
+        var e = await Assert.ThrowsAsync<NotSupportedException>(() => game.Script.CallFileAsync("MAIN.ADV"));
+
+        output.WriteLine($"rules: {string.Join(", ", game.Unported.Calls.Select(c => $"{c.File} {c.Entry}"))}");
+        Assert.StartsWith("MAIN.ADV:83", e.Message);
+        Assert.Equal(["ﾛｰﾄﾞｾｰﾌﾞ.ADV", "FIGT_A.ADV"], game.Unported.Calls.Select(c => c.File));
+        Assert.Equal(0, game.Input.Pending);
+        Assert.Equal(1, game.State.StoryStage.Value);
+        Assert.Equal(1, game.State.F_OpeningSeen.Value);
+        Assert.Contains(game.View.Events, ev => ev is MessageEvent { Text.File: "Iﾊﾝﾗﾝ.ADV" });
+        Assert.Equal(25, game.State.Week.Value);                        // 23, Iﾊﾝﾗﾝ's + 1, the next week's + 1
+    }
+
+    private sealed record Game(GameState State, ScriptContext Script, PlayerInput Input, RecordingView View, RecordingRules Unported);
+
+    /// <summary>The boot and the new game with the rule files routed and the scenes run from the decompile.</summary>
+    private static async Task<Game> NewGameAsync()
+    {
+        var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
+        var state = new GameState();
+        var view = new RecordingView();
+        var input = new PlayerInput(state);
+        var unported = new RecordingRules { State = state };
+        var rules = new StrategyRules(scripts, unported);
+        var runner = new SceneRunner(scripts, rules);
+        var script = new ScriptContext(state, new QueuedRandom { DefaultToOne = true }, view, input, runner);
+        runner.Bind(script);
+        rules.Bind(script);
+        var setup = new GameSetup(script, scripts);
+        await setup.BootAsync();
+        await setup.NewGameAsync();
+        unported.Calls.Clear();
+        return new Game(state, script, input, view, unported);
+    }
+
+    private sealed class WeekOverException : Exception;
+
+    /// <summary>
     /// The player as pointer gestures placed when they begin (the camera moves between them), each
     /// after three reads at rest since the last gesture or other input, and menu answers by file:
     /// the command menu from a queue, Pillage in <c>Cﾃｷﾄｼ</c>, the first item anywhere else.
@@ -186,9 +271,21 @@ public class PrologueCommandTests(ITestOutputHelper output)
         public Task<IReadOnlyList<Sys3Int>> GetDateAsync() =>
             Task.FromResult<IReadOnlyList<Sys3Int>>([(Sys3Int)2026, (Sys3Int)10, (Sys3Int)8, (Sys3Int)12, Sys3Int.Zero, Sys3Int.Zero, (Sys3Int)5]);
 
-        public Task ResetTimerAsync(Sys3Int value) => Task.CompletedTask;
+        private int _timer;
 
-        public Task<Sys3Int> GetTimerAsync(int mode) => Task.FromResult(Sys3Int.Zero);
+        /// <summary><c>ZT 1</c>: the timer starts at the value (the opening times its animation).</summary>
+        public Task ResetTimerAsync(Sys3Int value)
+        {
+            _timer = value.Value;
+            return Task.CompletedTask;
+        }
+
+        /// <summary><c>ZT n</c>: 100 ticks pass on every read.</summary>
+        public Task<Sys3Int> GetTimerAsync(int mode)
+        {
+            _timer += 100;
+            return Task.FromResult((Sys3Int)(_timer & 0xffff));
+        }
 
         public Task<IReadOnlyList<Sys3Int>> GetCdPositionAsync() =>
             Task.FromResult<IReadOnlyList<Sys3Int>>([(Sys3Int)999, (Sys3Int)999, (Sys3Int)999, (Sys3Int)999]);

@@ -95,9 +95,13 @@ public sealed class GoldenReplay
         "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sﾊｰﾚﾑ.ADV",
     };
 
+    /// <summary>The label roots the replay has an entry point for: one week of <c>MAIN.ADV</c> (<c>L_00020</c>).</summary>
+    public static readonly IReadOnlySet<string> ReplayableLabelRoots = new HashSet<string> { "MAIN.ADV@20" };
+
     /// <summary>Whether a capture with this header can be replayed (its root has an entry point).</summary>
-    public static bool CanReplay(GoldenHeader header) =>
-        header.RootKind == GoldenRootKind.PageCall && ReplayableRoots.Contains(header.Root);
+    public static bool CanReplay(GoldenHeader header) => header.RootKind == GoldenRootKind.PageCall
+        ? ReplayableRoots.Contains(header.Root)
+        : ReplayableLabelRoots.Contains(header.RootName);
 
     /// <summary>
     /// Records the core does not consume: <c>IM</c> and <c>IC</c> in the battle only wait for the
@@ -177,6 +181,7 @@ public sealed class GoldenReplay
                 {
                     "FIGT_A.ADV" => battle.AttackProvinceAsync,
                     "FIGT_B.ADV" => battle.DefendProvinceAsync,
+                    "MAIN.ADV" => new WeekLoop(battle.Script).RunWeekAsync,
                     "COM.ADV" => new WeeklyEvents(battle.Script).RunAsync,
                     "COMMAND.ADV" => new CommandPhase(battle.Script).RunAsync,
                     "Cﾃｷﾄｼ.ADV" => new EnemyCityCommand(battle.Script).RunAsync,

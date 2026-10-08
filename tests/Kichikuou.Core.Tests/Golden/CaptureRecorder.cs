@@ -34,8 +34,12 @@ public sealed class CaptureRecorder
     /// <summary>Runs on every story hook between its two dumps, with the generator (to simulate a scene).</summary>
     public Action<string, GameState, IScriptRandom>? OnHook { get; set; }
 
-    /// <summary>Runs the root and returns the capture text.</summary>
-    public async Task<string> RecordAsync(string root, Func<Battle, Task> entry)
+    /// <summary>
+    /// Runs the root and returns the capture text: a page call into <paramref name="root"/>, or with
+    /// <paramref name="labelRoot"/> (e.g. <c>MAIN.ADV@20</c> in group <paramref name="group"/>) a
+    /// label root that ends at the next arrival at the label.
+    /// </summary>
+    public async Task<string> RecordAsync(string root, Func<Battle, Task> entry, string? labelRoot = null, string group = "week")
     {
         var enter = Dump("enter");
         string? jumped = null;
@@ -50,12 +54,15 @@ public sealed class CaptureRecorder
         }
 
         var sb = new StringBuilder();
-        sb.Append("golden 1\n").Append($"seed {Seed}\n").Append($"root {root} Cﾃｷﾄｼ.ADV@1a5\n");
+        if (labelRoot is null)
+            sb.Append("golden 1\n").Append($"seed {Seed}\n").Append($"root {root} Cﾃｷﾄｼ.ADV@1a5\n");
+        else
+            sb.Append("golden 2\n").Append($"seed {Seed}\n").Append($"root {root} {labelRoot} label\n").Append($"group {group}\n");
         enter.Write(new StringWriter(sb));
         foreach (var line in _lines)
             sb.Append(line).Append('\n');
         Dump("exit").Write(new StringWriter(sb));
-        sb.Append(jumped is null ? "end return\n" : $"end jump {jumped}\n");
+        sb.Append(jumped is not null ? $"end jump {jumped}\n" : labelRoot is null ? "end return\n" : "end label\n");
         return sb.ToString();
     }
 

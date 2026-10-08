@@ -5,7 +5,8 @@ using Kichikuou.Core.Sys3;
 namespace Kichikuou.Core.Strategy;
 
 /// <summary>
-/// The strategic rule files as story hooks: a call of <c>COM.ADV</c>, <c>COMMAND.ADV</c>, one of
+/// The strategic rule files as story hooks: a call of <c>MAIN.ADV</c> (the week loop, which never
+/// returns; the game enters it by the jump <c>&amp;#MAIN.ADV:</c>), <c>COM.ADV</c>, <c>COMMAND.ADV</c>, one of
 /// the ported command files or one of their picker screens runs its port on the bound context;
 /// every other file goes to the hooks it wraps (the battle, the save screen — whatever is not
 /// ported here). Given to a
@@ -26,7 +27,7 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
     /// <summary>The files this router runs itself.</summary>
     public static readonly IReadOnlySet<string> PortedFiles = new HashSet<string>(StringComparer.Ordinal)
     {
-        "COM.ADV", "COMMAND.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV", "Cﾒｲｷｭｳ.ADV",
+        "MAIN.ADV", "COM.ADV", "COMMAND.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV", "Cﾒｲｷｭｳ.ADV",
         "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sﾊｰﾚﾑ.ADV",
     };
 
@@ -44,6 +45,7 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
     /// <inheritdoc />
     public Task RunEventAsync(string file, Sys3Int entry) => file switch
     {
+        "MAIN.ADV" => new WeekLoop(Script).RunAsync(),
         "COM.ADV" => new WeeklyEvents(Script).RunAsync(),
         "COMMAND.ADV" => new CommandPhase(Script).RunAsync(),
         "Cﾃｷﾄｼ.ADV" => new EnemyCityCommand(Script).RunAsync(),

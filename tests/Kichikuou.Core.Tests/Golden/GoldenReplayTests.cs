@@ -120,6 +120,51 @@ public class GoldenReplayTests
         Assert.Equal(2, report.ConsumedRecords);   // the roll and the hook
     }
 
+    /// <summary>
+    /// A week capture (label root <c>MAIN.ADV@20</c>, group <c>week</c>) replays through
+    /// <see cref="WeekLoop.RunWeekAsync"/>: the autosave, <c>COMMAND</c> ending the prologue and
+    /// <c>Iﾊﾝﾗﾝ</c> as hooks, the camera's pauses and the key waits in between.
+    /// </summary>
+    [Fact]
+    public async Task A_week_capture_replays_through_the_week_loop()
+    {
+        var recorder = new CaptureRecorder(4242)
+        {
+            OnHook = (file, state, _) =>
+            {
+                if (file == "COMMAND.ADV")
+                {
+                    state.Gold = 61;
+                    state.StoryStage = 99;
+                }
+                if (file == "Iﾊﾝﾗﾝ.ADV")
+                    state.Week = state.Week + 1;
+            },
+        };
+        var s = recorder.State;
+        s.Week = 22;
+        s.Gold = 50;
+        s.BgmEnabled = 1;
+        s.Dgns[1].MapX = 900;
+        s.Dgns[1].MapY = 300;
+        for (int u = 1; u <= 4; u++)
+        {
+            s.Units[u].Status = 2;
+            s.Units[u].MaxHP = 30;
+            s.Units[u].MaxTroops = 20;
+            s.Units[u].Troops = 5;
+        }
+        var capture = Parse(await recorder.RecordAsync("MAIN.ADV", b => new WeekLoop(b.Script).RunWeekAsync(), "MAIN.ADV@20"));
+
+        var report = await GoldenReplay.RunAsync(capture);
+
+        Assert.True(GoldenReplay.CanReplay(capture.Header));
+        Assert.True(report.Passed, report.Describe());
+        Assert.Equal(capture.Records.Count, report.ConsumedRecords);
+        Assert.Equal(["ﾛｰﾄﾞｾｰﾌﾞ.ADV", "COMMAND.ADV", "Iﾊﾝﾗﾝ.ADV"], capture.Records.OfType<HookRecord>().Select(h => h.File));
+        Assert.Contains(capture.Records, r => r is KeyRecord);
+    }
+
     [Fact]
     public async Task A_different_final_value_is_reported_by_name()
     {

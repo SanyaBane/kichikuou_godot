@@ -185,7 +185,8 @@ numbers are the engine's (`MS n` writes string n).
    whose capture ends in `jump` throws `ScenarioJumpException` after loading the final dump.
 5. **Entry point.** `FIGT_A.ADV` → `AttackProvinceAsync`, `FIGT_B.ADV` → `DefendProvinceAsync`,
    `FIGT.ADV` → `FightAsync`, `COM.ADV` → `WeeklyEvents.RunAsync`, `COMMAND.ADV` →
-   `CommandPhase.RunAsync`, the `commands` group's `Cﾃｷﾄｼ.ADV`, `Cﾃｷﾄｼ2.ADV`, `Cﾌﾞｶ.ADV`,
+   `CommandPhase.RunAsync`, the `week` group's label root `MAIN.ADV@20` → `WeekLoop.RunWeekAsync`
+   (`ReplayableLabelRoots`; the Leazas week throws `NotSupportedException`), the `commands` group's `Cﾃｷﾄｼ.ADV`, `Cﾃｷﾄｼ2.ADV`, `Cﾌﾞｶ.ADV`,
    `Cﾊｰﾚﾑ.ADV` → `EnemyCityCommand`, `DistantCityCommand`, `SubordinatesCommand`, `HaremCommand`
    (`GoldenReplay.ReplayableRoots`, `CanReplay`; their paths beyond the prologue throw
    `NotSupportedException`). `Cﾒｲｷｭｳ.ADV` reads its `MS` strings from the player's files, so its

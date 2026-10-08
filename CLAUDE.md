@@ -34,8 +34,11 @@ F0 is done: the shared services (message windows, map, sound, scene calls) live 
 (`ISceneInput`, `Script/PointerScript` for gesture-level UIs), and the prologue paths of the
 command files `Cﾃｷﾄｼ`, `Cﾃｷﾄｼ2`, `Cﾌﾞｶ`, `Cﾊｰﾚﾑ`, `Cﾒｲｷｭｳ` are ported (their later paths throw
 `NotSupportedException`), and so are the pickers `Sﾌﾞﾀｲ`, `Sﾌﾞｶ`, `Sﾊｰﾚﾑ`
-(`Strategy/*Screen.cs` on `PickerScreen`), all routed by `Strategy/StrategyRules`. Next is W2
-(the `MAIN` week loop), then G0 (the Godot screens).
+(`Strategy/*Screen.cs` on `PickerScreen`), all routed by `Strategy/StrategyRules`. W2 is done
+for stage 0: `MAIN.ADV` (the week loop) is `Strategy/WeekLoop` up to the thieves' week (the
+Leazas week throws `NotSupportedException`); the autosave stays a `ﾛｰﾄﾞｾｰﾌﾞ` hook until G0. Next
+the battle joins the router (owner's decision 7 in `docs/strategy/README.md`), then G0 (the
+Godot screens).
 
 ## Layout
 
@@ -57,7 +60,7 @@ command files `Cﾃｷﾄｼ`, `Cﾃｷﾄｼ2`, `Cﾌﾞｶ`, `Cﾊｰﾚﾑ`, 
   decompile line for line (`ScriptProgram`, one statement per engine command, jumps resolved,
   no idiom rewritten); `RunAsync` runs the straight-line `SET_*` data files and `SceneRunner`
   runs scene programs (`ISceneInput` adds menus, mouse and clock to the inputs). `Setup/GameSetup` is the boot (`SET.ADV`) and the new game.
-  `Strategy/` holds the strategic rule files: `WeeklyEvents` is `COM.ADV`, `CommandPhase` is
+  `Strategy/` holds the strategic rule files: `WeekLoop` is `MAIN.ADV`, `WeeklyEvents` is `COM.ADV`, `CommandPhase` is
   `COMMAND.ADV`, the `*Command` classes (on `CommandFile`) are the `C*.ADV` command files, the
   `*Screen` classes (on `PickerScreen`) their `S*.ADV` pickers, and `StrategyRules` routes calls of these files to their ports (the rule hooks of a `SceneRunner`).
 - `src/Kichikuou.Content` — engine-independent access to the player's own game data (never
