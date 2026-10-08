@@ -1,4 +1,5 @@
 using Kichikuou.Core.Combat;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.State;
 using Kichikuou.Core.Sys3;
 
@@ -98,12 +99,12 @@ public sealed class FlowRig
     public ScriptedStory Story { get; } = new();
     public Battle Battle { get; }
 
-    /// <summary>The lines of the MessageEvents and FlowValueMessageEvents shown, in order.</summary>
+    /// <summary>The lines of the MessageEvents and ValueMessageEvents shown, in order.</summary>
     public List<int> Lines => View.Events
         .Select(e => e switch
         {
             MessageEvent m => m.Text.Line,
-            FlowValueMessageEvent v => v.Text.Line,
+            ValueMessageEvent v => v.Text.Line,
             _ => 0,
         })
         .Where(l => l != 0)

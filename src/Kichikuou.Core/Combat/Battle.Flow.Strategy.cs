@@ -55,14 +55,14 @@ public sealed partial class Battle
             State.Bt_StrategyResult = 2;
         await PlayerStrategistLineAsync();
         // L_00632 (:318-347)
-        await FlowWindowAsync(143);
+        await WaoAsync(143);
         await FlowTextAsync(StrategyFile, 321);
         if (State.Bt_StrategyResult == 1)
             await FlowTextAsync(StrategyFile, 327);
         if (State.Bt_StrategyResult == 2)
             await FlowTextAsync(StrategyFile, 337);
         await FlowWaitKeyAsync();
-        await FlowWindowAsync(10);
+        await WaoAsync(10);
     }
 
     /// <summary><c>FIGT作.ADV:47-317</c>: the strategist's line, by <c>Unit_Cur</c>.</summary>
@@ -131,22 +131,22 @@ public sealed partial class Battle
         if (!spoken)
             await StrategyBoxAsync(152, 457);
         // L_00919 (:460-489)
-        await FlowWindowAsync(143);
+        await WaoAsync(143);
         await FlowTextAsync(StrategyFile, 463);
         if (State.Bt_StrategyResult == 11)
             await FlowTextAsync(StrategyFile, 469);
         if (State.Bt_StrategyResult == 12)
             await FlowTextAsync(StrategyFile, 479);
         await FlowWaitKeyAsync();
-        await FlowWindowAsync(10);
+        await WaoAsync(10);
     }
 
     /// <summary>A FIGT作 message: window op, text, <c>\L_00a4e</c> (wait, op 11), <c>\L_00a41</c> (close, op 10).</summary>
     private async Task StrategyBoxAsync(Sys3Int op, int line)
     {
-        await FlowWindowAsync(op);
+        await WaoAsync(op);
         await FlowTextAsync(StrategyFile, line);
         await FlowWaitKeyAsync();
-        await FlowWindowAsync(10);
+        await WaoAsync(10);
     }
 }

@@ -1,3 +1,4 @@
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Combat;
@@ -5,10 +6,10 @@ namespace Kichikuou.Core.Combat;
 // Battle flavour text, FIGT_M.ADV (spec docs/battle/02-resolution.md §5).
 //
 // This file holds the hand-ported entry (FIGT_M.ADV:1-23) and the window procedures
-// (10306-10353, with the parts of WAO_SUB.ADV they run). Everything in between — the player
+// (10306-10353, which call WAO_SUB.ADV). Everything in between — the player
 // and enemy dispatch, every unit/commander branch, the Asuka/Satella/Freak/Sieg scenes — is
 // in Battle.Flavour.g.cs, translated statement by statement from the script by
-// tools/analysis/gen_figt_m.py (re-run it against the raw decompile; `--check` verifies).
+// tools/codegen/gen_figt_m.py (re-run it against the raw decompile; `--check` verifies).
 public sealed partial class Battle
 {
     private const string FlavourFile = "FIGT_M.ADV";
@@ -74,48 +75,19 @@ public sealed partial class Battle
     /// Each FIGT_M procedure returns right after its first WAO_SUB call; the second op
     /// (241, 242, …) after <c>\0:</c> is unreachable.
     /// </summary>
-    private async Task OpenWindowAsync(FlavourWindow window)
-    {
-        State.Ui_WaoOp = (Sys3Int)(int)window;
-        // WAO_SUB: \L_00bb6 / \L_00c2d (screen save and box, display only).
-        (Sys3Int frame, Sys3Int type) = window switch
-        {
-            FlavourWindow.Left => ((Sys3Int)895, (Sys3Int)41),
-            FlavourWindow.LeftAlt => ((Sys3Int)896, (Sys3Int)42),
-            FlavourWindow.Right => ((Sys3Int)897, (Sys3Int)51),
-            FlavourWindow.RightAlt => ((Sys3Int)898, (Sys3Int)52),
-            _ => throw new ArgumentOutOfRangeException(nameof(window), window, null),
-        };
-        State.Ui_WinFrameCg = frame;
-        await View.ShowAsync(new FlavourWindowOpenEvent(window, State.Ui_WinFrameCg)); // G Ui_WinFrameCg, 40 (ZC 1, 11 for the Alt styles)
-        State.Ui_WinType = type;
-    }
+    private Task OpenWindowAsync(FlavourWindow window) => WaoAsync((Sys3Int)(int)window);
 
     /// <summary>
     /// Waits for the player after a message: <c>L_0c576</c> (<c>FIGT_M.ADV:10350-10353</c>) →
     /// <c>WAO_SUB.ADV</c> op 11, <c>L_00ce1</c> (<c>WAO_SUB.ADV:510-519</c>): returns at once when
-    /// no window is open, otherwise <c>IK 0</c> stores the key code in <c>RetVal</c>.
+    /// no window is open, otherwise <c>IK 0</c> stores the key code in <c>RetVal</c>
+    /// (QUIRK: Q13 / README O1 — IK 0 overwrites RetVal).
     /// </summary>
-    private async Task WaitKeyAsync()
-    {
-        State.Ui_WaoOp = 11;
-        if (State.Ui_WinType == 0)
-            return; // WAO_SUB.ADV:511-512 (the error text after \0: is unreachable)
-        await View.ShowAsync(new FlavourKeyWaitEvent());
-        Sys3Int key = await Input.WaitForKeyAsync(); // IK 0
-        State.RetVal = key; // QUIRK: Q13 / README O1 — IK 0 overwrites RetVal
-        // Y 1, 1 and G Ui_WinFrameCg, 40: clear the text (display only).
-    }
+    private Task WaitKeyAsync() => FlowWaitKeyAsync();
 
     /// <summary>
     /// Closes the message window: <c>L_0c569</c> (<c>FIGT_M.ADV:10346-10349</c>) →
     /// <c>WAO_SUB.ADV</c> op 10, <c>L_00cb9</c> (<c>WAO_SUB.ADV:504-509</c>).
     /// </summary>
-    private async Task CloseWindowAsync()
-    {
-        State.Ui_WaoOp = 10;
-        await View.ShowAsync(new FlavourWindowCloseEvent()); // CC (restore the screen), ZC 1, 15
-        State.Ui_WinType = 0;
-        State.Ui_WinFrameCg = 0;
-    }
+    private Task CloseWindowAsync() => WaoAsync(10);
 }

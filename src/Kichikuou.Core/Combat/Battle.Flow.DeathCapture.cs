@@ -1,3 +1,4 @@
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Combat;

@@ -355,7 +355,7 @@ every G/I/T*2/Cﾒｲｷｭｳ call; a menu input returning item index or cancel
 fall-through rule in the core); `IDeployInput`/`IUnitPicker`/`IHaremPicker`/`IItemScreenInput`
 returning the raw codes the scripts use; `IScriptRandom` (exists); view events for dialogue
 (`ScriptRef`), portraits, sounds (PCMPLAY) and map refresh (`M.ADV` ops 0/1/3/4/10, already in
-`Battle.Map.cs`).
+`ScriptContext.Map.cs`).
 
 **Golden harness changes:** today a capture is one battle. Commands need captures rooted at
 each command file (`Cﾃｷﾄｼ`, `Cｼﾊｲﾄｼ`, `Cｼｮｳﾆﾝ`, `Cﾌﾞｶ`, `Cﾆﾝｼﾞｬ` (inner of Cﾃｷﾄｼ), `Cﾃｲﾄ`,

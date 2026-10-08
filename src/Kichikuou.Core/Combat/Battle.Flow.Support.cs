@@ -1,3 +1,4 @@
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Combat;
@@ -152,32 +153,23 @@ public sealed partial class Battle
     /// <summary>The first string variable of the record selected by <c>Cmdr_Cur</c> (its name).</summary>
     private Sys3Int CmdrNameString(Sys3Int cmdr) => State.Cmdr_StrBase + (cmdr - 1) * 3;
 
-    /// <summary><c>Ui_WaoOp := op; call WAO_SUB.ADV</c> for a window operation (state effects in <see cref="WaoSubAsync"/>).</summary>
-    private async Task FlowWindowAsync(Sys3Int op)
-    {
-        State.Ui_WaoOp = op;
-        await View.ShowAsync(new FlowWindowEvent(op, State.CallArg));
-        await WaoSubAsync();
-    }
+    // The shared services in the battle's own words (ScriptContext holds the ports).
+
+    /// <summary><c>!Ui_WaoOp : op! %#WAO_SUB.ADV:</c> (<see cref="ScriptContext.WaoAsync"/>).</summary>
+    private Task WaoAsync(Sys3Int op) => Script.WaoAsync(op);
 
     /// <summary>A text run of <paramref name="file"/> starting at <paramref name="line"/>.</summary>
-    private Task FlowTextAsync(string file, int line) => View.ShowAsync(new MessageEvent(new ScriptRef(file, line)));
+    private Task FlowTextAsync(string file, int line) => Script.TextAsync(file, line);
 
     /// <summary>A text run that prints numbers.</summary>
     private Task FlowValueTextAsync(string file, int line, params Sys3Int[] values) =>
-        View.ShowAsync(new FlowValueMessageEvent(new ScriptRef(file, line), values));
+        View.ShowAsync(new ValueMessageEvent(new ScriptRef(file, line), values));
 
-    /// <summary>
-    /// <c>Ui_WaoOp := 11; call WAO_SUB.ADV</c> (<c>WAO_SUB.ADV:510-519</c>): waits with
-    /// <c>IK 0</c>, which leaves the key code in <c>RetVal</c> (nothing while no window is open).
-    /// </summary>
-    private Task FlowWaitKeyAsync() => FlowWindowAsync(11);
+    /// <summary>WAO op 11, the key wait that leaves the key in <c>RetVal</c> (<see cref="ScriptContext.WaoWaitKeyAsync"/>).</summary>
+    private Task FlowWaitKeyAsync() => Script.WaoWaitKeyAsync();
 
-    /// <summary>
-    /// <c>Ui_WaoOp := 1; call WAO_SUB.ADV</c> (<c>WAO_SUB.ADV:286-294</c>): waits with
-    /// <c>US RetVal; IK 0; UG RetVal</c>, so <c>RetVal</c> is preserved (nothing while no window is open).
-    /// </summary>
-    private Task FlowWaitKeyKeepRetValAsync() => FlowWindowAsync(1);
+    /// <summary>WAO op 1, the key wait that keeps <c>RetVal</c> (<see cref="ScriptContext.WaoWaitKeyKeepRetValAsync"/>).</summary>
+    private Task FlowWaitKeyKeepRetValAsync() => Script.WaoWaitKeyKeepRetValAsync();
 
     /// <summary>
     /// The FIGT message box: <c>\L_0509c</c> (open, op 143), the text, <c>\L_05119</c> (wait,
@@ -185,40 +177,20 @@ public sealed partial class Battle
     /// </summary>
     private async Task FigtBoxAsync(int line)
     {
-        await FlowWindowAsync(143);
+        await WaoAsync(143);
         await FlowTextAsync(FigtFile, line);
         await FlowWaitKeyAsync();
-        await FlowWindowAsync(10);
+        await WaoAsync(10);
     }
 
-    /// <summary><c>!CallArg : mode! (!RetVal : sound!) %#PCMPLAY.ADV</c> — PCMPLAY writes nothing else.</summary>
-    private Task FlowSoundAsync(Sys3Int mode)
-    {
-        State.CallArg = mode;
-        return View.ShowAsync(new FlowSoundEvent(State.CallArg, State.RetVal));
-    }
+    /// <summary><c>%#PCMPLAY.ADV</c> (<see cref="ScriptContext.SoundAsync"/>).</summary>
+    private Task FlowSoundAsync(Sys3Int mode) => Script.SoundAsync(mode);
 
-    /// <summary>
-    /// <c>!CallArg : mode! %#M.ADV</c>: a strategic-map call — the event for the presentation,
-    /// then <c>M.ADV</c>'s state effects (<see cref="MapAsync"/>).
-    /// </summary>
-    private async Task FlowMapAsync(Sys3Int mode)
-    {
-        State.CallArg = mode;
-        await View.ShowAsync(new FlowMapEvent(mode));
-        await MapAsync();
-    }
+    /// <summary><c>!CallArg : mode! %#M.ADV</c> (<see cref="ScriptContext.MapCallAsync"/>).</summary>
+    private Task FlowMapAsync(Sys3Int mode) => Script.MapCallAsync(mode);
 
-    /// <summary>
-    /// <c>Y 3, n</c>: a timed pause. The engine stores the key that cut it short (0 if none) in
-    /// <c>RetVal</c> (xsystem35 <c>cmdy.c</c>), so the pause is an input.
-    /// </summary>
-    private async Task PauseAsync(Sys3Int ticks)
-    {
-        await View.ShowAsync(new PauseEvent(ticks));
-        var key = await Input.PauseAsync(ticks);
-        State.RetVal = key;
-    }
+    /// <summary><c>Y 3, n</c> (<see cref="ScriptContext.PauseAsync"/>).</summary>
+    private Task PauseAsync(Sys3Int ticks) => Script.PauseAsync(ticks);
 
     /// <summary>
     /// <c>{BgmEnabled = 1: SR0, Tmp0001: SS 0:}</c> — remembers the playing track and stops the music.
@@ -227,29 +199,21 @@ public sealed partial class Battle
     {
         if (State.BgmEnabled == 1)
         {
-            var answer = await Input.GetPlayingTrackAsync();
+            var answer = await Script.GetPlayingTrackAsync();
             State.Tmp0001 = answer;
-            await View.ShowAsync(new FlowMusicEvent(0));
+            await Script.MusicAsync(0);
         }
     }
 
     /// <summary><c>{BgmEnabled = 1: SS Tmp0001 - 1:}</c> — resumes the remembered track.</summary>
     private Task FlowResumeMusicAsync() =>
-        State.BgmEnabled == 1 ? View.ShowAsync(new FlowMusicEvent(State.Tmp0001 - 1)) : Task.CompletedTask;
+        State.BgmEnabled == 1 ? Script.MusicAsync(State.Tmp0001 - 1) : Task.CompletedTask;
 
-    /// <summary><c>Ev_Entry := entry; call file</c> — a story scene through the hooks.</summary>
-    private Task EventAsync(string file, Sys3Int entry)
-    {
-        State.Ev_Entry = entry;
-        return Story.RunEventAsync(file, entry);
-    }
+    /// <summary><c>Ev_Entry := entry; call file</c> (<see cref="ScriptContext.EventAsync"/>).</summary>
+    private Task EventAsync(string file, Sys3Int entry) => Script.EventAsync(file, entry);
 
-    /// <summary>
-    /// <c>%#file</c> without an entry number (a sub-file that takes its arguments in other
-    /// variables, e.g. <c>Sﾌﾞﾀｲ.ADV</c>, <c>Gﾀﾐ.ADV</c>): routed through the story hook with the
-    /// current <c>Ev_Entry</c>, so the hook's <c>Ev_Entry := entry</c> changes nothing.
-    /// </summary>
-    private Task CallFileAsync(string file) => Story.RunEventAsync(file, State.Ev_Entry);
+    /// <summary><c>%#file</c> without an entry number (<see cref="ScriptContext.CallFileAsync"/>).</summary>
+    private Task CallFileAsync(string file) => Script.CallFileAsync(file);
 
     /// <summary>
     /// <c>!EndingId : id! &amp;#OVER.ADV:</c> — the script jumps to the game-over file and never
@@ -258,6 +222,6 @@ public sealed partial class Battle
     private void JumpToGameOver(Sys3Int endingId)
     {
         State.EndingId = endingId;
-        throw new ScenarioJumpException("OVER.ADV");
+        ScriptContext.JumpTo("OVER.ADV");
     }
 }

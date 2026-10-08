@@ -1,4 +1,5 @@
 using Kichikuou.Core.Combat;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Content.Tests;

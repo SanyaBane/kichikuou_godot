@@ -1,4 +1,5 @@
 using Kichikuou.Core.Combat;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Tests.Combat;
@@ -224,10 +225,10 @@ public class ResolutionCommandTests
         Assert.Equal(10, (int)s.Ui_WaoOp);
         Assert.Equal(
             [
-                new WaoCallEvent(143),
+                new WindowEvent(143, 0),
                 new ActionLabelsEvent(new ScriptRef("FIGT.ADV", 1753), new ScriptRef("FIGT.ADV", 1786)),
-                new WaoCallEvent(11),
-                new WaoCallEvent(10),
+                new WindowEvent(11, 0),
+                new WindowEvent(10, 0),
                 new EngagementSlideEvent(112),
                 new CountersEvent(100, 50, 25, 47),
             ],

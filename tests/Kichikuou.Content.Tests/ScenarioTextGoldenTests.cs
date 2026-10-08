@@ -1,5 +1,6 @@
 using Kichikuou.Core.Combat;
 using Kichikuou.Core.Golden;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 using Xunit.Abstractions;
 
@@ -70,20 +71,20 @@ public class ScenarioTextGoldenTests(ITestOutputHelper output)
         Assert.True(view.Resolved > 0);
     }
 
-    private sealed class ResolvingView(ScenarioText text) : IBattleView
+    private sealed class ResolvingView(ScenarioText text) : IScriptView
     {
         public List<string> Errors { get; } = [];
 
         public int Resolved { get; private set; }
 
-        public Task ShowAsync(BattleEvent battleEvent)
+        public Task ShowAsync(ScriptEvent scriptEvent)
         {
-            switch (battleEvent)
+            switch (scriptEvent)
             {
                 case MessageEvent m:
                     Check(m.Text, [], m.StringVariables ?? []);
                     break;
-                case FlowValueMessageEvent v:
+                case ValueMessageEvent v:
                     Check(v.Text, v.Values, []);
                     break;
                 case FlowErrorEvent e:

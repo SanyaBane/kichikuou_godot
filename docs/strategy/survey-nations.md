@@ -234,7 +234,7 @@ Draws are interleaved with nested `FIGT_B` battles (each with its own draws, see
   "X appeared around Y / VS / occupied" boxes (`TJAPAN:159-191`, `Tｹｲﾌﾞﾘｽ:1625-1637`),
   portraits by `CallArg` (e.g. 421 Gekkou, 422 Shinobu, 415/466 Kayblis), `G 806/133` CG in the
   Shinobu scene (`TJAPAN:2207-2208`). All of it can be redesigned freely; the map ops leave
-  scratch (`Tmp0021-0030`, camera) that the battle port already models (`Battle.Map.cs`).
+  scratch (`Tmp0021-0030`, camera) that the battle port already models (`ScriptContext.Map.cs`).
 
 ## 7. Rules vs presentation; quirks
 
@@ -281,7 +281,7 @@ text; the only display→state coupling is `M`'s scratch. TJAPAN's scenes are ru
 Code home: `src/Kichikuou.Core/Strategy/Nations/` (partial class `NationTurns`), same conventions
 as the battle; `FIGT_B` through the existing `Battle.DefendProvinceAsync`; story files through
 `IStoryHooks` (with scratch return values, §3); `M.ADV`/`WAO_SUB` state effects reused from
-`Battle.Map.cs` / `Battle.Wao.cs` (move them to a shared helper).
+`ScriptContext.Map.cs` / `ScriptContext.Wao.cs` (move them to a shared helper).
 
 | Part | Content | Script lines (rule) | Depends on |
 |---|---|---|---|

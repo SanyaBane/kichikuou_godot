@@ -1,3 +1,4 @@
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Combat;
@@ -499,7 +500,7 @@ public sealed partial class Battle
             State.Bt_RoundsLeft = State.Bt_RoundsLeft - 1;
             if (State.Bt_RoundsLeft == 0)
             {
-                await FlowWindowAsync(143);
+                await WaoAsync(143);
                 await FlowTextAsync(FigtFile, 453);
                 if (State.Bt_Kind != 3)
                 {
@@ -511,7 +512,7 @@ public sealed partial class Battle
                     await FlowTextAsync(FigtFile, 465);
                     await FlowWaitKeyAsync();
                 }
-                await FlowWindowAsync(10);
+                await WaoAsync(10);
                 State.Bt_Result = 0;
                 if (State.Bt_Kind == 1)
                     return FigtLabel.AttackerLost;
@@ -646,7 +647,7 @@ public sealed partial class Battle
         if (State.Bt_Kind != 3)
             await FlowMapAsync(0);
         if (State.Bt_Kind == 3)
-            await View.ShowAsync(new FlowClearScreenEvent());
+            await View.ShowAsync(new ClearScreenEvent());
     }
 
     /// <summary>Asks the input for a menu choice and rejects an item the menu does not list.</summary>

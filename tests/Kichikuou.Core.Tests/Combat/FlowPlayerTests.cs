@@ -1,4 +1,5 @@
 using Kichikuou.Core.Combat;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 using static Kichikuou.Core.Tests.Combat.Sys3Assert;
 
@@ -367,7 +368,7 @@ public class FlowPlayerTests
         await rig.Battle.DefendEffectAsync();
         Is(8, rig.State.Bt_PSlot2State);
         Assert.Equal([20], rig.Random.Draws);
-        var shown = Assert.Single(rig.View.Events.OfType<FlowValueMessageEvent>());
+        var shown = Assert.Single(rig.View.Events.OfType<ValueMessageEvent>());
         Assert.Equal(1399, shown.Text.Line);
         Is(8, shown.Values[0]);
         Is(32, rig.State.RetVal);   // the message wait overwrote it

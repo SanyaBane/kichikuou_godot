@@ -5,6 +5,7 @@ using Kichikuou.Content.Graphics;
 using Kichikuou.Content.Screen;
 using Kichikuou.Core.Combat;
 using Kichikuou.Core.Golden;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 using SelButton = Kichikuou.Content.Battles.MouseButton;
 
@@ -26,7 +27,7 @@ public enum BattleMode
 /// node shows the surface's screen corner, plays the sounds and turns mouse and keys into the
 /// battle's inputs. Backspace returns to the capture list.
 /// </summary>
-public partial class BattleScreen : Control, IBattleView, IBattleInput
+public partial class BattleScreen : Control, IScriptView, IBattleInput
 {
     private const ushort KeyReturn = 16;   // xsystem35 SYS35KEY_RET (left click, Enter)
     private const ushort KeySpace = 32;    // SYS35KEY_SPC (right click, Space, Escape)
@@ -196,9 +197,9 @@ public partial class BattleScreen : Control, IBattleView, IBattleInput
 
     // ---------------------------------------------------------------- view
 
-    public Task ShowAsync(BattleEvent battleEvent)
+    public Task ShowAsync(ScriptEvent scriptEvent)
     {
-        _presenter.Show(battleEvent);
+        _presenter.Show(scriptEvent);
         return Task.CompletedTask;
     }
 
@@ -206,13 +207,13 @@ public partial class BattleScreen : Control, IBattleView, IBattleInput
     /// The view for a recording: the same drawing; pauses take their time, and where the
     /// original waits for a key the playback rests a moment (a click goes on at once).
     /// </summary>
-    private sealed class WatchView(BattleScreen screen) : IBattleView
+    private sealed class WatchView(BattleScreen screen) : IScriptView
     {
-        public async Task ShowAsync(BattleEvent battleEvent)
+        public async Task ShowAsync(ScriptEvent scriptEvent)
         {
             var presenter = screen._presenter;
-            presenter.Show(battleEvent);
-            if (battleEvent is PauseEvent p)
+            presenter.Show(scriptEvent);
+            if (scriptEvent is PauseEvent p)
             {
                 presenter.Flush();
                 if (p.Ticks.Value >= 10)

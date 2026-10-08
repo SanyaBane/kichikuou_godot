@@ -1,6 +1,7 @@
 using Kichikuou.Content.Battles;
 using Kichikuou.Core.Combat;
 using Kichikuou.Core.Golden;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 using Xunit.Abstractions;
 
@@ -58,9 +59,9 @@ public class BattleSandboxTests(ITestOutputHelper output)
         Assert.True(differences.Count == 0, string.Join("\n", differences.Take(20)));
     }
 
-    private sealed class NullView : IBattleView
+    private sealed class NullView : IScriptView
     {
-        public Task ShowAsync(BattleEvent battleEvent) => Task.CompletedTask;
+        public Task ShowAsync(ScriptEvent scriptEvent) => Task.CompletedTask;
     }
 
     /// <summary>Attacks the first target it may, else defends; first menu item; keys 0.</summary>

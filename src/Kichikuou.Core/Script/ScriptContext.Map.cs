@@ -1,15 +1,27 @@
 using Kichikuou.Core.Sys3;
 
-namespace Kichikuou.Core.Combat;
+namespace Kichikuou.Core.Script;
 
-// M.ADV and the WAO_MAP.ADV operations it reaches from the battle: the strategic-map helpers,
-// ported for their state effects only — the camera (MapCamX/Y, MapTargetX/Y), the scratch
-// variables they leave behind (Tmp0021-0030, Tmp0039/0040, CallArg, RetVal from the Y 3 pauses)
-// and the map marker list on page 10. Drawing (PC, G, J0, CC, CS, EC) is the FlowMapEvent that
-// FlowMapAsync raises first. Found necessary by the first golden capture: the scratch values and
-// RetVal that M.ADV op 13 leaves are what FIGT_A returns to its caller.
-public sealed partial class Battle
+// M.ADV and the WAO_MAP.ADV operations it reaches: the strategic-map helpers, ported for their
+// state effects only — the camera (MapCamX/Y, MapTargetX/Y), the scratch variables they leave
+// behind (Tmp0021-0030, Tmp0039/0040, CallArg, RetVal from the Y 3 pauses) and the map marker
+// list on page 10. Drawing (PC, G, J0, CC, CS, EC) is the MapEvent that MapCallAsync raises
+// first. Found necessary by the first golden capture: the scratch values and RetVal that M.ADV
+// op 13 leaves are what FIGT_A returns to its caller. Ported so far: the operations the battle
+// reaches; the others (WAO_MAP op 1 drag-scroll, op 5, op 100) come with the parts that use them.
+public sealed partial class ScriptContext
 {
+    /// <summary>
+    /// <c>!CallArg : mode! %#M.ADV</c>: a strategic-map call — the <see cref="MapEvent"/> for
+    /// the presentation, then <c>M.ADV</c>'s state effects (<see cref="MapAsync"/>).
+    /// </summary>
+    public async Task MapCallAsync(Sys3Int mode)
+    {
+        State.CallArg = mode;
+        await View.ShowAsync(new MapEvent(mode));
+        await MapAsync();
+    }
+
     /// <summary><c>%#M.ADV</c> with the operation in <c>CallArg</c> (<c>M.ADV:1-242</c>).</summary>
     internal async Task MapAsync()
     {
@@ -42,7 +54,7 @@ public sealed partial class Battle
                 MapTargetMarkCorner();
                 State.CallArg = 0;
                 State.RetVal = 109;
-                await FlowSoundAsync(0);    // %#PCMPLAY.ADV with CallArg 0 writes nothing else
+                await SoundAsync(0);        // %#PCMPLAY.ADV with CallArg 0 writes nothing else
                 await MapBlinkAsync();
                 return;
             case 11:

@@ -36,9 +36,9 @@ The three parts are merged (2026-10-08); there are no stubs left. Notes on the m
   `python tools/codegen/gen_figt_m.py <_extract\scenario>` (`--check` verifies it is current);
   never edit it by hand. Re-run it after renaming a variable in the dictionary.
 - The strategic-map helpers (`M.ADV` and the `WAO_MAP.ADV` operations it reaches: ops 0, 1, 3,
-  4, 10-13) are ported for their state effects in `Battle.Map.cs` (camera, scratch
+  4, 10-13) are ported for their state effects in `ScriptContext.Map.cs` (camera, scratch
   `Tmp0021-0030`/`Tmp0039-0040`, marker list on page 10); `FlowMapAsync` raises the event first.
-  Every `Y 3` pause goes through `IBattleInput.PauseAsync()`, which returns the key that cut it
+  Every `Y 3` pause goes through `IScriptInput.PauseAsync()`, which returns the key that cut it
   short; the engine stores it in `RetVal`. Both found by the first golden capture.
 - Every `IK 0` goes through `IBattleInput.WaitForKeyAsync()` and stores the key in `RetVal`;
   the `*KeyWaitEvent` records only mark the point for the presentation.
@@ -48,7 +48,7 @@ The three parts are merged (2026-10-08); there are no stubs left. Notes on the m
 
 ### Known gaps for the golden-test harness
 
-- The message-window helper `WAO_SUB.ADV` is ported for its state effects in `Battle.Wao.cs`
+- The message-window helper `WAO_SUB.ADV` is ported for its state effects in `ScriptContext.Wao.cs`
   (`WaoSubAsync`, called by the flow and resolution window helpers; the flavour part keeps its
   own equivalent open/wait/close): window type and frame, the portraits and centre picture,
   `Tmp0021/0022` left by every picture removal (FIGT_B), and the key waits of ops 1/11, which

@@ -1,4 +1,5 @@
 using Kichikuou.Core.Combat;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 using static Kichikuou.Core.Tests.Combat.Sys3Assert;
 
@@ -291,7 +292,7 @@ public class FlowExitTests
         Assert.Equal([15], rig.Random.Draws);
         Is(1, rig.State.Units[1].Exp);
         Assert.Equal([453, 465, 2999, 3003], rig.Lines.Take(4));
-        Assert.IsType<FlowClearScreenEvent>(rig.View.Events[^1]);
+        Assert.IsType<ClearScreenEvent>(rig.View.Events[^1]);
     }
 
     [Fact]
@@ -304,7 +305,7 @@ public class FlowExitTests
         Is(1, rig.State.Bt_Result);
         Is(5, rig.State.Tmp0001);
         Assert.Equal([498, 2999, 3003], rig.Lines);
-        Assert.DoesNotContain(rig.View.Events, e => e is FlowMapEvent);
+        Assert.DoesNotContain(rig.View.Events, e => e is MapEvent);
     }
 
     [Fact]
@@ -314,7 +315,7 @@ public class FlowExitTests
         rig.State.Bt_IsDuel = 1;
         Assert.Equal(FigtLabel.End, await rig.Battle.EnemyAnnihilatedAsync());
         Is(2, rig.State.Bt_Result);
-        Assert.IsType<FlowMapEvent>(rig.View.Events[0]);
+        Assert.IsType<MapEvent>(rig.View.Events[0]);
         Assert.Equal([2999, 3003], rig.Lines);
     }
 

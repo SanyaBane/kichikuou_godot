@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using Kichikuou.Core.Combat;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Content;

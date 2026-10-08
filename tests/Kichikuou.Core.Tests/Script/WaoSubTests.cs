@@ -1,19 +1,21 @@
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
+using Kichikuou.Core.Tests.Combat;
 using static Kichikuou.Core.Tests.Combat.Sys3Assert;
 
-namespace Kichikuou.Core.Tests.Combat;
+namespace Kichikuou.Core.Tests.Script;
 
 /// <summary>
-/// <c>WAO_SUB.ADV</c> state effects (<c>Battle.Wao.cs</c>). FIGT_B shows and removes portraits
+/// <c>WAO_SUB.ADV</c> state effects (<c>ScriptContext.Wao.cs</c>). FIGT_B shows and removes portraits
 /// through ops 311/312/321/322/331/332; every removal runs <c>L_00b0f</c>, which leaves the
 /// clamped camera in <c>Tmp0021/0022</c> — scratch outside the ignored <c>ui</c> group that the
 /// port did not write. The key waits (ops 1, 11) do nothing while no window is open.
 /// </summary>
-public class FlowWaoTests
+public class WaoSubTests
 {
-    private static FlowRig Wao(int op, int camX = 960, int camY = 400)
+    private static ScriptRig Wao(int op, int camX = 960, int camY = 400)
     {
-        var rig = new FlowRig();
+        var rig = new ScriptRig();
         rig.State.Ui_WaoOp = (Sys3Int)op;
         rig.State.MapCamX = (Sys3Int)camX;
         rig.State.MapCamY = (Sys3Int)camY;
@@ -32,7 +34,7 @@ public class FlowWaoTests
         rig.State.Ui_CenterCg = 900;
         rig.State.Ui_CenterOverlay2 = 901;
 
-        await rig.Battle.WaoSubAsync();
+        await rig.Script.WaoSubAsync();
 
         Is(1600, rig.State.Tmp0021);
         Is(200, rig.State.Tmp0022);
@@ -47,7 +49,7 @@ public class FlowWaoTests
     {
         var rig = Wao(312, camX: 100, camY: 700);
 
-        await rig.Battle.WaoSubAsync();
+        await rig.Script.WaoSubAsync();
 
         Is(320, rig.State.Tmp0021);
         Is(600, rig.State.Tmp0022);
@@ -61,7 +63,7 @@ public class FlowWaoTests
         rig.State.CallArg = 1001;
         rig.State.Tmp0021 = 5;
 
-        await rig.Battle.WaoSubAsync();
+        await rig.Script.WaoSubAsync();
 
         Is(1001, rig.State.Ui_PortraitR);
         Is(700, rig.State.Tmp0021);
@@ -76,7 +78,7 @@ public class FlowWaoTests
         rig.State.Tmp0021 = 5;
         rig.State.Tmp0022 = 7;
 
-        await rig.Battle.WaoSubAsync();
+        await rig.Script.WaoSubAsync();
 
         Is(1, rig.State.Ui_PortraitL);
         Is(5, rig.State.Tmp0021);
@@ -91,7 +93,7 @@ public class FlowWaoTests
         rig.State.Ui_CenterCg = 900;
         rig.State.Ui_CenterOverlay4 = 3;
 
-        await rig.Battle.WaoSubAsync();
+        await rig.Script.WaoSubAsync();
 
         Is(815, rig.State.Ui_WinFrameCg);
         Is(31, rig.State.Ui_WinType);
@@ -107,19 +109,19 @@ public class FlowWaoTests
         closed.State.RetVal = 3;
         closed.Input.Keys.Enqueue(13);
 
-        await closed.Battle.WaoSubAsync();
+        await closed.Script.WaoSubAsync();
 
         Assert.Equal(0, closed.Input.KeyWaits);
         Is(3, closed.State.RetVal);
 
         var open = Wao(113);
-        await open.Battle.WaoSubAsync();
+        await open.Script.WaoSubAsync();
         Is(43, open.State.Ui_WinType);
         Is(809, open.State.Ui_WinFrameCg);
         open.State.Ui_WaoOp = 11;
         open.Input.Keys.Enqueue(13);
 
-        await open.Battle.WaoSubAsync();
+        await open.Script.WaoSubAsync();
 
         Assert.Equal(1, open.Input.KeyWaits);
         Is(13, open.State.RetVal);
@@ -133,7 +135,7 @@ public class FlowWaoTests
         rig.State.RetVal = 3;
         rig.Input.Keys.Enqueue(13);
 
-        await rig.Battle.WaoSubAsync();
+        await rig.Script.WaoSubAsync();
 
         Assert.Equal(1, rig.Input.KeyWaits);
         Is(3, rig.State.RetVal);
@@ -146,9 +148,59 @@ public class FlowWaoTests
         rig.State.Ui_WinType = 11;
         rig.State.Ui_WinFrameCg = 807;
 
-        await rig.Battle.WaoSubAsync();
+        await rig.Script.WaoSubAsync();
 
         Is(0, rig.State.Ui_WinType);
         Is(0, rig.State.Ui_WinFrameCg);
+    }
+
+    [Theory]
+    [InlineData(111, 807, 11)]
+    [InlineData(112, 808, 12)]
+    [InlineData(113, 809, 43)]
+    [InlineData(121, 810, 21)]
+    [InlineData(122, 811, 22)]
+    [InlineData(141, 895, 41)]
+    [InlineData(142, 896, 42)]
+    [InlineData(143, 894, 43)]
+    [InlineData(151, 897, 51)]
+    [InlineData(152, 898, 52)]
+    public async Task Opening_a_window_sets_its_frame_and_type(int op, int frame, int type)
+    {
+        var rig = Wao(op);
+
+        await rig.Script.WaoSubAsync();
+
+        Is(frame, rig.State.Ui_WinFrameCg);
+        Is(type, rig.State.Ui_WinType);
+    }
+
+    [Fact]
+    public async Task A_call_sets_the_op_and_shows_the_event_before_its_effects()
+    {
+        var rig = new ScriptRig();
+        rig.State.CallArg = 1137;
+        Sys3Int portraitAtEvent = 1;
+        var view = new SnapshotView(() => portraitAtEvent = rig.State.Ui_PortraitL);
+        var script = new ScriptContext(rig.State, rig.Random, view, rig.Input, rig.Story);
+
+        await script.WaoAsync(311);
+
+        Assert.Equal([new WindowEvent(311, 1137)], view.Events);
+        Is(0, portraitAtEvent);
+        Is(311, rig.State.Ui_WaoOp);
+        Is(1137, rig.State.Ui_PortraitL);
+    }
+
+    private sealed class SnapshotView(Action snapshot) : IScriptView
+    {
+        public List<ScriptEvent> Events { get; } = [];
+
+        public Task ShowAsync(ScriptEvent scriptEvent)
+        {
+            snapshot();
+            Events.Add(scriptEvent);
+            return Task.CompletedTask;
+        }
     }
 }

@@ -1,4 +1,5 @@
 using Kichikuou.Core.Combat;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Tests.Combat;
@@ -82,7 +83,7 @@ public class ResolutionApplyExchangeTests
         Assert.Equal(2, (int)s.Tmp0025);
 
         Assert.Equal(new CountersEvent(100, 80, 20, 15), fx.View.Events[0]);
-        Assert.Equal([new PlaySfxEvent(39, 8), new PlaySfxEvent(9, 40)], fx.Events<PlaySfxEvent>());
+        Assert.Equal([new SoundPairEvent(39, 8), new SoundPairEvent(9, 40)], fx.Events<SoundPairEvent>());
         Assert.Equal(
             Enumerable.Range(0, 10).Select(i => new ShotsFrameEvent((Sys3Int)(i * 40))),
             fx.Events<ShotsFrameEvent>());
@@ -157,9 +158,9 @@ public class ResolutionApplyExchangeTests
             .TakeWhile(e => e is not BattlefieldBackgroundEvent).ToList();
         Assert.Equal(
             [
-                new WaoCallEvent(151), new MessageEvent(new ScriptRef("FIGTﾃｷDE.ADV", 37)), new WaoCallEvent(11),
-                new WaoCallEvent(10), new WaoCallEvent(153), new PrintStringEvent(4),
-                new MessageEvent(new ScriptRef("FIGTﾃｷDE.ADV", 1816)), new WaoCallEvent(11), new WaoCallEvent(10),
+                new WindowEvent(151, 10), new MessageEvent(new ScriptRef("FIGTﾃｷDE.ADV", 37)), new WindowEvent(11, 10),
+                new WindowEvent(10, 10), new WindowEvent(153, 10), new PrintStringEvent(4),
+                new MessageEvent(new ScriptRef("FIGTﾃｷDE.ADV", 1816)), new WindowEvent(11, 10), new WindowEvent(10, 10),
             ],
             scene);
         Assert.Equal(

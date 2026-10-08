@@ -177,9 +177,9 @@ CG with `G frame, 40` at its embedded position, stores it in `Ui_WinFrameCg`, an
 222, 223, 231, 241, 242, 243, 251, 252, 253) only set `Ui_WinType` and draw nothing; no battle file
 reaches them (they are dead entries after `\0:` in the wrapper tables).
 
-Core events: `FlowWindowEvent(Op, CallArg)` (flow parts), `WaoCallEvent(Op)` (resolution, death
-scenes), `FlavourWindowOpenEvent / FlavourKeyWaitEvent / FlavourWindowCloseEvent` (`FIGT_M.ADV`),
-followed by `MessageEvent` / `FlowValueMessageEvent` / `PrintStringEvent` for the text.
+Core event: `WindowEvent(Op, CallArg)` for every `WAO_SUB.ADV` call (flow, resolution, death
+scenes and `FIGT_M.ADV` alike, raised by `ScriptContext.WaoAsync` before the op's state effects),
+followed by `MessageEvent` / `ValueMessageEvent` / `PrintStringEvent` for the text.
 
 ### 2.2 Window ops
 
@@ -273,7 +273,7 @@ The core's text events do not carry the colour; a faithful UI has to track `ZC 1
 
 ### 2.7 Messages and numbers
 
-- `MessageEvent(ScriptRef)` / `FlowValueMessageEvent`: the script string (half-width, §0.3)
+- `MessageEvent(ScriptRef)` / `ValueMessageEvent`: the script string (half-width, §0.3)
   printed at the window cursor; `R` = next line. Numbers are `H 0` (plain decimal).
 - `PrintStringEvent(Slot)`: `MP slot, width` — widths in the battle files: `MP 1, 8`
   (`FIGTﾐｶDE.ADV`), `MP 4, 18` (`FIGTﾃｷDE.ADV`), `MP 4, 20` / `MP 5, 20` (`FIGT_B.ADV:656, 663`),
@@ -478,8 +478,8 @@ The core's event lists the CGs in this order (`Battle.Resolution.cs:370-411`).
 
 ### 5.2 ActionLabelsEvent (`FIGT.ADV:1739-1802`)
 
-`WaoCallEvent(143)` (CG 894 box, text rect 200,196,240,200, colour 22 in practice) →
-`ActionLabelsEvent` → `WaoCallEvent(11)` + key wait (text erased) → `WaoCallEvent(10)` (box
+`WindowEvent(143)` (CG 894 box, text rect 200,196,240,200, colour 22 in practice) →
+`ActionLabelsEvent` → `WindowEvent(11)` + key wait (text erased) → `WindowEvent(10)` (box
 removed) (`Battle.Resolution.cs:341-344`). Text, size 24:
 
 | y | Text |
@@ -515,11 +515,11 @@ CountersEvent — `L_02c00` (`:1830-1863`), sprites from CG 888, style 0:
 In story stage 4 the 112 step shows commander 200's numbers (`FIGT.ADV:1803-1810`, core quirk
 comment `Battle.Resolution.cs:353-355`).
 
-### 5.4 Flavour text — FlavourWindowOpenEvent / FlavourKeyWaitEvent / FlavourWindowCloseEvent
+### 5.4 Flavour text — WindowEvent 141/142/151/152, 11, 10
 
 `FIGT_M.ADV` speaks in windows 141 (CG 895, tail left, text at 200,198), 142 (CG 896 dark,
 colour 11), 151 (CG 897, tail right, text at 224,198), 152 (CG 898 dark, colour 11), each followed
-by op 11 (key wait, `FlavourKeyWaitEvent`) and op 10 (restore, `FlavourWindowCloseEvent`). 141/151
+by op 11 (key wait) and op 10 (restore). 141/151
 print in colour 15 (§2.6). The windows sit over the engagement frame of step 112.
 
 ### 5.5 Exchange animation — `FIGTATTK.ADV`
@@ -527,7 +527,7 @@ print in colour 15 (§2.6). The windows sit over the engagement frame of step 11
 1. `G 893` at (640,400) (`:2-3`).
 2. **CountersEvent** (`:4-31`): the four numbers (no labels) are drawn again directly on the screen
    at the §5.3 positions, style 0 — visually identical to what is already shown.
-3. `PlaySfxEvent` (first sound pair, `:338-344`).
+3. `SoundPairEvent` (first sound pair, `:338-344`).
 4. **ShotsFrameEvent(Step)**, Step t = 0, 40, …, 360 (`:33-131`), each followed by `Y 3, 1`
    (16 ms): the clean final frame (back buffer) is copied to the work area (`:35`), the non-zero
    shot counters are drawn there in style 1 (cream/orange digits), and only 200×64 rectangles
@@ -547,7 +547,7 @@ print in colour 15 (§2.6). The windows sit over the engagement frame of step 11
    Player numbers move right, enemy numbers move left (they cross); "vs troop" rows converge and
    "vs commander" rows diverge vertically. The refreshed rectangles erase the previous position;
    everything else on screen (picture, troop/HP counters) stays. Final t = 360, d = 163.
-5. `Y 3, 40` (640 ms) (`:133`); second sound pair `PlaySfxEvent` unless both are 5 (`:346-351`).
+5. `Y 3, 40` (640 ms) (`:133`); second sound pair `SoundPairEvent` unless both are 5 (`:346-351`).
 6. **ExchangeResultsEvent** (`:134-233`): a complete frame is built in the work area and shown at
    once (`CC 640, 0, 640, 400, 0, 0`, `:233`): clean final scene; "TROOPS" labels and predicted
    troops (current − both troop damages, saturating at 0) at the §5.3 positions when the current
@@ -642,7 +642,7 @@ then op 1 (key wait + page clear, `:671`). Afterwards `Commanders` / ` ` + count
 Numbers` / ` ` + total (`:612-623`), op 1, op 0 (close), op 322 (remove portrait), and Rance
 answers in window 111 (`:624-648`).
 
-### 6.4 Map views — FlowMapEvent (`M.ADV`, `WAO_MAP.ADV`)
+### 6.4 Map views — MapEvent (`M.ADV`, `WAO_MAP.ADV`)
 
 | Mode | Script | Visible effect |
 |---|---|---|
@@ -657,7 +657,7 @@ answers in window 111 (`:624-648`).
 
 Battle use: `FIGT_A.ADV:72` (0), `:111-116` (4, 3, 0), `:124-125` (13); `FIGT_B.ADV:6-14` (0, 1,
 10), `:82-83`, `:245-246` (0), `:776-783` (4, 3, 0, 10), `:861-866` (4, 3, 0); `FIGT.ADV:1866-1867`
-(0, end of a field battle). Dungeon counterpart: `FlowClearScreenEvent` = `EC 0`
+(0, end of a field battle). Dungeon counterpart: `ClearScreenEvent` = `EC 0`
 (`FIGT.ADV:1869-1871`).
 
 ---

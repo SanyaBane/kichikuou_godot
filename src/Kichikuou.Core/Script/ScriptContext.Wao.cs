@@ -1,15 +1,40 @@
 using Kichikuou.Core.Sys3;
 
-namespace Kichikuou.Core.Combat;
+namespace Kichikuou.Core.Script;
 
 // WAO_SUB.ADV, the message-window helper, ported for its state effects only: the window state
 // (Ui_WinType, Ui_WinFrameCg), the pictures (Ui_PortraitL/R, Ui_CenterCg, Ui_CenterOverlay1-4,
 // Ui_FaceOverMap), the scratch it leaves (Tmp0021/0022 from L_00b0f whenever a picture is
 // removed) and the key waits (ops 1, 5, 11), which do nothing while no window is open. Drawing
-// (CC, CF, B3/B4, G, J0, ZC, ZM, Y 1) is the event each caller raises. Callers set Ui_WaoOp
-// (and CallArg for a picture) before the call, as the script does.
-public sealed partial class Battle
+// (CC, CF, B3/B4, G, J0, ZC, ZM, Y 1) is the WindowEvent raised first. Callers set CallArg for
+// a picture before the call, as the script does.
+public sealed partial class ScriptContext
 {
+    /// <summary>
+    /// <c>!Ui_WaoOp : op! %#WAO_SUB.ADV:</c> — sets <c>Ui_WaoOp</c>, shows the
+    /// <see cref="WindowEvent"/>, then applies the operation's state effects
+    /// (<see cref="WaoSubAsync"/>). The key waits (ops 1, 5, 11) run <c>IK 0</c> through
+    /// <see cref="IScriptInput.WaitForKeyAsync"/> unless no window is open.
+    /// </summary>
+    public async Task WaoAsync(Sys3Int op)
+    {
+        State.Ui_WaoOp = op;
+        await View.ShowAsync(new WindowEvent(op, State.CallArg));
+        await WaoSubAsync();
+    }
+
+    /// <summary>
+    /// <c>Ui_WaoOp := 11; call WAO_SUB.ADV</c> (<c>WAO_SUB.ADV:510-519</c>): waits with
+    /// <c>IK 0</c>, which leaves the key code in <c>RetVal</c> (nothing while no window is open).
+    /// </summary>
+    public Task WaoWaitKeyAsync() => WaoAsync(11);
+
+    /// <summary>
+    /// <c>Ui_WaoOp := 1; call WAO_SUB.ADV</c> (<c>WAO_SUB.ADV:286-294</c>): waits with
+    /// <c>US RetVal; IK 0; UG RetVal</c>, so <c>RetVal</c> is preserved (nothing while no window is open).
+    /// </summary>
+    public Task WaoWaitKeyKeepRetValAsync() => WaoAsync(1);
+
     /// <summary><c>%#WAO_SUB.ADV</c> with the operation in <c>Ui_WaoOp</c> (<c>WAO_SUB.ADV:1-169</c>).</summary>
     internal async Task WaoSubAsync()
     {
@@ -129,7 +154,7 @@ public sealed partial class Battle
                 State.Ui_CenterOverlay4 = State.Tmp0004;
                 return;
             default:
-                // :165-169 prints an error and waits (A); no battle file reaches it.
+                // :165-169 prints an error and waits (A); no ported file reaches it.
                 throw new InvalidOperationException($"WAO_SUB.ADV operation {State.Ui_WaoOp} does not exist.");
         }
     }

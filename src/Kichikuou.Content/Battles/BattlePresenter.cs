@@ -1,6 +1,7 @@
 using Kichikuou.Content.Graphics;
 using Kichikuou.Content.Screen;
 using Kichikuou.Core.Combat;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.State;
 using Kichikuou.Core.Sys3;
 
@@ -99,32 +100,28 @@ public sealed partial class BattlePresenter
     }
 
     /// <summary>Draws one core event.</summary>
-    public void Show(BattleEvent battleEvent)
+    public void Show(ScriptEvent scriptEvent)
     {
         AfterKey();
         WaitsForKey = false;
-        if (battleEvent is not SlotPanelEvent and not PanelHighlightEvent)
+        if (scriptEvent is not SlotPanelEvent and not PanelHighlightEvent)
             FinishRedraw();
-        if (battleEvent is not PauseEvent)
+        if (scriptEvent is not PauseEvent)
             _mapAnimation = MapAnimation.None;
 
-        switch (battleEvent)
+        switch (scriptEvent)
         {
             case BattlefieldBackgroundEvent e: Background(e.Cg); break;
             case SlotPanelEvent e: SlotPanel(e.Panel, e.Record); break;
             case PanelHighlightEvent e: Highlight(e.Panel); break;
             case RoundHeaderEvent e: RoundHeader(e); break;
-            case FlowWindowEvent e: Window(e.Op.Value, e.CallArg.Value); break;
-            case WaoCallEvent e: Window(e.Op.Value, 0); break;
-            case FlavourWindowOpenEvent e: Window((int)e.Window, 0); break;
-            case FlavourKeyWaitEvent: Window(11, 0); break;
-            case FlavourWindowCloseEvent: Window(10, 0); break;
+            case WindowEvent e: Window(e.Op.Value, e.CallArg.Value); break;
             case MessageEvent e:
                 if (e.Text == OrderMessage)
                     _orderMessage = true;
                 Writer.Print(Read(e.Text, [], e.StringVariables));
                 break;
-            case FlowValueMessageEvent e: Writer.Print(Read(e.Text, e.Values, null)); break;
+            case ValueMessageEvent e: Writer.Print(Read(e.Text, e.Values, null)); break;
             case PrintStringEvent e: PrintString(e.Slot.Value); break;
             case FlowErrorEvent e: Error(e.Text); break;
             case UnitInfoEvent e: UnitInfo(e.Unit, e.Order); break;
@@ -135,21 +132,21 @@ public sealed partial class BattlePresenter
             case ActionLabelsEvent e: ActionLabels(e); break;
             case EngagementSlideEvent e: Slide(e.Offset.Value); break;
             case CountersEvent e: Counters(e); break;
-            case PlaySfxEvent e: _audio?.PlaySoundPair(e.First.Value, e.Second.Value); break;
+            case SoundPairEvent e: _audio?.PlaySoundPair(e.First.Value, e.Second.Value); break;
             case ShotsFrameEvent e: ShotsFrame(e.Step.Value); break;
             case ExchangeResultsEvent: ExchangeResults(); break;
             case WipedOutMarksEvent e: WipedOutMarks(e); break;
             case KeyWaitEvent: ExchangeKeyWait(); break;
-            case FlowMapEvent e: Map(e.Mode.Value); break;
-            case FlowClearScreenEvent: Surface.Fill(0, 0, 640, 400, 0); break;
+            case MapEvent e: Map(e.Mode.Value); break;
+            case ClearScreenEvent: Surface.Fill(0, 0, 640, 400, 0); break;
             case PauseEvent: MapPause(); break;
-            case FlowSoundEvent e when e.Mode != 3: _audio?.PlaySound(e.Sound.Value); break;
-            case FlowMusicEvent e: _audio?.PlayMusic(e.Track.Value); break;
+            case SoundEvent e when e.Mode != 3: _audio?.PlaySound(e.Sound.Value); break;
+            case MusicEvent e: _audio?.PlayMusic(e.Track.Value); break;
         }
-        _lastEvent = battleEvent;
+        _lastEvent = scriptEvent;
     }
 
-    private BattleEvent? _lastEvent;
+    private ScriptEvent? _lastEvent;
 
     // ------------------------------------------------------------------ drawing helpers
 

@@ -29,7 +29,7 @@ opening credits, benchmark, font cache, sound wrapper) or debug (`TEST`).
 | `ﾛｰﾄﾞｾｰﾌﾞ` | 656 | `MAIN.ADV:1058`, `COMMAND.ADV:374`, `ｽﾀMENU.ADV:241`, `SET.ADV:340`, `OVER.ADV:2075`, `TEST.ADV:93` | save/load, persistent page sync | state only |
 | `ｽﾀｰﾄ` | 872 | boot (first file in `xsys35dc.hed`) | zero 846 vars (`ｽﾀｰﾄ.ADV:1-846`), window setup, `XSPEC`, `SET`, `&ｽﾀMENU` (`:851-872`) | init |
 | `ｽﾀMENU` | 871 | `ｽﾀｰﾄ.ADV:872` | title menu, new game, debug chapter starts | new-game setup |
-| `M` | 312 | 2984 calls, ops 0/1/3/4/10-13 (§3) | camera, owner markers, target blink | ported (`Battle.Map.cs`) |
+| `M` | 312 | 2984 calls, ops 0/1/3/4/10-13 (§3) | camera, owner markers, target blink | ported (`ScriptContext.Map.cs`) |
 | `WAO_MAP` | 196 | `M`, `COMMAND.ADV:61` (op 1), title/load (op 3) | blit, drag-scroll input loop (op 1), marker list (3/4/5), debug picker (100) | UI |
 | `OVER` | 2210 | `&` from 19 sites (FIGT_B, 死亡捕獲, Iｶﾐ ×6, Gｻﾃﾗ, TJAPAN, Iﾄｳｿﾞｸ, …, `TEST.ADV:343`) | ending CG `269+EndingId` (`:33`), completion report, fate record, `ZZ0` quit (`:2083`) | page 4 only |
 | `HAPPY_C` | 1451 | `ｽﾀMENU.ADV:236` | "Fortune Check": reads page 4 (`Glob_Fate`), draws it | no |
@@ -178,7 +178,7 @@ after `Week += 1`, history shift and BGM stop, at the start of the player phase"
 | `M` op use (whole scenario) | op 0 ×2184, 1 ×298, 10 ×296, 4 ×152, 3 ×46, 11/12 ×3, 13 ×1; op 5 never [C, `CallArg` set on the line before the call] |
 
 `M` and `WAO_MAP` ops 0, 1, 3, 4, 10-13 are ported for state in
-`src/Kichikuou.Core/Combat/Battle.Map.cs`; not ported: `WAO_MAP` op 1 (drag-scroll input,
+`src/Kichikuou.Core/Script/ScriptContext.Map.cs`; not ported: `WAO_MAP` op 1 (drag-scroll input,
 `WAO_MAP.ADV:5-82`, used only by `COMMAND`), op 5 (marker delete, never reached) and op 100
 (debug coordinate picker, only in dead code `ｽﾀMENU.ADV:558`).
 
@@ -283,7 +283,7 @@ Quirks (port them):
 
 ## 8. Porting proposal
 
-Already done: `M`/`WAO_MAP` state effects (`Battle.Map.cs`) and `WAO_SUB` (`Battle.Wao.cs`);
+Already done: `M`/`WAO_MAP` state effects (`ScriptContext.Map.cs`) and `WAO_SUB` (`ScriptContext.Wao.cs`);
 lift both out of `Combat` into a shared `Map`/`Ui` helper, since `MAIN` and `COMMAND` call them.
 
 | Part | Script | Size (rule lines) | Contents | Depends on |

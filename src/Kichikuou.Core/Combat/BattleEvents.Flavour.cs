@@ -1,9 +1,11 @@
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Combat;
 
-// Events of the battle flavour text (FIGT_M.ADV, spec 02 §5). The text itself is a
-// MessageEvent(ScriptRef("FIGT_M.ADV", line)) shown inside an open window.
+// The battle flavour text (FIGT_M.ADV, spec 02 §5) is a MessageEvent(ScriptRef("FIGT_M.ADV",
+// line)) shown inside a window that FIGT_M opens through WAO_SUB.ADV (a WindowEvent with the
+// FlavourWindow value as its op).
 
 /// <summary>
 /// The message-window style opened by FIGT_M's window procedures; the value is the
@@ -24,17 +26,5 @@ public enum FlavourWindow
     RightAlt = 152,
 }
 
-/// <summary>A flavour-text message window opens (<c>WAO_SUB.ADV</c> <c>G Ui_WinFrameCg</c>).</summary>
-/// <param name="Window">The window style.</param>
-/// <param name="FrameCg">The frame CG drawn (<c>Ui_WinFrameCg</c>).</param>
-public sealed record FlavourWindowOpenEvent(FlavourWindow Window, Sys3Int FrameCg) : BattleEvent;
 
-/// <summary>
-/// <c>IK 0</c> after a message (<c>WAO_SUB.ADV:515</c>): the text is complete and the battle is
-/// about to wait for the player (<see cref="IBattleInput.WaitForKeyAsync"/>). The key code goes
-/// to <c>RetVal</c>, which FIGT_M sometimes tests afterwards (C83/C84/unit 3, spec 02 Q13).
-/// </summary>
-public sealed record FlavourKeyWaitEvent : BattleEvent;
 
-/// <summary>The flavour-text window closes (<c>WAO_SUB.ADV</c> <c>L_00cb9</c>).</summary>
-public sealed record FlavourWindowCloseEvent : BattleEvent;

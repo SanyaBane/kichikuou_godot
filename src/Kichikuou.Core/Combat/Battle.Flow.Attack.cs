@@ -1,3 +1,4 @@
+using Kichikuou.Core.Script;
 namespace Kichikuou.Core.Combat;
 
 // FIGT_A.ADV: the player attacks a province (docs/battle/01-flow.md §2.1, §2.6, §11.3).
@@ -57,19 +58,19 @@ public sealed partial class Battle
         if (State.Bt_WallBonus == 0)
         {
             State.Bt_TroopLimit = 5000;
-            await FlowWindowAsync(113);
+            await WaoAsync(113);
             await FlowTextAsync(FigtAFile, 35);
             await FlowWaitKeyKeepRetValAsync();
-            await FlowWindowAsync(0);
+            await WaoAsync(0);
         }
         if (State.Bt_WallBonus != 0)
         {
             State.Bt_TroopLimit = Prov.BattleArea;
-            await FlowWindowAsync(113);
+            await WaoAsync(113);
             await FlowTextAsync(FigtAFile, 47);
             await FlowWaitKeyKeepRetValAsync();
             State.Bt_BackgroundCg = 902;
-            await FlowWindowAsync(0);
+            await WaoAsync(0);
         }
         if (State.Prov_Cur > 77 && State.Bt_BackgroundCg == 900)
         {
@@ -100,14 +101,14 @@ public sealed partial class Battle
                 await FlowSuspendMusicAsync();
                 State.RetVal = 2;
                 await FlowSoundAsync(0);
-                await FlowWindowAsync(113);
+                await WaoAsync(113);
                 await FlowTextAsync(FigtAFile, 86);
                 if (State.Bt_Kind == 1 && State.StoryStage != 0)
                     await FlowTextAsync(FigtAFile, 90);
                 await FlowWaitKeyKeepRetValAsync();
                 await FlowSoundAsync(3);
                 await FlowResumeMusicAsync();
-                await FlowWindowAsync(0);
+                await WaoAsync(0);
             }
             if (State.Bt_Result == 2)
             {
@@ -127,12 +128,12 @@ public sealed partial class Battle
                 State.RetVal = 1;
                 await FlowSoundAsync(0);
                 await FlowMapAsync(13);
-                await FlowWindowAsync(113);
+                await WaoAsync(113);
                 await FlowTextAsync(FigtAFile, 128);
                 if (State.StoryStage != 0 && State.Bt_Kind == 1)
                     await FlowTextAsync(FigtAFile, 132);
                 await FlowWaitKeyKeepRetValAsync();
-                await FlowWindowAsync(0);
+                await WaoAsync(0);
                 await FlowSoundAsync(3);
                 await FlowResumeMusicAsync();
             }

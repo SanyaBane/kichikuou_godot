@@ -304,7 +304,7 @@ The file breaks naturally into a flow layer and a data/scene layer:
 
 | Part | Script lines | Content | Depends on |
 |---|---|---|---|
-| **D0 shared helpers** (prerequisite, small) | — | Move `WaoSubAsync`, the `M.ADV` ops and PCMPLAY out of `Battle` (`Battle.Wao.cs`, `Battle.Map.cs`) into a shared presentation-helper service. The strategic commands reuse the same ops: WAO 0,1,3,4,111-123,131,311-333; M 0,1,10 | battle port |
+| **D0 shared helpers** (prerequisite, small) | — | Move `WaoSubAsync`, the `M.ADV` ops and PCMPLAY out of `Battle` (`ScriptContext.Wao.cs`, `ScriptContext.Map.cs`) into a shared presentation-helper service. The strategic commands reuse the same ops: WAO 0,1,3,4,111-123,131,311-333; M 0,1,10 | battle port |
 | **D1 dungeon flow** | `:1-1375`, `:2872-3470` (setters as data), `:5579-5747`, plus `Cﾀｶﾗ` | entry gates, dispatch, main menu, squad hook, blizzard, parameter table, resume, floor loop, trigger chain (as an ordered table), moves, encounter, boss override, battle setup → `Battle.FightAsync`, `DeathCaptureAsync`, post-battle (Merim, Gunagan, Aaya), end of search. ≈2.4k lines, half of them data | D0, `IStoryHooks`, an `ISquadPicker` (`Sﾌﾞﾀｲ` mode 3, ported later with the S* screens) |
 | **D2 dungeon scenes with state** | `:1376-2871`, `:3500-5578` | Orochi, 15 treasure chests, Uncurse Spring, KD + quiz, Thieves' Hideout, God's Door (statues, quest 4/6, entry into `Iｶﾐ` as a hook that ends in a jump), Merim inscriptions/join/leave, refusals, Pink Cow, Snow Charm advice. ≈2.9k lines, ≈80% text | D1 seams |
 

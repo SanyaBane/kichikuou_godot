@@ -1,3 +1,4 @@
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Combat;
@@ -92,19 +93,19 @@ public sealed partial class Battle
         await FlowMapAsync(10);
         FlowCopyString(8, State.Prov_StrBase + State.Prov_Cur - 1);
         State.CallArg = Prov.BgCg;
-        await FlowWindowAsync(331);
-        await FlowWindowAsync(113);
+        await WaoAsync(331);
+        await WaoAsync(113);
         await FlowTextAsync(FigtBFile, 20);
         await FlowWaitKeyKeepRetValAsync();
-        await FlowWindowAsync(0);
+        await WaoAsync(0);
         await PortraitAsync(1, 311);
         await PortraitAsync(6, 321);
-        await FlowWindowAsync(121);
+        await WaoAsync(121);
         await FlowTextAsync(FigtBFile, 35);
         await FlowWaitKeyKeepRetValAsync();
         await FlowTextAsync(FigtBFile, 43);
         await FlowWaitKeyKeepRetValAsync();
-        await FlowWindowAsync(0);
+        await WaoAsync(0);
         return FigtBLabel.Menu;
     }
 
@@ -135,14 +136,14 @@ public sealed partial class Battle
     /// </summary>
     internal async Task<FigtBLabel> DefenceInterceptAsync()
     {
-        await FlowWindowAsync(111);
+        await WaoAsync(111);
         await FlowTextAsync(FigtBFile, 68);
         await FlowWaitKeyKeepRetValAsync();
         await FlowTextAsync(FigtBFile, 73);
         await FlowWaitKeyKeepRetValAsync();
-        await FlowWindowAsync(0);
-        await FlowWindowAsync(312);
-        await FlowWindowAsync(322);
+        await WaoAsync(0);
+        await WaoAsync(312);
+        await WaoAsync(322);
         State.Tmp0021 = 4;
         State.Tmp0022 = 2;
         await CallFileAsync("Sﾌﾞﾀｲ.ADV");
@@ -170,15 +171,15 @@ public sealed partial class Battle
     private async Task<FigtBLabel> DefenceRefusalAsync(Sys3Int portrait, int line, int notice)
     {
         await PortraitAsync(portrait, 311);
-        await FlowWindowAsync(111);
+        await WaoAsync(111);
         await FlowTextAsync(FigtBFile, line);
         await FlowWaitKeyKeepRetValAsync();
-        await FlowWindowAsync(0);
-        await FlowWindowAsync(113);
+        await WaoAsync(0);
+        await WaoAsync(113);
         await FlowTextAsync(FigtBFile, notice);
         await FlowWaitKeyKeepRetValAsync();
-        await FlowWindowAsync(0);
-        await FlowWindowAsync(312);
+        await WaoAsync(0);
+        await WaoAsync(312);
         UndoDeploy();
         return FigtBLabel.Announce;
     }
@@ -205,12 +206,12 @@ public sealed partial class Battle
         State.Bt_TroopLimit = 5000;
         State.Bt_WallBonus = 0;
         await PortraitAsync(1, 311);
-        await FlowWindowAsync(111);
+        await WaoAsync(111);
         await FlowTextAsync(FigtBFile, 171);
         await FlowWaitKeyKeepRetValAsync();
         await FlowTextAsync(FigtBFile, 174);
         await FlowWaitKeyKeepRetValAsync();
-        await FlowWindowAsync(0);
+        await WaoAsync(0);
         return FigtBLabel.Fight;
     }
 
@@ -231,16 +232,16 @@ public sealed partial class Battle
             State.VAR0692 = State.VAR0692 - 1;
         await PortraitAsync(1, 311);
         await PortraitAsync(6, 321);
-        await FlowWindowAsync(111);
+        await WaoAsync(111);
         await FlowTextAsync(FigtBFile, 196);
         await FlowWaitKeyKeepRetValAsync();
         await FlowTextAsync(FigtBFile, 203);
         await FlowWaitKeyKeepRetValAsync();
-        await FlowWindowAsync(0);
-        await FlowWindowAsync(121);
+        await WaoAsync(0);
+        await WaoAsync(121);
         await FlowTextAsync(FigtBFile, 214);
         await FlowWaitKeyKeepRetValAsync();
-        await FlowWindowAsync(0);
+        await WaoAsync(0);
         return FigtBLabel.Fight;
     }
 
@@ -266,17 +267,17 @@ public sealed partial class Battle
     {
         if (State.F_Kayblis_War == 2 && State.Bt_EnemyParty1 == 135 && InPlayerParty(29))
         {
-            await FlowWindowAsync(322);
+            await WaoAsync(322);
             await EventAsync("Gｹｲﾌﾞﾘｽ.ADV", 5);
         }
         if (State.F_Kayblis_War == 2 && State.Bt_EnemyParty1 == 135 && InPlayerParty(30))
         {
-            await FlowWindowAsync(322);
+            await WaoAsync(322);
             await EventAsync("Gｹｲﾌﾞﾘｽ.ADV", 6);
         }
         if (State.F_Kayblis_War == 2 && State.Bt_EnemyParty1 == 135 && InPlayerParty(41))
         {
-            await FlowWindowAsync(322);
+            await WaoAsync(322);
             await EventAsync("Gｹｲﾌﾞﾘｽ.ADV", 7);
         }
         if (State.Bt_PlayerParty1 == 0)
@@ -305,12 +306,12 @@ public sealed partial class Battle
             await FlowSuspendMusicAsync();
             State.RetVal = 1;
             await FlowSoundAsync(0);
-            await FlowWindowAsync(113);
+            await WaoAsync(113);
             await FlowTextAsync(FigtBFile, 257);
             await FlowWaitKeyKeepRetValAsync();
             await FlowSoundAsync(3);
             await FlowResumeMusicAsync();
-            await FlowWindowAsync(0);
+            await WaoAsync(0);
         }
         State.Bt_Kind = 0;
         if (State.Bt_Result == 1)
@@ -361,14 +362,14 @@ public sealed partial class Battle
         await FlowSuspendMusicAsync();
         State.RetVal = 2;
         await FlowSoundAsync(0);
-        await FlowWindowAsync(113);
+        await WaoAsync(113);
         await FlowTextAsync(FigtBFile, 840);
         await FlowWaitKeyKeepRetValAsync();
         await FlowTextAsync(FigtBFile, 843);
         await FlowWaitKeyKeepRetValAsync();
         await FlowSoundAsync(3);
         await FlowResumeMusicAsync();
-        await FlowWindowAsync(0);
+        await WaoAsync(0);
         Prov.Owner = State.Ev_PhaseNation;
         State.Tmp0021 = Prov.Owner + 819;
         State.MapTargetX = Prov.MapX;
@@ -378,12 +379,12 @@ public sealed partial class Battle
         await FlowMapAsync(0);
         if (State.Prov_Cur == 1)
         {
-            await FlowWindowAsync(113);
+            await WaoAsync(113);
             await FlowTextAsync(FigtBFile, 870);
             await FlowWaitKeyKeepRetValAsync();
             await FlowTextAsync(FigtBFile, 875);
             await FlowWaitKeyKeepRetValAsync();
-            await FlowWindowAsync(0);
+            await WaoAsync(0);
             JumpToGameOver(2);
         }
     }
@@ -395,21 +396,21 @@ public sealed partial class Battle
     /// </summary>
     internal async Task<FigtBLabel> DefenceNinjaScoutAsync()
     {
-        await FlowWindowAsync(112);
+        await WaoAsync(112);
         await FlowTextAsync(FigtBFile, 314);
         await FlowWaitKeyKeepRetValAsync();
-        await FlowWindowAsync(0);
+        await WaoAsync(0);
         if (State.F_Kanami_NinjaUsed != 0 && State.F_Freya_NinjaUsed != 0 && State.F_Kaoru_NinjaUsed != 0 &&
             State.F_Wichita_NinjaUsed != 0 && State.F_Saitou_NinjaUsed != 0)
         {
-            await FlowWindowAsync(121);
+            await WaoAsync(121);
             await FlowTextAsync(FigtBFile, 322);
             await FlowWaitKeyKeepRetValAsync();
-            await FlowWindowAsync(0);
-            await FlowWindowAsync(111);
+            await WaoAsync(0);
+            await WaoAsync(111);
             await FlowTextAsync(FigtBFile, 331);
             await FlowWaitKeyKeepRetValAsync();
-            await FlowWindowAsync(0);
+            await WaoAsync(0);
             return FigtBLabel.Menu;
         }
         // L_007bd (:340-380)
@@ -425,14 +426,14 @@ public sealed partial class Battle
         if (choice is null || choice == 0)
         {
             // L_00889 (:381-392)
-            await FlowWindowAsync(111);
+            await WaoAsync(111);
             await FlowTextAsync(FigtBFile, 384);
             await FlowWaitKeyKeepRetValAsync();
-            await FlowWindowAsync(0);
-            await FlowWindowAsync(121);
+            await WaoAsync(0);
+            await WaoAsync(121);
             await FlowTextAsync(FigtBFile, 389);
             await FlowWaitKeyKeepRetValAsync();
-            await FlowWindowAsync(0);
+            await WaoAsync(0);
             return FigtBLabel.Menu;
         }
         await NinjaScoutReportAsync(choice.Value);
@@ -463,49 +464,49 @@ public sealed partial class Battle
         var ninja = Ninjas[code.Value - 1];
         State.Bt_ScoutNinja = code;
         NinjaFlag(ninja.Code) = 1;
-        await FlowWindowAsync(111);
+        await WaoAsync(111);
         await FlowTextAsync(FigtBFile, ninja.CallLine);
         await FlowWaitKeyKeepRetValAsync();
-        await FlowWindowAsync(0);
-        await FlowWindowAsync(322);
+        await WaoAsync(0);
+        await WaoAsync(322);
         State.CallArg = (Sys3Int)ninja.Portrait;
-        await FlowWindowAsync(321);
+        await WaoAsync(321);
         if (ninja.ArriveLine != 0)
         {
-            await FlowWindowAsync(113);
+            await WaoAsync(113);
             await FlowTextAsync(FigtBFile, ninja.ArriveLine);
             await FlowWaitKeyKeepRetValAsync();
-            await FlowWindowAsync(0);
+            await WaoAsync(0);
         }
-        await FlowWindowAsync(code == 1 ? (Sys3Int)122 : (Sys3Int)121);
+        await WaoAsync(code == 1 ? (Sys3Int)122 : (Sys3Int)121);
         await FlowTextAsync(FigtBFile, ninja.ReplyLine);
         await FlowWaitKeyKeepRetValAsync();
-        await FlowWindowAsync(0);
+        await WaoAsync(0);
         // L_00ad4 (:506-648)
-        await FlowWindowAsync(111);
+        await WaoAsync(111);
         await FlowTextAsync(FigtBFile, 509);
         await FlowWaitKeyKeepRetValAsync();
-        await FlowWindowAsync(0);
-        await FlowWindowAsync(121);
+        await WaoAsync(0);
+        await WaoAsync(121);
         await FlowTextAsync(FigtBFile, 518);
         await FlowWaitKeyKeepRetValAsync();
-        await FlowWindowAsync(0);
-        await FlowWindowAsync(322);
-        await FlowWindowAsync(113);
+        await WaoAsync(0);
+        await WaoAsync(322);
+        await WaoAsync(113);
         await FlowTextAsync(FigtBFile, 524);
         await FlowWaitKeyKeepRetValAsync();
         await FlowTextAsync(FigtBFile, 528);
         await FlowWaitKeyKeepRetValAsync();
         await FlowTextAsync(FigtBFile, 532);
         await FlowWaitKeyKeepRetValAsync();
-        await FlowWindowAsync(0);
+        await WaoAsync(0);
         foreach (var n in Ninjas)
         {
             if (State.Bt_ScoutNinja == (Sys3Int)n.Code)
             {
                 State.CallArg = (Sys3Int)n.Portrait;
-                await FlowWindowAsync(321);
-                await FlowWindowAsync(113);
+                await WaoAsync(321);
+                await WaoAsync(113);
                 await FlowTextAsync(FigtBFile, n.ReturnLine);
                 await FlowWaitKeyKeepRetValAsync();
             }
@@ -524,14 +525,14 @@ public sealed partial class Battle
         }
         await FlowValueTextAsync(FigtBFile, 613, State.Tmp0002, State.Tmp0001);
         await FlowWaitKeyKeepRetValAsync();
-        await FlowWindowAsync(0);
-        await FlowWindowAsync(322);
-        await FlowWindowAsync(111);
+        await WaoAsync(0);
+        await WaoAsync(322);
+        await WaoAsync(111);
         await FlowTextAsync(FigtBFile, 629);
         await FlowWaitKeyKeepRetValAsync();
-        await FlowWindowAsync(0);
+        await WaoAsync(0);
         await PortraitAsync(6, 321);
-        await FlowWindowAsync(121);
+        await WaoAsync(121);
         if (State.Tmp0001 > 5000)
         {
             await FlowTextAsync(FigtBFile, 637);
@@ -542,7 +543,7 @@ public sealed partial class Battle
             await FlowTextAsync(FigtBFile, 644);
             await FlowWaitKeyKeepRetValAsync();
         }
-        await FlowWindowAsync(0);
+        await WaoAsync(0);
     }
 
     /// <summary><c>L_00dad</c>, <c>FIGT_B.ADV:649-672</c>: one commander line of the scout report.</summary>
@@ -587,14 +588,14 @@ public sealed partial class Battle
         int[] lines = [737, 742, 747, 754, 759, 766];
         for (int k = 0; k < lines.Length; k++)
         {
-            await FlowWindowAsync(k % 2 == 0 ? (Sys3Int)111 : (Sys3Int)121);
+            await WaoAsync(k % 2 == 0 ? (Sys3Int)111 : (Sys3Int)121);
             await FlowTextAsync(FigtBFile, lines[k]);
             await FlowWaitKeyKeepRetValAsync();
-            await FlowWindowAsync(0);
+            await WaoAsync(0);
         }
-        await FlowWindowAsync(312);
-        await FlowWindowAsync(322);
-        await FlowWindowAsync(332);
+        await WaoAsync(312);
+        await WaoAsync(322);
+        await WaoAsync(332);
         Prov.Owner = State.Ev_PhaseNation;
         State.Tmp0021 = Prov.Owner + 819;
         State.MapTargetX = Prov.MapX;
@@ -604,11 +605,11 @@ public sealed partial class Battle
         await FlowMapAsync(0);
         await FlowMapAsync(10);
         State.CallArg = Prov.BgCg;
-        await FlowWindowAsync(331);
+        await WaoAsync(331);
         await FlowSuspendMusicAsync();
         State.RetVal = 2;
         await FlowSoundAsync(0);
-        await FlowWindowAsync(113);
+        await WaoAsync(113);
         await FlowTextAsync(FigtBFile, 795);
         await FlowWaitKeyKeepRetValAsync();
         await FlowSoundAsync(3);
@@ -616,18 +617,18 @@ public sealed partial class Battle
         if (State.Prov_Cur == 1)
         {
             State.CallArg = Prov.BgCg;
-            await FlowWindowAsync(331);
-            await FlowWindowAsync(113);
+            await WaoAsync(331);
+            await WaoAsync(113);
             await FlowTextAsync(FigtBFile, 813);
             await FlowWaitKeyKeepRetValAsync();
             await FlowTextAsync(FigtBFile, 818);
             await FlowWaitKeyKeepRetValAsync();
-            await FlowWindowAsync(0);
-            await FlowWindowAsync(332);
+            await WaoAsync(0);
+            await WaoAsync(332);
             JumpToGameOver(2);
         }
-        await FlowWindowAsync(0);
-        await FlowWindowAsync(332);
+        await WaoAsync(0);
+        await WaoAsync(332);
         return FigtBLabel.Return;
     }
 
@@ -635,6 +636,6 @@ public sealed partial class Battle
     private Task PortraitAsync(Sys3Int cg, Sys3Int op)
     {
         State.CallArg = cg;
-        return FlowWindowAsync(op);
+        return WaoAsync(op);
     }
 }

@@ -45,7 +45,7 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
 
 | Id | Part | Source survey | Needs |
 |---|---|---|---|
-| **F0** | Shared services out of `Combat`: message windows (`Battle.Wao.cs`), map ops (`Battle.Map.cs`), sound, scene calls (`IStoryHooks`) | main, dungeon, data | — |
+| **F0** ✓ | Shared services out of `Combat` into `Kichikuou.Core.Script` (2026-10-08): `ScriptContext` (state, draws, pauses, scene calls, jumps) with `WAO_SUB` (`ScriptContext.Wao.cs`), `M`/`WAO_MAP` (`ScriptContext.Map.cs`), `PCMPLAY`/`SS`/`SR` (`ScriptContext.Sound.cs`); `ScriptEvent`/`IScriptView`, `IScriptInput` (`IBattleInput` extends it), `IStoryHooks`; one `WindowEvent` for every `WAO_SUB` call. Script menus and map clicks are generalised with E1/E2 and W3 | main, dungeon, data | — |
 | **F1** | Data: port `SET.ADV` (initial values, string bases, quirks) + a loader for `SET_CHR/ITEM/MAP` from the player's decompile; new-game start | data | F0 |
 | **F2** | Harness: captures rooted at `COM`, `COMMAND`, each `T*`, `Cﾒｲｷｭｳ` and one `MAIN` week; `IM` click records; compare pages 2/10, string 10 and the `ui` command flags | main, commands, nations | — |
 | **E1** | Event converter front end: decompiled scene → goto IR (`Say(ScriptRef)`, menus, `Set`, `Random`, calls) | events | — |

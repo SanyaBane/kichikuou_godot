@@ -1,3 +1,4 @@
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Combat;
@@ -1577,7 +1578,7 @@ public sealed partial class Battle
         // :135 \L_009b8 — second pair of sounds
         State.CallArg = 10; // %#PCMPLAY.ADV with 10 writes nothing
         if (State.Bt_SfxDef2 != 5 || State.Bt_SfxAtk2 != 5)
-            await View.ShowAsync(new PlaySfxEvent(State.Bt_SfxDef2, State.Bt_SfxAtk2));
+            await View.ShowAsync(new SoundPairEvent(State.Bt_SfxDef2, State.Bt_SfxAtk2));
 
         // :136-232 predicted troops/HP and the damage numbers
         if (Unit.Troops != 0)
@@ -1714,7 +1715,7 @@ public sealed partial class Battle
 
         State.Bt_SkillSfx = 0;
         State.CallArg = 10; // :342, %#PCMPLAY.ADV with 10 writes nothing
-        await View.ShowAsync(new PlaySfxEvent(State.Bt_SfxAtk1, State.Bt_SfxDef1)); // :344 SQ
+        await View.ShowAsync(new SoundPairEvent(State.Bt_SfxAtk1, State.Bt_SfxDef1)); // :344 SQ
     }
 
     /// <summary><c>Bt_SkillSfx</c> → attack sounds, <c>FIGTATTK.ADV:301-336</c>.</summary>
@@ -1840,18 +1841,4 @@ public sealed partial class Battle
 
     /// <summary><c>MM dst, src</c> — copies string variable <paramref name="src"/> into <paramref name="dst"/>.</summary>
     private void CopyString(Sys3Int dst, Sys3Int src) => State.Strings[(int)dst] = State.Strings[(int)src];
-
-    /// <summary>
-    /// A call of a window label (<c>!Ui_WaoOp : op! %#WAO_SUB.ADV:</c>) — sets <c>Ui_WaoOp</c> and
-    /// shows the window operation; <see cref="WaoSubAsync"/> applies its state effects. Op 11 is
-    /// the click wait: <c>WAO_SUB.ADV:510-519</c> (<c>L_00ce1</c>) runs <c>IK 0</c>, which stores the
-    /// key in <c>RetVal</c> through <see cref="IBattleInput.WaitForKeyAsync"/> like every other
-    /// <c>IK 0</c> of the battle, unless no window is open (<c>:511</c>).
-    /// </summary>
-    private async Task WaoAsync(Sys3Int op)
-    {
-        State.Ui_WaoOp = op;
-        await View.ShowAsync(new WaoCallEvent(op));
-        await WaoSubAsync();
-    }
 }

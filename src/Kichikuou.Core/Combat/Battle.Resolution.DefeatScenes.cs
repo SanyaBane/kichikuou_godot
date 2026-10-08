@@ -1,3 +1,4 @@
+using Kichikuou.Core.Script;
 namespace Kichikuou.Core.Combat;
 
 // Part R1: the defeat scenes FIGTﾐｶDE.ADV and FIGTﾃｷDE.ADV (02-resolution.md §7.4, 01 §10).

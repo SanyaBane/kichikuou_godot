@@ -1,3 +1,4 @@
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Combat;
@@ -7,16 +8,7 @@ namespace Kichikuou.Core.Combat;
 // state at that moment (e.g. the 16 exchange variables) are read by the presenter from
 // Battle.State while the event is being shown.
 
-/// <summary>
-/// A call of a <c>WAO_SUB.ADV</c> window operation (<c>Ui_WaoOp</c>), e.g. 141/151 open a
-/// speaker window, 143 a narration window, 11 marks a click wait (the wait itself is the
-/// <see cref="IBattleInput.WaitForKeyAsync"/> call that follows), 10 closes the window.
-/// <c>WAO_SUB.ADV</c>'s own UI-variable writes are not ported (presentation).
-/// </summary>
-public sealed record WaoCallEvent(Sys3Int Op) : BattleEvent;
 
-/// <summary><c>MP slot, width</c> — prints string variable <paramref name="Slot"/> into the message window.</summary>
-public sealed record PrintStringEvent(Sys3Int Slot) : BattleEvent;
 
 /// <summary>
 /// <c>L_0320f</c> (<c>FIGT.ADV:2057-2060</c>) — battlefield panel <paramref name="Panel"/> (1-4
@@ -72,8 +64,6 @@ public sealed record EngagementSlideEvent(Sys3Int Offset) : BattleEvent;
 /// </summary>
 public sealed record CountersEvent(Sys3Int UnitTroops, Sys3Int CmdrTroops, Sys3Int UnitHP, Sys3Int CmdrHP) : BattleEvent;
 
-/// <summary><c>SQ a, b, 1</c> — plays two sound effects (<c>FIGTATTK.ADV:344</c>, <c>:350</c>).</summary>
-public sealed record PlaySfxEvent(Sys3Int First, Sys3Int Second) : BattleEvent;
 
 /// <summary>
 /// One frame of the shot animation (<c>FIGTATTK.ADV:34-131</c>): the non-zero shot counters
@@ -93,19 +83,4 @@ public sealed record ExchangeResultsEvent : BattleEvent;
 /// </summary>
 public sealed record WipedOutMarksEvent(bool PlayerTroops, bool EnemyTroops, bool PlayerCmdr, bool EnemyCmdr) : BattleEvent;
 
-/// <summary>
-/// <c>IK 0</c> at <c>FIGTATTK.ADV:247</c>: the exchange animation is complete and the battle is
-/// about to wait for a key (<see cref="IBattleInput.WaitForKeyAsync"/>, result in <c>RetVal</c>).
-/// </summary>
-public sealed record KeyWaitEvent : BattleEvent;
 
-/// <summary>
-/// <c>&amp;#FILE.ADV:</c> — the script jumped to another scenario file and never comes back (e.g.
-/// the game over at <c>FIGTﾐｶDE.ADV:39</c>). Unwinds the battle; the caller runs <see cref="File"/>.
-/// </summary>
-public sealed class ScenarioJumpException(string file)
-    : Exception($"The scenario jumped to {file}.")
-{
-    /// <summary>The scenario file the script jumped to, e.g. <c>OVER.ADV</c>.</summary>
-    public string File { get; } = file;
-}

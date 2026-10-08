@@ -3,6 +3,7 @@ using Kichikuou.Content.Graphics;
 using Kichikuou.Content.Screen;
 using Kichikuou.Core.Combat;
 using Kichikuou.Core.Golden;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 using Xunit.Abstractions;
 
@@ -226,14 +227,14 @@ public class BattlePresenterGameDataTests(ITestOutputHelper output)
         var name = presenter.State!.Unit_StrBase;
 
         // L_0129e: window 143, the order message, op 10 (ZC 1, 15), then FIGT.ADV:827 ZC 1, 22.
-        presenter.Show(new FlowWindowEvent(143, 0));
+        presenter.Show(new WindowEvent(143, 0));
         presenter.Show(new MessageEvent(new ScriptRef("FIGT.ADV", 801), [name]));
-        presenter.Show(new FlowWindowEvent(10, 0));
+        presenter.Show(new WindowEvent(10, 0));
         Assert.Equal(22, presenter.Writer.Color);
 
-        presenter.Show(new FlowWindowEvent(143, 0));
+        presenter.Show(new WindowEvent(143, 0));
         presenter.Show(new MessageEvent(new ScriptRef("FIGT.ADV", 805)));
-        presenter.Show(new FlowWindowEvent(10, 0));
+        presenter.Show(new WindowEvent(10, 0));
         Assert.Equal(15, presenter.Writer.Color);
     }
 
@@ -361,11 +362,11 @@ public class BattlePresenterGameDataTests(ITestOutputHelper output)
 
     private static (int, int, int) Rgb((byte R, byte G, byte B, byte A) p) => (p.R, p.G, p.B);
 
-    private sealed class DelegateView(Action<BattleEvent> show) : IBattleView
+    private sealed class DelegateView(Action<ScriptEvent> show) : IScriptView
     {
-        public Task ShowAsync(BattleEvent battleEvent)
+        public Task ShowAsync(ScriptEvent scriptEvent)
         {
-            show(battleEvent);
+            show(scriptEvent);
             return Task.CompletedTask;
         }
     }

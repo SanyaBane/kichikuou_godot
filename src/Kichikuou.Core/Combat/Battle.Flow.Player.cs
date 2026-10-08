@@ -1,3 +1,4 @@
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Combat;
@@ -365,10 +366,10 @@ public sealed partial class Battle
                 return FigtLabel.Select;
             default:
                 // FIGT.ADV:770-775 — "FIGT command error" box (L_05064, op 141).
-                await FlowWindowAsync(141);
+                await WaoAsync(141);
                 await View.ShowAsync(new FlowErrorEvent(new ScriptRef(FigtFile, 772)));
                 await FlowWaitKeyAsync();
-                await FlowWindowAsync(10);
+                await WaoAsync(10);
                 return FigtLabel.PlayerTurn;
         }
     }
@@ -403,7 +404,7 @@ public sealed partial class Battle
                 return FigtLabel.Dispatch;
             }
         }
-        await FlowWindowAsync(143);
+        await WaoAsync(143);
         // :801 X Unit_StrBase + (Tmp0002 - 1) * 3 — the name of the unit that got the order.
         await View.ShowAsync(new MessageEvent(new ScriptRef(FigtFile, 801), [UnitNameString(State.Tmp0002)]));
         if (State.RetVal == 50)
@@ -421,7 +422,7 @@ public sealed partial class Battle
             await FlowTextAsync(FigtFile, 821);
             await FlowWaitKeyAsync();
         }
-        await FlowWindowAsync(10);
+        await WaoAsync(10);
         // :828-832 — IM loop until the mouse button is released.
         State.RetVal = 0;
         return FigtLabel.Select;
@@ -440,11 +441,11 @@ public sealed partial class Battle
             State.Unit_Cur = PSlot(slot);
             State.Tmp0002 = POrder(slot);
         }
-        await FlowWindowAsync(143);
+        await WaoAsync(143);
         await View.ShowAsync(new UnitInfoEvent(State.Unit_Cur, State.Tmp0002));
         State.RetVal = 0;   // :1005-1009 IM release loop
         await FlowWaitKeyAsync();
-        await FlowWindowAsync(10);
+        await WaoAsync(10);
         State.Unit_Cur = State.Tmp0020;
         State.RetVal = 0;   // :1015-1019 IM release loop
     }
@@ -458,11 +459,11 @@ public sealed partial class Battle
         State.Tmp0020 = State.Cmdr_Cur;
         if (IsSlot(State.Tmp0001, out int slot))
             State.Cmdr_Cur = ESlot(slot);
-        await FlowWindowAsync(143);
+        await WaoAsync(143);
         await View.ShowAsync(new EnemyInfoEvent(State.Cmdr_Cur));
         State.RetVal = 0;
         await FlowWaitKeyAsync();
-        await FlowWindowAsync(10);
+        await WaoAsync(10);
         State.Cmdr_Cur = State.Tmp0020;
         State.RetVal = 0;
     }
@@ -544,12 +545,12 @@ public sealed partial class Battle
         State.Item_Cur = 28;
         Item.Holder = 0;
         State.FogCard_Price = State.FogCard_Price + State.FogCard_Price / 10;
-        await FlowWindowAsync(143);
+        await WaoAsync(143);
         await FlowTextAsync(FigtFile, 1241);
         await FlowWaitKeyAsync();
         await FlowTextAsync(FigtFile, 1244);
         await FlowWaitKeyAsync();
-        await FlowWindowAsync(10);
+        await WaoAsync(10);
     }
 
     /// <summary>
@@ -587,10 +588,10 @@ public sealed partial class Battle
     internal async Task<FigtLabel> OrderSelfAsync(Sys3Int order, int line)
     {
         State.Bt_CurOrder = order;
-        await FlowWindowAsync(143);
+        await WaoAsync(143);
         await FlowTextAsync(FigtFile, line);
         await FlowWaitKeyAsync();
-        await FlowWindowAsync(10);
+        await WaoAsync(10);
         if (IsSlot(State.Bt_PlayerActSlot, out int slot))
             POrder(slot) = State.Bt_CurOrder;
         return FigtLabel.AutoAction;
@@ -678,9 +679,9 @@ public sealed partial class Battle
         State.RetVal = State.RetVal + 1;
         if (IsSlot(State.Bt_PlayerActSlot, out int slot))
             PState(slot) = State.RetVal;
-        await FlowWindowAsync(143);
+        await WaoAsync(143);
         await FlowValueTextAsync(FigtFile, 1399, State.RetVal);
         await FlowWaitKeyAsync();
-        await FlowWindowAsync(10);
+        await WaoAsync(10);
     }
 }

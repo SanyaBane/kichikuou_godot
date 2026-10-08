@@ -1,6 +1,7 @@
 using System.Text;
 using Kichikuou.Core.Combat;
 using Kichikuou.Core.Golden;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.State;
 using Kichikuou.Core.Sys3;
 
@@ -128,8 +129,8 @@ public sealed class CaptureRecorder
         }
     }
 
-    private sealed class NullView : IBattleView
+    private sealed class NullView : IScriptView
     {
-        public Task ShowAsync(BattleEvent battleEvent) => Task.CompletedTask;
+        public Task ShowAsync(ScriptEvent scriptEvent) => Task.CompletedTask;
     }
 }

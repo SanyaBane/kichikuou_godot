@@ -1,4 +1,5 @@
 using Kichikuou.Core.Combat;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 using static Kichikuou.Core.Tests.Combat.Sys3Assert;
 
@@ -169,7 +170,7 @@ public class FlowSetupTests
         Is(30, rig.State.Bt_EnemySlot1);
         Is(4, rig.State.Bt_RoundsLeft);
         Assert.Equal(2, rig.Random.Draws[0]); // the round-limit draw; the battle then goes on
-        var sound = Assert.IsType<FlowSoundEvent>(rig.View.Events[0]);
+        var sound = Assert.IsType<SoundEvent>(rig.View.Events[0]);
         Is(1, sound.Mode);
         Is(102, sound.Sound);
     }
@@ -248,7 +249,7 @@ public class FlowStrategyTests
         rig.State.Bt_PlayerStrategist = (Sys3Int)unit;
         await rig.Battle.StrategyAsync();
         Assert.Equal(line, rig.Lines[1]);
-        var windows = rig.View.Events.OfType<FlowWindowEvent>().Select(w => (int)w.Op).ToList();
+        var windows = rig.View.Events.OfType<WindowEvent>().Select(w => (int)w.Op).ToList();
         Assert.Equal([143, 11, 10, op, 11, 10, 143, 11, 10], windows);
     }
 
@@ -282,7 +283,7 @@ public class FlowStrategyTests
         await rig.Battle.StrategyAsync();
         Is(11, rig.State.Bt_StrategyResult);
         Assert.Equal([378, 430, 463, 469], rig.Lines);
-        Assert.Contains(rig.View.Events.OfType<FlowWindowEvent>(), w => w.Op == 152);
+        Assert.Contains(rig.View.Events.OfType<WindowEvent>(), w => w.Op == 152);
     }
 
     [Fact]

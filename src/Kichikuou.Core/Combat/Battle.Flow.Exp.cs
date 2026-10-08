@@ -26,12 +26,12 @@ public sealed partial class Battle
             State.Tmp0001 = 1;
         if (State.Bt_Result == 1)
             State.Tmp0001 = State.Tmp0001 / 3;
-        await FlowWindowAsync(143);
+        await WaoAsync(143);
         // :2992-3001 picks the heading line, then one text run with the numbers continues at :3003.
         await FlowTextAsync(FigtFile, State.StoryStage != 0 ? 2994 : 2999);
         await FlowValueTextAsync(FigtFile, 3003, State.Bt_PlayerLosses, State.Bt_EnemyLosses, State.Tmp0001);
         await FlowWaitKeyAsync();
-        await FlowWindowAsync(10);
+        await WaoAsync(10);
         if (State.Bt_GarrisonProv == State.Prov_Cur && State.Bt_EnemyLosses > 200)
             State.Bt_GarrisonHits = State.Bt_GarrisonHits + 1;
         for (int i = 1; i <= 4; i++)
@@ -73,7 +73,7 @@ public sealed partial class Battle
         State.CallArg = 0;
         State.RetVal = 104;
         await FlowSoundAsync(0);
-        await FlowWindowAsync(143);
+        await WaoAsync(143);
         await FlowTextAsync(FigtFile, 3065);
         await FlowWaitKeyAsync();
         await FlowTextAsync(FigtFile, 3071);
@@ -83,7 +83,7 @@ public sealed partial class Battle
             Unit.Recovery = Unit.MaxTroops;
             await FlowTextAsync(FigtFile, 3077);
             await FlowWaitKeyAsync();
-            await FlowWindowAsync(10);
+            await WaoAsync(10);
             return;
         }
         if (Unit.Item == 3 && Unit.MaxTroops != 0)
@@ -92,7 +92,7 @@ public sealed partial class Battle
             Unit.MaxTroops = Unit.MaxTroops + State.Tmp0005;
             await FlowValueTextAsync(FigtFile, 3088, State.Tmp0005);
             await FlowWaitKeyAsync();
-            await FlowWindowAsync(10);
+            await WaoAsync(10);
             return;
         }
         Rnd(12 + Unit.Level);
@@ -112,7 +112,7 @@ public sealed partial class Battle
         // L_04e6c (:3155-3160). QUIRK: Q-13 — " UP" is shown even when nothing rose.
         await FlowTextAsync(FigtFile, 3157);
         await FlowWaitKeyAsync();
-        await FlowWindowAsync(10);
+        await WaoAsync(10);
     }
 
     /// <summary>

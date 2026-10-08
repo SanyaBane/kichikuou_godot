@@ -1,20 +1,21 @@
-using Kichikuou.Core.Combat;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
+using Kichikuou.Core.Tests.Combat;
 using static Kichikuou.Core.Tests.Combat.Sys3Assert;
 
-namespace Kichikuou.Core.Tests.Combat;
+namespace Kichikuou.Core.Tests.Script;
 
 /// <summary>
-/// <c>M.ADV</c> / <c>WAO_MAP.ADV</c> state effects (<c>Battle.Map.cs</c>) and the <c>Y 3</c>
+/// <c>M.ADV</c> / <c>WAO_MAP.ADV</c> state effects (<c>ScriptContext.Map.cs</c>) and the <c>Y 3</c>
 /// pauses that leave the key in <c>RetVal</c>. Both were found by the first golden capture
 /// (a FIGT_A victory at Golak): the original returned from FIGT_A with M.ADV op 13's scratch
 /// values and the last pause's key, which the port did not produce.
 /// </summary>
-public class FlowMapTests
+public class MapTests
 {
-    private static FlowRig Map(int op, int camX, int camY, int targetX, int targetY)
+    private static ScriptRig Map(int op, int camX, int camY, int targetX, int targetY)
     {
-        var rig = new FlowRig();
+        var rig = new ScriptRig();
         rig.State.CallArg = (Sys3Int)op;
         rig.State.MapCamX = (Sys3Int)camX;
         rig.State.MapCamY = (Sys3Int)camY;
@@ -33,7 +34,7 @@ public class FlowMapTests
             rig.Input.PauseKeys.Enqueue(0);
         rig.Input.PauseKeys.Enqueue(16);
 
-        await rig.Battle.MapAsync();
+        await rig.Script.MapAsync();
 
         Assert.Equal(Enumerable.Repeat(8, 8), rig.Input.Pauses);
         Is(1297, rig.State.Tmp0021);
@@ -50,9 +51,9 @@ public class FlowMapTests
     {
         var rig = Map(10, 640, 400, 700, 300);
 
-        await rig.Battle.MapAsync();
+        await rig.Script.MapAsync();
 
-        var sound = Assert.Single(rig.View.Events.OfType<FlowSoundEvent>());
+        var sound = Assert.Single(rig.View.Events.OfType<SoundEvent>());
         Is(0, sound.Mode);
         Is(109, sound.Sound);
         Is(0, rig.State.CallArg);
@@ -68,7 +69,7 @@ public class FlowMapTests
         // fifteen steps and a snap; then camera and target become the original 100.
         var rig = Map(1, 640, 200, 100, 200);
 
-        await rig.Battle.MapAsync();
+        await rig.Script.MapAsync();
 
         Assert.Equal(Enumerable.Repeat(5, 16), rig.Input.Pauses);
         Is(100, rig.State.MapCamX);
@@ -86,7 +87,7 @@ public class FlowMapTests
     {
         var rig = Map(1, 800, 300, 800, 300);
 
-        await rig.Battle.MapAsync();
+        await rig.Script.MapAsync();
 
         Assert.Empty(rig.Input.Pauses);
         Is(800, rig.State.MapCamX);
@@ -99,7 +100,7 @@ public class FlowMapTests
         rig.State.Ui_PortraitL = 5;
         rig.State.Ui_CenterCg = 7;
 
-        await rig.Battle.MapAsync();
+        await rig.Script.MapAsync();
 
         Is(1280, rig.State.Tmp0021);                 // 1700 - 320 capped
         Is(400, rig.State.Tmp0022);                  // 700 - 200 capped
@@ -119,7 +120,7 @@ public class FlowMapTests
         rig.State.Marks[1].Cg = 10823;
         rig.State.Tmp0021 = 820;
 
-        await rig.Battle.MapAsync();
+        await rig.Script.MapAsync();
 
         Is(2, rig.State.Ui_MarkCount);
         Is(10820, rig.State.Marks[1].Cg);
@@ -128,7 +129,7 @@ public class FlowMapTests
         rig.State.CallArg = 4;
         rig.State.MapTargetX = 70;
         rig.State.Tmp0021 = 821;
-        await rig.Battle.MapAsync();
+        await rig.Script.MapAsync();
 
         Is(3, rig.State.Ui_MarkCount);
         Is(70, rig.State.Marks[2].X);
@@ -144,7 +145,7 @@ public class FlowMapTests
         rig.State.Marks[1].Y = 40;
         rig.State.Marks[1].Cg = 10822;
 
-        await rig.Battle.MapAsync();
+        await rig.Script.MapAsync();
 
         Is(2, rig.State.Ui_MarkCur);
         Is(1310, rig.State.Tmp0021);

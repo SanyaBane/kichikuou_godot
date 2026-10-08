@@ -26,6 +26,8 @@ MSYS2 — see `docs/spike-findings.md`) records battles, `src/Kichikuou.Core/Gol
 Now: the **strategic layer** (week loop, commands, nation turns, data, scenes). Surveys, parts
 and the owner's decisions are in [docs/strategy/](docs/strategy/README.md); milestone 1 is the
 whole prologue, playable. Record data and scenes are read at run time from the player's files.
+F0 is done: the shared services (message windows, map, sound, scene calls) live in
+`src/Kichikuou.Core/Script`.
 
 ## Layout
 
@@ -40,6 +42,9 @@ whole prologue, playable. Record data and scenes are read at run time from the p
   (`state.Units[state.Unit_Cur].Troops`) to keep the script's cursor quirks visible.
   `Golden/` parses harness captures and replays them through the port (`GoldenReplay`);
   `State/VariableCatalog.g.cs` (names, groups, page bindings) is generated with `GameState.g.cs`.
+  `Script/` holds what every ported part shares: `ScriptContext` (state, draws, pauses, scene
+  calls) with the helper files `WAO_SUB` (message windows), `M`/`WAO_MAP` (map) and `PCMPLAY`
+  (sound), the shared events (`ScriptEvent`) and the view/input/hook interfaces.
 - `src/Kichikuou.Content` — engine-independent access to the player's own game data (never
   part of the repository): `ScenarioText` reads message texts from the decompiled scenario by
   `ScriptRef`; `Graphics/` decodes the CGs keeping palette indices (`IndexedPng`, `Pms`,

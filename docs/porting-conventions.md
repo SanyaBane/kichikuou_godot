@@ -37,6 +37,18 @@ model can be layered on later (e.g. for the hybrid branch).
 - Cross-file calls into story scenes (`Event(F, n)`), death scenes and other non-rule files go
   through an injected hooks interface; the hook's state effects are documented at the call.
 
+## Shared services
+
+Every part runs on one `Kichikuou.Core.Script.ScriptContext`: the state, `Rnd` (`Y 4`), pauses
+(`Y 3`), scene calls (`EventAsync`, `CallFileAsync`), jumps (`JumpTo`), and the helper files
+every part calls — `WAO_SUB.ADV` (`WaoAsync(op)`), `M.ADV` / `WAO_MAP.ADV` (`MapCallAsync(mode)`),
+`PCMPLAY.ADV` and `SS`/`SR` (`SoundAsync`, `MusicAsync`, `GetPlayingTrackAsync`). A part keeps
+short private forwarders in its own words (as `Battle` does) but never a second copy of a helper.
+An operation of a helper file that is not ported yet is ported there, in the context, when the
+first part needs it. Events every part may raise derive from `ScriptEvent`
+(`Script/ScriptEvents.cs`); a part's own events derive from its base (`BattleEvent`). Inputs every
+part uses are in `IScriptInput`; a part's own decisions extend it (`IBattleInput`).
+
 ## Presentation and input
 
 - Rules never draw. Screen output becomes an awaited event (`await View.ShowAsync(new …)`),

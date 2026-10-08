@@ -192,7 +192,7 @@ Records are always addressed through cursors; scenes move `Unit_Cur`/`Prov_Cur`/
 1,000 times and never restore them [C], so the caller sees the moved cursor. `Ev_Entry` is a
 global: a nested `FIGT_A` → scene call overwrites it, and some files test it again later
 (141 gallery guards) [I]. `M.ADV` and `WAO_SUB.ADV` leave values in `Tmp0021-0030` and the
-camera (ported for battle in `Battle.Map.cs`/`Battle.Wao.cs`, `docs/battle/README.md`) [C].
+camera (ported for battle in `ScriptContext.Map.cs`/`ScriptContext.Wao.cs`, `docs/battle/README.md`) [C].
 
 ### 4.6 Battle setup by scenes
 
@@ -326,10 +326,10 @@ these operations. "Core" names what `Kichikuou.Core` must provide.
 | Op | From | Core dependency |
 |---|---|---|
 | `Say(ScriptRef, segments)` with inline `Name(slot)` / `Number(expr)` / line break | `'…'`, `R`, `X`, `H`, `ZH`, `ZM` | text resolved by `ScenarioText` |
-| `Window(op, cg?)` | stub calls + `CallArg` | `WAO_SUB` state effects (reuse `Battle.Wao.cs` logic) |
+| `Window(op, cg?)` | stub calls + `CallArg` | `WAO_SUB` state effects (reuse `ScriptContext.Wao.cs` logic) |
 | `Cg(n, pos)`, `Fade(kind)`, `ClearText`, `Effect(raw)` | `G`, `J0/J1`, `PF*`, `PW*`, `EC`, `CC/CS/CF/CB/CL/B3/B4` | none (42 raw effect sites can stay opaque) |
-| `Music(n)`, `Sound(n)`, `Wait(t)` | `SS`, `PCMPLAY`, `Y 3` | `IBattleInput.PauseAsync`-style key result into `RetVal` |
-| `Map(op)` | `M.ADV` ops 0/1/3/4/10/11/12, `WAO_MAP` | `M.ADV` state effects (reuse `Battle.Map.cs`) |
+| `Music(n)`, `Sound(n)`, `Wait(t)` | `SS`, `PCMPLAY`, `Y 3` | `IScriptInput.PauseAsync`-style key result into `RetVal` |
+| `Map(op)` | `M.ADV` ops 0/1/3/4/10/11/12, `WAO_MAP` | `M.ADV` state effects (reuse `ScriptContext.Map.cs`) |
 | `Menu(items[cond, label])` → goto | `$…$`, `]` (drop release-wait loops) | input interface |
 | `PickParty(max, mode)` | `Sﾌﾞﾀｲ` | rule/UI port of `Sﾌﾞﾀｲ` |
 | `Goto`, `If(expr) goto`, `Gosub/Return`, `End` (`%0`, unwinds), `JumpGameOver` (`&#OVER`) | flow | `ScenarioJumpException` exists |

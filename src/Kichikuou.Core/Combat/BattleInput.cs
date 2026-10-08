@@ -1,27 +1,17 @@
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Combat;
 
 /// <summary>
-/// Player decisions and engine queries the battle waits for. Every method models one input
-/// command of the script and answers with the value the script would receive; the battle
+/// Player decisions the battle waits for, on top of the engine's input commands
+/// (<see cref="IScriptInput"/>). Every method models one input command of the script and answers
+/// with the value the script would receive; the battle
 /// describes the options the script makes available and rejects an answer outside them
 /// (<see cref="InvalidOperationException"/>), so the UI cannot pick an unavailable option.
 /// </summary>
-public interface IBattleInput
+public interface IBattleInput : IScriptInput
 {
-    /// <summary>
-    /// <c>IK 0</c> (message waits, the round header): waits for a key or click and returns the
-    /// key code the engine stores in <c>RetVal</c> (0 while message skip is on).
-    /// </summary>
-    Task<Sys3Int> WaitForKeyAsync();
-
-    /// <summary>
-    /// <c>Y 3, n</c>: a timed pause of <paramref name="ticks"/> × 16 ms that a key or click cuts
-    /// short; returns the key code the engine stores in <c>RetVal</c> (0 when the pause ran out).
-    /// </summary>
-    Task<Sys3Int> PauseAsync(Sys3Int ticks);
-
     /// <summary>
     /// <c>FIGT_SEL.ADV</c>: the command and target selection of a player unit. Returns the
     /// script's result pair (<c>RetVal</c>, <c>Tmp0001</c>); it must be allowed by
@@ -35,12 +25,6 @@ public interface IBattleInput
     /// which case the script continues after the menu.
     /// </summary>
     Task<Sys3Int?> ChooseAsync(BattleMenu menu);
-
-    /// <summary>
-    /// <c>SR 0, var</c>: engine query of the music track that is playing, stored by the
-    /// wrappers before a jingle and replayed afterwards with <c>SS var - 1</c>.
-    /// </summary>
-    Task<Sys3Int> GetPlayingTrackAsync();
 }
 
 /// <summary>The result pair of <c>FIGT_SEL.ADV</c>.</summary>

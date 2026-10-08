@@ -1,5 +1,6 @@
 using System.Text;
 using Kichikuou.Core.Combat;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.State;
 using Kichikuou.Core.Sys3;
 
@@ -102,7 +103,7 @@ public sealed class GoldenReplay
     public static async Task<GoldenReport> RunAsync(
         GoldenCapture capture,
         GoldenFilter? filter = null,
-        IBattleView? view = null,
+        IScriptView? view = null,
         Action<GameState>? started = null)
     {
         var replay = new GoldenReplay(capture, filter ?? GoldenFilter.Default);
@@ -110,7 +111,7 @@ public sealed class GoldenReplay
         return replay._report;
     }
 
-    private async Task RunAsync(IBattleView view, Action<GameState>? started)
+    private async Task RunAsync(IScriptView view, Action<GameState>? started)
     {
         try
         {
@@ -299,8 +300,8 @@ public sealed class GoldenReplay
         }
     }
 
-    private sealed class NullView : IBattleView
+    private sealed class NullView : IScriptView
     {
-        public Task ShowAsync(BattleEvent battleEvent) => Task.CompletedTask;
+        public Task ShowAsync(ScriptEvent scriptEvent) => Task.CompletedTask;
     }
 }

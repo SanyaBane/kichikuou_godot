@@ -1,4 +1,5 @@
 using Kichikuou.Core.Combat;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.State;
 
 namespace Kichikuou.Core.Tests.Combat;
@@ -32,7 +33,7 @@ internal sealed class ResolutionFixture
     public CmdrRecord Cmdr(int id) => State.Cmdrs[id];
 
     /// <summary>The events of type <typeparamref name="T"/>, in order.</summary>
-    public List<T> Events<T>() where T : BattleEvent => View.Events.OfType<T>().ToList();
+    public List<T> Events<T>() where T : ScriptEvent => View.Events.OfType<T>().ToList();
 
     /// <summary>
     /// Asserts that the draws begin with <paramref name="expected"/>. Used where a test runs into

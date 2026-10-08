@@ -1,4 +1,5 @@
 using Kichikuou.Core.Combat;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Tests.Combat;
@@ -63,12 +64,12 @@ public class FlavourPlayerTests
 
         Assert.Equal([2, 3], rig.Draws);
         Assert.Collection(rig.View.Events,
-            e => Assert.IsType<FlavourWindowOpenEvent>(e),
+            e => WindowAssert.Opens(e),
             e => Assert.Equal(new MessageEvent(new ScriptRef("FIGT_M.ADV", 9498)), e),
-            e => Assert.IsType<FlavourKeyWaitEvent>(e),
+            e => WindowAssert.Op(11, e),
             e => Assert.Equal(new MessageEvent(new ScriptRef("FIGT_M.ADV", 9511)), e),
-            e => Assert.IsType<FlavourKeyWaitEvent>(e),
-            e => Assert.IsType<FlavourWindowCloseEvent>(e));
+            e => WindowAssert.Op(11, e),
+            e => WindowAssert.Op(10, e));
     }
 
     [Fact]
@@ -143,7 +144,7 @@ public class FlavourPlayerTests
 
         Assert.Equal([2, 3, 5], rig.Draws);
         Assert.Equal([8949], rig.Lines);
-        Assert.Equal(new FlavourWindowOpenEvent(FlavourWindow.LeftAlt, 896), rig.View.Events[0]);
+        WindowAssert.Op((int)FlavourWindow.LeftAlt, rig.View.Events[0]);
     }
 
     // --- Miki (unit 32, :1493-1548) --------------------------------------------------------
@@ -205,11 +206,11 @@ public class FlavourPlayerTests
 
         Assert.Equal([2, 3], rig.Draws);
         Assert.Collection(rig.View.Events,
-            e => Assert.IsType<FlavourWindowOpenEvent>(e),
+            e => WindowAssert.Opens(e),
             e => Assert.Equal(new MessageEvent(new ScriptRef("FIGT_M.ADV", 8386)), e),
             e => Assert.Equal(new MessageEvent(new ScriptRef("FIGT_M.ADV", 8423)), e),
-            e => Assert.IsType<FlavourKeyWaitEvent>(e),
-            e => Assert.IsType<FlavourWindowCloseEvent>(e));
+            e => WindowAssert.Op(11, e),
+            e => WindowAssert.Op(10, e));
     }
 
     [Fact]

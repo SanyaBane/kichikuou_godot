@@ -156,9 +156,9 @@ here with its reason, never as a blanket rule.
 | Capture | Finding | Fix |
 |---|---|---|
 | boot-time smoke dump | `DC page, n` allocates `n + 1` slots | generator, `GameStateLayoutTests` |
-| FIGT_A, prologue victory at Golak (2026-10-08) | `M.ADV` / `WAO_MAP.ADV` leave scratch values (`Tmp0021-0026`, …) that FIGT_A returns to its caller; `Y 3` stores the key that cut the pause short in `RetVal` | `Battle.Map.cs` ports the map operations the battle reaches; every `Y 3` goes through `IBattleInput.PauseAsync` (`FlowMapTests`) |
+| FIGT_A, prologue victory at Golak (2026-10-08) | `M.ADV` / `WAO_MAP.ADV` leave scratch values (`Tmp0021-0026`, …) that FIGT_A returns to its caller; `Y 3` stores the key that cut the pause short in `RetVal` | `ScriptContext.Map.cs` ports the map operations the battle reaches; every `Y 3` goes through `IScriptInput.PauseAsync` (`MapTests`) |
 | same | `Glob_CgSeen` counters, `Tmp0010` | ignored (above) |
-| static audit of `WAO_SUB.ADV` ahead of a FIGT_B capture (2026-10-08) | FIGT_B shows and removes portraits (ops 311/312/321/322/331/332); every removal runs `L_00b0f`, which leaves the clamped camera in `Tmp0021/0022`; the key waits (ops 1/11) skip `IK 0` while no window is open | `Battle.Wao.cs` ports `WAO_SUB`'s state effects (`FlowWaoTests`); the FIGT_A capture still matches, and its `ui` variables now match too except `Ui_BtnCur` (FIGT_SEL) |
+| static audit of `WAO_SUB.ADV` ahead of a FIGT_B capture (2026-10-08) | FIGT_B shows and removes portraits (ops 311/312/321/322/331/332); every removal runs `L_00b0f`, which leaves the clamped camera in `Tmp0021/0022`; the key waits (ops 1/11) skip `IK 0` while no window is open | `ScriptContext.Wao.cs` ports `WAO_SUB`'s state effects (`WaoSubTests`); the FIGT_A capture still matches, and its `ui` variables now match too except `Ui_BtnCur` (FIGT_SEL) |
 | 5 more prologue FIGT_A, the Ruberan duel, FIGT_B city and plains intercepts with `Sﾌﾞﾀｲ`/`Gｴｸｽ` hooks (2026-10-08) | none — all match | — |
 | 10 stage-1 battles: city attacks that take a province, `Gｴｸｽ` inside FIGT_A, an abandoned and a lost defence (2026-10-08) | none — all match | — |
 | 3 more: Focus, Rance Attack and By la Way in an attack that runs out of rounds; two FIGT_B on Ys (2026-10-08) | none — all match | — |

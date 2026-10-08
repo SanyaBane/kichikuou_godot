@@ -1,3 +1,4 @@
+using Kichikuou.Core.Script;
 using Kichikuou.Core.State;
 using Kichikuou.Core.Sys3;
 
@@ -7,23 +8,35 @@ namespace Kichikuou.Core.Combat;
 /// The battle of <c>FIGT*.ADV</c>, ported one-to-one (see <c>docs/battle/</c> and
 /// <c>docs/porting-conventions.md</c>). All state lives in <see cref="State"/>; the partial
 /// files hold the procedures: the flow (<c>docs/battle/01-flow.md</c>) and the resolution of
-/// one exchange (<c>docs/battle/02-resolution.md</c>).
+/// one exchange (<c>docs/battle/02-resolution.md</c>). The shared services (message windows,
+/// map, sound, scene calls, draws) are the <see cref="ScriptContext"/> it runs on.
 /// </summary>
-public sealed partial class Battle(
-    GameState state,
-    IScriptRandom random,
-    IBattleView view,
-    IBattleInput input,
-    IStoryHooks story)
+public sealed partial class Battle
 {
+    /// <summary>A battle on a context shared with the rest of the game; <paramref name="input"/> is its input too.</summary>
+    public Battle(ScriptContext script, IBattleInput input)
+    {
+        if (!ReferenceEquals(script.Input, input))
+            throw new ArgumentException("The battle input must be the context's input.", nameof(input));
+        Script = script;
+        Input = input;
+    }
+
+    /// <summary>A battle on a context of its own.</summary>
+    public Battle(GameState state, IScriptRandom random, IScriptView view, IBattleInput input, IStoryHooks story)
+        : this(new ScriptContext(state, random, view, input, story), input)
+    {
+    }
+
+    /// <summary>The shared services the battle runs on.</summary>
+    public ScriptContext Script { get; }
+
     /// <summary>The game state the battle reads and changes.</summary>
-    public GameState State { get; } = state;
+    public GameState State => Script.State;
 
-    private IBattleView View { get; } = view;
+    private IScriptView View => Script.View;
 
-    private IBattleInput Input { get; } = input;
-
-    private IStoryHooks Story { get; } = story;
+    private IBattleInput Input { get; }
 
     /// <summary>The player-unit record selected by <c>Unit_Cur</c>, re-read on every access.</summary>
     private UnitRecord Unit => State.Units[State.Unit_Cur];
@@ -37,38 +50,9 @@ public sealed partial class Battle(
     /// <summary>The item record selected by <c>Item_Cur</c>, re-read on every access.</summary>
     private ItemRecord Item => State.Items[State.Item_Cur];
 
-    /// <summary><c>Y 4, n:</c> — draws 1..n (n of 0 or 1 returns n without drawing) into <c>RetVal</c>.</summary>
-    private Sys3Int Rnd(Sys3Int n)
-    {
-        State.RetVal = random.Next(n);
-        return State.RetVal;
-    }
-}
-
-/// <summary>A location in the decompiled scenario, used to identify a message or scene text.</summary>
-/// <param name="File">Scenario file name as decompiled, e.g. <c>FIGT_M.ADV</c>.</param>
-/// <param name="Line">1-based line in the raw decompile (<c>_extract\scenario</c>).</param>
-public readonly record struct ScriptRef(string File, int Line)
-{
-    /// <inheritdoc />
-    public override string ToString() => $"{File}:{Line}";
+    /// <summary><c>Y 4, n:</c> (<see cref="ScriptContext.Rnd"/>).</summary>
+    private Sys3Int Rnd(Sys3Int n) => Script.Rnd(n);
 }
 
 /// <summary>Something the battle shows; the presentation layer decides how.</summary>
-public abstract record BattleEvent;
-
-/// <summary>Receives the battle's presentation events in script order.</summary>
-public interface IBattleView
-{
-    /// <summary>Shows one event; the battle continues when the task completes.</summary>
-    Task ShowAsync(BattleEvent battleEvent);
-}
-
-/// <summary>Calls from the battle into non-rule scenario files (story and death scenes).</summary>
-public interface IStoryHooks
-{
-    /// <summary>
-    /// <c>Ev_Entry := entry; call file</c> — a story scene that may change any state.
-    /// </summary>
-    Task RunEventAsync(string file, Sys3Int entry);
-}
+public abstract record BattleEvent : ScriptEvent;

@@ -1,4 +1,5 @@
 using Kichikuou.Core.Combat;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Tests.Combat;
@@ -34,7 +35,7 @@ public class FlavourEnemyTests
 
         Assert.Equal([2, 3, 3], rig.Draws);
         Assert.Equal([line], rig.Lines);
-        Assert.Equal(new FlavourWindowOpenEvent(FlavourWindow.Right, 897), rig.View.Events[0]);
+        WindowAssert.Op((int)FlavourWindow.Right, rig.View.Events[0]);
     }
 
     [Fact]
@@ -100,8 +101,8 @@ public class FlavourEnemyTests
 
         Assert.Equal([2, 3, 3], rig.Draws);
         Assert.Equal([5019, 5033], rig.Lines);
-        Assert.Equal(2, rig.View.Events.OfType<FlavourWindowOpenEvent>().Count());
-        Assert.Single(rig.View.Events.OfType<FlavourWindowCloseEvent>());
+        Assert.Equal(2, rig.View.Events.OfType<WindowEvent>().Count(w => w.Op > 140));
+        Assert.Single(rig.View.Events.OfType<WindowEvent>(), w => w.Op == 10);
     }
 
     [Fact]

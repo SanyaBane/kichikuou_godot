@@ -1,4 +1,5 @@
 using Kichikuou.Core.Combat;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 using static Kichikuou.Core.Tests.Combat.Sys3Assert;
 
@@ -69,7 +70,7 @@ public class EndToEndBattleTests
 
     private static FigtSelChoice Direct(int enemySlot = 1) => new(FigtSelCommand.Direct, (Sys3Int)(enemySlot + 3));
 
-    private static int Count<T>(FlowRig rig) where T : BattleEvent => rig.View.Events.OfType<T>().Count();
+    private static int Count<T>(FlowRig rig) where T : ScriptEvent => rig.View.Events.OfType<T>().Count();
 
     /// <summary>
     /// The draws of one commanders-only exchange without specials (troops 0 on both sides,
@@ -383,7 +384,7 @@ public class EndToEndBattleTests
         Assert.Null(rig.Input.CommandMenus[0].Find(FigtSelCommand.RanceAttack));
         var scene = Assert.Single(rig.View.Events.OfType<EngagementSceneEvent>());
         Assert.Equal(new[] { (Sys3Int)1520 }, scene.PlayerSprites);    // :1660 Rance's special CG
-        Assert.Contains(rig.View.Events, e => e is PlaySfxEvent { First.Value: 31 });   // skill 1 sound
+        Assert.Contains(rig.View.Events, e => e is SoundPairEvent { First.Value: 31 });   // skill 1 sound
         Assert.Contains(rig.View.Events, e => e is MessageEvent { Text.File: "FIGT_M.ADV", Text.Line: 8965 });
     }
 
@@ -763,7 +764,7 @@ public class EndToEndBattleTests
         Is(2, s.Cmdrs[7].HP);
         var scene = Assert.Single(rig.View.Events.OfType<EngagementSceneEvent>());
         Assert.Equal(new[] { (Sys3Int)1529 }, scene.PlayerSprites);    // :1660-1701 Miki's special CG
-        Assert.Contains(rig.View.Events, e => e is PlaySfxEvent { First.Value: 39 });   // Bt_SkillSfx 7
+        Assert.Contains(rig.View.Events, e => e is SoundPairEvent { First.Value: 39 });   // Bt_SkillSfx 7
         Assert.Equal("Vanish Bomb", s.Strings[7]);
         Assert.Contains(rig.View.Events, e => e is MessageEvent { Text.File: "FIGT_M.ADV", Text.Line: 1497 });
     }

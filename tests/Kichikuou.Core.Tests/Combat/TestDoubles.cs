@@ -1,4 +1,5 @@
 using Kichikuou.Core.Combat;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Tests.Combat;
@@ -31,13 +32,13 @@ public sealed class ScriptedRandom : IScriptRandom
 }
 
 /// <summary>Collects presentation events.</summary>
-public sealed class RecordingView : IBattleView
+public sealed class RecordingView : IScriptView
 {
-    public List<BattleEvent> Events { get; } = [];
+    public List<ScriptEvent> Events { get; } = [];
 
-    public Task ShowAsync(BattleEvent battleEvent)
+    public Task ShowAsync(ScriptEvent scriptEvent)
     {
-        Events.Add(battleEvent);
+        Events.Add(scriptEvent);
         return Task.CompletedTask;
     }
 }
@@ -52,4 +53,14 @@ public sealed class RecordingStory : IStoryHooks
         Calls.Add((file, entry.Value));
         return Task.CompletedTask;
     }
+}
+
+/// <summary>Assertions on the <c>WAO_SUB.ADV</c> calls a test saw.</summary>
+internal static class WindowAssert
+{
+    /// <summary>The event is a call of window operation <paramref name="op"/>.</summary>
+    public static void Op(int op, ScriptEvent e) => Assert.Equal(op, (int)Assert.IsType<WindowEvent>(e).Op);
+
+    /// <summary>The event opens a speaker or narration window (ops 141-153).</summary>
+    public static void Opens(ScriptEvent e) => Assert.InRange((int)Assert.IsType<WindowEvent>(e).Op, 141, 153);
 }

@@ -1,4 +1,5 @@
 using Kichikuou.Core.Combat;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Tests.Combat;
@@ -27,8 +28,8 @@ public class FlavourStateTests
         Assert.Equal(1, rig.State.F_Asuka_State.Value);
         Assert.Equal([2, 3], rig.Draws);
         Assert.Equal([8330, 8339, 8342, 8347, 8356, 8369], rig.Lines); // one window, six pages
-        Assert.Single(rig.View.Events.OfType<FlavourWindowOpenEvent>());
-        Assert.Equal(6, rig.View.Events.OfType<FlavourKeyWaitEvent>().Count());
+        Assert.Single(rig.View.Events.OfType<WindowEvent>(), w => w.Op > 140);
+        Assert.Equal(6, rig.View.Events.OfType<WindowEvent>().Count(w => w.Op == 11));
     }
 
     [Fact]

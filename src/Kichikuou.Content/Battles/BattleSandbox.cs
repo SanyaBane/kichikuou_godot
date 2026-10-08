@@ -1,5 +1,6 @@
 using Kichikuou.Core.Combat;
 using Kichikuou.Core.Golden;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.State;
 using Kichikuou.Core.Sys3;
 
@@ -65,7 +66,7 @@ public static class BattleSandbox
     /// </summary>
     public static async Task<(GameState State, string? JumpTarget)> RunLiveAsync(
         GoldenCapture capture,
-        IBattleView view,
+        IScriptView view,
         IBattleInput input,
         uint? seed = null,
         Func<string, Task>? onSceneSkipped = null,
@@ -105,15 +106,15 @@ public static class BattleSandbox
     }
 
     /// <summary>Notes when the first round header is shown: the battle proper has begun.</summary>
-    private sealed class RoundTrackingView(IBattleView inner) : IBattleView
+    private sealed class RoundTrackingView(IScriptView inner) : IScriptView
     {
         public bool RoundsStarted { get; private set; }
 
-        public Task ShowAsync(BattleEvent battleEvent)
+        public Task ShowAsync(ScriptEvent scriptEvent)
         {
-            if (battleEvent is RoundHeaderEvent)
+            if (scriptEvent is RoundHeaderEvent)
                 RoundsStarted = true;
-            return inner.ShowAsync(battleEvent);
+            return inner.ShowAsync(scriptEvent);
         }
     }
 

@@ -1,4 +1,5 @@
 using Kichikuou.Core.Combat;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 using static Kichikuou.Core.Tests.Combat.Sys3Assert;
 
@@ -122,7 +123,7 @@ public class FlowAttackTests
         Is(4, rig.State.Provs[20].Owner);
         Is(1, rig.State.Ui_CmdAttackAvail);
         Assert.Equal([86, 90], rig.Lines);
-        var music = rig.View.Events.OfType<FlowMusicEvent>().Select(m => (int)m.Track).ToList();
+        var music = rig.View.Events.OfType<MusicEvent>().Select(m => (int)m.Track).ToList();
         Assert.Equal([0, 8], music);
     }
 

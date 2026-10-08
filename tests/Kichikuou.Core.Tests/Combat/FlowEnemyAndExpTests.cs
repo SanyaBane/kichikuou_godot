@@ -1,4 +1,5 @@
 using Kichikuou.Core.Combat;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 using static Kichikuou.Core.Tests.Combat.Sys3Assert;
 
@@ -136,7 +137,7 @@ public class FlowExpTests
         Is(0, rig.State.Hist_Cur);
         Is(133, rig.State.History[0].Casualties);
         Assert.Equal([15], rig.Random.Draws);
-        var shown = Assert.Single(rig.View.Events.OfType<FlowValueMessageEvent>());
+        var shown = Assert.Single(rig.View.Events.OfType<ValueMessageEvent>());
         Assert.Equal(3003, shown.Text.Line);
         Assert.Equal([2999, 3003], rig.Lines);
         Is(33, shown.Values[0]);
@@ -205,7 +206,7 @@ public class FlowExpTests
         Assert.Equal([15, 5, 15, 3], rig.Random.Draws);   // R15, R17, R18 = 12 + new level, R19
         Assert.Contains(3106, rig.Lines);
         Assert.Equal(3157, rig.Lines[^1]);
-        var sound = Assert.Single(rig.View.Events.OfType<FlowSoundEvent>());
+        var sound = Assert.Single(rig.View.Events.OfType<SoundEvent>());
         Is(104, sound.Sound);
     }
 
@@ -283,7 +284,7 @@ public class FlowExpTests
         Is(325, u.MaxTroops);
         Is(25, rig.State.Tmp0005);
         Assert.Equal([15], rig.Random.Draws);
-        var shown = rig.View.Events.OfType<FlowValueMessageEvent>().Last();
+        var shown = rig.View.Events.OfType<ValueMessageEvent>().Last();
         Assert.Equal(3088, shown.Text.Line);
         Is(25, shown.Values[0]);
     }

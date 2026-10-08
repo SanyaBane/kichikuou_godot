@@ -1,4 +1,5 @@
 using Kichikuou.Core.Combat;
+using Kichikuou.Core.Script;
 using Kichikuou.Core.State;
 using Kichikuou.Core.Sys3;
 
@@ -99,10 +100,10 @@ public class FlavourEntryTests
         await rig.RunAsync();
 
         Assert.Collection(rig.View.Events,
-            e => Assert.Equal(new FlavourWindowOpenEvent(FlavourWindow.Left, 895), e),
+            e => WindowAssert.Op((int)FlavourWindow.Left, e),
             e => Assert.Equal(new MessageEvent(new ScriptRef("FIGT_M.ADV", 239)), e),
-            e => Assert.IsType<FlavourKeyWaitEvent>(e),
-            e => Assert.IsType<FlavourWindowCloseEvent>(e));
+            e => WindowAssert.Op(11, e),
+            e => WindowAssert.Op(10, e));
     }
 
     [Fact]
@@ -112,8 +113,10 @@ public class FlavourEntryTests
 
         await rig.RunAsync();
 
-        // At the G (frame draw) of WAO_SUB L_00b78: op 141, frame 895, type not yet set.
-        Assert.Equal((141, 895, 0), rig.View.Snapshots[0]);
+        // The window event comes before WAO_SUB L_00b78 runs: op 141, nothing set yet.
+        Assert.Equal((141, 0, 0), rig.View.Snapshots[0]);
+        // At the text: frame 895, type 41.
+        Assert.Equal((141, 895, 41), rig.View.Snapshots[1]);
         // At IK 0 in L_00ce1: op 11, the window is open (type 41).
         Assert.Equal((11, 895, 41), rig.View.Snapshots[2]);
         // After L_00cb9: op 10, type and frame cleared.
@@ -129,8 +132,8 @@ public class FlavourEntryTests
 
         await rig.RunAsync();
 
-        Assert.Equal(new FlavourWindowOpenEvent(FlavourWindow.LeftAlt, 896), rig.View.Events[0]);
-        Assert.Equal((142, 896, 0), rig.View.Snapshots[0]);
+        WindowAssert.Op((int)FlavourWindow.LeftAlt, rig.View.Events[0]);
+        Assert.Equal((142, 896, 42), rig.View.Snapshots[1]);
         Assert.Equal((11, 896, 42), rig.View.Snapshots[2]);
         Assert.Equal([250], rig.Lines);
     }
@@ -142,7 +145,7 @@ public class FlavourEntryTests
 
         await rig.RunAsync();
 
-        Assert.Equal(new FlavourWindowOpenEvent(FlavourWindow.Right, 897), rig.View.Events[0]);
+        WindowAssert.Op((int)FlavourWindow.Right, rig.View.Events[0]);
         Assert.Equal((11, 897, 51), rig.View.Snapshots[2]);
     }
 
@@ -218,16 +221,16 @@ internal sealed class FlavourRig
 }
 
 /// <summary>Records events and the window state at each one.</summary>
-internal sealed class FlavourView(GameState state) : IBattleView
+internal sealed class FlavourView(GameState state) : IScriptView
 {
-    public List<BattleEvent> Events { get; } = [];
+    public List<ScriptEvent> Events { get; } = [];
 
     /// <summary>(<c>Ui_WaoOp</c>, <c>Ui_WinFrameCg</c>, <c>Ui_WinType</c>) when each event was shown.</summary>
     public List<(int WaoOp, int FrameCg, int WinType)> Snapshots { get; } = [];
 
-    public Task ShowAsync(BattleEvent battleEvent)
+    public Task ShowAsync(ScriptEvent scriptEvent)
     {
-        Events.Add(battleEvent);
+        Events.Add(scriptEvent);
         Snapshots.Add((state.Ui_WaoOp.Value, state.Ui_WinFrameCg.Value, state.Ui_WinType.Value));
         return Task.CompletedTask;
     }
