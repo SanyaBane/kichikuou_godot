@@ -189,8 +189,11 @@ numbers are the engine's (`MS n` writes string n).
    `Cﾊｰﾚﾑ.ADV` → `EnemyCityCommand`, `DistantCityCommand`, `SubordinatesCommand`, `HaremCommand`
    (`GoldenReplay.ReplayableRoots`, `CanReplay`; their paths beyond the prologue throw
    `NotSupportedException`). `Cﾒｲｷｭｳ.ADV` reads its `MS` strings from the player's files, so its
-   replay is `RunAsync(capture, entryPoint: s => new DungeonCommand(s, scripts).RunAsync())`. The
-   player phase and the command files read the pointer as the script does, so their replays answer
+   replay is `RunAsync(capture, entryPoint: s => new DungeonCommand(s, scripts).RunAsync())`; the
+   same holds for the `screens` group (`Sﾌﾞﾀｲ`, `Sﾌﾞｶ`, `Sﾊｰﾚﾑ` → `DeploymentScreen`,
+   `SubordinateScreen`, `HaremScreen`, which read their button labels and the harem's name table),
+   replayed by `ScreenReplayTests` in the content tests. The
+   player phase, the command files and the pickers read the pointer as the script does, so their replays answer
    `GetMouseAsync` from `mouse` and `SetCursorAsync` from `cursor` (the shape must match); in
    battle captures both stay passive. Every other root has no entry point yet: `GoldenBattleTests.Capture_matches_the_original`
    replays only captures whose header (`GoldenCapture.ReadHeader`)

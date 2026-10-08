@@ -84,6 +84,36 @@ public sealed class PointerScript
 
     private void Add(MouseState[] gesture) => _gestures.Enqueue(gesture);
 
+    /// <summary>
+    /// The middle of cell <paramref name="id"/> (1-51, row by row, three to a row) of the picker
+    /// screens' grid (<c>Sﾌﾞﾀｲ</c>, <c>Sﾌﾞｶ</c>, <c>Sﾊｰﾚﾑ</c>): unit or girl <paramref name="id"/>.
+    /// The cells are 108×18 from (328, 18) (<c>Sﾌﾞﾀｲ.ADV:500-505</c>).
+    /// </summary>
+    public static (int X, int Y) PickerCell(int id)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(id, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(id, 51);
+        return (328 + (id - 1) % 3 * 108 + 40, 18 + (id - 1) / 3 * 18 + 9);
+    }
+
+    /// <summary>
+    /// The middle of bar button <paramref name="button"/> (1-3, left to right) under the pickers'
+    /// grid: in <c>Sﾌﾞﾀｲ</c> 501 (Attack, Plains, Search), 502 (City) and 503 (Stop); in
+    /// <c>Sﾌﾞｶ</c> and <c>Sﾊｰﾚﾑ</c> only the third, "End" (<c>Sﾌﾞﾀｲ.ADV:507-517</c>).
+    /// </summary>
+    public static (int X, int Y) PickerButton(int button)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(button, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(button, 3);
+        return (320 + (button - 1) * 106 + 53, 360);
+    }
+
+    /// <summary>
+    /// A point left of the pickers' grid: a left click there takes the last unit out of the
+    /// party in <c>Sﾌﾞﾀｲ</c>, ends <c>Sﾌﾞｶ</c> and does nothing in <c>Sﾊｰﾚﾑ</c>.
+    /// </summary>
+    public static (int X, int Y) PickerOutside => (160, 200);
+
     private static MouseState Read(int button, int x, int y) => new((Sys3Int)button, (Sys3Int)x, (Sys3Int)y);
 
     /// <summary>

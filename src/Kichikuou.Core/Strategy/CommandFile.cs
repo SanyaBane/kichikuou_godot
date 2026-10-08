@@ -1,4 +1,5 @@
 using Kichikuou.Core.Script;
+using Kichikuou.Core.Setup;
 using Kichikuou.Core.State;
 using Kichikuou.Core.Sys3;
 
@@ -10,9 +11,11 @@ namespace Kichikuou.Core.Strategy;
 /// (<c>IM Ui_MouseX, Ui_MouseY</c> until no button), the pointer saved for a cancel (<c>IM
 /// Tmp0019, Tmp0020</c>) and put back (<c>IZ</c>), the menu (<c>]</c>) and the message runs. Every
 /// event is the one <see cref="SceneRunner"/> raises for the same statement, so a port and its
-/// file run from the decompile can be compared event by event.
+/// file run from the decompile can be compared event by event. A file whose literals the port
+/// must not embed (<c>MS n, "text"</c>, data tables) reads them from the player's files through
+/// the scenario source.
 /// </summary>
-public abstract class CommandFile(ScriptContext script, string file)
+public abstract class CommandFile(ScriptContext script, string file, IScenarioSource? scenario = null)
 {
     /// <summary>The shared services the file runs on.</summary>
     public ScriptContext Script { get; } = script;
@@ -54,6 +57,26 @@ public abstract class CommandFile(ScriptContext script, string file)
 
     /// <summary>A text run of this file without numbers, starting at <paramref name="line"/>.</summary>
     protected Task TextAsync(int line) => Script.TextAsync(File, line);
+
+    /// <summary>A text run whose <c>X expr</c> commands print computed string variables, evaluated now.</summary>
+    protected Task StringsAsync(int line, params Sys3Int[] strings) =>
+        Script.ShowAsync(new MessageEvent(Ref(line), strings.Length > 0 ? strings : null));
+
+    /// <summary>A presentation-only engine command (<c>G</c>, <c>CC</c>, <c>T</c>, <c>ZC</c>, …) with its evaluated arguments.</summary>
+    protected Task EngineAsync(string command, params Sys3Int[] args) => Script.ShowAsync(new EngineEvent(command, args));
+
+    /// <summary>The statement at <paramref name="line"/> of this file, read from the player's files.</summary>
+    protected ScriptStatement Literal(int line) =>
+        (scenario ?? throw new InvalidOperationException($"{File} reads its literals from the player's files: no scenario source given."))
+        .ReadStatement(Ref(line));
+
+    /// <summary><c>MS n, "text":</c> at <paramref name="line"/>, the text from the player's files.</summary>
+    protected void SetLiteral(int line)
+    {
+        var statement = Literal(line) as SetStringStatement
+            ?? throw new ScenarioFormatException($"{Ref(line)}: expected MS n, \"text\".");
+        Script.SetString(statement.Slot, statement.Text);
+    }
 
     /// <summary>A text run with its <c>H</c> numbers, evaluated now.</summary>
     protected Task ValuesAsync(int line, params Sys3Int[] values) =>

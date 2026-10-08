@@ -97,16 +97,28 @@ public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<str
                     {
                         int count = Eval(s.Count).Value;
                         for (int i = 0; i < count; i++)
-                            Slot(s, s.Var, i) = Sys3Int.Zero;
+                            State.WriteRun(s.Var, i, Sys3Int.Zero);
                         break;
                     }
                 case CopyVariablesStatement s:
                     {
                         int count = Eval(s.Count).Value;
                         for (int i = 0; i < count; i++)
-                            Slot(s, s.Target, i) = Slot(s, s.Source, i);
+                            State.WriteRun(s.Target, i, State.ReadRun(s.Source, i));
                         break;
                     }
+                case SetDataTableStatement s:
+                    Script.SetDataTable(s.Words);
+                    break;
+                case ReadDataStatement s:
+                    State.WriteVariable(s.Var, Script.ReadDataWord(s.At, Eval(s.Index)));
+                    break;
+                case SetStringTableStatement s:
+                    Script.SetStringTable(s.Strings);
+                    break;
+                case ReadStringStatement s:
+                    Script.ReadDataString(s.At, Eval(s.Slot), Eval(s.Skip));
+                    break;
                 case LocalVariablesStatement { Push: true } s:
                     {
                         int count = Eval(s.Count).Value;

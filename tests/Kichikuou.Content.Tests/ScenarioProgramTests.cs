@@ -337,8 +337,8 @@ public class ScenarioProgramSweepTests(ITestOutputHelper output)
         [
             "MAIN.ADV", "COMMAND.ADV", "COM.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV",
             "Cﾒｲｷｭｳ.ADV", "Cｼﾊｲﾄｼ.ADV", "Cｼｮｳﾆﾝ.ADV", "Cﾆﾝｼﾞｬ.ADV", "Cﾃｲﾄ.ADV", "Cﾀｶﾗ.ADV",
-            "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sｱｲﾃﾑ.ADV", "M.ADV", "WAO_MAP.ADV", "WAO_SUB.ADV",
-            // Not yet: Sﾊｰﾚﾑ (a data table, `#L_00848, 1:`), 各種DATA (ZB), PCMPLAY (SP).
+            "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sﾊｰﾚﾑ.ADV", "Sｱｲﾃﾑ.ADV", "M.ADV", "WAO_MAP.ADV", "WAO_SUB.ADV",
+            // Not yet: 各種DATA (ZB), PCMPLAY (SP).
         ];
         var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
         var text = new ScenarioText(LocalData.ScenarioDirectory);

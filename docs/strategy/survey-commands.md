@@ -303,7 +303,8 @@ reached through them are inside T*2 defender setups, FIGT and story scenes.
 - **Grid pickers** (Sﾊｰﾚﾑ, Sﾌﾞｶ, Sﾌﾞﾀｲ, Sｱｲﾃﾑ share one widget): `IM` polling, 3×17 grid
   ids 1..51, a bottom bar with per-file codes (501/502/503/997/998/999), right click 999
   (998 in Sｱｲﾃﾑ) [C]. The code semantics are rules (e.g. Sﾌﾞﾀｲ left-half click = remove last);
-  the geometry is presentation.
+  the geometry is presentation. Ported for Sﾌﾞﾀｲ, Sﾌﾞｶ, Sﾊｰﾚﾑ (`Strategy/PickerScreen.cs` and
+  its subclasses; quirks CMD-22 to CMD-24).
 - **Key waits:** every dialogue line (`WAO_SUB` op 1); 466 in Cﾃｷﾄｼ.
 - **Display only, free to redesign:** headers (name, Economy/Defense/Battle Area), all dialogue
   and portraits, cost/budget readouts, Sﾌﾞｶ modes 2-5 (screen save/restore), hover panels,

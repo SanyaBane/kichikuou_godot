@@ -45,6 +45,28 @@ public sealed partial class GameState
     }
 
     /// <summary>
+    /// The slot <paramref name="offset"/> places after variable <paramref name="number"/> as the
+    /// commands that walk a run of variables from a pointer see it (<c>NC</c>, <c>NB</c>; xsystem35
+    /// <c>getCaliVariable</c> resolves the variable once, through its binding at the cursor, and
+    /// the command steps on from there): the plain slots after a plain variable, the page slots
+    /// after a bound one. A page slot past the page's end is read as 0 and not written (the
+    /// original steps out of the page's buffer).
+    /// </summary>
+    public Sys3Int ReadRun(int number, int offset) =>
+        BindingOf(number) is { } b
+            ? Memory.ReadPage(b.Page, b.Offset + Memory.Var(b.Cursor).Value + offset)
+            : Memory.Var(number + offset);
+
+    /// <summary>Writes the slot <see cref="ReadRun"/> reads.</summary>
+    public void WriteRun(int number, int offset, Sys3Int value)
+    {
+        if (BindingOf(number) is { } b)
+            Memory.WritePage(b.Page, b.Offset + Memory.Var(b.Cursor).Value + offset, value);
+        else
+            Memory.Var(number + offset) = value;
+    }
+
+    /// <summary>
     /// True when variable <paramref name="number"/> is bound to a page through <c>DS</c>, so it is
     /// not the plain slot that commands addressing a run of variables (<c>NC</c>, <c>US</c>, …) start from.
     /// </summary>

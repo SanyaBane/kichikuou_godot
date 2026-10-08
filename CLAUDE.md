@@ -33,8 +33,9 @@ F0 is done: the shared services (message windows, map, sound, scene calls) live 
 (the player phase) is `Strategy/CommandPhase`, reading the pointer as the script does
 (`ISceneInput`, `Script/PointerScript` for gesture-level UIs), and the prologue paths of the
 command files `Cﾃｷﾄｼ`, `Cﾃｷﾄｼ2`, `Cﾌﾞｶ`, `Cﾊｰﾚﾑ`, `Cﾒｲｷｭｳ` are ported (their later paths throw
-`NotSupportedException`), routed by `Strategy/StrategyRules`; next are the pickers `Sﾌﾞﾀｲ`,
-`Sﾌﾞｶ`, `Sﾊｰﾚﾑ`.
+`NotSupportedException`), and so are the pickers `Sﾌﾞﾀｲ`, `Sﾌﾞｶ`, `Sﾊｰﾚﾑ`
+(`Strategy/*Screen.cs` on `PickerScreen`), all routed by `Strategy/StrategyRules`. Next is W2
+(the `MAIN` week loop), then G0 (the Godot screens).
 
 ## Layout
 
@@ -57,8 +58,8 @@ command files `Cﾃｷﾄｼ`, `Cﾃｷﾄｼ2`, `Cﾌﾞｶ`, `Cﾊｰﾚﾑ`, 
   no idiom rewritten); `RunAsync` runs the straight-line `SET_*` data files and `SceneRunner`
   runs scene programs (`ISceneInput` adds menus, mouse and clock to the inputs). `Setup/GameSetup` is the boot (`SET.ADV`) and the new game.
   `Strategy/` holds the strategic rule files: `WeeklyEvents` is `COM.ADV`, `CommandPhase` is
-  `COMMAND.ADV`, the `*Command` classes (on `CommandFile`) are the `C*.ADV` command files, and
-  `StrategyRules` routes calls of these files to their ports (the rule hooks of a `SceneRunner`).
+  `COMMAND.ADV`, the `*Command` classes (on `CommandFile`) are the `C*.ADV` command files, the
+  `*Screen` classes (on `PickerScreen`) their `S*.ADV` pickers, and `StrategyRules` routes calls of these files to their ports (the rule hooks of a `SceneRunner`).
 - `src/Kichikuou.Content` — engine-independent access to the player's own game data (never
   part of the repository): `ScenarioText` reads message texts from the decompiled scenario by
   `ScriptRef`; `Scripts/ScenarioScripts` reads the data files' statements and whole files as programs

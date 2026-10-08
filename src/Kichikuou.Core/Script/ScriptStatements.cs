@@ -60,6 +60,26 @@ public sealed record SetDataTableStatement(ScriptRef At, IReadOnlyList<Sys3Int> 
 /// <summary><c>F3, VARnnnn, k:</c> — the variable := word <c>k</c> of the current data table (<c>cmdf.c</c>).</summary>
 public sealed record ReadDataStatement(ScriptRef At, int Var, ScriptExpr Index) : ScriptStatement(At);
 
+/// <summary>
+/// <c>#label, 1:</c> when the label's address word names a run of strings (<c>"text"</c> lines,
+/// each null-terminated in the bytecode, e.g. <c>Sﾊｰﾚﾑ.ADV:311-363</c>): the data reader points at
+/// the first one; <paramref name="Strings"/> is the run (read from the player's files).
+/// </summary>
+public sealed record SetStringTableStatement(ScriptRef At, IReadOnlyList<string> Strings) : ScriptStatement(At);
+
+/// <summary>
+/// <c>F1, slot, skip:</c> — skips <paramref name="Skip"/> strings from the data reader's position,
+/// copies the next one into string variable <paramref name="Slot"/> and leaves the reader after it
+/// (<c>cmdf.c</c> <c>commandF1</c>).
+/// </summary>
+public sealed record ReadStringStatement(ScriptRef At, ScriptExpr Slot, ScriptExpr Skip) : ScriptStatement(At);
+
+/// <summary>
+/// A line of data inside a file's code area — an address word <c>_label:</c> or a string
+/// <c>"text"</c> of a table that <c>#label</c> points at. Running into it is an error.
+/// </summary>
+public sealed record DataStatement(ScriptRef At) : ScriptStatement(At);
+
 /// <summary><c>NC var, count:</c> — <paramref name="Count"/> variables from <paramref name="Var"/> on := 0 (<c>cmdn.c</c>).</summary>
 public sealed record ClearVariablesStatement(ScriptRef At, int Var, ScriptExpr Count) : ScriptStatement(At);
 

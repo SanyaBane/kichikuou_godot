@@ -11,7 +11,8 @@ namespace Kichikuou.Content.Tests;
 /// <summary>
 /// The hand-ported prologue slices of the command files (<see cref="EnemyCityCommand"/>,
 /// <see cref="DistantCityCommand"/>, <see cref="SubordinatesCommand"/>, <see cref="HaremCommand"/>,
-/// <see cref="DungeonCommand"/>) against the files themselves run from the player's decompile by
+/// <see cref="DungeonCommand"/>) and the pickers (<see cref="DeploymentScreen"/>,
+/// <see cref="SubordinateScreen"/>, <see cref="HaremScreen"/>) against the files themselves run from the player's decompile by
 /// <see cref="SceneRunner"/>, on random states (mostly the prologue, <c>StoryStage</c> 0) and
 /// random input: both runs must make the same input requests, call the same files with the same
 /// <c>Ev_Entry</c>, draw the same rolls, show the same events and leave the same memory. Every other
@@ -103,6 +104,61 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             Scribble,
             ["draw 3", "call Gﾊﾞｳﾝﾄﾞ.ADV", "call Gﾎﾗｶﾞ.ADV", "call Gｶﾌｪ.ADV", "text 2763", "text 2795", "text 2811",
              "text 2827", "text 2852", "M 1", "M 10", "unported"]);
+
+    [Fact]
+    public Task The_deployment_screen_runs_exactly_as_Sﾌﾞﾀｲ() =>
+        CompareAsync(
+            "Sﾌﾞﾀｲ.ADV",
+            (script, scenario) => new DeploymentScreen(script, scenario).RunAsync(),
+            (state, rng) =>
+            {
+                state.Tmp0021 = (Sys3Int)(rng.Next(8) == 0 ? rng.Next(0, 7) : 4);
+                state.Tmp0022 = (Sys3Int)(rng.Next(8) == 0 ? rng.Next(0, 6) : rng.Next(1, 4));
+                state.Gold = (Sys3Int)rng.Next(0, 400);
+                for (int u = 1; u <= 51; u++)
+                {
+                    state.Units[u].Status = (Sys3Int)(rng.Next(4) == 0 ? rng.Next(0, 4) : 1);
+                    state.Units[u].Troops = (Sys3Int)rng.Next(0, 3000);
+                    state.Units[u].DeployCost = (Sys3Int)rng.Next(0, 40);
+                    state.Units[u].Class = (Sys3Int)rng.Next(0, 13);
+                    state.Units[u].Item = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(1, 51) : 0);
+                }
+                state.Hist_Cur = (Sys3Int)rng.Next(0, 300);
+            },
+            Scribble,
+            ["text 22", "text 49", "text 79", "text 167", "text 179", "text 255", "text 261", "text 264", "text 329",
+             "text 349", "text 370", "text 394", "text 530", "text 551", "text 555", "text 559", "text 563"]);
+
+    [Fact]
+    public Task The_subordinate_picker_runs_exactly_as_Sﾌﾞｶ() =>
+        CompareAsync(
+            "Sﾌﾞｶ.ADV",
+            (script, scenario) => new SubordinateScreen(script, scenario).RunAsync(),
+            (state, rng) =>
+            {
+                state.CallArg = (Sys3Int)(rng.Next(4) == 0 ? rng.Next(0, 7) : 1);
+                state.RetVal = (Sys3Int)rng.Next(0, 2);
+            },
+            Scribble,
+            ["text 25", "text 71", "text 80", "text 208", "text 213"]);
+
+    [Fact]
+    public Task The_harem_picker_runs_exactly_as_Sﾊｰﾚﾑ() =>
+        CompareAsync(
+            "Sﾊｰﾚﾑ.ADV",
+            (script, scenario) => new HaremScreen(script, scenario).RunAsync(),
+            (state, rng) =>
+            {
+                for (int i = 0; i < 50; i++)
+                    state.Memory.Var(249 + i) = (Sys3Int)(rng.Next(3) == 0 ? 1 : 0);
+                state.F_Mill_State = (Sys3Int)rng.Next(0, 4);
+                state.Week = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(0, 65536) : rng.Next(9, 30));
+                for (int k = 1; k <= 50; k++)
+                    state.History[k].Harem_LastWeek = (Sys3Int)(rng.Next(2) == 0 ? 0 : rng.Next(0, 65536));
+            },
+            Scribble,
+            ["text 14", "text 62", "text 235", "text 241", "text 253", "text 256", "text 260", "text 264", "text 268",
+             "text 276", "text 280", "text 283"]);
 
     // ---------------------------------------------------------------------------------------
     // The comparison

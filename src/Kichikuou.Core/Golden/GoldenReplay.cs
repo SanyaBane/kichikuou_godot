@@ -84,10 +84,15 @@ public sealed class GoldenReplay
         "FIGT_A.ADV", "FIGT_B.ADV", "FIGT.ADV", "COM.ADV", "COMMAND.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV",
     };
 
-    /// <summary>The roots that read the pointer as the script does (the player phase and the command files).</summary>
+    /// <summary>
+    /// The roots that read the pointer as the script does (the player phase, the command files and
+    /// the picker screens; <c>Cﾒｲｷｭｳ</c> and the pickers read literals from the player's files, so
+    /// their replay is given as an entry point).
+    /// </summary>
     private static readonly IReadOnlySet<string> PointerRoots = new HashSet<string>
     {
         "COMMAND.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV", "Cﾒｲｷｭｳ.ADV",
+        "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sﾊｰﾚﾑ.ADV",
     };
 
     /// <summary>Whether a capture with this header can be replayed (its root has an entry point).</summary>

@@ -10,6 +10,49 @@ public sealed partial class ScriptContext
     /// <summary>The word table of the last <c>#label, 1:</c> (<see cref="ReadDataStatement"/> reads it).</summary>
     private IReadOnlyList<Sys3Int> _dataTable = [];
 
+    /// <summary>The string table of the last <c>#label, 1:</c> that named one, or null (<see cref="ReadStringStatement"/> reads it).</summary>
+    private IReadOnlyList<string>? _stringTable;
+
+    /// <summary>The data reader's position in <see cref="_stringTable"/> (<c>F1</c> moves it on).</summary>
+    private int _stringPosition;
+
+    /// <summary><c>#label, 1:</c> naming a word table: the data reader points at its first word.</summary>
+    public void SetDataTable(IReadOnlyList<Sys3Int> words)
+    {
+        _dataTable = words;
+        _stringTable = null;
+    }
+
+    /// <summary><c>#label, 1:</c> naming a run of strings: the data reader points at the first.</summary>
+    public void SetStringTable(IReadOnlyList<string> strings)
+    {
+        _stringTable = strings;
+        _stringPosition = 0;
+        _dataTable = [];
+    }
+
+    /// <summary><c>F3, var, k:</c> — word <paramref name="k"/> of the current word table.</summary>
+    public Sys3Int ReadDataWord(ScriptRef at, Sys3Int k) =>
+        k.Value < _dataTable.Count
+            ? _dataTable[k.Value]
+            : throw new ScenarioFormatException($"{at}: word {k.Value} is outside the data table ({_dataTable.Count} words).");
+
+    /// <summary>
+    /// <c>F1, slot, skip:</c> — string variable <paramref name="slot"/> := the string
+    /// <paramref name="skip"/> places after the reader's position, which moves past it (<c>commandF1</c>).
+    /// </summary>
+    public void ReadDataString(ScriptRef at, Sys3Int slot, Sys3Int skip)
+    {
+        if (_stringTable is null)
+            throw new ScenarioFormatException($"{at}: F1 with no string table set.");
+        int index = _stringPosition + skip.Value;
+        if (index >= _stringTable.Count)
+            throw new ScenarioFormatException($"{at}: string {index} is outside the string table ({_stringTable.Count} strings).");
+        if (slot.Value < State.Strings.Length)
+            State.Strings[slot.Value] = _stringTable[index];
+        _stringPosition = index + 1;
+    }
+
     /// <summary>Runs <paramref name="statements"/> in order, up to the first return.</summary>
     public async Task RunAsync(IEnumerable<ScriptStatement> statements)
     {
@@ -27,16 +70,11 @@ public sealed partial class ScriptContext
                     CopyString(Evaluate(s.Target), Evaluate(s.Source));
                     break;
                 case SetDataTableStatement s:
-                    _dataTable = s.Words;
+                    SetDataTable(s.Words);
                     break;
                 case ReadDataStatement s:
-                    {
-                        int k = Evaluate(s.Index).Value;
-                        if (k >= _dataTable.Count)
-                            throw new ScenarioFormatException($"{s.At}: word {k} is outside the data table ({_dataTable.Count} words).");
-                        State.WriteVariable(s.Var, _dataTable[k]);
-                        break;
-                    }
+                    State.WriteVariable(s.Var, ReadDataWord(s.At, Evaluate(s.Index)));
+                    break;
                 case CallFileStatement s:
                     await CallAsync(s.File);
                     break;

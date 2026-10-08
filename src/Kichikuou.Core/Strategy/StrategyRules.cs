@@ -5,9 +5,10 @@ using Kichikuou.Core.Sys3;
 namespace Kichikuou.Core.Strategy;
 
 /// <summary>
-/// The strategic rule files as story hooks: a call of <c>COM.ADV</c>, <c>COMMAND.ADV</c> or one of
-/// the ported command files runs its port on the bound context; every other file goes to the hooks
-/// it wraps (the battle, the pickers, the save screen — whatever is not ported here). Given to a
+/// The strategic rule files as story hooks: a call of <c>COM.ADV</c>, <c>COMMAND.ADV</c>, one of
+/// the ported command files or one of their picker screens runs its port on the bound context;
+/// every other file goes to the hooks it wraps (the battle, the save screen — whatever is not
+/// ported here). Given to a
 /// <see cref="SceneRunner"/> as its rule hooks, so a scene that calls a rule file and a rule file
 /// that calls a scene both work:
 /// <code>
@@ -26,6 +27,7 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
     public static readonly IReadOnlySet<string> PortedFiles = new HashSet<string>(StringComparer.Ordinal)
     {
         "COM.ADV", "COMMAND.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV", "Cﾒｲｷｭｳ.ADV",
+        "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sﾊｰﾚﾑ.ADV",
     };
 
     /// <summary>The context the rule files run on; set once with <see cref="Bind"/>.</summary>
@@ -49,6 +51,9 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
         "Cﾌﾞｶ.ADV" => new SubordinatesCommand(Script).RunAsync(),
         "Cﾊｰﾚﾑ.ADV" => new HaremCommand(Script).RunAsync(),
         "Cﾒｲｷｭｳ.ADV" => new DungeonCommand(Script, scenario).RunAsync(),
+        "Sﾌﾞﾀｲ.ADV" => new DeploymentScreen(Script, scenario).RunAsync(),
+        "Sﾌﾞｶ.ADV" => new SubordinateScreen(Script, scenario).RunAsync(),
+        "Sﾊｰﾚﾑ.ADV" => new HaremScreen(Script, scenario).RunAsync(),
         _ => unported.RunEventAsync(file, entry),
     };
 }

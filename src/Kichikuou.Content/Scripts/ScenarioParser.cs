@@ -16,8 +16,10 @@ namespace Kichikuou.Content.Scripts;
 /// Forms: labels <c>*L_x:</c>; <c>@L_x:</c>, <c>{expr:</c> … <c>}</c>, <c>\L_x:</c>, <c>\0:</c>,
 /// <c>%#FILE.ADV:</c>, <c>%0:</c>, <c>&amp;#FILE.ADV:</c>; <c>!VARnnnn : expr!</c>; text commands
 /// (<c>'…'</c>, <c>R</c>, <c>X</c>, <c>H</c>, <c>HH</c>, <c>MP</c>, with <c>ZH 1:</c> in between) grouped
-/// into runs; menus <c>$L_x$</c>, <c>$</c> and <c>]</c>; <c>A</c>; and the commands in
-/// <see cref="Command"/>. Expressions: see <see cref="Expr"/>.
+/// into runs; menus <c>$L_x$</c>, <c>$</c> and <c>]</c>; <c>A</c>; the data reader <c>#L_x, 1:</c>
+/// (<see cref="DataTable"/>) with <c>F1</c>/<c>F3</c>, and the data lines in the code area
+/// (<c>_L_x:</c>, <c>"text"</c>); and the commands in <see cref="Command"/>. Expressions: see
+/// <see cref="Expr"/>.
 /// </remarks>
 internal static partial class ScenarioParser
 {
@@ -34,13 +36,49 @@ internal static partial class ScenarioParser
     /// <summary>Reads a whole file as a program.</summary>
     public static ScriptProgram Program(string file, string[] lines)
     {
-        var builder = new ProgramBuilder(file);
+        var builder = new ProgramBuilder(file, lines);
         for (int i = 0; i < lines.Length; i++)
             builder.Add(new ScriptRef(file, i + 1), lines[i].Trim());
         return builder.Finish(new ScriptRef(file, lines.Length));
     }
 
-    private sealed class ProgramBuilder(string file)
+    /// <summary>
+    /// <c>#label, 1:</c> (<c>getDataTableAdr</c>): the label <c>*L_a:</c> holds an address word
+    /// <c>_L_b:</c>, and the data reader points at what follows <c>*L_b:</c> — a word table
+    /// <c>[w, w, …]</c> (which may span lines) or a run of <c>"text"</c> lines.
+    /// </summary>
+    public static ScriptStatement DataTable(ScriptRef at, string label, string[] lines)
+    {
+        int pointer = Array.FindIndex(lines, l => l.Trim() == $"*{label}:");
+        if (pointer < 0 || pointer + 1 >= lines.Length || !AddressWordRegex().IsMatch(lines[pointer + 1].Trim()))
+            throw new ScenarioFormatException($"{at}: no address word at *{label}:.");
+        string target = AddressWordRegex().Match(lines[pointer + 1].Trim()).Groups[1].Value;
+        int table = Array.FindIndex(lines, l => l.Trim() == $"*{target}:");
+        if (table < 0)
+            throw new ScenarioFormatException($"{at}: label *{target}: not found.");
+        if (table + 1 < lines.Length && DataStringRegex().IsMatch(lines[table + 1].Trim()))
+        {
+            var strings = new List<string>();
+            for (int i = table + 1; i < lines.Length && DataStringRegex().Match(lines[i].Trim()) is { Success: true } s; i++)
+                strings.Add(Unescape(s.Groups[1].Value));
+            return new SetStringTableStatement(at, strings);
+        }
+        var text = new StringBuilder();
+        for (int i = table + 1; i < lines.Length; i++)
+        {
+            text.Append(lines[i].Trim());
+            if (text.Length > 0 && text[^1] == ']')
+                break;
+        }
+        string list = text.ToString();
+        if (!list.StartsWith('[') || !list.EndsWith(']'))
+            throw new ScenarioFormatException($"{at}: no word table after *{target}:.");
+        return new SetDataTableStatement(at, list[1..^1].Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .Select(w => (Sys3Int)Number(at, w))
+            .ToArray());
+    }
+
+    private sealed class ProgramBuilder(string file, string[] lines)
     {
         private readonly List<ScriptStatement> _statements = [];
         private readonly Dictionary<string, int> _labels = new(StringComparer.Ordinal);
@@ -75,6 +113,10 @@ internal static partial class ScenarioParser
                 _blocks.Push(_statements.Count);
                 _statements.Add(new IfStatement(at, Expr(at, m.Groups[1].Value), -1));
             }
+            else if ((m = DataTableRegex().Match(line)).Success)
+                _statements.Add(DataTable(at, m.Groups[1].Value, lines));
+            else if (AddressWordRegex().IsMatch(line) || DataStringRegex().IsMatch(line))
+                _statements.Add(new DataStatement(at));
             else
                 _statements.Add(Statement(at, line));
         }
@@ -281,6 +323,12 @@ internal static partial class ScenarioParser
             case "ZZ0":
                 Count(1);
                 return new QuitStatement(at, Arg(0));
+            case "F1":
+                Count(2);
+                return new ReadStringStatement(at, Arg(0), Arg(1));
+            case "F3":
+                Count(2);
+                return new ReadDataStatement(at, VarArg(0), Arg(1));
         }
         if (EngineCommands.TryGetValue(command, out var counts))
         {
@@ -419,6 +467,16 @@ internal static partial class ScenarioParser
 
     [GeneratedRegex(@"^\$(L_[0-9a-f]+)\$$")]
     private static partial Regex MenuItemRegex();
+
+    [GeneratedRegex(@"^#(L_[0-9a-f]+), 1:$")]
+    public static partial Regex DataTableRegex();
+
+    [GeneratedRegex(@"^_(L_[0-9a-f]+):$")]
+    private static partial Regex AddressWordRegex();
+
+    /// <summary>A string of a data table: <c>"text"</c> on its own line.</summary>
+    [GeneratedRegex(@"^""((?:[^""\\]|\\.)*)""$")]
+    private static partial Regex DataStringRegex();
 
     [GeneratedRegex(@"^!VAR(\d{4}) : (.+)!$")]
     public static partial Regex AssignRegex();

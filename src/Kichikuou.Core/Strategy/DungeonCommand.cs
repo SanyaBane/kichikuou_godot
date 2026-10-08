@@ -12,7 +12,7 @@ namespace Kichikuou.Core.Strategy;
 /// <c>Y 4, 3</c>), or, in the prologue, nothing more. The search (part D1) and the dispatch of
 /// the later stages fail as not ported.
 /// </summary>
-public sealed class DungeonCommand(ScriptContext script, IScenarioSource scenario) : CommandFile(script, "Cﾒｲｷｭｳ.ADV")
+public sealed class DungeonCommand(ScriptContext script, IScenarioSource scenario) : CommandFile(script, "Cﾒｲｷｭｳ.ADV", scenario)
 {
     /// <summary>
     /// <c>:29-150</c>: each dungeon's <c>MS 8, "name"</c> line (<c>MS 9</c> for 9, never printed —
@@ -196,14 +196,5 @@ public sealed class DungeonCommand(ScriptContext script, IScenarioSource scenari
         await Script.ShowAsync(new EngineEvent("ZM", [(Sys3Int)32]));
         await TextAsync(line);
         await Script.ShowAsync(new EngineEvent("ZM", [(Sys3Int)24]));
-    }
-
-    /// <summary><c>MS n, "text":</c> at <paramref name="line"/> of the file, with the text from the player's files.</summary>
-    private void SetLiteral(int line)
-    {
-        var at = Ref(line);
-        var statement = scenario.ReadStatement(at) as SetStringStatement
-            ?? throw new ScenarioFormatException($"{at}: expected MS n, \"text\".");
-        Script.SetString(statement.Slot, statement.Text);
     }
 }

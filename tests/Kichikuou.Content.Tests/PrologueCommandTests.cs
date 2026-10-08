@@ -12,8 +12,9 @@ namespace Kichikuou.Content.Tests;
 /// A prologue week's player phase on the world the boot and the new game build, with the rule
 /// files routed by <see cref="StrategyRules"/> and the scenes run from the player's decompile by
 /// <see cref="SceneRunner"/>: Pillage on province 34, a talk with Bound, a visit to Sill, the
-/// hideout, Turn END. The party picker, the battle and the list pickers are not ported yet and
-/// answer through a recording hook. Skipped without the decompile.
+/// hideout, Turn END. The pickers run as ports and are answered with clicks on their grids and
+/// bars; the battle is not ported into the router yet and answers through a recording hook.
+/// Skipped without the decompile.
 /// </summary>
 public class PrologueCommandTests(ITestOutputHelper output)
 {
@@ -39,32 +40,35 @@ public class PrologueCommandTests(ITestOutputHelper output)
         unported.Calls.Clear();
 
         state.Week = 10;                                                // MAIN's week + 1 and more: COM plays Gｿｳﾙ 4
-        unported.Effects["Sﾌﾞﾀｲ.ADV"] = s => s.Bt_PlayerParty1 = 1;
         unported.Effects["FIGT_A.ADV"] = s => s.Bt_Result = 2;
-        unported.Effects["Sﾌﾞｶ.ADV"] = s =>
-        {
-            if (s.CallArg == 1)
-                (s.CallArg, s.Unit_Cur) = ((Sys3Int)3, (Sys3Int)3);    // Bound
-        };
-        unported.Effects["Sﾊｰﾚﾑ.ADV"] = s => s.CallArg = 1;           // Sill
         int exp = state.Units[1].Exp.Value;
         int gold = state.Gold.Value;
+        var rance = state.Units[1];
+        int expenses = (rance.DeployCost + rance.Troops / 300).Value;
+        state.Hist_Cur = 0;
+        int spent = state.History[0].MilitaryExp.Value;
 
         input.Province(34);
+        input.Pick(1);                                                  // Sﾌﾞﾀｲ: Rance,
+        input.Button(1);                                                // Attack
         input.Menu(2);                                                  // Subordinates
+        input.Pick(3);                                                  // Sﾌﾞｶ: Bound
         input.Menu(1);                                                  // Harem
+        input.Pick(1);                                                  // Sﾊｰﾚﾑ: Sill
         input.Dungeon(1);
         input.Menu(5);                                                  // Turn END
         await script.CallFileAsync("COMMAND.ADV");
 
         output.WriteLine($"rules: {string.Join(", ", unported.Calls.Select(c => $"{c.File} {c.Entry}"))}");
-        output.WriteLine($"draws: {string.Join(", ", random.Draws)}; inputs: {input.Reads} pointer reads");
-        Assert.Equal(
-            ["Sﾌﾞﾀｲ.ADV", "FIGT_A.ADV", "Sﾌﾞｶ.ADV", "Sﾌﾞｶ.ADV", "Sﾌﾞｶ.ADV", "Sﾊｰﾚﾑ.ADV"],
-            unported.Calls.Select(c => c.File));
+        output.WriteLine($"draws: {string.Join(", ", random.Draws)}; inputs: {input.Reads} pointer reads; war expenses {expenses}");
+        Assert.Equal(["FIGT_A.ADV"], unported.Calls.Select(c => c.File));
         Assert.Equal(0, input.Pending);
+        Assert.Equal(1, state.Bt_PlayerParty1.Value);                   // Rance went alone,
+        Assert.Equal(0, state.Bt_PlayerParty2.Value);
+        Assert.Equal(2, state.Units[1].Status.Value);                   // spent for the week,
+        Assert.Equal(spent + expenses, state.History[0].MilitaryExp.Value);
         Assert.Equal(1, state.F_Thieves_State.Value);                   // the thieves' first raid
-        Assert.Equal(gold + 1, state.Gold.Value);
+        Assert.Equal(gold - expenses + 1, state.Gold.Value);            // paid for, and one gold won
         Assert.Equal(0, state.Ui_CmdAttackAvail.Value);
         Assert.Equal(0, state.Ui_CmdSubordAvail.Value);                 // the week's talk
         Assert.Equal(0, state.Ui_CmdHaremAvail.Value);                  // the week's visit
@@ -98,6 +102,15 @@ public class PrologueCommandTests(ITestOutputHelper output)
         public void Province(int p) => Click(() => (state.Provs[p].MapX, state.Provs[p].MapY));
 
         public void Dungeon(int d) => Click(() => (state.Dgns[d].MapX, state.Dgns[d].MapY));
+
+        /// <summary>A click on unit or girl <paramref name="id"/> in a picker's grid.</summary>
+        public void Pick(int id) => ScreenClick(PointerScript.PickerCell(id));
+
+        /// <summary>A click on bar button <paramref name="button"/> (1-3) under a picker's grid.</summary>
+        public void Button(int button) => ScreenClick(PointerScript.PickerButton(button));
+
+        private void ScreenClick((int X, int Y) at) => _gestures.Enqueue(() =>
+            [new((Sys3Int)16, (Sys3Int)at.X, (Sys3Int)at.Y), new(Sys3Int.Zero, (Sys3Int)at.X, (Sys3Int)at.Y)]);
 
         /// <summary>A right click on the map, then the command menu's item.</summary>
         public void Menu(int item)
