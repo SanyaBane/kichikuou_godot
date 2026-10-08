@@ -271,6 +271,11 @@ after "From 1" would verify `NewGame()` (hook-enter dump = boot + three values).
 
 ## 9. Open questions
 
+Answered by the owner and F1 (2026-10-08): 1 — nothing is committed, the record files are read
+at run time (decision 1 in [README.md](README.md)); 2 — the port reads the raw decompile
+(`KICHIKUOU_SCENARIO_DIR`) for now; reading the `.ALD` directly may replace it later; 3 — the
+debug starts are not ported (`GameSetup.NewGameAsync` rejects `DebugMode ≠ 0`).
+
 1. **Commit numbers or not?** Runtime loader over the player's decompile (nothing committed) vs.
    generated C# with stat numbers (like the battle constants, but a whole table). Owner decision.
 2. **Does the port read the decompiled `.ADV` at run time?** Today `Kichikuou.Content` does

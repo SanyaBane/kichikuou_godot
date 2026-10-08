@@ -22,6 +22,17 @@ public sealed partial class ScriptContext
         await MapAsync();
     }
 
+    /// <summary>
+    /// <c>!CallArg : mode! %#WAO_MAP.ADV</c> called directly (e.g. op 3 by the new game,
+    /// <c>ｽﾀMENU.ADV:283-284</c>): the <see cref="WaoMapEvent"/>, then the operation's state effects.
+    /// </summary>
+    public async Task WaoMapCallAsync(Sys3Int mode)
+    {
+        State.CallArg = mode;
+        await View.ShowAsync(new WaoMapEvent(mode));
+        MapWaoMap();
+    }
+
     /// <summary><c>%#M.ADV</c> with the operation in <c>CallArg</c> (<c>M.ADV:1-242</c>).</summary>
     internal async Task MapAsync()
     {

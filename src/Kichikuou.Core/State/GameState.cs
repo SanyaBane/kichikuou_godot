@@ -24,6 +24,38 @@ public sealed partial class GameState
 
     /// <summary>String variables (<c>MS</c>/<c>MM</c>), 1-based.</summary>
     public string[] Strings => Memory.Strings;
+
+    /// <summary>
+    /// Variable <paramref name="number"/> as the script reads it: through its <c>DS</c> binding
+    /// (page slot <c>Offset + cursor</c>) when it has one, otherwise the plain slot. For code that
+    /// runs script statements by number (data files, scenes); rule code uses the properties.
+    /// </summary>
+    public Sys3Int ReadVariable(int number) =>
+        BindingOf(number) is { } b
+            ? Memory.ReadPage(b.Page, b.Offset + Memory.Var(b.Cursor).Value)
+            : Memory.Var(number);
+
+    /// <summary>Writes variable <paramref name="number"/> as the script does (see <see cref="ReadVariable"/>).</summary>
+    public void WriteVariable(int number, Sys3Int value)
+    {
+        if (BindingOf(number) is { } b)
+            Memory.WritePage(b.Page, b.Offset + Memory.Var(b.Cursor).Value, value);
+        else
+            Memory.Var(number) = value;
+    }
+
+    private static readonly PageBinding?[] BindingByVar = BuildBindingIndex();
+
+    private static PageBinding? BindingOf(int number) =>
+        (uint)number < (uint)BindingByVar.Length ? BindingByVar[number] : throw new ArgumentOutOfRangeException(nameof(number));
+
+    private static PageBinding?[] BuildBindingIndex()
+    {
+        var index = new PageBinding?[ScriptMemory.VariableCount];
+        foreach (var b in VariableCatalog.Bindings)
+            index[b.Var] = b;
+        return index;
+    }
 }
 
 /// <summary>A record view created for a cursor value.</summary>

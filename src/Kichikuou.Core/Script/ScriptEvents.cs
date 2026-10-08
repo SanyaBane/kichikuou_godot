@@ -63,5 +63,11 @@ public sealed record MusicEvent(Sys3Int Track) : ScriptEvent;
 /// </summary>
 public sealed record MapEvent(Sys3Int Mode) : ScriptEvent;
 
+/// <summary>
+/// A direct call of <c>WAO_MAP.ADV</c> with <c>CallArg</c> = <paramref name="Mode"/> (3 redraws the
+/// map tiles and every province marker). Raised before the call's state effects.
+/// </summary>
+public sealed record WaoMapEvent(Sys3Int Mode) : ScriptEvent;
+
 /// <summary><c>EC 0</c>: clears the dungeon screen (the dungeon counterpart of <see cref="MapEvent"/>).</summary>
 public sealed record ClearScreenEvent : ScriptEvent;
