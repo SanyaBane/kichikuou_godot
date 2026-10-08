@@ -9,12 +9,18 @@ reasoning, rejected alternatives, unverified facts about the source game, and th
 
 ## Status
 
-No game code yet. Spike surface analysis done — see [docs/spike-findings.md](docs/spike-findings.md)
-for measurements, data model, local paths of the game and tools. Porting strategy decided
-(hybrid, see "Next step" in the brief). The variable dictionary [docs/variables.tsv](docs/variables.tsv)
+Spike surface analysis done — see [docs/spike-findings.md](docs/spike-findings.md) for
+measurements, data model, local paths of the game and tools. Porting strategy decided (hybrid,
+see "Next step" in the brief). The variable dictionary [docs/variables.tsv](docs/variables.tsv)
 is done; when reading the scenario, use the renamed copy (`tools/analysis/rename_vars.py`) and
-keep the dictionary updated when a meaning is confirmed or corrected. Solution skeleton done
-(System 3 integer and RNG primitives). Next: port battle (`FIGT*.ADV`) as the first rules slice.
+keep the dictionary updated when a meaning is confirmed or corrected.
+
+The **battle** (`FIGT*.ADV`) is ported to `src/Kichikuou.Core/Combat` following
+[docs/porting-conventions.md](docs/porting-conventions.md) and the spec in
+[docs/battle/](docs/battle/README.md); unit tests per procedure pass, but no end-to-end battle
+test and no comparison with the original game exist yet. Next: review of the battle port and
+end-to-end tests, then the golden-test harness on a patched xsystem35
+(`F:\sources\Rance\xsystem35-sdl2`, built with MSYS2).
 
 ## Layout
 
