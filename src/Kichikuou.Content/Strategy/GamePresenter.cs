@@ -9,8 +9,16 @@ using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Content.Strategy;
 
-/// <summary>A palette fade (<c>PF</c>, <c>PW</c>) for the presentation engine to animate: from one amount to another over <paramref name="Ticks"/> × 16 ms.</summary>
-public sealed record FadeRequest(byte From, byte To, bool ToWhite, int Ticks);
+/// <summary>A palette fade (<c>PF</c>, <c>PW</c>) for the presentation engine to animate: from one amount to another at the command's <paramref name="Rate"/>.</summary>
+public sealed record FadeRequest(byte From, byte To, bool ToWhite, int Rate)
+{
+    /// <summary>
+    /// xsystem35's <c>ags_fadeIn</c>/<c>ags_fadeOut</c>: <c>rate * 16 * 1000 / 60</c> ms (≈267 ms a
+    /// unit; the scenes' <c>FadeSpeed</c> 4 is 1066 ms), not the 16 ms tick of <c>Y 3</c>. The
+    /// message skip does not shorten it (<c>ags_runEffect</c> waits without <c>KEYWAIT_SKIPPABLE</c>).
+    /// </summary>
+    public TimeSpan Duration => TimeSpan.FromMilliseconds(Rate * 16 * 1000 / 60);
+}
 
 /// <summary>
 /// Draws a whole game in the original's layout (part G0, owner's decisions 3 and 9) on two layers.

@@ -113,6 +113,26 @@ public class GamePresenterTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// <c>PF</c>/<c>PW</c> last <c>rate * 16 * 1000 / 60</c> ms as xsystem35's <c>ags_fadeIn</c>/<c>ags_fadeOut</c>
+    /// (<c>ags.c</c>), not <c>rate</c> × 16 ms: the scenes' <c>PF1 FadeSpeed</c> (4) takes 1066 ms.
+    /// </summary>
+    [Fact]
+    public void A_fade_lasts_as_long_as_the_engines()
+    {
+        var missing = Path.Combine(Path.GetTempPath(), "kichikuou-no-data");
+        var presenter = new GamePresenter(new ScenarioText(missing), new CgLibrary(missing), new BoxGlyphs());
+        presenter.Bind(new GameState());
+
+        presenter.Show(new EngineEvent("PF1", [(Sys3Int)4]));
+        var fadeOut = presenter.TakeFade();
+        Assert.Equal(new FadeRequest(0, 255, false, 4), fadeOut);
+        Assert.Equal(TimeSpan.FromMilliseconds(1066), fadeOut!.Duration);
+
+        presenter.Show(new EngineEvent("PW0", [(Sys3Int)1]));
+        Assert.Equal(TimeSpan.FromMilliseconds(266), presenter.TakeFade()!.Duration);
+    }
+
+    /// <summary>
     /// <c>Iｼﾚｲﾌﾞ.ADV:78-89</c>: <c>M.ADV</c> 1 scrolls the map with full-screen copies of the view,
     /// which wipe <c>WAO_SUB</c>'s pictures although their variables still hold them; only the
     /// right portrait is drawn again (<c>321</c>), so Rance and the centre picture stay gone.
