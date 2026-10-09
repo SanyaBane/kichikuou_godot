@@ -198,8 +198,9 @@ battle files, and the helpers `M`, `WAO_MAP`, `WAO_SUB`, `PCMPLAY`. Unreachable 
 1. Path A never sets `Prov_Cur` before the duel, so `FIGT_A.ADV:1-30` sees the province
    clicked last: province 55 would start `IJAPAN` 3 (`N_JapanInv_Stage := 1`), and a non-zero
    `Prov_Defense` makes `FIGT_A:43-44` replace `TroopLimit 5000` with `Prov_BattleArea`
-   (`Iﾄｳｿﾞｸ:1394`). Capture a week-23 Turn END.
+   (`Iﾄｳｿﾞｸ:1394`). Capture a week-23 Turn END (not in the owner's first prologue run, 2026-10-09).
 2. The map hit-tests (`COMMAND.ADV:99, 145`) start at index 0: a click near (0, 0) would pick
-   province 0 / dungeon 0 or 27-30.
-3. `Cﾒｲｷｭｳ.ADV:11-13` reads a leftover `Cmdr_Cur` on dungeon clicks 2/3/15.
+   province 0 / dungeon 0 or 27-30. Not yet captured (2026-10-09).
+3. `Cﾒｲｷｭｳ.ADV:11-13` reads a leftover `Cmdr_Cur` on dungeon clicks 2/3/15 — the port matches the
+   original on the two such clicks of the owner's prologue run (2026-10-09, docs/golden-tests.md).
 4. A unit left at status 0 by a battle is not refreshed by `MAIN.ADV:56`.

@@ -166,6 +166,21 @@ public class GoldenReplayTests
     }
 
     [Fact]
+    public async Task A_path_the_port_does_not_reach_ends_the_comparison_there()
+    {
+        var capture = Parse(await RecordPlainsAttackAsync());
+
+        var report = await GoldenReplay.RunAsync(capture,
+            entryPoint: _ => throw new NotSupportedException("FIGT.ADV:1: not ported yet."));
+
+        Assert.True(report.Passed, report.Describe());
+        Assert.Equal("FIGT.ADV:1: not ported yet.", report.Unported);
+        Assert.Equal(0, report.ConsumedRecords);
+        Assert.Empty(report.Checkpoints);
+        Assert.Contains("as far as the port reaches", report.Describe());
+    }
+
+    [Fact]
     public async Task A_different_final_value_is_reported_by_name()
     {
         var capture = Parse(await RecordPlainsAttackAsync());

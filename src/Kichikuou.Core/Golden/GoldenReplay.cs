@@ -37,7 +37,13 @@ public sealed class GoldenReport(GoldenCapture capture)
     /// <summary>Events consumed before the end or the divergence (for context).</summary>
     public int ConsumedRecords { get; set; }
 
-    /// <summary>The replay ran to the end and every compared location matched.</summary>
+    /// <summary>
+    /// The original went on along a path the port does not reach yet (its <see cref="NotSupportedException"/>),
+    /// or <c>null</c>: every event up to there and every checkpoint before it matched, the rest is not compared.
+    /// </summary>
+    public string? Unported { get; set; }
+
+    /// <summary>Every compared event and location matched (up to <see cref="Unported"/> when the port stopped there).</summary>
     public bool Passed => Divergence is null && Checkpoints.All(c => !c.Failures.Any());
 
     /// <summary>A readable account: the divergence, then each checkpoint's failures (capped).</summary>
@@ -45,7 +51,9 @@ public sealed class GoldenReport(GoldenCapture capture)
     {
         var sb = new StringBuilder();
         sb.Append($"{Capture.Source}: {Capture.Root}, {Capture.Records.Count} events, seed {Capture.Seed}");
-        sb.Append(Passed ? " — matches the original.\n" : " — DIFFERS from the original.\n");
+        sb.Append(!Passed ? " — DIFFERS from the original.\n"
+            : Unported is not null ? $" — matches the original as far as the port reaches ({ConsumedRecords} events); it stops at: {Unported}\n"
+            : " — matches the original.\n");
         if (Divergence is not null)
             sb.Append($"Diverged after {ConsumedRecords} events: {Divergence}\n");
         foreach (var checkpoint in Checkpoints)
@@ -199,6 +207,13 @@ public sealed class GoldenReplay
             catch (ScenarioJumpException e)
             {
                 jumped = e.File;
+            }
+            catch (NotSupportedException e)
+            {
+                // A path not ported yet (e.g. the Leazas week): what the port played matched; the rest waits for its port.
+                _report.Unported = e.Message;
+                _report.ConsumedRecords = _consumed.Count;
+                return;
             }
 
             if (jumped is not null)

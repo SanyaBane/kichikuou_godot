@@ -190,7 +190,8 @@ numbers are the engine's (`MS n` writes string n).
    `Cﾊｰﾚﾑ.ADV` → `EnemyCityCommand`, `DistantCityCommand`, `SubordinatesCommand`, `HaremCommand`
    (`GoldenReplay.ReplayableRoots`, `CanReplay`; their paths beyond the prologue throw
    `NotSupportedException`). `Cﾒｲｷｭｳ.ADV` reads its `MS` strings from the player's files, so its
-   replay is `RunAsync(capture, entryPoint: s => new DungeonCommand(s, scripts).RunAsync())`; the
+   replay is `RunAsync(capture, entryPoint: s => new DungeonCommand(s, scripts).RunAsync())`
+   (`DungeonReplayTests` in the content tests); the
    same holds for the `screens` group (`Sﾌﾞﾀｲ`, `Sﾌﾞｶ`, `Sﾊｰﾚﾑ` → `DeploymentScreen`,
    `SubordinateScreen`, `HaremScreen`, which read their button labels and the harem's name table),
    replayed by `ScreenReplayTests` in the content tests. The
@@ -210,7 +211,11 @@ numbers are the engine's (`MS n` writes string n).
    from `date` and `GetCdPositionAsync` from `cdpos` (`SceneReplayTests`).
 6. **Result.** After the entry point returns (or throws `ScenarioJumpException` for a capture
    that ends in `jump` to the same file), every record must have been consumed and the memory is
-   compared with the `exit` dump.
+   compared with the `exit` dump. When the port throws `NotSupportedException` (a path not ported
+   yet, e.g. the Leazas week or a command file at stage 1), the comparison ends there: every event
+   and hook checkpoint up to it matched, the rest waits for its port. The report passes and says
+   so (`GoldenReport.Unported`: "matches the original as far as the port reaches"), as the
+   differential tests compare an unported path up to where the port stops.
 7. **Passive records.** In a battle, `mouse` and `cursor` records are skipped: the battle's `IM`
    loops only wait for the button's release (`FIGT.ADV:829, 1006, 1016, 1105, 1115`,
    `FIGT_B.ADV:47, 341`; `RetVal` ends 0, the position goes to the ignored `Ui_MouseX/Y`) and no
@@ -284,6 +289,7 @@ here with its reason, never as a blanket rule.
 | enemy info and the player's retreat (2026-10-08) | none — matches | — |
 | F2: the weekly command flags, the harem list, `Ui_ClickedProv`, `Ui_CityScouted` and the page-10 markers compared (2026-10-08) | none — all 37 battle captures still match | — |
 | F2: boot capture (`SET.ADV`, windowless run to the title, 2026-10-08) | no draws, no input; one hook (`ﾛｰﾄﾞｾｰﾌﾞ` with `RetVal 10`); the exit dump has the generated layout (`GoldenPendingTests`) | replayed through `GameSetup.SetAsync` with the player's `SET_*` files (`PlayerBootTests` in the content tests, `GoldenReplay.RunAsync(entryPoint:)`): 0 differences at the hook and at the exit; the layout is checked on the exit dump, since SET's own `DC`/`DS` create it |
+| The owner's prologue run (2026-10-09, seed 50114115; 113 complete captures, two `.part` from quitting): a new game, weeks 9-12 at stage 0 with every command (harem with Sill, Soul and Anasel, subordinate talks, the hideout and two of the spots 2/3/15, `Cﾃｷﾄｼ2`, pillages of 33/34 won and lost, the party screen), a save in week 11, path B (Merci, the duel lost, `ｵｰﾌﾟﾆﾝｸﾞ`, `Iﾊﾝﾗﾝ`), the first Leazas week with its nation turn `TCﾘｰｻﾞｽ` and two FIGT_B defences | **none — every capture matches**: 4 `MAIN@20` weeks (the stage-0 → stage-1 transition included), 6 `COM`, 5 `COMMAND`, 26 command files, 30 picker screens, 22 scenes, 6 dungeon clicks, 7 battles (all 44 battle captures still match), the boot. Five stage-1 captures (the Leazas `MAIN@20`, `Cﾃｷﾄｼ` attack, `Cﾌﾞｶ` troop menu ×2, the later harem) match up to the unported path. Not played, so still open: path A's week-23 Turn END (README open item 1) and a click near the map's top-left corner (item 2); `TCﾘｰｻﾞｽ` waits for N1 | the replay ends the comparison at a `NotSupportedException` (`GoldenReport.Unported`, above); the `dungeon` group is now replayed (`DungeonReplayTests`) |
 
 ## Harness configuration
 
