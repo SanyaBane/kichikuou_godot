@@ -21,6 +21,9 @@ param(
     [long]$Seed = -1,
     # Also log every page call of the session to OutDir\trace.log.
     [switch]$Trace,
+    # Print every random draw to this console ("rnd k: Y 4, n = result page@addr"), to compare
+    # with the port's --rnglog.
+    [switch]$RngLog,
     # Extra arguments for xsystem35 (e.g. '-savedir', 'D:\saves').
     [string[]]$ExtraArgs = @()
 )
@@ -37,13 +40,22 @@ $env:XSYS35_GOLDEN_DIR = $OutDir
 $env:XSYS35_GOLDEN_HED = $Hed
 $env:XSYS35_GOLDEN_CLASSES = Join-Path $PSScriptRoot 'classes.txt'
 $env:XSYS35_GOLDEN_TRACE = if ($Trace) { '1' } else { '' }
+$env:XSYS35_RNGLOG = if ($RngLog) { '1' } else { '' }
 $env:PATH = "$MsysBin;$env:PATH"
+# The page names in the draw lines are UTF-8.
+if ($RngLog) { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 }
 
 Write-Host "Seed $Seed; captures go to $OutDir"
 # xsystem35 finds the game in the working directory (-gamedir is Android-only).
 Push-Location $GameDir
 try {
-    & $Exe @ExtraArgs
+    if ($RngLog) {
+        # A Windows GUI program: its stdout reaches this console only through a pipe (which also waits for it).
+        & $Exe @ExtraArgs | ForEach-Object { $_ }
+    }
+    else {
+        & $Exe @ExtraArgs
+    }
 }
 finally {
     Pop-Location

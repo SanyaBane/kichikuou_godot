@@ -12,11 +12,14 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal static class EngineState
 {
-    private static XSystem35Random? _random;
+    private static IScriptRandom? _random;
     private static readonly Dictionary<string, MessageSkip> Skips = [];
 
-    /// <summary>The random generator, seeded on first use with <c>--seed N</c> or the tick count.</summary>
-    public static XSystem35Random Random
+    /// <summary>
+    /// The random generator, seeded on first use with <c>--seed N</c> or the tick count; with
+    /// <c>--rnglog</c> every draw is printed (<see cref="RandomLog"/>).
+    /// </summary>
+    public static IScriptRandom Random
     {
         get
         {
@@ -28,6 +31,8 @@ internal static class EngineState
                     ? s : (uint)System.Environment.TickCount;
                 GD.Print($"Kichikuou: random seed {seed}");
                 _random = new XSystem35Random(seed);
+                if (args.Contains("--rnglog"))
+                    _random = new RandomLog(_random);
             }
             return _random;
         }
