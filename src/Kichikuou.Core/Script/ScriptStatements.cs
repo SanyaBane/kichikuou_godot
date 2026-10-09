@@ -224,8 +224,9 @@ public sealed record TimerStatement(ScriptRef At, int Mode, int Var) : ScriptSta
 /// <c>QD slot</c> saves everything, <c>LP slot, var, count</c> / <c>QP slot, var, count</c>
 /// load / save <paramref name="Count"/> variables from <paramref name="Var"/> on, <c>QC to, from</c>
 /// copies a slot (<paramref name="Slot"/> = to, <paramref name="Other"/> = from), <c>LT slot, var</c>
-/// reads a slot's time stamp into six variables from <paramref name="Var"/> on. Every one but
-/// <c>LT</c> sets <c>RetVal</c> to its result code.
+/// reads a slot's time stamp into six variables from <paramref name="Var"/> on. Every one sets
+/// <c>RetVal</c> to its result code (<c>LT</c> too, <c>cmdl.c:83-104</c>); they run on
+/// <see cref="ScriptContext.Saves"/> (<c>ScriptContext.Save.cs</c>).
 /// </summary>
 public sealed record SaveDataStatement(
     ScriptRef At, string Command, ScriptExpr Slot, int? Var = null, ScriptExpr? Count = null, ScriptExpr? Other = null)

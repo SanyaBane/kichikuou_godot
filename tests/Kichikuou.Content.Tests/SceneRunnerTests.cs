@@ -288,7 +288,7 @@ public sealed class SceneRunnerTests : IDisposable
     [InlineData("\t!VAR0001 : 1!", "ran past the end")]
     [InlineData("\tUG VAR0001, 1:", "UG with no pushed variable")]
     [InlineData("\t\\0:", "label return with no label call")]
-    [InlineData("\tQD 1:", "not ported yet")]
+    [InlineData("\tZZ0 0:", "not ported yet")]
     [InlineData("\t$", "no menu item open")]
     public async Task Runtime_errors_name_the_location(string line, string message)
     {

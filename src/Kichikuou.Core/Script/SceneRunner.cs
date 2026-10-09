@@ -18,9 +18,10 @@ namespace Kichikuou.Core.Script;
 /// <c>\0:</c> returns to the innermost label call and <c>%0:</c> leaves the page, both restoring
 /// the variables pushed above their target (<c>pop_state</c>). A page call is a C# call, so each
 /// page keeps its own part of the stack. The menu being built (<c>$label$</c> … <c>]</c>) is
-/// engine state shared by all pages, as <c>nact-&gt;sel</c> is. Save data and quitting (<c>LD</c>,
-/// <c>QD</c>, <c>LP</c>, <c>QP</c>, <c>QC</c>, <c>LT</c>, <c>ZZ0</c>; only the save screen, the
-/// ending and <c>Iｱﾘｽ</c> use them) are not ported yet and fail when reached.
+/// engine state shared by all pages, as <c>nact-&gt;sel</c> is. The save-data commands (<c>LD</c>,
+/// <c>QD</c>, <c>LP</c>, <c>QP</c>, <c>QC</c>, <c>LT</c>; only the save screen uses them) run on
+/// the context's slots; quitting (<c>ZZ0</c>: the ending and <c>Iｱﾘｽ</c>) is not ported yet and
+/// fails when reached.
 /// </remarks>
 public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<string, bool>? isScene = null) : IStoryHooks
 {
@@ -248,11 +249,44 @@ public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<str
                 case EngineStatement s:
                     await View.ShowAsync(new EngineEvent(s.Command, s.Args.Select(Eval).ToArray()));
                     break;
-                case SaveDataStatement or QuitStatement:
+                case SaveDataStatement s:
+                    RunSaveCommand(s);
+                    break;
+                case QuitStatement:
                     throw new NotSupportedException($"{statement.At}: {statement.GetType().Name} is not ported yet.");
                 default:
                     throw new ScenarioFormatException($"{statement.At}: {statement.GetType().Name} cannot run in a scene.");
             }
+        }
+    }
+
+    /// <summary>The save-data commands on the context's slots; a successful <c>LD</c> leaves by <see cref="GameLoadedException"/>.</summary>
+    private void RunSaveCommand(SaveDataStatement s)
+    {
+        int Var() => s.Var ?? throw new ScenarioFormatException($"{s.At}: {s.Command} without its variable.");
+        Sys3Int Count() => Eval(s.Count ?? throw new ScenarioFormatException($"{s.At}: {s.Command} without its count."));
+        switch (s.Command)
+        {
+            case "QD":
+                Script.SaveAll(Eval(s.Slot));
+                break;
+            case "LD":
+                Script.LoadAll(Eval(s.Slot));
+                break;
+            case "LP":
+                Script.LoadPartial(Eval(s.Slot), Var(), Count());
+                break;
+            case "QP":
+                Script.SavePartial(Eval(s.Slot), Var(), Count());
+                break;
+            case "QC":
+                Script.CopySave(Eval(s.Slot), Eval(s.Other ?? throw new ScenarioFormatException($"{s.At}: QC without its source slot.")));
+                break;
+            case "LT":
+                Script.ReadSaveTime(Eval(s.Slot), Var());
+                break;
+            default:
+                throw new ScenarioFormatException($"{s.At}: unknown save-data command {s.Command}.");
         }
     }
 

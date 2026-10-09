@@ -13,7 +13,7 @@ namespace Kichikuou.Core.Strategy;
 /// <c>Iﾊﾝﾗﾝ</c>). The Leazas week (<c>MAIN.ADV:83-1045</c>: income, refill, expenses, the nation
 /// phases, the end-of-week checks) is not ported yet and fails with
 /// <see cref="NotSupportedException"/> before its first statement. Every file the loop calls —
-/// the save screen (<c>ﾛｰﾄﾞｾｰﾌﾞ</c>, a hook until the save/load part), <c>COMMAND</c>, the scenes —
+/// the save screen (<c>ﾛｰﾄﾞｾｰﾌﾞ</c>, <see cref="LoadSaveScreen"/> in the router), <c>COMMAND</c>, the scenes —
 /// goes through the context's hooks (<see cref="ScriptContext.CallFileAsync"/>).
 /// </summary>
 /// <remarks>
@@ -92,7 +92,7 @@ public sealed class WeekLoop(ScriptContext script)
     /// </summary>
     private async Task ThievesWeekAsync()
     {
-        await AutosaveAsync();                                          // :20 \L_01875
+        await AutosaveAsync(20);                                        // :20 \L_01875
         SetDate();                                                      // :21 \L_01881
         if (State.BgmEnabled == 1)                                      // :22-25
         {
@@ -157,14 +157,22 @@ public sealed class WeekLoop(ScriptContext script)
     }
 
     /// <summary>
-    /// <c>L_01875</c> (<c>MAIN.ADV:1056-1059</c>) — the autosave: <c>ﾛｰﾄﾞｾｰﾌﾞ</c> with <c>RetVal 3</c>
-    /// (slot 1, then page 4 to every slot). Not ported: a hook until the save/load part; a load
-    /// resumes the original right after this call.
+    /// <c>L_01875</c> (<c>MAIN.ADV:1056-1059</c>), called at <paramref name="line"/> — the
+    /// autosave: <c>ﾛｰﾄﾞｾｰﾌﾞ</c> with <c>RetVal 3</c> (slot 1, then page 4 to every slot). The
+    /// slot remembers the call, so a load goes on right after it.
     /// </summary>
-    private Task AutosaveAsync()
+    private async Task AutosaveAsync(int line)
     {
         State.RetVal = 3;
-        return Script.CallFileAsync("ﾛｰﾄﾞｾｰﾌﾞ.ADV");
+        Script.SaveResume = Ref(line);
+        try
+        {
+            await Script.CallFileAsync("ﾛｰﾄﾞｾｰﾌﾞ.ADV");
+        }
+        finally
+        {
+            Script.SaveResume = null;
+        }
     }
 
     /// <summary>

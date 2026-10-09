@@ -116,10 +116,9 @@ public class PrologueCommandTests(ITestOutputHelper output)
         if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
             return;
         var game = await NewGameAsync();
-        int saves = 0;
-        game.Unported.Effects["ﾛｰﾄﾞｾｰﾌﾞ.ADV"] = _ =>
+        game.Saves.Written = (slot, data) =>
         {
-            if (++saves == 3)
+            if (slot == 1 && data.Variables[517] == 11)                 // week 11's autosave (QD 1)
                 throw new WeekOverException();
         };
         var bound = game.State.Units[3];
@@ -129,9 +128,13 @@ public class PrologueCommandTests(ITestOutputHelper output)
 
         await Assert.ThrowsAsync<WeekOverException>(() => game.Script.CallFileAsync("MAIN.ADV"));
 
-        Assert.Equal(["ﾛｰﾄﾞｾｰﾌﾞ.ADV", "ﾛｰﾄﾞｾｰﾌﾞ.ADV", "ﾛｰﾄﾞｾｰﾌﾞ.ADV"], game.Unported.Calls.Select(c => c.File));
+        Assert.Empty(game.Unported.Calls);                              // the autosave is ported (ﾛｰﾄﾞｾｰﾌﾞ 3)
         Assert.Equal(0, game.Input.Pending);
         Assert.Equal(11, game.State.Week.Value);
+        var autosave = game.Saves.Read(1)!;                             // week 10's, at the start of its player phase
+        Assert.Equal(new ScriptRef("MAIN.ADV", 20), autosave.Resume);
+        Assert.Equal(10, autosave.Variables[517].Value);                // Week
+        Assert.Equal([1], game.Saves.Slots);
         Assert.Equal(0, game.State.StoryStage.Value);
         Assert.Equal(bound.MaxTroops.Value, bound.Troops.Value);        // +2 a week, capped
         Assert.Contains(game.View.Events, e => e is MessageEvent { Text.File: "Iｼﾚｲﾌﾞ.ADV" });
@@ -158,7 +161,8 @@ public class PrologueCommandTests(ITestOutputHelper output)
 
         output.WriteLine($"rules: {string.Join(", ", game.Unported.Calls.Select(c => $"{c.File} {c.Entry}"))}");
         Assert.StartsWith("MAIN.ADV:83", e.Message);
-        Assert.Equal(["ﾛｰﾄﾞｾｰﾌﾞ.ADV", "FIGT_A.ADV"], game.Unported.Calls.Select(c => c.File));
+        Assert.Equal(["FIGT_A.ADV"], game.Unported.Calls.Select(c => c.File));
+        Assert.Equal([1], game.Saves.Slots);
         Assert.Equal(0, game.Input.Pending);
         Assert.Equal(1, game.State.StoryStage.Value);
         Assert.Equal(1, game.State.F_OpeningSeen.Value);
@@ -167,7 +171,8 @@ public class PrologueCommandTests(ITestOutputHelper output)
     }
 
     private sealed record Game(
-        GameState State, ScriptContext Script, PlayerInput Input, RecordingView View, RecordingRules Unported, QueuedRandom Random);
+        GameState State, ScriptContext Script, PlayerInput Input, RecordingView View, RecordingRules Unported, QueuedRandom Random,
+        WatchedSaves Saves);
 
     /// <summary>
     /// The boot and the new game with the rule files routed and the scenes run from the decompile;
@@ -184,14 +189,35 @@ public class PrologueCommandTests(ITestOutputHelper output)
         var unported = new RecordingRules { State = state };
         var rules = new StrategyRules(scripts, unported);
         var runner = new SceneRunner(scripts, stubBattle ? new StubbedFiles(rules, unported, "FIGT_A.ADV") : rules);
-        var script = new ScriptContext(state, random, view, input, runner);
+        var saves = new WatchedSaves();
+        var script = new ScriptContext(state, random, view, input, runner) { Saves = saves };
         runner.Bind(script);
         rules.Bind(script);
         var setup = new GameSetup(script, scripts);
         await setup.BootAsync();
         await setup.NewGameAsync();
         unported.Calls.Clear();
-        return new Game(state, script, input, view, unported, random);
+        return new Game(state, script, input, view, unported, random, saves);
+    }
+
+    /// <summary>Save slots in memory that report every write.</summary>
+    private sealed class WatchedSaves : ISaveStore
+    {
+        private readonly MemorySaveStore _slots = new();
+
+        public Action<int, SaveData>? Written { get; set; }
+
+        public IEnumerable<int> Slots => _slots.Slots;
+
+        public SaveData? Read(int slot) => _slots.Read(slot);
+
+        public bool Write(int slot, SaveData data)
+        {
+            Written?.Invoke(slot, data);
+            return _slots.Write(slot, data);
+        }
+
+        public DateTime? Timestamp(int slot) => _slots.Timestamp(slot);
     }
 
     /// <summary>The router, but the given files go to the stubs.</summary>

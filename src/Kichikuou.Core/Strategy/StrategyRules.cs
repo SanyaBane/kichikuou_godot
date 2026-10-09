@@ -10,8 +10,8 @@ namespace Kichikuou.Core.Strategy;
 /// returns; the game enters it by the jump <c>&amp;#MAIN.ADV:</c>), <c>COM.ADV</c>, <c>COMMAND.ADV</c>,
 /// one of the ported command files or one of their picker screens, or a battle file
 /// (<c>FIGT_A</c>, <c>FIGT_B</c>, <c>FIGT</c>, <c>死亡捕獲</c>, run as a <see cref="Battle"/>) runs its
-/// port on the bound context; every other file goes to the hooks it wraps (the save screen —
-/// whatever is not ported). Given to a <see cref="SceneRunner"/> as its rule hooks, so a scene that
+/// port on the bound context, and so does the save screen (<c>ﾛｰﾄﾞｾｰﾌﾞ</c>, on the context's
+/// save slots); every other file goes to the hooks it wraps (whatever is not ported). Given to a <see cref="SceneRunner"/> as its rule hooks, so a scene that
 /// calls a rule file and a rule file that calls a scene both work:
 /// <code>
 /// var rules = new StrategyRules(scenario, unported);
@@ -31,7 +31,7 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
     public static readonly IReadOnlySet<string> PortedFiles = new HashSet<string>(StringComparer.Ordinal)
     {
         "MAIN.ADV", "COM.ADV", "COMMAND.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV", "Cﾒｲｷｭｳ.ADV",
-        "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sﾊｰﾚﾑ.ADV", "FIGT_A.ADV", "FIGT_B.ADV", "FIGT.ADV", "死亡捕獲.ADV",
+        "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sﾊｰﾚﾑ.ADV", "FIGT_A.ADV", "FIGT_B.ADV", "FIGT.ADV", "死亡捕獲.ADV", "ﾛｰﾄﾞｾｰﾌﾞ.ADV",
     };
 
     /// <summary>The context the rule files run on; set once with <see cref="Bind"/>.</summary>
@@ -71,6 +71,7 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
         "FIGT_B.ADV" => Battle.DefendProvinceAsync(),
         "FIGT.ADV" => Battle.FightAsync(),
         "死亡捕獲.ADV" => Battle.DeathCaptureAsync(),
+        "ﾛｰﾄﾞｾｰﾌﾞ.ADV" => new LoadSaveScreen(Script, scenario).RunAsync(),
         _ => unported.RunEventAsync(file, entry),
     };
 }

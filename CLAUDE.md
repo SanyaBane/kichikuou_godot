@@ -36,10 +36,13 @@ command files `Cﾃｷﾄｼ`, `Cﾃｷﾄｼ2`, `Cﾌﾞｶ`, `Cﾊｰﾚﾑ`, 
 `NotSupportedException`), and so are the pickers `Sﾌﾞﾀｲ`, `Sﾌﾞｶ`, `Sﾊｰﾚﾑ`
 (`Strategy/*Screen.cs` on `PickerScreen`), all routed by `Strategy/StrategyRules`. W2 is done
 for stage 0: `MAIN.ADV` (the week loop) is `Strategy/WeekLoop` up to the thieves' week (the
-Leazas week throws `NotSupportedException`); the autosave stays a `ﾛｰﾄﾞｾｰﾌﾞ` hook until G0. The battle
+Leazas week throws `NotSupportedException`). The battle
 runs in the router too (`FIGT_A`/`FIGT_B`/`FIGT`/`死亡捕獲`), so the game's input is an
 `Strategy/IGameInput` (battle + scenes; owner's decisions 6-7 in `docs/strategy/README.md`).
-Next is G0 (the Godot screens).
+G0 (the Godot screens, owner's decisions 8-11) is under way: part 1 ported `ﾛｰﾄﾞｾｰﾌﾞ`
+(`Strategy/LoadSaveScreen`, the save commands in `Script/ScriptContext.Save.cs` on an
+`ISaveStore`, `Script/SaveData.cs`); next the game driver (load → resume after the autosave),
+the strategic presenter, the Godot screens.
 
 ## Layout
 
@@ -62,7 +65,7 @@ Next is G0 (the Godot screens).
   no idiom rewritten); `RunAsync` runs the straight-line `SET_*` data files and `SceneRunner`
   runs scene programs (`ISceneInput` adds menus, mouse and clock to the inputs). `Setup/GameSetup` is the boot (`SET.ADV`) and the new game.
   `Strategy/` holds the strategic rule files: `WeekLoop` is `MAIN.ADV`, `WeeklyEvents` is `COM.ADV`, `CommandPhase` is
-  `COMMAND.ADV`, the `*Command` classes (on `CommandFile`) are the `C*.ADV` command files, the
+  `COMMAND.ADV`, `LoadSaveScreen` is `ﾛｰﾄﾞｾｰﾌﾞ.ADV`, the `*Command` classes (on `CommandFile`) are the `C*.ADV` command files, the
   `*Screen` classes (on `PickerScreen`) their `S*.ADV` pickers, and `StrategyRules` routes calls of these files to their ports (the rule hooks of a `SceneRunner`).
 - `src/Kichikuou.Content` — engine-independent access to the player's own game data (never
   part of the repository): `ScenarioText` reads message texts from the decompiled scenario by

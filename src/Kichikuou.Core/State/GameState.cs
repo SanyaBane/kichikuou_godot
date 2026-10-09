@@ -67,6 +67,14 @@ public sealed partial class GameState
     }
 
     /// <summary>
+    /// Where a reference to variable <paramref name="number"/> points as the commands that take a
+    /// variable reference resolve it (<c>getCaliArray</c>, e.g. <c>LP</c>/<c>QP</c>): the page slot at
+    /// its binding's offset plus the cursor now, or the plain slot on page 0.
+    /// </summary>
+    public (int Page, int Index) Locate(int number) =>
+        BindingOf(number) is { } b ? (b.Page, b.Offset + Memory.Var(b.Cursor).Value) : (0, number);
+
+    /// <summary>
     /// True when variable <paramref name="number"/> is bound to a page through <c>DS</c>, so it is
     /// not the plain slot that commands addressing a run of variables (<c>NC</c>, <c>US</c>, …) start from.
     /// </summary>
