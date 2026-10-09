@@ -63,6 +63,34 @@ Sources: `src/win/resources.rc` (the menu), `src/win/menubar.c` (the handlers), 
   message not seen before (`STOP_ON_UNSEEN`, the menu item greyed out there): seen messages are
   kept in a Bloom filter in a file.
 
+## Ours (`godot/Strategy/GameScreen.MenuBar.cs`)
+
+Done 2026-10-09; the owner's decisions: Restart, the random generator and MsgSkip's stops as
+xsystem35's, skipping only seen messages if we know enough to do it (we do).
+
+- A light bar above the game screen: **File** (Save Screenshot, Restart, Exit), **Screen**
+  (Window, Fullscreen), **MsgSkip[off]** (toggles, `[on]` while on, greyed out while not
+  allowed). Not done: Integer Scaling, the Option menu (no pointer warping, no text hook), the
+  bar hiding in full screen.
+- Hot keys: **F1** MsgSkip and **F4** full screen (on release, as xsystem35's `event.c`), and
+  **Alt+R** Restart (ours, after System 3.9's). Backspace still returns to the title at once,
+  without asking (development).
+- **Save Screenshot** saves the screen as shown (1280×800, event CGs not masked) as
+  `user://screenshots/kichikuou-<date>-<time>.png` and names the file on screen.
+- **Restart / Exit** ask as xsystem35 does ("Restart game?" / "Quit game?", "Any unsaved progress
+  will be lost."); the game waits while the box is open. Restart returns to our title (the
+  opening and `ｽﾀMENU` are not ported, decision 10); the next game starts on a fresh
+  `GameState`. The random generator lives for the whole launch (`EngineState`, seeded once with
+  `--seed N` or the tick count) and so does the message skip.
+- **MsgSkip**: `Core/Script/MessageSkip` (the state and the seen set) and `GameScreen`'s waits.
+  The skippable waits — `IK 0` / `A` and `Y 3` — return 0 after one frame while it is on; input
+  held then turns it off and is returned (`STOP_ON_CLICK`); a `]` menu (`SelectAsync`, the
+  battle's `ChooseAsync`) turns it off (`STOP_ON_MENU`); every `MessageEvent` /
+  `ValueMessageEvent` marks its `ScriptRef` seen, and an unseen one turns it off and greys it out
+  (`STOP_ON_UNSEEN`). The seen messages are one `File:Line` per line in `msgskip.txt` next to the
+  save slots (`user://saves`, `user://saves-auto` for `--auto`), exact where xsystem35 uses a
+  Bloom filter. `--msgskip` starts a game with it on (development).
+
 ## System 3.9 (the original; reference only)
 
 From the owner's screenshots of the English release's `System39.exe`. Title bar

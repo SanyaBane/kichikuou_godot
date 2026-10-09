@@ -44,8 +44,8 @@ public sealed record GameOptions
     /// <summary>Development: save the screen (event CGs masked) as a PNG at every key wait and menu.</summary>
     public string? ScreenshotDirectory { get; init; }
 
-    /// <summary>The random generator's seed (default: the tick count).</summary>
-    public uint? Seed { get; init; }
+    /// <summary>Development: MsgSkip is on from the start.</summary>
+    public bool MsgSkip { get; init; }
 
     /// <summary>Where the save slots are (default <c>user://saves</c>); a Godot path or a folder.</summary>
     public string? SaveDirectory { get; init; }
@@ -59,7 +59,9 @@ public sealed record GameOptions
 /// (<see cref="PlayerInput"/>) that <c>IM</c>, <c>Y 3</c>, <c>IK 0</c> and the menus poll once a
 /// frame, so the map's clicks and drags and the pickers' hit tests and highlight are the
 /// script's own. The battle's input screens work as in <see cref="BattleScreen"/>, fed only the
-/// presses that begin while they are open. Backspace returns to the title.
+/// presses that begin while they are open. Over it, xsystem35's menu bar (File, Screen,
+/// MsgSkip; docs/window-menu.md) with its hot keys F1 (MsgSkip) and F4 (full screen), and Alt+R for
+/// Restart; Backspace returns to the title at once (development).
 /// </summary>
 public partial class GameScreen : Control, IScriptView, IGameInput
 {
@@ -74,6 +76,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private GamePresenter _presenter = null!;
     private GodotGlyphRenderer _glyphs = null!;
     private BattleAudio _audio = null!;
+    private Control _content = null!;
     private TextureRect _view = null!;
     private ImageTexture? _texture;
     private byte[]? _frame;
@@ -88,6 +91,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private BattleMenuScreen? _battleMenu;
     private TaskCompletionSource? _answered;
     private ushort _battleButtons;              // the buttons pressed since the battle's input screen opened
+
+    private MessageSkip _skip = null!;
+    private bool _modal;                        // a confirmation box is open: the game waits
 
     private ushort _ikKey;                      // cmdi.c ik_key, repeating: IK 0's key repeat
     private int _repeating;
@@ -114,6 +120,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         var background = new ColorRect { Color = Colors.Black, MouseFilter = MouseFilterEnum.Ignore };
         background.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         AddChild(background);
+        _content = new Control { MouseFilter = MouseFilterEnum.Ignore };
+        _content.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        _content.OffsetTop = MenuBarHeight;
+        AddChild(_content);
         _view = new TextureRect
         {
             ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
@@ -121,7 +131,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             MouseFilter = MouseFilterEnum.Ignore,
         };
         _view.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        AddChild(_view);
+        _content.AddChild(_view);
         _overlay = OutlinedLabel(VerticalAlignment.Center, 32);
         _notice = OutlinedLabel(VerticalAlignment.Top, 18);
 
@@ -134,6 +144,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             MaskEventCgs = _options.ScreenshotDirectory is not null,
         };
+        _skip = EngineState.Skip(SaveDirectory);
+        if (_options.MsgSkip)
+            _skip.Activate(true);
+        BuildMenuBar();
         _ = RunAsync(scripts);
     }
 
@@ -150,7 +164,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         label.AddThemeFontSizeOverride("font_size", size);
         label.AddThemeColorOverride("font_outline_color", Colors.Black);
         label.AddThemeConstantOverride("outline_size", 8);
-        AddChild(label);
+        _content.AddChild(label);
         return label;
     }
 
@@ -158,6 +172,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         _closing = true;
         _answered?.TrySetCanceled();
+        if (_skip is not null)
+            _skip.Changed -= UpdateSkipItem;
         _glyphs?.Dispose();
     }
 
@@ -209,11 +225,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         try
         {
             var state = new GameState();
-            uint seed = _options.Seed ?? (uint)System.Environment.TickCount;
-            GD.Print($"Kichikuou: random seed {seed}");
             _presenter.Bind(state);
-            var saves = new DirectorySaveStore(ProjectSettings.GlobalizePath(_options.SaveDirectory ?? "user://saves"));
-            var session = new GameSession(state, new XSystem35Random(seed), new ViewProxy(this), new GameInputProxy(this),
+            var saves = new DirectorySaveStore(SaveDirectory);
+            var session = new GameSession(state, EngineState.Random, new ViewProxy(this), new GameInputProxy(this),
                 scripts, scripts, saves, new UnportedFiles(this));
             await session.BootAsync();
             var end = _options.Start == GameStart.New ? await session.NewGameAsync() : await session.LoadFromTitleAsync();
@@ -269,12 +283,19 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             Screens.ToTitle(this);
     }
 
-    /// <summary>Waits for the next frame; the game stops here once the screen is closed.</summary>
+    /// <summary>The save slots' folder (also of the seen messages, <see cref="MessageSkip"/>).</summary>
+    private string SaveDirectory => ProjectSettings.GlobalizePath(_options.SaveDirectory ?? "user://saves");
+
+    /// <summary>Waits for the next frame, and while a confirmation box is open; the game stops here once the screen is closed.</summary>
     private async Task NextFrameAsync()
     {
-        await ToSignal(_tree, SceneTree.SignalName.ProcessFrame);
-        if (_closing)
-            throw new OperationCanceledException();
+        do
+        {
+            await ToSignal(_tree, SceneTree.SignalName.ProcessFrame);
+            if (_closing)
+                throw new OperationCanceledException();
+        }
+        while (_modal);
     }
 
     /// <summary>The files the port does not run yet: skipped, with a note.</summary>
@@ -293,6 +314,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     public async Task ShowAsync(ScriptEvent scriptEvent)
     {
         _presenter.Show(scriptEvent);
+        if (scriptEvent is MessageEvent message)
+            _skip.OnMessage(message.Text);
+        else if (scriptEvent is ValueMessageEvent values)
+            _skip.OnMessage(values.Text);
         if (scriptEvent is MapScreenEvent { Waiting: true })
             _autoMapWait = true;
         if (_presenter.TakeFade() is { } fade)
@@ -338,7 +363,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         var size = _view.Size;
         float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
         var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
-        var p = (local - _view.Position - (size - drawn) / 2) / (scale * Surface.Scale);
+        var p = (local - (_view.GlobalPosition - GlobalPosition) - (size - drawn) / 2) / (scale * Surface.Scale);
         return new Vector2I(Math.Clamp((int)Math.Floor(p.X), 0, Surface.ScreenWidth - 1),
             Math.Clamp((int)Math.Floor(p.Y), 0, Surface.ScreenHeight - 1));
     }
@@ -370,6 +395,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             Screens.ToTitle(this);
             return;
         }
+        if (MenuHotKey(key))
+            return;
         _input.Key(key.Keycode, key.Pressed);
     }
 
@@ -419,15 +446,27 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// <summary>
     /// xsystem35 <c>sys_keywait</c>: polls the input once a frame until <paramref name="seconds"/>
     /// passed (at least once); <paramref name="cancelable"/> ends it at the first poll that finds
-    /// anything held. Returns the last poll.
+    /// anything held. Returns the last poll. A <paramref name="skippable"/> wait ends as soon as
+    /// the message skip is on: while it is, it takes one frame and returns what is held, which
+    /// turns the skip off (<c>STOP_ON_CLICK</c>).
     /// </summary>
-    private async Task<ushort> KeyWaitAsync(double seconds, bool cancelable)
+    private async Task<ushort> KeyWaitAsync(double seconds, bool cancelable, bool skippable = false)
     {
+        ushort key = 0;
+        if (skippable && _skip.IsSkipping)
+        {
+            await NextFrameAsync();
+            key = _input.ReadInput();
+            if (key != 0)
+                _skip.Activate(false);
+            return key;
+        }
         var watch = Stopwatch.StartNew();
-        ushort key;
         do
         {
             await NextFrameAsync();
+            if (skippable && _skip.IsSkipping)
+                break;
             key = _input.ReadInput();
             if (cancelable && key != 0)
                 break;
@@ -467,7 +506,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         if (_input.PeekInput() != _ikKey)
             _repeating = 0;
-        ushort key = await KeyWaitAsync(double.PositiveInfinity, cancelable: true);
+        ushort key = await KeyWaitAsync(double.PositiveInfinity, cancelable: true, skippable: true);
+        if (_skip.IsSkipping)
+            return 0;
         if (_repeating == 1)
             await KeyWaitAsync(_options.Fast ? 0 : 0.6, cancelable: false);
         if (_repeating < 2)
@@ -497,7 +538,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         // ticks × 16 ms, polled once a frame; when cancelable, anything held ends it at once; the last poll is returned
         // (nothing is consumed: a button held over several pauses ends each of them).
-        return await KeyWaitAsync(seconds, cancelable);
+        return await KeyWaitAsync(seconds, cancelable, skippable: true);
     }
 
     /// <summary>At least one frame, then until <paramref name="seconds"/> passed.</summary>
@@ -512,6 +553,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     public async Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
     {
         _pointer.Interrupt();
+        _skip.OnMenu();
         _presenter.OpenMenu(items);
         _presenter.Pointer(_input.Position.X, _input.Position.Y);
         Shot("menu");
@@ -643,6 +685,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         _answered = new TaskCompletionSource();
         _battleButtons = 0;
+        _skip.OnMenu();
         _battleMenu = new BattleMenuScreen(_presenter.Battle, menu);
         _battleMenu.MouseMove(_input.Position.X, _input.Position.Y);
         _presenter.Invalidate();

@@ -56,7 +56,9 @@ public partial class Main : Control
     /// <summary>
     /// Development switches after <c>--</c>. A game: <c>--newgame</c> or <c>--load</c> starts it at
     /// once; <c>--auto</c> plays it unattended (keys answered, Turn END every week, the battles
-    /// fought with the first attack); <c>--seed N</c> fixes the random generator; <c>--saves DIR</c>
+    /// fought with the first attack); <c>--seed N</c> fixes the random generator (once per launch: a
+    /// later game goes on with it, as after xsystem35's Restart); <c>--msgskip</c> starts with MsgSkip
+    /// on; <c>--saves DIR</c>
     /// keeps its slots there (<c>--auto</c> defaults to <c>user://saves-auto</c>). A battle capture:
     /// <c>--play FILE</c> / <c>--watch FILE</c>. Both: <c>--fast</c> drops the delays, <c>--quit</c>
     /// exits at the end (exit code 1 after an error), <c>--shots DIR</c> saves the screen at every
@@ -80,7 +82,7 @@ public partial class Main : Control
                 Fast = fast,
                 QuitWhenDone = quit,
                 ScreenshotDirectory = shots,
-                Seed = uint.TryParse(Value("--seed"), out uint seed) ? seed : null,
+                MsgSkip = args.Contains("--msgskip"),
                 SaveDirectory = Value("--saves") ?? (auto ? "user://saves-auto" : null),
             });
         }

@@ -101,7 +101,9 @@ path A's week-23 duel (EVT-08 confirmed); README open items 1-2 are answered.
   development switches; `Strategy/GameScreen` runs one game (`GameSession` on a `GamePresenter`;
   mouse and keys are a state, `Strategy/PlayerInput`, that `IM`, `Y 3`, `IK 0` and the menus poll
   once a frame as xsystem35 does — the map and the pickers decide clicks and drags themselves;
-  `PointerScript` gestures only for `--auto`); `Battles/CaptureList` picks a capture, `Battles/BattleScreen` shows its battle;
+  `PointerScript` gestures only for `--auto`; `GameScreen.MenuBar` is xsystem35's menu bar —
+  Restart, MsgSkip on `Core/Script/MessageSkip`, docs/window-menu.md; `Strategy/EngineState` keeps
+  the random generator and the message skip for the whole launch); `Battles/CaptureList` picks a capture, `Battles/BattleScreen` shows its battle;
   `GodotGlyphRenderer` (MS Gothic via TextServer), `BattleAudio`; `Screens` switches screens. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
 - `tools/analysis/` — Python scripts for reading the decompiled scenario; `tools/codegen/` —
   generators for committed C# sources; `tools/golden/` — harness launcher and page classes.
