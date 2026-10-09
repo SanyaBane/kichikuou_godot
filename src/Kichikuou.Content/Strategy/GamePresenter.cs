@@ -55,6 +55,7 @@ public sealed partial class GamePresenter
     private (int X, int Y)? _jump;
     private (int X, int Y)? _jumpRelative;
     private int _cgFlags = 7;
+    private int _lastCg;
     private Action? _afterKey;
     private bool _dirty = true;
     private int _stageVersion = -1;
@@ -129,6 +130,13 @@ public sealed partial class GamePresenter
 
     /// <summary>Whether the battle waits for a key after the last event (see <see cref="BattlePresenter.WaitsForKey"/>).</summary>
     public bool WaitsForKey => InBattle && Battle.WaitsForKey;
+
+    /// <summary>
+    /// Debug only, off for play: while the full-screen window (<c>WAO_SUB</c> 131/231) is open, the
+    /// stage under it is drawn as a grey placeholder with the number of the CG last drawn there —
+    /// the event CGs stay out of the screen dumps the agent's tooling makes.
+    /// </summary>
+    public bool MaskEventCgs { get; set; }
 
     /// <summary>The message window's text (for tests and other UIs).</summary>
     public TextBox WindowText => _window;
@@ -476,6 +484,7 @@ public sealed partial class GamePresenter
         _jumpRelative = null;
         if (_cgs.Get(number) is not { } cg)
             return;
+        _lastCg = number;
         var (x, y) = jump ?? (relative is var (dx, dy) ? (cg.X + dx, cg.Y + dy) : (cg.X, cg.Y));
         if ((_cgFlags & 1) != 0)
             Stage.Palette = cg.PaletteOver(Stage.Palette);

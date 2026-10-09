@@ -39,14 +39,18 @@ for stage 0: `MAIN.ADV` (the week loop) is `Strategy/WeekLoop` up to the thieves
 Leazas week throws `NotSupportedException`). The battle
 runs in the router too (`FIGT_A`/`FIGT_B`/`FIGT`/`死亡捕獲`), so the game's input is an
 `Strategy/IGameInput` (battle + scenes; owner's decisions 6-7 in `docs/strategy/README.md`).
-G0 (the Godot screens, owner's decisions 8-11) is under way: part 1 ported `ﾛｰﾄﾞｾｰﾌﾞ`
+G0 (the Godot screens, owner's decisions 8-12) is done: part 1 ported `ﾛｰﾄﾞｾｰﾌﾞ`
 (`Strategy/LoadSaveScreen`, the save commands in `Script/ScriptContext.Save.cs` on an
 `ISaveStore`, `Script/SaveData.cs`); part 2 is the game driver `Strategy/GameSession` (boot,
 new game, load from the title or `COMMAND`, resume after the autosave, `&OVER` as `GameEnd`)
 and the view/input proxies; part 3 is the presenter `Kichikuou.Content/Strategy/GamePresenter`
 (decision 12: the scenes' drawing runs on the engine surface, map, windows, menus and pickers are
-drawn by hand over it from the semantic `ScreenEvent`s and GameState); next the Godot screens
-(part 4: title, game screen, audio, saves, smoke test).
+drawn by hand over it from the semantic `ScreenEvent`s and GameState); part 4 is the title and
+`godot/Strategy/GameScreen` — the whole prologue is playable in Godot up to the Leazas week, which
+is not ported. Next: the owner records the prologue with the harness (docs/golden-tests.md,
+"Capturing the prologue"), then every divergence of the new captures is investigated first.
+**Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
+`KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
 
 ## Layout
 
@@ -91,9 +95,11 @@ drawn by hand over it from the semantic `ScreenEvent`s and GameState); next the 
   captures in `E:\Modding games\Modding Rance\Kichikou\_extract\golden` (or
   `KICHIKUOU_GOLDEN_DIR`) and is skipped when there are none.
 - `godot/` — Godot 4.7.2 .NET project (`Kichikuou.csproj`, namespace `Kichikuou.Game`);
-  presentation only: `Main` picks a capture, `Battles/BattleScreen` shows the presenter's
-  surface and forwards mouse/keys, `GodotGlyphRenderer` (MS Gothic via TextServer),
-  `BattleAudio`. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
+  presentation only: `Main` is the title (New game, Load, Quit, the capture viewer) and reads the
+  development switches; `Strategy/GameScreen` runs one game (`GameSession` on a `GamePresenter`,
+  mouse and keys turned into the script's inputs, `PointerScript` gestures on the map and the
+  pickers); `Battles/CaptureList` picks a capture, `Battles/BattleScreen` shows its battle;
+  `GodotGlyphRenderer` (MS Gothic via TextServer), `BattleAudio`; `Screens` switches screens. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
 - `tools/analysis/` — Python scripts for reading the decompiled scenario; `tools/codegen/` —
   generators for committed C# sources; `tools/golden/` — harness launcher and page classes.
 - `docs/` — brief, spike findings, variable dictionary.
@@ -106,6 +112,9 @@ drawn by hand over it from the semantic `ScreenEvent`s and GameState); next the 
   the editor path is in `docs/spike-findings.md`. Commit the `*.uid` files Godot creates.
 - Watch a capture headless and save the screen at every key wait and long pause:
   `<Godot console exe> --headless --path godot -- --watch <capture> --fast --quit --shots <dir>`.
+- Play the prologue unattended headless (slots in `user://saves-auto`; `--load` resumes them):
+  `<Godot console exe> --headless --path godot -- --newgame --auto --fast --quit [--seed n] [--shots <dir>]`;
+  ends with the Leazas week's "not ported yet" (exit code 0; 1 after an error).
 
 ## Rules
 

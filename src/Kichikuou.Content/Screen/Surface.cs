@@ -174,6 +174,18 @@ public sealed class Surface
         Touch(x, y, w, h);
     }
 
+    /// <summary>Fills a rectangle with a colour outside the palette (debug drawing, e.g. a masked picture).</summary>
+    public void FillColor(int x, int y, int w, int h, (byte R, byte G, byte B) color)
+    {
+        int sx = x, sy = y;
+        if (!Clip(ref sx, ref sy, ref w, ref h, ref x, ref y, Width, Height))
+            return;
+        for (int row = 0; row < h; row++)
+            for (int col = 0; col < w; col++)
+                Plot(x + col, y + row, color.R, color.G, color.B, 255);
+        Touch(x, y, w, h);
+    }
+
     /// <summary><c>ags_drawRectangle</c>: a one-pixel outline of the rectangle in palette entry <paramref name="index"/>.</summary>
     public void DrawRectangle(int x, int y, int w, int h, int index)
     {

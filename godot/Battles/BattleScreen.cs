@@ -188,7 +188,7 @@ public partial class BattleScreen : Control, IScriptView, IBattleInput
         try
         {
             await KeyAsync();
-            GetTree().ChangeSceneToFile("res://Main.tscn");
+            Screens.Open(this, new CaptureList());
         }
         catch (TaskCanceledException)
         {
@@ -311,7 +311,7 @@ public partial class BattleScreen : Control, IScriptView, IBattleInput
             return;
         if (key.Keycode == Godot.Key.Backspace)
         {
-            GetTree().ChangeSceneToFile("res://Main.tscn");
+            Screens.Open(this, new CaptureList());
             return;
         }
         if (_sel is not null || _menu is not null)

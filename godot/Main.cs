@@ -1,152 +1,99 @@
 using Godot;
-using Kichikuou.Content.Battles;
-using Kichikuou.Core.Golden;
 using Kichikuou.Game.Battles;
+using Kichikuou.Game.Strategy;
 
 namespace Kichikuou.Game;
 
 /// <summary>
-/// The start screen while there is no strategic layer: picks a golden capture and starts its
-/// battle live ("Play") or plays the recorded battle back ("Watch").
+/// The title (owner's decision 10, minimal for now): New game, Load, Quit, and the battle-capture
+/// viewer for debugging. Every game runs on its own <see cref="GameScreen"/>, which comes back here.
 /// </summary>
 public partial class Main : Control
 {
-    private readonly List<(string Path, CaptureSummary Summary)> _captures = [];
-    private LineEdit _dataPath = null!;
-    private ItemList _list = null!;
-    private Label _status = null!;
-    private Button _play = null!;
-    private Button _watch = null!;
+    /// <summary>The development switches are read once per launch, not again when a game returns here.</summary>
+    private static bool _commandLineRead;
 
     public override void _Ready()
     {
-        var root = new VBoxContainer();
-        root.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect, LayoutPresetMode.KeepSize, 24);
-        root.AddThemeConstantOverride("separation", 12);
+        var background = new ColorRect { Color = Colors.Black };
+        background.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        AddChild(background);
+
+        var root = new VBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
+        root.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        root.AddThemeConstantOverride("separation", 16);
         AddChild(root);
 
-        root.AddChild(new Label { Text = "Kichikuou — battle sandbox", ThemeTypeVariation = "HeaderLarge" });
-
-        var pathRow = new HBoxContainer();
-        pathRow.AddChild(new Label { Text = "Extracted game data:" });
-        _dataPath = new LineEdit { Text = GameData.ExtractDirectory, SizeFlagsHorizontal = SizeFlags.ExpandFill };
-        pathRow.AddChild(_dataPath);
-        var apply = new Button { Text = "Reload" };
-        apply.Pressed += () =>
+        root.AddChild(new Label
         {
-            GameData.ExtractDirectory = _dataPath.Text;
-            _ = LoadCapturesAsync();
-        };
-        pathRow.AddChild(apply);
-        root.AddChild(pathRow);
+            Text = "鬼畜王ランス — Kichikuou Rance",
+            ThemeTypeVariation = "HeaderLarge",
+            HorizontalAlignment = HorizontalAlignment.Center,
+        });
+        root.AddChild(new Control { CustomMinimumSize = new Vector2(0, 32) });
+        AddButton(root, "New game", () => StartGame(GameStart.New));
+        AddButton(root, "Load", () => StartGame(GameStart.Load));
+        AddButton(root, "Quit", () => GetTree().Quit());
+        root.AddChild(new Control { CustomMinimumSize = new Vector2(0, 32) });
+        AddButton(root, "Battle captures (debug)", () => Screens.Open(this, new CaptureList()));
 
-        _list = new ItemList { SizeFlagsVertical = SizeFlags.ExpandFill };
-        _list.ItemSelected += _ => UpdateButtons();
-        _list.ItemActivated += index => Start((int)index, BattleMode.Play);
-        root.AddChild(_list);
-
-        var buttons = new HBoxContainer();
-        _play = new Button { Text = "Play", CustomMinimumSize = new Vector2(160, 40) };
-        _play.Pressed += () => StartSelected(BattleMode.Play);
-        _watch = new Button { Text = "Watch the recording", CustomMinimumSize = new Vector2(220, 40) };
-        _watch.Pressed += () => StartSelected(BattleMode.Watch);
-        buttons.AddChild(_play);
-        buttons.AddChild(_watch);
-        _status = new Label { SizeFlagsHorizontal = SizeFlags.ExpandFill, HorizontalAlignment = HorizontalAlignment.Right };
-        buttons.AddChild(_status);
-        root.AddChild(buttons);
-
-        UpdateButtons();
-        if (!StartFromCommandLine())
-            _ = LoadCapturesAsync();
+        if (!_commandLineRead)
+        {
+            _commandLineRead = true;
+            StartFromCommandLine();
+        }
     }
+
+    private static void AddButton(VBoxContainer root, string text, Action pressed)
+    {
+        var button = new Button { Text = text, CustomMinimumSize = new Vector2(320, 48), SizeFlagsHorizontal = SizeFlags.ShrinkCenter };
+        button.Pressed += pressed;
+        root.AddChild(button);
+    }
+
+    private void StartGame(GameStart start) => Screens.Open(this, new GameScreen(new GameOptions { Start = start }));
 
     /// <summary>
-    /// Development switches after <c>--</c>: <c>--play FILE</c> / <c>--watch FILE</c> open a capture
-    /// at once; <c>--fast</c> drops the watch delays; <c>--quit</c> exits when the battle ends;
-    /// <c>--shots DIR</c> saves the screen at every key wait.
+    /// Development switches after <c>--</c>. A game: <c>--newgame</c> or <c>--load</c> starts it at
+    /// once; <c>--auto</c> plays it unattended (keys answered, Turn END every week, the battles
+    /// fought with the first attack); <c>--seed N</c> fixes the random generator; <c>--saves DIR</c>
+    /// keeps its slots there (<c>--auto</c> defaults to <c>user://saves-auto</c>). A battle capture:
+    /// <c>--play FILE</c> / <c>--watch FILE</c>. Both: <c>--fast</c> drops the delays, <c>--quit</c>
+    /// exits at the end (exit code 1 after an error), <c>--shots DIR</c> saves the screen at every
+    /// key wait and menu (a game's event CGs masked, <c>GamePresenter.MaskEventCgs</c>).
     /// </summary>
-    private bool StartFromCommandLine()
+    private void StartFromCommandLine()
     {
         var args = OS.GetCmdlineUserArgs();
-        int at = Array.FindIndex(args, a => a is "--play" or "--watch");
-        if (at < 0 || at + 1 >= args.Length)
-            return false;
-        var mode = args[at] == "--watch" ? BattleMode.Watch : BattleMode.Play;
-        var screen = new BattleScreen(args[at + 1], mode)
-        {
-            Fast = args.Contains("--fast"),
-            QuitWhenDone = args.Contains("--quit"),
-            ScreenshotDirectory = Array.IndexOf(args, "--shots") is int s and >= 0 && s + 1 < args.Length ? args[s + 1] : null,
-        };
-        Callable.From(() => Open(screen)).CallDeferred();   // the tree is busy during _Ready
-        return true;
-    }
+        string? Value(string name) => Array.IndexOf(args, name) is int i and >= 0 && i + 1 < args.Length ? args[i + 1] : null;
+        bool fast = args.Contains("--fast"), quit = args.Contains("--quit");
+        string? shots = Value("--shots");
 
-    private async Task LoadCapturesAsync()
-    {
-        _captures.Clear();
-        _list.Clear();
-        UpdateButtons();
-        string dir = GameData.GoldenDirectory;
-        if (!System.IO.Directory.Exists(dir))
+        Node? screen = null;
+        if (args.Contains("--newgame") || args.Contains("--load"))
         {
-            _status.Text = $"No captures folder: {dir}";
-            return;
+            bool auto = args.Contains("--auto");
+            screen = new GameScreen(new GameOptions
+            {
+                Start = args.Contains("--load") ? GameStart.Load : GameStart.New,
+                Auto = auto,
+                Fast = fast,
+                QuitWhenDone = quit,
+                ScreenshotDirectory = shots,
+                Seed = uint.TryParse(Value("--seed"), out uint seed) ? seed : null,
+                SaveDirectory = Value("--saves") ?? (auto ? "user://saves-auto" : null),
+            });
         }
-        _status.Text = "Reading captures…";
-        var loaded = await Task.Run(() => System.IO.Directory.EnumerateFiles(dir, "*.golden")
-            .Order(StringComparer.Ordinal)
-            .Select(path => (path, BattleSandbox.Summarize(GoldenCapture.Load(path))))
-            .ToList());
-        foreach (var (path, summary) in loaded)
+        else if ((Value("--play") ?? Value("--watch")) is { } capture)
         {
-            _captures.Add((path, summary));
-            _list.AddItem(Describe(summary));
+            screen = new BattleScreen(capture, Value("--play") is not null ? BattleMode.Play : BattleMode.Watch)
+            {
+                Fast = fast,
+                QuitWhenDone = quit,
+                ScreenshotDirectory = shots,
+            };
         }
-        _status.Text = $"{_captures.Count} captures";
-        UpdateButtons();
-    }
-
-    private static string Describe(CaptureSummary s)
-    {
-        string kind = s.Root switch
-        {
-            "FIGT_A.ADV" => "Attack",
-            "FIGT_B.ADV" => "Defence",
-            "FIGT.ADV" => "Dungeon",
-            _ => s.Root,
-        };
-        string outcome = s.JumpTarget is not null ? "game over" : s.Outcome == 2 ? "won" : "lost";
-        string hooks = s.Hooks.Count > 0 ? $"  [scenes: {string.Join(", ", s.Hooks)}]" : "";
-        return $"Week {s.Week,2}  {kind,-7}  {s.Province,-14}  {string.Join(", ", s.PlayerUnits)}  vs  "
-            + $"{string.Join(", ", s.EnemyCommanders)}  — {outcome}{hooks}";
-    }
-
-    private void UpdateButtons()
-    {
-        bool selected = _list.GetSelectedItems().Length > 0;
-        _play.Disabled = !selected;
-        _watch.Disabled = !selected;
-    }
-
-    private void StartSelected(BattleMode mode)
-    {
-        var selected = _list.GetSelectedItems();
-        if (selected.Length > 0)
-            Start(selected[0], mode);
-    }
-
-    private void Start(int index, BattleMode mode)
-    {
-        Open(new BattleScreen(_captures[index].Path, mode));
-    }
-
-    private void Open(BattleScreen screen)
-    {
-        var tree = GetTree();
-        tree.Root.AddChild(screen);
-        tree.CurrentScene = screen;
-        QueueFree();
+        if (screen is not null)
+            Callable.From(() => Screens.Open(this, screen)).CallDeferred();   // the tree is busy during _Ready
     }
 }

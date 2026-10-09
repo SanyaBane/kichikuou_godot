@@ -76,6 +76,15 @@ public sealed class MessageWriter(Surface surface, IGlyphRenderer glyphs)
         return x - start;
     }
 
+    /// <summary>Draws a string in a colour outside the palette; returns the width drawn.</summary>
+    public static int DrawString(Surface surface, IGlyphRenderer glyphs, string text, int x, int y, int size, (byte R, byte G, byte B) color)
+    {
+        int start = x;
+        foreach (char c in text)
+            x += DrawChar(surface, glyphs, c, x, y, size, color);
+        return x - start;
+    }
+
     /// <summary>The cell width of <paramref name="c"/> at <paramref name="size"/> (script pixels).</summary>
     public static int CellWidth(char c, int size) => IsHalfWidth(c) ? size / 2 : size;
 

@@ -49,7 +49,8 @@ public sealed partial class GamePresenter
 
     /// <summary>
     /// A call of <c>M.ADV</c> (<see cref="MapEvent"/>): 0 and 12 show the map at the camera (0 with
-    /// the map's palette), 1 starts a scroll and 10/13 a blink, whose steps are the pauses that
+    /// the map's palette) over the whole screen — a picker its file left open is gone (<c>Cﾌﾞｶ</c>
+    /// returns from "End" without closing <c>Sﾌﾞｶ</c>, and <c>COMMAND.ADV:358-359</c> shows the map), 1 starts a scroll and 10/13 a blink, whose steps are the pauses that
     /// follow; 3 and 4 change markers (drawn again before the next view); 11 blacks the screen.
     /// </summary>
     private void Map(int mode)
@@ -57,6 +58,11 @@ public sealed partial class GamePresenter
         switch (mode)
         {
             case 0 or 12:
+                if (Picker is not null)
+                {
+                    Picker = null;
+                    _target = TextTarget.Window;
+                }
                 if (mode == 0 && State is { } s && _cgs.Get(s.Ui_MapCgTopL.Value) is { } top)
                     Stage.Palette = top.PaletteOver(Stage.Palette);
                 ShowMap();
@@ -194,6 +200,8 @@ public sealed partial class GamePresenter
         Screen.CopyFrom(Stage, 0, 0, Surface.ScreenWidth, Surface.ScreenHeight, 0, 0);
         if (!InBattle && State is { } s)
         {
+            if (MaskEventCgs && s.Ui_WinType == 31)
+                MaskStage();
             Pictures(s);
             Picker?.Draw(Screen, s);
             Frame(s);
@@ -206,6 +214,13 @@ public sealed partial class GamePresenter
         }
         Screen.FadeScreen(FadeAmount, FadeToWhite);
         return true;
+    }
+
+    /// <summary>The debug placeholder of <see cref="MaskEventCgs"/>: the stage's picture greyed out, with the CG's number.</summary>
+    private void MaskStage()
+    {
+        Screen.FillColor(0, 0, Surface.ScreenWidth, Surface.ScreenHeight, (96, 96, 96));
+        MessageWriter.DrawString(Screen, _glyphs, $"CG {_lastCg} (masked)", 16, 16, 24, (255, 255, 255));
     }
 
     /// <summary><c>WAO_SUB</c>'s pictures from GameState: the portraits at (0, 0) and (448, 144), the centre picture at (176, 96) with its overlays.</summary>

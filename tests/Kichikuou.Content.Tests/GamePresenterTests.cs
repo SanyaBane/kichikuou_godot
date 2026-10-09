@@ -21,8 +21,9 @@ public class GamePresenterTests(ITestOutputHelper output)
     /// <summary>
     /// Week 9 of a new game played through <see cref="GameSession"/>: Sill's CG scene, Pillage on
     /// province 34 with the deployment picker and the battle, a talk picked in the subordinate
-    /// picker, a harem visit, the hideout, a save into slot 2 on the save screen, Turn END; week 10
-    /// to its Turn END. Every text resolves and every screen is drawn.
+    /// picker, a harem visit, the hideout, a save into slot 2 on the save screen, Turn END; week 10:
+    /// the subordinate picker left with End (its file leaves it open, the map covers it), Turn END.
+    /// Every text resolves and every screen is drawn; no picker outlives the map.
     /// </summary>
     [Fact]
     public async Task A_prologue_week_is_drawn_through_the_presenter()
@@ -42,7 +43,9 @@ public class GamePresenterTests(ITestOutputHelper output)
         player.Map.Enqueue(Gesture.Menu(4));                                // Load/Save:
         player.Answers["ﾛｰﾄﾞｾｰﾌﾞ.ADV"] = new([2, 1, 0, 3]);                 // Save, slot "1", back, Don't
         player.Map.Enqueue(Gesture.Menu(5));                                // Turn END
-        player.Map.Enqueue(Gesture.Menu(5));                                // week 10: Turn END
+        player.Map.Enqueue(Gesture.Menu(2));                                // week 10: Subordinates,
+        player.Pickers.Enqueue((PickerKind.Subordinates, PickerArea.Button, 3)); // End (Sﾌﾞｶ stays open, the map covers it)
+        player.Map.Enqueue(Gesture.Menu(5));                                // Turn END
 
         await Assert.ThrowsAsync<WeekOverException>(() => run.Session.NewGameAsync());
 
@@ -79,6 +82,36 @@ public class GamePresenterTests(ITestOutputHelper output)
         Assert.True(run.Player.LitFrames > 10, "the opening's pictures reached the screen");
     }
 
+    /// <summary>
+    /// <see cref="GamePresenter.MaskEventCgs"/>: while the full-screen window is open the stage is a
+    /// grey placeholder; off (the default) and with any other window the stage shows as drawn.
+    /// </summary>
+    [Fact]
+    public void The_debug_mask_hides_the_stage_under_the_full_screen_window()
+    {
+        var missing = Path.Combine(Path.GetTempPath(), "kichikuou-no-data");
+        var presenter = new GamePresenter(new ScenarioText(missing), new CgLibrary(missing), new BoxGlyphs());
+        var state = new GameState();
+        presenter.Bind(state);
+        presenter.Show(new EngineEvent("CF", [(Sys3Int)0, (Sys3Int)0, (Sys3Int)640, (Sys3Int)400, (Sys3Int)15]));
+        var drawn = presenter.Stage.PixelAt(320, 100);
+
+        state.Ui_WinType = 31;
+        presenter.Invalidate();
+        presenter.Compose();
+        Assert.Equal(drawn, presenter.Screen.PixelAt(320, 100));                // off by default
+
+        presenter.MaskEventCgs = true;
+        presenter.Invalidate();
+        presenter.Compose();
+        Assert.Equal(((byte)96, (byte)96, (byte)96, (byte)255), presenter.Screen.PixelAt(320, 100));
+
+        state.Ui_WinType = 11;
+        presenter.Invalidate();
+        presenter.Compose();
+        Assert.Equal(drawn, presenter.Screen.PixelAt(320, 100));
+    }
+
     private sealed record Run(GameSession Session, GamePresenter Presenter, Player Player, StoppingSaves Saves);
 
     /// <summary>A booted session whose view is a presenter and whose input plays through it.</summary>
@@ -87,7 +120,7 @@ public class GamePresenterTests(ITestOutputHelper output)
         var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
         var state = new GameState();
         var presenter = new GamePresenter(new ScenarioText(LocalData.ScenarioDirectory), new CgLibrary(LocalData.CgDirectory),
-            new BoxGlyphs(), scripts);
+            new BoxGlyphs(), scripts) { MaskEventCgs = Environment.GetEnvironmentVariable("KICHIKUOU_SHOTS_DIR") is not null };
         var player = new Player(state, presenter);
         var saves = new StoppingSaves(stopAtWeek);
         var session = new GameSession(state, new QueuedRandom { DefaultToOne = true }, player, player, scripts, scripts, saves,
@@ -167,6 +200,8 @@ public class GamePresenterTests(ITestOutputHelper output)
         public Task ShowAsync(ScriptEvent e)
         {
             presenter.Show(e);
+            if (e is MapScreenEvent { Waiting: true })
+                Assert.Null(presenter.Picker);                                  // the map is drawn over every picker
             if (e is MapScreenEvent { Waiting: true } && _pointer.Pending == 0 && Map.TryDequeue(out var g))
             {
                 // The camera is still the centre here (COMMAND.ADV:51-58 turns it into the corner).
