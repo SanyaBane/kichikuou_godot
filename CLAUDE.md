@@ -48,8 +48,8 @@ and the view/input proxies; part 3 is the presenter `Kichikuou.Content/Strategy/
 drawn by hand over it from the semantic `ScreenEvent`s and GameState); part 4 is the title and
 `godot/Strategy/GameScreen` — the whole prologue is playable in Godot up to the Leazas week, which
 is not ported. The owner's prologue capture run (2026-10-09, docs/golden-tests.md, "Findings so
-far") matches the port everywhere, and so does a second run with top-left map clicks (STR-12 confirmed);
-path A's week-23 duel is still uncaptured (README open item 1).
+far") matches the port everywhere, and so do two more runs: top-left map clicks (STR-12 confirmed) and
+path A's week-23 duel (EVT-08 confirmed); README open items 1-2 are answered.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
 

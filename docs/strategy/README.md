@@ -198,7 +198,9 @@ battle files, and the helpers `M`, `WAO_MAP`, `WAO_SUB`, `PCMPLAY`. Unreachable 
 1. Path A never sets `Prov_Cur` before the duel, so `FIGT_A.ADV:1-30` sees the province
    clicked last: province 55 would start `IJAPAN` 3 (`N_JapanInv_Stage := 1`), and a non-zero
    `Prov_Defense` makes `FIGT_A:43-44` replace `TroopLimit 5000` with `Prov_BattleArea`
-   (`Iﾄｳｿﾞｸ:1394`). Capture a week-23 Turn END (not in the owner's first prologue run, 2026-10-09).
+   (`Iﾄｳｿﾞｸ:1394`). Captured 2026-10-09: province 32 (clicked in week 18) reached the duel with
+   its walls 6 as `Bt_WallBonus`; the limit, set to its Battle Area 320, goes back to 5000 in the
+   duel's round header (Q-6); the port matches (EVT-08).
 2. The map hit-tests (`COMMAND.ADV:99, 145`) start at index 0: a click near (0, 0) would pick
    province 0 / dungeon 0 or 27-30. Captured 2026-10-09: a click at (9, 5) picks province record 0
    and opens `Cﾃｷﾄｼ2` on it; the port matches (STR-12).
