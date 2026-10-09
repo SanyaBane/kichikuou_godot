@@ -105,7 +105,8 @@ path A's week-23 duel (EVT-08 confirmed); README open items 1-2 are answered.
   `GodotGlyphRenderer` (MS Gothic via TextServer), `BattleAudio`; `Screens` switches screens. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
 - `tools/analysis/` — Python scripts for reading the decompiled scenario; `tools/codegen/` —
   generators for committed C# sources; `tools/golden/` — harness launcher and page classes.
-- `docs/` — brief, spike findings, variable dictionary.
+- `docs/` — brief, spike findings, variable dictionary; `original-window-menu.md` records the
+  original window's menu bar (File/Options/Help/Skip Text) and what Restart and Skip Text do.
 
 ## Commands
 
