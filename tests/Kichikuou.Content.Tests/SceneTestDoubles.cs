@@ -66,8 +66,12 @@ public sealed class ScriptedSceneInput : ISceneInput
         return Answer((Sys3Int)(Keys.Count > 0 ? Keys.Dequeue() : 0));
     }
 
-    public Task<Sys3Int> PauseAsync(Sys3Int ticks)
+    /// <summary>Every <c>Y 3</c> pause: its ticks and whether a key may cut it short.</summary>
+    public List<(int Ticks, bool Cancelable)> Pauses { get; } = [];
+
+    public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
     {
+        Pauses.Add((ticks.Value, cancelable));
         Pointer.Interrupt();
         return Answer(Sys3Int.Zero);
     }

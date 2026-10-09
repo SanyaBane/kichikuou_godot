@@ -344,7 +344,7 @@ public partial class BattleScreen : Control, IScriptView, IBattleInput
         return key;
     }
 
-    public async Task<Sys3Int> PauseAsync(Sys3Int ticks)
+    public async Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
     {
         // Y 3: ticks × 16 ms, cut short by a key (which goes to RetVal).
         _presenter.Flush();

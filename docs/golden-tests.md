@@ -175,7 +175,9 @@ numbers are the engine's (`MS n` writes string n).
    unpatched one.
 3. **Input.** `ReplayBattleInput` answers `WaitForKeyAsync` from `key`, `ChooseAsync` from
    `menu` (index → the menu's option list; the core's list must have `count` items),
-   `GetPlayingTrackAsync` from `music`, `PauseAsync` from `wait` (the ticks must match) and
+   `GetPlayingTrackAsync` from `music`, `PauseAsync` from `wait` (the ticks must match;
+   `Y 3, 10000/10001` only set `ScriptContext.PauseCancelable`, the engine's `Y3waitFlags`, so
+   neither the harness nor the core has a wait for them) and
    `SelectCommandAsync` from `pick`. Records are consumed in log order by all consumers together,
    so a draw where the original waited for a key (or the other way round) is reported as a
    divergence.

@@ -284,6 +284,27 @@ public sealed class SceneRunnerTests : IDisposable
         Assert.Equal(new MessageResetEvent(1), rig.View.Events[3]);
     }
 
+    [Fact]
+    public async Task Y3_10000_and_10001_only_set_whether_later_pauses_end_at_a_key()
+    {
+        var rig = Rig(null, ("GTEST.ADV",
+        [
+            "\t!VAR0000 : 9!",
+            "\tY 3, 10000:",              // cmdy.c: sets Y3waitFlags only; no wait, RetVal kept
+            "\t!VAR0001 : VAR0000!",
+            "\tY 3, 40:",
+            "\tY 3, 10001:",
+            "\tY 3, 20:",
+            "\t%0:",
+        ]));
+
+        await rig.EventAsync("GTEST.ADV", 1);
+
+        Assert.Equal(9, Var(rig, 1));
+        Assert.Equal([new PauseEvent(40), new PauseEvent(20)], rig.View.Events.OfType<PauseEvent>());
+        Assert.Equal([(40, false), (20, true)], rig.Input.Pauses);
+    }
+
     [Theory]
     [InlineData("\t!VAR0001 : 1!", "ran past the end")]
     [InlineData("\tUG VAR0001, 1:", "UG with no pushed variable")]

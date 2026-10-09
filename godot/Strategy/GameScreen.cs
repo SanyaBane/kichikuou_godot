@@ -89,7 +89,6 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private TaskCompletionSource? _answered;
     private ushort _battleButtons;              // the buttons pressed since the battle's input screen opened
 
-    private bool _pauseCancelable = true;       // cmdy.c Y3waitFlags: Y 3, 10000 / 10001
     private ushort _ikKey;                      // cmdi.c ik_key, repeating: IK 0's key repeat
     private int _repeating;
 
@@ -479,17 +478,12 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         return key;
     }
 
-    public async Task<Sys3Int> PauseAsync(Sys3Int ticks)
+    public async Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
     {
-        // Y 3 (cmdy.c): 10000 / 10001 make the later pauses ignore / end at the input (the engine
-        // leaves RetVal alone; the core stores the 0 returned here); 0 reads the input once.
+        // Y 3 (cmdy.c): 0 reads the input once; the core keeps Y3waitFlags (Y 3, 10000 / 10001
+        // never come here) and passes it as cancelable.
         _pointer.Interrupt();
         _presenter.Flush();
-        if (ticks.Value is 10000 or 10001)
-        {
-            _pauseCancelable = ticks.Value == 10001;
-            return Sys3Int.Zero;
-        }
         double seconds = _options.Fast ? 0 : ticks.Value * 0.016;
         if (_options.Auto)
         {
@@ -501,9 +495,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             await NextFrameAsync();
             return _input.ReadInput();
         }
-        // ticks × 16 ms, polled once a frame; anything held ends it at once and is returned
+        // ticks × 16 ms, polled once a frame; when cancelable, anything held ends it at once; the last poll is returned
         // (nothing is consumed: a button held over several pauses ends each of them).
-        return await KeyWaitAsync(seconds, _pauseCancelable);
+        return await KeyWaitAsync(seconds, cancelable);
     }
 
     /// <summary>At least one frame, then until <paramref name="seconds"/> passed.</summary>

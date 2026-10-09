@@ -38,10 +38,13 @@ public interface IScriptInput
     Task<Sys3Int> WaitForKeyAsync();
 
     /// <summary>
-    /// <c>Y 3, n</c>: a timed pause of <paramref name="ticks"/> × 16 ms that a key or click cuts
-    /// short; returns the key code the engine stores in <c>RetVal</c> (0 when the pause ran out).
+    /// <c>Y 3, n</c>: a timed pause of <paramref name="ticks"/> × 16 ms; returns the key code the
+    /// engine stores in <c>RetVal</c> — what is held at the last poll (0 if nothing). When
+    /// <paramref name="cancelable"/> (<c>ScriptContext.PauseCancelable</c>), a key or click cuts
+    /// it short; otherwise it runs out. Never called for <c>Y 3, 10000/10001</c>, which only set
+    /// the flag.
     /// </summary>
-    Task<Sys3Int> PauseAsync(Sys3Int ticks);
+    Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable);
 
     /// <summary>
     /// <c>SR 0, var</c>: engine query of the music track that is playing, stored by the

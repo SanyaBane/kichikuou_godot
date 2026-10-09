@@ -41,9 +41,13 @@ public sealed class ScriptedInput : IBattleInput
     /// <summary>The ticks of every <c>Y 3</c> pause, in order.</summary>
     public List<int> Pauses { get; } = [];
 
-    public Task<Sys3Int> PauseAsync(Sys3Int ticks)
+    /// <summary>Whether a key may cut each <c>Y 3</c> pause short (the engine's <c>Y3waitFlags</c>), in order.</summary>
+    public List<bool> PauseCancelables { get; } = [];
+
+    public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
     {
         Pauses.Add(ticks.Value);
+        PauseCancelables.Add(cancelable);
         return Task.FromResult(PauseKeys.Count > 0 ? (Sys3Int)PauseKeys.Dequeue() : Sys3Int.Zero);
     }
 

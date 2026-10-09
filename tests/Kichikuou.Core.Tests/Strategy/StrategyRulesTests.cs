@@ -141,7 +141,7 @@ public class StrategyRulesTests
 
         public Task<Sys3Int> WaitForKeyAsync() => Task.FromResult(Sys3Int.Zero);
 
-        public Task<Sys3Int> PauseAsync(Sys3Int ticks) => Task.FromResult(Sys3Int.Zero);
+        public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable) => Task.FromResult(Sys3Int.Zero);
 
         public Task<Sys3Int> GetPlayingTrackAsync() => Task.FromResult((Sys3Int)7);
 

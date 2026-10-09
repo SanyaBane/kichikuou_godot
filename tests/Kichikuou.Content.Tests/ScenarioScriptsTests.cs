@@ -199,7 +199,7 @@ public class PlayerBootTests(ITestOutputHelper output)
     private sealed class NoInput : IScriptInput
     {
         public Task<Sys3Int> WaitForKeyAsync() => throw new InvalidOperationException();
-        public Task<Sys3Int> PauseAsync(Sys3Int ticks) => throw new InvalidOperationException();
+        public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable) => throw new InvalidOperationException();
         public Task<Sys3Int> GetPlayingTrackAsync() => throw new InvalidOperationException();
     }
 

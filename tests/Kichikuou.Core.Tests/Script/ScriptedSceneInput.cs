@@ -75,7 +75,7 @@ public sealed class ScriptedSceneInput : IGameInput
         return Task.FromResult((Sys3Int)(Keys.Count > 0 ? Keys.Dequeue() : 0));
     }
 
-    public Task<Sys3Int> PauseAsync(Sys3Int ticks)
+    public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
     {
         Pointer.Interrupt();
         return Task.FromResult(Sys3Int.Zero);

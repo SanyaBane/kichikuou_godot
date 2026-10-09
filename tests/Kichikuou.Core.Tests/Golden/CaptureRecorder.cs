@@ -91,7 +91,7 @@ public sealed class CaptureRecorder
             return Task.FromResult(Sys3Int.Zero);
         }
 
-        public Task<Sys3Int> PauseAsync(Sys3Int ticks)
+        public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
         {
             recorder.Add($"wait {ticks} 0 M.ADV@5aa");
             return Task.FromResult(Sys3Int.Zero);

@@ -315,7 +315,7 @@ public class BattlePresenterGameDataTests(ITestOutputHelper output)
             return Task.FromResult((Sys3Int)16);
         }
 
-        public Task<Sys3Int> PauseAsync(Sys3Int ticks) => Task.FromResult(Sys3Int.Zero);
+        public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable) => Task.FromResult(Sys3Int.Zero);
 
         public Task<FigtSelChoice> SelectCommandAsync(FigtSelMenu menu)
         {

@@ -19,7 +19,7 @@ public sealed class GameInputProxy(IGameInput target) : IGameInput
     public Task<Sys3Int> WaitForKeyAsync() => Target.WaitForKeyAsync();
 
     /// <inheritdoc />
-    public Task<Sys3Int> PauseAsync(Sys3Int ticks) => Target.PauseAsync(ticks);
+    public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable) => Target.PauseAsync(ticks, cancelable);
 
     /// <inheritdoc />
     public Task<Sys3Int> GetPlayingTrackAsync() => Target.GetPlayingTrackAsync();

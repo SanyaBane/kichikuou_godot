@@ -229,7 +229,7 @@ public class WeekLoopDifferentialTests(ITestOutputHelper output)
             return Task.FromResult(key);
         }
 
-        public Task<Sys3Int> PauseAsync(Sys3Int ticks)
+        public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
         {
             Spend();
             var key = (Sys3Int)(_rng.Next(5) == 0 ? 1 : 0);

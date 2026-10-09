@@ -436,7 +436,7 @@ public class PrologueCommandTests(ITestOutputHelper output)
             return Task.FromResult(Sys3Int.Zero);
         }
 
-        public Task<Sys3Int> PauseAsync(Sys3Int ticks)
+        public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
         {
             _rests = 0;
             return Task.FromResult(Sys3Int.Zero);

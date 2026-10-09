@@ -205,9 +205,9 @@ public sealed class SceneReplayTests(ITestOutputHelper output) : IDisposable
                 return key;
             }
 
-            public async Task<Sys3Int> PauseAsync(Sys3Int ticks)
+            public async Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
             {
-                var code = await r.Input.PauseAsync(ticks);
+                var code = await r.Input.PauseAsync(ticks, cancelable);
                 r.Add($"wait {ticks} {code} GTEST.ADV@60");
                 return code;
             }

@@ -81,7 +81,7 @@ public class BattleSandboxTests(ITestOutputHelper output)
             return Task.FromResult(Sys3Int.Zero);
         }
 
-        public Task<Sys3Int> PauseAsync(Sys3Int ticks) => Task.FromResult(Sys3Int.Zero);
+        public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable) => Task.FromResult(Sys3Int.Zero);
 
         public Task<FigtSelChoice> SelectCommandAsync(FigtSelMenu menu)
         {
@@ -112,7 +112,7 @@ public class BattleSandboxTests(ITestOutputHelper output)
 
         public Task<Sys3Int> WaitForKeyAsync() => Task.FromResult((Sys3Int)Next<KeyRecord>().Code);
 
-        public Task<Sys3Int> PauseAsync(Sys3Int ticks) => Task.FromResult((Sys3Int)Next<WaitRecord>().Code);
+        public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable) => Task.FromResult((Sys3Int)Next<WaitRecord>().Code);
 
         public Task<FigtSelChoice> SelectCommandAsync(FigtSelMenu menu)
         {

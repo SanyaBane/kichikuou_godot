@@ -48,13 +48,28 @@ public sealed partial class ScriptContext(
     public Task TextAsync(string file, int line) => View.ShowAsync(new MessageEvent(new ScriptRef(file, line)));
 
     /// <summary>
+    /// Whether a key or click ends a <c>Y 3, n</c> pause early: the engine's <c>Y3waitFlags</c>
+    /// (xsystem35 <c>cmdy.c</c>), set by <c>Y 3, 10000</c> (off) and <c>Y 3, 10001</c> (on).
+    /// Engine state, not script memory: it starts on and is never saved, so it lives as long as
+    /// the context (one game session, like the engine's process).
+    /// </summary>
+    public bool PauseCancelable { get; private set; } = true;
+
+    /// <summary>
     /// <c>Y 3, n</c>: a timed pause. The engine stores the key that cut it short (0 if none) in
-    /// <c>RetVal</c> (xsystem35 <c>cmdy.c</c>), so the pause is an input.
+    /// <c>RetVal</c> (xsystem35 <c>cmdy.c</c>), so the pause is an input. <c>Y 3, 10000</c> and
+    /// <c>Y 3, 10001</c> are not pauses: they only set <see cref="PauseCancelable"/>, raise no
+    /// event and leave <c>RetVal</c> alone (the golden harness records no wait for them either).
     /// </summary>
     public async Task PauseAsync(Sys3Int ticks)
     {
+        if (ticks.Value is 10000 or 10001)
+        {
+            PauseCancelable = ticks.Value == 10001;
+            return;
+        }
         await View.ShowAsync(new PauseEvent(ticks));
-        var key = await Input.PauseAsync(ticks);
+        var key = await Input.PauseAsync(ticks, PauseCancelable);
         State.RetVal = key;
     }
 

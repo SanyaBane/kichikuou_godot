@@ -492,7 +492,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             return Task.FromResult(key);
         }
 
-        public Task<Sys3Int> PauseAsync(Sys3Int ticks)
+        public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
         {
             Spend();
             log.Add($"wait {ticks}");

@@ -397,7 +397,7 @@ public sealed class GoldenReplay
         public Task<Sys3Int> WaitForKeyAsync() =>
             Task.FromResult((Sys3Int)replay.Take<KeyRecord>("a key (IK)").Code);
 
-        public Task<Sys3Int> PauseAsync(Sys3Int ticks)
+        public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
         {
             var record = replay.Take<WaitRecord>($"a pause (Y 3,{ticks})");
             if (record.Ticks != ticks.Value)

@@ -171,7 +171,7 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
             return Task.FromResult((Sys3Int)old);
         }
 
-        public Task<Sys3Int> PauseAsync(Sys3Int ticks)
+        public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
         {
             log.Add($"wait {ticks}");
             return Task.FromResult((Sys3Int)_rng.Next(0, 2));
@@ -406,7 +406,7 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
             return Task.FromResult(key);
         }
 
-        public Task<Sys3Int> PauseAsync(Sys3Int ticks)
+        public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
         {
             Spend();
             log.Add($"wait {ticks}");
