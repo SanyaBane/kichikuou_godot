@@ -21,9 +21,10 @@ param(
     [long]$Seed = -1,
     # Also log every page call of the session to OutDir\trace.log.
     [switch]$Trace,
-    # Print every random draw to this console ("rnd k: Y 4, n = result page@addr"), to compare
-    # with the port's --rnglog.
+    # Print every random draw to this console ("rnd k: Y 4, n = result page@addr") and write it to
+    # RngLogFile, to compare with the port's --rnglog (tools/golden/rngwatch.py watches both files).
     [switch]$RngLog,
+    [string]$RngLogFile = (Join-Path $env:APPDATA 'Godot\app_userdata\Kichikuou\rnglog-original.txt'),
     # Extra arguments for xsystem35 (e.g. '-savedir', 'D:\saves').
     [string[]]$ExtraArgs = @()
 )
@@ -41,6 +42,11 @@ $env:XSYS35_GOLDEN_HED = $Hed
 $env:XSYS35_GOLDEN_CLASSES = Join-Path $PSScriptRoot 'classes.txt'
 $env:XSYS35_GOLDEN_TRACE = if ($Trace) { '1' } else { '' }
 $env:XSYS35_RNGLOG = if ($RngLog) { '1' } else { '' }
+$env:XSYS35_RNGLOG_FILE = if ($RngLog) { $RngLogFile } else { '' }
+if ($RngLog) {
+    New-Item -ItemType Directory -Force (Split-Path $RngLogFile) | Out-Null
+    Write-Host "Random draws are logged to $RngLogFile"
+}
 $env:PATH = "$MsysBin;$env:PATH"
 # The page names in the draw lines are UTF-8.
 if ($RngLog) { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 }
