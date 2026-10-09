@@ -55,12 +55,32 @@ public sealed partial class GameSetup(ScriptContext script, IScenarioSource scen
     }
 
     /// <summary>
-    /// "Start" on the title menu with <c>DebugMode = 0</c>: <c>ｽﾀMENU.ADV:244-247</c> (<c>L_005ef</c>)
-    /// and the new game <c>L_00670</c> (<c>:279-290</c>). The script then jumps to <c>MAIN.ADV</c>
-    /// (<c>:291</c>); the caller runs the week loop next.
+    /// "Start" on the title menu with <c>DebugMode = 0</c>: the state the title menu leaves on
+    /// that path (below), <c>ｽﾀMENU.ADV:244-247</c> (<c>L_005ef</c>) and the new game
+    /// <c>L_00670</c> (<c>:279-290</c>). The script then jumps to <c>MAIN.ADV</c> (<c>:291</c>);
+    /// the caller runs the week loop next.
     /// </summary>
+    /// <remarks>
+    /// The title menu itself is not ported (owner's decision 10), but its state lines on the way
+    /// to "Start" are: checked against the <c>enter</c> dumps of the owner's <c>Iﾌﾟﾛﾛｰｸﾞ</c>
+    /// captures (<c>NewGameStateTests</c>). What the port cannot know is left: the persistent page
+    /// 4 (from the player's slots), the benchmark's results and the opening's scratch
+    /// (<c>Tmp0003</c>, <c>Tmp0020</c>, <c>Tmp0039</c>, which depend on the machine and on when the
+    /// opening was clicked away).
+    /// </remarks>
     public async Task NewGameAsync()
     {
+        Script.SetString(1, "");                    // :8 MS 1, "" (L_00035, the title screen)
+        State.Glob_FateCur = 79;                    // :55 the clear counter's slot
+        State.Glob_CgCur = 240;                     // :84
+        State.Tmp0001 = 6;                          // :103-116 (L_0028d, L_00e91 :695-698) the item under the pointer: Start
+        State.Tmp0002 = 6;                          //   :116 the item highlighted
+        State.Glob_MenuCur = 6;                     //   :112
+        State.RetVal = 0;                           // :131-134 the release wait L_0036f
+        State.MapTargetX = 1000;                    // :136-139 the camera on the middle of the map
+        State.MapTargetY = 400;
+        State.MapCamX = State.MapTargetX;
+        State.MapCamY = State.MapTargetY;
         State.CurrentBgm = 4;                       // :245
         if (State.DebugMode != 0)                   // :246-248; the debug menu "From 1-4" is not ported
             throw new NotSupportedException("The debug starts of ｽﾀMENU.ADV:249-266 are not ported.");

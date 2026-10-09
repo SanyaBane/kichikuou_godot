@@ -145,6 +145,13 @@ public class GameSetupTests
         Is(0, rig.State.StoryStage);
         Is(50, rig.State.Gold);
         Is(0, rig.State.CallArg);
+        Is(1000, rig.State.MapCamX);                // ｽﾀMENU.ADV:136-139: the map opens in the middle
+        Is(400, rig.State.MapCamY);
+        Is(1000, rig.State.MapTargetX);
+        Is(400, rig.State.MapTargetY);
+        Is(680, rig.State.Tmp0021);                 // M.ADV 0: the view's corner
+        Is(200, rig.State.Tmp0022);
+        Assert.Equal("", rig.State.Strings[1]);
         Assert.Equal([new WaoMapEvent(3), new MapEvent(0)], rig.View.Events);
         Assert.Equal([("Iﾌﾟﾛﾛｰｸﾞ.ADV", 0)], rig.Story.Calls);
     }
