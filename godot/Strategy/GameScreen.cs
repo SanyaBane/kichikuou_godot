@@ -743,9 +743,21 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         return (Sys3Int)(ushort)(value & 0xffff);
     }
 
-    /// <summary><c>SC</c>: the CD position; the music is not a CD here, so "nothing plays".</summary>
-    public Task<IReadOnlyList<Sys3Int>> GetCdPositionAsync() =>
-        Task.FromResult<IReadOnlyList<Sys3Int>>([(Sys3Int)999, (Sys3Int)999, (Sys3Int)999, (Sys3Int)999]);
+    /// <summary>
+    /// <c>SC</c> (<c>cmds.c</c>, <c>cdrom.mp3.c</c>): the track <c>SS</c> started and the time since,
+    /// as minutes, seconds and 1/75 s frames, while it plays; 999 four times when nothing does.
+    /// The opening waits on it for its first 25 frames (<c>ｵｰﾌﾟﾆﾝｸﾞ.ADV:17-31</c>) and times every
+    /// picture from there, so the music and the pictures keep step. Read once per frame (the
+    /// script polls it in a loop).
+    /// </summary>
+    public async Task<IReadOnlyList<Sys3Int>> GetCdPositionAsync()
+    {
+        await NextFrameAsync();
+        if (_audio.MusicPosition is not { } position)
+            return [(Sys3Int)999, (Sys3Int)999, (Sys3Int)999, (Sys3Int)999];
+        long ms = (long)position.TotalMilliseconds;
+        return [(Sys3Int)_audio.Track, (Sys3Int)(int)(ms / 60000), (Sys3Int)(int)(ms / 1000 % 60), (Sys3Int)(int)(ms % 1000 * 75 / 1000)];
+    }
 
     /// <summary><c>SR 1</c>: no MIDI plays.</summary>
     public Task<Sys3Int> GetMidiTrackAsync() => Task.FromResult(Sys3Int.Zero);

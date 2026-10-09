@@ -63,6 +63,7 @@ public sealed partial class GamePresenter
     private (int X, int Y)? _jump;
     private (int X, int Y)? _jumpRelative;
     private int _cgFlags = 7;
+    private int _nextMusicLoops;
     private int _lastCg;
     private Action? _afterKey;
     private bool _dirty = true;
@@ -249,7 +250,10 @@ public sealed partial class GamePresenter
                 break;
             case SoundEvent e when e.Mode != 3: _audio?.PlaySound(e.Sound.Value); break;
             case SoundPairEvent e: _audio?.PlaySoundPair(e.First.Value, e.Second.Value); break;
-            case MusicEvent e: _audio?.PlayMusic(e.Track.Value); break;
+            case MusicEvent e:
+                _audio?.PlayMusic(e.Track.Value, _nextMusicLoops);
+                _nextMusicLoops = 0;                                    // cmds.c: every SS resets it
+                break;
             case EngineEvent e: Engine(e.Command, e.Args); break;
         }
     }
@@ -370,6 +374,8 @@ public sealed partial class GamePresenter
             case 152: OpenWindow((224, 196, 240, 200), 11, null); break;
             case >= 211 and <= 253: _target = TextTarget.Window; break;
             case 0 or 10:
+                if (op == 0 && State is { Ui_WinType.Value: >= 31 and <= 39 } shown)
+                    LeaveWindowOnStage(shown);
                 if (op == 10 || State?.Ui_WinType.Value is >= 11 and <= 29)
                     _textColor = 15;
                 _window.Clear();
@@ -427,6 +433,7 @@ public sealed partial class GamePresenter
                 if (A(0) == 1)
                     _textColor = A(1);
                 return;
+            case "SL": _nextMusicLoops = A(0); return;                  // the next SS's loop count
             case "B1": _selectionWindows[A(0)] = (A(1), A(2), A(3)); return;
             case "B2": _selectionWindow = A(0); return;
             case "B3": _messageWindows[A(0)] = (A(1), A(2), A(3), A(4)); return;

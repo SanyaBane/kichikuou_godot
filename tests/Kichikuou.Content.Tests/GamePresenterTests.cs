@@ -113,6 +113,41 @@ public class GamePresenterTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// <c>WAO_SUB</c> 0 on the full-screen window restores nothing (<c>WAO_SUB.ADV:267-270</c>):
+    /// after <c>Iﾄｳｿﾞｸ.ADV</c>'s last line (<c>:1839-1843</c>) the frame and the text stay on the
+    /// screen while <c>ｵｰﾌﾟﾆﾝｸﾞ</c> waits for its music, until something draws over them.
+    /// Skipped without the player's CGs.
+    /// </summary>
+    [Fact]
+    public void Closing_the_full_screen_window_leaves_it_on_the_screen()
+    {
+        if (!File.Exists(Path.Combine(LocalData.CgDirectory, "CG815.png")))
+            return;
+        var missing = Path.Combine(Path.GetTempPath(), "kichikuou-no-data");
+        var presenter = new GamePresenter(new ScenarioText(missing), new CgLibrary(LocalData.CgDirectory), new BoxGlyphs());
+        var state = new GameState();
+        presenter.Bind(state);
+        presenter.Show(new EngineEvent("CF", [(Sys3Int)0, (Sys3Int)0, (Sys3Int)640, (Sys3Int)400, (Sys3Int)15]));
+        presenter.Show(new WindowEvent(131, 0));
+        state.Ui_WinType = 31;
+        state.Ui_WinFrameCg = 815;
+        presenter.Show(new MessageEvent(new ScriptRef("Iﾄｳｿﾞｸ.ADV", 1839)));
+        presenter.Invalidate();
+        presenter.Compose();
+        var shown = presenter.Screen.ReadScreen();
+
+        presenter.Show(new WindowEvent(0, 0));
+        state.Ui_WinType = 0;
+        presenter.Invalidate();
+        presenter.Compose();
+        Assert.Equal(shown, presenter.Screen.ReadScreen());
+
+        presenter.Show(new EngineEvent("CF", [(Sys3Int)0, (Sys3Int)0, (Sys3Int)640, (Sys3Int)400, (Sys3Int)0]));
+        presenter.Compose();
+        Assert.Equal((0, 0, 0, 255), presenter.Screen.PixelAt(320, 350));      // drawn over
+    }
+
+    /// <summary>
     /// <c>ｵｰﾌﾟﾆﾝｸﾞ.ADV:49-58</c>: <c>PC 1</c> draws a CG off screen without its palette, <c>PC 6</c>
     /// loads the palette without drawing, <c>CC</c> brings it on screen — the same picture as the
     /// CG drawn there with <c>PC 7</c>, though another CG's palette was loaded when it was drawn

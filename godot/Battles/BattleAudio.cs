@@ -29,6 +29,7 @@ public partial class BattleAudio : Node, IBattleAudio
         _right = AddPlayer(RightBus);
         _bgm = AddPlayer("Master");
         _bgm.VolumeDb = -6;
+        _bgm.Finished += OnMusicFinished;
         if (System.IO.Directory.Exists(GameData.GameDirectory))
             _music = new MusicTable(GameData.GameDirectory);
     }
@@ -90,20 +91,43 @@ public partial class BattleAudio : Node, IBattleAudio
     }
 
     /// <summary>
-    /// <c>SS n</c>: the track already started goes on playing (xsystem35 <c>muscd_start</c> returns
-    /// at once for the current track, <c>music_cdrom.c:81-82</c>); the map loop sends <c>SS</c> after every command.
+    /// <c>SS n</c>: the track already started goes on playing, even when it has ended (xsystem35
+    /// <c>muscd_start</c> returns at once for the current track, <c>music_cdrom.c:81-82</c>); the
+    /// map loop sends <c>SS</c> after every command. <paramref name="loops"/> plays it that many
+    /// times, 0 endlessly (<c>SL</c>, <c>Mix_PlayMusic</c>).
     /// </summary>
-    public void PlayMusic(int track)
+    public void PlayMusic(int track, int loops = 0)
     {
         if (track != 0 && track == Track)
             return;
         Track = track;
         _bgm.Stop();
+        _started = null;
         if (_music?.PathOf(track) is not { } path || !System.IO.File.Exists(path))
             return;
         var stream = AudioStreamMP3.LoadFromFile(path);
-        stream.Loop = true;
+        stream.Loop = loops == 0;
+        _loopsLeft = loops;
         _bgm.Stream = stream;
         _bgm.Play();
+        _started = System.Diagnostics.Stopwatch.StartNew();
     }
+
+    private System.Diagnostics.Stopwatch? _started;
+    private int _loopsLeft;
+
+    /// <summary>A track played a counted number of times starts again until the count is used up.</summary>
+    private void OnMusicFinished()
+    {
+        if (--_loopsLeft > 0)
+            _bgm.Play();
+        else
+            _started = null;
+    }
+
+    /// <summary>
+    /// <c>SC</c> with xsystem35's <c>cdrom.mp3.c</c>: while the music plays, the time since it was
+    /// started (wall clock, across its loops), else null ("nothing plays").
+    /// </summary>
+    public TimeSpan? MusicPosition => _started is { } started && _bgm.Playing ? started.Elapsed : null;
 }

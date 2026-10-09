@@ -16,8 +16,11 @@ public interface IBattleAudio
     /// <summary><c>SQ l, r, 1</c>: plays two sound effects, one on each channel.</summary>
     void PlaySoundPair(int left, int right);
 
-    /// <summary><c>SS n</c>: plays music track <paramref name="track"/> (0 stops).</summary>
-    void PlayMusic(int track);
+    /// <summary>
+    /// <c>SS n</c>: plays music track <paramref name="track"/> (0 stops) <paramref name="loops"/>
+    /// times, 0 endlessly (the <c>SL</c> before it; <c>Mix_PlayMusic</c>).
+    /// </summary>
+    void PlayMusic(int track, int loops = 0);
 }
 
 /// <summary>

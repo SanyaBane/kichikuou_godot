@@ -254,6 +254,27 @@ public sealed partial class GamePresenter
         return true;
     }
 
+    /// <summary>
+    /// <c>WAO_SUB</c> 0 on the full-screen window (types 31-39) restores nothing: its
+    /// <c>CC 0, 0, 640, 400, 0, 0</c> copies the screen onto itself (<c>WAO_SUB.ADV:267-270</c>), so
+    /// the frame, the text and the pictures stay on the screen until something draws over them
+    /// (the last line of <c>Iﾄｳｿﾞｸ.ADV</c>'s escape, <c>:1839-1843</c>, while <c>ｵｰﾌﾟﾆﾝｸﾞ</c> waits for
+    /// its music). The engine drew them into the screen; here the screen as shown (without the fade)
+    /// goes onto the stage under the frame, in its colours.
+    /// </summary>
+    private void LeaveWindowOnStage(GameState s)
+    {
+        if (_cgs.Get(s.Ui_WinFrameCg.Value) is not { } frame)
+            return;
+        byte fade = FadeAmount;
+        FadeAmount = 0;
+        Invalidate();
+        Compose();
+        FadeAmount = fade;
+        Invalidate();
+        Stage.CopyFrom(Screen, frame.X, frame.Y, frame.Width, frame.Height, Stage.View.X + frame.X, Stage.View.Y + frame.Y);
+    }
+
     /// <summary>The debug placeholder of <see cref="MaskEventCgs"/>: the stage's picture greyed out, with the CG's number.</summary>
     private void MaskStage()
     {
