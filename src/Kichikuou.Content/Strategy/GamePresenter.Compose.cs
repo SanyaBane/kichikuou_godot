@@ -27,7 +27,16 @@ public sealed partial class GamePresenter
 
     private enum MapAnimation { None, Scroll, Blink }
 
+    /// <summary><c>WAO_SUB</c>'s pictures (<see cref="Cover"/>).</summary>
+    [Flags]
+    private enum Pictures { None = 0, PortraitL = 1, PortraitR = 2, Center = 4 }
+
+    private static readonly (int X, int Y) PortraitLAt = (0, 0);
+    private static readonly (int X, int Y) PortraitRAt = (448, 144);
+    private static readonly (int X, int Y) CenterAt = (176, 96);
+
     private Tiles _tiles = Tiles.Dirty;
+    private Pictures _covered;
     private MapAnimation _mapAnimation;
     private int _blinkStep;
     private IReadOnlyList<string>? _menu;
@@ -81,6 +90,7 @@ public sealed partial class GamePresenter
                 break;
             case 11:
                 Stage.Fill(0, 0, Surface.ScreenWidth, Surface.ScreenHeight, 0);
+                CoverScreen();
                 break;
         }
     }
@@ -115,6 +125,7 @@ public sealed partial class GamePresenter
     {
         EnsureTiles();
         Battle.BlitMapView();
+        CoverScreen();
     }
 
     /// <summary>The six tiles and every marker off screen, from GameState (<c>WAO_MAP.ADV</c> op 3), unless they are there.</summary>
@@ -133,12 +144,39 @@ public sealed partial class GamePresenter
             EnsureTiles();
     }
 
-    /// <summary>A drawing command reached the tile area: what is there is no longer the map.</summary>
+    /// <summary>
+    /// A drawing command reached the tile area: what is there is no longer the map; on screen it
+    /// may draw over <c>WAO_SUB</c>'s pictures (<see cref="Cover"/>).
+    /// </summary>
     private void Drawn(int x, int y, int w, int h)
     {
         if (x + w > TileArea && w > 0 && h > 0)
             _tiles = Tiles.Foreign;
+        Cover(x, y, w, h);
     }
+
+    /// <summary>
+    /// The engine draws <c>WAO_SUB</c>'s pictures into the screen once, so a drawing over the whole
+    /// of one (the map's view during an <c>M.ADV</c> scroll, <c>WAO_MAP.ADV:2</c>) wipes it while its
+    /// variable still holds it; it stays hidden until <c>WAO_SUB</c> draws or removes it again.
+    /// </summary>
+    private void Cover(int x, int y, int w, int h)
+    {
+        if (State is not { } s || InBattle)
+            return;
+        bool Covers((int X, int Y) at, int number) =>
+            number != 0 && _cgs.Get(number) is { } cg
+            && x <= at.X && y <= at.Y && x + w >= at.X + cg.Width && y + h >= at.Y + cg.Height;
+        if (Covers(PortraitLAt, s.Ui_PortraitL.Value))
+            _covered |= Pictures.PortraitL;
+        if (Covers(PortraitRAt, s.Ui_PortraitR.Value))
+            _covered |= Pictures.PortraitR;
+        if (Covers(CenterAt, s.Ui_CenterCg.Value))
+            _covered |= Pictures.Center;
+    }
+
+    /// <summary>The whole screen was drawn over.</summary>
+    private void CoverScreen() => Cover(0, 0, Surface.ScreenWidth, Surface.ScreenHeight);
 
     // ------------------------------------------------------------------ menus and the pointer
 
@@ -202,7 +240,7 @@ public sealed partial class GamePresenter
         {
             if (MaskEventCgs && s.Ui_WinType == 31)
                 MaskStage();
-            Pictures(s);
+            DrawPictures(s);
             Picker?.Draw(Screen, s);
             Frame(s);
             _window.Draw(Screen, _glyphs);
@@ -223,19 +261,39 @@ public sealed partial class GamePresenter
         MessageWriter.DrawString(Screen, _glyphs, $"CG {_lastCg} (masked)", 16, 16, 24, (255, 255, 255));
     }
 
-    /// <summary><c>WAO_SUB</c>'s pictures from GameState: the portraits at (0, 0) and (448, 144), the centre picture at (176, 96) with its overlays.</summary>
-    private void Pictures(GameState s)
+    /// <summary>
+    /// <c>WAO_SUB</c>'s pictures from GameState: the portraits at (0, 0) and (448, 144), the centre
+    /// picture at (176, 96) with its overlays — those not drawn over since (<see cref="Cover"/>).
+    /// </summary>
+    private void DrawPictures(GameState s)
     {
-        Picture(s.Ui_PortraitL.Value, 0, 0, keyed: true);
-        Picture(s.Ui_PortraitR.Value, 448, 144, keyed: true);
+        if (s.Ui_PortraitL == 0)
+            _covered &= ~Pictures.PortraitL;
+        if (s.Ui_PortraitR == 0)
+            _covered &= ~Pictures.PortraitR;
         if (s.Ui_CenterCg == 0)
+            _covered &= ~Pictures.Center;
+        if ((_covered & Pictures.PortraitL) == 0)
+            Picture(s.Ui_PortraitL.Value, PortraitLAt, keyed: true);
+        if ((_covered & Pictures.PortraitR) == 0)
+            Picture(s.Ui_PortraitR.Value, PortraitRAt, keyed: true);
+        if (s.Ui_CenterCg == 0 || (_covered & Pictures.Center) != 0)
             return;
-        Picture(s.Ui_CenterCg.Value, 176, 96, keyed: false);
-        Picture(s.Ui_CenterOverlay1.Value, 176, 96, keyed: true);
-        Picture(s.Ui_CenterOverlay2.Value, 176, 96, keyed: true);
-        Picture(s.Ui_CenterOverlay3.Value, 176, 96, keyed: true);
-        Picture(s.Ui_CenterOverlay4.Value, 176, 96, keyed: true);
+        Picture(s.Ui_CenterCg.Value, CenterAt, keyed: false);
+        Picture(s.Ui_CenterOverlay1.Value, CenterAt, keyed: true);
+        Picture(s.Ui_CenterOverlay2.Value, CenterAt, keyed: true);
+        Picture(s.Ui_CenterOverlay3.Value, CenterAt, keyed: true);
+        Picture(s.Ui_CenterOverlay4.Value, CenterAt, keyed: true);
     }
+
+    /// <summary><c>WAO_SUB</c> drew a picture or removed it (<c>311</c>/<c>312</c>, <c>321</c>/<c>322</c>, <c>331</c>-<c>333</c>): it is no longer drawn over.</summary>
+    private void Uncover(int op) => _covered &= op switch
+    {
+        311 or 312 => ~Pictures.PortraitL,
+        321 or 322 => ~Pictures.PortraitR,
+        331 or 332 or 333 => ~Pictures.Center,
+        _ => ~Pictures.None,
+    };
 
     /// <summary>The open window's frame (<c>Ui_WinFrameCg</c>) at its own position; the full-screen window's is opaque under the keyed one.</summary>
     private void Frame(GameState s)
@@ -247,9 +305,9 @@ public sealed partial class GamePresenter
         Screen.DrawCg(frame, frame.X, frame.Y, Surface.SpriteKey);
     }
 
-    private void Picture(int number, int x, int y, bool keyed)
+    private void Picture(int number, (int X, int Y) at, bool keyed)
     {
         if (number != 0 && _cgs.Get(number) is { } cg)
-            Screen.DrawCg(cg, x, y, keyed ? Surface.SpriteKey : null);
+            Screen.DrawCg(cg, at.X, at.Y, keyed ? Surface.SpriteKey : null);
     }
 }

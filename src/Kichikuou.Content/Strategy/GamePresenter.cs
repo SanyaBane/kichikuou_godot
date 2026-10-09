@@ -235,7 +235,10 @@ public sealed partial class GamePresenter
                     _tiles = Tiles.Dirty;
                 break;
             case PauseEvent: MapPause(); break;
-            case ClearScreenEvent: Stage.Fill(0, 0, Surface.ScreenWidth, Surface.ScreenHeight, 0); break;
+            case ClearScreenEvent:
+                Stage.Fill(0, 0, Surface.ScreenWidth, Surface.ScreenHeight, 0);
+                CoverScreen();
+                break;
             case SoundEvent e when e.Mode != 3: _audio?.PlaySound(e.Sound.Value); break;
             case SoundPairEvent e: _audio?.PlaySoundPair(e.First.Value, e.Second.Value); break;
             case MusicEvent e: _audio?.PlayMusic(e.Track.Value); break;
@@ -370,6 +373,7 @@ public sealed partial class GamePresenter
                     _afterKey = _window.Clear;
                 break;
             case 2: _window.Clear(); break;
+            case >= 311 and <= 333: Uncover(op); break;
         }
     }
 
@@ -464,7 +468,10 @@ public sealed partial class GamePresenter
                 break;
             case "EC":
                 if (A(0) == 0)
+                {
                     Stage.Fill(0, 0, Surface.ScreenWidth, Surface.ScreenHeight, 0);
+                    CoverScreen();
+                }
                 break;
             case "PF0" or "PF2": Fade(0, toWhite: false, A(0)); break;
             case "PF1" or "PF3": Fade(255, toWhite: false, A(0)); break;

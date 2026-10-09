@@ -113,6 +113,47 @@ public class GamePresenterTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// <c>Iｼﾚｲﾌﾞ.ADV:78-89</c>: <c>M.ADV</c> 1 scrolls the map with full-screen copies of the view,
+    /// which wipe <c>WAO_SUB</c>'s pictures although their variables still hold them; only the
+    /// right portrait is drawn again (<c>321</c>), so Rance and the centre picture stay gone.
+    /// Skipped without the player's CGs.
+    /// </summary>
+    [Fact]
+    public void A_map_scroll_wipes_the_pictures_until_they_are_drawn_again()
+    {
+        if (!File.Exists(Path.Combine(LocalData.CgDirectory, "CG1008.png")))
+            return;
+        var missing = Path.Combine(Path.GetTempPath(), "kichikuou-no-data");
+        var presenter = new GamePresenter(new ScenarioText(missing), new CgLibrary(LocalData.CgDirectory), new BoxGlyphs());
+        var state = new GameState { Ui_PortraitL = 1, Ui_PortraitR = 4, Ui_CenterCg = 1008 };
+        presenter.Bind(state);
+        bool Shown(int x, int y, int w, int h)
+        {
+            presenter.Compose();
+            for (int py = y; py < y + h; py += 2)
+                for (int px = x; px < x + w; px += 2)
+                    if (presenter.Screen.PixelAt(px, py) != presenter.Stage.PixelAt(px, py))
+                        return true;
+            return false;
+        }
+        bool Left() => Shown(0, 0, 176, 256);
+        bool Right() => Shown(448, 144, 192, 256);
+        bool Centre() => Shown(200, 120, 64, 64);
+        Assert.True(Left() && Right() && Centre());
+
+        presenter.Show(new MapEvent(1));
+        presenter.Show(new PauseEvent((Sys3Int)5));                      // a scroll step: the view over the whole screen
+        Assert.False(Left() || Right() || Centre());
+
+        presenter.Show(new WindowEvent((Sys3Int)321, (Sys3Int)4));       // Soul drawn again
+        Assert.True(Right());
+        Assert.False(Left() || Centre());
+
+        presenter.Show(new WindowEvent((Sys3Int)311, (Sys3Int)1));       // a later 311 draws Rance again
+        Assert.True(Left());
+    }
+
+    /// <summary>
     /// <c>M.ADV</c> 10 blinks the target mark after its selection sound (<c>PCMPLAY</c>): the sound
     /// does not end the animation, and the first pause draws the mark at (<c>Tmp0025</c>, <c>Tmp0026</c>).
     /// </summary>
