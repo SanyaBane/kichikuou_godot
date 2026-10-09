@@ -82,7 +82,8 @@ path A's week-23 duel (EVT-08 confirmed); README open items 1-2 are answered.
   (`ScenarioParser`; strictly: anything unexpected fails with its location); `Graphics/` decodes the CGs keeping palette indices (`IndexedPng`, `Pms`,
   `CgLibrary`, `Palette` with the engine's reserved entries; `ToRgba(40)` = `G n, 40`);
   `Audio/` maps sound and music numbers to files. `Screen/` emulates the engine's drawing
-  surface (3200×800 at 2× RGBA, `G`/`CC`/`CS`/`CF`), message text and selection windows;
+  surface (3200×800 at 2×, 8-bit indexed as the engine's: a palette load recolours what is
+  drawn; `G`/`CC`/`CS`/`CF`/`CM`, `WV`), message text and selection windows;
   `Battles/BattlePresenter` draws every core event the way the original does
   ([docs/battle/screen-layout.md](docs/battle/screen-layout.md)), `FigtSelScreen` /
   `BattleMenuScreen` are the mouse-driven input screens. `Strategy/GamePresenter` draws a whole

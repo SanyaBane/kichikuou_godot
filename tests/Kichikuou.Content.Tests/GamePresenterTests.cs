@@ -113,6 +113,52 @@ public class GamePresenterTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// <c>ｵｰﾌﾟﾆﾝｸﾞ.ADV:49-58</c>: <c>PC 1</c> draws a CG off screen without its palette, <c>PC 6</c>
+    /// loads the palette without drawing, <c>CC</c> brings it on screen — the same picture as the
+    /// CG drawn there with <c>PC 7</c>, though another CG's palette was loaded when it was drawn
+    /// (<c>cg_fflg</c>: 1 draws, 4 loads). Skipped without the player's CGs.
+    /// </summary>
+    [Fact]
+    public void A_cg_drawn_without_its_palette_shows_in_the_palette_loaded_later()
+    {
+        if (!File.Exists(Path.Combine(LocalData.CgDirectory, "CG1734.png")))
+            return;
+        var missing = Path.Combine(Path.GetTempPath(), "kichikuou-no-data");
+        Sys3Int[] Args(params int[] values) => values.Select(v => (Sys3Int)v).ToArray();
+        GamePresenter Presenter()
+        {
+            var p = new GamePresenter(new ScenarioText(missing), new CgLibrary(LocalData.CgDirectory), new BoxGlyphs());
+            p.Bind(new GameState());
+            return p;
+        }
+        byte[] Shown(GamePresenter p)
+        {
+            p.Invalidate();
+            p.Compose();
+            return p.Screen.ReadScreen();
+        }
+
+        var expected = Presenter();
+        expected.Show(new EngineEvent("J0", Args(0, 0)));
+        expected.Show(new EngineEvent("G", Args(1734)));
+
+        var opening = Presenter();
+        opening.Show(new EngineEvent("G", Args(1731)));                 // another palette (PC 7)
+        opening.Show(new EngineEvent("CF", Args(0, 0, 1280, 400, 0)));
+        opening.Show(new EngineEvent("J0", Args(640, 0)));
+        opening.Show(new EngineEvent("PC", Args(1)));
+        opening.Show(new EngineEvent("G", Args(1734)));
+        opening.Show(new EngineEvent("PC", Args(7)));
+        opening.Show(new EngineEvent("CC", Args(640, 0, 640, 400, 0, 0)));
+        Assert.NotEqual(Shown(expected), Shown(opening));                 // still 1731's colours
+
+        opening.Show(new EngineEvent("PC", Args(6)));
+        opening.Show(new EngineEvent("G", Args(1734)));
+        opening.Show(new EngineEvent("PC", Args(7)));
+        Assert.Equal(Shown(expected), Shown(opening));
+    }
+
+    /// <summary>
     /// <c>ｵｰﾌﾟﾆﾝｸﾞ.ADV</c>'s zoom (<c>:226-302</c>, <c>CM</c> from the hidden page onto the screen)
     /// and its scroll (<c>:930-938</c>, <c>WV 0, y, 640, 400</c> and back) reach the stage and the screen.
     /// </summary>

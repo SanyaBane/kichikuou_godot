@@ -107,6 +107,35 @@ public class SurfaceTests
         Assert.Equal(0, s.PixelAt(0, 3).R);
     }
 
+    /// <summary>
+    /// The engine's surface is 8-bit: a palette load recolours what is drawn (and copied) from
+    /// palette entries, but not text (direct colours); a surface that is not indexed keeps the
+    /// colour of the moment.
+    /// </summary>
+    [Fact]
+    public void An_indexed_surface_shows_its_pixels_in_the_current_palette()
+    {
+        var first = Cg(1, 1, 50);                                          // entry 50: red 50
+        var second = new CgImage(1, 1, [50], Enumerable.Range(0, 768).Select(i => (byte)(i == 150 ? 200 : 0)).ToArray());
+        var s = new Surface(8, 4);
+        s.DrawCg(first, 0, 0);
+        s.Copy(0, 0, 1, 1, 1, 0);
+        s.Blend([255, 255, 255, 255], 2, 2, 4, 0, (9, 9, 9));             // text at script pixel (2, 0)
+        Assert.Equal(50, s.PixelAt(1, 0).R);
+        int version = s.ScreenVersion;
+
+        s.Palette = second.PaletteOver(s.Palette);
+        Assert.NotEqual(version, s.ScreenVersion);
+        Assert.Equal(200, s.PixelAt(0, 0).R);
+        Assert.Equal(200, s.PixelAt(1, 0).R);
+        Assert.Equal(9, s.PixelAt(2, 0).R);
+
+        var plain = new Surface(8, 4, indexed: false);
+        plain.DrawCg(first, 0, 0);
+        plain.Palette = second.PaletteOver(plain.Palette);
+        Assert.Equal(50, plain.PixelAt(0, 0).R);
+    }
+
     /// <summary><c>WV x, y, …</c> (<c>ags_setViewArea</c>): the screen is read from the view, and drawing inside it counts as a change.</summary>
     [Fact]
     public void The_view_moves_the_visible_screen()

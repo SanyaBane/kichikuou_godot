@@ -99,6 +99,11 @@ no game data, but they are not committed.
   palette to the display, 4 = copy the CG palette into the engine palette (`cg.c:63-65`);
   default 7 (`cg.c:349`). The scenario uses `PC 7` ×36, `PC 6` ×19 (palette-only load, e.g.
   `ｵｰﾌﾟﾆﾝｸﾞ.ADV:37-39`), `PC 1` ×17 (pixels without palette, opening and prologue only).
+- The port does the same (2026-10-10): the engine's surfaces (`Screen/Surface`, indexed: the
+  stage and the battle's) store palette entries and show them in the palette of the moment;
+  text and the hand-drawn layers store colours. Before, every pixel kept the colour it was drawn
+  in and `GamePresenter` read bits 1 and 4 the wrong way round, so the opening's first frames
+  (`PC 1` CGs shown after a `PC 6` load) came out in another CG's colours.
 - With bit 4 set, an 8-bit PMS copies only the banks named in its mask, never the "Windows
   reserved" entries 0-9 and 246-255 (`cg.c:415-425`): mask bit 0 → entries 10-15, bit 15 →
   240-245, bits 1-14 → 16 entries each. For mask `0xFFFF` (1220 CGs) that is **entries

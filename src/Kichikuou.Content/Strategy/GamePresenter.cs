@@ -98,7 +98,7 @@ public sealed partial class GamePresenter
         _audio = audio;
         _scenario = scenario;
         Stage = new Surface();
-        Screen = new Surface(Surface.ScreenWidth, Surface.ScreenHeight);
+        Screen = new Surface(Surface.ScreenWidth, Surface.ScreenHeight, indexed: false);
         Battle = new BattlePresenter(text, cgs, glyphs, audio, Stage);
         _stageWriter = new MessageWriter(Stage, glyphs);
     }
@@ -498,7 +498,11 @@ public sealed partial class GamePresenter
 
     /// <summary>
     /// <c>G n</c> / <c>G n, key</c>: at the <c>J0</c> position, or the CG's own moved by <c>J1</c>,
-    /// or its own; <c>PC</c> bit 1 loads the CG's palette, bit 4 draws it (<c>cmdp.c</c> <c>cg_fflg</c>).
+    /// or its own. <c>PC</c> (<c>cg_fflg</c>, <c>cg.c:63-65</c>): bit 4 loads the CG's palette and
+    /// bit 2 shows it — the scenario sets both or neither, so bit 4 alone decides here — and bit 1
+    /// draws the CG; <c>PC 1</c> draws without the palette, <c>PC 6</c> loads it without drawing
+    /// (<c>ｵｰﾌﾟﾆﾝｸﾞ.ADV:5-41</c>, <c>ﾌﾟﾛﾛｰｸﾞ.ADV:134-139</c>). The stage keeps palette entries, so
+    /// the load recolours what is drawn, as the engine's 8-bit screen.
     /// </summary>
     private void DrawCg(int number, int? key)
     {
@@ -510,9 +514,9 @@ public sealed partial class GamePresenter
             return;
         _lastCg = number;
         var (x, y) = jump ?? (relative is var (dx, dy) ? (cg.X + dx, cg.Y + dy) : (cg.X, cg.Y));
-        if ((_cgFlags & 1) != 0)
+        if ((_cgFlags & 4) != 0)
             Stage.Palette = cg.PaletteOver(Stage.Palette);
-        if ((_cgFlags & 4) == 0)
+        if ((_cgFlags & 1) == 0)
             return;
         Stage.DrawCgRegion(cg, 0, 0, cg.Width, cg.Height, x, y, key);
         Drawn(x, y, cg.Width, cg.Height);

@@ -4,15 +4,19 @@ namespace Kichikuou.Content.Screen;
 
 /// <summary>
 /// The engine's drawing surface: the 3200×800 virtual screen of <c>WW 3200, 800, 8</c>
-/// (<c>ｽﾀｰﾄ.ADV:852</c>) whose (0, 0)-(640, 400) corner is what the player sees
-/// (docs/battle/screen-layout.md §0.1). Coordinates are the script's; the pixels are stored at
-/// <see cref="Scale"/>× in RGBA so art can be drawn nearest-neighbour and text in high resolution.
+/// (<c>ｽﾀｰﾄ.ADV:852</c>) whose (0, 0)-(640, 400) corner is what the player sees, unless <c>WV</c>
+/// moves the view (docs/battle/screen-layout.md §0.1). Coordinates are the script's; the pixels are
+/// stored at <see cref="Scale"/>× so art can be drawn nearest-neighbour and text in high resolution.
 /// <para>
-/// The original surface holds palette indices. Here a pixel keeps its colour from the moment it
-/// was drawn, which is the same picture as long as later palette loads agree on the indices
-/// already on screen — true for the battle's CGs (docs/assets.md §3). The one index that matters
-/// after drawing, the colour key 40 of <c>CS …, 40</c>, is remembered in the alpha channel
-/// (<see cref="KeyAlpha"/>); <see cref="ReadScreen"/> returns opaque pixels.
+/// An <b>indexed</b> surface (the engine's: the stage, the battle's) is 8-bit as xsystem35's at
+/// depth 8: the CGs and fills store palette entries and show in the <see cref="Palette"/> of the
+/// moment they are read, so a palette load recolours everything already drawn (<c>PC 1</c> draws a
+/// CG without its palette, a later <c>PC 6</c> loads it — <c>ｵｰﾌﾟﾆﾝｸﾞ.ADV:5-41</c>). Text, debug
+/// fills and fades store colours (<see cref="Direct"/> pixels) that no palette changes. A surface
+/// that is not indexed (the hand-drawn <c>Screen</c>) stores every pixel's colour at the moment it
+/// is drawn. Index 40, the colour key of <c>CS …, 40</c>, reads with alpha <see cref="KeyAlpha"/>
+/// (in a surface that is not indexed it is remembered in the alpha channel);
+/// <see cref="ReadScreen"/> returns opaque pixels.
 /// </para>
 /// </summary>
 public sealed class Surface
@@ -29,18 +33,30 @@ public sealed class Surface
     /// <summary>The visible screen.</summary>
     public const int ScreenWidth = 640, ScreenHeight = 400;
 
-    private readonly byte[] _pixels;
-    private readonly int _stride;
+    /// <summary>The index-plane mark of a pixel that stores its colour.</summary>
+    private const short Direct = -1;
 
-    /// <summary>Creates a black surface of <paramref name="width"/> × <paramref name="height"/> script pixels.</summary>
-    public Surface(int width = 3200, int height = 800)
+    private readonly byte[] _pixels;
+    private readonly short[]? _index;
+    private readonly int _stride;
+    private readonly int _rowPixels;
+    private Palette _palette = Palette.Initial;
+
+    /// <summary>
+    /// Creates a black surface of <paramref name="width"/> × <paramref name="height"/> script pixels;
+    /// <paramref name="indexed"/> as the engine's (palette entry 0 everywhere).
+    /// </summary>
+    public Surface(int width = 3200, int height = 800, bool indexed = true)
     {
         Width = width;
         Height = height;
-        _stride = width * Scale * 4;
+        _rowPixels = width * Scale;
+        _stride = _rowPixels * 4;
         _pixels = new byte[_stride * height * Scale];
         for (int i = 3; i < _pixels.Length; i += 4)
             _pixels[i] = 255;
+        if (indexed)
+            _index = new short[_rowPixels * height * Scale];
     }
 
     /// <summary>Width in script pixels.</summary>
@@ -49,14 +65,31 @@ public sealed class Surface
     /// <summary>Height in script pixels.</summary>
     public int Height { get; }
 
-    /// <summary>The screen palette: the last CG drawn loaded its banks (<c>PC 7</c>).</summary>
-    public Palette Palette { get; set; } = Palette.Initial;
+    /// <summary>Whether the surface stores palette entries (see the class).</summary>
+    public bool Indexed => _index is not null;
+
+    /// <summary>
+    /// The screen palette: the last CG drawn with <c>PC</c> bit 4 loaded its banks. On an indexed
+    /// surface a new palette recolours what is drawn (the screen changes).
+    /// </summary>
+    public Palette Palette
+    {
+        get => _palette;
+        set
+        {
+            if (ReferenceEquals(_palette, value))
+                return;
+            _palette = value;
+            if (_index is not null)
+                ScreenVersion++;
+        }
+    }
 
     /// <summary>Counts the changes to the visible screen; a presenter uploads the screen when it moves.</summary>
     public int ScreenVersion { get; private set; }
 
     /// <summary>The colour of palette entry <paramref name="index"/> now.</summary>
-    public (byte R, byte G, byte B) Color(int index) => Palette[index];
+    public (byte R, byte G, byte B) Color(int index) => _palette[index];
 
     /// <summary>
     /// <c>G n</c> / <c>G n, 40</c>: draws <paramref name="cg"/> with its top-left at (x, y), loading
@@ -73,7 +106,6 @@ public sealed class Surface
     {
         if (!Clip(ref sx, ref sy, ref w, ref h, ref dx, ref dy, cg.Width, cg.Height))
             return;
-        var palette = Palette;
         for (int row = 0; row < h; row++)
         {
             for (int col = 0; col < w; col++)
@@ -81,8 +113,7 @@ public sealed class Surface
                 byte index = cg.IndexAt(sx + col, sy + row);
                 if (index == key)
                     continue;
-                var (r, g, b) = palette[index];
-                Plot(dx + col, dy + row, r, g, b, index == SpriteKey ? KeyAlpha : (byte)255);
+                PlotIndex(dx + col, dy + row, index);
             }
         }
         Touch(dx, dy, w, h);
@@ -93,15 +124,12 @@ public sealed class Surface
     {
         if (!Clip(ref sx, ref sy, ref w, ref h, ref dx, ref dy, Width, Height))
             return;
-        int bytes = w * Scale * 4;
         int rows = h * Scale;
         bool upward = dy > sy;
         for (int i = 0; i < rows; i++)
         {
             int row = upward ? rows - 1 - i : i;
-            int from = (sy * Scale + row) * _stride + sx * Scale * 4;
-            int to = (dy * Scale + row) * _stride + dx * Scale * 4;
-            Buffer.BlockCopy(_pixels, from, _pixels, to, bytes);
+            CopyStored(Pixel(sx, sy, row), Pixel(dx, dy, row), w * Scale);
         }
         Touch(dx, dy, w, h);
     }
@@ -119,10 +147,16 @@ public sealed class Surface
     {
         if (!CheckParam(ref sx, ref sy, ref sw, ref sh) || !CheckParam(ref dx, ref dy, ref dw, ref dh))
             return;
-        int block = Scale * 4, sourceStride = sw * block;
-        var source = new byte[sourceStride * sh * Scale];
+        int sourceRow = sw * Scale;
+        var colours = new byte[sourceRow * sh * Scale * 4];
+        var indices = _index is null ? null : new short[sourceRow * sh * Scale];
         for (int row = 0; row < sh * Scale; row++)
-            Buffer.BlockCopy(_pixels, (sy * Scale + row) * _stride + sx * block, source, row * sourceStride, sourceStride);
+        {
+            int from = Pixel(sx, sy, row);
+            Buffer.BlockCopy(_pixels, from * 4, colours, row * sourceRow * 4, sourceRow * 4);
+            if (indices is not null)
+                Array.Copy(_index!, from, indices, row * sourceRow, sourceRow);
+        }
         uint incX = (uint)(((long)sw << 16) / dw), incY = (uint)(((long)sh << 16) / dh);
         uint posY = incY / 2;
         for (int row = 0; row < dh; row++, posY += incY)
@@ -132,17 +166,19 @@ public sealed class Surface
             uint posX = incX / 2;
             for (int col = 0; col < dw; col++, posX += incX)
             {
-                int from = (int)(posX >> 16) * block;
+                int fromCol = (int)(posX >> 16) * Scale;
                 int toCol = dx + ((mirror & 2) != 0 ? dw - 1 - col : col);
                 for (int line = 0; line < Scale; line++)
                 {
-                    int to = (toRow * Scale + ((mirror & 1) != 0 ? Scale - 1 - line : line)) * _stride + toCol * block;
-                    int at = (fromRow + line) * sourceStride + from;
-                    if ((mirror & 2) == 0)
-                        Buffer.BlockCopy(source, at, _pixels, to, block);
-                    else
-                        for (int p = 0; p < Scale; p++)
-                            Buffer.BlockCopy(source, at + (Scale - 1 - p) * 4, _pixels, to + p * 4, 4);
+                    int toLine = toRow * Scale + ((mirror & 1) != 0 ? Scale - 1 - line : line);
+                    for (int p = 0; p < Scale; p++)
+                    {
+                        int at = (fromRow + line) * sourceRow + fromCol + ((mirror & 2) != 0 ? Scale - 1 - p : p);
+                        int to = toLine * _rowPixels + toCol * Scale + p;
+                        Buffer.BlockCopy(colours, at * 4, _pixels, to * 4, 4);
+                        if (indices is not null)
+                            _index![to] = indices[at];
+                    }
                 }
             }
         }
@@ -162,15 +198,22 @@ public sealed class Surface
         ScreenVersion++;
     }
 
-    /// <summary>Copies a rectangle of another surface (same <see cref="Scale"/>) onto this one.</summary>
+    /// <summary>
+    /// Copies a rectangle of another surface (same <see cref="Scale"/>) onto this one, as the
+    /// colours it shows now (in the source's palette).
+    /// </summary>
     public void CopyFrom(Surface source, int sx, int sy, int w, int h, int dx, int dy)
     {
         if (!Clip(ref sx, ref sy, ref w, ref h, ref dx, ref dy, source.Width, source.Height))
             return;
-        int bytes = w * Scale * 4;
+        int count = w * Scale;
         for (int row = 0; row < h * Scale; row++)
-            Buffer.BlockCopy(source._pixels, (sy * Scale + row) * source._stride + sx * Scale * 4,
-                _pixels, (dy * Scale + row) * _stride + dx * Scale * 4, bytes);
+        {
+            int to = Pixel(dx, dy, row);
+            source.ResolveRow(source.Pixel(sx, sy, row), count, _pixels, to * 4, opaque: false);
+            if (_index is not null)
+                Array.Fill(_index, Direct, to, count);
+        }
         Touch(dx, dy, w, h);
     }
 
@@ -183,12 +226,18 @@ public sealed class Surface
         if (amount == 0)
             return;
         int target = toWhite ? 255 : 0;
+        int count = Math.Min(ScreenWidth, Width) * Scale;
+        var line = new byte[count * 4];
         for (int row = 0; row < ScreenHeight * Scale && row < Height * Scale; row++)
         {
-            int o = row * _stride;
-            for (int i = 0; i < Math.Min(ScreenWidth, Width) * Scale * 4; i += 4)
+            int p = Pixel(View.X, View.Y, row);
+            ResolveRow(p, count, line, 0, opaque: false);
+            for (int i = 0; i < line.Length; i += 4)
                 for (int c = 0; c < 3; c++)
-                    _pixels[o + i + c] = (byte)((_pixels[o + i + c] * (255 - amount) + target * amount + 127) / 255);
+                    line[i + c] = (byte)((line[i + c] * (255 - amount) + target * amount + 127) / 255);
+            Buffer.BlockCopy(line, 0, _pixels, p * 4, line.Length);
+            if (_index is not null)
+                Array.Fill(_index, Direct, p, count);
         }
         ScreenVersion++;
     }
@@ -199,18 +248,27 @@ public sealed class Surface
         if (!Clip(ref sx, ref sy, ref w, ref h, ref dx, ref dy, Width, Height))
             return;
         // Source and destination never overlap in the battle; copy through a buffer anyway.
-        var source = new byte[w * Scale * h * Scale * 4];
-        int bytes = w * Scale * 4;
-        for (int row = 0; row < h * Scale; row++)
-            Buffer.BlockCopy(_pixels, (sy * Scale + row) * _stride + sx * Scale * 4, source, row * bytes, bytes);
+        int count = w * Scale;
+        var colours = new byte[count * h * Scale * 4];
+        var indices = _index is null ? null : new short[count * h * Scale];
         for (int row = 0; row < h * Scale; row++)
         {
-            int to = (dy * Scale + row) * _stride + dx * Scale * 4;
-            for (int i = 0; i < bytes; i += 4)
+            int from = Pixel(sx, sy, row);
+            Buffer.BlockCopy(_pixels, from * 4, colours, row * count * 4, count * 4);
+            if (indices is not null)
+                Array.Copy(_index!, from, indices, row * count, count);
+        }
+        for (int row = 0; row < h * Scale; row++)
+        {
+            int to = Pixel(dx, dy, row);
+            for (int i = 0; i < count; i++)
             {
-                if (source[row * bytes + i + 3] == KeyAlpha)
+                int at = row * count + i;
+                if (indices is not null ? indices[at] == SpriteKey : colours[at * 4 + 3] == KeyAlpha)
                     continue;
-                Buffer.BlockCopy(source, row * bytes + i, _pixels, to + i, 4);
+                Buffer.BlockCopy(colours, at * 4, _pixels, (to + i) * 4, 4);
+                if (indices is not null)
+                    _index![to + i] = indices[at];
             }
         }
         Touch(dx, dy, w, h);
@@ -222,11 +280,9 @@ public sealed class Surface
         int sx = x, sy = y;
         if (!Clip(ref sx, ref sy, ref w, ref h, ref x, ref y, Width, Height))
             return;
-        var (r, g, b) = Palette[index];
-        byte a = index == SpriteKey ? KeyAlpha : (byte)255;
         for (int row = 0; row < h; row++)
             for (int col = 0; col < w; col++)
-                Plot(x + col, y + row, r, g, b, a);
+                PlotIndex(x + col, y + row, index);
         Touch(x, y, w, h);
     }
 
@@ -257,19 +313,35 @@ public sealed class Surface
         int sx = x, sy = y, dx = x, dy = y;
         if (!Clip(ref sx, ref sy, ref w, ref h, ref dx, ref dy, Width, Height))
             return new SavedRegion(0, 0, 0, 0, []);
-        int bytes = w * Scale * 4;
-        var data = new byte[bytes * h * Scale];
+        int count = w * Scale;
+        var data = new byte[count * 4 * h * Scale];
+        var indices = _index is null ? null : new short[count * h * Scale];
         for (int row = 0; row < h * Scale; row++)
-            Buffer.BlockCopy(_pixels, (sy * Scale + row) * _stride + sx * Scale * 4, data, row * bytes, bytes);
-        return new SavedRegion(sx, sy, w, h, data);
+        {
+            int from = Pixel(sx, sy, row);
+            Buffer.BlockCopy(_pixels, from * 4, data, row * count * 4, count * 4);
+            if (indices is not null)
+                Array.Copy(_index!, from, indices, row * count, count);
+        }
+        return new SavedRegion(sx, sy, w, h, data, indices);
     }
 
     /// <summary><c>ags_restoreRegion</c>: puts a saved rectangle back where it came from.</summary>
     public void RestoreRegion(SavedRegion region)
     {
-        int bytes = region.W * Scale * 4;
+        int count = region.W * Scale;
         for (int row = 0; row < region.H * Scale; row++)
-            Buffer.BlockCopy(region.Data, row * bytes, _pixels, (region.Y * Scale + row) * _stride + region.X * Scale * 4, bytes);
+        {
+            int to = Pixel(region.X, region.Y, row);
+            Buffer.BlockCopy(region.Data, row * count * 4, _pixels, to * 4, count * 4);
+            if (_index is not null)
+            {
+                if (region.Indices is { } indices)
+                    Array.Copy(indices, row * count, _index, to, count);
+                else
+                    Array.Fill(_index, Direct, to, count);
+            }
+        }
         Touch(region.X, region.Y, region.W, region.H);
     }
 
@@ -296,27 +368,27 @@ public sealed class Surface
                 int c = coverage[row * width + col];
                 if (c == 0 || x < minX || x >= maxX)
                     continue;
-                int o = y * _stride + x * 4;
-                _pixels[o] = (byte)((color.R * c + _pixels[o] * (255 - c) + 127) / 255);
-                _pixels[o + 1] = (byte)((color.G * c + _pixels[o + 1] * (255 - c) + 127) / 255);
-                _pixels[o + 2] = (byte)((color.B * c + _pixels[o + 2] * (255 - c) + 127) / 255);
+                int p = y * _rowPixels + x;
+                var (r, g, b, _) = Resolve(p);
+                int o = p * 4;
+                _pixels[o] = (byte)((color.R * c + r * (255 - c) + 127) / 255);
+                _pixels[o + 1] = (byte)((color.G * c + g * (255 - c) + 127) / 255);
+                _pixels[o + 2] = (byte)((color.B * c + b * (255 - c) + 127) / 255);
                 _pixels[o + 3] = 255;
+                if (_index is not null)
+                    _index[p] = Direct;
                 touched = true;
             }
         }
-        if (touched && px < ScreenWidth * Scale && py < ScreenHeight * Scale)
+        if (touched && px < (View.X + ScreenWidth) * Scale && py < (View.Y + ScreenHeight) * Scale)
             ScreenVersion++;
     }
 
-    /// <summary>The stored colour at script pixel (x, y) (top-left stored pixel), with its alpha marker.</summary>
+    /// <summary>The colour at script pixel (x, y) now (top-left stored pixel), with its alpha marker.</summary>
     public (byte R, byte G, byte B, byte A) PixelAt(int x, int y) => StoredPixelAt(x * Scale, y * Scale);
 
-    /// <summary>The colour at stored pixel (px, py).</summary>
-    public (byte R, byte G, byte B, byte A) StoredPixelAt(int px, int py)
-    {
-        int o = py * _stride + px * 4;
-        return (_pixels[o], _pixels[o + 1], _pixels[o + 2], _pixels[o + 3]);
-    }
+    /// <summary>The colour at stored pixel (px, py) now.</summary>
+    public (byte R, byte G, byte B, byte A) StoredPixelAt(int px, int py) => Resolve(py * _rowPixels + px);
 
     /// <summary>
     /// The visible screen (from <see cref="View"/>) as opaque RGBA rows (<see cref="ScreenWidth"/>·<see cref="Scale"/> ×
@@ -324,28 +396,90 @@ public sealed class Surface
     /// </summary>
     public byte[] ReadScreen(byte[]? target = null)
     {
-        int bytes = ScreenWidth * Scale * 4;
-        target ??= new byte[bytes * ScreenHeight * Scale];
-        int origin = View.Y * Scale * _stride + View.X * Scale * 4;
+        int count = ScreenWidth * Scale;
+        target ??= new byte[count * 4 * ScreenHeight * Scale];
         for (int row = 0; row < ScreenHeight * Scale; row++)
-            Buffer.BlockCopy(_pixels, origin + row * _stride, target, row * bytes, bytes);
-        for (int i = 3; i < target.Length; i += 4)
-            target[i] = 255;
+            ResolveRow(Pixel(View.X, View.Y, row), count, target, row * count * 4, opaque: true);
         return target;
     }
 
+    /// <summary>The stored pixel number of row <paramref name="row"/> (stored) below script pixel (x, y).</summary>
+    private int Pixel(int x, int y, int row) => (y * Scale + row) * _rowPixels + x * Scale;
+
+    private (byte R, byte G, byte B, byte A) Resolve(int p)
+    {
+        if (_index is not null && _index[p] >= 0)
+        {
+            int i = _index[p];
+            var (r, g, b) = _palette[i];
+            return (r, g, b, i == SpriteKey ? KeyAlpha : (byte)255);
+        }
+        int o = p * 4;
+        return (_pixels[o], _pixels[o + 1], _pixels[o + 2], _pixels[o + 3]);
+    }
+
+    /// <summary>Writes <paramref name="count"/> stored pixels from <paramref name="p"/> as RGBA into <paramref name="target"/>.</summary>
+    private void ResolveRow(int p, int count, byte[] target, int at, bool opaque)
+    {
+        Buffer.BlockCopy(_pixels, p * 4, target, at, count * 4);
+        if (_index is not null)
+        {
+            var rgb = _palette.Rgb;
+            for (int i = 0; i < count; i++)
+            {
+                int index = _index[p + i];
+                if (index < 0)
+                    continue;
+                int o = at + i * 4;
+                target[o] = rgb[index * 3];
+                target[o + 1] = rgb[index * 3 + 1];
+                target[o + 2] = rgb[index * 3 + 2];
+                target[o + 3] = index == SpriteKey ? KeyAlpha : (byte)255;
+            }
+        }
+        if (opaque)
+            for (int i = 3; i < count * 4; i += 4)
+                target[at + i] = 255;
+    }
+
+    /// <summary>Moves <paramref name="count"/> stored pixels (colours and entries) within the surface.</summary>
+    private void CopyStored(int from, int to, int count)
+    {
+        Buffer.BlockCopy(_pixels, from * 4, _pixels, to * 4, count * 4);
+        if (_index is not null)
+            Array.Copy(_index, from, _index, to, count);
+    }
+
+    /// <summary>Draws palette entry <paramref name="index"/> at script pixel (x, y): stored as the entry, or as its colour now.</summary>
+    private void PlotIndex(int x, int y, int index)
+    {
+        if (_index is null)
+        {
+            var (r, g, b) = _palette[index];
+            Plot(x, y, r, g, b, index == SpriteKey ? KeyAlpha : (byte)255);
+            return;
+        }
+        int p = Pixel(x, y, 0);
+        for (int dy = 0; dy < Scale; dy++, p += _rowPixels)
+            for (int dx = 0; dx < Scale; dx++)
+                _index[p + dx] = (short)index;
+    }
+
+    /// <summary>Draws a colour at script pixel (x, y) (a <see cref="Direct"/> pixel).</summary>
     private void Plot(int x, int y, byte r, byte g, byte b, byte a)
     {
-        int o = y * Scale * _stride + x * Scale * 4;
-        for (int dy = 0; dy < Scale; dy++)
+        int p = Pixel(x, y, 0);
+        for (int dy = 0; dy < Scale; dy++, p += _rowPixels)
         {
-            int p = o + dy * _stride;
-            for (int dx = 0; dx < Scale; dx++, p += 4)
+            for (int dx = 0; dx < Scale; dx++)
             {
-                _pixels[p] = r;
-                _pixels[p + 1] = g;
-                _pixels[p + 2] = b;
-                _pixels[p + 3] = a;
+                int o = (p + dx) * 4;
+                _pixels[o] = r;
+                _pixels[o + 1] = g;
+                _pixels[o + 2] = b;
+                _pixels[o + 3] = a;
+                if (_index is not null)
+                    _index[p + dx] = Direct;
             }
         }
     }
@@ -382,5 +516,8 @@ public sealed class Surface
     }
 }
 
-/// <summary>A rectangle saved by <see cref="Surface.SaveRegion"/> (script coordinates, stored pixels).</summary>
-public sealed record SavedRegion(int X, int Y, int W, int H, byte[] Data);
+/// <summary>
+/// A rectangle saved by <see cref="Surface.SaveRegion"/> (script coordinates, stored pixels: the
+/// colours, and the palette entries of an indexed surface).
+/// </summary>
+public sealed record SavedRegion(int X, int Y, int W, int H, byte[] Data, short[]? Indices = null);
