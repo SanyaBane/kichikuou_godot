@@ -4,7 +4,8 @@ using Kichikuou.Content.Screen;
 namespace Kichikuou.Game.Strategy;
 
 // xsystem35's window menu bar over the game (docs/window-menu.md): File (Save Screenshot, Restart,
-// Exit), Screen (Window, Fullscreen), MsgSkip[off|on]; hot keys F1 and F4 as xsystem35's, Alt+R.
+// Exit), Screen (Window, Fullscreen), Option (ours: Skip Unseen Text, Forget Seen Messages),
+// MsgSkip[off|on]; hot keys F1 and F4 as xsystem35's, Alt+R.
 public partial class GameScreen
 {
     private const int MenuBarHeight = 24;
@@ -32,6 +33,20 @@ public partial class GameScreen
         row.AddChild(Menu("Screen",
             ("Window", () => SetFullscreen(false)),
             ("Fullscreen", () => SetFullscreen(true))));
+        PopupMenu options = null!;
+        var option = Menu("Option",
+            ("Skip Unseen Text", ToggleSkipUnseen),
+            ("Forget Seen Messages...", ConfirmForgetSeen));
+        options = option.GetPopup();
+        options.SetItemAsCheckable(0, true);
+        options.SetItemChecked(0, _skip.SkipUnseen);
+        options.AddThemeColorOverride("font_disabled_color", new Color(0.55f, 0.55f, 0.55f));
+        void ToggleSkipUnseen()
+        {
+            _skip.SkipUnseen = !_skip.SkipUnseen;
+            options.SetItemChecked(0, _skip.SkipUnseen);
+        }
+        row.AddChild(option);
         _skipItem = new Button();
         BarItem(_skipItem);
         _skipItem.Pressed += _skip.Toggle;
@@ -131,15 +146,20 @@ public partial class GameScreen
     /// <summary>Exit (<c>menu_quitmenu_open</c>): after the confirmation, the program ends.</summary>
     private void ConfirmExit() => Confirm("Quit game?", "Quit", () => _tree.Quit());
 
+    /// <summary>Forget Seen Messages (ours): after the confirmation, every message counts as unseen again.</summary>
+    private void ConfirmForgetSeen() =>
+        Confirm("Forget seen messages?", "Forget", () => _skip.ForgetSeen(),
+            $"All {_skip.SeenCount} messages seen so far will count as unseen again.");
+
     /// <summary><c>confirm_lose_progress</c>: a modal box; the game waits while it is open.</summary>
-    private void Confirm(string title, string confirm, Action confirmed)
+    private void Confirm(string title, string confirm, Action confirmed, string text = "Any unsaved progress will be lost.")
     {
         if (_modal)
             return;
         var dialog = new ConfirmationDialog
         {
             Title = title,
-            DialogText = "Any unsaved progress will be lost.",
+            DialogText = text,
             OkButtonText = confirm,
         };
         _modal = true;
@@ -147,6 +167,7 @@ public partial class GameScreen
         dialog.Confirmed += () =>
         {
             _modal = false;
+            dialog.QueueFree();
             confirmed();
         };
         dialog.Canceled += () =>

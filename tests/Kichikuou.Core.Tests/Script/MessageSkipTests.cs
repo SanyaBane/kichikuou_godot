@@ -24,7 +24,7 @@ public class MessageSkipTests
     public void An_unseen_message_stops_skipping_and_disables_it_until_a_seen_one()
     {
         var recorded = new List<string>();
-        var skip = new MessageSkip([MessageSkip.Key(Seen)], recorded.Add);
+        var skip = new MessageSkip([MessageSkip.Key(Seen)], recorded.Add) { SkipUnseen = false };
         int changes = 0;
         skip.Changed += () => changes++;
         skip.Activate(true);
@@ -41,6 +41,27 @@ public class MessageSkipTests
         Assert.True(skip.IsSkipping);
         Assert.Single(recorded);
         Assert.Equal(5, changes);               // on, off, disabled, on, enabled
+    }
+
+    [Fact]
+    public void By_default_unseen_messages_are_skipped_too_and_recorded()
+    {
+        var recorded = new List<string>();
+        var skip = new MessageSkip([], recorded.Add);
+        skip.Activate(true);
+        skip.OnMessage(New);
+        Assert.True(skip.IsSkipping);
+        Assert.Equal([MessageSkip.Key(New)], recorded);
+    }
+
+    [Fact]
+    public void Allowing_unseen_messages_enables_skipping_again()
+    {
+        var skip = new MessageSkip([]) { SkipUnseen = false };
+        skip.OnMessage(New);
+        Assert.False(skip.Enabled);
+        skip.SkipUnseen = true;
+        Assert.True(skip.Enabled);
     }
 
     [Fact]
@@ -71,9 +92,17 @@ public class MessageSkipTests
 
             var second = MessageSkip.Open(path);
             Assert.Equal(2, second.SeenCount);
+            second.SkipUnseen = false;
             second.Activate(true);
             second.OnMessage(New);
             Assert.True(second.IsSkipping);
+
+            second.ForgetSeen();
+            Assert.Equal(0, second.SeenCount);
+            Assert.False(File.Exists(path));
+            second.OnMessage(New);
+            Assert.False(second.IsSkipping);            // unseen again
+            Assert.Equal(1, MessageSkip.Open(path).SeenCount);
         }
         finally
         {

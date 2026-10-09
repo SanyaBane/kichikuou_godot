@@ -6,9 +6,9 @@ namespace Kichikuou.Core.Script;
 /// message waits and the <c>Y 3</c> pauses — return at once with no key, so the script runs on as
 /// if nothing was pressed. It turns itself off on a click or key during a skipped wait (the
 /// input's part, <c>STOP_ON_CLICK</c>), when a selection menu opens (<see cref="OnMenu"/>,
-/// <c>STOP_ON_MENU</c>) and at a message not seen before (<see cref="OnMessage"/>,
-/// <c>STOP_ON_UNSEEN</c>), which also disables it (<see cref="Enabled"/>) until a seen message
-/// comes. docs/window-menu.md.
+/// <c>STOP_ON_MENU</c>) and, unless <see cref="SkipUnseen"/>, at a message not seen before
+/// (<see cref="OnMessage"/>, <c>STOP_ON_UNSEEN</c>), which also disables it (<see cref="Enabled"/>)
+/// until a seen message comes. docs/window-menu.md.
 /// </summary>
 /// <remarks>
 /// xsystem35 keeps the seen messages in a Bloom filter keyed by the message's scenario address;
@@ -18,13 +18,36 @@ public sealed class MessageSkip
 {
     private readonly HashSet<string> _seen;
     private readonly Action<string>? _recordSeen;
+    private readonly Action? _forgetSeen;
+    private bool _skipUnseen = true;
 
     /// <param name="seen">The messages seen before, as <see cref="Key"/>s.</param>
     /// <param name="recordSeen">Called with each message seen for the first time.</param>
-    public MessageSkip(IEnumerable<string> seen, Action<string>? recordSeen = null)
+    /// <param name="forgetSeen">Called when the seen messages are forgotten (<see cref="ForgetSeen"/>).</param>
+    public MessageSkip(IEnumerable<string> seen, Action<string>? recordSeen = null, Action? forgetSeen = null)
     {
         _seen = new HashSet<string>(seen, StringComparer.Ordinal);
         _recordSeen = recordSeen;
+        _forgetSeen = forgetSeen;
+    }
+
+    /// <summary>
+    /// <c>MSGSKIP_SKIP_UNSEEN</c>: messages not seen before are skipped too (on by default: the
+    /// owner's xsystem35 for Windows keeps no seen messages without a <c>.gr</c> file, so it skips
+    /// everything). Turning it on allows skipping again at once.
+    /// </summary>
+    public bool SkipUnseen
+    {
+        get => _skipUnseen;
+        set
+        {
+            _skipUnseen = value;
+            if (value && !Enabled)
+            {
+                Enabled = true;
+                Changed?.Invoke();
+            }
+        }
     }
 
     /// <summary>Whether skipping is allowed now (false at a message not seen before; the menu item is greyed out).</summary>
@@ -66,15 +89,22 @@ public sealed class MessageSkip
         string key = Key(at);
         bool unseen = _seen.Add(key);
         if (unseen)
-        {
             _recordSeen?.Invoke(key);
+        bool stop = unseen && !SkipUnseen;          // msgskip_action
+        if (stop)
             Activate(false);
-        }
-        if (Enabled == unseen)
+        if (Enabled == stop)
         {
-            Enabled = !unseen;
+            Enabled = !stop;
             Changed?.Invoke();
         }
+    }
+
+    /// <summary>Forgets every message seen (the menu's "Forget Seen Messages").</summary>
+    public void ForgetSeen()
+    {
+        _seen.Clear();
+        _forgetSeen?.Invoke();
     }
 
     /// <summary><c>sel_select</c>: a selection menu opens.</summary>
@@ -89,13 +119,13 @@ public sealed class MessageSkip
 
     /// <summary>
     /// The skip state over a text file of seen messages (created when missing): read now, each
-    /// newly seen message appended at once.
+    /// newly seen message appended at once, deleted when they are forgotten.
     /// </summary>
     public static MessageSkip Open(string path)
     {
         if (Path.GetDirectoryName(path) is { Length: > 0 } directory)
             Directory.CreateDirectory(directory);
         var seen = File.Exists(path) ? File.ReadLines(path).Where(line => line.Length > 0) : [];
-        return new MessageSkip(seen.ToList(), key => File.AppendAllText(path, key + "\n"));
+        return new MessageSkip(seen.ToList(), key => File.AppendAllText(path, key + "\n"), () => File.Delete(path));
     }
 }

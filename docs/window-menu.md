@@ -62,16 +62,24 @@ Sources: `src/win/resources.rc` (the menu), `src/win/menubar.c` (the handlers), 
   (`STOP_ON_MENU`, `selection.c:419`; the script can change this flag, `cmdi.c:154-156`) and at a
   message not seen before (`STOP_ON_UNSEEN`, the menu item greyed out there): seen messages are
   kept in a Bloom filter in a file.
+- **But the seen messages are kept only when there is such a file**: the web build makes one
+  (`<game>.msgskip`, `src/gameresource.c:139-145`, `#ifdef __EMSCRIPTEN__`), the desktop builds
+  only from a `MsgSkip <path>` line in a `.gr` game-resource file (`:223`). The owner's
+  xsystem35 2.14.3 for Windows runs the game folder without a `.gr`, so `msgskip_onMessage`
+  returns at once (`msgskip.c:133`): **it skips every message, seen or not**, stops only on a
+  click or a menu, and the item is never greyed out. There is nothing to reset there; with a
+  `.gr`, deleting its msgskip file resets it.
 
 ## Ours (`godot/Strategy/GameScreen.MenuBar.cs`)
 
 Done 2026-10-09; the owner's decisions: Restart, the random generator and MsgSkip's stops as
-xsystem35's, skipping only seen messages if we know enough to do it (we do).
+xsystem35's; both skip modes, as the owner's desktop xsystem35 (everything) by default and as its
+web build (seen only) by an option.
 
 - A light bar above the game screen: **File** (Save Screenshot, Restart, Exit), **Screen**
-  (Window, Fullscreen), **MsgSkip[off]** (toggles, `[on]` while on, greyed out while not
-  allowed). Not done: Integer Scaling, the Option menu (no pointer warping, no text hook), the
-  bar hiding in full screen.
+  (Window, Fullscreen), **Option** (ours, see MsgSkip), **MsgSkip[off]** (toggles, `[on]` while
+  on, greyed out while not allowed). Not done: Integer Scaling, xsystem35's Option items (no
+  pointer warping, no text hook), the bar hiding in full screen.
 - Hot keys: **F1** MsgSkip and **F4** full screen (on release, as xsystem35's `event.c`), and
   **Alt+R** Restart (ours, after System 3.9's). Backspace still returns to the title at once,
   without asking (development).
@@ -86,10 +94,14 @@ xsystem35's, skipping only seen messages if we know enough to do it (we do).
   The skippable waits — `IK 0` / `A` and `Y 3` — return 0 after one frame while it is on; input
   held then turns it off and is returned (`STOP_ON_CLICK`); a `]` menu (`SelectAsync`, the
   battle's `ChooseAsync`) turns it off (`STOP_ON_MENU`); every `MessageEvent` /
-  `ValueMessageEvent` marks its `ScriptRef` seen, and an unseen one turns it off and greys it out
-  (`STOP_ON_UNSEEN`). The seen messages are one `File:Line` per line in `msgskip.txt` next to the
-  save slots (`user://saves`, `user://saves-auto` for `--auto`), exact where xsystem35 uses a
-  Bloom filter. `--msgskip` starts a game with it on (development).
+  `ValueMessageEvent` marks its `ScriptRef` seen. **Option → Skip Unseen Text** (checked by
+  default, `MSGSKIP_SKIP_UNSEEN`; for the launch, not saved): unseen messages are skipped too, as
+  the owner's xsystem35 does; unchecked, an unseen message turns the skip off and greys it out
+  (`STOP_ON_UNSEEN`) until a seen one, as the web build does. **Option → Forget Seen
+  Messages...** (asks first) makes every message unseen again. The seen messages are one
+  `File:Line` per line in `msgskip.txt` next to the save slots (`%APPDATA%\Godot\app_userdata\Kichikuou\saves`,
+  `saves-auto` for `--auto`; deleting it with the game closed resets them too), exact where
+  xsystem35 uses a Bloom filter. `--msgskip` starts a game with it on (development).
 
 ## System 3.9 (the original; reference only)
 
