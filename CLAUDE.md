@@ -87,8 +87,9 @@ path A's week-23 duel (EVT-08 confirmed); README open items 1-2 are answered.
   ([docs/battle/screen-layout.md](docs/battle/screen-layout.md)), `FigtSelScreen` /
   `BattleMenuScreen` are the mouse-driven input screens. `Strategy/GamePresenter` draws a whole
   game: the stage (`Battle` shares it) and the hand-drawn layers (`TextBox`, `PickerView`, menus)
-  composed into `Screen`; a UI asks it what a click means (`MapWaiting`, `Picker.HitTest`,
-  `MenuHitTest`) and turns that into the script's inputs (`PointerScript`). Tests in
+  composed into `Screen`; a UI asks it what is open (`MapWaiting`, `Picker`) and where a menu
+  item is (`MenuHitTest`); a gesture UI turns clicks into the script's inputs with
+  `PointerScript` (`Picker.HitTest`). Tests in
   `tests/Kichikuou.Content.Tests` (the golden part draws and plays every capture and resolves
   every text; `KICHIKUOU_SCENARIO_DIR` / `KICHIKUOU_EXTRACT_DIR` / `KICHIKUOU_GAME_DIR`
   override the local folders).
@@ -97,9 +98,10 @@ path A's week-23 duel (EVT-08 confirmed); README open items 1-2 are answered.
   `KICHIKUOU_GOLDEN_DIR`) and is skipped when there are none.
 - `godot/` — Godot 4.7.2 .NET project (`Kichikuou.csproj`, namespace `Kichikuou.Game`);
   presentation only: `Main` is the title (New game, Load, Quit, the capture viewer) and reads the
-  development switches; `Strategy/GameScreen` runs one game (`GameSession` on a `GamePresenter`,
-  mouse and keys turned into the script's inputs, `PointerScript` gestures on the map and the
-  pickers); `Battles/CaptureList` picks a capture, `Battles/BattleScreen` shows its battle;
+  development switches; `Strategy/GameScreen` runs one game (`GameSession` on a `GamePresenter`;
+  mouse and keys are a state, `Strategy/PlayerInput`, that `IM`, `Y 3`, `IK 0` and the menus poll
+  once a frame as xsystem35 does — the map and the pickers decide clicks and drags themselves;
+  `PointerScript` gestures only for `--auto`); `Battles/CaptureList` picks a capture, `Battles/BattleScreen` shows its battle;
   `GodotGlyphRenderer` (MS Gothic via TextServer), `BattleAudio`; `Screens` switches screens. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
 - `tools/analysis/` — Python scripts for reading the decompiled scenario; `tools/codegen/` —
   generators for committed C# sources; `tools/golden/` — harness launcher and page classes.

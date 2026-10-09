@@ -55,21 +55,20 @@ public sealed record GameOptions
 /// One game in the original's layout (part G0, owner's decisions 4, 8, 10): a
 /// <see cref="GameSession"/> whose view and input are this node behind the proxies, drawn by a
 /// <see cref="GamePresenter"/> (its <see cref="GamePresenter.Screen"/> is shown, fades animated) and
-/// played with the mouse: key waits take a click, Enter or Space; menus a click on an item (right
-/// click cancels); the map and the pickers turn the clicks into the pointer gestures the script
-/// reads (<see cref="PointerScript"/>); the battle's input screens work as in <see cref="BattleScreen"/>.
-/// Backspace returns to the title.
+/// played with the mouse and keys the way xsystem35 reads them: the input is a state
+/// (<see cref="PlayerInput"/>) that <c>IM</c>, <c>Y 3</c>, <c>IK 0</c> and the menus poll once a
+/// frame, so the map's clicks and drags and the pickers' hit tests and highlight are the
+/// script's own. The battle's input screens work as in <see cref="BattleScreen"/>, fed only the
+/// presses that begin while they are open. Backspace returns to the title.
 /// </summary>
 public partial class GameScreen : Control, IScriptView, IGameInput
 {
-    private const ushort KeyReturn = 16;   // xsystem35 SYS35KEY_RET (left click, Enter)
-    private const ushort KeySpace = 32;    // SYS35KEY_SPC (right click, Space, Escape)
-
-    /// <summary>How far the left button must move on the map before a press is a drag (script pixels).</summary>
-    private const int DragThreshold = 4;
+    private const ushort KeyReturn = PlayerInput.Return;
+    private const ushort KeySpace = PlayerInput.Space;
 
     private readonly GameOptions _options;
-    private readonly PointerScript _pointer = new();
+    private readonly PlayerInput _input = new();
+    private readonly PointerScript _pointer = new();   // --auto only: the unattended player's gestures
     private readonly Stopwatch _clock = Stopwatch.StartNew();
     private SceneTree _tree = null!;
     private GamePresenter _presenter = null!;
@@ -85,18 +84,14 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private bool _ended;
     private int _shot;
 
-    private TaskCompletionSource<ushort>? _key;
-    private bool _pausing;
-    private TaskCompletionSource<int>? _menuAnswer;
     private FigtSelScreen? _sel;
     private BattleMenuScreen? _battleMenu;
     private TaskCompletionSource? _answered;
+    private ushort _battleButtons;              // the buttons pressed since the battle's input screen opened
 
-    private Vector2I _mouse;
-    private bool _leftHeld;
-    private bool _dragging;
-    private Vector2I _pressAt;
-    private Vector2I _dragFrom;
+    private bool _pauseCancelable = true;       // cmdy.c Y3waitFlags: Y 3, 10000 / 10001
+    private ushort _ikKey;                      // cmdi.c ik_key, repeating: IK 0's key repeat
+    private int _repeating;
 
     private int _cursor = 1;
     private long _timerOffset;
@@ -163,8 +158,6 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     public override void _ExitTree()
     {
         _closing = true;
-        _key?.TrySetCanceled();
-        _menuAnswer?.TrySetCanceled();
         _answered?.TrySetCanceled();
         _glyphs?.Dispose();
     }
@@ -173,9 +166,13 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         if (_noticeLeft > 0 && (_noticeLeft -= delta) <= 0)
             _notice.Text = "";
-        if (_leftHeld && _dragging)
-            QueueDrag();
         Present();
+    }
+
+    public override void _Notification(int what)
+    {
+        if (what == NotificationWMWindowFocusOut)
+            _input.Clear();
     }
 
     /// <summary>Composes the screen and uploads it when it changed.</summary>
@@ -257,7 +254,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         try
         {
-            await KeyAsync();
+            await KeyWaitAsync(double.PositiveInfinity, cancelable: true);
             Leave(failed);
         }
         catch (OperationCanceledException)
@@ -352,181 +349,92 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         switch (@event)
         {
             case InputEventMouseMotion motion:
-                _mouse = ToScript(motion.Position);
-                MouseMoved();
+                _input.Position = ToScript(motion.Position);
+                PointerMoved();
                 break;
             case InputEventMouseButton { ButtonIndex: Godot.MouseButton.Left or Godot.MouseButton.Right } button:
-                _mouse = ToScript(button.Position);
-                MouseButton(button.ButtonIndex == Godot.MouseButton.Left, button.Pressed);
+                _input.Position = ToScript(button.Position);
+                ushort code = button.ButtonIndex == Godot.MouseButton.Left ? KeyReturn : KeySpace;
+                _input.Button(code, button.Pressed);
+                BattleButton(code, button.Pressed);
                 break;
         }
         AcceptEvent();
     }
 
-    private void MouseMoved()
-    {
-        var (x, y) = (_mouse.X, _mouse.Y);
-        _presenter.Pointer(x, y);
-        if (_sel is not null || _battleMenu is not null)
-        {
-            _sel?.MouseMove(x, y);
-            _battleMenu?.MouseMove(x, y);
-            _presenter.Invalidate();
-            return;
-        }
-        if (_presenter.Picker is not null)
-            _pointer.Move(x, y);
-        if (_leftHeld && _presenter.MapWaiting)
-        {
-            if (!_dragging && (_mouse - _pressAt).LengthSquared() >= DragThreshold * DragThreshold)
-                _dragging = true;
-            if (_dragging)
-                QueueDrag();
-        }
-    }
-
-    private void MouseButton(bool left, bool pressed)
-    {
-        var (x, y) = (_mouse.X, _mouse.Y);
-        if (_sel is not null || _battleMenu is not null)
-        {
-            var which = left ? SelButton.Left : SelButton.Right;
-            if (pressed)
-            {
-                _sel?.MouseDown(which, x, y);
-                _battleMenu?.MouseDown(which, x, y);
-            }
-            else
-            {
-                _sel?.MouseUp(which, x, y);
-                _battleMenu?.MouseUp(which, x, y);
-            }
-            _presenter.Invalidate();
-            if (_sel?.Result is not null || _battleMenu?.IsDone == true)
-                _answered?.TrySetResult();
-            return;
-        }
-        if ((!left && !pressed) || _options.Auto)
-            return;
-        if (_menuAnswer is { } menu)
-        {
-            if (!pressed)
-                return;
-            int item = left ? _presenter.MenuHitTest(x, y) + 1 : 0;
-            if (!left || item > 0)
-                menu.TrySetResult(item);
-            return;
-        }
-        if (left && !pressed && _leftHeld)
-        {
-            // The end of a press on the map, even while the drag pauses (Y 3) between its steps.
-            _leftHeld = false;
-            if (!_dragging)
-                _pointer.Click(_pressAt.X, _pressAt.Y);
-            else if (_mouse != _dragFrom)
-                _pointer.Drag(_dragFrom.X, _dragFrom.Y, _mouse.X, _mouse.Y);
-            return;
-        }
-        if (_key is not null && !_pausing)
-        {
-            if (pressed)
-                Key(left ? KeyReturn : KeySpace);
-            return;
-        }
-        if (_presenter.Picker is not null || _presenter.MapWaiting)
-        {
-            // The map and the pickers read the pointer: a press during one of their pauses is a gesture, not a key.
-            PointerButton(left, pressed);
-            return;
-        }
-        if (_key is not null && pressed)
-            Key(left ? KeyReturn : KeySpace);       // Y 3 elsewhere: a click cuts the pause short
-    }
-
-    /// <summary>A press or release while the map or a picker reads the pointer.</summary>
-    private void PointerButton(bool left, bool pressed)
-    {
-        var (x, y) = (_mouse.X, _mouse.Y);
-        if (_presenter.Picker is { } picker)
-        {
-            if (!pressed)
-                return;
-            if (!left)
-            {
-                _pointer.RightClick(x, y);
-                return;
-            }
-            var (area, number) = picker.HitTest(x, y);
-            var at = area switch
-            {
-                PickerArea.Cell => PointerScript.PickerCell(number),
-                PickerArea.Button => PointerScript.PickerButton(number),
-                _ => PointerScript.PickerOutside,
-            };
-            _pointer.Click(at.X, at.Y);
-            return;
-        }
-        if (_presenter.MapWaiting)
-        {
-            if (!left)
-            {
-                _pointer.RightClick(x, y);
-                return;
-            }
-            if (pressed)
-            {
-                _leftHeld = true;
-                _dragging = false;
-                _pressAt = _dragFrom = _mouse;
-            }
-        }
-    }
-
-    /// <summary>While the left button is held on the map, the view follows the pointer one drag at a time.</summary>
-    private void QueueDrag()
-    {
-        if (_pointer.Pending > 0 || _mouse == _dragFrom || !_presenter.MapWaiting)
-            return;
-        _pointer.Drag(_dragFrom.X, _dragFrom.Y, _mouse.X, _mouse.Y);
-        _dragFrom = _mouse;
-    }
-
     public override void _UnhandledKeyInput(InputEvent @event)
     {
-        if (@event is not InputEventKey { Pressed: true, Echo: false } key)
+        if (@event is not InputEventKey { Echo: false } key)
             return;
-        if (key.Keycode == Godot.Key.Backspace)
+        if (key.Pressed && key.Keycode == Godot.Key.Backspace)
         {
             Screens.ToTitle(this);
             return;
         }
-        if (_sel is not null || _battleMenu is not null || _options.Auto)
+        _input.Key(key.Keycode, key.Pressed);
+    }
+
+    /// <summary>The menus' highlight and the battle's input screens follow the pointer.</summary>
+    private void PointerMoved()
+    {
+        var (x, y) = (_input.Position.X, _input.Position.Y);
+        _presenter.Pointer(x, y);
+        if (_sel is null && _battleMenu is null)
             return;
-        bool enter = key.Keycode is Godot.Key.Enter or Godot.Key.KpEnter;
-        bool cancel = key.Keycode is Godot.Key.Space or Godot.Key.Escape;
-        if (_menuAnswer is { } menu)
+        _sel?.MouseMove(x, y);
+        _battleMenu?.MouseMove(x, y);
+        _presenter.Invalidate();
+    }
+
+    /// <summary>
+    /// A press or release for the battle's input screens, which are driven by the buttons' changes:
+    /// only the presses that began while the screen is open, and their releases.
+    /// </summary>
+    private void BattleButton(ushort code, bool pressed)
+    {
+        if (_sel is null && _battleMenu is null)
+            return;
+        if (pressed)
+            _battleButtons |= code;
+        else if ((_battleButtons & code) == 0)
+            return;
+        else
+            _battleButtons &= (ushort)~code;
+        var (x, y) = (_input.Position.X, _input.Position.Y);
+        var which = code == KeyReturn ? SelButton.Left : SelButton.Right;
+        if (pressed)
         {
-            if (cancel)
-                menu.TrySetResult(0);
-            return;
+            _sel?.MouseDown(which, x, y);
+            _battleMenu?.MouseDown(which, x, y);
         }
-        if (enter)
-            Key(KeyReturn);
-        else if (cancel)
-            Key(KeySpace);
+        else
+        {
+            _sel?.MouseUp(which, x, y);
+            _battleMenu?.MouseUp(which, x, y);
+        }
+        _presenter.Invalidate();
+        if (_sel?.Result is not null || _battleMenu?.IsDone == true)
+            _answered?.TrySetResult();
     }
 
-    private Task<ushort> KeyAsync()
+    /// <summary>
+    /// xsystem35 <c>sys_keywait</c>: polls the input once a frame until <paramref name="seconds"/>
+    /// passed (at least once); <paramref name="cancelable"/> ends it at the first poll that finds
+    /// anything held. Returns the last poll.
+    /// </summary>
+    private async Task<ushort> KeyWaitAsync(double seconds, bool cancelable)
     {
-        _key = new TaskCompletionSource<ushort>();
-        return _key.Task;
-    }
-
-    private void Key(ushort code)
-    {
-        var key = _key;
-        _key = null;
-        key?.TrySetResult(code);
+        var watch = Stopwatch.StartNew();
+        ushort key;
+        do
+        {
+            await NextFrameAsync();
+            key = _input.ReadInput();
+            if (cancelable && key != 0)
+                break;
+        }
+        while (watch.Elapsed.TotalSeconds < seconds);
+        return key;
     }
 
     // ---------------------------------------------------------------- input: keys, pauses, menus
@@ -544,66 +452,114 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         else
         {
-            key = await KeyAsync();
+            key = await HitKeyAsync();
         }
         _presenter.AfterKey();
         return key;
     }
 
-    public async Task<Sys3Int> PauseAsync(Sys3Int ticks)
+    /// <summary>
+    /// <c>IK 0</c> (<c>cmdi.c</c>): waits for anything held and returns it, after the release
+    /// for Return and the left button (<c>sys_key_releasewait</c> with the release mask 16). A key
+    /// still held from the last <c>IK 0</c> repeats: the second time after 600 ms, then at once.
+    /// <c>A</c> (<c>sys_hit_any_key</c>) comes here too: the same wait, without the 600 ms.
+    /// </summary>
+    private async Task<ushort> HitKeyAsync()
     {
-        // Y 3: ticks × 16 ms, cut short by a key (which goes to RetVal).
-        _pointer.Interrupt();
-        _presenter.Flush();
-        var key = KeyAsync();
-        _pausing = true;
-        try
-        {
-            await DelayAsync(_options.Fast ? 0 : ticks.Value * 0.016, key);
-        }
-        finally
-        {
-            _pausing = false;
-            _key = null;
-        }
-        return key.IsCompletedSuccessfully ? key.Result : Sys3Int.Zero;
+        if (_input.PeekInput() != _ikKey)
+            _repeating = 0;
+        ushort key = await KeyWaitAsync(double.PositiveInfinity, cancelable: true);
+        if (_repeating == 1)
+            await KeyWaitAsync(_options.Fast ? 0 : 0.6, cancelable: false);
+        if (_repeating < 2)
+            _repeating++;
+        for (ushort held = key; (held & KeyReturn) != 0;)
+            held = await KeyWaitAsync(0.05, cancelable: false);
+        _ikKey = key;
+        return key;
     }
 
-    /// <summary>At least one frame, then until <paramref name="seconds"/> passed or <paramref name="until"/> completed.</summary>
-    private async Task DelayAsync(double seconds, Task? until = null)
+    public async Task<Sys3Int> PauseAsync(Sys3Int ticks)
+    {
+        // Y 3 (cmdy.c): 10000 / 10001 make the later pauses ignore / end at the input (the engine
+        // leaves RetVal alone; the core stores the 0 returned here); 0 reads the input once.
+        _pointer.Interrupt();
+        _presenter.Flush();
+        if (ticks.Value is 10000 or 10001)
+        {
+            _pauseCancelable = ticks.Value == 10001;
+            return Sys3Int.Zero;
+        }
+        double seconds = _options.Fast ? 0 : ticks.Value * 0.016;
+        if (_options.Auto)
+        {
+            await DelayAsync(seconds);
+            return Sys3Int.Zero;
+        }
+        if (ticks.Value == 0)
+        {
+            await NextFrameAsync();
+            return _input.ReadInput();
+        }
+        // ticks × 16 ms, polled once a frame; anything held ends it at once and is returned
+        // (nothing is consumed: a button held over several pauses ends each of them).
+        return await KeyWaitAsync(seconds, _pauseCancelable);
+    }
+
+    /// <summary>At least one frame, then until <paramref name="seconds"/> passed.</summary>
+    private async Task DelayAsync(double seconds)
     {
         var watch = Stopwatch.StartNew();
         do
             await NextFrameAsync();
-        while (watch.Elapsed.TotalSeconds < seconds && until is not { IsCompleted: true });
+        while (watch.Elapsed.TotalSeconds < seconds);
     }
 
     public async Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
     {
         _pointer.Interrupt();
         _presenter.OpenMenu(items);
-        _presenter.Pointer(_mouse.X, _mouse.Y);
+        _presenter.Pointer(_input.Position.X, _input.Position.Y);
         Shot("menu");
-        int choice;
         try
         {
             if (_options.Auto)
             {
                 await DelayAsync(_options.Fast ? 0 : 0.5);
-                choice = AutoChoice(items);
+                return AutoChoice(items);
             }
-            else
-            {
-                _menuAnswer = new TaskCompletionSource<int>();
-                choice = await _menuAnswer.Task;
-            }
+            return await MenuAsync();
         }
         finally
         {
-            _menuAnswer = null;
             _presenter.CloseMenu();
         }
-        return choice;
+    }
+
+    /// <summary>
+    /// The menu's input as xsystem35's <c>sel_select</c> (<c>selection.c</c>) reads it: first until
+    /// nothing is held, then once a frame — Space alone (the right button) cancels at once, the
+    /// release of Return alone (the left button) over an item chooses it. The arrow keys are not
+    /// supported (the highlight follows the pointer only).
+    /// </summary>
+    private async Task<int> MenuAsync()
+    {
+        for (ushort held = KeyReturn; held != 0;)
+            held = await KeyWaitAsync(0.05, cancelable: false);
+        ushort previous = 0;
+        int item = -1;
+        while (true)
+        {
+            await NextFrameAsync();
+            ushort key = _input.ReadInput();
+            if (key == KeySpace)
+                return 0;
+            if (key == 0 && previous == KeyReturn && item >= 0)
+                return item + 1;
+            previous = key;
+            if ((key & 0xf) == 0)
+                item = _presenter.MenuHitTest(_input.Position.X, _input.Position.Y);
+        }
     }
 
     // ---------------------------------------------------------------- input: the pointer
@@ -612,17 +568,42 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         _presenter.Flush();
         if (_options.Auto)
+        {
             AutoPointer();
-        var mouse = _pointer.Next(out bool read);
-        if (!read)
-            await NextFrameAsync();                     // the scripts poll the pointer: one read per frame
-        return mouse;
+            var queued = _pointer.Next(out bool read);
+            if (!read)
+                await NextFrameAsync();                 // the scripts poll the pointer: one read per frame
+            return queued;
+        }
+        await NextFrameAsync();
+        return new MouseState((Sys3Int)_input.ReadMouse(), (Sys3Int)_input.Position.X, (Sys3Int)_input.Position.Y);
     }
 
+    /// <summary>
+    /// <c>IC</c>: returns the shape set before and shows the new one as a system cursor
+    /// (<c>cursor.c</c>: 6 is the four-way arrow of the map's drag); a shape the engine has no
+    /// cursor for leaves the cursor as it is.
+    /// </summary>
     public Task<Sys3Int> SetCursorAsync(Sys3Int shape)
     {
         var before = (Sys3Int)_cursor;
         _cursor = shape.Value;
+        CursorShape? cursor = shape.Value switch
+        {
+            1 or 4 or 12 => CursorShape.Arrow,
+            2 => CursorShape.Cross,
+            3 => CursorShape.Ibeam,
+            5 => CursorShape.Forbidden,
+            6 or 7 => CursorShape.Move,
+            8 => CursorShape.Bdiagsize,
+            9 => CursorShape.Vsize,
+            10 => CursorShape.Fdiagsize,
+            11 => CursorShape.Hsize,
+            13 => CursorShape.Wait,
+            _ => null,
+        };
+        if (cursor is { } c && !_options.Auto)
+            MouseDefaultCursorShape = c;
         return Task.FromResult(before);
     }
 
@@ -641,8 +622,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 : new FigtSelChoice(FigtSelCommand.Defend, menu.Find(FigtSelCommand.Defend)!.Arguments[0]);
         }
         _answered = new TaskCompletionSource();
+        _battleButtons = 0;
         _sel = new FigtSelScreen(_presenter.Battle, menu);
-        _sel.MouseMove(_mouse.X, _mouse.Y);
+        _sel.MouseMove(_input.Position.X, _input.Position.Y);
         _presenter.Invalidate();
         try
         {
@@ -666,8 +648,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             return menu.Options[0].Code;
         }
         _answered = new TaskCompletionSource();
+        _battleButtons = 0;
         _battleMenu = new BattleMenuScreen(_presenter.Battle, menu);
-        _battleMenu.MouseMove(_mouse.X, _mouse.Y);
+        _battleMenu.MouseMove(_input.Position.X, _input.Position.Y);
         _presenter.Invalidate();
         try
         {
