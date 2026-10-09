@@ -118,6 +118,16 @@ public class MessageWriterTests
         Assert.Equal((200, 198), w.Cursor);
     }
 
+    /// <summary>A cell is half-width only for a single Shift-JIS byte: the scenario's <c>×</c> (the used-up Harem) is full-width.</summary>
+    [Theory]
+    [InlineData('H', 12)]
+    [InlineData('ｱ', 12)]
+    [InlineData('○', 24)]
+    [InlineData('×', 24)]
+    [InlineData('÷', 24)]
+    [InlineData('§', 24)]
+    public void Cell_widths_follow_shift_jis(char c, int width) => Assert.Equal(width, MessageWriter.CellWidth(c, 24));
+
     [Fact]
     public void Text_is_drawn_in_the_palette_colour_at_high_resolution()
     {

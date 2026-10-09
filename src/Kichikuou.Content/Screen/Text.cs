@@ -88,8 +88,12 @@ public sealed class MessageWriter(Surface surface, IGlyphRenderer glyphs)
     /// <summary>The cell width of <paramref name="c"/> at <paramref name="size"/> (script pixels).</summary>
     public static int CellWidth(char c, int size) => IsHalfWidth(c) ? size / 2 : size;
 
-    /// <summary>Whether <paramref name="c"/> takes a half-width cell (ASCII, Latin-1, half-width katakana).</summary>
-    public static bool IsHalfWidth(char c) => c < 0x100 || c is >= '｡' and <= 'ﾟ';
+    /// <summary>
+    /// Whether <paramref name="c"/> takes a half-width cell: a single Shift-JIS byte (ASCII,
+    /// half-width katakana). The Latin-1 signs of the scenario (<c>×</c>, <c>÷</c>, <c>§</c>) are
+    /// double-byte in Shift-JIS and full-width, like <c>○</c>.
+    /// </summary>
+    public static bool IsHalfWidth(char c) => c < 0x80 || c is >= '｡' and <= 'ﾟ';
 
     private static int DrawChar(Surface surface, IGlyphRenderer glyphs, char c, int x, int y, int size, (byte, byte, byte) color)
     {
