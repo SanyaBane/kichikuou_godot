@@ -82,6 +82,50 @@ public class SurfaceTests
         Assert.Equal(10, s.PixelAt(6, 7).R);
     }
 
+    /// <summary>
+    /// <c>CM</c> (<c>ags_scaledCopyArea</c> → <c>SDL_SoftStretch</c>): nearest-neighbour with 16.16
+    /// steps sampled at their middle, so a 2:1 shrink takes the odd pixels; mirror bit 2 flips
+    /// horizontally; a source starting beyond the surface draws nothing.
+    /// </summary>
+    [Fact]
+    public void Scaled_copy_stretches_as_sdl_soft_stretch()
+    {
+        var s = new Surface(16, 4);
+        s.DrawCg(Cg(4, 1, 10, 20, 30, 40), 0, 0);
+
+        s.ScaledCopy(0, 0, 2, 1, 0, 1, 4, 1, 0);                      // grow 2 → 4
+        Assert.Equal([10, 10, 20, 20], Enumerable.Range(0, 4).Select(x => (int)s.PixelAt(x, 1).R));
+        Assert.Equal(10, s.StoredPixelAt(1, 3).R);                    // whole stored blocks
+
+        s.ScaledCopy(0, 0, 4, 1, 4, 1, 2, 1, 0);                      // shrink 4 → 2
+        Assert.Equal([20, 40], Enumerable.Range(4, 2).Select(x => (int)s.PixelAt(x, 1).R));
+
+        s.ScaledCopy(0, 0, 4, 1, 8, 2, 4, 1, 2);                      // mirrored
+        Assert.Equal([40, 30, 20, 10], Enumerable.Range(8, 4).Select(x => (int)s.PixelAt(x, 2).R));
+
+        s.ScaledCopy(16, 0, 4, 1, 0, 3, 4, 1, 0);                     // starts beyond: nothing
+        Assert.Equal(0, s.PixelAt(0, 3).R);
+    }
+
+    /// <summary><c>WV x, y, …</c> (<c>ags_setViewArea</c>): the screen is read from the view, and drawing inside it counts as a change.</summary>
+    [Fact]
+    public void The_view_moves_the_visible_screen()
+    {
+        var s = new Surface(640, 800);
+        s.DrawCg(Cg(1, 1, 90), 5, 500);
+        s.SetView(0, 400);
+        var screen = s.ReadScreen();
+        int at = (100 * Surface.Scale * Surface.ScreenWidth + 5) * Surface.Scale * 4;
+        Assert.Equal(90, screen[at]);
+
+        int version = s.ScreenVersion;
+        s.Fill(0, 700, 4, 4, 1);
+        Assert.NotEqual(version, s.ScreenVersion);
+        version = s.ScreenVersion;
+        s.Fill(0, 0, 4, 4, 1);                                        // above the view now
+        Assert.Equal(version, s.ScreenVersion);
+    }
+
     [Fact]
     public void Save_and_restore_a_region()
     {

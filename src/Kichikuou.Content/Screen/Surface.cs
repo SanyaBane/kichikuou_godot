@@ -106,6 +106,62 @@ public sealed class Surface
         Touch(dx, dy, w, h);
     }
 
+    /// <summary>
+    /// <c>CM sx, sy, sw, sh, dx, dy, dw, dh, mirror</c> (xsystem35 <c>ags_scaledCopyArea</c>): each
+    /// rectangle is clipped to the surface on its own (<c>ags_check_param</c>: nothing at all when it
+    /// starts right of or below the surface), then the source is stretched over the destination
+    /// nearest-neighbour as <c>SDL_SoftStretch</c> does (16.16 steps sampled at their middle) on
+    /// script pixels, each moved as its block of stored pixels; <paramref name="mirror"/> bit 1
+    /// flips the result vertically, bit 2 horizontally. The source is read before anything is
+    /// written.
+    /// </summary>
+    public void ScaledCopy(int sx, int sy, int sw, int sh, int dx, int dy, int dw, int dh, int mirror)
+    {
+        if (!CheckParam(ref sx, ref sy, ref sw, ref sh) || !CheckParam(ref dx, ref dy, ref dw, ref dh))
+            return;
+        int block = Scale * 4, sourceStride = sw * block;
+        var source = new byte[sourceStride * sh * Scale];
+        for (int row = 0; row < sh * Scale; row++)
+            Buffer.BlockCopy(_pixels, (sy * Scale + row) * _stride + sx * block, source, row * sourceStride, sourceStride);
+        uint incX = (uint)(((long)sw << 16) / dw), incY = (uint)(((long)sh << 16) / dh);
+        uint posY = incY / 2;
+        for (int row = 0; row < dh; row++, posY += incY)
+        {
+            int fromRow = (int)(posY >> 16) * Scale;
+            int toRow = dy + ((mirror & 1) != 0 ? dh - 1 - row : row);
+            uint posX = incX / 2;
+            for (int col = 0; col < dw; col++, posX += incX)
+            {
+                int from = (int)(posX >> 16) * block;
+                int toCol = dx + ((mirror & 2) != 0 ? dw - 1 - col : col);
+                for (int line = 0; line < Scale; line++)
+                {
+                    int to = (toRow * Scale + ((mirror & 1) != 0 ? Scale - 1 - line : line)) * _stride + toCol * block;
+                    int at = (fromRow + line) * sourceStride + from;
+                    if ((mirror & 2) == 0)
+                        Buffer.BlockCopy(source, at, _pixels, to, block);
+                    else
+                        for (int p = 0; p < Scale; p++)
+                            Buffer.BlockCopy(source, at + (Scale - 1 - p) * 4, _pixels, to + p * 4, 4);
+                }
+            }
+        }
+        Touch(dx, dy, dw, dh);
+    }
+
+    /// <summary>
+    /// The visible area's top-left corner: <c>WV x, y, w, h</c> (xsystem35 <c>ags_setViewArea</c>)
+    /// shows the surface from there; (0, 0) unless a scene moves it.
+    /// </summary>
+    public (int X, int Y) View { get; private set; }
+
+    /// <summary><c>WV x, y, …</c>: moves the visible area (its size stays <see cref="ScreenWidth"/> × <see cref="ScreenHeight"/>; kept on the surface).</summary>
+    public void SetView(int x, int y)
+    {
+        View = (Math.Clamp(x, 0, Width - ScreenWidth), Math.Clamp(y, 0, Height - ScreenHeight));
+        ScreenVersion++;
+    }
+
     /// <summary>Copies a rectangle of another surface (same <see cref="Scale"/>) onto this one.</summary>
     public void CopyFrom(Surface source, int sx, int sy, int w, int h, int dx, int dy)
     {
@@ -263,15 +319,16 @@ public sealed class Surface
     }
 
     /// <summary>
-    /// The visible screen as opaque RGBA rows (<see cref="ScreenWidth"/>·<see cref="Scale"/> ×
+    /// The visible screen (from <see cref="View"/>) as opaque RGBA rows (<see cref="ScreenWidth"/>·<see cref="Scale"/> ×
     /// <see cref="ScreenHeight"/>·<see cref="Scale"/>), into <paramref name="target"/> when given.
     /// </summary>
     public byte[] ReadScreen(byte[]? target = null)
     {
         int bytes = ScreenWidth * Scale * 4;
         target ??= new byte[bytes * ScreenHeight * Scale];
+        int origin = View.Y * Scale * _stride + View.X * Scale * 4;
         for (int row = 0; row < ScreenHeight * Scale; row++)
-            Buffer.BlockCopy(_pixels, row * _stride, target, row * bytes, bytes);
+            Buffer.BlockCopy(_pixels, origin + row * _stride, target, row * bytes, bytes);
         for (int i = 3; i < target.Length; i += 4)
             target[i] = 255;
         return target;
@@ -295,8 +352,21 @@ public sealed class Surface
 
     private void Touch(int x, int y, int w, int h)
     {
-        if (x < ScreenWidth && y < ScreenHeight && x + w > 0 && y + h > 0)
+        var (vx, vy) = View;
+        if (x < vx + ScreenWidth && y < vy + ScreenHeight && x + w > vx && y + h > vy)
             ScreenVersion++;
+    }
+
+    /// <summary>xsystem35 <c>ags_check_param</c>: clips a rectangle to the surface; false when nothing is left or it starts beyond the right or bottom edge.</summary>
+    private bool CheckParam(ref int x, ref int y, ref int w, ref int h)
+    {
+        if (x >= Width || y >= Height)
+            return false;
+        if (x < 0) { w += x; x = 0; }
+        if (y < 0) { h += y; y = 0; }
+        if (x + w > Width) w = Width - x;
+        if (y + h > Height) h = Height - y;
+        return w > 0 && h > 0;
     }
 
     /// <summary>Clips a source rectangle (inside a sourceW × sourceH image) and its destination to the surface.</summary>

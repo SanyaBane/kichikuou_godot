@@ -474,6 +474,14 @@ public sealed partial class GamePresenter
                 Stage.Fill(A(0), A(1), A(2), A(3), A(4));
                 Drawn(A(0), A(1), A(2), A(3));
                 break;
+            case "CM":
+                PrepareCopy(A(0), A(2));
+                Stage.ScaledCopy(A(0), A(1), A(2), A(3), A(4), A(5), A(6), A(7), A(8));
+                Drawn(A(4), A(5), A(6), A(7));
+                break;
+            case "WV":
+                Stage.SetView(A(0), A(1));
+                break;
             case "EC":
                 if (A(0) == 0)
                 {

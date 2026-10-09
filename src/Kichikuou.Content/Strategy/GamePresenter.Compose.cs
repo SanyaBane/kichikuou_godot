@@ -235,7 +235,7 @@ public sealed partial class GamePresenter
         _dirty = false;
         _stageVersion = Stage.ScreenVersion;
         Screen.Palette = Stage.Palette;
-        Screen.CopyFrom(Stage, 0, 0, Surface.ScreenWidth, Surface.ScreenHeight, 0, 0);
+        Screen.CopyFrom(Stage, Stage.View.X, Stage.View.Y, Surface.ScreenWidth, Surface.ScreenHeight, 0, 0);
         if (!InBattle && State is { } s)
         {
             if (MaskEventCgs && s.Ui_WinType == 31)

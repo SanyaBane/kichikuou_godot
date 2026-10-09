@@ -113,6 +113,35 @@ public class GamePresenterTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// <c>ｵｰﾌﾟﾆﾝｸﾞ.ADV</c>'s zoom (<c>:226-302</c>, <c>CM</c> from the hidden page onto the screen)
+    /// and its scroll (<c>:930-938</c>, <c>WV 0, y, 640, 400</c> and back) reach the stage and the screen.
+    /// </summary>
+    [Fact]
+    public void The_openings_scaled_copies_and_view_reach_the_screen()
+    {
+        var missing = Path.Combine(Path.GetTempPath(), "kichikuou-no-data");
+        var presenter = new GamePresenter(new ScenarioText(missing), new CgLibrary(missing), new BoxGlyphs());
+        presenter.Bind(new GameState());
+        Sys3Int[] Args(params int[] values) => values.Select(v => (Sys3Int)v).ToArray();
+
+        presenter.Show(new EngineEvent("CF", Args(640, 0, 640, 400, 15)));
+        presenter.Show(new EngineEvent("CM", Args(640, 0, 480, 300, 0, 0, 640, 400, 0)));
+        presenter.Compose();
+        var white = presenter.Stage.PixelAt(640, 0);
+        Assert.Equal(white, presenter.Screen.PixelAt(639, 399));
+
+        presenter.Show(new EngineEvent("CF", Args(0, 400, 640, 400, 0)));
+        presenter.Show(new EngineEvent("WV", Args(0, 400, 640, 400)));
+        presenter.Compose();
+        Assert.Equal(presenter.Stage.PixelAt(0, 400), presenter.Screen.PixelAt(0, 0));
+        Assert.NotEqual(white, presenter.Screen.PixelAt(0, 0));
+
+        presenter.Show(new EngineEvent("WV", Args(0, 0, 640, 400)));
+        presenter.Compose();
+        Assert.Equal(white, presenter.Screen.PixelAt(0, 0));
+    }
+
+    /// <summary>
     /// <c>PF</c>/<c>PW</c> last <c>rate * 16 * 1000 / 60</c> ms as xsystem35's <c>ags_fadeIn</c>/<c>ags_fadeOut</c>
     /// (<c>ags.c</c>), not <c>rate</c> × 16 ms: the scenes' <c>PF1 FadeSpeed</c> (4) takes 1066 ms.
     /// </summary>
