@@ -320,6 +320,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _skip.OnMessage(values.Text);
         if (scriptEvent is MapScreenEvent { Waiting: true })
             _autoMapWait = true;
+        if (scriptEvent is EngineEvent { Command: "IZ", Args: [var x, var y] })
+            await WarpPointerAsync(x.Value, y.Value);
         if (_presenter.TakeFade() is { } fade)
             await FadeAsync(fade);
     }
@@ -370,6 +372,56 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         var p = (local - (_view.GlobalPosition - GlobalPosition) - (size - drawn) / 2) / (scale * Surface.Scale);
         return new Vector2I(Math.Clamp((int)Math.Floor(p.X), 0, Surface.ScreenWidth - 1),
             Math.Clamp((int)Math.Floor(p.Y), 0, Surface.ScreenHeight - 1));
+    }
+
+    /// <summary>The centre of script pixel <paramref name="script"/> in this control's coordinates (the inverse of <see cref="ToScript"/>).</summary>
+    private Vector2 FromScript(Vector2I script)
+    {
+        var size = _view.Size;
+        float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
+        var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
+        return (_view.GlobalPosition - GlobalPosition) + (size - drawn) / 2 + (new Vector2(script.X, script.Y) + new Vector2(0.5f, 0.5f)) * scale * Surface.Scale;
+    }
+
+    /// <summary>
+    /// <c>IZ x, y</c> (<c>cmdi.c</c> → <c>ags_setCursorLocation</c>): nothing when the point lies right
+    /// of or below the 3200×800 surface, else it is clamped at 0 and taken relative to the <c>WV</c>
+    /// view. With Option → Mouse Movement (on, as <c>menu_init</c>) the pointer glides there in
+    /// seven steps 7 ms apart on the engine's ease-out curve and lands; off, only the position the
+    /// script reads moves and the script waits 50 ms. <c>COMMAND.ADV:618</c> puts the pointer back
+    /// where it was before a menu.
+    /// </summary>
+    private async Task WarpPointerAsync(int x, int y)
+    {
+        if (x >= 3200 || y >= 800)
+            return;
+        x = Math.Max(x, 0) - _presenter.Stage.View.X;
+        y = Math.Max(y, 0) - _presenter.Stage.View.Y;
+        if (!EngineState.MouseMovement || _options.Auto)
+        {
+            _input.Position = ClampToScreen(x, y);
+            await DelayAsync(_options.Fast ? 0 : 0.05);
+            return;
+        }
+        var path = PointerGlide.Path((_input.Position.X, _input.Position.Y), (x, y));
+        var watch = Stopwatch.StartNew();
+        for (int i = 0; i < path.Count; i++)
+        {
+            WarpTo(path[i].X, path[i].Y);
+            while (i < path.Count - 1 && watch.Elapsed.TotalMilliseconds < (i + 1) * PointerGlide.StepMilliseconds)
+                await NextFrameAsync();
+        }
+    }
+
+    private static Vector2I ClampToScreen(int x, int y) =>
+        new(Math.Clamp(x, 0, Surface.ScreenWidth - 1), Math.Clamp(y, 0, Surface.ScreenHeight - 1));
+
+    /// <summary>Moves the system pointer onto script pixel (x, y) and the position the script reads with it.</summary>
+    private void WarpTo(int x, int y)
+    {
+        _input.Position = ClampToScreen(x, y);
+        WarpMouse(FromScript(_input.Position));
+        PointerMoved();
     }
 
     public override void _GuiInput(InputEvent @event)

@@ -136,6 +136,30 @@ public class SurfaceTests
         Assert.Equal(50, plain.PixelAt(0, 0).R);
     }
 
+    /// <summary>
+    /// <c>CB</c> clips the rectangle first (<c>ags_check_param</c>), so one running past the edge gets
+    /// its far side at the edge; <c>CL</c> draws both ends, in the first entry of the colour
+    /// (<c>SDL_FindColor</c>: white 255 is stored as 15 when 15 is white too).
+    /// </summary>
+    [Fact]
+    public void Boxes_clip_first_and_lines_take_the_first_entry_of_their_colour()
+    {
+        var s = new Surface(8, 8);
+        s.Palette = Cg(1, 1, 0).PaletteOver(s.Palette);               // entry n: red n
+        s.DrawBox(4, 4, 10, 10, 50);
+        Assert.Equal(50, s.PixelAt(7, 5).R);                          // right side at the edge
+        Assert.Equal(50, s.PixelAt(5, 7).R);                          // bottom side at the edge
+        Assert.Equal(0, s.PixelAt(5, 5).R);
+
+        var white = new CgImage(1, 1, [0], Enumerable.Range(0, 768).Select(i => (byte)(i / 3 == 15 ? 255 : 0)).ToArray());
+        s.Palette = white.PaletteOver(s.Palette);                     // entry 15 white, as 255
+        s.DrawLine(0, 0, 3, 3, 255);
+        Assert.All(Enumerable.Range(0, 4), i => Assert.Equal(255, s.PixelAt(i, i).R));
+        Assert.Equal(0, s.PixelAt(1, 0).R);
+        s.Palette = Cg(1, 1, 0).PaletteOver(s.Palette);               // entry 15 red 15 now
+        Assert.Equal(15, s.PixelAt(2, 2).R);                          // the line was entry 15
+    }
+
     /// <summary><c>WV x, y, …</c> (<c>ags_setViewArea</c>): the screen is read from the view, and drawing inside it counts as a change.</summary>
     [Fact]
     public void The_view_moves_the_visible_screen()

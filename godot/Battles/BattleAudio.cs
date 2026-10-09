@@ -25,6 +25,7 @@ public partial class BattleAudio : Node, IBattleAudio
         EnsureBus(LeftBus, -1f);
         EnsureBus(RightBus, 1f);
         _sfx = AddPlayer("Master");
+        _sfx.Finished += OnSoundFinished;
         _left = AddPlayer(LeftBus);
         _right = AddPlayer(RightBus);
         _bgm = AddPlayer("Master");
@@ -52,7 +53,30 @@ public partial class BattleAudio : Node, IBattleAudio
         AudioServer.AddBusEffect(index, new AudioEffectPanner { Pan = pan });
     }
 
-    public void PlaySound(int number) => Play(_sfx, number);
+    /// <summary>
+    /// <c>SP n, loops</c>: the effect replaces the one playing (one PCM channel), <paramref name="loops"/>
+    /// times or endlessly for 0; <c>SP 0</c> stops it.
+    /// </summary>
+    public void PlaySound(int number, int loops = 1)
+    {
+        _sfxLoopsLeft = 0;
+        if (number == 0)
+        {
+            _sfx.Stop();
+            return;
+        }
+        _sfxLoopsLeft = loops == 0 ? int.MaxValue : loops;
+        Play(_sfx, number);
+    }
+
+    private int _sfxLoopsLeft;
+
+    /// <summary>An effect played a counted number of times (or endlessly) starts again until the count is used up.</summary>
+    private void OnSoundFinished()
+    {
+        if (_sfxLoopsLeft == int.MaxValue || --_sfxLoopsLeft > 0)
+            _sfx.Play();
+    }
 
     public void PlaySoundPair(int left, int right)
     {

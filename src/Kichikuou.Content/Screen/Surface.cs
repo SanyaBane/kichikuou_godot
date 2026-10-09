@@ -307,6 +307,63 @@ public sealed class Surface
         Fill(x + w - 1, y, 1, h, index);
     }
 
+    /// <summary>
+    /// <c>CB x, y, w, h, c</c> (<c>ags_drawRectangle</c>): the rectangle clipped to the surface first
+    /// (<c>ags_check_param</c>), then its one-pixel outline — a rectangle running past the edge
+    /// gets its right or bottom side at the edge.
+    /// </summary>
+    public void DrawBox(int x, int y, int w, int h, int index)
+    {
+        if (CheckParam(ref x, ref y, ref w, ref h))
+            DrawRectangle(x, y, w, h, index);
+    }
+
+    /// <summary>
+    /// <c>CL x0, y0, x1, y1, c</c> (<c>ags_drawLine</c>): each end clamped at 0 (nothing when one lies
+    /// right of or below the surface), then a line with both ends drawn (<c>SDL_RenderDrawLine</c>,
+    /// Bresenham). The renderer draws the entry's colour, which the 8-bit surface stores as the
+    /// first entry nearest to it (<c>SDL_FindColor</c>): white 255 may become entry 15.
+    /// </summary>
+    public void DrawLine(int x0, int y0, int x1, int y1, int index)
+    {
+        if (x0 >= Width || y0 >= Height || x1 >= Width || y1 >= Height)
+            return;
+        index = NearestEntry(_palette[index]);
+        (x0, y0, x1, y1) = (Math.Max(x0, 0), Math.Max(y0, 0), Math.Max(x1, 0), Math.Max(y1, 0));
+        int dx = Math.Abs(x1 - x0), dy = -Math.Abs(y1 - y0);
+        int sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
+        int error = dx + dy;
+        for (int x = x0, y = y0; ; )
+        {
+            PlotIndex(x, y, index);
+            if (x == x1 && y == y1)
+                break;
+            int e2 = 2 * error;
+            if (e2 >= dy) { error += dy; x += sx; }
+            if (e2 <= dx) { error += dx; y += sy; }
+        }
+        Touch(Math.Min(x0, x1), Math.Min(y0, y1), Math.Abs(x1 - x0) + 1, Math.Abs(y1 - y0) + 1);
+    }
+
+    /// <summary><c>SDL_FindColor</c>: the first palette entry with the least squared distance to <paramref name="color"/>.</summary>
+    private int NearestEntry((byte R, byte G, byte B) color)
+    {
+        int best = 0, smallest = int.MaxValue;
+        for (int i = 0; i < 256; i++)
+        {
+            var (r, g, b) = _palette[i];
+            int distance = (r - color.R) * (r - color.R) + (g - color.G) * (g - color.G) + (b - color.B) * (b - color.B);
+            if (distance < smallest)
+            {
+                best = i;
+                smallest = distance;
+                if (distance == 0)
+                    break;
+            }
+        }
+        return best;
+    }
+
     /// <summary><c>ags_saveRegion</c>: a copy of a rectangle, for <see cref="RestoreRegion"/>.</summary>
     public SavedRegion SaveRegion(int x, int y, int w, int h)
     {

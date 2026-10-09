@@ -248,7 +248,7 @@ public sealed partial class GamePresenter
                 Stage.Fill(0, 0, Surface.ScreenWidth, Surface.ScreenHeight, 0);
                 CoverScreen();
                 break;
-            case SoundEvent e when e.Mode != 3: _audio?.PlaySound(e.Sound.Value); break;
+            case SoundEvent e: IBattleAudio.PcmPlay(_audio, e); break;
             case SoundPairEvent e: _audio?.PlaySoundPair(e.First.Value, e.Second.Value); break;
             case MusicEvent e:
                 _audio?.PlayMusic(e.Track.Value, _nextMusicLoops);
@@ -488,6 +488,14 @@ public sealed partial class GamePresenter
                 break;
             case "WV":
                 Stage.SetView(A(0), A(1));
+                break;
+            case "CB":
+                Stage.DrawBox(A(0), A(1), A(2), A(3), A(4));
+                Drawn(A(0), A(1), A(2), A(3));
+                break;
+            case "CL":
+                Stage.DrawLine(A(0), A(1), A(2), A(3), A(4));
+                Drawn(Math.Min(A(0), A(2)), Math.Min(A(1), A(3)), Math.Abs(A(2) - A(0)) + 1, Math.Abs(A(3) - A(1)) + 1);
                 break;
             case "EC":
                 if (A(0) == 0)

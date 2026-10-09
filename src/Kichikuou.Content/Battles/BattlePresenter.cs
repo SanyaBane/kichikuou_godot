@@ -10,8 +10,27 @@ namespace Kichikuou.Content.Battles;
 /// <summary>Sound and music requests of the battle; implemented by the presentation engine.</summary>
 public interface IBattleAudio
 {
-    /// <summary><c>SP n, 1</c>: plays sound effect <paramref name="number"/> once.</summary>
-    void PlaySound(int number);
+    /// <summary>
+    /// <c>PCMPLAY.ADV</c> (<see cref="SoundEvent"/>): mode 0 and 1 <c>SP RetVal, 1</c>, mode 2
+    /// <c>SP RetVal, 0</c> (endless), mode 3 <c>SP 5, 1</c>, mode 10 and any other nothing
+    /// (<c>:1-19</c>, <c>:28-43</c>; any other mode prints an error box in the original, which no
+    /// caller reaches).
+    /// </summary>
+    static void PcmPlay(IBattleAudio? audio, SoundEvent e)
+    {
+        switch (e.Mode.Value)
+        {
+            case 0 or 1: audio?.PlaySound(e.Sound.Value, 1); break;
+            case 2: audio?.PlaySound(e.Sound.Value, 0); break;
+            case 3: audio?.PlaySound(5, 1); break;
+        }
+    }
+
+    /// <summary>
+    /// <c>SP n, loops</c>: plays sound effect <paramref name="number"/> that many times, 0 endlessly,
+    /// in place of the one playing; <c>SP 0</c> stops it (<c>cmds.c</c> <c>commandSP</c>).
+    /// </summary>
+    void PlaySound(int number, int loops = 1);
 
     /// <summary><c>SQ l, r, 1</c>: plays two sound effects, one on each channel.</summary>
     void PlaySoundPair(int left, int right);
@@ -159,7 +178,7 @@ public sealed partial class BattlePresenter
             case MapEvent e: Map(e.Mode.Value); break;
             case ClearScreenEvent: Surface.Fill(0, 0, 640, 400, 0); break;
             case PauseEvent: MapPause(); break;
-            case SoundEvent e when e.Mode != 3: _audio?.PlaySound(e.Sound.Value); break;
+            case SoundEvent e: IBattleAudio.PcmPlay(_audio, e); break;
             case MusicEvent e: _audio?.PlayMusic(e.Track.Value); break;
         }
         _lastEvent = scriptEvent;

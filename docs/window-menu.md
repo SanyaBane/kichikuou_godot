@@ -78,8 +78,13 @@ web build (seen only) by an option.
 
 - A light bar above the game screen: **File** (Save Screenshot, Restart, Exit), **Screen**
   (Window, Fullscreen), **Option** (ours, see MsgSkip), **MsgSkip[off]** (toggles, `[on]` while
-  on, greyed out while not allowed). Not done: Integer Scaling, xsystem35's Option items (no
-  pointer warping, no text hook), the bar hiding in full screen.
+  on, greyed out while not allowed). Not done: Integer Scaling, Auto Copy Text to Clipboard
+  (no text hook), the bar hiding in full screen.
+- **Option → Mouse Movement** (checked at start, for the launch; 2026-10-10): the script's
+  `IZ x, y` (`COMMAND.ADV:618` and the command files put the pointer back where it was before a
+  menu) glides the system pointer there as `ags_setCursorLocation` does — seven points on its
+  ease-out curve 7 ms apart, then the target (`Content/Screen/PointerGlide`); unchecked, only the
+  position the script reads moves and the script waits 50 ms. `--auto` never moves the pointer.
 - Hot keys: **F1** MsgSkip and **F4** full screen (on release, as xsystem35's `event.c`), and
   **Alt+R** Restart (ours, after System 3.9's). Backspace still returns to the title at once,
   without asking (development).
