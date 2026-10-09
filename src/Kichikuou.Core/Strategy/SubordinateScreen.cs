@@ -33,6 +33,7 @@ public sealed class SubordinateScreen(ScriptContext script, IScenarioSource scen
         if (State.Ui_SubordMode == 3)
         {
             await EngineAsync("CC", 0, 400, 640, 400, 0, 0);
+            await Script.ShowAsync(new PickerScreenEvent(PickerKind.Subordinates, State.Ui_SubordMode, false));
             return;
         }
         if (State.Ui_SubordMode == 4)
@@ -46,6 +47,7 @@ public sealed class SubordinateScreen(ScriptContext script, IScenarioSource scen
             return;
         }
         State.Tmp0040 = State.RetVal;
+        await Script.ShowAsync(new PickerScreenEvent(PickerKind.Subordinates, State.Ui_SubordMode, true));
         if (State.Ui_SubordMode != 1)                                   // :15-34 the screen
         {
             await EngineAsync("CC", 0, 0, 640, 400, 0, 400);
@@ -66,7 +68,10 @@ public sealed class SubordinateScreen(ScriptContext script, IScenarioSource scen
         await EngineAsync("ZM", 24);
         await EngineAsync("ZC", 1, 15);
         if (State.Ui_SubordMode == 0)
+        {
             await EngineAsync("CC", 0, 400, 640, 400, 0, 0);
+            await Script.ShowAsync(new PickerScreenEvent(PickerKind.Subordinates, State.Ui_SubordMode, false));
+        }
         State.Unit_Cur = State.CallArg;
     }
 

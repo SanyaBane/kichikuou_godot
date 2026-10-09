@@ -587,6 +587,8 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
     {
         public Task ShowAsync(ScriptEvent e)
         {
+            if (e is ScreenEvent)
+                return Task.CompletedTask;                              // the port's semantic events: no statement in the script
             log.Add(e switch
             {
                 ValueMessageEvent v => $"ValueMessageEvent {v.Text} [{string.Join(",", v.Values)}] [{string.Join(",", v.StringVariables ?? [])}]",

@@ -56,7 +56,10 @@ public class StrategyRulesTests
 
         Assert.Equal(alone.Random.Draws, routed.Random.Draws);
         Assert.Equal(alone.Story.Calls, routed.Story.Calls);
-        Assert.Equal(alone.View.Events.Select(e => e.GetType().Name), routed.View.Events.Select(e => e.GetType().Name));
+        Assert.Equal(alone.View.Events.Select(e => e.GetType().Name),
+            routed.View.Events.Where(e => e is not ScreenEvent).Select(e => e.GetType().Name));
+        Assert.Equal(new BattleScreenEvent("FIGT_A.ADV", true), routed.View.Events[0]);   // the router frames the battle
+        Assert.Equal(new BattleScreenEvent("FIGT_A.ADV", false), routed.View.Events[^1]);
         Assert.Contains(routed.View.Events, e => e is RoundHeaderEvent);
         for (int v = 0; v < ScriptMemory.VariableCount; v++)
             Assert.True(alone.State.Memory.Var(v) == routed.State.Memory.Var(v), $"VAR{v:D4} {VariableCatalog.Variables[v].Name}");

@@ -67,11 +67,19 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
         "Sﾌﾞﾀｲ.ADV" => new DeploymentScreen(Script, scenario).RunAsync(),
         "Sﾌﾞｶ.ADV" => new SubordinateScreen(Script, scenario).RunAsync(),
         "Sﾊｰﾚﾑ.ADV" => new HaremScreen(Script, scenario).RunAsync(),
-        "FIGT_A.ADV" => Battle.AttackProvinceAsync(),
-        "FIGT_B.ADV" => Battle.DefendProvinceAsync(),
-        "FIGT.ADV" => Battle.FightAsync(),
-        "死亡捕獲.ADV" => Battle.DeathCaptureAsync(),
+        "FIGT_A.ADV" => BattleAsync(file, battle => battle.AttackProvinceAsync()),
+        "FIGT_B.ADV" => BattleAsync(file, battle => battle.DefendProvinceAsync()),
+        "FIGT.ADV" => BattleAsync(file, battle => battle.FightAsync()),
+        "死亡捕獲.ADV" => BattleAsync(file, battle => battle.DeathCaptureAsync()),
         "ﾛｰﾄﾞｾｰﾌﾞ.ADV" => new LoadSaveScreen(Script, scenario).RunAsync(),
         _ => unported.RunEventAsync(file, entry),
     };
+
+    /// <summary>A battle file between its <see cref="BattleScreenEvent"/>s.</summary>
+    private async Task BattleAsync(string file, Func<Battle, Task> run)
+    {
+        await Script.ShowAsync(new BattleScreenEvent(file, true));
+        await run(Battle);
+        await Script.ShowAsync(new BattleScreenEvent(file, false));
+    }
 }

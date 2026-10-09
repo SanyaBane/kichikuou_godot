@@ -90,6 +90,42 @@ public sealed record TextRun(ScriptRef Source, IReadOnlyList<TextSegment> Segmen
     }
 
     /// <summary>
+    /// The text as it was printed into a menu item (<see cref="CapturedText"/>): the numbers in
+    /// order, and each string slot, fixed or computed, filled with the next of
+    /// <paramref name="strings"/> (their contents when printed); line breaks as <c>\n</c>.
+    /// </summary>
+    public string FormatCaptured(IReadOnlyList<Sys3Int> numbers, IReadOnlyList<string> strings)
+    {
+        var sb = new StringBuilder();
+        int next = 0;
+        int nextString = 0;
+        foreach (var segment in Segments)
+        {
+            switch (segment)
+            {
+                case LiteralText t:
+                    sb.Append(t.Text);
+                    break;
+                case LineBreak:
+                    sb.Append('\n');
+                    break;
+                case NumberSlot n:
+                    if (next >= numbers.Count)
+                        throw new ArgumentException($"{Source}: the text prints {NumberCount} numbers, {numbers.Count} captured.", nameof(numbers));
+                    sb.Append(FormatNumber(numbers[next++].Value, n.Width, n.FullWidth));
+                    break;
+                case StringSlot s:
+                    if (nextString >= strings.Count)
+                        throw new ArgumentException($"{Source}: the text prints more strings than the {strings.Count} captured.", nameof(strings));
+                    string value = strings[nextString++];
+                    sb.Append(s.Chars is int chars ? FormatString(value, chars) : value);
+                    break;
+            }
+        }
+        return Hankaku.ToHalfWidth(sb.ToString());
+    }
+
+    /// <summary>
     /// xsystem35 <c>format_number</c> (<c>hankaku.c</c>): <c>%*d</c> with the width, of which only
     /// the last <paramref name="width"/> characters are kept; full-width digits and blanks for <c>H</c>.
     /// </summary>

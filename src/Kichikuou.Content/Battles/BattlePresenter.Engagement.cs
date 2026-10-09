@@ -306,7 +306,7 @@ public sealed partial class BattlePresenter
     }
 
     /// <summary><c>M.ADV:3-10</c>: the view's top-left corner on the map.</summary>
-    private (int X, int Y) MapViewCorner()
+    internal (int X, int Y) MapViewCorner()
     {
         if (State is not { } s)
             return (0, 0);
@@ -315,14 +315,14 @@ public sealed partial class BattlePresenter
     }
 
     /// <summary><c>WAO_MAP.ADV</c> op 0: the map view onto the screen.</summary>
-    private void BlitMapView()
+    internal void BlitMapView()
     {
         var (x, y) = MapViewCorner();
         Surface.Copy(x + 1280, y, 640, 400, 0, 0);
     }
 
     /// <summary><c>WAO_MAP.ADV</c> op 3 (<c>:86-115</c>): the six tiles and every marker, off screen.</summary>
-    private void DrawMapTiles()
+    internal void DrawMapTiles()
     {
         if (State is not { } s)
             return;

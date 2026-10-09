@@ -354,7 +354,8 @@ public class PickerScreenTests
 
         Assert.Empty(unported.Calls);
         Assert.Equal(3, rig.State.Ui_SubordMode.Value);
-        var cc = Assert.IsType<EngineEvent>(rig.View.Events.Single());
+        Assert.Equal(new PickerScreenEvent(PickerKind.Subordinates, 3, false), rig.View.Events[^1]);
+        var cc = Assert.IsType<EngineEvent>(rig.View.Events.Single(e => e is not ScreenEvent));
         Assert.Equal("CC", cc.Command);
         Assert.Equal([0, 400, 640, 400, 0, 0], cc.Args.Select(a => (int)a.Value));
     }

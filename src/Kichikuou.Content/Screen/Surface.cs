@@ -106,6 +106,37 @@ public sealed class Surface
         Touch(dx, dy, w, h);
     }
 
+    /// <summary>Copies a rectangle of another surface (same <see cref="Scale"/>) onto this one.</summary>
+    public void CopyFrom(Surface source, int sx, int sy, int w, int h, int dx, int dy)
+    {
+        if (!Clip(ref sx, ref sy, ref w, ref h, ref dx, ref dy, source.Width, source.Height))
+            return;
+        int bytes = w * Scale * 4;
+        for (int row = 0; row < h * Scale; row++)
+            Buffer.BlockCopy(source._pixels, (sy * Scale + row) * source._stride + sx * Scale * 4,
+                _pixels, (dy * Scale + row) * _stride + dx * Scale * 4, bytes);
+        Touch(dx, dy, w, h);
+    }
+
+    /// <summary>
+    /// Blends the visible screen towards black or white by <paramref name="amount"/> (0 leaves
+    /// it, 255 is all black or white): the engine's palette fades (<c>PF</c>, <c>PW</c>).
+    /// </summary>
+    public void FadeScreen(byte amount, bool toWhite)
+    {
+        if (amount == 0)
+            return;
+        int target = toWhite ? 255 : 0;
+        for (int row = 0; row < ScreenHeight * Scale && row < Height * Scale; row++)
+        {
+            int o = row * _stride;
+            for (int i = 0; i < Math.Min(ScreenWidth, Width) * Scale * 4; i += 4)
+                for (int c = 0; c < 3; c++)
+                    _pixels[o + i + c] = (byte)((_pixels[o + i + c] * (255 - amount) + target * amount + 127) / 255);
+        }
+        ScreenVersion++;
+    }
+
     /// <summary><c>CS sx, sy, w, h, dx, dy, 40</c>: copies a rectangle skipping pixels of index 40.</summary>
     public void CopyKeyed(int sx, int sy, int w, int h, int dx, int dy)
     {

@@ -62,6 +62,12 @@ public sealed class PointerScript
         return _rest;
     }
 
+    /// <summary>
+    /// The pointer moved to a screen point without a button: the reads at rest answer it from now
+    /// on (the pickers' highlight and details follow it). A gesture under way is not affected.
+    /// </summary>
+    public void Move(int x, int y) => _rest = new MouseState(Sys3Int.Zero, (Sys3Int)x, (Sys3Int)y);
+
     /// <summary>Another input came between the pointer reads (a menu, a key): the pointer settles again.</summary>
     public void Interrupt() => _rests = 0;
 

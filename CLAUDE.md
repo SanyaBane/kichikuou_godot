@@ -43,8 +43,10 @@ G0 (the Godot screens, owner's decisions 8-11) is under way: part 1 ported `ﾛ�
 (`Strategy/LoadSaveScreen`, the save commands in `Script/ScriptContext.Save.cs` on an
 `ISaveStore`, `Script/SaveData.cs`); part 2 is the game driver `Strategy/GameSession` (boot,
 new game, load from the title or `COMMAND`, resume after the autosave, `&OVER` as `GameEnd`)
-and the view/input proxies; next the strategic presenter (screens drawn by hand, decision 9),
-then the Godot screens.
+and the view/input proxies; part 3 is the presenter `Kichikuou.Content/Strategy/GamePresenter`
+(decision 12: the scenes' drawing runs on the engine surface, map, windows, menus and pickers are
+drawn by hand over it from the semantic `ScreenEvent`s and GameState); next the Godot screens
+(part 4: title, game screen, audio, saves, smoke test).
 
 ## Layout
 
@@ -78,7 +80,10 @@ then the Godot screens.
   surface (3200×800 at 2× RGBA, `G`/`CC`/`CS`/`CF`), message text and selection windows;
   `Battles/BattlePresenter` draws every core event the way the original does
   ([docs/battle/screen-layout.md](docs/battle/screen-layout.md)), `FigtSelScreen` /
-  `BattleMenuScreen` are the mouse-driven input screens. Tests in
+  `BattleMenuScreen` are the mouse-driven input screens. `Strategy/GamePresenter` draws a whole
+  game: the stage (`Battle` shares it) and the hand-drawn layers (`TextBox`, `PickerView`, menus)
+  composed into `Screen`; a UI asks it what a click means (`MapWaiting`, `Picker.HitTest`,
+  `MenuHitTest`) and turns that into the script's inputs (`PointerScript`). Tests in
   `tests/Kichikuou.Content.Tests` (the golden part draws and plays every capture and resolves
   every text; `KICHIKUOU_SCENARIO_DIR` / `KICHIKUOU_EXTRACT_DIR` / `KICHIKUOU_GAME_DIR`
   override the local folders).

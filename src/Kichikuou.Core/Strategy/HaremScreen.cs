@@ -30,6 +30,7 @@ public sealed class HaremScreen(ScriptContext script, IScenarioSource scenario) 
     /// <summary><c>Sﾊｰﾚﾑ.ADV:1-45</c>: the screen, the list, the pick.</summary>
     public async Task RunAsync()
     {
+        await Script.ShowAsync(new PickerScreenEvent(PickerKind.Harem, Sys3Int.Zero, true));
         await EngineAsync("CC", 0, 0, 640, 400, 0, 400);
         if (State.StoryStage == 0)
             await EngineAsync("G", 694, 40);
@@ -53,6 +54,7 @@ public sealed class HaremScreen(ScriptContext script, IScenarioSource scenario) 
         await EngineAsync("ZM", 24);
         await EngineAsync("ZC", 1, 15);
         await EngineAsync("CC", 0, 400, 640, 400, 0, 0);
+        await Script.ShowAsync(new PickerScreenEvent(PickerKind.Harem, Sys3Int.Zero, false));
     }
 
     /// <summary>

@@ -61,6 +61,10 @@ part uses are in `IScriptInput`; a part's own decisions extend it (`IBattleInput
   line break (e.g. `MP 4, 18:` / `R` / `'fell in battle.'`, the name being a separate event),
   point at the `R`, or the break is lost. `ScenarioText.Read` rejects a reference that follows
   an `R` it would leave out.
+- Where a UI drawing a screen by hand must know what is open (the map wait, a picker, the save
+  screen, a battle), the port raises a semantic `ScreenEvent` (`Script/ScreenEvents.cs`) next to
+  the script's own events: open before the screen's first drawing command, closed after its last.
+  It has no statement in the script, so the differential comparisons skip it.
 - Presentation routines that also change state (e.g. the battle redraw moving cursors) are
   ported for their state effects, and emit an event for the visual part.
 

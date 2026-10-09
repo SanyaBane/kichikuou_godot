@@ -79,6 +79,8 @@ public sealed class LoadSaveScreen(ScriptContext script, IScenarioSource scenari
                 return;
         }
 
+        await Script.ShowAsync(new SaveScreenEvent(State.RetVal, true));
+        Sys3Int mode = State.RetVal;
         while (next != Next.Done)
         {
             next = next switch
@@ -91,6 +93,7 @@ public sealed class LoadSaveScreen(ScriptContext script, IScenarioSource scenari
                 _ => throw new InvalidOperationException($"No step {next}."),
             };
         }
+        await Script.ShowAsync(new SaveScreenEvent(mode, false));
     }
 
     /// <summary>
@@ -146,6 +149,7 @@ public sealed class LoadSaveScreen(ScriptContext script, IScenarioSource scenari
     /// <summary><c>L_00155</c> (<c>:59-81</c>): "Load Complete".</summary>
     private async Task LoadCompleteAsync()
     {
+        await Script.ShowAsync(new SaveScreenEvent(Sys3Int.Zero, false));
         State.Buf_Cur = 0;                                              // :60
         for (int i = 0; i < 20; i++)                                    // :61 NB Buf_Val, Tmp0021, 20
             State.Buffer[State.Buf_Cur.Value + i].Val = State.Memory.Var(VarTmp0021 + i);

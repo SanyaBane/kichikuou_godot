@@ -182,6 +182,7 @@ public sealed class CommandPhase(ScriptContext script)
     private async Task<bool> MapAsync()
     {
     Wait:                                                               // L_0012e
+        await Script.ShowAsync(new MapScreenEvent(true));
         await WaitForReleaseAsync();                                    // \L_003fe
         State.MapCamX = State.MapCamX - 320;                            // the camera as the view's corner
         State.MapCamY = State.MapCamY - 200;
@@ -210,6 +211,7 @@ public sealed class CommandPhase(ScriptContext script)
                     State.Tmp0022 = m.Y;
                 }
                 while (State.RetVal != 0);
+                await Script.ShowAsync(new MapScreenEvent(false));
                 return false;
             }
         }
@@ -254,7 +256,10 @@ public sealed class CommandPhase(ScriptContext script)
         {
             State.Tmp0030 = HitRadius(State.Prov_Cur);
             if (Hits(Prov.MapX, Prov.MapY))
+            {
+                await Script.ShowAsync(new MapScreenEvent(false));
                 return true;                                            // L_003f9 → L_00a95
+            }
             if (State.Prov_Cur >= State.Prov_Count)
                 break;
             State.Prov_Cur = State.Prov_Cur + 1;
@@ -269,6 +274,7 @@ public sealed class CommandPhase(ScriptContext script)
                 State.Prov_Cur = Dgn.Prov;
                 if (Prov.Owner == 1 || Dgn.Prov == 0)
                 {
+                    await Script.ShowAsync(new MapScreenEvent(false));
                     await Script.CallFileAsync("Cﾒｲｷｭｳ.ADV");
                     await Script.MusicAsync(State.CurrentBgm);          // @L_00129
                     goto Wait;

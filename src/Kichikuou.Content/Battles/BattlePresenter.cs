@@ -39,12 +39,18 @@ public sealed partial class BattlePresenter
 
     /// <summary>Creates a presenter with a fresh surface.</summary>
     public BattlePresenter(ScenarioText text, CgLibrary cgs, IGlyphRenderer glyphs, IBattleAudio? audio = null)
+        : this(text, cgs, glyphs, audio, new Surface())
+    {
+    }
+
+    /// <summary>Creates a presenter that draws on <paramref name="surface"/>, shared with the strategic screens.</summary>
+    public BattlePresenter(ScenarioText text, CgLibrary cgs, IGlyphRenderer glyphs, IBattleAudio? audio, Surface surface)
     {
         _text = text;
         _cgs = cgs;
         _glyphs = glyphs;
         _audio = audio;
-        Surface = new Surface();
+        Surface = surface;
         Writer = new MessageWriter(Surface, glyphs);
     }
 
@@ -79,6 +85,16 @@ public sealed partial class BattlePresenter
         State = state;
         DrawMapTiles();
         BlitMapView();
+    }
+
+    /// <summary>
+    /// Takes the game's state for a battle of a whole game: the map tiles and markers are drawn
+    /// off screen for the battle's backgrounds; the screen is left as the game drew it.
+    /// </summary>
+    public void Attach(GameState state)
+    {
+        State = state;
+        DrawMapTiles();
     }
 
     /// <summary>

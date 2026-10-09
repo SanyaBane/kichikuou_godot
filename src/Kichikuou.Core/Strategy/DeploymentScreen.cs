@@ -36,6 +36,7 @@ public sealed class DeploymentScreen(ScriptContext script, IScenarioSource scena
     /// <summary><c>Sﾌﾞﾀｲ.ADV:1-158</c>: the screen, then the party editing until it is sent or stopped.</summary>
     public async Task RunAsync()
     {
+        await Script.ShowAsync(new PickerScreenEvent(PickerKind.Deployment, State.Tmp0022, true));
         State.Bt_PlayerParty1 = 0;
         State.Bt_PlayerParty2 = 0;
         State.Bt_PlayerParty3 = 0;
@@ -67,12 +68,16 @@ public sealed class DeploymentScreen(ScriptContext script, IScenarioSource scena
                 if (State.CallArg == 502 && State.Ui_SquadMode != 2)
                     continue;
                 if (await GoAsync())
+                {
+                    await Script.ShowAsync(new PickerScreenEvent(PickerKind.Deployment, State.Ui_SquadMode, false));
                     return;
+                }
                 continue;
             }
             if (State.CallArg == 503)
             {
                 await StopAsync();
+                await Script.ShowAsync(new PickerScreenEvent(PickerKind.Deployment, State.Ui_SquadMode, false));
                 return;
             }
             if (State.CallArg == 999)
