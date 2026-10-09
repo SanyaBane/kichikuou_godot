@@ -50,6 +50,21 @@ public sealed class MessageSkip
         }
     }
 
+    /// <summary>
+    /// Ours (Option → MsgSkip Speeds Up Fades; on by default, for the launch, not saved): while
+    /// skipping (<see cref="IsSkipping"/>), the palette fades are cut short. xsystem35 never shortens
+    /// them (<c>ags_runEffect</c> waits without <c>KEYWAIT_SKIPPABLE</c>); off, they keep their length
+    /// as there. Display only: no fade changes what the script reads.
+    /// </summary>
+    public bool FastFades { get; set; } = true;
+
+    /// <summary>The longest a fade lasts while <see cref="FastFades"/> cuts it short.</summary>
+    public static readonly TimeSpan SkippedFade = TimeSpan.FromMilliseconds(150);
+
+    /// <summary>How long a fade of the engine's <paramref name="duration"/> lasts now (<see cref="FastFades"/>).</summary>
+    public TimeSpan FadeDuration(TimeSpan duration) =>
+        FastFades && IsSkipping && duration > SkippedFade ? SkippedFade : duration;
+
     /// <summary>Whether skipping is allowed now (false at a message not seen before; the menu item is greyed out).</summary>
     public bool Enabled { get; private set; } = true;
 

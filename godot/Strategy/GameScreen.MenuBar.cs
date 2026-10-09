@@ -4,7 +4,8 @@ using Kichikuou.Content.Screen;
 namespace Kichikuou.Game.Strategy;
 
 // xsystem35's window menu bar over the game (docs/window-menu.md): File (Save Screenshot, Restart,
-// Exit), Screen (Window, Fullscreen), Option (ours: Skip Unseen Text, Forget Seen Messages),
+// Exit), Screen (Window, Fullscreen), Option (ours: Skip Unseen Text, MsgSkip Speeds Up Fades,
+// Forget Seen Messages),
 // MsgSkip[off|on]; hot keys F1 and F4 as xsystem35's, Alt+R.
 public partial class GameScreen
 {
@@ -36,15 +37,23 @@ public partial class GameScreen
         PopupMenu options = null!;
         var option = Menu("Option",
             ("Skip Unseen Text", ToggleSkipUnseen),
+            ("MsgSkip Speeds Up Fades", ToggleFastFades),
             ("Forget Seen Messages...", ConfirmForgetSeen));
         options = option.GetPopup();
         options.SetItemAsCheckable(0, true);
         options.SetItemChecked(0, _skip.SkipUnseen);
+        options.SetItemAsCheckable(1, true);
+        options.SetItemChecked(1, _skip.FastFades);
         options.AddThemeColorOverride("font_disabled_color", new Color(0.55f, 0.55f, 0.55f));
         void ToggleSkipUnseen()
         {
             _skip.SkipUnseen = !_skip.SkipUnseen;
             options.SetItemChecked(0, _skip.SkipUnseen);
+        }
+        void ToggleFastFades()
+        {
+            _skip.FastFades = !_skip.FastFades;
+            options.SetItemChecked(1, _skip.FastFades);
         }
         row.AddChild(option);
         _skipItem = new Button();

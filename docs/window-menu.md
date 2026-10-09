@@ -97,7 +97,11 @@ web build (seen only) by an option.
   `ValueMessageEvent` marks its `ScriptRef` seen. **Option → Skip Unseen Text** (checked by
   default, `MSGSKIP_SKIP_UNSEEN`; for the launch, not saved): unseen messages are skipped too, as
   the owner's xsystem35 does; unchecked, an unseen message turns the skip off and greys it out
-  (`STOP_ON_UNSEEN`) until a seen one, as the web build does. **Option → Forget Seen
+  (`STOP_ON_UNSEEN`) until a seen one, as the web build does. **Option → MsgSkip Speeds Up
+  Fades** (ours, owner's request 2026-10-10; checked by default, for the launch, not saved):
+  while MsgSkip is on, a `PF`/`PW` fade lasts 150 ms at most (`MessageSkip.FadeDuration`);
+  unchecked, fades keep xsystem35's length while skipping too (`ags_runEffect` waits without
+  `KEYWAIT_SKIPPABLE`; `rate * 16 * 1000 / 60` ms). **Option → Forget Seen
   Messages...** (asks first) makes every message unseen again. The seen messages are one
   `File:Line` per line in `msgskip.txt` next to the save slots (`%APPDATA%\Godot\app_userdata\Kichikuou\saves`,
   `saves-auto` for `--auto`; deleting it with the game closed resets them too), exact where

@@ -20,6 +20,23 @@ public class MessageSkipTests
         Assert.False(skip.IsSkipping);
     }
 
+    /// <summary>Option → MsgSkip Speeds Up Fades (ours, on by default): only while skipping, and only shortening.</summary>
+    [Fact]
+    public void Fades_are_cut_short_only_while_skipping_with_the_option()
+    {
+        var skip = new MessageSkip([]);
+        var fade = TimeSpan.FromMilliseconds(1066);
+        Assert.True(skip.FastFades);
+        Assert.Equal(fade, skip.FadeDuration(fade));                      // not skipping: the engine's
+
+        skip.Activate(true);
+        Assert.Equal(MessageSkip.SkippedFade, skip.FadeDuration(fade));
+        Assert.Equal(TimeSpan.FromMilliseconds(16), skip.FadeDuration(TimeSpan.FromMilliseconds(16)));
+
+        skip.FastFades = false;
+        Assert.Equal(fade, skip.FadeDuration(fade));                      // as xsystem35
+    }
+
     [Fact]
     public void An_unseen_message_stops_skipping_and_disables_it_until_a_seen_one()
     {

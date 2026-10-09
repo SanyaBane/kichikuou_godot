@@ -324,10 +324,14 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             await FadeAsync(fade);
     }
 
-    /// <summary>Animates a palette fade over its <see cref="FadeRequest.Duration"/>, never skipped (the presenter already holds its end).</summary>
+    /// <summary>
+    /// Animates a palette fade over its <see cref="FadeRequest.Duration"/>, never skipped, unless
+    /// Option → MsgSkip Speeds Up Fades cuts it short while skipping (<see cref="MessageSkip.FadeDuration"/>);
+    /// the presenter already holds its end.
+    /// </summary>
     private async Task FadeAsync(FadeRequest fade)
     {
-        double seconds = fade.Duration.TotalSeconds;
+        double seconds = _skip.FadeDuration(fade.Duration).TotalSeconds;
         if (!_options.Fast && seconds > 0 && fade.From != fade.To)
         {
             var watch = Stopwatch.StartNew();
