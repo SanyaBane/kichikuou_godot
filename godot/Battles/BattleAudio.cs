@@ -89,8 +89,14 @@ public partial class BattleAudio : Node, IBattleAudio
         return stream;
     }
 
+    /// <summary>
+    /// <c>SS n</c>: the track already started goes on playing (xsystem35 <c>muscd_start</c> returns
+    /// at once for the current track, <c>music_cdrom.c:81-82</c>); the map loop sends <c>SS</c> after every command.
+    /// </summary>
     public void PlayMusic(int track)
     {
+        if (track != 0 && track == Track)
+            return;
         Track = track;
         _bgm.Stop();
         if (_music?.PathOf(track) is not { } path || !System.IO.File.Exists(path))

@@ -112,6 +112,29 @@ public class GamePresenterTests(ITestOutputHelper output)
         Assert.Equal(drawn, presenter.Screen.PixelAt(320, 100));
     }
 
+    /// <summary>
+    /// <c>M.ADV</c> 10 blinks the target mark after its selection sound (<c>PCMPLAY</c>): the sound
+    /// does not end the animation, and the first pause draws the mark at (<c>Tmp0025</c>, <c>Tmp0026</c>).
+    /// </summary>
+    [Fact]
+    public void The_map_mark_blinks_after_the_selection_sound()
+    {
+        var missing = Path.Combine(Path.GetTempPath(), "kichikuou-no-data");
+        var presenter = new GamePresenter(new ScenarioText(missing), new CgLibrary(missing), new BoxGlyphs());
+        var state = new GameState { Tmp0025 = 100, Tmp0026 = 120 };
+        presenter.Bind(state);
+        // The mark's cell off screen (CG 814 draws there; the player's files are not needed here).
+        presenter.Show(new EngineEvent("CF", [(Sys3Int)640, Sys3Int.Zero, (Sys3Int)32, (Sys3Int)32, (Sys3Int)15]));
+        var mark = presenter.Stage.PixelAt(640, 0);
+        Assert.NotEqual(mark, presenter.Stage.PixelAt(110, 130));
+
+        presenter.Show(new MapEvent(10));
+        presenter.Show(new SoundEvent(Sys3Int.Zero, (Sys3Int)109));
+        presenter.Show(new PauseEvent((Sys3Int)8));
+
+        Assert.Equal(mark, presenter.Stage.PixelAt(110, 130));
+    }
+
     private sealed record Run(GameSession Session, GamePresenter Presenter, Player Player, StoppingSaves Saves);
 
     /// <summary>A booted session whose view is a presenter and whose input plays through it.</summary>

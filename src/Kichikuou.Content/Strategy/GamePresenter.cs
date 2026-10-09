@@ -199,7 +199,8 @@ public sealed partial class GamePresenter
                 Battle.Show(scriptEvent);
             return;
         }
-        if (scriptEvent is not PauseEvent)
+        // A map animation's steps are the pauses after it; sound draws nothing (M 10 plays its sound before the blink).
+        if (scriptEvent is not (PauseEvent or SoundEvent or SoundPairEvent or MusicEvent))
             _mapAnimation = MapAnimation.None;
         if (_afterKey is { } after)
         {

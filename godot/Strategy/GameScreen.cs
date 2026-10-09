@@ -86,6 +86,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private int _shot;
 
     private TaskCompletionSource<ushort>? _key;
+    private bool _pausing;
     private TaskCompletionSource<int>? _menuAnswer;
     private FigtSelScreen? _sel;
     private BattleMenuScreen? _battleMenu;
@@ -416,12 +417,36 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 menu.TrySetResult(item);
             return;
         }
-        if (_key is not null)
+        if (left && !pressed && _leftHeld)
+        {
+            // The end of a press on the map, even while the drag pauses (Y 3) between its steps.
+            _leftHeld = false;
+            if (!_dragging)
+                _pointer.Click(_pressAt.X, _pressAt.Y);
+            else if (_mouse != _dragFrom)
+                _pointer.Drag(_dragFrom.X, _dragFrom.Y, _mouse.X, _mouse.Y);
+            return;
+        }
+        if (_key is not null && !_pausing)
         {
             if (pressed)
                 Key(left ? KeyReturn : KeySpace);
             return;
         }
+        if (_presenter.Picker is not null || _presenter.MapWaiting)
+        {
+            // The map and the pickers read the pointer: a press during one of their pauses is a gesture, not a key.
+            PointerButton(left, pressed);
+            return;
+        }
+        if (_key is not null && pressed)
+            Key(left ? KeyReturn : KeySpace);       // Y 3 elsewhere: a click cuts the pause short
+    }
+
+    /// <summary>A press or release while the map or a picker reads the pointer.</summary>
+    private void PointerButton(bool left, bool pressed)
+    {
+        var (x, y) = (_mouse.X, _mouse.Y);
         if (_presenter.Picker is { } picker)
         {
             if (!pressed)
@@ -453,15 +478,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 _leftHeld = true;
                 _dragging = false;
                 _pressAt = _dragFrom = _mouse;
-                return;
             }
-            if (!_leftHeld)
-                return;
-            _leftHeld = false;
-            if (!_dragging)
-                _pointer.Click(_pressAt.X, _pressAt.Y);
-            else if (_mouse != _dragFrom)
-                _pointer.Drag(_dragFrom.X, _dragFrom.Y, _mouse.X, _mouse.Y);
         }
     }
 
@@ -539,8 +556,16 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _pointer.Interrupt();
         _presenter.Flush();
         var key = KeyAsync();
-        await DelayAsync(_options.Fast ? 0 : ticks.Value * 0.016, key);
-        _key = null;
+        _pausing = true;
+        try
+        {
+            await DelayAsync(_options.Fast ? 0 : ticks.Value * 0.016, key);
+        }
+        finally
+        {
+            _pausing = false;
+            _key = null;
+        }
         return key.IsCompletedSuccessfully ? key.Result : Sys3Int.Zero;
     }
 

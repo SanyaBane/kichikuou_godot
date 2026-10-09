@@ -104,7 +104,8 @@ public class BattleSandboxTests(ITestOutputHelper output)
     /// <summary>Answers from the capture's input records, in order (draws come from the generator).</summary>
     private sealed class RecordedPlayer(GoldenCapture capture) : IBattleInput
     {
-        private readonly Queue<GoldenRecord> _inputs = new(capture.Records.Where(r => r is not RndRecord));
+        // The battle's pointer reads (release waits) and cursor records are passive, as in GoldenReplay.
+        private readonly Queue<GoldenRecord> _inputs = new(capture.Records.Where(r => r is not (RndRecord or MouseRecord or CursorRecord)));
 
         private T Next<T>() where T : GoldenRecord =>
             _inputs.Dequeue() as T ?? throw new InvalidOperationException($"Expected a {typeof(T).Name}.");
