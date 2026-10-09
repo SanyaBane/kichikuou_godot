@@ -41,8 +41,10 @@ runs in the router too (`FIGT_A`/`FIGT_B`/`FIGT`/`死亡捕獲`), so the game's 
 `Strategy/IGameInput` (battle + scenes; owner's decisions 6-7 in `docs/strategy/README.md`).
 G0 (the Godot screens, owner's decisions 8-11) is under way: part 1 ported `ﾛｰﾄﾞｾｰﾌﾞ`
 (`Strategy/LoadSaveScreen`, the save commands in `Script/ScriptContext.Save.cs` on an
-`ISaveStore`, `Script/SaveData.cs`); next the game driver (load → resume after the autosave),
-the strategic presenter, the Godot screens.
+`ISaveStore`, `Script/SaveData.cs`); part 2 is the game driver `Strategy/GameSession` (boot,
+new game, load from the title or `COMMAND`, resume after the autosave, `&OVER` as `GameEnd`)
+and the view/input proxies; next the strategic presenter (screens drawn by hand, decision 9),
+then the Godot screens.
 
 ## Layout
 

@@ -249,4 +249,42 @@ public class WeekLoopTests
 
         public ScriptStatement ReadStatement(ScriptRef at) => throw new InvalidOperationException(at.ToString());
     }
+
+    [Fact]
+    public async Task The_autosave_names_its_call_for_the_slot()
+    {
+        var rig = new WeekRig();
+        ScriptRef? during = null;
+        rig.Story.OnCall = (file, _) =>
+        {
+            if (file == "ﾛｰﾄﾞｾｰﾌﾞ.ADV")
+                during = rig.Script.SaveResume;
+            if (file == "COMMAND.ADV")
+                throw new OperationCanceledException();
+        };
+
+        await Assert.ThrowsAsync<OperationCanceledException>(rig.RunWeekAsync);
+
+        Assert.Equal(new ScriptRef("MAIN.ADV", 20), during);
+        Assert.Null(rig.Script.SaveResume);
+    }
+
+    [Fact]
+    public async Task A_load_goes_on_after_the_thieves_autosave_and_fails_for_the_Leazas_one()
+    {
+        var rig = new WeekRig();
+        rig.Story.OnCall = (file, _) =>
+        {
+            if (file == "ﾛｰﾄﾞｾｰﾌﾞ.ADV")
+                throw new OperationCanceledException();             // the next week's autosave
+        };
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() => new WeekLoop(rig.Script).ResumeAsync(new ScriptRef("MAIN.ADV", 20)));
+
+        Assert.Equal(["COMMAND.ADV", "ﾛｰﾄﾞｾｰﾌﾞ.ADV"], rig.Files);   // no autosave first: the week goes on from :21
+        Is(9, rig.State.Week);                                      // the next week began
+        var leazas = await Assert.ThrowsAsync<NotSupportedException>(() => new WeekLoop(rig.Script).ResumeAsync(new ScriptRef("MAIN.ADV", 83)));
+        Assert.StartsWith("MAIN.ADV:83", leazas.Message);
+        await Assert.ThrowsAsync<ArgumentException>(() => new WeekLoop(rig.Script).ResumeAsync(new ScriptRef("MAIN.ADV", 21)));
+    }
 }

@@ -93,6 +93,29 @@ public sealed class WeekLoop(ScriptContext script)
     private async Task ThievesWeekAsync()
     {
         await AutosaveAsync(20);                                        // :20 \L_01875
+        await ThievesWeekAfterAutosaveAsync();
+    }
+
+    /// <summary>
+    /// After a load: the rest of the week whose autosave the slot holds (the call at
+    /// <paramref name="autosave"/>, <c>MAIN.ADV:20</c> — the original comes back there from
+    /// <c>LD</c> through the save screen's "Load Complete", <see cref="LoadSaveScreen.ResumeAsync"/>,
+    /// which the caller runs first), then the loop for ever. The Leazas week's autosave
+    /// (<c>MAIN.ADV:83</c>) is not ported yet.
+    /// </summary>
+    public async Task ResumeAsync(ScriptRef autosave)
+    {
+        if (autosave == Ref(83))
+            throw new NotSupportedException($"{File}:83: the Leazas week (MAIN.ADV:83-1045) is not ported yet.");
+        if (autosave != Ref(20))
+            throw new ArgumentException($"{autosave} is not an autosave of {File}.", nameof(autosave));
+        await ThievesWeekAfterAutosaveAsync();
+        await RunAsync();
+    }
+
+    /// <summary><c>MAIN.ADV:21-80</c> — the thieves' week after its autosave, to "Then some time passed".</summary>
+    private async Task ThievesWeekAfterAutosaveAsync()
+    {
         SetDate();                                                      // :21 \L_01881
         if (State.BgmEnabled == 1)                                      // :22-25
         {

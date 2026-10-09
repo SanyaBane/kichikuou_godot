@@ -170,6 +170,98 @@ public class PrologueCommandTests(ITestOutputHelper output)
         Assert.Equal(25, game.State.Week.Value);                        // 23, Iﾊﾝﾗﾝ's + 1, the next week's + 1
     }
 
+    /// <summary>
+    /// A whole game through <see cref="GameSession"/>: the new game plays week 9 and stops as week
+    /// 10 autosaves; a second game loads slot 1 ("Auto") from the title and goes on from week 9's
+    /// autosave — "Load Complete", the week's date and banner, Sill's scene, the player phase — to
+    /// week 10's autosave.
+    /// </summary>
+    [Fact]
+    public async Task A_game_saved_at_the_start_of_a_week_loads_from_the_title_and_goes_on_from_there()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var saves = new WatchedSaves
+        {
+            Written = (slot, data) =>
+            {
+                if (slot == 1 && data.Variables[517] == 10)             // week 10's autosave (QD 1)
+                    throw new WeekOverException();
+            },
+        };
+        var first = await SessionAsync(saves);
+        first.Input.Menu(5);                                            // week 9: Turn END
+        await Assert.ThrowsAsync<WeekOverException>(() => first.Session.NewGameAsync());
+        Assert.Equal(9, saves.Read(1)!.Variables[517].Value);
+
+        var second = await SessionAsync(saves);
+        second.Input.Menu(5);                                           // week 9 again: Turn END
+        await Assert.ThrowsAsync<WeekOverException>(() => second.Session.LoadFromTitleAsync());
+
+        var events = second.View.Events;
+        int loaded = events.FindIndex(e => e is MessageEvent { Text: { File: "ﾛｰﾄﾞｾｰﾌﾞ.ADV", Line: 71 } });   // "Load Complete"
+        int banner = events.FindIndex(e => e is MessageEvent { Text: { File: "MAIN.ADV", Line: 35 } });        // "Rance's Thieves Phase"
+        int scene = events.FindIndex(e => e is MessageEvent { Text.File: "Iｼﾚｲﾌﾞ.ADV" });
+        Assert.True(loaded >= 0 && loaded < banner && banner < scene, $"Load Complete {loaded}, banner {banner}, Sill {scene}");
+        Assert.Equal(10, second.Session.State.Week.Value);
+        Assert.Equal(0, second.Input.Pending);
+    }
+
+    /// <summary>
+    /// Load/Save in the player phase, Load, "Auto": the session leaves the week for its start —
+    /// "Load Complete", the week's banner again — and the replayed week goes on to Turn END.
+    /// </summary>
+    [Fact]
+    public async Task Loading_from_the_command_menu_goes_back_to_the_start_of_the_week()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var saves = new WatchedSaves
+        {
+            Written = (slot, data) =>
+            {
+                if (slot == 1 && data.Variables[517] == 10)
+                    throw new WeekOverException();
+            },
+        };
+        var game = await SessionAsync(saves);
+        game.Input.Menu(4);                                             // week 9: Load/Save → Load → "Auto"
+        game.Input.Menu(5);                                             // week 9 again: Turn END
+
+        await Assert.ThrowsAsync<WeekOverException>(() => game.Session.NewGameAsync());
+
+        var events = game.View.Events;
+        Assert.Single(events, e => e is MessageEvent { Text: { File: "ﾛｰﾄﾞｾｰﾌﾞ.ADV", Line: 71 } });
+        Assert.Equal(2, events.Count(e => e is MessageEvent { Text: { File: "MAIN.ADV", Line: 35 } }));
+        Assert.Equal(10, game.Session.State.Week.Value);
+    }
+
+    [Fact]
+    public async Task Backing_out_of_the_load_list_returns_to_the_title()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var game = await SessionAsync(new WatchedSaves());               // no slots: every item lists them again…
+        game.Input.CancelMenus = true;                                   // …so the player cancels
+
+        Assert.Null(await game.Session.LoadFromTitleAsync());
+    }
+
+    private sealed record Played(GameSession Session, PlayerInput Input, RecordingView View);
+
+    /// <summary>A booted game session on the player's files (every draw 1; unported files recorded).</summary>
+    private static async Task<Played> SessionAsync(WatchedSaves saves)
+    {
+        var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
+        var state = new GameState();
+        var view = new RecordingView();
+        var input = new PlayerInput(state);
+        var session = new GameSession(
+            state, new QueuedRandom { DefaultToOne = true }, view, input, scripts, scripts, saves, new RecordingRules { State = state });
+        await session.BootAsync();
+        return new Played(session, input, view);
+    }
+
     private sealed record Game(
         GameState State, ScriptContext Script, PlayerInput Input, RecordingView View, RecordingRules Unported, QueuedRandom Random,
         WatchedSaves Saves);
@@ -267,6 +359,9 @@ public class PrologueCommandTests(ITestOutputHelper output)
 
         public int Pending => _gestures.Count + (_current is null ? 0 : 1);
 
+        /// <summary>Every menu is cancelled (right click).</summary>
+        public bool CancelMenus { get; set; }
+
         public void Province(int p) => Click(() => (state.Provs[p].MapX, state.Provs[p].MapY));
 
         public void Dungeon(int d) => Click(() => (state.Dgns[d].MapX, state.Dgns[d].MapY));
@@ -326,7 +421,7 @@ public class PrologueCommandTests(ITestOutputHelper output)
         public Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
         {
             _rests = 0;
-            int choice = items[0].At.File switch
+            int choice = CancelMenus ? 0 : items[0].At.File switch
             {
                 "COMMAND.ADV" => _commands.Dequeue(),
                 "Cﾃｷﾄｼ.ADV" => items.Select((item, i) => (item, i)).Single(x => x.item.At.Line == 70).i + 1,
