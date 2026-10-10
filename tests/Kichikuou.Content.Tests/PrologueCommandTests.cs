@@ -106,6 +106,48 @@ public class PrologueCommandTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// Story stage 1 (milestone 2, step 3): after the prologue's end (<c>Iﾊﾝﾗﾝ</c> gives the rebels
+    /// provinces 3-7) and the rebels' first turn, Rance attacks province 3 alone. <c>Cﾃｷﾄｼ</c>'s attack
+    /// calls the ported picker (answered with clicks), the rebels' defenders (<c>TCﾘｰｻﾞｽ2</c>) and the
+    /// battle, all through the router: nothing reaches the unported hooks.
+    /// </summary>
+    [Fact]
+    public async Task An_attack_on_the_rebels_is_fought_through_the_router()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var game = await NewGameAsync();
+        var state = game.State;
+        await game.Script.EventAsync("Iﾊﾝﾗﾝ.ADV", 1);
+        state.F_LeazasRebels_State = 2;                                 // the rebels' first turn (TCﾘｰｻﾞｽ.ADV:5-8)
+        game.Unported.Calls.Clear();
+        Assert.Equal(2, state.Provs[3].Owner.Value);
+        int gold = state.Gold.Value;
+        int expenses = (state.Units[1].DeployCost + state.Units[1].Troops / 300).Value;
+        game.Input.Province(3);
+        game.Input.Pick(1);                                             // Sﾌﾞﾀｲ: Rance,
+        game.Input.Button(1);                                           // Go
+        game.Input.Menu(-1);                                            // Turn END
+
+        await game.Script.CallFileAsync("COMMAND.ADV");
+
+        output.WriteLine($"result {state.Bt_Result}, owner of 3: {state.Provs[3].Owner}, gold {gold} -> {state.Gold}, " +
+                         $"enemy {state.Bt_EnemyParty1}/{state.Bt_EnemyParty2}/{state.Bt_EnemyParty3}/{state.Bt_EnemyParty4}, " +
+                         $"commands {game.Input.BattleCommands}, draws {game.Random.Draws.Count}");
+        Assert.Empty(game.Unported.Calls);
+        Assert.Equal(0, game.Input.Pending);
+        Assert.Equal(2, state.Ev_PhaseNation.Value);                    // TCﾘｰｻﾞｽ2 chose the defenders:
+        Assert.Equal([3, 5, 4], new[] { state.Bt_EnemyParty1, state.Bt_EnemyParty2, state.Bt_EnemyParty3 }.Select(c => c.Value));
+        Assert.True(game.Input.BattleCommands > 0);                     // army A, fought
+        Assert.Contains(game.View.Events, e => e is RoundHeaderEvent);
+        Assert.Equal(0, state.Bt_Kind.Value);
+        Assert.Equal(1, state.Bt_PlayerParty1.Value);
+        Assert.Equal(gold - expenses, state.Gold.Value);                // the war expenses
+        Assert.Equal(state.Bt_Result == 2 ? 1 : 2, state.Provs[3].Owner.Value);
+        Assert.Equal(state.Bt_Result == 2 ? 0 : 1, state.Ui_CmdAttackAvail.Value);
+    }
+
+    /// <summary>
     /// The new game enters the week loop (<c>&amp;#MAIN.ADV:</c>, routed by <see cref="StrategyRules"/>):
     /// week 9 opens with Sill's scene, week 10 with Soul's message, each week autosaves, refreshes
     /// the thieves and runs the player phase to Turn END.
@@ -328,7 +370,7 @@ public class PrologueCommandTests(ITestOutputHelper output)
     /// <summary>
     /// The player as pointer gestures placed when they begin (the camera moves between them), each
     /// after three reads at rest since the last gesture or other input, and menu answers by file:
-    /// the command menu from a queue, Pillage in <c>Cﾃｷﾄｼ</c>, the first item anywhere else.
+    /// the command menu from a queue, Attack or Pillage in <c>Cﾃｷﾄｼ</c>, the first item anywhere else.
     /// </summary>
     private sealed class PlayerInput(GameState state) : IGameInput
     {
@@ -379,7 +421,7 @@ public class PrologueCommandTests(ITestOutputHelper output)
         private void ScreenClick((int X, int Y) at) => _gestures.Enqueue(() =>
             [new((Sys3Int)16, (Sys3Int)at.X, (Sys3Int)at.Y), new(Sys3Int.Zero, (Sys3Int)at.X, (Sys3Int)at.Y)]);
 
-        /// <summary>A right click on the map, then the command menu's item.</summary>
+        /// <summary>A right click on the map, then the command menu's item (from the end if negative: -1 is the last).</summary>
         public void Menu(int item)
         {
             _gestures.Enqueue(() => [new((Sys3Int)32, (Sys3Int)5, (Sys3Int)6), new(Sys3Int.Zero, (Sys3Int)5, (Sys3Int)6)]);
@@ -427,11 +469,18 @@ public class PrologueCommandTests(ITestOutputHelper output)
             _rests = 0;
             int choice = CancelMenus ? 0 : items[0].At.File switch
             {
-                "COMMAND.ADV" => _commands.Dequeue(),
-                "Cﾃｷﾄｼ.ADV" => items.Select((item, i) => (item, i)).Single(x => x.item.At.Line == 70).i + 1,
+                "COMMAND.ADV" => Command(items.Count),
+                "Cﾃｷﾄｼ.ADV" => items.Select((item, i) => (item, i)).Single(x => x.item.At.Line is 64 or 70).i + 1,   // Attack, Pillage
                 _ => 1,
             };
             return Task.FromResult(choice);
+        }
+
+        /// <summary>The next command menu item, counted from the end if negative.</summary>
+        private int Command(int count)
+        {
+            int item = _commands.Dequeue();
+            return item < 0 ? count + 1 + item : item;
         }
 
         public Task<Sys3Int> WaitForKeyAsync()

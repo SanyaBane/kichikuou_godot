@@ -146,6 +146,95 @@ public abstract class CommandFile(ScriptContext script, string file, IScenarioSo
         await Script.ShowAsync(new MessageClearEvent());
     }
 
+    /// <summary>
+    /// <c>!Tmp0001 : a! … !Tmp0009 : 0!</c> — the priority list of commanders the army picker
+    /// reads, padded with 0.
+    /// </summary>
+    protected void SetPriority(params int[] commanders)
+    {
+        if (commanders.Length > 9)
+            throw new ArgumentException("A priority list has at most nine commanders.", nameof(commanders));
+        State.Tmp0001 = Entry(0);
+        State.Tmp0002 = Entry(1);
+        State.Tmp0003 = Entry(2);
+        State.Tmp0004 = Entry(3);
+        State.Tmp0005 = Entry(4);
+        State.Tmp0006 = Entry(5);
+        State.Tmp0007 = Entry(6);
+        State.Tmp0008 = Entry(7);
+        State.Tmp0009 = Entry(8);
+
+        Sys3Int Entry(int i) => i < commanders.Length ? (Sys3Int)commanders[i] : Sys3Int.Zero;
+    }
+
+    /// <summary>
+    /// The army picker of the nation template (<see cref="NationFile"/>; <c>TCﾘｰｻﾞｽ.ADV:119-178</c>,
+    /// <c>TCﾘｰｻﾞｽ2.ADV:85-144</c>, …, and <c>Cﾃｷﾄｼ.ADV:4265-4342</c>, <c>L_04f2a</c>): the party is
+    /// emptied, then every commander of the priority list in <c>Tmp0001-0009</c> who is alive
+    /// (<c>Cmdr_Status ≠ 0</c>) goes to the filler, in order; from the fourth entry on it stops as
+    /// soon as slot 4 is taken. Leaves <c>Cmdr_Cur</c> at the last entry tested.
+    /// </summary>
+    protected void PickArmy()
+    {
+        State.Bt_EnemyParty1 = 0;
+        State.Bt_EnemyParty2 = 0;
+        State.Bt_EnemyParty3 = 0;
+        State.Bt_EnemyParty4 = 0;
+        for (int k = 1; k <= 9; k++)
+        {
+            // QUIRK: NAT-12 — the 0 padding the list names commander record 0.
+            State.Cmdr_Cur = Priority(k);
+            if (Cmdr.Status != 0)
+                Fill();
+            if (k >= 4 && State.Bt_EnemyParty4 != 0)
+                return;
+        }
+    }
+
+    /// <summary><c>Tmp000k</c>, entry <paramref name="k"/> (1-9) of the priority list.</summary>
+    private Sys3Int Priority(int k) => k switch
+    {
+        1 => State.Tmp0001,
+        2 => State.Tmp0002,
+        3 => State.Tmp0003,
+        4 => State.Tmp0004,
+        5 => State.Tmp0005,
+        6 => State.Tmp0006,
+        7 => State.Tmp0007,
+        8 => State.Tmp0008,
+        _ => State.Tmp0009,
+    };
+
+    /// <summary>
+    /// The filler (<c>TCﾘｰｻﾞｽ.ADV:179-199</c>, <c>TCﾘｰｻﾞｽ2.ADV:145-162</c>, <c>Cﾃｷﾄｼ.ADV:4325-4342</c>,
+    /// …): <c>Cmdr_Cur</c> into the first empty party slot, unless the file's filter skips it.
+    /// </summary>
+    private void Fill()
+    {
+        if (SkipsCommander())
+            return;
+        if (State.Bt_EnemyParty1 == 0)
+        {
+            State.Bt_EnemyParty1 = State.Cmdr_Cur;
+            return;
+        }
+        if (State.Bt_EnemyParty2 == 0)
+        {
+            State.Bt_EnemyParty2 = State.Cmdr_Cur;
+            return;
+        }
+        if (State.Bt_EnemyParty3 == 0)
+        {
+            State.Bt_EnemyParty3 = State.Cmdr_Cur;
+            return;
+        }
+        if (State.Bt_EnemyParty4 == 0)
+            State.Bt_EnemyParty4 = State.Cmdr_Cur;
+    }
+
+    /// <summary>The army picker's filter: whether <c>Cmdr_Cur</c> stays out of the party (none by default).</summary>
+    protected virtual bool SkipsCommander() => false;
+
     /// <summary>A path of the file that a later part ports; reaching it fails.</summary>
     protected NotSupportedException NotPorted(int line, string what, string part) =>
         new($"{File}:{line}: {what} is not ported yet (part {part}).");

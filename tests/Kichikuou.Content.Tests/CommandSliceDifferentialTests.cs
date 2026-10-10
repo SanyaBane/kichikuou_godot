@@ -29,15 +29,62 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
     public Task The_enemy_city_runs_exactly_as_Cﾃｷﾄｼ() =>
         CompareAsync(
             "Cﾃｷﾄｼ.ADV",
-            (script, _) => new EnemyCityCommand(script).RunAsync(),
-            (state, rng) =>
-            {
-                state.Prov_Cur = (Sys3Int)(rng.Next(10) switch { < 6 => 33 + rng.Next(2), 6 => 77, _ => rng.Next(0, 100) });
-                state.N_ALChurch_Stage = (Sys3Int)rng.Next(0, 25);
-            },
+            (script, scenario) => new EnemyCityCommand(script, scenario).RunAsync(),
+            ShapeEnemyCity,
             Scribble,
             ["call Iﾄｳｿﾞｸ.ADV", "call ｵｰﾌﾟﾆﾝｸﾞ.ADV", "call Cﾆﾝｼﾞｬ.ADV", "call GAL.ADV", "call Gｶﾌｪ.ADV", "call Gﾏﾘｱ.ADV",
-             "text 28", "text 34", "text 4368", "text 4404", "item 52", "item 58", "item 64", "item 70", "item 76", "IZ", "M 0", "unported"]);
+             "text 28", "text 34", "text 4368", "text 4404", "item 52", "item 58", "item 64", "item 70", "item 76", "IZ", "M 0",
+             // the attack: Patton, the stage-2 gate, the picker, the defenders, the battle
+             "call Gﾊﾟｯﾄﾝ.ADV", "call Iｼﾚｲﾌﾞ.ADV", "call Sﾌﾞﾀｲ.ADV", "call TCﾘｰｻﾞｽ2.ADV", "call TJAPAN2.ADV", "call Tｾﾞｽ2.ADV",
+             "call Tﾍﾙﾏﾝ2.ADV", "call Tｹｲﾌﾞﾘｽ2.ADV", "call Gﾊﾟﾊﾟｲｱ.ADV", "call FIGT_A.ADV", "fleeing soldier",
+             "text 139", "text 162", "text 205", "text 231", "text 255", "text 281", "text 300", "text 311", "text 399",
+             // the refusals, the Land of Death and the barrier
+             "text 3834", "text 3868", "text 3953", "text 4014", "text 4064", "text 4138", "text 4256", "M 1", "M 3", "M 4",
+             "unported"],
+            cases: 5000);
+
+    /// <summary>
+    /// A city of the prologue now and then (Pillage, the AL Church), mostly an attack later on:
+    /// the rebels' provinces, the mountain passes and their neighbours, the Land of Death, the
+    /// stage-2 gate, JAPAN's 56; the flags of every refusal and exit, Patton's list alive or not.
+    /// </summary>
+    private static void ShapeEnemyCity(GameState state, Random rng)
+    {
+        state.Prov_Cur = (Sys3Int)(rng.Next(14) switch
+        {
+            < 3 => 33 + rng.Next(2),
+            3 => 77,
+            < 7 => rng.Next(3, 8),
+            7 => 31 + rng.Next(2),
+            8 => 82,
+            9 => 56,
+            10 => rng.Next(4) switch { 0 => 78, 1 => 89, 2 => 90, _ => 91 },
+            _ => rng.Next(0, 100),
+        });
+        state.N_ALChurch_Stage = (Sys3Int)rng.Next(0, 25);
+        state.StoryStage = (Sys3Int)(rng.Next(5) switch { 0 => 0, < 3 => 1, 3 => 2, _ => rng.Next(1, 5) });
+        if (state.StoryStage != 0 && state.Prov_Cur != 77)
+            state.Ev_CommandMode = Sys3Int.Zero;
+        var city = state.Provs[state.Prov_Cur];
+        city.Owner = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(0, 13) : state.StoryStage == 1 || rng.Next(3) == 0 ? 2 : rng.Next(4, 12));
+        foreach (int p in new[] { 30, 31, 32, 33, 34, 36 })
+            if (p != state.Prov_Cur.Value && rng.Next(3) == 0)
+                state.Provs[p].Owner = 1;
+        state.Ui_CmdAttackAvail = (Sys3Int)(rng.Next(6) == 0 ? 0 : 1);
+        state.F_LeazasRebels_State = (Sys3Int)(rng.Next(5) == 0 ? 1 : 2);
+        state.F_Helman_War = (Sys3Int)rng.Next(0, 3);
+        state.F_Zeth_War = (Sys3Int)rng.Next(0, 3);
+        state.F_DemonWar_Stage = (Sys3Int)(rng.Next(2) == 0 ? 12 : rng.Next(0, 13));
+        state.F_Patton_State = (Sys3Int)(rng.Next(4) switch { 0 => 10, 1 => 20, _ => rng.Next(0, 13) });
+        state.F_Aristoles_Helman2ndState = (Sys3Int)rng.Next(0, 12);
+        state.F_Japan_State = (Sys3Int)(rng.Next(3) switch { 0 => 1, 1 => 10, _ => rng.Next(0, 4) });
+        state.F_Zeth_State = (Sys3Int)rng.Next(0, 12);
+        state.F_ZethBarrier_State = (Sys3Int)rng.Next(0, 3);
+        state.F_Papaya_State = (Sys3Int)(rng.Next(6) == 0 ? 2 : rng.Next(0, 12));
+        state.F_Warg_State = (Sys3Int)rng.Next(0, 3);
+        foreach (int c in new[] { 32, 54, 55, 56, 57, 73 })
+            state.Cmdrs[c].Status = (Sys3Int)(rng.Next(3) == 0 ? 0 : 1);
+    }
 
     [Fact]
     public Task The_distant_city_runs_exactly_as_Cﾃｷﾄｼ2() =>
@@ -166,7 +213,8 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
 
     private delegate Task Port(ScriptContext script, ScenarioScripts scenario);
 
-    private async Task CompareAsync(string file, Port port, Action<GameState, Random> shape, Scribbler scribble, string[] expected)
+    private async Task CompareAsync(
+        string file, Port port, Action<GameState, Random> shape, Scribbler scribble, string[] expected, int cases = Cases)
     {
         if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, file)))
             return;
@@ -175,7 +223,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         var seen = new Dictionary<string, int>(StringComparer.Ordinal);
         int stopped = 0, unported = 0;
 
-        for (int seed = 1; seed <= Cases; seed++)
+        for (int seed = 1; seed <= cases; seed++)
         {
             var rng = new Random(seed);
             var state = RandomState(rng);
@@ -203,12 +251,12 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
                 seen[feature] = seen.GetValueOrDefault(feature) + 1;
         }
 
-        output.WriteLine($"{file}: {Cases} runs, {stopped} stopped by the input budget, {unported} reached an unported path");
+        output.WriteLine($"{file}: {cases} runs, {stopped} stopped by the input budget, {unported} reached an unported path");
         foreach (var (feature, count) in seen.OrderBy(f => f.Key, StringComparer.Ordinal))
             output.WriteLine($"  {feature}: {count}");
         var missed = expected.Where(e => !seen.ContainsKey(e)).ToList();
         Assert.True(missed.Count == 0, "never reached: " + string.Join(", ", missed));
-        Assert.True(unported < Cases / 3, $"{unported} of {Cases} runs reached an unported path");
+        Assert.True(unported < cases / 3, $"{unported} of {cases} runs reached an unported path");
     }
 
     private sealed record Run(GameState State, List<string> Log, bool Stopped, string? Unported);
@@ -262,7 +310,11 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         foreach (string entry in log)
         {
             if (entry.StartsWith("call ", StringComparison.Ordinal))
+            {
                 yield return entry[..entry.IndexOf(" entry", StringComparison.Ordinal)];
+                if (entry.StartsWith("call FIGT_A.ADV", StringComparison.Ordinal) && entry.EndsWith(" EParty1 73", StringComparison.Ordinal))
+                    yield return "fleeing soldier";                     // Cﾃｷﾄｼ.ADV:321-339 (the hooks never write 73)
+            }
             else if (entry.StartsWith("draw ", StringComparison.Ordinal))
                 yield return entry[..entry.IndexOf(" ->", StringComparison.Ordinal)];
             else if (entry.StartsWith("EngineEvent IZ", StringComparison.Ordinal))
@@ -399,6 +451,49 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             case "Cﾆﾝｼﾞｬ.ADV":
                 state.Ui_CityScouted = (Sys3Int)rng.Next(0, 2);
                 break;
+            case "Sﾌﾞﾀｲ.ADV":
+                {
+                    // The party picked (Go: deployed, paid) or nothing (Stop); the refusers often.
+                    int size = tired || rng.Next(5) == 0 ? 0 : rng.Next(1, 5);
+                    var party = new Sys3Int[4];
+                    for (int i = 0; i < size; i++)
+                    {
+                        party[i] = (Sys3Int)(rng.Next(6) switch { 0 => 29, 1 => 30, 2 => 37, 3 => 44, _ => rng.Next(1, 51) });
+                        state.Units[party[i]].Status = 2;
+                    }
+                    state.Bt_PlayerParty1 = party[0];
+                    state.Bt_PlayerParty2 = party[1];
+                    state.Bt_PlayerParty3 = party[2];
+                    state.Bt_PlayerParty4 = party[3];
+                    if (size > 0)
+                        state.Gold = (Sys3Int)rng.Next(0, 400);
+                    state.Tmp0021 = (Sys3Int)rng.Next(0, 30);
+                    break;
+                }
+            case "TCﾘｰｻﾞｽ2.ADV" or "TJAPAN2.ADV" or "Tｾﾞｽ2.ADV" or "Tﾍﾙﾏﾝ2.ADV" or "Tｹｲﾌﾞﾘｽ2.ADV" or "GAL.ADV":
+                // The defenders (none now and then); Zeth's barrier empties the party; Warg.
+                state.Bt_EnemyParty1 = (Sys3Int)(rng.Next(4) == 0 ? 0 : rng.Next(74, 200));
+                state.Bt_EnemyParty2 = (Sys3Int)rng.Next(0, 3);
+                state.Bt_EnemyRetreatMode = (Sys3Int)rng.Next(0, 5);
+                state.Bt_WallBonus = (Sys3Int)rng.Next(0, 3);
+                state.Cmdr_Cur = (Sys3Int)rng.Next(0, 221);
+                if (rng.Next(file == "Tｾﾞｽ2.ADV" ? 2 : 8) == 0)
+                    state.Bt_PlayerParty1 = Sys3Int.Zero;
+                if (rng.Next(file == "Tｹｲﾌﾞﾘｽ2.ADV" ? 2 : 8) == 0)
+                    state.F_Warg_State = (Sys3Int)rng.Next(0, 3);
+                if (rng.Next(4) == 0)
+                    state.F_Japan_State = (Sys3Int)rng.Next(0, 11);
+                break;
+            case "FIGT_A.ADV":
+                state.Bt_Kind = (Sys3Int)rng.Next(0, 4);
+                state.Bt_Result = (Sys3Int)rng.Next(0, 3);
+                if (rng.Next(2) == 0)
+                    state.Ui_CmdAttackAvail = Sys3Int.Zero;
+                state.Provs[state.Prov_Cur].Owner = (Sys3Int)rng.Next(0, 12);
+                break;
+            case "Gﾊﾟｯﾄﾝ.ADV":
+                state.F_Patton_State = (Sys3Int)(rng.Next(3) switch { 0 => 20, 1 => 10, _ => rng.Next(0, 13) });
+                break;
             default:
                 if (rng.Next(2) == 0)
                     state.Harem_ExpReward = (Sys3Int)rng.Next(0, 7);
@@ -425,7 +520,8 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             if (state.Ev_Entry != entry)
                 throw new InvalidOperationException($"{file}: Ev_Entry {state.Ev_Entry.Value}, entry {entry.Value}");
             log.Add($"call {file} entry {entry} RetVal {state.RetVal} CallArg {state.CallArg} Unit_Cur {state.Unit_Cur} "
-                + $"Prov_Cur {state.Prov_Cur} Dgn_Cur {state.Dgn_Cur} Tmp0001 {state.Tmp0001} Hist_Cur {state.Hist_Cur}");
+                + $"Prov_Cur {state.Prov_Cur} Dgn_Cur {state.Dgn_Cur} Tmp0001 {state.Tmp0001} Hist_Cur {state.Hist_Cur} "
+                + $"Tmp0021 {state.Tmp0021} Tmp0022 {state.Tmp0022} Bt_Kind {state.Bt_Kind} EParty1 {state.Bt_EnemyParty1}");
             var rng = new Random(seed * 1000 + ++Calls);
             scribble(file, state, rng, Tired);
             return Task.CompletedTask;

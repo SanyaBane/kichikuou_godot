@@ -33,7 +33,7 @@ F0 is done: the shared services (message windows, map, sound, scene calls) live 
 (the player phase) is `Strategy/CommandPhase`, reading the pointer as the script does
 (`ISceneInput`, `Script/PointerScript` for gesture-level UIs), and the prologue paths of the
 command files `Cﾃｷﾄｼ`, `Cﾃｷﾄｼ2`, `Cﾌﾞｶ`, `Cﾊｰﾚﾑ`, `Cﾒｲｷｭｳ` are ported (their later paths throw
-`NotSupportedException`), and so are the pickers `Sﾌﾞﾀｲ`, `Sﾌﾞｶ`, `Sﾊｰﾚﾑ`
+`NotSupportedException`; `Cﾃｷﾄｼ`'s attack came with milestone 2), and so are the pickers `Sﾌﾞﾀｲ`, `Sﾌﾞｶ`, `Sﾊｰﾚﾑ`
 (`Strategy/*Screen.cs` on `PickerScreen`), all routed by `Strategy/StrategyRules`. W2 is done:
 `MAIN.ADV` (the week loop) is `Strategy/WeekLoop`, the thieves' week and the Leazas week with
 every nation phase (the `T*` files are calls through the router). The battle
@@ -52,11 +52,12 @@ far") matches the port everywhere, and so do two more runs: top-left map clicks 
 path A's week-23 duel (EVT-08 confirmed); README open items 1-2 are answered.
 **Milestone 2** (owner's decision 13, 2026-10-10) is story stage 1 as a whole — the Leazas week,
 the rebels, every command a stage-1 player has, the dungeon search — in the order of
-docs/strategy/README.md, "Milestone 2" (with the sweep of what stage 1 reaches). Steps 0-2 are
+docs/strategy/README.md, "Milestone 2" (with the sweep of what stage 1 reaches). Steps 0-3 are
 done: every stage-1 file and every scene is a capture root, docs/golden-tests.md has the owner's
 stage-1 checklist, the Leazas week is ported (the W2 row), and so are the nation template with
-the rebels' turn `TCﾘｰｻﾞｽ` and their defender picker `TCﾘｰｻﾞｽ2` (the N1 row). Next: step 3, the
-attack in `Cﾃｷﾄｼ`.
+the rebels' turn `TCﾘｰｻﾞｽ` and their defender picker `TCﾘｰｻﾞｽ2` (the N1 row), and the attack in
+`Cﾃｷﾄｼ` (`EnemyCityCommand`, the P3 row; the independent cities still throw). Next: step 4,
+`Cﾌﾞｶ`'s troop menu and the whole `Cﾊｰﾚﾑ`.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
 
@@ -83,7 +84,8 @@ attack in `Cﾃｷﾄｼ`.
   `Strategy/` holds the strategic rule files: `WeekLoop` is `MAIN.ADV`, `WeeklyEvents` is `COM.ADV`, `CommandPhase` is
   `COMMAND.ADV`, `LoadSaveScreen` is `ﾛｰﾄﾞｾｰﾌﾞ.ADV`, the `*Command` classes (on `CommandFile`) are the `C*.ADV` command files, the
   `*Screen` classes (on `PickerScreen`) their `S*.ADV` pickers, the nation files sit on `NationFile` (the
-  template every `T*`/`T*2` repeats: priority list, picker, filler, troop sum, target walk) as
+  template every `T*`/`T*2` repeats: priority list, picker, filler, troop sum, target walk; the
+  army picker itself is on `CommandFile`, since `Cﾃｷﾄｼ` has a copy) as
   `*Turn` (`T*.ADV`, e.g. `RebelTurn`) and `*Defenders` (`T*2.ADV`), and `StrategyRules` routes calls of these files to their ports (the rule hooks of a `SceneRunner`).
 - `src/Kichikuou.Content` — engine-independent access to the player's own game data (never
   part of the repository): `ScenarioText` reads message texts from the decompiled scenario by

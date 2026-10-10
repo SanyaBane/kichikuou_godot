@@ -61,7 +61,7 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
         "MAIN.ADV" => new WeekLoop(Script, scenario).RunAsync(),
         "COM.ADV" => new WeeklyEvents(Script).RunAsync(),
         "COMMAND.ADV" => new CommandPhase(Script).RunAsync(),
-        "Cﾃｷﾄｼ.ADV" => new EnemyCityCommand(Script).RunAsync(),
+        "Cﾃｷﾄｼ.ADV" => new EnemyCityCommand(Script, scenario).RunAsync(),
         "Cﾃｷﾄｼ2.ADV" => new DistantCityCommand(Script).RunAsync(),
         "Cﾌﾞｶ.ADV" => new SubordinatesCommand(Script).RunAsync(),
         "Cﾊｰﾚﾑ.ADV" => new HaremCommand(Script).RunAsync(),

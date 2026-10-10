@@ -205,13 +205,259 @@ public class CommandSliceTests
             new ValueMessageComparer());
     }
 
-    [Fact]
-    public async Task The_attack_beyond_the_prologue_is_not_ported_yet()
+    /// <summary>A rebel province at stage 1 with the week's attack left; the picker sends <paramref name="party"/>.</summary>
+    private static SliceRig Attack(int province, params int[] party)
     {
-        var rig = EnemyCity(stage: 1, province: 40);
+        var rig = EnemyCity(stage: 1, province: province);
+        rig.State.Ui_CmdAttackAvail = 1;
+        rig.State.F_LeazasRebels_State = 2;
+        rig.State.Gold = 500;
         rig.Input.Choices.Enqueue(1);                                   // Attack
+        rig.On("Sﾌﾞﾀｲ.ADV", s =>
+        {
+            s.Bt_PlayerParty1 = (Sys3Int)(party.Length > 0 ? party[0] : 0);
+            s.Bt_PlayerParty2 = (Sys3Int)(party.Length > 1 ? party[1] : 0);
+            s.Bt_PlayerParty3 = (Sys3Int)(party.Length > 2 ? party[2] : 0);
+            s.Bt_PlayerParty4 = (Sys3Int)(party.Length > 3 ? party[3] : 0);
+            foreach (int u in party)
+                s.Units[u].Status = 2;
+            if (party.Length > 0)
+                s.Gold = s.Gold - (Sys3Int)30;                          // the war expenses
+        });
+        return rig;
+    }
+
+    [Fact]
+    public async Task An_attack_on_the_rebels_picks_the_party_lets_the_rebels_defend_and_fights()
+    {
+        var rig = Attack(5, 1, 6);
+        int pickerSize = 0, pickerMode = 0, battleKind = 0;
+        rig.On("Sﾌﾞﾀｲ.ADV", s => (pickerSize, pickerMode) = (s.Tmp0021.Value, s.Tmp0022.Value));
+        rig.On("TCﾘｰｻﾞｽ2.ADV", s => s.Bt_EnemyParty1 = 3);
+        rig.On("FIGT_A.ADV", s => battleKind = s.Bt_Kind.Value);
+
+        await new EnemyCityCommand(rig.Script).RunAsync();
+
+        Assert.Equal(["Sﾌﾞﾀｲ.ADV", "TCﾘｰｻﾞｽ2.ADV", "FIGT_A.ADV"], rig.Calls.Select(c => c.File));
+        Assert.Equal((4, 1), (pickerSize, pickerMode));                  // four units, attack mode
+        Is(1, (Sys3Int)battleKind);
+        Is(0, rig.State.Bt_Kind);
+        Is(5, rig.State.Bt_TargetProv);                                 // FIGT_A clears it, not Cﾃｷﾄｼ
+        Is(0, rig.State.Bt_WallBonus);
+        Assert.Equal([20, 4368, 28, 139, 162, 165, 311], rig.Lines);   // header, briefing, "advanced to"
+        Assert.Equal(new MapEvent(0), rig.View.Events[^1]);
+        Is(470, rig.State.Gold);
+    }
+
+    [Fact]
+    public async Task A_city_nobody_defends_is_taken_without_a_battle()
+    {
+        var rig = Attack(4, 1);
+        rig.State.Provs[4].MapX = 300;
+        rig.State.Provs[4].MapY = 200;
+        rig.On("TCﾘｰｻﾞｽ2.ADV", s => s.Bt_EnemyParty1 = 0);
+
+        await new EnemyCityCommand(rig.Script).RunAsync();
+
+        Assert.DoesNotContain(rig.Calls, c => c.File == "FIGT_A.ADV");
+        Is(1, rig.State.Provs[4].Owner);
+        Is(0, rig.State.Ui_CmdAttackAvail);
+        Is(300, rig.State.MapTargetX);
+        Is(200, rig.State.MapTargetY);
+        Assert.Equal([new MapEvent(0), new MapEvent(4), new MapEvent(3), new MapEvent(0)], rig.View.Events.OfType<MapEvent>());
+        Assert.Equal(399, rig.Lines[^1]);                               // "occupied … with no difficulties"
+    }
+
+    [Theory]
+    [InlineData(1, false, 1, 3868)]     // stage 1, not the rebels: the civil war comes first
+    [InlineData(4, true, 1, 4064)]      // stage 4: chaos
+    [InlineData(1, true, 0, 4014)]      // the week's conquest is made …
+    [InlineData(1, false, 0, 4014)]     // … which is tested before the civil war
+    public async Task Maris_refuses_an_attack_and_the_city_is_left(int stage, bool rebels, int attackLeft, int line)
+    {
+        var rig = Attack(5);
+        rig.State.StoryStage = (Sys3Int)stage;
+        rig.State.Ui_CmdAttackAvail = (Sys3Int)attackLeft;
+        rig.State.Provs[5].Owner = (Sys3Int)(rebels ? 2 : 4);
+
+        await new EnemyCityCommand(rig.Script).RunAsync();
+
+        Assert.Empty(rig.Calls);
+        Assert.Contains(line, rig.Lines);
+        Is(0, rig.State.Bt_TargetProv);
+        Assert.Equal([0, 332], rig.Windows.TakeLast(2));                // L_00205
+        Assert.Equal(new MapEvent(0), rig.View.Events[^1]);
+    }
+
+    [Fact]
+    public async Task The_rebels_first_week_has_the_army_disrupted()
+    {
+        var rig = Attack(3, 1);
+        rig.State.F_LeazasRebels_State = 1;
+
+        await new EnemyCityCommand(rig.Script).RunAsync();
+
+        Assert.Empty(rig.Calls);
+        Assert.Equal([20, 4368, 28, 139, 3834, 3841, 3846, 3853, 3858], rig.Lines);
+        Is(0, rig.State.Bt_TargetProv);
+    }
+
+    [Fact]
+    public async Task A_picker_left_without_a_party_comes_back_to_the_city_menu()
+    {
+        var rig = Attack(3);                                            // the picker sends nobody
+        rig.Input.Choices.Enqueue(3);                                   // Return
+
+        await new EnemyCityCommand(rig.Script).RunAsync();
+
+        Assert.Equal(["Sﾌﾞﾀｲ.ADV"], rig.Calls.Select(c => c.File));
+        Assert.Equal([[64, 76, 81], [64, 76, 81]], rig.MenuLines);
+        Assert.Equal([20, 4368, 28, 139, 162, 165, 20, 4368, 28], rig.Lines);   // the header again, not the picture
+        Assert.Equal([new WindowEvent(331, 777), new WindowEvent(331, 777)], rig.View.Events.OfType<WindowEvent>().Where(w => w.Op == 331));
+    }
+
+    [Fact]
+    public async Task Satella_refuses_to_fight_humans_and_the_party_stays_paid()
+    {
+        var rig = Attack(3, 1, 29);
+        rig.Input.Choices.Enqueue(3);                                   // Return
+
+        await new EnemyCityCommand(rig.Script).RunAsync();
+
+        Assert.Equal(["Sﾌﾞﾀｲ.ADV"], rig.Calls.Select(c => c.File));
+        Assert.Contains(272, rig.Lines);
+        Assert.Contains(281, rig.Lines);                                // "Satella refused to fight."
+        Is(1, rig.State.Units[1].Status);                               // back at status 1 …
+        Is(1, rig.State.Units[29].Status);
+        Is(470, rig.State.Gold);                                        // … the expenses not refunded (BFL-01)
+        Assert.Contains(new WindowEvent(311, 75), rig.View.Events);
+    }
+
+    [Fact]
+    public async Task At_56_while_at_war_with_JAPAN_Satella_and_Meglass_go_along()
+    {
+        var rig = Attack(56, 29, 30);
+        rig.State.StoryStage = 2;
+        rig.State.Provs[56].Owner = 6;
+        rig.State.F_Japan_State = 1;
+        rig.On("TJAPAN2.ADV", s => s.Bt_EnemyParty1 = 75);
+
+        await new EnemyCityCommand(rig.Script).RunAsync();
+
+        Assert.Equal(["Sﾌﾞﾀｲ.ADV", "TJAPAN2.ADV", "FIGT_A.ADV"], rig.Calls.Select(c => c.File));
+    }
+
+    [Theory]
+    [InlineData(false, 1)]
+    [InlineData(true, 4)]
+    public async Task A_mountain_pass_lets_one_unit_through_unless_a_neighbour_is_held(bool neighbourHeld, int size)
+    {
+        var rig = Attack(32);
+        rig.State.StoryStage = 2;
+        rig.State.Provs[32].Owner = 4;
+        rig.State.Provs[34].Owner = (Sys3Int)(neighbourHeld ? 1 : 4);
+        rig.State.Tmp0030 = 7;
+        int pickerSize = 0;
+        rig.On("Sﾌﾞﾀｲ.ADV", s => pickerSize = s.Tmp0021.Value);
+        rig.Input.Choices.Enqueue(3);                                   // Return after the cancelled picker
+
+        await new EnemyCityCommand(rig.Script).RunAsync();
+
+        Assert.Equal(size, pickerSize);
+        Assert.Equal(!neighbourHeld, rig.Lines.Contains(205));          // "only one unit can attack"
+        Is(32, rig.State.Prov_Cur);
+        Is(7, rig.State.Tmp0030);                                       // the scratch saved around the speech
+    }
+
+    [Fact]
+    public async Task Patton_defends_with_his_own_four_and_Aristoles_once_he_sided_with_him()
+    {
+        var rig = Attack(50, 1);
+        rig.State.StoryStage = 2;
+        rig.State.Provs[50].Owner = 5;
+        rig.State.F_Aristoles_Helman2ndState = 10;
+        rig.State.Bt_EnemyRetreatMode = 4;
+        foreach (int c in new[] { 54, 56, 57, 32 })
+            rig.State.Cmdrs[c].Status = 1;
+        Sys3Int[] party = [];
+        rig.On("FIGT_A.ADV", s => party = [s.Bt_EnemyParty1, s.Bt_EnemyParty2, s.Bt_EnemyParty3, s.Bt_EnemyParty4]);
+
+        await new EnemyCityCommand(rig.Script).RunAsync();
+
+        Assert.Equal([54, 56, 57, 32], party.Select(c => c.Value));     // 55 is dead
+        Is(1, rig.State.Bt_EnemyRetreatMode);
+    }
+
+    [Fact]
+    public async Task The_JAPAN_remnant_is_a_single_fleeing_soldier_named_from_the_players_files()
+    {
+        var rig = Attack(60, 1);
+        rig.State.StoryStage = 2;
+        rig.State.Provs[60].Owner = 6;
+        rig.State.F_Japan_State = 10;
+        rig.State.Cmdr_StrBase = 400;
+        rig.State.Cmdrs[73].MaxHP = 9;
+        rig.State.Cmdrs[73].MaxTroops = 300;
+        var scenario = new LiteralSource(new Dictionary<int, (int Slot, string Text)>
+        {
+            [324] = (10, "Fleeing Soldier"),
+            [334] = (4, "Fleeing Soldier"),
+            [336] = (5, "Foot Soldiers"),
+        });
+
+        await new EnemyCityCommand(rig.Script, scenario).RunAsync();
+
+        Assert.Equal(["Sﾌﾞﾀｲ.ADV", "FIGT_A.ADV"], rig.Calls.Select(c => c.File));
+        Is(73, rig.State.Bt_EnemyParty1);
+        Is(1, rig.State.Cmdrs[73].Status);
+        Is(9, rig.State.Cmdrs[73].HP);
+        Is(300, rig.State.Cmdrs[73].Troops);
+        Assert.Equal("Fleeing Soldier", rig.State.Strings[10]);
+        Assert.Equal("Fleeing Soldier", rig.State.Strings[400 + 72 * 3]);
+        Assert.Equal("Foot Soldiers", rig.State.Strings[400 + 72 * 3 + 1]);
+    }
+
+    [Theory]
+    [InlineData(0, 4156)]           // the first time: the talk about the barrier at the castle
+    [InlineData(1, 4138)]           // afterwards: the short report
+    public async Task Zeths_barrier_sends_the_army_back_without_a_refund(int barrier, int line)
+    {
+        var rig = Attack(66, 1);
+        rig.State.StoryStage = 2;
+        rig.State.Provs[66].Owner = 7;
+        rig.State.F_ZethBarrier_State = (Sys3Int)barrier;
+        rig.State.F_Papaya_State = 2;
+        rig.On("Tｾﾞｽ2.ADV", s => s.Bt_PlayerParty1 = 0);
+
+        await new EnemyCityCommand(rig.Script).RunAsync();
+
+        Assert.Equal(["Sﾌﾞﾀｲ.ADV", "Tｾﾞｽ2.ADV"], rig.Calls.Select(c => c.File));
+        Assert.Contains(line, rig.Lines);
+        Is(1, rig.State.F_ZethBarrier_State);
+        Is(1, rig.State.F_Papaya_State);
+        Is(2, rig.State.Units[1].Status);                               // still deployed (BFL-01)
+        Is(1, rig.State.Ui_CmdAttackAvail);
+    }
+
+    [Fact]
+    public async Task An_independent_city_is_not_ported_yet()
+    {
+        var rig = Attack(20, 1);
+        rig.State.StoryStage = 2;
+        rig.State.Provs[20].Owner = 3;
 
         await Assert.ThrowsAsync<NotSupportedException>(() => new EnemyCityCommand(rig.Script).RunAsync());
+    }
+
+    /// <summary>The <c>MS n, "text"</c> statements a test hands a file at given lines of <c>Cﾃｷﾄｼ.ADV</c>.</summary>
+    private sealed class LiteralSource(Dictionary<int, (int Slot, string Text)> literals) : IScenarioSource
+    {
+        public IReadOnlyList<ScriptStatement> ReadFile(string file) => throw new InvalidOperationException($"No file {file}.");
+
+        public ScriptStatement ReadStatement(ScriptRef at) =>
+            literals.TryGetValue(at.Line, out var l)
+                ? new SetStringStatement(at, l.Slot, l.Text)
+                : throw new InvalidOperationException($"No literal at {at}.");
     }
 
     [Fact]
