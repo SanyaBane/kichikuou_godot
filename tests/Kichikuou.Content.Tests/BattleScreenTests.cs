@@ -416,11 +416,15 @@ public class BattlePresenterGameDataTests
 
     private sealed class MouseInput(BattlePresenter presenter) : IBattleInput
     {
+        private int _keys, _attackMenus;
+
         public int Selections { get; private set; }
         public int Popups { get; private set; }
 
         public Task<Sys3Int> WaitForKeyAsync()
         {
+            if (++_keys > 20000)
+                throw new InvalidOperationException("The battle does not end.");
             presenter.Flush();
             presenter.AfterKey();
             return Task.FromResult((Sys3Int)16);
@@ -450,13 +454,21 @@ public class BattlePresenterGameDataTests
             return Task.FromResult(screen.Result ?? throw new InvalidOperationException("Defend did not answer."));
         }
 
+        /// <summary>
+        /// The first item; but an enemy attack offered again (the interception was stopped or refused,
+        /// <c>FIGT_B.ADV:84-163</c>) is answered with Abandon City, since intercepting again would loop.
+        /// </summary>
         public Task<Sys3Int?> ChooseAsync(BattleMenu menu)
         {
             presenter.Flush();
+            int item = menu.Kind == BattleMenuKind.EnemyAttackResponse && ++_attackMenus > 1
+                ? menu.Options.ToList().FindIndex(o => o.Code == 3)
+                : 0;
+            int y = 55 + item * 18;   // selection window 1 at (250, 50), an item every 18 dots
             var screen = new BattleMenuScreen(presenter, menu);
-            screen.MouseMove(260, 55);
-            screen.MouseDown(MouseButton.Left, 260, 55);
-            screen.MouseUp(MouseButton.Left, 260, 55);
+            screen.MouseMove(260, y);
+            screen.MouseDown(MouseButton.Left, 260, y);
+            screen.MouseUp(MouseButton.Left, 260, y);
             Assert.True(screen.IsDone);
             return Task.FromResult(screen.Result);
         }

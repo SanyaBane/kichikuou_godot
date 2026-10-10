@@ -64,9 +64,14 @@ public class BattleSandboxTests(ITestOutputHelper output)
         public Task ShowAsync(ScriptEvent scriptEvent) => Task.CompletedTask;
     }
 
-    /// <summary>Attacks the first target it may, else defends; first menu item; keys 0.</summary>
+    /// <summary>
+    /// Attacks the first target it may, else defends; first menu item, but Abandon City when an enemy
+    /// attack is offered again (intercepting again would loop); keys 0.
+    /// </summary>
     private sealed class AutoPlayer : IBattleInput
     {
+        private int _attackMenus;
+
         public int Inputs { get; private set; }
 
         private void Count()
@@ -95,6 +100,8 @@ public class BattleSandboxTests(ITestOutputHelper output)
         public Task<Sys3Int?> ChooseAsync(BattleMenu menu)
         {
             Count();
+            if (menu.Kind == BattleMenuKind.EnemyAttackResponse && ++_attackMenus > 1)
+                return Task.FromResult<Sys3Int?>((Sys3Int)3);
             return Task.FromResult<Sys3Int?>(menu.Options[0].Code);
         }
 
