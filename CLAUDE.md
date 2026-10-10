@@ -79,7 +79,8 @@ ported (`Strategy/ZethDefenders`, `Strategy/ZethTurn`). Step 3 (the gate) is don
 ported (`Strategy/KayblisDefenders`). Step 4 (the independent cities, P4, `Cﾃｷﾄｼ.ADV:429-3828`) is
 done, so `Cﾃｷﾄｼ` is ported whole: the cities' exits, the menu and Use Force are in
 `Strategy/EnemyCityCommand.Cities.cs`, the negotiations (`:604-3648`) in `Strategy/EnemyCityCommand.Talks.cs`.
-Step 5 (JAPAN: `TJAPAN2`, `TJAPAN`) is next.
+Step 5 (JAPAN) is under way: `TJAPAN2` is ported (`Strategy/JapanDefenders`); `TJAPAN` (the nation
+turn) is next.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
 

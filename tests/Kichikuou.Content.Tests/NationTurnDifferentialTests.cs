@@ -10,7 +10,7 @@ namespace Kichikuou.Content.Tests;
 
 /// <summary>
 /// The hand-ported nation files (<see cref="RebelTurn"/>, <see cref="RebelDefenders"/>,
-/// <see cref="HelmanTurn"/>, <see cref="HelmanDefenders"/>, <see cref="PattonTurn"/>, <see cref="ZethTurn"/>, <see cref="ZethDefenders"/>, <see cref="KayblisDefenders"/>, on the template
+/// <see cref="HelmanTurn"/>, <see cref="HelmanDefenders"/>, <see cref="PattonTurn"/>, <see cref="ZethTurn"/>, <see cref="ZethDefenders"/>, <see cref="KayblisDefenders"/>, <see cref="JapanDefenders"/>, on the template
 /// <see cref="NationFile"/>) against the files
 /// themselves run from the player's decompile by <see cref="SceneRunner"/>, on random states: both
 /// runs must call the same files with the same <c>Ev_Entry</c> and the same party, draw the same
@@ -464,6 +464,57 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
              "Kaybwan", "Kaybnyan", "Kesselring", "Camilla", "Camilla raised", "Kayblis", "Medusa", "Monster Generals",
              "Monster Generals with walls", "attacked again", "a general without a draw"],
             ScribbleKayblis);
+
+    [Fact]
+    public Task The_JAPAN_defenders_are_picked_exactly_as_TJAPAN2() =>
+        CompareAsync(
+            "TJAPAN2.ADV",
+            (script, scenario) => new JapanDefenders(script, scenario).RunAsync(),
+            AimAtJapan,
+            JapanDefenderFeatures,
+            ["Nagasaki", "Nagasaki too weak", "Osaka", "strongest 1", "strongest 2", "strongest 3", "too weak",
+             "retreat mode 4", "war over an alliance"]);
+
+    /// <summary>
+    /// Nagasaki (55), Osaka (56) or another province, with walls and battle area; JAPAN's commanders
+    /// (Nobunaga Oda (72) to Isoroku Yamamoto (82)) alive or not, their troops around the thresholds
+    /// (10 at Nagasaki, 500 elsewhere), now and then all alike (ties between the lists);
+    /// <c>F_Japan_State</c> 0-3, a stale retreat mode.
+    /// </summary>
+    private static void AimAtJapan(GameState state, Random rng)
+    {
+        state.Prov_Cur = (Sys3Int)(rng.Next(3) switch { 0 => 55, 1 => 56, _ => rng.Next(0, 101) });
+        state.Provs[state.Prov_Cur].BattleArea = (Sys3Int)rng.Next(0, 1000);
+        state.Provs[state.Prov_Cur].Defense = (Sys3Int)rng.Next(0, 30);
+        int scale = rng.Next(4) switch { 0 => 4, 1 => 40, _ => 300 };
+        int same = rng.Next(5) == 0 ? rng.Next(0, scale) : -1;
+        for (int c = 72; c <= 82; c++)
+        {
+            state.Cmdrs[c].Status = (Sys3Int)(rng.Next(4) == 0 ? 0 : 1);
+            state.Cmdrs[c].Troops = (Sys3Int)(same >= 0 ? same : rng.Next(0, scale));
+        }
+        state.F_Japan_State = (Sys3Int)rng.Next(0, 4);
+        state.Bt_EnemyRetreatMode = (Sys3Int)rng.Next(0, 60);
+    }
+
+    private static IEnumerable<string> JapanDefenderFeatures(GameState before, GameState after, GameState first, List<string> log)
+    {
+        if (before.F_Japan_State is { Value: 2 or 3 } && after.F_Japan_State == 1)
+            yield return "war over an alliance";
+        int prov = before.Prov_Cur.Value;
+        if (prov == 55)
+        {
+            yield return after.CallArg < 10 ? "Nagasaki too weak" : "Nagasaki";
+            yield break;
+        }
+        if (prov == 56)
+        {
+            yield return "Osaka";
+            yield break;
+        }
+        yield return $"strongest {after.Tmp0022}";
+        yield return after.CallArg < 500 ? "too weak" : "retreat mode 4";
+    }
 
     /// <summary>Kayblis's named commanders: Camilla (91), Kesselring (133), Medusa (134), Kayblis (135), the Houses (159-164), Monster Generals (181-183).</summary>
     private static readonly int[] KayblisCommanders = [91, 133, 134, 135, .. Enumerable.Range(159, 6), 181, 182, 183];
