@@ -73,6 +73,7 @@ reaching an unported path). **Milestone 3** (owner's decision 14, 2026-10-10) is
 a whole, up to the gate attack that starts stage 3: the sweep is docs/strategy/stage-2-sweep.md,
 the order docs/strategy/README.md, "Milestone 3" (Helman, Zeth, the gate, the independent cities,
 JAPAN, God's Door), the owner's capture checklist docs/golden-tests.md, "Capturing stage 2".
+Step 1 (Helman) is under way: `Tﾍﾙﾏﾝ2` is ported (`Strategy/HelmanDefenders`); `Tﾍﾙﾏﾝ` and `Tﾊﾟｯﾄﾝ` are next.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
 

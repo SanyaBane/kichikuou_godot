@@ -9,7 +9,8 @@ namespace Kichikuou.Content.Tests;
 /// <summary>
 /// The owner's captures of the nation turns and the defender pickers (group <c>nations</c>)
 /// replayed through their ports, which read the army name (<c>MS 10</c>) from the player's files:
-/// <c>TCﾘｰｻﾞｽ</c> (<see cref="RebelTurn"/>) and <c>TCﾘｰｻﾞｽ2</c> (<see cref="RebelDefenders"/>);
+/// <c>TCﾘｰｻﾞｽ</c> (<see cref="RebelTurn"/>), <c>TCﾘｰｻﾞｽ2</c> (<see cref="RebelDefenders"/>) and
+/// <c>Tﾍﾙﾏﾝ2</c> (<see cref="HelmanDefenders"/>);
 /// <c>FIGT_B</c> and the scenes stay hooks. Captures of nations not ported yet are listed and left
 /// to <c>GoldenPendingTests</c>. Skipped while there are none (or without the decompile).
 /// </summary>
@@ -20,6 +21,7 @@ public sealed class NationReplayTests(ITestOutputHelper output)
     {
         "TCﾘｰｻﾞｽ.ADV" => s => new RebelTurn(s, scripts).RunAsync(),
         "TCﾘｰｻﾞｽ2.ADV" => s => new RebelDefenders(s, scripts).RunAsync(),
+        "Tﾍﾙﾏﾝ2.ADV" => s => new HelmanDefenders(s, scripts).RunAsync(),
         _ => null,
     };
 

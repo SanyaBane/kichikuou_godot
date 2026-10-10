@@ -9,11 +9,11 @@ using Xunit.Abstractions;
 namespace Kichikuou.Content.Tests;
 
 /// <summary>
-/// The hand-ported nation files (<see cref="RebelTurn"/>, <see cref="RebelDefenders"/>, on the
-/// template <see cref="NationFile"/>) against the files themselves run from the player's decompile
-/// by <see cref="SceneRunner"/>, on random states: both runs must call the same files with the
-/// same <c>Ev_Entry</c> and the same party, draw the same rolls (none), show the same events and
-/// leave the same memory. Every other file (<c>FIGT_B</c>, <c>Gｴｸｽ</c>) is a hook that scribbles
+/// The hand-ported nation files (<see cref="RebelTurn"/>, <see cref="RebelDefenders"/>,
+/// <see cref="HelmanDefenders"/>, on the template <see cref="NationFile"/>) against the files
+/// themselves run from the player's decompile by <see cref="SceneRunner"/>, on random states: both
+/// runs must call the same files with the same <c>Ev_Entry</c> and the same party, draw the same
+/// rolls, show the same events and leave the same memory. Every other file (<c>FIGT_B</c>, the scenes) is a hook that scribbles
 /// over what a battle or a scene may change — the commanders, the owners, the cursors, scratch,
 /// the retreat mode — and now and then ends the game by a jump. Skipped without the decompile.
 /// </summary>
@@ -45,6 +45,136 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
             ["B at 7", "B at 8", "B elsewhere", "A at 2", "A at 3", "A at 4", "C at 5", "C at 6", "stale B", "stale A",
              "empty party", "full party", "walls"]);
 
+    [Fact]
+    public Task The_Helman_defenders_are_picked_exactly_as_Tﾍﾙﾏﾝ2() =>
+        CompareAsync(
+            "Tﾍﾙﾏﾝ2.ADV",
+            (script, scenario) => new HelmanDefenders(script, scenario).RunAsync(),
+            AimAtHelman,
+            HelmanDefenderFeatures,
+            ["call Gｽﾃｯｾﾙ.ADV", "call Gｼｰﾗ.ADV 1", "call Gｼｰﾗ.ADV 2", "called off", "call Gﾈﾛ.ADV", "call Gﾊﾟｯﾄﾝ.ADV",
+             "call Gﾙｰﾍﾞﾗﾝ.ADV", "1st army", "1st army, first order", "Laumiere alone", "2nd army", "3rd army",
+             "3rd army with militia", "4th army", "5th army", "Lelyukov alone", "Ruberan", "militia", "leader dead",
+             "Mineva met", "pass against one unit", "filtered"],
+            ScribbleHelman);
+
+    /// <summary>
+    /// Helman's provinces, mostly, held by Helman (now and then by Patton); the war on or won, the
+    /// Sheila, Mineva, Lelyukov, Nero, Cream, Rolex, Patton and Ruberan flags at their tested values;
+    /// commanders 22-59 alive or not with troops around the filler's 190, and Civilian Generals
+    /// 58 and 59 with a maximum HP; the walls and battle area of the province; the second party slot.
+    /// </summary>
+    private static void AimAtHelman(GameState state, Random rng)
+    {
+        int[] provinces = [2, 13, 30, 31, 32, 34, 35, 36, 37, 38, 39, 40, 41, 42, 44, 45, 46, 47, 48];
+        state.Prov_Cur = (Sys3Int)(rng.Next(8) == 0 ? rng.Next(0, 101) : provinces[rng.Next(provinces.Length)]);
+        state.Provs[state.Prov_Cur].Owner = (Sys3Int)(rng.Next(10) == 0 ? 5 : 4);
+        state.Provs[state.Prov_Cur].BattleArea = (Sys3Int)rng.Next(0, 1000);
+        state.Provs[state.Prov_Cur].Defense = (Sys3Int)rng.Next(0, 30);
+        state.F_StesselSheila_Stage = (Sys3Int)(rng.Next(3) == 0 ? 0 : 1);
+        state.F_Helman_War = (Sys3Int)(rng.Next(5) == 0 ? 2 : 1);
+        state.F_Sheila_State = (Sys3Int)rng.Next(0, 2);
+        state.F_Sheila_Flag = (Sys3Int)rng.Next(0, 2);
+        state.Units[43].Status = (Sys3Int)rng.Next(0, 2);
+        state.F_Mineva_State = (Sys3Int)rng.Next(0, 2);
+        state.F_Lelyukov_State = (Sys3Int)(rng.Next(3) switch { 0 => 1, 1 => 10, _ => 0 });
+        state.F_Nero_Helman4thState = (Sys3Int)(rng.Next(3) switch { 0 => 100, 1 => 0, _ => rng.Next(1, 7) });
+        state.F_Cream_State = (Sys3Int)rng.Next(0, 2);
+        state.F_Rolex_State = (Sys3Int)rng.Next(0, 6);
+        state.F_Patton_State = (Sys3Int)(rng.Next(3) switch { 0 => 10, 1 => 20, _ => 0 });
+        state.F_Ruberan_State = (Sys3Int)rng.Next(0, 2);
+        state.Bt_PlayerParty2 = (Sys3Int)(rng.Next(2) == 0 ? 0 : rng.Next(1, 50));
+        for (int c = 22; c <= 59; c++)
+        {
+            var cmdr = state.Cmdrs[c];
+            cmdr.Status = (Sys3Int)(rng.Next(5) == 0 ? 0 : rng.Next(1, 3));
+            cmdr.Troops = (Sys3Int)(rng.Next(10) switch
+            {
+                0 => rng.Next(60000, 65536),
+                1 => rng.Next(185, 195),
+                _ => rng.Next(0, 3000),
+            });
+            cmdr.MaxHP = (Sys3Int)rng.Next(0, 500);
+        }
+    }
+
+    /// <summary>What Helman's scenes may change: the cancel flag in <c>Tmp0001</c>, Sheila's flag, the commanders.</summary>
+    private static void ScribbleHelman(GameState state, Random rng)
+    {
+        if (rng.Next(2) == 0)
+            state.Tmp0001 = (Sys3Int)rng.Next(0, 3);
+        if (rng.Next(3) == 0)
+            state.F_Sheila_Flag = (Sys3Int)rng.Next(0, 2);
+        if (rng.Next(3) == 0)
+            state.F_Helman_War = (Sys3Int)rng.Next(1, 3);
+        for (int c = 22; c <= 59; c++)
+            if (rng.Next(8) == 0)
+                state.Cmdrs[c].Status = (Sys3Int)rng.Next(0, 2);
+    }
+
+    private static IEnumerable<string> HelmanDefenderFeatures(GameState before, GameState after, List<string> log)
+    {
+        foreach (string call in log.Where(e => e.StartsWith("call ", StringComparison.Ordinal)))
+        {
+            string[] parts = call.Split(' ');
+            yield return parts[1] == "Gｼｰﾗ.ADV" ? $"call Gｼｰﾗ.ADV {parts[3]}" : $"call {parts[1]}";
+        }
+        if (log.Any(e => e.StartsWith("jump ", StringComparison.Ordinal)))
+            yield return "jump";
+        int prov = before.Prov_Cur.Value;
+        bool war = log.Any(e => e.StartsWith("call Gｽﾃｯｾﾙ", StringComparison.Ordinal)) || before.F_Helman_War == 2;
+        if (after.Bt_EnemyParty1 == 0 && log.Any(e => e.StartsWith("call Gｼｰﾗ.ADV entry 2", StringComparison.Ordinal)))
+            yield return "called off";
+        if (after.Bt_EnemyParty1 == 58 && after.Bt_EnemyParty2 == 59 && after.Bt_EnemyParty3 == 0)
+        {
+            yield return "militia";
+            yield break;
+        }
+        if (after.Ev_PhaseNation != 4 || war && before.F_Helman_War == 2)
+            yield break;
+        switch (after.Tmp0001.Value)
+        {
+            case 22:
+                yield return "1st army, first order";
+                yield return "1st army";
+                break;
+            case 27 when after.Tmp0002 == 0:
+                yield return "Laumiere alone";
+                break;
+            case 27:
+                yield return "1st army";
+                break;
+            case 34:
+                yield return "2nd army";
+                break;
+            case 42:
+                yield return after.Tmp0006 == 58 ? "3rd army with militia" : "3rd army";
+                break;
+            case 49:
+                yield return "4th army";
+                break;
+            case 53:
+                yield return "5th army";
+                break;
+            case 31:
+                yield return "Ruberan";
+                break;
+        }
+        if (after.F_Lelyukov_State == 10 && before.F_Lelyukov_State == 1)
+            yield return "Lelyukov alone";
+        if ((prov is 30 or 31 or 32 or 34 or 38 or 39 or 2 or 13 or 36 && before.Cmdrs[22].Status == 0)
+            || (prov is 46 or 47 or 48 && before.Cmdrs[32].Status == 0))
+            yield return "leader dead";
+        if (before.F_Mineva_State == 0 && after.F_Mineva_State == 1)
+            yield return "Mineva met";
+        if (prov is 31 or 32 && before.Bt_PlayerParty2 == 0 && after.Bt_EnemyRetreatMode == 1)
+            yield return "pass against one unit";
+        int[] party = [after.Bt_EnemyParty1.Value, after.Bt_EnemyParty2.Value, after.Bt_EnemyParty3.Value, after.Bt_EnemyParty4.Value];
+        if (prov != 45 && party[0] != 0 && party.Skip(1).Any(c => c == 0)
+            && Enumerable.Range(22, 38).Any(c => before.Cmdrs[c].Status != 0 && before.Cmdrs[c].Troops < 190 && !party.Contains(c)))
+            yield return "filtered";
+    }
+
     private delegate IEnumerable<string> FeatureReader(GameState before, GameState after, List<string> log);
 
     private async Task CompareAsync(
@@ -52,7 +182,8 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
         Func<ScriptContext, ScenarioScripts, Task> port,
         Action<GameState, Random> aim,
         FeatureReader features,
-        string[] expected)
+        string[] expected,
+        Action<GameState, Random>? scribble = null)
     {
         if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, file)))
             return;
@@ -66,8 +197,8 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
             var rng = new Random(seed);
             var state = RandomState(rng);
             aim(state, rng);
-            var ported = await RunAsync(Copy(state), seed, script => port(script, scenario), null, file);
-            var original = await RunAsync(Copy(state), seed, null, program, file);
+            var ported = await RunAsync(Copy(state), seed, script => port(script, scenario), null, file, scribble);
+            var original = await RunAsync(Copy(state), seed, null, program, file, scribble);
 
             int at = FirstDifference(original.Log, ported.Log);
             Assert.True(at < 0, $"seed {seed}: the runs differ at entry {at}\n{Around(file, original.Log, ported.Log, at)}");
@@ -88,10 +219,11 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
     private sealed record Run(GameState State, List<string> Log);
 
     private static async Task<Run> RunAsync(
-        GameState state, int seed, Func<ScriptContext, Task>? port, ScriptProgram? program, string file)
+        GameState state, int seed, Func<ScriptContext, Task>? port, ScriptProgram? program, string file,
+        Action<GameState, Random>? scribble)
     {
         var log = new List<string>();
-        var hooks = new ScribblingHooks(state, seed, log);
+        var hooks = new ScribblingHooks(state, seed, log, scribble);
         var input = new NoInput();
         var view = new LoggingView(log);
         var random = new LoggingRandom(seed, log);
@@ -246,7 +378,7 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
 
     /// <summary>
     /// Draws from a generator of the seed, logged with their range: <c>Y 4, n</c> with n of 0 or 1
-    /// gives n without drawing, as the engine's. The nation files of N1 draw nothing.
+    /// gives n without drawing, as the engine's.
     /// </summary>
     private sealed class LoggingRandom(int seed, List<string> log) : IScriptRandom
     {
@@ -290,9 +422,10 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
     /// The other files as hooks: each call is logged with what it sees (the party, the retreat
     /// mode, the cursors, the priority list in scratch, the army name), then writes what a battle or
     /// a scene writes — the same writes for the same (seed, call) in both runs; one battle in
-    /// twelve loses Leazas Castle and jumps to the ending.
+    /// twelve loses Leazas Castle and jumps to the ending; a file's own <paramref name="scribble"/>
+    /// writes what its scenes may change besides.
     /// </summary>
-    private sealed class ScribblingHooks(GameState state, int seed, List<string> log) : IStoryHooks
+    private sealed class ScribblingHooks(GameState state, int seed, List<string> log, Action<GameState, Random>? scribble) : IStoryHooks
     {
         private int _calls;
 
@@ -341,6 +474,7 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
             for (int p = 1; p <= 8; p++)
                 if (rng.Next(5) == 0)
                     state.Provs[p].Owner = (Sys3Int)(rng.Next(2) + 1);
+            scribble?.Invoke(state, rng);
             return Task.CompletedTask;
         }
     }
