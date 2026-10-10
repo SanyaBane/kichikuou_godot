@@ -9,8 +9,9 @@ namespace Kichikuou.Core.Tests.Strategy;
 
 /// <summary>
 /// JAPAN's files (milestone 3 step 5): the defender picker <c>TJAPAN2</c>
-/// (<see cref="JapanDefenders"/>). Also compared with the decompile on random states (Content
-/// tests, <c>NationTurnDifferentialTests</c>).
+/// (<see cref="JapanDefenders"/>) and the turn <c>TJAPAN</c> (<see cref="JapanTurn"/>, Gekkou's
+/// scenes not yet). Also compared with the decompile on random states (Content tests,
+/// <c>NationTurnDifferentialTests</c>).
 /// </summary>
 public class JapanTests
 {
@@ -130,4 +131,93 @@ public class JapanTests
 
     [Fact]
     public void TJAPAN2_is_routed() => Assert.Contains("TJAPAN2.ADV", StrategyRules.PortedFiles);
+
+    /// <summary>
+    /// JAPAN's turn on <paramref name="draws"/>: its commanders with 200 troops each, the walk's
+    /// provinces held by nobody in particular (owner 4).
+    /// </summary>
+    private static (JapanRig Rig, ScriptedRandom Random) Turn(params int[] draws)
+    {
+        var rig = new JapanRig();
+        for (int c = 72; c <= 82; c++)
+            rig.State.Cmdrs[c].Troops = 200;
+        foreach (int p in new[] { 55, 28, 27, 25, 26, 24, 23, 6, 3, 2, 5, 4, 1 })
+            rig.State.Provs[p].Owner = 4;
+        return (rig, new ScriptedRandom(draws));
+    }
+
+    private static Task TurnAsync(JapanRig rig, ScriptedRandom random) =>
+        new JapanTurn(new ScriptContext(rig.State, random, rig.View, rig.Input, rig.Story), new Literals()).RunAsync();
+
+    [Fact]
+    public async Task A_quiet_week_plays_a_random_event_when_nothing_happened()
+    {
+        var (rig, random) = Turn(2, 2, 1, 3);                       // no Kouhime, quiet, IJAPAN 7
+        await TurnAsync(rig, random);
+        Assert.Equal([2, 2, 4, 4], random.Draws);
+        Assert.Equal([("IJAPAN.ADV", 7)], rig.Story.Calls);
+        Is(3, rig.State.Bt_EnemyRetreatMode);
+        Assert.Equal("TJAPAN.ADV:3", rig.State.Strings[10]);
+
+        (rig, random) = Turn(1, 2, 1);                              // Kouhime's scene 4 first: no event after it
+        rig.State.F_Kou_State = 1;
+        await TurnAsync(rig, random);
+        Assert.Equal([("Gｺｳﾋﾒ.ADV", 4)], rig.Story.Calls);
+        Is(1, rig.State.Ev_WeeklyEventDone);
+    }
+
+    [Fact]
+    public async Task The_drawn_army_attacks_the_first_province_the_player_holds()
+    {
+        var (rig, random) = Turn(2, 2, 2, 1);                       // the whole army
+        rig.State.Cmdrs[73].Troops = 100;
+        rig.State.Cmdrs[74].Troops = 150;                           // under 190: left out once Nobunaga leads
+        rig.State.Cmdrs[72].Troops = 300;
+        rig.State.Provs[6].Owner = 1;                               // Oaks
+        await TurnAsync(rig, random);
+        Assert.Equal([72, 78, 77, 75], rig.Party);
+        Assert.Equal([("FIGT_B.ADV", 0)], rig.Story.Calls);
+        Is(6, rig.State.Prov_Cur);
+
+        (rig, random) = Turn(2, 2, 2, 4);                           // One-Shot Tarou's four, 100 troops each
+        for (int c = 79; c <= 82; c++)
+            rig.State.Cmdrs[c].Troops = 100;
+        rig.State.Provs[6].Owner = 1;
+        await TurnAsync(rig, random);
+        Assert.Equal([79, 0, 0, 0], rig.Party);                     // the others under 190: left out
+        Is(100, rig.State.CallArg);                                 // too weak to march
+        Assert.Empty(rig.Story.Calls);
+    }
+
+    [Fact]
+    public async Task On_its_way_JAPAN_takes_Hanna_from_the_cities_but_passes_M_Land_by()
+    {
+        var (rig, random) = Turn(2, 2, 2, 2);                       // Katsuie's four, 800 troops
+        rig.State.Provs[25].Owner = 3;                              // M Land: passed by (NAT-22)
+        rig.State.Provs[26].Owner = 3;                              // Hanna: taken
+        rig.State.Provs[6].Owner = 1;
+        await TurnAsync(rig, random);
+        Assert.Empty(rig.Story.Calls);
+        Is(6, rig.State.Provs[26].Owner);
+        Is(3, rig.State.Provs[25].Owner);
+        Is(26, rig.State.Prov_Cur);
+        Assert.Contains(162, rig.View.Events.OfType<MessageEvent>().Select(m => m.Text.Line));
+
+        (rig, random) = Turn(2, 2, 2, 2);                           // nothing to attack: the walk runs out
+        await TurnAsync(rig, random);
+        Assert.Empty(rig.Story.Calls);
+        Is(1, rig.State.Prov_Cur);
+        Is(6, rig.State.Provs[1].Owner);                            // NAT-23: Leazas Castle taken
+    }
+
+    [Fact]
+    public async Task Gekkous_attempts_are_not_ported_yet()
+    {
+        var (rig, random) = Turn();
+        rig.State.N_Gekkou_Attempts = 2;
+        await Assert.ThrowsAsync<NotSupportedException>(() => TurnAsync(rig, random));
+    }
+
+    [Fact]
+    public void TJAPAN_is_routed() => Assert.Contains("TJAPAN.ADV", StrategyRules.PortedFiles);
 }

@@ -10,7 +10,7 @@ namespace Kichikuou.Content.Tests;
 
 /// <summary>
 /// The hand-ported nation files (<see cref="RebelTurn"/>, <see cref="RebelDefenders"/>,
-/// <see cref="HelmanTurn"/>, <see cref="HelmanDefenders"/>, <see cref="PattonTurn"/>, <see cref="ZethTurn"/>, <see cref="ZethDefenders"/>, <see cref="KayblisDefenders"/>, <see cref="JapanDefenders"/>, on the template
+/// <see cref="HelmanTurn"/>, <see cref="HelmanDefenders"/>, <see cref="PattonTurn"/>, <see cref="ZethTurn"/>, <see cref="ZethDefenders"/>, <see cref="KayblisDefenders"/>, <see cref="JapanTurn"/>, <see cref="JapanDefenders"/>, on the template
 /// <see cref="NationFile"/>) against the files
 /// themselves run from the player's decompile by <see cref="SceneRunner"/>, on random states: both
 /// runs must call the same files with the same <c>Ev_Entry</c> and the same party, draw the same
@@ -474,6 +474,109 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
             JapanDefenderFeatures,
             ["Nagasaki", "Nagasaki too weak", "Osaka", "strongest 1", "strongest 2", "strongest 3", "too weak",
              "retreat mode 4", "war over an alliance"]);
+
+    [Fact]
+    public Task The_JAPAN_turn_runs_exactly_as_TJAPAN() =>
+        CompareAsync(
+            "TJAPAN.ADV",
+            (script, scenario) => new JapanTurn(script, scenario).RunAsync(),
+            AimAtJapanTurn,
+            JapanTurnFeatures,
+            [
+                "call Gｺｳﾋﾒ.ADV 1", "call Gｺｳﾋﾒ.ADV 2", "call Gｺｳﾋﾒ.ADV 3", "call Gｺｳﾋﾒ.ADV 4", "call IJAPAN.ADV 7",
+                "call IJAPAN.ADV 8", "quiet week", "army 1", "army 2", "army 3", "army 4", "army 5", "no army", "too weak",
+                .. JapanTurnTargets.Select(p => $"attack at {p}"), .. new[] { 27, 26, 24, 23 }.Select(p => $"taken {p}"),
+                "M Land passed by", "the walk ran out", "a weak commander left out",
+            ],
+            ScribbleJapanTurn);
+
+    /// <summary>The provinces <c>TJAPAN</c>'s walk tests, in order: Nagasaki (55) … Leazas Castle (1).</summary>
+    private static readonly int[] JapanTurnTargets = [55, 28, 27, 25, 26, 24, 23, 6, 3, 2, 5, 4, 1];
+
+    /// <summary>
+    /// Gekkou's attempts not under way (0 or 5; the attempts are the next part), Kouhime's state;
+    /// JAPAN's commanders (Nobunaga Oda (72) to Isoroku Yamamoto (82)) alive or not with troops
+    /// around 190 each and 500 in all; the walk's provinces held by the player at a density of the
+    /// case's own, by the independent cities or by others.
+    /// </summary>
+    private static void AimAtJapanTurn(GameState state, Random rng)
+    {
+        state.N_Gekkou_Attempts = (Sys3Int)(rng.Next(2) == 0 ? 0 : 5);
+        state.F_Kou_State = (Sys3Int)rng.Next(0, 3);
+        for (int c = 72; c <= 82; c++)
+        {
+            state.Cmdrs[c].Status = (Sys3Int)(rng.Next(4) == 0 ? 0 : rng.Next(1, 3));
+            state.Cmdrs[c].Troops = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(0, 190) : rng.Next(0, 400));
+        }
+        double held = rng.NextDouble() * 0.4;
+        foreach (int p in JapanTurnTargets)
+            state.Provs[p].Owner = (Sys3Int)(rng.NextDouble() < held ? 1 : rng.Next(3) == 0 ? 3 : rng.Next(4, 12));
+    }
+
+    /// <summary>What the scenes may change: Kouhime's state, the week's event flag, JAPAN's commanders, the walk's owners.</summary>
+    private static void ScribbleJapanTurn(GameState state, Random rng)
+    {
+        if (rng.Next(4) == 0)
+            state.F_Kou_State = (Sys3Int)rng.Next(0, 3);
+        if (rng.Next(6) == 0)
+            state.Ev_WeeklyEventDone = (Sys3Int)rng.Next(0, 2);
+        for (int c = 72; c <= 82; c++)
+            if (rng.Next(10) == 0)
+                state.Cmdrs[c].Status = (Sys3Int)rng.Next(0, 2);
+        if (rng.Next(8) == 0)
+            state.Provs[JapanTurnTargets[rng.Next(JapanTurnTargets.Length)]].Owner = (Sys3Int)rng.Next(0, 4);
+    }
+
+    private static IEnumerable<string> JapanTurnFeatures(GameState before, GameState after, GameState first, List<string> log)
+    {
+        int attacked = 0;
+        foreach (string call in log.Where(e => e.StartsWith("call ", StringComparison.Ordinal)))
+        {
+            string[] parts = call.Split(' ');
+            if (parts[1] != "FIGT_B.ADV")
+            {
+                yield return $"call {parts[1]} {parts[3]}";
+                continue;
+            }
+            attacked = int.Parse(Field(call, "Prov_Cur"));
+            yield return $"attack at {attacked}";
+        }
+        var draws = log.Where(e => e.StartsWith("rnd ", StringComparison.Ordinal)).ToList();
+        if (draws.Count >= 3 && draws[2] == "rnd 4 1")
+        {
+            yield return "quiet week";
+            yield break;
+        }
+        if (draws.Count < 4)
+            yield break;
+        yield return $"army {draws[3].Split(' ')[2]}";
+        if (after.Bt_EnemyParty1 == 0)
+        {
+            yield return "no army";
+            yield break;
+        }
+        int[] party = [after.Bt_EnemyParty1.Value, after.Bt_EnemyParty2.Value, after.Bt_EnemyParty3.Value, after.Bt_EnemyParty4.Value];
+        int[] list = [after.Tmp0001.Value, after.Tmp0002.Value, after.Tmp0003.Value, after.Tmp0004.Value];
+        if (party[3] == 0 && list.Any(c => c != 0 && !party.Contains(c) && after.Cmdrs[c].Status != 0 && after.Cmdrs[c].Troops < 190))
+            yield return "a weak commander left out";
+        bool took = log.Any(e => e.Contains("MapEvent { Mode = 1 }", StringComparison.Ordinal));   // L_00366's camera
+        if (attacked == 0 && !took)
+        {
+            yield return "too weak";
+            yield break;
+        }
+        int end = attacked != 0 ? attacked : after.Prov_Cur.Value;      // where the walk ended
+        if (took)
+            yield return end == 1 ? "the walk ran out" : $"taken {end}"; // NAT-23: Leazas Castle (1) taken
+        if (after.Provs[25].Owner == 3 && Array.IndexOf(JapanTurnTargets, end) > Array.IndexOf(JapanTurnTargets, 25))
+            yield return "M Land passed by";
+
+        static string Field(string call, string name)
+        {
+            int at = call.IndexOf($" {name} ", StringComparison.Ordinal) + name.Length + 2;
+            return call[at..].Split(' ')[0];
+        }
+    }
 
     /// <summary>
     /// Nagasaki (55), Osaka (56) or another province, with walls and battle area; JAPAN's commanders
