@@ -12,8 +12,8 @@ namespace Kichikuou.Core.Tests.Strategy;
 /// The prologue slices of the command files: <c>Cﾃｷﾄｼ</c> (<see cref="EnemyCityCommand"/>),
 /// <c>Cﾃｷﾄｼ2</c> (<see cref="DistantCityCommand"/>), <c>Cﾌﾞｶ</c> (<see cref="SubordinatesCommand"/>),
 /// <c>Cﾊｰﾚﾑ</c> (<see cref="HaremCommand"/>), <c>Cｼｮｳﾆﾝ</c> (<see cref="MerchantCommand"/>), <c>Cｼﾊｲﾄｼ</c> (<see cref="OwnCityCommand"/>),
-/// <c>Cﾀｶﾗ</c> (<see cref="TreasureCommand"/>), <c>各種DATA</c> (<see cref="AllDataCommand"/>), the entry of <c>Cﾒｲｷｭｳ</c> with the Thieves' Hideout
-/// (<see cref="DungeonCommand"/>) and the router <see cref="StrategyRules"/>. Each file is also
+/// <c>Cﾀｶﾗ</c> (<see cref="TreasureCommand"/>), <c>各種DATA</c> (<see cref="AllDataCommand"/>), <c>Cﾒｲｷｭｳ</c> — the entry, the Thieves' Hideout
+/// and the search (<see cref="DungeonCommand"/>) — and the router <see cref="StrategyRules"/>. Each file is also
 /// compared with the decompile on random states (Content tests, <c>CommandSliceDifferentialTests</c>).
 /// </summary>
 public class CommandSliceTests
@@ -1525,13 +1525,27 @@ public class CommandSliceTests
     // Cﾒｲｷｭｳ
     // ---------------------------------------------------------------------------------------
 
-    /// <summary>The <c>MS</c> lines of <c>Cﾒｲｷｭｳ.ADV</c>, as "line n" in the slot the line writes.</summary>
+    /// <summary>
+    /// The <c>MS</c> lines of <c>Cﾒｲｷｭｳ.ADV</c>, as "line n" in the slot the line writes, and the
+    /// label bodies a test hands out (the boss and Hanny setters), by their first line.
+    /// </summary>
     private sealed class NameSource : IScenarioSource
     {
+        public Dictionary<int, IReadOnlyList<ScriptStatement>> Blocks { get; } = [];
+
+        /// <summary>The first lines of the blocks read, in order.</summary>
+        public List<int> BlocksRead { get; } = [];
+
         public IReadOnlyList<ScriptStatement> ReadFile(string file) => throw new InvalidOperationException(file);
 
         public ScriptStatement ReadStatement(ScriptRef at) =>
             new SetStringStatement(at, at.Line switch { 27 => 10, 70 => 9, _ => 8 }, $"line {at.Line}");
+
+        public IReadOnlyList<ScriptStatement> ReadBlock(ScriptRef at)
+        {
+            BlocksRead.Add(at.Line);
+            return Blocks.TryGetValue(at.Line, out var block) ? block : throw new InvalidOperationException($"No block at {at}.");
+        }
     }
 
     private static SliceRig Dungeon(int stage, int dungeon, params int[] draws)
@@ -1628,6 +1642,269 @@ public class CommandSliceTests
         var e = await Assert.ThrowsAsync<NotSupportedException>(() => new DungeonCommand(rig.Script, new NameSource()).RunAsync());
 
         Assert.Contains("Cﾒｲｷｭｳ.ADV:234", e.Message);
+    }
+
+    /// <summary>
+    /// A search of <paramref name="dungeon"/> at stage 1: unit 5 (100 men) is picked in <c>Sﾌﾞﾀｲ</c>
+    /// (status 2, as the picker leaves it); Start Search, then <paramref name="choices"/>.
+    /// </summary>
+    private static SliceRig Search(int dungeon, int[] draws, params int[] choices)
+    {
+        var rig = Dungeon(stage: 1, dungeon, draws);
+        rig.State.Unit_StrBase = 100;
+        rig.State.Units[5].Status = 1;
+        rig.State.Units[5].Troops = 100;
+        rig.State.Units[5].FaceCg = 555;
+        rig.State.Cmdrs[83].MaxHP = 12;
+        rig.On("Sﾌﾞﾀｲ.ADV", s =>
+        {
+            s.Bt_PlayerParty1 = 5;
+            s.Units[5].Status = 2;
+        });
+        rig.Input.Choices.Enqueue(1);                                   // Start Search
+        foreach (int choice in choices)
+            rig.Input.Choices.Enqueue(choice);
+        return rig;
+    }
+
+    /// <summary>The floors the arrivals' headers show (pit mode, <c>:679</c>).</summary>
+    private static List<int> FloorsArrived(SliceRig rig) =>
+        rig.View.Events.OfType<ValueMessageEvent>().Where(v => v.Text.Line == 679).Select(v => (int)v.Values[0].Value).ToList();
+
+    private static List<string> Files(SliceRig rig) => rig.Calls.Select(c => c.File).ToList();
+
+    [Fact]
+    public async Task A_search_of_the_Monsters_Cave_fights_on_the_way_down_and_ends_on_Finish()
+    {
+        // Descend; Ascend/Descend/Retreat on floor 2: Retreat; Finish.
+        var rig = Search(2, [1, 17], 1, 3, 1);
+        (int Kind, int Enemy, int Background, int Troops, int Limit) atBattle = default;
+        rig.On("FIGT.ADV", s => atBattle = (s.Bt_Kind.Value, s.Bt_EnemyParty1.Value, s.Bt_BackgroundCg.Value,
+            s.Cmdrs[83].Troops.Value, s.Bt_TroopLimit.Value));
+        rig.On("死亡捕獲.ADV", s => s.RetVal = 0);
+        (int Size, int Mode) picker = default;
+        rig.On("Sﾌﾞﾀｲ.ADV", s => picker = (s.Tmp0021.Value, s.Tmp0022.Value));
+
+        await new DungeonCommand(rig.Script, new NameSource()).RunAsync();
+
+        Assert.Empty(rig.Input.Choices);
+        Assert.Equal(["Sﾌﾞﾀｲ.ADV", "FIGT.ADV", "死亡捕獲.ADV"], Files(rig));
+        Assert.Equal((1, 3), picker);                                   // one unit, for a dungeon
+        Assert.Equal("s112", rig.State.Strings[1]);                     // the searcher's name
+        Assert.Equal([4, 40], rig.Random.Draws);                        // the encounter (1: a battle), the monsters' troops
+        Assert.Equal((3, 83, 910, 40 / 3 + 17, 80), atBattle);
+        Is(12, rig.State.Cmdrs[83].HP);
+        Assert.Equal([[267, 295], [884, 889], [866, 884, 889], [934, 938]], rig.MenuLines);
+        Assert.Equal([1, 2], FloorsArrived(rig));
+        Assert.Contains(1178, rig.Lines);                               // "Monsters appeared."
+        Assert.Equal(975, rig.Lines.Last());                            // "Search of … ended."
+        Is(1, rig.State.Dgns[2].State);                                 // in progress
+        Is(2, rig.State.Dgns[2].SavedFloor);
+        Is(14, rig.State.DgnRun_MaxFloor);
+        Is(1031, rig.State.DungeonBgCg);
+        Is(0, rig.State.Bt_Kind);
+        Is(900, rig.State.Bt_BackgroundCg);
+        Is(0, rig.State.Ui_CmdDungeonAvail);                            // the week's search is spent
+        Assert.Equal([new MapEvent(1), new MapEvent(10), new MapEvent(0), new MapEvent(0), new MapEvent(0)], rig.View.Events.OfType<MapEvent>());
+    }
+
+    [Fact]
+    public async Task A_battle_that_leaves_RetVal_2_draws_the_inscription_roll_without_Merim()
+    {
+        var rig = Search(2, [1, 17, 1], 1, 3, 1);
+        rig.On("死亡捕獲.ADV", s => s.RetVal = 2);
+
+        await new DungeonCommand(rig.Script, new NameSource()).RunAsync();
+
+        // QUIRK: DGN-02, STR-14 — the battle's RetVal reaches the inscription test.
+        Assert.Equal([4, 40, 10], rig.Random.Draws);
+        Assert.Equal([1, 2], FloorsArrived(rig));
+    }
+
+    [Fact]
+    public async Task A_searcher_who_falls_ends_the_command_at_once_with_the_floor_before_the_move()
+    {
+        var rig = Search(2, [1, 17], 1);
+        rig.On("死亡捕獲.ADV", s => s.Units[5].Status = 0);
+
+        await new DungeonCommand(rig.Script, new NameSource()).RunAsync();
+
+        // QUIRK: DGN-08 — no end of the search, the floor saved before the move.
+        Assert.DoesNotContain(975, rig.Lines);
+        Is(1, rig.State.Dgns[2].SavedFloor);
+        Is(2, rig.State.DgnRun_Floor);
+        Assert.Equal([1], FloorsArrived(rig));
+        Assert.Equal(3, rig.Windows.Last());
+    }
+
+    [Theory]
+    [InlineData(1, 6)]                                                  // "6F On"
+    [InlineData(2, 1)]                                                  // From the Start
+    [InlineData(0, 1)]                                                  // a cancel starts over too
+    public async Task A_saved_floor_offers_to_go_on_from_there(int choice, int floor)
+    {
+        var rig = Search(2, [], choice, floor == 1 ? 2 : 3, 1);         // then Retreat, Finish
+        rig.State.Dgns[2].State = 1;
+        rig.State.Dgns[2].SavedFloor = 6;
+
+        await new DungeonCommand(rig.Script, new NameSource()).RunAsync();
+
+        var resume = rig.Input.Menus[1];
+        Assert.Equal([652, 657], resume.Select(i => i.At.Line));
+        Assert.Equal([6], resume[0].Texts.Single().Numbers.Select(n => (int)n.Value));
+        Assert.Contains(rig.View.Events, e => e is ValueMessageEvent { Text.Line: 634 } v && v.Values[0] == 6);
+        Assert.Equal([floor], FloorsArrived(rig));
+        Is(floor, rig.State.Dgns[2].SavedFloor);
+        Assert.Empty(rig.Random.Draws);
+    }
+
+    [Fact]
+    public async Task A_cancelled_retreat_meets_an_empty_menu_before_the_floor_comes_back()
+    {
+        var rig = Search(2, [], 0, 2, 0, 0, 2, 1);                      // cancel the floor menu, Retreat, cancel, (empty), Retreat, Finish
+
+        await new DungeonCommand(rig.Script, new NameSource()).RunAsync();
+
+        // QUIRK: DGN-07 — the second ] has no items.
+        Assert.Equal([[267, 295], [884, 889], [884, 889], [934, 938], [], [884, 889], [934, 938]], rig.MenuLines);
+        Assert.Equal([1, 1], FloorsArrived(rig));                       // the floor arrived at again
+        Assert.Equal(975, rig.Lines.Last());
+    }
+
+    [Theory]
+    [InlineData(4, 0, 100, 30, 70)]                                     // the Snow Dungeon: r men lost
+    [InlineData(4, 100, 100, -1, 100)]                                  // the charm in stock: no blizzard
+    [InlineData(4, 7, 100, -1, 100)]                                    // QUIRK: DGN-09 — equipped protects too
+    [InlineData(5, 0, 100, 60, 0)]                                      // Ho Raga's Tower: half plus r, at most all
+    [InlineData(5, 0, 100, 20, 30)]
+    public async Task A_blizzard_costs_men_without_the_Snow_Charm(int dungeon, int holder, int troops, int roll, int left)
+    {
+        var rig = Search(dungeon, roll < 0 ? [] : [roll], 2, 1);       // Retreat, Finish
+        rig.State.Items[11].Holder = (Sys3Int)holder;
+        rig.State.Units[5].Troops = (Sys3Int)troops;
+
+        await new DungeonCommand(rig.Script, new NameSource()).RunAsync();
+
+        Is(left, rig.State.Units[5].Troops);
+        Assert.Equal(roll < 0 ? [] : [troops], rig.Random.Draws);
+        int line = dungeon == 4 ? 374 : 398;
+        Assert.Equal(roll >= 0, rig.Lines.Contains(line));
+        Assert.Equal(holder == 0 ? 5377 : holder == 100 ? 5350 : 324, rig.Lines.First(l => l is 5350 or 5377 or 324));
+        if (dungeon == 5)
+            Assert.Equal([("Gﾎﾗｶﾞ.ADV", 2), ("Sﾌﾞﾀｲ.ADV", 2), ("Gﾎﾗｶﾞ.ADV", 1)], rig.Calls);
+    }
+
+    /// <summary><c>L_04376</c> (<c>:3062-3092</c>), shortened: Marder over commander 100.</summary>
+    private static IReadOnlyList<ScriptStatement> MarderSetter()
+    {
+        var at = new ScriptRef("Cﾒｲｷｭｳ.ADV", 3062);
+        AssignStatement Set(string name, int value) =>
+            new(at, VariableCatalog.Variables.Select(v => v.Name).ToList().IndexOf(name), new ConstExpr((Sys3Int)value));
+        return
+        [
+            Set("Bt_IsDuel", 1), Set("F_Boss_Marder", 1), Set("Cmdr_Cur", 100), new SetStringStatement(at, 4, "Marder"),
+            Set("Cmdr_CgFull", 1328), Set("Cmdr_Troops", 0), Set("Cmdr_Atk", 15), Set("Cmdr_HP", 10), Set("Cmdr_MaxHP", 10),
+            new ReturnLabelStatement(at),
+        ];
+    }
+
+    [Fact]
+    public async Task Marder_waits_on_the_fifth_floor_once_and_the_monsters_troops_are_drawn_first()
+    {
+        var rig = Search(2, [3, 25], 1, 2, 3, 1);                       // 4F On, Descend, Retreat, Finish
+        rig.State.Dgns[2].State = 1;
+        rig.State.Dgns[2].SavedFloor = 4;
+        rig.State.BgmEnabled = 1;
+        var source = new NameSource();
+        source.Blocks[3062] = MarderSetter();
+        (int Enemy, int Duel, int Troops) atBattle = default;
+        rig.On("FIGT.ADV", s => atBattle = (s.Bt_EnemyParty1.Value, s.Bt_IsDuel.Value, s.Cmdrs[100].Troops.Value));
+
+        await new DungeonCommand(rig.Script, source).RunAsync();
+
+        // QUIRK: STR-14 — a roll of 3 is no battle, but the boss forces one; the troops are drawn for nothing.
+        Assert.Equal([4, 40], rig.Random.Draws);
+        Assert.Equal([3062], source.BlocksRead);
+        Assert.Equal((100, 1, 0), atBattle);
+        Is(40 / 3 + 25, rig.State.Cmdrs[83].Troops);                    // the monsters', overwritten by nobody
+        // QUIRK: DGN-04 — the flag is set before the fight.
+        Is(1, rig.State.F_Boss_Marder);
+        Is(0, rig.State.Bt_IsDuel);
+        Assert.Equal("Marder", rig.State.Strings[4]);
+        var music = rig.View.Events.OfType<MusicEvent>().Select(m => (int)m.Track.Value).ToList();
+        Assert.Equal([21, 18, 21], music.Take(3));                      // the dungeon's, the boss's, the dungeon's again
+        Assert.Equal([4, 5], FloorsArrived(rig));
+    }
+
+    [Fact]
+    public async Task Without_Marder_a_roll_of_3_on_the_fifth_floor_is_no_battle()
+    {
+        var rig = Search(2, [3], 1, 2, 3, 1);                           // 4F On, Descend, Retreat, Finish
+        rig.State.Dgns[2].State = 1;
+        rig.State.Dgns[2].SavedFloor = 4;
+        rig.State.F_Boss_Marder = 1;
+
+        await new DungeonCommand(rig.Script, new NameSource()).RunAsync();
+
+        Assert.Equal([4], rig.Random.Draws);
+        Assert.Equal(["Sﾌﾞﾀｲ.ADV"], Files(rig));
+    }
+
+    [Fact]
+    public async Task The_DO_Pot_waits_on_the_last_floor_and_finishes_the_dungeon()
+    {
+        var rig = Search(2, [3], 1, 2, 2, 1);                           // 13F On, Descend, Retreat, Finish
+        rig.State.Dgns[2].State = 1;
+        rig.State.Dgns[2].SavedFloor = 13;
+        rig.State.BgmEnabled = 1;
+
+        await new DungeonCommand(rig.Script, new NameSource()).RunAsync();
+
+        Is(100, rig.State.Items[9].Holder);                             // to Leazas's stock
+        Is(2, rig.State.Dgns[2].State);                                 // fully searched
+        Assert.Equal([1455, 1462, 1467], rig.Lines.Where(l => l is >= 1455 and <= 1467));
+        Assert.Contains(new WindowEvent(311, 555), rig.View.Events);   // the searcher's portrait
+        Assert.Contains(rig.View.Events, e => e is SoundEvent { Sound.Value: 101 });   // the fanfare
+        Assert.Equal([866, 889], rig.MenuLines[3]);                     // the last floor: only up and out
+        Assert.Equal(975, rig.Lines.Last());
+    }
+
+    [Fact]
+    public async Task Satella_refuses_the_dungeon_keeps_the_charge_and_the_menu_comes_back()
+    {
+        var rig = Dungeon(stage: 1, dungeon: 2);
+        rig.State.Units[29].Status = 1;
+        rig.On("Sﾌﾞﾀｲ.ADV", s =>
+        {
+            s.Bt_PlayerParty1 = 29;
+            s.Units[29].Status = 2;
+        });
+        rig.Input.Choices.Enqueue(1);                                   // Start Search
+        rig.Input.Choices.Enqueue(2);                                   // Return
+
+        await new DungeonCommand(rig.Script, new NameSource()).RunAsync();
+
+        // QUIRK: BFL-01 — status 1 again, nothing refunded; DGN-06 — back to the dispatch.
+        Is(1, rig.State.Units[29].Status);
+        Assert.Equal([5315, 5320, 5325, 5339], rig.Lines.Where(l => l >= 5315));
+        Assert.Equal([[267, 295], [267, 295]], rig.MenuLines);
+        Is(0, rig.State.Dgns[2].State);                                 // never searched
+        Is(1, rig.State.Ui_CmdDungeonAvail);                            // Return gives the week's search back
+        Assert.Empty(rig.Random.Draws);
+    }
+
+    [Fact]
+    public async Task An_empty_picker_goes_back_to_the_dispatch_and_its_pre_scene()
+    {
+        var rig = Dungeon(stage: 1, dungeon: 16);
+        rig.Input.Choices.Enqueue(1);                                   // Start Search, nobody picked
+        rig.Input.Choices.Enqueue(0);                                   // a cancel leaves
+
+        await new DungeonCommand(rig.Script, new NameSource()).RunAsync();
+
+        // QUIRK: DGN-06 — the Giant Battleship's scene again.
+        Assert.Equal([("G1.ADV", 10), ("Sﾌﾞﾀｲ.ADV", 10), ("G1.ADV", 10)], rig.Calls);
+        Is(1, rig.State.Ui_CmdDungeonAvail);
     }
 
     // ---------------------------------------------------------------------------------------
