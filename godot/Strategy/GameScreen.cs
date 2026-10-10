@@ -832,12 +832,21 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     // ---------------------------------------------------------------- unattended play (--auto)
 
-    /// <summary>The command menu's items the unattended player opens once each, one a week, before it ends the weeks.</summary>
-    private static readonly string[] AutoVisits = ["Harem", "Subordinates", "Thieves' Hideout"];
+    /// <summary>
+    /// The command menu's items the unattended player opens once each, one a week, before it ends the
+    /// weeks: the prologue's three, then Treasure and All Data once the Leazas menu offers them.
+    /// </summary>
+    private static readonly string[] AutoVisits = ["Harem", "Subordinates", "Thieves' Hideout", "Treasure", "All Data"];
 
     private int _autoVisit;
     private int _autoWeek = -1;
     private bool _autoMapWait;
+
+    /// <summary>All Data's graphs the unattended player has opened this visit (1-4, then Return).</summary>
+    private int _autoGraph;
+
+    /// <summary>Whether the unattended player asked All Data for a scale once (a right click on the first graph).</summary>
+    private bool _autoScaled;
 
     /// <summary>The deployment picker the unattended player sent its party from (a second visit means Go was refused).</summary>
     private PickerView? _autoSentFrom;
@@ -845,19 +854,59 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// <summary>The unattended player stopped a deployment picker: the next menu abandons the city.</summary>
     private bool _autoAbandon;
 
+    /// <summary>The item screen the unattended player works in, and its steps left (<see cref="AutoItemSteps"/>).</summary>
+    private PickerView? _autoItemsFrom;
+
+    private Queue<Action> _autoItemSteps = new();
+
     /// <summary>The end of unattended play (<see cref="GameOptions.AutoWeeks"/>).</summary>
     private sealed class AutoStopException(string message) : Exception(message);
 
     /// <summary>
     /// The map opens the command menu (one right click each time the map loop starts waiting); the
     /// deployment picker takes the first unit free (status 1) and sends it with the first button,
-    /// or stops (third button) when nobody is free or the sending was refused; any other picker is
-    /// left with its third button (End, Stop).
+    /// or stops (third button) when nobody is free or the sending was refused; the item screen
+    /// takes <see cref="AutoItemSteps"/>, then ends (third button); any other picker is left
+    /// with its third button (End, Stop). All Data's first graph gets a right
+    /// click (the scale menu), every graph then a left one (back to the menu).
     /// </summary>
     private void AutoPointer()
     {
         if (_pointer.Pending > 0)
             return;
+        if (_presenter.Data is not (DataView.Closed or DataView.Map))
+        {
+            Shot("data");
+            if (_autoScaled)
+            {
+                _pointer.Click(320, 200);
+            }
+            else
+            {
+                _autoScaled = true;
+                _pointer.RightClick(320, 200);
+            }
+            return;
+        }
+        if (_presenter.Picker is { Kind: PickerKind.Items } items && _presenter.State is { } state)
+        {
+            Shot("picker");
+            if (_autoItemsFrom != items)
+            {
+                _autoItemsFrom = items;
+                _autoItemSteps = AutoItemSteps(state);
+            }
+            if (_autoItemSteps.TryDequeue(out var step))
+            {
+                step();
+            }
+            else
+            {
+                var end = PointerScript.PickerButton(3);
+                _pointer.Click(end.X, end.Y);
+            }
+            return;
+        }
         if (_presenter.Picker is { } picker)
         {
             Shot("picker");
@@ -890,9 +939,53 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     }
 
     /// <summary>
+    /// What the unattended player does on the item screen, one step each time the pointer has
+    /// nothing queued (a step without a gesture lets the screen be drawn and dumped): an entry the
+    /// screen takes without a refusal or a question (<c>Sｱｲﾃﾑ.ADV:240-375</c>) is hovered and
+    /// picked — in the unit view a unit at status 1 or 2 not holding item 1 or 2, in the item view
+    /// an item past 2 in stock with an effect, else the view is turned to the units first and back
+    /// after — its prompt is looked at, the pick is dropped with a right click (998, which turns the
+    /// view back), then End. Nothing is equipped.
+    /// </summary>
+    private Queue<Action> AutoItemSteps(GameState s)
+    {
+        int unit = Enumerable.Range(1, 50).FirstOrDefault(id => s.Units[id].Status.Value is 1 or 2 && s.Units[id].Item.Value is not (1 or 2));
+        int item = Enumerable.Range(3, 48).FirstOrDefault(id => s.Items[id].Holder == 100 && s.Items[id].Effect != 0);
+        var steps = new Queue<Action>();
+        void Click((int X, int Y) at) => _pointer.Click(at.X, at.Y);
+        void Pick(int id)
+        {
+            var at = PointerScript.PickerCell(id);
+            steps.Enqueue(() =>
+            {
+                _pointer.Move(at.X, at.Y);                              // its details,
+                _pointer.Click(at.X, at.Y);                             // the pick
+            });
+            steps.Enqueue(() => { });                                   // its prompt drawn
+            steps.Enqueue(() => _pointer.RightClick(at.X, at.Y));      // dropped
+            steps.Enqueue(() => { });
+        }
+        if (s.Ui_ItemViewMode == 1 && item != 0)
+        {
+            Pick(item);
+        }
+        else if (s.Ui_ItemViewMode.Value is 0 or 1 && unit != 0)
+        {
+            bool turn = s.Ui_ItemViewMode == 1;
+            if (turn)
+                steps.Enqueue(() => Click(PointerScript.PickerButton(2)));
+            Pick(unit);
+            if (turn)
+                steps.Enqueue(() => Click(PointerScript.PickerButton(2)));
+        }
+        return steps;
+    }
+
+    /// <summary>
     /// The command menu's next item of <see cref="AutoVisits"/> once a week, else its Turn END
     /// (past <see cref="GameOptions.AutoWeeks"/> the run stops there); a defence's menu after a
-    /// stopped deployment picker abandons the city; elsewhere the first item.
+    /// stopped deployment picker abandons the city; All Data's menu each graph in turn, then Return;
+    /// elsewhere the first item.
     /// </summary>
     private int AutoChoice(IReadOnlyList<SceneMenuItem> items)
     {
@@ -911,6 +1004,14 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             {
                 _autoAbandon = false;
                 return abandon;
+            }
+            if (Find("All Funds") > 0 && Find("Return") is var back and > 0)
+            {
+                // All Data's menu: each graph once, then Return.
+                if (++_autoGraph <= 4)
+                    return _autoGraph;
+                _autoGraph = 0;
+                return back;
             }
             return items.Count > 0 ? 1 : 0;
         }
