@@ -251,6 +251,70 @@ public class GamePresenterTests(ITestOutputHelper output)
         Assert.Equal(16, s.Ui_DamageGraphScale.Value);
     }
 
+    /// <summary>
+    /// A search of the Monsters' Cave (<c>Cﾒｲｷｭｳ</c>, dungeon 2) at stage 1 on the booted world,
+    /// through the router: Start Search, Bound picked in the deployment picker drawn by hand, the
+    /// arrival over the cave's picture, a floor down with a battle (every draw is 1: monsters on
+    /// each move) drawn by the battle's presenter with <c>Bt_Kind</c> 3, Retreat cancelled into the
+    /// second, empty menu (DGN-07: an empty box that nothing hits, left by a cancel), the floor again,
+    /// Retreat, Finish.
+    /// </summary>
+    [Fact]
+    public async Task A_dungeon_search_draws_its_floors_menus_and_battle()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var run = await RunAsync(stopAtWeek: 0);
+        var s = run.Session.State;
+        s.StoryStage = 1;
+        s.Dgn_Cur = 2;
+        s.Ui_CmdDungeonAvail = 1;
+        var player = run.Player;
+        player.Answers["Cﾒｲｷｭｳ.ADV"] = new([1, 1, 3, 0, 3, 1]);          // Start Search; Descend; Retreat, cancel; (empty); Retreat, Finish
+        player.Pickers.Enqueue((PickerKind.Deployment, PickerArea.Cell, 3));   // Bound,
+        player.Pickers.Enqueue((PickerKind.Deployment, PickerArea.Button, 1)); // Go
+        var battles = new List<(int Kind, int Enemy)>();
+        var menus = new List<(string[] Items, string Window, int Hit)>();
+        var centres = new HashSet<int>();
+        player.OnShow = e =>
+        {
+            if (e is BattleScreenEvent { Open: true })
+                battles.Add((s.Bt_Kind.Value, s.Bt_EnemyParty1.Value));
+        };
+        player.OnRead = () =>
+        {
+            if (!run.Presenter.InBattle)
+                centres.Add(s.Ui_CenterCg.Value);
+        };
+        player.OnMenu = () => menus.Add(([.. run.Presenter.MenuItems!], run.Presenter.WindowText.Text,
+            run.Presenter.MenuHitTest(player.Last.X.Value, player.Last.Y.Value)));
+
+        await run.Session.Script.CallFileAsync("Cﾒｲｷｭｳ.ADV");
+
+        var p = run.Presenter;
+        foreach (var (items, window, hit) in menus)
+            output.WriteLine($"[{string.Join(" | ", items)}] hit {hit} over \"{window.Replace("\n", "/")}\"");
+        output.WriteLine($"battles {string.Join(",", battles)}; centres {string.Join(",", centres)}; battle frames {player.BattleFrames}");
+        Assert.Empty(p.Unresolved.Concat(p.Battle.Unresolved).Distinct());
+        Assert.Empty(player.Pickers);
+        Assert.Empty(player.Answers["Cﾒｲｷｭｳ.ADV"]);
+        Assert.Equal([PickerKind.Deployment], player.PickersSeen);
+        Assert.Equal([(3, 83), (3, 83)], battles);                            // FIGT and 死亡捕獲 of a dungeon battle with the Sergeant Hanny
+        Assert.True(player.BattleFrames > 0, "the battle was drawn");
+        Assert.Contains(1031, centres);                                       // the cave's picture
+        Assert.Equal(7, menus.Count);
+        Assert.Empty(menus[4].Items);                                         // the empty ]: a box with nothing in it,
+        Assert.Equal(-1, menus[4].Hit);                                       // nothing to hit
+        Assert.All(menus.Where(m => m.Items.Length > 0).SelectMany(m => m.Items), t => Assert.NotEmpty(t.Trim()));
+        string name = new([.. Hankaku.ToHalfWidth(s.Strings[8]).Where(c => !char.IsWhiteSpace(c))]);
+        Assert.Contains(name + "2F", menus[2].Window);                        // the header under the floor menu (the drawn characters)
+        Assert.Equal(2, s.Dgns[2].SavedFloor.Value);
+        Assert.Equal(1, s.Dgns[2].State.Value);
+        Assert.Equal(0, s.Bt_Kind.Value);
+        Assert.False(p.InBattle);
+        Assert.Null(p.Picker);
+    }
+
     /// <summary>The number of distinct colours in a rectangle of <paramref name="screen"/> (every other pixel).</summary>
     private static int Colours(Kichikuou.Content.Screen.Surface screen, int x, int y, int w, int h)
     {
@@ -723,9 +787,10 @@ public class GamePresenterTests(ITestOutputHelper output)
             MenuTexts.AddRange(presenter.MenuItems!);
             OnMenu?.Invoke();
             Shot("menu");
-            string file = items[0].At.File;
+            string file = items.Count > 0 ? items[0].At.File : "";
             int choice = file switch
             {
+                "" => 0,                                                        // an empty ] (DGN-07): only a cancel leaves it
                 "COMMAND.ADV" => _commands.Dequeue(),
                 "Cﾃｷﾄｼ.ADV" => items.Select((item, i) => (item, i)).Single(x => x.item.At.Line == 70).i + 1,
                 _ when Answers.TryGetValue(file, out var answers) && answers.Count > 0 => answers.Dequeue(),
