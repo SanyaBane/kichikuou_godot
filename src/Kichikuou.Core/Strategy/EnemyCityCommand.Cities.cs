@@ -8,7 +8,7 @@ namespace Kichikuou.Core.Strategy;
 /// <c>docs/strategy/stage-2-sweep.md</c>, "The player's commands"): the cities' own exits — Pluepet
 /// at Portugal (28), Shangri-La (29), Custom (21), Toushin City (27) —, Maris's question, the menu
 /// (Negotiate, Use Force, Stop), the way to the negotiation and Use Force. The negotiations with the
-/// mayors (<c>:604-3648</c>) are not ported yet.
+/// mayors (<c>:604-3648</c>) are in <c>EnemyCityCommand.Talks.cs</c>.
 /// </summary>
 public sealed partial class EnemyCityCommand
 {
@@ -117,7 +117,7 @@ public sealed partial class EnemyCityCommand
     /// <c>L_00bfb</c> (<c>:528-633</c>): at Rockearth (17) after the DX president was killed
     /// (<c>F_DX_State = 100</c>) Maris refuses and the menu comes back (null); else Rance's
     /// "as a gentleman", the army surrounds the city and the mayor is called out, then the city's own
-    /// negotiation (<c>:604-633</c>, not ported yet).
+    /// negotiation (<see cref="TalkAsync"/>).
     /// </summary>
     private async Task<Outcome?> NegotiateAsync()
     {
@@ -137,7 +137,7 @@ public sealed partial class EnemyCityCommand
         State.CallArg = 1;
         await WaoAsync(311);                                            // \L_052f3
         await SpeakAsync(113, 595);                                     // "… ordered the mayor … to come out."
-        throw NotPorted(604, "the negotiation with an independent city", "P4");
+        return await TalkAsync();                                       // :604-633, EnemyCityCommand.Talks.cs
     }
 
     /// <summary>

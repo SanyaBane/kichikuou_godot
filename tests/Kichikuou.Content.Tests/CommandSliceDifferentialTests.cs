@@ -43,9 +43,67 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
              "text 3834", "text 3868", "text 3953", "text 4014", "text 4064", "text 4138", "text 4256", "M 1", "M 3", "M 4",
              // the independent cities: their exits, the menu, Stop, the way to a negotiation, Use Force
              "call Iｼｬﾝｸﾞﾘﾗ.ADV", "call Gｻｰﾅｷｱ.ADV", "call Gﾚﾍﾞｯｶ.ADV", "call Gｶｾｲ.ADV", "item 493", "item 498", "item 502",
-             "text 448", "text 476", "text 510", "text 532", "text 2442", "text 2689", "text 3652",
-             "unported"],
+             "text 448", "text 476", "text 510", "text 532", "text 2442", "text 2689", "text 3652", "text 595"],
             cases: 5000);
+
+    [Fact]
+    public Task The_independent_cities_negotiate_exactly_as_Cﾃｷﾄｼ() =>
+        CompareAsync(
+            "Cﾃｷﾄｼ.ADV",
+            (script, scenario) => new EnemyCityCommand(script, scenario).RunAsync(),
+            ShapeNegotiation,
+            Scribble,
+            [// Mars (22), Diphtheria (19), Rockearth (17), Ice (18)
+             "text 637", "item 810", "item 814", "text 822", "text 859", "text 924",
+             "text 960", "item 1258", "item 1262", "text 1271", "text 1327", "text 1434",
+             // Lazeal (20): the question, the wait, the scene
+             "text 1545", "item 1665", "item 1669", "text 1677", "text 1699", "text 1849", "call Gﾚｨﾘｨ.ADV",
+             // Red (23), Portugal (28), Zeo (24)
+             "text 1985", "item 2085", "item 2089", "text 2097", "text 2149",
+             "text 2206", "text 2306", "item 2319", "item 2323", "text 2332", "text 2375", "text 2386", "text 2701",
+             // M Land (25), Hanna (26)
+             "text 2814", "item 3022", "item 3026", "text 3034", "text 3082",
+             "text 3314", "text 3491", "item 3504", "item 3508", "text 3518", "text 3529", "text 3544", "text 3611",
+             "M 0", "M 3", "M 4", "M 10"],
+            cases: 3000,
+            choose: ChooseNegotiation);
+
+    /// <summary>
+    /// A city that negotiates at story stage 2 or 3 — Rockearth (17), Ice (18), Diphtheria (19),
+    /// Lazeal (20), Mars (22), Red (23), Zeo (24), M Land (25), Hanna (26), Portugal (28) — held by
+    /// the cities, now and then any province they hold (the dispatch's fall-through); the DX
+    /// Association's state, Lazeal's week around the current one, gold around the demands of
+    /// Portugal (90) and Hanna (29, 30), Gengorou (commander 8) alive or not.
+    /// </summary>
+    private static void ShapeNegotiation(GameState state, Random rng)
+    {
+        int[] cities = [17, 18, 19, 20, 22, 23, 24, 25, 26, 28];
+        state.Prov_Cur = (Sys3Int)(rng.Next(20) == 0 ? rng.Next(0, 100) : cities[rng.Next(cities.Length)]);
+        state.Provs[state.Prov_Cur].Owner = 3;
+        state.StoryStage = (Sys3Int)rng.Next(2, 4);
+        state.Ev_CommandMode = Sys3Int.Zero;
+        state.Ui_CmdAttackAvail = 1;
+        state.F_Merchant_State = (Sys3Int)(rng.Next(6) == 0 ? 1 : rng.Next(2, 4));
+        state.F_DX_State = (Sys3Int)(rng.Next(4) == 0 ? 100 : rng.Next(0, 3));
+        state.DXTalk_RetryWeek = (Sys3Int)(rng.Next(3) == 0 ? 0 : state.Week.Value + rng.Next(-5, 6));
+        state.Gold = (Sys3Int)(rng.Next(3) switch { 0 => rng.Next(27, 32), 1 => rng.Next(88, 93), _ => rng.Next(0, 3000) });
+        state.Cmdrs[8].Status = (Sys3Int)rng.Next(0, 2);
+    }
+
+    /// <summary>
+    /// The city's menus: half the time Attack, then Negotiate; else at random. Once the run is long
+    /// (the talks are) Return and Stop, but either answer of a city's question.
+    /// </summary>
+    private static int ChooseNegotiation(IReadOnlyList<SceneMenuItem> items, Random rng, bool tired)
+    {
+        if (tired)
+            return items.Any(i => i.At.Line is 81 or 502) ? items.Count : rng.Next(1, items.Count + 1);
+        foreach (int line in new[] { 64, 493 })
+            for (int i = 0; i < items.Count; i++)
+                if (items[i].At == new ScriptRef("Cﾃｷﾄｼ.ADV", line) && rng.Next(2) == 0)
+                    return i + 1;
+        return rng.Next(6) == 0 ? 0 : rng.Next(1, items.Count + 1);
+    }
 
     /// <summary>
     /// A city of the prologue now and then (Pillage, the AL Church), mostly an attack later on:

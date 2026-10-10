@@ -1114,13 +1114,13 @@ public sealed partial class GameState
     /// <summary>VAR0473 [C] — Warg: 1 = met at province 78 during this attack (Gﾜｰｸﾞ 1, called by Tｹｲﾌﾞﾘｽ2 while N_Warg_Stage = 0): Cﾃｷﾄｼ skips the battle and clears it to 0; 2 = joined Rance (Gﾜｰｸﾞ 2, "Thus Warg joined Rance"); 3 = later scenes; &gt; 1 in the harem.</summary>
     public ref Sys3Int F_Warg_State => ref Memory.Var(473);
 
-    /// <summary>VAR0474 [I] — Mars the Great: 1=active (province 22, MAIN music), incremented per abduction (score shown x10); 0 when Mars dies</summary>
+    /// <summary>VAR0474 [I] — Mars the Great: 1=active (province 22, MAIN music), incremented per abduction (score shown x10); 2 when made a general by the negotiation (Mars the Great, unit 26, joins); 0 when Mars dies</summary>
     public ref Sys3Int N_Mars_Score => ref Memory.Var(474);
 
-    /// <summary>VAR0475 [I] — DX Association: 1=negotiations with Rockearth failed, 2 left estate, 3 took Aoi, 100=settled/destroyed</summary>
+    /// <summary>VAR0475 [I] — DX Association: 1=Rockearth (17) won by negotiation ("I'll approve you"), 2 left estate, 3 took Aoi (GDX), 100=settled/destroyed (GDX) or "Disgusting, die" (no talks with Rockearth again)</summary>
     public ref Sys3Int F_DX_State => ref Memory.Var(475);
 
-    /// <summary>VAR0476 [I] — Week (VAR0517+4) before negotiations can be retried after a failed conference</summary>
+    /// <summary>VAR0476 [C] — Lazeal (20): Week + 4 after "I'll wait"; a negotiation once it is below Week gives the city (Gﾚｨﾘｨ 1), before that the mayor holds Rance to the promise; 0 = not asked yet (cleared by Use Force and Gﾚｨﾘｨ)</summary>
     public ref Sys3Int DXTalk_RetryWeek => ref Memory.Var(476);
 
     /// <summary>VAR0477 [C] — Sayori: 1=met (enemy-city scene), 2 scene; 0 cleared on her fate</summary>
@@ -1129,7 +1129,7 @@ public sealed partial class GameState
     /// <summary>VAR0478 [C] — M Land amusement park funded: costs 20 gold units (2000K GOLD) every week, adds Amusement Park to province 25</summary>
     public ref Sys3Int F_MLand_Funded => ref Memory.Var(478);
 
-    /// <summary>VAR0479 [I] — Shinoda: 1 paid, 2-3 scenes</summary>
+    /// <summary>VAR0479 [C] — Shinoda: 1 = Hanna (26) bought by negotiation while Gengorou (commander 8) lived, 2-3 Gｼﾉﾀﾞ's scenes</summary>
     public ref Sys3Int F_Shinoda_State => ref Memory.Var(479);
 
     /// <summary>VAR0480 [C] — Merim in the current dungeon party: 0=no, 1=yes, 2=injured or died this run; reset when the dungeon command starts</summary>

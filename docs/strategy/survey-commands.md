@@ -98,7 +98,7 @@ peaceful merge, Papaya) — a lost battle, refusal, barrier or Warg exit leaves 
 player may attack again the same week with other units (Q-2) [C]. Win/loss handling, ownership
 change and `死亡捕獲` live in FIGT_A; `Cﾃｷﾄｼ` adds only the map redraw (`:424`) [C].
 
-### 3.2 Independent cities (owner 3, `Cﾃｷﾄｼ.ADV:429-3828`)
+### 3.2 Independent cities (owner 3, `Cﾃｷﾄｼ.ADV:429-3828`) — ported whole (`Strategy/EnemyCityCommand.Cities.cs`, `.Talks.cs`, 2026-10-11)
 
 Pre-menu specials: Portugal (28) + `F_Merchant_State = 1` → Portugal merchant scene,
 `Gold += 100`, state 2 (`:2432-2694`); Shangri-La (29) → Iｼｬﾝｸﾞﾘﾗ#1/#2 (`:434-442`); Custom (21)

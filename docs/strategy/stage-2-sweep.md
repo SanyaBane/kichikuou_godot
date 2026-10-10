@@ -120,7 +120,7 @@ B (50)) and Bone Forest (90) / Tearing Forest (91) (from the Maginot Strongholds
 `:112` still allows one conquest a week; `Cﾃｷﾄｼ`, `Cﾃｷﾄｼ2` and `COMMAND` have no draws.
 
 **The independent cities** (`Cﾃｷﾄｼ.ADV:429-3828`, 3400 lines, about 45 labels, mostly text, no
-draws; ported but the negotiations, which throw at `:604` — README, "Milestone 3", step 4).
+draws; ported whole, 2026-10-11 — README, "Milestone 3", step 4).
 Before the menu (`:429-485`): Portugal (28) with
 `F_Merchant_State = 1` → Pluepet's scene (`:2431-2697`, Gold + 100); Shangri-La (29) →
 `Iｼｬﾝｸﾞﾘﾗ` 1 or 2; Custom (21) → `Iｼﾚｲﾌﾞ` 3 (`:456-460`: Custom joins without a battle; Maria
@@ -136,12 +136,12 @@ refusals CMD-01, no walls BFL-15, retreat mode 1, the city's list through `L_04f
 | Rockearth (17) | approve → `F_DX_State` 1, Gold + 500, success; "die" → 100, refused for good (`:957-1430`) | Rockearth Hero (commanders 68, 69) |
 | Ice (18) | always surrenders (`:1431-1535`) | Ice Hero (66, 67) |
 | Diphtheria (19) | the mayor never comes (`:921-956`) | Diphtheria Hero (70) |
-| Lazeal (20) | wait a month (`DXTalk_RetryWeek`, attack not spent), then `Gﾚｨﾘｨ` 1, success (`:1536-1981`) | Lazeal Hero (65) |
-| Mars (22) | Make a General → Mars the Great (unit 26) joins (`:634-920`) | Mars the Great (71), then `Gｶｾｲ` 1 (Mars phase) |
+| Lazeal (20) | "I'll wait" (`DXTalk_RetryWeek := Week + 4`, the file left, attack not spent), then once that week has passed `Gﾚｨﾘｨ` 1, success (`:1536-1981`) | Lazeal Hero (65) |
+| Mars (22) | Make a General → Mars the Great (unit 26) joins, `N_Mars_Score := 2`, success, no `Gｶｾｲ` 1 (`:634-920`) | Mars the Great (71), then `Gｶｾｲ` 1 (Mars phase) |
 | Red (23) | "I promise" → success (`:1982-2202`) | Red Hero (63, 64) |
 | Zeo (24) | a refusal letter (`:2698-2810`) | Zeo Hero (13-16) |
-| M Land (25) | Maintain the Park → `F_MLand_Funded`, success (`:2811-3310`) | Sayori (11), M Land Hero (12) |
-| Hanna (26) | pay 30 (CMD-04) (`:3311-3648`) | Hanna Hero (9, 10), Gengorou (8) |
+| M Land (25) | Maintain the Park → `F_MLand_Funded`, `F_Sayori_State` 1, success (`:2811-3310`) | Sayori (11), M Land Hero (12) |
+| Hanna (26) | pay 30, refused below 29 (CMD-04); `F_Shinoda_State := 1` while Gengorou (commander 8) lives (`:3311-3648`) | Hanna Hero (9, 10), Gengorou (8) |
 | Portugal (28) | Pay and Conquer or Don't Pay, both succeed (CMD-03; `:2203-2430`) | Portugal Hero (17) |
 | Shangri-La (29) | none: `Iｼｬﾝｸﾞﾘﾗ` 2 (a duel against the Desert Guides (18-20), no conquest), the next week `Iｼｬﾝｸﾞﾘﾗ` 3 (`COM:137-140`) gives the city to Leazas [I: whatever the duel's result] | — |
 
@@ -260,7 +260,7 @@ stage-2 captures start from the owner's own saves (or a harness that sets `Debug
 | `Tｾﾞｽ2`, `Tｾﾞｽ` | 401, 777 | the first attack on Adam's Fortress (58) — main path (both ported 2026-10-10) |
 | `Tﾊﾟｯﾄﾝ` | 226 | after Helman falls (`Gﾊﾟｯﾄﾝ` 6) — main path (ported 2026-10-10) |
 | `Tｹｲﾌﾞﾘｽ2` | 347 | the gate attack after `Iｼﾚｲﾌﾞ` 6 (at stage 3, inside the same command) — ported 2026-10-10 |
-| `Cﾃｷﾄｼ` independent cities | `:429-3828`, 3400 | from W+1 (Rockearth (17), Zeo (24), Hanna (26), Shangri-La (29)) |
+| `Cﾃｷﾄｼ` independent cities | `:429-3828`, 3400 | from W+1 (Rockearth (17), Zeo (24), Hanna (26), Shangri-La (29)) — ported 2026-10-10/11 |
 | `TJAPAN2`, `TJAPAN` | 219, 2851 | after Portugal (28) |
 | `Cﾒｲｷｭｳ` God's Door | `:233-236`, `:3500-4556`, ~1060 | after the Ancient Ruins (35) and the quest |
 | `Tｹｲﾌﾞﾘｽ` | 1855 | the first week of stage 3 only |

@@ -473,12 +473,12 @@ VAR0470	F_Mokomoko_State	story	Mokomoko: 11=toll collected at province 4, 12-14 
 VAR0471	F_Makoto_State	story	Makoto: 0=lives in Osaka (good), 1=captured at province 56, 2 later (bad)	C	Cｼﾊｲﾄｼ.ADV:916; Gﾏｺﾄ.ADV:418; OVER.ADV:1194
 VAR0472	N_SpecialRoom_Girls	story	Number of girls kept in the Special Room (enables the castle menu entry)	C	Cｼﾊｲﾄｼ.ADV:1057; Gﾄｸﾍﾞﾂ.ADV:107; Gｶｾｲ.ADV:2593
 VAR0473	F_Warg_State	story	Warg: 1 = met at province 78 during this attack (Gﾜｰｸﾞ 1, called by Tｹｲﾌﾞﾘｽ2 while N_Warg_Stage = 0): Cﾃｷﾄｼ skips the battle and clears it to 0; 2 = joined Rance (Gﾜｰｸﾞ 2, "Thus Warg joined Rance"); 3 = later scenes; > 1 in the harem.	C	Gﾜｰｸﾞ.ADV:4085; Gﾜｰｸﾞ.ADV:3604; Cﾃｷﾄｼ.ADV:356-358; Tｹｲﾌﾞﾘｽ2.ADV:92-96; Cﾊｰﾚﾑ.ADV:179
-VAR0474	N_Mars_Score	story	Mars the Great: 1=active (province 22, MAIN music), incremented per abduction (score shown x10); 0 when Mars dies	I	Gｶｾｲ.ADV:1942; Gｶｾｲ.ADV:1893; Gｶｾｲ.ADV:3096
-VAR0475	F_DX_State	story	DX Association: 1=negotiations with Rockearth failed, 2 left estate, 3 took Aoi, 100=settled/destroyed	I	Cﾃｷﾄｼ.ADV:1324; GDX.ADV:1103; GDX.ADV:37
-VAR0476	DXTalk_RetryWeek	time	Week (VAR0517+4) before negotiations can be retried after a failed conference	I	Cﾃｷﾄｼ.ADV:1696; Cﾃｷﾄｼ.ADV:1537
+VAR0474	N_Mars_Score	story	Mars the Great: 1=active (province 22, MAIN music), incremented per abduction (score shown x10); 2 when made a general by the negotiation (Mars the Great, unit 26, joins); 0 when Mars dies	I	Gｶｾｲ.ADV:1942; Gｶｾｲ.ADV:1893; Gｶｾｲ.ADV:3096; Cﾃｷﾄｼ.ADV:899
+VAR0475	F_DX_State	story	DX Association: 1=Rockearth (17) won by negotiation ("I'll approve you"), 2 left estate, 3 took Aoi (GDX), 100=settled/destroyed (GDX) or "Disgusting, die" (no talks with Rockearth again)	I	Cﾃｷﾄｼ.ADV:1324; Cﾃｷﾄｼ.ADV:1268; Cﾃｷﾄｼ.ADV:529; GDX.ADV:1103; GDX.ADV:37
+VAR0476	DXTalk_RetryWeek	time	Lazeal (20): Week + 4 after "I'll wait"; a negotiation once it is below Week gives the city (Gﾚｨﾘｨ 1), before that the mayor holds Rance to the promise; 0 = not asked yet (cleared by Use Force and Gﾚｨﾘｨ)	C	Cﾃｷﾄｼ.ADV:1696; Cﾃｷﾄｼ.ADV:1537; Cﾃｷﾄｼ.ADV:3711; Gﾚｨﾘｨ.ADV:1673; Iｶﾝｶﾞｴ.ADV:518
 VAR0477	F_Sayori_State	story	Sayori: 1=met (enemy-city scene), 2 scene; 0 cleared on her fate	C	Cﾃｷﾄｼ.ADV:3078; Gｳﾝｶﾞ.ADV:14; IMﾗﾝﾄﾞ.ADV:1792
 VAR0478	F_MLand_Funded	economy	M Land amusement park funded: costs 20 gold units (2000K GOLD) every week, adds Amusement Park to province 25	C	MAIN.ADV:190; Cｼﾊｲﾄｼ.ADV:185; Cﾃｷﾄｼ.ADV:3079
-VAR0479	F_Shinoda_State	story	Shinoda: 1 paid, 2-3 scenes	I	Cﾃｷﾄｼ.ADV:3541; Gｼﾉﾀﾞ.ADV:18
+VAR0479	F_Shinoda_State	story	Shinoda: 1 = Hanna (26) bought by negotiation while Gengorou (commander 8) lived, 2-3 Gｼﾉﾀﾞ's scenes	C	Cﾃｷﾄｼ.ADV:3541; Gｼﾉﾀﾞ.ADV:18
 VAR0480	DgnRun_MerimInParty	dungeon	Merim in the current dungeon party: 0=no, 1=yes, 2=injured or died this run; reset when the dungeon command starts	C	Cﾒｲｷｭｳ.ADV:5503; Cﾒｲｷｭｳ.ADV:1342; Cﾒｲｷｭｳ.ADV:7
 VAR0481	DgnRun_Floor	dungeon	Current floor during dungeon exploration (+1 per step, stored to Dgn field VAR0148)	C	Cﾒｲｷｭｳ.ADV:1001; Cﾒｲｷｭｳ.ADV:863; Cﾒｲｷｭｳ.ADV:680
 VAR0482	DgnRun_MaxFloor	dungeon	Deepest floor of the current dungeon (set per dungeon id)	C	Cﾒｲｷｭｳ.ADV:478; Cﾒｲｷｭｳ.ADV:870

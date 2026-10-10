@@ -507,14 +507,162 @@ public class CommandSliceTests
         Assert.Empty(rig.Calls);
     }
 
-    [Fact]
-    public async Task A_negotiation_calls_the_mayor_out_and_is_not_ported_yet()
+    /// <summary>Whether the city became Leazas's, the week's attack was spent and its heroes are gone.</summary>
+    private static void Taken(SliceRig rig, int province, params int[] heroes)
     {
-        var rig = IndependentCity(23, [1], 1);
+        Is(1, rig.State.Provs[province].Owner);
+        Is(0, rig.State.Ui_CmdAttackAvail);
+        foreach (int c in heroes)
+        {
+            Is(0, rig.State.Cmdrs[c].Status);
+            Is(0, rig.State.Cmdrs[c].Troops);
+        }
+        Assert.Contains(4, rig.View.Events.OfType<MapEvent>().Select(m => (int)m.Mode.Value));   // the owner's flag
+    }
 
-        await Assert.ThrowsAsync<NotSupportedException>(() => new EnemyCityCommand(rig.Script).RunAsync());
+    [Fact]
+    public async Task Ice_and_Red_give_in_and_Diphtheria_and_Zeo_refuse()
+    {
+        var rig = IndependentCity(18, [1], 1);                          // Negotiate
+        rig.State.Cmdrs[66].Status = 1;
+        rig.State.Cmdrs[66].Troops = 900;
+        await new EnemyCityCommand(rig.Script).RunAsync();
+        Assert.Equal([595, 1434], rig.Lines.Where(l => l is 595 or 1434));
+        Taken(rig, 18, 66, 67);
 
-        Assert.Contains(595, rig.Lines);
+        rig = IndependentCity(23, [1], 1, 1);                           // Negotiate, I promise
+        await new EnemyCityCommand(rig.Script).RunAsync();
+        Assert.Equal([2085, 2089], rig.MenuLines[^1]);
+        Taken(rig, 23, 63, 64);
+
+        rig = IndependentCity(23, [1], 1, 2, 3);                        // I can't promise: the header, Return
+        await new EnemyCityCommand(rig.Script).RunAsync();
+        Assert.Contains(2149, rig.Lines);
+        Assert.Equal(2, rig.Lines.Count(l => l == 20));
+        Is(3, rig.State.Provs[23].Owner);
+
+        rig = IndependentCity(19, [1], 1, 3, 3);                        // Negotiate: back to the menu; Stop, Return
+        await new EnemyCityCommand(rig.Script).RunAsync();
+        Assert.Contains(953, rig.Lines);
+        Assert.Equal(2, rig.MenuLines.Count(m => m.SequenceEqual([493, 498, 502])));
+        Is(3, rig.State.Provs[19].Owner);
+
+        rig = IndependentCity(24, [1], 1);                              // the file is left
+        await new EnemyCityCommand(rig.Script).RunAsync();
+        Assert.Contains(2804, rig.Lines);
+        Is(3, rig.State.Provs[24].Owner);
+        Is(1, rig.State.Ui_CmdAttackAvail);
+    }
+
+    [Fact]
+    public async Task Rockearth_pays_500_when_approved_and_never_talks_again_after_die()
+    {
+        var rig = IndependentCity(17, [1], 1, 1);                       // Negotiate, I'll approve you
+        await new EnemyCityCommand(rig.Script).RunAsync();
+        Is(1, rig.State.F_DX_State);
+        Is(1000, rig.State.Gold);
+        Taken(rig, 17, 68, 69);
+
+        rig = IndependentCity(17, [1], 1, 2, 3);                        // Disgusting, die: the header, Return
+        await new EnemyCityCommand(rig.Script).RunAsync();
+        Is(100, rig.State.F_DX_State);
+        Is(500, rig.State.Gold);
+        Is(3, rig.State.Provs[17].Owner);
+        Assert.Contains(1317, rig.Lines);
+    }
+
+    [Fact]
+    public async Task Lazeal_waits_four_weeks_after_Ill_wait_and_gives_in_after_them()
+    {
+        var rig = IndependentCity(20, [1], 1, 2);                       // Negotiate, I'll wait
+        await new EnemyCityCommand(rig.Script).RunAsync();
+        Is(16, rig.State.DXTalk_RetryWeek);                             // week 12 + 4
+        Is(3, rig.State.Provs[20].Owner);
+        Is(1, rig.State.Ui_CmdAttackAvail);
+
+        rig = IndependentCity(20, [1], 1);
+        rig.State.DXTalk_RetryWeek = 12;                                // not before this week: wait on
+        await new EnemyCityCommand(rig.Script).RunAsync();
+        Assert.Contains(1849, rig.Lines);
+        Assert.Empty(rig.Calls);
+        Is(3, rig.State.Provs[20].Owner);
+
+        rig = IndependentCity(20, [1], 1);
+        rig.State.DXTalk_RetryWeek = 11;
+        await new EnemyCityCommand(rig.Script).RunAsync();
+        Assert.Equal([("Gﾚｨﾘｨ.ADV", 1)], rig.Calls);
+        Taken(rig, 20, 65);
+    }
+
+    [Fact]
+    public async Task Mars_joins_as_a_general_and_M_Land_is_funded()
+    {
+        var rig = IndependentCity(22, [1], 1, 2);                       // Negotiate, Make a General
+        await new EnemyCityCommand(rig.Script).RunAsync();
+        Is(1, rig.State.Units[26].Status);
+        Is(2, rig.State.N_Mars_Score);
+        Assert.Empty(rig.Calls);                                        // no Gｶｾｲ 1, unlike Use Force
+        Taken(rig, 22, 71);
+
+        rig = IndependentCity(22, [1], 1, 1, 3);                        // Reject: the header, Return
+        await new EnemyCityCommand(rig.Script).RunAsync();
+        Is(0, rig.State.Units[26].Status);
+        Is(3, rig.State.Provs[22].Owner);
+
+        rig = IndependentCity(25, [1], 1, 2);                           // Maintain the Park
+        await new EnemyCityCommand(rig.Script).RunAsync();
+        Is(1, rig.State.F_MLand_Funded);
+        Is(1, rig.State.F_Sayori_State);
+        Taken(rig, 25, 11, 12);
+
+        rig = IndependentCity(25, [1], 1, 1);                           // No: the file is left
+        await new EnemyCityCommand(rig.Script).RunAsync();
+        Is(0, rig.State.F_MLand_Funded);
+        Is(3, rig.State.Provs[25].Owner);
+    }
+
+    [Fact]
+    public async Task Portugal_is_taken_for_free_without_paying_and_refuses_89_gold()
+    {
+        var rig = IndependentCity(28, [1], 1, 2, 1);                    // Pay and Conquer (refused), Don't Pay
+        rig.State.Gold = 89;
+        await new EnemyCityCommand(rig.Script).RunAsync();
+        Assert.Equal([2375, 2332], rig.Lines.Where(l => l is 2375 or 2332));
+        Assert.Equal(2, rig.MenuLines.Count(m => m.SequenceEqual([2319, 2323])));
+        Is(89, rig.State.Gold);                                         // CMD-03
+        Taken(rig, 28, 17);
+
+        rig = IndependentCity(28, [1], 1, 2);                           // Pay and Conquer
+        rig.State.Gold = 90;
+        rig.State.Hist_Cur = 3;
+        await new EnemyCityCommand(rig.Script).RunAsync();
+        Is(0, rig.State.Gold);
+        Is(90, rig.State.History[3].SundryExp);                         // CMD-14
+        Taken(rig, 28, 17);
+    }
+
+    [Fact]
+    public async Task Hanna_takes_29_gold_for_30_and_Gengorou_has_his_say_while_alive()
+    {
+        var rig = IndependentCity(26, [1], 1, 1);                       // Negotiate, Pay
+        rig.State.Gold = 29;
+        rig.State.Hist_Cur = 2;
+        rig.State.Cmdrs[8].Status = 1;
+        await new EnemyCityCommand(rig.Script).RunAsync();
+        Is(0, rig.State.Gold);                                          // CMD-04
+        Is(30, rig.State.History[2].SundryExp);
+        Is(1, rig.State.F_Shinoda_State);
+        Assert.Contains(3544, rig.Lines);
+        Taken(rig, 26, 8, 9, 10);
+
+        rig = IndependentCity(26, [1], 1, 1, 2);                        // Pay (refused at 28), Refuse
+        rig.State.Gold = 28;
+        await new EnemyCityCommand(rig.Script).RunAsync();
+        Assert.Equal([3518, 3611], rig.Lines.Where(l => l is 3518 or 3611));
+        Is(28, rig.State.Gold);
+        Is(0, rig.State.F_Shinoda_State);
+        Is(3, rig.State.Provs[26].Owner);
+        Is(1, rig.State.Ui_CmdAttackAvail);
     }
 
     [Fact]

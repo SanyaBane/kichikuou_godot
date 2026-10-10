@@ -11,7 +11,7 @@ namespace Kichikuou.Core.Strategy;
 /// (<c>:99-425</c>): Maris's refusals, the party picker <c>Sﾌﾞﾀｲ</c>, the units' refusals, the
 /// defenders chosen by the owner's <c>T*2</c> file (calls through the hooks; Patton's list inline),
 /// the exits without a battle and <c>FIGT_A</c>. The independent cities (owner 3, <c>:429-3828</c>,
-/// part P4) are in <c>EnemyCityCommand.Cities.cs</c>; their negotiations fail as not ported yet.
+/// part P4) are in <c>EnemyCityCommand.Cities.cs</c>, their negotiations in <c>EnemyCityCommand.Talks.cs</c>.
 /// Called by <c>COMMAND.ADV</c> with the clicked province in <c>Prov_Cur</c>. The JAPAN "Fleeing
 /// Soldier" names (<c>MS 4/5/10</c>) and the cities' army names (<c>MS 10</c>) are read from the
 /// player's files through <paramref name="scenario"/>.
