@@ -335,7 +335,17 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         else if (scriptEvent is ValueMessageEvent values)
             _skip.OnMessage(values.Text);
         if (scriptEvent is MapScreenEvent { Waiting: true })
+        {
             _autoMapWait = true;
+            if (_autoDungeon == AutoDungeon.Searching && _presenter.State is { } s)
+            {
+                _autoDungeon = AutoDungeon.Done;                        // back on the map: the search is over
+                GD.Print($"Kichikuou: --auto left the cave: floor {s.DgnRun_Floor.Value} reached, "
+                    + $"{(_autoDungeonBattle ? "a battle fought" : "no battle")}, the searcher's status {s.Units[s.Bt_PlayerParty1].Status.Value}.");
+            }
+        }
+        if (scriptEvent is BattleScreenEvent { Open: true } && _autoDungeon == AutoDungeon.Searching)
+            _autoDungeonBattle = true;
         if (scriptEvent is EngineEvent { Command: "IZ", Args: [var x, var y] })
             await WarpPointerAsync(x.Value, y.Value);
         if (_presenter.TakeFade() is { } fade)
@@ -859,11 +869,26 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     private Queue<Action> _autoItemSteps = new();
 
+    /// <summary>The dungeon the unattended player searches once at stage 1: the Monsters' Cave.</summary>
+    private const int AutoCave = 2;
+
+    /// <summary>Where the unattended player's one dungeon search stands.</summary>
+    private enum AutoDungeon { NotYet, Searching, Done }
+
+    private AutoDungeon _autoDungeon;
+
+    /// <summary>Whether the search has fought a battle.</summary>
+    private bool _autoDungeonBattle;
+
+    /// <summary>Whether the search's Start Search was chosen (the dungeon's menu again means the picker came back empty).</summary>
+    private bool _autoDungeonStarted;
+
     /// <summary>The end of unattended play (<see cref="GameOptions.AutoWeeks"/>).</summary>
     private sealed class AutoStopException(string message) : Exception(message);
 
     /// <summary>
-    /// The map opens the command menu (one right click each time the map loop starts waiting); the
+    /// The map opens the command menu (one right click each time the map loop starts waiting), or once
+    /// the Monsters' Cave with a left click on it (<see cref="AutoCaveOnScreen"/>); the
     /// deployment picker takes the first unit free (status 1) and sends it with the first button,
     /// or stops (third button) when nobody is free or the sending was refused; the item screen
     /// takes <see cref="AutoItemSteps"/>, then ends (third button); any other picker is left
@@ -934,8 +959,34 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         else if (_presenter.MapWaiting && _autoMapWait)
         {
             _autoMapWait = false;
-            _pointer.RightClick(5, 6);
+            if (AutoCaveOnScreen() is var (x, y))
+            {
+                _autoDungeon = AutoDungeon.Searching;
+                _pointer.Click(x, y);
+            }
+            else
+            {
+                _pointer.RightClick(5, 6);
+            }
         }
+    }
+
+    /// <summary>
+    /// Where the Monsters' Cave is on the screen when the unattended player is to search it: once, at
+    /// the first map wait of stage 1 that finds the week's dungeon action free and the cave's province
+    /// the player's (<c>COMMAND.ADV:145-158</c>), before the menu's visits of the stage (the castle may
+    /// fall in a few weeks); null otherwise or out of view. The map wait's first read still has the
+    /// camera as the centre (<c>COMMAND.ADV:50-58</c>), on Leazas Castle (<c>:4-13</c>).
+    /// </summary>
+    private (int X, int Y)? AutoCaveOnScreen()
+    {
+        if (_autoDungeon != AutoDungeon.NotYet || _presenter.State is not { } s || s.StoryStage != 1
+            || s.Ui_CmdDungeonAvail != 1 || s.Provs[s.Dgns[AutoCave].Prov].Owner != 1)
+            return null;
+        if (PointerScript.OnScreen(s, s.Dgns[AutoCave].MapX, s.Dgns[AutoCave].MapY) is not { } at)
+            return null;
+        GD.Print($"Kichikuou: --auto searches the Monsters' Cave (week {s.Week.Value}).");
+        return at;
     }
 
     /// <summary>
@@ -985,7 +1036,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// The command menu's next item of <see cref="AutoVisits"/> once a week, else its Turn END
     /// (past <see cref="GameOptions.AutoWeeks"/> the run stops there); a defence's menu after a
     /// stopped deployment picker abandons the city; All Data's menu each graph in turn, then Return;
-    /// elsewhere the first item.
+    /// the dungeon search's menus a few floors down with a battle, then out; elsewhere the first item.
     /// </summary>
     private int AutoChoice(IReadOnlyList<SceneMenuItem> items)
     {
@@ -1012,6 +1063,26 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                     return _autoGraph;
                 _autoGraph = 0;
                 return back;
+            }
+            if (_autoDungeon == AutoDungeon.Searching && _presenter.State is { } d)
+            {
+                // The search: Start Search once (the dungeon's menu again means nobody went: Return);
+                // down until a battle was fought on floor 3 or deeper — between floors 3 and 4 until
+                // one is, Marder waits on 5 — then Retreat and Finish.
+                if (Find("Start Search") is var start and > 0)
+                {
+                    bool again = _autoDungeonStarted;
+                    _autoDungeonStarted = true;
+                    return again ? Find("Return") : start;
+                }
+                if (Find("Retreat") is var retreat and > 0)
+                {
+                    if (_autoDungeonBattle && d.DgnRun_Floor >= 3)
+                        return retreat;
+                    return d.DgnRun_Floor < 4 ? Find("Descend") : Find("Ascend");
+                }
+                if (Find("Finish") is var finish and > 0)
+                    return finish;
             }
             return items.Count > 0 ? 1 : 0;
         }
