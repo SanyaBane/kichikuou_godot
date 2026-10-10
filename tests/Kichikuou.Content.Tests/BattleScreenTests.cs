@@ -265,17 +265,23 @@ public class SelectionBoxTests
 }
 
 /// <summary>The presenter and FIGT_SEL over the player's data (CGs, scenario, captures).</summary>
-public class BattlePresenterGameDataTests(ITestOutputHelper output)
+public class BattlePresenterGameDataTests
 {
-    public static IEnumerable<object[]> Captures => LocalData.Captures.Select(f => new object[] { Path.GetFileName(f) });
+    /// <summary>
+    /// The per-capture tests are spread over the <c>BattleCaptures*</c> classes, each taking every
+    /// <see cref="CaptureShards"/>-th capture: xUnit runs the tests of one class one after another and
+    /// the classes in parallel.
+    /// </summary>
+    public const int CaptureShards = 8;
+
+    public static IEnumerable<object[]> CapturesOfShard(int shard) =>
+        LocalData.Captures.Where((_, i) => i % CaptureShards == shard).Select(f => new object[] { Path.GetFileName(f) });
 
     private static BattlePresenter NewPresenter(BoxGlyphs? glyphs = null) =>
         new(new ScenarioText(LocalData.ScenarioDirectory), new CgLibrary(LocalData.CgDirectory), glyphs ?? new BoxGlyphs());
 
     /// <summary>Every recorded battle draws without errors, and every text it draws is found.</summary>
-    [CaptureTheory]
-    [MemberData(nameof(Captures))]
-    public async Task Every_capture_draws(string file)
+    public static async Task EveryCaptureDrawsAsync(string file, ITestOutputHelper output)
     {
         var capture = GoldenCapture.Load(Path.Combine(LocalData.GoldenDirectory, file));
         var glyphs = new BoxGlyphs();
@@ -395,9 +401,7 @@ public class BattlePresenterGameDataTests(ITestOutputHelper output)
     /// clicked, or else "Defend" is chosen from the command popup; script menus take their first
     /// item. Checks that the FIGT_SEL screen answers every real menu the core asks.
     /// </summary>
-    [CaptureTheory]
-    [MemberData(nameof(Captures))]
-    public async Task Live_battles_can_be_fought_with_the_mouse(string file)
+    public static async Task FightWithTheMouseAsync(string file, ITestOutputHelper output)
     {
         var capture = GoldenCapture.Load(Path.Combine(LocalData.GoldenDirectory, file));
         var presenter = NewPresenter();
@@ -477,6 +481,80 @@ public class BattlePresenterGameDataTests(ITestOutputHelper output)
             return Task.CompletedTask;
         }
     }
+}
+
+// The shards of BattlePresenterGameDataTests' per-capture tests (CaptureShards of them).
+
+public class BattleCaptures0(ITestOutputHelper output)
+{
+    [CaptureTheory, MemberData(nameof(BattlePresenterGameDataTests.CapturesOfShard), 0, MemberType = typeof(BattlePresenterGameDataTests))]
+    public Task Every_capture_draws(string file) => BattlePresenterGameDataTests.EveryCaptureDrawsAsync(file, output);
+
+    [CaptureTheory, MemberData(nameof(BattlePresenterGameDataTests.CapturesOfShard), 0, MemberType = typeof(BattlePresenterGameDataTests))]
+    public Task Live_battles_can_be_fought_with_the_mouse(string file) => BattlePresenterGameDataTests.FightWithTheMouseAsync(file, output);
+}
+
+public class BattleCaptures1(ITestOutputHelper output)
+{
+    [CaptureTheory, MemberData(nameof(BattlePresenterGameDataTests.CapturesOfShard), 1, MemberType = typeof(BattlePresenterGameDataTests))]
+    public Task Every_capture_draws(string file) => BattlePresenterGameDataTests.EveryCaptureDrawsAsync(file, output);
+
+    [CaptureTheory, MemberData(nameof(BattlePresenterGameDataTests.CapturesOfShard), 1, MemberType = typeof(BattlePresenterGameDataTests))]
+    public Task Live_battles_can_be_fought_with_the_mouse(string file) => BattlePresenterGameDataTests.FightWithTheMouseAsync(file, output);
+}
+
+public class BattleCaptures2(ITestOutputHelper output)
+{
+    [CaptureTheory, MemberData(nameof(BattlePresenterGameDataTests.CapturesOfShard), 2, MemberType = typeof(BattlePresenterGameDataTests))]
+    public Task Every_capture_draws(string file) => BattlePresenterGameDataTests.EveryCaptureDrawsAsync(file, output);
+
+    [CaptureTheory, MemberData(nameof(BattlePresenterGameDataTests.CapturesOfShard), 2, MemberType = typeof(BattlePresenterGameDataTests))]
+    public Task Live_battles_can_be_fought_with_the_mouse(string file) => BattlePresenterGameDataTests.FightWithTheMouseAsync(file, output);
+}
+
+public class BattleCaptures3(ITestOutputHelper output)
+{
+    [CaptureTheory, MemberData(nameof(BattlePresenterGameDataTests.CapturesOfShard), 3, MemberType = typeof(BattlePresenterGameDataTests))]
+    public Task Every_capture_draws(string file) => BattlePresenterGameDataTests.EveryCaptureDrawsAsync(file, output);
+
+    [CaptureTheory, MemberData(nameof(BattlePresenterGameDataTests.CapturesOfShard), 3, MemberType = typeof(BattlePresenterGameDataTests))]
+    public Task Live_battles_can_be_fought_with_the_mouse(string file) => BattlePresenterGameDataTests.FightWithTheMouseAsync(file, output);
+}
+
+public class BattleCaptures4(ITestOutputHelper output)
+{
+    [CaptureTheory, MemberData(nameof(BattlePresenterGameDataTests.CapturesOfShard), 4, MemberType = typeof(BattlePresenterGameDataTests))]
+    public Task Every_capture_draws(string file) => BattlePresenterGameDataTests.EveryCaptureDrawsAsync(file, output);
+
+    [CaptureTheory, MemberData(nameof(BattlePresenterGameDataTests.CapturesOfShard), 4, MemberType = typeof(BattlePresenterGameDataTests))]
+    public Task Live_battles_can_be_fought_with_the_mouse(string file) => BattlePresenterGameDataTests.FightWithTheMouseAsync(file, output);
+}
+
+public class BattleCaptures5(ITestOutputHelper output)
+{
+    [CaptureTheory, MemberData(nameof(BattlePresenterGameDataTests.CapturesOfShard), 5, MemberType = typeof(BattlePresenterGameDataTests))]
+    public Task Every_capture_draws(string file) => BattlePresenterGameDataTests.EveryCaptureDrawsAsync(file, output);
+
+    [CaptureTheory, MemberData(nameof(BattlePresenterGameDataTests.CapturesOfShard), 5, MemberType = typeof(BattlePresenterGameDataTests))]
+    public Task Live_battles_can_be_fought_with_the_mouse(string file) => BattlePresenterGameDataTests.FightWithTheMouseAsync(file, output);
+}
+
+public class BattleCaptures6(ITestOutputHelper output)
+{
+    [CaptureTheory, MemberData(nameof(BattlePresenterGameDataTests.CapturesOfShard), 6, MemberType = typeof(BattlePresenterGameDataTests))]
+    public Task Every_capture_draws(string file) => BattlePresenterGameDataTests.EveryCaptureDrawsAsync(file, output);
+
+    [CaptureTheory, MemberData(nameof(BattlePresenterGameDataTests.CapturesOfShard), 6, MemberType = typeof(BattlePresenterGameDataTests))]
+    public Task Live_battles_can_be_fought_with_the_mouse(string file) => BattlePresenterGameDataTests.FightWithTheMouseAsync(file, output);
+}
+
+public class BattleCaptures7(ITestOutputHelper output)
+{
+    [CaptureTheory, MemberData(nameof(BattlePresenterGameDataTests.CapturesOfShard), 7, MemberType = typeof(BattlePresenterGameDataTests))]
+    public Task Every_capture_draws(string file) => BattlePresenterGameDataTests.EveryCaptureDrawsAsync(file, output);
+
+    [CaptureTheory, MemberData(nameof(BattlePresenterGameDataTests.CapturesOfShard), 7, MemberType = typeof(BattlePresenterGameDataTests))]
+    public Task Live_battles_can_be_fought_with_the_mouse(string file) => BattlePresenterGameDataTests.FightWithTheMouseAsync(file, output);
 }
 
 /// <summary>A fact over the golden captures; skipped without captures or scenario.</summary>

@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Text;
 using System.Text.RegularExpressions;
 using Kichikuou.Core.Script;
@@ -20,11 +21,12 @@ namespace Kichikuou.Content.Scripts;
 /// address word names, <see cref="ScenarioParser.DataTable"/>), <c>F3, VARnnnn, expr:</c>,
 /// <c>%#FILE.ADV:</c> and <c>%0:</c> (which ends the file's code); <c>ZH n:</c> and <c>R</c> are
 /// message formatting and produce nothing. <see cref="ReadStatement"/> reads one line in these
-/// forms, e.g. an <c>MS</c> or a <c>#label</c> of a hand-ported file.
+/// forms, e.g. an <c>MS</c> or a <c>#label</c> of a hand-ported file. One instance may be shared
+/// between threads (the content tests run their cases in parallel).
 /// </remarks>
 public sealed partial class ScenarioScripts(string directory) : IScenarioSource, ISceneSource
 {
-    private readonly Dictionary<string, string[]> _files = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, string[]> _files = new(StringComparer.Ordinal);
 
     /// <summary>The folder with the raw decompiled <c>.ADV</c> files.</summary>
     public string Directory { get; } = directory;
@@ -116,18 +118,13 @@ public sealed partial class ScenarioScripts(string directory) : IScenarioSource,
         throw new ScenarioFormatException($"{at}: unsupported statement '{line}'.");
     }
 
-    private string[] Lines(string file)
+    private string[] Lines(string file) => _files.GetOrAdd(file, f =>
     {
-        if (!_files.TryGetValue(file, out var lines))
-        {
-            string path = Path.Combine(Directory, file);
-            if (!File.Exists(path))
-                throw new ScenarioFormatException($"Scenario file {path} not found.");
-            lines = File.ReadAllLines(path, Encoding.UTF8);
-            _files[file] = lines;
-        }
-        return lines;
-    }
+        string path = Path.Combine(Directory, f);
+        if (!File.Exists(path))
+            throw new ScenarioFormatException($"Scenario file {path} not found.");
+        return File.ReadAllLines(path, Encoding.UTF8);
+    });
 
     [GeneratedRegex(@"^ZH \d+:$")]
     private static partial Regex ZhRegex();

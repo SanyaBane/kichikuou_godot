@@ -796,34 +796,23 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             return;
         var scenario = new ScenarioScripts(LocalData.ScenarioDirectory);
         var program = scenario.ReadProgram(file);
+
+        // The cases are independent (each has its own state, draws, input and log), so they run in
+        // parallel; they are judged in seed order, so a failure still names the first seed that fails.
+        var outcomes = new Outcome[cases];
+        await Parallel.ForAsync(1, cases + 1, async (seed, _) =>
+            outcomes[seed - 1] = await CompareCaseAsync(seed, file, program, port, shape, scenario, scribble, mouse, choose));
+
         var seen = new Dictionary<string, int>(StringComparer.Ordinal);
         int stopped = 0, unported = 0;
-
-        for (int seed = 1; seed <= cases; seed++)
+        foreach (var outcome in outcomes)
         {
-            var rng = new Random(seed);
-            var state = RandomState(rng);
-            shape(state, rng);
-            var mine = await RunAsync(Copy(state), seed, file, null, port, scenario, scribble, mouse, choose);
-            var original = await RunAsync(Copy(state), seed, file, program, port, scenario, scribble, mouse, choose);
-
-            if (mine.Unported is not null)
-            {
-                unported++;
-                seen["unported"] = seen.GetValueOrDefault("unported") + 1;
-                int prefix = FirstDifference(original.Log.Take(mine.Log.Count).ToList(), mine.Log);
-                Assert.True(prefix < 0, $"seed {seed}: the runs differ at entry {prefix} before the port's '{mine.Unported}'\n{Around(file, original.Log, mine.Log, prefix)}");
-                continue;
-            }
-            Assert.True(original.Unported is null, $"seed {seed}: the port finished, the decompile failed: {original.Unported}");
-            int at = FirstDifference(original.Log, mine.Log);
-            Assert.True(at < 0, $"seed {seed}: the runs differ at entry {at}\n{Around(file, original.Log, mine.Log, at)}");
-            Assert.Equal(original.Stopped, mine.Stopped);
-            var differences = Differences(file, original.State.Memory, mine.State.Memory).Take(10).ToList();
-            Assert.True(differences.Count == 0, $"seed {seed}: memory differs\n  " + string.Join("\n  ", differences));
-            if (mine.Stopped)
+            Assert.True(outcome.Failure is null, outcome.Failure);
+            if (outcome.Stopped)
                 stopped++;
-            foreach (string feature in Features(file, mine.Log).Distinct())
+            if (outcome.Unported)
+                unported++;
+            foreach (string feature in outcome.Features)
                 seen[feature] = seen.GetValueOrDefault(feature) + 1;
         }
 
@@ -833,6 +822,42 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         var missed = expected.Where(e => !seen.ContainsKey(e)).ToList();
         Assert.True(missed.Count == 0, "never reached: " + string.Join(", ", missed));
         Assert.True(unported < cases / 3, $"{unported} of {cases} runs reached an unported path");
+    }
+
+    /// <summary>One case judged: the failure (or <c>null</c>), how it ended, the features it reached.</summary>
+    private sealed record Outcome(string? Failure, bool Stopped, bool Unported, IReadOnlyList<string> Features);
+
+    /// <summary>Runs one seed through the port and the decompile and compares the two runs.</summary>
+    private static async Task<Outcome> CompareCaseAsync(
+        int seed, string file, ScriptProgram program, Port port, Action<GameState, Random> shape, ScenarioScripts scenario,
+        Scribbler scribble, Func<Random, MouseState>? mouse, MenuPolicy? choose)
+    {
+        var rng = new Random(seed);
+        var state = RandomState(rng);
+        shape(state, rng);
+        var mine = await RunAsync(Copy(state), seed, file, null, port, scenario, scribble, mouse, choose);
+        var original = await RunAsync(Copy(state), seed, file, program, port, scenario, scribble, mouse, choose);
+
+        if (mine.Unported is not null)
+        {
+            int prefix = FirstDifference(original.Log.Take(mine.Log.Count).ToList(), mine.Log);
+            return new Outcome(
+                prefix < 0 ? null : $"seed {seed}: the runs differ at entry {prefix} before the port's '{mine.Unported}'\n{Around(file, original.Log, mine.Log, prefix)}",
+                Stopped: false, Unported: true, ["unported"]);
+        }
+        if (original.Unported is not null)
+            return Failed($"seed {seed}: the port finished, the decompile failed: {original.Unported}");
+        int at = FirstDifference(original.Log, mine.Log);
+        if (at >= 0)
+            return Failed($"seed {seed}: the runs differ at entry {at}\n{Around(file, original.Log, mine.Log, at)}");
+        if (original.Stopped != mine.Stopped)
+            return Failed($"seed {seed}: stopped by the input budget: decompile {original.Stopped}, port {mine.Stopped}");
+        var differences = Differences(file, original.State.Memory, mine.State.Memory).Take(10).ToList();
+        if (differences.Count > 0)
+            return Failed($"seed {seed}: memory differs\n  " + string.Join("\n  ", differences));
+        return new Outcome(null, mine.Stopped, Unported: false, Features(file, mine.Log).Distinct().ToList());
+
+        static Outcome Failed(string failure) => new(failure, Stopped: false, Unported: false, []);
     }
 
     private sealed record Run(GameState State, List<string> Log, bool Stopped, string? Unported);
