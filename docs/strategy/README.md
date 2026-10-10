@@ -243,7 +243,20 @@ tests) and, where the owner has recorded them, golden captures:
 8. ✓ **D1** (2026-10-10, the D1 / D2 row): the dungeon search in `Cﾒｲｷｭｳ`, the whole file but God's Door (with
    `Iｶﾐ` later); `--auto` searches the Monsters' Cave once, at the first map wait of stage 1 (with `--seed 7`
    in week 25: down to floor 4 with a battle; the rebels still take Leazas Castle, ending 2).
-9. The whole stage unattended (`--auto`) to the first week of stage 2, and the owner's captures.
+9. ✓ **The whole stage unattended** (2026-10-10; the owner's captures are still to come): `--auto` plays
+   stage 1 to stage 2 with gestures and menu choices only (decision 4; the policy is
+   `godot/Strategy/GameScreen.cs`, "unattended play") — once a week a replenish (`Cﾌﾞｶ`, the unit
+   whose replenish restores the most) and, while Rance has three quarters of his troops, an attack
+   on the first of 4, 5, 6, 7, 3 the rebels hold next to an own province (`Cﾃｷﾄｼ`, Rance and the
+   strongest, all places against Oaks); defences with the strongest, the dungeon search with the
+   weakest; `--stage n` stops two weeks after stage n is reached. With `--seed 2` it takes 4 (week 26)
+   and 5 (week 28), fails at Oaks three times and takes it in week 34 (`Iｼﾚｲﾌﾞ` 2, stage 2), wins
+   `Iﾏｼﾞﾝ` 1's two defences of the castle in week 35 and stops in week 36; no file or path "not ported
+   yet" is met on the way. Stage 1 is hard on an unattended player: without the weekly replenish
+   none of seeds 1-13 took Oaks; with it 6 of 8 did, two reached the stop and in four the castle fell
+   afterwards (seed 7: `Iﾏｼﾞﾝ` 1's second defence with nobody free). `--auto` never abandoned a city
+   before: `FIGT_B`'s menu comes through the battle input (`ChooseAsync`), and a defence with nobody
+   free looped forever; fixed.
 
 Files without story gates (`MAIN`, `Cﾌﾞｶ`, `Cﾊｰﾚﾑ`, `Cｼﾊｲﾄｼ`, `Cｼｮｳﾆﾝ`, `Cﾆﾝｼﾞｬ`, `Cﾃｲﾄ`,
 `Sｱｲﾃﾑ`, `各種DATA`) are ported whole; of `Cﾃｷﾄｼ` only the attack (the independent cities are P4), of `Cﾒｲｷｭｳ`
@@ -290,7 +303,14 @@ stage 1 calls `Gｴｸｽ` 2 (province 5) / 3 (province 6) and `死亡捕獲`.
 %#Iｼﾚｲﾌﾞ.ADV:` (entry 2): `StoryStage := 2` (`Iｼﾚｲﾌﾞ.ADV:2689`), provinces 2-16 to Leazas, `Gｴｸｽ` 4
 (a three-way choice, `F_Ex_State` 100 or 4) — inside the player phase. Province 6 borders only 5
 and 26 (owner 3), so the shortest way is 4 or 7, then 5, then 6, one conquest a week: stage 2 in
-the fourth Leazas week at the earliest [I]. At that week's end `MAIN:893-895` sets
+the fourth Leazas week at the earliest [I] (the unattended run of step 9 took ten). Oaks is the hard
+part: `TCﾘｰｻﾞｽ2` gives it up to four defenders who never retreat (`Bt_EnemyRetreatMode` 1), walls 4
+and its battle area 232 as the troop limit, and the attacker loses when the 4-5 rounds run out. The
+rebels' armies attack the first province the player holds in their lists (`TCﾘｰｻﾞｽ.ADV:10-110`):
+A (commanders 3, 5, 4) 4, 3, 2, 1; B (1, 2, 6, 7) 7, 8, 1; once the player holds 5, only C (up to
+four of all seven) at 6, 5 — so holding 5 keeps the castle out of their reach. A unit that fought
+this week cannot be replenished: `Cﾌﾞｶ.ADV:38-43` shows its status page instead of the troop menu.
+At that week's end `MAIN:893-895` sets
 `N_Camilla_Stage` 0 → 1; the next week `COM:152` plays `GAL` 1, and at its end `MAIN:887` plays
 `Iﾏｼﾞﾝ` 1: two `FIGT_B` defences of province 1 (commanders 86+87, then 86+87+90;
 `N_Camilla_Stage := 2`). The milestone ends at the player phase after that week.

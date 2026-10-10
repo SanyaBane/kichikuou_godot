@@ -65,8 +65,9 @@ files whole; the P4-P7 row). Step 5 is done: `Cｼｮｳﾆﾝ` and `Cｼﾊｲ�
 `PickerKind.Items`, `DataScreenEvent`) and their screens are drawn by hand (`PickerView`, the
 presenter's All Data layer). Step 8 is done: `Cﾒｲｷｭｳ` is ported but God's Door (`DungeonCommand`, its
 scenes in `DungeonCommand.Scenes.cs`; the boss and Hanny setters are record data run from the player's
-files through `IScenarioSource.ReadBlock`; God's Door and `Iｶﾐ` throw `NotSupportedException`). Next:
-step 9, the whole stage unattended to the first week of stage 2, and the owner's captures.
+files through `IScenarioSource.ReadBlock`; God's Door and `Iｶﾐ` throw `NotSupportedException`). Step 9:
+`--auto` plays the whole stage to stage 2 (`--seed 2`: Oaks in week 34, `Iﾏｼﾞﾝ` 1, stop in week 36,
+nothing unported met); next, the owner's stage-1 captures (checklist in docs/golden-tests.md).
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
 
@@ -140,12 +141,14 @@ step 9, the whole stage unattended to the first week of stage 2, and the owner's
 - Watch a capture headless and save the screen at every key wait and long pause:
   `<Godot console exe> --headless --path godot -- --watch <capture> --fast --quit --shots <dir>`.
 - Play the game unattended headless (slots in `user://saves-auto`; `--load` resumes them):
-  `<Godot console exe> --headless --path godot -- --newgame --auto --fast --quit [--seed n] [--shots <dir>] [--weeks n]`;
+  `<Godot console exe> --headless --path godot -- --newgame --auto --fast --quit [--seed n] [--shots <dir>] [--weeks n] [--stage n]`;
   one visit each to Harem, Subordinates and the hideout in the prologue and to Treasure and All Data
-  at stage 1 (after one search of the Monsters' Cave: down to a battle, Retreat, Finish), Turn END
-  every week (stage 1: the rebels attack, `--auto` defends with the first unit free), ends at the first file or path not ported yet ("not ported yet"), at a game over, or after week
-  30 (`--weeks n`) — with `--seed 7` today the rebels take Leazas Castle: ending 2 (exit code 0;
-  1 after an error).
+  at stage 1 (after one search of the Monsters' Cave with the weakest unit: down to a battle, Retreat,
+  Finish); from stage 1 once a week a replenish (`Cﾌﾞｶ`) and an attack on the rebels (from their
+  second week, while Rance has 3/4 of his troops), defences with the strongest; Turn END every week;
+  ends at the first file or path not ported yet ("not ported yet"), at a game over, after week 30
+  (`--weeks n`) or two weeks after story stage `--stage n` is reached — `--seed 2 --weeks 60 --stage 2`
+  takes Oaks in week 34 and stops in week 36, ~15 min (exit code 0; 1 after an error).
 
 ## Rules
 
