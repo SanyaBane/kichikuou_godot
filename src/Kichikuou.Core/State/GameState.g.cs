@@ -205,8 +205,8 @@ public sealed partial class GameState
     /// <summary>VAR0062 [I] — Week number after which a Miri event fires (set Week+20, Cell extends +20); 0 = no deadline.</summary>
     public ref Sys3Int N_Miri_DeadlineWeek => ref Memory.Var(62);
 
-    /// <summary>VAR0063 [G] — Mixed flag: 0/1 first cancel-attack dialogue seen in Cﾃｷﾄｼ; 2 set by Papaia/Kayblis events, tested in Zeth AI.</summary>
-    public ref Sys3Int VAR0063 => ref Memory.Var(63);
+    /// <summary>VAR0063 [C] — Zeth Palace barrier: 0 never met, 1 met (Cﾃｷﾄｼ plays the long "lost the way" dialogue once when Tｾﾞｽ2 turns an attack back, then the short one), 2 broken (Gﾊﾟﾊﾟｲｱ, Tｹｲﾌﾞﾘｽ); Tｾﾞｽ2 empties the party on 66/67/68/70 while it is not 2 and no deployed unit holds item 12; G1/Gﾎﾗｶﾞ/Gﾏｹﾝ offer barrier hints at 1.</summary>
+    public ref Sys3Int F_ZethBarrier_State => ref Memory.Var(63);
 
     /// <summary>VAR0064 [I] — Province where Lady Caravan currently is (random walk +-1 each week, start 40); after capture (VAR0365=10/11) reused as weeks-since counter.</summary>
     public ref Sys3Int LadyCaravan_Prov => ref Memory.Var(64);
@@ -1111,7 +1111,7 @@ public sealed partial class GameState
     /// <summary>VAR0472 [C] — Number of girls kept in the Special Room (enables the castle menu entry)</summary>
     public ref Sys3Int N_SpecialRoom_Girls => ref Memory.Var(472);
 
-    /// <summary>VAR0473 [C] — Warg: 1=joined Rance, 2-3 scenes (&gt;1 harem)</summary>
+    /// <summary>VAR0473 [C] — Warg: 1 = met at province 78 during this attack (Gﾜｰｸﾞ 1, called by Tｹｲﾌﾞﾘｽ2 while N_Warg_Stage = 0): Cﾃｷﾄｼ skips the battle and clears it to 0; 2 = joined Rance (Gﾜｰｸﾞ 2, "Thus Warg joined Rance"); 3 = later scenes; &gt; 1 in the harem.</summary>
     public ref Sys3Int F_Warg_State => ref Memory.Var(473);
 
     /// <summary>VAR0474 [I] — Mars the Great: 1=active (province 22, MAIN music), incremented per abduction (score shown x10); 0 when Mars dies</summary>

@@ -70,7 +70,7 @@ public static partial class VariableCatalog
         new("F_Zeth_War", "story"),
         new("N_Warg_Stage", "story"),
         new("N_Miri_DeadlineWeek", "story"),
-        new("VAR0063", "story"),
+        new("F_ZethBarrier_State", "story"),
         new("LadyCaravan_Prov", "story"),
         new("N_Amiran_Stage", "story"),
         new("N_Cell_Stage", "story"),

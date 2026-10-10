@@ -62,7 +62,7 @@ VAR0059	F_Helman_War	story	Helman war state: 0 peace, 1 at war (Helman phase run
 VAR0060	F_Zeth_War	story	Zeth war state: 0 peace, 1 at war (Zeth phase runs), 2 Zeth fallen.	C	MAIN.ADV:507; Tｾﾞｽ2.ADV:46; Iｾﾞｽ.ADV:1127
 VAR0061	N_Warg_Stage	story	Warg (Lassie) event progression 0/1/2; 0 lets the Warg event fire and gates Kayblis turns.	I	COM.ADV:96; Gﾜｰｸﾞ.ADV:3525; Tｹｲﾌﾞﾘｽ.ADV:149
 VAR0062	N_Miri_DeadlineWeek	story	Week number after which a Miri event fires (set Week+20, Cell extends +20); 0 = no deadline.	I	Gﾐﾘ.ADV:1357; COM.ADV:525; Gｾﾙ.ADV:6012
-VAR0063		story	Mixed flag: 0/1 first cancel-attack dialogue seen in Cﾃｷﾄｼ; 2 set by Papaia/Kayblis events, tested in Zeth AI.	G	Cﾃｷﾄｼ.ADV:381; Tｾﾞｽ2.ADV:92
+VAR0063	F_ZethBarrier_State	story	Zeth Palace barrier: 0 never met, 1 met (Cﾃｷﾄｼ plays the long "lost the way" dialogue once when Tｾﾞｽ2 turns an attack back, then the short one), 2 broken (Gﾊﾟﾊﾟｲｱ, Tｹｲﾌﾞﾘｽ); Tｾﾞｽ2 empties the party on 66/67/68/70 while it is not 2 and no deployed unit holds item 12; G1/Gﾎﾗｶﾞ/Gﾏｹﾝ offer barrier hints at 1.	C	Cﾃｷﾄｼ.ADV:381-386; Tｾﾞｽ2.ADV:92; Gﾊﾟﾊﾟｲｱ.ADV:5737; Tｹｲﾌﾞﾘｽ.ADV:1701; G1.ADV:1996
 VAR0064	LadyCaravan_Prov	story	Province where Lady Caravan currently is (random walk +-1 each week, start 40); after capture (VAR0365=10/11) reused as weeks-since counter.	I	COM.ADV:56; Cｼﾊｲﾄｼ.ADV:287; Gｶﾌｪ.ADV:2451
 VAR0065	N_Amiran_Stage	story	Amiran/Lelyukov event progression (0,1,2,3,90,100).	I	Gｱﾐﾗﾝ.ADV:15; Gﾚﾘｭｰｺﾌ.ADV:1456; COM.ADV:711
 VAR0066	N_Cell_Stage	story	Cell event progression 0/1/2.	I	Gｾﾙ.ADV:4192; Gｾﾙ.ADV:4588
@@ -472,7 +472,7 @@ VAR0469	N_RanceSelfTalk	story	Times Rance picked himself in the subordinate talk
 VAR0470	F_Mokomoko_State	story	Mokomoko: 11=toll collected at province 4, 12-14 scenes, 15=lives at Rance's side (good), 2=captured by DX (bad)	C	Cｼﾊｲﾄｼ.ADV:910; Gﾓｺﾓｺ.ADV:1680; OVER.ADV:692
 VAR0471	F_Makoto_State	story	Makoto: 0=lives in Osaka (good), 1=captured at province 56, 2 later (bad)	C	Cｼﾊｲﾄｼ.ADV:916; Gﾏｺﾄ.ADV:418; OVER.ADV:1194
 VAR0472	N_SpecialRoom_Girls	story	Number of girls kept in the Special Room (enables the castle menu entry)	C	Cｼﾊｲﾄｼ.ADV:1057; Gﾄｸﾍﾞﾂ.ADV:107; Gｶｾｲ.ADV:2593
-VAR0473	F_Warg_State	story	Warg: 1=joined Rance, 2-3 scenes (>1 harem)	C	Gﾜｰｸﾞ.ADV:4085; Gﾜｰｸﾞ.ADV:3604; Cﾊｰﾚﾑ.ADV:179
+VAR0473	F_Warg_State	story	Warg: 1 = met at province 78 during this attack (Gﾜｰｸﾞ 1, called by Tｹｲﾌﾞﾘｽ2 while N_Warg_Stage = 0): Cﾃｷﾄｼ skips the battle and clears it to 0; 2 = joined Rance (Gﾜｰｸﾞ 2, "Thus Warg joined Rance"); 3 = later scenes; > 1 in the harem.	C	Gﾜｰｸﾞ.ADV:4085; Gﾜｰｸﾞ.ADV:3604; Cﾃｷﾄｼ.ADV:356-358; Tｹｲﾌﾞﾘｽ2.ADV:92-96; Cﾊｰﾚﾑ.ADV:179
 VAR0474	N_Mars_Score	story	Mars the Great: 1=active (province 22, MAIN music), incremented per abduction (score shown x10); 0 when Mars dies	I	Gｶｾｲ.ADV:1942; Gｶｾｲ.ADV:1893; Gｶｾｲ.ADV:3096
 VAR0475	F_DX_State	story	DX Association: 1=negotiations with Rockearth failed, 2 left estate, 3 took Aoi, 100=settled/destroyed	I	Cﾃｷﾄｼ.ADV:1324; GDX.ADV:1103; GDX.ADV:37
 VAR0476	DXTalk_RetryWeek	time	Week (VAR0517+4) before negotiations can be retried after a failed conference	I	Cﾃｷﾄｼ.ADV:1696; Cﾃｷﾄｼ.ADV:1537

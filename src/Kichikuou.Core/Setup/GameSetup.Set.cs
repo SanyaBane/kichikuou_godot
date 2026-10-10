@@ -35,7 +35,7 @@ public sealed partial class GameSetup
         State.F_Zeth_War = (Sys3Int)0; // :18
         State.N_Warg_Stage = (Sys3Int)0; // :19
         State.N_Miri_DeadlineWeek = (Sys3Int)0; // :20
-        State.VAR0063 = (Sys3Int)0; // :21
+        State.F_ZethBarrier_State = (Sys3Int)0; // :21
         State.LadyCaravan_Prov = (Sys3Int)40; // :22
         State.N_Amiran_Stage = (Sys3Int)0; // :23
         State.N_Cell_Stage = (Sys3Int)0; // :24
