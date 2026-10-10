@@ -31,6 +31,7 @@ public sealed class PickerView
     private readonly GamePresenter _owner;
     private readonly Dictionary<int, TextBox> _panels = [];
     private IReadOnlyList<string>? _haremNames;
+    private Surface? _promptPanel;
 
     internal PickerView(PickerKind kind, Sys3Int mode, GamePresenter owner)
     {
@@ -78,21 +79,31 @@ public sealed class PickerView
         return (PickerArea.Cell, Math.Min(row * 3 + column + 1, 51));
     }
 
-    /// <summary>Whether entry <paramref name="id"/> is on the list.</summary>
-    public bool Listed(GameState s, int id) =>
-        id is >= 1 and <= 50 && (Kind == PickerKind.Harem ? s.Buffer[(Sys3Int)id].Val != 0 : s.Units[(Sys3Int)id].Status != 0);
+    /// <summary>
+    /// Whether entry <paramref name="id"/> is on the list: a unit with a status, a girl of the
+    /// harem's list, or in <c>Sｱｲﾃﾑ</c>'s views a unit with a status (0) or an item owned (1; no list in other views).
+    /// </summary>
+    public bool Listed(GameState s, int id) => id is >= 1 and <= 50 && Kind switch
+    {
+        PickerKind.Harem => s.Buffer[(Sys3Int)id].Val != 0,
+        PickerKind.Items when s.Ui_ItemViewMode == 1 => s.Items[(Sys3Int)id].Holder != 0,
+        PickerKind.Items when s.Ui_ItemViewMode != 0 => false,
+        _ => s.Units[(Sys3Int)id].Status != 0,
+    };
 
     /// <summary>Draws the screen over what is on <paramref name="screen"/>.</summary>
     internal void Draw(Surface screen, GameState s)
     {
-        bool harem = Kind == PickerKind.Harem;
         G(screen, Kind switch
         {
             PickerKind.Deployment => 817,
             PickerKind.Subordinates => 870,
+            PickerKind.Items => 819,
             _ => s.StoryStage == 0 ? 694 : 818,
         }, keyed: true);
-        G(screen, harem ? (s.StoryStage == 0 ? 696 : 700) : 600);
+        G(screen, Background(s));
+        if (Kind == PickerKind.Items && Prompt(s) is { } prompt)
+            DrawPrompt(screen, s, prompt);
 
         int hovered = s.Tmp0033.Value;
         bool details = s.Tmp0026 != 0 && Listed(s, hovered);
@@ -113,12 +124,12 @@ public sealed class PickerView
         else if (details)
             screen.Fill(s.Tmp0027.Value, s.Tmp0028.Value + 18 + 14 + 2, 90, 2, 240);
 
-        foreach (var (line, x) in BarLabels())
+        foreach (var (line, x, y, size) in BarLabels())
         {
             if (_owner.Literal(new ScriptRef(File, line)) is not { } label)
                 continue;
-            Text(screen, label, x + 1, 333, 24, 0);
-            Text(screen, label, x, 333, 24, 255);
+            Text(screen, label, x + 1, y, size, 0);
+            Text(screen, label, x, y, size, 255);
         }
 
         if (Kind == PickerKind.Deployment)
@@ -131,36 +142,72 @@ public sealed class PickerView
     {
         PickerKind.Deployment => "Sﾌﾞﾀｲ.ADV",
         PickerKind.Subordinates => "Sﾌﾞｶ.ADV",
+        PickerKind.Items => "Sｱｲﾃﾑ.ADV",
         _ => "Sﾊｰﾚﾑ.ADV",
     };
 
-    /// <summary>The bar's labels: the <c>MS 1</c> lines and x of <c>Sﾌﾞﾀｲ.ADV:12-102</c> by mode, "End" of <c>Sﾌﾞｶ.ADV:21</c> / <c>Sﾊｰﾚﾑ.ADV:10</c>.</summary>
-    private IEnumerable<(int Line, int X)> BarLabels() => Kind switch
+    /// <summary>
+    /// The details panel's background: 600, the harem's 696/700, or <c>Sｱｲﾃﾑ</c>'s by the view its
+    /// screen was drawn for (<c>:5-13</c>: 600 the units, 692 the items) — a first pick turns the
+    /// view without drawing the screen again, so while it is half made the other view's stays.
+    /// </summary>
+    private int Background(GameState s)
+    {
+        if (Kind == PickerKind.Harem)
+            return s.StoryStage == 0 ? 696 : 700;
+        if (Kind != PickerKind.Items)
+            return 600;
+        var drawnFor = Prompt(s) switch
+        {
+            ItemPrompt.UnitFirst => 0,
+            ItemPrompt.ItemFirst => 1,
+            _ => s.Ui_ItemViewMode.Value,
+        };
+        return drawnFor switch { 0 => 600, 1 => 692, _ => 0 };
+    }
+
+    /// <summary>The bar's labels: line, x, y and size of the <c>MS 1</c> texts (<c>Sﾌﾞﾀｲ.ADV:12-102</c> by mode, "End" of <c>Sﾌﾞｶ.ADV:21</c> / <c>Sﾊｰﾚﾑ.ADV:10</c>, <c>Sｱｲﾃﾑ.ADV:16-44</c>).</summary>
+    private IEnumerable<(int Line, int X, int Y, int Size)> BarLabels() => Kind switch
     {
         PickerKind.Deployment when Mode.Value is >= 1 and <= 3 =>
-            new[] { new[] { 14, 24, 33 }, [45, 54, 63], [75, 84, 93] }[Mode.Value - 1].Zip([340, 445, 550]),
+            new[] { new[] { 14, 24, 33 }, [45, 54, 63], [75, 84, 93] }[Mode.Value - 1].Zip([340, 445, 550], (line, x) => (line, x, 333, 24)),
         PickerKind.Deployment => [],
-        PickerKind.Subordinates => [(21, 562)],
-        _ => [(10, 562)],
+        PickerKind.Subordinates => [(21, 562, 333, 24)],
+        PickerKind.Items => [(16, 452 - 8, 332, 12), (25, 475 - 8, 346, 12), (36, 550 + 12, 333, 24)],
+        _ => [(10, 562, 333, 24)],
     };
 
     private string Name(GameState s, int id)
     {
+        if (Kind == PickerKind.Items && s.Ui_ItemViewMode == 1)
+            return StringVar(s, s.Item_StrBase + (Sys3Int)id - 1);
         if (Kind != PickerKind.Harem)
-            return Hankaku.ToHalfWidth(s.Strings[s.Unit_StrBase.Value + (id - 1) * 3]);
+            return StringVar(s, s.Unit_StrBase + ((Sys3Int)id - 1) * 3);
         _haremNames ??= _owner.StringTable(new ScriptRef(File, 57));   // #L_00848, 1: (Sﾊｰﾚﾑ.ADV:56-58)
         return id - 1 < _haremNames.Count ? Hankaku.ToHalfWidth(_haremNames[id - 1]) : "";
     }
 
+    private static string StringVar(GameState s, Sys3Int index) =>
+        index.Value < s.Strings.Length ? Hankaku.ToHalfWidth(s.Strings[index.Value]) : "";
+
     /// <summary>
-    /// The name's colour (<c>Sﾌﾞﾀｲ.ADV:390-407</c>, <c>Sﾌﾞｶ.ADV:67-81</c>, <c>Sﾊｰﾚﾑ.ADV:56-67</c>): 255 at
-    /// status 1, 15 at status 2, 13 in the party being built; the harem's are all 255; other states keep the shadow's black.
+    /// The name's colour (<c>Sﾌﾞﾀｲ.ADV:390-407</c>, <c>Sﾌﾞｶ.ADV:67-81</c>, <c>Sﾊｰﾚﾑ.ADV:56-67</c>,
+    /// <c>Sｱｲﾃﾑ.ADV:181-226</c>): 255 at status 1, 15 at status 2 (<c>Sｱｲﾃﾑ</c>: 255), 13 in the party
+    /// being built; the harem's are all 255; an item 255 in stock, 253 held, 12 without effect;
+    /// other states keep the shadow's black.
     /// </summary>
     private int NameColor(GameState s, int id)
     {
         if (Kind == PickerKind.Harem)
             return 255;
+        if (Kind == PickerKind.Items && s.Ui_ItemViewMode == 1)
+        {
+            var item = s.Items[(Sys3Int)id];
+            return item.Effect == 0 ? 12 : item.Holder == 100 ? 255 : 253;
+        }
         var unit = s.Units[(Sys3Int)id];
+        if (Kind == PickerKind.Items)
+            return unit.Status == 1 || unit.Status == 2 ? 255 : 0;
         int color = unit.Status == 1 ? 255 : unit.Status == 2 ? 15 : 0;
         if (Kind == PickerKind.Deployment && (id == s.Bt_PlayerParty1.Value || id == s.Bt_PlayerParty2.Value || id == s.Bt_PlayerParty3.Value || id == s.Bt_PlayerParty4.Value))
             color = 13;
@@ -174,6 +221,11 @@ public sealed class PickerView
     /// </summary>
     private void DetailsPicture(Surface screen, GameState s, int id)
     {
+        if (Kind == PickerKind.Items && s.Ui_ItemViewMode == 1)
+        {
+            G(screen, 750 + id);                                        // Sｱｲﾃﾑ.ADV:475
+            return;
+        }
         if (Kind != PickerKind.Harem)
         {
             G(screen, s.Units[(Sys3Int)id].PortraitCg.Value);
@@ -185,6 +237,57 @@ public sealed class PickerView
             G(screen, id + 700);
         if (s.F_Mill_State > 1 && id == 18)
             G(screen, 695);
+    }
+
+    /// <summary><c>Sｱｲﾃﾑ</c>'s half-made pick: which came first.</summary>
+    public enum ItemPrompt
+    {
+        /// <summary>A unit, waiting for its item (<c>Ui_ItemUnitSel</c> alone).</summary>
+        UnitFirst,
+
+        /// <summary>An item, waiting for its unit (<c>Ui_ItemSel</c> alone).</summary>
+        ItemFirst,
+    }
+
+    /// <summary>The item screen's half-made pick, or null (another picker, nothing or both picked).</summary>
+    public ItemPrompt? Prompt(GameState s) => Kind != PickerKind.Items ? null
+        : s.Ui_ItemUnitSel != 0 && s.Ui_ItemSel == 0 ? ItemPrompt.UnitFirst
+        : s.Ui_ItemSel != 0 && s.Ui_ItemUnitSel == 0 ? ItemPrompt.ItemFirst
+        : null;
+
+    /// <summary>
+    /// The three lines of the half-made pick's prompt (<c>Sｱｲﾃﾑ.ADV:104-110</c> "&lt;unit&gt; / is
+    /// equipping / Which item?", <c>:121-128</c> "Equipping / &lt;item&gt; / Which character?"), or
+    /// null without one. The strings are the picks' own, also for the bar's 997 (CMD-17).
+    /// </summary>
+    public IReadOnlyList<string>? PromptLines(GameState s)
+    {
+        string Line(int line) => _owner.ReadText(new ScriptRef(File, line)).Replace("\n", "");
+        return Prompt(s) switch
+        {
+            ItemPrompt.UnitFirst => [StringVar(s, s.Unit_StrBase + (s.Ui_ItemUnitSel - 1) * 3), Line(107), Line(110)],
+            ItemPrompt.ItemFirst => [Line(121), StringVar(s, s.Item_StrBase + s.Ui_ItemSel - 1), Line(128)],
+            _ => null,
+        };
+    }
+
+    /// <summary>
+    /// <c>Sｱｲﾃﾑ.ADV:101-110</c>, <c>:118-128</c>: the first pick's prompt, which the script draws on
+    /// the screen it keeps — the picture panel as it was at the pick (the background and the
+    /// picked entry's picture) shrunk to 186×116 at (11, 273), the lines right of it at x 213.
+    /// </summary>
+    private void DrawPrompt(Surface screen, GameState s, ItemPrompt prompt)
+    {
+        _promptPanel ??= new Surface(Surface.ScreenWidth, Surface.ScreenHeight, indexed: false);
+        _promptPanel.Palette = screen.Palette;
+        _promptPanel.CopyFrom(screen, 6, 6, 314, 196, 6, 6);
+        int picked = (prompt == ItemPrompt.UnitFirst ? s.Ui_ItemUnitSel : s.Ui_ItemSel).Value;
+        if (picked is >= 1 and <= 50)                                   // the bar's 997 had no details shown
+            G(_promptPanel, prompt == ItemPrompt.UnitFirst ? s.Units[(Sys3Int)picked].PortraitCg.Value : 750 + picked);
+        screen.ScaledCopyFrom(_promptPanel, 6, 6, 314, 196, 11, 273, 186, 116, 0);
+        var lines = PromptLines(s)!;
+        for (int i = 0; i < lines.Count; i++)
+            Text(screen, lines[i], 11 + 202, 273 + 64 + 16 * i, 12, 255);
     }
 
     private void G(Surface screen, int number, bool keyed = false)

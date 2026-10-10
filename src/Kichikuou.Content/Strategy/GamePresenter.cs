@@ -234,6 +234,7 @@ public sealed partial class GamePresenter
                     EnsureTiles();                                      // the drag copies the view from the tiles
                 break;
             case PickerScreenEvent e: PickerScreen(e); break;
+            case DataScreenEvent e: DataScreen(e.View); break;
             case SaveScreenEvent e: SaveScreenOpen = e.Open; break;
             case WindowEvent e: Window(e.Op.Value); break;
             case MessageEvent e: Print(Read(e.Text, [], e.StringVariables)); break;
@@ -306,6 +307,9 @@ public sealed partial class GamePresenter
             return $"[{source}]";
         }
     }
+
+    /// <summary>The text at a script location with its numbers (the screens drawn by hand print the script's lines themselves).</summary>
+    internal string ReadText(ScriptRef source, params Sys3Int[] numbers) => Read(source, numbers, null);
 
     /// <summary>A menu item's text as it was printed into the item.</summary>
     internal string Read(CapturedText captured)
@@ -412,6 +416,9 @@ public sealed partial class GamePresenter
 
     // ------------------------------------------------------------------ pickers and menus
 
+    /// <summary>A screen drawn by hand is open: a picker or All Data.</summary>
+    private bool DrawnByHand => Picker is not null || Data != DataView.Closed;
+
     private void PickerScreen(PickerScreenEvent e)
     {
         if (e.Open)
@@ -430,7 +437,8 @@ public sealed partial class GamePresenter
     /// <summary>
     /// A presentation-only engine command. The text commands (<c>ZM</c>, <c>ZC 1</c>, the message
     /// and selection windows <c>B1</c>-<c>B4</c>, <c>T</c>) steer the text; the drawing commands
-    /// run on the stage as in the engine, except while a picker is open (it is drawn by hand).
+    /// run on the stage as in the engine, except while a picker or All Data is open (they are drawn
+    /// by hand: the text placed with <c>T</c> goes nowhere, they print it themselves).
     /// </summary>
     private void Engine(string command, IReadOnlyList<Sys3Int> args)
     {
@@ -459,7 +467,7 @@ public sealed partial class GamePresenter
                 }
                 return;
             case "T":
-                if (Picker is not null)
+                if (DrawnByHand)
                 {
                     _target = TextTarget.None;
                     return;
@@ -468,7 +476,7 @@ public sealed partial class GamePresenter
                 _target = TextTarget.Stage;
                 return;
         }
-        if (Picker is not null)
+        if (DrawnByHand)
             return;
         switch (command)
         {

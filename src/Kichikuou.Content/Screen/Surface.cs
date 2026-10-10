@@ -143,16 +143,29 @@ public sealed class Surface
     /// flips the result vertically, bit 2 horizontally. The source is read before anything is
     /// written.
     /// </summary>
-    public void ScaledCopy(int sx, int sy, int sw, int sh, int dx, int dy, int dw, int dh, int mirror)
+    public void ScaledCopy(int sx, int sy, int sw, int sh, int dx, int dy, int dw, int dh, int mirror) =>
+        ScaledCopyFrom(this, sx, sy, sw, sh, dx, dy, dw, dh, mirror);
+
+    /// <summary>
+    /// <see cref="ScaledCopy"/> from a rectangle of another surface (same <see cref="Scale"/>): its
+    /// pixels arrive as the colours they show now (in the source's palette), as <see cref="CopyFrom"/>.
+    /// </summary>
+    public void ScaledCopyFrom(Surface source, int sx, int sy, int sw, int sh, int dx, int dy, int dw, int dh, int mirror)
     {
-        if (!CheckParam(ref sx, ref sy, ref sw, ref sh) || !CheckParam(ref dx, ref dy, ref dw, ref dh))
+        if (!source.CheckParam(ref sx, ref sy, ref sw, ref sh) || !CheckParam(ref dx, ref dy, ref dw, ref dh))
             return;
+        bool same = ReferenceEquals(source, this);
         int sourceRow = sw * Scale;
         var colours = new byte[sourceRow * sh * Scale * 4];
-        var indices = _index is null ? null : new short[sourceRow * sh * Scale];
+        var indices = same && _index is not null ? new short[sourceRow * sh * Scale] : null;
         for (int row = 0; row < sh * Scale; row++)
         {
-            int from = Pixel(sx, sy, row);
+            int from = source.Pixel(sx, sy, row);
+            if (!same)
+            {
+                source.ResolveRow(from, sourceRow, colours, row * sourceRow * 4, opaque: false);
+                continue;
+            }
             Buffer.BlockCopy(_pixels, from * 4, colours, row * sourceRow * 4, sourceRow * 4);
             if (indices is not null)
                 Array.Copy(_index!, from, indices, row * sourceRow, sourceRow);
@@ -176,8 +189,8 @@ public sealed class Surface
                         int at = (fromRow + line) * sourceRow + fromCol + ((mirror & 2) != 0 ? Scale - 1 - p : p);
                         int to = toLine * _rowPixels + toCol * Scale + p;
                         Buffer.BlockCopy(colours, at * 4, _pixels, to * 4, 4);
-                        if (indices is not null)
-                            _index![to] = indices[at];
+                        if (_index is not null)
+                            _index[to] = indices?[at] ?? Direct;
                     }
                 }
             }

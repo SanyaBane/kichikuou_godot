@@ -58,7 +58,7 @@ public sealed partial class GamePresenter
 
     /// <summary>
     /// A call of <c>M.ADV</c> (<see cref="MapEvent"/>): 0 and 12 show the map at the camera (0 with
-    /// the map's palette) over the whole screen — a picker its file left open is gone (<c>Cﾌﾞｶ</c>
+    /// the map's palette) over the whole screen — a screen drawn by hand that its file left open is gone (<c>Cﾌﾞｶ</c>
     /// returns from "End" without closing <c>Sﾌﾞｶ</c>, and <c>COMMAND.ADV:358-359</c> shows the map), 1 starts a scroll and 10/13 a blink, whose steps are the pauses that
     /// follow; 3 and 4 change markers (drawn again before the next view); 11 blacks the screen.
     /// </summary>
@@ -67,9 +67,10 @@ public sealed partial class GamePresenter
         switch (mode)
         {
             case 0 or 12:
-                if (Picker is not null)
+                if (DrawnByHand)
                 {
                     Picker = null;
+                    Data = DataView.Closed;
                     _target = TextTarget.Window;
                 }
                 if (mode == 0 && State is { } s && _cgs.Get(s.Ui_MapCgTopL.Value) is { } top)
@@ -226,7 +227,8 @@ public sealed partial class GamePresenter
     /// <summary>
     /// Composes <see cref="Screen"/> when anything changed: the stage's screen, then (outside a
     /// battle, or over a picker the battle opened) the pictures, the open picker, the window's frame
-    /// and text and the menu, then the fade. Returns whether the screen was drawn again.
+    /// and text — or All Data's screen instead — and the menu, then the fade. Returns whether the
+    /// screen was drawn again.
     /// </summary>
     public bool Compose()
     {
@@ -238,12 +240,19 @@ public sealed partial class GamePresenter
         Screen.CopyFrom(Stage, Stage.View.X, Stage.View.Y, Surface.ScreenWidth, Surface.ScreenHeight, 0, 0);
         if (!BattleShows && State is { } s)
         {
-            if (MaskEventCgs && s.Ui_WinType == 31)
-                MaskStage();
-            DrawPictures(s);
-            Picker?.Draw(Screen, s);
-            Frame(s);
-            _window.Draw(Screen, _glyphs);
+            if (Data != DataView.Closed)
+            {
+                DrawData(s);                                            // over the whole screen (EC 0): no window, no pictures
+            }
+            else
+            {
+                if (MaskEventCgs && s.Ui_WinType == 31)
+                    MaskStage();
+                DrawPictures(s);
+                Picker?.Draw(Screen, s);
+                Frame(s);
+                _window.Draw(Screen, _glyphs);
+            }
             if (MenuBox() is { } menu)
             {
                 menu.Open();

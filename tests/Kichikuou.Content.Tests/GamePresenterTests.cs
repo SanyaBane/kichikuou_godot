@@ -104,6 +104,164 @@ public class GamePresenterTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// The Treasure command (<c>Cﾀｶﾗ</c> → <c>Sｱｲﾃﾑ</c>) on the booted world, played through the
+    /// item screen drawn by hand: a unit hovered (its details), picked (the prompt "&lt;unit&gt; is
+    /// equipping / Which item?" over the shrunk picture panel), the pick dropped with a right click,
+    /// the item view, a held item asked about (the question in the narration window, Yes/No at the
+    /// pointer, which sits on No) and kept, an item from stock picked first (its prompt) and
+    /// equipped on a unit, End. Every click goes through the drawn screen's hit test.
+    /// </summary>
+    [Fact]
+    public async Task The_item_screen_is_drawn_from_its_views_and_picks()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var run = await RunAsync(stopAtWeek: 0);
+        var s = run.Session.State;
+        s.StoryStage = 1;
+        s.Ui_ItemViewMode = 0;
+        s.Units[5].Status = 1;
+        s.Units[5].Item = 4;
+        s.Items[4].Holder = 5;
+        s.Items[3].Holder = 100;
+        s.Items[3].Effect = 1;
+        var player = run.Player;
+        player.Pickers.Enqueue(new(PickerKind.Items, PickerArea.Cell, 5, PickerPress.Move));    // unit 5 hovered,
+        player.Pickers.Enqueue((PickerKind.Items, PickerArea.Cell, 5));                          // picked,
+        player.Pickers.Enqueue(new(PickerKind.Items, PickerArea.Cell, 5, PickerPress.Right));   // dropped (998)
+        player.Pickers.Enqueue((PickerKind.Items, PickerArea.Button, 2));                        // the item view
+        player.Pickers.Enqueue((PickerKind.Items, PickerArea.Cell, 4));                          // item 4, held: unequip it?
+        player.Answers["Sｱｲﾃﾑ.ADV"] = new([2]);                                                  // No
+        player.Pickers.Enqueue((PickerKind.Items, PickerArea.Cell, 3));                          // item 3 from stock,
+        player.Pickers.Enqueue((PickerKind.Items, PickerArea.Cell, 5));                          // on unit 5
+        player.Pickers.Enqueue((PickerKind.Items, PickerArea.Button, 3));                        // End
+        var prompts = new List<string[]>();
+        var questions = new List<(string Window, int UnderPointer)>();
+        bool details = false;
+        int quietColours = 0, promptColours = 0;
+        player.OnRead = () =>
+        {
+            if (run.Presenter.Picker is not { Kind: PickerKind.Items } picker)
+                return;
+            details |= s.Tmp0026 != 0 && picker.PanelText(9) is { IsEmpty: false };
+            int colours = Colours(run.Presenter.Screen, 11, 273, 186, 116);
+            if (picker.PromptLines(s) is { } lines)
+            {
+                if (prompts.Count == 0 || !prompts[^1].SequenceEqual(lines))
+                    prompts.Add([.. lines]);
+                promptColours = Math.Max(promptColours, colours);
+            }
+            else
+            {
+                quietColours = Math.Max(quietColours, colours);
+            }
+        };
+        player.OnMenu = () => questions.Add((run.Presenter.WindowText.Text, run.Presenter.MenuHitTest(player.Last.X.Value, player.Last.Y.Value)));
+
+        await run.Session.Script.CallFileAsync("Cﾀｶﾗ.ADV");
+
+        var p = run.Presenter;
+        output.WriteLine($"prompts {string.Join(" | ", prompts.Select(l => string.Join("/", l)))}; question {questions.FirstOrDefault()}; colours {quietColours} → {promptColours}");
+        Assert.Empty(p.Unresolved);
+        Assert.Empty(player.Pickers);
+        Assert.Equal([PickerKind.Items], player.PickersSeen);
+        Assert.True(details, "the hovered unit's details were drawn");
+        string Str(Sys3Int index) => Hankaku.ToHalfWidth(s.Strings[index.Value]);
+        Assert.Equal(2, prompts.Count);
+        Assert.Equal(Str(s.Unit_StrBase + 4 * 3), prompts[0][0]);                    // "<unit 5>" / is equipping / Which item?
+        Assert.Equal(Str(s.Item_StrBase + 2), prompts[1][1]);                         // Equipping / "<item 3>" / Which character?
+        Assert.All(prompts.SelectMany(l => l), line => Assert.NotEmpty(line.Trim()));
+        Assert.True(promptColours > quietColours + 8, "the shrunk picture panel is in the prompt");
+        var (window, underPointer) = Assert.Single(questions);
+        Assert.NotEmpty(window.Trim());                                              // "… would you like to unequip it?"
+        Assert.Equal(1, underPointer);                                               // Yes/No opens with No under the pointer
+        Assert.Equal(3, s.Units[5].Item.Value);                                      // equipped,
+        Assert.Equal(5, s.Items[3].Holder.Value);
+        Assert.Equal(100, s.Items[4].Holder.Value);                                  // its own item back in stock
+        Assert.Null(p.Picker);
+    }
+
+    /// <summary>
+    /// All Data (<c>各種DATA</c>) on the booted world with 16 weeks of distinct history: the map in
+    /// miniature with the menu, the funds graph (a bar cut at 300 with "OV"), the scale menu from a
+    /// right click and the graph again at 4x (the bar now 45 high), each other graph, Return. The
+    /// screen is drawn by hand; the file's own drawing never reaches the stage.
+    /// </summary>
+    [Fact]
+    public async Task All_data_draws_the_map_view_and_every_graph()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var run = await RunAsync(stopAtWeek: 0);
+        var s = run.Session.State;
+        for (int k = 0; k < 16; k++)
+        {
+            var h = s.History[(Sys3Int)k];
+            h.Funds = (Sys3Int)(k == 0 ? 5000 : 300 * k);
+            h.MilitaryExp = (Sys3Int)(k == 0 ? 0 : 100 * k);
+            h.SundryExp = (Sys3Int)(k == 0 ? 0 : 50 * k);
+            h.Casualties = (Sys3Int)(20 * k);
+        }
+        var player = run.Player;
+        player.Answers["各種DATA.ADV"] = new([1, 3, 2, 3, 4, 5]);           // Funds, (the scale menu) 4x, Sundry, Military, Casualties, Return
+        player.DataPresses.Enqueue(32);                                    // the funds graph: right → the scale menu
+        foreach (var _ in Enumerable.Range(0, 4))
+            player.DataPresses.Enqueue(16);                                // left: back to the map view
+        var views = new List<DataView>();
+        var bars = new List<(DataView View, int Scale, int Bottom0, int Top0, int Bottom15)>();
+        bool menuOverMap = false;
+        player.OnShow = e =>
+        {
+            if (e is DataScreenEvent d)
+                views.Add(d.View);
+        };
+        player.OnRead = () =>
+        {
+            var p = run.Presenter;
+            if (p.Data is DataView.Closed or DataView.Map)
+                return;
+            int At(int x, int y)
+            {
+                var (r, g, b, _) = p.Screen.PixelAt(x, y);
+                return new[] { 207, 249, 252, 190 }.FirstOrDefault(i => p.Screen.Color(i) == (r, g, b), -1);
+            }
+            var scale = p.Data == DataView.Casualties ? s.Ui_DamageGraphScale : s.Ui_MoneyGraphScale;
+            // Record 0 stands at x 72 (funds 5000, nothing else), record 15 at x 552.
+            bars.Add((p.Data, scale.Value, At(76, 349), At(76, 55), At(556, 349)));
+        };
+        player.OnMenu = () => menuOverMap |= run.Presenter.Data == DataView.Map;
+
+        await run.Session.Script.CallFileAsync("各種DATA.ADV");
+
+        var presenter = run.Presenter;
+        output.WriteLine($"views {string.Join(",", views)}; bars {string.Join(" ", bars.Distinct())}");
+        Assert.Empty(presenter.Unresolved);
+        Assert.Empty(player.DataPresses);
+        Assert.Equal(
+            [DataView.Map, DataView.Funds, DataView.Funds, DataView.Map, DataView.SundryExpenses, DataView.Map,
+             DataView.MilitarySpending, DataView.Map, DataView.Casualties, DataView.Map, DataView.Closed], views);
+        Assert.Equal(DataView.Closed, presenter.Data);
+        Assert.True(menuOverMap, "the menu is drawn over the map view");
+        Assert.Contains((DataView.Funds, 16, 207, 207, 249), bars);                  // 5000 / 13 cut at 300 (OV); military at the foot of record 15
+        Assert.Contains((DataView.Funds, 4, 207, 190, 249), bars);                   // 5000 / 109 = 45 high
+        Assert.Contains((DataView.SundryExpenses, 4, 190, 190, 252), bars);          // record 0 empty, record 15 750 / 109 = 6
+        Assert.Contains((DataView.MilitarySpending, 4, 190, 190, 249), bars);
+        Assert.Contains((DataView.Casualties, 16, 190, 190, 249), bars);             // 300 / 13 = 23
+        Assert.Equal(4, s.Ui_MoneyGraphScale.Value);
+        Assert.Equal(16, s.Ui_DamageGraphScale.Value);
+    }
+
+    /// <summary>The number of distinct colours in a rectangle of <paramref name="screen"/> (every other pixel).</summary>
+    private static int Colours(Kichikuou.Content.Screen.Surface screen, int x, int y, int w, int h)
+    {
+        var seen = new HashSet<(byte, byte, byte, byte)>();
+        for (int py = y; py < y + h; py += 2)
+            for (int px = x; px < x + w; px += 2)
+                seen.Add(screen.PixelAt(px, py));
+        return seen.Count;
+    }
+
+    /// <summary>
     /// <c>ｵｰﾌﾟﾆﾝｸﾞ</c> run on the booted game: its drawing commands run on the stage (CGs off screen,
     /// copies onto the screen, fills), its texts resolve, and the screen shows pictures.
     /// </summary>
@@ -395,11 +553,22 @@ public class GamePresenterTests(ITestOutputHelper output)
         public static Gesture Menu(int item) => new(0, 0, item);
     }
 
+    /// <summary>What the player does at a place of a picker.</summary>
+    private enum PickerPress { Left, Right, Move }
+
+    /// <summary>A step in a picker: a place (through <see cref="PickerView.HitTest"/>) and what is done there; a plain tuple is a left click.</summary>
+    private sealed record PickerStep(PickerKind Kind, PickerArea Area, int Number, PickerPress Press = PickerPress.Left)
+    {
+        public static implicit operator PickerStep((PickerKind Kind, PickerArea Area, int Number) click) =>
+            new(click.Kind, click.Area, click.Number);
+    }
+
     /// <summary>
     /// The player as a UI on the presenter: the view shows every event and the screen is composed
     /// at every input; map gestures are queued as pointer gestures when the map loop starts
-    /// waiting (<see cref="MapScreenEvent"/>), picker choices go through
-    /// <see cref="PickerView.HitTest"/>, menus are shown and answered by file.
+    /// waiting (<see cref="MapScreenEvent"/>), picker steps go through
+    /// <see cref="PickerView.HitTest"/>, All Data's graphs get the presses queued for them, menus
+    /// are shown and answered by file. A test looks at the screen through the hooks.
     /// </summary>
     private sealed class Player(GameState state, GamePresenter presenter) : IGameInput, IScriptView
     {
@@ -409,7 +578,22 @@ public class GamePresenterTests(ITestOutputHelper output)
 
         public Queue<Gesture> Map { get; } = new();
 
-        public Queue<(PickerKind Kind, PickerArea Area, int Number)> Pickers { get; } = new();
+        public Queue<PickerStep> Pickers { get; } = new();
+
+        /// <summary>The buttons pressed (16 left, 32 right) at All Data's graph waits, in order.</summary>
+        public Queue<int> DataPresses { get; } = new();
+
+        /// <summary>Called after every event is shown.</summary>
+        public Action<ScriptEvent>? OnShow { get; set; }
+
+        /// <summary>Called at every pointer read, after the screen is composed.</summary>
+        public Action? OnRead { get; set; }
+
+        /// <summary>Called when a menu is shown, before it is answered.</summary>
+        public Action? OnMenu { get; set; }
+
+        /// <summary>The pointer as last read.</summary>
+        public MouseState Last { get; private set; }
 
         public Dictionary<string, Queue<int>> Answers { get; } = new(StringComparer.Ordinal);
 
@@ -456,6 +640,7 @@ public class GamePresenterTests(ITestOutputHelper output)
             }
             if (e is PickerScreenEvent { Open: true } open)
                 PickersSeen.Add(open.Kind);
+            OnShow?.Invoke(e);
             return Task.CompletedTask;
         }
 
@@ -503,15 +688,30 @@ public class GamePresenterTests(ITestOutputHelper output)
             if (++Reads > 20_000)
                 throw new InvalidOperationException("The pointer was read 20000 times.");
             Frame();
+            OnRead?.Invoke();
             if (presenter.Picker is { } picker && _pointer.Pending == 0 && Pickers.TryPeek(out var pick) && pick.Kind == picker.Kind)
             {
                 Pickers.Dequeue();
                 var at = pick.Area == PickerArea.Cell ? PointerScript.PickerCell(pick.Number) : PointerScript.PickerButton(pick.Number);
                 Assert.Equal((pick.Area, pick.Number), picker.HitTest(at.X, at.Y));   // the drawn screen agrees with the script's
-                _pointer.Click(at.X, at.Y);
+                switch (pick.Press)
+                {
+                    case PickerPress.Left: _pointer.Click(at.X, at.Y); break;
+                    case PickerPress.Right: _pointer.RightClick(at.X, at.Y); break;
+                    case PickerPress.Move: _pointer.Move(at.X, at.Y); break;
+                }
                 Shot("picker");
             }
-            return Task.FromResult(_pointer.Next(out _));
+            else if (presenter.Data is not (DataView.Closed or DataView.Map) && _pointer.Pending == 0 && DataPresses.TryDequeue(out int button))
+            {
+                Shot("data");
+                if (button == 32)
+                    _pointer.RightClick(320, 200);
+                else
+                    _pointer.Click(320, 200);
+            }
+            Last = _pointer.Next(out _);
+            return Task.FromResult(Last);
         }
 
         public Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
@@ -521,6 +721,7 @@ public class GamePresenterTests(ITestOutputHelper output)
             presenter.OpenMenu(items);
             Frame();
             MenuTexts.AddRange(presenter.MenuItems!);
+            OnMenu?.Invoke();
             Shot("menu");
             string file = items[0].At.File;
             int choice = file switch
