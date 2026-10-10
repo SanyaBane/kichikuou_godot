@@ -64,6 +64,46 @@ public class GamePresenterTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// The rebels' turn (<c>TCﾘｰｻﾞｽ</c>) on the booted world with the rebels holding 3-7: army A
+    /// attacks province 2 and army B province 8, each through <c>FIGT_B</c>, whose intercept opens
+    /// the deployment picker inside the battle — drawn by hand over the battle's screen and clicked
+    /// through its own hit test (a unit, then Intercept) — and the battle is fought.
+    /// </summary>
+    [Fact]
+    public async Task A_defence_picks_its_party_in_a_picker_drawn_over_the_battle()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var run = await RunAsync(stopAtWeek: 0);
+        var state = run.Session.State;
+        state.StoryStage = 1;
+        state.F_LeazasRebels_State = 2;
+        for (int p = 1; p <= 8; p++)
+            state.Provs[p].Owner = (Sys3Int)(p is >= 3 and <= 7 ? 2 : 1);
+        for (int c = 1; c <= 7; c++)
+        {
+            state.Cmdrs[c].Status = 1;
+            state.Cmdrs[c].Troops = 300;
+        }
+        var player = run.Player;
+        player.Pickers.Enqueue((PickerKind.Deployment, PickerArea.Cell, 2));   // Sill (Rance's death would end the game),
+        player.Pickers.Enqueue((PickerKind.Deployment, PickerArea.Button, 1)); // Intercept
+        player.Pickers.Enqueue((PickerKind.Deployment, PickerArea.Cell, 3));   // then Bound,
+        player.Pickers.Enqueue((PickerKind.Deployment, PickerArea.Button, 1)); // Intercept
+
+        await run.Session.Script.CallFileAsync("TCﾘｰｻﾞｽ.ADV");
+
+        var p2 = run.Presenter;
+        output.WriteLine($"composed {player.Composed}, battle frames {player.BattleFrames}, picker frames in battle {player.BattlePickerFrames}");
+        Assert.Empty(p2.Unresolved.Concat(p2.Battle.Unresolved).Distinct());
+        Assert.Empty(player.Pickers);
+        Assert.Equal([PickerKind.Deployment, PickerKind.Deployment], player.PickersSeen);
+        Assert.True(player.BattlePickerFrames > 0, "the picker was composed over the battle");
+        Assert.Null(p2.Picker);
+        Assert.False(p2.InBattle);
+    }
+
+    /// <summary>
     /// <c>ｵｰﾌﾟﾆﾝｸﾞ</c> run on the booted game: its drawing commands run on the stage (CGs off screen,
     /// copies onto the screen, fills), its texts resolve, and the screen shows pictures.
     /// </summary>
@@ -385,6 +425,8 @@ public class GamePresenterTests(ITestOutputHelper output)
 
         public int BattleFrames { get; private set; }
 
+        public int BattlePickerFrames { get; private set; }
+
         public int WindowTexts { get; private set; }
 
         public int LitFrames { get; private set; }
@@ -447,6 +489,8 @@ public class GamePresenterTests(ITestOutputHelper output)
             Composed++;
             if (presenter.InBattle)
                 BattleFrames++;
+            if (presenter.InBattle && presenter.Picker is not null)
+                BattlePickerFrames++;
             if (!presenter.WindowText.IsEmpty)
                 WindowTexts++;
             var (r, g, b, _) = presenter.Screen.PixelAt(320, 200);

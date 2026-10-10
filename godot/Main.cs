@@ -56,7 +56,8 @@ public partial class Main : Control
     /// <summary>
     /// Development switches after <c>--</c>. A game: <c>--newgame</c> or <c>--load</c> starts it at
     /// once; <c>--auto</c> plays it unattended (keys answered, Turn END every week, the battles
-    /// fought with the first attack); <c>--seed N</c> fixes the random generator (once per launch: a
+    /// fought with the first attack, a defence with the first unit free) up to week 30 or
+    /// <c>--weeks N</c>; <c>--seed N</c> fixes the random generator (once per launch: a
     /// later game goes on with it, as after xsystem35's Restart); <c>--rnglog</c> prints every
     /// draw to the console; <c>--msgskip</c> starts with MsgSkip
     /// on; <c>--saves DIR</c>
@@ -85,6 +86,7 @@ public partial class Main : Control
                 ScreenshotDirectory = shots,
                 MsgSkip = args.Contains("--msgskip"),
                 SaveDirectory = Value("--saves") ?? (auto ? "user://saves-auto" : null),
+                AutoWeeks = int.TryParse(Value("--weeks"), out int weeks) ? weeks : 30,
             });
         }
         else if ((Value("--play") ?? Value("--watch")) is { } capture)

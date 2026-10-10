@@ -228,7 +228,11 @@ tests) and, where the owner has recorded them, golden captures:
    unit's inline AI, the demon war) — and the resume after the Leazas autosave (`:83`); the nation
    phases are calls through the router.
 2. ✓ **N1, part** (2026-10-10, the N1 row): the nation template (picker, filler, troop sum, target
-   walk; the captures come with N2/N3) with `TCﾘｰｻﾞｽ` and `TCﾘｰｻﾞｽ2` on it.
+   walk; the captures come with N2/N3) with `TCﾘｰｻﾞｽ` and `TCﾘｰｻﾞｽ2` on it. The rebels' turn is the
+   first to call `FIGT_B` in a game, whose intercept opens `Sﾌﾞﾀｲ` inside the battle: the presenter
+   now draws a picker a battle opens by hand over the battle's screen (it dropped it before), and
+   `--auto` defends with the first unit free (abandoning the city when it cannot) and stops after
+   week 30 (`--weeks n`).
 3. **P3, part**: the attack in `Cﾃｷﾄｼ` (`:99-425` with its refusals). From here the main path of
    stage 1 plays to stage 2.
 4. `Cﾌﾞｶ`'s troop menu (`:713-1097`) and the whole `Cﾊｰﾚﾑ`.

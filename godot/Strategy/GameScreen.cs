@@ -32,8 +32,14 @@ public sealed record GameOptions
     /// <summary>New game or load.</summary>
     public GameStart Start { get; init; }
 
-    /// <summary>Development: plays unattended — keys answered, Turn END every week, the battles fought with the first attack.</summary>
+    /// <summary>
+    /// Development: plays unattended — keys answered, Turn END every week, the battles fought with
+    /// the first attack, a defence with the first unit free.
+    /// </summary>
     public bool Auto { get; init; }
+
+    /// <summary>Development: unattended play stops at the first command menu after this week.</summary>
+    public int AutoWeeks { get; init; } = 30;
 
     /// <summary>Development: no delays (pauses and fades take one frame, the clock runs 20 times faster).</summary>
     public bool Fast { get; init; }
@@ -249,6 +255,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             GD.Print("Kichikuou: not ported yet: " + e.Message);
             message = "This part of the game is not ported yet.\n" + e.Message;
+        }
+        catch (AutoStopException e)
+        {
+            GD.Print("Kichikuou: " + e.Message);
+            message = e.Message;
         }
         catch (Exception e)
         {
@@ -828,18 +839,47 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private int _autoWeek = -1;
     private bool _autoMapWait;
 
+    /// <summary>The deployment picker the unattended player sent its party from (a second visit means Go was refused).</summary>
+    private PickerView? _autoSentFrom;
+
+    /// <summary>The unattended player stopped a deployment picker: the next menu abandons the city.</summary>
+    private bool _autoAbandon;
+
+    /// <summary>The end of unattended play (<see cref="GameOptions.AutoWeeks"/>).</summary>
+    private sealed class AutoStopException(string message) : Exception(message);
+
     /// <summary>
-    /// The map opens the command menu (one right click each time the map loop starts waiting); a
-    /// picker is left with its third button (End, Stop).
+    /// The map opens the command menu (one right click each time the map loop starts waiting); the
+    /// deployment picker takes the first unit free (status 1) and sends it with the first button,
+    /// or stops (third button) when nobody is free or the sending was refused; any other picker is
+    /// left with its third button (End, Stop).
     /// </summary>
     private void AutoPointer()
     {
         if (_pointer.Pending > 0)
             return;
-        if (_presenter.Picker is not null)
+        if (_presenter.Picker is { } picker)
         {
             Shot("picker");
             var (x, y) = PointerScript.PickerButton(3);
+            if (picker.Kind == PickerKind.Deployment && _presenter.State is { } s)
+            {
+                int free = Enumerable.Range(1, 50).FirstOrDefault(u => s.Units[u].Status == 1);
+                if (_autoSentFrom == picker || (s.Bt_PlayerParty1 == 0 && free == 0))
+                {
+                    _autoSentFrom = null;
+                    _autoAbandon = true;
+                }
+                else if (s.Bt_PlayerParty1 != 0)
+                {
+                    (x, y) = PointerScript.PickerButton(1);
+                    _autoSentFrom = picker;
+                }
+                else
+                {
+                    (x, y) = PointerScript.PickerCell(free);
+                }
+            }
             _pointer.Click(x, y);
         }
         else if (_presenter.MapWaiting && _autoMapWait)
@@ -849,7 +889,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
     }
 
-    /// <summary>The command menu's next item of <see cref="AutoVisits"/> once a week, else its Turn END; elsewhere the first item.</summary>
+    /// <summary>
+    /// The command menu's next item of <see cref="AutoVisits"/> once a week, else its Turn END
+    /// (past <see cref="GameOptions.AutoWeeks"/> the run stops there); a defence's menu after a
+    /// stopped deployment picker abandons the city; elsewhere the first item.
+    /// </summary>
     private int AutoChoice(IReadOnlyList<SceneMenuItem> items)
     {
         var texts = _presenter.MenuItems ?? [];
@@ -862,8 +906,17 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         int turnEnd = Find("Turn END");
         if (turnEnd == 0)
+        {
+            if (_autoAbandon && Find("Abandon City") is var abandon and > 0)
+            {
+                _autoAbandon = false;
+                return abandon;
+            }
             return items.Count > 0 ? 1 : 0;
+        }
         int week = _presenter.State?.Week.Value ?? 0;
+        if (week > _options.AutoWeeks)
+            throw new AutoStopException($"--auto stopped after week {_options.AutoWeeks} (week {week}).");
         if (week != _autoWeek && _autoVisit < AutoVisits.Length && Find(AutoVisits[_autoVisit]) is var visit and > 0)
         {
             _autoWeek = week;

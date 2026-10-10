@@ -27,7 +27,9 @@ public sealed record FadeRequest(byte From, byte To, bool ToWhite, int Rate)
 /// themselves runs there as in the engine (<c>G</c> with <c>J0</c>/<c>J1</c>/<c>PC</c>, <c>CC</c>,
 /// <c>CS</c>, <c>CF</c>, <c>EC</c>; the opening and the CG scenes); the map is drawn there from
 /// GameState (tiles, markers, camera); the battle draws there through <see cref="Battle"/>, which
-/// gets every event between a battle's <see cref="BattleScreenEvent"/>s.</item>
+/// gets every event between a battle's <see cref="BattleScreenEvent"/>s — except while a picker the
+/// battle opened is up (<c>FIGT_B</c>'s <c>Sﾌﾞﾀｲ</c>): that one is drawn by hand over the battle's
+/// screen like any other.</item>
 /// <item>The <b>screens drawn by hand</b> over it, from the events' meaning and GameState: the
 /// message window (frame, text), the portraits and the centre picture, the menus, the pickers
 /// (<see cref="PickerView"/>). They are composed onto <see cref="Screen"/>, the 640×400 picture
@@ -116,8 +118,11 @@ public sealed partial class GamePresenter
     /// <summary>The game state the screens are drawn from (set by <see cref="Bind"/>).</summary>
     public GameState? State { get; private set; }
 
-    /// <summary>Whether a battle runs (its events draw the screen).</summary>
+    /// <summary>Whether a battle runs (its events draw the screen, unless it opened a picker).</summary>
     public bool InBattle => _battleDepth > 0;
+
+    /// <summary>Whether the battle's presenter draws the events now: in a battle, outside a picker it opened.</summary>
+    private bool BattleShows => InBattle && Picker is null;
 
     /// <summary>Whether <c>COMMAND</c>'s map loop waits for the player: its pointer reads are the map's.</summary>
     public bool MapWaiting { get; private set; }
@@ -138,7 +143,7 @@ public sealed partial class GamePresenter
     public List<string> Unresolved { get; } = [];
 
     /// <summary>Whether the battle waits for a key after the last event (see <see cref="BattlePresenter.WaitsForKey"/>).</summary>
-    public bool WaitsForKey => InBattle && Battle.WaitsForKey;
+    public bool WaitsForKey => BattleShows && Battle.WaitsForKey;
 
     /// <summary>
     /// Debug only, off for play: while the full-screen window (<c>WAO_SUB</c> 131/231) is open, the
@@ -175,14 +180,14 @@ public sealed partial class GamePresenter
     /// <summary>Finishes the drawing the script does without an event of its own; call before waiting for input.</summary>
     public void Flush()
     {
-        if (InBattle)
+        if (BattleShows)
             Battle.Flush();
     }
 
     /// <summary>The drawing the script does right after a key wait (the window's text cleared, the battle's).</summary>
     public void AfterKey()
     {
-        if (InBattle)
+        if (BattleShows)
         {
             Battle.AfterKey();
             return;
@@ -202,9 +207,13 @@ public sealed partial class GamePresenter
             BattleScreen(battle.Open);
             return;
         }
-        if (InBattle)
+        if (BattleShows)
         {
-            if (scriptEvent is not ScreenEvent)
+            // A picker the battle opens (FIGT_B's Sﾌﾞﾀｲ) is drawn by hand over the battle's screen,
+            // and its file's events go to it until it closes.
+            if (scriptEvent is PickerScreenEvent { Open: true } picker)
+                PickerScreen(picker);
+            else if (scriptEvent is not ScreenEvent)
                 Battle.Show(scriptEvent);
             return;
         }

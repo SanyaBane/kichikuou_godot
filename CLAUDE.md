@@ -129,9 +129,11 @@ attack in `Cﾃｷﾄｼ`.
 - Watch a capture headless and save the screen at every key wait and long pause:
   `<Godot console exe> --headless --path godot -- --watch <capture> --fast --quit --shots <dir>`.
 - Play the game unattended headless (slots in `user://saves-auto`; `--load` resumes them):
-  `<Godot console exe> --headless --path godot -- --newgame --auto --fast --quit [--seed n] [--shots <dir>]`;
-  ends at the first file or path not ported yet — now `TCﾘｰｻﾞｽ`, the rebels' turn at the end of
-  the first Leazas week — with "not ported yet" (exit code 0; 1 after an error).
+  `<Godot console exe> --headless --path godot -- --newgame --auto --fast --quit [--seed n] [--shots <dir>] [--weeks n]`;
+  Turn END every week (stage 1: the rebels attack, `--auto` defends with the first unit free),
+  ends at the first file or path not ported yet ("not ported yet"), at a game over, or after week
+  30 (`--weeks n`) — with `--seed 7` today the rebels take Leazas Castle: ending 2 (exit code 0;
+  1 after an error).
 
 ## Rules
 
