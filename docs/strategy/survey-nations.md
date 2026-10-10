@@ -113,9 +113,9 @@ Capture(): centre map; Prov_Owner := nation; flag CG Tmp0021 := owner+819; M ops
 | JAPAN (2,3) / (4,5) | Katsuie (75) through Denden Mori (78) / One-Shot Tarou (79) through Isoroku Yamamoto (82) | — & 500 | 3 | same |
 | Helman 1st (`F_Helman_War=1`, Lelyukov (22) alive, Lelyukov ≠ 1) | stronger of Jackal (24), Gadman (23), Lelyukov (22), Samisukan (25), Luke (29), Yorkdelta (30), Laumiere (27), Luc (28), Tainyar (26) and Laumiere (27), Luc (28), Luke (29), Yorkdelta (30), Jackal (24), Samisukan (25), Lelyukov (22), Gadman (23), Tainyar (26) (tie → 2nd) | none | 3 | Archgrad (36), Siberia (38), Golak (34), Log A (32), Log B (31), Volgo Z (30), Maunes (13)\*, North (2)\*, Leazas Castle (1) (Maunes (13): `Y 4,2` → `Gﾚﾘｭｰｺﾌ` 5 or Tainyar (26) alone; Maunes (13) / North (2) owner 8 → capture) |
 | Helman 2nd (Aristoles ≠ 0, Aristoles (32) alive) | Yutos (37), Keigo (38), Ivan (34), Samon (35), Yasutoeh (36), Aristoles (32), Convert (33) | 1500 | 4 | Micrograd (44), Parnas (47), Sudori 17 (46), Pawn (40), Sudori 13 (41), Laborie (52) |
-| Helman 3rd (Mineva ≠ 0, Mineva (39) alive) | Capricorn (184), Ortega (185), Serges (42), Booch (43), Mineva (39), Tami (40), Maha (41) | 1500 | 3 | Micrograd (44)\* (re-pick without Capricorn (184) / Ortega (185), `Gﾐﾈﾊﾞ` 4), Laurengrad (48), Pawn (40), Sudori 10 (42), Parnas (47), Rosesgrad (39), Archgrad (36) |
+| Helman 3rd (Mineva ≠ 0, Mineva (39) alive) | Capricorn (184), Ortega (185), Serges (42), Booch (43), Mineva (39), Tami (40), Maha (41) | 1500 | 3 | Micrograd (44)\* (re-pick without Capricorn (184) / Ortega (185), not summed again — NAT-19; `Gﾐﾈﾊﾞ` 4 first while Maha (41) lives and `F_Pastel_State = 0`), Laurengrad (48), Pawn (40), Sudori 10 (42), Parnas (47), Rosesgrad (39), Archgrad (36) |
 | Helman 4th (Nero ≠ 0 and (≠ 100 or Cream = 0)) | Sukakumi (49), Marquez (46), Hyam (47), Nero (44), Cream (45), Yang (48) | — | 4 | Pawn (40), Sudori 13 (41) (Nero 1,2 → +1; 3 → `Gﾈﾛ` 2) |
-| Helman 4th, Nero = 6 | Hyam (47), Marquez (46), Sukakumi (49), Cream (45), Yang (48) | — & 1000 | 3 | Pawn (40), Sudori 13 (41) |
+| Helman 4th, Nero = 6 | Hyam (47), Marquez (46), Sukakumi (49), Cream (45), Yang (48) | — & 1000 | 3 | Pawn (40), Sudori 13 (41) (the week left unmarked, NAT-18) |
 | Helman 5th (Rolex (50) alive, Rolex ≥ 4) | Alexei (53), Rolex (50), Saulnia (52), Katyusha (51) | 500 | 4 | Rosesgrad (39), Micrograd (44), Pawn (40), Sudori 13 (41), Archgrad (36), Log B (31), Volgo Z (30), Laurengrad (48), Parnas (47), Sudori 17 (46) |
 | Crusaders (Olhound ∉ {0,100}) | Olhound (60) alone, troops 500+rnd(500) | none | 1 | Path (43), Micrograd (44), Laurengrad (48), Parnas (47), Sudori 17 (46), Pawn (40), Sudori 13 (41), Sudori 10 (42), Rosesgrad (39), Archgrad (36) |
 | Patton | Patton (54), Hubert (55), Freak (56), Hanty (57) (+Aristoles (32) if Aristoles > 9) | 500 | 4 | Sudori 17 (46), Sudori 13 (41), Pawn (40), Micrograd (44), Lang Bau (45) |
@@ -229,7 +229,7 @@ Draws are interleaved with nested `FIGT_B` battles (each with its own draws, see
 - **No player choice in these files** [C]. All input happens inside `FIGT_B` (intercept / scout /
   abandon menu, `Sﾌﾞﾀｲ`) and inside story hooks.
 - Key waits (`WAO_SUB` op 1): TJAPAN 338 (all in the Gekkou/Shinobu scenes), Tｹｲﾌﾞﾘｽ 9
-  (captures, Kesselring move, guard speech), Tﾍﾙﾏﾝ 4 (capture from Kayblis), Tﾙﾄﾞﾗ 3 (earthquake).
+  (captures, Kesselring move, guard speech), Tﾍﾙﾏﾝ 3 (capture from Kayblis), Tﾙﾄﾞﾗ 3 (earthquake).
 - Display: map centring (`M` ops 1, 10), province flag redraw (ops 4, 3, 0) on capture,
   "X appeared around Y / VS / occupied" boxes (`TJAPAN:159-191`, `Tｹｲﾌﾞﾘｽ:1625-1637`),
   portraits by `CallArg` (e.g. 421 Gekkou, 422 Shinobu, 415/466 Kayblis), `G 806/133` CG in the
@@ -260,7 +260,8 @@ text; the only display→state coupling is `M`'s scratch. TJAPAN's scenes are ru
    (commander 125) (cursor from `:92`); probably meant `Cmdr_Cur`.
 7. **Inverted check** `Ev_WeeklyEventDone \ 0` for Patton events 2/12 (`Tﾍﾙﾏﾝ.ADV:61`, `:67`):
    they fire only if another event already fired this week.
-8. **Precedence**: `Tｹｲﾌﾞﾘｽ2.ADV:38` — only Tearing Forest (91) is gated by `StoryStage = 2`; `Tﾍﾙﾏﾝ.ADV:84`.
+8. **Precedence**: `Tｹｲﾌﾞﾘｽ2.ADV:38` — only Tearing Forest (91) is gated by `StoryStage = 2`.
+   (`Tﾍﾙﾏﾝ.ADV:84` is parenthesised and reads as meant — checked 2026-10-10.)
 9. **Stale `Bt_EnemyRetreatMode`** when `*2` returns early (`TCﾘｰｻﾞｽ2:31-32/48-49`,
    `TJAPAN2:26-27`, `:124-125`): the defenders still fight with last battle's mode.
 10. **Above-max troops**: Kayblis refill `max + rnd(max/2)` (`:1421-1437`); the Camilla 200→2000 patch.
@@ -289,9 +290,10 @@ as the battle; `FIGT_B` through the existing `Battle.DefendProvinceAsync`; story
 
 As ported (N1 part 1, 2026-10-10; [README](README.md), the N1 row): the template is a base class,
 `Strategy/NationFile` on `CommandFile`, the filter a method each file overrides; every file is a
-class of its own in `Strategy/` (`RebelTurn` = `TCﾘｰｻﾞｽ`, `RebelDefenders` = `TCﾘｰｻﾞｽ2`), its lists
-written in the script's order at the place the script sets them; the capture comes with the first
-file that has one.
+class of its own in `Strategy/` (`RebelTurn` = `TCﾘｰｻﾞｽ`, `RebelDefenders` = `TCﾘｰｻﾞｽ2`,
+`HelmanTurn` = `Tﾍﾙﾏﾝ`, `HelmanDefenders` = `Tﾍﾙﾏﾝ2`), its lists written in the script's order at
+the place the script sets them; a capture stays with its file (`HelmanTurn.CaptureAsync` is
+`Tﾍﾙﾏﾝ`'s `L_00fc2`).
 
 | Part | Content | Script lines (rule) | Depends on |
 |---|---|---|---|

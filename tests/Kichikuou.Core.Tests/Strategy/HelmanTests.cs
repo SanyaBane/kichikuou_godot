@@ -9,7 +9,8 @@ namespace Kichikuou.Core.Tests.Strategy;
 
 /// <summary>
 /// Helman's files (milestone 3 step 1): the defender picker <c>Tﾍﾙﾏﾝ2</c>
-/// (<see cref="HelmanDefenders"/>). Also compared with the decompile on random states (Content
+/// (<see cref="HelmanDefenders"/>) and the nation turn <c>Tﾍﾙﾏﾝ</c> (<see cref="HelmanTurn"/>).
+/// Also compared with the decompile on random states (Content
 /// tests, <c>NationTurnDifferentialTests</c>).
 /// </summary>
 public class HelmanTests
@@ -50,6 +51,25 @@ public class HelmanTests
             State.Provs[province].Owner = (Sys3Int)owner;
             return new HelmanDefenders(Script, new Literals()).RunAsync();
         }
+
+        public Task TurnAsync() => new HelmanTurn(Script, new Literals()).RunAsync();
+
+        /// <summary>The lines of the messages shown, in order.</summary>
+        public List<int> Lines => [.. View.Events.OfType<MessageEvent>().Select(m => m.Text.Line)];
+    }
+
+    /// <summary>
+    /// A turn where nothing marches unless a test lets it: Freya's scene played, Lelyukov
+    /// (commander 22) and Rolex (commander 50) dead, the other armies' flags at 0, no province the
+    /// player's.
+    /// </summary>
+    private static HelmanRig QuietWeek(params int[] draws)
+    {
+        var rig = new HelmanRig(draws);
+        rig.State.N_Freya_State = 10;
+        rig.State.Cmdrs[22].Status = 0;
+        rig.State.Cmdrs[50].Status = 0;
+        return rig;
     }
 
     /// <summary>The army name (<c>MS 10, "…"</c>) as "file:line", standing in for the player's files.</summary>
@@ -227,4 +247,224 @@ public class HelmanTests
 
     [Fact]
     public void Tﾍﾙﾏﾝ2_is_routed() => Assert.Contains("Tﾍﾙﾏﾝ2.ADV", StrategyRules.PortedFiles);
+
+    // -------------------------------------------------------------------------------------------
+    // Tﾍﾙﾏﾝ, the nation turn
+    // -------------------------------------------------------------------------------------------
+
+    [Fact]
+    public async Task A_quiet_week_draws_once_brings_Tainyar_back_and_ends_with_Stessels_scene()
+    {
+        var rig = QuietWeek(2);
+        rig.State.Cmdrs[26].Status = 0;
+        rig.State.Cmdrs[26].MaxHP = 80;
+        rig.State.Cmdrs[26].MaxTroops = 700;
+
+        await rig.TurnAsync();
+
+        Is(4, rig.State.Ev_PhaseNation);
+        Assert.Equal("Tﾍﾙﾏﾝ.ADV:3", rig.State.Strings[10]);
+        Assert.Equal([2], rig.Random.Draws);                    // :60, every turn
+        Assert.Equal([("Gｽﾃｯｾﾙ.ADV", 14)], rig.Story.Calls);    // nothing marked the week
+        Is(1, rig.State.Cmdrs[26].Status);                      // neither Log B nor Sudori 13 is the player's
+        Is(80, rig.State.Cmdrs[26].HP);
+        Is(700, rig.State.Cmdrs[26].Troops);
+        Is(40, rig.State.Prov_Cur);                             // :66
+
+        rig = QuietWeek(2);
+        rig.State.Cmdrs[26].Status = 0;
+        rig.State.Provs[41].Owner = 1;
+        await rig.TurnAsync();
+        Is(0, rig.State.Cmdrs[26].Status);
+    }
+
+    [Fact]
+    public async Task The_1st_army_marches_whatever_its_strength_on_the_first_province_the_player_holds()
+    {
+        var rig = QuietWeek(2);
+        rig.State.Cmdrs[22].Status = 1;
+        for (int c = 22; c <= 30; c++)
+            rig.State.Cmdrs[c].Troops = 10;                     // all under 190: one commander each order
+        rig.State.Provs[31].Owner = 1;                          // Log B
+        rig.State.Provs[34].Owner = 1;                          // Golak, earlier in the list
+
+        await rig.TurnAsync();
+
+        Assert.Equal([("FIGT_B.ADV", 0)], rig.Story.Calls);     // the week is marked: no scene 14
+        Is(34, rig.State.Prov_Cur);
+        Assert.Equal("Tﾍﾙﾏﾝ.ADV:101", rig.State.Strings[10]);
+        Is(3, rig.State.Bt_EnemyRetreatMode);
+        // Jackal's order and Laumiere's both muster 10: on a tie the second stays.
+        Is(10, rig.State.Tmp0011);
+        Is(10, rig.State.Tmp0012);
+        Assert.Equal([27, 0, 0, 0], rig.Party);
+        Is(1, rig.State.Ev_WeeklyEventDone);
+    }
+
+    [Fact]
+    public async Task At_Maunes_a_roll_sends_Lelyukovs_scene_or_Tainyar_alone()
+    {
+        var rig = QuietWeek(2, 1, 2, 2);
+        rig.State.Cmdrs[22].Status = 1;
+        rig.State.Provs[13].Owner = 1;
+
+        await rig.TurnAsync();
+        Assert.Equal([("Gﾚﾘｭｰｺﾌ.ADV", 5)], rig.Story.Calls);   // its scene has the battle
+
+        await rig.TurnAsync();
+        Assert.Equal(("FIGT_B.ADV", 5), rig.Story.Calls[^1]);
+        Assert.Equal([26, 0, 0, 0], rig.Party);
+        Is(13, rig.State.Prov_Cur);
+        Assert.Equal([2, 2, 2, 2], rig.Random.Draws);
+    }
+
+    [Fact]
+    public async Task The_1st_army_takes_Maunes_from_the_monsters_without_a_battle()
+    {
+        var rig = QuietWeek(2);
+        rig.State.Cmdrs[22].Status = 1;
+        rig.State.Provs[13].Owner = 8;
+        rig.State.Provs[13].MapX = 300;
+        rig.State.Provs[13].MapY = 200;
+        rig.State.Provs[13].BgCg = 1010;
+
+        await rig.TurnAsync();
+
+        Assert.Empty(rig.Story.Calls);
+        Is(4, rig.State.Provs[13].Owner);
+        Assert.Equal([689, 695, 702], rig.Lines);               // name, "VS Monster Army", "took control"
+        Assert.Equal([1, 4, 3], rig.View.Events.OfType<MapEvent>().Select(e => e.Mode.Value));
+        Assert.Equal(3, rig.View.Events.OfType<WindowEvent>().Count(e => e.Op == 1));
+    }
+
+    [Fact]
+    public async Task Pattons_second_scene_needs_another_scene_to_have_played_that_week()
+    {
+        var rig = QuietWeek(1, 1);
+        rig.State.F_Patton_State = 1;
+
+        await rig.TurnAsync();
+        // QUIRK: NAT-08 — the roll came up 1, but nothing had marked the week.
+        Assert.Equal([("Gｽﾃｯｾﾙ.ADV", 14)], rig.Story.Calls);
+
+        rig.Story.Calls.Clear();
+        rig.State.F_Lelyukov_State = 1;                         // his retreat scene marks the week
+        await rig.TurnAsync();
+        Assert.Equal([("Gﾚﾘｭｰｺﾌ.ADV", 2), ("Gﾊﾟｯﾄﾝ.ADV", 2)], rig.Story.Calls);
+    }
+
+    [Fact]
+    public async Task The_2nd_army_waits_for_Aristoles_and_marches_with_1500_troops()
+    {
+        var rig = QuietWeek(2, 2, 2);
+        rig.State.F_Aristoles_Helman2ndState = 1;
+        rig.State.Provs[44].Owner = 1;                          // Micrograd
+
+        await rig.TurnAsync();
+        Is(2, rig.State.F_Aristoles_Helman2ndState);
+        Is(1200, rig.State.CallArg);                            // 37, 38, 34, 35: too weak
+        Assert.Equal([("Gｽﾃｯｾﾙ.ADV", 14)], rig.Story.Calls);
+
+        for (int c = 32; c <= 38; c++)
+            rig.State.Cmdrs[c].Troops = 400;
+        rig.Story.Calls.Clear();
+        await rig.TurnAsync();
+        Is(3, rig.State.F_Aristoles_Helman2ndState);
+        Assert.Equal([("FIGT_B.ADV", 14)], rig.Story.Calls);
+        Assert.Equal("Tﾍﾙﾏﾝ.ADV:223", rig.State.Strings[10]);
+        Is(4, rig.State.Bt_EnemyRetreatMode);
+
+        rig.Story.Calls.Clear();
+        await rig.TurnAsync();
+        Assert.Equal([("Gｱﾘｽﾄﾚｽ.ADV", 5), ("FIGT_B.ADV", 5)], rig.Story.Calls);
+    }
+
+    [Fact]
+    public async Task At_Micrograd_the_3rd_army_marches_again_without_Capricorn_and_Ortega()
+    {
+        var rig = QuietWeek(2);
+        rig.State.F_Mineva_State = 1;
+        rig.State.Cmdrs[184].Status = 1;
+        rig.State.Cmdrs[184].Troops = 1000;
+        rig.State.Cmdrs[185].Status = 1;
+        rig.State.Cmdrs[185].Troops = 1000;
+        rig.State.Provs[44].Owner = 1;
+
+        await rig.TurnAsync();
+
+        Assert.Equal([("Gﾐﾈﾊﾞ.ADV", 1), ("Gﾐﾈﾊﾞ.ADV", 4), ("FIGT_B.ADV", 4)], rig.Story.Calls);
+        Is(2600, rig.State.CallArg);                            // 184, 185, 42, 43 — not summed again
+        Assert.Equal([42, 43, 39, 40], rig.Party);
+        Is(44, rig.State.Prov_Cur);
+        Is(3, rig.State.Bt_EnemyRetreatMode);
+    }
+
+    [Fact]
+    public async Task The_4th_army_counts_Neros_states_and_once_he_turns_marches_without_marking_the_week()
+    {
+        var rig = QuietWeek(2, 2);
+        rig.State.F_Nero_Helman4thState = 1;
+        rig.State.Provs[40].Owner = 1;                          // Pawn
+
+        await rig.TurnAsync();
+        Is(2, rig.State.F_Nero_Helman4thState);
+        Assert.Equal([("FIGT_B.ADV", 0)], rig.Story.Calls);
+        Assert.Equal([49, 46, 47, 44], rig.Party);
+        Is(4, rig.State.Bt_EnemyRetreatMode);
+
+        rig.Story.Calls.Clear();
+        rig.State.F_Nero_Helman4thState = 6;
+        await rig.TurnAsync();
+        Assert.Equal([47, 46, 49, 45], rig.Party);
+        Is(1200, rig.State.CallArg);
+        Is(3, rig.State.Bt_EnemyRetreatMode);
+        Assert.Equal("Tﾍﾙﾏﾝ.ADV:386", rig.State.Strings[10]);
+        // QUIRK: NAT-18 — the battle leaves the week unmarked: the quiet week's scene follows.
+        Assert.Equal([("FIGT_B.ADV", 0), ("Gｽﾃｯｾﾙ.ADV", 14)], rig.Story.Calls);
+    }
+
+    [Fact]
+    public async Task Rolex_takes_two_rolls_and_two_scenes_before_the_5th_army_marches()
+    {
+        var rig = QuietWeek(2, 1);
+        rig.State.Cmdrs[50].Status = 1;
+
+        await rig.TurnAsync();
+        Is(1, rig.State.F_Rolex_State);
+        Assert.Equal([2, 2], rig.Random.Draws);                 // the first roll ended the army's turn
+        Assert.Equal([("Gｽﾃｯｾﾙ.ADV", 14)], rig.Story.Calls);
+
+        rig = QuietWeek(2, 2, 2);
+        rig.State.Cmdrs[50].Status = 1;
+        rig.State.F_Rolex_State = 4;
+        rig.State.Provs[39].Owner = 1;                          // Rosesgrad
+        await rig.TurnAsync();
+        Assert.Equal([("FIGT_B.ADV", 0)], rig.Story.Calls);
+        Assert.Equal([53, 50, 52, 51], rig.Party);
+        Assert.Equal("Tﾍﾙﾏﾝ.ADV:449", rig.State.Strings[10]);
+        Assert.Equal([2, 2, 2], rig.Random.Draws);
+    }
+
+    [Fact]
+    public async Task The_Crusaders_bring_Olhound_back_with_fresh_troops_every_turn()
+    {
+        var rig = QuietWeek(2, 250);
+        rig.State.N_Olhound_Stage = 1;
+        rig.State.Cmdrs[60].MaxHP = 90;
+        rig.State.Provs[43].Owner = 1;                          // Path
+
+        await rig.TurnAsync();
+
+        Assert.Equal([("Gｵｰﾙﾊｳﾝﾄ.ADV", 1), ("FIGT_B.ADV", 1)], rig.Story.Calls);
+        Assert.Equal([2, 500], rig.Random.Draws);
+        Assert.Equal([60, 0, 0, 0], rig.Party);
+        Is(1, rig.State.Cmdrs[60].Status);
+        Is(90, rig.State.Cmdrs[60].HP);
+        Is(750, rig.State.Cmdrs[60].Troops);
+        Is(1, rig.State.Bt_EnemyRetreatMode);
+        Is(43, rig.State.Prov_Cur);
+    }
+
+    [Fact]
+    public void Tﾍﾙﾏﾝ_is_routed() => Assert.Contains("Tﾍﾙﾏﾝ.ADV", StrategyRules.PortedFiles);
 }

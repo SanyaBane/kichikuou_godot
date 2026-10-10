@@ -270,8 +270,8 @@ Quirks (port them):
 5. Item 48 holders skip HP recovery (`MAIN.ADV:141-146`) [C]; expenses can drive `Gold` to 0
    only (saturating subtraction, no debt) [C].
 6. Patton commanders Patton (54), Hubert (55), Freak (56), Hanty (57) are refreshed twice if
-   both the Helman and Patton phases run (`:431-448`, `:484-501`) [C]; whether both gates can be
-   open together is unknown.
+   both the Helman and Patton phases run (`:431-448`, `:484-501`) [C]; the gates are never open
+   together in play (2026-10-10, quirks STR-07).
 7. Demon-war chains test stages in descending order so a scene that advances the stage
    cannot chain in the same week [I]. Units Satella (29) / Meglass (30) alive reset
    `F_DemonWar_Stage` to 0 every Kayblis-war week (`:987-994`) [C].
@@ -326,7 +326,9 @@ Golden harness additions:
 1. Does `system39.exe` implement overlapping `NB` as a forward copy like xsystem35
    (history graphs flat) — `MAIN.ADV:8-11`?
 2. Creator phase nation code 11 vs 10 — `MAIN.ADV:843`, `Tﾙﾄﾞﾗ.ADV`.
-3. Can `F_Helman_War = 1` and `F_PattonArmy_State ≠ 0` hold together (double refresh)?
+3. Can `F_Helman_War = 1` and `F_PattonArmy_State ≠ 0` hold together (double refresh)? —
+   answered (2026-10-10): not in play; `Gﾊﾟｯﾄﾝ` 6 needs the war won (2, never set back) and not
+   lost to Kayblis, and only `Gｽﾃｯｾﾙ` 1 sets 1, once (quirks STR-07).
 4. Identity of commanders 90-93 — answered from `SET_CHR` (2026-10-10): La Seizel (90),
    Camilla (91), Lei (92), Sieg (93).
 5. Does anything rely on the cursor leftovers (`Unit_Cur = 51` after the status line,

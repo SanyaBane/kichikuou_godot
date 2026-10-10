@@ -254,7 +254,7 @@ stage-2 captures start from the owner's own saves (or a harness that sets `Debug
 
 | What | Lines | Reached |
 |---|---|---|
-| `Tﾍﾙﾏﾝ2`, `Tﾍﾙﾏﾝ` | 377, 792 | the first attack on Log B (31) / Log A (32) — main path |
+| `Tﾍﾙﾏﾝ2`, `Tﾍﾙﾏﾝ` | 377, 792 | the first attack on Log B (31) / Log A (32) — main path (both ported 2026-10-10) |
 | `Tｾﾞｽ2`, `Tｾﾞｽ` | 401, 777 | the first attack on Adam's Fortress (58) — main path |
 | `Tﾊﾟｯﾄﾝ` | 226 | after Helman falls (`Gﾊﾟｯﾄﾝ` 6) — main path |
 | `Tｹｲﾌﾞﾘｽ2` | 347 | the gate attack after `Iｼﾚｲﾌﾞ` 6 (at stage 3, inside the same command) |
