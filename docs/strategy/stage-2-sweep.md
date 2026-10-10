@@ -183,7 +183,8 @@ Three places write `StoryStage := 3`:
    unless `F_Zeth_War = 2`, `F_Helman_War = 2` and `F_DemonWar_Stage ≥ 10`; then `Iｼﾚｲﾌﾞ` 6 sets
    stage 3 and the attack goes on — `Sﾌﾞﾀｲ`, then `Tｹｲﾌﾞﾘｽ2` (347 lines: Monster Generals
    (commanders 86-89) refilled with four `Y 4` draws, `:12-31`; at Tower of Evil (78) with
-   `N_Warg_Stage = 0` `Gﾜｰｸﾞ` 1 replaces the battle, `:81-85`), then `FIGT_A`. The four are the only
+   `N_Warg_Stage = 0` `Gﾜｰｸﾞ` 1 replaces the battle, `:92-96`; the gate is fought without walls,
+   NAT-21; ported 2026-10-10), then `FIGT_A`. The four are the only
    demon provinces next to human land, reached from the Great Walls of Helman (49, 50) and the
    Maginot Strongholds (72, 76) [I].
 2. **`Iﾏｼﾞﾝ` 51** (`:8979-9195`): the demon war's last entry, by the timer alone — no war has to
@@ -257,7 +258,7 @@ stage-2 captures start from the owner's own saves (or a harness that sets `Debug
 | `Tﾍﾙﾏﾝ2`, `Tﾍﾙﾏﾝ` | 377, 792 | the first attack on Log B (31) / Log A (32) — main path (both ported 2026-10-10) |
 | `Tｾﾞｽ2`, `Tｾﾞｽ` | 401, 777 | the first attack on Adam's Fortress (58) — main path (both ported 2026-10-10) |
 | `Tﾊﾟｯﾄﾝ` | 226 | after Helman falls (`Gﾊﾟｯﾄﾝ` 6) — main path (ported 2026-10-10) |
-| `Tｹｲﾌﾞﾘｽ2` | 347 | the gate attack after `Iｼﾚｲﾌﾞ` 6 (at stage 3, inside the same command) |
+| `Tｹｲﾌﾞﾘｽ2` | 347 | the gate attack after `Iｼﾚｲﾌﾞ` 6 (at stage 3, inside the same command) — ported 2026-10-10 |
 | `Cﾃｷﾄｼ` independent cities | `:429-3828`, 3400 | from W+1 (Rockearth (17), Zeo (24), Hanna (26), Shangri-La (29)) |
 | `TJAPAN2`, `TJAPAN` | 219, 2851 | after Portugal (28) |
 | `Cﾒｲｷｭｳ` God's Door | `:233-236`, `:3500-4556`, ~1060 | after the Ancient Ruins (35) and the quest |

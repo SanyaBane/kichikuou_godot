@@ -75,7 +75,8 @@ the order docs/strategy/README.md, "Milestone 3" (Helman, Zeth, the gate, the in
 JAPAN, God's Door), the owner's capture checklist docs/golden-tests.md, "Capturing stage 2".
 Step 1 (Helman) is done: `Tﾍﾙﾏﾝ2`, `Tﾍﾙﾏﾝ` and `Tﾊﾟｯﾄﾝ` are ported (`Strategy/HelmanDefenders`,
 `Strategy/HelmanTurn`, `Strategy/PattonTurn`). Step 2 (Zeth) is done: `Tｾﾞｽ2` and `Tｾﾞｽ` are
-ported (`Strategy/ZethDefenders`, `Strategy/ZethTurn`). Step 3 (the gate, `Tｹｲﾌﾞﾘｽ2`) is next.
+ported (`Strategy/ZethDefenders`, `Strategy/ZethTurn`). Step 3 (the gate) is done: `Tｹｲﾌﾞﾘｽ2` is
+ported (`Strategy/KayblisDefenders`). Step 4 (the independent cities, P4, `Cﾃｷﾄｼ.ADV:429-3828`) is next.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
 

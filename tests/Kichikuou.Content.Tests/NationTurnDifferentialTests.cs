@@ -10,7 +10,7 @@ namespace Kichikuou.Content.Tests;
 
 /// <summary>
 /// The hand-ported nation files (<see cref="RebelTurn"/>, <see cref="RebelDefenders"/>,
-/// <see cref="HelmanTurn"/>, <see cref="HelmanDefenders"/>, <see cref="PattonTurn"/>, <see cref="ZethTurn"/>, <see cref="ZethDefenders"/>, on the template
+/// <see cref="HelmanTurn"/>, <see cref="HelmanDefenders"/>, <see cref="PattonTurn"/>, <see cref="ZethTurn"/>, <see cref="ZethDefenders"/>, <see cref="KayblisDefenders"/>, on the template
 /// <see cref="NationFile"/>) against the files
 /// themselves run from the player's decompile by <see cref="SceneRunner"/>, on random states: both
 /// runs must call the same files with the same <c>Ev_Entry</c> and the same party, draw the same
@@ -450,6 +450,108 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
             int at = call.IndexOf($" {name} ", StringComparison.Ordinal) + name.Length + 2;
             return call[at..].Split(' ')[0];
         }
+    }
+
+    [Fact]
+    public Task The_Kayblis_defenders_are_picked_exactly_as_Tｹｲﾌﾞﾘｽ2() =>
+        CompareAsync(
+            "Tｹｲﾌﾞﾘｽ2.ADV",
+            (script, scenario) => new KayblisDefenders(script, scenario).RunAsync(),
+            AimAtKayblis,
+            KayblisDefenderFeatures,
+            ["call Gﾜｰｸﾞ.ADV 1", "call Gｹｲﾌﾞﾘｽ.ADV 4", "plains, two", "plains, four", "91 in the plains",
+             "gate at 78", "gate at 89", "gate at 90", "gate at 91", "gate in another stage",
+             "Kaybwan", "Kaybnyan", "Kesselring", "Camilla", "Camilla raised", "Kayblis", "Medusa", "Monster Generals",
+             "Monster Generals with walls", "attacked again", "a general without a draw"],
+            ScribbleKayblis);
+
+    /// <summary>Kayblis's named commanders: Camilla (91), Kesselring (133), Medusa (134), Kayblis (135), the Houses (159-164), Monster Generals (181-183).</summary>
+    private static readonly int[] KayblisCommanders = [91, 133, 134, 135, .. Enumerable.Range(159, 6), 181, 182, 183];
+
+    /// <summary>
+    /// A province of Kayblis's (the gate, the Houses, the castles), now and then any, attacked again
+    /// now and then with up to four hits, with walls and battle area; the story stage around 2 and 3;
+    /// the Monster Generals (86-89) with random maxima (now and then too small to draw), the named
+    /// commanders alive or not, Camilla's maximum 200 now and then; Warg's and Galtia's flags.
+    /// </summary>
+    private static void AimAtKayblis(GameState state, Random rng)
+    {
+        int[] provinces = [78, 78, 79, 84, 85, 86, 87, 88, 89, 90, 91, 91];
+        state.Prov_Cur = (Sys3Int)(rng.Next(6) == 0 ? rng.Next(0, 101) : provinces[rng.Next(provinces.Length)]);
+        state.Provs[state.Prov_Cur].BattleArea = (Sys3Int)rng.Next(0, 1000);
+        state.Provs[state.Prov_Cur].Defense = (Sys3Int)rng.Next(0, 30);
+        state.StoryStage = (Sys3Int)(rng.Next(4) switch { 0 => rng.Next(0, 6), 1 => 2, _ => 3 });
+        state.Bt_GarrisonProv = (Sys3Int)(rng.Next(3) == 0 ? state.Prov_Cur.Value : rng.Next(0, 101));
+        state.Bt_GarrisonHits = (Sys3Int)rng.Next(0, 5);
+        for (int c = 86; c <= 89; c++)
+        {
+            state.Cmdrs[c].MaxTroops = (Sys3Int)(rng.Next(6) == 0 ? rng.Next(0, 8) : rng.Next(0, 4000));
+            state.Cmdrs[c].MaxHP = (Sys3Int)rng.Next(0, 500);
+        }
+        foreach (int c in KayblisCommanders)
+            state.Cmdrs[c].Status = (Sys3Int)(rng.Next(4) == 0 ? 0 : rng.Next(1, 3));
+        state.Cmdrs[91].MaxTroops = (Sys3Int)(rng.Next(2) == 0 ? 200 : rng.Next(0, 3000));
+        state.N_Warg_Stage = (Sys3Int)(rng.Next(2) == 0 ? 0 : rng.Next(1, 3));
+        state.F_Galtia_JoinedKayblis = (Sys3Int)rng.Next(0, 2);
+    }
+
+    /// <summary>What Warg's and Kayblis's scenes may change: the flags, the commanders, the stage, the army name.</summary>
+    private static void ScribbleKayblis(GameState state, Random rng)
+    {
+        if (rng.Next(3) == 0)
+            state.F_Warg_State = (Sys3Int)rng.Next(0, 3);
+        if (rng.Next(4) == 0)
+            state.N_Warg_Stage = (Sys3Int)rng.Next(0, 3);
+        if (rng.Next(4) == 0)
+            state.F_Galtia_JoinedKayblis = (Sys3Int)rng.Next(0, 2);
+        if (rng.Next(6) == 0)
+            state.StoryStage = (Sys3Int)rng.Next(2, 5);
+        foreach (int c in KayblisCommanders)
+            if (rng.Next(8) == 0)
+                state.Cmdrs[c].Status = (Sys3Int)rng.Next(0, 2);
+        if (rng.Next(6) == 0)
+            state.Strings[10] = "scribbled";
+    }
+
+    private static IEnumerable<string> KayblisDefenderFeatures(GameState before, GameState after, GameState first, List<string> log)
+    {
+        foreach (string[] call in log.Where(e => e.StartsWith("call ", StringComparison.Ordinal)).Select(e => e.Split(' ')))
+            yield return $"call {call[1]} {call[3]}";
+        int prov = before.Prov_Cur.Value;
+        if (before.Bt_GarrisonProv == before.Prov_Cur)
+            yield return "attacked again";
+        if (log.Any(e => e is "rnd 0 0" or "rnd 1 1"))
+            yield return "a general without a draw";
+        if (before.StoryStage != 3 && after.StoryStage == 3)
+        {
+            yield return $"gate at {prov}";
+            if (before.StoryStage != 2)
+                yield return "gate in another stage";
+        }
+        if (log.Any(e => e.StartsWith("call Gﾜｰｸﾞ", StringComparison.Ordinal)))
+            yield break;
+        if (after.Bt_TroopLimit == 5000 && after.Bt_WallBonus == 0 && after.Tmp0001 == 86 && before.StoryStage != 3)
+        {
+            yield return after.Tmp0003 == 88 ? "plains, four" : "plains, two";
+            if (prov == 91)
+                yield return "91 in the plains";
+            yield break;
+        }
+        yield return after.Tmp0001.Value switch
+        {
+            160 => "Kaybwan",
+            163 => "Kaybnyan",
+            133 => "Kesselring",
+            91 => "Camilla",
+            181 => "Kayblis",
+            134 => "Medusa",
+            86 => "Monster Generals",
+            _ => "?",
+        };
+        if (after.Tmp0001 == 91 && before.Cmdrs[91].MaxTroops == 200)
+            yield return "Camilla raised";
+        if (after.Tmp0001 == 86 && after.Bt_WallBonus == before.Provs[prov].Defense && before.StoryStage != 3)
+            yield return "Monster Generals with walls";
     }
 
     /// <summary>Every attack <c>Tﾍﾙﾏﾝ</c> can make: the army and the province, in the file's order.</summary>
