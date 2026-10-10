@@ -9,7 +9,7 @@ namespace Kichikuou.Core.Script;
 /// script does; a UI that lets the player pick a province or a menu instead of moving a pointer
 /// (and the tests) queues the gestures the script expects — <see cref="Click"/>,
 /// <see cref="RightClick"/>, <see cref="Drag"/> — at the screen points <see cref="OnScreen"/>
-/// gives. No rule is decided here: the script still hit-tests the point.
+/// gives (a point out of view brought in first with <see cref="DragToward"/>). No rule is decided here: the script still hit-tests the point.
 /// </summary>
 /// <remarks>
 /// In real time the script reads the pointer thousands of times while it waits, so a gesture
@@ -123,20 +123,52 @@ public sealed class PointerScript
     private static MouseState Read(int button, int x, int y) => new((Sys3Int)button, (Sys3Int)x, (Sys3Int)y);
 
     /// <summary>
-    /// Where a map point is on the 640×400 screen with the camera centred on
-    /// (<c>MapCamX</c>, <c>MapCamY</c>), as the map loop turns the camera into the view's corner
-    /// (<c>COMMAND.ADV:51-58</c>); null when the point is not in view.
+    /// Where a map point is on the 640×400 screen; null when the point is not in view. The camera
+    /// (<c>MapCamX</c>, <c>MapCamY</c>) is <paramref name="centred"/> on the view when the map wait
+    /// begins and is turned into the view's corner by the map loop (<c>COMMAND.ADV:51-58</c>), which
+    /// keeps it so while it waits — after a drag it is the corner (<see cref="ViewCorner"/>).
     /// </summary>
-    public static (int X, int Y)? OnScreen(GameState state, Sys3Int mapX, Sys3Int mapY)
+    public static (int X, int Y)? OnScreen(GameState state, Sys3Int mapX, Sys3Int mapY, bool centred = true)
     {
+        var (left, top) = ViewCorner(state, centred);
+        int x = mapX.Value - left;
+        int y = mapY.Value - top;
+        return x is >= 0 and < 640 && y is >= 0 and < 400 ? (x, y) : null;
+    }
+
+    /// <summary>
+    /// The view's top-left corner on the map: the camera <paramref name="centred"/> on the view as
+    /// the map loop turns it into the corner (<c>COMMAND.ADV:51-58</c>, saturating at 0 and held
+    /// within 1280 × 400), or the camera itself while the loop waits after a drag.
+    /// </summary>
+    public static (int X, int Y) ViewCorner(GameState state, bool centred)
+    {
+        if (!centred)
+            return (state.MapCamX.Value, state.MapCamY.Value);
         Sys3Int left = state.MapCamX - 320;
         Sys3Int top = state.MapCamY - 200;
         if (left > 1280)
             left = 1280;
         if (top > 400)
             top = 400;
-        int x = mapX.Value - left.Value;
-        int y = mapY.Value - top.Value;
-        return x is >= 0 and < 640 && y is >= 0 and < 400 ? (x, y) : null;
+        return (left.Value, top.Value);
+    }
+
+    /// <summary>
+    /// A <see cref="Drag"/> that brings a map point toward the middle of the view: the drag-scroll
+    /// moves the view's corner by the pointer's way back (<c>WAO_MAP.ADV:20-51</c>; the corner stays
+    /// within 0-1280 × 0-400), at most 600 × 360 at a time, so a far point may need a second one;
+    /// null when the view cannot move toward it. The camera is <paramref name="centred"/> as in
+    /// <see cref="OnScreen"/>.
+    /// </summary>
+    public static (int FromX, int FromY, int ToX, int ToY)? DragToward(GameState state, Sys3Int mapX, Sys3Int mapY, bool centred = true)
+    {
+        var (left, top) = ViewCorner(state, centred);
+        int dx = Math.Clamp(Math.Clamp(mapX.Value - 320, 0, 1280) - left, -600, 600);
+        int dy = Math.Clamp(Math.Clamp(mapY.Value - 200, 0, 400) - top, -360, 360);
+        if (dx == 0 && dy == 0)
+            return null;
+        int fromX = 320 + dx / 2, fromY = 200 + dy / 2;
+        return (fromX, fromY, fromX - dx, fromY - dy);
     }
 }

@@ -200,6 +200,30 @@ public class CommandPhaseTests
     }
 
     [Fact]
+    public async Task A_province_out_of_view_is_dragged_in_and_clicked_with_the_camera_as_the_corner()
+    {
+        var rig = new PhaseRig(stage: 2);
+        rig.Place(7, 1500, 700);
+        rig.State.Provs[7].Owner = 1;
+        Assert.Null(PointerScript.OnScreen(rig.State, (Sys3Int)1500, (Sys3Int)700));
+        var drag = PointerScript.DragToward(rig.State, (Sys3Int)1500, (Sys3Int)700)!.Value;
+        Assert.Equal((620, 300, 20, 100), drag);       // the corner (480, 200) moves 600 right (at most), 200 down
+        rig.Input.Pointer.Drag(drag.FromX, drag.FromY, drag.ToX, drag.ToY);
+        rig.Input.Pointer.Click(420, 300);             // the corner is (1080, 400) now
+        rig.Menu(10);
+
+        await rig.RunAsync();
+
+        Assert.Equal(["COM.ADV", "Cｼﾊｲﾄｼ.ADV"], rig.Files);
+        Is(7, rig.State.Ui_ClickedProv);
+        Assert.Equal((420, 300), PointerScript.OnScreen(rig.State, (Sys3Int)1500, (Sys3Int)700));   // centred again
+        rig.State.MapCamX = 1080;
+        rig.State.MapCamY = 400;
+        Assert.Equal((420, 300), PointerScript.OnScreen(rig.State, (Sys3Int)1500, (Sys3Int)700, centred: false));
+        Assert.Null(PointerScript.DragToward(rig.State, (Sys3Int)1400, (Sys3Int)600, centred: false));   // already in the middle
+    }
+
+    [Fact]
     public async Task A_dungeon_is_entered_only_in_an_own_province_but_its_province_stays_selected()
     {
         var rig = new PhaseRig(stage: 2);
