@@ -63,7 +63,10 @@ files whole; the P4-P7 row). Step 5 is done: `Cｼｮｳﾆﾝ` and `Cｼﾊｲ�
 `ConstructionCommand`). Step 7 is done: `Cﾀｶﾗ`, `Sｱｲﾃﾑ` and `各種DATA` are ported whole
 (`TreasureCommand`, `ItemScreen` on `PickerScreen`, `AllDataCommand`; semantic events
 `PickerKind.Items`, `DataScreenEvent`) and their screens are drawn by hand (`PickerView`, the
-presenter's All Data layer). Next: step 8, the dungeon search in `Cﾒｲｷｭｳ` (D1).
+presenter's All Data layer). Step 8 is done: `Cﾒｲｷｭｳ` is ported but God's Door (`DungeonCommand`, its
+scenes in `DungeonCommand.Scenes.cs`; the boss and Hanny setters are record data run from the player's
+files through `IScenarioSource.ReadBlock`; God's Door and `Iｶﾐ` throw `NotSupportedException`). Next:
+step 9, the whole stage unattended to the first week of stage 2, and the owner's captures.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
 
@@ -139,8 +142,8 @@ presenter's All Data layer). Next: step 8, the dungeon search in `Cﾒｲｷｭ�
 - Play the game unattended headless (slots in `user://saves-auto`; `--load` resumes them):
   `<Godot console exe> --headless --path godot -- --newgame --auto --fast --quit [--seed n] [--shots <dir>] [--weeks n]`;
   one visit each to Harem, Subordinates and the hideout in the prologue and to Treasure and All Data
-  at stage 1, Turn END every week (stage 1: the rebels attack, `--auto` defends with the first unit free),
-  ends at the first file or path not ported yet ("not ported yet"), at a game over, or after week
+  at stage 1 (after one search of the Monsters' Cave: down to a battle, Retreat, Finish), Turn END
+  every week (stage 1: the rebels attack, `--auto` defends with the first unit free), ends at the first file or path not ported yet ("not ported yet"), at a game over, or after week
   30 (`--weeks n`) — with `--seed 7` today the rebels take Leazas Castle: ending 2 (exit code 0;
   1 after an error).
 

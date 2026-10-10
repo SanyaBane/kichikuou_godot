@@ -199,9 +199,10 @@ numbers are the engine's (`MS n` writes string n).
    `Cﾊｰﾚﾑ.ADV`, `Cｼｮｳﾆﾝ.ADV`, `Cｼﾊｲﾄｼ.ADV`, `Cﾃｲﾄ.ADV`, `Cﾀｶﾗ.ADV`, `各種DATA.ADV` and the `ninja` group's `Cﾆﾝｼﾞｬ.ADV` →
    `EnemyCityCommand`, `DistantCityCommand`, `SubordinatesCommand`, `HaremCommand`, `MerchantCommand`,
    `OwnCityCommand`, `ConstructionCommand`, `TreasureCommand`, `AllDataCommand`, `NinjaCommand` (`GoldenReplay.ReplayableRoots`, `CanReplay`;
-   of their paths only `Cﾃｷﾄｼ`'s independent cities still throw `NotSupportedException`). `Cﾒｲｷｭｳ.ADV` reads its `MS` strings from the player's files, so its
+   of their paths only `Cﾃｷﾄｼ`'s independent cities still throw `NotSupportedException`). `Cﾒｲｷｭｳ.ADV` reads its `MS` strings and its boss and Hanny setters (`ReadBlock`) from the player's files, so its
    replay is `RunAsync(capture, entryPoint: s => new DungeonCommand(s, scripts).RunAsync())`
-   (`DungeonReplayTests` in the content tests); the
+   (`DungeonReplayTests` in the content tests; the search is ported since milestone 2 step 8, God's Door still
+   throws, and all 12 captures — clicks, no search yet — replay whole); the
    same holds for the `screens` group (`Sﾌﾞﾀｲ`, `Sﾌﾞｶ`, `Sﾊｰﾚﾑ`, `Sｱｲﾃﾑ` → `DeploymentScreen`,
    `SubordinateScreen`, `HaremScreen`, `ItemScreen`, which read their button labels and the harem's name table),
    replayed by `ScreenReplayTests` in the content tests, and for the `nations` group (`TCﾘｰｻﾞｽ`,

@@ -348,5 +348,6 @@ reproduce the conditional items and their order); key waits through WAO op 1.
 5. `VAR0427` (Mill quest chain) is unnamed (G); it gates `G2` 2 (`:617`) and `Gﾐﾘ` 3 (`:1808`).
 6. `Iｶﾐ.ADV` (6528 lines, 4 `FIGT` sites, its own rearguard state `VAR0304-0319`) is rule-heavy
    and needs its own survey. It is reachable only from God's Door here.
-7. `Sﾌﾞﾀｲ.ADV` is shared by the attack/defence/dungeon commands; which survey owns it? The
+7. *Answered (2026-10-10):* `Sﾌﾞﾀｲ` was ported whole with W3 part 3 (`DeploymentScreen`), mode 3 included;
+   the dungeon calls it through the router. Originally: `Sﾌﾞﾀｲ.ADV` is shared by the attack/defence/dungeon commands; which survey owns it? The
    dungeon needs only mode 3 with one unit.
