@@ -238,7 +238,8 @@ tests) and, where the owner has recorded them, golden captures:
 4. ✓ `Cﾌﾞｶ`'s troop menu and the whole `Cﾊｰﾚﾑ` (2026-10-10, the P4-P7 row: both files are ported whole).
 5. ✓ `Cｼﾊｲﾄｼ` and `Cｼｮｳﾆﾝ` (2026-10-10, the P4-P7 row: both files are ported whole).
 6. ✓ `Cﾆﾝｼﾞｬ` and `Cﾃｲﾄ` (2026-10-10, the P4-P7 row: both files are ported whole).
-7. `Cﾀｶﾗ` with `Sｱｲﾃﾑ`, and `各種DATA`, with their screens in the presenter and in Godot.
+7. `Cﾀｶﾗ` with `Sｱｲﾃﾑ`, and `各種DATA`, with their screens in the presenter and in Godot. The rules
+   are ported (2026-10-10, the P2 and P4-P7 rows); the screens are next.
 8. **D1**: the dungeon search in `Cﾒｲｷｭｳ` (God's Door and `Iｶﾐ` later).
 9. The whole stage unattended (`--auto`) to the first week of stage 2, and the owner's captures.
 

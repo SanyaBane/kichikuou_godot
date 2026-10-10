@@ -60,7 +60,9 @@ the rebels' turn `TCﾘｰｻﾞｽ` and their defender picker `TCﾘｰｻﾞ�
 `Cﾌﾞｶ`'s troop menu and the whole `Cﾊｰﾚﾑ` are ported (`SubordinatesCommand`, `HaremCommand`, both
 files whole; the P4-P7 row). Step 5 is done: `Cｼｮｳﾆﾝ` and `Cｼﾊｲﾄｼ` are ported whole (`MerchantCommand`,
 `OwnCityCommand`). Step 6 is done: `Cﾆﾝｼﾞｬ` and `Cﾃｲﾄ` are ported whole (`NinjaCommand`,
-`ConstructionCommand`). Next: `Cﾀｶﾗ` with `Sｱｲﾃﾑ`, and `各種DATA`, with their screens (step 7).
+`ConstructionCommand`). Step 7 is under way: the rules of `Cﾀｶﾗ`, `Sｱｲﾃﾑ` and `各種DATA` are ported
+whole (`TreasureCommand`, `ItemScreen` on `PickerScreen`, `AllDataCommand`; semantic events
+`PickerKind.Items`, `DataScreenEvent`); next their screens in the presenter and in Godot.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
 
