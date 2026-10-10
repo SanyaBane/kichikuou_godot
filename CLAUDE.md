@@ -167,4 +167,11 @@ nothing unported met); next, the owner's stage-1 captures (checklist in docs/gol
 - **Verify before relying.** Facts marked "unverified" in the brief are hypotheses; confirm them
   and update the brief.
 - `F:\sources\Rance\alice-tools` is a read-only reference; do not modify it.
+- **Name records.** The owner cannot tell provinces, units or commanders apart by number: in docs
+  and replies never write a bare record ID — name first, ID after it: "Oaks (6)", "Oku (3), South
+  (4) or Baranchi (7)", "Kinkaid (unit 9)", "Ruberan (commander 31)"; the same for dungeons ("the
+  Monsters' Cave (dungeon 2)"). Provinces: the `MS 8` strings of `SET_MAP.ADV` (record `VAR0158`);
+  units and commanders: `MS 1` / `MS 4` of `SET_CHR.ADV` (records `Unit_Cur` / `Cmdr_Cur`; some
+  scenes rename a record at run time — `MM Unit_StrBase…` / `MM Cmdr_StrBase…` — so check the
+  context); dungeons: docs/strategy/survey-dungeon.md §2.1.
 - IDE is JetBrains Rider.

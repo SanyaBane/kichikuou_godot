@@ -418,11 +418,12 @@ script menus).
   1. mode items (`L_00bc0`): `Direct` (mode ≠ 1); `Bow` (bow unit, mode ≠ 2); `Magic` (magic unit,
      mode ≠ 3); `Capsule` (item 27 → 30); `Capsule` (item 26 → 31); `Fog Card` (not duel, item 28
      → 32); then, only when mode ≤ 3 and `Bt_ActFocus > 0` (`:576-578`): `Rance Attack` (slot 1-2,
-     unit 1 or unit 31 with `F_Kentarou_State > 7`) 11, `By la Way` (slot 1-2, unit 7) 12,
-     `High Speed` (unit 30) 14, `WD Beam` (unit 17 or 39) 13, `BD Beam` (unit 38 or 40) 17,
-     `Vanish Bomb` (unit 32, focus > 2) 15, `W. Shot` (unit 27) 18, `CW Dance` (unit 18) 16,
-     `Chuhai` (unit 11, `F_Asuka_State > 7`) 19, `EPO Light` (unit 37, magic) 21, `T2S Wave`
-     (unit 47, melee) 20;
+     Rance (unit 1) or Kentarou (unit 31) with `F_Kentarou_State > 7`) 11, `By la Way` (slot 1-2,
+     Rick (unit 7)) 12, `High Speed` (Meglass (unit 30)) 14, `WD Beam` (Shizuka (unit 17) or Magic
+     (39)) 13, `BD Beam` (Chizuko (unit 38) or Nagi (40)) 17, `Vanish Bomb` (Miki (unit 32), focus
+     > 2) 15, `W. Shot` (Isoroku (unit 27)) 18, `CW Dance` (Patton (unit 18)) 16, `Chuhai` (Asuka
+     (unit 11), `F_Asuka_State > 7`) 19, `EPO Light` (Gandhi (unit 37), magic) 21, `T2S Wave`
+     (Rolex (unit 47), melee) 20;
   2. `Cheat` (debug mode only) → mode 10 (`:241-246`);
   3. `Defend` → (4, ·), `Wait` → (5, ·), `Auto-Atk` → (8, ·), `Auto-Def` → (9, ·) (`:247-262`);
   4. `Info` (only if the last hovered button ≠ 99) → (54, last hovered button − 3) (`:263-268`,
@@ -468,7 +469,7 @@ x − 640, y):
 | 1 | `J1 640, 256` + `G 899` (`:1628-1629`) | (0, 256), 640×400 | dark blue-grey texture behind the faces |
 | 2 | `J1 640, 0` + `G Bt_BackgroundCg` (`:1630-1631`) | (0, 0), 640×256 (900-905: 640×257) | battlefield picture: 900 plains, 902 city, 904/906/908/910/912/914/918 special (variables.tsv) |
 | 3 | `J1 640, 0` + `G Cmdr_CgFull / CgPartial / CgAlone, 40` (`:1632-1643`) | embedded x (320 for enemy sprites), y 0; 320×256 | by `Cmdr_Troops` ≥ limit / 0 < troops < limit / 0 |
-| 4 | player sprite, same rule with `Unit_Cg*` (`:1644-1657`), or with a special the special CG(s) (`:1658-1714`) | embedded x (0), y 0 | special CGs by `Unit_Cur`: 1→1520, 7→1521, 11→1121, 17→1522, 39→1523, 37→1524, 40→1525, 38→1526, 30→1527, 27→1528, 31→1222, 32→1529, 18→1530, 47→1252 (640×256, or 320×256 for 1121/1522/1523/1526/1528); plus 1164/1176/1182/1185 when `Unit_CgFull` equals it (ninja). Every match is drawn |
+| 4 | player sprite, same rule with `Unit_Cg*` (`:1644-1657`), or with a special the special CG(s) (`:1658-1714`) | embedded x (0), y 0 | special CGs by `Unit_Cur`: Rance (1)→1520, Rick (7)→1521, Asuka (11)→1121, Shizuka (17)→1522, Magic (39)→1523, Gandhi (37)→1524, Nagi (40)→1525, Chizuko (38)→1526, Meglass (30)→1527, Isoroku (27)→1528, Kentarou (31)→1222, Miki (32)→1529, Patton (18)→1530, Rolex (47)→1252 (640×256, or 320×256 for 1121/1522/1523/1526/1528); plus 1164/1176/1182/1185 when `Unit_CgFull` equals it (ninja). Every match is drawn |
 | 5 | `J1 640, 0` + `G Bt_BackgroundCg + 1, 40` if `Bt_EnemyParty1 ≠ 1137` (`:1715-1718`) | (0, 0) | foreground overlay (rocks etc.) over the sprites |
 | 6 | `J0 640, 256` + `G Unit_FaceCg, 40` (`:1719-1720`) | (0, 256), 192×256 | player face; `G 0` (Goliath) draws nothing |
 | 7 | `J0 1088, 256` + `G Cmdr_FaceCg, 40` if ≠ 0 (`:1721-1724`) | (448, 256), 192×256 | enemy face |

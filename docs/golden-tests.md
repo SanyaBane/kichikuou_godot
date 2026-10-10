@@ -302,14 +302,14 @@ here with its reason, never as a blanket rule.
 | enemy info and the player's retreat (2026-10-08) | none — matches | — |
 | F2: the weekly command flags, the harem list, `Ui_ClickedProv`, `Ui_CityScouted` and the page-10 markers compared (2026-10-08) | none — all 37 battle captures still match | — |
 | F2: boot capture (`SET.ADV`, windowless run to the title, 2026-10-08) | no draws, no input; one hook (`ﾛｰﾄﾞｾｰﾌﾞ` with `RetVal 10`); the exit dump has the generated layout (`GoldenPendingTests`) | replayed through `GameSetup.SetAsync` with the player's `SET_*` files (`PlayerBootTests` in the content tests, `GoldenReplay.RunAsync(entryPoint:)`): 0 differences at the hook and at the exit; the layout is checked on the exit dump, since SET's own `DC`/`DS` create it |
-| The owner's prologue run (2026-10-09, seed 50114115; 113 complete captures, two `.part` from quitting): a new game, weeks 9-12 at stage 0 with every command (harem with Sill, Soul and Anasel, subordinate talks, the hideout and two of the spots 2/3/15, `Cﾃｷﾄｼ2`, pillages of 33/34 won and lost, the party screen), a save in week 11, path B (Merci, the duel lost, `ｵｰﾌﾟﾆﾝｸﾞ`, `Iﾊﾝﾗﾝ`), the first Leazas week with its nation turn `TCﾘｰｻﾞｽ` and two FIGT_B defences | **none — every capture matches**: 4 `MAIN@20` weeks (the stage-0 → stage-1 transition included), 6 `COM`, 5 `COMMAND`, 26 command files, 30 picker screens, 22 scenes, 6 dungeon clicks, 7 battles (all 44 battle captures still match), the boot. Five stage-1 captures (the Leazas `MAIN@20`, `Cﾃｷﾄｼ` attack, `Cﾌﾞｶ` troop menu ×2, the later harem) match up to the unported path. Not played, so still open: path A's week-23 Turn END (README open item 1) and a click near the map's top-left corner (item 2); `TCﾘｰｻﾞｽ` waits for N1 | the replay ends the comparison at a `NotSupportedException` (`GoldenReport.Unported`, above); the `dungeon` group is now replayed (`DungeonReplayTests`) |
-| The owner's third run (2026-10-09, seed 1323388227): pillages of 33 and 34, a save in week 11, Turn END to week 23 (path A; province 32 clicked in week 18), the duel lost, quit during `ｵｰﾌﾟﾆﾝｸﾞ` | none — all 56 complete captures match (14 weeks, 15 `COM`, 14 `COMMAND`, 4 command files, 2 pickers, 19 scenes, 3 battles, the boot). The duel ran with `Prov_Cur = 32`: EVT-08 confirmed (README open item 1 answered) | — |
+| The owner's prologue run (2026-10-09, seed 50114115; 113 complete captures, two `.part` from quitting): a new game, weeks 9-12 at stage 0 with every command (harem with Sill, Soul and Anasel, subordinate talks, the hideout and two of the spots Monsters' Cave (2) / Thieves' Cave (3) / Isolated Shrine Island (15), `Cﾃｷﾄｼ2`, pillages of Vladivostok (33) / Golak (34) won and lost, the party screen), a save in week 11, path B (Merci, the duel lost, `ｵｰﾌﾟﾆﾝｸﾞ`, `Iﾊﾝﾗﾝ`), the first Leazas week with its nation turn `TCﾘｰｻﾞｽ` and two FIGT_B defences | **none — every capture matches**: 4 `MAIN@20` weeks (the stage-0 → stage-1 transition included), 6 `COM`, 5 `COMMAND`, 26 command files, 30 picker screens, 22 scenes, 6 dungeon clicks, 7 battles (all 44 battle captures still match), the boot. Five stage-1 captures (the Leazas `MAIN@20`, `Cﾃｷﾄｼ` attack, `Cﾌﾞｶ` troop menu ×2, the later harem) match up to the unported path. Not played, so still open: path A's week-23 Turn END (README open item 1) and a click near the map's top-left corner (item 2); `TCﾘｰｻﾞｽ` waits for N1 | the replay ends the comparison at a `NotSupportedException` (`GoldenReport.Unported`, above); the `dungeon` group is now replayed (`DungeonReplayTests`) |
+| The owner's third run (2026-10-09, seed 1323388227): pillages of Vladivostok (33) and Golak (34), a save in week 11, Turn END to week 23 (path A; Log A (32) clicked in week 18), the duel lost, quit during `ｵｰﾌﾟﾆﾝｸﾞ` | none — all 56 complete captures match (14 weeks, 15 `COM`, 14 `COMMAND`, 4 command files, 2 pickers, 19 scenes, 3 battles, the boot). The duel ran with `Prov_Cur = 32` (Log A): EVT-08 confirmed (README open item 1 answered) | — |
 | The owner's second run (2026-10-09, seed 502748417): a new game, week 9 ended, in week 10 two clicks at the map's top-left corner ((9, 5), (11, 6)), Turn END | none — all 14 captures match. Both clicks pick province record 0 and run `Cﾃｷﾄｼ2` on it (STR-12 confirmed; README open item 2 answered) | — |
 | The Leazas week ported (milestone 2 step 1, 2026-10-10) | the owner's Leazas week of the first run (`week61009-105401-92-MAIN@20`, week 13, stage 1) now matches whole: the autosave, `COMMAND`, `TCﾘｰｻﾞｽ` and `Gｼｨﾙ` 21 hook checkpoints and the exit, 0 differences | — |
 | The rebels' turn ported (milestone 2 step 2, 2026-10-10) | the owner's rebel turn of the first run (`nations`, `20261009-105433-107-TCﾘｰｻﾞｽ`, week 14: `Gｴｸｽ` 10, then `FIGT_B` from army A's walk and from army B's) matches whole: three hook checkpoints and the exit, 0 differences (`NationReplayTests`) | — |
 | `Cﾌﾞｶ`'s troop menu ported (milestone 2 step 4, 2026-10-10) | the owner's two stage-1 `Cﾌﾞｶ` captures of the first run (`commands`, `-99-` a replenish for 8 gold, `-103-` a talk with Cadmium, week 14) now match whole; every `Cﾌﾞｶ` capture matches | — |
-| The attack in `Cﾃｷﾄｼ` ported (milestone 2 step 3, 2026-10-10) | the owner's stage-1 `Cﾃｷﾄｼ` capture of the first run (`commands`, `20261009-105408-96-Cﾃｷﾄｼ`, week 14, province 7: "Let's begin the battle", then Maris's "disrupted" refusal of the rebels' first week, `:144`) now matches whole; all 38 `Cﾃｷﾄｼ` captures match | — |
-| `Cﾊｰﾚﾑ` ported whole (milestone 2 step 4, 2026-10-10) | the owner's stage-1 harem capture of the first run (`commands`, `20261009-105412-97-Cﾊｰﾚﾑ`, week 14: the intro draw `:7` with no first meeting, the stage-1 list, a visit to Lia) now matches whole — the draw, the `Sﾊｰﾚﾑ` and `Gﾘｱ` checkpoints (the list and `Unit_Cur` 27 included) and the exit, 0 differences; all 12 `Cﾊｰﾚﾑ` captures match | — |
+| The attack in `Cﾃｷﾄｼ` ported (milestone 2 step 3, 2026-10-10) | the owner's stage-1 `Cﾃｷﾄｼ` capture of the first run (`commands`, `20261009-105408-96-Cﾃｷﾄｼ`, week 14, Baranchi (7): "Let's begin the battle", then Maris's "disrupted" refusal of the rebels' first week, `:144`) now matches whole; all 38 `Cﾃｷﾄｼ` captures match | — |
+| `Cﾊｰﾚﾑ` ported whole (milestone 2 step 4, 2026-10-10) | the owner's stage-1 harem capture of the first run (`commands`, `20261009-105412-97-Cﾊｰﾚﾑ`, week 14: the intro draw `:7` with no first meeting, the stage-1 list, a visit to Lia) now matches whole — the draw, the `Sﾊｰﾚﾑ` and `Gﾘｱ` checkpoints (the list and `Unit_Cur` 27 (Isoroku) included) and the exit, 0 differences; all 12 `Cﾊｰﾚﾑ` captures match | — |
 
 ## Harness configuration
 
@@ -370,7 +370,7 @@ Each `.golden` file becomes one test case. Captured so far (all match the origin
 | Capture | Battle | What it exercises |
 |---|---|---|
 | `095048-01`, `102936-01` … `103255-05` | FIGT_A from `Iﾄｳｿﾞｸ`, prologue: Rance's party vs the Civilian General at Golak / Vladivostok, victory | direct and magic attacks, enemy commander death, EXP, `M.ADV` map ops |
-| `103304-06` | FIGT_A from `Iﾄｳｿﾞｸ@198f`, scripted duel vs Ruberan, defeat (`Bt_IsDuel = 1`) | slot orders (FIGT_SEL 51), player commander deaths, `死亡捕獲`, `Prov_Cur := 1` |
+| `103304-06` | FIGT_A from `Iﾄｳｿﾞｸ@198f`, scripted duel vs Ruberan, defeat (`Bt_IsDuel = 1`) | slot orders (FIGT_SEL 51), player commander deaths, `死亡捕獲`, `Prov_Cur := 1` (Leazas Castle) |
 | `103751-07` | FIGT_B, Pegasus/Dodge/Melfeis attack North, `Sﾌﾞﾀｲ` returns 502 (city defence) | intercept setup, portraits, city walls, victory |
 | `103847-08` | FIGT_B, Ex's army attacks Wes; hooks `Gｴｸｽ`, then `Sﾌﾞﾀｲ` returning 501 (plains) | story hook before the battle, plains intercept, slot order 52, player commander death (Rick) |
 | `105112-01` … `105637-03`, `110045-05`, `110306-08` | FIGT_B intercepts at North, Wes, Baranchi, Ys (stage 1, with and without `Gｴｸｽ`) | more intercepts, ninja scouting, slot orders 51/52 |
@@ -438,9 +438,10 @@ captured at least once — the captures named after each step are what to look f
      allows), and open the status view once after a talk — `commands\…-Cﾌﾞｶ`, `screens\…-Sﾌﾞｶ`,
      `scenes\…-Gﾊﾞｳﾝﾄﾞ`/`Gｿｳﾙ`.
    - **Click the thieves' hideout** (dungeon 1; the banter draws `Y 4, 3`) and once each of the
-     dungeon spots 2/3/15 if they show — `dungeon\…-Cﾒｲｷｭｳ`. Also use the menu item
-     "→Thieves' Hideout" once (camera pan only).
-   - **Click a province other than 33/34** (view only) — `commands\…-Cﾃｷﾄｼ2`.
+     dungeon spots Monsters' Cave (2) / Thieves' Cave (3) / Isolated Shrine Island (15) if they
+     show — `dungeon\…-Cﾒｲｷｭｳ`. Also use the menu item "→Thieves' Hideout" once (camera pan only).
+   - **Click a province other than Vladivostok (33) / Golak (34)** (view only) —
+     `commands\…-Cﾃｷﾄｼ2`.
    - **Pillage Vladivostok (33)**, win; another week **pillage Golak (34) and lose** (a weak party
      or retreat); once **cancel the party screen** instead of choosing a party —
      `commands\…-Cﾃｷﾄｼ`, `scenes\…-Iﾄｳｿﾞｸ`, `screens\…-Sﾌﾞﾀｲ`, battle captures in the top folder.
@@ -451,7 +452,7 @@ captured at least once — the captures named after each step are what to look f
 5. **Save** (menu Load/Save → save to a slot): `ﾛｰﾄﾞｾｰﾌﾞ` appears as a hook in the `COMMAND`
    capture. Note the week.
 6. **Path B (Merci).** **Win a pillage of Golak** again → the Merci path, the duel against
-   commander 31 — **lose it** (the story continues; winning is game over, ending 14) →
+   Ruberan (commander 31) — **lose it** (the story continues; winning is game over, ending 14) →
    `ｵｰﾌﾟﾆﾝｸﾞ`, then `MAIN` sets stage 1 and plays `Iﾊﾝﾗﾝ` (`scenes\…-ｵｰﾌﾟﾆﾝｸﾞ`, `…-Iﾊﾝﾗﾝ`; the
    week capture of that week shows both). **Play the first Leazas week to its Turn END**: income,
    `COM` with stage 1, the nation turns (`nations\…-T*`), a full `MAIN@20` week.
@@ -477,32 +478,33 @@ folder will fill with a capture per scene.
 1. **Reach stage 1**: load a save from the end of the prologue, or play path B quickly (harem with
    Sill or Soul, a won pillage of Golak for Anasel, harem with Anasel, a won pillage of Golak, the
    duel lost).
-2. **The first Leazas week.** `COM` plays `Iｼﾚｲﾌﾞ` 1. **Click a rebel province** (3, 4 or 7: the
-   attack is refused this week, `Cﾃｷﾄｼ:144`). Turn END: the rebel phase `TCﾘｰｻﾞｽ` (`Gｴｸｽ` 10;
+2. **The first Leazas week.** `COM` plays `Iｼﾚｲﾌﾞ` 1. **Click a rebel province** — Oku (3), South
+   (4) or Baranchi (7); the attack is refused this week, `Cﾃｷﾄｼ:144`. Turn END: the rebel phase `TCﾘｰｻﾞｽ` (`Gｴｸｽ` 10;
    if the rebels attack, defend), `Gｼｨﾙ` 21 at the end of the week.
 3. **In the following weeks, every command at least once** (most are once a week):
-   - **Attack** a rebel province (4 or 7) and win; in the same week **try a second attack**
-     (refused after a conquest, `Cﾃｷﾄｼ:112`); another week **cancel the party screen** once, and
-     **lose or retreat** once. Take province 5 — but **keep province 6 for step 5**.
-   - **Click provinces 17 or 29 and 31 or 32** (Maris refuses: "civil war") and an enemy province
-     farther away (`Cﾃｷﾄｼ2`).
+   - **Attack** a rebel province — South (4) or Baranchi (7) — and win; in the same week **try a
+     second attack** (refused after a conquest, `Cﾃｷﾄｼ:112`); another week **cancel the party
+     screen** once, and **lose or retreat** once. Take Ys (5) — but **keep Oaks (6) for step 5**.
+   - **Click Rockearth (17) or Shangri-La (29), and Log B (31) or Log A (32)** (Maris refuses:
+     "civil war") and an enemy province farther away (`Cﾃｷﾄｼ2`).
    - **Ninja** (Kanami, from an enemy city's menu): Collect Info one week, Sabotage another, and
      "No Mission" once.
    - **Subordinates**: Add New Troops (with Add More once), Replenish after a battle, a talk with a
      new unit (Leila, Rick, Kinkaid, …), Rance's monologue, Info.
    - **Harem**: a few visits (Lia, Maris, Kanami, …) and one cancel.
-   - **Own city** (click an own province): Temporary Levy on province 1 and on two others (e.g.
-     11 and 15); Bolster Defense once; on province 1 the dungeon cell.
+   - **Own city** (click an own province): Temporary Levy on Leazas Castle (1) and on two others
+     (e.g. Alan (11) and Rich (15)); Bolster Defense once; on Leazas Castle (1) the dungeon cell.
    - **Merchant**: the first meeting; a mercenary if the gold allows; an item; Send Away.
    - **Construction**: build the Library (400) and play on until it is finished (8 weeks: its
      scene runs at the start of a week).
    - **Treasure**: the item screen; equip and unequip an item if there is one.
    - **All Data**: the graphs, and change a scale once. **Think** once.
-   - **Dungeons**: the Monsters' Cave (province 14) — a search of a few floors with a battle, then
-     retreat; a click on dungeon 3 (province 1) and on dungeon 15 (province 11).
+   - **Dungeons**: the Monsters' Cave (dungeon 2, in Poor (14)) — a search of a few floors with a
+     battle, then retreat; a click on the Thieves' Cave (dungeon 3, in Leazas Castle (1)) and on
+     the Isolated Shrine Island (dungeon 15, in Alan (11)).
    - **Save** once (Load/Save, a slot) and **load** it once later from the menu.
 4. **The rebels' attacks**: defend once by intercepting; optionally abandon a province once.
-5. **The end of the stage**: take province 6 → `Iｼﾚｲﾌﾞ` 2 (stage 2; `Gｴｸｽ` 4 asks a question —
+5. **The end of the stage**: take Oaks (6) → `Iｼﾚｲﾌﾞ` 2 (stage 2; `Gｴｸｽ` 4 asks a question —
    any answer, note which). Turn END; the next week `GAL` 1, and at its end `Iﾏｼﾞﾝ` 1 with two
    defences of Leazas Castle (win them). Play the following week's player phase, then quit.
 

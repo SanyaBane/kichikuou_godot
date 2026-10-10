@@ -24,7 +24,7 @@ By volume the group is ~15.6k lines, but **rules are well under 2k lines**: ~85 
 
 | File | Lines | Reached from | Weekly flag consumed |
 |---|---|---|---|
-| `Cﾃｷﾄｼ` enemy city (adjacent) | 4497 | province click: enemy province adjacent to an own one (`COMMAND.ADV:535-571`); prologue click on 33/34 (`:518`) | `Ui_CmdAttackAvail` (only on a conquest); `Ui_CmdOwnCityAvail` (AL Church visit, `Cﾃｷﾄｼ.ADV:95`) |
+| `Cﾃｷﾄｼ` enemy city (adjacent) | 4497 | province click: enemy province adjacent to an own one (`COMMAND.ADV:535-571`); prologue click on Vladivostok (33) / Golak (34) (`:518`) | `Ui_CmdAttackAvail` (only on a conquest); `Ui_CmdOwnCityAvail` (AL Church visit, `Cﾃｷﾄｼ.ADV:95`) |
 | `Cﾃｷﾄｼ2` enemy city (not adjacent) | 190 | other enemy province (`COMMAND.ADV:576`); any other prologue click (`:524`) | — |
 | `Cｼﾊｲﾄｼ` own city | 1823 | click on own province, `StoryStage ≠ 0` (`COMMAND.ADV:527-530`) | `Ui_CmdOwnCityAvail` (global, one action per week) |
 | `Cｼｮｳﾆﾝ` merchant | 1794 | menu "Merchant" (`COMMAND.ADV:255-266, 349-353`) | `Ui_CmdMerchantAvail` (only on "Send Away") |
@@ -51,14 +51,14 @@ By volume the group is ~15.6k lines, but **rules are well under 2k lines**: ~85 
 |---|---|---|
 | Cﾃｷﾄｼ | 1-98 | entry (`Bt_TargetProv := Prov_Cur`, `Ui_CityScouted := 0`), header, main menu (Attack/Pillage, Ninja, AL Church, Return) |
 | Cﾃｷﾄｼ | 99-425 | attack pipeline → `Sﾌﾞﾀｲ` → refusals → defender setup (T*2 files) → `FIGT_A` (01-flow §2.1) |
-| Cﾃｷﾄｼ | 429-633, 634-3648 | independent cities (owner 3, provinces 17-29): Negotiate / Use Force / Stop + per-city negotiation scenes |
+| Cﾃｷﾄｼ | 429-633, 634-3648 | independent cities (owner 3, Rockearth (17) through Shangri-La (29)): Negotiate / Use Force / Stop + per-city negotiation scenes |
 | Cﾃｷﾄｼ | 3649-3828 | Use Force (independent city battle) |
 | Cﾃｷﾄｼ | 3829-4364 | refusal / barrier dialogues, "first four alive" picker `L_04f2a`, `L_05109` (remove cmdr), `L_05118` (undeploy) |
 | Cｼﾊｲﾄｼ | 32-507, 508-801 | menu builder (~30 province-specific story items), story stubs, castle cell submenu |
 | Cｼﾊｲﾄｼ | 810-1181 | Temporary Levy (all 8 draws) |
 | Cｼﾊｲﾄｼ | 1504-1731 | Bolster Defense |
 | Cｼｮｳﾆﾝ | 1-129 | greeting state machine (`F_Merchant_State`), main menu |
-| Cｼｮｳﾆﾝ | 205-925, 1059-1400 | mercenaries (units 49/50), item shop |
+| Cｼｮｳﾆﾝ | 205-925, 1059-1400 | mercenaries (Louis (unit 49) / Cecil (unit 50)), item shop |
 | Cﾌﾞｶ | 1-207 | view-only loop / pick loop over `Sﾌﾞｶ`; 208-712 50 per-unit talk stubs |
 | Cﾌﾞｶ | 725-1097 | new-troop offer, Add More, buy, replenish, talk |
 | Cﾆﾝｼﾞｬ | 1-330 | ninja pick, mission menu; 331-643 Collect Info / Sabotage / capture; 644-1166 per-ninja effects, commander picker `L_01691` |
@@ -72,7 +72,7 @@ By volume the group is ~15.6k lines, but **rules are well under 2k lines**: ~85 
 | Site | Max | Mode | Note |
 |---|---|---|---|
 | Cﾃｷﾄｼ:218 | 4, or 1 at the mountain passes (`:172-199`) | 1 Attack | `PParty1 = 0` → back to menu |
-| Cﾃｷﾄｼ:464 / :3662 | 4 | 1 | province 27 (→ Gｻｰﾅｷｱ#1) / Use Force |
+| Cﾃｷﾄｼ:464 / :3662 | 4 | 1 | Toushin City (27) (→ Gｻｰﾅｷｱ#1) / Use Force |
 | FIGT_B:80 | 4 | 2 Plains/City | port: `Battle.Flow.Defence.cs:146-149` via `IStoryHooks` (hook) |
 | Cﾒｲｷｭｳ:335, Gﾄｳｹﾞﾝ:278 | 1 | 3 Search | |
 | Gｶﾌｪ:1959, Iｶﾐ:4816, Iｼｬﾝｸﾞﾘﾗ:4526, Iﾄｳｿﾞｸ:305 | 4 | 1 | story battles |
@@ -81,12 +81,13 @@ By volume the group is ~15.6k lines, but **rules are well under 2k lines**: ~85 
 
 ### 3.1 Attack (`Cﾃｷﾄｼ` → `FIGT_A`) — ported (`Strategy/EnemyCityCommand`, 2026-10-10)
 
-01-flow §2.1 is correct with one correction: **province 31 also opens to a full party if the
-player owns 30** (`Cﾃｷﾄｼ.ADV:188-192`) [C]. Order: prologue (`StoryStage 0` → Iﾄｳｿﾞｸ#1,
+01-flow §2.1 is correct with one correction: **Log B (31) also opens to a full party if the
+player owns Volgo Z (30)** (`Cﾃｷﾄｼ.ADV:188-192`) [C]. Order: prologue (`StoryStage 0` → Iﾄｳｿﾞｸ#1,
 ｵｰﾌﾟﾆﾝｸﾞ, `:101-108`) → stage-4 refusal (`:109`) → `Ui_CmdAttackAvail = 0` refusal (`:112`) →
-province 82 warning (`:115`) → stage-1 "civil war" refusal unless owner 2 (`:118`) → owner 3 →
-independent flow (`:121`) → Patton hooks (`:124-134`) → rebels refusal (`:144`) → Iｼﾚｲﾌﾞ#5/#6
-gate for 78/89/90/91 (`:147-157`) → **`Sﾌﾞﾀｲ` (cost paid here)** → unit refusals (`:226-307`, no
+Land of Death (82) warning (`:115`) → stage-1 "civil war" refusal unless owner 2 (`:118`) → owner
+3 → independent flow (`:121`) → Patton hooks (`:124-134`) → rebels refusal (`:144`) → Iｼﾚｲﾌﾞ#5/#6
+gate for Tower of Evil (78) / Grief Valley (89) / Bone Forest (90) / Tearing Forest (91)
+(`:147-157`) → **`Sﾌﾞﾀｲ` (cost paid here)** → unit refusals (`:226-307`, no
 refund, Q-1) → defender setup by owner: TCﾘｰｻﾞｽ2 `:319`, TJAPAN2 `:342`, Tｾﾞｽ2 `:345`,
 Tﾍﾙﾏﾝ2 `:348`, GAL#9 `:351`, Tｹｲﾌﾞﾘｽ2 `:355` → no-battle exits (Warg `:377`, Zeth barrier
 `:381-387`, Papaya `:388`, unopposed `:395`) → `Bt_Kind := 1; FIGT_A; Bt_Kind := 0` (`:419-425`) [C].
@@ -99,10 +100,10 @@ change and `死亡捕獲` live in FIGT_A; `Cﾃｷﾄｼ` adds only the map redr
 
 ### 3.2 Independent cities (owner 3, `Cﾃｷﾄｼ.ADV:429-3828`)
 
-Pre-menu specials: 28 + `F_Merchant_State = 1` → Portugal merchant scene, `Gold += 100`, state 2
-(`:2432-2694`); 29 → Iｼｬﾝｸﾞﾘﾗ#1/#2 (`:434-442`); 21 → Iｼﾚｲﾌﾞ#3 (`:456`); 27 → `Sﾌﾞﾀｲ` then
-Gｻｰﾅｷｱ#1 (`:461-471`). Sub-menu Negotiate / Use Force / Stop (`:486-506`). Negotiation is free
-and repeatable; success = `Prov_Owner := 1`, `Ui_CmdAttackAvail := 0`, the city's commanders
+Pre-menu specials: Portugal (28) + `F_Merchant_State = 1` → Portugal merchant scene,
+`Gold += 100`, state 2 (`:2432-2694`); Shangri-La (29) → Iｼｬﾝｸﾞﾘﾗ#1/#2 (`:434-442`); Custom (21)
+→ Iｼﾚｲﾌﾞ#3 (`:456`); Toushin City (27) → `Sﾌﾞﾀｲ` then Gｻｰﾅｷｱ#1 (`:461-471`). Sub-menu
+Negotiate / Use Force / Stop (`:486-506`). Negotiation is free and repeatable; success = `Prov_Owner := 1`, `Ui_CmdAttackAvail := 0`, the city's commanders
 removed (`L_05109`) [C]:
 
 | Prov | Outcome of negotiation |
@@ -111,15 +112,15 @@ removed (`L_05109`) [C]:
 | 18 Ice | always succeeds (`:1515-1520`) |
 | 19 Diphtheria, 24 Zeo | never succeed (`:956`, `:2795-2810`) |
 | 20 Lazeal | first: "wait" → `DXTalk_RetryWeek := Week + 4` (`:1696`); due when `RetryWeek < Week` → Gﾚｨﾘｨ#1, success (`:1963-1981`) |
-| 22 Mars | "Make a General" → unit 26 `Status := 1`, `N_Mars_Score := 2`, success (`:897-903`) |
+| 22 Mars | "Make a General" → Mars the Great (unit 26) `Status := 1`, `N_Mars_Score := 2`, success (`:897-903`) |
 | 23 Red | "I promise" → success, nothing recorded (`:2125-2130`) |
 | 25 M Land | "Maintain the Park" → `F_MLand_Funded := 1` (−20 gold weekly, MAIN.ADV:190), `F_Sayori_State := 1`, success (`:3078-3291`) |
 | 26 Hanna | "Pay": refused if `Gold < 29`, else `Gold −= 30` (`:3515-3588`) |
 | 28 Portugal | "Pay" −90, but "Don't Pay" reaches the same success for free (`:2328-2413`) |
 
 **Use Force** (`:3649-3828`): `Sﾌﾞﾀｲ` (4), `Bt_EnemyRetreatMode := 1`, `MS 10` army name, fixed
-commander list per city → `L_04f2a` → FIGT_A; province 20 clears `DXTalk_RetryWeek` (`:3711`);
-after a win at 28 → Gﾚﾍﾞｯｶ#2, at 22 → Gｶｾｲ#1 (`:3817-3824`). **Skips the unit refusals** [C].
+commander list per city → `L_04f2a` → FIGT_A; Lazeal (20) clears `DXTalk_RetryWeek` (`:3711`);
+after a win at Portugal (28) → Gﾚﾍﾞｯｶ#2, at Mars (22) → Gｶｾｲ#1 (`:3817-3824`). **Skips the unit refusals** [C].
 
 ### 3.3 Own city (`Cｼﾊｲﾄｼ`) — one action per week across all own provinces [C] — ported whole (`Strategy/OwnCityCommand`, 2026-10-10)
 
@@ -127,9 +128,9 @@ after a win at 28 → Gﾚﾍﾞｯｶ#2, at 22 → Gｶｾｲ#1 (`:3817-3824`).
 |---|---|---|---|
 | Temporary Levy (hidden at Economy 0) | `Ui_CmdOwnCityAvail := 0` | `Gold += Y4(Prov_Economy*10)`; then the **first** matching story trigger (~30, keyed by province + flags) else item rolls (Cat Bread 24, Kuriripu 25), Gｶﾊﾟｰﾗ#1 roll, else a girl: `Prov_Girls −1`, `N_SpecialRoom_Girls +1`. No economy/defence penalty, no `Hist_*` | 810-1181 (triggers 897-1054) |
 | Bolster Defense | `Prov_Defense*20` (5 if 0); `Ui_CmdOwnCityAvail −= 1` | `Gold −= cost` **without a gold check** (floors at 0), `Prov_Defense += 1`, no cap | 1504-1699 (1593-1609) |
-| ~30 story items (province + flag gated) | `Ui_CmdOwnCityAvail := 0` | `Ev_Entry := n; %#G*` — table at 87-292 / stubs 508-801 (e.g. buildings on prov 1 → Gﾏﾘｱ/Gｱﾋﾞｧﾄｰﾙ/Gｱｰﾔ/Gﾏｹﾝ/Gﾕｳﾚｲ…/Gｽｽﾞﾒ; Special Room → Gﾄｸﾍﾞﾂ) | 87-801 |
-| Castle cells (prov 1) | same flag | G1#1, Gﾚﾘｭｰｺﾌ#4, Gﾙｰﾍﾞﾗﾝ#10, Gﾊﾟﾊﾟｲｱ#6, Gｶﾌｪ#2 | 728-801 |
-| Ruins Search (prov 35) | gated only by `Ui_CmdDungeonAvail` (consumed in Cﾒｲｷｭｳ:25) | sets dungeon record 30 (`Dgn_State := 0`, `Dgn_Prov := 35`), calls `Cﾒｲｷｭｳ` | 434-439, 538-548 |
+| ~30 story items (province + flag gated) | `Ui_CmdOwnCityAvail := 0` | `Ev_Entry := n; %#G*` — table at 87-292 / stubs 508-801 (e.g. buildings on Leazas Castle (1) → Gﾏﾘｱ/Gｱﾋﾞｧﾄｰﾙ/Gｱｰﾔ/Gﾏｹﾝ/Gﾕｳﾚｲ…/Gｽｽﾞﾒ; Special Room → Gﾄｸﾍﾞﾂ) | 87-801 |
+| Castle cells (Leazas Castle (1)) | same flag | G1#1, Gﾚﾘｭｰｺﾌ#4, Gﾙｰﾍﾞﾗﾝ#10, Gﾊﾟﾊﾟｲｱ#6, Gｶﾌｪ#2 | 728-801 |
+| Ruins Search (Ancient Ruins (35)) | gated only by `Ui_CmdDungeonAvail` (consumed in Cﾒｲｷｭｳ:25) | sets dungeon record 30 (Ancient Ruins; `Dgn_State := 0`, `Dgn_Prov := 35` (Ancient Ruins)), calls `Cﾒｲｷｭｳ` | 434-439, 538-548 |
 
 When the flag is 0 every item shows "×" and loops back to the menu (`:294-499`) [C].
 
@@ -142,7 +143,7 @@ Flag `Ui_CmdMerchantAvail := 0` only on Send Away (`:130-153`). Price test is `G
 |---|---|---|---|
 | Louis (unit 49) 200 / 1000 troops | 40 / 80 | `Status := 1`, `Troops = MaxTroops = n`; shown while `F_MercA_Lost = 0`, `Status = 0` | 279-302 |
 | Cecil (unit 50) 1000 / 5000 | 30 / 110 | same, `F_MercB_Lost` | 616-639 |
-| Shop: Popularity Staff 3 (500), Napoleon 4 (800), Shingen 5 (800), Substitute Ninja 8 (1000), Hirami Lemon 43 (500, unit 32 present), Clothes 19 (1, Sill present; sets `F_SillClothes_State`), Ninja Birdlime 44 (30, `N_Freya_State = 3`), Fog Card 28 (`FogCard_Price`) | | `Item_Holder := 100`; each sold once (shown while `Item_Holder = 0`) | 1059-1400 |
+| Shop: Popularity Staff 3 (500), Napoleon 4 (800), Shingen 5 (800), Substitute Ninja 8 (1000), Hirami Lemon 43 (500, Miki (unit 32) present), Clothes 19 (1, Sill present; sets `F_SillClothes_State`), Ninja Birdlime 44 (30, `N_Freya_State = 3`), Fog Card 28 (`FogCard_Price`) | | `Item_Holder := 100`; each sold once (shown while `Item_Holder = 0`) | 1059-1400 |
 | Fuck Rebecca (once per visit) / Buy Rebecca | free | Gﾚﾍﾞｯｶ#1 / dialogue only | 926-1058 |
 
 All purchases add to `Hist_SundryExp`. `F_SillCow_State` 6/2 → Gｼｨﾙ#6/#2 and return **without
@@ -155,9 +156,9 @@ One troop action and one talk per week. Using either clears its `CmdAvail_Sub*`;
 
 | Action | Cost | Effect | Lines |
 |---|---|---|---|
-| Add New Troops | offer table `:757-799`: Knights 110/25 men, Soldiers 50/25, Mages 100/25, units 3-4 30/50, units 5/33/36/18 200, unit 16 120, class 3 150, other 320/10 men; units >47, 25, 41 none; `+ Week/4`. "Add More": men ×2, cost ×3 while cost < 10000 | `Gold −= cost`, `Hist_MilitaryExp += cost`, `Troops += men`, `MaxTroops += men`, `Recovery += 1` | 922-965 |
+| Add New Troops | offer table `:757-799`: Knights 110/25 men, Soldiers 50/25, Mages 100/25, Bound (unit 3) / Soul (unit 4) 30/50, Leila (unit 5) / Julia (unit 33) / Aviator (unit 36) / Patton (unit 18) 200, Maria (unit 16) 120, class 3 150, other 320/10 men; units >47, Mill (unit 25), Galtia (unit 41) none; `+ Week/4`. "Add More": men ×2, cost ×3 while cost < 10000 | `Gold −= cost`, `Hist_MilitaryExp += cost`, `Troops += men`, `MaxTroops += men`, `Recovery += 1` | 922-965 |
 | Replenish | `max(1, (Max−Troops)/50)`; nothing if full | `Troops := MaxTroops` | 974-1097 |
-| Talk | `CmdAvail_SubTalk := 0` before the scene | unit N → its G file with **stale `Ev_Entry = 20`** (set once at `:25`); 49/50 → Gﾖｳﾍｲ#3/#4; 48 → Gﾊﾆｰ/Gｵｳｼﾞ by `Unit48_Identity`; Rance → inline self-talk, `VAR0469 += 1` | 966-973, 208-712, 1338-1377 |
+| Talk | `CmdAvail_SubTalk := 0` before the scene | unit N → its G file with **stale `Ev_Entry = 20`** (set once at `:25`); Louis (49) / Cecil (50) → Gﾖｳﾍｲ#3/#4; 48 → Gﾊﾆｰ/Gｵｳｼﾞ by `Unit48_Identity`; Rance → inline self-talk, `VAR0469 += 1` | 966-973, 208-712, 1338-1377 |
 | Prologue (`StoryStage 0`) | talk only, no menu | `Ui_CmdSubordAvail := 0` | 713-724 |
 
 Every action leaves `Cﾌﾞｶ` (`%0`); Info / Do Nothing don't consume anything.
@@ -197,7 +198,7 @@ One building at a time (`BuildWeeksLeft ≠ 0` → "busy", no flag consumed, `:7
 | Maria Research (unit 16 present, `F_Maria_Tulip > 1`) | 980 | 8 | Gﾏﾘｽ#7 | 839-871 |
 | Magic Research | 900 | 12 | Gﾏﾘｽ#8 | 933-962 |
 
-Completed buildings unlock own-city items on province 1 (§3.3).
+Completed buildings unlock own-city items on Leazas Castle (1) (§3.3).
 
 ### 3.8 Harem (`Cﾊｰﾚﾑ` + `Sﾊｰﾚﾑ`) [C] — ported whole (`Strategy/HaremCommand`, `Strategy/HaremScreen`, 2026-10-10)
 
@@ -253,7 +254,7 @@ dispatch on it [C].
 | history (page 2, cursor `Hist_Cur`) | `Hist_SundryExp` (merchant, construction, Hanna/Portugal), `Hist_MilitaryExp` (Cﾌﾞｶ, Sﾌﾞﾀｲ), `Harem_SexCount[k]`, `Harem_LastWeek[k]` |
 | prov | `Prov_Owner` (negotiations, unopposed take), `Prov_Defense` (±1), `Prov_Girls` |
 | unit | `Unit_Status` (Sﾌﾞﾀｲ 1→2, undeploy, Mars, mercenaries), `Troops`, `MaxTroops`, `Recovery`, `Unit_Item`, `Unit_Exp[1]` |
-| cmdr | `Cmdr_Status/Troops` (L_05109, ninja), `TroopAtk/Def`, `Recovery`; cmdr 73 refilled and **renamed** (`Cﾃｷﾄｼ.ADV:329-338`) |
+| cmdr | `Cmdr_Status/Troops` (L_05109, ninja), `TroopAtk/Def`, `Recovery`; Kenichi Oda (commander 73) refilled and **renamed** (`Cﾃｷﾄｼ.ADV:329-338`) |
 | item | `Item_Holder` (shop, finds, equip, Cﾀｶﾗ loss, Substitute Ninja) |
 | ui | all `Ui_Cmd*Avail`, `CmdAvail_Sub*`, `Ui_CityScouted`, `HaremAvail_*` (50), `Ui_ItemViewMode` (persistent), graph scales, `Ui_SquadMode/Choice`, `Ui_SubordMode` |
 | battle | `Bt_TargetProv`, `Bt_PlayerParty1-4`, `Bt_EnemyParty*`, `Bt_EnemyRetreatMode`, `Bt_WallBonus`, `Bt_Kind`, `Bt_ScoutNinja`, `F_*_NinjaUsed` |
@@ -262,13 +263,14 @@ dispatch on it [C].
 | unused | `VAR0055` (write-only tally of levy/defence gold, `Cｼﾊｲﾄｼ.ADV:894, 1607`) |
 
 Strings: `MM 8` province name, `MM 1/2/3/4/7` names for display, `MS 1` button labels,
-`MS 10` enemy army name; **`MS 4/5` permanently rename commander 73** (JAPAN "Fleeing
+`MS 10` enemy army name; **`MS 4/5` permanently rename Kenichi Oda (commander 73)** (JAPAN "Fleeing
 Soldier"/"Foot Soldiers", `Cﾃｷﾄｼ.ADV:334-338`) — a persistent string-table write [C]. No array
 page 4 use [I].
 
-**Stale cursors / aliasing** [C]: `Unit_Cur` left at 16 (Cﾃｲﾄ:268, Cｼﾊｲﾄｼ:88), 32, 503 (picker
-cancel), last party member (Sﾌﾞﾀｲ Go), 1 (harem reward); `Item_Cur` at 8 or 28; `Cmdr_Cur` at a
-random commander or 100; `Prov_Cur := 1` left after the first Zeth-barrier failure
+**Stale cursors / aliasing** [C]: `Unit_Cur` left at Maria (16; Cﾃｲﾄ:268, Cｼﾊｲﾄｼ:88), Miki (32),
+503 (picker cancel), last party member (Sﾌﾞﾀｲ Go), Rance (1; harem reward); `Item_Cur` at 8 or 28;
+`Cmdr_Cur` at a random commander or 100; `Prov_Cur := 1` (Leazas Castle) left after the first
+Zeth-barrier failure
 (`Cﾃｷﾄｼ.ADV:4172`); `Bt_TargetProv` left set on every exit but Return (`:88`) and FIGT_A;
 `Hist_Cur` left at the harem girl index (`Cﾊｰﾚﾑ.ADV:560`) so later expenses that week land in
 history slot k (graphs only); **`Sｱｲﾃﾑ` equip writes `Unit_Item[100]`** (`:148-151`), which
@@ -288,7 +290,7 @@ cursors without setting them is **unknown** — the golden comparison will tell.
 | Cﾆﾝｼﾞｬ:359 | 100 | Collect Info | 1 → capture |
 | Cﾆﾝｼﾞｬ:529 / 531 | 100 / 300 | Sabotage / owner 8 redraw | > 90 → capture |
 | Cﾆﾝｼﾞｬ:541 | 2 | sabotage not captured (incl. Saitou) | success / fail |
-| Cﾆﾝｼﾞｬ:1154 / 1158 / 1162 | 30 / 12 / 28 | success, Freya/Kaoru/Wichita, owner 4 / 6 / 7 | target commander 22-51 / 71-82 / 101-128 |
+| Cﾆﾝｼﾞｬ:1154 / 1158 / 1162 | 30 / 12 / 28 | success, Freya/Kaoru/Wichita, owner 4 / 6 / 7 | target commander Lelyukov (22) through Katyusha (51) / Mars the Great (71) through Isoroku Yamamoto (82) / Chizuko (101) through Shitareriha (128) |
 | Cﾆﾝｼﾞｬ:755 / 757 | 200 / `Cmdr_Troops` | Freya success; redraw if troops < first draw | troops killed |
 | Cﾆﾝｼﾞｬ:860 | 2 | Kaoru success | TroopAtk vs TroopDef |
 | Cﾊｰﾚﾑ:7 | 4 | every harem command, `StoryStage ≠ 0`, `F_SillCow_State ≠ 5`; drawn even if cancelled | Suzume / Wendy intro |
@@ -325,7 +327,7 @@ Quirks a faithful port must keep (or consciously decide on) [C unless tagged]:
 
 1. **No refund** of war costs on refusals, Zeth barrier, Warg exit (`Cﾃｷﾄｼ.ADV:226-307, 377-387`); units stay `Status 2`.
 2. **Attack flag survives a defeat** (Q-2): repeated attacks per week are possible with other units.
-3. **Use Force skips unit refusals** (Satella, Meglass, Gandhi, unit 44 fight independent cities); province 56 + `F_Japan_State = 1` skips Satella/Meglass (`:263`); the JAPAN "Fleeing Soldier" path skips the Papaya/Warg/unopposed checks (`:339`).
+3. **Use Force skips unit refusals** (Satella, Meglass, Gandhi, Gurwin (unit 44) fight independent cities); Osaka (56) + `F_Japan_State = 1` skips Satella/Meglass (`:263`); the JAPAN "Fleeing Soldier" path skips the Papaya/Warg/unopposed checks (`:339`).
 4. **Portugal**: paying 90 = not paying. **Hanna**: tests `< 29`, subtracts 30 (Gold 29 → 0, saturating).
 5. **Bolster Defense has no gold check and no cap**; the cost floors Gold at 0.
 6. **Merchant off-by-one** `Gold < price−1`: Clothes free at 0 gold.
@@ -333,13 +335,13 @@ Quirks a faithful port must keep (or consciously decide on) [C unless tagged]:
 8. **Merchant flag not consumed** by the Gｼｨﾙ#2/#6 branches; **Ruins Search** ignores the own-city flag and resets dungeon record 30.
 9. **Ninja is spent on "No Mission"**; the Burger draw is always made; Kanami's interrupt refunds her and recurs while Rance forgives her (`Gｶﾅﾐ.ADV:2536-2551`, read 2026-10-10); commander record 100 is zeroed by every sabotage-success picker call (`Cﾆﾝｼﾞｬ.ADV:1150-1152`); Freya/Kaoru/Wichita always fail against owners other than 4/6/7.
 10. **Cﾌﾞｶ**: talk relies on stale `Ev_Entry = 20`; Add-More multipliers survive a cancel (`:918`); Replenish sets `Troops := Max` even if above (unreachable: MAIN's weekly tick caps troops, `MAIN.ADV:147-164` [I]).
-11. **Cﾃｲﾄ**: "all built" check (`:1`) can never be true; pool branch (`:588-657`) dead; `Unit_Cur := 16` clobber (`:268`).
+11. **Cﾃｲﾄ**: "all built" check (`:1`) can never be true; pool branch (`:588-657`) dead; `Unit_Cur := 16` (Maria) clobber (`:268`).
 12. **Harem**: cancel lowers `N_Lia_Neglect` when it was at the cap; stale `Hist_Cur`; Gｻｲﾄｳ/Gﾏｼﾞｯｸ/Gﾜｰｸﾞ never set `Harem_ExpReward`.
 13. **Sﾌﾞﾀｲ**: clicking a selected unit moves it to the end instead of deselecting; returns only 501/502/503 (**answers battle open question 8**: FIGT_B's plains fall-through is unreachable).
 14. **Sｱｲﾃﾑ**: `Unit_Item[100]` alias write on every equip — `Unit_DgnAtkMod[48] := 0` (confirmed from the page layout, 2026-10-10); bottom-bar id 997 unfiltered → "unit/item 997" (`Cmdr_Troops[165]`, unused slots); item-first view reads `Unit_Item[0]` (CMD-17).
 15. **Cﾀｶﾗ**: items of dead units are destroyed, not returned to stock.
 16. Dead code: `Cｹﾝｷｭｳ` call, `Cｼﾊｲﾄｼ.ADV:1182-1235`, Cﾊｰﾚﾑ random stat routine (`:578-633`), Cﾃｷﾄｼ Shangri-La list (`:3800-3812`), WAO stub tails after `\0` in every file.
-17. Dictionary fixes: `DXTalk_RetryWeek` is Lazeal's surrender wait; `VAR0469` = Rance self-talk count (not debug); `F_Warg_State` reset at `Cﾃｷﾄｼ.ADV:357` contradicts "1 = joined" (resolved 2026-10-10 with the attack's port: 1 is the transient "met Warg at 78" that `Gﾜｰｸﾞ` 1 sets and `Cﾃｷﾄｼ` clears; 2 = joined); `VAR0063` is the Zeth barrier (`F_ZethBarrier_State`: 0 never met, 1 met, 2 broken); `F_Pool_Built` never set; `Hist_Cur` stale after harem.
+17. Dictionary fixes: `DXTalk_RetryWeek` is Lazeal's surrender wait; `VAR0469` = Rance self-talk count (not debug); `F_Warg_State` reset at `Cﾃｷﾄｼ.ADV:357` contradicts "1 = joined" (resolved 2026-10-10 with the attack's port: 1 is the transient "met Warg at Tower of Evil (78)" that `Gﾜｰｸﾞ` 1 sets and `Cﾃｷﾄｼ` clears; 2 = joined); `VAR0063` is the Zeth barrier (`F_ZethBarrier_State`: 0 never met, 1 met, 2 broken); `F_Pool_Built` never set; `Hist_Cur` stale after harem.
 
 ## 9. Porting proposal
 
@@ -376,11 +378,11 @@ FIGT_A when not under test; `Sﾌﾞﾀｲ`/`Sﾌﾞｶ`/`Sﾊｰﾚﾑ` either 
 
 1. `]` right-click semantics (fall-through assumed) and `IM` codes (16 left / 32 right) — confirm in xsystem35 `cmdi.c`.
 2. Can the player attack an owner-9/10 province (no defender setup → stale `EParty`)? (`Cﾃｷﾄｼ.ADV:317-376`)
-3. Does anything read the stale `Unit_Cur`/`Item_Cur`/`Cmdr_Cur`/`Prov_Cur = 1`/`Bt_TargetProv`/`Hist_Cur` before resetting them?
+3. Does anything read the stale `Unit_Cur`/`Item_Cur`/`Cmdr_Cur`/`Prov_Cur = 1` (Leazas Castle)/`Bt_TargetProv`/`Hist_Cur` before resetting them?
 4. Is the `Unit_DgnAtkMod[48]` alias write real in-game, and does the id-997 path write out of range or get bounds-checked? Answered 2026-10-10 from the page layout and xsystem35's page access (a slot inside the page is written, one past it ignored): both write the slots named in CMD-17; a capture would confirm.
-5. Gｻｰﾅｷｱ#1 (prov 27): does it fight / clear `Ui_CmdAttackAvail`? Gｼｨﾙ#5 (harem) and #2/#6 (merchant): do they touch the command flags?
+5. Gｻｰﾅｷｱ#1 (Toushin City (27)): does it fight / clear `Ui_CmdAttackAvail`? Gｼｨﾙ#5 (harem) and #2/#6 (merchant): do they touch the command flags?
 6. Gﾊﾟｯﾄﾝ#3 then #4 in one pass (separate `if`s, `Cﾃｷﾄｼ.ADV:124-134`) — possible?
-7. Meaning of `N_Mars_Score := 2` vs dictionary "1 = active"; where unit 26's troops come from.
-8. Commander 39 `TroopAtk = 20` as a levy story gate (`Cｼﾊｲﾄｼ.ADV:928`).
+7. Meaning of `N_Mars_Score := 2` vs dictionary "1 = active"; where the troops of Mars the Great (unit 26) come from.
+8. Mineva (commander 39) `TroopAtk = 20` as a levy story gate (`Cｼﾊｲﾄｼ.ADV:928`).
 9. Where Rance's level-up from harem EXP happens (not here).
 10. Is commander record 100 ever live when `Cﾆﾝｼﾞｬ` zeroes it?

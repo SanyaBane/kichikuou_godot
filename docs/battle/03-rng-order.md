@@ -41,7 +41,7 @@ A port that consumes draws in exactly this order reproduces the original sequenc
 
 | Step | Site | n | Condition | Ids |
 |---|---|---|---|---|
-| 3.1.1 | `FIGT.ADV:3172` via `:220/226/233/240/246/252/259/266` | troops/10 | `Prov_Cur = 82`; in order P1, P2, P3, P4, E1, E2, E3, E4 (slots 2-4 only if occupied); no draw while troops < 20 | R5 |
+| 3.1.1 | `FIGT.ADV:3172` via `:220/226/233/240/246/252/259/266` | troops/10 | `Prov_Cur = 82` (Land of Death); in order P1, P2, P3, P4, E1, E2, E3, E4 (slots 2-4 only if occupied); no draw while troops < 20 | R5 |
 
 The retreat checks for modes 3/4 (`:106-111`) come first and draw nothing.
 
@@ -52,7 +52,7 @@ Before every actor search: if `Goliath_State = 1 and Goliath_Prov = Prov_Cur` �
 
 | Actor / command | Draws, in order | Ids |
 |---|---|---|
-| Player, manual attack or special (codes 1-3, 10-21; also a summoned kaiju) | `RND(10)` at `FIGT.ADV:1587`, repeated while `Unit_Cur = 32` rolls 1; then **Ex** | R6 = 02#1, Ex |
+| Player, manual attack or special (codes 1-3, 10-21; also a summoned kaiju) | `RND(10)` at `FIGT.ADV:1587`, repeated while `Unit_Cur = 32` (Miki) rolls 1; then **Ex** | R6 = 02#1, Ex |
 | Player, Defend (code 4), standing order 2, or order 1 that falls back to defend | `RND(20)` at `FIGT.ADV:1383` | R7 |
 | Player, Wait/Focus (code 5) | `RND(2)` at `FIGT.ADV:1281` only for Miki (32) | R8 |
 | Player, standing order 1 that attacks (`L_01fd5`) | **Ex** (no R6) | Ex |
@@ -80,7 +80,7 @@ ninja follow-up. Rows are 02 §8; procedure specs in 02 §5-§7.
 | 4.10 | special override: 1 → step-b' draws again; 2 → `:2592` + hits; 5 → `:2370`; 6 → `:2592`, `:2598`, hits | | `Bt_SpecialAtk` 1/2/5/6 | 02#17 |
 | 4.11 | `FIGTATTK.ADV:234` | 2 | always (result unused) | 02#18 |
 | 4.12 | `FIGT.ADV:1915` | 3 | the commander tested after the death branches has HP ≠ 0 (after a player death that is the **last** enemy slot's commander, 01 Q-27) | R14 = 02#19 |
-| 4.13 | nested Ex: 4.1, 4.2 (unit 51's player branch has no draw), 4.4-4.12 with the stale unit-51 record | | R14 = 1, player unit HP ≠ 0, commander HP > 1, `Bt_MsgMode` ∉ {2, 4}, unit 10/21/37/39 with its ninja flag 0 | 02#20 |
+| 4.13 | nested Ex: 4.1, 4.2 (unit 51's player branch has no draw), 4.4-4.12 with the stale unit-51 record | | R14 = 1, player unit HP ≠ 0, commander HP > 1, `Bt_MsgMode` ∉ {2, 4}, unit Menad (10) / Hubert (21) / Gandhi (37) / Magic (39) with its ninja flag 0 | 02#20 |
 
 Notes: the side (4.2) and the branch (4.3) depend on `Bt_MsgMode`, which Goliath and the ninja
 inherit from the previous exchange (02 Q11 / 01 Q-10). The nested exchange's own 4.12 can never
@@ -101,7 +101,7 @@ Every exit (annihilation, timeout, retreats, debug Repel) except the game-over j
 
 | Step | Site | n | Condition | Ids |
 |---|---|---|---|---|
-| 6.1 | `FIGT_B.ADV:282` | 5 | enemy attack, won, `30 < Prov_Cur < 50`, after 死亡捕獲 | R2 |
+| 6.1 | `FIGT_B.ADV:282` | 5 | enemy attack, won, `30 < Prov_Cur < 50` (Log B (31) through Great Wall of Helman A (49)), after 死亡捕獲 | R2 |
 
 `FIGT_A`, the dungeon and the God-dungeon garrisons draw nothing after FIGT in battle scope.
 

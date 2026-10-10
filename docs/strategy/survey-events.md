@@ -145,11 +145,11 @@ from the caller: the cursors (`Unit_Cur`, `Prov_Cur`, `Cmdr_Cur`), the party
 | Operation | Pattern | Sites | Examples |
 |---|---|---|---|
 | Unit joins | `Unit_Cur := u; Unit_Status := 1` (2 = joined, already acted) | 30 + 33 | `Gｲｿﾛｸ.ADV:668-669`; `Iｶﾐ.ADV:4826-4840` (party restore) |
-| Unit leaves / dies | `Unit_Status := 0` | 45 | `GAL.ADV:2771-2775` (unit 44), `Gﾊﾟﾊﾟｲｱ.ADV:4768-4828` (whole party) |
+| Unit leaves / dies | `Unit_Status := 0` | 45 | `GAL.ADV:2771-2775` (Gurwin (unit 44)), `Gﾊﾟﾊﾟｲｱ.ADV:4768-4828` (whole party) |
 | Unit record created | all 32 fields written | 4 | unit 48 Hanny King `Gﾊﾆｰ.ADV:342-382` / Kaiju Prince `Gｵｳｼﾞ.ADV:321-361` (`Unit48_Identity`), Carfeknight `Gｶﾌｪ.ADV:4084-4123`, stage-1 roster `Iﾊﾝﾗﾝ.ADV:14-34` |
 | Unit stat change | `Unit_Atk/Def/MaxHP/Magic/Troops/Exp…` | ≈80 | button room `G1.ADV:907-1100`, Maria `Gﾏﾘｱ.ADV:3702-3703`, Melfeis `Gﾒﾙﾌｪｲｽ.ADV:3448-3449` |
 | Commander out / back | `Cmdr_Status := 0 / 1` | 46 / 39 | `Gﾊﾟｯﾄﾝ.ADV:4457`, `Iﾏｼﾞﾝ.ADV:69-79` |
-| Commander record created | 21 fields; slot **100** is a reusable scratch opponent | 6 | `G1.ADV:1107-1130`, `GAL.ADV:2840-2862`, `Gｻﾃﾗ.ADV:3402-3421`, `Gｾﾙ.ADV:5790-5813`; fixed ids `Gｶｾｲ.ADV:2758` (71), `Gｹｲﾌﾞﾘｽ.ADV:1370` (135) |
+| Commander record created | 21 fields; slot **100** is a reusable scratch opponent | 6 | `G1.ADV:1107-1130`, `GAL.ADV:2840-2862`, `Gｻﾃﾗ.ADV:3402-3421`, `Gｾﾙ.ADV:5790-5813`; fixed ids `Gｶｾｲ.ADV:2758` (Mars the Great (71)), `Gｹｲﾌﾞﾘｽ.ADV:1370` (Kayblis (135)) |
 | Items | `Item_Holder := 100` gain, `0` lose, `n` equipped by unit n | 40 | `G1.ADV:259-261`, `Gｹﾝﾀﾛｳ.ADV:1637-1642`, `Iﾏｼﾞﾝ.ADV:3310-3317` |
 | Gold | `Gold := Gold ± n` / `:= n` | 11 | `Gｶﾊﾟｰﾗ.ADV:2117-2163`, `Gﾄｳｹﾞﾝ.ADV:207`, `Iﾊﾝﾗﾝ.ADV:58` (`:= 685`), `Gﾌﾚｲｱ.ADV:3071` (`:= 2`) |
 | Province owner | `Prov_Cur := p; Prov_Owner := o` (+ flag redraw `Tmp0021 := Prov_Owner + 819; CallArg := 4`) | 44 in 9 files | §4.3 |
@@ -169,12 +169,12 @@ from the global save with `LP` [C]. `Iｱﾘｽ.ADV:119` sets `DebugMode := 1` (
 
 | Where | What |
 |---|---|
-| `Iｼﾚｲﾌﾞ.ADV:2689-2702` | `StoryStage := 2`, provinces 2-16 → player (loop) |
+| `Iｼﾚｲﾌﾞ.ADV:2689-2702` | `StoryStage := 2`, North (2) through Parapara Fortress (16) → player (loop) |
 | `Iｼﾚｲﾌﾞ.ADV:562, 569, 2696, 4183` | single provinces → player |
-| `Gﾐﾈﾊﾞ.ADV:2449-2462` | every Helman (4) province 30-54 → player (loop); `:2470-2498` five back to Helman |
-| `Iｾﾞｽ.ADV:1302-1318` | every Zeth (7) province 58-76 → player (loop), `F_Zeth_War := 2` |
-| `Iﾊﾝﾗﾝ.ADV:2142-2170` | provinces 3-7 → rebels (2) |
-| `Gﾊﾟｯﾄﾝ.ADV:2162, 3008, 4422-4717` | Patton (5) takes 46/47, later 40-47 → player |
+| `Gﾐﾈﾊﾞ.ADV:2449-2462` | every Helman (4) province Volgo Z (30) through Walkland (54) → player (loop); `:2470-2498` five back to Helman |
+| `Iｾﾞｽ.ADV:1302-1318` | every Zeth (7) province Adam's Fortress (58) through Maginot Stronghold (76) → player (loop), `F_Zeth_War := 2` |
+| `Iﾊﾝﾗﾝ.ADV:2142-2170` | Oku (3), South (4), Ys (5), Oaks (6), Baranchi (7) → rebels (2) |
+| `Gﾊﾟｯﾄﾝ.ADV:2162, 3008, 4422-4717` | Patton (5) takes Sudori 17 (46) / Parnas (47), later Pawn (40) through Parnas (47) → player |
 | `Iﾏｼﾞﾝ.ADV:6414-8444`, `Iﾏｼﾞﾝ2.ADV:39-81` | demon war: 15 provinces → Kayblis (8), one per `F_DemonWar_Stage` |
 | `Iｼｬﾝｸﾞﾘﾗ.ADV:1088, 4403`; `Gｹｯｾﾙ.ADV:603, 2838` | Shangri-La 29 → 3 then 1; Kesselring's province |
 
@@ -273,22 +273,22 @@ freely as long as the order of waits and choices is kept.
 
 | # | Mechanic | Where | Called from |
 |---|---|---|---|
-| R1 | AL Church war start: every unit 1-43 (minus 19, 20, 25, 29, 30, 41, 42) loses `rnd(Troops/6)` troops **and max troops**; unit 44 leaves; raider pools := 1000 | `GAL.ADV:2603-2608, 2727-2775` | `COM.ADV:148` (entry 4) |
-| R2 | AL Church nation phase: main army rnd(10) province, if player-owned `FIGT_B` vs 139-142 (who regain +2 HP via `L_0196a` `:1409`); four raider pools +rnd(500)/week, raid on a 1/2 roll when >800 troops into rnd(28) province with commander slot 100 rebuilt as "AList"; pool := 10 after defeat | `GAL.ADV:2805-2985` | `MAIN.ADV:296`, `COM.ADV:943` (entry 5) |
-| R3 | La Vaswald (cmdr 98) weekly attack: `Y 4, Tmp0621` with `Tmp0621` shrinking from 80 until a player province ≠ 75; `LaVaswald_Prov`, `FIGT_B` | `Gｻｲｾﾞﾙ.ADV:471-490` | `MAIN.ADV:882` (entry 12) |
-| R4 | Xacalite (cmdr 97) weekly duel: up to 9 × rnd(48) (32 → 31) to pick an active unit, forced `FIGT_A` duel, `N_Xacalite_KillsLeft -= Bt_PlayerLosses`, 97 healed | `Gﾏｼﾞｯｸ.ADV:2283-2410` | `MAIN.ADV:929` (entry 5) |
-| R5 | Mars the Great Army (cmdr 71, 32,600 troops): 1/7 roll to target unit 2; `FIGT_B` at province 1; `N_Mars_Score` reset when 71 falls | `Gｶｾｲ.ADV:465-480, 2758-2781, 3080-3094` | `COM.ADV:745` (entry 4 → `:465`); the `FIGT_B` block probably entry 2 from `MAIN.ADV:258` [I] |
-| R6 | Kesselring's march: fixed route 1 → 4 → 23 → 19 → 61 → 70, stops on a Kayblis-owned province | `Gｹｯｾﾙ.ADV:2991-3037` | `Tｹｲﾌﾞﾘｽ.ADV:233-1283` |
-| R7 | Lelyukov (cmdr 26) attacks with each of commanders 28, 23, 24, 25, 22 still alive, `FIGT_B` each [I] | `Gﾚﾘｭｰｺﾌ.ADV:30-65` | `Tﾍﾙﾏﾝ.ADV:43, 51, 175` |
-| R8 | Lady unit (cmdrs 143-145) duel at Leazas castle, each +50 troops and revived before it | `Gｶﾌｪ.ADV:2019-2049` | unknown entry (Lady Caravan walk itself: `COM.ADV:56-67`) |
+| R1 | AL Church war start: every unit Rance (1) through Aristoles (43) (minus Hanty (19), Freak (20), Mill (25), Satella (29), Meglass (30), Galtia (41), Seizel Sisters (42)) loses `rnd(Troops/6)` troops **and max troops**; Gurwin (unit 44) leaves; raider pools := 1000 | `GAL.ADV:2603-2608, 2727-2775` | `COM.ADV:148` (entry 4) |
+| R2 | AL Church nation phase: main army rnd(10) province, if player-owned `FIGT_B` vs Temple Knights (139-142) (who regain +2 HP via `L_0196a` `:1409`); four raider pools +rnd(500)/week, raid on a 1/2 roll when >800 troops into rnd(28) province with commander slot 100 rebuilt as "AList"; pool := 10 after defeat | `GAL.ADV:2805-2985` | `MAIN.ADV:296`, `COM.ADV:943` (entry 5) |
+| R3 | La Vaswald (cmdr 98) weekly attack: `Y 4, Tmp0621` with `Tmp0621` shrinking from 80 until a player province ≠ Nothing (75); `LaVaswald_Prov`, `FIGT_B` | `Gｻｲｾﾞﾙ.ADV:471-490` | `MAIN.ADV:882` (entry 12) |
+| R4 | Xacalite (cmdr 97) weekly duel: up to 9 × rnd(48) (Miki (32) → Kentarou (31)) to pick an active unit, forced `FIGT_A` duel, `N_Xacalite_KillsLeft -= Bt_PlayerLosses`, Xacalite (97) healed | `Gﾏｼﾞｯｸ.ADV:2283-2410` | `MAIN.ADV:929` (entry 5) |
+| R5 | Mars the Great Army (cmdr 71, 32,600 troops): 1/7 roll to target Sill (unit 2); `FIGT_B` at Leazas Castle (1); `N_Mars_Score` reset when Mars the Great (71) falls | `Gｶｾｲ.ADV:465-480, 2758-2781, 3080-3094` | `COM.ADV:745` (entry 4 → `:465`); the `FIGT_B` block probably entry 2 from `MAIN.ADV:258` [I] |
+| R6 | Kesselring's march: fixed route Leazas Castle (1) → South (4) → Red (23) → Diphtheria (19) → Tape (61) → Papaya's Tower (70), stops on a Kayblis-owned province | `Gｹｯｾﾙ.ADV:2991-3037` | `Tｹｲﾌﾞﾘｽ.ADV:233-1283` |
+| R7 | Lelyukov's attacks: one `FIGT_B` for each of commanders Tainyar (26), Laumiere (27), Luc (28), Gadman (23), Jackal (24), Samisukan (25), Lelyukov (22) still alive — `Cmdr_Cur` is that commander, but `Bt_EnemyParty1 := 26` (Tainyar) every time (`:61`; check when porting) [I] | `Gﾚﾘｭｰｺﾌ.ADV:30-65` | `Tﾍﾙﾏﾝ.ADV:43, 51, 175` |
+| R8 | Lady unit (Carfeknights, cmdrs 143-145) duel at Leazas castle, each +50 troops and revived before it | `Gｶﾌｪ.ADV:2019-2049` | unknown entry (Lady Caravan walk itself: `COM.ADV:56-67`) |
 | R9 | Freya ninja mission target: province from `DateWeek` × rnd(2), `N_Freya_Missions + 1` | `Gﾌﾚｲｱ.ADV:2412-2445` | `Tﾍﾙﾏﾝ.ADV:39` (entry 1) |
 | R10 | Kapala sponsorship: pay 10/50/100 gold, rank += rnd(n) − 1, capped 12; report flag | `Gｶﾊﾟｰﾗ.ADV:2035, 2104-2200` | `Cｼﾊｲﾄｼ`, `COM` |
 | R11 | Magic Research Institute projects: done week = `Week + Unit_Magic * 2` / +10 / +4, cancelled when the unit is gone | `Gﾏｹﾝ.ADV:338-339, 427, 511, 2545-2552` | `Cｼﾊｲﾄｼ` |
 | R12 | Tougen bunny contest: automatic duel of two 100-point pools hit by `rnd(Tmp0226)`/`rnd(Tmp0228)`, items 49/50 as prizes, record kept | `Gﾄｳｹﾞﾝ.ADV:1486-1600` | `Cﾒｲｷｭｳ` |
-| R13 | God dungeon: per-floor garrison `FIGT` (`Bt_Kind 3`, enemy 187…), rearguard units saved in `Ev_GodRear2F-5F_*`, party picker loop | `Iｶﾐ.ADV:1-12, 4561-4900` | `Cﾒｲｷｭｳ.ADV:4556` |
-| R14 | Shangri-La: time passes (`Week + 1` and its own date calculation `L_05f62`, duplicating `MAIN`'s), adjacency rewired, province 29 changes hands | `Iｼｬﾝｸﾞﾘﾗ.ADV:908-922, 1088-1100, 2262, 5309-5325` | `Gﾏﾘｽ.ADV:1037`, `COM` |
-| R15 | Stage-1 setup: `StoryStage := 1`, `Week + 1`, Rance's units built, `Gold := 685`, dungeon 1 placed | `Iﾊﾝﾗﾝ.ADV:1-60` | `MAIN.ADV:72`, `ｽﾀMENU.ADV:302` |
-| R16 | Conquest check: count non-player provinces 1-91 (skip 29, 75); none left → `StoryStage := 4` (Creator phase, `MAIN.ADV:816-838`) | `Iｼﾚｲﾌﾞ.ADV:149-168` (entry 7) | `Gｹｲﾌﾞﾘｽ.ADV:3129` |
+| R13 | God dungeon: per-floor garrison `FIGT` (`Bt_Kind 3`, enemy Kaiju Gaga (187)…), rearguard units saved in `Ev_GodRear2F-5F_*`, party picker loop | `Iｶﾐ.ADV:1-12, 4561-4900` | `Cﾒｲｷｭｳ.ADV:4556` |
+| R14 | Shangri-La: time passes (`Week + 1` and its own date calculation `L_05f62`, duplicating `MAIN`'s), adjacency rewired, Shangri-La (29) changes hands | `Iｼｬﾝｸﾞﾘﾗ.ADV:908-922, 1088-1100, 2262, 5309-5325` | `Gﾏﾘｽ.ADV:1037`, `COM` |
+| R15 | Stage-1 setup: `StoryStage := 1`, `Week + 1`, Rance's units built, `Gold := 685`, Thieves' Hideout (dungeon 1) placed | `Iﾊﾝﾗﾝ.ADV:1-60` | `MAIN.ADV:72`, `ｽﾀMENU.ADV:302` |
+| R16 | Conquest check: count non-player provinces 1-91 (skip Shangri-La (29), Nothing (75)); none left → `StoryStage := 4` (Creator phase, `MAIN.ADV:816-838`) | `Iｼﾚｲﾌﾞ.ADV:149-168` (entry 7) | `Gｹｲﾌﾞﾘｽ.ADV:3129` |
 | R17 | Mass losses: all units lose half troops and HP (`Gﾐｷ.ADV:6014-6029`); whole party killed, mercenary-lost flags (`Gﾊﾟﾊﾟｲｱ.ADV:4768-4828`) | | |
 | R18 | Button room: one-time Atk/Def +1, Atk +1, MaxHP +2, item | `G1.ADV:907-1100` | `Cﾒｲｷｭｳ` |
 | R19 | Mass province transfers (§4.3) and the demon-war stage sequence | `Iﾏｼﾞﾝ`, `Iﾏｼﾞﾝ2`, `Iｾﾞｽ`, `Gﾐﾈﾊﾞ`, `Iｼﾚｲﾌﾞ` | `MAIN.ADV:936-1033` |
@@ -310,7 +310,7 @@ calculation `Iｼｬﾝｸﾞﾘﾗ.ADV:5309`, and long text bodies called once 
 - `Gｻｲｾﾞﾙ.ADV:474-478`: the retry range shrinks by one per miss, so low-numbered player
   provinces are favoured; at `Tmp0621 = 0` the draw returns 0 and `Prov_Cur := 0` [C]; whether
   that can loop forever depends on record 0's owner (unknown).
-- `Gﾏｼﾞｯｸ.ADV:2297-2299`: draw 32 is remapped to 31, doubling unit 31's odds [C].
+- `Gﾏｼﾞｯｸ.ADV:2297-2299`: draw 32 is remapped to 31, doubling the odds of Kentarou (unit 31) [C].
 - Commander slot 100 is shared by AL raiders and several duel opponents (§4.2) [C].
 - `Iｼｬﾝｸﾞﾘﾗ` advances `Week` without running the week loop [C].
 - 19 unnamed variables are written here (`VAR0126/0127/0129` zeroed with commander records,

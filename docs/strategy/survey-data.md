@@ -66,8 +66,8 @@ Every unit sets all 32 fields; every commander the same 20 (never `Cmdr_Item`, `
 `VAR0127`, `VAR0129`, which stay 0 from `DF`). All values are decimal constants except
 unit 32 (Miki) `Unit_HP`/`Unit_MaxHP : 10000 * 3` (`:1239-1240`). Units 51-52 and commanders
 61, 99, 200-220 are never initialised; unit 51 is the battle's summon slot (`FIGT.ADV:1126`),
-commander 100 is overwritten by the dungeon (`Cﾒｲｷｭｳ.ADV`, 49 × `Cmdr_Cur : 100`), 139-142
-by `GAL.ADV` raiders.
+commander 100 is overwritten by the dungeon (`Cﾒｲｷｭｳ.ADV`, 49 × `Cmdr_Cur : 100`), the Temple
+Knights (139-142) by `GAL.ADV` raiders.
 
 Boot values worth knowing: units with `Unit_Status 1` = 1-4 (Rance, Sill, Bound, Soul), 46 at 0;
 commanders `Cmdr_Status 1` = 190, at 0 = 7 (Sieg, La Vaswald, slot 100, PG-9, Silky, Satella,
@@ -80,7 +80,7 @@ Meglass). Class histogram — units: 0×29, 1×3, 2×10, 3×3, 10×2, 11×3; com
 |---|---|---|
 | `SET_ITEM` 1-350 | items 1-50 (7 lines each) | `!Item_Cur : n!` / `ZH 1` / `MS 7, "<name>"` / `MM Item_StrBase+Item_Cur-1, 7` / `Item_Holder`, `Item_Effect`, `Item_Amount` |
 | `SET_ITEM` 351 | `%0:` | |
-| `SET_MAP` 1-2176 | provinces 1-91 (24 lines; 75 has 16) | `!Prov_Cur : n!` / `ZH 1` / `MS 8, "<name>"` / `MM Prov_StrBase+Prov_Cur-1, 8` / 12 field sets / `#L_03bf2, 1:` / `F3, Prov_MapX, (Prov_Cur-1)*2` / `F3, Prov_MapY, …+1` / `MapTargetX/Y := Prov_MapX/Y` / `Tmp0021 := Prov_Owner + 819` / `CallArg := 4` / `%#M.ADV:` |
+| `SET_MAP` 1-2176 | provinces 1-91 (24 lines; Nothing (75) has 16) | `!Prov_Cur : n!` / `ZH 1` / `MS 8, "<name>"` / `MM Prov_StrBase+Prov_Cur-1, 8` / 12 field sets / `#L_03bf2, 1:` / `F3, Prov_MapX, (Prov_Cur-1)*2` / `F3, Prov_MapY, …+1` / `MapTargetX/Y := Prov_MapX/Y` / `Tmp0021 := Prov_Owner + 819` / `CallArg := 4` / `%#M.ADV:` |
 | `SET_MAP` 2177-2332 | dungeons 1-26 (6 lines) | `!Dgn_Cur : n!` + `MapX`, `MapY`, `State` (all 0), `SavedFloor` (all 0), `Prov` |
 | `SET_MAP` 2333-2337 | `%0:`, `*L_03bf2:` `_L_03bf6:` (address word), `*L_03bf6:` `[1638, 408, …]` | the inline word table: 100 (x, y) pairs; pairs 75 and 92-100 are (0, 0) |
 
@@ -135,7 +135,7 @@ members of the battle: `ScriptContext.MapAsync` case 4 and `MapWaoMap` case 4 / 
 | `item` page 1, 50×3 | `SET_ITEM` | 50 records |
 | `ui` page 10 | `SET_MAP` via `M.ADV` | 90 markers (`Ui_MarkCount = 90`, 270 non-zero slots) |
 | strings | all three | 635 strings: units 20-175 (name, troop type; third slot not set), commanders 176-835, provinces 836-935, items 936-985; scratch strings 1, 2, 4, 5, 7, 8 hold the last record's text |
-| cursors/scratch | all three | final `Unit_Cur 50`, `Cmdr_Cur 199`, `Item_Cur 50`, `Prov_Cur 91`, `Dgn_Cur 26`; `MapTargetX/Y`, `Tmp0021-0023`, `CallArg`, `RetVal` from the last `M.ADV` call |
+| cursors/scratch | all three | final `Unit_Cur 50` (Cecil), `Cmdr_Cur 199` (9th Assault Leader), `Item_Cur 50`, `Prov_Cur 91` (Tearing Forest), `Dgn_Cur 26` (Hyper Building); `MapTargetX/Y`, `Tmp0021-0023`, `CallArg`, `RetVal` from the last `M.ADV` call |
 | `system`/`ui`/`story`/`history` plain vars | `SET.ADV` | §2.2 |
 
 Reads: only `Prov_Owner`, `Prov_MapX/Y` (just written), the counts and string bases, and
@@ -225,7 +225,7 @@ the `bind` lines of a capture for the layout, and compared with the `mem enter` 
 
 | Capture | Page-1 slots the files write | Differ | Strings ≥ 20 differ | Non-zero page-1 slots not written by SET_* |
 |---|---|---|---|---|
-| `095048-01` (first prologue battle) | 7092 | 7 (troops of units 1/3/4, their status 1→2, cmdr 58 troops) | 0 of 635 | 0 |
+| `095048-01` (first prologue battle) | 7092 | 7 (troops of units Rance (1) / Bound (3) / Soul (4), their status 1→2, Civilian General (cmdr 58) troops) | 0 of 635 | 0 |
 | `113558-01` (stage 1, Oaks) | 7092 | 69 | 2 | 0 |
 | `125124-01` (Log B) | 7092 | 99 | 3 | 0 |
 

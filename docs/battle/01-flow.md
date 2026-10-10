@@ -110,14 +110,16 @@ wrapper: result messages, ownership change, story hooks, 死亡捕獲.ADV (reviv
 
 1. `Bt_TargetProv := Prov_Cur` at file entry (`Cﾃｷﾄｼ.ADV:3`).
 2. Blocked if `Ui_CmdAttackAvail = 0` (`:112`). Story stage 0 → prologue file instead (`:101-108`).
-3. Max party size `Tmp0021 := 4`; mountain passes: attacking province 32 or 31 allows only **1 unit**
-   unless the player owns one of the listed neighbours (`:172-199`: 32 needs 33/34/31, 31 needs 36/32/30 — `:192`).
+3. Max party size `Tmp0021 := 4`; mountain passes: attacking Log A (32) or Log B (31) allows only
+   **1 unit** unless the player owns one of the listed neighbours (`:172-199`: Log A (32) needs
+   Vladivostok (33) / Golak (34) / Log B (31), Log B (31) needs Archgrad (36) / Log A (32) / Volgo Z
+   (30) — `:192`).
 4. `Sﾌﾞﾀｲ.ADV` (party picker, mode `Tmp0022 = 1`): fills `PParty[]`; only units with
    `Unit_Status = 1` are selectable; on "Go" it requires `PParty[1] ≠ 0` and
    `Gold ≥ Σ (Unit_DeployCost + Unit_Troops / 300)` over the party, then sets each
    `Unit_Status := 2`, `Gold -= cost`, `Hist_MilitaryExp += cost` (`Sﾌﾞﾀｲ.ADV:159-210`, `:347`).
    Cancel → `PParty[] := 0`.
-5. Refusals (`Cﾃｷﾄｼ.ADV:226-307`): unit 44 vs owner 11; Gandhi (37) vs owner 7 while
+5. Refusals (`Cﾃｷﾄｼ.ADV:226-307`): Gurwin (unit 44) vs owner 11; Gandhi (37) vs owner 7 while
    `F_Zeth_State < 8`; Satella (29) / Meglass (30) unless owner is 8 or 10. A refusal calls
    `L_05118` which only resets `Unit_Status := 1` for the party — **the war expenses already paid
    are not refunded** (quirk Q-1).
@@ -201,7 +203,7 @@ Notes:
 | 4 Helman | `%#Tﾍﾙﾏﾝ2.ADV` |
 | 11 ALism | `Event(GAL, 9)` |
 | 8 Kayblis | `%#Tｹｲﾌﾞﾘｽ2.ADV`; if `F_Warg_State = 1` afterwards: clear it and return without battle |
-| 5 Patton | `Bt_EnemyRetreatMode := 1`; priority list 54, 55, 56, 57 (+32 if `F_Aristoles_Helman2ndState > 9`) through `L_04f2a` |
+| 5 Patton | `Bt_EnemyRetreatMode := 1`; priority list Patton (54), Hubert (55), Freak (56), Hanty (57) (+Aristoles (32) if `F_Aristoles_Helman2ndState > 9`) through `L_04f2a` |
 | 3 Free cities | not attacked from this path: `L_00a07` (city story options); the battle option is "Use Force" (`Cﾃｷﾄｼ:3815`, last row of the table below) |
 
 Common helper ("first four alive", `Cﾃｷﾄｼ.ADV:4265-4341`, identical copies in each T* file):
@@ -215,7 +217,7 @@ for k in 1..9:                       # Tmp0001..Tmp0009 = priority list, 0 = non
 ```
 
 Helman's copy (`Tﾍﾙﾏﾝ2.ADV:358`) additionally skips, after slot 1 is filled, commanders with
-`Cmdr_Troops < 190` (except in province 45).
+`Cmdr_Troops < 190` (except in Lang Bau (45)).
 
 **Plains or city is decided only by `Bt_WallBonus`** (FIGT_A overwrites `Bt_TroopLimit`
 itself). There is no generic "walls ⇒ city" rule; each file decides. `Bt_EnemyRetreatMode` is
@@ -227,14 +229,14 @@ the sequence):
 
 | Owner / file | Plains or city | Retreat | Lists and notes |
 |---|---|---|---|
-| 2 `TCﾘｰｻﾞｽ2` | plains; province 6 city (`Prov_Defense`) | 4 (7/8/others, 2/3/4), 2 (prov 5), 1 (prov 6) | 7/8/any other → 1,2,6,7; 2/3/4 → 3,5,4; 5/6 → 1,2,3,6,4,5,7. If the party's troop sum < 100 the file exits before setting the retreat mode (stale), but still fights. `Ev_PhaseNation := 2` |
-| 6 `TJAPAN2` | always `Prov_Defense` (city if walls) | 1 (55, 56), 4 otherwise | 55 → 75,76,77,78; 56 → 72,73,74,78,77,75,82,79,80; others: of groups A (=56 list), B (75-78), C (79-82) the one with the largest troop sum (ties → earlier). Sum < 10 (55) / < 500 (others) → exits with stale mode. Writes `F_Japan_State := 1` on every attack |
-| 7 `Tｾﾞｽ2` | `Prov_Defense`; province 16 plains | 1 | Wall cmdrs 94-96 refilled each attack; on a repeat attack on the same garrison province, 3 draws `RND(Cmdr_Troops/2)` subtracted (94, 95, 96). Towers 58/61/65/63/66/67/68/70 have boss lists (fallback 94, 95 + boss with 10 troops when only the boss is alive); otherwise forced 94, 95, 96. Barrier: provinces 66/67/68/70 while `VAR0063 ≠ 2` and no deployed unit holds item 12 → `PParty[1] := 0`, no battle. Papaya / Zeth-war story writes |
-| 4 `Tﾍﾙﾏﾝ2` | `Prov_Defense` (normal); plains in the `F_Helman_War = 2` branch | 4 mostly, 1 for 39, 48, 45, 37, 36, 42, 35 and 31/32 when `PParty[2] = 0` | Militia (`L_00210`, also the fallback for unlisted provinces): cmdrs 58, 59 `Status 1`, HP max, troops `100 + RND(800)` each (2 draws), party 58, 59. Provinces 39/38/34/32/31/30/13/2 (and 36 unless Lelyukov joined): militia if `F_Lelyukov_State = 1` or cmdr 22 dead, else the larger-sum of A = 22,23,24,25,29,30,27,28,26 / B = 27,28,29,30,24,25,22,23,26 (ties → B; prov 30 with 27 alive → 27 alone). 46/47/48: 34,35,36,37,38,32,33 (militia if 32 dead). 45/44: 2 more militia draws, then 42,43,39,40,41 (+58,59 for 45) (militia if 39 dead). 40/41/37: 49,46,47,44,45,48 (militia rules with Nero/Cream flags). 36 with `F_Lelyukov_State = 1`: forced 22 alone with 10 troops. 42: 53,50,47,52,51. 35: 31 alone. `F_Helman_War = 2` branch: Sheila events may leave `EParty[1] = 0` (taken unopposed), else militia on the plains |
-| 5 inline (`Cﾃｷﾄｼ:361`) | always plains (`Bt_WallBonus` stays 0) | 1 | 54, 55, 56, 57 (+32). `Ev_PhaseNation` and the army name are not set (stale) |
-| 8 `Tｹｲﾌﾞﾘｽ2` | city (`Prov_Defense`) when the stage-2→3 switch fires (province 78, 89, 90, or 91 in stage 2 — `*` binds tighter than `+`) and for provinces 79, 84; else plains | 1 | 4 draws, cmdrs 86-89: `Status 1`, HP max, `RND(MaxTroops / k)` with k = 4 (new garrison province) or `2 + Bt_GarrisonHits` (repeat), troops `:= MaxTroops / (4 + Bt_GarrisonHits * 2) + r` (`Tｹｲﾌﾞﾘｽ2.ADV:4-31`); then (not stage 3) `RND(2)` picks 86-89 or 86-87. Stage-3 lists per province (159-164, 133, 91, 181-183+135, 134). Province 78 with `N_Warg_Stage = 0` → Warg event, no battle |
-| 11 `GAL` entry 9 | always plains | 1 | province 77: 139-142 revived and topped up; elsewhere a rebuilt cmdr 100 ("AList", 50 troops, HP 3) alone |
-| 3 (independent) "Use Force", `Cﾃｷﾄｼ:3815` | `Bt_WallBonus` **not written** (stale from the last battle) | 1 | per-province list through `L_04f2a`; afterwards Gﾚﾍﾞｯｶ (prov 28) / Gｶｾｲ (prov 22) if owned |
+| 2 `TCﾘｰｻﾞｽ2` | plains; Oaks (6) city (`Prov_Defense`) | 4 (Baranchi (7) / Wes (8) / others, North (2) / Oku (3) / South (4)), 2 (Ys (5)), 1 (Oaks (6)) | Baranchi (7) / Wes (8) / any other → Ex (1), Haurein (2), Sakanaku (6), Jibul (7); North (2) / Oku (3) / South (4) → Pegasus (3), Dodge (5), Melfeis (4); Ys (5) / Oaks (6) → Ex (1), Haurein (2), Pegasus (3), Sakanaku (6), Melfeis (4), Dodge (5), Jibul (7). If the party's troop sum < 100 the file exits before setting the retreat mode (stale), but still fights. `Ev_PhaseNation := 2` |
+| 6 `TJAPAN2` | always `Prov_Defense` (city if walls) | 1 (Nagasaki (55), Osaka (56)), 4 otherwise | Nagasaki (55) → Katsuie (75), Harumi Ueda (76), Mori Harada (77), Denden Mori (78); Osaka (56) → Nobunaga Oda (72), Kenichi Oda (73), Yamato Akechi (74), Denden Mori (78), Mori Harada (77), Katsuie (75), Isoroku Yamamoto (82), One-Shot Tarou (79), Noberu Maeda (80); others: of groups A (=Osaka (56) list), B (Katsuie (75) through Denden Mori (78)), C (One-Shot Tarou (79) through Isoroku Yamamoto (82)) the one with the largest troop sum (ties → earlier). Sum < 10 (Nagasaki (55)) / < 500 (others) → exits with stale mode. Writes `F_Japan_State := 1` on every attack |
+| 7 `Tｾﾞｽ2` | `Prov_Defense`; Parapara Fortress (16) plains | 1 | Wall cmdrs Wall (94), Wall (95), Mage Leader (96) refilled each attack; on a repeat attack on the same garrison province, 3 draws `RND(Cmdr_Troops/2)` subtracted (Wall (94), Wall (95), Mage Leader (96)). Towers Adam's Fortress (58) / Tape (61) / Amber Castle (65) / Old Zeth (63) / Magic's Tower (66) / Nagi's Tower (67) / Chizuko's Tower (68) / Papaya's Tower (70) have boss lists (fallback Wall (94), Wall (95) + boss with 10 troops when only the boss is alive); otherwise forced Wall (94), Wall (95), Mage Leader (96). Barrier: Magic's Tower (66) / Nagi's Tower (67) / Chizuko's Tower (68) / Papaya's Tower (70) while `VAR0063 ≠ 2` and no deployed unit holds item 12 → `PParty[1] := 0`, no battle. Papaya / Zeth-war story writes |
+| 4 `Tﾍﾙﾏﾝ2` | `Prov_Defense` (normal); plains in the `F_Helman_War = 2` branch | 4 mostly, 1 for Rosesgrad (39), Laurengrad (48), Lang Bau (45), Cossack (37), Archgrad (36), Sudori 10 (42), Ancient Ruins (35) and Log B (31) / Log A (32) when `PParty[2] = 0` | Militia (`L_00210`, also the fallback for unlisted provinces): cmdrs Civilian General (58), Civilian General (59) `Status 1`, HP max, troops `100 + RND(800)` each (2 draws), party Civilian Generals (58, 59). Rosesgrad (39) / Siberia (38) / Golak (34) / Log A (32) / Log B (31) / Volgo Z (30) / Maunes (13) / North (2) (and Archgrad (36) unless Lelyukov joined): militia if `F_Lelyukov_State = 1` or Lelyukov (cmdr 22) dead, else the larger-sum of A = Lelyukov (22), Gadman (23), Jackal (24), Samisukan (25), Luke (29), Yorkdelta (30), Laumiere (27), Luc (28), Tainyar (26) / B = Laumiere (27), Luc (28), Luke (29), Yorkdelta (30), Jackal (24), Samisukan (25), Lelyukov (22), Gadman (23), Tainyar (26) (ties → B; Volgo Z (30) with Laumiere (27) alive → Laumiere (27) alone). Sudori 17 (46) / Parnas (47) / Laurengrad (48): Ivan (34), Samon (35), Yasutoeh (36), Yutos (37), Keigo (38), Aristoles (32), Convert (33) (militia if Aristoles (32) dead). Lang Bau (45) / Micrograd (44): 2 more militia draws, then Serges (42), Booch (43), Mineva (39), Tami (40), Maha (41) (+Civilian Generals (58, 59) for Lang Bau (45)) (militia if Mineva (39) dead). Pawn (40) / Sudori 13 (41) / Cossack (37): Sukakumi (49), Marquez (46), Hyam (47), Nero (44), Cream (45), Yang (48) (militia rules with Nero/Cream flags). Archgrad (36) with `F_Lelyukov_State = 1`: forced Lelyukov (22) alone with 10 troops. Sudori 10 (42): Alexei (53), Rolex (50), Hyam (47), Saulnia (52), Katyusha (51). Ancient Ruins (35): Ruberan (31) alone. `F_Helman_War = 2` branch: Sheila events may leave `EParty[1] = 0` (taken unopposed), else militia on the plains |
+| 5 inline (`Cﾃｷﾄｼ:361`) | always plains (`Bt_WallBonus` stays 0) | 1 | Patton (54), Hubert (55), Freak (56), Hanty (57) (+Aristoles (32)). `Ev_PhaseNation` and the army name are not set (stale) |
+| 8 `Tｹｲﾌﾞﾘｽ2` | city (`Prov_Defense`) when the stage-2→3 switch fires (Tower of Evil (78), Grief Valley (89), Bone Forest (90), or Tearing Forest (91) in stage 2 — `*` binds tighter than `+`) and for Demon Lord's Castle (79), Kayblis's Castle (84); else plains | 1 | 4 draws, cmdrs Monster Generals (86-89): `Status 1`, HP max, `RND(MaxTroops / k)` with k = 4 (new garrison province) or `2 + Bt_GarrisonHits` (repeat), troops `:= MaxTroops / (4 + Bt_GarrisonHits * 2) + r` (`Tｹｲﾌﾞﾘｽ2.ADV:4-31`); then (not stage 3) `RND(2)` picks Monster Generals 86-89 or 86-87. Stage-3 lists per province (Kaybwan (159) through Kunihiko (164), Kesselring (133), Camilla (91), Monster Generals (181-183) + Kayblis (135), Medusa (134)). Tower of Evil (78) with `N_Warg_Stage = 0` → Warg event, no battle |
+| 11 `GAL` entry 9 | always plains | 1 | Temple AL HQ (77): Temple Knights (139-142) revived and topped up; elsewhere a rebuilt cmdr 100 ("AList", 50 troops, HP 3) alone |
+| 3 (independent) "Use Force", `Cﾃｷﾄｼ:3815` | `Bt_WallBonus` **not written** (stale from the last battle) | 1 | per-province list through `L_04f2a`; afterwards Gﾚﾍﾞｯｶ (Portugal (28)) / Gｶｾｲ (Mars (22)) if owned |
 
 Ways the attack ends without FIGT: `EParty[1] = 0` (taken unopposed), `PParty[1] = 0` set by a
 setup file (barrier text), `F_Papaya_State = 2` (event), Kayblis Warg flag.
@@ -259,8 +261,8 @@ setup file (barrier text), `F_Papaya_State = 2` (event), Kayblis Warg flag.
 - Afterwards most callers read nothing. Exceptions: `Bt_Result = 1` (Iﾏｼﾞﾝ:81/597, Tｹｲﾌﾞﾘｽ:950/1204);
   `Bt_RoundsLeft = 0 and Bt_Result = 2 and Ai_*Atk = 10` → the Kayblis sub-army attacks a second
   time that week (`Tｹｲﾌﾞﾘｽ.ADV:826-828` and 945/1087/1200); leader `Cmdr_Status` checks.
-- Callers without an ownership check: Gｶｾｲ:3085 (prov 1), Gｹｲﾌﾞﾘｽ:756 (prov 81), Iﾏｼﾞﾝ:62/582
-  (prov 1); Gﾚﾘｭｰｺﾌ:56-66 inherits `Prov_Cur` from its T caller.
+- Callers without an ownership check: Gｶｾｲ:3085 (Leazas Castle (1)), Gｹｲﾌﾞﾘｽ:756 (Silky's Castle
+  (81)), Iﾏｼﾞﾝ:62/582 (Leazas Castle (1)); Gﾚﾘｭｰｺﾌ:56-66 inherits `Prov_Cur` from its T caller.
 
 **`FIGT_B.ADV`** — pseudocode:
 
@@ -365,7 +367,8 @@ Setup belongs to the dungeon spec; what FIGT receives:
   `Bt_BackgroundCg` 910 / 912 / 914.
 - Random encounter troops: `RND(DgnRun_MonsterPower)`, `Cmdr_Troops := DgnRun_MonsterPower / 3 + r`,
   `Cmdr_HP := Cmdr_MaxHP` (`Cﾒｲｷｭｳ.ADV:1192-1195`), preceded by the encounter roll `RND(4)`
-  (and `RND(10)` with item 10). Haniwa dungeon 25 picks one of three templates for cmdr 100.
+  (and `RND(10)` with item 10). Titi Lake / Haniwa Temple (dungeon 25) picks one of three templates
+  for cmdr 100.
 - Bosses rebuild cmdr 100 and set `Bt_IsDuel := 1` (all but Okayu Fever); the boss-beaten flag is
   set in the setup label, **before** the fight. Dungeon duels keep the dungeon's troop limit
   (the duel's 5000 applies only to `Bt_Kind ≠ 3`).
@@ -379,37 +382,37 @@ bonus (0). After the battle the dungeon calls `死亡捕獲.ADV`, resets `Bt_Kin
 
 `Bt_TroopLimit := 800`, `Bt_WallBonus := 0`, `Bt_BackgroundCg := 916` once at file start.
 Per floor N (2-5): `PParty := Ev_GodRearNF_Unit1..4` (the garrison left there; Rance excluded);
-if `PParty[1] = 0` a FIGT表示 cutscene plays instead. `EParty := (k, 0, 0, 0)` with k = 187 (2F),
-188 (3F), 189 (4F), 190 (5F) — the kaiju for which the player-commander shield is disabled,
-`Bt_EnemyRetreatMode := 6` (3 rounds), `Bt_Kind := 3`, FIGT, `Bt_Kind := 0`, then
+if `PParty[1] = 0` a FIGT表示 cutscene plays instead. `EParty := (k, 0, 0, 0)` with k = Kaiju
+Gaga (187; 2F), Kaiju Zeze (188; 3F), Kaiju Dada (189; 4F), Kaiju Bobo (190; 5F) — the kaiju for
+which the player-commander shield is disabled, `Bt_EnemyRetreatMode := 6` (3 rounds), `Bt_Kind := 3`, FIGT, `Bt_Kind := 0`, then
 `Ev_GodRearNF_Unit1..4 := PSlot[1..4]` (survivors, compacted). No 死亡捕獲, `Bt_Result` unused.
 The same garrison may be attacked repeatedly in cascades until wiped out.
 
 ### 2.6 Scripted battles through `FIGT_A.ADV`
 
 FIGT_A does not reset `Bt_IsDuel`; every caller does. In a duel FIGT_A skips the result messages
-and forces `Prov_Cur := 1, Bt_TargetProv := 1` before 死亡捕獲. **A non-duel scripted win in
-`StoryStage ≠ 0` sets `Prov_Owner := 1` for whatever `Prov_Cur` is** (Q-25).
+and forces `Prov_Cur := 1, Bt_TargetProv := 1` (Leazas Castle) before 死亡捕獲. **A non-duel
+scripted win in `StoryStage ≠ 0` sets `Prov_Owner := 1` for whatever `Prov_Cur` is** (Q-25).
 
 | Caller | Player party | Enemy | Presets | Afterwards |
 |---|---|---|---|---|
-| Gｶﾌｪ:2049 | Sﾌﾞﾀｲ, 4 | 143, 144, 145 (troops +50, HP refilled if 0) | duel, retreat 1, WB 0, `Prov_Cur 1` | `Bt_Result = 1` → defeat scene |
-| Gｹｯｾﾙ:2434 | Rance | 133, HP 2, troops 0 | duel, retreat 1 | 死亡捕獲 called again; 133 `Status := 0` |
-| Gｹｯｾﾙ:2959 | Rance | 133, HP max | **not** duel, retreat 6, `Prov_Cur` inherited | 133 `Status := 1`; 死亡捕獲 again |
-| Gｻｰﾅｷｱ:581 | Sﾌﾞﾀｲ, 4 | 62 | retreat 1, `Prov_Cur = Bt_TargetProv = 27` | `Bt_Result = 1` → return; win sets Merim flags (and owner of 27) |
+| Gｶﾌｪ:2049 | Sﾌﾞﾀｲ, 4 | Carfeknights (143, 144, 145) (troops +50, HP refilled if 0) | duel, retreat 1, WB 0, `Prov_Cur 1` (Leazas Castle) | `Bt_Result = 1` → defeat scene |
+| Gｹｯｾﾙ:2434 | Rance | Kesselring (133), HP 2, troops 0 | duel, retreat 1 | 死亡捕獲 called again; Kesselring (133) `Status := 0` |
+| Gｹｯｾﾙ:2959 | Rance | Kesselring (133), HP max | **not** duel, retreat 6, `Prov_Cur` inherited | Kesselring (133) `Status := 1`; 死亡捕獲 again |
+| Gｻｰﾅｷｱ:581 | Sﾌﾞﾀｲ, 4 | Sanakia (62) | retreat 1, `Prov_Cur = Bt_TargetProv = 27` (Toushin City) | `Bt_Result = 1` → return; win sets Merim flags (and owner of Toushin City (27)) |
 | Gｻﾃﾗ:3436 | Rance | 100 = copy of Satella's stats | duel, retreat 1, `Bt_TargetProv 0` | `F_Satella_State := 3` |
 | Gｾﾙ:5828 | Rance | 100 "Ruffians" (20 troops, HP 5) | duel, retreat 1, WB 0 | — |
-| Gﾅｷﾞ:3240 | Shizuka (17), troops capped to the enemy's | 107 (Magic 14 temporarily) | duel, retreat 1 | FIGT表示 10 |
-| Gﾅｷﾞ:3422 | Shizuka, **HP 1, troops 0** (scripted loss) | 109 | duel, retreat 1 | 17 `Status := 0`, `F_RagarlRitual_State := 5` |
-| Gﾅｷﾞ:4167 | Rance | 109 | duel, retreat 1 | 109 `Status := 1`, 死亡捕獲 again |
-| Gﾏｼﾞｯｸ:2395 | random unit: up to 9 × `RND(48)` (32 → 31) until `Unit_Status = 1` | 97 Xacalite | duel, retreat 1 | `N_Xacalite_KillsLeft -= Bt_PlayerLosses` |
-| Gﾐﾈﾊﾞ:2240 | Rance, troops set to 0 (restored after) | 39, HP 3, troops 0 | duel, retreat 1 | — |
-| Gﾚｲ:2060, 2273 | Rance | 92, troops 0 | duel, retreat 1 | — |
-| Iｼｬﾝｸﾞﾘﾗ:3713 | Rance, troops 0 (restored) | 21 | duel, WB 0, BG 902 | FIGT表示 1 |
-| Iｼｬﾝｸﾞﾘﾗ:5052 | Sﾌﾞﾀｲ, 4, troops cut 10 % twice | 18, 19, 20 | duel (multi-unit), BG 904, `Bt_TargetProv 29` | — |
-| Iｾﾞｽ:6349 | Rance | 113, troops halved | duel, retreat 1 | `F_Uspira_Fate := 1`, 113 `Status 0` |
-| Iﾄｳｿﾞｸ:315 | Sﾌﾞﾀｲ, 4 | 58 (troops 10) | not duel, retreat 1, `WB = Prov_Defense`, `Bt_TargetProv = Prov_Cur` | `Bt_Result = 1` → return; win: `RND(4)` loot event |
-| Iﾄｳｿﾞｸ:1397 | fixed 1, 3, 4, 2 | 31 | duel, retreat 1, limit 5000, `WB = Prov_Defense` | `Bt_Result = 2` → win scene |
+| Gﾅｷﾞ:3240 | Shizuka (17), troops capped to the enemy's | Nagi (107) (Magic 14 temporarily) | duel, retreat 1 | FIGT表示 10 |
+| Gﾅｷﾞ:3422 | Shizuka, **HP 1, troops 0** (scripted loss) | Ragarl (109) | duel, retreat 1 | Shizuka (17) `Status := 0`, `F_RagarlRitual_State := 5` |
+| Gﾅｷﾞ:4167 | Rance | Ragarl (109) | duel, retreat 1 | Ragarl (109) `Status := 1`, 死亡捕獲 again |
+| Gﾏｼﾞｯｸ:2395 | random unit: up to 9 × `RND(48)` (Miki (32) → Kentarou (31)) until `Unit_Status = 1` | 97 Xacalite | duel, retreat 1 | `N_Xacalite_KillsLeft -= Bt_PlayerLosses` |
+| Gﾐﾈﾊﾞ:2240 | Rance, troops set to 0 (restored after) | Mineva (39), HP 3, troops 0 | duel, retreat 1 | — |
+| Gﾚｲ:2060, 2273 | Rance | Lei (92), troops 0 | duel, retreat 1 | — |
+| Iｼｬﾝｸﾞﾘﾗ:3713 | Rance, troops 0 (restored) | Aladdin (21) | duel, WB 0, BG 902 | FIGT表示 1 |
+| Iｼｬﾝｸﾞﾘﾗ:5052 | Sﾌﾞﾀｲ, 4, troops cut 10 % twice | Desert Guides (18, 19, 20) | duel (multi-unit), BG 904, `Bt_TargetProv 29` (Shangri-La) | — |
+| Iｾﾞｽ:6349 | Rance | Saias (113), troops halved | duel, retreat 1 | `F_Uspira_Fate := 1`, Saias (113) `Status 0` |
+| Iﾄｳｿﾞｸ:315 | Sﾌﾞﾀｲ, 4 | Civilian General (58) (troops 10) | not duel, retreat 1, `WB = Prov_Defense`, `Bt_TargetProv = Prov_Cur` | `Bt_Result = 1` → return; win: `RND(4)` loot event |
+| Iﾄｳｿﾞｸ:1397 | fixed Rance (1), Bound (3), Soul (4), Sill (2) | Ruberan (31) | duel, retreat 1, limit 5000, `WB = Prov_Defense` | `Bt_Result = 2` → win scene |
 
 Caller survey totals: FIGT.ADV is called directly only by Cﾒｲｷｭｳ (1) and Iｶﾐ (4); FIGT_A by
 Cﾃｷﾄｼ (2) and 13 story files (19 calls); FIGT_B by 14 files (MAIN, GAL, Gｶｾｲ, Gｹｲﾌﾞﾘｽ, Gｻｲｾﾞﾙ,
@@ -420,8 +423,9 @@ Gﾚﾘｭｰｺﾌ, Iﾏｼﾞﾝ, TCﾘｰｻﾞｽ, TJAPAN, Tｹｲﾌﾞﾘ�
 A cutscene player for 21 scripted "battles" (`Ev_Entry` 1-14, 21-24, 26; callers in Gｼﾙｷｨ, Gﾅｷﾞ,
 Gﾊﾟｯﾄﾝ, Gﾌﾘｰｸ, Gﾏｼﾞｯｸ, Gﾐﾈﾊﾞ, Iｶﾐ, Iｼｬﾝｸﾞﾘﾗ, Iﾏｼﾞﾝ). It sets the 16 exchange results by hand and
 calls `FIGTATTK.ADV` to animate them; it never calls FIGT/FIGT_A/FIGT_B. It does write state
-permanently (e.g. Ev 2: unit 20's troops/HP/CGs, cmdr 130 troops 0 and HP −10; Ev 4: unit 18
-troops 500; Ev 9: unit 39 troops 0; Ev 11/12: cmdr 107/109 HP; Ev 14: `Bt_TroopLimit := 5000`),
+permanently (e.g. Ev 2: Freak's (unit 20) troops/HP/CGs, Redeye (cmdr 130) troops 0 and HP −10;
+Ev 4: Patton (unit 18) troops 500; Ev 9: Magic (unit 39) troops 0; Ev 11/12: Nagi / Ragarl (cmdr
+107/109) HP; Ev 14: `Bt_TroopLimit := 5000`),
 and every FIGTATTK call consumes one discarded `RND(2)`. Port it as scripted events, not battles.
 
 ---
@@ -727,17 +731,17 @@ Command popup items, in display order (`FIGT_SEL.ADV:522-697`, then `:241-278`):
 | Capsule | `Unit.Item = 26` (C. Kaiju A) | return 31 (Jagi Jagi), no target |
 | Fog Card | `Bt_IsDuel = 0` and `Unit.Item = 28` | return 32, no target |
 | — specials below only if `mode ≤ 3` and `Bt_ActFocus > 0` — | | |
-| Rance Attack | slot 1-2 and (`Unit_Cur = 1` or (`Unit_Cur = 31` and `F_Kentarou_State > 7`)) | mode := 11 |
-| By la Way | slot 1-2 and `Unit_Cur = 7` | mode := 12 |
-| High Speed | `Unit_Cur = 30` | mode := 14 |
-| WD Beam | `Unit_Cur = 17` or `39` | mode := 13 |
-| BD Beam | `Unit_Cur = 38` or `40` | mode := 17 |
-| Vanish Bomb | `Unit_Cur = 32` and `Bt_ActFocus > 2` | mode := 15 |
-| W. Shot | `Unit_Cur = 27` | mode := 18 |
-| CW Dance | `Unit_Cur = 18` | mode := 16 |
-| Chuhai | `Unit_Cur = 11` and `F_Asuka_State > 7` | mode := 19 |
-| EPO Light | `Unit_Cur = 37` and `AtkType = 2` and `Bt_ActFocus > 0` | mode := 21 |
-| T2S Wave | `Unit_Cur = 47` and `AtkType = 0` and `Bt_ActFocus > 0` | mode := 20 |
+| Rance Attack | slot 1-2 and (`Unit_Cur = 1` (Rance) or (`Unit_Cur = 31` (Kentarou) and `F_Kentarou_State > 7`)) | mode := 11 |
+| By la Way | slot 1-2 and `Unit_Cur = 7` (Rick) | mode := 12 |
+| High Speed | `Unit_Cur = 30` (Meglass) | mode := 14 |
+| WD Beam | `Unit_Cur = 17` (Shizuka) or `39` (Magic) | mode := 13 |
+| BD Beam | `Unit_Cur = 38` (Chizuko) or `40` (Nagi) | mode := 17 |
+| Vanish Bomb | `Unit_Cur = 32` (Miki) and `Bt_ActFocus > 2` | mode := 15 |
+| W. Shot | `Unit_Cur = 27` (Isoroku) | mode := 18 |
+| CW Dance | `Unit_Cur = 18` (Patton) | mode := 16 |
+| Chuhai | `Unit_Cur = 11` (Asuka) and `F_Asuka_State > 7` | mode := 19 |
+| EPO Light | `Unit_Cur = 37` (Gandhi) and `AtkType = 2` and `Bt_ActFocus > 0` | mode := 21 |
+| T2S Wave | `Unit_Cur = 47` (Rolex) and `AtkType = 0` and `Bt_ActFocus > 0` | mode := 20 |
 | Cheat | `DebugMode = 1` | mode := 10 (Cheater Beam) |
 | Defend | always | return 4 |
 | Wait | always | return 5 (= Focus) |
@@ -1131,8 +1135,8 @@ Back in `Resolve`/`ResolveMagic`: `if Bt_EnemyRetreatMode ∈ {20, 50}: Bt_Enemy
 
 | File | Called | RNG | State writes |
 |---|---|---|---|
-| `FIGT_M.ADV` | once per `PresentEngagement` | **2 or 3 draws** per call, exactly as [02 §5.5](02-resolution.md#55-draw-count): `RND(2)` at `:5` (always; result overridden while `Bt_MsgMode` ∈ 1..4), `RND(3)` at `:25` (player side) or `:2825` (enemy side), then at most one branch draw (n ∈ {2,3,4,5,10}) selected by the dispatch tables 02 §5.2/§5.3 (92 `Y 4` sites in the file, all listed there) | `Bt_MsgMode := 2` if `Bt_MsgMode = 1 and Bt_EnemyAction = 2` (`:2-4`); `Tmp0621 := 0`; `Tmp0690`; `F_Satella_LineCmdr91/92/93`, `N_Freak_Stage := 1`, `F_Asuka_State := 1` (`:8326`: Mill, unit 25, in slot 1-3, or in slot 4 with `F_Mill_State < 2`, reading `*` as binding tighter than `+` — see README open question); Sieg block `:10090-10115` (`F_Sieg_State := 4`, `F_Sieg_Defeated := 1`, `N_Miki_Stage` 1→2, item 1 to unit 1, rewrites cmdr 93's name/CGs, changes Rance's CGs; its `Cmdr_Cur := 93` / `Unit_Cur := 1` are no-ops because the block is reached only from Rance's branch with `Cmdr_Cur = 93`, `FIGT_M.ADV:8956-8960`) — full table 02 §5.4 |
-| `FIGTﾐｶDE.ADV` | player commander HP 0 | none | unit 1 with `StoryStage ≠ 0`: `EndingId := 1`, jump `OVER.ADV` (game over in mid-battle); unit 1 in the prologue only "faints"; unit 2 with `StoryStage ≠ 0`: `F_Sill_Died := 1` (`FIGTﾐｶDE.ADV:42-90`); unit 11: `F_Asuka_State := 0` |
+| `FIGT_M.ADV` | once per `PresentEngagement` | **2 or 3 draws** per call, exactly as [02 §5.5](02-resolution.md#55-draw-count): `RND(2)` at `:5` (always; result overridden while `Bt_MsgMode` ∈ 1..4), `RND(3)` at `:25` (player side) or `:2825` (enemy side), then at most one branch draw (n ∈ {2,3,4,5,10}) selected by the dispatch tables 02 §5.2/§5.3 (92 `Y 4` sites in the file, all listed there) | `Bt_MsgMode := 2` if `Bt_MsgMode = 1 and Bt_EnemyAction = 2` (`:2-4`); `Tmp0621 := 0`; `Tmp0690`; `F_Satella_LineCmdr91/92/93`, `N_Freak_Stage := 1`, `F_Asuka_State := 1` (`:8326`: Mill, unit 25, in slot 1-3, or in slot 4 with `F_Mill_State < 2`, reading `*` as binding tighter than `+` — see README open question); Sieg block `:10090-10115` (`F_Sieg_State := 4`, `F_Sieg_Defeated := 1`, `N_Miki_Stage` 1→2, item 1 to Rance (unit 1), rewrites Sieg's (cmdr 93) name/CGs, changes Rance's CGs; its `Cmdr_Cur := 93` (Sieg) / `Unit_Cur := 1` (Rance) are no-ops because the block is reached only from Rance's branch with `Cmdr_Cur = 93`, `FIGT_M.ADV:8956-8960`) — full table 02 §5.4 |
+| `FIGTﾐｶDE.ADV` | player commander HP 0 | none | Rance (unit 1) with `StoryStage ≠ 0`: `EndingId := 1`, jump `OVER.ADV` (game over in mid-battle); Rance (unit 1) in the prologue only "faints"; Sill (unit 2) with `StoryStage ≠ 0`: `F_Sill_Died := 1` (`FIGTﾐｶDE.ADV:42-90`); Asuka (unit 11): `F_Asuka_State := 0` |
 | `FIGTﾃｷDE.ADV` | enemy commander HP 0 | none | none (text) |
 
 Because `Bt_MsgMode` is rewritten inside FIGT_M, an enemy magic attack ends with
@@ -1198,8 +1202,8 @@ modifiers.
 ### 11.3 Wrapper post-processing
 
 See §2.1 (FIGT_A) and §2.3 (FIGT_B). Ownership: attack victory (`StoryStage ≠ 0`) →
-`Prov_Owner := 1`; defence loss or abandon → `Prov_Owner := Ev_PhaseNation`; losing province 1
-→ game over (`EndingId 2`). Units deployed this week stay at `Unit_Status = 2` (greyed) until the
+`Prov_Owner := 1`; defence loss or abandon → `Prov_Owner := Ev_PhaseNation`; losing Leazas
+Castle (1) → game over (`EndingId 2`). Units deployed this week stay at `Unit_Status = 2` (greyed) until the
 weekly reset; dead ones are 0.
 
 ### 11.4 `死亡捕獲.ADV` — death / capture outcomes
@@ -1213,31 +1217,31 @@ alive, 2 deployed and `Unit_Status = 0`; `CmdrIn(id)` → 0 / 1 / 2 likewise on 
 | # | Lines | Condition | Effect |
 |---|---|---|---|
 | 1 | 1-13 | Menad (10) deployed, `Bt_Kind ≠ 3`, HP ≠ 0 | `F_Menad_State = 4` → Gﾒﾅﾄﾞ 2; `= 3` and `Troops * 3 < MaxTroops` → Gﾒﾅﾄﾞ 1 |
-| 2 | 14-25 | mercenary 49 / 50 deployed and dead | `F_MercA_Lost` / `F_MercB_Lost := 1` |
+| 2 | 14-25 | mercenary Louis (49) / Cecil (50) deployed and dead | `F_MercA_Lost` / `F_MercB_Lost := 1` |
 | 3 | 26-32 | Rance (1) `Status = 0` and `StoryStage ≠ 0` | `EndingId := 1`, game over (normally already done by FIGTﾐｶDE) |
-| 4 | 33-39 | Sill (2) `Status = 0` and `StoryStage = 0` | Sill revived: `Status := 2`, `HP := 1` (CmdrIn(2) is computed first and unused) |
+| 4 | 33-39 | Sill (2) `Status = 0` and `StoryStage = 0` | Sill revived: `Status := 2`, `HP := 1` (CmdrIn(2), Haurein, is computed first and unused) |
 | 5 | 40-44 | Somita (46) deployed and alive | `N_Somita_BattlesSurvived += 1` |
-| 6 | 45-51 | cmdr 4 in battle and dead | Gﾒﾙﾌｪｲｽ 1 |
-| 7 | 52-57 | cmdr 2 dead | Gﾊｳﾚｰﾝ 1 |
-| 8 | 58-69 | cmdr 1, cmdr 72 dead | revived: `Status 1, HP 1` (they escape) |
-| 9 | 70-90 | cmdr 82 / 22 / 44 dead | Gｲｿﾛｸ 1 / Gﾚﾘｭｰｺﾌ 3 / Gﾈﾛ 3 |
+| 6 | 45-51 | Melfeis (cmdr 4) in battle and dead | Gﾒﾙﾌｪｲｽ 1 |
+| 7 | 52-57 | Haurein (cmdr 2) dead | Gﾊｳﾚｰﾝ 1 |
+| 8 | 58-69 | Ex (cmdr 1), Nobunaga Oda (cmdr 72) dead | revived: `Status 1, HP 1` (they escape) |
+| 9 | 70-90 | Isoroku Yamamoto (cmdr 82) / Lelyukov (22) / Nero (44) dead | Gｲｿﾛｸ 1 / Gﾚﾘｭｰｺﾌ 3 / Gﾈﾛ 3 |
 | 10 | 91-105 | cmdr 45 (Cream) | dead: Gｸﾘｰﾑ 2, then `F_Nero_Helman4thState := 5` unless 100; if `F_Nero_Helman4thState = 4` (whether dead or not): set 5, Gｸﾘｰﾑ 1 |
-| 11 | 106-116 | cmdr 31 | `StoryStage = 0` → `Status := 1` always; dead and stage ≠ 0 → Gﾙｰﾍﾞﾗﾝ 2 |
-| 12 | 117-123 | cmdr 32 dead | Gｱﾘｽﾄﾚｽ 2 |
-| 13 | 124-147 | cmdr 54 dead → Gﾊﾟｯﾄﾝ 5; cmdrs 55, 56, 57 dead → revived HP 1 | |
-| 14 | 148-168 | cmdr 51 / 52 / 50 dead | Gｶﾁｭｰｼｬ 1 / Gｿﾙﾆｱ 1 / Gﾛﾚｯｸｽ 3 |
-| 15 | 169-180 | cmdr 39 (Mineva) dead | revived HP 2; if `Prov_Cur = 45` and won and not duel: `Status := 0`, Gﾐﾈﾊﾞ 5 |
-| 16 | 181-219 | cmdrs 101 / 104 / 110 dead | won → Gﾁｽﾞｺ 2 / Gﾊﾟﾊﾟｲｱ 4 / Gﾏｼﾞｯｸ 23; otherwise revived HP 1 |
-| 17 | 220-236 | cmdr 113 dead | revived HP 1 unless `Prov_Cur = 58`; at 58: won → Iｾﾞｽ 40, lost → `Status 2, HP 1` |
-| 18 | 237-255 | cmdr 107 dead → revived HP 1, at prov 67 and won: `Status 0`, Gﾅｷﾞ 6; cmdr 109 dead → revived with full HP | |
-| 19 | 256-270 | cmdr 125 dead | prov 66 → Gﾏｼﾞｯｸ 2, else revived HP 1; then prov 63 and won → `Status 0`, Iｾﾞｽ 41 |
-| 19a | 271-304 | cmdr 121 / 117 dead | as 113 with home province 65 / 61 and Iｾﾞｽ 42 / 43 |
-| 20 | 305-320 | `F_Zeth_War = 1` and cmdrs 101, 104, 107, 110 all `Status 0` | Iｾﾞｽ 100 (Zeth's Four Lords defeated) — regardless of who fought |
-| 21 | 321-368 | cmdrs 129, 130, 132, 131, 133 (not duel), 134, 135 dead | Gﾊﾞﾎﾞﾗ / Gﾚｯﾄﾞｱｲ / Gｶｲﾄ / Gｶﾞﾙﾃｨｱ / Gｹｯｾﾙ / Gﾒﾃﾞｨｳｻ / Gｹｲﾌﾞﾘｽ, entry 10 |
-| 22 | 369-385 | cmdr 98 dead → Gｻｲｾﾞﾙ 11; cmdr 91 dead → revived HP 2, prov 88 and won: `Status 0`, Gｶﾐｰﾗ 11 | |
-| 23 | 386-399 | cmdr 136 / 137 dead | Gﾊﾟｲｱｰﾙ 11 / 12 |
-| 24 | 400-419 | cmdr 159 / 162 dead | `Status := 1`; won → `Status 0`, Gｹｲﾌﾞﾜﾝ 1 / Gｹｲﾌﾞﾆｬﾝ 1 |
-| 25 | 420-430 | Leila (5) and Rick (7) both deployed alive, `F_LeilaRick_State < 6`, `Prov_Cur ≠ 1`, `F_Leila_State > 3`, won | Gﾚｲﾗ 2, return |
+| 11 | 106-116 | Ruberan (cmdr 31) | `StoryStage = 0` → `Status := 1` always; dead and stage ≠ 0 → Gﾙｰﾍﾞﾗﾝ 2 |
+| 12 | 117-123 | Aristoles (cmdr 32) dead | Gｱﾘｽﾄﾚｽ 2 |
+| 13 | 124-147 | Patton (cmdr 54) dead → Gﾊﾟｯﾄﾝ 5; Hubert (55), Freak (56), Hanty (57) dead → revived HP 1 | |
+| 14 | 148-168 | Katyusha (cmdr 51) / Saulnia (52) / Rolex (50) dead | Gｶﾁｭｰｼｬ 1 / Gｿﾙﾆｱ 1 / Gﾛﾚｯｸｽ 3 |
+| 15 | 169-180 | cmdr 39 (Mineva) dead | revived HP 2; if `Prov_Cur = 45` (Lang Bau) and won and not duel: `Status := 0`, Gﾐﾈﾊﾞ 5 |
+| 16 | 181-219 | Chizuko (cmdr 101) / Papaya (104) / Magic (110) dead | won → Gﾁｽﾞｺ 2 / Gﾊﾟﾊﾟｲｱ 4 / Gﾏｼﾞｯｸ 23; otherwise revived HP 1 |
+| 17 | 220-236 | Saias (cmdr 113) dead | revived HP 1 unless `Prov_Cur = 58` (Adam's Fortress); at Adam's Fortress (58): won → Iｾﾞｽ 40, lost → `Status 2, HP 1` |
+| 18 | 237-255 | Nagi (cmdr 107) dead → revived HP 1, at Nagi's Tower (67) and won: `Status 0`, Gﾅｷﾞ 6; Ragarl (cmdr 109) dead → revived with full HP | |
+| 19 | 256-270 | Alex (cmdr 125) dead | Magic's Tower (66) → Gﾏｼﾞｯｸ 2, else revived HP 1; then Old Zeth (63) and won → `Status 0`, Iｾﾞｽ 41 |
+| 19a | 271-304 | Kabachahn (cmdr 121) / Uspira (117) dead | as Saias (113) with home province Amber Castle (65) / Tape (61) and Iｾﾞｽ 42 / 43 |
+| 20 | 305-320 | `F_Zeth_War = 1` and cmdrs Chizuko (101), Papaya (104), Nagi (107), Magic (110) all `Status 0` | Iｾﾞｽ 100 (Zeth's Four Lords defeated) — regardless of who fought |
+| 21 | 321-368 | cmdrs Babolat (129), Redeye (130), Kite (132), Galtia (131), Kesselring (133) (not duel), Medusa (134), Kayblis (135) dead | Gﾊﾞﾎﾞﾗ / Gﾚｯﾄﾞｱｲ / Gｶｲﾄ / Gｶﾞﾙﾃｨｱ / Gｹｯｾﾙ / Gﾒﾃﾞｨｳｻ / Gｹｲﾌﾞﾘｽ, entry 10 |
+| 22 | 369-385 | La Vaswald (cmdr 98) dead → Gｻｲｾﾞﾙ 11; Camilla (cmdr 91) dead → revived HP 2, Camilla's Castle (88) and won: `Status 0`, Gｶﾐｰﾗ 11 | |
+| 23 | 386-399 | PG-7 (cmdr 136) / PG-9 (137) dead | Gﾊﾟｲｱｰﾙ 11 / 12 |
+| 24 | 400-419 | Kaybwan (cmdr 159) / Kaybnyan (162) dead | `Status := 1`; won → `Status 0`, Gｹｲﾌﾞﾜﾝ 1 / Gｹｲﾌﾞﾆｬﾝ 1 |
+| 25 | 420-430 | Leila (5) and Rick (7) both deployed alive, `F_LeilaRick_State < 6`, `Prov_Cur ≠ 1` (Leazas Castle), `F_Leila_State > 3`, won | Gﾚｲﾗ 2, return |
 | 26 | 431-441 | Barres (6) and Haurein (12) deployed alive, Haurein `Level > 3`, `F_Haurein_Fate = 0`, won | Gﾊｳﾚｰﾝ 2, return |
 
 Generic rule: a fallen **player** commander stays `Unit_Status = 0` (lost for good; prologue Sill
@@ -1264,7 +1268,7 @@ refills, the dungeon encounter `RND(4)` / `RND(10)` / `RND(MonsterPower)`, Gﾏ�
 | R1 | FIGT_B.ADV:186 | 2 | defending in the city | `VAR0692 -= 1` on 1 (write-only; effectively discarded) |
 | R3 | FIGT.ADV:17 | 2 | always | rounds = 3 + r (overridden to 3 by mode 6, draw still made) |
 | R4 | FIGT作.ADV:9 / :350 | 100 | `Bt_Kind ≠ 3` and the strategy values differ | success if `r ≤ d`; great if `d - r > 50` |
-| R5 | FIGT.ADV:3172 (`L_04eba`) | troops/10 | Prov_Cur = 82, each round start, for P1, P2-4 if present, E1, E2-4 if present, in that order; no draw when troops < 20 | troops lost |
+| R5 | FIGT.ADV:3172 (`L_04eba`) | troops/10 | Prov_Cur = 82 (Land of Death), each round start, for P1, P2-4 if present, E1, E2-4 if present, in that order; no draw when troops < 20 | troops lost |
 | — per action, repeated — | | | | |
 | R6 | FIGT.ADV:1587 | 10 | every manual attack/special (not auto), repeated while Miki rolls 1 | Miki's Vanish Bomb trigger (discarded for others) |
 | R7 | FIGT.ADV:1383 | 20 | Defend (manual, auto-defend, or auto-attack falling back to defend) | defence bonus r+1 |
@@ -1280,7 +1284,7 @@ refills, the dungeon encounter `RND(4)` / `RND(10)` / `RND(MonsterPower)`, Gﾏ�
 | R17 | FIGT.ADV:3057 | 5 | per surviving unit (slot order) that levels up and has `Recovery ≠ 0` | Recovery + r |
 | R18 | FIGT.ADV:3100 | 12+L | level-up, not Mill, not Popularity Staff with troops | which modifier |
 | R19 | FIGT.ADV:3102-3147 | 3 | R18 ≤ 6 | modifier rises if r > current |
-| R2 | FIGT_B.ADV:282 | 5 | after 死亡捕獲, defence won at province 31..49 | Elena event on 1 (forced off if province 40 not owned) |
+| R2 | FIGT_B.ADV:282 | 5 | after 死亡捕獲, defence won at Log B (31) .. Great Wall of Helman A (49) | Elena event on 1 (forced off if Pawn (40) not owned) |
 
 Draws inside story events called by the wrappers / 死亡捕獲 / FIGTﾐｶDE are not listed (they belong
 to those events). FIGTﾐｶDE, FIGTﾃｷDE, FIGT作 text and 死亡捕獲 draw nothing themselves.
@@ -1289,8 +1293,8 @@ to those events). FIGTﾐｶDE, FIGTﾃｷDE, FIGT作 text and 死亡捕獲 draw
 
 ## 13. Quirks a faithful port must reproduce
 
-- **Q-1** Refusals (Gandhi/Satella/Meglass, unit 44) after the party was confirmed undo the
-  deployment but keep the war expenses paid in Sﾌﾞﾀｲ (`FIGT_B.ADV:84-150`, `Cﾃｷﾄｼ.ADV:226-307`).
+- **Q-1** Refusals (Gandhi/Satella/Meglass, Gurwin (unit 44)) after the party was confirmed undo
+  the deployment but keep the war expenses paid in Sﾌﾞﾀｲ (`FIGT_B.ADV:84-150`, `Cﾃｷﾄｼ.ADV:226-307`).
 - **Q-2** A lost attack does not clear `Ui_CmdAttackAvail` (`FIGT_A.ADV:103-107`).
 - **Q-3** Every city defence permanently raises `Prov_BattleArea` by 10 % (after copying the old
   value into `Bt_TroopLimit`) (`FIGT_B.ADV:182-185`).
@@ -1343,8 +1347,8 @@ Merged with 02's open questions in [README.md](README.md). Resolved since the fi
 - ~~`Y 3, n` is random?~~ No: it is a timed pause (confirmed against xsystem35); `Y 4` is the
   only random source.
 - ~~Does the Sieg block (`FIGT_M.ADV:10090-10115`) switch the exchange to Rance's record?~~ No:
-  it is reached only from Rance's branch (`FIGT_M.ADV:8956-8960`, `Unit_Cur = 1`,
-  `Cmdr_Cur = 93`), so its `Unit_Cur := 1` / `Cmdr_Cur := 93` are no-ops.
+  it is reached only from Rance's branch (`FIGT_M.ADV:8956-8960`, `Unit_Cur = 1` (Rance),
+  `Cmdr_Cur = 93` (Sieg)), so its `Unit_Cur := 1` / `Cmdr_Cur := 93` are no-ops.
 
 Still open:
 

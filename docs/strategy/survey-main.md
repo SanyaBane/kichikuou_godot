@@ -58,7 +58,7 @@ Main procedures:
 | `COMMAND L_007cf` | `:377-425` | Turn END: Sill scene, Tange Dog revive, prologue end (`Week > 22`) |
 | `COMMAND L_00a95` | `:514-577` | province click → `C*` choice (§2.2) |
 | `COMMAND L_00c21` | `:578-614` | construction finished → first building in state 2 → 1 and its scene |
-| `COMMAND L_008e4 / L_0099a` | `:426-489` | status line (sum of troops); leaves `Unit_Cur = 51` / `4` |
+| `COMMAND L_008e4 / L_0099a` | `:426-489` | status line (sum of troops); leaves `Unit_Cur = 51` / `4` (Soul) |
 | `COM` | `COM.ADV:1-947` | §2.3 |
 | `ﾛｰﾄﾞｾｰﾌﾞ` dispatch | `ﾛｰﾄﾞｾｰﾌﾞ.ADV:1-29` | `RetVal` 0 load menu, 1 save menu, 2 Load/Save/Don't, 3 autosave, 10 read page 4 from all slots, 11 write page 4 to all slots |
 
@@ -68,32 +68,32 @@ Main procedures:
 |---|---|---|---|
 | 1 | `WAO_SUB` op 3, `M` op 0 (redraw) | — | `:2-4` |
 | 2 | `Week += 1`; history shift (`NB` ×4, 299 entries) and clear this week's `Hist_*` | — | `:5-15` |
-| 3a | **Thieves phase** (whole week): autosave; date; BGM 1; pan to dungeon 1; banner; units 1-4 alive → status 1, HP full, troops +2 (cap); `Hist_Funds := Gold`; `COMMAND`; if `StoryStage = 99` → `StoryStage := 1`, `Iﾊﾝﾗﾝ`; "Then some time passed"; loop | `StoryStage = 0` | `:19-82` |
-| 3b | **Leazas phase**: autosave (`:83`); date, BGM 4, pan to province 1, banner | otherwise | `:83-112` |
+| 3a | **Thieves phase** (whole week): autosave; date; BGM 1; pan to the Thieves' Hideout (dungeon 1); banner; units Rance (1), Sill (2), Bound (3), Soul (4) alive → status 1, HP full, troops +2 (cap); `Hist_Funds := Gold`; `COMMAND`; if `StoryStage = 99` → `StoryStage := 1`, `Iﾊﾝﾗﾝ`; "Then some time passed"; loop | `StoryStage = 0` | `:19-82` |
+| 3b | **Leazas phase**: autosave (`:83`); date, BGM 4, pan to Leazas Castle (1), banner | otherwise | `:83-112` |
 | 4 | Income: sum `Prov_Economy` of owner-1 provinces (`Tmp0022`; count in `Tmp0021`, unused) | — | `:113-126` |
 | 5 | Cream counter (unit 28): status 1 & `F_Cream_State > 10` → +1; status 2 → 11 | — | `:127-133` |
 | 6 | Units 1-48 alive: item 48 → status 1, troops −= rnd(troops/20), **skip rest**; item 50 → troops += rnd(max/10); status := 1; HP +2 (cap); not full → troops += rnd(2×Recovery) + Recovery (cap); `Tmp0024` = total replenished | — | `:134-167` |
 | 7 | `Gold += income`; `Hist_Funds := Gold`; report window | — | `:168-184` |
-| 8 | Expenses: M Land −20, AL Church −65, Galtia food −45 (each to `Hist_SundryExp`) | `F_MLand_Funded = 1`; `N_ALChurch_Stage < 19`; unit 41 alive | `:185-211` |
+| 8 | Expenses: M Land −20, AL Church −65, Galtia food −45 (each to `Hist_SundryExp`) | `F_MLand_Funded = 1`; `N_ALChurch_Stage < 19`; Galtia (unit 41) alive | `:185-211` |
 | 9 | `COMMAND` (player phase, §2.2), then `M` op 0 | — | `:213-215` |
-| 10 | Post-command scenes: `Gﾌｳｶ` 4, `Gｶﾄﾞﾐｭｳﾑ` 1, `Gｸﾘｰﾑ` 3 | `F_Fuuka_State = 9`; `F_Asuka_State = 1`; unit 28 status 1 & `F_Cream_State > 19` | `:216-228` |
+| 10 | Post-command scenes: `Gﾌｳｶ` 4, `Gｶﾄﾞﾐｭｳﾑ` 1, `Gｸﾘｰﾑ` 3 | `F_Fuuka_State = 9`; `F_Asuka_State = 1`; Cream (unit 28) status 1 & `F_Cream_State > 19` | `:216-228` |
 | 11 | Mars the Great: `Ev_PhaseNation := 3`, `Gｶｾｲ` 2 | `N_Mars_Score = 1` | `:229-259` |
 | 12 | AL Church: `Ev_PhaseNation := 11`, `GAL` 5 | `N_ALChurch_Stage ∈ {21, 100}` | `:260-297` |
-| 13 | Leazas Rebels: cmdrs 1-7 full HP, troops + 3×rec; `TCﾘｰｻﾞｽ` | `StoryStage = 1` | `:298-347` |
-| 14 | JAPAN: cmdrs 72-82 HP+2, troops + 3×rec; `TJAPAN` | `F_Japan_State = 1` | `:348-400` |
-| 15 | Helman: cmdrs 22-57; `Tﾍﾙﾏﾝ` | `F_Helman_War = 1` | `:401-453` |
-| 16 | Patton Army: cmdrs 54-57; `Tﾊﾟｯﾄﾝ` | `F_PattonArmy_State ≠ 0` | `:454-506` |
-| 17 | Zeth: BGM 10/12; capital = first of provinces 69/68/66/70/67 owned by 7; cmdrs 101-128, 165-180; `Tｾﾞｽ` | `F_Zeth_War = 1` | `:507-593` |
+| 13 | Leazas Rebels: cmdrs Ex (1) through Jibul (7) full HP, troops + 3×rec; `TCﾘｰｻﾞｽ` | `StoryStage = 1` | `:298-347` |
+| 14 | JAPAN: cmdrs Nobunaga Oda (72) through Isoroku Yamamoto (82) HP+2, troops + 3×rec; `TJAPAN` | `F_Japan_State = 1` | `:348-400` |
+| 15 | Helman: cmdrs Lelyukov (22) through Hanty (57); `Tﾍﾙﾏﾝ` | `F_Helman_War = 1` | `:401-453` |
+| 16 | Patton Army: cmdrs Patton (54) through Hanty (57); `Tﾊﾟｯﾄﾝ` | `F_PattonArmy_State ≠ 0` | `:454-506` |
+| 17 | Zeth: BGM 10/12; capital = first of Zeth Palace (69) / Chizuko's Tower (68) / Magic's Tower (66) / Papaya's Tower (70) / Nagi's Tower (67) owned by 7; cmdrs Chizuko (101) through Shitareriha (128), Zamoor (165) through Rue (180); `Tｾﾞｽ` | `F_Zeth_War = 1` | `:507-593` |
 | 18 | Kayblis: `Ev_PhaseNation := 8`, string 10 := "Kayblis Unit", `Tｹｲﾌﾞﾘｽ` (no refresh here) | `StoryStage = 3` & `F_Kayblis_War ∈ {0, 2}` | `:594-630` |
-| 19 | Camilla Unit: **inline AI** — cmdrs 92/93/90/92/91 each pick province rnd(16), attack via `FIGT_B` if player-owned and a roll passes; Sieg/Seizel/Satella/Rei/Camilla scenes | `N_Camilla_Stage > 1` & `≠ 100` | `:631-815` |
+| 19 | Camilla Unit: **inline AI** — cmdrs Lei (92) / Sieg (93) / La Seizel (90) / Lei (92) / Camilla (91) each pick province rnd(16), attack via `FIGT_B` if player-owned and a roll passes; Sieg/Seizel/Satella/Rei/Camilla scenes | `N_Camilla_Stage > 1` & `≠ 100` | `:631-815` |
 | 20 | Creator: `Ev_PhaseNation := 11`, string 10 := "Creator", `Tﾙﾄﾞﾗ` | `StoryStage = 4` | `:816-847` |
-| 21 | La Vaswald: pan to `LaVaswald_Prov`, `Gｻｲｾﾞﾙ` 12 | cmdr 98 alive | `:848-883` |
+| 21 | La Vaswald: pan to `LaVaswald_Prov`, `Gｻｲｾﾞﾙ` 12 | La Vaswald (commander 98) alive | `:848-883` |
 | 22 | `Iﾏｼﾞﾝ` 1 (BGM 16) / `N_Camilla_Stage 0 → 1` | `StoryStage = 2` & Camilla 1 / 0 | `:887-895` |
 | 23 | Sill kidnapping chain `Gｼｨﾙ` 21-27 at weeks >10/20/30/35/40/45/50 | `F_Helman_War ≠ 2`, `F_SillKidnap_Stage = 0..6` | `:896-925` |
 | 24 | `Gﾏｼﾞｯｸ` 5 | `F_Magic_State ∈ {2,3}` & `N_Xacalite_KillsLeft ≠ 0` | `:926-931` |
 | 25 | `N_Majin_EventTimer −= 1` (floors at 0); forced 0 when both wars won and `F_DemonWar_Stage < 10` | — | `:932-935` |
 | 26 | Demon war: `Iﾏｼﾞﾝ` 51/50/20…11 by `F_DemonWar_Stage` 11…0, tested **descending** | `F_Kayblis_War = 0`, Camilla > 5, timer 0 | `:936-985` |
-| 27 | Kayblis war: units 29 or 30 alive → `F_DemonWar_Stage := 0`; `Iﾏｼﾞﾝ2` 30…21 by stage 9…0 descending | `F_Kayblis_War = 1`, timer 0 | `:986-1035` |
+| 27 | Kayblis war: units Satella (29) or Meglass (30) alive → `F_DemonWar_Stage := 0`; `Iﾏｼﾞﾝ2` 30…21 by stage 9…0 descending | `F_Kayblis_War = 1`, timer 0 | `:986-1035` |
 | 28 | `M` op 0, "Then some time passed", `@L_00020` | — | `:1036-1045` |
 
 Every nation banner calls `L_01881` (date) and pans the camera (`M` ops 1, 10) to the nation's
@@ -112,7 +112,7 @@ Entry order: `PCMPLAY` op 10 (no-op) → **`COM`** (`:3`) → pan to castle (`:4
 | click own province | `Cｼﾊｲﾄｼ` | `:527-530` |
 | click province adjacent (Adj1-5) to an owned one | `Cﾃｷﾄｼ` (attack/negotiate; it calls `Cﾆﾝｼﾞｬ`) | `:531-574` |
 | click any other province | `Cﾃｷﾄｼ2` (view; calls `Cﾆﾝｼﾞｬ`) | `:575-576` |
-| thieves phase: click province 33/34 / other | `Cﾃｷﾄｼ` (ends phase if it set `StoryStage 99`) / `Cﾃｷﾄｼ2` | `:516-526` |
+| thieves phase: click Vladivostok (33) / Golak (34) / other | `Cﾃｷﾄｼ` (ends phase if it set `StoryStage 99`) / `Cﾃｷﾄｼ2` | `:516-526` |
 | click dungeon whose province is owned or 0 | `Cﾒｲｷｭｳ` | `:145-158` |
 | menu Construction / Harem / Treasure / Merchant / Subordinates | `Cﾃｲﾄ` / `Cﾊｰﾚﾑ` / `Cﾀｶﾗ` / `Cｼｮｳﾆﾝ` / `Cﾌﾞｶ` | `:330-360` |
 | menu All Data / Think / TADA (debug) | `各種DATA` / `Iｶﾝｶﾞｴ` / `TEST` | `:320-329,365-369` |
@@ -152,9 +152,9 @@ feast) and the `*_EventWeek` timers.
 | Boot | zero 846 vars → `XSPEC` → `SET` (allocs, `SET_MAP/CHR/ITEM`, `ﾓｼﾞｷｬｯｼｭ`, reads page 4 via `ﾛｰﾄﾞｾｰﾌﾞ` 10) → `&ｽﾀMENU` | `ｽﾀｰﾄ.ADV:1-872`, `SET.ADV:328-340` |
 | Title | spec warning, `ﾌﾟﾛﾛｰｸﾞ`, button table `L_011ca`; unlocks from `Glob_Fate[79]` (clears) | `ｽﾀMENU.ADV:1-169` |
 | New game | `Start` → `WAO_MAP` 3, `M` 0, `Week := 8`, `StoryStage := 0`, `Gold := 50`, `Iﾌﾟﾛﾛｰｸﾞ`, `&MAIN` | `ｽﾀMENU.ADV:244-291` |
-| Debug starts | `DebugMode = 1` → menu "From 1-4": week 12/stage 1 (`Iﾊﾝﾗﾝ`), week 16/stage 2 (`Iｼﾚｲﾌﾞ` 2, units set), week 77 late-game preset (≈40 flags, provinces 2-77 to Leazas, 78-83/89 to Kayblis) | `:292-546` |
+| Debug starts | `DebugMode = 1` → menu "From 1-4": week 12/stage 1 (`Iﾊﾝﾗﾝ`), week 16/stage 2 (`Iｼﾚｲﾌﾞ` 2, units set), week 77 late-game preset (≈40 flags, provinces North (2) through Temple AL HQ (77) to Leazas, Tower of Evil (78) through Cascade Bau (83) / Grief Valley (89) to Kayblis) | `:292-546` |
 | First week | `Week` 9 → `COM` plays `Iｼﾚｲﾌﾞ` 10 | `COM.ADV:1-5` |
-| Prologue end | the lost duel in `Iﾄｳｿﾞｸ` writes `StoryStage := 99` (`:1841`); reached by Turn END with `Week > 22` (`Iﾄｳｿﾞｸ` 2) or by the Merci path (Pillage on 34 with `F_Thieves_State = 3`) → `ｵｰﾌﾟﾆﾝｸﾞ` → MAIN sets 1 and plays `Iﾊﾝﾗﾝ`; see README "What the prologue reaches" | `COMMAND.ADV:419-424`, `Cﾃｷﾄｼ.ADV:99-108`, `MAIN.ADV:70-73` |
+| Prologue end | the lost duel in `Iﾄｳｿﾞｸ` writes `StoryStage := 99` (`:1841`); reached by Turn END with `Week > 22` (`Iﾄｳｿﾞｸ` 2) or by the Merci path (Pillage on Golak (34) with `F_Thieves_State = 3`) → `ｵｰﾌﾟﾆﾝｸﾞ` → MAIN sets 1 and plays `Iﾊﾝﾗﾝ`; see README "What the prologue reaches" | `COMMAND.ADV:419-424`, `Cﾃｷﾄｼ.ADV:99-108`, `MAIN.ADV:70-73` |
 | Autosave | each week at phase start: `QD 1` (slot 1), then page 4 to all slots | `MAIN.ADV:20,83`, `ﾛｰﾄﾞｾｰﾌﾞ.ADV:30-58` |
 | Manual save | `QC n,1` = **copy of this week's autosave** into slot 2-10, `QP n, Tmp0022` patches the slot number in | `ﾛｰﾄﾞｾｰﾌﾞ.ADV:325-512` |
 | Load | page 4 from all slots, `QC 1,n` (autosave := chosen slot), `LD n` → resumes after `QD 1` with `RetVal 0` → "Load Complete", `SS CurrentBgm`, returns into `MAIN` at the phase start | `ﾛｰﾄﾞｾｰﾌﾞ.ADV:105-299,59-81` |
@@ -200,7 +200,7 @@ Aliasing: `Hist_Prev*` = `Hist_*` at index 1 (`SET.ADV:244-255`); the shift is
 `NB Hist_PrevFunds, Hist_Funds, 299` — a forward copy onto an overlapping block (§7).
 Cursor leftovers that later code may see: `Unit_Cur = 51` after the Leazas status line
 (`COMMAND:428-439`), `Unit_Cur`/`Cmdr_Cur`/`Prov_Cur` from the gates (e.g. `MAIN:848` leaves
-`Cmdr_Cur 98`), `Tmp0001-0005` from the date routine, `RetVal` from the last roll.
+`Cmdr_Cur 98` (La Vaswald)), `Tmp0001-0005` from the date routine, `RetVal` from the last roll.
 
 ## 5. Randomness (`Y 4` sites)
 
@@ -209,15 +209,15 @@ Cursor leftovers that later code may see: `Unit_Cur = 51` after the Leazas statu
 | `MAIN.ADV:143` | `Unit_Troops/20` | unit alive with item 48: troop loss |
 | `MAIN.ADV:148` | `Unit_MaxTroops/10` | unit alive with item 50: troop gain |
 | `MAIN.ADV:160` | `Unit_Recovery*2` | each unit 1-48 alive, not item 48, troops < max |
-| `MAIN.ADV:689, 691` | 16, 2 | Camilla phase, cmdr 93 alive: target province, attack if roll ≠ 2 |
-| `MAIN.ADV:725, 727` | 16, 3 | cmdr 90 alive: province, attack if roll ≠ 2 and HP full |
-| `MAIN.ADV:751, 753` | 16, 3 | cmdr 92 alive: province, attack if roll ≠ 2 |
-| `MAIN.ADV:782, 784` | 16, 2 | cmdr 91 alive: province, attack if roll = 1 |
+| `MAIN.ADV:689, 691` | 16, 2 | Camilla phase, Sieg (commander 93) alive: target province, attack if roll ≠ 2 |
+| `MAIN.ADV:725, 727` | 16, 3 | La Seizel (commander 90) alive: province, attack if roll ≠ 2 and HP full |
+| `MAIN.ADV:751, 753` | 16, 3 | Lei (commander 92) alive: province, attack if roll ≠ 2 |
+| `MAIN.ADV:782, 784` | 16, 2 | Camilla (commander 91) alive: province, attack if roll = 1 |
 | `COM.ADV:59` | 2 | Lady Caravan walk, `F_Cafe_State < 10` (upkeep, every normal week) |
 | `COM.ADV:459, 465, 471` | 4, 2, 5 | Tier 2, unconditional once reached: Kapala, Menad, Suzume |
 | `COM.ADV:612, 618, 633` | 15, 3, 10 | Pastel, Merim, Barres |
 | `COM.ADV:694` | 10 | Seizel (`N_Saizel_Weeks > 40`) |
-| `COM.ADV:742` | 5 | only if unit 26 alive (Mars scene) |
+| `COM.ADV:742` | 5 | only if Mars the Great (unit 26) alive (Mars scene) |
 | `COM.ADV:800` | 2 | Elena 4 (roll 1) / 5 (roll 2) |
 | `COM.ADV:878` | 10 | one roll shared by Leila (1), Brittany (2), Julia (3), Horaga (4), Magic (5) |
 | `COM.ADV:934` | 10 | Kaiju prince; forced 1 after either war is won |
@@ -259,19 +259,22 @@ Quirks (port them):
    (`cmdn.c:56-58`), so `NB Hist[1], Hist[0], 299` sets all 300 entries to last week's value
    under xsystem35 [C]. Whether `system39.exe` used a block move is unknown [G]. The core has no
    `NB` helper yet.
-2. **Stale `RetVal`** in the Camilla block: `:798`/`:803` test `RetVal = 2` from cmdr 91's
-   roll, but if 91 is dead it is whatever cmdr 92's block or its `FIGT_B`/scene left [C].
+2. **Stale `RetVal`** in the Camilla block: `:798`/`:803` test `RetVal = 2` from Camilla's
+   (cmdr 91) roll, but if Camilla (91) is dead it is whatever Lei's (cmdr 92) block or its
+   `FIGT_B`/scene left [C].
 3. `N_Rei_Stage = 0` re-opens `Ev_WeeklyEventDone` (`:754-756`), allowing a second Camilla-unit
-   battle in one week [C]. Cmdr 93 is refreshed (`L_01831`) only when `N_Miki_Stage = 1` [C].
+   battle in one week [C]. Sieg (cmdr 93) is refreshed (`L_01831`) only when `N_Miki_Stage = 1`
+   [C].
 4. `COM` early exits (`:1-10`) skip all upkeep in week 9 and in the whole thieves phase
    (Lady Caravan does not move, timers do not tick) [C].
 5. Item 48 holders skip HP recovery (`MAIN.ADV:141-146`) [C]; expenses can drive `Gold` to 0
    only (saturating subtraction, no debt) [C].
-6. Patton commanders 54-57 are refreshed twice if both the Helman and Patton phases run
-   (`:431-448`, `:484-501`) [C]; whether both gates can be open together is unknown.
+6. Patton commanders Patton (54), Hubert (55), Freak (56), Hanty (57) are refreshed twice if
+   both the Helman and Patton phases run (`:431-448`, `:484-501`) [C]; whether both gates can be
+   open together is unknown.
 7. Demon-war chains test stages in descending order so a scene that advances the stage
-   cannot chain in the same week [I]. Units 29/30 alive reset `F_DemonWar_Stage` to 0 every
-   Kayblis-war week (`:987-994`) [C].
+   cannot chain in the same week [I]. Units Satella (29) / Meglass (30) alive reset
+   `F_DemonWar_Stage` to 0 every Kayblis-war week (`:987-994`) [C].
 8. `COMMAND L_00c21` returns (`\0`) after the first finished building [C]; the
    `BuildWeeksLeft` timer is shared by all buildings [I].
 9. Dead code: `COMMAND.ADV:361-364` (`Cｹﾝｷｭｳ`), `ｽﾀMENU.ADV:554-576` (debug picker, `Gﾜｵ`
@@ -324,7 +327,8 @@ Golden harness additions:
    (history graphs flat) — `MAIN.ADV:8-11`?
 2. Creator phase nation code 11 vs 10 — `MAIN.ADV:843`, `Tﾙﾄﾞﾗ.ADV`.
 3. Can `F_Helman_War = 1` and `F_PattonArmy_State ≠ 0` hold together (double refresh)?
-4. Identity of cmdrs 90-93 (Camilla, Satella?, Rei, Sieg) — confirm from `SET_CHR`.
+4. Identity of commanders 90-93 — answered from `SET_CHR` (2026-10-10): La Seizel (90),
+   Camilla (91), Lei (92), Sieg (93).
 5. Does anything rely on the cursor leftovers (`Unit_Cur = 51` after the status line,
    `Cmdr_Cur 98` after the La Vaswald gate) inside `C*`/`T*` files?
 6. `SET_VER.ADV` is called from nowhere; `ｽﾀｰﾄ.ADV` contains the same resets — confirm it is

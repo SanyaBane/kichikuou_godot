@@ -6,7 +6,8 @@ Open questions (merged from 01 §14 and 02 §11):
 
 1. ~~Does `IK 0` overwrite `RetVal`?~~ **Resolved (xsystem35 `cmdi.c` `commandIK`):** yes — it
    sets `RetVal` to the pressed key code, or 0 while message skip is on. So the extra flavour
-   lines for C83/C84/U3 depend on which key the player pressed; display only, no draws —
+   lines for Sergeant Hanny (C83) / Lieutenant Hanny (C84) / Bound (U3) depend on which key the
+   player pressed; display only, no draws —
    `FIGT_M.ADV:5014-5077`, `8859-8888`; `WAO_SUB.ADV:292-294`, `510-519`.
 2. ~~Operator precedence of the Asuka/Mill test?~~ **Resolved (bytecode, RPN in `FIGT_M.SCO` at
    0xa07d):** `*` binds before `+`, so the Mill-state test applies to slot 4 only — quirk BTX-04

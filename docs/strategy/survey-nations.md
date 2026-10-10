@@ -40,7 +40,7 @@ dispatch; `TJAPAN.ADV:295-2739` is a self-contained set of story scenes (Gekkou/
 | `Tｹｲﾌﾞﾘｽ2` | 347 | `Cﾃｷﾄｼ.ADV:355` | owner 8 | 8 | 278 (+69 dead helpers) |
 | `Tﾙﾄﾞﾗ2` | 1 | none (`%0:` only) | — | — | 0 |
 
-Patton has no `*2`: `Cﾃｷﾄｼ.ADV:361-376` inlines the same list (54-57, +32) via its own picker
+Patton has no `*2`: `Cﾃｷﾄｼ.ADV:361-376` inlines the same list (Patton (54), Hubert (55), Freak (56), Hanty (57), +Aristoles (32)) via its own picker
 `L_04f2a` (`:4265`) [C]. Phases not in this group but built on the same pattern: AL Church
 (`GAL` 5), Camilla Unit (inline in `MAIN.ADV:631-815`), La Vaswald (`Gｻｲｾﾞﾙ` 12) — see survey-main.
 
@@ -48,17 +48,17 @@ Patton has no `*2`: `Cﾃｷﾄｼ.ADV:361-376` inlines the same list (54-57, +3
 
 | File | Label / lines | Purpose |
 |---|---|---|
-| TCﾘｰｻﾞｽ | `:1-14` | army name; `F_LeazasRebels_State 1→2` + `Gｴｸｽ` 10; prov 5 player-owned → group C |
+| TCﾘｰｻﾞｽ | `:1-14` | army name; `F_LeazasRebels_State 1→2` + `Gｴｸｽ` 10; Ys (5) player-owned → group C |
 | | `:15-48` A, `L_00132` `:49-79` B, `L_001ce` `:80-105` C | three groups, see §2.4 |
 | | `L_00251` `:108`, `L_00297` `:119`, `L_00409` `:179` | troop sum, picker, slot filler (troops < 190 skipped, also for slot 1) |
 | TJAPAN | `:1-62` | Gekkou attempt, Kou events, 1/4 idle roll, army choice `Y 4,5` |
 | | `:63-147`, `L_00366` `:148-202` | target walk; capture of city-state provinces |
 | | `L_0046d` `:203`, `L_004b3` `:214`, `L_00625` `:274` | sum, picker, filler (troops < 190 skipped once slot 1 is filled) |
 | | `L_006ac` `:295-487` | Gekkou raid: gold theft or assassination (`L_00a2b` `:488`) or Shinobu (`L_024b0` `:1960`) |
-| | `L_00b86/00f8b/012f5/016ab/01b07/01e9c` `:551-1959` | assassination scenes for units 6, 7, 8, 14, 23, 15 |
+| | `L_00b86/00f8b/012f5/016ab/01b07/01e9c` `:551-1959` | assassination scenes for units Barres (6), Rick (7), Cordoba (8), Ex (14), Eleanor (23), Gengorou (15) |
 | | `L_024b0` `:1960-2161`, `L_02851` `:2162-2375`, `L_02c04/02ddd` `:2376-2744` | Shinobu attempt; game over (ending 4); 5th-attempt finale (display only) |
 | | `L_0327c` `:2745` | random Kou / `IJAPAN` event |
-| Tﾍﾙﾏﾝ | `:4-98` | Stessel/Lelyukov/Aristoles/Patton events, cmdr 26 revival, army dispatch, `Gｽﾃｯｾﾙ` 14 if nothing happened |
+| Tﾍﾙﾏﾝ | `:4-98` | Stessel/Lelyukov/Aristoles/Patton events, Tainyar (commander 26) revival, army dispatch, `Gｽﾃｯｾﾙ` 14 if nothing happened |
 | | `L_002e1` `:99`, `L_00521` `:208`, `L_0068c` `:270`, `L_00824` `:345`, `L_0090d` `:384`, `L_009c3` `:418`, `L_00c09` `:517` | 1st-5th armies, 4th-army variant, Crusaders |
 | | `L_00d83` `:584`, `L_00dc9` `:595`, `L_00f3b` `:655`, `L_00fc2` `:676` | sum, picker, filler (<190 once slot 1 filled), capture from Kayblis |
 | Tﾊﾟｯﾄﾝ | `:1-68`, `L_00198`, `L_001de`, `L_00350` | events 7/8/9/11 (`Gﾊﾟｯﾄﾝ`), `Gｱﾘｽﾄﾚｽ` 3; one army; sum; picker; filler (no filter) |
@@ -69,8 +69,8 @@ Patton has no `*2`: `Cﾃｷﾄｼ.ADV:361-376` inlines the same list (54-57, +3
 | Tｹｲﾌﾞﾘｽ | `:1-187` | weekly event chain (one event → skip to `L_004d1`), recovery `L_02662` ×24 |
 | | `L_004d1` `:188-325` | dispatch of sub-armies, Kayblis main army, monster generals |
 | | `L_00fd0` `:625`, `L_010af` `:670`, `L_0120e` `:729`, `L_01478` `:831`, `L_017e4` `:972`, `L_01b5e` `:1112`, `L_01db2` `:1209` | Grief-Valley guards, Piar, Babolat, Redeye, Kite, Galtia, Kesselring |
-| | `L_02038` `:1329`, `L_021f2` `:1417`, `L_0227b` `:1439` | Kayblis main army, refill 86-89, target walk |
-| | `L_00881` `:326`, `L_00c91` `:492`, `L_00faf` `:618` | monster generals 191-198 (north/south lists) |
+| | `L_02038` `:1329`, `L_021f2` `:1417`, `L_0227b` `:1439` | Kayblis main army, refill Monster Generals (commanders 86-89), target walk |
+| | `L_00881` `:326`, `L_00c91` `:492`, `L_00faf` `:618` | monster generals (1st…8th Assault Leader, commanders 191-198) (north/south lists) |
 | | `L_0241e` `:1509`, `L_02464` `:1520`, `L_025d6` `:1580`, `L_02662` `:1601` | sum, picker, filler (troops < 99 and class < 5 once slot 1 filled), recovery |
 | | `L_026bf` `:1615-1715`, `L_0291b` `:1716`, `L_029b2` `:1748` | capture by Kayblis + side effects; Helman / Zeth collapse |
 | Tﾙﾄﾞﾗ | `:1-21`, `L_00093` `:22`, `L_000f8` `:41`, `L_001d4` `:83`, `L_00255` `:105` | 5 attacks + 2 earthquakes; random target search |
@@ -97,7 +97,7 @@ Capture(): centre map; Prov_Owner := nation; flag CG Tmp0021 := owner+819; M ops
 | none | Tﾊﾟｯﾄﾝ, Tｾﾞｽ, Tｾﾞｽ2, TJAPAN2, TCﾘｰｻﾞｽ2, Tｹｲﾌﾞﾘｽ2, `Cﾃｷﾄｼ L_0509c` |
 | `Cmdr_Troops < 190` (any slot) | TCﾘｰｻﾞｽ `:180` |
 | `Cmdr_Troops < 190` and slot 1 filled | TJAPAN `:275`, Tﾍﾙﾏﾝ `:656` |
-| same, except at `Prov_Cur = 45` | Tﾍﾙﾏﾝ2 `:358` |
+| same, except at `Prov_Cur = 45` (Lang Bau) | Tﾍﾙﾏﾝ2 `:358` |
 | `Cmdr_Troops < 99` and `Cmdr_Class < 5` and slot 1 filled | Tｹｲﾌﾞﾘｽ `:1581` |
 
 ### 2.4 Armies per nation (data a port can table) [C]
@@ -106,31 +106,31 @@ Capture(): centre map; Prov_Owner := nation; flag CG Tmp0021 := owner+819; M ops
 
 | Army (gate) | Priority list | Thr | RM | Targets in order (`*` = special) |
 |---|---|---|---|---|
-| Rebels A (prov 5 not player's) | 3,5,4 | 500 | 4 | 4,3,2,1 → then always B |
-| Rebels B | 1,2,6,7 | 500 | 4 | 7,8,1; none found → **falls into C** (`TCﾘｰｻﾞｽ.ADV:75-80`) — only with province 1 lost, which ends the game |
-| Rebels C | 1,2,3,6,4,5,7 | 500 | 4 | 6,5 |
-| JAPAN (`Y 4,5` = 1) | 72,73,74,78,77,75,82,79,80 | — & 500 | 3 | 55,28,27*,25,26*,24*,23*,6,3,2,5,4,1 (`*` owner 3 → capture, ends turn) |
-| JAPAN (2,3) / (4,5) | 75-78 / 79-82 | — & 500 | 3 | same |
-| Helman 1st (`F_Helman_War=1`, 22 alive, Lelyukov ≠ 1) | stronger of 24,23,22,25,29,30,27,28,26 and 27,28,29,30,24,25,22,23,26 (tie → 2nd) | none | 3 | 36,38,34,32,31,30,13*,2*,1 (13: `Y 4,2` → `Gﾚﾘｭｰｺﾌ` 5 or 26 alone; 13/2 owner 8 → capture) |
-| Helman 2nd (Aristoles ≠ 0, 32 alive) | 37,38,34,35,36,32,33 | 1500 | 4 | 44,47,46,40,41,52 |
-| Helman 3rd (Mineva ≠ 0, 39 alive) | 184,185,42,43,39,40,41 | 1500 | 3 | 44* (re-pick without 184/185, `Gﾐﾈﾊﾞ` 4), 48,40,42,47,39,36 |
-| Helman 4th (Nero ≠ 0 and (≠ 100 or Cream = 0)) | 49,46,47,44,45,48 | — | 4 | 40,41 (Nero 1,2 → +1; 3 → `Gﾈﾛ` 2) |
-| Helman 4th, Nero = 6 | 47,46,49,45,48 | — & 1000 | 3 | 40,41 |
-| Helman 5th (50 alive, Rolex ≥ 4) | 53,50,52,51 | 500 | 4 | 39,44,40,41,36,31,30,48,47,46 |
-| Crusaders (Olhound ∉ {0,100}) | 60 alone, troops 500+rnd(500) | none | 1 | 43,44,48,47,46,40,41,42,39,36 |
-| Patton | 54,55,56,57 (+32 if Aristoles > 9) | 500 | 4 | 46,41,40,44,45 |
-| Zeth minister ×4 (each `Y 4,2`, minister alive, `F_Zeth_State ≠ 2`) | 165-168 / 169-172 / 173-176 / 177-180 | — | 4 | own lists (`Tｾﾞｽ.ADV:448-688`), pre-battle `Gﾁｽﾞｺ` 6 / `Gﾊﾟﾊﾟｲｱ` 9 / `Gﾅｷﾞ` 22 / `Gﾏｼﾞｯｸ` 24 |
-| Zeth general 113/117/121/125 | 3 subordinates then the general | `CallArg ≠ 0` | 4 | 68,70,66,67,62,63,61,60,59,58,16,15,13,2,1 |
-| Kayblis guards (prov 89 player-owned, `F_Kayblis_Moved=0`) | 186, troops 20+rnd(100) | none | 1 | 89, **repeated** until lost (`:669 @L_004d1`) |
-| Babolat (129 alive, state ≠ 0) | 129 | — | 2 | 78,49,53,48,45,44,42,39,38,34,32,12,2,1; pitfall prov → `Gﾊﾞﾎﾞﾗ` 4 instead |
-| Redeye (130) | 148,149,150,130 | — | 2 | 89,50,48,47,46,41,40,44,42,39,36,31,13 (130 alone),2,1 |
-| Kite (132) | 132,151,152,153 | — | 2 | 76,74,70,66,69,73,65,67,62,59,58,16,15,14,17,18,19 |
-| Galtia (131, `VAR0637=0`) | 154,155,131 | — | 2 | 76,74,65,63,66,61,60,59,58,16,15,13,2,1 |
-| Kesselring (133) | 133 | none | 1 | first non-Kayblis of 70,61,19,23,4,1 ("moves from" previous) |
-| Piar (state ∉ {0,100}) | 136,137,138 | — | 2 | random province (§5) |
-| Kayblis main (`F_Kayblis_War=2`) | 135; then 156 / 131 (`VAR0637≠0`) / 157 / 158 each + 86,88,89; then 87,86,88,89 | none | 2 | 89,50,48,47,46,41,40,44,42,39,36,31,13,2,1 |
-| Monster general 191..198 (Week > 100,110,…,160; cumulative) | monster, 87, 88 | monster troops ≥ 1000 | 1 | north list `:364-490` / south list `:530-617`, alternating |
-| Rudra / Creator | 146, 147 (full troops, **status 0**) | none | 1 | random player province ×5 |
+| Rebels A (Ys (5) not player's) | Pegasus (3), Dodge (5), Melfeis (4) | 500 | 4 | South (4), Oku (3), North (2), Leazas Castle (1) → then always B |
+| Rebels B | Ex (1), Haurein (2), Sakanaku (6), Jibul (7) | 500 | 4 | Baranchi (7), Wes (8), Leazas Castle (1); none found → **falls into C** (`TCﾘｰｻﾞｽ.ADV:75-80`) — only with Leazas Castle (1) lost, which ends the game |
+| Rebels C | Ex (1), Haurein (2), Pegasus (3), Sakanaku (6), Melfeis (4), Dodge (5), Jibul (7) | 500 | 4 | Oaks (6), Ys (5) |
+| JAPAN (`Y 4,5` = 1) | Nobunaga Oda (72), Kenichi Oda (73), Yamato Akechi (74), Denden Mori (78), Mori Harada (77), Katsuie (75), Isoroku Yamamoto (82), One-Shot Tarou (79), Noberu Maeda (80) | — & 500 | 3 | Nagasaki (55), Portugal (28), Toushin City (27)\*, M Land (25), Hanna (26)\*, Zeo (24)\*, Red (23)\*, Oaks (6), Oku (3), North (2), Ys (5), South (4), Leazas Castle (1) (`*` owner 3 → capture, ends turn) |
+| JAPAN (2,3) / (4,5) | Katsuie (75) through Denden Mori (78) / One-Shot Tarou (79) through Isoroku Yamamoto (82) | — & 500 | 3 | same |
+| Helman 1st (`F_Helman_War=1`, Lelyukov (22) alive, Lelyukov ≠ 1) | stronger of Jackal (24), Gadman (23), Lelyukov (22), Samisukan (25), Luke (29), Yorkdelta (30), Laumiere (27), Luc (28), Tainyar (26) and Laumiere (27), Luc (28), Luke (29), Yorkdelta (30), Jackal (24), Samisukan (25), Lelyukov (22), Gadman (23), Tainyar (26) (tie → 2nd) | none | 3 | Archgrad (36), Siberia (38), Golak (34), Log A (32), Log B (31), Volgo Z (30), Maunes (13)\*, North (2)\*, Leazas Castle (1) (Maunes (13): `Y 4,2` → `Gﾚﾘｭｰｺﾌ` 5 or Tainyar (26) alone; Maunes (13) / North (2) owner 8 → capture) |
+| Helman 2nd (Aristoles ≠ 0, Aristoles (32) alive) | Yutos (37), Keigo (38), Ivan (34), Samon (35), Yasutoeh (36), Aristoles (32), Convert (33) | 1500 | 4 | Micrograd (44), Parnas (47), Sudori 17 (46), Pawn (40), Sudori 13 (41), Laborie (52) |
+| Helman 3rd (Mineva ≠ 0, Mineva (39) alive) | Capricorn (184), Ortega (185), Serges (42), Booch (43), Mineva (39), Tami (40), Maha (41) | 1500 | 3 | Micrograd (44)\* (re-pick without Capricorn (184) / Ortega (185), `Gﾐﾈﾊﾞ` 4), Laurengrad (48), Pawn (40), Sudori 10 (42), Parnas (47), Rosesgrad (39), Archgrad (36) |
+| Helman 4th (Nero ≠ 0 and (≠ 100 or Cream = 0)) | Sukakumi (49), Marquez (46), Hyam (47), Nero (44), Cream (45), Yang (48) | — | 4 | Pawn (40), Sudori 13 (41) (Nero 1,2 → +1; 3 → `Gﾈﾛ` 2) |
+| Helman 4th, Nero = 6 | Hyam (47), Marquez (46), Sukakumi (49), Cream (45), Yang (48) | — & 1000 | 3 | Pawn (40), Sudori 13 (41) |
+| Helman 5th (Rolex (50) alive, Rolex ≥ 4) | Alexei (53), Rolex (50), Saulnia (52), Katyusha (51) | 500 | 4 | Rosesgrad (39), Micrograd (44), Pawn (40), Sudori 13 (41), Archgrad (36), Log B (31), Volgo Z (30), Laurengrad (48), Parnas (47), Sudori 17 (46) |
+| Crusaders (Olhound ∉ {0,100}) | Olhound (60) alone, troops 500+rnd(500) | none | 1 | Path (43), Micrograd (44), Laurengrad (48), Parnas (47), Sudori 17 (46), Pawn (40), Sudori 13 (41), Sudori 10 (42), Rosesgrad (39), Archgrad (36) |
+| Patton | Patton (54), Hubert (55), Freak (56), Hanty (57) (+Aristoles (32) if Aristoles > 9) | 500 | 4 | Sudori 17 (46), Sudori 13 (41), Pawn (40), Micrograd (44), Lang Bau (45) |
+| Zeth minister ×4 (each `Y 4,2`, minister alive, `F_Zeth_State ≠ 2`) | Zamoor (165) through Annis (168) / Backslock (169) through Am (172) / Lawson (173) through Hiroko (176) / Kenichi (177) through Rue (180) | — | 4 | own lists (`Tｾﾞｽ.ADV:448-688`), pre-battle `Gﾁｽﾞｺ` 6 / `Gﾊﾟﾊﾟｲｱ` 9 / `Gﾅｷﾞ` 22 / `Gﾏｼﾞｯｸ` 24 |
+| Zeth general Saias (113) / Uspira (117) / Kabachahn (121) / Alex (125) | 3 subordinates then the general | `CallArg ≠ 0` | 4 | Chizuko's Tower (68), Papaya's Tower (70), Magic's Tower (66), Nagi's Tower (67), Nagarmaule (62), Old Zeth (63), Tape (61), Italia (60), Sabasaba (59), Adam's Fortress (58), Parapara Fortress (16), Rich (15), Maunes (13), North (2), Leazas Castle (1) |
+| Kayblis guards (Grief Valley (89) player-owned, `F_Kayblis_Moved=0`) | Lis Guard (186), troops 20+rnd(100) | none | 1 | Grief Valley (89), **repeated** until lost (`:669 @L_004d1`) |
+| Babolat (129 alive, state ≠ 0) | Babolat (129) | — | 2 | Tower of Evil (78), Great Wall of Helman A (49), Ikoma (53), Laurengrad (48), Lang Bau (45), Micrograd (44), Sudori 10 (42), Rosesgrad (39), Siberia (38), Golak (34), Log A (32), Scale (12), North (2), Leazas Castle (1); pitfall prov → `Gﾊﾞﾎﾞﾗ` 4 instead |
+| Redeye (130) | Truffle 77 (148), Moreinyan (149), Ouzawa (150), Redeye (130) | — | 2 | Grief Valley (89), Great Wall of Helman B (50), Laurengrad (48), Parnas (47), Sudori 17 (46), Sudori 13 (41), Pawn (40), Micrograd (44), Sudori 10 (42), Rosesgrad (39), Archgrad (36), Log B (31), Maunes (13) (Redeye (130) alone), North (2), Leazas Castle (1) |
+| Kite (132) | Kite (132), Tobroiv (151), Deckmaster (152), Strength (153) | — | 2 | Maginot Stronghold (76), Marc (74), Papaya's Tower (70), Magic's Tower (66), Zeth Palace (69), Ardennes (73), Amber Castle (65), Nagi's Tower (67), Nagarmaule (62), Sabasaba (59), Adam's Fortress (58), Parapara Fortress (16), Rich (15), Poor (14), Rockearth (17), Ice (18), Diphtheria (19) |
+| Galtia (131, `VAR0637=0`) | Derandron (154), Nasport (155), Galtia (131) | — | 2 | Maginot Stronghold (76), Marc (74), Amber Castle (65), Old Zeth (63), Magic's Tower (66), Tape (61), Italia (60), Sabasaba (59), Adam's Fortress (58), Parapara Fortress (16), Rich (15), Maunes (13), North (2), Leazas Castle (1) |
+| Kesselring (133) | Kesselring (133) | none | 1 | first non-Kayblis of Papaya's Tower (70), Tape (61), Diphtheria (19), Red (23), South (4), Leazas Castle (1) ("moves from" previous) |
+| Piar (state ∉ {0,100}) | PG-7 (136), PG-9 (137), PG-X mk2 (138) | — | 2 | random province (§5) |
+| Kayblis main (`F_Kayblis_War=2`) | Kayblis (135); then Silky (156) / Galtia (131) (`VAR0637≠0`) / Satella (157) / Meglass (158) each + Monster Generals (86, 88, 89); then Monster Generals (87, 86, 88, 89) | none | 2 | Grief Valley (89), Great Wall of Helman B (50), Laurengrad (48), Parnas (47), Sudori 17 (46), Sudori 13 (41), Pawn (40), Micrograd (44), Sudori 10 (42), Rosesgrad (39), Archgrad (36), Log B (31), Maunes (13), North (2), Leazas Castle (1) |
+| Monster general (1st…8th Assault Leader, 191..198) (Week > 100,110,…,160; cumulative) | monster, Monster Generals (87, 88) | monster troops ≥ 1000 | 1 | north list `:364-490` / south list `:530-617`, alternating |
+| Rudra / Creator | Angel Knight (146), Angel Knight (147) (full troops, **status 0**) | none | 1 | random player province ×5 |
 
 All Kayblis walks attack/capture the first province **not owned by Kayblis**; a non-player one
 is captured without a battle (`L_026bf`). Helman (`L_00fc2`) and JAPAN (`L_00366`) capture only
@@ -140,11 +140,11 @@ Kayblis- / city-state-owned provinces at specific list positions.
 
 | File | Province → defenders | Notes |
 |---|---|---|
-| TCﾘｰｻﾞｽ2 | 7,8 → B; 2,3,4 → A; 5,6 → C (RM 2 / 1); else → B | A/B: sum < 100 → return with **stale RM**; only 6 gets walls (NAT-17) |
-| TJAPAN2 | 55 → 75-78 (sum < 10 → stale RM, else RM 1); 56 → full list RM 1; else the **strongest** of the three lists, sum < 500 → stale RM, else RM 4 | sets `F_Japan_State := 1` (`:4`) |
-| Tﾍﾙﾏﾝ2 | 40/41/37 → 4th; 39,38,34,32,31,30,13,2,36 → 1st (stronger order; prov 30 & 27 alive → 27 alone); 46-48 → 2nd; 45/44 → 3rd (+ militia 58,59 at 45); 36 & Lelyukov 1 → 22 alone, troops 10; 42 → 5th; 35 → 31 alone; else / leader dead → militia 58,59 (troops 100+rnd(800)) | `F_Helman_War = 2` → militia ("A Certain Country's People"); `Gｼｰﾗ` 2 may cancel via `Tmp0001 = 1` |
-| Tｾﾞｽ2 | garrison 94-96 regenerated; 58/61/65/63 → that general's army (only general left → 94,95 at 10 troops + general); 66/67/68/70 → ministers' armies after `Gﾏｼﾞｯｸ` 1 / `Gﾅｷﾞ` 5 / `Gﾁｽﾞｺ` 1 / `Gﾊﾟﾊﾟｲｱ` 3; else 94,95,96 (66: 96 alone) | ministers' provinces need a unit with item 12 unless `VAR0063 = 2`, else `Bt_PlayerParty1 := 0` cancels (`:91-130`); first attack sets `F_Zeth_War := 1` + `Iｾﾞｽ` 1 |
-| Tｹｲﾌﾞﾘｽ2 | monsters 86-89 regenerated; stage 3 or capitals 78/89/90/91 → named garrisons (86: 160,161,159; 85: 163,164,162; 87: Kesselring; 88: Camilla 91 + 88; 79: 181-183 + 135; 84: Medusa 134 + 87,88); else 86,87 (+88,89 on `Y 4,2 = 1`) in the plains | `StoryStage 2 → 3` on 78/89/90/91 (`:38`); prov 78 → `Gﾜｰｸﾞ` 1 replaces the battle |
+| TCﾘｰｻﾞｽ2 | Baranchi (7), Wes (8) → B; North (2), Oku (3), South (4) → A; Ys (5), Oaks (6) → C (RM 2 / 1); else → B | A/B: sum < 100 → return with **stale RM**; only Oaks (6) gets walls (NAT-17) |
+| TJAPAN2 | Nagasaki (55) → Katsuie (75) through Denden Mori (78) (sum < 10 → stale RM, else RM 1); Osaka (56) → full list RM 1; else the **strongest** of the three lists, sum < 500 → stale RM, else RM 4 | sets `F_Japan_State := 1` (`:4`) |
+| Tﾍﾙﾏﾝ2 | Pawn (40) / Sudori 13 (41) / Cossack (37) → 4th; Rosesgrad (39), Siberia (38), Golak (34), Log A (32), Log B (31), Volgo Z (30), Maunes (13), North (2), Archgrad (36) → 1st (stronger order; Volgo Z (30) & Laumiere (27) alive → Laumiere (27) alone); Sudori 17 (46) through Laurengrad (48) → 2nd; Lang Bau (45) / Micrograd (44) → 3rd (+ militia Civilian Generals (58, 59) at Lang Bau (45)); Archgrad (36) & Lelyukov 1 → Lelyukov (22) alone, troops 10; Sudori 10 (42) → 5th; Ancient Ruins (35) → Ruberan (31) alone; else / leader dead → militia Civilian Generals (58, 59) (troops 100+rnd(800)) | `F_Helman_War = 2` → militia ("A Certain Country's People"); `Gｼｰﾗ` 2 may cancel via `Tmp0001 = 1` |
+| Tｾﾞｽ2 | garrison Wall (94, 95) and Mage Leader (96) regenerated; Adam's Fortress (58) / Tape (61) / Amber Castle (65) / Old Zeth (63) → that general's army (only general left → Wall (94, 95) at 10 troops + general); Magic's Tower (66) / Nagi's Tower (67) / Chizuko's Tower (68) / Papaya's Tower (70) → ministers' armies after `Gﾏｼﾞｯｸ` 1 / `Gﾅｷﾞ` 5 / `Gﾁｽﾞｺ` 1 / `Gﾊﾟﾊﾟｲｱ` 3; else Wall (94, 95), Mage Leader (96) (Magic's Tower (66): Mage Leader (96) alone) | ministers' provinces need a unit with item 12 unless `VAR0063 = 2`, else `Bt_PlayerParty1 := 0` cancels (`:91-130`); first attack sets `F_Zeth_War := 1` + `Iｾﾞｽ` 1 |
+| Tｹｲﾌﾞﾘｽ2 | monsters (Monster Generals 86-89) regenerated; stage 3 or capitals Tower of Evil (78) / Grief Valley (89) / Bone Forest (90) / Tearing Forest (91) → named garrisons (Blue House (86): Hikaru (160), Rika (161), Kaybwan (159); Red House (85): Wao (163), Kunihiko (164), Kaybnyan (162); Kesselring's Castle (87): Kesselring; Camilla's Castle (88): Camilla 91 + Monster General (88); Demon Lord's Castle (79): Monster Generals (181-183) + Kayblis (135); Kayblis's Castle (84): Medusa 134 + Monster Generals (87, 88)); else Monster Generals (86, 87) (+88, 89 on `Y 4,2 = 1`) in the plains | `StoryStage 2 → 3` on Tower of Evil (78) / Grief Valley (89) / Bone Forest (90) / Tearing Forest (91) (`:38`); Tower of Evil (78) → `Gﾜｰｸﾞ` 1 replaces the battle |
 
 `Bt_TroopLimit` written by `*2` is dead: `FIGT_A.ADV:31-55` recomputes it from `Bt_WallBonus`,
 which `Cﾃｷﾄｼ.ADV:317` zeroes before the call [C]. After the call `Cﾃｷﾄｼ` cancels on
@@ -172,8 +172,8 @@ Hooks that **return values in scratch variables** (must be modelled by the hook 
 
 | Group | Read | Written |
 |---|---|---|
-| cmdr (`Cmdr_Cur`, Status/HP/Troops/MaxTroops/MaxHP/Recovery/Class) | everywhere | revive/refill: Zeth `L_00640` (troops max/8), Kayblis 86-89 (max/5+rnd(max/3) or max+rnd(max/2) — **above max**), guards 186, 191-198, militia 58/59, Crusader 60, Rudra 146/147 (status **0**), cmdr 26 (`Tﾍﾙﾏﾝ:25-36`), 91 max 200→2000 (`Tｹｲﾌﾞﾘｽ2:173-177`); Kayblis recovery `L_02662`; Status := 0 for Zeth leaders on Kayblis capture (`:1650-1693`) |
-| unit | `Unit_Status` of 1, 6, 7, 8, 14, 15, 23 (TJAPAN), `Unit_Item` (Tｾﾞｽ2) | `Unit_Status := 0` (Gekkou assassination); `Unit_Cur := 101` (Tｾﾞｽ `:130`, see §7) |
+| cmdr (`Cmdr_Cur`, Status/HP/Troops/MaxTroops/MaxHP/Recovery/Class) | everywhere | revive/refill: Zeth `L_00640` (troops max/8), Kayblis Monster Generals 86-89 (max/5+rnd(max/3) or max+rnd(max/2) — **above max**), guards Lis Guard (186), Assault Leaders (191-198), militia Civilian Generals (58/59), Crusader Olhound (60), Rudra Angel Knights (146/147) (status **0**), Tainyar (commander 26) (`Tﾍﾙﾏﾝ:25-36`), Camilla (91) max 200→2000 (`Tｹｲﾌﾞﾘｽ2:173-177`); Kayblis recovery `L_02662`; Status := 0 for Zeth leaders on Kayblis capture (`:1650-1693`) |
+| unit | `Unit_Status` of Rance (1), Barres (6), Rick (7), Cordoba (8), Ex (14), Gengorou (15), Eleanor (23) (TJAPAN), `Unit_Item` (Tｾﾞｽ2) | `Unit_Status := 0` (Gekkou assassination); `Unit_Cur := 101` (Tｾﾞｽ `:130`, see §7) |
 | prov | Owner, MapX/Y, BgCg, BattleArea, Defense | `Prov_Owner` (captures), Rudra: Economy 0, Defense 0, BattleArea ×2, BgCg 1043 (`Tﾙﾄﾞﾗ:66-69`) |
 | battle | `Bt_Result`, `Bt_RoundsLeft`, `Bt_PlayerParty1-4` | `Bt_EnemyParty1-4`, `Bt_EnemyRetreatMode`, `Bt_TroopLimit`/`Bt_WallBonus` (`*2`), `Bt_GarrisonProv/Hits` (`*2`), `Ai_{Babolat,Redeye,Kite,Galtia}Atk` (0/10/11) |
 | economy | `Gold` | `Gold /2` or `/4*3` (Gekkou, `TJAPAN:405, 441`) |
@@ -198,7 +198,7 @@ computed ranges (`Cmdr_MaxTroops / k`, `Cmdr_Troops / 2`).
 | TJAPAN `:357`, `:370`, `:490` | 2, 3, 6 | Gekkou: assassination vs theft; theft amount; target unit |
 | TJAPAN `:2746` | 4 | `L_0327c`: `Gｺｳﾋﾒ` 1/2, `IJAPAN` 7/8 |
 | Tﾍﾙﾏﾝ `:60` | 2 | always; Patton events |
-| Tﾍﾙﾏﾝ `:172` | 2 | 1st army at prov 13: `Gﾚﾘｭｰｺﾌ` 5 vs cmdr 26 |
+| Tﾍﾙﾏﾝ `:172` | 2 | 1st army at Maunes (13): `Gﾚﾘｭｰｺﾌ` 5 vs Tainyar (commander 26) |
 | Tﾍﾙﾏﾝ `:423`, `:428` | 2, 2 | cmdr 50 alive: Rolex state 0→1, 1→2 (each returns) |
 | Tﾍﾙﾏﾝ `:530` | 500 | Crusader troops |
 | Tｾﾞｽ `:55,60,65,70` | 2 ×4 | `F_Zeth_State ≠ 2`: each minister's army |
@@ -210,14 +210,14 @@ computed ranges (`Cmdr_MaxTroops / k`, `Cmdr_Troops / 2`).
 | Tｹｲﾌﾞﾘｽ `:181` | 5 | reached only if no event yet: Medusa 5 |
 | Tｹｲﾌﾞﾘｽ `:339,344,505,510` | max/3 | monster-general escorts 87, 88 |
 | Tｹｲﾌﾞﾘｽ `:629` | 100 | guards' troops, per repeat |
-| Tｹｲﾌﾞﾘｽ `:673`, `:676` | 77, 10 | Piar target; on a non-player/75 province 1/10 abort, else redraw — **unbounded loop** |
+| Tｹｲﾌﾞﾘｽ `:673`, `:676` | 77, 10 | Piar target; on a non-player/Nothing (75) province 1/10 abort, else redraw — **unbounded loop** |
 | Tｹｲﾌﾞﾘｽ `:949` | 2 | after Redeye's battle (Freak stage 5 event) |
 | Tｹｲﾌﾞﾘｽ `:989`, `:992` | 3, 10 | Kite events 6/7; 10 replaces 3 while `F_Calory_State < 4` |
-| Tｹｲﾌﾞﾘｽ `:1421-1436` | max/2 ×4 | refill 86-89, up to 5× per week |
+| Tｹｲﾌﾞﾘｽ `:1421-1436` | max/2 ×4 | refill Monster Generals (86-89), up to 5× per week |
 | Tｹｲﾌﾞﾘｽ2 `:15-30` | max/`Tmp0226` ×4 | garrison regen every player attack (`Tmp0226` = 4, or 2+hits on a repeat) |
 | Tｹｲﾌﾞﾘｽ2 `:45` | 2 | 2 or 4 defenders in the plains |
 | Tｾﾞｽ2 `:22,30,38` | troops/2 ×3 | only when the same province is attacked again |
-| Tﾍﾙﾏﾝ2 `:64,69`, `:173,178` | 800 | militia 58, 59 |
+| Tﾍﾙﾏﾝ2 `:64,69`, `:173,178` | 800 | militia Civilian Generals (58, 59) |
 | Tﾙﾄﾞﾗ `:113`, `:120` | 91, 2 | target search: ≤ 19 tries; `Turns > 5` adds the castle roll |
 | Tﾙﾄﾞﾗ `:85` | 4 | **dead** (after `\0:` at `:84`) |
 
@@ -243,22 +243,24 @@ text; the only display→state coupling is `M`'s scratch. TJAPAN's scenes are ru
 (6 state effects in 2450 lines). Quirks to reproduce (all [C] unless marked):
 
 1. **Collapse loops return after one province**: `L_0291b`/`L_029b2` end their loop body with
-   `\0:` (`Tｹｲﾌﾞﾘｽ.ADV:1742`, `:1773`) — only province 29 (Helman) / 58 (Zeth) can flip to
-   Kayblis; `F_Helman_War`/`F_Zeth_War := 2` still set. `Prov_Cur` is left at 29/58.
-2. **Guards repeat**: `L_00fd0` jumps back to `L_004d1` (`:669`), which re-attacks prov 89 while it
-   stays player-owned and `F_Kayblis_Moved = 0` — one battle per win, new `Y 4,100` each time [I: until lost].
+   `\0:` (`Tｹｲﾌﾞﾘｽ.ADV:1742`, `:1773`) — only Shangri-La (29, Helman) / Adam's Fortress (58, Zeth)
+   can flip to Kayblis; `F_Helman_War`/`F_Zeth_War := 2` still set. `Prov_Cur` is left at
+   Shangri-La (29) / Adam's Fortress (58).
+2. **Guards repeat**: `L_00fd0` jumps back to `L_004d1` (`:669`), which re-attacks Grief Valley
+   (89) while it stays player-owned and `F_Kayblis_Moved = 0` — one battle per win, new `Y 4,100`
+   each time [I: until lost].
 3. **Second attack on timeout**: Babolat/Redeye/Kite/Galtia re-attack once if `Bt_RoundsLeft = 0`
    and `Bt_Result = 2` (`:826`, `:945`, `:1087`, `:1200`). The `Ai_*Atk` reset (`:13-16`) is
    skipped when `F_DemonWar_Stage < 20` (`:3-8` jumps over it) — stale 10/11 carry over.
-4. **Babolat recovers three times** (`Tｹｲﾌﾞﾘｽ.ADV:27-30`, `L_02662` ×3 on cmdr 129).
+4. **Babolat recovers three times** (`Tｹｲﾌﾞﾘｽ.ADV:27-30`, `L_02662` ×3 on Babolat (commander 129)).
 5. **Rebels B falls into C** (`TCﾘｰｻﾞｽ.ADV:75-80`): up to two attacks per week; A always continues to B.
-   B's last target is province 1, whose loss ends the game, so the fall into C needs a castle the
-   player no longer holds (NAT-06).
-6. **Stale cursor**: `Tｾﾞｽ.ADV:130` sets `Unit_Cur := 101` but tests `Cmdr_Status` of cmdr 125
-   (cursor from `:92`); probably meant `Cmdr_Cur`.
+   B's last target is Leazas Castle (1), whose loss ends the game, so the fall into C needs a castle
+   the player no longer holds (NAT-06).
+6. **Stale cursor**: `Tｾﾞｽ.ADV:130` sets `Unit_Cur := 101` but tests `Cmdr_Status` of Alex
+   (commander 125) (cursor from `:92`); probably meant `Cmdr_Cur`.
 7. **Inverted check** `Ev_WeeklyEventDone \ 0` for Patton events 2/12 (`Tﾍﾙﾏﾝ.ADV:61`, `:67`):
    they fire only if another event already fired this week.
-8. **Precedence**: `Tｹｲﾌﾞﾘｽ2.ADV:38` — only prov 91 is gated by `StoryStage = 2`; `Tﾍﾙﾏﾝ.ADV:84`.
+8. **Precedence**: `Tｹｲﾌﾞﾘｽ2.ADV:38` — only Tearing Forest (91) is gated by `StoryStage = 2`; `Tﾍﾙﾏﾝ.ADV:84`.
 9. **Stale `Bt_EnemyRetreatMode`** when `*2` returns early (`TCﾘｰｻﾞｽ2:31-32/48-49`,
    `TJAPAN2:26-27`, `:124-125`): the defenders still fight with last battle's mode.
 10. **Above-max troops**: Kayblis refill `max + rnd(max/2)` (`:1421-1437`); the Camilla 200→2000 patch.
@@ -276,7 +278,7 @@ text; the only display→state coupling is `M`'s scratch. TJAPAN's scenes are ru
     Shinobu with Rance at status 2 → `EndingId 4`, game over (`TJAPAN:2111-2113`, `:2373-2374`);
     only Shinobu attempts count toward 5 (`:1961`).
 16. **`Y 4` returning n+1** (battle Q20) would leave `Tmp0001-0009` = date values in TJAPAN (`:29`
-    → 6 matches no group) and pick nonexistent province 92 / 78 (Rudra / Piar).
+    → 6 matches no group) and pick nonexistent province 92 / Tower of Evil (78) (Rudra / Piar).
 
 ## 8. Porting proposal
 
@@ -308,20 +310,20 @@ hooks. A capture is then one nation turn with zero or more nested battles; the r
 battle port inside it. `*2` files as roots called from `Cﾃｷﾄｼ` (no input; draws and hooks only),
 or later the whole `Cﾃｷﾄｼ` attack. Captures needed: each nation with and without an attack;
 JAPAN idle/Gekkou theft/assassination; Rebels two attacks; Zeth combined attack; Kayblis
-timeout second attack, AI-vs-AI capture incl. Helman capital 45 (quirk 1), guards repeat,
+timeout second attack, AI-vs-AI capture incl. Helman capital Lang Bau (45) (quirk 1), guards repeat,
 monster generals (needs Week > 100 — save editing), Piar loop; Rudra; each `*2` incl. a
 repeated Kayblis/Zeth garrison attack and the item-12 cancel. The `&#OVER` jump ends a capture.
 
 ## 9. Open questions
 
-1. Quirk 1: does the original really flip only province 29 / 58 on a Kayblis collapse? A capture
-   of Kayblis taking prov 45 settles it (`Tｹｲﾌﾞﾘｽ.ADV:1729-1747`).
+1. Quirk 1: does the original really flip only Shangri-La (29) / Adam's Fortress (58) on a Kayblis
+   collapse? A capture of Kayblis taking Lang Bau (45) settles it (`Tｹｲﾌﾞﾘｽ.ADV:1729-1747`).
 2. Can the guards loop (`:625-669`) run more than twice in practice, and what ends it besides losing?
 3. Who sets `F_Kayblis_Moved` (only `Gｹｲﾌﾞﾘｽ.ADV:659`) and `VAR0637` (`Gｹｲﾌﾞﾘｽ.ADV:368`) — meaning of 637.
 4. Content of commander record 0 (quirk 12) — read it from a memory dump.
-5. Effect of `Cmdr_Status = 0` defenders (Rudra 146/147) inside FIGT — compare with dungeon
+5. Effect of `Cmdr_Status = 0` defenders (Rudra's Angel Knights 146/147) inside FIGT — compare with dungeon
    captures of a status-0 commander.
-6. Units 6, 7, 8, 14, 15, 23 — who they are, and whether `Unit_Status = 2` really means
+6. Units Barres (6), Rick (7), Cordoba (8), Ex (14), Gengorou (15), Eleanor (23) — who they are, and whether `Unit_Status = 2` really means
    "deployed this week" at JAPAN-phase time (week refresh order in `MAIN`).
 7. Who first sets `F_Helman_War = 1` and `F_Zeth_War` paths — `Gｽﾃｯｾﾙ` 1 / `Iｾﾞｽ` 1 hooks (unverified).
 8. `Tｾﾞｽ.ADV:130` intent (quirk 6) and `Tﾍﾙﾏﾝ.ADV:61/67` (quirk 7) — reproduce as is; confirm by capture.

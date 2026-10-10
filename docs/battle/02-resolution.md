@@ -101,7 +101,7 @@ World state written:
   follow-up).
 - Flavour-text side effects (§5.4): `F_Asuka_State`, `F_Satella_LineCmdr91..93`,
   `N_Freak_Stage`, Sieg event (`F_Sieg_State`, `F_Sieg_Defeated`, `N_Miki_Stage`, item 1,
-  Rance's `Unit_Item`/CGs, commander 93's CGs/face/item/VAR0126/VAR0127, `Ev_Entry`).
+  Rance's `Unit_Item`/CGs, Sieg's (commander 93) CGs/face/item/VAR0126/VAR0127, `Ev_Entry`).
 - Death scenes (§7.4): `F_Sill_Died`, `F_Asuka_State`, `EndingId` + game over.
 
 Battle-local written: `Bt_PlayerLosses`, `Bt_EnemyLosses`, `Bt_EnemyRetreatMode` (5→50,
@@ -350,9 +350,10 @@ proc PresentEngagement():
   SlideAnimation x4 with ShowCounters()                         // 1816-1828
 ```
 
-`SpecialSprite` (1660-1713; each test independent, display only): unit 1→1520, 7→1521,
-11→1121, 17→1522, 39→1523, 37→1524, 40→1525, 38→1526, 30→1527, 27→1528, 31→1222,
-32→1529, 18→1530, 47→1252; `Unit_CgFull` 1164/1176/1182/1185 (ninjas) → same CG; otherwise
+`SpecialSprite` (1660-1713; each test independent, display only): unit Rance (1)→1520, Rick
+(7)→1521, Asuka (11)→1121, Shizuka (17)→1522, Magic (39)→1523, Gandhi (37)→1524, Nagi
+(40)→1525, Chizuko (38)→1526, Meglass (30)→1527, Isoroku (27)→1528, Kentarou (31)→1222, Miki
+(32)→1529, Patton (18)→1530, Rolex (47)→1252; `Unit_CgFull` 1164/1176/1182/1185 (ninjas) → same CG; otherwise
 nothing (Goliath).
 
 ---
@@ -537,9 +538,9 @@ nothing:         C94, C95 (the two "Wall" commanders, class 5), C61, C99, C>=200
 | :1 | always | `Tmp0621 = 0` |
 | :2-3 | `Bt_MsgMode=1` and `Bt_EnemyAction=2` | `Bt_MsgMode = 2` (persists; disables the ninja roll, §7.3) |
 | :8325-8327 | Asuka (U11), see 5.2 | `F_Asuka_State = 1` |
-| :9677-9678, :9755-9756, :9826-9827 | Satella (U29) vs C91/C92, Meglass (U30) vs C93, StoryStage<3, flag 0 | `F_Satella_LineCmdr91/92/93 = 1` (one-shot scenes) |
-| `L_0bddd` :9900-9902 | Freak (U20) vs C130 | if `N_Freak_Stage = 0`: `N_Freak_Stage = 1` + long scene; else short scene |
-| `L_0c0fc` :10090-10115 | Rance vs C93 with `F_Sieg_State` 2/3 (player side only) | **SiegEvent**: `Ev_Entry=4`; `F_Sieg_State=4`; `F_Sieg_Defeated=1`; if `N_Miki_Stage=1` → 2; `Item_Cur=1`, `Item_Holder=1`; commander 93 renamed "Sieg"/"Maneshitas", CgFull/Partial/Alone = 1325/1326/1327, FaceCg 59, `Cmdr_Item=0`, `VAR0126=0`, `VAR0127=0`; `Unit_Cur=1`, `Unit_Item=1` (Chaos), `Unit_CgPartial=1358`, `Unit_CgAlone=1361`; long scene |
+| :9677-9678, :9755-9756, :9826-9827 | Satella (U29) vs Camilla (C91) / Lei (C92), Meglass (U30) vs Sieg (C93), StoryStage<3, flag 0 | `F_Satella_LineCmdr91/92/93 = 1` (one-shot scenes) |
+| `L_0bddd` :9900-9902 | Freak (U20) vs Redeye (C130) | if `N_Freak_Stage = 0`: `N_Freak_Stage = 1` + long scene; else short scene |
+| `L_0c0fc` :10090-10115 | Rance vs Sieg (C93) with `F_Sieg_State` 2/3 (player side only) | **SiegEvent**: `Ev_Entry=4`; `F_Sieg_State=4`; `F_Sieg_Defeated=1`; if `N_Miki_Stage=1` → 2; `Item_Cur=1`, `Item_Holder=1`; commander 93 renamed "Sieg"/"Maneshitas", CgFull/Partial/Alone = 1325/1326/1327, FaceCg 59, `Cmdr_Item=0`, `VAR0126=0`, `VAR0127=0`; `Unit_Cur=1` (Rance), `Unit_Item=1` (Chaos), `Unit_CgPartial=1358`, `Unit_CgAlone=1361`; long scene |
 
 The Sieg event runs **before** `ComputeExchange`, so the same exchange already uses Chaos
 (+10 commander attack, demon-shield break).
@@ -709,8 +710,8 @@ proc ComputeExchange():                                     // L_035fb
 
 Meaning of the shields: a demon commander (class 10/11) takes **no HP damage from troops**
 ever, and HP damage from a commander only if that commander is a demon or (for enemy demons)
-wields Chaos/Nikkou. Player demons lose the protection against enemy commanders 146, 147 and
-187-190. Shields zero only damage; shots stay (for display).
+wields Chaos/Nikkou. Player demons lose the protection against enemy commanders Angel Knight (146),
+Angel Knight (147) and Kaiju Gaga (187) through Kaiju Bobo (190). Shields zero only damage; shots stay (for display).
 
 Engagement summary (from a–f): troops shoot at the enemy commander only when the enemy's
 troops all fit the battle limit; `shots at commander = (own engaged / enemy engaged) * 2`
@@ -969,7 +970,7 @@ because the roll requires `Cmdr_HP > 1`. The availability flags are only read, n
 ### 7.4 Defeat scenes (black boxes, no draws)
 
 - `FIGTﾐｶDE.ADV` (player unit `Unit_Cur` fell): dialogue keyed by `Unit_Cur`/`StoryStage`;
-  state: unit 2 (Sill, StoryStage ≠ 0) `F_Sill_Died = 1`; unit 11 `F_Asuka_State = 0`;
+  state: unit 2 (Sill, StoryStage ≠ 0) `F_Sill_Died = 1`; Asuka (unit 11) `F_Asuka_State = 0`;
   unit 1 (Rance) when `StoryStage ≠ 0`: `EndingId = 1` and jump to `OVER.ADV` (game over,
   never returns). In StoryStage 0 Rance's defeat only shows text.
 - `FIGTﾃｷDE.ADV` (enemy commander `Cmdr_Cur` fell): dialogue only, no state.
@@ -999,7 +1000,7 @@ whole-battle walkthrough is [03-rng-order.md](03-rng-order.md).
 
 | # | Site | n | Condition | Use |
 |---|---|---|---|---|
-| 1 | 1587 | 10 | manual player command (via FIGT_SEL), **not** auto orders, enemy, Goliath or ninja; repeats while it returns 1 and `Unit_Cur = 32` | Miki involuntary Vanish Bomb |
+| 1 | 1587 | 10 | manual player command (via FIGT_SEL), **not** auto orders, enemy, Goliath or ninja; repeats while it returns 1 and `Unit_Cur = 32` (Miki) | Miki involuntary Vanish Bomb |
 | 2 | FIGT_M:5 | 2 | ✓ | discarded (side choice only if MsgMode ∉ 1..4) |
 | 3 | FIGT_M:25 / :2825 | 3 | ✓ (one of them) | player side: Sill's guards; enemy side: discarded |
 | 4 | FIGT_M branch | 2,3,4,5,10 | per §5.2/5.3 | flavour line |
@@ -1105,7 +1106,8 @@ Then `Bt_SkillSfx = 0`.
 - **Q12 Defend values subtract from hit chance even when "1 = acted"**: an acted slot
   defends with 1, an un-acted slot with 0; the actor itself is always state 1, so counters
   against it get −1.
-- **Q13 Multi-arm `RetVal` tests.** C83/C84 (FIGT_M:5016-5075) and U3 (:8870-8887) test
+- **Q13 Multi-arm `RetVal` tests.** Sergeant Hanny (C83) / Lieutenant Hanny (C84)
+  (FIGT_M:5016-5075) and Bound (U3) (:8870-8887) test
   `RetVal` after showing a line; if a window call changes `RetVal` a second line could show
   (Q-open O1). Presentation only.
 - **Q14 Ninja never kills** (`Cmdr_HP > 1`), never consumes its availability flag, needs the
@@ -1125,7 +1127,7 @@ Then `Bt_SkillSfx = 0`.
   RND(100) = 101 misses even at 100%; flavour selectors show nothing; spread +0; Miki/ninja
   rolls fail. Reproduce whatever the chosen RNG backend does.
 - **Q21 Sieg event gives Chaos to Rance** by `Unit_Item = 1` without clearing the holder of
-  his previous item (FIGT_M:10096-10113), and changes commander 93 before the exchange.
+  his previous item (FIGT_M:10096-10113), and changes Sieg (commander 93) before the exchange.
 - **Q22 Kayblis (C135) at war rolls 1..100 commander-vs-commander shots** (2839-2841),
   bypassing the `> 5 → RND(6)` cap.
 - **Q23 Wall advantage display vs rule.** The battle header shows walls as enemy advantage for
@@ -1146,7 +1148,7 @@ Merged with the flow spec's open questions in [README.md](README.md).
 
 | # | Question | Lines |
 |---|---|---|
-| O1 | Does `IK 0` (in `WAO_SUB.ADV` `L_00ce1`, run after every window) overwrite `RetVal`? `WAO_SUB.ADV:292-294` saves/restores `RetVal` around another `IK 0`, which suggests it does. Affects only which flavour lines show for C83/C84/U3 (Q13). | FIGT_M:5014-5077, 8859-8888; WAO_SUB:292-294, 510-519 |
+| O1 | Does `IK 0` (in `WAO_SUB.ADV` `L_00ce1`, run after every window) overwrite `RetVal`? `WAO_SUB.ADV:292-294` saves/restores `RetVal` around another `IK 0`, which suggests it does. Affects only which flavour lines show for Sergeant Hanny (C83) / Lieutenant Hanny (C84) / Bound (U3) (Q13). | FIGT_M:5014-5077, 8859-8888; WAO_SUB:292-294, 510-519 |
 | O2 | Operator precedence of the decompiled expression in Q8 — confirm against the bytecode (RPN order) before relying on it. | FIGT_M:8326 |
 | O3 | What record 51 holds at a new game / after loading, before any kaiju is summoned (affects `RND(Unit_Attacks)` for Goliath and ninjas). | FIGT:1126-1137, 1922-1979, 2592, 2648 |
 | O4 | Whether the original `system39.exe` RNG can return `n+1` like xsystem35. | — |
