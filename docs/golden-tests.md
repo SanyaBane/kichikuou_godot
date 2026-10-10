@@ -196,14 +196,14 @@ numbers are the engine's (`MS n` writes string n).
    `FIGT.ADV` → `FightAsync`, `COM.ADV` → `WeeklyEvents.RunAsync`, `COMMAND.ADV` →
    `CommandPhase.RunAsync`, the `week` group's label root `MAIN.ADV@20` → `WeekLoop.RunWeekAsync`
    (`ReplayableLabelRoots`; a week with an army name of its own, `MS 10`, needs the player's files and is not replayed in the core yet), the `commands` group's `Cﾃｷﾄｼ.ADV`, `Cﾃｷﾄｼ2.ADV`, `Cﾌﾞｶ.ADV`,
-   `Cﾊｰﾚﾑ.ADV`, `Cｼｮｳﾆﾝ.ADV`, `Cｼﾊｲﾄｼ.ADV`, `Cﾃｲﾄ.ADV` and the `ninja` group's `Cﾆﾝｼﾞｬ.ADV` →
+   `Cﾊｰﾚﾑ.ADV`, `Cｼｮｳﾆﾝ.ADV`, `Cｼﾊｲﾄｼ.ADV`, `Cﾃｲﾄ.ADV`, `Cﾀｶﾗ.ADV`, `各種DATA.ADV` and the `ninja` group's `Cﾆﾝｼﾞｬ.ADV` →
    `EnemyCityCommand`, `DistantCityCommand`, `SubordinatesCommand`, `HaremCommand`, `MerchantCommand`,
-   `OwnCityCommand`, `ConstructionCommand`, `NinjaCommand` (`GoldenReplay.ReplayableRoots`, `CanReplay`;
+   `OwnCityCommand`, `ConstructionCommand`, `TreasureCommand`, `AllDataCommand`, `NinjaCommand` (`GoldenReplay.ReplayableRoots`, `CanReplay`;
    of their paths only `Cﾃｷﾄｼ`'s independent cities still throw `NotSupportedException`). `Cﾒｲｷｭｳ.ADV` reads its `MS` strings from the player's files, so its
    replay is `RunAsync(capture, entryPoint: s => new DungeonCommand(s, scripts).RunAsync())`
    (`DungeonReplayTests` in the content tests); the
-   same holds for the `screens` group (`Sﾌﾞﾀｲ`, `Sﾌﾞｶ`, `Sﾊｰﾚﾑ` → `DeploymentScreen`,
-   `SubordinateScreen`, `HaremScreen`, which read their button labels and the harem's name table),
+   same holds for the `screens` group (`Sﾌﾞﾀｲ`, `Sﾌﾞｶ`, `Sﾊｰﾚﾑ`, `Sｱｲﾃﾑ` → `DeploymentScreen`,
+   `SubordinateScreen`, `HaremScreen`, `ItemScreen`, which read their button labels and the harem's name table),
    replayed by `ScreenReplayTests` in the content tests, and for the `nations` group (`TCﾘｰｻﾞｽ`,
    `TCﾘｰｻﾞｽ2` → `RebelTurn`, `RebelDefenders`, which read the army name `MS 10`), replayed by
    `NationReplayTests`, which lists the roots still waiting for their part. The

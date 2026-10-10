@@ -60,9 +60,10 @@ the rebels' turn `TCﾘｰｻﾞｽ` and their defender picker `TCﾘｰｻﾞ�
 `Cﾌﾞｶ`'s troop menu and the whole `Cﾊｰﾚﾑ` are ported (`SubordinatesCommand`, `HaremCommand`, both
 files whole; the P4-P7 row). Step 5 is done: `Cｼｮｳﾆﾝ` and `Cｼﾊｲﾄｼ` are ported whole (`MerchantCommand`,
 `OwnCityCommand`). Step 6 is done: `Cﾆﾝｼﾞｬ` and `Cﾃｲﾄ` are ported whole (`NinjaCommand`,
-`ConstructionCommand`). Step 7 is under way: the rules of `Cﾀｶﾗ`, `Sｱｲﾃﾑ` and `各種DATA` are ported
-whole (`TreasureCommand`, `ItemScreen` on `PickerScreen`, `AllDataCommand`; semantic events
-`PickerKind.Items`, `DataScreenEvent`); next their screens in the presenter and in Godot.
+`ConstructionCommand`). Step 7 is done: `Cﾀｶﾗ`, `Sｱｲﾃﾑ` and `各種DATA` are ported whole
+(`TreasureCommand`, `ItemScreen` on `PickerScreen`, `AllDataCommand`; semantic events
+`PickerKind.Items`, `DataScreenEvent`) and their screens are drawn by hand (`PickerView`, the
+presenter's All Data layer). Next: step 8, the dungeon search in `Cﾒｲｷｭｳ` (D1).
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
 
@@ -88,7 +89,7 @@ whole (`TreasureCommand`, `ItemScreen` on `PickerScreen`, `AllDataCommand`; sema
   runs scene programs (`ISceneInput` adds menus, mouse and clock to the inputs). `Setup/GameSetup` is the boot (`SET.ADV`) and the new game.
   `Strategy/` holds the strategic rule files: `WeekLoop` is `MAIN.ADV`, `WeeklyEvents` is `COM.ADV`, `CommandPhase` is
   `COMMAND.ADV`, `LoadSaveScreen` is `ﾛｰﾄﾞｾｰﾌﾞ.ADV`, the `*Command` classes (on `CommandFile`) are the `C*.ADV` command files, the
-  `*Screen` classes (on `PickerScreen`) their `S*.ADV` pickers, the nation files sit on `NationFile` (the
+  `*Screen` classes (on `PickerScreen`) their `S*.ADV` pickers (`ItemScreen` is `Sｱｲﾃﾑ`), `AllDataCommand` is `各種DATA.ADV`, the nation files sit on `NationFile` (the
   template every `T*`/`T*2` repeats: priority list, picker, filler, troop sum, target walk; the
   army picker itself is on `CommandFile`, since `Cﾃｷﾄｼ` has a copy) as
   `*Turn` (`T*.ADV`, e.g. `RebelTurn`) and `*Defenders` (`T*2.ADV`), and `StrategyRules` routes calls of these files to their ports (the rule hooks of a `SceneRunner`).
@@ -103,8 +104,8 @@ whole (`TreasureCommand`, `ItemScreen` on `PickerScreen`, `AllDataCommand`; sema
   `Battles/BattlePresenter` draws every core event the way the original does
   ([docs/battle/screen-layout.md](docs/battle/screen-layout.md)), `FigtSelScreen` /
   `BattleMenuScreen` are the mouse-driven input screens. `Strategy/GamePresenter` draws a whole
-  game: the stage (`Battle` shares it) and the hand-drawn layers (`TextBox`, `PickerView`, menus)
-  composed into `Screen`; a UI asks it what is open (`MapWaiting`, `Picker`) and where a menu
+  game: the stage (`Battle` shares it) and the hand-drawn layers (`TextBox`, `PickerView`, menus,
+  All Data in `GamePresenter.Data.cs`) composed into `Screen`; a UI asks it what is open (`MapWaiting`, `Picker`, `Data`) and where a menu
   item is (`MenuHitTest`); a gesture UI turns clicks into the script's inputs with
   `PointerScript` (`Picker.HitTest`). Tests in
   `tests/Kichikuou.Content.Tests` (the golden part draws and plays every capture and resolves
@@ -137,7 +138,8 @@ whole (`TreasureCommand`, `ItemScreen` on `PickerScreen`, `AllDataCommand`; sema
   `<Godot console exe> --headless --path godot -- --watch <capture> --fast --quit --shots <dir>`.
 - Play the game unattended headless (slots in `user://saves-auto`; `--load` resumes them):
   `<Godot console exe> --headless --path godot -- --newgame --auto --fast --quit [--seed n] [--shots <dir>] [--weeks n]`;
-  Turn END every week (stage 1: the rebels attack, `--auto` defends with the first unit free),
+  one visit each to Harem, Subordinates and the hideout in the prologue and to Treasure and All Data
+  at stage 1, Turn END every week (stage 1: the rebels attack, `--auto` defends with the first unit free),
   ends at the first file or path not ported yet ("not ported yet"), at a game over, or after week
   30 (`--weeks n`) — with `--seed 7` today the rebels take Leazas Castle: ending 2 (exit code 0;
   1 after an error).
