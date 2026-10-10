@@ -105,6 +105,19 @@ public sealed class GoldenReplay
         "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sﾊｰﾚﾑ.ADV", "Sｱｲﾃﾑ.ADV",
     };
 
+    /// <summary>
+    /// Files a group's captures hold inline (<c>inner</c> in tools/golden/classes.txt) although the
+    /// port reaches them through a file call: the replay runs their port on the same context, so
+    /// their draws and inputs meet the inline records. <c>Cﾒｲｷｭｳ</c> calls <c>死亡捕獲</c> after each
+    /// dungeon battle (<c>Cﾒｲｷｭｳ.ADV:1288</c>), which the game routes to the battle code
+    /// (<c>StrategyRules</c>).
+    /// </summary>
+    private static readonly IReadOnlyDictionary<(string Group, string File), Func<Battle, Task>> InlinePorts =
+        new Dictionary<(string, string), Func<Battle, Task>>
+        {
+            [("dungeon", "死亡捕獲.ADV")] = battle => battle.DeathCaptureAsync(),
+        };
+
     /// <summary>The label roots the replay has an entry point for: one week of <c>MAIN.ADV</c> (<c>L_00020</c>).</summary>
     public static readonly IReadOnlySet<string> ReplayableLabelRoots = new HashSet<string> { "MAIN.ADV@20" };
 
@@ -130,6 +143,7 @@ public sealed class GoldenReplay
     private int _next;
     private long _mouseRepeats;
     private bool _pointer;
+    private Battle? _battle;
     private Mt19937Legacy _generator;
     private XSystem35Random _random;
 
@@ -182,6 +196,7 @@ public sealed class GoldenReplay
             var runner = scenes?.Invoke(hooks);
             _pointer = runner is not null || PointerRoots.Contains(_capture.Root);
             var battle = new Battle(_state, new Random(this), view, new Input(this), runner ?? (IStoryHooks)hooks);
+            _battle = battle;
             runner?.Bind(battle.Script);
             Func<Task> entry = entryPoint is not null
                 ? () => entryPoint(battle.Script)
@@ -444,6 +459,9 @@ public sealed class GoldenReplay
     {
         public Task RunEventAsync(string file, Sys3Int entry)
         {
+            if (InlinePorts.TryGetValue((replay._capture.Group, file), out var inline))
+                return inline(replay._battle!);
+
             var record = replay.Take<HookRecord>($"a call of {file} (entry {entry})");
             if (record.File != file)
                 throw replay.Diverged($"the core called {file} where the original called {record.File} at {record.Where} (line {record.Line})");

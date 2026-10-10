@@ -49,7 +49,8 @@ root TCﾘｰｻﾞｽ.ADV TJAPAN.ADV Tｹｲﾌﾞﾘｽ.ADV Tｾﾞｽ.ADV T�
 root TCﾘｰｻﾞｽ2.ADV TJAPAN2.ADV Tｹｲﾌﾞﾘｽ2.ADV Tｾﾞｽ2.ADV Tﾍﾙﾏﾝ2.ADV Tﾙﾄﾞﾗ2.ADV
 
 # The dungeon (D1). FIGT is a hook (the battle has its own captures); 死亡捕獲 is inner because
-# it is already ported (Combat) and the dungeon calls it directly; Sﾌﾞﾀｲ and scenes are hooks.
+# it is already ported (Combat): the replay runs its port inline (GoldenReplay.InlinePorts);
+# Sﾌﾞﾀｲ and scenes are hooks.
 group dungeon
 root Cﾒｲｷｭｳ.ADV
 inner 死亡捕獲.ADV

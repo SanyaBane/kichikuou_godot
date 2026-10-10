@@ -74,7 +74,7 @@ Hooks are everything not listed; "helpers" = the four UI helpers above.
 | `command` | `COMMAND` | — | — | `COM`, every `C*`, `ﾛｰﾄﾞｾｰﾌﾞ`, `各種DATA`, `Iｶﾝｶﾞｴ`, `Iﾄｳｿﾞｸ`, `ｵｰﾌﾟﾆﾝｸﾞ`, `TEST`, scenes — the sequence of hook calls (with `Prov_Cur` / `Ui_ClickedProv` / `Dgn_Cur` in the hook-enter dump) is the player's choice; the map clicks are in the `mouse` records |
 | `com` | `COM` | — | — | every scene (`Iｼﾚｲﾌﾞ`, `Gｿｳﾙ`, …) |
 | `nations` | `TCﾘｰｻﾞｽ`, `TJAPAN`, `Tｹｲﾌﾞﾘｽ`, `Tｾﾞｽ`, `Tﾊﾟｯﾄﾝ`, `Tﾍﾙﾏﾝ`, `Tﾙﾄﾞﾗ` and the defender pickers `TCﾘｰｻﾞｽ2`, `TJAPAN2`, `Tｹｲﾌﾞﾘｽ2`, `Tｾﾞｽ2`, `Tﾍﾙﾏﾝ2`, `Tﾙﾄﾞﾗ2` | — | — | `FIGT_B` (verified separately), scenes. No `T*` file calls another |
-| `dungeon` | `Cﾒｲｷｭｳ` | `死亡捕獲` (ported in `Combat`; the dungeon calls it directly) | — | `FIGT` (a battle capture of its own), `Sﾌﾞﾀｲ`, scenes, `Iｶﾐ` |
+| `dungeon` | `Cﾒｲｷｭｳ` | `死亡捕獲` (ported in `Combat`; the port calls it as a file, which the game routes to the battle code and the replay runs inline, `GoldenReplay.InlinePorts`) | — | `FIGT` (a battle capture of its own), `Sﾌﾞﾀｲ`, scenes, `Iｶﾐ` |
 | `commands` | `Cﾃｷﾄｼ`, `Cﾃｷﾄｼ2`, `Cﾌﾞｶ`, `Cﾊｰﾚﾑ`; since milestone 2 `Cｼﾊｲﾄｼ`, `Cｼｮｳﾆﾝ`, `Cﾃｲﾄ`, `Cﾀｶﾗ`, `各種DATA` | — | — | the `S*` screens, `FIGT_A`, the `T*2` pickers, `Cﾆﾝｼﾞｬ`, `Cﾒｲｷｭｳ` (`Cｼﾊｲﾄｼ`'s Ruins Search), `Iﾄｳｿﾞｸ`, `Iｼﾚｲﾌﾞ`, `ｵｰﾌﾟﾆﾝｸﾞ`, scenes — each has its own capture or part |
 | `ninja` | `Cﾆﾝｼﾞｬ` (apart: `Cﾃｷﾄｼ`/`Cﾃｷﾄｼ2` call it) | — | — | scenes (`Gｺｰﾄﾞ`, `Gｶﾅﾐ`, `Gﾌﾚｲｱ`) |
 | `screens` | `Sﾌﾞﾀｲ`, `Sﾌﾞｶ`, `Sﾊｰﾚﾑ`, `Sｱｲﾃﾑ` | — | — | none reached (only the helpers inside) |
