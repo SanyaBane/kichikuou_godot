@@ -203,7 +203,9 @@ numbers are the engine's (`MS n` writes string n).
    (`DungeonReplayTests` in the content tests); the
    same holds for the `screens` group (`Sﾌﾞﾀｲ`, `Sﾌﾞｶ`, `Sﾊｰﾚﾑ` → `DeploymentScreen`,
    `SubordinateScreen`, `HaremScreen`, which read their button labels and the harem's name table),
-   replayed by `ScreenReplayTests` in the content tests. The
+   replayed by `ScreenReplayTests` in the content tests, and for the `nations` group (`TCﾘｰｻﾞｽ`,
+   `TCﾘｰｻﾞｽ2` → `RebelTurn`, `RebelDefenders`, which read the army name `MS 10`), replayed by
+   `NationReplayTests`, which lists the roots still waiting for their part. The
    player phase, the command files and the pickers read the pointer as the script does, so their replays answer
    `GetMouseAsync` from `mouse` and `SetCursorAsync` from `cursor` (the shape must match); in
    battle captures both stay passive. Every other root has no entry point yet: `GoldenBattleTests.Capture_matches_the_original`
@@ -302,6 +304,7 @@ here with its reason, never as a blanket rule.
 | The owner's third run (2026-10-09, seed 1323388227): pillages of 33 and 34, a save in week 11, Turn END to week 23 (path A; province 32 clicked in week 18), the duel lost, quit during `ｵｰﾌﾟﾆﾝｸﾞ` | none — all 56 complete captures match (14 weeks, 15 `COM`, 14 `COMMAND`, 4 command files, 2 pickers, 19 scenes, 3 battles, the boot). The duel ran with `Prov_Cur = 32`: EVT-08 confirmed (README open item 1 answered) | — |
 | The owner's second run (2026-10-09, seed 502748417): a new game, week 9 ended, in week 10 two clicks at the map's top-left corner ((9, 5), (11, 6)), Turn END | none — all 14 captures match. Both clicks pick province record 0 and run `Cﾃｷﾄｼ2` on it (STR-12 confirmed; README open item 2 answered) | — |
 | The Leazas week ported (milestone 2 step 1, 2026-10-10) | the owner's Leazas week of the first run (`week61009-105401-92-MAIN@20`, week 13, stage 1) now matches whole: the autosave, `COMMAND`, `TCﾘｰｻﾞｽ` and `Gｼｨﾙ` 21 hook checkpoints and the exit, 0 differences | — |
+| The rebels' turn ported (milestone 2 step 2, 2026-10-10) | the owner's rebel turn of the first run (`nations`, `20261009-105433-107-TCﾘｰｻﾞｽ`, week 14: `Gｴｸｽ` 10, then `FIGT_B` from army A's walk and from army B's) matches whole: three hook checkpoints and the exit, 0 differences (`NationReplayTests`) | — |
 
 ## Harness configuration
 

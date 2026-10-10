@@ -52,9 +52,11 @@ far") matches the port everywhere, and so do two more runs: top-left map clicks 
 path A's week-23 duel (EVT-08 confirmed); README open items 1-2 are answered.
 **Milestone 2** (owner's decision 13, 2026-10-10) is story stage 1 as a whole — the Leazas week,
 the rebels, every command a stage-1 player has, the dungeon search — in the order of
-docs/strategy/README.md, "Milestone 2" (with the sweep of what stage 1 reaches). Steps 0-1 are
+docs/strategy/README.md, "Milestone 2" (with the sweep of what stage 1 reaches). Steps 0-2 are
 done: every stage-1 file and every scene is a capture root, docs/golden-tests.md has the owner's
-stage-1 checklist, and the Leazas week is ported (the W2 row).
+stage-1 checklist, the Leazas week is ported (the W2 row), and so are the nation template with
+the rebels' turn `TCﾘｰｻﾞｽ` and their defender picker `TCﾘｰｻﾞｽ2` (the N1 row). Next: step 3, the
+attack in `Cﾃｷﾄｼ`.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
 
@@ -80,7 +82,9 @@ stage-1 checklist, and the Leazas week is ported (the W2 row).
   runs scene programs (`ISceneInput` adds menus, mouse and clock to the inputs). `Setup/GameSetup` is the boot (`SET.ADV`) and the new game.
   `Strategy/` holds the strategic rule files: `WeekLoop` is `MAIN.ADV`, `WeeklyEvents` is `COM.ADV`, `CommandPhase` is
   `COMMAND.ADV`, `LoadSaveScreen` is `ﾛｰﾄﾞｾｰﾌﾞ.ADV`, the `*Command` classes (on `CommandFile`) are the `C*.ADV` command files, the
-  `*Screen` classes (on `PickerScreen`) their `S*.ADV` pickers, and `StrategyRules` routes calls of these files to their ports (the rule hooks of a `SceneRunner`).
+  `*Screen` classes (on `PickerScreen`) their `S*.ADV` pickers, the nation files sit on `NationFile` (the
+  template every `T*`/`T*2` repeats: priority list, picker, filler, troop sum, target walk) as
+  `*Turn` (`T*.ADV`, e.g. `RebelTurn`) and `*Defenders` (`T*2.ADV`), and `StrategyRules` routes calls of these files to their ports (the rule hooks of a `SceneRunner`).
 - `src/Kichikuou.Content` — engine-independent access to the player's own game data (never
   part of the repository): `ScenarioText` reads message texts from the decompiled scenario by
   `ScriptRef`; `Scripts/ScenarioScripts` reads the data files' statements and whole files as programs

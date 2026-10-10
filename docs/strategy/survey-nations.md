@@ -107,7 +107,7 @@ Capture(): centre map; Prov_Owner := nation; flag CG Tmp0021 := owner+819; M ops
 | Army (gate) | Priority list | Thr | RM | Targets in order (`*` = special) |
 |---|---|---|---|---|
 | Rebels A (prov 5 not player's) | 3,5,4 | 500 | 4 | 4,3,2,1 → then always B |
-| Rebels B | 1,2,6,7 | 500 | 4 | 7,8,1; none found → **falls into C** (`TCﾘｰｻﾞｽ.ADV:75-80`) |
+| Rebels B | 1,2,6,7 | 500 | 4 | 7,8,1; none found → **falls into C** (`TCﾘｰｻﾞｽ.ADV:75-80`) — only with province 1 lost, which ends the game |
 | Rebels C | 1,2,3,6,4,5,7 | 500 | 4 | 6,5 |
 | JAPAN (`Y 4,5` = 1) | 72,73,74,78,77,75,82,79,80 | — & 500 | 3 | 55,28,27*,25,26*,24*,23*,6,3,2,5,4,1 (`*` owner 3 → capture, ends turn) |
 | JAPAN (2,3) / (4,5) | 75-78 / 79-82 | — & 500 | 3 | same |
@@ -140,7 +140,7 @@ Kayblis- / city-state-owned provinces at specific list positions.
 
 | File | Province → defenders | Notes |
 |---|---|---|
-| TCﾘｰｻﾞｽ2 | 7,8 → B; 2,3,4 → A; 5,6 → C (RM 2 / 1); else → B | A/B: sum < 100 → return with **stale RM**; 6 gets walls |
+| TCﾘｰｻﾞｽ2 | 7,8 → B; 2,3,4 → A; 5,6 → C (RM 2 / 1); else → B | A/B: sum < 100 → return with **stale RM**; only 6 gets walls (NAT-17) |
 | TJAPAN2 | 55 → 75-78 (sum < 10 → stale RM, else RM 1); 56 → full list RM 1; else the **strongest** of the three lists, sum < 500 → stale RM, else RM 4 | sets `F_Japan_State := 1` (`:4`) |
 | Tﾍﾙﾏﾝ2 | 40/41/37 → 4th; 39,38,34,32,31,30,13,2,36 → 1st (stronger order; prov 30 & 27 alive → 27 alone); 46-48 → 2nd; 45/44 → 3rd (+ militia 58,59 at 45); 36 & Lelyukov 1 → 22 alone, troops 10; 42 → 5th; 35 → 31 alone; else / leader dead → militia 58,59 (troops 100+rnd(800)) | `F_Helman_War = 2` → militia ("A Certain Country's People"); `Gｼｰﾗ` 2 may cancel via `Tmp0001 = 1` |
 | Tｾﾞｽ2 | garrison 94-96 regenerated; 58/61/65/63 → that general's army (only general left → 94,95 at 10 troops + general); 66/67/68/70 → ministers' armies after `Gﾏｼﾞｯｸ` 1 / `Gﾅｷﾞ` 5 / `Gﾁｽﾞｺ` 1 / `Gﾊﾟﾊﾟｲｱ` 3; else 94,95,96 (66: 96 alone) | ministers' provinces need a unit with item 12 unless `VAR0063 = 2`, else `Bt_PlayerParty1 := 0` cancels (`:91-130`); first attack sets `F_Zeth_War := 1` + `Iｾﾞｽ` 1 |
@@ -252,6 +252,8 @@ text; the only display→state coupling is `M`'s scratch. TJAPAN's scenes are ru
    skipped when `F_DemonWar_Stage < 20` (`:3-8` jumps over it) — stale 10/11 carry over.
 4. **Babolat recovers three times** (`Tｹｲﾌﾞﾘｽ.ADV:27-30`, `L_02662` ×3 on cmdr 129).
 5. **Rebels B falls into C** (`TCﾘｰｻﾞｽ.ADV:75-80`): up to two attacks per week; A always continues to B.
+   B's last target is province 1, whose loss ends the game, so the fall into C needs a castle the
+   player no longer holds (NAT-06).
 6. **Stale cursor**: `Tｾﾞｽ.ADV:130` sets `Unit_Cur := 101` but tests `Cmdr_Status` of cmdr 125
    (cursor from `:92`); probably meant `Cmdr_Cur`.
 7. **Inverted check** `Ev_WeeklyEventDone \ 0` for Patton events 2/12 (`Tﾍﾙﾏﾝ.ADV:61`, `:67`):
@@ -282,6 +284,12 @@ Code home: `src/Kichikuou.Core/Strategy/Nations/` (partial class `NationTurns`),
 as the battle; `FIGT_B` through the existing `Battle.DefendProvinceAsync`; story files through
 `IStoryHooks` (with scratch return values, §3); `M.ADV`/`WAO_SUB` state effects reused from
 `ScriptContext.Map.cs` / `ScriptContext.Wao.cs` (move them to a shared helper).
+
+As ported (N1 part 1, 2026-10-10; [README](README.md), the N1 row): the template is a base class,
+`Strategy/NationFile` on `CommandFile`, the filter a method each file overrides; every file is a
+class of its own in `Strategy/` (`RebelTurn` = `TCﾘｰｻﾞｽ`, `RebelDefenders` = `TCﾘｰｻﾞｽ2`), its lists
+written in the script's order at the place the script sets them; the capture comes with the first
+file that has one.
 
 | Part | Content | Script lines (rule) | Depends on |
 |---|---|---|---|

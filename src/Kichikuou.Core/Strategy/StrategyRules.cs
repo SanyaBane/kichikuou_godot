@@ -8,7 +8,8 @@ namespace Kichikuou.Core.Strategy;
 /// <summary>
 /// The ported rule files as story hooks: a call of <c>MAIN.ADV</c> (the week loop, which never
 /// returns; the game enters it by the jump <c>&amp;#MAIN.ADV:</c>), <c>COM.ADV</c>, <c>COMMAND.ADV</c>,
-/// one of the ported command files or one of their picker screens, or a battle file
+/// one of the ported command files or one of their picker screens, a nation's turn or defender
+/// picker (<c>TCﾘｰｻﾞｽ</c>, <c>TCﾘｰｻﾞｽ2</c>), or a battle file
 /// (<c>FIGT_A</c>, <c>FIGT_B</c>, <c>FIGT</c>, <c>死亡捕獲</c>, run as a <see cref="Battle"/>) runs its
 /// port on the bound context, and so does the save screen (<c>ﾛｰﾄﾞｾｰﾌﾞ</c>, on the context's
 /// save slots); every other file goes to the hooks it wraps (whatever is not ported). Given to a <see cref="SceneRunner"/> as its rule hooks, so a scene that
@@ -31,7 +32,8 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
     public static readonly IReadOnlySet<string> PortedFiles = new HashSet<string>(StringComparer.Ordinal)
     {
         "MAIN.ADV", "COM.ADV", "COMMAND.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV", "Cﾒｲｷｭｳ.ADV",
-        "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sﾊｰﾚﾑ.ADV", "FIGT_A.ADV", "FIGT_B.ADV", "FIGT.ADV", "死亡捕獲.ADV", "ﾛｰﾄﾞｾｰﾌﾞ.ADV",
+        "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sﾊｰﾚﾑ.ADV", "TCﾘｰｻﾞｽ.ADV", "TCﾘｰｻﾞｽ2.ADV", "FIGT_A.ADV", "FIGT_B.ADV", "FIGT.ADV",
+        "死亡捕獲.ADV", "ﾛｰﾄﾞｾｰﾌﾞ.ADV",
     };
 
     /// <summary>The context the rule files run on; set once with <see cref="Bind"/>.</summary>
@@ -67,6 +69,8 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
         "Sﾌﾞﾀｲ.ADV" => new DeploymentScreen(Script, scenario).RunAsync(),
         "Sﾌﾞｶ.ADV" => new SubordinateScreen(Script, scenario).RunAsync(),
         "Sﾊｰﾚﾑ.ADV" => new HaremScreen(Script, scenario).RunAsync(),
+        "TCﾘｰｻﾞｽ.ADV" => new RebelTurn(Script, scenario).RunAsync(),
+        "TCﾘｰｻﾞｽ2.ADV" => new RebelDefenders(Script, scenario).RunAsync(),
         "FIGT_A.ADV" => BattleAsync(file, battle => battle.AttackProvinceAsync()),
         "FIGT_B.ADV" => BattleAsync(file, battle => battle.DefendProvinceAsync()),
         "FIGT.ADV" => BattleAsync(file, battle => battle.FightAsync()),
