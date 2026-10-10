@@ -50,6 +50,11 @@ drawn by hand over it from the semantic `ScreenEvent`s and GameState); part 4 is
 is not ported. The owner's prologue capture run (2026-10-09, docs/golden-tests.md, "Findings so
 far") matches the port everywhere, and so do two more runs: top-left map clicks (STR-12 confirmed) and
 path A's week-23 duel (EVT-08 confirmed); README open items 1-2 are answered.
+**Milestone 2** (owner's decision 13, 2026-10-10) is story stage 1 as a whole — the Leazas week,
+the rebels, every command a stage-1 player has, the dungeon search — in the order of
+docs/strategy/README.md, "Milestone 2" (with the sweep of what stage 1 reaches). Step 0 is done:
+every stage-1 file and every scene is a capture root, and docs/golden-tests.md has the owner's
+stage-1 checklist.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
 

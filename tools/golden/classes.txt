@@ -54,17 +54,47 @@ group dungeon
 root Cﾒｲｷｭｳ.ADV
 inner 死亡捕獲.ADV
 
-# Command files of the prologue (P3, P6, P7). The S* screens, FIGT_A, the T*2 pickers, Cﾆﾝｼﾞｬ,
+# Command files (P3-P7): the prologue's, and since milestone 2 the rest of the player's menu at
+# stage 1. The S* screens, FIGT_A, the T*2 pickers, Cﾆﾝｼﾞｬ, Cﾒｲｷｭｳ (Cｼﾊｲﾄｼ's Ruins Search),
 # Iﾄｳｿﾞｸ, ｵｰﾌﾟﾆﾝｸﾞ and the scenes are hooks. No root of this group calls another.
 group commands
 root Cﾃｷﾄｼ.ADV Cﾃｷﾄｼ2.ADV Cﾌﾞｶ.ADV Cﾊｰﾚﾑ.ADV
+root Cｼﾊｲﾄｼ.ADV Cｼｮｳﾆﾝ.ADV Cﾃｲﾄ.ADV Cﾀｶﾗ.ADV 各種DATA.ADV
 
-# Army, subordinate and harem screens (P2, P6, P7): mouse-driven; only PCMPLAY/WAO_SUB inside.
+# The ninja (P6), apart because Cﾃｷﾄｼ and Cﾃｷﾄｼ2 call it; its scenes are hooks.
+group ninja
+root Cﾆﾝｼﾞｬ.ADV
+
+# Army, subordinate, harem and item screens (P2, P6, P7): mouse-driven; only PCMPLAY/WAO_SUB/M
+# inside.
 group screens
-root Sﾌﾞﾀｲ.ADV Sﾌﾞｶ.ADV Sﾊｰﾚﾑ.ADV
+root Sﾌﾞﾀｲ.ADV Sﾌﾞｶ.ADV Sﾊｰﾚﾑ.ADV Sｱｲﾃﾑ.ADV
 
 # Prologue scenes (E1/E2). FIGT_A, Sﾌﾞﾀｲ, Gｴｸｽ, Gｼｨﾙ2 are hooks. No root of this group calls
 # another.
 group scenes
 root Iﾄｳｿﾞｸ.ADV Iﾌﾟﾛﾛｰｸﾞ.ADV Iｼﾚｲﾌﾞ.ADV Iﾊﾝﾗﾝ.ADV ｵｰﾌﾟﾆﾝｸﾞ.ADV
 root Gｼｨﾙ.ADV Gｿｳﾙ.ADV Gﾊﾞｳﾝﾄﾞ.ADV Gｱﾅｾﾙ.ADV
+
+# Every other scene file (G*, I*; milestone 2). A group of its own, so the scenes group's class
+# table, under which its captures were recorded, stays as it was: here the scenes group's roots
+# are hooks. A scene of this group called by another one of it is inner there (logged inline;
+# the replay runs it inline too) and gets its own capture only when called from elsewhere.
+# FIGT_A, FIGT_B, Sﾌﾞﾀｲ, the C* files and FIGT表示 are hooks.
+group events
+root G1.ADV G2.ADV GAL.ADV GDX.ADV Gｱｰﾔ.ADV Gｱｰﾙｺｰﾄ.ADV Gｱｵｲ.ADV Gｱﾃﾅ2.ADV
+root Gｱﾆｽ.ADV Gｱﾋﾞｧﾄｰﾙ.ADV Gｱﾐﾗﾝ.ADV Gｱﾘｽ.ADV Gｱﾘｽ2.ADV Gｱﾘｽﾄﾚｽ.ADV Gｲｿﾛｸ.ADV Gｳｪﾝﾃﾞｨ.ADV
+root Gｳﾝｶﾞ.ADV Gｴｸｽ.ADV Gｴﾘｻﾞﾍﾞ.ADV Gｴﾚﾅ.ADV Gｵｰﾙﾊｳﾝﾄ.ADV Gｵｳｼﾞ.ADV Gｶｲﾄ.ADV Gｶｸｻﾝ.ADV
+root Gｶｾｲ.ADV Gｶﾁｭｰｼｬ.ADV Gｶﾄﾞﾐｭｳﾑ.ADV Gｶﾅﾐ.ADV Gｶﾊﾟｰﾗ.ADV Gｶﾌｪ.ADV Gｶﾐｰﾗ.ADV Gｶﾗｰ.ADV
+root Gｶﾞﾙﾃｨｱ.ADV Gｶﾞﾝｼﾞｰ.ADV Gｷｬﾛﾘ.ADV Gｷﾝｹｰﾄﾞ.ADV Gｸﾘｰﾑ.ADV Gｹｯｾﾙ.ADV Gｹｲﾌﾞﾆｬﾝ.ADV Gｹｲﾌﾞﾘｽ.ADV
+root Gｹｲﾌﾞﾜﾝ.ADV Gｹﾝﾀﾛｳ.ADV Gｺｰﾄﾞ.ADV Gｺｳﾋﾒ.ADV Gｺﾙﾄﾞﾊﾞ.ADV Gｻｰﾅｷｱ.ADV Gｻｲｾﾞﾙ.ADV Gｻｲﾄｳ.ADV
+root Gｻﾃﾗ.ADV Gｼｨﾙ2.ADV Gｼｬﾘｴﾗ.ADV Gｼｰﾗ.ADV Gｼｽﾞｶ.ADV Gｼﾉﾀﾞ.ADV Gｼﾙｷｨ.ADV Gｼﾞｭﾘｱ.ADV
+root Gｼﾞｰｸ.ADV Gｽｹｻﾝ.ADV Gｽｽﾞﾒ.ADV Gｽﾃｯｾﾙ.ADV Gｾﾙ.ADV Gｿﾐｰﾀ.ADV Gｿﾙﾆｱ.ADV Gﾀﾐ.ADV
+root Gﾁｽﾞｺ.ADV Gﾄｳｹﾞﾝ.ADV Gﾄｸﾍﾞﾂ.ADV Gﾅｷﾞ.ADV Gﾈﾛ.ADV Gﾊｳﾚｰﾝ.ADV Gﾊﾆｰ.ADV Gﾊﾝﾃｨ.ADV
+root Gﾊﾞﾎﾞﾗ.ADV Gﾊﾞﾚｽ.ADV Gﾊﾟｯﾄﾝ.ADV Gﾊﾟｲｱｰﾙ.ADV Gﾊﾟﾊﾟｲｱ.ADV Gﾋｭｰﾊﾞｰﾄ.ADV Gﾌｳｶ.ADV Gﾌﾘｰｸ.ADV
+root Gﾌﾚｲｱ.ADV Gﾌﾞﾘﾃｨ.ADV Gﾎﾗｶﾞ.ADV Gﾏｹﾝ.ADV Gﾏｺﾄ.ADV Gﾏｼﾞｯｸ.ADV Gﾏﾘｱ.ADV Gﾏﾘｽ.ADV
+root Gﾏﾙﾁﾅ.ADV Gﾐｷ.ADV Gﾐﾈﾊﾞ.ADV Gﾐﾘ.ADV Gﾐﾙ.ADV Gﾑﾐｿ.ADV Gﾒｶﾞﾗｽ.ADV Gﾒﾃﾞｨｳｻ.ADV
+root Gﾒﾅﾄﾞ.ADV Gﾒﾘﾑ.ADV Gﾒﾙｼｨ.ADV Gﾒﾙﾌｪｲｽ.ADV Gﾓｺﾓｺ.ADV Gﾕｳﾚｲ.ADV Gﾖｳﾍｲ.ADV Gﾗﾌｧﾘｱ.ADV
+root Gﾗﾝ.ADV Gﾘｯｸ.ADV Gﾘｱ.ADV Gﾙｰﾍﾞﾗﾝ.ADV Gﾙﾄﾞﾗ.ADV Gﾚｨﾘｨ.ADV Gﾚｯﾄﾞｱｲ.ADV Gﾚｲ.ADV
+root Gﾚｲﾗ.ADV Gﾚﾍﾞｯｶ.ADV Gﾚﾘｭｰｺﾌ.ADV Gﾛﾚｯｸｽ.ADV Gﾜｰｸﾞ.ADV Gﾜｵ.ADV IJAPAN.ADV IMﾗﾝﾄﾞ.ADV
+root Iｱﾘｽ.ADV Iｶﾐ.ADV Iｶﾝｶﾞｴ.ADV Iｼｬﾝｸﾞﾘﾗ.ADV Iｾﾞｽ.ADV Iﾄｼ.ADV Iﾏｼﾞﾝ.ADV Iﾏｼﾞﾝ2.ADV

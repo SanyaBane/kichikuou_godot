@@ -75,14 +75,21 @@ Hooks are everything not listed; "helpers" = the four UI helpers above.
 | `com` | `COM` | — | — | every scene (`Iｼﾚｲﾌﾞ`, `Gｿｳﾙ`, …) |
 | `nations` | `TCﾘｰｻﾞｽ`, `TJAPAN`, `Tｹｲﾌﾞﾘｽ`, `Tｾﾞｽ`, `Tﾊﾟｯﾄﾝ`, `Tﾍﾙﾏﾝ`, `Tﾙﾄﾞﾗ` and the defender pickers `TCﾘｰｻﾞｽ2`, `TJAPAN2`, `Tｹｲﾌﾞﾘｽ2`, `Tｾﾞｽ2`, `Tﾍﾙﾏﾝ2`, `Tﾙﾄﾞﾗ2` | — | — | `FIGT_B` (verified separately), scenes. No `T*` file calls another |
 | `dungeon` | `Cﾒｲｷｭｳ` | `死亡捕獲` (ported in `Combat`; the dungeon calls it directly) | — | `FIGT` (a battle capture of its own), `Sﾌﾞﾀｲ`, scenes, `Iｶﾐ` |
-| `commands` | `Cﾃｷﾄｼ`, `Cﾃｷﾄｼ2`, `Cﾌﾞｶ`, `Cﾊｰﾚﾑ` | — | — | the `S*` screens, `FIGT_A`, the `T*2` pickers, `Cﾆﾝｼﾞｬ`, `Iﾄｳｿﾞｸ`, `Iｼﾚｲﾌﾞ`, `ｵｰﾌﾟﾆﾝｸﾞ`, scenes — each has its own capture or part |
-| `screens` | `Sﾌﾞﾀｲ`, `Sﾌﾞｶ`, `Sﾊｰﾚﾑ` | — | — | none reached (only the helpers inside) |
+| `commands` | `Cﾃｷﾄｼ`, `Cﾃｷﾄｼ2`, `Cﾌﾞｶ`, `Cﾊｰﾚﾑ`; since milestone 2 `Cｼﾊｲﾄｼ`, `Cｼｮｳﾆﾝ`, `Cﾃｲﾄ`, `Cﾀｶﾗ`, `各種DATA` | — | — | the `S*` screens, `FIGT_A`, the `T*2` pickers, `Cﾆﾝｼﾞｬ`, `Cﾒｲｷｭｳ` (`Cｼﾊｲﾄｼ`'s Ruins Search), `Iﾄｳｿﾞｸ`, `Iｼﾚｲﾌﾞ`, `ｵｰﾌﾟﾆﾝｸﾞ`, scenes — each has its own capture or part |
+| `ninja` | `Cﾆﾝｼﾞｬ` (apart: `Cﾃｷﾄｼ`/`Cﾃｷﾄｼ2` call it) | — | — | scenes (`Gｺｰﾄﾞ`, `Gｶﾅﾐ`, `Gﾌﾚｲｱ`) |
+| `screens` | `Sﾌﾞﾀｲ`, `Sﾌﾞｶ`, `Sﾊｰﾚﾑ`, `Sｱｲﾃﾑ` | — | — | none reached (only the helpers inside) |
 | `scenes` | `Iﾄｳｿﾞｸ`, `Iﾌﾟﾛﾛｰｸﾞ`, `Iｼﾚｲﾌﾞ`, `Iﾊﾝﾗﾝ`, `ｵｰﾌﾟﾆﾝｸﾞ`, `Gｼｨﾙ`, `Gｿｳﾙ`, `Gﾊﾞｳﾝﾄﾞ`, `Gｱﾅｾﾙ` | — | — | `FIGT_A`, `Sﾌﾞﾀｲ`, `Gｴｸｽ`, `Gｼｨﾙ2` |
+| `events` (milestone 2) | every other `G*`/`I*` file (128) | — | — | the `scenes` group's roots, `FIGT_A`, `FIGT_B`, `Sﾌﾞﾀｲ`, the `C*` files, `FIGT表示` |
 
 Several roots share a group only where none of them calls another (checked against the
-decompiled call graph, 2026-10-08): inside a group a root is inner, so a call between two of
-them would not get its own capture. Not roots (yet): `COMMAND`'s other `C*` files, `Sｱｲﾃﾑ`,
-`各種DATA`, the other scenes — add them to a group when their part is ported.
+decompiled call graph, 2026-10-08 and 2026-10-10): inside a group a root is inner, so a call
+between two of them would not get its own capture. The exception is `events`, whose scenes call
+each other: there a scene called by another one of the group is logged inline (the replay runs
+it inline too) and gets a capture of its own only when called from elsewhere. It is a group
+apart from `scenes`, so the class table the `scenes` captures were recorded with stays as it was
+(the replay of a scene capture runs its group's roots and meets every other file as a hook:
+`SceneReplayTests`). Not roots yet: the title, ending and gallery files (`ｽﾀMENU`, `OVER`, `CG`,
+…), which no milestone has reached.
 
 ## Capture file format
 
@@ -297,7 +304,9 @@ here with its reason, never as a blanket rule.
 
 ## Harness configuration
 
-`tools/golden/capture.ps1` sets the environment and starts the patched build in the game folder:
+`tools/golden/capture.ps1` sets the environment, makes the folder of every group in
+`classes.txt` (the harness cannot make one itself on a drive path: xsystem35's `mkdir_p` gives up
+at `E:`, whose `mkdir` fails with `EACCES`) and starts the patched build in the game folder:
 
 | Variable | Meaning |
 |---|---|
@@ -447,3 +456,47 @@ captured at least once — the captures named after each step are what to look f
 Afterwards run `dotnet test tests/Kichikuou.Core.Tests`: the battles must still match, the new
 captures are parsed (`GoldenPendingTests`) and listed as waiting for their ports; and
 `describe.py` on the `week\` captures to check the weeks against what was played.
+
+## Capturing stage 1 (milestone 2) — checklist for the owner
+
+What stage 1 reaches is in [strategy/README.md](strategy/README.md), "Milestone 2". One session of
+`capture.ps1` again records every root at once; the port cannot play stage 1 beside it yet, so
+this is a session of the original alone. Loading a save is fine (it
+aborts the open captures; the next ones start normally). Note the week of each step; the `events`
+folder will fill with a capture per scene.
+
+1. **Reach stage 1**: load a save from the end of the prologue, or play path B quickly (harem with
+   Sill or Soul, a won pillage of Golak for Anasel, harem with Anasel, a won pillage of Golak, the
+   duel lost).
+2. **The first Leazas week.** `COM` plays `Iｼﾚｲﾌﾞ` 1. **Click a rebel province** (3, 4 or 7: the
+   attack is refused this week, `Cﾃｷﾄｼ:144`). Turn END: the rebel phase `TCﾘｰｻﾞｽ` (`Gｴｸｽ` 10;
+   if the rebels attack, defend), `Gｼｨﾙ` 21 at the end of the week.
+3. **In the following weeks, every command at least once** (most are once a week):
+   - **Attack** a rebel province (4 or 7) and win; in the same week **try a second attack**
+     (refused after a conquest, `Cﾃｷﾄｼ:112`); another week **cancel the party screen** once, and
+     **lose or retreat** once. Take province 5 — but **keep province 6 for step 5**.
+   - **Click provinces 17 or 29 and 31 or 32** (Maris refuses: "civil war") and an enemy province
+     farther away (`Cﾃｷﾄｼ2`).
+   - **Ninja** (Kanami, from an enemy city's menu): Collect Info one week, Sabotage another, and
+     "No Mission" once.
+   - **Subordinates**: Add New Troops (with Add More once), Replenish after a battle, a talk with a
+     new unit (Leila, Rick, Kinkaid, …), Rance's monologue, Info.
+   - **Harem**: a few visits (Lia, Maris, Kanami, …) and one cancel.
+   - **Own city** (click an own province): Temporary Levy on province 1 and on two others (e.g.
+     11 and 15); Bolster Defense once; on province 1 the dungeon cell.
+   - **Merchant**: the first meeting; a mercenary if the gold allows; an item; Send Away.
+   - **Construction**: build the Library (400) and play on until it is finished (8 weeks: its
+     scene runs at the start of a week).
+   - **Treasure**: the item screen; equip and unequip an item if there is one.
+   - **All Data**: the graphs, and change a scale once. **Think** once.
+   - **Dungeons**: the Monsters' Cave (province 14) — a search of a few floors with a battle, then
+     retreat; a click on dungeon 3 (province 1) and on dungeon 15 (province 11).
+   - **Save** once (Load/Save, a slot) and **load** it once later from the menu.
+4. **The rebels' attacks**: defend once by intercepting; optionally abandon a province once.
+5. **The end of the stage**: take province 6 → `Iｼﾚｲﾌﾞ` 2 (stage 2; `Gｴｸｽ` 4 asks a question —
+   any answer, note which). Turn END; the next week `GAL` 1, and at its end `Iﾏｼﾞﾝ` 1 with two
+   defences of Leazas Castle (win them). Play the following week's player phase, then quit.
+
+Afterwards the same checks as for the prologue: `dotnet test` for both test projects (the scene
+and `events` captures replay through the runtime at once; the rest wait for their ports) and
+`describe.py` on the `week\` captures.

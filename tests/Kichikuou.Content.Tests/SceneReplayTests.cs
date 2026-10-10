@@ -81,13 +81,25 @@ public sealed class SceneReplayTests(ITestOutputHelper output) : IDisposable
         Assert.Contains("the menu has 2 items in the core and 3 in the original", report.Divergence, StringComparison.Ordinal);
     }
 
-    /// <summary>The owner's captures of the prologue scenes (group <c>scenes</c>), replayed through the runtime.</summary>
-    [Fact]
-    public async Task The_scene_captures_replay_through_the_runtime()
+    /// <summary>
+    /// The roots of the <c>events</c> group: every other scene file (<c>G*</c>, <c>I*</c>); the
+    /// <c>scenes</c> group's roots are hooks there.
+    /// </summary>
+    private static bool IsEventRoot(string file) => file.Length > 0 && file[0] is 'G' or 'I' && !SceneRoots.Contains(file);
+
+    /// <summary>
+    /// The owner's captures of the prologue scenes (group <c>scenes</c>) and of every other scene
+    /// (group <c>events</c>), replayed through the runtime with their group's roots run inline.
+    /// </summary>
+    [Theory]
+    [InlineData("scenes")]
+    [InlineData("events")]
+    public async Task The_scene_captures_replay_through_the_runtime(string group)
     {
-        string dir = Path.Combine(LocalData.GoldenDirectory, "scenes");
+        string dir = Path.Combine(LocalData.GoldenDirectory, group);
         if (!Directory.Exists(dir) || !Directory.Exists(LocalData.ScenarioDirectory))
             return;
+        Func<string, bool> isRoot = group == "scenes" ? SceneRoots.Contains : IsEventRoot;
         var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
         var failed = new List<string>();
         foreach (string path in Directory.EnumerateFiles(dir, "*.golden").Order(StringComparer.Ordinal))
@@ -95,7 +107,7 @@ public sealed class SceneReplayTests(ITestOutputHelper output) : IDisposable
             var capture = GoldenCapture.Load(path);
             var report = await GoldenReplay.RunAsync(capture,
                 entryPoint: script => script.CallFileAsync(capture.Root),
-                scenes: hooks => new SceneRunner(scripts, hooks, SceneRoots.Contains));
+                scenes: hooks => new SceneRunner(scripts, hooks, isRoot));
             output.WriteLine(report.Describe(maxLines: 40));
             if (!report.Passed)
                 failed.Add(Path.GetFileName(path));

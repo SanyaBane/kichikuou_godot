@@ -34,6 +34,14 @@ foreach ($path in @($GameDir, $Hed, $Exe, $MsysBin)) {
     if (-not (Test-Path $path)) { throw "Not found: $path" }
 }
 New-Item -ItemType Directory -Force $OutDir | Out-Null
+# The harness cannot create a group's folder itself on a drive path (xsystem35's mkdir_p gives up
+# at "E:", whose mkdir fails with EACCES), so the folder of every group in classes.txt is made here.
+foreach ($line in Get-Content -Encoding UTF8 (Join-Path $PSScriptRoot 'classes.txt')) {
+    if ($line -match '^group\s+(\S+)(?:\s+(\S+))?') {
+        $folder = if ($Matches[2]) { $Matches[2] } else { $Matches[1] }
+        New-Item -ItemType Directory -Force (Join-Path $OutDir $folder) | Out-Null
+    }
+}
 
 if ($Seed -lt 0) { $Seed = Get-Random -Minimum 1 -Maximum 2147483647 }
 $env:XSYS35_SEED = "$Seed"

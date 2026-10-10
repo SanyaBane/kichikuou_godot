@@ -129,6 +129,12 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     hand — while everything with a meaning (map, window, pictures, menus, pickers, save screen) is
     drawn by hand over it from the events and GameState; the battle draws on the same surface. A
     redesigned UI replaces the layers and may show or hide the stage.
+13. **Milestone 2 is story stage 1, playable as a whole** (2026-10-10; of three scopes the agent
+    proposed — the whole stage, only its main path, the whole stage without the dungeon — the owner
+    chose the whole stage, in the proposed order): everything a player of stage 1 can do, from the
+    first Leazas week to the win at province 6 and the first week of stage 2. What stage 2 opens
+    (the independent cities, the wars with Helman, Zeth and JAPAN, their `T*`/`T*2` files) is the
+    next milestone. See "Milestone 2" below.
 
 ## Milestone 1 — the prologue
 
@@ -208,3 +214,100 @@ battle files, and the helpers `M`, `WAO_MAP`, `WAO_SUB`, `PCMPLAY`. Unreachable 
 3. `Cﾒｲｷｭｳ.ADV:11-13` reads a leftover `Cmdr_Cur` on dungeon clicks 2/3/15 — the port matches the
    original on the two such clicks of the owner's prologue run (2026-10-09, docs/golden-tests.md).
 4. A unit left at status 0 by a battle is not refreshed by `MAIN.ADV:56`.
+
+## Milestone 2 — story stage 1 (the Leazas civil war)
+
+Decision 13. The main path first, then the commands by how often a player of stage 1 uses them;
+one or more commits per step, each verified against its file run by `SceneRunner` (differential
+tests) and, where the owner has recorded them, golden captures:
+
+0. **Harness** (2026-10-10): the stage-1 command files, the ninja, the item screen and every other
+   scene file are capture roots (groups `commands`, `ninja`, `screens`, `events`;
+   [../golden-tests.md](../golden-tests.md)); the owner's checklist for a stage-1 session.
+1. **W2**: `MAIN.ADV:83-1045` whole — every block, also those closed at stage 1 (the Camilla
+   unit's inline AI, the demon war) — and the resume after the Leazas autosave (`:83`); the nation
+   phases are calls through the router.
+2. **N1, part**: the nation template (picker, filler, troop sum, target walk, capture) with
+   `TCﾘｰｻﾞｽ` and `TCﾘｰｻﾞｽ2` on it.
+3. **P3, part**: the attack in `Cﾃｷﾄｼ` (`:99-425` with its refusals). From here the main path of
+   stage 1 plays to stage 2.
+4. `Cﾌﾞｶ`'s troop menu (`:713-1097`) and the whole `Cﾊｰﾚﾑ`.
+5. `Cｼﾊｲﾄｼ` and `Cｼｮｳﾆﾝ`.
+6. `Cﾆﾝｼﾞｬ` and `Cﾃｲﾄ`.
+7. `Cﾀｶﾗ` with `Sｱｲﾃﾑ`, and `各種DATA`, with their screens in the presenter and in Godot.
+8. **D1**: the dungeon search in `Cﾒｲｷｭｳ` (God's Door and `Iｶﾐ` later).
+9. The whole stage unattended (`--auto`) to the first week of stage 2, and the owner's captures.
+
+Files without story gates (`MAIN`, `Cﾌﾞｶ`, `Cﾊｰﾚﾑ`, `Cｼﾊｲﾄｼ`, `Cｼｮｳﾆﾝ`, `Cﾆﾝｼﾞｬ`, `Cﾃｲﾄ`,
+`Sｱｲﾃﾑ`, `各種DATA`) are ported whole; of `Cﾃｷﾄｼ` only the attack (the independent cities are P4).
+
+### What stage 1 reaches (`StoryStage = 1`, swept 2026-10-10)
+
+Lines refer to `_extract\scenario_named` (assignments read `!StoryStage : n!`). [I] marks an
+inference; everything else was read.
+
+**Start.** `Iﾊﾝﾗﾝ.ADV:13-58` leaves units 1 and 5-11 alive, 2-4 dead, `Gold` 685; `:2141-2173`
+gives provinces 3-7 to the rebels (owner 2). The player holds 1, 2, 8-16 and 75.
+
+**The gate of the stage.** `Cﾃｷﾄｼ.ADV:118` `{(StoryStage = 1) * (Prov_Owner \ 2): @L_0481f:}`
+comes before the independent cities (`:121`) and Patton (`:124`): at stage 1 only the rebels can
+be attacked, every other owner gets Maris's refusal (`:3863-3947`). So no other war can start —
+`F_Japan_State := 1` is written only by `IJAPAN:1062` (needs province 28, owner 3), `IJAPAN:2791`
+and `TJAPAN2:4`; `F_Helman_War` only by `Gｽﾃｯｾﾙ` 1 (from `Tﾍﾙﾏﾝ2:4`); `F_Zeth_War` only by
+`Tｾﾞｽ2:46` — and the independent cities' writers (M Land, Mars) are behind it too.
+
+**The week** (`MAIN.ADV:83-1045`; no stage test in `:83-215`). Open at stage 1: the autosave
+(`:83`), the date, the banner, income, the refill of units 1-48, the report; the AL Church
+expense (−65, `:197`) every week (`N_ALChurch_Stage` stays 0 until `GAL` 1, called at `COM:152`
+only at stage 2); `COMMAND`; the rebel phase `TCﾘｰｻﾞｽ` (`:298`) every week; the Sill kidnapping
+chain `Gｼｨﾙ` 21-27 (`:896-925`, gated by `Week` only, so 21 plays at the end of the first Leazas
+week — and 22 too in the same week after a prologue that ran to week 23, the tests being in
+sequence [I]); `Gﾌｳｶ` 4 only past week 51. Closed: M Land, Galtia, Cream, `Gｶﾄﾞﾐｭｳﾑ` 1, Mars, the
+AL Church phase, JAPAN, Helman, Patton, Zeth, Kayblis, Creator, Camilla, La Vaswald,
+`Gﾏｼﾞｯｸ` 5, the demon and Kayblis wars. `TCﾘｰｻﾞｽ` is the only nation phase.
+
+**The first Leazas week.** `COM:91` plays `Iｼﾚｲﾌﾞ` 1, which sets `F_LeazasRebels_State := 1`
+(`Iｼﾚｲﾌﾞ:2119`): `Cﾃｷﾄｼ:144` refuses attacks on the rebels ("disrupted") that week. The rebel
+phase moves it to 2 and plays `Gｴｸｽ` 10 (`TCﾘｰｻﾞｽ.ADV:5-8`).
+
+**Attack.** A click on a rebel province next to an own one (`COMMAND.ADV:531-574`: 3, 4, 7) →
+`Cﾃｷﾄｼ` → `Sﾌﾞﾀｲ` (`:218`) → the unit refusals (`:226-307`; at stage 1 only Satella 29 and
+Meglass 30, unlikely in the army [I]) → `TCﾘｰｻﾞｽ2` (`:318-320`: defenders by province, no draws)
+→ an unopposed take when no rebel commander is alive (`:395`) or `FIGT_A` (`:419-425`). `:112`
+refuses a second attack in a week after a conquest. Clicks on 17, 29 (independent) and 31, 32
+(Helman) open `Cﾃｷﾄｼ` and get the refusal; other enemy provinces open `Cﾃｷﾄｼ2`. `FIGT_A` at
+stage 1 calls `Gｴｸｽ` 2 (province 5) / 3 (province 6) and `死亡捕獲`.
+
+**End.** `FIGT_A.ADV:192-195` `{(StoryStage = 1) * (Prov_Cur = 6) * (Bt_Result = 2): …
+%#Iｼﾚｲﾌﾞ.ADV:` (entry 2): `StoryStage := 2` (`Iｼﾚｲﾌﾞ.ADV:2689`), provinces 2-16 to Leazas, `Gｴｸｽ` 4
+(a three-way choice, `F_Ex_State` 100 or 4) — inside the player phase. Province 6 borders only 5
+and 26 (owner 3), so the shortest way is 4 or 7, then 5, then 6, one conquest a week: stage 2 in
+the fourth Leazas week at the earliest [I]. At that week's end `MAIN:893-895` sets
+`N_Camilla_Stage` 0 → 1; the next week `COM:152` plays `GAL` 1, and at its end `MAIN:887` plays
+`Iﾏｼﾞﾝ` 1: two `FIGT_B` defences of province 1 (commanders 86+87, then 86+87+90;
+`N_Camilla_Stage := 2`). The milestone ends at the player phase after that week.
+**Game over** at stage 1: losing province 1 (`FIGT_B:816-826, 877-882`, ending 2) or Rance's
+death (`死亡捕獲:29-31`, ending 1).
+
+**Commands** (the Leazas menu `COMMAND.ADV:226-316`, no stage gate): Construction `Cﾃｲﾄ`, Harem
+`Cﾊｰﾚﾑ` (its `Y 4, 4` at `:7` on every visit; stage 1 throws at `:6` today), Treasure `Cﾀｶﾗ` →
+`Sｱｲﾃﾑ`, Merchant `Cｼｮｳﾆﾝ`, Subordinates `Cﾌﾞｶ` (the troop menu), All Data `各種DATA`, Think
+`Iｶﾝｶﾞｴ` (a scene file), Load/Save, →Leazas Castle, Turn END. An own province opens `Cｼﾊｲﾄｼ`
+(Temporary Levy with its 8 draws and story triggers such as province 1 `G1` 7, 11 `G2` 6,
+15 `Gﾚｲ` 2; Bolster Defense; the province-1 cells; the Special Room); enemy cities offer
+`Cﾆﾝｼﾞｬ` (Kanami, `SET.ADV:16`; Sabotage against owners 2 and 3). Dungeons in own provinces:
+2 (Monsters' Cave, province 14, a floor search), 3 (province 1, `Gﾌﾞﾘﾃｨ` 1), 15 (province 11,
+`G1` 2/3/4 and a search); dungeon 1 lies in province 34 (Helman) [I].
+
+**Unreachable at stage 1:** the independent cities (`Cﾃｷﾄｼ.ADV:429-3828`), the Patton hooks
+(`:124-134`), the `Iｼﾚｲﾌﾞ` 3/5/6 gates, Papaya, Warg, the Zeth barrier, the AL Church visit, the
+thieves' hideout, Ruins Search; every `T*` but `TCﾘｰｻﾞｽ`, every `T*2` but `TCﾘｰｻﾞｽ2`.
+
+**Scenes.** `COM` tier 1: `Iｼﾚｲﾌﾞ` 1, `Gﾏﾘｽ` 15 (week 2; needs `F_Maris_RebelTalk`,
+`Iﾄｳｿﾞｸ:1842`), `Gﾌｳｶ` 1/2 late; tier 2: `Gﾏﾘｽ` 1/2/3/13/14, `Gｶﾞﾝｼﾞｰ` 1, `Gﾊﾞﾚｽ` 1, `Gｺﾙﾄﾞﾊﾞ` 1,
+`Gｼﾞｭﾘｱ` 1, `Gｱﾋﾞｧﾄｰﾙ` 2, `G2` 9, `Gｶﾅﾐ` 13 (about ten pairs [I]). None of the stage-1 scenes
+calls a rule file (grep); the rule files they meet are the battles above.
+
+**Files in milestone 2:** `MAIN`, `TCﾘｰｻﾞｽ`, `TCﾘｰｻﾞｽ2`, `Cﾃｷﾄｼ` (attack), `Cﾌﾞｶ`, `Cﾊｰﾚﾑ`,
+`Cｼﾊｲﾄｼ`, `Cｼｮｳﾆﾝ`, `Cﾆﾝｼﾞｬ`, `Cﾃｲﾄ`, `Cﾀｶﾗ`, `Sｱｲﾃﾑ`, `各種DATA`, `Cﾒｲｷｭｳ` (search); the scenes
+run from the player's files as before.
