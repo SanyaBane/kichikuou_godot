@@ -209,17 +209,22 @@ scene set `Harem_ExpReward`: `Harem_SexCount[k] += 1`, `Unit_Exp[1] += reward` (
 level-up here) (`:553-577`). `N_Lia_Neglect`: +1 per visit (cap 10) while `F_Lia_State = 1`,
 −1 on cancel, reset when Lia is picked (`:29-34, 396-408, 548-550`).
 
-### 3.9 Treasure / items (`Cﾀｶﾗ` + `Sｱｲﾃﾑ`) [C]
+### 3.9 Treasure / items (`Cﾀｶﾗ` + `Sｱｲﾃﾑ`) [C] — ported whole (`Strategy/TreasureCommand`, `Strategy/ItemScreen`, 2026-10-10)
 
 `Cﾀｶﾗ.ADV:1-15`: items held by a unit with `Status = 0` are lost (`Item_Holder := 0`), then
 `Sｱｲﾃﾑ`. Equip / unequip / swap are free and unlimited; items 1 and 2 are locked (and lock their
 holder); `Item_Effect = 0` cannot be equipped (`Sｱｲﾃﾑ.ADV:139-160, 250-371, 416-427`).
-`Item_Holder`: 0 not owned, 100 in stock, 1..50 held by unit.
+`Item_Holder`: 0 not owned, 100 in stock, 1..50 held by unit. Two views (`Ui_ItemViewMode`, kept
+between visits): units or items; a first pick turns the view and the second equips (the unit's
+own item to stock; an item held by another unit is taken off after a Yes); in the item view
+without a unit picked a held item can only be taken off. Every equip writes `Unit_Item[100]`
+(`Unit_DgnAtkMod[48]`), and the bar's unlabelled first place is a pick (997) — CMD-17.
 
-### 3.10 Display-only commands
+### 3.10 Display-only commands — `各種DATA` ported whole (`Strategy/AllDataCommand`, 2026-10-10)
 
 `各種DATA` (graphs of `Hist_Funds/SundryExp/MilitaryExp/Casualties` over 16 weeks, minimap
-marks; persistent scale preferences `Ui_MoneyGraphDiv/Scale`, `Ui_DamageGraphDiv/Scale`) and
+marks; persistent scale preferences `Ui_MoneyGraphDiv/Scale`, `Ui_DamageGraphDiv/Scale`; a press of both
+buttons on a graph sets the scale label to a bar's height, CMD-25; the exit resets `Hist_Cur` to 0) and
 Load/Save. `Sﾌﾞｶ` and `Sﾊｰﾚﾑ` are pickers with no rule writes (except stale cursors, §4).
 
 ## 4. Call graph
@@ -267,7 +272,7 @@ random commander or 100; `Prov_Cur := 1` left after the first Zeth-barrier failu
 (`Cﾃｷﾄｼ.ADV:4172`); `Bt_TargetProv` left set on every exit but Return (`:88`) and FIGT_A;
 `Hist_Cur` left at the harem girl index (`Cﾊｰﾚﾑ.ADV:560`) so later expenses that week land in
 history slot k (graphs only); **`Sｱｲﾃﾑ` equip writes `Unit_Item[100]`** (`:148-151`), which
-aliases `Unit_DgnAtkMod[48]` (page 1, stride 52) [I effect]. Whether any later code reads these
+aliases `Unit_DgnAtkMod[48]` (page 1, stride 52): unit 48's dungeon attack modifier is zeroed (CMD-17). Whether any later code reads these
 cursors without setting them is **unknown** — the golden comparison will tell.
 
 ## 6. Randomness — 28 `Y 4` sites, 21 live [C]
@@ -303,8 +308,8 @@ reached through them are inside T*2 defender setups, FIGT and story scenes.
 - **Grid pickers** (Sﾊｰﾚﾑ, Sﾌﾞｶ, Sﾌﾞﾀｲ, Sｱｲﾃﾑ share one widget): `IM` polling, 3×17 grid
   ids 1..51, a bottom bar with per-file codes (501/502/503/997/998/999), right click 999
   (998 in Sｱｲﾃﾑ) [C]. The code semantics are rules (e.g. Sﾌﾞﾀｲ left-half click = remove last);
-  the geometry is presentation. Ported for Sﾌﾞﾀｲ, Sﾌﾞｶ, Sﾊｰﾚﾑ (`Strategy/PickerScreen.cs` and
-  its subclasses; quirks CMD-22 to CMD-24).
+  the geometry is presentation. Ported for all four (`Strategy/PickerScreen.cs` and its
+  subclasses; quirks CMD-17, CMD-22 to CMD-24).
 - **Key waits:** every dialogue line (`WAO_SUB` op 1); 466 in Cﾃｷﾄｼ.
 - **Display only, free to redesign:** headers (name, Economy/Defense/Battle Area), all dialogue
   and portraits, cost/budget readouts, Sﾌﾞｶ modes 2-5 (screen save/restore), hover panels,
@@ -331,7 +336,7 @@ Quirks a faithful port must keep (or consciously decide on) [C unless tagged]:
 11. **Cﾃｲﾄ**: "all built" check (`:1`) can never be true; pool branch (`:588-657`) dead; `Unit_Cur := 16` clobber (`:268`).
 12. **Harem**: cancel lowers `N_Lia_Neglect` when it was at the cap; stale `Hist_Cur`; Gｻｲﾄｳ/Gﾏｼﾞｯｸ/Gﾜｰｸﾞ never set `Harem_ExpReward`.
 13. **Sﾌﾞﾀｲ**: clicking a selected unit moves it to the end instead of deselecting; returns only 501/502/503 (**answers battle open question 8**: FIGT_B's plains fall-through is unreachable).
-14. **Sｱｲﾃﾑ**: `Unit_Item[100]` alias write on every equip; bottom-bar id 997 unfiltered → out-of-range writes [I effect]; item-first view reads `Unit_Item[0]`.
+14. **Sｱｲﾃﾑ**: `Unit_Item[100]` alias write on every equip — `Unit_DgnAtkMod[48] := 0` (confirmed from the page layout, 2026-10-10); bottom-bar id 997 unfiltered → "unit/item 997" (`Cmdr_Troops[165]`, unused slots); item-first view reads `Unit_Item[0]` (CMD-17).
 15. **Cﾀｶﾗ**: items of dead units are destroyed, not returned to stock.
 16. Dead code: `Cｹﾝｷｭｳ` call, `Cｼﾊｲﾄｼ.ADV:1182-1235`, Cﾊｰﾚﾑ random stat routine (`:578-633`), Cﾃｷﾄｼ Shangri-La list (`:3800-3812`), WAO stub tails after `\0` in every file.
 17. Dictionary fixes: `DXTalk_RetryWeek` is Lazeal's surrender wait; `VAR0469` = Rance self-talk count (not debug); `F_Warg_State` reset at `Cﾃｷﾄｼ.ADV:357` contradicts "1 = joined" (resolved 2026-10-10 with the attack's port: 1 is the transient "met Warg at 78" that `Gﾜｰｸﾞ` 1 sets and `Cﾃｷﾄｼ` clears; 2 = joined); `VAR0063` is the Zeth barrier (`F_ZethBarrier_State`: 0 never met, 1 met, 2 broken); `F_Pool_Built` never set; `Hist_Cur` stale after harem.
@@ -372,7 +377,7 @@ FIGT_A when not under test; `Sﾌﾞﾀｲ`/`Sﾌﾞｶ`/`Sﾊｰﾚﾑ` either 
 1. `]` right-click semantics (fall-through assumed) and `IM` codes (16 left / 32 right) — confirm in xsystem35 `cmdi.c`.
 2. Can the player attack an owner-9/10 province (no defender setup → stale `EParty`)? (`Cﾃｷﾄｼ.ADV:317-376`)
 3. Does anything read the stale `Unit_Cur`/`Item_Cur`/`Cmdr_Cur`/`Prov_Cur = 1`/`Bt_TargetProv`/`Hist_Cur` before resetting them?
-4. Is the `Unit_DgnAtkMod[48]` alias write real in-game, and does the id-997 path write out of range or get bounds-checked? Needs a capture.
+4. Is the `Unit_DgnAtkMod[48]` alias write real in-game, and does the id-997 path write out of range or get bounds-checked? Answered 2026-10-10 from the page layout and xsystem35's page access (a slot inside the page is written, one past it ignored): both write the slots named in CMD-17; a capture would confirm.
 5. Gｻｰﾅｷｱ#1 (prov 27): does it fight / clear `Ui_CmdAttackAvail`? Gｼｨﾙ#5 (harem) and #2/#6 (merchant): do they touch the command flags?
 6. Gﾊﾟｯﾄﾝ#3 then #4 in one pass (separate `if`s, `Cﾃｷﾄｼ.ADV:124-134`) — possible?
 7. Meaning of `N_Mars_Score := 2` vs dictionary "1 = active"; where unit 26's troops come from.

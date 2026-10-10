@@ -10,7 +10,7 @@ namespace Kichikuou.Core.Tests.Strategy;
 
 /// <summary>
 /// The picker screens: <c>Sﾌﾞﾀｲ</c> (<see cref="DeploymentScreen"/>), <c>Sﾌﾞｶ</c>
-/// (<see cref="SubordinateScreen"/>) and <c>Sﾊｰﾚﾑ</c> (<see cref="HaremScreen"/>), answered with
+/// (<see cref="SubordinateScreen"/>), <c>Sﾊｰﾚﾑ</c> (<see cref="HaremScreen"/>) and <c>Sｱｲﾃﾑ</c> (<see cref="ItemScreen"/>), answered with
 /// pointer gestures on their grids and bars. Each file is also compared with the decompile on
 /// random states and random pointers (Content tests, <c>CommandSliceDifferentialTests</c>).
 /// </summary>
@@ -330,6 +330,191 @@ public class PickerScreenTests
     }
 
     // ---------------------------------------------------------------------------------------
+    // Sｱｲﾃﾑ
+    // ---------------------------------------------------------------------------------------
+
+    /// <summary>
+    /// The item screen in view <paramref name="view"/>: units 1-4 at status 1, unit 2 holding
+    /// item 1 (locked), unit 3 item 6; items 5 and 7 in stock, item 8 in stock without effect;
+    /// item names from string 300, unit 48's dungeon attack modifier 2.
+    /// </summary>
+    private static PickerRig Items(int view)
+    {
+        var rig = new PickerRig();
+        rig.State.Item_StrBase = 300;
+        rig.State.Ui_ItemViewMode = (Sys3Int)view;
+        for (int u = 1; u <= 4; u++)
+            rig.State.Units[u].Status = 1;
+        foreach (var (item, holder) in new[] { (1, 2), (6, 3), (5, 100), (7, 100), (8, 100) })
+        {
+            rig.State.Items[item].Holder = (Sys3Int)holder;
+            rig.State.Items[item].Effect = (Sys3Int)(item == 8 ? 0 : 3);
+            if (holder != 100)
+                rig.State.Units[holder].Item = (Sys3Int)item;
+        }
+        rig.State.Units[48].DgnAtkMod = 2;
+        return rig;
+    }
+
+    private static Task RunItems(PickerRig rig) => new ItemScreen(rig.Script, rig.Source).RunAsync();
+
+    [Fact]
+    public async Task A_unit_then_an_item_equips_it_and_the_old_one_goes_to_stock()
+    {
+        var rig = Items(view: 0);
+        rig.State.Units[4].Item = 7;
+        rig.State.Items[7].Holder = 4;
+        rig.Pick(4);                                                    // the unit: the item view, "Which item?"
+        rig.Pick(5);                                                    // the item: equipped
+        rig.Button(3);                                                  // End
+
+        await RunItems(rig);
+
+        Assert.Equal(5, rig.State.Units[4].Item.Value);
+        Assert.Equal(4, rig.State.Items[5].Holder.Value);
+        Assert.Equal(100, rig.State.Items[7].Holder.Value);             // the unit's old item back in stock
+        // QUIRK: CMD-17 — taking item 5 from the stock (holder 100) wrote Unit_Item[100] = Unit_DgnAtkMod[48].
+        Assert.Equal(0, rig.State.Units[48].DgnAtkMod.Value);
+        Assert.Equal(0, rig.State.Ui_ItemViewMode.Value);               // the view of the first pick again
+        Assert.Contains(104, rig.Lines);                                // "<unit> is equipping / Which item?"
+        Assert.Equal([108, 110], rig.Sounds);
+        Assert.Equal(0, rig.State.Ui_ItemSel.Value);
+        Assert.Equal(0, rig.State.Unit_Cur.Value);                      // the exit: the cursors on the picks
+        Assert.Equal(new PickerScreenEvent(PickerKind.Items, 0, false), rig.View.Events.OfType<ScreenEvent>().Last());
+        Assert.IsType<MapEvent>(rig.View.Events[^1]);
+        Assert.Equal(0, rig.Input.Pointer.Pending);
+    }
+
+    [Fact]
+    public async Task Items_1_and_2_stay_where_they_are()
+    {
+        var rig = Items(view: 0);
+        rig.Pick(2);                                                    // unit 2 holds item 1
+        rig.Button(3);
+
+        await RunItems(rig);
+
+        Assert.Contains(254, rig.Lines);                                // "<unit>'s equipment, <item>, can't be unequipped."
+        Assert.DoesNotContain(104, rig.Lines);
+        Assert.Equal([113, 1, 0], rig.Windows);
+        Assert.Equal([90], rig.Sounds);
+        Assert.Equal(1, rig.State.Units[2].Item.Value);
+        Assert.Equal(0, rig.State.Ui_ItemUnitSel.Value);
+    }
+
+    [Fact]
+    public async Task An_item_without_effect_cannot_be_equipped()
+    {
+        var rig = Items(view: 1);
+        rig.Pick(8);
+        rig.Button(3);
+
+        await RunItems(rig);
+
+        Assert.Contains(367, rig.Lines);                                // "This item can't be equipped."
+        Assert.Equal(100, rig.State.Items[8].Holder.Value);
+        Assert.Equal(1, rig.State.Ui_ItemViewMode.Value);
+    }
+
+    [Fact]
+    public async Task A_held_item_picked_first_is_taken_off_after_a_yes()
+    {
+        var rig = Items(view: 1);
+        rig.Pick(6);                                                    // held by unit 3: "unequip it?"
+        rig.Input.Choices.Enqueue(1);                                   // Yes
+        rig.Button(3);
+
+        await RunItems(rig);
+
+        Assert.Contains(322, rig.Lines);
+        Assert.Equal(100, rig.State.Items[6].Holder.Value);
+        Assert.Equal(0, rig.State.Units[3].Item.Value);
+        Assert.Equal([111, 110], rig.Sounds);
+        Assert.Equal([399, 403], rig.Input.Menus.Single().Select(i => i.At.Line));
+        Assert.Contains(rig.View.Events, e => e is EngineEvent { Command: "B1" } b && b.Args[0] == 2);
+    }
+
+    [Fact]
+    public async Task A_held_item_moves_to_the_unit_picked_after_a_yes()
+    {
+        var rig = Items(view: 0);
+        rig.Pick(1);
+        rig.Pick(6);                                                    // held by unit 3: "remove it and equip <unit> instead?"
+        rig.Input.Choices.Enqueue(1);
+        rig.Button(3);
+
+        await RunItems(rig);
+
+        Assert.Contains(341, rig.Lines);
+        Assert.Equal(6, rig.State.Units[1].Item.Value);
+        Assert.Equal(1, rig.State.Items[6].Holder.Value);
+        Assert.Equal(0, rig.State.Units[3].Item.Value);
+        Assert.Equal([108, 111, 110], rig.Sounds);
+    }
+
+    [Fact]
+    public async Task A_no_keeps_the_item_where_it_is()
+    {
+        var rig = Items(view: 1);
+        rig.Pick(6);
+        rig.Input.Choices.Enqueue(2);                                   // No
+        rig.Button(3);
+
+        await RunItems(rig);
+
+        Assert.Equal(3, rig.State.Items[6].Holder.Value);
+        Assert.Equal(6, rig.State.Units[3].Item.Value);
+    }
+
+    [Fact]
+    public async Task The_bars_first_place_is_taken_for_a_unit()
+    {
+        // QUIRK: CMD-17 — 997 is "unit 997": its item slot is commander 165's troops.
+        var rig = Items(view: 0);
+        rig.State.Cmdrs[165].Troops = 0;
+        rig.Button(1);
+        rig.Pick(5);
+        rig.Button(3);
+
+        await RunItems(rig);
+
+        Assert.Equal(997, rig.State.Items[5].Holder.Value);
+        Assert.Equal(5, rig.State.Cmdrs[165].Troops.Value);
+        var prompt = rig.View.Events.OfType<MessageEvent>().Single(m => m.Text.Line == 104);
+        Assert.Equal([20 + 996 * 3], prompt.StringVariables!.Select(s => (int)s.Value));
+    }
+
+    [Fact]
+    public async Task A_right_click_drops_a_half_made_pick_then_leaves()
+    {
+        var rig = Items(view: 0);
+        rig.Pick(1);
+        rig.Input.Pointer.RightClick(400, 100);                         // the pick dropped, the view back
+        rig.Input.Pointer.RightClick(400, 100);                         // nothing picked: the screen ends
+
+        await RunItems(rig);
+
+        Assert.Equal(0, rig.State.Ui_ItemViewMode.Value);
+        Assert.Equal(0, rig.State.Ui_ItemUnitSel.Value);
+        Assert.Equal(0, rig.State.Units[1].Item.Value);
+        Assert.Equal(0, rig.Input.Pointer.Pending);
+    }
+
+    [Fact]
+    public async Task The_view_turns_and_stays_turned()
+    {
+        var rig = Items(view: 0);
+        rig.Button(2);                                                  // Item/Character
+        rig.Button(3);
+
+        await RunItems(rig);
+
+        Assert.Equal(1, rig.State.Ui_ItemViewMode.Value);
+        Assert.Equal([108], rig.Sounds);
+        Assert.Equal(2, rig.View.Events.Count(e => e is EngineEvent { Command: "J1" }));   // the screen drawn twice
+    }
+
+    // ---------------------------------------------------------------------------------------
     // The router
     // ---------------------------------------------------------------------------------------
 
@@ -337,6 +522,7 @@ public class PickerScreenTests
     [InlineData("Sﾌﾞﾀｲ.ADV")]
     [InlineData("Sﾌﾞｶ.ADV")]
     [InlineData("Sﾊｰﾚﾑ.ADV")]
+    [InlineData("Sｱｲﾃﾑ.ADV")]
     public void The_router_runs_the_pickers_itself(string file) =>
         Assert.Contains(file, StrategyRules.PortedFiles);
 

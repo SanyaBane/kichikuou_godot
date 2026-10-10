@@ -11,8 +11,9 @@ namespace Kichikuou.Content.Tests;
 /// <summary>
 /// The hand-ported prologue slices of the command files (<see cref="EnemyCityCommand"/>,
 /// <see cref="DistantCityCommand"/>, <see cref="SubordinatesCommand"/>, <see cref="HaremCommand"/>, <see cref="MerchantCommand"/>, <see cref="OwnCityCommand"/>,
-/// <see cref="NinjaCommand"/>, <see cref="ConstructionCommand"/>, <see cref="DungeonCommand"/>) and the pickers (<see cref="DeploymentScreen"/>,
-/// <see cref="SubordinateScreen"/>, <see cref="HaremScreen"/>) against the files themselves run from the player's decompile by
+/// <see cref="NinjaCommand"/>, <see cref="ConstructionCommand"/>, <see cref="TreasureCommand"/>, <see cref="AllDataCommand"/>,
+/// <see cref="DungeonCommand"/>) and the pickers (<see cref="DeploymentScreen"/>, <see cref="SubordinateScreen"/>,
+/// <see cref="HaremScreen"/>, <see cref="ItemScreen"/>) against the files themselves run from the player's decompile by
 /// <see cref="SceneRunner"/>, on random states (mostly the prologue, <c>StoryStage</c> 0) and
 /// random input: both runs must make the same input requests, call the same files with the same
 /// <c>Ev_Entry</c>, draw the same rolls, show the same events and leave the same memory. Every other
@@ -502,6 +503,132 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             ["text 14", "text 62", "text 235", "text 241", "text 253", "text 256", "text 260", "text 264", "text 268",
              "text 276", "text 280", "text 283"]);
 
+    [Fact]
+    public Task The_item_screen_runs_exactly_as_Sｱｲﾃﾑ() =>
+        CompareAsync(
+            "Sｱｲﾃﾑ.ADV",
+            (script, scenario) => new ItemScreen(script, scenario).RunAsync(),
+            ShapeItems,
+            Scribble,
+            ["M 0", "item 399", "sound 90", "sound 108", "sound 110", "sound 111",
+             "text 104", "text 121", "text 185", "text 194", "text 215", "text 225", "text 254", "text 291", "text 301",
+             "text 311", "text 322", "text 341", "text 367", "text 540", "text 546", "text 549", "text 556", "text 559",
+             "text 587", "text 600", "text 604", "text 607", "text 612"],
+            cases: 4000,
+            mouse: ItemPointer);
+
+    /// <summary>
+    /// The view kept from the last visit (now and then one the file never sets), the units' states,
+    /// the items lost, in stock or equipped (each on one unit, which holds it; items 1 and 2 often;
+    /// now and then a holder out of range), the alias of <c>Unit_Item[100]</c> and of the bar's 997.
+    /// </summary>
+    private static void ShapeItems(GameState state, Random rng)
+    {
+        state.Ui_ItemViewMode = (Sys3Int)(rng.Next(25) == 0 ? rng.Next(2, 4) : rng.Next(0, 2));
+        for (int u = 0; u <= 51; u++)
+        {
+            state.Units[u].Item = Sys3Int.Zero;
+            state.Units[u].Status = (Sys3Int)(rng.Next(4) switch { 0 => 0, 1 => rng.Next(2, 4), _ => 1 });
+        }
+        for (int k = 1; k <= 50; k++)
+        {
+            var item = state.Items[k];
+            item.Effect = (Sys3Int)(rng.Next(4) == 0 ? 0 : rng.Next(1, 10));
+            int roll = k <= 2 ? rng.Next(2, 6) : rng.Next(6);
+            item.Holder = (Sys3Int)(roll switch { 0 or 1 => 0, 2 => 100, _ => 0 });
+            if (roll >= 3)
+            {
+                int u = rng.Next(1, 51);
+                if (state.Units[u].Item == 0)
+                {
+                    state.Units[u].Item = (Sys3Int)k;
+                    item.Holder = (Sys3Int)u;
+                }
+            }
+            if (rng.Next(60) == 0)
+                item.Holder = (Sys3Int)rng.Next(0, 1200);
+        }
+        state.Units[48].DgnAtkMod = (Sys3Int)rng.Next(0, 3);
+        state.Cmdrs[165].Troops = (Sys3Int)(rng.Next(3) == 0 ? 0 : rng.Next(1, 60));
+    }
+
+    /// <summary>The pointer of the item screen: mostly over the grid, now and then on the bar or elsewhere; a quarter of the reads press a button.</summary>
+    private static MouseState ItemPointer(Random rng)
+    {
+        int r = rng.Next(20);
+        var button = (Sys3Int)(r < 15 ? 0 : r < 19 ? 16 : 32);
+        var (x, y) = rng.Next(10) switch
+        {
+            < 7 => (rng.Next(328, 640), rng.Next(18, 324)),
+            < 9 => (rng.Next(320, 640), rng.Next(324, 400)),
+            _ => (rng.Next(0, 640), rng.Next(0, 400)),
+        };
+        return new MouseState(button, (Sys3Int)x, (Sys3Int)y);
+    }
+
+    [Fact]
+    public Task The_treasure_command_runs_exactly_as_Cﾀｶﾗ() =>
+        CompareAsync(
+            "Cﾀｶﾗ.ADV",
+            (script, _) => new TreasureCommand(script).RunAsync(),
+            (state, rng) =>
+            {
+                for (int k = 1; k <= 50; k++)
+                    state.Items[k].Holder = (Sys3Int)(rng.Next(6) switch { 0 => 0, 1 => 100, 5 => rng.Next(0, 1200), _ => rng.Next(1, 52) });
+                for (int u = 1; u <= 51; u++)
+                    state.Units[u].Status = (Sys3Int)(rng.Next(3) == 0 ? 0 : rng.Next(1, 3));
+            },
+            Scribble,
+            ["call Sｱｲﾃﾑ.ADV"],
+            cases: 500);
+
+    [Fact]
+    public Task The_all_data_screen_runs_exactly_as_各種DATA() =>
+        CompareAsync(
+            "各種DATA.ADV",
+            (script, _) => new AllDataCommand(script).RunAsync(),
+            ShapeAllData,
+            Scribble,
+            ["item 28", "item 316", "IM 48", "text 71", "text 117", "text 124", "text 146", "text 166", "text 173", "text 195",
+             "text 215", "text 222", "text 244", "text 264", "text 271", "text 395"],
+            mouse: DataPointer);
+
+    /// <summary>The 16 weeks of history from nothing to past the scale, the scales unset or kept, the map markers, a stale history cursor.</summary>
+    private static void ShapeAllData(GameState state, Random rng)
+    {
+        state.Ui_MoneyGraphDiv = (Sys3Int)(rng.Next(3) == 0 ? 0 : rng.Next(1, 220));
+        state.Ui_DamageGraphDiv = (Sys3Int)(rng.Next(3) == 0 ? 0 : rng.Next(1, 220));
+        state.Ui_MoneyGraphScale = (Sys3Int)rng.Next(0, 200);
+        state.Ui_DamageGraphScale = (Sys3Int)rng.Next(0, 200);
+        for (int k = 0; k < 300; k++)
+        {
+            var h = state.History[k];
+            h.Funds = Amount();
+            h.SundryExp = Amount();
+            h.MilitaryExp = Amount();
+            h.Casualties = Amount();
+        }
+        state.Ui_MarkCount = (Sys3Int)rng.Next(0, 12);
+        for (int m = 0; m < 100; m++)
+        {
+            var mark = state.Marks[m];
+            mark.Cg = (Sys3Int)rng.Next(0, 20000);
+            mark.X = (Sys3Int)rng.Next(0, 1920);
+            mark.Y = (Sys3Int)rng.Next(0, 800);
+        }
+        state.Hist_Cur = (Sys3Int)rng.Next(0, 300);
+
+        Sys3Int Amount() => (Sys3Int)(rng.Next(5) switch { 0 => 0, 1 => rng.Next(0, 300), 2 => rng.Next(0, 4000), _ => rng.Next(0, 65536) });
+    }
+
+    /// <summary>The pointer of the All Data screen: anywhere; a third of the reads press a button, now and then both.</summary>
+    private static MouseState DataPointer(Random rng)
+    {
+        int r = rng.Next(30);
+        var button = (Sys3Int)(r < 20 ? 0 : r < 25 ? 16 : r < 29 ? 32 : 48);
+        return new MouseState(button, (Sys3Int)rng.Next(0, 640), (Sys3Int)rng.Next(0, 400));
+    }
+
     // ---------------------------------------------------------------------------------------
     // The comparison
     // ---------------------------------------------------------------------------------------
@@ -509,7 +636,8 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
     private delegate Task Port(ScriptContext script, ScenarioScripts scenario);
 
     private async Task CompareAsync(
-        string file, Port port, Action<GameState, Random> shape, Scribbler scribble, string[] expected, int cases = Cases)
+        string file, Port port, Action<GameState, Random> shape, Scribbler scribble, string[] expected, int cases = Cases,
+        Func<Random, MouseState>? mouse = null)
     {
         if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, file)))
             return;
@@ -523,8 +651,8 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             var rng = new Random(seed);
             var state = RandomState(rng);
             shape(state, rng);
-            var mine = await RunAsync(Copy(state), seed, file, null, port, scenario, scribble);
-            var original = await RunAsync(Copy(state), seed, file, program, port, scenario, scribble);
+            var mine = await RunAsync(Copy(state), seed, file, null, port, scenario, scribble, mouse);
+            var original = await RunAsync(Copy(state), seed, file, program, port, scenario, scribble, mouse);
 
             if (mine.Unported is not null)
             {
@@ -557,11 +685,12 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
     private sealed record Run(GameState State, List<string> Log, bool Stopped, string? Unported);
 
     private static async Task<Run> RunAsync(
-        GameState state, int seed, string file, ScriptProgram? program, Port port, ScenarioScripts scenario, Scribbler scribble)
+        GameState state, int seed, string file, ScriptProgram? program, Port port, ScenarioScripts scenario, Scribbler scribble,
+        Func<Random, MouseState>? mouse)
     {
         var log = new List<string>();
         var hooks = new ScribblingHooks(state, seed, log, scribble);
-        var input = new RandomInput(seed, log, hooks);
+        var input = new RandomInput(seed, log, hooks, mouse);
         var view = new LoggingView(log);
         var random = new LoggingRandom(seed, log);
         bool stopped = false;
@@ -614,6 +743,10 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
                 yield return entry[..entry.IndexOf(" ->", StringComparison.Ordinal)];
             else if (entry.StartsWith("EngineEvent IZ", StringComparison.Ordinal))
                 yield return "IZ";
+            else if (entry.StartsWith("IM 48 ", StringComparison.Ordinal))
+                yield return "IM 48";                                   // both buttons
+            else if (entry.StartsWith("SoundEvent", StringComparison.Ordinal))
+                yield return $"sound {entry[(entry.IndexOf("Sound = ", StringComparison.Ordinal) + 8)..].TrimEnd(' ', '}')}";
             else if (entry.StartsWith("MapEvent", StringComparison.Ordinal))
                 yield return $"M {entry[(entry.IndexOf("Mode = ", StringComparison.Ordinal) + 7)..].TrimEnd(' ', '}')}";
             else if (entry.StartsWith("menu ", StringComparison.Ordinal))
@@ -866,10 +999,11 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
 
     /// <summary>
     /// The player at random: the pointer mostly at rest (now and then a button still down, for
-    /// the release waits), random menu choices (the last item — Return — once the run is long),
-    /// keys that are sometimes a right click (32), which closes the status pages.
+    /// the release waits; or as the test's <c>mouse</c> places it), random menu choices (the last
+    /// item — Return — once the run is long), keys that are sometimes a right click (32), which
+    /// closes the status pages.
     /// </summary>
-    private sealed class RandomInput(int seed, List<string> log, ScribblingHooks hooks) : ISceneInput
+    private sealed class RandomInput(int seed, List<string> log, ScribblingHooks hooks, Func<Random, MouseState>? mouse) : ISceneInput
     {
         private readonly Random _rng = new(seed * 31 + 7);
         private int _answers;
@@ -881,7 +1015,8 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         {
             Spend();
             int r = _rng.Next(10);
-            var m = new MouseState((Sys3Int)(r < 8 ? 0 : r == 8 ? 16 : 32), (Sys3Int)_rng.Next(0, 640), (Sys3Int)_rng.Next(0, 400));
+            var m = mouse?.Invoke(_rng)
+                ?? new MouseState((Sys3Int)(r < 8 ? 0 : r == 8 ? 16 : 32), (Sys3Int)_rng.Next(0, 640), (Sys3Int)_rng.Next(0, 400));
             log.Add($"IM {m.Button} {m.X} {m.Y}");
             return Task.FromResult(m);
         }

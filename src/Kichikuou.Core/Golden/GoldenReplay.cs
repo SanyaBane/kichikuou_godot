@@ -90,7 +90,7 @@ public sealed class GoldenReplay
     public static readonly IReadOnlySet<string> ReplayableRoots = new HashSet<string>
     {
         "FIGT_A.ADV", "FIGT_B.ADV", "FIGT.ADV", "COM.ADV", "COMMAND.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV",
-        "Cｼｮｳﾆﾝ.ADV", "Cｼﾊｲﾄｼ.ADV", "Cﾆﾝｼﾞｬ.ADV", "Cﾃｲﾄ.ADV",
+        "Cｼｮｳﾆﾝ.ADV", "Cｼﾊｲﾄｼ.ADV", "Cﾆﾝｼﾞｬ.ADV", "Cﾃｲﾄ.ADV", "Cﾀｶﾗ.ADV", "各種DATA.ADV",
     };
 
     /// <summary>
@@ -101,8 +101,8 @@ public sealed class GoldenReplay
     private static readonly IReadOnlySet<string> PointerRoots = new HashSet<string>
     {
         "COMMAND.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV", "Cｼｮｳﾆﾝ.ADV", "Cｼﾊｲﾄｼ.ADV", "Cﾆﾝｼﾞｬ.ADV",
-        "Cﾃｲﾄ.ADV", "Cﾒｲｷｭｳ.ADV",
-        "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sﾊｰﾚﾑ.ADV",
+        "Cﾃｲﾄ.ADV", "Cﾀｶﾗ.ADV", "各種DATA.ADV", "Cﾒｲｷｭｳ.ADV",
+        "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sﾊｰﾚﾑ.ADV", "Sｱｲﾃﾑ.ADV",
     };
 
     /// <summary>The label roots the replay has an entry point for: one week of <c>MAIN.ADV</c> (<c>L_00020</c>).</summary>
@@ -202,6 +202,8 @@ public sealed class GoldenReplay
                     "Cｼﾊｲﾄｼ.ADV" => new OwnCityCommand(battle.Script).RunAsync,
                     "Cﾆﾝｼﾞｬ.ADV" => new NinjaCommand(battle.Script).RunAsync,
                     "Cﾃｲﾄ.ADV" => new ConstructionCommand(battle.Script).RunAsync,
+                    "Cﾀｶﾗ.ADV" => new TreasureCommand(battle.Script).RunAsync,
+                    "各種DATA.ADV" => new AllDataCommand(battle.Script).RunAsync,
                     _ => battle.FightAsync,
                 };
 

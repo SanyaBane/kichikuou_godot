@@ -30,7 +30,7 @@ internal static partial class ScenarioParser
         ["PF0"] = [1], ["PF1"] = [1], ["PW0"] = [1], ["PW1"] = [1],
         ["EC"] = [1], ["CB"] = [5], ["CC"] = [6], ["CF"] = [5], ["CL"] = [5], ["CM"] = [9], ["CS"] = [7],
         ["B1"] = [6], ["B2"] = [6], ["B3"] = [6], ["B4"] = [6],
-        ["T"] = [2], ["WV"] = [4], ["ZC"] = [2], ["ZM"] = [1], ["SL"] = [1], ["IZ"] = [2],
+        ["T"] = [2], ["WV"] = [4], ["ZB"] = [1], ["ZC"] = [2], ["ZM"] = [1], ["SL"] = [1], ["IZ"] = [2],
     };
 
     /// <summary>Reads a whole file as a program.</summary>

@@ -5,7 +5,7 @@ using Kichikuou.Core.Sys3;
 namespace Kichikuou.Core.Strategy;
 
 /// <summary>
-/// The list widget the original's picker screens share (<c>Sﾌﾞﾀｲ</c>, <c>Sﾌﾞｶ</c>, <c>Sﾊｰﾚﾑ</c>;
+/// The list widget the original's picker screens share (<c>Sﾌﾞﾀｲ</c>, <c>Sﾌﾞｶ</c>, <c>Sﾊｰﾚﾑ</c>, <c>Sｱｲﾃﾑ</c>;
 /// <c>docs/strategy/survey-commands.md</c> §7): a 3×17 grid of names on the right half of the
 /// screen (ids 1-51, cells 108×18 from (328, 18), <see cref="PointerScript.PickerCell"/>), a bar of
 /// buttons below it, a highlight under the pointer and a details panel for the entry it is on,
@@ -39,21 +39,39 @@ public abstract class PickerScreen(ScriptContext script, string file, IScenarioS
     /// <summary>The picture and the details of the entry under the pointer (after its highlight's <c>CF</c>).</summary>
     protected abstract Task ShowDetailsAsync();
 
+    /// <summary>Whether the grid has a list to walk now (<c>Sｱｲﾃﾑ</c> walks one only in its views 0 and 1).</summary>
+    protected virtual bool HasList => true;
+
     /// <summary>
-    /// The grid (<c>Sﾌﾞﾀｲ.ADV:381-418</c>, <c>Sﾌﾞｶ.ADV:58-92</c>, <c>Sﾊｰﾚﾑ.ADV:47-78</c>): every
-    /// listed entry 1-50 in its cell, row by row; leaves <see cref="Cursor"/> and <c>Tmp0032</c> at
-    /// 51, the end of the hoverable ids.
+    /// Whether the entry under the pointer is taken for the highlight even when it is not listed
+    /// (<c>Sｱｲﾃﾑ.ADV:466-482</c>: the cell is remembered in <c>Tmp0033</c>, only its underline and
+    /// details wait for a listed entry); the other pickers remember listed entries only.
+    /// </summary>
+    protected virtual bool MarksUnlisted => false;
+
+    /// <summary>The code a right click answers (999; <c>Sｱｲﾃﾑ</c> 998).</summary>
+    protected virtual Sys3Int RightClickCode => 999;
+
+    /// <summary>The cursors the pointer loop points at the code under the pointer (<see cref="Cursor"/>; <c>Sｱｲﾃﾑ</c> two).</summary>
+    protected virtual void PointAt(Sys3Int code) => Cursor = code;
+
+    /// <summary>
+    /// The grid (<c>Sﾌﾞﾀｲ.ADV:381-418</c>, <c>Sﾌﾞｶ.ADV:58-92</c>, <c>Sﾊｰﾚﾑ.ADV:47-78</c>,
+    /// <c>Sｱｲﾃﾑ.ADV:170-238</c>): every listed entry 1-50 in its cell, row by row; leaves
+    /// <see cref="Cursor"/> and <c>Tmp0032</c> at 51, the end of the hoverable ids.
     /// </summary>
     protected async Task DrawListAsync()
     {
         await EngineAsync("ZM", 12);
         State.Tmp0030 = 108;
         State.Tmp0031 = 18;
-        Cursor = 1;
         State.Tmp0034 = 328;
         State.Tmp0035 = State.Tmp0031 + 0;
         State.Tmp0021 = State.Tmp0034;
         State.Tmp0022 = State.Tmp0035;
+        if (!HasList)
+            return;
+        Cursor = 1;
         do
         {
             if (Listed)
@@ -72,11 +90,11 @@ public abstract class PickerScreen(ScriptContext script, string file, IScenarioS
     }
 
     /// <summary>
-    /// The pointer loop (<c>Sﾌﾞﾀｲ.ADV:433-497</c>, <c>Sﾌﾞｶ.ADV:110-174</c>, <c>Sﾊｰﾚﾑ.ADV:92-177</c>):
-    /// waits for the buttons to be released, then follows the pointer — the highlight and the
-    /// details move with the entry or bar button under it — until a button is pressed; a right
-    /// click is 999. The code under the pointer at the press goes to <c>CallArg</c>; then it waits
-    /// for the release.
+    /// The pointer loop (<c>Sﾌﾞﾀｲ.ADV:433-497</c>, <c>Sﾌﾞｶ.ADV:110-174</c>, <c>Sﾊｰﾚﾑ.ADV:92-177</c>,
+    /// <c>Sｱｲﾃﾑ.ADV:428-506</c>): waits for the buttons to be released, then follows the pointer —
+    /// the highlight and the details move with the entry or bar button under it — until a button
+    /// is pressed; a right click is <see cref="RightClickCode"/>. The code under the pointer at the
+    /// press goes to <c>CallArg</c>; then it waits for the release.
     /// </summary>
     protected async Task PointAsync()
     {
@@ -92,7 +110,7 @@ public abstract class PickerScreen(ScriptContext script, string file, IScenarioS
         do
         {
             await HitTestAsync();
-            Cursor = State.Tmp0025;
+            PointAt(State.Tmp0025);
             if (State.Tmp0025 != State.Tmp0033 && State.Tmp0033 != 998 || State.Tmp0025 != State.Tmp0029 && State.Tmp0029 != 0)
             {
                 // The highlight leaves what it was on.
@@ -114,12 +132,15 @@ public abstract class PickerScreen(ScriptContext script, string file, IScenarioS
                     State.Tmp0029 = 0;
                 }
             }
-            if (State.Tmp0025 != State.Tmp0033 && State.Tmp0025 < State.Tmp0032 && Listed)
+            if (State.Tmp0025 != State.Tmp0033 && State.Tmp0025 < State.Tmp0032 && (MarksUnlisted || Listed))
             {
                 // A listed entry: underline it, show its details.
-                await EngineAsync("CF", State.Tmp0023, State.Tmp0024 + State.Tmp0031 + 14 + 2, 90, 2, 240);
-                await ShowDetailsAsync();
-                State.Tmp0026 = 1;
+                if (Listed)
+                {
+                    await EngineAsync("CF", State.Tmp0023, State.Tmp0024 + State.Tmp0031 + 14 + 2, 90, 2, 240);
+                    await ShowDetailsAsync();
+                    State.Tmp0026 = 1;
+                }
                 State.Tmp0033 = State.Tmp0025;
                 State.Tmp0027 = State.Tmp0023;
                 State.Tmp0028 = State.Tmp0024;
@@ -135,7 +156,7 @@ public abstract class PickerScreen(ScriptContext script, string file, IScenarioS
         }
         while (State.RetVal == 0);
         if (State.RetVal == 32)
-            State.Tmp0025 = 999;
+            State.Tmp0025 = RightClickCode;
         State.CallArg = State.Tmp0025;
         if (State.Tmp0029 > 500 && State.Tmp0029 < 600)
             await EngineAsync("CC", State.Tmp0027 + 640 + 10, State.Tmp0028 + 400, 70, 2, State.Tmp0027 + 10, State.Tmp0028);
@@ -178,15 +199,15 @@ public abstract class PickerScreen(ScriptContext script, string file, IScenarioS
 
     /// <summary>
     /// A bar button's label (<c>MS 1, "text"</c> at <paramref name="line"/>, from the player's
-    /// files): string 1 printed at (x + 1, 333) in black, then at (x, 333) in white.
+    /// files): string 1 printed at (x + 1, y) in black, then at (x, y) in white.
     /// </summary>
-    protected async Task BarLabelAsync(int line, Sys3Int x)
+    protected async Task BarLabelAsync(int line, Sys3Int x, int y = 333)
     {
         SetLiteral(line);
-        await EngineAsync("T", x + 1, 333);
+        await EngineAsync("T", x + 1, (Sys3Int)y);
         await EngineAsync("ZC", 1, 0);
         await TextAsync(line + 4);                                      // X 1
-        await EngineAsync("T", x, 333);
+        await EngineAsync("T", x, (Sys3Int)y);
         await EngineAsync("ZC", 1, 255);
         await TextAsync(line + 8);                                      // X 1
     }

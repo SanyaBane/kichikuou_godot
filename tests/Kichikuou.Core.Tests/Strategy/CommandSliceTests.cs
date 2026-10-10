@@ -11,7 +11,8 @@ namespace Kichikuou.Core.Tests.Strategy;
 /// <summary>
 /// The prologue slices of the command files: <c>Cﾃｷﾄｼ</c> (<see cref="EnemyCityCommand"/>),
 /// <c>Cﾃｷﾄｼ2</c> (<see cref="DistantCityCommand"/>), <c>Cﾌﾞｶ</c> (<see cref="SubordinatesCommand"/>),
-/// <c>Cﾊｰﾚﾑ</c> (<see cref="HaremCommand"/>), <c>Cｼｮｳﾆﾝ</c> (<see cref="MerchantCommand"/>), <c>Cｼﾊｲﾄｼ</c> (<see cref="OwnCityCommand"/>), the entry of <c>Cﾒｲｷｭｳ</c> with the Thieves' Hideout
+/// <c>Cﾊｰﾚﾑ</c> (<see cref="HaremCommand"/>), <c>Cｼｮｳﾆﾝ</c> (<see cref="MerchantCommand"/>), <c>Cｼﾊｲﾄｼ</c> (<see cref="OwnCityCommand"/>),
+/// <c>Cﾀｶﾗ</c> (<see cref="TreasureCommand"/>), <c>各種DATA</c> (<see cref="AllDataCommand"/>), the entry of <c>Cﾒｲｷｭｳ</c> with the Thieves' Hideout
 /// (<see cref="DungeonCommand"/>) and the router <see cref="StrategyRules"/>. Each file is also
 /// compared with the decompile on random states (Content tests, <c>CommandSliceDifferentialTests</c>).
 /// </summary>
@@ -1623,6 +1624,113 @@ public class CommandSliceTests
         var rig = Dungeon(stage: 2, dungeon: 4);
 
         await Assert.ThrowsAsync<NotSupportedException>(() => new DungeonCommand(rig.Script, new NameSource()).RunAsync());
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // Cﾀｶﾗ
+    // ---------------------------------------------------------------------------------------
+
+    [Fact]
+    public async Task Treasure_loses_the_items_of_fallen_units_then_shows_the_item_screen()
+    {
+        var rig = new SliceRig(stage: 1);
+        rig.State.Units[2].Status = 0;
+        rig.State.Units[5].Status = 1;
+        foreach (var (item, holder) in new[] { (3, 2), (4, 5), (9, 100) })
+        {
+            rig.State.Items[item].Holder = (Sys3Int)holder;
+            if (holder != 100)
+                rig.State.Units[holder].Item = (Sys3Int)item;
+        }
+
+        await new TreasureCommand(rig.Script).RunAsync();
+
+        // QUIRK: CMD-18 — not owned (0), not back in stock (100).
+        Assert.Equal(0, rig.State.Items[3].Holder.Value);
+        Assert.Equal(0, rig.State.Units[2].Item.Value);
+        Assert.Equal(5, rig.State.Items[4].Holder.Value);
+        Assert.Equal(100, rig.State.Items[9].Holder.Value);
+        Assert.Equal(["Sｱｲﾃﾑ.ADV"], rig.Scenes.Concat(rig.Calls.Select(c => c.File).Where(f => f[0] == 'S')).Distinct());
+        Assert.Equal(51, rig.State.Item_Cur.Value);
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // 各種DATA
+    // ---------------------------------------------------------------------------------------
+
+    private static SliceRig AllData()
+    {
+        var rig = new SliceRig(stage: 1);
+        for (int k = 0; k < 16; k++)
+        {
+            rig.State.History[k].Funds = (Sys3Int)(1000 * k);
+            rig.State.History[k].MilitaryExp = (Sys3Int)(100 * k);
+            rig.State.History[k].SundryExp = (Sys3Int)(50 * k);
+            rig.State.History[k].Casualties = (Sys3Int)(10 * k);
+        }
+        rig.State.Hist_Cur = 9;
+        return rig;
+    }
+
+    [Fact]
+    public async Task All_Data_shows_a_graph_and_keeps_the_scale_picked()
+    {
+        var rig = AllData();
+        rig.Input.Choices.Enqueue(1);                                   // All Funds
+        rig.Input.Pointer.RightClick(300, 200);                         // the scale menu
+        rig.Input.Choices.Enqueue(3);                                   // 4x
+        rig.Input.Pointer.Click(300, 200);                              // back to the menu
+        rig.Input.Choices.Enqueue(5);                                   // Return
+
+        await new AllDataCommand(rig.Script).RunAsync();
+
+        Assert.Equal((10000 + 6383) / 300, rig.State.Ui_MoneyGraphDiv.Value);
+        Assert.Equal(4, rig.State.Ui_MoneyGraphScale.Value);
+        Assert.Equal(4095 / 300, rig.State.Ui_DamageGraphDiv.Value);    // set on the first visit
+        Assert.Equal(16, rig.State.Ui_DamageGraphScale.Value);
+        Assert.Equal(0, rig.State.Hist_Cur.Value);
+        Assert.Equal([[28, 32, 36, 40, 44], [316, 320, 324, 328, 332, 336, 340, 344], [28, 32, 36, 40, 44]], rig.MenuLines);
+        var titles = rig.View.Events.OfType<ValueMessageEvent>().Where(v => v.Text.Line == 71).Select(v => (int)v.Values[0].Value);
+        Assert.Equal([16, 4], titles);                                  // drawn again at the new scale
+        var funds = rig.View.Events.OfType<ValueMessageEvent>().Where(v => v.Text.Line == 117).Take(16).Select(v => (int)v.Values[0].Value);
+        Assert.Equal(Enumerable.Range(0, 16).Select(k => 1000 * k / 100), funds);   // newest first, in hundreds
+        Assert.Equal(
+            [DataView.Map, DataView.Funds, DataView.Funds, DataView.Map, DataView.Closed],
+            rig.View.Events.OfType<DataScreenEvent>().Select(e => e.View));
+    }
+
+    [Fact]
+    public async Task A_bar_past_the_scale_is_cut_and_marked()
+    {
+        var rig = AllData();
+        rig.State.History[3].Casualties = 9000;                         // 9000 / 13 > 300
+        rig.Input.Choices.Enqueue(4);                                   // All Casualties
+        rig.Input.Pointer.Click(300, 200);
+        rig.Input.Choices.Enqueue(5);
+
+        await new AllDataCommand(rig.Script).RunAsync();
+
+        Assert.Equal([271], rig.Lines.Where(l => l == 271));           // "OV" once
+        var labels = rig.View.Events.OfType<ValueMessageEvent>().Where(v => v.Text.Line == 264).Select(v => (int)v.Values[0].Value).ToList();
+        Assert.Equal(900, labels[3]);                                   // in tens
+        Assert.Contains(rig.View.Events, e => e is EngineEvent { Command: "CF" } cf && cf.Args[3] == 300);
+    }
+
+    [Fact]
+    public async Task A_cancelled_menu_comes_back_on_a_left_click_and_ends_on_a_right_click()
+    {
+        var rig = AllData();
+        rig.Input.Choices.Enqueue(0);
+        rig.Input.Pointer.Click(300, 200);                              // the menu again
+        rig.Input.Choices.Enqueue(0);
+        rig.Input.Pointer.RightClick(300, 200);                         // the screen ends
+
+        await new AllDataCommand(rig.Script).RunAsync();
+
+        Assert.Equal(2, rig.Input.Menus.Count);
+        Assert.Equal(0, rig.State.Hist_Cur.Value);
+        Assert.Equal(1, rig.Input.Pointer.Pending);                     // it ends at the press: the release is not read
+        Assert.Equal(DataView.Closed, rig.View.Events.OfType<DataScreenEvent>().Last().View);
     }
 
     // ---------------------------------------------------------------------------------------

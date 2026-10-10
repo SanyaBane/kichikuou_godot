@@ -17,7 +17,7 @@ public abstract record ScreenEvent : ScriptEvent;
 /// </summary>
 public sealed record MapScreenEvent(bool Waiting) : ScreenEvent;
 
-/// <summary>The picker screens of the original (<c>Sﾌﾞﾀｲ</c>, <c>Sﾌﾞｶ</c>, <c>Sﾊｰﾚﾑ</c>).</summary>
+/// <summary>The picker screens of the original (<c>Sﾌﾞﾀｲ</c>, <c>Sﾌﾞｶ</c>, <c>Sﾊｰﾚﾑ</c>, <c>Sｱｲﾃﾑ</c>).</summary>
 public enum PickerKind
 {
     /// <summary><c>Sﾌﾞﾀｲ.ADV</c>: the party for a battle or a dungeon search.</summary>
@@ -28,16 +28,51 @@ public enum PickerKind
 
     /// <summary><c>Sﾊｰﾚﾑ.ADV</c>: a girl for the Harem command.</summary>
     Harem,
+
+    /// <summary><c>Sｱｲﾃﾑ.ADV</c>: the item screen of the Treasure command (equip and unequip).</summary>
+    Items,
 }
 
 /// <summary>
 /// A picker screen opened (<paramref name="Open"/>; raised before its first drawing command) or
 /// closed (raised after its last), with the mode it was called in (<c>Tmp0022</c> of
-/// <c>Sﾌﾞﾀｲ</c>, <c>CallArg</c> of <c>Sﾌﾞｶ</c>; 0 for <c>Sﾊｰﾚﾑ</c>). The screen's state is in
-/// GameState: the grid (unit status, <c>Buf_Val</c>), the party (<c>Bt_PlayerParty1-4</c>), the
-/// entry under the pointer (<c>Tmp0033</c>) and the bar button under it (<c>Tmp0029</c>).
+/// <c>Sﾌﾞﾀｲ</c>, <c>CallArg</c> of <c>Sﾌﾞｶ</c>; 0 for <c>Sﾊｰﾚﾑ</c> and <c>Sｱｲﾃﾑ</c>). The screen's
+/// state is in GameState: the grid (unit status, <c>Buf_Val</c>, item holders; <c>Sｱｲﾃﾑ</c>'s view
+/// <c>Ui_ItemViewMode</c> and its half-made pick <c>Ui_ItemSel</c>/<c>Ui_ItemUnitSel</c>), the party
+/// (<c>Bt_PlayerParty1-4</c>), the entry under the pointer (<c>Tmp0033</c>) and the bar button under
+/// it (<c>Tmp0029</c>).
 /// </summary>
 public sealed record PickerScreenEvent(PickerKind Kind, Sys3Int Mode, bool Open) : ScreenEvent;
+
+/// <summary>What <c>各種DATA</c> (the All Data command) shows.</summary>
+public enum DataView
+{
+    /// <summary>The screen is closed.</summary>
+    Closed,
+
+    /// <summary>The map in miniature with its markers, under the menu of graphs (<c>各種DATA.ADV:1-65</c>).</summary>
+    Map,
+
+    /// <summary>The funds, with the sundry and military spending stacked in each week's bar (<c>L_001a4</c>).</summary>
+    Funds,
+
+    /// <summary>The sundry expenses (<c>L_003ac</c>).</summary>
+    SundryExpenses,
+
+    /// <summary>The military spending (<c>L_004f6</c>).</summary>
+    MilitarySpending,
+
+    /// <summary>The casualties (<c>L_00640</c>).</summary>
+    Casualties,
+}
+
+/// <summary>
+/// <c>各種DATA</c> shows <paramref name="View"/>: raised before the view's first drawing command
+/// (<see cref="DataView.Closed"/> after the screen's last). The numbers are in GameState: the 16
+/// weeks of history (<c>Hist_*</c>, records 0-15, newest first), the scales
+/// (<c>Ui_MoneyGraphDiv/Scale</c>, <c>Ui_DamageGraphDiv/Scale</c>) and the map markers.
+/// </summary>
+public sealed record DataScreenEvent(DataView View) : ScreenEvent;
 
 /// <summary>
 /// The save screen's lists and menu (<c>ﾛｰﾄﾞｾｰﾌﾞ</c> modes 0, 1, 2) opened or closed; a load

@@ -32,8 +32,8 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
     public static readonly IReadOnlySet<string> PortedFiles = new HashSet<string>(StringComparer.Ordinal)
     {
         "MAIN.ADV", "COM.ADV", "COMMAND.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV", "Cｼｮｳﾆﾝ.ADV", "Cｼﾊｲﾄｼ.ADV", "Cﾆﾝｼﾞｬ.ADV",
-        "Cﾃｲﾄ.ADV", "Cﾒｲｷｭｳ.ADV",
-        "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sﾊｰﾚﾑ.ADV", "TCﾘｰｻﾞｽ.ADV", "TCﾘｰｻﾞｽ2.ADV", "FIGT_A.ADV", "FIGT_B.ADV", "FIGT.ADV",
+        "Cﾃｲﾄ.ADV", "Cﾀｶﾗ.ADV", "各種DATA.ADV", "Cﾒｲｷｭｳ.ADV",
+        "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sﾊｰﾚﾑ.ADV", "Sｱｲﾃﾑ.ADV", "TCﾘｰｻﾞｽ.ADV", "TCﾘｰｻﾞｽ2.ADV", "FIGT_A.ADV", "FIGT_B.ADV", "FIGT.ADV",
         "死亡捕獲.ADV", "ﾛｰﾄﾞｾｰﾌﾞ.ADV",
     };
 
@@ -70,10 +70,13 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
         "Cｼﾊｲﾄｼ.ADV" => new OwnCityCommand(Script).RunAsync(),
         "Cﾆﾝｼﾞｬ.ADV" => new NinjaCommand(Script).RunAsync(),
         "Cﾃｲﾄ.ADV" => new ConstructionCommand(Script).RunAsync(),
+        "Cﾀｶﾗ.ADV" => new TreasureCommand(Script).RunAsync(),
+        "各種DATA.ADV" => new AllDataCommand(Script).RunAsync(),
         "Cﾒｲｷｭｳ.ADV" => new DungeonCommand(Script, scenario).RunAsync(),
         "Sﾌﾞﾀｲ.ADV" => new DeploymentScreen(Script, scenario).RunAsync(),
         "Sﾌﾞｶ.ADV" => new SubordinateScreen(Script, scenario).RunAsync(),
         "Sﾊｰﾚﾑ.ADV" => new HaremScreen(Script, scenario).RunAsync(),
+        "Sｱｲﾃﾑ.ADV" => new ItemScreen(Script, scenario).RunAsync(),
         "TCﾘｰｻﾞｽ.ADV" => new RebelTurn(Script, scenario).RunAsync(),
         "TCﾘｰｻﾞｽ2.ADV" => new RebelDefenders(Script, scenario).RunAsync(),
         "FIGT_A.ADV" => BattleAsync(file, battle => battle.AttackProvinceAsync()),

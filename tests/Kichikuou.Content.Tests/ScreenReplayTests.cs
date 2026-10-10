@@ -8,7 +8,7 @@ namespace Kichikuou.Content.Tests;
 
 /// <summary>
 /// The owner's captures of the picker screens (group <c>screens</c>, roots <c>Sﾌﾞﾀｲ</c>,
-/// <c>Sﾌﾞｶ</c>, <c>Sﾊｰﾚﾑ</c>) replayed through their ports, which read their literals from the
+/// <c>Sﾌﾞｶ</c>, <c>Sﾊｰﾚﾑ</c>, <c>Sｱｲﾃﾑ</c>) replayed through their ports, which read their literals from the
 /// player's files. Skipped while there are none (or without the decompile).
 /// </summary>
 public sealed class ScreenReplayTests(ITestOutputHelper output)
@@ -29,6 +29,7 @@ public sealed class ScreenReplayTests(ITestOutputHelper output)
                 "Sﾌﾞﾀｲ.ADV" => s => new DeploymentScreen(s, scripts).RunAsync(),
                 "Sﾌﾞｶ.ADV" => s => new SubordinateScreen(s, scripts).RunAsync(),
                 "Sﾊｰﾚﾑ.ADV" => s => new HaremScreen(s, scripts).RunAsync(),
+                "Sｱｲﾃﾑ.ADV" => s => new ItemScreen(s, scripts).RunAsync(),
                 _ => throw new InvalidOperationException($"{path}: root {capture.Root} is not a picker screen."),
             };
             var report = await GoldenReplay.RunAsync(capture, entryPoint: entry);
