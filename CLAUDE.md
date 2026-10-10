@@ -69,8 +69,10 @@ files through `IScenarioSource.ReadBlock`; God's Door and `Iｶﾐ` throw `NotSu
 `--auto` plays the whole stage to stage 2 (`--seed 2`: Oaks in week 34, `Iﾏｼﾞﾝ` 1, stop in week 36,
 nothing unported met). **Milestone 2 is closed** (2026-10-10): the owner's three stage-1 capture
 runs, the end of the stage included, match the port whole (all 885 captures in the folder, none
-reaching an unported path). Next: milestone 3, its scope and order the owner's choice (candidates
-at the end of "Milestone 2" in docs/strategy/README.md); port nothing unasked.
+reaching an unported path). **Milestone 3** (owner's decision 14, 2026-10-10) is story stage 2 as
+a whole, up to the gate attack that starts stage 3: the sweep is docs/strategy/stage-2-sweep.md,
+the order docs/strategy/README.md, "Milestone 3" (Helman, Zeth, the gate, the independent cities,
+JAPAN, God's Door), the owner's capture checklist docs/golden-tests.md, "Capturing stage 2".
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
 

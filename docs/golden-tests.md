@@ -518,3 +518,41 @@ matches the port.
 Afterwards the same checks as for the prologue: `dotnet test` for both test projects (the scene
 and `events` captures replay through the runtime at once; the rest wait for their ports) and
 `describe.py` on the `week\` captures.
+
+## Capturing stage 2 (milestone 3) — checklist for the owner
+
+What stage 2 reaches is in [strategy/stage-2-sweep.md](strategy/stage-2-sweep.md); the order of
+the ports in [strategy/README.md](strategy/README.md), "Milestone 3". The harness needs nothing new.
+Stage 2 cannot be started from the title, so every session starts from a save; **save once a
+week** (Load/Save, a slot) so the next session can go on from there. The main path takes about
+twenty weeks of play; several sessions are fine, and the early steps help most, since the ports
+come in this order. Note the week of each step and every question's answer.
+
+1. **Start** from a save of stage 2 (the third stage-1 run saved in week 21's player phase, before
+   `Iﾏｼﾞﾝ` 1's defences and `Iﾏｼﾞﾝ` 2's question). At `Iﾏｼﾞﾝ` 2 answer **"Watch For Now"** ("Rape Demon Lord" ends the game about six
+   weeks later — worth a separate short session from the same save). At `GAL` 2 (the week after)
+   any answer, noted.
+2. **Helman**: attack Log B (31) or Log A (32) (one unit through the pass): `Gｽﾃｯｾﾙ` 1 starts the
+   war. Turn END: the Helman phase (`Tﾍﾙﾏﾝ`; defend when attacked, once intercept, once abandon if
+   it comes to that). The next week `Gﾊﾟｯﾄﾝ` 1. Then conquer on towards Lang Bau (45) — Archgrad
+   (36), Rosesgrad (39), Sudori 10 (42), Micrograd (44) — and take it (`Gﾐﾈﾊﾞ` 5, Helman falls);
+   later weeks bring `Gﾊﾟｯﾄﾝ` 6 and Patton's army (`Tﾊﾟｯﾄﾝ`). Attack a Patton province once
+   (`Gﾊﾟｯﾄﾝ` 3: Give Treaty or Destroy Them, noted).
+3. **Zeth**: attack Adam's Fortress (58) (`Iｾﾞｽ` 1 starts the war); Turn END: the Zeth phase
+   (`Tｾﾞｽ`). Conquer towards the ministers' towers — Nagi's Tower (67), Magic's Tower (66),
+   Chizuko's Tower (68), Papaya's Tower (70) (a unit with the Barrier Blade (item 12) passes the
+   barrier) — until `Iｾﾞｽ` 100 (Zeth falls).
+4. **The defences of the week**: the Camilla Unit's raids, the AL Church's attacks if it was told
+   to stop, Mars if he was taken by force — defend whatever comes.
+5. **The gate**: after both wars and the HQ meeting (`Iｼﾚｲﾌﾞ` 4), attack Tower of Evil (78) or
+   Grief Valley (89) from the Great Walls of Helman — once too early (`Iｼﾚｲﾌﾞ` 5, Maris refuses)
+   and once when `Iｼﾚｲﾌﾞ` 6 plays (stage 3); fight the battle, then Turn END and quit during the
+   Kayblis phase.
+6. **On the way, any week**: the independent cities — Rockearth (17), Zeo (24), Hanna (26),
+   Shangri-La (29), later Custom (21), Mars (22), Portugal (28), … — Negotiate with some, Use Force
+   on one, Stop once; Portugal (28) brings `IJAPAN` 1, and an attack on Nagasaki (55) the JAPAN war.
+   The AL Church visit (Temple AL HQ (77) header) once.
+7. **God's Door** (optional, long): the Ancient Ruins (35) held, Ho Raga's quest (Siberia (38)), the
+   four statues, then the door — its end is a game ending.
+
+Afterwards: `dotnet test` for both test projects and `describe.py` on the `week\` captures.

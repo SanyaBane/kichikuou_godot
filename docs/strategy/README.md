@@ -135,6 +135,17 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     first Leazas week to the win at Oaks (6) and the first week of stage 2. What stage 2 opens
     (the independent cities, the wars with Helman, Zeth and JAPAN, their `T*`/`T*2` files) is the
     next milestone. See "Milestone 2" below.
+14. **Milestone 3 is story stage 2, playable as a whole** (2026-10-10; of four scopes the agent
+    proposed — the whole stage, the endings `ｽﾀMENU`/`OVER` (W4) first, only stage 2's main path,
+    or by part regardless of stage — the owner chose the whole stage): as with decision 13, a
+    sweep of what stage 2 reaches comes first and decides the parts; the independent cities (P4)
+    and the wars stage 2 opens are in, Kayblis (N3) and God's Door (D2, `Iｶﾐ`) only if stage 2
+    reaches them. After the sweep ([stage-2-sweep.md](stage-2-sweep.md)) the owner chose
+    (2026-10-10): the milestone **ends at the gate attack** — `StoryStage := 3` by `Iｼﾚｲﾌﾞ` 6 with
+    its battle (`Tｹｲﾌﾞﾘｽ2` → `FIGT_A`) or by `Iﾏｼﾞﾝ` 51, before that week's Kayblis Empire phase
+    (`MAIN:594`; `Tｹｲﾌﾞﾘｽ` is N3, a later milestone); **the main path first** (Helman, Zeth, the
+    gate), then the independent cities, JAPAN, and **God's Door as the last step** (it has no
+    stage test and is reached at stage 2). See "Milestone 3" below.
 
 ## Milestone 1 — the prologue
 
@@ -310,8 +321,10 @@ South (4), Baranchi (7)) → `Cﾃｷﾄｼ` → `Sﾌﾞﾀｲ` (`:218`) → th
 only Satella 29 and Meglass 30, unlikely in the army [I]) → `TCﾘｰｻﾞｽ2` (`:318-320`: defenders by
 province, no draws) → an unopposed take when no rebel commander is alive (`:395`) or `FIGT_A`
 (`:419-425`). `:112` refuses a second attack in a week after a conquest. Clicks on Rockearth (17),
-Shangri-La (29) (independent) and Log B (31), Log A (32) (Helman) open `Cﾃｷﾄｼ` and get the
-refusal; other enemy provinces open `Cﾃｷﾄｼ2`. `FIGT_A` at stage 1 calls `Gｴｸｽ` 2 (Ys (5)) / 3
+Shangri-La (29), Zeo (24) once Oku (3) is held (independent), Log B (31), Log A (32) (Helman) and
+Adam's Fortress (58) (Zeth; it lists Parapara Fortress (16) as a neighbour) open `Cﾃｷﾄｼ` and get
+the refusal (Adam's Fortress (58) confirmed by the owner's first stage-1 run); other enemy
+provinces open `Cﾃｷﾄｼ2`. `FIGT_A` at stage 1 calls `Gｴｸｽ` 2 (Ys (5)) / 3
 (Oaks (6)) and `死亡捕獲`.
 
 **End.** `FIGT_A.ADV:192-195` `{(StoryStage = 1) * (Prov_Cur = 6) * (Bt_Result = 2): …
@@ -358,3 +371,32 @@ calls a rule file (grep); the rule files they meet are the battles above.
 **Files in milestone 2:** `MAIN`, `TCﾘｰｻﾞｽ`, `TCﾘｰｻﾞｽ2`, `Cﾃｷﾄｼ` (attack), `Cﾌﾞｶ`, `Cﾊｰﾚﾑ`,
 `Cｼﾊｲﾄｼ`, `Cｼｮｳﾆﾝ`, `Cﾆﾝｼﾞｬ`, `Cﾃｲﾄ`, `Cﾀｶﾗ`, `Sｱｲﾃﾑ`, `各種DATA`, `Cﾒｲｷｭｳ` (search); the scenes
 run from the player's files as before.
+
+## Milestone 3 — story stage 2 (the wars of humanity)
+
+Decision 14. What stage 2 reaches is in [stage-2-sweep.md](stage-2-sweep.md): the week is ported
+(milestone 2: the Camilla Unit, the AL Church, Mars and the demon war run already), `COMMAND` and
+the other command files have no stage-2 gate, the scenes run from the player's files; what is
+missing are the nation files of the wars, the independent cities, JAPAN and God's Door. The milestone
+starts in the player phase after `Iﾏｼﾞﾝ` 2's question (where milestone 2 ended) and ends with
+`StoryStage := 3`. The main path first, then the optional fronts; one or more commits per step,
+each verified against its file run by `SceneRunner` (differential tests) and the owner's captures
+where recorded:
+
+0. **Sweep and harness** (2026-10-10): [stage-2-sweep.md](stage-2-sweep.md). The harness needs
+   nothing new (every `T*`/`T*2`, `Cﾃｷﾄｼ` and every scene file are capture roots already); the
+   owner's stage-2 checklist is in [../golden-tests.md](../golden-tests.md). Stage-2 captures start
+   from the owner's saves (`ｽﾀMENU`'s "From 3" needs `DebugMode`).
+1. **Helman** (N2, part): `Tﾍﾙﾏﾝ2` (the defenders; its first run plays `Gｽﾃｯｾﾙ` 1, which starts the
+   war), `Tﾍﾙﾏﾝ` (the nation turn on `NationFile`) and `Tﾊﾟｯﾄﾝ` (Patton's army, after Helman falls).
+2. **Zeth** (N2, part): `Tｾﾞｽ2` (the defenders, the barrier, Papaya's trap; its first run starts
+   the war) and `Tｾﾞｽ`.
+3. **The gate**: `Tｹｲﾌﾞﾘｽ2` (Monster Generals refilled, Warg at Tower of Evil (78)), reached by the
+   attack after `Iｼﾚｲﾌﾞ` 6. From here the main path plays to stage 3.
+4. **The independent cities** (P4): `Cﾃｷﾄｼ.ADV:429-3828` — the dispatch, Negotiate, Use Force and
+   the eleven cities' paths.
+5. **JAPAN** (N2, the rest): `TJAPAN2` and `TJAPAN`.
+6. **God's Door** (D2): `Cﾒｲｷｭｳ`'s gate (`:233-236`), `L_04ddc` and the room (`:3500-4556`); `Iｶﾐ`
+   runs from the player's files (its endings end the game as `GameEnd` until W4 ports `OVER`).
+7. **The whole stage unattended, the owner's captures**: whether `--auto` should play stage 2 to
+   the gate (about 13 conquests on the shortest path) is the owner's call.
