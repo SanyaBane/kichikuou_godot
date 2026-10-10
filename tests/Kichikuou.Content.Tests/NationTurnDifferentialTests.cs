@@ -10,7 +10,7 @@ namespace Kichikuou.Content.Tests;
 
 /// <summary>
 /// The hand-ported nation files (<see cref="RebelTurn"/>, <see cref="RebelDefenders"/>,
-/// <see cref="HelmanTurn"/>, <see cref="HelmanDefenders"/>, <see cref="PattonTurn"/>, on the template
+/// <see cref="HelmanTurn"/>, <see cref="HelmanDefenders"/>, <see cref="PattonTurn"/>, <see cref="ZethDefenders"/>, on the template
 /// <see cref="NationFile"/>) against the files
 /// themselves run from the player's decompile by <see cref="SceneRunner"/>, on random states: both
 /// runs must call the same files with the same <c>Ev_Entry</c> and the same party, draw the same
@@ -159,6 +159,119 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
             yield return after.CallArg < 500 ? "too weak" : "no target";
         if (log.Any(e => e.StartsWith("jump ", StringComparison.Ordinal)))
             yield return "jump";
+    }
+
+    [Fact]
+    public Task The_Zeth_defenders_are_picked_exactly_as_Tｾﾞｽ2() =>
+        CompareAsync(
+            "Tｾﾞｽ2.ADV",
+            (script, scenario) => new ZethDefenders(script, scenario).RunAsync(),
+            AimAtZeth,
+            ZethDefenderFeatures,
+            ["call Iｾﾞｽ.ADV 1", "call Gﾏｼﾞｯｸ.ADV 1", "call Gﾅｷﾞ.ADV 5", "call Gﾁｽﾞｺ.ADV 1", "call Gﾊﾟﾊﾟｲｱ.ADV 3",
+             "Magic's army", "Alex's army at Magic's Tower", "Nagi's army", "Chizuko's army", "Papaya's army",
+             "113's army", "117's army", "121's army", "125's army",
+             "113 with the Walls", "117 with the Walls", "121 with the Walls", "125 with the Walls",
+             "sent back at 66", "sent back at 67", "sent back at 68", "sent back at 70", "the Blade", "barrier down",
+             "garrison", "Mage Leader alone", "garrison weakened", "Parapara Fortress", "Papaya's trap"],
+            ScribbleZeth);
+
+    /// <summary>Zeth's ministers (101-112 with their officers) and generals (113-128 with theirs).</summary>
+    private static readonly int[] ZethLeaders = [.. Enumerable.Range(101, 28)];
+
+    /// <summary>
+    /// A Zeth province, mostly a general's city or a minister's tower, now and then attacked again
+    /// (the garrison's draws), with walls and battle area; the garrison Wall (94), Wall (95), Mage
+    /// Leader (96) with random maxima; Zeth's leaders alive or not (a general alone now and then);
+    /// the player's party of up to four units, one of them holding the Barrier Blade (item 12) now
+    /// and then; the barrier, Papaya's state and the war at their tested values.
+    /// </summary>
+    private static void AimAtZeth(GameState state, Random rng)
+    {
+        int[] provinces = [16, 58, 61, 63, 65, 66, 66, 67, 67, 68, 68, 70, 70, 59, 60, 62, 69];
+        state.Prov_Cur = (Sys3Int)(rng.Next(8) == 0 ? rng.Next(0, 101) : provinces[rng.Next(provinces.Length)]);
+        state.Provs[state.Prov_Cur].BattleArea = (Sys3Int)rng.Next(0, 1000);
+        state.Provs[state.Prov_Cur].Defense = (Sys3Int)rng.Next(0, 30);
+        state.Bt_GarrisonProv = (Sys3Int)(rng.Next(3) == 0 ? state.Prov_Cur.Value : rng.Next(0, 101));
+        state.Bt_GarrisonHits = (Sys3Int)rng.Next(0, 5);
+        foreach (int c in new[] { 94, 95, 96 })
+        {
+            state.Cmdrs[c].MaxTroops = (Sys3Int)(rng.Next(6) == 0 ? rng.Next(0, 2) : rng.Next(0, 3000));
+            state.Cmdrs[c].MaxHP = (Sys3Int)rng.Next(0, 500);
+        }
+        bool alone = rng.Next(4) == 0;
+        foreach (int c in ZethLeaders)
+            state.Cmdrs[c].Status = (Sys3Int)(alone && (c - 113) % 4 != 0 || rng.Next(5) == 0 ? 0 : 1);
+        state.F_Papaya_State = (Sys3Int)rng.Next(0, 4);
+        state.F_Zeth_War = (Sys3Int)(rng.Next(4) == 0 ? 0 : rng.Next(1, 3));
+        state.F_ZethBarrier_State = (Sys3Int)rng.Next(0, 3);
+        int units = rng.Next(0, 5);
+        Sys3Int[] party = [.. Enumerable.Range(0, 4).Select(k => (Sys3Int)(k < units ? rng.Next(1, 51) : 0))];
+        state.Bt_PlayerParty1 = party[0];
+        state.Bt_PlayerParty2 = party[1];
+        state.Bt_PlayerParty3 = party[2];
+        state.Bt_PlayerParty4 = party[3];
+        foreach (var unit in party)
+            state.Units[unit].Item = (Sys3Int)(rng.Next(4) == 0 ? 12 : rng.Next(0, 20));
+    }
+
+    /// <summary>What Zeth's scenes may change: <c>Gﾏｼﾞｯｸ</c> 1's answer in <c>Tmp0001</c>, the leaders, the barrier, Papaya's state, the party.</summary>
+    private static void ScribbleZeth(GameState state, Random rng)
+    {
+        if (rng.Next(2) == 0)
+            state.Tmp0001 = (Sys3Int)rng.Next(0, 2);
+        foreach (int c in ZethLeaders)
+            if (rng.Next(10) == 0)
+                state.Cmdrs[c].Status = (Sys3Int)rng.Next(0, 2);
+        if (rng.Next(6) == 0)
+            state.F_ZethBarrier_State = (Sys3Int)rng.Next(0, 3);
+        if (rng.Next(6) == 0)
+            state.F_Papaya_State = (Sys3Int)rng.Next(0, 4);
+        if (rng.Next(6) == 0)
+            state.Bt_PlayerParty2 = (Sys3Int)rng.Next(0, 51);
+        if (rng.Next(6) == 0)
+            state.Strings[10] = "scribbled";
+    }
+
+    private static IEnumerable<string> ZethDefenderFeatures(GameState before, GameState after, GameState first, List<string> log)
+    {
+        foreach (string[] call in log.Where(e => e.StartsWith("call ", StringComparison.Ordinal)).Select(e => e.Split(' ')))
+            yield return $"call {call[1]} {call[3]}";
+        int prov = after.Prov_Cur.Value;
+        int[] party = [after.Bt_EnemyParty1.Value, after.Bt_EnemyParty2.Value, after.Bt_EnemyParty3.Value, after.Bt_EnemyParty4.Value];
+        bool tower = prov is 66 or 67 or 68 or 70;
+        if (log.Any(e => e.StartsWith("rnd ", StringComparison.Ordinal)))
+            yield return "garrison weakened";
+        if (before.Prov_Cur == 16 && after.Bt_TroopLimit == 5000 && after.Bt_WallBonus == 0)
+            yield return "Parapara Fortress";
+        if (before.F_Papaya_State == 1 && first.F_Papaya_State == 2)
+            yield return "Papaya's trap";
+        if (tower && after.Bt_PlayerParty1 == 0 && before.Bt_PlayerParty1 != 0)
+        {
+            yield return $"sent back at {prov}";
+            yield break;
+        }
+        if (tower && after.F_ZethBarrier_State != 2 && log.All(e => !e.StartsWith("call Iｾﾞｽ", StringComparison.Ordinal)))
+            yield return "the Blade";
+        if (tower && after.F_ZethBarrier_State == 2)
+            yield return "barrier down";
+        if (party is [94, 95, 96, 0])
+            yield return "garrison";
+        else if (party is [96, 0, 0, 0] && prov == 66)
+            yield return "Mage Leader alone";
+        else if (after.Tmp0001 == 94 && after.Tmp0002 == 95 && after.Tmp0003.Value is 113 or 117 or 121 or 125)
+            yield return $"{after.Tmp0003.Value} with the Walls";
+        else if (after.Tmp0004.Value is 113 or 117 or 121 or 125 && after.Tmp0005 == 0)
+            yield return prov == 66 ? "Alex's army at Magic's Tower" : $"{after.Tmp0004.Value}'s army";
+        else
+            yield return after.Tmp0003.Value switch
+            {
+                110 => "Magic's army",
+                107 => "Nagi's army",
+                101 => "Chizuko's army",
+                104 => "Papaya's army",
+                _ => "?",
+            };
     }
 
     /// <summary>Every attack <c>Tﾍﾙﾏﾝ</c> can make: the army and the province, in the file's order.</summary>
