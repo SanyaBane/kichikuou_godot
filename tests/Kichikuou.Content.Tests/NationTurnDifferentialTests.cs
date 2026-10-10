@@ -10,7 +10,7 @@ namespace Kichikuou.Content.Tests;
 
 /// <summary>
 /// The hand-ported nation files (<see cref="RebelTurn"/>, <see cref="RebelDefenders"/>,
-/// <see cref="HelmanTurn"/>, <see cref="HelmanDefenders"/>, <see cref="PattonTurn"/>, <see cref="ZethDefenders"/>, on the template
+/// <see cref="HelmanTurn"/>, <see cref="HelmanDefenders"/>, <see cref="PattonTurn"/>, <see cref="ZethTurn"/>, <see cref="ZethDefenders"/>, on the template
 /// <see cref="NationFile"/>) against the files
 /// themselves run from the player's decompile by <see cref="SceneRunner"/>, on random states: both
 /// runs must call the same files with the same <c>Ev_Entry</c> and the same party, draw the same
@@ -272,6 +272,184 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
                 104 => "Papaya's army",
                 _ => "?",
             };
+    }
+
+    [Fact]
+    public Task The_Zeth_turn_runs_exactly_as_Tｾﾞｽ() =>
+        CompareAsync(
+            "Tｾﾞｽ.ADV",
+            (script, scenario) => new ZethTurn(script, scenario).RunAsync(),
+            AimAtZethTurn,
+            ZethTurnFeatures,
+            [
+                "call Gﾊﾟﾊﾟｲｱ.ADV 1", "call Gﾅｷﾞ.ADV 3", "call Gﾅｷﾞ.ADV 2", "call Gﾅｷﾞ.ADV 1",
+                .. new[] { 2, 3, 4, 5, 6, 30, 31, 32, 33, 34, 35, 36 }.Select(e => $"call Iｾﾞｽ.ADV {e}"),
+                "call Gﾏｼﾞｯｸ.ADV 3", "call Gﾁｽﾞｺ.ADV 6", "call Gﾊﾟﾊﾟｲｱ.ADV 9", "call Gﾅｷﾞ.ADV 22", "call Gﾏｼﾞｯｸ.ADV 24",
+                "call Gﾊﾟﾊﾟｲｱ.ADV 8", "call Gﾁｽﾞｺ.ADV 4", "call Gﾁｽﾞｺ.ADV 5", "call Gﾅｷﾞ.ADV 21", "call Gﾏｼﾞｯｸ.ADV 21",
+                "call Gﾏｼﾞｯｸ.ADV 22",
+                .. ZethAttacks,
+                "state 2: Saias alone", "state 2: Saias dead", "no scene the week Iｾﾞｽ 2 played", "6 without Alex",
+                "officer revived", "general too weak", "fell into Chizuko's army",
+                "no attack", "one attack", "two attacks", "three attacks", "jump",
+            ],
+            ScribbleZethTurn,
+            cases: 4000);
+
+    /// <summary>The generals with the first commander of their armies: Saias (113) … Alex (125), each with his three officers after him.</summary>
+    private static readonly (string Name, int Leader)[] ZethGenerals = [("Saias", 113), ("Uspira", 117), ("Kabachahn", 121), ("Alex", 125)];
+
+    /// <summary>The ministers' armies (four commanders each from the first) and their targets, in the file's order.</summary>
+    private static readonly (string Name, int First, int[] Targets)[] ZethMinisterArmies =
+    [
+        ("Chizuko", 165, [70, 69, 67, 62, 59, 58]),
+        ("Papaya", 169, [66, 74, 76, 65, 63, 64]),
+        ("Nagi", 173, [66, 69, 62, 59, 58, 16]),
+        ("Magic", 177, [67, 63, 61, 60, 59, 58]),
+    ];
+
+    /// <summary>The generals' march, Chizuko's Tower (68) to Leazas Castle (1).</summary>
+    private static readonly int[] ZethGeneralsTargets = [68, 70, 66, 67, 62, 63, 61, 60, 59, 58, 16, 15, 13, 2, 1];
+
+    /// <summary>Every attack <c>Tｾﾞｽ</c> can make: each general's army, the generals' march at each province, each minister's army at each.</summary>
+    private static readonly string[] ZethAttacks =
+    [
+        .. ZethGenerals.Select(g => $"{g.Name}'s army"),
+        .. ZethGeneralsTargets.Select(p => $"generals at {p}"),
+        .. ZethMinisterArmies.SelectMany(m => m.Targets.Select(p => $"{m.Name}'s army at {p}")),
+    ];
+
+    /// <summary>The provinces <c>Tｾﾞｽ</c> tests: the generals' march and the ministers' targets.</summary>
+    private static readonly int[] ZethTurnProvinces = [1, 2, 13, 15, 16, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 74, 76];
+
+    /// <summary>The ministers, the generals and their officers (101-128), the ministers' armies (165-180).</summary>
+    private static readonly int[] ZethTurnCommanders = [.. Enumerable.Range(101, 28), .. Enumerable.Range(165, 16)];
+
+    private static Sys3Int ZethState(Random rng) =>
+        (Sys3Int)(rng.Next(3) == 0 ? rng.Next(0, 13) : new[] { 1, 2, 4, 5, 8, 9, 10, 11 }[rng.Next(8)]);
+
+    /// <summary>
+    /// The ritual, the war's state, Magic's and Papaya's at their tested values and around them;
+    /// Zeth's commanders alive or not, with troops (now and then nobody has any: the generals'
+    /// march stays home) and maxima for a revival; the provinces of the lists held by the player at
+    /// a density of the case's own, now and then none of the generals' targets but Zeth Palace (69)
+    /// (the march falls into Chizuko's army).
+    /// </summary>
+    private static void AimAtZethTurn(GameState state, Random rng)
+    {
+        state.F_RagarlRitual_State = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(1, 6) : rng.Next(6) == 0 ? rng.Next(6, 8) : 0);
+        state.F_Zeth_State = ZethState(rng);
+        state.F_Magic_State = (Sys3Int)rng.Next(0, 3);
+        state.F_Papaya_State = (Sys3Int)rng.Next(0, 3);
+        bool weak = rng.Next(8) == 0;
+        foreach (int c in ZethTurnCommanders)
+        {
+            var cmdr = state.Cmdrs[c];
+            cmdr.Status = (Sys3Int)(rng.Next(4) == 0 ? 0 : rng.Next(1, 3));
+            cmdr.Troops = (Sys3Int)(weak ? 0 : rng.Next(10) == 0 ? rng.Next(60000, 65536) : rng.Next(0, 1500));
+            cmdr.MaxHP = (Sys3Int)rng.Next(0, 500);
+            cmdr.MaxTroops = (Sys3Int)(weak ? rng.Next(0, 8) : rng.Next(0, 3000));
+        }
+        if (weak)
+            state.Cmdrs[0].Troops = 0;
+        double mine = rng.Next(8) == 0 ? 0 : rng.NextDouble() * 0.4;
+        foreach (int p in ZethTurnProvinces)
+            state.Provs[p].Owner = (Sys3Int)(rng.NextDouble() < mine ? 1 : rng.Next(4) switch { 0 => 8, 1 => rng.Next(0, 12), _ => 7 });
+        if (rng.Next(8) == 0)
+        {
+            foreach (int p in ZethGeneralsTargets)
+                if (state.Provs[p].Owner == 1)
+                    state.Provs[p].Owner = 7;
+            state.Provs[69].Owner = 1;
+        }
+    }
+
+    /// <summary>
+    /// What Zeth's scenes and battles may change: the war's state (<c>Iｾﾞｽ</c> 2 moves it to 2,
+    /// <c>Iｾﾞｽ.ADV:2900</c>: an <c>Ev_Entry</c> of 2 does so on one call in two), the ritual,
+    /// Magic's and Papaya's states, the commanders, the provinces and the army name.
+    /// </summary>
+    private static void ScribbleZethTurn(GameState state, Random rng)
+    {
+        if (state.Ev_Entry == 2 && rng.Next(2) == 0)
+            state.F_Zeth_State = 2;
+        else if (rng.Next(5) == 0)
+            state.F_Zeth_State = ZethState(rng);
+        if (rng.Next(6) == 0)
+            state.F_RagarlRitual_State = (Sys3Int)rng.Next(0, 8);
+        if (rng.Next(6) == 0)
+            state.F_Magic_State = (Sys3Int)rng.Next(0, 3);
+        if (rng.Next(6) == 0)
+            state.F_Papaya_State = (Sys3Int)rng.Next(0, 3);
+        if (rng.Next(6) == 0)
+            state.Strings[10] = "scribbled";
+        foreach (int c in ZethTurnCommanders)
+        {
+            if (rng.Next(10) == 0)
+                state.Cmdrs[c].Status = (Sys3Int)rng.Next(0, 2);
+            if (rng.Next(10) == 0)
+                state.Cmdrs[c].Troops = (Sys3Int)rng.Next(0, 1500);
+        }
+        foreach (int p in ZethTurnProvinces)
+            if (rng.Next(10) == 0)
+                state.Provs[p].Owner = (Sys3Int)(rng.Next(2) == 0 ? 1 : 7);
+    }
+
+    private static IEnumerable<string> ZethTurnFeatures(GameState before, GameState after, GameState first, List<string> log)
+    {
+        int attacks = 0;
+        foreach (string call in log.Where(e => e.StartsWith("call ", StringComparison.Ordinal)))
+        {
+            string[] parts = call.Split(' ');
+            if (parts[1] != "FIGT_B.ADV")
+            {
+                yield return $"call {parts[1]} {parts[3]}";
+                continue;
+            }
+            attacks++;
+            string prov = Field(call, "Prov_Cur");
+            int[] party = [.. Field(call, "Party").Split(',').Select(int.Parse)];
+            var general = ZethGenerals.Where(g => party.Any(c => c >= g.Leader && c < g.Leader + 4)).Select(g => g.Name).FirstOrDefault();
+            var minister = ZethMinisterArmies.Where(m => party.Any(c => c >= m.First && c < m.First + 4)).Select(m => m.Name).FirstOrDefault();
+            if (general is not null)
+            {
+                yield return $"{general}'s army";
+                yield return $"generals at {prov}";
+            }
+            else
+                yield return $"{minister ?? "?"}'s army at {prov}";
+        }
+        yield return attacks switch { 0 => "no attack", 1 => "one attack", 2 => "two attacks", 3 => "three attacks", _ => "four attacks or more" };
+        if (log.Any(e => e.StartsWith("jump ", StringComparison.Ordinal)))
+            yield return "jump";
+
+        var draws = log.Where(e => e.StartsWith("rnd ", StringComparison.Ordinal)).ToList();
+        if (draws.Count > 0 && draws[0].StartsWith("rnd 3 ", StringComparison.Ordinal))
+            yield return "state 2: Saias alone";
+        if (draws.Count == 0 && !log.Any(e => e.StartsWith("jump ", StringComparison.Ordinal)))
+            yield return "state 2: Saias dead";
+        if (draws.Count > 0 && draws[0].StartsWith("rnd 7 ", StringComparison.Ordinal)
+            && log.Any(e => e.StartsWith("call Iｾﾞｽ.ADV entry 2 ", StringComparison.Ordinal)))
+            yield return "no scene the week Iｾﾞｽ 2 played";
+        int scene = log.FindIndex(e => e.StartsWith("rnd 7 ", StringComparison.Ordinal));
+        if (scene >= 0 && log[scene] == "rnd 7 6" && !log.Take(scene).Any(e => e.StartsWith("call ", StringComparison.Ordinal))
+            && before.Cmdrs[113].Status != 0 && before.Cmdrs[121].Status != 0 && before.Cmdrs[125].Status == 0)
+            yield return "6 without Alex";
+        for (int i = 0; i + 1 < log.Count; i++)
+            if (log[i].StartsWith("rnd 3 ", StringComparison.Ordinal) && log[i + 1].StartsWith("call Gﾁｽﾞｺ.ADV entry 6 ", StringComparison.Ordinal))
+                yield return "fell into Chizuko's army";
+        if (log.Count >= 2 && log[^2].StartsWith("rnd 3 ", StringComparison.Ordinal) && log[^1] == "return" && after.CallArg == 0)
+            yield return "general too weak";
+        // What the file changed before its first call (or before its end).
+        foreach (var (_, leader) in ZethGenerals)
+            for (int c = leader + 1; c < leader + 4; c++)
+                if (before.Cmdrs[c].Status == 0 && first.Cmdrs[c].Status == 1 && first.Cmdrs[c].Troops == before.Cmdrs[c].MaxTroops / 8)
+                    yield return "officer revived";
+
+        static string Field(string call, string name)
+        {
+            int at = call.IndexOf($" {name} ", StringComparison.Ordinal) + name.Length + 2;
+            return call[at..].Split(' ')[0];
+        }
     }
 
     /// <summary>Every attack <c>Tﾍﾙﾏﾝ</c> can make: the army and the province, in the file's order.</summary>

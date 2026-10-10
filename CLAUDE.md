@@ -74,8 +74,8 @@ a whole, up to the gate attack that starts stage 3: the sweep is docs/strategy/s
 the order docs/strategy/README.md, "Milestone 3" (Helman, Zeth, the gate, the independent cities,
 JAPAN, God's Door), the owner's capture checklist docs/golden-tests.md, "Capturing stage 2".
 Step 1 (Helman) is done: `Tﾍﾙﾏﾝ2`, `Tﾍﾙﾏﾝ` and `Tﾊﾟｯﾄﾝ` are ported (`Strategy/HelmanDefenders`,
-`Strategy/HelmanTurn`, `Strategy/PattonTurn`). Step 2 (Zeth) is under way: `Tｾﾞｽ2` is ported
-(`Strategy/ZethDefenders`); `Tｾﾞｽ` is next.
+`Strategy/HelmanTurn`, `Strategy/PattonTurn`). Step 2 (Zeth) is done: `Tｾﾞｽ2` and `Tｾﾞｽ` are
+ported (`Strategy/ZethDefenders`, `Strategy/ZethTurn`). Step 3 (the gate, `Tｹｲﾌﾞﾘｽ2`) is next.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
 

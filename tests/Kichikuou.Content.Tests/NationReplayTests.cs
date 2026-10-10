@@ -11,7 +11,7 @@ namespace Kichikuou.Content.Tests;
 /// replayed through their ports, which read the army name (<c>MS 10</c>) from the player's files:
 /// <c>TCﾘｰｻﾞｽ</c> (<see cref="RebelTurn"/>), <c>TCﾘｰｻﾞｽ2</c> (<see cref="RebelDefenders"/>),
 /// <c>Tﾍﾙﾏﾝ</c> (<see cref="HelmanTurn"/>), <c>Tﾍﾙﾏﾝ2</c> (<see cref="HelmanDefenders"/>),
-/// <c>Tﾊﾟｯﾄﾝ</c> (<see cref="PattonTurn"/>) and <c>Tｾﾞｽ2</c> (<see cref="ZethDefenders"/>);
+/// <c>Tﾊﾟｯﾄﾝ</c> (<see cref="PattonTurn"/>), <c>Tｾﾞｽ</c> (<see cref="ZethTurn"/>) and <c>Tｾﾞｽ2</c> (<see cref="ZethDefenders"/>);
 /// <c>FIGT_B</c> and the scenes stay hooks. Captures of nations not ported yet are listed and left
 /// to <c>GoldenPendingTests</c>. Skipped while there are none (or without the decompile).
 /// </summary>
@@ -25,6 +25,7 @@ public sealed class NationReplayTests(ITestOutputHelper output)
         "Tﾍﾙﾏﾝ.ADV" => s => new HelmanTurn(s, scripts).RunAsync(),
         "Tﾍﾙﾏﾝ2.ADV" => s => new HelmanDefenders(s, scripts).RunAsync(),
         "Tﾊﾟｯﾄﾝ.ADV" => s => new PattonTurn(s, scripts).RunAsync(),
+        "Tｾﾞｽ.ADV" => s => new ZethTurn(s, scripts).RunAsync(),
         "Tｾﾞｽ2.ADV" => s => new ZethDefenders(s, scripts).RunAsync(),
         _ => null,
     };

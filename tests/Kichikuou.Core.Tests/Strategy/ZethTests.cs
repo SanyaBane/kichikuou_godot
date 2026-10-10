@@ -8,7 +8,8 @@ using Kichikuou.Core.Tests.Script;
 namespace Kichikuou.Core.Tests.Strategy;
 
 /// <summary>
-/// Zeth's files (milestone 3 step 2): the defender picker <c>Tｾﾞｽ2</c> (<see cref="ZethDefenders"/>).
+/// Zeth's files (milestone 3 step 2): the defender picker <c>Tｾﾞｽ2</c> (<see cref="ZethDefenders"/>)
+/// and the nation turn <c>Tｾﾞｽ</c> (<see cref="ZethTurn"/>).
 /// Also compared with the decompile on random states (Content tests, <c>NationTurnDifferentialTests</c>).
 /// </summary>
 public class ZethTests
@@ -214,4 +215,213 @@ public class ZethTests
 
     [Fact]
     public void Tｾﾞｽ2_is_routed() => Assert.Contains("Tｾﾞｽ2.ADV", StrategyRules.PortedFiles);
+
+    private static Task TurnAsync(ZethRig rig) => new ZethTurn(rig.Script, new Literals()).RunAsync();
+
+    /// <summary>Saias (113), Uspira (117), Kabachahn (121) and Alex (125) dead: no general marches.</summary>
+    private static void KillGenerals(ZethRig rig)
+    {
+        foreach (int c in new[] { 113, 117, 121, 125 })
+            rig.State.Cmdrs[c].Status = 0;
+    }
+
+    /// <summary>Every battle as "province: party", recorded when <c>FIGT_B</c> is called.</summary>
+    private static List<string> RecordBattles(ZethRig rig, Action<string, int>? also = null)
+    {
+        var battles = new List<string>();
+        rig.Story.OnCall = (file, entry) =>
+        {
+            if (file == "FIGT_B.ADV")
+                battles.Add($"{rig.State.Prov_Cur.Value}: {string.Join(",", rig.Party)}");
+            also?.Invoke(file, entry);
+        };
+        return battles;
+    }
+
+    [Fact]
+    public async Task At_state_2_the_war_moves_on_and_Saias_marches_alone_reviving_an_officer()
+    {
+        var rig = new ZethRig(2);                               // Y 4,3 → Maskloader (115)
+        rig.State.F_Zeth_State = 2;
+        rig.State.Cmdrs[115].Status = 0;
+        rig.State.Cmdrs[115].MaxHP = 70;
+        rig.State.Cmdrs[115].MaxTroops = 500;
+        rig.State.Provs[62].Owner = 1;                          // Nagarmaule
+        rig.State.Provs[1].Owner = 1;                           // Leazas Castle, later in the list
+
+        await TurnAsync(rig);
+
+        Is(7, rig.State.Ev_PhaseNation);
+        Assert.Equal("Tｾﾞｽ.ADV:3", rig.State.Strings[10]);
+        Is(4, rig.State.F_Zeth_State);
+        Assert.Equal([3], rig.Random.Draws);
+        Is(1, rig.State.Cmdrs[115].Status);                     // :238-244 full HP, an eighth of his troops
+        Is(70, rig.State.Cmdrs[115].HP);
+        Is(62, rig.State.Cmdrs[115].Troops);
+        Assert.Equal([116, 115, 114, 113], rig.Party);
+        Is(962, rig.State.CallArg);
+        Assert.Equal([("FIGT_B.ADV", 0)], rig.Story.Calls);
+        Is(62, rig.State.Prov_Cur);
+        Is(4, rig.State.Bt_EnemyRetreatMode);
+
+        rig.Story.Calls.Clear();
+        rig.State.F_Zeth_State = 2;
+        rig.State.Cmdrs[113].Status = 0;
+        await TurnAsync(rig);
+        Assert.Empty(rig.Story.Calls);                          // Saias dead: the week ends there
+        Is(4, rig.State.F_Zeth_State);
+        Assert.Equal([3], rig.Random.Draws);
+    }
+
+    [Fact]
+    public async Task The_week_Iｾﾞｽ_2_opens_the_war_no_minister_marches_and_the_scene_roll_is_void()
+    {
+        var rig = new ZethRig(7, 4, 1);                         // the scene roll, Alex's roll, his officers' roll
+        rig.State.F_Zeth_State = 1;
+        rig.State.Provs[1].Owner = 1;
+        var battles = RecordBattles(rig, (file, entry) =>
+        {
+            if (file == "Iｾﾞｽ.ADV" && entry == 2)
+                rig.State.F_Zeth_State = 2;                     // Iｾﾞｽ.ADV:2900
+        });
+
+        await TurnAsync(rig);
+
+        // :97-99 — a 7 would have sent all four generals; the state turns it into 10.
+        Assert.Equal([("Iｾﾞｽ.ADV", 2), ("FIGT_B.ADV", 2)], rig.Story.Calls);
+        Assert.Equal([7, 4, 3], rig.Random.Draws);
+        Assert.Equal(["1: 128,127,126,125"], battles);
+        Is(2, rig.State.F_Zeth_State);
+    }
+
+    [Fact]
+    public async Task A_ministers_army_marches_on_one_roll_in_two_with_her_scene_before_the_battle()
+    {
+        var rig = new ZethRig(1, 2, 2, 1, 7, 1, 1);
+        KillGenerals(rig);
+        for (int c = 165; c <= 168; c++)                        // Chizuko's army; Magic's (177-180) is empty
+        {
+            rig.State.Cmdrs[c].Status = 1;
+            rig.State.Cmdrs[c].Troops = 200;
+        }
+        rig.State.Provs[69].Owner = 1;                          // Zeth Palace
+        rig.State.Provs[67].Owner = 1;                          // Nagi's Tower, first on Magic's list
+        var battles = RecordBattles(rig, (file, _) =>
+        {
+            if (file == "Gﾁｽﾞｺ.ADV")
+                rig.State.Prov_Cur = 5;                         // a scene moving the cursor
+        });
+
+        await TurnAsync(rig);
+
+        Assert.Equal([("Gﾁｽﾞｺ.ADV", 6), ("FIGT_B.ADV", 6)], rig.Story.Calls);
+        Assert.Equal(["69: 165,166,167,168"], battles);     // the province set again after the scene
+        Assert.Equal([2, 2, 2, 2, 7, 4, 4], rig.Random.Draws);
+        Is(4, rig.State.Bt_EnemyRetreatMode);
+        Assert.Equal([0, 0, 0, 0], rig.Party);                  // Magic's army picked last, nobody in it
+    }
+
+    [Fact]
+    public async Task On_a_7_all_four_generals_march_after_Iｾﾞｽ_30()
+    {
+        var rig = new ZethRig(2, 2, 2, 2, 7, 3, 3, 3, 3);
+        rig.State.Provs[16].Owner = 1;                          // Parapara Fortress
+        var battles = RecordBattles(rig);
+
+        await TurnAsync(rig);
+
+        Assert.Equal(("Iｾﾞｽ.ADV", 30), rig.Story.Calls[0]);
+        Assert.Equal(
+            ["16: 128,127,126,125", "16: 116,115,114,113", "16: 120,119,118,117", "16: 124,123,122,121"],
+            battles);
+        Assert.Equal([2, 2, 2, 2, 7, 3, 3, 3, 3], rig.Random.Draws);
+    }
+
+    [Fact]
+    public async Task Kabachahns_scene_needs_Alex_alive_too()
+    {
+        var rig = new ZethRig(2, 2, 2, 2, 6, 3, 2);
+        rig.State.Cmdrs[125].Status = 0;                        // Alex
+        rig.State.Provs[2].Owner = 1;                           // North
+
+        await TurnAsync(rig);
+
+        // QUIRK: NAT-07 — Saias and Kabachahn live, but the status tested is Alex's: no Iｾﾞｽ 36;
+        // the first single roll sends Kabachahn's army instead.
+        Assert.Equal([("FIGT_B.ADV", 0)], rig.Story.Calls);
+        Is(101, rig.State.Unit_Cur);
+        Assert.Equal([124, 123, 122, 121], rig.Party);
+        Assert.Equal([2, 2, 2, 2, 7, 4, 3], rig.Random.Draws);
+
+        rig = new ZethRig(2, 2, 2, 2, 6, 1);
+        rig.State.Provs[2].Owner = 1;
+        await TurnAsync(rig);
+        Assert.Equal([("Iｾﾞｽ.ADV", 36), ("FIGT_B.ADV", 36)], rig.Story.Calls);
+        Assert.Equal([124, 123, 122, 121], rig.Party);
+    }
+
+    [Fact]
+    public async Task A_generals_march_that_finds_no_target_falls_into_Chizukos_army()
+    {
+        var rig = new ZethRig(2, 2, 2, 2, 5, 1);                // Iｾﾞｽ 35: Alex's army
+        for (int c = 165; c <= 168; c++)
+        {
+            rig.State.Cmdrs[c].Status = 1;
+            rig.State.Cmdrs[c].Troops = 200;
+        }
+        rig.State.Provs[69].Owner = 1;                          // Zeth Palace, not on the generals' list
+        var battles = RecordBattles(rig);
+
+        await TurnAsync(rig);
+
+        // QUIRK: NAT-20 — L_00897 has no return after Leazas Castle (1).
+        Assert.Equal([("Iｾﾞｽ.ADV", 35), ("Gﾁｽﾞｺ.ADV", 6), ("FIGT_B.ADV", 6)], rig.Story.Calls);
+        Assert.Equal(["69: 165,166,167,168"], battles);
+
+        // Without troops the march stays home (CallArg 0) and falls nowhere.
+        rig = new ZethRig(2, 2, 2, 2, 5, 1);
+        for (int c = 125; c <= 128; c++)
+            rig.State.Cmdrs[c].Troops = 0;
+        rig.State.Provs[69].Owner = 1;
+        await TurnAsync(rig);
+        Assert.Equal([("Iｾﾞｽ.ADV", 35)], rig.Story.Calls);
+        Is(0, rig.State.CallArg);
+        Assert.Equal([128, 127, 126, 125], rig.Party);
+    }
+
+    [Fact]
+    public async Task The_war_and_ritual_scenes_come_first_and_the_ministers_scenes_close_a_quiet_week()
+    {
+        var rig = new ZethRig(2, 2, 2, 2, 1, 1, 1, 2);
+        KillGenerals(rig);
+        rig.State.F_RagarlRitual_State = 4;
+        rig.State.F_Zeth_State = 10;
+        rig.State.F_Magic_State = 1;
+
+        await TurnAsync(rig);
+
+        Assert.Equal([("Gﾊﾟﾊﾟｲｱ.ADV", 1), ("Iｾﾞｽ.ADV", 5), ("Gﾏｼﾞｯｸ.ADV", 3)], rig.Story.Calls);
+        Assert.Equal([2, 2, 2, 2, 7, 4, 4, 4], rig.Random.Draws);   // the last roll's 2 is Papaya's: no scene
+
+        rig = new ZethRig(2, 2, 2, 2, 1, 1, 1);
+        KillGenerals(rig);
+        rig.State.F_Papaya_State = 1;
+        await TurnAsync(rig);
+        Assert.Equal([("Gﾊﾟﾊﾟｲｱ.ADV", 8)], rig.Story.Calls);
+
+        rig = new ZethRig(2, 2, 2, 2, 1, 1, 1, 4);
+        KillGenerals(rig);
+        rig.State.F_Zeth_State = 9;
+        await TurnAsync(rig);
+        Assert.Equal([("Gﾏｼﾞｯｸ.ADV", 21)], rig.Story.Calls);
+
+        rig = new ZethRig(2, 2, 2, 2, 1, 1, 1, 1);
+        KillGenerals(rig);
+        rig.State.F_Zeth_State = 11;
+        await TurnAsync(rig);
+        Assert.Equal([("Gﾁｽﾞｺ.ADV", 5)], rig.Story.Calls);
+    }
+
+    [Fact]
+    public void Tｾﾞｽ_is_routed() => Assert.Contains("Tｾﾞｽ.ADV", StrategyRules.PortedFiles);
 }

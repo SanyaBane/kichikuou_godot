@@ -62,9 +62,9 @@ Patton has no `*2`: `Cﾃｷﾄｼ.ADV:361-376` inlines the same list (Patton (5
 | | `L_002e1` `:99`, `L_00521` `:208`, `L_0068c` `:270`, `L_00824` `:345`, `L_0090d` `:384`, `L_009c3` `:418`, `L_00c09` `:517` | 1st-5th armies, 4th-army variant, Crusaders |
 | | `L_00d83` `:584`, `L_00dc9` `:595`, `L_00f3b` `:655`, `L_00fc2` `:676` | sum, picker, filler (<190 once slot 1 filled), capture from Kayblis |
 | Tﾊﾟｯﾄﾝ | `:1-68`, `L_00198`, `L_001de`, `L_00350` | events 7/8/9/11 (`Gﾊﾟｯﾄﾝ`), `Gｱﾘｽﾄﾚｽ` 3; one army; sum; picker; filler (no filter) |
-| Tｾﾞｽ | `:1-53` | ritual/arc events (`Gﾊﾟﾊﾟｲｱ`, `Gﾅｷﾞ`, `Iｾﾞｽ`, `Gﾏｼﾞｯｸ`) |
-| | `:54-75` → `L_00a5e/00bb1/00d04/00e55` `:433-688` | four ministers' armies, 1/2 each |
-| | `:76-187` → `L_00667/006f3/0077f/0080b` `:245-352` | four generals' armies (combined `Y 4,7`, then two `Y 4,4`) |
+| Tｾﾞｽ | `:1-53` | ritual/arc events (`Gﾊﾟﾊﾟｲｱ`, `Gﾅｷﾞ`, `Iｾﾞｽ`, `Gﾏｼﾞｯｸ`); state 2 → 4 with Saias's army alone (`:36-44`); `Iｾﾞｽ` 2 at state 1 sets state 2 (`Iｾﾞｽ.ADV:2900`) |
+| | `:54-75` → `L_00a5e/00bb1/00d04/00e55` `:433-688` | four ministers' armies, 1/2 each (none while state 2) |
+| | `:76-187` → `L_00667/006f3/0077f/0080b` `:245-352` | the generals' scene roll `Y 4,7` (`Iｾﾞｽ` 30-36, each with one general's army if the generals it names live, all four on 7; voided to 10 at state 2, `:97-99`), then up to two `Y 4,4` single armies |
 | | `L_00640` `:238`, `L_00897` `:353`, `L_00fa8` `:689`, `L_00fee` `:700`, `L_01160` `:760` | revive one subordinate, target walk, sum, picker, filler (no filter) |
 | Tｹｲﾌﾞﾘｽ | `:1-187` | weekly event chain (one event → skip to `L_004d1`), recovery `L_02662` ×24 |
 | | `L_004d1` `:188-325` | dispatch of sub-armies, Kayblis main army, monster generals |
@@ -120,7 +120,7 @@ Capture(): centre map; Prov_Owner := nation; flag CG Tmp0021 := owner+819; M ops
 | Crusaders (Olhound ∉ {0,100}) | Olhound (60) alone, troops 500+rnd(500) | none | 1 | Path (43), Micrograd (44), Laurengrad (48), Parnas (47), Sudori 17 (46), Pawn (40), Sudori 13 (41), Sudori 10 (42), Rosesgrad (39), Archgrad (36) |
 | Patton | Patton (54), Hubert (55), Freak (56), Hanty (57) (+Aristoles (32) if Aristoles > 9) | 500 | 4 | Sudori 17 (46), Sudori 13 (41), Pawn (40), Micrograd (44), Lang Bau (45) |
 | Zeth minister ×4 (each `Y 4,2`, minister alive, `F_Zeth_State ≠ 2`) | Zamoor (165) through Annis (168) / Backslock (169) through Am (172) / Lawson (173) through Hiroko (176) / Kenichi (177) through Rue (180) | — | 4 | own lists (`Tｾﾞｽ.ADV:448-688`), pre-battle `Gﾁｽﾞｺ` 6 / `Gﾊﾟﾊﾟｲｱ` 9 / `Gﾅｷﾞ` 22 / `Gﾏｼﾞｯｸ` 24 |
-| Zeth general Saias (113) / Uspira (117) / Kabachahn (121) / Alex (125) | 3 subordinates then the general | `CallArg ≠ 0` | 4 | Chizuko's Tower (68), Papaya's Tower (70), Magic's Tower (66), Nagi's Tower (67), Nagarmaule (62), Old Zeth (63), Tape (61), Italia (60), Sabasaba (59), Adam's Fortress (58), Parapara Fortress (16), Rich (15), Maunes (13), North (2), Leazas Castle (1) |
+| Zeth general Saias (113) / Uspira (117) / Kabachahn (121) / Alex (125) | 3 subordinates then the general (Dabinch (116), Maskloader (115), Reshie (114) / Minamin (120), Dan Cero (119), Starlighter (118) / Dancelove (124), The Bomber (123), Kyouko (122) / Shitareriha (128), Haseras (127), Sanneri (126)); one of the three revived first (`Y 4,3`, troops max/8) | `CallArg ≠ 0` | 4 | Chizuko's Tower (68), Papaya's Tower (70), Magic's Tower (66), Nagi's Tower (67), Nagarmaule (62), Old Zeth (63), Tape (61), Italia (60), Sabasaba (59), Adam's Fortress (58), Parapara Fortress (16), Rich (15), Maunes (13), North (2), Leazas Castle (1); none found → falls into Chizuko's army (NAT-20, dead in play) |
 | Kayblis guards (Grief Valley (89) player-owned, `F_Kayblis_Moved=0`) | Lis Guard (186), troops 20+rnd(100) | none | 1 | Grief Valley (89), **repeated** until lost (`:669 @L_004d1`) |
 | Babolat (129 alive, state ≠ 0) | Babolat (129) | — | 2 | Tower of Evil (78), Great Wall of Helman A (49), Ikoma (53), Laurengrad (48), Lang Bau (45), Micrograd (44), Sudori 10 (42), Rosesgrad (39), Siberia (38), Golak (34), Log A (32), Scale (12), North (2), Leazas Castle (1); pitfall prov → `Gﾊﾞﾎﾞﾗ` 4 instead |
 | Redeye (130) | Truffle 77 (148), Moreinyan (149), Ouzawa (150), Redeye (130) | — | 2 | Grief Valley (89), Great Wall of Helman B (50), Laurengrad (48), Parnas (47), Sudori 17 (46), Sudori 13 (41), Pawn (40), Micrograd (44), Sudori 10 (42), Rosesgrad (39), Archgrad (36), Log B (31), Maunes (13) (Redeye (130) alone), North (2), Leazas Castle (1) |
@@ -202,7 +202,7 @@ computed ranges (`Cmdr_MaxTroops / k`, `Cmdr_Troops / 2`).
 | Tﾍﾙﾏﾝ `:423`, `:428` | 2, 2 | cmdr 50 alive: Rolex state 0→1, 1→2 (each returns) |
 | Tﾍﾙﾏﾝ `:530` | 500 | Crusader troops |
 | Tｾﾞｽ `:55,60,65,70` | 2 ×4 | `F_Zeth_State ≠ 2`: each minister's army |
-| Tｾﾞｽ `:96`, `:146`, `:167` | 7, 4, 4 | combined attack (needs leaders alive), then two single-army rolls |
+| Tｾﾞｽ `:96`, `:146`, `:167` | 7, 4, 4 | the generals' scene roll (always drawn, voided at state 2), then up to two single-army rolls (the second only if the first sent nobody) |
 | Tｾﾞｽ `:195`, `:216` | 4, 4 | Zeth state 8/9, 10/11: minister scenes |
 | Tｾﾞｽ `:247,274,301,328` | 3 | which subordinate to revive before a general's attack |
 | Tｹｲﾌﾞﾘｽ `:70` | 5 | Medusa (134) alive: `N_Medusa_Events += 1` on 1 |
@@ -257,7 +257,7 @@ text; the only display→state coupling is `M`'s scratch. TJAPAN's scenes are ru
    B's last target is Leazas Castle (1), whose loss ends the game, so the fall into C needs a castle
    the player no longer holds (NAT-06).
 6. **Stale cursor**: `Tｾﾞｽ.ADV:130` sets `Unit_Cur := 101` but tests `Cmdr_Status` of Alex
-   (commander 125) (cursor from `:92`); probably meant `Cmdr_Cur`.
+   (commander 125) (cursor from `:92`); probably meant `Cmdr_Cur` (NAT-07).
 7. **Inverted check** `Ev_WeeklyEventDone \ 0` for Patton events 2/12 (`Tﾍﾙﾏﾝ.ADV:61`, `:67`):
    they fire only if another event already fired this week.
 8. **Precedence**: `Tｹｲﾌﾞﾘｽ2.ADV:38` — only Tearing Forest (91) is gated by `StoryStage = 2`.
@@ -271,8 +271,8 @@ text; the only display→state coupling is `M`'s scratch. TJAPAN's scenes are ru
     the previous field with stride 220, probably 0].
 13. **Dead code**: unlabelled window-helper copies (`TCﾘｰｻﾞｽ:200-268`, `Tｹｲﾌﾞﾘｽ2:279-347`,
     `Tﾙﾄﾞﾗ:132-143`), second ops of two-op helpers (e.g. `TJAPAN:2772-2774`), unlabelled troop sums
-    (`Tｹｲﾌﾞﾘｽ2:191-200`, `Tｾﾞｽ2:314-323`), `Tｾﾞｽ.ADV:97-99` (state 2 already returned at `:43`),
-    `Tﾍﾙﾏﾝ2.ADV:31-32` (owner 5 never reaches it), `Tｹｲﾌﾞﾘｽ.ADV:642-645`, sums whose `CallArg`
+    (`Tｹｲﾌﾞﾘｽ2:191-200`, `Tｾﾞｽ2:314-323`) (`Tｾﾞｽ.ADV:97-99`, once listed here, is live: `Iｾﾞｽ` 2
+    at `:45-47` sets state 2 after the test at `:36` — NAT-16), `Tﾍﾙﾏﾝ2.ADV:31-32` (owner 5 never reaches it), `Tｹｲﾌﾞﾘｽ.ADV:642-645`, sums whose `CallArg`
     is never tested (Babolat/Redeye/Kite/Galtia/Kesselring/Kayblis), `Tﾙﾄﾞﾗ2`, `Bt_TroopLimit` in `*2`.
 14. **Helman 1st army** has no troop or empty-party check before `FIGT_B` (`Tﾍﾙﾏﾝ.ADV:99-207`).
 15. **Gekkou**: assassination kills only a target with `Unit_Status = 2` (deployed this week);
@@ -291,7 +291,7 @@ as the battle; `FIGT_B` through the existing `Battle.DefendProvinceAsync`; story
 As ported (N1 part 1, 2026-10-10; [README](README.md), the N1 row): the template is a base class,
 `Strategy/NationFile` on `CommandFile`, the filter a method each file overrides; every file is a
 class of its own in `Strategy/` (`RebelTurn` = `TCﾘｰｻﾞｽ`, `RebelDefenders` = `TCﾘｰｻﾞｽ2`,
-`HelmanTurn` = `Tﾍﾙﾏﾝ`, `HelmanDefenders` = `Tﾍﾙﾏﾝ2`, `PattonTurn` = `Tﾊﾟｯﾄﾝ`, `ZethDefenders` = `Tｾﾞｽ2`), its lists written in the script's order at
+`HelmanTurn` = `Tﾍﾙﾏﾝ`, `HelmanDefenders` = `Tﾍﾙﾏﾝ2`, `PattonTurn` = `Tﾊﾟｯﾄﾝ`, `ZethTurn` = `Tｾﾞｽ`, `ZethDefenders` = `Tｾﾞｽ2`), its lists written in the script's order at
 the place the script sets them; a capture stays with its file (`HelmanTurn.CaptureAsync` is
 `Tﾍﾙﾏﾝ`'s `L_00fc2`).
 
