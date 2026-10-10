@@ -34,12 +34,19 @@ public sealed record GameOptions
 
     /// <summary>
     /// Development: plays unattended — keys answered, Turn END every week, the battles fought with
-    /// the first attack, a defence with the first unit free.
+    /// the first attack, from stage 1 a replenish and an attack on the rebels once a week, a strong
+    /// party sent.
     /// </summary>
     public bool Auto { get; init; }
 
     /// <summary>Development: unattended play stops at the first command menu after this week.</summary>
     public int AutoWeeks { get; init; } = 30;
+
+    /// <summary>
+    /// Development: unattended play stops at the command menu two weeks after the week this story
+    /// stage was reached, so the stage's first whole week is played (0: never).
+    /// </summary>
+    public int AutoStage { get; init; }
 
     /// <summary>Development: no delays (pauses and fades take one frame, the clock runs 20 times faster).</summary>
     public bool Fast { get; init; }
@@ -337,6 +344,14 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (scriptEvent is MapScreenEvent { Waiting: true })
         {
             _autoMapWait = true;
+            _autoDragged = false;
+            if (_autoAttack != AutoAttack.None && _presenter.State is { } a)
+            {
+                _autoAttack = AutoAttack.None;                          // back on the map: the attack is over
+                var p = a.Provs[_autoAttackProv];
+                GD.Print($"Kichikuou: --auto's attack on province {_autoAttackProv}: "
+                    + $"{(p.Owner == 1 ? "taken" : $"still owner {p.Owner.Value}'s")}, stage {a.StoryStage.Value}, gold {a.Gold.Value}.");
+            }
             if (_autoDungeon == AutoDungeon.Searching && _presenter.State is { } s)
             {
                 _autoDungeon = AutoDungeon.Done;                        // back on the map: the search is over
@@ -346,6 +361,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         if (scriptEvent is BattleScreenEvent { Open: true } && _autoDungeon == AutoDungeon.Searching)
             _autoDungeonBattle = true;
+        if (scriptEvent is BattleScreenEvent { File: "FIGT_A.ADV" or "FIGT_B.ADV" } battle && _options.Auto)
+            AutoBattleLog(battle);
         if (scriptEvent is EngineEvent { Command: "IZ", Args: [var x, var y] })
             await WarpPointerAsync(x.Value, y.Value);
         if (_presenter.TakeFade() is { } fade)
@@ -763,6 +780,12 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.Auto)
         {
             await DelayAsync(_options.Fast ? 0 : 0.5);
+            if (menu.Kind == BattleMenuKind.EnemyAttackResponse && _autoAbandon)
+            {
+                // FIGT_B's menu after a stopped deployment picker: Abandon City (code 3).
+                _autoAbandon = false;
+                return menu.Options.First(o => o.Code == 3).Code;
+            }
             return menu.Options[0].Code;
         }
         _answered = new TaskCompletionSource();
@@ -861,6 +884,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// <summary>The deployment picker the unattended player sent its party from (a second visit means Go was refused).</summary>
     private PickerView? _autoSentFrom;
 
+    /// <summary>The deployment picker the unattended player builds <see cref="_autoParty"/> in.</summary>
+    private PickerView? _autoPartyFrom;
+
+    private List<int> _autoParty = [];
+
     /// <summary>The unattended player stopped a deployment picker: the next menu abandons the city.</summary>
     private bool _autoAbandon;
 
@@ -883,16 +911,47 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// <summary>Whether the search's Start Search was chosen (the dungeon's menu again means the picker came back empty).</summary>
     private bool _autoDungeonStarted;
 
+    /// <summary>
+    /// The rebel provinces the unattended player attacks at stage 1, the first one next to an own
+    /// province: the shortest way to province 6, whose conquest ends the stage
+    /// (<c>FIGT_A.ADV:192-195</c>), then the others next to the player's land.
+    /// </summary>
+    private static readonly int[] AutoTargets = [4, 5, 6, 7, 3];
+
+    /// <summary>Where the unattended player's attack of the week stands, from the click on the province to the map again.</summary>
+    private enum AutoAttack { None, Clicked, Chosen }
+
+    private AutoAttack _autoAttack;
+    private int _autoAttackWeek = -1;
+    private int _autoAttackProv;
+
+    /// <summary>The unattended player dragged the map: the map loop holds the camera as the view's corner.</summary>
+    private bool _autoDragged;
+
+    /// <summary>The week the unattended player first saw <see cref="GameOptions.AutoStage"/> reached at the command menu.</summary>
+    private int _autoStageWeek = -1;
+
+    /// <summary>
+    /// Where the unattended player's replenish of the week stands: wanted at the map, Subordinates
+    /// chosen, the unit picked, Replenish chosen (then Do).
+    /// </summary>
+    private enum AutoReplenish { None, Wanted, Chosen, Picked, Asked }
+
+    private AutoReplenish _autoReplenish;
+    private int _autoReplenishUnit;
+    private int _autoReplenishWeek = -1;
+
     /// <summary>The end of unattended play (<see cref="GameOptions.AutoWeeks"/>).</summary>
     private sealed class AutoStopException(string message) : Exception(message);
 
     /// <summary>
-    /// The map opens the command menu (one right click each time the map loop starts waiting), or once
-    /// the Monsters' Cave with a left click on it (<see cref="AutoCaveOnScreen"/>); the
-    /// deployment picker takes the first unit free (status 1) and sends it with the first button,
-    /// or stops (third button) when nobody is free or the sending was refused; the item screen
-    /// takes <see cref="AutoItemSteps"/>, then ends (third button); any other picker is left
-    /// with its third button (End, Stop). All Data's first graph gets a right
+    /// The map opens the command menu (one right click each time the map loop starts waiting) — once a
+    /// week first for a replenish (<see cref="AutoReplenishUnit"/>) —, or once a week at stage 1 a rebel province with a left click on it (<see cref="AutoAttackTarget"/>;
+    /// dragged into view first when it is out of it), or once the Monsters' Cave
+    /// (<see cref="AutoCaveOnScreen"/>); the deployment picker takes <see cref="AutoDeploy"/>; the
+    /// item screen takes <see cref="AutoItemSteps"/>, then ends (third button); the subordinates
+    /// picker the unit to replenish; any other picker
+    /// is left with its third button (End, Stop). All Data's first graph gets a right
     /// click (the scale menu), every graph then a left one (back to the menu).
     /// </summary>
     private void AutoPointer()
@@ -935,34 +994,55 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_presenter.Picker is { } picker)
         {
             Shot("picker");
-            var (x, y) = PointerScript.PickerButton(3);
-            if (picker.Kind == PickerKind.Deployment && _presenter.State is { } s)
+            var (x, y) = picker.Kind == PickerKind.Deployment && _presenter.State is { } s
+                ? AutoDeploy(picker, s)
+                : PointerScript.PickerButton(3);
+            if (picker.Kind == PickerKind.Subordinates && _autoReplenish == AutoReplenish.Chosen)
             {
-                int free = Enumerable.Range(1, 50).FirstOrDefault(u => s.Units[u].Status == 1);
-                if (_autoSentFrom == picker || (s.Bt_PlayerParty1 == 0 && free == 0))
-                {
-                    _autoSentFrom = null;
-                    _autoAbandon = true;
-                }
-                else if (s.Bt_PlayerParty1 != 0)
-                {
-                    (x, y) = PointerScript.PickerButton(1);
-                    _autoSentFrom = picker;
-                }
-                else
-                {
-                    (x, y) = PointerScript.PickerCell(free);
-                }
+                _autoReplenish = AutoReplenish.Picked;
+                (x, y) = PointerScript.PickerCell(_autoReplenishUnit);
             }
             _pointer.Click(x, y);
         }
-        else if (_presenter.MapWaiting && _autoMapWait)
+        else if (_presenter.MapWaiting && (_autoMapWait || _autoDragged) && _presenter.State is { } s)
         {
-            _autoMapWait = false;
-            if (AutoCaveOnScreen() is var (x, y))
+            // The map wait's first read still has the camera as the centre (COMMAND.ADV:50-58), on
+            // Leazas Castle at the start of the week (:4-13); after a drag the loop holds it as the corner.
+            bool centred = !_autoDragged;
+            _autoMapWait = _autoDragged = false;
+            if (centred && AutoReplenishUnit(s) is { } unit)
+            {
+                GD.Print($"Kichikuou: --auto replenishes unit {unit} ({s.Units[unit].Troops.Value} of {s.Units[unit].MaxTroops.Value} troops, week {s.Week.Value}).");
+                _autoReplenish = AutoReplenish.Wanted;
+                _autoReplenishUnit = unit;
+                _autoReplenishWeek = s.Week.Value;
+                _pointer.RightClick(5, 6);                              // the menu: Subordinates
+                return;
+            }
+            if (AutoAttackTarget(s) is { } target)
+            {
+                var p = s.Provs[target];
+                if (PointerScript.OnScreen(s, p.MapX, p.MapY, centred) is var (x, y))
+                {
+                    GD.Print($"Kichikuou: --auto attacks province {target} (week {s.Week.Value}, gold {s.Gold.Value}).");
+                    _autoAttack = AutoAttack.Clicked;
+                    _autoAttackWeek = s.Week.Value;
+                    _autoAttackProv = target;
+                    _pointer.Click(x, y);
+                    return;
+                }
+                if (PointerScript.DragToward(s, p.MapX, p.MapY, centred) is var (fromX, fromY, toX, toY))
+                {
+                    _autoDragged = true;
+                    _pointer.Drag(fromX, fromY, toX, toY);
+                    return;
+                }
+                _autoAttackWeek = s.Week.Value;                         // out of reach: no attack this week
+            }
+            if (centred && AutoCaveOnScreen(s) is var (cx, cy))
             {
                 _autoDungeon = AutoDungeon.Searching;
-                _pointer.Click(x, y);
+                _pointer.Click(cx, cy);
             }
             else
             {
@@ -972,16 +1052,143 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     }
 
     /// <summary>
+    /// A line for each war battle of unattended play: when it starts, both sides' commanders with
+    /// their troops (<c>Bt_PlayerParty1-4</c>, <c>Bt_EnemyParty1-4</c>), and when it returns, the result
+    /// (<c>Bt_Result</c>: 2 the player won).
+    /// </summary>
+    private void AutoBattleLog(BattleScreenEvent battle)
+    {
+        if (_presenter.State is not { } s)
+            return;
+        string Side(IEnumerable<Sys3Int> ids, Func<int, int> troops) =>
+            string.Join(" ", ids.Select(id => id.Value).Where(id => id != 0).Select(id => $"{id}:{troops(id)}"));
+        if (battle.Open)
+        {
+            // FIGT_B picks the player's party itself: only the attackers are known here.
+            _autoBattleProv = s.Prov_Cur.Value;
+            _autoBattleEnemy = Side([s.Bt_EnemyParty1, s.Bt_EnemyParty2, s.Bt_EnemyParty3, s.Bt_EnemyParty4], id => s.Cmdrs[id].Troops.Value);
+            return;
+        }
+        string ours = Side([s.Bt_PlayerParty1, s.Bt_PlayerParty2, s.Bt_PlayerParty3, s.Bt_PlayerParty4], id => s.Units[id].Troops.Value);
+        GD.Print($"Kichikuou: {battle.File[..^4]} at province {_autoBattleProv} (week {s.Week.Value}): "
+            + $"commanders {_autoBattleEnemy} against units {(ours == "" ? "none" : ours)} (troops left): "
+            + $"{(s.Bt_Result == 2 ? "won" : $"lost (result {s.Bt_Result.Value})")}.");
+    }
+
+    private int _autoBattleProv;
+    private string _autoBattleEnemy = "";
+
+    /// <summary>
+    /// The rebel province the unattended player attacks this week, if any: at stage 1, from the second
+    /// Leazas week on (the first refuses it, "disrupted": <c>Cﾃｷﾄｼ.ADV:144</c>), once a week while the
+    /// week's attack is free and Rance, who leads it, is free with at least three quarters of his
+    /// troops (thinner, he tends to die), the first of <see cref="AutoTargets"/> the rebels hold next to
+    /// an own province (a click on it opens <c>Cﾃｷﾄｼ</c>, <c>COMMAND.ADV:531-574</c>).
+    /// </summary>
+    private int? AutoAttackTarget(GameState s)
+    {
+        if (s.StoryStage != 1 || s.F_LeazasRebels_State == 1 || s.Ui_CmdAttackAvail != 1 || s.Week.Value == _autoAttackWeek)
+            return null;
+        if (s.Units[1].Status != 1 || s.Units[1].Troops.Value * 4 < s.Units[1].MaxTroops.Value * 3)
+            return null;
+        foreach (int target in AutoTargets)
+        {
+            var p = s.Provs[target];
+            if (p.Owner == 2 && new[] { p.Adj1, p.Adj2, p.Adj3, p.Adj4, p.Adj5 }.Any(adj => adj != 0 && s.Provs[adj].Owner == 1))
+                return target;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// The unit the unattended player replenishes this week, if any (<c>Cﾌﾞｶ</c>'s Replenish Troops:
+    /// the troops back to the maximum, once a week, <c>CmdAvail_SubTroops</c>; only a unit at status 1,
+    /// so before the week's attack): from stage 1 on, of the units at status 1 short of troops the one
+    /// whose replenish restores the most strength, the missing troops times troop attack.
+    /// </summary>
+    private int? AutoReplenishUnit(GameState s)
+    {
+        if (s.StoryStage.Value is < 1 or >= 99 || s.Ui_CmdSubordAvail != 1 || s.CmdAvail_SubTroops != 1
+            || s.Week.Value == _autoReplenishWeek)
+            return null;
+        int Gain(int u) => (s.Units[u].MaxTroops.Value - s.Units[u].Troops.Value) * s.Units[u].TroopAtk.Value;
+        int unit = Enumerable.Range(1, 50).Where(u => s.Units[u].Status == 1 && s.Units[u].Troops < s.Units[u].MaxTroops)
+            .OrderByDescending(Gain).ThenBy(u => u).FirstOrDefault();
+        return unit == 0 ? null : unit;
+    }
+
+    /// <summary>
+    /// The deployment picker's next gesture: the party of <see cref="AutoParty"/> clicked in, the last
+    /// one taken out (a click left of the list) while the war expenses the screen shows
+    /// (<c>Tmp0016</c>) top the gold, then Go (the first button) — or Stop (the third) with nobody to
+    /// send or when Go was refused, which in a defence leads to abandoning the city.
+    /// </summary>
+    private (int X, int Y) AutoDeploy(PickerView picker, GameState s)
+    {
+        if (_autoPartyFrom != picker)
+        {
+            _autoPartyFrom = picker;
+            _autoParty = AutoParty(picker.Mode.Value, s);
+        }
+        int[] party = [.. new[] { s.Bt_PlayerParty1, s.Bt_PlayerParty2, s.Bt_PlayerParty3, s.Bt_PlayerParty4 }
+            .Select(u => u.Value).Where(u => u != 0)];
+        if (_autoSentFrom != picker)
+        {
+            if (party.Length < _autoParty.Count && party.SequenceEqual(_autoParty.Take(party.Length)))
+                return PointerScript.PickerCell(_autoParty[party.Length]);
+            if (party.Length > 0 && s.Tmp0016 > s.Gold)
+            {
+                _autoParty = [.. party[..^1]];
+                return PointerScript.PickerOutside;
+            }
+            if (party.Length > 0)
+            {
+                _autoSentFrom = picker;
+                return PointerScript.PickerButton(1);
+            }
+        }
+        _autoSentFrom = null;
+        if (picker.Mode == 2)
+            _autoAbandon = true;
+        return PointerScript.PickerButton(3);
+    }
+
+    /// <summary>
+    /// The units the unattended player sends, of those free (status 1), the strongest first (the most
+    /// troops times troop attack), up to the places the screen offers (<c>Tmp0040</c>): an attack
+    /// (mode 1) takes Rance and the strongest others, leaving two free for the rebels' turn — all it
+    /// may take against Oaks (province 6: walls, a narrow field, defenders who never retreat, and a
+    /// battle the attacker loses when its rounds run out); a defence (mode 2) the strongest, without
+    /// Rance when he has less than a quarter of his troops (his death ends the game) unless he is the
+    /// only one; a search (mode 3) the weakest, so the strong stay for the rebels' turn.
+    /// </summary>
+    private static List<int> AutoParty(int mode, GameState s)
+    {
+        var free = Enumerable.Range(1, 50).Where(u => s.Units[u].Status == 1).ToList();
+        var strongest = free.OrderByDescending(u => s.Units[u].Troops.Value * s.Units[u].TroopAtk.Value).ThenBy(u => u).ToList();
+        if (mode is not (1 or 2))
+            return [.. strongest.TakeLast(1)];
+        int places = Math.Max((int)s.Tmp0040.Value, 1);
+        if (mode == 1)
+        {
+            var order = free.Contains(1) ? strongest.Where(u => u != 1).Prepend(1) : strongest;
+            return [.. order.Take(s.Bt_TargetProv == 6 ? places : Math.Min(places, Math.Max(free.Count - 2, 1)))];
+        }
+        if (s.Units[1].Troops.Value * 4 < s.Units[1].MaxTroops.Value && strongest.Count > 1)
+            strongest.Remove(1);
+        return [.. strongest.Take(places)];
+    }
+
+    /// <summary>
     /// Where the Monsters' Cave is on the screen when the unattended player is to search it: once, at
     /// the first map wait of stage 1 that finds the week's dungeon action free and the cave's province
     /// the player's (<c>COMMAND.ADV:145-158</c>), before the menu's visits of the stage (the castle may
-    /// fall in a few weeks); null otherwise or out of view. The map wait's first read still has the
-    /// camera as the centre (<c>COMMAND.ADV:50-58</c>), on Leazas Castle (<c>:4-13</c>).
+    /// fall in a few weeks); null otherwise or out of view (the camera centred, the map wait's first read).
     /// </summary>
-    private (int X, int Y)? AutoCaveOnScreen()
+    private (int X, int Y)? AutoCaveOnScreen(GameState s)
     {
-        if (_autoDungeon != AutoDungeon.NotYet || _presenter.State is not { } s || s.StoryStage != 1
-            || s.Ui_CmdDungeonAvail != 1 || s.Provs[s.Dgns[AutoCave].Prov].Owner != 1)
+        if (_autoDungeon != AutoDungeon.NotYet || s.StoryStage != 1 || s.Ui_CmdDungeonAvail != 1
+            || s.Provs[s.Dgns[AutoCave].Prov].Owner != 1)
             return null;
         if (PointerScript.OnScreen(s, s.Dgns[AutoCave].MapX, s.Dgns[AutoCave].MapY) is not { } at)
             return null;
@@ -1034,8 +1241,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     /// <summary>
     /// The command menu's next item of <see cref="AutoVisits"/> once a week, else its Turn END
-    /// (past <see cref="GameOptions.AutoWeeks"/> the run stops there); a defence's menu after a
-    /// stopped deployment picker abandons the city; All Data's menu each graph in turn, then Return;
+    /// (past <see cref="GameOptions.AutoWeeks"/>, or two weeks after <see cref="GameOptions.AutoStage"/>
+    /// was reached, the run stops there); the attacked city's menu Attack, then Return; All Data's menu each graph in turn, then Return;
     /// the dungeon search's menus a few floors down with a battle, then out; elsewhere the first item.
     /// </summary>
     private int AutoChoice(IReadOnlyList<SceneMenuItem> items)
@@ -1048,13 +1255,41 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                     return i + 1;
             return 0;
         }
+        int FindExact(string text)
+        {
+            for (int i = 0; i < texts.Count; i++)
+                if (texts[i].Trim() == text)
+                    return i + 1;
+            return 0;
+        }
         int turnEnd = Find("Turn END");
         if (turnEnd == 0)
         {
-            if (_autoAbandon && Find("Abandon City") is var abandon and > 0)
+            if (_autoReplenish != AutoReplenish.None && Find("Do Nothing") > 0 && Find("Info") > 0)
             {
-                _autoAbandon = false;
-                return abandon;
+                // Cﾌﾞｶ's troop menu: Replenish Troops for the unit picked, else (anything unexpected) Do Nothing.
+                if (_autoReplenish == AutoReplenish.Picked && Find("○Replenish Troops") is var replenish and > 0)
+                {
+                    _autoReplenish = AutoReplenish.Asked;
+                    return replenish;
+                }
+                _autoReplenish = AutoReplenish.None;
+                return Find("Do Nothing");
+            }
+            if (_autoReplenish == AutoReplenish.Asked && FindExact("Do") is var yes and > 0 && Find("Don") > 0)
+            {
+                _autoReplenish = AutoReplenish.None;
+                return yes;
+            }
+            if (_autoAttack != AutoAttack.None && Find("Ninja Maneuver") > 0 && Find("Return") is var leave and > 0)
+            {
+                // Cﾃｷﾄｼ's menu: the attack once; again (the picker stopped: back to the header), Return.
+                if (_autoAttack == AutoAttack.Clicked && Find("Attack") is var attack and > 0)
+                {
+                    _autoAttack = AutoAttack.Chosen;
+                    return attack;
+                }
+                return leave;
             }
             if (Find("All Funds") > 0 && Find("Return") is var back and > 0)
             {
@@ -1089,6 +1324,18 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         int week = _presenter.State?.Week.Value ?? 0;
         if (week > _options.AutoWeeks)
             throw new AutoStopException($"--auto stopped after week {_options.AutoWeeks} (week {week}).");
+        if (_options.AutoStage > 0 && _autoStageWeek < 0 && _presenter.State?.StoryStage.Value == _options.AutoStage)
+        {
+            _autoStageWeek = week;
+            GD.Print($"Kichikuou: --auto reached stage {_options.AutoStage} in week {week}.");
+        }
+        if (_autoStageWeek >= 0 && week >= _autoStageWeek + 2)
+            throw new AutoStopException($"--auto stopped in week {week}, two weeks after stage {_options.AutoStage} was reached (week {_autoStageWeek}).");
+        if (_autoReplenish == AutoReplenish.Wanted && Find("Subordinates") is var subordinates and > 0)
+        {
+            _autoReplenish = AutoReplenish.Chosen;
+            return subordinates;
+        }
         if (week != _autoWeek && _autoVisit < AutoVisits.Length && Find(AutoVisits[_autoVisit]) is var visit and > 0)
         {
             _autoWeek = week;
