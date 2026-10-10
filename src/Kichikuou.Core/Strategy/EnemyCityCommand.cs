@@ -10,12 +10,13 @@ namespace Kichikuou.Core.Strategy;
 /// prologue's Pillage (<c>Iﾄｳｿﾞｸ</c> 1, then <c>ｵｰﾌﾟﾆﾝｸﾞ</c> if the story stage moved) and the attack
 /// (<c>:99-425</c>): Maris's refusals, the party picker <c>Sﾌﾞﾀｲ</c>, the units' refusals, the
 /// defenders chosen by the owner's <c>T*2</c> file (calls through the hooks; Patton's list inline),
-/// the exits without a battle and <c>FIGT_A</c>. The independent cities (owner 3, <c>:429-3828</c>)
-/// come with part P4 and fail as not ported. Called by <c>COMMAND.ADV</c> with the clicked province
-/// in <c>Prov_Cur</c>. The JAPAN "Fleeing Soldier" names (<c>MS 4/5/10</c>) are read from the
+/// the exits without a battle and <c>FIGT_A</c>. The independent cities (owner 3, <c>:429-3828</c>,
+/// part P4) are in <c>EnemyCityCommand.Cities.cs</c>; their negotiations fail as not ported yet.
+/// Called by <c>COMMAND.ADV</c> with the clicked province in <c>Prov_Cur</c>. The JAPAN "Fleeing
+/// Soldier" names (<c>MS 4/5/10</c>) and the cities' army names (<c>MS 10</c>) are read from the
 /// player's files through <paramref name="scenario"/>.
 /// </summary>
-public sealed class EnemyCityCommand(ScriptContext script, IScenarioSource? scenario = null)
+public sealed partial class EnemyCityCommand(ScriptContext script, IScenarioSource? scenario = null)
     : CommandFile(script, "Cﾃｷﾄｼ.ADV", scenario)
 {
     private const int VarTmp0021 = 21;
@@ -34,6 +35,8 @@ public sealed class EnemyCityCommand(ScriptContext script, IScenarioSource? scen
     {
         Done,           // %0: or @L_00205 — the file returns
         Header,         // @L_00078 — the header and the menu again
+        Menu,           // @L_0010d — the menu again, without the header
+        Top,            // @L_00025 — the city's picture, the header and the menu again
     }
 
     /// <summary><c>Cﾃｷﾄｼ.ADV:1-108</c>: the city's menu until a command leaves the file.</summary>
@@ -58,17 +61,22 @@ public sealed class EnemyCityCommand(ScriptContext script, IScenarioSource? scen
                 return;
             }
 
+            bool header = true;
             while (true)
             {
                 // L_00078 (:17-43) — "［name］ (owner)" and the scouted figures; an attack the
                 // player called off comes back here.
-                await WaoAsync(113);                                    // \L_052d7
-                await TextAsync(20);
-                await OwnerAsync();                                     // \L_05185
-                if (State.Ui_CityScouted != 1)
-                    await TextAsync(28);                                // "Economy: ??  Defense: ??"
-                if (State.Ui_CityScouted == 1)
-                    await ValuesAsync(34, Prov.Economy, Prov.Defense, Prov.BattleArea);
+                if (header)
+                {
+                    await WaoAsync(113);                                // \L_052d7
+                    await TextAsync(20);
+                    await OwnerAsync();                                 // \L_05185
+                    if (State.Ui_CityScouted != 1)
+                        await TextAsync(28);                            // "Economy: ??  Defense: ??"
+                    if (State.Ui_CityScouted == 1)
+                        await ValuesAsync(34, Prov.Economy, Prov.Defense, Prov.BattleArea);
+                }
+                header = true;
 
                 var choice = await MenuAsync();
                 switch (choice)
@@ -78,8 +86,16 @@ public sealed class EnemyCityCommand(ScriptContext script, IScenarioSource? scen
                         await Script.EventAsync("GAL.ADV", 7);
                         return;
                     case Choice.Attack:
-                        if (await AttackAsync() == Outcome.Header)
+                        var outcome = await AttackAsync();
+                        if (outcome == Outcome.Header)
                             continue;
+                        if (outcome == Outcome.Menu)                    // the independent cities' Stop
+                        {
+                            header = false;
+                            continue;
+                        }
+                        if (outcome == Outcome.Top)                     // after Pluepet's scene
+                            break;
                         return;
                     case Choice.Ninja:                                  // L_009fe
                         await Script.CallFileAsync("Cﾆﾝｼﾞｬ.ADV");
@@ -175,7 +191,7 @@ public sealed class EnemyCityCommand(ScriptContext script, IScenarioSource? scen
             return Outcome.Done;
         }
         if (Prov.Owner == 3)                                            // :121 @L_00a07
-            throw NotPorted(121, "the independent cities", "P4");
+            return await IndependentCityAsync();
         if (Prov.Owner == 5 && State.F_Patton_State < 10 && State.F_Helman_War == 1)   // :124-130
         {
             await Script.EventAsync("Gﾊﾟｯﾄﾝ.ADV", 3);

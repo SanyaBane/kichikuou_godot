@@ -41,17 +41,22 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
              "text 139", "text 162", "text 205", "text 231", "text 255", "text 281", "text 300", "text 311", "text 399",
              // the refusals, the Land of Death and the barrier
              "text 3834", "text 3868", "text 3953", "text 4014", "text 4064", "text 4138", "text 4256", "M 1", "M 3", "M 4",
+             // the independent cities: their exits, the menu, Stop, the way to a negotiation, Use Force
+             "call Iｼｬﾝｸﾞﾘﾗ.ADV", "call Gｻｰﾅｷｱ.ADV", "call Gﾚﾍﾞｯｶ.ADV", "call Gｶｾｲ.ADV", "item 493", "item 498", "item 502",
+             "text 448", "text 476", "text 510", "text 532", "text 2442", "text 2689", "text 3652",
              "unported"],
             cases: 5000);
 
     /// <summary>
     /// A city of the prologue now and then (Pillage, the AL Church), mostly an attack later on:
     /// the rebels' provinces, the mountain passes and their neighbours, the Land of Death, the
-    /// stage-2 gate, JAPAN's 56; the flags of every refusal and exit, Patton's list alive or not.
+    /// stage-2 gate, JAPAN's 56, the independent cities (17-29, mostly held by them); the flags of
+    /// every refusal and exit, Patton's list alive or not, the merchant's, Shangri-La's and the DX
+    /// Association's states.
     /// </summary>
     private static void ShapeEnemyCity(GameState state, Random rng)
     {
-        state.Prov_Cur = (Sys3Int)(rng.Next(14) switch
+        state.Prov_Cur = (Sys3Int)(rng.Next(17) switch
         {
             < 3 => 33 + rng.Next(2),
             3 => 77,
@@ -60,6 +65,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             8 => 82,
             9 => 56,
             10 => rng.Next(4) switch { 0 => 78, 1 => 89, 2 => 90, _ => 91 },
+            < 14 => rng.Next(3) == 0 ? rng.Next(3) switch { 0 => 17, 1 => 22, _ => 28 } : rng.Next(17, 30),
             _ => rng.Next(0, 100),
         });
         state.N_ALChurch_Stage = (Sys3Int)rng.Next(0, 25);
@@ -68,6 +74,15 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             state.Ev_CommandMode = Sys3Int.Zero;
         var city = state.Provs[state.Prov_Cur];
         city.Owner = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(0, 13) : state.StoryStage == 1 || rng.Next(3) == 0 ? 2 : rng.Next(4, 12));
+        if (state.Prov_Cur.Value is >= 17 and <= 29 && rng.Next(4) != 0)
+        {
+            city.Owner = 3;
+            if (state.StoryStage == 1 || state.StoryStage == 0)
+                state.StoryStage = (Sys3Int)rng.Next(2, 4);
+        }
+        state.F_Merchant_State = (Sys3Int)rng.Next(0, 4);
+        state.F_ShangriLa_State = (Sys3Int)rng.Next(0, 2);
+        state.F_DX_State = (Sys3Int)(rng.Next(3) == 0 ? 100 : rng.Next(0, 3));
         foreach (int p in new[] { 30, 31, 32, 33, 34, 36 })
             if (p != state.Prov_Cur.Value && rng.Next(3) == 0)
                 state.Provs[p].Owner = 1;
@@ -1108,7 +1123,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
                 state.Bt_Result = (Sys3Int)rng.Next(0, 3);
                 if (rng.Next(2) == 0)
                     state.Ui_CmdAttackAvail = Sys3Int.Zero;
-                state.Provs[state.Prov_Cur].Owner = (Sys3Int)rng.Next(0, 12);
+                state.Provs[state.Prov_Cur].Owner = (Sys3Int)(rng.Next(3) == 0 ? 1 : rng.Next(0, 12));
                 break;
             case "Gﾊﾟｯﾄﾝ.ADV":
                 state.F_Patton_State = (Sys3Int)(rng.Next(3) switch { 0 => 20, 1 => 10, _ => rng.Next(0, 13) });

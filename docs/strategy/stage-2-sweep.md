@@ -120,7 +120,8 @@ B (50)) and Bone Forest (90) / Tearing Forest (91) (from the Maginot Strongholds
 `:112` still allows one conquest a week; `Cﾃｷﾄｼ`, `Cﾃｷﾄｼ2` and `COMMAND` have no draws.
 
 **The independent cities** (`Cﾃｷﾄｼ.ADV:429-3828`, 3400 lines, about 45 labels, mostly text, no
-draws; the port throws at `:121`). Before the menu (`:429-485`): Portugal (28) with
+draws; ported but the negotiations, which throw at `:604` — README, "Milestone 3", step 4).
+Before the menu (`:429-485`): Portugal (28) with
 `F_Merchant_State = 1` → Pluepet's scene (`:2431-2697`, Gold + 100); Shangri-La (29) →
 `Iｼｬﾝｸﾞﾘﾗ` 1 or 2; Custom (21) → `Iｼﾚｲﾌﾞ` 3 (`:456-460`: Custom joins without a battle; Maria
 (16), Shizuka (17), Eleanor (23), Milli (24), Mill (25) join); Toushin City (27) → `Sﾌﾞﾀｲ` and

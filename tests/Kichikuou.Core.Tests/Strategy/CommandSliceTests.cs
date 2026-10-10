@@ -440,14 +440,104 @@ public class CommandSliceTests
         Is(1, rig.State.Ui_CmdAttackAvail);
     }
 
-    [Fact]
-    public async Task An_independent_city_is_not_ported_yet()
+    /// <summary>An attack on independent city <paramref name="province"/> at stage 2, then the cities' menu answers <paramref name="choices"/>.</summary>
+    private static SliceRig IndependentCity(int province, int[] party, params int[] choices)
     {
-        var rig = Attack(20, 1);
+        var rig = Attack(province, party);
         rig.State.StoryStage = 2;
-        rig.State.Provs[20].Owner = 3;
+        rig.State.Provs[province].Owner = 3;
+        foreach (int choice in choices)
+            rig.Input.Choices.Enqueue(choice);
+        return rig;
+    }
+
+    [Fact]
+    public async Task Use_Force_on_an_independent_city_fights_its_heroes_without_refusals()
+    {
+        var rig = IndependentCity(20, [29], 2);                         // Satella, who refuses elsewhere; Use Force
+        rig.State.Cmdrs[65].Status = 1;
+        rig.State.DXTalk_RetryWeek = 9;
+        int kind = -1;
+        rig.On("FIGT_A.ADV", s => kind = s.Bt_Kind.Value);
+        var scenario = new LiteralSource(new Dictionary<int, (int Slot, string Text)> { [3710] = (10, "Lazeal Army") });
+
+        await new EnemyCityCommand(rig.Script, scenario).RunAsync();
+
+        Assert.Equal(["Sﾌﾞﾀｲ.ADV", "FIGT_A.ADV"], rig.Calls.Select(c => c.File));
+        Assert.Equal([493, 498, 502], rig.MenuLines[^1]);               // Negotiate, Use Force, Stop
+        Assert.Equal([20, 448, 476, 483, 3652], rig.Lines.Where(l => l is 20 or 448 or 476 or 483 or 3652));
+        Assert.Equal("Lazeal Army", rig.State.Strings[10]);
+        Assert.Equal([65, 0, 0, 0], [rig.State.Bt_EnemyParty1.Value, rig.State.Bt_EnemyParty2.Value, rig.State.Bt_EnemyParty3.Value, rig.State.Bt_EnemyParty4.Value]);
+        Is(1, rig.State.Bt_EnemyRetreatMode);
+        Is(0, rig.State.DXTalk_RetryWeek);
+        Assert.Equal(1, kind);
+        Is(0, rig.State.Bt_Kind);
+    }
+
+    [Fact]
+    public async Task Taking_Portugal_by_force_while_Pluepet_waits_plays_Rebeccas_scene_and_Mars_his()
+    {
+        var rig = IndependentCity(28, [1], 2);
+        rig.State.F_Merchant_State = 2;
+        rig.On("FIGT_A.ADV", s => s.Provs[28].Owner = 1);
+        var scenario = new LiteralSource(new Dictionary<int, (int Slot, string Text)> { [3789] = (10, "Portugal Army") });
+
+        await new EnemyCityCommand(rig.Script, scenario).RunAsync();
+
+        Assert.Equal([("Sﾌﾞﾀｲ.ADV", 0), ("FIGT_A.ADV", 0), ("Gﾚﾍﾞｯｶ.ADV", 2)], rig.Calls);
+        Is(3, rig.State.F_Merchant_State);
+
+        rig = IndependentCity(22, [1], 2);
+        rig.On("FIGT_A.ADV", s => s.Provs[22].Owner = 1);
+        scenario = new LiteralSource(new Dictionary<int, (int Slot, string Text)> { [3724] = (10, "Mars Army") });
+        await new EnemyCityCommand(rig.Script, scenario).RunAsync();
+        Assert.Equal(("Gｶｾｲ.ADV", 1), rig.Calls[^1]);
+    }
+
+    [Fact]
+    public async Task Stop_goes_back_to_the_citys_menu_and_Rockearth_refuses_talks_after_the_DX_president_died()
+    {
+        var rig = IndependentCity(17, [1], 1, 3, 0);                    // Negotiate, Stop, then leave
+        rig.State.F_DX_State = 100;
+
+        await new EnemyCityCommand(rig.Script).RunAsync();
+
+        Assert.Equal([532, 543, 510, 515, 520], rig.Lines.Where(l => l is 532 or 543 or 510 or 515 or 520));
+        Assert.Single(rig.Lines, 20);                                   // the menu again, without the header
+        Assert.Empty(rig.Calls);
+    }
+
+    [Fact]
+    public async Task A_negotiation_calls_the_mayor_out_and_is_not_ported_yet()
+    {
+        var rig = IndependentCity(23, [1], 1);
 
         await Assert.ThrowsAsync<NotSupportedException>(() => new EnemyCityCommand(rig.Script).RunAsync());
+
+        Assert.Contains(595, rig.Lines);
+    }
+
+    [Fact]
+    public async Task Pluepet_visits_Portugal_once_and_Custom_and_Toushin_City_have_their_own_scenes()
+    {
+        var rig = IndependentCity(28, [1], 0);
+        rig.State.F_Merchant_State = 1;
+        rig.State.Gold = 50;
+
+        await new EnemyCityCommand(rig.Script).RunAsync();
+
+        Is(2, rig.State.F_Merchant_State);
+        Is(150, rig.State.Gold);
+        Assert.Contains(2442, rig.Lines);
+        Assert.Equal(2, rig.Lines.Count(l => l == 20));                // the picture and the header again
+
+        rig = IndependentCity(21, [1]);
+        await new EnemyCityCommand(rig.Script).RunAsync();
+        Assert.Equal([("Iｼﾚｲﾌﾞ.ADV", 3)], rig.Calls);
+
+        rig = IndependentCity(27, [1]);
+        await new EnemyCityCommand(rig.Script).RunAsync();
+        Assert.Equal([("Sﾌﾞﾀｲ.ADV", 0), ("Gｻｰﾅｷｱ.ADV", 1)], rig.Calls);
     }
 
     /// <summary>The <c>MS n, "text"</c> statements a test hands a file at given lines of <c>Cﾃｷﾄｼ.ADV</c>.</summary>

@@ -397,7 +397,17 @@ where recorded:
    Tower of Evil (78)), reached by the attack after `Iｼﾚｲﾌﾞ` 6. From here the main path plays to
    stage 3.
 4. **The independent cities** (P4): `Cﾃｷﾄｼ.ADV:429-3828` — the dispatch, Negotiate, Use Force and
-   the eleven cities' paths.
+   the eleven cities' paths. Part 1 (2026-10-10) in `Strategy/EnemyCityCommand.Cities.cs`: the
+   cities' own exits (`:429-471`: Pluepet's visit to Portugal (28), `L_02e1e`, Gold + 100, then the
+   city's picture again; Shangri-La (29) `Iｼｬﾝｸﾞﾘﾗ` 1/2; Custom (21) `Iｼﾚｲﾌﾞ` 3; Toushin City (27)
+   `Sﾌﾞﾀｲ` and `Gｻｰﾅｷｱ` 1), Maris's question and the menu (`:472-506`; no Negotiate at Temple AL HQ
+   (77) or Shangri-La), Stop (back to the city's menu without the header), Negotiate up to the
+   mayor called out (`:528-603`; Rockearth (17) after the DX president's death refuses), and Use
+   Force whole (`:3649-3828`: no refusals CMD-01, the last battle's walls BFL-15, each city's army
+   with its name `MS 10` from the player's files, `Gﾚﾍﾞｯｶ` 2 / `Gｶｾｲ` 1 after Portugal / Mars fall).
+   Checked against `Cﾃｷﾄｼ` run by `SceneRunner` on 5000 random states (`CommandSliceDifferentialTests`,
+   the cities 17-29 added) and unit tests (`CommandSliceTests`). The cities' negotiations
+   (`:604-3648`, `L_00e20` … `L_042f5`) throw `NotSupportedException` — part 2.
 5. **JAPAN** (N2, the rest): `TJAPAN2` and `TJAPAN`.
 6. **God's Door** (D2): `Cﾒｲｷｭｳ`'s gate (`:233-236`), `L_04ddc` and the room (`:3500-4556`); `Iｶﾐ`
    runs from the player's files (its endings end the game as `GameEnd` until W4 ports `OVER`).
