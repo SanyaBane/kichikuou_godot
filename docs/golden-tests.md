@@ -307,6 +307,7 @@ here with its reason, never as a blanket rule.
 | The rebels' turn ported (milestone 2 step 2, 2026-10-10) | the owner's rebel turn of the first run (`nations`, `20261009-105433-107-TCﾘｰｻﾞｽ`, week 14: `Gｴｸｽ` 10, then `FIGT_B` from army A's walk and from army B's) matches whole: three hook checkpoints and the exit, 0 differences (`NationReplayTests`) | — |
 | `Cﾌﾞｶ`'s troop menu ported (milestone 2 step 4, 2026-10-10) | the owner's two stage-1 `Cﾌﾞｶ` captures of the first run (`commands`, `-99-` a replenish for 8 gold, `-103-` a talk with Cadmium, week 14) now match whole; every `Cﾌﾞｶ` capture matches | — |
 | The attack in `Cﾃｷﾄｼ` ported (milestone 2 step 3, 2026-10-10) | the owner's stage-1 `Cﾃｷﾄｼ` capture of the first run (`commands`, `20261009-105408-96-Cﾃｷﾄｼ`, week 14, province 7: "Let's begin the battle", then Maris's "disrupted" refusal of the rebels' first week, `:144`) now matches whole; all 38 `Cﾃｷﾄｼ` captures match | — |
+| `Cﾊｰﾚﾑ` ported whole (milestone 2 step 4, 2026-10-10) | the owner's stage-1 harem capture of the first run (`commands`, `20261009-105412-97-Cﾊｰﾚﾑ`, week 14: the intro draw `:7` with no first meeting, the stage-1 list, a visit to Lia) now matches whole — the draw, the `Sﾊｰﾚﾑ` and `Gﾘｱ` checkpoints (the list and `Unit_Cur` 27 included) and the exit, 0 differences; all 12 `Cﾊｰﾚﾑ` captures match | — |
 
 ## Harness configuration
 

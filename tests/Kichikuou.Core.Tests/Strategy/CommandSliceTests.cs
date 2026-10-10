@@ -742,13 +742,17 @@ public class CommandSliceTests
     // Cﾊｰﾚﾑ
     // ---------------------------------------------------------------------------------------
 
-    private static SliceRig Harem()
+    private static SliceRig Harem(int stage = 0, params int[] draws)
     {
-        var rig = new SliceRig(stage: 0);
+        var rig = new SliceRig(stage, draws);
         rig.State.Ui_CmdHaremAvail = 1;
         rig.State.CurrentBgm = 7;
         return rig;
     }
+
+    /// <summary>The girls on offer when the picker is called, by their <c>HaremAvail_*</c> index (1-50).</summary>
+    private static List<int> Offered(GameState s) =>
+        Enumerable.Range(1, 50).Where(k => s.Memory.Var(248 + k) != 0).ToList();
 
     [Fact]
     public async Task The_prologue_harem_offers_Sill_Soul_and_Anasel_once_captured()
@@ -849,13 +853,110 @@ public class CommandSliceTests
     }
 
     [Fact]
-    public async Task The_harem_beyond_the_prologue_is_not_ported_yet()
+    public async Task After_the_prologue_a_visit_draws_first_even_when_cancelled_and_offers_Lia_and_Maris()
     {
-        var rig = Harem();
-        rig.State.StoryStage = 1;
+        var rig = Harem(stage: 1, draws: 3);
+        rig.State.F_Thieves_State = 3;                                  // the prologue's Anasel rule is gone
+        rig.Picker("Sﾊｰﾚﾑ.ADV", 0);
+        List<int> offered = [];
+        rig.On("Sﾊｰﾚﾑ.ADV", s => offered = Offered(s));
 
-        await Assert.ThrowsAsync<NotSupportedException>(() => new HaremCommand(rig.Script).RunAsync());
-        Assert.Empty(rig.Random.Draws);
+        await new HaremCommand(rig.Script).RunAsync();
+
+        Assert.Equal([4], rig.Random.Draws);                            // QUIRK: STR-14
+        Assert.Equal([2, 3], offered);                                  // Lia, Maris
+        Assert.Equal([("Sﾊｰﾚﾑ.ADV", 10)], rig.Calls);
+        Is(1, rig.State.Ui_CmdHaremAvail);
+        Is(27, rig.State.Unit_Cur);                                     // the list's last cursor (ENG-05)
+    }
+
+    [Fact]
+    public async Task The_draw_plays_Suzumes_first_meeting_and_the_visit_goes_on_with_her()
+    {
+        var rig = Harem(stage: 1, draws: 1);
+        rig.Picker("Sﾊｰﾚﾑ.ADV", 4);
+        List<int> offered = [];
+        rig.On("Sﾊｰﾚﾑ.ADV", s => offered = Offered(s));
+
+        await new HaremCommand(rig.Script).RunAsync();
+
+        Assert.Equal([("Gｽｽﾞﾒ.ADV", 2), ("Sﾊｰﾚﾑ.ADV", 10), ("Gｽｽﾞﾒ.ADV", 10)], rig.Calls);
+        Is(1, rig.State.F_Suzume_Met);
+        Assert.Equal([2, 3, 4], offered);
+        Is(4, rig.State.Harem_LastPick);
+        Is(12, rig.State.History[4].Harem_LastWeek);
+    }
+
+    [Fact]
+    public async Task Each_intro_test_reads_RetVal_as_the_scene_before_it_left_it()
+    {
+        // Wendy's first meeting, then her bedroom in the same visit (state 4, RetVal still 2).
+        var rig = Harem(stage: 2, draws: 2);
+        rig.State.F_Wendy_State = 4;
+        rig.Picker("Sﾊｰﾚﾑ.ADV", 0);
+
+        await new HaremCommand(rig.Script).RunAsync();
+
+        Assert.Equal([("Gｳｪﾝﾃﾞｨ.ADV", 2), ("Gｳｪﾝﾃﾞｨ.ADV", 4), ("Sﾊｰﾚﾑ.ADV", 10)], rig.Calls);
+        Is(1, rig.State.F_Wendy_Met);
+
+        // A scene leaving RetVal 2 after Suzume's would bring on Wendy's as well (none of the
+        // intro scenes writes RetVal, so in play the draw decides alone).
+        rig = Harem(stage: 1, draws: 1);
+        rig.On("Gｽｽﾞﾒ.ADV", s => s.RetVal = 2);
+        rig.Picker("Sﾊｰﾚﾑ.ADV", 0);
+
+        await new HaremCommand(rig.Script).RunAsync();
+
+        Assert.Equal([("Gｽｽﾞﾒ.ADV", 2), ("Gｳｪﾝﾃﾞｨ.ADV", 2), ("Sﾊｰﾚﾑ.ADV", 10)], rig.Calls);
+    }
+
+    [Fact]
+    public async Task The_cafes_scene_takes_the_visit_before_Lias_counter()
+    {
+        var rig = Harem(stage: 1, draws: 4);
+        rig.State.F_Cafe_State = 11;
+        rig.State.LadyCaravan_Prov = 5;
+        rig.State.F_Lia_State = 1;
+        rig.State.Ui_CmdHaremAvail = 2;
+
+        await new HaremCommand(rig.Script).RunAsync();
+
+        Assert.Equal([("Gｶﾌｪ.ADV", 3)], rig.Calls);
+        Is(0, rig.State.Ui_CmdHaremAvail);
+        Is(0, rig.State.N_Lia_Neglect);
+
+        rig = Harem(stage: 1, draws: 4);
+        rig.State.F_Cafe_State = 10;
+        rig.State.LadyCaravan_Prov = 4;                                 // the caravan not past 4 yet
+        rig.Picker("Sﾊｰﾚﾑ.ADV", 0);
+        await new HaremCommand(rig.Script).RunAsync();
+        Assert.Equal([("Sﾊｰﾚﾑ.ADV", 10)], rig.Calls);
+    }
+
+    [Fact]
+    public async Task The_list_reads_the_units_present_and_the_story_flags()
+    {
+        var rig = Harem(stage: 3, draws: 4);
+        var s = rig.State;
+        s.F_Sill_State = 1;                                             // Sill by her flag, unit 2 gone
+        s.Units[4].Status = 1;                                          // Soul by her unit
+        s.Units[5].Status = 0;
+        s.F_Leila_State = 2;                                            // Leila's second set only
+        s.Units[43].Status = 0;
+        s.F_Helman_FallCause = 2;                                       // Sheila while unit 43 is gone
+        s.N_Amiran_Stage = 90;                                          // excluded
+        s.F_Mokomoko_State = 12;
+        s.Units[27].Status = 2;
+        s.N_Isoroku_Stage = 1;                                          // Isoroku with her unit
+        s.F_Saitou_State = 2;
+        rig.Picker("Sﾊｰﾚﾑ.ADV", 0);
+        List<int> offered = [];
+        rig.On("Sﾊｰﾚﾑ.ADV", st => offered = Offered(st));
+
+        await new HaremCommand(rig.Script).RunAsync();
+
+        Assert.Equal([1, 2, 3, 11, 13, 19, 35, 44, 50], offered);
     }
 
     // ---------------------------------------------------------------------------------------

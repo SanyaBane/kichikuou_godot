@@ -199,7 +199,7 @@ One building at a time (`BuildWeeksLeft ≠ 0` → "busy", no flag consumed, `:7
 
 Completed buildings unlock own-city items on province 1 (§3.3).
 
-### 3.8 Harem (`Cﾊｰﾚﾑ` + `Sﾊｰﾚﾑ`) [C]
+### 3.8 Harem (`Cﾊｰﾚﾑ` + `Sﾊｰﾚﾑ`) [C] — ported whole (`Strategy/HaremCommand`, `Strategy/HaremScreen`, 2026-10-10)
 
 `Ui_CmdHaremAvail −= 1` (`:36`), refunded on cancel (`:547-552`). Intro draw `Y 4,4` → Suzume /
 Wendy first meetings; Cafe trigger Gｶﾌｪ#3 consumes the visit (`:6-27`). Availability of 50 girls

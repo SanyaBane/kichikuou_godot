@@ -139,17 +139,63 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         CompareAsync(
             "Cﾊｰﾚﾑ.ADV",
             (script, _) => new HaremCommand(script).RunAsync(),
-            (state, rng) =>
-            {
-                state.F_SillCow_State = (Sys3Int)(rng.Next(8) switch { 0 => 5, 1 => 7, 2 => 8, _ => 0 });
-                state.F_Lia_State = (Sys3Int)(rng.Next(4) switch { 0 => 1, 1 => 3, _ => 0 });
-                state.N_Lia_Neglect = (Sys3Int)rng.Next(0, 12);
-                state.F_Thieves_State = (Sys3Int)rng.Next(0, 4);
-                state.Ui_CmdHaremAvail = (Sys3Int)rng.Next(0, 3);
-            },
+            ShapeHarem,
             Scribble,
-            ["call Sﾊｰﾚﾑ.ADV", "call Gｼｨﾙ.ADV", "call Gｿｳﾙ.ADV", "call Gｱﾅｾﾙ.ADV", "call Gﾘｱ.ADV", "call Gﾚｲﾗ.ADV",
-             "call Gｻｲﾄｳ.ADV", "text 376", "text 566", "M 0", "unported"]);
+            ["call Sﾊｰﾚﾑ.ADV", "draw 4", "call Gｽｽﾞﾒ.ADV", "call Gｳｪﾝﾃﾞｨ.ADV", "call Gｶﾌｪ.ADV", "text 376", "text 566", "M 0",
+             .. HaremScenes.Select(f => "call " + f)],
+            cases: 4000);
+
+    /// <summary>Every girl's scene file of <c>Cﾊｰﾚﾑ.ADV:384-546</c>.</summary>
+    private static readonly string[] HaremScenes =
+    [
+        "Gｼｨﾙ.ADV", "Gﾘｱ.ADV", "Gﾏﾘｽ.ADV", "Gｽｽﾞﾒ.ADV", "Gｳｪﾝﾃﾞｨ.ADV", "Gｶﾅﾐ.ADV", "Gﾚｲﾗ.ADV", "Gﾒﾅﾄﾞ.ADV",
+        "Gﾊｳﾚｰﾝ.ADV", "Gﾒﾙﾌｪｲｽ.ADV", "Gｿｳﾙ.ADV", "Gｱﾅｾﾙ.ADV", "Gﾏﾘｱ.ADV", "Gｼｽﾞｶ.ADV", "Gﾗﾝ.ADV", "Gﾐﾘ.ADV",
+        "Gﾐﾙ.ADV", "Gﾓｺﾓｺ.ADV", "Gｳﾝｶﾞ.ADV", "Gﾒﾘﾑ.ADV", "Gﾚｨﾘｨ.ADV", "Gｱｵｲ.ADV", "Gｼｬﾘｴﾗ.ADV", "Gｱﾐﾗﾝ.ADV",
+        "Gｶﾁｭｰｼｬ.ADV", "Gｿﾙﾆｱ.ADV", "Gｻﾃﾗ.ADV", "Gｼﾞｭﾘｱ.ADV", "Gﾗﾌｧﾘｱ.ADV", "Gｱｰﾙｺｰﾄ.ADV", "Gｸﾘｰﾑ.ADV",
+        "Gﾙｰﾍﾞﾗﾝ.ADV", "Gｼｰﾗ.ADV", "Gﾁｽﾞｺ.ADV", "Gﾏｼﾞｯｸ.ADV", "Gﾅｷﾞ.ADV", "Gﾏｺﾄ.ADV", "Gﾜｰｸﾞ.ADV", "Gｶｸｻﾝ.ADV",
+        "Gｽｹｻﾝ.ADV", "Gｴﾘｻﾞﾍﾞ.ADV", "Gｲｿﾛｸ.ADV", "Gﾒﾙｼｨ.ADV", "Gｺｳﾋﾒ.ADV", "Gﾚﾍﾞｯｶ.ADV", "Gｱﾆｽ.ADV", "Gｴﾚﾅ.ADV",
+        "Gｻｲﾄｳ.ADV",
+    ];
+
+    /// <summary>
+    /// The prologue a third of the time, else a later stage: the intro draw's flags (Suzume and
+    /// Wendy met or not, Wendy's state 4, the cafe at 10/11 with the caravan past province 4), Cow
+    /// Sill, Lia's counter around its cap, and the girls' flags around every bound of the list.
+    /// </summary>
+    private static void ShapeHarem(GameState state, Random rng)
+    {
+        state.F_SillCow_State = (Sys3Int)(rng.Next(8) switch { 0 => 5, 1 => 7, 2 => 8, _ => 0 });
+        state.F_Lia_State = (Sys3Int)(rng.Next(4) switch { 0 => 1, 1 => 3, _ => 0 });
+        state.N_Lia_Neglect = (Sys3Int)rng.Next(0, 12);
+        state.F_Thieves_State = (Sys3Int)rng.Next(0, 4);
+        state.Ui_CmdHaremAvail = (Sys3Int)rng.Next(0, 3);
+        state.StoryStage = (Sys3Int)(rng.Next(3) == 0 ? 0 : rng.Next(1, 5));
+        state.F_Suzume_Met = (Sys3Int)rng.Next(0, 2);
+        state.F_Wendy_Met = (Sys3Int)rng.Next(0, 2);
+        state.F_Wendy_State = (Sys3Int)(rng.Next(3) == 0 ? 4 : rng.Next(0, 8));
+        state.F_Wendy_BedroomSeen = (Sys3Int)rng.Next(0, 2);
+        state.F_Cafe_State = (Sys3Int)(rng.Next(8) switch { 0 => 10, 1 => 11, _ => rng.Next(0, 13) });
+        state.LadyCaravan_Prov = (Sys3Int)rng.Next(0, 9);
+        state.F_Sill_State = (Sys3Int)rng.Next(0, 3);
+        state.N_Soul_Stage = (Sys3Int)rng.Next(0, 3);
+        state.F_Mokomoko_State = (Sys3Int)rng.Next(9, 16);
+        state.F_Merim_Dungeon = (Sys3Int)rng.Next(0, 3);
+        state.F_Raylee_State = (Sys3Int)rng.Next(0, 12);
+        state.F_Aoi_State = (Sys3Int)rng.Next(0, 12);
+        state.F_Shariela_State = (Sys3Int)rng.Next(2, 6);
+        state.N_Amiran_Stage = (Sys3Int)(rng.Next(4) switch { 0 => 90, 1 => 100, _ => rng.Next(0, 4) });
+        state.F_Katyusha_State = (Sys3Int)rng.Next(0, 11);
+        state.F_Saulnia_State = (Sys3Int)rng.Next(0, 11);
+        state.F_Ruberan_State = (Sys3Int)(rng.Next(3) == 0 ? 100 : rng.Next(2, 6));
+        state.F_Helman_FallCause = (Sys3Int)rng.Next(0, 4);
+        state.F_Nagi_State = (Sys3Int)rng.Next(9, 13);
+        state.N_Kaoru_State = (Sys3Int)(rng.Next(3) == 0 ? 100 : rng.Next(0, 3));
+        state.F_Elisabeth_State = (Sys3Int)(rng.Next(3) == 0 ? 10 : rng.Next(0, 3));
+        state.F_Isoroku_Fate = (Sys3Int)rng.Next(0, 4);
+        state.F_Kouhime_Dead = (Sys3Int)rng.Next(0, 4);
+        state.F_Rebecca_State = (Sys3Int)(rng.Next(3) == 0 ? 100 : rng.Next(0, 4));
+        state.F_Elena_State = (Sys3Int)rng.Next(4, 9);
+    }
 
     [Fact]
     public Task The_dungeon_entry_runs_exactly_as_Cﾒｲｷｭｳ() =>
@@ -515,6 +561,24 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
                 break;
             case "Gﾊﾟｯﾄﾝ.ADV":
                 state.F_Patton_State = (Sys3Int)(rng.Next(3) switch { 0 => 20, 1 => 10, _ => rng.Next(0, 13) });
+                break;
+            case "Gｽｽﾞﾒ.ADV" or "Gｳｪﾝﾃﾞｨ.ADV" or "Gｶﾌｪ.ADV" when state.Ev_Entry != 10:
+                // The harem's intro scenes: what the tests after them read, RetVal above all.
+                state.RetVal = (Sys3Int)rng.Next(0, 4);
+                if (rng.Next(3) == 0)
+                    state.F_Wendy_State = (Sys3Int)(rng.Next(2) == 0 ? 4 : rng.Next(0, 8));
+                if (rng.Next(3) == 0)
+                    state.F_Wendy_BedroomSeen = (Sys3Int)rng.Next(0, 2);
+                if (rng.Next(3) == 0)
+                    state.F_Cafe_State = (Sys3Int)rng.Next(9, 13);
+                if (rng.Next(3) == 0)
+                    state.LadyCaravan_Prov = (Sys3Int)rng.Next(0, 9);
+                if (rng.Next(3) == 0)
+                    state.F_Lia_State = (Sys3Int)rng.Next(0, 3);
+                if (rng.Next(3) == 0)
+                    state.Ui_CmdHaremAvail = (Sys3Int)rng.Next(0, 3);
+                if (rng.Next(4) == 0)
+                    state.StoryStage = (Sys3Int)rng.Next(0, 3);
                 break;
             default:
                 if (rng.Next(2) == 0)

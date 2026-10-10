@@ -33,7 +33,7 @@ F0 is done: the shared services (message windows, map, sound, scene calls) live 
 (the player phase) is `Strategy/CommandPhase`, reading the pointer as the script does
 (`ISceneInput`, `Script/PointerScript` for gesture-level UIs), and the prologue paths of the
 command files `Cﾃｷﾄｼ`, `Cﾃｷﾄｼ2`, `Cﾌﾞｶ`, `Cﾊｰﾚﾑ`, `Cﾒｲｷｭｳ` are ported (their later paths throw
-`NotSupportedException`; `Cﾃｷﾄｼ`'s attack and `Cﾌﾞｶ`'s troop menu came with milestone 2), and so are the pickers `Sﾌﾞﾀｲ`, `Sﾌﾞｶ`, `Sﾊｰﾚﾑ`
+`NotSupportedException`; `Cﾃｷﾄｼ`'s attack, `Cﾌﾞｶ`'s troop menu and the rest of `Cﾊｰﾚﾑ` came with milestone 2), and so are the pickers `Sﾌﾞﾀｲ`, `Sﾌﾞｶ`, `Sﾊｰﾚﾑ`
 (`Strategy/*Screen.cs` on `PickerScreen`), all routed by `Strategy/StrategyRules`. W2 is done:
 `MAIN.ADV` (the week loop) is `Strategy/WeekLoop`, the thieves' week and the Leazas week with
 every nation phase (the `T*` files are calls through the router). The battle
@@ -56,9 +56,9 @@ docs/strategy/README.md, "Milestone 2" (with the sweep of what stage 1 reaches).
 done: every stage-1 file and every scene is a capture root, docs/golden-tests.md has the owner's
 stage-1 checklist, the Leazas week is ported (the W2 row), and so are the nation template with
 the rebels' turn `TCﾘｰｻﾞｽ` and their defender picker `TCﾘｰｻﾞｽ2` (the N1 row), and the attack in
-`Cﾃｷﾄｼ` (`EnemyCityCommand`, the P3 row; the independent cities still throw). Step 4 is half
-done: `Cﾌﾞｶ`'s troop menu is ported (`SubordinatesCommand`, `Cﾌﾞｶ` whole; the P4-P7 row). Next: the
-whole `Cﾊｰﾚﾑ` (the rest of step 4).
+`Cﾃｷﾄｼ` (`EnemyCityCommand`, the P3 row; the independent cities still throw). Step 4 is done:
+`Cﾌﾞｶ`'s troop menu and the whole `Cﾊｰﾚﾑ` are ported (`SubordinatesCommand`, `HaremCommand`, both
+files whole; the P4-P7 row). Next: `Cｼﾊｲﾄｼ` and `Cｼｮｳﾆﾝ` (step 5).
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
 
