@@ -10,7 +10,7 @@ namespace Kichikuou.Content.Tests;
 
 /// <summary>
 /// The hand-ported prologue slices of the command files (<see cref="EnemyCityCommand"/>,
-/// <see cref="DistantCityCommand"/>, <see cref="SubordinatesCommand"/>, <see cref="HaremCommand"/>, <see cref="MerchantCommand"/>,
+/// <see cref="DistantCityCommand"/>, <see cref="SubordinatesCommand"/>, <see cref="HaremCommand"/>, <see cref="MerchantCommand"/>, <see cref="OwnCityCommand"/>,
 /// <see cref="DungeonCommand"/>) and the pickers (<see cref="DeploymentScreen"/>,
 /// <see cref="SubordinateScreen"/>, <see cref="HaremScreen"/>) against the files themselves run from the player's decompile by
 /// <see cref="SceneRunner"/>, on random states (mostly the prologue, <c>StoryStage</c> 0) and
@@ -242,6 +242,93 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         state.Units[32].Status = (Sys3Int)(rng.Next(4) == 0 ? 0 : 1);
         state.FogCard_Price = (Sys3Int)(rng.Next(3) == 0 ? 0 : rng.Next(1, 300));
         state.Hist_Cur = (Sys3Int)rng.Next(0, 300);
+    }
+
+    [Fact]
+    public Task The_own_city_runs_exactly_as_Cｼﾊｲﾄｼ() =>
+        CompareAsync(
+            "Cｼﾊｲﾄｼ.ADV",
+            (script, _) => new OwnCityCommand(script).RunAsync(),
+            ShapeOwnCity,
+            Scribble,
+            ["M 0", "draw 3", "draw 5", "draw 10", "item 41", "item 47", "item 53", "item 59", "item 65", "item 71", "item 340",
+             "item 436", "item 442", "item 502", "item 735", "item 741", "item 747", "item 753", "item 758", "item 762",
+             "item 1583", "item 1587", "text 17", "text 887", "text 1062", "text 1150", "text 1242", "text 1355", "text 1532",
+             "text 1597", "text 1687", "text 1704",
+             // the places and the castle
+             .. new[]
+             {
+                 "Gｶﾌｪ", "Gﾏﾘｱ", "Gﾊﾞﾎﾞﾗ", "Gｶﾞﾙﾃｨｱ", "Gｱﾋﾞｧﾄｰﾙ", "Gｱｰﾔ", "Gﾏｹﾝ", "Gｽｽﾞﾒ", "Gｱｵｲ", "Gﾐｷ", "Gﾄｸﾍﾞﾂ", "Gｶﾊﾟｰﾗ",
+                 "Gﾚｲ", "Gｶｾｲ", "Gｾﾙ", "Gｼﾉﾀﾞ", "IMﾗﾝﾄﾞ", "Gｱﾘｽ", "Gｱﾃﾅ2", "GDX", "Iｼｬﾝｸﾞﾘﾗ", "Gｴﾚﾅ", "Gﾊﾟﾊﾟｲｱ", "Gﾏｼﾞｯｸ",
+                 "Gﾌｳｶ", "Gﾏﾙﾁﾅ", "Gｻｲｾﾞﾙ", "Gｹｲﾌﾞﾜﾝ", "Gｹｲﾌﾞﾆｬﾝ", "GAL", "Cﾒｲｷｭｳ", "Gﾕｳﾚｲ", "Gｿｳﾙ", "Gﾚｨﾘｨ", "Gｱﾆｽ",
+                 "Gﾏﾘｽ", "G1", "Gﾚﾘｭｰｺﾌ", "Gﾙｰﾍﾞﾗﾝ",
+                 // the levy's triggers
+                 "Gﾌﾚｲｱ", "Gﾓｺﾓｺ", "Gﾏｺﾄ", "Gﾒﾙｼｨ", "Gｱﾅｾﾙ", "Gｱﾐﾗﾝ", "Gﾛﾚｯｸｽ", "Gｵｰﾙﾊｳﾝﾄ", "G2", "Gｽﾃｯｾﾙ", "Gｶﾞﾝｼﾞｰ", "Iｾﾞｽ",
+             }.Select(f => $"call {f}.ADV")],
+            cases: 12000);
+
+    /// <summary>
+    /// A city with a place or a levy trigger most of the time (the castle above all), the week's
+    /// action mostly free, the economy, defence and girls of the city, the buildings, the flags
+    /// around the bounds of the places and triggers, the items the levy can find owned or not.
+    /// </summary>
+    private static void ShapeOwnCity(GameState state, Random rng)
+    {
+        int[] places = [1, 1, 1, 1, 2, 4, 10, 11, 15, 17, 18, 20, 22, 23, 24, 25, 26, 29, 34, 35, 35, 36, 40, 41, 42, 42, 43, 43,
+                        45, 45, 47, 48, 49, 53, 54, 55, 56, 59, 62, 65, 66, 68, 68, 69, 77, 84, 85, 86];
+        state.Prov_Cur = (Sys3Int)(rng.Next(6) == 0 ? rng.Next(0, 100) : places[rng.Next(places.Length)]);
+        if (rng.Next(6) == 0)
+            state.Freya_TargetProv = state.Prov_Cur;
+        if (rng.Next(6) == 0)
+            state.LadyCaravan_Prov = state.Prov_Cur;
+        state.Ev_CommandMode = (Sys3Int)(rng.Next(15) switch { 0 => 1, 1 => 2, _ => 0 });
+        state.Ui_CmdOwnCityAvail = (Sys3Int)(rng.Next(4) == 0 ? 0 : rng.Next(1, 3));
+        state.Ui_CmdDungeonAvail = (Sys3Int)rng.Next(0, 2);
+        var city = state.Provs[state.Prov_Cur];
+        city.Economy = (Sys3Int)(rng.Next(6) == 0 ? 0 : rng.Next(1, 12));
+        city.Defense = (Sys3Int)rng.Next(0, 13);
+        city.Girls = (Sys3Int)(rng.Next(3) == 0 ? 0 : rng.Next(1, 4));
+        state.Gold = (Sys3Int)rng.Next(0, 3000);
+        foreach (var set in new Action<Sys3Int>[]
+                 {
+                     v => state.Bld_MariaLab = v, v => state.Bld_GirlsAcademy = v, v => state.Bld_Hospital = v,
+                     v => state.Bld_MagicLab = v, v => state.Bld_SMTower = v,
+                 })
+            set((Sys3Int)(rng.Next(3) == 0 ? 1 : 0));
+        state.Bld_Library = (Sys3Int)(rng.Next(3) == 0 ? 0 : 1);
+        state.F_Miki_InCastle = (Sys3Int)(rng.Next(3) == 0 ? 1 : 0);
+        state.N_SpecialRoom_Girls = (Sys3Int)(rng.Next(3) == 0 ? 1 : 0);
+        state.F_Lelyukov_State = (Sys3Int)(rng.Next(2) == 0 ? 3 : rng.Next(0, 5));
+        state.F_Ruberan_State = (Sys3Int)rng.Next(0, 6);
+        state.N_Amiran_Stage = (Sys3Int)rng.Next(0, 3);
+        state.F_Merci_State = (Sys3Int)rng.Next(0, 3);
+        state.F_Anasel_Fate = (Sys3Int)rng.Next(0, 3);
+        state.N_Mars_Score = (Sys3Int)rng.Next(0, 3);
+        state.F_MLand_Funded = (Sys3Int)rng.Next(0, 2);
+        state.F_Magic_State = (Sys3Int)rng.Next(1, 5);
+        state.F_Raylee_State = (Sys3Int)(rng.Next(2) == 0 ? 3 : rng.Next(0, 5));
+        state.F_Maria_Tulip = (Sys3Int)(rng.Next(3) == 0 ? 15 : rng.Next(0, 15));
+        state.F_Aoi_State = (Sys3Int)(rng.Next(3) == 0 ? 100 : rng.Next(8, 12));
+        state.F_DX_State = (Sys3Int)(rng.Next(3) == 0 ? 100 : rng.Next(0, 3));
+        state.F_Fuuka_State = (Sys3Int)(rng.Next(3) == 0 ? 19 : rng.Next(0, 3));
+        state.F_Martina_State = (Sys3Int)(rng.Next(3) == 0 ? 100 : 0);
+        state.N_ALChurch_Stage = (Sys3Int)(rng.Next(3) == 0 ? 100 : 0);
+        state.N_Camilla_Stage = (Sys3Int)(rng.Next(3) == 0 ? 100 : 0);
+        state.N_Olhound_Stage = (Sys3Int)(rng.Next(3) switch { 0 => 100, 1 => 0, _ => 1 });
+        state.F_Cafe_State = (Sys3Int)(rng.Next(4) switch { 0 => 10, 1 => 11, _ => rng.Next(0, 10) });
+        state.F_Papaya_State = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(6, 12) : rng.Next(0, 12));
+        state.F_ShangriLa_State = (Sys3Int)rng.Next(4, 7);
+        state.F_Kapala_State = (Sys3Int)rng.Next(2, 5);
+        state.F_Helman_War = (Sys3Int)rng.Next(0, 3);
+        state.F_RagarlRitual_State = (Sys3Int)(rng.Next(2) == 0 ? 7 : 0);
+        state.F_Stessel_State = (Sys3Int)rng.Next(0, 4);
+        state.F_Gandhi_State = (Sys3Int)rng.Next(0, 4);
+        state.F_LibraryGhost_State = (Sys3Int)(rng.Next(2) == 0 ? rng.Next(0, 2) * 3 + 3 : rng.Next(0, 7));
+        state.N_Soul_Stage = (Sys3Int)(rng.Next(2) == 0 ? 4 : rng.Next(3, 6));
+        state.N_Kapala_Rank = (Sys3Int)(rng.Next(2) == 0 ? 0 : 1);
+        state.Cmdrs[39].TroopAtk = (Sys3Int)(rng.Next(2) == 0 ? 20 : rng.Next(0, 25));
+        foreach (int item in new[] { 10, 20, 24, 25, 31, 32, 35, 40, 45 })
+            state.Items[item].Holder = (Sys3Int)(rng.Next(3) == 0 ? 100 : 0);
     }
 
     [Fact]

@@ -11,7 +11,7 @@ namespace Kichikuou.Core.Tests.Strategy;
 /// <summary>
 /// The prologue slices of the command files: <c>Cﾃｷﾄｼ</c> (<see cref="EnemyCityCommand"/>),
 /// <c>Cﾃｷﾄｼ2</c> (<see cref="DistantCityCommand"/>), <c>Cﾌﾞｶ</c> (<see cref="SubordinatesCommand"/>),
-/// <c>Cﾊｰﾚﾑ</c> (<see cref="HaremCommand"/>), <c>Cｼｮｳﾆﾝ</c> (<see cref="MerchantCommand"/>), the entry of <c>Cﾒｲｷｭｳ</c> with the Thieves' Hideout
+/// <c>Cﾊｰﾚﾑ</c> (<see cref="HaremCommand"/>), <c>Cｼｮｳﾆﾝ</c> (<see cref="MerchantCommand"/>), <c>Cｼﾊｲﾄｼ</c> (<see cref="OwnCityCommand"/>), the entry of <c>Cﾒｲｷｭｳ</c> with the Thieves' Hideout
 /// (<see cref="DungeonCommand"/>) and the router <see cref="StrategyRules"/>. Each file is also
 /// compared with the decompile on random states (Content tests, <c>CommandSliceDifferentialTests</c>).
 /// </summary>
@@ -1071,6 +1071,100 @@ public class CommandSliceTests
 
         Assert.Equal([("Gﾚﾍﾞｯｶ.ADV", 1)], rig.Calls);
         Assert.Equal([[95, 100, 106, 113, 120, 125], [95, 106, 113, 120, 125]], rig.MenuLines);
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // Cｼﾊｲﾄｼ
+    // ---------------------------------------------------------------------------------------
+
+    private static SliceRig OwnCity(int province, params int[] draws)
+    {
+        var rig = new SliceRig(1, draws);
+        rig.State.Prov_Cur = (Sys3Int)province;
+        rig.State.Provs[province].Economy = 5;
+        rig.State.Provs[province].Defense = 3;
+        rig.State.Ui_CmdOwnCityAvail = 1;
+        rig.State.Gold = 100;
+        return rig;
+    }
+
+    [Fact]
+    public async Task A_levy_collects_its_draw_and_plays_the_citys_first_trigger()
+    {
+        var rig = OwnCity(4, 2, 37);
+        rig.Input.Choices.Enqueue(1);                                   // Temporary Levy
+
+        await new OwnCityCommand(rig.Script).RunAsync();
+
+        Assert.Equal([[41, 47, 502]], rig.MenuLines);
+        Assert.Equal([3, 50], rig.Random.Draws);                        // the flavour, Economy × 10
+        Is(137, rig.State.Gold);                                        // QUIRK: CMD-07
+        Is(37, rig.State.VAR0055);
+        Is(0, rig.State.Ui_CmdOwnCityAvail);
+        Is(11, rig.State.F_Mokomoko_State);
+        Assert.Equal([("Gﾓｺﾓｺ.ADV", 1)], rig.Calls);
+        Assert.Contains(865, rig.Lines);                                // the second flavour
+    }
+
+    [Fact]
+    public async Task Without_a_trigger_the_levy_draws_every_roll_and_takes_a_girl()
+    {
+        var rig = OwnCity(3, 1, 10, 1, 2, 2, 4, 7, 1);
+        rig.State.Items[24].Holder = 100;                               // the Cat Bread's 1 finds nothing
+        rig.State.Provs[3].Girls = 2;
+        rig.Input.Choices.Enqueue(1);
+
+        await new OwnCityCommand(rig.Script).RunAsync();
+
+        Assert.Equal([3, 50, 5, 5, 5, 5, 10, 3], rig.Random.Draws);     // QUIRK: STR-14
+        Is(1, rig.State.Provs[3].Girls);
+        Is(1, rig.State.N_SpecialRoom_Girls);
+        Assert.Contains(1078, rig.Lines);                               // "cute"
+        Assert.Contains(1113, rig.Lines);                               // "dancer"
+        Assert.Contains(1150, rig.Lines);                               // the soldier's aside
+        Assert.Empty(rig.Calls);
+        Is(25, rig.State.Item_Cur);
+    }
+
+    [Fact]
+    public async Task Bolster_Defense_pays_without_a_gold_check_and_returns_to_the_city()
+    {
+        var rig = OwnCity(3);
+        rig.State.Gold = 10;
+        rig.State.Ui_CmdOwnCityAvail = 2;
+        rig.Input.Choices.Enqueue(2);                                   // Bolster Defense
+        rig.Input.Choices.Enqueue(1);                                   // Reinforce
+        rig.Input.Choices.Enqueue(3);                                   // Return
+
+        await new OwnCityCommand(rig.Script).RunAsync();
+
+        Assert.Equal([[41, 47, 502], [1583, 1587], [41, 47, 502]], rig.MenuLines);
+        Assert.Equal(60, rig.View.Events.OfType<ValueMessageEvent>().First(v => v.Text.Line == 1532).Values[0].Value);
+        Is(0, rig.State.Gold);                                          // QUIRK: CMD-05
+        Is(4, rig.State.Provs[3].Defense);
+        Is(1, rig.State.Ui_CmdOwnCityAvail);
+    }
+
+    [Fact]
+    public async Task A_spent_week_shows_crosses_but_the_Ruins_Search_follows_the_dungeon_flag()
+    {
+        var rig = OwnCity(35);
+        rig.State.Ui_CmdOwnCityAvail = 0;
+        rig.State.Ui_CmdDungeonAvail = 1;
+        rig.State.Provs[35].MapX = 123;
+        rig.State.Dgns[30].State = 5;
+        rig.Input.Choices.Enqueue(1);                                   // ×Temporary Levy: the menu again
+        rig.Input.Choices.Enqueue(3);                                   // ○Ruins Search
+
+        await new OwnCityCommand(rig.Script).RunAsync();
+
+        Assert.Equal([[65, 71, 436, 502], [65, 71, 436, 502]], rig.MenuLines);
+        Is(30, rig.State.Dgn_Cur);                                      // QUIRK: CMD-09
+        Is(0, rig.State.Dgns[30].State);
+        Is(35, rig.State.Dgns[30].Prov);
+        Is(123, rig.State.Dgns[30].MapX);
+        Assert.Equal(["Cﾒｲｷｭｳ.ADV"], rig.Scenes);
+        Is(16, rig.State.Unit_Cur);                                     // the place list's cursor
     }
 
     // ---------------------------------------------------------------------------------------

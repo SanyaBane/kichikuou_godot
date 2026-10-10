@@ -58,8 +58,8 @@ stage-1 checklist, the Leazas week is ported (the W2 row), and so are the nation
 the rebels' turn `TCﾘｰｻﾞｽ` and their defender picker `TCﾘｰｻﾞｽ2` (the N1 row), and the attack in
 `Cﾃｷﾄｼ` (`EnemyCityCommand`, the P3 row; the independent cities still throw). Step 4 is done:
 `Cﾌﾞｶ`'s troop menu and the whole `Cﾊｰﾚﾑ` are ported (`SubordinatesCommand`, `HaremCommand`, both
-files whole; the P4-P7 row). Step 5 is half done: `Cｼｮｳﾆﾝ` is ported whole (`MerchantCommand`).
-Next: `Cｼﾊｲﾄｼ` (the rest of step 5).
+files whole; the P4-P7 row). Step 5 is done: `Cｼｮｳﾆﾝ` and `Cｼﾊｲﾄｼ` are ported whole (`MerchantCommand`,
+`OwnCityCommand`). Next: `Cﾆﾝｼﾞｬ` and `Cﾃｲﾄ` (step 6).
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
 

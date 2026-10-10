@@ -121,7 +121,7 @@ removed (`L_05109`) [C]:
 commander list per city → `L_04f2a` → FIGT_A; province 20 clears `DXTalk_RetryWeek` (`:3711`);
 after a win at 28 → Gﾚﾍﾞｯｶ#2, at 22 → Gｶｾｲ#1 (`:3817-3824`). **Skips the unit refusals** [C].
 
-### 3.3 Own city (`Cｼﾊｲﾄｼ`) — one action per week across all own provinces [C]
+### 3.3 Own city (`Cｼﾊｲﾄｼ`) — one action per week across all own provinces [C] — ported whole (`Strategy/OwnCityCommand`, 2026-10-10)
 
 | Action | Cost | Effect | Lines |
 |---|---|---|---|
