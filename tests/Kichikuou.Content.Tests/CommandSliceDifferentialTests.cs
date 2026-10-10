@@ -11,7 +11,7 @@ namespace Kichikuou.Content.Tests;
 /// <summary>
 /// The hand-ported prologue slices of the command files (<see cref="EnemyCityCommand"/>,
 /// <see cref="DistantCityCommand"/>, <see cref="SubordinatesCommand"/>, <see cref="HaremCommand"/>, <see cref="MerchantCommand"/>, <see cref="OwnCityCommand"/>,
-/// <see cref="DungeonCommand"/>) and the pickers (<see cref="DeploymentScreen"/>,
+/// <see cref="NinjaCommand"/>, <see cref="ConstructionCommand"/>, <see cref="DungeonCommand"/>) and the pickers (<see cref="DeploymentScreen"/>,
 /// <see cref="SubordinateScreen"/>, <see cref="HaremScreen"/>) against the files themselves run from the player's decompile by
 /// <see cref="SceneRunner"/>, on random states (mostly the prologue, <c>StoryStage</c> 0) and
 /// random input: both runs must make the same input requests, call the same files with the same
@@ -329,6 +329,99 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         state.Cmdrs[39].TroopAtk = (Sys3Int)(rng.Next(2) == 0 ? 20 : rng.Next(0, 25));
         foreach (int item in new[] { 10, 20, 24, 25, 31, 32, 35, 40, 45 })
             state.Items[item].Holder = (Sys3Int)(rng.Next(3) == 0 ? 100 : 0);
+    }
+
+    [Fact]
+    public Task The_ninja_runs_exactly_as_Cﾆﾝｼﾞｬ() =>
+        CompareAsync(
+            "Cﾆﾝｼﾞｬ.ADV",
+            (script, _) => new NinjaCommand(script).RunAsync(),
+            ShapeNinja,
+            Scribble,
+            ["draw 5", "draw 100", "draw 300", "draw 2", "draw 200", "draw 30", "draw 12", "draw 28", "M 0",
+             "call Gｶﾅﾐ.ADV", "call Gｺｰﾄﾞ.ADV", "call Gﾌﾚｲｱ.ADV",
+             "item 51", "item 57", "item 63", "item 69", "item 75", "item 80", "item 283", "item 288", "item 294", "item 299",
+             "text 16", "text 87", "text 119", "text 146", "text 169", "text 203", "text 235", "text 306", "text 373",
+             "text 383", "text 393", "text 403", "text 413", "text 419", "text 586", "text 604", "text 608", "text 615",
+             "text 625", "text 631", "text 637",
+             // each ninja's sabotage, success and failure
+             "text 441", "text 450", "text 459", "text 468", "text 477", "text 656", "text 703", "text 774", "text 787",
+             "text 807", "text 880", "text 923", "text 991", "text 1027", "text 1096"],
+            cases: 6000);
+
+    /// <summary>
+    /// The five ninjas free, spent or not recruited (now and then all of them busy), Kanami's scene 4
+    /// seen or not; a city of every owner whose sabotage is barred or open (the three wars), owner 8,
+    /// Zeth's Code; the Substitute Ninja in stock or not; the commanders a sabotage may hit alive or
+    /// not, with troops around the draws.
+    /// </summary>
+    private static void ShapeNinja(GameState state, Random rng)
+    {
+        bool busy = rng.Next(15) == 0;
+        foreach (var set in new Action<Sys3Int>[]
+                 {
+                     v => state.F_Kanami_NinjaUsed = v, v => state.F_Freya_NinjaUsed = v, v => state.F_Kaoru_NinjaUsed = v,
+                     v => state.F_Wichita_NinjaUsed = v, v => state.F_Saitou_NinjaUsed = v,
+                 })
+            set((Sys3Int)(busy ? rng.Next(2) == 0 ? 1 : 99 : rng.Next(4) switch { 0 => 1, 1 => 99, _ => 0 }));
+        state.F_Kanami_Scene4 = (Sys3Int)(rng.Next(3) == 0 ? 1 : 0);
+        state.Prov_Cur = (Sys3Int)rng.Next(0, 100);
+        state.Provs[state.Prov_Cur].Owner = (Sys3Int)(rng.Next(8) switch
+        {
+            0 => 2, 1 => 3, 2 => 4, 3 => 6, 4 => 7, 5 => 7, 6 => 8, _ => rng.Next(0, 13),
+        });
+        state.F_Japan_State = (Sys3Int)rng.Next(0, 3);
+        state.F_Helman_War = (Sys3Int)rng.Next(0, 3);
+        state.F_Zeth_War = (Sys3Int)rng.Next(0, 3);
+        state.F_Code_State = (Sys3Int)(rng.Next(3) switch { 0 => 0, 1 => 2, _ => rng.Next(0, 6) });
+        state.Items[8].Holder = (Sys3Int)(rng.Next(3) == 0 ? 100 : rng.Next(0, 51));
+        foreach (int c in Enumerable.Range(21, 31).Concat(Enumerable.Range(70, 13)).Concat(Enumerable.Range(100, 29)))
+        {
+            var cmdr = state.Cmdrs[c];
+            cmdr.Status = (Sys3Int)(rng.Next(3) == 0 ? 0 : 1);
+            cmdr.Troops = (Sys3Int)(rng.Next(4) switch { 0 => 0, 1 => rng.Next(1, 200), _ => rng.Next(0, 3000) });
+            cmdr.TroopAtk = (Sys3Int)rng.Next(0, 12);
+            cmdr.TroopDef = (Sys3Int)rng.Next(0, 12);
+            cmdr.Recovery = (Sys3Int)rng.Next(0, 300);
+        }
+    }
+
+    [Fact]
+    public Task The_construction_runs_exactly_as_Cﾃｲﾄ() =>
+        CompareAsync(
+            "Cﾃｲﾄ.ADV",
+            (script, _) => new ConstructionCommand(script).RunAsync(),
+            ShapeConstruction,
+            Scribble,
+            ["M 0", "item 62", "item 66", "item 246", "item 252", "item 258", "item 264", "item 271", "item 277", "item 282",
+             "item 355", "item 359", "item 442", "item 446", "item 544", "item 548", "item 725", "item 729", "item 830",
+             "item 834", "item 920", "item 924", "item 928",
+             "text 8", "text 80", "text 107", "text 111", "text 115", "text 119", "text 123", "text 127", "text 135",
+             "text 142", "text 339", "text 426", "text 528", "text 709", "text 814", "text 904", "text 966",
+             "text 377", "text 464", "text 566", "text 747", "text 852", "text 946"],
+            cases: 4000);
+
+    /// <summary>
+    /// The buildings not started, under way or built (now and then all of them and the pool, the dead
+    /// opening), a timer running or not, Maria in the army with her tulip, a budget around the prices,
+    /// a stale history cursor.
+    /// </summary>
+    private static void ShapeConstruction(GameState state, Random rng)
+    {
+        bool all = rng.Next(20) == 0;
+        foreach (var set in new Action<Sys3Int>[]
+                 {
+                     v => state.Bld_GirlsAcademy = v, v => state.Bld_Library = v, v => state.Bld_Hospital = v,
+                     v => state.Bld_SMTower = v, v => state.Bld_MariaLab = v, v => state.Bld_MagicLab = v,
+                 })
+            set((Sys3Int)(all ? 2 : rng.Next(5) switch { 0 => 1, 1 => 2, _ => 0 }));
+        state.F_Pool_Built = (Sys3Int)(all ? 2 : rng.Next(0, 3));
+        state.BuildWeeksLeft = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(1, 17) : 0);
+        state.Units[16].Status = (Sys3Int)(rng.Next(3) == 0 ? 0 : 1);
+        state.F_Maria_Tulip = (Sys3Int)rng.Next(0, 4);
+        int[] edges = [0, 399, 400, 401, 599, 600, 799, 800, 899, 900, 979, 980, 3000];
+        state.Gold = (Sys3Int)(rng.Next(2) == 0 ? edges[rng.Next(edges.Length)] : rng.Next(0, 1500));
+        state.Hist_Cur = (Sys3Int)rng.Next(0, 300);
     }
 
     [Fact]
@@ -652,6 +745,16 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
                 break;
             case "Cﾆﾝｼﾞｬ.ADV":
                 state.Ui_CityScouted = (Sys3Int)rng.Next(0, 2);
+                break;
+            case "Gｶﾅﾐ.ADV" or "Gｺｰﾄﾞ.ADV" or "Gﾌﾚｲｱ.ADV":
+                // The ninja's scenes: Kanami's scene 4 (seen when Rance does not forgive her
+                // interrupt), Code's states, now and then another ninja for the tests after them.
+                if (rng.Next(2) == 0)
+                    state.F_Kanami_Scene4 = (Sys3Int)rng.Next(0, 2);
+                if (rng.Next(2) == 0)
+                    state.F_Code_State = (Sys3Int)(rng.Next(3) * 2);
+                if (rng.Next(4) == 0)
+                    state.Bt_ScoutNinja = (Sys3Int)rng.Next(0, 6);
                 break;
             case "Sﾌﾞﾀｲ.ADV":
                 {

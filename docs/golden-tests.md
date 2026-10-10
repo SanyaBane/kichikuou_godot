@@ -196,9 +196,10 @@ numbers are the engine's (`MS n` writes string n).
    `FIGT.ADV` → `FightAsync`, `COM.ADV` → `WeeklyEvents.RunAsync`, `COMMAND.ADV` →
    `CommandPhase.RunAsync`, the `week` group's label root `MAIN.ADV@20` → `WeekLoop.RunWeekAsync`
    (`ReplayableLabelRoots`; a week with an army name of its own, `MS 10`, needs the player's files and is not replayed in the core yet), the `commands` group's `Cﾃｷﾄｼ.ADV`, `Cﾃｷﾄｼ2.ADV`, `Cﾌﾞｶ.ADV`,
-   `Cﾊｰﾚﾑ.ADV` → `EnemyCityCommand`, `DistantCityCommand`, `SubordinatesCommand`, `HaremCommand`
-   (`GoldenReplay.ReplayableRoots`, `CanReplay`; their paths beyond the prologue throw
-   `NotSupportedException`). `Cﾒｲｷｭｳ.ADV` reads its `MS` strings from the player's files, so its
+   `Cﾊｰﾚﾑ.ADV`, `Cｼｮｳﾆﾝ.ADV`, `Cｼﾊｲﾄｼ.ADV`, `Cﾃｲﾄ.ADV` and the `ninja` group's `Cﾆﾝｼﾞｬ.ADV` →
+   `EnemyCityCommand`, `DistantCityCommand`, `SubordinatesCommand`, `HaremCommand`, `MerchantCommand`,
+   `OwnCityCommand`, `ConstructionCommand`, `NinjaCommand` (`GoldenReplay.ReplayableRoots`, `CanReplay`;
+   of their paths only `Cﾃｷﾄｼ`'s independent cities still throw `NotSupportedException`). `Cﾒｲｷｭｳ.ADV` reads its `MS` strings from the player's files, so its
    replay is `RunAsync(capture, entryPoint: s => new DungeonCommand(s, scripts).RunAsync())`
    (`DungeonReplayTests` in the content tests); the
    same holds for the `screens` group (`Sﾌﾞﾀｲ`, `Sﾌﾞｶ`, `Sﾊｰﾚﾑ` → `DeploymentScreen`,

@@ -162,7 +162,7 @@ One troop action and one talk per week. Using either clears its `CmdAvail_Sub*`;
 
 Every action leaves `Cﾌﾞｶ` (`%0`); Info / Do Nothing don't consume anything.
 
-### 3.6 Ninja (`Cﾆﾝｼﾞｬ`) [C]
+### 3.6 Ninja (`Cﾆﾝｼﾞｬ`) [C] — ported whole (`Strategy/NinjaCommand`, 2026-10-10)
 
 No gold, no command flag. Picking ninja k sets `F_k_NinjaUsed := 1` **before** the mission menu
 (spent on "No Mission"); COM.ADV:11-32 resets the five flags weekly (99 = not recruited);
@@ -179,9 +179,9 @@ started, `:261-270`; capture 10 %, 70 % vs owner 8; success 1/2), Burger (Kanami
 | Saitou | always fails (`:1091-1148`) | `F_Saitou_State := 0` |
 
 Substitute Ninja (item 8, `Item_Holder = 100`) converts a capture into loss of the item
-(`:360-364, 529-540, 582-600`). Kanami's Ev 12 interrupt (20 %) refunds her (`:95-102`).
+(`:360-364, 529-540, 582-600`). Kanami's Ev 12 interrupt (20 %) refunds her (`:95-102`) and comes back while Rance forgives her (`Gｶﾅﾐ.ADV:2536-2551`; CMD-10).
 
-### 3.7 Construction (`Cﾃｲﾄ`) [C]
+### 3.7 Construction (`Cﾃｲﾄ`) [C] — ported whole (`Strategy/ConstructionCommand`, 2026-10-10)
 
 One building at a time (`BuildWeeksLeft ≠ 0` → "busy", no flag consumed, `:72-220`). Build:
 `Gold < cost` → back to list; else `Gold −= cost`, `Hist_SundryExp += cost`,
@@ -326,7 +326,7 @@ Quirks a faithful port must keep (or consciously decide on) [C unless tagged]:
 6. **Merchant off-by-one** `Gold < price−1`: Clothes free at 0 gold.
 7. **Levy has no downside** and its three item/scene rolls are always drawn.
 8. **Merchant flag not consumed** by the Gｼｨﾙ#2/#6 branches; **Ruins Search** ignores the own-city flag and resets dungeon record 30.
-9. **Ninja is spent on "No Mission"**; the Burger draw is always made; Kanami's interrupt refunds her and can recur [I]; commander record 100 is zeroed by every sabotage-success picker call (`Cﾆﾝｼﾞｬ.ADV:1150-1152`); Freya/Kaoru/Wichita always fail against owners other than 4/6/7.
+9. **Ninja is spent on "No Mission"**; the Burger draw is always made; Kanami's interrupt refunds her and recurs while Rance forgives her (`Gｶﾅﾐ.ADV:2536-2551`, read 2026-10-10); commander record 100 is zeroed by every sabotage-success picker call (`Cﾆﾝｼﾞｬ.ADV:1150-1152`); Freya/Kaoru/Wichita always fail against owners other than 4/6/7.
 10. **Cﾌﾞｶ**: talk relies on stale `Ev_Entry = 20`; Add-More multipliers survive a cancel (`:918`); Replenish sets `Troops := Max` even if above (unreachable: MAIN's weekly tick caps troops, `MAIN.ADV:147-164` [I]).
 11. **Cﾃｲﾄ**: "all built" check (`:1`) can never be true; pool branch (`:588-657`) dead; `Unit_Cur := 16` clobber (`:268`).
 12. **Harem**: cancel lowers `N_Lia_Neglect` when it was at the cap; stale `Hist_Cur`; Gｻｲﾄｳ/Gﾏｼﾞｯｸ/Gﾜｰｸﾞ never set `Harem_ExpReward`.

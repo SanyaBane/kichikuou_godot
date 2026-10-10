@@ -1168,6 +1168,359 @@ public class CommandSliceTests
     }
 
     // ---------------------------------------------------------------------------------------
+    // Cﾆﾝｼﾞｬ
+    // ---------------------------------------------------------------------------------------
+
+    private static SliceRig Ninja(int owner, params int[] draws)
+    {
+        var rig = new SliceRig(1, draws);
+        rig.State.Prov_Cur = 5;
+        rig.State.Provs[5].Owner = (Sys3Int)owner;
+        rig.State.Provs[5].Economy = 4;
+        rig.State.Provs[5].Defense = 3;
+        rig.State.Provs[5].BattleArea = 600;
+        rig.State.Cmdr_StrBase = 100;
+        return rig;
+    }
+
+    [Fact]
+    public async Task Every_ninja_busy_leaves_with_Maris_regrets()
+    {
+        var rig = Ninja(2);
+        rig.State.F_Kanami_NinjaUsed = 1;
+        rig.State.F_Freya_NinjaUsed = 99;                               // not recruited
+        rig.State.F_Kaoru_NinjaUsed = 1;
+        rig.State.F_Wichita_NinjaUsed = 99;
+        rig.State.F_Saitou_NinjaUsed = 1;
+
+        await new NinjaCommand(rig.Script).RunAsync();
+
+        Assert.Empty(rig.MenuLines);
+        Assert.Equal([6, 16, 25, 30, 35], rig.Lines);
+    }
+
+    [Fact]
+    public async Task A_picked_ninja_is_spent_even_without_a_mission()
+    {
+        var rig = Ninja(2, 2, 3);                                       // no interrupt, no burger
+        rig.State.F_Freya_NinjaUsed = 99;
+        rig.State.F_Wichita_NinjaUsed = 1;
+        rig.Input.Choices.Enqueue(1);                                   // Kanami
+        rig.Input.Choices.Enqueue(3);                                   // No Mission
+
+        await new NinjaCommand(rig.Script).RunAsync();
+
+        Assert.Equal([[51, 63, 75, 80], [283, 288, 299]], rig.MenuLines);
+        Assert.Equal([5, 5], rig.Random.Draws);                         // QUIRK: STR-14 — the burger's draw
+        Is(1, rig.State.F_Kanami_NinjaUsed);                            // QUIRK: CMD-10
+        Is(1, rig.State.Bt_ScoutNinja);
+        Assert.Equal(322, rig.Lines[^1]);                               // "Boring girl."
+        Assert.Empty(rig.Calls);
+    }
+
+    [Fact]
+    public async Task Kanami_may_interrupt_and_is_given_back_or_offers_the_burger()
+    {
+        var rig = Ninja(2, 1);
+        rig.Input.Choices.Enqueue(1);
+
+        await new NinjaCommand(rig.Script).RunAsync();
+
+        Assert.Equal([("Gｶﾅﾐ.ADV", 12)], rig.Calls);
+        Is(0, rig.State.F_Kanami_NinjaUsed);                            // QUIRK: CMD-10 — given back
+        Is(0, rig.State.Bt_ScoutNinja);
+        Assert.Single(rig.MenuLines);
+
+        rig = Ninja(2, 1, 1);
+        rig.State.F_Kanami_Scene4 = 1;                                  // seen: no interrupt
+        rig.Input.Choices.Enqueue(1);
+        rig.Input.Choices.Enqueue(3);                                   // Get Me A Burger
+        await new NinjaCommand(rig.Script).RunAsync();
+        Assert.Equal([283, 288, 294, 299], rig.MenuLines[1]);
+        Assert.Equal([("Gｶﾅﾐ.ADV", 11)], rig.Calls);
+    }
+
+    [Fact]
+    public async Task Collect_Info_shows_the_citys_figures_and_no_sabotage_before_the_war()
+    {
+        var rig = Ninja(4, 5, 50);                                      // Helman, not at war
+        rig.Input.Choices.Enqueue(3);                                   // Kaoru
+        rig.Input.Choices.Enqueue(1);                                   // Collect Info
+
+        await new NinjaCommand(rig.Script).RunAsync();
+
+        Assert.Equal([[51, 57, 63, 69, 75, 80], [283, 299]], rig.MenuLines);
+        Assert.Equal([5, 100], rig.Random.Draws);
+        Is(1, rig.State.Ui_CityScouted);
+        Assert.Contains(393, rig.Lines);                                // "Kaoru came back with information."
+        var info = rig.View.Events.OfType<ValueMessageEvent>().Single(v => v.Text.Line == 419);
+        Assert.Equal([4, 3, 600], info.Values.Select(v => v.Value));
+    }
+
+    [Fact]
+    public async Task A_caught_ninja_is_lost_unless_a_Substitute_Ninja_takes_her_place()
+    {
+        var rig = Ninja(4, 5, 1);
+        rig.State.N_Kaoru_State = 2;
+        rig.Input.Choices.Enqueue(3);
+        rig.Input.Choices.Enqueue(1);
+
+        await new NinjaCommand(rig.Script).RunAsync();
+
+        Is(0, rig.State.N_Kaoru_State);
+        Assert.Equal([604, 625], rig.Lines[^2..]);                      // "never returned", "Kaoru was captured."
+        Assert.Contains(rig.View.Events, e => e is MapEvent);
+        Is(0, rig.State.Ui_CityScouted);
+
+        rig = Ninja(4, 5, 1);
+        rig.State.N_Kaoru_State = 2;
+        rig.State.Items[8].Holder = 100;
+        rig.Input.Choices.Enqueue(3);
+        rig.Input.Choices.Enqueue(1);
+        await new NinjaCommand(rig.Script).RunAsync();
+        Is(0, rig.State.Items[8].Holder);
+        Is(2, rig.State.N_Kaoru_State);
+        Assert.Contains(586, rig.Lines);
+        Assert.Contains(419, rig.Lines);                                // she brings the figures all the same
+    }
+
+    [Theory]
+    [InlineData(1, 0, 2, 656)]                                          // success: the walls lose one
+    [InlineData(2, 1, 3, 703)]                                          // failure
+    [InlineData(3, 1, 2, 656)]                                          // QUIRK: ENG-02 — a 3 keeps the stale Tmp0001
+    [InlineData(3, 2, 3, 703)]
+    public async Task Kanamis_sabotage_lowers_the_citys_walls(int roll, int staleTmp, int defense, int line)
+    {
+        var rig = Ninja(2, 2, 3, 90, roll);                             // no interrupt, no burger, not caught at 90
+        rig.State.Tmp0001 = (Sys3Int)staleTmp;
+        rig.Input.Choices.Enqueue(1);                                   // Kanami
+        rig.Input.Choices.Enqueue(2);                                   // Sabotage
+
+        await new NinjaCommand(rig.Script).RunAsync();
+
+        Assert.Equal([5, 5, 100, 2], rig.Random.Draws);
+        Is(defense, rig.State.Provs[5].Defense);
+        Assert.Contains(line, rig.Lines);
+        Assert.Contains(rig.View.Events, e => e is MapEvent);
+    }
+
+    [Fact]
+    public async Task Against_owner_8_the_capture_is_drawn_again_of_300()
+    {
+        var rig = Ninja(8, 2, 3, 10, 91);
+        rig.Input.Choices.Enqueue(1);
+        rig.Input.Choices.Enqueue(2);
+
+        await new NinjaCommand(rig.Script).RunAsync();
+
+        Assert.Equal([5, 5, 100, 300], rig.Random.Draws);               // QUIRK: STR-14 — the 10 is dropped
+        Assert.Equal([("Gｶﾅﾐ.ADV", 100)], rig.Calls);
+    }
+
+    [Fact]
+    public async Task Freya_kills_troops_of_a_commander_drawn_from_the_owners_whole_range()
+    {
+        var rig = Ninja(4, 3, 50, 1, 7, 150);
+        rig.State.F_Helman_War = 1;
+        rig.State.Cmdrs[28].Status = 1;
+        rig.State.Cmdrs[28].Troops = 1000;
+        rig.State.Cmdrs[100].Status = 1;
+        rig.State.Cmdrs[100].Troops = 500;
+        rig.Input.Choices.Enqueue(2);                                   // Freya
+        rig.Input.Choices.Enqueue(2);                                   // Sabotage
+
+        await new NinjaCommand(rig.Script).RunAsync();
+
+        Assert.Equal([5, 100, 2, 30, 200], rig.Random.Draws);
+        Is(28, rig.State.Cmdr_Cur);                                     // QUIRK: CMD-11 — 21 + 7
+        Is(850, rig.State.Cmdrs[28].Troops);
+        Is(150, rig.State.Tmp0002);
+        Is(0, rig.State.Cmdrs[100].Status);                             // QUIRK: EVT-04
+        Is(0, rig.State.Cmdrs[100].Troops);
+        Assert.Equal("s181", rig.State.Strings[4]);                     // the commander's name
+        Assert.Equal(150, rig.View.Events.OfType<ValueMessageEvent>().Single(v => v.Text.Line == 787).Values[0].Value);
+        Is(1, rig.State.Ui_CityScouted);
+
+        rig = Ninja(4, 3, 50, 1, 7, 150, 60);                           // fewer troops than the draw: a second one
+        rig.State.F_Helman_War = 1;
+        rig.State.Cmdrs[28].Status = 1;
+        rig.State.Cmdrs[28].Troops = 100;
+        rig.Input.Choices.Enqueue(2);
+        rig.Input.Choices.Enqueue(2);
+        await new NinjaCommand(rig.Script).RunAsync();
+        Assert.Equal([5, 100, 2, 30, 200, 100], rig.Random.Draws);
+        Is(40, rig.State.Cmdrs[28].Troops);
+    }
+
+    [Fact]
+    public async Task Freya_against_the_rebels_always_fails_and_zeroes_record_100()
+    {
+        var rig = Ninja(2, 3, 50, 1);
+        rig.State.Cmdrs[100].Status = 1;
+        rig.State.Cmdrs[100].Troops = 500;
+        rig.Input.Choices.Enqueue(2);
+        rig.Input.Choices.Enqueue(2);
+
+        await new NinjaCommand(rig.Script).RunAsync();
+
+        Assert.Equal([5, 100, 2], rig.Random.Draws);                    // QUIRK: CMD-11 — no target drawn
+        Is(100, rig.State.Cmdr_Cur);
+        Is(0, rig.State.Cmdrs[100].Troops);                             // QUIRK: EVT-04
+        Is(0, rig.State.Tmp0001);
+        Assert.Contains(807, rig.Lines);                                // her failure
+        Is(0, rig.State.Ui_CityScouted);
+    }
+
+    [Fact]
+    public async Task Kaoru_and_Wichita_weaken_a_living_commander_and_Saitou_never_succeeds()
+    {
+        var rig = Ninja(6, 3, 50, 1, 5, 2);                             // JAPAN at war; the target 70 + 5
+        rig.State.F_Japan_State = 1;
+        rig.State.Cmdrs[75].Status = 1;
+        rig.State.Cmdrs[75].TroopDef = 4;
+        rig.Input.Choices.Enqueue(3);                                   // Kaoru
+        rig.Input.Choices.Enqueue(2);
+        await new NinjaCommand(rig.Script).RunAsync();
+        Is(3, rig.State.Cmdrs[75].TroopDef);
+        Assert.Contains(880, rig.Lines);
+
+        rig = Ninja(7, 3, 50, 1, 10);                                   // Zeth at war; the target 100 + 10
+        rig.State.F_Zeth_War = 1;
+        rig.State.Cmdrs[110].Status = 1;
+        rig.State.Cmdrs[110].Recovery = 101;
+        rig.Input.Choices.Enqueue(4);                                   // Wichita
+        rig.Input.Choices.Enqueue(2);
+        await new NinjaCommand(rig.Script).RunAsync();
+        Is(50, rig.State.Cmdrs[110].Recovery);
+        Assert.Contains(991, rig.Lines);
+
+        rig = Ninja(2, 3, 50, 1);
+        rig.Input.Choices.Enqueue(5);                                   // Saitou
+        rig.Input.Choices.Enqueue(2);
+        await new NinjaCommand(rig.Script).RunAsync();
+        Is(1, rig.State.Tmp0001);                                       // QUIRK: CMD-11 — a success all the same
+        Is(3, rig.State.Provs[5].Defense);
+        Is(0, rig.State.Ui_CityScouted);
+        Assert.Equal(1143, rig.Lines[^1]);                              // "Typical of a spy..."
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // Cﾃｲﾄ
+    // ---------------------------------------------------------------------------------------
+
+    private static SliceRig Construction(int gold)
+    {
+        var rig = new SliceRig(1);
+        rig.State.Gold = (Sys3Int)gold;
+        rig.State.Ui_CmdBuildAvail = 1;
+        return rig;
+    }
+
+    [Fact]
+    public async Task Construct_pays_starts_the_timer_and_spends_the_weeks_construction()
+    {
+        var rig = Construction(500);
+        rig.State.Hist_Cur = 7;
+        rig.Input.Choices.Enqueue(1);                                   // Build
+        rig.Input.Choices.Enqueue(2);                                   // NEW Library
+        rig.Input.Choices.Enqueue(1);                                   // Construct
+
+        await new ConstructionCommand(rig.Script).RunAsync();
+
+        Assert.Equal([[62, 66], [246, 252, 258, 264, 277, 282], [442, 446]], rig.MenuLines);
+        Assert.Equal(500, rig.View.Events.OfType<ValueMessageEvent>().Single(v => v.Text.Line == 426).Values[0].Value);
+        Is(100, rig.State.Gold);
+        Is(400, rig.State.History[7].SundryExp);                        // QUIRK: CMD-14
+        Is(8, rig.State.BuildWeeksLeft);
+        Is(2, rig.State.Bld_Library);
+        Is(0, rig.State.Ui_CmdBuildAvail);
+        Is(16, rig.State.Unit_Cur);                                     // QUIRK: CMD-20 — the list's cursor
+        Assert.Equal([464, 469], rig.Lines[^2..]);
+    }
+
+    [Fact]
+    public async Task Something_Else_or_too_little_gold_shows_the_list_again()
+    {
+        var rig = Construction(399);
+        rig.Input.Choices.Enqueue(1);                                   // Build
+        rig.Input.Choices.Enqueue(2);                                   // NEW Library
+        rig.Input.Choices.Enqueue(2);                                   // Something Else
+        rig.Input.Choices.Enqueue(2);                                   // NEW Library
+        rig.Input.Choices.Enqueue(1);                                   // Construct: not enough
+        rig.Input.Choices.Enqueue(6);                                   // Don't Build: the first menu
+        rig.Input.Choices.Enqueue(2);                                   // Don't
+
+        await new ConstructionCommand(rig.Script).RunAsync();
+
+        List<int> list = [246, 252, 258, 264, 277, 282];
+        Assert.Equal([[62, 66], list, [442, 446], list, [442, 446], list, [62, 66]], rig.MenuLines);
+        Is(399, rig.State.Gold);
+        Is(0, rig.State.Bld_Library);
+        Is(1, rig.State.Ui_CmdBuildAvail);
+        Assert.Contains(966, rig.Lines);                                // "lacks the necessary funds"
+    }
+
+    [Theory]
+    [InlineData(3, true)]
+    [InlineData(1, false)]
+    public async Task While_a_building_is_under_way_Maris_names_it_and_the_weeks_left(int weeks, bool plural)
+    {
+        var rig = Construction(5000);
+        rig.State.BuildWeeksLeft = (Sys3Int)weeks;
+        rig.State.Bld_Hospital = 2;
+        rig.Input.Choices.Enqueue(1);                                   // Build
+
+        await new ConstructionCommand(rig.Script).RunAsync();
+
+        Assert.Single(rig.MenuLines);
+        Assert.Contains(115, rig.Lines);                                // "the hospital"
+        Assert.DoesNotContain(107, rig.Lines);
+        Assert.Equal(plural, rig.Lines.Contains(135));                  // " n"
+        Assert.Equal(plural, rig.Lines.Contains(142));                  // "s"
+        Assert.Contains(rig.View.Events, e => e is MapEvent);
+        Is(5000, rig.State.Gold);
+        Is(1, rig.State.Ui_CmdBuildAvail);
+    }
+
+    [Fact]
+    public async Task Marias_institute_needs_her_and_her_tulip_and_the_magic_lab_can_be_left()
+    {
+        var rig = Construction(2000);
+        rig.State.Units[16].Status = 1;
+        rig.State.F_Maria_Tulip = 2;
+        rig.State.Bld_GirlsAcademy = 1;
+        rig.State.Bld_Library = 1;
+        rig.Input.Choices.Enqueue(1);                                   // Build
+        rig.Input.Choices.Enqueue(4);                                   // Magic Research
+        rig.Input.Choices.Enqueue(3);                                   // Don't Construct
+
+        await new ConstructionCommand(rig.Script).RunAsync();
+
+        Assert.Equal([[62, 66], [258, 264, 271, 277, 282], [920, 924, 928]], rig.MenuLines);
+        Is(2000, rig.State.Gold);
+        Is(0, rig.State.Bld_MagicLab);
+        Assert.DoesNotContain(rig.View.Events, e => e is MapEvent);
+    }
+
+    [Fact]
+    public async Task The_opening_for_everything_built_needs_the_pool_nothing_builds()
+    {
+        var rig = Construction(0);
+        rig.State.Bld_GirlsAcademy = rig.State.Bld_Library = rig.State.Bld_Hospital = 2;
+        rig.State.Bld_SMTower = rig.State.Bld_MariaLab = rig.State.Bld_MagicLab = 2;
+        rig.Input.Choices.Enqueue(2);                                   // Don't
+
+        await new ConstructionCommand(rig.Script).RunAsync();
+        Assert.Equal([[62, 66]], rig.MenuLines);                        // QUIRK: CMD-20
+
+        rig.State.F_Pool_Built = 2;
+        rig.Input.Menus.Clear();
+        await new ConstructionCommand(rig.Script).RunAsync();
+        Assert.Empty(rig.Input.Menus);
+        Assert.Equal(51, rig.Lines[^1]);                                // "There's nothing left to build"
+    }
+
+    // ---------------------------------------------------------------------------------------
     // Cﾒｲｷｭｳ
     // ---------------------------------------------------------------------------------------
 

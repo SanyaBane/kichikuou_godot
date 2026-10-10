@@ -59,7 +59,8 @@ the rebels' turn `TCﾘｰｻﾞｽ` and their defender picker `TCﾘｰｻﾞ�
 `Cﾃｷﾄｼ` (`EnemyCityCommand`, the P3 row; the independent cities still throw). Step 4 is done:
 `Cﾌﾞｶ`'s troop menu and the whole `Cﾊｰﾚﾑ` are ported (`SubordinatesCommand`, `HaremCommand`, both
 files whole; the P4-P7 row). Step 5 is done: `Cｼｮｳﾆﾝ` and `Cｼﾊｲﾄｼ` are ported whole (`MerchantCommand`,
-`OwnCityCommand`). Next: `Cﾆﾝｼﾞｬ` and `Cﾃｲﾄ` (step 6).
+`OwnCityCommand`). Step 6 is done: `Cﾆﾝｼﾞｬ` and `Cﾃｲﾄ` are ported whole (`NinjaCommand`,
+`ConstructionCommand`). Next: `Cﾀｶﾗ` with `Sｱｲﾃﾑ`, and `各種DATA`, with their screens (step 7).
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
 
