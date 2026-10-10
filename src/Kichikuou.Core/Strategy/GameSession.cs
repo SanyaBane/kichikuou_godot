@@ -116,7 +116,7 @@ public sealed class GameSession
     private async Task ResumeAsync(ScriptRef autosave)
     {
         await new LoadSaveScreen(Script, _scenario).ResumeAsync();
-        await new WeekLoop(Script).ResumeAsync(autosave);
+        await new WeekLoop(Script, _scenario).ResumeAsync(autosave);
     }
 }
 

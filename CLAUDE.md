@@ -34,9 +34,9 @@ F0 is done: the shared services (message windows, map, sound, scene calls) live 
 (`ISceneInput`, `Script/PointerScript` for gesture-level UIs), and the prologue paths of the
 command files `Cﾃｷﾄｼ`, `Cﾃｷﾄｼ2`, `Cﾌﾞｶ`, `Cﾊｰﾚﾑ`, `Cﾒｲｷｭｳ` are ported (their later paths throw
 `NotSupportedException`), and so are the pickers `Sﾌﾞﾀｲ`, `Sﾌﾞｶ`, `Sﾊｰﾚﾑ`
-(`Strategy/*Screen.cs` on `PickerScreen`), all routed by `Strategy/StrategyRules`. W2 is done
-for stage 0: `MAIN.ADV` (the week loop) is `Strategy/WeekLoop` up to the thieves' week (the
-Leazas week throws `NotSupportedException`). The battle
+(`Strategy/*Screen.cs` on `PickerScreen`), all routed by `Strategy/StrategyRules`. W2 is done:
+`MAIN.ADV` (the week loop) is `Strategy/WeekLoop`, the thieves' week and the Leazas week with
+every nation phase (the `T*` files are calls through the router). The battle
 runs in the router too (`FIGT_A`/`FIGT_B`/`FIGT`/`死亡捕獲`), so the game's input is an
 `Strategy/IGameInput` (battle + scenes; owner's decisions 6-7 in `docs/strategy/README.md`).
 G0 (the Godot screens, owner's decisions 8-12) is done: part 1 ported `ﾛｰﾄﾞｾｰﾌﾞ`
@@ -52,9 +52,9 @@ far") matches the port everywhere, and so do two more runs: top-left map clicks 
 path A's week-23 duel (EVT-08 confirmed); README open items 1-2 are answered.
 **Milestone 2** (owner's decision 13, 2026-10-10) is story stage 1 as a whole — the Leazas week,
 the rebels, every command a stage-1 player has, the dungeon search — in the order of
-docs/strategy/README.md, "Milestone 2" (with the sweep of what stage 1 reaches). Step 0 is done:
-every stage-1 file and every scene is a capture root, and docs/golden-tests.md has the owner's
-stage-1 checklist.
+docs/strategy/README.md, "Milestone 2" (with the sweep of what stage 1 reaches). Steps 0-1 are
+done: every stage-1 file and every scene is a capture root, docs/golden-tests.md has the owner's
+stage-1 checklist, and the Leazas week is ported (the W2 row).
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
 
@@ -124,9 +124,10 @@ stage-1 checklist.
   the editor path is in `docs/spike-findings.md`. Commit the `*.uid` files Godot creates.
 - Watch a capture headless and save the screen at every key wait and long pause:
   `<Godot console exe> --headless --path godot -- --watch <capture> --fast --quit --shots <dir>`.
-- Play the prologue unattended headless (slots in `user://saves-auto`; `--load` resumes them):
+- Play the game unattended headless (slots in `user://saves-auto`; `--load` resumes them):
   `<Godot console exe> --headless --path godot -- --newgame --auto --fast --quit [--seed n] [--shots <dir>]`;
-  ends with the Leazas week's "not ported yet" (exit code 0; 1 after an error).
+  ends at the first file or path not ported yet — now `TCﾘｰｻﾞｽ`, the rebels' turn at the end of
+  the first Leazas week — with "not ported yet" (exit code 0; 1 after an error).
 
 ## Rules
 

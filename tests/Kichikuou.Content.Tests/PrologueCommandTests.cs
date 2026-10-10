@@ -145,7 +145,7 @@ public class PrologueCommandTests(ITestOutputHelper output)
     /// <summary>
     /// Turn END after week 22 ends the prologue: the thieves' last fight (<c>Iﾄｳｿﾞｸ</c> 2, the duel
     /// lost), the opening, <c>StoryStage 99 → 1</c> and <c>Iﾊﾝﾗﾝ</c> in the week loop; the next week
-    /// is Leazas's, which is not ported yet.
+    /// is Leazas's, stopped at its autosave (<c>MAIN.ADV:83</c>).
     /// </summary>
     [Fact]
     public async Task Turn_END_in_week_23_ends_the_prologue_through_the_week_loop()
@@ -156,11 +156,15 @@ public class PrologueCommandTests(ITestOutputHelper output)
         game.State.Week = 22;
         game.Unported.Effects["FIGT_A.ADV"] = s => s.Bt_Result = 1;     // the duel is lost
         game.Input.Menu(5);                                             // Turn END
+        game.Saves.Written = (_, data) =>
+        {
+            if (data.Resume == new ScriptRef("MAIN.ADV", 83))
+                throw new WeekOverException();                          // the Leazas week's autosave
+        };
 
-        var e = await Assert.ThrowsAsync<NotSupportedException>(() => game.Script.CallFileAsync("MAIN.ADV"));
+        await Assert.ThrowsAsync<WeekOverException>(() => game.Script.CallFileAsync("MAIN.ADV"));
 
         output.WriteLine($"rules: {string.Join(", ", game.Unported.Calls.Select(c => $"{c.File} {c.Entry}"))}");
-        Assert.StartsWith("MAIN.ADV:83", e.Message);
         Assert.Equal(["FIGT_A.ADV"], game.Unported.Calls.Select(c => c.File));
         Assert.Equal([1], game.Saves.Slots);
         Assert.Equal(0, game.Input.Pending);

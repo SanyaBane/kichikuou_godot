@@ -6,8 +6,9 @@ using Kichikuou.Core.Sys3;
 namespace Kichikuou.Core.Strategy;
 
 /// <summary>
-/// What the hand-ported command files (<c>C*.ADV</c>) share: the context, the record cursors, and
-/// the engine commands each file repeats in its own label stubs — the release wait before a menu
+/// What the hand-ported files share — the command files (<c>C*.ADV</c>) first, also the pickers,
+/// the save screen and the week loop: the context, the record cursors, and the engine commands
+/// each file repeats in its own label stubs — the release wait before a menu
 /// (<c>IM Ui_MouseX, Ui_MouseY</c> until no button), the pointer saved for a cancel (<c>IM
 /// Tmp0019, Tmp0020</c>) and put back (<c>IZ</c>), the menu (<c>]</c>) and the message runs. Every
 /// event is the one <see cref="SceneRunner"/> raises for the same statement, so a port and its

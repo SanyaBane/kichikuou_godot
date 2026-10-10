@@ -195,7 +195,7 @@ numbers are the engine's (`MS n` writes string n).
 5. **Entry point.** `FIGT_A.ADV` → `AttackProvinceAsync`, `FIGT_B.ADV` → `DefendProvinceAsync`,
    `FIGT.ADV` → `FightAsync`, `COM.ADV` → `WeeklyEvents.RunAsync`, `COMMAND.ADV` →
    `CommandPhase.RunAsync`, the `week` group's label root `MAIN.ADV@20` → `WeekLoop.RunWeekAsync`
-   (`ReplayableLabelRoots`; the Leazas week throws `NotSupportedException`), the `commands` group's `Cﾃｷﾄｼ.ADV`, `Cﾃｷﾄｼ2.ADV`, `Cﾌﾞｶ.ADV`,
+   (`ReplayableLabelRoots`; a week with an army name of its own, `MS 10`, needs the player's files and is not replayed in the core yet), the `commands` group's `Cﾃｷﾄｼ.ADV`, `Cﾃｷﾄｼ2.ADV`, `Cﾌﾞｶ.ADV`,
    `Cﾊｰﾚﾑ.ADV` → `EnemyCityCommand`, `DistantCityCommand`, `SubordinatesCommand`, `HaremCommand`
    (`GoldenReplay.ReplayableRoots`, `CanReplay`; their paths beyond the prologue throw
    `NotSupportedException`). `Cﾒｲｷｭｳ.ADV` reads its `MS` strings from the player's files, so its
@@ -301,6 +301,7 @@ here with its reason, never as a blanket rule.
 | The owner's prologue run (2026-10-09, seed 50114115; 113 complete captures, two `.part` from quitting): a new game, weeks 9-12 at stage 0 with every command (harem with Sill, Soul and Anasel, subordinate talks, the hideout and two of the spots 2/3/15, `Cﾃｷﾄｼ2`, pillages of 33/34 won and lost, the party screen), a save in week 11, path B (Merci, the duel lost, `ｵｰﾌﾟﾆﾝｸﾞ`, `Iﾊﾝﾗﾝ`), the first Leazas week with its nation turn `TCﾘｰｻﾞｽ` and two FIGT_B defences | **none — every capture matches**: 4 `MAIN@20` weeks (the stage-0 → stage-1 transition included), 6 `COM`, 5 `COMMAND`, 26 command files, 30 picker screens, 22 scenes, 6 dungeon clicks, 7 battles (all 44 battle captures still match), the boot. Five stage-1 captures (the Leazas `MAIN@20`, `Cﾃｷﾄｼ` attack, `Cﾌﾞｶ` troop menu ×2, the later harem) match up to the unported path. Not played, so still open: path A's week-23 Turn END (README open item 1) and a click near the map's top-left corner (item 2); `TCﾘｰｻﾞｽ` waits for N1 | the replay ends the comparison at a `NotSupportedException` (`GoldenReport.Unported`, above); the `dungeon` group is now replayed (`DungeonReplayTests`) |
 | The owner's third run (2026-10-09, seed 1323388227): pillages of 33 and 34, a save in week 11, Turn END to week 23 (path A; province 32 clicked in week 18), the duel lost, quit during `ｵｰﾌﾟﾆﾝｸﾞ` | none — all 56 complete captures match (14 weeks, 15 `COM`, 14 `COMMAND`, 4 command files, 2 pickers, 19 scenes, 3 battles, the boot). The duel ran with `Prov_Cur = 32`: EVT-08 confirmed (README open item 1 answered) | — |
 | The owner's second run (2026-10-09, seed 502748417): a new game, week 9 ended, in week 10 two clicks at the map's top-left corner ((9, 5), (11, 6)), Turn END | none — all 14 captures match. Both clicks pick province record 0 and run `Cﾃｷﾄｼ2` on it (STR-12 confirmed; README open item 2 answered) | — |
+| The Leazas week ported (milestone 2 step 1, 2026-10-10) | the owner's Leazas week of the first run (`week61009-105401-92-MAIN@20`, week 13, stage 1) now matches whole: the autosave, `COMMAND`, `TCﾘｰｻﾞｽ` and `Gｼｨﾙ` 21 hook checkpoints and the exit, 0 differences | — |
 
 ## Harness configuration
 

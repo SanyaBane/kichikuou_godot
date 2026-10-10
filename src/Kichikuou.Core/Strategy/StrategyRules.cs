@@ -56,7 +56,7 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
     /// <inheritdoc />
     public Task RunEventAsync(string file, Sys3Int entry) => file switch
     {
-        "MAIN.ADV" => new WeekLoop(Script).RunAsync(),
+        "MAIN.ADV" => new WeekLoop(Script, scenario).RunAsync(),
         "COM.ADV" => new WeeklyEvents(Script).RunAsync(),
         "COMMAND.ADV" => new CommandPhase(Script).RunAsync(),
         "Cﾃｷﾄｼ.ADV" => new EnemyCityCommand(Script).RunAsync(),

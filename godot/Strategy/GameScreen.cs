@@ -298,11 +298,16 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         while (_modal);
     }
 
-    /// <summary>The files the port does not run yet: skipped, with a note.</summary>
+    /// <summary>
+    /// The files the port does not run yet: skipped, with a note — or, in unattended play, the end
+    /// of the run (as a path not ported yet), so <c>--auto</c> plays exactly as far as the port reaches.
+    /// </summary>
     private sealed class UnportedFiles(GameScreen screen) : IStoryHooks
     {
         public Task RunEventAsync(string file, Sys3Int entry)
         {
+            if (screen._options.Auto)
+                throw new NotSupportedException($"{file} (entry {entry.Value}) is not ported yet.");
             GD.Print($"Kichikuou: {file} (entry {entry.Value}) is not ported yet and was skipped.");
             screen.Notice($"{file} is not ported yet and was skipped.");
             return Task.CompletedTask;
