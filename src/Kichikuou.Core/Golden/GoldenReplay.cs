@@ -90,6 +90,7 @@ public sealed class GoldenReplay
     public static readonly IReadOnlySet<string> ReplayableRoots = new HashSet<string>
     {
         "FIGT_A.ADV", "FIGT_B.ADV", "FIGT.ADV", "COM.ADV", "COMMAND.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV",
+        "Cｼｮｳﾆﾝ.ADV",
     };
 
     /// <summary>
@@ -99,7 +100,7 @@ public sealed class GoldenReplay
     /// </summary>
     private static readonly IReadOnlySet<string> PointerRoots = new HashSet<string>
     {
-        "COMMAND.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV", "Cﾒｲｷｭｳ.ADV",
+        "COMMAND.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV", "Cｼｮｳﾆﾝ.ADV", "Cﾒｲｷｭｳ.ADV",
         "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sﾊｰﾚﾑ.ADV",
     };
 
@@ -196,6 +197,7 @@ public sealed class GoldenReplay
                     "Cﾃｷﾄｼ2.ADV" => new DistantCityCommand(battle.Script).RunAsync,
                     "Cﾌﾞｶ.ADV" => new SubordinatesCommand(battle.Script).RunAsync,
                     "Cﾊｰﾚﾑ.ADV" => new HaremCommand(battle.Script).RunAsync,
+                    "Cｼｮｳﾆﾝ.ADV" => new MerchantCommand(battle.Script).RunAsync,
                     _ => battle.FightAsync,
                 };
 

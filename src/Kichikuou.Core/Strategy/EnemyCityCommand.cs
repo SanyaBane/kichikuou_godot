@@ -617,27 +617,6 @@ public sealed class EnemyCityCommand(ScriptContext script, IScenarioSource? scen
         await WaoAsync(332);                                            // \L_053a9
     }
 
-    /// <summary>
-    /// One speech as the file writes it: the speaker's window (<paramref name="window"/>: 111 Rance,
-    /// 112 Rance aside, 113 the narration, 121 the other side), each text run followed by its key
-    /// wait (<c>\L_053c4</c>), and the window closed (<c>\L_053b7</c>) unless <paramref name="close"/>
-    /// is false (the last speech before <c>@L_00205</c>, which closes it).
-    /// </summary>
-    private async Task SpeakAsync(int window, bool close, params int[] runs)
-    {
-        await WaoAsync((Sys3Int)window);
-        foreach (int line in runs)
-        {
-            await TextAsync(line);
-            await WaoAsync(1);
-        }
-        if (close)
-            await WaoAsync(0);
-    }
-
-    /// <inheritdoc cref="SpeakAsync(int, bool, int[])"/>
-    private Task SpeakAsync(int window, params int[] runs) => SpeakAsync(window, true, runs);
-
     /// <summary><c>L_05185</c> (<c>:4365-4408</c>): the owner's name after the city's, then a line break.</summary>
     private async Task OwnerAsync()
     {

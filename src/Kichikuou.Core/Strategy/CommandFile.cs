@@ -138,6 +138,27 @@ public abstract class CommandFile(ScriptContext script, string file, IScenarioSo
         return choice;
     }
 
+    /// <summary>
+    /// One speech as the command files write it with their window stubs: the speaker's window
+    /// (<paramref name="window"/>: 111 Rance, 112 Rance aside, 113 the narration, 121 the other
+    /// side, 123 the other side's narration), each text run followed by its key wait (op 1), and
+    /// the window closed (op 0) unless <paramref name="close"/> is false.
+    /// </summary>
+    protected async Task SpeakAsync(int window, bool close, params int[] runs)
+    {
+        await WaoAsync((Sys3Int)window);
+        foreach (int line in runs)
+        {
+            await TextAsync(line);
+            await WaoAsync(1);
+        }
+        if (close)
+            await WaoAsync(0);
+    }
+
+    /// <inheritdoc cref="SpeakAsync(int, bool, int[])"/>
+    protected Task SpeakAsync(int window, params int[] runs) => SpeakAsync(window, true, runs);
+
     /// <summary><c>A</c>: waits for a key, then clears the message.</summary>
     protected async Task HitAnyKeyAsync()
     {

@@ -10,7 +10,7 @@ namespace Kichikuou.Content.Tests;
 
 /// <summary>
 /// The hand-ported prologue slices of the command files (<see cref="EnemyCityCommand"/>,
-/// <see cref="DistantCityCommand"/>, <see cref="SubordinatesCommand"/>, <see cref="HaremCommand"/>,
+/// <see cref="DistantCityCommand"/>, <see cref="SubordinatesCommand"/>, <see cref="HaremCommand"/>, <see cref="MerchantCommand"/>,
 /// <see cref="DungeonCommand"/>) and the pickers (<see cref="DeploymentScreen"/>,
 /// <see cref="SubordinateScreen"/>, <see cref="HaremScreen"/>) against the files themselves run from the player's decompile by
 /// <see cref="SceneRunner"/>, on random states (mostly the prologue, <c>StoryStage</c> 0) and
@@ -195,6 +195,53 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         state.F_Kouhime_Dead = (Sys3Int)rng.Next(0, 4);
         state.F_Rebecca_State = (Sys3Int)(rng.Next(3) == 0 ? 100 : rng.Next(0, 4));
         state.F_Elena_State = (Sys3Int)rng.Next(4, 9);
+    }
+
+    [Fact]
+    public Task The_merchant_runs_exactly_as_Cｼｮｳﾆﾝ() =>
+        CompareAsync(
+            "Cｼｮｳﾆﾝ.ADV",
+            (script, _) => new MerchantCommand(script).RunAsync(),
+            ShapeMerchant,
+            Scribble,
+            ["call Gｼｨﾙ.ADV", "call Gﾚﾍﾞｯｶ.ADV", "M 0",
+             // the arrivals, Send Away, the contracts and their refusals, the hires, Rebecca
+             "text 30", "text 61", "text 1407", "text 1600", "text 134", "text 158", "text 176", "text 250", "text 587",
+             "text 307", "text 381", "text 644", "text 728", "text 934",
+             // the shop: the budget, every page, the refusal, Buy and Don't Buy
+             "text 1062", "text 1075", "text 1299", "text 1311", "text 1323", "text 1338", "text 1352", "text 1366",
+             "text 1380", "text 1394", "text 1158", "text 1203", "text 1268",
+             "item 95", "item 100", "item 106", "item 113", "item 120", "item 125", "item 266", "item 270", "item 274",
+             "item 603", "item 607", "item 611", "item 1088", "item 1095", "item 1102", "item 1109", "item 1116",
+             "item 1124", "item 1132", "item 1139", "item 1144", "item 1183", "item 1187"],
+            cases: 3000);
+
+    /// <summary>
+    /// Every arrival (the merchant's states 0-5, Sill's two scenes), the mercenaries free or not and
+    /// hired before or not, a budget around every price (one under it above all), the shop's items
+    /// owned or not with their gates, a stale history cursor.
+    /// </summary>
+    private static void ShapeMerchant(GameState state, Random rng)
+    {
+        state.F_SillCow_State = (Sys3Int)(rng.Next(10) switch { 0 => 2, 1 => 6, _ => rng.Next(0, 2) * 7 });
+        state.F_Merchant_State = (Sys3Int)rng.Next(0, 6);
+        state.F_Rebecca_State = (Sys3Int)rng.Next(0, 4);
+        state.Units[49].Status = (Sys3Int)(rng.Next(3) == 0 ? 1 : 0);
+        state.Units[50].Status = (Sys3Int)(rng.Next(3) == 0 ? 1 : 0);
+        state.F_MercA_Lost = (Sys3Int)(rng.Next(4) == 0 ? 1 : 0);
+        state.F_MercB_Lost = (Sys3Int)(rng.Next(4) == 0 ? 1 : 0);
+        state.F_Louis_HiredBefore = (Sys3Int)rng.Next(0, 2);
+        state.F_Cecil_HiredBefore = (Sys3Int)rng.Next(0, 2);
+        int[] edges = [0, 1, 28, 29, 30, 38, 39, 40, 78, 79, 80, 108, 109, 110, 498, 499, 500, 798, 799, 998, 999];
+        state.Gold = (Sys3Int)(rng.Next(3) switch { 0 => edges[rng.Next(edges.Length)], 1 => rng.Next(0, 150), _ => rng.Next(0, 1500) });
+        foreach (int item in new[] { 3, 4, 5, 8, 19, 28, 43, 44 })
+            state.Items[item].Holder = (Sys3Int)(rng.Next(4) == 0 ? rng.Next(1, 101) : 0);
+        state.N_Freya_State = (Sys3Int)(rng.Next(2) == 0 ? 3 : rng.Next(0, 5));
+        state.F_SillClothes_State = (Sys3Int)(rng.Next(3) == 0 ? 1 : 0);
+        state.Units[2].Status = (Sys3Int)(rng.Next(4) == 0 ? 0 : 1);
+        state.Units[32].Status = (Sys3Int)(rng.Next(4) == 0 ? 0 : 1);
+        state.FogCard_Price = (Sys3Int)(rng.Next(3) == 0 ? 0 : rng.Next(1, 300));
+        state.Hist_Cur = (Sys3Int)rng.Next(0, 300);
     }
 
     [Fact]

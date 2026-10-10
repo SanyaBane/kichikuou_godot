@@ -31,7 +31,7 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
     /// <summary>The files this router runs itself.</summary>
     public static readonly IReadOnlySet<string> PortedFiles = new HashSet<string>(StringComparer.Ordinal)
     {
-        "MAIN.ADV", "COM.ADV", "COMMAND.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV", "Cﾒｲｷｭｳ.ADV",
+        "MAIN.ADV", "COM.ADV", "COMMAND.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV", "Cｼｮｳﾆﾝ.ADV", "Cﾒｲｷｭｳ.ADV",
         "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sﾊｰﾚﾑ.ADV", "TCﾘｰｻﾞｽ.ADV", "TCﾘｰｻﾞｽ2.ADV", "FIGT_A.ADV", "FIGT_B.ADV", "FIGT.ADV",
         "死亡捕獲.ADV", "ﾛｰﾄﾞｾｰﾌﾞ.ADV",
     };
@@ -65,6 +65,7 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
         "Cﾃｷﾄｼ2.ADV" => new DistantCityCommand(Script).RunAsync(),
         "Cﾌﾞｶ.ADV" => new SubordinatesCommand(Script).RunAsync(),
         "Cﾊｰﾚﾑ.ADV" => new HaremCommand(Script).RunAsync(),
+        "Cｼｮｳﾆﾝ.ADV" => new MerchantCommand(Script).RunAsync(),
         "Cﾒｲｷｭｳ.ADV" => new DungeonCommand(Script, scenario).RunAsync(),
         "Sﾌﾞﾀｲ.ADV" => new DeploymentScreen(Script, scenario).RunAsync(),
         "Sﾌﾞｶ.ADV" => new SubordinateScreen(Script, scenario).RunAsync(),

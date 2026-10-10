@@ -11,7 +11,7 @@ namespace Kichikuou.Core.Tests.Strategy;
 /// <summary>
 /// The prologue slices of the command files: <c>Cﾃｷﾄｼ</c> (<see cref="EnemyCityCommand"/>),
 /// <c>Cﾃｷﾄｼ2</c> (<see cref="DistantCityCommand"/>), <c>Cﾌﾞｶ</c> (<see cref="SubordinatesCommand"/>),
-/// <c>Cﾊｰﾚﾑ</c> (<see cref="HaremCommand"/>), the entry of <c>Cﾒｲｷｭｳ</c> with the Thieves' Hideout
+/// <c>Cﾊｰﾚﾑ</c> (<see cref="HaremCommand"/>), <c>Cｼｮｳﾆﾝ</c> (<see cref="MerchantCommand"/>), the entry of <c>Cﾒｲｷｭｳ</c> with the Thieves' Hideout
 /// (<see cref="DungeonCommand"/>) and the router <see cref="StrategyRules"/>. Each file is also
 /// compared with the decompile on random states (Content tests, <c>CommandSliceDifferentialTests</c>).
 /// </summary>
@@ -957,6 +957,120 @@ public class CommandSliceTests
         await new HaremCommand(rig.Script).RunAsync();
 
         Assert.Equal([1, 2, 3, 11, 13, 19, 35, 44, 50], offered);
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // Cｼｮｳﾆﾝ
+    // ---------------------------------------------------------------------------------------
+
+    private static SliceRig Merchant(int gold = 100, int state = 4)
+    {
+        var rig = new SliceRig(stage: 1);
+        rig.State.Ui_CmdMerchantAvail = 1;
+        rig.State.Gold = (Sys3Int)gold;
+        rig.State.F_Merchant_State = (Sys3Int)state;
+        return rig;
+    }
+
+    [Fact]
+    public async Task The_first_summons_meets_Pluepet_and_only_Send_Away_spends_the_merchant()
+    {
+        var rig = Merchant(state: 0);
+        rig.Input.Choices.Enqueue(0);                                   // a cancel shows the menu again
+        rig.Input.Choices.Enqueue(6);                                   // Send Away
+
+        await new MerchantCommand(rig.Script).RunAsync();
+
+        Is(1, rig.State.F_Merchant_State);
+        Assert.Equal([[95, 100, 106, 113, 120, 125], [95, 100, 106, 113, 120, 125]], rig.MenuLines);
+        Is(0, rig.State.Ui_CmdMerchantAvail);
+        Assert.Equal(1407, rig.Lines[0]);
+        Assert.Equal([134, 141, 148], rig.Lines[^3..]);
+        Assert.Contains(rig.View.Events, e => e is MapEvent);
+        Is(50, rig.State.Unit_Cur);                                     // the menu's last cursor (ENG-05)
+    }
+
+    [Fact]
+    public async Task Sills_scenes_leave_without_spending_the_merchant()
+    {
+        var rig = Merchant(state: 0);
+        rig.State.F_SillCow_State = 6;
+
+        await new MerchantCommand(rig.Script).RunAsync();
+
+        Assert.Equal([("Gｼｨﾙ.ADV", 6)], rig.Calls);
+        Is(1, rig.State.Ui_CmdMerchantAvail);                           // QUIRK: CMD-08
+        Is(0, rig.State.F_Merchant_State);
+    }
+
+    [Fact]
+    public async Task A_mercenary_is_hired_with_one_gold_under_the_price_and_booked_to_the_stale_history_slot()
+    {
+        var rig = Merchant(gold: 39);
+        rig.State.Hist_Cur = 7;
+        rig.Input.Choices.Enqueue(2);                                   // Hire Mercenary A
+        rig.Input.Choices.Enqueue(1);                                   // 4000K Contract
+        rig.Input.Choices.Enqueue(3);                                   // Send Away
+
+        await new MerchantCommand(rig.Script).RunAsync();
+
+        Assert.Equal([[95, 113, 120, 125], [266, 270, 274], [95, 120, 125]], rig.MenuLines);
+        Is(0, rig.State.Gold);                                          // QUIRK: CMD-06
+        Is(40, rig.State.History[7].SundryExp);                         // QUIRK: CMD-14
+        Is(1, rig.State.Units[49].Status);
+        Is(200, rig.State.Units[49].Troops);
+        Is(200, rig.State.Units[49].MaxTroops);
+        Is(1, rig.State.F_Louis_HiredBefore);
+        Assert.Contains(381, rig.Lines);                                // the first hire's scene
+
+        rig = Merchant(gold: 38);
+        rig.Input.Choices.Enqueue(2);
+        rig.Input.Choices.Enqueue(1);
+        rig.Input.Choices.Enqueue(4);
+        await new MerchantCommand(rig.Script).RunAsync();
+        Is(38, rig.State.Gold);
+        Is(0, rig.State.Units[49].Status);
+        Assert.Contains(176, rig.Lines);                                // "you don't have enough money"
+    }
+
+    [Fact]
+    public async Task The_shop_sells_each_item_once_and_the_clothes_are_free_at_0()
+    {
+        var rig = Merchant(gold: 0);
+        rig.State.Units[2].Status = 1;
+        rig.Input.Choices.Enqueue(1);                                   // Buy Item
+        rig.Input.Choices.Enqueue(5);                                   // Clothes
+        rig.Input.Choices.Enqueue(1);                                   // Buy
+        rig.Input.Choices.Enqueue(1);                                   // Popularity Staff
+        rig.Input.Choices.Enqueue(5);                                   // Don't Buy (the list)
+        rig.Input.Choices.Enqueue(4);                                   // Send Away
+
+        await new MerchantCommand(rig.Script).RunAsync();
+
+        Assert.Equal(
+            [[95, 113, 120, 125], [1088, 1095, 1102, 1116, 1124, 1144], [1183, 1187], [1088, 1095, 1102, 1116, 1144],
+             [1088, 1095, 1102, 1116, 1144], [95, 113, 120, 125]],
+            rig.MenuLines);
+        Is(100, rig.State.Items[19].Holder);                            // QUIRK: CMD-06 — 0 < 1 - 1 is false
+        Is(1, rig.State.F_SillClothes_State);
+        Is(0, rig.State.Gold);
+        Is(0, rig.State.Items[3].Holder);                               // the staff refused
+        Assert.Contains(1299, rig.Lines);
+        Assert.Contains(1158, rig.Lines);                               // "Not enough money."
+        Is(28, rig.State.Item_Cur);                                     // the list's last cursor
+    }
+
+    [Fact]
+    public async Task Rebecca_is_offered_once_a_visit_while_the_merchant_has_her()
+    {
+        var rig = Merchant(state: 1);
+        rig.Input.Choices.Enqueue(2);                                   // Fuck Rebecca
+        rig.Input.Choices.Enqueue(5);                                   // Send Away
+
+        await new MerchantCommand(rig.Script).RunAsync();
+
+        Assert.Equal([("Gﾚﾍﾞｯｶ.ADV", 1)], rig.Calls);
+        Assert.Equal([[95, 100, 106, 113, 120, 125], [95, 106, 113, 120, 125]], rig.MenuLines);
     }
 
     // ---------------------------------------------------------------------------------------

@@ -133,7 +133,7 @@ after a win at 28 → Gﾚﾍﾞｯｶ#2, at 22 → Gｶｾｲ#1 (`:3817-3824`).
 
 When the flag is 0 every item shows "×" and loops back to the menu (`:294-499`) [C].
 
-### 3.4 Merchant (`Cｼｮｳﾆﾝ`) — any number of purchases per visit [C]
+### 3.4 Merchant (`Cｼｮｳﾆﾝ`) — any number of purchases per visit [C] — ported whole (`Strategy/MerchantCommand`, 2026-10-10)
 
 Flag `Ui_CmdMerchantAvail := 0` only on Send Away (`:130-153`). Price test is `Gold < price−1`
 (off by one; Gold floors at 0) [C].
