@@ -67,7 +67,10 @@ presenter's All Data layer). Step 8 is done: `Cﾒｲｷｭｳ` is ported but Go
 scenes in `DungeonCommand.Scenes.cs`; the boss and Hanny setters are record data run from the player's
 files through `IScenarioSource.ReadBlock`; God's Door and `Iｶﾐ` throw `NotSupportedException`). Step 9:
 `--auto` plays the whole stage to stage 2 (`--seed 2`: Oaks in week 34, `Iﾏｼﾞﾝ` 1, stop in week 36,
-nothing unported met); next, the owner's stage-1 captures (checklist in docs/golden-tests.md).
+nothing unported met). **Milestone 2 is closed** (2026-10-10): the owner's three stage-1 capture
+runs, the end of the stage included, match the port whole (all 885 captures in the folder, none
+reaching an unported path). Next: milestone 3, its scope and order the owner's choice (candidates
+at the end of "Milestone 2" in docs/strategy/README.md); port nothing unasked.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
 

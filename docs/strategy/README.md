@@ -246,7 +246,7 @@ tests) and, where the owner has recorded them, golden captures:
 8. ✓ **D1** (2026-10-10, the D1 / D2 row): the dungeon search in `Cﾒｲｷｭｳ`, the whole file but God's Door (with
    `Iｶﾐ` later); `--auto` searches the Monsters' Cave once, at the first map wait of stage 1 (with `--seed 7`
    in week 25: down to floor 4 with a battle; the rebels still take Leazas Castle, ending 2).
-9. ✓ **The whole stage unattended** (2026-10-10; the owner's captures are still to come): `--auto` plays
+9. ✓ **The whole stage unattended** (2026-10-10): `--auto` plays
    stage 1 to stage 2 with gestures and menu choices only (decision 4; the policy is
    `godot/Strategy/GameScreen.cs`, "unattended play") — once a week a replenish (`Cﾌﾞｶ`, the unit
    whose replenish restores the most) and, while Rance has three quarters of his troops, an attack
@@ -260,6 +260,16 @@ tests) and, where the owner has recorded them, golden captures:
    afterwards (seed 7: `Iﾏｼﾞﾝ` 1's second defence with nobody free). `--auto` never abandoned a city
    before: `FIGT_B`'s menu comes through the battle input (`ChooseAsync`), and a defence with nobody
    free looped forever; fixed.
+
+**Milestone 2 is closed** (2026-10-10). The owner's three stage-1 capture runs (weeks 14-26 from
+saves, every stage-1 command, the dungeon search, the rebels' turns and defences, then Oaks (6)
+taken → `Iｼﾚｲﾌﾞ` 2, `GAL` 1, `Iﾏｼﾞﾝ` 1's two defences of Leazas Castle (1) and the first week of
+stage 2; [../golden-tests.md](../golden-tests.md), the last three rows of "Findings so far") match
+the port whole: all 885 captures, none reaching an unported path. Never captured, covered by the
+differential tests only: the Library's completion, a load from the command menu, the ninja's No
+Mission. Candidates for milestone 3, for the owner to choose and order: the independent cities
+(P4, `Cﾃｷﾄｼ:429-3828` with Use Force), the nations N2/N3 (Helman, Zeth, JAPAN, Kayblis with their
+`T*`/`T*2` files), God's Door (D2, `Iｶﾐ`), W4 (`ｽﾀMENU`, `OVER`).
 
 Files without story gates (`MAIN`, `Cﾌﾞｶ`, `Cﾊｰﾚﾑ`, `Cｼﾊｲﾄｼ`, `Cｼｮｳﾆﾝ`, `Cﾆﾝｼﾞｬ`, `Cﾃｲﾄ`,
 `Sｱｲﾃﾑ`, `各種DATA`) are ported whole; of `Cﾃｷﾄｼ` only the attack (the independent cities are P4), of `Cﾒｲｷｭｳ`
