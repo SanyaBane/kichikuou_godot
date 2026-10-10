@@ -796,6 +796,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             return;
         var scenario = new ScenarioScripts(LocalData.ScenarioDirectory);
         var program = scenario.ReadProgram(file);
+        cases = DifferentialRuns.Cases(cases);
 
         // The cases are independent (each has its own state, draws, input and log), so they run in
         // parallel; they are judged in seed order, so a failure still names the first seed that fails.
@@ -820,7 +821,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         foreach (var (feature, count) in seen.OrderBy(f => f.Key, StringComparer.Ordinal))
             output.WriteLine($"  {feature}: {count}");
         var missed = expected.Where(e => !seen.ContainsKey(e)).ToList();
-        Assert.True(missed.Count == 0, "never reached: " + string.Join(", ", missed));
+        DifferentialRuns.AssertReached(missed, output);
         Assert.True(unported < cases / 3, $"{unported} of {cases} runs reached an unported path");
     }
 

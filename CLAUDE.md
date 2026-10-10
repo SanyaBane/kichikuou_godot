@@ -134,7 +134,12 @@ nothing unported met); next, the owner's stage-1 captures (checklist in docs/gol
 
 ## Commands
 
-- Tests: `dotnet test tests/Kichikuou.Core.Tests` and `dotnet test tests/Kichikuou.Content.Tests`
+- Tests: `dotnet test tests/Kichikuou.Core.Tests` and `dotnet test tests/Kichikuou.Content.Tests`.
+  The content tests' differential tests (a port against its file run from the decompile on random
+  states) run an eighth of their random cases by default — the quick run, for checks while working
+  (`DifferentialRuns`). **Before every commit that changes code, run the full counts**:
+  `KICHIKUOU_FULL_TESTS=1 dotnet test tests/Kichikuou.Content.Tests` (only the full run fails a test
+  whose random states never reached a path it lists). Report which run a result comes from.
 - Build everything: `dotnet build Kichikuou.sln`
 - Run the game headless (smoke test): `<Godot console exe> --headless --path godot --quit-after 30`;
   the editor path is in `docs/spike-findings.md`. Commit the `*.uid` files Godot creates.

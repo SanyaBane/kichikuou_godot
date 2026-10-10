@@ -32,8 +32,9 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
         var program = scripts.ReadProgram(LoadSave);
         var resume = FromStatement(program, AfterQd(program));
         var seen = new Dictionary<string, int>(StringComparer.Ordinal);
+        int cases = DifferentialRuns.Cases(Cases);
 
-        for (int seed = 1; seed <= Cases; seed++)
+        for (int seed = 1; seed <= cases; seed++)
         {
             var rng = new Random(seed);
             var state = RandomState(rng);
@@ -77,7 +78,7 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
                 seen[feature] = seen.GetValueOrDefault(feature) + 1;
         }
 
-        output.WriteLine($"{Cases} runs");
+        output.WriteLine($"{cases} runs");
         foreach (var (feature, count) in seen.OrderBy(f => f.Key, StringComparer.Ordinal))
             output.WriteLine($"  {feature}: {count}");
         string[] expected =
@@ -87,7 +88,7 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
             "save error", "load complete",
         ];
         var missed = expected.Where(e => !seen.ContainsKey(e)).ToList();
-        Assert.True(missed.Count == 0, "never reached: " + string.Join(", ", missed));
+        DifferentialRuns.AssertReached(missed, output);
     }
 
     private sealed record Run(GameState State, List<string> Log, TestStore Store);

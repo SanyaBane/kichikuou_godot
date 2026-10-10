@@ -59,8 +59,9 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
         var scenario = new ScenarioScripts(LocalData.ScenarioDirectory);
         var program = scenario.ReadProgram(file);
         var seen = new Dictionary<string, int>(StringComparer.Ordinal);
+        int cases = DifferentialRuns.Cases(Cases);
 
-        for (int seed = 1; seed <= Cases; seed++)
+        for (int seed = 1; seed <= cases; seed++)
         {
             var rng = new Random(seed);
             var state = RandomState(rng);
@@ -77,11 +78,11 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
                 seen[feature] = seen.GetValueOrDefault(feature) + 1;
         }
 
-        output.WriteLine($"{file}: {Cases} runs");
+        output.WriteLine($"{file}: {cases} runs");
         foreach (var (feature, count) in seen.OrderBy(f => f.Key, StringComparer.Ordinal))
             output.WriteLine($"  {feature}: {count}");
         var missed = expected.Where(e => !seen.ContainsKey(e)).ToList();
-        Assert.True(missed.Count == 0, "never reached: " + string.Join(", ", missed));
+        DifferentialRuns.AssertReached(missed, output);
     }
 
     private sealed record Run(GameState State, List<string> Log);

@@ -34,9 +34,9 @@ public class WeeklyEventsDifferentialTests(ITestOutputHelper output)
         var scenes = new OneProgram(program);
         var guide = new Guide(program);
         var reached = new Dictionary<(string File, int Entry), int>();
-        int aimed = 0, hit = 0;
+        int aimed = 0, hit = 0, cases = DifferentialRuns.Cases(Cases);
 
-        for (int seed = 1; seed <= Cases; seed++)
+        for (int seed = 1; seed <= cases; seed++)
         {
             var state = RandomState(new Random(seed));
             int runSeed = seed;
@@ -88,11 +88,11 @@ public class WeeklyEventsDifferentialTests(ITestOutputHelper output)
         }
 
         var expected = guide.Calls.Select(c => (c.File, c.Entry)).ToHashSet();
-        output.WriteLine($"{Cases} states, {aimed} aimed at a call ({hit} reached it); {reached.Count} of {expected.Count} scene entries called");
+        output.WriteLine($"{cases} states, {aimed} aimed at a call ({hit} reached it); {reached.Count} of {expected.Count} scene entries called");
         foreach (var ((file, entry), count) in reached.OrderBy(r => r.Key.File, StringComparer.Ordinal).ThenBy(r => r.Key.Entry))
             output.WriteLine($"  {file} {entry}: {count}");
         var missed = expected.Except(reached.Keys).Select(m => $"{m.Item1} {m.Item2}").ToList();
-        Assert.True(missed.Count == 0, "never called: " + string.Join(", ", missed));
+        DifferentialRuns.AssertReached(missed, output, "never called");
     }
 
     /// <summary><c>COM.ADV</c>, read once.</summary>

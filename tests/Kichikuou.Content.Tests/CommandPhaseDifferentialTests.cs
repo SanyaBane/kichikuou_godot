@@ -28,9 +28,9 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
             return;
         var program = new ScenarioScripts(LocalData.ScenarioDirectory).ReadProgram(Command);
         var seen = new Dictionary<string, int>(StringComparer.Ordinal);
-        int stopped = 0;
+        int stopped = 0, cases = DifferentialRuns.Cases(Cases);
 
-        for (int seed = 1; seed <= Cases; seed++)
+        for (int seed = 1; seed <= cases; seed++)
         {
             var state = RandomState(new Random(seed));
             var port = await RunAsync(Copy(state), seed, null);
@@ -48,7 +48,7 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
                 seen[feature] = seen.GetValueOrDefault(feature) + 1;
         }
 
-        output.WriteLine($"{Cases} runs, {stopped} stopped by the input budget");
+        output.WriteLine($"{cases} runs, {stopped} stopped by the input budget");
         foreach (var (feature, count) in seen.OrderBy(f => f.Key, StringComparer.Ordinal))
             output.WriteLine($"  {feature}: {count}");
         string[] expected =
@@ -60,7 +60,7 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
             "call Gﾏﾘｽ.ADV", "call Gｱｰﾔ.ADV", "cursor", "drag step", "Tange Dog", "end",
         ];
         var missed = expected.Where(e => !seen.ContainsKey(e)).ToList();
-        Assert.True(missed.Count == 0, "never reached: " + string.Join(", ", missed));
+        DifferentialRuns.AssertReached(missed, output);
     }
 
     /// <summary>
@@ -74,8 +74,8 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
         if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "WAO_MAP.ADV")))
             return;
         var program = new ScenarioScripts(LocalData.ScenarioDirectory).ReadProgram("WAO_MAP.ADV");
-        int steps = 0;
-        for (int seed = 1; seed <= 2000; seed++)
+        int steps = 0, drags = DifferentialRuns.Cases(2000);
+        for (int seed = 1; seed <= drags; seed++)
         {
             var rng = new Random(seed);
             var state = new GameState();
@@ -96,8 +96,8 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
             Assert.True(differences.Count == 0, $"seed {seed}: memory differs\n  " + string.Join("\n  ", differences));
             steps += port.Log.Count(e => e.StartsWith("EngineEvent CC", StringComparison.Ordinal));
         }
-        output.WriteLine($"2000 drags, {steps} scroll steps");
-        Assert.True(steps > 1000);
+        output.WriteLine($"{drags} drags, {steps} scroll steps");
+        Assert.True(steps > drags / 2);
     }
 
     private static async Task<Run> DragAsync(GameState state, int seed, ScriptProgram? program)
