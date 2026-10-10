@@ -106,11 +106,33 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
                 state.F_SillCow_State = (Sys3Int)(rng.Next(6) == 0 ? 3 : 0);
                 state.N_RanceSelfTalk = (Sys3Int)rng.Next(0, 25);
                 state.Unit48_Identity = (Sys3Int)rng.Next(0, 3);
+                // The troop menu of the later stages: the week's two sub-commands, the offers by
+                // class and troop attack, full and short units, a budget around the prices.
+                if (rng.Next(2) == 0)
+                    state.StoryStage = (Sys3Int)rng.Next(1, 5);
+                state.CmdAvail_SubTroops = (Sys3Int)(rng.Next(4) == 0 ? 0 : 1);
+                state.CmdAvail_SubTalk = (Sys3Int)(rng.Next(4) == 0 ? 0 : 1);
+                state.Week = (Sys3Int)rng.Next(9, 120);
+                state.Gold = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(0, 40) : rng.Next(0, 3000));
+                for (int u = 1; u <= 50; u++)
+                {
+                    var unit = state.Units[u];
+                    unit.Class = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(0, 13) : rng.Next(0, 4));
+                    unit.TroopAtk = (Sys3Int)(rng.Next(2) == 0 ? rng.Next(0, 15) : rng.Next(3) switch { 0 => 10, 1 => 11, _ => 8 });
+                    unit.MaxTroops = (Sys3Int)rng.Next(0, 3000);
+                    unit.Troops = rng.Next(3) switch { 0 => unit.MaxTroops, 1 => (Sys3Int)rng.Next(0, 3000), _ => (Sys3Int)rng.Next(0, unit.MaxTroops.Value + 1) };
+                }
             },
             Scribble,
             ["call Sﾌﾞｶ.ADV", "call Gｼｨﾙ.ADV", "call Gﾊﾞｳﾝﾄﾞ.ADV", "call Gｿｳﾙ.ADV", "call Gﾖｳﾍｲ.ADV", "call Gﾊﾆｰ.ADV",
              "call Gｵｳｼﾞ.ADV", "call Gﾛﾚｯｸｽ.ADV", "text 1348", "text 1357", "text 1374", "text 1116", "text 1149",
-             "text 1174", "text 1179", "text 1254", "text 1280", "text 1286", "text 1328", "text 199", "unported"]);
+             "text 1174", "text 1179", "text 1254", "text 1280", "text 1286", "text 1328", "text 199",
+             // the troop menu: header, offer and Add More, budget refusals, replenish, talk
+             "text 729", "text 738", "text 744", "text 870", "text 883", "text 927", "text 945", "text 979", "text 995",
+             "text 1012", "text 1046", "text 1053", "text 1073", "text 1080", "text 1104",
+             "item 807", "item 812", "item 817", "item 824", "item 829", "item 836", "item 842", "item 847", "item 904",
+             "item 909", "item 914", "item 1026", "item 1030", "M 0", "IZ"],
+            cases: 4000);
 
     [Fact]
     public Task The_harem_runs_exactly_as_Cﾊｰﾚﾑ() =>

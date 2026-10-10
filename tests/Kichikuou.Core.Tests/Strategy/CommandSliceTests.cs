@@ -616,12 +616,126 @@ public class CommandSliceTests
     }
 
     [Fact]
-    public async Task The_troop_menu_beyond_the_prologue_is_not_ported_yet()
+    public async Task Later_a_unit_opens_its_troop_menu_with_the_offer_of_its_class()
+    {
+        var rig = TroopMenu(unit: 2);
+        rig.State.Units[2].Class = 0;
+        rig.State.Units[2].TroopAtk = 10;                               // 110 for 25 men
+        rig.State.Week = 21;                                            // + 21/4
+        rig.Input.Choices.Enqueue(5);                                   // Do Nothing
+
+        await new SubordinatesCommand(rig.Script).RunAsync();
+
+        Assert.Equal([[807, 812, 817, 836, 847]], rig.MenuLines.Take(1));   // Info, Replenish, Add, Talk, Nothing
+        Assert.Equal([2, 1, 3, 4, 1], rig.PickerModes);                // open, pick, close, redraw, pick (none)
+        Assert.Contains(new ValueMessageEvent(new ScriptRef("Cﾌﾞｶ.ADV", 744), [(Sys3Int)30, (Sys3Int)40, (Sys3Int)100, (Sys3Int)400]),
+            rig.View.Events, new ValueMessageComparer());
+        Assert.Contains(new WindowEvent(311, 900), rig.View.Events);   // the unit's face, Maris on the right
+        Assert.Contains(new WindowEvent(321, 6), rig.View.Events);
+        Is(1, rig.State.CmdAvail_SubTroops);
+        Is(1, rig.State.Ui_CmdSubordAvail);
+        Assert.Single(rig.View.Events.OfType<EngineEvent>(), e => e.Command == "IZ");
+    }
+
+    [Fact]
+    public async Task Add_New_Troops_pays_and_raises_the_units_troops_and_maximum()
+    {
+        var rig = TroopMenu(unit: 3);                                   // Bound: 30 for 50 men
+        rig.State.Week = 8;                                             // + 2
+        rig.State.Gold = 100;
+        rig.State.Hist_Cur = 0;
+        rig.Input.Choices.Enqueue(3);                                   // Add New Troops
+        rig.Input.Choices.Enqueue(1);                                   // Do It
+
+        await new SubordinatesCommand(rig.Script).RunAsync();
+
+        Is(68, rig.State.Gold);
+        Is(32, rig.State.History[0].MilitaryExp);
+        Is(150, rig.State.Units[3].Troops);
+        Is(450, rig.State.Units[3].MaxTroops);
+        Is(1, rig.State.Units[3].Recovery);
+        Is(0, rig.State.CmdAvail_SubTroops);
+        Is(1, rig.State.Ui_CmdSubordAvail);                             // the talk is left
+        Is(0, rig.State.Tmp0001);
+        Assert.Equal([870, 883, 945], rig.Lines.Where(l => l is 870 or 883 or 945));
+        Assert.Equal(new MapEvent(0), rig.View.Events.OfType<MapEvent>().Last());
+    }
+
+    [Fact]
+    public async Task Add_More_doubles_the_men_for_three_times_the_price_and_a_cancel_keeps_it()
+    {
+        var rig = TroopMenu(unit: 3);
+        rig.State.Week = 8;                                             // 32 for 50 men
+        rig.State.Gold = 1000;
+        rig.Input.Choices.Enqueue(3);                                   // Add New Troops
+        rig.Input.Choices.Enqueue(2);                                   // Add More: 96 for 100
+        rig.Input.Choices.Enqueue(0);                                   // cancel: the menu again …
+        rig.Input.Choices.Enqueue(3);                                   // … the offer as it was
+        rig.Input.Choices.Enqueue(1);                                   // Do It
+
+        await new SubordinatesCommand(rig.Script).RunAsync();
+
+        // QUIRK: CMD-12
+        Assert.Equal([(50, 32), (100, 96), (100, 96)],
+            rig.View.Events.OfType<ValueMessageEvent>().Where(v => v.Text.Line == 870).Select(v => (v.Values[0].Value, v.Values[1].Value)));
+        Is(904, rig.State.Gold);
+        Is(200, rig.State.Units[3].Troops);
+    }
+
+    [Theory]
+    [InlineData(400, 400, 0, 0)]        // full: refused, the menu again, Do Nothing
+    [InlineData(100, 400, 6, 6)]        // 300 short: 6
+    [InlineData(380, 400, 1, 1)]        // 20 short: at least 1
+    public async Task Replenish_fills_a_short_unit_for_one_per_fifty_men(int troops, int max, int price, int paid)
+    {
+        var rig = TroopMenu(unit: 2);
+        rig.State.Units[2].Troops = (Sys3Int)troops;
+        rig.State.Units[2].MaxTroops = (Sys3Int)max;
+        rig.State.Gold = 50;
+        rig.Input.Choices.Enqueue(2);                                   // Replenish Troops
+        rig.Input.Choices.Enqueue(troops == max ? 5 : 1);               // Do Nothing / Do
+
+        await new SubordinatesCommand(rig.Script).RunAsync();
+
+        Is(50 - paid, rig.State.Gold);
+        Is(max, rig.State.Units[2].Troops);
+        Is(troops == max ? 1 : 0, rig.State.CmdAvail_SubTroops);
+        if (troops == max)
+            Assert.Contains(979, rig.Lines);                            // "already has n troops"
+        else
+            Assert.Contains(new ValueMessageEvent(new ScriptRef("Cﾌﾞｶ.ADV", 1012), [(Sys3Int)(max - troops), (Sys3Int)price]),
+                rig.View.Events, new ValueMessageComparer());
+    }
+
+    [Fact]
+    public async Task Talk_spends_the_talk_and_plays_the_units_scene()
+    {
+        var rig = TroopMenu(unit: 3);
+        rig.State.CmdAvail_SubTroops = 0;
+        rig.Input.Choices.Enqueue(4);                                   // Talk (after ×Replenish, ×Add)
+
+        await new SubordinatesCommand(rig.Script).RunAsync();
+
+        Assert.Equal([[807, 824, 829, 836, 847]], rig.MenuLines);
+        Assert.Equal([("Gﾊﾞｳﾝﾄﾞ.ADV", 20)], rig.Calls.Where(c => c.File[0] == 'G'));
+        Is(0, rig.State.CmdAvail_SubTalk);
+        Is(0, rig.State.Ui_CmdSubordAvail);                             // both spent
+        Assert.Contains(1104, rig.Lines);
+    }
+
+    /// <summary>A stage-1 Subordinates command whose picker answers <paramref name="unit"/> once.</summary>
+    private static SliceRig TroopMenu(int unit)
     {
         var rig = Subordinates(stage: 1);
-        rig.Picker("Sﾌﾞｶ.ADV", 2);
-
-        await Assert.ThrowsAsync<NotSupportedException>(() => new SubordinatesCommand(rig.Script).RunAsync());
+        rig.State.CmdAvail_SubTroops = 1;
+        rig.State.CmdAvail_SubTalk = 1;
+        rig.State.Units[unit].FaceCg = 900;
+        rig.State.Units[unit].HP = 30;
+        rig.State.Units[unit].MaxHP = 40;
+        rig.State.Units[unit].Troops = 100;
+        rig.State.Units[unit].MaxTroops = 400;
+        rig.Picker("Sﾌﾞｶ.ADV", unit);
+        return rig;
     }
 
     // ---------------------------------------------------------------------------------------

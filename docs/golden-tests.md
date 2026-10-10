@@ -305,6 +305,7 @@ here with its reason, never as a blanket rule.
 | The owner's second run (2026-10-09, seed 502748417): a new game, week 9 ended, in week 10 two clicks at the map's top-left corner ((9, 5), (11, 6)), Turn END | none — all 14 captures match. Both clicks pick province record 0 and run `Cﾃｷﾄｼ2` on it (STR-12 confirmed; README open item 2 answered) | — |
 | The Leazas week ported (milestone 2 step 1, 2026-10-10) | the owner's Leazas week of the first run (`week61009-105401-92-MAIN@20`, week 13, stage 1) now matches whole: the autosave, `COMMAND`, `TCﾘｰｻﾞｽ` and `Gｼｨﾙ` 21 hook checkpoints and the exit, 0 differences | — |
 | The rebels' turn ported (milestone 2 step 2, 2026-10-10) | the owner's rebel turn of the first run (`nations`, `20261009-105433-107-TCﾘｰｻﾞｽ`, week 14: `Gｴｸｽ` 10, then `FIGT_B` from army A's walk and from army B's) matches whole: three hook checkpoints and the exit, 0 differences (`NationReplayTests`) | — |
+| `Cﾌﾞｶ`'s troop menu ported (milestone 2 step 4, 2026-10-10) | the owner's two stage-1 `Cﾌﾞｶ` captures of the first run (`commands`, `-99-` a replenish for 8 gold, `-103-` a talk with Cadmium, week 14) now match whole; every `Cﾌﾞｶ` capture matches | — |
 | The attack in `Cﾃｷﾄｼ` ported (milestone 2 step 3, 2026-10-10) | the owner's stage-1 `Cﾃｷﾄｼ` capture of the first run (`commands`, `20261009-105408-96-Cﾃｷﾄｼ`, week 14, province 7: "Let's begin the battle", then Maris's "disrupted" refusal of the rebels' first week, `:144`) now matches whole; all 38 `Cﾃｷﾄｼ` captures match | — |
 
 ## Harness configuration

@@ -148,7 +148,7 @@ Flag `Ui_CmdMerchantAvail := 0` only on Send Away (`:130-153`). Price test is `G
 All purchases add to `Hist_SundryExp`. `F_SillCow_State` 6/2 → Gｼｨﾙ#6/#2 and return **without
 consuming the flag** (`:9-18`) [C].
 
-### 3.5 Subordinates (`Cﾌﾞｶ`) [C]
+### 3.5 Subordinates (`Cﾌﾞｶ`) [C] — ported whole (`Strategy/SubordinatesCommand`, 2026-10-10)
 
 One troop action and one talk per week. Using either clears its `CmdAvail_Sub*`; when both are
 0, `Ui_CmdSubordAvail := 0` (menu "△", view-only loop `:1-20`). Only `Unit_Status = 1` units act.

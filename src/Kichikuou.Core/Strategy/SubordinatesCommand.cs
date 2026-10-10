@@ -4,12 +4,12 @@ using Kichikuou.Core.Sys3;
 namespace Kichikuou.Core.Strategy;
 
 /// <summary>
-/// <c>Cﾌﾞｶ.ADV</c>, the Subordinates command (<c>docs/strategy/survey-commands.md</c> §3.5): the
-/// picker <c>Sﾌﾞｶ</c> (a hook, called with its mode in <c>CallArg</c>; it answers the unit in
+/// <c>Cﾌﾞｶ.ADV</c>, the Subordinates command (<c>docs/strategy/survey-commands.md</c> §3.5), ported
+/// whole: the picker <c>Sﾌﾞｶ</c> (called with its mode in <c>CallArg</c>; it answers the unit in
 /// <c>CallArg</c> and <c>Unit_Cur</c>), the view-only loop once the week's actions are spent, the
-/// unit's status page, and the prologue's talk (<c>:713-720</c>: no menu, the unit's talk scene at
-/// once, the command spent). The troop menu of the later stages (<c>:721-1097</c>) is part P6 and
-/// fails as not ported.
+/// unit's status page, the prologue's talk (<c>:713-720</c>: no menu, the unit's talk scene at once,
+/// the command spent) and the troop menu of the later stages (<c>:721-1112</c>: Info, Replenish
+/// Troops, Add New Troops, Talk, Do Nothing).
 /// </summary>
 public sealed class SubordinatesCommand(ScriptContext script) : CommandFile(script, "Cﾌﾞｶ.ADV")
 {
@@ -125,11 +125,35 @@ public sealed class SubordinatesCommand(ScriptContext script) : CommandFile(scri
         CopyString(3, State.Unit_StrBase + (State.Unit_Cur - 1) * 3 + 2);
     }
 
+    /// <summary>Where a troop-menu action goes on.</summary>
+    private enum Next
+    {
+        Header,         // @L_00f9b — the unit's header, the offer and the menu again
+        Menu,           // @L_0117d — the menu again
+        Done,           // \0: — back to the unit's label with Tmp0001 0 (done), 1 (pick again) or 2 (talk)
+    }
+
+    /// <summary>The troop menu's items (<c>:805-850</c>).</summary>
+    private enum TroopChoice
+    {
+        Info,           // L_0129a
+        Replenish,      // L_014d9
+        AddTroops,      // L_012b5
+        Talk,           // L_014b2
+        Unavailable,    // L_0117d: a "×" item, the menu again
+        Nothing,        // L_0127d, also a cancel
+    }
+
     /// <summary>
-    /// <c>L_00f4b</c> (<c>:713-720</c>): in the prologue there is no menu — the command is spent
-    /// and the talk follows (<c>Tmp0001</c> 2). The troop menu of the later stages is part P6.
+    /// <c>L_00f4b</c> (<c>:713-1112</c>): in the prologue there is no menu — the command is spent
+    /// and the talk follows (<c>Tmp0001</c> 2). Later the unit's troop menu (survey-commands §3.5):
+    /// Info (the status page), Replenish Troops, Add New Troops (the offer by class and unit, dearer
+    /// every four weeks; Add More doubles the men for three times the price), Talk, Do Nothing.
+    /// Replenishing or adding spends <c>CmdAvail_SubTroops</c>, talking <c>CmdAvail_SubTalk</c>;
+    /// the command is spent when both are. Leaves <c>Tmp0001</c> for the unit's label: 0 done,
+    /// 1 pick another unit, 2 talk.
     /// </summary>
-    private Task ActionAsync()
+    private async Task ActionAsync()
     {
         CopyString(1, State.Unit_StrBase + (State.Unit_Cur - 1) * 3);
         CopyString(2, State.Unit_StrBase + (State.Unit_Cur - 1) * 3 + 1);
@@ -137,9 +161,313 @@ public sealed class SubordinatesCommand(ScriptContext script) : CommandFile(scri
         {
             State.Ui_CmdSubordAvail = 0;
             State.Tmp0001 = 2;
-            return Task.CompletedTask;
+            return;
         }
-        throw NotPorted(721, "the troop menu beyond the prologue", "P6");
+        State.CallArg = Unit.FaceCg;                                    // :721-724
+        await WaoAsync(311);                                            // \L_01e1e
+        State.CallArg = 6;
+        await WaoAsync(321);                                            // \L_01e8e
+        var next = Next.Header;
+        while (true)
+        {
+            if (next == Next.Header)
+                await OfferAsync();                                     // L_00f9b
+            next = await TroopMenuAsync() switch                        // L_0117d
+            {
+                TroopChoice.Info => await InfoAsync(),
+                TroopChoice.Replenish => await ReplenishAsync(),
+                TroopChoice.AddTroops => await AddTroopsAsync(),
+                TroopChoice.Talk => await TalkChoiceAsync(),
+                _ => await NothingAsync(),
+            };
+            if (next == Next.Done)
+                return;
+        }
+    }
+
+    /// <summary>
+    /// <c>L_00f9b</c> (<c>:725-799</c>): "X's unit. What will you do?" with its HP and troops, and
+    /// the offer of new troops — <c>Tmp0003</c> men for <c>Tmp0001</c> (hundreds of gold): by class
+    /// and troop attack, a few units of their own, 320 for 10 men otherwise, none for units 25, 41
+    /// and 48-50, and a quarter of the week added to any price.
+    /// </summary>
+    private async Task OfferAsync()
+    {
+        if (State.Unit_Cur != 1)
+        {
+            await WaoAsync(121);                                        // \L_01e3a
+            await TextAsync(729);                                       // "X's unit. What will you do?"
+        }
+        if (State.Unit_Cur == 1)
+        {
+            await WaoAsync(121);
+            await TextAsync(738);                                       // "The King's personal unit."
+        }
+        await ValuesAsync(744, Unit.HP, Unit.MaxHP, Unit.Troops, Unit.MaxTroops);
+        State.Tmp0001 = 0;                                              // :757-799 the offer
+        State.Tmp0003 = 25;
+        if (Unit.Class == 0 && Unit.TroopAtk == 10)
+            State.Tmp0001 = 110;
+        if (Unit.Class == 0 && Unit.TroopAtk == 11)
+            State.Tmp0001 = 300;
+        if (Unit.Class == 0 && Unit.TroopAtk == 8)
+            State.Tmp0001 = 50;
+        if (Unit.Class == 2 && Unit.TroopAtk == 3)
+            State.Tmp0001 = 100;
+        if (State.Unit_Cur == 3 || State.Unit_Cur == 4)
+        {
+            State.Tmp0001 = 30;
+            State.Tmp0003 = 50;
+        }
+        if (State.Unit_Cur == 5 || State.Unit_Cur == 33 || State.Unit_Cur == 36 || State.Unit_Cur == 18)
+            State.Tmp0001 = 200;
+        if (State.Unit_Cur == 16)
+            State.Tmp0001 = 120;
+        if (Unit.Class == 3)
+            State.Tmp0001 = 150;
+        if (State.Tmp0001 == 0)
+        {
+            State.Tmp0001 = 320;
+            State.Tmp0003 = 10;
+        }
+        if (State.Unit_Cur > 47)
+            State.Tmp0001 = 0;
+        if (State.Unit_Cur == 25)
+            State.Tmp0001 = 0;
+        if (State.Unit_Cur == 41)
+            State.Tmp0001 = 0;
+        if (State.Tmp0001 != 0)
+            State.Tmp0001 = State.Tmp0001 + State.Week / 4;
+    }
+
+    /// <summary>
+    /// <c>L_0117d</c> (<c>:800-851</c>): the release wait, the pointer saved, the menu (Add New
+    /// Troops only with an offer); a "×" item starts again from the wait, a cancel is Do Nothing.
+    /// </summary>
+    private async Task<TroopChoice> TroopMenuAsync()
+    {
+        while (true)
+        {
+            await WaitForReleaseAsync();
+            await SavePointerAsync();                                   // \L_01db4
+            var items = new List<(SceneMenuItem Item, TroopChoice Choice)> { (MenuItem(807), TroopChoice.Info) };
+            if (State.CmdAvail_SubTroops == 1)
+            {
+                items.Add((MenuItem(812), TroopChoice.Replenish));      // ○Replenish Troops
+                if (State.Tmp0001 != 0)
+                    items.Add((MenuItem(817), TroopChoice.AddTroops));  // ○Add New Troops
+            }
+            if (State.CmdAvail_SubTroops == 0)
+            {
+                items.Add((MenuItem(824), TroopChoice.Unavailable));    // ×Replenish Troops
+                if (State.Tmp0001 != 0)
+                    items.Add((MenuItem(829), TroopChoice.Unavailable));
+            }
+            if (State.CmdAvail_SubTalk == 1)
+                items.Add((MenuItem(836), TroopChoice.Talk));           // ○Talk
+            if (State.CmdAvail_SubTalk == 0)
+                items.Add((MenuItem(842), TroopChoice.Unavailable));    // ×Talk
+            items.Add((MenuItem(847), TroopChoice.Nothing));            // Do Nothing
+
+            int choice = await SelectAsync(items.Select(i => i.Item).ToArray());
+            if (choice == 0)
+                return TroopChoice.Nothing;                             // :851 @L_0127d
+            if (items[choice - 1].Choice != TroopChoice.Unavailable)
+                return items[choice - 1].Choice;
+        }
+    }
+
+    /// <summary><c>L_0127d</c> (<c>:852-858</c>): the windows and portraits closed, the pointer back, pick again.</summary>
+    private async Task<Next> NothingAsync()
+    {
+        await WaoAsync(0);                                              // \L_01ee2
+        await WaoAsync(312);                                            // \L_01e2c
+        await WaoAsync(322);                                            // \L_01e9c
+        State.Tmp0001 = 1;
+        await RestorePointerAsync();                                    // \L_01dbf
+        return Next.Done;
+    }
+
+    /// <summary><c>L_0129a</c> (<c>:859-862</c>): the unit's status page, then the header again.</summary>
+    private async Task<Next> InfoAsync()
+    {
+        await WaoAsync(0);
+        await StatusPageAsync();                                        // \L_0179c
+        return Next.Header;
+    }
+
+    /// <summary>
+    /// <c>L_012b5</c> (<c>:863-965</c>): the offer and its price against the budget; Add More
+    /// (<c>L_012a9</c>, while the price is under 10000) doubles the men and triples the price; Do It
+    /// pays and raises the unit's troops, maximum and recovery.
+    /// </summary>
+    private async Task<Next> AddTroopsAsync()
+    {
+        while (true)
+        {
+            await WaoAsync(0);                                          // \L_01ee2
+            await WaoAsync(121);                                        // \L_01e3a
+            await ValuesAsync(870, State.Tmp0003, State.Tmp0001);       // "Giving n new troops will cost m00K GOLD."
+            await WaoAsync(1);                                          // \L_01eef
+            await WaoAsync(0);
+            await WaoAsync(123);                                        // \L_01e72
+            await ValuesAsync(883, State.Tmp0001, State.Tmp0003, State.Gold);
+            await WaitForReleaseAsync();                                // L_01358
+            var items = new List<SceneMenuItem> { MenuItem(904) };      // Do It
+            if (State.Tmp0001 < 10000)
+                items.Add(MenuItem(909));                               // Add More
+            items.Add(MenuItem(914));                                   // Don't
+            int choice = await SelectAsync(items);
+            if (choice == 0)
+                return Next.Menu;                                       // :918 @L_0117d — QUIRK: CMD-12, the multiplied offer stays
+            if (items[choice - 1].At.Line == 909)
+            {
+                State.Tmp0003 = State.Tmp0003 * 2;                      // L_012a9
+                State.Tmp0001 = State.Tmp0001 * 3;
+                continue;
+            }
+            if (items[choice - 1].At.Line == 914)
+            {
+                await WaoAsync(0);                                      // L_013b8
+                return Next.Header;
+            }
+            break;
+        }
+
+        await WaoAsync(0);                                              // L_013c2
+        if (State.Gold < State.Tmp0001)
+        {
+            await WaoAsync(121);
+            await TextAsync(927);                                       // "we don't have the budget"
+            await WaoAsync(1);
+            await WaoAsync(0);
+            return Next.Header;
+        }
+        State.CmdAvail_SubTroops = 0;
+        if (State.CmdAvail_SubTalk == 0)
+            State.Ui_CmdSubordAvail = 0;
+        State.Gold = State.Gold - State.Tmp0001;
+        Hist.MilitaryExp = Hist.MilitaryExp + State.Tmp0001;            // QUIRK: CMD-14 — whatever history slot Hist_Cur names
+        Unit.Troops = Unit.Troops + State.Tmp0003;
+        Unit.MaxTroops = Unit.MaxTroops + State.Tmp0003;
+        Unit.Recovery = Unit.Recovery + 1;
+        await WaoAsync(113);                                            // \L_01e02
+        await ValuesAsync(945, State.Tmp0003, Unit.Troops, Unit.MaxTroops);
+        await WaoAsync(1);
+        await WaoAsync(0);
+        await Script.MapCallAsync(0);
+        State.Tmp0001 = 0;
+        return Next.Done;
+    }
+
+    /// <summary>
+    /// <c>L_014b2</c> (<c>:966-973</c>) and <c>L_01757</c> (<c>:1098-1112</c>): the talk is spent;
+    /// Rance thinks of meeting the unit; the unit's label plays its talk (<c>Tmp0001</c> 2).
+    /// </summary>
+    private async Task<Next> TalkChoiceAsync()
+    {
+        await WaoAsync(0);
+        State.Tmp0001 = 2;
+        State.CmdAvail_SubTalk = 0;
+        if (State.CmdAvail_SubTroops == 0)
+            State.Ui_CmdSubordAvail = 0;
+        await WaoAsync(312);                                            // L_01757: \L_01e2c
+        State.CallArg = 1;
+        await WaoAsync(311);                                            // \L_01e1e
+        await WaoAsync(112);                                            // \L_01de6
+        await TextAsync(1104);                                          // "Maybe I'll meet with X."
+        await WaoAsync(1);
+        await WaoAsync(0);
+        await WaoAsync(312);
+        State.Tmp0001 = 2;
+        return Next.Done;
+    }
+
+    /// <summary>
+    /// <c>L_014d9</c> (<c>:974-1097</c>): a full unit cannot be replenished; otherwise the deficiency
+    /// and its price (one per 50 men, at least 1), Do / Don't, and the troops back to the maximum.
+    /// </summary>
+    private async Task<Next> ReplenishAsync()
+    {
+        await WaoAsync(0);                                              // \L_01ee2
+        if (Unit.Troops == Unit.MaxTroops)                              // :976-1004
+        {
+            await WaoAsync(121);                                        // \L_01e3a
+            await ValuesAsync(979, Unit.MaxTroops);                     // "already has n troops"
+            await WaoAsync(1);
+            await WaoAsync(0);
+            await WaoAsync(312);                                        // \L_01e2c
+            State.CallArg = 1;
+            await WaoAsync(311);                                        // \L_01e1e
+            await WaoAsync(112);                                        // \L_01de6
+            await TextAsync(995);                                       // "What? Damn it."
+            await WaoAsync(1);
+            await WaoAsync(0);
+            await WaoAsync(312);
+            State.CallArg = Unit.FaceCg;
+            await WaoAsync(311);
+            return Next.Header;
+        }
+        // QUIRK: CMD-20 — above the maximum the deficiency is 0, priced 1, and Do lowers the troops.
+        State.Tmp0621 = Unit.MaxTroops - Unit.Troops;                   // :1005-1009
+        State.Tmp0226 = State.Tmp0621 / 50;
+        if (State.Tmp0226 == 0)
+            State.Tmp0226 = 1;
+        await WaoAsync(121);                                            // \L_01e3a
+        await ValuesAsync(1012, State.Tmp0621, State.Tmp0226);          // "Replenish X's unit? …"
+        var items = new List<SceneMenuItem> { MenuItem(1026) };         // Do
+        await LineBreakAsync();                                         // :1029 R
+        items.Add(MenuItem(1030));                                      // Don't
+        int choice = await SelectAsync(items);
+        if (choice == 0)
+            return Next.Menu;                                           // :1034 @L_0117d
+        if (choice == 2)
+        {
+            await WaoAsync(0);                                          // L_0160a
+            await WaoAsync(312);                                        // \L_01e2c
+            await WaoAsync(322);                                        // \L_01e9c
+            State.Tmp0001 = 1;
+            return Next.Done;
+        }
+
+        await WaoAsync(0);                                              // L_01622
+        if (State.Gold < State.Tmp0226)
+        {
+            await WaoAsync(121);
+            await TextAsync(1046);                                      // "we don't have the budget"
+            await WaoAsync(1);
+            await WaoAsync(0);
+            await WaoAsync(111);                                        // \L_01dca
+            await TextAsync(1053);                                      // "Ch..."
+            await WaoAsync(1);
+            await WaoAsync(0);
+            return Next.Header;
+        }
+        State.CmdAvail_SubTroops = 0;
+        if (State.CmdAvail_SubTalk == 0)
+            State.Ui_CmdSubordAvail = 0;
+        State.Gold = State.Gold - State.Tmp0226;
+        Hist.MilitaryExp = Hist.MilitaryExp + State.Tmp0226;            // QUIRK: CMD-14
+        State.CallArg = 1;
+        await WaoAsync(311);                                            // \L_01e1e
+        await WaoAsync(111);                                            // \L_01dca
+        await TextAsync(1068);                                          // "Replenish the troops."
+        await WaoAsync(1);
+        await WaoAsync(0);
+        await WaoAsync(121);                                            // \L_01e3a
+        await TextAsync(1073);                                          // "Understood."
+        await WaoAsync(1);
+        await WaoAsync(0);
+        State.Tmp0001 = Unit.MaxTroops - Unit.Troops;
+        Unit.Troops = Unit.MaxTroops;
+        await WaoAsync(113);                                            // \L_01e02
+        await ValuesAsync(1080, State.Tmp0001, Unit.Troops);            // "X's Y replenished by n to m."
+        await WaoAsync(1);
+        await WaoAsync(0);
+        await WaoAsync(322);                                            // \L_01e9c
+        await Script.MapCallAsync(0);
+        State.Tmp0001 = 0;
+        return Next.Done;
     }
 
     /// <summary>The <c>Tmp0001 = 2</c> branch of the unit's label (<c>:208-712</c>): its talk.</summary>
