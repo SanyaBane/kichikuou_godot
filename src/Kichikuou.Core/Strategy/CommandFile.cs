@@ -71,6 +71,15 @@ public abstract class CommandFile(ScriptContext script, string file, IScenarioSo
         (scenario ?? throw new InvalidOperationException($"{File} reads its literals from the player's files: no scenario source given."))
         .ReadStatement(Ref(line));
 
+    /// <summary>
+    /// The label body of this file that starts at <paramref name="line"/>, read from the player's
+    /// files and run up to its <c>\0:</c> — record data such as a commander setter
+    /// (<see cref="IScenarioSource.ReadBlock"/>).
+    /// </summary>
+    protected Task RunBlockAsync(int line) =>
+        Script.RunAsync((scenario ?? throw new InvalidOperationException($"{File} reads its data blocks from the player's files: no scenario source given."))
+            .ReadBlock(Ref(line)));
+
     /// <summary><c>MS n, "text":</c> at <paramref name="line"/>, the text from the player's files.</summary>
     protected void SetLiteral(int line)
     {

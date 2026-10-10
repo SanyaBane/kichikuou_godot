@@ -78,7 +78,10 @@ public sealed partial class ScriptContext
                 case CallFileStatement s:
                     await CallAsync(s.File);
                     break;
-                case ReturnStatement:
+                case LineBreakStatement:
+                    await View.ShowAsync(new LineBreakEvent());
+                    break;
+                case ReturnStatement or ReturnLabelStatement:
                     return;
                 default:
                     throw new ScenarioFormatException($"{statement.At}: {statement.GetType().Name} is not supported here.");

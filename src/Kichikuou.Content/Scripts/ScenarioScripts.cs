@@ -60,6 +60,39 @@ public sealed partial class ScenarioScripts(string directory) : IScenarioSource,
             ?? throw new ScenarioFormatException($"{at}: no statement at this line.");
     }
 
+    /// <inheritdoc />
+    public IReadOnlyList<ScriptStatement> ReadBlock(ScriptRef at)
+    {
+        string[] lines = Lines(at.File);
+        var block = new List<ScriptStatement>();
+        for (int n = Math.Max(at.Line, 1); n <= lines.Length; n++)
+        {
+            var here = new ScriptRef(at.File, n);
+            string line = lines[n - 1].Trim();
+            if (line == "\\0:")
+            {
+                block.Add(new ReturnLabelStatement(here));
+                return block;
+            }
+            if (line == "R")
+            {
+                block.Add(new LineBreakStatement(here));
+                continue;
+            }
+            switch (ParseData(here, line))
+            {
+                case null:
+                    continue;
+                case var statement when statement is AssignStatement or SetStringStatement or CopyStringStatement:
+                    block.Add(statement);
+                    break;
+                default:
+                    throw new ScenarioFormatException($"{here}: only assignments, MS, MM and R are read in a block, not '{line}'.");
+            }
+        }
+        throw new ScenarioFormatException($"{at}: the block has no return (\\0:).");
+    }
+
     /// <summary>One line of a data file (the forms listed in the remarks).</summary>
     private ScriptStatement? ParseData(ScriptRef at, string line)
     {

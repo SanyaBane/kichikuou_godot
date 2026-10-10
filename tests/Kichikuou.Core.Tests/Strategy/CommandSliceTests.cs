@@ -1619,11 +1619,15 @@ public class CommandSliceTests
     }
 
     [Fact]
-    public async Task A_dungeon_beyond_the_prologue_is_not_ported_yet()
+    public async Task Gods_door_is_not_ported_yet()
     {
-        var rig = Dungeon(stage: 2, dungeon: 4);
+        var rig = Dungeon(stage: 2, dungeon: 30);
+        rig.State.F_GodsDoor_Quest = 2;
+        rig.State.Units[1].Item = 1;
 
-        await Assert.ThrowsAsync<NotSupportedException>(() => new DungeonCommand(rig.Script, new NameSource()).RunAsync());
+        var e = await Assert.ThrowsAsync<NotSupportedException>(() => new DungeonCommand(rig.Script, new NameSource()).RunAsync());
+
+        Assert.Contains("Cﾒｲｷｭｳ.ADV:234", e.Message);
     }
 
     // ---------------------------------------------------------------------------------------

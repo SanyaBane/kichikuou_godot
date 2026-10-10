@@ -426,27 +426,177 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
     }
 
     [Fact]
-    public Task The_dungeon_entry_runs_exactly_as_Cﾒｲｷｭｳ() =>
+    public Task The_dungeon_runs_exactly_as_Cﾒｲｷｭｳ() =>
         CompareAsync(
             "Cﾒｲｷｭｳ.ADV",
             (script, scenario) => new DungeonCommand(script, scenario).RunAsync(),
-            (state, rng) =>
-            {
-                state.Dgn_Cur = (Sys3Int)(rng.Next(10) switch { < 3 => 1, 3 => 2, 4 => 3, 5 => 15, _ => rng.Next(0, 32) });
-                state.Ui_CmdDungeonAvail = (Sys3Int)rng.Next(0, 2);
-                state.F_Merim_MillArc = (Sys3Int)rng.Next(0, 5);
-                state.Cmdr_Cur = (Sys3Int)rng.Next(0, 221);
-                if (rng.Next(4) == 0)
-                    state.Cmdrs[state.Cmdr_Cur].CgFull = 1137;
-                state.F_PG9_State = (Sys3Int)rng.Next(0, 4);
-                state.N_Soul_Stage = (Sys3Int)(rng.Next(4) == 0 ? 5 : rng.Next(0, 5));
-                state.F_HannyKing_State = (Sys3Int)rng.Next(0, 4);
-                if (rng.Next(4) == 0)
-                    state.Dgns[5].State = Sys3Int.Zero;
-            },
-            Scribble,
-            ["draw 3", "call Gﾊﾞｳﾝﾄﾞ.ADV", "call Gﾎﾗｶﾞ.ADV", "call Gｶﾌｪ.ADV", "text 2763", "text 2795", "text 2811",
-             "text 2827", "text 2852", "M 1", "M 10", "unported"]);
+            ShapeDungeon,
+            ScribbleDungeon,
+            ["draw 3", "draw 4", "draw 10", "draw 20", "draw 5", "draw 40", "call Gﾊﾞｳﾝﾄﾞ.ADV", "call Gﾎﾗｶﾞ.ADV", "call Gｶﾌｪ.ADV",
+             "text 2763", "text 2795", "text 2811", "text 2827", "text 2852", "M 0", "M 1", "M 10", "IZ", "unported", "boss fight",
+             // the dispatch, the menu, the picker and the refusals, the week's refusal
+             .. new[]
+             {
+                 "Gﾌﾞﾘﾃｨ", "Gｷｬﾛﾘ", "Gﾊﾟｲｱｰﾙ", "Gｶﾗｰ", "Gﾄｳｹﾞﾝ", "G1", "G2", "Sﾌﾞﾀｲ", "FIGT", "死亡捕獲", "Gｻｲｾﾞﾙ", "Gﾒﾘﾑ", "Gﾌｳｶ",
+                 "Gｹｲﾌﾞﾜﾝ", "Gｹｲﾌﾞﾆｬﾝ", "Gﾊﾆｰ", "Gﾐﾘ", "Gﾒﾙﾌｪｲｽ", "Gﾐﾙ", "Gﾙｰﾍﾞﾗﾝ", "Gｱｰﾔ",
+             }.Select(f => $"call {f}.ADV"),
+             "item 267", "item 272", "item 278", "item 284", "item 295", "text 243", "text 250", "text 254", "text 258", "text 312",
+             "text 5064", "text 5139", "text 5218", "text 5260", "text 5315", "text 5350", "text 5377", "text 5423", "text 5509",
+             "text 5540", "text 5584",
+             // the way, the resume floor, the floors, the moves, the battle, the end
+             "text 374", "text 398", "text 427", "text 634", "item 652", "item 657", "text 692", "text 914", "item 866", "item 872",
+             "item 878", "item 884", "item 889", "text 1006", "text 1011", "text 1088", "text 1093", "text 1178", "text 1304",
+             "text 1347", "text 1359", "text 927", "item 934", "item 938", "text 975",
+             // the chests, Orochi, the spring, KD and his quiz, Merim's inscriptions
+             "text 1455", "text 1487", "text 1517", "text 1547", "text 1577", "text 1607", "text 1637", "text 1667", "text 1697",
+             "text 1727", "text 1755", "text 1786", "text 1825", "text 1854", "text 1884", "text 1913", "text 1381", "text 1940",
+             "item 1954", "item 1958", "text 1966", "text 1989", "text 2036", "text 2051", "text 2081", "text 2122", "text 2209",
+             "text 2266", "item 2363", "item 2367", "text 2375", "text 2449", "text 2464", "text 2493", "text 2526", "text 2557",
+             "text 2586", "text 2620", "text 2634", "text 2699", "text 4600", "text 4736", "text 4856"],
+            cases: 8000,
+            choose: ChooseInDungeon);
+
+    /// <summary>
+    /// The dungeon's menus: half the time the way further in — Start Search, the saved floor, a move
+    /// deeper, the spring, the quiz and its right answers —, else at random; Finish once the run is long.
+    /// </summary>
+    private static int ChooseInDungeon(IReadOnlyList<SceneMenuItem> items, Random rng, bool tired)
+    {
+        if (tired)
+            return Find(934) is var finish and > 0 ? finish : items.Count;
+        foreach (int line in new[] { 272, 267, 652, 872, 884, 1954, 2363, 2476, 2513, 2548, 2569, 2600 })
+            if (Find(line) is var k and > 0 && rng.Next(2) == 0)
+                return k;
+        return rng.Next(6) == 0 ? 0 : rng.Next(1, items.Count + 1);
+
+        int Find(int line)
+        {
+            for (int i = 0; i < items.Count; i++)
+                if (items[i].At == new ScriptRef("Cﾒｲｷｭｳ.ADV", line))
+                    return i + 1;
+            return 0;
+        }
+    }
+
+    /// <summary>
+    /// A dungeon to search most of the time (stage 1 and later), else the hideout, a story spot or
+    /// any record; the week's action mostly free; a saved floor around the fixed floors and the
+    /// bosses; the bosses' flags, the Snow Charm, the Battleship's key and the treasures owned or
+    /// not; Merim and her inscriptions, KD's quest, the Fuuka arc, the Hanny King, the scenes' flags.
+    /// </summary>
+    private static void ShapeDungeon(GameState state, Random rng)
+    {
+        state.Cmdrs[100].CgFull = (Sys3Int)(rng.Next(6) == 0 ? 1137 : rng.Next(0, 2000));
+        int[] searches = [2, 2, 2, 4, 5, 6, 8, 10, 10, 11, 11, 11, 11, 14, 14, 15, 15, 16, 18, 19, 20, 21, 22, 23, 23, 24, 25, 25, 26, 30, 30, 30];
+        state.Dgn_Cur = (Sys3Int)(rng.Next(12) switch
+        {
+            0 => 1,
+            1 => rng.Next(0, 32),
+            2 => rng.Next(1, 18),
+            _ => searches[rng.Next(searches.Length)],
+        });
+        state.StoryStage = (Sys3Int)(rng.Next(10) == 0 ? 0 : rng.Next(1, 5));
+        state.Ev_CommandMode = (Sys3Int)(rng.Next(12) switch { 0 => 1, 1 => 2, _ => 0 });
+        if (state.Ev_CommandMode == 1 && rng.Next(2) == 0)
+            state.Dgn_Cur = 10;
+        state.Ui_CmdDungeonAvail = (Sys3Int)(rng.Next(10) == 0 ? 0 : 1);
+        state.F_Merim_MillArc = (Sys3Int)rng.Next(0, 5);
+        state.Cmdr_Cur = (Sys3Int)rng.Next(0, 221);
+        if (rng.Next(8) == 0)
+            state.Cmdrs[state.Cmdr_Cur].CgFull = 1137;
+        state.F_PG9_State = (Sys3Int)rng.Next(0, 4);
+        state.N_Soul_Stage = (Sys3Int)(rng.Next(4) == 0 ? 5 : rng.Next(0, 5));
+        state.F_HannyKing_State = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(0, 2) : rng.Next(2, 9));
+        var dungeon = state.Dgns[state.Dgn_Cur];
+        dungeon.State = (Sys3Int)rng.Next(0, 3);
+        dungeon.SavedFloor = (Sys3Int)(rng.Next(6) switch
+        {
+            0 => 0,
+            1 => rng.Next(0, 60),
+            _ when SavedFloors.TryGetValue(state.Dgn_Cur.Value, out var near) => near[rng.Next(near.Length)],
+            _ => rng.Next(0, 3),
+        });
+        foreach (var set in new Action<Sys3Int>[]
+                 {
+                     v => state.F_YellowDragon_Beaten = v, v => state.F_RedDragon_Beaten = v, v => state.F_GreenDragon_Beaten = v,
+                     v => state.F_BlueDragon_Beaten = v, v => state.F_BlackDragon_Beaten = v, v => state.F_Boss_Marder = v,
+                     v => state.F_Boss_StoneGuardian = v, v => state.F_Boss_HawKyu = v, v => state.F_Boss_Musashibou = v,
+                     v => state.F_Boss_JapaneseSoldier = v, v => state.F_Boss_ShimoJoe = v, v => state.F_Boss_Vevetar = v,
+                     v => state.F_Boss_GGCaterpillar = v,
+                 })
+            set((Sys3Int)(rng.Next(3) == 0 ? 1 : 0));
+        state.F_Gunagan_State = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(1, 3) : 0);
+        state.F_Merim_Dungeon = (Sys3Int)(rng.Next(2) == 0 ? 1 : rng.Next(0, 4));
+        state.N_Merim_Inscriptions = (Sys3Int)rng.Next(0, 13);
+        state.F_SillCow_State = (Sys3Int)(rng.Next(3) == 0 ? 7 : rng.Next(0, 9));
+        state.F_GodsDoor_Found = (Sys3Int)(rng.Next(4) == 0 ? 1 : 0);
+        state.F_GodsDoor_Quest = (Sys3Int)(rng.Next(2) == 0 ? rng.Next(2, 7) : rng.Next(0, 2));
+        foreach (int item in new[] { 11, 17, 21, 22, 28, 29, 30, 33, 34, 36, 38, 39, 42, 45, 48 })
+            state.Items[item].Holder = (Sys3Int)(rng.Next(3) switch { 0 => 0, 1 => 100, _ => rng.Next(0, 51) });
+        state.F_Battleship_Door = (Sys3Int)rng.Next(0, 2);
+        state.F_Arcy_State = (Sys3Int)rng.Next(0, 3);
+        state.DateWeek = (Sys3Int)(rng.Next(2) == 0 ? 1 : rng.Next(0, 5));
+        state.F_Seizel_State = (Sys3Int)rng.Next(0, 8);
+        state.F_Kaybwan_State = (Sys3Int)rng.Next(0, 5);
+        state.F_Kaybnyan_State = (Sys3Int)rng.Next(0, 5);
+        state.FogCard_Price = (Sys3Int)(rng.Next(2) == 0 ? 0 : 120);
+        state.F_Fuuka_State = (Sys3Int)(rng.Next(2) == 0 ? 9 : rng.Next(0, 20));
+        state.F_Fuuka_ShrineVisited = (Sys3Int)rng.Next(0, 2);
+        state.VAR0427 = (Sys3Int)(rng.Next(2) == 0 ? 3 : rng.Next(0, 5));
+        state.F_Wenlina_CureMilli = (Sys3Int)rng.Next(0, 2);
+        state.N_Melfeis_Stage = (Sys3Int)rng.Next(8, 13);
+        state.F_Ruberan_State = (Sys3Int)rng.Next(0, 2);
+        state.N_Aaya_Stage = (Sys3Int)rng.Next(4, 8);
+        state.Bld_Hospital = (Sys3Int)rng.Next(0, 2);
+        state.DebugMode = (Sys3Int)(rng.Next(10) == 0 ? 1 : 0);
+        state.BgmEnabled = (Sys3Int)rng.Next(0, 2);
+        for (int u = 1; u <= 50; u++)
+        {
+            state.Units[u].Item = (Sys3Int)(rng.Next(4) switch { 0 => 10, 1 => rng.Next(1, 3), _ => rng.Next(0, 51) });
+            state.Units[u].Troops = (Sys3Int)(rng.Next(4) == 0 ? rng.Next(0, 3) : rng.Next(0, 3000));
+        }
+        if (state.Dgn_Cur == 11 && rng.Next(2) == 0)
+        {
+            // KD's statue and quiz: the quest needs it and item 17 is not owned.
+            state.F_GodsDoor_Quest = 3;
+            state.Items[17].Holder = Sys3Int.Zero;
+        }
+    }
+
+    /// <summary>The floors next to each dungeon's fixed floors and bosses, where a search resumes.</summary>
+    private static readonly Dictionary<int, int[]> SavedFloors = new()
+    {
+        [2] = [4, 5, 13, 14], [4] = [11, 12], [6] = [9, 10, 24, 25], [8] = [9, 10, 19, 20, 29, 30], [10] = [9, 10, 26, 27, 28],
+        [11] = [4, 5, 9, 10, 14, 15, 19, 20, 24, 25, 29, 30, 30, 30], [14] = [11, 12, 19, 20, 37, 38, 38], [15] = [3, 4, 37, 38],
+        [16] = [19, 20], [18] = [26, 27], [19] = [24, 25], [20] = [4, 5, 9, 10, 49, 50, 50], [21] = [14, 15, 16],
+        [22] = [12, 13, 49, 50], [23] = [32, 33, 75, 76], [24] = [9, 10, 49, 50], [25] = [1, 2, 7, 8, 26, 41, 65, 66],
+        [26] = [200, 201], [30] = [19, 20, 49, 50, 50, 99, 100, 201, 501, 999, 1000],
+    };
+
+    /// <summary>
+    /// <see cref="Scribble"/>, and for the dungeon: the searcher falls now and then in the battle,
+    /// which leaves <c>RetVal</c> anywhere (DGN-02); the picker hands over a refuser now and then.
+    /// </summary>
+    private static void ScribbleDungeon(string file, GameState state, Random rng, bool tired)
+    {
+        Scribble(file, state, rng, tired);
+        switch (file)
+        {
+            case "FIGT.ADV" or "死亡捕獲.ADV":
+                if (rng.Next(6) == 0)
+                    state.Units[state.Bt_PlayerParty1].Status = Sys3Int.Zero;
+                state.RetVal = (Sys3Int)rng.Next(0, 4);
+                break;
+            case "Sﾌﾞﾀｲ.ADV" when state.Bt_PlayerParty1 != 0 && rng.Next(3) != 0:
+                state.Bt_PlayerParty1 = (Sys3Int)(rng.Next(8) switch { 0 => 32, 1 => 41, 2 => 42, _ => 1 });
+                break;
+            default:
+                // A scene of the search may start Mill's part of Merim's story (DGN-11).
+                if (rng.Next(8) == 0)
+                    state.F_Merim_MillArc = 3;
+                break;
+        }
+    }
 
     [Fact]
     public Task The_deployment_screen_runs_exactly_as_Sﾌﾞﾀｲ() =>
@@ -635,9 +785,12 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
 
     private delegate Task Port(ScriptContext script, ScenarioScripts scenario);
 
+    /// <summary>A test's own menu player: the choice (0 a cancel) for <paramref name="items"/>, from <paramref name="rng"/>.</summary>
+    private delegate int MenuPolicy(IReadOnlyList<SceneMenuItem> items, Random rng, bool tired);
+
     private async Task CompareAsync(
         string file, Port port, Action<GameState, Random> shape, Scribbler scribble, string[] expected, int cases = Cases,
-        Func<Random, MouseState>? mouse = null)
+        Func<Random, MouseState>? mouse = null, MenuPolicy? choose = null)
     {
         if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, file)))
             return;
@@ -651,8 +804,8 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             var rng = new Random(seed);
             var state = RandomState(rng);
             shape(state, rng);
-            var mine = await RunAsync(Copy(state), seed, file, null, port, scenario, scribble, mouse);
-            var original = await RunAsync(Copy(state), seed, file, program, port, scenario, scribble, mouse);
+            var mine = await RunAsync(Copy(state), seed, file, null, port, scenario, scribble, mouse, choose);
+            var original = await RunAsync(Copy(state), seed, file, program, port, scenario, scribble, mouse, choose);
 
             if (mine.Unported is not null)
             {
@@ -686,11 +839,11 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
 
     private static async Task<Run> RunAsync(
         GameState state, int seed, string file, ScriptProgram? program, Port port, ScenarioScripts scenario, Scribbler scribble,
-        Func<Random, MouseState>? mouse)
+        Func<Random, MouseState>? mouse, MenuPolicy? choose)
     {
         var log = new List<string>();
         var hooks = new ScribblingHooks(state, seed, log, scribble);
-        var input = new RandomInput(seed, log, hooks, mouse);
+        var input = new RandomInput(seed, log, hooks, mouse, choose);
         var view = new LoggingView(log);
         var random = new LoggingRandom(seed, log);
         bool stopped = false;
@@ -722,7 +875,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             // before the port's stop is compared then.
             unported = e.Message;
         }
-        catch (InvalidOperationException e) when (program is not null)
+        catch (Exception e) when (program is not null && e is InvalidOperationException or ScenarioFormatException)
         {
             unported = e.Message;
         }
@@ -738,6 +891,8 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
                 yield return entry[..entry.IndexOf(" entry", StringComparison.Ordinal)];
                 if (entry.StartsWith("call FIGT_A.ADV", StringComparison.Ordinal) && entry.EndsWith(" EParty1 73", StringComparison.Ordinal))
                     yield return "fleeing soldier";                     // Cﾃｷﾄｼ.ADV:321-339 (the hooks never write 73)
+                if (entry.StartsWith("call FIGT.ADV", StringComparison.Ordinal) && entry.EndsWith(" EParty1 100", StringComparison.Ordinal))
+                    yield return "boss fight";                          // Cﾒｲｷｭｳ.ADV:1196-1271, a setter run from the player's files
             }
             else if (entry.StartsWith("draw ", StringComparison.Ordinal))
                 yield return entry[..entry.IndexOf(" ->", StringComparison.Ordinal)];
@@ -1000,10 +1155,11 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
     /// <summary>
     /// The player at random: the pointer mostly at rest (now and then a button still down, for
     /// the release waits; or as the test's <c>mouse</c> places it), random menu choices (the last
-    /// item — Return — once the run is long), keys that are sometimes a right click (32), which
-    /// closes the status pages.
+    /// item — Return — once the run is long; or the test's <c>choose</c>), keys that are
+    /// sometimes a right click (32), which closes the status pages.
     /// </summary>
-    private sealed class RandomInput(int seed, List<string> log, ScribblingHooks hooks, Func<Random, MouseState>? mouse) : ISceneInput
+    private sealed class RandomInput(
+        int seed, List<string> log, ScribblingHooks hooks, Func<Random, MouseState>? mouse, MenuPolicy? choose) : ISceneInput
     {
         private readonly Random _rng = new(seed * 31 + 7);
         private int _answers;
@@ -1033,7 +1189,9 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         public Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
         {
             Spend();
-            int choice = items.Count == 0 ? 0 : Tired ? items.Count : _rng.Next(6) == 0 ? 0 : _rng.Next(1, items.Count + 1);
+            int choice = items.Count == 0 ? 0
+                : choose is not null ? choose(items, _rng, Tired)
+                : Tired ? items.Count : _rng.Next(6) == 0 ? 0 : _rng.Next(1, items.Count + 1);
             log.Add($"menu {string.Join(" | ", items.Select(Format))} -> {choice}");
             return Task.FromResult(choice);
         }
