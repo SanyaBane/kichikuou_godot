@@ -10,7 +10,8 @@ namespace Kichikuou.Content.Tests;
 
 /// <summary>
 /// The hand-ported nation files (<see cref="RebelTurn"/>, <see cref="RebelDefenders"/>,
-/// <see cref="HelmanTurn"/>, <see cref="HelmanDefenders"/>, on the template <see cref="NationFile"/>) against the files
+/// <see cref="HelmanTurn"/>, <see cref="HelmanDefenders"/>, <see cref="PattonTurn"/>, on the template
+/// <see cref="NationFile"/>) against the files
 /// themselves run from the player's decompile by <see cref="SceneRunner"/>, on random states: both
 /// runs must call the same files with the same <c>Ev_Entry</c> and the same party, draw the same
 /// rolls, show the same events and leave the same memory. Every other file (<c>FIGT_B</c>, the scenes) is a hook that scribbles
@@ -78,6 +79,87 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
             ],
             ScribbleHelmanTurn,
             cases: 4000);
+
+    [Fact]
+    public Task The_Patton_turn_runs_exactly_as_Tﾊﾟｯﾄﾝ() =>
+        CompareAsync(
+            "Tﾊﾟｯﾄﾝ.ADV",
+            (script, scenario) => new PattonTurn(script, scenario).RunAsync(),
+            AimAtPatton,
+            PattonFeatures,
+            ["call Gﾊﾟｯﾄﾝ.ADV 11", "call Gｱﾘｽﾄﾚｽ.ADV 3", "call Gﾊﾟｯﾄﾝ.ADV 9", "call Gﾊﾟｯﾄﾝ.ADV 8", "call Gﾊﾟｯﾄﾝ.ADV 7",
+             "two scenes", "at 46", "at 41", "at 40", "at 44", "at 45", "with Aristoles", "full party", "too weak",
+             "no target", "jump"],
+            ScribblePatton);
+
+    /// <summary>
+    /// Patton's army state at its tested values and around them, Aristoles's state below and above
+    /// 9, Patton (54), Hubert (55), Freak (56), Hanty (57) and Aristoles (32) alive or not with
+    /// troops around the army's 500, and its five targets held by the player at the case's density.
+    /// </summary>
+    private static void AimAtPatton(GameState state, Random rng)
+    {
+        state.F_PattonArmy_State = (Sys3Int)rng.Next(0, 8);
+        state.F_Aristoles_Helman2ndState = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(0, 10) : rng.Next(10, 21));
+        foreach (int c in PattonArmy)
+        {
+            state.Cmdrs[c].Status = (Sys3Int)(rng.Next(4) == 0 ? 0 : rng.Next(1, 3));
+            state.Cmdrs[c].Troops = (Sys3Int)(rng.Next(10) == 0 ? rng.Next(60000, 65536) : rng.Next(0, 300));
+        }
+        double mine = rng.NextDouble() * 0.6;
+        foreach (int p in PattonTargets)
+            state.Provs[p].Owner = (Sys3Int)(rng.NextDouble() < mine ? 1 : rng.Next(3) == 0 ? rng.Next(0, 12) : 5);
+    }
+
+    private static readonly int[] PattonArmy = [54, 55, 56, 57, 32];
+
+    private static readonly int[] PattonTargets = [46, 41, 40, 44, 45];
+
+    /// <summary>What Patton's scenes and battles may change: the two states, the army, its targets, the army name.</summary>
+    private static void ScribblePatton(GameState state, Random rng)
+    {
+        if (rng.Next(3) == 0)
+            state.F_PattonArmy_State = (Sys3Int)rng.Next(0, 8);
+        if (rng.Next(4) == 0)
+            state.F_Aristoles_Helman2ndState = (Sys3Int)rng.Next(0, 21);
+        foreach (int c in PattonArmy)
+        {
+            if (rng.Next(6) == 0)
+                state.Cmdrs[c].Status = (Sys3Int)rng.Next(0, 2);
+            if (rng.Next(6) == 0)
+                state.Cmdrs[c].Troops = (Sys3Int)rng.Next(0, 300);
+        }
+        foreach (int p in PattonTargets)
+            if (rng.Next(8) == 0)
+                state.Provs[p].Owner = (Sys3Int)(rng.Next(2) == 0 ? 1 : 5);
+        if (rng.Next(6) == 0)
+            state.Strings[10] = "scribbled";
+    }
+
+    private static IEnumerable<string> PattonFeatures(GameState before, GameState after, GameState first, List<string> log)
+    {
+        var calls = log.Where(e => e.StartsWith("call ", StringComparison.Ordinal)).Select(e => e.Split(' ')).ToList();
+        var scenes = calls.Where(c => c[1] != "FIGT_B.ADV").ToList();
+        foreach (string[] scene in scenes)
+            yield return $"call {scene[1]} {scene[3]}";
+        if (scenes.Count >= 2)
+            yield return "two scenes";
+        var battle = log.FirstOrDefault(e => e.StartsWith("call FIGT_B.ADV", StringComparison.Ordinal));
+        if (battle is not null)
+        {
+            string[] parts = battle.Split(' ');
+            yield return $"at {parts[Array.IndexOf(parts, "Prov_Cur") + 1]}";
+            int[] party = [.. parts[Array.IndexOf(parts, "Party") + 1].Split(',').Select(int.Parse)];
+            if (party.Contains(32))
+                yield return "with Aristoles";
+            if (party[3] != 0)
+                yield return "full party";
+        }
+        else if (!log.Any(e => e.StartsWith("jump ", StringComparison.Ordinal)))
+            yield return after.CallArg < 500 ? "too weak" : "no target";
+        if (log.Any(e => e.StartsWith("jump ", StringComparison.Ordinal)))
+            yield return "jump";
+    }
 
     /// <summary>Every attack <c>Tﾍﾙﾏﾝ</c> can make: the army and the province, in the file's order.</summary>
     private static readonly string[] HelmanAttacks =

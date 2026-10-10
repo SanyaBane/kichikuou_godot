@@ -291,7 +291,7 @@ as the battle; `FIGT_B` through the existing `Battle.DefendProvinceAsync`; story
 As ported (N1 part 1, 2026-10-10; [README](README.md), the N1 row): the template is a base class,
 `Strategy/NationFile` on `CommandFile`, the filter a method each file overrides; every file is a
 class of its own in `Strategy/` (`RebelTurn` = `TCﾘｰｻﾞｽ`, `RebelDefenders` = `TCﾘｰｻﾞｽ2`,
-`HelmanTurn` = `Tﾍﾙﾏﾝ`, `HelmanDefenders` = `Tﾍﾙﾏﾝ2`), its lists written in the script's order at
+`HelmanTurn` = `Tﾍﾙﾏﾝ`, `HelmanDefenders` = `Tﾍﾙﾏﾝ2`, `PattonTurn` = `Tﾊﾟｯﾄﾝ`), its lists written in the script's order at
 the place the script sets them; a capture stays with its file (`HelmanTurn.CaptureAsync` is
 `Tﾍﾙﾏﾝ`'s `L_00fc2`).
 

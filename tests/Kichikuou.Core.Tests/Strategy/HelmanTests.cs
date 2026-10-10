@@ -9,7 +9,8 @@ namespace Kichikuou.Core.Tests.Strategy;
 
 /// <summary>
 /// Helman's files (milestone 3 step 1): the defender picker <c>Tﾍﾙﾏﾝ2</c>
-/// (<see cref="HelmanDefenders"/>) and the nation turn <c>Tﾍﾙﾏﾝ</c> (<see cref="HelmanTurn"/>).
+/// (<see cref="HelmanDefenders"/>), the nation turn <c>Tﾍﾙﾏﾝ</c> (<see cref="HelmanTurn"/>) and the
+/// Patton army's turn after Helman's fall, <c>Tﾊﾟｯﾄﾝ</c> (<see cref="PattonTurn"/>).
 /// Also compared with the decompile on random states (Content
 /// tests, <c>NationTurnDifferentialTests</c>).
 /// </summary>
@@ -467,4 +468,82 @@ public class HelmanTests
 
     [Fact]
     public void Tﾍﾙﾏﾝ_is_routed() => Assert.Contains("Tﾍﾙﾏﾝ.ADV", StrategyRules.PortedFiles);
+
+    // -------------------------------------------------------------------------------------------
+    // Tﾊﾟｯﾄﾝ, the Patton army's turn after Helman's fall
+    // -------------------------------------------------------------------------------------------
+
+    private static Task PattonTurnAsync(HelmanRig rig) => new PattonTurn(rig.Script, new Literals()).RunAsync();
+
+    [Fact]
+    public async Task The_Patton_army_plays_its_story_scene_and_marches_on_the_first_province_the_player_holds()
+    {
+        var rig = new HelmanRig();
+        rig.State.F_PattonArmy_State = 1;
+        rig.State.Provs[41].Owner = 1;                          // Sudori 13
+        rig.State.Provs[45].Owner = 1;                          // Lang Bau, later in the list
+
+        await PattonTurnAsync(rig);
+
+        Is(5, rig.State.Ev_PhaseNation);
+        Assert.Equal("Tﾊﾟｯﾄﾝ.ADV:4", rig.State.Strings[10]);
+        Assert.Equal([("Gﾊﾟｯﾄﾝ.ADV", 7), ("FIGT_B.ADV", 7)], rig.Story.Calls);
+        Assert.Equal([54, 55, 56, 57], rig.Party);
+        Is(1200, rig.State.CallArg);
+        Is(41, rig.State.Prov_Cur);
+        Is(4, rig.State.Bt_EnemyRetreatMode);
+        Assert.Empty(rig.Random.Draws);
+    }
+
+    [Fact]
+    public async Task Aristoles_joins_once_past_state_9_and_a_weak_army_stays_home()
+    {
+        var rig = new HelmanRig();
+        rig.State.F_Aristoles_Helman2ndState = 10;
+        rig.State.Cmdrs[55].Status = 0;
+        for (int c = 54; c <= 57; c++)
+            rig.State.Cmdrs[c].Troops = 100;
+        rig.State.Cmdrs[32].Troops = 150;
+        rig.State.Provs[46].Owner = 1;                          // Sudori 17
+
+        await PattonTurnAsync(rig);
+
+        // Nobody is left out for weakness, but 100 × 3 + 150 is under 500.
+        Assert.Equal([54, 56, 57, 32], rig.Party);
+        Is(450, rig.State.CallArg);
+        Assert.Empty(rig.Story.Calls);
+
+        rig.State.Cmdrs[32].Troops = 200;
+        await PattonTurnAsync(rig);
+        Assert.Equal([("FIGT_B.ADV", 0)], rig.Story.Calls);
+        Is(46, rig.State.Prov_Cur);
+    }
+
+    [Fact]
+    public async Task The_story_scenes_are_tested_in_order_each_after_the_one_before()
+    {
+        var rig = new HelmanRig();
+        rig.State.F_PattonArmy_State = 6;
+        rig.Story.OnCall = (file, entry) =>
+        {
+            if (file == "Gﾊﾟｯﾄﾝ.ADV" && entry == 11)
+                rig.State.F_PattonArmy_State = 3;               // a scene moving the story on
+            if (file == "Gﾊﾟｯﾄﾝ.ADV" && entry == 9)
+                rig.State.Bt_EnemyRetreatMode = 1;
+        };
+
+        await PattonTurnAsync(rig);
+
+        Assert.Equal([("Gﾊﾟｯﾄﾝ.ADV", 11), ("Gﾊﾟｯﾄﾝ.ADV", 9)], rig.Story.Calls);
+        Is(1, rig.State.Bt_EnemyRetreatMode);                   // set once, before the scenes
+
+        rig.Story.Calls.Clear();
+        rig.Story.OnCall = null;
+        rig.State.F_PattonArmy_State = 5;
+        await PattonTurnAsync(rig);
+        Assert.Equal([("Gｱﾘｽﾄﾚｽ.ADV", 3)], rig.Story.Calls);
+    }
+
+    [Fact]
+    public void Tﾊﾟｯﾄﾝ_is_routed() => Assert.Contains("Tﾊﾟｯﾄﾝ.ADV", StrategyRules.PortedFiles);
 }
