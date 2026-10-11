@@ -1,3 +1,4 @@
+using Kichikuou.Core;
 using Kichikuou.Core.Combat;
 using Kichikuou.Core.Golden;
 using Kichikuou.Core.Script;
@@ -8,17 +9,19 @@ namespace Kichikuou.Content.Tests;
 
 /// <summary>
 /// Local game data: the decompiled scenario and the golden captures (docs/golden-tests.md). Both
-/// stay outside the repository; <c>KICHIKUOU_SCENARIO_DIR</c> / <c>KICHIKUOU_GOLDEN_DIR</c>
-/// override the defaults; <c>KICHIKUOU_EXTRACT_DIR</c> moves the whole extracted folder
-/// (CGs, sounds) and <c>KICHIKUOU_GAME_DIR</c> the game folder (music).
+/// stay outside the repository; the folders come from <see cref="LocalPaths"/> (<c>local.env</c>,
+/// overridden by the environment): <c>KICHIKUOU_EXTRACT_DIR</c> the whole extracted folder (CGs,
+/// sounds), <c>KICHIKUOU_SCENARIO_DIR</c> / <c>KICHIKUOU_GOLDEN_DIR</c> one of its subfolders,
+/// <c>KICHIKUOU_GAME_DIR</c> the game folder (music). An unset folder is empty: the tests that need
+/// it skip or fail.
 /// </summary>
 public static class LocalData
 {
-    private static string Extract => Env("KICHIKUOU_EXTRACT_DIR") ?? @"E:\Modding games\Modding Rance\Kichikou\_extract";
+    private static string Extract => LocalPaths.ExtractDirectory ?? "";
 
-    public static string ScenarioDirectory => Env("KICHIKUOU_SCENARIO_DIR") ?? Path.Combine(Extract, "scenario");
+    public static string ScenarioDirectory => LocalPaths.ScenarioDirectory ?? "";
 
-    public static string GoldenDirectory => Env("KICHIKUOU_GOLDEN_DIR") ?? Path.Combine(Extract, "golden");
+    public static string GoldenDirectory => LocalPaths.GoldenDirectory ?? "";
 
     public static string CgDirectory => Path.Combine(Extract, "cg_png");
 
@@ -26,15 +29,12 @@ public static class LocalData
 
     public static string WavDirectory => Path.Combine(Extract, "wav");
 
-    public static string GameDirectory => Env("KICHIKUOU_GAME_DIR") ?? @"E:\Modding games\Modding Rance\Kichikou\Kichikuou Rance";
+    public static string GameDirectory => LocalPaths.GameDirectory ?? "";
 
     public static IEnumerable<string> Captures =>
         Directory.Exists(GoldenDirectory)
             ? Directory.EnumerateFiles(GoldenDirectory, "*.golden").Order(StringComparer.Ordinal)
             : [];
-
-    private static string? Env(string name) =>
-        Environment.GetEnvironmentVariable(name) is { Length: > 0 } value ? value : null;
 }
 
 /// <summary>A theory over the golden captures; skipped without captures or scenario.</summary>

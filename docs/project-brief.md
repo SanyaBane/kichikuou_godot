@@ -73,7 +73,8 @@ local paths are in [spike-findings.md](spike-findings.md).
   cleanly; xsystem35 2.20 supports the English version.
 - Resources are in `.ALD` archives: 1222 PMS CGs (8 bpp), 51 WAV effects; music is 28 MP3
   tracks played through `_inmm` (confirmed). `alice-tools` 0.13 and xsys35c's `ald`/`pms`
-  unpack and convert them. `F:\sources\Rance\alice-tools` stays a read-only reference.
+  unpack and convert them. The alice-tools source (`KICHIKUOU_ALICE_TOOLS_DIR`) stays a read-only
+  reference.
 - Original resolution 640×480, 256 colours. **(unverified)**
 - **Game logic lives in the scenario script**, not in the executable: no DLLs, no library calls;
   battle formulas, AI, turn order and event conditions are all readable (confirmed).

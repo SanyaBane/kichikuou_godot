@@ -5,26 +5,36 @@ Confidence: **[C]** confirmed by reading code / disassembly, **[I]** strong infe
 
 ## Local layout (outside the repo, never committed)
 
-| What | Path |
+The folders live on the developer's machine; their paths are in `local.env` at the repository root,
+which git ignores (the template `local.env.example` lists every key; an environment variable of the
+same name overrides a line). The docs name the key, never the path; `_extract` in the docs is the
+folder `KICHIKUOU_EXTRACT_DIR` names.
+
+| What | Key in `local.env` |
 |---|---|
-| Game (EN) | `E:\Modding games\Modding Rance\Kichikou\Kichikuou Rance` |
-| xsystem35 2.20.0 (Windows build) | `E:\Modding games\Modding Rance\Kichikou\xsystem35-2.20.0-windows-64bit` |
-| xsys35c 1.13.0 (`xsys35dc`, `ald`, `pms`, …) | `E:\Modding games\Modding Rance\Kichikou\xsys35c-1.13.0-64bit` |
-| alice-tools 0.13.0 | `E:\Modding games\Modding Rance\alice-tools\alice-tools-0.13.0` |
-| Godot 4.7.2 .NET (portable) | `E:\Install PORTABLE\Godot_v4.7.2-stable_mono_win64` |
-| xsystem35-sdl2 source (golden-test harness, branch `golden-harness`) | `F:\sources\Rance\xsystem35-sdl2` |
-| MSYS2 (toolchain for xsystem35) | `C:\msys64` |
-| Extracted data | `E:\Modding games\Modding Rance\Kichikou\_extract\` — `scenario\` (decompiled `.ADV`), `aindump\`, `cg_pms\`, `cg_png\`, `wav\` |
+| Game (EN) | `KICHIKUOU_GAME_DIR` |
+| Extracted data (`_extract`): `scenario\` (decompiled `.ADV`), `scenario_named\` (renamed copy), `aindump\`, `cg_pms\`, `cg_png\`, `wav\`, `golden\` (captures) | `KICHIKUOU_EXTRACT_DIR` (`KICHIKUOU_SCENARIO_DIR` / `KICHIKUOU_GOLDEN_DIR` move one subfolder) |
+| Godot 4.7.2 .NET (portable): the console executable, the editor's next to it | `KICHIKUOU_GODOT_EXE` |
+| xsystem35-sdl2 source (golden-test harness, branch `golden-harness`) | `KICHIKUOU_XSYSTEM35_DIR` |
+| MSYS2 (toolchain for xsystem35) | `KICHIKUOU_MSYS2_DIR` |
+| alice-tools source (read-only reference) | `KICHIKUOU_ALICE_TOOLS_DIR` |
+| xsystem35 2.20.0 (Windows build) | `KICHIKUOU_XSYSTEM35_RELEASE_DIR` |
+| xsys35c 1.13.0 (`xsys35dc`, `ald`, `pms`, …) | `KICHIKUOU_XSYS35C_DIR` |
+| alice-tools 0.13.0 (Windows build) | `KICHIKUOU_ALICE_TOOLS_RELEASE_DIR` |
+
+`Kichikuou.Core.LocalPaths` reads the keys for the tests and the Godot game's default folders,
+`tools/golden/capture.ps1` for the harness; the commands in the docs write `<KEY>` for a key's value.
 
 Building xsystem35 (verified 2026-10-08, commit `82c8b76`): the README's `pacman` list lacks
-`make`, so use Ninja, which ships with the MSYS2 cmake package. From any shell:
+`make`, so use Ninja, which ships with the MSYS2 cmake package. From any shell, with both folders
+written as MSYS2 paths (`F:\x\y` is `/f/x/y`):
 
 ```
-MSYSTEM=UCRT64 /c/msys64/usr/bin/bash.exe -lc 'cd /f/sources/Rance/xsystem35-sdl2 && mkdir -p out/debug && cd out/debug && cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug ../.. && ninja'
+MSYSTEM=UCRT64 <KICHIKUOU_MSYS2_DIR>/usr/bin/bash.exe -lc 'cd <KICHIKUOU_XSYSTEM35_DIR> && mkdir -p out/debug && cd out/debug && cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug ../.. && ninja'
 ```
 
-Output: `out/debug/src/xsystem35.exe` (run it with `C:\msys64\ucrt64\bin` on `PATH` for the DLLs).
-`bash -lc` starts in the MSYS2 home directory, so always `cd` explicitly.
+Output: `out/debug/src/xsystem35.exe` (run it with `<KICHIKUOU_MSYS2_DIR>\ucrt64\bin` on `PATH` for
+the DLLs). `bash -lc` starts in the MSYS2 home directory, so always `cd` explicitly.
 
 Tool quirk: `xsys35dc -o` and `ald extract -d` fail on absolute paths with a drive letter
 (`cannot create directory E:`). Run them from `_extract\` with relative paths.

@@ -1,6 +1,6 @@
 # Battle specification 01 — flow (everything except per-exchange damage resolution)
 
-Source: `E:\Modding games\Modding Rance\Kichikou\_extract\scenario_named\` (line numbers are identical
+Source: `_extract\scenario_named\` (line numbers are identical
 to the raw decompile). Variable names come from `docs/variables.tsv`. Confidence tags as in
 `spike-findings.md`: **[C]** read in code, **[I]** inference, **[G]** guess.
 

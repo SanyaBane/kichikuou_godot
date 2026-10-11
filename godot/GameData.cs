@@ -1,16 +1,18 @@
 using Godot;
+using Kichikuou.Core;
 
 namespace Kichikuou.Game;
 
 /// <summary>
 /// Where the player's own game data lives. For now the folder of extracted data
 /// (<c>_extract</c>: decompiled <c>scenario\</c>, <c>cg_png\</c>, <c>wav\</c>, golden captures in
-/// <c>golden\</c>); kept in <c>user://settings.cfg</c>. Nothing from it is part of the project.
+/// <c>golden\</c>); kept in <c>user://settings.cfg</c>, by default the developer's local paths
+/// (<see cref="LocalPaths"/>: <c>local.env</c> or the environment). Nothing from it is part of the project.
 /// </summary>
 public static class GameData
 {
     private const string SettingsPath = "user://settings.cfg";
-    private const string DefaultExtract = @"E:\Modding games\Modding Rance\Kichikou\_extract";
+    private static string DefaultExtract => LocalPaths.ExtractDirectory ?? "";
 
     /// <summary>The folder of extracted data.</summary>
     public static string ExtractDirectory
@@ -50,7 +52,7 @@ public static class GameData
         }
     }
 
-    private const string DefaultGame = @"E:\Modding games\Modding Rance\Kichikou\Kichikuou Rance";
+    private static string DefaultGame => LocalPaths.GameDirectory ?? "";
 
     /// <summary>The sound effects (<c>.WAV</c> files named as in the archive).</summary>
     public static string WavDirectory => System.IO.Path.Combine(ExtractDirectory, "wav");

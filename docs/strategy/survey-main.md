@@ -3,7 +3,7 @@
 Scope: `MAIN`, `COMMAND`, `COM`, `MMODE`, `M`, `WAO_MAP`, `ｽﾀｰﾄ`, `ｽﾀMENU`, `ﾛｰﾄﾞｾｰﾌﾞ`,
 `ｵｰﾌﾟﾆﾝｸﾞ`, `ﾌﾟﾛﾛｰｸﾞ`, `OVER`, `HAPPY_C`, `CG`, `TEST`, `XSPEC`, `PCMPLAY`, `ﾓｼﾞｷｬｯｼｭ`, `END`.
 Source: `_extract\scenario_named\` (2026-10-08). Confidence: **[C]** read, **[I]** inference,
-**[G]** guess. xsystem35 semantics cite `F:\sources\Rance\xsystem35-sdl2\src`.
+**[G]** guess. xsystem35 semantics cite `src\` of the checkout `KICHIKUOU_XSYSTEM35_DIR`.
 
 ## 1. Role
 

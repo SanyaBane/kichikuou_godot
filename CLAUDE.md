@@ -10,7 +10,7 @@ reasoning, rejected alternatives, unverified facts about the source game, and th
 ## Status
 
 Spike surface analysis done — see [docs/spike-findings.md](docs/spike-findings.md) for
-measurements, data model, local paths of the game and tools. Porting strategy decided (hybrid,
+measurements, data model, the local layout of the game and tools. Porting strategy decided (hybrid,
 see "Next step" in the brief). The variable dictionary [docs/variables.tsv](docs/variables.tsv)
 is done; when reading the scenario, use the renamed copy (`tools/analysis/rename_vars.py`) and
 keep the dictionary updated when a meaning is confirmed or corrected.
@@ -19,7 +19,7 @@ The **battle** (`FIGT*.ADV`) is ported to `src/Kichikuou.Core/Combat` following
 [docs/porting-conventions.md](docs/porting-conventions.md) and the spec in
 [docs/battle/](docs/battle/README.md); it has been reviewed against the script and has unit and
 end-to-end tests. The golden-test harness is built ([docs/golden-tests.md](docs/golden-tests.md)):
-a patched xsystem35 (`F:\sources\Rance\xsystem35-sdl2`, branch `golden-harness`, built with
+a patched xsystem35 (the checkout `KICHIKUOU_XSYSTEM35_DIR`, branch `golden-harness`, built with
 MSYS2 — see `docs/spike-findings.md`) records battles, `src/Kichikuou.Core/Golden` replays them.
 37 captured battles match; the battle screen reproduces the original layout at 1280×800.
 
@@ -133,15 +133,16 @@ title's background (`GamePresenter.MaskEventCgs`). Step 3 is done: the music roo
 the player's files (`MusicRoomTests`); `F1` past its string table reads an empty string (STR-44).
 Step 4 is done: the gallery's and the music room's quirks are STR-43 to STR-57, EVT-07 is withdrawn.
 Every file the game reaches now runs but the dead `XSPEC`. **Milestone 7 is closed** (2026-10-11,
-owner's decision 22: no capture). Next (decision 22): the absolute paths of the owner's machine leave
-the repository — a local configuration file git ignores, a clean template committed.
+owner's decision 22: no capture). Decision 22's next step is done: the absolute paths of the owner's
+machine left the repository for `local.env`, which git ignores ("Local paths" below).
 `tools/analysis/port_draft.py` drafts text-heavy ranges for hand ports.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
 
 ## Layout
 
-- `src/Kichikuou.Core` — engine-independent rules library (`net10.0`, warnings are errors).
+- `src/Kichikuou.Core` — engine-independent rules library (`net10.0`, warnings are errors);
+  `LocalPaths` (no rule) reads the developer's local paths ("Local paths" below).
   `Sys3/` holds exact reproductions of System 3 / xsystem35 semantics: `Sys3Int` (16-bit
   saturating arithmetic — use it for every value that comes from the script),
   `Mt19937Legacy` + `XSystem35Random` (`Y 4,n`), `IScriptRandom` for injecting recorded draws,
@@ -181,11 +182,9 @@ the repository — a local configuration file git ignores, a clean template comm
   item is (`MenuHitTest`); a gesture UI turns clicks into the script's inputs with
   `PointerScript` (`Picker.HitTest`). Tests in
   `tests/Kichikuou.Content.Tests` (the golden part draws and plays every capture and resolves
-  every text; `KICHIKUOU_SCENARIO_DIR` / `KICHIKUOU_EXTRACT_DIR` / `KICHIKUOU_GAME_DIR`
-  override the local folders).
+  every text; its folders are the local paths, "Local paths" below).
 - `tests/Kichikuou.Core.Tests` — xUnit tests for the core. `Golden/GoldenBattleTests` replays the
-  captures in `E:\Modding games\Modding Rance\Kichikou\_extract\golden` (or
-  `KICHIKUOU_GOLDEN_DIR`) and is skipped when there are none.
+  captures in `_extract\golden` (`KICHIKUOU_GOLDEN_DIR`) and is skipped when there are none.
 - `godot/` — Godot 4.7.2 .NET project (`Kichikuou.csproj`, namespace `Kichikuou.Game`);
   presentation only: `Main` opens the title (a `GameScreen` running `ｽﾀMENU`) or what the
   development switches ask for; `Strategy/GameScreen` runs one game from the boot (`GameSession` on a `GamePresenter`;
@@ -200,6 +199,19 @@ the repository — a local configuration file git ignores, a clean template comm
 - `docs/` — brief, spike findings, variable dictionary; `window-menu.md` records
   xsystem35's window menu bar (our reference; File/Screen/Option/MsgSkip) and what its commands do.
 
+## Local paths
+
+The paths of the owner's machine never enter the repository: they live in **`local.env`** at the
+root, which git ignores (`KEY=value` lines; the committed template `local.env.example` lists every
+key; an environment variable of the same name overrides a line). **Read `local.env` first** whenever
+a command or a doc needs a folder or a tool: `KICHIKUOU_GAME_DIR` (the game), `KICHIKUOU_EXTRACT_DIR`
+(the extract, `_extract` in the docs: `scenario`, `scenario_named`, `cg_png`, `cg_pms`, `wav`,
+`golden`), `KICHIKUOU_GODOT_EXE` (the Godot console exe), `KICHIKUOU_XSYSTEM35_DIR`,
+`KICHIKUOU_MSYS2_DIR`, `KICHIKUOU_ALICE_TOOLS_DIR` and the spike's tools (docs/spike-findings.md,
+"Local layout"). `Kichikuou.Core.LocalPaths` reads it for the tests and the Godot game's default
+folders, `tools/golden/capture.ps1` for the harness. Docs and code name a key, never a path; never
+commit `local.env`.
+
 ## Commands
 
 - Tests: `dotnet test tests/Kichikuou.Core.Tests` and `dotnet test tests/Kichikuou.Content.Tests`.
@@ -210,7 +222,8 @@ the repository — a local configuration file git ignores, a clean template comm
   whose random states never reached a path it lists). Report which run a result comes from.
 - Build everything: `dotnet build Kichikuou.sln`
 - Run the game headless (smoke test): `<Godot console exe> --headless --path godot --quit-after 30`;
-  the editor path is in `docs/spike-findings.md`. Commit the `*.uid` files Godot creates.
+  `<Godot console exe>` is `KICHIKUOU_GODOT_EXE` in `local.env` (the editor's exe is next to it).
+  Commit the `*.uid` files Godot creates.
 - Watch a capture headless and save the screen at every key wait and long pause:
   `<Godot console exe> --headless --path godot -- --watch <capture> --fast --quit --shots <dir>`.
 - Play the game unattended headless (slots in `user://saves-auto`; `--load` resumes them):
@@ -242,7 +255,7 @@ the repository — a local configuration file git ignores, a clean template comm
 - **Never commit original game assets or extracted data** — the player supplies their own files.
 - **Verify before relying.** Facts marked "unverified" in the brief are hypotheses; confirm them
   and update the brief.
-- `F:\sources\Rance\alice-tools` is a read-only reference; do not modify it.
+- The alice-tools source (`KICHIKUOU_ALICE_TOOLS_DIR`) is a read-only reference; do not modify it.
 - **Name records.** The owner cannot tell provinces, units or commanders apart by number: in docs
   and replies never write a bare record ID — name first, ID after it: "Oaks (6)", "Oku (3), South
   (4) or Baranchi (7)", "Kinkaid (unit 9)", "Ruberan (commander 31)"; the same for dungeons ("the

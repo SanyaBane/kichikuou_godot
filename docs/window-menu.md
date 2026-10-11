@@ -4,7 +4,7 @@ Our game screen gets a classic Windows-style menu bar (owner's request, 2026-10-
 reference is **xsystem35's** menu bar — xsystem35 is the engine the port follows (golden
 harness, input, `docs/golden-tests.md`). This file records how it looks, from the owner's
 screenshots of xsystem35 2.14.3 on Windows, so they need not be sent again, and what its
-commands do in the source (`F:\sources\Rance\xsystem35-sdl2`). The System 3.9 menu at the end is
+commands do in the source (the checkout `KICHIKUOU_XSYSTEM35_DIR`). The System 3.9 menu at the end is
 kept for reference only; it is **not** what we follow.
 
 ## xsystem35 (the reference)

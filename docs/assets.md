@@ -1,9 +1,8 @@
 # Game assets — how the original engine finds and draws them (2026-10-08)
 
 What a runtime loader in the Godot project needs to know about the player's own extracted
-files (`E:\Modding games\Modding Rance\Kichikou\_extract\`, see
-[spike-findings.md](spike-findings.md) for the local layout). Facts only; each one cites the
-xsystem35 source (`F:\sources\Rance\xsystem35-sdl2\src`, branch `golden-harness`, commit
+files (`_extract\`, see [spike-findings.md](spike-findings.md) for the local layout). Facts only;
+each one cites the xsystem35 source (`src\` of `KICHIKUOU_XSYSTEM35_DIR`, branch `golden-harness`, commit
 `1d7d3fe`), a byte dump, or a count made by a script over the extracted data. Items that were
 **not** verified are marked **[unverified]**.
 

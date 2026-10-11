@@ -1,3 +1,6 @@
+# The local paths of this machine (template: local.env.example)
+/local.env
+
 # Godot
 .godot/
 *.translation

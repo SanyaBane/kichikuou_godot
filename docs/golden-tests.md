@@ -12,9 +12,9 @@ commands, the screens and the prologue scenes — in the same play session.
 
 | Piece | Where |
 |---|---|
-| Harness (patched xsystem35) | `F:\sources\Rance\xsystem35-sdl2`, branch `golden-harness`, `src/golden.c` |
+| Harness (patched xsystem35) | the checkout `KICHIKUOU_XSYSTEM35_DIR` in `local.env` (docs/spike-findings.md, "Local layout"), branch `golden-harness`, `src/golden.c` |
 | Capture launcher, page classes, summary tool | `tools/golden/capture.ps1`, `classes.txt`, `describe.py` |
-| Captures (game data — never committed) | `E:\Modding games\Modding Rance\Kichikou\_extract\golden\`: battles in the folder itself, every other group in a subfolder named after it (`boot\`, `week\`, `command\`, …) |
+| Captures (game data — never committed) | `_extract\golden\` (`KICHIKUOU_GOLDEN_DIR`, else `golden` in `KICHIKUOU_EXTRACT_DIR`): battles in the folder itself, every other group in a subfolder named after it (`boot\`, `week\`, `command\`, …) |
 | Capture parser, replay doubles, memory comparison | `src/Kichikuou.Core/Golden/` |
 | Golden tests (skip when no captures exist) | `tests/Kichikuou.Core.Tests/Golden/` |
 
@@ -415,7 +415,9 @@ Start the harness with
 powershell -ExecutionPolicy Bypass -File tools\golden\capture.ps1
 ```
 
-and play normally; loading a save before a battle is fine (the capture starts at the battle's
+(its folders come from `local.env`, docs/spike-findings.md "Local layout": the game, the captures
+and the `.hed` in the extract, the harness build in `KICHIKUOU_XSYSTEM35_DIR`, the DLLs in
+`KICHIKUOU_MSYS2_DIR`; a parameter such as `-OutDir` overrides one) and play normally; loading a save before a battle is fine (the capture starts at the battle's
 page call). `python tools/golden/describe.py <file> …` prints what a capture holds (root, group,
 week / stage / gold / province before and after, hooks, event counts, mouse presses; for a battle
 also the parties, result and commands) to check it against what was played. Run the tests with

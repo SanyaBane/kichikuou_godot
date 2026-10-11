@@ -201,7 +201,10 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     the put-off captures, the register's optional fixes) the owner chose none for now: the absolute
     paths of the owner's machine (the game's folder, the extract, alice-tools, xsystem35, Godot, …)
     go out of the repository into a local configuration file that git ignores, with a clean template
-    committed in its place.
+    committed in its place. Done (2026-10-11): `local.env` at the root (template `local.env.example`,
+    `KICHIKUOU_*` keys that the environment overrides), read by `Kichikuou.Core.LocalPaths` and
+    `tools/golden/capture.ps1`; the docs name the keys (docs/spike-findings.md, "Local layout"). The
+    old paths remain in the git history (rewriting it only on the owner's explicit request).
 
 ## Milestone 1 — the prologue
 

@@ -5,15 +5,13 @@ namespace Kichikuou.Core.Tests.Golden;
 
 /// <summary>
 /// Where the captures of the original game live. They contain game data and stay outside the
-/// repository (<c>docs/golden-tests.md</c>); <c>KICHIKUOU_GOLDEN_DIR</c> overrides the default.
+/// repository (<c>docs/golden-tests.md</c>): <see cref="LocalPaths.GoldenDirectory"/>
+/// (<c>KICHIKUOU_GOLDEN_DIR</c>, else <c>golden</c> in <c>KICHIKUOU_EXTRACT_DIR</c>; <c>local.env</c>).
 /// Battle captures lie in the folder itself, the other groups' in subfolders named after the group.
 /// </summary>
 public static class GoldenData
 {
-    public const string DefaultDirectory = @"E:\Modding games\Modding Rance\Kichikou\_extract\golden";
-
-    public static string Directory =>
-        Environment.GetEnvironmentVariable("KICHIKUOU_GOLDEN_DIR") is { Length: > 0 } dir ? dir : DefaultDirectory;
+    public static string Directory => LocalPaths.GoldenDirectory ?? "";
 
     /// <summary>The complete captures (<c>*.golden</c>, every subfolder; unfinished <c>.part</c> files are not listed).</summary>
     public static IEnumerable<string> Files =>
