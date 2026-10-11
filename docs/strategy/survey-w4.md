@@ -182,6 +182,8 @@ Cursors written on the way: `Unit_Cur` (each P), `Cmdr_Cur` (`:2016, 2019`), `Pr
 | O8 | Kouhime's fortune needs `F_Kou_State = 3` exactly (her arc runs 3-11) and ending 8 | `:1360` | odd design [I] |
 | O9 | Dead code (§2.6) | — | dead code |
 
+Registered in step 4 (docs/quirks.md): O1-O9 are STR-25 to STR-33.
+
 ## 3. `ｽﾀMENU.ADV` — the start menu
 
 ### 3.1 Shape
@@ -248,8 +250,11 @@ unreachable button 11.
 | M3 | Stale highlight: `:102` resets `Tmp0002 := 98` without redrawing the highlighted button (after a cancelled Load or debug menu, or the slip, which also restores a copy taken while it was lit) | `:102`, `:183`, `:233` | bug, screen only |
 | M4 | Title side effects carry into the new game: `Gｻｲﾄｳ:8` sets `F_Saitou_State := 1` (then `COM.ADV:705` plays `G2` 3 [I: maybe the intended unlock]); the camera preset | `:136-139`, `:278` | odd design [I] |
 | M5 | No music after the music room: `MMODE` ends with `SS 0` and `L_00035` does not play `SS 27` again (the gallery's way does, `:580`) | `:273`, `MMODE:26-37` | bug |
-| M6 | The debug presets disagree with themselves: From 3 gives Rance item 6 without `Item_Holder`, sets battle-only modifiers, copies a stale string 3; From 4 is `StoryStage 2` at week 77. (Withdrawn in step 2: "From 4 gives Nikkou (item 2) to Kentarou (unit 31) without his `Unit_Item`" — he holds it from `SET_CHR.ADV:1204`.) | `:304-546` | bug (debug only) |
+| M6 | The debug presets disagree with themselves: From 4 is `StoryStage 2` at week 77 with a later war's flags and seven provinces handed to Kayblis (8) [I]. (Withdrawn in step 2: "From 4 gives Nikkou (item 2) to Kentarou (unit 31) without his `Unit_Item`" — he holds it from `SET_CHR.ADV:1204`. Withdrawn in step 4: "From 3 gives Rance item 6 without `Item_Holder`, sets battle-only modifiers, copies a stale string 3" — `:339-356` copy `Iﾊﾝﾗﾝ.ADV:20-34`, the normal game's, and item 6 is Rance's from `SET_ITEM.ADV:40`, DAT-02.) | `:360-546` | unverified (debug only) |
 | M7 | Dead: `:170-181` (XSPEC re-measure), `:553-576` (a map test, a "Start/Don't" menu calling `Gﾜｵ`), `:584`, the WAO helpers' tails `:810-854`, `:863-871`; blank prints `:8-38` [I: blanked by the translation] | — | dead code |
+
+Registered in step 4 (docs/quirks.md): M1 and M7 in STR-13 (the frame's dead code; the blank prints, blanked by
+the translation [I], are not registered), M2-M6 are STR-34 to STR-38.
 
 ## 4. `HAPPY_C.ADV` — Fortune Check
 
@@ -264,7 +269,8 @@ the title waits for its release first, so it takes a press during the fade-in); 
 undiscovered fates; H3 three portraits differ from the one `OVER` sets before an entry's tests (eleven
 entries change it for one half): Amiran 39 (`OVER` 40), Somita 46 (47; never drawn by `OVER`), Pastel
 41 (493) — 39 and 41 are their misfortunes'; H4 dead code (`:90-91`, `:195-203`, `:382-384`,
-`:389-391`, error traps `:192-194`, `:249-250`, `:277-280`, `:346-347`, `:1449-1450`).
+`:389-391`, error traps `:192-194`, `:249-250`, `:277-280`, `:346-347`, `:1449-1450`). Registered in
+step 4 (docs/quirks.md): H1-H4 are STR-39 to STR-42.
 
 ## 5. Against survey-main
 

@@ -697,5 +697,18 @@ Steps:
    title reaches nothing unported but the gallery, the music room and the dead `XSPEC`). survey-w4's
    H3 made precise: Fortune Check shows the portrait `OVER` sets before an entry's tests (eleven
    entries change it for one half) but for Amiran, Somita and Pastel.
-4. **Docs**: the quirk candidates O1-O9, M1-M7, H1-H4 registered; STR-10's fix noted; survey-main's
-   W4 row.
+4. **Docs** ✓ (2026-10-11): the quirk candidates are registered in [docs/quirks.md](../quirks.md) with
+   the game frame (STR): O1-O9 are STR-25 to STR-33, M2-M6 STR-34 to STR-38, H1-H4 STR-39 to STR-42,
+   and M1 and M7 went into STR-13 (the frame's dead code, the title's button 11 now confirmed never
+   loaded). No `// QUIRK:` marker: the three files run from the decompile, so the port reproduces them
+   by running them; the tests cite the IDs. M6 narrowed on the way: From 3 copies `Iﾊﾝﾗﾝ.ADV:20-34`
+   (the normal game's item 6, string 3 and modifiers; item 6 is Rance's from `SET_ITEM.ADV:40`), so
+   only From 4's stage 2 at week 77 stays, unverified (STR-38). STR-10's entry notes its fix (decision
+   19); survey-main's W4 row points to survey-w4 and this milestone.
+
+All four steps are done: every ending plays `OVER` from the player's files and records the clear and
+the fates on page 4, `ｽﾀMENU` is the title with its buttons (New game, Load, Fortune Check, Alice's
+Mansion, `Gｻｲﾄｳ`, the requests slip) and the debug starts, and Godot goes back to the title after an
+ending. Left by decision 19: the gallery (`CG`) and the music room (`MMODE`), which go to the unported
+files' hooks (Godot: a notice, and the title is drawn again). How to close the milestone is the
+owner's call.

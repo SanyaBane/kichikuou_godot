@@ -18,7 +18,7 @@ public class TitleTests
     private const int Clears = 79;
 
     /// <summary>
-    /// The buttons' boxes (<c>ｽﾀMENU.ADV:805</c>, x, y, width, height), loaded for 0-10 only (M1);
+    /// The buttons' boxes (<c>ｽﾀMENU.ADV:805</c>, x, y, width, height), loaded for 0-10 only (STR-13);
     /// a click goes to the middle of one.
     /// </summary>
     private static readonly (int X, int Y, int W, int H)[] Boxes =
@@ -32,7 +32,7 @@ public class TitleTests
 
     /// <summary>
     /// A first launch (no clears): the logo (its waits cancelable, then not again, <c>ﾌﾟﾛﾛｰｸﾞ.ADV:1, 151</c>),
-    /// the title's CGs and music, the boxes of buttons 0-10 (not 11, M1), and the buttons a first
+    /// the title's CGs and music, the boxes of buttons 0-10 (not 11, STR-13), and the buttons a first
     /// launch has: Alice's Mansion, Load, New game, 8 drawn, 9 and 10 clickable but not drawn; the
     /// gallery's CG 240 counted as seen; no roll without clears. The title then waits for the mouse.
     /// </summary>
@@ -55,7 +55,7 @@ public class TitleTests
             var b = s.Buttons[i];
             Assert.Equal((x, y, w, h, x + w, y + h), ((int)b.X1.Value, (int)b.Y1.Value, (int)b.W.Value, (int)b.H.Value, (int)b.X2.Value, (int)b.Y2.Value));
         }
-        Assert.Equal(0, s.Buttons[11].X2.Value);                        // M1: never loaded
+        Assert.Equal(0, s.Buttons[11].X2.Value);                        // STR-13: never loaded
         Assert.Empty(game.Random.Draws);
         Assert.Contains(game.View.Events, e => IsCg(e, 1700));          // the logo
         Assert.Contains(game.View.Events, e => e is EngineEvent { Command: "CE" });
@@ -70,7 +70,7 @@ public class TitleTests
     /// With a clear (page 4's clear count) Fortune Check, the music room and the gallery are
     /// unlocked; the requests slip and <c>Gｻｲﾄｳ</c> only on a roll of 10 of 10 and 20 of 20: the
     /// script's <c>{RetVal - 9:</c> and <c>{RetVal - 19:</c> are 0 for every lower draw only because the
-    /// engine's <c>-</c> stops at 0 (ENG-01, M2).
+    /// engine's <c>-</c> stops at 0 (ENG-01, STR-34).
     /// </summary>
     [Theory]
     [InlineData(10, 20, 1, 1)]
@@ -171,7 +171,7 @@ public class TitleTests
 
     /// <summary>
     /// <c>Gｻｲﾄｳ</c> 1 (button 4, unlocked by its roll of 20): Saitou's scene runs from the files and
-    /// leaves <c>F_Saitou_State</c> 1 for the next game (M4); the title is drawn again and rolls again.
+    /// leaves <c>F_Saitou_State</c> 1 for the next game (STR-36); the title is drawn again and rolls again.
     /// </summary>
     [Fact]
     public async Task Saitou_runs_from_the_title_and_leaves_her_state_for_the_game()
@@ -250,7 +250,7 @@ public class TitleTests
     /// <summary>
     /// The debug starts (<c>DebugMode</c> 1, Alice's secret, EVT-09): "Start" opens From 1-4
     /// (<c>:249-266</c>); a cancel puts the pointer back and the title waits again; From 4 sets week
-    /// 77 at story stage 2 (M6) with the world <c>:360-546</c> builds — the provinces up to Temple AL
+    /// 77 at story stage 2 (STR-38) with the world <c>:360-546</c> builds — the provinces up to Temple AL
     /// HQ (77) Leazas's, seven Kayblis's, Nikkou (item 2) held by Kentarou (unit 31) — and jumps to
     /// <c>MAIN</c> without a scene.
     /// </summary>

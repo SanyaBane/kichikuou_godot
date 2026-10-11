@@ -7,7 +7,7 @@ namespace Kichikuou.Content.Tests;
 /// Fortune Check, <c>HAPPY_C</c> (milestone 6 step 3; docs/strategy/survey-w4.md §4), run from the
 /// player's files: from the title (its button 0, unlocked by a clear) with a scripted mouse — the
 /// two pages of <c>Glob_Fate[0..65]</c> with a stamp for each fate seen, a cell's detail, the page
-/// flip and the way back — or on its own for the hover state's start (H1). The script tests the
+/// flip and the way back — or on its own for the hover state's start (STR-39). The script tests the
 /// button before the pointer's place (<c>:50-72</c>), so a click acts on what the read before it
 /// highlighted: each click here follows a hover (<see cref="PointerScript.Hover"/>). A run ends
 /// where the title (or Fortune Check) polls the mouse again with every gesture done. Skipped
@@ -80,7 +80,7 @@ public class FortuneCheckTests
 
     /// <summary>
     /// A cell's detail (<c>:297-381</c>): the sheet copied to (0, 400), the portrait at (16, 416)
-    /// keyed by 40 — for a fate not yet seen too (H2) — the fortune's three lines at y 492, 523, 554
+    /// keyed by 40 — for a fate not yet seen too (STR-40) — the fortune's three lines at y 492, 523, 554
     /// and the misfortune's at 652, 683, 714 from x 246, a half not yet seen printed "Undiscovered"
     /// (the two halves of fate 0 spaced unlike the single ones', <c>:310-342</c>), then the whole
     /// shown at once, a key, and the page shown again.
@@ -134,7 +134,7 @@ public class FortuneCheckTests
         Assert.Equal(Menad, cursor);
         var detail = game.View.Events.Take(keyAt).ToList();
         int portrait = detail.FindLastIndex(e => IsCg(e, MenadCg));
-        Assert.True(portrait > 0, "the portrait drawn");                // H2: for a fate not yet seen too
+        Assert.True(portrait > 0, "the portrait drawn");                // STR-40: for a fate not yet seen too
         Assert.Equal([MenadCg, 40], ((EngineEvent)detail[portrait]).Args.Select(a => (int)a.Value));
         Assert.True(detail[portrait - 1] is EngineEvent { Command: "J0" } j && j.Args[0].Value == 16 && j.Args[1].Value == 416, "the portrait at (16, 416)");
         Assert.Equal((0, 400, 640, 400, 0, 0), Copies(detail).Last());   // :367, the detail shown
@@ -190,7 +190,7 @@ public class FortuneCheckTests
     /// Every cell opens its own fate: page 1's 33 cells fates 0-32 row by row (<c>Tmp0009</c>, the
     /// column + 3 × the row, <c>:124-191</c>), page 2's fates 33-65 (<c>:303-305</c>), each with its one
     /// portrait (<c>:392-1448</c>): the one <c>OVER</c> sets before an entry's tests (eleven entries
-    /// change it for one half), but for H3 — Amiran (fate 22) 39, OVER's 40 (39 her misfortune's);
+    /// change it for one half), but for STR-41 — Amiran (fate 22) 39, OVER's 40 (39 her misfortune's);
     /// Somita (54) 46, OVER's 47 (48 her misfortune's; 46 OVER never draws); Pastel (55) 41, OVER's
     /// 493 (41 her misfortune's).
     /// </summary>
@@ -233,13 +233,13 @@ public class FortuneCheckTests
     }
 
     /// <summary>
-    /// H1: the hover state starts at 0, not 100 (<c>:45</c>, and again after a page flip, <c>:255</c>),
+    /// STR-39: the hover state starts at 0, not 100 (<c>:45</c>, and again after a page flip, <c>:255</c>),
     /// so a button already down at the first read (pressed again during the fade-in, the title having
     /// waited for its release, <c>ｽﾀMENU.ADV:131-134</c>) opens fate 0 — or 33 after a flip — wherever
     /// the pointer is: here over the page flip, then over a cell of page 2 (fate 38).
     /// </summary>
     [Fact]
-    public async Task H1_a_press_at_the_first_read_opens_fate_0_or_33_wherever_the_pointer_is()
+    public async Task A_press_at_the_first_read_opens_fate_0_or_33_wherever_the_pointer_is()
     {
         var game = await EndGame.BootAsync(newGame: false);
         if (game is null)

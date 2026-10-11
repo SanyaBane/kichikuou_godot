@@ -7,7 +7,7 @@ namespace Kichikuou.Content.Tests;
 /// <c>OVER</c>, the ending (milestone 6 step 1; docs/strategy/survey-w4.md §2), run from the player's
 /// files on a booted new game (<see cref="EndGame"/>) with chosen states: the clear count, the
 /// fates of the Completion Report merged into page 4 (0, 1 fortune, 10 misfortune, 100 both) and
-/// kept in every slot by <c>ﾛｰﾄﾞｾｰﾌﾞ</c> 11, the staff roll, and the file's oddities (O1, O3-O6).
+/// kept in every slot by <c>ﾛｰﾄﾞｾｰﾌﾞ</c> 11, the staff roll, and the file's oddities (STR-25, STR-27 to STR-30).
 /// Every key wait and pause is answered at once. Skipped without the decompile.
 /// </summary>
 public class OverTests
@@ -84,7 +84,7 @@ public class OverTests
     }
 
     /// <summary>
-    /// O6: ending 9 is a clear but shows no fortune (<c>Tmp0002</c>, <c>:15-17</c>) — Sill's is
+    /// STR-30: ending 9 is a clear but shows no fortune (<c>Tmp0002</c>, <c>:15-17</c>) — Sill's is
     /// neither shown nor recorded — while the misfortunes are: Wendy's (her state below 2, any ending
     /// but 14) is.
     /// </summary>
@@ -106,9 +106,9 @@ public class OverTests
     }
 
     /// <summary>
-    /// Ending 7 (Satella's) is no clear (O1) and has the staff roll: the credits' CGs 850-857, the
-    /// credits music, the wait for it polled once (O2: <c>SR 1</c> is 0 at once). Satella's fortune has
-    /// no <c>Tmp0002</c> guard (O5), so it shows although ending 7 turns the fortunes off. With
+    /// Ending 7 (Satella's) is no clear (STR-25) and has the staff roll: the credits' CGs 850-857, the
+    /// credits music, the wait for it polled once (STR-26: <c>SR 1</c> is 0 at once). Satella's fortune has
+    /// no <c>Tmp0002</c> guard (STR-29), so it shows although ending 7 turns the fortunes off. With
     /// <c>Tmp0020</c> left above 1 by earlier code (it counts the clears only in a clear), the staff
     /// roll is made skippable (<c>Y 3, 10001</c>, <c>:73-75</c>) on a first viewing.
     /// </summary>
@@ -131,7 +131,7 @@ public class OverTests
         for (int cg = 850; cg <= 857; cg++)
             Assert.Contains(game.View.Events, e => IsCg(e, cg));
         Assert.Contains(game.View.Events, e => e is EngineEvent { Command: "SL" });
-        Assert.True(game.Script.PauseCancelable);                      // survey-w4 §2.7, O1
+        Assert.True(game.Script.PauseCancelable);                      // STR-25
     }
 
     /// <summary>A first clear with the staff roll (ending 13) leaves its waits uncancelable (<c>Y 3, 10000</c>, <c>:72</c>).</summary>
@@ -150,7 +150,7 @@ public class OverTests
     }
 
     /// <summary>
-    /// O5: Kouhime's fortune (ending 8, Kou at state 3, Isoroku (unit 27) at stage 6 and present) has
+    /// STR-29: Kouhime's fortune (ending 8, Kou at state 3, Isoroku (unit 27) at stage 6 and present) has
     /// no <c>Tmp0002</c> guard either: with the Kayblis war at 2, which turns the fortunes off, hers is
     /// still recorded and Sill's is not.
     /// </summary>
@@ -176,7 +176,7 @@ public class OverTests
     }
 
     /// <summary>
-    /// O4: an entry whose two conditions read different variables can show both texts — Wendy's
+    /// STR-28: an entry whose two conditions read different variables can show both texts — Wendy's
     /// fortune (her bedroom seen) and her misfortune (her state below 2) — and records the misfortune.
     /// </summary>
     [Fact]
@@ -194,7 +194,7 @@ public class OverTests
         Assert.True(MessageAt(game, 335) >= 0, "Wendy's misfortune");
     }
 
-    /// <summary>O3: Cell's fortune prints "（Misfortune）" (<c>:1707</c>) and records a fortune.</summary>
+    /// <summary>STR-27: Cell's fortune prints "（Misfortune）" (<c>:1707</c>) and records a fortune.</summary>
     [Fact]
     public async Task Cell_s_fortune_reads_misfortune_but_records_a_fortune()
     {

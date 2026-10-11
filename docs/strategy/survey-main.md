@@ -300,6 +300,12 @@ lift both out of `Combat` into a shared `Map`/`Ui` helper, since `MAIN` and `COM
 Order: W2 first (no dependencies, highest event density), then W1 (needs the `T*` turns as
 hooks until ported), W3 (needs the `C*` files as hooks), W4 last together with the save format.
 
+W4 is done (milestone 6, 2026-10-11; [survey-w4.md](survey-w4.md) supersedes this row): the boot and
+the new game are ported (`Setup/GameSetup`), `ﾛｰﾄﾞｾｰﾌﾞ` and page 4's store too (`Strategy/LoadSaveScreen`);
+`OVER` (the clear and the fate record), `ｽﾀMENU` (its new-game path and the debug presets) and, of the
+last row, `HAPPY_C` and `ﾌﾟﾛﾛｰｸﾞ` run from the player's files (owner's decision 19), as `ｵｰﾌﾟﾆﾝｸﾞ` did
+already; `CG` and `MMODE` come later (decision 19), `XSPEC` stays unrun (DAT-04).
+
 Interfaces: `IStoryHooks.Event(file, entry)` (exists); `INationTurns` (one call per `T*`
 file, a hook until each `T*` is ported); `ICommandFiles` for `C*`, `各種DATA`, `Iｶﾝｶﾞｴ`;
 `ISaveService` for `ﾛｰﾄﾞｾｰﾌﾞ` (autosave at the phase start; load = restore snapshot and resume
