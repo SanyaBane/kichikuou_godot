@@ -125,7 +125,12 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private int _repeating;
 
     private int _cursor = 1;
-    private long _timerOffset;
+    private readonly EngineTimer _timer;
+
+    private SceneRunner? _scenes;                       // the session's, for the scenes running now
+    private readonly Stopwatch _skipYield = Stopwatch.StartNew();
+    private Stopwatch? _sceneSkip;                      // since the message skip began to skip a scene whole
+    private bool _stageSkipped;                         // a skipped scene's stage commands were dropped: clear the stage after it
 
     /// <summary>For the engine; screens are created with the other constructor.</summary>
     public GameScreen() : this(new GameOptions())
@@ -135,6 +140,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     public GameScreen(GameOptions options)
     {
         _options = options;
+        _timer = new EngineTimer { Speed = options.Fast ? 20 : 1 };
     }
 
     public override void _Ready()
@@ -216,9 +222,17 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _input.Clear();
     }
 
-    /// <summary>Composes the screen and uploads it when it changed.</summary>
+    /// <summary>Composes the screen and uploads it when it changed; nothing while a scene is skipped whole (<see cref="SkippingScene"/>).</summary>
     private void Present()
     {
+        if (SkippingScene)
+            return;
+        if (_sceneSkip is { } skip)
+        {
+            GD.Print($"Kichikuou: MsgSkip skipped the scene in {skip.ElapsedMilliseconds} ms.");
+            _sceneSkip = null;
+        }
+        ClearSkippedStage();
         if (!_presenter.Compose())
             return;
         _frame = _presenter.Screen.ReadScreen(_frame);
@@ -255,6 +269,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             var saves = new DirectorySaveStore(SaveDirectory);
             var session = new GameSession(state, EngineState.Random, new ViewProxy(this), new GameInputProxy(this),
                 scripts, scripts, saves, new UnportedFiles(this));
+            _scenes = session.Scenes;
             await session.BootAsync();
             var end = _options.Start switch
             {
@@ -360,6 +375,19 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     public async Task ShowAsync(ScriptEvent scriptEvent)
     {
+        if (SkippingScene)
+        {
+            // A scene skipped whole is not drawn: its stage commands (seconds of work for the opening) are dropped.
+            if (scriptEvent is EngineEvent { Command: "G" or "CC" or "CE" or "CS" or "CF" or "CM" or "CB" or "CL" })
+            {
+                _stageSkipped = true;
+                return;
+            }
+        }
+        else
+        {
+            ClearSkippedStage();
+        }
         _presenter.Show(scriptEvent);
         if (scriptEvent is MessageEvent message)
             _skip.OnMessage(message.Text);
@@ -400,7 +428,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// </summary>
     private async Task FadeAsync(FadeRequest fade)
     {
-        double seconds = _skip.FadeDuration(fade.Duration).TotalSeconds;
+        double seconds = SkippingScene ? 0 : _skip.FadeDuration(fade.Duration).TotalSeconds;
         if (!_options.Fast && seconds > 0 && fade.From != fade.To)
         {
             var watch = Stopwatch.StartNew();
@@ -576,6 +604,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private async Task<ushort> KeyWaitAsync(double seconds, bool cancelable, bool skippable = false)
     {
         ushort key = 0;
+        if (skippable && SkippingScene)
+        {
+            await SkipYieldAsync();
+            return 0;
+        }
         if (skippable && _skip.IsSkipping)
         {
             await NextFrameAsync();
@@ -604,15 +637,21 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         _pointer.Interrupt();
         _presenter.Flush();
-        Shot("key");
         ushort key;
-        if (_options.Auto)
+        if (SkippingScene)
         {
+            await SkipYieldAsync();
+            key = 0;
+        }
+        else if (_options.Auto)
+        {
+            Shot("key");
             await DelayAsync(_options.Fast ? 0 : 0.8);
             key = KeyReturn;
         }
         else
         {
+            Shot("key");
             key = await HitKeyAsync();
         }
         _presenter.AfterKey();
@@ -648,6 +687,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         // never come here) and passes it as cancelable.
         _pointer.Interrupt();
         _presenter.Flush();
+        if (SkippingScene)
+        {
+            await SkipYieldAsync();
+            return Sys3Int.Zero;
+        }
         double seconds = _options.Fast ? 0 : ticks.Value * 0.016;
         if (_options.Auto)
         {
@@ -662,6 +706,43 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         // ticks × 16 ms, polled once a frame; when cancelable, anything held ends it at once; the last poll is returned
         // (nothing is consumed: a button held over several pauses ends each of them).
         return await KeyWaitAsync(seconds, cancelable, skippable: true);
+    }
+
+    /// <summary>
+    /// The message skip is on inside a scene it skips whole (<see cref="MessageSkip.WholeScenes"/>,
+    /// the opening between the prologue and the rebellion): its waits and fades take no time and none
+    /// of it is shown (<see cref="Present"/>).
+    /// </summary>
+    private bool SkippingScene => _scenes is not null && _skip.SkipsScene(_scenes.RunningScenes);
+
+    /// <summary>
+    /// After a scene skipped whole, whose stage commands were dropped (<see cref="ShowAsync"/>): the
+    /// stage is cleared, as <c>EC 0</c>, before anything else is drawn or shown on it — whatever the
+    /// scene would have left there is not there to show.
+    /// </summary>
+    private void ClearSkippedStage()
+    {
+        if (!_stageSkipped)
+            return;
+        _stageSkipped = false;
+        _presenter.Show(new EngineEvent("EC", [Sys3Int.Zero]));
+    }
+
+    /// <summary>
+    /// Instead of a wait while the skip runs a scene through: a frame only every 100 ms, so the window
+    /// stays responsive (and F1 can still turn the skip off); nothing of the scene is drawn meanwhile.
+    /// </summary>
+    private async Task SkipYieldAsync()
+    {
+        if (_sceneSkip is null && SkippingScene)
+        {
+            _sceneSkip = Stopwatch.StartNew();
+            GD.Print($"Kichikuou: MsgSkip skips {_scenes!.RunningScenes[^1]}.");
+        }
+        if (_skipYield.ElapsedMilliseconds < 100)
+            return;
+        await NextFrameAsync();
+        _skipYield.Restart();
     }
 
     /// <summary>At least one frame, then until <paramref name="seconds"/> passed.</summary>
@@ -848,24 +929,24 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// <summary><c>ZT1 n</c>: the timer restarts at n milliseconds (<c>cmdz.c</c> <c>reset_counter(0, 1, n)</c>).</summary>
     public Task ResetTimerAsync(Sys3Int value)
     {
-        _timerOffset = value.Value;
-        _clock.Restart();
+        _timer.Restart(value.Value, _clock.Elapsed);
         return Task.CompletedTask;
     }
 
-    /// <summary><c>ZT2</c>-<c>ZT5</c>: the timer in 1/10, 1/30, 1/60 or 1/100 s; read once per frame (the scripts wait on it in loops).</summary>
+    /// <summary>
+    /// <c>ZT2</c>-<c>ZT5</c>: the timer in 1/10, 1/30, 1/60 or 1/100 s; read once per frame (the scripts
+    /// wait on it in loops). While the message skip is on, one tick a read and no frame (but
+    /// <see cref="SkipYieldAsync"/>'s): the opening runs through at once (<see cref="EngineTimer"/>).
+    /// </summary>
     public async Task<Sys3Int> GetTimerAsync(int mode)
     {
-        await NextFrameAsync();
-        long ms = (long)(_clock.Elapsed.TotalMilliseconds * (_options.Fast ? 20 : 1)) + _timerOffset;
-        long value = mode switch
-        {
-            2 => ms / 100,
-            3 => ms * 3 / 100,
-            4 => ms * 3 / 50,
-            _ => ms / 10,
-        };
-        return (Sys3Int)(ushort)(value & 0xffff);
+        bool skipping = _skip.IsSkipping;
+        if (!skipping)
+            await NextFrameAsync();
+        long ms = _timer.Read(_clock.Elapsed, skipping);
+        if (skipping)
+            await SkipYieldAsync();
+        return EngineTimer.InUnits(ms, mode);
     }
 
     /// <summary>

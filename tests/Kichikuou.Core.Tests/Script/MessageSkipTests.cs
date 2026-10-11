@@ -20,6 +20,21 @@ public class MessageSkipTests
         Assert.False(skip.IsSkipping);
     }
 
+    /// <summary>The skip skips the opening whole, also when another scene runs inside it, and only while it is on; the rebellion after it is fast-forwarded as usual.</summary>
+    [Fact]
+    public void Only_the_opening_is_skipped_whole()
+    {
+        var skip = new MessageSkip([]);
+        Assert.False(skip.SkipsScene(["ｵｰﾌﾟﾆﾝｸﾞ.ADV"]));                     // not skipping
+        skip.Toggle();
+        Assert.True(skip.SkipsScene(["ｵｰﾌﾟﾆﾝｸﾞ.ADV"]));
+        Assert.True(skip.SkipsScene(["Iｱﾘｽ.ADV", "ｵｰﾌﾟﾆﾝｸﾞ.ADV"]));
+        Assert.False(skip.SkipsScene(["Iﾊﾝﾗﾝ.ADV"]));
+        Assert.False(skip.SkipsScene(["Iﾄｳｿﾞｸ.ADV"]));
+        Assert.False(skip.SkipsScene(["Iｼﾚｲﾌﾞ.ADV"]));
+        Assert.False(skip.SkipsScene([]));
+    }
+
     /// <summary>Option → MsgSkip Speeds Up Fades (ours, on by default): only while skipping, and only shortening.</summary>
     [Fact]
     public void Fades_are_cut_short_only_while_skipping_with_the_option()

@@ -207,8 +207,33 @@ internal sealed class EndInput(GameState state) : IGameInput
 
     public Task<Sys3Int?> ChooseAsync(BattleMenu menu) => throw new InvalidOperationException("A battle menu: no defence is fought here.");
     public Task<IReadOnlyList<Sys3Int>> GetDateAsync() => throw new InvalidOperationException("ZT 0");
-    public Task ResetTimerAsync(Sys3Int value) => throw new InvalidOperationException("ZT 1");
-    public Task<Sys3Int> GetTimerAsync(int mode) => throw new InvalidOperationException("ZT n");
+    /// <summary>The engine timer <c>ZT</c> reads, as <c>GameScreen</c> does; without one, a <c>ZT</c> fails.</summary>
+    public EngineTimer? Timer { get; set; }
+
+    /// <summary>Whether the message skip is on for <see cref="Timer"/>.</summary>
+    public bool Skipping { get; set; }
+
+    /// <summary>The frames the timer's reads let pass: one (1/60 s) before every read, none while <see cref="Skipping"/>.</summary>
+    public int TimerFrames { get; private set; }
+
+    private TimeSpan _now;
+
+    public Task ResetTimerAsync(Sys3Int value)
+    {
+        (Timer ?? throw new InvalidOperationException("ZT 1")).Restart(value.Value, _now);
+        return Task.CompletedTask;
+    }
+
+    public Task<Sys3Int> GetTimerAsync(int mode)
+    {
+        var timer = Timer ?? throw new InvalidOperationException("ZT n");
+        if (!Skipping)
+        {
+            _now += TimeSpan.FromSeconds(1 / 60.0);
+            TimerFrames++;
+        }
+        return Task.FromResult(EngineTimer.InUnits(timer.Read(_now, Skipping), mode));
+    }
 
     /// <summary>What <c>SC</c> answers (track, minute, second, frame): 999 each, nothing playing, unless set.</summary>
     public IReadOnlyList<Sys3Int> CdPosition { get; set; } = [(Sys3Int)999, (Sys3Int)999, (Sys3Int)999, (Sys3Int)999];

@@ -65,6 +65,31 @@ public sealed class MessageSkip
     public TimeSpan FadeDuration(TimeSpan duration) =>
         FastFades && IsSkipping && duration > SkippedFade ? SkippedFade : duration;
 
+    /// <summary>
+    /// Ours (the owner's requests 2026-10-11): the scenes the message skip skips whole instead of
+    /// fast-forwarding — the opening (<c>ｵｰﾌﾟﾆﾝｸﾞ</c>) between the prologue and the rebellion, up to
+    /// the rebellion's first scene (<c>Iﾊﾝﾗﾝ.ADV:63-77</c>, Northern Leazas City on the map), from which
+    /// the skip goes on as usual. While one runs and the skip is on (<see cref="SkipsScene"/>), the game
+    /// neither shows nor draws it: the script still runs every statement, so the state comes out as
+    /// when it is watched (it has no menu); the waits and fades take no time and the engine timer ticks
+    /// per read (<see cref="EngineTimer"/>). docs/window-menu.md, MsgSkip.
+    /// </summary>
+    public static readonly IReadOnlySet<string> WholeScenes = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "ｵｰﾌﾟﾆﾝｸﾞ.ADV",
+    };
+
+    /// <summary>Whether the skip is on inside one of the <see cref="WholeScenes"/>, given the scene files running now (outermost first).</summary>
+    public bool SkipsScene(IReadOnlyList<string> runningScenes)
+    {
+        if (!IsSkipping)
+            return false;
+        foreach (string file in runningScenes)
+            if (WholeScenes.Contains(file))
+                return true;
+        return false;
+    }
+
     /// <summary>Whether skipping is allowed now (false at a message not seen before; the menu item is greyed out).</summary>
     public bool Enabled { get; private set; } = true;
 

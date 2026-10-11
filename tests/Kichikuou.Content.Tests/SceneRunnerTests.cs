@@ -56,6 +56,26 @@ public sealed class SceneRunnerTests : IDisposable
         Assert.Equal(1, Var(rig, 1));
     }
 
+    /// <summary>The scene files running now, outermost first, for the message skip's whole scenes (<c>MessageSkip.WholeScenes</c>); a jump out leaves none.</summary>
+    [Fact]
+    public async Task The_runner_knows_the_scenes_running_now()
+    {
+        var rig = Rig(null,
+            ("GOUTER.ADV", ["\t%#GINNER.ADV:", "\t%0:"]),
+            ("GINNER.ADV", ["\t%#XHOOK.ADV:", "\t{VAR0001 = 1:", "\t\t&#MAIN.ADV:", "\t}", "\t%0:"]));
+        List<string>? during = null;
+        rig.Rules.Effects["XHOOK.ADV"] = _ => during = rig.Runner.RunningScenes.ToList();
+
+        await rig.EventAsync("GOUTER.ADV", 1);
+
+        Assert.Equal(["GOUTER.ADV", "GINNER.ADV"], during);
+        Assert.Empty(rig.Runner.RunningScenes);
+
+        rig.State.Memory.Var(1) = (Sys3Int)1;
+        await Assert.ThrowsAsync<ScenarioJumpException>(() => rig.EventAsync("GOUTER.ADV", 1));
+        Assert.Empty(rig.Runner.RunningScenes);
+    }
+
     [Fact]
     public async Task Label_calls_return_and_blocks_skip_on_zero()
     {

@@ -71,8 +71,26 @@ public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<str
     public Task RunEventAsync(string file, Sys3Int entry) =>
         _isScene(file) ? RunFileAsync(file) : rules.RunEventAsync(file, entry);
 
+    private readonly List<string> _running = [];
+
+    /// <summary>The scene files running now, outermost first (a scene that calls another, e.g. a battle's insert, is below it).</summary>
+    public IReadOnlyList<string> RunningScenes => _running;
+
     /// <summary>Runs <paramref name="file"/> from its first statement up to its page return (<c>Ev_Entry</c> as the caller left it).</summary>
     public async Task RunFileAsync(string file)
+    {
+        _running.Add(file);
+        try
+        {
+            await RunProgramAsync(file);
+        }
+        finally
+        {
+            _running.RemoveAt(_running.Count - 1);
+        }
+    }
+
+    private async Task RunProgramAsync(string file)
     {
         var program = Program(file);
         var stack = new List<StackEntry>();

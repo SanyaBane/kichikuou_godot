@@ -109,7 +109,25 @@ web build (seen only) by an option.
   Fades** (ours, owner's request 2026-10-10; checked by default, for the launch, not saved):
   while MsgSkip is on, a `PF`/`PW` fade lasts 150 ms at most (`MessageSkip.FadeDuration`);
   unchecked, fades keep xsystem35's length while skipping too (`ags_runEffect` waits without
-  `KEYWAIT_SKIPPABLE`; `rate * 16 * 1000 / 60` ms). **Option → Forget Seen
+  `KEYWAIT_SKIPPABLE`; `rate * 16 * 1000 / 60` ms). **MsgSkip skips the opening whole** (ours,
+  owner's requests 2026-10-11): inside `ｵｰﾌﾟﾆﾝｸﾞ`, between the prologue and the rebellion
+  (`MessageSkip.WholeScenes`; `SceneRunner.RunningScenes` says which scenes run), the skippable
+  waits and the fades take no time and nothing is shown — a frame passes only every 100 ms so the
+  window stays responsive. Its stage commands (`G`, `CC`, `CE`, `CS`, `CF`, `CM`, `CB`, `CL`) are
+  dropped: drawing its 3,400 of them on the emulated surface alone takes ~7 s; the stage is cleared
+  (`EC 0`) when the skip ends, before anything else is drawn. It goes in about a tenth of a second
+  (it may first wait up to ~1/3 s for its music, `SC`); turned on mid-way, from there on. The
+  rebellion `Iﾊﾝﾗﾝ` comes next with nothing shown in between: from its first scene (Northern Leazas
+  City on the map, `:63-77`) MsgSkip fast-forwards as everywhere. Turned off mid-way (F1), the rest
+  of the opening is drawn on the cleared stage, so pictures it drew before are missing until it
+  draws new ones. The script runs every statement, so the state is as when the opening is watched
+  (it has no menu). It paces its pictures on the engine timer
+  (`ZT2`-`ZT5`, the only scene that reads it); while MsgSkip is on, the timer
+  (`Core/Script/EngineTimer`) moves one 1/100 s tick per read instead of following the clock, which
+  ends each of its waits exactly on schedule, so it loads every CG a watched opening does
+  (`Glob_CgSeen`; a jump of the timer would trip its `RetVal > 6900` cuts and lose some);
+  `OpeningSkipTests`. xsystem35's MsgSkip fast-forwards every scene alike and leaves the timer
+  alone. **Option → Forget Seen
   Messages...** (asks first) makes every message unseen again. The seen messages are one
   `File:Line` per line in `msgskip.txt` next to the save slots (`%APPDATA%\Godot\app_userdata\Kichikuou\saves`,
   `saves-auto` for `--auto`; deleting it with the game closed resets them too), exact where
