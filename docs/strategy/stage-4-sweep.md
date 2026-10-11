@@ -305,10 +305,11 @@ stops at it in S4, and nothing stage 4 reaches is left unported but `OVER` (`Gam
 2. Are Siberia (38) and Ancient Ruins (35) then lost for good to the Angels from phase 4 — i.e. is a
    dungeon on a province of owner 10 really closed (survey-dungeon §2, `COMMAND:151`)?
 3. Does milestone 5 include W4 (`OVER`, `ｽﾀMENU`) — decision 16 says "up to the game's end", and stage
-   4 ends only there — or does every ending stay `GameEnd`?
+   4 ends only there — or does every ending stay `GameEnd`? **Answered** (decision 17): `GameEnd`;
+   W4 is not in milestone 5.
 4. Path 2 (Kayblis killed by his own army, the Demon Lord's Castle (79) held): reachable at all?
 5. `Iｶﾐ` needs its survey (rearguard rules, `FIGT表示` 21-24, the party restore `:4838-4854`) — with
-   this milestone, or apart?
+   this milestone, or apart? **Answered** (decision 17): its own survey, before step 2's end tests.
 6. `docs/variables.tsv`: `N_Rudrasaum_Turns` (above; corrected in step 1); `F_GodsDoor_Quest` reads "3 got gold statue, 4
    door failed to open", but 3 is Ho Raga's refusal and 4 Kou's hint (table above); `F_Hornet_Joined`.
 7. Stage-4 captures need a save at the end of stage 3 with the whole map (owner).

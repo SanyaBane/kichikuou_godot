@@ -155,6 +155,11 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     capture and no `--auto` through stage 3, as decision 15 had it for stage 2. The next milestone is
     story stage 4 (the Creator phase `Tﾙﾄﾞﾗ` and what stage 4 reaches up to the game's end), a sweep
     first (stage-4-sweep.md). See "Milestone 5" below.
+17. **`Iｶﾐ` gets its own survey before the end tests; W4 stays out of milestone 5** (2026-10-11,
+    after step 1): a survey of `Iｶﾐ` (the rearguards, the picker, `FIGT表示` 21-24, the party
+    restore, the endings) comes first, as its own step and commit, and step 2's end tests follow it;
+    `OVER` and `ｽﾀMENU` (W4) are not part of milestone 5 — every ending stays `GameEnd` (sweep, open
+    questions 3 and 5).
 
 ## Milestone 1 — the prologue
 
@@ -549,8 +554,10 @@ Steps, in the sweep's order (its "Proposed order"):
    (`CreatorTurnTests`); `StageThreeEndTests` runs on from Kayblis's death into the first phase with
    `Gﾙﾄﾞﾗ` from the player's files. By the sweep's table nothing stage 4 reaches is left unported but
    `OVER`, which stays `GameEnd` (W4).
-2. **The end**: content tests from the player's files — `Gﾙﾄﾞﾗ` with Kou at 8 through Ho Raga's Bonsai
+2. **The end**, after a survey of `Iｶﾐ` of its own (decision 17; step 2a, `survey-ikami.md`): content
+   tests from the player's files — `Gﾙﾄﾞﾗ` with Kou at 8 through Ho Raga's Bonsai
    Statue (item 18) and God's Door to `Iｶﾐ`'s endings, and Kou below 8; `Iｶﾐ`'s first run end to end.
 3. **Docs**: the sweep's quirk candidates registered, survey-nations and stage-2-sweep corrected, the
    dictionary's entries the sweep found wrong.
-4. **W4** (`OVER`, `ｽﾀMENU`) only if the owner puts it in this milestone (sweep, open question 3).
+4. ~~**W4** (`OVER`, `ｽﾀMENU`) only if the owner puts it in this milestone~~ — not in it (decision
+   17): every ending stays `GameEnd`.

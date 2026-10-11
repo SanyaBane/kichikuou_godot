@@ -98,7 +98,8 @@ owner's decision 16: no stage-3 capture, no `--auto` through stage 3). **Milesto
 (the Creator phase `Tﾙﾄﾞﾗ` and on to the game's end), a sweep first (docs/strategy/stage-4-sweep.md;
 docs/strategy/README.md, "Milestone 5"). Step 1 is done: `Tﾙﾄﾞﾗ` is `Strategy/CreatorTurn` (on
 `NationFile`, using none of the template), so N1 is done and nothing stage 4 reaches is left unported
-but `OVER` (`GameEnd`).
+but `OVER` (`GameEnd`). Owner's decision 17: `Iｶﾐ` gets a survey of its own before step 2's end tests,
+and W4 (`OVER`, `ｽﾀMENU`) stays out of milestone 5 — every ending stays `GameEnd`.
 `tools/analysis/port_draft.py` drafts text-heavy ranges for hand ports.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
