@@ -40,16 +40,18 @@ public sealed partial class ScriptContext
     /// <summary>
     /// <c>F1, slot, skip:</c> — string variable <paramref name="slot"/> := the string
     /// <paramref name="skip"/> places after the reader's position, which moves past it (<c>commandF1</c>).
+    /// Past the table's end the engine reads on into the scenario's bytes (<c>cmdf.c:85-90</c>), which
+    /// the decompile does not hold: the port reads an empty string there (owner's decision 21).
     /// </summary>
     public void ReadDataString(ScriptRef at, Sys3Int slot, Sys3Int skip)
     {
         if (_stringTable is null)
             throw new ScenarioFormatException($"{at}: F1 with no string table set.");
         int index = _stringPosition + skip.Value;
-        if (index >= _stringTable.Count)
-            throw new ScenarioFormatException($"{at}: string {index} is outside the string table ({_stringTable.Count} strings).");
+        // QUIRK: STR-44 — the music room's Stop with nothing playing reads string 999 of 224.
+        string text = index < _stringTable.Count ? _stringTable[index] : "";
         if (slot.Value < State.Strings.Length)
-            State.Strings[slot.Value] = _stringTable[index];
+            State.Strings[slot.Value] = text;
         _stringPosition = index + 1;
     }
 

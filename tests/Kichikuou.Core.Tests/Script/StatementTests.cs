@@ -191,4 +191,29 @@ public class StatementTests
 
         Assert.Contains("TEST.ADV:1", e.Message, StringComparison.Ordinal);
     }
+
+    /// <summary>
+    /// <c>F1</c> reads the string <c>skip</c> places on and moves past it; past the table's end it reads
+    /// an empty string (owner's decision 21, STR-44: the engine reads on into the scenario's bytes,
+    /// which the decompile does not hold), and the next <c>#label</c> starts the reader again.
+    /// </summary>
+    [Fact]
+    public void A_string_read_past_its_table_is_empty()
+    {
+        var rig = new ScriptRig();
+        rig.Script.SetStringTable(["Track 1", "Track 2"]);
+
+        rig.Script.ReadDataString(At, 1, 1);
+        Assert.Equal("Track 2", rig.State.Strings[1]);
+        rig.Script.ReadDataString(At, 1, 0);
+        Assert.Equal("", rig.State.Strings[1]);
+
+        rig.Script.SetStringTable(["Track 1", "Track 2"]);
+        rig.State.Strings[2] = "kept";
+        rig.Script.ReadDataString(At, 2, 999);
+        Assert.Equal("", rig.State.Strings[2]);
+        rig.Script.SetStringTable(["Track 1", "Track 2"]);
+        rig.Script.ReadDataString(At, 2, 0);
+        Assert.Equal("Track 1", rig.State.Strings[2]);
+    }
 }

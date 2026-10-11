@@ -209,7 +209,18 @@ internal sealed class EndInput(GameState state) : IGameInput
     public Task<IReadOnlyList<Sys3Int>> GetDateAsync() => throw new InvalidOperationException("ZT 0");
     public Task ResetTimerAsync(Sys3Int value) => throw new InvalidOperationException("ZT 1");
     public Task<Sys3Int> GetTimerAsync(int mode) => throw new InvalidOperationException("ZT n");
-    public Task<IReadOnlyList<Sys3Int>> GetCdPositionAsync() => throw new InvalidOperationException("SC");
+
+    /// <summary>What <c>SC</c> answers (track, minute, second, frame): 999 each, nothing playing, unless set.</summary>
+    public IReadOnlyList<Sys3Int> CdPosition { get; set; } = [(Sys3Int)999, (Sys3Int)999, (Sys3Int)999, (Sys3Int)999];
+
+    /// <summary>How often <c>SC</c> was read (the music room's time display polls it).</summary>
+    public int CdReads { get; private set; }
+
+    public Task<IReadOnlyList<Sys3Int>> GetCdPositionAsync()
+    {
+        CdReads++;
+        return Task.FromResult(CdPosition);
+    }
     /// <summary><c>SR 1</c>: no MIDI plays (the music is <c>SS</c>), so 0 at once, as xsystem35 answers <c>OVER.ADV:160</c>.</summary>
     public Task<Sys3Int> GetMidiTrackAsync() => Task.FromResult(Sys3Int.Zero);
 }

@@ -778,7 +778,11 @@ Steps:
    the gallery. The presenter's: the pages masked, the title not; page 3's sheet, in the map's tile area
    (survey §4.3), is shown as loaded — composing does not draw the map over it, and no replay calls the
    map helpers (§2.4).
-3. **`MMODE`** from the player's files, `F1` past its table as an empty string, `SC` in the tests'
-   input; tests: a track played, Stop, Stop with nothing (R1), End and the silent title (STR-37); the
-   presenter's.
+3. **`MMODE`** ✓ (2026-10-11) from the player's files (`IsSceneFile`); `F1` past its table reads an
+   empty string (`ScriptContext.ReadDataString`, STR-44 = R1), `SC` answered in the tests' input
+   ("nothing playing"). `MusicRoomTests`: a title plays its track, Stop silences it, End puts the title
+   back with `SS 0` and the scratch restored (`US`/`UG`); Stop with nothing playing reads past the 224
+   names and goes on. `TitleTests`: the title is silent after the music room (STR-37). The presenter's:
+   the room drawn on the stage, a track started, the title back. No file the game reaches is left
+   unrun but the dead `XSPEC` (DAT-04).
 4. **Docs**: G1-G10 and R1-R5 registered, EVT-07 withdrawn, CLAUDE.md.

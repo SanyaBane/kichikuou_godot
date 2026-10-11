@@ -582,6 +582,64 @@ public class GamePresenterTests(ITestOutputHelper output)
         Assert.Empty(p.Unresolved);
     }
 
+    /// <summary>
+    /// The music room (<c>MMODE</c>, milestone 7 step 3) from the title, on the stage: its screen (CG
+    /// 693 and the 28 titles written over it) differs from the title's, its texts resolve, a title
+    /// played starts its track, and End puts the title back — silent (STR-37). No event CG: the mask
+    /// leaves it as drawn.
+    /// </summary>
+    [Fact]
+    public async Task The_music_room_draws_on_the_stage_and_End_puts_the_title_back()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var run = await RunAsync(stopAtWeek: 0);
+        var p = run.Presenter;
+        p.MaskEventCgs = true;
+        run.Session.State.Fates[79].Fate = 1;                           // a clear: the button is there
+        var grey = ((byte)96, (byte)96, (byte)96, (byte)255);
+        int phase = 0;
+        (int X, int Y)[] points = [(60, 60), (382, 34), (490, 200), (598, 354), (300, 380)];
+        (byte, byte, byte, byte)[]? title = null, room = null, back = null;
+        static bool IsG(ScriptEvent e, int cg) => e is EngineEvent { Command: "G" } g && g.Args[0].Value == cg;
+        (byte, byte, byte, byte)[] Screen()
+        {
+            ScreenAt(p, 0, 0);
+            return [.. points.Select(pt => p.Screen.PixelAt(pt.X, pt.Y))];
+        }
+        run.Player.OnRead = () =>
+        {
+            var shown = run.Player.Shown;
+            switch (phase)
+            {
+                case 0 when shown.Any(e => e is MusicEvent { Track.Value: 27 }):
+                    title = Screen();
+                    run.Player.Click(341, 63);                          // the music room (ｽﾀMENU.ADV:805, button 1)
+                    phase = 1;
+                    break;
+                case 1 when shown.Any(e => IsG(e, 693)):
+                    room = Screen();
+                    run.Player.Click(382, 34);                          // the first title
+                    run.Player.Click(598, 354);                         // End
+                    phase = 2;
+                    break;
+                case 2 when shown.Count(e => IsG(e, 301)) == 2:
+                    back = Screen();
+                    throw new BackAtTitleException();
+            }
+        };
+
+        await Assert.ThrowsAsync<BackAtTitleException>(() => run.Session.TitleAsync());
+
+        Assert.NotEqual(title, room);
+        Assert.DoesNotContain(grey, room!);
+        Assert.Equal(title, back);
+        int played = run.Player.Shown.FindIndex(e => e is MusicEvent { Track.Value: 1 });
+        Assert.True(played >= 0);
+        Assert.DoesNotContain(run.Player.Shown.Skip(played), e => e is MusicEvent { Track.Value: 27 });
+        Assert.Empty(p.Unresolved);
+    }
+
     private sealed class BackAtTitleException : Exception;
 
     private static (byte, byte, byte, byte) ScreenAt(GamePresenter p, int x, int y)

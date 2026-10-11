@@ -327,13 +327,13 @@ public class TitleTests
     }
 
     /// <summary>
-    /// The gallery (button 7, with a clear) runs from the player's files (milestone 7 step 2,
-    /// <c>GalleryTests</c>): left by Exit, the title is drawn again and plays its music again
-    /// (<c>ｽﾀMENU.ADV:577-581</c>). The music room (button 1) is not ported yet: its file goes to the
-    /// unported files' hooks and the title is drawn again.
+    /// The gallery (button 7) and the music room (button 1), with a clear, run from the player's
+    /// files (milestone 7, <c>GalleryTests</c>, <c>MusicRoomTests</c>). Left by Exit, the gallery
+    /// returns to a title that plays its music again (<c>ｽﾀMENU.ADV:577-581</c>); left by End, the
+    /// music room returns to a silent one (STR-37, <c>:272-274</c>). The title is drawn again each time.
     /// </summary>
     [Fact]
-    public async Task The_gallery_runs_and_the_music_room_goes_to_the_unported_files()
+    public async Task The_gallery_and_the_music_room_run_and_only_the_gallery_brings_the_music_back()
     {
         var game = await EndGame.BootAsync(newGame: false);
         if (game is null)
@@ -343,15 +343,18 @@ public class TitleTests
         game.Input.Pointer.Hover(595, 12);                              // the gallery's Exit (CG.ADV:202-205)
         game.Input.Pointer.Click(595, 12);
         Click(game, MusicRoom);
+        game.Input.Pointer.Click(598, 354);                             // the music room's End (MMODE.ADV:216-230)
 
         await Assert.ThrowsAsync<PointerIdleException>(() => game.Script.CallFileAsync(Title));
 
-        Assert.Contains("CG.ADV", Files(game));
-        Assert.Equal(["MMODE.ADV"], game.Unported.Calls.Select(c => c.File));
+        Assert.Equal(["CG.ADV", "MMODE.ADV"], Files(game).Where(f => f is "CG.ADV" or "MMODE.ADV"));
+        Assert.Empty(game.Unported.Calls);
         Assert.Equal(3, game.View.Events.Count(e => IsCg(e, 301)));
         var events = game.View.Events;
-        int silent = events.FindLastIndex(e => e is MusicEvent { Track.Value: 0 });   // the gallery's SS 0
-        Assert.Contains(events.Skip(silent), e => e is MusicEvent { Track.Value: 27 });
+        int gallery = events.FindIndex(e => IsCg(e, 844));              // the gallery's first sheet
+        int room = events.FindIndex(e => IsCg(e, 693));                 // the music room's screen
+        Assert.Contains(events.Take(room).Skip(gallery), e => e is MusicEvent { Track.Value: 27 });
+        Assert.DoesNotContain(events.Skip(room), e => e is MusicEvent { Track.Value: 27 });
         Assert.Equal(0, game.State.Ev_Entry.Value);
     }
 

@@ -146,7 +146,7 @@ run by `SceneRunner` (`F1` with a gap, §4.2).
 
 | # | What | Lines | Kind |
 |---|---|---|---|
-| R1 | Stop with nothing playing (a right click, or Stop twice: `:25` sets `Tmp0039 := 999`) draws "the track 999" plain: `F1, 1, 999` skips 999 strings of a 224-string table — xsystem35 reads the scenario's bytes after it (`cmdf.c:85-90`) — and prints them at (328, 10681), off the 800-row surface [I: nothing visible] | `:17-22`, `:80-98` | bug |
+| R1 (STR-44) | Stop with nothing playing (a right click, or Stop twice: `:25` sets `Tmp0039 := 999`) draws "the track 999" plain: `F1, 1, 999` skips 999 strings of a 224-string table — xsystem35 reads the scenario's bytes after it (`cmdf.c:85-90`) — and prints them at (328, 10681), off the 800-row surface [I: nothing visible] | `:17-22`, `:80-98` | bug |
 | R2 | Holding the button on Stop repeats Stop and sound 108 on every poll (no release wait on that path) | `:17-27`, `:253-257` | bug |
 | R3 | The ending's and "Brutal"'s titles are flagged two-line but their second lines are blank, so they sit 8 dots high [I: the translation] | `:407`, `:409`, `:560` | odd design |
 | R4 | The time display sets no colour of its own: it takes the last `ZC` (255 or 15) | `:260-284` | bug, screen only |

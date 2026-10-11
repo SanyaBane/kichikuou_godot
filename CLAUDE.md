@@ -129,7 +129,9 @@ binds the counter and `ScriptContext.CountCgLoad` counts each load (STR-43) — 
 a hand port through `ScriptContext.EngineAsync`, and where `WAO_SUB`, the map and the battle load
 CGs they draw through their own events. Step 2 is done: the gallery `CG` runs from the player's files
 (`SceneRunner.IsSceneFile`, `GalleryTests`) and the agent's dumps mask it from its sheets to the
-title's background (`GamePresenter.MaskEventCgs`). Step 3 (`MMODE`) is next.
+title's background (`GamePresenter.MaskEventCgs`). Step 3 is done: the music room `MMODE` runs from
+the player's files (`MusicRoomTests`); `F1` past its string table reads an empty string (STR-44).
+Step 4 (docs: the gallery's and the music room's quirks, EVT-07 withdrawn) is next.
 `tools/analysis/port_draft.py` drafts text-heavy ranges for hand ports.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
