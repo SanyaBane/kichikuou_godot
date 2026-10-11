@@ -123,7 +123,8 @@ Step 3 is done: `HAPPY_C` (Fortune Check, the title's button 0) runs from the pl
 is the gallery `CG` and the music room `MMODE`, the last files the game reaches that do not run
 (docs/strategy/README.md, "Milestone 7"). Step 0 is done (docs/strategy/survey-gallery.md): the
 gallery reads the engine's CG load counter (`ZG Glob_CgSeen`), which the port does not count yet;
-EVT-07 does not hold; two questions for the owner (§5).
+EVT-07 does not hold. Owner's decision 21: the port counts every CG it shows on every path into
+`Glob_CgSeen`; `F1` past its string table reads an empty string. Step 1 (the `ZG` counter) is next.
 `tools/analysis/port_draft.py` drafts text-heavy ranges for hand ports.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.

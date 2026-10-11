@@ -188,6 +188,13 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     interface; the register's optional fixes) the owner chose the first, which the agent recommended:
     `CG` (the gallery) and `MMODE` (the music room), which decision 19 put off — after them no file the
     game reaches is left unrun. A survey first. See "Milestone 7" below.
+21. **The CG load counter on every path; `F1` past its table reads nothing** (2026-10-11, the owner's
+    answers to [survey-gallery.md](survey-gallery.md) §5; the agent recommended both): (1) the port
+    counts `Glob_CgSeen` as the engine does (`ZG`, `SET.ADV:297`) — every CG it shows, on every path the
+    script loads one: the scenes' and the frame's `G`, the window helper's pictures, the map, the
+    battle, the hand-ported command files and pickers; the counts cannot match xsystem35's cache (G9),
+    and the gallery only tests ≠ 0. (2) `F1` past the end of its string table reads an empty string
+    (R1: the original reads the scenario's bytes after the table and draws them off the surface).
 
 ## Milestone 1 — the prologue
 
@@ -745,4 +752,16 @@ Steps:
    label inside its scene and leaves at an exact `{Ev_Entry = n: %0:}` guard, writing no story state —
    EVT-07 does not hold. The music room plays tracks 1-28, keeps nothing (`US`/`UG`). The thumbnails
    need a new mask rule for the agent's dumps. 15 quirk candidates (G1-G10, R1-R5); two questions for
-   the owner (§5): how to count CG loads, and what `F1` past its table reads.
+   the owner (§5): how to count CG loads, and what `F1` past its table reads. Answered by decision 21:
+   on every path; an empty string.
+1. **The `ZG` counter** (decision 21): `Glob_CgSeen[n]` + 1 for every CG n the port shows, on every
+   path (survey-gallery §4.1); tests that a scene's `G`, a window picture and the other paths count,
+   and that the counts reach page 4 and the slots (`ﾛｰﾄﾞｾｰﾌﾞ` 11).
+2. **`CG`** from the player's files (`IsSceneFile`) and the gallery mask (`MaskEventCgs` from `G 844`-`848`
+   until the title's `G 301`); tests: entries locked and unlocked by `Glob_CgSeen`, the tabs, a
+   picture's prompt (left back with G1, right replays a scene from its entry and comes back), the exit
+   with `Ev_Entry` 0 and `SS 27`; the presenter's.
+3. **`MMODE`** from the player's files, `F1` past its table as an empty string, `SC` in the tests'
+   input; tests: a track played, Stop, Stop with nothing (R1), End and the silent title (STR-37); the
+   presenter's.
+4. **Docs**: G1-G10 and R1-R5 registered, EVT-07 withdrawn, CLAUDE.md.

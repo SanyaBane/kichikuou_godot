@@ -199,6 +199,8 @@ string is drawn off the surface. Each of the music room's reads sets the table f
    visible in the original either), or something else.
 3. EVT-07 is withdrawn by §2.4 (no question; in the docs step).
 
+Answered by decision 21 (2026-10-11): 1 (a), every path; 2 an empty string.
+
 ## 6. Proposed order (after the owner's answers)
 
 0. This survey ✓.
