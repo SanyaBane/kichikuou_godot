@@ -61,8 +61,9 @@ public sealed class GameSession
 
     /// <summary>
     /// The title (<c>ｽﾀｰﾄ.ADV:872</c> <c>&amp;#ｽﾀMENU.ADV:</c>): <c>ｽﾀMENU</c> from the player's files
-    /// (owner's decision 19) — the logo, the buttons the clears unlock, Alice's Mansion, <c>Gｻｲﾄｳ</c>,
-    /// the requests slip — until a game started from it (New game, a debug start, Load) ends. The
+    /// (owner's decision 19) — the logo, the buttons the clears unlock, Fortune Check (<c>HAPPY_C</c>),
+    /// Alice's Mansion, <c>Gｻｲﾄｳ</c>, the requests slip — until a game started from it (New game, a
+    /// debug start, Load) ends. The
     /// gallery and the music room (<c>CG</c>, <c>MMODE</c>) are not ported: they go to the unported
     /// files' hooks, and the title goes on.
     /// </summary>

@@ -315,7 +315,7 @@ public sealed class ScenarioProgramTests : IDisposable
 /// </summary>
 public class ScenarioProgramSweepTests(ITestOutputHelper output)
 {
-    private static readonly string[] OtherFiles = ["ｵｰﾌﾟﾆﾝｸﾞ.ADV", "FIGT表示.ADV", "ﾛｰﾄﾞｾｰﾌﾞ.ADV", "OVER.ADV", "ｽﾀMENU.ADV", "ﾌﾟﾛﾛｰｸﾞ.ADV"];
+    private static readonly string[] OtherFiles = ["ｵｰﾌﾟﾆﾝｸﾞ.ADV", "FIGT表示.ADV", "ﾛｰﾄﾞｾｰﾌﾞ.ADV", "OVER.ADV", "ｽﾀMENU.ADV", "ﾌﾟﾛﾛｰｸﾞ.ADV", "HAPPY_C.ADV"];
 
     private static readonly string[] Milestone1 =
         ["Iﾄｳｿﾞｸ.ADV", "Iﾌﾟﾛﾛｰｸﾞ.ADV", "Iｼﾚｲﾌﾞ.ADV", "Iﾊﾝﾗﾝ.ADV", "Gｼｨﾙ.ADV", "Gｿｳﾙ.ADV", "Gﾊﾞｳﾝﾄﾞ.ADV", "Gｱﾅｾﾙ.ADV"];
@@ -396,9 +396,9 @@ public class ScenarioProgramSweepTests(ITestOutputHelper output)
     }
 
     /// <summary>
-    /// The title's calls run somewhere too, but for the gallery and the music room (<c>CG</c>,
-    /// <c>MMODE</c>; later, owner's decision 19), Fortune Check (<c>HAPPY_C</c>, step 3) and the dead
-    /// <c>XSPEC</c> (<c>ｽﾀMENU.ADV:179</c>; the boot does not run it either, DAT-04).
+    /// The title's calls (its logo's and Fortune Check's, <c>HAPPY_C</c>, included) run somewhere
+    /// too, but for the gallery and the music room (<c>CG</c>, <c>MMODE</c>; later, owner's decision
+    /// 19) and the dead <c>XSPEC</c> (<c>ｽﾀMENU.ADV:179</c>; the boot does not run it either, DAT-04).
     /// </summary>
     [Fact]
     public void The_title_calls_only_files_that_run_but_those_left_for_later()
@@ -407,13 +407,13 @@ public class ScenarioProgramSweepTests(ITestOutputHelper output)
             return;
         string[] helpers = ["M.ADV", "WAO_MAP.ADV", "WAO_SUB.ADV", "PCMPLAY.ADV"];
         var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
-        var missing = new[] { "ｽﾀMENU.ADV", "ﾌﾟﾛﾛｰｸﾞ.ADV" }
+        var missing = new[] { "ｽﾀMENU.ADV", "ﾌﾟﾛﾛｰｸﾞ.ADV", "HAPPY_C.ADV" }
             .SelectMany(f => scripts.ReadProgram(f).Statements.OfType<CallFileStatement>())
             .Select(c => c.File)
             .Where(f => !SceneRunner.IsSceneFile(f) && !StrategyRules.PortedFiles.Contains(f) && !helpers.Contains(f))
             .Distinct()
             .Order(StringComparer.Ordinal);
-        Assert.Equal(["CG.ADV", "HAPPY_C.ADV", "MMODE.ADV", "XSPEC.ADV"], missing);
+        Assert.Equal(["CG.ADV", "MMODE.ADV", "XSPEC.ADV"], missing);
     }
 
     /// <summary>

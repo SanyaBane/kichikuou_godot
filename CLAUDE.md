@@ -117,7 +117,8 @@ Step 2 is done: `ｽﾀMENU` (with its logo `ﾌﾟﾛﾛｰｸﾞ`) is the titl
 `GameSession.TitleAsync` after the boot (which now keeps `ｽﾀｰﾄ.ADV:858`'s `Y 3, 10000`): New game,
 Load, `Iｱﾘｽ`, `Gｻｲﾄｳ`, the requests slip and the debug starts through it, the gallery and the music
 room unported (`TitleTests`); Godot's `Main` opens it, the capture viewer is in the Debug menu.
-Step 3 (`HAPPY_C`) is next.
+Step 3 is done: `HAPPY_C` (Fortune Check, the title's button 0) runs from the player's files
+(`FortuneCheckTests`). Step 4 (docs: the quirks O1-O9, M1-M7, H1-H4) is next.
 `tools/analysis/port_draft.py` drafts text-heavy ranges for hand ports.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.

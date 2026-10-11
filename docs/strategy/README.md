@@ -680,6 +680,22 @@ Steps:
    `Tmp0039`, a map scroll one capture's owner watched on the title first [I: Alice's opening]),
    `GamePresenterTests` (the title drawn on the stage, Start to week 9), the parser's and the
    runner's. survey-w4's M6 corrected (Kentarou (unit 31) holds Nikkou from `SET_CHR.ADV:1204`).
-3. **`HAPPY_C`** (§4) from the player's files.
+3. **`HAPPY_C`** ✓ (2026-10-11, survey-w4 §4): Fortune Check runs from the player's files
+   (`SceneRunner.IsSceneFile`), from the title's button 0 (with a clear) as written: the two pages
+   of `Glob_Fate[0..65]` (CGs 837, 838) with a stamp for each fate seen (CG 841), the hovered cell or
+   button lit (`CB`), a cell's detail composed off screen at (0, 400) — the sheet (CG 839), the
+   portrait, the fortune's and the misfortune's three lines or "Undiscovered" — and shown whole until
+   a key, the page flip (98) and the way back (99 or a right click, `%0`). No statement was missing
+   and the presenter needed nothing new (`CC`, `CB`, the keyed `G`, `T` on the stage off screen);
+   neither did `MaskEventCgs`: the portraits are the busts the windows and `OVER`'s report show.
+   The script tests the button before the pointer's place, so a click acts on what the read before
+   it lit: the gestures that drive it hover first (`PointerScript.Hover`). Tests (content, from the
+   player's files): `FortuneCheckTests` (the stamps on both pages, a cell's detail for each of
+   0/1/10/100 with H2, every cell opening its own fate and portrait with H3, the flip both ways and
+   the back button; H1 confirmed — a press at the first read opens fate 0, or 33 after a flip,
+   wherever the pointer is), `GamePresenterTests` (a page and a detail on the stage), the sweep (the
+   title reaches nothing unported but the gallery, the music room and the dead `XSPEC`). survey-w4's
+   H3 made precise: Fortune Check shows the portrait `OVER` sets before an entry's tests (eleven
+   entries change it for one half) but for Amiran, Somita and Pastel.
 4. **Docs**: the quirk candidates O1-O9, M1-M7, H1-H4 registered; STR-10's fix noted; survey-main's
    W4 row.

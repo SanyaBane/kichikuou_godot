@@ -137,7 +137,8 @@ internal sealed class MenuAnswers
 /// </summary>
 internal sealed class EndInput(GameState state) : IGameInput
 {
-    public PointerScript Pointer { get; } = new();
+    /// <summary>The pointer's gestures; replaced for one that does not settle first (a button already down at a loop's first read).</summary>
+    public PointerScript Pointer { get; set; } = new();
 
     public MenuAnswers Menu { get; } = new();
 

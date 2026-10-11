@@ -68,6 +68,14 @@ public sealed class PointerScript
     /// </summary>
     public void Move(int x, int y) => _rest = new MouseState(Sys3Int.Zero, (Sys3Int)x, (Sys3Int)y);
 
+    /// <summary>
+    /// The pointer moved to a screen point without a button, as a gesture in turn: one read there,
+    /// and the reads at rest answer it afterwards. Fortune Check tests the button before the
+    /// pointer's place, so a click acts on what the last read highlighted (<c>HAPPY_C.ADV:50-72</c>);
+    /// a hover before the click puts the highlight under it, as the pointer's way there does in real time.
+    /// </summary>
+    public void Hover(int x, int y) => Add([Read(0, x, y)]);
+
     /// <summary>Another input came between the pointer reads (a menu, a key): the pointer settles again.</summary>
     public void Interrupt() => _rests = 0;
 

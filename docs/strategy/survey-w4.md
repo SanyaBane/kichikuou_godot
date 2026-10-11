@@ -259,8 +259,11 @@ fortune and misfortune texts, "Undiscovered" for a half not yet seen). Mouse: ho
 a left click on a cell opens it, 98 flips the page, 99 or a right click anywhere returns (`%0`, `:89`).
 No draws. Writes only scratch (`Glob_FateCur`, `CallArg`, strings 1-6, `Tmp0001-0010`, `MapTargetX/Y`
 as `IM` scratch). Quirk candidates: H1 the hover state starts at 0, not 100 (`:45`, `:255`) — a click on
-the first poll opens fate 0 or 33 [I]; H2 portraits shown for undiscovered fates; H3 three portraits
-differ from `OVER`'s (Amiran 39, Somita 46, Pastel 41); H4 dead code (`:90-91`, `:195-203`, `:382-384`,
+the first poll opens fate 0 or 33 (confirmed in step 3: the button tested before the place, `:50-72`;
+the title waits for its release first, so it takes a press during the fade-in); H2 portraits shown for
+undiscovered fates; H3 three portraits differ from the one `OVER` sets before an entry's tests (eleven
+entries change it for one half): Amiran 39 (`OVER` 40), Somita 46 (47; never drawn by `OVER`), Pastel
+41 (493) — 39 and 41 are their misfortunes'; H4 dead code (`:90-91`, `:195-203`, `:382-384`,
 `:389-391`, error traps `:192-194`, `:249-250`, `:277-280`, `:346-347`, `:1449-1450`).
 
 ## 5. Against survey-main

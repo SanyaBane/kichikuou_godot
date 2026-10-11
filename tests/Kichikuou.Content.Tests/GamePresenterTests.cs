@@ -438,6 +438,90 @@ public class GamePresenterTests(ITestOutputHelper output)
         Assert.Equal(9, run.Session.State.Week.Value);
     }
 
+    /// <summary>
+    /// Fortune Check (<c>HAPPY_C</c>, milestone 6 step 3) from the title, on the stage: page 1 (CG 837
+    /// at (640, 0)) with Menad's stamp for both halves (CG 841's (0, 400), copied to (1014, 78)) shown,
+    /// a hovered cell lit by <c>CB</c>, and her detail composed at (0, 400) — the sheet (CG 839), the
+    /// portrait, the six lines — then shown whole; a right click goes back to the title. The
+    /// portraits are not event CGs: <see cref="GamePresenter.MaskEventCgs"/> leaves the screen as drawn.
+    /// </summary>
+    [Fact]
+    public async Task Fortune_Check_draws_its_pages_and_a_detail_on_the_stage()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var run = await RunAsync(stopAtWeek: 0);
+        var p = run.Presenter;
+        p.MaskEventCgs = true;
+        var s = run.Session.State;
+        s.Fates[79].Fate = 1;                                           // a clear: the button is there
+        s.Fates[7].Fate = 100;                                          // Menad, both halves
+        int phase = 0;
+        (byte, byte, byte, byte)[]? page = null, pageExpected = null, detail = null, detailExpected = null;
+        (byte, byte, byte, byte)? stamp = null, stampExpected = null, lit = null, unlit = null;
+        int textDiffers = 0;
+        (int X, int Y)[] pagePoints = [(5, 5), (89, 27), (300, 200), (491, 379), (600, 390)];
+        (int X, int Y)[] detailPoints = [(40, 60), (120, 150), (300, 100), (400, 300), (620, 380)];
+        run.Player.OnShow = e =>
+        {
+            if (phase != 3 || e is not KeyWaitEvent)
+                return;
+            ScreenAt(p, 0, 0);
+            detail = [.. detailPoints.Select(pt => p.Screen.PixelAt(pt.X, pt.Y))];
+            detailExpected = [.. detailPoints.Select(pt => p.Stage.PixelAt(pt.X, 400 + pt.Y))];
+            for (int x = 246; x < 500; x++)                             // the first line's text over the clean sheet
+                for (int y = 92; y < 112; y++)
+                    if (p.Screen.PixelAt(x, y) != p.Stage.PixelAt(640 + x, 400 + y))
+                        textDiffers++;
+            phase = 4;
+        };
+        run.Player.OnRead = () =>
+        {
+            var shown = run.Player.Shown;
+            switch (phase)
+            {
+                case 0 when shown.Any(e => e is MusicEvent { Track.Value: 27 }):
+                    run.Player.Click(120, 77);                          // Fortune Check (ｽﾀMENU.ADV:805, button 0)
+                    phase = 1;
+                    break;
+                case 1 when shown.Any(e => e is EngineEvent { Command: "G" } g && g.Args[0].Value == 839):
+                    page = [.. pagePoints.Select(pt => p.Screen.PixelAt(pt.X, pt.Y))];
+                    pageExpected = [.. pagePoints.Select(pt => p.Stage.PixelAt(640 + pt.X, pt.Y))];
+                    stamp = p.Screen.PixelAt(1014 - 640 + 20, 78 + 10);
+                    stampExpected = p.Stage.PixelAt(20, 410);
+                    unlit = p.Screen.PixelAt(223, 87);
+                    run.Player.Hover(297, 91);                          // Menad's cell (fate 7)
+                    phase = 2;
+                    break;
+                case 2 when run.Player.Pending == 0 && run.Player.Last.X.Value == 297:
+                    lit = p.Screen.PixelAt(223, 87);                    // the CB at (223, 75), 148 × 25
+                    run.Player.Click(297, 91);
+                    phase = 3;
+                    break;
+                case 4:
+                    run.Player.RightClick(300, 200);
+                    phase = 5;
+                    break;
+                case 5 when shown.Count(e => e is EngineEvent { Command: "G" } g && g.Args[0].Value == 301) == 2:
+                    throw new BackAtTitleException();
+            }
+        };
+
+        await Assert.ThrowsAsync<BackAtTitleException>(() => run.Session.TitleAsync());
+
+        Assert.Equal(5, phase);
+        Assert.Equal(pageExpected, page);
+        Assert.Contains(page!, px => px != ((byte)0, (byte)0, (byte)0, (byte)255));
+        Assert.Equal(stampExpected, stamp);
+        Assert.NotEqual(unlit, lit);
+        Assert.Equal(detailExpected, detail);
+        Assert.True(textDiffers > 20, $"the text reached the detail ({textDiffers} pixels)");
+        Assert.Contains(run.Player.Shown, e => e is EngineEvent { Command: "G" } g && g.Args[0].Value == 8);   // Menad's portrait
+        Assert.Empty(p.Unresolved);
+    }
+
+    private sealed class BackAtTitleException : Exception;
+
     private static (byte, byte, byte, byte) ScreenAt(GamePresenter p, int x, int y)
     {
         p.Flush();
@@ -785,6 +869,12 @@ public class GamePresenterTests(ITestOutputHelper output)
 
         /// <summary>A left click at a screen point, after the pointer has settled.</summary>
         public void Click(int x, int y) => _pointer.Click(x, y);
+
+        /// <summary>The pointer moved to a screen point, after it has settled (<see cref="PointerScript.Hover"/>).</summary>
+        public void Hover(int x, int y) => _pointer.Hover(x, y);
+
+        /// <summary>A right click at a screen point, after the pointer has settled.</summary>
+        public void RightClick(int x, int y) => _pointer.RightClick(x, y);
 
         /// <summary>Every event shown, in order.</summary>
         public List<ScriptEvent> Shown { get; } = [];

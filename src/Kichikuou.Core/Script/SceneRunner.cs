@@ -59,11 +59,11 @@ public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<str
     /// <summary>
     /// The files run from the decompile: the scenes (<c>G*</c>, <c>I*</c>), the opening, the battle
     /// inserts and the game frame (owner's decision 19: <c>OVER</c>, the ending; <c>ｽﾀMENU</c>, the
-    /// title, with its logo <c>ﾌﾟﾛﾛｰｸﾞ</c>).
+    /// title, with its logo <c>ﾌﾟﾛﾛｰｸﾞ</c> and its Fortune Check <c>HAPPY_C</c>).
     /// </summary>
     public static bool IsSceneFile(string file) =>
         file.Length > 0 && file[0] is 'G' or 'I'
-        || file is "ｵｰﾌﾟﾆﾝｸﾞ.ADV" or "FIGT表示.ADV" or "OVER.ADV" or "ｽﾀMENU.ADV" or "ﾌﾟﾛﾛｰｸﾞ.ADV";
+        || file is "ｵｰﾌﾟﾆﾝｸﾞ.ADV" or "FIGT表示.ADV" or "OVER.ADV" or "ｽﾀMENU.ADV" or "ﾌﾟﾛﾛｰｸﾞ.ADV" or "HAPPY_C.ADV";
 
     /// <inheritdoc />
     public Task RunEventAsync(string file, Sys3Int entry) =>
