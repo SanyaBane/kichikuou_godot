@@ -249,7 +249,7 @@ PNG itself, `CgImage.ToRgba(transparentIndex: 40)`, `Palette` with `initPal`); t
   imitating GDI (`font.c:191-210`).
 - The port (`godot/Battles/GodotGlyphRenderer.cs`): MS Gothic, or the bundled BIZ UDGothic
   (`godot/fonts`, SIL OFL 1.1; Morisawa's monospaced successor to MS Gothic, which Windows 10
-  also ships), as Option → Font chooses (docs/window-menu.md); both cover every character of the
+  also ships), as Option → Fonts chooses (docs/window-menu.md); both cover every character of the
   scenario's texts (517 outside ASCII, 2026-10-11).
 
 ## Not verified

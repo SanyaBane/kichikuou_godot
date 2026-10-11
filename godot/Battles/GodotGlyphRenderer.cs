@@ -3,7 +3,7 @@ using Kichikuou.Content.Screen;
 
 namespace Kichikuou.Game.Battles;
 
-/// <summary>The fonts the surface's text can be drawn in (Option → Font, docs/window-menu.md).</summary>
+/// <summary>The fonts the surface's text can be drawn in (Option → Fonts, docs/window-menu.md).</summary>
 public enum GameFont
 {
     /// <summary>MS Gothic, face 0 of <c>msgothic.ttc</c>: the original's font (docs/assets.md §6); Windows only.</summary>
@@ -15,7 +15,7 @@ public enum GameFont
 
 /// <summary>
 /// The game font for the emulated surface, bold, as xsystem35 uses it (docs/assets.md §6):
-/// MS Gothic where it is installed, or the bundled BIZ UDGothic — whichever Option → Font chose —
+/// MS Gothic where it is installed, or the bundled BIZ UDGothic — whichever Option → Fonts chose —
 /// rasterised by Godot's TextServer at the surface's resolution. Every character takes a fixed
 /// cell (<see cref="MessageWriter.CellWidth"/>), so the font changes how the glyphs look, never the
 /// layout. Glyph bitmaps are read back from the TextServer's cache texture and kept.

@@ -39,7 +39,7 @@ GPL-2.0-or-later, and the player brings their own copy of the game. What a relea
   exports C# to Android as experimental and needs .NET 9 or later (the project is on `net10.0`). It
   needs the C# import above (the player copies the game's files to the device; how a Godot 4.7 app
   reaches them under Android's scoped storage is to be checked) and a touch interface (the font is
-  done: BIZ UDGothic is bundled, docs/window-menu.md, Option → Font; `OFL.txt` ships as for
+  done: BIZ UDGothic is bundled, docs/window-menu.md, Option → Fonts; `OFL.txt` ships as for
   Windows): the original is played with a mouse — the right button cancels (menus, the map, the empty
   dungeon menu, All Data's scale menu), the pickers' highlight and info panel follow the hover, keys
   drive the message skip and xsystem35's menu, and a menu line is 16 of 400 pixels (~4 mm on a 6.5"

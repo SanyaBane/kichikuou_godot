@@ -10,7 +10,7 @@ namespace Kichikuou.Game.Strategy;
 
 // xsystem35's window menu bar over the game (docs/window-menu.md): File (Save Screenshot, Restart,
 // Exit), Screen (Window, Fullscreen), Option (Mouse Movement as xsystem35's; ours: Skip Unseen
-// Text, MsgSkip Speeds Up Fades, Forget Seen Messages, the font),
+// Text, MsgSkip Speeds Up Fades, Forget Seen Messages, Fonts),
 // MsgSkip[off|on]; hot keys F1 and F4 as xsystem35's, Alt+R; and ours for development, Debug
 // (Battle Captures: the capture viewer, which our own title had until ｽﾀMENU replaced it).
 public partial class GameScreen
@@ -45,9 +45,7 @@ public partial class GameScreen
             ("Mouse Movement", ToggleMouseMovement),
             ("Skip Unseen Text", ToggleSkipUnseen),
             ("MsgSkip Speeds Up Fades", ToggleFastFades),
-            ("Forget Seen Messages...", ConfirmForgetSeen),
-            ("Font: MS Gothic", () => SetFont(GameFont.MsGothic)),
-            ("Font: BIZ UDGothic", () => SetFont(GameFont.BizUdGothic)));
+            ("Forget Seen Messages...", ConfirmForgetSeen));
         options = option.GetPopup();
         options.SetItemAsCheckable(0, true);
         options.SetItemChecked(0, EngineState.MouseMovement);
@@ -55,11 +53,21 @@ public partial class GameScreen
         options.SetItemChecked(1, _skip.SkipUnseen);
         options.SetItemAsCheckable(2, true);
         options.SetItemChecked(2, _skip.FastFades);
-        options.SetItemAsRadioCheckable(4, true);
-        options.SetItemAsRadioCheckable(5, true);
-        options.SetItemDisabled(4, !GodotGlyphRenderer.MsGothicInstalled);
+        PopupMenu fonts = null!;
+        fonts = Submenu(
+            ("MS Gothic", () => SetFont(GameFont.MsGothic)),
+            ("BIZ UDGothic", () => SetFont(GameFont.BizUdGothic)));
+        fonts.SetItemAsRadioCheckable(0, true);
+        fonts.SetItemAsRadioCheckable(1, true);
+        fonts.SetItemDisabled(0, !GodotGlyphRenderer.MsGothicInstalled);
+        // Only the chosen font is marked: the unchecked mark is blank, as wide as the checked one.
+        var mark = fonts.GetThemeIcon("radio_checked").GetSize();
+        var blank = ImageTexture.CreateFromImage(
+            Image.CreateEmpty(Math.Max(1, (int)mark.X), Math.Max(1, (int)mark.Y), false, Image.Format.Rgba8));
+        fonts.AddThemeIconOverride("radio_unchecked", blank);
+        fonts.AddThemeIconOverride("radio_unchecked_disabled", blank);
         CheckFont();
-        options.AddThemeColorOverride("font_disabled_color", new Color(0.55f, 0.55f, 0.55f));
+        options.AddSubmenuNodeItem(Padded("Fonts"), fonts, SubmenuId);
         void ToggleMouseMovement()
         {
             EngineState.MouseMovement = !EngineState.MouseMovement;
@@ -86,8 +94,8 @@ public partial class GameScreen
         }
         void CheckFont()
         {
-            options.SetItemChecked(4, _glyphs.Font == GameFont.MsGothic);
-            options.SetItemChecked(5, _glyphs.Font == GameFont.BizUdGothic);
+            fonts.SetItemChecked(0, _glyphs.Font == GameFont.MsGothic);
+            fonts.SetItemChecked(1, _glyphs.Font == GameFont.BizUdGothic);
         }
         row.AddChild(option);
         _skipItem = new Button();
@@ -100,11 +108,28 @@ public partial class GameScreen
             ("Battle Captures...", ConfirmCaptures)));
     }
 
+    /// <summary>The id of an item that opens a submenu: past every item's index, so it runs nothing.</summary>
+    private const int SubmenuId = 1000;
+
     private static MenuButton Menu(string title, params (string Text, Action Run)[] items)
     {
         var menu = new MenuButton { Text = title };
         BarItem(menu);
-        var popup = menu.GetPopup();
+        Fill(menu.GetPopup(), items);
+        return menu;
+    }
+
+    /// <summary>A submenu (<c>AddSubmenuNodeItem</c>), looking as the bar's menus do.</summary>
+    private static PopupMenu Submenu(params (string Text, Action Run)[] items)
+    {
+        var popup = new PopupMenu();
+        Fill(popup, items);
+        return popup;
+    }
+
+    /// <summary>The bar's look on a menu, and its items, whose ids are their indices.</summary>
+    private static void Fill(PopupMenu popup, (string Text, Action Run)[] items)
+    {
         popup.AddThemeStyleboxOverride("panel", new StyleBoxFlat
         {
             BgColor = BarColor, BorderColor = new Color(0.6f, 0.6f, 0.6f),
@@ -114,12 +139,18 @@ public partial class GameScreen
         popup.AddThemeStyleboxOverride("hover", new StyleBoxFlat { BgColor = HoverColor });
         popup.AddThemeColorOverride("font_color", Colors.Black);
         popup.AddThemeColorOverride("font_hover_color", Colors.Black);
+        popup.AddThemeColorOverride("font_disabled_color", new Color(0.55f, 0.55f, 0.55f));
         popup.AddThemeFontSizeOverride("font_size", 14);
         for (int i = 0; i < items.Length; i++)
-            popup.AddItem("   " + items[i].Text + "      ", i);
-        popup.IdPressed += id => items[(int)id].Run();
-        return menu;
+            popup.AddItem(Padded(items[i].Text), i);
+        popup.IdPressed += id =>
+        {
+            if (id < items.Length)
+                items[(int)id].Run();
+        };
     }
+
+    private static string Padded(string text) => "   " + text + "      ";
 
     /// <summary>A top-level item: black text on the bar, a light highlight under the pointer, no focus.</summary>
     private static void BarItem(Button item)
