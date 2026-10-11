@@ -141,6 +141,9 @@ Every file the game reaches now runs but the dead `XSPEC`. **Milestone 7 is clos
 owner's decision 22: no capture). Decision 22's next step is done: the absolute paths of the owner's
 machine left the repository for `local.env`, which git ignores ("Local paths" below). Decision 23:
 the project is GPL-2.0-or-later (`LICENSE`; README, "License").
+Next (owner's requests 2026-10-11/12): an interface of our own next to the original layout, chosen
+by the player, and an Android build later (docs/backlog.md). The game logic stays the original's.
+The UI survey's parts 1-4 are docs/ui/survey.md; the design waits for the owner.
 `tools/analysis/port_draft.py` drafts text-heavy ranges for hand ports.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
@@ -205,7 +208,8 @@ the project is GPL-2.0-or-later (`LICENSE`; README, "License").
 - `tools/analysis/` — Python scripts for reading the decompiled scenario; `tools/codegen/` —
   generators for committed C# sources; `tools/golden/` — harness launcher and page classes.
 - `docs/` — brief, spike findings, variable dictionary; `window-menu.md` records
-  xsystem35's window menu bar (our reference; File/Screen/Option/MsgSkip) and what its commands do.
+  xsystem35's window menu bar (our reference; File/Screen/Option/MsgSkip) and what its commands do;
+  `ui/survey.md` surveys the screens and input for our own interface.
 
 ## Local paths
 

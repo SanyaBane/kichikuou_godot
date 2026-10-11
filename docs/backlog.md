@@ -42,8 +42,9 @@ GPL-2.0-or-later, and the player brings their own copy of the game. What a relea
   done: BIZ UDGothic is bundled, docs/window-menu.md, Option → Fonts; `OFL.txt` ships as for
   Windows): the original is played with a mouse — the right button cancels (menus, the map, the empty
   dungeon menu, All Data's scale menu), the pickers' highlight and info panel follow the hover, keys
-  drive the message skip and xsystem35's menu, and a menu line is 16 of 400 pixels (~4 mm on a 6.5"
-  phone). The touch interface belongs with our own interface (Interface, below). Unknown until
+  drive the message skip and xsystem35's menu, and a menu line is 18 of 400 pixels (~3 mm on a 6.5"
+  phone; every dependency in [ui/survey.md](ui/survey.md) §3). The touch interface belongs with our
+  own interface (Interface, below). Unknown until
   measured: the speed of the engine surface's per-pixel C# drawing on a phone. A cheap spike first:
   the current build on a device with the extract copied by hand, a tap as a left click.
 - **CI** — *owner* (a remote first), then *agent*: build, core tests, export. Without the game data
@@ -81,7 +82,14 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
 ## Interface
 
 - **Our own interface** next to the original layout — *owner*: decisions 3-4 (the player picks the UI,
-  ideally also during play), 9 and 12 (what a redesign replaces).
+  ideally also during play), 9 and 12 (what a redesign replaces). The survey's parts 1-4 are done
+  (2026-10-12, [ui/survey.md](ui/survey.md): the screens, the classes of work, input on mouse and
+  touch, how a second UI plugs in); the design (part 5) waits for the owner. Groundwork that does not
+  wait for it — *agent*, survey §4.8: the proxies kept for a switch, a shared screen-state tracker,
+  menus as data, a shared engine-timing base, a map geometry helper.
+- **Scenes called inside a battle file may not be drawn** — *agent*: while a battle shows, raw drawing
+  is dropped and the hand-drawn layers are not composed ([ui/survey.md](ui/survey.md) §5); check
+  `Gｴｸｽ`'s scenes from `FIGT_A`/`FIGT_B` headless.
 - **Quality-of-life features**, the README's second aim — *owner* (which), then *agent*; a survey of
   candidates first. Done so far: MsgSkip skips the opening whole (2026-10-11,
   [window-menu.md](window-menu.md), MsgSkip).
