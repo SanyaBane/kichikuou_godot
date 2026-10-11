@@ -110,7 +110,10 @@ closed** (2026-10-11, owner's decision 18: no stage-4 capture, no `--auto` throu
 replace the minimal "THE END" of decision 10; a survey first (docs/strategy/README.md, "Milestone 6").
 Step 0 is done (docs/strategy/survey-w4.md). Owner's decision 19: the three files run from the
 player's files through `SceneRunner` (not hand-ported), after `ZZ0` back to the title, `ｽﾀMENU`
-replaces our title; the gallery `CG` and the music room `MMODE` later. Step 1 (`OVER`) is next.
+replaces our title; the gallery `CG` and the music room `MMODE` later. Step 1 is done: `OVER` runs
+from the player's files (`SceneRunner.IsSceneFile`; `ZZ0, 0` is `GameQuitException`, which
+`GameSession` turns into `GameEnd`; Godot then goes back to the title), tested by `OverTests`.
+Step 2 (`ｽﾀMENU` as the title) is next.
 `tools/analysis/port_draft.py` drafts text-heavy ranges for hand ports.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
@@ -198,6 +201,9 @@ replaces our title; the gallery `CG` and the music room `MMODE` later. Step 1 (`
   ends at the first file or path not ported yet ("not ported yet"), at a game over, after week 30
   (`--weeks n`) or two weeks after story stage `--stage n` is reached — `--seed 2 --weeks 60 --stage 2`
   takes Oaks in week 34 and stops in week 36, ~15 min (exit code 0; 1 after an error).
+- Show an ending's `OVER` (its picture, staff roll, Completion Report) on a booted game:
+  `<Godot console exe> --headless --path godot -- --ending <1-14> --auto --fast --quit [--shots <dir>]`
+  (without `--auto` the keys wait for the player; slots in `user://saves-ending`).
 
 ## Rules
 

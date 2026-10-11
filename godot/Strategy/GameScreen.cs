@@ -24,6 +24,9 @@ public enum GameStart
 
     /// <summary>"Load": the save screen's load list (backing out returns to the title).</summary>
     Load,
+
+    /// <summary>Development: an ending's <c>OVER</c> on the booted game (<see cref="GameOptions.Ending"/>).</summary>
+    Ending,
 }
 
 /// <summary>What a <see cref="GameScreen"/> plays and how (the development switches of <see cref="Main"/>).</summary>
@@ -31,6 +34,9 @@ public sealed record GameOptions
 {
     /// <summary>New game or load.</summary>
     public GameStart Start { get; init; }
+
+    /// <summary>Development: the ending <see cref="GameStart.Ending"/> shows (1-14).</summary>
+    public int Ending { get; init; }
 
     /// <summary>
     /// Development: plays unattended — keys answered, Turn END every week, the battles fought with
@@ -97,7 +103,6 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private Label _notice = null!;
     private double _noticeLeft;
     private bool _closing;
-    private bool _ended;
     private int _shot;
 
     private FigtSelScreen? _sel;
@@ -206,7 +211,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// <summary>Composes the screen and uploads it when it changed.</summary>
     private void Present()
     {
-        if (_ended || !_presenter.Compose())
+        if (!_presenter.Compose())
             return;
         _frame = _presenter.Screen.ReadScreen(_frame);
         var image = Image.CreateFromData(Surface.ScreenWidth * Surface.Scale, Surface.ScreenHeight * Surface.Scale,
@@ -243,16 +248,21 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             var session = new GameSession(state, EngineState.Random, new ViewProxy(this), new GameInputProxy(this),
                 scripts, scripts, saves, new UnportedFiles(this));
             await session.BootAsync();
-            var end = _options.Start == GameStart.New ? await session.NewGameAsync() : await session.LoadFromTitleAsync();
-            if (end is null)
+            var end = _options.Start switch
             {
-                Leave(failed: false);
-                return;
+                GameStart.New => await session.NewGameAsync(),
+                GameStart.Load => await session.LoadFromTitleAsync(),
+                _ => await session.EndingAsync((Sys3Int)_options.Ending),
+            };
+            if (end is not null)
+            {
+                // OVER.ADV ran to its ZZ0: back to the title (decision 19; the original quits, STR-10).
+                GD.Print($"Kichikuou: the game ended, ending {end.EndingId.Value}.");
+                Shot("end");
             }
-            GD.Print($"Kichikuou: the game ended, ending {end.EndingId.Value}.");
-            _ended = true;
-            _view.Visible = false;
-            message = $"THE END — ending {end.EndingId.Value}";
+            WarnUnresolved();
+            Leave(failed: false);
+            return;
         }
         catch (OperationCanceledException) when (_closing)
         {
@@ -274,8 +284,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             message = "Error: " + e.Message;
             failed = true;
         }
-        if (_presenter.Unresolved.Count + _presenter.Battle.Unresolved.Count > 0)
-            GD.PushWarning("Texts not found: " + string.Join("; ", _presenter.Unresolved.Concat(_presenter.Battle.Unresolved).Distinct()));
+        WarnUnresolved();
         _overlay.Text = message + "\n\n(click to return to the title)";
         Shot("end");
         if (_options.QuitWhenDone)
@@ -291,6 +300,12 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         catch (OperationCanceledException)
         {
         }
+    }
+
+    private void WarnUnresolved()
+    {
+        if (_presenter.Unresolved.Count + _presenter.Battle.Unresolved.Count > 0)
+            GD.PushWarning("Texts not found: " + string.Join("; ", _presenter.Unresolved.Concat(_presenter.Battle.Unresolved).Distinct()));
     }
 
     private void Leave(bool failed)

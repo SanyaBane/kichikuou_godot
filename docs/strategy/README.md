@@ -634,10 +634,25 @@ Steps:
    or back to the title, the scope (gallery, music room, debug starts), our own title or `ｽﾀMENU`.
    Answered by decision 19: from the player's files, back to the title, everything but the gallery
    and the music room, `ｽﾀMENU` as the title.
-1. **`OVER`** (survey-w4 §2): `&#OVER` runs the file through `SceneRunner` instead of ending the
-   session; the commands it needs that `SceneRunner` and the screen lack are added (`ZZ0` ends the
-   game: `GameEnd`, then the title). Content tests from the player's files: an ending recorded on
-   page 4 (the clear, the fates) and kept in a slot by `ﾛｰﾄﾞｾｰﾌﾞ` 11; the roster against chosen states.
+1. **`OVER`** ✓ (2026-10-11, survey-w4 §2): `&#OVER` runs the file through `SceneRunner`
+   (`IsSceneFile`), and `GameSession` returns the ending at its `ZZ0, 0` (`GameQuitException`, the
+   exit code `RetVal`, `cmdz.c`); Godot goes back to the title (STR-10's fix). Of the three files'
+   statements only `ZZ0` was missing for `OVER` (`ｽﾀMENU` lacks `MC`, `ZZ3`, `WW` and its word
+   tables in the code area; `HAPPY_C` nothing but its dead `ZZ0`); `SR 1` is 0 at once (no MIDI under
+   `SS`, O2), `SL` and `Y 3, 10000/10001` were there. The presenter: an opaque drawing command (`CC`,
+   `CF`, `CM`, a `G` without a key) wipes the window's characters under it and hides a frame it covers
+   whole until a window is opened or closed, as the engine's screen — the report restores its text
+   area after each entry (`:2208`), the ending's picture covers the window opened at `:29`; the map's
+   own redraws do not wipe them (unchanged). `MaskEventCgs` masks the ending's picture (CGs 270-283,
+   under the staff roll too) until the report's background (CG 840). Content tests from the player's
+   files: `OverTests` (the clear and the fates on page 4 and in the slots that hold a save, the merge
+   across plays, endings 7, 8, 9, 13 with O1, O3-O6, Sanakia by Toushin City (27)'s owner),
+   `IkamiEndTests` on through `OVER` (each of `Iｶﾐ`'s endings counts a clear), the session's end
+   (`PrologueCommandTests`) and the presenter's (`GamePresenterTests`). `--ending N` (development)
+   shows ending N's `OVER` on a booted game; headless `--ending 13 --auto --fast --quit` runs to the
+   quit. Found on the way: the boot skips `ｽﾀｰﾄ.ADV:858` (`Y 3, 10000`), and the logo leaves the
+   waits uncancelable too (`ﾌﾟﾛﾛｰｸﾞ.ADV:151`, its only exit), so the port's `Y 3` pauses end on a
+   held key in play where the original's do not — step 2 (the boot runs those files).
 2. **`ｽﾀMENU` as the title** (§3): the boot goes on from `SET` into `ｽﾀｰﾄ`'s end and `ｽﾀMENU` (the
    logo, the buttons and their unlocks, the rolls), run from the player's files; New game and Load
    through it; `Iｱﾘｽ`, `Gｻｲﾄｳ`, the requests slip and the debug starts From 2-4; the gallery's and the

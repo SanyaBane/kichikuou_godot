@@ -345,6 +345,71 @@ public class GamePresenterTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// <c>OVER</c> run on the booted game for ending 13, a second clear (milestone 6): the ending's
+    /// picture, the staff roll's first frame (skipped by a key held through the pauses, <c>:79-81</c>:
+    /// its 1200 steps would compose 1200 screens) and the Completion Report draw on the stage, the
+    /// report's texts resolve in the window and each entry's text is wiped by the restored text area
+    /// (<c>:2208</c>), and with <see cref="GamePresenter.MaskEventCgs"/> the ending's picture is
+    /// masked (it is not drawn in the full-screen window) — without the window's frame, which the
+    /// picture covers (<c>:29-34</c>) — while the report is not.
+    /// </summary>
+    [Fact]
+    public async Task The_ending_draws_on_the_stage_with_its_picture_masked_for_the_agent()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var run = await RunAsync(stopAtWeek: 0);
+        var p = run.Presenter;
+        p.MaskEventCgs = true;
+        var grey = ((byte)96, (byte)96, (byte)96, (byte)255);
+        (byte, byte, byte, byte)? atEnding = null, frame = null, atReport = null;
+        var texts = new List<string>();
+        run.Player.OnShow = e =>
+        {
+            if (e is PauseEvent { Ticks.Value: 360 })                   // :45, the ending's picture shown
+            {
+                atEnding = ScreenAt(p, 320, 100);
+                frame = p.Screen.PixelAt(140, 280);                     // window 113's frame (CG 809) would be here
+            }
+            if (e is KeyWaitEvent && !p.WindowText.IsEmpty)
+            {
+                atReport ??= ScreenAt(p, 320, 100);                     // the report's first entry
+                texts.Add(p.WindowText.Text);
+            }
+        };
+        var s = run.Session.State;
+        s.EndingId = 13;
+        s.Fates[79].Fate = 1;
+        s.F_Sill_Fate = 1;
+        s.Units[2].Status = 1;
+        run.Player.PauseKey = 1;
+
+        await Assert.ThrowsAsync<GameQuitException>(() => run.Session.Script.CallFileAsync("OVER.ADV"));
+
+        output.WriteLine($"composed {run.Player.Composed}, window texts {run.Player.WindowTexts}");
+        output.WriteLine(string.Join(" | ", texts));
+        Assert.Empty(p.Unresolved);
+        Assert.Equal(grey, atEnding);
+        Assert.Equal(grey, frame);
+        Assert.NotNull(atReport);
+        Assert.NotEqual(grey, atReport);
+        Assert.Contains(run.Player.Shown, e => e is EngineEvent { Command: "G" } g && g.Args[0].Value == 857);
+        Assert.True(texts.Count > 3, "the report's entries reached the window");
+        Assert.Equal("CompletionReport", texts[0]);                     // :201 (the window keeps no spaces)
+        Assert.StartsWith("SillPlain", texts[1], StringComparison.Ordinal);
+        Assert.All(texts.Skip(2), t => Assert.DoesNotContain("SillPlain", t, StringComparison.Ordinal));
+        Assert.Equal(2, s.Fates[79].Fate.Value);
+    }
+
+    private static (byte, byte, byte, byte) ScreenAt(GamePresenter p, int x, int y)
+    {
+        p.Flush();
+        p.Invalidate();
+        p.Compose();
+        return p.Screen.PixelAt(x, y);
+    }
+
+    /// <summary>
     /// <see cref="GamePresenter.MaskEventCgs"/>: while the full-screen window is open the stage is a
     /// grey placeholder; off (the default) and with any other window the stage shows as drawn.
     /// </summary>
@@ -681,8 +746,15 @@ public class GamePresenterTests(ITestOutputHelper output)
 
         public int Pending => _pointer.Pending;
 
+        /// <summary>Every event shown, in order.</summary>
+        public List<ScriptEvent> Shown { get; } = [];
+
+        /// <summary>The key every pause returns (held through it); 0 by default.</summary>
+        public Sys3Int PauseKey { get; set; }
+
         public Task ShowAsync(ScriptEvent e)
         {
+            Shown.Add(e);
             presenter.Show(e);
             if (e is MapScreenEvent { Waiting: true })
                 Assert.Null(presenter.Picker);                                  // the map is drawn over every picker
@@ -813,7 +885,7 @@ public class GamePresenterTests(ITestOutputHelper output)
         {
             _pointer.Interrupt();
             Frame();
-            return Task.FromResult(Sys3Int.Zero);
+            return Task.FromResult(PauseKey);
         }
 
         public Task<FigtSelChoice> SelectCommandAsync(FigtSelMenu menu)

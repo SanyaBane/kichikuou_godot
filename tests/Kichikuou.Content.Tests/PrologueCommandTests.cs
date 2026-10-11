@@ -282,6 +282,44 @@ public class PrologueCommandTests(ITestOutputHelper output)
         Assert.Equal(10, game.Session.State.Week.Value);
     }
 
+    /// <summary>
+    /// The end of a game through <see cref="GameSession"/> (decision 19): a jump to <c>OVER</c> —
+    /// here thrown, with Maria's ending (5), where week 10 would autosave — runs the file from the
+    /// player's files to its <c>ZZ0</c>, and the session returns the ending; the clear is counted on
+    /// page 4 and kept in slot 1, which holds week 9's autosave.
+    /// </summary>
+    [Fact]
+    public async Task A_game_that_reaches_an_ending_runs_OVER_and_keeps_the_clear_in_its_slots()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        Played? game = null;
+        bool ended = false;
+        var saves = new WatchedSaves
+        {
+            Written = (slot, data) =>
+            {
+                if (!ended && slot == 1 && data.Variables[517] == 10)    // week 10's autosave (QD 1)
+                {
+                    ended = true;
+                    game!.Session.State.EndingId = 5;
+                    throw new ScenarioJumpException("OVER.ADV");
+                }
+            },
+        };
+        game = await SessionAsync(saves);
+        game.Input.Menu(5);                                             // week 9: Turn END
+
+        var end = await game.Session.NewGameAsync();
+
+        Assert.Equal(5, end.EndingId.Value);
+        Assert.Equal(1, game.Session.State.Fates[79].Fate.Value);
+        var slot = saves.Read(1)!;
+        Assert.Equal(9, slot.Variables[517].Value);
+        Assert.Equal(1, slot.Pages[4][79].Value);
+        Assert.Contains(game.View.Events, e => e is MessageEvent { Text: { File: "OVER.ADV", Line: 201 } });   // "Completion Report"
+    }
+
     [Fact]
     public async Task Backing_out_of_the_load_list_returns_to_the_title()
     {

@@ -67,6 +67,7 @@ public sealed partial class GamePresenter
     private int _cgFlags = 7;
     private int _nextMusicLoops;
     private int _lastCg;
+    private int _endingCg;                      // OVER's ending picture while on the stage (MaskEventCgs)
     private Action? _afterKey;
     private bool _dirty = true;
     private int _stageVersion = -1;
@@ -148,9 +149,17 @@ public sealed partial class GamePresenter
     /// <summary>
     /// Debug only, off for play: while the full-screen window (<c>WAO_SUB</c> 131/231) is open, the
     /// stage under it is drawn as a grey placeholder with the number of the CG last drawn there —
-    /// the event CGs stay out of the screen dumps the agent's tooling makes.
+    /// the event CGs stay out of the screen dumps the agent's tooling makes. So is the stage from
+    /// <c>OVER</c>'s ending picture (<see cref="FirstEndingCg"/>-<see cref="LastEndingCg"/>, under the
+    /// staff roll too) until the report's background (<see cref="ReportCg"/>) replaces it.
     /// </summary>
     public bool MaskEventCgs { get; set; }
+
+    /// <summary>The endings' pictures, <c>G 269 + EndingId</c> (<c>OVER.ADV:33</c>).</summary>
+    public const int FirstEndingCg = 270, LastEndingCg = 283;
+
+    /// <summary>The Completion Report's background (<c>OVER.ADV:194</c>).</summary>
+    public const int ReportCg = 840;
 
     /// <summary>The message window's text (for tests and other UIs).</summary>
     public TextBox WindowText => _window;
@@ -375,6 +384,8 @@ public sealed partial class GamePresenter
     /// </summary>
     private void Window(int op)
     {
+        if (op is (>= 111 and <= 153) or 0 or 10)
+            _covered &= ~Pictures.Frame;                                // the frame drawn again, or the window closed
         switch (op)
         {
             case 111 or 112: OpenWindow((235, 8, 378, 141), 15, 24); break;
@@ -487,7 +498,7 @@ public sealed partial class GamePresenter
             case "CC":
                 PrepareCopy(A(0), A(2));
                 Stage.Copy(A(0), A(1), A(2), A(3), A(4), A(5));
-                Drawn(A(4), A(5), A(2), A(3));
+                Drawn(A(4), A(5), A(2), A(3), opaque: true);
                 break;
             case "CS":
                 PrepareCopy(A(0), A(2));
@@ -496,12 +507,12 @@ public sealed partial class GamePresenter
                 break;
             case "CF":
                 Stage.Fill(A(0), A(1), A(2), A(3), A(4));
-                Drawn(A(0), A(1), A(2), A(3));
+                Drawn(A(0), A(1), A(2), A(3), opaque: true);
                 break;
             case "CM":
                 PrepareCopy(A(0), A(2));
                 Stage.ScaledCopy(A(0), A(1), A(2), A(3), A(4), A(5), A(6), A(7), A(8));
-                Drawn(A(4), A(5), A(6), A(7));
+                Drawn(A(4), A(5), A(6), A(7), opaque: true);
                 break;
             case "WV":
                 Stage.SetView(A(0), A(1));
@@ -545,13 +556,17 @@ public sealed partial class GamePresenter
         if (_cgs.Get(number) is not { } cg)
             return;
         _lastCg = number;
+        if (number is >= FirstEndingCg and <= LastEndingCg)
+            _endingCg = number;
+        else if (number == ReportCg)
+            _endingCg = 0;
         var (x, y) = jump ?? (relative is var (dx, dy) ? (cg.X + dx, cg.Y + dy) : (cg.X, cg.Y));
         if ((_cgFlags & 4) != 0)
             Stage.Palette = cg.PaletteOver(Stage.Palette);
         if ((_cgFlags & 1) == 0)
             return;
         Stage.DrawCgRegion(cg, 0, 0, cg.Width, cg.Height, x, y, key);
-        Drawn(x, y, cg.Width, cg.Height);
+        Drawn(x, y, cg.Width, cg.Height, opaque: key is null);
     }
 
     private void Fade(byte to, bool toWhite, int ticks)

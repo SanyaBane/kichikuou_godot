@@ -309,7 +309,7 @@ public sealed class SceneRunnerTests : IDisposable
     [InlineData("\t!VAR0001 : 1!", "ran past the end")]
     [InlineData("\tUG VAR0001, 1:", "UG with no pushed variable")]
     [InlineData("\t\\0:", "label return with no label call")]
-    [InlineData("\tZZ0 0:", "not ported yet")]
+    [InlineData("\tZZ0 1:", "ZZ0 1 is not ported")]
     [InlineData("\t$", "no menu item open")]
     public async Task Runtime_errors_name_the_location(string line, string message)
     {
@@ -318,6 +318,18 @@ public sealed class SceneRunnerTests : IDisposable
         var e = await Assert.ThrowsAnyAsync<Exception>(() => rig.EventAsync("GTEST.ADV", 1));
 
         Assert.Contains(message, e.Message, StringComparison.Ordinal);
+    }
+
+    /// <summary><c>ZZ0, 0</c> quits (<c>cmdz.c</c>: <c>sys_exit(RetVal)</c>): the scene is left with <c>RetVal</c> as the exit code.</summary>
+    [Fact]
+    public async Task ZZ0_quits_with_RetVal_as_the_exit_code()
+    {
+        var rig = Rig(null, ("GTEST.ADV", ["\t!VAR0000 : 3!", "\tZZ0, 0:", "\t!VAR0001 : 1!", "\t%0:"]));
+
+        var quit = await Assert.ThrowsAsync<GameQuitException>(() => rig.EventAsync("GTEST.ADV", 1));
+
+        Assert.Equal(3, quit.ExitCode.Value);
+        Assert.Equal(0, Var(rig, 1));
     }
 
     [Fact]
@@ -331,6 +343,7 @@ public sealed class SceneRunnerTests : IDisposable
         Assert.Equal([("Sﾌﾞﾀｲ.ADV", 4), ("死亡捕獲.ADV", 4)], rig.Rules.Calls);
         Assert.True(SceneRunner.IsSceneFile("Iﾄｳｿﾞｸ.ADV"));
         Assert.True(SceneRunner.IsSceneFile("ｵｰﾌﾟﾆﾝｸﾞ.ADV"));
+        Assert.True(SceneRunner.IsSceneFile("OVER.ADV"));
         Assert.False(SceneRunner.IsSceneFile("FIGT_A.ADV"));
     }
 }

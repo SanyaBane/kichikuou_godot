@@ -72,3 +72,15 @@ public sealed class ScenarioJumpException(string file)
     /// <summary>The scenario file the script jumped to, e.g. <c>OVER.ADV</c>.</summary>
     public string File { get; } = file;
 }
+
+/// <summary>
+/// <c>ZZ0, 0:</c> — the engine quits (<c>cmdz.c</c>: <c>sys_exit(RetVal)</c>); the scenario does so
+/// only at the end of <c>OVER.ADV</c>, after an ending. Unwinds the running code; the caller ends the
+/// game (STR-10: the port goes back to the title instead, owner's decision 19).
+/// </summary>
+public sealed class GameQuitException(Sys3Int exitCode)
+    : Exception($"The scenario quit the engine (exit code {exitCode.Value}).")
+{
+    /// <summary>The process's exit code the original would return: <c>RetVal</c> at the <c>ZZ0</c>.</summary>
+    public Sys3Int ExitCode { get; } = exitCode;
+}

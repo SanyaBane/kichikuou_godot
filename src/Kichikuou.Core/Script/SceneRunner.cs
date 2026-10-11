@@ -20,8 +20,8 @@ namespace Kichikuou.Core.Script;
 /// page keeps its own part of the stack. The menu being built (<c>$label$</c> … <c>]</c>) is
 /// engine state shared by all pages, as <c>nact-&gt;sel</c> is. The save-data commands (<c>LD</c>,
 /// <c>QD</c>, <c>LP</c>, <c>QP</c>, <c>QC</c>, <c>LT</c>; only the save screen uses them) run on
-/// the context's slots; quitting (<c>ZZ0</c>: the ending and <c>Iｱﾘｽ</c>) is not ported yet and
-/// fails when reached.
+/// the context's slots; quitting (<c>ZZ0, 0</c>, the end of <c>OVER</c>) leaves by
+/// <see cref="GameQuitException"/>.
 /// </remarks>
 public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<string, bool>? isScene = null) : IStoryHooks
 {
@@ -56,9 +56,12 @@ public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<str
         _script = script;
     }
 
-    /// <summary>The scene files of the scenario: <c>G*</c>, <c>I*</c>, the opening and the battle inserts.</summary>
+    /// <summary>
+    /// The files run from the decompile: the scenes (<c>G*</c>, <c>I*</c>), the opening, the battle
+    /// inserts and the game frame (owner's decision 19: <c>OVER</c>, the ending).
+    /// </summary>
     public static bool IsSceneFile(string file) =>
-        file.Length > 0 && file[0] is 'G' or 'I' || file is "ｵｰﾌﾟﾆﾝｸﾞ.ADV" or "FIGT表示.ADV";
+        file.Length > 0 && file[0] is 'G' or 'I' || file is "ｵｰﾌﾟﾆﾝｸﾞ.ADV" or "FIGT表示.ADV" or "OVER.ADV";
 
     /// <inheritdoc />
     public Task RunEventAsync(string file, Sys3Int entry) =>
@@ -252,8 +255,12 @@ public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<str
                 case SaveDataStatement s:
                     RunSaveCommand(s);
                     break;
-                case QuitStatement:
-                    throw new NotSupportedException($"{statement.At}: {statement.GetType().Name} is not ported yet.");
+                case QuitStatement s:
+                    // cmdz.c commandZZ0: 0 quits with RetVal as the exit code (the end of OVER); 1, waiting
+                    // for the window to close, is used nowhere.
+                    if (Eval(s.Mode) != Sys3Int.Zero)
+                        throw new NotSupportedException($"{s.At}: ZZ0 {Eval(s.Mode).Value} is not ported.");
+                    throw new GameQuitException(State.RetVal);
                 default:
                     throw new ScenarioFormatException($"{statement.At}: {statement.GetType().Name} cannot run in a scene.");
             }

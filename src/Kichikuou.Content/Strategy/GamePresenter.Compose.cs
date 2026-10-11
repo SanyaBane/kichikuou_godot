@@ -27,9 +27,9 @@ public sealed partial class GamePresenter
 
     private enum MapAnimation { None, Scroll, Blink }
 
-    /// <summary><c>WAO_SUB</c>'s pictures (<see cref="Cover"/>).</summary>
+    /// <summary><c>WAO_SUB</c>'s pictures and the window's frame (<see cref="Cover"/>).</summary>
     [Flags]
-    private enum Pictures { None = 0, PortraitL = 1, PortraitR = 2, Center = 4 }
+    private enum Pictures { None = 0, PortraitL = 1, PortraitR = 2, Center = 4, Frame = 8 }
 
     private static readonly (int X, int Y) PortraitLAt = (0, 0);
     private static readonly (int X, int Y) PortraitRAt = (448, 144);
@@ -147,33 +147,42 @@ public sealed partial class GamePresenter
 
     /// <summary>
     /// A drawing command reached the tile area: what is there is no longer the map; on screen it
-    /// may draw over <c>WAO_SUB</c>'s pictures (<see cref="Cover"/>).
+    /// may draw over <c>WAO_SUB</c>'s pictures, and an <paramref name="opaque"/> one (<c>CC</c>,
+    /// <c>CF</c>, <c>CM</c>, <c>G</c> without a key) over the window's frame and text (<see cref="Cover"/>).
     /// </summary>
-    private void Drawn(int x, int y, int w, int h)
+    private void Drawn(int x, int y, int w, int h, bool opaque = false)
     {
         if (x + w > TileArea && w > 0 && h > 0)
             _tiles = Tiles.Foreign;
-        Cover(x, y, w, h);
+        Cover(x, y, w, h, opaque);
     }
 
     /// <summary>
-    /// The engine draws <c>WAO_SUB</c>'s pictures into the screen once, so a drawing over the whole
-    /// of one (the map's view during an <c>M.ADV</c> scroll, <c>WAO_MAP.ADV:2</c>) wipes it while its
-    /// variable still holds it; it stays hidden until <c>WAO_SUB</c> draws or removes it again.
+    /// The engine draws <c>WAO_SUB</c>'s pictures and the window's frame and text into the screen
+    /// once, so a drawing over the whole of one (the map's view during an <c>M.ADV</c> scroll,
+    /// <c>WAO_MAP.ADV:2</c>) wipes it while its variable still holds it; it stays hidden until
+    /// <c>WAO_SUB</c> draws or removes it again. The frame and the text are wiped only by an
+    /// <paramref name="opaque"/> drawing command — <c>OVER</c>'s ending picture over the window it
+    /// has just opened (<c>OVER.ADV:29-34</c>), the frame until a window is opened or closed; its
+    /// report's text area restored after each entry (<c>:2208</c>), the characters under it.
     /// </summary>
-    private void Cover(int x, int y, int w, int h)
+    private void Cover(int x, int y, int w, int h, bool opaque = false)
     {
         if (State is not { } s || InBattle)
             return;
-        bool Covers((int X, int Y) at, int number) =>
-            number != 0 && _cgs.Get(number) is { } cg
-            && x <= at.X && y <= at.Y && x + w >= at.X + cg.Width && y + h >= at.Y + cg.Height;
+        if (opaque)
+            _window.Wipe(x, y, w, h);
+        bool Covers((int X, int Y)? at, int number) =>
+            number != 0 && _cgs.Get(number) is { } cg && (at ?? (cg.X, cg.Y)) is var (ax, ay)
+            && x <= ax && y <= ay && x + w >= ax + cg.Width && y + h >= ay + cg.Height;
         if (Covers(PortraitLAt, s.Ui_PortraitL.Value))
             _covered |= Pictures.PortraitL;
         if (Covers(PortraitRAt, s.Ui_PortraitR.Value))
             _covered |= Pictures.PortraitR;
         if (Covers(CenterAt, s.Ui_CenterCg.Value))
             _covered |= Pictures.Center;
+        if (opaque && s.Ui_WinType != 0 && Covers(null, s.Ui_WinFrameCg.Value))
+            _covered |= Pictures.Frame;
     }
 
     /// <summary>The whole screen was drawn over.</summary>
@@ -246,7 +255,7 @@ public sealed partial class GamePresenter
             }
             else
             {
-                if (MaskEventCgs && s.Ui_WinType == 31)
+                if (MaskEventCgs && (s.Ui_WinType == 31 || _endingCg != 0))
                     MaskStage();
                 DrawPictures(s);
                 Picker?.Draw(Screen, s);
@@ -288,7 +297,7 @@ public sealed partial class GamePresenter
     private void MaskStage()
     {
         Screen.FillColor(0, 0, Surface.ScreenWidth, Surface.ScreenHeight, (96, 96, 96));
-        MessageWriter.DrawString(Screen, _glyphs, $"CG {_lastCg} (masked)", 16, 16, 24, (255, 255, 255));
+        MessageWriter.DrawString(Screen, _glyphs, $"CG {(_endingCg != 0 ? _endingCg : _lastCg)} (masked)", 16, 16, 24, (255, 255, 255));
     }
 
     /// <summary>
@@ -328,7 +337,7 @@ public sealed partial class GamePresenter
     /// <summary>The open window's frame (<c>Ui_WinFrameCg</c>) at its own position; the full-screen window's is opaque under the keyed one.</summary>
     private void Frame(GameState s)
     {
-        if (s.Ui_WinType == 0 || _cgs.Get(s.Ui_WinFrameCg.Value) is not { } frame)
+        if (s.Ui_WinType == 0 || (_covered & Pictures.Frame) != 0 || _cgs.Get(s.Ui_WinFrameCg.Value) is not { } frame)
             return;
         if (s.Ui_WinType.Value is >= 31 and <= 39)
             Screen.DrawCg(frame, frame.X, frame.Y);

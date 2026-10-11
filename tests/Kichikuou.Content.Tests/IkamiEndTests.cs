@@ -9,8 +9,8 @@ namespace Kichikuou.Content.Tests;
 /// The end of the game (milestone 5 step 2; docs/strategy/survey-ikami.md): <c>Iｶﾐ</c> run from the
 /// player's files, end to end, with the rule files it calls routed — the garrison picker
 /// <c>Sﾌﾞﾀｲ</c> (<see cref="DeploymentScreen"/>), the kaiju battles <c>FIGT</c> (the battle's port),
-/// <c>FIGT表示</c> 21-24 as a scene — to each of its endings, which jump to <c>OVER</c>
-/// (<c>GameEnd</c>). A garrison is left on 2F-5F: Bound (unit 3), Soul (unit 4), Leila (unit 5),
+/// <c>FIGT表示</c> 21-24 as a scene — to each of its endings, which jump to <c>OVER</c>, run from the
+/// player's files to its quit. A garrison is left on 2F-5F: Bound (unit 3), Soul (unit 4), Leila (unit 5),
 /// Rick (unit 7). The fights are won with the debug Repel unless a test says otherwise. Skipped
 /// without the decompile.
 /// </summary>
@@ -230,7 +230,10 @@ public class IkamiEndTests(ITestOutputHelper output)
         game.Input.Menu.Enqueue(4);
     }
 
-    /// <summary>Runs <c>Iｶﾐ</c> to its jump to <c>OVER</c>.</summary>
+    /// <summary>
+    /// Runs <c>Iｶﾐ</c> to its jump to <c>OVER</c>, then <c>OVER</c> from the player's files to its
+    /// quit (milestone 6): each of <c>Iｶﾐ</c>'s endings (9, 10, 11, 13) counts a clear.
+    /// </summary>
     private async Task RunToTheEndAsync(EndGame game, int pickers = 4)
     {
         var jump = await Assert.ThrowsAsync<ScenarioJumpException>(() => game.Script.CallFileAsync("Iｶﾐ.ADV"));
@@ -238,6 +241,10 @@ public class IkamiEndTests(ITestOutputHelper output)
         output.WriteLine($"fights {game.Fights}, mouse reads {game.Input.Reads}, ending {game.State.EndingId.Value}");
         Assert.Equal("OVER.ADV", jump.File);
         Assert.Equal(pickers, game.Calls.Count(c => c.StartsWith("Sﾌﾞﾀｲ.ADV", StringComparison.Ordinal)));
+
+        int clears = game.State.Fates[79].Fate.Value;
+        await Assert.ThrowsAsync<GameQuitException>(() => game.Script.CallFileAsync("OVER.ADV"));
+        Assert.Equal(clears + 1, game.State.Fates[79].Fate.Value);
     }
 
     /// <summary>

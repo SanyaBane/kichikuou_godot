@@ -55,7 +55,8 @@ public partial class Main : Control
 
     /// <summary>
     /// Development switches after <c>--</c>. A game: <c>--newgame</c> or <c>--load</c> starts it at
-    /// once; <c>--auto</c> plays it unattended (keys answered, Turn END every week, the battles
+    /// once (<c>--ending N</c> shows ending N's <c>OVER</c> on the booted game, its slots in
+    /// <c>user://saves-ending</c>, so the clear it records stays out of the player's); <c>--auto</c> plays it unattended (keys answered, Turn END every week, the battles
     /// fought with the first attack, from stage 1 a replenish and an attack on the rebels once a
     /// week, a strong party sent) up to week 30 or <c>--weeks N</c>, or to the command menu two weeks after story stage
     /// <c>--stage N</c> was reached; <c>--seed N</c> fixes the random generator (once per launch: a
@@ -75,18 +76,20 @@ public partial class Main : Control
         string? shots = Value("--shots");
 
         Node? screen = null;
-        if (args.Contains("--newgame") || args.Contains("--load"))
+        int? ending = int.TryParse(Value("--ending"), out int e) ? e : null;
+        if (args.Contains("--newgame") || args.Contains("--load") || ending is not null)
         {
             bool auto = args.Contains("--auto");
             screen = new GameScreen(new GameOptions
             {
-                Start = args.Contains("--load") ? GameStart.Load : GameStart.New,
+                Start = ending is not null ? GameStart.Ending : args.Contains("--load") ? GameStart.Load : GameStart.New,
+                Ending = ending ?? 0,
                 Auto = auto,
                 Fast = fast,
                 QuitWhenDone = quit,
                 ScreenshotDirectory = shots,
                 MsgSkip = args.Contains("--msgskip"),
-                SaveDirectory = Value("--saves") ?? (auto ? "user://saves-auto" : null),
+                SaveDirectory = Value("--saves") ?? (ending is not null ? "user://saves-ending" : auto ? "user://saves-auto" : null),
                 AutoWeeks = int.TryParse(Value("--weeks"), out int weeks) ? weeks : 30,
                 AutoStage = int.TryParse(Value("--stage"), out int stage) ? stage : 0,
             });

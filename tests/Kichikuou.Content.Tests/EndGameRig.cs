@@ -9,7 +9,7 @@ using Kichikuou.Core.Sys3;
 namespace Kichikuou.Content.Tests;
 
 /// <summary>
-/// A game for the end-of-game tests (<see cref="IkamiEndTests"/>, <see cref="GodsDoorEndTests"/>):
+/// A game for the end-of-game tests (<see cref="IkamiEndTests"/>, <see cref="GodsDoorEndTests"/>, <see cref="OverTests"/>):
 /// the boot and the new game from the player's files with the rule files routed and the scenes run
 /// from the decompile (every draw 1), every call to another file recorded, the input an
 /// <see cref="EndInput"/>.
@@ -24,11 +24,12 @@ internal sealed class EndGame
 
     private readonly CallRecorder _recorder;
 
-    private EndGame(GameState state, ScriptContext script, EndInput input, CallRecorder recorder)
+    private EndGame(GameState state, ScriptContext script, EndInput input, RecordingView view, CallRecorder recorder)
     {
         State = state;
         Script = script;
         Input = input;
+        View = view;
         _recorder = recorder;
     }
 
@@ -37,6 +38,9 @@ internal sealed class EndGame
     public ScriptContext Script { get; }
 
     public EndInput Input { get; }
+
+    /// <summary>Every presentation event, the boot's and the new game's included.</summary>
+    public RecordingView View { get; }
 
     /// <summary>Every call to another file as "file entry", in order.</summary>
     public List<string> Calls => _recorder.Calls;
@@ -58,7 +62,8 @@ internal sealed class EndGame
         var runner = new SceneRunner(scripts, rules);
         var input = new EndInput(state);
         var recorder = new CallRecorder(runner, state);
-        var script = new ScriptContext(state, new QueuedRandom { DefaultToOne = true }, new RecordingView(), input, recorder)
+        var view = new RecordingView();
+        var script = new ScriptContext(state, new QueuedRandom { DefaultToOne = true }, view, input, recorder)
         {
             Saves = new MemorySaveStore(),
         };
@@ -68,7 +73,7 @@ internal sealed class EndGame
         await setup.BootAsync();
         await setup.NewGameAsync();
         recorder.Calls.Clear();
-        return new EndGame(state, script, input, recorder);
+        return new EndGame(state, script, input, view, recorder);
     }
 
     /// <summary>Every call to another file, recorded with its entry, then run.</summary>
@@ -191,5 +196,6 @@ internal sealed class EndInput(GameState state) : IGameInput
     public Task ResetTimerAsync(Sys3Int value) => throw new InvalidOperationException("ZT 1");
     public Task<Sys3Int> GetTimerAsync(int mode) => throw new InvalidOperationException("ZT n");
     public Task<IReadOnlyList<Sys3Int>> GetCdPositionAsync() => throw new InvalidOperationException("SC");
-    public Task<Sys3Int> GetMidiTrackAsync() => throw new InvalidOperationException("SR 1");
+    /// <summary><c>SR 1</c>: no MIDI plays (the music is <c>SS</c>), so 0 at once, as xsystem35 answers <c>OVER.ADV:160</c>.</summary>
+    public Task<Sys3Int> GetMidiTrackAsync() => Task.FromResult(Sys3Int.Zero);
 }

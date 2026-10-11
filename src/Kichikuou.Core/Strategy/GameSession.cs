@@ -13,8 +13,10 @@ namespace Kichikuou.Core.Strategy;
 /// whatever runs by <see cref="GameLoadedException"/>; the session catches it and goes on where the
 /// slot was saved — the save screen's "Load Complete" (<see cref="LoadSaveScreen.ResumeAsync"/>),
 /// then the rest of that week (<see cref="WeekLoop.ResumeAsync"/>). The game ends at a jump to
-/// <c>OVER.ADV</c> (an ending, <c>EndingId</c>), which the session returns; <c>OVER</c> itself is
-/// not ported (owner's decision 10). A path not ported yet fails with <see cref="NotSupportedException"/>.
+/// <c>OVER.ADV</c> (an ending, <c>EndingId</c>): the file runs from the player's files (owner's
+/// decision 19) — the ending's picture, the staff roll, the Completion Report recorded on page 4 and
+/// kept in the slots — up to its <c>ZZ0</c>, and the session returns the ending. A path not ported
+/// yet fails with <see cref="NotSupportedException"/>.
 /// </summary>
 /// <remarks>
 /// The original boots once per launch and quits at every ending (STR-10); a session is one boot
@@ -85,7 +87,20 @@ public sealed class GameSession
         }
     }
 
-    /// <summary>Runs <paramref name="start"/> and whatever a load or a jump to <c>MAIN</c> continues with, until an ending.</summary>
+    /// <summary>
+    /// Development (<c>--ending</c>): an ending without playing to it — <c>OVER</c> on the booted
+    /// state with <paramref name="endingId"/> (the report shows a fresh game's fates), to its <c>ZZ0</c>.
+    /// </summary>
+    public Task<GameEnd> EndingAsync(Sys3Int endingId) => PlayAsync(() =>
+    {
+        State.EndingId = endingId;
+        return Script.CallFileAsync("OVER.ADV");
+    });
+
+    /// <summary>
+    /// Runs <paramref name="start"/> and whatever a load or a jump to <c>MAIN</c> or <c>OVER</c>
+    /// continues with, until <c>OVER</c> quits.
+    /// </summary>
     private async Task<GameEnd> PlayAsync(Func<Task> start)
     {
         var next = start;
@@ -94,20 +109,20 @@ public sealed class GameSession
             try
             {
                 await next();
-                throw new InvalidOperationException("The week loop returned.");
+                throw new InvalidOperationException("The week loop or OVER.ADV returned.");
             }
             catch (GameLoadedException loaded)
             {
                 var resume = loaded.Resume;
                 next = () => ResumeAsync(resume);
             }
-            catch (ScenarioJumpException jump) when (jump.File == "MAIN.ADV")
+            catch (ScenarioJumpException jump) when (jump.File is "MAIN.ADV" or "OVER.ADV")
             {
-                next = () => Script.CallFileAsync("MAIN.ADV");
+                next = () => Script.CallFileAsync(jump.File);
             }
-            catch (ScenarioJumpException jump) when (jump.File == "OVER.ADV")
+            catch (GameQuitException)
             {
-                return new GameEnd(State.EndingId);
+                return new GameEnd(State.EndingId);                     // OVER.ADV:2083 ZZ0, 0
             }
         }
     }
@@ -120,5 +135,5 @@ public sealed class GameSession
     }
 }
 
-/// <summary>How a game ended: the jump to <c>OVER.ADV</c> with <paramref name="EndingId"/> set by the caller.</summary>
+/// <summary>How a game ended: <c>OVER.ADV</c> ran to its <c>ZZ0</c> for the ending <paramref name="EndingId"/>.</summary>
 public sealed record GameEnd(Sys3Int EndingId);

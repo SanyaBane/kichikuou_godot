@@ -60,6 +60,14 @@ public sealed class TextBox((int X, int Y, int W, int H) rect)
         }
     }
 
+    /// <summary>
+    /// An opaque drawing over the screen at (<paramref name="x"/>, <paramref name="y"/>): the
+    /// characters whose cells it reaches are gone (the engine prints into the screen, so a copy over
+    /// the text erases it — <c>OVER.ADV:2208</c> restores its text area so); the cursor stays.
+    /// </summary>
+    public void Wipe(int x, int y, int w, int h) =>
+        _chars.RemoveAll(c => c.X < x + w && x < c.X + MessageWriter.CellWidth(c.C, c.Size) && c.Y < y + h && y < c.Y + c.Size);
+
     /// <summary>Draws the text onto <paramref name="surface"/> in its palette's colours.</summary>
     public void Draw(Surface surface, IGlyphRenderer glyphs)
     {
