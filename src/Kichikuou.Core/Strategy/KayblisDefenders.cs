@@ -19,7 +19,7 @@ namespace Kichikuou.Core.Strategy;
 /// Tower of Evil (78) until she is met (<c>Gﾜｰｸﾞ</c> 1), Kesselring (133) with three Monster Generals
 /// at his castle (87), Camilla (91) with one at hers (88; her maximum raised from 200 to 2000,
 /// NAT-10), Kayblis (135) with three Monster Generals (181-183) at the Demon Lord's Castle (79;
-/// <c>Gｹｲﾌﾞﾘｽ</c> 4 unless Galtia has joined him), Medusa (134) with two at Kayblis's Castle (84),
+/// <c>Gｹｲﾌﾞﾘｽ</c> 4 on the first attack), Medusa (134) with two at Kayblis's Castle (84),
 /// else the four Monster Generals (86-89); only the last two castles keep their walls (NAT-21).
 /// Retreat mode 1 throughout; nobody is left out of a pick. The army name (<c>MS 10</c>) is read from
 /// the player's files through <paramref name="scenario"/>.
@@ -169,11 +169,11 @@ public sealed class KayblisDefenders(ScriptContext script, IScenarioSource? scen
 
     /// <summary>
     /// <c>Tｹｲﾌﾞﾘｽ2.ADV:124-143</c> (<c>L_0032f</c>) — Kayblis (135) with Monster Generals (181-183),
-    /// walls; <c>Gｹｲﾌﾞﾘｽ</c> 4 first unless Galtia has joined him.
+    /// walls; <c>Gｹｲﾌﾞﾘｽ</c> 4 first on the first attack (Kayblis hears of it).
     /// </summary>
     private async Task DemonLordsCastleAsync()
     {
-        if (State.F_Galtia_JoinedKayblis == 0)
+        if (State.F_DemonCastle_Attacked == 0)
             await Script.EventAsync("Gｹｲﾌﾞﾘｽ.ADV", 4);
         State.Bt_EnemyRetreatMode = 1;
         State.Bt_TroopLimit = Prov.BattleArea;                          // QUIRK: NAT-16

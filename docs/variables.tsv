@@ -636,7 +636,7 @@ VAR0633		unused	Only reset to 0, never used.	C	SET_VER.ADV:530
 VAR0634	F_Satella_LineCmdr91	battle	One-shot Satella battle line vs enemy commander 91 already shown.	I	FIGT_M.ADV:1255; FIGT_M.ADV:9678
 VAR0635	F_Satella_LineCmdr92	battle	One-shot Satella battle line vs enemy commander 92 already shown.	I	FIGT_M.ADV:1258; FIGT_M.ADV:9756
 VAR0636	F_Meglass_LineCmdr93	battle	One-shot battle line of unit 30 (Meglass) vs enemy commander 93 already shown.	C	FIGT_M.ADV:1414-1415; FIGT_M.ADV:9827
-VAR0637		story	Kayblis event flag set when commander 135 joins; changes Kayblis AI branches.	G	Gｹｲﾌﾞﾘｽ.ADV:368; Tｹｲﾌﾞﾘｽ.ADV:1360
+VAR0637	F_Galtia_DefectedToKayblis	story	Galtia (unit 41) defected to Kayblis in a defence against Kayblis's army (Gｹｲﾌﾞﾘｽ 7, from FIGT_B:217-231; the unit to status 0, Galtia (commander 131) to 1): Galtia then marches with Kayblis's army (Tｹｲﾌﾞﾘｽ:1360), no longer with his own unit (:226)	C	Gｹｲﾌﾞﾘｽ.ADV:368; Tｹｲﾌﾞﾘｽ.ADV:226; Tｹｲﾌﾞﾘｽ.ADV:1360
 VAR0638	N_Freak_Stage	story	Freak event progression 0-7 (1 set by a battle line).	I	FIGT_M.ADV:9902; Gﾌﾘｰｸ.ADV:580; COM.ADV:403
 VAR0639	F_MercA_Lost	unit	Mercenary A (unit 49) died; can no longer be hired.	C	死亡捕獲.ADV:17; Cｼｮｳﾆﾝ.ADV:111
 VAR0640	F_MercB_Lost	unit	Mercenary B (unit 50) died; can no longer be hired.	C	死亡捕獲.ADV:23; Cｼｮｳﾆﾝ.ADV:118
@@ -743,8 +743,8 @@ VAR0740	F_Kaoru_Fate	story	2=Kaoru killed by Medusa (bad epilogue; Kaoru ninja r
 VAR0741	F_Kite_Ev8Seen	story	Kite (cmdr 132) scene 8 seen (needs VAR0380>2)	C	COM.ADV:437, Gｶｲﾄ.ADV:29
 VAR0742	F_Redeye_Ev7Seen	story	Redeye scene 7 seen (needs VAR0654!=0)	C	COM.ADV:431, Gﾚｯﾄﾞｱｲ.ADV:1085
 VAR0743	F_Babolat_Ev6Seen	story	Babolat scene 6 (Barres audience) seen	C	COM.ADV:425, Gﾊﾞﾎﾞﾗ.ADV:23
-VAR0744	F_Galtia_JoinedKayblis	story	Galtia joined Kayblis (Kayblis scene 4); enables Waag scene 2	C	Gｹｲﾌﾞﾘｽ.ADV:504, Tｹｲﾌﾞﾘｽ2.ADV:125, COM.ADV:96
-VAR0745	F_Kayblis_Moved	story	Kayblis began to move (Kayblis scene 3, played once the player owns prov 81/89)	C	Gｹｲﾌﾞﾘｽ.ADV:659, Tｹｲﾌﾞﾘｽ.ADV:190, Tｹｲﾌﾞﾘｽ.ADV:276
+VAR0744	F_DemonCastle_Attacked	story	Kayblis has heard of the first attack on the Demon Lord's Castle (79) (Gｹｲﾌﾞﾘｽ 4, played by Tｹｲﾌﾞﾘｽ2 while 0); opens Warg's scene 2 (COM:96)	C	Gｹｲﾌﾞﾘｽ.ADV:504, Tｹｲﾌﾞﾘｽ2.ADV:125, COM.ADV:96
+VAR0745	F_Kayblis_Moved	story	Kayblis began to move (Gｹｲﾌﾞﾘｽ 3, played by the Kayblis turn once the player holds Silky's Castle (81)); ends the Grief Valley (89) guards' attacks (Tｹｲﾌﾞﾘｽ:190)	C	Gｹｲﾌﾞﾘｽ.ADV:659, Tｹｲﾌﾞﾘｽ.ADV:190, Tｹｲﾌﾞﾘｽ.ADV:276
 VAR0746	F_Maris_DemonTalkSeen	story	Maris scene 17 (stage 3, war on the demons) seen	C	COM.ADV:284, Gﾏﾘｽ.ADV:53
 VAR0747	F_Maris_KesselringTalkSeen	story	Maris scene 16 (Rance fuming about Kesselring, VAR0376=2) seen	C	COM.ADV:812, Gﾏﾘｽ.ADV:241
 VAR0748	F_Wendy_BedroomSeen	story	Wendy scene 4 (cleaning Rance's bedroom) seen; 1 gives Wendy's good epilogue	C	Cﾊｰﾚﾑ.ADV:18, Gｳｪﾝﾃﾞｨ.ADV:46, OVER.ADV:317

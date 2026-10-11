@@ -1603,8 +1603,8 @@ public sealed partial class GameState
     /// <summary>VAR0636 [C] — One-shot battle line of unit 30 (Meglass) vs enemy commander 93 already shown.</summary>
     public ref Sys3Int F_Meglass_LineCmdr93 => ref Memory.Var(636);
 
-    /// <summary>VAR0637 [G] — Kayblis event flag set when commander 135 joins; changes Kayblis AI branches.</summary>
-    public ref Sys3Int VAR0637 => ref Memory.Var(637);
+    /// <summary>VAR0637 [C] — Galtia (unit 41) defected to Kayblis in a defence against Kayblis's army (Gｹｲﾌﾞﾘｽ 7, from FIGT_B:217-231; the unit to status 0, Galtia (commander 131) to 1): Galtia then marches with Kayblis's army (Tｹｲﾌﾞﾘｽ:1360), no longer with his own unit (:226)</summary>
+    public ref Sys3Int F_Galtia_DefectedToKayblis => ref Memory.Var(637);
 
     /// <summary>VAR0638 [I] — Freak event progression 0-7 (1 set by a battle line).</summary>
     public ref Sys3Int N_Freak_Stage => ref Memory.Var(638);
@@ -1924,10 +1924,10 @@ public sealed partial class GameState
     /// <summary>VAR0743 [C] — Babolat scene 6 (Barres audience) seen</summary>
     public ref Sys3Int F_Babolat_Ev6Seen => ref Memory.Var(743);
 
-    /// <summary>VAR0744 [C] — Galtia joined Kayblis (Kayblis scene 4); enables Waag scene 2</summary>
-    public ref Sys3Int F_Galtia_JoinedKayblis => ref Memory.Var(744);
+    /// <summary>VAR0744 [C] — Kayblis has heard of the first attack on the Demon Lord's Castle (79) (Gｹｲﾌﾞﾘｽ 4, played by Tｹｲﾌﾞﾘｽ2 while 0); opens Warg's scene 2 (COM:96)</summary>
+    public ref Sys3Int F_DemonCastle_Attacked => ref Memory.Var(744);
 
-    /// <summary>VAR0745 [C] — Kayblis began to move (Kayblis scene 3, played once the player owns prov 81/89)</summary>
+    /// <summary>VAR0745 [C] — Kayblis began to move (Gｹｲﾌﾞﾘｽ 3, played by the Kayblis turn once the player holds Silky's Castle (81)); ends the Grief Valley (89) guards' attacks (Tｹｲﾌﾞﾘｽ:190)</summary>
     public ref Sys3Int F_Kayblis_Moved => ref Memory.Var(745);
 
     /// <summary>VAR0746 [C] — Maris scene 17 (stage 3, war on the demons) seen</summary>

@@ -10,7 +10,7 @@ namespace Kichikuou.Content.Tests;
 
 /// <summary>
 /// The hand-ported nation files (<see cref="RebelTurn"/>, <see cref="RebelDefenders"/>,
-/// <see cref="HelmanTurn"/>, <see cref="HelmanDefenders"/>, <see cref="PattonTurn"/>, <see cref="ZethTurn"/>, <see cref="ZethDefenders"/>, <see cref="KayblisDefenders"/>, <see cref="JapanTurn"/>, <see cref="JapanDefenders"/>, on the template
+/// <see cref="HelmanTurn"/>, <see cref="HelmanDefenders"/>, <see cref="PattonTurn"/>, <see cref="ZethTurn"/>, <see cref="ZethDefenders"/>, <see cref="KayblisTurn"/>, <see cref="KayblisDefenders"/>, <see cref="JapanTurn"/>, <see cref="JapanDefenders"/>, on the template
 /// <see cref="NationFile"/>) against the files
 /// themselves run from the player's decompile by <see cref="SceneRunner"/>, on random states: both
 /// runs must call the same files with the same <c>Ev_Entry</c> and the same party, draw the same
@@ -671,7 +671,7 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
     /// A province of Kayblis's (the gate, the Houses, the castles), now and then any, attacked again
     /// now and then with up to four hits, with walls and battle area; the story stage around 2 and 3;
     /// the Monster Generals (86-89) with random maxima (now and then too small to draw), the named
-    /// commanders alive or not, Camilla's maximum 200 now and then; Warg's and Galtia's flags.
+    /// commanders alive or not, Camilla's maximum 200 now and then; Warg's flag and the first attack on the Demon Lord's Castle (79).
     /// </summary>
     private static void AimAtKayblis(GameState state, Random rng)
     {
@@ -691,7 +691,7 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
             state.Cmdrs[c].Status = (Sys3Int)(rng.Next(4) == 0 ? 0 : rng.Next(1, 3));
         state.Cmdrs[91].MaxTroops = (Sys3Int)(rng.Next(2) == 0 ? 200 : rng.Next(0, 3000));
         state.N_Warg_Stage = (Sys3Int)(rng.Next(2) == 0 ? 0 : rng.Next(1, 3));
-        state.F_Galtia_JoinedKayblis = (Sys3Int)rng.Next(0, 2);
+        state.F_DemonCastle_Attacked = (Sys3Int)rng.Next(0, 2);
     }
 
     /// <summary>What Warg's and Kayblis's scenes may change: the flags, the commanders, the stage, the army name.</summary>
@@ -702,7 +702,7 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
         if (rng.Next(4) == 0)
             state.N_Warg_Stage = (Sys3Int)rng.Next(0, 3);
         if (rng.Next(4) == 0)
-            state.F_Galtia_JoinedKayblis = (Sys3Int)rng.Next(0, 2);
+            state.F_DemonCastle_Attacked = (Sys3Int)rng.Next(0, 2);
         if (rng.Next(6) == 0)
             state.StoryStage = (Sys3Int)rng.Next(2, 5);
         foreach (int c in KayblisCommanders)
@@ -751,6 +751,247 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
             yield return "Camilla raised";
         if (after.Tmp0001 == 86 && after.Bt_WallBonus == before.Provs[prov].Defense && before.StoryStage != 3)
             yield return "Monster Generals with walls";
+    }
+
+    [Fact]
+    public Task The_Kayblis_turn_runs_exactly_as_Tｹｲﾌﾞﾘｽ() =>
+        CompareAsync(
+            "Tｹｲﾌﾞﾘｽ.ADV",
+            (script, scenario) => new KayblisTurn(script, scenario).RunAsync(),
+            AimAtKayblisTurn,
+            KayblisTurnFeatures,
+            [
+                "week S", "call Gｹｲﾌﾞﾘｽ.ADV 2", "call Gﾒﾃﾞｨｳｻ.ADV 1", "call Gﾒﾃﾞｨｳｻ.ADV 2", "call Gﾒﾃﾞｨｳｻ.ADV 3",
+                "call Gﾒﾃﾞｨｳｻ.ADV 4", "call Gﾒﾃﾞｨｳｻ.ADV 5", "Medusa's counter moved", "call Gｶﾐｰﾗ.ADV 3", "call Gｶﾐｰﾗ.ADV 4",
+                "call Gｶﾐｰﾗ.ADV 5", "a marked week ends the chain",
+                .. new[] { 1, 2, 3, 4, 5, 6, 8, 9 }.Select(n => $"call Gｼﾙｷｨ.ADV {n}"), "the chain goes on after Gｼﾙｷｨ 8",
+                "call Gﾜｰｸﾞ.ADV 3", "call Gﾜｰｸﾞ.ADV 4", "call Gﾅｷﾞ.ADV 9", "call Gｹｲﾌﾞﾜﾝ.ADV 3", "call Gｹｲﾌﾞﾆｬﾝ.ADV 3",
+                "call Gｻﾃﾗ.ADV 2", "no scene", "guards", "guards again", "guards with portrait 415", "guards with portrait 466",
+                "call Gﾊﾞﾎﾞﾗ.ADV 1", "call Gﾚｯﾄﾞｱｲ.ADV 1", "call Gｶｲﾄ.ADV 1", "call Gｶﾞﾙﾃｨｱ.ADV 1", "call Gｹｯｾﾙ.ADV 1",
+                "call Gﾊﾟｲｱｰﾙ.ADV 1", "call Gｹｲﾌﾞﾘｽ.ADV 3", "the end", "jump",
+                .. new[] { 729, 831, 972, 1112, 1209, 670, 1329, 326 }.Select(l => $"unported {l}"),
+            ],
+            ScribbleKayblisTurn,
+            unported: true);
+
+    [Fact]
+    public Task Kayblis_captures_exactly_as_L_026bf() =>
+        CompareAsync(
+            "Tｹｲﾌﾞﾘｽ.ADV",
+            (script, scenario) => new KayblisTurn(script, scenario).CaptureAsync(),
+            AimAtKayblisCapture,
+            KayblisCaptureFeatures,
+            [
+                "plain capture", "Helman falls", "Helman fallen already", "Shangri-La to Kayblis", "Shangri-La kept",
+                .. new[] { 101, 104, 107, 110 }.Select(c => $"minister {c} killed"), "Zeth's story moved on", "Zeth falls",
+                "Zeth fallen already", "Adam's Fortress to Kayblis", "Saias killed by the collapse",
+                .. new[] { 113, 117, 121, 125 }.Select(c => $"general {c} killed"), "general dead already",
+            ],
+            label: "L_026bf");
+
+    /// <summary>
+    /// Kayblis's commanders: Camilla (91), the generals and their officers (129-133, 148-155), Medusa
+    /// (134), Kayblis (135), Piar's (136-138), Silky (156), Satella (157), Meglass (158), Lis Guard (186).
+    /// </summary>
+    private static readonly int[] KayblisTurnCommanders = [91, .. Enumerable.Range(129, 10), .. Enumerable.Range(148, 11), 186];
+
+    /// <summary>
+    /// Week S now and then (the demon war below 20), the assault pending now and then; Kayblis's
+    /// commanders alive or not, with HP, troops, maxima and recovery around their caps; the event
+    /// chain's flags around their tests (Medusa's state and counter, Camilla's state, the war, Silky's
+    /// state, souls and week, Warg, Stessel, Nagi, Kaybwan, Kaybnyan, Satella); Grief Valley (89),
+    /// Silky's Castle (81), Bone Forest (90), the Red House (85) held by the player or not, Kayblis
+    /// moved or not. Half the cases keep the armies home (each general dead or not yet introduced,
+    /// Piar at 0 or 100, no war, week 100 at most), so the run reaches the file's end.
+    /// </summary>
+    private static void AimAtKayblisTurn(GameState state, Random rng)
+    {
+        state.F_DemonWar_Stage = (Sys3Int)(rng.Next(6) == 0 ? rng.Next(0, 20) : rng.Next(20, 22));
+        state.Ev_KayblisAssault = (Sys3Int)(rng.Next(4) == 0 ? 1 : rng.Next(0, 3));
+        foreach (int c in KayblisTurnCommanders)
+        {
+            var cmdr = state.Cmdrs[c];
+            cmdr.Status = (Sys3Int)(rng.Next(4) == 0 ? 0 : rng.Next(1, 3));
+            cmdr.MaxHP = (Sys3Int)rng.Next(0, 200);
+            cmdr.HP = (Sys3Int)Math.Max(0, cmdr.MaxHP.Value - rng.Next(-2, 6));
+            cmdr.MaxTroops = (Sys3Int)rng.Next(0, 5000);
+            cmdr.Troops = (Sys3Int)(rng.Next(8) == 0 ? rng.Next(60000, 65536) : Math.Max(0, cmdr.MaxTroops.Value - rng.Next(-20, 300)));
+            cmdr.Recovery = (Sys3Int)(rng.Next(8) == 0 ? rng.Next(20000, 32767) : rng.Next(0, 100));
+            cmdr.Class = (Sys3Int)rng.Next(0, 11);
+        }
+        state.F_Medusa_State = (Sys3Int)(rng.Next(4) == 0 ? 0 : rng.Next(1, 11));
+        state.N_Medusa_Events = (Sys3Int)rng.Next(0, 8);
+        state.F_Camilla_State = (Sys3Int)rng.Next(5, 13);
+        state.F_Kayblis_War = (Sys3Int)(rng.Next(6) switch { 0 => 2, 1 => rng.Next(0, 4), _ => 0 });
+        state.F_Silky_State = (Sys3Int)rng.Next(0, 10);
+        state.F_SoulRedeye = (Sys3Int)(rng.Next(6) == 0 ? 1 : rng.Next(0, 3) * 2);
+        state.F_SoulPiar = (Sys3Int)(rng.Next(6) == 0 ? 1 : 0);
+        state.F_SoulMedusa = (Sys3Int)(rng.Next(6) == 0 ? 1 : 0);
+        state.F_SoulKesselring = (Sys3Int)(rng.Next(6) == 0 ? 1 : 0);
+        state.F_SoulCamilla = (Sys3Int)(rng.Next(6) == 0 ? 1 : 0);
+        state.Week = (Sys3Int)rng.Next(60, 170);
+        state.Silky_NextEventWeek = (Sys3Int)(state.Week.Value + rng.Next(-3, 3));
+        state.N_Warg_Stage = (Sys3Int)rng.Next(0, 3);
+        state.F_Stessel_State = (Sys3Int)rng.Next(3, 7);
+        state.F_Nagi_State = (Sys3Int)rng.Next(4, 7);
+        state.F_Kaybwan_State = (Sys3Int)rng.Next(0, 4);
+        state.F_Kaybnyan_State = (Sys3Int)rng.Next(0, 4);
+        state.F_Satella_State = (Sys3Int)rng.Next(9, 13);
+        foreach (int p in new[] { 89, 81, 90, 85 })
+            state.Provs[p].Owner = (Sys3Int)(rng.Next(3) == 0 ? 1 : rng.Next(0, 12));
+        state.F_Kayblis_Moved = (Sys3Int)rng.Next(0, 2);
+        state.F_Babolat_State = (Sys3Int)rng.Next(0, 3);
+        state.F_Redeye_State = (Sys3Int)rng.Next(0, 3);
+        state.F_Calory_State = (Sys3Int)rng.Next(0, 3);
+        state.F_Galtia_State = (Sys3Int)rng.Next(0, 3);
+        state.F_Galtia_DefectedToKayblis = (Sys3Int)rng.Next(0, 2);
+        state.F_Kesselring_State = (Sys3Int)rng.Next(0, 3);
+        state.F_Piar_State = (Sys3Int)(rng.Next(3) switch { 0 => 0, 1 => 100, _ => rng.Next(1, 100) });
+        if (rng.Next(2) == 0)
+        {
+            foreach (int general in new[] { 129, 130, 132, 131, 133 })
+                if (rng.Next(2) == 0)
+                    state.Cmdrs[general].Status = 0;
+            state.F_Babolat_State = state.Cmdrs[129].Status == 0 ? state.F_Babolat_State : Sys3Int.Zero;
+            state.F_Redeye_State = state.Cmdrs[130].Status == 0 ? state.F_Redeye_State : Sys3Int.Zero;
+            state.F_Calory_State = state.Cmdrs[132].Status == 0 ? state.F_Calory_State : Sys3Int.Zero;
+            state.F_Galtia_State = state.Cmdrs[131].Status == 0 ? state.F_Galtia_State : Sys3Int.Zero;
+            state.F_Kesselring_State = state.Cmdrs[133].Status == 0 ? state.F_Kesselring_State : Sys3Int.Zero;
+            state.F_Piar_State = (Sys3Int)(rng.Next(2) == 0 ? 0 : 100);
+            if (state.F_Kayblis_War == 2)
+                state.F_Kayblis_War = 0;
+            state.Week = (Sys3Int)rng.Next(60, 101);
+        }
+    }
+
+    /// <summary>
+    /// What the scenes and battles may change: Grief Valley (89)'s owner (so the guards stop), Kayblis
+    /// moved, the week's event flag, the chain's flags, the generals' states and lives, Piar's state.
+    /// </summary>
+    private static void ScribbleKayblisTurn(GameState state, Random rng)
+    {
+        if (rng.Next(2) == 0)
+            state.Provs[89].Owner = (Sys3Int)rng.Next(0, 9);
+        if (rng.Next(6) == 0)
+            state.F_Kayblis_Moved = (Sys3Int)rng.Next(0, 2);
+        if (rng.Next(6) == 0)
+            state.Ev_WeeklyEventDone = (Sys3Int)rng.Next(0, 2);
+        if (rng.Next(6) == 0)
+            state.F_Silky_State = (Sys3Int)rng.Next(0, 10);
+        if (rng.Next(6) == 0)
+            state.N_Warg_Stage = (Sys3Int)rng.Next(0, 2);
+        if (rng.Next(8) == 0)
+            state.F_Kayblis_War = (Sys3Int)rng.Next(0, 3);
+        foreach (int general in new[] { 129, 130, 131, 132, 133 })
+            if (rng.Next(10) == 0)
+                state.Cmdrs[general].Status = (Sys3Int)rng.Next(0, 2);
+        if (rng.Next(10) == 0)
+            state.F_Piar_State = (Sys3Int)(rng.Next(2) == 0 ? 100 : rng.Next(0, 3));
+        foreach (int p in new[] { 81, 90, 85 })
+            if (rng.Next(10) == 0)
+                state.Provs[p].Owner = (Sys3Int)rng.Next(0, 9);
+        if (rng.Next(6) == 0)
+            state.Strings[10] = "scribbled";
+    }
+
+    private static IEnumerable<string> KayblisTurnFeatures(GameState before, GameState after, GameState first, List<string> log)
+    {
+        var calls = log.Where(e => e.StartsWith("call ", StringComparison.Ordinal)).Select(e => e.Split(' ')).ToList();
+        string[] chain = ["Gﾒﾃﾞｨｳｻ.ADV", "Gｶﾐｰﾗ.ADV", "Gｼﾙｷｨ.ADV", "Gﾜｰｸﾞ.ADV", "Gﾅｷﾞ.ADV", "Gｹｲﾌﾞﾜﾝ.ADV", "Gｹｲﾌﾞﾆｬﾝ.ADV", "Gｻﾃﾗ.ADV"];
+        int guards = 0;
+        for (int i = 0; i < calls.Count; i++)
+        {
+            string[] call = calls[i];
+            if (call[1] == "Gｹｲﾌﾞﾘｽ.ADV" && call[3] == "1")
+                yield return "week S";
+            if (call[1] != "FIGT_B.ADV")
+            {
+                yield return $"call {call[1]} {call[3]}";
+                if (call[1] == "Gｼﾙｷｨ.ADV" && call[3] == "8" && i + 1 < calls.Count && chain.Contains(calls[i + 1][1]))
+                    yield return "the chain goes on after Gｼﾙｷｨ 8";
+                continue;
+            }
+            string line = string.Join(' ', call);
+            if (line.Contains(" Prov_Cur 89 ", StringComparison.Ordinal) && line.Contains(" Tmp 186,", StringComparison.Ordinal))
+            {
+                guards++;
+                yield return "guards";
+                if (line.Contains(" CallArg 415 ", StringComparison.Ordinal))
+                    yield return "guards with portrait 415";
+                if (line.Contains(" CallArg 466 ", StringComparison.Ordinal))
+                    yield return "guards with portrait 466";
+            }
+        }
+        if (guards > 1)
+            yield return "guards again";
+        if (after.N_Medusa_Events != before.N_Medusa_Events)
+            yield return "Medusa's counter moved";
+        if (before.F_DemonWar_Stage >= 20 && !calls.Any(c => chain.Contains(c[1])))
+        {
+            yield return "no scene";
+            // Camilla's draw, then no draw for Medusa's last scene (:181): the chain ended at :107-109.
+            int camilla = log.FindIndex(e => e.StartsWith("rnd 3 ", StringComparison.Ordinal));
+            if (camilla >= 0 && !log.Skip(camilla).Any(e => e.StartsWith("rnd 5 ", StringComparison.Ordinal)))
+                yield return "a marked week ends the chain";
+        }
+        if (log.LastOrDefault() == "return")
+            yield return "the end";
+        if (log.Any(e => e.StartsWith("jump ", StringComparison.Ordinal)))
+            yield return "jump";
+    }
+
+    /// <summary>
+    /// A province Kayblis takes: Lang Bau (45), a Zeth tower (68, 70, 67, 66), a Zeth general's city
+    /// (58, 61, 65, 63) or any; Helman's and Zeth's wars at 0-2, Shangri-La (29) Helman's now and
+    /// then, Adam's Fortress (58) Zeth's now and then; the ministers Chizuko (101), Papaya (104), Nagi
+    /// (107), Magic (110) dead in half the cases each, the generals Saias (113), Uspira (117),
+    /// Kabachahn (121), Alex (125) alive or not; Zeth's story around 7.
+    /// </summary>
+    private static void AimAtKayblisCapture(GameState state, Random rng)
+    {
+        int[] provinces = [45, 45, 68, 70, 67, 66, 68, 70, 67, 66, 58, 61, 65, 63];
+        state.Prov_Cur = (Sys3Int)(rng.Next(5) == 0 ? rng.Next(0, 92) : provinces[rng.Next(provinces.Length)]);
+        state.F_Helman_War = (Sys3Int)rng.Next(0, 3);
+        state.F_Zeth_War = (Sys3Int)rng.Next(0, 3);
+        state.F_Zeth_State = (Sys3Int)rng.Next(4, 13);
+        state.Provs[29].Owner = (Sys3Int)(rng.Next(3) == 0 ? 4 : rng.Next(0, 4));
+        state.Provs[58].Owner = (Sys3Int)(rng.Next(2) == 0 ? 7 : rng.Next(0, 9));
+        foreach (int c in new[] { 101, 104, 107, 110 })
+            state.Cmdrs[c].Status = (Sys3Int)(rng.Next(2) == 0 ? 0 : rng.Next(1, 3));
+        foreach (int c in new[] { 113, 117, 121, 125 })
+            state.Cmdrs[c].Status = (Sys3Int)(rng.Next(3) == 0 ? 0 : rng.Next(1, 3));
+    }
+
+    private static IEnumerable<string> KayblisCaptureFeatures(GameState before, GameState after, GameState first, List<string> log)
+    {
+        int prov = before.Prov_Cur.Value;
+        if (prov == 45)
+            yield return before.F_Helman_War == 2 ? "Helman fallen already" : "Helman falls";
+        if (prov == 45 && before.F_Helman_War != 2)
+            yield return after.Provs[29].Owner == 8 && before.Provs[29].Owner == 4 ? "Shangri-La to Kayblis" : "Shangri-La kept";
+        foreach (int c in new[] { 101, 104, 107, 110 })
+            if (before.Cmdrs[c].Status != 0 && after.Cmdrs[c].Status == 0)
+                yield return $"minister {c} killed";
+        if (prov is 68 or 70 or 67 or 66)
+        {
+            if (before.F_Zeth_State < 7)
+                yield return "Zeth's story moved on";
+            if (after.F_Zeth_War == 2 && before.F_Zeth_War != 2)
+                yield return "Zeth falls";
+            else if (before.F_Zeth_War == 2 && new[] { 101, 104, 107, 110 }.All(c => after.Cmdrs[c].Status == 0))
+                yield return "Zeth fallen already";
+            if (after.F_Zeth_War == 2 && before.F_Zeth_War != 2 && before.Provs[58].Owner == 7)
+                yield return "Adam's Fortress to Kayblis";
+            if (after.F_Zeth_War == 2 && before.F_Zeth_War != 2 && before.Cmdrs[113].Status != 0)
+                yield return "Saias killed by the collapse";
+        }
+        foreach (int c in new[] { 113, 117, 121, 125 })
+            if (before.Cmdrs[c].Status != 0 && after.Cmdrs[c].Status == 0)
+                yield return $"general {c} killed";
+        if (prov is 58 or 61 or 65 or 63 && before.Cmdrs[prov switch { 58 => 113, 61 => 117, 65 => 121, _ => 125 }].Status == 0)
+            yield return "general dead already";
+        if (prov is not (45 or 68 or 70 or 67 or 66 or 58 or 61 or 65 or 63))
+            yield return "plain capture";
     }
 
     /// <summary>Every attack <c>Tﾍﾙﾏﾝ</c> can make: the army and the province, in the file's order.</summary>
@@ -1072,12 +1313,16 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
         FeatureReader features,
         string[] expected,
         Action<GameState, Random>? scribble = null,
-        int cases = Cases)
+        int cases = Cases,
+        bool unported = false,
+        string? label = null)
     {
         if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, file)))
             return;
         var scenario = new ScenarioScripts(LocalData.ScenarioDirectory);
         var program = scenario.ReadProgram(file);
+        if (label is not null)
+            program = FromLabel(program, label);
         var seen = new Dictionary<string, int>(StringComparer.Ordinal);
         cases = DifferentialRuns.Cases(cases);
 
@@ -1088,6 +1333,18 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
             aim(state, rng);
             var ported = await RunAsync(Copy(state), seed, script => port(script, scenario), null, file, scribble);
             var original = await RunAsync(Copy(state), seed, null, program, file, scribble);
+
+            if (ported.Unported is not null)
+            {
+                // A path of a later step: the runs are compared up to the port's stop.
+                Assert.True(unported, $"seed {seed}: {ported.Unported}");
+                int prefix = FirstDifference(original.Log.Take(ported.Log.Count).ToList(), ported.Log);
+                Assert.True(prefix < 0, $"seed {seed}: the runs differ at entry {prefix} before the port's '{ported.Unported}'\n{Around(file, original.Log, ported.Log, prefix)}");
+                string where = ported.Unported[(ported.Unported.IndexOf(':') + 1)..].Split(':')[0];
+                foreach (string feature in features(state, ported.State, ported.AtFirstCall ?? ported.State, ported.Log).Append($"unported {where}").Distinct())
+                    seen[feature] = seen.GetValueOrDefault(feature) + 1;
+                continue;
+            }
 
             int at = FirstDifference(original.Log, ported.Log);
             Assert.True(at < 0, $"seed {seed}: the runs differ at entry {at}\n{Around(file, original.Log, ported.Log, at)}");
@@ -1105,7 +1362,20 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
         DifferentialRuns.AssertReached(missed, output);
     }
 
-    private sealed record Run(GameState State, List<string> Log, GameState? AtFirstCall);
+    /// <summary>
+    /// The program with its first two statements turned into <c>\label:</c> and <c>%0:</c>: runs
+    /// <paramref name="label"/> as a label call and returns from the file after it.
+    /// </summary>
+    private static ScriptProgram FromLabel(ScriptProgram program, string label)
+    {
+        var statements = program.Statements.ToList();
+        statements[0] = new CallLabelStatement(statements[0].At, label, program.Labels[label]);
+        statements[1] = new ReturnStatement(statements[1].At);
+        return new ScriptProgram(program.File, statements, program.Labels);
+    }
+
+    /// <summary>A run: the state after it, its log, the state at its first call, and the port's stop at a later step's path.</summary>
+    private sealed record Run(GameState State, List<string> Log, GameState? AtFirstCall, string? Unported = null);
 
     private static async Task<Run> RunAsync(
         GameState state, int seed, Func<ScriptContext, Task>? port, ScriptProgram? program, string file,
@@ -1132,6 +1402,10 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
         catch (ScenarioJumpException e)
         {
             log.Add($"jump {e.File}");
+        }
+        catch (NotSupportedException e) when (port is not null)
+        {
+            return new Run(state, log, hooks.AtFirstCall, e.Message);
         }
         return new Run(state, log, hooks.AtFirstCall);
     }

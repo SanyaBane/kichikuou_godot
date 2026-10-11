@@ -199,7 +199,7 @@ public class KayblisTests
     }
 
     [Fact]
-    public async Task At_the_Demon_Lords_Castle_Kayblis_speaks_first_unless_Galtia_has_joined_him()
+    public async Task At_the_Demon_Lords_Castle_Kayblis_speaks_first_on_the_first_attack()
     {
         var rig = new KayblisRig(1, 1, 1, 1);
 
@@ -211,7 +211,7 @@ public class KayblisTests
         Is(1, rig.State.Bt_EnemyRetreatMode);
 
         rig = new KayblisRig(1, 1, 1, 1);
-        rig.State.F_Galtia_JoinedKayblis = 1;
+        rig.State.F_DemonCastle_Attacked = 1;
         await rig.DefendersAsync(79);
         Assert.Empty(rig.Story.Calls);
     }

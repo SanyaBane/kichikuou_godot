@@ -146,7 +146,7 @@ public sealed partial class WeeklyEvents(ScriptContext script)
             await FireAsync("Gﾏﾘｽ.ADV", 15);
         if (State.StoryStage == 1 && State.F_LeazasRebels_State == 0)                       // :91-95
             await FireAsync("Iｼﾚｲﾌﾞ.ADV", 1);
-        if (State.F_Galtia_JoinedKayblis != 0 && State.N_Warg_Stage == 0 && State.F_Kayblis_War == 0) // :96-100
+        if (State.F_DemonCastle_Attacked != 0 && State.N_Warg_Stage == 0 && State.F_Kayblis_War == 0) // :96-100
             await FireAsync("Gﾜｰｸﾞ.ADV", 2);
         State.Prov_Cur = 28;                                                                // :101
         if (Prov.Owner == 1 && State.F_Japan_State == 0)                                    // :102-106

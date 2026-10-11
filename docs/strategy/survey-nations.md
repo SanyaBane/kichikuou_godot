@@ -66,13 +66,13 @@ Patton has no `*2`: `Cﾃｷﾄｼ.ADV:361-376` inlines the same list (Patton (5
 | | `:54-75` → `L_00a5e/00bb1/00d04/00e55` `:433-688` | four ministers' armies, 1/2 each (none while state 2) |
 | | `:76-187` → `L_00667/006f3/0077f/0080b` `:245-352` | the generals' scene roll `Y 4,7` (`Iｾﾞｽ` 30-36, each with one general's army if the generals it names live, all four on 7; voided to 10 at state 2, `:97-99`), then up to two `Y 4,4` single armies |
 | | `L_00640` `:238`, `L_00897` `:353`, `L_00fa8` `:689`, `L_00fee` `:700`, `L_01160` `:760` | revive one subordinate, target walk, sum, picker, filler (no filter) |
-| Tｹｲﾌﾞﾘｽ | `:1-187` | weekly event chain (one event → skip to `L_004d1`), recovery `L_02662` ×24 |
-| | `L_004d1` `:188-325` | dispatch of sub-armies, Kayblis main army, monster generals |
+| Tｹｲﾌﾞﾘｽ | `:1-187` | week S: `Gｹｲﾌﾞﾘｽ` 1 and straight to `L_004d1` (`:3-8`); the assault `Gｹｲﾌﾞﾘｽ` 2, the `Ai_*` reset, recovery `L_02662` ×24 on 22 commanders (Babolat (129) ×3), the weekly event chain (one event → skip to `L_004d1`, but `Gｼﾙｷｨ` 8 does not, NAT-26) |
+| | `L_004d1` `:188-325` | dispatch: the guards, the generals' introductions and units, Piar, Kayblis main army, `Gｹｲﾌﾞﾘｽ` 3, the Assault Leaders, Monster General (86)'s name back |
 | | `L_00fd0` `:625`, `L_010af` `:670`, `L_0120e` `:729`, `L_01478` `:831`, `L_017e4` `:972`, `L_01b5e` `:1112`, `L_01db2` `:1209` | Grief-Valley guards, Piar, Babolat, Redeye, Kite, Galtia, Kesselring |
 | | `L_02038` `:1329`, `L_021f2` `:1417`, `L_0227b` `:1439` | Kayblis main army, refill Monster Generals (commanders 86-89), target walk |
 | | `L_00881` `:326`, `L_00c91` `:492`, `L_00faf` `:618` | monster generals (1st…8th Assault Leader, commanders 191-198) (north/south lists) |
 | | `L_0241e` `:1509`, `L_02464` `:1520`, `L_025d6` `:1580`, `L_02662` `:1601` | sum, picker, filler (troops < 99 and class < 5 once slot 1 filled), recovery |
-| | `L_026bf` `:1615-1715`, `L_0291b` `:1716`, `L_029b2` `:1748` | capture by Kayblis + side effects; Helman / Zeth collapse |
+| | `L_026bf` `:1615-1694`, `L_02897` `:1695-1715`, `L_0291b` `:1716`, `L_029b2` `:1748` | capture by Kayblis + side effects (ministers' and generals' deaths); Zeth's story after a minister's death; Helman / Zeth collapse |
 | Tﾙﾄﾞﾗ | `:1-21`, `L_00093` `:22`, `L_000f8` `:41`, `L_001d4` `:83`, `L_00255` `:105` | 5 attacks + 2 earthquakes; random target search |
 
 ### 2.3 Common template [C]
@@ -125,11 +125,11 @@ Capture(): centre map; Prov_Owner := nation; flag CG Tmp0021 := owner+819; M ops
 | Babolat (129 alive, state ≠ 0) | Babolat (129) | — | 2 | Tower of Evil (78), Great Wall of Helman A (49), Ikoma (53), Laurengrad (48), Lang Bau (45), Micrograd (44), Sudori 10 (42), Rosesgrad (39), Siberia (38), Golak (34), Log A (32), Scale (12), North (2), Leazas Castle (1); pitfall prov → `Gﾊﾞﾎﾞﾗ` 4 instead |
 | Redeye (130) | Truffle 77 (148), Moreinyan (149), Ouzawa (150), Redeye (130) | — | 2 | Grief Valley (89), Great Wall of Helman B (50), Laurengrad (48), Parnas (47), Sudori 17 (46), Sudori 13 (41), Pawn (40), Micrograd (44), Sudori 10 (42), Rosesgrad (39), Archgrad (36), Log B (31), Maunes (13) (Redeye (130) alone), North (2), Leazas Castle (1) |
 | Kite (132) | Kite (132), Tobroiv (151), Deckmaster (152), Strength (153) | — | 2 | Maginot Stronghold (76), Marc (74), Papaya's Tower (70), Magic's Tower (66), Zeth Palace (69), Ardennes (73), Amber Castle (65), Nagi's Tower (67), Nagarmaule (62), Sabasaba (59), Adam's Fortress (58), Parapara Fortress (16), Rich (15), Poor (14), Rockearth (17), Ice (18), Diphtheria (19) |
-| Galtia (131, `VAR0637=0`) | Derandron (154), Nasport (155), Galtia (131) | — | 2 | Maginot Stronghold (76), Marc (74), Amber Castle (65), Old Zeth (63), Magic's Tower (66), Tape (61), Italia (60), Sabasaba (59), Adam's Fortress (58), Parapara Fortress (16), Rich (15), Maunes (13), North (2), Leazas Castle (1) |
+| Galtia (131, `F_Galtia_DefectedToKayblis=0`) | Derandron (154), Nasport (155), Galtia (131) | — | 2 | Maginot Stronghold (76), Marc (74), Amber Castle (65), Old Zeth (63), Magic's Tower (66), Tape (61), Italia (60), Sabasaba (59), Adam's Fortress (58), Parapara Fortress (16), Rich (15), Maunes (13), North (2), Leazas Castle (1) |
 | Kesselring (133) | Kesselring (133) | none | 1 | first non-Kayblis of Papaya's Tower (70), Tape (61), Diphtheria (19), Red (23), South (4), Leazas Castle (1) ("moves from" previous) |
 | Piar (state ∉ {0,100}) | PG-7 (136), PG-9 (137), PG-X mk2 (138) | — | 2 | random province (§5) |
-| Kayblis main (`F_Kayblis_War=2`) | Kayblis (135); then Silky (156) / Galtia (131) (`VAR0637≠0`) / Satella (157) / Meglass (158) each + Monster Generals (86, 88, 89); then Monster Generals (87, 86, 88, 89) | none | 2 | Grief Valley (89), Great Wall of Helman B (50), Laurengrad (48), Parnas (47), Sudori 17 (46), Sudori 13 (41), Pawn (40), Micrograd (44), Sudori 10 (42), Rosesgrad (39), Archgrad (36), Log B (31), Maunes (13), North (2), Leazas Castle (1) |
-| Monster general (1st…8th Assault Leader, 191..198) (Week > 100,110,…,160; cumulative) | monster, Monster Generals (87, 88) | monster troops ≥ 1000 | 1 | north list `:364-490` / south list `:530-617`, alternating |
+| Kayblis main (`F_Kayblis_War=2`) | Kayblis (135); then Silky (156) / Galtia (131) (`F_Galtia_DefectedToKayblis≠0`) / Satella (157) / Meglass (158) each + Monster Generals (86, 88, 89); then Monster Generals (87, 86, 88, 89) | none | 2 | Grief Valley (89), Great Wall of Helman B (50), Laurengrad (48), Parnas (47), Sudori 17 (46), Sudori 13 (41), Pawn (40), Micrograd (44), Sudori 10 (42), Rosesgrad (39), Archgrad (36), Log B (31), Maunes (13), North (2), Leazas Castle (1) |
+| Monster general (1st…8th Assault Leader, 191..198) (Week > 100,110,…,160; cumulative) | the leader, Monster Generals (87, 88) refilled to `max/5 + RND(max/3)` whether it marches or not; a dead leader is revived at HP 1 and stays home; the leader alone at Maunes (13) on the north list | the leader's own troops ≥ 1000 after `+Recovery` | 1 | north list `:364-490` / south list `:530-617`, alternating |
 | Rudra / Creator | Angel Knight (146), Angel Knight (147) (full troops, **status 0**) | none | 1 | random player province ×5 |
 
 All Kayblis walks attack/capture the first province **not owned by Kayblis**; a non-player one
@@ -245,7 +245,8 @@ text; the only display→state coupling is `M`'s scratch. TJAPAN's scenes are ru
 1. **Collapse loops return after one province**: `L_0291b`/`L_029b2` end their loop body with
    `\0:` (`Tｹｲﾌﾞﾘｽ.ADV:1742`, `:1773`) — only Shangri-La (29, Helman) / Adam's Fortress (58, Zeth)
    can flip to Kayblis; `F_Helman_War`/`F_Zeth_War := 2` still set. `Prov_Cur` is left at
-   Shangri-La (29) / Adam's Fortress (58).
+   Shangri-La (29) / Adam's Fortress (58). Helman's flips nothing in play (Shangri-La is never
+   Helman's), and the capture's own test of Adam's Fortress then kills Saias (113) — NAT-01.
 2. **Guards repeat**: `L_00fd0` jumps back to `L_004d1` (`:669`), which re-attacks Grief Valley
    (89) while it stays player-owned and `F_Kayblis_Moved = 0` — one battle per win, new `Y 4,100`
    each time [I: until lost].
@@ -319,9 +320,13 @@ repeated Kayblis/Zeth garrison attack and the item-12 cancel. The `&#OVER` jump 
 ## 9. Open questions
 
 1. Quirk 1: does the original really flip only Shangri-La (29) / Adam's Fortress (58) on a Kayblis
-   collapse? A capture of Kayblis taking Lang Bau (45) settles it (`Tｹｲﾌﾞﾘｽ.ADV:1729-1747`).
+   collapse? A capture of Kayblis taking Lang Bau (45) settles it (`Tｹｲﾌﾞﾘｽ.ADV:1729-1747`). (Helman's flips nothing in
+   play, Shangri-La (29) never being Helman's; Zeth's also kills Saias (113): NAT-01.)
 2. Can the guards loop (`:625-669`) run more than twice in practice, and what ends it besides losing?
 3. Who sets `F_Kayblis_Moved` (only `Gｹｲﾌﾞﾘｽ.ADV:659`) and `VAR0637` (`Gｹｲﾌﾞﾘｽ.ADV:368`) — meaning of 637.
+   **Answered (2026-10-11, porting `Tｹｲﾌﾞﾘｽ`'s frame):** `F_Kayblis_Moved` is set by `Gｹｲﾌﾞﾘｽ` 3, which the turn
+   plays once the player holds Silky's Castle (81); VAR0637 is `F_Galtia_DefectedToKayblis`, set by
+   `Gｹｲﾌﾞﾘｽ` 7 when Galtia (unit 41) defects in a defence against Kayblis's army (stage-3-sweep).
 4. Content of commander record 0 (quirk 12) — read it from a memory dump.
 5. Effect of `Cmdr_Status = 0` defenders (Rudra's Angel Knights 146/147) inside FIGT — compare with dungeon
    captures of a status-0 commander.

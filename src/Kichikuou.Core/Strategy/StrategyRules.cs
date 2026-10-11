@@ -9,7 +9,7 @@ namespace Kichikuou.Core.Strategy;
 /// The ported rule files as story hooks: a call of <c>MAIN.ADV</c> (the week loop, which never
 /// returns; the game enters it by the jump <c>&amp;#MAIN.ADV:</c>), <c>COM.ADV</c>, <c>COMMAND.ADV</c>,
 /// one of the ported command files or one of their picker screens, a nation's turn or defender
-/// picker (<c>TCﾘｰｻﾞｽ</c>, <c>TCﾘｰｻﾞｽ2</c>, <c>Tﾍﾙﾏﾝ</c>, <c>Tﾍﾙﾏﾝ2</c>, <c>Tﾊﾟｯﾄﾝ</c>, <c>Tｾﾞｽ</c>, <c>Tｾﾞｽ2</c>, <c>Tｹｲﾌﾞﾘｽ2</c>, <c>TJAPAN</c>, <c>TJAPAN2</c>), or a battle file
+/// picker (<c>TCﾘｰｻﾞｽ</c>, <c>TCﾘｰｻﾞｽ2</c>, <c>Tﾍﾙﾏﾝ</c>, <c>Tﾍﾙﾏﾝ2</c>, <c>Tﾊﾟｯﾄﾝ</c>, <c>Tｾﾞｽ</c>, <c>Tｾﾞｽ2</c>, <c>Tｹｲﾌﾞﾘｽ</c>, <c>Tｹｲﾌﾞﾘｽ2</c>, <c>TJAPAN</c>, <c>TJAPAN2</c>), or a battle file
 /// (<c>FIGT_A</c>, <c>FIGT_B</c>, <c>FIGT</c>, <c>死亡捕獲</c>, run as a <see cref="Battle"/>; also
 /// <c>FIGTATTK</c>, the battle's result animation, which the scene <c>FIGT表示</c> calls) runs its
 /// port on the bound context, and so does the save screen (<c>ﾛｰﾄﾞｾｰﾌﾞ</c>, on the context's
@@ -34,7 +34,7 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
     {
         "MAIN.ADV", "COM.ADV", "COMMAND.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV", "Cｼｮｳﾆﾝ.ADV", "Cｼﾊｲﾄｼ.ADV", "Cﾆﾝｼﾞｬ.ADV",
         "Cﾃｲﾄ.ADV", "Cﾀｶﾗ.ADV", "各種DATA.ADV", "Cﾒｲｷｭｳ.ADV",
-        "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sﾊｰﾚﾑ.ADV", "Sｱｲﾃﾑ.ADV", "TCﾘｰｻﾞｽ.ADV", "TCﾘｰｻﾞｽ2.ADV", "Tﾍﾙﾏﾝ.ADV", "Tﾍﾙﾏﾝ2.ADV", "Tﾊﾟｯﾄﾝ.ADV", "Tｾﾞｽ.ADV", "Tｾﾞｽ2.ADV", "Tｹｲﾌﾞﾘｽ2.ADV", "TJAPAN.ADV", "TJAPAN2.ADV", "FIGT_A.ADV", "FIGT_B.ADV", "FIGT.ADV",
+        "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sﾊｰﾚﾑ.ADV", "Sｱｲﾃﾑ.ADV", "TCﾘｰｻﾞｽ.ADV", "TCﾘｰｻﾞｽ2.ADV", "Tﾍﾙﾏﾝ.ADV", "Tﾍﾙﾏﾝ2.ADV", "Tﾊﾟｯﾄﾝ.ADV", "Tｾﾞｽ.ADV", "Tｾﾞｽ2.ADV", "Tｹｲﾌﾞﾘｽ.ADV", "Tｹｲﾌﾞﾘｽ2.ADV", "TJAPAN.ADV", "TJAPAN2.ADV", "FIGT_A.ADV", "FIGT_B.ADV", "FIGT.ADV",
         "死亡捕獲.ADV", "FIGTATTK.ADV", "ﾛｰﾄﾞｾｰﾌﾞ.ADV",
     };
 
@@ -85,6 +85,7 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
         "Tﾊﾟｯﾄﾝ.ADV" => new PattonTurn(Script, scenario).RunAsync(),
         "Tｾﾞｽ.ADV" => new ZethTurn(Script, scenario).RunAsync(),
         "Tｾﾞｽ2.ADV" => new ZethDefenders(Script, scenario).RunAsync(),
+        "Tｹｲﾌﾞﾘｽ.ADV" => new KayblisTurn(Script, scenario).RunAsync(),
         "Tｹｲﾌﾞﾘｽ2.ADV" => new KayblisDefenders(Script, scenario).RunAsync(),
         "TJAPAN.ADV" => new JapanTurn(Script, scenario).RunAsync(),
         "TJAPAN2.ADV" => new JapanDefenders(Script, scenario).RunAsync(),

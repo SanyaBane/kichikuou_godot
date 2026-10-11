@@ -86,7 +86,10 @@ so `Cﾒｲｷｭｳ` is ported whole; `Iｶﾐ` runs from the player's files (n
 **Milestone 3 is closed** (2026-10-11, owner's decision 15): no `--auto` through stage 2, the stage-2
 captures put off. `FIGTATTK` (the battle's animation, which the scene `FIGT表示` calls) is routed to the
 battle's port. **Milestone 4** is story stage 3 as a whole: the sweep is docs/strategy/stage-3-sweep.md,
-the order docs/strategy/README.md, "Milestone 4" — step 1 (`Tｹｲﾌﾞﾘｽ`'s frame) is next.
+the order docs/strategy/README.md, "Milestone 4". Step 1 is done: `Tｹｲﾌﾞﾘｽ`'s frame (week S, the
+recoveries, the event chain, the dispatch, the Grief Valley guards, the capture with Helman's and Zeth's
+collapses) is `Strategy/KayblisTurn`; its armies throw `NotSupportedException` until steps 2, 3 and 5,
+so stage 3 stops at the first army that marches. Step 2 (the generals' units, `:729-1328`) is next.
 `tools/analysis/port_draft.py` drafts text-heavy ranges for hand ports.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.

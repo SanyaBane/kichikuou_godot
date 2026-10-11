@@ -12,7 +12,7 @@ namespace Kichikuou.Content.Tests;
 /// <c>TCﾘｰｻﾞｽ</c> (<see cref="RebelTurn"/>), <c>TCﾘｰｻﾞｽ2</c> (<see cref="RebelDefenders"/>),
 /// <c>Tﾍﾙﾏﾝ</c> (<see cref="HelmanTurn"/>), <c>Tﾍﾙﾏﾝ2</c> (<see cref="HelmanDefenders"/>),
 /// <c>Tﾊﾟｯﾄﾝ</c> (<see cref="PattonTurn"/>), <c>Tｾﾞｽ</c> (<see cref="ZethTurn"/>), <c>Tｾﾞｽ2</c> (<see cref="ZethDefenders"/>),
-/// <c>Tｹｲﾌﾞﾘｽ2</c> (<see cref="KayblisDefenders"/>), <c>TJAPAN</c> (<see cref="JapanTurn"/>) and <c>TJAPAN2</c> (<see cref="JapanDefenders"/>);
+/// <c>Tｹｲﾌﾞﾘｽ</c> (<see cref="KayblisTurn"/>), <c>Tｹｲﾌﾞﾘｽ2</c> (<see cref="KayblisDefenders"/>), <c>TJAPAN</c> (<see cref="JapanTurn"/>) and <c>TJAPAN2</c> (<see cref="JapanDefenders"/>);
 /// <c>FIGT_B</c> and the scenes stay hooks. Captures of nations not ported yet are listed and left
 /// to <c>GoldenPendingTests</c>. Skipped while there are none (or without the decompile).
 /// </summary>
@@ -28,6 +28,7 @@ public sealed class NationReplayTests(ITestOutputHelper output)
         "Tﾊﾟｯﾄﾝ.ADV" => s => new PattonTurn(s, scripts).RunAsync(),
         "Tｾﾞｽ.ADV" => s => new ZethTurn(s, scripts).RunAsync(),
         "Tｾﾞｽ2.ADV" => s => new ZethDefenders(s, scripts).RunAsync(),
+        "Tｹｲﾌﾞﾘｽ.ADV" => s => new KayblisTurn(s, scripts).RunAsync(),
         "Tｹｲﾌﾞﾘｽ2.ADV" => s => new KayblisDefenders(s, scripts).RunAsync(),
         "TJAPAN.ADV" => s => new JapanTurn(s, scripts).RunAsync(),
         "TJAPAN2.ADV" => s => new JapanDefenders(s, scripts).RunAsync(),

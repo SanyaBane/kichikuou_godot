@@ -68,7 +68,7 @@ Open at stage 3, besides what stage 2 has:
   stage 2.
 
 **`COM` at stage 3** (new or live; none calls a rule file). Tier 1: `Gﾜｰｸﾞ` 2 (`:96`:
-`F_Galtia_JoinedKayblis ≠ 0` — set by `Gｹｲﾌﾞﾘｽ` 4 on the first attack on the Demon Lord's Castle
+`F_DemonCastle_Attacked ≠ 0` — set by `Gｹｲﾌﾞﾘｽ` 4 on the first attack on the Demon Lord's Castle
 (79) —, `N_Warg_Stage = 0`, `F_Kayblis_War = 0`; Warg joins, `N_Warg_Stage := 1`,
 `Gﾜｰｸﾞ:3604-3605`), `Gﾊﾞﾎﾞﾗ` 5 (`:228-233`, the pitfall), `Gﾏﾘｽ` 17 (`:284`, stage 3, Redeye met).
 Tier 2: `Gﾚｯﾄﾞｱｲ` 3 (`:337`), `Gﾌﾘｰｸ` 2/3/5/6 (`:402-421`, Freak (unit 20)), `Gﾊﾞﾎﾞﾗ` 6 / `Gﾚｯﾄﾞｱｲ`
@@ -86,8 +86,8 @@ file — where it differs, it is said below (captures, quirk candidates). Shape:
 | Lines | Label | What |
 |---|---|---|
 | 1-8 | — | `Ev_WeeklyEventDone := 0`, RM 2; `F_DemonWar_Stage < 20` → `Gｹｲﾌﾞﾘｽ` 1, jump to `L_004d1` (week S only) |
-| 9-62 | — | `Ev_KayblisAssault = 1` → `Gｹｲﾌﾞﾘｽ` 2 (the assault); the `Ai_*` reset (`:13-16`); `L_02662` recovery on 24 commanders (`:17-62`; Babolat (commander 129) three times, NAT-05) |
-| 63-187 | — | the event chain, first match then `@L_004d1` (`Gｼﾙｷｨ` 8 alone does not jump): Medusa (below), Camilla (91) (`Y 4, 3` drawn; `Gｶﾐｰﾗ` 3 at `F_Camilla_State < 10`, 4 / 5 at 10 / 11 on a 1; 5 kills her, `Gｶﾐｰﾗ:2160-2163`), Silky (`:110-148`, only while `F_Kayblis_War = 0`: `Gｼﾙｷｨ` 1, 2-6 on each freed soul of Redeye, Piar, Medusa, Kesselring, Camilla, 8, 9), Warg (`Gﾜｰｸﾞ` 3/4 on `F_Stessel_State` 4/5), `Gﾅｷﾞ` 9 (Kesselring alive, `F_Nagi_State = 5`), `Gｹｲﾌﾞﾜﾝ` 3 / `Gｹｲﾌﾞﾆｬﾝ` 3 (state 2), `Gｻﾃﾗ` 2 (Satella (commander 157) alive, `F_Satella_State = 11`), Medusa 5 (`Y 4, 5`) |
+| 9-62 | — | `Ev_KayblisAssault = 1` → `Gｹｲﾌﾞﾘｽ` 2 (the assault); the `Ai_*` reset (`:13-16`); the recovery `L_02662`, 24 calls on 22 commanders (`:17-62`; Babolat (commander 129) three times, NAT-05) |
+| 63-187 | — | the event chain, first match then `@L_004d1` (`Gｼﾙｷｨ` 8 alone does not jump, NAT-26): Medusa's first scene (`F_Medusa_State = 0`, the week not marked), her counter's scenes (NAT-25), Camilla (91) (`Y 4, 3` drawn; `Gｶﾐｰﾗ` 3 at `F_Camilla_State < 10`, 4 / 5 at 10 / 11 on a 1; 5 kills her, `Gｶﾐｰﾗ:2160-2163`), Silky (`:110-148`, only while `F_Kayblis_War = 0`: `Gｼﾙｷｨ` 1, 2-6 on each freed soul of Redeye, Piar, Medusa, Kesselring, Camilla, 8, 9), Warg (`Gﾜｰｸﾞ` 3/4 on `F_Stessel_State` 4/5), `Gﾅｷﾞ` 9 (Kesselring alive, `F_Nagi_State = 5`), `Gｹｲﾌﾞﾜﾝ` 3 / `Gｹｲﾌﾞﾆｬﾝ` 3 (state 2), `Gｻﾃﾗ` 2 (Satella (commander 157) alive, `F_Satella_State = 11`), Medusa 5 (`Y 4, 5`) |
 | 188-325 | `L_004d1` | the dispatch (below); `:321-325` gives Monster General (commander 86) its name back; `%0` |
 | 326-624 | `L_00881`, `L_00c91`, `L_00faf` | the Assault Leaders' armies (north / south list) and the shared attack-or-capture |
 | 625-669 | `L_00fd0` | the Grief Valley guards: Lis Guard (commander 186), `20 + RND(100)` troops, `FIGT_B`, `@L_004d1` (NAT-02) |
@@ -110,7 +110,7 @@ file — where it differs, it is said below (captures, quirk candidates). Shape:
    player holds Bone Forest (90) or Red House (85) (`:229-240`). Their units (`:198-244`): Babolat
    (commander 129) alone; Truffle 77 (148), Moreinyan (149), Ouzawa (150), Redeye (130); Kite (132),
    Tobroiv (151), Deckmaster (152), Strength (153); Derandron (154), Nasport (155), Galtia (131)
-   (while `VAR0637 = 0`); Kesselring (133) alone. Each walks its fixed list (survey-nations §2.4)
+   (while `F_Galtia_DefectedToKayblis = 0`); Kesselring (133) alone. Each walks its fixed list (survey-nations §2.4)
    to the first province not Kayblis's: the player's → `FIGT_B` (RM 2; Kesselring RM 1), any
    other → captured without a battle (`L_026bf`). A battle that times out with the player holding
    (`Bt_RoundsLeft = 0`, `Bt_Result = 2`) is fought again once (NAT-03). Babolat's target equal to
@@ -132,7 +132,7 @@ file — where it differs, it is said below (captures, quirk candidates). Shape:
    (`:360-362`); the leader goes alone at Maunes (13) on the north list (`:436-442`).
 
 **Kayblis's main army** (`L_02038`, only with `F_Kayblis_War = 2`): Kayblis (commander 135) alone;
-then each of Silky (156), Galtia (131, with `VAR0637 ≠ 0`), Satella (157), Meglass (158) alive with
+then each of Silky (156), Galtia (131, with `F_Galtia_DefectedToKayblis ≠ 0`), Satella (157), Meglass (158) alive with
 Monster Generals (86, 88, 89); then Monster Generals (87, 86, 88, 89) — each after `L_021f2` refills
 86-89 to `max + RND(max/2)` (NAT-10), up to six walks a week, all RM 2, all along Grief Valley (89),
 Great Wall of Helman B (50), Laurengrad (48) … Maunes (13), North (2), Leazas Castle (1)
@@ -140,7 +140,7 @@ Great Wall of Helman B (50), Laurengrad (48) … Maunes (13), North (2), Leazas 
 attacks, HP 60000 (`:1369-1389`; at boot HP 40, attack 38, 100 attacks, `SET_CHR.ADV:5534-5539`), and
 `FIGT.ADV:2839-2841` gives him `RND(100)` shots at war (BRS-17). In a defence against him Satella
 (unit 29), Meglass (unit 30) and Galtia (unit 41) defect (`FIGT_B.ADV:217-231` → `Gｹｲﾌﾞﾘｽ` 5/6/7:
-the unit to status 0, Satella (commander 157) / Meglass (158) / Galtia (131) to 1, `VAR0637 := 1`
+the unit to status 0, Satella (commander 157) / Meglass (158) / Galtia (131) to 1, `F_Galtia_DefectedToKayblis := 1`
 for Galtia, the unit out of the party).
 
 **The assault** (`F_Kayblis_War := 2`, `Gｹｲﾌﾞﾘｽ:760`) follows `Ev_KayblisAssault = 1`, set by
@@ -156,9 +156,11 @@ Kayblis (`Gｼﾙｷｨ:1217-1219`, `:2561-3019`).
 the Zeth story states, the barrier open, and — the four dead and `F_Zeth_War ≠ 2` — Zeth's collapse;
 Adam's Fortress (58), Tape (61), Amber Castle (65), Old Zeth (63) kill Saias (113), Uspira (117),
 Kabachahn (121), Alex (125). Both collapse tests also fire with the war never started (`≠ 2`
-includes 0). The collapse loops stop after one province (NAT-01): Helman's flips **nothing**, since
+includes 0, NAT-27). The collapse loops stop after one province (NAT-01): Helman's flips **nothing**, since
 its first province, Shangri-La (29), is never Helman's (only `Iｼｬﾝｸﾞﾘﾗ:1088, 4403` write its owner,
-to 3 and 1); Zeth's flips Adam's Fortress (58) if Zeth's. On the main path Kayblis's first captures
+to 3 and 1; checked 2026-10-11); Zeth's flips Adam's Fortress (58) if Zeth's — and since the capture
+goes on testing `Prov_Cur`, now 58, Zeth's collapse also kills Saias (113) (`:1670-1675`, checked by
+the port's differential test). On the main path Kayblis's first captures
 are Helman's remnants (`Gﾐﾈﾊﾞ:2447-2498` gave back Laurengrad (48), Ikoma (53), Great Walls of
 Helman A (49) and B (50), Walkland (54)): Babolat's list reaches Great Wall of Helman A (49), Ikoma
 (53), Laurengrad (48), Redeye's Great Wall of Helman B (50) [I]; Kite's ends with Rockearth (17), Ice
@@ -169,19 +171,23 @@ taken too.
 battles a week, the scenes' own (`Gｶﾞﾙﾃｨｱ` 2 `:324`) and, through `FIGT表示`, `FIGTATTK`'s
 (below).
 
-**Quirk candidates** (not yet in quirks.md; IDs when ported):
-- **Medusa's scenes replay.** The counter `N_Medusa_Events` moves on a 1-in-5 roll (`:70-73`), and
-  `Gﾒﾃﾞｨｳｻ` 2/3/4 play while it *equals* 2/4/6 (`:74-88`), every week until the next roll. They kill
-  Milli (unit 24), Isoroku (unit 27), the ninja Kaoru, each once (`Gﾒﾃﾞｨｳｻ:1060-1064, 1507-1513,
-  1893-1899`); the replays return at once but still end the week's event chain (`@L_004d1`).
-- **`Gｼﾙｷｨ` 8 every week.** `:140-143` plays it while `F_Silky_State` is 2-5 and `Silky_NextEventWeek
-  < Week`, without jumping; the only write is `Week + 12` when the state becomes 2
-  (`Gｼﾙｷｨ:1015-1016`), so from then on it plays every phase (with `FIGT表示` 26, `Gｼﾙｷｨ:1319-1320`).
-- **Dead code:** `:107-109` (`Ev_WeeklyEventDone` is still 0 there: no scene of the chain writes it);
-  the south list falls through into `L_00faf` (`:614-618`) when all of it is Kayblis's — only with
-  Leazas Castle (1) lost.
-- NAT-04 is dead in play: the jump at `:3-8` happens once, in week S, before any `Ai_*` write
-  (`F_DemonWar_Stage` reaches 20 only at `Gｹｲﾌﾞﾘｽ:2105`).
+**Quirk candidates** (settled with step 1, 2026-10-11):
+- **Medusa's scenes replay** — NAT-25. The counter `N_Medusa_Events` moves on a 1-in-5 roll
+  (`:70-73`), and `Gﾒﾃﾞｨｳｻ` 2/3/4 play while it *equals* 2/4/6 (`:74-88`), every week until the next
+  roll. They kill Milli (unit 24), Isoroku (unit 27), the ninja Kaoru, each once (`Gﾒﾃﾞｨｳｻ:1060-1064,
+  1507-1513, 1893-1899`); the replays return at once but still end the week's event chain
+  (`@L_004d1`).
+- ~~**`Gｼﾙｷｨ` 8 every week.**~~ Not so: `Gｼﾙｷｨ` 8 runs on into `L_01cd1` (entry 300's label) and ends
+  with `F_Silky_State := 8` (`Gｼﾙｷｨ:1784-1789`), so it plays once, twelve weeks after the second
+  absorption (`Silky_NextEventWeek`, written only at `Gｼﾙｷｨ:1015-1016`) with the state still 2-5.
+  What is left is the missing jump after it (`:140-143`): the chain goes on — NAT-26.
+- **Dead code** — NAT-16: `:107-109` (`Ev_WeeklyEventDone` is still 0 there: no scene of the chain
+  before it writes it). The south list's fall-through into `L_00faf` (`:614-618`, only with Leazas
+  Castle (1) lost) comes with the Assault Leaders (step 5).
+- NAT-04 is dead in play (confirmed): the jump at `:3-8` happens once, in week S, before any `Ai_*`
+  write (`F_DemonWar_Stage` reaches 20 only at `Gｹｲﾌﾞﾘｽ:2105`; `MAIN:989-993` zeroes it only with
+  `F_Kayblis_War = 1`, when the phase never runs).
+- The collapse tests fire for wars never started — NAT-27.
 
 ## The other nation files
 
@@ -190,7 +196,7 @@ battles a week, the scenes' own (`Gｶﾞﾙﾃｨｱ` 2 `:324`) and, through `F
   (85): Wao (163), Kunihiko (164), Kaybnyan (162); Tower of Evil (78): `Gﾜｰｸﾞ` 1 while
   `N_Warg_Stage = 0`; Kesselring's Castle (87): Kesselring (133) + Monster Generals (87-89); Camilla's
   Castle (88): Camilla (91, maximum 200 → 2000) + Monster General (88); **Demon Lord's Castle (79)**:
-  `Gｹｲﾌﾞﾘｽ` 4 on the first attack (`F_Galtia_JoinedKayblis := 1`), walls, Monster Generals (181,
+  `Gｹｲﾌﾞﾘｽ` 4 on the first attack (`F_DemonCastle_Attacked := 1`), walls, Monster Generals (181,
   182, 183) + Kayblis (135); Kayblis's Castle (84): walls, Medusa (134) + Monster Generals (87, 88);
   a dead leader or any other province: Monster Generals (86-89), no walls (NAT-21).
 - **`Tﾍﾙﾏﾝ2`**: Helman's remnants are militia ("A Certain Country's People") after the war — until
@@ -274,7 +280,7 @@ attack every week.
 | 1 | 1393-2109 | `Tｹｲﾌﾞﾘｽ:3-8` (week S) | the war council; demon war 20, Camilla 100 |
 | 2 | 759-1392 | `Tｹｲﾌﾞﾘｽ:9-12` (`Ev_KayblisAssault = 1`) | the assault: `F_Kayblis_War := 2`, Kayblis remade |
 | 3 | 658-758 | `Tｹｲﾌﾞﾘｽ:275-279` (Silky's Castle (81) the player's, not moved) | `F_Kayblis_Moved := 1`, Lis Guard (186) attacks Silky's Castle (81) |
-| 4 | 503-657 | `Tｹｲﾌﾞﾘｽ2:124-128` (first attack on the Demon Lord's Castle (79)) | Kayblis's reaction; `F_Galtia_JoinedKayblis := 1` |
+| 4 | 503-657 | `Tｹｲﾌﾞﾘｽ2:124-128` (first attack on the Demon Lord's Castle (79)) | Kayblis's reaction; `F_DemonCastle_Attacked := 1` |
 | 5 / 6 / 7 | 44-232 / 233-360 / 361-502 | `FIGT_B:217-231` (at war, Kayblis leading) | Satella (unit 29) / Meglass (unit 30) / Galtia (unit 41) defect |
 | 10 | 2110-3130 | `死亡捕獲:362-366` (Kayblis dead) | `Iｼﾚｲﾌﾞ` 7: stage 4 or ending 8 |
 
@@ -293,16 +299,17 @@ attack every week.
 
 | What | Lines | Reached |
 |---|---|---|
-| `Tｹｲﾌﾞﾘｽ` | 1855 | every week from S (`MAIN:594-629`) — main path |
-| `FIGTATTK` | 395 | from `FIGT表示`, a scene: its entries 2-7, 11-14 and 26 call it (24 sites); at stage 3 `Gｼﾙｷｨ` 8 (`FIGT表示` 26, weekly, above) and `Gﾌﾘｰｸ` 4 (`FIGT表示` 2); already at stage 2 `Iﾏｼﾞﾝ` 12, 14, 16, 18 (`FIGT表示` 3, 5, 6 and 7, 14) and `Gﾊﾟｯﾄﾝ` 2 (4). Was neither a scene file (`SceneRunner.IsSceneFile`) nor in `StrategyRules.PortedFiles`, so `ScriptContext.CallAsync` sent it to the unported hooks (Godot: skipped with a notice; `--auto`: stops), losing its one `Y 4, 2` per call (`FIGTATTK.ADV:234`). **Routed 2026-10-11** to the battle's port of the file (`Battle.PlayExchangeAnimationAsync`), checked against the file on 1900 random runs of `FIGT表示`; `ScenarioProgramSweepTests` now checks that every file the scenes call runs somewhere |
+| `Tｹｲﾌﾞﾘｽ` | 1855 | every week from S (`MAIN:594-629`) — main path. The frame is ported (step 1, 2026-10-11, `Strategy/KayblisTurn`); its armies `:326-624` and `:670-1508` stop the run ("not ported yet") until steps 2, 3 and 5 |
+| `FIGTATTK` | 395 | from `FIGT表示`, a scene: its entries 2-7, 11-14 and 26 call it (24 sites); at stage 3 `Gｼﾙｷｨ` 8 (`FIGT表示` 26, once, above) and `Gﾌﾘｰｸ` 4 (`FIGT表示` 2); already at stage 2 `Iﾏｼﾞﾝ` 12, 14, 16, 18 (`FIGT表示` 3, 5, 6 and 7, 14) and `Gﾊﾟｯﾄﾝ` 2 (4). Was neither a scene file (`SceneRunner.IsSceneFile`) nor in `StrategyRules.PortedFiles`, so `ScriptContext.CallAsync` sent it to the unported hooks (Godot: skipped with a notice; `--auto`: stops), losing its one `Y 4, 2` per call (`FIGTATTK.ADV:234`). **Routed 2026-10-11** to the battle's port of the file (`Battle.PlayExchangeAnimationAsync`), checked against the file on 1900 random runs of `FIGT表示`; `ScenarioProgramSweepTests` now checks that every file the scenes call runs somewhere |
 | `OVER` | 2210 | ending 8 and every other ending; `GameEnd` until W4 |
 | `Tﾙﾄﾞﾗ` | 205 | the week stage 4 begins — after the milestone |
 
 Every scene stage 3 reaches runs from the player's files; their rule calls are `FIGT_A`/`FIGT_B`
 (`Gｹｲﾌﾞﾘｽ` 3, `Gｹｯｾﾙ` 2's duel and battle `:2420-2437`/`:2951-2963`, `Gｻｲｾﾞﾙ` 12, `Gｻﾃﾗ` 20), `死亡捕獲`,
-`Sﾌﾞﾀｲ` and `FIGT表示`; none calls a `T*` file. In interactive Godot `Tｹｲﾌﾞﾘｽ` is skipped with a
-notice, so stage 3 currently has no Kayblis phase at all (and `Gｹｲﾌﾞﾘｽ` 1 never closes the Camilla
-Unit or the demon war [I]).
+`Sﾌﾞﾀｲ` and `FIGT表示`; none calls a `T*` file. Since step 1 `Tｹｲﾌﾞﾘｽ` is routed (it was skipped with a notice in
+interactive Godot before, so stage 3 had no Kayblis phase at all): the phase runs up to the first
+army that marches — in week S Babolat's, right after `Gﾊﾞﾎﾞﾗ` 1 —, which ends the session with "not
+ported yet" until step 2.
 
 ## Open questions
 
@@ -311,11 +318,12 @@ Unit or the demon war [I]).
 2. Can Kesselring's Castle (87) be won with Kesselring alive (troops gone, HP left)? `Gｹｯｾﾙ` 2's
    branch at `:871` reads a `Tmp0001` left by the battle before it — duel or not [I: stale].
 3. Can Kayblis at 40 HP be killed without Silky's `Gｼﾙｷｨ` 9 — and at war (60000 HP) at all?
-4. The two replay candidates (Medusa's scenes, `Gｼﾙｷｨ` 8): confirm by capture.
+4. Medusa's replays (NAT-25): confirm by capture. (`Gｼﾙｷｨ` 8 does not replay: NAT-26.)
 5. Is La Vaswald reached at stage 3 in practice (`N_Saizel_Weeks > 40`)?
-6. `docs/variables.tsv`: `F_Galtia_JoinedKayblis` (VAR0744) is "the first attack on the Demon Lord's
-   Castle (79) reported" (`Gｹｲﾌﾞﾘｽ` 4), `VAR0637` "Galtia (unit 41) defected to Kayblis" (`Gｹｲﾌﾞﾘｽ` 7,
-   read at `Tｹｲﾌﾞﾘｽ:226, 1360`) — this answers survey-nations §9 Q3; rename when porting.
+6. ~~`docs/variables.tsv`~~ Renamed with step 1 (2026-10-11): VAR0744 is `F_DemonCastle_Attacked` (the
+   first attack on the Demon Lord's Castle (79) reported, `Gｹｲﾌﾞﾘｽ` 4), VAR0637
+   `F_Galtia_DefectedToKayblis` (Galtia (unit 41) defected, `Gｹｲﾌﾞﾘｽ` 7, read at `Tｹｲﾌﾞﾘｽ:226, 1360`) —
+   this answers survey-nations §9 Q3.
 7. Stage-3 captures: from the owner's saves at the gate attack; `ｽﾀMENU`'s "From 4" (week 77, demon
    war at 9) needs `DebugMode`.
 
@@ -328,8 +336,8 @@ not Kayblis's", its filter and its capture with the collapses). Main path first:
 
 0. **Sweep and harness**: this file; the owner's stage-3 checklist in
    [../golden-tests.md](../golden-tests.md) (`Tｹｲﾌﾞﾘｽ` is a capture root already).
-1. **`Tｹｲﾌﾞﾘｽ`, the frame** (~720 lines): `:1-325` (week S's jump with `Gｹｲﾌﾞﾘｽ` 1, the `Ai_*` reset,
-   the 24 recoveries, the event chain, the dispatch), the guards `:625-669`, the template
+1. **`Tｹｲﾌﾞﾘｽ`, the frame** ✓ (2026-10-11, `Strategy/KayblisTurn`; README "Milestone 4") (~720 lines): `:1-325` (week S's jump with `Gｹｲﾌﾞﾘｽ` 1, the `Ai_*` reset,
+   the 24 recoveries of 22 commanders, the event chain, the dispatch), the guards `:625-669`, the template
    `:1509-1614`, the captures and collapses `:1615-1778`, the helpers; the armies throw
    `NotSupportedException` until their step, as in milestone 3.
 2. **The generals' units** (~600): Babolat, Redeye, Kite, Galtia, Kesselring `:729-1328`.
