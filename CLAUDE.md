@@ -108,7 +108,9 @@ Step 3 (docs) is done: the quirks are registered (EVT-10 to EVT-20, NAT-31, DGN-
 closed** (2026-10-11, owner's decision 18: no stage-4 capture, no `--auto` through stage 4).
 **Milestone 6** is W4 — `OVER` (the endings) and `ｽﾀMENU` (the start menu, with `HAPPY_C`), which
 replace the minimal "THE END" of decision 10; a survey first (docs/strategy/README.md, "Milestone 6").
-Step 0 is done (docs/strategy/survey-w4.md); its §6 questions wait for the owner.
+Step 0 is done (docs/strategy/survey-w4.md). Owner's decision 19: the three files run from the
+player's files through `SceneRunner` (not hand-ported), after `ZZ0` back to the title, `ｽﾀMENU`
+replaces our title; the gallery `CG` and the music room `MMODE` later. Step 1 (`OVER`) is next.
 `tools/analysis/port_draft.py` drafts text-heavy ranges for hand ports.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.

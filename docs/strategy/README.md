@@ -168,6 +168,18 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     and take W4 next: `OVER` (the endings, what they record, their epilogues) and `ｽﾀMENU` (the start
     menu and its stage starts, with `HAPPY_C`, which only it calls), which replace decision 10's
     minimal ending; a survey first. See "Milestone 6" below.
+19. **The game frame runs from the player's files** (2026-10-11, the owner's answers to
+    [survey-w4.md](survey-w4.md) §6; the agent recommended each of them): (1) `OVER`, `ｽﾀMENU` and
+    `HAPPY_C` run from the player's files through `SceneRunner` and draw on the engine surface, as the
+    scenes do (decision 12), with the engine commands they need added; their rules (the clear, the
+    fate record, the unlocks) are not hand-ported — the owner asked for both ways in detail first: the
+    files are mostly presentation, the rules a few dozen lines, and run as written they cannot be
+    mistranscribed; a redesigned UI can read their results from page 4. (2) After `ZZ0` the port goes
+    back to the title instead of quitting (STR-10's interface fix; a return to `ｽﾀMENU` is a new
+    launch's boot). (3) In milestone 6: `OVER`, `ｽﾀMENU` with its buttons (`HAPPY_C`, `Iｱﾘｽ`, `Gｻｲﾄｳ`,
+    the requests slip, Load, New game) and the debug starts From 2-4; the gallery (`CG`) and the music
+    room (`MMODE`) later. (4) `ｽﾀMENU` replaces our own title (decision 10); the development switches
+    and the battle-capture viewer stay reachable.
 
 ## Milestone 1 — the prologue
 
@@ -620,3 +632,17 @@ Steps:
    starts. 20 quirk candidates (O1-O9, M1-M7, H1-H4). Four questions for the owner (§6): how the
    frame runs (from the player's files or hand-ported rules under our own screens), quit after `ZZ0`
    or back to the title, the scope (gallery, music room, debug starts), our own title or `ｽﾀMENU`.
+   Answered by decision 19: from the player's files, back to the title, everything but the gallery
+   and the music room, `ｽﾀMENU` as the title.
+1. **`OVER`** (survey-w4 §2): `&#OVER` runs the file through `SceneRunner` instead of ending the
+   session; the commands it needs that `SceneRunner` and the screen lack are added (`ZZ0` ends the
+   game: `GameEnd`, then the title). Content tests from the player's files: an ending recorded on
+   page 4 (the clear, the fates) and kept in a slot by `ﾛｰﾄﾞｾｰﾌﾞ` 11; the roster against chosen states.
+2. **`ｽﾀMENU` as the title** (§3): the boot goes on from `SET` into `ｽﾀｰﾄ`'s end and `ｽﾀMENU` (the
+   logo, the buttons and their unlocks, the rolls), run from the player's files; New game and Load
+   through it; `Iｱﾘｽ`, `Gｻｲﾄｳ`, the requests slip and the debug starts From 2-4; the gallery's and the
+   music room's buttons stay unported (decision 19). Our title's development entries (the capture
+   viewer) move elsewhere; `--newgame`/`--load` keep working.
+3. **`HAPPY_C`** (§4) from the player's files.
+4. **Docs**: the quirk candidates O1-O9, M1-M7, H1-H4 registered; STR-10's fix noted; survey-main's
+   W4 row.
