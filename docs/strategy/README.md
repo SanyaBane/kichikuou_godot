@@ -17,6 +17,8 @@ survey → spec per part → port per part → golden captures.
 | [survey-events.md](survey-events.md) | `G*`, `I*` (136 files) | ≈423k | ~40 commands, goto-based; 19 rule mechanics hidden in scenes (~950 lines to hand-port) |
 
 | [survey-ikami.md](survey-ikami.md) (2026-10-11, decision 17) | `Iｶﾐ` (with `FIGT表示` 21-24) | ≈6.5k | the garrisons on 2F-5F and their 20 kaiju battles, the menu before Rudrasaum, endings 9, 10, 11, 13; no draws |
+| [survey-w4.md](survey-w4.md) (2026-10-11, decision 18) | `OVER`, `ｽﾀMENU`, `HAPPY_C` | ≈4.5k | the clear and the fate record, the title's unlocks; mostly presentation |
+| [survey-gallery.md](survey-gallery.md) (2026-10-11, decision 20) | `CG`, `MMODE` | ≈4.5k | none but the engine's CG load counter the gallery reads; 141 scene replays, all clean |
 
 Not yet surveyed: `FIGT表示.ADV` beyond its entries 21-24.
 
@@ -733,6 +735,14 @@ what each needs.
 
 Steps:
 
-0. **Survey**: both files read as programs (the statements `SceneRunner` lacks), what they draw and
-   play, what they write (EVT-07: whether a replay can change a later game's state), the scenes the
-   gallery enters at 300 and whether each runs from there, quirk candidates; questions for the owner.
+0. **Survey** ✓ (2026-10-11): [survey-gallery.md](survey-gallery.md). Both files read as programs and
+   `SceneRunner` runs their statements but two gaps: the gallery decides what is unlocked by the
+   engine's CG load counter (`ZG Glob_CgSeen`, `SET.ADV:297`: every CG loaded from file adds 1 to its
+   record), which the port does not count — without it everything but CG 240 stays locked; and the
+   music room's Stop with nothing playing reads past its string table (`F1`), where the port throws.
+   The gallery: 150 pictures on five pages; 141 replays enter 82 scene files at entries 300-304, 8
+   replay text kept in `CG.ADV`, one shows the picture only. Every replay was traced: each enters a
+   label inside its scene and leaves at an exact `{Ev_Entry = n: %0:}` guard, writing no story state —
+   EVT-07 does not hold. The music room plays tracks 1-28, keeps nothing (`US`/`UG`). The thumbnails
+   need a new mask rule for the agent's dumps. 15 quirk candidates (G1-G10, R1-R5); two questions for
+   the owner (§5): how to count CG loads, and what `F1` past its table reads.
