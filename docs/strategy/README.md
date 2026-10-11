@@ -556,7 +556,7 @@ Steps, in the sweep's order (its "Proposed order"):
    (`CreatorTurnTests`); `StageThreeEndTests` runs on from Kayblis's death into the first phase with
    `Gﾙﾄﾞﾗ` from the player's files. By the sweep's table nothing stage 4 reaches is left unported but
    `OVER`, which stays `GameEnd` (W4).
-2. **The end**, after a survey of `Iｶﾐ` of its own (decision 17; step 2a ✓ 2026-10-11,
+2. **The end** ✓ (2026-10-11), after a survey of `Iｶﾐ` of its own (decision 17; step 2a ✓ 2026-10-11,
    [survey-ikami.md](survey-ikami.md): six floors, Rudrasaum on 6F, four garrisons and 20 kaiju battles,
    the picker's soft lock without a free unit, ten quirk candidates, a recipe per ending): content
    tests from the player's files — `Gﾙﾄﾞﾗ` with Kou at 8 through Ho Raga's Bonsai
@@ -567,9 +567,18 @@ Steps, in the sweep's order (its "Proposed order"):
    Create Chaos without Sill (unit 2); a garrison lost on the way down), 10, 11 and 13; it also runs
    the survey's quirk candidates Q3 (the picker never ends with only Rance free), Q4 (a garrison
    killed in its last fight counts as held) and Q5 (Rance picked: the war expenses stay paid).
-   Part 2: `Gﾙﾄﾞﾗ` and Kou's arc ✓ (2026-10-11, `StageThreeEndTests`: the first Creator phase from
+   Part 2 ✓ (2026-10-11): `Gﾙﾄﾞﾗ` and Kou's arc (`StageThreeEndTests`: the first Creator phase from
    the player's files takes Kou at 8 to 10 and `Gｺｳﾋﾒ` 6 to 11; any other state but 0 to 0 with
-   `F_Kouhime_Dead` 2); Ho Raga's Bonsai Statue (item 18) and God's Door into `Iｶﾐ` still to come.
+   `F_Kouhime_Dead` 2), then the chain (`GodsDoorEndTests`, from Kayblis's death with the quest at 2,
+   Rance holding Chaos (item 1) and three statues in stock): S4's `Gﾙﾄﾞﾗ` (Kou 8 → 10),
+   S4+1's `COM` (`Gｺｳﾋﾒ` 6, 11) and Ho Raga's Tower (dungeon 5) through `Cﾒｲｷｭｳ` with Rance searching —
+   "Get Gold Statue" gives the Bonsai Statue (item 18), quest 5; S4+2's Ruins Search in Ancient Ruins (35)
+   (`Cｼﾊｲﾄｼ` → `Cﾒｲｷｭｳ`): God's Door found, the four statues placed, quest 6, Enter → `Iｶﾐ` → ending 11 —
+   the sweep's shortest winning run, inside the spared Creator phases. With Kou at 7 or 0 Ho Raga
+   refuses twice (quest 2 → 3), no hint comes at the door and it stays shut with three statues. Also run:
+   the statue offered only to Rance, Kou's hint at the door (quest 3 → 4) and the stage-4 sweep's quirk
+   candidate — Ho Raga gives the statue again after it is placed (quest 6 → 5, Enter hidden until it is
+   placed again).
 3. **Docs**: the sweep's quirk candidates registered, survey-nations and stage-2-sweep corrected, the
    dictionary's entries the sweep found wrong.
 4. ~~**W4** (`OVER`, `ｽﾀMENU`) only if the owner puts it in this milestone~~ — not in it (decision

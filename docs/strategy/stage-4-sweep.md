@@ -208,9 +208,21 @@ or Nikkou (`Cﾒｲｷｭｳ:233-236`, ported). Kou reaches 8 through her own ar
 (`IJAPAN:5565`, state 3; the other choice kills her, `:5534`), four harem nights (4-7,
 `Gｺｳﾋﾒ:338, 2006, 2233, 2355`), then `COM:217` (`Gｺｳﾋﾒ` 5, 8). **With Kou not at 8 when `Gﾙﾄﾞﾗ` plays,
 no Bonsai Statue exists, God's Door stays shut, and stage 4 can only be lost** [I: no other exit;
-endings 12, 7, 5 below are not stage-bound]. Shortest winning run [I]: S4 `Gﾙﾄﾞﾗ` (Kou 10), S4+1 Ho
+endings 12, 7, 5 below are not stage-bound]. Shortest winning run: S4 `Gﾙﾄﾞﾗ` (Kou 10), S4+1 Ho
 Raga's Tower with Rance leading (`Gﾎﾗｶﾞ:290` needs no hint), S4+2 God's Door — inside the three
 spared phases if the other statues are in hand.
+
+**Run** (2026-10-11, milestone 5 step 2, `GodsDoorEndTests`, content, from Kayblis's death with the quest
+at 2, Rance holding Chaos (item 1), the other three statues in stock): the shortest run holds as written,
+to ending 11. Ho Raga's Tower is clicked on the map (`COMMAND:149-151`, Siberia (38)); its gate opens to
+units 1, 3, 7, 14, 21, 31 (`Gﾎﾗｶﾞ:4-6`), "Get Gold Statue" shows only with Rance (unit 1) searching. The
+Ancient Ruins (dungeon 30) are entered from the city's menu, Ruins Search (`Cｼﾊｲﾄｼ:227-232` →
+`L_00c9e`, `:538-547`, which writes dungeon 30's record each time, `Dgn_State := 0`), so `Prov_Cur` is 35
+when `Iｶﾐ` starts. Leaving God's Door and then the dungeon's menu gives the week's search back
+(`Cﾒｲｷｭｳ` `L_008bf`): Ho Raga's Tower can follow the door in the same week. With Kou at 7 or 0 when
+`Gﾙﾄﾞﾗ` plays, Ho Raga refuses twice (quest 2 → 3, then `:296-357`), no hint comes at the door and it
+stays shut with three statues; with Kou at 11 and the quest at 3, the door first gives the hint (quest 4)
+and Ho Raga the statue after it.
 
 **`Iｶﾐ`** (6528 lines; a scene from the player's files, entered from `Cﾒｲｷｭｳ:4556`, never returns;
 never run end to end; first look, **corrected by [survey-ikami.md](survey-ikami.md)** (decision 17):
@@ -291,7 +303,8 @@ stops at it in S4, and nothing stage 4 reaches is left unported but `OVER` (`Gam
   the count; no phase or attack can touch them again [I].
 - **Ho Raga gives the Bonsai Statue again** after it is placed (`Cﾒｲｷｭｳ:4008-4009` clears the holder;
   `Gﾎﾗｶﾞ:276-291, 358-359`): at stage 4 with Kou past 9 the quest falls from 6 back to 5 and "Enter
-  God's Door" (`Cﾒｲｷｭｳ:3921`) hides until the statue is placed again.
+  God's Door" (`Cﾒｲｷｭｳ:3921`) hides until the statue is placed again. **Confirmed by a run**
+  (`GodsDoorEndTests`: the door opened, left, Ho Raga the same week, the bonsai placed again reopens it).
 - **`Iｶﾐ`** [first look]: 4F's and 5F's "garrison destroyed" lines test the 3F rearguard
   (`:4740`, `:4803`; text only); `EndingId := 1` (`:2650`) is overwritten with 9 (`:2774`) before
   `&#OVER`; the rearguard picker (`:4813-4886`) loops until a party without Rance is picked — with no
@@ -303,7 +316,9 @@ stops at it in S4, and nothing stage 4 reaches is left unported but `OVER` (`Gam
 ## Open questions
 
 1. Is Kou at 8 really the only way to a winning end? Every writer of `F_Kou_State > 9` and of item 18
-   was checked by grep; a capture of S4 with Kou at 8 and one with Kou below would settle it.
+   was checked by grep; a capture of S4 with Kou at 8 and one with Kou below would settle it. **Run**
+   (`GodsDoorEndTests`): both branches behave as read — Kou at 8 reaches `Iｶﾐ` in S4+2, Kou at 7 or 0
+   leaves the statue with Ho Raga and the door shut; "the only way" still rests on the grep.
 2. Are Siberia (38) and Ancient Ruins (35) then lost for good to the Angels from phase 4 — i.e. is a
    dungeon on a province of owner 10 really closed (survey-dungeon §2, `COMMAND:151`)?
 3. Does milestone 5 include W4 (`OVER`, `ｽﾀMENU`) — decision 16 says "up to the game's end", and stage

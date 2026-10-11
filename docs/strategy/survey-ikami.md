@@ -8,7 +8,8 @@ confirmed; **[I]** marks an inference, **[G]** a guess. Lines without a file nam
 **Run** (2026-10-11, step 2): `IkamiEndTests` (content) runs `Iｶﾐ` from the player's files after
 the boot and a new game, with the four garrisons picked through `DeploymentScreen` and the fights in
 the battle's port, to endings 9 (Charge; Create Chaos without Sill; a garrison lost), 10, 11 and 13
-— the recipes of §9 hold as written, with `DebugMode 1` and Repel.
+— the recipes of §9 hold as written, with `DebugMode 1` and Repel. `GodsDoorEndTests` runs the way
+in from Kayblis's death (Ho Raga's Bonsai Statue, God's Door's four statues, Enter) to ending 11.
 
 ## 1. Role and shape
 
@@ -358,7 +359,10 @@ With `N_Warg_Stage` below 2 the second Think plays "Can't think of anything" and
    its last fight (`:2362`, 0 troops, 1 HP, Defend) — `Tmp0226` stays 0 and the run ends with ending 11.
    Q9 not run.
 2. Is `Prov_Cur` always Ancient Ruins (35) at entry? `Cﾒｲｷｭｳ` writes it nowhere; the God's Door
-   scenes between the click and `:4556` were not traced for map calls that move it [I].
+   scenes between the click and `:4556` were not traced for map calls that move it [I]. **Answered by
+   a run** (`GodsDoorEndTests`, 2026-10-11): the ruins are entered from the city's Ruins Search
+   (`Cｼﾊｲﾄｼ:227-232`, `:538-547`), which runs on Ancient Ruins (35), and nothing up to `:4556` moves
+   the cursor — `Prov_Cur` is 35 when `Iｶﾐ` starts.
 3. `Bt_IsDuel` at entry: every duel caller resets it (01-flow §2.6) [I]; a stale 1 would make the
    fights endless until a side is annihilated.
 4. Does Repel at the first turn really skip the kaiju's turn (turn order by troops, 01-flow §6)?

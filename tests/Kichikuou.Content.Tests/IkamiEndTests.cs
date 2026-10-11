@@ -1,10 +1,6 @@
-using Kichikuou.Content.Scripts;
 using Kichikuou.Core.Combat;
 using Kichikuou.Core.Script;
-using Kichikuou.Core.Setup;
-using Kichikuou.Core.State;
 using Kichikuou.Core.Strategy;
-using Kichikuou.Core.Sys3;
 using Xunit.Abstractions;
 
 namespace Kichikuou.Content.Tests;
@@ -21,7 +17,7 @@ namespace Kichikuou.Content.Tests;
 public class IkamiEndTests(ITestOutputHelper output)
 {
     /// <summary>The garrisons of 2F, 3F, 4F and 5F, in the order they are picked.</summary>
-    private static readonly int[] Garrisons = [3, 4, 5, 7];
+    private static readonly int[] Garrisons = EndGame.Garrisons;
 
     [Fact]
     public async Task Charge_ends_the_game_with_ending_9()
@@ -210,7 +206,7 @@ public class IkamiEndTests(ITestOutputHelper output)
     /// In fight <paramref name="fight"/> (counted from 1) <paramref name="unit"/>, alone in his
     /// garrison, goes in with 0 troops and 1 HP and only defends, so the kaiju kills him.
     /// </summary>
-    private static void WipeIn(Game game, int fight, int unit)
+    private static void WipeIn(EndGame game, int fight, int unit)
     {
         game.OnCall = file =>
         {
@@ -226,7 +222,7 @@ public class IkamiEndTests(ITestOutputHelper output)
     }
 
     /// <summary>The menu answers of the way back: Think twice (with Warg at stage 2), Leave it to Warg.</summary>
-    private static void LeaveItToWarg(Game game)
+    private static void LeaveItToWarg(EndGame game)
     {
         game.State.N_Warg_Stage = 2;
         game.Input.Menu.Enqueue(2);
@@ -235,7 +231,7 @@ public class IkamiEndTests(ITestOutputHelper output)
     }
 
     /// <summary>Runs <c>Iｶﾐ</c> to its jump to <c>OVER</c>.</summary>
-    private async Task RunToTheEndAsync(Game game, int pickers = 4)
+    private async Task RunToTheEndAsync(EndGame game, int pickers = 4)
     {
         var jump = await Assert.ThrowsAsync<ScenarioJumpException>(() => game.Script.CallFileAsync("Iｶﾐ.ADV"));
         output.WriteLine(string.Join(", ", game.Calls.Where(c => !c.StartsWith("FIGT.ADV", StringComparison.Ordinal))));
@@ -244,47 +240,19 @@ public class IkamiEndTests(ITestOutputHelper output)
         Assert.Equal(pickers, game.Calls.Count(c => c.StartsWith("Sﾌﾞﾀｲ.ADV", StringComparison.Ordinal)));
     }
 
-    private sealed class Game(GameState state, ScriptContext script, EndInput input, Recorder recorder)
-    {
-        public GameState State { get; } = state;
-        public ScriptContext Script { get; } = script;
-        public EndInput Input { get; } = input;
-        public List<string> Calls => recorder.Calls;
-        public int Fights => Calls.Count(c => c.StartsWith("FIGT.ADV", StringComparison.Ordinal));
-
-        /// <summary>Runs on every call, after it is recorded and before it runs.</summary>
-        public Action<string>? OnCall { get => recorder.OnCall; set => recorder.OnCall = value; }
-    }
-
     /// <summary>
-    /// The boot and the new game with the rule files routed and the scenes run from the decompile
-    /// (every draw 1), then the state God's Door leaves: story stage 4, the Ancient Ruins (35)
-    /// under the cursor, no duel; Rance (unit 1) and Sill (unit 2) with him; Bound (unit 3), Soul
-    /// (unit 4), Leila (unit 5) and Rick (unit 7) free for the garrisons and the Gold to send them;
-    /// Warg at stage 2 and the debug commands on (Repel); unless <paramref name="picks"/> is false, the
-    /// four garrisons' picks queued.
+    /// The booted new game (<see cref="EndGame"/>), then the state God's Door leaves: story stage 4,
+    /// the Ancient Ruins (35) under the cursor, no duel; Rance (unit 1) and Sill (unit 2) with him;
+    /// Bound (unit 3), Soul (unit 4), Leila (unit 5) and Rick (unit 7) free for the garrisons and the
+    /// Gold to send them; Warg at stage 2 and the debug commands on (Repel); unless
+    /// <paramref name="picks"/> is false, the four garrisons' picks queued.
     /// </summary>
-    private static async Task<Game?> AtGodsDoorAsync(bool picks = true)
+    private static async Task<EndGame?> AtGodsDoorAsync(bool picks = true)
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+        var game = await EndGame.BootAsync();
+        if (game is null)
             return null;
-        var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
-        var state = new GameState();
-        var rules = new StrategyRules(scripts, new RecordingRules { State = state });
-        var runner = new SceneRunner(scripts, rules);
-        var input = new EndInput(state);
-        var recorder = new Recorder(runner, state);
-        var script = new ScriptContext(state, new QueuedRandom { DefaultToOne = true }, new RecordingView(), input, recorder)
-        {
-            Saves = new MemorySaveStore(),
-        };
-        runner.Bind(script);
-        rules.Bind(script);
-        var setup = new GameSetup(script, scripts);
-        await setup.BootAsync();
-        await setup.NewGameAsync();
-        recorder.Calls.Clear();
-
+        var state = game.State;
         state.StoryStage = 4;
         state.Prov_Cur = 35;
         state.Bt_IsDuel = 0;
@@ -295,85 +263,10 @@ public class IkamiEndTests(ITestOutputHelper output)
         foreach (int unit in free)
             state.Units[unit].Status = 1;
         if (picks)
-            QueuePicks(input);
-        return new Game(state, script, input, recorder);
+            QueuePicks(game.Input);
+        return game;
     }
 
     /// <summary>The four garrisons' picks: each unit's cell, then "Attack".</summary>
-    private static void QueuePicks(EndInput input)
-    {
-        foreach (int unit in Garrisons)
-        {
-            var at = PointerScript.PickerCell(unit);
-            input.Pointer.Click(at.X, at.Y);
-            var attack = PointerScript.PickerButton(1);
-            input.Pointer.Click(attack.X, attack.Y);
-        }
-    }
-
-    /// <summary>Every call to another file, recorded with its entry, then run.</summary>
-    private sealed class Recorder(IStoryHooks target, GameState state) : IStoryHooks
-    {
-        public List<string> Calls { get; } = [];
-
-        public Action<string>? OnCall { get; set; }
-
-        public Task RunEventAsync(string file, Sys3Int entry)
-        {
-            Calls.Add($"{file} {state.Ev_Entry.Value}");
-            OnCall?.Invoke(file);
-            return target.RunEventAsync(file, entry);
-        }
-    }
-
-    /// <summary>
-    /// Key waits and pauses answered at once; the mouse from a <see cref="PointerScript"/> (the
-    /// garrison picks); the menus from a queue; every battle turn answered by
-    /// <see cref="Command"/> (Repel by default). A run that reads the mouse with nothing left to
-    /// click fails instead of waiting for ever.
-    /// </summary>
-    private sealed class EndInput(GameState state) : IGameInput
-    {
-        public PointerScript Pointer { get; } = new();
-        public Queue<int> Menu { get; } = new();
-        public List<int> MenuSizes { get; } = [];
-        public int Reads { get; private set; }
-        private int _idle;
-
-        /// <summary>The answer to a battle turn; Repel by default.</summary>
-        public Func<GameState, FigtSelMenu, FigtSelChoice> Command { get; set; } = (_, menu) =>
-            new FigtSelChoice(FigtSelCommand.Repel, (menu.Find(FigtSelCommand.Repel)
-                ?? throw new InvalidOperationException("No Repel: is DebugMode 1?")).Arguments[0]);
-
-        public Task<Sys3Int> WaitForKeyAsync() => Task.FromResult(Sys3Int.Zero);
-        public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable) => Task.FromResult(Sys3Int.Zero);
-        public Task<Sys3Int> GetPlayingTrackAsync() => Task.FromResult(Sys3Int.Zero);
-
-        public Task<MouseState> GetMouseAsync()
-        {
-            Reads++;
-            var m = Pointer.Next(out bool read);
-            _idle = read || Pointer.Pending > 0 ? 0 : _idle + 1;
-            if (_idle > 1000)
-                throw new InvalidOperationException("The mouse is read with nothing left to click.");
-            return Task.FromResult(m);
-        }
-
-        public Task<Sys3Int> SetCursorAsync(Sys3Int shape) => Task.FromResult(shape);
-
-        public Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
-        {
-            MenuSizes.Add(items.Count);
-            return Task.FromResult(Menu.Count > 0 ? Menu.Dequeue() : throw new InvalidOperationException($"A menu of {items.Count} items with no answer left."));
-        }
-
-        public Task<FigtSelChoice> SelectCommandAsync(FigtSelMenu menu) => Task.FromResult(Command(state, menu));
-
-        public Task<Sys3Int?> ChooseAsync(BattleMenu menu) => throw new InvalidOperationException("A battle menu in Iｶﾐ.");
-        public Task<IReadOnlyList<Sys3Int>> GetDateAsync() => throw new InvalidOperationException("ZT 0");
-        public Task ResetTimerAsync(Sys3Int value) => throw new InvalidOperationException("ZT 1");
-        public Task<Sys3Int> GetTimerAsync(int mode) => throw new InvalidOperationException("ZT n");
-        public Task<IReadOnlyList<Sys3Int>> GetCdPositionAsync() => throw new InvalidOperationException("SC");
-        public Task<Sys3Int> GetMidiTrackAsync() => throw new InvalidOperationException("SR 1");
-    }
+    private static void QueuePicks(EndInput input) => input.Pick(Garrisons);
 }

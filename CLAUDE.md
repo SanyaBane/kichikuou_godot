@@ -100,8 +100,10 @@ docs/strategy/README.md, "Milestone 5"). Step 1 is done: `Tﾙﾄﾞﾗ` is `Str
 `NationFile`, using none of the template), so N1 is done and nothing stage 4 reaches is left unported
 but `OVER` (`GameEnd`). Owner's decision 17: `Iｶﾐ` gets a survey of its own before step 2's end tests,
 and W4 (`OVER`, `ｽﾀMENU`) stays out of milestone 5 — every ending stays `GameEnd`. Step 2a is done
-(docs/strategy/survey-ikami.md); step 2 part 1 is done: `IkamiEndTests` (content) runs `Iｶﾐ` end to
-end from the player's files to endings 9, 10, 11 and 13.
+(docs/strategy/survey-ikami.md); step 2 is done: `IkamiEndTests` (content) runs `Iｶﾐ` end to
+end from the player's files to endings 9, 10, 11 and 13, and `GodsDoorEndTests` the way there from
+Kayblis's death — Kou at 8 when `Gﾙﾄﾞﾗ` plays, Ho Raga's Bonsai Statue, the four statues at God's Door,
+`Iｶﾐ` to ending 11; Kou below 8: Ho Raga refuses and the door stays shut (`EndGameRig.cs` is their rig).
 `tools/analysis/port_draft.py` drafts text-heavy ranges for hand ports.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
