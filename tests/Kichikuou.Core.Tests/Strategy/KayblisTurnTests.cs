@@ -11,7 +11,7 @@ namespace Kichikuou.Core.Tests.Strategy;
 /// Kayblis's turn <c>Tｹｲﾌﾞﾘｽ</c> (<see cref="KayblisTurn"/>, milestone 4 step 1: the frame — week S,
 /// the recoveries, the event chain, the dispatch, the Grief Valley (89) guards, the capture with
 /// Helman's and Zeth's collapses; step 2: the units of Babolat, Redeye, Kite, Galtia and
-/// Kesselring; step 3: Piar's unit). Also compared with the decompile on random states (Content tests,
+/// Kesselring; step 3: Piar's unit and Kayblis's army). Also compared with the decompile on random states (Content tests,
 /// <c>NationTurnDifferentialTests</c>).
 /// </summary>
 public class KayblisTurnTests
@@ -231,7 +231,7 @@ public class KayblisTurnTests
         rig.State.F_Silky_State = 2;
         rig.State.F_SoulMedusa = 1;
         rig.State.F_Kayblis_War = 2;
-        await Assert.ThrowsAsync<NotSupportedException>(rig.RunAsync);   // Kayblis's army at war
+        await rig.RunAsync();                                   // Kayblis's army takes Grief Valley (89) and more
         Assert.Empty(rig.Story.Calls);
     }
 
@@ -703,6 +703,49 @@ public class KayblisTurnTests
             Assert.Equal(expected, rig.Story.Calls);
             Is(after, rig.State.F_Piar_State);                  // the scenes set the state themselves
         }
+    }
+
+    [Fact]
+    public async Task At_war_Kayblis_s_army_marches_up_to_six_times_with_its_Monster_Generals_refilled()
+    {
+        // Monster Generals' maximum 1000: each refill draws RND(500) for 86, 87, 88, 89.
+        var rig = new TurnRig([2, 5, .. Enumerable.Repeat(100, 12)]);
+        rig.State.F_Kayblis_War = 2;
+        foreach (int c in new[] { 135, 156, 131, 158 })        // Kayblis, Silky, Galtia (not defected), Meglass; Satella dead
+            rig.State.Cmdrs[c].Status = 1;
+        foreach (int c in new[] { 86, 87, 88, 89 })
+        {
+            rig.State.Cmdrs[c].MaxTroops = 1000;
+            rig.State.Cmdrs[c].MaxHP = 40;
+        }
+        rig.State.Provs[89].Owner = 8;                          // Grief Valley Kayblis's, Great Wall of Helman B the player's
+        rig.State.Provs[50].Owner = 1;
+        var parties = new List<string>();
+        rig.Story.OnCall = (file, _) =>
+        {
+            if (file == "FIGT_B.ADV")
+                parties.Add($"{rig.State.Bt_EnemyParty1.Value},{rig.State.Bt_EnemyParty2.Value},{rig.State.Bt_EnemyParty3.Value},{rig.State.Bt_EnemyParty4.Value} at {rig.State.Prov_Cur.Value} RM {rig.State.Bt_EnemyRetreatMode.Value}");
+        };
+
+        await rig.RunAsync();
+
+        Assert.Equal(["135,0,0,0 at 50 RM 2", "156,86,88,89 at 50 RM 2", "158,86,88,89 at 50 RM 2", "87,86,88,89 at 50 RM 2"], parties);
+        Assert.Equal([3, 5, .. Enumerable.Repeat(500, 12)], rig.Random.Draws);
+        // QUIRK: NAT-10 — above the maximum.
+        Is(1100, rig.State.Cmdrs[87].Troops);
+        Is(40, rig.State.Cmdrs[87].HP);
+        Is(1, rig.State.Cmdrs[87].Status);
+
+        // A province nobody holds is taken, so the next march goes on past it.
+        rig = new TurnRig(2, 5);
+        rig.State.F_Kayblis_War = 2;
+        rig.State.Cmdrs[135].Status = 1;
+        await rig.RunAsync();
+        Assert.Empty(rig.Story.Calls);
+        Is(8, rig.State.Provs[89].Owner);                       // Kayblis himself
+        Is(8, rig.State.Provs[50].Owner);                       // the Monster Generals
+        Is(0, rig.State.Provs[48].Owner);
+        Assert.Equal([1628, 1628], rig.Lines);
     }
 
     [Fact]

@@ -769,7 +769,10 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
                 "call Gｻﾃﾗ.ADV 2", "no scene", "guards", "guards again", "guards with portrait 415", "guards with portrait 466",
                 "call Gﾊﾞﾎﾞﾗ.ADV 1", "call Gﾚｯﾄﾞｱｲ.ADV 1", "call Gｶｲﾄ.ADV 1", "call Gｶﾞﾙﾃｨｱ.ADV 1", "call Gｹｯｾﾙ.ADV 1",
                 "call Gﾊﾟｲｱｰﾙ.ADV 1", "call Gｹｲﾌﾞﾘｽ.ADV 3", "the end", "jump",
-                .. new[] { 1329, 326 }.Select(l => $"unported {l}"),
+                "unported 326",
+                .. new[] { 135, 156, 131, 157, 158, 87 }.Select(c => $"Kayblis's army led by {c}"),
+                .. KayblisGenerals[1].Line.Select(p => $"Kayblis's army attacks {p}"),
+                "Kayblis's army without Kayblis", "Monster Generals above their maximum",
                 .. KayblisGenerals.SelectMany(g => g.Line.Select(p => $"{g.Army} attacks {p}")),
                 .. KayblisGenerals.Where(g => g.Army != "Kesselring").Select(g => $"{g.Army} attacks again"),
                 .. KayblisGenerals.Select(g => $"{g.Army} killed"),
@@ -853,6 +856,8 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
         state.F_Satella_State = (Sys3Int)rng.Next(9, 13);
         foreach (int p in new[] { 89, 81, 90, 85 })
             state.Provs[p].Owner = (Sys3Int)(rng.Next(3) == 0 ? 1 : rng.Next(0, 12));
+        foreach (int c in new[] { 86, 87, 88, 89 })
+            state.Cmdrs[c].MaxTroops = (Sys3Int)(rng.Next(4) == 0 ? rng.Next(0, 4) : rng.Next(0, 3000));
         state.F_Kayblis_Moved = (Sys3Int)rng.Next(0, 2);
         state.F_Babolat_State = (Sys3Int)rng.Next(0, 3);
         state.F_Redeye_State = (Sys3Int)rng.Next(0, 3);
@@ -1058,7 +1063,8 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
     /// after <c>Gﾚｯﾄﾞｱｲ</c> 8 or not (NAT-28), his state's steps; Kite's draw in ten; <c>Gｹｯｾﾙ</c> 2 at
     /// Bone Forest (90) or the Red House (85). Piar's unit: her target drawn again, given up, her unit
     /// after <c>Gﾊﾟｲｱｰﾙ</c> 2 attacking, capturing (a scene's scribble: dead in play) or empty (the same),
-    /// her state's steps.
+    /// her state's steps. Kayblis's army: each march by its leader (dead Kayblis's empty unit
+    /// included) and province, the Monster Generals refilled above their maximum (NAT-10).
     /// </summary>
     private static IEnumerable<string> KayblisGeneralFeatures(GameState before, GameState after, List<string> log)
     {
@@ -1119,6 +1125,14 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
         foreach (var (from, to) in new[] { (2, 3), (4, 5) })
             if (before.F_Piar_State == (Sys3Int)from && after.F_Piar_State == (Sys3Int)to)
                 yield return $"Piar's state {from} to {to}";
+        foreach (string battle in battles.Where(b => b.EndsWith(" Str10 Kayblis Unit", StringComparison.Ordinal)))
+        {
+            string leader = Field(battle, "Party").Split(',')[0];
+            yield return leader == "0" ? "Kayblis's army without Kayblis" : $"Kayblis's army led by {leader}";
+            yield return $"Kayblis's army attacks {Field(battle, "Prov_Cur")}";
+        }
+        if (new[] { 86, 87, 88, 89 }.Any(c => before.Cmdrs[c].Troops <= before.Cmdrs[c].MaxTroops && after.Cmdrs[c].Troops > after.Cmdrs[c].MaxTroops))
+            yield return "Monster Generals above their maximum";
 
         static string Field(string call, string name) =>
             call[(call.IndexOf($" {name} ", StringComparison.Ordinal) + name.Length + 2)..].Split(' ')[0];

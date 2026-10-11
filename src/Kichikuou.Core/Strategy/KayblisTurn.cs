@@ -19,9 +19,9 @@ namespace Kichikuou.Core.Strategy;
 /// Monster General (commander 86) given its name back. A province Kayblis's armies reach that is
 /// neither his nor the player's is taken without a battle (<see cref="CaptureAsync"/>), with
 /// Helman's and Zeth's collapses. The generals' units (<c>:729-1328</c>, step 2) are in
-/// <c>KayblisTurn.Generals.cs</c>, Piar's unit (<c>:670-728</c>, step 3) in
-/// <c>KayblisTurn.Armies.cs</c>; Kayblis's army and the Assault Leaders (<c>:1329-1508</c>,
-/// <c>:326-624</c>) are ported in later steps of milestone 4 and fail until then. The army names (<c>MS 10</c>) and Monster General's name (<c>MS 4</c>) are read
+/// <c>KayblisTurn.Generals.cs</c>, Piar's unit and Kayblis's army (<c>:670-728</c>,
+/// <c>:1329-1508</c>, step 3) in <c>KayblisTurn.Armies.cs</c>; the Assault Leaders (<c>:326-624</c>)
+/// are ported in step 5 of milestone 4 and fail until then. The army names (<c>MS 10</c>) and Monster General's name (<c>MS 4</c>) are read
 /// from the player's files through <paramref name="scenario"/>.
 /// </summary>
 public sealed partial class KayblisTurn(ScriptContext script, IScenarioSource? scenario = null)
