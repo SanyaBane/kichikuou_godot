@@ -567,7 +567,9 @@ Steps, in the sweep's order (its "Proposed order"):
    Create Chaos without Sill (unit 2); a garrison lost on the way down), 10, 11 and 13; it also runs
    the survey's quirk candidates Q3 (the picker never ends with only Rance free), Q4 (a garrison
    killed in its last fight counts as held) and Q5 (Rance picked: the war expenses stay paid).
-   Part 2: `Gﾙﾄﾞﾗ` and Kou's arc, Ho Raga's Bonsai Statue and God's Door into `Iｶﾐ`.
+   Part 2: `Gﾙﾄﾞﾗ` and Kou's arc ✓ (2026-10-11, `StageThreeEndTests`: the first Creator phase from
+   the player's files takes Kou at 8 to 10 and `Gｺｳﾋﾒ` 6 to 11; any other state but 0 to 0 with
+   `F_Kouhime_Dead` 2); Ho Raga's Bonsai Statue (item 18) and God's Door into `Iｶﾐ` still to come.
 3. **Docs**: the sweep's quirk candidates registered, survey-nations and stage-2-sweep corrected, the
    dictionary's entries the sweep found wrong.
 4. ~~**W4** (`OVER`, `ｽﾀMENU`) only if the owner puts it in this milestone~~ — not in it (decision

@@ -46,6 +46,34 @@ public class StageThreeEndTests(ITestOutputHelper output)
         Assert.Equal(0, game.State.Prov_Cur.Value);
     }
 
+    /// <summary>
+    /// The first Creator phase decides Kou's fate (stage-4-sweep, "`Gﾙﾄﾞﾗ`"): at 8 her dream of
+    /// Rudrasaum (10), and the next week's <c>COM</c> plays <c>Gｺｳﾋﾒ</c> 6 (11), Rance turning to God's
+    /// Door; any other state but 0 — she kills herself (0, <c>F_Kouhime_Dead</c> 2); 0 — nothing.
+    /// </summary>
+    [Theory]
+    [InlineData(8, 10, 0)]                                              // Gﾙﾄﾞﾗ.ADV:421, :548
+    [InlineData(5, 0, 2)]                                               // :468-470
+    [InlineData(11, 0, 2)]
+    [InlineData(0, 0, 0)]
+    public async Task The_first_Creator_phase_decides_Kou_s_fate(int kou, int after, int dead)
+    {
+        var game = await KayblisDeadAsync();
+        if (game is null)
+            return;
+        game.State.F_Kou_State = (Sys3Int)kou;
+        await game.Script.CallFileAsync("死亡捕獲.ADV");
+
+        await game.Script.CallFileAsync("Tﾙﾄﾞﾗ.ADV");
+
+        Assert.Equal(after, game.State.F_Kou_State.Value);
+        Assert.Equal(dead, game.State.F_Kouhime_Dead.Value);
+        if (after != 10)
+            return;
+        await game.Script.EventAsync("Gｺｳﾋﾒ.ADV", 6);                   // COM.ADV:268-270, the next week
+        Assert.Equal(11, game.State.F_Kou_State.Value);                 // Gｺｳﾋﾒ.ADV:29
+    }
+
     [Theory]
     [InlineData(84, 8)]                                                 // Kayblis's Castle still Kayblis's
     [InlineData(48, 4)]                                                 // Laurengrad Helman's
