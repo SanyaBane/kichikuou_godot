@@ -151,6 +151,10 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     captures (docs/golden-tests.md, "Capturing stage 2") are put off, and the owner asked to go on
     porting. The agent took the next stage as the next milestone, as decisions 13-14 did: milestone
     4 is story stage 3, a sweep first ([stage-3-sweep.md](stage-3-sweep.md)). See "Milestone 4" below.
+16. **Milestone 4 closes on the same terms; milestone 5 is story stage 4** (2026-10-11): no stage-3
+    capture and no `--auto` through stage 3, as decision 15 had it for stage 2. The next milestone is
+    story stage 4 (the Creator phase `Tﾙﾄﾞﾗ` and what stage 4 reaches up to the game's end), a sweep
+    first (stage-4-sweep.md). See "Milestone 5" below.
 
 ## Milestone 1 — the prologue
 
@@ -517,6 +521,15 @@ sweep's order (its "Proposed order"):
    own army's battle leaves the rest of that phase to run (the sweep's [I] confirmed); the phase
    itself runs only at stage 3 (`MAIN:594`).
 
-All six steps of milestone 4 are done (2026-10-11): `Tｹｲﾌﾞﾘｽ` is ported whole and stage 3 runs to its
-end in the port. As with milestone 3, no stage-3 capture is recorded yet (decision 15) and `--auto`
-does not play stage 3; closing the milestone and choosing the next one are the owner's.
+**Milestone 4 is closed** (2026-10-11, decision 16): every file and range stage 3 reaches is ported
+(steps 1-6; `Tｹｲﾌﾞﾘｽ` whole), checked against the files run by `SceneRunner` on random states and by
+unit tests, and stage 3 runs to its end in the port (`StageThreeEndTests`). As with milestone 3, no
+stage-3 capture is recorded yet and `--auto` does not play stage 3.
+
+## Milestone 5 — story stage 4
+
+Decision 16. Stage 4 begins when `Iｼﾚｲﾌﾞ` 7 finds the whole map Leazas's at Kayblis's death; its first
+rule file is the Creator phase `Tﾙﾄﾞﾗ` (`MAIN:816`, 205 lines), the first file the port stops at.
+
+0. **Sweep**: what stage 4 reaches (stage-4-sweep.md) — the week, the commands, `Tﾙﾄﾞﾗ`, the
+   scenes, the end of the game — and the milestone's steps.

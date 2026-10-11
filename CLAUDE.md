@@ -93,8 +93,10 @@ Kite, Galtia, Kesselring) are `Strategy/KayblisTurn.Generals.cs`. Step 3 is done
 (`:670-728`) and Kayblis's army at war (`:1329-1508`) are `Strategy/KayblisTurn.Armies.cs`. Step 5 is
 done: the Assault Leaders (`:326-624`) are `Strategy/KayblisTurn.Assault.cs`, so `Tｹｲﾌﾞﾘｽ` is ported
 whole. Step 6 is done: `StageThreeEndTests` runs Kayblis's death (`死亡捕獲` → `Gｹｲﾌﾞﾘｽ` 10 →
-`Iｼﾚｲﾌﾞ` 7 from the player's files) to stage 4 or ending 8. All steps of milestone 4 are done; no
-stage-3 capture yet (decision 15); closing it and the next milestone are the owner's.
+`Iｼﾚｲﾌﾞ` 7 from the player's files) to stage 4 or ending 8. **Milestone 4 is closed** (2026-10-11,
+owner's decision 16: no stage-3 capture, no `--auto` through stage 3). **Milestone 5** is story stage 4
+(the Creator phase `Tﾙﾄﾞﾗ` and on to the game's end), a sweep first (docs/strategy/stage-4-sweep.md;
+docs/strategy/README.md, "Milestone 5").
 `tools/analysis/port_draft.py` drafts text-heavy ranges for hand ports.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
