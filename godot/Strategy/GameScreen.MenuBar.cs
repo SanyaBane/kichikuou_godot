@@ -1,3 +1,7 @@
+// The menu's texts are taken from xsystem35 (https://github.com/kichikuou/xsystem35-sdl2): menu.c
+// (the dialogs), Copyright (C) 2000- Masaki Chikama (Wren), and win/resources.rc (the labels) by the
+// xsystem35-sdl2 authors. GNU General Public License, version 2 or later, as KichikuouGodot (LICENSE).
+
 using Godot;
 using Kichikuou.Content.Screen;
 using Kichikuou.Game.Battles;

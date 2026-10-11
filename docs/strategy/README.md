@@ -205,6 +205,16 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     `KICHIKUOU_*` keys that the environment overrides), read by `Kichikuou.Core.LocalPaths` and
     `tools/golden/capture.ps1`; the docs name the keys (docs/spike-findings.md, "Local layout"). The
     old paths remain in the git history (rewriting it only on the owner's explicit request).
+23. **The project is GPL-2.0-or-later** (2026-10-11, the owner's choice; the agent recommended it):
+    a few files translate xsystem35's C code (GPL-2.0-or-later: `pms.c`, `ags.c`, `cg.c`, `hankaku.c`,
+    `cmdi.c`, `input.c`, `selection.c`, `cursor.c`, `menu.c`, `win/resources.rc`) and `mt19937-1.c`
+    (LGPL-2.0-or-later), so any release must be GPL-compatible; xsystem35's own terms keep code free to
+    move both ways. The rest reproduces behaviour without copying code. Those files carry a header with
+    their origin and its copyright holders; `LICENSE` is the GPL-2.0 text, README's "License" says the
+    license covers the project's own work only, not AliceSoft's game nor the translators' text. Rejected:
+    GPL-3.0-or-later (code could not go back to xsystem35), MIT (needs the translated parts rewritten,
+    with the GPL sources already read), no license (blocks any release). The scenario logic ported from
+    AliceSoft's script stays the risk the brief accepted ("Risks").
 
 ## Milestone 1 — the prologue
 

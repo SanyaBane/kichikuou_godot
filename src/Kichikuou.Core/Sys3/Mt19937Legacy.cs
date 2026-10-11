@@ -1,3 +1,9 @@
+// Translated from mt19937-1.c, the 1998 Mersenne Twister reference code that xsystem35 ships:
+// Copyright (C) 1997 Makoto Matsumoto and Takuji Nishimura. The original is free software under the
+// GNU Library General Public License, version 2 or (at your option) any later version; this
+// translation is part of KichikuouGodot, under the GNU General Public License, version 2 or later
+// (LICENSE).
+
 namespace Kichikuou.Core.Sys3;
 
 /// <summary>

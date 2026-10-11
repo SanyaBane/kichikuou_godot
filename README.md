@@ -67,3 +67,19 @@ reproduces, and every line of text the port shows is theirs.
 - **MS Gothic** (Microsoft), the game's font. It is read from the Windows fonts and not bundled.
 - **Claude Code** (Anthropic), the AI agent that writes most of the code under the project
   owner's direction.
+
+## License
+
+KichikuouGodot is free software: you can redistribute it and/or modify it under the terms of the
+GNU General Public License as published by the Free Software Foundation, either version 2 of the
+License, or (at your option) any later version. It is distributed in the hope that it will be
+useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See [LICENSE](LICENSE) for the full text.
+
+A few files contain code translated from xsystem35 (GPL-2.0-or-later) and from the Mersenne
+Twister's reference code `mt19937-1.c` (LGPL-2.0-or-later). The header of each of those files
+names what it comes from and who holds the copyright.
+
+The license covers the project's own work only. *Kichikuou Rance* belongs to AliceSoft, and the
+English translation's text belongs to its translators; this license grants no rights to either.
+None of their files are in this repository: the port needs the player's own copy of the game.

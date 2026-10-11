@@ -1,3 +1,7 @@
+// Parts translated from xsystem35 (https://github.com/kichikuou/xsystem35-sdl2), ags.c
+// (ags_check_param, as CheckParam): Copyright (C) 1997-1998 Masaki Chikama (Wren). GNU General Public
+// License, version 2 or later, as KichikuouGodot (LICENSE).
+
 using Kichikuou.Content.Graphics;
 
 namespace Kichikuou.Content.Screen;

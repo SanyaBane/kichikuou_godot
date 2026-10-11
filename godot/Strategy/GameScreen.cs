@@ -1,3 +1,8 @@
+// Parts translated from xsystem35 (https://github.com/kichikuou/xsystem35-sdl2): cmdi.c (IK 0),
+// input.c (sys_keywait) and selection.c (the selection loop), Copyright (C) 1997-1998 Masaki Chikama
+// (Wren); cursor.c (the cursor shapes), Copyright (C) 2000- TAJIRI Yasuhiro. GNU General Public
+// License, version 2 or later, as KichikuouGodot (LICENSE).
+
 using System.Diagnostics;
 using Godot;
 using Kichikuou.Content;

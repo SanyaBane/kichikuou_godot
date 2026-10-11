@@ -1,3 +1,7 @@
+// Parts translated from xsystem35 (https://github.com/kichikuou/xsystem35-sdl2), hankaku.c (the
+// table of zen2han_utf8): Copyright (C) 1997-1998 Masaki Chikama (Wren). GNU General Public License,
+// version 2 or later, as KichikuouGodot (LICENSE).
+
 using System.Text;
 
 namespace Kichikuou.Content;

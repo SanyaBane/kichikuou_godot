@@ -1,3 +1,7 @@
+// Parts translated from xsystem35 (https://github.com/kichikuou/xsystem35-sdl2), ags.c (the path of
+// ags_setCursorLocation): Copyright (C) 1997-1998 Masaki Chikama (Wren). GNU General Public License,
+// version 2 or later, as KichikuouGodot (LICENSE).
+
 namespace Kichikuou.Content.Screen;
 
 /// <summary>

@@ -1,3 +1,7 @@
+// Parts translated from xsystem35 (https://github.com/kichikuou/xsystem35-sdl2), pms.c (the PMS
+// header and extract_8bit): Copyright (C) 1997-1998 Masaki Chikama (Wren). GNU General Public
+// License, version 2 or later, as KichikuouGodot (LICENSE).
+
 using System.Buffers.Binary;
 
 namespace Kichikuou.Content.Graphics;

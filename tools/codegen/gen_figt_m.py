@@ -4,7 +4,8 @@ FIGT_M.ADV is ~10k lines, almost all of it dialogue windows chosen by nested `{c
 blocks. Its control flow uses a handful of statement kinds only, so this tool translates it
 mechanically and statement by statement into `Battle.Flavour.g.cs`; the result is a faithful
 port of every condition, assignment, goto and `Y 4` draw, with each text run replaced by its
-line number (`ScriptRef("FIGT_M.ADV", line)`) — no dialogue is copied.
+line number (`ScriptRef("FIGT_M.ADV", line)`) — no dialogue is copied; only the two names that
+`MS` sets (:10099, :10101) pass through as string literals.
 
 Hand-written in `Battle.Flavour.cs` (this tool only checks that the script still says what
 that code assumes): the entry, lines 1-23 (`FlavourTextAsync`), and the window procedures

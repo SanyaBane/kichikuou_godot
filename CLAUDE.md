@@ -134,7 +134,8 @@ the player's files (`MusicRoomTests`); `F1` past its string table reads an empty
 Step 4 is done: the gallery's and the music room's quirks are STR-43 to STR-57, EVT-07 is withdrawn.
 Every file the game reaches now runs but the dead `XSPEC`. **Milestone 7 is closed** (2026-10-11,
 owner's decision 22: no capture). Decision 22's next step is done: the absolute paths of the owner's
-machine left the repository for `local.env`, which git ignores ("Local paths" below).
+machine left the repository for `local.env`, which git ignores ("Local paths" below). Decision 23:
+the project is GPL-2.0-or-later (`LICENSE`; README, "License").
 `tools/analysis/port_draft.py` drafts text-heavy ranges for hand ports.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
@@ -253,6 +254,10 @@ commit `local.env`.
 - **Godot 4 only.** Use Godot 4 C# APIs; never Godot 3 idioms (`yield`, old method/signal names).
   When unsure about an API, check the docs for the installed version.
 - **Never commit original game assets or extracted data** — the player supplies their own files.
+- **License: GPL-2.0-or-later** ([LICENSE](LICENSE), decision 23). Code translated from a
+  third-party source (xsystem35's C, `mt19937-1.c`, …) gets a header naming the file and its
+  copyright holders, as `Sys3/Mt19937Legacy.cs` and `Graphics/Pms.cs` have; reproducing behaviour
+  needs none. Never copy code whose license is not GPL-2.0-or-later compatible.
 - **Verify before relying.** Facts marked "unverified" in the brief are hypotheses; confirm them
   and update the brief.
 - The alice-tools source (`KICHIKUOU_ALICE_TOOLS_DIR`) is a read-only reference; do not modify it.
