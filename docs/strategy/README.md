@@ -531,5 +531,18 @@ stage-3 capture is recorded yet and `--auto` does not play stage 3.
 Decision 16. Stage 4 begins when `Iｼﾚｲﾌﾞ` 7 finds the whole map Leazas's at Kayblis's death; its first
 rule file is the Creator phase `Tﾙﾄﾞﾗ` (`MAIN:816`, 205 lines), the first file the port stops at.
 
-0. **Sweep**: what stage 4 reaches (stage-4-sweep.md) — the week, the commands, `Tﾙﾄﾞﾗ`, the
-   scenes, the end of the game — and the milestone's steps.
+Steps, in the sweep's order (its "Proposed order"):
+
+0. **Sweep** ✓ (2026-10-11): [stage-4-sweep.md](stage-4-sweep.md). Stage 4 is the last stage: every
+   week the Creator phase sends Angel Knights against five random player provinces and an earthquake
+   at two more, the player may no longer attack (`Cﾃｷﾄｼ:109`), and the game ends only in `&#OVER` —
+   Leazas Castle (1) lost, Rance's death, or God's Door → `Iｶﾐ` (endings 9, 10, 11, 13), which opens
+   only at stage 4 and only if Kou's arc stood at 8 when `Gﾙﾄﾞﾗ` played. The owner's stage-4
+   checklist waits with the captures (decision 16).
+1. **`Tﾙﾄﾞﾗ` whole** (~110 live lines): `Strategy/CreatorTurn`, routed in `StrategyRules`, with a
+   differential test against the file and unit tests.
+2. **The end**: content tests from the player's files — `Gﾙﾄﾞﾗ` with Kou at 8 through Ho Raga's Bonsai
+   Statue (item 18) and God's Door to `Iｶﾐ`'s endings, and Kou below 8; `Iｶﾐ`'s first run end to end.
+3. **Docs**: the sweep's quirk candidates registered, survey-nations and stage-2-sweep corrected, the
+   dictionary's entries the sweep found wrong.
+4. **W4** (`OVER`, `ｽﾀMENU`) only if the owner puts it in this milestone (sweep, open question 3).
