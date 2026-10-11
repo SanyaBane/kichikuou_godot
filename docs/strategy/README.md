@@ -507,5 +507,16 @@ sweep's order (its "Proposed order"):
    Maunes (13) on the north list (`:436-442`; the south list keeps the unit there), the south list's
    run-on into `L_00faf` at Leazas Castle (1) (`:614-618`, dead in play, NAT-16). With it `Tｹｲﾌﾞﾘｽ` is
    ported whole: an interactive or `--auto` stage 3 now plays every Kayblis phase.
-6. **The end**: `Iｼﾚｲﾌﾞ` 7 from the player's files; a test that Kayblis's death reaches stage 4 or
-   ending 8.
+6. **The end** ✓ (2026-10-11): `StageThreeEndTests` (content) runs Kayblis's (135) death the way a
+   battle ends — `死亡捕獲` (the battle's port) calls `Gｹｲﾌﾞﾘｽ` 10, which calls `Iｼﾚｲﾌﾞ` 7, both from
+   the player's files, on the world of a new game moved to stage 3: with every province but
+   Shangri-La (29) and Nothing (75) Leazas's the story moves to stage 4 (the week's Creator phase,
+   `Tﾙﾄﾞﾗ` at `MAIN:816`, then stops the session as "not ported yet"); with Kayblis's Castle (84),
+   Laurengrad (48, Helman's) or Red (23, an independent city) not Leazas's the game ends with
+   ending 8 (`&#OVER`, `GameEnd`). Nothing in `Tｹｲﾌﾞﾘｽ` tests the stage, so a Kayblis killed in his
+   own army's battle leaves the rest of that phase to run (the sweep's [I] confirmed); the phase
+   itself runs only at stage 3 (`MAIN:594`).
+
+All six steps of milestone 4 are done (2026-10-11): `Tｹｲﾌﾞﾘｽ` is ported whole and stage 3 runs to its
+end in the port. As with milestone 3, no stage-3 capture is recorded yet (decision 15) and `--auto`
+does not play stage 3; closing the milestone and choosing the next one are the owner's.

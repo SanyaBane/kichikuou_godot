@@ -258,7 +258,9 @@ every province 1-91 but Shangri-La (29) and Nothing (75) is counted: **all Leaza
 
 If he dies in a battle of his own army and `Iｼﾚｲﾌﾞ` 7 moves the story to stage 4 (rather than ending
 the game), the same phase goes on: the rest of his army's marches, `Gｹｲﾌﾞﾘｽ` 3 and the Assault Leaders
-still run [I].
+still run (checked with step 6, 2026-10-11: nothing in `Tｹｲﾌﾞﾘｽ` tests `StoryStage`; the phase itself
+runs only at stage 3, `MAIN:594`). `StageThreeEndTests` (content) runs the chain `死亡捕獲` → `Gｹｲﾌﾞﾘｽ`
+10 → `Iｼﾚｲﾌﾞ` 7 from the player's files: stage 4 with the whole map Leazas's, else ending 8.
 
 Kayblis fights in two places only (no other file puts commander 135 in a party): the Demon Lord's
 Castle (79) attacked (`Tｹｲﾌﾞﾘｽ2:124-143`, RM 1) and his own army at war (`Tｹｲﾌﾞﾘｽ:1333`) (`FIGT_B`; the castle stays his, so ending 8 unless the player took the
@@ -366,8 +368,9 @@ not Kayblis's", its filter and its capture with the collapses). Main path first:
    [I] (display only).
 5. **The Assault Leaders** ✓ (2026-10-11, `Strategy/KayblisTurn.Assault.cs`) (~300): `:326-624`; from S
    on the `Iﾏｼﾞﾝ` 51 path, else after week 100.
-6. **The end**: `Iｼﾚｲﾌﾞ` 7 runs from the player's files; a test that Kayblis's death reaches stage 4
-   (the session then stops at `Tﾙﾄﾞﾗ`, "not ported yet") or ending 8 (`GameEnd`).
+6. **The end** ✓ (2026-10-11, `StageThreeEndTests`): `Iｼﾚｲﾌﾞ` 7 runs from the player's files; a test
+   that Kayblis's death reaches stage 4 (the session then stops at `Tﾙﾄﾞﾗ`, "not ported yet") or
+   ending 8 (`GameEnd`).
 
 Optional fronts need no new rule code: La Vaswald (`Gｻｲｾﾞﾙ` 12), JAPAN, the AL Church, God's Door,
 Helman and Zeth on the `Iﾏｼﾞﾝ` 51 path run on ported files.
