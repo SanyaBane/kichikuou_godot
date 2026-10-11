@@ -79,9 +79,10 @@ ported (`Strategy/ZethDefenders`, `Strategy/ZethTurn`). Step 3 (the gate) is don
 ported (`Strategy/KayblisDefenders`). Step 4 (the independent cities, P4, `Cﾃｷﾄｼ.ADV:429-3828`) is
 done, so `Cﾃｷﾄｼ` is ported whole: the cities' exits, the menu and Use Force are in
 `Strategy/EnemyCityCommand.Cities.cs`, the negotiations (`:604-3648`) in `Strategy/EnemyCityCommand.Talks.cs`.
-Step 5 (JAPAN) is under way: `TJAPAN2` is ported (`Strategy/JapanDefenders`), and so are `TJAPAN`'s
-rules (`Strategy/JapanTurn`); Gekkou's attempts (`TJAPAN.ADV:295-2739`) are next and throw
-`NotSupportedException` until then. `tools/analysis/port_draft.py` drafts such text-heavy ranges.
+Step 5 (JAPAN) is done: `TJAPAN2` is ported (`Strategy/JapanDefenders`), and so is `TJAPAN` whole —
+its rules in `Strategy/JapanTurn`, Gekkou's and Shinobu's attempts (`:295-2744`, ending 4) in
+`Strategy/JapanTurn.Gekkou.cs`. Step 6 (God's Door, D2) is next.
+`tools/analysis/port_draft.py` drafts text-heavy ranges for hand ports.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
 

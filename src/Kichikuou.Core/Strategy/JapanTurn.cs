@@ -8,7 +8,8 @@ namespace Kichikuou.Core.Strategy;
 /// <c>TJAPAN.ADV</c>, JAPAN's turn (part N2, milestone 3 step 5; called by <c>MAIN.ADV:399</c> while
 /// <c>F_Japan_State = 1</c>), ported one-to-one on the nation template
 /// (<c>docs/strategy/survey-nations.md</c> §2.3-§2.4). Gekkou's attempt first while
-/// <c>N_Gekkou_Attempts</c> is 1-4 (<c>L_006ac</c>, the scenes <c>:295-2739</c>, not ported yet);
+/// <c>N_Gekkou_Attempts</c> is 1-4 (<c>L_006ac</c>, the scenes <c>:295-2744</c> in
+/// <c>JapanTurn.Gekkou.cs</c>; it marks the week's event done);
 /// Kouhime's scenes on two draws (<c>Gｺｳﾋﾒ</c> 4 while <c>F_Kou_State = 1</c>, 3 while 0); one week in
 /// four nothing more — a random event (<c>Gｺｳﾋﾒ</c> 1/2, <c>IJAPAN</c> 7/8) when nothing happened
 /// yet —, else one of three armies on a draw in five: the whole army from Nobunaga Oda (72) (1),
@@ -21,7 +22,7 @@ namespace Kichikuou.Core.Strategy;
 /// army name (<c>MS 10</c>) is read from the player's files through
 /// <paramref name="scenario"/>.
 /// </summary>
-public sealed class JapanTurn(ScriptContext script, IScenarioSource? scenario = null)
+public sealed partial class JapanTurn(ScriptContext script, IScenarioSource? scenario = null)
     : NationFile(script, "TJAPAN.ADV", scenario)
 {
     /// <summary>The walk's provinces in order, and whether the cities lose each without a battle.</summary>
@@ -39,7 +40,10 @@ public sealed class JapanTurn(ScriptContext script, IScenarioSource? scenario = 
         State.Bt_EnemyRetreatMode = 3;                                  // :4-5
         State.Ev_WeeklyEventDone = 0;
         if (State.N_Gekkou_Attempts != 0 && State.N_Gekkou_Attempts != 5)   // :6-9
-            throw NotPorted(295, "Gekkou's attempt (L_006ac)", "N2");
+        {
+            await GekkouAttemptAsync();                                 // \L_006ac
+            State.Ev_WeeklyEventDone = 1;
+        }
         Script.Rnd(2);                                                  // :10-15
         if (State.RetVal == 1 && State.F_Kou_State == 1 && State.Ev_WeeklyEventDone == 0)
         {

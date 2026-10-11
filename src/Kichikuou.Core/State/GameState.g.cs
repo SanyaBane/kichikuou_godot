@@ -1627,7 +1627,7 @@ public sealed partial class GameState
     /// <summary>VAR0644 [C] — Leazas rebel army (Ex): 0=Slave arc not yet started (COM starts it in stage 1), 1=rebellion begun at end of Slave arc, 2=Ex's rebel-HQ scene seen (start-menu skip sets 2)</summary>
     public ref Sys3Int F_LeazasRebels_State => ref Memory.Var(644);
 
-    /// <summary>VAR0645 [I] — JAPAN: Gekkou assassination-attempt counter; set 1 at end of JAPAN arc, +1 per attempt scene, at 5 the final branch plays; 0 or 5 disables the attempts</summary>
+    /// <summary>VAR0645 [C] — JAPAN: Shinobu's attempt counter; IJAPAN sets 1 (end of the JAPAN arc); while 1-4, TJAPAN raids Leazas Castle every week (Gekkou's theft or assassination, or Shinobu's seduction of Rance, which alone adds 1); the attempt that makes 5 plays Shinobu's capture; 0 or 5 disables the raids</summary>
     public ref Sys3Int N_Gekkou_Attempts => ref Memory.Var(645);
 
     /// <summary>VAR0646 [I] — Helman 2nd Army (Aristoles, cmdr 32): 0=dormant (starts when VAR0444&gt;11), 1-3=mobilising (+1 per Helman turn, scene 5 at 3), 4=army destroyed, 10=sided with Patton (&gt;9 adds cmdr 32 to Patton defence), 20/21=later scenes, 100=Convert scene</summary>

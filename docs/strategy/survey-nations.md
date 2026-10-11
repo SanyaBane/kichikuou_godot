@@ -18,7 +18,7 @@ province without a battle. There is no evaluation of the map beyond "first owned
 the list" — the "AI" is data. Each `*2` file is the **defence picker** used when the *player*
 attacks that nation: `Cﾃｷﾄｼ.ADV:319-355` calls it before `FIGT_A` to fill `Bt_EnemyParty1-4`,
 `Bt_EnemyRetreatMode` and `Bt_WallBonus` [C]. Large parts of `TJAPAN` and `Tｹｲﾌﾞﾘｽ` are story
-dispatch; `TJAPAN.ADV:295-2739` is a self-contained set of story scenes (Gekkou/Shinobu).
+dispatch; `TJAPAN.ADV:295-2744` is a self-contained set of story scenes (Gekkou/Shinobu).
 
 ## 2. Inventory
 
@@ -326,7 +326,9 @@ repeated Kayblis/Zeth garrison attack and the item-12 cancel. The `&#OVER` jump 
 5. Effect of `Cmdr_Status = 0` defenders (Rudra's Angel Knights 146/147) inside FIGT — compare with dungeon
    captures of a status-0 commander.
 6. Units Barres (6), Rick (7), Cordoba (8), Ex (14), Gengorou (15), Eleanor (23) — who they are, and whether `Unit_Status = 2` really means
-   "deployed this week" at JAPAN-phase time (week refresh order in `MAIN`).
+   "deployed this week" at JAPAN-phase time (week refresh order in `MAIN`). **Answered (2026-10-11, porting
+   `TJAPAN:295-2744`):** the names are `SET_CHR`'s `MS 1`; the status is reset at `MAIN.ADV:151`, before the
+   player phase (`:213`), and JAPAN moves after it (`:399`), so 2 is "deployed this week" (NAT-14).
 7. Who first sets `F_Helman_War = 1` and `F_Zeth_War` paths — `Gｽﾃｯｾﾙ` 1 / `Iｾﾞｽ` 1 hooks (unverified).
 8. `Tｾﾞｽ.ADV:130` intent (quirk 6) and `Tﾍﾙﾏﾝ.ADV:61/67` (quirk 7) — reproduce as is; confirm by capture.
 9. Is the Piar redraw loop (`Tｹｲﾌﾞﾘｽ.ADV:673-681`) guaranteed to end quickly when the player

@@ -9,8 +9,8 @@ namespace Kichikuou.Core.Tests.Strategy;
 
 /// <summary>
 /// JAPAN's files (milestone 3 step 5): the defender picker <c>TJAPAN2</c>
-/// (<see cref="JapanDefenders"/>) and the turn <c>TJAPAN</c> (<see cref="JapanTurn"/>, Gekkou's
-/// scenes not yet). Also compared with the decompile on random states (Content tests,
+/// (<see cref="JapanDefenders"/>) and the turn <c>TJAPAN</c> (<see cref="JapanTurn"/>, with Gekkou's
+/// and Shinobu's attempts). Also compared with the decompile on random states (Content tests,
 /// <c>NationTurnDifferentialTests</c>).
 /// </summary>
 public class JapanTests
@@ -210,12 +210,104 @@ public class JapanTests
         Is(6, rig.State.Provs[1].Owner);                            // NAT-23: Leazas Castle taken
     }
 
+    private static IEnumerable<int> Lines(JapanRig rig) => rig.View.Events.OfType<MessageEvent>().Select(m => m.Text.Line);
+
     [Fact]
-    public async Task Gekkous_attempts_are_not_ported_yet()
+    public async Task Gekkou_kills_only_a_unit_that_fought_this_week_and_takes_the_weeks_event()
     {
-        var (rig, random) = Turn();
+        var (rig, random) = Turn(1, 1, 2, 1, 1, 1);                 // Gekkou, an attempt, Rick; quiet week
         rig.State.N_Gekkou_Attempts = 2;
-        await Assert.ThrowsAsync<NotSupportedException>(() => TurnAsync(rig, random));
+        rig.State.F_Kou_State = 1;
+        rig.State.Units[6].Status = 2;
+        rig.State.Units[7].Status = 2;
+        await TurnAsync(rig, random);
+        Assert.Equal([2, 2, 6, 2, 2, 4], random.Draws);
+        Is(0, rig.State.Units[7].Status);                           // NAT-14: Rick fought, killed
+        Is(2, rig.State.Units[6].Status);
+        Is(7, rig.State.Unit_Cur);
+        Is(2, rig.State.N_Gekkou_Attempts);                         // Gekkou's attempts do not count
+        Is(1, rig.State.Ev_WeeklyEventDone);
+        Assert.Empty(rig.Story.Calls);                              // no Kouhime, no random event
+        Assert.Contains(844, Lines(rig));
+
+        (rig, random) = Turn(1, 1, 2, 1, 1, 1);
+        rig.State.N_Gekkou_Attempts = 2;
+        rig.State.Units[7].Status = 1;                              // idle: he wins the duel
+        await TurnAsync(rig, random);
+        Is(1, rig.State.Units[7].Status);
+        Assert.Contains(922, Lines(rig));
+        Assert.DoesNotContain(844, Lines(rig));
+
+        (rig, random) = Turn(1, 1, 2, 1, 1, 1);
+        rig.State.N_Gekkou_Attempts = 2;                            // Rick dead: nobody found
+        await TurnAsync(rig, random);
+        Is(15, rig.State.Unit_Cur);
+        Assert.Contains(518, Lines(rig));
+    }
+
+    [Fact]
+    public async Task Gekkou_steals_half_the_gold_or_a_quarter_or_nothing()
+    {
+        foreach (var (draw, gold) in new[] { (1, 500), (2, 750), (3, 1001) })
+        {
+            var (rig, random) = Turn(1, 2, draw, 1, 1, 1);
+            rig.State.N_Gekkou_Attempts = 1;
+            rig.State.Gold = 1001;
+            await TurnAsync(rig, random);
+            Assert.Equal([2, 2, 3, 2, 2, 4], random.Draws);
+            Is(gold, rig.State.Gold);
+            Is(draw, rig.State.Tmp0690);
+        }
+    }
+
+    [Fact]
+    public async Task Shinobu_ends_the_game_when_Rance_fought_this_week_and_counts_otherwise()
+    {
+        var (rig, random) = Turn(1, 2);                             // Rance fought: a draw in three, 2
+        rig.State.N_Gekkou_Attempts = 3;
+        rig.State.Units[1].Status = 2;
+        var jump = await Assert.ThrowsAsync<ScenarioJumpException>(() => TurnAsync(rig, random));
+        Assert.Equal("OVER.ADV", jump.File);
+        Is(4, rig.State.EndingId);
+        Is(4, rig.State.N_Gekkou_Attempts);
+        Assert.Equal([2, 3], random.Draws);
+
+        (rig, random) = Turn(2, 1, 1, 1);                           // Rance idle: he runs off, the turn goes on
+        rig.State.N_Gekkou_Attempts = 3;
+        rig.State.Units[1].Status = 1;
+        await TurnAsync(rig, random);
+        Is(4, rig.State.N_Gekkou_Attempts);
+        Is(0, rig.State.EndingId);
+        Assert.Contains(2118, Lines(rig));
+        Assert.DoesNotContain(2438, Lines(rig));
+    }
+
+    [Fact]
+    public async Task On_the_fifth_count_Shinobu_is_caught_and_a_dead_Leila_still_gives_an_order()
+    {
+        var (rig, random) = Turn(2, 1, 1, 1);
+        rig.State.N_Gekkou_Attempts = 4;
+        rig.State.Units[5].Status = 1;                              // Leila alive
+        await TurnAsync(rig, random);
+        Is(5, rig.State.N_Gekkou_Attempts);
+        Assert.Contains(2438, Lines(rig));
+        Assert.Contains(2557, Lines(rig));
+        Assert.DoesNotContain(2384, Lines(rig));
+        Assert.DoesNotContain(2536, Lines(rig));
+
+        (rig, random) = Turn(2, 1, 1, 1);
+        rig.State.N_Gekkou_Attempts = 4;                            // Leila dead: Maris speaks
+        await TurnAsync(rig, random);
+        Assert.Contains(2384, Lines(rig));
+        Assert.Contains(2536, Lines(rig));
+        Assert.Contains(2557, Lines(rig));                          // NAT-24: Leila's order too
+        Assert.Contains(2660, Lines(rig));
+        Assert.DoesNotContain(2683, Lines(rig));
+
+        (rig, random) = Turn(1, 1, 1);                              // five counted: no more attempts
+        rig.State.N_Gekkou_Attempts = 5;
+        await TurnAsync(rig, random);
+        Assert.Equal([2, 2, 4], random.Draws);
     }
 
     [Fact]

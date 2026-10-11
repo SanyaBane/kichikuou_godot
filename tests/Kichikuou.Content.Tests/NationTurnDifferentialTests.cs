@@ -487,21 +487,31 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
                 "call IJAPAN.ADV 8", "quiet week", "army 1", "army 2", "army 3", "army 4", "army 5", "no army", "too weak",
                 .. JapanTurnTargets.Select(p => $"attack at {p}"), .. new[] { 27, 26, 24, 23 }.Select(p => $"taken {p}"),
                 "M Land passed by", "the walk ran out", "a weak commander left out",
+                "Rance fought: draw in three", "Gekkou: half the gold", "Gekkou: a quarter", "Gekkou: nothing stolen",
+                "Gekkou: nobody found", .. GekkouTargets.SelectMany(u => new[] { $"Gekkou kills unit {u}", $"Gekkou fails at unit {u}" }),
+                "Shinobu fails", "Shinobu: ending 4", "Shinobu caught, Leila alive", "Shinobu caught, Leila dead",
+                "army after an attempt",
             ],
             ScribbleJapanTurn);
+
+    /// <summary>The units Gekkou's draw in six picks (<c>TJAPAN.ADV:490-514</c>): Barres (6), Rick (7), Cordoba (8), Ex (14), Eleanor (23), Gengorou (15).</summary>
+    private static readonly int[] GekkouTargets = [6, 7, 8, 14, 23, 15];
 
     /// <summary>The provinces <c>TJAPAN</c>'s walk tests, in order: Nagasaki (55) … Leazas Castle (1).</summary>
     private static readonly int[] JapanTurnTargets = [55, 28, 27, 25, 26, 24, 23, 6, 3, 2, 5, 4, 1];
 
     /// <summary>
-    /// Gekkou's attempts not under way (0 or 5; the attempts are the next part), Kouhime's state;
+    /// Gekkou's attempts under way (1-4) in three cases of four, else not (0 or 5); Rance (unit 1),
+    /// Leila (5) and Gekkou's targets dead, idle or fought this week (status 0-2); Kouhime's state;
     /// JAPAN's commanders (Nobunaga Oda (72) to Isoroku Yamamoto (82)) alive or not with troops
     /// around 190 each and 500 in all; the walk's provinces held by the player at a density of the
     /// case's own, by the independent cities or by others.
     /// </summary>
     private static void AimAtJapanTurn(GameState state, Random rng)
     {
-        state.N_Gekkou_Attempts = (Sys3Int)(rng.Next(2) == 0 ? 0 : 5);
+        state.N_Gekkou_Attempts = (Sys3Int)(rng.Next(4) == 0 ? (rng.Next(2) == 0 ? 0 : 5) : rng.Next(1, 5));
+        foreach (int u in new[] { 1, 5 }.Concat(GekkouTargets))
+            state.Units[u].Status = (Sys3Int)rng.Next(0, 3);
         state.F_Kou_State = (Sys3Int)rng.Next(0, 3);
         for (int c = 72; c <= 82; c++)
         {
@@ -542,14 +552,48 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
             yield return $"attack at {attacked}";
         }
         var draws = log.Where(e => e.StartsWith("rnd ", StringComparison.Ordinal)).ToList();
-        if (draws.Count >= 3 && draws[2] == "rnd 4 1")
+        int k = 0;                                                      // the attempt's draws
+        if (before.N_Gekkou_Attempts.Value is >= 1 and <= 4)
+        {
+            k = before.Units[1].Status == 2 ? 2 : 1;
+            if (k == 2)
+                yield return "Rance fought: draw in three";
+            if (draws[k - 1] == $"rnd {k + 1} 2")
+            {
+                if (log.Contains("jump OVER.ADV") && after.EndingId == 4)
+                {
+                    yield return "Shinobu: ending 4";
+                    yield break;
+                }
+                yield return after.N_Gekkou_Attempts == 5
+                    ? before.Units[5].Status == 0 ? "Shinobu caught, Leila dead" : "Shinobu caught, Leila alive"
+                    : "Shinobu fails";
+            }
+            else if (draws[k++] == "rnd 2 1")
+            {
+                int pick = int.Parse(draws[k++].Split(' ')[2]);
+                int unit = pick <= 6 ? GekkouTargets[pick - 1] : 0;
+                yield return unit == 0 || before.Units[unit].Status == 0 ? "Gekkou: nobody found"
+                    : before.Units[unit].Status == 2 ? $"Gekkou kills unit {unit}" : $"Gekkou fails at unit {unit}";
+            }
+            else
+                yield return draws[k++] switch
+                {
+                    "rnd 3 1" => "Gekkou: half the gold",
+                    "rnd 3 2" => "Gekkou: a quarter",
+                    _ => "Gekkou: nothing stolen",
+                };
+        }
+        if (draws.Count >= k + 3 && draws[k + 2] == "rnd 4 1")
         {
             yield return "quiet week";
             yield break;
         }
-        if (draws.Count < 4)
+        if (draws.Count < k + 4)
             yield break;
-        yield return $"army {draws[3].Split(' ')[2]}";
+        yield return $"army {draws[k + 3].Split(' ')[2]}";
+        if (k > 0)
+            yield return "army after an attempt";
         if (after.Bt_EnemyParty1 == 0)
         {
             yield return "no army";
@@ -559,7 +603,8 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
         int[] list = [after.Tmp0001.Value, after.Tmp0002.Value, after.Tmp0003.Value, after.Tmp0004.Value];
         if (party[3] == 0 && list.Any(c => c != 0 && !party.Contains(c) && after.Cmdrs[c].Status != 0 && after.Cmdrs[c].Troops < 190))
             yield return "a weak commander left out";
-        bool took = log.Any(e => e.Contains("MapEvent { Mode = 1 }", StringComparison.Ordinal));   // L_00366's camera
+        int army = log.FindIndex(e => e == draws[k + 3]);               // past the attempt's camera
+        bool took = log.Skip(army).Any(e => e.Contains("MapEvent { Mode = 1 }", StringComparison.Ordinal));   // L_00366's camera
         if (attacked == 0 && !took)
         {
             yield return "too weak";
