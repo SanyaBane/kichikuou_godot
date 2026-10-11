@@ -10,7 +10,7 @@ namespace Kichikuou.Content.Tests;
 
 /// <summary>
 /// The hand-ported nation files (<see cref="RebelTurn"/>, <see cref="RebelDefenders"/>,
-/// <see cref="HelmanTurn"/>, <see cref="HelmanDefenders"/>, <see cref="PattonTurn"/>, <see cref="ZethTurn"/>, <see cref="ZethDefenders"/>, <see cref="KayblisTurn"/>, <see cref="KayblisDefenders"/>, <see cref="JapanTurn"/>, <see cref="JapanDefenders"/>, on the template
+/// <see cref="HelmanTurn"/>, <see cref="HelmanDefenders"/>, <see cref="PattonTurn"/>, <see cref="ZethTurn"/>, <see cref="ZethDefenders"/>, <see cref="KayblisTurn"/>, <see cref="KayblisDefenders"/>, <see cref="JapanTurn"/>, <see cref="JapanDefenders"/>, <see cref="CreatorTurn"/>, on the template
 /// <see cref="NationFile"/>) against the files
 /// themselves run from the player's decompile by <see cref="SceneRunner"/>, on random states: both
 /// runs must call the same files with the same <c>Ev_Entry</c> and the same party, draw the same
@@ -1651,6 +1651,161 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
         if (prov != 45 && party[0] != 0 && party.Skip(1).Any(c => c == 0)
             && Enumerable.Range(22, 38).Any(c => before.Cmdrs[c].Status != 0 && before.Cmdrs[c].Troops < 190 && !party.Contains(c)))
             yield return "filtered";
+    }
+
+    [Fact]
+    public Task The_Creator_turn_runs_exactly_as_Tﾙﾄﾞﾗ() =>
+        CompareAsync(
+            "Tﾙﾄﾞﾗ.ADV",
+            (script, scenario) => new CreatorTurn(script, scenario).RunAsync(),
+            AimAtCreator,
+            CreatorFeatures,
+            ["call Gﾙﾄﾞﾗ.ADV 1", "no scene off stage 4", "five attacks", "attack skipped", "two earthquakes",
+             "earthquake skipped", "Nothing drawn", "gave up after 19", "spared 1", "spared 35", "spared 38",
+             "unspared at 5", "castle roll", "castle roll missed", "Leazas Castle by the roll", "Leazas Castle quaked",
+             "battle area saturated", "counter saturated", "jump"],
+            ScribbleCreator,
+            logPlaces: true);
+
+    private static readonly int[] CreatorKnights = [146, 147];
+
+    /// <summary>
+    /// Stage 4 mostly; the counter at 0 (the first phase), around the spared provinces' 5 and the
+    /// castle roll's 6, or high up to its 16-bit ceiling; the provinces 1-91 the player's at the case's
+    /// density (now and then so low that searches give up), else the Angels', Kayblis's or anyone's,
+    /// with their map places, pictures, economy, walls and battle areas (near the ceiling now and
+    /// then); Angel Knight (146) and Angel Knight (147) at any status, HP and troops.
+    /// </summary>
+    private static void AimAtCreator(GameState state, Random rng)
+    {
+        state.StoryStage = (Sys3Int)(rng.Next(8) == 0 ? rng.Next(0, 6) : 4);
+        state.N_Rudrasaum_Turns = (Sys3Int)(rng.Next(12) switch
+        {
+            < 3 => 0,
+            3 => 65535,
+            4 => rng.Next(8, 3000),
+            _ => rng.Next(1, 8),
+        });
+        double mine = rng.Next(3) switch { 0 => rng.NextDouble() * 0.05, 1 => rng.NextDouble(), _ => 0.5 + rng.NextDouble() / 2 };
+        for (int p = 1; p <= 91; p++)
+        {
+            var prov = state.Provs[p];
+            prov.Owner = (Sys3Int)(rng.NextDouble() < mine ? 1 : rng.Next(3) switch { 0 => 10, 1 => 8, _ => rng.Next(0, 12) });
+            prov.MapX = (Sys3Int)rng.Next(0, 3200);
+            prov.MapY = (Sys3Int)rng.Next(0, 3200);
+            prov.BgCg = (Sys3Int)rng.Next(1000, 1100);
+            prov.Economy = (Sys3Int)rng.Next(0, 300);
+            prov.Defense = (Sys3Int)rng.Next(0, 100);
+            prov.BattleArea = (Sys3Int)(rng.Next(6) == 0 ? rng.Next(30000, 65536) : rng.Next(0, 3000));
+        }
+        foreach (int knight in CreatorKnights)
+        {
+            var cmdr = state.Cmdrs[knight];
+            cmdr.Status = (Sys3Int)rng.Next(0, 3);
+            cmdr.HP = (Sys3Int)rng.Next(0, 30);
+            cmdr.MaxHP = (Sys3Int)rng.Next(0, 30);
+            cmdr.Troops = (Sys3Int)rng.Next(0, 4000);
+            cmdr.MaxTroops = (Sys3Int)rng.Next(0, 4000);
+        }
+    }
+
+    /// <summary>
+    /// <c>Gﾙﾄﾞﾗ</c> (the only call while the counter is 0) starts the counter at 1 (<c>Gﾙﾄﾞﾗ.ADV:5</c>),
+    /// now and then elsewhere, and moves Kou's state; a battle hurts the knights and gives provinces to
+    /// the Angels or back.
+    /// </summary>
+    private static void ScribbleCreator(GameState state, Random rng)
+    {
+        if (state.N_Rudrasaum_Turns == 0)
+        {
+            state.N_Rudrasaum_Turns = (Sys3Int)(rng.Next(5) == 0 ? rng.Next(0, 8) : 1);
+            state.F_Kou_State = (Sys3Int)rng.Next(0, 12);
+            return;
+        }
+        foreach (int knight in CreatorKnights)
+        {
+            if (rng.Next(3) == 0)
+                state.Cmdrs[knight].Status = (Sys3Int)rng.Next(0, 2);
+            if (rng.Next(2) == 0)
+                state.Cmdrs[knight].Troops = (Sys3Int)rng.Next(0, 4000);
+            if (rng.Next(2) == 0)
+                state.Cmdrs[knight].HP = (Sys3Int)rng.Next(0, 30);
+        }
+        for (int k = rng.Next(0, 4); k > 0; k--)
+            state.Provs[rng.Next(1, 92)].Owner = (Sys3Int)(rng.Next(2) == 0 ? 10 : 1);
+    }
+
+    /// <summary>The province a logged call or message saw under the cursor.</summary>
+    private static int ProvinceOf(string entry) =>
+        int.Parse(entry[(entry.IndexOf(" Prov_Cur ", StringComparison.Ordinal) + 10)..].Split(' ')[0]);
+
+    private static IEnumerable<string> CreatorFeatures(GameState before, GameState after, GameState first, List<string> log)
+    {
+        bool jump = log.Any(e => e.StartsWith("jump ", StringComparison.Ordinal));
+        if (log.Any(e => e.StartsWith("call Gﾙﾄﾞﾗ.ADV entry 1 ", StringComparison.Ordinal)))
+            yield return "call Gﾙﾄﾞﾗ.ADV 1";
+        else if (before.N_Rudrasaum_Turns == 0)
+            yield return "no scene off stage 4";
+        var battles = log.Where(e => e.StartsWith("call FIGT_B.ADV", StringComparison.Ordinal)).ToList();
+        var quakes = log.Where(e => e.StartsWith("MessageEvent Tﾙﾄﾞﾗ.ADV:74 ", StringComparison.Ordinal)).ToList();
+        if (battles.Count == 5)
+            yield return "five attacks";
+        else if (!jump)
+            yield return "attack skipped";
+        if (quakes.Count == 2)
+            yield return "two earthquakes";
+        else if (!jump)
+            yield return "earthquake skipped";
+        if (jump)
+            yield return "jump";
+
+        var draws = log.Where(e => e.StartsWith("rnd 91 ", StringComparison.Ordinal)).Select(e => int.Parse(e[7..])).ToList();
+        if (draws.Contains(75))
+            yield return "Nothing drawn";
+        // A search draws at most 19 times and ends at a target (its battle or the earthquake's map
+        // call) or gives up: a run of draws with no Nothing (75) gave up at the limit when it is
+        // longer than 19 or ends the phase.
+        int run = 0;
+        bool nothing = false, limit = false;
+        foreach (string e in log.Append("end"))
+        {
+            if (e.StartsWith("rnd ", StringComparison.Ordinal))
+            {
+                if (e.StartsWith("rnd 91 ", StringComparison.Ordinal))
+                {
+                    run++;
+                    nothing |= e == "rnd 91 75";
+                }
+                continue;
+            }
+            if (!nothing && (run > 19 || (e is "return" or "end" && run > 0)))
+                limit = true;
+            run = 0;
+            nothing = false;
+        }
+        if (limit)
+            yield return "gave up after 19";
+
+        int turns = after.N_Rudrasaum_Turns.Value;
+        int[] targets = [.. battles.Select(ProvinceOf), .. quakes.Select(ProvinceOf)];
+        if (turns < 5)
+            foreach (int p in new[] { 1, 35, 38 }.Where(draws.Contains))
+                yield return $"spared {p}";
+        if (turns == 5 && targets.Any(p => p is 1 or 35 or 38))
+            yield return "unspared at 5";
+        if (log.Contains("rnd 2 1"))
+            yield return "castle roll";
+        if (log.Contains("rnd 2 2"))
+            yield return "castle roll missed";
+        for (int i = 1; i < log.Count; i++)
+            if (log[i].StartsWith("call FIGT_B.ADV", StringComparison.Ordinal) && log[i - 1] == "rnd 2 1")
+                yield return "Leazas Castle by the roll";
+        if (quakes.Any(q => ProvinceOf(q) == 1))
+            yield return "Leazas Castle quaked";
+        if (quakes.Any(q => after.Provs[ProvinceOf(q)].BattleArea == 65535))
+            yield return "battle area saturated";
+        if (before.N_Rudrasaum_Turns == 65535)
+            yield return "counter saturated";
     }
 
     /// <summary>

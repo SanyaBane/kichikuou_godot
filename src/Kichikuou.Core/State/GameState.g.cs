@@ -1657,7 +1657,7 @@ public sealed partial class GameState
     /// <summary>VAR0654 [I] — Redeye (cmdr 130) / Rona arc: 1-8 progress (Kayblis turns advance odd steps), 10=Redeye destroyed but Rona still cursed, 11/12=Freak variants, 13=Rona escaped the curse; &gt;9 enables Freak scenes</summary>
     public ref Sys3Int F_Redeye_State => ref Memory.Var(654);
 
-    /// <summary>VAR0655 [C] — Creator (Rudrasaum) phase counter: 1 after the first Rudrasaum scene in stage 4, +1 every Creator turn; &gt;5 enables random attacks</summary>
+    /// <summary>VAR0655 [C] — Creator (Rudrasaum) phase counter: 0 until the first Creator phase, whose Gﾙﾄﾞﾗ 1 sets 1; +1 every Creator phase before its searches (phase k runs with k+1); &lt;5 spares Leazas Castle (1), Ancient Ruins (35), Siberia (38) from the searches, &gt;5 adds the castle roll, 5 has neither (NAT-30); &gt;2 lets Gﾒﾅﾄﾞ 4 play</summary>
     public ref Sys3Int N_Rudrasaum_Turns => ref Memory.Var(655);
 
     /// <summary>VAR0656 [I] — Own-city construction: pool ordered/built (2); with VAR0550-0555 all 2 the all-built message plays</summary>

@@ -266,7 +266,7 @@ text; the only display→state coupling is `M`'s scratch. TJAPAN's scenes are ru
 9. **Stale `Bt_EnemyRetreatMode`** when `*2` returns early (`TCﾘｰｻﾞｽ2:31-32/48-49`,
    `TJAPAN2:26-27`, `:124-125`): the defenders still fight with last battle's mode.
 10. **Above-max troops**: Kayblis refill `max + rnd(max/2)` (`:1421-1437`); the Camilla 200→2000 patch.
-11. **Rudra commanders enter with `Cmdr_Status = 0`** (`Tﾙﾄﾞﾗ.ADV:31,35`); earthquake jitter
+11. **Rudra commanders enter with `Cmdr_Status = 0`** (`Tﾙﾄﾞﾗ.ADV:31,35`; no effect, NAT-11); earthquake jitter
     `L_001d4` is dead (`\0:` first, `:84`), so `Prov_MapX/Y` never move.
 12. **Empty party slots** read commander record 0 in every `TroopSum` [I: aliases record 220 of
     the previous field with stride 220, probably 0].
@@ -329,7 +329,8 @@ repeated Kayblis/Zeth garrison attack and the item-12 cancel. The `&#OVER` jump 
    `Gｹｲﾌﾞﾘｽ` 7 when Galtia (unit 41) defects in a defence against Kayblis's army (stage-3-sweep).
 4. Content of commander record 0 (quirk 12) — read it from a memory dump.
 5. Effect of `Cmdr_Status = 0` defenders (Rudra's Angel Knights 146/147) inside FIGT — compare with dungeon
-   captures of a status-0 commander.
+   captures of a status-0 commander. **Answered** (2026-10-11, milestone 5 step 1): none — nothing reads
+   their status (NAT-11; stage-4-sweep "The Creator phase").
 6. Units Barres (6), Rick (7), Cordoba (8), Ex (14), Gengorou (15), Eleanor (23) — who they are, and whether `Unit_Status = 2` really means
    "deployed this week" at JAPAN-phase time (week refresh order in `MAIN`). **Answered (2026-10-11, porting
    `TJAPAN:295-2744`):** the names are `SET_CHR`'s `MS 1`; the status is reset at `MAIN.ADV:151`, before the

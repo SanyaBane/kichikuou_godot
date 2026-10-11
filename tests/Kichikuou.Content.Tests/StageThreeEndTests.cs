@@ -13,8 +13,9 @@ namespace Kichikuou.Content.Tests;
 /// The end of story stage 3 (milestone 4 step 6; docs/strategy/stage-3-sweep.md, "End of stage 3"):
 /// Kayblis (commander 135) dead after a battle — <c>死亡捕獲</c>, the battle's port, calls
 /// <c>Gｹｲﾌﾞﾘｽ</c> 10, which calls <c>Iｼﾚｲﾌﾞ</c> 7, both run from the player's files. With every
-/// province but Shangri-La (29) and Nothing (75) Leazas's the story moves on to stage 4 (and the
-/// session goes on to the Creator phase, <c>Tﾙﾄﾞﾗ</c>, not ported yet); else the game ends, ending 8.
+/// province but Shangri-La (29) and Nothing (75) Leazas's the story moves on to stage 4, and the week
+/// goes on to the Creator phase (<c>Tﾙﾄﾞﾗ</c>, ported), whose first phase plays <c>Gﾙﾄﾞﾗ</c> 1 from the
+/// player's files; else the game ends, ending 8.
 /// Skipped without the decompile.
 /// </summary>
 public class StageThreeEndTests(ITestOutputHelper output)
@@ -32,7 +33,17 @@ public class StageThreeEndTests(ITestOutputHelper output)
         Assert.Equal(4, game.State.StoryStage.Value);
         Assert.Equal(0, game.State.EndingId.Value);
         AssertTheEndRan(game);
-        Assert.DoesNotContain("Tﾙﾄﾞﾗ.ADV", StrategyRules.PortedFiles);  // the week's next phase stops the session
+
+        game.Calls.Clear();
+        await game.Script.CallFileAsync("Tﾙﾄﾞﾗ.ADV");                  // MAIN.ADV:846, later that week
+
+        output.WriteLine(string.Join(", ", game.Calls));
+        Assert.Equal(["Gﾙﾄﾞﾗ.ADV 1"], game.Calls.Skip(1));                 // after the call of Tﾙﾄﾞﾗ itself
+        // Gﾙﾄﾞﾗ.ADV:5 sets 1, Tﾙﾄﾞﾗ.ADV:5 counts 2; every draw 1 is Leazas Castle (1), spared
+        // below 5, so each search gives up after 19 draws and no battle is fought.
+        Assert.Equal(2, game.State.N_Rudrasaum_Turns.Value);
+        Assert.Equal(10, game.State.Ev_PhaseNation.Value);
+        Assert.Equal(0, game.State.Prov_Cur.Value);
     }
 
     [Theory]

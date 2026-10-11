@@ -654,7 +654,7 @@ VAR0651	F_Papaya_State	story	Papaya (cmdr 104) arc: 1-3 early, 5-8 imprisonment/
 VAR0652	N_Medusa_Events	story	Medusa (cmdr 134) event counter: +1 on a 1-in-5 roll per Kayblis turn; at 2/4/6 Medusa scenes 2/3/4 play	C	Tｹｲﾌﾞﾘｽ.ADV:72, Tｹｲﾌﾞﾘｽ.ADV:74
 VAR0653	F_Piar_State	story	Piar / PG sisters (cmdr 136/137) arc: 0=not started (starts once 3 of cmdrs 130-132 are dead), 1-5=progress (Kayblis turns advance 2->3, 4->5), 6=PG-9 scene, 100=finished	I	Tｹｲﾌﾞﾘｽ.ADV:262, Tｹｲﾌﾞﾘｽ.ADV:710, Gﾊﾟｲｱｰﾙ.ADV:2239
 VAR0654	F_Redeye_State	story	Redeye (cmdr 130) / Rona arc: 1-8 progress (Kayblis turns advance odd steps), 10=Redeye destroyed but Rona still cursed, 11/12=Freak variants, 13=Rona escaped the curse; >9 enables Freak scenes	I	Tｹｲﾌﾞﾘｽ.ADV:919, Gﾚｯﾄﾞｱｲ.ADV:3256, OVER.ADV:1986
-VAR0655	N_Rudrasaum_Turns	story	Creator (Rudrasaum) phase counter: 1 after the first Rudrasaum scene in stage 4, +1 every Creator turn; >5 enables random attacks	C	Tﾙﾄﾞﾗ.ADV:1, Tﾙﾄﾞﾗ.ADV:5, Tﾙﾄﾞﾗ.ADV:119
+VAR0655	N_Rudrasaum_Turns	story	Creator (Rudrasaum) phase counter: 0 until the first Creator phase, whose Gﾙﾄﾞﾗ 1 sets 1; +1 every Creator phase before its searches (phase k runs with k+1); <5 spares Leazas Castle (1), Ancient Ruins (35), Siberia (38) from the searches, >5 adds the castle roll, 5 has neither (NAT-30); >2 lets Gﾒﾅﾄﾞ 4 play	C	Tﾙﾄﾞﾗ.ADV:1, Tﾙﾄﾞﾗ.ADV:5, Tﾙﾄﾞﾗ.ADV:119, Tﾙﾄﾞﾗ.ADV:125, Gﾙﾄﾞﾗ.ADV:5, COM.ADV:305
 VAR0656	F_Pool_Built	economy	Own-city construction: pool ordered/built (2); with VAR0550-0555 all 2 the all-built message plays	I	Cﾃｲﾄ.ADV:639, Cﾃｲﾄ.ADV:1
 VAR0657	F_Zoo_DogGirlSeen	story	Gｱﾘｽ2 zoo menu: Dog Girl visited (hides the option)	C	Gｱﾘｽ2.ADV:1299, Gｱﾘｽ2.ADV:1532
 VAR0658	F_Zoo_CowGirlSeen	story	Gｱﾘｽ2 zoo menu: Cow Girl visited	C	Gｱﾘｽ2.ADV:1305, Gｱﾘｽ2.ADV:2804

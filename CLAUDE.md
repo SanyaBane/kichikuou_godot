@@ -96,7 +96,9 @@ whole. Step 6 is done: `StageThreeEndTests` runs Kayblis's death (`死亡捕獲`
 `Iｼﾚｲﾌﾞ` 7 from the player's files) to stage 4 or ending 8. **Milestone 4 is closed** (2026-10-11,
 owner's decision 16: no stage-3 capture, no `--auto` through stage 3). **Milestone 5** is story stage 4
 (the Creator phase `Tﾙﾄﾞﾗ` and on to the game's end), a sweep first (docs/strategy/stage-4-sweep.md;
-docs/strategy/README.md, "Milestone 5").
+docs/strategy/README.md, "Milestone 5"). Step 1 is done: `Tﾙﾄﾞﾗ` is `Strategy/CreatorTurn` (on
+`NationFile`, using none of the template), so N1 is done and nothing stage 4 reaches is left unported
+but `OVER` (`GameEnd`).
 `tools/analysis/port_draft.py` drafts text-heavy ranges for hand ports.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.

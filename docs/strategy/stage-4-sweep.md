@@ -165,7 +165,7 @@ owner-10 branch, and at stage 4 an attack never gets there (`:109`). Owner 10 is
 one of them, `:101`, dead), §4 (`:66-69`), §5 (`:113`, `:120`, `:85` dead), §7 #11/#13/#16. Not in
 the survey: the Nothing (75) abort, the counter's start at 2 and the phase-4 gap, the three spared
 provinces. `docs/variables.tsv`'s `N_Rudrasaum_Turns` ("> 5 enables random attacks") is wrong: the
-attacks run from phase 1; > 5 adds the castle roll.
+attacks run from phase 1; > 5 adds the castle roll (corrected in milestone 5 step 1).
 
 ## The player's commands
 
@@ -260,22 +260,26 @@ not surveyed — README "Not yet surveyed" — and never run end to end; first l
 
 | What | Lines | Reached |
 |---|---|---|
-| `Tﾙﾄﾞﾗ` | 205 (~110 live) | every week from S4 (`MAIN:816-846`) — main path; the only rule file stage 4 adds |
+| ~~`Tﾙﾄﾞﾗ`~~ | 205 (~110 live) | every week from S4 (`MAIN:816-846`) — main path; the only rule file stage 4 adds. **Ported** (milestone 5 step 1, `Strategy/CreatorTurn`) |
 | `OVER` | 2210 | every ending; `GameEnd` until W4 (with `ｽﾀMENU`, and `HAPPY_C`, 1451, which only `ｽﾀMENU:236` calls) |
 | `Tﾙﾄﾞﾗ2` | 1 | never (empty) |
 
 Every scene stage 4 reaches runs from the player's files: `Gﾙﾄﾞﾗ`, `Gｺｳﾋﾒ`, `Gﾒﾅﾄﾞ`, `Gﾐｷ`, `Gｻﾃﾗ` 3 and
 `Gﾎﾗｶﾞ` call no rule file; `Iｶﾐ` calls `FIGT`, `Sﾌﾞﾀｲ`, `FIGT表示` (→ `FIGTATTK`, routed) and `OVER`. The
 battle, `FIGT_B`, `死亡捕獲`, `Sﾌﾞﾀｲ`, `Cﾒｲｷｭｳ` with God's Door, `COM`, `COMMAND`, `Cﾃｷﾄｼ` and `MAIN` are
-ported (`StrategyRules.PortedFiles`). Today the session stops at `Tﾙﾄﾞﾗ` in S4 ("not ported yet").
+ported (`StrategyRules.PortedFiles`), and so is `Tﾙﾄﾞﾗ` since milestone 5 step 1: the session no longer
+stops at it in S4, and nothing stage 4 reaches is left unported but `OVER` (`GameEnd`).
 
 ## Quirk candidates
 
 - **Nothing (75) ends the Creator's search** (`Tﾙﾄﾞﾗ:115-118`): no retry, that attack or earthquake
-  is skipped (1 in 91 a try) — like Piar's NAT-15.
+  is skipped (1 in 91 a try) — like Piar's NAT-15. **Registered: NAT-29** (with the give-up on the
+  20th try).
 - **The counter's boundaries** (`Gﾙﾄﾞﾗ:5`, `Tﾙﾄﾞﾗ:5, 119, 125`): phase 1 counts 2, so the spared
   provinces last three phases, and phase 4 (Turns 5) has neither the protection nor the castle roll.
+  **Registered: NAT-30.**
 - **NAT-11 is no quirk in effect**: status 0 changes nothing (above) — close it or reword it.
+  **Reworded** (milestone 5 step 1): dead code, a write nothing reads.
 - **Dead code** (NAT-16, EVT-01): the jitter `:83-104`, the unlabelled helpers `:132-143`, second ops
   `:148-186`, `:203-205`; `MAIN:843` (STR-13). Already registered.
 - **Stale cursor after `Iｼﾚｲﾌﾞ` 7** (`:150-163`): `Prov_Cur = 92` reaches `死亡捕獲:380, 425` (Leila's
@@ -305,7 +309,7 @@ ported (`StrategyRules.PortedFiles`). Today the session stops at `Tﾙﾄﾞﾗ`
 4. Path 2 (Kayblis killed by his own army, the Demon Lord's Castle (79) held): reachable at all?
 5. `Iｶﾐ` needs its survey (rearguard rules, `FIGT表示` 21-24, the party restore `:4838-4854`) — with
    this milestone, or apart?
-6. `docs/variables.tsv`: `N_Rudrasaum_Turns` (above); `F_GodsDoor_Quest` reads "3 got gold statue, 4
+6. `docs/variables.tsv`: `N_Rudrasaum_Turns` (above; corrected in step 1); `F_GodsDoor_Quest` reads "3 got gold statue, 4
    door failed to open", but 3 is Ho Raga's refusal and 4 Kou's hint (table above); `F_Hornet_Joined`.
 7. Stage-4 captures need a save at the end of stage 3 with the whole map (owner).
 
@@ -319,7 +323,7 @@ Main path first:
    [../golden-tests.md](../golden-tests.md) (`Tﾙﾄﾞﾗ` is a capture root already): S4 with Kou at 8 and
    below, phases 1-5 (searches, the spared provinces, the castle roll), an earthquake, a defence with
    Satella (unit 29), Ho Raga's Bonsai Statue, God's Door and `Iｶﾐ` to each ending.
-1. **`Tﾙﾄﾞﾗ` whole** (~110 live lines): `Strategy/CreatorTurn` (no template — a small file like
+1. **`Tﾙﾄﾞﾗ` whole** ✓ (2026-10-11; README, the N1 row) (~110 live lines): `Strategy/CreatorTurn` (no template — a small file like
    `PattonTurn`), routed in `StrategyRules`; `Gﾙﾄﾞﾗ` stays a scene; the dead code left out (NAT-16,
    EVT-01); a differential test against the file run from the decompile on random states (the search,
    the 75 abort, the counter, the castle roll, the earthquake's writes). Then an interactive stage 4
