@@ -213,7 +213,9 @@ Raga's Tower with Rance leading (`Gﾎﾗｶﾞ:290` needs no hint), S4+2 God's 
 spared phases if the other statues are in hand.
 
 **`Iｶﾐ`** (6528 lines; a scene from the player's files, entered from `Cﾒｲｷｭｳ:4556`, never returns;
-not surveyed — README "Not yet surveyed" — and never run end to end; first look):
+never run end to end; first look, **corrected by [survey-ikami.md](survey-ikami.md)** (decision 17):
+Rudrasaum is on 6F, the way back has 10 battles (20 in all), "each rearguard below" is the garrisons
+left above, and a garrison wiped in its last fight is never flagged):
 
 - Floors 1F-5F down to Rudrasaum (`:1-1062`); at 2F-5F Rance leaves a rearguard picked with
   `Sﾌﾞﾀｲ` (`L_0577f`, `:4813-4886`; Rance himself refused `:4838-4885`;
@@ -225,7 +227,7 @@ not surveyed — README "Not yet surveyed" — and never run end to end; first l
 - Before Rudrasaum (`:1249-1275`): Charge → ending 9 (`:1335`); Think (once: "Create Chaos"; twice
   with `N_Warg_Stage > 1`, from `Gﾜｰｸﾞ:3525`: "Leave it to Warg"); Create Chaos → Sill (unit 2) at
   status 1 → ending 10 (`:1767-1769`, `:2777`/`:3723`), else ending 9 (`:1810`); Leave it to Warg →
-  the retreat (`:2261-2617`), 9 more kaiju battles (`:2269-2272`, `:2301-2303`, `:2332-2333`), each
+  the retreat (`:2261-2617`), 10 more kaiju battles (`:2269-2272`, `:2301-2303`, `:2332-2333`, `:2362`), each
   floor's rearguard checked: one lost → ending 9 (`L_03043`, `:2649-2775`); all held → Sill (unit 2)
   present → ending 11 (`:2613-2615`, `:3726-3728`), else ending 13 (`:4313-4315`).
 - Its rule calls: `FIGT` ×4 sites, `Sﾌﾞﾀｲ`, `FIGT表示` ×4 (a scene), `&#OVER` ×6 — all ported or
@@ -332,7 +334,7 @@ Main path first:
 2. **The end**: content tests from the player's files, as `StageThreeEndTests`: `Gﾙﾄﾞﾗ` with Kou at 8
    → `Gｺｳﾋﾒ` 6 → Ho Raga's Bonsai Statue → the four statues → God's Door → `Iｶﾐ` to endings 9, 10, 11
    and 13 (`GameEnd`); Kou below 8 → she dies and Ho Raga keeps the statue. This is `Iｶﾐ`'s first run
-   end to end (its 19 kaiju battles, the rearguard picker, `FIGT表示` 21-24); its survey's open points
+   end to end (its 20 kaiju battles, the rearguard picker, `FIGT表示` 21-24); its survey's open points
    go with it.
 3. **Docs**: survey-nations §9 Q5 answered, NAT-11 settled, the new quirks registered,
    `docs/variables.tsv` (question 6), stage-2-sweep's God's Door corrected.

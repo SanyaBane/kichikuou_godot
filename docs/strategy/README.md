@@ -16,7 +16,9 @@ survey → spec per part → port per part → golden captures.
 | [survey-data.md](survey-data.md) | `SET`, `SET_CHR`, `SET_ITEM`, `SET_MAP`, `SET_VER` | ≈11k | pure data (no draws, no conditions); `SET_VER` is dead |
 | [survey-events.md](survey-events.md) | `G*`, `I*` (136 files) | ≈423k | ~40 commands, goto-based; 19 rule mechanics hidden in scenes (~950 lines to hand-port) |
 
-Not yet surveyed: `Iｶﾐ.ADV` (6.5k lines, God's Door, four battles) and `FIGT表示.ADV`.
+| [survey-ikami.md](survey-ikami.md) (2026-10-11, decision 17) | `Iｶﾐ` (with `FIGT表示` 21-24) | ≈6.5k | the garrisons on 2F-5F and their 20 kaiju battles, the menu before Rudrasaum, endings 9, 10, 11, 13; no draws |
+
+Not yet surveyed: `FIGT表示.ADV` beyond its entries 21-24.
 
 ## What the surveys established
 
@@ -554,7 +556,9 @@ Steps, in the sweep's order (its "Proposed order"):
    (`CreatorTurnTests`); `StageThreeEndTests` runs on from Kayblis's death into the first phase with
    `Gﾙﾄﾞﾗ` from the player's files. By the sweep's table nothing stage 4 reaches is left unported but
    `OVER`, which stays `GameEnd` (W4).
-2. **The end**, after a survey of `Iｶﾐ` of its own (decision 17; step 2a, `survey-ikami.md`): content
+2. **The end**, after a survey of `Iｶﾐ` of its own (decision 17; step 2a ✓ 2026-10-11,
+   [survey-ikami.md](survey-ikami.md): six floors, Rudrasaum on 6F, four garrisons and 20 kaiju battles,
+   the picker's soft lock without a free unit, ten quirk candidates, a recipe per ending): content
    tests from the player's files — `Gﾙﾄﾞﾗ` with Kou at 8 through Ho Raga's Bonsai
    Statue (item 18) and God's Door to `Iｶﾐ`'s endings, and Kou below 8; `Iｶﾐ`'s first run end to end.
 3. **Docs**: the sweep's quirk candidates registered, survey-nations and stage-2-sweep corrected, the
