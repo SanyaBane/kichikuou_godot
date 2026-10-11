@@ -561,6 +561,13 @@ Steps, in the sweep's order (its "Proposed order"):
    the picker's soft lock without a free unit, ten quirk candidates, a recipe per ending): content
    tests from the player's files — `Gﾙﾄﾞﾗ` with Kou at 8 through Ho Raga's Bonsai
    Statue (item 18) and God's Door to `Iｶﾐ`'s endings, and Kou below 8; `Iｶﾐ`'s first run end to end.
+   Part 1 ✓ (2026-10-11): `IkamiEndTests` (content) runs `Iｶﾐ` end to end from the player's files after
+   the boot and a new game — four garrisons picked through `DeploymentScreen`, 10 or 20 kaiju fights
+   in the battle's port (won with the debug Repel), `FIGT表示` 24 as a scene — to endings 9 (Charge;
+   Create Chaos without Sill (unit 2); a garrison lost on the way down), 10, 11 and 13; it also runs
+   the survey's quirk candidates Q3 (the picker never ends with only Rance free), Q4 (a garrison
+   killed in its last fight counts as held) and Q5 (Rance picked: the war expenses stay paid).
+   Part 2: `Gﾙﾄﾞﾗ` and Kou's arc, Ho Raga's Bonsai Statue and God's Door into `Iｶﾐ`.
 3. **Docs**: the sweep's quirk candidates registered, survey-nations and stage-2-sweep corrected, the
    dictionary's entries the sweep found wrong.
 4. ~~**W4** (`OVER`, `ｽﾀMENU`) only if the owner puts it in this milestone~~ — not in it (decision

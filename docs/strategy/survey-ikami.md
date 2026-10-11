@@ -5,6 +5,11 @@ Survey of the scene that ends the game, ahead of the content tests that drive it
 (assignments read `!Var : n!`, `\` is ≠, `*` binds before `+`). Unmarked claims were read and
 confirmed; **[I]** marks an inference, **[G]** a guess. Lines without a file name are `Iｶﾐ.ADV`.
 
+**Run** (2026-10-11, step 2): `IkamiEndTests` (content) runs `Iｶﾐ` from the player's files after
+the boot and a new game, with the four garrisons picked through `DeploymentScreen` and the fights in
+the battle's port, to endings 9 (Charge; Create Chaos without Sill; a garrison lost), 10, 11 and 13
+— the recipes of §9 hold as written, with `DebugMode 1` and Repel.
+
 ## 1. Role and shape
 
 `Iｶﾐ.ADV` (6528 lines, a scene: `SceneRunner.IsSceneFile`, `I*`) is entered once, from God's Door:
@@ -349,13 +354,19 @@ With `N_Warg_Stage` below 2 the second Think plays "Can't think of anything" and
 
 1. Q4 and Q9 rest on the battle port's behaviour with a wiped garrison and with record 51 in a party
    slot (CMD-24, BFL-20): the end tests should confirm both, and a capture of `Iｶﾐ` would settle them.
+   **Q4 confirmed by a run** (`IkamiEndTests`, 2026-10-11): Bound (unit 3), the 2F garrison, killed in
+   its last fight (`:2362`, 0 troops, 1 HP, Defend) — `Tmp0226` stays 0 and the run ends with ending 11.
+   Q9 not run.
 2. Is `Prov_Cur` always Ancient Ruins (35) at entry? `Cﾒｲｷｭｳ` writes it nowhere; the God's Door
    scenes between the click and `:4556` were not traced for map calls that move it [I].
 3. `Bt_IsDuel` at entry: every duel caller resets it (01-flow §2.6) [I]; a stale 1 would make the
    fights endless until a side is annihilated.
 4. Does Repel at the first turn really skip the kaiju's turn (turn order by troops, 01-flow §6)?
-   The recipes in §9 assume it; the first test run answers it.
+   The recipes in §9 assume it; the first test run answers it. **Answered** (`IkamiEndTests`): Repel
+   wins every one of the 20 fights with the four garrisons of the new game's units, none lost.
 5. Unit record 0's `Unit_Status` (Q8): which slot it aliases and whether it can be non-zero.
 6. `N_Warg_Stage 2`'s path (`Gﾜｰｸﾞ` entry 10 from `Cﾊｰﾚﾑ:35`) was not traced: needed only to tell
    the owner how a player reaches "Leave it to Warg".
-7. Register Q1-Q10 (areas EVT/DGN) after the end tests, citing this survey as `ikami`.
+7. Register Q1-Q10 (areas EVT/DGN) after the end tests, citing this survey as `ikami` (step 3). Q3
+   (the picker never ends with only Rance free: three Stops, four pickers), Q4 and Q5 (Rance picked:
+   his war expenses stay paid) are confirmed by runs in `IkamiEndTests`.
