@@ -18,9 +18,11 @@ namespace Kichikuou.Core.Strategy;
 /// <c>Gｹｲﾌﾞﾘｽ</c> 3 once the player holds Silky's Castle (81), the Assault Leaders after week 100, and
 /// Monster General (commander 86) given its name back. A province Kayblis's armies reach that is
 /// neither his nor the player's is taken without a battle (<see cref="CaptureAsync"/>), with
-/// Helman's and Zeth's collapses. The armies (<c>:326-624</c>, <c>:670-1508</c>) are ported in later
-/// steps of milestone 4 and fail until then. The army names (<c>MS 10</c>) and Monster General's name
-/// (<c>MS 4</c>) are read from the player's files through <paramref name="scenario"/>.
+/// Helman's and Zeth's collapses. The generals' units (<c>:729-1328</c>, step 2) are in
+/// <c>KayblisTurn.Generals.cs</c>; Piar's unit, Kayblis's army and the Assault Leaders
+/// (<c>:326-624</c>, <c>:670-728</c>, <c>:1329-1508</c>) are ported in later steps of milestone 4 and
+/// fail until then. The army names (<c>MS 10</c>) and Monster General's name (<c>MS 4</c>) are read
+/// from the player's files through <paramref name="scenario"/>.
 /// </summary>
 public sealed partial class KayblisTurn(ScriptContext script, IScenarioSource? scenario = null)
     : NationFile(script, "Tｹｲﾌﾞﾘｽ.ADV", scenario)
@@ -503,21 +505,6 @@ public sealed partial class KayblisTurn(ScriptContext script, IScenarioSource? s
         await Script.MapCallAsync(4);
         // QUIRK: NAT-01 — \0: before @L_02950: one province only.
     }
-
-    /// <summary><c>Tｹｲﾌﾞﾘｽ.ADV:729-830</c> (<c>L_0120e</c>) — Babolat's unit (milestone 4 step 2).</summary>
-    private Task BabolatAsync() => throw NotPorted(729, "Babolat's unit (L_0120e)", "N3, milestone 4 step 2");
-
-    /// <summary><c>Tｹｲﾌﾞﾘｽ.ADV:831-971</c> (<c>L_01478</c>) — Redeye's unit (milestone 4 step 2).</summary>
-    private Task RedeyeAsync() => throw NotPorted(831, "Redeye's unit (L_01478)", "N3, milestone 4 step 2");
-
-    /// <summary><c>Tｹｲﾌﾞﾘｽ.ADV:972-1111</c> (<c>L_017e4</c>) — Kite's unit (milestone 4 step 2).</summary>
-    private Task KiteAsync() => throw NotPorted(972, "Kite's unit (L_017e4)", "N3, milestone 4 step 2");
-
-    /// <summary><c>Tｹｲﾌﾞﾘｽ.ADV:1112-1208</c> (<c>L_01b5e</c>) — Galtia's unit (milestone 4 step 2).</summary>
-    private Task GaltiaAsync() => throw NotPorted(1112, "Galtia's unit (L_01b5e)", "N3, milestone 4 step 2");
-
-    /// <summary><c>Tｹｲﾌﾞﾘｽ.ADV:1209-1328</c> (<c>L_01db2</c>) — Kesselring's unit (milestone 4 step 2).</summary>
-    private Task KesselringAsync() => throw NotPorted(1209, "Kesselring's unit (L_01db2)", "N3, milestone 4 step 2");
 
     /// <summary><c>Tｹｲﾌﾞﾘｽ.ADV:670-728</c> (<c>L_010af</c>) — Piar's unit (milestone 4 step 3).</summary>
     private Task PiarAsync() => throw NotPorted(670, "Piar's unit (L_010af)", "N3, milestone 4 step 3");

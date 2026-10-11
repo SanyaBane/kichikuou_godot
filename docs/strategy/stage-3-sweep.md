@@ -117,7 +117,10 @@ file — where it differs, it is said below (captures, quirk candidates). Shape:
    `Babolat_PitfallProv` → `Gﾊﾞﾎﾞﾗ` 4 instead (he dies, `Gﾊﾞﾎﾞﾗ:1764-1766`). After Redeye's battle
    `Y 4, 2` and his state steps (`:949-970`); after Kite's, `Gｶｲﾄ` 2-5 (`:1091-1110`); after a lost
    defence against Galtia, `Gｶﾞﾙﾃｨｱ` 2; after Kesselring's, `Gｹｯｾﾙ` 2 when he is at state 3 and the
-   player holds Bone Forest (90) or Red House (85) (`:1273-1285`).
+   player holds Bone Forest (90) or Red House (85) (`:1273-1285`). Checked with step 2
+   (2026-10-11): the pitfall is tested only on a player's province; Kesselring has no second attack
+   and no empty-unit test (the others' are dead, NAT-16); with no ninja free, Redeye's battle at
+   Maunes (13) after `Gﾚｯﾄﾞｱｲ` 8 hangs on a stale cursor (NAT-28).
 3. Piar (`:245-269`): once three of Babolat (129), Redeye (130), Galtia (131), Kite (132) are dead,
    `Gﾊﾟｲｱｰﾙ` 1; then while `F_Piar_State` is 1-99 Piar's unit attacks a random player province.
 4. `F_Kayblis_War = 2` → Kayblis's main army (`:270-272`).
@@ -188,6 +191,9 @@ battles a week, the scenes' own (`Gｶﾞﾙﾃｨｱ` 2 `:324`) and, through `F
   write (`F_DemonWar_Stage` reaches 20 only at `Gｹｲﾌﾞﾘｽ:2105`; `MAIN:989-993` zeroes it only with
   `F_Kayblis_War = 1`, when the phase never runs).
 - The collapse tests fire for wars never started — NAT-27.
+- (Found with step 2.) After `Gﾚｯﾄﾞｱｲ` 8 the test of Redeye's death reads the cursor the troop sum
+  left when the scene returns at once (no ninja free): Redeye only in a full unit, else commander
+  record 0 — NAT-28.
 
 ## The other nation files
 
@@ -299,7 +305,7 @@ attack every week.
 
 | What | Lines | Reached |
 |---|---|---|
-| `Tｹｲﾌﾞﾘｽ` | 1855 | every week from S (`MAIN:594-629`) — main path. The frame is ported (step 1, 2026-10-11, `Strategy/KayblisTurn`); its armies `:326-624` and `:670-1508` stop the run ("not ported yet") until steps 2, 3 and 5 |
+| `Tｹｲﾌﾞﾘｽ` | 1855 | every week from S (`MAIN:594-629`) — main path. The frame (step 1, 2026-10-11, `Strategy/KayblisTurn`) and the generals' units `:729-1328` (step 2, 2026-10-11, `Strategy/KayblisTurn.Generals.cs`) are ported; Piar's unit `:670-728`, Kayblis's army `:1329-1508` and the Assault Leaders `:326-624` stop the run ("not ported yet") until steps 3 and 5 |
 | `FIGTATTK` | 395 | from `FIGT表示`, a scene: its entries 2-7, 11-14 and 26 call it (24 sites); at stage 3 `Gｼﾙｷｨ` 8 (`FIGT表示` 26, once, above) and `Gﾌﾘｰｸ` 4 (`FIGT表示` 2); already at stage 2 `Iﾏｼﾞﾝ` 12, 14, 16, 18 (`FIGT表示` 3, 5, 6 and 7, 14) and `Gﾊﾟｯﾄﾝ` 2 (4). Was neither a scene file (`SceneRunner.IsSceneFile`) nor in `StrategyRules.PortedFiles`, so `ScriptContext.CallAsync` sent it to the unported hooks (Godot: skipped with a notice; `--auto`: stops), losing its one `Y 4, 2` per call (`FIGTATTK.ADV:234`). **Routed 2026-10-11** to the battle's port of the file (`Battle.PlayExchangeAnimationAsync`), checked against the file on 1900 random runs of `FIGT表示`; `ScenarioProgramSweepTests` now checks that every file the scenes call runs somewhere |
 | `OVER` | 2210 | ending 8 and every other ending; `GameEnd` until W4 |
 | `Tﾙﾄﾞﾗ` | 205 | the week stage 4 begins — after the milestone |
@@ -307,9 +313,9 @@ attack every week.
 Every scene stage 3 reaches runs from the player's files; their rule calls are `FIGT_A`/`FIGT_B`
 (`Gｹｲﾌﾞﾘｽ` 3, `Gｹｯｾﾙ` 2's duel and battle `:2420-2437`/`:2951-2963`, `Gｻｲｾﾞﾙ` 12, `Gｻﾃﾗ` 20), `死亡捕獲`,
 `Sﾌﾞﾀｲ` and `FIGT表示`; none calls a `T*` file. Since step 1 `Tｹｲﾌﾞﾘｽ` is routed (it was skipped with a notice in
-interactive Godot before, so stage 3 had no Kayblis phase at all): the phase runs up to the first
-army that marches — in week S Babolat's, right after `Gﾊﾞﾎﾞﾗ` 1 —, which ends the session with "not
-ported yet" until step 2.
+interactive Godot before, so stage 3 had no Kayblis phase at all). Since step 2 the phase runs up to
+Piar's unit, Kayblis's army at war or the first Assault Leader, which end the session with "not
+ported yet" until steps 3 and 5.
 
 ## Open questions
 
@@ -340,7 +346,8 @@ not Kayblis's", its filter and its capture with the collapses). Main path first:
    the 24 recoveries of 22 commanders, the event chain, the dispatch), the guards `:625-669`, the template
    `:1509-1614`, the captures and collapses `:1615-1778`, the helpers; the armies throw
    `NotSupportedException` until their step, as in milestone 3.
-2. **The generals' units** (~600): Babolat, Redeye, Kite, Galtia, Kesselring `:729-1328`.
+2. **The generals' units** ✓ (2026-10-11, `Strategy/KayblisTurn.Generals.cs`) (~600): Babolat, Redeye,
+   Kite, Galtia, Kesselring `:729-1328`.
 3. **Piar and the assault** (~240): Piar `:670-728`, Kayblis's main army `:1329-1508`.
 4. ~~**`FIGTATTK`**~~ — done before the milestone (2026-10-11): routed to the battle's port, since
    stage 2 needs it too. Left: the presenter hands the battle's events to its battle layer only

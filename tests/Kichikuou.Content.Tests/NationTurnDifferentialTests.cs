@@ -769,7 +769,17 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
                 "call Gｻﾃﾗ.ADV 2", "no scene", "guards", "guards again", "guards with portrait 415", "guards with portrait 466",
                 "call Gﾊﾞﾎﾞﾗ.ADV 1", "call Gﾚｯﾄﾞｱｲ.ADV 1", "call Gｶｲﾄ.ADV 1", "call Gｶﾞﾙﾃｨｱ.ADV 1", "call Gｹｯｾﾙ.ADV 1",
                 "call Gﾊﾟｲｱｰﾙ.ADV 1", "call Gｹｲﾌﾞﾘｽ.ADV 3", "the end", "jump",
-                .. new[] { 729, 831, 972, 1112, 1209, 670, 1329, 326 }.Select(l => $"unported {l}"),
+                .. new[] { 670, 1329, 326 }.Select(l => $"unported {l}"),
+                .. KayblisGenerals.SelectMany(g => g.Line.Select(p => $"{g.Army} attacks {p}")),
+                .. KayblisGenerals.Where(g => g.Army != "Kesselring").Select(g => $"{g.Army} attacks again"),
+                .. KayblisGenerals.Select(g => $"{g.Army} killed"),
+                .. KayblisGenerals.SelectMany(g => g.Line).Distinct().Where(p => p != 89).Select(p => $"capture at {p}"),
+                "Kesselring captures", "Redeye alone at Maunes", "the battle at Maunes after Gﾚｯﾄﾞｱｲ 8",
+                "Gﾚｯﾄﾞｱｲ 8 calls the battle off", "Redeye's state 1 to 2", "Redeye's state 3 to 4", "Redeye's state 6 to 7",
+                "Kite's draw in ten", "Gｹｯｾﾙ 2 at Bone Forest", "Gｹｯｾﾙ 2 at the Red House",
+                "call Gﾊﾞﾎﾞﾗ.ADV 2", "call Gﾊﾞﾎﾞﾗ.ADV 4", .. new[] { 2, 4, 5, 6, 8 }.Select(n => $"call Gﾚｯﾄﾞｱｲ.ADV {n}"),
+                "call Gﾌﾘｰｸ.ADV 4", .. Enumerable.Range(2, 6).Select(n => $"call Gｶｲﾄ.ADV {n}"), "call Gｶﾞﾙﾃｨｱ.ADV 2",
+                "call Gｹｯｾﾙ.ADV 2",
             ],
             ScribbleKayblisTurn,
             unported: true);
@@ -801,8 +811,10 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
     /// chain's flags around their tests (Medusa's state and counter, Camilla's state, the war, Silky's
     /// state, souls and week, Warg, Stessel, Nagi, Kaybwan, Kaybnyan, Satella); Grief Valley (89),
     /// Silky's Castle (81), Bone Forest (90), the Red House (85) held by the player or not, Kayblis
-    /// moved or not. Half the cases keep the armies home (each general dead or not yet introduced,
-    /// Piar at 0 or 100, no war, week 100 at most), so the run reaches the file's end.
+    /// moved or not. A third of the cases keep the armies home (each general dead or not yet
+    /// introduced, Piar at 0 or 100, no war, week 100 at most), so the run reaches the file's end; a
+    /// third send the generals (<see cref="AimAtKayblisGenerals"/>) and keep the later armies home;
+    /// a third send them all.
     /// </summary>
     private static void AimAtKayblisTurn(GameState state, Random rng)
     {
@@ -847,7 +859,19 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
         state.F_Galtia_DefectedToKayblis = (Sys3Int)rng.Next(0, 2);
         state.F_Kesselring_State = (Sys3Int)rng.Next(0, 3);
         state.F_Piar_State = (Sys3Int)(rng.Next(3) switch { 0 => 0, 1 => 100, _ => rng.Next(1, 100) });
-        if (rng.Next(2) == 0)
+        int group = rng.Next(3);
+        if (group != 0)
+        {
+            AimAtKayblisGenerals(state, rng);
+            if (group == 1)
+            {
+                state.F_Piar_State = (Sys3Int)(rng.Next(2) == 0 ? 0 : 100);
+                if (state.F_Kayblis_War == 2)
+                    state.F_Kayblis_War = 0;
+                state.Week = (Sys3Int)rng.Next(60, 101);
+            }
+        }
+        else
         {
             foreach (int general in new[] { 129, 130, 132, 131, 133 })
                 if (rng.Next(2) == 0)
@@ -864,9 +888,72 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
         }
     }
 
+    /// <summary>Kayblis's generals in the order they march: the army's name, the general, his line.</summary>
+    private static readonly (string Army, int General, int[] Line)[] KayblisGenerals =
+    [
+        ("Babolat", 129, [78, 49, 53, 48, 45, 44, 42, 39, 38, 34, 32, 12, 2, 1]),
+        ("Redeye", 130, [89, 50, 48, 47, 46, 41, 40, 44, 42, 39, 36, 31, 13, 2, 1]),
+        ("Kite", 132, [76, 74, 70, 66, 69, 73, 65, 67, 62, 59, 58, 16, 15, 14, 17, 18, 19]),
+        ("Galtia", 131, [76, 74, 65, 63, 66, 61, 60, 59, 58, 16, 15, 13, 2, 1]),
+        ("Kesselring", 133, [70, 61, 19, 23, 4, 1]),
+    ];
+
+    /// <summary>
+    /// The generals on the march: each alive in most cases and past his introduction, his line
+    /// Kayblis's up to a random province, the player's or another owner's, all of it Kayblis's now
+    /// and then — the lines laid in a random order, so a later one may cut an earlier short; Kite's
+    /// stopping at Zeth Palace (69) and Redeye's at Maunes (13) more often. Babolat's pitfall at his
+    /// target, elsewhere on his line or nowhere; the states around their tests (Redeye's 1-9, 8 more
+    /// often, and Freak's stage at 3 or 5, Calory's 0-5, Galtia's defection, Kesselring's 3); the ninjas
+    /// busy now and then all four; Zeth Palace (69) with its own picture or not; the attack marks and
+    /// the last battle's rounds and result.
+    /// </summary>
+    private static void AimAtKayblisGenerals(GameState state, Random rng)
+    {
+        int[] others = [0, 2, 3, 4, 5, 6, 7, 9, 10, 11];
+        foreach (var (_, general, line) in KayblisGenerals.OrderBy(_ => rng.Next()).ToList())
+        {
+            int depth = rng.Next(20) == 0 ? line.Length : rng.Next(line.Length);
+            if (general == 132 && rng.Next(3) == 0)
+                depth = 4;                                              // Zeth Palace (69)
+            if (general == 130 && rng.Next(3) == 0)
+                depth = 12;                                             // Maunes (13)
+            for (int i = 0; i < depth; i++)
+                state.Provs[line[i]].Owner = 8;
+            if (depth < line.Length)
+                state.Provs[line[depth]].Owner = (Sys3Int)(rng.Next(2) == 0 ? others[rng.Next(others.Length)] : 1);
+            if (general == 129)
+                state.Babolat_PitfallProv = (Sys3Int)(rng.Next(3) switch { 0 => line[Math.Min(depth, line.Length - 1)], 1 => 0, _ => line[rng.Next(line.Length)] });
+            state.Cmdrs[general].Status = (Sys3Int)(rng.Next(6) == 0 ? 0 : rng.Next(1, 3));
+        }
+        state.F_Babolat_State = (Sys3Int)(rng.Next(6) == 0 ? 0 : rng.Next(1, 4));
+        state.F_Redeye_State = (Sys3Int)(rng.Next(4) == 0 ? 8 : rng.Next(6) == 0 ? 0 : rng.Next(1, 10));
+        state.N_Freak_Stage = (Sys3Int)(rng.Next(3) switch { 0 => 3, 1 => 5, _ => rng.Next(0, 8) });
+        state.F_Calory_State = (Sys3Int)(rng.Next(6) == 0 ? 0 : rng.Next(1, 6));
+        state.F_Galtia_State = (Sys3Int)(rng.Next(6) == 0 ? 0 : rng.Next(1, 3));
+        state.F_Galtia_DefectedToKayblis = (Sys3Int)(rng.Next(6) == 0 ? 1 : 0);
+        state.F_Kesselring_State = (Sys3Int)(rng.Next(6) == 0 ? 0 : rng.Next(1, 5));
+        state.F_Kanami_NinjaUsed = Ninja(rng);
+        state.F_Freya_NinjaUsed = Ninja(rng);
+        state.F_Kaoru_NinjaUsed = Ninja(rng);
+        state.F_Wichita_NinjaUsed = Ninja(rng);
+        state.Provs[69].BgCg = (Sys3Int)(rng.Next(4) == 0 ? rng.Next(1000, 1050) : 1011);
+        state.Ai_BabolatAtk = Mark(rng);
+        state.Ai_RedeyeAtk = Mark(rng);
+        state.Ai_KiteAtk = Mark(rng);
+        state.Ai_GaltiaAtk = Mark(rng);
+        state.Bt_RoundsLeft = (Sys3Int)rng.Next(0, 3);
+        state.Bt_Result = (Sys3Int)rng.Next(0, 3);
+
+        static Sys3Int Ninja(Random rng) => (Sys3Int)(rng.Next(3) == 0 ? 0 : rng.Next(2) == 0 ? 1 : 99);
+
+        static Sys3Int Mark(Random rng) => (Sys3Int)(rng.Next(4) switch { 0 => 10, 1 => 11, _ => 0 });
+    }
+
     /// <summary>
     /// What the scenes and battles may change: Grief Valley (89)'s owner (so the guards stop), Kayblis
-    /// moved, the week's event flag, the chain's flags, the generals' states and lives, Piar's state.
+    /// moved, the week's event flag, the chain's flags, the generals' states and lives, Piar's state,
+    /// a battle's rounds left and result, Zeth Palace (69) lost.
     /// </summary>
     private static void ScribbleKayblisTurn(GameState state, Random rng)
     {
@@ -892,6 +979,13 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
                 state.Provs[p].Owner = (Sys3Int)rng.Next(0, 9);
         if (rng.Next(6) == 0)
             state.Strings[10] = "scribbled";
+        if (rng.Next(2) == 0)
+        {
+            state.Bt_RoundsLeft = (Sys3Int)(rng.Next(2) == 0 ? 0 : rng.Next(1, 5));
+            state.Bt_Result = (Sys3Int)rng.Next(0, 3);
+        }
+        if (state.Prov_Cur == 69 && rng.Next(3) == 0)
+            state.Provs[69].Owner = 8;                                  // Zeth Palace lost (Calory's last scene)
     }
 
     private static IEnumerable<string> KayblisTurnFeatures(GameState before, GameState after, GameState first, List<string> log)
@@ -938,6 +1032,60 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
             yield return "the end";
         if (log.Any(e => e.StartsWith("jump ", StringComparison.Ordinal)))
             yield return "jump";
+        foreach (string feature in KayblisGeneralFeatures(before, after, log))
+            yield return feature;
+    }
+
+    /// <summary>
+    /// The generals' marches: each battle by army (its name in string 10) and province, a second
+    /// attack, a general killed; a province on the lines taken without a battle (told by its owner:
+    /// Grief Valley (89), whose owner the scenes write, left out; Zeth Palace (69) only without a battle
+    /// there), Kesselring's capture after his flight; Redeye alone at Maunes (13), the battle there
+    /// after <c>Gﾚｯﾄﾞｱｲ</c> 8 or not (NAT-28), his state's steps; Kite's draw in ten; <c>Gｹｯｾﾙ</c> 2 at
+    /// Bone Forest (90) or the Red House (85).
+    /// </summary>
+    private static IEnumerable<string> KayblisGeneralFeatures(GameState before, GameState after, List<string> log)
+    {
+        var battles = log.Where(e => e.StartsWith("call FIGT_B.ADV ", StringComparison.Ordinal)).ToList();
+        foreach (var (army, general, _) in KayblisGenerals)
+        {
+            var own = battles.Where(b => b.EndsWith($" Str10 {army} Unit", StringComparison.Ordinal)).ToList();
+            foreach (string battle in own)
+            {
+                yield return $"{army} attacks {Field(battle, "Prov_Cur")}";
+                if (army == "Redeye" && Field(battle, "Prov_Cur") == "13" && Field(battle, "Party") == "130,0,0,0")
+                    yield return "Redeye alone at Maunes";
+            }
+            if (own.Count > 1)
+                yield return $"{army} attacks again";
+            if (own.Count > 0 && after.Cmdrs[general].Status == 0)
+                yield return $"{army} killed";
+        }
+        foreach (int p in KayblisGenerals.SelectMany(g => g.Line).Distinct())
+            if (p != 89 && before.Provs[p].Owner != 8 && after.Provs[p].Owner == 8
+                && (p != 69 || !battles.Any(b => Field(b, "Prov_Cur") == "69")))
+                yield return $"capture at {p}";
+        int flight = log.FindLastIndex(e => e.Contains("Tｹｲﾌﾞﾘｽ.ADV:1321", StringComparison.Ordinal));
+        if (flight >= 0 && log.Skip(flight).Any(e => e.Contains("Tｹｲﾌﾞﾘｽ.ADV:1628", StringComparison.Ordinal)))
+            yield return "Kesselring captures";
+        int ninja = log.FindIndex(e => e.StartsWith("call Gﾚｯﾄﾞｱｲ.ADV entry 8 ", StringComparison.Ordinal));
+        if (ninja >= 0)
+        {
+            string? next = log.Skip(ninja + 1).FirstOrDefault(e => e.StartsWith("call ", StringComparison.Ordinal));
+            bool fought = next is not null && next.StartsWith("call FIGT_B.ADV ", StringComparison.Ordinal) && Field(next, "Prov_Cur") == "13"
+                && !KayblisGenerals.Any(g => g.Army != "Redeye" && next.EndsWith($" Str10 {g.Army} Unit", StringComparison.Ordinal));
+            yield return fought ? "the battle at Maunes after Gﾚｯﾄﾞｱｲ 8" : "Gﾚｯﾄﾞｱｲ 8 calls the battle off";
+        }
+        foreach (var (from, to) in new[] { (1, 2), (3, 4), (6, 7) })
+            if (before.F_Redeye_State == (Sys3Int)from && after.F_Redeye_State == (Sys3Int)to)
+                yield return $"Redeye's state {from} to {to}";
+        if (log.Any(e => e.StartsWith("rnd 10 ", StringComparison.Ordinal)))
+            yield return "Kite's draw in ten";
+        foreach (string call in log.Where(e => e.StartsWith("call Gｹｯｾﾙ.ADV entry 2 ", StringComparison.Ordinal)))
+            yield return Field(call, "Prov_Cur") == "90" ? "Gｹｯｾﾙ 2 at Bone Forest" : "Gｹｯｾﾙ 2 at the Red House";
+
+        static string Field(string call, string name) =>
+            call[(call.IndexOf($" {name} ", StringComparison.Ordinal) + name.Length + 2)..].Split(' ')[0];
     }
 
     /// <summary>

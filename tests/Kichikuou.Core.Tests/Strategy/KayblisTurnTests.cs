@@ -10,8 +10,9 @@ namespace Kichikuou.Core.Tests.Strategy;
 /// <summary>
 /// Kayblis's turn <c>Tｹｲﾌﾞﾘｽ</c> (<see cref="KayblisTurn"/>, milestone 4 step 1: the frame — week S,
 /// the recoveries, the event chain, the dispatch, the Grief Valley (89) guards, the capture with
-/// Helman's and Zeth's collapses). Also compared with the decompile on random states (Content
-/// tests, <c>NationTurnDifferentialTests</c>).
+/// Helman's and Zeth's collapses; step 2: the units of Babolat, Redeye, Kite, Galtia and
+/// Kesselring). Also compared with the decompile on random states (Content tests,
+/// <c>NationTurnDifferentialTests</c>).
 /// </summary>
 public class KayblisTurnTests
 {
@@ -275,7 +276,7 @@ public class KayblisTurnTests
     }
 
     [Fact]
-    public async Task Babolat_s_introduction_marks_the_week_and_his_unit_waits_for_its_step()
+    public async Task Babolat_s_introduction_marks_the_week_and_his_unit_marches_at_once()
     {
         var rig = new TurnRig(2, 5);
         rig.State.Cmdrs[129].Status = 1;
@@ -287,12 +288,14 @@ public class KayblisTurnTests
                 rig.State.F_Babolat_State = 1;
         };
 
-        var e = await Assert.ThrowsAsync<NotSupportedException>(rig.RunAsync);
+        await rig.RunAsync();
 
-        Assert.Contains("Tｹｲﾌﾞﾘｽ.ADV:729", e.Message);
+        // Tower of Evil (78), the first on his line, is nobody's: taken without a battle.
         Assert.Equal([("Gﾊﾞﾎﾞﾗ.ADV", 1)], rig.Story.Calls);
         Is(1, rig.State.Ev_WeeklyEventDone);
-        Is(129, rig.State.Cmdr_Cur);
+        Is(8, rig.State.Provs[78].Owner);
+        Assert.Equal([1628], rig.Lines);
+        Is(0, rig.State.Ai_BabolatAtk);
 
         // Babolat's introduction marks the week, so Redeye's waits for another.
         rig = new TurnRig(2, 5);
@@ -300,6 +303,324 @@ public class KayblisTurnTests
         rig.State.F_Redeye_State = 0;
         await rig.RunAsync();
         Assert.Equal([("Gﾊﾞﾎﾞﾗ.ADV", 1)], rig.Story.Calls);
+    }
+
+    /// <summary>The files called, in order.</summary>
+    private static List<string> Files(TurnRig rig) => rig.Story.Calls.Select(c => c.File).ToList();
+
+    [Fact]
+    public async Task Babolat_attacks_the_first_player_province_on_his_line_and_once_more_after_a_held_battle()
+    {
+        var rig = new TurnRig(2, 5);
+        rig.State.Cmdrs[129].Status = 1;
+        rig.State.Provs[78].Owner = 8;                          // Tower of Evil, Great Wall of Helman A: Kayblis's
+        rig.State.Provs[49].Owner = 8;
+        rig.State.Provs[53].Owner = 1;                          // Ikoma: the player's
+        var seen = new List<(int Prov, int Party, int Retreat, int Mark, string Army)>();
+        rig.Story.OnCall = (file, _) =>
+        {
+            if (file != "FIGT_B.ADV")
+                return;
+            seen.Add((rig.State.Prov_Cur.Value, rig.State.Bt_EnemyParty1.Value, rig.State.Bt_EnemyRetreatMode.Value, rig.State.Ai_BabolatAtk.Value, rig.State.Strings[10]));
+            rig.State.Bt_RoundsLeft = 0;                        // held to the time limit, both times
+            rig.State.Bt_Result = 2;
+        };
+
+        await rig.RunAsync();
+
+        // QUIRK: NAT-03 — fought again once; Gﾊﾞﾎﾞﾗ 2 after each battle at state 1.
+        Assert.Equal(["FIGT_B.ADV", "Gﾊﾞﾎﾞﾗ.ADV", "FIGT_B.ADV", "Gﾊﾞﾎﾞﾗ.ADV"], Files(rig));
+        Assert.Equal(2, rig.Story.Calls[1].Entry);
+        Assert.Equal([(53, 129, 2, 10, "Tｹｲﾌﾞﾘｽ.ADV:731"), (53, 129, 2, 11, "Tｹｲﾌﾞﾘｽ.ADV:731")], seen);   // "Babolat Unit"
+        Is(11, rig.State.Ai_BabolatAtk);
+        Assert.Equal([3, 5], rig.Random.Draws);
+
+        // A battle he does not survive ends his march.
+        rig = new TurnRig(2, 5);
+        rig.State.Cmdrs[129].Status = 1;
+        rig.State.Provs[78].Owner = 1;
+        rig.Story.OnCall = (file, _) => rig.State.Cmdrs[129].Status = 0;
+        await rig.RunAsync();
+        Assert.Equal(["FIGT_B.ADV"], Files(rig));
+    }
+
+    [Fact]
+    public async Task Babolat_s_pitfall_replaces_the_battle()
+    {
+        var rig = new TurnRig(2, 5);
+        rig.State.Cmdrs[129].Status = 1;
+        rig.State.F_Babolat_State = 2;
+        rig.State.Provs[78].Owner = 8;
+        rig.State.Provs[49].Owner = 1;
+        rig.State.Babolat_PitfallProv = 49;
+
+        await rig.RunAsync();
+
+        Assert.Equal([("Gﾊﾞﾎﾞﾗ.ADV", 4)], rig.Story.Calls);
+        Is(0, rig.State.Ai_BabolatAtk);
+
+        // Only on the player's province: one nobody holds is taken all the same.
+        rig = new TurnRig(2, 5);
+        rig.State.Cmdrs[129].Status = 1;
+        rig.State.Babolat_PitfallProv = 78;
+        await rig.RunAsync();
+        Assert.Empty(rig.Story.Calls);
+        Is(8, rig.State.Provs[78].Owner);
+    }
+
+    /// <summary>Redeye (130) and his three officers alive, his line Kayblis's up to Maunes (13), the player's.</summary>
+    private static TurnRig RedeyeAtMaunes(params int[] draws)
+    {
+        var rig = new TurnRig(draws);
+        foreach (int c in new[] { 148, 149, 150, 130 })
+        {
+            rig.State.Cmdrs[c].Status = 1;
+            rig.State.Cmdrs[c].Troops = 500;
+            rig.State.Cmdrs[c].MaxTroops = 1000;                // the recovery caps the troops at it
+        }
+        foreach (int p in new[] { 89, 50, 48, 47, 46, 41, 40, 44, 42, 39, 36, 31 })
+            rig.State.Provs[p].Owner = 8;
+        rig.State.Provs[13].Owner = 1;
+        return rig;
+    }
+
+    [Fact]
+    public async Task Redeye_fights_alone_at_Maunes_and_steps_his_state_after_the_battle()
+    {
+        var rig = RedeyeAtMaunes(2, 5, 1);
+        int party = -1;
+        string? army = null;
+        rig.Story.OnCall = (file, _) =>
+        {
+            if (file != "FIGT_B.ADV")
+                return;
+            party = rig.State.Bt_EnemyParty1.Value * 1000 + rig.State.Bt_EnemyParty2.Value;
+            army = rig.State.Strings[10];
+        };
+
+        await rig.RunAsync();
+
+        Assert.Equal(["FIGT_B.ADV"], Files(rig));
+        Assert.Equal(130 * 1000, party);                        // alone, the officers left behind
+        Assert.Equal([3, 5, 2], rig.Random.Draws);              // the draw in two after his battle
+        Is(2, rig.State.F_Redeye_State);                        // 1 to 2
+        Is(13, rig.State.Tmp0229);
+        Assert.Equal("Tｹｲﾌﾞﾘｽ.ADV:833", army);                  // "Redeye Unit"
+
+        // Freak's stage 5, the player lost, the draw not 1: Gﾚｯﾄﾞｱｲ 6; then at state 5 his fourth scene.
+        rig = RedeyeAtMaunes(2, 5, 2);
+        rig.State.F_Redeye_State = 5;
+        rig.State.N_Freak_Stage = 5;
+        rig.Story.OnCall = (file, _) =>
+        {
+            if (file == "FIGT_B.ADV")
+                rig.State.Bt_Result = 1;
+        };
+        await rig.RunAsync();
+        Assert.Equal([("FIGT_B.ADV", 0), ("Gﾚｯﾄﾞｱｲ.ADV", 6), ("Gﾚｯﾄﾞｱｲ.ADV", 4)], rig.Story.Calls);
+
+        // At state 2 his second scene comes before the battle, which is fought where he stood.
+        rig = RedeyeAtMaunes(2, 5, 1);
+        rig.State.F_Redeye_State = 2;
+        int foughtAt = 0;
+        rig.Story.OnCall = (file, _) =>
+        {
+            if (file == "Gﾚｯﾄﾞｱｲ.ADV")
+                rig.State.Prov_Cur = 1;
+            else
+                foughtAt = rig.State.Prov_Cur.Value;
+        };
+        await rig.RunAsync();
+        Assert.Equal([("Gﾚｯﾄﾞｱｲ.ADV", 2), ("FIGT_B.ADV", 2)], rig.Story.Calls);
+        Assert.Equal(13, foughtAt);
+    }
+
+    [Fact]
+    public async Task At_state_8_Freak_or_the_ninja_comes_before_Redeye_s_battle_and_a_stale_cursor_decides_it()
+    {
+        // Freak's stage 3: his scene instead of the battle.
+        var rig = RedeyeAtMaunes(2, 5);
+        rig.State.F_Redeye_State = 8;
+        rig.State.N_Freak_Stage = 3;
+        await rig.RunAsync();
+        Assert.Equal([("Gﾌﾘｰｸ.ADV", 4)], rig.Story.Calls);
+
+        // QUIRK: NAT-28 — with no ninja the scene leaves the cursor at the troop sum's last slot:
+        // record 0 in a unit of three (dead: no battle) …
+        rig = RedeyeAtMaunes(2, 5);
+        rig.State.F_Redeye_State = 8;
+        rig.State.Cmdrs[148].Status = 0;
+        await rig.RunAsync();
+        Assert.Equal([("Gﾚｯﾄﾞｱｲ.ADV", 8)], rig.Story.Calls);
+
+        // … Redeye himself in a full unit (alive: the battle).
+        rig = RedeyeAtMaunes(2, 5, 1);
+        rig.State.F_Redeye_State = 8;
+        await rig.RunAsync();
+        Assert.Equal(["Gﾚｯﾄﾞｱｲ.ADV", "FIGT_B.ADV"], Files(rig));
+
+        // The scene killing him calls the battle off.
+        rig = RedeyeAtMaunes(2, 5);
+        rig.State.F_Redeye_State = 8;
+        rig.Story.OnCall = (file, _) =>
+        {
+            rig.State.Cmdr_Cur = 130;
+            rig.State.Cmdrs[130].Status = 0;
+        };
+        await rig.RunAsync();
+        Assert.Equal(["Gﾚｯﾄﾞｱｲ.ADV"], Files(rig));
+    }
+
+    /// <summary>Kite (132) alive, Calory at <paramref name="calory"/>, Zeth Palace (69) Kayblis's with its own picture.</summary>
+    private static TurnRig KiteRig(int calory, params int[] draws)
+    {
+        var rig = new TurnRig(draws);
+        rig.State.Cmdrs[132].Status = 1;
+        rig.State.F_Calory_State = (Sys3Int)calory;
+        rig.State.Provs[69].Owner = 8;
+        rig.State.Provs[69].BgCg = 1011;
+        return rig;
+    }
+
+    [Fact]
+    public async Task Kite_s_draws_may_bring_Calory_s_scenes_instead_of_the_march()
+    {
+        // Below state 4 a draw in ten replaces the draw in three.
+        var rig = KiteRig(2, 2, 5, 3, 1);
+        await rig.RunAsync();
+        Assert.Equal([("Gｶｲﾄ.ADV", 6)], rig.Story.Calls);
+        Assert.Equal([3, 5, 3, 10], rig.Random.Draws);
+
+        rig = KiteRig(4, 2, 5, 2);
+        await rig.RunAsync();
+        Assert.Equal([("Gｶｲﾄ.ADV", 7)], rig.Story.Calls);
+        Assert.Equal([3, 5, 3], rig.Random.Draws);
+
+        // Not with Zeth Palace's picture changed: Kite marches, and takes Maginot Stronghold (76).
+        rig = KiteRig(4, 2, 5, 1);
+        rig.State.Provs[69].BgCg = 1043;
+        await rig.RunAsync();
+        Assert.Empty(rig.Story.Calls);
+        Is(8, rig.State.Provs[76].Owner);
+    }
+
+    [Fact]
+    public async Task After_Kite_s_battle_Calory_s_scene_follows_her_state()
+    {
+        var rig = KiteRig(2, 2, 5, 3, 3);
+        rig.State.Provs[76].Owner = 1;
+        string? army = null;
+        rig.Story.OnCall = (file, _) => army ??= rig.State.Strings[10];
+        await rig.RunAsync();
+        Assert.Equal(["FIGT_B.ADV", "Gｶｲﾄ.ADV"], Files(rig));
+        Assert.Equal("Tｹｲﾌﾞﾘｽ.ADV:974", army);                  // "Kite Unit"
+        Assert.Equal(3, rig.Story.Calls[1].Entry);              // state 2: her third scene
+        Is(10, rig.State.Ai_KiteAtk);
+
+        // State 4: her fifth once Zeth Palace (69), the province fought over, has fallen to Kayblis.
+        rig = KiteRig(4, 2, 5, 3);
+        foreach (int p in new[] { 76, 74, 70, 66 })
+            rig.State.Provs[p].Owner = 8;
+        rig.State.Provs[69].Owner = 1;
+        rig.Story.OnCall = (file, _) =>
+        {
+            if (file == "FIGT_B.ADV")
+                rig.State.Provs[69].Owner = 8;
+        };
+        await rig.RunAsync();
+        Assert.Equal(["FIGT_B.ADV", "Gｶｲﾄ.ADV"], Files(rig));
+        Assert.Equal(5, rig.Story.Calls[1].Entry);
+    }
+
+    [Fact]
+    public async Task Galtia_s_second_scene_follows_a_lost_defence()
+    {
+        var rig = new TurnRig(2, 5);
+        foreach (int c in new[] { 154, 131 })                   // Derandron, Galtia; Nasport (155) dead
+        {
+            rig.State.Cmdrs[c].Status = 1;
+            rig.State.Cmdrs[c].Troops = 300;
+            rig.State.Cmdrs[c].MaxTroops = 1000;
+        }
+        rig.State.Provs[76].Owner = 1;
+        int party = -1;
+        string? army = null;
+        rig.Story.OnCall = (file, _) =>
+        {
+            if (file != "FIGT_B.ADV")
+                return;
+            party = rig.State.Bt_EnemyParty1.Value * 1000 + rig.State.Bt_EnemyParty2.Value;
+            army = rig.State.Strings[10];
+            rig.State.Bt_RoundsLeft = 1;
+            rig.State.Bt_Result = 1;
+        };
+
+        await rig.RunAsync();
+
+        Assert.Equal([("FIGT_B.ADV", 0), ("Gｶﾞﾙﾃｨｱ.ADV", 2)], rig.Story.Calls);
+        Assert.Equal(154 * 1000 + 131, party);                  // Derandron, Galtia
+        Assert.Equal("Tｹｲﾌﾞﾘｽ.ADV:1114", army);                 // "Galtia Unit"
+
+        // A line all Kayblis's: the unit stays home.
+        rig = new TurnRig(2, 5);
+        rig.State.Cmdrs[131].Status = 1;
+        foreach (int p in new[] { 76, 74, 65, 63, 66, 61, 60, 59, 58, 16, 15, 13, 2, 1 })
+            rig.State.Provs[p].Owner = 8;
+        await rig.RunAsync();
+        Assert.Empty(rig.Story.Calls);
+        Assert.Empty(rig.Lines);
+    }
+
+    [Fact]
+    public async Task Kesselring_flies_from_the_province_before_his_target_and_attacks_without_a_second_battle()
+    {
+        var rig = new TurnRig(2, 5);
+        rig.State.Cmdrs[133].Status = 1;
+        rig.State.F_Kesselring_State = 3;
+        rig.State.Prov_StrBase = 2000;
+        rig.State.Strings[2000 + 60] = "Tape";
+        rig.State.Provs[70].Owner = 8;                          // Papaya's Tower, Tape: Kayblis's
+        rig.State.Provs[61].Owner = 8;
+        rig.State.Provs[19].Owner = 1;                          // Diphtheria: the player's
+        rig.State.Provs[85].Owner = 1;                          // the Red House
+        string? from = null, army = null;
+        int scene = 0;
+        rig.Story.OnCall = (file, _) =>
+        {
+            if (file != "FIGT_B.ADV")
+            {
+                scene = rig.State.Prov_Cur.Value;
+                return;
+            }
+            from = rig.State.Strings[8];
+            army = rig.State.Strings[10];
+            rig.State.Bt_RoundsLeft = 0;                        // held: no second attack for him
+            rig.State.Bt_Result = 2;
+        };
+
+        await rig.RunAsync();
+
+        Assert.Equal(["FIGT_B.ADV", "Gｹｯｾﾙ.ADV"], Files(rig));
+        Assert.Equal(2, rig.Story.Calls[1].Entry);
+        Assert.Equal("Tape", from);                             // "［Tape］ Sky Above"
+        Is(19, rig.State.Kesselring_LastProv);
+        Assert.Equal(85, scene);                                // at the Red House
+        Is(1, rig.State.Bt_EnemyRetreatMode);
+        Assert.Equal([1302, 1308, 1316, 1321], rig.Lines);
+        Assert.Equal([331, 113, 1, 0, 311, 111, 1, 0, 113, 1, 0, 312, 332], rig.Windows);
+        Assert.Equal([32, 24], rig.View.Events.OfType<EngineEvent>().Where(e => e.Command == "ZM").Select(e => (int)e.Args[0].Value));
+        Assert.Equal("Tｹｲﾌﾞﾘｽ.ADV:1211", army);                 // "Kesselring Unit"
+
+        // From his castle (87) to Papaya's Tower (70), nobody's: taken without a battle, no last province.
+        rig = new TurnRig(2, 5);
+        rig.State.Cmdrs[133].Status = 1;
+        rig.State.F_Kesselring_State = 1;
+        rig.State.F_Zeth_War = 2;                               // Papaya's Tower: Zeth fallen already
+        await rig.RunAsync();
+        Assert.Empty(rig.Story.Calls);
+        Is(8, rig.State.Provs[70].Owner);
+        Assert.Equal([1302, 1308, 1316, 1321, 1628], rig.Lines);
+        Is(0, rig.State.Kesselring_LastProv);
     }
 
     [Fact]
