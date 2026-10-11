@@ -785,4 +785,10 @@ Steps:
    names and goes on. `TitleTests`: the title is silent after the music room (STR-37). The presenter's:
    the room drawn on the stage, a track started, the title back. No file the game reaches is left
    unrun but the dead `XSPEC` (DAT-04).
-4. **Docs**: G1-G10 and R1-R5 registered, EVT-07 withdrawn, CLAUDE.md.
+4. **Docs** ✓ (2026-10-11): G1-G10 and R1-R5 registered as STR-43 to STR-57 (G9 = STR-43 and R1 =
+   STR-44 with the port code that reproduces them, in steps 1 and 3; the rest in the order of the
+   survey's tables), EVT-07 withdrawn, CLAUDE.md.
+
+Milestone 7's steps are done: every file the game reaches runs — the gallery and the music room from
+the player's files, the gallery's locks on the engine's CG load counter — but the dead `XSPEC` (DAT-04).
+How to close the milestone and what comes next is the owner's to decide.

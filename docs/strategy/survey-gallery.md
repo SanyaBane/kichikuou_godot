@@ -104,16 +104,16 @@ scene calls, 23 `%#WAO_SUB`, one `%0`. All are run by `SceneRunner` and drawn by
 
 | # | What | Lines | Kind |
 |---|---|---|---|
-| G1 | A left click at the replay prompt returns without closing the window (`WAO_SUB` 0 is only after a replay): `Ui_WinType` stays 31, back to the title [I] | `:833-835`, `:2344`, `:2347-2349` | bug |
-| G2 | `WAO_SUB` 131's strip save (`WAO_SUB.ADV:235`, rows 300-403 to x 640-1279) overwrites the top rows of page 2's sheet at (640, 400): after a prompt page 2's top edge can show the strip [I] | `:2330`; `:37-38` | bug, screen only |
-| G3 | The locks are stamped once, at entry: a CG loaded first during a replay becomes clickable but keeps its lock tile until the gallery is opened again [I] | `:47`, `:3002-3046` | bug, screen only |
-| G4 | Column 6 starts at x 535, not 533: x 533-534 select nothing | `:74`, `:98`, `:122`, `:146`, `:170` | bug |
-| G5 | The prompt inverts the buttons: left goes back, right (or both) replays; the pages ignore a right click | `:2333-2346`, `:51` | odd design |
-| G6 | String 1 is set only for `Gﾄｳｹﾞﾝ`; `G1` and `Gﾊﾟﾊﾟｲｱ` replays print `X 1` with what it holds [I] | `:2033-2034` | bug [I] |
-| G7 | Eight entries replay text kept in `CG.ADV` (two only "............"), CG 862 none; CG 240 is always unlocked (`ｽﾀMENU.ADV:84-85`) | `:1149-1157`, `:2313-2321`, `:2350-3001` | odd design |
-| G8 | `Gﾏﾘｽ` 300's line depends on Sill (unit 2)'s status as the title left it (the boot's, or the last game's) [I] | `Gﾏﾘｽ.ADV:2163-2164` | odd design |
+| G1 (STR-45) | A left click at the replay prompt returns without closing the window (`WAO_SUB` 0 is only after a replay): `Ui_WinType` stays 31, back to the title [I] | `:833-835`, `:2344`, `:2347-2349` | bug |
+| G2 (STR-46) | `WAO_SUB` 131's strip save (`WAO_SUB.ADV:235`, rows 300-403 to x 640-1279) overwrites the top rows of page 2's sheet at (640, 400): after a prompt page 2's top edge can show the strip [I] | `:2330`; `:37-38` | bug, screen only |
+| G3 (STR-47) | The locks are stamped once, at entry: a CG loaded first during a replay becomes clickable but keeps its lock tile until the gallery is opened again [I] | `:47`, `:3002-3046` | bug, screen only |
+| G4 (STR-48) | Column 6 starts at x 535, not 533: x 533-534 select nothing | `:74`, `:98`, `:122`, `:146`, `:170` | bug |
+| G5 (STR-49) | The prompt inverts the buttons: left goes back, right (or both) replays; the pages ignore a right click | `:2333-2346`, `:51` | odd design |
+| G6 (STR-50) | String 1 is set only for `Gﾄｳｹﾞﾝ`; `G1` and `Gﾊﾟﾊﾟｲｱ` replays print `X 1` with what it holds [I] | `:2033-2034` | bug [I] |
+| G7 (STR-51) | Eight entries replay text kept in `CG.ADV` (two only "............"), CG 862 none; CG 240 is always unlocked (`ｽﾀMENU.ADV:84-85`) | `:1149-1157`, `:2313-2321`, `:2350-3001` | odd design |
+| G8 (STR-52) | `Gﾏﾘｽ` 300's line depends on Sill (unit 2)'s status as the title left it (the boot's, or the last game's) [I] | `Gﾏﾘｽ.ADV:2163-2164` | odd design |
 | G9 (STR-43) | "Seen" is the engine's load counter: only loads from file count (not cache hits), 16 bits wrapping; the gallery tests ≠ 0 | `SET.ADV:297`; `cg.c:268-277` | engine artefact |
-| G10 | Dead: the error prints `:329-330`, `:356-357`, `:450`, `:544`, `:638`, `:732`, `:826` (their fallbacks jump to wrong pages), `:3898-3899`; the `WAO_SUB` wrappers `:3905-3952`, `:3957-3965`; `G 841` at `:334` [I]; `:1-19` repeated by `:20-33`; `Tmp0007-0010`, `Tmp0015-0019` never read | — | dead code |
+| G10 (STR-53) | Dead: the error prints `:329-330`, `:356-357`, `:450`, `:544`, `:638`, `:732`, `:826` (their fallbacks jump to wrong pages), `:3898-3899`; the `WAO_SUB` wrappers `:3905-3952`, `:3957-3965`; `G 841` at `:334` [I]; `:1-19` repeated by `:20-33`; `Tmp0007-0010`, `Tmp0015-0019` never read | — | dead code |
 
 ## 3. `MMODE.ADV` — the music room
 
@@ -147,10 +147,10 @@ run by `SceneRunner` (`F1` with a gap, §4.2).
 | # | What | Lines | Kind |
 |---|---|---|---|
 | R1 (STR-44) | Stop with nothing playing (a right click, or Stop twice: `:25` sets `Tmp0039 := 999`) draws "the track 999" plain: `F1, 1, 999` skips 999 strings of a 224-string table — xsystem35 reads the scenario's bytes after it (`cmdf.c:85-90`) — and prints them at (328, 10681), off the 800-row surface [I: nothing visible] | `:17-22`, `:80-98` | bug |
-| R2 | Holding the button on Stop repeats Stop and sound 108 on every poll (no release wait on that path) | `:17-27`, `:253-257` | bug |
-| R3 | The ending's and "Brutal"'s titles are flagged two-line but their second lines are blank, so they sit 8 dots high [I: the translation] | `:407`, `:409`, `:560` | odd design |
-| R4 | The time display sets no colour of its own: it takes the last `ZC` (255 or 15) | `:260-284` | bug, screen only |
-| R5 | Dead: the panels' colour-15 branches (`:152-154`, `:165-167`, `:189-191`), `Tmp0039 := RetVal` twice (`:295`, `:297`), a stray `R` (`:62`) | — | dead code |
+| R2 (STR-54) | Holding the button on Stop repeats Stop and sound 108 on every poll (no release wait on that path) | `:17-27`, `:253-257` | bug |
+| R3 (STR-55) | The ending's and "Brutal"'s titles are flagged two-line but their second lines are blank, so they sit 8 dots high [I: the translation] | `:407`, `:409`, `:560` | odd design |
+| R4 (STR-56) | The time display sets no colour of its own: it takes the last `ZC` (255 or 15) | `:260-284` | bug, screen only |
+| R5 (STR-57) | Dead: the panels' colour-15 branches (`:152-154`, `:165-167`, `:189-191`), `Tmp0039 := RetVal` twice (`:295`, `:297`), a stray `R` (`:62`) | — | dead code |
 
 ## 4. The port's side
 
@@ -197,7 +197,7 @@ string is drawn off the surface. Each of the music room's reads sets the table f
    trace confirms it.
 2. **`F1` past its table** (R1): read an empty string (the agent's recommendation: nothing of it is
    visible in the original either), or something else.
-3. EVT-07 is withdrawn by §2.4 (no question; in the docs step).
+3. EVT-07 is withdrawn by §2.4 (no question; in the docs step — done, quirks.md).
 
 Answered by decision 21 (2026-10-11): 1 (a), every path; 2 an empty string.
 
