@@ -47,6 +47,10 @@ public sealed partial class Battle
             return;
         State.Unit_Cur = State.Bt_PlayerStrategist;
         FlowCopyString(1, UnitNameString(State.Unit_Cur));
+        CountCgLoad(899);                                       // :16
+        CountCgLoad(State.Bt_BackgroundCg);                     // :18
+        CountTroopSprite(Unit.Troops, Unit.CgFull, Unit.CgPartial, Unit.CgAlone);   // :19-30
+        CountCgLoad(Unit.FaceCg);                               // :32
         await View.ShowAsync(new StrategyScreenEvent(1, State.Unit_Cur));
         State.Tmp0021 = State.Tmp0021 - State.RetVal;
         await StrategyBoxAsync(143, 37);
@@ -103,6 +107,21 @@ public sealed partial class Battle
         await StrategyBoxAsync(142, 315);
     }
 
+    /// <summary>
+    /// The sprite of the strategist's troops (<c>FIGT作.ADV:19-30</c>, <c>:361-372</c>), each test on
+    /// its own as in the duel scene: full at or above <c>Bt_TroopLimit</c>, partial below it, alone
+    /// without troops.
+    /// </summary>
+    private void CountTroopSprite(Sys3Int troops, Sys3Int full, Sys3Int partial, Sys3Int alone)
+    {
+        if (troops > State.Bt_TroopLimit || troops == State.Bt_TroopLimit)
+            CountCgLoad(full);
+        if (troops < State.Bt_TroopLimit && troops != 0)
+            CountCgLoad(partial);
+        if (troops == 0)
+            CountCgLoad(alone);
+    }
+
     /// <summary><c>L_006b2</c>, <c>FIGT作.ADV:348-489</c>: the enemy's strategy.</summary>
     private async Task EnemyStrategyAsync()
     {
@@ -113,6 +132,10 @@ public sealed partial class Battle
         State.Tmp0022 = State.Tmp0022 - State.RetVal;
         State.Cmdr_Cur = State.Bt_EnemyStrategist;
         FlowCopyString(4, CmdrNameString(State.Cmdr_Cur));
+        CountCgLoad(899);                                       // :358
+        CountCgLoad(900);                                       // :360
+        CountTroopSprite(Cmdr.Troops, Cmdr.CgFull, Cmdr.CgPartial, Cmdr.CgAlone);   // :361-372
+        CountCgLoad(Cmdr.FaceCg);                               // :374
         await View.ShowAsync(new StrategyScreenEvent(2, State.Cmdr_Cur));
         await StrategyBoxAsync(143, 378);
         State.Bt_StrategyResult = 11;

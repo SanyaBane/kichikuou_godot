@@ -332,6 +332,7 @@ public sealed partial class Battle
             State.Tmp0002 = State.Tmp0002 + 10;
         if (State.Bt_StrategyResult == 12)
             State.Tmp0002 = State.Tmp0002 + 50;
+        CountCgLoad(887);                                           // FIGT.ADV:115 G 887, 40
         await View.ShowAsync(new RoundHeaderEvent(
             State.Bt_IsDuel, State.Bt_Kind, State.Bt_TroopLimit, State.Tmp0001, State.Tmp0002, State.Bt_RoundsLeft));
         var answer = await Input.WaitForKeyAsync();

@@ -353,6 +353,7 @@ public sealed partial class Battle
 
         // QUIRK: FIGT.ADV:1803-1810 — the first counters run after the swap, so in story stage 4
         // they read (and draw) commander 200's troops and HP.
+        CountCgLoad(888); // 1807-1808 J1 640, 400: G 888
         await SlideEngagementAsync(112); // 1807-1811
         await FlavourTextAsync(); // 1812 %#FIGT_M.ADV
         if (State.StoryStage == 4)
@@ -408,6 +409,17 @@ public sealed partial class Battle
 
         // QUIRK: 01 §14 open question 3 — a commander id is never 1137, so the overlay is always drawn.
         bool overlay = State.Bt_EnemyParty1 != 1137;
+        CountCgLoad(899);                       // 1629
+        CountCgLoad(State.Bt_BackgroundCg);     // 1631
+        foreach (var cg in enemy)
+            CountCgLoad(cg);
+        foreach (var cg in player)
+            CountCgLoad(cg);
+        if (overlay)
+            CountCgLoad(State.Bt_BackgroundCg + 1);     // 1717
+        CountCgLoad(Unit.FaceCg);               // 1720
+        if (Cmdr.FaceCg != 0)
+            CountCgLoad(Cmdr.FaceCg);           // 1723
         await View.ShowAsync(new EngagementSceneEvent(
             State.Bt_BackgroundCg, enemy, player, overlay, Unit.FaceCg, Cmdr.FaceCg));
     }
@@ -1533,6 +1545,8 @@ public sealed partial class Battle
     /// </summary>
     public async Task PlayExchangeAnimationAsync()
     {
+        CountCgLoad(893); // :2-3 J0 640, 400: G 893 (the backdrop the counters are drawn on)
+
         // :1-31 current troops and HP
         if (Unit.Troops != 0)
             DrawCounter(100, 0, 0, Unit.Troops);
@@ -1604,11 +1618,20 @@ public sealed partial class Battle
         Rnd(2); // :234, result never used
 
         // :235-246 wiped-out marks
-        await View.ShowAsync(new WipedOutMarksEvent(
+        var marks = new WipedOutMarksEvent(
             Unit.Troops != 0 && Unit.Troops - State.Bt_ETroopVsTroopDmg - State.Bt_ECmdrVsTroopDmg == 0,
             Cmdr.Troops != 0 && Cmdr.Troops - State.Bt_PTroopVsTroopDmg - State.Bt_PCmdrVsTroopDmg == 0,
             Unit.HP != 0 && Unit.HP - State.Bt_ETroopVsCmdrDmg - State.Bt_ECmdrVsCmdrDmg == 0,
-            Cmdr.HP != 0 && Cmdr.HP - State.Bt_PTroopVsCmdrDmg - State.Bt_PCmdrVsCmdrDmg == 0));
+            Cmdr.HP != 0 && Cmdr.HP - State.Bt_PTroopVsCmdrDmg - State.Bt_PCmdrVsCmdrDmg == 0);
+        if (marks.PlayerTroops)
+            CountCgLoad(889);
+        if (marks.EnemyTroops)
+            CountCgLoad(890);
+        if (marks.PlayerCmdr)
+            CountCgLoad(891);
+        if (marks.EnemyCmdr)
+            CountCgLoad(892);
+        await View.ShowAsync(marks);
         await View.ShowAsync(new KeyWaitEvent());
         Sys3Int key = await Input.WaitForKeyAsync(); // :247 IK 0
         State.RetVal = key;

@@ -93,10 +93,13 @@ public sealed partial class Battle
     /// script has at its return where the choice determines them; for popup commands that do not
     /// change the mode, <c>Tmp0019</c>/<c>Tmp0020</c> keep the entry values (the original keeps
     /// the last mode the player browsed — never read). Mouse coordinates, popup geometry
-    /// (<c>Tmp0010-0015</c>) and <c>Ui_BtnCur</c> depend only on the pointer and are not modelled.
+    /// (<c>Tmp0010-0015</c>) and <c>Ui_BtnCur</c> depend only on the pointer and are not modelled,
+    /// nor are the loads of the menu's backdrop (CG 861) each time the player switches modes: it
+    /// counts once at the entry and once for the first mode.
     /// </remarks>
     internal async Task FigtSelAsync()
     {
+        CountCgLoad(861);                                   // FIGT_SEL.ADV:4 G 861, 40
         State.Buf_Cur = 0;
         for (int i = 0; i < 100; i++)
             State.Buffer[State.Buf_Cur.Value + i].Val = 0;
@@ -150,6 +153,7 @@ public sealed partial class Battle
         State.Tmp0002 = 98;
         State.Tmp0019 = State.Bt_PlayerAtkType + 1;
         State.Tmp0020 = 255;
+        CountCgLoad(861);                                   // :64-65 L_001bb G 861, 40
 
         var menu = BuildFigtSelMenu();
         var choice = await Input.SelectCommandAsync(menu);

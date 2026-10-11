@@ -112,7 +112,7 @@ scene calls, 23 `%#WAO_SUB`, one `%0`. All are run by `SceneRunner` and drawn by
 | G6 | String 1 is set only for `Gﾄｳｹﾞﾝ`; `G1` and `Gﾊﾟﾊﾟｲｱ` replays print `X 1` with what it holds [I] | `:2033-2034` | bug [I] |
 | G7 | Eight entries replay text kept in `CG.ADV` (two only "............"), CG 862 none; CG 240 is always unlocked (`ｽﾀMENU.ADV:84-85`) | `:1149-1157`, `:2313-2321`, `:2350-3001` | odd design |
 | G8 | `Gﾏﾘｽ` 300's line depends on Sill (unit 2)'s status as the title left it (the boot's, or the last game's) [I] | `Gﾏﾘｽ.ADV:2163-2164` | odd design |
-| G9 | "Seen" is the engine's load counter: only loads from file count (not cache hits), 16 bits wrapping; the gallery tests ≠ 0 | `SET.ADV:297`; `cg.c:268-277` | engine artefact |
+| G9 (STR-43) | "Seen" is the engine's load counter: only loads from file count (not cache hits), 16 bits wrapping; the gallery tests ≠ 0 | `SET.ADV:297`; `cg.c:268-277` | engine artefact |
 | G10 | Dead: the error prints `:329-330`, `:356-357`, `:450`, `:544`, `:638`, `:732`, `:826` (their fallbacks jump to wrong pages), `:3898-3899`; the `WAO_SUB` wrappers `:3905-3952`, `:3957-3965`; `G 841` at `:334` [I]; `:1-19` repeated by `:20-33`; `Tmp0007-0010`, `Tmp0015-0019` never read | — | dead code |
 
 ## 3. `MMODE.ADV` — the music room

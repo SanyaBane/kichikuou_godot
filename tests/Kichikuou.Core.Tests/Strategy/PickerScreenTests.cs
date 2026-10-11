@@ -243,6 +243,31 @@ public class PickerScreenTests
         Assert.Contains(208, rig.Lines);                                // the details of the unit under the pointer
     }
 
+    /// <summary>
+    /// A hand-ported file's <c>G</c> counts its load like a scene's (STR-43): every CG the picker
+    /// loads — the portrait of the unit under the pointer among them — once per <c>G</c>.
+    /// </summary>
+    [Fact]
+    public async Task The_subordinate_picker_counts_the_CGs_it_loads()
+    {
+        var rig = new PickerRig();
+        rig.Script.BindCgLoadCounter(196);
+        rig.State.Units[1].Status = 1;
+        rig.State.Units[3].Status = 2;
+        rig.State.Units[3].PortraitCg = 1330;
+        rig.State.CallArg = 1;
+        rig.State.RetVal = 1;
+        rig.Pick(3);
+
+        await new SubordinateScreen(rig.Script, rig.Source).RunAsync();
+
+        var loads = rig.View.Events.OfType<EngineEvent>().Where(e => e.Command == "G")
+            .GroupBy(e => (int)e.Args[0].Value).ToDictionary(g => g.Key, g => g.Count());
+        Assert.Contains(1330, loads.Keys);
+        foreach (var (cg, count) in loads)
+            Assert.Equal(count, rig.State.CgSeen[cg].CgSeen.Value);
+    }
+
     [Fact]
     public async Task With_RetVal_0_only_a_unit_at_status_1_can_be_picked_and_a_click_left_of_the_list_ends()
     {

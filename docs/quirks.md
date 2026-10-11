@@ -31,7 +31,7 @@ Columns:
 - **Where** — script `FILE.ADV:line`, spec section (`01` = [battle/01-flow.md](battle/01-flow.md),
   `02` = [battle/02-resolution.md](battle/02-resolution.md), `03` = [battle/03-rng-order.md](battle/03-rng-order.md),
   `screen` = [battle/screen-layout.md](battle/screen-layout.md), `bREADME` = [battle/README.md](battle/README.md);
-  `main`, `commands`, `nations`, `dungeon`, `data`, `events`, `ikami`, `w4` = `strategy/survey-*.md`, `sREADME` =
+  `main`, `commands`, `nations`, `dungeon`, `data`, `events`, `ikami`, `w4`, `gallery` = `strategy/survey-*.md`, `sREADME` =
   [strategy/README.md](strategy/README.md); `golden-tests`, `spike-findings`, `porting-conventions` = the docs of
   those names; `#n` = item n of a numbered list), and the port file
   when the behaviour is already ported (file names as of 2026-10-08; grep the ID or the marker
@@ -179,6 +179,7 @@ the ending `OVER`, the title `ｽﾀMENU` and its Fortune Check `HAPPY_C`: [w4](
 | STR-40 (w4 H2) | Fortune Check draws a fate's portrait whether or not anything of it was seen (only the texts say "Undiscovered"). | Who each undiscovered fate belongs to is shown. | odd design | `HAPPY_C.ADV:307-345`; w4 §4; port: `FortuneCheckTests` | maybe |
 | STR-41 (w4 H3) | Fortune Check shows one portrait per fate: the one `OVER` sets before an entry's tests (eleven entries change it for one half), except Amiran (fate 22) 39 for `OVER`'s 40, Somita (54) 46 for 47 (46 `OVER` never draws) and Pastel (55) 41 for 493 — 39 and 41 being their misfortunes'. | Three characters look different in Fortune Check and the report. | odd design | `HAPPY_C.ADV:745-760, 1257-1288`, `OVER.ADV:820-840, 1727-1773`; w4 §4; port: `FortuneCheckTests` | no |
 | STR-42 (w4 H4) | Dead code in `HAPPY_C`: the `ZZ0` after its `%0` (`:90-91`), the hit tests after a jump (`:195-203`), the tails after `@L_0010a` and `\0:` (`:382-384`, `:389-391`), and error prints the data never reach: no row matched (`:192-194`), a page neither 1 nor 2 (`:249-250`), a fate value other than 0/1/10/100 (`:277-280`, `:346-347`, opening window 1 through `L_009d8`), a fate past 65 (`:1449-1450`). | None. | dead code | `HAPPY_C.ADV:90-91, 192-203, 249-250, 277-280, 346-347, 382-391, 1449-1450`; w4 §4 | no |
+| STR-43 (gallery G9) | What the gallery calls seen is the engine's CG load counter (`ZG Glob_CgSeen:`): every CG n loaded from the archive adds 1 to record n of `Glob_CgSeen` on page 4, a 16-bit count that wraps to 0; a load the CG cache answers, or of a CG the archive lacks, adds nothing. The gallery only tests ≠ 0. | A picture unlocks once its scene has drawn it on any path (a window picture, a battle sprite, a map tile alike); the counts are not how often it was seen. | engine artefact | `SET.ADV:297`, `CG.ADV:234-235, 281-282, 3040-3041`; xsystem35 `cg.c:262-277`, `cmdg.c:31-53`, `cmdz.c:480-485`; gallery §2.2, §4.1; port: `ScriptContext.CountCgLoad` on every path the script loads a CG (owner's decision 21) — it counts every load, cache hits and missing CGs too, so its counts run higher [I: ≠ 0 differs only where a slot was loaded after a CG, which the cache then answers] | no — only ≠ 0 is read |
 
 ## Commands (CMD)
 

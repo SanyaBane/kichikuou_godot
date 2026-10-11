@@ -44,6 +44,52 @@ public sealed partial class ScriptContext(
     /// <summary>Shows one presentation event.</summary>
     public Task ShowAsync(ScriptEvent scriptEvent) => View.ShowAsync(scriptEvent);
 
+    /// <summary>
+    /// A presentation-only engine command (<see cref="EngineEvent"/>) with its evaluated arguments,
+    /// from a scene (<see cref="SceneRunner"/>) or a hand-ported file: <c>G n</c> and <c>G n, sprite</c>
+    /// load CG n first (<see cref="CountCgLoad"/>).
+    /// </summary>
+    public Task EngineAsync(string command, IReadOnlyList<Sys3Int> args)
+    {
+        if (command == "G")
+            CountCgLoad(args[0]);
+        return View.ShowAsync(new EngineEvent(command, args));
+    }
+
+    /// <summary>
+    /// Where the engine's CG load counter points: the page slot of CG 0, null until <c>ZG</c>
+    /// binds it (<see cref="BindCgLoadCounter"/>). Engine state, like <see cref="PauseCancelable"/>:
+    /// never saved; a loaded slot overwrites the page in place (xsystem35 <c>loadVarPage</c>), so
+    /// the binding holds as long as the context.
+    /// </summary>
+    public (int Page, int Index)? CgLoadCounter { get; private set; }
+
+    /// <summary>
+    /// <c>ZG var:</c> (<c>SET.ADV:297</c> <c>ZG Glob_CgSeen:</c>) — the CG load counter starts at
+    /// where variable <paramref name="variable"/> points now (xsystem35 <c>cmdz.c:480-485</c> keeps
+    /// the address <c>getCaliVariable</c> resolves, through the variable's binding at its cursor).
+    /// </summary>
+    public void BindCgLoadCounter(int variable) => CgLoadCounter = State.Locate(variable);
+
+    /// <summary>
+    /// The engine's CG load counter (owner's decision 21): loading CG <paramref name="cg"/> adds 1
+    /// to the n-th slot after the bound one (xsystem35 <c>cg.c:276-277</c>,
+    /// <c>(*(cg_loadCountVar + no + 1))++</c> with <c>no = n - 1</c>, <c>cmdg.c:38, 53</c>) — record
+    /// n of <c>Glob_CgSeen</c>, which the gallery reads. Called wherever the script loads a CG:
+    /// <c>G</c> (<see cref="EngineAsync"/>) and the helper files and the battle that draw through
+    /// their own events. <c>G 0</c> loads nothing (<c>cmdg.c:31-35</c>); a slot past the page is not
+    /// written (the original writes past its buffer; no CG of the game is numbered so high).
+    /// </summary>
+    public void CountCgLoad(Sys3Int cg)
+    {
+        if (CgLoadCounter is not { } at || cg == 0)
+            return;
+        int slot = at.Index + cg.Value;
+        // QUIRK: STR-43 — every load counts here, a cache hit too; the 16-bit count wraps.
+        var count = State.Memory.ReadPage(at.Page, slot);
+        State.Memory.WritePage(at.Page, slot, unchecked((ushort)(count.Value + 1)));
+    }
+
     /// <summary>A text run of <paramref name="file"/> starting at <paramref name="line"/>.</summary>
     public Task TextAsync(string file, int line) => View.ShowAsync(new MessageEvent(new ScriptRef(file, line)));
 

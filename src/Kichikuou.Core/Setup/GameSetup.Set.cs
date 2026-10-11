@@ -202,7 +202,7 @@ public sealed partial class GameSetup
         State.Glob_CgCur = (Sys3Int)0; // :294
         State.Glob_MenuCur = (Sys3Int)0; // :295
         Df(195, 2100, 0); // :296 DF Glob_Fate
-        // :297 ZG Glob_CgSeen: — the engine counts CG loads in Glob_CgSeen (not modelled; ignored by the golden comparison)
+        Script.BindCgLoadCounter(196); // :297 ZG Glob_CgSeen — the engine counts CG loads there (ignored by the golden comparison)
         State.Unit_StrBase = (Sys3Int)20; // :298
         State.Cmdr_StrBase = (Sys3Int)20 + State.Unit_Count * (Sys3Int)3; // :299
         State.Prov_StrBase = (Sys3Int)20 + State.Unit_Count * (Sys3Int)3 + State.Cmdr_Count * (Sys3Int)3; // :300

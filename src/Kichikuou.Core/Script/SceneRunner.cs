@@ -255,7 +255,7 @@ public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<str
                     State.WriteVariable(s.Var, await Input.GetTimerAsync(s.Mode));
                     break;
                 case EngineStatement s:
-                    await View.ShowAsync(new EngineEvent(s.Command, s.Args.Select(Eval).ToArray()));
+                    await Script.EngineAsync(s.Command, s.Args.Select(Eval).ToArray());
                     break;
                 case EffectCopyStatement s:
                     await EffectCopyAsync(s);

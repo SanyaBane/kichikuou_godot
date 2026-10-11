@@ -84,10 +84,8 @@ public class EndToEndBattleTests
     // (a) FIGT_A, plains, 1 unit vs 1 commander, direct attacks to annihilation
     // ------------------------------------------------------------------------------------
 
-    [Fact]
-    public async Task Plains_attack_one_on_one_is_fought_to_annihilation()
-    {
-        int[] values =
+    /// <summary>The draws of <see cref="Plains_attack_one_on_one_is_fought_to_annihilation"/>.</summary>
+    private static readonly int[] PlainsOneOnOne =
         [
             2,                              // :17 R3 → 5 rounds
             // round 1, player (unit 44 acts first: troop tie goes to the player, Q-17)
@@ -109,13 +107,23 @@ public class EndToEndBattleTests
             1,                              // :3100 R18 = RND(12 + new level 6) → case 1
             3,                              // :3102 R19 → 3 - OffAtkMod(0) ≠ 0 → +1
         ];
-        var rig = NewRig(values);
-        var s = rig.State;
+
+    private static FlowRig PlainsOneOnOneRig()
+    {
+        var rig = NewRig(PlainsOneOnOne);
         rig.PlayerParty(UnitA);
         rig.EnemyParty(5);
         SetUnit(rig, UnitA, exp: 240, recovery: 3);    // threshold 100 + 5 * 30 = 250
         SetCmdr(rig, 5);
         rig.Input.Commands.Enqueue(Direct());
+        return rig;
+    }
+
+    [Fact]
+    public async Task Plains_attack_one_on_one_is_fought_to_annihilation()
+    {
+        var rig = PlainsOneOnOneRig();
+        var s = rig.State;
 
         await rig.Battle.AttackProvinceAsync();
 
@@ -141,6 +149,45 @@ public class EndToEndBattleTests
         Is(0, s.Bt_TargetProv);
         Assert.Equal(1, Count<RoundHeaderEvent>(rig));
         Assert.Equal(2, Count<ExchangeResultsEvent>(rig));
+    }
+
+    /// <summary>
+    /// The same battle with the CG load counter bound (STR-43): every CG the battle files load counts,
+    /// though the battle draws them through its own events — the round header 887 (:115), the
+    /// battlefield (:2008), a panel 836 per panel drawn (:2083), FIGT_SEL's backdrop 861 at its entry
+    /// and for its first mode (FIGT_SEL.ADV:4, 65), per engagement 899, the background, the sprites by
+    /// troops, the overlay, the faces (:1629-1723) and the slide 888 (:1808), per exchange FIGTATTK's
+    /// 893 (FIGTATTK.ADV:3) and the mark of the commander it wipes out (892, :245), and the windows' frames.
+    /// </summary>
+    [Fact]
+    public async Task The_battle_counts_every_CG_it_loads()
+    {
+        var rig = PlainsOneOnOneRig();
+        var s = rig.State;
+        rig.Battle.Script.BindCgLoadCounter(196);
+        s.Provs[20].BgCg = 950;
+        s.Units[UnitA].FaceCg = 1300;
+        s.Units[UnitA].CgAlone = 1301;
+        s.Cmdrs[5].FaceCg = 1302;
+        s.Cmdrs[5].CgAlone = 1303;
+        int Seen(int cg) => s.CgSeen[cg].CgSeen.Value;
+
+        await rig.Battle.AttackProvinceAsync();
+
+        int engagements = Count<EngagementSceneEvent>(rig);
+        Assert.Equal(2, engagements);
+        Assert.Equal(1, Seen(887));
+        Assert.True(Seen(950) > 0);
+        Assert.Equal(Count<SlotPanelEvent>(rig), Seen(836));
+        Assert.Equal(2 * rig.Input.CommandMenus.Count, Seen(861));
+        Assert.Equal(
+            [engagements, engagements, engagements, engagements, engagements, engagements, engagements],
+            new[] { 899, 900, 901, 888, 1300, 1301, 1302 }.Select(Seen));
+        Assert.Equal(engagements, Seen(1303));          // the commander has no troops either
+        Assert.Equal(Count<ExchangeResultsEvent>(rig), Seen(893));
+        Assert.Equal(rig.View.Events.OfType<WipedOutMarksEvent>().Count(m => m.EnemyCmdr), Seen(892));
+        Assert.Equal(1, Seen(892));
+        Assert.True(Seen(894) > 0);                     // WAO_SUB 143's frame
     }
 
     // ------------------------------------------------------------------------------------

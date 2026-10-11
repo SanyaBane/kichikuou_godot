@@ -1,4 +1,5 @@
 using Kichikuou.Content.Scripts;
+using Kichikuou.Core.Golden;
 using Kichikuou.Core.Script;
 using Kichikuou.Core.Setup;
 using Kichikuou.Core.State;
@@ -198,7 +199,10 @@ public class PlayerSceneTests(ITestOutputHelper output)
             VariableCatalog.Pages.ToDictionary(p => p.Page, p => Enumerable.Range(0, p.Size).Select(i => (int)state.Memory.ReadPage(p.Page, i).Value).ToArray()),
             (string[])state.Strings.Clone());
 
-        /// <summary>Every change outside the presentation and scratch groups, described.</summary>
+        /// <summary>
+        /// Every change outside the presentation and scratch groups and the engine's CG load counts
+        /// (<see cref="GoldenFilter.IgnoredVariables"/>, STR-43), described.
+        /// </summary>
         public List<string> WorldChangesSince(Snapshot before)
         {
             var changes = new List<string>();
@@ -211,11 +215,15 @@ public class PlayerSceneTests(ITestOutputHelper output)
             {
                 for (int i = 0; i < values.Length; i++)
                 {
-                    if (values[i] != before.Pages[page][i])
+                    if (values[i] != before.Pages[page][i] && !IsEngineCounter(page, i))
                         changes.Add($"{VariableCatalog.DescribeSlot(page, i)}: {before.Pages[page][i]} -> {values[i]}");
                 }
             }
             return changes;
         }
+
+        private static bool IsEngineCounter(int page, int index) =>
+            VariableCatalog.FindSlot(page, index) is { } binding
+            && GoldenFilter.IgnoredVariables.Contains(VariableCatalog.Variables[binding.Var].Name);
     }
 }

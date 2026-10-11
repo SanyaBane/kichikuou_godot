@@ -6,7 +6,7 @@ namespace Kichikuou.Core.Script;
 // state effects only — the camera (MapCamX/Y, MapTargetX/Y), the scratch variables they leave
 // behind (Tmp0021-0030, Tmp0039/0040, CallArg, RetVal from the Y 3 pauses) and the map marker
 // list on page 10. Drawing (PC, G, J0, CC, CS, EC) is the MapEvent that MapCallAsync raises
-// first. Found necessary by the first golden capture: the scratch values and RetVal that M.ADV
+// first; each G counts its CG (CountCgLoad). Found necessary by the first golden capture: the scratch values and RetVal that M.ADV
 // op 13 leaves are what FIGT_A returns to its caller. Ported so far: the operations the battle
 // reaches; the others (WAO_MAP op 1 drag-scroll, op 5, op 100) come with the parts that use them.
 public sealed partial class ScriptContext
@@ -162,6 +162,7 @@ public sealed partial class ScriptContext
                 // :1-19 — redraw the map at the camera; clear the window pictures.
                 State.CallArg = 0;
                 MapViewCorner();
+                CountCgLoad(State.Ui_MapCgTopL);    // :11-12 PC 6: G Ui_MapCgTopL (loaded, not drawn)
                 MapWaoMap();                // CallArg 0: blit only
                 State.Ui_PortraitL = 0;
                 State.Ui_PortraitR = 0;
@@ -350,6 +351,7 @@ public sealed partial class ScriptContext
     private async Task MapBlinkAsync()
     {
         State.Tmp0023 = 3;
+        CountCgLoad(814);           // :169-170 / :227-228 J0 640, 0: G 814 (the mark)
         while (true)
         {
             await PauseAsync(8);    // CS: mark drawn
@@ -373,6 +375,12 @@ public sealed partial class ScriptContext
             case 3:
                 // :81-109 — redraw the six map tiles, then every marker; flags above 10000
                 // are drawn 18 px higher.
+                CountCgLoad(State.Ui_MapCgTopL);
+                CountCgLoad(State.Ui_MapCgTopM);
+                CountCgLoad(State.Ui_MapCgTopR);
+                CountCgLoad(State.Ui_MapCgBotL);
+                CountCgLoad(State.Ui_MapCgBotM);
+                CountCgLoad(State.Ui_MapCgBotR);
                 State.Ui_MarkCur = 0;
                 while (State.Ui_MarkCur < State.Ui_MarkCount)
                 {
@@ -385,6 +393,7 @@ public sealed partial class ScriptContext
                         State.Tmp0022 = State.Tmp0022 - 18;
                         State.Tmp0023 = State.Tmp0023 - 10000;
                     }
+                    CountCgLoad(State.Tmp0023);     // G Tmp0023, 40
                     State.Ui_MarkCur = State.Ui_MarkCur + 1;
                 }
                 return;

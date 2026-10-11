@@ -259,8 +259,9 @@ public sealed record DisplayInfoStatement(ScriptRef At, int Var) : ScriptStateme
 public sealed record EffectCopyStatement(ScriptRef At, IReadOnlyList<ScriptExpr> Args) : ScriptStatement(At);
 
 /// <summary>
-/// An engine command that changes only what is shown and never a script variable: CG loading and
-/// placement (<c>G</c>, <c>J0</c>, <c>J1</c>, <c>PC</c>), fades and palette (<c>PF0</c>, <c>PF1</c>,
+/// An engine command that changes only what is shown and never a script variable but through the
+/// engine's CG load counter (<c>G</c> counts its CG, <see cref="ScriptContext.CountCgLoad"/>): CG
+/// loading and placement (<c>G</c>, <c>J0</c>, <c>J1</c>, <c>PC</c>), fades and palette (<c>PF0</c>, <c>PF1</c>,
 /// <c>PW0</c>, <c>PW1</c>), screen copies and fills (<c>EC</c>, <c>CB</c>, <c>CC</c>, <c>CF</c>,
 /// <c>CL</c>, <c>CM</c>, <c>CS</c>), window and text layout (<c>B1</c>-<c>B4</c>, <c>T</c>, <c>WV</c>,
 /// <c>ZC</c>, <c>ZM</c>), the next track's loop count (<c>SL</c>), the pointer warp (<c>IZ x, y</c>,

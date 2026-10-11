@@ -190,6 +190,41 @@ public class FlowStrategyTests
         return rig;
     }
 
+    /// <summary>
+    /// A successful strategy loads its screen (STR-43): the player's 899, the battle's background, the
+    /// unit's sprite by troops and face (<c>FIGT作.ADV:16-32</c>); the enemy's 899, 900, the
+    /// commander's sprite and face (<c>:358-374</c>). A failed one loads nothing.
+    /// </summary>
+    [Theory]
+    [InlineData(1, 40)]
+    [InlineData(2, 40)]
+    [InlineData(1, 41)]
+    public async Task A_successful_strategy_counts_the_CGs_of_its_screen(int side, int roll)
+    {
+        var rig = side == 1 ? Rig(1, 60, 20, roll) : Rig(2, 20, 60, roll);
+        var s = rig.State;
+        rig.Battle.Script.BindCgLoadCounter(196);
+        s.Bt_BackgroundCg = 905;
+        s.Bt_TroopLimit = 100;
+        var unit = s.Units[3];
+        unit.Troops = 50;
+        (unit.CgFull, unit.CgPartial, unit.CgAlone, unit.FaceCg) = ((Sys3Int)1310, (Sys3Int)1311, (Sys3Int)1312, (Sys3Int)1313);
+        var cmdr = s.Cmdrs[60];
+        cmdr.Troops = 100;
+        (cmdr.CgFull, cmdr.CgPartial, cmdr.CgAlone, cmdr.FaceCg) = ((Sys3Int)1320, (Sys3Int)1321, (Sys3Int)1322, (Sys3Int)1323);
+        int[] cgs = [899, 900, 905, 1310, 1311, 1312, 1313, 1320, 1321, 1322, 1323];
+
+        await rig.Battle.StrategyAsync();
+
+        int[] expected = (side, roll) switch
+        {
+            (1, 40) => [1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0],      // troops 50 below the limit: partial
+            (2, 40) => [1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1],      // troops at the limit: full
+            _ => new int[cgs.Length],
+        };
+        Assert.Equal(expected, cgs.Select(cg => (int)s.CgSeen[cg].CgSeen.Value));
+    }
+
     [Fact]
     public async Task Player_strategy_fails_when_the_roll_exceeds_the_difference()
     {

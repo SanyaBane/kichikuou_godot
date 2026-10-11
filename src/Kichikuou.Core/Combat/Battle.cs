@@ -52,6 +52,12 @@ public sealed partial class Battle
 
     /// <summary><c>Y 4, n:</c> (<see cref="ScriptContext.Rnd"/>).</summary>
     private Sys3Int Rnd(Sys3Int n) => Script.Rnd(n);
+
+    /// <summary>
+    /// <c>G n</c> of a battle file, drawn through the battle's own events: the engine counts the
+    /// load (<see cref="ScriptContext.CountCgLoad"/>).
+    /// </summary>
+    private void CountCgLoad(Sys3Int cg) => Script.CountCgLoad(cg);
 }
 
 /// <summary>Something the battle shows; the presentation layer decides how.</summary>

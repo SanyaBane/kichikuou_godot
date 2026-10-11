@@ -41,6 +41,7 @@ public sealed partial class Battle
             State.Tmp0021 = 1280;
         if (State.Tmp0022 > 400)
             State.Tmp0022 = 400;
+        CountCgLoad(Prov.BgCg);                                    // :2008 G Prov_BgCg
         await View.ShowAsync(new BattlefieldBackgroundEvent(Prov.BgCg));
     }
 
@@ -143,6 +144,7 @@ public sealed partial class Battle
         State.Tmp0022 = ReadPanelTable(State.RetVal + 1);
         State.Tmp0023 = ReadPanelTable(State.RetVal + 2);
         State.Tmp0024 = ReadPanelTable(State.RetVal + 3);
+        CountCgLoad(836);                                          // :2083 G 836, 40 (the panel)
         if (State.CallArg < 5)
         {
             CopyString(1, UnitString(0));

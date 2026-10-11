@@ -64,7 +64,7 @@ public abstract class CommandFile(ScriptContext script, string file, IScenarioSo
         Script.ShowAsync(new MessageEvent(Ref(line), strings.Length > 0 ? strings : null));
 
     /// <summary>A presentation-only engine command (<c>G</c>, <c>CC</c>, <c>T</c>, <c>ZC</c>, …) with its evaluated arguments.</summary>
-    protected Task EngineAsync(string command, params Sys3Int[] args) => Script.ShowAsync(new EngineEvent(command, args));
+    protected Task EngineAsync(string command, params Sys3Int[] args) => Script.EngineAsync(command, args);
 
     /// <summary>The statement at <paramref name="line"/> of this file, read from the player's files.</summary>
     protected ScriptStatement Literal(int line) =>

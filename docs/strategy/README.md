@@ -754,9 +754,21 @@ Steps:
    need a new mask rule for the agent's dumps. 15 quirk candidates (G1-G10, R1-R5); two questions for
    the owner (§5): how to count CG loads, and what `F1` past its table reads. Answered by decision 21:
    on every path; an empty string.
-1. **The `ZG` counter** (decision 21): `Glob_CgSeen[n]` + 1 for every CG n the port shows, on every
-   path (survey-gallery §4.1); tests that a scene's `G`, a window picture and the other paths count,
-   and that the counts reach page 4 and the slots (`ﾛｰﾄﾞｾｰﾌﾞ` 11).
+1. **The `ZG` counter** ✓ (2026-10-11, decision 21): `Glob_CgSeen[n]` + 1 for every CG n the port
+   shows, on every path (survey-gallery §4.1). The boot binds it (`SET.ADV:297`,
+   `ScriptContext.BindCgLoadCounter`, at where `Glob_CgSeen` points then: page 4, slot 80);
+   `ScriptContext.CountCgLoad` counts one load (`G 0` nothing, the 16-bit count wrapping, STR-43). The
+   points: every `G` of a scene or a hand-ported file (`ScriptContext.EngineAsync`, which `SceneRunner`
+   and `CommandFile` share); `WAO_SUB`'s frames (on opening, after each key wait or clear — twice for
+   the full-screen windows), portraits, centre pictures and overlays, and the centre's redraw when a
+   portrait goes; the map's tiles, markers and target mark (`M` 0, 10, 13, `WAO_MAP` 3); the battle's
+   round header, battlefield, panels, `FIGT_SEL`'s backdrop (at its entry and first mode; the
+   re-entries on each mode the player browses are not modelled), the duel scene, its slide,
+   `FIGTATTK`'s backdrop and marks, and `FIGT作`'s screens. The differential tests compare page 4 whole:
+   both sides count through the same code. The golden comparison still ignores `Glob_CgSeen`. Tests:
+   `CgLoadCounterTests` (core: the binding, wrap, windows, map), `EndToEndBattleTests`,
+   `FlowStrategyTests`, `PickerScreenTests` (a hand-ported file), `CgSeenTests` (content: the title's
+   and the prologue's loads, `ﾛｰﾄﾞｾｰﾌﾞ` 11 and 10).
 2. **`CG`** from the player's files (`IsSceneFile`) and the gallery mask (`MaskEventCgs` from `G 844`-`848`
    until the title's `G 301`); tests: entries locked and unlocked by `Glob_CgSeen`, the tabs, a
    picture's prompt (left back with G1, right replays a scene from its entry and comes back), the exit

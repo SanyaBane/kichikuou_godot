@@ -6,8 +6,8 @@ namespace Kichikuou.Core.Script;
 // (Ui_WinType, Ui_WinFrameCg), the pictures (Ui_PortraitL/R, Ui_CenterCg, Ui_CenterOverlay1-4,
 // Ui_FaceOverMap), the scratch it leaves (Tmp0021/0022 from L_00b0f whenever a picture is
 // removed) and the key waits (ops 1, 5, 11), which do nothing while no window is open. Drawing
-// (CC, CF, B3/B4, G, J0, ZC, ZM, Y 1) is the WindowEvent raised first. Callers set CallArg for
-// a picture before the call, as the script does.
+// (CC, CF, B3/B4, G, J0, ZC, ZM, Y 1) is the WindowEvent raised first; each G counts its CG
+// (CountCgLoad). Callers set CallArg for a picture before the call, as the script does.
 public sealed partial class ScriptContext
 {
     /// <summary>
@@ -52,9 +52,13 @@ public sealed partial class ScriptContext
                 if (State.Ui_WinType == 0)
                     return;
                 _ = await Input.WaitForKeyAsync();
-                return;                     // falls into L_0072b: Y 1, 1 and a redraw only
+                WaoClear();                 // falls into L_0072b
+                return;
             case 2:
-                return;                     // L_0072b (:295-306): clear the text, display only
+                if (State.Ui_WinType == 0)
+                    return;
+                WaoClear();                 // L_0072b
+                return;
             case 3:
                 State.Ui_FaceOverMap = 1;   // L_00773 (:307-309)
                 return;
@@ -68,6 +72,10 @@ public sealed partial class ScriptContext
                     return;
                 Sys3Int key = await Input.WaitForKeyAsync();
                 State.RetVal = key;
+                if (State.Ui_WaoOp == 5)
+                    WaoClear();             // @L_0072b
+                else
+                    CountCgLoad(State.Ui_WinFrameCg);   // :517-518 Y 1, 1; G Ui_WinFrameCg, 40
                 return;
             case 10:
                 // L_00cb9 (:504-509) — close the dialog box.
@@ -83,6 +91,7 @@ public sealed partial class ScriptContext
             case 131:
                 // L_0050c (:216-233) — the full-screen window clears every picture.
                 State.Ui_WinFrameCg = 815;
+                CountCgLoad(State.Ui_WinFrameCg);       // :219 G Ui_WinFrameCg (no sprite key)
                 State.Ui_PortraitL = 0;
                 State.Ui_PortraitR = 0;
                 State.Ui_CenterCg = 0;
@@ -116,6 +125,7 @@ public sealed partial class ScriptContext
                 // L_00787 (:313-320) — left portrait CallArg, replacing the one shown.
                 if (State.Ui_PortraitL != 0)
                     WaoRemovePortraitL();
+                CountCgLoad(State.CallArg);             // :318 G CallArg, 40
                 State.Ui_PortraitL = State.CallArg;
                 return;
             case 312:
@@ -125,6 +135,7 @@ public sealed partial class ScriptContext
                 // L_008b1 (:352-359) — right portrait.
                 if (State.Ui_PortraitR != 0)
                     WaoRemovePortraitR();
+                CountCgLoad(State.CallArg);             // :357 G CallArg, 40
                 State.Ui_PortraitR = State.CallArg;
                 return;
             case 322:
@@ -134,6 +145,7 @@ public sealed partial class ScriptContext
                 // L_009e7 (:391-402) — centre picture CallArg without overlays.
                 if (State.Ui_CenterCg != 0)
                     WaoRemoveCenter();
+                CountCgLoad(State.CallArg);             // :396 G CallArg
                 State.Ui_CenterCg = State.CallArg;
                 State.Ui_CenterOverlay1 = 0;
                 State.Ui_CenterOverlay2 = 0;
@@ -147,6 +159,11 @@ public sealed partial class ScriptContext
                 // L_00a25 (:403-422) — centre picture CallArg with overlays Tmp0001-0004.
                 if (State.Ui_CenterCg != 0)
                     WaoRemoveCenter();
+                CountCgLoad(State.CallArg);             // :408-416 G CallArg, then each overlay (G 0 loads nothing)
+                CountCgLoad(State.Tmp0001);
+                CountCgLoad(State.Tmp0002);
+                CountCgLoad(State.Tmp0003);
+                CountCgLoad(State.Tmp0004);
                 State.Ui_CenterCg = State.CallArg;
                 State.Ui_CenterOverlay1 = State.Tmp0001;
                 State.Ui_CenterOverlay2 = State.Tmp0002;
@@ -159,17 +176,33 @@ public sealed partial class ScriptContext
         }
     }
 
-    /// <summary>Opens a framed window: <c>Ui_WinFrameCg := frame</c>, the box (display only), <c>Ui_WinType := type</c>.</summary>
+    /// <summary>
+    /// Opens a framed window: <c>Ui_WinFrameCg := frame</c> and its <c>G Ui_WinFrameCg, 40</c>, the
+    /// box (display only), <c>Ui_WinType := type</c>.
+    /// </summary>
     private void WaoOpen(Sys3Int frame, Sys3Int type)
     {
         State.Ui_WinFrameCg = frame;
+        CountCgLoad(State.Ui_WinFrameCg);
         State.Ui_WinType = type;
+    }
+
+    /// <summary>
+    /// <c>L_0072b</c> (<c>WAO_SUB.ADV:295-306</c>, a window open): <c>Y 1, 1</c> clears the text and
+    /// the frame is drawn again — twice for the full-screen windows (types 31-39).
+    /// </summary>
+    private void WaoClear()
+    {
+        if (State.Ui_WinType > 30 && State.Ui_WinType < 40)
+            CountCgLoad(State.Ui_WinFrameCg);   // :302-304 G Ui_WinFrameCg
+        CountCgLoad(State.Ui_WinFrameCg);       // :305 G Ui_WinFrameCg, 40
     }
 
     /// <summary><c>L_007b1</c> (<c>WAO_SUB.ADV:321-351</c>): restores the screen under the left portrait.</summary>
     private void WaoRemovePortraitL()
     {
         WaoMapCorner();
+        WaoRedrawCenter();
         State.Ui_PortraitL = 0;
     }
 
@@ -177,7 +210,27 @@ public sealed partial class ScriptContext
     private void WaoRemovePortraitR()
     {
         WaoMapCorner();
+        WaoRedrawCenter();
         State.Ui_PortraitR = 0;
+    }
+
+    /// <summary>
+    /// <c>WAO_SUB.ADV:329-348</c> / <c>:368-387</c>: a portrait's removal draws the centre picture
+    /// again when one is shown, with each overlay that is set.
+    /// </summary>
+    private void WaoRedrawCenter()
+    {
+        if (State.Ui_CenterCg == 0)
+            return;
+        CountCgLoad(State.Ui_CenterCg);
+        if (State.Ui_CenterOverlay1 != 0)
+            CountCgLoad(State.Ui_CenterOverlay1);
+        if (State.Ui_CenterOverlay2 != 0)
+            CountCgLoad(State.Ui_CenterOverlay2);
+        if (State.Ui_CenterOverlay3 != 0)
+            CountCgLoad(State.Ui_CenterOverlay3);
+        if (State.Ui_CenterOverlay4 != 0)
+            CountCgLoad(State.Ui_CenterOverlay4);
     }
 
     /// <summary><c>L_00a9b</c> (<c>WAO_SUB.ADV:423-436</c>): restores the screen under the centre picture.</summary>
