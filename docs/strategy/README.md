@@ -180,6 +180,12 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     the requests slip, Load, New game) and the debug starts From 2-4; the gallery (`CG`) and the music
     room (`MMODE`) later. (4) `ｽﾀMENU` replaces our own title (decision 10); the development switches
     and the battle-capture viewer stay reachable.
+20. **Milestone 6 closes as it is; milestone 7 is the gallery and the music room** (2026-10-11): no
+    capture of the endings, the title or Fortune Check, as decisions 15-18 had it for the stages. Of
+    the agent's four proposals (the gallery and the music room; the put-off captures; the Godot
+    interface; the register's optional fixes) the owner chose the first, which the agent recommended:
+    `CG` (the gallery) and `MMODE` (the music room), which decision 19 put off — after them no file the
+    game reaches is left unrun. A survey first. See "Milestone 7" below.
 
 ## Milestone 1 — the prologue
 
@@ -710,5 +716,23 @@ All four steps are done: every ending plays `OVER` from the player's files and r
 the fates on page 4, `ｽﾀMENU` is the title with its buttons (New game, Load, Fortune Check, Alice's
 Mansion, `Gｻｲﾄｳ`, the requests slip) and the debug starts, and Godot goes back to the title after an
 ending. Left by decision 19: the gallery (`CG`) and the music room (`MMODE`), which go to the unported
-files' hooks (Godot: a notice, and the title is drawn again). How to close the milestone is the
-owner's call.
+files' hooks (Godot: a notice, and the title is drawn again).
+
+**Milestone 6 is closed** (2026-10-11, decision 20): no capture of the frame is recorded; the three
+files run from the player's files under content tests (`OverTests`, `TitleTests`, `FortuneCheckTests`,
+the presenter's).
+
+## Milestone 7 — the gallery and the music room (`CG`, `MMODE`)
+
+Decision 20. The last files the game reaches that the port does not run: `CG.ADV` (3977 lines, the
+gallery: title button 7 with a clear, `ｽﾀMENU.ADV:577-581`; it replays scenes by entering their files
+at entry 300, EVT-07) and `MMODE.ADV` (560 lines, the music room: button 1 with a clear,
+`ｽﾀMENU.ADV:272-274`; STR-37). Both are called only from the title (and from the dead `TEST.ADV`).
+Decision 19's way is the default (from the player's files through `SceneRunner`); the survey says
+what each needs.
+
+Steps:
+
+0. **Survey**: both files read as programs (the statements `SceneRunner` lacks), what they draw and
+   play, what they write (EVT-07: whether a replay can change a later game's state), the scenes the
+   gallery enters at 300 and whether each runs from there, quirk candidates; questions for the owner.
