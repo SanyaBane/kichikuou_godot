@@ -22,8 +22,9 @@ GPL-2.0-or-later, and the player brings their own copy of the game. What a relea
   the developer's extract (`_extract`: the decompile, CGs as PNG, the sounds). An import on the
   first launch into `user://`: the `.ALD` archives read directly (the PMS decoder exists,
   `Content/Graphics/Pms.cs`), the scenario decompiled by a bundled `xsys35dc` pinned to 1.13 (the
-  parser knows only its output; GPL-2, shipped with its source) or, later, by our own loader of the
-  `.SCO` bytecode.
+  parser knows only its output; GPL-2, shipped with its source) or by our own loader of the `.SCO`
+  bytecode. Android (below) cannot run a bundled native tool, so the import has to be C# whole: our
+  own `.SCO` loader, or `xsys35dc` translated to C# (GPL-2, a header naming its origin).
 - **Check the game's version** — *agent*: the port reads only the English translation v1.0; check the
   archives' hashes and refuse another version clearly instead of failing somewhere in the parser.
 - **A folder picker** for the game folder — *agent*. Today only `user://settings.cfg` or the field in
@@ -33,9 +34,22 @@ GPL-2.0-or-later, and the player brings their own copy of the game. What a relea
   the switches (`--auto`, `--watch`, `--ending`, …).
 - **Windows export** — *agent*: commit `export_presets.cfg` (git ignores it today); export templates
   4.7.2 mono.
-- **Other platforms** — *owner* (whether at all), then *agent*: the font MS Gothic is read from
-  `C:\Windows\Fonts`; elsewhere Godot's fallback font changes the text's layout, so a free font with
-  close metrics would be bundled.
+- **Android** — *agent* (the owner wants it, 2026-10-11): our own `.apk`, not Google Play. Godot 4.7
+  exports C# to Android as experimental and needs .NET 9 or later (the project is on `net10.0`). It
+  needs the C# import above (the player copies the game's files to the device; how a Godot 4.7 app
+  reaches them under Android's scoped storage is to be checked), a bundled font (below) and a touch
+  interface: the original is played with a mouse — the right button cancels (menus, the map, the empty
+  dungeon menu, All Data's scale menu), the pickers' highlight and info panel follow the hover, keys
+  drive the message skip and xsystem35's menu, and a menu line is 16 of 400 pixels (~4 mm on a 6.5"
+  phone). The touch interface belongs with our own interface (Interface, below). Unknown until
+  measured: the speed of the engine surface's per-pixel C# drawing on a phone. A cheap spike first:
+  the current build on a device with the extract copied by hand, a tap as a left click.
+- **A bundled font** — *agent*: `godot/Battles/GodotGlyphRenderer.cs` reads MS Gothic from
+  `C:\Windows\Fonts`, which cannot be shipped and is missing outside Windows (Godot's fallback font
+  stands in). The layout does not depend on the font — every character takes a fixed cell
+  (`MessageWriter.CellWidth`: half the size for a half-width character), the font only draws the
+  glyph inside it — so a free font whose Latin is half-width (IPAGothic, Noto Sans Mono CJK, …)
+  keeps the original layout on every platform.
 - **CI** — *owner* (a remote first), then *agent*: build, core tests, export. Without the game data
   some content tests fail instead of skipping; they must skip.
 - **Rights** — *owner*: the license covers only our own work; the rule code ports AliceSoft's
