@@ -3,47 +3,108 @@ using Kichikuou.Content.Screen;
 
 namespace Kichikuou.Game.Battles;
 
+/// <summary>The fonts the surface's text can be drawn in (Option → Font, docs/window-menu.md).</summary>
+public enum GameFont
+{
+    /// <summary>MS Gothic, face 0 of <c>msgothic.ttc</c>: the original's font (docs/assets.md §6); Windows only.</summary>
+    MsGothic,
+
+    /// <summary>BIZ UDGothic (SIL OFL 1.1, <c>godot/fonts</c>): bundled, the same cells, on every platform.</summary>
+    BizUdGothic,
+}
+
 /// <summary>
-/// The game font for the emulated surface: MS Gothic (face 0 of <c>msgothic.ttc</c>), bold, as
-/// xsystem35 uses on Windows (docs/assets.md §6), rasterised by Godot's TextServer at the
-/// surface's resolution. Falls back to Godot's default font when MS Gothic is missing. Glyph
-/// bitmaps are read back from the TextServer's cache texture and kept.
+/// The game font for the emulated surface, bold, as xsystem35 uses it (docs/assets.md §6):
+/// MS Gothic where it is installed, or the bundled BIZ UDGothic — whichever Option → Font chose —
+/// rasterised by Godot's TextServer at the surface's resolution. Every character takes a fixed
+/// cell (<see cref="MessageWriter.CellWidth"/>), so the font changes how the glyphs look, never the
+/// layout. Glyph bitmaps are read back from the TextServer's cache texture and kept.
 /// </summary>
 public sealed class GodotGlyphRenderer : IGlyphRenderer, IDisposable
 {
-    private const string MsGothic = @"C:\Windows\Fonts\msgothic.ttc";
+    private const string MsGothicPath = @"C:\Windows\Fonts\msgothic.ttc";
+
+    /// <summary>Kept as is in an export (its <c>.import</c> says <c>keep</c>), so <c>FileAccess</c> reads it there too.</summary>
+    private const string BizUdGothicPath = "res://fonts/BIZUDGothic-Regular.ttf";
 
     /// <summary>Synthetic bold strength (TextServer <c>embolden</c>), standing in for GDI's bold.</summary>
     private const double Embolden = 0.6;
 
     private readonly TextServer _ts = TextServerManager.GetPrimaryInterface();
-    private readonly Rid _font;
-    private readonly bool _ownsFont;
     private readonly Dictionary<(char, int), Glyph?> _cache = [];
+    private Rid _font;
 
-    public GodotGlyphRenderer()
+    public GodotGlyphRenderer() => Font = Chosen;
+
+    /// <summary>Whether MS Gothic is installed (on a Windows without the Japanese fonts it is not).</summary>
+    public static bool MsGothicInstalled => System.IO.File.Exists(MsGothicPath);
+
+    /// <summary>
+    /// The font the player chose: <c>--font ms-gothic|biz-ud-gothic</c> for the launch (development),
+    /// else <c>[display] font</c> in <c>user://settings.cfg</c>, else MS Gothic where installed.
+    /// </summary>
+    public static GameFont Chosen
     {
-        if (System.IO.File.Exists(MsGothic))
+        get
         {
-            _font = _ts.CreateFont();
-            _ownsFont = true;
-            _ts.FontSetData(_font, System.IO.File.ReadAllBytes(MsGothic));
-            _ts.FontSetFaceIndex(_font, 0);
-            FaceName = "MS Gothic";
+            var args = OS.GetCmdlineUserArgs();
+            int at = Array.IndexOf(args, "--font");
+            if (at >= 0 && at + 1 < args.Length && Parse(args[at + 1]) is { } given)
+                return given;
+            var config = new ConfigFile();
+            if (config.Load(GameData.SettingsPath) == Error.Ok && Parse((string)config.GetValue("display", "font", "")) is { } saved)
+                return saved;
+            return MsGothicInstalled ? GameFont.MsGothic : GameFont.BizUdGothic;
         }
-        else
+        set
         {
-            _font = ThemeDB.FallbackFont.GetRids()[0];
-            FaceName = "fallback";
+            var config = new ConfigFile();
+            config.Load(GameData.SettingsPath);
+            config.SetValue("display", "font", value == GameFont.MsGothic ? "ms-gothic" : "biz-ud-gothic");
+            config.Save(GameData.SettingsPath);
         }
-        _ts.FontSetAntialiasing(_font, TextServer.FontAntialiasing.Gray);
-        _ts.FontSetHinting(_font, TextServer.Hinting.Light);
-        _ts.FontSetDisableEmbeddedBitmaps(_font, true);
-        _ts.FontSetEmbolden(_font, Embolden);
+    }
+
+    private static GameFont? Parse(string name) => name switch
+    {
+        "ms-gothic" => GameFont.MsGothic,
+        "biz-ud-gothic" => GameFont.BizUdGothic,
+        _ => null,
+    };
+
+    /// <summary>
+    /// The font in use; MS Gothic where it is not installed is BIZ UDGothic. Setting it drops the
+    /// glyphs rendered so far: what is drawn from now on uses the new font.
+    /// </summary>
+    public GameFont Font
+    {
+        get;
+        set
+        {
+            if (value == GameFont.MsGothic && !MsGothicInstalled)
+                value = GameFont.BizUdGothic;
+            byte[] data = value == GameFont.MsGothic
+                ? System.IO.File.ReadAllBytes(MsGothicPath)
+                : Godot.FileAccess.GetFileAsBytes(BizUdGothicPath);
+            if (data.Length == 0)
+                throw new InvalidOperationException($"The bundled font {BizUdGothicPath} cannot be read.");
+            var font = _ts.CreateFont();
+            _ts.FontSetData(font, data);
+            _ts.FontSetFaceIndex(font, 0);
+            _ts.FontSetAntialiasing(font, TextServer.FontAntialiasing.Gray);
+            _ts.FontSetHinting(font, TextServer.Hinting.Light);
+            _ts.FontSetDisableEmbeddedBitmaps(font, true);
+            _ts.FontSetEmbolden(font, Embolden);
+            if (_font.IsValid)
+                _ts.FreeRid(_font);
+            _font = font;
+            _cache.Clear();
+            field = value;
+        }
     }
 
     /// <summary>Which font is in use.</summary>
-    public string FaceName { get; }
+    public string FaceName => Font == GameFont.MsGothic ? "MS Gothic" : "BIZ UDGothic";
 
     public Glyph? Render(char c, int pixelSize)
     {
@@ -82,7 +143,7 @@ public sealed class GodotGlyphRenderer : IGlyphRenderer, IDisposable
 
     public void Dispose()
     {
-        if (_ownsFont)
+        if (_font.IsValid)
             _ts.FreeRid(_font);
     }
 }

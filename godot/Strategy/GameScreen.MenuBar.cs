@@ -10,7 +10,7 @@ namespace Kichikuou.Game.Strategy;
 
 // xsystem35's window menu bar over the game (docs/window-menu.md): File (Save Screenshot, Restart,
 // Exit), Screen (Window, Fullscreen), Option (Mouse Movement as xsystem35's; ours: Skip Unseen
-// Text, MsgSkip Speeds Up Fades, Forget Seen Messages),
+// Text, MsgSkip Speeds Up Fades, Forget Seen Messages, the font),
 // MsgSkip[off|on]; hot keys F1 and F4 as xsystem35's, Alt+R; and ours for development, Debug
 // (Battle Captures: the capture viewer, which our own title had until ｽﾀMENU replaced it).
 public partial class GameScreen
@@ -45,7 +45,9 @@ public partial class GameScreen
             ("Mouse Movement", ToggleMouseMovement),
             ("Skip Unseen Text", ToggleSkipUnseen),
             ("MsgSkip Speeds Up Fades", ToggleFastFades),
-            ("Forget Seen Messages...", ConfirmForgetSeen));
+            ("Forget Seen Messages...", ConfirmForgetSeen),
+            ("Font: MS Gothic", () => SetFont(GameFont.MsGothic)),
+            ("Font: BIZ UDGothic", () => SetFont(GameFont.BizUdGothic)));
         options = option.GetPopup();
         options.SetItemAsCheckable(0, true);
         options.SetItemChecked(0, EngineState.MouseMovement);
@@ -53,6 +55,10 @@ public partial class GameScreen
         options.SetItemChecked(1, _skip.SkipUnseen);
         options.SetItemAsCheckable(2, true);
         options.SetItemChecked(2, _skip.FastFades);
+        options.SetItemAsRadioCheckable(4, true);
+        options.SetItemAsRadioCheckable(5, true);
+        options.SetItemDisabled(4, !GodotGlyphRenderer.MsGothicInstalled);
+        CheckFont();
         options.AddThemeColorOverride("font_disabled_color", new Color(0.55f, 0.55f, 0.55f));
         void ToggleMouseMovement()
         {
@@ -68,6 +74,20 @@ public partial class GameScreen
         {
             _skip.FastFades = !_skip.FastFades;
             options.SetItemChecked(2, _skip.FastFades);
+        }
+        // Saved for later launches; the windows, menus and pickers are drawn again at once, text the
+        // script printed on the stage keeps its font until it is drawn again.
+        void SetFont(GameFont font)
+        {
+            GodotGlyphRenderer.Chosen = font;
+            _glyphs.Font = font;
+            CheckFont();
+            _presenter.Invalidate();
+        }
+        void CheckFont()
+        {
+            options.SetItemChecked(4, _glyphs.Font == GameFont.MsGothic);
+            options.SetItemChecked(5, _glyphs.Font == GameFont.BizUdGothic);
         }
         row.AddChild(option);
         _skipItem = new Button();

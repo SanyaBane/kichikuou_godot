@@ -200,7 +200,8 @@ the project is GPL-2.0-or-later (`LICENSE`; README, "License").
   Restart, MsgSkip on `Core/Script/MessageSkip` (it skips the opening whole, `WholeScenes`, `Core/Script/EngineTimer`),
   docs/window-menu.md, plus our Debug menu; `Strategy/EngineState` keeps
   the random generator and the message skip for the whole launch); `Battles/CaptureList` (Debug → Battle Captures) picks a capture, `Battles/BattleScreen` shows its battle;
-  `GodotGlyphRenderer` (MS Gothic via TextServer), `BattleAudio`; `Screens` switches screens. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
+  `GodotGlyphRenderer` (TextServer; MS Gothic or the bundled BIZ UDGothic in `godot/fonts`, Option →
+  Font, `--font ms-gothic|biz-ud-gothic` for one launch), `BattleAudio`; `Screens` switches screens. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
 - `tools/analysis/` — Python scripts for reading the decompiled scenario; `tools/codegen/` —
   generators for committed C# sources; `tools/golden/` — harness launcher and page classes.
 - `docs/` — brief, spike findings, variable dictionary; `window-menu.md` records

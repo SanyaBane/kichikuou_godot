@@ -11,7 +11,8 @@ namespace Kichikuou.Game;
 /// </summary>
 public static class GameData
 {
-    private const string SettingsPath = "user://settings.cfg";
+    /// <summary>The player's settings: these folders, and the font (<see cref="Battles.GodotGlyphRenderer.Chosen"/>).</summary>
+    internal const string SettingsPath = "user://settings.cfg";
     private static string DefaultExtract => LocalPaths.ExtractDirectory ?? "";
 
     /// <summary>The folder of extracted data.</summary>

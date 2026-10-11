@@ -65,6 +65,8 @@ reproduces, and every line of text the port shows is theirs.
 - **.NET** and **C#**, **xUnit.net** for the tests, **Python** for the analysis tools, and
   **MSYS2**, **CMake** and **Ninja** to build the harness.
 - **MS Gothic** (Microsoft), the game's font. It is read from the Windows fonts and not bundled.
+- **[BIZ UDGothic](https://github.com/googlefonts/morisawa-biz-ud-gothic)** by **Morisawa** and
+  **Type Bank**, the bundled font, under the SIL Open Font License 1.1 (`godot/fonts/OFL.txt`).
 - **Claude Code** (Anthropic), the AI agent that writes most of the code under the project
   owner's direction.
 

@@ -77,7 +77,7 @@ xsystem35's; both skip modes, as the owner's desktop xsystem35 (everything) by d
 web build (seen only) by an option.
 
 - A light bar above the game screen: **File** (Save Screenshot, Restart, Exit), **Screen**
-  (Window, Fullscreen), **Option** (ours, see MsgSkip), **MsgSkip[off]** (toggles, `[on]` while
+  (Window, Fullscreen), **Option** (ours, see MsgSkip and Font), **MsgSkip[off]** (toggles, `[on]` while
   on, greyed out while not allowed), and ours for development at the end, **Debug** (Battle
   Captures...: asks first, then the battle-capture viewer, which our own title had until `ｽﾀMENU`
   replaced it, 2026-10-11). Not done: Integer Scaling, Auto Copy Text to Clipboard
@@ -87,6 +87,14 @@ web build (seen only) by an option.
   menu) glides the system pointer there as `ags_setCursorLocation` does — seven points on its
   ease-out curve 7 ms apart, then the target (`Content/Screen/PointerGlide`); unchecked, only the
   position the script reads moves and the script waits 50 ms. `--auto` never moves the pointer.
+- **Option → Font: MS Gothic / Font: BIZ UDGothic** (ours, owner's request 2026-10-11; one is
+  checked; saved in `user://settings.cfg`, `[display] font`): the font of the game's text. MS
+  Gothic is the original's (docs/assets.md §6), read from the Windows fonts and greyed out where
+  it is not installed; BIZ UDGothic (Morisawa, SIL OFL 1.1) is bundled in `godot/fonts` with its
+  license. By default MS Gothic where installed, else BIZ UDGothic. Every character takes a fixed
+  cell, so the layout is the same in both. A change shows at once in the message windows, menus
+  and pickers; text the script printed on the stage keeps its font until drawn again.
+  `--font ms-gothic|biz-ud-gothic` picks one for the launch without saving it (development).
 - Hot keys: **F1** MsgSkip and **F4** full screen (on release, as xsystem35's `event.c`), and
   **Alt+R** Restart (ours, after System 3.9's). Backspace still returns to the title at once,
   without asking (development).
