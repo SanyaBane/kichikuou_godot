@@ -240,8 +240,9 @@ she joins).
 
 Nothing between `:2650` and `:2774` or `:2777` and `:3723` reads `EndingId` (text, windows, `M` op 0
 only). For context only (`OVER` is `GameEnd`): `OVER:1-5` counts a clear for 9, 10, 11, 13;
-`:15-17` marks 9; 11 and 13 share the long epilogue (`:35`, `:47`); `F_Sill_Fate` and
-`F_Ending_LiaRoute` pick epilogues (`OVER:207-273`).
+`:15-17` turns ending 9's fortunes off; 11 and 13 share the jingle and the staff roll (`:35`, `:47`);
+`F_Sill_Fate` and `F_Ending_LiaRoute` pick the roster's lines for Sill, Lia and Maris
+(`OVER:203-273`) — corrected by [survey-w4.md](survey-w4.md) §2.3.
 
 **Sill's two tests differ**: Create Chaos and her 6F scene need status **1** (`:1064`, `:1768`) —
 with Rance, not left in a garrison (status 2) or spent this week; the way back needs **≠ 0**

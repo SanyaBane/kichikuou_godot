@@ -611,7 +611,12 @@ ported (G0, decision 6).
 
 Steps:
 
-0. **Survey** of `OVER`, `ｽﾀMENU` and `HAPPY_C`: what each ending records (the clears, page 4) and
-   shows, the epilogues and the state they read, the menu's paths and stage starts, what is rules and
-   what is presentation, the quirk candidates, and a proposed order (as stage-4-sweep and
-   survey-ikami did).
+0. **Survey** ✓ (2026-10-11): [survey-w4.md](survey-w4.md). `OVER` has no per-ending epilogue: the
+   ending's CG and jingle, a staff roll for 7, 8, 11, 13, then the Completion Report — 66 characters'
+   fortunes and misfortunes merged into page 4 (`Glob_Fate`, 0/1/10/100 across plays) after the clear
+   count (5, 8, 9, 10, 11, 13), `ﾛｰﾄﾞｾｰﾌﾞ` 11 and `ZZ0`. `ｽﾀMENU` is a mouse-driven title of 12 buttons
+   unlocked by the clears (two by rolls), with New game and Load (ported), `HAPPY_C` (a viewer of the
+   roster), the gallery, the music room, Alice's Mansion, `Gｻｲﾄｳ`, a requests slip and three debug
+   starts. 20 quirk candidates (O1-O9, M1-M7, H1-H4). Four questions for the owner (§6): how the
+   frame runs (from the player's files or hand-ported rules under our own screens), quit after `ZZ0`
+   or back to the title, the scope (gallery, music room, debug starts), our own title or `ｽﾀMENU`.
