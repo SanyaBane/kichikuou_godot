@@ -19,9 +19,9 @@ namespace Kichikuou.Core.Strategy;
 /// Monster General (commander 86) given its name back. A province Kayblis's armies reach that is
 /// neither his nor the player's is taken without a battle (<see cref="CaptureAsync"/>), with
 /// Helman's and Zeth's collapses. The generals' units (<c>:729-1328</c>, step 2) are in
-/// <c>KayblisTurn.Generals.cs</c>; Piar's unit, Kayblis's army and the Assault Leaders
-/// (<c>:326-624</c>, <c>:670-728</c>, <c>:1329-1508</c>) are ported in later steps of milestone 4 and
-/// fail until then. The army names (<c>MS 10</c>) and Monster General's name (<c>MS 4</c>) are read
+/// <c>KayblisTurn.Generals.cs</c>, Piar's unit (<c>:670-728</c>, step 3) in
+/// <c>KayblisTurn.Armies.cs</c>; Kayblis's army and the Assault Leaders (<c>:1329-1508</c>,
+/// <c>:326-624</c>) are ported in later steps of milestone 4 and fail until then. The army names (<c>MS 10</c>) and Monster General's name (<c>MS 4</c>) are read
 /// from the player's files through <paramref name="scenario"/>.
 /// </summary>
 public sealed partial class KayblisTurn(ScriptContext script, IScenarioSource? scenario = null)
@@ -505,12 +505,6 @@ public sealed partial class KayblisTurn(ScriptContext script, IScenarioSource? s
         await Script.MapCallAsync(4);
         // QUIRK: NAT-01 — \0: before @L_02950: one province only.
     }
-
-    /// <summary><c>Tｹｲﾌﾞﾘｽ.ADV:670-728</c> (<c>L_010af</c>) — Piar's unit (milestone 4 step 3).</summary>
-    private Task PiarAsync() => throw NotPorted(670, "Piar's unit (L_010af)", "N3, milestone 4 step 3");
-
-    /// <summary><c>Tｹｲﾌﾞﾘｽ.ADV:1329-1508</c> (<c>L_02038</c>) — Kayblis's army at war (milestone 4 step 3).</summary>
-    private Task KayblisArmyAsync() => throw NotPorted(1329, "Kayblis's army (L_02038)", "N3, milestone 4 step 3");
 
     /// <summary>
     /// <c>Tｹｲﾌﾞﾘｽ.ADV:326-491</c> / <c>:492-624</c> (<c>L_00881</c> / <c>L_00c91</c>) — an Assault

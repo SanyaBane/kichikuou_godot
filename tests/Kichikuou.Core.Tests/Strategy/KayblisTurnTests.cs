@@ -11,7 +11,7 @@ namespace Kichikuou.Core.Tests.Strategy;
 /// Kayblis's turn <c>Tｹｲﾌﾞﾘｽ</c> (<see cref="KayblisTurn"/>, milestone 4 step 1: the frame — week S,
 /// the recoveries, the event chain, the dispatch, the Grief Valley (89) guards, the capture with
 /// Helman's and Zeth's collapses; step 2: the units of Babolat, Redeye, Kite, Galtia and
-/// Kesselring). Also compared with the decompile on random states (Content tests,
+/// Kesselring; step 3: Piar's unit). Also compared with the decompile on random states (Content tests,
 /// <c>NationTurnDifferentialTests</c>).
 /// </summary>
 public class KayblisTurnTests
@@ -638,11 +638,71 @@ public class KayblisTurnTests
         Assert.Equal([("Gﾊﾟｲｱｰﾙ.ADV", 1), ("Gｹｲﾌﾞﾘｽ.ADV", 3)], rig.Story.Calls);
         Is(1, rig.State.Ev_WeeklyEventDone);
 
-        // Piar's arc under way: her unit marches (step 3).
-        rig = new TurnRig(2, 5);
-        rig.State.F_Piar_State = 2;
-        var e = await Assert.ThrowsAsync<NotSupportedException>(rig.RunAsync);
-        Assert.Contains("Tｹｲﾌﾞﾘｽ.ADV:670", e.Message);
+    }
+
+    /// <summary>Piar's arc at <paramref name="state"/>, PG-7 (136) alive, Oaks (6) and Nothing (75) the player's.</summary>
+    private static TurnRig PiarRig(int state, params int[] draws)
+    {
+        var rig = new TurnRig(draws);
+        rig.State.F_Piar_State = (Sys3Int)state;
+        rig.State.Cmdrs[136].Status = 1;
+        rig.State.Provs[6].Owner = 1;
+        rig.State.Provs[75].Owner = 1;
+        return rig;
+    }
+
+    [Fact]
+    public async Task Piar_s_unit_draws_a_province_until_it_is_the_player_s_or_gives_up()
+    {
+        // Ys (5), nobody's: missed, a draw in ten (not 1), drawn again: Oaks (6).
+        var rig = PiarRig(2, 2, 5, 5, 3, 6);
+        int foughtAt = 0, party = 0;
+        rig.Story.OnCall = (file, _) =>
+        {
+            if (file != "FIGT_B.ADV")
+                return;
+            foughtAt = rig.State.Prov_Cur.Value;
+            party = rig.State.Bt_EnemyParty1.Value;
+        };
+
+        await rig.RunAsync();
+
+        Assert.Equal([("Gﾊﾟｲｱｰﾙ.ADV", 2), ("FIGT_B.ADV", 2)], rig.Story.Calls);
+        Assert.Equal([3, 5, 77, 10, 77], rig.Random.Draws);
+        Assert.Equal(6, foughtAt);
+        Assert.Equal(136, party);                               // PG-7
+        Is(3, rig.State.F_Piar_State);                          // 2 to 3
+
+        // QUIRK: NAT-15 — Nothing (75) is a miss even when the player's; a 1 gives up.
+        rig = PiarRig(2, 2, 5, 75, 1);
+        await rig.RunAsync();
+        Assert.Empty(rig.Story.Calls);
+        Assert.Equal([3, 5, 77, 10], rig.Random.Draws);
+        Is(2, rig.State.F_Piar_State);
+    }
+
+    [Fact]
+    public async Task After_Piar_s_battle_Miki_brings_the_assault_or_her_state_moves_on()
+    {
+        var rig = PiarRig(5, 2, 5, 6);
+        rig.Story.OnCall = (file, _) =>
+        {
+            if (file == "FIGT_B.ADV")
+                rig.State.Bt_PlayerParty3 = 32;                 // Miki among the defenders
+        };
+        await rig.RunAsync();
+        Assert.Equal([("Gﾊﾟｲｱｰﾙ.ADV", 2), ("FIGT_B.ADV", 2), ("Gﾊﾟｲｱｰﾙ.ADV", 6)], rig.Story.Calls);
+
+        foreach (var (state, scene, after) in new[] { (5, 5, 5), (4, 0, 5), (3, 4, 3), (1, 3, 1) })
+        {
+            rig = PiarRig(state, 2, 5, 6);
+            await rig.RunAsync();
+            var expected = new List<(string, int)> { ("Gﾊﾟｲｱｰﾙ.ADV", 2), ("FIGT_B.ADV", 2) };
+            if (scene != 0)
+                expected.Add(("Gﾊﾟｲｱｰﾙ.ADV", scene));
+            Assert.Equal(expected, rig.Story.Calls);
+            Is(after, rig.State.F_Piar_State);                  // the scenes set the state themselves
+        }
     }
 
     [Fact]

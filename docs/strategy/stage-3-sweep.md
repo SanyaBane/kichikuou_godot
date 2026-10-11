@@ -305,7 +305,7 @@ attack every week.
 
 | What | Lines | Reached |
 |---|---|---|
-| `Tｹｲﾌﾞﾘｽ` | 1855 | every week from S (`MAIN:594-629`) — main path. The frame (step 1, 2026-10-11, `Strategy/KayblisTurn`) and the generals' units `:729-1328` (step 2, 2026-10-11, `Strategy/KayblisTurn.Generals.cs`) are ported; Piar's unit `:670-728`, Kayblis's army `:1329-1508` and the Assault Leaders `:326-624` stop the run ("not ported yet") until steps 3 and 5 |
+| `Tｹｲﾌﾞﾘｽ` | 1855 | every week from S (`MAIN:594-629`) — main path. The frame (step 1, 2026-10-11, `Strategy/KayblisTurn`) and the generals' units `:729-1328` (step 2, 2026-10-11, `Strategy/KayblisTurn.Generals.cs`) and Piar's unit `:670-728` (step 3, part 1, `Strategy/KayblisTurn.Armies.cs`) are ported; Kayblis's army `:1329-1508` and the Assault Leaders `:326-624` stop the run ("not ported yet") until steps 3 and 5 |
 | `FIGTATTK` | 395 | from `FIGT表示`, a scene: its entries 2-7, 11-14 and 26 call it (24 sites); at stage 3 `Gｼﾙｷｨ` 8 (`FIGT表示` 26, once, above) and `Gﾌﾘｰｸ` 4 (`FIGT表示` 2); already at stage 2 `Iﾏｼﾞﾝ` 12, 14, 16, 18 (`FIGT表示` 3, 5, 6 and 7, 14) and `Gﾊﾟｯﾄﾝ` 2 (4). Was neither a scene file (`SceneRunner.IsSceneFile`) nor in `StrategyRules.PortedFiles`, so `ScriptContext.CallAsync` sent it to the unported hooks (Godot: skipped with a notice; `--auto`: stops), losing its one `Y 4, 2` per call (`FIGTATTK.ADV:234`). **Routed 2026-10-11** to the battle's port of the file (`Battle.PlayExchangeAnimationAsync`), checked against the file on 1900 random runs of `FIGT表示`; `ScenarioProgramSweepTests` now checks that every file the scenes call runs somewhere |
 | `OVER` | 2210 | ending 8 and every other ending; `GameEnd` until W4 |
 | `Tﾙﾄﾞﾗ` | 205 | the week stage 4 begins — after the milestone |
@@ -313,9 +313,9 @@ attack every week.
 Every scene stage 3 reaches runs from the player's files; their rule calls are `FIGT_A`/`FIGT_B`
 (`Gｹｲﾌﾞﾘｽ` 3, `Gｹｯｾﾙ` 2's duel and battle `:2420-2437`/`:2951-2963`, `Gｻｲｾﾞﾙ` 12, `Gｻﾃﾗ` 20), `死亡捕獲`,
 `Sﾌﾞﾀｲ` and `FIGT表示`; none calls a `T*` file. Since step 1 `Tｹｲﾌﾞﾘｽ` is routed (it was skipped with a notice in
-interactive Godot before, so stage 3 had no Kayblis phase at all). Since step 2 the phase runs up to
-Piar's unit, Kayblis's army at war or the first Assault Leader, which end the session with "not
-ported yet" until steps 3 and 5.
+interactive Godot before, so stage 3 had no Kayblis phase at all). Since step 3's part 1 the phase
+runs up to Kayblis's army at war or the first Assault Leader, which end the session with "not ported
+yet" until steps 3 and 5.
 
 ## Open questions
 
@@ -348,7 +348,8 @@ not Kayblis's", its filter and its capture with the collapses). Main path first:
    `NotSupportedException` until their step, as in milestone 3.
 2. **The generals' units** ✓ (2026-10-11, `Strategy/KayblisTurn.Generals.cs`) (~600): Babolat, Redeye,
    Kite, Galtia, Kesselring `:729-1328`.
-3. **Piar and the assault** (~240): Piar `:670-728`, Kayblis's main army `:1329-1508`.
+3. **Piar and the assault** (~240): Piar `:670-728` ✓ (2026-10-11, `Strategy/KayblisTurn.Armies.cs`),
+   Kayblis's main army `:1329-1508`.
 4. ~~**`FIGTATTK`**~~ — done before the milestone (2026-10-11): routed to the battle's port, since
    stage 2 needs it too. Left: the presenter hands the battle's events to its battle layer only
    between a battle's `BattleScreenEvent`s, so `FIGT表示`'s counters are probably not drawn yet

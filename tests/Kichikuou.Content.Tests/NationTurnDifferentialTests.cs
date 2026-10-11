@@ -769,7 +769,7 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
                 "call Gｻﾃﾗ.ADV 2", "no scene", "guards", "guards again", "guards with portrait 415", "guards with portrait 466",
                 "call Gﾊﾞﾎﾞﾗ.ADV 1", "call Gﾚｯﾄﾞｱｲ.ADV 1", "call Gｶｲﾄ.ADV 1", "call Gｶﾞﾙﾃｨｱ.ADV 1", "call Gｹｯｾﾙ.ADV 1",
                 "call Gﾊﾟｲｱｰﾙ.ADV 1", "call Gｹｲﾌﾞﾘｽ.ADV 3", "the end", "jump",
-                .. new[] { 670, 1329, 326 }.Select(l => $"unported {l}"),
+                .. new[] { 1329, 326 }.Select(l => $"unported {l}"),
                 .. KayblisGenerals.SelectMany(g => g.Line.Select(p => $"{g.Army} attacks {p}")),
                 .. KayblisGenerals.Where(g => g.Army != "Kesselring").Select(g => $"{g.Army} attacks again"),
                 .. KayblisGenerals.Select(g => $"{g.Army} killed"),
@@ -780,6 +780,8 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
                 "call Gﾊﾞﾎﾞﾗ.ADV 2", "call Gﾊﾞﾎﾞﾗ.ADV 4", .. new[] { 2, 4, 5, 6, 8 }.Select(n => $"call Gﾚｯﾄﾞｱｲ.ADV {n}"),
                 "call Gﾌﾘｰｸ.ADV 4", .. Enumerable.Range(2, 6).Select(n => $"call Gｶｲﾄ.ADV {n}"), "call Gｶﾞﾙﾃｨｱ.ADV 2",
                 "call Gｹｯｾﾙ.ADV 2",
+                "Piar draws again", "Piar gives up", "Piar's unit empty", "Piar attacks", "Piar captures",
+                "Piar's state 2 to 3", "Piar's state 4 to 5", .. Enumerable.Range(2, 5).Select(n => $"call Gﾊﾟｲｱｰﾙ.ADV {n}"),
             ],
             ScribbleKayblisTurn,
             unported: true);
@@ -858,7 +860,7 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
         state.F_Galtia_State = (Sys3Int)rng.Next(0, 3);
         state.F_Galtia_DefectedToKayblis = (Sys3Int)rng.Next(0, 2);
         state.F_Kesselring_State = (Sys3Int)rng.Next(0, 3);
-        state.F_Piar_State = (Sys3Int)(rng.Next(3) switch { 0 => 0, 1 => 100, _ => rng.Next(1, 100) });
+        state.F_Piar_State = (Sys3Int)(rng.Next(3) switch { 0 => 0, 1 => 100, _ => rng.Next(3) != 0 ? rng.Next(1, 7) : rng.Next(1, 100) });
         int group = rng.Next(3);
         if (group != 0)
         {
@@ -953,7 +955,8 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
     /// <summary>
     /// What the scenes and battles may change: Grief Valley (89)'s owner (so the guards stop), Kayblis
     /// moved, the week's event flag, the chain's flags, the generals' states and lives, Piar's state,
-    /// a battle's rounds left and result, Zeth Palace (69) lost.
+    /// a battle's rounds left and result, Zeth Palace (69) lost, the player's defenders (Miki (unit 32)
+    /// among them now and then).
     /// </summary>
     private static void ScribbleKayblisTurn(GameState state, Random rng)
     {
@@ -986,6 +989,17 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
         }
         if (state.Prov_Cur == 69 && rng.Next(3) == 0)
             state.Provs[69].Owner = 8;                                  // Zeth Palace lost (Calory's last scene)
+        if (rng.Next(6) == 0)
+        {
+            Sys3Int defender = (Sys3Int)(rng.Next(3) == 0 ? 32 : rng.Next(0, 40));   // Miki (unit 32) among the defenders
+            switch (rng.Next(4))
+            {
+                case 0: state.Bt_PlayerParty1 = defender; break;
+                case 1: state.Bt_PlayerParty2 = defender; break;
+                case 2: state.Bt_PlayerParty3 = defender; break;
+                default: state.Bt_PlayerParty4 = defender; break;
+            }
+        }
     }
 
     private static IEnumerable<string> KayblisTurnFeatures(GameState before, GameState after, GameState first, List<string> log)
@@ -1042,7 +1056,9 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
     /// Grief Valley (89), whose owner the scenes write, left out; Zeth Palace (69) only without a battle
     /// there), Kesselring's capture after his flight; Redeye alone at Maunes (13), the battle there
     /// after <c>Gﾚｯﾄﾞｱｲ</c> 8 or not (NAT-28), his state's steps; Kite's draw in ten; <c>Gｹｯｾﾙ</c> 2 at
-    /// Bone Forest (90) or the Red House (85).
+    /// Bone Forest (90) or the Red House (85). Piar's unit: her target drawn again, given up, her unit
+    /// after <c>Gﾊﾟｲｱｰﾙ</c> 2 attacking, capturing (a scene's scribble: dead in play) or empty (the same),
+    /// her state's steps.
     /// </summary>
     private static IEnumerable<string> KayblisGeneralFeatures(GameState before, GameState after, List<string> log)
     {
@@ -1083,6 +1099,26 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
             yield return "Kite's draw in ten";
         foreach (string call in log.Where(e => e.StartsWith("call Gｹｯｾﾙ.ADV entry 2 ", StringComparison.Ordinal)))
             yield return Field(call, "Prov_Cur") == "90" ? "Gｹｯｾﾙ 2 at Bone Forest" : "Gｹｯｾﾙ 2 at the Red House";
+        int target = log.FindIndex(e => e.StartsWith("rnd 77 ", StringComparison.Ordinal));
+        if (target >= 0)
+        {
+            if (log.Count(e => e.StartsWith("rnd 77 ", StringComparison.Ordinal)) > 1)
+                yield return "Piar draws again";
+            int last = log.FindLastIndex(e => e.StartsWith("rnd 77 ", StringComparison.Ordinal));
+            if (last + 1 < log.Count && log[last + 1] == "rnd 10 1")
+                yield return "Piar gives up";
+        }
+        int scene = log.FindIndex(e => e.StartsWith("call Gﾊﾟｲｱｰﾙ.ADV entry 2 ", StringComparison.Ordinal));
+        if (scene >= 0)
+        {
+            string? next = log.Skip(scene + 1).FirstOrDefault(e => e.StartsWith("call ", StringComparison.Ordinal) || e.Contains("Tｹｲﾌﾞﾘｽ.ADV:1628", StringComparison.Ordinal));
+            yield return next is null || !(next.StartsWith("call FIGT_B.ADV ", StringComparison.Ordinal) || next.Contains("Tｹｲﾌﾞﾘｽ.ADV:1628", StringComparison.Ordinal))
+                ? "Piar's unit empty"
+                : next.StartsWith("call ", StringComparison.Ordinal) ? "Piar attacks" : "Piar captures";
+        }
+        foreach (var (from, to) in new[] { (2, 3), (4, 5) })
+            if (before.F_Piar_State == (Sys3Int)from && after.F_Piar_State == (Sys3Int)to)
+                yield return $"Piar's state {from} to {to}";
 
         static string Field(string call, string name) =>
             call[(call.IndexOf($" {name} ", StringComparison.Ordinal) + name.Length + 2)..].Split(' ')[0];
