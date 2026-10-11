@@ -520,6 +520,68 @@ public class GamePresenterTests(ITestOutputHelper output)
         Assert.Empty(p.Unresolved);
     }
 
+    /// <summary>
+    /// The gallery (<c>CG</c>, milestone 7 step 2) from the title, on the stage. Its sheets are reduced
+    /// event pictures: with <see cref="GamePresenter.MaskEventCgs"/> the stage is masked from the
+    /// sheets (CG 844-848) until the title's background (CG 301) comes back. Page 3's sheet sits in the
+    /// map's tile area (CG 846 at (1280, 0), survey-gallery §4.3): composing the screen does not draw
+    /// the map over it, so the tab shows the sheet as it was loaded.
+    /// </summary>
+    [Fact]
+    public async Task The_gallery_draws_its_pages_on_the_stage_masked_for_the_agent()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var run = await RunAsync(stopAtWeek: 0);
+        var p = run.Presenter;
+        run.Session.State.Fates[79].Fate = 1;                           // a clear: the button is there
+        var grey = ((byte)96, (byte)96, (byte)96, (byte)255);
+        int phase = 0;
+        (byte, byte, byte, byte)? masked = null, title = null;
+        (byte, byte, byte, byte)[]? sheet = null, page = null;
+        (int X, int Y)[] points = [(5, 5), (60, 70), (300, 200), (500, 300), (620, 390)];
+        static bool IsG(ScriptEvent e, int cg) => e is EngineEvent { Command: "G" } g && g.Args[0].Value == cg;
+        run.Player.OnRead = () =>
+        {
+            var shown = run.Player.Shown;
+            switch (phase)
+            {
+                case 0 when shown.Any(e => e is MusicEvent { Track.Value: 27 }):
+                    run.Player.Click(551, 319);                         // the gallery (ｽﾀMENU.ADV:805, button 7)
+                    phase = 1;
+                    break;
+                case 1 when shown.Any(e => IsG(e, 848)):
+                    p.MaskEventCgs = true;
+                    masked = ScreenAt(p, 320, 200);
+                    p.MaskEventCgs = false;
+                    sheet = [.. points.Select(pt => p.Stage.PixelAt(1280 + pt.X, pt.Y))];
+                    run.Player.Hover(168, 14);                          // tab 3 (CG.ADV:186-190)
+                    run.Player.Click(168, 14);
+                    phase = 2;
+                    break;
+                case 2 when shown.Any(e => e is EngineEvent { Command: "CC" } c && c.Args[0].Value == 1280 && c.Args[1].Value == 0):
+                    ScreenAt(p, 0, 0);
+                    page = [.. points.Select(pt => p.Screen.PixelAt(pt.X, pt.Y))];
+                    run.Player.Hover(595, 12);                          // Exit
+                    run.Player.Click(595, 12);
+                    phase = 3;
+                    break;
+                case 3 when shown.Count(e => IsG(e, 301)) == 2:
+                    p.MaskEventCgs = true;
+                    title = ScreenAt(p, 320, 200);
+                    throw new BackAtTitleException();
+            }
+        };
+
+        await Assert.ThrowsAsync<BackAtTitleException>(() => run.Session.TitleAsync());
+
+        Assert.Equal(grey, masked);
+        Assert.Equal(sheet, page);
+        Assert.Contains(page!, px => px != ((byte)0, (byte)0, (byte)0, (byte)255));
+        Assert.NotEqual(grey, title);
+        Assert.Empty(p.Unresolved);
+    }
+
     private sealed class BackAtTitleException : Exception;
 
     private static (byte, byte, byte, byte) ScreenAt(GamePresenter p, int x, int y)

@@ -255,7 +255,7 @@ public sealed partial class GamePresenter
             }
             else
             {
-                if (MaskEventCgs && (s.Ui_WinType == 31 || _endingCg != 0))
+                if (MaskEventCgs && (s.Ui_WinType == 31 || _endingCg != 0 || _gallery))
                     MaskStage();
                 DrawPictures(s);
                 Picker?.Draw(Screen, s);

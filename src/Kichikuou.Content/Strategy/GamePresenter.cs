@@ -69,6 +69,7 @@ public sealed partial class GamePresenter
     private int _nextMusicLoops;
     private int _lastCg;
     private int _endingCg;                      // OVER's ending picture while on the stage (MaskEventCgs)
+    private bool _gallery;                      // from the gallery's sheets to the title's background (MaskEventCgs)
     private Action? _afterKey;
     private bool _dirty = true;
     private int _stageVersion = -1;
@@ -152,12 +153,20 @@ public sealed partial class GamePresenter
     /// stage under it is drawn as a grey placeholder with the number of the CG last drawn there —
     /// the event CGs stay out of the screen dumps the agent's tooling makes. So is the stage from
     /// <c>OVER</c>'s ending picture (<see cref="FirstEndingCg"/>-<see cref="LastEndingCg"/>, under the
-    /// staff roll too) until the report's background (<see cref="ReportCg"/>) replaces it.
+    /// staff roll too) until the report's background (<see cref="ReportCg"/>) replaces it, and the
+    /// gallery from its sheets of reduced event pictures (<see cref="FirstGallerySheet"/>-<see cref="LastGallerySheet"/>)
+    /// until the title's background (<see cref="TitleCg"/>): its pages, its pictures and the scenes it replays.
     /// </summary>
     public bool MaskEventCgs { get; set; }
 
     /// <summary>The endings' pictures, <c>G 269 + EndingId</c> (<c>OVER.ADV:33</c>).</summary>
     public const int FirstEndingCg = 270, LastEndingCg = 283;
+
+    /// <summary>The gallery's five page sheets, loaded off screen first (<c>CG.ADV:35-44</c>).</summary>
+    public const int FirstGallerySheet = 844, LastGallerySheet = 848;
+
+    /// <summary>The title's background (<c>ｽﾀMENU.ADV</c>), drawn again when the gallery returns.</summary>
+    public const int TitleCg = 301;
 
     /// <summary>The Completion Report's background (<c>OVER.ADV:194</c>).</summary>
     public const int ReportCg = 840;
@@ -561,6 +570,10 @@ public sealed partial class GamePresenter
             _endingCg = number;
         else if (number == ReportCg)
             _endingCg = 0;
+        if (number is >= FirstGallerySheet and <= LastGallerySheet)
+            _gallery = true;
+        else if (number == TitleCg)
+            _gallery = false;
         var (x, y) = jump ?? (relative is var (dx, dy) ? (cg.X + dx, cg.Y + dy) : (cg.X, cg.Y));
         if ((_cgFlags & 4) != 0)
             Stage.Palette = cg.PaletteOver(Stage.Palette);

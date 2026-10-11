@@ -769,10 +769,15 @@ Steps:
    `CgLoadCounterTests` (core: the binding, wrap, windows, map), `EndToEndBattleTests`,
    `FlowStrategyTests`, `PickerScreenTests` (a hand-ported file), `CgSeenTests` (content: the title's
    and the prologue's loads, `ﾛｰﾄﾞｾｰﾌﾞ` 11 and 10).
-2. **`CG`** from the player's files (`IsSceneFile`) and the gallery mask (`MaskEventCgs` from `G 844`-`848`
-   until the title's `G 301`); tests: entries locked and unlocked by `Glob_CgSeen`, the tabs, a
-   picture's prompt (left back with G1, right replays a scene from its entry and comes back), the exit
-   with `Ev_Entry` 0 and `SS 27`; the presenter's.
+2. **`CG`** ✓ (2026-10-11) from the player's files (`IsSceneFile`) and the gallery mask (`MaskEventCgs`
+   from `G 844`-`848` until the title's `G 301`). `GalleryTests`: the locks stamped on the entries never
+   loaded (147 of 150 with three loaded) and a locked entry ignoring a click; a picture's prompt — a
+   left click goes back with the window left open (G1), a right click replays `Gｼｨﾙ` from entry 300 and
+   comes back with the window closed, the world unchanged and no map call; a tab, and text kept in
+   `CG.ADV` replayed (CG 133); Exit with `Ev_Entry` 0. `TitleTests`: the title plays `SS 27` again after
+   the gallery. The presenter's: the pages masked, the title not; page 3's sheet, in the map's tile area
+   (survey §4.3), is shown as loaded — composing does not draw the map over it, and no replay calls the
+   map helpers (§2.4).
 3. **`MMODE`** from the player's files, `F1` past its table as an empty string, `SC` in the tests'
    input; tests: a track played, Stop, Stop with nothing (R1), End and the silent title (STR-37); the
    presenter's.

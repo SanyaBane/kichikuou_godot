@@ -381,6 +381,7 @@ public sealed class SceneRunnerTests : IDisposable
         Assert.True(SceneRunner.IsSceneFile("ｽﾀMENU.ADV"));
         Assert.True(SceneRunner.IsSceneFile("ﾌﾟﾛﾛｰｸﾞ.ADV"));
         Assert.False(SceneRunner.IsSceneFile("FIGT_A.ADV"));
-        Assert.False(SceneRunner.IsSceneFile("CG.ADV"));
+        Assert.True(SceneRunner.IsSceneFile("CG.ADV"));
+        Assert.False(SceneRunner.IsSceneFile("MMODE.ADV"));
     }
 }

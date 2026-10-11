@@ -396,9 +396,9 @@ public class ScenarioProgramSweepTests(ITestOutputHelper output)
     }
 
     /// <summary>
-    /// The title's calls (its logo's and Fortune Check's, <c>HAPPY_C</c>, included) run somewhere
-    /// too, but for the gallery and the music room (<c>CG</c>, <c>MMODE</c>; later, owner's decision
-    /// 19) and the dead <c>XSPEC</c> (<c>ｽﾀMENU.ADV:179</c>; the boot does not run it either, DAT-04).
+    /// The title's calls (its logo's, Fortune Check's, <c>HAPPY_C</c>, and the gallery's, <c>CG</c>,
+    /// included) run somewhere too, but for the music room (<c>MMODE</c>; milestone 7) and the dead
+    /// <c>XSPEC</c> (<c>ｽﾀMENU.ADV:179</c>; the boot does not run it either, DAT-04).
     /// </summary>
     [Fact]
     public void The_title_calls_only_files_that_run_but_those_left_for_later()
@@ -407,13 +407,13 @@ public class ScenarioProgramSweepTests(ITestOutputHelper output)
             return;
         string[] helpers = ["M.ADV", "WAO_MAP.ADV", "WAO_SUB.ADV", "PCMPLAY.ADV"];
         var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
-        var missing = new[] { "ｽﾀMENU.ADV", "ﾌﾟﾛﾛｰｸﾞ.ADV", "HAPPY_C.ADV" }
+        var missing = new[] { "ｽﾀMENU.ADV", "ﾌﾟﾛﾛｰｸﾞ.ADV", "HAPPY_C.ADV", "CG.ADV" }
             .SelectMany(f => scripts.ReadProgram(f).Statements.OfType<CallFileStatement>())
             .Select(c => c.File)
             .Where(f => !SceneRunner.IsSceneFile(f) && !StrategyRules.PortedFiles.Contains(f) && !helpers.Contains(f))
             .Distinct()
             .Order(StringComparer.Ordinal);
-        Assert.Equal(["CG.ADV", "MMODE.ADV", "XSPEC.ADV"], missing);
+        Assert.Equal(["MMODE.ADV", "XSPEC.ADV"], missing);
     }
 
     /// <summary>

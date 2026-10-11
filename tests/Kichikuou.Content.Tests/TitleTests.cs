@@ -327,23 +327,32 @@ public class TitleTests
     }
 
     /// <summary>
-    /// The gallery and the music room (buttons 7 and 1, with a clear) are not ported (decision 19):
-    /// their files go to the unported files' hooks and the title is drawn again.
+    /// The gallery (button 7, with a clear) runs from the player's files (milestone 7 step 2,
+    /// <c>GalleryTests</c>): left by Exit, the title is drawn again and plays its music again
+    /// (<c>ｽﾀMENU.ADV:577-581</c>). The music room (button 1) is not ported yet: its file goes to the
+    /// unported files' hooks and the title is drawn again.
     /// </summary>
     [Fact]
-    public async Task The_gallery_and_the_music_room_go_to_the_unported_files()
+    public async Task The_gallery_runs_and_the_music_room_goes_to_the_unported_files()
     {
         var game = await EndGame.BootAsync(newGame: false);
         if (game is null)
             return;
         game.State.Fates[Clears].Fate = 1;
         Click(game, Gallery);
+        game.Input.Pointer.Hover(595, 12);                              // the gallery's Exit (CG.ADV:202-205)
+        game.Input.Pointer.Click(595, 12);
         Click(game, MusicRoom);
 
         await Assert.ThrowsAsync<PointerIdleException>(() => game.Script.CallFileAsync(Title));
 
-        Assert.Equal(["CG.ADV", "MMODE.ADV"], game.Unported.Calls.Select(c => c.File));
+        Assert.Contains("CG.ADV", Files(game));
+        Assert.Equal(["MMODE.ADV"], game.Unported.Calls.Select(c => c.File));
         Assert.Equal(3, game.View.Events.Count(e => IsCg(e, 301)));
+        var events = game.View.Events;
+        int silent = events.FindLastIndex(e => e is MusicEvent { Track.Value: 0 });   // the gallery's SS 0
+        Assert.Contains(events.Skip(silent), e => e is MusicEvent { Track.Value: 27 });
+        Assert.Equal(0, game.State.Ev_Entry.Value);
     }
 
     /// <summary>The files called, in order (the title itself and its logo included).</summary>

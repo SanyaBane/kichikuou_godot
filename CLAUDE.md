@@ -127,7 +127,9 @@ EVT-07 does not hold. Owner's decision 21: the port counts every CG it shows on 
 `Glob_CgSeen`; `F1` past its string table reads an empty string. Step 1 is done: the boot's `ZG`
 binds the counter and `ScriptContext.CountCgLoad` counts each load (STR-43) — every `G` of a scene or
 a hand port through `ScriptContext.EngineAsync`, and where `WAO_SUB`, the map and the battle load
-CGs they draw through their own events. Step 2 (`CG`) is next.
+CGs they draw through their own events. Step 2 is done: the gallery `CG` runs from the player's files
+(`SceneRunner.IsSceneFile`, `GalleryTests`) and the agent's dumps mask it from its sheets to the
+title's background (`GamePresenter.MaskEventCgs`). Step 3 (`MMODE`) is next.
 `tools/analysis/port_draft.py` drafts text-heavy ranges for hand ports.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
