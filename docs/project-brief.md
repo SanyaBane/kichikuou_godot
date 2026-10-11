@@ -75,7 +75,9 @@ local paths are in [spike-findings.md](spike-findings.md).
   tracks played through `_inmm` (confirmed). `alice-tools` 0.13 and xsys35c's `ald`/`pms`
   unpack and convert them. The alice-tools source (`KICHIKUOU_ALICE_TOOLS_DIR`) stays a read-only
   reference.
-- Original resolution 640×480, 256 colours. **(unverified)**
+- Original screen 640×400, 256 colours: the game shows the (0,0)-(640,400) corner of one 8-bit
+  3200×800 surface (`WW 3200, 800, 8` / `WV 0, 0, 640, 400`, `ｽﾀｰﾄ.ADV:852-853`; confirmed,
+  [battle/screen-layout.md](battle/screen-layout.md)). Not 640×480, as noted here before.
 - **Game logic lives in the scenario script**, not in the executable: no DLLs, no library calls;
   battle formulas, AI, turn order and event conditions are all readable (confirmed).
 
@@ -127,7 +129,11 @@ Why the strategic engine is still hard in a faithful port (rules are given, not 
 Decompile with xsys35c, fix the worst screens in the original scenario, recompile — a
 quality-of-life patch in weeks, but capped by System 3 limits (resolution, palette).
 
-## Next step
+## Porting strategy (2026-10-07/08)
+
+This section records how the porting strategy was decided; it is history, not the plan. Where the
+project stands is in [../CLAUDE.md](../CLAUDE.md) ("Status") and [strategy/README.md](strategy/README.md)
+(milestones and the owner's decisions); what is put off is in [backlog.md](backlog.md).
 
 The spike's surface analysis is done (see [spike-findings.md](spike-findings.md)): game files
 live outside the repo; System 3.9 decompiles cleanly; ≈650–700 scenes, 126k message lines,
@@ -159,5 +165,5 @@ Decided (2026-10-08, after the battle port): the strategic layer is surveyed in
 files (nothing derived from the game is committed); the first milestone is the whole prologue,
 playable; strategic screens first reproduce the original layout.
 
-Done so far: variable dictionary; solution skeleton (`Kichikuou.Core` + tests + Godot 4.7.2
+Done by 2026-10-08: variable dictionary; solution skeleton (`Kichikuou.Core` + tests + Godot 4.7.2
 project on `net10.0`, verified building and running headless).

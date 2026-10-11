@@ -1,0 +1,170 @@
+# Backlog
+
+Everything put off, in one place: what it is, where its details live, what it waits for. Details
+stay in the linked docs; this list only points at them.
+
+- **Add** an item whenever work is put off (by the owner or by the agent), with the date and a link.
+- **Remove** it when it is done or taken into a milestone ([strategy/README.md](strategy/README.md)
+  holds the milestones and the owner's numbered decisions); git keeps the history.
+- **Waits for:** *owner* — a decision or a play session of the owner's; *capture* — a run of the
+  original game through the harness ([golden-tests.md](golden-tests.md)); *agent* — work the agent
+  can do on its own.
+
+Last swept: 2026-10-11.
+
+## Release
+
+The model is decided (brief, "Risks"; decision 23): only our engine is distributed, under
+GPL-2.0-or-later, and the player brings their own copy of the game. What a release still needs
+(discussed with the owner 2026-10-11):
+
+- **Read the player's game folder directly** (decision 1 foresaw it) — *agent*. Today the port needs
+  the developer's extract (`_extract`: the decompile, CGs as PNG, the sounds). An import on the
+  first launch into `user://`: the `.ALD` archives read directly (the PMS decoder exists,
+  `Content/Graphics/Pms.cs`), the scenario decompiled by a bundled `xsys35dc` pinned to 1.13 (the
+  parser knows only its output; GPL-2, shipped with its source) or, later, by our own loader of the
+  `.SCO` bytecode.
+- **Check the game's version** — *agent*: the port reads only the English translation v1.0; check the
+  archives' hashes and refuse another version clearly instead of failing somewhere in the parser.
+- **A folder picker** for the game folder — *agent*. Today only `user://settings.cfg` or the field in
+  Debug → Battle Captures; `local.env` is for development only and is not read outside the
+  repository.
+- **Hide the development parts** in a release build — *agent*: the Debug menu, the capture viewer,
+  the switches (`--auto`, `--watch`, `--ending`, …).
+- **Windows export** — *agent*: commit `export_presets.cfg` (git ignores it today); export templates
+  4.7.2 mono.
+- **Other platforms** — *owner* (whether at all), then *agent*: the font MS Gothic is read from
+  `C:\Windows\Fonts`; elsewhere Godot's fallback font changes the text's layout, so a free font with
+  close metrics would be bundled.
+- **CI** — *owner* (a remote first), then *agent*: build, core tests, export. Without the game data
+  some content tests fail instead of skipping; they must skip.
+- **Rights** — *owner*: the license covers only our own work; the rule code ports AliceSoft's
+  scenario logic, the risk the brief accepts for personal use. Any public release is the owner's call.
+
+## Saves
+
+- **The original's `.asd` saves** — *owner* put it off (2026-10-11); decision 11 chose our own format.
+  Found while looking (2026-10-11): `System39.exe` and xsystem35 both write "System3.8 SaveData"
+  (`savedata.c`): a 4 KB header (the resume point as page and address, window and font settings,
+  offsets), the call stack, 5000 strings, pages 0, 1, 2, 4, 10 — what `Script/SaveData` holds. The
+  scenario's only `QD` is `ﾛｰﾄﾞｾｰﾌﾞ.ADV:33`, called only from `MAIN.ADV`'s `L_01875` at `:20` and
+  `:83`, so every original save resumes at one of our two autosave points (the near call's return
+  address tells which). The owner's ten slots are all Leazas-week autosaves; four lack xsystem35's
+  `XS35` mark, so `System39.exe` likely wrote them. Reading them is cheap; writing them needs the
+  window settings, which a survey must find. Open: where the port keeps saves (the game folder, its
+  own, an import).
+
+## Verification against the original
+
+The stages after stage 1 and the game frame are covered by the port's own tests only.
+
+- **Stage-2 captures** — *owner, capture* (decision 15): the checklist is
+  [golden-tests.md](golden-tests.md), "Capturing stage 2".
+- **Stage-3 captures** — *owner, capture* (decision 16).
+- **Stage-4 captures** — *owner, capture* (decision 18); they start from the owner's save at the end
+  of stage 3.
+- **The frame** (the endings `OVER`, the title `ｽﾀMENU`, Fortune Check `HAPPY_C`) — *owner, capture*
+  (decision 20); **the gallery and the music room** — *owner, capture* (decision 22).
+- **`Iｶﾐ` end to end against a capture** — *capture* (survey-ikami.md; no capture reaches it).
+- **`--auto` plays stages 0-1 only** — *agent* if wanted (decision 15).
+
+## Interface
+
+- **Our own interface** next to the original layout — *owner*: decisions 3-4 (the player picks the UI,
+  ideally also during play), 9 and 12 (what a redesign replaces).
+- **Quality-of-life features**, the README's second aim — *owner* (which), then *agent*; a survey of
+  candidates first. Done so far: MsgSkip skips the opening whole (2026-10-11,
+  [window-menu.md](window-menu.md), MsgSkip).
+- **Optional fixes** — *owner* (which), then *agent*: the quirks register ([quirks.md](quirks.md),
+  decision 5) lists every reproduced bug; some can become options.
+
+## Open questions from the surveys
+
+Swept 2026-10-11: of ~120 questions in the docs' "Open questions" sections, these are still open
+(line numbers as of the sweep). A copy in another file is noted once.
+
+Need a run or capture of the original:
+
+- [battle/README.md](battle/README.md) Q4 (`:16`, = 02-resolution O4): can `System39.exe`'s `Y 4`
+  return n+1 like xsystem35's? (ENG-02)
+- battle/README.md Q7 (`:19`, = 01-flow §14): who restores Rance's `Unit_Status` after a prologue
+  defeat? (BFL-25)
+- [strategy/survey-main.md](strategy/survey-main.md) `:332`: does `System39.exe` do the overlapping
+  `NB` as a forward copy? (STR-01)
+- [strategy/stage-2-sweep.md](strategy/stage-2-sweep.md) `:281` (AL Church attacked: a stale enemy
+  party, or the city taken unopposed?), `:285` (Shangri-La taken anyway after a lost duel?).
+- [strategy/stage-3-sweep.md](strategy/stage-3-sweep.md) `:334` (= survey-nations `:325`: does the
+  Grief Valley guards' loop end only by losing? NAT-02), `:339` (Medusa's replays, NAT-25), `:340`
+  (is La Vaswald reached at stage 3 in practice?).
+- [strategy/stage-4-sweep.md](strategy/stage-4-sweep.md) `:320`: is Kou at 8 the only winning route?
+- [strategy/survey-commands.md](strategy/survey-commands.md) `:380`: attacking a province of owner 9
+  or 10 (the Angels): `Cﾃｷﾄｼ` has no defender setup for them (CMD-19, unverified).
+- [strategy/survey-dungeon.md](strategy/survey-dungeon.md) `:348` (can a click hit the empty dungeon
+  record 0? STR-12), `:351` (`RetVal` after `L_0755b` on Return).
+- [strategy/survey-ikami.md](strategy/survey-ikami.md) `:360`: the summon slot (unit 51) in a party,
+  not run (EVT-18).
+- [strategy/survey-nations.md](strategy/survey-nations.md) `:322` (NAT-01, confirmed by reading, not
+  by a capture), `:330` (what the empty commander record 0 holds, NAT-12; existing dumps may answer).
+
+Research the agent can do:
+
+- battle/README.md Q3 (`:15`): what the summon slot (unit 51) holds before any summon — probably
+  closable (survey-data.md `:66-68`: never initialised; BRS-13). Q6 (`:18`): can `Bt_MsgMode` be
+  outside 1..4 at a Goliath strike? (BTX-02)
+- [battle/screen-layout.md](battle/screen-layout.md) `:727`: does `#L_05126, 1` select `L_0512e`?
+  (`Battle.Display.cs:141` assumes it; the battle captures may prove it.)
+- [spike-findings.md](spike-findings.md) `:186`: confirm the variables still at I or G confidence in
+  [variables.tsv](variables.tsv) (136 at I, 8 at G).
+- stage-2-sweep.md `:287` (does taking a Zeth tower kill or capture its minister?), `:289` (`RetVal`
+  after the Camilla Unit's `FIGT_B` while she lives; STR-02), `:290` (is `Iﾏｼﾞﾝ` 1 `:1569-1719`
+  reachable; endings 5 and 12 at stage 2?), `:292` (Use Force with every listed commander dead).
+- stage-3-sweep.md `:336` (Kesselring's Castle won with Kesselring alive?), `:338` (Kayblis killed
+  without `Gｼﾙｷｨ` 9?).
+- stage-4-sweep.md `:324` (Siberia and the Ancient Ruins lost for good to the Angels?), `:329` (is
+  path 2 reachable? NAT-31).
+- survey-commands.md `:381` (= survey-main `:340`: does anything read the stale cursors? single cases
+  in ENG-05, EVT-08/17/20, NAT-28), `:383` (`Gｼｨﾙ` #2/#5/#6 command flags), `:384` (`Gﾊﾟｯﾄﾝ` 3 then 4
+  in one pass?), `:385` (where Mars the Great's troops come from), `:386` (the Mineva
+  `TroopAtk = 20` gate, `OwnCityCommand.cs:428`), `:387` (where Rance levels up from harem EXP),
+  `:388` (is the item record 100 live when `Cﾆﾝｼﾞｬ` zeroes it? EVT-04).
+- [strategy/survey-data.md](strategy/survey-data.md) `:288`: the third unit string slot's meaning.
+- survey-dungeon.md `:344` (who sets `F_Merim_MillArc = 3`? DGN-11), `:353` (`VAR0427` unnamed).
+- [strategy/survey-events.md](strategy/survey-events.md) `:393` (the owner of the empty province
+  record 0 for `Gｻｲｾﾞﾙ`, EVT-02; dumps may answer), `:394` (who calls `Gｶﾌｪ` with the Lady-unit
+  entry?), `:395` (Shangri-La's date calculation vs `L_01881`; low priority), `:398` (Lelyukov's
+  `{Prov_Owner \ 0: %0:}`), `:400` (`FIGT表示` has no survey; strategy/README.md `:23`).
+- survey-ikami.md `:370` (is `Bt_IsDuel` ever stale at entry?), `:375` (the empty unit record 0's
+  status, EVT-17), `:376` (the `N_Warg_Stage` 2 path, for telling the owner how a player gets there).
+
+Other:
+
+- battle/screen-layout.md `:731`: the `ZC 1` text colour is not traced per message — visual only;
+  decision 3 probably closes it.
+- spike-findings.md `:187`: did the fan translation change any logic? Parked by design until a
+  discrepancy shows up.
+- **Mark the answered questions answered** — *agent*, housekeeping: answered by later decisions,
+  quirks or code but not marked in place — battle/README.md Q5 (and its copies 01-flow `:1362`,
+  02-resolution `:1155`; 02-resolution's O1/O2 are resolved in battle/README.md only),
+  spike-findings.md `:188`, survey-commands.md `:379` and `:382`, survey-data.md `:286`,
+  survey-dungeon.md `:345`, survey-events.md `:388` and `:396`, survey-main.md `:334`, `:342`, `:344`,
+  survey-nations.md `:338` and `:339`.
+
+## Repository and tooling
+
+- **Old absolute paths in the git history** — *owner*: rewriting the history is destructive, only on
+  the owner's explicit request (decision 22).
+- **README** — *owner*: About and Credits only so far (2026-10-11); installing, building and playing
+  come with a release.
+- **`--msgskip` cannot test the skip in `--auto` runs** — *agent*, low priority: MsgSkip stops at the
+  first menu (`STOP_ON_MENU`), so an unattended run reaches the opening with it off; checking the
+  opening's skip (2026-10-11) took a temporary line.
+- **"2 ObjectDB instances were leaked at exit"** on every headless run — *agent*, low priority:
+  harmless so far, not looked into.
+- **Unverified facts in the brief** — *agent*: Godot 4.7's video playback (Ogg Theora only?) and
+  AliceSoft's freeware release of the game ([project-brief.md](project-brief.md), "What is known").
+
+## Later, after the whole port
+
+- **The hybrid** on a separate branch: the original's content with Sengoku Rance's mechanics (brief,
+  scope decision 2).
+- **A remake** (brief, scope decision 3).

@@ -5,13 +5,18 @@ A faithful port of **Kichikuou Rance** (AliceSoft, 1996, System 3.x) onto our ow
 almost all code.
 
 **Read [docs/project-brief.md](docs/project-brief.md) first** — it holds the decisions, the
-reasoning, rejected alternatives, unverified facts about the source game, and the next step.
+reasoning, rejected alternatives and unverified facts about the source game.
+
+**Backlog: [docs/backlog.md](docs/backlog.md)** holds everything put off (release, saves, captures,
+interface, the surveys' open questions, tooling). Whenever work is put off — by the owner or by
+you — add it there with the date and a link to its details; remove an item when it is done or taken
+into a milestone. Keep it in English, like everything in the repository.
 
 ## Status
 
 Spike surface analysis done — see [docs/spike-findings.md](docs/spike-findings.md) for
 measurements, data model, the local layout of the game and tools. Porting strategy decided (hybrid,
-see "Next step" in the brief). The variable dictionary [docs/variables.tsv](docs/variables.tsv)
+see "Porting strategy" in the brief). The variable dictionary [docs/variables.tsv](docs/variables.tsv)
 is done; when reading the scenario, use the renamed copy (`tools/analysis/rename_vars.py`) and
 keep the dictionary updated when a meaning is confirmed or corrected.
 
