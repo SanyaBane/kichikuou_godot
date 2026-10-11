@@ -162,6 +162,12 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     restore, the endings) comes first, as its own step and commit, and step 2's end tests follow it;
     `OVER` and `ｽﾀMENU` (W4) are not part of milestone 5 — every ending stays `GameEnd` (sweep, open
     questions 3 and 5).
+18. **Milestone 5 closes on the same terms; milestone 6 is W4** (2026-10-11): no stage-4 capture and no
+    `--auto` through stage 4, as decisions 15-16 had it. Of the agent's four proposals (close so; the
+    stage-4 captures first; W4 next; the put-off captures or the Godot side) the owner chose to close
+    and take W4 next: `OVER` (the endings, what they record, their epilogues) and `ｽﾀMENU` (the start
+    menu and its stage starts, with `HAPPY_C`, which only it calls), which replace decision 10's
+    minimal ending; a survey first. See "Milestone 6" below.
 
 ## Milestone 1 — the prologue
 
@@ -589,3 +595,23 @@ Steps, in the sweep's order (its "Proposed order"):
    how to close it (captures, `--auto`) is the owner's call.
 4. ~~**W4** (`OVER`, `ｽﾀMENU`) only if the owner puts it in this milestone~~ — not in it (decision
    17): every ending stays `GameEnd`.
+
+**Milestone 5 is closed** (2026-10-11, decision 18): everything stage 4 reaches is ported or runs
+from the player's files (`Tﾙﾄﾞﾗ` whole), and the way out of stage 4 runs end to end in the port
+(`StageThreeEndTests`, `GodsDoorEndTests`, `IkamiEndTests`) up to `&#OVER`, which stays `GameEnd`. As
+with milestones 3-4, no stage-4 capture is recorded yet and `--auto` does not play stage 4.
+
+## Milestone 6 — W4 (`OVER`, `ｽﾀMENU`)
+
+Decision 18. Every ending of the game jumps to `OVER.ADV` (2210 lines), which the port ends as
+`GameEnd` (decision 10's "THE END" screen); `ｽﾀMENU.ADV` is the original's start menu (the new game is
+ported from it already, `Setup/GameSetup`, F1), whose stage starts and `HAPPY_C` (1451 lines, called
+only from `ｽﾀMENU:236`) are not. survey-main's W4 row lists the game frame's rules; `ﾛｰﾄﾞｾｰﾌﾞ` is
+ported (G0, decision 6).
+
+Steps:
+
+0. **Survey** of `OVER`, `ｽﾀMENU` and `HAPPY_C`: what each ending records (the clears, page 4) and
+   shows, the epilogues and the state they read, the menu's paths and stage starts, what is rules and
+   what is presentation, the quirk candidates, and a proposed order (as stage-4-sweep and
+   survey-ikami did).
