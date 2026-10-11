@@ -195,6 +195,13 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     battle, the hand-ported command files and pickers; the counts cannot match xsystem35's cache (G9),
     and the gallery only tests ≠ 0. (2) `F1` past the end of its string table reads an empty string
     (R1: the original reads the scenario's bytes after the table and draws them off the surface).
+22. **Milestone 7 closes as it is; next, the local paths leave the repository** (2026-10-11): no
+    capture of the gallery or the music room (the agent recommended closing so; the golden comparison
+    ignores `Glob_CgSeen` anyway). Of the agent's proposals for what comes next (the Godot interface,
+    the put-off captures, the register's optional fixes) the owner chose none for now: the absolute
+    paths of the owner's machine (the game's folder, the extract, alice-tools, xsystem35, Godot, …)
+    go out of the repository into a local configuration file that git ignores, with a clean template
+    committed in its place.
 
 ## Milestone 1 — the prologue
 
@@ -789,6 +796,6 @@ Steps:
    STR-44 with the port code that reproduces them, in steps 1 and 3; the rest in the order of the
    survey's tables), EVT-07 withdrawn, CLAUDE.md.
 
-Milestone 7's steps are done: every file the game reaches runs — the gallery and the music room from
-the player's files, the gallery's locks on the engine's CG load counter — but the dead `XSPEC` (DAT-04).
-How to close the milestone and what comes next is the owner's to decide.
+**Milestone 7 is closed** (2026-10-11, decision 22): every file the game reaches runs — the gallery and
+the music room from the player's files, the gallery's locks on the engine's CG load counter — but the
+dead `XSPEC` (DAT-04); no capture of either is recorded.

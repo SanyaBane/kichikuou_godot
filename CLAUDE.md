@@ -132,7 +132,9 @@ CGs they draw through their own events. Step 2 is done: the gallery `CG` runs fr
 title's background (`GamePresenter.MaskEventCgs`). Step 3 is done: the music room `MMODE` runs from
 the player's files (`MusicRoomTests`); `F1` past its string table reads an empty string (STR-44).
 Step 4 is done: the gallery's and the music room's quirks are STR-43 to STR-57, EVT-07 is withdrawn.
-Every file the game reaches now runs but the dead `XSPEC`; closing milestone 7 is the owner's call.
+Every file the game reaches now runs but the dead `XSPEC`. **Milestone 7 is closed** (2026-10-11,
+owner's decision 22: no capture). Next (decision 22): the absolute paths of the owner's machine leave
+the repository — a local configuration file git ignores, a clean template committed.
 `tools/analysis/port_draft.py` drafts text-heavy ranges for hand ports.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
