@@ -219,9 +219,14 @@ commit `local.env`.
 - Tests: `dotnet test tests/Kichikuou.Core.Tests` and `dotnet test tests/Kichikuou.Content.Tests`.
   The content tests' differential tests (a port against its file run from the decompile on random
   states) run an eighth of their random cases by default — the quick run, for checks while working
-  (`DifferentialRuns`). **Before every commit that changes code, run the full counts**:
-  `KICHIKUOU_FULL_TESTS=1 dotnet test tests/Kichikuou.Content.Tests` (only the full run fails a test
-  whose random states never reached a path it lists). Report which run a result comes from.
+  (`DifferentialRuns`). The full counts, `KICHIKUOU_FULL_TESTS=1 dotnet test tests/Kichikuou.Content.Tests`
+  (~5 min; only the full run fails a test whose random states never reached a path it lists), are
+  **not for every commit — only when the change could break something they cover**: the rule code,
+  the script runtime, the content readers, the presenter. A change no content test reaches (docs,
+  comments, Godot-only code, a list the content tests do not read) needs the build, the core tests
+  and the targeted tests only. Judge by what the diff touches and say why in the reply; when the full
+  run is due, run it once, right before the commit, not while the owner may still ask for changes
+  (owner's request 2026-10-11). Report which run a result comes from.
 - Build everything: `dotnet build Kichikuou.sln`
 - Run the game headless (smoke test): `<Godot console exe> --headless --path godot --quit-after 30`;
   `<Godot console exe>` is `KICHIKUOU_GODOT_EXE` in `local.env` (the editor's exe is next to it).
