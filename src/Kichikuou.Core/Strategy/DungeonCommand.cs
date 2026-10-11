@@ -15,7 +15,7 @@ namespace Kichikuou.Core.Strategy;
 /// search: the fixed floors (treasure chests, story scenes, the Uncurse Spring, KD's quiz, Orochi),
 /// the moves with their encounter rolls, the battles (monsters, Hanny tiers, the bosses, whose
 /// setters are read from the player's files), Merim's inscriptions and the end of the search.
-/// God's Door (<c>L_04ddc</c>, <c>L_05437</c>, then <c>Iｶﾐ</c>) fails as not ported.
+/// God's Door (<c>L_04ddc</c>, <c>L_05437</c>, then <c>Iｶﾐ</c>) is in <c>DungeonCommand.GodsDoor.cs</c>.
 /// </summary>
 public sealed partial class DungeonCommand(ScriptContext script, IScenarioSource scenario) : CommandFile(script, "Cﾒｲｷｭｳ.ADV", scenario)
 {
@@ -204,7 +204,10 @@ public sealed partial class DungeonCommand(ScriptContext script, IScenarioSource
             State.Unit_Cur = 1;                                         // :232-237
             if (State.Dgn_Cur == 30 && State.F_GodsDoor_Quest > 1 && State.F_GodsDoor_Found == 0
                 && (Unit.Item == 1 || Unit.Item == 2))
-                throw NotPorted(234, "God's Door found (L_04ddc)", "D2, God's Door");
+            {
+                await GodsDoorFoundAsync();                             // \L_04ddc
+                await Script.MapCallAsync(0);
+            }
 
             if (!await MainMenuAsync())
                 return;
@@ -265,7 +268,8 @@ public sealed partial class DungeonCommand(ScriptContext script, IScenarioSource
                     await PinkCowAsync();
                     continue;
                 case 290:
-                    throw NotPorted(290, "God's Door (L_05437)", "D2, God's Door");
+                    await GodsDoorAsync();                              // @L_05437, back by @L_0076a
+                    continue;
                 case 0:
                     await RestorePointerAsync();                        // \L_07566, @L_008bf
                     break;

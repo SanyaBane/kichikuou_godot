@@ -1870,16 +1870,72 @@ public class CommandSliceTests
         Assert.Empty(rig.Lines);
     }
 
-    [Fact]
-    public async Task Gods_door_is_not_ported_yet()
+    [Theory]
+    [InlineData(1, 3554, 3691)]
+    [InlineData(2, 3691, 3554)]
+    public async Task Gods_door_is_found_by_Rance_holding_item_1_or_2_and_joins_the_menu(int item, int scene, int other)
     {
         var rig = Dungeon(stage: 2, dungeon: 30);
         rig.State.F_GodsDoor_Quest = 2;
-        rig.State.Units[1].Item = 1;
+        rig.State.Units[1].Item = (Sys3Int)item;
+        rig.Input.Choices.Enqueue(3);                                   // Return
 
-        var e = await Assert.ThrowsAsync<NotSupportedException>(() => new DungeonCommand(rig.Script, new NameSource()).RunAsync());
+        await new DungeonCommand(rig.Script, new NameSource()).RunAsync();
 
-        Assert.Contains("Cﾒｲｷｭｳ.ADV:234", e.Message);
+        Is(1, rig.State.F_GodsDoor_Found);
+        Assert.Contains(3513, rig.Lines);
+        Assert.Contains(scene, rig.Lines);
+        Assert.DoesNotContain(other, rig.Lines);
+        Assert.Equal([267, 290, 295], rig.MenuLines[0]);
+        Is(1, rig.State.Ui_CmdDungeonAvail);                            // Return gives the action back
+    }
+
+    [Fact]
+    public async Task The_last_statue_opens_the_door_and_Enter_leads_into_Iｶﾐ_for_good()
+    {
+        var rig = Dungeon(stage: 2, dungeon: 30);
+        rig.State.F_GodsDoor_Found = 1;
+        rig.State.F_GodsDoor_Quest = 4;
+        rig.State.F_Statue_Gourd = 1;
+        rig.State.F_Statue_Monkey = 1;
+        rig.State.F_Statue_Sunflower = 1;
+        rig.State.Items[18].Holder = 1;                                 // the bonsai
+        rig.On("Iｶﾐ.ADV", _ => throw new ScenarioJumpException("OVER.ADV"));
+        foreach (int choice in new[] { 2, 1, 1 })                       // God's Door, the bonsai, Enter
+            rig.Input.Choices.Enqueue(choice);
+
+        var jump = await Assert.ThrowsAsync<ScenarioJumpException>(() => new DungeonCommand(rig.Script, new NameSource()).RunAsync());
+
+        Assert.Equal("OVER.ADV", jump.File);
+        Assert.Equal([3911, 3917, 3928], rig.MenuLines[1]);             // the statue, Rance's talk, Leave
+        Assert.Equal([3923, 3928], rig.MenuLines[2]);                   // the door open: Enter, Leave
+        Is(0, rig.State.Items[18].Holder);
+        Is(1, rig.State.F_Statue_Bonsai);
+        Is(6, rig.State.F_GodsDoor_Quest);
+        Assert.Contains(4032, rig.Lines);                               // the door opens
+        Assert.Contains(4549, rig.Lines);
+        Assert.Equal("Iｶﾐ.ADV", rig.Calls[^1].File);
+    }
+
+    [Fact]
+    public async Task Kouhimes_hint_names_the_missing_statues_and_moves_the_quest_on()
+    {
+        var rig = Dungeon(stage: 2, dungeon: 30);
+        rig.State.F_GodsDoor_Found = 1;
+        rig.State.F_GodsDoor_Quest = 3;
+        rig.State.F_Kou_State = 10;
+        rig.State.F_Statue_Monkey = 1;                                  // placed: the sunflower is the first missing
+        foreach (int choice in new[] { 2, 2, 3 })                       // God's Door, Leave, Return
+            rig.Input.Choices.Enqueue(choice);
+
+        await new DungeonCommand(rig.Script, new NameSource()).RunAsync();
+
+        Is(4, rig.State.F_GodsDoor_Quest);
+        Assert.Equal([3917, 3928], rig.MenuLines[1]);
+        Assert.Contains(4415, rig.Lines);
+        Assert.Equal([4463, 4473], rig.Lines.Where(l => l is 4445 or 4455 or 4463 or 4473 or 4480).ToList());
+        Assert.DoesNotContain(3879, rig.Lines);
+        Assert.Contains(3936, rig.Lines);                               // Leave
     }
 
     /// <summary>

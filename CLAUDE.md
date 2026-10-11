@@ -65,7 +65,7 @@ files whole; the P4-P7 row). Step 5 is done: `Cｼｮｳﾆﾝ` and `Cｼﾊｲ�
 `PickerKind.Items`, `DataScreenEvent`) and their screens are drawn by hand (`PickerView`, the
 presenter's All Data layer). Step 8 is done: `Cﾒｲｷｭｳ` is ported but God's Door (`DungeonCommand`, its
 scenes in `DungeonCommand.Scenes.cs`; the boss and Hanny setters are record data run from the player's
-files through `IScenarioSource.ReadBlock`; God's Door and `Iｶﾐ` throw `NotSupportedException`). Step 9:
+files through `IScenarioSource.ReadBlock`; God's Door came with milestone 3 step 6). Step 9:
 `--auto` plays the whole stage to stage 2 (`--seed 2`: Oaks in week 34, `Iﾏｼﾞﾝ` 1, stop in week 36,
 nothing unported met). **Milestone 2 is closed** (2026-10-10): the owner's three stage-1 capture
 runs, the end of the stage included, match the port whole (all 885 captures in the folder, none
@@ -81,7 +81,9 @@ done, so `Cﾃｷﾄｼ` is ported whole: the cities' exits, the menu and Use Fo
 `Strategy/EnemyCityCommand.Cities.cs`, the negotiations (`:604-3648`) in `Strategy/EnemyCityCommand.Talks.cs`.
 Step 5 (JAPAN) is done: `TJAPAN2` is ported (`Strategy/JapanDefenders`), and so is `TJAPAN` whole —
 its rules in `Strategy/JapanTurn`, Gekkou's and Shinobu's attempts (`:295-2744`, ending 4) in
-`Strategy/JapanTurn.Gekkou.cs`. Step 6 (God's Door, D2) is next.
+`Strategy/JapanTurn.Gekkou.cs`. Step 6 (God's Door, D2) is done: `Strategy/DungeonCommand.GodsDoor.cs`,
+so `Cﾒｲｷｭｳ` is ported whole; `Iｶﾐ` runs from the player's files (not run end to end yet). Step 7
+(`--auto` through stage 2, the owner's stage-2 captures) is the owner's call.
 `tools/analysis/port_draft.py` drafts text-heavy ranges for hand ports.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.

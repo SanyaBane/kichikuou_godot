@@ -162,17 +162,18 @@ Kalar Forest (dungeon 12, Laborie (52)), the Giant Battleship (dungeon 16, Path 
 (dungeon 30, by Ruins Search), Orochi's Pit (dungeon 14, Nagasaki (55)), Green Village (dungeon 7,
 Maginot Stronghold (72)), Rising Dragon Mountain (dungeon 11, Paritylaon (71)), the Holy Gal's
 Dungeon (dungeon 23, Italia (60)), Summit's Mouth (dungeon 8) once moved to Scale (12). All of
-`Cﾒｲｷｭｳ` is ported but God's Door.
+`Cﾒｲｷｭｳ` is ported, God's Door included (milestone 3 step 6, 2026-10-11).
 
 **God's Door has no stage test** (`Cﾒｲｷｭｳ.ADV:232-236`): found in the Ancient Ruins (dungeon 30)
 with `F_GodsDoor_Quest > 1`, `F_GodsDoor_Found = 0` and Rance holding Chaos (item 1) or Nikkou
 (item 2, given by `Iﾏｼﾞﾝ` 3) — `L_04ddc` (`:3500-3827`); the room `L_05437` (`:3855-4497`; the four
 statues, items 15-18, set quest 6; Dance) → "Enter God's Door" → `Iｶﾐ` (`:4498-4556`; a scene file
-that runs from the player's files, 6528 lines with four battles, it ends only in `&#OVER` [I]). The
-quest steps: Ho Raga with Chaos or Nikkou (`Gﾎﾗｶﾞ:266-270`, Siberia (38)), British (`Gﾌﾞﾘﾃｨ:1014`),
-Ho Raga again (`Gﾎﾗｶﾞ:511`). Reachable at stage 2 [I] after about six Helman conquests and the four
-statues. Not ported: the gate and `L_04ddc`, `L_0539e` and the room (`:3828-4556`), about 1060
-lines.
+that runs from the player's files, 6528 lines with four battles, it ends only in `&#OVER` — six
+sites, no `%0` [C]). The quest steps: Ho Raga with Chaos or Nikkou (`Gﾎﾗｶﾞ:266-270`, Siberia (38)),
+British (`Gﾌﾞﾘﾃｨ:1014`), Ho Raga again (`Gﾎﾗｶﾞ:511`). Reachable at stage 2 [I] after about six
+Helman conquests and the four statues. Ported (2026-10-11): the gate and `L_04ddc`, `L_0539e` and
+the room (`:3828-4556`) in `Strategy/DungeonCommand.GodsDoor.cs`; Kouhime's hint (`L_05ea4`, her
+state past 9 and the quest at 3) moves the quest to 4.
 
 ## End of stage 2
 
@@ -262,7 +263,7 @@ stage-2 captures start from the owner's own saves (or a harness that sets `Debug
 | `Tｹｲﾌﾞﾘｽ2` | 347 | the gate attack after `Iｼﾚｲﾌﾞ` 6 (at stage 3, inside the same command) — ported 2026-10-10 |
 | `Cﾃｷﾄｼ` independent cities | `:429-3828`, 3400 | from W+1 (Rockearth (17), Zeo (24), Hanna (26), Shangri-La (29)) — ported 2026-10-10/11 |
 | `TJAPAN2`, `TJAPAN` | 219, 2851 | after Portugal (28) (both ported whole 2026-10-11, Gekkou's scenes `:295-2744` included) |
-| `Cﾒｲｷｭｳ` God's Door | `:233-236`, `:3500-4556`, ~1060 | after the Ancient Ruins (35) and the quest |
+| `Cﾒｲｷｭｳ` God's Door | `:233-236`, `:3500-4556`, ~1060 | after the Ancient Ruins (35) and the quest (ported 2026-10-11; `Iｶﾐ` from the player's files) |
 | `Tｹｲﾌﾞﾘｽ` | 1855 | the first week of stage 3 only |
 
 The week, `COMMAND`, the other command files, the pickers and every scene are ported or run from

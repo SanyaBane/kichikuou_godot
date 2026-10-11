@@ -506,7 +506,12 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             ShapeDungeon,
             ScribbleDungeon,
             ["draw 3", "draw 4", "draw 10", "draw 20", "draw 5", "draw 40", "call Gﾊﾞｳﾝﾄﾞ.ADV", "call Gﾎﾗｶﾞ.ADV", "call Gｶﾌｪ.ADV",
-             "text 2763", "text 2795", "text 2811", "text 2827", "text 2852", "M 0", "M 1", "M 10", "IZ", "unported", "boss fight",
+             "text 2763", "text 2795", "text 2811", "text 2827", "text 2852", "M 0", "M 1", "M 10", "IZ", "boss fight",
+             // God's Door: found by either item, its menu, the statues, the door opening, Rance's talk, Kouhime's hint, Iｶﾐ
+             "text 3513", "text 3554", "text 3691", "item 290", "text 3866", "text 3879", "item 3890", "item 3897", "item 3904",
+             "item 3911", "item 3917", "item 3923", "item 3928", "text 3953", "text 3973", "text 3993", "text 4013", "text 4032",
+             "text 4084", "text 4381", "text 4415", "text 4445", "text 4455", "text 4463", "text 4473", "text 4480",
+             "call Iｶﾐ.ADV", "jump OVER.ADV",
              // the dispatch, the menu, the picker and the refusals, the week's refusal
              .. new[]
              {
@@ -537,7 +542,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
     {
         if (tired)
             return Find(934) is var finish and > 0 ? finish : items.Count;
-        foreach (int line in new[] { 272, 267, 652, 872, 884, 1954, 2363, 2476, 2513, 2548, 2569, 2600 })
+        foreach (int line in new[] { 272, 290, 3890, 3897, 3904, 3911, 3923, 267, 652, 872, 884, 1954, 2363, 2476, 2513, 2548, 2569, 2600 })
             if (Find(line) is var k and > 0 && rng.Next(2) == 0)
                 return k;
         return rng.Next(6) == 0 ? 0 : rng.Next(1, items.Count + 1);
@@ -634,6 +639,24 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             state.F_GodsDoor_Quest = 3;
             state.Items[17].Holder = Sys3Int.Zero;
         }
+        if (state.Dgn_Cur == 30 && rng.Next(2) == 0)
+        {
+            // God's Door: found or about to be (Rance with item 1 or 2), the quest at 2-6, the statues
+            // placed, held or lost, Kouhime past 9 or not.
+            state.F_GodsDoor_Found = (Sys3Int)rng.Next(0, 2);
+            state.F_GodsDoor_Quest = (Sys3Int)(rng.Next(2) == 0 ? 3 : rng.Next(1, 7));
+            state.Units[1].Item = (Sys3Int)rng.Next(0, 4);
+            state.F_Kou_State = (Sys3Int)rng.Next(9, 12);
+            int placed = rng.Next(0, 5);
+            foreach (var set in new Action<Sys3Int>[]
+                     {
+                         v => state.F_Statue_Gourd = v, v => state.F_Statue_Monkey = v,
+                         v => state.F_Statue_Sunflower = v, v => state.F_Statue_Bonsai = v,
+                     })
+                set((Sys3Int)(rng.Next(4) < placed ? 1 : 0));
+            for (int item = 15; item <= 18; item++)
+                state.Items[item].Holder = (Sys3Int)(rng.Next(4) switch { 0 or 1 => 0, 2 => 1, _ => rng.Next(0, 101) });
+        }
     }
 
     /// <summary>The floors next to each dungeon's fixed floors and bosses, where a search resumes.</summary>
@@ -655,6 +678,8 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         Scribble(file, state, rng, tired);
         switch (file)
         {
+            case "Iｶﾐ.ADV":
+                throw new ScenarioJumpException("OVER.ADV");             // it ends only in &#OVER
             case "FIGT.ADV" or "死亡捕獲.ADV":
                 if (rng.Next(6) == 0)
                     state.Units[state.Bt_PlayerParty1].Status = Sys3Int.Zero;
@@ -967,6 +992,10 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         {
             stopped = true;
         }
+        catch (ScenarioJumpException e)
+        {
+            log.Add($"jump {e.File}");                                  // Iｶﾐ's ends (the hook below)
+        }
         catch (NotSupportedException e)
         {
             // The port: a path of a later part. The decompile run past that point may meet
@@ -997,6 +1026,8 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
                 yield return entry[..entry.IndexOf(" ->", StringComparison.Ordinal)];
             else if (entry.StartsWith("EngineEvent IZ", StringComparison.Ordinal))
                 yield return "IZ";
+            else if (entry.StartsWith("jump ", StringComparison.Ordinal))
+                yield return entry;
             else if (entry.StartsWith("IM 48 ", StringComparison.Ordinal))
                 yield return "IM 48";                                   // both buttons
             else if (entry.StartsWith("SoundEvent", StringComparison.Ordinal))
