@@ -427,6 +427,8 @@ permanently (e.g. Ev 2: Freak's (unit 20) troops/HP/CGs, Redeye (cmdr 130) troop
 Ev 4: Patton (unit 18) troops 500; Ev 9: Magic (unit 39) troops 0; Ev 11/12: Nagi / Ragarl (cmdr
 107/109) HP; Ev 14: `Bt_TroopLimit := 5000`),
 and every FIGTATTK call consumes one discarded `RND(2)`. Port it as scripted events, not battles.
+Done so (2026-10-11): `FIGT表示` runs from the player's files as a scene, and the router sends its
+`FIGTATTK` calls to the battle's port of that file (`Battle.PlayExchangeAnimationAsync`).
 
 ---
 

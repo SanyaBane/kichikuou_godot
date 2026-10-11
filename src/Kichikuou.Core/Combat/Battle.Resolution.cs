@@ -1528,9 +1528,10 @@ public sealed partial class Battle
     /// (<c>L_00796</c>, which resets <c>Bt_SkillSfx</c>), ten shot frames, the predicted results,
     /// one discarded RND(2) and the "wiped out" marks. Ported for its state writes
     /// (<c>Ui_MouseX/Y</c>, <c>Tmp0002-0005</c>, <c>Tmp0021-0025</c>, <c>CallArg</c>, the SFX
-    /// variables) and its draw. 02 §7.2.
+    /// variables) and its draw. 02 §7.2. Public for the router: the scene <c>FIGT表示</c> calls the
+    /// file too, with the results it sets by hand (01 §2.7).
     /// </summary>
-    private async Task PlayExchangeAnimationAsync()
+    public async Task PlayExchangeAnimationAsync()
     {
         // :1-31 current troops and HP
         if (Unit.Troops != 0)

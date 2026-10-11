@@ -82,8 +82,11 @@ done, so `Cﾃｷﾄｼ` is ported whole: the cities' exits, the menu and Use Fo
 Step 5 (JAPAN) is done: `TJAPAN2` is ported (`Strategy/JapanDefenders`), and so is `TJAPAN` whole —
 its rules in `Strategy/JapanTurn`, Gekkou's and Shinobu's attempts (`:295-2744`, ending 4) in
 `Strategy/JapanTurn.Gekkou.cs`. Step 6 (God's Door, D2) is done: `Strategy/DungeonCommand.GodsDoor.cs`,
-so `Cﾒｲｷｭｳ` is ported whole; `Iｶﾐ` runs from the player's files (not run end to end yet). Step 7
-(`--auto` through stage 2, the owner's stage-2 captures) is the owner's call.
+so `Cﾒｲｷｭｳ` is ported whole; `Iｶﾐ` runs from the player's files (not run end to end yet).
+**Milestone 3 is closed** (2026-10-11, owner's decision 15): no `--auto` through stage 2, the stage-2
+captures put off. `FIGTATTK` (the battle's animation, which the scene `FIGT表示` calls) is routed to the
+battle's port. **Milestone 4** is story stage 3 as a whole: the sweep is docs/strategy/stage-3-sweep.md,
+the order docs/strategy/README.md, "Milestone 4" — step 1 (`Tｹｲﾌﾞﾘｽ`'s frame) is next.
 `tools/analysis/port_draft.py` drafts text-heavy ranges for hand ports.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.

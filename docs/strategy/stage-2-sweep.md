@@ -267,7 +267,9 @@ stage-2 captures start from the owner's own saves (or a harness that sets `Debug
 | `Tｹｲﾌﾞﾘｽ` | 1855 | the first week of stage 3 only |
 
 The week, `COMMAND`, the other command files, the pickers and every scene are ported or run from
-the player's files. In interactive Godot an unported `T*2` is skipped with a notice
+the player's files — but `FIGTATTK` (the battle's animation, which the scene `FIGT表示` calls from
+`Iﾏｼﾞﾝ` 12-18 and `Gﾊﾟｯﾄﾝ` 2) was neither until 2026-10-11, when it was routed to the battle's port
+(found by the stage-3 sweep). In interactive Godot an unported `T*2` is skipped with a notice
 (`GameScreen.UnportedFiles`), which leaves the war flags unset; `--auto` stops there.
 
 ## Open questions

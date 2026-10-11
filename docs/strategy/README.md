@@ -146,6 +146,11 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     (`MAIN:594`; `Tｹｲﾌﾞﾘｽ` is N3, a later milestone); **the main path first** (Helman, Zeth, the
     gate), then the independent cities, JAPAN, and **God's Door as the last step** (it has no
     stage test and is reached at stage 2). See "Milestone 3" below.
+15. **Milestone 3 closes without `--auto` and without captures; porting goes on** (2026-10-11):
+    `--auto` stays a smoke test of stages 0-1 (it does not play stage 2), the owner's stage-2
+    captures (docs/golden-tests.md, "Capturing stage 2") are put off, and the owner asked to go on
+    porting. The agent took the next stage as the next milestone, as decisions 13-14 did: milestone
+    4 is story stage 3, a sweep first ([stage-3-sweep.md](stage-3-sweep.md)). See "Milestone 4" below.
 
 ## Milestone 1 — the prologue
 
@@ -438,5 +443,37 @@ where recorded:
    and the room (`:3500-4556`) in `Strategy/DungeonCommand.GodsDoor.cs`, so `Cﾒｲｷｭｳ` is ported
    whole; `Iｶﾐ` runs from the player's files (its endings end the game as `GameEnd` until W4 ports
    `OVER`; not run end to end yet — no capture reaches it).
-7. **The whole stage unattended, the owner's captures**: whether `--auto` should play stage 2 to
-   the gate (about 13 conquests on the shortest path) is the owner's call.
+7. **The whole stage unattended, the owner's captures**: not now (decision 15, 2026-10-11) —
+   `--auto` does not play stage 2, the stage-2 captures are put off.
+
+**Milestone 3 is closed** (2026-10-11): every file and range stage 2 reaches is ported (steps
+1-6), checked against the files run by `SceneRunner` on random states and by unit tests; no
+stage-2 capture is recorded yet, and `Iｶﾐ` (God's Door's arc, run from the player's files) has not
+run end to end. The stage-3 sweep found one gap stage 2 already had: `FIGTATTK`, the battle's
+result animation, which the scene `FIGT表示` calls (from `Iﾏｼﾞﾝ` 12-18 and `Gﾊﾟｯﾄﾝ` 2), was neither
+a scene nor routed; it is now routed to the battle's port (`Battle.PlayExchangeAnimationAsync`),
+checked against the file on 1900 random runs of `FIGT表示`, and `ScenarioProgramSweepTests` checks
+that every file the scenes call is a scene, a port or a helper.
+
+## Milestone 4 — story stage 3 (the Kayblis war)
+
+Decision 15. What stage 3 reaches is in [stage-3-sweep.md](stage-3-sweep.md): the week, the
+commands, `Tｹｲﾌﾞﾘｽ2` and the scenes run already; what is missing is `Tｹｲﾌﾞﾘｽ` (1855 lines, the
+Kayblis Empire phase of every stage-3 week). The milestone starts in the first week of stage 3 and
+ends with `StoryStage := 4` (`Iｼﾚｲﾌﾞ` 7, before that week's `Tﾙﾄﾞﾗ`) or ending 8. Steps, in the
+sweep's order (its "Proposed order"):
+
+0. **Sweep** ✓ (2026-10-11): [stage-3-sweep.md](stage-3-sweep.md). The owner's stage-3 checklist
+   waits with the captures (decision 15).
+1. **`Tｹｲﾌﾞﾘｽ`, the frame** (~720 lines): `:1-325`, the guards `:625-669`, the template
+   `:1509-1614`, the captures and collapses `:1615-1778`, the helpers; the armies throw
+   `NotSupportedException` until their step. Check on the way the sweep's corrections: NAT-01
+   (Shangri-La (29) is never Helman's, so Helman's collapse flips nothing), NAT-04 (dead in play),
+   survey-nations §2.2/§2.4 details, and the dictionary's `VAR0637` / `F_Galtia_JoinedKayblis`
+   (sweep, open question 6).
+2. **The generals' units** (~600): Babolat, Redeye, Kite, Galtia, Kesselring `:729-1328`.
+3. **Piar and the assault** (~240): Piar `:670-728`, Kayblis's main army `:1329-1508`.
+4. ~~`FIGTATTK`~~ ✓ (done with milestone 3's close, above).
+5. **The Assault Leaders** (~300): `:326-624`.
+6. **The end**: `Iｼﾚｲﾌﾞ` 7 from the player's files; a test that Kayblis's death reaches stage 4 or
+   ending 8.

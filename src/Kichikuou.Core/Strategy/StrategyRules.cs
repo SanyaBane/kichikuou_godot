@@ -10,7 +10,8 @@ namespace Kichikuou.Core.Strategy;
 /// returns; the game enters it by the jump <c>&amp;#MAIN.ADV:</c>), <c>COM.ADV</c>, <c>COMMAND.ADV</c>,
 /// one of the ported command files or one of their picker screens, a nation's turn or defender
 /// picker (<c>TCﾘｰｻﾞｽ</c>, <c>TCﾘｰｻﾞｽ2</c>, <c>Tﾍﾙﾏﾝ</c>, <c>Tﾍﾙﾏﾝ2</c>, <c>Tﾊﾟｯﾄﾝ</c>, <c>Tｾﾞｽ</c>, <c>Tｾﾞｽ2</c>, <c>Tｹｲﾌﾞﾘｽ2</c>, <c>TJAPAN</c>, <c>TJAPAN2</c>), or a battle file
-/// (<c>FIGT_A</c>, <c>FIGT_B</c>, <c>FIGT</c>, <c>死亡捕獲</c>, run as a <see cref="Battle"/>) runs its
+/// (<c>FIGT_A</c>, <c>FIGT_B</c>, <c>FIGT</c>, <c>死亡捕獲</c>, run as a <see cref="Battle"/>; also
+/// <c>FIGTATTK</c>, the battle's result animation, which the scene <c>FIGT表示</c> calls) runs its
 /// port on the bound context, and so does the save screen (<c>ﾛｰﾄﾞｾｰﾌﾞ</c>, on the context's
 /// save slots); every other file goes to the hooks it wraps (whatever is not ported). Given to a <see cref="SceneRunner"/> as its rule hooks, so a scene that
 /// calls a rule file and a rule file that calls a scene both work:
@@ -34,7 +35,7 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
         "MAIN.ADV", "COM.ADV", "COMMAND.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV", "Cｼｮｳﾆﾝ.ADV", "Cｼﾊｲﾄｼ.ADV", "Cﾆﾝｼﾞｬ.ADV",
         "Cﾃｲﾄ.ADV", "Cﾀｶﾗ.ADV", "各種DATA.ADV", "Cﾒｲｷｭｳ.ADV",
         "Sﾌﾞﾀｲ.ADV", "Sﾌﾞｶ.ADV", "Sﾊｰﾚﾑ.ADV", "Sｱｲﾃﾑ.ADV", "TCﾘｰｻﾞｽ.ADV", "TCﾘｰｻﾞｽ2.ADV", "Tﾍﾙﾏﾝ.ADV", "Tﾍﾙﾏﾝ2.ADV", "Tﾊﾟｯﾄﾝ.ADV", "Tｾﾞｽ.ADV", "Tｾﾞｽ2.ADV", "Tｹｲﾌﾞﾘｽ2.ADV", "TJAPAN.ADV", "TJAPAN2.ADV", "FIGT_A.ADV", "FIGT_B.ADV", "FIGT.ADV",
-        "死亡捕獲.ADV", "ﾛｰﾄﾞｾｰﾌﾞ.ADV",
+        "死亡捕獲.ADV", "FIGTATTK.ADV", "ﾛｰﾄﾞｾｰﾌﾞ.ADV",
     };
 
     /// <summary>The context the rule files run on; set once with <see cref="Bind"/>.</summary>
@@ -91,6 +92,7 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
         "FIGT_B.ADV" => BattleAsync(file, battle => battle.DefendProvinceAsync()),
         "FIGT.ADV" => BattleAsync(file, battle => battle.FightAsync()),
         "死亡捕獲.ADV" => BattleAsync(file, battle => battle.DeathCaptureAsync()),
+        "FIGTATTK.ADV" => Battle.PlayExchangeAnimationAsync(),            // from FIGT表示, inside its own screen
         "ﾛｰﾄﾞｾｰﾌﾞ.ADV" => new LoadSaveScreen(Script, scenario).RunAsync(),
         _ => unported.RunEventAsync(file, entry),
     };

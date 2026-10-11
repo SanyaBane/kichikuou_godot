@@ -1,5 +1,6 @@
 using Kichikuou.Content.Scripts;
 using Kichikuou.Core.Script;
+using Kichikuou.Core.Strategy;
 using Kichikuou.Core.Sys3;
 using Xunit.Abstractions;
 
@@ -321,6 +322,27 @@ public class ScenarioProgramSweepTests(ITestOutputHelper output)
         Assert.Equal(14, sceneStatements.Count(s => s is JumpFileStatement { File: "OVER.ADV" }));
         output.WriteLine($"{programs.Count} files, {programs.Values.Sum(p => p.Statements.Count)} statements, "
             + $"{programs.Values.Sum(p => p.Statements.Count(s => s is MessageStatement))} messages.");
+    }
+
+    /// <summary>
+    /// Every file the scenes call (the scene files, <c>ｵｰﾌﾟﾆﾝｸﾞ</c>, <c>FIGT表示</c>) runs somewhere:
+    /// it is a scene, a file the router ports or a helper of the context — none falls to the
+    /// unported hooks (<c>FIGTATTK</c>, the battle's animation, did until 2026-10-11).
+    /// </summary>
+    [Fact]
+    public void Every_file_the_scenes_call_is_a_scene_a_port_or_a_helper()
+    {
+        if (!Directory.Exists(LocalData.ScenarioDirectory))
+            return;
+        string[] helpers = ["M.ADV", "WAO_MAP.ADV", "WAO_SUB.ADV", "PCMPLAY.ADV"];
+        var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
+        var missing = SceneFiles().Concat(["ｵｰﾌﾟﾆﾝｸﾞ.ADV", "FIGT表示.ADV"])
+            .SelectMany(f => scripts.ReadProgram(f).Statements.OfType<CallFileStatement>())
+            .Where(c => !SceneRunner.IsSceneFile(c.File) && !StrategyRules.PortedFiles.Contains(c.File) && !helpers.Contains(c.File))
+            .GroupBy(c => c.File)
+            .Select(g => $"{g.Key}: {g.Count()} calls, e.g. {g.First().At}")
+            .ToList();
+        Assert.Empty(missing);
     }
 
     /// <summary>

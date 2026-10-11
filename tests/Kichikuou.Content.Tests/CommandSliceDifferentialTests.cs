@@ -535,6 +535,108 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             choose: ChooseInDungeon);
 
     /// <summary>
+    /// <c>FIGT表示</c> (the scenes' scripted battles, every entry) with its 24 calls of
+    /// <c>FIGTATTK</c> run by the battle's port (<see cref="Kichikuou.Core.Combat.Battle.PlayExchangeAnimationAsync"/>,
+    /// the router's route) against <c>FIGTATTK</c> run from the decompile, on random states: the same
+    /// draws and calls and the same memory. The screen events are not compared — the port raises
+    /// the battle's own events where the file draws.
+    /// </summary>
+    [Fact]
+    public async Task FIGTATTK_called_from_FIGT表示_runs_as_the_file()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "FIGTATTK.ADV")))
+            return;
+        var scenario = new ScenarioScripts(LocalData.ScenarioDirectory);
+        var programs = new[] { "FIGT表示.ADV", "FIGTATTK.ADV" }.ToDictionary(f => f, scenario.ReadProgram);
+        int[] entries = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 21, 22, 23, 24, 26];
+        var seen = new HashSet<int>();
+        int cases = DifferentialRuns.Cases(1900);
+        for (int seed = 1; seed <= cases; seed++)
+        {
+            var rng = new Random(seed);
+            var state = RandomState(rng);
+            state.Ev_Entry = (Sys3Int)entries[rng.Next(entries.Length)];
+            var mine = await RunCutsceneAsync(Copy(state), seed, programs, port: true);
+            var original = await RunCutsceneAsync(Copy(state), seed, programs, port: false);
+            int at = FirstDifference(original.Log, mine.Log);
+            Assert.True(at < 0, $"seed {seed}: the runs differ at entry {at}\n{Around("FIGTATTK.ADV", original.Log, mine.Log, at)}");
+            var differences = Differences("FIGTATTK.ADV", original.State.Memory, mine.State.Memory).Take(10).ToList();
+            Assert.True(differences.Count == 0, $"seed {seed}: memory differs\n  " + string.Join("\n  ", differences));
+            if (mine.Log.Any(e => e.StartsWith("draw ", StringComparison.Ordinal)))
+                seen.Add(state.Ev_Entry.Value);
+        }
+        output.WriteLine($"FIGT表示.ADV: {cases} runs, entries with an animation: {string.Join(",", seen.Order())}");
+        int[] animated = [2, 3, 4, 5, 6, 7, 11, 12, 13, 14, 26];         // 1, 8-10, 21-24 call no FIGTATTK
+        DifferentialRuns.AssertReached(animated.Where(e => !seen.Contains(e)).Select(e => $"entry {e}").ToList(), output);
+    }
+
+    /// <summary>
+    /// One run of <c>FIGT表示</c>: <c>FIGTATTK</c> by the port or from the decompile, every other
+    /// file a logged no-op; the log keeps the draws and the calls only.
+    /// </summary>
+    private static async Task<(GameState State, List<string> Log)> RunCutsceneAsync(
+        GameState state, int seed, Dictionary<string, ScriptProgram> programs, bool port)
+    {
+        var log = new List<string>();
+        var input = new CutsceneInput();
+        var hooks = new CutsceneHooks(log, input, port);
+        var runner = new SceneRunner(new Programs(programs), hooks, f => f == "FIGT表示.ADV" || (!port && f == "FIGTATTK.ADV"));
+        var script = new ScriptContext(state, new LoggingRandom(seed, log), new LoggingView([]), input, runner);
+        runner.Bind(script);
+        hooks.Script = script;
+        try
+        {
+            await runner.RunEventAsync("FIGT表示.ADV", state.Ev_Entry);
+            log.Add("end");
+        }
+        catch (ScenarioJumpException e)
+        {
+            log.Add($"jump {e.File}");
+        }
+        return (state, log);
+    }
+
+    private sealed class Programs(Dictionary<string, ScriptProgram> programs) : ISceneSource
+    {
+        public ScriptProgram ReadProgram(string file) =>
+            programs.TryGetValue(file, out var program) ? program : throw new InvalidOperationException($"{file} is a hook here.");
+    }
+
+    /// <summary><c>FIGTATTK</c> to the battle's port (when <c>port</c>), every other call logged.</summary>
+    private sealed class CutsceneHooks(List<string> log, CutsceneInput input, bool port) : IStoryHooks
+    {
+        public ScriptContext? Script { get; set; }
+
+        public Task RunEventAsync(string file, Sys3Int entry)
+        {
+            if (port && file == "FIGTATTK.ADV")
+                return new Kichikuou.Core.Combat.Battle(Script!, input).PlayExchangeAnimationAsync();
+            log.Add($"call {file} entry {entry}");
+            return Task.CompletedTask;
+        }
+    }
+
+    /// <summary>A cutscene asks for keys and pauses only; the pointer rests.</summary>
+    private sealed class CutsceneInput : IGameInput
+    {
+        private static T No<T>() => throw new InvalidOperationException("The cutscene asked for input.");
+
+        public Task<Sys3Int> WaitForKeyAsync() => Task.FromResult(Sys3Int.Zero);
+        public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable) => Task.FromResult(Sys3Int.Zero);
+        public Task<Sys3Int> GetPlayingTrackAsync() => Task.FromResult(Sys3Int.Zero);
+        public Task<Kichikuou.Core.Combat.FigtSelChoice> SelectCommandAsync(Kichikuou.Core.Combat.FigtSelMenu menu) => No<Task<Kichikuou.Core.Combat.FigtSelChoice>>();
+        public Task<Sys3Int?> ChooseAsync(Kichikuou.Core.Combat.BattleMenu menu) => No<Task<Sys3Int?>>();
+        public Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items) => No<Task<int>>();
+        public Task<MouseState> GetMouseAsync() => Task.FromResult(new MouseState(Sys3Int.Zero, Sys3Int.Zero, Sys3Int.Zero));
+        public Task<Sys3Int> SetCursorAsync(Sys3Int shape) => Task.FromResult(Sys3Int.Zero);
+        public Task<IReadOnlyList<Sys3Int>> GetDateAsync() => No<Task<IReadOnlyList<Sys3Int>>>();
+        public Task ResetTimerAsync(Sys3Int value) => Task.CompletedTask;
+        public Task<Sys3Int> GetTimerAsync(int mode) => Task.FromResult(Sys3Int.Zero);
+        public Task<IReadOnlyList<Sys3Int>> GetCdPositionAsync() => No<Task<IReadOnlyList<Sys3Int>>>();
+        public Task<Sys3Int> GetMidiTrackAsync() => No<Task<Sys3Int>>();
+    }
+
+    /// <summary>
     /// The dungeon's menus: half the time the way further in — Start Search, the saved floor, a move
     /// deeper, the spring, the quiz and its right answers —, else at random; Finish once the run is long.
     /// </summary>

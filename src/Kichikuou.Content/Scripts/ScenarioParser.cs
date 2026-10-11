@@ -31,6 +31,7 @@ internal static partial class ScenarioParser
         ["EC"] = [1], ["CB"] = [5], ["CC"] = [6], ["CF"] = [5], ["CL"] = [5], ["CM"] = [9], ["CS"] = [7],
         ["B1"] = [6], ["B2"] = [6], ["B3"] = [6], ["B4"] = [6],
         ["T"] = [2], ["WV"] = [4], ["ZB"] = [1], ["ZC"] = [2], ["ZM"] = [1], ["SL"] = [1], ["IZ"] = [2],
+        ["ZW"] = [1], ["SM"] = [1], ["SQ"] = [3],                       // FIGTATTK.ADV:1, 254, 338-350 (run as a file in tests only)
     };
 
     /// <summary>Reads a whole file as a program.</summary>
