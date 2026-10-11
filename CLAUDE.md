@@ -90,9 +90,9 @@ the order docs/strategy/README.md, "Milestone 4". Step 1 is done: `Tｹｲﾌﾞ
 recoveries, the event chain, the dispatch, the Grief Valley guards, the capture with Helman's and Zeth's
 collapses) is `Strategy/KayblisTurn`. Step 2 is done: the generals' units (`:729-1328`: Babolat, Redeye,
 Kite, Galtia, Kesselring) are `Strategy/KayblisTurn.Generals.cs`. Step 3 is done: Piar's unit
-(`:670-728`) and Kayblis's army at war (`:1329-1508`) are `Strategy/KayblisTurn.Armies.cs`. The Assault
-Leaders (`:326-624`, step 5, next) throw `NotSupportedException`, so stage 3 stops at the first that
-marches (past week 100).
+(`:670-728`) and Kayblis's army at war (`:1329-1508`) are `Strategy/KayblisTurn.Armies.cs`. Step 5 is
+done: the Assault Leaders (`:326-624`) are `Strategy/KayblisTurn.Assault.cs`, so `Tｹｲﾌﾞﾘｽ` is ported
+whole. Next is step 6 (the end: `Iｼﾚｲﾌﾞ` 7, stage 4 or ending 8).
 `tools/analysis/port_draft.py` drafts text-heavy ranges for hand ports.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.

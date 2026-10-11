@@ -769,7 +769,6 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
                 "call Gｻﾃﾗ.ADV 2", "no scene", "guards", "guards again", "guards with portrait 415", "guards with portrait 466",
                 "call Gﾊﾞﾎﾞﾗ.ADV 1", "call Gﾚｯﾄﾞｱｲ.ADV 1", "call Gｶｲﾄ.ADV 1", "call Gｶﾞﾙﾃｨｱ.ADV 1", "call Gｹｯｾﾙ.ADV 1",
                 "call Gﾊﾟｲｱｰﾙ.ADV 1", "call Gｹｲﾌﾞﾘｽ.ADV 3", "the end", "jump",
-                "unported 326",
                 .. new[] { 135, 156, 131, 157, 158, 87 }.Select(c => $"Kayblis's army led by {c}"),
                 .. KayblisGenerals[1].Line.Select(p => $"Kayblis's army attacks {p}"),
                 "Kayblis's army without Kayblis", "Monster Generals above their maximum",
@@ -785,9 +784,16 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
                 "call Gｹｯｾﾙ.ADV 2",
                 "Piar draws again", "Piar gives up", "Piar's unit empty", "Piar attacks", "Piar captures",
                 "Piar's state 2 to 3", "Piar's state 4 to 5", .. Enumerable.Range(2, 5).Select(n => $"call Gﾊﾟｲｱｰﾙ.ADV {n}"),
+                .. Enumerable.Range(191, 8).Select(c => $"Assault Leader {c} marches"),
+                .. AssaultLists.SelectMany(l => l.Line.Select(p => $"{l.Name} list attacks {p}")),
+                .. AssaultLists.SelectMany(l => l.Line.Select(p => $"{l.Name} list captures at {p}")),
+                "the south list takes Leazas Castle again", "the north list all Kayblis's", "an Assault Leader alone at Maunes",
+                "an Assault Leader revived", "an Assault Leader too weak", "an Assault Leader held under 1000 by his maximum",
+                "a Monster General left out", "a Monster General called up without a draw",
             ],
             ScribbleKayblisTurn,
-            unported: true);
+            cases: 4000,
+            logPlaces: true);
 
     [Fact]
     public Task Kayblis_captures_exactly_as_L_026bf() =>
@@ -816,10 +822,12 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
     /// chain's flags around their tests (Medusa's state and counter, Camilla's state, the war, Silky's
     /// state, souls and week, Warg, Stessel, Nagi, Kaybwan, Kaybnyan, Satella); Grief Valley (89),
     /// Silky's Castle (81), Bone Forest (90), the Red House (85) held by the player or not, Kayblis
-    /// moved or not. A third of the cases keep the armies home (each general dead or not yet
-    /// introduced, Piar at 0 or 100, no war, week 100 at most), so the run reaches the file's end; a
-    /// third send the generals (<see cref="AimAtKayblisGenerals"/>) and keep the later armies home;
-    /// a third send them all.
+    /// moved or not. A quarter of the cases keep the armies home (each general dead or not yet
+    /// introduced, Piar at 0 or 100, no war, week 100 at most); a quarter send the generals
+    /// (<see cref="AimAtKayblisGenerals"/>) and keep the later armies home; a quarter send them all,
+    /// the Assault Leaders (<see cref="AimAtAssaultLeaders"/>) among them past week 100; a quarter keep
+    /// all but the Assault Leaders home, past week 100, half of them with nothing at all before the
+    /// leaders (<see cref="QuietBeforeTheLeaders"/>).
     /// </summary>
     private static void AimAtKayblisTurn(GameState state, Random rng)
     {
@@ -866,8 +874,10 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
         state.F_Galtia_DefectedToKayblis = (Sys3Int)rng.Next(0, 2);
         state.F_Kesselring_State = (Sys3Int)rng.Next(0, 3);
         state.F_Piar_State = (Sys3Int)(rng.Next(3) switch { 0 => 0, 1 => 100, _ => rng.Next(3) != 0 ? rng.Next(1, 7) : rng.Next(1, 100) });
-        int group = rng.Next(3);
-        if (group != 0)
+        int group = rng.Next(4);
+        if (group is 2 or 3)
+            AimAtAssaultLeaders(state, rng);                            // before the generals, whose lines win
+        if (group is 1 or 2)
         {
             AimAtKayblisGenerals(state, rng);
             if (group == 1)
@@ -891,7 +901,88 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
             state.F_Piar_State = (Sys3Int)(rng.Next(2) == 0 ? 0 : 100);
             if (state.F_Kayblis_War == 2)
                 state.F_Kayblis_War = 0;
-            state.Week = (Sys3Int)rng.Next(60, 101);
+            state.Week = (Sys3Int)(group == 3 ? rng.Next(101, 171) : rng.Next(60, 101));
+            if (group == 3 && rng.Next(2) == 0)
+                QuietBeforeTheLeaders(state);
+        }
+    }
+
+    /// <summary>
+    /// Nothing before the Assault Leaders, so they find the provinces as laid out: past week S, no
+    /// assault pending, the event chain shut (Medusa (134), Camilla (91), Kesselring (133), Satella
+    /// (157) dead, Medusa met, Silky, Warg, Kaybwan and Kaybnyan past their scenes), the generals dead
+    /// and introduced, Piar's arc over, no war, Kayblis moved (no guards, no <c>Gｹｲﾌﾞﾘｽ</c> 3).
+    /// </summary>
+    private static void QuietBeforeTheLeaders(GameState state)
+    {
+        state.F_DemonWar_Stage = 20;
+        state.Ev_KayblisAssault = 0;
+        foreach (int c in new[] { 91, 129, 130, 131, 132, 133, 134, 157 })
+            state.Cmdrs[c].Status = 0;
+        state.F_Medusa_State = 1;
+        state.F_Silky_State = 10;
+        state.N_Warg_Stage = 1;
+        state.F_Kaybwan_State = 0;
+        state.F_Kaybnyan_State = 0;
+        state.F_Babolat_State = 1;
+        state.F_Redeye_State = 1;
+        state.F_Calory_State = 1;
+        state.F_Galtia_State = 1;
+        state.F_Kesselring_State = 1;
+        state.F_Piar_State = 100;
+        state.F_Kayblis_War = 0;
+        state.F_Kayblis_Moved = 1;
+    }
+
+    /// <summary>The Assault Leaders' two lists (<c>Tｹｲﾌﾞﾘｽ.ADV:364-490</c>, <c>:530-617</c>).</summary>
+    private static readonly (string Name, int[] Line)[] AssaultLists =
+    [
+        ("north", [80, 81, 89, 50, 48, 45, 83, 87, 90, 72, 71, 68, 69, 44, 42, 39, 36, 31, 13, 67, 62, 59, 58, 16, 15, 2, 3, 12, 11, 4, 1]),
+        ("south", [80, 81, 82, 84, 86, 88, 91, 76, 74, 70, 68, 66, 69, 67, 62, 59, 58, 16, 15, 13, 2, 1]),
+    ];
+
+    /// <summary>
+    /// The Assault Leaders on the march: the 1st to 8th (191-198) dead now and then, with troops and
+    /// recovery around the 1000 they need (held under it by a smaller maximum now and then, near the
+    /// 16-bit ceiling now and then); Monster Generals (87, 88) at their boot maximum, small (under 99
+    /// after the call-up) or tiny (no draw), of classes on both sides of 5; each list Kayblis's up to a
+    /// random province (one of the last six more often), the player's or another owner's, all of it
+    /// Kayblis's now and then (Leazas Castle (1) included) — the lists laid in a random order, so the
+    /// later one may cut the earlier short; the north list stopping at Maunes (13) more often.
+    /// </summary>
+    private static void AimAtAssaultLeaders(GameState state, Random rng)
+    {
+        for (int c = 191; c <= 198; c++)
+        {
+            var leader = state.Cmdrs[c];
+            leader.Status = (Sys3Int)(rng.Next(5) == 0 ? 0 : rng.Next(1, 3));
+            leader.MaxHP = (Sys3Int)rng.Next(0, 20);
+            leader.HP = (Sys3Int)Math.Max(0, leader.MaxHP.Value - rng.Next(-2, 6));
+            leader.MaxTroops = (Sys3Int)(rng.Next(6) == 0 ? rng.Next(0, 1100) : rng.Next(1000, 12000));
+            leader.Troops = (Sys3Int)(rng.Next(12) == 0 ? rng.Next(60000, 65536) : rng.Next(3) switch
+            {
+                0 => rng.Next(700, 1000),
+                1 => rng.Next(0, 300),
+                _ => rng.Next(0, leader.MaxTroops.Value + 1),
+            });
+            leader.Recovery = (Sys3Int)(rng.Next(10) == 0 ? rng.Next(20000, 32767) : rng.Next(0, 300));
+        }
+        foreach (int c in new[] { 87, 88 })
+        {
+            state.Cmdrs[c].MaxTroops = (Sys3Int)(rng.Next(4) switch { 0 => rng.Next(0, 6), 1 => rng.Next(0, 500), _ => 1200 });
+            state.Cmdrs[c].MaxHP = (Sys3Int)rng.Next(0, 20);
+            state.Cmdrs[c].Class = (Sys3Int)rng.Next(0, 8);
+        }
+        int[] others = [0, 2, 3, 4, 5, 6, 7, 9, 10, 11];
+        foreach (var (name, line) in AssaultLists.OrderBy(_ => rng.Next()).ToList())
+        {
+            int depth = rng.Next(20) == 0 ? line.Length : rng.Next(4) == 0 ? rng.Next(line.Length - 6, line.Length) : rng.Next(line.Length);
+            if (name == "north" && rng.Next(4) == 0)
+                depth = 18;                                             // Maunes (13)
+            for (int i = 0; i < depth; i++)
+                state.Provs[line[i]].Owner = 8;
+            if (depth < line.Length)
+                state.Provs[line[depth]].Owner = (Sys3Int)(rng.Next(2) == 0 ? others[rng.Next(others.Length)] : 1);
         }
     }
 
@@ -1053,13 +1144,78 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
             yield return "jump";
         foreach (string feature in KayblisGeneralFeatures(before, after, log))
             yield return feature;
+        foreach (string feature in KayblisAssaultFeatures(before, after, log))
+            yield return feature;
+    }
+
+    /// <summary>
+    /// The Assault Leaders: each march by leader, list and province — a battle told by the head of
+    /// the priority list in its call, a capture by the head in the log of its report, with the owner
+    /// the capture's first map call saw (Kayblis's: the south list run on into Leazas Castle (1),
+    /// NAT-16); the leader alone at Maunes (13), a Monster General left out of the unit. In a run that
+    /// reached the file's end: a leader revived, too weak (held under 1000 by his maximum or not) or
+    /// finding all of the north list Kayblis's; a Monster General called up without a draw.
+    /// </summary>
+    private static IEnumerable<string> KayblisAssaultFeatures(GameState before, GameState after, List<string> log)
+    {
+        var marched = new HashSet<int>();
+        for (int i = 0; i < log.Count; i++)
+        {
+            string entry = log[i];
+            bool battle = entry.StartsWith("call FIGT_B.ADV ", StringComparison.Ordinal);
+            bool capture = entry.StartsWith("MessageEvent Tｹｲﾌﾞﾘｽ.ADV:1628 ", StringComparison.Ordinal);
+            if (!battle && !capture)
+                continue;
+            int leader = int.Parse(battle ? Field(entry, "Tmp").Split(',')[0] : Field(entry, "Tmp0001"));
+            if (leader is < 191 or > 198)
+                continue;
+            marched.Add(leader);
+            string list = AssaultLists[(leader - 191) % 2].Name;
+            string prov = Field(entry, "Prov_Cur");
+            if (battle)
+            {
+                yield return $"{list} list attacks {prov}";
+                string[] party = Field(entry, "Party").Split(',');
+                if (list == "north" && prov == "13" && party[1..].All(p => p == "0"))
+                    yield return "an Assault Leader alone at Maunes";
+                else if (party.Count(p => p != "0") < 3)
+                    yield return "a Monster General left out";
+                continue;
+            }
+            yield return $"{list} list captures at {prov}";
+            int map = log.FindLastIndex(i, e => e.StartsWith("MapEvent { Mode = 1 }", StringComparison.Ordinal));
+            if (map >= 0 && Field(log[map], "Owner") == "8")
+                yield return list == "south" && prov == "1" ? "the south list takes Leazas Castle again" : $"the {list} list takes {prov} again";
+        }
+        foreach (int leader in marched)
+            yield return $"Assault Leader {leader} marches";
+        if (log.LastOrDefault() != "return")
+            yield break;
+        int[] weeks = [100, 110, 120, 130, 140, 150, 155, 160];
+        for (int k = 0; k < weeks.Length && before.Week > (Sys3Int)weeks[k]; k++)
+        {
+            int leader = 191 + k;
+            var was = before.Cmdrs[leader];
+            if (was.Status == 0)
+                yield return "an Assault Leader revived";
+            else if (after.Cmdrs[leader].Troops < 1000)
+                yield return was.Troops.Value + was.Recovery.Value >= 1000 ? "an Assault Leader held under 1000 by his maximum" : "an Assault Leader too weak";
+            else if (k % 2 == 0 && !marched.Contains(leader))
+                yield return "the north list all Kayblis's";
+        }
+        if (before.Week > 100 && (before.Cmdrs[87].MaxTroops / 3 <= 1 || before.Cmdrs[88].MaxTroops / 3 <= 1))
+            yield return "a Monster General called up without a draw";
+
+        static string Field(string entry, string name) =>
+            entry[(entry.IndexOf($" {name} ", StringComparison.Ordinal) + name.Length + 2)..].Split(' ')[0];
     }
 
     /// <summary>
     /// The generals' marches: each battle by army (its name in string 10) and province, a second
     /// attack, a general killed; a province on the lines taken without a battle (told by its owner:
     /// Grief Valley (89), whose owner the scenes write, left out; Zeth Palace (69) only without a battle
-    /// there), Kesselring's capture after his flight; Redeye alone at Maunes (13), the battle there
+    /// there), Kesselring's capture (his name at the head of the priority list when its report shows);
+    /// Redeye alone at Maunes (13), the battle there
     /// after <c>Gﾚｯﾄﾞｱｲ</c> 8 or not (NAT-28), his state's steps; Kite's draw in ten; <c>Gｹｯｾﾙ</c> 2 at
     /// Bone Forest (90) or the Red House (85). Piar's unit: her target drawn again, given up, her unit
     /// after <c>Gﾊﾟｲｱｰﾙ</c> 2 attacking, capturing (a scene's scribble: dead in play) or empty (the same),
@@ -1087,8 +1243,7 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
             if (p != 89 && before.Provs[p].Owner != 8 && after.Provs[p].Owner == 8
                 && (p != 69 || !battles.Any(b => Field(b, "Prov_Cur") == "69")))
                 yield return $"capture at {p}";
-        int flight = log.FindLastIndex(e => e.Contains("Tｹｲﾌﾞﾘｽ.ADV:1321", StringComparison.Ordinal));
-        if (flight >= 0 && log.Skip(flight).Any(e => e.Contains("Tｹｲﾌﾞﾘｽ.ADV:1628", StringComparison.Ordinal)))
+        if (log.Any(e => e.StartsWith("MessageEvent Tｹｲﾌﾞﾘｽ.ADV:1628 ", StringComparison.Ordinal) && Field(e, "Tmp0001") == "133"))
             yield return "Kesselring captures";
         int ninja = log.FindIndex(e => e.StartsWith("call Gﾚｯﾄﾞｱｲ.ADV entry 8 ", StringComparison.Ordinal));
         if (ninja >= 0)
@@ -1125,7 +1280,8 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
         foreach (var (from, to) in new[] { (2, 3), (4, 5) })
             if (before.F_Piar_State == (Sys3Int)from && after.F_Piar_State == (Sys3Int)to)
                 yield return $"Piar's state {from} to {to}";
-        foreach (string battle in battles.Where(b => b.EndsWith(" Str10 Kayblis Unit", StringComparison.Ordinal)))
+        foreach (string battle in battles.Where(b => b.EndsWith(" Str10 Kayblis Unit", StringComparison.Ordinal)
+                                                     && int.Parse(Field(b, "Tmp").Split(',')[0]) is < 191 or > 198))   // not an Assault Leader's
         {
             string leader = Field(battle, "Party").Split(',')[0];
             yield return leader == "0" ? "Kayblis's army without Kayblis" : $"Kayblis's army led by {leader}";
@@ -1513,7 +1669,8 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
         Action<GameState, Random>? scribble = null,
         int cases = Cases,
         bool unported = false,
-        string? label = null)
+        string? label = null,
+        bool logPlaces = false)
     {
         if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, file)))
             return;
@@ -1529,8 +1686,8 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
             var rng = new Random(seed);
             var state = RandomState(rng);
             aim(state, rng);
-            var ported = await RunAsync(Copy(state), seed, script => port(script, scenario), null, file, scribble);
-            var original = await RunAsync(Copy(state), seed, null, program, file, scribble);
+            var ported = await RunAsync(Copy(state), seed, script => port(script, scenario), null, file, scribble, logPlaces);
+            var original = await RunAsync(Copy(state), seed, null, program, file, scribble, logPlaces);
 
             if (ported.Unported is not null)
             {
@@ -1577,12 +1734,12 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
 
     private static async Task<Run> RunAsync(
         GameState state, int seed, Func<ScriptContext, Task>? port, ScriptProgram? program, string file,
-        Action<GameState, Random>? scribble)
+        Action<GameState, Random>? scribble, bool logPlaces)
     {
         var log = new List<string>();
         var hooks = new ScribblingHooks(state, seed, log, scribble);
         var input = new NoInput(log);
-        var view = new LoggingView(log);
+        var view = new LoggingView(log, logPlaces ? state : null);
         var random = new LoggingRandom(seed, log);
         try
         {
@@ -1852,20 +2009,27 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
         }
     }
 
-    /// <summary>Logs every event with its lists spelled out.</summary>
-    private sealed class LoggingView(List<string> log) : IScriptView
+    /// <summary>
+    /// Logs every event with its lists spelled out; with <paramref name="places"/>, a map call or a
+    /// message also with the province under the cursor, its owner and the head of the priority list
+    /// (the army whose capture it reports).
+    /// </summary>
+    private sealed class LoggingView(List<string> log, GameState? places = null) : IScriptView
     {
         public Task ShowAsync(ScriptEvent e)
         {
             if (e is ScreenEvent)
                 return Task.CompletedTask;                              // the port's semantic events: no statement in the script
-            log.Add(e switch
+            string entry = e switch
             {
                 ValueMessageEvent v => $"ValueMessageEvent {v.Text} [{string.Join(",", v.Values)}] [{string.Join(",", v.StringVariables ?? [])}]",
                 MessageEvent m => $"MessageEvent {m.Text} [{string.Join(",", m.StringVariables ?? [])}]",
                 EngineEvent g => $"EngineEvent {g.Command} [{string.Join(",", g.Args)}]",
                 _ => e.ToString(),
-            });
+            };
+            if (places is not null && e is MapEvent or MessageEvent)
+                entry += $" Prov_Cur {places.Prov_Cur} Owner {places.Provs[places.Prov_Cur].Owner} Tmp0001 {places.Tmp0001}";
+            log.Add(entry);
             return Task.CompletedTask;
         }
     }

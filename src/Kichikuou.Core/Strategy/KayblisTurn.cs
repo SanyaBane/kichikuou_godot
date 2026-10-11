@@ -20,9 +20,9 @@ namespace Kichikuou.Core.Strategy;
 /// neither his nor the player's is taken without a battle (<see cref="CaptureAsync"/>), with
 /// Helman's and Zeth's collapses. The generals' units (<c>:729-1328</c>, step 2) are in
 /// <c>KayblisTurn.Generals.cs</c>, Piar's unit and Kayblis's army (<c>:670-728</c>,
-/// <c>:1329-1508</c>, step 3) in <c>KayblisTurn.Armies.cs</c>; the Assault Leaders (<c>:326-624</c>)
-/// are ported in step 5 of milestone 4 and fail until then. The army names (<c>MS 10</c>) and Monster General's name (<c>MS 4</c>) are read
-/// from the player's files through <paramref name="scenario"/>.
+/// <c>:1329-1508</c>, step 3) in <c>KayblisTurn.Armies.cs</c>, the Assault Leaders (<c>:326-624</c>,
+/// step 5) in <c>KayblisTurn.Assault.cs</c>. The army names (<c>MS 10</c>) and Monster General's name
+/// (<c>MS 4</c>) are read from the player's files through <paramref name="scenario"/>.
 /// </summary>
 public sealed partial class KayblisTurn(ScriptContext script, IScenarioSource? scenario = null)
     : NationFile(script, "Tｹｲﾌﾞﾘｽ.ADV", scenario)
@@ -505,13 +505,4 @@ public sealed partial class KayblisTurn(ScriptContext script, IScenarioSource? s
         await Script.MapCallAsync(4);
         // QUIRK: NAT-01 — \0: before @L_02950: one province only.
     }
-
-    /// <summary>
-    /// <c>Tｹｲﾌﾞﾘｽ.ADV:326-491</c> / <c>:492-624</c> (<c>L_00881</c> / <c>L_00c91</c>) — an Assault
-    /// Leader's army on the north or the south list (milestone 4 step 5).
-    /// </summary>
-    private Task AssaultLeaderAsync(bool north) =>
-        throw (north
-            ? NotPorted(326, "an Assault Leader's army, north (L_00881)", "N3, milestone 4 step 5")
-            : NotPorted(492, "an Assault Leader's army, south (L_00c91)", "N3, milestone 4 step 5"));
 }

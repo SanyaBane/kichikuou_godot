@@ -11,7 +11,7 @@ namespace Kichikuou.Core.Tests.Strategy;
 /// Kayblis's turn <c>Tｹｲﾌﾞﾘｽ</c> (<see cref="KayblisTurn"/>, milestone 4 step 1: the frame — week S,
 /// the recoveries, the event chain, the dispatch, the Grief Valley (89) guards, the capture with
 /// Helman's and Zeth's collapses; step 2: the units of Babolat, Redeye, Kite, Galtia and
-/// Kesselring; step 3: Piar's unit and Kayblis's army). Also compared with the decompile on random states (Content tests,
+/// Kesselring; step 3: Piar's unit and Kayblis's army; step 5: the Assault Leaders). Also compared with the decompile on random states (Content tests,
 /// <c>NationTurnDifferentialTests</c>).
 /// </summary>
 public class KayblisTurnTests
@@ -748,18 +748,196 @@ public class KayblisTurnTests
         Assert.Equal([1628, 1628], rig.Lines);
     }
 
-    [Fact]
-    public async Task After_week_100_the_first_Assault_Leader_marches()
+    /// <summary>
+    /// A quiet week <paramref name="week"/>: Monster Generals (87, 88) at their boot values (1200
+    /// troops at most, so each refill draws <c>RND(400)</c>; 10 / 4 HP; classes 0 and 2); the 1st to
+    /// 8th Assault Leaders (191-198) alive with 5000 of 10000 troops, recovery 200, 5 of 10 HP.
+    /// </summary>
+    private static TurnRig AssaultRig(int week, params int[] draws)
     {
-        var rig = new TurnRig(2, 5);
-        rig.State.Week = 101;
+        var rig = new TurnRig([2, 5, .. draws]);
+        rig.State.Week = (Sys3Int)week;
+        foreach (var (c, hp, cls) in new[] { (87, 10, 0), (88, 4, 2) })
+        {
+            rig.State.Cmdrs[c].MaxTroops = 1200;
+            rig.State.Cmdrs[c].MaxHP = (Sys3Int)hp;
+            rig.State.Cmdrs[c].Class = (Sys3Int)cls;
+        }
+        for (int c = 191; c <= 198; c++)
+        {
+            var leader = rig.State.Cmdrs[c];
+            leader.Status = 1;
+            leader.Troops = 5000;
+            leader.MaxTroops = 10000;
+            leader.Recovery = 200;
+            leader.HP = 5;
+            leader.MaxHP = 10;
+        }
+        return rig;
+    }
 
-        var e = await Assert.ThrowsAsync<NotSupportedException>(rig.RunAsync);
+    /// <summary>Every <c>FIGT_B</c> call as "party at province RM mode".</summary>
+    private static List<string> Battles(TurnRig rig)
+    {
+        var battles = new List<string>();
+        rig.Story.OnCall = (file, _) =>
+        {
+            if (file == "FIGT_B.ADV")
+                battles.Add($"{rig.State.Bt_EnemyParty1.Value},{rig.State.Bt_EnemyParty2.Value},{rig.State.Bt_EnemyParty3.Value},{rig.State.Bt_EnemyParty4.Value} at {rig.State.Prov_Cur.Value} RM {rig.State.Bt_EnemyRetreatMode.Value}");
+        };
+        return battles;
+    }
 
-        Assert.Contains("Tｹｲﾌﾞﾘｽ.ADV:326", e.Message);
-        Is(191, rig.State.Tmp0001);
-        Is(87, rig.State.Tmp0002);
-        Is(88, rig.State.Tmp0003);
+    [Fact]
+    public async Task After_week_100_the_first_Assault_Leader_marches_on_the_north_list_with_two_Monster_Generals()
+    {
+        var rig = AssaultRig(101, 100, 300);
+        foreach (int p in new[] { 80, 81, 89 })                 // Sulfur Forest, Silky's Castle, Grief Valley Kayblis's
+            rig.State.Provs[p].Owner = 8;
+        rig.State.Provs[50].Owner = 1;                          // Great Wall of Helman B the player's
+        var battles = Battles(rig);
+
+        await rig.RunAsync();
+
+        Assert.Equal(["191,87,88,0 at 50 RM 1"], battles);
+        Assert.Equal([3, 5, 400, 400], rig.Random.Draws);       // a third of each maximum
+        Is(340, rig.State.Cmdrs[87].Troops);                    // a fifth of 1200, and the draw
+        Is(540, rig.State.Cmdrs[88].Troops);
+        Is(10, rig.State.Cmdrs[87].HP);
+        Is(1, rig.State.Cmdrs[88].Status);
+        Is(5200, rig.State.Cmdrs[191].Troops);                  // his recovery once
+        Is(8, rig.State.Cmdrs[191].HP);
+        Is(86, rig.State.Cmdr_Cur);                             // the file's end
+
+        // A province not the player's is taken without a battle.
+        rig = AssaultRig(101, 100, 300);
+        battles = Battles(rig);
+        await rig.RunAsync();
+        Assert.Empty(battles);
+        Is(8, rig.State.Provs[80].Owner);
+        Assert.Equal([1628], rig.Lines);
+    }
+
+    [Fact]
+    public async Task The_Assault_Leaders_march_one_per_threshold_on_the_lists_in_turn()
+    {
+        var rig = AssaultRig(161, [.. Enumerable.Repeat(1, 16)]);
+        rig.State.Provs[80].Owner = 1;                          // Sulfur Forest, first on both lists
+        var leaders = new List<int>();
+        rig.Story.OnCall = (file, _) => leaders.Add(rig.State.Bt_EnemyParty1.Value);
+
+        await rig.RunAsync();
+
+        Assert.Equal([191, 192, 193, 194, 195, 196, 197, 198], leaders);
+        Assert.Equal([3, 5, .. Enumerable.Repeat(400, 16)], rig.Random.Draws);
+
+        rig = AssaultRig(160, [.. Enumerable.Repeat(1, 14)]);   // not past 160: the 8th stays out
+        rig.State.Provs[80].Owner = 1;
+        leaders = [];
+        rig.Story.OnCall = (file, _) => leaders.Add(rig.State.Bt_EnemyParty1.Value);
+        await rig.RunAsync();
+        Assert.Equal([191, 192, 193, 194, 195, 196, 197], leaders);
+    }
+
+    [Fact]
+    public async Task A_dead_Assault_Leader_is_revived_and_stays_home_and_so_does_one_under_1000_troops()
+    {
+        var rig = AssaultRig(111, 1, 1, 1, 1);
+        rig.State.Provs[80].Owner = 1;
+        rig.State.Cmdrs[191].Status = 0;
+        rig.State.Cmdrs[191].Troops = 0;
+        rig.State.Cmdrs[192].Troops = 900;                      // 1100 after his recovery, but his maximum is 950
+        rig.State.Cmdrs[192].MaxTroops = 950;
+        rig.State.Cmdrs[192].HP = 9;
+        rig.State.Cmdrs[87].Status = 0;
+        var battles = Battles(rig);
+
+        await rig.RunAsync();
+
+        Assert.Empty(battles);
+        Assert.Equal([3, 5, 400, 400, 400, 400], rig.Random.Draws);  // the Monster Generals called up all the same
+        Is(1, rig.State.Cmdrs[87].Status);
+        Is(1, rig.State.Cmdrs[191].Status);
+        Is(1, rig.State.Cmdrs[191].HP);
+        Is(0, rig.State.Cmdrs[191].Troops);
+        Is(950, rig.State.Cmdrs[192].Troops);
+        Is(10, rig.State.Cmdrs[192].HP);
+    }
+
+    [Fact]
+    public async Task On_the_north_list_the_leader_goes_alone_to_Maunes_and_stays_home_when_the_list_is_Kayblis_s()
+    {
+        int[] north = [80, 81, 89, 50, 48, 45, 83, 87, 90, 72, 71, 68, 69, 44, 42, 39, 36, 31];
+        var rig = AssaultRig(101, 1, 1);
+        foreach (int p in north)
+            rig.State.Provs[p].Owner = 8;
+        rig.State.Provs[13].Owner = 1;                          // Maunes
+        var battles = Battles(rig);
+        await rig.RunAsync();
+        Assert.Equal(["191,0,0,0 at 13 RM 1"], battles);
+
+        // All of it Kayblis's, Leazas Castle (1) as well: nothing.
+        rig = AssaultRig(101, 1, 1);
+        int[] all = [.. north, 13, 67, 62, 59, 58, 16, 15, 2, 3, 12, 11, 4, 1];
+        foreach (int p in all)
+            rig.State.Provs[p].Owner = 8;
+        battles = Battles(rig);
+        await rig.RunAsync();
+        Assert.Empty(battles);
+        Assert.Empty(rig.Lines);
+    }
+
+    [Fact]
+    public async Task The_south_list_keeps_its_unit_at_Maunes_and_runs_on_into_Leazas_Castle()
+    {
+        int[] south = [80, 81, 82, 84, 86, 88, 91, 76, 74, 70, 68, 66, 69, 67, 62, 59, 58, 16, 15];
+        var rig = AssaultRig(111, 1, 1, 1, 1);
+        rig.State.Cmdrs[191].Status = 0;                        // the 1st revived, so only the 2nd marches
+        foreach (int p in south)
+            rig.State.Provs[p].Owner = 8;
+        rig.State.Provs[13].Owner = 1;
+        var battles = Battles(rig);
+        await rig.RunAsync();
+        Assert.Equal(["192,87,88,0 at 13 RM 1"], battles);
+
+        // QUIRK: NAT-16 — all of it Kayblis's, Leazas Castle (1) too: taken again.
+        rig = AssaultRig(111, 1, 1, 1, 1);
+        rig.State.Cmdrs[191].Status = 0;
+        int[] all = [.. south, 13, 2, 1];
+        foreach (int p in all)
+            rig.State.Provs[p].Owner = 8;
+        battles = Battles(rig);
+        await rig.RunAsync();
+        Assert.Empty(battles);
+        Assert.Equal([1628], rig.Lines);
+        Is(8, rig.State.Provs[1].Owner);
+    }
+
+    [Fact]
+    public async Task A_Monster_General_under_99_troops_and_of_a_class_under_5_stays_out()
+    {
+        // 87: 300 troops at most, a fifth is 60 and the draw 30; 88: at most 3, a third is 1, no draw.
+        var rig = AssaultRig(101, 30);
+        rig.State.Cmdrs[87].MaxTroops = 300;
+        rig.State.Cmdrs[88].MaxTroops = 3;
+        rig.State.Provs[80].Owner = 1;
+        var battles = Battles(rig);
+
+        await rig.RunAsync();
+
+        Assert.Equal(["191,0,0,0 at 80 RM 1"], battles);
+        Assert.Equal([3, 5, 100], rig.Random.Draws);
+        Is(90, rig.State.Cmdrs[87].Troops);
+        Is(1, rig.State.Cmdrs[88].Troops);
+
+        rig = AssaultRig(101, 30);                              // of class 5, 87 goes along
+        rig.State.Cmdrs[87].MaxTroops = 300;
+        rig.State.Cmdrs[87].Class = 5;
+        rig.State.Cmdrs[88].MaxTroops = 3;
+        rig.State.Provs[80].Owner = 1;
+        battles = Battles(rig);
+        await rig.RunAsync();
+        Assert.Equal(["191,87,0,0 at 80 RM 1"], battles);
     }
 
     [Fact]

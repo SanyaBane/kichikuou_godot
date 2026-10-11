@@ -132,7 +132,14 @@ file — where it differs, it is said below (captures, quirk candidates). Shape:
    (195); > 150 6th (196); > 155 7th (197); > 160 8th (198), alternating. Each refills Monster
    Generals (commanders 87, 88) to `max/5 + RND(max/3)` (two draws); a dead leader is revived at HP 1
    and does not march that week (`:347-351`), one under 1000 troops after `+Recovery` neither
-   (`:360-362`); the leader goes alone at Maunes (13) on the north list (`:436-442`).
+   (`:360-362`); the leader goes alone at Maunes (13) on the north list (`:436-442`). Checked with
+   step 5 (2026-10-11): all confirmed; retreat mode 1; the two Monster Generals are called up alive at
+   full HP for every leader, dead, weak or marching (under 99 troops and of a class under 5 the filter
+   leaves them out); a living leader gains 3 HP and his recovery once (each up to its maximum); no
+   troop sum, no empty-unit test (the leader is alive in slot 1); the south list keeps the unit at
+   Maunes (13); with all of the north list (31 provinces, Sulfur Forest (80) … Leazas Castle (1))
+   Kayblis's the leader stays home, while the south list (22) runs on into `L_00faf` at Leazas Castle
+   (1) and takes it again (`:614-618`, NAT-16, dead in play).
 
 **Kayblis's main army** (`L_02038`, only with `F_Kayblis_War = 2`): Kayblis (commander 135) alone;
 then each of Silky (156), Galtia (131, with `F_Galtia_DefectedToKayblis ≠ 0`), Satella (157), Meglass (158) alive with
@@ -187,7 +194,7 @@ battles a week, the scenes' own (`Gｶﾞﾙﾃｨｱ` 2 `:324`) and, through `F
   What is left is the missing jump after it (`:140-143`): the chain goes on — NAT-26.
 - **Dead code** — NAT-16: `:107-109` (`Ev_WeeklyEventDone` is still 0 there: no scene of the chain
   before it writes it). The south list's fall-through into `L_00faf` (`:614-618`, only with Leazas
-  Castle (1) lost) comes with the Assault Leaders (step 5).
+  Castle (1) lost) — confirmed with step 5, added to NAT-16.
 - NAT-04 is dead in play (confirmed): the jump at `:3-8` happens once, in week S, before any `Ai_*`
   write (`F_DemonWar_Stage` reaches 20 only at `Gｹｲﾌﾞﾘｽ:2105`; `MAIN:989-993` zeroes it only with
   `F_Kayblis_War = 1`, when the phase never runs).
@@ -310,7 +317,7 @@ attack every week.
 
 | What | Lines | Reached |
 |---|---|---|
-| `Tｹｲﾌﾞﾘｽ` | 1855 | every week from S (`MAIN:594-629`) — main path. The frame (step 1, 2026-10-11, `Strategy/KayblisTurn`) and the generals' units `:729-1328` (step 2, 2026-10-11, `Strategy/KayblisTurn.Generals.cs`) and Piar's unit `:670-728` and Kayblis's army `:1329-1508` (step 3, `Strategy/KayblisTurn.Armies.cs`) are ported; the Assault Leaders `:326-624` stop the run ("not ported yet") until step 5 |
+| ~~`Tｹｲﾌﾞﾘｽ`~~ | 1855 | every week from S (`MAIN:594-629`) — main path. **Ported whole** (2026-10-11): the frame (step 1, `Strategy/KayblisTurn`), the generals' units `:729-1328` (step 2, `Strategy/KayblisTurn.Generals.cs`), Piar's unit `:670-728` and Kayblis's army `:1329-1508` (step 3, `Strategy/KayblisTurn.Armies.cs`), the Assault Leaders `:326-624` (step 5, `Strategy/KayblisTurn.Assault.cs`) |
 | `FIGTATTK` | 395 | from `FIGT表示`, a scene: its entries 2-7, 11-14 and 26 call it (24 sites); at stage 3 `Gｼﾙｷｨ` 8 (`FIGT表示` 26, once, above) and `Gﾌﾘｰｸ` 4 (`FIGT表示` 2); already at stage 2 `Iﾏｼﾞﾝ` 12, 14, 16, 18 (`FIGT表示` 3, 5, 6 and 7, 14) and `Gﾊﾟｯﾄﾝ` 2 (4). Was neither a scene file (`SceneRunner.IsSceneFile`) nor in `StrategyRules.PortedFiles`, so `ScriptContext.CallAsync` sent it to the unported hooks (Godot: skipped with a notice; `--auto`: stops), losing its one `Y 4, 2` per call (`FIGTATTK.ADV:234`). **Routed 2026-10-11** to the battle's port of the file (`Battle.PlayExchangeAnimationAsync`), checked against the file on 1900 random runs of `FIGT表示`; `ScenarioProgramSweepTests` now checks that every file the scenes call runs somewhere |
 | `OVER` | 2210 | ending 8 and every other ending; `GameEnd` until W4 |
 | `Tﾙﾄﾞﾗ` | 205 | the week stage 4 begins — after the milestone |
@@ -318,8 +325,7 @@ attack every week.
 Every scene stage 3 reaches runs from the player's files; their rule calls are `FIGT_A`/`FIGT_B`
 (`Gｹｲﾌﾞﾘｽ` 3, `Gｹｯｾﾙ` 2's duel and battle `:2420-2437`/`:2951-2963`, `Gｻｲｾﾞﾙ` 12, `Gｻﾃﾗ` 20), `死亡捕獲`,
 `Sﾌﾞﾀｲ` and `FIGT表示`; none calls a `T*` file. Since step 1 `Tｹｲﾌﾞﾘｽ` is routed (it was skipped with a notice in
-interactive Godot before, so stage 3 had no Kayblis phase at all). Since step 3 the phase runs up to
-the first Assault Leader (past week 100), which ends the session with "not ported yet" until step 5.
+interactive Godot before, so stage 3 had no Kayblis phase at all). Since step 5 the whole phase runs.
 
 ## Open questions
 
@@ -358,7 +364,8 @@ not Kayblis's", its filter and its capture with the collapses). Main path first:
    stage 2 needs it too. Left: the presenter hands the battle's events to its battle layer only
    between a battle's `BattleScreenEvent`s, so `FIGT表示`'s counters are probably not drawn yet
    [I] (display only).
-5. **The Assault Leaders** (~300): `:326-624`; from S on the `Iﾏｼﾞﾝ` 51 path, else after week 100.
+5. **The Assault Leaders** ✓ (2026-10-11, `Strategy/KayblisTurn.Assault.cs`) (~300): `:326-624`; from S
+   on the `Iﾏｼﾞﾝ` 51 path, else after week 100.
 6. **The end**: `Iｼﾚｲﾌﾞ` 7 runs from the player's files; a test that Kayblis's death reaches stage 4
    (the session then stops at `Tﾙﾄﾞﾗ`, "not ported yet") or ending 8 (`GameEnd`).
 
