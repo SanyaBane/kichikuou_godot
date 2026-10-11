@@ -853,7 +853,7 @@ public sealed partial class GameState
     /// <summary>VAR0386 [G] — Set after a Kayblis subordinate ran away (Gｹｲﾌﾞﾘｽ); enables a Miki event in COM</summary>
     public ref Sys3Int VAR0386 => ref Memory.Var(386);
 
-    /// <summary>VAR0387 [C] — Hornet joined Rance</summary>
+    /// <summary>VAR0387 [C] — Set to 1 by Gｹｲﾌﾞﾘｽ 10 (Kayblis's death) only with Silky at 8 (F_Silky_State = 8), although the text before it says Hornet joined Rance in any case; gates Gｻﾃﾗ 3 at stage 4, where Hornet and Silky both appear (with VAR0386).</summary>
     public ref Sys3Int F_Hornet_Joined => ref Memory.Var(387);
 
     /// <summary>VAR0388 [C] — Lives still needed for demon Xacalite's contract with Magic (starts 800, reduced by each attack)</summary>
@@ -1168,7 +1168,7 @@ public sealed partial class GameState
     /// <summary>VAR0491 [C] — Bonsai statue placed before God's Door</summary>
     public ref Sys3Int F_Statue_Bonsai => ref Memory.Var(491);
 
-    /// <summary>VAR0492 [I] — God's Door quest (Ho Raga, British): 1 told by Ho Raga, 2 British plea, 3 got gold statue, 4 door failed to open, 5, 6=door opened</summary>
+    /// <summary>VAR0492 [C] — God's Door quest: 1 told by Ho Raga (Rance holding Chaos or Nikkou), 2 British's plea, 3 Ho Raga refused the gold statue, 4 Kouhime's hint at the shut door (Kou past 9: stage 4), 5 Ho Raga gave the Bonsai Statue (item 18; with quest 4, or at stage 4 with Kou past 9), 6 the four statues placed, door open.</summary>
     public ref Sys3Int F_GodsDoor_Quest => ref Memory.Var(492);
 
     /// <summary>VAR0493 [C] — Progress 0-12 of Merim deciphering dungeon inscriptions (random while she is in the party); &gt;5 Merim good ending</summary>

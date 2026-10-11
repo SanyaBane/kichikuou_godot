@@ -130,6 +130,7 @@ public sealed partial class KayblisTurn
             return;
         }
         State.Bt_EnemyRetreatMode = 2;
+        // QUIRK: NAT-31 — Kayblis dying here moves the story to stage 4, and the phase marches on.
         await Script.CallFileAsync("FIGT_B.ADV");
     }
 }

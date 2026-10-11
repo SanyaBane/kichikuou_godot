@@ -190,6 +190,7 @@ public sealed partial class Battle
         if (State.Tmp0002 == 2 && State.Bt_IsDuel == 0)
             await EventAsync("Gｹｯｾﾙ.ADV", 10);
         await DeadCmdrEventAsync(134, "Gﾒﾃﾞｨｳｻ.ADV", 10);
+        // QUIRK: EVT-20 — Gｹｲﾌﾞﾘｽ 10 → Iｼﾚｲﾌﾞ 7 leaves Prov_Cur at 92 for the tests below.
         await DeadCmdrEventAsync(135, "Gｹｲﾌﾞﾘｽ.ADV", 10);
         State.Tmp0001 = 98;
         CmdrIn();

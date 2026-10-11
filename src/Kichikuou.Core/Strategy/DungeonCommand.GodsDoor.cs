@@ -230,6 +230,7 @@ public sealed partial class DungeonCommand
     private async Task PlaceStatueAsync(int item, int line)
     {
         State.Item_Cur = (Sys3Int)item;
+        // QUIRK: DGN-19 — nobody holds the placed Bonsai Statue, so Ho Raga offers it again (Gﾎﾗｶﾞ:277).
         Item.Holder = 0;
         if (item == 15)
             State.F_Statue_Gourd = 1;

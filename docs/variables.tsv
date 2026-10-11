@@ -386,7 +386,7 @@ VAR0383	N_Babolat_PitfallStep	story	Pitfall plan step 1-5 against Babolat; reset
 VAR0384	Babolat_PitfallProv	prov	Province (VAR0158) chosen for the Babolat pitfall; Kayblis turn checks it	C	Gﾊﾞﾎﾞﾗ.ADV:1728; Tｹｲﾌﾞﾘｽ.ADV:808
 VAR0385	F_Kayblis_War	story	Kayblis conflict: 0=demon war ongoing, 1=Miki/Kentarou route resolved, 2=Monster Army assaulted the humans (at war with Kayblis)	I	Gｹｲﾌﾞﾘｽ.ADV:760; Gﾐｷ.ADV:3753; MAIN.ADV:594
 VAR0386		story	Set after a Kayblis subordinate ran away (Gｹｲﾌﾞﾘｽ); enables a Miki event in COM	G	Gｹｲﾌﾞﾘｽ.ADV:2550; COM.ADV:552
-VAR0387	F_Hornet_Joined	story	Hornet joined Rance	C	Gｹｲﾌﾞﾘｽ.ADV:3110; COM.ADV:817
+VAR0387	F_Hornet_Joined	story	Set to 1 by Gｹｲﾌﾞﾘｽ 10 (Kayblis's death) only with Silky at 8 (F_Silky_State = 8), although the text before it says Hornet joined Rance in any case; gates Gｻﾃﾗ 3 at stage 4, where Hornet and Silky both appear (with VAR0386).	C	Gｹｲﾌﾞﾘｽ.ADV:3109-3110; COM.ADV:817
 VAR0388	N_Xacalite_KillsLeft	story	Lives still needed for demon Xacalite's contract with Magic (starts 800, reduced by each attack)	C	Gﾏｼﾞｯｸ.ADV:4993; Gﾏｼﾞｯｸ.ADV:2398; MAIN.ADV:926
 VAR0389	F_Magic_State	story	Magic arc: 1 Xacalite appears, 2-3 contract active (MAIN attacks), 4-5, 6=reunited with Alex (good), 99 saved, 100=soul taken by devil (bad)	C	Gﾏｼﾞｯｸ.ADV:4992; Gﾏｼﾞｯｸ.ADV:2462; OVER.ADV:1137
 VAR0390	F_Ex_State	story	Ex (White General): 1-3 scene branch, 4=imprisoned for life, 5=reinstated, 6, 100=dead/finished	I	Gｴｸｽ.ADV:811; Gｴｸｽ.ADV:3000; FIGT_A.ADV:1
@@ -491,7 +491,7 @@ VAR0488	F_Statue_Gourd	dungeon	Gourd statue placed before God's Door	C	Cﾒｲ�
 VAR0489	F_Statue_Monkey	dungeon	Monkey statue placed before God's Door	C	Cﾒｲｷｭｳ.ADV:3970; Cﾒｲｷｭｳ.ADV:3963
 VAR0490	F_Statue_Sunflower	dungeon	Sunflower statue placed before God's Door	C	Cﾒｲｷｭｳ.ADV:3990; Cﾒｲｷｭｳ.ADV:3963
 VAR0491	F_Statue_Bonsai	dungeon	Bonsai statue placed before God's Door	C	Cﾒｲｷｭｳ.ADV:4010; Cﾒｲｷｭｳ.ADV:3963
-VAR0492	F_GodsDoor_Quest	story	God's Door quest (Ho Raga, British): 1 told by Ho Raga, 2 British plea, 3 got gold statue, 4 door failed to open, 5, 6=door opened	I	Gﾎﾗｶﾞ.ADV:1492; Gﾎﾗｶﾞ.ADV:511; Cﾒｲｷｭｳ.ADV:4052
+VAR0492	F_GodsDoor_Quest	story	God's Door quest: 1 told by Ho Raga (Rance holding Chaos or Nikkou), 2 British's plea, 3 Ho Raga refused the gold statue, 4 Kouhime's hint at the shut door (Kou past 9: stage 4), 5 Ho Raga gave the Bonsai Statue (item 18; with quest 4, or at stage 4 with Kou past 9), 6 the four statues placed, door open.	C	Gﾎﾗｶﾞ.ADV:1492; Gﾌﾞﾘﾃｨ.ADV:1014; Gﾎﾗｶﾞ.ADV:511; Cﾒｲｷｭｳ.ADV:4412; Gﾎﾗｶﾞ.ADV:359; Cﾒｲｷｭｳ.ADV:4052
 VAR0493	N_Merim_Inscriptions	story	Progress 0-12 of Merim deciphering dungeon inscriptions (random while she is in the party); >5 Merim good ending	C	Cﾒｲｷｭｳ.ADV:4558; Gﾒﾘﾑ.ADV:373; OVER.ADV:744
 VAR0494		unused	Cleared in the Gﾜｵ scene, never otherwise used	C	Gﾜｵ.ADV:333
 VAR0495	F_Wao_State	event	Gﾜｵ (staff/joke) scene progress 0-3	I	Gﾜｵ.ADV:408; Gﾜｵ.ADV:474; Gﾜｵ.ADV:361

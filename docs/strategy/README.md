@@ -579,7 +579,13 @@ Steps, in the sweep's order (its "Proposed order"):
    the statue offered only to Rance, Kou's hint at the door (quest 3 → 4) and the stage-4 sweep's quirk
    candidate — Ho Raga gives the statue again after it is placed (quest 6 → 5, Enter hidden until it is
    placed again).
-3. **Docs**: the sweep's quirk candidates registered, survey-nations and stage-2-sweep corrected, the
-   dictionary's entries the sweep found wrong.
+3. **Docs** ✓ (2026-10-11): the sweep's quirk candidates registered, survey-nations and stage-2-sweep
+   corrected, the dictionary's entries the sweep found wrong. Survey-ikami's Q1-Q10 are EVT-10 to
+   EVT-19 (Q3-Q5 confirmed by runs; scene quirks cite the tests, no marker), the sweep's last candidates
+   NAT-31 (Kayblis's last captures on path 2), DGN-19 (Ho Raga gives the statue again, confirmed by a
+   run) and EVT-20 (`Prov_Cur` 92 after `Iｼﾚｲﾌﾞ` 7); survey-nations §9 Q5 and NAT-11 were settled in
+   step 1; stage-2-sweep's "God's Door reachable at stage 2" corrected; `F_GodsDoor_Quest` and
+   `F_Hornet_Joined` rewritten in `docs/variables.tsv`. **Milestone 5 is complete up to `GameEnd`**:
+   how to close it (captures, `--auto`) is the owner's call.
 4. ~~**W4** (`OVER`, `ｽﾀMENU`) only if the owner puts it in this milestone~~ — not in it (decision
    17): every ending stays `GameEnd`.

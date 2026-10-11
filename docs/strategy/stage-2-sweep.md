@@ -170,8 +170,12 @@ with `F_GodsDoor_Quest > 1`, `F_GodsDoor_Found = 0` and Rance holding Chaos (ite
 statues, items 15-18, set quest 6; Dance) → "Enter God's Door" → `Iｶﾐ` (`:4498-4556`; a scene file
 that runs from the player's files, 6528 lines with four battles, it ends only in `&#OVER` — six
 sites, no `%0` [C]). The quest steps: Ho Raga with Chaos or Nikkou (`Gﾎﾗｶﾞ:266-270`, Siberia (38)),
-British (`Gﾌﾞﾘﾃｨ:1014`), Ho Raga again (`Gﾎﾗｶﾞ:511`). Reachable at stage 2 [I] after about six
-Helman conquests and the four statues. Ported (2026-10-11): the gate and `L_04ddc`, `L_0539e` and
+British (`Gﾌﾞﾘﾃｨ:1014`), Ho Raga again (`Gﾎﾗｶﾞ:511`). ~~Reachable at stage 2 [I] after about six
+Helman conquests and the four statues.~~ **Corrected** ([stage-4-sweep.md](stage-4-sweep.md), "God's
+Door and `Iｶﾐ`"): the door opens only at stage 4 — the Bonsai Statue (item 18) comes only from Ho Raga,
+with the quest at 4 (Kouhime's hint at the door, which needs Kou past 9) or at stage 4 with Kou past 9
+(`Gﾎﾗｶﾞ:290`), and Kou passes 9 only in stage 4's first Creator phase (`Gﾙﾄﾞﾗ:548`); at stage 2 Ho
+Raga refuses (quest 3). Run in milestone 5 step 2 (`GodsDoorEndTests`). Ported (2026-10-11): the gate and `L_04ddc`, `L_0539e` and
 the room (`:3828-4556`) in `Strategy/DungeonCommand.GodsDoor.cs`; Kouhime's hint (`L_05ea4`, her
 state past 9 and the quest at 3) moves the quest to 4.
 

@@ -143,7 +143,7 @@ public class IkamiEndTests(ITestOutputHelper output)
 
         await RunToTheEndAsync(game);
 
-        // QUIRK candidate Q4 (survey-ikami §4.5): the check at :2373 passes, the run ends as if it held.
+        // QUIRK: EVT-13 (survey-ikami §4.5, Q4): the check at :2373 passes, the run ends as if it held.
         Assert.Equal(11, game.State.EndingId.Value);
         Assert.Equal(0, game.State.Units[3].Status.Value);
         Assert.Equal(0, game.State.Ev_GodRear2F_Unit1.Value);
@@ -165,7 +165,7 @@ public class IkamiEndTests(ITestOutputHelper output)
         for (int k = 0; k < 3; k++)
             game.Input.Pointer.Click(stop.X, stop.Y);
 
-        // QUIRK candidate Q3 (survey-ikami §3): Stop empties the party and :4817-4836 opens the
+        // QUIRK: EVT-12 (survey-ikami §3, Q3): Stop empties the party and :4817-4836 opens the
         // picker again; "Attack" without a unit is refused inside Sﾌﾞﾀｲ. No way on.
         var e = await Assert.ThrowsAsync<InvalidOperationException>(() => game.Script.CallFileAsync("Iｶﾐ.ADV"));
 
@@ -195,7 +195,7 @@ public class IkamiEndTests(ITestOutputHelper output)
 
         await RunToTheEndAsync(game, pickers: 5);
 
-        // QUIRK candidate Q5 (survey-ikami §3): :4838-4854 sets Rance back to 1, nothing refunds Sﾌﾞﾀｲ:206.
+        // QUIRK: EVT-14 (survey-ikami §3, Q5): :4838-4854 sets Rance back to 1, nothing refunds Sﾌﾞﾀｲ:206.
         Assert.True(cost.Value > 0);
         Assert.Equal(baseline.State.Gold.Value - cost.Value, game.State.Gold.Value);
         Assert.Equal(1, game.State.Units[1].Status.Value);

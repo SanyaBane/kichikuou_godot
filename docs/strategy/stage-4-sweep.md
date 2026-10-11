@@ -298,20 +298,22 @@ stops at it in S4, and nothing stage 4 reaches is left unported but `OVER` (`Gam
   `:148-186`, `:203-205`; `MAIN:843` (STR-13). Already registered.
 - **Stale cursor after `Iｼﾚｲﾌﾞ` 7** (`:150-163`): `Prov_Cur = 92` reaches `死亡捕獲:380, 425` (Leila's
   scene test `Prov_Cur ≠ 1` holds even for a defence of Leazas Castle (1) on the own-army path) [I:
-  effect only on path 2].
+  effect only on path 2]. **Registered: EVT-20.**
 - **Kayblis's last captures freeze** (path 2): the rest of his phase may take player provinces after
-  the count; no phase or attack can touch them again [I].
+  the count; no phase or attack can touch them again [I]. **Registered: NAT-31.**
 - **Ho Raga gives the Bonsai Statue again** after it is placed (`Cﾒｲｷｭｳ:4008-4009` clears the holder;
   `Gﾎﾗｶﾞ:276-291, 358-359`): at stage 4 with Kou past 9 the quest falls from 6 back to 5 and "Enter
   God's Door" (`Cﾒｲｷｭｳ:3921`) hides until the statue is placed again. **Confirmed by a run**
   (`GodsDoorEndTests`: the door opened, left, Ho Raga the same week, the bonsai placed again reopens it).
+  **Registered: DGN-19.**
 - **`Iｶﾐ`** [first look]: 4F's and 5F's "garrison destroyed" lines test the 3F rearguard
   (`:4740`, `:4803`; text only); `EndingId := 1` (`:2650`) is overwritten with 9 (`:2774`) before
   `&#OVER`; the rearguard picker (`:4813-4886`) loops until a party without Rance is picked — with no
-  free unit it never ends [I: soft lock].
+  free unit it never ends [I: soft lock]. **Registered** with the survey's Q1-Q10 (survey-ikami §8):
+  EVT-10, EVT-11, EVT-12 (confirmed by a run).
 - `F_Hornet_Joined` is set only with Silky at 8 although the text says Hornet joins in any case
   (`Gｹｲﾌﾞﾘｽ:3100-3110`); it gates `Gｻﾃﾗ` 3, where Hornet and Silky both appear — a naming question for
-  the dictionary rather than a quirk [I].
+  the dictionary rather than a quirk [I]. **Dictionary** (step 3): described so in `docs/variables.tsv`.
 
 ## Open questions
 
@@ -329,6 +331,7 @@ stops at it in S4, and nothing stage 4 reaches is left unported but `OVER` (`Gam
    this milestone, or apart? **Answered** (decision 17): its own survey, before step 2's end tests.
 6. `docs/variables.tsv`: `N_Rudrasaum_Turns` (above; corrected in step 1); `F_GodsDoor_Quest` reads "3 got gold statue, 4
    door failed to open", but 3 is Ho Raga's refusal and 4 Kou's hint (table above); `F_Hornet_Joined`.
+   **Answered** (milestone 5 step 3): both rows rewritten.
 7. Stage-4 captures need a save at the end of stage 3 with the whole map (owner).
 
 ## Proposed order — milestone 5 (story stage 4)

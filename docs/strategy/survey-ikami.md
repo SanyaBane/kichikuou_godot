@@ -318,6 +318,9 @@ every WAO op used (0, 1, 3, 4, 10, 11, 111-113, 121, 131, 151, 153, 311, 312, 32
 
 Not a quirk: FIGT's stage-4 save in `Tmp0229` (§4.3).
 
+**Registered** (2026-10-11, milestone 5 step 3): Q1-Q10 are EVT-10 to EVT-19 in
+[../quirks.md](../quirks.md), in order (Q1 EVT-10 … Q10 EVT-19).
+
 ## 9. What a content test needs, per ending
 
 **Common rig** (as `StageThreeEndTests.KayblisDeadAsync`): boot and new game from the player's files,
@@ -373,4 +376,5 @@ With `N_Warg_Stage` below 2 the second Think plays "Can't think of anything" and
    the owner how a player reaches "Leave it to Warg".
 7. Register Q1-Q10 (areas EVT/DGN) after the end tests, citing this survey as `ikami` (step 3). Q3
    (the picker never ends with only Rance free: three Stops, four pickers), Q4 and Q5 (Rance picked:
-   his war expenses stay paid) are confirmed by runs in `IkamiEndTests`.
+   his war expenses stay paid) are confirmed by runs in `IkamiEndTests`. **Done** (step 3): EVT-10 to
+   EVT-19.

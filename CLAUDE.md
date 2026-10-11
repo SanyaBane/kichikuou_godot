@@ -104,6 +104,8 @@ and W4 (`OVER`, `ｽﾀMENU`) stays out of milestone 5 — every ending stays `G
 end from the player's files to endings 9, 10, 11 and 13, and `GodsDoorEndTests` the way there from
 Kayblis's death — Kou at 8 when `Gﾙﾄﾞﾗ` plays, Ho Raga's Bonsai Statue, the four statues at God's Door,
 `Iｶﾐ` to ending 11; Kou below 8: Ho Raga refuses and the door stays shut (`EndGameRig.cs` is their rig).
+Step 3 (docs) is done: the quirks are registered (EVT-10 to EVT-20, NAT-31, DGN-19). Milestone 5 is
+complete up to `GameEnd`; how to close it is the owner's call.
 `tools/analysis/port_draft.py` drafts text-heavy ranges for hand ports.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.

@@ -117,7 +117,7 @@ public class GodsDoorEndTests(ITestOutputHelper output)
     }
 
     /// <summary>
-    /// Stage-4-sweep's quirk candidate: placing the Bonsai Statue clears its holder
+    /// DGN-19 (stage-4-sweep's quirk candidate): placing the Bonsai Statue clears its holder
     /// (<c>Cﾒｲｷｭｳ:4008-4009</c>), so at stage 4 with Kou past 9 Ho Raga offers and gives it again
     /// (<c>Gﾎﾗｶﾞ:276-291, 358-359</c>): the quest falls from 6 back to 5, and Enter
     /// (<c>Cﾒｲｷｭｳ:3921-3925</c>) hides until the statue is placed again.
@@ -148,7 +148,7 @@ public class GodsDoorEndTests(ITestOutputHelper output)
         game.Input.Menu.Enqueue("Gﾎﾗｶﾞ.ADV", 284);
         await game.Script.CallFileAsync("Cﾒｲｷｭｳ.ADV");
 
-        // QUIRK candidate (stage-4-sweep, "Quirk candidates"): the open door's quest goes back to 5.
+        // QUIRK: DGN-19 — the open door's quest goes back to 5.
         Assert.Equal(5, s.F_GodsDoor_Quest.Value);
         Assert.Equal(100, s.Items[18].Holder.Value);
         Assert.Equal(1, s.F_Statue_Bonsai.Value);
