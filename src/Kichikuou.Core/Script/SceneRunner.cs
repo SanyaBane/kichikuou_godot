@@ -58,10 +58,12 @@ public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<str
 
     /// <summary>
     /// The files run from the decompile: the scenes (<c>G*</c>, <c>I*</c>), the opening, the battle
-    /// inserts and the game frame (owner's decision 19: <c>OVER</c>, the ending).
+    /// inserts and the game frame (owner's decision 19: <c>OVER</c>, the ending; <c>ｽﾀMENU</c>, the
+    /// title, with its logo <c>ﾌﾟﾛﾛｰｸﾞ</c>).
     /// </summary>
     public static bool IsSceneFile(string file) =>
-        file.Length > 0 && file[0] is 'G' or 'I' || file is "ｵｰﾌﾟﾆﾝｸﾞ.ADV" or "FIGT表示.ADV" or "OVER.ADV";
+        file.Length > 0 && file[0] is 'G' or 'I'
+        || file is "ｵｰﾌﾟﾆﾝｸﾞ.ADV" or "FIGT表示.ADV" or "OVER.ADV" or "ｽﾀMENU.ADV" or "ﾌﾟﾛﾛｰｸﾞ.ADV";
 
     /// <inheritdoc />
     public Task RunEventAsync(string file, Sys3Int entry) =>
@@ -122,6 +124,9 @@ public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<str
                     break;
                 case ReadStringStatement s:
                     Script.ReadDataString(s.At, Eval(s.Slot), Eval(s.Skip));
+                    break;
+                case CompareStringsStatement s:
+                    State.RetVal = Script.CompareStrings(Eval(s.Left), Eval(s.Right));
                     break;
                 case LocalVariablesStatement { Push: true } s:
                     {
@@ -252,6 +257,12 @@ public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<str
                 case EngineStatement s:
                     await View.ShowAsync(new EngineEvent(s.Command, s.Args.Select(Eval).ToArray()));
                     break;
+                case EffectCopyStatement s:
+                    await EffectCopyAsync(s);
+                    break;
+                case DisplayInfoStatement s:
+                    WriteSlots(s, s.Var, await Input.GetDisplayAsync(), 3);
+                    break;
                 case SaveDataStatement s:
                     RunSaveCommand(s);
                     break;
@@ -295,6 +306,28 @@ public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<str
             default:
                 throw new ScenarioFormatException($"{s.At}: unknown save-data command {s.Command}.");
         }
+    }
+
+    /// <summary>
+    /// <c>CE</c>: the copy goes to the view (an <see cref="EngineEvent"/> <c>CE</c>, drawn at once),
+    /// then the effect's time passes as a pause (<c>ags_runEffect</c>, 16 ms steps): with the wait
+    /// flag set a key cuts it short, and with the flag 1 that key, or 0, lands in <c>RetVal</c>
+    /// (<c>cmdc.c:142-144</c>). One difference: the engine's effects do not end on the message skip,
+    /// the port's pause does (the logo, its only user, is over the sooner).
+    /// </summary>
+    private async Task EffectCopyAsync(EffectCopyStatement s)
+    {
+        var args = s.Args.Select(Eval).ToArray();
+        await View.ShowAsync(new EngineEvent("CE", args));
+        int effect = args[6].Value, option = args[7].Value, width = args[2].Value, wait = args[8].Value;
+        // ecopy.c duration(): only the effect the scenario uses — 4, NACT_EFFECT_SKIP_LINE_LR_RL,
+        // (option or 3) × half the width in ms (ﾌﾟﾛﾛｰｸﾞ.ADV:158: 3 × 320 = 960 ms).
+        int milliseconds = effect == 4
+            ? (option != 0 ? option : 3) * (width / 2)
+            : throw new NotSupportedException($"{s.At}: CE effect {effect} is not ported.");
+        var key = await Input.PauseAsync((Sys3Int)((milliseconds + 15) / 16), cancelable: wait != 0);
+        if (wait == 1)
+            State.RetVal = key;
     }
 
     private ScriptProgram Program(string file)

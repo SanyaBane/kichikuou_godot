@@ -19,9 +19,11 @@ namespace Kichikuou.Content.Tests;
 public class NewGameStateTests(ITestOutputHelper output)
 {
     /// <summary>
-    /// What the port cannot know: the benchmark's results (<c>XSPEC.ADV</c>, not run, QUIRK: DAT-04)
-    /// and the opening's scratch (<c>ﾌﾟﾛﾛｰｸﾞ.ADV</c>, not ported; <c>Tmp0020</c> and <c>Tmp0039</c>
-    /// depend on when it was clicked away). The persistent page 4 comes from the player's slots.
+    /// What the port's "Start" without the title cannot know: the benchmark's results (<c>XSPEC.ADV</c>,
+    /// not run, QUIRK: DAT-04) and the title's scratch — the display's depth (<c>Tmp0003</c>, <c>ZZ3</c>),
+    /// the logo's last pause (<c>Tmp0020</c>) and the last map scroll's target (<c>Tmp0039</c>,
+    /// <c>M.ADV:21</c>, left by what was watched on the title first [I: Alice's opening or
+    /// <c>Gｻｲﾄｳ</c>]). The persistent page 4 comes from the player's slots.
     /// </summary>
     private static readonly HashSet<string> Unknowable =
         ["SpecBaseline", "SpecGraphics", "SpecCpu", "Tmp0003", "Tmp0020", "Tmp0039"];
@@ -29,22 +31,76 @@ public class NewGameStateTests(ITestOutputHelper output)
     [Fact]
     public async Task A_new_game_enters_the_prologue_in_the_original_state()
     {
-        string dir = Path.Combine(LocalData.GoldenDirectory, "scenes");
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")) || !Directory.Exists(dir))
-            return;
-        var captures = Directory.GetFiles(dir, "*-Iﾌﾟﾛﾛｰｸﾞ.golden")
-            .Select(path => GoldenCapture.Parse(new StringReader(File.ReadAllText(path)), path))
-            .Where(c => c.RootCall.ToString().Contains("ｽﾀMENU.ADV@69d", StringComparison.Ordinal))
-            .ToList();
+        var captures = Captures();
         if (captures.Count == 0)
             return;
 
-        var state = await NewGameAsync();
+        Compare(captures, await NewGameAsync(), Unknowable);
+    }
+
+    /// <summary>
+    /// The same through the title run from the player's files (milestone 6 step 2): the logo run
+    /// through, the title, a click on "Start". Its own scratch is now the original's too — but for the
+    /// display's depth (<c>Tmp0003</c>, the machine's), the benchmark's results, the logo's last pause
+    /// (<c>Tmp0020</c>: 30 when it runs through, as in one capture; 180 in the other, clicked away)
+    /// and <c>Tmp0039</c> (that capture's owner watched a map scroll on the title first, see
+    /// <see cref="Unknowable"/>).
+    /// </summary>
+    [Fact]
+    public async Task Start_on_the_title_enters_the_prologue_in_the_original_state()
+    {
+        var captures = Captures();
+        if (captures.Count == 0)
+            return;
+        var game = (await EndGame.BootAsync(newGame: false))!;
+        GameState? atPrologue = null;
+        game.OnCall = file =>
+        {
+            if (file == "Iﾌﾟﾛﾛｰｸﾞ.ADV" && atPrologue is null)
+                atPrologue = Snapshot(game.State);
+        };
+        game.Input.Pointer.Click(347, 331);                             // Start (button 6)
+
+        await Assert.ThrowsAsync<ScenarioJumpException>(() => game.Script.CallFileAsync("ｽﾀMENU.ADV"));
+
+        Compare(captures, atPrologue!, ["SpecBaseline", "SpecGraphics", "SpecCpu", "Tmp0003", "Tmp0020", "Tmp0039"]);
+    }
+
+    private static List<GoldenCapture> Captures()
+    {
+        string dir = Path.Combine(LocalData.GoldenDirectory, "scenes");
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")) || !Directory.Exists(dir))
+            return [];
+        return Directory.GetFiles(dir, "*-Iﾌﾟﾛﾛｰｸﾞ.golden")
+            .Select(path => GoldenCapture.Parse(new StringReader(File.ReadAllText(path)), path))
+            .Where(c => c.RootCall.ToString().Contains("ｽﾀMENU.ADV@69d", StringComparison.Ordinal))
+            .ToList();
+    }
+
+    /// <summary>A copy of the memory as it is now.</summary>
+    private static GameState Snapshot(GameState state)
+    {
+        var copy = new GameState();
+        var (from, to) = (state.Memory, copy.Memory);
+        for (int v = 0; v < ScriptMemory.VariableCount; v++)
+            to.Var(v) = from.Var(v);
+        foreach (int page in from.AllocatedPages)
+        {
+            to.AllocatePage(page, from.PageSize(page));
+            for (int i = 0; i < from.PageSize(page); i++)
+                to.WritePage(page, i, from.ReadPage(page, i));
+        }
+        Array.Copy(from.Strings, to.Strings, from.Strings.Length);
+        return copy;
+    }
+
+    private void Compare(List<GoldenCapture> captures, GameState state, IReadOnlyCollection<string> unknowable)
+    {
         foreach (var capture in captures)
         {
             var diffs = MemoryComparison.Compare(capture.Enter, state.Memory, null, GoldenFilter.Strategic)
                 .Where(d => !d.Ignored && !d.Location.Contains("(page4[", StringComparison.Ordinal)
-                    && !Unknowable.Any(name => d.Location.EndsWith(" " + name, StringComparison.Ordinal)))
+                    && !unknowable.Any(name => d.Location.EndsWith(" " + name, StringComparison.Ordinal)))
                 .ToList();
             foreach (var d in diffs)
                 output.WriteLine($"{Path.GetFileName(capture.Source)}: {d}");

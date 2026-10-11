@@ -1,12 +1,14 @@
 using Godot;
 using Kichikuou.Content.Screen;
+using Kichikuou.Game.Battles;
 
 namespace Kichikuou.Game.Strategy;
 
 // xsystem35's window menu bar over the game (docs/window-menu.md): File (Save Screenshot, Restart,
 // Exit), Screen (Window, Fullscreen), Option (Mouse Movement as xsystem35's; ours: Skip Unseen
 // Text, MsgSkip Speeds Up Fades, Forget Seen Messages),
-// MsgSkip[off|on]; hot keys F1 and F4 as xsystem35's, Alt+R.
+// MsgSkip[off|on]; hot keys F1 and F4 as xsystem35's, Alt+R; and ours for development, Debug
+// (Battle Captures: the capture viewer, which our own title had until ｽﾀMENU replaced it).
 public partial class GameScreen
 {
     private const int MenuBarHeight = 24;
@@ -70,6 +72,8 @@ public partial class GameScreen
         row.AddChild(_skipItem);
         _skip.Changed += UpdateSkipItem;
         UpdateSkipItem();
+        row.AddChild(Menu("Debug",
+            ("Battle Captures...", ConfirmCaptures)));
     }
 
     private static MenuButton Menu(string title, params (string Text, Action Run)[] items)
@@ -162,6 +166,9 @@ public partial class GameScreen
 
     /// <summary>Exit (<c>menu_quitmenu_open</c>): after the confirmation, the program ends.</summary>
     private void ConfirmExit() => Confirm("Quit game?", "Quit", () => _tree.Quit());
+
+    /// <summary>Debug → Battle Captures (ours, development): after the confirmation, the capture viewer, which comes back to the title.</summary>
+    private void ConfirmCaptures() => Confirm("Open the battle captures?", "Open", () => Screens.Open(this, new CaptureList()));
 
     /// <summary>Forget Seen Messages (ours): after the confirmation, every message counts as unseen again.</summary>
     private void ConfirmForgetSeen() =>

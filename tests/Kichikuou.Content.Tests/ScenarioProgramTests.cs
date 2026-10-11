@@ -194,6 +194,55 @@ public sealed class ScenarioProgramTests : IDisposable
         Assert.Equal(new CallFileStatement(At(25), "WAO_SUB.ADV"), p.Statements[24]);
     }
 
+    /// <summary>
+    /// The title's forms (<c>ｽﾀMENU.ADV</c>, <c>ﾌﾟﾛﾛｰｸﾞ.ADV</c>): <c>MC</c>, <c>ZZ3</c>, <c>WW</c>, <c>CE</c>;
+    /// <c>#label, n</c> naming the n-th address word; word tables in the code area, one line or
+    /// several, read as data the way <c>_label</c> and <c>"text"</c> lines are.
+    /// </summary>
+    [Fact]
+    public void The_title_s_commands_tables_and_address_words_are_read()
+    {
+        var p = Read(
+            "\tMC 1, 2:",                                   // 0
+            "\tZZ3, VAR0001:",                              // 1
+            "\tWW 3200, 800, 8:",                           // 2
+            "\tCE 640, 0, 640, 400, 0, 0, 4, 0, 1:",        // 3
+            "\t#L_00010, 1:",                               // 4
+            "\t#L_00010, 2:",                               // 5
+            "\t%0:",                                        // 6
+            "*L_00010:",
+            "\t_L_00020:",                                  // 7
+            "\t_L_00030:",                                  // 8
+            "*L_00020:",
+            "\t[15, 7,",                                    // 9
+            "\t 9]",                                        // 10
+            "*L_00030:",
+            "\t\"Don’t play\"",                             // 11
+            "\t\"／／\"",                                    // 12
+            "*L_00040:",
+            "\t[1]");                                       // 13
+
+        Assert.Equal(14, p.Statements.Count);
+        Assert.Equal(new CompareStringsStatement(At(1), C(1), C(2)), p.Statements[0]);
+        Assert.Equal(new DisplayInfoStatement(At(2), 1), p.Statements[1]);
+        Assert.Equal(new EngineStatement(At(3), "WW", [C(3200), C(800), C(8)]), p.Statements[2], new EngineComparer());
+        Assert.Equal([C(640), C(0), C(640), C(400), C(0), C(0), C(4), C(0), C(1)], Assert.IsType<EffectCopyStatement>(p.Statements[3]).Args);
+        Assert.Equal([(Sys3Int)15, (Sys3Int)7, (Sys3Int)9], Assert.IsType<SetDataTableStatement>(p.Statements[4]).Words);
+        Assert.Equal(["Don’t play", "／／"], Assert.IsType<SetStringTableStatement>(p.Statements[5]).Strings);
+        Assert.All(p.Statements.Skip(7), s => Assert.IsType<DataStatement>(s));
+        Assert.Equal(9, p.Labels["L_00020"]);
+        Assert.Equal(13, p.Labels["L_00040"]);
+    }
+
+    [Fact]
+    public void An_address_word_past_the_label_s_words_or_an_open_table_fails()
+    {
+        Assert.Contains("SCENE.ADV:1: no address word 2", Assert.Throws<ScenarioFormatException>(
+            () => Read("\t#L_00010, 2:", "\t%0:", "*L_00010:", "\t_L_00020:", "*L_00020:", "\t[1]")).Message, StringComparison.Ordinal);
+        Assert.Contains("word table is not closed", Assert.Throws<ScenarioFormatException>(
+            () => Read("\t%0:", "*L_00010:", "\t[1, 2,")).Message, StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData("VAR0001 + 2 * 3", "(VAR0001 + (2 * 3))")]
     [InlineData("VAR0001 - VAR0002 \\ 0", "((VAR0001 - VAR0002) \\ 0)")]
@@ -260,12 +309,13 @@ public sealed class ScenarioProgramTests : IDisposable
 
 /// <summary>
 /// Every scene file of the player's decompile (the 136 <c>G*</c>/<c>I*</c> files) and the other
-/// files that run through the event runtime (<c>ｵｰﾌﾟﾆﾝｸﾞ</c>, <c>FIGT表示</c>, <c>ﾛｰﾄﾞｾｰﾌﾞ</c>, <c>OVER</c>)
-/// read as programs, and every text they show resolves (skipped without the decompile).
+/// files that run through the event runtime (<c>ｵｰﾌﾟﾆﾝｸﾞ</c>, <c>FIGT表示</c>, <c>ﾛｰﾄﾞｾｰﾌﾞ</c>, <c>OVER</c>,
+/// the title <c>ｽﾀMENU</c> and its logo <c>ﾌﾟﾛﾛｰｸﾞ</c>) read as programs, and every text they show
+/// resolves (skipped without the decompile).
 /// </summary>
 public class ScenarioProgramSweepTests(ITestOutputHelper output)
 {
-    private static readonly string[] OtherFiles = ["ｵｰﾌﾟﾆﾝｸﾞ.ADV", "FIGT表示.ADV", "ﾛｰﾄﾞｾｰﾌﾞ.ADV", "OVER.ADV"];
+    private static readonly string[] OtherFiles = ["ｵｰﾌﾟﾆﾝｸﾞ.ADV", "FIGT表示.ADV", "ﾛｰﾄﾞｾｰﾌﾞ.ADV", "OVER.ADV", "ｽﾀMENU.ADV", "ﾌﾟﾛﾛｰｸﾞ.ADV"];
 
     private static readonly string[] Milestone1 =
         ["Iﾄｳｿﾞｸ.ADV", "Iﾌﾟﾛﾛｰｸﾞ.ADV", "Iｼﾚｲﾌﾞ.ADV", "Iﾊﾝﾗﾝ.ADV", "Gｼｨﾙ.ADV", "Gｿｳﾙ.ADV", "Gﾊﾞｳﾝﾄﾞ.ADV", "Gｱﾅｾﾙ.ADV"];
@@ -343,6 +393,27 @@ public class ScenarioProgramSweepTests(ITestOutputHelper output)
             .Select(g => $"{g.Key}: {g.Count()} calls, e.g. {g.First().At}")
             .ToList();
         Assert.Empty(missing);
+    }
+
+    /// <summary>
+    /// The title's calls run somewhere too, but for the gallery and the music room (<c>CG</c>,
+    /// <c>MMODE</c>; later, owner's decision 19), Fortune Check (<c>HAPPY_C</c>, step 3) and the dead
+    /// <c>XSPEC</c> (<c>ｽﾀMENU.ADV:179</c>; the boot does not run it either, DAT-04).
+    /// </summary>
+    [Fact]
+    public void The_title_calls_only_files_that_run_but_those_left_for_later()
+    {
+        if (!Directory.Exists(LocalData.ScenarioDirectory))
+            return;
+        string[] helpers = ["M.ADV", "WAO_MAP.ADV", "WAO_SUB.ADV", "PCMPLAY.ADV"];
+        var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
+        var missing = new[] { "ｽﾀMENU.ADV", "ﾌﾟﾛﾛｰｸﾞ.ADV" }
+            .SelectMany(f => scripts.ReadProgram(f).Statements.OfType<CallFileStatement>())
+            .Select(c => c.File)
+            .Where(f => !SceneRunner.IsSceneFile(f) && !StrategyRules.PortedFiles.Contains(f) && !helpers.Contains(f))
+            .Distinct()
+            .Order(StringComparer.Ordinal);
+        Assert.Equal(["CG.ADV", "HAPPY_C.ADV", "MMODE.ADV", "XSPEC.ADV"], missing);
     }
 
     /// <summary>

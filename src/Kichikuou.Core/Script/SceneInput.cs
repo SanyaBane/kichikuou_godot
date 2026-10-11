@@ -40,6 +40,16 @@ public interface ISceneInput : IScriptInput
 
     /// <summary><c>SR 1, var:</c> — the MIDI track playing (0 when stopped).</summary>
     Task<Sys3Int> GetMidiTrackAsync();
+
+    /// <summary>
+    /// <c>ZZ3 var:</c> — the display's width, height and bits per pixel (<c>cmdz.c</c>: the
+    /// desktop's current mode as SDL reports it). Only the title asks (<c>ｽﾀMENU.ADV:717</c>), for a
+    /// 256-colour warning it shows only with <c>SpecGraphics ≥ 210</c>, which the port never has
+    /// (<c>XSPEC</c> is not run, QUIRK: DAT-04); the values stay in <c>Tmp0001-0003</c>. By default
+    /// a common desktop: 1920 × 1080 at 24 bits (SDL's XRGB8888).
+    /// </summary>
+    Task<IReadOnlyList<Sys3Int>> GetDisplayAsync() =>
+        Task.FromResult<IReadOnlyList<Sys3Int>>([(Sys3Int)1920, (Sys3Int)1080, (Sys3Int)24]);
 }
 
 /// <summary>What <c>IM</c> reads: <paramref name="Button"/> goes to <c>RetVal</c> (0 = released).</summary>

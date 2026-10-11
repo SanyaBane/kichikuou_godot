@@ -16,9 +16,9 @@ namespace Kichikuou.Content.Scripts;
 /// Forms: labels <c>*L_x:</c>; <c>@L_x:</c>, <c>{expr:</c> … <c>}</c>, <c>\L_x:</c>, <c>\0:</c>,
 /// <c>%#FILE.ADV:</c>, <c>%0:</c>, <c>&amp;#FILE.ADV:</c>; <c>!VARnnnn : expr!</c>; text commands
 /// (<c>'…'</c>, <c>R</c>, <c>X</c>, <c>H</c>, <c>HH</c>, <c>MP</c>, with <c>ZH 1:</c> in between) grouped
-/// into runs; menus <c>$L_x$</c>, <c>$</c> and <c>]</c>; <c>A</c>; the data reader <c>#L_x, 1:</c>
+/// into runs; menus <c>$L_x$</c>, <c>$</c> and <c>]</c>; <c>A</c>; the data reader <c>#L_x, n:</c>
 /// (<see cref="DataTable"/>) with <c>F1</c>/<c>F3</c>, and the data lines in the code area
-/// (<c>_L_x:</c>, <c>"text"</c>); and the commands in <see cref="Command"/>. Expressions: see
+/// (<c>_L_x:</c>, <c>"text"</c>, word tables <c>[w, …]</c>); and the commands in <see cref="Command"/>. Expressions: see
 /// <see cref="Expr"/>.
 /// </remarks>
 internal static partial class ScenarioParser
@@ -30,7 +30,7 @@ internal static partial class ScenarioParser
         ["PF0"] = [1], ["PF1"] = [1], ["PW0"] = [1], ["PW1"] = [1],
         ["EC"] = [1], ["CB"] = [5], ["CC"] = [6], ["CF"] = [5], ["CL"] = [5], ["CM"] = [9], ["CS"] = [7],
         ["B1"] = [6], ["B2"] = [6], ["B3"] = [6], ["B4"] = [6],
-        ["T"] = [2], ["WV"] = [4], ["ZB"] = [1], ["ZC"] = [2], ["ZM"] = [1], ["SL"] = [1], ["IZ"] = [2],
+        ["T"] = [2], ["WV"] = [4], ["WW"] = [3], ["ZB"] = [1], ["ZC"] = [2], ["ZM"] = [1], ["SL"] = [1], ["IZ"] = [2],
         ["ZW"] = [1], ["SM"] = [1], ["SQ"] = [3],                       // FIGTATTK.ADV:1, 254, 338-350 (run as a file in tests only)
     };
 
@@ -44,16 +44,21 @@ internal static partial class ScenarioParser
     }
 
     /// <summary>
-    /// <c>#label, 1:</c> (<c>getDataTableAdr</c>): the label <c>*L_a:</c> holds an address word
-    /// <c>_L_b:</c>, and the data reader points at what follows <c>*L_b:</c> — a word table
-    /// <c>[w, w, …]</c> (which may span lines) or a run of <c>"text"</c> lines.
+    /// <c>#label, n:</c> (<c>getDataTableAdr</c>, <c>cmd_check.c</c>): the label <c>*L_a:</c> holds
+    /// address words <c>_L_b:</c>, and the data reader points at what follows the label the
+    /// <paramref name="index"/>-th of them names (1-based; <c>ｽﾀMENU.ADV:188, 203</c> take the first
+    /// and the second) — a word table <c>[w, w, …]</c> (which may span lines) or a run of
+    /// <c>"text"</c> lines.
     /// </summary>
-    public static ScriptStatement DataTable(ScriptRef at, string label, string[] lines)
+    public static ScriptStatement DataTable(ScriptRef at, string label, int index, string[] lines)
     {
         int pointer = Array.FindIndex(lines, l => l.Trim() == $"*{label}:");
-        if (pointer < 0 || pointer + 1 >= lines.Length || !AddressWordRegex().IsMatch(lines[pointer + 1].Trim()))
-            throw new ScenarioFormatException($"{at}: no address word at *{label}:.");
-        string target = AddressWordRegex().Match(lines[pointer + 1].Trim()).Groups[1].Value;
+        if (index < 1)
+            throw new ScenarioFormatException($"{at}: #{label}, {index}: only an address word (1 or more) is supported.");
+        if (pointer < 0 || pointer + index >= lines.Length
+            || Enumerable.Range(pointer + 1, index).Any(i => !AddressWordRegex().IsMatch(lines[i].Trim())))
+            throw new ScenarioFormatException($"{at}: no address word {index} at *{label}:.");
+        string target = AddressWordRegex().Match(lines[pointer + index].Trim()).Groups[1].Value;
         int table = Array.FindIndex(lines, l => l.Trim() == $"*{target}:");
         if (table < 0)
             throw new ScenarioFormatException($"{at}: label *{target}: not found.");
@@ -85,9 +90,17 @@ internal static partial class ScenarioParser
         private readonly Dictionary<string, int> _labels = new(StringComparer.Ordinal);
         private readonly Stack<int> _blocks = new();
         private TextBuilder? _run;
+        private bool _inWordTable;
 
         public void Add(ScriptRef at, string line)
         {
+            if (_inWordTable)
+            {
+                // The rest of a word table in the code area that spans lines.
+                _statements.Add(new DataStatement(at));
+                _inWordTable = !line.EndsWith(']');
+                return;
+            }
             if (TextBuilder.IsText(at, line))
             {
                 (_run ??= new TextBuilder()).Add(at, line);
@@ -115,9 +128,15 @@ internal static partial class ScenarioParser
                 _statements.Add(new IfStatement(at, Expr(at, m.Groups[1].Value), -1));
             }
             else if ((m = DataTableRegex().Match(line)).Success)
-                _statements.Add(DataTable(at, m.Groups[1].Value, lines));
+                _statements.Add(DataTable(at, m.Groups[1].Value, Number(at, m.Groups[2].Value), lines));
             else if (AddressWordRegex().IsMatch(line) || DataStringRegex().IsMatch(line))
                 _statements.Add(new DataStatement(at));
+            else if (line.StartsWith('['))
+            {
+                // A word table a #label points at (ｽﾀMENU.ADV:743, :805); it may span lines.
+                _statements.Add(new DataStatement(at));
+                _inWordTable = !line.EndsWith(']');
+            }
             else
                 _statements.Add(Statement(at, line));
         }
@@ -125,6 +144,8 @@ internal static partial class ScenarioParser
         public ScriptProgram Finish(ScriptRef end)
         {
             FlushRun();
+            if (_inWordTable)
+                throw new ScenarioFormatException($"{end}: a word table is not closed by the end of the file.");
             if (_blocks.Count > 0)
                 throw new ScenarioFormatException($"{_statements[_blocks.Peek()].At}: block not closed by the end of the file ({end}).");
             for (int i = 0; i < _statements.Count; i++)
@@ -324,6 +345,15 @@ internal static partial class ScenarioParser
             case "ZZ0":
                 Count(1);
                 return new QuitStatement(at, Arg(0));
+            case "ZZ3":
+                Count(1);
+                return new DisplayInfoStatement(at, VarArg(0));
+            case "MC":
+                Count(2);
+                return new CompareStringsStatement(at, Arg(0), Arg(1));
+            case "CE":
+                Count(9);
+                return new EffectCopyStatement(at, args.Select((_, i) => Arg(i)).ToArray());
             case "F1":
                 Count(2);
                 return new ReadStringStatement(at, Arg(0), Arg(1));
@@ -469,7 +499,8 @@ internal static partial class ScenarioParser
     [GeneratedRegex(@"^\$(L_[0-9a-f]+)\$$")]
     private static partial Regex MenuItemRegex();
 
-    [GeneratedRegex(@"^#(L_[0-9a-f]+), 1:$")]
+    /// <summary><c>#label, n:</c>; group 2 is n.</summary>
+    [GeneratedRegex(@"^#(L_[0-9a-f]+), (\d+):$")]
     public static partial Regex DataTableRegex();
 
     [GeneratedRegex(@"^_(L_[0-9a-f]+):$")]

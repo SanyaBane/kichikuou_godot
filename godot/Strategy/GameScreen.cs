@@ -16,13 +16,16 @@ using SelButton = Kichikuou.Content.Battles.MouseButton;
 
 namespace Kichikuou.Game.Strategy;
 
-/// <summary>How a game starts from the title.</summary>
+/// <summary>How a game starts.</summary>
 public enum GameStart
 {
-    /// <summary>"New game": the new game, then the week loop.</summary>
+    /// <summary>The title (<c>ｽﾀMENU</c> from the player's files, owner's decision 19), then the game started there.</summary>
+    Title,
+
+    /// <summary>Development: the new game at once, then the week loop.</summary>
     New,
 
-    /// <summary>"Load": the save screen's load list (backing out returns to the title).</summary>
+    /// <summary>Development: the save screen's load list at once (backing out returns to the title).</summary>
     Load,
 
     /// <summary>Development: an ending's <c>OVER</c> on the booted game (<see cref="GameOptions.Ending"/>).</summary>
@@ -32,7 +35,7 @@ public enum GameStart
 /// <summary>What a <see cref="GameScreen"/> plays and how (the development switches of <see cref="Main"/>).</summary>
 public sealed record GameOptions
 {
-    /// <summary>New game or load.</summary>
+    /// <summary>The title, or (development) a new game, a load or an ending at once.</summary>
     public GameStart Start { get; init; }
 
     /// <summary>Development: the ending <see cref="GameStart.Ending"/> shows (1-14).</summary>
@@ -250,6 +253,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             await session.BootAsync();
             var end = _options.Start switch
             {
+                GameStart.Title => await session.TitleAsync(),
                 GameStart.New => await session.NewGameAsync(),
                 GameStart.Load => await session.LoadFromTitleAsync(),
                 _ => await session.EndingAsync((Sys3Int)_options.Ending),
@@ -877,6 +881,13 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     /// <summary><c>SR 1</c>: no MIDI plays.</summary>
     public Task<Sys3Int> GetMidiTrackAsync() => Task.FromResult(Sys3Int.Zero);
+
+    /// <summary><c>ZZ3</c> (<c>cmdz.c</c>): the size of the screen the window is on, at 24 bits per pixel (SDL's XRGB8888 desktop).</summary>
+    public Task<IReadOnlyList<Sys3Int>> GetDisplayAsync()
+    {
+        var size = DisplayServer.ScreenGetSize();
+        return Task.FromResult<IReadOnlyList<Sys3Int>>([(Sys3Int)size.X, (Sys3Int)size.Y, (Sys3Int)24]);
+    }
 
     // ---------------------------------------------------------------- unattended play (--auto)
 

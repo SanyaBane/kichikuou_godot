@@ -78,7 +78,9 @@ web build (seen only) by an option.
 
 - A light bar above the game screen: **File** (Save Screenshot, Restart, Exit), **Screen**
   (Window, Fullscreen), **Option** (ours, see MsgSkip), **MsgSkip[off]** (toggles, `[on]` while
-  on, greyed out while not allowed). Not done: Integer Scaling, Auto Copy Text to Clipboard
+  on, greyed out while not allowed), and ours for development at the end, **Debug** (Battle
+  Captures...: asks first, then the battle-capture viewer, which our own title had until `ｽﾀMENU`
+  replaced it, 2026-10-11). Not done: Integer Scaling, Auto Copy Text to Clipboard
   (no text hook), the bar hiding in full screen.
 - **Option → Mouse Movement** (checked at start, for the launch; 2026-10-10): the script's
   `IZ x, y` (`COMMAND.ADV:618` and the command files put the pointer back where it was before a
@@ -91,8 +93,9 @@ web build (seen only) by an option.
 - **Save Screenshot** saves the screen as shown (1280×800, event CGs not masked) as
   `user://screenshots/kichikuou-<date>-<time>.png` and names the file on screen.
 - **Restart / Exit** ask as xsystem35 does ("Restart game?" / "Quit game?", "Any unsaved progress
-  will be lost."); the game waits while the box is open. Restart returns to our title (the
-  opening and `ｽﾀMENU` are not ported, decision 10); the next game starts on a fresh
+  will be lost."); the game waits while the box is open. Restart returns to the title, a fresh
+  boot as xsystem35's (`SET`, the logo and `ｽﾀMENU` from the player's files, decision 19; until
+  2026-10-11 our own title, decision 10); the next game starts on a fresh
   `GameState`. The random generator lives for the whole launch (`EngineState`, seeded once with
   `--seed N` or the tick count) and so does the message skip.
 - **MsgSkip**: `Core/Script/MessageSkip` (the state and the seen set) and `GameScreen`'s waits.

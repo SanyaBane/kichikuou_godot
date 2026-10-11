@@ -51,29 +51,42 @@ internal sealed class EndGame
     /// <summary>Runs on every call, after it is recorded and before it runs.</summary>
     public Action<string>? OnCall { get => _recorder.OnCall; set => _recorder.OnCall = value; }
 
-    /// <summary>The booted new game, its calls cleared; null without the decompile.</summary>
-    public static async Task<EndGame?> BootAsync()
+    /// <summary>The files the rules do not port (the gallery, the music room, ...): recorded, not run.</summary>
+    public RecordingRules Unported { get; private init; } = null!;
+
+    /// <summary>The draws the script made (1 for each unless queued).</summary>
+    public QueuedRandom Random { get; private init; } = null!;
+
+    /// <summary>
+    /// The booted new game (or only the boot, <paramref name="newGame"/> false: the title is next),
+    /// its calls cleared; null without the decompile. <paramref name="saves"/> are the slots (empty
+    /// by default); <paramref name="random"/> the draws (1 for each by default).
+    /// </summary>
+    public static async Task<EndGame?> BootAsync(bool newGame = true, ISaveStore? saves = null, QueuedRandom? random = null)
     {
         if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
             return null;
         var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
         var state = new GameState();
-        var rules = new StrategyRules(scripts, new RecordingRules { State = state });
+        var unported = new RecordingRules { State = state };
+        var rules = new StrategyRules(scripts, unported);
         var runner = new SceneRunner(scripts, rules);
         var input = new EndInput(state);
         var recorder = new CallRecorder(runner, state);
         var view = new RecordingView();
-        var script = new ScriptContext(state, new QueuedRandom { DefaultToOne = true }, view, input, recorder)
+        random ??= new QueuedRandom { DefaultToOne = true };
+        var script = new ScriptContext(state, random, view, input, recorder)
         {
-            Saves = new MemorySaveStore(),
+            Saves = saves ?? new MemorySaveStore(),
         };
         runner.Bind(script);
         rules.Bind(script);
         var setup = new GameSetup(script, scripts);
         await setup.BootAsync();
-        await setup.NewGameAsync();
+        if (newGame)
+            await setup.NewGameAsync();
         recorder.Calls.Clear();
-        return new EndGame(state, script, input, view, recorder);
+        return new EndGame(state, script, input, view, recorder) { Unported = unported, Random = random };
     }
 
     /// <summary>Every call to another file, recorded with its entry, then run.</summary>
@@ -174,7 +187,7 @@ internal sealed class EndInput(GameState state) : IGameInput
         var m = Pointer.Next(out bool read);
         _idle = read || Pointer.Pending > 0 ? 0 : _idle + 1;
         if (_idle > 1000)
-            throw new InvalidOperationException("The mouse is read with nothing left to click.");
+            throw new PointerIdleException();
         return Task.FromResult(m);
     }
 
@@ -199,3 +212,6 @@ internal sealed class EndInput(GameState state) : IGameInput
     /// <summary><c>SR 1</c>: no MIDI plays (the music is <c>SS</c>), so 0 at once, as xsystem35 answers <c>OVER.ADV:160</c>.</summary>
     public Task<Sys3Int> GetMidiTrackAsync() => Task.FromResult(Sys3Int.Zero);
 }
+
+/// <summary>The script polls the mouse with every gesture done (e.g. the title waits again): the run ends.</summary>
+internal sealed class PointerIdleException() : InvalidOperationException("The mouse is read with nothing left to click.");

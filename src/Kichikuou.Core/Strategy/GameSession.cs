@@ -8,8 +8,9 @@ namespace Kichikuou.Core.Strategy;
 /// <summary>
 /// One game from the boot to its end (part G0): the rule files routed (<see cref="StrategyRules"/>),
 /// the scenes run from the player's files (<see cref="SceneRunner"/>), one context with the save
-/// slots, then the boot (<c>SET.ADV</c>) and either the new game or a load from the title, and the
-/// week loop for ever. A load (<c>LD</c>, from the title or from <c>COMMAND</c>'s Load/Save) leaves
+/// slots, then the boot (<c>SET.ADV</c>) and the title (<c>ｽﾀMENU.ADV</c>, from the player's files,
+/// owner's decision 19) — or, for development, the new game or a load at once — and the week loop
+/// for ever. A load (<c>LD</c>, from the title or from <c>COMMAND</c>'s Load/Save) leaves
 /// whatever runs by <see cref="GameLoadedException"/>; the session catches it and goes on where the
 /// slot was saved — the save screen's "Load Complete" (<see cref="LoadSaveScreen.ResumeAsync"/>),
 /// then the rest of that week (<see cref="WeekLoop.ResumeAsync"/>). The game ends at a jump to
@@ -58,7 +59,22 @@ public sealed class GameSession
     /// <summary>The boot: <c>ｽﾀｰﾄ.ADV</c>'s state lines and <c>SET.ADV</c> (which reads page 4 from the slots, <c>ﾛｰﾄﾞｾｰﾌﾞ</c> 10).</summary>
     public Task BootAsync() => new GameSetup(Script, _scenario).BootAsync();
 
-    /// <summary>"Start" on the title: the new game (<c>ｽﾀMENU.ADV:244-291</c>), then the week loop until the game ends.</summary>
+    /// <summary>
+    /// The title (<c>ｽﾀｰﾄ.ADV:872</c> <c>&amp;#ｽﾀMENU.ADV:</c>): <c>ｽﾀMENU</c> from the player's files
+    /// (owner's decision 19) — the logo, the buttons the clears unlock, Alice's Mansion, <c>Gｻｲﾄｳ</c>,
+    /// the requests slip — until a game started from it (New game, a debug start, Load) ends. The
+    /// gallery and the music room (<c>CG</c>, <c>MMODE</c>) are not ported: they go to the unported
+    /// files' hooks, and the title goes on.
+    /// </summary>
+    public Task<GameEnd> TitleAsync() => PlayAsync(() => Script.CallFileAsync(TitleFile));
+
+    /// <summary>The title, run from the player's files.</summary>
+    public const string TitleFile = "ｽﾀMENU.ADV";
+
+    /// <summary>
+    /// Development: "Start" on the title without it — the new game (<c>ｽﾀMENU.ADV:244-291</c>,
+    /// <see cref="GameSetup.NewGameAsync"/>), then the week loop until the game ends.
+    /// </summary>
     public async Task<GameEnd> NewGameAsync()
     {
         return await PlayAsync(async () =>
@@ -69,9 +85,9 @@ public sealed class GameSession
     }
 
     /// <summary>
-    /// "Load" on the title (<c>ｽﾀMENU.ADV:238-243</c>): the save screen's load list
-    /// (<c>ﾛｰﾄﾞｾｰﾌﾞ</c> with <c>RetVal 0</c>); null when the player backs out of it, otherwise the
-    /// loaded game played until it ends.
+    /// Development (<c>--load</c>): "Load" on the title without it (<c>ｽﾀMENU.ADV:238-243</c>): the
+    /// save screen's load list (<c>ﾛｰﾄﾞｾｰﾌﾞ</c> with <c>RetVal 0</c>); null when the player backs out
+    /// of it, otherwise the loaded game played until it ends.
     /// </summary>
     public async Task<GameEnd?> LoadFromTitleAsync()
     {
@@ -109,7 +125,7 @@ public sealed class GameSession
             try
             {
                 await next();
-                throw new InvalidOperationException("The week loop or OVER.ADV returned.");
+                throw new InvalidOperationException("The title, the week loop or OVER.ADV returned.");
             }
             catch (GameLoadedException loaded)
             {

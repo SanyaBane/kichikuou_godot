@@ -5,8 +5,11 @@ using Kichikuou.Game.Strategy;
 namespace Kichikuou.Game;
 
 /// <summary>
-/// The title (owner's decision 10, minimal for now): New game, Load, Quit, and the battle-capture
-/// viewer for debugging. Every game runs on its own <see cref="GameScreen"/>, which comes back here.
+/// The start of the program and the way back to the title: it opens the title — a
+/// <see cref="GameScreen"/> running <c>ｽﾀMENU</c> from the player's files (owner's decision 19, in
+/// place of decision 10's own title), a fresh boot each time, as a new launch of the original —
+/// or, on the first start, what the development switches ask for. The battle-capture viewer is in
+/// the game screen's Debug menu.
 /// </summary>
 public partial class Main : Control
 {
@@ -19,42 +22,18 @@ public partial class Main : Control
         background.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         AddChild(background);
 
-        var root = new VBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
-        root.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        root.AddThemeConstantOverride("separation", 16);
-        AddChild(root);
-
-        root.AddChild(new Label
-        {
-            Text = "鬼畜王ランス — Kichikuou Rance",
-            ThemeTypeVariation = "HeaderLarge",
-            HorizontalAlignment = HorizontalAlignment.Center,
-        });
-        root.AddChild(new Control { CustomMinimumSize = new Vector2(0, 32) });
-        AddButton(root, "New game", () => StartGame(GameStart.New));
-        AddButton(root, "Load", () => StartGame(GameStart.Load));
-        AddButton(root, "Quit", () => GetTree().Quit());
-        root.AddChild(new Control { CustomMinimumSize = new Vector2(0, 32) });
-        AddButton(root, "Battle captures (debug)", () => Screens.Open(this, new CaptureList()));
-
+        Node? screen = null;
         if (!_commandLineRead)
         {
             _commandLineRead = true;
-            StartFromCommandLine();
+            screen = FromCommandLine();
         }
+        screen ??= new GameScreen(new GameOptions { Start = GameStart.Title });
+        Callable.From(() => Screens.Open(this, screen)).CallDeferred();     // the tree is busy during _Ready
     }
-
-    private static void AddButton(VBoxContainer root, string text, Action pressed)
-    {
-        var button = new Button { Text = text, CustomMinimumSize = new Vector2(320, 48), SizeFlagsHorizontal = SizeFlags.ShrinkCenter };
-        button.Pressed += pressed;
-        root.AddChild(button);
-    }
-
-    private void StartGame(GameStart start) => Screens.Open(this, new GameScreen(new GameOptions { Start = start }));
 
     /// <summary>
-    /// Development switches after <c>--</c>. A game: <c>--newgame</c> or <c>--load</c> starts it at
+    /// Development switches after <c>--</c>. A game without the title: <c>--newgame</c> or <c>--load</c> starts it at
     /// once (<c>--ending N</c> shows ending N's <c>OVER</c> on the booted game, its slots in
     /// <c>user://saves-ending</c>, so the clear it records stays out of the player's); <c>--auto</c> plays it unattended (keys answered, Turn END every week, the battles
     /// fought with the first attack, from stage 1 a replenish and an attack on the rebels once a
@@ -66,21 +45,21 @@ public partial class Main : Control
     /// keeps its slots there (<c>--auto</c> defaults to <c>user://saves-auto</c>). A battle capture:
     /// <c>--play FILE</c> / <c>--watch FILE</c>. Both: <c>--fast</c> drops the delays, <c>--quit</c>
     /// exits at the end (exit code 1 after an error), <c>--shots DIR</c> saves the screen at every
-    /// key wait and menu (a game's event CGs masked, <c>GamePresenter.MaskEventCgs</c>).
+    /// key wait and menu (a game's event CGs masked, <c>GamePresenter.MaskEventCgs</c>). Null
+    /// without a switch: the title.
     /// </summary>
-    private void StartFromCommandLine()
+    private static Node? FromCommandLine()
     {
         var args = OS.GetCmdlineUserArgs();
         string? Value(string name) => Array.IndexOf(args, name) is int i and >= 0 && i + 1 < args.Length ? args[i + 1] : null;
         bool fast = args.Contains("--fast"), quit = args.Contains("--quit");
         string? shots = Value("--shots");
 
-        Node? screen = null;
         int? ending = int.TryParse(Value("--ending"), out int e) ? e : null;
         if (args.Contains("--newgame") || args.Contains("--load") || ending is not null)
         {
             bool auto = args.Contains("--auto");
-            screen = new GameScreen(new GameOptions
+            return new GameScreen(new GameOptions
             {
                 Start = ending is not null ? GameStart.Ending : args.Contains("--load") ? GameStart.Load : GameStart.New,
                 Ending = ending ?? 0,
@@ -94,16 +73,15 @@ public partial class Main : Control
                 AutoStage = int.TryParse(Value("--stage"), out int stage) ? stage : 0,
             });
         }
-        else if ((Value("--play") ?? Value("--watch")) is { } capture)
+        if ((Value("--play") ?? Value("--watch")) is { } capture)
         {
-            screen = new BattleScreen(capture, Value("--play") is not null ? BattleMode.Play : BattleMode.Watch)
+            return new BattleScreen(capture, Value("--play") is not null ? BattleMode.Play : BattleMode.Watch)
             {
                 Fast = fast,
                 QuitWhenDone = quit,
                 ScreenshotDirectory = shots,
             };
         }
-        if (screen is not null)
-            Callable.From(() => Screens.Open(this, screen)).CallDeferred();   // the tree is busy during _Ready
+        return null;
     }
 }

@@ -54,28 +54,35 @@ public sealed partial class GameSetup(ScriptContext script, IScenarioSource scen
     /// <c>:851</c> runs <c>XSPEC.ADV</c>, a machine benchmark whose results (<c>SpecBaseline</c>,
     /// <c>SpecGraphics</c>, <c>SpecCpu</c> and scratch) only choose <c>Ui_ScrollWait</c> and the
     /// opening's speed (QUIRK: DAT-04) — not run, so they stay 0; the rest of <c>:847-868</c> sets
-    /// up the screen.
+    /// up the screen (the presenter starts so), but for <c>:858</c>, <c>Y 3, 10000</c>: from the boot
+    /// on, a key does not cut a <c>Y 3</c> pause short until a scene says so (the logo does, and
+    /// leaves them so again at its end, <c>ﾌﾟﾛﾛｰｸﾞ.ADV:1, 151</c>). The script then jumps to the
+    /// title (<c>:872</c>), which the caller runs.
     /// </remarks>
     public async Task BootAsync()
     {
-        State.VAR0041 = 1280; // ｽﾀｰﾄ.ADV:869
-        State.VAR0042 = 200;  // :870
-        await SetAsync();     // :871
+        await Script.PauseAsync((Sys3Int)10000);   // ｽﾀｰﾄ.ADV:858
+        State.VAR0041 = 1280;                       // :869
+        State.VAR0042 = 200;                        // :870
+        await SetAsync();                           // :871
     }
 
     /// <summary>
-    /// "Start" on the title menu with <c>DebugMode = 0</c>: the state the title menu leaves on
-    /// that path (below), <c>ｽﾀMENU.ADV:244-247</c> (<c>L_005ef</c>) and the new game
-    /// <c>L_00670</c> (<c>:279-290</c>). The script then jumps to <c>MAIN.ADV</c> (<c>:291</c>);
-    /// the caller runs the week loop next.
+    /// "Start" on the title menu with <c>DebugMode = 0</c> without the title (development:
+    /// <c>--newgame</c>, <c>--auto</c>, the tests): the state the title menu leaves on that path
+    /// (below), <c>ｽﾀMENU.ADV:244-247</c> (<c>L_005ef</c>) and the new game <c>L_00670</c>
+    /// (<c>:279-290</c>). The script then jumps to <c>MAIN.ADV</c> (<c>:291</c>); the caller runs
+    /// the week loop next.
     /// </summary>
     /// <remarks>
-    /// The title menu itself is not ported (owner's decision 10), but its state lines on the way
-    /// to "Start" are: checked against the <c>enter</c> dumps of the owner's <c>Iﾌﾟﾛﾛｰｸﾞ</c>
-    /// captures (<c>NewGameStateTests</c>). What the port cannot know is left: the persistent page
-    /// 4 (from the player's slots), the benchmark's results and the opening's scratch
-    /// (<c>Tmp0003</c>, <c>Tmp0020</c>, <c>Tmp0039</c>, which depend on the machine and on when the
-    /// opening was clicked away).
+    /// The title itself runs from the player's files (owner's decision 19,
+    /// <c>GameSession.TitleAsync</c>), its debug starts From 2-4 too; this is its state lines on the
+    /// way to "Start" on a fresh boot, where <c>DebugMode</c> is 0 (the debug menu needs Alice's
+    /// secret first, QUIRK: EVT-09): checked against the <c>enter</c> dumps of the owner's
+    /// <c>Iﾌﾟﾛﾛｰｸﾞ</c> captures (<c>NewGameStateTests</c>). What the port cannot know is left: the
+    /// persistent page 4 (from the player's slots), the benchmark's results and the title's scratch:
+    /// the display's depth (<c>Tmp0003</c>), where the logo was clicked away (<c>Tmp0020</c>) and the
+    /// target of a map scroll watched on the title first (<c>Tmp0039</c> [I: Alice's opening]).
     /// </remarks>
     public async Task NewGameAsync()
     {
@@ -91,8 +98,7 @@ public sealed partial class GameSetup(ScriptContext script, IScenarioSource scen
         State.MapCamX = State.MapTargetX;
         State.MapCamY = State.MapTargetY;
         State.CurrentBgm = 4;                       // :245
-        if (State.DebugMode != 0)                   // :246-248; the debug menu "From 1-4" is not ported
-            throw new NotSupportedException("The debug starts of ｽﾀMENU.ADV:249-266 are not ported.");
+        // :246-248 DebugMode 0: on to L_00670
         // :280-282 PF1 1, EC 0, PF0 1: fade out, clear, fade in (display only)
         await Script.WaoMapCallAsync(3);            // :283-284 redraw the map and the markers
         await Script.MapCallAsync(0);               // :285-286

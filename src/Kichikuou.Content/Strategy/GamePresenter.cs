@@ -25,7 +25,8 @@ public sealed record FadeRequest(byte From, byte To, bool ToWhite, int Rate)
 /// <list type="bullet">
 /// <item>The <b>stage</b> (<see cref="Stage"/>): the engine's 3200×800 surface. What the scenes draw
 /// themselves runs there as in the engine (<c>G</c> with <c>J0</c>/<c>J1</c>/<c>PC</c>, <c>CC</c>,
-/// <c>CS</c>, <c>CF</c>, <c>EC</c>; the opening and the CG scenes); the map is drawn there from
+/// <c>CE</c>, <c>CS</c>, <c>CF</c>, <c>EC</c>; the opening, the CG scenes, the logo, the title and
+/// the ending); the map is drawn there from
 /// GameState (tiles, markers, camera); the battle draws there through <see cref="Battle"/>, which
 /// gets every event between a battle's <see cref="BattleScreenEvent"/>s — except while a picker the
 /// battle opened is up (<c>FIGT_B</c>'s <c>Sﾌﾞﾀｲ</c>): that one is drawn by hand over the battle's
@@ -495,7 +496,7 @@ public sealed partial class GamePresenter
             case "J1": _jumpRelative = (A(0), A(1)); break;
             case "PC": _cgFlags = A(0); break;
             case "G": DrawCg(A(0), args.Count > 1 ? A(1) : null); break;
-            case "CC":
+            case "CC" or "CE":                                          // CE: the copy at once, without its effect (the logo)
                 PrepareCopy(A(0), A(2));
                 Stage.Copy(A(0), A(1), A(2), A(3), A(4), A(5));
                 Drawn(A(4), A(5), A(2), A(3), opaque: true);

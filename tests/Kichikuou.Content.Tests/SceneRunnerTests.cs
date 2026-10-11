@@ -305,7 +305,41 @@ public sealed class SceneRunnerTests : IDisposable
         Assert.Equal([(40, false), (20, true)], rig.Input.Pauses);
     }
 
+    /// <summary>
+    /// The title's commands: <c>MC</c> compares two string variables into <c>RetVal</c> (1 equal, 0
+    /// not); <c>ZZ3</c> writes the display (the input's) into three variables; <c>CE</c> shows its copy
+    /// and waits its effect's time as a pause — effect 4 on 640 dots, 3 × 320 ms, 60 ticks — that a
+    /// key may cut short, the key in <c>RetVal</c> (0: it ran out).
+    /// </summary>
+    [Fact]
+    public async Task MC_ZZ3_and_CE_compare_measure_and_wait()
+    {
+        var rig = Rig(null, ("GTEST.ADV",
+        [
+            "\tMS 1, \"／／\":",
+            "\tMS 2, \"／／\":",
+            "\tMC 1, 2:",
+            "\t!VAR0010 : VAR0000!",
+            "\tMS 2, \"x\":",
+            "\tMC 1, 2:",
+            "\t!VAR0011 : VAR0000!",
+            "\tZZ3, VAR0001:",
+            "\t!VAR0000 : 7!",
+            "\tCE 640, 0, 640, 400, 0, 0, 4, 0, 1:",
+            "\t%0:",
+        ]));
+
+        await rig.EventAsync("GTEST.ADV", 1);
+
+        Assert.Equal((1, 0), (Var(rig, 10), Var(rig, 11)));
+        Assert.Equal((1920, 1080, 24), (Var(rig, 1), Var(rig, 2), Var(rig, 3)));
+        Assert.Equal(0, Var(rig, 0));
+        Assert.Equal([(60, true)], rig.Input.Pauses);
+        Assert.Equal("CE", Assert.IsType<EngineEvent>(rig.View.Events[^1]).Command);
+    }
+
     [Theory]
+    [InlineData("\tCE 0, 0, 8, 8, 0, 0, 9, 0, 1:", "CE effect 9 is not ported")]
     [InlineData("\t!VAR0001 : 1!", "ran past the end")]
     [InlineData("\tUG VAR0001, 1:", "UG with no pushed variable")]
     [InlineData("\t\\0:", "label return with no label call")]
@@ -344,6 +378,9 @@ public sealed class SceneRunnerTests : IDisposable
         Assert.True(SceneRunner.IsSceneFile("Iﾄｳｿﾞｸ.ADV"));
         Assert.True(SceneRunner.IsSceneFile("ｵｰﾌﾟﾆﾝｸﾞ.ADV"));
         Assert.True(SceneRunner.IsSceneFile("OVER.ADV"));
+        Assert.True(SceneRunner.IsSceneFile("ｽﾀMENU.ADV"));
+        Assert.True(SceneRunner.IsSceneFile("ﾌﾟﾛﾛｰｸﾞ.ADV"));
         Assert.False(SceneRunner.IsSceneFile("FIGT_A.ADV"));
+        Assert.False(SceneRunner.IsSceneFile("CG.ADV"));
     }
 }

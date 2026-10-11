@@ -7,23 +7,23 @@ namespace Kichikuou.Core.Script;
 // other file is a hook.
 public sealed partial class ScriptContext
 {
-    /// <summary>The word table of the last <c>#label, 1:</c> (<see cref="ReadDataStatement"/> reads it).</summary>
+    /// <summary>The word table of the last <c>#label, n:</c> (<see cref="ReadDataStatement"/> reads it).</summary>
     private IReadOnlyList<Sys3Int> _dataTable = [];
 
-    /// <summary>The string table of the last <c>#label, 1:</c> that named one, or null (<see cref="ReadStringStatement"/> reads it).</summary>
+    /// <summary>The string table of the last <c>#label, n:</c> that named one, or null (<see cref="ReadStringStatement"/> reads it).</summary>
     private IReadOnlyList<string>? _stringTable;
 
     /// <summary>The data reader's position in <see cref="_stringTable"/> (<c>F1</c> moves it on).</summary>
     private int _stringPosition;
 
-    /// <summary><c>#label, 1:</c> naming a word table: the data reader points at its first word.</summary>
+    /// <summary><c>#label, n:</c> naming a word table: the data reader points at its first word.</summary>
     public void SetDataTable(IReadOnlyList<Sys3Int> words)
     {
         _dataTable = words;
         _stringTable = null;
     }
 
-    /// <summary><c>#label, 1:</c> naming a run of strings: the data reader points at the first.</summary>
+    /// <summary><c>#label, n:</c> naming a run of strings: the data reader points at the first.</summary>
     public void SetStringTable(IReadOnlyList<string> strings)
     {
         _stringTable = strings;
@@ -132,6 +132,17 @@ public sealed partial class ScriptContext
         var strings = State.Strings;
         if (target.Value < strings.Length && source.Value < strings.Length)
             strings[target.Value] = strings[source.Value];
+    }
+
+    /// <summary>
+    /// <c>MC a, b</c>: 1 when string variables <paramref name="a"/> and <paramref name="b"/> hold the
+    /// same text, else 0 (<c>cmdm.c</c>, <c>strcmp</c>); an index outside the string table reads as empty.
+    /// </summary>
+    public Sys3Int CompareStrings(Sys3Int a, Sys3Int b)
+    {
+        var strings = State.Strings;
+        string Text(Sys3Int n) => n.Value < strings.Length ? strings[n.Value] : string.Empty;
+        return string.Equals(Text(a), Text(b), StringComparison.Ordinal) ? (Sys3Int)1 : Sys3Int.Zero;
     }
 
     /// <summary>

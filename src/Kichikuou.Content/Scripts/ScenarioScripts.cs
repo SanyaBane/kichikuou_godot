@@ -17,8 +17,8 @@ namespace Kichikuou.Content.Scripts;
 /// <remarks>
 /// <see cref="ReadProgram"/> reads a whole file as a goto program (<see cref="ScenarioParser"/>).
 /// <see cref="ReadFile"/> reads a straight-line data file: <c>!VARnnnn : expr!</c>,
-/// <c>MS n, "text":</c>, <c>MM expr, expr:</c>, <c>#L_xxxxx, 1:</c> (resolved to the table its
-/// address word names, <see cref="ScenarioParser.DataTable"/>), <c>F3, VARnnnn, expr:</c>,
+/// <c>MS n, "text":</c>, <c>MM expr, expr:</c>, <c>#L_xxxxx, n:</c> (resolved to the table its
+/// n-th address word names, <see cref="ScenarioParser.DataTable"/>), <c>F3, VARnnnn, expr:</c>,
 /// <c>%#FILE.ADV:</c> and <c>%0:</c> (which ends the file's code); <c>ZH n:</c> and <c>R</c> are
 /// message formatting and produce nothing. <see cref="ReadStatement"/> reads one line in these
 /// forms, e.g. an <c>MS</c> or a <c>#label</c> of a hand-ported file. One instance may be shared
@@ -108,7 +108,7 @@ public sealed partial class ScenarioScripts(string directory) : IScenarioSource,
         if ((m = CopyStringRegex().Match(line)).Success)
             return new CopyStringStatement(at, ScenarioParser.Expr(at, m.Groups[1].Value), ScenarioParser.Expr(at, m.Groups[2].Value));
         if ((m = ScenarioParser.DataTableRegex().Match(line)).Success)
-            return ScenarioParser.DataTable(at, m.Groups[1].Value, Lines(at.File));
+            return ScenarioParser.DataTable(at, m.Groups[1].Value, ScenarioParser.Number(at, m.Groups[2].Value), Lines(at.File));
         if ((m = ReadDataRegex().Match(line)).Success)
             return new ReadDataStatement(at, ScenarioParser.Var(m.Groups[1].Value), ScenarioParser.Expr(at, m.Groups[2].Value));
         if ((m = ScenarioParser.CallRegex().Match(line)).Success)

@@ -401,6 +401,43 @@ public class GamePresenterTests(ITestOutputHelper output)
         Assert.Equal(2, s.Fates[79].Fate.Value);
     }
 
+    /// <summary>
+    /// The title (milestone 6 step 2) through <see cref="GameSession.TitleAsync"/>: the logo, then
+    /// <c>ｽﾀMENU</c> draws on the stage — the background (CG 301) and the buttons from the off-screen
+    /// sheet (CG 303 at (640, 400)) composed at (640, 0) and copied onto the screen — and a click on
+    /// "Start" begins the game: the prologue scene, then <c>MAIN</c> up to week 9's autosave.
+    /// </summary>
+    [Fact]
+    public async Task The_title_draws_on_the_stage_and_Start_begins_the_game()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var run = await RunAsync(stopAtWeek: 9);
+        var p = run.Presenter;
+        bool clicked = false;
+        (byte, byte, byte, byte)[]? screen = null, expected = null;
+        (int X, int Y)[] points = [(10, 200), (600, 50), (347, 331), (120, 77)];
+        run.Player.OnRead = () =>
+        {
+            if (clicked || !run.Player.Shown.Any(e => e is MusicEvent { Track.Value: 27 }))
+                return;                                                 // the first read after SS 27 is the title's (:97)
+            clicked = true;
+            screen = [.. points.Select(pt => p.Screen.PixelAt(pt.X, pt.Y))];
+            expected = [.. points.Select(pt => p.Stage.PixelAt(640 + pt.X, pt.Y))];
+            Assert.Equal(p.Stage.PixelAt(640 + 347, 400 + 331), p.Screen.PixelAt(347, 331));   // button 6 as CG 303 has it
+            run.Player.Click(347, 331);
+        };
+
+        await Assert.ThrowsAsync<WeekOverException>(() => run.Session.TitleAsync());
+
+        Assert.True(clicked, "the title waited for the mouse");
+        Assert.Equal(expected, screen);
+        Assert.Contains(screen!, px => px != ((byte)0, (byte)0, (byte)0, (byte)255));
+        Assert.Empty(p.Unresolved);
+        Assert.Contains(run.Player.Shown, e => e is EngineEvent { Command: "G" } g && g.Args[0].Value == 1700);
+        Assert.Equal(9, run.Session.State.Week.Value);
+    }
+
     private static (byte, byte, byte, byte) ScreenAt(GamePresenter p, int x, int y)
     {
         p.Flush();
@@ -745,6 +782,9 @@ public class GamePresenterTests(ITestOutputHelper output)
         public int LitFrames { get; private set; }
 
         public int Pending => _pointer.Pending;
+
+        /// <summary>A left click at a screen point, after the pointer has settled.</summary>
+        public void Click(int x, int y) => _pointer.Click(x, y);
 
         /// <summary>Every event shown, in order.</summary>
         public List<ScriptEvent> Shown { get; } = [];

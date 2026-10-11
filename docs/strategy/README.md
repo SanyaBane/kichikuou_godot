@@ -653,11 +653,33 @@ Steps:
    quit. Found on the way: the boot skips `ｽﾀｰﾄ.ADV:858` (`Y 3, 10000`), and the logo leaves the
    waits uncancelable too (`ﾌﾟﾛﾛｰｸﾞ.ADV:151`, its only exit), so the port's `Y 3` pauses end on a
    held key in play where the original's do not — step 2 (the boot runs those files).
-2. **`ｽﾀMENU` as the title** (§3): the boot goes on from `SET` into `ｽﾀｰﾄ`'s end and `ｽﾀMENU` (the
-   logo, the buttons and their unlocks, the rolls), run from the player's files; New game and Load
-   through it; `Iｱﾘｽ`, `Gｻｲﾄｳ`, the requests slip and the debug starts From 2-4; the gallery's and the
-   music room's buttons stay unported (decision 19). Our title's development entries (the capture
-   viewer) move elsewhere; `--newgame`/`--load` keep working.
+2. **`ｽﾀMENU` as the title** ✓ (2026-10-11, survey-w4 §3): the boot (still `GameSetup.BootAsync`)
+   now keeps `ｽﾀｰﾄ.ADV:858`, `Y 3, 10000` — a key no longer cuts the `Y 3` pauses of play short, as
+   in the original (the logo turns it on for its frames and off again, `ﾌﾟﾛﾛｰｸﾞ.ADV:1, 151`); the
+   rest of `:847-868` is the screen's set-up and `XSPEC` stays unrun (DAT-04). Then
+   `GameSession.TitleAsync` runs `ｽﾀMENU` from the player's files (`SceneRunner.IsSceneFile` takes it
+   and the logo `ﾌﾟﾛﾛｰｸﾞ`), as written: the logo, the title, the unlocks by the clears and the rolls,
+   a button's description (right click), Alice's Mansion (`Iｱﾘｽ`), `Gｻｲﾄｳ`, the requests slip, Load,
+   New game and, with `DebugMode`, the debug starts From 1-4. Added for it: `MC` (a string compare
+   into `RetVal`), `ZZ3` (the display into three variables, `ISceneInput.GetDisplayAsync`; only the
+   256-colour warning reads it, never shown without `XSPEC`), `CE` (the logo's effect copy: drawn at
+   once, its 960 ms a pause a key cuts short, the key in `RetVal`), `WW` (presentation), `#label, n`
+   (the n-th address word: `#L_00fb3, 2` names the slip's strings) and word tables in the code area.
+   The gallery and the music room go to the unported files' hooks (Godot: a notice, and the title is
+   drawn again; `HAPPY_C` too until step 3). `GameSetup.NewGameAsync` stays for `--newgame`/`--auto`
+   and the tests, its `DebugMode` throw gone. Godot: `Main` opens the title, a `GameScreen` (a
+   fresh boot each time: at launch, after a game, on Restart), mouse polled by `IM` as in the map;
+   the capture viewer moved to the menu bar's Debug menu; the development switches are unchanged.
+   `MaskEventCgs` needs nothing new: `Iｱﾘｽ`'s pictures (CG 240, the rankings) show inside the
+   full-screen window, `Gｻｲﾄｳ` draws no CG on the stage. Tests (content, from the player's files):
+   `TitleTests` (the buttons by clears, the rolls passing only on 10 and 20, New game to `MAIN`, Load
+   backed out of and loaded, Alice's Mansion, `Gｻｲﾄｳ` leaving `F_Saitou_State` 1 (M4), the slip and
+   its re-roll, a description, the debug menu cancelled and From 2, 3, 4, the gallery and the music
+   room unported), `NewGameStateTests` (Start on the title against the owner's `Iﾌﾟﾛﾛｰｸﾞ` captures:
+   equal but for the display's depth `Tmp0003`, where the logo was clicked away `Tmp0020` and
+   `Tmp0039`, a map scroll one capture's owner watched on the title first [I: Alice's opening]),
+   `GamePresenterTests` (the title drawn on the stage, Start to week 9), the parser's and the
+   runner's. survey-w4's M6 corrected (Kentarou (unit 31) holds Nikkou from `SET_CHR.ADV:1204`).
 3. **`HAPPY_C`** (§4) from the player's files.
 4. **Docs**: the quirk candidates O1-O9, M1-M7, H1-H4 registered; STR-10's fix noted; survey-main's
    W4 row.

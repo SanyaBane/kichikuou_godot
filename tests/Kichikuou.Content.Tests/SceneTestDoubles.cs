@@ -31,9 +31,13 @@ public sealed class RecordingView : IScriptView
 {
     public List<ScriptEvent> Events { get; } = [];
 
+    /// <summary>Called after every event is recorded (e.g. to look at the state a message prints).</summary>
+    public Action<ScriptEvent>? OnShow { get; set; }
+
     public Task ShowAsync(ScriptEvent scriptEvent)
     {
         Events.Add(scriptEvent);
+        OnShow?.Invoke(scriptEvent);
         return Task.CompletedTask;
     }
 }

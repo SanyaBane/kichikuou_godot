@@ -53,6 +53,9 @@ public sealed class GameInputProxy(IGameInput target) : IGameInput
 
     /// <inheritdoc />
     public Task<Sys3Int> GetMidiTrackAsync() => Target.GetMidiTrackAsync();
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<Sys3Int>> GetDisplayAsync() => Target.GetDisplayAsync();
 }
 
 /// <summary>The game's view as a proxy for the UI that shows it now (decision 4); switched with the input, at a safe point.</summary>

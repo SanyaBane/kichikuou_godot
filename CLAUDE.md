@@ -113,7 +113,11 @@ player's files through `SceneRunner` (not hand-ported), after `ZZ0` back to the 
 replaces our title; the gallery `CG` and the music room `MMODE` later. Step 1 is done: `OVER` runs
 from the player's files (`SceneRunner.IsSceneFile`; `ZZ0, 0` is `GameQuitException`, which
 `GameSession` turns into `GameEnd`; Godot then goes back to the title), tested by `OverTests`.
-Step 2 (`ｽﾀMENU` as the title) is next.
+Step 2 is done: `ｽﾀMENU` (with its logo `ﾌﾟﾛﾛｰｸﾞ`) is the title, run from the player's files by
+`GameSession.TitleAsync` after the boot (which now keeps `ｽﾀｰﾄ.ADV:858`'s `Y 3, 10000`): New game,
+Load, `Iｱﾘｽ`, `Gｻｲﾄｳ`, the requests slip and the debug starts through it, the gallery and the music
+room unported (`TitleTests`); Godot's `Main` opens it, the capture viewer is in the Debug menu.
+Step 3 (`HAPPY_C`) is next.
 `tools/analysis/port_draft.py` drafts text-heavy ranges for hand ports.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.
@@ -166,13 +170,13 @@ Step 2 (`ｽﾀMENU` as the title) is next.
   captures in `E:\Modding games\Modding Rance\Kichikou\_extract\golden` (or
   `KICHIKUOU_GOLDEN_DIR`) and is skipped when there are none.
 - `godot/` — Godot 4.7.2 .NET project (`Kichikuou.csproj`, namespace `Kichikuou.Game`);
-  presentation only: `Main` is the title (New game, Load, Quit, the capture viewer) and reads the
-  development switches; `Strategy/GameScreen` runs one game (`GameSession` on a `GamePresenter`;
+  presentation only: `Main` opens the title (a `GameScreen` running `ｽﾀMENU`) or what the
+  development switches ask for; `Strategy/GameScreen` runs one game from the boot (`GameSession` on a `GamePresenter`;
   mouse and keys are a state, `Strategy/PlayerInput`, that `IM`, `Y 3`, `IK 0` and the menus poll
   once a frame as xsystem35 does — the map and the pickers decide clicks and drags themselves;
   `PointerScript` gestures only for `--auto`; `GameScreen.MenuBar` is xsystem35's menu bar —
-  Restart, MsgSkip on `Core/Script/MessageSkip`, docs/window-menu.md; `Strategy/EngineState` keeps
-  the random generator and the message skip for the whole launch); `Battles/CaptureList` picks a capture, `Battles/BattleScreen` shows its battle;
+  Restart, MsgSkip on `Core/Script/MessageSkip`, docs/window-menu.md, plus our Debug menu; `Strategy/EngineState` keeps
+  the random generator and the message skip for the whole launch); `Battles/CaptureList` (Debug → Battle Captures) picks a capture, `Battles/BattleScreen` shows its battle;
   `GodotGlyphRenderer` (MS Gothic via TextServer), `BattleAudio`; `Screens` switches screens. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
 - `tools/analysis/` — Python scripts for reading the decompiled scenario; `tools/codegen/` —
   generators for committed C# sources; `tools/golden/` — harness launcher and page classes.

@@ -52,8 +52,15 @@ public sealed record AppendStringStatement(ScriptRef At, ScriptExpr Target, Scri
 public sealed record NumberToStringStatement(ScriptRef At, ScriptExpr Slot, ScriptExpr Width, ScriptExpr Value) : ScriptStatement(At);
 
 /// <summary>
-/// <c>#label, 1:</c> — points the data reader at the word table the label's address word names
-/// (xsystem35 <c>cmd_check.c</c>); <paramref name="Words"/> is that table.
+/// <c>MC a, b:</c> — <c>RetVal</c> := 1 when string variables <paramref name="Left"/> and
+/// <paramref name="Right"/> hold the same text, else 0 (<c>cmdm.c</c> <c>commandMC</c>, a <c>strcmp</c>;
+/// the title's requests slip finds its separators so, <c>ｽﾀMENU.ADV:212, 222</c>).
+/// </summary>
+public sealed record CompareStringsStatement(ScriptRef At, ScriptExpr Left, ScriptExpr Right) : ScriptStatement(At);
+
+/// <summary>
+/// <c>#label, n:</c> — points the data reader at the word table the label's n-th address word
+/// names (xsystem35 <c>cmd_check.c</c>); <paramref name="Words"/> is that table.
 /// </summary>
 public sealed record SetDataTableStatement(ScriptRef At, IReadOnlyList<Sys3Int> Words) : ScriptStatement(At);
 
@@ -61,7 +68,7 @@ public sealed record SetDataTableStatement(ScriptRef At, IReadOnlyList<Sys3Int> 
 public sealed record ReadDataStatement(ScriptRef At, int Var, ScriptExpr Index) : ScriptStatement(At);
 
 /// <summary>
-/// <c>#label, 1:</c> when the label's address word names a run of strings (<c>"text"</c> lines,
+/// <c>#label, n:</c> when the label's n-th address word names a run of strings (<c>"text"</c> lines,
 /// each null-terminated in the bytecode, e.g. <c>Sﾊｰﾚﾑ.ADV:311-363</c>): the data reader points at
 /// the first one; <paramref name="Strings"/> is the run (read from the player's files).
 /// </summary>
@@ -236,12 +243,28 @@ public sealed record SaveDataStatement(
 public sealed record QuitStatement(ScriptRef At, ScriptExpr Mode) : ScriptStatement(At);
 
 /// <summary>
+/// <c>ZZ3 var:</c> — the display's width, height and bits per pixel into three variables from
+/// <paramref name="Var"/> on (<c>cmdz.c</c> <c>commandZZ3</c>, <see cref="ISceneInput.GetDisplayAsync"/>).
+/// </summary>
+public sealed record DisplayInfoStatement(ScriptRef At, int Var) : ScriptStatement(At);
+
+/// <summary>
+/// <c>CE sx, sy, w, h, dx, dy, effect, option, wait:</c> — copies an area like <c>CC</c> with a
+/// transition effect that takes its time (<c>cmdc.c</c> <c>commandCE</c>, <c>ecopy.c</c>
+/// <c>ags_eCopyArea</c>): with <c>wait</c> set a key or click cuts it short, and with
+/// <c>wait</c> 1 <c>RetVal</c> := that key (0 when it ran out). The presentation draws the copy
+/// (an <see cref="EngineEvent"/> <c>CE</c>); the time is an input. Only the logo uses it
+/// (<c>ﾌﾟﾛﾛｰｸﾞ.ADV:158</c>, effect 4).
+/// </summary>
+public sealed record EffectCopyStatement(ScriptRef At, IReadOnlyList<ScriptExpr> Args) : ScriptStatement(At);
+
+/// <summary>
 /// An engine command that changes only what is shown and never a script variable: CG loading and
 /// placement (<c>G</c>, <c>J0</c>, <c>J1</c>, <c>PC</c>), fades and palette (<c>PF0</c>, <c>PF1</c>,
 /// <c>PW0</c>, <c>PW1</c>), screen copies and fills (<c>EC</c>, <c>CB</c>, <c>CC</c>, <c>CF</c>,
 /// <c>CL</c>, <c>CM</c>, <c>CS</c>), window and text layout (<c>B1</c>-<c>B4</c>, <c>T</c>, <c>WV</c>,
 /// <c>ZC</c>, <c>ZM</c>), the next track's loop count (<c>SL</c>), the pointer warp (<c>IZ x, y</c>,
-/// whose effect shows in the next <c>IM</c>). The presentation interprets them;
+/// whose effect shows in the next <c>IM</c>), the world's size (<c>WW</c>). The presentation interprets them;
 /// <paramref name="Args"/> are evaluated when the statement runs.
 /// </summary>
 public sealed record EngineStatement(ScriptRef At, string Command, IReadOnlyList<ScriptExpr> Args) : ScriptStatement(At);

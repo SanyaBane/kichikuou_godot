@@ -167,9 +167,8 @@ public class IkamiEndTests(ITestOutputHelper output)
 
         // QUIRK: EVT-12 (survey-ikami §3, Q3): Stop empties the party and :4817-4836 opens the
         // picker again; "Attack" without a unit is refused inside Sﾌﾞﾀｲ. No way on.
-        var e = await Assert.ThrowsAsync<InvalidOperationException>(() => game.Script.CallFileAsync("Iｶﾐ.ADV"));
+        await Assert.ThrowsAsync<PointerIdleException>(() => game.Script.CallFileAsync("Iｶﾐ.ADV"));
 
-        Assert.Equal("The mouse is read with nothing left to click.", e.Message);
         Assert.Equal(4, game.Calls.Count(c => c.StartsWith("Sﾌﾞﾀｲ.ADV", StringComparison.Ordinal)));
         Assert.Equal(0, game.Fights);
     }
