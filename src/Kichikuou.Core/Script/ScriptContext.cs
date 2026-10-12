@@ -7,9 +7,9 @@ namespace Kichikuou.Core.Script;
 /// <summary>
 /// What every ported scenario file shares: the game state, the script's random generator, the
 /// presentation and input interfaces and the calls into non-rule files, plus the helper files
-/// every part calls — <c>WAO_SUB.ADV</c> (<c>ScriptContext.Wao.cs</c>), <c>M.ADV</c> /
-/// <c>WAO_MAP.ADV</c> (<c>ScriptContext.Map.cs</c>) and <c>PCMPLAY.ADV</c> with the music
-/// commands (<c>ScriptContext.Sound.cs</c>). One context serves a whole game: the battle, the
+/// every part calls — <c>WAO_SUB.ADV</c> (<c>OriginalScriptContext.Wao.cs</c>), <c>M.ADV</c> /
+/// <c>WAO_MAP.ADV</c> (<c>OriginalScriptContext.Map.cs</c>) and <c>PCMPLAY.ADV</c> with the music
+/// commands (<c>OriginalScriptContext.Sound.cs</c>). One context serves a whole game: the battle, the
 /// week loop, the commands and the dungeon all run on it.
 /// </summary>
 public sealed partial class ScriptContext(

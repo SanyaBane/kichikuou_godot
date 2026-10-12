@@ -64,7 +64,7 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
     }
 
     /// <summary>
-    /// The drag-scroll of <c>WAO_MAP.ADV</c> op 1 (<c>ScriptContext.Map.cs</c>, which both runs above
+    /// The drag-scroll of <c>WAO_MAP.ADV</c> op 1 (<c>OriginalScriptContext.Map.cs</c>, which both runs above
     /// share) against the file run from the decompile, on random cameras and random pointer
     /// sequences (presses, moves, other buttons, presses while the view coasts).
     /// </summary>

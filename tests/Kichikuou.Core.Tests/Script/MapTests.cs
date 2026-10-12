@@ -6,7 +6,7 @@ using static Kichikuou.Core.Tests.Combat.Sys3Assert;
 namespace Kichikuou.Core.Tests.Script;
 
 /// <summary>
-/// <c>M.ADV</c> / <c>WAO_MAP.ADV</c> state effects (<c>ScriptContext.Map.cs</c>) and the <c>Y 3</c>
+/// <c>M.ADV</c> / <c>WAO_MAP.ADV</c> state effects (<c>OriginalScriptContext.Map.cs</c>) and the <c>Y 3</c>
 /// pauses that leave the key in <c>RetVal</c>. Both were found by the first golden capture
 /// (a FIGT_A victory at Golak): the original returned from FIGT_A with M.ADV op 13's scratch
 /// values and the last pause's key, which the port did not produce.

@@ -63,7 +63,7 @@ public sealed record KeyWaitEvent : ScriptEvent;
 /// speaker windows, 311/321 a portrait with the CG number in <paramref name="CallArg"/>, 331/333
 /// the centre picture, 1/5/11 a key wait (the wait itself is the
 /// <see cref="IScriptInput.WaitForKeyAsync"/> call that follows while a window is open), 0/10
-/// close. Raised before the operation's state effects (<c>ScriptContext.Wao.cs</c>).
+/// close. Raised before the operation's state effects (<c>OriginalScriptContext.Wao.cs</c>).
 /// </summary>
 public sealed record WindowEvent(Sys3Int Op, Sys3Int CallArg) : ScriptEvent;
 
@@ -80,7 +80,7 @@ public sealed record MusicEvent(Sys3Int Track) : ScriptEvent;
 /// A call of <c>M.ADV</c> (strategic map) with <c>CallArg</c> = <paramref name="Mode"/>
 /// (0 redraw, 1 scroll to the target, 3/4 province markers, 10/13 blink the target, 11/12
 /// pause). Raised before the call's state effects (camera, scratch variables, markers), which
-/// <c>ScriptContext.Map.cs</c> ports; its pauses follow as <see cref="IScriptInput.PauseAsync"/> calls.
+/// <c>OriginalScriptContext.Map.cs</c> ports; its pauses follow as <see cref="IScriptInput.PauseAsync"/> calls.
 /// </summary>
 public sealed record MapEvent(Sys3Int Mode) : ScriptEvent;
 

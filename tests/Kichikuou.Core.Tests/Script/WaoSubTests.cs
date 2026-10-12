@@ -6,7 +6,7 @@ using static Kichikuou.Core.Tests.Combat.Sys3Assert;
 namespace Kichikuou.Core.Tests.Script;
 
 /// <summary>
-/// <c>WAO_SUB.ADV</c> state effects (<c>ScriptContext.Wao.cs</c>). FIGT_B shows and removes portraits
+/// <c>WAO_SUB.ADV</c> state effects (<c>OriginalScriptContext.Wao.cs</c>). FIGT_B shows and removes portraits
 /// through ops 311/312/321/322/331/332; every removal runs <c>L_00b0f</c>, which leaves the
 /// clamped camera in <c>Tmp0021/0022</c> — scratch outside the ignored <c>ui</c> group that the
 /// port did not write. The key waits (ops 1, 11) do nothing while no window is open.
