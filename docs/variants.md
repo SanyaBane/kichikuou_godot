@@ -133,7 +133,13 @@ Each step ends green (see "Principles").
    - The original's events moved to files of their own (`Script/HelperEvents.cs`: the window, sound
      and map events; `Script/ScreenEvents.cs`). Their namespace follows the folders in step 4
      (`Kichikuou.Original.Script` beside `Kichikuou.Engine.Script`), so they are not renamed twice.
-3. **Split the presenter**: the engine-command emulation into `Screen/`.
+3. ✓ (2026-10-12) **Split the presenter**: the engine-command emulation into `Screen/`. As done:
+   `Screen/EngineStage` runs the drawing commands (`G` with `J0`/`J1`/`PC`, `CC`, `CE`, `CS`, `CF`,
+   `CM`, `WV`, `CB`, `CL`, `EC`, `PF`/`PW`, with `FadeRequest`) and keeps the text commands' state
+   (`ZM`, `ZC`, `B1`-`B3`, `SL`). `GamePresenter` owns one: it places the text itself (`B4`, `T`),
+   skips the drawing while a screen drawn by hand is open, sets the boot's selection window 1
+   (`ｽﾀｰﾄ.ADV:860`) and learns of the drawing through `IStageObserver` (the tile area, the covered
+   pictures, the CG numbers `MaskEventCgs` watches).
 4. **The assemblies**: create `Kichikuou.Engine` and `Kichikuou.Original.Content`; `Kichikuou.Core`
    becomes `Kichikuou.Original`, with namespaces following the folders. This step is mechanical:
    `InternalsVisibleTo` per assembly, the solution, the Godot project's references (Godot's scene files

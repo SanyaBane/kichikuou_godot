@@ -9,24 +9,13 @@ using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Content.Strategy;
 
-/// <summary>A palette fade (<c>PF</c>, <c>PW</c>) for the presentation engine to animate: from one amount to another at the command's <paramref name="Rate"/>.</summary>
-public sealed record FadeRequest(byte From, byte To, bool ToWhite, int Rate)
-{
-    /// <summary>
-    /// xsystem35's <c>ags_fadeIn</c>/<c>ags_fadeOut</c>: <c>rate * 16 * 1000 / 60</c> ms (≈267 ms a
-    /// unit; the scenes' <c>FadeSpeed</c> 4 is 1066 ms), not the 16 ms tick of <c>Y 3</c>. The
-    /// message skip does not shorten it (<c>ags_runEffect</c> waits without <c>KEYWAIT_SKIPPABLE</c>).
-    /// </summary>
-    public TimeSpan Duration => TimeSpan.FromMilliseconds(Rate * 16 * 1000 / 60);
-}
-
 /// <summary>
 /// Draws a whole game in the original's layout (part G0, owner's decisions 3 and 9) on two layers.
 /// <list type="bullet">
 /// <item>The <b>stage</b> (<see cref="Stage"/>): the engine's 3200×800 surface. What the scenes draw
-/// themselves runs there as in the engine (<c>G</c> with <c>J0</c>/<c>J1</c>/<c>PC</c>, <c>CC</c>,
-/// <c>CE</c>, <c>CS</c>, <c>CF</c>, <c>EC</c>; the opening, the CG scenes, the logo, the title and
-/// the ending); the map is drawn there from
+/// themselves runs there as in the engine (<see cref="EngineStage"/>: <c>G</c> with
+/// <c>J0</c>/<c>J1</c>/<c>PC</c>, <c>CC</c>, <c>CE</c>, <c>CS</c>, <c>CF</c>, <c>EC</c>; the opening,
+/// the CG scenes, the logo, the title and the ending); the map is drawn there from
 /// GameState (tiles, markers, camera); the battle draws there through <see cref="Battle"/>, which
 /// gets every event between a battle's <see cref="BattleScreenEvent"/>s — except while a picker the
 /// battle opened is up (<c>FIGT_B</c>'s <c>Sﾌﾞﾀｲ</c>): that one is drawn by hand over the battle's
@@ -40,7 +29,7 @@ public sealed record FadeRequest(byte From, byte To, bool ToWhite, int Rate)
 /// audio, animates <see cref="TakeFade"/> and turns its input into the script's inputs (it asks
 /// <see cref="MapWaiting"/>, <see cref="Picker"/> and <see cref="MenuHitTest"/> what a click means).
 /// </summary>
-public sealed partial class GamePresenter
+public sealed partial class GamePresenter : IStageObserver
 {
     private readonly ScenarioText _text;
     private readonly CgLibrary _cgs;
@@ -48,25 +37,13 @@ public sealed partial class GamePresenter
     private readonly IBattleAudio? _audio;
     private readonly IScenarioSource? _scenario;
     private readonly MessageWriter _stageWriter;
+    private readonly EngineStage _engine;
 
     /// <summary>The message window's text (<c>WAO_SUB</c> windows, and text printed with none open).</summary>
     private readonly TextBox _window = new((140, 278, 376, 140));
 
-    /// <summary>Message windows <c>B3 n, x, y, w, h</c> by number.</summary>
-    private readonly Dictionary<int, (int X, int Y, int W, int H)> _messageWindows = [];
-
-    /// <summary>Selection windows <c>B1 n, x, y, w</c> by number; window 1 as <c>ｽﾀｰﾄ.ADV:860</c> sets it.</summary>
-    private readonly Dictionary<int, (int X, int Y, int W)> _selectionWindows = new() { [1] = (250, 50, 150) };
-
-    private int _selectionWindow = 1;
     private int _battleDepth;
-    private int _textSize = 24;
-    private int _textColor = 15;
     private TextTarget _target = TextTarget.Window;
-    private (int X, int Y)? _jump;
-    private (int X, int Y)? _jumpRelative;
-    private int _cgFlags = 7;
-    private int _nextMusicLoops;
     private int _lastCg;
     private int _endingCg;                      // OVER's ending picture while on the stage (MaskEventCgs)
     private bool _gallery;                      // from the gallery's sheets to the title's background (MaskEventCgs)
@@ -107,6 +84,8 @@ public sealed partial class GamePresenter
         Screen = new Surface(Surface.ScreenWidth, Surface.ScreenHeight, indexed: false);
         Battle = new BattlePresenter(text, cgs, glyphs, audio, Stage);
         _stageWriter = new MessageWriter(Stage, glyphs);
+        _engine = new EngineStage(Stage, cgs, this);
+        _engine.SetState("B1", [(Sys3Int)1, (Sys3Int)250, (Sys3Int)50, (Sys3Int)150]);   // ｽﾀｰﾄ.ADV:860, the boot's window 1
     }
 
     /// <summary>The engine's surface: what the scenes, the map and the battle draw.</summary>
@@ -137,10 +116,14 @@ public sealed partial class GamePresenter
     public bool SaveScreenOpen { get; private set; }
 
     /// <summary>How far the screen is faded (0 not at all, 255 all black or white).</summary>
-    public byte FadeAmount { get; set; }
+    public byte FadeAmount
+    {
+        get => _engine.FadeAmount;
+        set => _engine.FadeAmount = value;
+    }
 
     /// <summary>Whether the fade goes to white (<c>PW</c>) rather than black (<c>PF</c>).</summary>
-    public bool FadeToWhite { get; private set; }
+    public bool FadeToWhite => _engine.FadeToWhite;
 
     /// <summary>Script locations whose text could not be read (shown as the location instead).</summary>
     public List<string> Unresolved { get; } = [];
@@ -174,8 +157,6 @@ public sealed partial class GamePresenter
     /// <summary>The message window's text (for tests and other UIs).</summary>
     public TextBox WindowText => _window;
 
-    private FadeRequest? _fade;
-
     /// <summary>Takes the game's state: the screens are drawn from it.</summary>
     public void Bind(GameState state)
     {
@@ -189,12 +170,7 @@ public sealed partial class GamePresenter
     public void Invalidate() => _dirty = true;
 
     /// <summary>The fade the last event started, once (the engine animates it; the amount is already the end).</summary>
-    public FadeRequest? TakeFade()
-    {
-        var fade = _fade;
-        _fade = null;
-        return fade;
-    }
+    public FadeRequest? TakeFade() => _engine.TakeFade();
 
     /// <summary>Finishes the drawing the script does without an event of its own; call before waiting for input.</summary>
     public void Flush()
@@ -280,8 +256,7 @@ public sealed partial class GamePresenter
             case SoundEvent e: IBattleAudio.PcmPlay(_audio, e); break;
             case SoundPairEvent e: _audio?.PlaySoundPair(e.First.Value, e.Second.Value); break;
             case MusicEvent e:
-                _audio?.PlayMusic(e.Track.Value, _nextMusicLoops);
-                _nextMusicLoops = 0;                                    // cmds.c: every SS resets it
+                _audio?.PlayMusic(e.Track.Value, _engine.TakeMusicLoops());
                 break;
             case EngineEvent e: Engine(e.Command, e.Args); break;
         }
@@ -357,12 +332,12 @@ public sealed partial class GamePresenter
     {
         if (_target == TextTarget.Stage)
         {
-            _stageWriter.Size = _textSize;
-            _stageWriter.Color = _textColor;
+            _stageWriter.Size = _engine.TextSize;
+            _stageWriter.Color = _engine.TextColor;
             _stageWriter.Print(text);
             return;
         }
-        TargetBox?.Print(text, _textSize, _textColor);
+        TargetBox?.Print(text, _engine.TextSize, _engine.TextColor);
     }
 
     private void NewLine()
@@ -370,7 +345,7 @@ public sealed partial class GamePresenter
         if (_target == TextTarget.Stage)
             _stageWriter.NewLine();
         else
-            TargetBox?.NewLine(_textSize);
+            TargetBox?.NewLine(_engine.TextSize);
     }
 
     private void ClearText() => TargetBox?.Clear();
@@ -411,7 +386,7 @@ public sealed partial class GamePresenter
                 if (op == 0 && State is { Ui_WinType.Value: >= 31 and <= 39 } shown)
                     LeaveWindowOnStage(shown);
                 if (op == 10 || State?.Ui_WinType.Value is >= 11 and <= 29)
-                    _textColor = 15;
+                    _engine.TextColor = 15;
                 _window.Clear();
                 if (_target == TextTarget.Window && Picker is not null)
                     _target = TextTarget.None;
@@ -429,9 +404,9 @@ public sealed partial class GamePresenter
     {
         _window.Open(text);
         if (color is int c)
-            _textColor = c;
+            _engine.TextColor = c;
         if (size is int s)
-            _textSize = s;
+            _engine.TextSize = s;
         _target = TextTarget.Window;
     }
 
@@ -458,30 +433,24 @@ public sealed partial class GamePresenter
     /// <summary>
     /// A presentation-only engine command. The text commands (<c>ZM</c>, <c>ZC 1</c>, the message
     /// and selection windows <c>B1</c>-<c>B4</c>, <c>T</c>) steer the text; the drawing commands
-    /// run on the stage as in the engine, except while a picker or All Data is open (they are drawn
-    /// by hand: the text placed with <c>T</c> goes nowhere, they print it themselves).
+    /// run on the stage as in the engine (<see cref="EngineStage"/>), except while a picker or All
+    /// Data is open (they are drawn by hand: the text placed with <c>T</c> goes nowhere, they print
+    /// it themselves).
     /// </summary>
     private void Engine(string command, IReadOnlyList<Sys3Int> args)
     {
+        if (_engine.SetState(command, args))
+            return;
         int A(int i) => i < args.Count ? args[i].Value : 0;
         switch (command)
         {
-            case "ZM": _textSize = A(0); return;
-            case "ZC":
-                if (A(0) == 1)
-                    _textColor = A(1);
-                return;
-            case "SL": _nextMusicLoops = A(0); return;                  // the next SS's loop count
-            case "B1": _selectionWindows[A(0)] = (A(1), A(2), A(3)); return;
-            case "B2": _selectionWindow = A(0); return;
-            case "B3": _messageWindows[A(0)] = (A(1), A(2), A(3), A(4)); return;
             case "B4":
                 if (Picker is { } picker)
                 {
-                    picker.SelectPanel(A(0), _messageWindows.TryGetValue(A(0), out var r) ? r : null);
+                    picker.SelectPanel(A(0), _engine.MessageWindow(A(0)));
                     _target = TextTarget.Panel;
                 }
-                else if (_messageWindows.TryGetValue(A(0), out var rect))
+                else if (_engine.MessageWindow(A(0)) is { } rect)
                 {
                     _window.Open(rect);
                     _target = TextTarget.Window;
@@ -497,74 +466,17 @@ public sealed partial class GamePresenter
                 _target = TextTarget.Stage;
                 return;
         }
-        if (DrawnByHand)
-            return;
-        switch (command)
-        {
-            case "J0": _jump = (A(0), A(1)); break;
-            case "J1": _jumpRelative = (A(0), A(1)); break;
-            case "PC": _cgFlags = A(0); break;
-            case "G": DrawCg(A(0), args.Count > 1 ? A(1) : null); break;
-            case "CC" or "CE":                                          // CE: the copy at once, without its effect (the logo)
-                PrepareCopy(A(0), A(2));
-                Stage.Copy(A(0), A(1), A(2), A(3), A(4), A(5));
-                Drawn(A(4), A(5), A(2), A(3), opaque: true);
-                break;
-            case "CS":
-                PrepareCopy(A(0), A(2));
-                Stage.CopyKeyed(A(0), A(1), A(2), A(3), A(4), A(5));
-                Drawn(A(4), A(5), A(2), A(3));
-                break;
-            case "CF":
-                Stage.Fill(A(0), A(1), A(2), A(3), A(4));
-                Drawn(A(0), A(1), A(2), A(3), opaque: true);
-                break;
-            case "CM":
-                PrepareCopy(A(0), A(2));
-                Stage.ScaledCopy(A(0), A(1), A(2), A(3), A(4), A(5), A(6), A(7), A(8));
-                Drawn(A(4), A(5), A(6), A(7), opaque: true);
-                break;
-            case "WV":
-                Stage.SetView(A(0), A(1));
-                break;
-            case "CB":
-                Stage.DrawBox(A(0), A(1), A(2), A(3), A(4));
-                Drawn(A(0), A(1), A(2), A(3));
-                break;
-            case "CL":
-                Stage.DrawLine(A(0), A(1), A(2), A(3), A(4));
-                Drawn(Math.Min(A(0), A(2)), Math.Min(A(1), A(3)), Math.Abs(A(2) - A(0)) + 1, Math.Abs(A(3) - A(1)) + 1);
-                break;
-            case "EC":
-                if (A(0) == 0)
-                {
-                    Stage.Fill(0, 0, Surface.ScreenWidth, Surface.ScreenHeight, 0);
-                    CoverScreen();
-                }
-                break;
-            case "PF0" or "PF2": Fade(0, toWhite: false, A(0)); break;
-            case "PF1" or "PF3": Fade(255, toWhite: false, A(0)); break;
-            case "PW0" or "PW2": Fade(0, toWhite: true, A(0)); break;
-            case "PW1" or "PW3": Fade(255, toWhite: true, A(0)); break;
-        }
+        if (!DrawnByHand)
+            _engine.Draw(command, args);
     }
 
-    /// <summary>
-    /// <c>G n</c> / <c>G n, key</c>: at the <c>J0</c> position, or the CG's own moved by <c>J1</c>,
-    /// or its own. <c>PC</c> (<c>cg_fflg</c>, <c>cg.c:63-65</c>): bit 4 loads the CG's palette and
-    /// bit 2 shows it — the scenario sets both or neither, so bit 4 alone decides here — and bit 1
-    /// draws the CG; <c>PC 1</c> draws without the palette, <c>PC 6</c> loads it without drawing
-    /// (<c>ｵｰﾌﾟﾆﾝｸﾞ.ADV:5-41</c>, <c>ﾌﾟﾛﾛｰｸﾞ.ADV:134-139</c>). The stage keeps palette entries, so
-    /// the load recolours what is drawn, as the engine's 8-bit screen.
-    /// </summary>
-    private void DrawCg(int number, int? key)
+    void IStageObserver.BeforeCopy(int sourceX, int width) => PrepareCopy(sourceX, width);
+
+    void IStageObserver.Drawn(int x, int y, int width, int height, bool opaque) => Drawn(x, y, width, height, opaque);
+
+    /// <summary>The CG last loaded, and whether the stage shows an ending's picture or the gallery (<see cref="MaskEventCgs"/>).</summary>
+    void IStageObserver.CgLoaded(int number)
     {
-        var jump = _jump;
-        var relative = _jumpRelative;
-        _jump = null;
-        _jumpRelative = null;
-        if (_cgs.Get(number) is not { } cg)
-            return;
         _lastCg = number;
         if (number is >= FirstEndingCg and <= LastEndingCg)
             _endingCg = number;
@@ -574,19 +486,5 @@ public sealed partial class GamePresenter
             _gallery = true;
         else if (number == TitleCg)
             _gallery = false;
-        var (x, y) = jump ?? (relative is var (dx, dy) ? (cg.X + dx, cg.Y + dy) : (cg.X, cg.Y));
-        if ((_cgFlags & 4) != 0)
-            Stage.Palette = cg.PaletteOver(Stage.Palette);
-        if ((_cgFlags & 1) == 0)
-            return;
-        Stage.DrawCgRegion(cg, 0, 0, cg.Width, cg.Height, x, y, key);
-        Drawn(x, y, cg.Width, cg.Height, opaque: key is null);
-    }
-
-    private void Fade(byte to, bool toWhite, int ticks)
-    {
-        FadeToWhite = toWhite;
-        _fade = new FadeRequest(FadeAmount, to, FadeToWhite, ticks);
-        FadeAmount = to;
     }
 }

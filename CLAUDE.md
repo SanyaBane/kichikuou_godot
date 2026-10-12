@@ -189,7 +189,8 @@ Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its author's pe
   `CgLibrary`, `Palette` with the engine's reserved entries; `ToRgba(40)` = `G n, 40`);
   `Audio/` maps sound and music numbers to files. `Screen/` emulates the engine's drawing
   surface (3200×800 at 2×, 8-bit indexed as the engine's: a palette load recolours what is
-  drawn; `G`/`CC`/`CS`/`CF`/`CM`, `WV`), message text and selection windows;
+  drawn), its drawing commands (`EngineStage`: `G`/`CC`/`CS`/`CF`/`CM`, `WV`, the fades, the text
+  state; its owner is told of the drawing through `IStageObserver`), message text and selection windows;
   `Battles/BattlePresenter` draws every core event the way the original does
   ([docs/battle/screen-layout.md](docs/battle/screen-layout.md)), `FigtSelScreen` /
   `BattleMenuScreen` are the mouse-driven input screens. `Strategy/GamePresenter` draws a whole

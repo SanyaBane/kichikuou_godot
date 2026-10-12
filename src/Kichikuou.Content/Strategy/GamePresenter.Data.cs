@@ -155,5 +155,5 @@ public sealed partial class GamePresenter
     }
 
     private void DataText(string text, int x, int y, int size) =>
-        MessageWriter.DrawString(Screen, _glyphs, text.Replace("\n", ""), x, y, size, _textColor);
+        MessageWriter.DrawString(Screen, _glyphs, text.Replace("\n", ""), x, y, size, _engine.TextColor);
 }

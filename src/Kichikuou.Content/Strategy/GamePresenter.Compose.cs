@@ -227,7 +227,7 @@ public sealed partial class GamePresenter
     {
         if (_menu is null)
             return null;
-        var (x, y, w) = _selectionWindows.TryGetValue(_selectionWindow, out var window) ? window : _selectionWindows[1];
+        var (x, y, w) = _engine.SelectionWindow ?? throw new InvalidOperationException("No selection window is set (B1).");
         return new SelectionBox(Screen, _glyphs, x, y, w, _menu);
     }
 

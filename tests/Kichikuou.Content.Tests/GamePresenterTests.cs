@@ -1,4 +1,5 @@
 using Kichikuou.Content.Graphics;
+using Kichikuou.Content.Screen;
 using Kichikuou.Content.Scripts;
 using Kichikuou.Content.Strategy;
 using Kichikuou.Core.Combat;
