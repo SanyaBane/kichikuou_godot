@@ -161,7 +161,7 @@ public sealed partial class BattlePresenter
                     _orderMessage = true;
                 Writer.Print(Read(e.Text, [], e.StringVariables));
                 break;
-            case ValueMessageEvent e: Writer.Print(Read(e.Text, e.Values, null)); break;
+            case ValueMessageEvent e: Writer.Print(Read(e.Text, e.Values, e.StringVariables)); break;
             case PrintStringEvent e: PrintString(e.Slot.Value); break;
             case FlowErrorEvent e: Error(e.Text); break;
             case UnitInfoEvent e: UnitInfo(e.Unit, e.Order); break;

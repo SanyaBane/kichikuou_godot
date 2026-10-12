@@ -684,6 +684,72 @@ public class GamePresenterTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// A scene a battle file calls draws on the battle's surface: its raw drawing reaches the stage
+    /// while the battle's presenter shows the events, and the debug mask hides the stage under its
+    /// full-screen window there too.
+    /// </summary>
+    [Fact]
+    public void A_scene_inside_a_battle_draws_on_the_stage_and_is_masked()
+    {
+        var missing = Path.Combine(Path.GetTempPath(), "kichikuou-no-data");
+        var presenter = new GamePresenter(new ScenarioText(missing), new CgLibrary(missing), new BoxGlyphs());
+        var state = new GameState();
+        presenter.Bind(state);
+        presenter.Show(new BattleScreenEvent("死亡捕獲.ADV", true));
+        presenter.Show(new EngineEvent("CF", [(Sys3Int)0, (Sys3Int)0, (Sys3Int)640, (Sys3Int)400, (Sys3Int)15]));
+        var drawn = presenter.Stage.PixelAt(320, 100);
+        Assert.NotEqual((0, 0, 0, 255), drawn);
+        presenter.Invalidate();
+        presenter.Compose();
+        Assert.Equal(drawn, presenter.Screen.PixelAt(320, 100));
+
+        state.Ui_WinType = 31;
+        presenter.MaskEventCgs = true;
+        presenter.Invalidate();
+        presenter.Compose();
+        Assert.Equal(((byte)96, (byte)96, (byte)96, (byte)255), presenter.Screen.PixelAt(320, 100));
+    }
+
+    /// <summary>
+    /// <c>Gｸﾘｰﾑ</c> 1, which <c>死亡捕獲</c> calls (<c>Battle.Flow.DeathCapture.cs</c>), run from the
+    /// player's files inside the battle's screen: its pictures (<c>G 806</c>, <c>G 128</c>) reach the
+    /// stage, its text resolves, and with the debug mask every frame under its full-screen window is the
+    /// grey placeholder. Skipped without the player's files.
+    /// </summary>
+    [Fact]
+    public async Task A_death_scene_draws_its_pictures_over_the_battle()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var run = await RunAsync(stopAtWeek: 0);
+        var p = run.Presenter;
+        var s = run.Session.State;
+        p.MaskEventCgs = true;
+        int drawn = 0, version = 0, masked = 0, full = 0;
+        run.Player.OnShow = e =>
+        {
+            if (e is EngineEvent && p.Stage.ScreenVersion != version)
+                drawn++;
+            version = p.Stage.ScreenVersion;
+            if (!p.InBattle || s.Ui_WinType != 31 || p.FadeAmount != 0)        // faded out, the placeholder is dark too
+                return;
+            full++;
+            if (ScreenAt(p, 320, 200) == ((byte)96, (byte)96, (byte)96, (byte)255))
+                masked++;
+        };
+        await run.Session.Script.ShowAsync(new BattleScreenEvent("死亡捕獲.ADV", true));
+        version = p.Stage.ScreenVersion;
+
+        await run.Session.Script.EventAsync("Gｸﾘｰﾑ.ADV", 1);
+
+        Assert.True(p.InBattle);
+        Assert.True(drawn >= 2, $"{drawn} drawing commands reached the stage");
+        Assert.True(full > 0, "the full-screen window opened");
+        Assert.Equal(full, masked);
+        Assert.Empty(p.Unresolved.Concat(p.Battle.Unresolved).Distinct());
+    }
+
+    /// <summary>
     /// <c>WAO_SUB</c> 0 on the full-screen window restores nothing (<c>WAO_SUB.ADV:267-270</c>):
     /// after <c>Iﾄｳｿﾞｸ.ADV</c>'s last line (<c>:1839-1843</c>) the frame and the text stay on the
     /// screen while <c>ｵｰﾌﾟﾆﾝｸﾞ</c> waits for its music, until something draws over them.

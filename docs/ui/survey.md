@@ -363,7 +363,14 @@ None of these changes a rule or a look; each is small and testable on its own:
   `Battle.Flow.Attack.cs:36-38` and `Battle.Flow.Defence.cs:66, 324, 576`, and the other
   `EventAsync` calls in `Combat`) would lose any raw drawing, and their portraits and centre
   pictures would show only as far as `BattlePresenter.Window` draws them. `Gｴｸｽ` has no raw drawing
-  command; whether its `WAO_SUB` pictures show was not checked. In the backlog.
+  command; whether its `WAO_SUB` pictures show was not checked.
+  **Fixed (2026-10-12):** of the ~55 scene calls in `Combat`, 23 reach raw drawing (`G`, the fades,
+  `EC` — `死亡捕獲`'s death scenes above all, `Gｼｨﾙ` 28, `Gﾏｼﾞｯｸ` 25, `Iｾﾞｽ` 50); none places text
+  (`T`, `B1`-`B4`, `ZC`, `ZS`). Their raw drawing now runs on the stage the battle draws on, after
+  the battle's own drawing; their windows and portraits (`Gｴｸｽ`'s included) are
+  `BattlePresenter.Window`'s, which draws every `WAO_SUB` op they use (3 and 4 through
+  `Ui_FaceOverMap`); the value messages read their computed string variables there too; the debug mask covers their
+  full-screen window there too (`GamePresenterTests.A_death_scene_draws_its_pictures_over_the_battle`).
 - `SaveScreenEvent` is emitted and read by nothing; `KeyWaitEvent` is ignored outside battles.
 - The menus always use the battle's colours and size (16 / 18 / 255 / 22): the scenes' `ZC 2-4`,
   `ZS` and `B1`'s extra arguments are not tracked (visual only).

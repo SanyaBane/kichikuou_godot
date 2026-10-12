@@ -19,7 +19,8 @@ namespace Kichikuou.Original.Content.Strategy;
 /// GameState (tiles, markers, camera); the battle draws there through <see cref="Battle"/>, which
 /// gets every event between a battle's <see cref="BattleScreenEvent"/>s — except while a picker the
 /// battle opened is up (<c>FIGT_B</c>'s <c>Sﾌﾞﾀｲ</c>): that one is drawn by hand over the battle's
-/// screen like any other.</item>
+/// screen like any other. The scenes a battle file calls draw their windows through the battle's
+/// presenter and their own drawing on the stage.</item>
 /// <item>The <b>screens drawn by hand</b> over it, from the events' meaning and GameState: the
 /// message window (frame, text), the portraits and the centre picture, the menus, the pickers
 /// (<see cref="PickerView"/>). They are composed onto <see cref="Screen"/>, the 640×400 picture
@@ -210,6 +211,10 @@ public sealed partial class GamePresenter : IStageObserver
                 PickerScreen(picker);
             else if (scriptEvent is not ScreenEvent)
                 Battle.Show(scriptEvent);
+            // The scenes a battle file calls (死亡捕獲's deaths, Gｼｨﾙ 28 …) draw on the same surface:
+            // their G, fades and copies run on the stage after the battle's drawing they follow.
+            if (scriptEvent is EngineEvent engine)
+                Engine(engine.Command, engine.Args);
             return;
         }
         // A map animation's steps are the pauses after it; sound draws nothing (M 10 plays its sound before the blink).

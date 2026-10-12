@@ -87,9 +87,6 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   touch, how a second UI plugs in); the design (part 5) waits for the owner. Groundwork that does not
   wait for it — *agent*, survey §4.8: the proxies kept for a switch, a shared screen-state tracker,
   menus as data, a shared engine-timing base, a map geometry helper.
-- **Scenes called inside a battle file may not be drawn** — *agent*: while a battle shows, raw drawing
-  is dropped and the hand-drawn layers are not composed ([ui/survey.md](ui/survey.md) §5); check
-  `Gｴｸｽ`'s scenes from `FIGT_A`/`FIGT_B` headless.
 - **Quality-of-life features**, the README's second aim — *owner* (which), then *agent*; a survey of
   candidates first. Done so far: MsgSkip skips the opening whole (2026-10-11,
   [window-menu.md](window-menu.md), MsgSkip).
