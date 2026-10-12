@@ -9,9 +9,10 @@ namespace Kichikuou.Game.Strategy;
 /// The deployment table (owner's decision 25, docs/ui/deployment-table.md): our own screen over
 /// <c>Sﾌﾞﾀｲ</c>'s unit grid — a row per listed unit (<see cref="DeploymentTable.Rows"/>), the
 /// columns' compact headers with their full names as tooltips, sorted by a header click (ascending,
-/// again descending; by number at first), scrolling both ways, the units deployed this week grey,
-/// the party's members marked with their place in a first column. It decides nothing: the presses
-/// go to <see cref="GameScreen"/>, which answers the script with the gestures it expects.
+/// again descending, a small mark on the header with its room kept; by number at first),
+/// scrolling both ways, the units deployed this week grey, the party's members marked with their
+/// place in a first column. It decides nothing: the presses go to <see cref="GameScreen"/>, which
+/// answers the script with the gestures it expects.
 /// </summary>
 internal sealed partial class DeploymentTableView : Tree
 {
@@ -31,6 +32,10 @@ internal sealed partial class DeploymentTableView : Tree
     private DeploymentColumn _sort = DeploymentColumn.Number;
     private bool _descending;
     private FontFile _font = null!;
+    private string _up = "▲", _down = "▼";
+
+    /// <summary>The sort marks to choose from (ascending, descending); MS Gothic has the small triangles, BIZ UDGothic not.</summary>
+    private static readonly (string Up, string Down)[] SortMarks = [("▴", "▾"), ("˄", "˅"), ("↑", "↓"), ("▲", "▼")];
     private int _fontSize;
 
     /// <summary>A left press on a unit's row (the unit's number).</summary>
@@ -55,7 +60,7 @@ internal sealed partial class DeploymentTableView : Tree
             var info = DeploymentTable.Columns[c];
             SetColumnTitle(c + 1, info.Header);
             SetColumnTitleTooltipText(c + 1, info.FullName);
-            SetColumnTitleAlignment(c + 1, info.IsText ? HorizontalAlignment.Left : HorizontalAlignment.Right);
+            SetColumnTitleAlignment(c + 1, Alignment(info));
         }
         for (int c = 0; c < Columns; c++)
         {
@@ -92,6 +97,10 @@ internal sealed partial class DeploymentTableView : Tree
         };
         AddThemeFontOverride("font", _font);
         AddThemeFontOverride("title_button_font", _font);
+        // The sort mark: the narrowest pair the font has, so the header grows little.
+        (_up, _down) = SortMarks
+            .Where(m => _font.HasChar(m.Up[0]) && _font.HasChar(m.Down[0]))
+            .MinBy(m => Math.Max(_font.GetStringSize(m.Up, fontSize: 16).X, _font.GetStringSize(m.Down, fontSize: 16).X));
         Fill();
     }
 
@@ -166,6 +175,10 @@ internal sealed partial class DeploymentTableView : Tree
         }
     }
 
+    /// <summary>Text columns and the troops (the owner's choice) on the left, the numbers on the right.</summary>
+    private static HorizontalAlignment Alignment(DeploymentColumnInfo info) =>
+        info.IsText || info.Column == DeploymentColumn.Troops ? HorizontalAlignment.Left : HorizontalAlignment.Right;
+
     /// <summary>A header click: by that column ascending, again descending.</summary>
     private void SortBy(DeploymentColumn column)
     {
@@ -187,9 +200,9 @@ internal sealed partial class DeploymentTableView : Tree
         for (int c = 0; c < DeploymentTable.Columns.Count; c++)
         {
             var info = DeploymentTable.Columns[c];
-            string header = info.Header + (info.Column == _sort ? _descending ? " ▼" : " ▲" : "");
+            string header = info.Header + (info.Column == _sort ? _descending ? _down : _up : "");
             SetColumnTitle(c + 1, header);
-            Fit(c + 1, header);
+            Fit(c + 1, info.Header + _down);                           // room for the mark: a sort never widens a column
         }
         foreach (var row in DeploymentTable.Sort(_rows, _sort, _descending))
         {
@@ -202,7 +215,7 @@ internal sealed partial class DeploymentTableView : Tree
                 var info = DeploymentTable.Columns[c];
                 string text = row.Text(info.Column);
                 item.SetText(c + 1, text);
-                item.SetTextAlignment(c + 1, info.IsText ? HorizontalAlignment.Left : HorizontalAlignment.Right);
+                item.SetTextAlignment(c + 1, Alignment(info));
                 Fit(c + 1, text);
             }
             for (int c = 0; c < Columns; c++)

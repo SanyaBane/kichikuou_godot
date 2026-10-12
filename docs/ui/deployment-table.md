@@ -77,7 +77,9 @@ owner's order (2026-10-12), after a first column with the party place (header �
 3. ✓ (2026-10-12) **The Godot table** — a `Tree` with the columns, tooltips, sorting on a header click, both scroll
    bars, placed over the grid area and following the window's size. As done:
    `godot/Strategy/DeploymentTableView` — a first column with the party place (members' rows
-   tinted), grey text for status 2, the sorted header marked ▲/▼, columns as wide as their widest
+   tinted), grey text for status 2, the sorted header marked small (▴/▾ in MS Gothic, ↑/↓ in BIZ UDGothic: the
+   font's narrowest pair, its room kept in every column, so a sort never widens one), Troops on the
+   left like the text columns (owner, 2026-10-12), columns as wide as their widest
    text, the text 10 script pixels high in the Option → Fonts font (regular), over (322, 4)-(638, 322).
 4. ✓ (2026-10-12) **The setting** — Option → Interface (Original / New) in `user://settings.cfg`
    (`[display] interface`; `InterfaceChoice`, `--interface original|new` for one launch; docs/window-menu.md).
