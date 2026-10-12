@@ -89,12 +89,7 @@ internal sealed partial class DeploymentTableView : Tree
     /// <summary>Option → Fonts: the table's text in the chosen font (regular, unlike the surface's bold).</summary>
     public void SetFont(GameFont font)
     {
-        _font = new FontFile
-        {
-            Data = font == GameFont.MsGothic && GodotGlyphRenderer.MsGothicInstalled
-                ? System.IO.File.ReadAllBytes(GodotGlyphRenderer.MsGothicPath)
-                : Godot.FileAccess.GetFileAsBytes(GodotGlyphRenderer.BizUdGothicPath),
-        };
+        _font = LoadFont(font);
         AddThemeFontOverride("font", _font);
         AddThemeFontOverride("title_button_font", _font);
         // The sort mark: the narrowest pair the font has, so the header grows little.
@@ -103,6 +98,14 @@ internal sealed partial class DeploymentTableView : Tree
             .MinBy(m => Math.Max(_font.GetStringSize(m.Up, fontSize: 16).X, _font.GetStringSize(m.Down, fontSize: 16).X));
         Fill();
     }
+
+    /// <summary>The font of our own screens: the Option → Fonts face, regular (MS Gothic where installed, else BIZ UDGothic).</summary>
+    public static FontFile LoadFont(GameFont font) => new()
+    {
+        Data = font == GameFont.MsGothic && GodotGlyphRenderer.MsGothicInstalled
+            ? System.IO.File.ReadAllBytes(GodotGlyphRenderer.MsGothicPath)
+            : Godot.FileAccess.GetFileAsBytes(GodotGlyphRenderer.BizUdGothicPath),
+    };
 
     /// <summary>
     /// Covers <paramref name="rect"/> (in its parent's coordinates) with the text scaled by

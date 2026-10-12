@@ -100,6 +100,44 @@ public class DeploymentTableTests
         Assert.Equal(rest, DeploymentTable.PointerAt(0));                  // off the rows: the empty 51st cell
     }
 
+    [Fact]
+    public void The_details_are_the_hovered_units_as_the_script_shows_them()
+    {
+        var s = World();
+        s.Item_StrBase = 300;
+        s.Strings[300 + 6] = "By Lord";
+        s.Units[3].Class = 3;
+        s.Units[3].Item = 7;
+
+        Assert.Null(DeploymentTable.Details(s));                            // nothing shown (Tmp0026 0)
+        s.Tmp0026 = 1;
+        s.Tmp0033 = 3;
+        Assert.Equal(new DeploymentDetails(3, "Bound", 3, 600, 1000, "Front, Back", "By Lord"), DeploymentTable.Details(s));
+        s.Tmp0033 = 4;                                                      // not in the army
+        Assert.Null(DeploymentTable.Details(s));
+    }
+
+    [Fact]
+    public void The_party_has_the_places_the_screen_offers_and_the_scripts_sums()
+    {
+        var s = World();
+        s.Gold = 5;
+        s.Tmp0040 = 3;
+
+        var party = DeploymentTable.Party(s);
+
+        Assert.Equal([new DeploymentMember(1, 3, "Bound", 3, 600), new DeploymentMember(2, 2, "Sill", 2, 300), null], party.Places);
+        Assert.Equal(900, party.Troops);
+        Assert.Equal(5, party.Cost);                                        // Bound 1 + 600/300, Sill 1 + 300/300
+        Assert.True(party.Affordable);
+        s.Tmp0040 = 1;                                                      // the sums stop at the last place shown
+        Assert.Equal((1, 600, 3), (DeploymentTable.Party(s).Places.Count, DeploymentTable.Party(s).Troops, DeploymentTable.Party(s).Cost));
+        s.Tmp0040 = 0;                                                      // a limit the panel never meets: all four
+        Assert.Equal(4, DeploymentTable.Party(s).Places.Count);
+        s.Gold = 4;
+        Assert.False(DeploymentTable.Party(s).Affordable);
+    }
+
     /// <summary>The reads of the gestures <paramref name="queue"/> puts on a pointer: button, x, y.</summary>
     private static List<(int, int, int)> Gestures(Action<PointerScript> queue)
     {

@@ -57,7 +57,7 @@ public class DeploymentTableScriptTests(ITestOutputHelper output)
             var (x, y) = DeploymentTable.PointerAt(2);
             pointer.Hover(x, y);
         });
-        steps.Enqueue(() => seen.Add($"hovered {s.Tmp0033.Value}, details {s.Tmp0026.Value}"));
+        steps.Enqueue(() => seen.Add($"hovered {s.Tmp0033.Value}, details {s.Tmp0026.Value}: {DeploymentTable.Details(s)?.Name}"));
         foreach (int unit in new[] { 2, 3, 4 })
             steps.Enqueue(() => DeploymentTable.Press(s, unit, pointer));
         steps.Enqueue(() => seen.Add("party " + string.Join(" ", Party())));
@@ -81,9 +81,10 @@ public class DeploymentTableScriptTests(ITestOutputHelper output)
 
         output.WriteLine(string.Join("; ", seen));
         Assert.Empty(steps);
-        Assert.Equal(["hovered 2, details 1", "party 2 3 4 0", "party 2 4 0 0"], seen);
+        Assert.Equal(["hovered 2, details 1: Sill", "party 2 3 4 0", "party 2 4 0 0"], seen);
         Assert.Equal(501, s.CallArg.Value);                             // Attack
         Assert.Equal([2, 4, 0, 0], Party());
+        Assert.Equal([2, 4], DeploymentTable.Party(s).Places.Where(m => m is not null).Select(m => m!.Unit));   // the party panel
         Assert.Equal([1, 2, 1, 2], new[] { 1, 2, 3, 4 }.Select(u => s.Units[u].Status.Value));   // the party is spent for the week
         Assert.Equal(999 - expenses, s.Gold.Value);
     }

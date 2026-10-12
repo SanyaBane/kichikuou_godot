@@ -27,7 +27,8 @@ public enum PickerArea
 /// button the script follows (<c>Tmp0033</c>, <c>Tmp0029</c>, at <c>Tmp0027</c>/<c>Tmp0028</c>),
 /// the picture of that entry, the bar's labels from the player's files, and the two text panels
 /// the script prints into (<c>B4 8</c>: the party; <c>B4 9</c>: the entry's details). Under our own
-/// deployment table the deployment picker's grid is left out (<see cref="GamePresenter.DeploymentGridHidden"/>).
+/// deployment screen only the deployment picker's background and portrait are drawn
+/// (<see cref="GamePresenter.DeploymentCovered"/>).
 /// </summary>
 public sealed class PickerView
 {
@@ -113,10 +114,12 @@ public sealed class PickerView
         if (details)
             DetailsPicture(screen, s, hovered);
 
-        bool grid = !(Kind == PickerKind.Deployment && _owner.DeploymentGridHidden);
+        if (Kind == PickerKind.Deployment && _owner.DeploymentCovered)
+            return;                                                     // our own screen shows the rest
+
         for (int id = 1; id <= 50; id++)
         {
-            if (!grid || !Listed(s, id))
+            if (!Listed(s, id))
                 continue;
             int x = 328 + (id - 1) % 3 * 108, y = 18 + (id - 1) / 3 * 18;
             Text(screen, Name(s, id), x, y, 12, 0);
@@ -125,7 +128,7 @@ public sealed class PickerView
 
         if (s.Tmp0029.Value is > 500 and < 600)
             screen.Fill(s.Tmp0027.Value + 10, s.Tmp0028.Value, 70, 2, 240);
-        else if (details && grid)
+        else if (details)
             screen.Fill(s.Tmp0027.Value, s.Tmp0028.Value + 18 + 14 + 2, 90, 2, 240);
 
         foreach (var (line, x, y, size) in BarLabels())
@@ -140,6 +143,18 @@ public sealed class PickerView
             PanelText(8)?.Draw(screen, _owner.Glyphs);
         if (details)
             PanelText(9)?.Draw(screen, _owner.Glyphs);
+    }
+
+    /// <summary>The bar's three labels, left to right, from the player's files ("" where a place has none).</summary>
+    public IReadOnlyList<string> BarLabelTexts()
+    {
+        var labels = new[] { "", "", "" };
+        foreach (var (line, x, _, _) in BarLabels())
+        {
+            int button = x > 532 ? 2 : x > 426 ? 1 : 0;
+            labels[button] = _owner.Literal(new ScriptRef(File, line)) ?? "";
+        }
+        return labels;
     }
 
     private string File => Kind switch

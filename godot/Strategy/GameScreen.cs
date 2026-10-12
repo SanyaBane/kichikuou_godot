@@ -118,9 +118,9 @@ public sealed record GameOptions
 /// (<see cref="PlayerInput"/>) that <c>IM</c>, <c>Y 3</c>, <c>IK 0</c> and the menus poll once a
 /// frame, so the map's clicks and drags and the pickers' hit tests and highlight are the
 /// script's own. The battle's input screens work as in <see cref="BattleScreen"/>, fed only the
-/// presses that begin while they are open. With Option → Interface on New our own deployment table
-/// covers <c>Sﾌﾞﾀｲ</c>'s grid (<see cref="UpdateTable"/>, docs/ui/deployment-table.md) and answers the
-/// script with its gestures. Over it, xsystem35's menu bar (File, Screen,
+/// presses that begin while they are open. With Option → Interface on New our own deployment screen
+/// covers <c>Sﾌﾞﾀｲ</c>'s but the portrait (<see cref="UpdateDeploymentScreen"/>, docs/ui/deployment-table.md) and
+/// answers the script with its gestures. Over it, xsystem35's menu bar (File, Screen,
 /// MsgSkip; docs/window-menu.md) with its hot keys F1 (MsgSkip) and F4 (full screen), and Alt+R for
 /// Restart; Backspace returns to the title at once (development).
 /// </summary>
@@ -164,6 +164,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private SceneRunner? _scenes;                       // the session's, for the scenes running now
 
     private DeploymentTableView _table = null!;         // our own screen over Sﾌﾞﾀｲ's grid (Option → Interface: New)
+    private DeploymentPanels _panels = null!;           // and over the rest of it but the portrait
     private PointerScript _tablePointer = new();        // the script's pointer while the player's is over the table
     private readonly Stopwatch _skipYield = Stopwatch.StartNew();
     private Stopwatch? _sceneSkip;                      // since the message skip began to skip a scene whole
@@ -201,6 +202,12 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         };
         _view.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _content.AddChild(_view);
+        _panels = new DeploymentPanels(GodotGlyphRenderer.Chosen);
+        _panels.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        _panels.RemovePressed += TableRowPressed;
+        _panels.ButtonPressed += TableButtonPressed;
+        _panels.RightPressed += TableRightPressed;
+        _content.AddChild(_panels);
         _table = new DeploymentTableView(GodotGlyphRenderer.Chosen);
         _table.RowPressed += TableRowPressed;
         _table.RightPressed += TableRightPressed;
@@ -254,7 +261,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         if (_noticeLeft > 0 && (_noticeLeft -= delta) <= 0)
             _notice.Text = "";
-        UpdateTable();
+        UpdateDeploymentScreen();
         Present();
     }
 
@@ -890,7 +897,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _presenter.Flush();
         if (_options.Auto)
         {
-            UpdateTable();
+            UpdateDeploymentScreen();
             AutoPointer();
             var queued = _pointer.Next(out bool read);
             if (!read)
@@ -898,9 +905,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             return queued;
         }
         await NextFrameAsync();
-        if (UpdateTable() && (_tablePointer.Pending > 0 || _table.HasPointer))
+        if (UpdateDeploymentScreen() && (_tablePointer.Pending > 0 || _table.HasPointer || _panels.HasPointer))
         {
-            // Over the table the script's pointer is the table's: on the hovered row's cell, pressed by its gestures.
+            // Over our screen the script's pointer is ours: on the hovered row's cell, pressed by its gestures.
             if (_tablePointer.Pending == 0)
             {
                 var (x, y) = DeploymentTable.PointerAt(_table.HoveredUnit);
@@ -913,23 +920,24 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     // ---------------------------------------------------------------- the deployment table (owner's decision 25)
 
-    /// <summary>The grid area the table covers, in script pixels: right of the details and above the bar (<c>Sﾌﾞﾀｲ.ADV:498-523</c>).</summary>
+    /// <summary>The grid area the table covers, in script pixels: right of the portrait and above the bar (<c>Sﾌﾞﾀｲ.ADV:498-523</c>).</summary>
     private static readonly Rect2 TableArea = new(322, 4, 316, 318);
 
     /// <summary>
-    /// Shows the table over <c>Sﾌﾞﾀｲ</c>'s grid while the deployment picker is open with Option →
-    /// Interface on New (the presenter leaves the grid out), but not while a message window is up
-    /// over the screen; places it over the picture's grid area as the window is sized and fills it
-    /// from GameState. Returns whether it shows. A table shown or hidden starts with no gestures queued.
+    /// Shows our deployment screen — the table over <c>Sﾌﾞﾀｲ</c>'s grid and the panels over the rest
+    /// but the portrait — while the deployment picker is open with Option → Interface on New (the
+    /// presenter draws only the background and the portrait under it), but not while a message
+    /// window is up over the screen; places it over the picture as the window is sized and fills it
+    /// from GameState. Returns whether it shows. A screen shown or hidden starts with no gestures queued.
     /// </summary>
-    private bool UpdateTable()
+    private bool UpdateDeploymentScreen()
     {
         bool ours = InterfaceChoice.New && _presenter.Picker is { Kind: PickerKind.Deployment };
-        _presenter.DeploymentGridHidden = ours;
+        _presenter.DeploymentCovered = ours;
         bool show = ours && !_presenter.MessageWindowShown && !SkippingScene && _presenter.State is not null;
         if (show != _table.Visible)
         {
-            _table.Visible = show;
+            _table.Visible = _panels.Visible = show;
             _tablePointer = new PointerScript();
         }
         if (!show)
@@ -939,6 +947,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
         float pixels = scale * Surface.Scale;
         var origin = _view.Position + (size - drawn) / 2;
+        _panels.Place(origin, pixels);
+        _panels.Refresh(_presenter.State!, _presenter.Picker!);
         _table.Place(new Rect2(origin + TableArea.Position * pixels, TableArea.Size * pixels), pixels);
         _table.Refresh(_presenter.State!);
         return true;
@@ -957,7 +967,17 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         DeploymentTable.Press(s, unit, pointer);
     }
 
-    /// <summary>A right press on the table: a right click where the script's pointer is, which takes the last member out.</summary>
+    /// <summary>A bar button pressed (by the mouse, or by unattended play): a click on the script's button there.</summary>
+    private void TableButtonPressed(int button)
+    {
+        var pointer = _options.Auto ? _pointer : _tablePointer;
+        if (pointer.Pending > 0)
+            return;
+        var (x, y) = GesturePoints.PickerButton(button);
+        pointer.Click(x, y);
+    }
+
+    /// <summary>A right press on our screen: a right click where the script's pointer is, which takes the last member out.</summary>
     private void TableRightPressed()
     {
         if (_options.Auto || _tablePointer.Pending > 0)
@@ -1147,6 +1167,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     private List<int> _autoParty = [];
 
+    /// <summary>The reads the unattended player has hovered a row of our table for, waiting for its details.</summary>
+    private int _autoHovers;
+
     /// <summary>Whether the unattended player has pressed a row of our own deployment table (logged once).</summary>
     private bool _autoTableUsed;
 
@@ -1256,6 +1279,18 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             Shot("picker");
             var (step, value) = AutoDeploy(deployment, d);
+            if (step == AutoDeployStep.Button && _panels.Visible)
+            {
+                _panels.PressButton(value);                             // our own bar
+                return;
+            }
+            if (step == AutoDeployStep.Join && _table.Visible && DeploymentTable.Details(d)?.Unit != value && _autoHovers++ < 10)
+            {
+                var (hx, hy) = DeploymentTable.PointerAt(value);
+                _pointer.Move(hx, hy);                                  // the row hovered first: the script shows its details
+                return;
+            }
+            _autoHovers = 0;
             if (step != AutoDeployStep.Button && _table.Visible)
             {
                 if (!_autoTableUsed)

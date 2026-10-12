@@ -111,6 +111,28 @@ public sealed record DeploymentRow(
 }
 
 /// <summary>
+/// The details panel of our deployment screen: the unit whose details the script shows (its
+/// portrait is on the screen), with what <c>Sﾌﾞﾀｲ</c> prints for it (<c>:524-569</c>) — the war
+/// expense, the troops, the rows it fights in (<see cref="Rows"/>: "Front", "Back", "Front, Back"
+/// or "") and its item ("" without one).
+/// </summary>
+public sealed record DeploymentDetails(int Unit, string Name, int Cost, int Troops, int MaxTroops, string Rows, string Item);
+
+/// <summary>A place of the party panel: the member's number, name, war expense and troops.</summary>
+public sealed record DeploymentMember(int Place, int Unit, string Name, int Cost, int Troops);
+
+/// <summary>
+/// The party panel of our deployment screen: the places the screen offers (<c>Tmp0040</c>, at most
+/// four), each a member or null, the troop total and the war expenses as <c>Sﾌﾞﾀｲ</c> sums them
+/// (<c>:269-366</c>), and the gold they are paid from (both ×100K).
+/// </summary>
+public sealed record DeploymentParty(IReadOnlyList<DeploymentMember?> Places, int Troops, int Cost, int Gold)
+{
+    /// <summary>Whether the gold pays the expenses (Go is refused otherwise, <c>:159-210</c>).</summary>
+    public bool Affordable => Cost <= Gold;
+}
+
+/// <summary>
 /// The deployment table, our own screen over <c>Sﾌﾞﾀｲ</c>'s unit grid (owner's decision 25,
 /// docs/ui/deployment-table.md): the units the script lists, their values and the sort. It decides
 /// nothing — a click on a row is a click on the unit's cell, which the script hit-tests.
@@ -202,6 +224,50 @@ public static class DeploymentTable
     {
         var at = PointerAt(unit);
         pointer.RightClick(at.X, at.Y);
+    }
+
+    /// <summary>
+    /// The details the script shows now (<c>Tmp0026</c> set, for the listed unit <c>Tmp0033</c>, as
+    /// the picker draws its portrait), or null.
+    /// </summary>
+    public static DeploymentDetails? Details(GameState state)
+    {
+        int unit = state.Tmp0033.Value;
+        if (state.Tmp0026 == 0 || unit is < 1 or > LastUnit || state.Units[unit].Status == 0)
+            return null;
+        var u = state.Units[unit];
+        string rows = u.Class.Value switch
+        {
+            0 or 4 or 10 => "Front",
+            1 or 2 or 11 => "Back",
+            3 => "Front, Back",
+            _ => "",
+        };
+        string item = u.Item == 0 ? "" : StringAt(state, (state.Item_StrBase + u.Item - 1).Value);
+        return new DeploymentDetails(unit, StringAt(state, (state.Unit_StrBase + (Sys3Int)((unit - 1) * 3)).Value),
+            (u.DeployCost + u.Troops / 300).Value, u.Troops.Value, u.MaxTroops.Value, rows, item);
+    }
+
+    /// <summary>The party being built (<c>Bt_PlayerParty1-4</c>) in the places the screen offers, with its totals.</summary>
+    public static DeploymentParty Party(GameState state)
+    {
+        Sys3Int[] party = [state.Bt_PlayerParty1, state.Bt_PlayerParty2, state.Bt_PlayerParty3, state.Bt_PlayerParty4];
+        // :269-343: the lines and the sums stop at the place Tmp0040 names; any other limit shows all four.
+        int places = state.Tmp0040.Value is >= 1 and <= 4 ? state.Tmp0040.Value : 4;
+        var members = new DeploymentMember?[places];
+        Sys3Int troops = 0, cost = 0;
+        for (int place = 1; place <= places; place++)
+        {
+            int unit = party[place - 1].Value;
+            if (unit is < 1 or > 51)
+                continue;
+            var u = state.Units[unit];
+            troops += u.Troops;
+            cost += u.DeployCost + u.Troops / 300;
+            members[place - 1] = new DeploymentMember(place, unit, StringAt(state, (state.Unit_StrBase + (Sys3Int)((unit - 1) * 3)).Value),
+                (u.DeployCost + u.Troops / 300).Value, u.Troops.Value);
+        }
+        return new DeploymentParty(members, troops.Value, cost.Value, state.Gold.Value);
     }
 
     /// <summary>The unit's place in the party being built (<c>Bt_PlayerParty1-4</c>), or 0.</summary>

@@ -117,11 +117,12 @@ public sealed partial class GamePresenter : IStageObserver
     public bool SaveScreenOpen { get; private set; }
 
     /// <summary>
-    /// Our own deployment table covers <c>Sﾌﾞﾀｲ</c>'s grid (owner's decision 25,
-    /// docs/ui/deployment-table.md): the deployment picker is drawn without the names of its grid
-    /// and the hovered unit's underline; the details, the party panel and the bar stay.
+    /// Our own deployment screen covers <c>Sﾌﾞﾀｲ</c>'s (owner's decision 25,
+    /// docs/ui/deployment-table.md): the deployment picker is drawn with its background and the
+    /// hovered unit's portrait only — without the grid's names, the underlines, the bar's labels
+    /// and the text of the details and party panels, which our panels show instead.
     /// </summary>
-    public bool DeploymentGridHidden
+    public bool DeploymentCovered
     {
         get;
         set
