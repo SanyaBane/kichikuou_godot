@@ -11,7 +11,7 @@ namespace Kichikuou.Game.Strategy;
 
 // xsystem35's window menu bar over the game (docs/window-menu.md): File (Save Screenshot, Restart,
 // Exit), Screen (Window, Fullscreen), Option (Mouse Movement as xsystem35's; ours: Skip Unseen
-// Text, MsgSkip Speeds Up Fades, Forget Seen Messages, Fonts, Interface, Palette),
+// Text, MsgSkip Speeds Up Fades, Forget Seen Messages, Battle Screen, Fonts, Interface, Palette),
 // MsgSkip[off|on]; hot keys F1 and F4 as xsystem35's, Alt+R; and ours for development, Debug
 // (Battle Captures: the capture viewer, which our own title had until ｽﾀMENU replaced it).
 public partial class GameScreen
@@ -46,7 +46,8 @@ public partial class GameScreen
             ("Mouse Movement", ToggleMouseMovement),
             ("Skip Unseen Text", ToggleSkipUnseen),
             ("MsgSkip Speeds Up Fades", ToggleFastFades),
-            ("Forget Seen Messages...", ConfirmForgetSeen));
+            ("Forget Seen Messages...", ConfirmForgetSeen),
+            ("Battle Screen...", OpenBattleScreenSettings));
         options = option.GetPopup();
         options.SetItemAsCheckable(0, true);
         options.SetItemChecked(0, EngineState.MouseMovement);
@@ -292,6 +293,29 @@ public partial class GameScreen
         await viewer.SaveUnitsAsync(dir);
         if (_options.QuitWhenDone)
             _tree.Quit();
+    }
+
+    private BattleScreenSettingsDialog? _battleSettings;
+
+    /// <summary>Option → Battle Screen… (ours): our battle screen's settings; the game goes on behind it.</summary>
+    private void OpenBattleScreenSettings()
+    {
+        if (_battleSettings is not null)
+        {
+            _battleSettings.GrabFocus();
+            return;
+        }
+        var dialog = new BattleScreenSettingsDialog();
+        _battleSettings = dialog;
+        dialog.VisibilityChanged += () =>
+        {
+            if (dialog.Visible)
+                return;
+            _battleSettings = null;
+            dialog.QueueFree();
+        };
+        AddChild(dialog);
+        dialog.PopupCentered();
     }
 
     /// <summary>Forget Seen Messages (ours): after the confirmation, every message counts as unseen again.</summary>

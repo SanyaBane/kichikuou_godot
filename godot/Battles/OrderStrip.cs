@@ -14,14 +14,15 @@ namespace Kichikuou.Game.Battles;
 /// </summary>
 internal sealed partial class OrderStrip : Control
 {
-    /// <summary>How long a change of the order moves (later configurable).</summary>
-    public const double Seconds = 1.0;
+    /// <summary>How long a change of the order moves (Option → Battle Screen…); 0 places the chips at once.</summary>
+    private static double Seconds => BattleScreenSettings.Get(BattleScreenSettings.StripSeconds);
 
     /// <summary>How fast a move under way finishes when the next change comes.</summary>
-    public const double HurrySeconds = 0.15;
+    private static double HurrySeconds => Math.Max(0.001, BattleScreenSettings.Get(BattleScreenSettings.StripHurrySeconds));
 
     // The phases of a jump, as parts of the move: down, across, up.
-    private const double DownEnd = 0.2, AcrossEnd = 0.8;
+    private static double DownEnd => BattleScreenSettings.Get(BattleScreenSettings.StripDropShare);
+    private static double AcrossEnd => 1 - DownEnd;
 
     private DeploymentPalette _colours = DeploymentPalette.Chosen;
     private readonly Dictionary<(BattleSide, int), Chip> _chips = [];
@@ -80,7 +81,7 @@ internal sealed partial class OrderStrip : Control
             if (_chips.ContainsKey(Key(chip)))
                 Restyle(chip);
         }
-        if (instant)
+        if (instant || Seconds <= 0)
         {
             _next = null;
             _target = chips;
