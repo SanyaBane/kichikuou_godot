@@ -76,6 +76,15 @@ public sealed record GameOptions
     /// </summary>
     public int AutoStage { get; init; }
 
+    /// <summary>Development: the unattended player ends every week at once — no visits, replenishes, attacks or searches.</summary>
+    public bool AutoTurnEnd { get; init; }
+
+    /// <summary>
+    /// Development: the units the unattended player sends from a deployment picker, those of them
+    /// free (status 1), up to the places it offers; its own choice when none of them is free.
+    /// </summary>
+    public IReadOnlyList<int>? AutoParty { get; init; }
+
     /// <summary>Development: unattended play stops after the first deployment picker or the first battle (a look at one screen).</summary>
     public AutoUntil AutoUntil { get; init; }
 
@@ -1372,6 +1381,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// </summary>
     private int? AutoAttackTarget(GameState s)
     {
+        if (_options.AutoTurnEnd)
+            return null;
         if (s.StoryStage != 1 || s.F_LeazasRebels_State == 1 || s.Ui_CmdAttackAvail != 1 || s.Week.Value == _autoAttackWeek)
             return null;
         if (s.Units[1].Status != 1 || s.Units[1].Troops.Value * 4 < s.Units[1].MaxTroops.Value * 3)
@@ -1393,6 +1404,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// </summary>
     private int? AutoReplenishUnit(GameState s)
     {
+        if (_options.AutoTurnEnd)
+            return null;
         if (s.StoryStage.Value is < 1 or >= 99 || s.Ui_CmdSubordAvail != 1 || s.CmdAvail_SubTroops != 1
             || s.Week.Value == _autoReplenishWeek)
             return null;
@@ -1426,7 +1439,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_autoPartyFrom != picker)
         {
             _autoPartyFrom = picker;
-            _autoParty = AutoParty(picker.Mode.Value, s);
+            _autoParty = ChosenParty(s) ?? AutoParty(picker.Mode.Value, s);
         }
         int[] party = [.. new[] { s.Bt_PlayerParty1, s.Bt_PlayerParty2, s.Bt_PlayerParty3, s.Bt_PlayerParty4 }
             .Select(u => u.Value).Where(u => u != 0)];
@@ -1460,6 +1473,15 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// Rance when he has less than a quarter of his troops (his death ends the game) unless he is the
     /// only one; a search (mode 3) the weakest, so the strong stay for the rebels' turn.
     /// </summary>
+    /// <summary><see cref="GameOptions.AutoParty"/>: those of the units given that are free, up to the places; null when none is.</summary>
+    private List<int>? ChosenParty(GameState s)
+    {
+        if (_options.AutoParty is not { } chosen)
+            return null;
+        List<int> free = [.. chosen.Where(u => u is >= 1 and <= 50 && s.Units[u].Status == 1).Take(Math.Max((int)s.Tmp0040.Value, 1))];
+        return free.Count > 0 ? free : null;
+    }
+
     private static List<int> AutoParty(int mode, GameState s)
     {
         var free = Enumerable.Range(1, 50).Where(u => s.Units[u].Status == 1).ToList();
@@ -1485,6 +1507,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// </summary>
     private (int X, int Y)? AutoCaveOnScreen(GameState s)
     {
+        if (_options.AutoTurnEnd)
+            return null;
         if (_autoDungeon != AutoDungeon.NotYet || s.StoryStage != 1 || s.Ui_CmdDungeonAvail != 1
             || s.Provs[s.Dgns[AutoCave].Prov].Owner != 1)
             return null;
@@ -1634,7 +1658,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _autoReplenish = AutoReplenish.Chosen;
             return subordinates;
         }
-        if (week != _autoWeek && _autoVisit < AutoVisits.Length && Find(AutoVisits[_autoVisit]) is var visit and > 0)
+        if (!_options.AutoTurnEnd && week != _autoWeek && _autoVisit < AutoVisits.Length && Find(AutoVisits[_autoVisit]) is var visit and > 0)
         {
             _autoWeek = week;
             _autoVisit++;

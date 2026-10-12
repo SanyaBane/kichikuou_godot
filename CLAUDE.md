@@ -290,13 +290,20 @@ commit `local.env`.
   takes Oaks in week 34 and stops in week 36, ~15 min (exit code 0; 1 after an error). `--interface new`
   builds the parties in our own deployment table; its dumps need a window (no `--headless`).
 - **A look at one screen** (screen dumps for the owner) starts from a kept save, never from the
-  prologue (owner's request 2026-10-12): `user://saves-leazas` holds the first Leazas week (week 25,
-  stage 1; made once with `--newgame --auto --fast --quit --seed 2 --weeks 24 --saves user://saves-leazas`,
-  ~2 min headless; make it again when the save format or the boot changes), and
-  `<Godot console exe> --path godot -- --load --auto --fast --quit --seed 2 --saves user://saves-look --slots-from user://saves-leazas --until battle [--interface new] --shots <dir>`
-  copies it into a working folder (the kept one stays unchanged), plays the Monsters' Cave search's
-  deployment picker and its battle and stops (~15 s in a window; `--until deployment` stops after the
-  picker). Add another kept save the same way when a screen needs another phase.
+  prologue (owner's requests 2026-10-12): `user://saves-week26` holds the second Leazas week (week 26,
+  stage 1), the one to use, and
+  `<Godot console exe> --path godot -- --load --auto --fast --quit --seed 2 --saves user://saves-look --slots-from user://saves-week26 --until battle [--interface new] --shots <dir>`
+  copies it into a working folder (the kept one stays unchanged), plays the week's attack on South (4)
+  — its deployment picker and its battle — and stops (~7 s headless, a little more in a window;
+  `--until deployment` stops after the picker). A load replays the week from its autosave: the
+  banner, income and the week's own events (Lia's scene, Maris's schedule) come first; no save skips
+  them (a manual save is a copy of the autosave, `LoadSaveScreen`). Making it again (when the save
+  format or the boot changes): first week 25, the first Leazas week, ~2 min headless —
+  `--newgame --auto --fast --quit --seed 2 --weeks 24 --saves user://saves-leazas`; then week 25
+  ended at once and the first attack on it (on North (2)) repelled by Rance (unit 1), Menad (unit 10) and Asuka
+  (unit 11) (the owner's choice; the second, on Wes (8), with the bot's own party), seconds —
+  `--load --auto --fast --quit --seed 2 --turn-end --party 1,10,11 --weeks 25 --saves user://saves-week26 --slots-from user://saves-leazas`.
+  Add another kept save the same way when a screen needs another phase.
 - Show an ending's `OVER` (its picture, staff roll, Completion Report) on a booted game:
   `<Godot console exe> --headless --path godot -- --ending <1-14> --auto --fast --quit [--shots <dir>]`
   (without `--auto` the keys wait for the player; slots in `user://saves-ending`).

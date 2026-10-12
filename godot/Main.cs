@@ -44,7 +44,9 @@ public partial class Main : Control
     /// draw to the console; <c>--msgskip</c> starts with MsgSkip
     /// on; <c>--interface new</c> uses our own screens for the launch (Option → Interface); <c>--saves DIR</c>
     /// keeps its slots there (<c>--auto</c> defaults to <c>user://saves-auto</c>); <c>--slots-from DIR</c>
-    /// copies DIR's slots there first, so a kept save is loaded unchanged every time. A battle capture:
+    /// copies DIR's slots there first, so a kept save is loaded unchanged every time; <c>--turn-end</c>
+    /// makes the unattended player end every week at once, <c>--party 1,10,11</c> send those units
+    /// (to make a kept save). A battle capture:
     /// <c>--play FILE</c> / <c>--watch FILE</c>. Both: <c>--fast</c> drops the delays, <c>--quit</c>
     /// exits at the end (exit code 1 after an error), <c>--shots DIR</c> saves the screen at every
     /// key wait and menu (a game's event CGs masked, <c>GamePresenter.MaskEventCgs</c>). Null
@@ -80,6 +82,8 @@ public partial class Main : Control
                     _ => AutoUntil.None,
                 },
                 SlotsFrom = Value("--slots-from"),
+                AutoTurnEnd = args.Contains("--turn-end"),
+                AutoParty = Value("--party") is { } party ? [.. party.Split(',').Select(int.Parse)] : null,
             });
         }
         if ((Value("--play") ?? Value("--watch")) is { } capture)
