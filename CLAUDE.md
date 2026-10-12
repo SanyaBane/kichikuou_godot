@@ -299,15 +299,21 @@ commit `local.env`.
   builds the parties in our own deployment table and swaps the first two places by drops and back;
   its dumps need a window (no `--headless`).
 - **A look at one screen** (screen dumps for the owner) starts from a kept save, never from the
-  prologue (owner's requests 2026-10-12): `user://saves-week26` holds the second Leazas week (week 26,
-  stage 1), the one to use, and
-  `<Godot console exe> --path godot -- --load --auto --fast --quit --seed 2 --saves user://saves-look --slots-from user://saves-week26 --until battle [--interface new] --shots <dir>`
-  copies it into a working folder (the kept one stays unchanged), plays the week's attack on South (4)
-  — its deployment picker and its battle — and stops (~7 s headless, a little more in a window;
-  `--until deployment` stops after the picker). A load replays the week from its autosave: the
-  banner, income and the week's own events (Lia's scene, Maris's schedule) come first; no save skips
-  them (a manual save is a copy of the autosave, `LoadSaveScreen`). Making it again (when the save
-  format or the boot changes): first week 25, the first Leazas week, ~2 min headless —
+  prologue (owner's requests 2026-10-12): `user://saves-week18` holds the owner's own game at week 18
+  (LP 3, month 5, week 2; stage 1, the Leazas week) — the one to use, chosen by the owner (2026-10-13)
+  because no event plays at its turn's start — and
+  `<Godot console exe> --path godot -- --load --auto --fast --quit --seed 2 --saves user://saves-look --slots-from user://saves-week18 --until battle [--interface new] --shots <dir>`
+  copies it into a working folder (the kept one stays unchanged), plays the week's attack on Oaks (6)
+  — its deployment picker and its battle: Rance (unit 1), Haurein (unit 12), Cordoba (unit 8) and
+  Barres (unit 6) against Ex (commander 1), Sakanaku (commander 6), Dodge (commander 5) and Jibul
+  (commander 7), lost with `--seed 2` — and stops (`--until deployment` stops after the picker). A load
+  replays the week from its autosave (a manual save is a copy of it, `LoadSaveScreen`): the load
+  list, the banner, income and expenses, then the command menu. `--load --auto` always loads slot 1
+  (the list's first item), so a kept folder holds one `slot01.ksav`: the owner's slot copied under that
+  name. It cannot be made again by a command; when the save format or the boot changes, ask the owner
+  for a new one. The older kept save `user://saves-week26` (the bot's own game, the second Leazas week:
+  the attack on South (4)) plays the week's events (Lia's scene, Maris's schedule) first. Making it
+  again: first week 25, the first Leazas week, ~2 min headless —
   `--newgame --auto --fast --quit --seed 2 --weeks 24 --saves user://saves-leazas`; then week 25
   ended at once and the first attack on it (on North (2)) repelled by Rance (unit 1), Menad (unit 10) and Asuka
   (unit 11) (the owner's choice; the second, on Wes (8), with the bot's own party), seconds —
