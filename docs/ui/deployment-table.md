@@ -55,9 +55,12 @@ Rows: the listed units. Columns, compact headers, each with its full name as a t
 
 ## Steps
 
-1. **The table's model** — `Original.Content/Strategy/DeploymentTable` (engine-independent, tested):
+1. ✓ (2026-10-12) **The table's model** — `Original.Content/Strategy/DeploymentTable` (engine-independent, tested):
    the rows from GameState, the columns (header, full name, text, sort key), the party place, the grey
-   rows, the sort.
+   rows, the sort. As done: `DeploymentTable.Rows` (units 1-50 at status ≠ 0, names and troop types
+   from the string table through `Hankaku`), `DeploymentRow.Text`/`Key`, `DeploymentTable.Sort` (stable,
+   ties by number), `DeploymentTableTests` on a hand-made state; the names on a booted game are
+   checked with step 5.
 2. **The screen of our own** — in `GameScreen`: while the deployment picker is open and the setting is
    New, the table shows over the grid area; the presenter skips drawing the grid
    (`PickerView`); the pointer over the table area is the table's gestures, elsewhere the mouse's.
