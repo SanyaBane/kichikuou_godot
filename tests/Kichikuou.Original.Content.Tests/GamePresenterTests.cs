@@ -63,7 +63,24 @@ public class GamePresenterTests(ITestOutputHelper output)
         Assert.True(player.BattleFrames > 0, "the battle was drawn");
         Assert.True(player.WindowTexts > 10, "message windows were drawn with text");
         Assert.All(player.MenuTexts, t => Assert.NotEmpty(t.Trim()));         // every menu item has its text
+        Assert.All(player.MenuViews, m => Assert.NotNull(m.Window));          // menus as data: in a selection window,
+        Assert.Contains(player.MenuViews, m => m.Items.Any(i => i.Mark == '○' && !i.Text.StartsWith('○')));   // the marks split off
         Assert.Equal(11, run.Session.State.Week.Value);
+    }
+
+    /// <summary><see cref="MenuEntry.FromText"/>: a leading ○, × or △ is the item's mark; the text keeps the rest.</summary>
+    [Theory]
+    [InlineData("○Harem", '○', "Harem")]
+    [InlineData("×Construction", '×', "Construction")]
+    [InlineData("△Subordinates", '△', "Subordinates")]
+    [InlineData("Turn END", null, "Turn END")]
+    [InlineData("", null, "")]
+    public void A_menu_item_splits_off_its_mark(string printed, char? mark, string text)
+    {
+        var entry = MenuEntry.FromText(printed);
+        Assert.Equal(mark, entry.Mark);
+        Assert.Equal(text, entry.Text);
+        Assert.Equal(printed, entry.Shown);
     }
 
     /// <summary>
@@ -1040,6 +1057,9 @@ public class GamePresenterTests(ITestOutputHelper output)
 
         public List<string> MenuTexts { get; } = [];
 
+        /// <summary>Every menu as the presenter keeps it for a UI (<see cref="GamePresenter.Menu"/>).</summary>
+        public List<MenuView> MenuViews { get; } = [];
+
         public int Composed { get; private set; }
 
         public int Reads { get; private set; }
@@ -1176,6 +1196,7 @@ public class GamePresenterTests(ITestOutputHelper output)
             presenter.OpenMenu(items);
             Frame();
             MenuTexts.AddRange(presenter.MenuItems!);
+            MenuViews.Add(presenter.Menu!);
             OnMenu?.Invoke();
             Shot("menu");
             string file = items.Count > 0 ? items[0].At.File : "";

@@ -355,6 +355,11 @@ None of these changes a rule or a look; each is small and testable on its own:
    once there is a second UI to switch to (the Option menu, §4.7);
 2. the shared screen-state tracker (§4.3);
 3. menus as data: an event with the items (text, ○/×/△ split off, window), emitted where `]` asks;
+   ✓ (2026-10-12), as data rather than an event: every `]` (about twenty call sites in the hand
+   ports, plus `SceneRunner`) reaches the UI as `SelectAsync`, where the presenter's `OpenMenu`
+   builds a `MenuView` (`Original.Content/Strategy/MenuView.cs`: the items with their mark split off,
+   the selection window); `GamePresenter.Menu` exposes it, and the original layout draws its box from
+   it;
 4. the engine-timing base shared by both UIs (§4.5);
 5. a map geometry helper in `Original.Content`: the province or dungeon at a point and the point of a province
    (from `Prov.MapX/MapY` and the hit radii), for our map to send exact clicks. ✓ (2026-10-12):

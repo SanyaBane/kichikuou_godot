@@ -40,7 +40,6 @@ public sealed partial class GamePresenter
     private Pictures _covered;
     private MapAnimation _mapAnimation;
     private int _blinkStep;
-    private IReadOnlyList<string>? _menu;
     private (int X, int Y) _pointer;
 
     internal CgLibrary Cgs => _cgs;
@@ -197,17 +196,21 @@ public sealed partial class GamePresenter
     /// </summary>
     public void OpenMenu(IReadOnlyList<SceneMenuItem> items)
     {
-        _menu = items.Select(item => string.Concat(item.Texts.Select(Read)).Replace("\n", "")).ToArray();
+        Menu = MenuView.FromTexts(items.Select(item => string.Concat(item.Texts.Select(Read)).Replace("\n", "")),
+            _engine.SelectionWindow);
         Invalidate();
     }
 
-    /// <summary>The menu's item texts while it is open.</summary>
-    public IReadOnlyList<string>? MenuItems => _menu;
+    /// <summary>The open menu as data (<see cref="MenuView"/>), or null.</summary>
+    public MenuView? Menu { get; private set; }
+
+    /// <summary>The menu's item texts as printed (mark and text) while it is open.</summary>
+    public IReadOnlyList<string>? MenuItems => Menu?.Items.Select(item => item.Shown).ToArray();
 
     /// <summary>The menu answered: it disappears.</summary>
     public void CloseMenu()
     {
-        _menu = null;
+        Menu = null;
         Invalidate();
     }
 
@@ -220,16 +223,16 @@ public sealed partial class GamePresenter
         if (_pointer == (x, y))
             return;
         _pointer = (x, y);
-        if (_menu is not null)
+        if (Menu is not null)
             Invalidate();
     }
 
     private SelectionBox? MenuBox()
     {
-        if (_menu is null)
+        if (Menu is not { } menu)
             return null;
-        var (x, y, w) = _engine.SelectionWindow ?? throw new InvalidOperationException("No selection window is set (B1).");
-        return new SelectionBox(Screen, _glyphs, x, y, w, _menu);
+        var (x, y, w) = menu.Window ?? throw new InvalidOperationException("No selection window is set (B1).");
+        return new SelectionBox(Screen, _glyphs, x, y, w, [.. menu.Items.Select(item => item.Shown)]);
     }
 
     // ------------------------------------------------------------------ composing
