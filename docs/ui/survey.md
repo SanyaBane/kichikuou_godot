@@ -348,11 +348,9 @@ owner's call).
 
 None of these changes a rule or a look; each is small and testable on its own:
 
-1. keep the session and the proxies in fields; a switch at a safe point; ✓ (2026-10-12): the
-   switch is `InterfaceSwitch` (`Original/Strategy/GameInputProxy.cs`): `Request` names the next UI,
-   which takes over at the next key wait or when the map loop starts waiting, never mid-request
-   (`InterfaceSwitchTests`); `GameScreen` builds the session on one. Godot keeps it in a field
-   once there is a second UI to switch to (the Option menu, §4.7);
+1. keep the session and the proxies in fields; a switch at a safe point; superseded (2026-10-12):
+   decision 25 brings our interface screen by screen over the original layout, so no whole UI is
+   swapped (an `InterfaceSwitch` was built and removed again; see docs/ui/deployment-table.md);
 2. the shared screen-state tracker (§4.3);
 3. menus as data: an event with the items (text, ○/×/△ split off, window), emitted where `]` asks;
    ✓ (2026-10-12), as data rather than an event: every `]` (about twenty call sites in the hand

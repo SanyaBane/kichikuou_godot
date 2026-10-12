@@ -268,8 +268,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             var state = new GameState();
             _presenter.Bind(state);
             var saves = new DirectorySaveStore(SaveDirectory);
-            var ui = new InterfaceSwitch(this, this);              // a second UI switches in through it (decision 4)
-            var session = new GameSession(state, EngineState.Random, ui.View, ui.Input,
+            var session = new GameSession(state, EngineState.Random, new ViewProxy(this), new GameInputProxy(this),
                 scripts, scripts, saves, new UnportedFiles(this));
             _scenes = session.Scenes;
             await session.BootAsync();
