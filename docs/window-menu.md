@@ -96,6 +96,12 @@ web build (seen only) by an option.
   cell, so the layout is the same in both. A change shows at once in the message windows, menus
   and pickers; text the script printed on the stage keeps its font until drawn again.
   `--font ms-gothic|biz-ud-gothic` picks one for the launch without saving it (development).
+  The deployment table's text uses the same font, regular.
+- **Option → Interface → Original / New** (ours, owner's decision 25, 2026-10-12; a submenu like
+  Fonts; saved in `user://settings.cfg`, `[display] interface`, Original by default): New shows our
+  own screens over the original layout where there is one — so far the deployment table over
+  `Sﾌﾞﾀｲ`'s unit grid (docs/ui/deployment-table.md). A change shows at once.
+  `--interface original|new` picks one for the launch without saving it (development).
 - Hot keys: **F1** MsgSkip and **F4** full screen (on release, as xsystem35's `event.c`), and
   **Alt+R** Restart (ours, after System 3.9's). Backspace still returns to the title at once,
   without asking (development).

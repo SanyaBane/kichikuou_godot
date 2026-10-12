@@ -10,7 +10,7 @@ namespace Kichikuou.Game.Strategy;
 
 // xsystem35's window menu bar over the game (docs/window-menu.md): File (Save Screenshot, Restart,
 // Exit), Screen (Window, Fullscreen), Option (Mouse Movement as xsystem35's; ours: Skip Unseen
-// Text, MsgSkip Speeds Up Fades, Forget Seen Messages, Fonts),
+// Text, MsgSkip Speeds Up Fades, Forget Seen Messages, Fonts, Interface),
 // MsgSkip[off|on]; hot keys F1 and F4 as xsystem35's, Alt+R; and ours for development, Debug
 // (Battle Captures: the capture viewer, which our own title had until ｽﾀMENU replaced it).
 public partial class GameScreen
@@ -68,6 +68,15 @@ public partial class GameScreen
         fonts.AddThemeIconOverride("radio_unchecked_disabled", blank);
         CheckFont();
         options.AddSubmenuNodeItem(Padded("Fonts"), fonts, SubmenuId);
+        PopupMenu interfaces = null!;
+        interfaces = Submenu(
+            ("Original", () => SetInterface(false)),
+            ("New", () => SetInterface(true)));
+        interfaces.SetItemAsRadioCheckable(0, true);
+        interfaces.SetItemAsRadioCheckable(1, true);
+        interfaces.AddThemeIconOverride("radio_unchecked", blank);
+        CheckInterface();
+        options.AddSubmenuNodeItem(Padded("Interface"), interfaces, SubmenuId);
         void ToggleMouseMovement()
         {
             EngineState.MouseMovement = !EngineState.MouseMovement;
@@ -97,6 +106,17 @@ public partial class GameScreen
         {
             fonts.SetItemChecked(0, _glyphs.Font == GameFont.MsGothic);
             fonts.SetItemChecked(1, _glyphs.Font == GameFont.BizUdGothic);
+        }
+        // Saved for later launches; an open screen of ours appears or goes at once (UpdateTable).
+        void SetInterface(bool ours)
+        {
+            InterfaceChoice.New = ours;
+            CheckInterface();
+        }
+        void CheckInterface()
+        {
+            interfaces.SetItemChecked(0, !InterfaceChoice.New);
+            interfaces.SetItemChecked(1, InterfaceChoice.New);
         }
         row.AddChild(option);
         _skipItem = new Button();
