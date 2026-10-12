@@ -84,6 +84,7 @@ public sealed partial class GamePresenter : IStageObserver
         Stage = new Surface();
         Screen = new Surface(Surface.ScreenWidth, Surface.ScreenHeight, indexed: false);
         Battle = new BattlePresenter(text, cgs, glyphs, audio, Stage);
+        Scene = new BattleScene(cgs);
         _stageWriter = new MessageWriter(Stage, glyphs);
         _engine = new EngineStage(Stage, cgs, this);
         _engine.SetState("B1", [(Sys3Int)1, (Sys3Int)250, (Sys3Int)50, (Sys3Int)150]);   // ｽﾀｰﾄ.ADV:860, the boot's window 1
@@ -97,6 +98,26 @@ public sealed partial class GamePresenter : IStageObserver
 
     /// <summary>The battle's presenter, drawing on <see cref="Stage"/>; its input screens take it.</summary>
     public BattlePresenter Battle { get; }
+
+    /// <summary>
+    /// Our battle screen's armies' scene (docs/ui/battle-screen.md, "The scene between exchanges"): it
+    /// follows every event the battle's presenter draws, whichever interface shows.
+    /// </summary>
+    public BattleScene Scene { get; }
+
+    /// <summary>Our battle screen's round order and rounds (<see cref="RoundOrder"/>), following the same events.</summary>
+    public RoundOrder Order { get; } = new();
+
+    /// <summary>Whether our battle screen can stand now: the battle draws and its field or an exchange is on (<see cref="BattleScene.Active"/>).</summary>
+    public bool BattleSceneShows => BattleShows && Scene.Active;
+
+    /// <summary>
+    /// The windows of the battle's screen now (<see cref="BattlePresenter.Windows"/>, plus those of the
+    /// input screen open, <paramref name="extra"/>) as a mask over <see cref="Screen"/>; our battle
+    /// screen shows the screen only there (<see cref="WindowMask.Compose"/>).
+    /// </summary>
+    public WindowMask BattleWindows(IEnumerable<WindowShape>? extra = null) =>
+        WindowMask.Of(BattleShows ? Battle.Windows.Concat(extra ?? []) : []);
 
     /// <summary>The game state the screens are drawn from (set by <see cref="Bind"/>).</summary>
     public GameState? State { get; private set; }
@@ -235,6 +256,11 @@ public sealed partial class GamePresenter : IStageObserver
             // their G, fades and copies run on the stage after the battle's drawing they follow.
             if (scriptEvent is EngineEvent engine)
                 Engine(engine.Command, engine.Args);
+            if (State is { } s && Picker is null)
+            {
+                Scene.Observe(scriptEvent, s);
+                Order.Observe(scriptEvent, s);
+            }
             return;
         }
         // A map animation's steps are the pauses after it; sound draws nothing (M 10 plays its sound before the blink).
@@ -296,6 +322,8 @@ public sealed partial class GamePresenter : IStageObserver
             if (_battleDepth++ == 0 && State is { } s)
             {
                 Battle.Attach(s);
+                Scene.Start(s);
+                Order.Reset();
                 _tiles = Tiles.Valid;
                 _window.Clear();
                 _afterKey = null;
@@ -306,6 +334,7 @@ public sealed partial class GamePresenter : IStageObserver
         if (_battleDepth > 0 && --_battleDepth == 0)
         {
             Battle.Flush();
+            Scene.Stop();
             _tiles = Tiles.Dirty;
             _target = TextTarget.Window;
         }

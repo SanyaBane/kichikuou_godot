@@ -58,7 +58,10 @@ public sealed class BattleScene
     /// <summary>The scene's surface: the picture at (0, 0)-(640, 256), the digit sheets right of it.</summary>
     public Surface Surface { get; }
 
-    /// <summary>Whether the battle's field or an exchange is on: the split screen shows (not the pre-battle map, strategy or scout screens).</summary>
+    /// <summary>
+    /// Whether the battle's field or an exchange is on: the split screen shows (not the pre-battle map,
+    /// strategy or scout screens, nor while a scene the battle calls draws on the stage).
+    /// </summary>
     public bool Active { get; private set; }
 
     /// <summary>Counts the scene's changes; a view uploads the picture when it moves.</summary>
@@ -161,6 +164,11 @@ public sealed class BattleScene
                 break;
             case MapEvent { Mode.Value: 0 or 11 or 12 } or StrategyScreenEvent or ClearScreenEvent:
                 Active = false;                                         // the original's own full screens
+                break;
+            case EngineEvent { Command: "G" or "CC" or "CE" or "CS" or "CF" or "CM" or "CB" or "CL" } or WindowEvent { Op.Value: 131 }:
+                // A scene the battle calls (死亡捕獲's deaths, Gｼｨﾙ 28 …) draws on the stage itself: its
+                // screen is shown whole until the battle's field or exchange is drawn again.
+                Active = false;
                 break;
         }
     }

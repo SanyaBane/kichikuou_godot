@@ -64,6 +64,22 @@ public sealed class FigtSelScreen
     /// <summary>The open popup, if any.</summary>
     public SelectionBox? Popup => _state is State.SlotPopup or State.CommandPopup ? _box : null;
 
+    /// <summary>The screen's windows while the player chooses: the prompt (CG 861) and the open popup (<see cref="BattlePresenter.Windows"/>).</summary>
+    public IReadOnlyList<WindowShape> Windows
+    {
+        get
+        {
+            if (_state == State.Done)
+                return [];
+            var shapes = new List<WindowShape>();
+            if (_p.Shape(861) is { } prompt)
+                shapes.Add(prompt);
+            if (Popup is { } box)
+                shapes.Add(WindowShape.Of(box));
+            return shapes;
+        }
+    }
+
     private int FrameColor => _mode >= 10 ? 249 : 255; // Tmp0020
 
     /// <summary><c>L_001bb</c> (<c>:64-159</c>): the prompt box and its text.</summary>

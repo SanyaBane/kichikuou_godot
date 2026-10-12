@@ -296,10 +296,20 @@ public class GamePresenterTests(ITestOutputHelper output)
         var battles = new List<(int Kind, int Enemy)>();
         var menus = new List<(string[] Items, string Window, int Hit)>();
         var centres = new HashSet<int>();
+        int sceneShown = 0, rounds = 0, stageDrawnInBattle = 0, splitOverStage = 0;
         player.OnShow = e =>
         {
             if (e is BattleScreenEvent { Open: true })
                 battles.Add((s.Bt_Kind.Value, s.Bt_EnemyParty1.Value));
+            if (run.Presenter.BattleSceneShows)
+                sceneShown++;
+            rounds = Math.Max(rounds, run.Presenter.Order.Rounds);
+            if (run.Presenter.InBattle && e is EngineEvent { Command: "G" })
+            {
+                stageDrawnInBattle++;                                       // 死亡捕獲's scene draws on the stage: the original's screen shows
+                if (run.Presenter.BattleSceneShows)
+                    splitOverStage++;
+            }
         };
         player.OnRead = () =>
         {
@@ -321,7 +331,11 @@ public class GamePresenterTests(ITestOutputHelper output)
         Assert.Equal([PickerKind.Deployment], player.PickersSeen);
         Assert.Equal([(3, 83), (3, 83)], battles);                            // FIGT and 死亡捕獲 of a dungeon battle with the Sergeant Hanny
         Assert.True(player.BattleFrames > 0, "the battle was drawn");
-        Assert.Contains(1031, centres);                                       // the cave's picture
+        Assert.True(sceneShown > 0, "our battle screen's scene followed the battle");
+        Assert.True(rounds > 0, "the round order saw the round header");
+        output.WriteLine($"scene shown at {sceneShown} events; {stageDrawnInBattle} G in the battle, {splitOverStage} with the split on");
+        Assert.Equal(0, splitOverStage);
+        Assert.Contains(1031, centres);                                      // the cave's picture
         Assert.Equal(7, menus.Count);
         Assert.Empty(menus[4].Items);                                         // the empty ]: a box with nothing in it,
         Assert.Equal(-1, menus[4].Hit);                                       // nothing to hit

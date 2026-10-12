@@ -178,7 +178,10 @@ public sealed partial class BattlePresenter
             case WipedOutMarksEvent e: WipedOutMarks(e); break;
             case KeyWaitEvent: ExchangeKeyWait(); break;
             case MapEvent e: Map(e.Mode.Value); break;
-            case ClearScreenEvent: Surface.Fill(0, 0, 640, 400, 0); break;
+            case ClearScreenEvent:
+                Surface.Fill(0, 0, 640, 400, 0);
+                PicturesCovered();
+                break;
             case PauseEvent: MapPause(); break;
             case SoundEvent e: IBattleAudio.PcmPlay(_audio, e); break;
             case MusicEvent e: _audio?.PlayMusic(e.Track.Value); break;
@@ -313,6 +316,7 @@ public sealed partial class BattlePresenter
         _redrawing = false;
         Writer.Color = 22; // FIGT.ADV:2052
         Surface.Copy(0, 400, 640, 400, 0, 0); // L_031f9
+        PicturesCovered();
     }
 
     /// <summary>One panel into the back buffer in the current text colour.</summary>
@@ -356,7 +360,59 @@ public sealed partial class BattlePresenter
         if (e.IsDuel == 0)
             Writer.Print(Read(209, e.RoundsLeft));
         WaitsForKey = true;
-        _afterKey = () => Surface.Copy(640, 0, 640, 400, 0, 0);
+        _roundHeader = true;
+        _afterKey = () =>
+        {
+            Surface.Copy(640, 0, 640, 400, 0, 0);
+            _roundHeader = false;
+        };
+    }
+
+    private bool _roundHeader;
+
+    // ------------------------------------------------------------------ the windows' shapes
+
+    /// <summary>
+    /// The shapes of the screen that are windows now (<see cref="WindowShape"/>): the round header
+    /// (CG 887 until the key's restore), the open window's frame (<c>Ui_WinFrameCg</c>; the full-screen
+    /// 815 of window 131 whole), the portraits of ops 311/321 and the centre picture of op 331.
+    /// <see cref="FigtSelScreen.Windows"/> and <see cref="BattleMenuScreen.Windows"/> add the input screens'.
+    /// </summary>
+    public IReadOnlyList<WindowShape> Windows
+    {
+        get
+        {
+            var shapes = new List<WindowShape>();
+            if (_roundHeader && Shape(887) is { } header)
+                shapes.Add(header);
+            if (_winType != 0 && Shape(_winFrame, opaque: _winType is >= 31 and <= 39) is { } frame)
+                shapes.Add(frame);
+            if (!_covered.HasFlag(Pictures.PortraitL) && Shape(_portraitL, (0, 0)) is { } left)
+                shapes.Add(left);
+            if (!_covered.HasFlag(Pictures.PortraitR) && Shape(_portraitR, (448, 144)) is { } right)
+                shapes.Add(right);
+            if (!_covered.HasFlag(Pictures.Center) && Shape(_centerCg, (176, 96), opaque: true) is { } centre)
+                shapes.Add(centre);
+            return shapes;
+        }
+    }
+
+    /// <summary>The pictures of ops 311/321/331 the screen no longer shows (their variables still hold them).</summary>
+    [Flags]
+    private enum Pictures { None = 0, PortraitL = 1, PortraitR = 2, Center = 4 }
+
+    private Pictures _covered;
+
+    /// <summary>The whole screen was drawn over (a field redraw, an engagement frame, the map): the pictures are gone from it.</summary>
+    private void PicturesCovered() => _covered = Pictures.PortraitL | Pictures.PortraitR | Pictures.Center;
+
+    /// <summary>CG <paramref name="number"/>'s shape at <paramref name="at"/> or its own position (null for none).</summary>
+    internal WindowShape? Shape(int number, (int X, int Y)? at = null, bool opaque = false)
+    {
+        if (number == 0 || _cgs.Get(number) is not { } cg)
+            return null;
+        var (x, y) = at ?? (cg.X, cg.Y);
+        return opaque ? WindowShape.Box(x, y, cg.Width, cg.Height) : WindowShape.Keyed(cg, x, y);
     }
 
     // ------------------------------------------------------------------ windows (§2)
@@ -417,6 +473,7 @@ public sealed partial class BattlePresenter
                     ErasePortrait(left: true);
                 GAt(callArg, 0, 0, keyed: true);
                 _portraitL = callArg;
+                _covered &= ~Pictures.PortraitL;
                 break;
             case 312: ErasePortrait(left: true); break;
             case 321:
@@ -424,6 +481,7 @@ public sealed partial class BattlePresenter
                     ErasePortrait(left: false);
                 GAt(callArg, 448, 144, keyed: true);
                 _portraitR = callArg;
+                _covered &= ~Pictures.PortraitR;
                 break;
             case 322: ErasePortrait(left: false); break;
             case 331:
@@ -431,6 +489,7 @@ public sealed partial class BattlePresenter
                     EraseCenter();
                 GAt(callArg, 176, 96);
                 _centerCg = callArg;
+                _covered &= ~Pictures.Center;
                 break;
             case 332: EraseCenter(); break;
         }

@@ -27,6 +27,7 @@ public sealed partial class BattlePresenter
         if (e.EnemyFace != 0)
             GAt(e.EnemyFace.Value, 1088, 256, keyed: true);
         Surface.Copy(640, 112, 640, 400, 0, 0);
+        PicturesCovered();
     }
 
     /// <summary><c>FIGT.ADV:1739-1800</c>: the two names and action labels, in window 143.</summary>
@@ -75,6 +76,7 @@ public sealed partial class BattlePresenter
             Surface.CopyKeyed(990, sheetY + 64, 64, 32, 480, 768);
             Number(e.CmdrHP.Value, 480, 768, 0, sheetY);
             Surface.Copy(0, 400, 640, 400, 0, 0);
+            PicturesCovered();
             if (_slideOffset == 0)
                 Surface.Copy(640, 0, 640, 400, 0, 400); // :1828, the clean final frame
             return;
@@ -188,6 +190,7 @@ public sealed partial class BattlePresenter
                 Number(damage.Damage.Value, 640 + damage.X, damage.Y, 1, AttackSheetY);
         }
         Surface.Copy(640, 0, 640, 400, 0, 0);
+        PicturesCovered();
     }
 
     private WipedOutMarksEvent? _marks;
@@ -250,6 +253,7 @@ public sealed partial class BattlePresenter
             GRel(alone.Value, 0, 400, keyed: true);
         GAt(face.Value, side == 1 ? 0 : 448, 544, keyed: true);
         Surface.Copy(0, 400, 640, 400, 0, 0);
+        PicturesCovered();
     }
 
     // ------------------------------------------------------------------ strategic map (§6.4)
@@ -283,6 +287,7 @@ public sealed partial class BattlePresenter
                 break;
             case 11:
                 Surface.Fill(0, 0, 640, 400, 0);
+                PicturesCovered();
                 break;
         }
     }
@@ -322,6 +327,7 @@ public sealed partial class BattlePresenter
     {
         var (x, y) = MapViewCorner();
         Surface.Copy(x + 1280, y, 640, 400, 0, 0);
+        PicturesCovered();
     }
 
     /// <summary><c>WAO_MAP.ADV</c> op 3 (<c>:86-115</c>): the six tiles and every marker, off screen.</summary>

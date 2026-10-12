@@ -131,7 +131,18 @@ picture, the slot panels) is not shown. How it is built:
    the numbers is kept and drawn again only when the armies change); `BattleSceneTests` — in the
    captured battles the scene's rows 0-223 equal the original's screen when its engagement stands whole
    with the counters, and between exchanges the two in focus stand in the slots (every eighth capture
-   in the quick run, all in the full one). Next: the windows' shapes over it and the Godot frame.
+   in the quick run, all in the full one).
+   ✓ 2026-10-12 the windows' layer: `Battles/BattleWindows.cs` — `WindowShape` (a keyed CG's non-key
+   pixels, or a rectangle) and `WindowMask` (their union, and the stage's screen with alpha 0 outside
+   it); `BattlePresenter.Windows` (the round header until its key, the open window's frame — 815 of
+   window 131 whole —, the portraits and the centre picture of ops 311/321/331 until a full-screen copy
+   covers them), `FigtSelScreen.Windows` (the prompt, CG 861, and the open popup with its 8-px frame),
+   `BattleMenuScreen.Windows` (the menu's box); `GamePresenter.BattleWindows` joins them,
+   `GamePresenter.Scene` / `Order` follow every battle event. **The scenes a battle calls**
+   (`死亡捕獲`'s deaths, any `G`/`CC`/… on the stage or window 131) turn the split off until the field
+   or an exchange is drawn again: their screen is the original's, whole. `BattleWindowsTests`: in the
+   captured battles every window frame, the round header and the portraits are on the screen at every
+   pixel of their shapes when they open, and the mask is empty once the field has been drawn again.
 3. **The frame** (Godot): while a battle shows and the interface is New, our screen covers the
    stage; the presenter keeps drawing the stage (the core's events still run) but it is not shown
    (as `DeploymentCovered`); our view follows the events it needs.

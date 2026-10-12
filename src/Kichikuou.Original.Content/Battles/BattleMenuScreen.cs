@@ -31,6 +31,9 @@ public sealed class BattleMenuScreen
     /// <summary>The chosen code, or <c>null</c> for a cancel.</summary>
     public Sys3Int? Result { get; private set; }
 
+    /// <summary>The menu's box while it is open (<see cref="BattlePresenter.Windows"/>).</summary>
+    public IReadOnlyList<WindowShape> Windows => IsDone ? [] : [WindowShape.Of(_box)];
+
     /// <summary>The mouse moved (script coordinates).</summary>
     public void MouseMove(int x, int y)
     {
