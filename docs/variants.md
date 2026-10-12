@@ -194,8 +194,14 @@ Each step ends green (see "Principles").
      every draw keeps its order, so the random cases are the same as before.
    - Engine and Content grant no internals to any test project; Original and Original.Content grant
      theirs to their own test projects and to Original.Content.Tests.
-6. **The tools' paths**: `gen_state.py`, `gen_figt_m.py` and `tools/golden/describe.py` write and read
-   the new paths; `gen_state.py`'s output must stay byte-identical.
+6. ✓ (2026-10-12) **The tools' paths**: `gen_state.py`, `gen_figt_m.py` and `tools/golden/describe.py` write and read
+   the new paths; `gen_state.py`'s output must stay byte-identical. As done:
+   - Both generators write `src/Kichikuou.Original` in the new namespaces; their output is byte-identical
+     (`gen_figt_m.py --check` on the decompile).
+   - `gen_figt_m.py` names VAR0000 itself (`State.RetVal`): since step 1 it is the engine's
+     `ScriptState.RetVal`, no longer in `GameState.g.cs`.
+   - `describe.py` reads the catalog's new path; `local.env.example`, `capture.ps1` and
+     `classes.txt` name `Kichikuou.Engine.LocalPaths` and `Kichikuou.Original.Script`.
 7. **Docs**: CLAUDE.md (layout, commands), README, porting conventions; the `--auto` regression run
    (`--seed 2 --weeks 60 --stage 2`: Oaks (6) in week 34, stop in week 36).
 

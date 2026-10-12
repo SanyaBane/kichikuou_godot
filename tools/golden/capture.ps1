@@ -39,7 +39,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-# The local paths, as Kichikuou.Core.LocalPaths reads them: the environment, else local.env.
+# The local paths, as Kichikuou.Engine.LocalPaths reads them: the environment, else local.env.
 $localPaths = @{}
 $localFile = Join-Path $PSScriptRoot '..\..\local.env'
 if (Test-Path $localFile) {

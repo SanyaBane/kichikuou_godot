@@ -24,7 +24,7 @@ def load_names():
 
 
 def load_fields():
-    text = (REPO / "src/Kichikuou.Core/State/VariableCatalog.g.cs").read_text(encoding="utf-8")
+    text = (REPO / "src/Kichikuou.Original/State/VariableCatalog.g.cs").read_text(encoding="utf-8")
     fields = {}
     for m in re.finditer(r'new\((\d+), (\d+), (\d+), (\d+), (\d+), "(\w+)", "(\w+)"\)', text):
         _, page, off, _, _, table, field = m.groups()

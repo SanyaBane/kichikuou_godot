@@ -12,7 +12,7 @@
 # dumped around calls into it and nothing inside is logged. A call into a root starts a capture
 # unless an open capture of the same group logs that call as an inner one.
 
-# UI helpers, inner everywhere (their state effects are ported in Kichikuou.Core.Script).
+# UI helpers, inner everywhere (their state effects are ported in Kichikuou.Original.Script).
 inner WAO_SUB.ADV M.ADV WAO_MAP.ADV PCMPLAY.ADV
 
 # The battle (ported, 37 captures match). Unchanged since the first harness; its captures stay in
