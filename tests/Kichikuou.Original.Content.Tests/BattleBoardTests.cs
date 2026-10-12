@@ -118,6 +118,8 @@ public class BattleBoardTests(ITestOutputHelper output)
         var order = new RoundOrder();
         order.Observe(new RoundHeaderEvent(0, 1, 5000, 0, 0, 4), s);
         Assert.Equal(["Melfeis:Waiting", "Barres:Waiting", "Rance:Waiting", "Dodge:Waiting"], Strip(order, s));
+        Assert.False(BattleBoard.Card(s, new BattlePlace(BattleSide.Player, 1), order.States(s))!.Acted);   // the cards show the round to come
+        Assert.True(BattleBoard.Card(s, new BattlePlace(BattleSide.Player, 1))!.Acted);
         order.Observe(new BattlefieldBackgroundEvent(0), s);
 
         // FIGT.ADV:296-317 resets the slots and L_007ca picks Melfeis (1 again) before the next event.

@@ -133,13 +133,13 @@ public static class BattleBoard
     public static IReadOnlyList<BattleCard?> Cards(GameState s, BattleSide side) =>
         [.. Enumerable.Range(1, 4).Select(slot => Card(s, new BattlePlace(side, slot)))];
 
-    /// <summary>The card of a place, or null when the slot is empty.</summary>
-    public static BattleCard? Card(GameState s, BattlePlace place)
+    /// <summary>The card of a place, or null when the slot is empty; with the slots' states of <paramref name="states"/> when given (<see cref="RoundOrder.States"/>).</summary>
+    public static BattleCard? Card(GameState s, BattlePlace place, SlotSnapshot? states = null)
     {
         int record = Record(s, place);
         if (record == 0)
             return null;
-        int state = SlotState(s, place).Value;
+        int state = states?.State(place) ?? SlotState(s, place).Value;
         bool acted = state != 0 && state != EmptyState;
         if (place.Side == BattleSide.Player)
         {
@@ -417,6 +417,13 @@ public sealed class RoundOrder
         return null;
     }
 
+    /// <summary>
+    /// The slots' states our screen shows: from a round header until the round's first turn is seen,
+    /// those the round's reset will leave (<see cref="SlotSnapshot.AtRoundStart"/>; GameState still holds
+    /// the last round's), else null — GameState's own.
+    /// </summary>
+    public SlotSnapshot? States(GameState s) => _header is null ? null : SlotSnapshot.Of(s).AtRoundStart();
+
     /// <summary>The strip: the acted (in turn order), the acting, the waiting (Kichikuou's order now).</summary>
     public IReadOnlyList<OrderChip> Chips(GameState s)
     {
@@ -426,7 +433,7 @@ public sealed class RoundOrder
         if (Acting is { } acting && ActingRecord != 0)
             chips.Add(Chip(s, acting.Side, ActingRecord, ChipState.Acting));
         // Before the round's first turn the states are still the last round's: the whole round waits.
-        foreach (var place in BattleBoard.Remaining(s, _header is null ? null : SlotSnapshot.Of(s).AtRoundStart()))
+        foreach (var place in BattleBoard.Remaining(s, States(s)))
         {
             int record = BattleBoard.Record(s, place);
             if (Acting is { } a && a.Side == place.Side && record == ActingRecord)

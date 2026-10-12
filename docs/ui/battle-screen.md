@@ -162,8 +162,9 @@ picture, the slot panels) is not shown. How it is built:
    strip; the cards 282×150 (faces through `FacePictures`, the acting one framed and not dimmed, the
    acted dimmed); the rounds gauge; the armies' names (`BattleBoard.Armies`). Input as before: the
    pointer over a card is the script's pointer at its panel's centre (`BattleBoard.PanelCentre`) and
-   focuses the scene on it, elsewhere the point of the windows' layer under it. Known: at a round header
-   the cards still show the last round's states (the core resets them after the header).
+   focuses the scene on it, elsewhere the point of the windows' layer under it. From a round header
+   until the round's first turn the cards, as the strip, show the states the round's reset will leave
+   (`RoundOrder.States`; GameState still holds the last round's).
 4. **Input**: our `IBattleInput` answers — the target cards' commands, the acting card's, the
    own cards' orders and info; the script menus as dialogs.
 5. **The scene and the exchange**: the engagement's pictures, the shots and counters, the action

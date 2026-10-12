@@ -290,7 +290,8 @@ internal sealed partial class BattleBoardView : Control
 
     private void RefreshCards(GameState s, RoundOrder order, BattlePlace? hovered)
     {
-        var cards = SlotSnapshot.Places.Select(p => BattleBoard.Card(s, p)).ToList();
+        var states = order.States(s);                                    // at a round header, the round to come
+        var cards = SlotSnapshot.Places.Select(p => BattleBoard.Card(s, p, states)).ToList();
         string key = string.Join(";", cards) + $"|{order.Acting}|{hovered}";
         if (key == _cardsKey)
             return;
