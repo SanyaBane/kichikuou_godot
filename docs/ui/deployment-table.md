@@ -6,6 +6,16 @@ deployment picker, `PickerKind.Deployment`, `Strategy/DeploymentScreen`) replace
 player's units. The rest of the screen — the portrait and description, the party and expense panel on
 the left, the bar buttons (Attack / Plains, City / Search; Stop) — stays the original's.
 
+**Second part (owner's request 2026-10-12): the rest of the screen.** Everything but the portrait and
+its description (the unit's picture, its name and the text beside it, all in the unit's CG — the
+description exists nowhere else in the player's files) is covered by our panels in the same places:
+the details of the hovered unit under the portrait, the party with a remove button per member and
+its totals against the gold, and the bar's three buttons labelled from the player's files. The
+owner's choices: the description stays the original's; a remove button (×) per member; the gold
+shown next to the war expenses; a left click on our panels does nothing but their buttons, a right
+click is the script's own (the last member out), the portrait keeps the original's clicks (a left
+click there takes the last member out too, CMD-23).
+
 ## How it works
 
 - **The script decides everything.** `DeploymentScreen` (the port of `Sﾌﾞﾀｲ.ADV`) runs unchanged and
@@ -70,7 +80,7 @@ owner's order (2026-10-12), after a first column with the party place (header �
    New, the table shows over the grid area; the presenter skips drawing the grid
    (`PickerView`); the pointer over the table area is the table's gestures, elsewhere the mouse's.
    As done: `GameScreen.UpdateTable` (each frame and before each pointer read) shows, places and fills
-   the table, not while `GamePresenter.MessageWindowShown`; `GamePresenter.DeploymentGridHidden`
+   the table, not while `GamePresenter.MessageWindowShown`; `GamePresenter.DeploymentCovered`
    leaves out the grid's names and underline; over the table `GetMouseAsync` answers from a
    `PointerScript` of the table's (`DeploymentTable.PointerAt` at rest, `DeploymentTable.Press` /
    `RightPress` for the presses, engine-independent and tested).
@@ -89,4 +99,15 @@ owner's order (2026-10-12), after a first column with the party place (header �
    shows the details, three presses build the party, a press on a member takes it out, Attack sends
    it); `--auto --interface new` builds every party through the table's presses
    (`DeploymentTableView.Press`); masked window dumps for the owner (`--shots` without `--headless`
-   saves the window while the table shows). The owner's look is next.
+   saves the window while the table shows). The owner looked and approved (2026-10-12).
+6. ✓ (2026-10-12) **The rest of the screen** (the second part above) — the model:
+   `DeploymentTable.Details` (what the script shows for the hovered unit, `Tmp0026`/`Tmp0033`: war
+   expense, troops, rows, item) and `DeploymentTable.Party` (the places `Tmp0040` offers, the troops
+   and expenses as `Sﾌﾞﾀｲ.ADV:269-366` sums them, the gold), tested; `PickerView.BarLabelTexts`; the
+   presenter draws only the background and the portrait under it (`GamePresenter.DeploymentCovered`).
+   Godot: `godot/Strategy/DeploymentPanels` (a backdrop over the right half and the left part below
+   the portrait, the details and party panels, the bar's buttons; a × is `DeploymentTable.Press` on a
+   member, a button a click on the script's own, `GameScreen.UpdateDeploymentScreen` places and fills
+   it with the table). `--auto --interface new` hovers each row until the script shows its details,
+   then presses it, and presses Go / Stop on our bar. Found on the way: a window dump's `Compose` took
+   the frame's upload from `Present`, so the window kept the screen from before the picker — fixed.
