@@ -63,7 +63,7 @@ internal sealed partial class BattleBoardView : Control
     private readonly StyleBoxFlat _speakerBox;
     private readonly TextureRect _speakerFace;
     private readonly Label _speakerName;
-    private readonly HBoxContainer _strip;
+    private readonly OrderStrip _strip;
     private readonly Label _playerName, _enemyName;
     private readonly Control _gauge;
     private readonly Dictionary<BattlePlace, (PanelContainer Card, StyleBoxFlat Box)> _cards = [];
@@ -116,7 +116,7 @@ internal sealed partial class BattleBoardView : Control
         _windows = Picture();
         AddChild(_windows);
 
-        _strip = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore, Alignment = BoxContainer.AlignmentMode.Center };
+        _strip = new OrderStrip();
         AddChild(_strip);
         _playerName = new Label { MouseFilter = MouseFilterEnum.Ignore };
         _enemyName = new Label { MouseFilter = MouseFilterEnum.Ignore, HorizontalAlignment = HorizontalAlignment.Right };
@@ -153,6 +153,7 @@ internal sealed partial class BattleBoardView : Control
         _back.Color = palette.Back;
         _speakerBox.BgColor = palette.Back;
         _speakerBox.BorderColor = palette.Accent;
+        _strip.SetPalette(palette);
         _cardsKey = _stripKey = "?";
         _gauge.QueueRedraw();
     }
@@ -187,6 +188,7 @@ internal sealed partial class BattleBoardView : Control
         At(_scene, SceneArea);
         At(_windows, WindowsArea);
         At(_strip, StripArea);
+        _strip.SetScale(scale);
         At(_playerName, PlayerNameArea);
         At(_enemyName, EnemyNameArea);
         At(_gauge, GaugeArea);
@@ -201,7 +203,7 @@ internal sealed partial class BattleBoardView : Control
     /// <paramref name="screenChanged"/> (with the input screen's own windows, <paramref name="inputWindows"/>),
     /// the cards, the strip, the gauge and the speaker when what they show changed.
     /// </summary>
-    public void Refresh(GamePresenter presenter, IEnumerable<WindowShape> inputWindows, bool screenChanged, BattlePlace? hovered)
+    public void Refresh(GamePresenter presenter, IEnumerable<WindowShape> inputWindows, bool screenChanged, BattlePlace? hovered, bool instant)
     {
         if (presenter.State is not { } s)
             return;
@@ -220,7 +222,7 @@ internal sealed partial class BattleBoardView : Control
         }
         RefreshSpeaker(s);
         RefreshCards(s, presenter.Order, hovered);
-        RefreshStrip(s, presenter.Order);
+        RefreshStrip(s, presenter.Order, instant);
         var gauge = (Math.Max(presenter.Order.Rounds, s.Bt_RoundsLeft.Value), s.Bt_RoundsLeft.Value);
         if (gauge != _gaugeValues)
         {
@@ -416,38 +418,15 @@ internal sealed partial class BattleBoardView : Control
 
     // ------------------------------------------------------------------ the strip and the gauge
 
-    /// <summary>The round's order: the acted grey, the acting framed, the rest in their side's colour.</summary>
-    private void RefreshStrip(GameState s, RoundOrder order)
+    /// <summary>The round's order (<see cref="OrderStrip"/>): the chips move on their own; at once while <paramref name="instant"/> (the message skip).</summary>
+    private void RefreshStrip(GameState s, RoundOrder order, bool instant)
     {
         var chips = order.Chips(s);
         string key = string.Join(";", chips);
         if (key == _stripKey)
             return;
         _stripKey = key;
-        foreach (var child in _strip.GetChildren())
-        {
-            _strip.RemoveChild(child);
-            child.QueueFree();
-        }
-        _strip.AddThemeConstantOverride("separation", (int)Math.Round(4 * _scale));
-        foreach (var chip in chips)
-        {
-            var side = chip.Side == BattleSide.Player ? PlayerColour : EnemyColour;
-            int pad = (int)Math.Round(6 * _scale);
-            var box = new StyleBoxFlat
-            {
-                BgColor = chip.State == ChipState.Acted ? _colours.ButtonDisabled : side.Darkened(0.35f),
-                BorderColor = chip.State == ChipState.Acting ? _colours.Accent : side,
-                BorderWidthLeft = 2, BorderWidthTop = 2, BorderWidthRight = 2, BorderWidthBottom = 2,
-                ContentMarginLeft = pad, ContentMarginRight = pad,
-            };
-            if (chip.State == ChipState.Acted)
-                box.BorderColor = _colours.ButtonDisabled;
-            var panel = new PanelContainer { MouseFilter = MouseFilterEnum.Ignore };
-            panel.AddThemeStyleboxOverride("panel", box);
-            panel.AddChild(Line(chip.Name, chip.State == ChipState.Acted ? _colours.GreyText : _colours.Text, expand: false, center: true));
-            _strip.AddChild(panel);
-        }
+        _strip.Show(chips, instant);
     }
 
     /// <summary>One segment per round of the battle, the spent ones dark, "n left" below.</summary>
