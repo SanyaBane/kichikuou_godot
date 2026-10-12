@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Kichikuou.Core.Tests" />
-    <InternalsVisibleTo Include="Kichikuou.Content.Tests" />
+    <InternalsVisibleTo Include="Kichikuou.Original.Tests" />
+    <InternalsVisibleTo Include="Kichikuou.Original.Content.Tests" />
   </ItemGroup>
 
   <ItemGroup>

@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kichikuou.Original", "src\K
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kichikuou.Core.Tests", "tests\Kichikuou.Core.Tests\Kichikuou.Core.Tests.csproj", "{6A5F3813-A6B9-4A87-8041-54F1D89FFFE2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kichikuou.Original.Tests", "tests\Kichikuou.Original.Tests\Kichikuou.Original.Tests.csproj", "{6A5F3813-A6B9-4A87-8041-54F1D89FFFE2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "godot", "godot", "{8D4FAABC-C56A-6D5C-8531-6A6B417F5DBA}"
 EndProject
@@ -21,7 +21,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kichikuou.Engine", "src\Kic
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kichikuou.Original.Content", "src\Kichikuou.Original.Content\Kichikuou.Original.Content.csproj", "{C5D1A7E2-8B34-4F6D-A0C9-2E7B6F1D4A85}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kichikuou.Content.Tests", "tests\Kichikuou.Content.Tests\Kichikuou.Content.Tests.csproj", "{A8A8FB02-BEB1-47C7-A8D0-0E131A6B983A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kichikuou.Original.Content.Tests", "tests\Kichikuou.Original.Content.Tests\Kichikuou.Original.Content.Tests.csproj", "{A8A8FB02-BEB1-47C7-A8D0-0E131A6B983A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kichikuou.Engine.Tests", "tests\Kichikuou.Engine.Tests\Kichikuou.Engine.Tests.csproj", "{9E4B7C21-3D58-4A6F-B2E0-71C5D8A3F946}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kichikuou.Content.Tests", "tests\Kichikuou.Content.Tests\Kichikuou.Content.Tests.csproj", "{D27F8A3B-6C14-4E95-8B7D-0F3A92C6E518}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -117,6 +121,30 @@ Global
 		{A8A8FB02-BEB1-47C7-A8D0-0E131A6B983A}.Release|x64.Build.0 = Release|Any CPU
 		{A8A8FB02-BEB1-47C7-A8D0-0E131A6B983A}.Release|x86.ActiveCfg = Release|Any CPU
 		{A8A8FB02-BEB1-47C7-A8D0-0E131A6B983A}.Release|x86.Build.0 = Release|Any CPU
+		{9E4B7C21-3D58-4A6F-B2E0-71C5D8A3F946}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E4B7C21-3D58-4A6F-B2E0-71C5D8A3F946}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E4B7C21-3D58-4A6F-B2E0-71C5D8A3F946}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9E4B7C21-3D58-4A6F-B2E0-71C5D8A3F946}.Debug|x64.Build.0 = Debug|Any CPU
+		{9E4B7C21-3D58-4A6F-B2E0-71C5D8A3F946}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9E4B7C21-3D58-4A6F-B2E0-71C5D8A3F946}.Debug|x86.Build.0 = Debug|Any CPU
+		{9E4B7C21-3D58-4A6F-B2E0-71C5D8A3F946}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E4B7C21-3D58-4A6F-B2E0-71C5D8A3F946}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E4B7C21-3D58-4A6F-B2E0-71C5D8A3F946}.Release|x64.ActiveCfg = Release|Any CPU
+		{9E4B7C21-3D58-4A6F-B2E0-71C5D8A3F946}.Release|x64.Build.0 = Release|Any CPU
+		{9E4B7C21-3D58-4A6F-B2E0-71C5D8A3F946}.Release|x86.ActiveCfg = Release|Any CPU
+		{9E4B7C21-3D58-4A6F-B2E0-71C5D8A3F946}.Release|x86.Build.0 = Release|Any CPU
+		{D27F8A3B-6C14-4E95-8B7D-0F3A92C6E518}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D27F8A3B-6C14-4E95-8B7D-0F3A92C6E518}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D27F8A3B-6C14-4E95-8B7D-0F3A92C6E518}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D27F8A3B-6C14-4E95-8B7D-0F3A92C6E518}.Debug|x64.Build.0 = Debug|Any CPU
+		{D27F8A3B-6C14-4E95-8B7D-0F3A92C6E518}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D27F8A3B-6C14-4E95-8B7D-0F3A92C6E518}.Debug|x86.Build.0 = Debug|Any CPU
+		{D27F8A3B-6C14-4E95-8B7D-0F3A92C6E518}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D27F8A3B-6C14-4E95-8B7D-0F3A92C6E518}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D27F8A3B-6C14-4E95-8B7D-0F3A92C6E518}.Release|x64.ActiveCfg = Release|Any CPU
+		{D27F8A3B-6C14-4E95-8B7D-0F3A92C6E518}.Release|x64.Build.0 = Release|Any CPU
+		{D27F8A3B-6C14-4E95-8B7D-0F3A92C6E518}.Release|x86.ActiveCfg = Release|Any CPU
+		{D27F8A3B-6C14-4E95-8B7D-0F3A92C6E518}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -129,5 +157,7 @@ Global
 		{3B6E2C1D-6F0A-4C57-9E1B-5A8D2F47C0E3} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{C5D1A7E2-8B34-4F6D-A0C9-2E7B6F1D4A85} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{A8A8FB02-BEB1-47C7-A8D0-0E131A6B983A} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{9E4B7C21-3D58-4A6F-B2E0-71C5D8A3F946} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{D27F8A3B-6C14-4E95-8B7D-0F3A92C6E518} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal

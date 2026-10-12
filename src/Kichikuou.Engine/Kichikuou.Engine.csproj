@@ -6,9 +6,4 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <ItemGroup>
-    <InternalsVisibleTo Include="Kichikuou.Core.Tests" />
-    <InternalsVisibleTo Include="Kichikuou.Content.Tests" />
-  </ItemGroup>
-
 </Project>

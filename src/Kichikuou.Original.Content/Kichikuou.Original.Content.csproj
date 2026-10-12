@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Kichikuou.Content.Tests" />
+    <InternalsVisibleTo Include="Kichikuou.Original.Content.Tests" />
   </ItemGroup>
 
   <ItemGroup>

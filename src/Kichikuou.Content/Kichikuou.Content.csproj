@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Kichikuou.Content.Tests" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Kichikuou.Engine\Kichikuou.Engine.csproj" />
   </ItemGroup>
 
