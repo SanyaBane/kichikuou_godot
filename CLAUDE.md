@@ -246,7 +246,8 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   generators for committed C# sources; `tools/golden/` — harness launcher and page classes.
 - `docs/` — brief, spike findings, variable dictionary; `window-menu.md` records
   xsystem35's window menu bar (our reference; File/Screen/Option/MsgSkip) and what its commands do;
-  `ui/survey.md` surveys the screens and input for our own interface.
+  `ui/survey.md` surveys the screens and input for our own interface; `sengoku/` surveys Sengoku
+  Rance's battle from its code, the reference for our own battle screen (`tools/sengoku/split_jam.py`).
 
 ## Local paths
 
@@ -257,7 +258,7 @@ a command or a doc needs a folder or a tool: `KICHIKUOU_GAME_DIR` (the game), `K
 (the extract, `_extract` in the docs: `scenario`, `scenario_named`, `cg_png`, `cg_pms`, `wav`,
 `golden`), `KICHIKUOU_GODOT_EXE` (the Godot console exe), `KICHIKUOU_XSYSTEM35_DIR`,
 `KICHIKUOU_MSYS2_DIR`, `KICHIKUOU_ALICE_TOOLS_DIR` and the spike's tools (docs/spike-findings.md,
-"Local layout"). `Kichikuou.Engine.LocalPaths` reads it for the tests and the Godot game's default
+"Local layout"); `SENGOKU_RANCE_GAME_DIR` and `SENGOKU_RANCE_EXTRACT_DIR` (docs/sengoku/README.md). `Kichikuou.Engine.LocalPaths` reads it for the tests and the Godot game's default
 folders, `tools/golden/capture.ps1` for the harness. Docs and code name a key, never a path; never
 commit `local.env`.
 
