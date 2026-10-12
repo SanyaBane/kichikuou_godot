@@ -89,6 +89,31 @@ portrait (mock-up B):
 - The windows that wait for a click (round header, "vs", results, info) stay as they are, over the
   scene, for now.
 
+### The scene between exchanges (owner, 2026-10-12)
+
+**During the whole battle the cards are at the bottom and the armies' scene on top** — while a
+command is chosen as well as during an exchange; the original's field (the map, the province's
+picture, the slot panels) is not shown. How it is built:
+
+- **The scene** is a picture of our own, 640×256 shown ×1.6: the battlefield (`Bt_BackgroundCg` and
+  its overlay `+1`, which `Bt_EnemyParty1 = 1137` leaves out) with two armies. During an exchange
+  (from `EngagementSceneEvent` to the next redraw) exactly the engagement's pictures (the sprites by
+  troops, the specials); between exchanges the player unit and the enemy commander last in focus —
+  the acting unit, the target the enemy picked, the card the pointer is on — each by the engagement's
+  rule (`Cg*Full` at the troop limit, `Cg*Partial` below it, `Cg*Alone` without troops). The exchange's
+  numbers are drawn in the picture: the TROOPS counters, the flying shots and the damages; what the
+  original draws below row 255 moves up — the HP counters to y 224, the commanders' rows halfway
+  (y' = 80 + (y − 80) / 2), "UNABLE TO FIGHT" to y 112. The slide (the picture scrolling 112 rows
+  down) is not shown: the picture stands whole from the start.
+- **The windows over it** (round header, "vs", the flavour lines, the results, the info boxes, the
+  prompt, the popups, the script menus) are the stage's screen as the original draws it, shown only
+  inside the windows' own shapes (their frame CGs, the selection boxes): the 640×400 screen fitted to
+  the scene's height (×1.025, centred). The stage keeps drawing the original's screen unchanged —
+  Option → Interface → Original shows it as today.
+- **The input** stays the script's: a click on a card is the click on its panel (`FigtSelScreen`), a
+  popup opens over the scene where the panel would be; the command menu on the target's card comes
+  later (step 4, the owner first).
+
 ## Steps
 
 1. **Mock-ups** of the layout — the first part's done (2026-10-12, "The layout" above); the
@@ -97,6 +122,11 @@ portrait (mock-up B):
    record, face, troops, HP, order, focus, acted), the round's order (Kichikuou's rule, tested
    against the core's choice on recorded battles), the commands per target from `FigtSelMenu`
    (tested: every captured `FIGT_SEL` answer of the golden captures is offered on its target).
+   ✓ 2026-10-12 the cards and the order: `Battles/BattleBoard.cs` — `BattleBoard.Cards` / `Card`,
+   `BattleBoard.Remaining` (who acts next, `L_007ca`'s rule), `RoundOrder` (the strip: acted, acting,
+   waiting; a turn is the slot whose state the core's choice set; the rounds for the gauge);
+   `BattleBoardTests` checks every turn of every golden capture against the core's choice. The
+   commands per target wait for step 4.
 3. **The frame** (Godot): while a battle shows and the interface is New, our screen covers the
    stage; the presenter keeps drawing the stage (the core's events still run) but it is not shown
    (as `DeploymentCovered`); our view follows the events it needs.
