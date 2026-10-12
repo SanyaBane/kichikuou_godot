@@ -160,8 +160,11 @@ public static class DeploymentTable
     /// <summary>The highest unit the deployment screen lists (<c>Sﾌﾞﾀｲ</c>'s grid: 1-50, <c>PickerScreen</c>).</summary>
     public const int LastUnit = 50;
 
-    /// <summary>The listed units (status not 0) in number order, as <c>Sﾌﾞﾀｲ</c> lists them.</summary>
-    public static IReadOnlyList<DeploymentRow> Rows(GameState state)
+    /// <summary>
+    /// The listed units (status not 0) in number order, as <c>Sﾌﾞﾀｲ</c> lists them, with their places
+    /// in the party — or in <paramref name="order"/>, the party a drop asked for (<see cref="Drop"/>).
+    /// </summary>
+    public static IReadOnlyList<DeploymentRow> Rows(GameState state, IReadOnlyList<int>? order = null)
     {
         var rows = new List<DeploymentRow>();
         for (int n = 1; n <= LastUnit; n++)
@@ -176,7 +179,7 @@ public static class DeploymentTable
                 u.Exp.Value, ((Sys3Int)100 + u.Level * 30).Value,
                 u.Level.Value, u.Atk.Value, u.Def.Value, u.Attacks.Value, u.Strategy.Value, u.Magic.Value,
                 u.TroopAtk.Value, u.TroopDef.Value, (u.DeployCost + u.Troops / 300).Value,
-                Grey: u.Status == 2, PartyPlace: PartyPlace(state, n)));
+                Grey: u.Status == 2, PartyPlace: order is null ? PartyPlace(state, n) : order.ToList().IndexOf(n) + 1));
         }
         return rows;
     }
@@ -217,6 +220,67 @@ public static class DeploymentTable
         pointer.Click(outside.X, outside.Y);
     }
 
+    /// <summary>The party's members in place order (<c>Bt_PlayerParty1-4</c>; <c>Sﾌﾞﾀｲ</c> keeps them without gaps).</summary>
+    public static IReadOnlyList<int> PartyOrder(GameState state) =>
+        [.. new[] { state.Bt_PlayerParty1, state.Bt_PlayerParty2, state.Bt_PlayerParty3, state.Bt_PlayerParty4 }
+            .Select(p => p.Value).Where(u => u != 0)];
+
+    /// <summary>
+    /// The order a drag of place <paramref name="from"/>'s member onto place <paramref name="to"/>
+    /// asks for (places 1-4): the two members swap places; onto a place no member stands at, the
+    /// member goes to the end (the party has no gaps). Null when nothing changes.
+    /// </summary>
+    public static IReadOnlyList<int>? Dropped(IReadOnlyList<int> order, int from, int to)
+    {
+        if (from < 1 || from > order.Count || to < 1 || from == to || (to > order.Count && from == order.Count))
+            return null;
+        var wanted = order.ToList();
+        if (to <= order.Count)
+            (wanted[from - 1], wanted[to - 1]) = (wanted[to - 1], wanted[from - 1]);
+        else
+        {
+            wanted.RemoveAt(from - 1);
+            wanted.Add(order[from - 1]);
+        }
+        return wanted;
+    }
+
+    /// <summary>
+    /// The members to click, in turn, so that the party <paramref name="order"/> becomes
+    /// <paramref name="wanted"/> (the same members): a click moves a member to the end (CMD-16), so
+    /// the members not clicked keep their order at the front. The fewest clicks leave alone the
+    /// longest start of <paramref name="wanted"/> that stands in that order in the party and click
+    /// the rest in the wanted order.
+    /// </summary>
+    public static IReadOnlyList<int> Reordering(IReadOnlyList<int> order, IReadOnlyList<int> wanted)
+    {
+        if (order.Count != wanted.Count || order.Except(wanted).Any())
+            throw new ArgumentException("The wanted order must hold the party's members.", nameof(wanted));
+        int kept = 0;
+        foreach (int unit in order)
+            if (kept < wanted.Count && wanted[kept] == unit)
+                kept++;
+        return [.. wanted.Skip(kept)];
+    }
+
+    /// <summary>
+    /// A drop of place <paramref name="from"/>'s member onto place <paramref name="to"/> (<see cref="Dropped"/>)
+    /// as the gestures <c>Sﾌﾞﾀｲ</c> expects: a click on each cell of <see cref="Reordering"/>. Returns
+    /// the order wanted (the panels show it while the clicks run), or null when nothing changes.
+    /// </summary>
+    public static IReadOnlyList<int>? Drop(GameState state, int from, int to, PointerScript pointer)
+    {
+        var order = PartyOrder(state);
+        if (Dropped(order, from, to) is not { } wanted)
+            return null;
+        foreach (int unit in Reordering(order, wanted))
+        {
+            var cell = GesturePoints.PickerCell(unit);
+            pointer.Click(cell.X, cell.Y);
+        }
+        return wanted;
+    }
+
     /// <summary>A right press on the table: a right click where the script's pointer is (<see cref="PointerAt"/>), which takes the last member out (999).</summary>
     public static void RightPress(int unit, PointerScript pointer)
     {
@@ -246,10 +310,15 @@ public static class DeploymentTable
             (u.DeployCost + u.Troops / 300).Value, u.Troops.Value, u.MaxTroops.Value, rows, item);
     }
 
-    /// <summary>The party being built (<c>Bt_PlayerParty1-4</c>) in the places the screen offers, with its totals.</summary>
-    public static DeploymentParty Party(GameState state)
+    /// <summary>
+    /// The party being built (<c>Bt_PlayerParty1-4</c>) in the places the screen offers, with its
+    /// totals — or the party in <paramref name="order"/>, the order a drop asked for (<see cref="Drop"/>).
+    /// </summary>
+    public static DeploymentParty Party(GameState state, IReadOnlyList<int>? order = null)
     {
-        Sys3Int[] party = [state.Bt_PlayerParty1, state.Bt_PlayerParty2, state.Bt_PlayerParty3, state.Bt_PlayerParty4];
+        Sys3Int[] party = order is null
+            ? [state.Bt_PlayerParty1, state.Bt_PlayerParty2, state.Bt_PlayerParty3, state.Bt_PlayerParty4]
+            : [.. Enumerable.Range(0, 4).Select(i => (Sys3Int)(i < order.Count ? order[i] : 0))];
         // :269-343: the lines and the sums stop at the place Tmp0040 names; any other limit shows all four.
         int places = state.Tmp0040.Value is >= 1 and <= 4 ? state.Tmp0040.Value : 4;
         var members = new DeploymentMember?[places];

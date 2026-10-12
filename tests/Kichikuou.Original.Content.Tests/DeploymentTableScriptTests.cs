@@ -91,4 +91,55 @@ public class DeploymentTableScriptTests(ITestOutputHelper output)
         Assert.Equal([1, 2, 1, 2], new[] { 1, 2, 3, 4 }.Select(u => s.Units[u].Status.Value));   // the party is spent for the week
         Assert.Equal(999 - expenses, s.Gold.Value);
     }
+
+    /// <summary>
+    /// Drops on the party Sill (unit 2), Bound (unit 3), Soul (unit 4): the first onto the third place
+    /// swaps them, the second onto the first swaps them, the first onto the empty fourth place sends it
+    /// to the end — each time <c>Sﾌﾞﾀｲ</c>, clicked as <see cref="DeploymentTable.Drop"/> says, gives
+    /// the order the drop asked for; Stop ends the picker.
+    /// </summary>
+    [Fact]
+    public async Task A_drops_clicks_give_the_order_it_asked_for()
+    {
+        var game = await EndGame.BootAsync();
+        if (game is null)
+            return;
+        var s = game.State;
+        for (int u = 1; u <= 4; u++)
+            s.Units[u].Status = 1;
+        s.Tmp0021 = 4;                                                  // up to four units,
+        s.Tmp0022 = 1;                                                  // an attack
+
+        var pointer = game.Input.Pointer;
+        var steps = new Queue<Action>();
+        var seen = new List<string>();
+        foreach (int unit in new[] { 2, 3, 4 })
+            steps.Enqueue(() => DeploymentTable.Press(s, unit, pointer));
+        foreach (var (from, to) in new[] { (1, 3), (2, 1), (1, 4) })
+        {
+            IReadOnlyList<int>? wanted = null;
+            steps.Enqueue(() => wanted = DeploymentTable.Drop(s, from, to, pointer));
+            steps.Enqueue(() => seen.Add($"{from}→{to}: wanted {string.Join(" ", wanted!)}, party {string.Join(" ", DeploymentTable.PartyOrder(s))}"));
+        }
+        steps.Enqueue(() =>
+        {
+            var stop = GesturePoints.PickerButton(3);
+            pointer.Click(stop.X, stop.Y);
+        });
+        game.Input.Idle = () =>
+        {
+            if (steps.TryDequeue(out var step))
+                step();
+        };
+        var runner = new SceneRunner(new ScenarioScripts(LocalData.ScenarioDirectory), new RecordingRules { State = s }, f => f == "Sﾌﾞﾀｲ.ADV");
+        var script = new OriginalScriptContext(s, game.Random, game.View, game.Input, runner);
+        runner.Bind(script);
+
+        await runner.RunFileAsync("Sﾌﾞﾀｲ.ADV");
+
+        output.WriteLine(string.Join("; ", seen));
+        Assert.Empty(steps);
+        Assert.Equal(["1→3: wanted 4 3 2, party 4 3 2", "2→1: wanted 3 4 2, party 3 4 2", "1→4: wanted 4 2 3, party 4 2 3"], seen);
+        Assert.Equal(503, s.CallArg.Value);                             // Stop
+    }
 }
