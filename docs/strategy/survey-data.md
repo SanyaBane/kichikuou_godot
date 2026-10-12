@@ -120,7 +120,7 @@ new game" reading is wrong — `ｽﾀｰﾄ.ADV:1-846` does the zeroing.
 
 No calls to `FIGT*`, `COM.ADV`, story scenes or `T*`. The marker op is already ported, as private
 members of the battle: `ScriptContext.MapAsync` case 4 and `MapWaoMap` case 4 / `MapFindMarker`
-(`src/Kichikuou.Core/Script/ScriptContext.Map.cs`, `M.ADV:118-124`, `WAO_MAP.ADV:110-116, 183-196`).
+(`src/Kichikuou.Original/Script/OriginalScriptContext.Map.cs`, `M.ADV:118-124`, `WAO_MAP.ADV:110-116, 183-196`).
 
 ## 4. State
 

@@ -7,8 +7,9 @@ The hybrid with Sengoku Rance's mechanics (brief, scope decision 2) would be a t
 plan is the refactor that comes first.** It changes no behaviour of the original and adds nothing of the
 mod.
 
-Status: **approved** (2026-10-12; the owner accepted the names). The facts come from a read-only sweep
-of the code on 2026-10-12, at commit `616eb12`.
+Status: **done** (2026-10-12; approved the same day, the owner accepted the names): steps 1–7 ✓, the
+"Deferred" parts wait for a second variant. The facts come from a read-only sweep of the code on
+2026-10-12, at commit `616eb12`.
 
 **It must pay off with the original alone.** The owner expects the mod's author to refuse. So the split is
 worth doing only for what it gives the original's code:
@@ -202,8 +203,17 @@ Each step ends green (see "Principles").
      `ScriptState.RetVal`, no longer in `GameState.g.cs`.
    - `describe.py` reads the catalog's new path; `local.env.example`, `capture.ps1` and
      `classes.txt` name `Kichikuou.Engine.LocalPaths` and `Kichikuou.Original.Script`.
-7. **Docs**: CLAUDE.md (layout, commands), README, porting conventions; the `--auto` regression run
-   (`--seed 2 --weeks 60 --stage 2`: Oaks (6) in week 34, stop in week 36).
+7. ✓ (2026-10-12) **Docs**: CLAUDE.md (layout, commands), README, porting conventions; the `--auto` regression run
+   (`--seed 2 --weeks 60 --stage 2`: Oaks (6) in week 34, stop in week 36). As done:
+   - README, the brief, the porting conventions, the golden-test, battle and quirk docs, the UI survey
+     and the pointers in the strategic surveys name the new libraries and test projects (the golden
+     code is split: the capture format in `Kichikuou.Engine/Golden`, the replay in
+     `Kichikuou.Original/Golden`).
+   - Dated records stay as written: the F0 row of strategy/README.md, the brief's "Done by
+     2026-10-08", and the surveys' proposals of homes never built (`Kichikuou.Core/Events`,
+     `Strategy/Nations/`); the surveys' bare `ScriptContext.Map.cs`/`.Wao.cs` with line numbers are
+     today's `OriginalScriptContext.Map.cs`/`.Wao.cs` as they were then.
+   - The `--auto` regression matches: Oaks (6) in week 34, stop in week 36, exit 0.
 
 ## Deferred until a second variant starts
 

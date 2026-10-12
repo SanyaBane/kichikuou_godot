@@ -15,10 +15,11 @@ commands, the screens and the prologue scenes — in the same play session.
 | Harness (patched xsystem35) | the checkout `KICHIKUOU_XSYSTEM35_DIR` in `local.env` (docs/spike-findings.md, "Local layout"), branch `golden-harness`, `src/golden.c` |
 | Capture launcher, page classes, summary tool | `tools/golden/capture.ps1`, `classes.txt`, `describe.py` |
 | Captures (game data — never committed) | `_extract\golden\` (`KICHIKUOU_GOLDEN_DIR`, else `golden` in `KICHIKUOU_EXTRACT_DIR`): battles in the folder itself, every other group in a subfolder named after it (`boot\`, `week\`, `command\`, …) |
-| Capture parser, replay doubles, memory comparison | `src/Kichikuou.Core/Golden/` |
-| Golden tests (skip when no captures exist) | `tests/Kichikuou.Core.Tests/Golden/` |
+| Capture parser, memory dump | `src/Kichikuou.Engine/Golden/` |
+| Replay doubles, memory comparison | `src/Kichikuou.Original/Golden/` |
+| Golden tests (skip when no captures exist) | `tests/Kichikuou.Original.Tests/Golden/`; the content tests (`tests/Kichikuou.Original.Content.Tests`) draw and play the captures and resolve their texts |
 
-The battle screen (`godot/Main.cs`) and the Content tests list only the top folder, so they see
+The battle-capture viewer (`godot/Battles/CaptureList.cs`) and the content tests list only the top folder, so they see
 battles only.
 
 ## Roots, groups and nesting
@@ -40,7 +41,7 @@ three classes:
 - **inner** — files the port reproduces: calls into them are transparent; their draws and
   inputs are logged. The group's own roots are inner to it, and the UI helpers `WAO_SUB.ADV`,
   `M.ADV`, `WAO_MAP.ADV`, `PCMPLAY.ADV` are inner in every group (their state effects are ported
-  in `Kichikuou.Core.Script`).
+  in `Kichikuou.Original.Script`).
 - **pick** — a file the core models as one input call (`FIGT_SEL.ADV`:
   `IBattleInput.SelectCommandAsync`). Inputs inside it are not logged; at its return the harness
   logs the result pair `RetVal` (`VAR0000`) and `Tmp0001` (`VAR0001`).
@@ -169,7 +170,7 @@ numbers are the engine's (`MS n` writes string n).
 
 ## Replay in the core
 
-`GoldenReplay` (in `src/Kichikuou.Core/Golden/`) runs one capture:
+`GoldenReplay` (in `src/Kichikuou.Original/Golden/`) runs one capture:
 
 1. **State.** A fresh `GameState`; the `enter` dump is loaded into its `ScriptMemory` (variables
    0..805, every page at the dumped size, strings). Non-zero variables beyond 805 or bindings that
@@ -421,7 +422,7 @@ and the `.hed` in the extract, the harness build in `KICHIKUOU_XSYSTEM35_DIR`, t
 page call). `python tools/golden/describe.py <file> …` prints what a capture holds (root, group,
 week / stage / gold / province before and after, hooks, event counts, mouse presses; for a battle
 also the parties, result and commands) to check it against what was played. Run the tests with
-`dotnet test tests/Kichikuou.Core.Tests`; a failing capture prints the divergence (with the
+`dotnet test tests/Kichikuou.Original.Tests`; a failing capture prints the divergence (with the
 original's `file@address`) or the differing variables by name.
 
 ## Capturing the prologue (milestone 1) — checklist for the owner
@@ -468,7 +469,7 @@ captured at least once — the captures named after each step are what to look f
 8. **Optional:** load again and **win the duel** once (game over, ending 14: `Iﾄｳｿﾞｸ` ends in
    `jump OVER.ADV`; the game quits itself). A battle in the dungeon is not part of the prologue.
 
-Afterwards run `dotnet test tests/Kichikuou.Core.Tests`: the battles must still match, the new
+Afterwards run `dotnet test tests/Kichikuou.Original.Tests`: the battles must still match, the new
 captures are parsed (`GoldenPendingTests`) and listed as waiting for their ports; and
 `describe.py` on the `week\` captures to check the weeks against what was played.
 

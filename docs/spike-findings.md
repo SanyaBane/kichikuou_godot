@@ -22,7 +22,7 @@ folder `KICHIKUOU_EXTRACT_DIR` names.
 | xsys35c 1.13.0 (`xsys35dc`, `ald`, `pms`, …) | `KICHIKUOU_XSYS35C_DIR` |
 | alice-tools 0.13.0 (Windows build) | `KICHIKUOU_ALICE_TOOLS_RELEASE_DIR` |
 
-`Kichikuou.Core.LocalPaths` reads the keys for the tests and the Godot game's default folders,
+`Kichikuou.Engine.LocalPaths` reads the keys for the tests and the Godot game's default folders,
 `tools/golden/capture.ps1` for the harness; the commands in the docs write `<KEY>` for a key's value.
 
 Building xsystem35 (verified 2026-10-08, commit `82c8b76`): the README's `pacman` list lacks

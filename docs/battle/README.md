@@ -20,7 +20,7 @@ Open questions (merged from 01 §14 and 02 §11):
 8. ~~Can `Sﾌﾞﾀｲ` return a code other than 501/502/503 to FIGT_B?~~ **Resolved:** no — it returns only
    501, 502 (mode 2) or 503 (`Sﾌﾞﾀｲ.ADV:106-149`); the plains fall-through is unreachable.
 
-## Port: how the C# code is split (`src/Kichikuou.Core/Combat/`)
+## Port: how the C# code is split (`src/Kichikuou.Original/Combat/`)
 
 `Battle` is one partial class written by three parts. Follow
 [../porting-conventions.md](../porting-conventions.md). Seam methods are `internal`,

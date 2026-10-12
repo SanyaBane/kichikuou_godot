@@ -1,7 +1,7 @@
 # Battle screen layout of the original (640×400)
 
 What the original battle draws, where and in which order, organised by the core's presentation
-events (`src/Kichikuou.Core/Combat/BattleEvents*.cs`) and input points (`BattleInput.cs`). All
+events (`src/Kichikuou.Original/Combat/BattleEvents*.cs`) and input points (`BattleInput.cs`). All
 coordinates are 640×400 screen pixels (draw ×2 for 1280×800). Script locations are lines of the
 decompiled scenario with readable names (`_extract/scenario_named/`); engine semantics cite the
 xsystem35 source (`xsystem35-sdl2/src/…`). "Unknown" marks what could not be determined.

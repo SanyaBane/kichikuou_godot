@@ -33,7 +33,8 @@ Chosen: **Godot 4 (.NET build) with C#**, desktop target. IDE is JetBrains Rider
 
 ### Architecture rule: engine-independent core
 
-- **`Kichikuou.Core`** — a plain .NET class library with **no Godot dependency**: world model
+- **`Kichikuou.Original`** (was `Kichikuou.Core`, on the shared runtime `Kichikuou.Engine` since the
+  variant split, [variants.md](variants.md)) — a plain .NET class library with **no Godot dependency**: world model
   (nations, provinces, commanders, troops), turn rules, battle, AI, event interpreter, save/load.
 - **Godot project** — presentation and input only: map, commander cards, dialogue, animation.
   It calls the core and renders its state.
@@ -141,7 +142,7 @@ live outside the repo; System 3.9 decompiles cleanly; ≈650–700 scenes, 126k 
 from the process id.
 
 **Decided (2026-10-07): hybrid.** Dialogue/event files go through an automatic converter into
-our own event format; rule files are hand-ported to C# in `Kichikuou.Core` and verified by golden
+our own event format; rule files are hand-ported to C# in `Kichikuou.Original` and verified by golden
 tests. Work order: variable dictionary ([variables.tsv](variables.tsv)) → solution skeleton
 (saturating 16-bit integer type, MT19937-1998 port) → battle as the first rules slice → golden-test
 harness on a patched xsystem35; an event-converter prototype runs in parallel with the battle slice.

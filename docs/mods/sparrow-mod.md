@@ -178,7 +178,7 @@ Lines identical after the normalisation and the variable mapping, per group (ori
 From a read-only sweep of the code (2026-10-12):
 
 - **File names**: files are identified by their decompiled Japanese names, never by page; ≈ 188 distinct
-  name literals in `Kichikuou.Core` (the router `Strategy/StrategyRules.cs`, `SceneRunner.IsSceneFile`'s
+  name literals in `Kichikuou.Core` (now `Kichikuou.Original`; the router `Strategy/StrategyRules.cs`, `SceneRunner.IsSceneFile`'s
   `G`/`I` prefix rule plus 8 names, the helpers in `Script/ScriptContext.Statements.cs`, each port's own
   file and every scene it calls). The two readers (`ScenarioScripts`, `ScenarioText`) are the one place a
   name map could go, but the mod's own calls (`%#CCity.ADV:`) would also need it.

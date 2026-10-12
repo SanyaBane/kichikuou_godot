@@ -51,7 +51,7 @@ interface is modernised (scope 1); the presentation layer can be replaced withou
 
 ### 1.1 How a frame is drawn today
 
-`Kichikuou.Content/Strategy/GamePresenter` composes the 640×400 `Screen` whenever anything changed
+`Kichikuou.Original.Content/Strategy/GamePresenter` composes the 640×400 `Screen` whenever anything changed
 (`GamePresenter.Compose.cs:242-273`):
 
 1. **the stage** — the emulated engine surface (3200×800, 8-bit indexed as the engine's; the battle's
@@ -123,7 +123,7 @@ the hand-drawn screen replaces them.
 
 - **A — semantic already**: a UI of our own draws it from events and `GameState` and answers with
   indices; nothing in the core changes.
-- **B — semantic in part**: it needs a new event, a query or a geometry helper in `Content`/`Core`
+- **B — semantic in part**: it needs a new event, a query or a geometry helper in `Original.Content`/`Original`
   (presentation only, no rule), and its input is given as synthesized gestures.
 - **C — the script draws and hit-tests**: keep the original layout scaled (input as pointer), or
   port the file by hand into a semantic form.
@@ -282,7 +282,7 @@ proxies inline and keeps no reference, and the session is a local of `RunAsync`
 Decision 4 wants a UI that takes over mid-game to draw from `GameState`. Part of what
 `GamePresenter` draws comes from the event history instead: `MapWaiting`, the open picker, the
 battle's depth, the window's text, the open menu (`GamePresenter.cs:221-288`). A UI switched in
-mid-game would miss it. **Proposal:** a shared screen-state tracker in `Content`, fed every event
+mid-game would miss it. **Proposal:** a shared screen-state tracker in `Original.Content`, fed every event
 whichever UI is active, that both UIs read (what is open, the window and its text, the menu, the
 battle depth).
 
@@ -352,7 +352,7 @@ None of these changes a rule or a look; each is small and testable on its own:
 2. the shared screen-state tracker (§4.3);
 3. menus as data: an event with the items (text, ○/×/△ split off, window), emitted where `]` asks;
 4. the engine-timing base shared by both UIs (§4.5);
-5. a map geometry helper in `Content`: the province or dungeon at a point and the point of a province
+5. a map geometry helper in `Original.Content`: the province or dungeon at a point and the point of a province
    (from `Prov.MapX/MapY` and the hit radii), for our map to send exact clicks.
 
 ## 5. Found while surveying

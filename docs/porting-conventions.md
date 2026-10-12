@@ -1,4 +1,4 @@
-# Porting conventions — scenario rules into `Kichikuou.Core`
+# Porting conventions — scenario rules into `Kichikuou.Original`
 
 How hand-ported rule code is written. The goal is a one-to-one port that golden tests can
 check variable by variable against the original game; readability comes second, a cleaner
@@ -39,7 +39,7 @@ model can be layered on later (e.g. for the hybrid branch).
 
 ## Shared services
 
-Every part runs on one `Kichikuou.Core.Script.OriginalScriptContext`. Its base, the engine's
+Every part runs on one `Kichikuou.Original.Script.OriginalScriptContext`. Its base, the engine's
 `ScriptContext`, has the state, `Rnd` (`Y 4`), pauses (`Y 3`), scene calls (`EventAsync`,
 `CallFileAsync`), jumps (`JumpTo`), `SS`/`SR` (`MusicAsync`, `GetPlayingTrackAsync`) and the save
 commands; the original's context adds the helper files every part calls — `WAO_SUB.ADV`

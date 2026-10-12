@@ -351,7 +351,7 @@ Swept on 2026-10-08: [battle/README.md](battle/README.md) (open questions), [bat
 `strategy/survey-*.md` (quirk lists and open questions), [strategy/README.md](strategy/README.md)
 ("What the prologue reaches", "Open [I]"), [spike-findings.md](spike-findings.md),
 [project-brief.md](project-brief.md), [golden-tests.md](golden-tests.md), and every
-`// QUIRK:` marker in `src/Kichikuou.Core`. `Iｶﾐ.ADV` and `FIGT表示.ADV` 21-24 were swept on
+`// QUIRK:` marker in `src/Kichikuou.Original`. `Iｶﾐ.ADV` and `FIGT表示.ADV` 21-24 were swept on
 2026-10-11 from [strategy/survey-ikami.md](strategy/survey-ikami.md) (`ikami`, §8 Q1-Q10: EVT-10 to
 EVT-19), the last candidates of [strategy/stage-4-sweep.md](strategy/stage-4-sweep.md) with them (NAT-31,
 DGN-19, EVT-20). Quirks of scenes run from the player's files have no marker in the port; their

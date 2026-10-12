@@ -19,10 +19,11 @@ that make the game more convenient to play.
 - **No game data in the repository.** The player supplies their own copy of the game. The port
   reads the scenario, pictures, sounds and music from the player's files at run time. The version
   ported is the English fan translation (v1.0).
-- **An engine-independent core.** The rules live in `Kichikuou.Core`, a plain .NET library with no
-  Godot dependency, covered by unit tests. `Kichikuou.Content` reads the player's data and
-  emulates the original's drawing surface. The Godot project only draws the state and forwards
-  input.
+- **An engine-independent core.** The rules live in `Kichikuou.Original`, a plain .NET library with
+  no Godot dependency, covered by unit tests, on `Kichikuou.Engine`, the runtime any System 3.9
+  game shares. `Kichikuou.Content` reads the player's data and emulates the engine's drawing
+  surface; `Kichikuou.Original.Content` draws the original's screens on it. The Godot project only
+  draws the state and forwards input.
 
 This is an unofficial fan project. It is not affiliated with or endorsed by AliceSoft, and it
 contains no part of the original game.
