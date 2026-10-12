@@ -64,6 +64,24 @@ public sealed class SlotSnapshot
     /// <summary>A place's round state (<c>Bt_PSlot1-4State</c> / <c>Bt_ESlot1-4State</c>).</summary>
     public int State(BattlePlace place) => _states[Index(place)];
 
+    /// <summary>
+    /// The slots as the round's reset leaves them (<c>FIGT.ADV:296-317</c>): every occupied slot to act (0),
+    /// every empty one 100.
+    /// </summary>
+    public SlotSnapshot AtRoundStart()
+    {
+        var snapshot = new SlotSnapshot();
+        for (int i = 0; i < 8; i++)
+        {
+            snapshot._records[i] = _records[i];
+            snapshot._states[i] = _records[i] == 0 ? 100 : 0;
+        }
+        return snapshot;
+    }
+
+    /// <summary>Whether every slot holds the same record in the same state as in <paramref name="other"/>.</summary>
+    public bool SameAs(SlotSnapshot other) => _records.AsSpan().SequenceEqual(other._records) && _states.AsSpan().SequenceEqual(other._states);
+
     private static int Index(BattlePlace p) => (p.Side == BattleSide.Player ? 0 : 4) + p.Slot - 1;
 }
 
@@ -98,7 +116,7 @@ public sealed record BattleSpeaker(BattleSide Side, int Record, int FaceCg, stri
 
 /// <summary>
 /// The battle as our own screen shows it, read from GameState: the cards (<see cref="Cards"/>) and who
-/// acts next this round (<see cref="Remaining"/>, Kichikuou's rule). Engine-independent; reads only.
+/// acts next this round (<see cref="Remaining(GameState)"/>, Kichikuou's rule). Engine-independent; reads only.
 /// </summary>
 public static class BattleBoard
 {
@@ -147,7 +165,10 @@ public static class BattleBoard
     /// not listed. Slot 1 is taken without the comparison against the 65535 sentinel (Q-17) — the same
     /// order but for a unit of exactly 65535 troops elsewhere, which is never picked.
     /// </summary>
-    public static IReadOnlyList<BattlePlace> Remaining(GameState s)
+    public static IReadOnlyList<BattlePlace> Remaining(GameState s) => Remaining(s, null);
+
+    /// <summary>As <see cref="Remaining(GameState)"/>, with the slots' states of <paramref name="states"/> when given.</summary>
+    public static IReadOnlyList<BattlePlace> Remaining(GameState s, SlotSnapshot? states)
     {
         var waiting = new List<(BattlePlace Place, int Troops)>();
         foreach (var side in (ReadOnlySpan<BattleSide>)[BattleSide.Player, BattleSide.Enemy])
@@ -156,7 +177,7 @@ public static class BattleBoard
             {
                 var place = new BattlePlace(side, slot);
                 int record = Record(s, place);
-                if (record == 0 || SlotState(s, place) != 0)
+                if (record == 0 || (states?.State(place) ?? SlotState(s, place).Value) != 0)
                     continue;
                 int troops = side == BattleSide.Player ? s.Units[record].Troops.Value : s.Cmdrs[record].Troops.Value;
                 bool sentinel = troops == 65535 && !(side == BattleSide.Player && slot == 1);
@@ -288,7 +309,7 @@ public sealed record OrderChip(BattleSide Side, int Record, int Slot, string Nam
 /// <summary>
 /// The round's order as our screen shows it (docs/ui/battle-screen.md, "The layout"): the units that
 /// have acted in the order they did, the one acting, then the rest in Kichikuou's order
-/// (<see cref="BattleBoard.Remaining"/>). The turns are followed from the battle's events
+/// (<see cref="BattleBoard.Remaining(GameState)"/>). The turns are followed from the battle's events
 /// (<see cref="Observe"/>): a round header starts a round, a slot whose state the core's choice set
 /// (<see cref="TurnStarted"/>) names the turn's actor. Also keeps the battle's rounds for the gauge.
 /// </summary>
@@ -318,6 +339,7 @@ public sealed class RoundOrder
         Rounds = 0;
         Round = 0;
         _slots = null;
+        _header = null;
     }
 
     /// <summary>
@@ -337,15 +359,46 @@ public sealed class RoundOrder
             _acted.Clear();
             Acting = null;
             ActingRecord = 0;
+            _header = now;
+            _slots = now;
+            return;
         }
-        if (_slots is { } before && TurnStarted(before, now) is { } place)
+        if (_slots is { } before && (_header is { } h ? FirstTurn(h, now) : TurnStarted(before, now)) is { } place)
         {
             if (Acting is { } acting && ActingRecord != 0)
                 _acted.Add((acting.Side, ActingRecord));
             Acting = place;
             ActingRecord = now.Record(place);
+            _header = null;
         }
         _slots = now;
+    }
+
+    /// <summary>The slots at the round header while the round's first turn is not seen yet (the states still the last round's).</summary>
+    private SlotSnapshot? _header;
+
+    /// <summary>
+    /// The round's first turn. After the header and the field's redraw the core resets the slots
+    /// (<c>FIGT.ADV:296-317</c>) and makes its first choice (<c>L_007ca</c>) with no event between: a slot
+    /// that had acted the round before goes 1 → 0 → 1 unseen (<see cref="TurnStarted"/> would miss it).
+    /// So once the slots have changed since the header and are all 0 but one 1, that one acts.
+    /// </summary>
+    public static BattlePlace? FirstTurn(SlotSnapshot header, SlotSnapshot now)
+    {
+        if (now.SameAs(header))
+            return null;
+        BattlePlace? actor = null;
+        foreach (var place in SlotSnapshot.Places)
+        {
+            if (now.Record(place) == 0)
+                continue;
+            int state = now.State(place);
+            if (state == 1 && actor is null)
+                actor = place;
+            else if (state != 0)
+                return null;
+        }
+        return actor;
     }
 
     /// <summary>
@@ -372,7 +425,8 @@ public sealed class RoundOrder
             chips.Add(Chip(s, side, record, ChipState.Acted));
         if (Acting is { } acting && ActingRecord != 0)
             chips.Add(Chip(s, acting.Side, ActingRecord, ChipState.Acting));
-        foreach (var place in BattleBoard.Remaining(s))
+        // Before the round's first turn the states are still the last round's: the whole round waits.
+        foreach (var place in BattleBoard.Remaining(s, _header is null ? null : SlotSnapshot.Of(s).AtRoundStart()))
         {
             int record = BattleBoard.Record(s, place);
             if (Acting is { } a && a.Side == place.Side && record == ActingRecord)

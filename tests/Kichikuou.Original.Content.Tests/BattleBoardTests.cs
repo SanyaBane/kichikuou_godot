@@ -111,6 +111,23 @@ public class BattleBoardTests(ITestOutputHelper output)
     }
 
     [Fact]
+    public void A_round_s_first_actor_who_acted_the_round_before_is_seen()
+    {
+        var s = Battle();
+        (s.Bt_PSlot1State, s.Bt_PSlot2State, s.Bt_ESlot1State, s.Bt_ESlot2State) = (1, 1, 1, 1);   // the last round's (or battle's)
+        var order = new RoundOrder();
+        order.Observe(new RoundHeaderEvent(0, 1, 5000, 0, 0, 4), s);
+        Assert.Equal(["Melfeis:Waiting", "Barres:Waiting", "Rance:Waiting", "Dodge:Waiting"], Strip(order, s));
+        order.Observe(new BattlefieldBackgroundEvent(0), s);
+
+        // FIGT.ADV:296-317 resets the slots and L_007ca picks Melfeis (1 again) before the next event.
+        (s.Bt_PSlot1State, s.Bt_PSlot2State, s.Bt_ESlot1State, s.Bt_ESlot2State) = (0, 0, 0, 1);
+        s.Bt_EnemyActSlot = 2;
+        order.Observe(new PanelHighlightEvent(6), s);
+        Assert.Equal(["Melfeis:Acting", "Barres:Waiting", "Rance:Waiting", "Dodge:Waiting"], Strip(order, s));
+    }
+
+    [Fact]
     public void The_strip_lists_the_acted_the_acting_and_the_rest()
     {
         var s = Battle();
@@ -153,13 +170,14 @@ public class BattleBoardTests(ITestOutputHelper output)
         var order = new RoundOrder();
         int turns = 0;
         var wrong = new List<string>();
-        SlotSnapshot? before = null;
+        int missing = 0;
         var view = new ObservingView(e =>
         {
             if (state is null)
                 return;
-            var now = SlotSnapshot.Of(state);
-            if (before is not null && RoundOrder.TurnStarted(before, now) is { } actor)
+            var was = (order.Acting, order.ActingRecord, order.Round);
+            order.Observe(e, state);
+            if (order.Acting is { } actor && (order.Acting, order.ActingRecord, order.Round) != was)
             {
                 // The core's choice ran since the last event: the model, on the states before it, names the same place.
                 var states = Snapshot(state);
@@ -169,17 +187,27 @@ public class BattleBoardTests(ITestOutputHelper output)
                 turns++;
                 if (expected.Count == 0 || expected[0] != actor)
                     wrong.Add($"round {order.Round}: the core picked {actor}, the model {string.Join(", ", expected)}");
+                if (order.Chips(state).Single(c => c.State == ChipState.Acting).Record != BattleBoard.Record(state, actor))
+                    wrong.Add($"round {order.Round}: the strip's acting chip is not {actor}");
             }
-            bool started = before is not null && RoundOrder.TurnStarted(before, now) is not null;
-            before = now;
-            order.Observe(e, state);
-            if (started && order.Acting is { } acting
-                && order.Chips(state).Single(c => c.State == ChipState.Acting).Record != BattleBoard.Record(state, acting))
-                wrong.Add($"round {order.Round}: the strip's acting chip is not {acting}");
+            if (order.Acting is not null)
+            {
+                // Once the round's first turn is seen, every unit in a slot is on the strip (acted, acting or waiting).
+                var chips = order.Chips(state);
+                foreach (var place in SlotSnapshot.Places)
+                {
+                    int record = BattleBoard.Record(state, place);
+                    if (record != 0 && !chips.Any(c => c.Side == place.Side && c.Record == record))
+                    {
+                        missing++;
+                        wrong.Add($"round {order.Round}: {place} (record {record}) is not on the strip");
+                    }
+                }
+            }
         });
         var report = await GoldenReplay.RunAsync(capture, view: view, started: s => { state = s; order.Reset(); });
-        output.WriteLine($"{file}: {turns} turns; replay {(report.Passed ? "matches" : "diverges")}");
-        Assert.Empty(wrong);
+        output.WriteLine($"{file}: {turns} turns, {missing} times a unit off the strip; replay {(report.Passed ? "matches" : "diverges")}");
+        Assert.Empty(wrong.Distinct().Take(10));
     }
 
     public static IEnumerable<object[]> Captures =>

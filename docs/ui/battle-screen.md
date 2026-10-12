@@ -127,6 +127,13 @@ picture, the slot panels) is not shown. How it is built:
    waiting; a turn is the slot whose state the core's choice set; the rounds for the gauge);
    `BattleBoardTests` checks every turn of every golden capture against the core's choice. The
    commands per target wait for step 4.
+   Fixed 2026-10-12 (the owner saw Melfeis missing from the strip): after the round header and its
+   redraw the core resets the slots and makes the round's first choice with no event between
+   (`FIGT.ADV:296-330`), so a first actor that had acted the round (or battle) before went 1 → 0 → 1
+   unseen and was on the strip nowhere. `RoundOrder.FirstTurn` now names it (the slots changed since the
+   header, all 0 but one 1), and until then the strip shows the whole round as the reset will leave it;
+   the golden test now also requires every unit in a slot to be on the strip (92 of 110 captures failed
+   it before the fix).
    ✓ 2026-10-12 the scene's picture: `Battles/BattleScene.cs` (on its own surface; the picture under
    the numbers is kept and drawn again only when the armies change); `BattleSceneTests` — in the
    captured battles the scene's rows 0-223 equal the original's screen when its engagement stands whole
