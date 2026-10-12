@@ -141,6 +141,15 @@ owner's order (2026-10-12), after a first column with the party place (header �
    1280×800 window (shrunk with premultiplied alpha, so the colour key's magenta does not bleed in), a
    click shows the whole face twice as large with its square framed. `--portraits` opens it over the
    title (`--shots DIR` saves the units' list — never the list of every face, some are adult pictures).
-   Waits for the owner's look.
+   The owner looked (2026-10-12): some faces need their own squares, and enemies will want faces too
+   (the battle, later). So the viewer grew (2026-10-12): a third list, the commanders of the running
+   game (`UnitFaces.Commanders`, `Cmdr_FaceCg`: 196 listed, nine without a face — Aladdin
+   (commander 21), the three Hannies (commanders 83-85), PG-X mk2 (commander 138), the four Kaiju
+   (commanders 187-190); commander 100 is the record scenes and the dungeon fill before their
+   battles, empty at the boot; many generic commanders share one face, e.g. CG 482 for 24 of them),
+   and the owner's edits: drag the square with the mouse, size it with the wheel, the square below as
+   the panel will show it, Reset; each edit saved at once in `user://face-crops.txt`
+   (`FaceCrops`, `godot/Strategy/FaceCropFile`, `FaceCropEditor`), which the agent then moves into
+   `UnitFaces.Exceptions`. Waits for the owner's edits.
 8. **The party panel, variant B**, with the faces of step 7.
 9. **Drag and drop** between the places, input held while the script's clicks run.

@@ -284,6 +284,6 @@ public static class DeploymentTable
     public static string UnitName(GameState state, int unit) =>
         StringAt(state, (state.Unit_StrBase + (Sys3Int)((unit - 1) * 3)).Value);
 
-    private static string StringAt(GameState state, int index) =>
+    internal static string StringAt(GameState state, int index) =>
         index >= 0 && index < state.Strings.Length ? Hankaku.ToHalfWidth(state.Strings[index]) : "";
 }
