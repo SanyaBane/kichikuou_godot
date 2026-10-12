@@ -1,11 +1,12 @@
-using System.Text;
 using Kichikuou.Content.Scripts;
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
 using Kichikuou.Original.Strategy;
+using Kichikuou.TestSupport;
 using Xunit.Abstractions;
+using static Kichikuou.TestSupport.Differential;
 
 namespace Kichikuou.Original.Content.Tests;
 
@@ -561,9 +562,9 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             var original = await RunCutsceneAsync(Copy(state), seed, programs, port: false);
             int at = FirstDifference(original.Log, mine.Log);
             Assert.True(at < 0, $"seed {seed}: the runs differ at entry {at}\n{Around("FIGTATTK.ADV", original.Log, mine.Log, at)}");
-            var differences = Differences("FIGTATTK.ADV", original.State.Memory, mine.State.Memory).Take(10).ToList();
+            var differences = Differences("FIGTATTK.ADV", original.State.Memory, mine.State.Memory, v => VariableCatalog.Variables[v].Name).Take(10).ToList();
             Assert.True(differences.Count == 0, $"seed {seed}: memory differs\n  " + string.Join("\n  ", differences));
-            if (mine.Log.Any(e => e.StartsWith("draw ", StringComparison.Ordinal)))
+            if (mine.Log.Any(e => e.StartsWith("rnd ", StringComparison.Ordinal)))
                 seen.Add(state.Ev_Entry.Value);
         }
         output.WriteLine($"FIGT表示.ADV: {cases} runs, entries with an animation: {string.Join(",", seen.Order())}");
@@ -582,7 +583,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         var input = new CutsceneInput();
         var hooks = new CutsceneHooks(log, input, port);
         var runner = new SceneRunner(new Programs(programs), hooks, f => f == "FIGT表示.ADV" || (!port && f == "FIGTATTK.ADV"));
-        var script = new OriginalScriptContext(state, new LoggingRandom(seed, log), new LoggingView([]), input, runner);
+        var script = new OriginalScriptContext(state, new LoggingRandom(seed * 7 + 1, log), new LoggingView([], e => e is ScreenEvent), input, runner);
         runner.Bind(script);
         hooks.Script = script;
         try
@@ -1054,7 +1055,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             return Failed($"seed {seed}: the runs differ at entry {at}\n{Around(file, original.Log, mine.Log, at)}");
         if (original.Stopped != mine.Stopped)
             return Failed($"seed {seed}: stopped by the input budget: decompile {original.Stopped}, port {mine.Stopped}");
-        var differences = Differences(file, original.State.Memory, mine.State.Memory).Take(10).ToList();
+        var differences = Differences(file, original.State.Memory, mine.State.Memory, v => VariableCatalog.Variables[v].Name).Take(10).ToList();
         if (differences.Count > 0)
             return Failed($"seed {seed}: memory differs\n  " + string.Join("\n  ", differences));
         return new Outcome(null, mine.Stopped, Unported: false, Features(file, mine.Log).Distinct().ToList());
@@ -1069,10 +1070,10 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         Func<Random, MouseState>? mouse, MenuPolicy? choose)
     {
         var log = new List<string>();
-        var hooks = new ScribblingHooks(state, seed, log, scribble);
+        var hooks = new SliceHooks(state, seed, log, scribble);
         var input = new RandomInput(seed, log, hooks, mouse, choose);
-        var view = new LoggingView(log);
-        var random = new LoggingRandom(seed, log);
+        var view = new LoggingView(log, e => e is ScreenEvent);
+        var random = new LoggingRandom(seed * 7 + 1, log);
         bool stopped = false;
         string? unported = null;
         try
@@ -1125,8 +1126,8 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
                 if (entry.StartsWith("call FIGT.ADV", StringComparison.Ordinal) && entry.EndsWith(" EParty1 100", StringComparison.Ordinal))
                     yield return "boss fight";                          // Cﾒｲｷｭｳ.ADV:1196-1271, a setter run from the player's files
             }
-            else if (entry.StartsWith("draw ", StringComparison.Ordinal))
-                yield return entry[..entry.IndexOf(" ->", StringComparison.Ordinal)];
+            else if (entry.StartsWith("rnd ", StringComparison.Ordinal))
+                yield return $"draw {entry.Split(' ')[1]}";
             else if (entry.StartsWith("EngineEvent IZ", StringComparison.Ordinal))
                 yield return "IZ";
             else if (entry.StartsWith("jump ", StringComparison.Ordinal))
@@ -1162,15 +1163,12 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
     {
         var state = new GameState();
         double zero = rng.NextDouble() * 0.6;
-        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
-            if (!state.IsBound(v))
-                state.Memory.Var(v) = (Sys3Int)(rng.NextDouble() < zero ? 0 : rng.Next(5) == 0 ? rng.Next(0, 3000) : rng.Next(0, 12));
+        RandomStates.Variables(state, rng, zero);
         for (int i = 0; i < state.Memory.PageSize(1); i++)
             state.Memory.WritePage(1, i, (Sys3Int)(rng.NextDouble() < zero ? 0 : rng.Next(8) == 0 ? rng.Next(0, 3000) : rng.Next(0, 21)));
         for (int i = 0; i < state.Memory.PageSize(2); i++)
             state.Memory.WritePage(2, i, (Sys3Int)rng.Next(0, 5));
-        for (int s = 0; s < state.Strings.Length; s++)
-            state.Strings[s] = $"s{s}";
+        RandomStates.NameStrings(state);
         state.StoryStage = (Sys3Int)(rng.Next(6) == 0 ? rng.Next(1, 5) : 0);
         state.Ev_CommandMode = (Sys3Int)(rng.Next(12) == 0 ? rng.Next(1, 3) : 0);
         state.Week = (Sys3Int)rng.Next(9, 30);
@@ -1181,18 +1179,6 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         for (int k = 1; k <= 50; k++)
             state.Items[k].Effect = (Sys3Int)rng.Next(0, 8);
         return state;
-    }
-
-    private static GameState Copy(GameState source)
-    {
-        var copy = new GameState();
-        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
-            copy.Memory.Var(v) = source.Memory.Var(v);
-        foreach (int page in source.Memory.AllocatedPages)
-            for (int i = 0; i < source.Memory.PageSize(page); i++)
-                copy.Memory.WritePage(page, i, source.Memory.ReadPage(page, i));
-        Array.Copy(source.Strings, copy.Strings, source.Strings.Length);
-        return copy;
     }
 
     // ---------------------------------------------------------------------------------------
@@ -1353,37 +1339,21 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         }
     }
 
-    private sealed class ScribblingHooks(GameState state, int seed, List<string> log, Scribbler scribble) : IStoryHooks
+    private sealed class SliceHooks(GameState state, int seed, List<string> log, Scribbler scribble) : ScribblingHooks<GameState>(state, seed, log)
     {
-        public int Calls { get; private set; }
-
         public bool Tired => Calls > 40;
 
-        public Task RunEventAsync(string file, Sys3Int entry)
-        {
-            if (state.Ev_Entry != entry)
-                throw new InvalidOperationException($"{file}: Ev_Entry {state.Ev_Entry.Value}, entry {entry.Value}");
-            log.Add($"call {file} entry {entry} RetVal {state.RetVal} CallArg {state.CallArg} Unit_Cur {state.Unit_Cur} "
-                + $"Prov_Cur {state.Prov_Cur} Dgn_Cur {state.Dgn_Cur} Tmp0001 {state.Tmp0001} Hist_Cur {state.Hist_Cur} "
-                + $"Tmp0021 {state.Tmp0021} Tmp0022 {state.Tmp0022} Bt_Kind {state.Bt_Kind} EParty1 {state.Bt_EnemyParty1}");
-            var rng = new Random(seed * 1000 + ++Calls);
-            scribble(file, state, rng, Tired);
-            return Task.CompletedTask;
-        }
-    }
+        protected override string Describe() =>
+            $"RetVal {State.RetVal} CallArg {State.CallArg} Unit_Cur {State.Unit_Cur} "
+            + $"Prov_Cur {State.Prov_Cur} Dgn_Cur {State.Dgn_Cur} Tmp0001 {State.Tmp0001} Hist_Cur {State.Hist_Cur} "
+            + $"Tmp0021 {State.Tmp0021} Tmp0022 {State.Tmp0022} Bt_Kind {State.Bt_Kind} EParty1 {State.Bt_EnemyParty1}";
 
-    /// <summary>The slice's file, read once; every other file is a hook.</summary>
-    private sealed class OneProgram(ScriptProgram program) : ISceneSource
-    {
-        public ScriptProgram ReadProgram(string file) =>
-            file == program.File ? program : throw new InvalidOperationException($"{file} is a hook here.");
+        protected override void Scribble(string file, Sys3Int entry, Random rng) => scribble(file, State, rng, Tired);
     }
 
     // ---------------------------------------------------------------------------------------
     // Input, draws, view
     // ---------------------------------------------------------------------------------------
-
-    private sealed class InputBudgetException() : Exception("The input budget ran out.");
 
     /// <summary>
     /// The player at random: the pointer mostly at rest (now and then a button still down, for
@@ -1392,7 +1362,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
     /// sometimes a right click (32), which closes the status pages.
     /// </summary>
     private sealed class RandomInput(
-        int seed, List<string> log, ScribblingHooks hooks, Func<Random, MouseState>? mouse, MenuPolicy? choose) : ISceneInput
+        int seed, List<string> log, SliceHooks hooks, Func<Random, MouseState>? mouse, MenuPolicy? choose) : UnexpectedInput
     {
         private readonly Random _rng = new(seed * 31 + 7);
         private int _answers;
@@ -1400,7 +1370,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
 
         private bool Tired => hooks.Tired || _answers > 300;
 
-        public Task<MouseState> GetMouseAsync()
+        public override Task<MouseState> GetMouseAsync()
         {
             Spend();
             int r = _rng.Next(10);
@@ -1410,7 +1380,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             return Task.FromResult(m);
         }
 
-        public Task<Sys3Int> SetCursorAsync(Sys3Int shape)
+        public override Task<Sys3Int> SetCursorAsync(Sys3Int shape)
         {
             Spend();
             int old = _cursor;
@@ -1419,7 +1389,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             return Task.FromResult((Sys3Int)old);
         }
 
-        public Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
+        public override Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
         {
             Spend();
             int choice = items.Count == 0 ? 0
@@ -1429,7 +1399,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             return Task.FromResult(choice);
         }
 
-        public Task<Sys3Int> WaitForKeyAsync()
+        public override Task<Sys3Int> WaitForKeyAsync()
         {
             Spend();
             var key = (Sys3Int)(_rng.Next(5) switch { 0 => 32, 1 => 13, _ => 0 });
@@ -1437,24 +1407,12 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             return Task.FromResult(key);
         }
 
-        public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
+        public override Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
         {
             Spend();
             log.Add($"wait {ticks}");
             return Task.FromResult(Sys3Int.Zero);
         }
-
-        public Task<Sys3Int> GetPlayingTrackAsync() => throw new InvalidOperationException("SR 0");
-
-        public Task<IReadOnlyList<Sys3Int>> GetDateAsync() => throw new InvalidOperationException("ZT 0");
-
-        public Task ResetTimerAsync(Sys3Int value) => throw new InvalidOperationException("ZT 1");
-
-        public Task<Sys3Int> GetTimerAsync(int mode) => throw new InvalidOperationException("ZT n");
-
-        public Task<IReadOnlyList<Sys3Int>> GetCdPositionAsync() => throw new InvalidOperationException("SC");
-
-        public Task<Sys3Int> GetMidiTrackAsync() => throw new InvalidOperationException("SR 1");
 
         private void Spend()
         {
@@ -1466,71 +1424,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             $"{item.At} {string.Join(",", item.Texts.Select(t => $"{t.Text}[{string.Join(",", t.Numbers)}][{string.Join(",", t.Strings)}]"))}";
     }
 
-    /// <summary>Draws 1..n from a seeded generator, logged.</summary>
-    private sealed class LoggingRandom(int seed, List<string> log) : IScriptRandom
-    {
-        private readonly Random _rng = new(seed * 7 + 1);
-
-        public Sys3Int Next(Sys3Int n)
-        {
-            var value = (Sys3Int)(n.Value <= 1 ? n.Value : _rng.Next(1, n.Value + 1));
-            log.Add($"draw {n} -> {value}");
-            return value;
-        }
-    }
-
-    /// <summary>Logs every event with its lists spelled out.</summary>
-    private sealed class LoggingView(List<string> log) : IScriptView
-    {
-        public Task ShowAsync(ScriptEvent e)
-        {
-            if (e is ScreenEvent)
-                return Task.CompletedTask;                              // the port's semantic events: no statement in the script
-            log.Add(e switch
-            {
-                ValueMessageEvent v => $"ValueMessageEvent {v.Text} [{string.Join(",", v.Values)}] [{string.Join(",", v.StringVariables ?? [])}]",
-                MessageEvent m => $"MessageEvent {m.Text} [{string.Join(",", m.StringVariables ?? [])}]",
-                EngineEvent g => $"EngineEvent {g.Command} [{string.Join(",", g.Args)}]",
-                _ => e.ToString(),
-            });
-            return Task.CompletedTask;
-        }
-    }
-
     // ---------------------------------------------------------------------------------------
     // Reports
     // ---------------------------------------------------------------------------------------
-
-    private static int FirstDifference(List<string> a, List<string> b)
-    {
-        for (int i = 0; i < Math.Min(a.Count, b.Count); i++)
-            if (a[i] != b[i])
-                return i;
-        return a.Count == b.Count ? -1 : Math.Min(a.Count, b.Count);
-    }
-
-    private static string Around(string file, List<string> original, List<string> port, int at)
-    {
-        var sb = new StringBuilder();
-        for (int i = Math.Max(0, at - 8); i < at + 3; i++)
-        {
-            sb.Append($"  {i,5} {file}: {(i < original.Count ? original[i] : "-")}\n");
-            sb.Append($"  {i,5} port: {(i < port.Count ? port[i] : "-")}\n");
-        }
-        return sb.ToString();
-    }
-
-    private static IEnumerable<string> Differences(string file, ScriptMemory expected, ScriptMemory actual)
-    {
-        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
-            if (expected.Var(v) != actual.Var(v))
-                yield return $"VAR{v:D4} {VariableCatalog.Variables[v].Name}: {file} {expected.Var(v).Value}, port {actual.Var(v).Value}";
-        foreach (int page in expected.AllocatedPages)
-            for (int i = 0; i < expected.PageSize(page); i++)
-                if (expected.ReadPage(page, i) != actual.ReadPage(page, i))
-                    yield return $"page {page}[{i}]: {file} {expected.ReadPage(page, i).Value}, port {actual.ReadPage(page, i).Value}";
-        for (int s = 0; s < expected.Strings.Length; s++)
-            if (expected.Strings[s] != actual.Strings[s])
-                yield return $"string {s}: {file} \"{expected.Strings[s]}\", port \"{actual.Strings[s]}\"";
-    }
 }

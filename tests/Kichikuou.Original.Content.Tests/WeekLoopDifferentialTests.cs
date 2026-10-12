@@ -1,11 +1,12 @@
-using System.Text;
 using Kichikuou.Content.Scripts;
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
 using Kichikuou.Original.Strategy;
+using Kichikuou.TestSupport;
 using Xunit.Abstractions;
+using static Kichikuou.TestSupport.Differential;
 
 namespace Kichikuou.Original.Content.Tests;
 
@@ -43,8 +44,8 @@ public class WeekLoopDifferentialTests(ITestOutputHelper output)
             var original = await RunAsync(Copy(state), seed, weeks, program, scenario);
 
             int at = FirstDifference(original.Log, port.Log);
-            Assert.True(at < 0, $"seed {seed}: the runs differ at entry {at}\n{Around(original.Log, port.Log, at)}");
-            var differences = Differences(original.State.Memory, port.State.Memory).Take(10).ToList();
+            Assert.True(at < 0, $"seed {seed}: the runs differ at entry {at}\n{Around(Main, original.Log, port.Log, at)}");
+            var differences = Differences(Main, original.State.Memory, port.State.Memory, v => VariableCatalog.Variables[v].Name).Take(10).ToList();
             Assert.True(differences.Count == 0, $"seed {seed}: memory differs\n  " + string.Join("\n  ", differences));
 
             foreach (string feature in Features(port.Log).Distinct())
@@ -73,10 +74,10 @@ public class WeekLoopDifferentialTests(ITestOutputHelper output)
     private static async Task<Run> RunAsync(GameState state, int seed, int weeks, ScriptProgram? program, ScenarioScripts scenario)
     {
         var log = new List<string>();
-        var hooks = new ScribblingHooks(state, seed, weeks, log);
+        var hooks = new WeekHooks(state, seed, weeks, log);
         var input = new RandomInput(seed, log);
-        var view = new LoggingView(log);
-        var random = new LoggingRandom(seed, log);
+        var view = new LoggingView(log, e => e is ScreenEvent);
+        var random = new LoggingRandom(seed * 17 + 3, log);
         try
         {
             if (program is null)
@@ -129,25 +130,6 @@ public class WeekLoopDifferentialTests(ITestOutputHelper output)
             yield return "no music";
     }
 
-    private static int FirstDifference(List<string> a, List<string> b)
-    {
-        for (int i = 0; i < Math.Min(a.Count, b.Count); i++)
-            if (a[i] != b[i])
-                return i;
-        return a.Count == b.Count ? -1 : Math.Min(a.Count, b.Count);
-    }
-
-    private static string Around(List<string> original, List<string> port, int at)
-    {
-        var sb = new StringBuilder();
-        for (int i = Math.Max(0, at - 8); i < at + 3; i++)
-        {
-            sb.Append($"  {i,5} MAIN.ADV: {(i < original.Count ? original[i] : "-")}\n");
-            sb.Append($"  {i,5} port:     {(i < port.Count ? port[i] : "-")}\n");
-        }
-        return sb.ToString();
-    }
-
     /// <summary>
     /// Every unbound variable and the record and history pages random, then: the prologue or a
     /// later stage, the gates of the nation phases and the end-of-week checks open now and then,
@@ -159,15 +141,12 @@ public class WeekLoopDifferentialTests(ITestOutputHelper output)
     {
         var state = new GameState();
         double zero = rng.NextDouble() * 0.6;
-        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
-            if (!state.IsBound(v))
-                state.Memory.Var(v) = (Sys3Int)(rng.NextDouble() < zero ? 0 : rng.Next(5) == 0 ? rng.Next(0, 3000) : rng.Next(0, 12));
+        RandomStates.Variables(state, rng, zero);
         for (int i = 0; i < state.Memory.PageSize(1); i++)
             state.Memory.WritePage(1, i, (Sys3Int)(rng.NextDouble() < zero ? 0 : rng.Next(0, 4)));
         for (int i = 0; i < state.Memory.PageSize(2); i++)
             state.Memory.WritePage(2, i, (Sys3Int)rng.Next(0, 1000));
-        for (int s = 0; s < state.Strings.Length; s++)
-            state.Strings[s] = $"s{s}";
+        RandomStates.NameStrings(state);
 
         state.StoryStage = (Sys3Int)(rng.Next(4) == 0 ? 0 : rng.Next(10) == 0 ? 99 : rng.Next(1, 5));
         state.Week = (Sys3Int)(rng.Next(10) == 0 ? rng.Next(0, 400) : rng.Next(8, 60));
@@ -250,50 +229,15 @@ public class WeekLoopDifferentialTests(ITestOutputHelper output)
         cmdr.Recovery = (Sys3Int)(rng.Next(20) == 0 ? rng.Next(30000, 65536) : rng.Next(0, 60));
     }
 
-    private static GameState Copy(GameState source)
-    {
-        var copy = new GameState();
-        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
-            copy.Memory.Var(v) = source.Memory.Var(v);
-        foreach (int page in source.Memory.AllocatedPages)
-            for (int i = 0; i < source.Memory.PageSize(page); i++)
-                copy.Memory.WritePage(page, i, source.Memory.ReadPage(page, i));
-        Array.Copy(source.Strings, copy.Strings, source.Strings.Length);
-        return copy;
-    }
-
-    /// <summary><c>MAIN.ADV</c>, read once.</summary>
-    private sealed class OneProgram(ScriptProgram program) : ISceneSource
-    {
-        public ScriptProgram ReadProgram(string file) =>
-            file == Main ? program : throw new InvalidOperationException($"{file} is a hook here.");
-    }
-
-    /// <summary>
-    /// Draws from a generator of the seed, logged with their range: <c>Y 4, n</c> with n of 0 or 1
-    /// gives n without drawing, as the engine's.
-    /// </summary>
-    private sealed class LoggingRandom(int seed, List<string> log) : IScriptRandom
-    {
-        private readonly Random _rng = new(seed * 17 + 3);
-
-        public Sys3Int Next(Sys3Int n)
-        {
-            var value = n.Value <= 1 ? n : (Sys3Int)_rng.Next(1, n.Value + 1);
-            log.Add($"rnd {n} {value}");
-            return value;
-        }
-    }
-
     private sealed class StopException() : Exception("The run is over.");
 
     /// <summary>Keys and pauses answered at random and logged; <c>MAIN</c> reads no pointer.</summary>
-    private sealed class RandomInput(int seed, List<string> log) : ISceneInput
+    private sealed class RandomInput(int seed, List<string> log) : UnexpectedInput
     {
         private readonly Random _rng = new(seed * 31 + 7);
         private int _answers;
 
-        public Task<Sys3Int> WaitForKeyAsync()
+        public override Task<Sys3Int> WaitForKeyAsync()
         {
             Spend();
             var key = (Sys3Int)(_rng.Next(4) == 0 ? _rng.Next(1, 33) : 0);
@@ -301,31 +245,13 @@ public class WeekLoopDifferentialTests(ITestOutputHelper output)
             return Task.FromResult(key);
         }
 
-        public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
+        public override Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
         {
             Spend();
             var key = (Sys3Int)(_rng.Next(5) == 0 ? 1 : 0);
             log.Add($"wait {ticks} {key}");
             return Task.FromResult(key);
         }
-
-        public Task<MouseState> GetMouseAsync() => throw new InvalidOperationException("IM");
-
-        public Task<Sys3Int> SetCursorAsync(Sys3Int shape) => throw new InvalidOperationException("IC");
-
-        public Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items) => throw new InvalidOperationException("]");
-
-        public Task<Sys3Int> GetPlayingTrackAsync() => throw new InvalidOperationException("SR 0");
-
-        public Task<IReadOnlyList<Sys3Int>> GetDateAsync() => throw new InvalidOperationException("ZT 0");
-
-        public Task ResetTimerAsync(Sys3Int value) => throw new InvalidOperationException("ZT 1");
-
-        public Task<Sys3Int> GetTimerAsync(int mode) => throw new InvalidOperationException("ZT n");
-
-        public Task<IReadOnlyList<Sys3Int>> GetCdPositionAsync() => throw new InvalidOperationException("SC");
-
-        public Task<Sys3Int> GetMidiTrackAsync() => throw new InvalidOperationException("SR 1");
 
         private void Spend()
         {
@@ -339,118 +265,86 @@ public class WeekLoopDifferentialTests(ITestOutputHelper output)
     /// screen, the player phase, the battles, the nation turns and the scenes write — the same
     /// writes for the same (seed, call) in both runs. The autosave after the last week ends the run.
     /// </summary>
-    private sealed class ScribblingHooks(GameState state, int seed, int weeks, List<string> log) : IStoryHooks
+    private sealed class WeekHooks(GameState state, int seed, int weeks, List<string> log) : ScribblingHooks<GameState>(state, seed, log)
     {
-        private int _calls;
         private int _saves;
 
-        public Task RunEventAsync(string file, Sys3Int entry)
+        protected override void Arrive(string file)
         {
-            if (state.Ev_Entry != entry)
-                throw new InvalidOperationException($"{file}: Ev_Entry {state.Ev_Entry.Value}, entry {entry.Value}");
-            if (file == "ﾛｰﾄﾞｾｰﾌﾞ.ADV" && state.RetVal == 3 && ++_saves > weeks)
+            if (file == "ﾛｰﾄﾞｾｰﾌﾞ.ADV" && State.RetVal == 3 && ++_saves > weeks)
             {
-                log.Add("stop weeks");
+                Log.Add("stop weeks");
                 throw new StopException();
             }
-            log.Add($"call {file} entry {entry} RetVal {state.RetVal} CallArg {state.CallArg} Week {state.Week} Stage {state.StoryStage} " +
-                    $"Funds {state.History[state.Hist_Cur].Funds} Unit_Cur {state.Unit_Cur} Cmdr_Cur {state.Cmdr_Cur} Prov_Cur {state.Prov_Cur} " +
-                    $"Dgn_Cur {state.Dgn_Cur} Tmp {state.Tmp0001},{state.Tmp0002},{state.Tmp0003} Phase {state.Ev_PhaseNation} " +
-                    $"Done {state.Ev_WeeklyEventDone} Party {state.Bt_EnemyParty1},{state.Bt_EnemyParty2} Retreat {state.Bt_EnemyRetreatMode} " +
-                    $"Str10 {state.Strings[10]}");
+        }
 
-            var rng = new Random(seed * 1000 + ++_calls);
+        protected override string Describe() =>
+            $"RetVal {State.RetVal} CallArg {State.CallArg} Week {State.Week} Stage {State.StoryStage} " +
+            $"Funds {State.History[State.Hist_Cur].Funds} Unit_Cur {State.Unit_Cur} Cmdr_Cur {State.Cmdr_Cur} Prov_Cur {State.Prov_Cur} " +
+            $"Dgn_Cur {State.Dgn_Cur} Tmp {State.Tmp0001},{State.Tmp0002},{State.Tmp0003} Phase {State.Ev_PhaseNation} " +
+            $"Done {State.Ev_WeeklyEventDone} Party {State.Bt_EnemyParty1},{State.Bt_EnemyParty2} Retreat {State.Bt_EnemyRetreatMode} " +
+            $"Str10 {State.Strings[10]}";
+
+        protected override void Scribble(string file, Sys3Int entry, Random rng)
+        {
             if (rng.Next(2) == 0)
-                state.RetVal = (Sys3Int)rng.Next(0, 6);
+                State.RetVal = (Sys3Int)rng.Next(0, 6);
             if (rng.Next(2) == 0)
-                state.CallArg = (Sys3Int)rng.Next(0, 14);
+                State.CallArg = (Sys3Int)rng.Next(0, 14);
             if (rng.Next(2) == 0)
-                state.Tmp0001 = (Sys3Int)rng.Next(0, 600);
+                State.Tmp0001 = (Sys3Int)rng.Next(0, 600);
             if (rng.Next(2) == 0)
-                state.Tmp0021 = (Sys3Int)rng.Next(0, 600);
+                State.Tmp0021 = (Sys3Int)rng.Next(0, 600);
             if (rng.Next(2) == 0)
-                state.Unit_Cur = (Sys3Int)rng.Next(0, 52);
+                State.Unit_Cur = (Sys3Int)rng.Next(0, 52);
             if (rng.Next(3) == 0)
-                state.Cmdr_Cur = (Sys3Int)rng.Next(0, 200);
+                State.Cmdr_Cur = (Sys3Int)rng.Next(0, 200);
             if (rng.Next(3) == 0)
-                state.Prov_Cur = (Sys3Int)rng.Next(0, 101);
+                State.Prov_Cur = (Sys3Int)rng.Next(0, 101);
             if (rng.Next(2) == 0)
-                state.Dgn_Cur = (Sys3Int)rng.Next(0, 31);
+                State.Dgn_Cur = (Sys3Int)rng.Next(0, 31);
             if (rng.Next(3) == 0)
-                state.Ui_WinType = (Sys3Int)rng.Next(0, 2) * 43;
+                State.Ui_WinType = (Sys3Int)rng.Next(0, 2) * 43;
             if (rng.Next(4) == 0)
-                state.BgmEnabled = (Sys3Int)rng.Next(0, 2);
+                State.BgmEnabled = (Sys3Int)rng.Next(0, 2);
             if (rng.Next(4) == 0)
-                state.CurrentBgm = (Sys3Int)rng.Next(0, 20);
+                State.CurrentBgm = (Sys3Int)rng.Next(0, 20);
             if (rng.Next(4) == 0)
-                state.FadeSpeed = (Sys3Int)rng.Next(0, 10);
+                State.FadeSpeed = (Sys3Int)rng.Next(0, 10);
             if (rng.Next(4) == 0)
-                state.Ev_WeeklyEventDone = (Sys3Int)rng.Next(0, 2);
+                State.Ev_WeeklyEventDone = (Sys3Int)rng.Next(0, 2);
             if (rng.Next(6) == 0)
-                state.Ev_Entry = (Sys3Int)rng.Next(0, 30);
+                State.Ev_Entry = (Sys3Int)rng.Next(0, 30);
             for (int c = 90; c <= 98; c++)
                 if (rng.Next(8) == 0)
-                    RandomCmdr(state.Cmdrs[(Sys3Int)c], rng);
+                    RandomCmdr(State.Cmdrs[(Sys3Int)c], rng);
             if (file == "COMMAND.ADV")
             {
-                state.Gold = (Sys3Int)rng.Next(0, 300);
+                State.Gold = (Sys3Int)rng.Next(0, 300);
                 if (rng.Next(3) == 0)
-                    state.Hist_Cur = (Sys3Int)rng.Next(0, 20);     // the harem's girl index (CMD-14)
+                    State.Hist_Cur = (Sys3Int)rng.Next(0, 20);     // the harem's girl index (CMD-14)
                 for (int u = 1; u <= 6; u++)
                     if (rng.Next(3) == 0)
-                        RandomUnit(state.Units[(Sys3Int)u], rng);
+                        RandomUnit(State.Units[(Sys3Int)u], rng);
                 if (rng.Next(5) == 0)
-                    state.StoryStage = 99;                          // the lost duel
+                    State.StoryStage = 99;                          // the lost duel
                 else if (rng.Next(20) == 0)
-                    state.StoryStage = (Sys3Int)rng.Next(0, 5);
+                    State.StoryStage = (Sys3Int)rng.Next(0, 5);
             }
             if (file == "Iﾊﾝﾗﾝ.ADV")
             {
-                state.Week = state.Week + 1;
+                State.Week = State.Week + 1;
                 if (rng.Next(4) == 0)
-                    state.StoryStage = 0;                           // back to the thieves, to go on looping
+                    State.StoryStage = 0;                           // back to the thieves, to go on looping
             }
             if (file == "Gｼｨﾙ.ADV" && entry.Value is >= 21 and <= 27 && rng.Next(3) != 0)
-                state.F_SillKidnap_Stage = (Sys3Int)(entry.Value - 20);   // each sets the next stage first
+                State.F_SillKidnap_Stage = (Sys3Int)(entry.Value - 20);   // each sets the next stage first
             if (file is "Iﾏｼﾞﾝ.ADV" or "Iﾏｼﾞﾝ2.ADV" && rng.Next(2) == 0)
-                state.F_DemonWar_Stage = (Sys3Int)rng.Next(0, 13);
+                State.F_DemonWar_Stage = (Sys3Int)rng.Next(0, 13);
             if (file is "Gｶﾐｰﾗ.ADV" or "Gｼﾞｰｸ.ADV" or "Gｻﾃﾗ.ADV" && rng.Next(3) == 0)
-                state.F_Camilla_State = (Sys3Int)rng.Next(0, 2);
+                State.F_Camilla_State = (Sys3Int)rng.Next(0, 2);
             if (file.StartsWith('T') && rng.Next(4) == 0)
-                state.Strings[10] = $"army {rng.Next(10)}";
-            return Task.CompletedTask;
+                State.Strings[10] = $"army {rng.Next(10)}";
         }
-    }
-
-    /// <summary>Logs every event with its lists spelled out.</summary>
-    private sealed class LoggingView(List<string> log) : IScriptView
-    {
-        public Task ShowAsync(ScriptEvent e)
-        {
-            if (e is ScreenEvent)
-                return Task.CompletedTask;                              // the port's semantic events: no statement in the script
-            log.Add(e switch
-            {
-                ValueMessageEvent v => $"ValueMessageEvent {v.Text} [{string.Join(",", v.Values)}] [{string.Join(",", v.StringVariables ?? [])}]",
-                MessageEvent m => $"MessageEvent {m.Text} [{string.Join(",", m.StringVariables ?? [])}]",
-                EngineEvent g => $"EngineEvent {g.Command} [{string.Join(",", g.Args)}]",
-                _ => e.ToString(),
-            });
-            return Task.CompletedTask;
-        }
-    }
-
-    private static IEnumerable<string> Differences(ScriptMemory expected, ScriptMemory actual)
-    {
-        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
-            if (expected.Var(v) != actual.Var(v))
-                yield return $"VAR{v:D4} {VariableCatalog.Variables[v].Name}: MAIN.ADV {expected.Var(v).Value}, port {actual.Var(v).Value}";
-        foreach (int page in expected.AllocatedPages)
-            for (int i = 0; i < expected.PageSize(page); i++)
-                if (expected.ReadPage(page, i) != actual.ReadPage(page, i))
-                    yield return $"page {page}[{i}]: MAIN.ADV {expected.ReadPage(page, i).Value}, port {actual.ReadPage(page, i).Value}";
-        for (int s = 0; s < expected.Strings.Length; s++)
-            if (expected.Strings[s] != actual.Strings[s])
-                yield return $"string {s}: MAIN.ADV \"{expected.Strings[s]}\", port \"{actual.Strings[s]}\"";
     }
 }

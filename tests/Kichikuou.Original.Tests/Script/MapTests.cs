@@ -1,4 +1,3 @@
-using Kichikuou.Original.Tests.Combat;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Script;
 using static Kichikuou.Original.Tests.Combat.Sys3Assert;

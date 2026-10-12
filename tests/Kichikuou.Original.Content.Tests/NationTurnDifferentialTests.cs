@@ -1,11 +1,12 @@
-using System.Text;
 using Kichikuou.Content.Scripts;
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
 using Kichikuou.Original.Strategy;
+using Kichikuou.TestSupport;
 using Xunit.Abstractions;
+using static Kichikuou.TestSupport.Differential;
 
 namespace Kichikuou.Original.Content.Tests;
 
@@ -1859,7 +1860,7 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
 
             int at = FirstDifference(original.Log, ported.Log);
             Assert.True(at < 0, $"seed {seed}: the runs differ at entry {at}\n{Around(file, original.Log, ported.Log, at)}");
-            var differences = Differences(file, original.State.Memory, ported.State.Memory).Take(10).ToList();
+            var differences = Differences(file, original.State.Memory, ported.State.Memory, v => VariableCatalog.Variables[v].Name).Take(10).ToList();
             Assert.True(differences.Count == 0, $"seed {seed}: memory differs\n  " + string.Join("\n  ", differences));
 
             foreach (string feature in features(state, ported.State, ported.AtFirstCall ?? ported.State, ported.Log).Distinct())
@@ -1893,17 +1894,21 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
         Action<GameState, Random>? scribble, bool logPlaces)
     {
         var log = new List<string>();
-        var hooks = new ScribblingHooks(state, seed, log, scribble);
+        var hooks = new NationHooks(state, seed, log, scribble);
         var input = new NoInput(log);
-        var view = new LoggingView(log, logPlaces ? state : null);
-        var random = new LoggingRandom(seed, log);
+        // with logPlaces, a map call or a message also notes the province under the cursor, its owner
+        // and the head of the priority list (the army whose capture it reports)
+        var view = new LoggingView(log, e => e is ScreenEvent, !logPlaces ? null : e => e is MapEvent or MessageEvent
+            ? $" Prov_Cur {state.Prov_Cur} Owner {state.Provs[state.Prov_Cur].Owner} Tmp0001 {state.Tmp0001}"
+            : null);
+        var random = new LoggingRandom(seed * 17 + 3, log);
         try
         {
             if (port is not null)
                 await port(new OriginalScriptContext(state, random, view, input, hooks));
             else
             {
-                var runner = new SceneRunner(new OneProgram(file, program!), hooks, f => f == file);
+                var runner = new SceneRunner(new OneProgram(program!), hooks, f => f == file);
                 var script = new OriginalScriptContext(state, random, view, input, runner);
                 runner.Bind(script);
                 await runner.RunFileAsync(file);
@@ -1965,25 +1970,6 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
             yield return "walls";
     }
 
-    private static int FirstDifference(List<string> a, List<string> b)
-    {
-        for (int i = 0; i < Math.Min(a.Count, b.Count); i++)
-            if (a[i] != b[i])
-                return i;
-        return a.Count == b.Count ? -1 : Math.Min(a.Count, b.Count);
-    }
-
-    private static string Around(string file, List<string> original, List<string> port, int at)
-    {
-        var sb = new StringBuilder();
-        for (int i = Math.Max(0, at - 8); i < at + 3; i++)
-        {
-            sb.Append($"  {i,5} {file}: {(i < original.Count ? original[i] : "-")}\n");
-            sb.Append($"  {i,5} port: {(i < port.Count ? port[i] : "-")}\n");
-        }
-        return sb.ToString();
-    }
-
     /// <summary>
     /// Every unbound variable and the record pages random (commander record 0, which the picker
     /// and the troop sum read, among them), then: the rebel commanders 1-7 alive or not, with troops
@@ -1995,13 +1981,10 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
     {
         var state = new GameState();
         double zero = rng.NextDouble() * 0.6;
-        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
-            if (!state.IsBound(v))
-                state.Memory.Var(v) = (Sys3Int)(rng.NextDouble() < zero ? 0 : rng.Next(5) == 0 ? rng.Next(0, 3000) : rng.Next(0, 12));
+        RandomStates.Variables(state, rng, zero);
         for (int i = 0; i < state.Memory.PageSize(1); i++)
             state.Memory.WritePage(1, i, (Sys3Int)(rng.NextDouble() < zero ? 0 : rng.Next(0, 4)));
-        for (int s = 0; s < state.Strings.Length; s++)
-            state.Strings[s] = $"s{s}";
+        RandomStates.NameStrings(state);
 
         for (int c = 0; c <= 7; c++)
         {
@@ -2031,73 +2014,20 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
         return state;
     }
 
-    private static GameState Copy(GameState source)
-    {
-        var copy = new GameState();
-        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
-            copy.Memory.Var(v) = source.Memory.Var(v);
-        foreach (int page in source.Memory.AllocatedPages)
-            for (int i = 0; i < source.Memory.PageSize(page); i++)
-                copy.Memory.WritePage(page, i, source.Memory.ReadPage(page, i));
-        Array.Copy(source.Strings, copy.Strings, source.Strings.Length);
-        return copy;
-    }
-
-    /// <summary>The file under test, read once.</summary>
-    private sealed class OneProgram(string file, ScriptProgram program) : ISceneSource
-    {
-        public ScriptProgram ReadProgram(string name) =>
-            name == file ? program : throw new InvalidOperationException($"{name} is a hook here.");
-    }
-
-    /// <summary>
-    /// Draws from a generator of the seed, logged with their range: <c>Y 4, n</c> with n of 0 or 1
-    /// gives n without drawing, as the engine's.
-    /// </summary>
-    private sealed class LoggingRandom(int seed, List<string> log) : IScriptRandom
-    {
-        private readonly Random _rng = new(seed * 17 + 3);
-
-        public Sys3Int Next(Sys3Int n)
-        {
-            var value = n.Value <= 1 ? n : (Sys3Int)_rng.Next(1, n.Value + 1);
-            log.Add($"rnd {n} {value}");
-            return value;
-        }
-    }
-
     /// <summary>The nation files read no input but key waits and the map's pauses (logged, answered with no key): every other request fails.</summary>
-    private sealed class NoInput(List<string> log) : ISceneInput
+    private sealed class NoInput(List<string> log) : UnexpectedInput
     {
-        public Task<Sys3Int> WaitForKeyAsync()
+        public override Task<Sys3Int> WaitForKeyAsync()
         {
             log.Add("IK 0");
             return Task.FromResult(Sys3Int.Zero);
         }
 
-        public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
+        public override Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
         {
             log.Add($"Y 3, {ticks}");
             return Task.FromResult(Sys3Int.Zero);
         }
-
-        public Task<MouseState> GetMouseAsync() => throw new InvalidOperationException("IM");
-
-        public Task<Sys3Int> SetCursorAsync(Sys3Int shape) => throw new InvalidOperationException("IC");
-
-        public Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items) => throw new InvalidOperationException("]");
-
-        public Task<Sys3Int> GetPlayingTrackAsync() => throw new InvalidOperationException("SR 0");
-
-        public Task<IReadOnlyList<Sys3Int>> GetDateAsync() => throw new InvalidOperationException("ZT 0");
-
-        public Task ResetTimerAsync(Sys3Int value) => throw new InvalidOperationException("ZT 1");
-
-        public Task<Sys3Int> GetTimerAsync(int mode) => throw new InvalidOperationException("ZT n");
-
-        public Task<IReadOnlyList<Sys3Int>> GetCdPositionAsync() => throw new InvalidOperationException("SC");
-
-        public Task<Sys3Int> GetMidiTrackAsync() => throw new InvalidOperationException("SR 1");
     }
 
     /// <summary>
@@ -2107,100 +2037,60 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
     /// twelve loses Leazas Castle and jumps to the ending; a file's own <paramref name="scribble"/>
     /// writes what its scenes may change besides.
     /// </summary>
-    private sealed class ScribblingHooks(GameState state, int seed, List<string> log, Action<GameState, Random>? scribble) : IStoryHooks
+    private sealed class NationHooks(GameState state, int seed, List<string> log, Action<GameState, Random>? scribble) : ScribblingHooks<GameState>(state, seed, log)
     {
-        private int _calls;
-
         /// <summary>The state at the first call, before its writes; null while nothing was called.</summary>
         public GameState? AtFirstCall { get; private set; }
 
-        public Task RunEventAsync(string file, Sys3Int entry)
+        protected override void Arrive(string file)
         {
-            if (state.Ev_Entry != entry)
-                throw new InvalidOperationException($"{file}: Ev_Entry {state.Ev_Entry.Value}, entry {entry.Value}");
-            AtFirstCall ??= Copy(state);
-            log.Add($"call {file} entry {entry} RetVal {state.RetVal} CallArg {state.CallArg} Cmdr_Cur {state.Cmdr_Cur} " +
-                    $"Prov_Cur {state.Prov_Cur} Tmp {state.Tmp0001},{state.Tmp0002},{state.Tmp0003},{state.Tmp0004},{state.Tmp0005}," +
-                    $"{state.Tmp0006},{state.Tmp0007},{state.Tmp0008},{state.Tmp0009} Phase {state.Ev_PhaseNation} " +
-                    $"Party {state.Bt_EnemyParty1},{state.Bt_EnemyParty2},{state.Bt_EnemyParty3},{state.Bt_EnemyParty4} " +
-                    $"Retreat {state.Bt_EnemyRetreatMode} Rebels {state.F_LeazasRebels_State} Str10 {state.Strings[10]}");
+            AtFirstCall ??= Copy(State);
+        }
 
-            var rng = new Random(seed * 1000 + ++_calls);
+        protected override string Describe() =>
+            $"RetVal {State.RetVal} CallArg {State.CallArg} Cmdr_Cur {State.Cmdr_Cur} " +
+            $"Prov_Cur {State.Prov_Cur} Tmp {State.Tmp0001},{State.Tmp0002},{State.Tmp0003},{State.Tmp0004},{State.Tmp0005}," +
+            $"{State.Tmp0006},{State.Tmp0007},{State.Tmp0008},{State.Tmp0009} Phase {State.Ev_PhaseNation} " +
+            $"Party {State.Bt_EnemyParty1},{State.Bt_EnemyParty2},{State.Bt_EnemyParty3},{State.Bt_EnemyParty4} " +
+            $"Retreat {State.Bt_EnemyRetreatMode} Rebels {State.F_LeazasRebels_State} Str10 {State.Strings[10]}";
+
+        protected override void Scribble(string file, Sys3Int entry, Random rng)
+        {
             if (file == "FIGT_B.ADV" && rng.Next(12) == 0)
             {
-                state.EndingId = 2;
+                State.EndingId = 2;
                 ScriptContext.JumpTo("OVER.ADV");
             }
             if (rng.Next(2) == 0)
-                state.RetVal = (Sys3Int)rng.Next(0, 6);
+                State.RetVal = (Sys3Int)rng.Next(0, 6);
             if (rng.Next(2) == 0)
-                state.CallArg = (Sys3Int)rng.Next(0, 1000);
+                State.CallArg = (Sys3Int)rng.Next(0, 1000);
             for (int v = 1; v <= 9; v++)
                 if (rng.Next(3) == 0)
-                    state.Memory.Var(v) = (Sys3Int)rng.Next(0, 600);
+                    State.Memory.Var(v) = (Sys3Int)rng.Next(0, 600);
             if (rng.Next(2) == 0)
-                state.Cmdr_Cur = (Sys3Int)rng.Next(0, 200);
+                State.Cmdr_Cur = (Sys3Int)rng.Next(0, 200);
             if (rng.Next(3) == 0)
-                state.Prov_Cur = (Sys3Int)rng.Next(0, 101);
+                State.Prov_Cur = (Sys3Int)rng.Next(0, 101);
             if (rng.Next(2) == 0)
-                state.Bt_EnemyRetreatMode = (Sys3Int)(rng.Next(2) == 0 ? 20 : rng.Next(0, 60));
+                State.Bt_EnemyRetreatMode = (Sys3Int)(rng.Next(2) == 0 ? 20 : rng.Next(0, 60));
             if (rng.Next(3) == 0)
-                state.Bt_EnemyParty1 = (Sys3Int)rng.Next(0, 8);
+                State.Bt_EnemyParty1 = (Sys3Int)rng.Next(0, 8);
             if (rng.Next(6) == 0)
-                state.Ev_Entry = (Sys3Int)rng.Next(0, 30);
+                State.Ev_Entry = (Sys3Int)rng.Next(0, 30);
             if (rng.Next(4) == 0)
-                state.F_LeazasRebels_State = (Sys3Int)rng.Next(0, 3);
+                State.F_LeazasRebels_State = (Sys3Int)rng.Next(0, 3);
             for (int c = 1; c <= 7; c++)
             {
                 if (rng.Next(4) == 0)
-                    state.Cmdrs[c].Status = (Sys3Int)rng.Next(0, 3);
+                    State.Cmdrs[c].Status = (Sys3Int)rng.Next(0, 3);
                 if (rng.Next(3) == 0)
-                    state.Cmdrs[c].Troops = (Sys3Int)rng.Next(0, 600);
+                    State.Cmdrs[c].Troops = (Sys3Int)rng.Next(0, 600);
             }
             for (int p = 1; p <= 8; p++)
                 if (rng.Next(5) == 0)
-                    state.Provs[p].Owner = (Sys3Int)(rng.Next(2) + 1);
-            scribble?.Invoke(state, rng);
-            return Task.CompletedTask;
+                    State.Provs[p].Owner = (Sys3Int)(rng.Next(2) + 1);
+            scribble?.Invoke(State, rng);
         }
-    }
-
-    /// <summary>
-    /// Logs every event with its lists spelled out; with <paramref name="places"/>, a map call or a
-    /// message also with the province under the cursor, its owner and the head of the priority list
-    /// (the army whose capture it reports).
-    /// </summary>
-    private sealed class LoggingView(List<string> log, GameState? places = null) : IScriptView
-    {
-        public Task ShowAsync(ScriptEvent e)
-        {
-            if (e is ScreenEvent)
-                return Task.CompletedTask;                              // the port's semantic events: no statement in the script
-            string entry = e switch
-            {
-                ValueMessageEvent v => $"ValueMessageEvent {v.Text} [{string.Join(",", v.Values)}] [{string.Join(",", v.StringVariables ?? [])}]",
-                MessageEvent m => $"MessageEvent {m.Text} [{string.Join(",", m.StringVariables ?? [])}]",
-                EngineEvent g => $"EngineEvent {g.Command} [{string.Join(",", g.Args)}]",
-                _ => e.ToString(),
-            };
-            if (places is not null && e is MapEvent or MessageEvent)
-                entry += $" Prov_Cur {places.Prov_Cur} Owner {places.Provs[places.Prov_Cur].Owner} Tmp0001 {places.Tmp0001}";
-            log.Add(entry);
-            return Task.CompletedTask;
-        }
-    }
-
-    private static IEnumerable<string> Differences(string file, ScriptMemory expected, ScriptMemory actual)
-    {
-        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
-            if (expected.Var(v) != actual.Var(v))
-                yield return $"VAR{v:D4} {VariableCatalog.Variables[v].Name}: {file} {expected.Var(v).Value}, port {actual.Var(v).Value}";
-        foreach (int page in expected.AllocatedPages)
-            for (int i = 0; i < expected.PageSize(page); i++)
-                if (expected.ReadPage(page, i) != actual.ReadPage(page, i))
-                    yield return $"page {page}[{i}]: {file} {expected.ReadPage(page, i).Value}, port {actual.ReadPage(page, i).Value}";
-        for (int s = 0; s < expected.Strings.Length; s++)
-            if (expected.Strings[s] != actual.Strings[s])
-                yield return $"string {s}: {file} \"{expected.Strings[s]}\", port \"{actual.Strings[s]}\"";
     }
 }

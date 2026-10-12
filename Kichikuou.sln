@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kichikuou.Engine.Tests", "t
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kichikuou.Content.Tests", "tests\Kichikuou.Content.Tests\Kichikuou.Content.Tests.csproj", "{D27F8A3B-6C14-4E95-8B7D-0F3A92C6E518}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kichikuou.TestSupport", "tests\Kichikuou.TestSupport\Kichikuou.TestSupport.csproj", "{4F1C9B6E-2A73-4D8E-9C05-B7E36A1D2F84}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -145,6 +147,18 @@ Global
 		{D27F8A3B-6C14-4E95-8B7D-0F3A92C6E518}.Release|x64.Build.0 = Release|Any CPU
 		{D27F8A3B-6C14-4E95-8B7D-0F3A92C6E518}.Release|x86.ActiveCfg = Release|Any CPU
 		{D27F8A3B-6C14-4E95-8B7D-0F3A92C6E518}.Release|x86.Build.0 = Release|Any CPU
+		{4F1C9B6E-2A73-4D8E-9C05-B7E36A1D2F84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F1C9B6E-2A73-4D8E-9C05-B7E36A1D2F84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F1C9B6E-2A73-4D8E-9C05-B7E36A1D2F84}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4F1C9B6E-2A73-4D8E-9C05-B7E36A1D2F84}.Debug|x64.Build.0 = Debug|Any CPU
+		{4F1C9B6E-2A73-4D8E-9C05-B7E36A1D2F84}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4F1C9B6E-2A73-4D8E-9C05-B7E36A1D2F84}.Debug|x86.Build.0 = Debug|Any CPU
+		{4F1C9B6E-2A73-4D8E-9C05-B7E36A1D2F84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F1C9B6E-2A73-4D8E-9C05-B7E36A1D2F84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F1C9B6E-2A73-4D8E-9C05-B7E36A1D2F84}.Release|x64.ActiveCfg = Release|Any CPU
+		{4F1C9B6E-2A73-4D8E-9C05-B7E36A1D2F84}.Release|x64.Build.0 = Release|Any CPU
+		{4F1C9B6E-2A73-4D8E-9C05-B7E36A1D2F84}.Release|x86.ActiveCfg = Release|Any CPU
+		{4F1C9B6E-2A73-4D8E-9C05-B7E36A1D2F84}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -159,5 +173,6 @@ Global
 		{A8A8FB02-BEB1-47C7-A8D0-0E131A6B983A} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{9E4B7C21-3D58-4A6F-B2E0-71C5D8A3F946} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{D27F8A3B-6C14-4E95-8B7D-0F3A92C6E518} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{4F1C9B6E-2A73-4D8E-9C05-B7E36A1D2F84} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal

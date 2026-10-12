@@ -6,6 +6,7 @@ using Kichikuou.Original.Golden;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.Setup;
 using Kichikuou.Original.State;
+using Kichikuou.TestSupport;
 using Xunit.Abstractions;
 
 namespace Kichikuou.Original.Content.Tests;
@@ -187,16 +188,6 @@ public class PlayerBootTests(ITestOutputHelper output)
     }
 
     private static void Is(int expected, Sys3Int actual) => Assert.Equal(expected, (int)actual);
-
-    private sealed class NoRandom : IScriptRandom
-    {
-        public Sys3Int Next(Sys3Int n) => throw new InvalidOperationException("The boot draws nothing.");
-    }
-
-    private sealed class NullView : IScriptView
-    {
-        public Task ShowAsync(ScriptEvent scriptEvent) => Task.CompletedTask;
-    }
 
     private sealed class NoInput : IScriptInput
     {

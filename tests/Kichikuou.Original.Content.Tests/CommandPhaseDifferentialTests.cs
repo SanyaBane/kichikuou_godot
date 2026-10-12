@@ -1,11 +1,12 @@
-using System.Text;
 using Kichikuou.Content.Scripts;
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
 using Kichikuou.Original.Strategy;
+using Kichikuou.TestSupport;
 using Xunit.Abstractions;
+using static Kichikuou.TestSupport.Differential;
 
 namespace Kichikuou.Original.Content.Tests;
 
@@ -38,9 +39,9 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
             var original = await RunAsync(Copy(state), seed, program);
 
             int at = FirstDifference(original.Log, port.Log);
-            Assert.True(at < 0, $"seed {seed}: the runs differ at entry {at}\n{Around(original.Log, port.Log, at)}");
+            Assert.True(at < 0, $"seed {seed}: the runs differ at entry {at}\n{Around(Command, original.Log, port.Log, at)}");
             Assert.Equal(original.Stopped, port.Stopped);
-            var differences = Differences(original.State.Memory, port.State.Memory).Take(10).ToList();
+            var differences = Differences(Command, original.State.Memory, port.State.Memory, v => VariableCatalog.Variables[v].Name).Take(10).ToList();
             Assert.True(differences.Count == 0, $"seed {seed}: memory differs\n  " + string.Join("\n  ", differences));
 
             if (port.Stopped)
@@ -92,8 +93,8 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
             var port = await DragAsync(Copy(state), seed, null);
             var original = await DragAsync(Copy(state), seed, program);
             int at = FirstDifference(original.Log, port.Log);
-            Assert.True(at < 0, $"seed {seed}: the runs differ at entry {at}\n{Around(original.Log, port.Log, at)}");
-            var differences = Differences(original.State.Memory, port.State.Memory).Take(10).ToList();
+            Assert.True(at < 0, $"seed {seed}: the runs differ at entry {at}\n{Around("WAO_MAP.ADV", original.Log, port.Log, at)}");
+            var differences = Differences("WAO_MAP.ADV", original.State.Memory, port.State.Memory, v => VariableCatalog.Variables[v].Name).Take(10).ToList();
             Assert.True(differences.Count == 0, $"seed {seed}: memory differs\n  " + string.Join("\n  ", differences));
             steps += port.Log.Count(e => e.StartsWith("EngineEvent CC", StringComparison.Ordinal));
         }
@@ -105,19 +106,19 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
     {
         var log = new List<string>();
         var input = new RandomPointer(seed, log);
-        var view = new LoggingView(log);
+        var view = new LoggingView(log, e => e is ScreenEvent);
         bool stopped = false;
         try
         {
             if (program is null)
             {
-                var script = new OriginalScriptContext(state, new NoRandom(), view, input, new ScribblingHooks(state, seed, log));
+                var script = new OriginalScriptContext(state, new NoRandom(), view, input, new CommandHooks(state, seed, log));
                 await script.WaoMapCallAsync(1);
                 log.RemoveAt(0);    // the WaoMapEvent the port raises for the call
             }
             else
             {
-                var runner = new SceneRunner(new NamedProgram(program), new ScribblingHooks(state, seed, log), _ => true);
+                var runner = new SceneRunner(new OneProgram(program), new CommandHooks(state, seed, log), _ => true);
                 var script = new OriginalScriptContext(state, new NoRandom(), view, input, runner);
                 runner.Bind(script);
                 state.CallArg = 1;
@@ -131,15 +132,8 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
         return new Run(state, log, stopped);
     }
 
-    /// <summary>One program under its own name.</summary>
-    private sealed class NamedProgram(ScriptProgram program) : ISceneSource
-    {
-        public ScriptProgram ReadProgram(string file) =>
-            file == program.File ? program : throw new InvalidOperationException($"{file} is a hook here.");
-    }
-
     /// <summary>A random pointer: mostly the left button held while it wanders, releases, now and then another button.</summary>
-    private sealed class RandomPointer(int seed, List<string> log) : ISceneInput
+    private sealed class RandomPointer(int seed, List<string> log) : UnexpectedInput
     {
         private readonly Random _rng = new(seed * 17 + 3);
         private int _x = 320;
@@ -148,7 +142,7 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
         private int _reads;
         private int _cursor = 1;
 
-        public Task<MouseState> GetMouseAsync()
+        public override Task<MouseState> GetMouseAsync()
         {
             if (++_reads > 200)
                 throw new InputBudgetException();
@@ -164,7 +158,7 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
             return Task.FromResult(m);
         }
 
-        public Task<Sys3Int> SetCursorAsync(Sys3Int shape)
+        public override Task<Sys3Int> SetCursorAsync(Sys3Int shape)
         {
             int old = _cursor;
             _cursor = shape.Value;
@@ -172,27 +166,11 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
             return Task.FromResult((Sys3Int)old);
         }
 
-        public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
+        public override Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
         {
             log.Add($"wait {ticks}");
             return Task.FromResult((Sys3Int)_rng.Next(0, 2));
         }
-
-        public Task<Sys3Int> WaitForKeyAsync() => throw new InvalidOperationException("IK");
-
-        public Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items) => throw new InvalidOperationException("]");
-
-        public Task<Sys3Int> GetPlayingTrackAsync() => throw new InvalidOperationException("SR 0");
-
-        public Task<IReadOnlyList<Sys3Int>> GetDateAsync() => throw new InvalidOperationException("ZT 0");
-
-        public Task ResetTimerAsync(Sys3Int value) => throw new InvalidOperationException("ZT 1");
-
-        public Task<Sys3Int> GetTimerAsync(int mode) => throw new InvalidOperationException("ZT n");
-
-        public Task<IReadOnlyList<Sys3Int>> GetCdPositionAsync() => throw new InvalidOperationException("SC");
-
-        public Task<Sys3Int> GetMidiTrackAsync() => throw new InvalidOperationException("SR 1");
     }
 
     private sealed record Run(GameState State, List<string> Log, bool Stopped);
@@ -200,9 +178,9 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
     private static async Task<Run> RunAsync(GameState state, int seed, ScriptProgram? program)
     {
         var log = new List<string>();
-        var hooks = new ScribblingHooks(state, seed, log);
+        var hooks = new CommandHooks(state, seed, log);
         var input = new GestureInput(state, seed, log);
-        var view = new LoggingView(log);
+        var view = new LoggingView(log, e => e is ScreenEvent);
         bool stopped = false;
         try
         {
@@ -244,25 +222,6 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
         }
     }
 
-    private static int FirstDifference(List<string> a, List<string> b)
-    {
-        for (int i = 0; i < Math.Min(a.Count, b.Count); i++)
-            if (a[i] != b[i])
-                return i;
-        return a.Count == b.Count ? -1 : Math.Min(a.Count, b.Count);
-    }
-
-    private static string Around(List<string> original, List<string> port, int at)
-    {
-        var sb = new StringBuilder();
-        for (int i = Math.Max(0, at - 8); i < at + 3; i++)
-        {
-            sb.Append($"  {i,5} COMMAND.ADV: {(i < original.Count ? original[i] : "-")}\n");
-            sb.Append($"  {i,5} port:        {(i < port.Count ? port[i] : "-")}\n");
-        }
-        return sb.ToString();
-    }
-
     /// <summary>
     /// Every unbound variable and the record page random, then a map the gestures can aim at:
     /// province and dungeon positions on the 1920×800 map, owners, neighbours, the camera, the
@@ -272,13 +231,10 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
     {
         var state = new GameState();
         double zero = rng.NextDouble() * 0.6;
-        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
-            if (!state.IsBound(v))
-                state.Memory.Var(v) = (Sys3Int)(rng.NextDouble() < zero ? 0 : rng.Next(5) == 0 ? rng.Next(0, 3000) : rng.Next(0, 12));
+        RandomStates.Variables(state, rng, zero);
         for (int i = 0; i < state.Memory.PageSize(1); i++)
             state.Memory.WritePage(1, i, (Sys3Int)(rng.NextDouble() < zero ? 0 : rng.Next(0, 4)));
-        for (int s = 0; s < state.Strings.Length; s++)
-            state.Strings[s] = $"s{s}";
+        RandomStates.NameStrings(state);
 
         state.StoryStage = (Sys3Int)(rng.Next(2) == 0 ? 0 : rng.Next(1, 5));
         state.Week = (Sys3Int)rng.Next(9, 60);
@@ -327,33 +283,6 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
         return state;
     }
 
-    private static GameState Copy(GameState source)
-    {
-        var copy = new GameState();
-        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
-            copy.Memory.Var(v) = source.Memory.Var(v);
-        foreach (int page in source.Memory.AllocatedPages)
-            for (int i = 0; i < source.Memory.PageSize(page); i++)
-                copy.Memory.WritePage(page, i, source.Memory.ReadPage(page, i));
-        Array.Copy(source.Strings, copy.Strings, source.Strings.Length);
-        return copy;
-    }
-
-    /// <summary><c>COMMAND.ADV</c>, read once.</summary>
-    private sealed class OneProgram(ScriptProgram program) : ISceneSource
-    {
-        public ScriptProgram ReadProgram(string file) =>
-            file == Command ? program : throw new InvalidOperationException($"{file} is a hook here.");
-    }
-
-    /// <summary><c>COMMAND</c> draws nothing; a draw is a divergence.</summary>
-    private sealed class NoRandom : IScriptRandom
-    {
-        public Sys3Int Next(Sys3Int n) => throw new InvalidOperationException($"Unexpected draw Y 4, {n}.");
-    }
-
-    private sealed class InputBudgetException() : Exception("The input budget ran out.");
-
     /// <summary>
     /// The player as random pointer gestures, answered one <c>IM</c> at a time and logged with
     /// every other input. Each gesture starts with three reads at rest (the release waits before
@@ -362,7 +291,7 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
     /// moment. Clicks go mostly to provinces and dungeons; after 30 gestures only menus, ending
     /// with Turn END (the last item).
     /// </summary>
-    private sealed class GestureInput(GameState state, int seed, List<string> log) : ISceneInput
+    private sealed class GestureInput(GameState state, int seed, List<string> log) : UnexpectedInput
     {
         private readonly Random _rng = new(seed * 31 + 7);
         private readonly Queue<Func<MouseState>> _reads = new();
@@ -372,7 +301,7 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
 
         private bool Ending => _gestures > 30;
 
-        public Task<MouseState> GetMouseAsync()
+        public override Task<MouseState> GetMouseAsync()
         {
             Spend();
             if (_reads.Count == 0)
@@ -382,7 +311,7 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
             return Task.FromResult(m);
         }
 
-        public Task<Sys3Int> SetCursorAsync(Sys3Int shape)
+        public override Task<Sys3Int> SetCursorAsync(Sys3Int shape)
         {
             Spend();
             int old = _cursor;
@@ -391,7 +320,7 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
             return Task.FromResult((Sys3Int)old);
         }
 
-        public Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
+        public override Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
         {
             Spend();
             int choice = Ending ? items.Count : _rng.Next(7) == 0 ? 0 : _rng.Next(1, items.Count + 1);
@@ -399,7 +328,7 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
             return Task.FromResult(choice);
         }
 
-        public Task<Sys3Int> WaitForKeyAsync()
+        public override Task<Sys3Int> WaitForKeyAsync()
         {
             Spend();
             var key = (Sys3Int)(_rng.Next(4) == 0 ? 1 : 0);
@@ -407,24 +336,12 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
             return Task.FromResult(key);
         }
 
-        public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
+        public override Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
         {
             Spend();
             log.Add($"wait {ticks}");
             return Task.FromResult(Sys3Int.Zero);
         }
-
-        public Task<Sys3Int> GetPlayingTrackAsync() => throw new InvalidOperationException("SR 0");
-
-        public Task<IReadOnlyList<Sys3Int>> GetDateAsync() => throw new InvalidOperationException("ZT 0");
-
-        public Task ResetTimerAsync(Sys3Int value) => throw new InvalidOperationException("ZT 1");
-
-        public Task<Sys3Int> GetTimerAsync(int mode) => throw new InvalidOperationException("ZT n");
-
-        public Task<IReadOnlyList<Sys3Int>> GetCdPositionAsync() => throw new InvalidOperationException("SC");
-
-        public Task<Sys3Int> GetMidiTrackAsync() => throw new InvalidOperationException("SR 1");
 
         private void Spend()
         {
@@ -527,91 +444,55 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
     }
 
     /// <summary>
-    /// The other files as hooks: each call is logged with the <c>Ev_Entry</c> it sees, then the
-    /// hook writes what commands and scenes write — cursors, scratch, <c>RetVal</c>, the camera,
-    /// the weekly flags, a forced command mode cleared, the prologue ended by <c>Cﾃｷﾄｼ</c> — the
-    /// same writes for the same (seed, call) in both runs.
+    /// The other files as hooks (<see cref="ScribblingHooks{TState}"/>): each call is logged with the
+    /// cursors it sees, then the hook writes what commands and scenes write — cursors, scratch,
+    /// <c>RetVal</c>, the camera, the weekly flags, a forced command mode cleared, the prologue
+    /// ended by <c>Cﾃｷﾄｼ</c>.
     /// </summary>
-    private sealed class ScribblingHooks(GameState state, int seed, List<string> log) : IStoryHooks
+    private sealed class CommandHooks(GameState state, int seed, List<string> log) : ScribblingHooks<GameState>(state, seed, log)
     {
-        private int _calls;
+        protected override string Describe() =>
+            $"RetVal {State.RetVal} CallArg {State.CallArg} Prov_Cur {State.Prov_Cur} Dgn_Cur {State.Dgn_Cur}";
 
-        public Task RunEventAsync(string file, Sys3Int entry)
+        protected override void Scribble(string file, Sys3Int entry, Random rng)
         {
-            if (state.Ev_Entry != entry)
-                throw new InvalidOperationException($"{file}: Ev_Entry {state.Ev_Entry.Value}, entry {entry.Value}");
-            log.Add($"call {file} entry {entry} RetVal {state.RetVal} CallArg {state.CallArg} Prov_Cur {state.Prov_Cur} Dgn_Cur {state.Dgn_Cur}");
-            var rng = new Random(seed * 1000 + ++_calls);
             if (rng.Next(2) == 0)
-                state.Unit_Cur = (Sys3Int)rng.Next(0, 52);
+                State.Unit_Cur = (Sys3Int)rng.Next(0, 52);
             if (rng.Next(2) == 0)
-                state.Prov_Cur = (Sys3Int)rng.Next(0, 100);
+                State.Prov_Cur = (Sys3Int)rng.Next(0, 100);
             if (rng.Next(2) == 0)
-                state.Dgn_Cur = (Sys3Int)rng.Next(0, 31);
+                State.Dgn_Cur = (Sys3Int)rng.Next(0, 31);
             if (rng.Next(2) == 0)
-                state.Item_Cur = (Sys3Int)rng.Next(0, 50);
+                State.Item_Cur = (Sys3Int)rng.Next(0, 50);
             if (rng.Next(2) == 0)
-                state.RetVal = (Sys3Int)rng.Next(0, 40);
+                State.RetVal = (Sys3Int)rng.Next(0, 40);
             if (rng.Next(2) == 0)
-                state.CallArg = (Sys3Int)rng.Next(0, 14);
+                State.CallArg = (Sys3Int)rng.Next(0, 14);
             if (rng.Next(2) == 0)
-                state.Tmp0021 = (Sys3Int)rng.Next(0, 600);
+                State.Tmp0021 = (Sys3Int)rng.Next(0, 600);
             if (rng.Next(3) == 0)
             {
-                state.MapCamX = (Sys3Int)rng.Next(0, 1920);
-                state.MapCamY = (Sys3Int)rng.Next(0, 800);
+                State.MapCamX = (Sys3Int)rng.Next(0, 1920);
+                State.MapCamY = (Sys3Int)rng.Next(0, 800);
             }
             if (rng.Next(3) == 0)
-                state.Ui_WinType = (Sys3Int)rng.Next(0, 2) * 43;
-            if (state.Ev_CommandMode != 0 && rng.Next(2) == 0)
-                state.Ev_CommandMode = 0;
+                State.Ui_WinType = (Sys3Int)rng.Next(0, 2) * 43;
+            if (State.Ev_CommandMode != 0 && rng.Next(2) == 0)
+                State.Ev_CommandMode = 0;
             if (rng.Next(2) == 0)
-                state.Ui_CmdHaremAvail = (Sys3Int)rng.Next(0, 2);
+                State.Ui_CmdHaremAvail = (Sys3Int)rng.Next(0, 2);
             if (rng.Next(2) == 0)
-                state.Ui_CmdSubordAvail = (Sys3Int)rng.Next(0, 2);
+                State.Ui_CmdSubordAvail = (Sys3Int)rng.Next(0, 2);
             if (rng.Next(3) == 0)
-                state.Ui_CmdBuildAvail = Sys3Int.Zero;
+                State.Ui_CmdBuildAvail = Sys3Int.Zero;
             if (rng.Next(3) == 0)
-                state.Ui_CmdMerchantAvail = Sys3Int.Zero;
+                State.Ui_CmdMerchantAvail = Sys3Int.Zero;
             if (rng.Next(3) == 0)
-                state.CmdAvail_SubTroops = Sys3Int.Zero;
+                State.CmdAvail_SubTroops = Sys3Int.Zero;
             if (rng.Next(3) == 0)
-                state.CmdAvail_SubTalk = Sys3Int.Zero;
-            if (file == "Cﾃｷﾄｼ.ADV" && state.StoryStage == 0 && rng.Next(3) == 0)
-                state.StoryStage = 99;
-            return Task.CompletedTask;
+                State.CmdAvail_SubTalk = Sys3Int.Zero;
+            if (file == "Cﾃｷﾄｼ.ADV" && State.StoryStage == 0 && rng.Next(3) == 0)
+                State.StoryStage = 99;
         }
-    }
-
-    /// <summary>Logs every event with its lists spelled out.</summary>
-    private sealed class LoggingView(List<string> log) : IScriptView
-    {
-        public Task ShowAsync(ScriptEvent e)
-        {
-            if (e is ScreenEvent)
-                return Task.CompletedTask;                              // the port's semantic events: no statement in the script
-            log.Add(e switch
-            {
-                ValueMessageEvent v => $"ValueMessageEvent {v.Text} [{string.Join(",", v.Values)}] [{string.Join(",", v.StringVariables ?? [])}]",
-                MessageEvent m => $"MessageEvent {m.Text} [{string.Join(",", m.StringVariables ?? [])}]",
-                EngineEvent g => $"EngineEvent {g.Command} [{string.Join(",", g.Args)}]",
-                _ => e.ToString(),
-            });
-            return Task.CompletedTask;
-        }
-    }
-
-    private static IEnumerable<string> Differences(ScriptMemory expected, ScriptMemory actual)
-    {
-        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
-            if (expected.Var(v) != actual.Var(v))
-                yield return $"VAR{v:D4} {VariableCatalog.Variables[v].Name}: COMMAND.ADV {expected.Var(v).Value}, port {actual.Var(v).Value}";
-        foreach (int page in expected.AllocatedPages)
-            for (int i = 0; i < expected.PageSize(page); i++)
-                if (expected.ReadPage(page, i) != actual.ReadPage(page, i))
-                    yield return $"page {page}[{i}]: COMMAND.ADV {expected.ReadPage(page, i).Value}, port {actual.ReadPage(page, i).Value}";
-        for (int s = 0; s < expected.Strings.Length; s++)
-            if (expected.Strings[s] != actual.Strings[s])
-                yield return $"string {s}: COMMAND.ADV \"{expected.Strings[s]}\", port \"{actual.Strings[s]}\"";
     }
 }

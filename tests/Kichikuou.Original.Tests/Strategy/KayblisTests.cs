@@ -1,10 +1,10 @@
 using Kichikuou.Original.Tests.Combat;
 using Kichikuou.Original.Tests.Script;
-using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
 using Kichikuou.Original.Strategy;
+using Kichikuou.TestSupport;
 
 namespace Kichikuou.Original.Tests.Strategy;
 
@@ -60,16 +60,8 @@ public class KayblisTests
             State.Bt_WallBonus = 0;
             if (!again && State.Bt_GarrisonProv.Value == province)
                 State.Bt_GarrisonProv = 0;
-            return new KayblisDefenders(Script, new Literals()).RunAsync();
+            return new KayblisDefenders(Script, new Literals(10)).RunAsync();
         }
-    }
-
-    /// <summary>The army name (<c>MS 10, "…"</c>) as "file:line", standing in for the player's files.</summary>
-    private sealed class Literals : IScenarioSource
-    {
-        public IReadOnlyList<ScriptStatement> ReadFile(string file) => throw new InvalidOperationException(file);
-
-        public ScriptStatement ReadStatement(ScriptRef at) => new SetStringStatement(at, 10, at.ToString());
     }
 
     private static void Is(int expected, Sys3Int actual) => Assert.Equal(expected, actual.Value);

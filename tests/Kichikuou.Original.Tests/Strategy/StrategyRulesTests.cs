@@ -1,11 +1,11 @@
 using Kichikuou.Original.Tests.Combat;
-using Kichikuou.Original.Tests.Script;
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Combat;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
 using Kichikuou.Original.Strategy;
+using Kichikuou.TestSupport;
 
 namespace Kichikuou.Original.Tests.Strategy;
 
@@ -128,7 +128,7 @@ public class StrategyRulesTests
     }
 
     /// <summary>Attacks the first enemy it may, or defends; every menu's first option; keys and pauses 0.</summary>
-    private sealed class AttackingInput : IGameInput
+    private sealed class AttackingInput : UnexpectedInput, IGameInput
     {
         public Task<FigtSelChoice> SelectCommandAsync(FigtSelMenu menu)
         {
@@ -140,33 +140,10 @@ public class StrategyRulesTests
 
         public Task<Sys3Int?> ChooseAsync(BattleMenu menu) => Task.FromResult<Sys3Int?>(menu.Options[0].Code);
 
-        public Task<Sys3Int> WaitForKeyAsync() => Task.FromResult(Sys3Int.Zero);
+        public override Task<Sys3Int> WaitForKeyAsync() => Task.FromResult(Sys3Int.Zero);
 
-        public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable) => Task.FromResult(Sys3Int.Zero);
+        public override Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable) => Task.FromResult(Sys3Int.Zero);
 
-        public Task<Sys3Int> GetPlayingTrackAsync() => Task.FromResult((Sys3Int)7);
-
-        public Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items) => throw new InvalidOperationException("]");
-
-        public Task<MouseState> GetMouseAsync() => throw new InvalidOperationException("IM");
-
-        public Task<Sys3Int> SetCursorAsync(Sys3Int shape) => throw new InvalidOperationException("IC");
-
-        public Task<IReadOnlyList<Sys3Int>> GetDateAsync() => throw new InvalidOperationException("ZT 0");
-
-        public Task ResetTimerAsync(Sys3Int value) => throw new InvalidOperationException("ZT 1");
-
-        public Task<Sys3Int> GetTimerAsync(int mode) => throw new InvalidOperationException("ZT n");
-
-        public Task<IReadOnlyList<Sys3Int>> GetCdPositionAsync() => throw new InvalidOperationException("SC");
-
-        public Task<Sys3Int> GetMidiTrackAsync() => throw new InvalidOperationException("SR 1");
-    }
-
-    private sealed class NoScenario : IScenarioSource
-    {
-        public IReadOnlyList<ScriptStatement> ReadFile(string file) => throw new InvalidOperationException(file);
-
-        public ScriptStatement ReadStatement(ScriptRef at) => throw new InvalidOperationException(at.ToString());
+        public override Task<Sys3Int> GetPlayingTrackAsync() => Task.FromResult((Sys3Int)7);
     }
 }

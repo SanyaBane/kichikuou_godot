@@ -4,7 +4,9 @@ using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
 using Kichikuou.Original.Strategy;
+using Kichikuou.TestSupport;
 using Xunit.Abstractions;
+using static Kichikuou.TestSupport.Differential;
 
 namespace Kichikuou.Original.Content.Tests;
 
@@ -81,7 +83,7 @@ public class WeeklyEventsDifferentialTests(ITestOutputHelper output)
                 $"seed {seed}: scene calls differ\n  COM.ADV: {string.Join(", ", original.Calls)}\n  port:    {string.Join(", ", port.Calls)}");
             Assert.True(original.Draws.SequenceEqual(port.Draws),
                 $"seed {seed}: draws differ\n  COM.ADV: {string.Join(", ", original.Draws)}\n  port:    {string.Join(", ", port.Draws)}");
-            var differences = Differences(original.State.Memory, port.State.Memory).Take(10).ToList();
+            var differences = Differences(Com, original.State.Memory, port.State.Memory, v => VariableCatalog.Variables[v].Name).Take(10).ToList();
             Assert.True(differences.Count == 0, $"seed {seed}: memory differs\n  " + string.Join("\n  ", differences));
 
             foreach (var call in port.Calls)
@@ -94,13 +96,6 @@ public class WeeklyEventsDifferentialTests(ITestOutputHelper output)
             output.WriteLine($"  {file} {entry}: {count}");
         var missed = expected.Except(reached.Keys).Select(m => $"{m.Item1} {m.Item2}").ToList();
         DifferentialRuns.AssertReached(missed, output, "never called");
-    }
-
-    /// <summary><c>COM.ADV</c>, read once.</summary>
-    private sealed class OneProgram(ScriptProgram program) : ISceneSource
-    {
-        public ScriptProgram ReadProgram(string file) =>
-            file == Com ? program : throw new InvalidOperationException($"{file} is a hook here.");
     }
 
     private sealed record Run(GameState State, List<(string File, int Entry)> Calls, List<int> Draws);
@@ -165,17 +160,6 @@ public class WeeklyEventsDifferentialTests(ITestOutputHelper output)
 
     private static Sys3Int Value(Random rng, double zero) =>
         (Sys3Int)(rng.NextDouble() < zero ? 0 : rng.Next(5) == 0 ? rng.Next(0, 300) : Interesting[rng.Next(Interesting.Length)]);
-
-    /// <summary>The variables and the record page (the only page the states here fill; strings stay empty).</summary>
-    private static GameState Copy(GameState source)
-    {
-        var copy = new GameState();
-        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
-            copy.Memory.Var(v) = source.Memory.Var(v);
-        for (int i = 0; i < source.Memory.PageSize(1); i++)
-            copy.Memory.WritePage(1, i, source.Memory.ReadPage(1, i));
-        return copy;
-    }
 
     /// <summary>
     /// Aims a state at one scene call of the program: the conditions of the blocks around the call
@@ -452,19 +436,5 @@ public class WeeklyEventsDifferentialTests(ITestOutputHelper output)
             }
             return Task.CompletedTask;
         }
-    }
-
-    private static IEnumerable<string> Differences(ScriptMemory expected, ScriptMemory actual)
-    {
-        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
-            if (expected.Var(v) != actual.Var(v))
-                yield return $"VAR{v:D4}: COM.ADV {expected.Var(v).Value}, port {actual.Var(v).Value}";
-        foreach (int page in expected.AllocatedPages)
-            for (int i = 0; i < expected.PageSize(page); i++)
-                if (expected.ReadPage(page, i) != actual.ReadPage(page, i))
-                    yield return $"page {page}[{i}]: COM.ADV {expected.ReadPage(page, i).Value}, port {actual.ReadPage(page, i).Value}";
-        for (int s = 0; s < expected.Strings.Length; s++)
-            if (expected.Strings[s] != actual.Strings[s])
-                yield return $"string {s}: COM.ADV \"{expected.Strings[s]}\", port \"{actual.Strings[s]}\"";
     }
 }

@@ -1,11 +1,12 @@
-using System.Text;
 using Kichikuou.Content.Scripts;
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
 using Kichikuou.Original.Strategy;
+using Kichikuou.TestSupport;
 using Xunit.Abstractions;
+using static Kichikuou.TestSupport.Differential;
 
 namespace Kichikuou.Original.Content.Tests;
 
@@ -66,8 +67,8 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
             }, bindRunner: true);
 
             int at = FirstDifference(original.Log, port.Log);
-            Assert.True(at < 0, $"seed {seed} (mode {mode}): the runs differ at entry {at}\n{Around(original.Log, port.Log, at)}");
-            var differences = Differences(original.State.Memory, port.State.Memory).Take(10).ToList();
+            Assert.True(at < 0, $"seed {seed} (mode {mode}): the runs differ at entry {at}\n{Around(LoadSave, original.Log, port.Log, at)}");
+            var differences = Differences(LoadSave, original.State.Memory, port.State.Memory, v => VariableCatalog.Variables[v].Name).Take(10).ToList();
             Assert.True(differences.Count == 0, $"seed {seed} (mode {mode}): memory differs\n  " + string.Join("\n  ", differences));
             for (int slot = 1; slot <= ISaveStore.SlotCount; slot++)
             {
@@ -102,7 +103,7 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
         var store = new TestStore(failing, log);
         foreach (var (slot, data) in slots)
             store.Fill(slot, data);
-        var script = new OriginalScriptContext(state, new NoRandom(), new LoggingView(log), new RandomInput(seed, log), new NoHooks())
+        var script = new OriginalScriptContext(state, new NoRandom(), new LoggingView(log, e => e is ScreenEvent), new RandomInput(seed, log), new NoHooks())
         {
             Saves = store,
             SaveResume = AutosaveCall,
@@ -174,25 +175,6 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
         return stream.ToArray();
     }
 
-    private static int FirstDifference(List<string> a, List<string> b)
-    {
-        for (int i = 0; i < Math.Min(a.Count, b.Count); i++)
-            if (a[i] != b[i])
-                return i;
-        return a.Count == b.Count ? -1 : Math.Min(a.Count, b.Count);
-    }
-
-    private static string Around(List<string> original, List<string> port, int at)
-    {
-        var sb = new StringBuilder();
-        for (int i = Math.Max(0, at - 8); i < at + 3; i++)
-        {
-            sb.Append($"  {i,5} file: {(i < original.Count ? original[i] : "-")}\n");
-            sb.Append($"  {i,5} port: {(i < port.Count ? port[i] : "-")}\n");
-        }
-        return sb.ToString();
-    }
-
     /// <summary>Every unbound variable small and random, the scratch buffer and page 4 random, a week, a window open or not.</summary>
     private static GameState RandomState(Random rng)
     {
@@ -246,32 +228,6 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
         return slots;
     }
 
-    private static GameState Copy(GameState source)
-    {
-        var copy = new GameState();
-        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
-            copy.Memory.Var(v) = source.Memory.Var(v);
-        foreach (int page in source.Memory.AllocatedPages)
-            for (int i = 0; i < source.Memory.PageSize(page); i++)
-                copy.Memory.WritePage(page, i, source.Memory.ReadPage(page, i));
-        Array.Copy(source.Strings, copy.Strings, source.Strings.Length);
-        return copy;
-    }
-
-    private static IEnumerable<string> Differences(ScriptMemory expected, ScriptMemory actual)
-    {
-        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
-            if (expected.Var(v) != actual.Var(v))
-                yield return $"VAR{v:D4} {VariableCatalog.Variables[v].Name}: file {expected.Var(v).Value}, port {actual.Var(v).Value}";
-        foreach (int page in expected.AllocatedPages)
-            for (int i = 0; i < expected.PageSize(page); i++)
-                if (expected.ReadPage(page, i) != actual.ReadPage(page, i))
-                    yield return $"page {page}[{i}]: file {expected.ReadPage(page, i).Value}, port {actual.ReadPage(page, i).Value}";
-        for (int s = 0; s < expected.Strings.Length; s++)
-            if (expected.Strings[s] != actual.Strings[s])
-                yield return $"string {s}: file \"{expected.Strings[s]}\", port \"{actual.Strings[s]}\"";
-    }
-
     /// <summary>Slots in memory with a clock that ticks per write; some slots refuse writes; every access is logged.</summary>
     private sealed class TestStore(IReadOnlySet<int> failing, List<string> log) : ISaveStore
     {
@@ -309,31 +265,19 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
         private DateTime Tick() => _now = _now.AddSeconds(37);
     }
 
-    /// <summary><c>ﾛｰﾄﾞｾｰﾌﾞ.ADV</c>, read once.</summary>
-    private sealed class OneProgram(ScriptProgram program) : ISceneSource
-    {
-        public ScriptProgram ReadProgram(string file) =>
-            file == LoadSave ? program : throw new InvalidOperationException($"{file} is not expected here.");
-    }
-
     private sealed class NoHooks : IStoryHooks
     {
         public Task RunEventAsync(string file, Sys3Int entry) => throw new InvalidOperationException($"Unexpected call of {file}.");
     }
 
-    private sealed class NoRandom : IScriptRandom
-    {
-        public Sys3Int Next(Sys3Int n) => throw new InvalidOperationException($"Unexpected draw Y 4, {n}.");
-    }
-
     /// <summary>Keys, the pointer and the menus answered at random and logged; after a few menus every menu is cancelled.</summary>
-    private sealed class RandomInput(int seed, List<string> log) : ISceneInput
+    private sealed class RandomInput(int seed, List<string> log) : UnexpectedInput
     {
         private readonly Random _rng = new(seed * 31 + 7);
         private int _answers;
         private int _menus;
 
-        public Task<Sys3Int> WaitForKeyAsync()
+        public override Task<Sys3Int> WaitForKeyAsync()
         {
             Spend();
             var key = (Sys3Int)(_rng.Next(4) == 0 ? _rng.Next(1, 33) : 0);
@@ -341,7 +285,7 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
             return Task.FromResult(key);
         }
 
-        public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
+        public override Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
         {
             Spend();
             var key = (Sys3Int)(_rng.Next(5) == 0 ? 1 : 0);
@@ -349,7 +293,7 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
             return Task.FromResult(key);
         }
 
-        public Task<MouseState> GetMouseAsync()
+        public override Task<MouseState> GetMouseAsync()
         {
             Spend();
             var m = new MouseState((Sys3Int)(_rng.Next(3) == 0 ? _rng.Next(1, 3) * 16 : 0), (Sys3Int)_rng.Next(0, 640), (Sys3Int)_rng.Next(0, 400));
@@ -357,7 +301,7 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
             return Task.FromResult(m);
         }
 
-        public Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
+        public override Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
         {
             Spend();
             int choice = ++_menus > 6 || _rng.Next(5) == 0 ? 0 : _rng.Next(1, items.Count + 1);
@@ -368,42 +312,10 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
             return Task.FromResult(choice);
         }
 
-        public Task<Sys3Int> SetCursorAsync(Sys3Int shape) => throw new InvalidOperationException("IC");
-
-        public Task<Sys3Int> GetPlayingTrackAsync() => throw new InvalidOperationException("SR 0");
-
-        public Task<IReadOnlyList<Sys3Int>> GetDateAsync() => throw new InvalidOperationException("ZT 0");
-
-        public Task ResetTimerAsync(Sys3Int value) => throw new InvalidOperationException("ZT 1");
-
-        public Task<Sys3Int> GetTimerAsync(int mode) => throw new InvalidOperationException("ZT n");
-
-        public Task<IReadOnlyList<Sys3Int>> GetCdPositionAsync() => throw new InvalidOperationException("SC");
-
-        public Task<Sys3Int> GetMidiTrackAsync() => throw new InvalidOperationException("SR 1");
-
         private void Spend()
         {
             if (++_answers > 3000)
                 throw new InvalidOperationException("The input budget ran out: the loop does not stop.");
-        }
-    }
-
-    /// <summary>Logs every event with its lists spelled out.</summary>
-    private sealed class LoggingView(List<string> log) : IScriptView
-    {
-        public Task ShowAsync(ScriptEvent e)
-        {
-            if (e is ScreenEvent)
-                return Task.CompletedTask;                              // the port's semantic events: no statement in the script
-            log.Add(e switch
-            {
-                ValueMessageEvent v => $"ValueMessageEvent {v.Text} [{string.Join(",", v.Values)}] [{string.Join(",", v.StringVariables ?? [])}]",
-                MessageEvent m => $"MessageEvent {m.Text} [{string.Join(",", m.StringVariables ?? [])}]",
-                EngineEvent g => $"EngineEvent {g.Command} [{string.Join(",", g.Args)}]",
-                _ => e.ToString(),
-            });
-            return Task.CompletedTask;
         }
     }
 }

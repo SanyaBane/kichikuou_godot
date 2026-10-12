@@ -4,6 +4,7 @@ using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Combat;
 using Kichikuou.Original.State;
+using Kichikuou.TestSupport;
 
 namespace Kichikuou.Original.Tests.Golden;
 
@@ -134,10 +135,5 @@ public sealed class CaptureRecorder
             recorder.Add($"ret {file} {file}@2c0");
             return Task.CompletedTask;
         }
-    }
-
-    private sealed class NullView : IScriptView
-    {
-        public Task ShowAsync(ScriptEvent scriptEvent) => Task.CompletedTask;
     }
 }

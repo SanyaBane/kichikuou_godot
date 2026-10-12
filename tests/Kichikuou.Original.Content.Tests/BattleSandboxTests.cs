@@ -1,9 +1,9 @@
 using Kichikuou.Engine.Golden;
-using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Combat;
 using Kichikuou.Original.Content.Battles;
 using Kichikuou.Original.Golden;
+using Kichikuou.TestSupport;
 using Xunit.Abstractions;
 
 namespace Kichikuou.Original.Content.Tests;
@@ -58,11 +58,6 @@ public class BattleSandboxTests(ITestOutputHelper output)
         var differences = MemoryComparison.Compare(capture.Exit, state.Memory, null, GoldenFilter.Default)
             .Where(d => !d.Ignored).ToList();
         Assert.True(differences.Count == 0, string.Join("\n", differences.Take(20)));
-    }
-
-    private sealed class NullView : IScriptView
-    {
-        public Task ShowAsync(ScriptEvent scriptEvent) => Task.CompletedTask;
     }
 
     /// <summary>

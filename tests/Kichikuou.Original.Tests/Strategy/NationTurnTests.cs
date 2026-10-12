@@ -5,6 +5,7 @@ using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
 using Kichikuou.Original.Strategy;
+using Kichikuou.TestSupport;
 
 namespace Kichikuou.Original.Tests.Strategy;
 
@@ -52,21 +53,13 @@ public class NationTurnTests
         /// <summary>Each <c>FIGT_B</c> call: the province, the enemy party and its retreat mode.</summary>
         public List<(int Prov, int[] Party, int Retreat)> Battles { get; } = [];
 
-        public Task TurnAsync() => new RebelTurn(Script, new Literals()).RunAsync();
+        public Task TurnAsync() => new RebelTurn(Script, new Literals(10)).RunAsync();
 
         public Task DefendersAsync(int province)
         {
             State.Prov_Cur = (Sys3Int)province;
-            return new RebelDefenders(Script, new Literals()).RunAsync();
+            return new RebelDefenders(Script, new Literals(10)).RunAsync();
         }
-    }
-
-    /// <summary>The army name (<c>MS 10, "…"</c>) as "file:line", standing in for the player's files.</summary>
-    private sealed class Literals : IScenarioSource
-    {
-        public IReadOnlyList<ScriptStatement> ReadFile(string file) => throw new InvalidOperationException(file);
-
-        public ScriptStatement ReadStatement(ScriptRef at) => new SetStringStatement(at, 10, at.ToString());
     }
 
     private static void Is(int expected, Sys3Int actual) => Assert.Equal(expected, actual.Value);

@@ -1,10 +1,10 @@
 using Kichikuou.Original.Tests.Combat;
 using Kichikuou.Original.Tests.Script;
-using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
 using Kichikuou.Original.Strategy;
+using Kichikuou.TestSupport;
 
 namespace Kichikuou.Original.Tests.Strategy;
 
@@ -58,16 +58,8 @@ public class ZethTests
             State.Prov_Cur = (Sys3Int)province;
             if (!again && State.Bt_GarrisonProv.Value == province)
                 State.Bt_GarrisonProv = 0;
-            return new ZethDefenders(Script, new Literals()).RunAsync();
+            return new ZethDefenders(Script, new Literals(10)).RunAsync();
         }
-    }
-
-    /// <summary>The army name (<c>MS 10, "…"</c>) as "file:line", standing in for the player's files.</summary>
-    private sealed class Literals : IScenarioSource
-    {
-        public IReadOnlyList<ScriptStatement> ReadFile(string file) => throw new InvalidOperationException(file);
-
-        public ScriptStatement ReadStatement(ScriptRef at) => new SetStringStatement(at, 10, at.ToString());
     }
 
     private static void Is(int expected, Sys3Int actual) => Assert.Equal(expected, actual.Value);
@@ -217,7 +209,7 @@ public class ZethTests
     [Fact]
     public void Tｾﾞｽ2_is_routed() => Assert.Contains("Tｾﾞｽ2.ADV", StrategyRules.PortedFiles);
 
-    private static Task TurnAsync(ZethRig rig) => new ZethTurn(rig.Script, new Literals()).RunAsync();
+    private static Task TurnAsync(ZethRig rig) => new ZethTurn(rig.Script, new Literals(10)).RunAsync();
 
     /// <summary>Saias (113), Uspira (117), Kabachahn (121) and Alex (125) dead: no general marches.</summary>
     private static void KillGenerals(ZethRig rig)

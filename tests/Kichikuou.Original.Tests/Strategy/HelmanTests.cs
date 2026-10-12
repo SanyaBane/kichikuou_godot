@@ -5,6 +5,7 @@ using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
 using Kichikuou.Original.Strategy;
+using Kichikuou.TestSupport;
 
 namespace Kichikuou.Original.Tests.Strategy;
 
@@ -51,10 +52,10 @@ public class HelmanTests
         {
             State.Prov_Cur = (Sys3Int)province;
             State.Provs[province].Owner = (Sys3Int)owner;
-            return new HelmanDefenders(Script, new Literals()).RunAsync();
+            return new HelmanDefenders(Script, new Literals(10)).RunAsync();
         }
 
-        public Task TurnAsync() => new HelmanTurn(Script, new Literals()).RunAsync();
+        public Task TurnAsync() => new HelmanTurn(Script, new Literals(10)).RunAsync();
 
         /// <summary>The lines of the messages shown, in order.</summary>
         public List<int> Lines => [.. View.Events.OfType<MessageEvent>().Select(m => m.Text.Line)];
@@ -72,14 +73,6 @@ public class HelmanTests
         rig.State.Cmdrs[22].Status = 0;
         rig.State.Cmdrs[50].Status = 0;
         return rig;
-    }
-
-    /// <summary>The army name (<c>MS 10, "…"</c>) as "file:line", standing in for the player's files.</summary>
-    private sealed class Literals : IScenarioSource
-    {
-        public IReadOnlyList<ScriptStatement> ReadFile(string file) => throw new InvalidOperationException(file);
-
-        public ScriptStatement ReadStatement(ScriptRef at) => new SetStringStatement(at, 10, at.ToString());
     }
 
     private static void Is(int expected, Sys3Int actual) => Assert.Equal(expected, actual.Value);
@@ -474,7 +467,7 @@ public class HelmanTests
     // Tﾊﾟｯﾄﾝ, the Patton army's turn after Helman's fall
     // -------------------------------------------------------------------------------------------
 
-    private static Task PattonTurnAsync(HelmanRig rig) => new PattonTurn(rig.Script, new Literals()).RunAsync();
+    private static Task PattonTurnAsync(HelmanRig rig) => new PattonTurn(rig.Script, new Literals(10)).RunAsync();
 
     [Fact]
     public async Task The_Patton_army_plays_its_story_scene_and_marches_on_the_first_province_the_player_holds()

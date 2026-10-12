@@ -5,6 +5,7 @@ using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
 using Kichikuou.Original.Strategy;
+using Kichikuou.TestSupport;
 
 namespace Kichikuou.Original.Tests.Strategy;
 
@@ -52,21 +53,13 @@ public class KayblisTurnTests
         public ScriptedStory Story { get; } = new();
         public OriginalScriptContext Script { get; }
 
-        public KayblisTurn Turn => new(Script, new Literals());
+        public KayblisTurn Turn => new(Script, new Literals(at => at.Line == 323 ? 4 : 10));
 
         public Task RunAsync() => Turn.RunAsync();
 
         public List<int> Lines => View.Events.OfType<MessageEvent>().Select(m => m.Text.Line).ToList();
 
         public List<int> Windows => View.Events.OfType<WindowEvent>().Select(w => (int)w.Op.Value).ToList();
-    }
-
-    /// <summary>The literals (<c>MS n, "…"</c>) as "file:line", standing in for the player's files: <c>MS 4</c> at <c>:323</c>, <c>MS 10</c> elsewhere.</summary>
-    private sealed class Literals : IScenarioSource
-    {
-        public IReadOnlyList<ScriptStatement> ReadFile(string file) => throw new InvalidOperationException(file);
-
-        public ScriptStatement ReadStatement(ScriptRef at) => new SetStringStatement(at, at.Line == 323 ? 4 : 10, at.ToString());
     }
 
     private static void Is(int expected, Sys3Int actual) => Assert.Equal(expected, actual.Value);

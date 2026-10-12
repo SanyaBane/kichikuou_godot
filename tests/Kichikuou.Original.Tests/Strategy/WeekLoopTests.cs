@@ -5,6 +5,7 @@ using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
 using Kichikuou.Original.Strategy;
+using Kichikuou.TestSupport;
 
 namespace Kichikuou.Original.Tests.Strategy;
 
@@ -41,15 +42,7 @@ public class WeekLoopTests
 
         public List<string> Files => Story.Calls.Select(c => c.File).ToList();
 
-        public Task RunWeekAsync() => new WeekLoop(Script, new Literals()).RunWeekAsync();
-    }
-
-    /// <summary>The army names (<c>MS 10, "…"</c>) as "file:line", standing in for the player's files.</summary>
-    private sealed class Literals : IScenarioSource
-    {
-        public IReadOnlyList<ScriptStatement> ReadFile(string file) => throw new InvalidOperationException(file);
-
-        public ScriptStatement ReadStatement(ScriptRef at) => new SetStringStatement(at, 10, at.ToString());
+        public Task RunWeekAsync() => new WeekLoop(Script, new Literals(10)).RunWeekAsync();
     }
 
     private static void Is(int expected, Sys3Int actual) => Assert.Equal(expected, actual.Value);
@@ -401,13 +394,6 @@ public class WeekLoopTests
     }
 
     private sealed class StopException : Exception;
-
-    private sealed class NoScenario : IScenarioSource
-    {
-        public IReadOnlyList<ScriptStatement> ReadFile(string file) => throw new InvalidOperationException(file);
-
-        public ScriptStatement ReadStatement(ScriptRef at) => throw new InvalidOperationException(at.ToString());
-    }
 
     /// <summary>Slots that stop the run at the first save.</summary>
     private sealed class StoppingSaves : ISaveStore

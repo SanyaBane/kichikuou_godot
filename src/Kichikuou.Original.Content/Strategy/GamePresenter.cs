@@ -3,7 +3,6 @@ using Kichikuou.Content.Graphics;
 using Kichikuou.Content.Screen;
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
-using Kichikuou.Original.Combat;
 using Kichikuou.Original.Content.Battles;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
