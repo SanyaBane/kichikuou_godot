@@ -140,10 +140,22 @@ Each step ends green (see "Principles").
    skips the drawing while a screen drawn by hand is open, sets the boot's selection window 1
    (`ｽﾀｰﾄ.ADV:860`) and learns of the drawing through `IStageObserver` (the tile area, the covered
    pictures, the CG numbers `MaskEventCgs` watches).
-4. **The assemblies**: create `Kichikuou.Engine` and `Kichikuou.Original.Content`; `Kichikuou.Core`
+4. ✓ (2026-10-12) **The assemblies**: create `Kichikuou.Engine` and `Kichikuou.Original.Content`; `Kichikuou.Core`
    becomes `Kichikuou.Original`, with namespaces following the folders. This step is mechanical:
    `InternalsVisibleTo` per assembly, the solution, the Godot project's references (Godot's scene files
-   reference scripts by path; the Godot scripts do not move). Prepared (2026-10-12):
+   reference scripts by path; the Godot scripts do not move). As done:
+   - The files moved per the file map below (`MusicTable` first got a file of its own); the namespaces
+     follow the folders (`Kichikuou.Engine.Script` beside `Kichikuou.Original.Script`,
+     `Kichikuou.Original.Content.Strategy` …); every file imports what it uses.
+   - No internal member crosses a boundary between the libraries: `Palette.Rgb` and
+     `BattlePresenter.Panels`/`BlitMapView`/`DrawMapTiles` are used inside their own library. Only the
+     two test projects get `InternalsVisibleTo` (`KayblisTurn.CaptureAsync`, the battle's internals,
+     `ScenarioText.TryParse`, `OriginalScriptContext.MapAsync` …); they keep their names and
+     namespaces until step 5.
+   - The engine names the original's types only in prose (`<c>`), never in a `cref`.
+   - The Godot project references the four libraries.
+
+   Prepared (2026-10-12):
    - `Script/GesturePoints` took the original's screen geometry (the pickers' grid and bar, a map
      point on screen) from `PointerScript`, which keeps the gesture queue.
    - `IScenarioSource` left `Setup/GameSetup.cs` for `Script/IScenarioSource.cs`; generic Content

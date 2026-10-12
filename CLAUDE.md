@@ -20,19 +20,19 @@ see "Porting strategy" in the brief). The variable dictionary [docs/variables.ts
 is done; when reading the scenario, use the renamed copy (`tools/analysis/rename_vars.py`) and
 keep the dictionary updated when a meaning is confirmed or corrected.
 
-The **battle** (`FIGT*.ADV`) is ported to `src/Kichikuou.Core/Combat` following
+The **battle** (`FIGT*.ADV`) is ported to `src/Kichikuou.Original/Combat` following
 [docs/porting-conventions.md](docs/porting-conventions.md) and the spec in
 [docs/battle/](docs/battle/README.md); it has been reviewed against the script and has unit and
 end-to-end tests. The golden-test harness is built ([docs/golden-tests.md](docs/golden-tests.md)):
 a patched xsystem35 (the checkout `KICHIKUOU_XSYSTEM35_DIR`, branch `golden-harness`, built with
-MSYS2 — see `docs/spike-findings.md`) records battles, `src/Kichikuou.Core/Golden` replays them.
+MSYS2 — see `docs/spike-findings.md`) records battles, `src/Kichikuou.Original/Golden` replays them.
 37 captured battles match; the battle screen reproduces the original layout at 1280×800.
 
 Now: the **strategic layer** (week loop, commands, nation turns, data, scenes). Surveys, parts
 and the owner's decisions are in [docs/strategy/](docs/strategy/README.md); milestone 1 is the
 whole prologue, playable. Record data and scenes are read at run time from the player's files.
 F0 is done: the shared services (message windows, map, sound, scene calls) live in
-`src/Kichikuou.Core/Script`. E1 and E2 are done: every scene file reads as a goto program
+`Script/` (the engine's runtime and the original's helper files). E1 and E2 are done: every scene file reads as a goto program
 (`ScriptProgram`) and `SceneRunner` runs it as the context's story hooks. W1 is done: `COM.ADV`
 (weekly upkeep and story triggers) is `Strategy/WeeklyEvents`. W3 is under way: `COMMAND.ADV`
 (the player phase) is `Strategy/CommandPhase`, reading the pointer as the script does
@@ -48,7 +48,7 @@ G0 (the Godot screens, owner's decisions 8-12) is done: part 1 ported `ﾛｰﾄ
 (`Strategy/LoadSaveScreen`, the save commands in `Script/ScriptContext.Save.cs` on an
 `ISaveStore`, `Script/SaveData.cs`); part 2 is the game driver `Strategy/GameSession` (boot,
 new game, load from the title or `COMMAND`, resume after the autosave, `&OVER` as `GameEnd`)
-and the view/input proxies; part 3 is the presenter `Kichikuou.Content/Strategy/GamePresenter`
+and the view/input proxies; part 3 is the presenter `Kichikuou.Original.Content/Strategy/GamePresenter`
 (decision 12: the scenes' drawing runs on the engine surface, map, windows, menus and pickers are
 drawn by hand over it from the semantic `ScreenEvent`s and GameState); part 4 is the title and
 `godot/Strategy/GameScreen` — the whole prologue is playable in Godot up to the Leazas week, which
@@ -153,29 +153,40 @@ Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its author's pe
 
 ## Layout
 
-- `src/Kichikuou.Core` — engine-independent rules library (`net10.0`, warnings are errors);
-  `LocalPaths` (no rule) reads the developer's local paths ("Local paths" below).
+The code is a shared engine plus one rule set per game variant, the original alone for now
+(docs/variants.md); the compiler keeps the layers: Engine ← Content, Engine ← Original,
+Original + Content ← Original.Content ← Godot. All four libraries are `net10.0`, warnings are errors.
+
+- `src/Kichikuou.Engine` — what works unchanged for any System 3.9 game, no rule of the original.
+  `LocalPaths` reads the developer's local paths ("Local paths" below).
   `Sys3/` holds exact reproductions of System 3 / xsystem35 semantics: `Sys3Int` (16-bit
   saturating arithmetic — use it for every value that comes from the script),
   `Mt19937Legacy` + `XSystem35Random` (`Y 4,n`), `IScriptRandom` for injecting recorded draws,
   and `ScriptMemory` (variables, array pages, strings in the original engine's layout).
-  `State/GameState` is the typed view over it: `GameState.g.cs` is **generated** by
-  `python tools/codegen/gen_state.py` from `docs/variables.tsv` — never edit it by hand;
-  re-run the generator after changing the dictionary. Rule code addresses records explicitly
-  (`state.Units[state.Unit_Cur].Troops`) to keep the script's cursor quirks visible.
-  `GameState` derives from `Script/ScriptState` (what the runtime sees: the memory, `RetVal`, the
-  `DS` bindings) and carries the original's `Script/VariantProfile` (`State/OriginalVariant`: the
-  facts the runtime takes from a variant — variable count, scene rule, saved pages; docs/variants.md).
-  `Golden/` parses harness captures and replays them through the port (`GoldenReplay`);
-  `State/VariableCatalog.g.cs` (names, groups, page bindings) is generated with `GameState.g.cs`.
-  `Script/` holds what every ported part shares: `ScriptContext` (the engine's side: state, draws,
-  pauses, scene calls, saves) and the original's `OriginalScriptContext` on it with the helper files
-  `WAO_SUB` (message windows), `M`/`WAO_MAP` (map) and `PCMPLAY` (sound), the shared events
-  (`ScriptEvent`) and the view/input/hook interfaces, plus
+  `Script/` is the runtime: `ScriptState` (what the runtime sees: the memory, `RetVal`, the `DS`
+  bindings), `VariantProfile` (the facts the runtime takes from a variant — variable count, scene
+  rule, saved pages), `ScriptContext` (the engine's side: state, draws, pauses, scene calls, saves;
+  helper calls go through the virtual `CallHelperAsync`), the shared events (`ScriptEvent`) and the
+  view/input/hook interfaces, `SaveData` (the slot format), `MessageSkip`, `PointerScript` (the
+  gesture queue), `IScenarioSource`, plus
   `ScriptStatements` — scenario code read at run time: a goto program that mirrors the
   decompile line for line (`ScriptProgram`, one statement per engine command, jumps resolved,
   no idiom rewritten); `RunAsync` runs the straight-line `SET_*` data files and `SceneRunner`
-  runs scene programs (`ISceneInput` adds menus, mouse and clock to the inputs). `Setup/GameSetup` is the boot (`SET.ADV`) and the new game.
+  runs scene programs (`ISceneInput` adds menus, mouse and clock to the inputs).
+  `Golden/` is the harness's capture format (`GoldenCapture`, `MemoryDump`).
+- `src/Kichikuou.Original` — the original game's rules (references the engine only).
+  `State/GameState` is the typed view over the memory: `GameState.g.cs` is **generated** by
+  `python tools/codegen/gen_state.py` from `docs/variables.tsv` — never edit it by hand;
+  re-run the generator after changing the dictionary. Rule code addresses records explicitly
+  (`state.Units[state.Unit_Cur].Troops`) to keep the script's cursor quirks visible.
+  `GameState` derives from the engine's `ScriptState` and carries the original's profile
+  (`State/OriginalVariant`); `State/VariableCatalog.g.cs` (names, groups, page bindings) is
+  generated with `GameState.g.cs`. `Script/` holds the original's `OriginalScriptContext` on the
+  engine's context with the helper files `WAO_SUB` (message windows), `M`/`WAO_MAP` (map) and
+  `PCMPLAY` (sound), their events (`HelperEvents`), the semantic screen events (`ScreenEvents`)
+  and the screens' gesture geometry (`GesturePoints`). `Golden/` replays harness captures through
+  the port (`GoldenReplay`, `MemoryComparison`). `Combat/` is the battle. `Setup/GameSetup` is
+  the boot (`SET.ADV`) and the new game.
   `Strategy/` holds the strategic rule files: `WeekLoop` is `MAIN.ADV`, `WeeklyEvents` is `COM.ADV`, `CommandPhase` is
   `COMMAND.ADV`, `LoadSaveScreen` is `ﾛｰﾄﾞｾｰﾌﾞ.ADV`, the `*Command` classes (on `CommandFile`) are the `C*.ADV` command files, the
   `*Screen` classes (on `PickerScreen`) their `S*.ADV` pickers (`ItemScreen` is `Sｱｲﾃﾑ`), `AllDataCommand` is `各種DATA.ADV`, the nation files sit on `NationFile` (the
@@ -183,14 +194,16 @@ Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its author's pe
   army picker itself is on `CommandFile`, since `Cﾃｷﾄｼ` has a copy) as
   `*Turn` (`T*.ADV`, e.g. `RebelTurn`) and `*Defenders` (`T*2.ADV`), and `StrategyRules` routes calls of these files to their ports (the rule hooks of a `SceneRunner`).
 - `src/Kichikuou.Content` — engine-independent access to the player's own game data (never
-  part of the repository): `ScenarioText` reads message texts from the decompiled scenario by
+  part of the repository; references the engine only): `ScenarioText` reads message texts from the decompiled scenario by
   `ScriptRef`; `Scripts/ScenarioScripts` reads the data files' statements and whole files as programs
   (`ScenarioParser`; strictly: anything unexpected fails with its location); `Graphics/` decodes the CGs keeping palette indices (`IndexedPng`, `Pms`,
   `CgLibrary`, `Palette` with the engine's reserved entries; `ToRgba(40)` = `G n, 40`);
-  `Audio/` maps sound and music numbers to files. `Screen/` emulates the engine's drawing
+  `Audio/MusicTable` maps music numbers to files. `Screen/` emulates the engine's drawing
   surface (3200×800 at 2×, 8-bit indexed as the engine's: a palette load recolours what is
   drawn), its drawing commands (`EngineStage`: `G`/`CC`/`CS`/`CF`/`CM`, `WV`, the fades, the text
-  state; its owner is told of the drawing through `IStageObserver`), message text and selection windows;
+  state; its owner is told of the drawing through `IStageObserver`), message text (`TextBox`) and selection windows.
+- `src/Kichikuou.Original.Content` — the original's presenters (references Original and Content):
+  `Audio/SoundTable` maps the original's sound numbers to files;
   `Battles/BattlePresenter` draws every core event the way the original does
   ([docs/battle/screen-layout.md](docs/battle/screen-layout.md)), `FigtSelScreen` /
   `BattleMenuScreen` are the mouse-driven input screens. `Strategy/GamePresenter` draws a whole
@@ -202,13 +215,14 @@ Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its author's pe
   every text; its folders are the local paths, "Local paths" below).
 - `tests/Kichikuou.Core.Tests` — xUnit tests for the core. `Golden/GoldenBattleTests` replays the
   captures in `_extract\golden` (`KICHIKUOU_GOLDEN_DIR`) and is skipped when there are none.
-- `godot/` — Godot 4.7.2 .NET project (`Kichikuou.csproj`, namespace `Kichikuou.Game`);
+- `godot/` — Godot 4.7.2 .NET project (`Kichikuou.csproj`, namespace `Kichikuou.Game`, references
+  the four libraries; its build does not make warnings errors, so check it at run time);
   presentation only: `Main` opens the title (a `GameScreen` running `ｽﾀMENU`) or what the
   development switches ask for; `Strategy/GameScreen` runs one game from the boot (`GameSession` on a `GamePresenter`;
   mouse and keys are a state, `Strategy/PlayerInput`, that `IM`, `Y 3`, `IK 0` and the menus poll
   once a frame as xsystem35 does — the map and the pickers decide clicks and drags themselves;
   `PointerScript` gestures only for `--auto`; `GameScreen.MenuBar` is xsystem35's menu bar —
-  Restart, MsgSkip on `Core/Script/MessageSkip` (it skips the opening whole, `OriginalVariant.WholeScenes`, `Core/Script/EngineTimer`),
+  Restart, MsgSkip on `Engine/Script/MessageSkip` (it skips the opening whole, `OriginalVariant.WholeScenes`, `Engine/Script/EngineTimer`),
   docs/window-menu.md, plus our Debug menu; `Strategy/EngineState` keeps
   the random generator and the message skip for the whole launch); `Battles/CaptureList` (Debug → Battle Captures) picks a capture, `Battles/BattleScreen` shows its battle;
   `GodotGlyphRenderer` (TextServer; MS Gothic or the bundled BIZ UDGothic in `godot/fonts`, Option →
@@ -228,7 +242,7 @@ a command or a doc needs a folder or a tool: `KICHIKUOU_GAME_DIR` (the game), `K
 (the extract, `_extract` in the docs: `scenario`, `scenario_named`, `cg_png`, `cg_pms`, `wav`,
 `golden`), `KICHIKUOU_GODOT_EXE` (the Godot console exe), `KICHIKUOU_XSYSTEM35_DIR`,
 `KICHIKUOU_MSYS2_DIR`, `KICHIKUOU_ALICE_TOOLS_DIR` and the spike's tools (docs/spike-findings.md,
-"Local layout"). `Kichikuou.Core.LocalPaths` reads it for the tests and the Godot game's default
+"Local layout"). `Kichikuou.Engine.LocalPaths` reads it for the tests and the Godot game's default
 folders, `tools/golden/capture.ps1` for the harness. Docs and code name a key, never a path; never
 commit `local.env`.
 
@@ -272,7 +286,7 @@ commit `local.env`.
 - **Register every quirk.** Bugs and oddities of the original are reproduced as is and each one is
   recorded in [docs/quirks.md](docs/quirks.md) (stable ID, cited as `// QUIRK: <ID>`), so some can
   be offered as optional fixes later.
-- **Engine-independent core.** Game rules live in `Kichikuou.Core`, a .NET class library with no
+- **Engine-independent core.** Game rules live in `Kichikuou.Original` (on the shared `Kichikuou.Engine`), .NET class libraries with no
   Godot references, covered by unit tests. The Godot project only renders state and forwards input.
   Never put rules in UI code.
 - **Godot 4 only.** Use Godot 4 C# APIs; never Godot 3 idioms (`yield`, old method/signal names).
