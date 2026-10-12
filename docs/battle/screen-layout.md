@@ -481,7 +481,9 @@ The core's event lists the CGs in this order (`Battle.Resolution.cs:370-411`).
 
 `WindowEvent(143)` (CG 894 box, text rect 200,196,240,200, colour 22 in practice) →
 `ActionLabelsEvent` → `WindowEvent(11)` + key wait (text erased) → `WindowEvent(10)` (box
-removed) (`Battle.Resolution.cs:341-344`). Text, size 24:
+removed) (`Battle.Resolution.cs:341-344`). The key wait is `IK 0`, which takes a button already
+held: after the player clicks a target (§4.3: on the press) the window shows for one frame, after
+the enemy's choice it waits for a click (BSC-07). Text, size 24:
 
 | y | Text |
 |---|---|

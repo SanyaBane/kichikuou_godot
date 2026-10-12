@@ -341,6 +341,8 @@ public sealed partial class Battle
 
         await WaoAsync(143); // L_0509c, 1739
         await View.ShowAsync(new ActionLabelsEvent(PlayerActionLabel(), EnemyActionLabel()));
+        // QUIRK: BSC-07 — IK 0 takes a button still held: after a target clicked (FIGT_SEL acts on
+        // the press) the window is gone in a frame; otherwise it waits for a click.
         await WaoAsync(11); // L_05119, 1801
         await WaoAsync(10); // L_0510c, 1802
 
