@@ -144,6 +144,9 @@ the project is GPL-2.0-or-later (`LICENSE`; README, "License").
 Next (owner's requests 2026-10-11/12): an interface of our own next to the original layout, chosen
 by the player, and an Android build later (docs/backlog.md). The game logic stays the original's.
 The UI survey's parts 1-4 are docs/ui/survey.md; the design waits for the owner.
+**Now: the variant split** (decision 24, 2026-10-12): a shared engine and one rule set per game variant,
+the original first and alone — the plan, its steps and what is deferred are docs/variants.md. The Sparrow
+Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its author's permission.
 `tools/analysis/port_draft.py` drafts text-heavy ranges for hand ports.
 **Agent screen dumps mask the event CGs** (`GamePresenter.MaskEventCgs`, on with `--shots` and
 `KICHIKUOU_SHOTS_DIR`); never look at unmasked ones.

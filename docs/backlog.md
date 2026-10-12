@@ -186,3 +186,7 @@ Other:
 - **The hybrid** on a separate branch: the original's content with Sengoku Rance's mechanics (brief,
   scope decision 2).
 - **A remake** (brief, scope decision 3).
+- **The Sparrow Mod port** (2026-10-12) — *owner*: survey done ([mods/sparrow-mod.md](mods/sparrow-mod.md));
+  decision 24: a second variant on the shared engine, after the variant split
+  ([variants.md](variants.md)), with the split's deferred parts (variants.md, "Deferred"). Waits for
+  the mod author's permission (the owner wrote to them 2026-10-12; a refusal is expected).

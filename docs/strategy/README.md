@@ -215,6 +215,18 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     GPL-3.0-or-later (code could not go back to xsystem35), MIT (needs the translated parts rewritten,
     with the GPL sources already read), no license (blocks any release). The scenario logic ported from
     AliceSoft's script stays the risk the brief accepted ("Risks").
+24. **A shared engine and one rule set per game variant; the refactor first** (2026-10-12, after the
+    Sparrow Mod survey, docs/mods/sparrow-mod.md): the owner wants the original and the Sparrow Mod as
+    two projects on one code base. The agent's survey showed the mod's changes cannot be merged into the
+    original's rules (another memory layout, rewritten rule files), so the split is the engine,
+    readers and screen emulation shared, the state, rules and presenters per variant, each verified
+    against its own scenario. Order: the refactor of today's code into that split first, with no
+    change for the player (docs/variants.md, the plan); the Sparrow port only after its author allows
+    it. The owner wrote to the author the same day and expects a refusal, so the split must pay off with
+    the original alone; what helps only a second variant waits for one (the plan's "Deferred"). The
+    names (`Kichikuou.Engine`, `Kichikuou.Content`, `Kichikuou.Original`, `Kichikuou.Original.Content`)
+    are the owner's choice. Rejected: one rule set with `#if` (the mod touched nearly every rule file and shifted every
+    message line), a branch per variant (the shared fixes would have to be merged by hand forever).
 
 ## Milestone 1 — the prologue
 
