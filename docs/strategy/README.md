@@ -227,6 +227,16 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     names (`Kichikuou.Engine`, `Kichikuou.Content`, `Kichikuou.Original`, `Kichikuou.Original.Content`)
     are the owner's choice. Rejected: one rule set with `#if` (the mod touched nearly every rule file and shifted every
     message line), a branch per variant (the shared fixes would have to be merged by hand forever).
+25. **Our own interface screen by screen, over the original layout; the deployment table first**
+    (2026-10-12, docs/ui/deployment-table.md): the original layout stays whole and is the reference;
+    a screen of our own is a Godot control over it, chosen by a setting (Option → Interface), that
+    reads GameState and answers with the gestures the script expects (the script still hit-tests
+    them), so no rule moves into the UI and no shared engine host is needed for it. The first is
+    `Sﾌﾞﾀｲ`'s unit grid replaced by a table of the player's units — compact headers with the full name
+    as a tooltip, the columns of the plan, sortable by any column, scrolling both ways; units deployed
+    this week are grey but sort like the rest (Rance (unit 1) stays first by number). The left part
+    and the bar buttons stay the original's. Rejected for now: a whole second UI behind
+    `InterfaceSwitch` (removed again).
 
 ## Milestone 1 — the prologue
 
