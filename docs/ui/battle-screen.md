@@ -57,10 +57,42 @@ draws what the core shows and answers what the core asks.
 7. **Script menus** (retreat, intercept / ninja scout / abandon, the ninja): a dialog of ours.
 8. **Dungeon battles** (black field, no strategy): the scene's background.
 
+## The layout (owner, 2026-10-12, from the mock-ups)
+
+The owner goes one thing at a time; first: **the scene and the cards on screen at once**, as
+Sengoku Rance's (today the engagement scene and the field with the slot panels replace each other),
+and **the cards like Sengoku's, with portraits**. The questions above wait. Mock-up A (made from
+window dumps of the week-26 battle, steel palette) was approved with one addition, the speaker's
+portrait (mock-up B):
+
+- **Window 1280×800** (script pixels ×2). Top, y 0-410: **the scene** — what the original fills the
+  whole screen with during an exchange (the battlefield with the sprites, the TROOPS counters, the
+  shots, the marks such as ANNIHILATED, the speech bubble), its picture rows 0-255 scaled ×1.6 to
+  1024×410 in the middle, the sides filled with the same picture scaled to the width, blurred and
+  darkened. The two big portraits under the original's scene are not drawn there (the cards carry
+  the faces) — except while someone speaks (below).
+- **The speaker's whole portrait** while a flavour line or any window with a speaker is up: the
+  192×256 face (`Unit_FaceCg` / `Cmdr_FaceCg`) scaled ×1.56 to 300×400 on the speaker's side of the
+  scene (the player's left, the enemy's right: the bubble's tail), framed in the accent colour, the
+  name below it — so it is clear who speaks, as the original's faces beside the bubble show.
+- **The round's order**, y 412-446: a strip of name chips, the acted grey, the acting framed, the
+  rest blue (player) or red (enemy), in Kichikuou's order (fewest troops first, re-evaluated after
+  each action; ties by slot, player first; 01-flow.md §6).
+- **The cards**, y ~470-785: two columns of two cards a side, 282×150; the player's back row
+  (places 3-4) on the far left, its front row (1-2) next to the centre, the enemy's front row next to
+  the centre, its back row on the far right; between them **the rounds gauge** (one segment per
+  round of the battle, the spent ones dark, "n left" below). A card: the face (`UnitFaces` square,
+  118 px; the enemy's on the card's right), place and name, troop type, troops now/max with a bar,
+  HP now/max with a bar, the standing order (Manual / Auto-Atk / Auto-Def; the player's), "acted"
+  (the face dimmed); the acting unit's card framed in the accent colour; an empty place "n empty".
+  "Rance Army" / the enemy army's name above the two sides.
+- The windows that wait for a click (round header, "vs", results, info) stay as they are, over the
+  scene, for now.
+
 ## Steps
 
-1. **Mock-ups** of the layout (owner's choice, as A-D for the deployment panel), with the answers
-   to the questions above.
+1. **Mock-ups** of the layout — the first part's done (2026-10-12, "The layout" above); the
+   questions above come one at a time, later.
 2. **The model** (`Original.Content`, engine-independent, tested): the cards from GameState (slot,
    record, face, troops, HP, order, focus, acted), the round's order (Kichikuou's rule, tested
    against the core's choice on recorded battles), the commands per target from `FigtSelMenu`
