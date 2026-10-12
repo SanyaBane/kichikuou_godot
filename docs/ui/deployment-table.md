@@ -26,8 +26,9 @@ owner's choices (2026-10-12), from four mock-ups:
   the right), two member cards in each, the totals against the gold below.
 - **Faces**: a member's face is its dialogue face (`Unit_FaceCg`, 192×256; scenes change it at
   run time — unit 48 is empty until `Gﾊﾆｰ` makes it the Hanny King, CG 495, or `Gｵｳｼﾞ` the Kaiju
-  Prince, CG 499) cut to a square: the top 144 pixels of its middle (the closer 104 showed the
-  pixels, 128 and 160 were the other choices), shrunk to the card. A face the square misses gets
+  Prince, CG 499) cut to a square: 144 pixels of its middle from y 7, below the portrait's gold
+  frame (first from y 0, moved by the owner the same day; the closer 104 showed the pixels, 128 and
+  160 were the other choices), shrunk to the card. A face the square misses gets
   its own: Asuka's (unit 11) sits under Pigu's hat. `Original.Content/Strategy/UnitFaces`.
 - **Debug → Portraits** first, so the owner can judge every face before it is used: the units of
   the running game and every face CG in the player's files, each cut as the panel will cut it.

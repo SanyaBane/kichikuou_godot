@@ -7,9 +7,9 @@ namespace Kichikuou.Original.Content.Tests;
 public class UnitFacesTests
 {
     [Fact]
-    public void A_face_is_cut_to_the_top_144_pixels_of_its_middle_but_Asukas_lower()
+    public void A_face_is_cut_to_144_pixels_of_its_middle_below_the_gold_frame_but_Asukas_lower()
     {
-        Assert.Equal(new FaceCrop(24, 0, 144), UnitFaces.CropOf(1));        // Rance's (unit 1)
+        Assert.Equal(new FaceCrop(24, 7, 144), UnitFaces.CropOf(1));        // Rance's (unit 1)
         Assert.Equal(new FaceCrop(24, 64, 144), UnitFaces.CropOf(430));     // Asuka's (unit 11), under Pigu's hat
         Assert.All(UnitFaces.Exceptions.Values.Append(UnitFaces.Default), c => Assert.Equal(c, c.Clamped()));
     }

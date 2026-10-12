@@ -22,17 +22,17 @@ public sealed record RecordFace(int Record, string Name, int FaceCg);
 /// The faces on our own screens (docs/ui/deployment-table.md, third part): the face CG a unit shows
 /// in the dialogues (<c>Unit_FaceCg</c>, which scenes change at run time — unit 48 becomes the Hanny
 /// King or the Kaiju Prince) or a commander in the battle (<c>Cmdr_FaceCg</c>, the same 192×256
-/// pictures) cut to a square: the top 144 pixels of its middle, the owner's choice (2026-10-12), but
-/// where the face sits elsewhere (<see cref="Exceptions"/>; the owner's own in Debug → Portraits,
-/// <see cref="FaceCrops"/>).
+/// pictures) cut to a square: 144 pixels of its middle from just below the gold frame (y 7), the
+/// owner's choice (2026-10-12), but where the face sits elsewhere (<see cref="Exceptions"/>; the
+/// owner's own in Debug → Portraits, <see cref="FaceCrops"/>).
 /// </summary>
 public static class UnitFaces
 {
     /// <summary>A face CG's size: every <c>WAO_SUB</c> portrait is 192×256.</summary>
     public const int Width = 192, Height = 256;
 
-    /// <summary>The usual square: 144 pixels, centred, from the top.</summary>
-    public static FaceCrop Default { get; } = new(24, 0, 144);
+    /// <summary>The usual square: 144 pixels, centred, from y 7 — the portrait's gold frame stays out (owner, 2026-10-12).</summary>
+    public static FaceCrop Default { get; } = new(24, 7, 144);
 
     /// <summary>Faces the usual square misses, by CG: Asuka's (unit 11) sits under Pigu's hat.</summary>
     public static IReadOnlyDictionary<int, FaceCrop> Exceptions { get; } = new Dictionary<int, FaceCrop>
