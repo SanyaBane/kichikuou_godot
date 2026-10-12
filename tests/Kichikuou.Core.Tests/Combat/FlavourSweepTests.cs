@@ -1,6 +1,3 @@
-using Kichikuou.Core.Combat;
-using Kichikuou.Core.Sys3;
-
 namespace Kichikuou.Core.Tests.Combat;
 
 /// <summary>

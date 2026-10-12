@@ -1,5 +1,5 @@
 using Godot;
-using Kichikuou.Core.Sys3;
+using Kichikuou.Engine.Sys3;
 
 namespace Kichikuou.Game.Strategy;
 

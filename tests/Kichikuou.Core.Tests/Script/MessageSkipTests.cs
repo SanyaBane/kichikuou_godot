@@ -1,5 +1,5 @@
-using Kichikuou.Core.Script;
-using Kichikuou.Core.State;
+using Kichikuou.Engine.Script;
+using Kichikuou.Original.State;
 
 namespace Kichikuou.Core.Tests.Script;
 

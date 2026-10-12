@@ -1,3 +1,5 @@
+using Kichikuou.Engine;
+
 namespace Kichikuou.Core.Tests;
 
 public class LocalPathsTests

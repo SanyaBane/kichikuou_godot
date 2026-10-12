@@ -1,5 +1,6 @@
 using Kichikuou.Content.Audio;
 using Kichikuou.Content.Graphics;
+using Kichikuou.Original.Content.Audio;
 using Xunit.Abstractions;
 
 namespace Kichikuou.Content.Tests;

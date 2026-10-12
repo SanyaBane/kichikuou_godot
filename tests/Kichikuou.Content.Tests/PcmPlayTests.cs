@@ -1,7 +1,7 @@
-using Kichikuou.Content.Battles;
 using Kichikuou.Content.Screen;
-using Kichikuou.Core.Script;
-using Kichikuou.Core.Sys3;
+using Kichikuou.Engine.Sys3;
+using Kichikuou.Original.Content.Battles;
+using Kichikuou.Original.Script;
 
 namespace Kichikuou.Content.Tests;
 

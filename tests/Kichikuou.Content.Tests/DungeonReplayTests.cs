@@ -1,6 +1,7 @@
 using Kichikuou.Content.Scripts;
-using Kichikuou.Core.Golden;
-using Kichikuou.Core.Strategy;
+using Kichikuou.Engine.Golden;
+using Kichikuou.Original.Golden;
+using Kichikuou.Original.Strategy;
 using Xunit.Abstractions;
 
 namespace Kichikuou.Content.Tests;

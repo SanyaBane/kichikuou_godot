@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text;
-using Kichikuou.Core.Script;
-using Kichikuou.Core.Sys3;
+using Kichikuou.Engine.Script;
+using Kichikuou.Engine.Sys3;
 
 namespace Kichikuou.Content;
 
@@ -129,7 +129,7 @@ public sealed record TextRun(ScriptRef Source, IReadOnlyList<TextSegment> Segmen
     /// the last <paramref name="width"/> characters are kept; full-width digits and blanks for <c>H</c>.
     /// </summary>
     public static string FormatNumber(int value, int width, bool fullWidth) =>
-        Kichikuou.Core.Sys3.Sys3Text.FormatNumber(value, width, fullWidth);
+        Kichikuou.Engine.Sys3.Sys3Text.FormatNumber(value, width, fullWidth);
 
     /// <summary>
     /// xsystem35 <c>commandMP</c> (<c>cmdm.c</c>, non-English-patch branch): the first

@@ -1,9 +1,9 @@
 using Kichikuou.Content.Scripts;
-using Kichikuou.Core.Golden;
-using Kichikuou.Core.Script;
-using Kichikuou.Core.Setup;
-using Kichikuou.Core.State;
-using Kichikuou.Core.Sys3;
+using Kichikuou.Engine.Script;
+using Kichikuou.Engine.Sys3;
+using Kichikuou.Original.Golden;
+using Kichikuou.Original.Setup;
+using Kichikuou.Original.State;
 using Xunit.Abstractions;
 
 namespace Kichikuou.Content.Tests;

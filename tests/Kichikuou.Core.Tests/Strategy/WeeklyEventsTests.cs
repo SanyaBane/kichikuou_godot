@@ -1,6 +1,6 @@
-using Kichikuou.Core.Strategy;
-using Kichikuou.Core.Sys3;
 using Kichikuou.Core.Tests.Script;
+using Kichikuou.Engine.Sys3;
+using Kichikuou.Original.Strategy;
 
 namespace Kichikuou.Core.Tests.Strategy;
 

@@ -1,10 +1,12 @@
-using Kichikuou.Content.Battles;
 using Kichikuou.Content.Graphics;
 using Kichikuou.Content.Screen;
-using Kichikuou.Core.Combat;
-using Kichikuou.Core.Golden;
-using Kichikuou.Core.Script;
-using Kichikuou.Core.Sys3;
+using Kichikuou.Engine.Golden;
+using Kichikuou.Engine.Script;
+using Kichikuou.Engine.Sys3;
+using Kichikuou.Original.Combat;
+using Kichikuou.Original.Content.Battles;
+using Kichikuou.Original.Golden;
+using Kichikuou.Original.Script;
 using Xunit.Abstractions;
 
 namespace Kichikuou.Content.Tests;

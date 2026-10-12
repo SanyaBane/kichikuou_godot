@@ -1,7 +1,8 @@
-using Kichikuou.Core.Golden;
-using Kichikuou.Core.State;
-using Kichikuou.Core.Strategy;
-using Kichikuou.Core.Sys3;
+using Kichikuou.Engine.Golden;
+using Kichikuou.Engine.Sys3;
+using Kichikuou.Original.Golden;
+using Kichikuou.Original.State;
+using Kichikuou.Original.Strategy;
 
 namespace Kichikuou.Core.Tests.Golden;
 

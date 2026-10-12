@@ -1,6 +1,7 @@
 using Godot;
 using Kichikuou.Content.Audio;
-using Kichikuou.Content.Battles;
+using Kichikuou.Original.Content.Audio;
+using Kichikuou.Original.Content.Battles;
 
 namespace Kichikuou.Game.Battles;
 

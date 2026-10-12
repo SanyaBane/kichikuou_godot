@@ -7,7 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\src\Kichikuou.Engine\Kichikuou.Engine.csproj" />
     <ProjectReference Include="..\src\Kichikuou.Content\Kichikuou.Content.csproj" />
+    <ProjectReference Include="..\src\Kichikuou.Original\Kichikuou.Original.csproj" />
+    <ProjectReference Include="..\src\Kichikuou.Original.Content\Kichikuou.Original.Content.csproj" />
   </ItemGroup>
 
 </Project>

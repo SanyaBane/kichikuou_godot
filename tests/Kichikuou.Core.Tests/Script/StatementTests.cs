@@ -1,7 +1,8 @@
-using Kichikuou.Core.Script;
-using Kichikuou.Core.State;
-using Kichikuou.Core.Sys3;
 using Kichikuou.Core.Tests.Combat;
+using Kichikuou.Engine.Script;
+using Kichikuou.Engine.Sys3;
+using Kichikuou.Original.Script;
+using Kichikuou.Original.State;
 using static Kichikuou.Core.Tests.Combat.Sys3Assert;
 
 namespace Kichikuou.Core.Tests.Script;

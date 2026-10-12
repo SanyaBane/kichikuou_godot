@@ -1,6 +1,6 @@
 using Godot;
-using Kichikuou.Content.Battles;
-using Kichikuou.Core.Golden;
+using Kichikuou.Engine.Golden;
+using Kichikuou.Original.Content.Battles;
 
 namespace Kichikuou.Game.Battles;
 

@@ -1,5 +1,5 @@
 using Kichikuou.Content.Graphics;
-using Kichikuou.Core.Sys3;
+using Kichikuou.Engine.Sys3;
 
 namespace Kichikuou.Content.Screen;
 
@@ -28,7 +28,7 @@ public interface IStageObserver
 }
 
 /// <summary>
-/// The engine's drawing commands (<see cref="Core.Script.EngineEvent"/>) run on its surface as
+/// The engine's drawing commands (<see cref="Engine.Script.EngineEvent"/>) run on its surface as
 /// xsystem35 runs them: <c>G</c> with <c>J0</c>/<c>J1</c>/<c>PC</c>, <c>CC</c>, <c>CE</c>,
 /// <c>CS</c>, <c>CF</c>, <c>CM</c>, <c>WV</c>, <c>CB</c>, <c>CL</c>, <c>EC</c> and the fades
 /// <c>PF</c>/<c>PW</c> (<see cref="Draw"/>), and the state the text commands keep: <c>ZM</c>,

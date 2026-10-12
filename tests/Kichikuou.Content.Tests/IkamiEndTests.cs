@@ -1,6 +1,7 @@
-using Kichikuou.Core.Combat;
-using Kichikuou.Core.Script;
-using Kichikuou.Core.Strategy;
+using Kichikuou.Engine.Script;
+using Kichikuou.Original.Combat;
+using Kichikuou.Original.Script;
+using Kichikuou.Original.Strategy;
 using Xunit.Abstractions;
 
 namespace Kichikuou.Content.Tests;

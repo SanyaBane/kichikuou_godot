@@ -1,9 +1,10 @@
 using System.Text;
 using Kichikuou.Content.Scripts;
-using Kichikuou.Core.Script;
-using Kichikuou.Core.State;
-using Kichikuou.Core.Strategy;
-using Kichikuou.Core.Sys3;
+using Kichikuou.Engine.Script;
+using Kichikuou.Engine.Sys3;
+using Kichikuou.Original.Script;
+using Kichikuou.Original.State;
+using Kichikuou.Original.Strategy;
 using Xunit.Abstractions;
 
 namespace Kichikuou.Content.Tests;
@@ -536,7 +537,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
 
     /// <summary>
     /// <c>FIGT表示</c> (the scenes' scripted battles, every entry) with its 24 calls of
-    /// <c>FIGTATTK</c> run by the battle's port (<see cref="Kichikuou.Core.Combat.Battle.PlayExchangeAnimationAsync"/>,
+    /// <c>FIGTATTK</c> run by the battle's port (<see cref="Kichikuou.Original.Combat.Battle.PlayExchangeAnimationAsync"/>,
     /// the router's route) against <c>FIGTATTK</c> run from the decompile, on random states: the same
     /// draws and calls and the same memory. The screen events are not compared — the port raises
     /// the battle's own events where the file draws.
@@ -610,7 +611,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         public Task RunEventAsync(string file, Sys3Int entry)
         {
             if (port && file == "FIGTATTK.ADV")
-                return new Kichikuou.Core.Combat.Battle(Script!, input).PlayExchangeAnimationAsync();
+                return new Kichikuou.Original.Combat.Battle(Script!, input).PlayExchangeAnimationAsync();
             log.Add($"call {file} entry {entry}");
             return Task.CompletedTask;
         }
@@ -624,8 +625,8 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         public Task<Sys3Int> WaitForKeyAsync() => Task.FromResult(Sys3Int.Zero);
         public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable) => Task.FromResult(Sys3Int.Zero);
         public Task<Sys3Int> GetPlayingTrackAsync() => Task.FromResult(Sys3Int.Zero);
-        public Task<Kichikuou.Core.Combat.FigtSelChoice> SelectCommandAsync(Kichikuou.Core.Combat.FigtSelMenu menu) => No<Task<Kichikuou.Core.Combat.FigtSelChoice>>();
-        public Task<Sys3Int?> ChooseAsync(Kichikuou.Core.Combat.BattleMenu menu) => No<Task<Sys3Int?>>();
+        public Task<Kichikuou.Original.Combat.FigtSelChoice> SelectCommandAsync(Kichikuou.Original.Combat.FigtSelMenu menu) => No<Task<Kichikuou.Original.Combat.FigtSelChoice>>();
+        public Task<Sys3Int?> ChooseAsync(Kichikuou.Original.Combat.BattleMenu menu) => No<Task<Sys3Int?>>();
         public Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items) => No<Task<int>>();
         public Task<MouseState> GetMouseAsync() => Task.FromResult(new MouseState(Sys3Int.Zero, Sys3Int.Zero, Sys3Int.Zero));
         public Task<Sys3Int> SetCursorAsync(Sys3Int shape) => Task.FromResult(Sys3Int.Zero);

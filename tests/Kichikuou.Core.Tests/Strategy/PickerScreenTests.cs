@@ -1,10 +1,10 @@
-using Kichikuou.Core.Script;
-using Kichikuou.Core.Setup;
-using Kichikuou.Core.State;
-using Kichikuou.Core.Strategy;
-using Kichikuou.Core.Sys3;
 using Kichikuou.Core.Tests.Combat;
 using Kichikuou.Core.Tests.Script;
+using Kichikuou.Engine.Script;
+using Kichikuou.Engine.Sys3;
+using Kichikuou.Original.Script;
+using Kichikuou.Original.State;
+using Kichikuou.Original.Strategy;
 
 namespace Kichikuou.Core.Tests.Strategy;
 

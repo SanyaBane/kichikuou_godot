@@ -1,8 +1,8 @@
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
-using Kichikuou.Core.Script;
-using Kichikuou.Core.Sys3;
+using Kichikuou.Engine.Script;
+using Kichikuou.Engine.Sys3;
 
 namespace Kichikuou.Content.Scripts;
 

@@ -1,4 +1,4 @@
-using Kichikuou.Core.Script;
+using Kichikuou.Engine.Script;
 
 namespace Kichikuou.Core.Tests.Script;
 

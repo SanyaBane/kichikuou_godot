@@ -1,6 +1,6 @@
-using Kichikuou.Core.Combat;
-using Kichikuou.Core.Script;
-using Kichikuou.Core.Sys3;
+using Kichikuou.Engine.Sys3;
+using Kichikuou.Original.Combat;
+using Kichikuou.Original.Script;
 
 namespace Kichikuou.Core.Tests.Combat;
 

@@ -1,5 +1,5 @@
-using Kichikuou.Core.State;
-using Kichikuou.Core.Sys3;
+using Kichikuou.Engine.Sys3;
+using Kichikuou.Original.State;
 
 namespace Kichikuou.Core.Tests.Combat;
 

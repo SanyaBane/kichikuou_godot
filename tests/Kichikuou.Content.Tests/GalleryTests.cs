@@ -1,7 +1,7 @@
-using Kichikuou.Core.Golden;
-using Kichikuou.Core.Script;
-using Kichikuou.Core.State;
-using Kichikuou.Core.Sys3;
+using Kichikuou.Engine.Script;
+using Kichikuou.Original.Golden;
+using Kichikuou.Original.Script;
+using Kichikuou.Original.State;
 
 namespace Kichikuou.Content.Tests;
 

@@ -1,5 +1,5 @@
 using Godot;
-using Kichikuou.Core;
+using Kichikuou.Engine;
 
 namespace Kichikuou.Game;
 

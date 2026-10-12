@@ -6,18 +6,19 @@
 using System.Diagnostics;
 using Godot;
 using Kichikuou.Content;
-using Kichikuou.Content.Battles;
 using Kichikuou.Content.Graphics;
 using Kichikuou.Content.Screen;
 using Kichikuou.Content.Scripts;
-using Kichikuou.Content.Strategy;
-using Kichikuou.Core.Combat;
-using Kichikuou.Core.Script;
-using Kichikuou.Core.State;
-using Kichikuou.Core.Strategy;
-using Kichikuou.Core.Sys3;
+using Kichikuou.Engine.Script;
+using Kichikuou.Engine.Sys3;
 using Kichikuou.Game.Battles;
-using SelButton = Kichikuou.Content.Battles.MouseButton;
+using Kichikuou.Original.Combat;
+using Kichikuou.Original.Content.Battles;
+using Kichikuou.Original.Content.Strategy;
+using Kichikuou.Original.Script;
+using Kichikuou.Original.State;
+using Kichikuou.Original.Strategy;
+using SelButton = Kichikuou.Original.Content.Battles.MouseButton;
 
 namespace Kichikuou.Game.Strategy;
 

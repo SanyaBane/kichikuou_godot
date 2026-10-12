@@ -1,4 +1,4 @@
-using Kichikuou.Core.Script;
+using Kichikuou.Engine.Script;
 using Xunit.Abstractions;
 
 namespace Kichikuou.Content.Tests;

@@ -1,13 +1,14 @@
 using Godot;
 using Kichikuou.Content;
-using Kichikuou.Content.Battles;
 using Kichikuou.Content.Graphics;
 using Kichikuou.Content.Screen;
-using Kichikuou.Core.Combat;
-using Kichikuou.Core.Golden;
-using Kichikuou.Core.Script;
-using Kichikuou.Core.Sys3;
-using SelButton = Kichikuou.Content.Battles.MouseButton;
+using Kichikuou.Engine.Golden;
+using Kichikuou.Engine.Script;
+using Kichikuou.Engine.Sys3;
+using Kichikuou.Original.Combat;
+using Kichikuou.Original.Content.Battles;
+using Kichikuou.Original.Golden;
+using SelButton = Kichikuou.Original.Content.Battles.MouseButton;
 
 namespace Kichikuou.Game.Battles;
 

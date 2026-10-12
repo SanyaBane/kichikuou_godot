@@ -1,8 +1,9 @@
 using Kichikuou.Content.Scripts;
-using Kichikuou.Core.Script;
-using Kichikuou.Core.State;
-using Kichikuou.Core.Strategy;
-using Kichikuou.Core.Sys3;
+using Kichikuou.Engine.Script;
+using Kichikuou.Engine.Sys3;
+using Kichikuou.Original.Script;
+using Kichikuou.Original.State;
+using Kichikuou.Original.Strategy;
 
 namespace Kichikuou.Content.Tests;
 

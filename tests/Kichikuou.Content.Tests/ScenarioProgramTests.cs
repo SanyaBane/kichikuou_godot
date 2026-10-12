@@ -1,8 +1,8 @@
 using Kichikuou.Content.Scripts;
-using Kichikuou.Core.Script;
-using Kichikuou.Core.State;
-using Kichikuou.Core.Strategy;
-using Kichikuou.Core.Sys3;
+using Kichikuou.Engine.Script;
+using Kichikuou.Engine.Sys3;
+using Kichikuou.Original.State;
+using Kichikuou.Original.Strategy;
 using Xunit.Abstractions;
 
 namespace Kichikuou.Content.Tests;

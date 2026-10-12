@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kichikuou.Core\Kichikuou.Core.csproj" />
+    <ProjectReference Include="..\Kichikuou.Engine\Kichikuou.Engine.csproj" />
   </ItemGroup>
 
 </Project>

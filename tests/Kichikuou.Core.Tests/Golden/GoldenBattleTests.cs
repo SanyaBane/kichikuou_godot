@@ -1,4 +1,6 @@
-using Kichikuou.Core.Golden;
+using Kichikuou.Engine;
+using Kichikuou.Engine.Golden;
+using Kichikuou.Original.Golden;
 using Xunit.Abstractions;
 
 namespace Kichikuou.Core.Tests.Golden;

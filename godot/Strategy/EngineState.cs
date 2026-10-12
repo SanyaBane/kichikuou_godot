@@ -1,6 +1,6 @@
 using Godot;
-using Kichikuou.Core.Script;
-using Kichikuou.Core.Sys3;
+using Kichikuou.Engine.Script;
+using Kichikuou.Engine.Sys3;
 
 namespace Kichikuou.Game.Strategy;
 
@@ -8,7 +8,7 @@ namespace Kichikuou.Game.Strategy;
 /// What the engine keeps for the whole run of the program: xsystem35's Restart (<c>sys_reset</c>)
 /// clears the interpreter but not the random generator (seeded once at start-up) nor the message
 /// skip (docs/window-menu.md). Our Restart goes back to the title and the next game starts on a
-/// fresh <see cref="Core.State.GameState"/>, with these.
+/// fresh <see cref="Original.State.GameState"/>, with these.
 /// </summary>
 internal static class EngineState
 {
