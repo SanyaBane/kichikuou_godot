@@ -330,9 +330,13 @@ public sealed class RoundOrder
     /// <summary>The round now, 1 at the battle's first round header (0 before).</summary>
     public int Round { get; private set; }
 
+    /// <summary>Counts the battles followed (<see cref="Reset"/>): a screen tells a new battle's first round from the last one's.</summary>
+    public int Battle { get; private set; }
+
     /// <summary>Forgets the battle (a new one begins).</summary>
     public void Reset()
     {
+        Battle++;
         _acted.Clear();
         Acting = null;
         ActingRecord = 0;

@@ -427,15 +427,15 @@ internal sealed partial class BattleBoardView : Control
     {
         var chips = order.Chips(s);
         string key = string.Join(";", chips);
-        if (key == _stripKey && order.Round == _stripRound)
+        if (key == _stripKey && (order.Battle, order.Round) == _stripRound)
             return;
         _stripKey = key;
-        bool newRound = order.Round != _stripRound;
-        _stripRound = order.Round;
+        bool newRound = (order.Battle, order.Round) != _stripRound;     // a new round, or a new battle's first
+        _stripRound = (order.Battle, order.Round);
         _strip.Show(chips, instant || newRound);
     }
 
-    private int _stripRound = -1;
+    private (int Battle, int Round) _stripRound = (-1, -1);
 
     /// <summary>One segment per round of the battle, the spent ones dark, "n left" below.</summary>
     private void DrawGauge()

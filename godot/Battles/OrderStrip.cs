@@ -112,6 +112,12 @@ internal sealed partial class OrderStrip : Control
     /// <summary>Every chip at its place now; the chips that left are gone.</summary>
     private void Snap()
     {
+        var shown = _target.Select(Key).ToHashSet();
+        foreach (var (key, c) in _chips.Where(p => !shown.Contains(p.Key)).ToList())
+        {
+            c.Panel.QueueFree();                                // the chips of units no longer in the order (or of the last battle)
+            _chips.Remove(key);
+        }
         Sync(_target);
         var places = Places(_target);
         foreach (var chip in _target)
