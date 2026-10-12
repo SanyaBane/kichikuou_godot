@@ -80,18 +80,18 @@ the hand-drawn screen replaces them.
 
 ### 1.2 The events
 
-- **Screen events** (`Core/Script/ScreenEvents.cs`; they draw nothing, they say what is open):
+- **Screen events** (`Original/Script/ScreenEvents.cs`; they draw nothing, they say what is open):
   `MapScreenEvent(Waiting)` (`CommandPhase.cs:185`, closed at `:214, :260, :277`),
   `PickerScreenEvent(Kind, Mode, Open)` (`DeploymentScreen`, `SubordinateScreen`, `HaremScreen`,
   `ItemScreen`), `DataScreenEvent(View)` (`AllDataCommand.cs:34, 102, 260, 272`),
   `SaveScreenEvent(Mode, Open)` (`LoadSaveScreen.cs:82, 96, 152`), `BattleScreenEvent(File, Open)`
   (`StrategyRules.cs:105, 107`, nesting).
-- **Script events** (`Core/Script/ScriptEvents.cs`): messages and line breaks, `MessageClearEvent`
+- **Script events** (`Engine/Script/ScriptEvents.cs`): messages and line breaks, `MessageClearEvent`
   (after `A` and every menu choice), `MessageResetEvent` (`Y 1`), `PrintStringEvent` (`MP`),
   `KeyWaitEvent` (a bare `IK 0`), `PauseEvent` (`Y 3`), `WindowEvent(Op, CallArg)` (every `WAO_SUB`
   call), `MapEvent`/`WaoMapEvent` (`M.ADV`/`WAO_MAP` calls), `ClearScreenEvent`, sound and music,
   and `EngineEvent(Command, Args)` — any raw engine command.
-- **Battle events** (`Core/Combat/BattleEvents.*.cs`): `RoundHeader`, `StrategyScreen`, `UnitInfo`,
+- **Battle events** (`Original/Combat/BattleEvents.*.cs`): `RoundHeader`, `StrategyScreen`, `UnitInfo`,
   `EnemyInfo`, `FlowError`, `ScoutReport`, `PanelHighlight`, `BattlefieldBackground`, `SlotPanel`,
   `EngagementScene`, `ActionLabels`, `EngagementSlide`, `Counters`, `ShotsFrame`, `ExchangeResults`,
   `WipedOutMarks`. Several carry little and the presenter reads `GameState` while showing them
@@ -151,7 +151,7 @@ Effort: S — a day or less, M — a few days, L — more. **[I]** for every est
 
 ### 3.1 How input reaches the logic today
 
-- **`ISceneInput`** (`Core/Script/SceneInput.cs:11-53`): `SelectAsync(items)` — a `]` menu, answered
+- **`ISceneInput`** (`Engine/Script/SceneInput.cs:11-53`): `SelectAsync(items)` — a `]` menu, answered
   with the item (1-based) or 0 for a cancel; `GetMouseAsync()` — `IM`, raw: buttons 0/16/32/48 and
   the point. **`IScriptInput`** (`ScriptInterfaces.cs:32-54`): `WaitForKeyAsync()` (`IK 0`, `A`; the
   key code goes to `RetVal`), `PauseAsync(ticks, cancelable)` (`Y 3`). **`IBattleInput`**
@@ -256,7 +256,7 @@ pixel. A finger needs ~7-9 mm.)
 
 ### 4.1 What a UI implements
 
-`GameSession` (`Core/Strategy/GameSession.cs:35-45`) takes `GameState`, the random generator, an
+`GameSession` (`Original/Strategy/GameSession.cs:35-45`) takes `GameState`, the random generator, an
 `IScriptView`, an `IGameInput`, the scenario and scene sources, an `ISaveStore` and the hooks for
 unported files.
 
@@ -270,7 +270,7 @@ unported files.
 
 ### 4.2 Swapping
 
-`GameInputProxy` and `ViewProxy` (`Core/Strategy/GameInputProxy.cs:13-69`) each have a settable
+`GameInputProxy` and `ViewProxy` (`Original/Strategy/GameInputProxy.cs:13-69`) each have a settable
 `Target`; a switch must happen while no request is pending (a pending one stays with the old UI).
 The battle checks that its input is the context's own (`Battle.cs:19-20`); the router passes the
 proxy itself (`StrategyRules.cs:58`), so a proxy switch passes it. **But** `GameScreen` creates both

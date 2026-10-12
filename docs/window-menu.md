@@ -107,7 +107,7 @@ web build (seen only) by an option.
   2026-10-11 our own title, decision 10); the next game starts on a fresh
   `GameState`. The random generator lives for the whole launch (`EngineState`, seeded once with
   `--seed N` or the tick count) and so does the message skip.
-- **MsgSkip**: `Core/Script/MessageSkip` (the state and the seen set) and `GameScreen`'s waits.
+- **MsgSkip**: `Engine/Script/MessageSkip` (the state and the seen set) and `GameScreen`'s waits.
   The skippable waits — `IK 0` / `A` and `Y 3` — return 0 after one frame while it is on; input
   held then turns it off and is returned (`STOP_ON_CLICK`); a `]` menu (`SelectAsync`, the
   battle's `ChooseAsync`) turns it off (`STOP_ON_MENU`); every `MessageEvent` /
@@ -132,7 +132,7 @@ web build (seen only) by an option.
   draws new ones. The script runs every statement, so the state is as when the opening is watched
   (it has no menu). It paces its pictures on the engine timer
   (`ZT2`-`ZT5`, the only scene that reads it); while MsgSkip is on, the timer
-  (`Core/Script/EngineTimer`) moves one 1/100 s tick per read instead of following the clock, which
+  (`Engine/Script/EngineTimer`) moves one 1/100 s tick per read instead of following the clock, which
   ends each of its waits exactly on schedule, so it loads every CG a watched opening does
   (`Glob_CgSeen`; a jump of the timer would trip its `RetVal > 6900` cuts and lose some);
   `OpeningSkipTests`. xsystem35's MsgSkip fast-forwards every scene alike and leaves the timer
