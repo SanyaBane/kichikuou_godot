@@ -89,6 +89,7 @@ public partial class GameScreen
         {
             GodotGlyphRenderer.Chosen = font;
             _glyphs.Font = font;
+            _table.SetFont(font);
             CheckFont();
             _presenter.Invalidate();
         }

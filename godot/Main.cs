@@ -41,7 +41,7 @@ public partial class Main : Control
     /// <c>--stage N</c> was reached; <c>--seed N</c> fixes the random generator (once per launch: a
     /// later game goes on with it, as after xsystem35's Restart); <c>--rnglog</c> prints every
     /// draw to the console; <c>--msgskip</c> starts with MsgSkip
-    /// on; <c>--saves DIR</c>
+    /// on; <c>--interface new</c> uses our own screens for the launch (Option → Interface); <c>--saves DIR</c>
     /// keeps its slots there (<c>--auto</c> defaults to <c>user://saves-auto</c>). A battle capture:
     /// <c>--play FILE</c> / <c>--watch FILE</c>. Both: <c>--fast</c> drops the delays, <c>--quit</c>
     /// exits at the end (exit code 1 after an error), <c>--shots DIR</c> saves the screen at every

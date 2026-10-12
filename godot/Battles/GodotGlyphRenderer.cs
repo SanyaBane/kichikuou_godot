@@ -22,10 +22,10 @@ public enum GameFont
 /// </summary>
 public sealed class GodotGlyphRenderer : IGlyphRenderer, IDisposable
 {
-    private const string MsGothicPath = @"C:\Windows\Fonts\msgothic.ttc";
+    internal const string MsGothicPath = @"C:\Windows\Fonts\msgothic.ttc";
 
     /// <summary>Kept as is in an export (its <c>.import</c> says <c>keep</c>), so <c>FileAccess</c> reads it there too.</summary>
-    private const string BizUdGothicPath = "res://fonts/BIZUDGothic-Regular.ttf";
+    internal const string BizUdGothicPath = "res://fonts/BIZUDGothic-Regular.ttf";
 
     /// <summary>Synthetic bold strength (TextServer <c>embolden</c>), standing in for GDI's bold.</summary>
     private const double Embolden = 0.6;

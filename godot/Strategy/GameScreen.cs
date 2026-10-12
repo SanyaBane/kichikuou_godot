@@ -87,7 +87,9 @@ public sealed record GameOptions
 /// (<see cref="PlayerInput"/>) that <c>IM</c>, <c>Y 3</c>, <c>IK 0</c> and the menus poll once a
 /// frame, so the map's clicks and drags and the pickers' hit tests and highlight are the
 /// script's own. The battle's input screens work as in <see cref="BattleScreen"/>, fed only the
-/// presses that begin while they are open. Over it, xsystem35's menu bar (File, Screen,
+/// presses that begin while they are open. With Option → Interface on New our own deployment table
+/// covers <c>Sﾌﾞﾀｲ</c>'s grid (<see cref="UpdateTable"/>, docs/ui/deployment-table.md) and answers the
+/// script with its gestures. Over it, xsystem35's menu bar (File, Screen,
 /// MsgSkip; docs/window-menu.md) with its hot keys F1 (MsgSkip) and F4 (full screen), and Alt+R for
 /// Restart; Backspace returns to the title at once (development).
 /// </summary>
@@ -129,6 +131,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private readonly EngineTimer _timer;
 
     private SceneRunner? _scenes;                       // the session's, for the scenes running now
+
+    private DeploymentTableView _table = null!;         // our own screen over Sﾌﾞﾀｲ's grid (Option → Interface: New)
+    private PointerScript _tablePointer = new();        // the script's pointer while the player's is over the table
     private readonly Stopwatch _skipYield = Stopwatch.StartNew();
     private Stopwatch? _sceneSkip;                      // since the message skip began to skip a scene whole
     private bool _stageSkipped;                         // a skipped scene's stage commands were dropped: clear the stage after it
@@ -165,6 +170,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         };
         _view.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _content.AddChild(_view);
+        _table = new DeploymentTableView(GodotGlyphRenderer.Chosen);
+        _table.RowPressed += TableRowPressed;
+        _table.RightPressed += TableRightPressed;
+        _content.AddChild(_table);
         _overlay = OutlinedLabel(VerticalAlignment.Center, 32);
         _notice = OutlinedLabel(VerticalAlignment.Top, 18);
 
@@ -214,6 +223,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         if (_noticeLeft > 0 && (_noticeLeft -= delta) <= 0)
             _notice.Text = "";
+        UpdateTable();
         Present();
     }
 
@@ -451,10 +461,24 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             return;
         System.IO.Directory.CreateDirectory(dir);
         _presenter.Compose();
+        if (_table.Visible && DisplayServer.GetName() != "headless")
+        {
+            // The table is drawn by Godot over the screen: the window's next frame (headless draws none).
+            _ = WindowShotAsync(System.IO.Path.Combine(dir, $"{_shot++:D5}-{what}.png"));
+            return;
+        }
         var image = Image.CreateFromData(Surface.ScreenWidth * Surface.Scale, Surface.ScreenHeight * Surface.Scale,
             false, Image.Format.Rgba8, _presenter.Screen.ReadScreen());
         image.Resize(Surface.ScreenWidth, Surface.ScreenHeight, Image.Interpolation.Bilinear);
         image.SavePng(System.IO.Path.Combine(dir, $"{_shot++:D5}-{what}.png"));
+    }
+
+    /// <summary>The window as the next frame draws it, saved at <paramref name="path"/> (the screen is composed in the frame's process step).</summary>
+    private async Task WindowShotAsync(string path)
+    {
+        await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+        if (!_closing)
+            GetViewport().GetTexture().GetImage().SavePng(path);
     }
 
     // ---------------------------------------------------------------- mouse and keys
@@ -811,6 +835,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _presenter.Flush();
         if (_options.Auto)
         {
+            UpdateTable();
             AutoPointer();
             var queued = _pointer.Next(out bool read);
             if (!read)
@@ -818,7 +843,71 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             return queued;
         }
         await NextFrameAsync();
+        if (UpdateTable() && (_tablePointer.Pending > 0 || _table.HasPointer))
+        {
+            // Over the table the script's pointer is the table's: on the hovered row's cell, pressed by its gestures.
+            if (_tablePointer.Pending == 0)
+            {
+                var (x, y) = DeploymentTable.PointerAt(_table.HoveredUnit);
+                _tablePointer.Move(x, y);
+            }
+            return _tablePointer.Next(out _);
+        }
         return new MouseState((Sys3Int)_input.ReadMouse(), (Sys3Int)_input.Position.X, (Sys3Int)_input.Position.Y);
+    }
+
+    // ---------------------------------------------------------------- the deployment table (owner's decision 25)
+
+    /// <summary>The grid area the table covers, in script pixels: right of the details and above the bar (<c>Sﾌﾞﾀｲ.ADV:498-523</c>).</summary>
+    private static readonly Rect2 TableArea = new(322, 4, 316, 318);
+
+    /// <summary>
+    /// Shows the table over <c>Sﾌﾞﾀｲ</c>'s grid while the deployment picker is open with Option →
+    /// Interface on New (the presenter leaves the grid out), but not while a message window is up
+    /// over the screen; places it over the picture's grid area as the window is sized and fills it
+    /// from GameState. Returns whether it shows. A table shown or hidden starts with no gestures queued.
+    /// </summary>
+    private bool UpdateTable()
+    {
+        bool ours = InterfaceChoice.New && _presenter.Picker is { Kind: PickerKind.Deployment };
+        _presenter.DeploymentGridHidden = ours;
+        bool show = ours && !_presenter.MessageWindowShown && !SkippingScene && _presenter.State is not null;
+        if (show != _table.Visible)
+        {
+            _table.Visible = show;
+            _tablePointer = new PointerScript();
+        }
+        if (!show)
+            return false;
+        var size = _view.Size;
+        float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
+        var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
+        float pixels = scale * Surface.Scale;
+        var origin = _view.Position + (size - drawn) / 2;
+        _table.Place(new Rect2(origin + TableArea.Position * pixels, TableArea.Size * pixels), pixels);
+        _table.Refresh(_presenter.State!);
+        return true;
+    }
+
+    /// <summary>
+    /// A row pressed (by the mouse, or by unattended play): the gestures the script expects
+    /// (<see cref="DeploymentTable.Press"/>), queued for the table's pointer — or unattended play's —
+    /// unless the last press's are still under way.
+    /// </summary>
+    private void TableRowPressed(int unit)
+    {
+        var pointer = _options.Auto ? _pointer : _tablePointer;
+        if (pointer.Pending > 0 || _presenter.State is not { } s)
+            return;
+        DeploymentTable.Press(s, unit, pointer);
+    }
+
+    /// <summary>A right press on the table: a right click where the script's pointer is, which takes the last member out.</summary>
+    private void TableRightPressed()
+    {
+        if (_options.Auto || _tablePointer.Pending > 0)
+            return;
+        DeploymentTable.RightPress(_table.HoveredUnit, _tablePointer);
     }
 
     /// <summary>
@@ -1003,6 +1092,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     private List<int> _autoParty = [];
 
+    /// <summary>Whether the unattended player has pressed a row of our own deployment table (logged once).</summary>
+    private bool _autoTableUsed;
+
     /// <summary>The unattended player stopped a deployment picker: the next menu abandons the city.</summary>
     private bool _autoAbandon;
 
@@ -1105,12 +1197,30 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             }
             return;
         }
-        if (_presenter.Picker is { } picker)
+        if (_presenter.Picker is { Kind: PickerKind.Deployment } deployment && _presenter.State is { } d)
         {
             Shot("picker");
-            var (x, y) = picker.Kind == PickerKind.Deployment && _presenter.State is { } s
-                ? AutoDeploy(picker, s)
-                : GesturePoints.PickerButton(3);
+            var (step, value) = AutoDeploy(deployment, d);
+            if (step != AutoDeployStep.Button && _table.Visible)
+            {
+                if (!_autoTableUsed)
+                    GD.Print($"Kichikuou: --auto builds its party in the deployment table (week {d.Week.Value}).");
+                _autoTableUsed = true;
+                _table.Press(value);                                    // our own table: a press on the unit's row
+                return;
+            }
+            var (dx, dy) = step switch
+            {
+                AutoDeployStep.Join => GesturePoints.PickerCell(value),
+                AutoDeployStep.TakeOut => GesturePoints.PickerOutside,
+                _ => GesturePoints.PickerButton(value),
+            };
+            _pointer.Click(dx, dy);
+        }
+        else if (_presenter.Picker is { } picker)
+        {
+            Shot("picker");
+            var (x, y) = GesturePoints.PickerButton(3);
             if (picker.Kind == PickerKind.Subordinates && _autoReplenish == AutoReplenish.Chosen)
             {
                 _autoReplenish = AutoReplenish.Picked;
@@ -1231,13 +1341,26 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         return unit == 0 ? null : unit;
     }
 
+    /// <summary>What the unattended player does next in the deployment picker.</summary>
+    private enum AutoDeployStep
+    {
+        /// <summary>The unit joins the party (a click on its cell, or a press on its row).</summary>
+        Join,
+
+        /// <summary>The last member leaves it (a click left of the list, or a press on its row).</summary>
+        TakeOut,
+
+        /// <summary>A bar button.</summary>
+        Button,
+    }
+
     /// <summary>
-    /// The deployment picker's next gesture: the party of <see cref="AutoParty"/> clicked in, the last
-    /// one taken out (a click left of the list) while the war expenses the screen shows
-    /// (<c>Tmp0016</c>) top the gold, then Go (the first button) — or Stop (the third) with nobody to
-    /// send or when Go was refused, which in a defence leads to abandoning the city.
+    /// The deployment picker's next step: the party of <see cref="AutoParty"/> joined, the last one
+    /// taken out while the war expenses the screen shows (<c>Tmp0016</c>) top the gold, then Go (the
+    /// first button) — or Stop (the third) with nobody to send or when Go was refused, which in a
+    /// defence leads to abandoning the city.
     /// </summary>
-    private (int X, int Y) AutoDeploy(PickerView picker, GameState s)
+    private (AutoDeployStep Step, int Value) AutoDeploy(PickerView picker, GameState s)
     {
         if (_autoPartyFrom != picker)
         {
@@ -1249,22 +1372,22 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_autoSentFrom != picker)
         {
             if (party.Length < _autoParty.Count && party.SequenceEqual(_autoParty.Take(party.Length)))
-                return GesturePoints.PickerCell(_autoParty[party.Length]);
+                return (AutoDeployStep.Join, _autoParty[party.Length]);
             if (party.Length > 0 && s.Tmp0016 > s.Gold)
             {
                 _autoParty = [.. party[..^1]];
-                return GesturePoints.PickerOutside;
+                return (AutoDeployStep.TakeOut, party[^1]);
             }
             if (party.Length > 0)
             {
                 _autoSentFrom = picker;
-                return GesturePoints.PickerButton(1);
+                return (AutoDeployStep.Button, 1);
             }
         }
         _autoSentFrom = null;
         if (picker.Mode == 2)
             _autoAbandon = true;
-        return GesturePoints.PickerButton(3);
+        return (AutoDeployStep.Button, 3);
     }
 
     /// <summary>
