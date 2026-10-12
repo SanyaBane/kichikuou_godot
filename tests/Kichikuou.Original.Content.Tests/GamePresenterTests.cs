@@ -742,6 +742,31 @@ public class GamePresenterTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// A view that does not show the screen takes its changes without composing (<see cref="GamePresenter.TakeChange"/>,
+    /// once per change); the next <see cref="GamePresenter.Compose"/> draws what changed meanwhile.
+    /// </summary>
+    [Fact]
+    public void A_change_taken_without_composing_is_drawn_by_the_next_compose()
+    {
+        var missing = Path.Combine(Path.GetTempPath(), "kichikuou-no-data");
+        var presenter = new GamePresenter(new ScenarioText(missing), new CgLibrary(missing), new BoxGlyphs());
+        presenter.Bind(new GameState());
+        presenter.Show(new BattleScreenEvent("FIGT_A.ADV", true));
+        presenter.Compose();
+        Assert.False(presenter.TakeChange());
+
+        presenter.Show(new EngineEvent("CF", [(Sys3Int)0, (Sys3Int)0, (Sys3Int)640, (Sys3Int)400, (Sys3Int)15]));
+        var drawn = presenter.Stage.PixelAt(320, 100);
+        Assert.True(presenter.TakeChange());
+        Assert.False(presenter.TakeChange());
+        Assert.NotEqual(drawn, presenter.Screen.PixelAt(320, 100));
+
+        Assert.True(presenter.Compose());
+        Assert.Equal(drawn, presenter.Screen.PixelAt(320, 100));
+        Assert.False(presenter.Compose());
+    }
+
+    /// <summary>
     /// <c>Gｸﾘｰﾑ</c> 1, which <c>死亡捕獲</c> calls (<c>Battle.Flow.DeathCapture.cs</c>), run from the
     /// player's files inside the battle's screen: its pictures (<c>G 806</c>, <c>G 128</c>) reach the
     /// stage, its text resolves, and with the debug mask every frame under its full-screen window is the

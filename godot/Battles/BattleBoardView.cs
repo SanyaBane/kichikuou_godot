@@ -218,6 +218,7 @@ internal sealed partial class BattleBoardView : Control
             _windows.Visible = !mask.IsEmpty;                                  // no window: nothing to read or upload
             if (!mask.IsEmpty || _windowsTexture is null)
             {
+                presenter.Compose();                                           // GameScreen leaves it to us while we cover the view
                 _windowsRgba = mask.Compose(presenter.Screen, _windowsRgba);
                 var image = Image.CreateFromData(Surface.ScreenWidth * Surface.Scale, Surface.ScreenHeight * Surface.Scale,
                     false, Image.Format.Rgba8, _windowsRgba);

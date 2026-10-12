@@ -177,6 +177,15 @@ picture, the slot panels) is not shown. How it is built:
    (5-45 %), applied and saved (`[battle_screen]` in `user://settings.cfg`, `BattleScreenSettings`) as a
    slider moves, with a preview of the strip; the game goes on behind it. `--strip-seconds x` for a
    launch.
+   ✓ 2026-10-13 the frame time (owner: the exchange's flying numbers, 10 frames each followed by
+   `Y 3, 1`, ran several times slower in New than in Original). A frame whose screen changed cost
+   ~53 ms in New against ~16.5 in Original (the week-18 look, window, `--fast`); now ~11 ms (median;
+   the 10 % slowest, ~40 ms, when the field's picture changes or a window is open). The view under our
+   screen is neither composed nor uploaded (`GamePresenter.TakeChange`; `BattleBoardView` composes for
+   its windows' layer only while a window is open, the layer hidden when none is); the scene reads only
+   its 640×256 (`Surface.ReadArea`); the sides are blurred only when the picture under the numbers
+   changes (`BattleScene.PictureVersion`, blurred from that picture, so without the numbers); the
+   windows' layer reads only the rows its windows span.
 4. **Input**: our `IBattleInput` answers — the target cards' commands, the acting card's, the
    own cards' orders and info; the script menus as dialogs.
 5. **The scene and the exchange**: the engagement's pictures, the shots and counters, the action

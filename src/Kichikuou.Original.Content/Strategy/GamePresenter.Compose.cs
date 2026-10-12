@@ -238,6 +238,24 @@ public sealed partial class GamePresenter
     // ------------------------------------------------------------------ composing
 
     /// <summary>
+    /// Whether anything changed since the last call or <see cref="Compose"/>, without composing: a view
+    /// that does not show <see cref="Screen"/> now (our battle screen with no window open) asks this
+    /// instead; the next <see cref="Compose"/> draws the change.
+    /// </summary>
+    public bool TakeChange()
+    {
+        if (!_dirty && Stage.ScreenVersion == _stageVersion)
+            return false;
+        _dirty = false;
+        _stageVersion = Stage.ScreenVersion;
+        _composeOwed = true;
+        return true;
+    }
+
+    /// <summary>A change <see cref="TakeChange"/> took that <see cref="Screen"/> does not show yet.</summary>
+    private bool _composeOwed;
+
+    /// <summary>
     /// Composes <see cref="Screen"/> when anything changed: the stage's screen, then (outside a
     /// battle, or over a picker the battle opened) the pictures, the open picker, the window's frame
     /// and text — or All Data's screen instead —, the menu (in a battle too), then the fade. Returns whether the
@@ -245,9 +263,10 @@ public sealed partial class GamePresenter
     /// </summary>
     public bool Compose()
     {
-        if (!_dirty && Stage.ScreenVersion == _stageVersion)
+        if (!_dirty && Stage.ScreenVersion == _stageVersion && !_composeOwed)
             return false;
         _dirty = false;
+        _composeOwed = false;
         _stageVersion = Stage.ScreenVersion;
         Screen.Palette = Stage.Palette;
         Screen.CopyFrom(Stage, Stage.View.X, Stage.View.Y, Surface.ScreenWidth, Surface.ScreenHeight, 0, 0);

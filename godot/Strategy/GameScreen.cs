@@ -147,6 +147,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private TextureRect _view = null!;
     private ImageTexture? _texture;
     private byte[]? _frame;
+
+    /// <summary>The screen changed while our battle screen hid the view (<see cref="Present"/>).</summary>
+    private bool _viewStale;
     private Label _overlay = null!;
     private Label _notice = null!;
     private double _noticeLeft;
@@ -291,7 +294,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     /// <summary>
     /// Composes the screen and uploads it when it changed; nothing while a scene is skipped whole
-    /// (<see cref="SkippingScene"/>). Returns whether the screen changed.
+    /// (<see cref="SkippingScene"/>); neither while our battle screen covers the view
+    /// (<see cref="BattleScreenShown"/>: it composes the screen for its windows' layer itself), the
+    /// change uploaded when the view shows again. Returns whether the screen changed.
     /// </summary>
     private bool Present()
     {
@@ -303,8 +308,16 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _sceneSkip = null;
         }
         ClearSkippedStage();
-        if (!_presenter.Compose())
+        if (BattleScreenShown)
+        {
+            bool covered = _presenter.TakeChange();                            // our battle screen covers the view: it composes for its windows,
+            _viewStale |= covered;                                             // the view is uploaded when it shows again
+            return covered;
+        }
+        bool changed = _presenter.Compose();
+        if (!changed && !_viewStale)
             return false;
+        _viewStale = false;
         _frame = _presenter.Screen.ReadScreen(_frame);
         var image = Image.CreateFromData(Surface.ScreenWidth * Surface.Scale, Surface.ScreenHeight * Surface.Scale,
             false, Image.Format.Rgba8, _frame);
