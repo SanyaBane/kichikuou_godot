@@ -143,7 +143,9 @@ machine left the repository for `local.env`, which git ignores ("Local paths" be
 the project is GPL-2.0-or-later (`LICENSE`; README, "License").
 Next (owner's requests 2026-10-11/12): an interface of our own next to the original layout, chosen
 by the player, and an Android build later (docs/backlog.md). The game logic stays the original's.
-The UI survey's parts 1-4 are docs/ui/survey.md; the design waits for the owner.
+The UI survey's parts 1-4 are docs/ui/survey.md. Decision 25 (2026-10-12): our own screens come one by
+one over the original layout, chosen by Option → Interface; the first, the deployment table over
+`Sﾌﾞﾀｲ`'s grid, is built (docs/ui/deployment-table.md) and waits for the owner's look.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -233,6 +235,8 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   Restart, MsgSkip on `Engine/Script/MessageSkip` (it skips the opening whole, `OriginalVariant.WholeScenes`, `Engine/Script/EngineTimer`),
   docs/window-menu.md, plus our Debug menu; `Strategy/EngineState` keeps
   the random generator and the message skip for the whole launch); `Battles/CaptureList` (Debug → Battle Captures) picks a capture, `Battles/BattleScreen` shows its battle;
+  `Strategy/DeploymentTableView` (our own deployment table, Option → Interface → New, `InterfaceChoice`;
+  `GameScreen` feeds the script its gestures, `Original.Content/Strategy/DeploymentTable` the rows);
   `GodotGlyphRenderer` (TextServer; MS Gothic or the bundled BIZ UDGothic in `godot/fonts`, Option →
   Fonts, `--font ms-gothic|biz-ud-gothic` for one launch), `BattleAudio`; `Screens` switches screens. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
 - `tools/analysis/` — Python scripts for reading the decompiled scenario; `tools/codegen/` —
@@ -276,14 +280,15 @@ commit `local.env`.
 - Watch a capture headless and save the screen at every key wait and long pause:
   `<Godot console exe> --headless --path godot -- --watch <capture> --fast --quit --shots <dir>`.
 - Play the game unattended headless (slots in `user://saves-auto`; `--load` resumes them):
-  `<Godot console exe> --headless --path godot -- --newgame --auto --fast --quit [--seed n] [--shots <dir>] [--weeks n] [--stage n]`;
+  `<Godot console exe> --headless --path godot -- --newgame --auto --fast --quit [--seed n] [--shots <dir>] [--weeks n] [--stage n] [--interface new]`;
   one visit each to Harem, Subordinates and the hideout in the prologue and to Treasure and All Data
   at stage 1 (after one search of the Monsters' Cave with the weakest unit: down to a battle, Retreat,
   Finish); from stage 1 once a week a replenish (`Cﾌﾞｶ`) and an attack on the rebels (from their
   second week, while Rance has 3/4 of his troops), defences with the strongest; Turn END every week;
   ends at the first file or path not ported yet ("not ported yet"), at a game over, after week 30
   (`--weeks n`) or two weeks after story stage `--stage n` is reached — `--seed 2 --weeks 60 --stage 2`
-  takes Oaks in week 34 and stops in week 36, ~15 min (exit code 0; 1 after an error).
+  takes Oaks in week 34 and stops in week 36, ~15 min (exit code 0; 1 after an error). `--interface new`
+  builds the parties in our own deployment table; its dumps need a window (no `--headless`).
 - Show an ending's `OVER` (its picture, staff roll, Completion Report) on a booted game:
   `<Godot console exe> --headless --path godot -- --ending <1-14> --auto --fast --quit [--shots <dir>]`
   (without `--auto` the keys wait for the player; slots in `user://saves-ending`).
