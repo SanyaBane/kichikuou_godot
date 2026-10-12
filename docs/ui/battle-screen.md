@@ -127,6 +127,11 @@ picture, the slot panels) is not shown. How it is built:
    waiting; a turn is the slot whose state the core's choice set; the rounds for the gauge);
    `BattleBoardTests` checks every turn of every golden capture against the core's choice. The
    commands per target wait for step 4.
+   ✓ 2026-10-12 the scene's picture: `Battles/BattleScene.cs` (on its own surface; the picture under
+   the numbers is kept and drawn again only when the armies change); `BattleSceneTests` — in the
+   captured battles the scene's rows 0-223 equal the original's screen when its engagement stands whole
+   with the counters, and between exchanges the two in focus stand in the slots (every eighth capture
+   in the quick run, all in the full one). Next: the windows' shapes over it and the Godot frame.
 3. **The frame** (Godot): while a battle shows and the interface is New, our screen covers the
    stage; the presenter keeps drawing the stage (the core's events still run) but it is not shown
    (as `DeploymentCovered`); our view follows the events it needs.

@@ -97,7 +97,10 @@ public sealed partial class BattlePresenter
     /// number of 32×32 digits copied with key 40 from the sheet row of <paramref name="style"/>;
     /// leading zeros stay blank, the last digit is always drawn.
     /// </summary>
-    private void Number(int value, int x, int y, int style, int sheetY)
+    private void Number(int value, int x, int y, int style, int sheetY) => DrawNumber(Surface, value, x, y, style, sheetY);
+
+    /// <summary><see cref="Number"/> on <paramref name="surface"/>, whose digit sheet is at x 640, y <paramref name="sheetY"/>.</summary>
+    internal static void DrawNumber(Kichikuou.Content.Screen.Surface surface, int value, int x, int y, int style, int sheetY)
     {
         int sum = 0;
         for (int divisor = 10000; divisor >= 1; divisor /= 10)
@@ -106,7 +109,7 @@ public sealed partial class BattlePresenter
             value -= digit * divisor;
             sum += digit;
             if (sum + digit != 0 || divisor == 1)
-                Surface.CopyKeyed(digit * 32 + 640, style * 64 + sheetY, 32, 32, x, y);
+                surface.CopyKeyed(digit * 32 + 640, style * 64 + sheetY, 32, 32, x, y);
             x += 32;
         }
     }

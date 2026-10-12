@@ -10,7 +10,7 @@ namespace Kichikuou.Original.Content.Tests;
 /// </summary>
 internal static class DifferentialRuns
 {
-    private const int QuickShare = 8;
+    public const int QuickShare = 8;
 
     /// <summary>The full counts run (<c>KICHIKUOU_FULL_TESTS=1</c>).</summary>
     public static bool Full { get; } = Environment.GetEnvironmentVariable("KICHIKUOU_FULL_TESTS") == "1";
