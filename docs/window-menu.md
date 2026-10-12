@@ -102,6 +102,10 @@ web build (seen only) by an option.
   own screens over the original layout where there is one — so far the deployment table over
   `Sﾌﾞﾀｲ`'s unit grid (docs/ui/deployment-table.md). A change shows at once.
   `--interface original|new` picks one for the launch without saving it (development).
+- **Option → Palette → Navy / Gold / Steel / Parchment / Crimson** (ours, owner's choice 2026-10-12;
+  a submenu like Fonts; saved in `user://settings.cfg`, `[display] palette`, Steel by default): the
+  colours of our own screens (`DeploymentPalette`). A change recolours an open screen at once.
+  `--palette <name>` picks one for the launch without saving it (development).
 - Hot keys: **F1** MsgSkip and **F4** full screen (on release, as xsystem35's `event.c`), and
   **Alt+R** Restart (ours, after System 3.9's). Backspace still returns to the title at once,
   without asking (development).

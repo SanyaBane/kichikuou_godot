@@ -11,7 +11,7 @@ namespace Kichikuou.Game.Strategy;
 
 // xsystem35's window menu bar over the game (docs/window-menu.md): File (Save Screenshot, Restart,
 // Exit), Screen (Window, Fullscreen), Option (Mouse Movement as xsystem35's; ours: Skip Unseen
-// Text, MsgSkip Speeds Up Fades, Forget Seen Messages, Fonts, Interface),
+// Text, MsgSkip Speeds Up Fades, Forget Seen Messages, Fonts, Interface, Palette),
 // MsgSkip[off|on]; hot keys F1 and F4 as xsystem35's, Alt+R; and ours for development, Debug
 // (Battle Captures: the capture viewer, which our own title had until ｽﾀMENU replaced it).
 public partial class GameScreen
@@ -78,6 +78,13 @@ public partial class GameScreen
         interfaces.AddThemeIconOverride("radio_unchecked", blank);
         CheckInterface();
         options.AddSubmenuNodeItem(Padded("Interface"), interfaces, SubmenuId);
+        PopupMenu palettes = null!;
+        palettes = Submenu([.. DeploymentPalette.All.Select(p => (p.Title, (Action)(() => SetPalette(p))))]);
+        for (int i = 0; i < DeploymentPalette.All.Count; i++)
+            palettes.SetItemAsRadioCheckable(i, true);
+        palettes.AddThemeIconOverride("radio_unchecked", blank);
+        CheckPalette();
+        options.AddSubmenuNodeItem(Padded("Palette"), palettes, SubmenuId);
         void ToggleMouseMovement()
         {
             EngineState.MouseMovement = !EngineState.MouseMovement;
@@ -119,6 +126,19 @@ public partial class GameScreen
         {
             interfaces.SetItemChecked(0, !InterfaceChoice.New);
             interfaces.SetItemChecked(1, InterfaceChoice.New);
+        }
+        // Our screens' colours (DeploymentPalette); saved for later launches, an open screen recoloured at once.
+        void SetPalette(DeploymentPalette palette)
+        {
+            DeploymentPalette.Chosen = palette;
+            _table.SetPalette(palette);
+            _panels.SetPalette(palette);
+            CheckPalette();
+        }
+        void CheckPalette()
+        {
+            for (int i = 0; i < DeploymentPalette.All.Count; i++)
+                palettes.SetItemChecked(i, DeploymentPalette.All[i] == DeploymentPalette.Chosen);
         }
         row.AddChild(option);
         _skipItem = new Button();

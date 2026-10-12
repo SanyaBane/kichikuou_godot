@@ -32,11 +32,14 @@ internal sealed partial class DeploymentPanels : Control
     /// <summary>A face's square on a member's card, in script pixels (90 screen pixels in a 1280×800 window).</summary>
     private const float FaceSize = 45;
 
-    private static readonly Color Back = new(0.04f, 0.05f, 0.12f);
-    private static readonly Color CardBack = new(0.08f, 0.1f, 0.22f);
-    private static readonly Color Border = new(0.18f, 0.23f, 0.42f);
-    private static readonly Color Muted = new(0.56f, 0.59f, 0.73f);
-    private static readonly Color Warning = new(0.88f, 0.48f, 0.48f);
+    private DeploymentPalette _colours = DeploymentPalette.Chosen;   // Option → Palette
+    private Color Back => _colours.Back;
+    private Color CardBack => _colours.Card;
+    private Color Border => _colours.Border;
+    private Color Muted => _colours.Muted;
+    private Color Warning => _colours.Warning;
+    private readonly List<StyleBoxFlat> _panelBoxes = [];   // the details' and the party's frames
+    private readonly List<Label> _headers = [];             // "Back row", "Front row"
 
     private readonly ColorRect _right;
     private readonly ColorRect _left;
@@ -80,16 +83,12 @@ internal sealed partial class DeploymentPanels : Control
     /// <summary>How far, in screen pixels, a press moves before it is a drag.</summary>
     private const float DragDistance = 6;
 
-    private static readonly Color DropBorder = new(0.95f, 0.8f, 0.35f);
-
     public DeploymentPanels(GameFont font, FacePictures faces)
     {
         _faces = faces;
         MouseFilter = MouseFilterEnum.Ignore;
         Visible = false;
         Theme = _theme;
-        _theme.SetColor("font_color", "Label", new Color(0.95f, 0.95f, 0.95f));
-        _theme.SetColor("default_color", "RichTextLabel", new Color(0.95f, 0.95f, 0.95f));
         _right = Backdrop();
         _left = Backdrop();
 
@@ -105,7 +104,7 @@ internal sealed partial class DeploymentPanels : Control
         foreach (string header in new[] { "Back row", "Front row  ▶" })
         {
             var label = new Label { Text = header, HorizontalAlignment = HorizontalAlignment.Center, SizeFlagsHorizontal = SizeFlags.ExpandFill };
-            label.AddThemeColorOverride("font_color", Muted);
+            _headers.Add(label);
             headers.AddChild(label);
         }
         column.AddChild(headers);
@@ -123,11 +122,6 @@ internal sealed partial class DeploymentPanels : Control
         {
             int button = i + 1;
             var b = new Button { FocusMode = FocusModeEnum.None, SizeFlagsHorizontal = SizeFlags.ExpandFill };
-            b.AddThemeStyleboxOverride("normal", ButtonBox(new Color(0.14f, 0.19f, 0.37f)));
-            b.AddThemeStyleboxOverride("hover", ButtonBox(new Color(0.22f, 0.29f, 0.52f)));
-            b.AddThemeStyleboxOverride("pressed", ButtonBox(new Color(0.1f, 0.13f, 0.27f)));
-            b.AddThemeStyleboxOverride("disabled", ButtonBox(new Color(0.08f, 0.1f, 0.18f)));
-            b.AddThemeColorOverride("font_disabled_color", new Color(0.35f, 0.38f, 0.5f));
             b.Pressed += () => ButtonPressed?.Invoke(button);
             b.GuiInput += RightClick;
             _buttons[i] = b;
@@ -142,7 +136,40 @@ internal sealed partial class DeploymentPanels : Control
             Modulate = new Color(1, 1, 1, 0.85f),
         };
         AddChild(_ghost);                                       // over everything else of the panels
+        ApplyPalette();
         SetFont(font);
+    }
+
+    /// <summary>Option → Palette: the panels in <paramref name="palette"/>'s colours at once.</summary>
+    public void SetPalette(DeploymentPalette palette)
+    {
+        _colours = palette;
+        ApplyPalette();
+    }
+
+    private void ApplyPalette()
+    {
+        _theme.SetColor("font_color", "Label", _colours.Text);
+        _theme.SetColor("default_color", "RichTextLabel", _colours.Text);
+        _right.Color = _left.Color = Back;
+        foreach (var box in _panelBoxes)
+        {
+            box.BgColor = Back;
+            box.BorderColor = Border;
+        }
+        foreach (var header in _headers)
+            header.AddThemeColorOverride("font_color", Muted);
+        foreach (var b in _buttons)
+        {
+            b.AddThemeStyleboxOverride("normal", ButtonBox(_colours.Button));
+            b.AddThemeStyleboxOverride("hover", ButtonBox(_colours.ButtonHover));
+            b.AddThemeStyleboxOverride("pressed", ButtonBox(_colours.ButtonPressed));
+            b.AddThemeStyleboxOverride("disabled", ButtonBox(_colours.ButtonDisabled));
+            foreach (var state in new[] { "font_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color" })
+                b.AddThemeColorOverride(state, _colours.ButtonText);
+            b.AddThemeColorOverride("font_disabled_color", _colours.ButtonText.Lerp(_colours.ButtonDisabled, 0.6f));
+        }
+        _detailsKey = _partyKey = "?";                          // the details and the cards filled in again in these colours
     }
 
     /// <summary>Option → Fonts: the panels' text in the chosen font, as the table's.</summary>
@@ -367,7 +394,7 @@ internal sealed partial class DeploymentPanels : Control
         return label;
     }
 
-    private static string Label(string text) => $"[color=#{Muted.ToHtml(false)}]{text}[/color]";
+    private string Label(string text) => $"[color=#{Muted.ToHtml(false)}]{text}[/color]";
 
     private ColorRect Backdrop()
     {
@@ -428,7 +455,7 @@ internal sealed partial class DeploymentPanels : Control
         if (place == _dropOn)
             return;
         foreach (var c in _cards)
-            c.Box.BorderColor = c.Place == place ? DropBorder : Border;
+            c.Box.BorderColor = c.Place == place ? _colours.Accent : Border;
         _dropOn = place;
     }
 
@@ -452,12 +479,13 @@ internal sealed partial class DeploymentPanels : Control
     private PanelContainer Panel()
     {
         var panel = new PanelContainer { MouseFilter = MouseFilterEnum.Ignore };
-        panel.AddThemeStyleboxOverride("panel", new StyleBoxFlat
+        var box = new StyleBoxFlat
         {
-            BgColor = Back, BorderColor = Border,
             BorderWidthLeft = 1, BorderWidthTop = 1, BorderWidthRight = 1, BorderWidthBottom = 1,
             ContentMarginLeft = 8, ContentMarginRight = 8, ContentMarginTop = 3, ContentMarginBottom = 3,
-        });
+        };
+        _panelBoxes.Add(box);                                   // coloured by ApplyPalette
+        panel.AddThemeStyleboxOverride("panel", box);
         AddChild(panel);
         return panel;
     }
@@ -471,9 +499,9 @@ internal sealed partial class DeploymentPanels : Control
         MouseFilter = MouseFilterEnum.Ignore,
     };
 
-    private static StyleBoxFlat ButtonBox(Color color) => new()
+    private StyleBoxFlat ButtonBox(Color color) => new()
     {
-        BgColor = color, BorderColor = new Color(0.35f, 0.42f, 0.69f),
+        BgColor = color, BorderColor = _colours.ButtonBorder,
         BorderWidthLeft = 1, BorderWidthTop = 1, BorderWidthRight = 1, BorderWidthBottom = 1,
     };
 }

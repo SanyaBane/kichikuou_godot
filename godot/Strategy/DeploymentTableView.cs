@@ -22,11 +22,7 @@ internal sealed partial class DeploymentTableView : Tree
     /// <summary>The party column's header: a circle (both fonts have it), its full name the tooltip.</summary>
     private const string PartyMark = "●";
 
-    private static readonly Color Panel = new(0.04f, 0.05f, 0.12f, 0.94f);
-    private static readonly Color Text = new(0.95f, 0.95f, 0.95f);
-    private static readonly Color GreyText = new(0.5f, 0.5f, 0.55f);
-    private static readonly Color MemberBack = new(0.2f, 0.3f, 0.6f, 0.6f);
-    private static readonly Color Title = new(0.12f, 0.14f, 0.26f);
+    private DeploymentPalette _colours = DeploymentPalette.Chosen;   // Option → Palette
 
     private IReadOnlyList<DeploymentRow> _rows = [];
     private DeploymentColumn _sort = DeploymentColumn.Number;
@@ -67,14 +63,8 @@ internal sealed partial class DeploymentTableView : Tree
             SetColumnExpand(c, false);
             SetColumnClipContent(c, true);
         }
-        AddThemeStyleboxOverride("panel", new StyleBoxFlat { BgColor = Panel });
         AddThemeStyleboxOverride("focus", new StyleBoxEmpty());
-        var title = new StyleBoxFlat { BgColor = Title, ContentMarginLeft = 4, ContentMarginRight = 4 };
-        AddThemeStyleboxOverride("title_button_normal", title);
-        AddThemeStyleboxOverride("title_button_hover", new StyleBoxFlat { BgColor = Title.Lightened(0.2f), ContentMarginLeft = 4, ContentMarginRight = 4 });
-        AddThemeStyleboxOverride("title_button_pressed", title);
-        AddThemeColorOverride("font_color", Text);
-        AddThemeColorOverride("title_button_color", Text);
+        ApplyPalette();
         AddThemeConstantOverride("h_separation", 6);
         AddThemeConstantOverride("v_separation", 2);
         AddThemeConstantOverride("item_margin", 0);
@@ -85,6 +75,48 @@ internal sealed partial class DeploymentTableView : Tree
         };
         SetFont(font);
     }
+
+    /// <summary>Option → Palette: the table in <paramref name="palette"/>'s colours at once.</summary>
+    public void SetPalette(DeploymentPalette palette)
+    {
+        _colours = palette;
+        ApplyPalette();
+        Fill();
+    }
+
+    private void ApplyPalette()
+    {
+        var c = _colours;
+        AddThemeStyleboxOverride("panel", new StyleBoxFlat { BgColor = c.TableBack });
+        var title = new StyleBoxFlat { BgColor = c.TableTitle, ContentMarginLeft = 4, ContentMarginRight = 4 };
+        AddThemeStyleboxOverride("title_button_normal", title);
+        AddThemeStyleboxOverride("title_button_hover", new StyleBoxFlat { BgColor = c.TableTitle.Lightened(0.2f), ContentMarginLeft = 4, ContentMarginRight = 4 });
+        AddThemeStyleboxOverride("title_button_pressed", title);
+        AddThemeColorOverride("font_color", c.Text);
+        AddThemeColorOverride("title_button_color", c.Text);
+        AddThemeColorOverride("guide_color", c.Border with { A = 0.35f });
+        foreach (var state in new[] { "font_hovered_color", "font_selected_color", "font_hovered_selected_color" })
+            AddThemeColorOverride(state, c.Text);
+        AddThemeStyleboxOverride("hovered", new StyleBoxFlat { BgColor = c.Accent with { A = 0.12f } });
+        foreach (var state in new[] { "selected", "selected_focus", "hovered_selected", "hovered_selected_focus" })
+            AddThemeStyleboxOverride(state, new StyleBoxFlat { BgColor = c.Accent with { A = 0.2f } });
+        // The scroll bars: the panels' frame colour on the table's.
+        var bars = new Theme();
+        foreach (string bar in new[] { "HScrollBar", "VScrollBar" })
+        {
+            bars.SetStylebox("scroll", bar, BarBox(c.TableTitle));
+            bars.SetStylebox("grabber", bar, BarBox(c.Border));
+            bars.SetStylebox("grabber_highlight", bar, BarBox(c.Accent));
+            bars.SetStylebox("grabber_pressed", bar, BarBox(c.Accent));
+        }
+        Theme = bars;
+    }
+
+    /// <summary>A scroll bar's part: its margins make the bar as thick as the default theme's.</summary>
+    private static StyleBoxFlat BarBox(Color color) => new()
+    {
+        BgColor = color, ContentMarginLeft = 4, ContentMarginRight = 4, ContentMarginTop = 4, ContentMarginBottom = 4,
+    };
 
     /// <summary>Option → Fonts: the table's text in the chosen font (regular, unlike the surface's bold).</summary>
     public void SetFont(GameFont font)
@@ -227,9 +259,9 @@ internal sealed partial class DeploymentTableView : Tree
             for (int c = 0; c < Columns; c++)
             {
                 if (row.Grey)
-                    item.SetCustomColor(c, GreyText);
+                    item.SetCustomColor(c, _colours.GreyText);
                 if (row.PartyPlace > 0)
-                    item.SetCustomBgColor(c, MemberBack);
+                    item.SetCustomBgColor(c, _colours.MemberRow);
             }
         }
         int separation = GetThemeConstant("h_separation");

@@ -61,6 +61,15 @@ owner's choices (2026-10-12), from four mock-ups:
   highlights. While a message window is up (a refusal) the table steps aside, so the window shows
   whole and a click anywhere answers it.
 
+## The colours (the owner's choice, 2026-10-12)
+
+The first build was dark blue, which sat badly with the portrait's gold frame. The owner looked at
+four more palettes drawn from the original screen (its gold frames, grey tiles and sepia map) — gold on
+warm charcoal, gold on grey steel, ink on parchment, gold on crimson — kept all five for the player
+(Option → Palette, `godot/Strategy/DeploymentPalette`, saved in `user://settings.cfg`) and made steel
+the default. Every colour of the table and the panels comes from the palette; a change recolours an
+open screen at once.
+
 ## The table (the owner's choices)
 
 Rows: the listed units. Columns, compact headers, each with its full name as a tooltip, in the
