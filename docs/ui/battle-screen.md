@@ -170,7 +170,8 @@ picture, the slot panels) is not shown. How it is built:
    order; among runs as long, the one that moved left) drops a row, slides to its place while the chips
    it passes make room, and rises into it — 1 s (`OrderStrip.Seconds`, to be configurable). A new order
    or turn while chips move makes them finish within 0.15 s, then the next move starts; under MsgSkip
-   the chips stand at their places at once.
+   the chips stand at their places at once, and so when a new round (or battle) begins (owner: the
+   units that acted go back into the order without jumps).
 4. **Input**: our `IBattleInput` answers — the target cards' commands, the acting card's, the
    own cards' orders and info; the script menus as dialogs.
 5. **The scene and the exchange**: the engagement's pictures, the shots and counters, the action

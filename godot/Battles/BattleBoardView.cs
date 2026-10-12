@@ -418,16 +418,24 @@ internal sealed partial class BattleBoardView : Control
 
     // ------------------------------------------------------------------ the strip and the gauge
 
-    /// <summary>The round's order (<see cref="OrderStrip"/>): the chips move on their own; at once while <paramref name="instant"/> (the message skip).</summary>
+    /// <summary>
+    /// The round's order (<see cref="OrderStrip"/>): the chips move on their own; at once while
+    /// <paramref name="instant"/> (the message skip) and when a new round begins (owner, 2026-10-12: the
+    /// units that acted go back into the order, no jumps).
+    /// </summary>
     private void RefreshStrip(GameState s, RoundOrder order, bool instant)
     {
         var chips = order.Chips(s);
         string key = string.Join(";", chips);
-        if (key == _stripKey)
+        if (key == _stripKey && order.Round == _stripRound)
             return;
         _stripKey = key;
-        _strip.Show(chips, instant);
+        bool newRound = order.Round != _stripRound;
+        _stripRound = order.Round;
+        _strip.Show(chips, instant || newRound);
     }
+
+    private int _stripRound = -1;
 
     /// <summary>One segment per round of the battle, the spent ones dark, "n left" below.</summary>
     private void DrawGauge()
