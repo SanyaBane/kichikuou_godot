@@ -124,10 +124,13 @@ internal sealed partial class DeploymentTableView : Tree
         Fill();
     }
 
-    /// <summary>The rows from <paramref name="state"/>, filled in again when anything shown changed.</summary>
-    public void Refresh(GameState state)
+    /// <summary>
+    /// The rows from <paramref name="state"/>, filled in again when anything shown changed; the party
+    /// places from <paramref name="order"/> while a drop's clicks run (the order it asked for).
+    /// </summary>
+    public void Refresh(GameState state, IReadOnlyList<int>? order = null)
     {
-        var rows = DeploymentTable.Rows(state);
+        var rows = DeploymentTable.Rows(state, order);
         if (rows.SequenceEqual(_rows))
             return;
         _rows = rows;

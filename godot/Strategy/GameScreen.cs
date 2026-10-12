@@ -173,6 +173,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private DeploymentTableView _table = null!;         // our own screen over Sﾌﾞﾀｲ's grid (Option → Interface: New)
     private DeploymentPanels _panels = null!;           // and over the rest of it but the portrait
     private PointerScript _tablePointer = new();        // the script's pointer while the player's is over the table
+    private IReadOnlyList<int>? _wantedOrder;           // the party a drop asked for, while its clicks run
     private readonly Stopwatch _skipYield = Stopwatch.StartNew();
     private Stopwatch? _sceneSkip;                      // since the message skip began to skip a scene whole
     private bool _stageSkipped;                         // a skipped scene's stage commands were dropped: clear the stage after it
@@ -214,6 +215,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _panels.RemovePressed += TableRowPressed;
         _panels.ButtonPressed += TableButtonPressed;
         _panels.RightPressed += TableRightPressed;
+        _panels.Dropped += PartyDropped;
         _content.AddChild(_panels);
         _table = new DeploymentTableView(GodotGlyphRenderer.Chosen);
         _table.RowPressed += TableRowPressed;
@@ -909,6 +911,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _presenter.Flush();
         if (_options.Auto)
         {
+            if (_pointer.Pending == 0)
+                _wantedOrder = null;                    // the script asks again with nothing queued: a drop's clicks are done
             UpdateDeploymentScreen();
             AutoPointer();
             var queued = _pointer.Next(out bool read);
@@ -917,6 +921,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             return queued;
         }
         await NextFrameAsync();
+        if (_tablePointer.Pending == 0)
+            _wantedOrder = null;                        // the script asks again with nothing queued: a drop's clicks are done
         if (UpdateDeploymentScreen() && (_tablePointer.Pending > 0 || _table.HasPointer || _panels.HasPointer))
         {
             // Over our screen the script's pointer is ours: on the hovered row's or member card's cell, pressed by its gestures.
@@ -951,6 +957,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             _table.Visible = _panels.Visible = show;
             _tablePointer = new PointerScript();
+            _wantedOrder = null;
             if (show)
                 _panels.LoadCrops();                            // the owner's squares from Debug → Portraits
         }
@@ -961,10 +968,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
         float pixels = scale * Surface.Scale;
         var origin = _view.Position + (size - drawn) / 2;
+        _panels.Busy = (_options.Auto ? _pointer : _tablePointer).Pending > 0 || _wantedOrder is not null;
         _panels.Place(origin, pixels);
-        _panels.Refresh(_presenter.State!, _presenter.Picker!);
+        _panels.Refresh(_presenter.State!, _presenter.Picker!, _wantedOrder);
         _table.Place(new Rect2(origin + TableArea.Position * pixels, TableArea.Size * pixels), pixels);
-        _table.Refresh(_presenter.State!);
+        _table.Refresh(_presenter.State!, _wantedOrder);
         return true;
     }
 
@@ -976,7 +984,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private void TableRowPressed(int unit)
     {
         var pointer = _options.Auto ? _pointer : _tablePointer;
-        if (pointer.Pending > 0 || _presenter.State is not { } s)
+        if (pointer.Pending > 0 || _wantedOrder is not null || _presenter.State is not { } s)
             return;
         DeploymentTable.Press(s, unit, pointer);
     }
@@ -985,16 +993,29 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private void TableButtonPressed(int button)
     {
         var pointer = _options.Auto ? _pointer : _tablePointer;
-        if (pointer.Pending > 0)
+        if (pointer.Pending > 0 || _wantedOrder is not null)
             return;
         var (x, y) = GesturePoints.PickerButton(button);
         pointer.Click(x, y);
     }
 
+    /// <summary>
+    /// A member's card dropped on another place (by the mouse, or by unattended play): the clicks that
+    /// give the order the drop asks for (<see cref="DeploymentTable.Drop"/>), queued as a row's press
+    /// is; until the script has run them our screen shows that order and starts no other drag.
+    /// </summary>
+    private void PartyDropped(int from, int to)
+    {
+        var pointer = _options.Auto ? _pointer : _tablePointer;
+        if (pointer.Pending > 0 || _wantedOrder is not null || _presenter.State is not { } s)
+            return;
+        _wantedOrder = DeploymentTable.Drop(s, from, to, pointer);
+    }
+
     /// <summary>A right press on our screen: a right click where the script's pointer is, which takes the last member out.</summary>
     private void TableRightPressed()
     {
-        if (_options.Auto || _tablePointer.Pending > 0)
+        if (_options.Auto || _tablePointer.Pending > 0 || _wantedOrder is not null)
             return;
         DeploymentTable.RightPress(HoveredUnit, _tablePointer);
     }
@@ -1182,6 +1203,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// <summary>The deployment picker the unattended player builds <see cref="_autoParty"/> in.</summary>
     private PickerView? _autoPartyFrom;
 
+    /// <summary>The picker the unattended player drops on (our party panel) and how many drops it has made there (3: done).</summary>
+    private PickerView? _autoDropPicker;
+    private int _autoDrops;
+    private bool _autoDropsUsed;
+
     private List<int> _autoParty = [];
 
     /// <summary>The reads the unattended player has hovered a row of our table for, waiting for its details.</summary>
@@ -1298,6 +1324,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_presenter.Picker is { Kind: PickerKind.Deployment } deployment && _presenter.State is { } d)
         {
             Shot("picker");
+            if (AutoDrop(deployment, d))
+                return;
             var (step, value) = AutoDeploy(deployment, d);
             if (step == AutoDeployStep.Button && _panels.Visible)
             {
@@ -1485,6 +1513,38 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
         /// <summary>A bar button.</summary>
         Button,
+    }
+
+    /// <summary>
+    /// With our screen (Option → Interface: New), once the party is built: place 1's member dropped
+    /// onto place 2 and back, as the player's drags make them (<see cref="PartyDropped"/>); the party
+    /// must come out as it was. Returns whether a drop was made.
+    /// </summary>
+    private bool AutoDrop(PickerView picker, GameState s)
+    {
+        if (_autoDropPicker != picker)
+        {
+            _autoDropPicker = picker;
+            _autoDrops = 0;
+        }
+        if (!_panels.Visible || _autoPartyFrom != picker || _autoDrops == 3)
+            return false;
+        var order = DeploymentTable.PartyOrder(s);
+        if (_autoDrops == 0 && (order.Count < 2 || !order.SequenceEqual(_autoParty)))
+            return false;
+        if (_autoDrops == 2)
+        {
+            _autoDrops = 3;
+            if (!order.SequenceEqual(_autoParty))
+                throw new InvalidOperationException($"--auto's drops left the party {string.Join(" ", order)}, not {string.Join(" ", _autoParty)}.");
+            return false;
+        }
+        if (!_autoDropsUsed)
+            GD.Print($"Kichikuou: --auto swaps the first two places of its party by drops and back (week {s.Week.Value}).");
+        _autoDropsUsed = true;
+        _autoDrops++;
+        PartyDropped(1, 2);
+        return true;
     }
 
     /// <summary>

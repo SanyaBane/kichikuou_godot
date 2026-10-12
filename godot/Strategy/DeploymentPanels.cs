@@ -46,7 +46,12 @@ internal sealed partial class DeploymentPanels : Control
     private readonly HBoxContainer _rows;                   // the back row's column, then the front row's
     private readonly RichTextLabel _partyTotals;
     private readonly FacePictures _faces;
-    private readonly List<(Control Card, int Unit)> _memberCards = [];
+    private readonly List<PlaceCard> _cards = [];           // the offered places' cards
+    private readonly TextureRect _ghost;                    // the dragged member's face under the pointer
+    private int _dragFrom;                                  // the place a left press fell on (0: none)
+    private Vector2 _dragStart;
+    private bool _dragging;
+    private int _dropOn;                                    // the place under the pointer while dragging (0: none)
     private FaceCrops _crops = new();
     private float _pixels = 1;                              // screen pixels to a script pixel
     private readonly HBoxContainer _bar;
@@ -62,6 +67,20 @@ internal sealed partial class DeploymentPanels : Control
 
     /// <summary>A right press anywhere on the panels.</summary>
     public event Action? RightPressed;
+
+    /// <summary>A member's card dragged onto another place: the places (1-4), from and to.</summary>
+    public event Action<int, int>? Dropped;
+
+    /// <summary>Whether a drop's clicks are under way: no drag starts until they are done.</summary>
+    public bool Busy { get; set; }
+
+    /// <summary>An offered place's card: its box (the border shows a drop), its member (0 for none) and the member's face.</summary>
+    private sealed record PlaceCard(Control Card, StyleBoxFlat Box, int Place, int Unit, Texture2D? Face);
+
+    /// <summary>How far, in screen pixels, a press moves before it is a drag.</summary>
+    private const float DragDistance = 6;
+
+    private static readonly Color DropBorder = new(0.95f, 0.8f, 0.35f);
 
     public DeploymentPanels(GameFont font, FacePictures faces)
     {
@@ -114,6 +133,15 @@ internal sealed partial class DeploymentPanels : Control
             _buttons[i] = b;
             _bar.AddChild(b);
         }
+        _ghost = new TextureRect
+        {
+            MouseFilter = MouseFilterEnum.Ignore,
+            Visible = false,
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+            Modulate = new Color(1, 1, 1, 0.85f),
+        };
+        AddChild(_ghost);                                       // over everything else of the panels
         SetFont(font);
     }
 
@@ -131,13 +159,12 @@ internal sealed partial class DeploymentPanels : Control
         {
             if (!Visible)
                 return 0;
-            var at = GetGlobalMousePosition();
-            foreach (var (card, unit) in _memberCards)
-                if (card.GetGlobalRect().HasPoint(at))
-                    return unit;
-            return 0;
+            return CardAt(GetGlobalMousePosition())?.Unit ?? 0;
         }
     }
+
+    /// <summary>The offered place's card at <paramref name="at"/> (global), or null.</summary>
+    private PlaceCard? CardAt(Vector2 at) => _cards.Find(c => c.Card.GetGlobalRect().HasPoint(at));
 
     /// <summary>
     /// Covers the areas over the screen whose script pixel (0, 0) is at <paramref name="origin"/>
@@ -172,8 +199,12 @@ internal sealed partial class DeploymentPanels : Control
         _partyKey = "?";
     }
 
-    /// <summary>The panels from <paramref name="state"/> and the bar's labels from <paramref name="picker"/>, filled in again when anything shown changed.</summary>
-    public void Refresh(GameState state, PickerView picker)
+    /// <summary>
+    /// The panels from <paramref name="state"/> and the bar's labels from <paramref name="picker"/>,
+    /// filled in again when anything shown changed; the party in <paramref name="order"/> while a
+    /// drop's clicks run (the order it asked for, not the orders on the way).
+    /// </summary>
+    public void Refresh(GameState state, PickerView picker, IReadOnlyList<int>? order = null)
     {
         var details = DeploymentTable.Details(state);
         string detailsKey = details?.ToString() ?? "";
@@ -186,7 +217,7 @@ internal sealed partial class DeploymentPanels : Control
                 + $"{Label("Rows")} {(details.Rows == "" ? "—" : details.Rows)}   {Label("Item")} {(details.Item == "" ? "—" : details.Item)}";
         }
 
-        var party = DeploymentTable.Party(state);
+        var party = DeploymentTable.Party(state, order);
         string partyKey = string.Join(";", party.Places) + $"|{party.Troops}|{party.Cost}|{party.Gold}";
         if (partyKey != _partyKey)
         {
@@ -220,16 +251,18 @@ internal sealed partial class DeploymentPanels : Control
     /// 3-4 the back row (docs/battle/01-flow.md §0.2), the back row's column on the left and the
     /// front row's on the right, towards the enemy. A member's card has its face (<see cref="UnitFaces"/>),
     /// name, troop type, troops and war expense, its place and its remove button; a place the screen
-    /// does not offer (<c>Tmp0040</c>) is left blank.
+    /// does not offer (<c>Tmp0040</c>) is left blank. A member's card is dragged onto another place
+    /// (<see cref="Dropped"/>).
     /// </summary>
     private void FillParty(DeploymentParty party)
     {
+        EndDrag();
         foreach (var child in _rows.GetChildren())
         {
             _rows.RemoveChild(child);
             child.QueueFree();
         }
-        _memberCards.Clear();
+        _cards.Clear();
         foreach (int[] places in new[] { new[] { 3, 4 }, new[] { 1, 2 } })
         {
             var row = new VBoxContainer { MouseFilter = MouseFilterEnum.Ignore, SizeFlagsHorizontal = SizeFlags.ExpandFill };
@@ -252,12 +285,13 @@ internal sealed partial class DeploymentPanels : Control
     {
         int pad = Math.Max(1, (int)Math.Round(2 * _pixels));
         var card = new PanelContainer { MouseFilter = MouseFilterEnum.Ignore, SizeFlagsVertical = SizeFlags.ExpandFill };
-        card.AddThemeStyleboxOverride("panel", new StyleBoxFlat
+        var cardBox = new StyleBoxFlat
         {
             BgColor = member is null ? Back : CardBack, BorderColor = offered ? Border : Back,
             BorderWidthLeft = 1, BorderWidthTop = 1, BorderWidthRight = 1, BorderWidthBottom = 1,
             ContentMarginLeft = pad, ContentMarginRight = pad, ContentMarginTop = pad, ContentMarginBottom = pad,
-        });
+        };
+        card.AddThemeStyleboxOverride("panel", cardBox);
         if (!offered)
             return card;
         var line = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
@@ -266,6 +300,7 @@ internal sealed partial class DeploymentPanels : Control
         if (member is null)
         {
             line.AddChild(Line($"{place}  empty", Muted, center: true));
+            _cards.Add(new PlaceCard(card, cardBox, place, 0, null));
             return card;
         }
 
@@ -306,7 +341,7 @@ internal sealed partial class DeploymentPanels : Control
         remove.Pressed += () => RemovePressed?.Invoke(unit);
         remove.GuiInput += RightClick;
         line.AddChild(remove);
-        _memberCards.Add((card, member.Unit));
+        _cards.Add(new PlaceCard(card, cardBox, place, member.Unit, face.Texture));
         return card;
     }
 
@@ -340,11 +375,72 @@ internal sealed partial class DeploymentPanels : Control
         rect.GuiInput += e =>
         {
             RightClick(e);
+            Drag(e);
             if (e is InputEventMouseButton)
                 rect.AcceptEvent();                                     // a left click on the panels does nothing
         };
         AddChild(rect);
         return rect;
+    }
+
+    /// <summary>
+    /// A left press on a member's card, moved further than <see cref="DragDistance"/>, drags it: its
+    /// face follows the pointer and the place under it is framed; released over another place, the
+    /// drop goes to <see cref="Dropped"/>. No drag starts while <see cref="Busy"/>.
+    /// </summary>
+    private void Drag(InputEvent e)
+    {
+        var at = GetGlobalMousePosition();
+        switch (e)
+        {
+            case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true }:
+                EndDrag();
+                _dragFrom = !Busy && CardAt(at) is { Unit: not 0 } pressed ? pressed.Place : 0;
+                _dragStart = at;
+                break;
+            case InputEventMouseMotion when _dragFrom != 0:
+                if (!_dragging)
+                {
+                    if (at.DistanceTo(_dragStart) < DragDistance || _cards.Find(c => c.Place == _dragFrom) is not { } source)
+                        return;
+                    _dragging = true;
+                    source.Card.Modulate = new Color(1, 1, 1, 0.4f);
+                    float size = (float)Math.Round(FaceSize * _pixels);
+                    _ghost.Texture = source.Face;
+                    _ghost.Size = new Vector2(size, size);
+                    _ghost.Visible = true;
+                }
+                _ghost.GlobalPosition = at - _ghost.Size / 2;
+                ShowDropOn(CardAt(at) is { } over && over.Place != _dragFrom ? over.Place : 0);
+                break;
+            case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false } when _dragFrom != 0:
+                int from = _dragFrom, to = _dropOn;
+                EndDrag();
+                if (to != 0 && !Busy)
+                    Dropped?.Invoke(from, to);
+                break;
+        }
+    }
+
+    /// <summary>The place <paramref name="place"/> framed as where a drop goes (0: none).</summary>
+    private void ShowDropOn(int place)
+    {
+        if (place == _dropOn)
+            return;
+        foreach (var c in _cards)
+            c.Box.BorderColor = c.Place == place ? DropBorder : Border;
+        _dropOn = place;
+    }
+
+    /// <summary>Any drag under way given up: the cards as they were, the face hidden.</summary>
+    private void EndDrag()
+    {
+        ShowDropOn(0);
+        foreach (var c in _cards)
+            c.Card.Modulate = Colors.White;
+        _ghost.Visible = false;
+        _dragFrom = 0;
+        _dragging = false;
     }
 
     private void RightClick(InputEvent e)

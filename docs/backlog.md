@@ -86,7 +86,7 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   (2026-10-12, [ui/survey.md](ui/survey.md): the screens, the classes of work, input on mouse and
   touch, how a second UI plugs in). Decision 25 (2026-10-12): screen by screen over the original
   layout, the deployment table first — built (2026-10-12, Option → Interface → New, its second part
-  too); the third part (the party as a formation, faces, drag and drop) is under way: [ui/deployment-table.md](ui/deployment-table.md).
+  too, and the third, the party as a formation with faces and drag and drop): [ui/deployment-table.md](ui/deployment-table.md).
   Later (owner, 2026-10-12): our own battle screen may want the enemies' faces too — the commanders'
   faces are in Debug → Portraits (`UnitFaces.Commanders`); nine commanders have none (and commander
   100 has one only in some scenes' battles); their battle sprite stands in (owner, 2026-10-12;

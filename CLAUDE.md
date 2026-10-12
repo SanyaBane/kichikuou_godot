@@ -145,8 +145,8 @@ Next (owner's requests 2026-10-11/12): an interface of our own next to the origi
 by the player, and an Android build later (docs/backlog.md). The game logic stays the original's.
 The UI survey's parts 1-4 are docs/ui/survey.md. Decision 25 (2026-10-12): our own screens come one by
 one over the original layout, chosen by Option → Interface; the first, the deployment table over
-`Sﾌﾞﾀｲ`'s grid, is built with the rest of its screen (docs/ui/deployment-table.md); its third part (the
-party as a formation with the units' faces, drag and drop) is under way, Debug → Portraits first.
+`Sﾌﾞﾀｲ`'s grid, is built with the rest of its screen and its third part (the party as a formation with
+the units' faces, drag and drop; Debug → Portraits) — docs/ui/deployment-table.md.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -290,7 +290,8 @@ commit `local.env`.
   ends at the first file or path not ported yet ("not ported yet"), at a game over, after week 30
   (`--weeks n`) or two weeks after story stage `--stage n` is reached — `--seed 2 --weeks 60 --stage 2`
   takes Oaks in week 34 and stops in week 36, ~15 min (exit code 0; 1 after an error). `--interface new`
-  builds the parties in our own deployment table; its dumps need a window (no `--headless`).
+  builds the parties in our own deployment table and swaps the first two places by drops and back;
+  its dumps need a window (no `--headless`).
 - **A look at one screen** (screen dumps for the owner) starts from a kept save, never from the
   prologue (owner's requests 2026-10-12): `user://saves-week26` holds the second Leazas week (week 26,
   stage 1), the one to use, and

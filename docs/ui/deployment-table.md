@@ -176,4 +176,17 @@ the details panel (2026-10-12, after the look at step 8):
    (`DeploymentPanels.HoveredUnit`: the script's pointer on the member's cell, so the script shows its
    portrait and details). `--auto` hovers a row one read longer once its details show, so a window
    dump (the next frame) has them.
-9. **Drag and drop** between the places, input held while the script's clicks run.
+9. ✓ (2026-10-12) **Drag and drop** between the places, input held while the script's clicks run.
+   The model: `DeploymentTable.Dropped` (the order a drop asks for: the two members swap places; onto
+   an empty place the member goes to the end, as the party has no gaps), `Reordering` (the fewest
+   clicks that give it: a click moves a member to the end, CMD-16, so the longest start of the wanted
+   order that already stands in that order stays and the rest is clicked in turn) and `Drop` (a click
+   on each of their cells), tested over every order of up to four members against a search of all
+   click series, and against `Sﾌﾞﾀｲ` run from the player's files (`DeploymentTableScriptTests`: three
+   drops, each giving the order asked for). `Party` and `Rows` take the wanted order. Godot: a left
+   press on a member's card moved six screen pixels is a drag (`DeploymentPanels.Drag`: the card
+   dimmed, its face under the pointer, the place under it framed); a release over another place is
+   `GameScreen.PartyDropped`, which queues the clicks and keeps the wanted order (`_wantedOrder`) until
+   the script reads the pointer again with nothing queued — meanwhile the table and the panels show
+   that order, no drag starts and presses on our screen are dropped. `--auto --interface new` drops
+   place 1 onto place 2 and back once the party is built, and fails unless the party comes out as it was.
