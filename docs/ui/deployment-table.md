@@ -161,5 +161,12 @@ owner's order (2026-10-12), after a first column with the party place (header �
    The owner set the sprites' squares (the Hannies', PG-X mk2's, the Kaiju's; Aladdin's stays in the
    middle) and eight more faces' — the Hanny King's and the Kaiju Prince's (unit 48) among them —
    the same day; they are `UnitFaces.Exceptions` too (73 in all).
-8. **The party panel, variant B**, with the faces of step 7.
+8. ✓ (2026-10-12) **The party panel, variant B**, with the faces of step 7 — the model's
+   `DeploymentMember` carries the troop type and the face (`Unit_FaceCg`); `DeploymentPanels.FillParty`:
+   "Back row" (places 3-4) on the left, "Front row ▶" (places 1-2) on the right, a card per place — the
+   face's square (45 script pixels, 90 in a 1280×800 window), the place and name, the troop type, the
+   troops, × and the war expense; "empty" where no member stands, blank where the screen does not offer
+   the place (`Tmp0040`); the totals below. The faces come through `godot/Strategy/FacePictures` (the
+   viewer's loader, shared), their squares are `UnitFaces`' with the owner's edits read as the screen
+   opens. Waits for the owner's look.
 9. **Drag and drop** between the places, input held while the script's clicks run.

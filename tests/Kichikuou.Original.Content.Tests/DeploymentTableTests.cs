@@ -123,10 +123,11 @@ public class DeploymentTableTests
         var s = World();
         s.Gold = 5;
         s.Tmp0040 = 3;
+        s.Units[3].FaceCg = 3;                                              // Bound's face
 
         var party = DeploymentTable.Party(s);
 
-        Assert.Equal([new DeploymentMember(1, 3, "Bound", 3, 600), new DeploymentMember(2, 2, "Sill", 2, 300), null], party.Places);
+        Assert.Equal([new DeploymentMember(1, 3, "Bound", 3, 600, "Thieves", 3), new DeploymentMember(2, 2, "Sill", 2, 300, "Mages", 0), null], party.Places);
         Assert.Equal(900, party.Troops);
         Assert.Equal(5, party.Cost);                                        // Bound 1 + 600/300, Sill 1 + 300/300
         Assert.True(party.Affordable);

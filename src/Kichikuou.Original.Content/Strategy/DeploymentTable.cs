@@ -118,8 +118,11 @@ public sealed record DeploymentRow(
 /// </summary>
 public sealed record DeploymentDetails(int Unit, string Name, int Cost, int Troops, int MaxTroops, string Rows, string Item);
 
-/// <summary>A place of the party panel: the member's number, name, war expense and troops.</summary>
-public sealed record DeploymentMember(int Place, int Unit, string Name, int Cost, int Troops);
+/// <summary>
+/// A place of the party panel: the member's number, name, war expense, troops, troop type and face CG
+/// (<c>Unit_FaceCg</c>, 0 = none; <see cref="UnitFaces"/> cuts it).
+/// </summary>
+public sealed record DeploymentMember(int Place, int Unit, string Name, int Cost, int Troops, string TroopType, int FaceCg);
 
 /// <summary>
 /// The party panel of our deployment screen: the places the screen offers (<c>Tmp0040</c>, at most
@@ -264,8 +267,9 @@ public static class DeploymentTable
             var u = state.Units[unit];
             troops += u.Troops;
             cost += u.DeployCost + u.Troops / 300;
-            members[place - 1] = new DeploymentMember(place, unit, UnitName(state, unit),
-                (u.DeployCost + u.Troops / 300).Value, u.Troops.Value);
+            int strings = (state.Unit_StrBase + (Sys3Int)((unit - 1) * 3)).Value;
+            members[place - 1] = new DeploymentMember(place, unit, StringAt(state, strings),
+                (u.DeployCost + u.Troops / 300).Value, u.Troops.Value, StringAt(state, strings + 1), u.FaceCg.Value);
         }
         return new DeploymentParty(members, troops.Value, cost.Value, state.Gold.Value);
     }

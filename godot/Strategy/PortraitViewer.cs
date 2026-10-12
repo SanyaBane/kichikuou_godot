@@ -22,11 +22,10 @@ internal sealed partial class PortraitViewer : Window
     /// <summary>A square's size on the screen in a 1280×800 window (the party panel's).</summary>
     private const int TileSize = 90;
 
-    private readonly CgLibrary _cgs;
+    private readonly FacePictures _pictures;
     private readonly IReadOnlyList<RecordFace> _units;
     private readonly IReadOnlyList<RecordFace> _commanders;
     private readonly FaceCrops _crops = FaceCropFile.Load();
-    private readonly Dictionary<int, Image> _images = [];
     private readonly Dictionary<int, List<Button>> _tiles = [];      // the tiles shown, by face CG
     private List<int>? _allFaces;
     private OptionButton _list = null!;
@@ -43,7 +42,7 @@ internal sealed partial class PortraitViewer : Window
     /// <param name="state">The running game's state, or null before the boot (no units or commanders then).</param>
     public PortraitViewer(CgLibrary cgs, GameState? state)
     {
-        _cgs = cgs;
+        _pictures = new FacePictures(cgs);
         _units = state is null ? [] : UnitFaces.Units(state);
         _commanders = state is null ? [] : UnitFaces.Commanders(state);
         Title = "Portraits (debug)";
@@ -249,16 +248,10 @@ internal sealed partial class PortraitViewer : Window
 
     private static string Describe(FaceCrop c) => $"({c.X}, {c.Y}) {c.Size}×{c.Size}";
 
-    /// <summary>CG <paramref name="cg"/>'s size: a face's 192×256 or a stand-in's battle sprite's (a face's without the CG).</summary>
-    private (int Width, int Height) SizeOf(int cg) =>
-        Face(cg) is { } image ? (image.GetWidth(), image.GetHeight()) : (UnitFaces.Width, UnitFaces.Height);
+    private (int Width, int Height) SizeOf(int cg) => _pictures.SizeOf(cg);
 
     /// <summary>The square in use for CG <paramref name="cg"/>: the owner's edit, else the built-in one.</summary>
-    private FaceCrop CropOf(int cg)
-    {
-        var (width, height) = SizeOf(cg);
-        return _crops.CropOf(cg, width, height);
-    }
+    private FaceCrop CropOf(int cg) => _pictures.CropOf(cg, _crops);
 
     /// <summary>The built-in square for CG <paramref name="cg"/> (<see cref="UnitFaces.CropOf"/>).</summary>
     private FaceCrop BuiltIn(int cg)
@@ -281,44 +274,10 @@ internal sealed partial class PortraitViewer : Window
         };
     }
 
-    /// <summary>The face CG as <c>G n, 40</c> draws it (index 40 transparent), or null.</summary>
-    private Image? Face(int cg)
-    {
-        if (cg == 0)
-            return null;
-        if (_images.TryGetValue(cg, out var image))
-            return image;
-        if (_cgs.Get(cg) is not { } face)
-            return null;
-        image = Image.CreateFromData(face.Width, face.Height, false, Image.Format.Rgba8, face.ToRgba(40));
-        _images[cg] = image;
-        return image;
-    }
+    private Image? Face(int cg) => _pictures.Picture(cg);
 
-    /// <summary>The face's <paramref name="crop"/> at <see cref="TileSize"/>, or null.</summary>
-    private Image? Square(int cg, FaceCrop crop) =>
-        Face(cg) is { } face ? Shrink(face.GetRegion(new Rect2I(crop.X, crop.Y, crop.Size, crop.Size)), TileSize) : null;
-
-    /// <summary>
-    /// <paramref name="image"/> resized to <paramref name="size"/>² without the colour key's magenta
-    /// bleeding in: the transparent pixels' colour is dropped (premultiplied) before the filter and
-    /// the alpha divided out after it.
-    /// </summary>
-    internal static Image Shrink(Image image, int size)
-    {
-        image.PremultiplyAlpha();
-        image.Resize(size, size, Image.Interpolation.Lanczos);
-        byte[] rgba = image.GetData();
-        for (int i = 0; i < rgba.Length; i += 4)
-        {
-            int a = rgba[i + 3];
-            if (a is 0 or 255)
-                continue;
-            for (int c = 0; c < 3; c++)
-                rgba[i + c] = (byte)Math.Min(255, rgba[i + c] * 255 / a);
-        }
-        return Image.CreateFromData(size, size, false, Image.Format.Rgba8, rgba);
-    }
+    /// <summary>The <paramref name="crop"/> of CG <paramref name="cg"/> at <see cref="TileSize"/>, or null.</summary>
+    private Image? Square(int cg, FaceCrop crop) => _pictures.Square(cg, crop, TileSize);
 
     /// <summary>Every CG of a face's size in the player's files, read from the PNG headers.</summary>
     private List<int> AllFaces()
@@ -326,10 +285,10 @@ internal sealed partial class PortraitViewer : Window
         if (_allFaces is not null)
             return _allFaces;
         _allFaces = [];
-        if (!System.IO.Directory.Exists(_cgs.Directory))
+        if (!System.IO.Directory.Exists(_pictures.Cgs.Directory))
             return _allFaces;
         var header = new byte[24];
-        foreach (string path in System.IO.Directory.EnumerateFiles(_cgs.Directory, "CG*.png").Order(StringComparer.Ordinal))
+        foreach (string path in System.IO.Directory.EnumerateFiles(_pictures.Cgs.Directory, "CG*.png").Order(StringComparer.Ordinal))
         {
             if (!int.TryParse(System.IO.Path.GetFileNameWithoutExtension(path)[2..], out int cg))
                 continue;

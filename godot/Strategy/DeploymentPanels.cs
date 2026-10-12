@@ -9,8 +9,9 @@ namespace Kichikuou.Game.Strategy;
 /// The rest of our own deployment screen around the <see cref="DeploymentTableView"/> (owner's
 /// decision 25, docs/ui/deployment-table.md): everything of <c>Sﾌﾞﾀｲ</c>'s screen but the
 /// portrait and its description is covered — the details of the hovered unit
-/// (<see cref="DeploymentTable.Details"/>), the party with a remove button per member and its
-/// totals against the gold (<see cref="DeploymentTable.Party"/>), and the bar's three buttons
+/// (<see cref="DeploymentTable.Details"/>), the party as the battle sets it up — the back row on the
+/// left, the front row on the right, a card per place with the member's face and a remove button —
+/// and its totals against the gold (<see cref="DeploymentTable.Party"/>), and the bar's three buttons
 /// labelled from the player's files. It decides nothing: the presses go to <see cref="GameScreen"/>,
 /// which answers the script with the gestures it expects; a left click elsewhere on it does
 /// nothing, a right click is the script's own (the last member out).
@@ -27,7 +28,11 @@ internal sealed partial class DeploymentPanels : Control
     private static readonly Rect2 PartyArea = new(6, 254, 314, 142);
     private static readonly Rect2 BarArea = new(322, 326, 316, 70);
 
+    /// <summary>A face's square on a member's card, in script pixels (90 screen pixels in a 1280×800 window).</summary>
+    private const float FaceSize = 45;
+
     private static readonly Color Back = new(0.04f, 0.05f, 0.12f);
+    private static readonly Color CardBack = new(0.08f, 0.1f, 0.22f);
     private static readonly Color Border = new(0.18f, 0.23f, 0.42f);
     private static readonly Color Muted = new(0.56f, 0.59f, 0.73f);
     private static readonly Color Warning = new(0.88f, 0.48f, 0.48f);
@@ -37,8 +42,11 @@ internal sealed partial class DeploymentPanels : Control
     private readonly PanelContainer _details;
     private readonly RichTextLabel _detailsText;
     private readonly PanelContainer _party;
-    private readonly GridContainer _partyGrid;
+    private readonly HBoxContainer _rows;                   // the back row's column, then the front row's
     private readonly RichTextLabel _partyTotals;
+    private readonly FacePictures _faces;
+    private FaceCrops _crops = new();
+    private float _pixels = 1;                              // screen pixels to a script pixel
     private readonly HBoxContainer _bar;
     private readonly Button[] _buttons = new Button[3];
     private readonly Theme _theme = new();
@@ -53,8 +61,9 @@ internal sealed partial class DeploymentPanels : Control
     /// <summary>A right press anywhere on the panels.</summary>
     public event Action? RightPressed;
 
-    public DeploymentPanels(GameFont font)
+    public DeploymentPanels(GameFont font, FacePictures faces)
     {
+        _faces = faces;
         MouseFilter = MouseFilterEnum.Ignore;
         Visible = false;
         Theme = _theme;
@@ -69,13 +78,20 @@ internal sealed partial class DeploymentPanels : Control
 
         _party = Panel();
         var column = new VBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
-        _partyGrid = new GridContainer { Columns = 5, MouseFilter = MouseFilterEnum.Ignore };
-        _partyGrid.AddThemeConstantOverride("h_separation", 10);
-        _partyGrid.AddThemeConstantOverride("v_separation", 0);
+        column.AddThemeConstantOverride("separation", 2);
+        var headers = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
+        headers.AddThemeConstantOverride("separation", 6);
+        foreach (string header in new[] { "Back row", "Front row  ▶" })
+        {
+            var label = new Label { Text = header, HorizontalAlignment = HorizontalAlignment.Center, SizeFlagsHorizontal = SizeFlags.ExpandFill };
+            label.AddThemeColorOverride("font_color", Muted);
+            headers.AddChild(label);
+        }
+        column.AddChild(headers);
+        _rows = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore, SizeFlagsVertical = SizeFlags.ExpandFill };
+        _rows.AddThemeConstantOverride("separation", 6);
+        column.AddChild(_rows);
         _partyTotals = Text();
-        _partyTotals.SizeFlagsVertical = SizeFlags.ExpandFill;
-        _partyTotals.VerticalAlignment = VerticalAlignment.Bottom;
-        column.AddChild(_partyGrid);
         column.AddChild(_partyTotals);
         _party.AddChild(column);
 
@@ -125,6 +141,18 @@ internal sealed partial class DeploymentPanels : Control
         _theme.DefaultFontSize = Math.Max(8, (int)Math.Round(TextSize * pixelsPerScript));
         foreach (var b in _buttons)
             b.AddThemeFontSizeOverride("font_size", Math.Max(10, (int)Math.Round(16 * pixelsPerScript)));
+        if (pixelsPerScript != _pixels)
+        {
+            _pixels = pixelsPerScript;
+            _partyKey = "?";                                    // the faces are shrunk to the new size
+        }
+    }
+
+    /// <summary>The squares of the faces: the built-in ones and the owner's edits from Debug → Portraits (read as the screen opens).</summary>
+    public void LoadCrops()
+    {
+        _crops = FaceCropFile.Load();
+        _partyKey = "?";
     }
 
     /// <summary>The panels from <paramref name="state"/> and the bar's labels from <paramref name="picker"/>, filled in again when anything shown changed.</summary>
@@ -169,56 +197,123 @@ internal sealed partial class DeploymentPanels : Control
         ButtonPressed?.Invoke(button);
     }
 
+    /// <summary>
+    /// The party as the battle sets it up (variant B, owner 2026-10-12): places 1-2 are the front row,
+    /// 3-4 the back row (docs/battle/01-flow.md §0.2), the back row's column on the left and the
+    /// front row's on the right, towards the enemy. A member's card has its face (<see cref="UnitFaces"/>),
+    /// name, troop type, troops and war expense, its place and its remove button; a place the screen
+    /// does not offer (<c>Tmp0040</c>) is left blank.
+    /// </summary>
     private void FillParty(DeploymentParty party)
     {
-        foreach (var child in _partyGrid.GetChildren())
+        foreach (var child in _rows.GetChildren())
         {
-            _partyGrid.RemoveChild(child);
+            _rows.RemoveChild(child);
             child.QueueFree();
         }
-        void Cell(string text, Color? color = null, bool right = false, bool expand = false)
+        foreach (int[] places in new[] { new[] { 3, 4 }, new[] { 1, 2 } })
         {
-            var label = new Label { Text = text, MouseFilter = MouseFilterEnum.Ignore, SizeFlagsHorizontal = expand ? SizeFlags.ExpandFill : SizeFlags.Fill };
-            if (right)
-                label.HorizontalAlignment = HorizontalAlignment.Right;
-            if (color is { } c)
-                label.AddThemeColorOverride("font_color", c);
-            _partyGrid.AddChild(label);
-        }
-        Cell("●", Muted);
-        Cell("Unit", Muted, expand: true);
-        Cell("Expense", Muted, right: true);
-        Cell("Troops", Muted, right: true);
-        Cell("", Muted);
-        foreach (var (member, place) in party.Places.Select((m, i) => (m, i + 1)))
-        {
-            if (member is null)
-            {
-                Cell(place.ToString(), Muted);
-                Cell("—", Muted, expand: true);
-                Cell("", Muted);
-                Cell("", Muted);
-                Cell("", Muted);
-                continue;
-            }
-            Cell(place.ToString());
-            Cell(member.Name, expand: true);
-            Cell($"{member.Cost * 100}K", right: true);
-            Cell(member.Troops.ToString(), right: true);
-            var remove = new Button { Text = "×", Flat = true, FocusMode = FocusModeEnum.None, TooltipText = "Take out of the party" };
-            remove.AddThemeColorOverride("font_color", Warning);
-            remove.AddThemeColorOverride("font_hover_color", Warning.Lightened(0.3f));
-            foreach (var box in new[] { "normal", "hover", "pressed", "focus" })
-                remove.AddThemeStyleboxOverride(box, new StyleBoxEmpty());     // as tall as the labels
-            int unit = member.Unit;
-            remove.Pressed += () => RemovePressed?.Invoke(unit);
-            remove.GuiInput += RightClick;
-            _partyGrid.AddChild(remove);
+            var row = new VBoxContainer { MouseFilter = MouseFilterEnum.Ignore, SizeFlagsHorizontal = SizeFlags.ExpandFill };
+            row.AddThemeConstantOverride("separation", (int)Math.Round(3 * _pixels));
+            foreach (int place in places)
+                row.AddChild(Card(place, place <= party.Places.Count, place <= party.Places.Count ? party.Places[place - 1] : null));
+            _rows.AddChild(row);
         }
         string cost = $"{party.Cost * 100}K";
         _partyTotals.Text = $"{Label("Troop total")} {party.Troops}      {Label("War expenses")} "
             + (party.Affordable ? cost : $"[color=#{Warning.ToHtml(false)}]{cost}[/color]")
             + $" {Label("of")} {party.Gold * 100}K";
+    }
+
+    /// <summary>
+    /// Place <paramref name="place"/>'s card: blank where the screen does not offer it, "empty" where
+    /// no member stands, else the member's face and lines with the remove button and the expense.
+    /// </summary>
+    private Control Card(int place, bool offered, DeploymentMember? member)
+    {
+        int pad = Math.Max(1, (int)Math.Round(2 * _pixels));
+        var card = new PanelContainer { MouseFilter = MouseFilterEnum.Ignore, SizeFlagsVertical = SizeFlags.ExpandFill };
+        card.AddThemeStyleboxOverride("panel", new StyleBoxFlat
+        {
+            BgColor = member is null ? Back : CardBack, BorderColor = offered ? Border : Back,
+            BorderWidthLeft = 1, BorderWidthTop = 1, BorderWidthRight = 1, BorderWidthBottom = 1,
+            ContentMarginLeft = pad, ContentMarginRight = pad, ContentMarginTop = pad, ContentMarginBottom = pad,
+        });
+        if (!offered)
+            return card;
+        var line = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
+        line.AddThemeConstantOverride("separation", pad * 2);
+        card.AddChild(line);
+        if (member is null)
+        {
+            line.AddChild(Line($"{place}  empty", Muted, center: true));
+            return card;
+        }
+
+        int size = (int)Math.Round(FaceSize * _pixels);
+        var face = new TextureRect
+        {
+            CustomMinimumSize = new Vector2(size, size),
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.KeepCentered,
+            SizeFlagsVertical = SizeFlags.ShrinkCenter,
+            MouseFilter = MouseFilterEnum.Ignore,
+        };
+        if (member.FaceCg != 0)
+            face.Texture = _faces.SquareTexture(member.FaceCg, _faces.CropOf(member.FaceCg, _crops), size);
+        line.AddChild(face);
+
+        var text = new VBoxContainer { MouseFilter = MouseFilterEnum.Ignore, SizeFlagsHorizontal = SizeFlags.ExpandFill };
+        text.AddThemeConstantOverride("separation", 0);
+        var name = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
+        name.AddThemeConstantOverride("separation", pad * 2);
+        name.AddChild(Line(place.ToString(), Muted, expand: false));
+        name.AddChild(Line(member.Name));
+        text.AddChild(name);
+        text.AddChild(Line(member.TroopType, Muted));
+        text.AddChild(Line($"{member.Troops} troops"));
+        line.AddChild(text);
+
+        var side = new VBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
+        side.AddThemeConstantOverride("separation", 0);
+        var remove = new Button { Text = "×", Flat = true, FocusMode = FocusModeEnum.None, TooltipText = "Take out of the party", SizeFlagsHorizontal = SizeFlags.ShrinkEnd };
+        remove.AddThemeColorOverride("font_color", Warning);
+        remove.AddThemeColorOverride("font_hover_color", Warning.Lightened(0.3f));
+        foreach (var box in new[] { "normal", "hover", "pressed", "focus" })
+            remove.AddThemeStyleboxOverride(box, new StyleBoxEmpty());     // as tall as the labels
+        int unit = member.Unit;
+        remove.Pressed += () => RemovePressed?.Invoke(unit);
+        remove.GuiInput += RightClick;
+        side.AddChild(remove);
+        side.AddChild(new Control { SizeFlagsVertical = SizeFlags.ExpandFill, MouseFilter = MouseFilterEnum.Ignore });
+        var cost = Line($"{member.Cost * 100}K", expand: false);
+        cost.HorizontalAlignment = HorizontalAlignment.Right;
+        cost.TooltipText = "War expense (GOLD)";
+        side.AddChild(cost);
+        line.AddChild(side);
+        return card;
+    }
+
+    /// <summary>A line of a card: one that takes the room left is cut with an ellipsis where it does not fit, the others are whole.</summary>
+    private static Label Line(string text, Color? color = null, bool expand = true, bool center = false)
+    {
+        var label = new Label
+        {
+            Text = text,
+            ClipText = expand,
+            TextOverrunBehavior = expand ? TextServer.OverrunBehavior.TrimEllipsis : TextServer.OverrunBehavior.NoTrimming,
+            SizeFlagsHorizontal = expand ? SizeFlags.ExpandFill : SizeFlags.Fill,
+            MouseFilter = MouseFilterEnum.Ignore,
+        };
+        if (center)
+        {
+            label.HorizontalAlignment = HorizontalAlignment.Center;
+            label.VerticalAlignment = VerticalAlignment.Center;
+            label.SizeFlagsVertical = SizeFlags.ExpandFill;
+        }
+        if (color is { } c)
+            label.AddThemeColorOverride("font_color", c);
+        return label;
     }
 
     private static string Label(string text) => $"[color=#{Muted.ToHtml(false)}]{text}[/color]";

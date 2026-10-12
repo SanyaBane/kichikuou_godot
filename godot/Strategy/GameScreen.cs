@@ -209,7 +209,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         };
         _view.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _content.AddChild(_view);
-        _panels = new DeploymentPanels(GodotGlyphRenderer.Chosen);
+        _panels = new DeploymentPanels(GodotGlyphRenderer.Chosen, new FacePictures(new CgLibrary(GameData.CgDirectory)));
         _panels.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _panels.RemovePressed += TableRowPressed;
         _panels.ButtonPressed += TableButtonPressed;
@@ -951,6 +951,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             _table.Visible = _panels.Visible = show;
             _tablePointer = new PointerScript();
+            if (show)
+                _panels.LoadCrops();                            // the owner's squares from Debug → Portraits
         }
         if (!show)
             return false;

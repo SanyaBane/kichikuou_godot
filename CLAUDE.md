@@ -236,7 +236,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   Restart, MsgSkip on `Engine/Script/MessageSkip` (it skips the opening whole, `OriginalVariant.WholeScenes`, `Engine/Script/EngineTimer`),
   docs/window-menu.md, plus our Debug menu; `Strategy/EngineState` keeps
   the random generator and the message skip for the whole launch); `Battles/CaptureList` (Debug → Battle Captures) picks a capture, `Battles/BattleScreen` shows its battle;
-  `Strategy/PortraitViewer` (Debug → Portraits: units', commanders' and every face as our screens cut them, `UnitFaces`; the owner's edits of a square, `FaceCropEditor`, are kept in `user://face-crops.txt`, `FaceCropFile`; `--portraits` opens it);
+  `Strategy/PortraitViewer` (Debug → Portraits: units', commanders' and every face as our screens cut them, `UnitFaces`, through `Strategy/FacePictures`, which the deployment screen's party cards share; the owner's edits of a square, `FaceCropEditor`, are kept in `user://face-crops.txt`, `FaceCropFile`; `--portraits` opens it);
   `Strategy/DeploymentTableView` and `Strategy/DeploymentPanels` (our own deployment screen, Option → Interface → New, `InterfaceChoice`;
   `GameScreen` feeds the script its gestures, `Original.Content/Strategy/DeploymentTable` the rows);
   `GodotGlyphRenderer` (TextServer; MS Gothic or the bundled BIZ UDGothic in `godot/fonts`, Option →
