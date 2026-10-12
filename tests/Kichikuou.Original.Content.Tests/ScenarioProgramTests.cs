@@ -1,5 +1,5 @@
-using Kichikuou.Content.Scripts;
 using Kichikuou.Content;
+using Kichikuou.Content.Scripts;
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.State;

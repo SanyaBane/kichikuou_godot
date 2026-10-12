@@ -1,4 +1,5 @@
 using Kichikuou.Engine.Script;
+using Kichikuou.Engine.Sys3;
 
 namespace Kichikuou.TestSupport;
 
@@ -32,4 +33,10 @@ public sealed class NoScenario : IScenarioSource
     public IReadOnlyList<ScriptStatement> ReadFile(string file) => throw new InvalidOperationException(file);
 
     public ScriptStatement ReadStatement(ScriptRef at) => throw new InvalidOperationException(at.ToString());
+}
+
+/// <summary>No other file runs: a call is a divergence.</summary>
+public sealed class NoHooks : IStoryHooks
+{
+    public Task RunEventAsync(string file, Sys3Int entry) => throw new InvalidOperationException($"Unexpected call of {file}.");
 }

@@ -1,6 +1,6 @@
+using Kichikuou.Content;
 using Kichikuou.Content.Graphics;
 using Kichikuou.Content.Screen;
-using Kichikuou.Content;
 using Kichikuou.Engine.Golden;
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;

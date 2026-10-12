@@ -1,9 +1,9 @@
-using Kichikuou.Original.Tests.Combat;
-using Kichikuou.Original.Tests.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
 using Kichikuou.Original.Strategy;
+using Kichikuou.Original.Tests.Combat;
+using Kichikuou.Original.Tests.Script;
 using Kichikuou.TestSupport;
 
 namespace Kichikuou.Original.Tests.Strategy;

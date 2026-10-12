@@ -210,11 +210,18 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   game: the stage (`Battle` shares it) and the hand-drawn layers (`TextBox`, `PickerView`, menus,
   All Data in `GamePresenter.Data.cs`) composed into `Screen`; a UI asks it what is open (`MapWaiting`, `Picker`, `Data`) and where a menu
   item is (`MenuHitTest`); a gesture UI turns clicks into the script's inputs with
-  `PointerScript` (`Picker.HitTest`). Tests in
-  `tests/Kichikuou.Content.Tests` (the golden part draws and plays every capture and resolves
-  every text; its folders are the local paths, "Local paths" below).
-- `tests/Kichikuou.Core.Tests` — xUnit tests for the core. `Golden/GoldenBattleTests` replays the
-  captures in `_extract\golden` (`KICHIKUOU_GOLDEN_DIR`) and is skipped when there are none.
+  `PointerScript` (`Picker.HitTest`).
+- `tests/` — xUnit, one project per library: `Kichikuou.Engine.Tests` (Sys3, local paths, the
+  timer, the message skip and the pauses, on a `TestState` of plain variables),
+  `Kichikuou.Content.Tests` (graphics, scenario text), `Kichikuou.Original.Tests` (the rules, the
+  battle, the engine's runtime on the original's state; `Golden/GoldenBattleTests` replays the
+  captures in `_extract\golden` (`KICHIKUOU_GOLDEN_DIR`) and is skipped when there are none) and
+  `Kichikuou.Original.Content.Tests` (everything that reads the player's files: the differential
+  tests, the scenes, the presenters; the golden part draws and plays every capture and resolves every
+  text; its folders are the local paths, "Local paths" below). `Kichikuou.TestSupport` (on the
+  engine alone) holds the doubles the tests share: `OneProgram`, `LoggingView`, `LoggingRandom`,
+  `UnexpectedInput`, the `ScribblingHooks` frame, `RandomStates`, `Differential` (state copy, log
+  and memory differences) and the like.
 - `godot/` — Godot 4.7.2 .NET project (`Kichikuou.csproj`, namespace `Kichikuou.Game`, references
   the four libraries; its build does not make warnings errors, so check it at run time);
   presentation only: `Main` opens the title (a `GameScreen` running `ｽﾀMENU`) or what the
@@ -248,10 +255,12 @@ commit `local.env`.
 
 ## Commands
 
-- Tests: `dotnet test tests/Kichikuou.Core.Tests` and `dotnet test tests/Kichikuou.Content.Tests`.
+- Tests: `dotnet test tests/Kichikuou.Engine.Tests`, `tests/Kichikuou.Content.Tests`,
+  `tests/Kichikuou.Original.Tests` (seconds; "the core tests" below are these three) and
+  `tests/Kichikuou.Original.Content.Tests` ("the content tests").
   The content tests' differential tests (a port against its file run from the decompile on random
   states) run an eighth of their random cases by default — the quick run, for checks while working
-  (`DifferentialRuns`). The full counts, `KICHIKUOU_FULL_TESTS=1 dotnet test tests/Kichikuou.Content.Tests`
+  (`DifferentialRuns`). The full counts, `KICHIKUOU_FULL_TESTS=1 dotnet test tests/Kichikuou.Original.Content.Tests`
   (~5 min; only the full run fails a test whose random states never reached a path it lists), are
   **not for every commit — only when the change could break something they cover**: the rule code,
   the script runtime, the content readers, the presenter. A change no content test reaches (docs,

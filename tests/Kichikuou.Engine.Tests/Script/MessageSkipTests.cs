@@ -1,7 +1,6 @@
 using Kichikuou.Engine.Script;
-using Kichikuou.Original.State;
 
-namespace Kichikuou.Original.Tests.Script;
+namespace Kichikuou.Engine.Tests.Script;
 
 public class MessageSkipTests
 {
@@ -21,19 +20,18 @@ public class MessageSkipTests
         Assert.False(skip.IsSkipping);
     }
 
-    /// <summary>The skip skips the opening whole, also when another scene runs inside it, and only while it is on; the rebellion after it is fast-forwarded as usual.</summary>
+    /// <summary>The skip skips a listed scene whole, also when another scene runs inside it, and only while it is on.</summary>
     [Fact]
-    public void Only_the_opening_is_skipped_whole()
+    public void A_listed_scene_is_skipped_whole_while_skipping()
     {
+        HashSet<string> whole = ["WHOLE.ADV"];
         var skip = new MessageSkip([]);
-        Assert.False(skip.SkipsScene(["ｵｰﾌﾟﾆﾝｸﾞ.ADV"], OriginalVariant.WholeScenes));                     // not skipping
+        Assert.False(skip.SkipsScene(["WHOLE.ADV"], whole));                                   // not skipping
         skip.Toggle();
-        Assert.True(skip.SkipsScene(["ｵｰﾌﾟﾆﾝｸﾞ.ADV"], OriginalVariant.WholeScenes));
-        Assert.True(skip.SkipsScene(["Iｱﾘｽ.ADV", "ｵｰﾌﾟﾆﾝｸﾞ.ADV"], OriginalVariant.WholeScenes));
-        Assert.False(skip.SkipsScene(["Iﾊﾝﾗﾝ.ADV"], OriginalVariant.WholeScenes));
-        Assert.False(skip.SkipsScene(["Iﾄｳｿﾞｸ.ADV"], OriginalVariant.WholeScenes));
-        Assert.False(skip.SkipsScene(["Iｼﾚｲﾌﾞ.ADV"], OriginalVariant.WholeScenes));
-        Assert.False(skip.SkipsScene([], OriginalVariant.WholeScenes));
+        Assert.True(skip.SkipsScene(["WHOLE.ADV"], whole));
+        Assert.True(skip.SkipsScene(["INNER.ADV", "WHOLE.ADV"], whole));
+        Assert.False(skip.SkipsScene(["OTHER.ADV"], whole));
+        Assert.False(skip.SkipsScene([], whole));
     }
 
     /// <summary>Option → MsgSkip Speeds Up Fades (ours, on by default): only while skipping, and only shortening.</summary>

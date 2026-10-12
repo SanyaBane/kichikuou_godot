@@ -1,8 +1,7 @@
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
-using static Kichikuou.Original.Tests.Combat.Sys3Assert;
 
-namespace Kichikuou.Original.Tests.Script;
+namespace Kichikuou.Engine.Tests.Script;
 
 /// <summary><c>Y 3, n</c> (<see cref="ScriptContext.PauseAsync"/>) as xsystem35 <c>cmdy.c</c> runs it.</summary>
 public class PauseTests
@@ -10,7 +9,7 @@ public class PauseTests
     [Fact]
     public async Task A_pause_shows_its_event_and_stores_the_key_that_ended_it()
     {
-        var rig = new ScriptRig();
+        var rig = new EngineRig();
         rig.Input.PauseKeys.Enqueue(32);
 
         await rig.Script.PauseAsync(40);
@@ -18,7 +17,7 @@ public class PauseTests
         Assert.Equal([new PauseEvent(40)], rig.View.Events);
         Assert.Equal([40], rig.Input.Pauses);
         Assert.Equal([true], rig.Input.PauseCancelables); // Y3waitFlags starts as KEYWAIT_CANCELABLE
-        Is(32, rig.State.RetVal);
+        Assert.Equal(32, rig.State.RetVal.Value);
     }
 
     [Theory]
@@ -26,7 +25,7 @@ public class PauseTests
     [InlineData(10001, true)]
     public async Task Y3_10000_and_10001_set_the_flag_without_pausing_or_touching_RetVal(int ticks, bool cancelable)
     {
-        var rig = new ScriptRig();
+        var rig = new EngineRig();
         await rig.Script.PauseAsync(10000); // so that 10001 changes the flag too
         rig.State.RetVal = 9;
 
@@ -35,13 +34,13 @@ public class PauseTests
         Assert.Equal(cancelable, rig.Script.PauseCancelable);
         Assert.Empty(rig.View.Events);
         Assert.Empty(rig.Input.Pauses);
-        Is(9, rig.State.RetVal);
+        Assert.Equal(9, rig.State.RetVal.Value);
     }
 
     [Fact]
     public async Task Later_pauses_carry_the_flag_to_the_input()
     {
-        var rig = new ScriptRig();
+        var rig = new EngineRig();
 
         await rig.Script.PauseAsync(10000);
         await rig.Script.PauseAsync(5);

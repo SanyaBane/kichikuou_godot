@@ -265,11 +265,6 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
         private DateTime Tick() => _now = _now.AddSeconds(37);
     }
 
-    private sealed class NoHooks : IStoryHooks
-    {
-        public Task RunEventAsync(string file, Sys3Int entry) => throw new InvalidOperationException($"Unexpected call of {file}.");
-    }
-
     /// <summary>Keys, the pointer and the menus answered at random and logged; after a few menus every menu is cancelled.</summary>
     private sealed class RandomInput(int seed, List<string> log) : UnexpectedInput
     {

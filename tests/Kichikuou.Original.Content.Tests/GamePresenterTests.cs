@@ -1,7 +1,7 @@
+using Kichikuou.Content;
 using Kichikuou.Content.Graphics;
 using Kichikuou.Content.Screen;
 using Kichikuou.Content.Scripts;
-using Kichikuou.Content;
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Combat;

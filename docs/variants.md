@@ -171,9 +171,29 @@ Each step ends green (see "Principles").
      `Graphics/`, `Screen/` (with `EngineStage`), `Strategy/TextBox` (to `Screen/`), `MusicTable` (now in
      `Audio/SoundTable.cs`, to a file of its own). **Original.Content**: `Battles/`,
      `Strategy/GamePresenter*.cs`, `Strategy/PickerView`, `Audio/SoundTable` (the original's sound numbers).
-5. **The tests**: the same split (engine, original, original content), and one `Kichikuou.TestSupport`
+5. ✓ (2026-10-12) **The tests**: the same split (engine, original, original content), and one `Kichikuou.TestSupport`
    project for the doubles each differential file now copies (`OneProgram` ×6, `RandomState` ×6,
-   `LoggingView` ×5, `ScribblingHooks` ×4 …) — the Sparrow port will need them too.
+   `LoggingView` ×5, `ScribblingHooks` ×4 …) — the Sparrow port will need them too. As done:
+   - One test project per library. `Kichikuou.Engine.Tests`: Sys3, `LocalPaths`, the timer, the
+     message skip and the pauses, on a `TestState` (100 plain variables, a profile of its own).
+     `Kichikuou.Content.Tests`: graphics and scenario text. `Kichikuou.Original.Tests`: the rest of
+     the core tests. `Kichikuou.Original.Content.Tests`: everything that reads the player's files
+     (the differential tests with their quick and full runs, scenes, presenters, golden replays).
+   - The engine's other runtime tests (saves, statements, the CG counter, the map and window
+     helpers) drive it through the original's state and helper files, so they stay with the
+     original; the original's whole-scenes list got a test of its own (`OriginalVariantTests`).
+   - `Kichikuou.TestSupport` stands on the engine alone: `OneProgram`, `NoRandom`, `LoggingRandom`
+     (its generator's seed is the caller's), `NullView`, `LoggingView` (the caller says which events
+     to leave out — the original's `ScreenEvent`s — and may note more), `Literals`, `NoScenario`,
+     `NoHooks`, `UnexpectedInput` (every command throws; a test's input overrides what its file
+     reads), `InputBudgetException`, the `ScribblingHooks<TState>` frame (the entry check, the log
+     line, a generator per call; each test describes and scribbles), `RandomStates` (the unbound
+     variables, the named strings) and `Differential` (state copy, first log difference, the logs
+     around it, memory differences).
+   - Each file keeps what it tunes — its random state, its input's answers, its hooks' writes — and
+     every draw keeps its order, so the random cases are the same as before.
+   - Engine and Content grant no internals to any test project; Original and Original.Content grant
+     theirs to their own test projects and to Original.Content.Tests.
 6. **The tools' paths**: `gen_state.py`, `gen_figt_m.py` and `tools/golden/describe.py` write and read
    the new paths; `gen_state.py`'s output must stay byte-identical.
 7. **Docs**: CLAUDE.md (layout, commands), README, porting conventions; the `--auto` regression run
