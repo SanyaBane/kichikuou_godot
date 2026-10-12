@@ -123,8 +123,16 @@ Each step ends green (see "Principles").
      `SaveData.Capture` the state. The context reads a slot of another variable count as empty (the
      check left `SaveData.ReadFrom`).
    - The variant's id waits for the saves per variant (Deferred): nothing would read it yet.
-2. **Split `ScriptContext`** into the engine part and `OriginalScriptContext`; move the original's
-   events into their own namespace. Still one assembly.
+2. ✓ (2026-10-12) **Split `ScriptContext`** into the engine part and `OriginalScriptContext`; move the
+   original's events into their own namespace. Still one assembly. As done:
+   - `ScriptContext` (unsealed, on `ScriptState`) keeps the draws, pauses, scene calls (the entry
+     variable from the profile), the CG counter, `SS`/`SR`, the saves and the statements; a call from
+     a statement list or a scene goes through the virtual `CallHelperAsync`.
+   - `OriginalScriptContext` (on `GameState`, its `State` hides the base's) takes the `Wao`, `Map` and
+     `Sound` (`PCMPLAY`) partials and routes the four helper files; rule code and the tests name it.
+   - The original's events moved to files of their own (`Script/HelperEvents.cs`: the window, sound
+     and map events; `Script/ScreenEvents.cs`). Their namespace follows the folders in step 4
+     (`Kichikuou.Original.Script` beside `Kichikuou.Engine.Script`), so they are not renamed twice.
 3. **Split the presenter**: the engine-command emulation into `Screen/`.
 4. **The assemblies**: create `Kichikuou.Engine` and `Kichikuou.Original.Content`; `Kichikuou.Core`
    becomes `Kichikuou.Original`, with namespaces following the folders. This step is mechanical:
