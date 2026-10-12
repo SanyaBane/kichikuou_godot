@@ -1,5 +1,7 @@
+using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Content.Strategy;
+using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
 
 namespace Kichikuou.Original.Content.Tests;
@@ -79,5 +81,36 @@ public class DeploymentTableTests
         Assert.Equal([2, 50, 1, 3], DeploymentTable.Sort(rows, DeploymentColumn.Atk, descending: false).Select(r => r.Unit));
         Assert.Equal([3, 50, 1, 2], DeploymentTable.Sort(rows, DeploymentColumn.Name, descending: false).Select(r => r.Unit));
         Assert.Equal([1, 2, 3, 50], DeploymentTable.Sort(rows, DeploymentColumn.Number, descending: false).Select(r => r.Unit));
+    }
+
+    [Fact]
+    public void A_press_joins_with_a_click_on_the_cell_and_takes_a_member_out_with_a_second_left_of_the_list()
+    {
+        var s = World();
+        var cell = GesturePoints.PickerCell(50);
+        var bound = GesturePoints.PickerCell(3);
+        var outside = GesturePoints.PickerOutside;
+
+        Assert.Equal([(16, cell.X, cell.Y), (0, cell.X, cell.Y)], Gestures(p => DeploymentTable.Press(s, 50, p)));
+        Assert.Equal([(16, bound.X, bound.Y), (0, bound.X, bound.Y), (16, outside.X, outside.Y), (0, outside.X, outside.Y)],
+            Gestures(p => DeploymentTable.Press(s, 3, p)));                 // Bound is first in the party
+        var rest = GesturePoints.PickerCell(51);
+        Assert.Equal([(32, rest.X, rest.Y), (0, rest.X, rest.Y)], Gestures(p => DeploymentTable.RightPress(0, p)));
+        Assert.Equal(GesturePoints.PickerCell(2), DeploymentTable.PointerAt(2));
+        Assert.Equal(rest, DeploymentTable.PointerAt(0));                  // off the rows: the empty 51st cell
+    }
+
+    /// <summary>The reads of the gestures <paramref name="queue"/> puts on a pointer: button, x, y.</summary>
+    private static List<(int, int, int)> Gestures(Action<PointerScript> queue)
+    {
+        var pointer = new PointerScript { SettleReads = 0 };
+        queue(pointer);
+        var reads = new List<(int, int, int)>();
+        while (pointer.Pending > 0)
+        {
+            var m = pointer.Next(out _);
+            reads.Add((m.Button.Value, m.X.Value, m.Y.Value));
+        }
+        return reads;
     }
 }

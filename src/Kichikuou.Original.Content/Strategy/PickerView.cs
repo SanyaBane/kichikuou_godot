@@ -26,7 +26,8 @@ public enum PickerArea
 /// of names from GameState in the colours of their state, the highlight under the entry or bar
 /// button the script follows (<c>Tmp0033</c>, <c>Tmp0029</c>, at <c>Tmp0027</c>/<c>Tmp0028</c>),
 /// the picture of that entry, the bar's labels from the player's files, and the two text panels
-/// the script prints into (<c>B4 8</c>: the party; <c>B4 9</c>: the entry's details).
+/// the script prints into (<c>B4 8</c>: the party; <c>B4 9</c>: the entry's details). Under our own
+/// deployment table the deployment picker's grid is left out (<see cref="GamePresenter.DeploymentGridHidden"/>).
 /// </summary>
 public sealed class PickerView
 {
@@ -112,9 +113,10 @@ public sealed class PickerView
         if (details)
             DetailsPicture(screen, s, hovered);
 
+        bool grid = !(Kind == PickerKind.Deployment && _owner.DeploymentGridHidden);
         for (int id = 1; id <= 50; id++)
         {
-            if (!Listed(s, id))
+            if (!grid || !Listed(s, id))
                 continue;
             int x = 328 + (id - 1) % 3 * 108, y = 18 + (id - 1) / 3 * 18;
             Text(screen, Name(s, id), x, y, 12, 0);
@@ -123,7 +125,7 @@ public sealed class PickerView
 
         if (s.Tmp0029.Value is > 500 and < 600)
             screen.Fill(s.Tmp0027.Value + 10, s.Tmp0028.Value, 70, 2, 240);
-        else if (details)
+        else if (details && grid)
             screen.Fill(s.Tmp0027.Value, s.Tmp0028.Value + 18 + 14 + 2, 90, 2, 240);
 
         foreach (var (line, x, y, size) in BarLabels())

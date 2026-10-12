@@ -183,9 +183,14 @@ internal sealed class EndInput(GameState state) : IGameInput
 
     public Task<Sys3Int> GetPlayingTrackAsync() => Task.FromResult(Sys3Int.Zero);
 
+    /// <summary>Runs before a read while the pointer has nothing queued: a UI that decides its next gestures from the state (the deployment table).</summary>
+    public Action? Idle { get; set; }
+
     public Task<MouseState> GetMouseAsync()
     {
         Reads++;
+        if (Pointer.Pending == 0)
+            Idle?.Invoke();
         var m = Pointer.Next(out bool read);
         _idle = read || Pointer.Pending > 0 ? 0 : _idle + 1;
         if (_idle > 1000)

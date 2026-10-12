@@ -1,5 +1,7 @@
 using Kichikuou.Content;
+using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
+using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
 
 namespace Kichikuou.Original.Content.Strategy;
@@ -82,7 +84,7 @@ public sealed record DeploymentRow(
         DeploymentColumn.TroopType => TroopType,
         DeploymentColumn.TroopAtk => TroopAtk.ToString(),
         DeploymentColumn.TroopDef => TroopDef.ToString(),
-        DeploymentColumn.Cost => $"{Cost}00K",
+        DeploymentColumn.Cost => $"{Cost * 100}K",
         _ => throw new ArgumentOutOfRangeException(nameof(column)),
     };
 
@@ -141,7 +143,6 @@ public static class DeploymentTable
     /// <summary>The listed units (status not 0) in number order, as <c>Sﾌﾞﾀｲ</c> lists them.</summary>
     public static IReadOnlyList<DeploymentRow> Rows(GameState state)
     {
-        Sys3Int[] party = [state.Bt_PlayerParty1, state.Bt_PlayerParty2, state.Bt_PlayerParty3, state.Bt_PlayerParty4];
         var rows = new List<DeploymentRow>();
         for (int n = 1; n <= LastUnit; n++)
         {
@@ -155,7 +156,7 @@ public static class DeploymentTable
                 u.Exp.Value, ((Sys3Int)100 + u.Level * 30).Value,
                 u.Level.Value, u.Atk.Value, u.Def.Value, u.Attacks.Value, u.Strategy.Value, u.Magic.Value,
                 u.TroopAtk.Value, u.TroopDef.Value, (u.DeployCost + u.Troops / 300).Value,
-                Grey: u.Status == 2, PartyPlace: Array.FindIndex(party, p => p.Value == n) + 1));
+                Grey: u.Status == 2, PartyPlace: PartyPlace(state, n)));
         }
         return rows;
     }
@@ -170,6 +171,44 @@ public static class DeploymentTable
             ? rows.OrderByDescending(r => r.Key(column), KeyComparer)
             : rows.OrderBy(r => r.Key(column), KeyComparer);
         return [.. sorted.ThenBy(r => r.Unit)];
+    }
+
+    /// <summary>
+    /// Where the script's pointer is while the player's pointer is over the table: on the hovered
+    /// row's cell (the script shows that unit's details, as when its cell is hovered), or, off the
+    /// rows (<paramref name="unit"/> 0), on the empty 51st cell, which the script never highlights
+    /// (only ids below <c>Tmp0032</c>, 51) and the table never clicks (CMD-24).
+    /// </summary>
+    public static (int X, int Y) PointerAt(int unit) => GesturePoints.PickerCell(unit is >= 1 and <= LastUnit ? unit : 51);
+
+    /// <summary>
+    /// A left press on <paramref name="unit"/>'s row as the gestures <c>Sﾌﾞﾀｲ</c> expects: a unit out
+    /// of the party is a click on its cell (it joins, or the script refuses it with its own sound and
+    /// message); a member is taken out — a click on its cell moves it to the end (CMD-16), then a
+    /// click left of the list takes the last member out (<c>Sﾌﾞﾀｲ.ADV:123-145</c>).
+    /// </summary>
+    public static void Press(GameState state, int unit, PointerScript pointer)
+    {
+        var cell = GesturePoints.PickerCell(unit);
+        pointer.Click(cell.X, cell.Y);
+        if (PartyPlace(state, unit) == 0)
+            return;
+        var outside = GesturePoints.PickerOutside;
+        pointer.Click(outside.X, outside.Y);
+    }
+
+    /// <summary>A right press on the table: a right click where the script's pointer is (<see cref="PointerAt"/>), which takes the last member out (999).</summary>
+    public static void RightPress(int unit, PointerScript pointer)
+    {
+        var at = PointerAt(unit);
+        pointer.RightClick(at.X, at.Y);
+    }
+
+    /// <summary>The unit's place in the party being built (<c>Bt_PlayerParty1-4</c>), or 0.</summary>
+    public static int PartyPlace(GameState state, int unit)
+    {
+        Sys3Int[] party = [state.Bt_PlayerParty1, state.Bt_PlayerParty2, state.Bt_PlayerParty3, state.Bt_PlayerParty4];
+        return Array.FindIndex(party, p => p.Value == unit) + 1;
     }
 
     private static readonly IComparer<IComparable> KeyComparer = Comparer<IComparable>.Create((a, b) =>

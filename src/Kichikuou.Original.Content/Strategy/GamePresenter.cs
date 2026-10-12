@@ -116,6 +116,25 @@ public sealed partial class GamePresenter : IStageObserver
     /// <summary>Whether the save screen's lists or menu are open.</summary>
     public bool SaveScreenOpen { get; private set; }
 
+    /// <summary>
+    /// Our own deployment table covers <c>Sﾌﾞﾀｲ</c>'s grid (owner's decision 25,
+    /// docs/ui/deployment-table.md): the deployment picker is drawn without the names of its grid
+    /// and the hovered unit's underline; the details, the party panel and the bar stay.
+    /// </summary>
+    public bool DeploymentGridHidden
+    {
+        get;
+        set
+        {
+            if (field != value)
+                Invalidate();
+            field = value;
+        }
+    }
+
+    /// <summary>Whether <c>WAO_SUB</c>'s message window is up over a screen drawn by hand (its frame is drawn: <c>Ui_WinType</c> not 0).</summary>
+    public bool MessageWindowShown => !BattleShows && State is { } s && s.Ui_WinType != 0;
+
     /// <summary>How far the screen is faded (0 not at all, 255 all black or white).</summary>
     public byte FadeAmount
     {
