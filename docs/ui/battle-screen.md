@@ -146,6 +146,17 @@ picture, the slot panels) is not shown. How it is built:
 3. **The frame** (Godot): while a battle shows and the interface is New, our screen covers the
    stage; the presenter keeps drawing the stage (the core's events still run) but it is not shown
    (as `DeploymentCovered`); our view follows the events it needs.
+   ✓ 2026-10-12 `godot/Battles/BattleBoardView`, shown by `GameScreen.UpdateBattleScreen` while
+   `GamePresenter.BattleSceneShows` (the field or an exchange; not the pre-battle map, the strategy and
+   scout screens or a scene the battle calls): the scene ×1.6 at 1024×410 centred, its sides the same
+   picture blurred and darkened; the windows' layer (640×400 at 656×410, centred); the speaker's whole
+   face on its side while a bubble 141/142 (the player unit, left) or 151/152 (the enemy commander,
+   right) is up (`BattleBoard.Speaker`), framed in the accent colour with the name; the round's order
+   strip; the cards 282×150 (faces through `FacePictures`, the acting one framed and not dimmed, the
+   acted dimmed); the rounds gauge; the armies' names (`BattleBoard.Armies`). Input as before: the
+   pointer over a card is the script's pointer at its panel's centre (`BattleBoard.PanelCentre`) and
+   focuses the scene on it, elsewhere the point of the windows' layer under it. Known: at a round header
+   the cards still show the last round's states (the core resets them after the header).
 4. **Input**: our `IBattleInput` answers — the target cards' commands, the acting card's, the
    own cards' orders and info; the script menus as dialogs.
 5. **The scene and the exchange**: the engagement's pictures, the shots and counters, the action

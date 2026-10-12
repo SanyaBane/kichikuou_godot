@@ -171,6 +171,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private SceneRunner? _scenes;                       // the session's, for the scenes running now
 
     private DeploymentTableView _table = null!;         // our own screen over Sﾌﾞﾀｲ's grid (Option → Interface: New)
+    private BattleBoardView _battleView = null!;        // our own battle screen over the stage (Option → Interface: New)
     private DeploymentPanels _panels = null!;           // and over the rest of it but the portrait
     private PointerScript _tablePointer = new();        // the script's pointer while the player's is over the table
     private IReadOnlyList<int>? _wantedOrder;           // the party a drop asked for, while its clicks run
@@ -210,7 +211,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         };
         _view.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _content.AddChild(_view);
-        _panels = new DeploymentPanels(GodotGlyphRenderer.Chosen, new FacePictures(new CgLibrary(GameData.CgDirectory)));
+        var faces = new FacePictures(new CgLibrary(GameData.CgDirectory));
+        _battleView = new BattleBoardView(GodotGlyphRenderer.Chosen, faces);
+        _content.AddChild(_battleView);
+        _panels = new DeploymentPanels(GodotGlyphRenderer.Chosen, faces);
         _panels.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _panels.RemovePressed += TableRowPressed;
         _panels.ButtonPressed += TableButtonPressed;
@@ -271,7 +275,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_noticeLeft > 0 && (_noticeLeft -= delta) <= 0)
             _notice.Text = "";
         UpdateDeploymentScreen();
-        Present();
+        UpdateBattleScreen(Present());
         if (_options.Portraits && !_portraitsOpened && _presenter.State is not null && !_modal)
         {
             _portraitsOpened = true;
@@ -285,11 +289,14 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _input.Clear();
     }
 
-    /// <summary>Composes the screen and uploads it when it changed; nothing while a scene is skipped whole (<see cref="SkippingScene"/>).</summary>
-    private void Present()
+    /// <summary>
+    /// Composes the screen and uploads it when it changed; nothing while a scene is skipped whole
+    /// (<see cref="SkippingScene"/>). Returns whether the screen changed.
+    /// </summary>
+    private bool Present()
     {
         if (SkippingScene)
-            return;
+            return false;
         if (_sceneSkip is { } skip)
         {
             GD.Print($"Kichikuou: MsgSkip skipped the scene in {skip.ElapsedMilliseconds} ms.");
@@ -297,7 +304,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         ClearSkippedStage();
         if (!_presenter.Compose())
-            return;
+            return false;
         _frame = _presenter.Screen.ReadScreen(_frame);
         var image = Image.CreateFromData(Surface.ScreenWidth * Surface.Scale, Surface.ScreenHeight * Surface.Scale,
             false, Image.Format.Rgba8, _frame);
@@ -310,6 +317,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             _texture.Update(image);
         }
+        return true;
     }
 
     /// <summary>A line at the top of the screen for a few seconds (files the port skips).</summary>
@@ -535,9 +543,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.ScreenshotDirectory is not { } dir)
             return;
         System.IO.Directory.CreateDirectory(dir);
-        if (_table.Visible && DisplayServer.GetName() != "headless")
+        if ((_table.Visible || BattleScreenShown) && DisplayServer.GetName() != "headless")
         {
-            // Our deployment screen is drawn by Godot over the screen: the window's next frame (headless
+            // Our deployment and battle screens are drawn by Godot over the screen: the window's next frame (headless
             // draws none). No Compose here: the frame's Present must find the change to upload it.
             _ = WindowShotAsync(System.IO.Path.Combine(dir, $"{_shot++:D5}-{what}.png"));
             return;
@@ -562,6 +570,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// <summary>The mouse position in script coordinates (640×400), clamped to the screen.</summary>
     private Vector2I ToScript(Vector2 local)
     {
+        if (_battleView.Visible && _presenter.State is { } s)
+            return _battleView.ToScript(local - _content.Position, s);  // a card's panel, or the windows' layer
         var size = _view.Size;
         float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
         var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
@@ -573,6 +583,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// <summary>The centre of script pixel <paramref name="script"/> in this control's coordinates (the inverse of <see cref="ToScript"/>).</summary>
     private Vector2 FromScript(Vector2I script)
     {
+        if (_battleView.Visible)
+            return _content.Position + _battleView.FromScript(script);
         var size = _view.Size;
         float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
         var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
@@ -657,6 +669,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         var (x, y) = (_input.Position.X, _input.Position.Y);
         _presenter.Pointer(x, y);
+        if (_battleView.Visible && _presenter.State is { } s && _battleView.PlaceAt(GetLocalMousePosition() - _content.Position, s) is { } card)
+            _presenter.Scene.Focus(card);                                       // the card's army goes into the scene
         if (_sel is null && _battleMenu is null)
             return;
         _sel?.MouseMove(x, y);
@@ -974,6 +988,38 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _table.Place(new Rect2(origin + TableArea.Position * pixels, TableArea.Size * pixels), pixels);
         _table.Refresh(_presenter.State!, _wantedOrder);
         return true;
+    }
+
+    // ---------------------------------------------------------------- our battle screen (docs/ui/battle-screen.md)
+
+    /// <summary>
+    /// Shows our battle screen over the stage while Option → Interface is on New and the battle's field
+    /// or an exchange is on (<see cref="GamePresenter.BattleSceneShows"/>; the pre-battle map, the
+    /// strategy and scout screens and the scenes a battle calls stay the original's); places it over the
+    /// picture as the window is sized and fills it (<paramref name="screenChanged"/>: the windows' layer
+    /// is read again).
+    /// </summary>
+    private bool BattleScreenShown => InterfaceChoice.New && _presenter.BattleSceneShows && !SkippingScene && _presenter.State is not null;
+
+    private void UpdateBattleScreen(bool screenChanged)
+    {
+        bool show = BattleScreenShown;
+        if (show != _battleView.Visible)
+        {
+            _battleView.Visible = show;
+            _view.Visible = !show;
+            screenChanged = true;
+            if (show)
+                _battleView.LoadCrops();
+        }
+        if (!show)
+            return;
+        var size = _view.Size;
+        float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
+        var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
+        _battleView.Place(_view.Position + (size - drawn) / 2, scale);
+        IEnumerable<WindowShape> input = _sel?.Windows ?? _battleMenu?.Windows ?? [];
+        _battleView.Refresh(_presenter, input, screenChanged, _battleView.PlaceAt(GetLocalMousePosition() - _content.Position, _presenter.State!));
     }
 
     /// <summary>

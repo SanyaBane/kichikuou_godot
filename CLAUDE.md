@@ -240,6 +240,9 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `Strategy/DeploymentTableView` and `Strategy/DeploymentPanels` (our own deployment screen, Option → Interface → New, `InterfaceChoice`;
   its colours Option → Palette, `DeploymentPalette`, steel by default;
   `GameScreen` feeds the script its gestures, `Original.Content/Strategy/DeploymentTable` the rows);
+  `Battles/BattleBoardView` (our own battle screen, Option → Interface → New, docs/ui/battle-screen.md:
+  `Original.Content/Battles/BattleScene` on top, the stage's windows over it through `WindowMask`, the
+  cards and the round's order from `BattleBoard`/`RoundOrder`);
   `GodotGlyphRenderer` (TextServer; MS Gothic or the bundled BIZ UDGothic in `godot/fonts`, Option →
   Fonts, `--font ms-gothic|biz-ud-gothic` for one launch), `BattleAudio`; `Screens` switches screens. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
 - `tools/analysis/` — Python scripts for reading the decompiled scenario; `tools/codegen/` —

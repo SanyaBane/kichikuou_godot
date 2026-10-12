@@ -108,6 +108,7 @@ public partial class GameScreen
             _glyphs.Font = font;
             _table.SetFont(font);
             _panels.SetFont(font);
+            _battleView.SetFont(font);
             CheckFont();
             _presenter.Invalidate();
         }
@@ -133,6 +134,7 @@ public partial class GameScreen
             DeploymentPalette.Chosen = palette;
             _table.SetPalette(palette);
             _panels.SetPalette(palette);
+            _battleView.SetPalette(palette);
             CheckPalette();
         }
         void CheckPalette()

@@ -93,6 +93,9 @@ public sealed record BattleCard(
     public int Picture => FaceCg != 0 ? FaceCg : StandIn;
 }
 
+/// <summary>The speaker of a window: the side whose portrait our screen shows, the record, its face CG (0: none) and its name.</summary>
+public sealed record BattleSpeaker(BattleSide Side, int Record, int FaceCg, string Name);
+
 /// <summary>
 /// The battle as our own screen shows it, read from GameState: the cards (<see cref="Cards"/>) and who
 /// acts next this round (<see cref="Remaining"/>, Kichikuou's rule). Engine-independent; reads only.
@@ -190,6 +193,38 @@ public static class BattleBoard
 
     /// <summary>A place's panel (1-8).</summary>
     public static int Panel(BattlePlace place) => place.Side == BattleSide.Player ? place.Slot : place.Slot + 4;
+
+    /// <summary>The centre of a place's panel on the original's screen (<c>L_0512e</c>): where <c>FIGT_SEL</c> takes a click on it.</summary>
+    public static (int X, int Y) PanelCentre(BattlePlace place)
+    {
+        var (x, y, w, h) = BattlePresenter.Panels[Panel(place) - 1];
+        return (x + w / 2, y + h / 2);
+    }
+
+    /// <summary>The two armies' names as the round header prints them: string 7 (" Rance Army", <c>FIGT.ADV:168</c>) and string 10, the enemy's.</summary>
+    public static (string Player, string Enemy) Armies(GameState s) =>
+        (DeploymentTable.StringAt(s, 7).Trim(), DeploymentTable.StringAt(s, 10).Trim());
+
+    /// <summary>
+    /// Who speaks in the window open now (docs/ui/battle-screen.md, "The layout"): the bubbles with the
+    /// tail on the left (<c>WAO_SUB</c> 141/142, <c>Ui_WinType</c> 41/42) are the player unit's
+    /// (<c>Unit_Cur</c>), those with the tail on the right (151/152, types 51/52) the enemy commander's
+    /// (<c>Cmdr_Cur</c>); null for any other window (or none).
+    /// </summary>
+    public static BattleSpeaker? Speaker(GameState s)
+    {
+        switch (s.Ui_WinType.Value)
+        {
+            case 41 or 42 when s.Unit_Cur.Value is > 0 and var unit:
+                return new BattleSpeaker(BattleSide.Player, unit, s.Units[(int)unit].FaceCg.Value,
+                    DeploymentTable.StringAt(s, (s.Unit_StrBase + (Sys3Int)((unit - 1) * 3)).Value).Trim());
+            case 51 or 52 when s.Cmdr_Cur.Value is > 0 and var cmdr:
+                return new BattleSpeaker(BattleSide.Enemy, cmdr, s.Cmdrs[(int)cmdr].FaceCg.Value,
+                    DeploymentTable.StringAt(s, (s.Cmdr_StrBase + (Sys3Int)((cmdr - 1) * 3)).Value).Trim());
+            default:
+                return null;
+        }
+    }
 
     private static Sys3Int Slot(GameState s, BattlePlace p) => (p.Side, p.Slot) switch
     {

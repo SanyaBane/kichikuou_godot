@@ -91,6 +91,26 @@ public class BattleBoardTests(ITestOutputHelper output)
     }
 
     [Fact]
+    public void A_bubble_names_its_speaker_by_its_tail_and_a_card_clicks_its_panel()
+    {
+        var s = Battle();
+        s.Unit_Cur = 1;
+        s.Cmdr_Cur = 5;
+        s.Ui_WinType = 41;
+        Assert.Equal((BattleSide.Player, 1, 1001, "Rance"), Speaker(s));
+        s.Ui_WinType = 52;
+        Assert.Equal((BattleSide.Enemy, 5, 1105, "Dodge"), Speaker(s));
+        s.Ui_WinType = 43;                                                  // the cream box: nobody's
+        Assert.Null(BattleBoard.Speaker(s));
+
+        Assert.Equal((12 + 91, 108 + 42), BattleBoard.PanelCentre(new BattlePlace(BattleSide.Player, 2)));
+        Assert.Equal((448 + 91, 308 + 42), BattleBoard.PanelCentre(new BattlePlace(BattleSide.Enemy, 4)));
+
+        static (BattleSide, int, int, string)? Speaker(GameState s) =>
+            BattleBoard.Speaker(s) is { } sp ? (sp.Side, sp.Record, sp.FaceCg, sp.Name) : null;
+    }
+
+    [Fact]
     public void The_strip_lists_the_acted_the_acting_and_the_rest()
     {
         var s = Battle();
