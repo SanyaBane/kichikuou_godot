@@ -151,6 +151,7 @@ owner's order (2026-10-12), after a first column with the party place (header â—
    and the owner's edits: drag the square with the mouse, size it with the wheel, the square below as
    the panel will show it, Reset; each edit saved at once in `user://face-crops.txt`
    (`FaceCrops`, `godot/Strategy/FaceCropFile`, `FaceCropEditor`), which the agent then moves into
-   `UnitFaces.Exceptions`. Waits for the owner's edits.
+   `UnitFaces.Exceptions`. The owner set 58 faces' squares (2026-10-12: units' and commanders', most
+   closer than 144, Asuka's at (26, 45)); they are `UnitFaces.Exceptions` now.
 8. **The party panel, variant B**, with the faces of step 7.
 9. **Drag and drop** between the places, input held while the script's clicks run.

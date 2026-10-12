@@ -34,10 +34,71 @@ public static class UnitFaces
     /// <summary>The usual square: 144 pixels, centred, from y 7 — the portrait's gold frame stays out (owner, 2026-10-12).</summary>
     public static FaceCrop Default { get; } = new(24, 7, 144);
 
-    /// <summary>Faces the usual square misses, by CG: Asuka's (unit 11) sits under Pigu's hat.</summary>
+    /// <summary>
+    /// The owner's own squares, by CG, set in Debug → Portraits (2026-10-12): closer or moved where the
+    /// usual square shows too much or misses the face (Asuka's, unit 11, sits under Pigu's hat). A
+    /// face many commanders share is named by one or two of them.
+    /// </summary>
     public static IReadOnlyDictionary<int, FaceCrop> Exceptions { get; } = new Dictionary<int, FaceCrop>
     {
-        [430] = new(24, 64, 144),
+        [1] = new(33, 7, 128),     // Rance (unit 1)
+        [2] = new(32, 7, 136),     // Sill (unit 2)
+        [3] = new(28, 7, 136),     // Bound (unit 3)
+        [4] = new(25, 7, 136),     // Soul (unit 4)
+        [7] = new(28, 7, 136),     // Leila (unit 5)
+        [8] = new(31, 7, 128),     // Menad (unit 10)
+        [10] = new(32, 7, 128),    // Haurein (unit 12), Haurein (commander 2)
+        [11] = new(31, 7, 136),    // Melfeis (unit 13), Melfeis (commander 4)
+        [24] = new(30, 10, 120),   // Isoroku (unit 27), Isoroku Yamamoto (commander 82)
+        [26] = new(38, 7, 128),    // Cream (unit 28), Cream (commander 45)
+        [28] = new(25, 7, 128),    // Katyusha (commander 51)
+        [29] = new(44, 11, 120),   // Saulnia (commander 52)
+        [42] = new(36, 7, 120),    // Gandhi (unit 37)
+        [45] = new(28, 7, 128),    // Nagi (unit 40), ？？？？？？？ (unit 45), Nagi (commander 107)
+        [46] = new(40, 7, 136),    // Somita (unit 46)
+        [49] = new(31, 7, 136),    // Shizuka (unit 17)
+        [55] = new(40, 7, 120),    // Kentarou (unit 31)
+        [58] = new(31, 7, 136),    // Magic (unit 39), Magic (commander 110)
+        [61] = new(20, 7, 144),    // Chizuko (unit 38)
+        [66] = new(30, 7, 136),    // Eleanor (unit 23)
+        [67] = new(38, 7, 128),    // Milli (unit 24)
+        [68] = new(30, 29, 136),   // Mill (unit 25)
+        [73] = new(28, 7, 128),    // Silky (commander 156)
+        [75] = new(37, 6, 136),    // Satella (unit 29), Satella (commander 157)
+        [76] = new(25, 7, 128),    // Aviator (unit 36)
+        [84] = new(20, 21, 144),   // PG-7 (commander 136)
+        [85] = new(66, 16, 120),   // PG-9 (commander 137)
+        [89] = new(37, 7, 128),    // Cecil (unit 50)
+        [402] = new(15, 9, 136),   // Barres (unit 6)
+        [403] = new(44, 7, 136),   // Rick (unit 7)
+        [404] = new(28, 7, 128),   // Cordoba (unit 8)
+        [405] = new(31, 8, 120),   // Ex (unit 14), Ex (commander 1)
+        [406] = new(38, 7, 112),   // Kinkaid (unit 9)
+        [408] = new(33, 52, 144),  // Desert Guide (commander 18), Desert Guide (commander 19) and 1 more
+        [412] = new(20, 7, 152),   // Hanna Hero (commander 9), Hanna Hero (commander 10) and 14 more
+        [414] = new(35, 15, 120),  // Mars the Great (unit 26), Mars the Great (commander 71)
+        [415] = new(20, 7, 160),   // Kayblis (commander 135)
+        [418] = new(18, 6, 136),   // Kenichi Oda (commander 73), Yamato Akechi (commander 74) and 3 more
+        [423] = new(22, 7, 128),   // Patton (unit 18), Patton (commander 54)
+        [424] = new(32, 10, 120),  // Hanty (unit 19), Hanty (commander 57)
+        [425] = new(46, 7, 128),   // Hubert (unit 21), Hubert (commander 55)
+        [426] = new(28, 7, 144),   // Freak (unit 20), Freak (commander 56)
+        [428] = new(28, 7, 120),   // Seizel Sisters (unit 42), La Seizel (commander 90)
+        [430] = new(26, 45, 144),  // Asuka (unit 11)
+        [432] = new(25, 7, 136),   // Aristoles (unit 43), Aristoles (commander 32)
+        [434] = new(44, 7, 128),   // Lelyukov (unit 22), Lelyukov (commander 22)
+        [435] = new(43, 7, 136),   // Tami (commander 40)
+        [436] = new(40, 22, 136),  // Maha (commander 41)
+        [439] = new(33, 7, 120),   // Gadman (commander 23), Jackal (commander 24) and 14 more
+        [447] = new(63, 11, 120),  // Meglass (unit 30), Meglass (commander 158)
+        [452] = new(37, 7, 128),   // Galtia (unit 41), Galtia (commander 131)
+        [453] = new(9, 10, 152),   // Redeye (commander 130)
+        [454] = new(9, 10, 176),   // Babolat (commander 129)
+        [456] = new(30, 7, 144),   // Saias (commander 113)
+        [459] = new(34, 7, 120),   // Alex (commander 125)
+        [463] = new(16, 8, 152),   // Gurwin (unit 44), Temple Knight (commander 139) and 3 more
+        [485] = new(42, 7, 120),   // Angel Knight (commander 146), Angel Knight (commander 147)
+        [498] = new(28, 7, 136),   // Rolex (unit 47)
     };
 
     /// <summary>The square shown for face CG <paramref name="faceCg"/>.</summary>

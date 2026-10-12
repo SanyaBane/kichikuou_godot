@@ -7,10 +7,11 @@ namespace Kichikuou.Original.Content.Tests;
 public class UnitFacesTests
 {
     [Fact]
-    public void A_face_is_cut_to_144_pixels_of_its_middle_below_the_gold_frame_but_Asukas_lower()
+    public void A_face_is_cut_to_144_pixels_of_its_middle_below_the_gold_frame_but_the_owners_own()
     {
-        Assert.Equal(new FaceCrop(24, 7, 144), UnitFaces.CropOf(1));        // Rance's (unit 1)
-        Assert.Equal(new FaceCrop(24, 64, 144), UnitFaces.CropOf(430));     // Asuka's (unit 11), under Pigu's hat
+        Assert.Equal(new FaceCrop(24, 7, 144), UnitFaces.CropOf(5));        // a face the owner left as it is
+        Assert.Equal(new FaceCrop(33, 7, 128), UnitFaces.CropOf(1));        // Rance's (unit 1), closer
+        Assert.Equal(new FaceCrop(26, 45, 144), UnitFaces.CropOf(430));     // Asuka's (unit 11), under Pigu's hat
         Assert.All(UnitFaces.Exceptions.Values.Append(UnitFaces.Default), c => Assert.Equal(c, c.Clamped()));
     }
 
@@ -20,18 +21,18 @@ public class UnitFacesTests
         var crops = new FaceCrops();
         crops.Set(1, new FaceCrop(100, -5, 144));                           // past the right edge and the top
         crops.Set(2, new FaceCrop(24, 16, 400));                            // larger than the CG
-        crops.Set(430, new FaceCrop(24, 64, 144));                          // Asuka's built-in square: no edit
+        crops.Set(430, new FaceCrop(26, 45, 144));                          // Asuka's built-in square: no edit
 
         Assert.Equal(new FaceCrop(48, 0, 144), crops.CropOf(1));
         Assert.Equal(new FaceCrop(0, 16, 192), crops.CropOf(2));
         Assert.False(crops.IsEdited(430));
-        Assert.Equal(UnitFaces.Default, crops.CropOf(3));
+        Assert.Equal(UnitFaces.Default, crops.CropOf(5));
         Assert.Equal("1 48 0 144\n2 0 16 192\n", crops.Write());
 
         var read = FaceCrops.Read(crops.Write() + "garbage line\n");
         Assert.Equal(crops.Edits, read.Edits);
         read.Reset(1);
-        Assert.Equal(UnitFaces.Default, read.CropOf(1));
+        Assert.Equal(UnitFaces.CropOf(1), read.CropOf(1));
     }
 
     /// <summary>The booted game's units: names and faces from <c>SET_CHR</c>; unit 48 is empty until a scene fills it.</summary>
