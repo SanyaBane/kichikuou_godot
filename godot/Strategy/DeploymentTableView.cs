@@ -18,6 +18,9 @@ internal sealed partial class DeploymentTableView : Tree
     /// <summary>The text size in script pixels (the grid's names are 12); scaled with the screen.</summary>
     private const float TextSize = 10;
 
+    /// <summary>The party column's header: a circle (both fonts have it), its full name the tooltip.</summary>
+    private const string PartyMark = "●";
+
     private static readonly Color Panel = new(0.04f, 0.05f, 0.12f, 0.94f);
     private static readonly Color Text = new(0.95f, 0.95f, 0.95f);
     private static readonly Color GreyText = new(0.5f, 0.5f, 0.55f);
@@ -44,7 +47,8 @@ internal sealed partial class DeploymentTableView : Tree
         FocusMode = FocusModeEnum.None;
         SelectMode = SelectModeEnum.Row;
         Visible = false;
-        SetColumnTitle(0, "");
+        SetColumnTitle(0, PartyMark);
+        SetColumnTitleAlignment(0, HorizontalAlignment.Center);
         SetColumnTitleTooltipText(0, "Place in the party");
         for (int c = 0; c < DeploymentTable.Columns.Count; c++)
         {
@@ -60,9 +64,9 @@ internal sealed partial class DeploymentTableView : Tree
         }
         AddThemeStyleboxOverride("panel", new StyleBoxFlat { BgColor = Panel });
         AddThemeStyleboxOverride("focus", new StyleBoxEmpty());
-        var title = new StyleBoxFlat { BgColor = Title, ContentMarginLeft = 2, ContentMarginRight = 2 };
+        var title = new StyleBoxFlat { BgColor = Title, ContentMarginLeft = 4, ContentMarginRight = 4 };
         AddThemeStyleboxOverride("title_button_normal", title);
-        AddThemeStyleboxOverride("title_button_hover", new StyleBoxFlat { BgColor = Title.Lightened(0.2f), ContentMarginLeft = 2, ContentMarginRight = 2 });
+        AddThemeStyleboxOverride("title_button_hover", new StyleBoxFlat { BgColor = Title.Lightened(0.2f), ContentMarginLeft = 4, ContentMarginRight = 4 });
         AddThemeStyleboxOverride("title_button_pressed", title);
         AddThemeColorOverride("font_color", Text);
         AddThemeColorOverride("title_button_color", Text);
@@ -178,6 +182,7 @@ internal sealed partial class DeploymentTableView : Tree
         var widths = new float[Columns];
         float Width(string text) => _font.GetStringSize(text, HorizontalAlignment.Left, -1, Math.Max(_fontSize, 8)).X;
         void Fit(int column, string text) => widths[column] = Math.Max(widths[column], Width(text));
+        Fit(0, PartyMark);
         Fit(0, "4");
         for (int c = 0; c < DeploymentTable.Columns.Count; c++)
         {

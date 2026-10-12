@@ -30,25 +30,26 @@ the left, the bar buttons (Attack / Plains, City / Search; Stop) — stays the o
 
 ## The table (the owner's choices)
 
-Rows: the listed units. Columns, compact headers, each with its full name as a tooltip:
+Rows: the listed units. Columns, compact headers, each with its full name as a tooltip, in the
+owner's order (2026-10-12), after a first column with the party place (header ●, "Place in the party"):
 
 | Header | Full name | Value |
 |---|---|---|
 | № | Unit number | the record (Rance (unit 1), Sill (unit 2), Bound (unit 3) …) |
 | Name | Name | the unit's name string (`Unit_StrBase + (n-1)·3`; scenes may rename it) |
 | Troops | Troops | `Troops / MaxTroops` |
-| HP | Commander HP | `HP / MaxHP` |
-| EXP | Experience | `Exp / (100 + Level·30)` (the next level) |
-| Lv | Level | `Level` |
-| Atk | Commander attack | `Atk` |
-| Def | Commander defense | `Def` |
-| Act | Attacks | `Attacks` |
-| Str% | Strategy | `Strategy` (success chance) |
-| Mag | Magic | `Magic` |
 | Type | Troop type | the unit's troop-type string (`Unit_StrBase + (n-1)·3 + 1`) |
 | T.Atk | Troop attack | `TroopAtk` |
 | T.Def | Troop defense | `TroopDef` |
+| Str% | Strategy | `Strategy` (success chance) |
 | Cost | War expense | `DeployCost + Troops / 300` (×100K GOLD), as the script sums it |
+| HP | Commander HP | `HP / MaxHP` |
+| Lv | Level | `Level` |
+| EXP | Experience | `Exp / (100 + Level·30)` (the next level) |
+| Atk | Commander attack | `Atk` |
+| Def | Commander defense | `Def` |
+| Act | Attacks | `Attacks` |
+| Mag | Magic | `Magic` |
 
 - Sorting by any column (a header click: ascending, again descending); by № at first. A sort key of
   "a / b" is a. Units deployed this week (status 2) are grey but sort like the rest — Rance stays first

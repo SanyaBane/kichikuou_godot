@@ -18,14 +18,29 @@ public enum DeploymentColumn
     /// <summary>Troops and their maximum.</summary>
     Troops,
 
+    /// <summary>The troop type's name.</summary>
+    TroopType,
+
+    /// <summary>The troops' attack.</summary>
+    TroopAtk,
+
+    /// <summary>The troops' defense.</summary>
+    TroopDef,
+
+    /// <summary>The strategy's success chance.</summary>
+    Strategy,
+
+    /// <summary>The war expense of sending the unit.</summary>
+    Cost,
+
     /// <summary>The commander's HP and maximum.</summary>
     Hp,
 
-    /// <summary>Experience and the next level's.</summary>
-    Exp,
-
     /// <summary>The level.</summary>
     Level,
+
+    /// <summary>Experience and the next level's.</summary>
+    Exp,
 
     /// <summary>The commander's attack.</summary>
     Atk,
@@ -36,23 +51,8 @@ public enum DeploymentColumn
     /// <summary>The number of attacks.</summary>
     Attacks,
 
-    /// <summary>The strategy's success chance.</summary>
-    Strategy,
-
     /// <summary>Magic.</summary>
     Magic,
-
-    /// <summary>The troop type's name.</summary>
-    TroopType,
-
-    /// <summary>The troops' attack.</summary>
-    TroopAtk,
-
-    /// <summary>The troops' defense.</summary>
-    TroopDef,
-
-    /// <summary>The war expense of sending the unit.</summary>
-    Cost,
 }
 
 /// <summary>A column's compact header, its full name (the header's tooltip) and whether it is text.</summary>
@@ -123,18 +123,18 @@ public static class DeploymentTable
         new(DeploymentColumn.Number, "№", "Unit number"),
         new(DeploymentColumn.Name, "Name", "Name", IsText: true),
         new(DeploymentColumn.Troops, "Troops", "Troops / maximum"),
-        new(DeploymentColumn.Hp, "HP", "Commander HP / maximum"),
-        new(DeploymentColumn.Exp, "EXP", "Experience / next level"),
-        new(DeploymentColumn.Level, "Lv", "Level"),
-        new(DeploymentColumn.Atk, "Atk", "Commander attack"),
-        new(DeploymentColumn.Def, "Def", "Commander defense"),
-        new(DeploymentColumn.Attacks, "Act", "Attacks"),
-        new(DeploymentColumn.Strategy, "Str%", "Strategy success chance"),
-        new(DeploymentColumn.Magic, "Mag", "Magic"),
         new(DeploymentColumn.TroopType, "Type", "Troop type", IsText: true),
         new(DeploymentColumn.TroopAtk, "T.Atk", "Troop attack"),
         new(DeploymentColumn.TroopDef, "T.Def", "Troop defense"),
+        new(DeploymentColumn.Strategy, "Str%", "Strategy success chance"),
         new(DeploymentColumn.Cost, "Cost", "War expense (GOLD)"),
+        new(DeploymentColumn.Hp, "HP", "Commander HP / maximum"),
+        new(DeploymentColumn.Level, "Lv", "Level"),
+        new(DeploymentColumn.Exp, "EXP", "Experience / next level"),
+        new(DeploymentColumn.Atk, "Atk", "Commander attack"),
+        new(DeploymentColumn.Def, "Def", "Commander defense"),
+        new(DeploymentColumn.Attacks, "Act", "Attacks"),
+        new(DeploymentColumn.Magic, "Mag", "Magic"),
     ];
 
     /// <summary>The highest unit the deployment screen lists (<c>Sﾌﾞﾀｲ</c>'s grid: 1-50, <c>PickerScreen</c>).</summary>
