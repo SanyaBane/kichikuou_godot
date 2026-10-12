@@ -13,6 +13,20 @@ public class UnitFacesTests
         Assert.Equal(new FaceCrop(33, 7, 128), UnitFaces.CropOf(1));        // Rance's (unit 1), closer
         Assert.Equal(new FaceCrop(26, 45, 144), UnitFaces.CropOf(430));     // Asuka's (unit 11), under Pigu's hat
         Assert.All(UnitFaces.Exceptions.Values.Append(UnitFaces.Default), c => Assert.Equal(c, c.Clamped()));
+        Assert.Equal(new FaceCrop(88, 56, 144), UnitFaces.CropOf(1302, 320, 256));    // a battle sprite: its middle
+    }
+
+    [Fact]
+    public void A_stand_ins_edit_keeps_its_sprites_size_through_the_file()
+    {
+        var crops = new FaceCrops();
+        crops.Set(1302, new FaceCrop(150, 90, 120), 320, 256);             // Sergeant Hanny's (commander 83) sprite
+        crops.Set(1501, new FaceCrop(300, 0, 300), 320, 256);              // Kaiju Gaga's (commander 187): clamped
+
+        Assert.Equal(new FaceCrop(150, 90, 120), crops.CropOf(1302, 320, 256));
+        Assert.Equal(new FaceCrop(64, 0, 256), crops.CropOf(1501, 320, 256));
+        Assert.Equal("1302 150 90 120 320 256\n1501 64 0 256 320 256\n", crops.Write());
+        Assert.Equal(crops.Edits, FaceCrops.Read(crops.Write()).Edits);
     }
 
     [Fact]
@@ -54,10 +68,11 @@ public class UnitFacesTests
 
     /// <summary>
     /// The booted game's commanders: 197 from <c>SET_CHR</c>; commander 100, the scenes' own, is empty
-    /// and not listed; nine of the rest have no face (Aladdin, commander 21, among them).
+    /// and not listed; nine of the rest have no face (Aladdin, commander 21, among them) and stand in
+    /// with their battle sprites (Sergeant Hanny, commander 83: CG 1302; Kaiju Gaga, commander 187: CG 1501).
     /// </summary>
     [Fact]
-    public async Task The_booted_games_commanders_have_their_faces_but_ten()
+    public async Task The_booted_games_commanders_have_their_faces_or_their_sprites()
     {
         var game = await EndGame.BootAsync();
         if (game is null)
@@ -68,8 +83,11 @@ public class UnitFacesTests
         Assert.Equal(196, faces.Count);
         Assert.DoesNotContain(faces, f => f.Record == 100);
         Assert.Equal(("Ex", 405), (faces[0].Name, faces[0].FaceCg));     // Ex (commander 1)
-        Assert.Contains(new RecordFace(21, "Aladdin", 0), faces);
+        Assert.Contains(new RecordFace(21, "Aladdin", 0, 1215), faces);
         Assert.Equal(9, faces.Count(f => f.FaceCg == 0));
+        Assert.All(faces, f => Assert.Equal(f.FaceCg == 0, f.StandIn != 0));   // the faceless have their sprites
+        Assert.Contains(new RecordFace(83, "Sergeant Hanny", 0, 1302), faces);
+        Assert.Contains(new RecordFace(187, "Kaiju Gaga", 0, 1501), faces);
         AssertFacesExist(faces);
     }
 

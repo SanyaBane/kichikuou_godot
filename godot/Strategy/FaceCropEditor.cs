@@ -4,14 +4,16 @@ using Kichikuou.Original.Content.Strategy;
 namespace Kichikuou.Game.Strategy;
 
 /// <summary>
-/// Debug → Portraits' face, twice as large, with its square framed: the left button drags the
-/// square, the wheel sizes it by 8 pixels about its centre (<see cref="FaceCrop.Clamped"/> keeps it
-/// inside the face). <see cref="Changed"/> follows every move, <see cref="Finished"/> the release.
+/// Debug → Portraits' picture — a face twice as large, or a stand-in's battle sprite (320×256) as
+/// large as fits the same width — with its square framed: the left button drags the square, the
+/// wheel sizes it by 8 pixels about its centre (<see cref="FaceCrop.Clamped"/> keeps it inside the
+/// picture). <see cref="Changed"/> follows every move, <see cref="Finished"/> the release.
 /// </summary>
 internal sealed partial class FaceCropEditor : Control
 {
-    private const float Zoom = 2;
-    private Texture2D? _face;
+    private static readonly Vector2 Area = new Vector2(UnitFaces.Width, UnitFaces.Height) * 2;
+    private Texture2D? _picture;
+    private float _zoom = 2;
     private FaceCrop _crop;
     private Vector2? _dragFrom;
     private FaceCrop _dragStart;
@@ -24,15 +26,16 @@ internal sealed partial class FaceCropEditor : Control
 
     public FaceCropEditor()
     {
-        CustomMinimumSize = new Vector2(UnitFaces.Width, UnitFaces.Height) * Zoom;
+        CustomMinimumSize = Area;
         TextureFilter = TextureFilterEnum.Nearest;
         MouseDefaultCursorShape = CursorShape.Move;
     }
 
-    /// <summary>Shows <paramref name="face"/> (null: nothing) with <paramref name="crop"/> framed.</summary>
-    public void SetFace(Texture2D? face, FaceCrop crop)
+    /// <summary>Shows <paramref name="picture"/> (null: nothing) with <paramref name="crop"/> framed.</summary>
+    public void SetPicture(Texture2D? picture, FaceCrop crop)
     {
-        _face = face;
+        _picture = picture;
+        _zoom = picture is null ? 2 : Math.Min(2, Area.X / picture.GetWidth());
         _crop = crop;
         _dragFrom = null;
         QueueRedraw();
@@ -40,16 +43,16 @@ internal sealed partial class FaceCropEditor : Control
 
     public override void _Draw()
     {
-        if (_face is null)
+        if (_picture is null)
             return;
-        DrawTextureRect(_face, new Rect2(Vector2.Zero, CustomMinimumSize), false);
-        var frame = new Rect2(new Vector2(_crop.X, _crop.Y) * Zoom, new Vector2(_crop.Size, _crop.Size) * Zoom);
+        DrawTextureRect(_picture, new Rect2(Vector2.Zero, _picture.GetSize() * _zoom), false);
+        var frame = new Rect2(new Vector2(_crop.X, _crop.Y) * _zoom, new Vector2(_crop.Size, _crop.Size) * _zoom);
         DrawRect(frame, Colors.Yellow, false, 2);
     }
 
     public override void _GuiInput(InputEvent e)
     {
-        if (_face is null)
+        if (_picture is null)
             return;
         switch (e)
         {
@@ -64,7 +67,7 @@ internal sealed partial class FaceCropEditor : Control
                 AcceptEvent();
                 break;
             case InputEventMouseMotion motion when _dragFrom is { } from:
-                var delta = (motion.Position - from) / Zoom;
+                var delta = (motion.Position - from) / _zoom;
                 Set(new FaceCrop(_dragStart.X + (int)MathF.Round(delta.X), _dragStart.Y + (int)MathF.Round(delta.Y), _dragStart.Size));
                 AcceptEvent();
                 break;
@@ -80,7 +83,7 @@ internal sealed partial class FaceCropEditor : Control
 
     private void Set(FaceCrop crop)
     {
-        crop = crop.Clamped();
+        crop = crop.Clamped(_picture!.GetWidth(), _picture.GetHeight());
         if (crop == _crop)
             return;
         _crop = crop;

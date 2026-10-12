@@ -4,19 +4,27 @@ using Kichikuou.Original.State;
 
 namespace Kichikuou.Original.Content.Strategy;
 
-/// <summary>A square part of a face CG (192×256), in the CG's own pixels.</summary>
+/// <summary>A square part of a face CG (192×256) or of a stand-in's battle sprite, in the CG's own pixels.</summary>
 public readonly record struct FaceCrop(int X, int Y, int Size)
 {
-    /// <summary>This square moved and sized to lie inside a face CG (at least 32 pixels).</summary>
-    public FaceCrop Clamped()
+    /// <summary>This square moved and sized to lie inside a CG of <paramref name="width"/>×<paramref name="height"/> (at least 32 pixels).</summary>
+    public FaceCrop Clamped(int width = UnitFaces.Width, int height = UnitFaces.Height)
     {
-        int size = Math.Clamp(Size, 32, UnitFaces.Width);
-        return new(Math.Clamp(X, 0, UnitFaces.Width - size), Math.Clamp(Y, 0, UnitFaces.Height - size), size);
+        int size = Math.Clamp(Size, 32, Math.Min(width, height));
+        return new(Math.Clamp(X, 0, width - size), Math.Clamp(Y, 0, height - size), size);
     }
 }
 
-/// <summary>A record's face for our screens: a unit or a commander, its name and its face CG (0 = none).</summary>
-public sealed record RecordFace(int Record, string Name, int FaceCg);
+/// <summary>
+/// A record's face for our screens: a unit or a commander, its name, its face CG (0 = none) and, for
+/// a commander without a face, the battle sprite that stands in for it (<c>Cmdr_CgAlone</c>, the
+/// commander without troops; 0 otherwise).
+/// </summary>
+public sealed record RecordFace(int Record, string Name, int FaceCg, int StandIn = 0)
+{
+    /// <summary>The CG our screens cut: the face, else the stand-in (0: none).</summary>
+    public int Picture => FaceCg != 0 ? FaceCg : StandIn;
+}
 
 /// <summary>
 /// The faces on our own screens (docs/ui/deployment-table.md, third part): the face CG a unit shows
@@ -101,8 +109,15 @@ public static class UnitFaces
         [498] = new(28, 7, 136),   // Rolex (unit 47)
     };
 
-    /// <summary>The square shown for face CG <paramref name="faceCg"/>.</summary>
-    public static FaceCrop CropOf(int faceCg) => Exceptions.TryGetValue(faceCg, out var crop) ? crop : Default;
+    /// <summary>
+    /// The square shown for CG <paramref name="cg"/> of <paramref name="width"/>×<paramref name="height"/>:
+    /// its exception, else <see cref="Default"/> for a face, else 144 pixels in the middle (a stand-in's
+    /// battle sprite, 320×256).
+    /// </summary>
+    public static FaceCrop CropOf(int cg, int width = Width, int height = Height) =>
+        Exceptions.TryGetValue(cg, out var crop) ? crop
+        : (width, height) == (Width, Height) ? Default
+        : new FaceCrop((width - 144) / 2, (height - 144) / 2, 144).Clamped(width, height);
 
     /// <summary>Units 1-50 (the deployment screen's), each with its name and face as the state has them now.</summary>
     public static IReadOnlyList<RecordFace> Units(GameState state)
@@ -115,17 +130,21 @@ public static class UnitFaces
 
     /// <summary>
     /// The commanders with a name or a face as the state has them now (the boot's <c>SET_CHR</c>
-    /// fills 1-199; scenes fill commander 100 before their battles).
+    /// fills 1-199; scenes fill commander 100 before their battles). One without a face — monsters,
+    /// which never speak in a window: the Hannies, the Kaiju, Aladdin, PG-X mk2 — has its battle sprite
+    /// as a stand-in (owner, 2026-10-12), the one without troops (<c>Cmdr_CgAlone</c>, else <c>Cmdr_CgFull</c>).
     /// </summary>
     public static IReadOnlyList<RecordFace> Commanders(GameState state)
     {
         var faces = new List<RecordFace>();
         for (int n = 1; n < state.Cmdrs.Count; n++)
         {
+            var c = state.Cmdrs[n];
             string name = DeploymentTable.StringAt(state, (state.Cmdr_StrBase + (Sys3Int)((n - 1) * 3)).Value).Trim();
-            int face = state.Cmdrs[n].FaceCg.Value;
+            int face = c.FaceCg.Value;
+            int standIn = face != 0 ? 0 : c.CgAlone != 0 ? c.CgAlone.Value : c.CgFull.Value;
             if (name.Length > 0 || face != 0)
-                faces.Add(new RecordFace(n, name, face));
+                faces.Add(new RecordFace(n, name, face, standIn));
         }
         return faces;
     }
@@ -133,37 +152,47 @@ public static class UnitFaces
 
 /// <summary>
 /// The squares in use: <see cref="UnitFaces"/>' own and the owner's edits from Debug → Portraits,
-/// which a text file keeps (one line a face: <c>cg x y size</c>) until they join the exceptions.
+/// which a text file keeps (one line a CG: <c>cg x y size</c>, and the CG's width and height when it is
+/// not a face's 192×256) until they join the exceptions.
 /// </summary>
 public sealed class FaceCrops
 {
-    private readonly SortedDictionary<int, FaceCrop> _edits = [];
+    private readonly SortedDictionary<int, (FaceCrop Crop, int Width, int Height)> _edits = [];
 
     /// <summary>The owner's edits, by CG.</summary>
-    public IReadOnlyDictionary<int, FaceCrop> Edits => _edits;
+    public IReadOnlyDictionary<int, FaceCrop> Edits => _edits.ToDictionary(e => e.Key, e => e.Value.Crop);
 
-    /// <summary>The square shown for face CG <paramref name="faceCg"/>: the edit, else <see cref="UnitFaces.CropOf"/>.</summary>
-    public FaceCrop CropOf(int faceCg) => _edits.TryGetValue(faceCg, out var crop) ? crop : UnitFaces.CropOf(faceCg);
+    /// <summary>The square shown for CG <paramref name="cg"/> of the size given: the edit, else <see cref="UnitFaces.CropOf"/>.</summary>
+    public FaceCrop CropOf(int cg, int width = UnitFaces.Width, int height = UnitFaces.Height) =>
+        _edits.TryGetValue(cg, out var edit) ? edit.Crop : UnitFaces.CropOf(cg, width, height);
 
-    /// <summary>Whether face CG <paramref name="faceCg"/> has an edit.</summary>
-    public bool IsEdited(int faceCg) => _edits.ContainsKey(faceCg);
+    /// <summary>Whether CG <paramref name="cg"/> has an edit.</summary>
+    public bool IsEdited(int cg) => _edits.ContainsKey(cg);
 
-    /// <summary>Edits face CG <paramref name="faceCg"/>'s square (kept inside the CG); an edit back to the built-in square is dropped.</summary>
-    public void Set(int faceCg, FaceCrop crop)
+    /// <summary>
+    /// Edits CG <paramref name="cg"/>'s square, kept inside the CG of the size given; an edit back to
+    /// the built-in square is dropped.
+    /// </summary>
+    public void Set(int cg, FaceCrop crop, int width = UnitFaces.Width, int height = UnitFaces.Height)
     {
-        crop = crop.Clamped();
-        if (crop == UnitFaces.CropOf(faceCg))
-            _edits.Remove(faceCg);
+        crop = crop.Clamped(width, height);
+        if (crop == UnitFaces.CropOf(cg, width, height))
+            _edits.Remove(cg);
         else
-            _edits[faceCg] = crop;
+            _edits[cg] = (crop, width, height);
     }
 
-    /// <summary>Drops face CG <paramref name="faceCg"/>'s edit.</summary>
-    public void Reset(int faceCg) => _edits.Remove(faceCg);
+    /// <summary>Drops CG <paramref name="cg"/>'s edit.</summary>
+    public void Reset(int cg) => _edits.Remove(cg);
 
     /// <summary>The edits as the file keeps them.</summary>
     public string Write() =>
-        string.Concat(_edits.Select(e => FormattableString.Invariant($"{e.Key} {e.Value.X} {e.Value.Y} {e.Value.Size}\n")));
+        string.Concat(_edits.Select(e =>
+        {
+            var (c, w, h) = e.Value;
+            string size = (w, h) == (UnitFaces.Width, UnitFaces.Height) ? "" : FormattableString.Invariant($" {w} {h}");
+            return FormattableString.Invariant($"{e.Key} {c.X} {c.Y} {c.Size}{size}\n");
+        }));
 
     /// <summary>The edits of a file written by <see cref="Write"/>; lines that do not read are skipped.</summary>
     public static FaceCrops Read(string text)
@@ -172,10 +201,12 @@ public sealed class FaceCrops
         foreach (string line in text.Split('\n'))
         {
             var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            if (parts.Length == 4 && parts.All(p => int.TryParse(p, NumberStyles.Integer, CultureInfo.InvariantCulture, out _)))
+            if (parts.Length is 4 or 6 && parts.All(p => int.TryParse(p, NumberStyles.Integer, CultureInfo.InvariantCulture, out _)))
             {
                 var n = parts.Select(p => int.Parse(p, CultureInfo.InvariantCulture)).ToArray();
-                crops.Set(n[0], new FaceCrop(n[1], n[2], n[3]));
+                if (n.Length == 6 && (n[4] <= 0 || n[5] <= 0))
+                    continue;
+                crops.Set(n[0], new FaceCrop(n[1], n[2], n[3]), n.Length == 6 ? n[4] : UnitFaces.Width, n.Length == 6 ? n[5] : UnitFaces.Height);
             }
         }
         return crops;

@@ -89,8 +89,8 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   too); the third part (the party as a formation, faces, drag and drop) is under way: [ui/deployment-table.md](ui/deployment-table.md).
   Later (owner, 2026-10-12): our own battle screen may want the enemies' faces too — the commanders'
   faces are in Debug → Portraits (`UnitFaces.Commanders`); nine commanders have none (and commander
-  100 has one only in some scenes' battles), so they need a stand-in (a name card or their battle
-  sprite, `Cmdr_CgAlone`) — [ui/deployment-table.md](ui/deployment-table.md), step 7.
+  100 has one only in some scenes' battles); their battle sprite stands in (owner, 2026-10-12;
+  `RecordFace.StandIn`, its square set in the viewer) — [ui/deployment-table.md](ui/deployment-table.md), step 7.
   Groundwork (survey §4.8): menus as data and the map helper are done (2026-10-12); the shared engine
   host (§4.8, "Items 2 and 4 are one step") is not needed for screens over the original layout.
 - **Quality-of-life features**, the README's second aim — *owner* (which), then *agent*; a survey of

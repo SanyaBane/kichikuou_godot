@@ -152,6 +152,11 @@ owner's order (2026-10-12), after a first column with the party place (header â—
    the panel will show it, Reset; each edit saved at once in `user://face-crops.txt`
    (`FaceCrops`, `godot/Strategy/FaceCropFile`, `FaceCropEditor`), which the agent then moves into
    `UnitFaces.Exceptions`. The owner set 58 faces' squares (2026-10-12: units' and commanders', most
-   closer than 144, Asuka's at (26, 45)); they are `UnitFaces.Exceptions` now.
+   closer than 144, Asuka's at (26, 45)); they are `UnitFaces.Exceptions` now. The faceless
+   commanders are monsters, which never speak in a window, so the original has no face for them
+   and the battle's engagement scene draws none (`FIGT.ADV:1720-1723`); the owner's choice
+   (2026-10-12): their battle sprite stands in (`RecordFace.StandIn`: `Cmdr_CgAlone`, the commander
+   without troops, else `Cmdr_CgFull`; 320Ã—256, the same colour key 40), its square set in the
+   viewer like a face's (144 in the middle by default; the file keeps a sprite's size with its line).
 8. **The party panel, variant B**, with the faces of step 7.
 9. **Drag and drop** between the places, input held while the script's clicks run.

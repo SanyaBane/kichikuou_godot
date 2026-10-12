@@ -10,7 +10,8 @@ namespace Kichikuou.Game.Strategy;
 /// cuts them, for the owner to judge and set before they are used (docs/ui/deployment-table.md,
 /// third part). Three lists: the units and the commanders of the running game (their names and
 /// <c>Unit_FaceCg</c> / <c>Cmdr_FaceCg</c> as the state has them now, so unit 48 once a scene has
-/// filled it) and every face CG in the player's files (each 192×256 CG). A tile is the square at the
+/// filled it; a commander without a face has its battle sprite, <see cref="RecordFace.StandIn"/>)
+/// and every face CG in the player's files (each 192×256 CG). A tile is the square at the
 /// size the party panel shows it in a 1280×800 window, its title yellow when the owner edited it; a
 /// click shows the whole face twice as large with the square framed (<see cref="FaceCropEditor"/>:
 /// drag it, size it with the wheel) and the square below as the panel will show it. Each edit is
@@ -119,8 +120,10 @@ internal sealed partial class PortraitViewer : Window
             $"{(f.Name.Length > 0 ? f.Name : "(empty)")} ({kind} {f.Record})";
         var tiles = _list.Selected switch
         {
-            0 => _units.Select(u => ($"{u.Record} {u.Name}", Named(u, "unit"), u.FaceCg)).ToList(),
-            1 => _commanders.Select(c => ($"{c.Record} {c.Name}", Named(c, "commander"), c.FaceCg)).ToList(),
+            0 => _units.Select(u => ($"{u.Record} {u.Name}", Named(u, "unit"), u.Picture)).ToList(),
+            1 => _commanders.Select(c => c.StandIn == 0
+                ? ($"{c.Record} {c.Name}", Named(c, "commander"), c.Picture)
+                : ($"{c.Record} {c.Name} (sprite)", $"{Named(c, "commander")}: no face, its battle sprite stands in", c.Picture)).ToList(),
             _ => AllFaces().Select(cg => ($"CG {cg}", $"CG {cg}{UsedBy(cg)}", cg)).ToList(),
         };
         _count.Text = _list.Selected < 2 && _units.Count == 0
@@ -153,7 +156,7 @@ internal sealed partial class PortraitViewer : Window
 
     private void UpdateTile(Button button, int cg)
     {
-        button.Icon = Square(cg, _crops.CropOf(cg)) is { } square ? ImageTexture.CreateFromImage(square) : null;
+        button.Icon = Square(cg, CropOf(cg)) is { } square ? ImageTexture.CreateFromImage(square) : null;
         if (_crops.IsEdited(cg))
             button.AddThemeColorOverride("font_color", Colors.Yellow);
         else
@@ -166,14 +169,14 @@ internal sealed partial class PortraitViewer : Window
         _shown = (about, cg);
         if (Face(cg) is not { } face)
         {
-            _about.Text = cg == 0 ? $"{about}\nNo face." : $"{about}\nFace CG {cg} is not in the player's files.";
-            _editor.SetFace(null, default);
+            _about.Text = cg == 0 ? $"{about}\nNo picture." : $"{about}\nFace CG {cg} is not in the player's files.";
+            _editor.SetPicture(null, default);
             _square.Texture = null;
             _reset.Disabled = true;
             return;
         }
-        var crop = _crops.CropOf(cg);
-        _editor.SetFace(ImageTexture.CreateFromImage(face), crop);
+        var crop = CropOf(cg);
+        _editor.SetPicture(ImageTexture.CreateFromImage(face), crop);
         Preview(crop);
     }
 
@@ -183,10 +186,11 @@ internal sealed partial class PortraitViewer : Window
         if (_shown is not { } shown)
             return;
         var (about, cg) = shown;
-        string state = crop != UnitFaces.CropOf(cg) ? " (edited)" : UnitFaces.Exceptions.ContainsKey(cg) ? " (an exception)" : "";
-        _about.Text = $"{about}\nFace CG {cg}: square {Describe(crop)}{state}";
+        string state = crop != BuiltIn(cg) ? " (edited)" : UnitFaces.Exceptions.ContainsKey(cg) ? " (an exception)" : "";
+        string kind = SizeOf(cg) == (UnitFaces.Width, UnitFaces.Height) ? "Face" : "Battle sprite";
+        _about.Text = $"{about}\n{kind} CG {cg}: square {Describe(crop)}{state}";
         _square.Texture = Square(cg, crop) is { } square ? ImageTexture.CreateFromImage(square) : null;
-        _reset.Disabled = !_crops.IsEdited(cg) && crop == UnitFaces.CropOf(cg);
+        _reset.Disabled = !_crops.IsEdited(cg) && crop == BuiltIn(cg);
     }
 
     /// <summary>An edit of the shown face: kept, saved, and its tiles redrawn.</summary>
@@ -195,12 +199,13 @@ internal sealed partial class PortraitViewer : Window
         if (_shown is not { } shown)
             return;
         int cg = shown.Cg;
-        _crops.Set(cg, crop);
+        var (width, height) = SizeOf(cg);
+        _crops.Set(cg, crop, width, height);
         FaceCropFile.Save(_crops);
         if (_tiles.TryGetValue(cg, out var tiles))
             tiles.ForEach(t => UpdateTile(t, cg));
         _count.Text = $"  {_grid.GetChildCount()} tiles; the usual square {Describe(UnitFaces.Default)}; {_crops.Edits.Count} edited";
-        Preview(_crops.CropOf(cg));
+        Preview(CropOf(cg));
     }
 
     /// <summary>Drops the shown face's edit.</summary>
@@ -210,14 +215,15 @@ internal sealed partial class PortraitViewer : Window
             return;
         var (about, cg) = shown;
         _crops.Reset(cg);
-        Edited(UnitFaces.CropOf(cg));
+        Edited(BuiltIn(cg));
         ShowFace(about, cg);
     }
 
     /// <summary>
     /// Development: saves the window with the units' list, Asuka's face (unit 11, the exception)
-    /// shown, as <c>portraits-units.png</c> in <paramref name="dir"/>. The list of every face CG is
-    /// never saved: some faces are adult pictures, which the agent's dumps leave out.
+    /// shown, as <c>portraits-units.png</c> in <paramref name="dir"/>, then with the first stand-in
+    /// shown (Aladdin's sprite, commander 21) as <c>portraits-stand-in.png</c>. The other lists
+    /// are never saved: some faces are adult pictures, which the agent's dumps leave out.
     /// </summary>
     public async Task SaveUnitsAsync(string dir)
     {
@@ -226,18 +232,46 @@ internal sealed partial class PortraitViewer : Window
         Fill();
         if (_units.Count > 10)
             ShowFace($"{_units[10].Name} (unit 11)", _units[10].FaceCg);
+        await SaveAsync(System.IO.Path.Combine(dir, "portraits-units.png"));
+        if (_commanders.FirstOrDefault(c => c.StandIn != 0) is { } standIn)
+        {
+            ShowFace($"{standIn.Name} (commander {standIn.Record}): no face, its battle sprite stands in", standIn.Picture);
+            await SaveAsync(System.IO.Path.Combine(dir, "portraits-stand-in.png"));
+        }
+    }
+
+    private async Task SaveAsync(string path)
+    {
         for (int i = 0; i < 3; i++)
             await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-        GetTexture().GetImage().SavePng(System.IO.Path.Combine(dir, "portraits-units.png"));
+        GetTexture().GetImage().SavePng(path);
     }
 
     private static string Describe(FaceCrop c) => $"({c.X}, {c.Y}) {c.Size}×{c.Size}";
+
+    /// <summary>CG <paramref name="cg"/>'s size: a face's 192×256 or a stand-in's battle sprite's (a face's without the CG).</summary>
+    private (int Width, int Height) SizeOf(int cg) =>
+        Face(cg) is { } image ? (image.GetWidth(), image.GetHeight()) : (UnitFaces.Width, UnitFaces.Height);
+
+    /// <summary>The square in use for CG <paramref name="cg"/>: the owner's edit, else the built-in one.</summary>
+    private FaceCrop CropOf(int cg)
+    {
+        var (width, height) = SizeOf(cg);
+        return _crops.CropOf(cg, width, height);
+    }
+
+    /// <summary>The built-in square for CG <paramref name="cg"/> (<see cref="UnitFaces.CropOf"/>).</summary>
+    private FaceCrop BuiltIn(int cg)
+    {
+        var (width, height) = SizeOf(cg);
+        return UnitFaces.CropOf(cg, width, height);
+    }
 
     /// <summary>The units and commanders of the running game whose face is <paramref name="cg"/>, for the third list.</summary>
     private string UsedBy(int cg)
     {
         var names = _units.Where(u => u.FaceCg == cg).Select(u => $"{u.Name} (unit {u.Record})")
-            .Concat(_commanders.Where(c => c.FaceCg == cg).Select(c => $"{c.Name} (commander {c.Record})"))
+            .Concat(_commanders.Where(c => c.Picture == cg).Select(c => $"{c.Name} (commander {c.Record})"))
             .ToList();
         return names.Count switch
         {
