@@ -12,8 +12,8 @@ public class UnitFacesTests
         Assert.Equal(new FaceCrop(24, 7, 144), UnitFaces.CropOf(5));        // a face the owner left as it is
         Assert.Equal(new FaceCrop(33, 7, 128), UnitFaces.CropOf(1));        // Rance's (unit 1), closer
         Assert.Equal(new FaceCrop(26, 45, 144), UnitFaces.CropOf(430));     // Asuka's (unit 11), under Pigu's hat
-        Assert.All(UnitFaces.Exceptions.Values.Append(UnitFaces.Default), c => Assert.Equal(c, c.Clamped()));
-        Assert.Equal(new FaceCrop(88, 56, 144), UnitFaces.CropOf(1302, 320, 256));    // a battle sprite: its middle
+        Assert.Equal(UnitFaces.Default, UnitFaces.Default.Clamped());
+        Assert.Equal(new FaceCrop(88, 56, 144), UnitFaces.CropOf(1215, 320, 256));    // Aladdin's sprite (commander 21): its middle
     }
 
     [Fact]
@@ -89,6 +89,21 @@ public class UnitFacesTests
         Assert.Contains(new RecordFace(83, "Sergeant Hanny", 0, 1302), faces);
         Assert.Contains(new RecordFace(187, "Kaiju Gaga", 0, 1501), faces);
         AssertFacesExist(faces);
+    }
+
+    /// <summary>Every square of the table lies inside its CG, a face's 192×256 or a battle sprite's 320×256.</summary>
+    [Fact]
+    public void Every_exception_lies_inside_its_picture()
+    {
+        if (!Directory.Exists(LocalData.CgDirectory))
+            return;
+        var cgs = new CgLibrary(LocalData.CgDirectory);
+        Assert.All(UnitFaces.Exceptions, e =>
+        {
+            var cg = cgs.Get(e.Key);
+            Assert.NotNull(cg);
+            Assert.Equal(e.Value, e.Value.Clamped(cg.Width, cg.Height));
+        });
     }
 
     private static void AssertFacesExist(IEnumerable<RecordFace> faces)

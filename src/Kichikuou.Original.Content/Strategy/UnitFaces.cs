@@ -44,8 +44,9 @@ public static class UnitFaces
 
     /// <summary>
     /// The owner's own squares, by CG, set in Debug → Portraits (2026-10-12): closer or moved where the
-    /// usual square shows too much or misses the face (Asuka's, unit 11, sits under Pigu's hat). A
-    /// face many commanders share is named by one or two of them.
+    /// usual square shows too much or misses the face (Asuka's, unit 11, sits under Pigu's hat), and
+    /// the squares of the stand-ins' battle sprites (CG 1000 and up, 320×256). A face many commanders
+    /// share is named by one or two of them.
     /// </summary>
     public static IReadOnlyDictionary<int, FaceCrop> Exceptions { get; } = new Dictionary<int, FaceCrop>
     {
@@ -62,6 +63,7 @@ public static class UnitFaces
         [28] = new(25, 7, 128),    // Katyusha (commander 51)
         [29] = new(44, 11, 120),   // Saulnia (commander 52)
         [42] = new(36, 7, 120),    // Gandhi (unit 37)
+        [44] = new(35, 17, 128),   // Papaya (commander 104)
         [45] = new(28, 7, 128),    // Nagi (unit 40), ？？？？？？？ (unit 45), Nagi (commander 107)
         [46] = new(40, 7, 136),    // Somita (unit 46)
         [49] = new(31, 7, 136),    // Shizuka (unit 17)
@@ -77,6 +79,8 @@ public static class UnitFaces
         [84] = new(20, 21, 144),   // PG-7 (commander 136)
         [85] = new(66, 16, 120),   // PG-9 (commander 137)
         [89] = new(37, 7, 128),    // Cecil (unit 50)
+        [257] = new(8, 37, 176),   // Xacalite (commander 97)
+        [387] = new(32, 79, 144),  // a scene's face, no record's at the boot
         [402] = new(15, 9, 136),   // Barres (unit 6)
         [403] = new(44, 7, 136),   // Rick (unit 7)
         [404] = new(28, 7, 128),   // Cordoba (unit 8)
@@ -103,10 +107,22 @@ public static class UnitFaces
         [453] = new(9, 10, 152),   // Redeye (commander 130)
         [454] = new(9, 10, 176),   // Babolat (commander 129)
         [456] = new(30, 7, 144),   // Saias (commander 113)
-        [459] = new(34, 7, 120),   // Alex (commander 125)
+        [459] = new(40, 7, 112),   // Alex (commander 125)
         [463] = new(16, 8, 152),   // Gurwin (unit 44), Temple Knight (commander 139) and 3 more
+        [470] = new(59, 103, 120), // a scene's face, no record's at the boot
+        [478] = new(30, 7, 120),   // Mage Leader (commander 96), Noplans (commander 103) and 13 more
         [485] = new(42, 7, 120),   // Angel Knight (commander 146), Angel Knight (commander 147)
+        [495] = new(4, 5, 184),    // Hanny King (unit 48)
         [498] = new(28, 7, 136),   // Rolex (unit 47)
+        [499] = new(34, 7, 144),   // Kaiju Prince (unit 48)
+        [1302] = new(122, 84, 128), // Sergeant Hanny's sprite (commander 83)
+        [1305] = new(159, 88, 128), // Lieutenant Hanny's sprite (commander 84)
+        [1308] = new(192, 87, 128), // Colonel Hanny's sprite (commander 85)
+        [1429] = new(102, 85, 72), // PG-X mk2's sprite (commander 138)
+        [1501] = new(43, 0, 200),  // Kaiju Gaga's sprite (commander 187)
+        [1502] = new(3, 0, 200),   // Kaiju Zeze's sprite (commander 188)
+        [1503] = new(14, 27, 200), // Kaiju Dada's sprite (commander 189)
+        [1504] = new(5, 0, 200),   // Kaiju Bobo's sprite (commander 190)
     };
 
     /// <summary>

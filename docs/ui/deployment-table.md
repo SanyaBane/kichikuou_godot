@@ -158,5 +158,8 @@ owner's order (2026-10-12), after a first column with the party place (header �
    (2026-10-12): their battle sprite stands in (`RecordFace.StandIn`: `Cmdr_CgAlone`, the commander
    without troops, else `Cmdr_CgFull`; 320×256, the same colour key 40), its square set in the
    viewer like a face's (144 in the middle by default; the file keeps a sprite's size with its line).
+   The owner set the sprites' squares (the Hannies', PG-X mk2's, the Kaiju's; Aladdin's stays in the
+   middle) and eight more faces' — the Hanny King's and the Kaiju Prince's (unit 48) among them —
+   the same day; they are `UnitFaces.Exceptions` too (73 in all).
 8. **The party panel, variant B**, with the faces of step 7.
 9. **Drag and drop** between the places, input held while the script's clicks run.
