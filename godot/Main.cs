@@ -38,11 +38,13 @@ public partial class Main : Control
     /// <c>user://saves-ending</c>, so the clear it records stays out of the player's); <c>--auto</c> plays it unattended (keys answered, Turn END every week, the battles
     /// fought with the first attack, from stage 1 a replenish and an attack on the rebels once a
     /// week, a strong party sent) up to week 30 or <c>--weeks N</c>, or to the command menu two weeks after story stage
-    /// <c>--stage N</c> was reached; <c>--seed N</c> fixes the random generator (once per launch: a
+    /// <c>--stage N</c> was reached, or earlier with <c>--until deployment|battle</c> (after the first
+    /// deployment picker or the first battle: a look at one screen); <c>--seed N</c> fixes the random generator (once per launch: a
     /// later game goes on with it, as after xsystem35's Restart); <c>--rnglog</c> prints every
     /// draw to the console; <c>--msgskip</c> starts with MsgSkip
     /// on; <c>--interface new</c> uses our own screens for the launch (Option → Interface); <c>--saves DIR</c>
-    /// keeps its slots there (<c>--auto</c> defaults to <c>user://saves-auto</c>). A battle capture:
+    /// keeps its slots there (<c>--auto</c> defaults to <c>user://saves-auto</c>); <c>--slots-from DIR</c>
+    /// copies DIR's slots there first, so a kept save is loaded unchanged every time. A battle capture:
     /// <c>--play FILE</c> / <c>--watch FILE</c>. Both: <c>--fast</c> drops the delays, <c>--quit</c>
     /// exits at the end (exit code 1 after an error), <c>--shots DIR</c> saves the screen at every
     /// key wait and menu (a game's event CGs masked, <c>GamePresenter.MaskEventCgs</c>). Null
@@ -71,6 +73,13 @@ public partial class Main : Control
                 SaveDirectory = Value("--saves") ?? (ending is not null ? "user://saves-ending" : auto ? "user://saves-auto" : null),
                 AutoWeeks = int.TryParse(Value("--weeks"), out int weeks) ? weeks : 30,
                 AutoStage = int.TryParse(Value("--stage"), out int stage) ? stage : 0,
+                AutoUntil = Value("--until") switch
+                {
+                    "deployment" => AutoUntil.Deployment,
+                    "battle" => AutoUntil.Battle,
+                    _ => AutoUntil.None,
+                },
+                SlotsFrom = Value("--slots-from"),
             });
         }
         if ((Value("--play") ?? Value("--watch")) is { } capture)

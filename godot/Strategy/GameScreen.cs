@@ -38,6 +38,19 @@ public enum GameStart
     Ending,
 }
 
+/// <summary>Where unattended play stops early (<c>--until</c>).</summary>
+public enum AutoUntil
+{
+    /// <summary>Not early: at the weeks or the stage.</summary>
+    None,
+
+    /// <summary>When the first deployment picker closes.</summary>
+    Deployment,
+
+    /// <summary>When the first battle ends.</summary>
+    Battle,
+}
+
 /// <summary>What a <see cref="GameScreen"/> plays and how (the development switches of <see cref="Main"/>).</summary>
 public sealed record GameOptions
 {
@@ -62,6 +75,15 @@ public sealed record GameOptions
     /// stage was reached, so the stage's first whole week is played (0: never).
     /// </summary>
     public int AutoStage { get; init; }
+
+    /// <summary>Development: unattended play stops after the first deployment picker or the first battle (a look at one screen).</summary>
+    public AutoUntil AutoUntil { get; init; }
+
+    /// <summary>
+    /// Development: a folder whose save slots are copied into <see cref="SaveDirectory"/> before the
+    /// game starts, so a kept save (e.g. the first Leazas week) is loaded again and again unchanged.
+    /// </summary>
+    public string? SlotsFrom { get; init; }
 
     /// <summary>Development: no delays (pauses and fades take one frame, the clock runs 20 times faster).</summary>
     public bool Fast { get; init; }
@@ -275,6 +297,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         bool failed = false;
         try
         {
+            if (_options.SlotsFrom is { } from)
+                CopySlots(ProjectSettings.GlobalizePath(from), SaveDirectory);
             var state = new GameState();
             _presenter.Bind(state);
             var saves = new DirectorySaveStore(SaveDirectory);
@@ -349,6 +373,25 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _tree.Quit(failed ? 1 : 0);
         else
             Screens.ToTitle(this);
+    }
+
+    /// <summary>
+    /// <see cref="GameOptions.SlotsFrom"/>: the save slots of <paramref name="from"/> replace those in
+    /// <paramref name="to"/> (the slots there without a copy are removed); none there is an error.
+    /// </summary>
+    private static void CopySlots(string from, string to)
+    {
+        var slots = System.IO.Directory.Exists(from) ? System.IO.Directory.GetFiles(from, "slot*.ksav") : [];
+        if (slots.Length == 0)
+            throw new InvalidOperationException($"No save slots to copy in {from}.");
+        if (System.IO.Path.GetFullPath(from) == System.IO.Path.GetFullPath(to))
+            throw new InvalidOperationException("--slots-from names the run's own save folder.");
+        System.IO.Directory.CreateDirectory(to);
+        foreach (string old in System.IO.Directory.GetFiles(to, "slot*.ksav"))
+            System.IO.File.Delete(old);
+        foreach (string slot in slots)
+            System.IO.File.Copy(slot, System.IO.Path.Combine(to, System.IO.Path.GetFileName(slot)));
+        GD.Print($"Kichikuou: {slots.Length} save slot(s) copied from {from}.");
     }
 
     /// <summary>The save slots' folder (also of the seen messages, <see cref="MessageSkip"/>).</summary>
@@ -426,6 +469,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _autoDungeonBattle = true;
         if (scriptEvent is BattleScreenEvent { File: "FIGT_A.ADV" or "FIGT_B.ADV" } battle && _options.Auto)
             AutoBattleLog(battle);
+        if (_options.Auto)
+            AutoStopEarly(scriptEvent);
         if (scriptEvent is EngineEvent { Command: "IZ", Args: [var x, var y] })
             await WarpPointerAsync(x.Value, y.Value);
         if (_presenter.TakeFade() is { } fade)
@@ -1301,6 +1346,22 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     private int _autoBattleProv;
     private string _autoBattleEnemy = "";
+
+    /// <summary>
+    /// <see cref="GameOptions.AutoUntil"/>: the end of unattended play when the first deployment
+    /// picker closes, or when the first battle (<c>FIGT_A</c>, <c>FIGT_B</c>, <c>FIGT</c>) ends.
+    /// </summary>
+    private void AutoStopEarly(ScriptEvent scriptEvent)
+    {
+        int week = _presenter.State?.Week.Value ?? 0;
+        switch (_options.AutoUntil, scriptEvent)
+        {
+            case (AutoUntil.Deployment, PickerScreenEvent { Kind: PickerKind.Deployment, Open: false }):
+                throw new AutoStopException($"--auto stopped after the first deployment picker (week {week}).");
+            case (AutoUntil.Battle, BattleScreenEvent { File: "FIGT_A.ADV" or "FIGT_B.ADV" or "FIGT.ADV", Open: false } battle):
+                throw new AutoStopException($"--auto stopped after the first battle, {battle.File} (week {week}).");
+        }
+    }
 
     /// <summary>
     /// The rebel province the unattended player attacks this week, if any: at stage 1, from the second

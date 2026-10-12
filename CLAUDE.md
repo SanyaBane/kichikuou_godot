@@ -289,6 +289,14 @@ commit `local.env`.
   (`--weeks n`) or two weeks after story stage `--stage n` is reached — `--seed 2 --weeks 60 --stage 2`
   takes Oaks in week 34 and stops in week 36, ~15 min (exit code 0; 1 after an error). `--interface new`
   builds the parties in our own deployment table; its dumps need a window (no `--headless`).
+- **A look at one screen** (screen dumps for the owner) starts from a kept save, never from the
+  prologue (owner's request 2026-10-12): `user://saves-leazas` holds the first Leazas week (week 25,
+  stage 1; made once with `--newgame --auto --fast --quit --seed 2 --weeks 24 --saves user://saves-leazas`,
+  ~2 min headless; make it again when the save format or the boot changes), and
+  `<Godot console exe> --path godot -- --load --auto --fast --quit --seed 2 --saves user://saves-look --slots-from user://saves-leazas --until battle [--interface new] --shots <dir>`
+  copies it into a working folder (the kept one stays unchanged), plays the Monsters' Cave search's
+  deployment picker and its battle and stops (~15 s in a window; `--until deployment` stops after the
+  picker). Add another kept save the same way when a screen needs another phase.
 - Show an ending's `OVER` (its picture, staff roll, Completion Report) on a booted game:
   `<Godot console exe> --headless --path godot -- --ending <1-14> --auto --fast --quit [--shots <dir>]`
   (without `--auto` the keys wait for the player; slots in `user://saves-ending`).
