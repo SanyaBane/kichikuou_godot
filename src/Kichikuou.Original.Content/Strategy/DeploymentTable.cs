@@ -244,7 +244,7 @@ public static class DeploymentTable
             _ => "",
         };
         string item = u.Item == 0 ? "" : StringAt(state, (state.Item_StrBase + u.Item - 1).Value);
-        return new DeploymentDetails(unit, StringAt(state, (state.Unit_StrBase + (Sys3Int)((unit - 1) * 3)).Value),
+        return new DeploymentDetails(unit, UnitName(state, unit),
             (u.DeployCost + u.Troops / 300).Value, u.Troops.Value, u.MaxTroops.Value, rows, item);
     }
 
@@ -264,7 +264,7 @@ public static class DeploymentTable
             var u = state.Units[unit];
             troops += u.Troops;
             cost += u.DeployCost + u.Troops / 300;
-            members[place - 1] = new DeploymentMember(place, unit, StringAt(state, (state.Unit_StrBase + (Sys3Int)((unit - 1) * 3)).Value),
+            members[place - 1] = new DeploymentMember(place, unit, UnitName(state, unit),
                 (u.DeployCost + u.Troops / 300).Value, u.Troops.Value);
         }
         return new DeploymentParty(members, troops.Value, cost.Value, state.Gold.Value);
@@ -279,6 +279,10 @@ public static class DeploymentTable
 
     private static readonly IComparer<IComparable> KeyComparer = Comparer<IComparable>.Create((a, b) =>
         a is string x && b is string y ? string.Compare(x, y, StringComparison.OrdinalIgnoreCase) : a.CompareTo(b));
+
+    /// <summary>Unit <paramref name="unit"/>'s name: its first string (<c>Unit_StrBase + (n-1)·3</c>; scenes may rename it).</summary>
+    public static string UnitName(GameState state, int unit) =>
+        StringAt(state, (state.Unit_StrBase + (Sys3Int)((unit - 1) * 3)).Value);
 
     private static string StringAt(GameState state, int index) =>
         index >= 0 && index < state.Strings.Length ? Hankaku.ToHalfWidth(state.Strings[index]) : "";

@@ -108,6 +108,12 @@ public sealed record GameOptions
 
     /// <summary>Where the save slots are (default <c>user://saves</c>); a Godot path or a folder.</summary>
     public string? SaveDirectory { get; init; }
+
+    /// <summary>
+    /// Development: Debug → Portraits opens once the game has booted; with <see cref="ScreenshotDirectory"/>
+    /// it saves the units' list there (<see cref="PortraitViewer.SaveUnitsAsync"/>), then the program ends with <see cref="QuitWhenDone"/>.
+    /// </summary>
+    public bool Portraits { get; init; }
 }
 
 /// <summary>
@@ -154,6 +160,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     private MessageSkip _skip = null!;
     private bool _modal;                        // a confirmation box is open: the game waits
+    private bool _portraitsOpened;              // GameOptions.Portraits: Debug → Portraits was opened
 
     private ushort _ikKey;                      // cmdi.c ik_key, repeating: IK 0's key repeat
     private int _repeating;
@@ -263,6 +270,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _notice.Text = "";
         UpdateDeploymentScreen();
         Present();
+        if (_options.Portraits && !_portraitsOpened && _presenter.State is not null && !_modal)
+        {
+            _portraitsOpened = true;
+            OpenPortraits();
+        }
     }
 
     public override void _Notification(int what)

@@ -3,6 +3,7 @@
 // xsystem35-sdl2 authors. GNU General Public License, version 2 or later, as KichikuouGodot (LICENSE).
 
 using Godot;
+using Kichikuou.Content.Graphics;
 using Kichikuou.Content.Screen;
 using Kichikuou.Game.Battles;
 
@@ -127,7 +128,8 @@ public partial class GameScreen
         _skip.Changed += UpdateSkipItem;
         UpdateSkipItem();
         row.AddChild(Menu("Debug",
-            ("Battle Captures...", ConfirmCaptures)));
+            ("Battle Captures...", ConfirmCaptures),
+            ("Portraits...", OpenPortraits)));
     }
 
     /// <summary>The id of an item that opens a submenu: past every item's index, so it runs nothing.</summary>
@@ -246,6 +248,29 @@ public partial class GameScreen
 
     /// <summary>Debug → Battle Captures (ours, development): after the confirmation, the capture viewer, which comes back to the title.</summary>
     private void ConfirmCaptures() => Confirm("Open the battle captures?", "Open", () => Screens.Open(this, new CaptureList()));
+
+    /// <summary>Debug → Portraits (ours, development): the faces our screens cut, over the game, which waits while it is open.</summary>
+    private void OpenPortraits()
+    {
+        if (_modal)
+            return;
+        _modal = true;
+        _input.Clear();
+        var viewer = new PortraitViewer(new CgLibrary(GameData.CgDirectory), _presenter.State);
+        viewer.TreeExiting += () => _modal = false;
+        AddChild(viewer);
+        viewer.PopupCentered();
+        if (_options.Portraits && _options.ScreenshotDirectory is { } shots)
+            _ = SavePortraitsAsync(viewer, shots);
+    }
+
+    /// <summary>Development (<see cref="GameOptions.Portraits"/>): saves the viewer's units' list, then quits with <c>--quit</c>.</summary>
+    private async Task SavePortraitsAsync(PortraitViewer viewer, string dir)
+    {
+        await viewer.SaveUnitsAsync(dir);
+        if (_options.QuitWhenDone)
+            _tree.Quit();
+    }
 
     /// <summary>Forget Seen Messages (ours): after the confirmation, every message counts as unseen again.</summary>
     private void ConfirmForgetSeen() =>

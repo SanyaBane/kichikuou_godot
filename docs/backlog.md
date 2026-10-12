@@ -85,8 +85,8 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   ideally also during play), 9 and 12 (what a redesign replaces). The survey's parts 1-4 are done
   (2026-10-12, [ui/survey.md](ui/survey.md): the screens, the classes of work, input on mouse and
   touch, how a second UI plugs in). Decision 25 (2026-10-12): screen by screen over the original
-  layout, the deployment table first — built (2026-10-12, Option → Interface → New), waiting for the
-  *owner*'s look: [ui/deployment-table.md](ui/deployment-table.md).
+  layout, the deployment table first — built (2026-10-12, Option → Interface → New, its second part
+  too); the third part (the party as a formation, faces, drag and drop) is under way: [ui/deployment-table.md](ui/deployment-table.md).
   Groundwork (survey §4.8): menus as data and the map helper are done (2026-10-12); the shared engine
   host (§4.8, "Items 2 and 4 are one step") is not needed for screens over the original layout.
 - **Quality-of-life features**, the README's second aim — *owner* (which), then *agent*; a survey of

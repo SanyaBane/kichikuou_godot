@@ -16,6 +16,28 @@ shown next to the war expenses; a left click on our panels does nothing but thei
 click is the script's own (the last member out), the portrait keeps the original's clicks (a left
 click there takes the last member out too, CMD-23).
 
+**Third part (owner's request 2026-10-12): the party as a formation.** The owner looked at the
+second part (× and the bar's buttons work with the mouse) and asked for the party panel in the
+manner of Sengoku Rance's: who stands in the front row and who in the back. The battle's rows are
+the party's places — 1-2 the front row, 3-4 the back row (docs/battle/01-flow.md §0.2); a melee
+unit (class 0/10) in the back row cannot attack (docs/battle/02-resolution.md §2.2, §2.5). The
+owner's choices (2026-10-12), from four mock-ups:
+- **Variant B**: two columns, the back row on the left, the front row on the right (the enemy to
+  the right), two member cards in each, the totals against the gold below.
+- **Faces**: a member's face is its dialogue face (`Unit_FaceCg`, 192×256; scenes change it at
+  run time — unit 48 is empty until `Gﾊﾆｰ` makes it the Hanny King, CG 495, or `Gｵｳｼﾞ` the Kaiju
+  Prince, CG 499) cut to a square: the top 144 pixels of its middle (the closer 104 showed the
+  pixels, 128 and 160 were the other choices), shrunk to the card. A face the square misses gets
+  its own: Asuka's (unit 11) sits under Pigu's hat. `Original.Content/Strategy/UnitFaces`.
+- **Debug → Portraits** first, so the owner can judge every face before it is used: the units of
+  the running game and every face CG in the player's files, each cut as the panel will cut it.
+- **No mark** for a melee unit in the back row.
+- **Drag and drop** between places: the script only moves a clicked member to the end of the party
+  (CMD-16), so a drop is answered with the clicks that give the order wanted. While they run
+  the player's input stays out (as for × already: while the table's gestures are queued the script
+  reads only them, and presses on our panels are dropped), no new drag starts, and the panel shows
+  the order wanted at once instead of the orders on the way.
+
 ## How it works
 
 - **The script decides everything.** `DeploymentScreen` (the port of `Sﾌﾞﾀｲ.ADV`) runs unchanged and
@@ -111,3 +133,14 @@ owner's order (2026-10-12), after a first column with the party place (header �
    it with the table). `--auto --interface new` hovers each row until the script shows its details,
    then presses it, and presses Go / Stop on our bar. Found on the way: a window dump's `Compose` took
    the frame's upload from `Present`, so the window kept the screen from before the picker — fixed.
+7. ✓ (2026-10-12) **Debug → Portraits** (the third part above) — the model `UnitFaces` (the square of a
+   face CG, `Default` and `Exceptions`; the units 1-50 with their names and faces from GameState),
+   tested (`UnitFacesTests`: the squares, the booted game's faces, unit 48 empty); Godot:
+   `godot/Strategy/PortraitViewer` over the game (which waits while it is open): the units of the
+   running game or every 192×256 CG in the player's files, each square at the party panel's size in a
+   1280×800 window (shrunk with premultiplied alpha, so the colour key's magenta does not bleed in), a
+   click shows the whole face twice as large with its square framed. `--portraits` opens it over the
+   title (`--shots DIR` saves the units' list — never the list of every face, some are adult pictures).
+   Waits for the owner's look.
+8. **The party panel, variant B**, with the faces of step 7.
+9. **Drag and drop** between the places, input held while the script's clicks run.

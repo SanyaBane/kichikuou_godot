@@ -145,7 +145,8 @@ Next (owner's requests 2026-10-11/12): an interface of our own next to the origi
 by the player, and an Android build later (docs/backlog.md). The game logic stays the original's.
 The UI survey's parts 1-4 are docs/ui/survey.md. Decision 25 (2026-10-12): our own screens come one by
 one over the original layout, chosen by Option → Interface; the first, the deployment table over
-`Sﾌﾞﾀｲ`'s grid, is built (docs/ui/deployment-table.md) and waits for the owner's look.
+`Sﾌﾞﾀｲ`'s grid, is built with the rest of its screen (docs/ui/deployment-table.md); its third part (the
+party as a formation with the units' faces, drag and drop) is under way, Debug → Portraits first.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -235,6 +236,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   Restart, MsgSkip on `Engine/Script/MessageSkip` (it skips the opening whole, `OriginalVariant.WholeScenes`, `Engine/Script/EngineTimer`),
   docs/window-menu.md, plus our Debug menu; `Strategy/EngineState` keeps
   the random generator and the message skip for the whole launch); `Battles/CaptureList` (Debug → Battle Captures) picks a capture, `Battles/BattleScreen` shows its battle;
+  `Strategy/PortraitViewer` (Debug → Portraits: the faces as our screens cut them, `UnitFaces`; `--portraits` opens it);
   `Strategy/DeploymentTableView` and `Strategy/DeploymentPanels` (our own deployment screen, Option → Interface → New, `InterfaceChoice`;
   `GameScreen` feeds the script its gestures, `Original.Content/Strategy/DeploymentTable` the rows);
   `GodotGlyphRenderer` (TextServer; MS Gothic or the bundled BIZ UDGothic in `godot/fonts`, Option →
