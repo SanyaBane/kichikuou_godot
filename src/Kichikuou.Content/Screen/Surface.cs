@@ -468,12 +468,19 @@ public sealed class Surface
     /// The visible screen (from <see cref="View"/>) as opaque RGBA rows (<see cref="ScreenWidth"/>·<see cref="Scale"/> ×
     /// <see cref="ScreenHeight"/>·<see cref="Scale"/>), into <paramref name="target"/> when given.
     /// </summary>
-    public byte[] ReadScreen(byte[]? target = null)
+    public byte[] ReadScreen(byte[]? target = null) => ReadArea(View.X, View.Y, ScreenWidth, ScreenHeight, target);
+
+    /// <summary>
+    /// The area at script pixel (<paramref name="x"/>, <paramref name="y"/>) as opaque RGBA rows
+    /// (<paramref name="width"/>·<see cref="Scale"/> × <paramref name="height"/>·<see cref="Scale"/>), into
+    /// <paramref name="target"/> when given, from its byte <paramref name="at"/> on (rows of the same width).
+    /// </summary>
+    public byte[] ReadArea(int x, int y, int width, int height, byte[]? target = null, int at = 0)
     {
-        int count = ScreenWidth * Scale;
-        target ??= new byte[count * 4 * ScreenHeight * Scale];
-        for (int row = 0; row < ScreenHeight * Scale; row++)
-            ResolveRow(Pixel(View.X, View.Y, row), count, target, row * count * 4, opaque: true);
+        int count = width * Scale;
+        target ??= new byte[at + count * 4 * height * Scale];
+        for (int row = 0; row < height * Scale; row++)
+            ResolveRow(Pixel(x, y, row), count, target, at + row * count * 4, opaque: true);
         return target;
     }
 

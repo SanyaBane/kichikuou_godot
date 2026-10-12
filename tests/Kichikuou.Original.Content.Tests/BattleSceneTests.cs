@@ -31,7 +31,8 @@ public class BattleSceneTests(ITestOutputHelper output)
     /// In every captured battle the scene is on from the field's first drawing; when the original's
     /// engagement stands whole with its counters (the slide's last step), the scene's rows 0-223 are the
     /// original's screen there (the HP counters, moved to row 224, aside); between exchanges it shows a
-    /// player unit and an enemy commander that stand in the slots.
+    /// player unit and an enemy commander that stand in the slots; the picture kept under the numbers
+    /// changes only with <see cref="BattleScene.PictureVersion"/> (what our screen's sides are blurred from).
     /// </summary>
     [CaptureTheory]
     [MemberData(nameof(Captures))]
@@ -45,10 +46,24 @@ public class BattleSceneTests(ITestOutputHelper output)
         int compared = 0, between = 0;
         int lastOffset = -1;
         var wrong = new List<string>();
+        byte[]? picture = null;
+        int pictureVersion = -1, pictures = 0;
         var view = new ObservingView(e =>
         {
             presenter.Show(e);
             scene.Observe(e, state!);
+            if (e is BattlefieldBackgroundEvent or CountersEvent)
+            {
+                // The picture under the numbers (what the screen's sides blur) changes only with its version.
+                var now = scene.Surface.ReadArea(0, BattleScene.PictureY, BattleScene.Width, BattleScene.Height);
+                bool same = picture is not null && now.AsSpan().SequenceEqual(picture);
+                if (scene.PictureVersion == pictureVersion && !same && picture is not null)
+                    wrong.Add($"the picture under the numbers changed without its version ({e.GetType().Name})");
+                if (scene.PictureVersion != pictureVersion)
+                    pictures++;
+                picture = now;
+                pictureVersion = scene.PictureVersion;
+            }
             if (e is EngagementSlideEvent slide)
                 lastOffset = slide.Offset.Value;
             if (e is CountersEvent && lastOffset == 0 && scene.InEngagement)
@@ -87,7 +102,7 @@ public class BattleSceneTests(ITestOutputHelper output)
             presenter.Start(s);
             scene.Start(s);
         });
-        output.WriteLine($"{file}: {compared} engagements compared, {between} redraws; replay {(report.Passed ? "matches" : "diverges")}");
+        output.WriteLine($"{file}: {compared} engagements compared, {between} redraws, {pictures} pictures; replay {(report.Passed ? "matches" : "diverges")}");
         Assert.Empty(wrong);
     }
 

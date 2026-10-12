@@ -71,9 +71,14 @@ public sealed class WindowMask
                 if (!p)
                     Count++;
                 p = true;
+                _top = Math.Min(_top, y);
+                _bottom = Math.Max(_bottom, y + 1);
             }
         }
     }
+
+    /// <summary>The rows the windows span: from <see cref="_top"/> to before <see cref="_bottom"/> (none: empty).</summary>
+    private int _top = Height, _bottom;
 
     /// <summary>
     /// The visible screen of <paramref name="screen"/> as RGBA rows (<see cref="Surface.ReadScreen"/>),
@@ -81,9 +86,13 @@ public sealed class WindowMask
     /// </summary>
     public byte[] Compose(Surface screen, byte[]? target = null)
     {
-        target = screen.ReadScreen(target);
-        int row = Width * Surface.Scale;
-        for (int py = 0; py < Height * Surface.Scale; py++)
+        int row = Width * Surface.Scale, rowBytes = row * 4 * Surface.Scale;
+        target ??= new byte[rowBytes * Height];
+        Array.Clear(target, 0, _top * rowBytes);                         // the rows without a window: transparent, unread
+        Array.Clear(target, _bottom * rowBytes, (Height - _bottom) * rowBytes);
+        if (_bottom > _top)
+            screen.ReadArea(screen.View.X, screen.View.Y + _top, Width, _bottom - _top, target, _top * rowBytes);
+        for (int py = _top * Surface.Scale; py < _bottom * Surface.Scale; py++)
         {
             int y = py / Surface.Scale;
             for (int px = 0; px < row; px++)

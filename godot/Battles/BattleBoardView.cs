@@ -70,7 +70,7 @@ internal sealed partial class BattleBoardView : Control
     private readonly Dictionary<int, ImageTexture?> _portraits = [];
     private ImageTexture? _sceneTexture, _sidesTexture, _windowsTexture;
     private byte[]? _sceneRgba, _windowsRgba;
-    private int _sceneVersion = -1;
+    private int _sceneVersion = -1, _pictureVersion = -1;
     private string _cardsKey = "?", _stripKey = "?", _speakerKey = "?";
     private (int Rounds, int Left) _gaugeValues;
     private Rect2 _speakerArea = SpeakerLeft;
@@ -210,15 +210,20 @@ internal sealed partial class BattleBoardView : Control
         if (presenter.Scene.Version != _sceneVersion)
         {
             _sceneVersion = presenter.Scene.Version;
-            UploadScene(presenter.Scene.Surface);
+            UploadScene(presenter.Scene);
         }
         if (screenChanged || _windowsTexture is null)
         {
-            _windowsRgba = presenter.BattleWindows(inputWindows).Compose(presenter.Screen, _windowsRgba);
-            var image = Image.CreateFromData(Surface.ScreenWidth * Surface.Scale, Surface.ScreenHeight * Surface.Scale,
-                false, Image.Format.Rgba8, _windowsRgba);
-            Upload(ref _windowsTexture, image);
-            _windows.Texture = _windowsTexture;
+            var mask = presenter.BattleWindows(inputWindows);
+            _windows.Visible = !mask.IsEmpty;                                  // no window: nothing to read or upload
+            if (!mask.IsEmpty || _windowsTexture is null)
+            {
+                _windowsRgba = mask.Compose(presenter.Screen, _windowsRgba);
+                var image = Image.CreateFromData(Surface.ScreenWidth * Surface.Scale, Surface.ScreenHeight * Surface.Scale,
+                    false, Image.Format.Rgba8, _windowsRgba);
+                Upload(ref _windowsTexture, image);
+                _windows.Texture = _windowsTexture;
+            }
         }
         RefreshSpeaker(s);
         RefreshCards(s, presenter.Order, hovered);
@@ -234,15 +239,21 @@ internal sealed partial class BattleBoardView : Control
         _enemyName.Text = enemy;
     }
 
-    /// <summary>The scene's 640×256 picture, and the sides: the same blurred (shrunk and grown again).</summary>
-    private void UploadScene(Surface scene)
+    /// <summary>
+    /// The scene's 640×256 picture, and the sides when the picture under the numbers changed
+    /// (<see cref="BattleScene.PictureVersion"/>): that picture blurred (shrunk and grown again).
+    /// </summary>
+    private void UploadScene(BattleScene scene)
     {
-        _sceneRgba = scene.ReadScreen(_sceneRgba);
         int w = BattleScene.Width * Surface.Scale, h = BattleScene.Height * Surface.Scale;
-        var picture = Image.CreateFromData(w, h, false, Image.Format.Rgba8, _sceneRgba.AsSpan(0, w * h * 4).ToArray());
-        Upload(ref _sceneTexture, picture);
+        _sceneRgba = scene.Surface.ReadArea(0, 0, BattleScene.Width, BattleScene.Height, _sceneRgba);
+        Upload(ref _sceneTexture, Image.CreateFromData(w, h, false, Image.Format.Rgba8, _sceneRgba));
         _scene.Texture = _sceneTexture;
-        var blurred = (Image)picture.Duplicate();
+        if (scene.PictureVersion == _pictureVersion)
+            return;
+        _pictureVersion = scene.PictureVersion;
+        var blurred = Image.CreateFromData(w, h, false, Image.Format.Rgba8,
+            scene.Surface.ReadArea(0, BattleScene.PictureY, BattleScene.Width, BattleScene.Height));
         blurred.Resize(w / 16, h / 16, Image.Interpolation.Bilinear);
         blurred.Resize(w, h, Image.Interpolation.Bilinear);
         Upload(ref _sidesTexture, blurred);

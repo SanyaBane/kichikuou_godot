@@ -67,6 +67,16 @@ public sealed class BattleScene
     /// <summary>Counts the scene's changes; a view uploads the picture when it moves.</summary>
     public int Version { get; private set; }
 
+    /// <summary>
+    /// Counts the changes of the picture under the numbers (the battlefield and the armies' sprites),
+    /// kept at (0, <see cref="PictureY"/>) of <see cref="Surface"/>: a view blurs it for the screen's
+    /// sides only when this moves, not at every number of an exchange.
+    /// </summary>
+    public int PictureVersion { get; private set; }
+
+    /// <summary>Where on <see cref="Surface"/> the picture under the numbers is kept (<see cref="Width"/> × <see cref="Height"/>).</summary>
+    public const int PictureY = BaseY;
+
     /// <summary>The player unit and the enemy commander the picture shows between exchanges (0: none).</summary>
     public (int Unit, int Cmdr) InFocus => (_unit, _cmdr);
 
@@ -217,6 +227,7 @@ public sealed class BattleScene
                 G(_background + 1, 0, BaseY, keyed: true, own: true);
             G(888, 640, CounterSheetY, keyed: false, own: false);
             G(893, 640, AttackSheetY, keyed: false, own: false);
+            PictureVersion++;
         }
         Surface.Copy(0, BaseY, Width, Height, 0, 0);
         if (_mode == Mode.Engagement)

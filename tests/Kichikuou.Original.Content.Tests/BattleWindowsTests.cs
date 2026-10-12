@@ -53,6 +53,37 @@ public class BattleWindowsTests(ITestOutputHelper output)
         Assert.Equal(1, rgba[((21 * Surface.Scale) * row + 11 * Surface.Scale) * 4]);
     }
 
+    /// <summary>
+    /// A mask reads only the rows its windows span (<see cref="Surface.ReadArea"/>, the same pixels as
+    /// <see cref="Surface.ReadScreen"/>); the rest is transparent, also in a target an earlier compose filled,
+    /// and an empty mask leaves the whole screen transparent.
+    /// </summary>
+    [Fact]
+    public void A_mask_reads_only_the_rows_of_its_windows()
+    {
+        var screen = new Surface(Surface.ScreenWidth, Surface.ScreenHeight, indexed: false);
+        screen.FillColor(0, 0, Surface.ScreenWidth, Surface.ScreenHeight, (1, 2, 3));
+        screen.FillColor(100, 50, 20, 10, (9, 8, 7));
+        var whole = screen.ReadScreen();
+        int rowBytes = Surface.ScreenWidth * Surface.Scale * 4;
+        var area = screen.ReadArea(0, 50, Surface.ScreenWidth, 10);
+        Assert.Equal(whole.AsSpan(50 * Surface.Scale * rowBytes, area.Length).ToArray(), area);
+
+        var target = WindowMask.Of([WindowShape.Box(0, 0, Surface.ScreenWidth, Surface.ScreenHeight)]).Compose(screen);
+        WindowMask.Of([WindowShape.Box(100, 50, 20, 10)]).Compose(screen, target);
+        byte Alpha(int x, int y) => target[(y * Surface.Scale * rowBytes) + x * Surface.Scale * 4 + 3];
+        Assert.Equal(255, Alpha(105, 55));
+        Assert.Equal(9, target[55 * Surface.Scale * rowBytes + 105 * Surface.Scale * 4]);
+        Assert.Equal(0, Alpha(105, 49));
+        Assert.Equal(0, Alpha(105, 60));
+        Assert.Equal(0, Alpha(99, 55));
+
+        var empty = WindowMask.Of([]);
+        Assert.True(empty.IsEmpty);
+        empty.Compose(screen, target);
+        Assert.True(Enumerable.Range(0, target.Length / 4).All(i => target[i * 4 + 3] == 0), "an empty mask shows nothing");
+    }
+
     [Fact]
     public void The_input_screens_add_the_prompt_and_their_boxes_until_they_answer()
     {
