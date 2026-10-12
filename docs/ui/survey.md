@@ -367,6 +367,16 @@ None of these changes a rule or a look; each is small and testable on its own:
    still click at a screen point opens, with `CommandPhase`'s own box test and radii;
    `CommandPhaseTests` checks it against the map loop.
 
+**Items 2 and 4 are one step** (found 2026-10-12, while doing 1, 3 and 5): `GamePresenter` already
+holds the state a second UI lacks (what is open, the window's text, the menu as data) and keeps it
+from the events alone; what ties it to the original layout is that `GameScreen.ShowAsync` feeds it,
+interleaved with the engine's own work — MsgSkip's whole-scene skip dropping the stage commands, the
+fades, the `IZ` pointer warp, `--auto` — and the key, pause and clock timing (`IK 0`'s release wait and
+repeat, `Y 3`, `ZT`) lives in the same class. So the tracker is the presenter fed whichever UI is
+active, and the step is to move a shared engine host out of `GameScreen` (feeding the presenter, the
+skip, the fades, the timing) with the original layout as one UI on it. **[I]** L-sized: `GameScreen` is
+~1500 lines, ~480 of them `--auto`, covered by the smoke test and the `--auto` regression only.
+
 ## 5. Found while surveying
 
 - **Scenes inside a battle file.** While a battle shows, every event goes to `BattlePresenter.Show`,
