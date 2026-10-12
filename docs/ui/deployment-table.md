@@ -64,14 +64,15 @@ owner's choices (2026-10-12), from four mock-ups:
 ## The table (the owner's choices)
 
 Rows: the listed units. Columns, compact headers, each with its full name as a tooltip, in the
-owner's order (2026-10-12), after a first column with the party place (header ●, "Place in the party"):
+owner's order (2026-10-12), after a first column with the party place (header ●, "Place in the party").
+The troop type (`Unit_StrBase + (n-1)·3 + 1`) was a column after Troops until the owner moved it into
+the details panel (2026-10-12, after the look at step 8):
 
 | Header | Full name | Value |
 |---|---|---|
 | № | Unit number | the record (Rance (unit 1), Sill (unit 2), Bound (unit 3) …) |
 | Name | Name | the unit's name string (`Unit_StrBase + (n-1)·3`; scenes may rename it) |
 | Troops | Troops | `Troops / MaxTroops` |
-| Type | Troop type | the unit's troop-type string (`Unit_StrBase + (n-1)·3 + 1`) |
 | T.Atk | Troop attack | `TroopAtk` |
 | T.Def | Troop defense | `TroopDef` |
 | Str% | Strategy | `Strategy` (success chance) |
@@ -168,5 +169,11 @@ owner's order (2026-10-12), after a first column with the party place (header �
    troops, × and the war expense; "empty" where no member stands, blank where the screen does not offer
    the place (`Tmp0040`); the totals below. The faces come through `godot/Strategy/FacePictures` (the
    viewer's loader, shared), their squares are `UnitFaces`' with the owner's edits read as the screen
-   opens. Waits for the owner's look.
+   opens. The owner looked (2026-10-12) and asked for three changes, made the same day: a card's
+   expense reads "Cost: 900K" (under the card's lines, so they keep its width); the troop type left
+   the table for the details panel (`DeploymentDetails.TroopType`: name and type, expense and
+   troops, rows and item); a member's card under the pointer is hovered as its row is
+   (`DeploymentPanels.HoveredUnit`: the script's pointer on the member's cell, so the script shows its
+   portrait and details). `--auto` hovers a row one read longer once its details show, so a window
+   dump (the next frame) has them.
 9. **Drag and drop** between the places, input held while the script's clicks run.

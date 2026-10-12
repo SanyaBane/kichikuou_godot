@@ -21,12 +21,15 @@ public class DeploymentTableScriptTests(ITestOutputHelper output)
         if (game is null)
             return;
 
-        var rows = DeploymentTable.Rows(game.State);
+        var s = game.State;
+        var rows = DeploymentTable.Rows(s);
+        (s.Bt_PlayerParty1, s.Bt_PlayerParty2, s.Bt_PlayerParty3, s.Bt_PlayerParty4) = (1, 2, 3, 4);
+        var members = DeploymentTable.Party(s).Places.Select(m => m!).ToList();   // the troop types are the cards'
 
-        output.WriteLine(string.Join("; ", rows.Select(r => $"{r.Unit} {r.Name} / {r.TroopType} / {r.Text(DeploymentColumn.Cost)}")));
+        output.WriteLine(string.Join("; ", rows.Zip(members, (r, m) => $"{r.Unit} {r.Name} / {m.TroopType} / {r.Text(DeploymentColumn.Cost)}")));
         Assert.Equal([1, 2, 3, 4], rows.Select(r => r.Unit));                // Rance (unit 1) to Soul (unit 4): the prologue's army
         Assert.Equal(["Rance", "Sill", "Bound", "Soul"], rows.Select(r => r.Name));
-        Assert.All(rows, r => Assert.NotEmpty(r.TroopType));
+        Assert.All(members, m => Assert.NotEmpty(m.TroopType));
     }
 
     /// <summary>

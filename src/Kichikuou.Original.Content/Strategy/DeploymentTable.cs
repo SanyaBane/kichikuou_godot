@@ -18,9 +18,6 @@ public enum DeploymentColumn
     /// <summary>Troops and their maximum.</summary>
     Troops,
 
-    /// <summary>The troop type's name.</summary>
-    TroopType,
-
     /// <summary>The troops' attack.</summary>
     TroopAtk,
 
@@ -63,7 +60,7 @@ public sealed record DeploymentColumnInfo(DeploymentColumn Column, string Header
 /// GameState, whether it is grey (deployed this week, status 2) and its place in the party (1-4, or 0).
 /// </summary>
 public sealed record DeploymentRow(
-    int Unit, string Name, string TroopType, int Troops, int MaxTroops, int Hp, int MaxHp, int Exp, int NextExp,
+    int Unit, string Name, int Troops, int MaxTroops, int Hp, int MaxHp, int Exp, int NextExp,
     int Level, int Atk, int Def, int Attacks, int Strategy, int Magic, int TroopAtk, int TroopDef, int Cost,
     bool Grey, int PartyPlace)
 {
@@ -81,7 +78,6 @@ public sealed record DeploymentRow(
         DeploymentColumn.Attacks => Attacks.ToString(),
         DeploymentColumn.Strategy => $"{Strategy}%",
         DeploymentColumn.Magic => Magic.ToString(),
-        DeploymentColumn.TroopType => TroopType,
         DeploymentColumn.TroopAtk => TroopAtk.ToString(),
         DeploymentColumn.TroopDef => TroopDef.ToString(),
         DeploymentColumn.Cost => $"{Cost * 100}K",
@@ -92,7 +88,6 @@ public sealed record DeploymentRow(
     public IComparable Key(DeploymentColumn column) => column switch
     {
         DeploymentColumn.Name => Name,
-        DeploymentColumn.TroopType => TroopType,
         DeploymentColumn.Number => Unit,
         DeploymentColumn.Troops => Troops,
         DeploymentColumn.Hp => Hp,
@@ -114,9 +109,10 @@ public sealed record DeploymentRow(
 /// The details panel of our deployment screen: the unit whose details the script shows (its
 /// portrait is on the screen), with what <c>Sﾌﾞﾀｲ</c> prints for it (<c>:524-569</c>) — the war
 /// expense, the troops, the rows it fights in (<see cref="Rows"/>: "Front", "Back", "Front, Back"
-/// or "") and its item ("" without one).
+/// or "") and its item ("" without one) — and its troop type, which the original shows in the grid
+/// (the owner's choice, 2026-10-12: here rather than in a column of the table).
 /// </summary>
-public sealed record DeploymentDetails(int Unit, string Name, int Cost, int Troops, int MaxTroops, string Rows, string Item);
+public sealed record DeploymentDetails(int Unit, string Name, string TroopType, int Cost, int Troops, int MaxTroops, string Rows, string Item);
 
 /// <summary>
 /// A place of the party panel: the member's number, name, war expense, troops, troop type and face CG
@@ -148,7 +144,6 @@ public static class DeploymentTable
         new(DeploymentColumn.Number, "№", "Unit number"),
         new(DeploymentColumn.Name, "Name", "Name", IsText: true),
         new(DeploymentColumn.Troops, "Troops", "Troops / maximum"),
-        new(DeploymentColumn.TroopType, "Type", "Troop type", IsText: true),
         new(DeploymentColumn.TroopAtk, "T.Atk", "Troop attack"),
         new(DeploymentColumn.TroopDef, "T.Def", "Troop defense"),
         new(DeploymentColumn.Strategy, "Str%", "Strategy success chance"),
@@ -176,7 +171,7 @@ public static class DeploymentTable
                 continue;
             int strings = (state.Unit_StrBase + (Sys3Int)((n - 1) * 3)).Value;
             rows.Add(new DeploymentRow(
-                n, StringAt(state, strings), StringAt(state, strings + 1),
+                n, StringAt(state, strings),
                 u.Troops.Value, u.MaxTroops.Value, u.HP.Value, u.MaxHP.Value,
                 u.Exp.Value, ((Sys3Int)100 + u.Level * 30).Value,
                 u.Level.Value, u.Atk.Value, u.Def.Value, u.Attacks.Value, u.Strategy.Value, u.Magic.Value,
@@ -247,7 +242,7 @@ public static class DeploymentTable
             _ => "",
         };
         string item = u.Item == 0 ? "" : StringAt(state, (state.Item_StrBase + u.Item - 1).Value);
-        return new DeploymentDetails(unit, UnitName(state, unit),
+        return new DeploymentDetails(unit, UnitName(state, unit), StringAt(state, (state.Unit_StrBase + (Sys3Int)((unit - 1) * 3)).Value + 1),
             (u.DeployCost + u.Troops / 300).Value, u.Troops.Value, u.MaxTroops.Value, rows, item);
     }
 

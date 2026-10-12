@@ -919,10 +919,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         await NextFrameAsync();
         if (UpdateDeploymentScreen() && (_tablePointer.Pending > 0 || _table.HasPointer || _panels.HasPointer))
         {
-            // Over our screen the script's pointer is ours: on the hovered row's cell, pressed by its gestures.
+            // Over our screen the script's pointer is ours: on the hovered row's or member card's cell, pressed by its gestures.
             if (_tablePointer.Pending == 0)
             {
-                var (x, y) = DeploymentTable.PointerAt(_table.HoveredUnit);
+                var (x, y) = DeploymentTable.PointerAt(HoveredUnit);
                 _tablePointer.Move(x, y);
             }
             return _tablePointer.Next(out _);
@@ -996,8 +996,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         if (_options.Auto || _tablePointer.Pending > 0)
             return;
-        DeploymentTable.RightPress(_table.HoveredUnit, _tablePointer);
+        DeploymentTable.RightPress(HoveredUnit, _tablePointer);
     }
+
+    /// <summary>The unit hovered on our deployment screen: its row in the table or its card in the party panel, else 0.</summary>
+    private int HoveredUnit => _table.HoveredUnit != 0 ? _table.HoveredUnit : _panels.HoveredUnit;
 
     /// <summary>
     /// <c>IC</c>: returns the shape set before and shows the new one as a system cursor
@@ -1184,6 +1187,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// <summary>The reads the unattended player has hovered a row of our table for, waiting for its details.</summary>
     private int _autoHovers;
 
+    /// <summary>Whether the unattended player has hovered one read more since the details showed (a window dump saves the next frame).</summary>
+    private bool _autoHoverHeld;
+
     /// <summary>Whether the unattended player has pressed a row of our own deployment table (logged once).</summary>
     private bool _autoTableUsed;
 
@@ -1298,13 +1304,16 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 _panels.PressButton(value);                             // our own bar
                 return;
             }
-            if (step == AutoDeployStep.Join && _table.Visible && DeploymentTable.Details(d)?.Unit != value && _autoHovers++ < 10)
+            bool detailsShown = DeploymentTable.Details(d)?.Unit == value;
+            if (step == AutoDeployStep.Join && _table.Visible && (!detailsShown || !_autoHoverHeld) && _autoHovers++ < 10)
             {
+                _autoHoverHeld = detailsShown;
                 var (hx, hy) = DeploymentTable.PointerAt(value);
                 _pointer.Move(hx, hy);                                  // the row hovered first: the script shows its details
                 return;
             }
             _autoHovers = 0;
+            _autoHoverHeld = false;
             if (step != AutoDeployStep.Button && _table.Visible)
             {
                 if (!_autoTableUsed)

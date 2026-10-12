@@ -14,7 +14,8 @@ namespace Kichikuou.Game.Strategy;
 /// and its totals against the gold (<see cref="DeploymentTable.Party"/>), and the bar's three buttons
 /// labelled from the player's files. It decides nothing: the presses go to <see cref="GameScreen"/>,
 /// which answers the script with the gestures it expects; a left click elsewhere on it does
-/// nothing, a right click is the script's own (the last member out).
+/// nothing, a right click is the script's own (the last member out). A member's card under the
+/// pointer is hovered as its row is (<see cref="HoveredUnit"/>): the script shows its details.
 /// </summary>
 internal sealed partial class DeploymentPanels : Control
 {
@@ -45,6 +46,7 @@ internal sealed partial class DeploymentPanels : Control
     private readonly HBoxContainer _rows;                   // the back row's column, then the front row's
     private readonly RichTextLabel _partyTotals;
     private readonly FacePictures _faces;
+    private readonly List<(Control Card, int Unit)> _memberCards = [];
     private FaceCrops _crops = new();
     private float _pixels = 1;                              // screen pixels to a script pixel
     private readonly HBoxContainer _bar;
@@ -122,6 +124,21 @@ internal sealed partial class DeploymentPanels : Control
     public bool HasPointer => Visible && (_right.GetGlobalRect().HasPoint(GetGlobalMousePosition())
         || _left.GetGlobalRect().HasPoint(GetGlobalMousePosition()));
 
+    /// <summary>The unit whose card is under the pointer, or 0.</summary>
+    public int HoveredUnit
+    {
+        get
+        {
+            if (!Visible)
+                return 0;
+            var at = GetGlobalMousePosition();
+            foreach (var (card, unit) in _memberCards)
+                if (card.GetGlobalRect().HasPoint(at))
+                    return unit;
+            return 0;
+        }
+    }
+
     /// <summary>
     /// Covers the areas over the screen whose script pixel (0, 0) is at <paramref name="origin"/>
     /// (in its parent's coordinates), <paramref name="pixelsPerScript"/> screen pixels to a script pixel.
@@ -164,7 +181,8 @@ internal sealed partial class DeploymentPanels : Control
         {
             _detailsKey = detailsKey;
             _detailsText.Text = details is null ? "" :
-                $"{details.Name}   {Label("Expense")} {details.Cost * 100}K   {Label("Troops")} {details.Troops}/{details.MaxTroops}\n"
+                $"{details.Name}   {Label("Type")} {details.TroopType}\n"
+                + $"{Label("Expense")} {details.Cost * 100}K   {Label("Troops")} {details.Troops}/{details.MaxTroops}\n"
                 + $"{Label("Rows")} {(details.Rows == "" ? "—" : details.Rows)}   {Label("Item")} {(details.Item == "" ? "—" : details.Item)}";
         }
 
@@ -211,6 +229,7 @@ internal sealed partial class DeploymentPanels : Control
             _rows.RemoveChild(child);
             child.QueueFree();
         }
+        _memberCards.Clear();
         foreach (int[] places in new[] { new[] { 3, 4 }, new[] { 1, 2 } })
         {
             var row = new VBoxContainer { MouseFilter = MouseFilterEnum.Ignore, SizeFlagsHorizontal = SizeFlags.ExpandFill };
@@ -272,11 +291,13 @@ internal sealed partial class DeploymentPanels : Control
         text.AddChild(name);
         text.AddChild(Line(member.TroopType, Muted));
         text.AddChild(Line($"{member.Troops} troops"));
+        text.AddChild(new Control { SizeFlagsVertical = SizeFlags.ExpandFill, MouseFilter = MouseFilterEnum.Ignore });
+        var cost = Line($"Cost: {member.Cost * 100}K", expand: false);       // under the text, so the lines keep the card's width (owner, 2026-10-12)
+        cost.HorizontalAlignment = HorizontalAlignment.Right;
+        text.AddChild(cost);
         line.AddChild(text);
 
-        var side = new VBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
-        side.AddThemeConstantOverride("separation", 0);
-        var remove = new Button { Text = "×", Flat = true, FocusMode = FocusModeEnum.None, TooltipText = "Take out of the party", SizeFlagsHorizontal = SizeFlags.ShrinkEnd };
+        var remove = new Button { Text = "×", Flat = true, FocusMode = FocusModeEnum.None, TooltipText = "Take out of the party", SizeFlagsVertical = SizeFlags.ShrinkBegin };
         remove.AddThemeColorOverride("font_color", Warning);
         remove.AddThemeColorOverride("font_hover_color", Warning.Lightened(0.3f));
         foreach (var box in new[] { "normal", "hover", "pressed", "focus" })
@@ -284,13 +305,8 @@ internal sealed partial class DeploymentPanels : Control
         int unit = member.Unit;
         remove.Pressed += () => RemovePressed?.Invoke(unit);
         remove.GuiInput += RightClick;
-        side.AddChild(remove);
-        side.AddChild(new Control { SizeFlagsVertical = SizeFlags.ExpandFill, MouseFilter = MouseFilterEnum.Ignore });
-        var cost = Line($"{member.Cost * 100}K", expand: false);
-        cost.HorizontalAlignment = HorizontalAlignment.Right;
-        cost.TooltipText = "War expense (GOLD)";
-        side.AddChild(cost);
-        line.AddChild(side);
+        line.AddChild(remove);
+        _memberCards.Add((card, member.Unit));
         return card;
     }
 

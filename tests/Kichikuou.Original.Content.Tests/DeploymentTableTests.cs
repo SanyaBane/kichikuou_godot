@@ -52,7 +52,6 @@ public class DeploymentTableTests
         var rance = rows[0];
         Assert.Equal("900/1000", rance.Text(DeploymentColumn.Troops));
         Assert.Equal("40/160", rance.Text(DeploymentColumn.Exp));                 // the next level at 100 + 2·30
-        Assert.Equal("Thieves", rance.Text(DeploymentColumn.TroopType));
         Assert.Equal("400K", rance.Text(DeploymentColumn.Cost));                  // 1 + 900/300, ×100K
         Assert.Equal("300K", rows[2].Text(DeploymentColumn.Cost));                // Bound: 1 + 600/300
     }
@@ -112,7 +111,7 @@ public class DeploymentTableTests
         Assert.Null(DeploymentTable.Details(s));                            // nothing shown (Tmp0026 0)
         s.Tmp0026 = 1;
         s.Tmp0033 = 3;
-        Assert.Equal(new DeploymentDetails(3, "Bound", 3, 600, 1000, "Front, Back", "By Lord"), DeploymentTable.Details(s));
+        Assert.Equal(new DeploymentDetails(3, "Bound", "Thieves", 3, 600, 1000, "Front, Back", "By Lord"), DeploymentTable.Details(s));
         s.Tmp0033 = 4;                                                      // not in the army
         Assert.Null(DeploymentTable.Details(s));
     }
