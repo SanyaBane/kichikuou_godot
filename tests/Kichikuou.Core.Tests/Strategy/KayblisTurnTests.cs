@@ -61,7 +61,7 @@ public class KayblisTurnTests
     }
 
     /// <summary>The literals (<c>MS n, "…"</c>) as "file:line", standing in for the player's files: <c>MS 4</c> at <c>:323</c>, <c>MS 10</c> elsewhere.</summary>
-    private sealed class Literals : Kichikuou.Core.Setup.IScenarioSource
+    private sealed class Literals : IScenarioSource
     {
         public IReadOnlyList<ScriptStatement> ReadFile(string file) => throw new InvalidOperationException(file);
 

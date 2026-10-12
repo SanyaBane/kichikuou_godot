@@ -143,7 +143,22 @@ Each step ends green (see "Principles").
 4. **The assemblies**: create `Kichikuou.Engine` and `Kichikuou.Original.Content`; `Kichikuou.Core`
    becomes `Kichikuou.Original`, with namespaces following the folders. This step is mechanical:
    `InternalsVisibleTo` per assembly, the solution, the Godot project's references (Godot's scene files
-   reference scripts by path; the Godot scripts do not move).
+   reference scripts by path; the Godot scripts do not move). Prepared (2026-10-12):
+   - `Script/GesturePoints` took the original's screen geometry (the pickers' grid and bar, a map
+     point on screen) from `PointerScript`, which keeps the gesture queue.
+   - `IScenarioSource` left `Setup/GameSetup.cs` for `Script/IScenarioSource.cs`; generic Content
+     (`ScenarioText`, `Scripts/ScenarioScripts`) imports no namespace of the original any more.
+   - `IBattleAudio` stays in `Battles/BattlePresenter.cs`: only the original's presenters and Godot use it.
+   - The file map. **Engine**: `Sys3/*`; from `Script/` `ScriptContext{,.Save,.Statements}.cs`,
+     `ScriptState`, `VariantProfile`, `ScriptProgram`, `ScriptStatements`, `SceneRunner`, `SceneInput`,
+     `EngineTimer`, `ScriptInterfaces`, `ScriptEvents`, `SaveData`, `MessageSkip`, `PointerScript`,
+     `IScenarioSource`; `Golden/GoldenCapture`, `Golden/MemoryDump`; `LocalPaths`. **Original** (today's
+     Core): the rest — `State/`, `Setup/`, `Strategy/`, `Combat/`, `Golden/GoldenReplay`,
+     `Golden/MemoryComparison`, `Script/OriginalScriptContext*.cs`, `Script/HelperEvents`,
+     `Script/ScreenEvents`, `Script/GesturePoints`. **Content**: `Hankaku`, `ScenarioText`, `Scripts/`,
+     `Graphics/`, `Screen/` (with `EngineStage`), `Strategy/TextBox` (to `Screen/`), `MusicTable` (now in
+     `Audio/SoundTable.cs`, to a file of its own). **Original.Content**: `Battles/`,
+     `Strategy/GamePresenter*.cs`, `Strategy/PickerView`, `Audio/SoundTable` (the original's sound numbers).
 5. **The tests**: the same split (engine, original, original content), and one `Kichikuou.TestSupport`
    project for the doubles each differential file now copies (`OneProgram` ×6, `RandomState` ×6,
    `LoggingView` ×5, `ScribblingHooks` ×4 …) — the Sparrow port will need them too.

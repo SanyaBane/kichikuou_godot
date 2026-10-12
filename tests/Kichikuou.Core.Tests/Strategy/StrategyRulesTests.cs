@@ -162,7 +162,7 @@ public class StrategyRulesTests
         public Task<Sys3Int> GetMidiTrackAsync() => throw new InvalidOperationException("SR 1");
     }
 
-    private sealed class NoScenario : Kichikuou.Core.Setup.IScenarioSource
+    private sealed class NoScenario : IScenarioSource
     {
         public IReadOnlyList<ScriptStatement> ReadFile(string file) => throw new InvalidOperationException(file);
 

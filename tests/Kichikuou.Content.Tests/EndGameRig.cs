@@ -161,9 +161,9 @@ internal sealed class EndInput(GameState state) : IGameInput
     {
         foreach (int unit in units)
         {
-            var at = PointerScript.PickerCell(unit);
+            var at = GesturePoints.PickerCell(unit);
             Pointer.Click(at.X, at.Y);
-            var go = PointerScript.PickerButton(1);
+            var go = GesturePoints.PickerButton(1);
             Pointer.Click(go.X, go.Y);
         }
     }

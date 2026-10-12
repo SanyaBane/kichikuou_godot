@@ -161,7 +161,7 @@ public class IkamiEndTests(ITestOutputHelper output)
         int[] gone = [2, .. Garrisons];
         foreach (int unit in gone)
             game.State.Units[unit].Status = 0;
-        var stop = PointerScript.PickerButton(3);
+        var stop = GesturePoints.PickerButton(3);
         for (int k = 0; k < 3; k++)
             game.Input.Pointer.Click(stop.X, stop.Y);
 
@@ -184,8 +184,8 @@ public class IkamiEndTests(ITestOutputHelper output)
 
         var game = await AtGodsDoorAsync(picks: false);
         game!.Input.Menu.Enqueue(1);
-        var rance = PointerScript.PickerCell(1);
-        var attack = PointerScript.PickerButton(1);
+        var rance = GesturePoints.PickerCell(1);
+        var attack = GesturePoints.PickerButton(1);
         game.Input.Pointer.Click(rance.X, rance.Y);
         game.Input.Pointer.Click(attack.X, attack.Y);
         QueuePicks(game.Input);

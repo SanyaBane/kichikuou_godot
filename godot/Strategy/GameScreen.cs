@@ -1099,7 +1099,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             }
             else
             {
-                var end = PointerScript.PickerButton(3);
+                var end = GesturePoints.PickerButton(3);
                 _pointer.Click(end.X, end.Y);
             }
             return;
@@ -1109,11 +1109,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             Shot("picker");
             var (x, y) = picker.Kind == PickerKind.Deployment && _presenter.State is { } s
                 ? AutoDeploy(picker, s)
-                : PointerScript.PickerButton(3);
+                : GesturePoints.PickerButton(3);
             if (picker.Kind == PickerKind.Subordinates && _autoReplenish == AutoReplenish.Chosen)
             {
                 _autoReplenish = AutoReplenish.Picked;
-                (x, y) = PointerScript.PickerCell(_autoReplenishUnit);
+                (x, y) = GesturePoints.PickerCell(_autoReplenishUnit);
             }
             _pointer.Click(x, y);
         }
@@ -1135,7 +1135,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             if (AutoAttackTarget(s) is { } target)
             {
                 var p = s.Provs[target];
-                if (PointerScript.OnScreen(s, p.MapX, p.MapY, centred) is var (x, y))
+                if (GesturePoints.OnScreen(s, p.MapX, p.MapY, centred) is var (x, y))
                 {
                     GD.Print($"Kichikuou: --auto attacks province {target} (week {s.Week.Value}, gold {s.Gold.Value}).");
                     _autoAttack = AutoAttack.Clicked;
@@ -1144,7 +1144,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                     _pointer.Click(x, y);
                     return;
                 }
-                if (PointerScript.DragToward(s, p.MapX, p.MapY, centred) is var (fromX, fromY, toX, toY))
+                if (GesturePoints.DragToward(s, p.MapX, p.MapY, centred) is var (fromX, fromY, toX, toY))
                 {
                     _autoDragged = true;
                     _pointer.Drag(fromX, fromY, toX, toY);
@@ -1248,22 +1248,22 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_autoSentFrom != picker)
         {
             if (party.Length < _autoParty.Count && party.SequenceEqual(_autoParty.Take(party.Length)))
-                return PointerScript.PickerCell(_autoParty[party.Length]);
+                return GesturePoints.PickerCell(_autoParty[party.Length]);
             if (party.Length > 0 && s.Tmp0016 > s.Gold)
             {
                 _autoParty = [.. party[..^1]];
-                return PointerScript.PickerOutside;
+                return GesturePoints.PickerOutside;
             }
             if (party.Length > 0)
             {
                 _autoSentFrom = picker;
-                return PointerScript.PickerButton(1);
+                return GesturePoints.PickerButton(1);
             }
         }
         _autoSentFrom = null;
         if (picker.Mode == 2)
             _autoAbandon = true;
-        return PointerScript.PickerButton(3);
+        return GesturePoints.PickerButton(3);
     }
 
     /// <summary>
@@ -1303,7 +1303,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_autoDungeon != AutoDungeon.NotYet || s.StoryStage != 1 || s.Ui_CmdDungeonAvail != 1
             || s.Provs[s.Dgns[AutoCave].Prov].Owner != 1)
             return null;
-        if (PointerScript.OnScreen(s, s.Dgns[AutoCave].MapX, s.Dgns[AutoCave].MapY) is not { } at)
+        if (GesturePoints.OnScreen(s, s.Dgns[AutoCave].MapX, s.Dgns[AutoCave].MapY) is not { } at)
             return null;
         GD.Print($"Kichikuou: --auto searches the Monsters' Cave (week {s.Week.Value}).");
         return at;
@@ -1326,7 +1326,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         void Click((int X, int Y) at) => _pointer.Click(at.X, at.Y);
         void Pick(int id)
         {
-            var at = PointerScript.PickerCell(id);
+            var at = GesturePoints.PickerCell(id);
             steps.Enqueue(() =>
             {
                 _pointer.Move(at.X, at.Y);                              // its details,
@@ -1344,10 +1344,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             bool turn = s.Ui_ItemViewMode == 1;
             if (turn)
-                steps.Enqueue(() => Click(PointerScript.PickerButton(2)));
+                steps.Enqueue(() => Click(GesturePoints.PickerButton(2)));
             Pick(unit);
             if (turn)
-                steps.Enqueue(() => Click(PointerScript.PickerButton(2)));
+                steps.Enqueue(() => Click(GesturePoints.PickerButton(2)));
         }
         return steps;
     }

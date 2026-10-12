@@ -451,10 +451,10 @@ public class PrologueCommandTests(ITestOutputHelper output)
         public void Dungeon(int d) => Click(() => (state.Dgns[d].MapX, state.Dgns[d].MapY));
 
         /// <summary>A click on unit or girl <paramref name="id"/> in a picker's grid.</summary>
-        public void Pick(int id) => ScreenClick(PointerScript.PickerCell(id));
+        public void Pick(int id) => ScreenClick(GesturePoints.PickerCell(id));
 
         /// <summary>A click on bar button <paramref name="button"/> (1-3) under a picker's grid.</summary>
-        public void Button(int button) => ScreenClick(PointerScript.PickerButton(button));
+        public void Button(int button) => ScreenClick(GesturePoints.PickerButton(button));
 
         private void ScreenClick((int X, int Y) at) => _gestures.Enqueue(() =>
             [new((Sys3Int)16, (Sys3Int)at.X, (Sys3Int)at.Y), new(Sys3Int.Zero, (Sys3Int)at.X, (Sys3Int)at.Y)]);

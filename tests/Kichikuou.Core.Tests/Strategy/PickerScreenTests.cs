@@ -35,13 +35,13 @@ public class PickerScreenTests
 
         public void Pick(int id)
         {
-            var (x, y) = PointerScript.PickerCell(id);
+            var (x, y) = GesturePoints.PickerCell(id);
             Input.Pointer.Click(x, y);
         }
 
         public void Button(int button)
         {
-            var (x, y) = PointerScript.PickerButton(button);
+            var (x, y) = GesturePoints.PickerButton(button);
             Input.Pointer.Click(x, y);
         }
 
@@ -276,7 +276,7 @@ public class PickerScreenTests
         rig.State.CallArg = 1;
         rig.State.RetVal = 0;
         rig.Pick(3);
-        var (x, y) = PointerScript.PickerOutside;
+        var (x, y) = GesturePoints.PickerOutside;
         rig.Input.Pointer.Click(x, y);
 
         await new SubordinateScreen(rig.Script, rig.Source).RunAsync();
@@ -343,7 +343,7 @@ public class PickerScreenTests
     public async Task A_left_click_left_of_the_list_reopens_it_and_End_cancels()
     {
         var rig = Harem(1);
-        var (x, y) = PointerScript.PickerOutside;
+        var (x, y) = GesturePoints.PickerOutside;
         rig.Input.Pointer.Click(x, y);
         rig.Button(3);
 

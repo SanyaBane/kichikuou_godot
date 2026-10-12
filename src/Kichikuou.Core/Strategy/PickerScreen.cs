@@ -7,7 +7,7 @@ namespace Kichikuou.Core.Strategy;
 /// <summary>
 /// The list widget the original's picker screens share (<c>Sﾌﾞﾀｲ</c>, <c>Sﾌﾞｶ</c>, <c>Sﾊｰﾚﾑ</c>, <c>Sｱｲﾃﾑ</c>;
 /// <c>docs/strategy/survey-commands.md</c> §7): a 3×17 grid of names on the right half of the
-/// screen (ids 1-51, cells 108×18 from (328, 18), <see cref="PointerScript.PickerCell"/>), a bar of
+/// screen (ids 1-51, cells 108×18 from (328, 18), <see cref="GesturePoints.PickerCell"/>), a bar of
 /// buttons below it, a highlight under the pointer and a details panel for the entry it is on,
 /// all read with <c>IM</c> polled as the script polls it. Each file has its own copy of the code;
 /// the copies differ in what a cell shows, which entries are listed, the details panel and the

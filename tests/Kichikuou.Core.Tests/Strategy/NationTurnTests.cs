@@ -61,7 +61,7 @@ public class NationTurnTests
     }
 
     /// <summary>The army name (<c>MS 10, "…"</c>) as "file:line", standing in for the player's files.</summary>
-    private sealed class Literals : Kichikuou.Core.Setup.IScenarioSource
+    private sealed class Literals : IScenarioSource
     {
         public IReadOnlyList<ScriptStatement> ReadFile(string file) => throw new InvalidOperationException(file);
 

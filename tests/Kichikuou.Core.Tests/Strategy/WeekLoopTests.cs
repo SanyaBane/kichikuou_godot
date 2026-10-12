@@ -44,7 +44,7 @@ public class WeekLoopTests
     }
 
     /// <summary>The army names (<c>MS 10, "…"</c>) as "file:line", standing in for the player's files.</summary>
-    private sealed class Literals : Kichikuou.Core.Setup.IScenarioSource
+    private sealed class Literals : IScenarioSource
     {
         public IReadOnlyList<ScriptStatement> ReadFile(string file) => throw new InvalidOperationException(file);
 
@@ -401,7 +401,7 @@ public class WeekLoopTests
 
     private sealed class StopException : Exception;
 
-    private sealed class NoScenario : Kichikuou.Core.Setup.IScenarioSource
+    private sealed class NoScenario : IScenarioSource
     {
         public IReadOnlyList<ScriptStatement> ReadFile(string file) => throw new InvalidOperationException(file);
 

@@ -2,7 +2,6 @@ using System.Collections.Concurrent;
 using System.Text;
 using System.Text.RegularExpressions;
 using Kichikuou.Core.Script;
-using Kichikuou.Core.Setup;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Content.Scripts;

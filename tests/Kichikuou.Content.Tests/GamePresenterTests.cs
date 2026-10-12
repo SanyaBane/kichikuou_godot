@@ -1021,7 +1021,7 @@ public class GamePresenterTests(ITestOutputHelper output)
                 {
                     var (x, y) = g.ProvinceId != 0 ? (state.Provs[g.ProvinceId].MapX, state.Provs[g.ProvinceId].MapY)
                         : (state.Dgns[g.DungeonId].MapX, state.Dgns[g.DungeonId].MapY);
-                    var at = PointerScript.OnScreen(state, x, y) ?? throw new InvalidOperationException($"({x}, {y}) is not in view.");
+                    var at = GesturePoints.OnScreen(state, x, y) ?? throw new InvalidOperationException($"({x}, {y}) is not in view.");
                     _pointer.Click(at.X, at.Y);
                 }
             }
@@ -1079,7 +1079,7 @@ public class GamePresenterTests(ITestOutputHelper output)
             if (presenter.Picker is { } picker && _pointer.Pending == 0 && Pickers.TryPeek(out var pick) && pick.Kind == picker.Kind)
             {
                 Pickers.Dequeue();
-                var at = pick.Area == PickerArea.Cell ? PointerScript.PickerCell(pick.Number) : PointerScript.PickerButton(pick.Number);
+                var at = pick.Area == PickerArea.Cell ? GesturePoints.PickerCell(pick.Number) : GesturePoints.PickerButton(pick.Number);
                 Assert.Equal((pick.Area, pick.Number), picker.HitTest(at.X, at.Y));   // the drawn screen agrees with the script's
                 switch (pick.Press)
                 {

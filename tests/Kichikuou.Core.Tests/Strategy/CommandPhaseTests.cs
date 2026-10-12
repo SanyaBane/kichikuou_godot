@@ -51,7 +51,7 @@ public class CommandPhaseTests
         /// <summary>A left click on a map point (the camera centred on (800, 400)).</summary>
         public void Click(int mapX, int mapY)
         {
-            var (x, y) = PointerScript.OnScreen(State, (Sys3Int)mapX, (Sys3Int)mapY)!.Value;
+            var (x, y) = GesturePoints.OnScreen(State, (Sys3Int)mapX, (Sys3Int)mapY)!.Value;
             Input.Pointer.Click(x, y);
         }
 
@@ -205,8 +205,8 @@ public class CommandPhaseTests
         var rig = new PhaseRig(stage: 2);
         rig.Place(7, 1500, 700);
         rig.State.Provs[7].Owner = 1;
-        Assert.Null(PointerScript.OnScreen(rig.State, (Sys3Int)1500, (Sys3Int)700));
-        var drag = PointerScript.DragToward(rig.State, (Sys3Int)1500, (Sys3Int)700)!.Value;
+        Assert.Null(GesturePoints.OnScreen(rig.State, (Sys3Int)1500, (Sys3Int)700));
+        var drag = GesturePoints.DragToward(rig.State, (Sys3Int)1500, (Sys3Int)700)!.Value;
         Assert.Equal((620, 300, 20, 100), drag);       // the corner (480, 200) moves 600 right (at most), 200 down
         rig.Input.Pointer.Drag(drag.FromX, drag.FromY, drag.ToX, drag.ToY);
         rig.Input.Pointer.Click(420, 300);             // the corner is (1080, 400) now
@@ -216,11 +216,11 @@ public class CommandPhaseTests
 
         Assert.Equal(["COM.ADV", "Cｼﾊｲﾄｼ.ADV"], rig.Files);
         Is(7, rig.State.Ui_ClickedProv);
-        Assert.Equal((420, 300), PointerScript.OnScreen(rig.State, (Sys3Int)1500, (Sys3Int)700));   // centred again
+        Assert.Equal((420, 300), GesturePoints.OnScreen(rig.State, (Sys3Int)1500, (Sys3Int)700));   // centred again
         rig.State.MapCamX = 1080;
         rig.State.MapCamY = 400;
-        Assert.Equal((420, 300), PointerScript.OnScreen(rig.State, (Sys3Int)1500, (Sys3Int)700, centred: false));
-        Assert.Null(PointerScript.DragToward(rig.State, (Sys3Int)1400, (Sys3Int)600, centred: false));   // already in the middle
+        Assert.Equal((420, 300), GesturePoints.OnScreen(rig.State, (Sys3Int)1500, (Sys3Int)700, centred: false));
+        Assert.Null(GesturePoints.DragToward(rig.State, (Sys3Int)1400, (Sys3Int)600, centred: false));   // already in the middle
     }
 
     [Fact]
