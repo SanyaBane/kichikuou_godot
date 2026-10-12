@@ -13,7 +13,7 @@ namespace Kichikuou.Core.Strategy;
 /// both once the player holds province 5. The army name (<c>MS 10</c>) is read from the player's
 /// files through <paramref name="scenario"/>.
 /// </summary>
-public sealed class RebelTurn(ScriptContext script, IScenarioSource? scenario = null)
+public sealed class RebelTurn(OriginalScriptContext script, IScenarioSource? scenario = null)
     : NationFile(script, "TCﾘｰｻﾞｽ.ADV", scenario)
 {
     /// <summary><c>TCﾘｰｻﾞｽ.ADV:1-107</c>, up to the <c>%0:</c> at <c>L_0024e</c>.</summary>

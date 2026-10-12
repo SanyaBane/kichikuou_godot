@@ -17,7 +17,7 @@ public class LoadSaveScreenTests
     private const string File = "ﾛｰﾄﾞｾｰﾌﾞ.ADV";
     private static readonly ScriptRef Call = new("MAIN.ADV", 20);
 
-    private sealed record Rig(GameState State, ScriptContext Script, RecordingView View, ScriptedSceneInput Input, MemorySaveStore Saves, LoadSaveScreen Screen);
+    private sealed record Rig(GameState State, OriginalScriptContext Script, RecordingView View, ScriptedSceneInput Input, MemorySaveStore Saves, LoadSaveScreen Screen);
 
     private static Rig? NewRig()
     {
@@ -27,7 +27,7 @@ public class LoadSaveScreenTests
         var view = new RecordingView();
         var input = new ScriptedSceneInput();
         var saves = new MemorySaveStore(() => new DateTime(2026, 10, 9, 12, 0, 45));
-        var script = new ScriptContext(state, new QueuedRandom(), view, input, new RecordingRules { State = state })
+        var script = new OriginalScriptContext(state, new QueuedRandom(), view, input, new RecordingRules { State = state })
         {
             Saves = saves,
             SaveResume = Call,

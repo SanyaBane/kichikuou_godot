@@ -15,7 +15,7 @@ namespace Kichikuou.Core.Strategy;
 /// weeks down and plays the completion scene. The "all built" opening (<c>:1-59</c>) needs the pool,
 /// which nothing builds, and the pool's own offer (<c>:588-657</c>) has no way in (CMD-20).
 /// </summary>
-public sealed class ConstructionCommand(ScriptContext script) : CommandFile(script, "Cﾃｲﾄ.ADV")
+public sealed class ConstructionCommand(OriginalScriptContext script) : CommandFile(script, "Cﾃｲﾄ.ADV")
 {
     /// <summary><c>Cﾃｲﾄ.ADV:1-286</c>: the command, up to its return.</summary>
     public async Task RunAsync()

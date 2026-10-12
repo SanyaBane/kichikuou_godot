@@ -39,13 +39,13 @@ public sealed class GameSession
         _scenario = scenario;
         Rules = new StrategyRules(scenario, unported);
         Scenes = new SceneRunner(scenes, Rules);
-        Script = new ScriptContext(state, random, view, input, Scenes) { Saves = saves };
+        Script = new OriginalScriptContext(state, random, view, input, Scenes) { Saves = saves };
         Scenes.Bind(Script);
         Rules.Bind(Script);
     }
 
     /// <summary>The shared services the game runs on.</summary>
-    public ScriptContext Script { get; }
+    public OriginalScriptContext Script { get; }
 
     /// <summary>The router of the ported rule files.</summary>
     public StrategyRules Rules { get; }

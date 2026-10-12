@@ -92,7 +92,7 @@ public class PlayerBootTests(ITestOutputHelper output)
         if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
             return null;
         var state = new GameState();
-        var script = new ScriptContext(state, new NoRandom(), new NullView(), new NoInput(), new NoHooks());
+        var script = new OriginalScriptContext(state, new NoRandom(), new NullView(), new NoInput(), new NoHooks());
         await new GameSetup(script, new ScenarioScripts(LocalData.ScenarioDirectory)).BootAsync();
         return state;
     }

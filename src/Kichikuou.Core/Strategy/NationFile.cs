@@ -15,7 +15,7 @@ namespace Kichikuou.Core.Strategy;
 /// filter. The captures of non-player provinces differ in their text from file to file and are
 /// ported with the files that have them (N2, N3).
 /// </summary>
-public abstract class NationFile(ScriptContext script, string file, IScenarioSource? scenario = null)
+public abstract class NationFile(OriginalScriptContext script, string file, IScenarioSource? scenario = null)
     : CommandFile(script, file, scenario)
 {
     /// <summary>

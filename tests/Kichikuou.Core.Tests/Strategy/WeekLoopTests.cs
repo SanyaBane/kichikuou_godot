@@ -21,7 +21,7 @@ public class WeekLoopTests
         public WeekRig(int stage = 0, params int[] draws)
         {
             Random = new ScriptedRandom(draws);
-            Script = new ScriptContext(State, Random, View, Input, Story);
+            Script = new OriginalScriptContext(State, Random, View, Input, Story);
             State.StoryStage = (Sys3Int)stage;
             State.Week = 8;
             State.Gold = 50;
@@ -36,7 +36,7 @@ public class WeekLoopTests
         public RecordingView View { get; } = new();
         public ScriptedStory Story { get; } = new();
         public ScriptedRandom Random { get; }
-        public ScriptContext Script { get; }
+        public OriginalScriptContext Script { get; }
 
         public List<string> Files => Story.Calls.Select(c => c.File).ToList();
 
@@ -386,7 +386,7 @@ public class WeekLoopTests
         var story = new ScriptedStory();
         var rules = new StrategyRules(new NoScenario(), story);
         var saves = new StoppingSaves();
-        var script = new ScriptContext(state, new ScriptedRandom(), new RecordingView(), new ScriptedSceneInput(), rules)
+        var script = new OriginalScriptContext(state, new ScriptedRandom(), new RecordingView(), new ScriptedSceneInput(), rules)
         {
             Saves = saves,
         };

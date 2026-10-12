@@ -35,12 +35,12 @@ public interface IScenarioSource
 /// the initial world once per process) and the new game of the title menu (<c>ｽﾀMENU.ADV</c>).
 /// See <c>docs/strategy/survey-data.md</c>.
 /// </summary>
-public sealed partial class GameSetup(ScriptContext script, IScenarioSource scenario)
+public sealed partial class GameSetup(OriginalScriptContext script, IScenarioSource scenario)
 {
     private const string SetFile = "SET.ADV";
 
     /// <summary>The shared services the setup runs on.</summary>
-    public ScriptContext Script { get; } = script;
+    public OriginalScriptContext Script { get; } = script;
 
     private IScenarioSource Scenario { get; } = scenario;
 

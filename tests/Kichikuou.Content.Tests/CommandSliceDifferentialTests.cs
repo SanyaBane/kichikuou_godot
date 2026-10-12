@@ -581,7 +581,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         var input = new CutsceneInput();
         var hooks = new CutsceneHooks(log, input, port);
         var runner = new SceneRunner(new Programs(programs), hooks, f => f == "FIGT表示.ADV" || (!port && f == "FIGTATTK.ADV"));
-        var script = new ScriptContext(state, new LoggingRandom(seed, log), new LoggingView([]), input, runner);
+        var script = new OriginalScriptContext(state, new LoggingRandom(seed, log), new LoggingView([]), input, runner);
         runner.Bind(script);
         hooks.Script = script;
         try
@@ -605,7 +605,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
     /// <summary><c>FIGTATTK</c> to the battle's port (when <c>port</c>), every other call logged.</summary>
     private sealed class CutsceneHooks(List<string> log, CutsceneInput input, bool port) : IStoryHooks
     {
-        public ScriptContext? Script { get; set; }
+        public OriginalScriptContext? Script { get; set; }
 
         public Task RunEventAsync(string file, Sys3Int entry)
         {
@@ -983,7 +983,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
     // The comparison
     // ---------------------------------------------------------------------------------------
 
-    private delegate Task Port(ScriptContext script, ScenarioScripts scenario);
+    private delegate Task Port(OriginalScriptContext script, ScenarioScripts scenario);
 
     /// <summary>A test's own menu player: the choice (0 a cancel) for <paramref name="items"/>, from <paramref name="rng"/>.</summary>
     private delegate int MenuPolicy(IReadOnlyList<SceneMenuItem> items, Random rng, bool tired);
@@ -1078,13 +1078,13 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         {
             if (program is null)
             {
-                var script = new ScriptContext(state, random, view, input, hooks);
+                var script = new OriginalScriptContext(state, random, view, input, hooks);
                 await port(script, scenario);
             }
             else
             {
                 var runner = new SceneRunner(new OneProgram(program), hooks, f => f == file);
-                var script = new ScriptContext(state, random, view, input, runner);
+                var script = new OriginalScriptContext(state, random, view, input, runner);
                 runner.Bind(script);
                 await runner.RunFileAsync(file);
             }

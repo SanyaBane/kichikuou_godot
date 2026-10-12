@@ -23,7 +23,7 @@ public class CommandSliceTests
         public SliceRig(int stage, params int[] draws)
         {
             Random = new ScriptedRandom(draws);
-            Script = new ScriptContext(State, Random, View, Input, Story);
+            Script = new OriginalScriptContext(State, Random, View, Input, Story);
             State.StoryStage = (Sys3Int)stage;
             State.Week = 12;
             for (int s = 0; s < State.Strings.Length; s++)
@@ -35,7 +35,7 @@ public class CommandSliceTests
         public RecordingView View { get; } = new();
         public ScriptedSceneInput Input { get; } = new();
         public ScriptedStory Story { get; } = new();
-        public ScriptContext Script { get; }
+        public OriginalScriptContext Script { get; }
 
         public List<(string File, int Entry)> Calls => Story.Calls;
 
@@ -2319,7 +2319,7 @@ public class CommandSliceTests
         var unported = new ScriptedStory();
         var rules = new StrategyRules(new NameSource(), unported);
         var input = new ScriptedSceneInput();
-        var script = new ScriptContext(state, new ScriptedRandom(2), new RecordingView(), input, rules);
+        var script = new OriginalScriptContext(state, new ScriptedRandom(2), new RecordingView(), input, rules);
         rules.Bind(script);
         state.Dgn_Cur = 1;
         state.Units[4].Status = 1;
@@ -2330,7 +2330,7 @@ public class CommandSliceTests
         Is(2, state.Tmp0690);
         Assert.Equal([("Gｼｨﾙ.ADV", 10)], unported.Calls);
         Assert.Contains("Cﾊｰﾚﾑ.ADV", StrategyRules.PortedFiles);
-        Assert.Throws<InvalidOperationException>(() => rules.Bind(new ScriptContext(state, new ScriptedRandom(), new RecordingView(), input, rules)));
+        Assert.Throws<InvalidOperationException>(() => rules.Bind(new OriginalScriptContext(state, new ScriptedRandom(), new RecordingView(), input, rules)));
     }
 
     /// <summary>Compares value messages by their lists' contents.</summary>

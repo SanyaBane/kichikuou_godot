@@ -182,7 +182,7 @@ public class WaoSubTests
         rig.State.CallArg = 1137;
         Sys3Int portraitAtEvent = 1;
         var view = new SnapshotView(() => portraitAtEvent = rig.State.Ui_PortraitL);
-        var script = new ScriptContext(rig.State, rig.Random, view, rig.Input, rig.Story);
+        var script = new OriginalScriptContext(rig.State, rig.Random, view, rig.Input, rig.Story);
 
         await script.WaoAsync(311);
 

@@ -110,14 +110,14 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
         {
             if (program is null)
             {
-                var script = new ScriptContext(state, new NoRandom(), view, input, new ScribblingHooks(state, seed, log));
+                var script = new OriginalScriptContext(state, new NoRandom(), view, input, new ScribblingHooks(state, seed, log));
                 await script.WaoMapCallAsync(1);
                 log.RemoveAt(0);    // the WaoMapEvent the port raises for the call
             }
             else
             {
                 var runner = new SceneRunner(new NamedProgram(program), new ScribblingHooks(state, seed, log), _ => true);
-                var script = new ScriptContext(state, new NoRandom(), view, input, runner);
+                var script = new OriginalScriptContext(state, new NoRandom(), view, input, runner);
                 runner.Bind(script);
                 state.CallArg = 1;
                 await runner.RunFileAsync("WAO_MAP.ADV");
@@ -207,13 +207,13 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
         {
             if (program is null)
             {
-                var script = new ScriptContext(state, new NoRandom(), view, input, hooks);
+                var script = new OriginalScriptContext(state, new NoRandom(), view, input, hooks);
                 await new CommandPhase(script).RunAsync();
             }
             else
             {
                 var runner = new SceneRunner(new OneProgram(program), hooks, file => file == Command);
-                var script = new ScriptContext(state, new NoRandom(), view, input, runner);
+                var script = new OriginalScriptContext(state, new NoRandom(), view, input, runner);
                 runner.Bind(script);
                 await runner.RunFileAsync(Command);
             }

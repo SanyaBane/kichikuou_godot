@@ -20,7 +20,7 @@ public class CommandPhaseTests
     {
         public PhaseRig(int stage)
         {
-            Script = new ScriptContext(State, new ScriptedRandom(), View, Input, Story);
+            Script = new OriginalScriptContext(State, new ScriptedRandom(), View, Input, Story);
             State.StoryStage = (Sys3Int)stage;
             State.Week = 10;
             State.Prov_Count = 100;
@@ -38,7 +38,7 @@ public class CommandPhaseTests
         public ScriptedSceneInput Input { get; } = new();
         public RecordingView View { get; } = new();
         public ScriptedStory Story { get; } = new();
-        public ScriptContext Script { get; }
+        public OriginalScriptContext Script { get; }
 
         public List<string> Files => Story.Calls.Select(c => c.File).ToList();
 

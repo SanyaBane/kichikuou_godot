@@ -25,7 +25,7 @@ public class HelmanTests
         public HelmanRig(params int[] draws)
         {
             Random = new ScriptedRandom(draws);
-            Script = new ScriptContext(State, Random, View, Input, Story);
+            Script = new OriginalScriptContext(State, Random, View, Input, Story);
             State.F_Helman_War = 1;
             State.F_StesselSheila_Stage = 1;
             for (int c = 22; c <= 59; c++)
@@ -41,7 +41,7 @@ public class HelmanTests
         public RecordingView View { get; } = new();
         public ScriptedSceneInput Input { get; } = new();
         public ScriptedStory Story { get; } = new();
-        public ScriptContext Script { get; }
+        public OriginalScriptContext Script { get; }
 
         public int[] Party =>
             [State.Bt_EnemyParty1.Value, State.Bt_EnemyParty2.Value, State.Bt_EnemyParty3.Value, State.Bt_EnemyParty4.Value];

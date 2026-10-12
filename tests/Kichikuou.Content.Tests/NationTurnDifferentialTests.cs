@@ -1817,7 +1817,7 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
 
     private async Task CompareAsync(
         string file,
-        Func<ScriptContext, ScenarioScripts, Task> port,
+        Func<OriginalScriptContext, ScenarioScripts, Task> port,
         Action<GameState, Random> aim,
         FeatureReader features,
         string[] expected,
@@ -1888,7 +1888,7 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
     private sealed record Run(GameState State, List<string> Log, GameState? AtFirstCall, string? Unported = null);
 
     private static async Task<Run> RunAsync(
-        GameState state, int seed, Func<ScriptContext, Task>? port, ScriptProgram? program, string file,
+        GameState state, int seed, Func<OriginalScriptContext, Task>? port, ScriptProgram? program, string file,
         Action<GameState, Random>? scribble, bool logPlaces)
     {
         var log = new List<string>();
@@ -1899,11 +1899,11 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
         try
         {
             if (port is not null)
-                await port(new ScriptContext(state, random, view, input, hooks));
+                await port(new OriginalScriptContext(state, random, view, input, hooks));
             else
             {
                 var runner = new SceneRunner(new OneProgram(file, program!), hooks, f => f == file);
-                var script = new ScriptContext(state, random, view, input, runner);
+                var script = new OriginalScriptContext(state, random, view, input, runner);
                 runner.Bind(script);
                 await runner.RunFileAsync(file);
             }

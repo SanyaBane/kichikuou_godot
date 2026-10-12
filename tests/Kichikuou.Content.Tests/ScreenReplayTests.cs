@@ -24,7 +24,7 @@ public sealed class ScreenReplayTests(ITestOutputHelper output)
         foreach (string path in Directory.EnumerateFiles(dir, "*.golden").Order(StringComparer.Ordinal))
         {
             var capture = GoldenCapture.Load(path);
-            Func<ScriptContext, Task> entry = capture.Root switch
+            Func<OriginalScriptContext, Task> entry = capture.Root switch
             {
                 "Sﾌﾞﾀｲ.ADV" => s => new DeploymentScreen(s, scripts).RunAsync(),
                 "Sﾌﾞｶ.ADV" => s => new SubordinateScreen(s, scripts).RunAsync(),

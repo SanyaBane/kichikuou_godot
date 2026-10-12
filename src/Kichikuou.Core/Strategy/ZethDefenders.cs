@@ -20,7 +20,7 @@ namespace Kichikuou.Core.Strategy;
 /// alone at Magic's Tower). Retreat mode 1 throughout; nobody is left out of a pick. The army name
 /// (<c>MS 10</c>) is read from the player's files through <paramref name="scenario"/>.
 /// </summary>
-public sealed class ZethDefenders(ScriptContext script, IScenarioSource? scenario = null)
+public sealed class ZethDefenders(OriginalScriptContext script, IScenarioSource? scenario = null)
     : NationFile(script, "Tｾﾞｽ2.ADV", scenario)
 {
     /// <summary><c>Tｾﾞｽ2.ADV:1-142</c>, then the label the province leads to.</summary>

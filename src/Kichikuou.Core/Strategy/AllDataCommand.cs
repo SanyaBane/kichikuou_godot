@@ -15,7 +15,7 @@ namespace Kichikuou.Core.Strategy;
 /// visit sets them). Changes nothing else; every exit leaves <c>Hist_Cur</c> at 0. Under xsystem35
 /// the weekly shift leaves every week of history at last week's values (STR-01), so the bars are level.
 /// </summary>
-public sealed class AllDataCommand(ScriptContext script) : CommandFile(script, "各種DATA.ADV")
+public sealed class AllDataCommand(OriginalScriptContext script) : CommandFile(script, "各種DATA.ADV")
 {
     /// <summary>The scale menu's divisors per bar height (<c>Tmp0021</c> = 300 × divisor, <c>:350-381</c>) and labels.</summary>
     private static readonly (int Range, int Scale)[] Scales =

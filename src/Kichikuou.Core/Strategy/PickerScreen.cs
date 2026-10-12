@@ -14,7 +14,7 @@ namespace Kichikuou.Core.Strategy;
 /// codes of the hit test (the subclasses), and are the same code otherwise (here). Every event is
 /// the one <see cref="SceneRunner"/> raises for the same statement.
 /// </summary>
-public abstract class PickerScreen(ScriptContext script, string file, IScenarioSource scenario)
+public abstract class PickerScreen(OriginalScriptContext script, string file, IScenarioSource scenario)
     : CommandFile(script, file, scenario)
 {
     /// <summary>The cursor the grid walks and the pointer sets (<c>Unit_Cur</c>, <c>Buf_Cur</c>).</summary>

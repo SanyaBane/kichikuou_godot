@@ -8,7 +8,7 @@ namespace Kichikuou.Core.Script;
 // removed) and the key waits (ops 1, 5, 11), which do nothing while no window is open. Drawing
 // (CC, CF, B3/B4, G, J0, ZC, ZM, Y 1) is the WindowEvent raised first; each G counts its CG
 // (CountCgLoad). Callers set CallArg for a picture before the call, as the script does.
-public sealed partial class ScriptContext
+public sealed partial class OriginalScriptContext
 {
     /// <summary>
     /// <c>!Ui_WaoOp : op! %#WAO_SUB.ADV:</c> — sets <c>Ui_WaoOp</c>, shows the

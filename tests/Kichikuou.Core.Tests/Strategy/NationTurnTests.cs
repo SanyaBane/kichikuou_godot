@@ -24,7 +24,7 @@ public class NationTurnTests
     {
         public NationRig()
         {
-            Script = new ScriptContext(State, Random, View, Input, Story);
+            Script = new OriginalScriptContext(State, Random, View, Input, Story);
             for (int p = 1; p <= 8; p++)
                 State.Provs[p].Owner = (Sys3Int)(p is >= 3 and <= 7 ? 2 : 1);
             for (int c = 1; c <= 7; c++)
@@ -46,7 +46,7 @@ public class NationTurnTests
         public RecordingView View { get; } = new();
         public ScriptedSceneInput Input { get; } = new();
         public ScriptedStory Story { get; } = new();
-        public ScriptContext Script { get; }
+        public OriginalScriptContext Script { get; }
 
         /// <summary>Each <c>FIGT_B</c> call: the province, the enemy party and its retreat mode.</summary>
         public List<(int Prov, int[] Party, int Retreat)> Battles { get; } = [];

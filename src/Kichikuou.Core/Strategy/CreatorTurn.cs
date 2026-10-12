@@ -16,7 +16,7 @@ namespace Kichikuou.Core.Strategy;
 /// <c>L_001d4</c> (<c>:83-104</c>, NAT-16) and the window helpers' unreachable ops (<c>:132-143</c>,
 /// <c>:148-186</c>, <c>:203-205</c>, EVT-01).
 /// </summary>
-public sealed class CreatorTurn(ScriptContext script, IScenarioSource? scenario = null)
+public sealed class CreatorTurn(OriginalScriptContext script, IScenarioSource? scenario = null)
     : NationFile(script, "Tﾙﾄﾞﾗ.ADV", scenario)
 {
     /// <summary><c>Tﾙﾄﾞﾗ.ADV:1-21</c>, up to its <c>%0:</c>.</summary>

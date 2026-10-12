@@ -17,7 +17,7 @@ namespace Kichikuou.Core.Strategy;
 /// left it (BFL-13). No filter, no draws, no calls. The army name (<c>MS 10</c>) is read from the
 /// player's files through <paramref name="scenario"/>.
 /// </summary>
-public sealed class JapanDefenders(ScriptContext script, IScenarioSource? scenario = null)
+public sealed class JapanDefenders(OriginalScriptContext script, IScenarioSource? scenario = null)
     : NationFile(script, "TJAPAN2.ADV", scenario)
 {
     /// <summary><c>TJAPAN2.ADV:1-130</c>.</summary>

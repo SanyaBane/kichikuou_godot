@@ -175,7 +175,7 @@ public sealed class GoldenReplay
         GoldenFilter? filter = null,
         IScriptView? view = null,
         Action<GameState>? started = null,
-        Func<ScriptContext, Task>? entryPoint = null,
+        Func<OriginalScriptContext, Task>? entryPoint = null,
         Func<IStoryHooks, SceneRunner>? scenes = null)
     {
         var replay = new GoldenReplay(capture, filter ?? GoldenFilter.For(capture));
@@ -184,7 +184,7 @@ public sealed class GoldenReplay
     }
 
     private async Task RunAsync(
-        IScriptView view, Action<GameState>? started, Func<ScriptContext, Task>? entryPoint, Func<IStoryHooks, SceneRunner>? scenes)
+        IScriptView view, Action<GameState>? started, Func<OriginalScriptContext, Task>? entryPoint, Func<IStoryHooks, SceneRunner>? scenes)
     {
         try
         {

@@ -347,7 +347,7 @@ public class PrologueCommandTests(ITestOutputHelper output)
     }
 
     private sealed record Game(
-        GameState State, ScriptContext Script, PlayerInput Input, RecordingView View, RecordingRules Unported, QueuedRandom Random,
+        GameState State, OriginalScriptContext Script, PlayerInput Input, RecordingView View, RecordingRules Unported, QueuedRandom Random,
         WatchedSaves Saves);
 
     /// <summary>
@@ -366,7 +366,7 @@ public class PrologueCommandTests(ITestOutputHelper output)
         var rules = new StrategyRules(scripts, unported);
         var runner = new SceneRunner(scripts, stubBattle ? new StubbedFiles(rules, unported, "FIGT_A.ADV") : rules);
         var saves = new WatchedSaves();
-        var script = new ScriptContext(state, random, view, input, runner) { Saves = saves };
+        var script = new OriginalScriptContext(state, random, view, input, runner) { Saves = saves };
         runner.Bind(script);
         rules.Bind(script);
         var setup = new GameSetup(script, scripts);

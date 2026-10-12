@@ -1,26 +1,26 @@
 using System.Diagnostics.CodeAnalysis;
-using Kichikuou.Core.State;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Script;
 
 /// <summary>
-/// What every ported scenario file shares: the game state, the script's random generator, the
-/// presentation and input interfaces and the calls into non-rule files, plus the helper files
-/// every part calls — <c>WAO_SUB.ADV</c> (<c>OriginalScriptContext.Wao.cs</c>), <c>M.ADV</c> /
-/// <c>WAO_MAP.ADV</c> (<c>OriginalScriptContext.Map.cs</c>) and <c>PCMPLAY.ADV</c> with the music
-/// commands (<c>OriginalScriptContext.Sound.cs</c>). One context serves a whole game: the battle, the
-/// week loop, the commands and the dungeon all run on it.
+/// The engine's side of a running game, which every part that runs the scenario shares: the
+/// state, the script's random generator, the presentation and input interfaces, the calls into
+/// other files, the pauses, the CG load counter and the music commands; the save commands are in
+/// <c>ScriptContext.Save.cs</c>, the statements and strings in <c>ScriptContext.Statements.cs</c>.
+/// A variant's context derives from it with the ports of its helper files, which
+/// <see cref="CallHelperAsync"/> reaches (the original's <c>OriginalScriptContext</c>). One context
+/// serves a whole game.
 /// </summary>
-public sealed partial class ScriptContext(
-    GameState state,
+public partial class ScriptContext(
+    ScriptState state,
     IScriptRandom random,
     IScriptView view,
     IScriptInput input,
     IStoryHooks story)
 {
     /// <summary>The game state the scripts read and change.</summary>
-    public GameState State { get; } = state;
+    public ScriptState State { get; } = state;
 
     /// <summary>Receives the presentation events in script order.</summary>
     public IScriptView View { get; } = view;
@@ -119,10 +119,13 @@ public sealed partial class ScriptContext(
         State.RetVal = key;
     }
 
-    /// <summary><c>Ev_Entry := entry; call file</c> — a story scene through the hooks.</summary>
+    /// <summary>
+    /// <c>Ev_Entry := entry; call file</c> — a story scene through the hooks (the scene number goes
+    /// into the variant's <see cref="VariantProfile.EventEntryVariable"/>).
+    /// </summary>
     public Task EventAsync(string file, Sys3Int entry)
     {
-        State.Ev_Entry = entry;
+        EventEntry = entry;
         return Story.RunEventAsync(file, entry);
     }
 
@@ -131,7 +134,16 @@ public sealed partial class ScriptContext(
     /// variables, e.g. <c>Sﾌﾞﾀｲ.ADV</c>, <c>Gﾀﾐ.ADV</c>): routed through the story hook with the
     /// current <c>Ev_Entry</c>, so the hook's <c>Ev_Entry := entry</c> changes nothing.
     /// </summary>
-    public Task CallFileAsync(string file) => Story.RunEventAsync(file, State.Ev_Entry);
+    public Task CallFileAsync(string file) => Story.RunEventAsync(file, EventEntry);
+
+    /// <summary>The scene number a page call passes (the original's <c>Ev_Entry</c>).</summary>
+    private ref Sys3Int EventEntry => ref State.Memory.Var(State.Profile.EventEntryVariable);
+
+    /// <summary><c>SS n</c>: plays music track n (0 stops the music).</summary>
+    public Task MusicAsync(Sys3Int track) => View.ShowAsync(new MusicEvent(track));
+
+    /// <summary><c>SR 0, var</c>: the track that is playing (the caller stores it).</summary>
+    public Task<Sys3Int> GetPlayingTrackAsync() => Input.GetPlayingTrackAsync();
 
     /// <summary>
     /// <c>&amp;#file:</c> — the script jumps to another file and never returns; the running code

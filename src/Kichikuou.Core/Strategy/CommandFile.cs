@@ -16,10 +16,10 @@ namespace Kichikuou.Core.Strategy;
 /// must not embed (<c>MS n, "text"</c>, data tables) reads them from the player's files through
 /// the scenario source.
 /// </summary>
-public abstract class CommandFile(ScriptContext script, string file, IScenarioSource? scenario = null)
+public abstract class CommandFile(OriginalScriptContext script, string file, IScenarioSource? scenario = null)
 {
     /// <summary>The shared services the file runs on.</summary>
-    public ScriptContext Script { get; } = script;
+    public OriginalScriptContext Script { get; } = script;
 
     /// <summary>The scenario file this class ports, e.g. <c>Cﾃｷﾄｼ.ADV</c>.</summary>
     protected string File { get; } = file;

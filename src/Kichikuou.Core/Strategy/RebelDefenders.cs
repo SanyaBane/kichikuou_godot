@@ -12,7 +12,7 @@ namespace Kichikuou.Core.Strategy;
 /// at 6, the only province with walls (retreat mode 1). No filter, no draws, no calls. The army
 /// name (<c>MS 10</c>) is read from the player's files through <paramref name="scenario"/>.
 /// </summary>
-public sealed class RebelDefenders(ScriptContext script, IScenarioSource? scenario = null)
+public sealed class RebelDefenders(OriginalScriptContext script, IScenarioSource? scenario = null)
     : NationFile(script, "TCﾘｰｻﾞｽ2.ADV", scenario)
 {
     /// <summary><c>TCﾘｰｻﾞｽ2.ADV:1-73</c>.</summary>

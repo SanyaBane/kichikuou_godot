@@ -95,13 +95,13 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
 
     private static async Task<Run> RunAsync(
         GameState state, IReadOnlyDictionary<int, SaveData> slots, IReadOnlySet<int> failing, int seed,
-        Func<ScriptContext, Task> run, bool bindRunner = false)
+        Func<OriginalScriptContext, Task> run, bool bindRunner = false)
     {
         var log = new List<string>();
         var store = new TestStore(failing, log);
         foreach (var (slot, data) in slots)
             store.Fill(slot, data);
-        var script = new ScriptContext(state, new NoRandom(), new LoggingView(log), new RandomInput(seed, log), new NoHooks())
+        var script = new OriginalScriptContext(state, new NoRandom(), new LoggingView(log), new RandomInput(seed, log), new NoHooks())
         {
             Saves = store,
             SaveResume = AutosaveCall,

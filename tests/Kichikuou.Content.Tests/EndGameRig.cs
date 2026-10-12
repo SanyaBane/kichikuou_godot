@@ -24,7 +24,7 @@ internal sealed class EndGame
 
     private readonly CallRecorder _recorder;
 
-    private EndGame(GameState state, ScriptContext script, EndInput input, RecordingView view, CallRecorder recorder)
+    private EndGame(GameState state, OriginalScriptContext script, EndInput input, RecordingView view, CallRecorder recorder)
     {
         State = state;
         Script = script;
@@ -35,7 +35,7 @@ internal sealed class EndGame
 
     public GameState State { get; }
 
-    public ScriptContext Script { get; }
+    public OriginalScriptContext Script { get; }
 
     public EndInput Input { get; }
 
@@ -75,7 +75,7 @@ internal sealed class EndGame
         var recorder = new CallRecorder(runner, state);
         var view = new RecordingView();
         random ??= new QueuedRandom { DefaultToOne = true };
-        var script = new ScriptContext(state, random, view, input, recorder)
+        var script = new OriginalScriptContext(state, random, view, input, recorder)
         {
             Saves = saves ?? new MemorySaveStore(),
         };

@@ -8,7 +8,7 @@ namespace Kichikuou.Core.Strategy;
 /// holds is lost — taken off the unit and set to "not owned", not to stock (CMD-18) — then the item
 /// screen <c>Sｱｲﾃﾑ</c>. Leaves <c>Item_Cur</c> at 51.
 /// </summary>
-public sealed class TreasureCommand(ScriptContext script) : CommandFile(script, "Cﾀｶﾗ.ADV")
+public sealed class TreasureCommand(OriginalScriptContext script) : CommandFile(script, "Cﾀｶﾗ.ADV")
 {
     /// <summary><c>Cﾀｶﾗ.ADV:1-15</c>.</summary>
     public async Task RunAsync()

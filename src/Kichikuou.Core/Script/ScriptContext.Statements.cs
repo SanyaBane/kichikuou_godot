@@ -3,9 +3,9 @@ using Kichikuou.Core.Sys3;
 namespace Kichikuou.Core.Script;
 
 // Runs straight-line statements read from the player's decompile (ScriptStatements.cs): the
-// SET_* data files today. Calls into the helper files go to their ports in this context; any
-// other file is a hook.
-public sealed partial class ScriptContext
+// SET_* data files today. A call goes through CallHelperAsync: a variant's context runs the
+// helper files it ports; any other file is a hook.
+public partial class ScriptContext
 {
     /// <summary>The word table of the last <c>#label, n:</c> (<see cref="ReadDataStatement"/> reads it).</summary>
     private IReadOnlyList<Sys3Int> _dataTable = [];
@@ -169,16 +169,13 @@ public sealed partial class ScriptContext
             State.Strings[slot.Value] = Sys3Text.FormatNumber(value.Value, width.Value, fullWidth: true);
     }
 
+    /// <summary><c>%#file:</c> from a statement list or a scene (<see cref="SceneRunner"/>): <see cref="CallHelperAsync"/>.</summary>
+    internal Task CallAsync(string file) => CallHelperAsync(file);
+
     /// <summary>
-    /// <c>%#file:</c> from a statement list: the helper files run their ports with the arguments
-    /// the statements left in <c>CallArg</c> / <c>Ui_WaoOp</c>; any other file is a hook.
+    /// A call of <paramref name="file"/> with the arguments the statements left in the variables: a
+    /// variant's context runs the helper files it ports and passes the others on to this; any file
+    /// is a hook here (<see cref="CallFileAsync"/>).
     /// </summary>
-    internal Task CallAsync(string file) => file switch
-    {
-        "M.ADV" => MapCallAsync(State.CallArg),
-        "WAO_MAP.ADV" => WaoMapCallAsync(State.CallArg),
-        "WAO_SUB.ADV" => WaoAsync(State.Ui_WaoOp),
-        "PCMPLAY.ADV" => SoundAsync(State.CallArg),
-        _ => CallFileAsync(file),
-    };
+    protected virtual Task CallHelperAsync(string file) => CallFileAsync(file);
 }

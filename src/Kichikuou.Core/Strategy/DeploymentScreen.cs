@@ -15,7 +15,7 @@ namespace Kichikuou.Core.Strategy;
 /// <c>Unit_DeployCost + Unit_Troops / 300</c>, computed in <c>Tmp0016</c> — which are paid at once
 /// with every member set to status 2 (BFL-01). The code is answered in <c>CallArg</c>.
 /// </summary>
-public sealed class DeploymentScreen(ScriptContext script, IScenarioSource scenario) : PickerScreen(script, "Sﾌﾞﾀｲ.ADV", scenario)
+public sealed class DeploymentScreen(OriginalScriptContext script, IScenarioSource scenario) : PickerScreen(script, "Sﾌﾞﾀｲ.ADV", scenario)
 {
     /// <summary>The bar labels of each mode: the <c>MS 1</c> lines of its three buttons (<c>:12-102</c>).</summary>
     private static readonly int[][] BarLabels = [[14, 24, 33], [45, 54, 63], [75, 84, 93]];

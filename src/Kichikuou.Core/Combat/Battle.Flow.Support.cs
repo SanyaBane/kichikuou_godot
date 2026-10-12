@@ -153,9 +153,9 @@ public sealed partial class Battle
     /// <summary>The first string variable of the record selected by <c>Cmdr_Cur</c> (its name).</summary>
     private Sys3Int CmdrNameString(Sys3Int cmdr) => State.Cmdr_StrBase + (cmdr - 1) * 3;
 
-    // The shared services in the battle's own words (ScriptContext holds the ports).
+    // The shared services in the battle's own words (OriginalScriptContext holds the ports).
 
-    /// <summary><c>!Ui_WaoOp : op! %#WAO_SUB.ADV:</c> (<see cref="ScriptContext.WaoAsync"/>).</summary>
+    /// <summary><c>!Ui_WaoOp : op! %#WAO_SUB.ADV:</c> (<see cref="OriginalScriptContext.WaoAsync"/>).</summary>
     private Task WaoAsync(Sys3Int op) => Script.WaoAsync(op);
 
     /// <summary>A text run of <paramref name="file"/> starting at <paramref name="line"/>.</summary>
@@ -165,10 +165,10 @@ public sealed partial class Battle
     private Task FlowValueTextAsync(string file, int line, params Sys3Int[] values) =>
         View.ShowAsync(new ValueMessageEvent(new ScriptRef(file, line), values));
 
-    /// <summary>WAO op 11, the key wait that leaves the key in <c>RetVal</c> (<see cref="ScriptContext.WaoWaitKeyAsync"/>).</summary>
+    /// <summary>WAO op 11, the key wait that leaves the key in <c>RetVal</c> (<see cref="OriginalScriptContext.WaoWaitKeyAsync"/>).</summary>
     private Task FlowWaitKeyAsync() => Script.WaoWaitKeyAsync();
 
-    /// <summary>WAO op 1, the key wait that keeps <c>RetVal</c> (<see cref="ScriptContext.WaoWaitKeyKeepRetValAsync"/>).</summary>
+    /// <summary>WAO op 1, the key wait that keeps <c>RetVal</c> (<see cref="OriginalScriptContext.WaoWaitKeyKeepRetValAsync"/>).</summary>
     private Task FlowWaitKeyKeepRetValAsync() => Script.WaoWaitKeyKeepRetValAsync();
 
     /// <summary>
@@ -183,10 +183,10 @@ public sealed partial class Battle
         await WaoAsync(10);
     }
 
-    /// <summary><c>%#PCMPLAY.ADV</c> (<see cref="ScriptContext.SoundAsync"/>).</summary>
+    /// <summary><c>%#PCMPLAY.ADV</c> (<see cref="OriginalScriptContext.SoundAsync"/>).</summary>
     private Task FlowSoundAsync(Sys3Int mode) => Script.SoundAsync(mode);
 
-    /// <summary><c>!CallArg : mode! %#M.ADV</c> (<see cref="ScriptContext.MapCallAsync"/>).</summary>
+    /// <summary><c>!CallArg : mode! %#M.ADV</c> (<see cref="OriginalScriptContext.MapCallAsync"/>).</summary>
     private Task FlowMapAsync(Sys3Int mode) => Script.MapCallAsync(mode);
 
     /// <summary><c>Y 3, n</c> (<see cref="ScriptContext.PauseAsync"/>).</summary>

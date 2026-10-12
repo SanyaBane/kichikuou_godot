@@ -11,7 +11,7 @@ namespace Kichikuou.Core.Strategy;
 /// the command spent) and the troop menu of the later stages (<c>:721-1112</c>: Info, Replenish
 /// Troops, Add New Troops, Talk, Do Nothing).
 /// </summary>
-public sealed class SubordinatesCommand(ScriptContext script) : CommandFile(script, "Cﾌﾞｶ.ADV")
+public sealed class SubordinatesCommand(OriginalScriptContext script) : CommandFile(script, "Cﾌﾞｶ.ADV")
 {
     /// <summary>
     /// The talk scene of each unit (<c>:208-712</c>, one label per unit, all called with the

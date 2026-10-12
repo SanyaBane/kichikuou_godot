@@ -18,7 +18,7 @@ namespace Kichikuou.Core.Strategy;
 /// is taken, except at Lang Bau (45). The army name (<c>MS 10</c>) is read from the player's files
 /// through <paramref name="scenario"/>.
 /// </summary>
-public sealed class HelmanDefenders(ScriptContext script, IScenarioSource? scenario = null)
+public sealed class HelmanDefenders(OriginalScriptContext script, IScenarioSource? scenario = null)
     : NationFile(script, "Tﾍﾙﾏﾝ2.ADV", scenario)
 {
     /// <summary><c>Tﾍﾙﾏﾝ2.ADV:1-60</c>, then the label the province leads to.</summary>

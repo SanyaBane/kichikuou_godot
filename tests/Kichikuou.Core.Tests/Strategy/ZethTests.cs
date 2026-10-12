@@ -24,7 +24,7 @@ public class ZethTests
         public ZethRig(params int[] draws)
         {
             Random = new ScriptedRandom(draws);
-            Script = new ScriptContext(State, Random, View, Input, Story);
+            Script = new OriginalScriptContext(State, Random, View, Input, Story);
             State.F_Zeth_War = 1;
             for (int c = 101; c <= 128; c++)
             {
@@ -46,7 +46,7 @@ public class ZethTests
         public RecordingView View { get; } = new();
         public ScriptedSceneInput Input { get; } = new();
         public ScriptedStory Story { get; } = new();
-        public ScriptContext Script { get; }
+        public OriginalScriptContext Script { get; }
 
         public int[] Party =>
             [State.Bt_EnemyParty1.Value, State.Bt_EnemyParty2.Value, State.Bt_EnemyParty3.Value, State.Bt_EnemyParty4.Value];

@@ -118,7 +118,7 @@ public class NewGameStateTests(ITestOutputHelper output)
         var stubs = new RecordingRules { State = state };
         var rules = new StrategyRules(scripts, stubs);
         var runner = new SceneRunner(scripts, rules);
-        var script = new ScriptContext(state, new QueuedRandom(), new RecordingView(), new NoInput(), new Prologue(runner, stubs))
+        var script = new OriginalScriptContext(state, new QueuedRandom(), new RecordingView(), new NoInput(), new Prologue(runner, stubs))
         {
             Saves = new MemorySaveStore(),
         };

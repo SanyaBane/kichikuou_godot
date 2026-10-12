@@ -11,7 +11,7 @@ namespace Kichikuou.Core.Strategy;
 /// while <c>F_Merchant_State</c> is under 3, and the two mercenary units while they are free.
 /// Every purchase is booked to <c>Hist_SundryExp</c> of whatever record <c>Hist_Cur</c> names.
 /// </summary>
-public sealed class MerchantCommand(ScriptContext script) : CommandFile(script, "Cｼｮｳﾆﾝ.ADV")
+public sealed class MerchantCommand(OriginalScriptContext script) : CommandFile(script, "Cｼｮｳﾆﾝ.ADV")
 {
     /// <summary><c>Cｼｮｳﾆﾝ.ADV:1-153</c>: the command, up to its return.</summary>
     public async Task RunAsync()

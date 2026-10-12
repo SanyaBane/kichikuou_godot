@@ -17,7 +17,7 @@ namespace Kichikuou.Core.Strategy;
 /// setters are read from the player's files), Merim's inscriptions and the end of the search.
 /// God's Door (<c>L_04ddc</c>, <c>L_05437</c>, then <c>Iｶﾐ</c>) is in <c>DungeonCommand.GodsDoor.cs</c>.
 /// </summary>
-public sealed partial class DungeonCommand(ScriptContext script, IScenarioSource scenario) : CommandFile(script, "Cﾒｲｷｭｳ.ADV", scenario)
+public sealed partial class DungeonCommand(OriginalScriptContext script, IScenarioSource scenario) : CommandFile(script, "Cﾒｲｷｭｳ.ADV", scenario)
 {
     /// <summary>
     /// <c>:29-150</c>: each dungeon's <c>MS 8, "name"</c> line (<c>MS 9</c> for 9, never printed —

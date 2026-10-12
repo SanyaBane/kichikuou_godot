@@ -25,7 +25,7 @@ public class CreatorTurnTests
         public CreatorRig(params int[] draws)
         {
             Random = new ScriptedRandom(draws);
-            Script = new ScriptContext(State, Random, new QuakeWatch(this), Input, Story);
+            Script = new OriginalScriptContext(State, Random, new QuakeWatch(this), Input, Story);
             State.StoryStage = 4;
             State.N_Rudrasaum_Turns = 2;
             State.Prov_StrBase = 2000;
@@ -56,7 +56,7 @@ public class CreatorTurnTests
         public RecordingView View { get; } = new();
         public ScriptedSceneInput Input { get; } = new();
         public ScriptedStory Story { get; } = new();
-        public ScriptContext Script { get; }
+        public OriginalScriptContext Script { get; }
 
         /// <summary>Each <c>FIGT_B</c> call: the province, the enemy party and its retreat mode.</summary>
         public List<(int Prov, int[] Party, int Retreat)> Battles { get; } = [];

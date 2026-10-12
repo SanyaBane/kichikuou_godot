@@ -163,7 +163,7 @@ public sealed class SceneReplayTests(ITestOutputHelper output) : IDisposable
         public async Task<string> RecordAsync(string root, ISceneSource scenes)
         {
             var runner = new SceneRunner(scenes, new Hooks(this));
-            var script = new ScriptContext(State, new RecordingRandom(this), new RecordingView(), new RecordingInput(this), runner);
+            var script = new OriginalScriptContext(State, new RecordingRandom(this), new RecordingView(), new RecordingInput(this), runner);
             runner.Bind(script);
             var enter = Dump("enter");
             await script.CallFileAsync(root);

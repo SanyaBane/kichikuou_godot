@@ -18,7 +18,7 @@ public class StrategyRulesTests
     public void Binding_needs_an_input_that_answers_the_battle_and_the_scenes()
     {
         var rules = new StrategyRules(new NoScenario(), new ScriptedStory());
-        var battleOnly = new ScriptContext(new GameState(), new ScriptedRandom(), new RecordingView(), new ScriptedInput(), rules);
+        var battleOnly = new OriginalScriptContext(new GameState(), new ScriptedRandom(), new RecordingView(), new ScriptedInput(), rules);
 
         var e = Assert.Throws<ArgumentException>(() => rules.Bind(battleOnly));
 
@@ -50,7 +50,7 @@ public class StrategyRulesTests
 
         var routed = Attack(seed);
         var rules = new StrategyRules(new NoScenario(), routed.Story);
-        var script = new ScriptContext(routed.State, routed.Random, routed.View, routed.Input, rules);
+        var script = new OriginalScriptContext(routed.State, routed.Random, routed.View, routed.Input, rules);
         rules.Bind(script);
         await script.CallFileAsync("FIGT_A.ADV");
 

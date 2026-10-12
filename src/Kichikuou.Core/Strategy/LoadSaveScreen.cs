@@ -23,7 +23,7 @@ namespace Kichikuou.Core.Strategy;
 /// printed, <c>ﾛｰﾄﾞｾｰﾌﾞ.ADV:129-131</c>); the literals (<c>MS 1, "Auto"</c>, …) come from the
 /// player's files.
 /// </remarks>
-public sealed class LoadSaveScreen(ScriptContext script, IScenarioSource scenario)
+public sealed class LoadSaveScreen(OriginalScriptContext script, IScenarioSource scenario)
     : CommandFile(script, "ﾛｰﾄﾞｾｰﾌﾞ.ADV", scenario)
 {
     // Variables the save commands address by reference (getCaliArray), by number.

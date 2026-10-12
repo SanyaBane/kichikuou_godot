@@ -12,7 +12,7 @@ namespace Kichikuou.Core.Strategy;
 /// <c>Sﾊｰﾚﾑ</c> answers the girl in <c>CallArg</c>, her scene plays with <c>Ev_Entry</c> 10, and if
 /// it set <c>Harem_ExpReward</c> Rance gains that much experience.
 /// </summary>
-public sealed class HaremCommand(ScriptContext script) : CommandFile(script, "Cﾊｰﾚﾑ.ADV")
+public sealed class HaremCommand(OriginalScriptContext script) : CommandFile(script, "Cﾊｰﾚﾑ.ADV")
 {
     /// <summary>The girls' scenes by their picker number (<c>:224-546</c>); 1, 2, 13 and 25 are handled apart.</summary>
     private static readonly Dictionary<int, string> Scenes = new()

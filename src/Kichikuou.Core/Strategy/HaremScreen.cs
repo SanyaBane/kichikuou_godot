@@ -13,7 +13,7 @@ namespace Kichikuou.Core.Strategy;
 /// writes <c>DateYear/Month/Week</c> and leaves <c>Hist_Cur</c> at her index until the exit
 /// resets it to 0).
 /// </summary>
-public sealed class HaremScreen(ScriptContext script, IScenarioSource scenario) : PickerScreen(script, "Sﾊｰﾚﾑ.ADV", scenario)
+public sealed class HaremScreen(OriginalScriptContext script, IScenarioSource scenario) : PickerScreen(script, "Sﾊｰﾚﾑ.ADV", scenario)
 {
     private IReadOnlyList<string>? _names;
 

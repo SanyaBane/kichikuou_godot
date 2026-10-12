@@ -16,7 +16,7 @@ namespace Kichikuou.Core.Strategy;
 /// Soldier" names (<c>MS 4/5/10</c>) and the cities' army names (<c>MS 10</c>) are read from the
 /// player's files through <paramref name="scenario"/>.
 /// </summary>
-public sealed partial class EnemyCityCommand(ScriptContext script, IScenarioSource? scenario = null)
+public sealed partial class EnemyCityCommand(OriginalScriptContext script, IScenarioSource? scenario = null)
     : CommandFile(script, "Cﾃｷﾄｼ.ADV", scenario)
 {
     private const int VarTmp0021 = 21;

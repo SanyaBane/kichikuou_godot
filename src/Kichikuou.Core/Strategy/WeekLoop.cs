@@ -23,7 +23,7 @@ namespace Kichikuou.Core.Strategy;
 /// The army names of the Kayblis, Camilla and Creator phases (<c>MS 10, "…"</c>) are read from the
 /// player's files through <paramref name="scenario"/>; a week without those phases needs none.
 /// </remarks>
-public sealed class WeekLoop(ScriptContext script, IScenarioSource? scenario = null)
+public sealed class WeekLoop(OriginalScriptContext script, IScenarioSource? scenario = null)
     : CommandFile(script, "MAIN.ADV", scenario)
 {
     /// <summary>The autosave of the thieves' week (<c>MAIN.ADV:20</c>).</summary>

@@ -11,7 +11,7 @@ namespace Kichikuou.Core.Strategy;
 /// Ruins Search). One action a week across all own cities (<c>Ui_CmdOwnCityAvail</c>; spent items
 /// show "×" and lead back to the menu); the Ruins Search is gated by the dungeon flag alone.
 /// </summary>
-public sealed class OwnCityCommand(ScriptContext script) : CommandFile(script, "Cｼﾊｲﾄｼ.ADV")
+public sealed class OwnCityCommand(OriginalScriptContext script) : CommandFile(script, "Cｼﾊｲﾄｼ.ADV")
 {
     private enum Next
     {

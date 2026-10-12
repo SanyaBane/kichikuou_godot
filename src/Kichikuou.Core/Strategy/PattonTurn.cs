@@ -14,7 +14,7 @@ namespace Kichikuou.Core.Strategy;
 /// (44), Lang Bau (45) the player holds. No draws. The army name (<c>MS 10</c>) is read from the
 /// player's files through <paramref name="scenario"/>.
 /// </summary>
-public sealed class PattonTurn(ScriptContext script, IScenarioSource? scenario = null)
+public sealed class PattonTurn(OriginalScriptContext script, IScenarioSource? scenario = null)
     : NationFile(script, "Tﾊﾟｯﾄﾝ.ADV", scenario)
 {
     /// <summary><c>Tﾊﾟｯﾄﾝ.ADV:1-68</c>, up to its <c>%0:</c>.</summary>

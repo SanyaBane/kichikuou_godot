@@ -102,7 +102,7 @@ public class StageThreeEndTests(ITestOutputHelper output)
         Assert.Equal(6, game.State.F_Kaybnyan_State.Value);
     }
 
-    private sealed record Game(GameState State, ScriptContext Script, List<string> Calls);
+    private sealed record Game(GameState State, OriginalScriptContext Script, List<string> Calls);
 
     /// <summary>
     /// The boot and the new game with the rule files routed and the scenes run from the decompile
@@ -120,7 +120,7 @@ public class StageThreeEndTests(ITestOutputHelper output)
         var rules = new StrategyRules(scripts, unported);
         var runner = new SceneRunner(scripts, rules);
         var calls = new List<string>();
-        var script = new ScriptContext(state, new QueuedRandom { DefaultToOne = true }, new RecordingView(), new KeysOnly(),
+        var script = new OriginalScriptContext(state, new QueuedRandom { DefaultToOne = true }, new RecordingView(), new KeysOnly(),
             new Recorder(runner, state, calls))
         {
             Saves = new MemorySaveStore(),

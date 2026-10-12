@@ -1,4 +1,3 @@
-using Kichikuou.Core.State;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Script;
@@ -11,8 +10,9 @@ namespace Kichikuou.Core.Script;
 /// and the scenes make: scene files run here, every other file goes to the hooks given at
 /// construction (the ported rules: the battle, the death handler, the party picker), so a scene
 /// may start a battle that plays another scene. Which files are scenes is the variant's rule
-/// (<see cref="VariantProfile.IsSceneFile"/>) unless a test gives its own. The helper files
-/// (<c>WAO_SUB</c>, <c>M</c>, <c>WAO_MAP</c>, <c>PCMPLAY</c>) run their ports in the context.
+/// (<see cref="VariantProfile.IsSceneFile"/>) unless a test gives its own. The helper files a
+/// variant ports (the original's <c>WAO_SUB</c>, <c>M</c>, <c>WAO_MAP</c>, <c>PCMPLAY</c>) run in
+/// its context (<see cref="ScriptContext.CallAsync"/>).
 /// </summary>
 /// <remarks>
 /// Call stack as in <c>scenario.c</c>: a label call pushes its return; <c>US</c> pushes variables;
@@ -35,7 +35,7 @@ public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<str
     /// <summary>The context the scenes run on; set once with <see cref="Bind"/>.</summary>
     public ScriptContext Script => _script ?? throw new InvalidOperationException("The scene runner is not bound to a context.");
 
-    private GameState State => Script.State;
+    private ScriptState State => Script.State;
 
     private IScriptView View => Script.View;
 

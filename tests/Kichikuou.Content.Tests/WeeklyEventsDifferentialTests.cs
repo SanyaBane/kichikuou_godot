@@ -110,13 +110,13 @@ public class WeeklyEventsDifferentialTests(ITestOutputHelper output)
         var story = new ScribblingStory(state, seed);
         if (scenes is null)
         {
-            var script = new ScriptContext(state, random, new RecordingView(), new ScriptedSceneInput(), story);
+            var script = new OriginalScriptContext(state, random, new RecordingView(), new ScriptedSceneInput(), story);
             await new WeeklyEvents(script).RunAsync();
         }
         else
         {
             var runner = new SceneRunner(scenes, story, file => file == Com);
-            var script = new ScriptContext(state, random, new RecordingView(), new ScriptedSceneInput(), runner);
+            var script = new OriginalScriptContext(state, random, new RecordingView(), new ScriptedSceneInput(), runner);
             runner.Bind(script);
             await script.CallFileAsync(Com);
         }

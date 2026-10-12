@@ -17,7 +17,7 @@ namespace Kichikuou.Core.Strategy;
 /// place (997, no label) is taken for a pick (CMD-17), "Item/Character" turns the view (502), "End"
 /// (503) leaves; a right click (998) drops a half-made pick, or leaves when there is none.
 /// </summary>
-public sealed class ItemScreen(ScriptContext script, IScenarioSource scenario) : PickerScreen(script, "Sｱｲﾃﾑ.ADV", scenario)
+public sealed class ItemScreen(OriginalScriptContext script, IScenarioSource scenario) : PickerScreen(script, "Sｱｲﾃﾑ.ADV", scenario)
 {
     /// <summary>The cursor of the view: <c>Unit_Cur</c> in view 0, <c>Item_Cur</c> otherwise.</summary>
     protected override Sys3Int Cursor

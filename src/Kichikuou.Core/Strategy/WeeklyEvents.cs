@@ -13,10 +13,10 @@ namespace Kichikuou.Core.Strategy;
 /// <see cref="ScriptContext.EventAsync"/> (the scene runner); their effects on the state are
 /// theirs, and later conditions read the state as the scenes left it.
 /// </summary>
-public sealed partial class WeeklyEvents(ScriptContext script)
+public sealed partial class WeeklyEvents(OriginalScriptContext script)
 {
     /// <summary>The shared services the file runs on.</summary>
-    public ScriptContext Script { get; } = script;
+    public OriginalScriptContext Script { get; } = script;
 
     private GameState State => Script.State;
 

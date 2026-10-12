@@ -24,7 +24,7 @@ namespace Kichikuou.Core.Strategy;
 /// step 5) in <c>KayblisTurn.Assault.cs</c>. The army names (<c>MS 10</c>) and Monster General's name
 /// (<c>MS 4</c>) are read from the player's files through <paramref name="scenario"/>.
 /// </summary>
-public sealed partial class KayblisTurn(ScriptContext script, IScenarioSource? scenario = null)
+public sealed partial class KayblisTurn(OriginalScriptContext script, IScenarioSource? scenario = null)
     : NationFile(script, "Tｹｲﾌﾞﾘｽ.ADV", scenario)
 {
     /// <summary>

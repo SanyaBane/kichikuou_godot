@@ -15,12 +15,12 @@ namespace Kichikuou.Core.Strategy;
 /// the save screen, the scenes — is called by name through the context's hooks
 /// (<see cref="ScriptContext.CallFileAsync"/>), which run the ported ones.
 /// </summary>
-public sealed class CommandPhase(ScriptContext script)
+public sealed class CommandPhase(OriginalScriptContext script)
 {
     private const string File = "COMMAND.ADV";
 
     /// <summary>The shared services the file runs on.</summary>
-    public ScriptContext Script { get; } = script;
+    public OriginalScriptContext Script { get; } = script;
 
     private GameState State => Script.State;
 

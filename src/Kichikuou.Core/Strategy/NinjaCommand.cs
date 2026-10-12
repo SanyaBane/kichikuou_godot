@@ -16,7 +16,7 @@ namespace Kichikuou.Core.Strategy;
 /// or No Mission. A Substitute Ninja in stock (item 8) is destroyed instead of a capture. Leaves the
 /// ninja in <c>Bt_ScoutNinja</c>; draws in the order of survey §6.
 /// </summary>
-public sealed class NinjaCommand(ScriptContext script) : CommandFile(script, "Cﾆﾝｼﾞｬ.ADV")
+public sealed class NinjaCommand(OriginalScriptContext script) : CommandFile(script, "Cﾆﾝｼﾞｬ.ADV")
 {
     /// <summary>The ninjas' pictures by <c>Bt_ScoutNinja</c> 1-5: Kanami, Freya, Kaoru, Wichita, Saitou.</summary>
     private static readonly int[] Pictures = [9, 449, 72, 71, 94];

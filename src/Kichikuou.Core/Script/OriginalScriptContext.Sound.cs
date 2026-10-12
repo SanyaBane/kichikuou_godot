@@ -2,10 +2,10 @@ using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Script;
 
-// PCMPLAY.ADV (the SP sound-effect wrapper; it writes nothing but the CallArg its caller set)
-// and the engine's music commands SS / SR. Playing is the presentation's job; the rules only
-// see the variables the script sets around the call.
-public sealed partial class ScriptContext
+// PCMPLAY.ADV (the SP sound-effect wrapper; it writes nothing but the CallArg its caller set).
+// Playing is the presentation's job; the rules only see the variables the script sets around the
+// call. The engine's music commands SS / SR are the base context's.
+public sealed partial class OriginalScriptContext
 {
     /// <summary>
     /// <c>!CallArg : mode! (!RetVal : sound!) %#PCMPLAY.ADV</c> — PCMPLAY writes nothing else;
@@ -17,10 +17,4 @@ public sealed partial class ScriptContext
         State.CallArg = mode;
         return View.ShowAsync(new SoundEvent(State.CallArg, State.RetVal));
     }
-
-    /// <summary><c>SS n</c>: plays music track n (0 stops the music).</summary>
-    public Task MusicAsync(Sys3Int track) => View.ShowAsync(new MusicEvent(track));
-
-    /// <summary><c>SR 0, var</c>: the track that is playing (the caller stores it).</summary>
-    public Task<Sys3Int> GetPlayingTrackAsync() => Input.GetPlayingTrackAsync();
 }

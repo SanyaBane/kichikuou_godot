@@ -14,7 +14,7 @@ namespace Kichikuou.Core.Strategy;
 /// With <c>RetVal</c> 0 at the call only units at status 1 can be picked; the callers pass 1, so
 /// any listed unit can.
 /// </summary>
-public sealed class SubordinateScreen(ScriptContext script, IScenarioSource scenario) : PickerScreen(script, "Sﾌﾞｶ.ADV", scenario)
+public sealed class SubordinateScreen(OriginalScriptContext script, IScenarioSource scenario) : PickerScreen(script, "Sﾌﾞｶ.ADV", scenario)
 {
     /// <inheritdoc />
     protected override Sys3Int Cursor

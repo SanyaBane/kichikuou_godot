@@ -168,9 +168,10 @@ Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its author's pe
   facts the runtime takes from a variant — variable count, scene rule, saved pages; docs/variants.md).
   `Golden/` parses harness captures and replays them through the port (`GoldenReplay`);
   `State/VariableCatalog.g.cs` (names, groups, page bindings) is generated with `GameState.g.cs`.
-  `Script/` holds what every ported part shares: `ScriptContext` (state, draws, pauses, scene
-  calls) with the helper files `WAO_SUB` (message windows), `M`/`WAO_MAP` (map) and `PCMPLAY`
-  (sound), the shared events (`ScriptEvent`) and the view/input/hook interfaces, plus
+  `Script/` holds what every ported part shares: `ScriptContext` (the engine's side: state, draws,
+  pauses, scene calls, saves) and the original's `OriginalScriptContext` on it with the helper files
+  `WAO_SUB` (message windows), `M`/`WAO_MAP` (map) and `PCMPLAY` (sound), the shared events
+  (`ScriptEvent`) and the view/input/hook interfaces, plus
   `ScriptStatements` — scenario code read at run time: a goto program that mirrors the
   decompile line for line (`ScriptProgram`, one statement per engine command, jumps resolved,
   no idiom rewritten); `RunAsync` runs the straight-line `SET_*` data files and `SceneRunner`

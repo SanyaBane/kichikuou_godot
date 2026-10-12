@@ -24,7 +24,7 @@ namespace Kichikuou.Core.Strategy;
 /// Retreat mode 1 throughout; nobody is left out of a pick. The army name (<c>MS 10</c>) is read from
 /// the player's files through <paramref name="scenario"/>.
 /// </summary>
-public sealed class KayblisDefenders(ScriptContext script, IScenarioSource? scenario = null)
+public sealed class KayblisDefenders(OriginalScriptContext script, IScenarioSource? scenario = null)
     : NationFile(script, "Tｹｲﾌﾞﾘｽ2.ADV", scenario)
 {
     /// <summary><c>Tｹｲﾌﾞﾘｽ2.ADV:1-60</c>, then <c>L_001c7</c> at stage 3 and at the gate.</summary>

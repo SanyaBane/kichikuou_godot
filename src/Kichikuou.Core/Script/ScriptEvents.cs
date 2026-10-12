@@ -5,7 +5,7 @@ namespace Kichikuou.Core.Script;
 // Presentation events of the engine commands and helper files every part uses. Messages use
 // MessageEvent with the line of the first output command of a text run (a quoted string, an R
 // when the run starts with a line break, or X / MP / H when it starts with a variable); the
-// presentation layer reads string variables (X n, MP n) from GameState.Strings at the time of
+// presentation layer reads string variables (X n, MP n) from the state's strings at the time of
 // the event. A run that prints a number (H 0, var) uses ValueMessageEvent, because the
 // variable may change before it is drawn.
 

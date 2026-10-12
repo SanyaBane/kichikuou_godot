@@ -21,7 +21,7 @@ namespace Kichikuou.Core.Strategy;
 /// happened. The filler leaves out commanders under 190 troops once slot 1 is taken. The army
 /// names (<c>MS 10</c>) are read from the player's files through <paramref name="scenario"/>.
 /// </summary>
-public sealed class HelmanTurn(ScriptContext script, IScenarioSource? scenario = null)
+public sealed class HelmanTurn(OriginalScriptContext script, IScenarioSource? scenario = null)
     : NationFile(script, "Tﾍﾙﾏﾝ.ADV", scenario)
 {
     /// <summary><c>Tﾍﾙﾏﾝ.ADV:1-98</c>, up to its <c>%0:</c>.</summary>

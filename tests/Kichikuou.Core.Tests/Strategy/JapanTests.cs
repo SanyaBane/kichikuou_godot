@@ -20,7 +20,7 @@ public class JapanTests
     {
         public JapanRig()
         {
-            Script = new ScriptContext(State, new ScriptedRandom(), View, Input, Story);
+            Script = new OriginalScriptContext(State, new ScriptedRandom(), View, Input, Story);
             for (int c = 72; c <= 82; c++)
             {
                 State.Cmdrs[c].Status = 1;
@@ -33,7 +33,7 @@ public class JapanTests
         public RecordingView View { get; } = new();
         public ScriptedSceneInput Input { get; } = new();
         public ScriptedStory Story { get; } = new();
-        public ScriptContext Script { get; }
+        public OriginalScriptContext Script { get; }
 
         public int[] Party =>
             [State.Bt_EnemyParty1.Value, State.Bt_EnemyParty2.Value, State.Bt_EnemyParty3.Value, State.Bt_EnemyParty4.Value];
@@ -147,7 +147,7 @@ public class JapanTests
     }
 
     private static Task TurnAsync(JapanRig rig, ScriptedRandom random) =>
-        new JapanTurn(new ScriptContext(rig.State, random, rig.View, rig.Input, rig.Story), new Literals()).RunAsync();
+        new JapanTurn(new OriginalScriptContext(rig.State, random, rig.View, rig.Input, rig.Story), new Literals()).RunAsync();
 
     [Fact]
     public async Task A_quiet_week_plays_a_random_event_when_nothing_happened()

@@ -23,7 +23,7 @@ namespace Kichikuou.Core.Strategy;
 /// out of a pick. The army name (<c>MS 10</c>) is read from the player's files through
 /// <paramref name="scenario"/>.
 /// </summary>
-public sealed class ZethTurn(ScriptContext script, IScenarioSource? scenario = null)
+public sealed class ZethTurn(OriginalScriptContext script, IScenarioSource? scenario = null)
     : NationFile(script, "Tｾﾞｽ.ADV", scenario)
 {
     /// <summary><c>Tｾﾞｽ.ADV:1-237</c>, up to its <c>%0:</c> (<c>L_0063d</c>).</summary>

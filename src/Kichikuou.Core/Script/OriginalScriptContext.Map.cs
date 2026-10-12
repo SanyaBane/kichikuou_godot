@@ -9,7 +9,7 @@ namespace Kichikuou.Core.Script;
 // first; each G counts its CG (CountCgLoad). Found necessary by the first golden capture: the scratch values and RetVal that M.ADV
 // op 13 leaves are what FIGT_A returns to its caller. Ported so far: the operations the battle
 // reaches; the others (WAO_MAP op 1 drag-scroll, op 5, op 100) come with the parts that use them.
-public sealed partial class ScriptContext
+public sealed partial class OriginalScriptContext
 {
     /// <summary>
     /// <c>!CallArg : mode! %#M.ADV</c>: a strategic-map call — the <see cref="MapEvent"/> for

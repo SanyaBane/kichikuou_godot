@@ -7,7 +7,7 @@ namespace Kichikuou.Core.Strategy;
 /// every province but 33 and 34), ported whole (<c>docs/strategy/survey-commands.md</c> §2): the
 /// header with the scouted figures, then Ninja Maneuver (after the prologue) or Return.
 /// </summary>
-public sealed class DistantCityCommand(ScriptContext script) : CommandFile(script, "Cﾃｷﾄｼ2.ADV")
+public sealed class DistantCityCommand(OriginalScriptContext script) : CommandFile(script, "Cﾃｷﾄｼ2.ADV")
 {
     /// <summary><c>Cﾃｷﾄｼ2.ADV:1-67</c>: the view until Return.</summary>
     public async Task RunAsync()

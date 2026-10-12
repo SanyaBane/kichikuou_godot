@@ -80,13 +80,13 @@ public class WeekLoopDifferentialTests(ITestOutputHelper output)
         {
             if (program is null)
             {
-                var script = new ScriptContext(state, random, view, input, hooks);
+                var script = new OriginalScriptContext(state, random, view, input, hooks);
                 await new WeekLoop(script, scenario).RunAsync();
             }
             else
             {
                 var runner = new SceneRunner(new OneProgram(program), hooks, file => file == Main);
-                var script = new ScriptContext(state, random, view, input, runner);
+                var script = new OriginalScriptContext(state, random, view, input, runner);
                 runner.Bind(script);
                 await runner.RunFileAsync(Main);
             }

@@ -10,7 +10,7 @@ public sealed class ScriptRig
     public ScriptRig(params int[] draws)
     {
         Random = new ScriptedRandom(draws);
-        Script = new ScriptContext(State, Random, View, Input, Story);
+        Script = new OriginalScriptContext(State, Random, View, Input, Story);
     }
 
     public GameState State { get; } = new();
@@ -18,5 +18,5 @@ public sealed class ScriptRig
     public RecordingView View { get; } = new();
     public ScriptedInput Input { get; } = new();
     public ScriptedStory Story { get; } = new();
-    public ScriptContext Script { get; }
+    public OriginalScriptContext Script { get; }
 }

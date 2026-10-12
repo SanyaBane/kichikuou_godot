@@ -20,7 +20,7 @@ public class PickerScreenTests
     {
         public PickerRig()
         {
-            Script = new ScriptContext(State, new ScriptedRandom(), View, Input, Story);
+            Script = new OriginalScriptContext(State, new ScriptedRandom(), View, Input, Story);
             for (int s = 0; s < State.Strings.Length; s++)
                 State.Strings[s] = $"s{s}";
             State.Unit_StrBase = 20;
@@ -30,7 +30,7 @@ public class PickerScreenTests
         public RecordingView View { get; } = new();
         public ScriptedSceneInput Input { get; } = new();
         public ScriptedStory Story { get; } = new();
-        public ScriptContext Script { get; }
+        public OriginalScriptContext Script { get; }
         public LiteralSource Source { get; } = new();
 
         public void Pick(int id)
@@ -557,7 +557,7 @@ public class PickerScreenTests
         var rig = new PickerRig();
         var unported = new ScriptedStory();
         var rules = new StrategyRules(rig.Source, unported);
-        var script = new ScriptContext(rig.State, new ScriptedRandom(), rig.View, rig.Input, rules);
+        var script = new OriginalScriptContext(rig.State, new ScriptedRandom(), rig.View, rig.Input, rules);
         rules.Bind(script);
         rig.State.CallArg = 3;
 

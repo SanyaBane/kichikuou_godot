@@ -19,7 +19,7 @@ namespace Kichikuou.Content.Tests;
 public sealed class NationReplayTests(ITestOutputHelper output)
 {
     /// <summary>The port of a nation root, or null while it waits for its part.</summary>
-    private static Func<ScriptContext, Task>? EntryPoint(string root, ScenarioScripts scripts) => root switch
+    private static Func<OriginalScriptContext, Task>? EntryPoint(string root, ScenarioScripts scripts) => root switch
     {
         "TCﾘｰｻﾞｽ.ADV" => s => new RebelTurn(s, scripts).RunAsync(),
         "TCﾘｰｻﾞｽ2.ADV" => s => new RebelDefenders(s, scripts).RunAsync(),

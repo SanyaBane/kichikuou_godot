@@ -158,7 +158,7 @@ public sealed class SceneRig
         Random = random ?? new QueuedRandom();
         Rules.State = State;
         Runner = new SceneRunner(new Scripts.ScenarioScripts(scenarioDirectory), Rules);
-        Script = new ScriptContext(State, Random, View, Input, Runner);
+        Script = new OriginalScriptContext(State, Random, View, Input, Runner);
         Runner.Bind(Script);
     }
 
@@ -174,7 +174,7 @@ public sealed class SceneRig
 
     public SceneRunner Runner { get; }
 
-    public ScriptContext Script { get; }
+    public OriginalScriptContext Script { get; }
 
     /// <summary><c>Ev_Entry := entry; %#file</c>, as a rule file calls a scene.</summary>
     public Task EventAsync(string file, int entry) => Script.EventAsync(file, (Sys3Int)entry);

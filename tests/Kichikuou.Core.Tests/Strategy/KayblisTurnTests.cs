@@ -27,7 +27,7 @@ public class KayblisTurnTests
         public TurnRig(params int[] draws)
         {
             Random = new ScriptedRandom(draws);
-            Script = new ScriptContext(State, Random, View, Input, Story);
+            Script = new OriginalScriptContext(State, Random, View, Input, Story);
             State.F_DemonWar_Stage = 20;
             State.F_Medusa_State = 1;
             State.F_Silky_State = 10;
@@ -49,7 +49,7 @@ public class KayblisTurnTests
         public RecordingView View { get; } = new();
         public ScriptedSceneInput Input { get; } = new();
         public ScriptedStory Story { get; } = new();
-        public ScriptContext Script { get; }
+        public OriginalScriptContext Script { get; }
 
         public KayblisTurn Turn => new(Script, new Literals());
 

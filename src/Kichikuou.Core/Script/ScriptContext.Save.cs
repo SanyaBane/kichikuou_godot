@@ -10,7 +10,7 @@ namespace Kichikuou.Core.Script;
 /// A slot whose variable count is not the memory's reads as empty. Only <c>ﾛｰﾄﾞｾｰﾌﾞ.ADV</c> uses
 /// them; its port and <see cref="SceneRunner"/> share these.
 /// </summary>
-public sealed partial class ScriptContext
+public partial class ScriptContext
 {
     private const ushort SaveError = 255;
 

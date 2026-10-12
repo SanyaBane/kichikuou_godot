@@ -18,7 +18,7 @@ namespace Kichikuou.Core.Strategy;
 /// <code>
 /// var rules = new StrategyRules(scenario, unported);
 /// var runner = new SceneRunner(scenes, rules);
-/// var script = new ScriptContext(state, random, view, input, runner);   // input: an IGameInput
+/// var script = new OriginalScriptContext(state, random, view, input, runner);   // input: an IGameInput
 /// runner.Bind(script);
 /// rules.Bind(script);
 /// </code>
@@ -27,7 +27,7 @@ namespace Kichikuou.Core.Strategy;
 /// </summary>
 public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported) : IStoryHooks
 {
-    private ScriptContext? _script;
+    private OriginalScriptContext? _script;
 
     /// <summary>The files this router runs itself.</summary>
     public static readonly IReadOnlySet<string> PortedFiles = new HashSet<string>(StringComparer.Ordinal)
@@ -39,13 +39,13 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
     };
 
     /// <summary>The context the rule files run on; set once with <see cref="Bind"/>.</summary>
-    public ScriptContext Script => _script ?? throw new InvalidOperationException("The strategic rules are not bound to a context.");
+    public OriginalScriptContext Script => _script ?? throw new InvalidOperationException("The strategic rules are not bound to a context.");
 
     /// <summary>
     /// Binds the router to the context whose hooks it serves (built after it, so bound afterwards).
     /// The context's input must be an <see cref="IGameInput"/>: the battles run here.
     /// </summary>
-    public void Bind(ScriptContext script)
+    public void Bind(OriginalScriptContext script)
     {
         if (_script is not null && !ReferenceEquals(_script, script))
             throw new InvalidOperationException("The strategic rules are already bound to another context.");

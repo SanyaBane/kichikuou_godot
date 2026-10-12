@@ -9,12 +9,12 @@ namespace Kichikuou.Core.Combat;
 /// <c>docs/porting-conventions.md</c>). All state lives in <see cref="State"/>; the partial
 /// files hold the procedures: the flow (<c>docs/battle/01-flow.md</c>) and the resolution of
 /// one exchange (<c>docs/battle/02-resolution.md</c>). The shared services (message windows,
-/// map, sound, scene calls, draws) are the <see cref="ScriptContext"/> it runs on.
+/// map, sound, scene calls, draws) are the <see cref="OriginalScriptContext"/> it runs on.
 /// </summary>
 public sealed partial class Battle
 {
     /// <summary>A battle on a context shared with the rest of the game; <paramref name="input"/> is its input too.</summary>
-    public Battle(ScriptContext script, IBattleInput input)
+    public Battle(OriginalScriptContext script, IBattleInput input)
     {
         if (!ReferenceEquals(script.Input, input))
             throw new ArgumentException("The battle input must be the context's input.", nameof(input));
@@ -24,12 +24,12 @@ public sealed partial class Battle
 
     /// <summary>A battle on a context of its own.</summary>
     public Battle(GameState state, IScriptRandom random, IScriptView view, IBattleInput input, IStoryHooks story)
-        : this(new ScriptContext(state, random, view, input, story), input)
+        : this(new OriginalScriptContext(state, random, view, input, story), input)
     {
     }
 
     /// <summary>The shared services the battle runs on.</summary>
-    public ScriptContext Script { get; }
+    public OriginalScriptContext Script { get; }
 
     /// <summary>The game state the battle reads and changes.</summary>
     public GameState State => Script.State;

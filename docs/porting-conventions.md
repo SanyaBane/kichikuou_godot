@@ -39,13 +39,15 @@ model can be layered on later (e.g. for the hybrid branch).
 
 ## Shared services
 
-Every part runs on one `Kichikuou.Core.Script.ScriptContext`: the state, `Rnd` (`Y 4`), pauses
-(`Y 3`), scene calls (`EventAsync`, `CallFileAsync`), jumps (`JumpTo`), and the helper files
-every part calls — `WAO_SUB.ADV` (`WaoAsync(op)`), `M.ADV` / `WAO_MAP.ADV` (`MapCallAsync(mode)`),
-`PCMPLAY.ADV` and `SS`/`SR` (`SoundAsync`, `MusicAsync`, `GetPlayingTrackAsync`). A part keeps
+Every part runs on one `Kichikuou.Core.Script.OriginalScriptContext`. Its base, the engine's
+`ScriptContext`, has the state, `Rnd` (`Y 4`), pauses (`Y 3`), scene calls (`EventAsync`,
+`CallFileAsync`), jumps (`JumpTo`), `SS`/`SR` (`MusicAsync`, `GetPlayingTrackAsync`) and the save
+commands; the original's context adds the helper files every part calls — `WAO_SUB.ADV`
+(`WaoAsync(op)`), `M.ADV` / `WAO_MAP.ADV` (`MapCallAsync(mode)`) and `PCMPLAY.ADV` (`SoundAsync`),
+which a call from a statement list or a scene reaches through `CallHelperAsync`. A part keeps
 short private forwarders in its own words (as `Battle` does) but never a second copy of a helper.
-An operation of a helper file that is not ported yet is ported there, in the context, when the
-first part needs it. Events every part may raise derive from `ScriptEvent`
+An operation of a helper file that is not ported yet is ported there, in the original's context,
+when the first part needs it. Events every part may raise derive from `ScriptEvent`
 (`Script/ScriptEvents.cs`); a part's own events derive from its base (`BattleEvent`). Inputs every
 part uses are in `IScriptInput`; a part's own decisions extend it (`IBattleInput`).
 
