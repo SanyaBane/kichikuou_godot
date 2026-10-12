@@ -353,7 +353,10 @@ None of these changes a rule or a look; each is small and testable on its own:
 3. menus as data: an event with the items (text, ○/×/△ split off, window), emitted where `]` asks;
 4. the engine-timing base shared by both UIs (§4.5);
 5. a map geometry helper in `Original.Content`: the province or dungeon at a point and the point of a province
-   (from `Prov.MapX/MapY` and the hit radii), for our map to send exact clicks.
+   (from `Prov.MapX/MapY` and the hit radii), for our map to send exact clicks. ✓ (2026-10-12):
+   `GesturePoints.MapAt` (in `Original`, beside `OnScreen`, the point of a map record) names what a
+   still click at a screen point opens, with `CommandPhase`'s own box test and radii;
+   `CommandPhaseTests` checks it against the map loop.
 
 ## 5. Found while surveying
 

@@ -289,7 +289,7 @@ public sealed class CommandPhase(OriginalScriptContext script)
     }
 
     /// <summary><c>COMMAND.ADV:101-137</c>: the half-size of a province's click box (12, larger for the big ones).</summary>
-    private static Sys3Int HitRadius(Sys3Int province) => province.Value switch
+    internal static Sys3Int HitRadius(Sys3Int province) => province.Value switch
     {
         1 or 56 or 69 or 78 or 79 => 30,
         25 => 36,
@@ -303,9 +303,11 @@ public sealed class CommandPhase(OriginalScriptContext script)
     /// inside the box of half-size <c>Tmp0030</c> around (<paramref name="x"/>, <paramref name="y"/>);
     /// the subtraction saturates at 0, as the script's does.
     /// </summary>
-    private bool Hits(Sys3Int x, Sys3Int y) =>
-        State.Tmp0025 > x - State.Tmp0030 && State.Tmp0026 > y - State.Tmp0030
-        && State.Tmp0025 < x + State.Tmp0030 && State.Tmp0026 < y + State.Tmp0030;
+    private bool Hits(Sys3Int x, Sys3Int y) => Inside(State.Tmp0025, State.Tmp0026, x, y, State.Tmp0030);
+
+    /// <summary>The test of <see cref="Hits"/> on its values: (<paramref name="pressX"/>, <paramref name="pressY"/>) strictly inside the box of half-size <paramref name="radius"/> around (<paramref name="x"/>, <paramref name="y"/>).</summary>
+    internal static bool Inside(Sys3Int pressX, Sys3Int pressY, Sys3Int x, Sys3Int y, Sys3Int radius) =>
+        pressX > x - radius && pressY > y - radius && pressX < x + radius && pressY < y + radius;
 
     /// <summary><c>IM x, y:</c> — the button into <c>RetVal</c>; the caller stores the position.</summary>
     private async Task<MouseState> MouseAsync()

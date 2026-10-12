@@ -251,6 +251,60 @@ public class CommandPhaseTests
         Is(0, rig.State.Prov_Cur);
     }
 
+    /// <summary>
+    /// <see cref="GesturePoints.MapAt"/> names what the map loop itself opens for a click at the
+    /// same point: a province (its own box size; the large Oaks-sized box of 25 too), a dungeon the
+    /// player may enter, nothing for an enemy province's dungeon or an empty spot.
+    /// </summary>
+    [Theory]
+    [InlineData(600, 300, "Province", 7)]       // own city
+    [InlineData(611, 311, "Province", 7)]       // inside its box of 12
+    [InlineData(612, 300, null, 0)]             // on the edge: outside
+    [InlineData(735, 300, "Province", 25)]      // record 25's box is 36
+    [InlineData(650, 350, "Dungeon", 6)]        // no province: always enterable
+    [InlineData(1000, 500, null, 0)]            // in an enemy province
+    [InlineData(560, 250, null, 0)]             // empty
+    public async Task The_map_helper_names_what_the_map_loop_opens(int mapX, int mapY, string? kind, int id)
+    {
+        var rig = new PhaseRig(stage: 2);
+        rig.Place(7, 600, 300);
+        rig.State.Provs[7].Owner = 1;
+        rig.Place(25, 700, 300);
+        rig.State.Provs[25].Owner = 2;
+        rig.State.Dgns[6].MapX = 650;
+        rig.State.Dgns[6].MapY = 350;
+        rig.State.Dgns[5].MapX = 1000;
+        rig.State.Dgns[5].MapY = 500;
+        rig.State.Dgns[5].Prov = 40;
+        rig.State.Provs[40].Owner = 2;
+        var (x, y) = GesturePoints.OnScreen(rig.State, (Sys3Int)mapX, (Sys3Int)mapY)!.Value;
+        var hit = GesturePoints.MapAt(rig.State, x, y);
+        int? entered = null;
+        rig.Story.OnCall = (file, _) =>
+        {
+            if (file == "Cﾒｲｷｭｳ.ADV")
+                entered = rig.State.Dgn_Cur.Value;
+        };
+        rig.Input.Pointer.Click(x, y);
+        rig.Menu(10);
+
+        await rig.RunAsync();
+
+        Assert.Equal(kind, hit?.Kind.ToString());
+        if (kind == "Province")
+        {
+            Assert.Equal(id, hit!.Value.Id);
+            Is(id, rig.State.Ui_ClickedProv);
+        }
+        else
+        {
+            Is(0, rig.State.Ui_ClickedProv);
+        }
+        Assert.Equal(kind == "Dungeon" ? id : null, entered);
+        if (kind == "Dungeon")
+            Assert.Equal(id, hit!.Value.Id);
+    }
+
     [Fact]
     public async Task A_click_on_a_dungeon_in_an_enemy_province_moves_the_province_cursor()
     {

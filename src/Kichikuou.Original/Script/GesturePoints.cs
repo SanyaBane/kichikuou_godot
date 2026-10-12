@@ -1,6 +1,7 @@
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.State;
+using Kichikuou.Original.Strategy;
 
 namespace Kichikuou.Original.Script;
 
@@ -90,4 +91,46 @@ public static class GesturePoints
         int fromX = 320 + dx / 2, fromY = 200 + dy / 2;
         return (fromX, fromY, fromX - dx, fromY - dy);
     }
+
+    /// <summary>
+    /// What a still click at screen point (<paramref name="x"/>, <paramref name="y"/>) opens in
+    /// <c>COMMAND</c>'s map wait (<c>COMMAND.ADV:94-158</c>, <see cref="CommandPhase"/>), the camera
+    /// <paramref name="centred"/> as in <see cref="OnScreen"/>: the first province whose box holds the
+    /// point, from record 0 (STR-12) to <c>Prov_Count</c>; else the first dungeon (box half-size 10)
+    /// the player may enter — in an own province or in none; null when the click opens nothing. A
+    /// dungeon hit the player may not enter opens nothing, though the script moves <c>Prov_Cur</c> (STR-19).
+    /// </summary>
+    public static MapHit? MapAt(GameState state, int x, int y, bool centred = true)
+    {
+        var (left, top) = ViewCorner(state, centred);
+        Sys3Int pressX = (Sys3Int)left + (Sys3Int)x;
+        Sys3Int pressY = (Sys3Int)top + (Sys3Int)y;
+        for (int p = 0; p <= state.Prov_Count.Value; p++)
+        {
+            var prov = state.Provs[p];
+            if (CommandPhase.Inside(pressX, pressY, prov.MapX, prov.MapY, CommandPhase.HitRadius((Sys3Int)p)))
+                return new MapHit(MapHitKind.Province, p);
+        }
+        for (int d = 0; d <= state.Dgn_Count.Value; d++)
+        {
+            var dgn = state.Dgns[d];
+            if (CommandPhase.Inside(pressX, pressY, dgn.MapX, dgn.MapY, (Sys3Int)10)
+                && (state.Provs[dgn.Prov].Owner == 1 || dgn.Prov == 0))
+                return new MapHit(MapHitKind.Dungeon, d);
+        }
+        return null;
+    }
+}
+
+/// <summary>What a click on the map opens: a province or a dungeon (<see cref="GesturePoints.MapAt"/>).</summary>
+public readonly record struct MapHit(MapHitKind Kind, int Id);
+
+/// <summary>The kind of <see cref="MapHit"/>.</summary>
+public enum MapHitKind
+{
+    /// <summary>A province: <c>COMMAND</c> goes on with <c>Prov_Cur</c> on it.</summary>
+    Province,
+
+    /// <summary>A dungeon the player may enter: <c>COMMAND</c> calls <c>Cﾒｲｷｭｳ</c>.</summary>
+    Dungeon,
 }
