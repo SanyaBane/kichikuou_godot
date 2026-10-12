@@ -240,7 +240,7 @@ public sealed partial class GamePresenter
     /// <summary>
     /// Composes <see cref="Screen"/> when anything changed: the stage's screen, then (outside a
     /// battle, or over a picker the battle opened) the pictures, the open picker, the window's frame
-    /// and text — or All Data's screen instead — and the menu, then the fade. Returns whether the
+    /// and text — or All Data's screen instead —, the menu (in a battle too), then the fade. Returns whether the
     /// screen was drawn again.
     /// </summary>
     public bool Compose()
@@ -268,11 +268,11 @@ public sealed partial class GamePresenter
                 Frame(s);
                 _window.Draw(Screen, _glyphs);
             }
-            if (MenuBox() is { } menu)
-            {
-                menu.Open();
-                menu.Hover(_pointer.X, _pointer.Y);
-            }
+        }
+        if (State is not null && MenuBox() is { } menu)                 // also over a battle: a scene it called (Gﾒﾙﾌｪｲｽ from 死亡捕獲)
+        {
+            menu.Open();
+            menu.Hover(_pointer.X, _pointer.Y);
         }
         Screen.FadeScreen(FadeAmount, FadeToWhite);
         return true;

@@ -781,6 +781,41 @@ public class GamePresenterTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// <c>Gﾒﾙﾌｪｲｽ</c> 1, which <c>死亡捕獲</c> calls when Melfeis (commander 4) falls, asks its question
+    /// (<c>Gﾒﾙﾌｪｲｽ.ADV:2430-2440</c>) inside the battle's screen: the menu is drawn over it (it was
+    /// left out in a battle, an invisible menu the player could still click) and is a window of our
+    /// battle screen's layer. Skipped without the player's files.
+    /// </summary>
+    [Fact]
+    public async Task A_menu_of_a_scene_the_battle_called_is_drawn_over_the_battle()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var run = await RunAsync(stopAtWeek: 0);
+        var p = run.Presenter;
+        var menus = new List<(string[] Items, int Changed, bool Masked)>();
+        run.Player.OnMenu = () =>
+        {
+            var (x, y, w) = p.Menu!.Window!.Value;
+            int changed = 0;
+            for (int dx = 0; dx < w; dx++)
+                if (p.Screen.PixelAt(x + dx, y + 2) != p.Stage.PixelAt(p.Stage.View.X + x + dx, p.Stage.View.Y + y + 2))
+                    changed++;
+            menus.Add(([.. p.MenuItems!], changed, p.BattleWindows().Contains(x + 2, y + 2)));
+        };
+        await run.Session.Script.ShowAsync(new BattleScreenEvent("死亡捕獲.ADV", true));
+
+        await run.Session.Script.EventAsync("Gﾒﾙﾌｪｲｽ.ADV", 1);
+
+        Assert.True(p.InBattle);
+        var (items, changed, masked) = Assert.Single(menus);
+        output.WriteLine($"[{string.Join(" | ", items)}]: {changed} pixels of its row drawn");
+        Assert.Equal(2, items.Length);
+        Assert.True(changed > 0, "the menu is drawn over the battle's screen");
+        Assert.True(masked, "the menu is in our battle screen's windows' layer");
+    }
+
+    /// <summary>
     /// <c>WAO_SUB</c> 0 on the full-screen window restores nothing (<c>WAO_SUB.ADV:267-270</c>):
     /// after <c>Iﾄｳｿﾞｸ.ADV</c>'s last line (<c>:1839-1843</c>) the frame and the text stay on the
     /// screen while <c>ｵｰﾌﾟﾆﾝｸﾞ</c> waits for its music, until something draws over them.

@@ -113,11 +113,17 @@ public sealed partial class GamePresenter : IStageObserver
 
     /// <summary>
     /// The windows of the battle's screen now (<see cref="BattlePresenter.Windows"/>, plus those of the
-    /// input screen open, <paramref name="extra"/>) as a mask over <see cref="Screen"/>; our battle
-    /// screen shows the screen only there (<see cref="WindowMask.Compose"/>).
+    /// input screen open, <paramref name="extra"/>, and the menu a scene the battle called opened) as a
+    /// mask over <see cref="Screen"/>; our battle screen shows the screen only there (<see cref="WindowMask.Compose"/>).
     /// </summary>
     public WindowMask BattleWindows(IEnumerable<WindowShape>? extra = null) =>
-        WindowMask.Of(BattleShows ? Battle.Windows.Concat(extra ?? []) : []);
+        WindowMask.Of(BattleShows ? Battle.Windows.Concat(extra ?? []).Concat(MenuWindow()) : []);
+
+    private IEnumerable<WindowShape> MenuWindow()
+    {
+        if (MenuBox() is { Box: var (x, y, w, h) })
+            yield return WindowShape.Box(x, y, w, h);
+    }
 
     /// <summary>The game state the screens are drawn from (set by <see cref="Bind"/>).</summary>
     public GameState? State { get; private set; }
