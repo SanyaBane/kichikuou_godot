@@ -514,13 +514,14 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.ScreenshotDirectory is not { } dir)
             return;
         System.IO.Directory.CreateDirectory(dir);
-        _presenter.Compose();
         if (_table.Visible && DisplayServer.GetName() != "headless")
         {
-            // The table is drawn by Godot over the screen: the window's next frame (headless draws none).
+            // Our deployment screen is drawn by Godot over the screen: the window's next frame (headless
+            // draws none). No Compose here: the frame's Present must find the change to upload it.
             _ = WindowShotAsync(System.IO.Path.Combine(dir, $"{_shot++:D5}-{what}.png"));
             return;
         }
+        _presenter.Compose();
         var image = Image.CreateFromData(Surface.ScreenWidth * Surface.Scale, Surface.ScreenHeight * Surface.Scale,
             false, Image.Format.Rgba8, _presenter.Screen.ReadScreen());
         image.Resize(Surface.ScreenWidth, Surface.ScreenHeight, Image.Interpolation.Bilinear);
