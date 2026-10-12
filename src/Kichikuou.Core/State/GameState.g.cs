@@ -16,9 +16,6 @@ public sealed partial class GameState
         memory.AllocatePage(10, 301);
     }
 
-    /// <summary>VAR0000 [C] — Engine result register: Y 4,n random 1..n, IM mouse button, menu/sub-file return codes; also reused as a temp.</summary>
-    public ref Sys3Int RetVal => ref Memory.Var(0);
-
     /// <summary>VAR0001 [C] — General temporary (date calc in L_01881, damage maths, AI commander-id lists passed to T* subroutines, loop counters); no persistent meaning.</summary>
     public ref Sys3Int Tmp0001 => ref Memory.Var(1);
 

@@ -1,4 +1,5 @@
 using Kichikuou.Core.Golden;
+using Kichikuou.Core.State;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.Tests.Golden;
@@ -153,7 +154,7 @@ public class GoldenCaptureTests
         var capture = Parse("golden 1\nseed 1\nroot FIGT.ADV X.ADV@0\n" +
             Dump("enter", "v 800 0 0 0 0 0 1\npage 2 1800\np 2 16 7\nstr 3 x\n") +
             Dump("exit") + "end return\n");
-        var memory = new ScriptMemory();
+        var memory = new ScriptMemory(VariableCatalog.Variables.Count);
         memory.AllocatePage(1, 20000);
         memory.WritePage(1, 5, 9);
         memory.Strings[4] = "old";
@@ -173,7 +174,7 @@ public class GoldenCaptureTests
         var capture = Parse("golden 1\nseed 1\nroot FIGT.ADV X.ADV@0\n" +
             Dump("enter", "v 1008 1\n") + Dump("exit") + "end return\n");
 
-        var e = Assert.Throws<GoldenFormatException>(() => capture.Enter.ApplyTo(new ScriptMemory()));
+        var e = Assert.Throws<GoldenFormatException>(() => capture.Enter.ApplyTo(new ScriptMemory(VariableCatalog.Variables.Count)));
         Assert.Contains("VAR1008", e.Message);
     }
 }

@@ -10,7 +10,7 @@ namespace Kichikuou.Core.Script;
 /// </summary>
 /// <remarks>
 /// The only scene that reads the timer is the opening (<c>ｵｰﾌﾟﾆﾝｸﾞ.ADV</c>, at the prologue's end;
-/// <c>XSPEC</c> is dead), which the message skip skips whole (<see cref="MessageSkip.WholeScenes"/>).
+/// <c>XSPEC</c> is dead), which the message skip skips whole (<see cref="VariantProfile.WholeScenes"/>).
 /// It shows each picture when the timer reaches the picture's time, waiting in a loop that reads
 /// <c>ZT5</c> (<c>:1422-1427</c>), and its scrolls give up at 69 s (<c>{RetVal > 6900:</c>, e.g.
 /// <c>:661</c>), skipping the CGs left in them. One tick a read ends every wait exactly at its time,

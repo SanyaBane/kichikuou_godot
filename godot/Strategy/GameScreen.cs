@@ -709,11 +709,12 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     }
 
     /// <summary>
-    /// The message skip is on inside a scene it skips whole (<see cref="MessageSkip.WholeScenes"/>,
+    /// The message skip is on inside a scene it skips whole (<see cref="VariantProfile.WholeScenes"/>,
     /// the opening between the prologue and the rebellion): its waits and fades take no time and none
     /// of it is shown (<see cref="Present"/>).
     /// </summary>
-    private bool SkippingScene => _scenes is not null && _skip.SkipsScene(_scenes.RunningScenes);
+    private bool SkippingScene =>
+        _scenes is not null && _skip.SkipsScene(_scenes.RunningScenes, _scenes.Script.State.Profile.WholeScenes);
 
     /// <summary>
     /// After a scene skipped whole, whose stage commands were dropped (<see cref="ShowAsync"/>): the

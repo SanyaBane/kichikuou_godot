@@ -116,7 +116,7 @@ replace the minimal "THE END" of decision 10; a survey first (docs/strategy/READ
 Step 0 is done (docs/strategy/survey-w4.md). Owner's decision 19: the three files run from the
 player's files through `SceneRunner` (not hand-ported), after `ZZ0` back to the title, `ｽﾀMENU`
 replaces our title; the gallery `CG` and the music room `MMODE` later. Step 1 is done: `OVER` runs
-from the player's files (`SceneRunner.IsSceneFile`; `ZZ0, 0` is `GameQuitException`, which
+from the player's files (`OriginalVariant.IsSceneFile`; `ZZ0, 0` is `GameQuitException`, which
 `GameSession` turns into `GameEnd`; Godot then goes back to the title), tested by `OverTests`.
 Step 2 is done: `ｽﾀMENU` (with its logo `ﾌﾟﾛﾛｰｸﾞ`) is the title, run from the player's files by
 `GameSession.TitleAsync` after the boot (which now keeps `ｽﾀｰﾄ.ADV:858`'s `Y 3, 10000`): New game,
@@ -133,7 +133,7 @@ EVT-07 does not hold. Owner's decision 21: the port counts every CG it shows on 
 binds the counter and `ScriptContext.CountCgLoad` counts each load (STR-43) — every `G` of a scene or
 a hand port through `ScriptContext.EngineAsync`, and where `WAO_SUB`, the map and the battle load
 CGs they draw through their own events. Step 2 is done: the gallery `CG` runs from the player's files
-(`SceneRunner.IsSceneFile`, `GalleryTests`) and the agent's dumps mask it from its sheets to the
+(`OriginalVariant.IsSceneFile`, `GalleryTests`) and the agent's dumps mask it from its sheets to the
 title's background (`GamePresenter.MaskEventCgs`). Step 3 is done: the music room `MMODE` runs from
 the player's files (`MusicRoomTests`); `F1` past its string table reads an empty string (STR-44).
 Step 4 is done: the gallery's and the music room's quirks are STR-43 to STR-57, EVT-07 is withdrawn.
@@ -163,6 +163,9 @@ Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its author's pe
   `python tools/codegen/gen_state.py` from `docs/variables.tsv` — never edit it by hand;
   re-run the generator after changing the dictionary. Rule code addresses records explicitly
   (`state.Units[state.Unit_Cur].Troops`) to keep the script's cursor quirks visible.
+  `GameState` derives from `Script/ScriptState` (what the runtime sees: the memory, `RetVal`, the
+  `DS` bindings) and carries the original's `Script/VariantProfile` (`State/OriginalVariant`: the
+  facts the runtime takes from a variant — variable count, scene rule, saved pages; docs/variants.md).
   `Golden/` parses harness captures and replays them through the port (`GoldenReplay`);
   `State/VariableCatalog.g.cs` (names, groups, page bindings) is generated with `GameState.g.cs`.
   `Script/` holds what every ported part shares: `ScriptContext` (state, draws, pauses, scene
@@ -203,7 +206,7 @@ Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its author's pe
   mouse and keys are a state, `Strategy/PlayerInput`, that `IM`, `Y 3`, `IK 0` and the menus poll
   once a frame as xsystem35 does — the map and the pickers decide clicks and drags themselves;
   `PointerScript` gestures only for `--auto`; `GameScreen.MenuBar` is xsystem35's menu bar —
-  Restart, MsgSkip on `Core/Script/MessageSkip` (it skips the opening whole, `WholeScenes`, `Core/Script/EngineTimer`),
+  Restart, MsgSkip on `Core/Script/MessageSkip` (it skips the opening whole, `OriginalVariant.WholeScenes`, `Core/Script/EngineTimer`),
   docs/window-menu.md, plus our Debug menu; `Strategy/EngineState` keeps
   the random generator and the message skip for the whole launch); `Battles/CaptureList` (Debug → Battle Captures) picks a capture, `Battles/BattleScreen` shows its battle;
   `GodotGlyphRenderer` (TextServer; MS Gothic or the bundled BIZ UDGothic in `godot/fonts`, Option →

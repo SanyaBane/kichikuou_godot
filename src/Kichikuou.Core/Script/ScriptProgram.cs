@@ -5,15 +5,11 @@ namespace Kichikuou.Core.Script;
 /// <summary>
 /// One scenario file as a goto program (<see cref="ScriptStatement"/>s with resolved jump
 /// targets), read from the player's decompile at run time: a story scene runs from statement 0
-/// with <c>Ev_Entry</c> set by its caller, exactly as the original page call does.
+/// with the scene number set by its caller (the original's <c>Ev_Entry</c>), exactly as the
+/// original page call does.
 /// </summary>
 public sealed class ScriptProgram
 {
-    /// <summary><c>VAR0520</c>, <c>Ev_Entry</c>: the scene number a caller sets before the page call.</summary>
-    private const int EvEntryVar = 520;
-
-    private IReadOnlyList<SceneEntry>? _entries;
-
     /// <summary>A program of <paramref name="file"/>.</summary>
     public ScriptProgram(string file, IReadOnlyList<ScriptStatement> statements, IReadOnlyDictionary<string, int> labels)
     {
@@ -35,13 +31,12 @@ public sealed class ScriptProgram
     /// The dispatch table at the top of the file, if any: every <c>{Ev_Entry = n: … @label: }</c>
     /// block before the file's first label (some set a flag before the jump, e.g.
     /// <c>Gｴｸｽ.ADV:1-3</c>; some files run statements before the table, e.g. <c>GAL.ADV</c>), in
-    /// order. Information only — running the program
-    /// performs the same dispatch, and an unmatched <c>Ev_Entry</c> falls through into the code
-    /// after the table (the default scene).
+    /// order, where <paramref name="entryVariable"/> is the variable holding the scene number (the
+    /// variant's <see cref="VariantProfile.EventEntryVariable"/>). Information only — running the
+    /// program performs the same dispatch, and an unmatched <c>Ev_Entry</c> falls through into the
+    /// code after the table (the default scene).
     /// </summary>
-    public IReadOnlyList<SceneEntry> Entries => _entries ??= FindEntries();
-
-    private List<SceneEntry> FindEntries()
+    public IReadOnlyList<SceneEntry> FindEntries(int entryVariable)
     {
         var entries = new List<SceneEntry>();
         int firstLabel = Labels.Count > 0 ? Labels.Values.Min() : Statements.Count;
@@ -49,8 +44,9 @@ public sealed class ScriptProgram
         {
             if (Statements[i] is IfStatement
                 {
-                    Condition: BinaryExpr { Op: "=", Left: VarExpr { Var: EvEntryVar }, Right: ConstExpr entry },
+                    Condition: BinaryExpr { Op: "=", Left: VarExpr v, Right: ConstExpr entry },
                 } test
+                && v.Var == entryVariable
                 && test.EndTarget > i + 1
                 && Statements[test.EndTarget - 1] is GotoStatement jump)
                 entries.Add(new SceneEntry(entry.Value, jump.Label, jump.Target));

@@ -52,13 +52,13 @@ public sealed class MemoryDump
     /// </exception>
     public void ApplyTo(ScriptMemory memory)
     {
-        for (int i = ScriptMemory.VariableCount; i < Vars.Length; i++)
+        for (int i = memory.VariableCount; i < Vars.Length; i++)
         {
             if (Vars[i] != 0)
                 throw new GoldenFormatException(
-                    $"Dump '{Tag}': VAR{i:D4} = {Vars[i]} lies beyond the core's {ScriptMemory.VariableCount} variables.");
+                    $"Dump '{Tag}': VAR{i:D4} = {Vars[i]} lies beyond the core's {memory.VariableCount} variables.");
         }
-        for (int i = 0; i < ScriptMemory.VariableCount; i++)
+        for (int i = 0; i < memory.VariableCount; i++)
             memory.Var(i) = i < Vars.Length ? Vars[i] : (ushort)0;
 
         foreach (int page in memory.AllocatedPages.ToList())
@@ -87,7 +87,7 @@ public sealed class MemoryDump
     public static MemoryDump FromMemory(string tag, ScriptMemory memory, Mt19937Legacy generator,
         IEnumerable<DumpBinding> bindings)
     {
-        var vars = new ushort[ScriptMemory.VariableCount];
+        var vars = new ushort[memory.VariableCount];
         for (int i = 0; i < vars.Length; i++)
             vars[i] = memory.Var(i).Value;
         var pages = new SortedDictionary<int, ushort[]>();

@@ -117,7 +117,7 @@ public class StatementTests
         ],
         new Dictionary<string, int> { ["L_a"] = 8, ["L_b"] = 9 });
 
-        Assert.Equal([new SceneEntry(1, "L_a", 8), new SceneEntry(20, "L_b", 9)], program.Entries);
+        Assert.Equal([new SceneEntry(1, "L_a", 8), new SceneEntry(20, "L_b", 9)], program.FindEntries(OriginalVariant.Profile.EventEntryVariable));
     }
 
     [Fact]

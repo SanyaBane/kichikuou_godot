@@ -153,8 +153,8 @@ public class WeeklyEventsDifferentialTests(ITestOutputHelper output)
     private static void RandomVariables(GameState state, Random rng, double? zero = null)
     {
         double p = zero ?? rng.NextDouble() * 0.6;
-        for (int v = 0; v < ScriptMemory.VariableCount; v++)
-            if (!GameState.IsBound(v))
+        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
+            if (!state.IsBound(v))
                 state.Memory.Var(v) = Value(rng, p);
         state.StoryStage = (Sys3Int)(rng.Next(20) == 0 ? 0 : rng.Next(1, 5));
         state.Week = (Sys3Int)(rng.Next(30) == 0 ? 9 : rng.Next(1, 90));
@@ -169,7 +169,7 @@ public class WeeklyEventsDifferentialTests(ITestOutputHelper output)
     private static GameState Copy(GameState source)
     {
         var copy = new GameState();
-        for (int v = 0; v < ScriptMemory.VariableCount; v++)
+        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
             copy.Memory.Var(v) = source.Memory.Var(v);
         for (int i = 0; i < source.Memory.PageSize(1); i++)
             copy.Memory.WritePage(1, i, source.Memory.ReadPage(1, i));
@@ -188,7 +188,7 @@ public class WeeklyEventsDifferentialTests(ITestOutputHelper output)
     {
         private static readonly HashSet<int> Cursors = VariableCatalog.Bindings.Select(b => b.Cursor).ToHashSet();
         private static readonly int EvEntry =
-            Enumerable.Range(0, ScriptMemory.VariableCount).Single(v => VariableCatalog.Variables[v].Name == "Ev_Entry");
+            Enumerable.Range(0, VariableCatalog.Variables.Count).Single(v => VariableCatalog.Variables[v].Name == "Ev_Entry");
 
         private readonly IReadOnlyList<ScriptStatement> _statements;
 
@@ -298,7 +298,7 @@ public class WeeklyEventsDifferentialTests(ITestOutputHelper output)
     private sealed class Solver(GameState state, Context context, Random rng, List<int>? rolls)
     {
         private static readonly int RetVal =
-            Enumerable.Range(0, ScriptMemory.VariableCount).Single(v => VariableCatalog.Variables[v].Name == "RetVal");
+            Enumerable.Range(0, VariableCatalog.Variables.Count).Single(v => VariableCatalog.Variables[v].Name == "RetVal");
 
         public void Solve(ScriptExpr condition, bool want)
         {
@@ -445,8 +445,8 @@ public class WeeklyEventsDifferentialTests(ITestOutputHelper output)
                 state.Ev_WeeklyEventDone = (Sys3Int)rng.Next(0, 2);
             for (int k = rng.Next(0, 6); k > 0; k--)
             {
-                int v = rng.Next(0, ScriptMemory.VariableCount);
-                if (!GameState.IsBound(v))
+                int v = rng.Next(0, VariableCatalog.Variables.Count);
+                if (!state.IsBound(v))
                     state.Memory.Var(v) = (Sys3Int)Interesting[rng.Next(Interesting.Length)];
             }
             return Task.CompletedTask;
@@ -455,7 +455,7 @@ public class WeeklyEventsDifferentialTests(ITestOutputHelper output)
 
     private static IEnumerable<string> Differences(ScriptMemory expected, ScriptMemory actual)
     {
-        for (int v = 0; v < ScriptMemory.VariableCount; v++)
+        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
             if (expected.Var(v) != actual.Var(v))
                 yield return $"VAR{v:D4}: COM.ADV {expected.Var(v).Value}, port {actual.Var(v).Value}";
         foreach (int page in expected.AllocatedPages)

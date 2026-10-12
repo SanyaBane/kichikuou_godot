@@ -82,7 +82,7 @@ public class NewGameStateTests(ITestOutputHelper output)
     {
         var copy = new GameState();
         var (from, to) = (state.Memory, copy.Memory);
-        for (int v = 0; v < ScriptMemory.VariableCount; v++)
+        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
             to.Var(v) = from.Var(v);
         foreach (int page in from.AllocatedPages)
         {

@@ -1,95 +1,38 @@
+using Kichikuou.Core.Script;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Core.State;
 
 /// <summary>
-/// The whole game state as a typed view over <see cref="ScriptMemory"/>. Every scenario
-/// variable is a property named by <c>docs/variables.tsv</c> (generated part), and the
-/// array-bound tables are exposed as <see cref="RecordTable{T}"/>.
+/// The whole game state as a typed view over <see cref="ScriptMemory"/>: the original's state
+/// (<see cref="OriginalVariant"/>). Every scenario variable is a property named by
+/// <c>docs/variables.tsv</c> (generated part), and the array-bound tables are exposed as
+/// <see cref="RecordTable{T}"/>.
 /// </summary>
 /// <remarks>
 /// Rule code addresses records explicitly (<c>state.Units[state.Unit_Cur].Troops</c>) rather
 /// than through an implicit cursor, so cursor-dependent quirks of the script stay visible.
 /// </remarks>
-public sealed partial class GameState
+public sealed partial class GameState : ScriptState
 {
     /// <summary>Creates an empty state with the array pages allocated as <c>SET.ADV</c> does.</summary>
     public GameState()
+        : base(OriginalVariant.Profile)
     {
         AllocatePages(Memory);
     }
 
-    /// <summary>The underlying memory, in the original engine's layout.</summary>
-    public ScriptMemory Memory { get; } = new();
-
-    /// <summary>String variables (<c>MS</c>/<c>MM</c>), 1-based.</summary>
-    public string[] Strings => Memory.Strings;
-
-    /// <summary>
-    /// Variable <paramref name="number"/> as the script reads it: through its <c>DS</c> binding
-    /// (page slot <c>Offset + cursor</c>) when it has one, otherwise the plain slot. For code that
-    /// runs script statements by number (data files, scenes); rule code uses the properties.
-    /// </summary>
-    public Sys3Int ReadVariable(int number) =>
-        BindingOf(number) is { } b
-            ? Memory.ReadPage(b.Page, b.Offset + Memory.Var(b.Cursor).Value)
-            : Memory.Var(number);
-
-    /// <summary>Writes variable <paramref name="number"/> as the script does (see <see cref="ReadVariable"/>).</summary>
-    public void WriteVariable(int number, Sys3Int value)
-    {
-        if (BindingOf(number) is { } b)
-            Memory.WritePage(b.Page, b.Offset + Memory.Var(b.Cursor).Value, value);
-        else
-            Memory.Var(number) = value;
-    }
-
-    /// <summary>
-    /// The slot <paramref name="offset"/> places after variable <paramref name="number"/> as the
-    /// commands that walk a run of variables from a pointer see it (<c>NC</c>, <c>NB</c>; xsystem35
-    /// <c>getCaliVariable</c> resolves the variable once, through its binding at the cursor, and
-    /// the command steps on from there): the plain slots after a plain variable, the page slots
-    /// after a bound one. A page slot past the page's end is read as 0 and not written (the
-    /// original steps out of the page's buffer).
-    /// </summary>
-    public Sys3Int ReadRun(int number, int offset) =>
-        BindingOf(number) is { } b
-            ? Memory.ReadPage(b.Page, b.Offset + Memory.Var(b.Cursor).Value + offset)
-            : Memory.Var(number + offset);
-
-    /// <summary>Writes the slot <see cref="ReadRun"/> reads.</summary>
-    public void WriteRun(int number, int offset, Sys3Int value)
-    {
-        if (BindingOf(number) is { } b)
-            Memory.WritePage(b.Page, b.Offset + Memory.Var(b.Cursor).Value + offset, value);
-        else
-            Memory.Var(number + offset) = value;
-    }
-
-    /// <summary>
-    /// Where a reference to variable <paramref name="number"/> points as the commands that take a
-    /// variable reference resolve it (<c>getCaliArray</c>, e.g. <c>LP</c>/<c>QP</c>): the page slot at
-    /// its binding's offset plus the cursor now, or the plain slot on page 0.
-    /// </summary>
-    public (int Page, int Index) Locate(int number) =>
-        BindingOf(number) is { } b ? (b.Page, b.Offset + Memory.Var(b.Cursor).Value) : (0, number);
-
-    /// <summary>
-    /// True when variable <paramref name="number"/> is bound to a page through <c>DS</c>, so it is
-    /// not the plain slot that commands addressing a run of variables (<c>NC</c>, <c>US</c>, …) start from.
-    /// </summary>
-    public static bool IsBound(int number) => BindingOf(number) is not null;
-
-    private static readonly PageBinding?[] BindingByVar = BuildBindingIndex();
-
-    private static PageBinding? BindingOf(int number) =>
+    /// <inheritdoc />
+    protected override VariableBinding? BindingOf(int number) =>
         (uint)number < (uint)BindingByVar.Length ? BindingByVar[number] : throw new ArgumentOutOfRangeException(nameof(number));
 
-    private static PageBinding?[] BuildBindingIndex()
+    private static readonly VariableBinding?[] BindingByVar = BuildBindingIndex();
+
+    private static VariableBinding?[] BuildBindingIndex()
     {
-        var index = new PageBinding?[ScriptMemory.VariableCount];
+        var index = new VariableBinding?[VariableCatalog.Variables.Count];
         foreach (var b in VariableCatalog.Bindings)
-            index[b.Var] = b;
+            index[b.Var] = new VariableBinding(b.Page, b.Offset, b.Cursor);
         return index;
     }
 }

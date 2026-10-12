@@ -161,7 +161,7 @@ public class PlayerSceneTests(ITestOutputHelper output)
         var failures = new List<string>();
         foreach (string file in Milestone1)
         {
-            var entries = scripts.ReadProgram(file).Entries.Select(e => e.Entry.Value).Distinct().ToList();
+            var entries = scripts.ReadProgram(file).FindEntries(OriginalVariant.Profile.EventEntryVariable).Select(e => e.Entry.Value).Distinct().ToList();
             if (entries.Count == 0)
                 entries.Add(0);
             foreach (int entry in entries)

@@ -196,7 +196,7 @@ public class SaveDataTests
         state.Week = 300;
         state.Units[1].HP = 65535;
         state.Strings[1] = "ランス";
-        var data = SaveData.Capture(state.Memory, new ScriptRef("MAIN.ADV", 83));
+        var data = SaveData.Capture(state, new ScriptRef("MAIN.ADV", 83));
         var stream = new MemoryStream();
         data.WriteTo(stream);
 
@@ -221,7 +221,7 @@ public class SaveDataTests
         {
             var state = new GameState();
             state.Week = 77;
-            Assert.True(new DirectorySaveStore(directory).Write(3, SaveData.Capture(state.Memory, Call)));
+            Assert.True(new DirectorySaveStore(directory).Write(3, SaveData.Capture(state, Call)));
 
             var store = new DirectorySaveStore(directory);
             Assert.Equal(77, store.Read(3)!.Variables[517].Value);

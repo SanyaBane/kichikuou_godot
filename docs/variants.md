@@ -110,9 +110,19 @@ parts stay as they are: the `--auto` bot, the battle capture viewer and `--endin
 Each step ends green (see "Principles").
 
 0. **Plan and decision** (this document): decision 24, the backlog, the Sparrow survey.
-1. **De-static inside today's projects.** The variable count per memory, `ScriptState` with an instance
-   `IsBound`, `VariantProfile` (the original's built by `Original` code, passed by `GameSession`, the
-   tests and Godot). No file moves.
+1. ✓ (2026-10-12) **De-static inside today's projects.** The variable count per memory, `ScriptState`
+   with an instance `IsBound`, `VariantProfile` (the original's built by `Original` code, passed by
+   `GameSession`, the tests and Godot). No file moves. As done:
+   - `Script/ScriptState` holds the memory, `RetVal` (the generator no longer emits VAR0000), the reads
+     through the `DS` bindings and `IsBound`. The variant's type gives the bindings (`BindingOf`) and
+     the profile, so the profile reaches the runtime through the state (`ScriptState.Profile`): the
+     session and the tests pass nothing new.
+   - `State/OriginalVariant` builds the original's profile: the scene rule, the whole scenes, the saved
+     pages, `Ev_Entry` = VAR0520, the count from the catalog.
+   - `ScriptProgram.FindEntries` takes the entry variable, `MessageSkip.SkipsScene` the whole scenes,
+     `SaveData.Capture` the state. The context reads a slot of another variable count as empty (the
+     check left `SaveData.ReadFrom`).
+   - The variant's id waits for the saves per variant (Deferred): nothing would read it yet.
 2. **Split `ScriptContext`** into the engine part and `OriginalScriptContext`; move the original's
    events into their own namespace. Still one assembly.
 3. **Split the presenter**: the engine-command emulation into `Screen/`.

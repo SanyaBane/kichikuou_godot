@@ -158,8 +158,8 @@ public class WeekLoopDifferentialTests(ITestOutputHelper output)
     {
         var state = new GameState();
         double zero = rng.NextDouble() * 0.6;
-        for (int v = 0; v < ScriptMemory.VariableCount; v++)
-            if (!GameState.IsBound(v))
+        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
+            if (!state.IsBound(v))
                 state.Memory.Var(v) = (Sys3Int)(rng.NextDouble() < zero ? 0 : rng.Next(5) == 0 ? rng.Next(0, 3000) : rng.Next(0, 12));
         for (int i = 0; i < state.Memory.PageSize(1); i++)
             state.Memory.WritePage(1, i, (Sys3Int)(rng.NextDouble() < zero ? 0 : rng.Next(0, 4)));
@@ -252,7 +252,7 @@ public class WeekLoopDifferentialTests(ITestOutputHelper output)
     private static GameState Copy(GameState source)
     {
         var copy = new GameState();
-        for (int v = 0; v < ScriptMemory.VariableCount; v++)
+        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
             copy.Memory.Var(v) = source.Memory.Var(v);
         foreach (int page in source.Memory.AllocatedPages)
             for (int i = 0; i < source.Memory.PageSize(page); i++)
@@ -441,7 +441,7 @@ public class WeekLoopDifferentialTests(ITestOutputHelper output)
 
     private static IEnumerable<string> Differences(ScriptMemory expected, ScriptMemory actual)
     {
-        for (int v = 0; v < ScriptMemory.VariableCount; v++)
+        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
             if (expected.Var(v) != actual.Var(v))
                 yield return $"VAR{v:D4} {VariableCatalog.Variables[v].Name}: MAIN.ADV {expected.Var(v).Value}, port {actual.Var(v).Value}";
         foreach (int page in expected.AllocatedPages)

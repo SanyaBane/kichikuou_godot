@@ -61,7 +61,7 @@ public class GoldenPendingTests
         Assert.Equal(GoldenCapture.FormatVersion, capture.Version);
         Assert.Equal(capture.Group, Path.GetFileName(Path.GetDirectoryName(Path.Combine(GoldenData.Directory, file))));
         Assert.Equal(capture.RootKind == GoldenRootKind.Label, capture.RootCall.File == capture.Root);
-        var memory = new ScriptMemory();
+        var memory = new ScriptMemory(VariableCatalog.Variables.Count);
         capture.Enter.ApplyTo(memory);
         capture.Exit.ApplyTo(memory);
     }

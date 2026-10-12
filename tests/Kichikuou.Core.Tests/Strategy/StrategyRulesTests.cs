@@ -61,7 +61,7 @@ public class StrategyRulesTests
         Assert.Equal(new BattleScreenEvent("FIGT_A.ADV", true), routed.View.Events[0]);   // the router frames the battle
         Assert.Equal(new BattleScreenEvent("FIGT_A.ADV", false), routed.View.Events[^1]);
         Assert.Contains(routed.View.Events, e => e is RoundHeaderEvent);
-        for (int v = 0; v < ScriptMemory.VariableCount; v++)
+        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
             Assert.True(alone.State.Memory.Var(v) == routed.State.Memory.Var(v), $"VAR{v:D4} {VariableCatalog.Variables[v].Name}");
         foreach (int page in alone.State.Memory.AllocatedPages)
             for (int i = 0; i < alone.State.Memory.PageSize(page); i++)

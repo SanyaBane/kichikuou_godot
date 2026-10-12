@@ -1,4 +1,5 @@
 using Kichikuou.Core.Script;
+using Kichikuou.Core.State;
 using Kichikuou.Core.Sys3;
 
 namespace Kichikuou.Content.Tests;
@@ -395,14 +396,14 @@ public sealed class SceneRunnerTests : IDisposable
         await rig.Script.CallFileAsync("死亡捕獲.ADV");
 
         Assert.Equal([("Sﾌﾞﾀｲ.ADV", 4), ("死亡捕獲.ADV", 4)], rig.Rules.Calls);
-        Assert.True(SceneRunner.IsSceneFile("Iﾄｳｿﾞｸ.ADV"));
-        Assert.True(SceneRunner.IsSceneFile("ｵｰﾌﾟﾆﾝｸﾞ.ADV"));
-        Assert.True(SceneRunner.IsSceneFile("OVER.ADV"));
-        Assert.True(SceneRunner.IsSceneFile("ｽﾀMENU.ADV"));
-        Assert.True(SceneRunner.IsSceneFile("ﾌﾟﾛﾛｰｸﾞ.ADV"));
-        Assert.False(SceneRunner.IsSceneFile("FIGT_A.ADV"));
-        Assert.True(SceneRunner.IsSceneFile("CG.ADV"));
-        Assert.True(SceneRunner.IsSceneFile("MMODE.ADV"));
-        Assert.False(SceneRunner.IsSceneFile("XSPEC.ADV"));
+        Assert.True(OriginalVariant.IsSceneFile("Iﾄｳｿﾞｸ.ADV"));
+        Assert.True(OriginalVariant.IsSceneFile("ｵｰﾌﾟﾆﾝｸﾞ.ADV"));
+        Assert.True(OriginalVariant.IsSceneFile("OVER.ADV"));
+        Assert.True(OriginalVariant.IsSceneFile("ｽﾀMENU.ADV"));
+        Assert.True(OriginalVariant.IsSceneFile("ﾌﾟﾛﾛｰｸﾞ.ADV"));
+        Assert.False(OriginalVariant.IsSceneFile("FIGT_A.ADV"));
+        Assert.True(OriginalVariant.IsSceneFile("CG.ADV"));
+        Assert.True(OriginalVariant.IsSceneFile("MMODE.ADV"));
+        Assert.False(OriginalVariant.IsSceneFile("XSPEC.ADV"));
     }
 }

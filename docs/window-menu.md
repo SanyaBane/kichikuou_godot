@@ -120,7 +120,7 @@ web build (seen only) by an option.
   unchecked, fades keep xsystem35's length while skipping too (`ags_runEffect` waits without
   `KEYWAIT_SKIPPABLE`; `rate * 16 * 1000 / 60` ms). **MsgSkip skips the opening whole** (ours,
   owner's requests 2026-10-11): inside `ｵｰﾌﾟﾆﾝｸﾞ`, between the prologue and the rebellion
-  (`MessageSkip.WholeScenes`; `SceneRunner.RunningScenes` says which scenes run), the skippable
+  (`OriginalVariant.WholeScenes`; `SceneRunner.RunningScenes` says which scenes run), the skippable
   waits and the fades take no time and nothing is shown — a frame passes only every 100 ms so the
   window stays responsive. Its stage commands (`G`, `CC`, `CE`, `CS`, `CF`, `CM`, `CB`, `CL`) are
   dropped: drawing its 3,400 of them on the emulated surface alone takes ~7 s; the stage is cleared

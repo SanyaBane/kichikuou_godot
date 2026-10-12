@@ -1,5 +1,6 @@
 using Kichikuou.Content.Scripts;
 using Kichikuou.Core.Script;
+using Kichikuou.Core.State;
 using Kichikuou.Core.Strategy;
 using Kichikuou.Core.Sys3;
 using Xunit.Abstractions;
@@ -63,7 +64,7 @@ public sealed class ScenarioProgramTests : IDisposable
         Assert.Equal(4, p.Labels["L_00010"]);
         Assert.Equal(
             [new SceneEntry((Sys3Int)1, "L_00020", 5), new SceneEntry((Sys3Int)2, "L_00030", 6)],
-            p.Entries);
+            p.FindEntries(OriginalVariant.Profile.EventEntryVariable));
     }
 
     [Fact]
@@ -364,8 +365,8 @@ public class ScenarioProgramSweepTests(ITestOutputHelper output)
 
         // The survey's counts (survey-events.md §2.1, §5, §6.1) over the 136 scene files.
         var sceneStatements = scenes.SelectMany(f => programs[f].Statements).ToList();
-        Assert.Equal(795, scenes.Sum(f => programs[f].Entries.Count));
-        Assert.Equal(125, scenes.Count(f => programs[f].Entries.Count > 0));
+        Assert.Equal(795, scenes.Sum(f => programs[f].FindEntries(OriginalVariant.Profile.EventEntryVariable).Count));
+        Assert.Equal(125, scenes.Count(f => programs[f].FindEntries(OriginalVariant.Profile.EventEntryVariable).Count > 0));
         Assert.Equal(108, sceneStatements.Count(s => s is RandomStatement));
         Assert.Equal(123, sceneStatements.Count(s => s is MenuStatement));
         Assert.Equal(426, sceneStatements.Count(s => s is MenuItemStatement));
@@ -388,7 +389,7 @@ public class ScenarioProgramSweepTests(ITestOutputHelper output)
         var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
         var missing = SceneFiles().Concat(["ｵｰﾌﾟﾆﾝｸﾞ.ADV", "FIGT表示.ADV"])
             .SelectMany(f => scripts.ReadProgram(f).Statements.OfType<CallFileStatement>())
-            .Where(c => !SceneRunner.IsSceneFile(c.File) && !StrategyRules.PortedFiles.Contains(c.File) && !helpers.Contains(c.File))
+            .Where(c => !OriginalVariant.IsSceneFile(c.File) && !StrategyRules.PortedFiles.Contains(c.File) && !helpers.Contains(c.File))
             .GroupBy(c => c.File)
             .Select(g => $"{g.Key}: {g.Count()} calls, e.g. {g.First().At}")
             .ToList();
@@ -410,7 +411,7 @@ public class ScenarioProgramSweepTests(ITestOutputHelper output)
         var missing = new[] { "ｽﾀMENU.ADV", "ﾌﾟﾛﾛｰｸﾞ.ADV", "HAPPY_C.ADV", "CG.ADV", "MMODE.ADV" }
             .SelectMany(f => scripts.ReadProgram(f).Statements.OfType<CallFileStatement>())
             .Select(c => c.File)
-            .Where(f => !SceneRunner.IsSceneFile(f) && !StrategyRules.PortedFiles.Contains(f) && !helpers.Contains(f))
+            .Where(f => !OriginalVariant.IsSceneFile(f) && !StrategyRules.PortedFiles.Contains(f) && !helpers.Contains(f))
             .Distinct()
             .Order(StringComparer.Ordinal);
         Assert.Equal(["XSPEC.ADV"], missing);

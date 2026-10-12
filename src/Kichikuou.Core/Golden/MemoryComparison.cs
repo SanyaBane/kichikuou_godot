@@ -77,7 +77,7 @@ public sealed class GoldenFilter
         capture.Group == GoldenCapture.BattleGroup ? Default : Strategic;
 
     /// <summary>Compares everything.</summary>
-    public static GoldenFilter None { get; } = new(new bool[ScriptMemory.VariableCount]);
+    public static GoldenFilter None { get; } = new(new bool[VariableCatalog.Variables.Count]);
 
     /// <summary>Whether a variable (page 0) is ignored.</summary>
     public bool IgnoresVar(int number) => number < _ignoredVars.Length && _ignoredVars[number];
@@ -100,10 +100,10 @@ public static class MemoryComparison
     {
         var diffs = new List<MemoryDifference>();
 
-        for (int i = 0; i < Math.Max(expected.Vars.Length, ScriptMemory.VariableCount); i++)
+        for (int i = 0; i < Math.Max(expected.Vars.Length, actual.VariableCount); i++)
         {
             ushort e = i < expected.Vars.Length ? expected.Vars[i] : (ushort)0;
-            ushort a = i < ScriptMemory.VariableCount ? actual.Var(i).Value : (ushort)0;
+            ushort a = i < actual.VariableCount ? actual.Var(i).Value : (ushort)0;
             if (e != a)
                 diffs.Add(new(VariableCatalog.DescribeVar(i), e.ToString(), a.ToString(), filter.IgnoresVar(i)));
         }

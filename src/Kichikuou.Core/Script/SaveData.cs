@@ -11,18 +11,13 @@ namespace Kichikuou.Core.Script;
 /// (<see cref="Resume"/>, e.g. <c>MAIN.ADV:20</c>, the weekly autosave), which is the only
 /// <c>QD</c> the scenario has (<c>ﾛｰﾄﾞｾｰﾌﾞ.ADV:33</c>). Presentation settings the original also
 /// saves (window rectangles, font sizes and colours) are not kept: the UI redraws from the state.
-/// The random generator's state is not saved either, as in the original.
+/// The random generator's state is not saved either, as in the original. The slot format is the
+/// engine's; whether a slot fits a game is the context's check (its variable count).
 /// </summary>
 public sealed class SaveData
 {
     private const string Magic = "KKSAVE";
     private const int FormatVersion = 1;
-
-    /// <summary>
-    /// The array pages <c>SET.ADV</c> allocates with the save flag (<c>DC n, max, 1</c>, <c>:135</c>,
-    /// <c>:241</c>, <c>:282</c>, <c>:320</c>); page 3, the scratch buffer (<c>:269</c>), is not saved.
-    /// </summary>
-    public static IReadOnlyList<int> SavedPages { get; } = [1, 2, 4, 10];
 
     /// <summary>Creates a slot's contents; the arrays are kept, not copied.</summary>
     public SaveData(ScriptRef resume, Sys3Int[] variables, IReadOnlyDictionary<int, Sys3Int[]> pages, string[] strings)
@@ -45,14 +40,15 @@ public sealed class SaveData
     /// <summary>The string variables, 1-based as in <see cref="ScriptMemory.Strings"/>.</summary>
     public string[] Strings { get; }
 
-    /// <summary><c>QD</c>: the memory as it is now.</summary>
-    public static SaveData Capture(ScriptMemory memory, ScriptRef resume)
+    /// <summary><c>QD</c>: the memory as it is now, with the pages the variant saves (<see cref="VariantProfile.SavedPages"/>).</summary>
+    public static SaveData Capture(ScriptState state, ScriptRef resume)
     {
-        var variables = new Sys3Int[ScriptMemory.VariableCount];
+        var memory = state.Memory;
+        var variables = new Sys3Int[memory.VariableCount];
         for (int v = 0; v < variables.Length; v++)
             variables[v] = memory.Var(v);
         var pages = new Dictionary<int, Sys3Int[]>();
-        foreach (int page in SavedPages)
+        foreach (int page in state.Profile.SavedPages)
         {
             int size = memory.PageSize(page);
             if (size == 0)
@@ -130,8 +126,6 @@ public sealed class SaveData
                 throw new InvalidDataException($"Save format {version} is not supported (expected {FormatVersion}).");
             var resume = new ScriptRef(r.ReadString(), r.ReadInt32());
             var variables = ReadValues(r);
-            if (variables.Length != ScriptMemory.VariableCount)
-                throw new InvalidDataException($"The slot has {variables.Length} variables, expected {ScriptMemory.VariableCount}.");
             int pageCount = r.ReadInt32();
             var pages = new Dictionary<int, Sys3Int[]>();
             for (int i = 0; i < pageCount; i++)

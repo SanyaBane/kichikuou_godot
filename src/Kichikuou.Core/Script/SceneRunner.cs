@@ -10,8 +10,9 @@ namespace Kichikuou.Core.Script;
 /// bytecode. As the context's <see cref="IStoryHooks"/> it receives every page call the rules
 /// and the scenes make: scene files run here, every other file goes to the hooks given at
 /// construction (the ported rules: the battle, the death handler, the party picker), so a scene
-/// may start a battle that plays another scene. The helper files (<c>WAO_SUB</c>, <c>M</c>,
-/// <c>WAO_MAP</c>, <c>PCMPLAY</c>) run their ports in the context.
+/// may start a battle that plays another scene. Which files are scenes is the variant's rule
+/// (<see cref="VariantProfile.IsSceneFile"/>) unless a test gives its own. The helper files
+/// (<c>WAO_SUB</c>, <c>M</c>, <c>WAO_MAP</c>, <c>PCMPLAY</c>) run their ports in the context.
 /// </summary>
 /// <remarks>
 /// Call stack as in <c>scenario.c</c>: a label call pushes its return; <c>US</c> pushes variables;
@@ -26,7 +27,6 @@ namespace Kichikuou.Core.Script;
 public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<string, bool>? isScene = null) : IStoryHooks
 {
     private readonly Dictionary<string, ScriptProgram> _programs = new(StringComparer.Ordinal);
-    private readonly Func<string, bool> _isScene = isScene ?? IsSceneFile;
     private readonly List<SceneMenuItem> _menu = [];
     private readonly List<(ScriptProgram Program, int Target)> _menuTargets = [];
     private MenuItemBuilder? _item;
@@ -56,20 +56,9 @@ public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<str
         _script = script;
     }
 
-    /// <summary>
-    /// The files run from the decompile: the scenes (<c>G*</c>, <c>I*</c>), the opening, the battle
-    /// inserts and the game frame (owner's decision 19: <c>OVER</c>, the ending; <c>ｽﾀMENU</c>, the
-    /// title, with its logo <c>ﾌﾟﾛﾛｰｸﾞ</c>, its Fortune Check <c>HAPPY_C</c>, its gallery <c>CG</c> and
-    /// its music room <c>MMODE</c>).
-    /// </summary>
-    public static bool IsSceneFile(string file) =>
-        file.Length > 0 && file[0] is 'G' or 'I'
-        || file is "ｵｰﾌﾟﾆﾝｸﾞ.ADV" or "FIGT表示.ADV" or "OVER.ADV" or "ｽﾀMENU.ADV" or "ﾌﾟﾛﾛｰｸﾞ.ADV" or "HAPPY_C.ADV"
-            or "CG.ADV" or "MMODE.ADV";
-
     /// <inheritdoc />
     public Task RunEventAsync(string file, Sys3Int entry) =>
-        _isScene(file) ? RunFileAsync(file) : rules.RunEventAsync(file, entry);
+        (isScene ?? State.Profile.IsSceneFile)(file) ? RunFileAsync(file) : rules.RunEventAsync(file, entry);
 
     private readonly List<string> _running = [];
 
@@ -414,7 +403,7 @@ public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<str
     /// </summary>
     private ref Sys3Int Slot(ScriptStatement at, int var, int offset)
     {
-        if (GameState.IsBound(var))
+        if (State.IsBound(var))
             throw new NotSupportedException($"{at.At}: a run of variables starting at the bound VAR{var:D4}.");
         return ref State.Memory.Var(var + offset);
     }

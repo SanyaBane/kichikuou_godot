@@ -7,12 +7,13 @@ namespace Kichikuou.Core.Sys3;
 /// original game's variable by variable.
 /// </summary>
 /// <remarks>
-/// Prefer the typed view <see cref="State.GameState"/>; this class is the storage beneath it.
+/// Prefer the typed view, a variant's <see cref="Script.ScriptState"/>; this class is the storage beneath it.
 /// </remarks>
-public sealed class ScriptMemory
+/// <param name="variableCount">The numbered variables the scenario declares (the variant's, <see cref="Script.VariantProfile.VariableCount"/>).</param>
+public sealed class ScriptMemory(int variableCount)
 {
-    /// <summary>Number of numbered variables the scenario declares (<c>VAR0000..VAR0805</c>).</summary>
-    public const int VariableCount = 806;
+    /// <summary>Number of numbered variables the scenario declares (the original's <c>VAR0000..VAR0805</c>).</summary>
+    public int VariableCount => _vars.Length;
 
     /// <summary>Highest array page number + 1 (xsystem35 <c>PAGE_MAX</c>).</summary>
     public const int PageLimit = 256;
@@ -20,7 +21,7 @@ public sealed class ScriptMemory
     /// <summary>Default number of string variables (xsystem35 <c>STRVAR_MAX</c>).</summary>
     public const int DefaultStringCount = 5000;
 
-    private readonly Sys3Int[] _vars = new Sys3Int[VariableCount];
+    private readonly Sys3Int[] _vars = new Sys3Int[variableCount];
     private readonly Sys3Int[]?[] _pages = new Sys3Int[]?[PageLimit];
 
     /// <summary>String variables, 1-based as in the script (<c>MS n, "..."</c>); index 0 is unused.</summary>

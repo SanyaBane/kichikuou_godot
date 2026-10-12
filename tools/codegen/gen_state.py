@@ -1,7 +1,7 @@
 """Generate src/Kichikuou.Core/State/GameState.g.cs and VariableCatalog.g.cs from docs/variables.tsv.
 
 GameState is a typed view over ScriptMemory: one property per scenario variable, named by the
-dictionary, and record tables for the variables SET.ADV binds onto array pages with DS. The
+dictionary (but VAR0000, the engine's ScriptState.RetVal), and record tables for the variables SET.ADV binds onto array pages with DS. The
 page layout below is transcribed from SET.ADV (decompiled, lines given); the field order on a
 page follows the DS order there, not the variable numbers.
 
@@ -122,7 +122,8 @@ def generate() -> str:
     w("    }\n\n")
 
     for n in range(806):
-        if n in bound:
+        # VAR0000 is the engine's result register, declared by the base class (ScriptState.RetVal).
+        if n in bound or n == 0:
             continue
         e = d[n]
         w(doc(e, n, "    "))

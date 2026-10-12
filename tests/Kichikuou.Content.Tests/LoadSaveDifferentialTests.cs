@@ -196,8 +196,8 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
     private static GameState RandomState(Random rng)
     {
         var state = new GameState();
-        for (int v = 0; v < ScriptMemory.VariableCount; v++)
-            if (!GameState.IsBound(v))
+        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
+            if (!state.IsBound(v))
                 state.Memory.Var(v) = (Sys3Int)(rng.Next(3) == 0 ? 0 : rng.Next(5) == 0 ? rng.Next(0, 3000) : rng.Next(0, 12));
         for (int i = 0; i < state.Memory.PageSize(3); i += 1 + rng.Next(50))
             state.Memory.WritePage(3, i, (Sys3Int)rng.Next(0, 100));
@@ -224,7 +224,7 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
         var slots = new Dictionary<int, SaveData>();
         var source = Copy(state);
         source.Week = (Sys3Int)rng.Next(1, 600);
-        var baseline = SaveData.Capture(source.Memory, AutosaveCall);
+        var baseline = SaveData.Capture(source, AutosaveCall);
         double empty = rng.NextDouble();
         for (int slot = 1; slot <= 11; slot++)
         {
@@ -248,7 +248,7 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
     private static GameState Copy(GameState source)
     {
         var copy = new GameState();
-        for (int v = 0; v < ScriptMemory.VariableCount; v++)
+        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
             copy.Memory.Var(v) = source.Memory.Var(v);
         foreach (int page in source.Memory.AllocatedPages)
             for (int i = 0; i < source.Memory.PageSize(page); i++)
@@ -259,7 +259,7 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
 
     private static IEnumerable<string> Differences(ScriptMemory expected, ScriptMemory actual)
     {
-        for (int v = 0; v < ScriptMemory.VariableCount; v++)
+        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
             if (expected.Var(v) != actual.Var(v))
                 yield return $"VAR{v:D4} {VariableCatalog.Variables[v].Name}: file {expected.Var(v).Value}, port {actual.Var(v).Value}";
         foreach (int page in expected.AllocatedPages)

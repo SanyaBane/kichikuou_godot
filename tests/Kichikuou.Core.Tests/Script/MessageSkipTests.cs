@@ -1,4 +1,5 @@
 using Kichikuou.Core.Script;
+using Kichikuou.Core.State;
 
 namespace Kichikuou.Core.Tests.Script;
 
@@ -25,14 +26,14 @@ public class MessageSkipTests
     public void Only_the_opening_is_skipped_whole()
     {
         var skip = new MessageSkip([]);
-        Assert.False(skip.SkipsScene(["ｵｰﾌﾟﾆﾝｸﾞ.ADV"]));                     // not skipping
+        Assert.False(skip.SkipsScene(["ｵｰﾌﾟﾆﾝｸﾞ.ADV"], OriginalVariant.WholeScenes));                     // not skipping
         skip.Toggle();
-        Assert.True(skip.SkipsScene(["ｵｰﾌﾟﾆﾝｸﾞ.ADV"]));
-        Assert.True(skip.SkipsScene(["Iｱﾘｽ.ADV", "ｵｰﾌﾟﾆﾝｸﾞ.ADV"]));
-        Assert.False(skip.SkipsScene(["Iﾊﾝﾗﾝ.ADV"]));
-        Assert.False(skip.SkipsScene(["Iﾄｳｿﾞｸ.ADV"]));
-        Assert.False(skip.SkipsScene(["Iｼﾚｲﾌﾞ.ADV"]));
-        Assert.False(skip.SkipsScene([]));
+        Assert.True(skip.SkipsScene(["ｵｰﾌﾟﾆﾝｸﾞ.ADV"], OriginalVariant.WholeScenes));
+        Assert.True(skip.SkipsScene(["Iｱﾘｽ.ADV", "ｵｰﾌﾟﾆﾝｸﾞ.ADV"], OriginalVariant.WholeScenes));
+        Assert.False(skip.SkipsScene(["Iﾊﾝﾗﾝ.ADV"], OriginalVariant.WholeScenes));
+        Assert.False(skip.SkipsScene(["Iﾄｳｿﾞｸ.ADV"], OriginalVariant.WholeScenes));
+        Assert.False(skip.SkipsScene(["Iｼﾚｲﾌﾞ.ADV"], OriginalVariant.WholeScenes));
+        Assert.False(skip.SkipsScene([], OriginalVariant.WholeScenes));
     }
 
     /// <summary>Option → MsgSkip Speeds Up Fades (ours, on by default): only while skipping, and only shortening.</summary>
