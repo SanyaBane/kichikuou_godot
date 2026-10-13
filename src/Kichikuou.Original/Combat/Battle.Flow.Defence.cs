@@ -112,7 +112,8 @@ public sealed partial class Battle
     /// <summary><c>L_00105</c>, <c>FIGT_B.ADV:46-64</c>: the three-way menu; cancelling shows it again.</summary>
     internal async Task<FigtBLabel> DefenceMenuAsync()
     {
-        State.RetVal = 0;   // :47-50 IM release loop
+        await Input.WaitForReleaseAsync();                  // :47-50
+        State.RetVal = 0;
         var menu = new BattleMenu(BattleMenuKind.EnemyAttackResponse,
         [
             new BattleMenuOption(1, new ScriptRef(FigtBFile, 53)),
@@ -414,7 +415,8 @@ public sealed partial class Battle
             return FigtBLabel.Menu;
         }
         // L_007bd (:340-380)
-        State.RetVal = 0;   // IM release loop
+        await Input.WaitForReleaseAsync();
+        State.RetVal = 0;
         var options = new List<BattleMenuOption>();
         foreach (var ninja in Ninjas)
         {

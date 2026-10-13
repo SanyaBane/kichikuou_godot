@@ -25,6 +25,14 @@ public interface IBattleInput : IScriptInput
     /// which case the script continues after the menu.
     /// </summary>
     Task<Sys3Int?> ChooseAsync(BattleMenu menu);
+
+    /// <summary>
+    /// <c>IM x, y</c> repeated while a mouse button is down — the battle's release loops before a key
+    /// wait or a menu (<c>FIGT.ADV:1005-1009</c>, <c>FIGT_B.ADV:47-50</c>, …), so the click that led there
+    /// does not answer the wait. The engine's mouse reads; the position they store is not modelled. The
+    /// default finds no button down (no pointer: a replay, a test).
+    /// </summary>
+    Task WaitForReleaseAsync() => Task.CompletedTask;
 }
 
 /// <summary>The result pair of <c>FIGT_SEL.ADV</c>.</summary>

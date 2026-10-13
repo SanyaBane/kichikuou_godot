@@ -110,6 +110,21 @@ public class FlowPlayerTests
     }
 
     [Fact]
+    public async Task An_info_box_waits_for_the_click_s_release_before_its_key_and_after_it()
+    {
+        var rig = Acting(5, 0);
+        rig.State.Tmp0001 = 1;
+        rig.Input.Keys.Enqueue(16);
+        await rig.Battle.UnitInfoAsync();
+        Assert.Equal(["release", "key", "release"], rig.Input.Waits);
+
+        rig.Input.Waits.Clear();
+        rig.Input.Keys.Enqueue(16);
+        await rig.Battle.EnemyInfoAsync();
+        Assert.Equal(["release", "key", "release"], rig.Input.Waits);
+    }
+
+    [Fact]
     public void Melee_in_the_front_row_attacks_only_the_enemy_front_row()
     {
         var rig = Acting(5, 0, slot: 2);

@@ -29,9 +29,13 @@ public sealed class ScriptedInput : IBattleInput
     /// <summary>What <c>SR 0</c> reports.</summary>
     public int Track { get; set; } = 7;
 
+    /// <summary>The key waits ("key") and the release loops ("release"), in order.</summary>
+    public List<string> Waits { get; } = [];
+
     public Task<Sys3Int> WaitForKeyAsync()
     {
         KeyWaits++;
+        Waits.Add("key");
         return Task.FromResult(Keys.Count > 0 ? (Sys3Int)Keys.Dequeue() : Sys3Int.Zero);
     }
 
@@ -49,6 +53,12 @@ public sealed class ScriptedInput : IBattleInput
         Pauses.Add(ticks.Value);
         PauseCancelables.Add(cancelable);
         return Task.FromResult(PauseKeys.Count > 0 ? (Sys3Int)PauseKeys.Dequeue() : Sys3Int.Zero);
+    }
+
+    public Task WaitForReleaseAsync()
+    {
+        Waits.Add("release");
+        return Task.CompletedTask;
     }
 
     public Task<FigtSelChoice> SelectCommandAsync(FigtSelMenu menu)

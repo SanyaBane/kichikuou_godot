@@ -427,7 +427,7 @@ public sealed partial class Battle
             await FlowWaitKeyAsync();
         }
         await WaoAsync(10);
-        // :828-832 — IM loop until the mouse button is released.
+        await Input.WaitForReleaseAsync();                  // :828-832
         State.RetVal = 0;
         return FigtLabel.Select;
     }
@@ -447,11 +447,13 @@ public sealed partial class Battle
         }
         await WaoAsync(143);
         await View.ShowAsync(new UnitInfoEvent(State.Unit_Cur, State.Tmp0002));
-        State.RetVal = 0;   // :1005-1009 IM release loop
+        await Input.WaitForReleaseAsync();                  // :1005-1009
+        State.RetVal = 0;
         await FlowWaitKeyAsync();
         await WaoAsync(10);
         State.Unit_Cur = State.Tmp0020;
-        State.RetVal = 0;   // :1015-1019 IM release loop
+        await Input.WaitForReleaseAsync();                  // :1015-1019
+        State.RetVal = 0;
     }
 
     /// <summary>
@@ -465,10 +467,12 @@ public sealed partial class Battle
             State.Cmdr_Cur = ESlot(slot);
         await WaoAsync(143);
         await View.ShowAsync(new EnemyInfoEvent(State.Cmdr_Cur));
+        await Input.WaitForReleaseAsync();                  // :1105-1108
         State.RetVal = 0;
         await FlowWaitKeyAsync();
         await WaoAsync(10);
         State.Cmdr_Cur = State.Tmp0020;
+        await Input.WaitForReleaseAsync();                  // L_01a9d
         State.RetVal = 0;
     }
 
