@@ -55,6 +55,14 @@ internal sealed partial class BattleBoardView : Control
     private const float ActingTint = 0.3f;                          // the card's colour toward the accent
     private const ulong BlinkMs = 500;
 
+    // The spotlight (Sengoku Rance's, docs/sengoku/04-screen.md §6.5; owner, 2026-10-13): while an exchange is on,
+    // everything below the scene is darkened but the two cards that fight.
+    private static readonly Rect2 PanelArea = new(0, 410, 1280, 390);
+    private const double SpotFadeSeconds = 0.15;
+
+    /// <summary>How dark the spotlight makes the panel (Option → Battle Screen…, 0.5 by default).</summary>
+    private static float SpotDarkness => (float)BattleScreenSettings.Get(BattleScreenSettings.SpotDarkness);
+
     private DeploymentPalette _colours = DeploymentPalette.Chosen;
     private readonly FacePictures _faces;
     private FaceCrops _crops = new();
@@ -143,7 +151,10 @@ internal sealed partial class BattleBoardView : Control
             AddChild(card);
             _cards[place] = (card, box);
         }
-        _actingFrame = new Control { MouseFilter = MouseFilterEnum.Ignore, Visible = false };    // over the cards
+        _spotlight = new Control { MouseFilter = MouseFilterEnum.Ignore, ZIndex = 2 };   // over the cards and the strip (1), under the acting frame
+        _spotlight.Draw += DrawSpotlight;
+        AddChild(_spotlight);
+        _actingFrame = new Control { MouseFilter = MouseFilterEnum.Ignore, Visible = false, ZIndex = 2 };    // over the cards and the spotlight
         _actingFrame.Draw += DrawActingFrame;
         AddChild(_actingFrame);
         _commands = new BattleCommandLayer();                               // over the cards
@@ -221,6 +232,8 @@ internal sealed partial class BattleBoardView : Control
         At(_enemyName, EnemyNameArea);
         At(_gauge, GaugeArea);
         At(_speaker, _speakerArea);
+        At(_spotlight, new Rect2(0, 0, 1280, 800));
+        _spotlight.QueueRedraw();
         At(_commands, new Rect2(0, 0, 1280, 800));
         _commands.Layout(CardArea, scale);
         At(_dialog, new Rect2(0, 0, 1280, 800));
@@ -265,6 +278,7 @@ internal sealed partial class BattleBoardView : Control
         }
         RefreshSpeaker(s);
         RefreshCards(s, presenter.Order, hovered);
+        RefreshSpotlight(s, presenter.Scene);
         RefreshStrip(s, presenter.Order, instant);
         var gauge = (Math.Max(presenter.Order.Rounds, s.Bt_RoundsLeft.Value), s.Bt_RoundsLeft.Value);
         if (gauge != _gaugeValues)
@@ -458,6 +472,88 @@ internal sealed partial class BattleBoardView : Control
         }
     }
 
+    // ------------------------------------------------------------------ the spotlight
+
+    private readonly Control _spotlight;
+    private readonly List<Rect2> _spotHoles = [];                    // the fighters' cards, layout pixels
+    private float _spotShown;                                        // 0: off, 1: whole
+    private float _spotDrawnDarkness;
+    private bool _spotOn;
+
+    /// <summary>
+    /// While an exchange is on (<see cref="BattleScene.InEngagement"/>) the spotlight falls on its two fighters'
+    /// cards: the player's unit (<c>Unit_Cur</c>) and the enemy's commander (<c>Cmdr_Cur</c>).
+    /// </summary>
+    private void RefreshSpotlight(GameState s, BattleScene scene)
+    {
+        bool on = scene.Active && scene.InEngagement;
+        var holes = new List<Rect2>(2);
+        if (on)
+        {
+            foreach (var place in SlotSnapshot.Places)
+            {
+                int fighter = place.Side == BattleSide.Player ? s.Unit_Cur.Value : s.Cmdr_Cur.Value;
+                if (fighter != 0 && BattleBoard.Record(s, place) == fighter)
+                    holes.Add(CardArea(place));
+            }
+        }
+        if (on == _spotOn && (!on || holes.SequenceEqual(_spotHoles)))
+            return;
+        _spotOn = on;
+        if (on)
+        {
+            _spotHoles.Clear();
+            _spotHoles.AddRange(holes);                                  // when it goes off, the holes stay while it fades
+        }
+        _spotlight.QueueRedraw();
+    }
+
+    /// <summary>The spotlight fades in and out (<see cref="SpotFadeSeconds"/>; at once while skipping and with <c>--fast</c>).</summary>
+    private void StepSpotlight(double delta)
+    {
+        if (_spotShown > 0 && SpotDarkness != _spotDrawnDarkness)
+            _spotlight.QueueRedraw();                                    // the option moved while it shows
+        float target = _spotOn ? 1 : 0;
+        if (_spotShown == target)
+            return;
+        float step = _armiesInstant ? 1 : (float)(delta / SpotFadeSeconds);
+        _spotShown = target > _spotShown ? Math.Min(target, _spotShown + step) : Math.Max(target, _spotShown - step);
+        _spotlight.QueueRedraw();
+    }
+
+    /// <summary>Black at <see cref="SpotDarkness"/> over the panel below the scene, but over the fighters' cards.</summary>
+    private void DrawSpotlight()
+    {
+        _spotDrawnDarkness = SpotDarkness;
+        if (_spotShown <= 0)
+            return;
+        var colour = new Color(0, 0, 0, _spotDrawnDarkness * _spotShown);
+        IEnumerable<Rect2> dark = [PanelArea];
+        foreach (var hole in _spotHoles)
+            dark = dark.SelectMany(r => Without(r, hole)).ToList();
+        foreach (var r in dark)
+            _spotlight.DrawRect(new Rect2(r.Position * _scale, r.Size * _scale), colour);
+    }
+
+    /// <summary><paramref name="r"/> without <paramref name="hole"/>: up to four rectangles (above, below, left, right of it).</summary>
+    private static IEnumerable<Rect2> Without(Rect2 r, Rect2 hole)
+    {
+        var cut = r.Intersection(hole);
+        if (!cut.HasArea())
+        {
+            yield return r;
+            yield break;
+        }
+        if (cut.Position.Y > r.Position.Y)
+            yield return new Rect2(r.Position.X, r.Position.Y, r.Size.X, cut.Position.Y - r.Position.Y);
+        if (cut.End.Y < r.End.Y)
+            yield return new Rect2(r.Position.X, cut.End.Y, r.Size.X, r.End.Y - cut.End.Y);
+        if (cut.Position.X > r.Position.X)
+            yield return new Rect2(r.Position.X, cut.Position.Y, cut.Position.X - r.Position.X, cut.Size.Y);
+        if (cut.End.X < r.End.X)
+            yield return new Rect2(cut.End.X, cut.Position.Y, r.End.X - cut.End.X, cut.Size.Y);
+    }
+
     // ------------------------------------------------------------------ the cards
 
     /// <summary>
@@ -528,6 +624,7 @@ internal sealed partial class BattleBoardView : Control
     public override void _Process(double delta)
     {
         StepArmies(delta);
+        StepSpotlight(delta);
         if (_actingPlace is null)
             return;
         bool on = (Time.GetTicksMsec() - _blinkFrom) / BlinkMs % 2 == 0;

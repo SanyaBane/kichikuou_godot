@@ -126,6 +126,11 @@ picture, the slot panels) is not shown. How it is built:
   layers for it (`BattleScene.FieldY`: the battlefield, each army on the key, the front — the overlay and
   the numbers); our screen stacks them (`BattleBoardView`'s `ArmySlide`), `GameScreen` waits for them at
   an `EngagementSceneEvent`.
+- **The spotlight** (owner, 2026-10-13; Sengoku Rance's, docs/sengoku/04-screen.md §6.5): while an
+  exchange is on (`BattleScene.InEngagement`, from its engagement picture to the field's redraw) the whole
+  panel below the scene — the order strip, the armies' names, the gauge, the cards — is darkened (black at
+  Option → Battle Screen… → "Spotlight: darkness", 50 % by default), but the two fighters' cards (`Unit_Cur`, `Cmdr_Cur`), so who fights shows at a glance. It fades in
+  and out in 0.15 s (at once while skipping and with `--fast`); the acting card's frame stays over it.
 - **The windows over it** (round header, "vs", the flavour lines, the results, the info boxes, the
   prompt, the popups, the script menus) are the stage's screen as the original draws it, shown only
   inside the windows' own shapes (their frame CGs, the selection boxes): the 640×400 screen fitted to
