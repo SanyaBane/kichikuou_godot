@@ -146,6 +146,7 @@ public sealed class GoldenReplay
     private long _mouseRepeats;
     private bool _pointer;
     private Battle? _battle;
+    private Action<FigtSelMenu, FigtSelChoice>? _commands;
     private Mt19937Legacy _generator;
     private XSystem35Random _random;
 
@@ -171,6 +172,7 @@ public sealed class GoldenReplay
     /// must be one of <see cref="ReplayableRoots"/>. <paramref name="scenes"/> makes the scene
     /// runtime from the replay's hooks (the files it does not run as scenes stay hooks): the
     /// context then runs scene files, and the replay answers menus, the mouse and the clock.
+    /// <paramref name="commands"/> sees each <c>FIGT_SEL</c> menu with the answer the capture gives it.
     /// </summary>
     public static async Task<GoldenReport> RunAsync(
         GoldenCapture capture,
@@ -178,9 +180,10 @@ public sealed class GoldenReplay
         IScriptView? view = null,
         Action<GameState>? started = null,
         Func<OriginalScriptContext, Task>? entryPoint = null,
-        Func<IStoryHooks, SceneRunner>? scenes = null)
+        Func<IStoryHooks, SceneRunner>? scenes = null,
+        Action<FigtSelMenu, FigtSelChoice>? commands = null)
     {
-        var replay = new GoldenReplay(capture, filter ?? GoldenFilter.For(capture));
+        var replay = new GoldenReplay(capture, filter ?? GoldenFilter.For(capture)) { _commands = commands };
         await replay.RunAsync(view ?? new NullView(), started, entryPoint, scenes);
         return replay._report;
     }
@@ -439,6 +442,7 @@ public sealed class GoldenReplay
                 throw replay.Diverged(
                     $"FIGT_SEL returned ({record.RetVal}, {record.Tmp0001}) at {record.Where} (line {record.Line}), which the core's menu does not offer");
             }
+            replay._commands?.Invoke(menu, choice);
             return Task.FromResult(choice);
         }
 

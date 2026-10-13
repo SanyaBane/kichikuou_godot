@@ -336,7 +336,7 @@ public sealed class FigtSelScreen
     };
 
     /// <summary>The label line of each popup entry and its width in 16-pixel cells (<c>Tmp0014</c>).</summary>
-    private static (int Line, int Cells) ModeEntry(int mode) => mode switch
+    internal static (int Line, int Cells) ModeEntry(int mode) => mode switch
     {
         1 => (525, 4), 2 => (534, 4), 3 => (543, 4),
         30 => (552, 6), 31 => (561, 6), 32 => (570, 4),

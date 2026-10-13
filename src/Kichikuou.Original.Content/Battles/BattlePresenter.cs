@@ -233,6 +233,9 @@ public sealed partial class BattlePresenter
 
     internal string Read(int line, params Sys3Int[] numbers) => Read(new ScriptRef(Figt, line), numbers);
 
+    /// <summary>The text of a script line without numbers (a label, <see cref="BattleCommand.Label"/>).</summary>
+    public string Text(ScriptRef source) => Read(source, []);
+
     private string StringVar(int index) => State is { } s && index < s.Strings.Length ? s.Strings[index] : "";
 
     // ------------------------------------------------------------------ battlefield (§1)
