@@ -6,12 +6,13 @@ namespace Kichikuou.Original.Content.Battles;
 
 /// <summary>
 /// One command our battle screen offers: its label (the script's own line, as <see cref="FigtSelScreen"/>
-/// prints it) and the answer it gives <c>FIGT_SEL</c>.
+/// prints it, unless our screen names it itself) and the answer it gives <c>FIGT_SEL</c>.
 /// </summary>
-/// <param name="Label">Where the label is in the scenario.</param>
+/// <param name="Label">Where the script's label is in the scenario.</param>
 /// <param name="Choice">The pair returned to the core.</param>
 /// <param name="Current">A standing order the unit has now (marked in its menu).</param>
-public sealed record BattleCommand(ScriptRef Label, FigtSelChoice Choice, bool Current = false);
+/// <param name="Name">Our screen's own label, shown instead of the script's (null: the script's).</param>
+public sealed record BattleCommand(ScriptRef Label, FigtSelChoice Choice, bool Current = false, string? Name = null);
 
 /// <summary>
 /// <c>FIGT_SEL</c> answered by our own battle screen (docs/ui/battle-screen.md, step 4, "Next — our own
@@ -22,6 +23,9 @@ public sealed record BattleCommand(ScriptRef Label, FigtSelChoice Choice, bool C
 public sealed class BattleCommands(FigtSelMenu menu)
 {
     private const string Sel = "FIGT_SEL.ADV";
+
+    /// <summary>Our screen's name for the Direct attack (owner, 2026-10-13): the close-combat exchange, front row to front row, which the enemy answers.</summary>
+    public const string MeleeName = "Melee";
 
     /// <summary>
     /// The argument of the commands that take no target: no enemy button under the pointer, as a right
@@ -39,7 +43,7 @@ public sealed class BattleCommands(FigtSelMenu menu)
     /// The attacks on <paramref name="target"/>, one banner each: the unit's own attack type first
     /// (<c>AttackType + 1</c>: Bow, Magic or Direct), then Direct, then the specials (the debug Cheater Beam
     /// among them) — each only when its mode allows the target's button (4-7). Empty for an own card and
-    /// for a target no attack reaches (a melee unit in the back row).
+    /// for a target no attack reaches (a melee unit in the back row). Direct is named "Melee" here.
     /// </summary>
     public IReadOnlyList<BattleCommand> Banners(BattlePlace target)
     {
@@ -53,7 +57,8 @@ public sealed class BattleCommands(FigtSelMenu menu)
         modes.AddRange(menu.Options.Select(o => o.Command).Where(c => c.Value is >= 10 and <= 21));
         return [.. modes
             .Where(m => menu.Find(m)?.Arguments.Contains(button) == true)
-            .Select(m => new BattleCommand(ModeLabel(m.Value), new FigtSelChoice(m, button)))];
+            .Select(m => new BattleCommand(ModeLabel(m.Value), new FigtSelChoice(m, button),
+                Name: m == FigtSelCommand.Direct ? MeleeName : null))];
     }
 
     /// <summary>

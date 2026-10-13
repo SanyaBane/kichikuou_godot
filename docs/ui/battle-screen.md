@@ -258,6 +258,10 @@ picture, the slot panels) is not shown. How it is built:
    `IBattleInput.WaitForReleaseAsync` now (the game reads the mouse as `IM`; replays and tests find no
    button down), and the answering click is read off the input when `FIGT_SEL` returns, as the script's
    own `IM` polls take it.
+   Renamed 2026-10-13 (owner): on our screen the Direct banner reads "Melee" (`BattleCommands.MeleeName`) —
+   the close-combat exchange, front row to front row, which the enemy answers; the script's "Direct" pairs
+   with "Indirect" (the bow). The original's windows (the prompt, the exchange's "Direct Attack") keep the
+   script's text.
 5. **The scene and the exchange**: the engagement's pictures, the shots and counters, the action
    labels, the wiped-out marks.
 6. **Windows**: the round header, the flavour lines, the results, the info boxes, the strategy

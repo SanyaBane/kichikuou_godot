@@ -137,7 +137,7 @@ internal sealed partial class BattleCommandLayer : Control
         {
             _hovered = place;
             _banners = place is { } t
-                ? [.. _commands.Banners(t).Select(b => (_text(b.Label).Trim(), b.Choice))]
+                ? [.. _commands.Banners(t).Select(b => (b.Name ?? _text(b.Label).Trim(), b.Choice))]
                 : [];
             QueueRedraw();
         }
@@ -211,7 +211,7 @@ internal sealed partial class BattleCommandLayer : Control
     private void OpenMenu(BattlePlace place, Vector2 at)
     {
         var order = place.Side == BattleSide.Player && _state is { } s ? BattleBoard.Card(s, place)?.Order : null;
-        var items = _commands!.ContextMenu(place, order).Select(c => (_text(c.Label).Trim(), c.Choice, c.Current)).ToList();
+        var items = _commands!.ContextMenu(place, order).Select(c => (c.Name ?? _text(c.Label).Trim(), c.Choice, c.Current)).ToList();
         if (items.Count == 0)
             return;
         float width = MenuMinWidth;

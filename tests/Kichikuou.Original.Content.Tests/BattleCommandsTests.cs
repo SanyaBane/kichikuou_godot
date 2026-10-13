@@ -66,7 +66,7 @@ public class BattleCommandsTests(ITestOutputHelper output)
         [.. commands.Select(c => $"{c.Choice.Command.Value}:{c.Choice.Argument.Value}{(c.Current ? "*" : "")}")];
 
     private static string[] Labels(IEnumerable<BattleCommand> commands) =>
-        [.. commands.Select(c => Texts.Value.Read(c.Label).Format([], _ => ""))];
+        [.. commands.Select(c => c.Name ?? Texts.Value.Read(c.Label).Format([], _ => ""))];
 
     [Fact]
     public void A_melee_unit_in_front_attacks_the_enemy_front_row_directly_and_nothing_from_the_back()
@@ -87,11 +87,11 @@ public class BattleCommandsTests(ITestOutputHelper output)
         var bow = new BattleCommands(Menu(5, 1, slot: 2));
         Assert.Equal(["2:4", "1:4"], Codes(bow.Banners(Enemy(1))));
         Assert.Equal(["2:7"], Codes(bow.Banners(Enemy(4))));
-        Assert.Equal(["Bow", "Direct"], Labels(bow.Banners(Enemy(1))));
+        Assert.Equal(["Bow", "Melee"], Labels(bow.Banners(Enemy(1))));
 
         var mage = new BattleCommands(Menu(17, 2, slot: 1, focus: 1));     // White Destruction Beam with focus
         Assert.Equal(["3:5", "1:5", "13:5"], Codes(mage.Banners(Enemy(2))));
-        Assert.Equal(["Magic", "Direct", "WD Beam"], Labels(mage.Banners(Enemy(2))));
+        Assert.Equal(["Magic", "Melee", "WD Beam"], Labels(mage.Banners(Enemy(2))));
         Assert.Equal(["3:6", "13:6"], Codes(mage.Banners(Enemy(3))));
     }
 
@@ -101,7 +101,7 @@ public class BattleCommandsTests(ITestOutputHelper output)
         Assert.Equal(["1:4"], Codes(new BattleCommands(Menu(1, 0)).Banners(Enemy(1))));
         var focused = new BattleCommands(Menu(1, 0, focus: 1));
         Assert.Equal(["1:4", "11:4"], Codes(focused.Banners(Enemy(1))));
-        Assert.Equal(["Direct", "Rance Attack"], Labels(focused.Banners(Enemy(1))));
+        Assert.Equal(["Melee", "Rance Attack"], Labels(focused.Banners(Enemy(1))));
     }
 
     [Fact]
