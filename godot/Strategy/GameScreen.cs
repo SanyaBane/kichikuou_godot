@@ -494,6 +494,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             ClearSkippedStage();
         }
         _presenter.Show(scriptEvent);
+        if (scriptEvent is EngagementSceneEvent)
+            await WaitForArmiesAsync();
         if (scriptEvent is MessageEvent message)
             _skip.OnMessage(message.Text);
         else if (scriptEvent is ValueMessageEvent values)
@@ -527,6 +529,28 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_presenter.TakeFade() is { } fade)
             await FadeAsync(fade);
     }
+
+    /// <summary>
+    /// An exchange begins (its engagement picture, numbers not yet drawn): on our battle screen it waits
+    /// until the armies have slid into place (<see cref="BattleBoardView.ArmiesSettled"/>) — the ones the
+    /// player's choice or the turn brought in, or the exchange's own (owner, 2026-10-13: the choice itself
+    /// never waits for a slide, the fighting does).
+    /// </summary>
+    private async Task WaitForArmiesAsync()
+    {
+        var watch = Stopwatch.StartNew();
+        while (BattleScreenShown && !_battleView.ArmiesSettled(_presenter.Scene))
+        {
+            if (_options.Auto && !_slideShot && watch.Elapsed.TotalSeconds >= BattleScreenSettings.Get(BattleScreenSettings.ArmySeconds) / 2)
+            {
+                _slideShot = true;                                          // unattended play's dump: once a launch, halfway
+                Shot("slide");
+            }
+            await NextFrameAsync();
+        }
+    }
+
+    private bool _slideShot;
 
     /// <summary>
     /// Animates a palette fade over its <see cref="FadeRequest.Duration"/>, never skipped, unless
@@ -1090,7 +1114,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         var hovered = _battleView.Commands.Active ? _battleView.Commands.Lit   // a card lights up only while the player chooses
             : _sel is null ? null : _battleView.PlaceAt(GetLocalMousePosition() - _content.Position, _presenter.State!);
         _battleView.Refresh(_presenter, input, screenChanged, hovered,
-            instant: _skip.IsSkipping);                                        // MsgSkip: the order strip's chips jump to their places
+            instant: _skip.IsSkipping,                                         // MsgSkip: the order strip's chips jump to their places
+            slidesInstant: _skip.IsSkipping || _options.Fast);                 // and the armies (--fast: no slides)
     }
 
     /// <summary>

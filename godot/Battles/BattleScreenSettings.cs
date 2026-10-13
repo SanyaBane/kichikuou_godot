@@ -5,7 +5,7 @@ namespace Kichikuou.Game.Battles;
 /// <summary>
 /// The settings of our own battle screen (Option → Battle Screen…, <see cref="BattleScreenSettingsDialog"/>),
 /// kept in <c>[battle_screen]</c> of <c>user://settings.cfg</c>; a change applies at once. So far the order
-/// strip's moves (<see cref="OrderStrip"/>).
+/// strip's moves (<see cref="OrderStrip"/>) and the armies' slides (<see cref="BattleBoardView"/>).
 /// </summary>
 internal static class BattleScreenSettings
 {
@@ -26,13 +26,20 @@ internal static class BattleScreenSettings
     public static readonly Setting StripDropShare = new("strip_drop_share", "Order strip: drop and rise", 0.05, 0.45, 0.01, 0.2, "%",
         "The part of the move the jumping chip spends going down a row, and again coming up into its place.");
 
-    public static IReadOnlyList<Setting> All { get; } = [StripSeconds, StripHurrySeconds, StripDropShare];
+    /// <summary>How long an army takes to slide into the scene or out of it (Sengoku Rance's slides).</summary>
+    public static readonly Setting ArmySeconds = new("army_seconds", "Armies: slide", 0, 3, 0.05, 0.2, "s",
+        "How long an army takes to slide into the scene from its side, or out of it (0: at once). The exchange waits for it.");
+
+    public static IReadOnlyList<Setting> All { get; } = [StripSeconds, StripHurrySeconds, StripDropShare, ArmySeconds];
+
+    /// <summary>The development switches that set a setting for the launch.</summary>
+    private static readonly (string Switch, Setting Setting)[] Switches = [("--strip-seconds", StripSeconds), ("--army-seconds", ArmySeconds)];
 
     private static Dictionary<string, double>? _values;
 
     /// <summary>
-    /// A setting's value: <c>--strip-seconds x</c> for the launch (development) for <see cref="StripSeconds"/>,
-    /// else the file's, else the default.
+    /// A setting's value: <c>--strip-seconds x</c> / <c>--army-seconds x</c> for the launch (development) for
+    /// <see cref="StripSeconds"/> / <see cref="ArmySeconds"/>, else the file's, else the default.
     /// </summary>
     public static double Get(Setting setting)
     {
@@ -44,10 +51,13 @@ internal static class BattleScreenSettings
             foreach (var s in All)
                 _values[s.Key] = loaded ? Math.Clamp((double)config.GetValue(Section, s.Key, s.Default), s.Min, s.Max) : s.Default;
             var args = OS.GetCmdlineUserArgs();
-            int at = Array.IndexOf(args, "--strip-seconds");
-            if (at >= 0 && at + 1 < args.Length
-                && double.TryParse(args[at + 1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double given))
-                _values[StripSeconds.Key] = Math.Clamp(given, StripSeconds.Min, StripSeconds.Max);
+            foreach (var (name, s) in Switches)
+            {
+                int at = Array.IndexOf(args, name);
+                if (at >= 0 && at + 1 < args.Length
+                    && double.TryParse(args[at + 1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double given))
+                    _values[s.Key] = Math.Clamp(given, s.Min, s.Max);
+            }
         }
         return _values[setting.Key];
     }

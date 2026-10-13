@@ -16,7 +16,8 @@ namespace Kichikuou.Original.Content.Battles;
 /// up); between exchanges the turn's actor and its target (<see cref="Observe"/>), while the player
 /// chooses the acting unit and the enemy whose card the pointer is on (<see cref="Hover"/>). Follows the battle's events with
 /// the state as it is when each is shown (<see cref="Observe"/>); draws on its own <see cref="Surface"/>,
-/// never on the stage. Engine-independent.
+/// never on the stage. Besides the whole picture it keeps its layers, so a view can slide the armies in and
+/// out (<see cref="FieldY"/>, <see cref="PlayerArmy"/>). Engine-independent.
 /// </summary>
 public sealed class BattleScene
 {
@@ -31,6 +32,22 @@ public sealed class BattleScene
 
     /// <summary>The y the "unable to fight" marks (CG 891/892, y 256) move up to.</summary>
     public const int CmdrMarkY = 112;
+
+    /// <summary>
+    /// The picture's layers on <see cref="Surface"/>, each <see cref="Width"/> × <see cref="Height"/>: the
+    /// battlefield alone at (0, <see cref="FieldY"/>); the player's army at (0, <see cref="ArmyY"/>) and the
+    /// enemy's at (<see cref="EnemyArmyX"/>, <see cref="ArmyY"/>), on the colour key
+    /// (<see cref="Surface.SpriteKey"/>) where they draw nothing; the front — the battlefield's overlay and the
+    /// exchange's numbers, on the key — at (0, <see cref="FrontY"/>). The battlefield, the enemy's army, the
+    /// player's over it (the picture draws them so) and the front make the picture.
+    /// </summary>
+    public const int FieldY = 560, ArmyY = 820, EnemyArmyX = 640, FrontY = 1080;
+
+    /// <summary>Where the overlay alone is kept (right of the battlefield), copied under the front's numbers at every change.</summary>
+    private const int OverlayX = 640;
+
+    /// <summary>A side's army in the picture: its record (the unit or the commander; 0: none drawn) and the x span its sprites cover.</summary>
+    public readonly record struct Army(int Record, int Left, int Right);
 
     private readonly CgLibrary _cgs;
     private Mode _mode;
@@ -55,11 +72,17 @@ public sealed class BattleScene
     public BattleScene(CgLibrary cgs)
     {
         _cgs = cgs;
-        Surface = new Surface(1280, 560);
+        Surface = new Surface(1280, FrontY + Height);
     }
 
-    /// <summary>The scene's surface: the picture at (0, 0)-(640, 256), the digit sheets right of it.</summary>
+    /// <summary>The scene's surface: the picture at (0, 0)-(640, 256), the digit sheets right of it, the layers below (<see cref="FieldY"/>).</summary>
     public Surface Surface { get; }
+
+    /// <summary>The player's army in the picture's layer (changes with <see cref="PictureVersion"/>).</summary>
+    public Army PlayerArmy { get; private set; }
+
+    /// <summary>The enemy's army in the picture's layer (changes with <see cref="PictureVersion"/>).</summary>
+    public Army EnemyArmy { get; private set; }
 
     /// <summary>
     /// Whether the battle's field or an exchange is on: the split screen shows (not the pre-battle map,
@@ -86,6 +109,8 @@ public sealed class BattleScene
     /// <summary>
     /// Whether the player is choosing the acting unit's command (<c>FIGT_SEL</c>): the picture shows the
     /// acting unit and, on the right, only the enemy whose card the pointer is on (<see cref="Hover"/>).
+    /// When the choice ends that enemy stays — an attack's target is the card its banner was on, and the
+    /// target's highlight follows — so a view does not move its army out and in again.
     /// </summary>
     public bool Choosing
     {
@@ -95,6 +120,8 @@ public sealed class BattleScene
             if (_choosing == value)
                 return;
             _choosing = value;
+            if (!value && _mode == Mode.Between)
+                _cmdr = _hovered;
             _hovered = 0;
             if (_mode == Mode.Between)
                 Render();
@@ -283,7 +310,8 @@ public sealed class BattleScene
             return;
         if (_mode == Mode.Between)
             ComposeBetween(s);
-        string picture = $"{_background} {_overlay} {string.Join(",", _enemySprites)} / {string.Join(",", _playerSprites)}";
+        var (unit, cmdr) = _mode == Mode.Between ? InFocus : (_unit, _cmdr);
+        string picture = $"{_background} {_overlay} {string.Join(",", _enemySprites)} / {string.Join(",", _playerSprites)} | {unit} {cmdr}";
         if (picture != _picture)
         {
             // The picture under the numbers, kept below the scene; the digit sheets load their palettes after it, as in FIGT.
@@ -298,12 +326,55 @@ public sealed class BattleScene
                 G(_background + 1, 0, BaseY, keyed: true, own: true);
             G(888, 640, CounterSheetY, keyed: false, own: false);
             G(893, 640, AttackSheetY, keyed: false, own: false);
+            DrawLayers(unit, cmdr);
             PictureVersion++;
         }
         Surface.Copy(0, BaseY, Width, Height, 0, 0);
+        Surface.Copy(OverlayX, FieldY, Width, Height, 0, FrontY);
         if (_mode == Mode.Engagement)
-            DrawNumbers(s);
+        {
+            DrawNumbers(s, 0);
+            DrawNumbers(s, FrontY);
+        }
         Version++;
+    }
+
+    /// <summary>
+    /// The layers of the picture just drawn (<see cref="FieldY"/>), in the palette its CGs loaded (none is
+    /// loaded again): the battlefield, the overlay alone, each side's army on the key.
+    /// </summary>
+    private void DrawLayers(int unit, int cmdr)
+    {
+        Surface.Fill(0, FieldY, Width, Height, 0);
+        Put(_background, 0, FieldY, keyed: false);
+        Surface.Fill(OverlayX, FieldY, Width, Height, Surface.SpriteKey);         // after the field, which may reach into it
+        if (_overlay)
+            Put(_background + 1, OverlayX, FieldY, keyed: true);
+        PlayerArmy = ArmyLayer(_playerSprites, unit, 0);
+        EnemyArmy = ArmyLayer(_enemySprites, cmdr, EnemyArmyX);                  // after the player's, which may reach into it
+    }
+
+    private Army ArmyLayer(IReadOnlyList<int> sprites, int record, int x)
+    {
+        Surface.Fill(x, ArmyY, Width, Height, Surface.SpriteKey);
+        int left = Width, right = 0;
+        foreach (int number in sprites)
+        {
+            if (Put(number, x, ArmyY, keyed: true) is not { } cg)
+                continue;
+            left = Math.Min(left, Math.Max(0, cg.X));
+            right = Math.Max(right, Math.Min(Width, cg.X + cg.Width));
+        }
+        return right > left ? new Army(record, left, right) : default;
+    }
+
+    /// <summary>A CG at its own position moved by (x, y), in the palette of the moment (no palette load).</summary>
+    private CgImage? Put(int number, int x, int y, bool keyed)
+    {
+        if (number == 0 || _cgs.Get(number) is not { } cg)
+            return null;
+        Surface.DrawCgRegion(cg, 0, 0, cg.Width, cg.Height, cg.X + x, cg.Y + y, keyed ? Surface.SpriteKey : null);
+        return cg;
     }
 
     /// <summary>Where the picture under the numbers is kept (below the scene, left of nothing).</summary>
@@ -343,9 +414,10 @@ public sealed class BattleScene
     /// <summary>
     /// The exchange's numbers in the picture: the counters (<c>L_02c00</c>), the shots of the frame
     /// (<c>FIGTATTK.ADV:34-126</c>), the results (<c>:134-233</c>) and the marks (<c>:235-246</c>),
-    /// as the presenter draws them on the stage but with the rows below 255 moved up (<see cref="Y"/>).
+    /// as the presenter draws them on the stage but with the rows below 255 moved up (<see cref="Y"/>),
+    /// on the picture at y <paramref name="oy"/> (the whole one, or the front layer).
     /// </summary>
-    private void DrawNumbers(GameState s)
+    private void DrawNumbers(GameState s, int oy)
     {
         if (_counters is null && _shotsStep is null && !_results && _marks is null)
             return;
@@ -356,17 +428,17 @@ public sealed class BattleScene
             Counters(unit.Troops != 0 ? (unit.Troops - s.Bt_ETroopVsTroopDmg - s.Bt_ECmdrVsTroopDmg).Value : null,
                 cmdr.Troops != 0 ? (cmdr.Troops - s.Bt_PTroopVsTroopDmg - s.Bt_PCmdrVsTroopDmg).Value : null,
                 (unit.HP - s.Bt_ETroopVsCmdrDmg - s.Bt_ECmdrVsCmdrDmg).Value,
-                (cmdr.HP - s.Bt_PTroopVsCmdrDmg - s.Bt_PCmdrVsCmdrDmg).Value, AttackSheetY);
+                (cmdr.HP - s.Bt_PTroopVsCmdrDmg - s.Bt_PCmdrVsCmdrDmg).Value, AttackSheetY, oy);
             const int t = 360, d = t * 5 / 11;
             foreach (var (shots, damage, x, y) in Rows(s, t, d, damages: true))
             {
                 if (shots != 0)
-                    BattlePresenter.DrawNumber(Surface, damage, x, Y(y), 1, AttackSheetY);
+                    BattlePresenter.DrawNumber(Surface, damage, x, oy + Y(y), 1, AttackSheetY);
             }
         }
         else if (_counters is { } c)
         {
-            Counters(c.UnitTroops != 0 ? c.UnitTroops : null, c.CmdrTroops != 0 ? c.CmdrTroops : null, c.UnitHp, c.CmdrHp, CounterSheetY);
+            Counters(c.UnitTroops != 0 ? c.UnitTroops : null, c.CmdrTroops != 0 ? c.CmdrTroops : null, c.UnitHp, c.CmdrHp, CounterSheetY, oy);
         }
         if (_shotsStep is int step)
         {
@@ -374,39 +446,39 @@ public sealed class BattleScene
             foreach (var (shots, _, x, y) in Rows(s, step, d, damages: false))
             {
                 if (shots != 0)
-                    BattlePresenter.DrawNumber(Surface, shots, x, Y(y), 1, AttackSheetY);
+                    BattlePresenter.DrawNumber(Surface, shots, x, oy + Y(y), 1, AttackSheetY);
             }
         }
         if (_marks is { } m)
         {
             if (m.PlayerTroops)
-                G(889, 0, 0, keyed: true, own: true);
+                G(889, 0, oy, keyed: true, own: true);
             if (m.EnemyTroops)
-                G(890, 0, 0, keyed: true, own: true);
+                G(890, 0, oy, keyed: true, own: true);
             if (m.PlayerCmdr)
-                G(891, 0, CmdrMarkY - 256, keyed: true, own: true);
+                G(891, 0, oy + CmdrMarkY - 256, keyed: true, own: true);
             if (m.EnemyCmdr)
-                G(892, 0, CmdrMarkY - 256, keyed: true, own: true);
+                G(892, 0, oy + CmdrMarkY - 256, keyed: true, own: true);
         }
     }
 
     /// <summary>The TROOPS labels and numbers (a side without troops shows none) and the HP labels and numbers, moved up to <see cref="HpY"/>.</summary>
-    private void Counters(int? unitTroops, int? cmdrTroops, int unitHp, int cmdrHp, int sheetY)
+    private void Counters(int? unitTroops, int? cmdrTroops, int unitHp, int cmdrHp, int sheetY, int oy)
     {
         if (unitTroops is int ut)
         {
-            Surface.CopyKeyed(990, sheetY, 100, 32, 0, 0);
-            BattlePresenter.DrawNumber(Surface, ut, 100, 0, 0, sheetY);
+            Surface.CopyKeyed(990, sheetY, 100, 32, 0, oy);
+            BattlePresenter.DrawNumber(Surface, ut, 100, oy, 0, sheetY);
         }
         if (cmdrTroops is int ct)
         {
-            Surface.CopyKeyed(990, sheetY, 100, 32, 392, 0);
-            BattlePresenter.DrawNumber(Surface, ct, 480, 0, 0, sheetY);
+            Surface.CopyKeyed(990, sheetY, 100, 32, 392, oy);
+            BattlePresenter.DrawNumber(Surface, ct, 480, oy, 0, sheetY);
         }
-        Surface.CopyKeyed(990, sheetY + 64, 64, 32, 0, HpY);
-        BattlePresenter.DrawNumber(Surface, unitHp, 0, HpY, 0, sheetY);
-        Surface.CopyKeyed(990, sheetY + 64, 64, 32, 480, HpY);
-        BattlePresenter.DrawNumber(Surface, cmdrHp, 480, HpY, 0, sheetY);
+        Surface.CopyKeyed(990, sheetY + 64, 64, 32, 0, oy + HpY);
+        BattlePresenter.DrawNumber(Surface, unitHp, 0, oy + HpY, 0, sheetY);
+        Surface.CopyKeyed(990, sheetY + 64, 64, 32, 480, oy + HpY);
+        BattlePresenter.DrawNumber(Surface, cmdrHp, 480, oy + HpY, 0, sheetY);
     }
 
     /// <summary>The eight shot rows at step <paramref name="t"/>: their counts (or damages) and positions on the original's screen.</summary>

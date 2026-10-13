@@ -62,7 +62,10 @@ internal sealed partial class BattleBoardView : Control
     private readonly ColorRect _back;
     private readonly Control _sidesClip;
     private readonly TextureRect _sides;
-    private readonly TextureRect _scene;
+    private readonly Control _sceneClip;                    // the scene's layers, clipped to its area
+    private readonly TextureRect _field, _front;
+    private readonly ArmySlide _playerArmy, _enemyArmy;
+    private bool _armiesInstant, _jumpArmies = true;
     private readonly TextureRect _windows;
     private readonly BattleCommandLayer _commands;
     private readonly BattleDialogLayer _dialog;
@@ -79,8 +82,8 @@ internal sealed partial class BattleBoardView : Control
     private ulong _blinkFrom;
     private bool _blinkOn;
     private readonly Dictionary<int, ImageTexture?> _portraits = [];
-    private ImageTexture? _sceneTexture, _sidesTexture, _windowsTexture;
-    private byte[]? _sceneRgba, _windowsRgba;
+    private ImageTexture? _fieldTexture, _frontTexture, _sidesTexture, _windowsTexture;
+    private byte[]? _frontRgba, _windowsRgba;
     private int _sceneVersion = -1, _pictureVersion = -1;
     private string _cardsKey = "?", _stripKey = "?", _speakerKey = "?";
     private (int Rounds, int Left) _gaugeValues;
@@ -107,8 +110,13 @@ internal sealed partial class BattleBoardView : Control
         };
         _sides.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _sidesClip.AddChild(_sides);
-        _scene = Picture();
-        AddChild(_scene);
+        _sceneClip = new Control { ClipContents = true, MouseFilter = MouseFilterEnum.Ignore };
+        AddChild(_sceneClip);
+        _field = Layer();
+        _enemyArmy = new ArmySlide(BattleSide.Enemy, Layer());              // the player's over the enemy's, as the picture draws them
+        _playerArmy = new ArmySlide(BattleSide.Player, Layer());
+        _front = Layer();
+        VisibilityChanged += () => _jumpArmies = true;                     // shown again: the armies stand where they are
 
         _speaker = Picture();                                               // the portrait has its own frame and name
         _speaker.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
@@ -154,6 +162,14 @@ internal sealed partial class BattleBoardView : Control
         MouseFilter = MouseFilterEnum.Ignore,
     };
 
+    /// <summary>A layer of the scene (<see cref="BattleScene.FieldY"/>), over the ones before it.</summary>
+    private TextureRect Layer()
+    {
+        var layer = Picture();
+        _sceneClip.AddChild(layer);
+        return layer;
+    }
+
     /// <summary>Option → Palette: the screen in <paramref name="palette"/>'s colours at once.</summary>
     public void SetPalette(DeploymentPalette palette)
     {
@@ -194,7 +210,10 @@ internal sealed partial class BattleBoardView : Control
         }
         At(_back, new Rect2(0, 0, 1280, 800));
         At(_sidesClip, SidesArea);
-        At(_scene, SceneArea);
+        At(_sceneClip, SceneArea);
+        foreach (var layer in new[] { _field, _front })
+            (layer.Position, layer.Size) = (Vector2.Zero, _sceneClip.Size);
+        PlaceArmies();
         At(_windows, WindowsArea);
         At(_strip, StripArea);
         _strip.SetScale(scale);
@@ -217,11 +236,14 @@ internal sealed partial class BattleBoardView : Control
     /// Fills the screen from the presenter: the scene's picture when it changed, the windows' layer when
     /// <paramref name="screenChanged"/> (with the input screen's own windows, <paramref name="inputWindows"/>),
     /// the cards (<paramref name="hovered"/> lit), the strip, the gauge and the speaker when what they show changed.
+    /// <paramref name="instant"/>: the strip's chips jump to their places; <paramref name="slidesInstant"/>: the armies too.
     /// </summary>
-    public void Refresh(GamePresenter presenter, IEnumerable<WindowShape> inputWindows, bool screenChanged, BattlePlace? hovered, bool instant)
+    public void Refresh(GamePresenter presenter, IEnumerable<WindowShape> inputWindows, bool screenChanged, BattlePlace? hovered,
+        bool instant, bool slidesInstant)
     {
         if (presenter.State is not { } s)
             return;
+        _armiesInstant = slidesInstant;
         if (presenter.Scene.Version != _sceneVersion)
         {
             _sceneVersion = presenter.Scene.Version;
@@ -256,18 +278,26 @@ internal sealed partial class BattleBoardView : Control
     }
 
     /// <summary>
-    /// The scene's 640×256 picture, and the sides when the picture under the numbers changed
-    /// (<see cref="BattleScene.PictureVersion"/>): that picture blurred (shrunk and grown again).
+    /// The scene's 640×256 picture as its layers (<see cref="BattleScene.FieldY"/>): the front (the overlay and the
+    /// numbers) at every change; the battlefield, the armies (<see cref="ArmySlide"/>) and the sides when the picture
+    /// under the numbers changed (<see cref="BattleScene.PictureVersion"/>) — the sides that picture blurred
+    /// (shrunk and grown again).
     /// </summary>
     private void UploadScene(BattleScene scene)
     {
         int w = BattleScene.Width * Surface.Scale, h = BattleScene.Height * Surface.Scale;
-        _sceneRgba = scene.Surface.ReadArea(0, 0, BattleScene.Width, BattleScene.Height, _sceneRgba);
-        Upload(ref _sceneTexture, Image.CreateFromData(w, h, false, Image.Format.Rgba8, _sceneRgba));
-        _scene.Texture = _sceneTexture;
+        Image AsImage(byte[] rgba) => Image.CreateFromData(w, h, false, Image.Format.Rgba8, rgba);
+        _frontRgba = scene.Surface.ReadLayer(0, BattleScene.FrontY, BattleScene.Width, BattleScene.Height, _frontRgba);
+        Upload(ref _frontTexture, AsImage(_frontRgba));
+        _front.Texture = _frontTexture;
         if (scene.PictureVersion == _pictureVersion)
             return;
         _pictureVersion = scene.PictureVersion;
+        Upload(ref _fieldTexture, AsImage(scene.Surface.ReadArea(0, BattleScene.FieldY, BattleScene.Width, BattleScene.Height)));
+        _field.Texture = _fieldTexture;
+        _playerArmy.Arrive(scene.PlayerArmy, AsImage(scene.Surface.ReadLayer(0, BattleScene.ArmyY, BattleScene.Width, BattleScene.Height)));
+        _enemyArmy.Arrive(scene.EnemyArmy,
+            AsImage(scene.Surface.ReadLayer(BattleScene.EnemyArmyX, BattleScene.ArmyY, BattleScene.Width, BattleScene.Height)));
         var blurred = Image.CreateFromData(w, h, false, Image.Format.Rgba8,
             scene.Surface.ReadArea(0, BattleScene.PictureY, BattleScene.Width, BattleScene.Height));
         blurred.Resize(w / 16, h / 16, Image.Interpolation.Bilinear);
@@ -312,6 +342,103 @@ internal sealed partial class BattleBoardView : Control
             _portraits[cg] = texture;
         }
         return texture;
+    }
+
+    // ------------------------------------------------------------------ the armies' slides
+
+    /// <summary>
+    /// Whether the armies stand where the scene has them (its latest picture taken, no slide under way): the
+    /// exchange waits for it (<see cref="GameScreen"/>), the player's choice does not.
+    /// </summary>
+    public bool ArmiesSettled(BattleScene scene) => scene.PictureVersion == _pictureVersion && _playerArmy.Settled && _enemyArmy.Settled;
+
+    /// <summary>The armies' slides go on (<see cref="BattleScreenSettings.ArmySeconds"/>; at once while skipping and when the screen is shown again).</summary>
+    private void StepArmies(double delta)
+    {
+        double seconds = BattleScreenSettings.Get(BattleScreenSettings.ArmySeconds);
+        bool instant = _armiesInstant || _jumpArmies || seconds <= 0;
+        _jumpArmies = false;
+        float amount = instant ? 1 : (float)(delta / seconds);
+        _playerArmy.Step(amount, instant);
+        _enemyArmy.Step(amount, instant);
+        PlaceArmies();
+    }
+
+    private void PlaceArmies()
+    {
+        float unit = _sceneClip.Size.X / BattleScene.Width;              // window pixels to a script pixel of the scene
+        _playerArmy.Place(_sceneClip.Size, unit);
+        _enemyArmy.Place(_sceneClip.Size, unit);
+    }
+
+    /// <summary>
+    /// One side's army in the scene, sliding as Sengoku Rance's (docs/sengoku/04-screen.md §2.3; owner, 2026-10-13):
+    /// horizontally and evenly, from just outside the scene on its side (the player's left, the enemy's right) into
+    /// place and back. A new army waits for the one shown to slide out, then slides in; the same army with other
+    /// sprites (fewer troops, an exchange's) changes in place.
+    /// </summary>
+    private sealed class ArmySlide(BattleSide side, TextureRect rect)
+    {
+        private BattleScene.Army _shown, _target;
+        private Image? _pending;                                    // the target's picture while the shown army leaves
+        private ImageTexture? _texture;
+        private float _in;                                          // 1: in place; 0: its sprites' edge at the scene's
+
+        public bool Settled => _shown.Record == _target.Record && (_shown.Record == 0 || _in >= 1);
+
+        /// <summary>The scene's picture of this side changed: <paramref name="army"/> drawn in <paramref name="picture"/>.</summary>
+        public void Arrive(BattleScene.Army army, Image picture)
+        {
+            _target = army;
+            if (army.Record == _shown.Record)
+            {
+                _shown = army;
+                _pending = null;
+                Show(picture);
+            }
+            else
+            {
+                _pending = picture;
+            }
+        }
+
+        /// <summary>Moves by <paramref name="amount"/> of a whole slide.</summary>
+        public void Step(float amount, bool instant)
+        {
+            if (_shown.Record != _target.Record)
+            {
+                if (_shown.Record != 0 && _in > 0 && !instant)
+                {
+                    _in = Math.Max(0, _in - amount);
+                    return;
+                }
+                _shown = _target;
+                if (_pending is not null)
+                    Show(_pending);
+                _pending = null;
+                _in = instant ? 1 : 0;
+            }
+            else if (_shown.Record != 0 && _in < 1)
+            {
+                _in = instant ? 1 : Math.Min(1, _in + amount);
+            }
+        }
+
+        public void Place(Vector2 size, float unit)
+        {
+            float outside = side == BattleSide.Player ? -_shown.Right : BattleScene.Width - _shown.Left;
+            rect.Position = new Vector2((float)Math.Round((1 - _in) * outside * unit), 0);
+            rect.Size = size;
+        }
+
+        private void Show(Image picture)
+        {
+            if (_texture is null || _texture.GetWidth() != picture.GetWidth() || _texture.GetHeight() != picture.GetHeight())
+                _texture = ImageTexture.CreateFromImage(picture);
+            else
+                _texture.Update(picture);
+            rect.Texture = _texture;
+        }
     }
 
     // ------------------------------------------------------------------ the cards
@@ -364,6 +491,7 @@ internal sealed partial class BattleBoardView : Control
 
     public override void _Process(double delta)
     {
+        StepArmies(delta);
         if (_actingPlace is null)
             return;
         bool on = (Time.GetTicksMsec() - _blinkFrom) / BlinkMs % 2 == 0;

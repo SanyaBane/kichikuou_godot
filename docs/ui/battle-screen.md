@@ -112,6 +112,18 @@ picture, the slot panels) is not shown. How it is built:
   original draws below row 255 moves up — the HP counters to y 224, the commanders' rows halfway
   (y' = 80 + (y − 80) / 2), "UNABLE TO FIGHT" to y 112. The slide (the picture scrolling 112 rows
   down) is not shown: the picture stands whole from the start.
+- **The armies slide** (owner, 2026-10-13; Sengoku Rance's, docs/sengoku/04-screen.md §2.3): an army
+  that comes into the picture slides in from outside the scene on its side (the player's from the left,
+  the enemy's from the right), one that leaves slides out the same way; horizontally, evenly, in
+  Option → Battle Screen… → "Armies: slide" (0.2 s by default; `--army-seconds x` for a launch), at once
+  while skipping and with `--fast`. A new army on a side waits for the one shown there to leave; the same
+  army with other sprites changes in place. The player's choice never waits for a slide (the hovered
+  enemy slides in and out while the pointer moves); the exchange does: its engagement picture waits until
+  every army stands in place, then the numbers run. When the choice ends the hovered enemy stays in the
+  picture (the attack's target), so it does not slide out and in again. The scene keeps the picture's
+  layers for it (`BattleScene.FieldY`: the battlefield, each army on the key, the front — the overlay and
+  the numbers); our screen stacks them (`BattleBoardView`'s `ArmySlide`), `GameScreen` waits for them at
+  an `EngagementSceneEvent`.
 - **The windows over it** (round header, "vs", the flavour lines, the results, the info boxes, the
   prompt, the popups, the script menus) are the stage's screen as the original draws it, shown only
   inside the windows' own shapes (their frame CGs, the selection boxes): the 640×400 screen fitted to

@@ -303,7 +303,8 @@ commit `local.env`.
   (the acting unit's menu, another own card's, closed by a click off it; Retreat, whose dialog it
   cancels; back at the turn, each enemy card's banners, two sample menus' two and three banners never
   answered, then a click on the target's Melee banner; dumps `menu`, `menu-orders`, `retreat`,
-  `banners-E1`…, `sample-2-banners`, `sample-3-banners`, `banner-hover`; it moves the system pointer,
+  `banners-E1`…, `sample-2-banners`, `sample-3-banners`, `banner-hover`, and without `--fast` `slide`
+(halfway through the first wait for the armies' slides; `--army-seconds 1` makes them long enough); it moves the system pointer,
   so leave the mouse alone); its dumps need a window (no `--headless`).
 - **A look at one screen** (screen dumps for the owner) starts from a kept save, never from the
   prologue (owner's requests 2026-10-12): `user://saves-week18` holds the owner's own game at week 18

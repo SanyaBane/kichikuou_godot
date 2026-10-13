@@ -484,6 +484,21 @@ public sealed class Surface
         return target;
     }
 
+    /// <summary>
+    /// <see cref="ReadArea"/> for a layer drawn on the colour key: the pixels of <see cref="SpriteKey"/> (and
+    /// the colours stored with its marker) come out transparent, every other one opaque.
+    /// </summary>
+    public byte[] ReadLayer(int x, int y, int width, int height, byte[]? target = null)
+    {
+        int count = width * Scale;
+        target ??= new byte[count * 4 * height * Scale];
+        for (int row = 0; row < height * Scale; row++)
+            ResolveRow(Pixel(x, y, row), count, target, row * count * 4, opaque: false);
+        for (int i = 3; i < target.Length; i += 4)
+            target[i] = target[i] == KeyAlpha ? (byte)0 : (byte)255;
+        return target;
+    }
+
     /// <summary>The stored pixel number of row <paramref name="row"/> (stored) below script pixel (x, y).</summary>
     private int Pixel(int x, int y, int row) => (y * Scale + row) * _rowPixels + x * Scale;
 

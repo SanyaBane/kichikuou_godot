@@ -71,7 +71,8 @@ public class BattleSceneTests(ITestOutputHelper output)
         scene.Hover(null);                                              // off the card
         Assert.Equal((1, 0), scene.InFocus);
         scene.Hover(dodge);
-        scene.Choosing = false;                                         // Rance attacks Dodge
+        scene.Choosing = false;                                         // Rance attacks Dodge: he stays, no slide out and in
+        Assert.Equal((1, 5), scene.InFocus);
         See(new PanelHighlightEvent(5), rance);
         Assert.Equal((1, 5), scene.InFocus);
         (s.Unit_Cur, s.Cmdr_Cur) = (1, 5);
@@ -92,7 +93,9 @@ public class BattleSceneTests(ITestOutputHelper output)
     /// engagement stands whole with its counters (the slide's last step), the scene's rows 0-223 are the
     /// original's screen there (the HP counters, moved to row 224, aside); between exchanges it shows a
     /// player unit and an enemy commander that stand in the slots; the picture kept under the numbers
-    /// changes only with <see cref="BattleScene.PictureVersion"/> (what our screen's sides are blurred from).
+    /// changes only with <see cref="BattleScene.PictureVersion"/> (what our screen's sides are blurred from);
+    /// the layers our screen slides the armies on (<see cref="BattleScene.FieldY"/>) make the picture again,
+    /// and each side's army is the one in focus.
     /// </summary>
     [CaptureTheory]
     [MemberData(nameof(Captures))]
@@ -108,7 +111,7 @@ public class BattleSceneTests(ITestOutputHelper output)
         int lastOffset = -1;
         var wrong = new List<string>();
         byte[]? picture = null;
-        int pictureVersion = -1, pictures = 0, actors = 0;
+        int pictureVersion = -1, pictures = 0, actors = 0, layers = 0;
         var view = new ObservingView(e =>
         {
             presenter.Show(e);
@@ -131,10 +134,23 @@ public class BattleSceneTests(ITestOutputHelper output)
                 bool same = picture is not null && now.AsSpan().SequenceEqual(picture);
                 if (scene.PictureVersion == pictureVersion && !same && picture is not null)
                     wrong.Add($"the picture under the numbers changed without its version ({e.GetType().Name})");
-                if (scene.PictureVersion != pictureVersion)
+                bool newPicture = scene.PictureVersion != pictureVersion;
+                if (newPicture)
                     pictures++;
                 picture = now;
                 pictureVersion = scene.PictureVersion;
+                // The layers stacked: at a new picture, and with the numbers where the engagement is compared (stacking
+                // at every counter is what would take the time).
+                if (newPicture || (e is CountersEvent && lastOffset == 0 && scene.InEngagement))
+                {
+                    if (Stacked(scene) is int differ && differ > 0)
+                        wrong.Add($"the layers differ from the picture at {differ} pixels ({e.GetType().Name})");
+                    layers++;
+                }
+                var (unit, cmdr) = scene.InEngagement ? (state!.Unit_Cur.Value, state!.Cmdr_Cur.Value) : scene.InFocus;
+                int shownUnit = scene.PlayerArmy.Record, shownCmdr = scene.EnemyArmy.Record;     // 0: no sprite drawn
+                if ((shownUnit != 0 && shownUnit != unit) || (shownCmdr != 0 && shownCmdr != cmdr))
+                    wrong.Add($"the armies' layers show {scene.PlayerArmy.Record} / {scene.EnemyArmy.Record}, the picture {unit} / {cmdr}");
             }
             if (e is EngagementSlideEvent slide)
                 lastOffset = slide.Offset.Value;
@@ -174,8 +190,41 @@ public class BattleSceneTests(ITestOutputHelper output)
             presenter.Start(s);
             scene.Start(s);
         });
-        output.WriteLine($"{file}: {compared} engagements compared, {between} redraws, {pictures} pictures, {actors} actors highlighted; replay {(report.Passed ? "matches" : "diverges")}");
+        output.WriteLine($"{file}: {compared} engagements compared, {between} redraws, {pictures} pictures, {layers} layer stacks, "
+            + $"{actors} actors highlighted; replay {(report.Passed ? "matches" : "diverges")}");
         Assert.Empty(wrong);
+    }
+
+    /// <summary>
+    /// The battlefield, the enemy's army, the player's and the front, each over the ones before it where it
+    /// is not transparent, against the whole picture: the stored pixels that differ.
+    /// </summary>
+    private static int Stacked(BattleScene scene)
+    {
+        const int w = BattleScene.Width, h = BattleScene.Height;
+        var surface = scene.Surface;
+        var stack = surface.ReadArea(0, BattleScene.FieldY, w, h);
+        foreach (var layer in new[]
+        {
+            surface.ReadLayer(BattleScene.EnemyArmyX, BattleScene.ArmyY, w, h),
+            surface.ReadLayer(0, BattleScene.ArmyY, w, h),
+            surface.ReadLayer(0, BattleScene.FrontY, w, h),
+        })
+        {
+            for (int i = 0; i < stack.Length; i += 4)
+            {
+                if (layer[i + 3] != 0)
+                    Array.Copy(layer, i, stack, i, 4);
+            }
+        }
+        var whole = surface.ReadArea(0, 0, w, h);
+        int differ = 0;
+        for (int i = 0; i < stack.Length; i += 4)
+        {
+            if (stack[i] != whole[i] || stack[i + 1] != whole[i + 1] || stack[i + 2] != whole[i + 2])
+                differ++;
+        }
+        return differ;
     }
 
     /// <summary>
