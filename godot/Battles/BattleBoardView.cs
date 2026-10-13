@@ -60,6 +60,7 @@ internal sealed partial class BattleBoardView : Control
     private readonly TextureRect _scene;
     private readonly TextureRect _windows;
     private readonly BattleCommandLayer _commands;
+    private readonly BattleDialogLayer _dialog;
 
     /// <summary>Layout pixels to a script pixel of the windows' layer.</summary>
     private static float WindowScale => WindowsArea.Size.X / Surface.ScreenWidth;
@@ -127,6 +128,8 @@ internal sealed partial class BattleBoardView : Control
         }
         _commands = new BattleCommandLayer();                               // over the cards
         AddChild(_commands);
+        _dialog = new BattleDialogLayer();                                  // over everything
+        AddChild(_dialog);
         SetPalette(_colours);
         SetFont(font);
     }
@@ -147,6 +150,7 @@ internal sealed partial class BattleBoardView : Control
         _back.Color = palette.Back;
         _strip.SetPalette(palette);
         _commands.SetPalette(palette);
+        _dialog.SetPalette(palette);
         _cardsKey = _stripKey = "?";
         _gauge.QueueRedraw();
     }
@@ -188,6 +192,8 @@ internal sealed partial class BattleBoardView : Control
         At(_speaker, _speakerArea);
         At(_commands, new Rect2(0, 0, 1280, 800));
         _commands.Layout(CardArea, scale);
+        At(_dialog, new Rect2(0, 0, 1280, 800));
+        _dialog.Layout(scale);
         foreach (var (place, (card, _)) in _cards)
             At(card, CardArea(place));
         _theme.DefaultFontSize = Math.Max(8, (int)Math.Round(TextSize * scale));
@@ -491,6 +497,9 @@ internal sealed partial class BattleBoardView : Control
 
     /// <summary>Our command input over the cards (<c>FIGT_SEL</c> in New).</summary>
     public BattleCommandLayer Commands => _commands;
+
+    /// <summary>Our dialog for a script menu of the battle (the retreat confirmation in New).</summary>
+    public BattleDialogLayer Dialog => _dialog;
 
     /// <summary>The layout point under <paramref name="local"/> (in the parent's coordinates).</summary>
     public Vector2 ToLayout(Vector2 local) => (local - _origin) / _scale;

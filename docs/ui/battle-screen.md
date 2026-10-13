@@ -262,6 +262,18 @@ picture, the slot panels) is not shown. How it is built:
    the close-combat exchange, front row to front row, which the enemy answers; the script's "Direct" pairs
    with "Indirect" (the bow). The original's windows (the prompt, the exchange's "Direct Attack") keep the
    script's text.
+
+   ✓ 2026-10-13 the script menus (owner, mock-up B): only the retreat confirmation (`FIGT.ADV:571-580`)
+   opens over our screen — `FIGT_B`'s Intercept / Ninja Scout / Abandon City and the ninja come before the
+   field is drawn, on the original's screen, and stay the original's (the strategic map's interface,
+   later). On our screen it is our dialog (`Original.Content/Battles/BattleDialog`, `godot/Battles/BattleDialogLayer`):
+   the screen dimmed, a box centred over the scene in the context menus' style, our question "Retreat the
+   whole army?" and "The battle is lost." (muted) over the script's items, Retreat in the palette's warning
+   colour. A left release on an item chooses it; Esc, a right press or a left press off the box cancels
+   (no code: Cease Retreat, as a right click on the script's menu). The other menus, and a dialog open when
+   the interface changes, are the script's (`BattleMenuScreen`). `--auto --interface new` in a window
+   chooses Retreat from the acting unit's menu on its first turn, cancels the dialog (dump `retreat`) and
+   goes on to the banners in the same turn.
 5. **The scene and the exchange**: the engagement's pictures, the shots and counters, the action
    labels, the wiped-out marks.
 6. **Windows**: the round header, the flavour lines, the results, the info boxes, the strategy

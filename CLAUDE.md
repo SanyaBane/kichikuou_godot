@@ -244,7 +244,8 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `Original.Content/Battles/BattleScene` on top, the stage's windows over it through `WindowMask`, the
   cards and the round's order from `BattleBoard`/`RoundOrder`, the order strip `OrderStrip` moving on its own;
   `FIGT_SEL` answered by our own input, `BattleCommandLayer`: banners and context menus from
-  `Original.Content/Battles/BattleCommands`; its settings Option → Battle Screen…, `BattleScreenSettings`);
+  `Original.Content/Battles/BattleCommands`; the retreat confirmation our dialog, `BattleDialogLayer`
+  from `BattleDialog`; its settings Option → Battle Screen…, `BattleScreenSettings`);
   `GodotGlyphRenderer` (TextServer; MS Gothic or the bundled BIZ UDGothic in `godot/fonts`, Option →
   Fonts, `--font ms-gothic|biz-ud-gothic` for one launch), `BattleAudio`; `Screens` switches screens. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
 - `tools/analysis/` — Python scripts for reading the decompiled scenario; `tools/codegen/` —
@@ -298,12 +299,12 @@ commit `local.env`.
   (`--weeks n`) or two weeks after story stage `--stage n` is reached — `--seed 2 --weeks 60 --stage 2`
   takes Oaks in week 34 and stops in week 36, ~15 min (exit code 0; 1 after an error). `--interface new`
   builds the parties in our own deployment table and swaps the first two places by drops and back,
-  and in a window, once a launch, answers the first `FIGT_SEL` through the pointer on our command
-  input (the acting unit's menu, another own card's, closed by a click off it; each enemy card's
-  banners, two sample menus' two and three banners never answered, then a click on the target's
-  Direct banner; dumps `menu`, `menu-orders`, `banners-E1`…, `sample-2-banners`, `sample-3-banners`,
-  `banner-hover`; it moves the system pointer, so leave the mouse alone); its dumps need a window
-  (no `--headless`).
+  and in a window, once a launch, answers the first turn through the pointer on our command input
+  (the acting unit's menu, another own card's, closed by a click off it; Retreat, whose dialog it
+  cancels; back at the turn, each enemy card's banners, two sample menus' two and three banners never
+  answered, then a click on the target's Melee banner; dumps `menu`, `menu-orders`, `retreat`,
+  `banners-E1`…, `sample-2-banners`, `sample-3-banners`, `banner-hover`; it moves the system pointer,
+  so leave the mouse alone); its dumps need a window (no `--headless`).
 - **A look at one screen** (screen dumps for the owner) starts from a kept save, never from the
   prologue (owner's requests 2026-10-12): `user://saves-week18` holds the owner's own game at week 18
   (LP 3, month 5, week 2; stage 1, the Leazas week) — the one to use, chosen by the owner (2026-10-13)

@@ -186,6 +186,22 @@ public class BattleCommandsTests(ITestOutputHelper output)
         Assert.Empty(missing.Distinct().Take(10));
     }
 
+    /// <summary>The retreat confirmation the core asks (cancelled here) opens our dialog: its question, Retreat as a warning, Cease Retreat.</summary>
+    [Fact]
+    public async Task The_retreat_confirmation_is_our_dialog_and_the_enemy_s_attack_menus_are_not()
+    {
+        var input = new MenuInput();
+        var battle = new Battle(new GameState(), new NoRandom(), new NullView(), input, new NoHooks());
+        await battle.PlayerRetreatAsync();
+        var dialog = BattleDialog.For(Assert.Single(input.Menus))!;
+        Assert.Equal(("Retreat the whole army?", "The battle is lost."), (dialog.Question, dialog.Note));
+        Assert.Equal(["1:Retreat:True", "2:Cease Retreat:False"],
+            dialog.Items.Select(i => $"{i.Code.Value}:{Texts.Value.Read(i.Label).Format([], _ => "")}:{i.Warning}"));
+
+        Assert.Null(BattleDialog.For(new BattleMenu(BattleMenuKind.EnemyAttackResponse, [])));
+        Assert.Null(BattleDialog.For(new BattleMenu(BattleMenuKind.NinjaScout, [])));
+    }
+
     public static IEnumerable<object[]> Captures =>
         LocalData.Captures.Any() ? LocalData.Captures.Select(f => new object[] { Path.GetFileName(f) }) : [[""]];
 
@@ -193,5 +209,18 @@ public class BattleCommandsTests(ITestOutputHelper output)
     {
         public Task<FigtSelChoice> SelectCommandAsync(FigtSelMenu menu) => throw new InvalidOperationException("Unexpected FIGT_SEL");
         public Task<Sys3Int?> ChooseAsync(BattleMenu menu) => throw new InvalidOperationException("Unexpected menu");
+    }
+
+    /// <summary>Cancels every script menu and keeps it.</summary>
+    private sealed class MenuInput : UnexpectedInput, IBattleInput
+    {
+        public List<BattleMenu> Menus { get; } = [];
+        public Task<FigtSelChoice> SelectCommandAsync(FigtSelMenu menu) => throw new InvalidOperationException("Unexpected FIGT_SEL");
+
+        public Task<Sys3Int?> ChooseAsync(BattleMenu menu)
+        {
+            Menus.Add(menu);
+            return Task.FromResult<Sys3Int?>(null);
+        }
     }
 }

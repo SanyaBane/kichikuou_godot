@@ -674,6 +674,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             Screens.ToTitle(this);
             return;
         }
+        if (key.Pressed && key.Keycode == Godot.Key.Escape && _battleView.Dialog.Escape())
+        {
+            _answered?.TrySetResult();                                      // cancels our battle screen's dialog
+            return;
+        }
         if (key.Pressed && key.Keycode == Godot.Key.Escape && _battleView.Commands.Escape())
             return;                                                         // closes our battle screen's context menu
         if (MenuHotKey(key))
@@ -688,6 +693,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _presenter.Pointer(x, y);
         if (_battleView.Commands.Active)
             _battleView.Commands.Move(_battleView.ToLayout(_battlePointer - _content.Position));
+        if (_battleView.Dialog.Active)
+            _battleView.Dialog.Move(_battleView.ToLayout(_battlePointer - _content.Position));
         HoverScene();
         if (_sel is null && _battleMenu is null)
             return;
@@ -716,6 +723,18 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// </summary>
     private void BattleButton(ushort code, bool pressed)
     {
+        var dialog = _battleView.Dialog;
+        if (dialog.Active)
+        {
+            var at = _battleView.ToLayout(_battlePointer - _content.Position);
+            if (pressed)
+                dialog.Press(code == KeySpace, at);
+            else
+                dialog.Release(code == KeySpace, at);
+            if (dialog.Done)
+                _answered?.TrySetResult();
+            return;
+        }
         var commands = _battleView.Commands;
         if (commands.Active)
         {
@@ -1059,8 +1078,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         if (!show)
         {
-            if (_battleView.Commands.Active)
-                _answered?.TrySetResult();                                  // the interface changed: the original's FIGT_SEL takes over
+            if (_battleView.Commands.Active || _battleView.Dialog.Active)
+                _answered?.TrySetResult();                                  // the interface changed: the original's FIGT_SEL or menu takes over
             return;
         }
         var size = _view.Size;
@@ -1164,7 +1183,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             await DelayAsync(_options.Fast ? 0 : 0.5);
             var direct = menu.Find(FigtSelCommand.Direct);
-            if (!_autoCommandsUsed && BattleScreenShown && DisplayServer.GetName() != "headless" && direct is { Arguments.Count: > 0 })
+            if (_autoCommandsPhase < 3 && BattleScreenShown && DisplayServer.GetName() != "headless" && direct is { Arguments.Count: > 0 })
                 return await AutoCommandsAsync(menu, direct.Arguments[0]);
             return direct is { Arguments.Count: > 0 }
                 ? new FigtSelChoice(FigtSelCommand.Direct, direct.Arguments[0])
@@ -1217,78 +1236,69 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     }
 
     /// <summary>
-    /// Unattended play on our battle screen, once a launch (in a window): the first choice goes through the
-    /// pointer as a player's would — a right click on the acting unit's card opens its menu (screen dump
-    /// "menu", the pointer on its first item), one on another own card opens that one's ("menu-orders"), a
-    /// left click off it closes it; the pointer on each enemy card shows its banners (dumps "banners-E1"…);
-    /// two sample menus, never answered, show two and three banners on the target ("sample-2-banners",
-    /// "sample-3-banners": Rance Attack added; Bow and Whirlwind Shot added); then the pointer on the
-    /// target's Direct banner ("banner-hover"), and a click there attacks. Anything else is an error.
+    /// Unattended play on our battle screen, once a launch (in a window): the first turn goes through the
+    /// pointer as a player's would. First a right click on the acting unit's card opens its menu (screen
+    /// dump "menu", the pointer on its first item), one on another own card opens that one's
+    /// ("menu-orders"), a left click off it closes it, and Retreat from the acting unit's menu asks the
+    /// retreat dialog, which <see cref="AutoRetreatDialogAsync"/> cancels. Back at the same turn: the
+    /// pointer on each enemy card shows its banners (dumps "banners-E1"…); two sample menus, never
+    /// answered, show two and three banners on the target ("sample-2-banners", "sample-3-banners": Rance
+    /// Attack added; Bow and Whirlwind Shot added); then the pointer on the target's Melee banner
+    /// ("banner-hover"), and a click there attacks. Anything else is an error.
     /// </summary>
     private async Task<FigtSelChoice> AutoCommandsAsync(FigtSelMenu menu, Sys3Int button)
     {
-        _autoCommandsUsed = true;
         var s = _presenter.State!;
-        GD.Print($"Kichikuou: --auto opens the acting unit's menu, closes it, shows the banners and attacks by a banner (week {s.Week.Value}).");
         var model = new BattleCommands(menu);
-        var target = new BattlePlace(BattleSide.Enemy, button.Value - 3);
-        var expected = new FigtSelChoice(FigtSelCommand.Direct, button);
         var commands = _battleView.Commands;
         _battleButtons = 0;
         _answered = new TaskCompletionSource();
         _presenter.Scene.Choosing = true;
         commands.Begin(model, s, _presenter.Battle.Text);
-        async Task Move(Vector2 layout)
-        {
-            var at = _content.Position + _battleView.FromLayout(layout);
-            WarpMouse(at);
-            _battlePointer = at;
-            _input.Position = ToScript(at);
-            PointerMoved();
-            await NextFrameAsync();
-            await NextFrameAsync();
-        }
-        async Task Click(Vector2 layout, ushort code)
-        {
-            await Move(layout);
-            _input.Button(code, true);
-            BattleButton(code, true);
-            await NextFrameAsync();
-            _input.Button(code, false);
-            BattleButton(code, false);
-            await NextFrameAsync();
-            await NextFrameAsync();
-        }
-        async Task Dump(string what)
-        {
-            Shot(what);
-            await NextFrameAsync();
-            await NextFrameAsync();
-        }
-        static Vector2 Centre(BattlePlace place) => BattleBoardView.CardArea(place).GetCenter();
-        static Vector2 Face(BattlePlace place) => BattleBoardView.CardArea(place).Position + new Vector2(220, 75);   // an enemy's face, off its banners
         try
         {
-            await Click(Centre(model.Acting), KeySpace);
-            if (!commands.MenuOpen || commands.ItemCentre(0) is not { } first)
-                throw new InvalidOperationException("--auto's right click on the acting unit's card opened no menu.");
-            await Move(first);
-            await Dump("menu");
-            var other = Enumerable.Range(1, menu.PlayerSlotsUsed.Value).Select(n => new BattlePlace(BattleSide.Player, n)).FirstOrDefault(p => p != model.Acting);
-            if (other.Slot != 0)
+            if (_autoCommandsPhase == 0)
             {
-                await Click(Centre(other), KeySpace);                          // another card: its menu at once
-                if (commands.ItemCentre(1) is { } second)
-                    await Move(second);
-                await Dump("menu-orders");
+                GD.Print($"Kichikuou: --auto opens the cards' menus and asks the retreat dialog (week {s.Week.Value}).");
+                await AutoClickAsync(Centre(model.Acting), KeySpace);
+                if (!commands.MenuOpen || commands.ItemCentre(0) is not { } first)
+                    throw new InvalidOperationException("--auto's right click on the acting unit's card opened no menu.");
+                await AutoMoveAsync(first);
+                await AutoDumpAsync("menu");
+                var other = Enumerable.Range(1, menu.PlayerSlotsUsed.Value).Select(n => new BattlePlace(BattleSide.Player, n)).FirstOrDefault(p => p != model.Acting);
+                if (other.Slot != 0)
+                {
+                    await AutoClickAsync(Centre(other), KeySpace);             // another card: its menu at once
+                    if (commands.ItemCentre(1) is { } second)
+                        await AutoMoveAsync(second);
+                    await AutoDumpAsync("menu-orders");
+                }
+                await AutoClickAsync(new Vector2(640, 300), KeyReturn);        // in the scene, off the menu
+                if (commands.MenuOpen || commands.Result is not null)
+                    throw new InvalidOperationException("--auto's left click off the menu did not close it.");
+                var retreat = new FigtSelChoice(FigtSelCommand.Retreat, BattleCommands.NoButton);
+                await AutoClickAsync(Centre(model.Acting), KeySpace);
+                int item = commands.MenuItems.ToList().IndexOf(retreat);
+                if (item >= 0 && commands.ItemCentre(item) is { } at)
+                {
+                    await AutoClickAsync(at, KeyReturn);
+                    if (commands.Result != retreat)
+                        throw new InvalidOperationException($"--auto's click on Retreat answered {commands.Result}, not {retreat}.");
+                    _autoCommandsPhase = 1;                                    // the retreat dialog comes next
+                    return retreat;
+                }
+                await AutoClickAsync(new Vector2(640, 300), KeyReturn);
+                _autoCommandsPhase = 2;                                        // no Retreat in the menu: on to the banners
             }
-            await Click(new Vector2(640, 300), KeyReturn);                     // in the scene, off the menu
-            if (commands.MenuOpen || commands.Result is not null)
-                throw new InvalidOperationException("--auto's left click off the menu did not close it.");
+
+            GD.Print($"Kichikuou: --auto shows the banners and attacks by a banner (week {s.Week.Value}).");
+            _autoCommandsPhase = 3;
+            var target = new BattlePlace(BattleSide.Enemy, button.Value - 3);
+            var expected = new FigtSelChoice(FigtSelCommand.Direct, button);
             for (int slot = 1; slot <= menu.EnemySlotsUsed.Value; slot++)
             {
-                await Move(Face(new BattlePlace(BattleSide.Enemy, slot)));
-                await Dump($"banners-E{slot}");
+                await AutoMoveAsync(Face(new BattlePlace(BattleSide.Enemy, slot)));
+                await AutoDumpAsync($"banners-E{slot}");
             }
             // Samples for the banners' look, never answered: the menus a unit with a special and focus would get.
             var button4 = new List<Sys3Int> { button };
@@ -1299,18 +1309,18 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             })
             {
                 commands.Begin(new BattleCommands(sample), s, _presenter.Battle.Text);
-                await Move(Face(target));
-                await Dump($"{name}-banners");
+                await AutoMoveAsync(Face(target));
+                await AutoDumpAsync($"{name}-banners");
             }
             commands.Begin(model, s, _presenter.Battle.Text);
-            await Move(Face(target));
+            await AutoMoveAsync(Face(target));
             if (commands.BannerCentre(expected) is not { } banner)
-                throw new InvalidOperationException($"--auto found no Direct banner on {target} (banners {string.Join(", ", commands.Banners)}).");
-            await Move(banner);
-            await Dump("banner-hover");
-            await Click(banner, KeyReturn);
+                throw new InvalidOperationException($"--auto found no Melee banner on {target} (banners {string.Join(", ", commands.Banners)}).");
+            await AutoMoveAsync(banner);
+            await AutoDumpAsync("banner-hover");
+            await AutoClickAsync(banner, KeyReturn);
             if (commands.Result != expected)
-                throw new InvalidOperationException($"--auto's click on {target}'s Direct banner answered {commands.Result}, not {expected}.");
+                throw new InvalidOperationException($"--auto's click on {target}'s Melee banner answered {commands.Result}, not {expected}.");
             return expected;
         }
         finally
@@ -1318,9 +1328,79 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             commands.End();
             _presenter.Scene.Choosing = false;
             _presenter.Invalidate();
+            _input.ReadMouse();
+        }
+
+        static Vector2 Centre(BattlePlace place) => BattleBoardView.CardArea(place).GetCenter();
+        static Vector2 Face(BattlePlace place) => BattleBoardView.CardArea(place).Position + new Vector2(220, 75);   // an enemy's face, off its banners
+    }
+
+    /// <summary>
+    /// Unattended play, after <see cref="AutoCommandsAsync"/> chose Retreat: the retreat dialog through the
+    /// pointer (dump "retreat", the pointer on Retreat), cancelled by a left click off it.
+    /// </summary>
+    private async Task<Sys3Int?> AutoRetreatDialogAsync(BattleDialog dialog)
+    {
+        _autoCommandsPhase = 2;
+        GD.Print("Kichikuou: --auto shows the retreat dialog and cancels it.");
+        var layer = _battleView.Dialog;
+        _battleButtons = 0;
+        _answered = new TaskCompletionSource();
+        layer.Begin(dialog, _presenter.Battle.Text);
+        try
+        {
+            await AutoMoveAsync(layer.ItemCentre(0));
+            await AutoDumpAsync("retreat");
+            await AutoClickAsync(new Vector2(100, 100), KeyReturn);           // in the scene, off the box
+            if (!layer.Done || layer.Result is not null)
+                throw new InvalidOperationException($"--auto's click off the retreat dialog did not cancel it (done {layer.Done}, {layer.Result}).");
+            return null;
+        }
+        finally
+        {
+            layer.End();
+            _input.ReadMouse();
         }
     }
 
+    /// <summary>Unattended play: the system pointer and the script's onto layout point <paramref name="layout"/> of our battle screen.</summary>
+    private async Task AutoMoveAsync(Vector2 layout)
+    {
+        var at = _content.Position + _battleView.FromLayout(layout);
+        WarpMouse(at);
+        _battlePointer = at;
+        _input.Position = ToScript(at);
+        PointerMoved();
+        await NextFrameAsync();
+        await NextFrameAsync();
+    }
+
+    /// <summary>Unattended play: a click (press and release) at layout point <paramref name="layout"/>.</summary>
+    private async Task AutoClickAsync(Vector2 layout, ushort code)
+    {
+        await AutoMoveAsync(layout);
+        _input.Button(code, true);
+        BattleButton(code, true);
+        await NextFrameAsync();
+        _input.Button(code, false);
+        BattleButton(code, false);
+        await NextFrameAsync();
+        await NextFrameAsync();
+    }
+
+    /// <summary>Unattended play: a screen dump of the next frame, then two frames for it to be taken.</summary>
+    private async Task AutoDumpAsync(string what)
+    {
+        Shot(what);
+        await NextFrameAsync();
+        await NextFrameAsync();
+    }
+
+    /// <summary>
+    /// A script menu of the battle: on our battle screen the retreat confirmation is our own dialog
+    /// (<see cref="BattleDialogLayer"/>); the rest, or once the interface changes while it is open, the
+    /// script's menu (<see cref="BattleMenuScreen"/>).
+    /// </summary>
     public async Task<Sys3Int?> ChooseAsync(BattleMenu menu)
     {
         _pointer.Interrupt();
@@ -1328,6 +1408,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.Auto)
         {
             await DelayAsync(_options.Fast ? 0 : 0.5);
+            if (_autoCommandsPhase == 1 && BattleScreenShown && BattleDialog.For(menu) is { } auto)
+                return await AutoRetreatDialogAsync(auto);
             if (menu.Kind == BattleMenuKind.EnemyAttackResponse && _autoAbandon)
             {
                 // FIGT_B's menu after a stopped deployment picker: Abandon City (code 3).
@@ -1336,9 +1418,27 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             }
             return menu.Options[0].Code;
         }
-        _answered = new TaskCompletionSource();
         _battleButtons = 0;
         _skip.OnMenu();
+        if (BattleScreenShown && BattleDialog.For(menu) is { } dialog)
+        {
+            var layer = _battleView.Dialog;
+            _answered = new TaskCompletionSource();
+            layer.Begin(dialog, _presenter.Battle.Text);
+            PointerMoved();
+            try
+            {
+                await _answered.Task;
+                if (layer.Done)
+                    return layer.Result;
+            }
+            finally
+            {
+                layer.End();
+                _input.ReadMouse();
+            }
+        }
+        _answered = new TaskCompletionSource();
         _battleMenu = new BattleMenuScreen(_presenter.Battle, menu);
         _battleMenu.MouseMove(_input.Position.X, _input.Position.Y);
         _presenter.Invalidate();
@@ -1447,8 +1547,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private int _autoDrops;
     private bool _autoDropsUsed;
 
-    /// <summary>Whether the unattended player has used our battle screen's command input through the pointer (once a launch).</summary>
-    private bool _autoCommandsUsed;
+    /// <summary>
+    /// How far the unattended player has gone through our battle screen's input by the pointer (once a launch,
+    /// <see cref="AutoCommandsAsync"/>): 0 not yet, 1 Retreat chosen, 2 its dialog cancelled, 3 done.
+    /// </summary>
+    private int _autoCommandsPhase;
 
     /// <summary>The pointer as the last mouse event (or unattended play) put it, in this control's coordinates.</summary>
     private Vector2 _battlePointer;
