@@ -82,7 +82,10 @@ public sealed class BattleScene
         Surface = new Surface(1280, FrontY + Height);
     }
 
-    /// <summary>The scene's surface: the picture at (0, 0)-(640, 256), the digit sheets right of it, the layers below (<see cref="FieldY"/>).</summary>
+    /// <summary>
+    /// The scene's surface: the layers (<see cref="FieldY"/>), the digit sheets right of (0, 0), and there the
+    /// whole picture when <see cref="ComposeWhole"/> puts it together.
+    /// </summary>
     public Surface Surface { get; }
 
     /// <summary>The player's army in the picture's layer (changes with <see cref="PictureVersion"/>).</summary>
@@ -101,13 +104,12 @@ public sealed class BattleScene
     public int Version { get; private set; }
 
     /// <summary>
-    /// Counts the changes of the picture under the numbers (the battlefield and the armies' sprites),
-    /// kept at (0, <see cref="PictureY"/>) of <see cref="Surface"/>: a view blurs it for the screen's
-    /// sides only when this moves, not at every number of an exchange.
+    /// Counts the changes of the picture under the numbers (the battlefield and the armies' layers), not
+    /// every number of an exchange; each layer has its own count besides (<see cref="FieldVersion"/>).
     /// </summary>
     public int PictureVersion { get; private set; }
 
-    /// <summary>Where on <see cref="Surface"/> the picture under the numbers is kept (<see cref="Width"/> × <see cref="Height"/>).</summary>
+    /// <summary>Where on <see cref="Surface"/> <see cref="ComposeWhole"/> puts the picture under the numbers (<see cref="Width"/> × <see cref="Height"/>).</summary>
     public const int PictureY = BaseY;
 
     /// <summary>The player unit and the enemy commander the picture shows between exchanges (0: none).</summary>
@@ -146,6 +148,7 @@ public sealed class BattleScene
         _mode = Mode.Between;
         _unit = _cmdr = _hovered = _drawnUnit = _drawnCmdr = 0;
         _engaged = _choosing = false;
+        _fieldKey = _enemyKey = _playerKey = null;                       // the new battle's picture drawn whole
         ClearNumbers();
     }
 
@@ -310,7 +313,12 @@ public sealed class BattleScene
 
     // ------------------------------------------------------------------ drawing
 
-    /// <summary>Draws the picture again from what the scene holds.</summary>
+    /// <summary>
+    /// Draws again what changed of the picture (owner, 2026-10-13: a pointer moving over the enemies' cards
+    /// must not cost frames): the palette as the original's drawing loads it, then only the layers whose CGs
+    /// changed (<see cref="FieldY"/>; a hovered enemy redraws the enemy's army alone), and the front when
+    /// it shows numbers or its overlay changed.
+    /// </summary>
     private void Render()
     {
         if (_state is not { } s)
@@ -322,47 +330,99 @@ public sealed class BattleScene
             (_drawnUnit, _playerArrival) = (unit, _playerArrival + 1);
         if (cmdr != _drawnCmdr)
             (_drawnCmdr, _enemyArrival) = (cmdr, _enemyArrival + 1);
-        string picture = $"{_background} {_overlay} {string.Join(",", _enemySprites)} / {string.Join(",", _playerSprites)} | {unit} {cmdr}";
-        if (picture != _picture)
+        if (!_sheetsDrawn)
         {
-            // The picture under the numbers, kept below the scene; the digit sheets load their palettes after it, as in FIGT.
-            _picture = picture;
-            Surface.Fill(0, BaseY, Width, Height, 0);
-            G(_background, 0, BaseY, keyed: false, own: true);
-            foreach (int cg in _enemySprites)
-                G(cg, 0, BaseY, keyed: true, own: true);
-            foreach (int cg in _playerSprites)
-                G(cg, 0, BaseY, keyed: true, own: true);
-            if (_overlay)
-                G(_background + 1, 0, BaseY, keyed: true, own: true);
-            G(888, 640, CounterSheetY, keyed: false, own: false);
-            G(893, 640, AttackSheetY, keyed: false, own: false);
-            DrawLayers(unit, cmdr);
+            _sheetsDrawn = true;
+            Sheet(888, CounterSheetY);
+            Sheet(893, AttackSheetY);
+        }
+        string field = $"{_background} {_overlay}";
+        string enemy = $"{string.Join(",", _enemySprites)} {cmdr} {_enemyArrival}";
+        string player = $"{string.Join(",", _playerSprites)} {unit} {_playerArrival}";
+        bool fieldChanged = field != _fieldKey;
+        if (fieldChanged || enemy != _enemyKey || player != _playerKey)
+        {
+            // The palette as FIGT leaves it: the battlefield, the sprites, the overlay, then the digit sheets.
+            var palette = Surface.Palette;
+            int[] loads = [_background, .. _enemySprites, .. _playerSprites, _overlay ? _background + 1 : 0, 888, 893];
+            foreach (int number in loads)
+            {
+                if (number != 0 && _cgs.Get(number) is { } cg)
+                    palette = cg.PaletteOver(palette);
+            }
+            Surface.Palette = palette;
+            if (fieldChanged)
+            {
+                _fieldKey = field;
+                Surface.Fill(0, FieldY, Width, Height, 0);
+                Put(_background, 0, FieldY, keyed: false);
+                Surface.Fill(OverlayX, FieldY, Width, Height, Surface.SpriteKey);
+                if (_overlay)
+                    Put(_background + 1, OverlayX, FieldY, keyed: true);
+                FieldVersion++;
+            }
+            if (enemy != _enemyKey)
+            {
+                _enemyKey = enemy;
+                EnemyArmy = ArmyLayer(_enemySprites, cmdr, EnemyArmyX, _enemyArrival);
+                EnemyLayerVersion++;
+            }
+            if (player != _playerKey)
+            {
+                _playerKey = player;
+                PlayerArmy = ArmyLayer(_playerSprites, unit, 0, _playerArrival);
+                PlayerLayerVersion++;
+            }
             PictureVersion++;
         }
-        Surface.Copy(0, BaseY, Width, Height, 0, 0);
-        Surface.Copy(OverlayX, FieldY, Width, Height, 0, FrontY);
-        if (_mode == Mode.Engagement)
+        if (fieldChanged || _mode == Mode.Engagement || _frontNumbers)
         {
-            DrawNumbers(s, 0);
-            DrawNumbers(s, FrontY);
+            Surface.Copy(OverlayX, FieldY, Width, Height, 0, FrontY);
+            _frontNumbers = _mode == Mode.Engagement;
+            if (_frontNumbers)
+                DrawNumbers(s, FrontY);
+            FrontVersion++;
+        }
+        if (!Surface.Palette.SameAs(_shownPalette))
+        {
+            _shownPalette = Surface.Palette;
+            PaletteVersion++;
         }
         Version++;
     }
 
+    private string? _fieldKey, _enemyKey, _playerKey;
+    private bool _sheetsDrawn, _frontNumbers;
+    private Palette? _shownPalette;
+
+    /// <summary>Counts the redraws of the battlefield's layer (and the overlay kept beside it).</summary>
+    public int FieldVersion { get; private set; }
+
+    /// <summary>Counts the redraws of the enemy's army's layer (<see cref="EnemyArmy"/>).</summary>
+    public int EnemyLayerVersion { get; private set; }
+
+    /// <summary>Counts the redraws of the player's army's layer (<see cref="PlayerArmy"/>).</summary>
+    public int PlayerLayerVersion { get; private set; }
+
+    /// <summary>Counts the redraws of the front (the overlay and the exchange's numbers).</summary>
+    public int FrontVersion { get; private set; }
+
+    /// <summary>Counts the palette's changes: every layer shows in the new one (a view reads them all again).</summary>
+    public int PaletteVersion { get; private set; }
+
     /// <summary>
-    /// The layers of the picture just drawn (<see cref="FieldY"/>), in the palette its CGs loaded (none is
-    /// loaded again): the battlefield, the overlay alone, each side's army on the key.
+    /// The whole picture from the layers, as the original draws it: the picture under the numbers at
+    /// (0, <see cref="PictureY"/>) — the battlefield, the enemy's army, the player's, the overlay — and with
+    /// the front's numbers at (0, 0). Not kept up to date by the scene itself (no view needs it); for the tests.
     /// </summary>
-    private void DrawLayers(int unit, int cmdr)
+    public void ComposeWhole()
     {
-        Surface.Fill(0, FieldY, Width, Height, 0);
-        Put(_background, 0, FieldY, keyed: false);
-        Surface.Fill(OverlayX, FieldY, Width, Height, Surface.SpriteKey);         // after the field, which may reach into it
-        if (_overlay)
-            Put(_background + 1, OverlayX, FieldY, keyed: true);
-        PlayerArmy = ArmyLayer(_playerSprites, unit, 0, _playerArrival);
-        EnemyArmy = ArmyLayer(_enemySprites, cmdr, EnemyArmyX, _enemyArrival);   // after the player's, which may reach into it
+        Surface.Copy(0, FieldY, Width, Height, 0, BaseY);
+        Surface.CopyKeyed(EnemyArmyX, ArmyY, Width, Height, 0, BaseY);
+        Surface.CopyKeyed(0, ArmyY, Width, Height, 0, BaseY);
+        Surface.CopyKeyed(OverlayX, FieldY, Width, Height, 0, BaseY);
+        Surface.Copy(0, BaseY, Width, Height, 0, 0);
+        Surface.CopyKeyed(0, FrontY, Width, Height, 0, 0);
     }
 
     private Army ArmyLayer(IReadOnlyList<int> sprites, int record, int x, int arrival)
@@ -379,19 +439,30 @@ public sealed class BattleScene
         return right > left ? new Army(record, left, right, arrival) : new Army(0, 0, 0, arrival);
     }
 
-    /// <summary>A CG at its own position moved by (x, y), in the palette of the moment (no palette load).</summary>
+    /// <summary>
+    /// A CG at its own position in the layer at (x, y), clipped to the layer (<see cref="Width"/> × <see cref="Height"/>,
+    /// as the picture clips it), in the palette of the moment (no palette load).
+    /// </summary>
     private CgImage? Put(int number, int x, int y, bool keyed)
     {
         if (number == 0 || _cgs.Get(number) is not { } cg)
             return null;
-        Surface.DrawCgRegion(cg, 0, 0, cg.Width, cg.Height, cg.X + x, cg.Y + y, keyed ? Surface.SpriteKey : null);
+        int sx = Math.Max(0, -cg.X), sy = Math.Max(0, -cg.Y);
+        int w = Math.Min(cg.Width, Width - cg.X) - sx, h = Math.Min(cg.Height, Height - cg.Y) - sy;
+        if (w > 0 && h > 0)
+            Surface.DrawCgRegion(cg, sx, sy, w, h, x + cg.X + sx, y + cg.Y + sy, keyed ? Surface.SpriteKey : null);
         return cg;
     }
 
-    /// <summary>Where the picture under the numbers is kept (below the scene, left of nothing).</summary>
-    private const int BaseY = 290;
+    /// <summary>A digit sheet at x 640, y <paramref name="y"/> (its palette is loaded with the picture's).</summary>
+    private void Sheet(int number, int y)
+    {
+        if (_cgs.Get(number) is { } cg)
+            Surface.DrawCgRegion(cg, 0, 0, cg.Width, cg.Height, 640, y);
+    }
 
-    private string? _picture;
+    /// <summary>Where the picture under the numbers is composed for the tests (<see cref="ComposeWhole"/>).</summary>
+    private const int BaseY = 290;
 
     /// <summary>The pictures between exchanges: the engagement's rule (<c>FIGT.ADV:1628-1718</c>) for the two in focus, no specials.</summary>
     private void ComposeBetween(GameState s)

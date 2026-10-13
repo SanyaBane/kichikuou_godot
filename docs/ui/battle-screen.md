@@ -68,8 +68,8 @@ portrait (mock-up B):
 - **Window 1280×800** (script pixels ×2). Top, y 0-410: **the scene** — what the original fills the
   whole screen with during an exchange (the battlefield with the sprites, the TROOPS counters, the
   shots, the marks such as ANNIHILATED, the speech bubble), its picture rows 0-255 scaled ×1.6 to
-  1024×410 in the middle, the sides filled with the same picture scaled to the width, blurred and
-  darkened. The two big portraits under the original's scene are not drawn there (the cards carry
+  1024×410 in the middle, the sides filled with its battlefield (without the armies, since 2026-10-13)
+  scaled to the width, blurred and darkened. The two big portraits under the original's scene are not drawn there (the cards carry
   the faces) — except while someone speaks (below).
 - **The speaker's whole portrait** while a flavour line or any window with a speaker is up: the
   192×256 face (`Unit_FaceCg` / `Cmdr_FaceCg`) scaled ×1.56 to 300×400 on the speaker's side of the
@@ -207,6 +207,14 @@ picture, the slot panels) is not shown. How it is built:
    its 640×256 (`Surface.ReadArea`); the sides are blurred only when the picture under the numbers
    changes (`BattleScene.PictureVersion`, blurred from that picture, so without the numbers); the
    windows' layer reads only the rows its windows span.
+   Fixed 2026-10-13 (the owner saw the banners come late when the pointer moved from one enemy card to
+   another): a hover cost ~145 ms in a debug build — the scene drew its whole picture again (~58 ms),
+   the view read and uploaded every layer and blurred the sides (~78 ms), the eight cards were built
+   again (~8 ms). Now the scene draws only the layer that changed (a hovered enemy: its army's layer;
+   the palette chained as the original loads it, the digit sheets drawn once, the whole picture put
+   together only for the tests, `BattleScene.ComposeWhole`), the view reads only the layers drawn again
+   (all of them when the palette changes; `BattleScene.FieldVersion` and the like) and blurs the sides
+   from the battlefield alone, and a hover changes only the cards' frames: ~2 ms + ~14 ms.
 4. **Input**: our `IBattleInput` answers — the target cards' commands, the acting card's, the
    own cards' orders and info; the script menus as dialogs.
    ✓ 2026-10-13 `FIGT_SEL`'s popups over the cards (owner: they opened where the original's panels

@@ -48,6 +48,9 @@ public sealed class Palette
         return new Palette(rgb);
     }
 
+    /// <summary>Whether <paramref name="other"/> holds the same colours in every entry.</summary>
+    public bool SameAs(Palette? other) => other is not null && (ReferenceEquals(this, other) || _rgb.AsSpan().SequenceEqual(other._rgb));
+
     private static void Copy(byte[] from, byte[] to, int first, int count) =>
         Array.Copy(from, first * 3, to, first * 3, count * 3);
 

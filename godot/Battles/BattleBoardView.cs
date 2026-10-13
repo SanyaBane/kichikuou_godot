@@ -278,33 +278,49 @@ internal sealed partial class BattleBoardView : Control
     }
 
     /// <summary>
-    /// The scene's 640×256 picture as its layers (<see cref="BattleScene.FieldY"/>): the front (the overlay and the
-    /// numbers) at every change; the battlefield, the armies (<see cref="ArmySlide"/>) and the sides when the picture
-    /// under the numbers changed (<see cref="BattleScene.PictureVersion"/>) — the sides that picture blurred
-    /// (shrunk and grown again).
+    /// The scene's 640×256 picture as its layers (<see cref="BattleScene.FieldY"/>), each read and uploaded only
+    /// when it was drawn again (owner, 2026-10-13: a hovered enemy costs its army's layer alone), all of them when
+    /// the palette changed: the front (the overlay and the numbers); the battlefield, and the sides from it —
+    /// blurred (shrunk and grown again), without the armies; the armies (<see cref="ArmySlide"/>).
     /// </summary>
     private void UploadScene(BattleScene scene)
     {
-        int w = BattleScene.Width * Surface.Scale, h = BattleScene.Height * Surface.Scale;
+        const int w = BattleScene.Width * Surface.Scale, h = BattleScene.Height * Surface.Scale;
         Image AsImage(byte[] rgba) => Image.CreateFromData(w, h, false, Image.Format.Rgba8, rgba);
-        _frontRgba = scene.Surface.ReadLayer(0, BattleScene.FrontY, BattleScene.Width, BattleScene.Height, _frontRgba);
-        Upload(ref _frontTexture, AsImage(_frontRgba));
-        _front.Texture = _frontTexture;
-        if (scene.PictureVersion == _pictureVersion)
-            return;
+        bool all = scene.PaletteVersion != _seen.Palette;                     // every layer shows in the new palette
+        if (all || scene.FrontVersion != _seen.Front)
+        {
+            _frontRgba = scene.Surface.ReadLayer(0, BattleScene.FrontY, BattleScene.Width, BattleScene.Height, _frontRgba);
+            Upload(ref _frontTexture, AsImage(_frontRgba));
+            _front.Texture = _frontTexture;
+        }
+        if (all || scene.FieldVersion != _seen.Field)
+        {
+            _layerRgba = scene.Surface.ReadArea(0, BattleScene.FieldY, BattleScene.Width, BattleScene.Height, _layerRgba);
+            Upload(ref _fieldTexture, AsImage(_layerRgba));
+            _field.Texture = _fieldTexture;
+            var blurred = AsImage(_layerRgba);
+            blurred.Resize(w / 16, h / 16, Image.Interpolation.Bilinear);
+            blurred.Resize(w, h, Image.Interpolation.Bilinear);
+            Upload(ref _sidesTexture, blurred);
+            _sides.Texture = _sidesTexture;
+        }
+        if (all || scene.EnemyLayerVersion != _seen.Enemy)
+        {
+            _layerRgba = scene.Surface.ReadLayer(BattleScene.EnemyArmyX, BattleScene.ArmyY, BattleScene.Width, BattleScene.Height, _layerRgba);
+            _enemyArmy.Arrive(scene.EnemyArmy, AsImage(_layerRgba));
+        }
+        if (all || scene.PlayerLayerVersion != _seen.Player)
+        {
+            _layerRgba = scene.Surface.ReadLayer(0, BattleScene.ArmyY, BattleScene.Width, BattleScene.Height, _layerRgba);
+            _playerArmy.Arrive(scene.PlayerArmy, AsImage(_layerRgba));
+        }
+        _seen = (scene.PaletteVersion, scene.FrontVersion, scene.FieldVersion, scene.EnemyLayerVersion, scene.PlayerLayerVersion);
         _pictureVersion = scene.PictureVersion;
-        Upload(ref _fieldTexture, AsImage(scene.Surface.ReadArea(0, BattleScene.FieldY, BattleScene.Width, BattleScene.Height)));
-        _field.Texture = _fieldTexture;
-        _playerArmy.Arrive(scene.PlayerArmy, AsImage(scene.Surface.ReadLayer(0, BattleScene.ArmyY, BattleScene.Width, BattleScene.Height)));
-        _enemyArmy.Arrive(scene.EnemyArmy,
-            AsImage(scene.Surface.ReadLayer(BattleScene.EnemyArmyX, BattleScene.ArmyY, BattleScene.Width, BattleScene.Height)));
-        var blurred = Image.CreateFromData(w, h, false, Image.Format.Rgba8,
-            scene.Surface.ReadArea(0, BattleScene.PictureY, BattleScene.Width, BattleScene.Height));
-        blurred.Resize(w / 16, h / 16, Image.Interpolation.Bilinear);
-        blurred.Resize(w, h, Image.Interpolation.Bilinear);
-        Upload(ref _sidesTexture, blurred);
-        _sides.Texture = _sidesTexture;
     }
+
+    private (int Palette, int Front, int Field, int Enemy, int Player) _seen = (-1, -1, -1, -1, -1);
+    private byte[]? _layerRgba;
 
     private static void Upload(ref ImageTexture? texture, Image image)
     {
@@ -444,14 +460,27 @@ internal sealed partial class BattleBoardView : Control
 
     // ------------------------------------------------------------------ the cards
 
+    /// <summary>
+    /// The cards, built again only when what they show changed; the pointer moving over them changes their
+    /// frames alone (owner, 2026-10-13: hovering must not cost frames).
+    /// </summary>
     private void RefreshCards(GameState s, RoundOrder order, BattlePlace? hovered)
     {
         var states = order.States(s);                                    // at a round header, the round to come
         var cards = SlotSnapshot.Places.Select(p => BattleBoard.Card(s, p, states)).ToList();
-        string key = string.Join(";", cards) + $"|{order.Acting}|{hovered}";
+        string key = string.Join(";", cards) + $"|{order.Acting}";
         if (key == _cardsKey)
+        {
+            if (hovered != _cardsHovered)
+            {
+                _cardsHovered = hovered;
+                for (int i = 0; i < cards.Count; i++)
+                    _cards[SlotSnapshot.Places[i]].Box.BorderColor = Border(SlotSnapshot.Places[i], cards[i], acting: SlotSnapshot.Places[i] == _actingPlace);
+            }
             return;
+        }
         _cardsKey = key;
+        _cardsHovered = hovered;
         BattlePlace? actingPlace = null;
         for (int i = 0; i < cards.Count; i++)
         {
@@ -462,7 +491,7 @@ internal sealed partial class BattleBoardView : Control
             if (acting)
                 actingPlace = place;
             box.BgColor = card is null ? _colours.Back : acting ? _colours.Card.Lerp(_colours.Accent, ActingTint) : _colours.Card;
-            box.BorderColor = acting ? _colours.Accent : hovered == place && card is not null ? _colours.ButtonBorder : _colours.Border;
+            box.BorderColor = Border(place, card, acting);
             int pad = Pad;
             box.ContentMarginLeft = box.ContentMarginRight = box.ContentMarginTop = box.ContentMarginBottom = pad;
             foreach (var child in panel.GetChildren())
@@ -486,6 +515,12 @@ internal sealed partial class BattleBoardView : Control
         }
         _actingFrame.QueueRedraw();
     }
+
+    private BattlePlace? _cardsHovered;
+
+    /// <summary>A card's frame: the accent while it acts, lit under the pointer (<see cref="_cardsHovered"/>), else plain.</summary>
+    private Color Border(BattlePlace place, BattleCard? card, bool acting) =>
+        acting ? _colours.Accent : _cardsHovered == place && card is not null ? _colours.ButtonBorder : _colours.Border;
 
     /// <summary>The cards' padding inside their frame, in window pixels: four units of the acting frame.</summary>
     private int Pad => Math.Max(1, (int)Math.Round(4 * _scale));

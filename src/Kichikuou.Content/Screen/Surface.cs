@@ -112,6 +112,21 @@ public sealed class Surface
             return;
         for (int row = 0; row < h; row++)
         {
+            if (_index is not null)
+            {
+                // Indexed (the engine's surfaces): each script pixel's entry into its block of stored pixels.
+                int p = Pixel(dx, dy + row, 0);
+                for (int col = 0; col < w; col++, p += Scale)
+                {
+                    byte index = cg.IndexAt(sx + col, sy + row);
+                    if (index == key)
+                        continue;
+                    for (int r = 0, q = p; r < Scale; r++, q += _rowPixels)
+                        for (int c = 0; c < Scale; c++)
+                            _index[q + c] = index;
+                }
+                continue;
+            }
             for (int col = 0; col < w; col++)
             {
                 byte index = cg.IndexAt(sx + col, sy + row);
@@ -297,6 +312,13 @@ public sealed class Surface
         int sx = x, sy = y;
         if (!Clip(ref sx, ref sy, ref w, ref h, ref x, ref y, Width, Height))
             return;
+        if (_index is not null)
+        {
+            for (int row = 0; row < h * Scale; row++)                          // indexed: whole stored rows at once
+                _index.AsSpan(Pixel(x, y, row), w * Scale).Fill((short)index);
+            Touch(x, y, w, h);
+            return;
+        }
         for (int row = 0; row < h; row++)
             for (int col = 0; col < w; col++)
                 PlotIndex(x + col, y + row, index);
