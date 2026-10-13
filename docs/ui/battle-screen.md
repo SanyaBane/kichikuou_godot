@@ -114,9 +114,8 @@ picture, the slot panels) is not shown. How it is built:
   inside the windows' own shapes (their frame CGs, the selection boxes): the 640×400 screen fitted to
   the scene's height (×1.025, centred). The stage keeps drawing the original's screen unchanged —
   Option → Interface → Original shows it as today.
-- **The input** stays the script's: a click on a card is the click on its panel (`FigtSelScreen`), a
-  popup opens over the scene where the panel would be; the command menu on the target's card comes
-  later (step 4, the owner first).
+- **The input**: `FIGT_SEL` is answered by our own command input on the cards (step 4, "Next — our own
+  command input", built 2026-10-13); the script menus and the key waits stay the script's.
 
 ## Steps
 
@@ -200,8 +199,9 @@ picture, the slot panels) is not shown. How it is built:
    open, a pointer on it is the popup's script point, off it a corner no popup covers (so a card's
    panel centre under the original's box cannot pick an item). `--auto --interface new` in a window
    opens the command popup on the target's card once, hovers its first item, cancels it and attacks
-   by a click (dumps `popup`, `popup-hover`).
-   **Next — our own command input (owner, 2026-10-13; agreed on mock-ups, not built yet).** In New,
+   by a click (dumps `popup`, `popup-hover`). Superseded the same day by our own command input (below):
+   in New the original's popups are not shown.
+   **Next — our own command input (owner, 2026-10-13; agreed on mock-ups, built the same day).** In New,
    `FIGT_SEL` is answered without `FigtSelScreen` and without the original's popups: our own screen
    builds its choices from the `FigtSelMenu` the core passes (`Options` with each command's allowed
    arguments; `Allows`) and returns a `FigtSelChoice` — the rules stay the core's. The prompt box
@@ -232,6 +232,23 @@ picture, the slot panels) is not shown. How it is built:
    - `--auto --interface new` in a window exercises it once a launch (replacing today's popup run):
      hover the target's card (banners), click a banner; a right click on an own card (menu dump), a
      left click outside to close it.
+
+   ✓ 2026-10-13 built as above. The model is `Original.Content/Battles/BattleCommands`
+   (`Banners(target)`, `ContextMenu(place, order)`; labels are the script's lines): the commands without a
+   target (Defend, Wait, the items, Auto-Atk, Auto-Def, Retreat) answer 99, as a right click off the
+   panels does in the original (Q-18 then binds no commander). The original's slot popup on the acting
+   unit itself is not offered as such: its Auto-Atk / Auto-Def become 8 / 9 in the core (`OrderOtherAsync`),
+   which the acting unit's menu gives, and its Manual only shows a message. `BattleCommandsTests` builds the
+   core's own menus and checks that every `FIGT_SEL` answer of the golden captures is offered on a card
+   (`GoldenReplay.RunAsync`'s `commands` observer). Godot: `godot/Battles/BattleCommandLayer` (drawn over the
+   cards, `BattleBoardView.Commands`) — the banners on the enemy card under the pointer (or whose banners it
+   is on; the scene shows that enemy), lit cards only where something can be done (an enemy card without
+   banners stays grey), the menus at the pointer; `GameScreen.SelectCommandAsync` answers with it while our
+   screen shows, and falls back to `FigtSelScreen` when the interface changes to Original while the player
+   chooses (switching to New while the original's prompt is open leaves that choice the original's). The
+   exercise also dumps another own card's menu (`menu-orders`, its order marked) and, since the week-18
+   party is all melee without focus, two sample menus never answered (`sample-2-banners`: Rance Attack
+   added; `sample-3-banners`: Bow and Whirlwind Shot added) for the banners' look.
 5. **The scene and the exchange**: the engagement's pictures, the shots and counters, the action
    labels, the wiped-out marks.
 6. **Windows**: the round header, the flavour lines, the results, the info boxes, the strategy
