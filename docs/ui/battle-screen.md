@@ -131,6 +131,13 @@ picture, the slot panels) is not shown. How it is built:
   panel below the scene — the order strip, the armies' names, the gauge, the cards — is darkened (black at
   Option → Battle Screen… → "Spotlight: darkness", 50 % by default), but the two fighters' cards (`Unit_Cur`, `Cmdr_Cur`), so who fights shows at a glance. It fades in
   and out in 0.15 s (at once while skipping and with `--fast`); the acting card's frame stays over it.
+- **The actions on the fighters' cards** (owner, 2026-10-13, mock-up D): the "vs" window (window 143 with
+  the two sides' action labels, `FIGT.ADV:1739-1802`) is not shown — `BattlePresenter.ActionLabelsOpen`
+  leaves it out of the windows' layer and `GameScreen` answers its click wait at once, as a click
+  (BSC-07). Instead each fighter's card shows a pill in the accent colour under its state line for the
+  whole exchange: an icon and our name (`BattleCommands.ActionName`: Melee, Bow, Magic, Special — a
+  special's own name is not known after the choice —, Defense; `BattleScene.Actions`, from the labels'
+  event to the field's redraw). A player's special leaves the enemy's line blank: no pill there.
 - **The windows over it** (round header, "vs", the flavour lines, the results, the info boxes, the
   prompt, the popups, the script menus) are the stage's screen as the original draws it, shown only
   inside the windows' own shapes (their frame CGs, the selection boxes): the 640×400 screen fitted to

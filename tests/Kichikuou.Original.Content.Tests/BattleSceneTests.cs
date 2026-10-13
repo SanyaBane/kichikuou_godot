@@ -79,10 +79,19 @@ public class BattleSceneTests(ITestOutputHelper output)
         (s.Unit_Cur, s.Cmdr_Cur) = (1, 5);
         See(new EngagementSceneEvent(0, [], [], false, 0, 0), rance);
         Assert.Equal((1, 5), scene.InFocus);
+        Assert.Equal((ExchangeAction.None, ExchangeAction.None), scene.Actions);
+        (s.Bt_PlayerAction, s.Bt_EnemyAction) = (0, 2);                 // Melee against Magic
+        See(new ActionLabelsEvent(new ScriptRef("FIGT.ADV", 1753), new ScriptRef("FIGT.ADV", 1794)), rance);
+        Assert.Equal((ExchangeAction.Melee, ExchangeAction.Magic), scene.Actions);
+        s.Bt_SpecialAtk = 3;                                            // a special: the enemy's line is blank
+        See(new ActionLabelsEvent(new ScriptRef("FIGT.ADV", 1748), new ScriptRef("FIGT.ADV", 1781)), rance);
+        Assert.Equal((ExchangeAction.Special, ExchangeAction.None), scene.Actions);
+        s.Bt_SpecialAtk = 0;
         (s.Bt_EnemySlot1, s.Bt_EnemySlot2) = (4, 0);                    // Dodge falls: the slots compact
         int arrival = scene.PlayerArmy.Arrival;
         See(new BattlefieldBackgroundEvent(0), rance);                  // after the exchange the armies part
         Assert.Equal((0, 0), scene.InFocus);
+        Assert.Equal((ExchangeAction.None, ExchangeAction.None), scene.Actions);
 
         See(new PanelHighlightEvent(1), rance);                         // Rance acts again: he comes back
         Assert.Equal((1, 0), scene.InFocus);

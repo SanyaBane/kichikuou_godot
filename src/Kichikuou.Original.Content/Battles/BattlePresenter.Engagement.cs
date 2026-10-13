@@ -30,9 +30,17 @@ public sealed partial class BattlePresenter
         PicturesCovered();
     }
 
+    /// <summary>
+    /// Whether the "vs" window (window 143 with the two sides' action labels) is up, until it closes. Our screen
+    /// shows the actions on the fighters' cards instead (owner, 2026-10-13): it leaves this window out of the
+    /// windows' layer (<see cref="Windows"/>) and answers its click wait itself (BSC-07).
+    /// </summary>
+    public bool ActionLabelsOpen { get; private set; }
+
     /// <summary><c>FIGT.ADV:1739-1800</c>: the two names and action labels, in window 143.</summary>
     private void ActionLabels(ActionLabelsEvent e)
     {
+        ActionLabelsOpen = true;
         Writer.Print(Read(1741));
         if (e.PlayerLabel is { } player)
             Writer.Print(Read(player, []));

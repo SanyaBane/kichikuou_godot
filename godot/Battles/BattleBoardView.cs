@@ -475,35 +475,40 @@ internal sealed partial class BattleBoardView : Control
     // ------------------------------------------------------------------ the spotlight
 
     private readonly Control _spotlight;
-    private readonly List<Rect2> _spotHoles = [];                    // the fighters' cards, layout pixels
+    private readonly List<Fighter> _fighters = [];                   // the fighters' cards (layout pixels) and actions
     private float _spotShown;                                        // 0: off, 1: whole
     private float _spotDrawnDarkness;
     private bool _spotOn;
 
+    /// <summary>A fighter's card in the spotlight and what it does in the exchange (<see cref="ExchangeAction.None"/> until known).</summary>
+    private readonly record struct Fighter(Rect2 Card, BattleSide Side, ExchangeAction Action);
+
     /// <summary>
     /// While an exchange is on (<see cref="BattleScene.InEngagement"/>) the spotlight falls on its two fighters'
-    /// cards: the player's unit (<c>Unit_Cur</c>) and the enemy's commander (<c>Cmdr_Cur</c>).
+    /// cards — the player's unit (<c>Unit_Cur</c>) and the enemy's commander (<c>Cmdr_Cur</c>) — each with a
+    /// pill naming its action (<see cref="BattleScene.Actions"/>; owner, 2026-10-13, in place of the "vs" window).
     /// </summary>
     private void RefreshSpotlight(GameState s, BattleScene scene)
     {
         bool on = scene.Active && scene.InEngagement;
-        var holes = new List<Rect2>(2);
+        var fighters = new List<Fighter>(2);
         if (on)
         {
             foreach (var place in SlotSnapshot.Places)
             {
                 int fighter = place.Side == BattleSide.Player ? s.Unit_Cur.Value : s.Cmdr_Cur.Value;
                 if (fighter != 0 && BattleBoard.Record(s, place) == fighter)
-                    holes.Add(CardArea(place));
+                    fighters.Add(new Fighter(CardArea(place), place.Side,
+                        place.Side == BattleSide.Player ? scene.Actions.Player : scene.Actions.Enemy));
             }
         }
-        if (on == _spotOn && (!on || holes.SequenceEqual(_spotHoles)))
+        if (on == _spotOn && (!on || fighters.SequenceEqual(_fighters)))
             return;
         _spotOn = on;
         if (on)
         {
-            _spotHoles.Clear();
-            _spotHoles.AddRange(holes);                                  // when it goes off, the holes stay while it fades
+            _fighters.Clear();
+            _fighters.AddRange(fighters);                                // when it goes off, they stay while it fades
         }
         _spotlight.QueueRedraw();
     }
@@ -529,10 +534,75 @@ internal sealed partial class BattleBoardView : Control
             return;
         var colour = new Color(0, 0, 0, _spotDrawnDarkness * _spotShown);
         IEnumerable<Rect2> dark = [PanelArea];
-        foreach (var hole in _spotHoles)
-            dark = dark.SelectMany(r => Without(r, hole)).ToList();
+        foreach (var fighter in _fighters)
+            dark = dark.SelectMany(r => Without(r, fighter.Card)).ToList();
         foreach (var r in dark)
             _spotlight.DrawRect(new Rect2(r.Position * _scale, r.Size * _scale), colour);
+        foreach (var fighter in _fighters)
+        {
+            if (fighter.Action != ExchangeAction.None)
+                DrawPill(fighter);
+        }
+    }
+
+    // The action's pill (owner, 2026-10-13, mock-up D): under the card's state line, at the text column's left.
+    private const float PillHeight = 24, PillBottom = 8, PillText = 16, PillIcon = 16;
+    private static readonly Color PillInk = new(0.12f, 0.09f, 0.05f);
+
+    /// <summary>A pill in the accent colour on the fighter's card: the action's icon and our name for it (<see cref="BattleCommands.ActionName"/>).</summary>
+    private void DrawPill(Fighter fighter)
+    {
+        float s = _scale;
+        var font = _theme.DefaultFont;
+        int size = Math.Max(8, (int)Math.Round(PillText * s));
+        string text = BattleCommands.ActionName(fighter.Action);
+        float textWidth = font.GetStringSize(text, HorizontalAlignment.Left, -1, size).X;
+        float column = fighter.Side == BattleSide.Player ? 4 + FaceSize + 8 : 4;   // the text column: padding, face, separation
+        float h = PillHeight * s, icon = PillIcon * s, gap = 6 * s, side = 9 * s;
+        var rect = new Rect2((fighter.Card.Position.X + column) * s, (fighter.Card.End.Y - PillBottom - PillHeight) * s,
+            side + icon + gap + textWidth + side, h);
+        var box = new StyleBoxFlat { BgColor = _colours.Accent with { A = _spotShown } };
+        box.SetCornerRadiusAll((int)(h / 2));
+        _spotlight.DrawStyleBox(box, rect);
+        var ink = PillInk with { A = _spotShown };
+        DrawActionIcon(fighter.Action, new Vector2(rect.Position.X + side + icon / 2, rect.GetCenter().Y), icon, ink);
+        float baseline = rect.GetCenter().Y + (font.GetAscent(size) - font.GetDescent(size)) / 2;
+        _spotlight.DrawString(font, new Vector2(rect.Position.X + side + icon + gap, baseline), text,
+            HorizontalAlignment.Left, -1, size, ink);
+    }
+
+    /// <summary>The action's icon, <paramref name="size"/> across at <paramref name="c"/>: a sword, a bow, a star, a burst, a shield.</summary>
+    private void DrawActionIcon(ExchangeAction action, Vector2 c, float size, Color ink)
+    {
+        float k = size / 2, w = Math.Max(1.5f, size / 7);
+        Vector2 P(float x, float y) => c + new Vector2(x, y) * k;
+        Vector2[] Star(int points, float inner) => [.. Enumerable.Range(0, points * 2).Select(i =>
+        {
+            float a = -MathF.PI / 2 + i * MathF.PI / points, r = i % 2 == 0 ? 1 : inner;
+            return P(r * MathF.Cos(a), r * MathF.Sin(a));
+        })];
+        switch (action)
+        {
+            case ExchangeAction.Melee:                                   // a sword, point up and to the right
+                _spotlight.DrawLine(P(-0.85f, 0.85f), P(0.9f, -0.9f), ink, w * 1.2f, antialiased: true);
+                _spotlight.DrawLine(P(-0.85f, 0.05f), P(-0.05f, 0.85f), ink, w * 1.2f, antialiased: true);
+                break;
+            case ExchangeAction.Bow:                                     // a bow and its arrow
+                _spotlight.DrawArc(P(0.35f, 0), k * 1.05f, MathF.PI * 0.62f, MathF.PI * 1.38f, 12, ink, w, antialiased: true);
+                _spotlight.DrawLine(P(-0.04f, -0.97f), P(-0.04f, 0.97f), ink, w * 0.6f, antialiased: true);   // the string, end to end
+                _spotlight.DrawLine(P(-0.95f, 0), P(0.95f, 0), ink, w, antialiased: true);
+                _spotlight.DrawColoredPolygon([P(1f, 0), P(0.55f, -0.3f), P(0.55f, 0.3f)], ink);
+                break;
+            case ExchangeAction.Magic:                                   // a star
+                _spotlight.DrawColoredPolygon(Star(5, 0.42f), ink);
+                break;
+            case ExchangeAction.Special:                                 // a burst
+                _spotlight.DrawColoredPolygon(Star(8, 0.5f), ink);
+                break;
+            case ExchangeAction.Defense:                                 // a shield
+                _spotlight.DrawColoredPolygon([P(-0.8f, -0.85f), P(0.8f, -0.85f), P(0.8f, 0.05f), P(0, 0.95f), P(-0.8f, 0.05f)], ink);
+                break;
+        }
     }
 
     /// <summary><paramref name="r"/> without <paramref name="hole"/>: up to four rectangles (above, below, left, right of it).</summary>

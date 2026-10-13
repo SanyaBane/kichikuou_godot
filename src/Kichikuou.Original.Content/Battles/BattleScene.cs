@@ -8,6 +8,23 @@ using Kichikuou.Original.State;
 
 namespace Kichikuou.Original.Content.Battles;
 
+/// <summary>What one side does in an exchange, as our screen names it (<see cref="BattleScene.Actions"/>).</summary>
+public enum ExchangeAction
+{
+    /// <summary>Not known, or none (between exchanges; the enemy's side of a player's special).</summary>
+    None,
+    /// <summary>The Direct attack (action 0).</summary>
+    Melee,
+    /// <summary>The Indirect attack (action 1).</summary>
+    Bow,
+    /// <summary>The Magic attack (action 2).</summary>
+    Magic,
+    /// <summary>A special attack of the player's unit (<c>Bt_SpecialAtk</c> not 0).</summary>
+    Special,
+    /// <summary>Defending (action 99).</summary>
+    Defense,
+}
+
 /// <summary>
 /// The armies' scene of our own battle screen (docs/ui/battle-screen.md, "The scene between
 /// exchanges"): a 640×256 picture — the battlefield and two armies — that stays on top for the whole
@@ -140,6 +157,23 @@ public sealed class BattleScene
     /// <summary>Whether an exchange is on (from its engagement picture to the next redraw of the field).</summary>
     public bool InEngagement => _mode == Mode.Engagement;
 
+    /// <summary>
+    /// What each side does in the exchange on (from its action labels, <c>FIGT.ADV:1739-1800</c>, to the
+    /// field's redraw; <see cref="ExchangeAction.None"/> before them, between exchanges, and for the enemy's
+    /// side of a player's special, whose label line is blank).
+    /// </summary>
+    public (ExchangeAction Player, ExchangeAction Enemy) Actions { get; private set; }
+
+    /// <summary>A side's action in <c>Bt_PlayerAction</c> / <c>Bt_EnemyAction</c> (0 direct, 1 indirect, 2 magic, 99 defend).</summary>
+    private static ExchangeAction Action(Sys3Int value) => value.Value switch
+    {
+        0 => ExchangeAction.Melee,
+        1 => ExchangeAction.Bow,
+        2 => ExchangeAction.Magic,
+        99 => ExchangeAction.Defense,
+        _ => ExchangeAction.None,
+    };
+
     /// <summary>A battle begins: nothing shown until its field is (<see cref="Active"/>).</summary>
     public void Start(GameState state)
     {
@@ -191,6 +225,11 @@ public sealed class BattleScene
         }
         switch (scriptEvent)
         {
+            case ActionLabelsEvent labels when _mode == Mode.Engagement:
+                bool special = state.Bt_SpecialAtk != 0;
+                Actions = (labels.PlayerLabel is null ? ExchangeAction.None : special ? ExchangeAction.Special : Action(state.Bt_PlayerAction),
+                    labels.EnemyLabel is null || special ? ExchangeAction.None : Action(state.Bt_EnemyAction));
+                break;
             case RoundHeaderEvent:
                 _mode = Mode.Between;
                 _unit = _cmdr = 0;                                      // an empty field until the round's first turn
@@ -302,8 +341,10 @@ public sealed class BattleScene
         DropFallen(s);
     }
 
+    /// <summary>A new exchange or none: its numbers and its sides' actions are gone.</summary>
     private void ClearNumbers()
     {
+        Actions = default;
         _counters = null;
         _shotsStep = null;
         _results = false;

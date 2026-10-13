@@ -28,6 +28,21 @@ public sealed class BattleCommands(FigtSelMenu menu)
     public const string MeleeName = "Melee";
 
     /// <summary>
+    /// Our screen's name for a side's action in an exchange (owner, 2026-10-13; on the fighters' cards): the
+    /// banners' names — Melee, Bow, Magic — and Special for any special (its own name is not known after the
+    /// choice: <c>Bt_SpecialAtk</c> 3 is three of them), Defense; empty for none.
+    /// </summary>
+    public static string ActionName(ExchangeAction action) => action switch
+    {
+        ExchangeAction.Melee => MeleeName,
+        ExchangeAction.Bow => "Bow",
+        ExchangeAction.Magic => "Magic",
+        ExchangeAction.Special => "Special",
+        ExchangeAction.Defense => "Defense",
+        _ => "",
+    };
+
+    /// <summary>
     /// The argument of the commands that take no target: no enemy button under the pointer, as a right
     /// click off the panels gives in the original (<c>Tmp0001</c> = 99; Q-18 then binds no commander).
     /// </summary>

@@ -846,6 +846,12 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             await SkipYieldAsync();
             key = 0;
         }
+        else if (BattleScreenShown && _presenter.Battle.ActionLabelsOpen)
+        {
+            // QUIRK: BSC-07 — our battle screen shows the actions on the fighters' cards, not the "vs"
+            // window (owner, 2026-10-13): its click wait is answered at once, as by a click.
+            key = KeyReturn;
+        }
         else if (_options.Auto)
         {
             Shot("key");

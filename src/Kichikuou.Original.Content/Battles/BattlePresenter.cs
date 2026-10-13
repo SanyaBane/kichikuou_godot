@@ -388,8 +388,8 @@ public sealed partial class BattlePresenter
             var shapes = new List<WindowShape>();
             if (_roundHeader && Shape(887) is { } header)
                 shapes.Add(header);
-            if (_winType != 0 && Shape(_winFrame, opaque: _winType is >= 31 and <= 39) is { } frame)
-                shapes.Add(frame);
+            if (_winType != 0 && !ActionLabelsOpen && Shape(_winFrame, opaque: _winType is >= 31 and <= 39) is { } frame)
+                shapes.Add(frame);                                      // not the "vs" window: our cards show the actions
             if (!_covered.HasFlag(Pictures.PortraitL) && Shape(_portraitL, (0, 0)) is { } left)
                 shapes.Add(left);
             if (!_covered.HasFlag(Pictures.PortraitR) && Shape(_portraitR, (448, 144)) is { } right)
@@ -539,6 +539,7 @@ public sealed partial class BattlePresenter
     {
         _winType = 0;
         _winFrame = 0;
+        ActionLabelsOpen = false;
         if (_infoBox)
         {
             // FIGT.ADV:1013-1014 / 1112-1113 after the info box closes.

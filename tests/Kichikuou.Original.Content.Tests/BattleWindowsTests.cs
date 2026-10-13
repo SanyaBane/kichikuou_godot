@@ -129,6 +129,27 @@ public class BattleWindowsTests(ITestOutputHelper output)
         Assert.Empty(script.Windows);
     }
 
+    /// <summary>
+    /// Our screen shows the exchange's actions on the fighters' cards (owner, 2026-10-13): window 143 is a
+    /// window of the layer when it opens, but not once it holds the action labels, until it closes.
+    /// </summary>
+    [Fact]
+    public void The_vs_window_leaves_the_layer_once_it_holds_the_action_labels()
+    {
+        var presenter = new BattlePresenter(Texts.Value, Cgs.Value, new BoxGlyphs());
+        presenter.Start(new GameState());
+        presenter.Show(new WindowEvent(143, 0));
+        Assert.Single(presenter.Windows);
+        Assert.False(presenter.ActionLabelsOpen);
+        presenter.Show(new ActionLabelsEvent(new ScriptRef("FIGT.ADV", 1753), new ScriptRef("FIGT.ADV", 1786)));
+        Assert.True(presenter.ActionLabelsOpen);
+        Assert.Empty(presenter.Windows);
+        presenter.Show(new WindowEvent(10, 0));
+        Assert.False(presenter.ActionLabelsOpen);
+        presenter.Show(new WindowEvent(143, 0));                        // the next message in the window shows again
+        Assert.Single(presenter.Windows);
+    }
+
     [Fact]
     public void A_scene_the_battle_calls_turns_the_split_off_until_the_field_is_drawn_again()
     {
