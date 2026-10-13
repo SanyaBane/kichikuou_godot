@@ -1038,7 +1038,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
         _battleView.Place(_view.Position + (size - drawn) / 2, scale);
         IEnumerable<WindowShape> input = _sel?.Windows ?? _battleMenu?.Windows ?? [];
-        _battleView.Refresh(_presenter, input, screenChanged, _battleView.PlaceAt(GetLocalMousePosition() - _content.Position, _presenter.State!),
+        var hovered = _sel is null ? null : _battleView.PlaceAt(GetLocalMousePosition() - _content.Position, _presenter.State!);   // a card lights up only while the player chooses
+        _battleView.Refresh(_presenter, input, screenChanged, hovered,
             instant: _skip.IsSkipping);                                        // MsgSkip: the order strip's chips jump to their places
     }
 

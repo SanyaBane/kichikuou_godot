@@ -59,10 +59,7 @@ internal sealed partial class BattleBoardView : Control
     private readonly TextureRect _sides;
     private readonly TextureRect _scene;
     private readonly TextureRect _windows;
-    private readonly PanelContainer _speaker;
-    private readonly StyleBoxFlat _speakerBox;
-    private readonly TextureRect _speakerFace;
-    private readonly Label _speakerName;
+    private readonly TextureRect _speaker;
     private readonly OrderStrip _strip;
     private readonly Label _playerName, _enemyName;
     private readonly Control _gauge;
@@ -99,18 +96,9 @@ internal sealed partial class BattleBoardView : Control
         _scene = Picture();
         AddChild(_scene);
 
-        _speakerBox = new StyleBoxFlat { BorderWidthLeft = 3, BorderWidthTop = 3, BorderWidthRight = 3, BorderWidthBottom = 3 };
-        _speaker = new PanelContainer { MouseFilter = MouseFilterEnum.Ignore, Visible = false };
-        _speaker.AddThemeStyleboxOverride("panel", _speakerBox);
-        var speakerColumn = new VBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
-        speakerColumn.AddThemeConstantOverride("separation", 0);
-        _speakerFace = Picture();
-        _speakerFace.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-        _speakerFace.SizeFlagsVertical = SizeFlags.ExpandFill;
-        speakerColumn.AddChild(_speakerFace);
-        _speakerName = new Label { HorizontalAlignment = HorizontalAlignment.Center, MouseFilter = MouseFilterEnum.Ignore };
-        speakerColumn.AddChild(_speakerName);
-        _speaker.AddChild(speakerColumn);
+        _speaker = Picture();                                               // the portrait has its own frame and name
+        _speaker.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+        _speaker.Visible = false;
         AddChild(_speaker);
 
         _windows = Picture();
@@ -151,8 +139,6 @@ internal sealed partial class BattleBoardView : Control
         _colours = palette;
         _theme.SetColor("font_color", "Label", palette.Text);
         _back.Color = palette.Back;
-        _speakerBox.BgColor = palette.Back;
-        _speakerBox.BorderColor = palette.Accent;
         _strip.SetPalette(palette);
         _cardsKey = _stripKey = "?";
         _gauge.QueueRedraw();
@@ -269,7 +255,7 @@ internal sealed partial class BattleBoardView : Control
             texture.Update(image);
     }
 
-    /// <summary>While a bubble speaks (<see cref="BattleBoard.Speaker"/>): the speaker's whole face on its side, framed, the name below.</summary>
+    /// <summary>While a bubble speaks (<see cref="BattleBoard.Speaker"/>): the speaker's whole portrait on its side (its frame and name are in the picture).</summary>
     private void RefreshSpeaker(GameState s)
     {
         var speaker = BattleBoard.Speaker(s);
@@ -282,8 +268,7 @@ internal sealed partial class BattleBoardView : Control
             _speaker.Visible = false;
             return;
         }
-        _speakerFace.Texture = face;
-        _speakerName.Text = speaker.Name;
+        _speaker.Texture = face;
         _speakerArea = speaker.Side == BattleSide.Player ? SpeakerLeft : SpeakerRight;
         _speaker.Position = _origin + _speakerArea.Position * _scale;
         _speaker.Size = _speakerArea.Size * _scale;
