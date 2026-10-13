@@ -31,6 +31,9 @@ public sealed class GameInputProxy(IGameInput target) : IGameInput
     public Task<Sys3Int?> ChooseAsync(BattleMenu menu) => Target.ChooseAsync(menu);
 
     /// <inheritdoc />
+    public Task WaitForReleaseAsync() => Target.WaitForReleaseAsync();
+
+    /// <inheritdoc />
     public Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items) => Target.SelectAsync(items);
 
     /// <inheritdoc />
