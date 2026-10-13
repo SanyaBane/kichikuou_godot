@@ -331,7 +331,7 @@ internal sealed partial class BattleBoardView : Control
 
     private Label Empty(BattlePlace place) => Line($"{place.Slot}  empty", _colours.Muted, center: true);
 
-    /// <summary>A card: the face (dimmed once the unit has acted, but while it acts; the enemy's on the right), place and name, troop type, troops and HP with bars, the player's standing order.</summary>
+    /// <summary>A card: the face (the enemy's on the right), place and name, troop type, troops and HP with bars, the player's standing order, "Acting" / "Acted".</summary>
     private Control Contents(BattleCard card, bool acting, int pad)
     {
         var line = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
@@ -344,7 +344,6 @@ internal sealed partial class BattleBoardView : Control
             StretchMode = TextureRect.StretchModeEnum.KeepCentered,
             SizeFlagsVertical = SizeFlags.ShrinkCenter,
             MouseFilter = MouseFilterEnum.Ignore,
-            Modulate = card.Acted && !acting ? new Color(0.45f, 0.45f, 0.45f) : Colors.White,
         };
         if (card.Picture != 0)
             face.Texture = _faces.SquareTexture(card.Picture, _faces.CropOf(card.Picture, _crops), size);
