@@ -17,9 +17,11 @@ namespace Kichikuou.Game.Battles;
 /// </summary>
 internal sealed partial class BattleCommandLayer : Control
 {
-    // The banners (as Sengoku Rance's): 200×40, 5 apart, one column centred on the card's height, 22 out of its left edge.
+    // The banners (as Sengoku Rance's): 200×40, 5 apart, one column 22 out of the card's left edge; their places are
+    // fixed from the top whatever their number (owner, 2026-10-13), three of them centred on the card's height.
     private static readonly Vector2 BannerSize = new(200, 40);
     private const float BannerGap = 5, BannerOut = 22, BannerSlant = 12, BannerPoint = 18, BannerText = 20;
+    private const int BannerPlaces = 3;
     private const float BannerAlpha = 0.8f;
     private static readonly Color BannerTop = Color8(255, 228, 90), BannerBottom = Color8(226, 128, 20);
     private static readonly Color HotTop = Color8(255, 170, 90), HotBottom = Color8(196, 70, 30);
@@ -40,6 +42,7 @@ internal sealed partial class BattleCommandLayer : Control
     private int _hotBanner = -1;
     private (BattlePlace Place, Rect2 Box, IReadOnlyList<(string Text, FigtSelChoice Choice, bool Current)> Items)? _menu;
     private int _hotItem = -1;
+    private int _pressedItem = -1;                                  // the item a left press began on (chosen at its release)
 
     public BattleCommandLayer()
     {
@@ -77,7 +80,7 @@ internal sealed partial class BattleCommandLayer : Control
     public Vector2? BannerCentre(FigtSelChoice choice)
     {
         int i = _banners.Select(b => b.Choice).ToList().IndexOf(choice);
-        return _hovered is { } target && i >= 0 ? BannerRect(target, i, _banners.Count).GetCenter() : null;
+        return _hovered is { } target && i >= 0 ? BannerRect(target, i).GetCenter() : null;
     }
 
     /// <summary>The centre of the open menu's item <paramref name="item"/> (layout pixels), or null.</summary>
@@ -147,20 +150,22 @@ internal sealed partial class BattleCommandLayer : Control
     }
 
     /// <summary>
-    /// A button pressed at <paramref name="p"/>: a left click on a banner or on a menu item chooses it, one
-    /// outside the open menu closes it, anywhere else it does nothing; a right click on a card opens its menu
-    /// there (closing an open one), elsewhere it closes the menu.
+    /// A button pressed at <paramref name="p"/>: a left press on a banner chooses it (as the original's click
+    /// on a target, at the press), one on a menu item chooses it at its release there (as the original's
+    /// popups), one outside the open menu closes it, anywhere else it does nothing; a right press on a card
+    /// opens its menu there (closing an open one), elsewhere it closes the menu.
     /// </summary>
     public void Press(bool right, Vector2 p)
     {
         if (_commands is null)
             return;
+        _pressedItem = -1;
         if (_menu is { } menu)
         {
             int item = ItemAt(menu, p);
             if (!right && item >= 0)
             {
-                Result = menu.Items[item].Choice;
+                _pressedItem = item;
                 return;
             }
             if (!right && menu.Box.HasPoint(p))
@@ -182,6 +187,16 @@ internal sealed partial class BattleCommandLayer : Control
         if (place is { } card)
             OpenMenu(card, p);
         Move(p);
+    }
+
+    /// <summary>A button released at <paramref name="p"/>: a left press that began on a menu item chooses it if the pointer is still on it.</summary>
+    public void Release(bool right, Vector2 p)
+    {
+        if (_commands is null || right)
+            return;
+        if (_menu is { } menu && _pressedItem >= 0 && ItemAt(menu, p) == _pressedItem)
+            Result = menu.Items[_pressedItem].Choice;
+        _pressedItem = -1;
     }
 
     /// <summary>Esc: closes the open menu (true), else does nothing (false).</summary>
@@ -216,7 +231,7 @@ internal sealed partial class BattleCommandLayer : Control
     private void CloseMenu()
     {
         _menu = null;
-        _hotItem = -1;
+        _hotItem = _pressedItem = -1;
         QueueRedraw();
     }
 
@@ -243,11 +258,11 @@ internal sealed partial class BattleCommandLayer : Control
         return null;
     }
 
-    /// <summary>Banner <paramref name="i"/> of <paramref name="count"/> on <paramref name="target"/>'s card.</summary>
-    private Rect2 BannerRect(BattlePlace target, int i, int count)
+    /// <summary>Banner <paramref name="i"/> on <paramref name="target"/>'s card: its fixed place, the first at the top.</summary>
+    private Rect2 BannerRect(BattlePlace target, int i)
     {
         var card = _cardArea(target);
-        float column = count * BannerSize.Y + (count - 1) * BannerGap;
+        float column = BannerPlaces * BannerSize.Y + (BannerPlaces - 1) * BannerGap;
         return new Rect2(card.Position.X - BannerOut, card.Position.Y + (card.Size.Y - column) / 2 + i * (BannerSize.Y + BannerGap), BannerSize);
     }
 
@@ -258,7 +273,7 @@ internal sealed partial class BattleCommandLayer : Control
             return -1;
         for (int i = 0; i < _banners.Count; i++)
         {
-            if (Geometry2D.IsPointInPolygon(p, Pennant(BannerRect(target, i, _banners.Count), 1)))
+            if (Geometry2D.IsPointInPolygon(p, Pennant(BannerRect(target, i), 1)))
                 return i;
         }
         return -1;
@@ -293,7 +308,7 @@ internal sealed partial class BattleCommandLayer : Control
         if (_hovered is { } target && _menu is null)
         {
             for (int i = 0; i < _banners.Count; i++)
-                DrawBanner(BannerRect(target, i, _banners.Count), _banners[i].Text, i == _hotBanner, font);
+                DrawBanner(BannerRect(target, i), _banners[i].Text, i == _hotBanner, font);
         }
         if (_menu is { } menu)
             DrawMenu(menu, font);

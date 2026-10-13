@@ -249,6 +249,15 @@ picture, the slot panels) is not shown. How it is built:
    exercise also dumps another own card's menu (`menu-orders`, its order marked) and, since the week-18
    party is all melee without focus, two sample menus never answered (`sample-2-banners`: Rance Attack
    added; `sample-3-banners`: Bow and Whirlwind Shot added) for the banners' look.
+   Fixed 2026-10-13 (owner): the banners keep their places whatever their number — the first at the top
+   of a column of three centred on the card. A menu item is chosen at the left button's release on it, as
+   the original's popups; a banner at the press, as the original's click on a target. The Info boxes
+   closed at once in both interfaces: the core had left out `FIGT.ADV`'s release loops (`IM` while a
+   button is down, before and after the box's key wait; also `FIGT_B`'s before its menus and after an
+   order's message), so the key wait took the click that chose Info. They are
+   `IBattleInput.WaitForReleaseAsync` now (the game reads the mouse as `IM`; replays and tests find no
+   button down), and the answering click is read off the input when `FIGT_SEL` returns, as the script's
+   own `IM` polls take it.
 5. **The scene and the exchange**: the engagement's pictures, the shots and counters, the action
    labels, the wiped-out marks.
 6. **Windows**: the round header, the flavour lines, the results, the info boxes, the strategy

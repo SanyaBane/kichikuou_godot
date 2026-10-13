@@ -719,13 +719,14 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         var commands = _battleView.Commands;
         if (commands.Active)
         {
+            var at = _battleView.ToLayout(_battlePointer - _content.Position);
             if (pressed)
-            {
-                commands.Press(code == KeySpace, _battleView.ToLayout(_battlePointer - _content.Position));
-                HoverScene();
-                if (commands.Result is not null)
-                    _answered?.TrySetResult();
-            }
+                commands.Press(code == KeySpace, at);
+            else
+                commands.Release(code == KeySpace, at);
+            HoverScene();
+            if (commands.Result is not null)
+                _answered?.TrySetResult();
             return;
         }
         if (_sel is null && _battleMenu is null)
@@ -1198,6 +1199,20 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _sel = null;
             _presenter.Scene.Choosing = false;
             _presenter.Invalidate();
+            _input.ReadMouse();                                             // the script's own IM polls took the answering click
+        }
+    }
+
+    /// <summary>
+    /// The battle's release loops (<c>IM</c> while a button is down, <see cref="IBattleInput.WaitForReleaseAsync"/>):
+    /// the engine's mouse reads, once a frame; unattended play holds no button.
+    /// </summary>
+    public async Task WaitForReleaseAsync()
+    {
+        if (_options.Auto)
+            return;
+        while ((await GetMouseAsync()).Button != 0)
+        {
         }
     }
 
