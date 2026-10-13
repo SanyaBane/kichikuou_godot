@@ -201,6 +201,37 @@ picture, the slot panels) is not shown. How it is built:
    panel centre under the original's box cannot pick an item). `--auto --interface new` in a window
    opens the command popup on the target's card once, hovers its first item, cancels it and attacks
    by a click (dumps `popup`, `popup-hover`).
+   **Next — our own command input (owner, 2026-10-13; agreed on mock-ups, not built yet).** In New,
+   `FIGT_SEL` is answered without `FigtSelScreen` and without the original's popups: our own screen
+   builds its choices from the `FigtSelMenu` the core passes (`Options` with each command's allowed
+   arguments; `Allows`) and returns a `FigtSelChoice` — the rules stay the core's. The prompt box
+   ("Attack who? [Direct Attack]", CG 861) is not shown at all.
+   - **Attacks only through banners on the enemy's card**, shown only on the card under the pointer
+     while the player chooses (never on several cards). One banner per attack the acting unit may make
+     on that slot (`Find(mode).Arguments` holds its button 4-7): 1 to 3 — the unit's own attack type
+     first (Bow for bowmen, Magic for mages, Direct for melee: `AttackType + 1`), then Direct, then its
+     special (one at most per unit: Rance Attack, WD Beam …, only with focus). None: no banners (a melee
+     unit in the back row; the card stays grey). A click on a banner attacks; a click on the card off the
+     banners does nothing (no default attack). Labels: the script's own lines (`FigtSelScreen.ModeEntry`).
+   - **The banners' look (as Sengoku Rance's):** a pennant — the left end cut aslant, the right end an
+     arrow point towards the target's face; 200×40 layout pixels, 5 apart, all in one column (no
+     stagger), centred on the card's height, 22 px out of the card's left edge (never over the rounds
+     gauge); a vertical gradient fill about 80 % opaque (the card shows faintly through), a white
+     outline, a soft shadow, white text with a dark outline. All yellow-orange (top (255, 228, 90),
+     bottom (226, 128, 20)); the one under the pointer orange-red (top (255, 170, 90), bottom
+     (196, 70, 30)) with a light glow.
+   - **Context menus of our own** (styled like the cards, the palette's colours and font), opened by a
+     right click on a card at the pointer, kept on the screen: on an enemy card "Info" (54); on the
+     acting unit's card Defend (4), Wait (5), the items without a target (Capsule 30/31, Fog Card 32)
+     when offered, Auto-Atk (8), Auto-Def (9), Info (53), Retreat (6, the whole army; its "Retreat /
+     Cease Retreat" confirmation stays the original's window for now); on another own card Manual (50),
+     Auto-Atk (51), Auto-Def (52) — the current order marked — and Info (53). A left click on an item
+     chooses it; a left click outside or Esc closes the menu (back to choosing); a right click on another
+     card closes it and opens that card's menu at once; a right click elsewhere closes it. Only items the
+     core allows (`Allows`) are listed. The Info screens stay the original's windows for now.
+   - `--auto --interface new` in a window exercises it once a launch (replacing today's popup run):
+     hover the target's card (banners), click a banner; a right click on an own card (menu dump), a
+     left click outside to close it.
 5. **The scene and the exchange**: the engagement's pictures, the shots and counters, the action
    labels, the wiped-out marks.
 6. **Windows**: the round header, the flavour lines, the results, the info boxes, the strategy
