@@ -84,7 +84,10 @@ portrait (mock-up B):
   round of the battle, the spent ones dark, "n left" below). A card: the face (`UnitFaces` square,
   118 px; the enemy's on the card's right), place and name, troop type, troops now/max with a bar,
   HP now/max with a bar, the standing order (Manual / Auto-Atk / Auto-Def; the player's), "acted"
-  (a word in the state line; the face is not dimmed, owner's request 2026-10-13); the acting unit's card framed in the accent colour; an empty place "n empty".
+  (a word in the state line; the face is not dimmed, owner's request 2026-10-13); the acting unit's card as Sengoku Rance's
+  (owner, 2026-10-13; docs/sengoku/04-screen.md §6.2, §6.5): its fill the card's colour 30 % toward the
+  accent, its edge black / accent / accent / black, and every 500 ms a frame shown or hidden over it one
+  unit further out, accent / white / white / accent (a unit is a quarter of the card's padding); an empty place "n empty".
   "Rance Army" / the enemy army's name above the two sides.
 - The windows that wait for a click (round header, "vs", results, info) stay as they are, over the
   scene, for now.
@@ -162,7 +165,8 @@ picture, the slot panels) is not shown. How it is built:
    picture blurred and darkened; the windows' layer (640×400 at 656×410, centred); the speaker's whole
    face on its side while a bubble 141/142 (the player unit, left) or 151/152 (the enemy commander,
    right) is up (`BattleBoard.Speaker`), framed in the accent colour with the name; the round's order
-   strip; the cards 282×150 (faces through `FacePictures`, the acting one framed; the acted ones' faces
+   strip; the cards 282×150 (faces through `FacePictures`, the acting one framed — since 2026-10-13 with Sengoku Rance's fill and blinking
+   frame; the acted ones' faces
    were dimmed until the owner's request of 2026-10-13); the rounds gauge; the armies' names (`BattleBoard.Armies`). Input as before: the
    pointer over a card is the script's pointer at its panel's centre (`BattleBoard.PanelCentre`) and
    focuses the scene on it, elsewhere the point of the windows' layer under it. From a round header

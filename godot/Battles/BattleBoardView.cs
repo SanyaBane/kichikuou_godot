@@ -50,6 +50,11 @@ internal sealed partial class BattleBoardView : Control
     private static readonly Color EnemyColour = new(0.82f, 0.3f, 0.3f);
     private static readonly Color HpColour = new(0.42f, 0.76f, 0.42f);
 
+    // The acting card (Sengoku Rance's, docs/sengoku/04-screen.md §6.2 and §6.5; owner, 2026-10-13): its own
+    // fill, and a frame that shows and hides every 500 ms.
+    private const float ActingTint = 0.3f;                          // the card's colour toward the accent
+    private const ulong BlinkMs = 500;
+
     private DeploymentPalette _colours = DeploymentPalette.Chosen;
     private readonly FacePictures _faces;
     private FaceCrops _crops = new();
@@ -69,6 +74,10 @@ internal sealed partial class BattleBoardView : Control
     private readonly Label _playerName, _enemyName;
     private readonly Control _gauge;
     private readonly Dictionary<BattlePlace, (PanelContainer Card, StyleBoxFlat Box)> _cards = [];
+    private readonly Control _actingFrame;
+    private BattlePlace? _actingPlace;
+    private ulong _blinkFrom;
+    private bool _blinkOn;
     private readonly Dictionary<int, ImageTexture?> _portraits = [];
     private ImageTexture? _sceneTexture, _sidesTexture, _windowsTexture;
     private byte[]? _sceneRgba, _windowsRgba;
@@ -126,6 +135,9 @@ internal sealed partial class BattleBoardView : Control
             AddChild(card);
             _cards[place] = (card, box);
         }
+        _actingFrame = new Control { MouseFilter = MouseFilterEnum.Ignore, Visible = false };    // over the cards
+        _actingFrame.Draw += DrawActingFrame;
+        AddChild(_actingFrame);
         _commands = new BattleCommandLayer();                               // over the cards
         AddChild(_commands);
         _dialog = new BattleDialogLayer();                                  // over everything
@@ -196,6 +208,8 @@ internal sealed partial class BattleBoardView : Control
         _dialog.Layout(scale);
         foreach (var (place, (card, _)) in _cards)
             At(card, CardArea(place));
+        if (_actingPlace is { } acting)
+            At(_actingFrame, CardArea(acting));
         _theme.DefaultFontSize = Math.Max(8, (int)Math.Round(TextSize * scale));
     }
 
@@ -310,15 +324,18 @@ internal sealed partial class BattleBoardView : Control
         if (key == _cardsKey)
             return;
         _cardsKey = key;
+        BattlePlace? actingPlace = null;
         for (int i = 0; i < cards.Count; i++)
         {
             var place = SlotSnapshot.Places[i];
             var (panel, box) = _cards[place];
             var card = cards[i];
             bool acting = order.Acting == place && card is not null && card.Record == order.ActingRecord;
-            box.BgColor = card is null ? _colours.Back : _colours.Card;
+            if (acting)
+                actingPlace = place;
+            box.BgColor = card is null ? _colours.Back : acting ? _colours.Card.Lerp(_colours.Accent, ActingTint) : _colours.Card;
             box.BorderColor = acting ? _colours.Accent : hovered == place && card is not null ? _colours.ButtonBorder : _colours.Border;
-            int pad = Math.Max(1, (int)Math.Round(4 * _scale));
+            int pad = Pad;
             box.ContentMarginLeft = box.ContentMarginRight = box.ContentMarginTop = box.ContentMarginBottom = pad;
             foreach (var child in panel.GetChildren())
             {
@@ -327,6 +344,60 @@ internal sealed partial class BattleBoardView : Control
             }
             panel.AddChild(card is null ? Empty(place) : Contents(card, acting, pad));
         }
+        if (actingPlace != _actingPlace)
+        {
+            _actingPlace = actingPlace;
+            (_blinkFrom, _blinkOn) = (Time.GetTicksMsec(), true);        // a new actor: the frame shown first
+        }
+        _actingFrame.Visible = actingPlace is not null;
+        if (actingPlace is { } a)
+        {
+            var area = CardArea(a);
+            _actingFrame.Position = _origin + area.Position * _scale;
+            _actingFrame.Size = area.Size * _scale;
+        }
+        _actingFrame.QueueRedraw();
+    }
+
+    /// <summary>The cards' padding inside their frame, in window pixels: four units of the acting frame.</summary>
+    private int Pad => Math.Max(1, (int)Math.Round(4 * _scale));
+
+    public override void _Process(double delta)
+    {
+        if (_actingPlace is null)
+            return;
+        bool on = (Time.GetTicksMsec() - _blinkFrom) / BlinkMs % 2 == 0;
+        if (on == _blinkOn)
+            return;
+        _blinkOn = on;
+        _actingFrame.QueueRedraw();
+    }
+
+    /// <summary>
+    /// The acting card's frame, in units of a quarter of the padding (a pixel of Sengoku Rance's card): the
+    /// card's own edge black, accent, accent, black from the outside in; while the blinking frame shows, it
+    /// covers that edge one unit further out — accent, white, white, accent — and leaves the inner black.
+    /// </summary>
+    private void DrawActingFrame()
+    {
+        float u = Pad / 4f;
+        var card = new Rect2(Vector2.Zero, _actingFrame.Size);
+        void Ring(int at, Color colour)                               // the ring `at` units in from the card's edge
+        {
+            var r = card.Grow(-at * u);
+            _actingFrame.DrawRect(new Rect2(r.Position, new Vector2(r.Size.X, u)), colour);
+            _actingFrame.DrawRect(new Rect2(r.Position.X, r.End.Y - u, r.Size.X, u), colour);
+            _actingFrame.DrawRect(new Rect2(r.Position.X, r.Position.Y + u, u, r.Size.Y - 2 * u), colour);
+            _actingFrame.DrawRect(new Rect2(r.End.X - u, r.Position.Y + u, u, r.Size.Y - 2 * u), colour);
+        }
+        Color[] edge = [Colors.Black, _colours.Accent, _colours.Accent, Colors.Black];
+        for (int i = 0; i < edge.Length; i++)
+            Ring(i, edge[i]);
+        if (!_blinkOn)
+            return;
+        Color[] blink = [_colours.Accent, Colors.White, Colors.White, _colours.Accent];
+        for (int i = 0; i < blink.Length; i++)
+            Ring(i - 1, blink[i]);
     }
 
     private Label Empty(BattlePlace place) => Line($"{place.Slot}  empty", _colours.Muted, center: true);
