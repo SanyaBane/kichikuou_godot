@@ -1037,10 +1037,12 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
         var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
         _battleView.Place(_view.Position + (size - drawn) / 2, scale);
-        IEnumerable<WindowShape> input = _sel?.Windows ?? _battleMenu?.Windows ?? [];
-        var hovered = _sel is null ? null : _battleView.PlaceAt(GetLocalMousePosition() - _content.Position, _presenter.State!);   // a card lights up only while the player chooses
+        var popup = _sel?.Popup;                                               // shown over the cards, not among the windows
+        IEnumerable<WindowShape> input = _sel is { } sel ? sel.Windows.Where(w => popup is null || w != WindowShape.Of(popup)) : _battleMenu?.Windows ?? [];
+        var pointer = GetLocalMousePosition() - _content.Position;
+        var hovered = _sel is null ? null : _battleView.PlaceAt(pointer, _presenter.State!);   // a card lights up only while the player chooses
         _battleView.Refresh(_presenter, input, screenChanged, hovered,
-            instant: _skip.IsSkipping);                                        // MsgSkip: the order strip's chips jump to their places
+            instant: _skip.IsSkipping, popup, pointer);                        // MsgSkip: the order strip's chips jump to their places
     }
 
     /// <summary>
@@ -1128,6 +1130,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             await DelayAsync(_options.Fast ? 0 : 0.5);
             var direct = menu.Find(FigtSelCommand.Direct);
+            if (!_autoPopupUsed && BattleScreenShown && DisplayServer.GetName() != "headless" && direct is { Arguments.Count: > 0 })
+                return await AutoPopupAsync(menu, direct.Arguments[0]);
             return direct is { Arguments.Count: > 0 }
                 ? new FigtSelChoice(FigtSelCommand.Direct, direct.Arguments[0])
                 : new FigtSelChoice(FigtSelCommand.Defend, menu.Find(FigtSelCommand.Defend)!.Arguments[0]);
@@ -1143,6 +1147,72 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             await _answered.Task;
             return _sel.Result!.Value;
+        }
+        finally
+        {
+            _sel = null;
+            _presenter.Scene.Choosing = false;
+            _presenter.Invalidate();
+        }
+    }
+
+    /// <summary>
+    /// Unattended play on our battle screen, once a launch (in a window): the first choice goes through
+    /// the pointer as a player's would — a right click on the target's card opens the command popup
+    /// there (screen dumps "popup" and "popup-hover", the pointer on its first item), two right clicks
+    /// cancel it and go back to targeting, a left click on the card attacks it directly. Anything else
+    /// is an error.
+    /// </summary>
+    private async Task<FigtSelChoice> AutoPopupAsync(FigtSelMenu menu, Sys3Int button)
+    {
+        _autoPopupUsed = true;
+        var s = _presenter.State!;
+        GD.Print($"Kichikuou: --auto opens the command popup on an enemy card, cancels it and attacks by a click (week {s.Week.Value}).");
+        var target = new BattlePlace(BattleSide.Enemy, button.Value - 3);
+        var card = _content.Position + _battleView.CardCentre(target);
+        _answered = new TaskCompletionSource();
+        _battleButtons = 0;
+        _sel = new FigtSelScreen(_presenter.Battle, menu);
+        _presenter.Scene.Choosing = true;
+        async Task Move(Vector2 at)
+        {
+            WarpMouse(at);
+            _input.Position = ToScript(at);
+            PointerMoved();
+            await NextFrameAsync();
+        }
+        async Task Click(Vector2 at, ushort code)
+        {
+            await Move(at);
+            _input.Button(code, true);
+            BattleButton(code, true);
+            await NextFrameAsync();
+            _input.Position = ToScript(at);
+            _input.Button(code, false);
+            BattleButton(code, false);
+            await NextFrameAsync();
+            await NextFrameAsync();
+        }
+        try
+        {
+            await Click(card, KeySpace);
+            if (_sel.Popup is not { } popup)
+                throw new InvalidOperationException("--auto's right click on an enemy card opened no popup.");
+            Shot("popup");
+            var (x, y, w, _) = popup.Box;
+            await Move(FromScript(new Vector2I(x + 2 + w / 2, y + 2 + 9)));
+            await NextFrameAsync();
+            if (popup.Hovered != 0)
+                throw new InvalidOperationException($"--auto's pointer on the popup's first item hovers item {popup.Hovered} (script {_input.Position}, box {popup.Box}, aimed at {x + 2 + w / 2},{y + 11}).");
+            Shot("popup-hover");
+            await Click(card, KeySpace);                                       // cancel
+            await Click(card, KeySpace);                                       // back to targeting
+            if (_sel.Popup is not null || _sel.Result is not null)
+                throw new InvalidOperationException("--auto's two right clicks did not cancel the popup.");
+            await Click(card, KeyReturn);
+            if (_sel.Result is not { } choice || choice.Command.Value != FigtSelCommand.Direct || choice.Argument != button)
+                throw new InvalidOperationException($"--auto's click on {target} answered {_sel.Result}, not a direct attack on button {button.Value}.");
+            return choice;
         }
         finally
         {
@@ -1277,6 +1347,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private PickerView? _autoDropPicker;
     private int _autoDrops;
     private bool _autoDropsUsed;
+
+    /// <summary>Whether the unattended player has opened <c>FIGT_SEL</c>'s popup on our battle screen (once a launch).</summary>
+    private bool _autoPopupUsed;
 
     private List<int> _autoParty = [];
 

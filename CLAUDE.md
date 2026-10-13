@@ -296,8 +296,10 @@ commit `local.env`.
   ends at the first file or path not ported yet ("not ported yet"), at a game over, after week 30
   (`--weeks n`) or two weeks after story stage `--stage n` is reached — `--seed 2 --weeks 60 --stage 2`
   takes Oaks in week 34 and stops in week 36, ~15 min (exit code 0; 1 after an error). `--interface new`
-  builds the parties in our own deployment table and swaps the first two places by drops and back;
-  its dumps need a window (no `--headless`).
+  builds the parties in our own deployment table and swaps the first two places by drops and back,
+  and in a window, once a launch, answers the first `FIGT_SEL` through the pointer (the command popup
+  on the target's card, its first item hovered, cancelled, then a click on the card; it moves the
+  system pointer, so leave the mouse alone); its dumps need a window (no `--headless`).
 - **A look at one screen** (screen dumps for the owner) starts from a kept save, never from the
   prologue (owner's requests 2026-10-12): `user://saves-week18` holds the owner's own game at week 18
   (LP 3, month 5, week 2; stage 1, the Leazas week) — the one to use, chosen by the owner (2026-10-13)

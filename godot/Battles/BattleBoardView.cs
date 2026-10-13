@@ -59,6 +59,14 @@ internal sealed partial class BattleBoardView : Control
     private readonly TextureRect _sides;
     private readonly TextureRect _scene;
     private readonly TextureRect _windows;
+    private readonly TextureRect _popup;
+    private ImageTexture? _popupTexture;
+    private SelectionBox? _popupBox;
+    private WindowShape? _popupShape;                                       // the open popup with its frame, in script pixels
+    private Rect2 _popupArea;                                               // where it is shown, in layout pixels
+
+    /// <summary>Layout pixels to a script pixel of the windows' layer (and of the popup moved over the cards).</summary>
+    private static float WindowScale => WindowsArea.Size.X / Surface.ScreenWidth;
     private readonly TextureRect _speaker;
     private readonly OrderStrip _strip;
     private readonly Label _playerName, _enemyName;
@@ -103,6 +111,11 @@ internal sealed partial class BattleBoardView : Control
 
         _windows = Picture();
         AddChild(_windows);
+
+        _popup = Picture();                                                 // FIGT_SEL's popup, moved to the pointer (over the cards)
+        _popup.ZIndex = 10;
+        _popup.Visible = false;
+        AddChild(_popup);
 
         _strip = new OrderStrip();
         AddChild(_strip);
@@ -179,6 +192,7 @@ internal sealed partial class BattleBoardView : Control
         At(_enemyName, EnemyNameArea);
         At(_gauge, GaugeArea);
         At(_speaker, _speakerArea);
+        At(_popup, _popupArea);
         foreach (var (place, (card, _)) in _cards)
             At(card, CardArea(place));
         _theme.DefaultFontSize = Math.Max(8, (int)Math.Round(TextSize * scale));
@@ -187,12 +201,16 @@ internal sealed partial class BattleBoardView : Control
     /// <summary>
     /// Fills the screen from the presenter: the scene's picture when it changed, the windows' layer when
     /// <paramref name="screenChanged"/> (with the input screen's own windows, <paramref name="inputWindows"/>),
-    /// the cards, the strip, the gauge and the speaker when what they show changed.
+    /// the cards, the strip, the gauge and the speaker when what they show changed; the input screen's
+    /// open <paramref name="popup"/> (not among <paramref name="inputWindows"/>) where the pointer
+    /// (<paramref name="pointer"/>, in the parent's coordinates) was when it opened.
     /// </summary>
-    public void Refresh(GamePresenter presenter, IEnumerable<WindowShape> inputWindows, bool screenChanged, BattlePlace? hovered, bool instant)
+    public void Refresh(GamePresenter presenter, IEnumerable<WindowShape> inputWindows, bool screenChanged, BattlePlace? hovered, bool instant,
+        SelectionBox? popup = null, Vector2 pointer = default)
     {
         if (presenter.State is not { } s)
             return;
+        RefreshPopup(presenter, popup, pointer, screenChanged);
         if (presenter.Scene.Version != _sceneVersion)
         {
             _sceneVersion = presenter.Scene.Version;
@@ -224,6 +242,57 @@ internal sealed partial class BattleBoardView : Control
         var (player, enemy) = BattleBoard.Armies(s);
         _playerName.Text = player;
         _enemyName.Text = enemy;
+    }
+
+    /// <summary>
+    /// <c>FIGT_SEL</c>'s popup (the slot popup, the command popup; owner, 2026-10-13): the script opens it
+    /// at its pointer, which over a card is the centre of the original's panel; our screen shows it where
+    /// the pointer is, over the cards — the box at the pointer less (16, 10) as the original puts it,
+    /// inside the screen — read from the stage's screen as it is drawn (its hover too).
+    /// </summary>
+    private void RefreshPopup(GamePresenter presenter, SelectionBox? box, Vector2 pointer, bool screenChanged)
+    {
+        if (box != _popupBox)
+        {
+            _popupBox = box;
+            _popupShape = box is null ? null : OnScreen(WindowShape.Of(box));
+            if (_popupShape is { } opened)
+            {
+                var size = new Vector2(opened.W, opened.H) * WindowScale;
+                var at = (pointer - _origin) / _scale - new Vector2(16 + 8, 10 + 8) * WindowScale;
+                _popupArea = new Rect2(new Vector2(Math.Clamp(at.X, 0, 1280 - size.X), Math.Clamp(at.Y, 0, 800 - size.Y)), size);
+                _popup.Position = _origin + _popupArea.Position * _scale;
+                _popup.Size = _popupArea.Size * _scale;
+            }
+            _popup.Visible = box is not null;
+            screenChanged = true;
+        }
+        if (_popupShape is not { } shape || !screenChanged)
+            return;
+        presenter.Compose();
+        var screen = presenter.Screen;
+        int w = shape.W * Surface.Scale, h = shape.H * Surface.Scale;
+        var rgba = screen.ReadArea(screen.View.X + shape.X, screen.View.Y + shape.Y, shape.W, shape.H);
+        Upload(ref _popupTexture, Image.CreateFromData(w, h, false, Image.Format.Rgba8, rgba));
+        _popup.Texture = _popupTexture;
+    }
+
+    /// <summary>A shape clipped to the screen (the command popup's frame may pass its right edge, <c>:208-233</c>).</summary>
+    private static WindowShape OnScreen(WindowShape shape)
+    {
+        int x0 = Math.Max(shape.X, 0), y0 = Math.Max(shape.Y, 0);
+        int x1 = Math.Min(shape.X + shape.W, Surface.ScreenWidth), y1 = Math.Min(shape.Y + shape.H, Surface.ScreenHeight);
+        return WindowShape.Box(x0, y0, x1 - x0, y1 - y0);
+    }
+
+    /// <summary>The script pixel of the open popup under layout point <paramref name="layout"/>, or null when it is not on it.</summary>
+    private Vector2I? PopupPoint(Vector2 layout)
+    {
+        if (_popupShape is not { } shape || !_popupArea.HasPoint(layout))
+            return null;
+        var p = (layout - _popupArea.Position) / WindowScale;
+        return new Vector2I(Math.Clamp(shape.X + (int)Math.Floor(p.X), shape.X, shape.X + shape.W - 1),
+            Math.Clamp(shape.Y + (int)Math.Floor(p.Y), shape.Y, shape.Y + shape.H - 1));
     }
 
     /// <summary>
@@ -460,6 +529,13 @@ internal sealed partial class BattleBoardView : Control
 
     // ------------------------------------------------------------------ the pointer
 
+    /// <summary>The centre of <paramref name="place"/>'s card, in the parent's coordinates (unattended play's clicks).</summary>
+    public Vector2 CardCentre(BattlePlace place)
+    {
+        var area = CardArea(place);
+        return _origin + (area.Position + area.Size / 2) * _scale;
+    }
+
     /// <summary>The place whose card is under <paramref name="local"/> (in the parent's coordinates) and holds a unit, or null.</summary>
     public BattlePlace? PlaceAt(Vector2 local, GameState s)
     {
@@ -474,12 +550,15 @@ internal sealed partial class BattleBoardView : Control
     }
 
     /// <summary>
-    /// The script's point for a pointer at <paramref name="local"/>: on a card, the centre of its slot
+    /// The script's point for a pointer at <paramref name="local"/>: while a popup is open, its point
+    /// under the pointer (off it, a point no popup covers); on a card, the centre of its slot
     /// panel (<see cref="BattleBoard.PanelCentre"/>); elsewhere the
     /// point of the windows' layer under it, clamped to the screen.
     /// </summary>
     public Vector2I ToScript(Vector2 local, GameState s)
     {
+        if (_popupShape is not null)
+            return PopupPoint((local - _origin) / _scale) ?? Vector2I.Zero;  // off the popup: a corner it never covers (x, y ≥ 2)
         if (PlaceAt(local, s) is { } place)
         {
             var (x, y) = BattleBoard.PanelCentre(place);
@@ -490,7 +569,12 @@ internal sealed partial class BattleBoardView : Control
             Math.Clamp((int)Math.Floor(p.Y), 0, Surface.ScreenHeight - 1));
     }
 
-    /// <summary>The centre of script pixel <paramref name="script"/> on the windows' layer, in the parent's coordinates.</summary>
-    public Vector2 FromScript(Vector2I script) =>
-        _origin + WindowsArea.Position * _scale + (new Vector2(script.X, script.Y) + new Vector2(0.5f, 0.5f)) * (WindowsArea.Size.X / Surface.ScreenWidth * _scale);
+    /// <summary>The centre of script pixel <paramref name="script"/> on the windows' layer (or on the popup moved over the cards), in the parent's coordinates.</summary>
+    public Vector2 FromScript(Vector2I script)
+    {
+        var centre = new Vector2(script.X, script.Y) + new Vector2(0.5f, 0.5f);
+        if (_popupShape is { } shape && new Rect2I(shape.X, shape.Y, shape.W, shape.H).HasPoint(script))
+            return _origin + (_popupArea.Position + (centre - new Vector2(shape.X, shape.Y)) * WindowScale) * _scale;
+        return _origin + (WindowsArea.Position + centre * WindowScale) * _scale;
+    }
 }

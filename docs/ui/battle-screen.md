@@ -192,6 +192,15 @@ picture, the slot panels) is not shown. How it is built:
    windows' layer reads only the rows its windows span.
 4. **Input**: our `IBattleInput` answers — the target cards' commands, the acting card's, the
    own cards' orders and info; the script menus as dialogs.
+   ✓ 2026-10-13 `FIGT_SEL`'s popups over the cards (owner: they opened where the original's panels
+   are): the script still opens the slot popup and the command popup at its pointer (on a card, the
+   centre of the original's panel); `BattleBoardView` shows the popup's box, read from the stage's
+   screen as drawn (its hover too), where the pointer was when it opened (the box at the pointer less
+   (16, 10), as the original, kept on the screen) and leaves it out of the windows' layer; while it is
+   open, a pointer on it is the popup's script point, off it a corner no popup covers (so a card's
+   panel centre under the original's box cannot pick an item). `--auto --interface new` in a window
+   opens the command popup on the target's card once, hovers its first item, cancels it and attacks
+   by a click (dumps `popup`, `popup-hover`).
 5. **The scene and the exchange**: the engagement's pictures, the shots and counters, the action
    labels, the wiped-out marks.
 6. **Windows**: the round header, the flavour lines, the results, the info boxes, the strategy
