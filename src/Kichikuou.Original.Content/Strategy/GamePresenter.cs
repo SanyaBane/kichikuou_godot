@@ -264,8 +264,8 @@ public sealed partial class GamePresenter : IStageObserver
                 Engine(engine.Command, engine.Args);
             if (State is { } s && Picker is null)
             {
-                Scene.Observe(scriptEvent, s);
                 Order.Observe(scriptEvent, s);
+                Scene.Observe(scriptEvent, s, Order.Acting);                // the turn's actor first: the scene shows it
             }
             return;
         }

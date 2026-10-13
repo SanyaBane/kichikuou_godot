@@ -682,13 +682,19 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         var (x, y) = (_input.Position.X, _input.Position.Y);
         _presenter.Pointer(x, y);
-        if (_battleView.Visible && _presenter.State is { } s && _battleView.PlaceAt(GetLocalMousePosition() - _content.Position, s) is { } card)
-            _presenter.Scene.Focus(card);                                       // the card's army goes into the scene
+        HoverScene();
         if (_sel is null && _battleMenu is null)
             return;
         _sel?.MouseMove(x, y);
         _battleMenu?.MouseMove(x, y);
         _presenter.Invalidate();
+    }
+
+    /// <summary>While the player chooses (<c>FIGT_SEL</c>), the enemy card under the pointer puts its army into the scene (<see cref="BattleScene.Hover"/>).</summary>
+    private void HoverScene()
+    {
+        if (_presenter.State is { } s && _presenter.Scene.Choosing)
+            _presenter.Scene.Hover(_battleView.Visible ? _battleView.PlaceAt(GetLocalMousePosition() - _content.Position, s) : null);
     }
 
     /// <summary>
@@ -1129,6 +1135,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _battleButtons = 0;
         _sel = new FigtSelScreen(_presenter.Battle, menu);
         _sel.MouseMove(_input.Position.X, _input.Position.Y);
+        _presenter.Scene.Choosing = true;
+        HoverScene();
         _presenter.Invalidate();
         try
         {
@@ -1138,6 +1146,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         finally
         {
             _sel = null;
+            _presenter.Scene.Choosing = false;
             _presenter.Invalidate();
         }
     }

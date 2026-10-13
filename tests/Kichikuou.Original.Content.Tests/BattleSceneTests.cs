@@ -28,6 +28,66 @@ public class BattleSceneTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// Who the picture shows between exchanges (owner, 2026-10-13): an empty field at a round's start; the
+    /// enemy's turn its actor, then the target it highlights, the target gone when it defends; the player's
+    /// turn the acting unit, and while choosing the enemy whose card the pointer is on, never another own
+    /// card; after an exchange its two armies until the next turn, the fallen dropped at the redraw.
+    /// </summary>
+    [Fact]
+    public void The_scene_shows_the_turns_actor_its_target_and_the_hovered_enemy()
+    {
+        var missing = Path.Combine(Path.GetTempPath(), "kichikuou-no-data");
+        var scene = new BattleScene(new CgLibrary(missing));
+        // Rance (unit 1) and Barres (unit 6) against Dodge (commander 5) and Melfeis (commander 4).
+        var s = new GameState();
+        (s.Bt_PlayerSlot1, s.Bt_PlayerSlot2, s.Bt_EnemySlot1, s.Bt_EnemySlot2) = (1, 6, 5, 4);
+        var rance = new BattlePlace(BattleSide.Player, 1);
+        var barres = new BattlePlace(BattleSide.Player, 2);
+        var dodge = new BattlePlace(BattleSide.Enemy, 1);
+        var melfeis = new BattlePlace(BattleSide.Enemy, 2);
+        scene.Start(s);
+        void See(ScriptEvent e, BattlePlace? acting = null) => scene.Observe(e, s, acting);
+
+        See(new RoundHeaderEvent(0, 0, 0, 0, 0, 5));
+        See(new BattlefieldBackgroundEvent(0));
+        Assert.Equal((0, 0), scene.InFocus);
+
+        See(new PanelHighlightEvent(5), dodge);                         // Dodge acts
+        Assert.Equal((0, 5), scene.InFocus);
+        See(new PanelHighlightEvent(2), dodge);                         // and picks Barres
+        Assert.Equal((6, 5), scene.InFocus);
+        See(new BattlefieldBackgroundEvent(0), dodge);                  // then defends: no exchange
+        Assert.Equal((0, 5), scene.InFocus);
+
+        See(new PanelHighlightEvent(1), rance);                         // Rance's turn
+        Assert.Equal((1, 0), scene.InFocus);
+        scene.Hover(melfeis);                                           // not choosing yet: nothing
+        Assert.Equal((1, 0), scene.InFocus);
+        scene.Choosing = true;
+        scene.Hover(barres);                                            // an own card: Rance stays
+        Assert.Equal((1, 0), scene.InFocus);
+        scene.Hover(melfeis);
+        Assert.Equal((1, 4), scene.InFocus);
+        scene.Hover(null);                                              // off the card
+        Assert.Equal((1, 0), scene.InFocus);
+        scene.Hover(dodge);
+        scene.Choosing = false;                                         // Rance attacks Dodge
+        See(new PanelHighlightEvent(5), rance);
+        Assert.Equal((1, 5), scene.InFocus);
+        (s.Unit_Cur, s.Cmdr_Cur) = (1, 5);
+        See(new EngagementSceneEvent(0, [], [], false, 0, 0), rance);
+        Assert.Equal((1, 5), scene.InFocus);
+        (s.Bt_EnemySlot1, s.Bt_EnemySlot2) = (4, 0);                    // Dodge falls: the slots compact
+        See(new BattlefieldBackgroundEvent(0), rance);
+        Assert.Equal((1, 0), scene.InFocus);
+
+        See(new PanelHighlightEvent(2), barres);                        // Barres (Auto-Atk) acts, the exchange follows
+        Assert.Equal((6, 0), scene.InFocus);
+        See(new RoundHeaderEvent(0, 0, 0, 0, 0, 4));
+        Assert.Equal((0, 0), scene.InFocus);
+    }
+
+    /// <summary>
     /// In every captured battle the scene is on from the field's first drawing; when the original's
     /// engagement stands whole with its counters (the slide's last step), the scene's rows 0-223 are the
     /// original's screen there (the HP counters, moved to row 224, aside); between exchanges it shows a
@@ -42,16 +102,28 @@ public class BattleSceneTests(ITestOutputHelper output)
         var cgs = Cgs.Value;
         var presenter = new BattlePresenter(Texts.Value, cgs, new BoxGlyphs());
         var scene = new BattleScene(cgs);
+        var order = new RoundOrder();
         GameState? state = null;
         int compared = 0, between = 0;
         int lastOffset = -1;
         var wrong = new List<string>();
         byte[]? picture = null;
-        int pictureVersion = -1, pictures = 0;
+        int pictureVersion = -1, pictures = 0, actors = 0;
         var view = new ObservingView(e =>
         {
             presenter.Show(e);
-            scene.Observe(e, state!);
+            order.Observe(e, state!);
+            scene.Observe(e, state!, order.Acting);
+            if (e is PanelHighlightEvent other && BattleBoard.PanelPlace(other.Panel.Value) is { } p && order.Acting is { } a
+                && p.Side == a.Side && p != a)
+                wrong.Add($"{p} highlighted on the side of the actor {a}: a turn not seen");
+            if (e is PanelHighlightEvent && order.Acting is null)
+                wrong.Add("a panel highlighted with no actor");
+            if (e is RoundHeaderEvent && scene.InFocus != (0, 0))
+                wrong.Add($"a round header shows {scene.InFocus}");
+            if (e is PanelHighlightEvent h && BattleBoard.PanelPlace(h.Panel.Value) is { } lit && lit == order.Acting && ++actors > 0
+                && scene.InFocus != (lit.Side == BattleSide.Player ? (BattleBoard.Record(state!, lit), 0) : (0, BattleBoard.Record(state!, lit))))
+                wrong.Add($"the actor {lit} highlighted shows {scene.InFocus}");
             if (e is BattlefieldBackgroundEvent or CountersEvent)
             {
                 // The picture under the numbers (what the screen's sides blur) changes only with its version.
@@ -102,7 +174,7 @@ public class BattleSceneTests(ITestOutputHelper output)
             presenter.Start(s);
             scene.Start(s);
         });
-        output.WriteLine($"{file}: {compared} engagements compared, {between} redraws, {pictures} pictures; replay {(report.Passed ? "matches" : "diverges")}");
+        output.WriteLine($"{file}: {compared} engagements compared, {between} redraws, {pictures} pictures, {actors} actors highlighted; replay {(report.Passed ? "matches" : "diverges")}");
         Assert.Empty(wrong);
     }
 

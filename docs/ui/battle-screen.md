@@ -98,8 +98,12 @@ picture, the slot panels) is not shown. How it is built:
 - **The scene** is a picture of our own, 640×256 shown ×1.6: the battlefield (`Bt_BackgroundCg` and
   its overlay `+1`, which `Bt_EnemyParty1 = 1137` leaves out) with two armies. During an exchange
   (from `EngagementSceneEvent` to the next redraw) exactly the engagement's pictures (the sprites by
-  troops, the specials); between exchanges the player unit and the enemy commander last in focus —
-  the acting unit, the target the enemy picked, the card the pointer is on — each by the engagement's
+  troops, the specials); between exchanges (owner, 2026-10-13) an empty field at a round's start; in a
+  turn its actor alone from the highlight of its panel, then the target the next highlight names (the
+  enemy's pick; the player's attack) — a defence leaves the actor alone; while the player chooses
+  (`FIGT_SEL`) the acting unit and, on the right, only the enemy whose card the pointer is on (gone when
+  the pointer leaves it; own cards change nothing); after an exchange its two armies until the next
+  turn, the fallen dropped at the field's redraw — each by the engagement's
   rule (`Cg*Full` at the troop limit, `Cg*Partial` below it, `Cg*Alone` without troops). The exchange's
   numbers are drawn in the picture: the TROOPS counters, the flying shots and the damages; what the
   original draws below row 255 moves up — the HP counters to y 224, the commanders' rows halfway

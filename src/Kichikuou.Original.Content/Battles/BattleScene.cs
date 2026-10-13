@@ -13,8 +13,8 @@ namespace Kichikuou.Original.Content.Battles;
 /// exchanges"): a 640×256 picture — the battlefield and two armies — that stays on top for the whole
 /// battle. During an exchange it shows the engagement's pictures (<see cref="EngagementSceneEvent"/>)
 /// with the exchange's numbers in the picture's geometry (what the original draws below row 255 moved
-/// up); between exchanges the player unit and the enemy commander last in focus (the turn's actor and
-/// its target, <see cref="Focus"/> for the card the pointer is on). Follows the battle's events with
+/// up); between exchanges the turn's actor and its target (<see cref="Observe"/>), while the player
+/// chooses the acting unit and the enemy whose card the pointer is on (<see cref="Hover"/>). Follows the battle's events with
 /// the state as it is when each is shown (<see cref="Observe"/>); draws on its own <see cref="Surface"/>,
 /// never on the stage. Engine-independent.
 /// </summary>
@@ -39,6 +39,9 @@ public sealed class BattleScene
     private IReadOnlyList<int> _enemySprites = [];
     private IReadOnlyList<int> _playerSprites = [];
     private int _unit, _cmdr;                                   // the records in focus between exchanges
+    private bool _engaged;                                      // the turn has had its exchange
+    private bool _choosing;
+    private int _hovered;                                       // the enemy whose card the pointer is on while choosing
     private (int UnitTroops, int CmdrTroops, int UnitHp, int CmdrHp)? _counters;
     private int? _shotsStep;
     private bool _results;
@@ -78,7 +81,25 @@ public sealed class BattleScene
     public const int PictureY = BaseY;
 
     /// <summary>The player unit and the enemy commander the picture shows between exchanges (0: none).</summary>
-    public (int Unit, int Cmdr) InFocus => (_unit, _cmdr);
+    public (int Unit, int Cmdr) InFocus => _choosing && _mode == Mode.Between ? (_unit, _hovered) : (_unit, _cmdr);
+
+    /// <summary>
+    /// Whether the player is choosing the acting unit's command (<c>FIGT_SEL</c>): the picture shows the
+    /// acting unit and, on the right, only the enemy whose card the pointer is on (<see cref="Hover"/>).
+    /// </summary>
+    public bool Choosing
+    {
+        get => _choosing;
+        set
+        {
+            if (_choosing == value)
+                return;
+            _choosing = value;
+            _hovered = 0;
+            if (_mode == Mode.Between)
+                Render();
+        }
+    }
 
     /// <summary>Whether an exchange is on (from its engagement picture to the next redraw of the field).</summary>
     public bool InEngagement => _mode == Mode.Engagement;
@@ -89,7 +110,8 @@ public sealed class BattleScene
         _state = state;
         Active = false;
         _mode = Mode.Between;
-        _unit = _cmdr = 0;
+        _unit = _cmdr = _hovered = 0;
+        _engaged = _choosing = false;
         ClearNumbers();
     }
 
@@ -97,27 +119,30 @@ public sealed class BattleScene
     public void Stop() => Active = false;
 
     /// <summary>
-    /// A card the player points at (between exchanges): its army goes into the picture on its side.
-    /// Ignored during an exchange.
+    /// The card the pointer is on while the player chooses (<see cref="Choosing"/>; null: none): an
+    /// enemy's army goes into the picture on the right until the pointer leaves its card; the player's
+    /// own cards change nothing (the acting unit stays). Ignored at any other time.
     /// </summary>
-    public void Focus(BattlePlace place)
+    public void Hover(BattlePlace? place)
     {
-        if (_state is not { } s || _mode != Mode.Between)
+        if (_state is not { } s || !_choosing || _mode != Mode.Between)
             return;
-        int record = BattleBoard.Record(s, place);
-        if (record == 0)
+        int record = place is { Side: BattleSide.Enemy } enemy ? BattleBoard.Record(s, enemy) : 0;
+        if (record == _hovered)
             return;
-        if (place.Side == BattleSide.Player ? _unit == record : _cmdr == record)
-            return;
-        if (place.Side == BattleSide.Player)
-            _unit = record;
-        else
-            _cmdr = record;
+        _hovered = record;
         Render();
     }
 
-    /// <summary>Follows one battle event (the state as it is when the event is shown).</summary>
-    public void Observe(ScriptEvent scriptEvent, GameState state)
+    /// <summary>
+    /// Follows one battle event (the state as it is when the event is shown; <paramref name="acting"/>:
+    /// the turn's actor, <see cref="RoundOrder.Acting"/>, after the same event). Between exchanges the
+    /// picture shows (owner, 2026-10-13): nothing at a round's start; from a turn's first highlight its
+    /// actor alone, then the target the next highlight names (the enemy's pick, the player's attack);
+    /// after an exchange its two armies, the fallen dropped at the field's redraw; after a turn without
+    /// one (a defence) its actor alone.
+    /// </summary>
+    public void Observe(ScriptEvent scriptEvent, GameState state, BattlePlace? acting = null)
     {
         _state = state;
         if (_dropCmdrMarks && _marks is { } shown)
@@ -129,19 +154,30 @@ public sealed class BattleScene
         }
         switch (scriptEvent)
         {
-            case RoundHeaderEvent or BattlefieldBackgroundEvent:
+            case RoundHeaderEvent:
                 _mode = Mode.Between;
-                KeepFocusInSlots(state);                                // a death compacts the slots between redraws
+                _unit = _cmdr = 0;                                      // an empty field until the round's first turn
+                _engaged = false;
+                Active = true;
+                ClearNumbers();
+                Render();
+                break;
+            case BattlefieldBackgroundEvent:
+                _mode = Mode.Between;
+                if (_engaged)
+                    DropFallen(state);                                  // a death compacts the slots between redraws
+                else
+                    KeepActor(state, acting);
                 Active = true;
                 ClearNumbers();
                 Render();
                 break;
             case PanelHighlightEvent highlight when BattleBoard.PanelPlace(highlight.Panel.Value) is { } place:
-                if (_mode == Mode.Between)
-                    Focus(place);
+                Highlight(state, place, actor: place == acting);
                 break;
             case EngagementSceneEvent e:
                 Active = true;
+                _engaged = true;
                 _mode = Mode.Engagement;
                 _background = e.Background.Value;
                 _overlay = e.Overlay;
@@ -183,15 +219,50 @@ public sealed class BattleScene
         }
     }
 
-    /// <summary>The records in focus, kept when they are still in a slot, else each side's first.</summary>
-    private void KeepFocusInSlots(GameState s)
+    /// <summary>
+    /// A panel highlighted (<c>L_0320f</c>): the turn's <paramref name="actor"/> alone on its side, or the
+    /// target it names (the enemy's pick, <c>FIGT.ADV:1424</c>; the player's attack, <c>:1592</c>) added on its own.
+    /// </summary>
+    private void Highlight(GameState s, BattlePlace place, bool actor)
     {
-        var players = BattleBoard.Cards(s, BattleSide.Player);
-        var enemies = BattleBoard.Cards(s, BattleSide.Enemy);
-        if (!players.Any(c => c?.Record == _unit))
-            _unit = players.FirstOrDefault(c => c is not null)?.Record ?? 0;
-        if (!enemies.Any(c => c?.Record == _cmdr))
-            _cmdr = enemies.FirstOrDefault(c => c is not null)?.Record ?? 0;
+        int record = BattleBoard.Record(s, place);
+        if (record == 0)
+            return;
+        if (actor)
+        {
+            _engaged = false;
+            _hovered = 0;
+            (_unit, _cmdr) = place.Side == BattleSide.Player ? (record, 0) : (0, record);
+        }
+        else if (place.Side == BattleSide.Player)
+        {
+            _unit = record;
+        }
+        else
+        {
+            _cmdr = record;
+        }
+        if (_mode == Mode.Between)
+            Render();
+    }
+
+    /// <summary>After an exchange: the armies that are no longer in a slot (fallen) leave the picture.</summary>
+    private void DropFallen(GameState s)
+    {
+        if (!BattleBoard.Cards(s, BattleSide.Player).Any(c => c?.Record == _unit))
+            _unit = 0;
+        if (!BattleBoard.Cards(s, BattleSide.Enemy).Any(c => c?.Record == _cmdr))
+            _cmdr = 0;
+    }
+
+    /// <summary>A redraw in a turn without an exchange (a defence, a round's start): only the actor stays, if any.</summary>
+    private void KeepActor(GameState s, BattlePlace? acting)
+    {
+        if (acting?.Side != BattleSide.Player)
+            _unit = 0;
+        if (acting?.Side != BattleSide.Enemy)
+            _cmdr = 0;
+        DropFallen(s);
     }
 
     private void ClearNumbers()
@@ -248,18 +319,19 @@ public sealed class BattleScene
         Sys3Int limit = s.Bt_TroopLimit;
         int Sprite(Sys3Int troops, Sys3Int full, Sys3Int partial, Sys3Int alone) =>
             (troops >= limit ? full : troops != 0 ? partial : alone).Value;
-        if (_cmdr != 0)
+        var (unit, cmdr) = InFocus;
+        if (cmdr != 0)
         {
-            var c = s.Cmdrs[_cmdr];
+            var c = s.Cmdrs[cmdr];
             _enemySprites = [Sprite(c.Troops, c.CgFull, c.CgPartial, c.CgAlone)];
         }
         else
         {
             _enemySprites = [];
         }
-        if (_unit != 0)
+        if (unit != 0)
         {
-            var u = s.Units[_unit];
+            var u = s.Units[unit];
             _playerSprites = [Sprite(u.Troops, u.CgFull, u.CgPartial, u.CgAlone)];
         }
         else

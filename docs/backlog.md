@@ -94,6 +94,9 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   faces are in Debug → Portraits (`UnitFaces.Commanders`); nine commanders have none (and commander
   100 has one only in some scenes' battles); their battle sprite stands in (owner, 2026-10-12;
   `RecordFace.StandIn`, its square set in the viewer) — [ui/deployment-table.md](ui/deployment-table.md), step 7.
+  A bug of our battle screen (owner, 2026-10-13, put off as a topic of its own): `FIGT_SEL`'s popups (the
+  right click's command popup, the slot popup) open where the original's panels are, not over our cards —
+  [ui/battle-screen.md](ui/battle-screen.md), step 4 (input).
   Groundwork (survey §4.8): menus as data and the map helper are done (2026-10-12); the shared engine
   host (§4.8, "Items 2 and 4 are one step") is not needed for screens over the original layout.
 - **Quality-of-life features**, the README's second aim — *owner* (which), then *agent*; a survey of
