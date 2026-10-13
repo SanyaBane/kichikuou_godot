@@ -46,8 +46,13 @@ public sealed class BattleScene
     /// <summary>Where the overlay alone is kept (right of the battlefield), copied under the front's numbers at every change.</summary>
     private const int OverlayX = 640;
 
-    /// <summary>A side's army in the picture: its record (the unit or the commander; 0: none drawn) and the x span its sprites cover.</summary>
-    public readonly record struct Army(int Record, int Left, int Right);
+    /// <summary>
+    /// A side's army in the picture: its record (the unit or the commander; 0: none drawn), the x span its
+    /// sprites cover, and its arrival — a number that changes whenever the side's army changes, so a view
+    /// that sees only the last of several changes (the armies part after an exchange and the same unit acts
+    /// next) still knows the army left and came back.
+    /// </summary>
+    public readonly record struct Army(int Record, int Left, int Right, int Arrival);
 
     private readonly CgLibrary _cgs;
     private Mode _mode;
@@ -57,6 +62,8 @@ public sealed class BattleScene
     private IReadOnlyList<int> _playerSprites = [];
     private int _unit, _cmdr;                                   // the records in focus between exchanges
     private bool _engaged;                                      // the turn has had its exchange
+    private int _drawnUnit, _drawnCmdr;                         // the records the picture was last drawn with
+    private int _playerArrival, _enemyArrival;
     private bool _choosing;
     private int _hovered;                                       // the enemy whose card the pointer is on while choosing
     private (int UnitTroops, int CmdrTroops, int UnitHp, int CmdrHp)? _counters;
@@ -137,7 +144,7 @@ public sealed class BattleScene
         _state = state;
         Active = false;
         _mode = Mode.Between;
-        _unit = _cmdr = _hovered = 0;
+        _unit = _cmdr = _hovered = _drawnUnit = _drawnCmdr = 0;
         _engaged = _choosing = false;
         ClearNumbers();
     }
@@ -166,8 +173,8 @@ public sealed class BattleScene
     /// the turn's actor, <see cref="RoundOrder.Acting"/>, after the same event). Between exchanges the
     /// picture shows (owner, 2026-10-13): nothing at a round's start; from a turn's first highlight its
     /// actor alone, then the target the next highlight names (the enemy's pick, the player's attack);
-    /// after an exchange its two armies, the fallen dropped at the field's redraw; after a turn without
-    /// one (a defence) its actor alone.
+    /// after an exchange nothing from the field's redraw on — the armies part, even when the same unit acts
+    /// next (owner, 2026-10-13); after a turn without one (a defence) its actor alone.
     /// </summary>
     public void Observe(ScriptEvent scriptEvent, GameState state, BattlePlace? acting = null)
     {
@@ -192,7 +199,7 @@ public sealed class BattleScene
             case BattlefieldBackgroundEvent:
                 _mode = Mode.Between;
                 if (_engaged)
-                    DropFallen(state);                                  // a death compacts the slots between redraws
+                    _unit = _cmdr = 0;                                  // after an exchange the armies part (owner, 2026-10-13)
                 else
                     KeepActor(state, acting);
                 Active = true;
@@ -273,7 +280,7 @@ public sealed class BattleScene
             Render();
     }
 
-    /// <summary>After an exchange: the armies that are no longer in a slot (fallen) leave the picture.</summary>
+    /// <summary>The armies that are no longer in a slot (fallen) leave the picture.</summary>
     private void DropFallen(GameState s)
     {
         if (!BattleBoard.Cards(s, BattleSide.Player).Any(c => c?.Record == _unit))
@@ -311,6 +318,10 @@ public sealed class BattleScene
         if (_mode == Mode.Between)
             ComposeBetween(s);
         var (unit, cmdr) = _mode == Mode.Between ? InFocus : (_unit, _cmdr);
+        if (unit != _drawnUnit)
+            (_drawnUnit, _playerArrival) = (unit, _playerArrival + 1);
+        if (cmdr != _drawnCmdr)
+            (_drawnCmdr, _enemyArrival) = (cmdr, _enemyArrival + 1);
         string picture = $"{_background} {_overlay} {string.Join(",", _enemySprites)} / {string.Join(",", _playerSprites)} | {unit} {cmdr}";
         if (picture != _picture)
         {
@@ -350,11 +361,11 @@ public sealed class BattleScene
         Surface.Fill(OverlayX, FieldY, Width, Height, Surface.SpriteKey);         // after the field, which may reach into it
         if (_overlay)
             Put(_background + 1, OverlayX, FieldY, keyed: true);
-        PlayerArmy = ArmyLayer(_playerSprites, unit, 0);
-        EnemyArmy = ArmyLayer(_enemySprites, cmdr, EnemyArmyX);                  // after the player's, which may reach into it
+        PlayerArmy = ArmyLayer(_playerSprites, unit, 0, _playerArrival);
+        EnemyArmy = ArmyLayer(_enemySprites, cmdr, EnemyArmyX, _enemyArrival);   // after the player's, which may reach into it
     }
 
-    private Army ArmyLayer(IReadOnlyList<int> sprites, int record, int x)
+    private Army ArmyLayer(IReadOnlyList<int> sprites, int record, int x, int arrival)
     {
         Surface.Fill(x, ArmyY, Width, Height, Surface.SpriteKey);
         int left = Width, right = 0;
@@ -365,7 +376,7 @@ public sealed class BattleScene
             left = Math.Min(left, Math.Max(0, cg.X));
             right = Math.Max(right, Math.Min(Width, cg.X + cg.Width));
         }
-        return right > left ? new Army(record, left, right) : default;
+        return right > left ? new Army(record, left, right, arrival) : new Army(0, 0, 0, arrival);
     }
 
     /// <summary>A CG at its own position moved by (x, y), in the palette of the moment (no palette load).</summary>

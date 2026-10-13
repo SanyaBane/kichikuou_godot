@@ -31,7 +31,8 @@ public class BattleSceneTests(ITestOutputHelper output)
     /// Who the picture shows between exchanges (owner, 2026-10-13): an empty field at a round's start; the
     /// enemy's turn its actor, then the target it highlights, the target gone when it defends; the player's
     /// turn the acting unit, and while choosing the enemy whose card the pointer is on, never another own
-    /// card; after an exchange its two armies until the next turn, the fallen dropped at the redraw.
+    /// card; after an exchange nothing from the redraw on (the armies part), so the next actor comes in
+    /// anew even when it fought in that exchange (its arrival changes).
     /// </summary>
     [Fact]
     public void The_scene_shows_the_turns_actor_its_target_and_the_hovered_enemy()
@@ -79,8 +80,16 @@ public class BattleSceneTests(ITestOutputHelper output)
         See(new EngagementSceneEvent(0, [], [], false, 0, 0), rance);
         Assert.Equal((1, 5), scene.InFocus);
         (s.Bt_EnemySlot1, s.Bt_EnemySlot2) = (4, 0);                    // Dodge falls: the slots compact
-        See(new BattlefieldBackgroundEvent(0), rance);
+        int arrival = scene.PlayerArmy.Arrival;
+        See(new BattlefieldBackgroundEvent(0), rance);                  // after the exchange the armies part
+        Assert.Equal((0, 0), scene.InFocus);
+
+        See(new PanelHighlightEvent(1), rance);                         // Rance acts again: he comes back
         Assert.Equal((1, 0), scene.InFocus);
+        Assert.Equal(arrival + 2, scene.PlayerArmy.Arrival);
+        See(new BattlefieldBackgroundEvent(0), rance);                  // and defends: he stays
+        Assert.Equal((1, 0), scene.InFocus);
+        Assert.Equal(arrival + 2, scene.PlayerArmy.Arrival);
 
         See(new PanelHighlightEvent(2), barres);                        // Barres (Auto-Atk) acts, the exchange follows
         Assert.Equal((6, 0), scene.InFocus);

@@ -105,8 +105,9 @@ picture, the slot panels) is not shown. How it is built:
   turn its actor alone from the highlight of its panel, then the target the next highlight names (the
   enemy's pick; the player's attack) — a defence leaves the actor alone; while the player chooses
   (`FIGT_SEL`) the acting unit and, on the right, only the enemy whose card the pointer is on (gone when
-  the pointer leaves it; own cards change nothing); after an exchange its two armies until the next
-  turn, the fallen dropped at the field's redraw — each by the engagement's
+  the pointer leaves it; own cards change nothing); after an exchange nothing from the field's redraw
+  on — the armies part (owner, 2026-10-13; until then its two armies stayed until the next turn), so the
+  next actor comes in anew even when it fought in that exchange — each by the engagement's
   rule (`Cg*Full` at the troop limit, `Cg*Partial` below it, `Cg*Alone` without troops). The exchange's
   numbers are drawn in the picture: the TROOPS counters, the flying shots and the damages; what the
   original draws below row 255 moves up — the HP counters to y 224, the commanders' rows halfway
@@ -116,8 +117,9 @@ picture, the slot panels) is not shown. How it is built:
   that comes into the picture slides in from outside the scene on its side (the player's from the left,
   the enemy's from the right), one that leaves slides out the same way; horizontally, evenly, in
   Option → Battle Screen… → "Armies: slide" (0.2 s by default; `--army-seconds x` for a launch), at once
-  while skipping and with `--fast`. A new army on a side waits for the one shown there to leave; the same
-  army with other sprites changes in place. The player's choice never waits for a slide (the hovered
+  while skipping and with `--fast`. A new army on a side waits for the one shown there to leave — a new
+  arrival (`BattleScene.Army.Arrival`), so the same unit that parted after an exchange and acts next
+  slides out and in again; the same arrival with other sprites changes in place. The player's choice never waits for a slide (the hovered
   enemy slides in and out while the pointer moves); the exchange does: its engagement picture waits until
   every army stands in place, then the numbers run. When the choice ends the hovered enemy stays in the
   picture (the attack's target), so it does not slide out and in again. The scene keeps the picture's

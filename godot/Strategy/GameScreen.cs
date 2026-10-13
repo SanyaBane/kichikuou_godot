@@ -587,7 +587,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _ = WindowShotAsync(System.IO.Path.Combine(dir, $"{_shot++:D5}-{what}.png"));
             return;
         }
-        _presenter.Compose();
+        _viewStale |= _presenter.Compose();                                     // the change it takes is the window's too
         var image = Image.CreateFromData(Surface.ScreenWidth * Surface.Scale, Surface.ScreenHeight * Surface.Scale,
             false, Image.Format.Rgba8, _presenter.Screen.ReadScreen());
         image.Resize(Surface.ScreenWidth, Surface.ScreenHeight, Image.Interpolation.Bilinear);

@@ -374,7 +374,8 @@ internal sealed partial class BattleBoardView : Control
     /// <summary>
     /// One side's army in the scene, sliding as Sengoku Rance's (docs/sengoku/04-screen.md §2.3; owner, 2026-10-13):
     /// horizontally and evenly, from just outside the scene on its side (the player's left, the enemy's right) into
-    /// place and back. A new army waits for the one shown to slide out, then slides in; the same army with other
+    /// place and back. A new army (a new <see cref="BattleScene.Army.Arrival"/>, even of the same record: the armies
+    /// parted after an exchange) waits for the one shown to slide out, then slides in; the same arrival with other
     /// sprites (fewer troops, an exchange's) changes in place.
     /// </summary>
     private sealed class ArmySlide(BattleSide side, TextureRect rect)
@@ -384,13 +385,13 @@ internal sealed partial class BattleBoardView : Control
         private ImageTexture? _texture;
         private float _in;                                          // 1: in place; 0: its sprites' edge at the scene's
 
-        public bool Settled => _shown.Record == _target.Record && (_shown.Record == 0 || _in >= 1);
+        public bool Settled => _shown.Arrival == _target.Arrival && (_shown.Record == 0 || _in >= 1);
 
         /// <summary>The scene's picture of this side changed: <paramref name="army"/> drawn in <paramref name="picture"/>.</summary>
         public void Arrive(BattleScene.Army army, Image picture)
         {
             _target = army;
-            if (army.Record == _shown.Record)
+            if (army.Arrival == _shown.Arrival)
             {
                 _shown = army;
                 _pending = null;
@@ -405,7 +406,7 @@ internal sealed partial class BattleBoardView : Control
         /// <summary>Moves by <paramref name="amount"/> of a whole slide.</summary>
         public void Step(float amount, bool instant)
         {
-            if (_shown.Record != _target.Record)
+            if (_shown.Arrival != _target.Arrival)
             {
                 if (_shown.Record != 0 && _in > 0 && !instant)
                 {
