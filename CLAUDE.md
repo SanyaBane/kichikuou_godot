@@ -239,7 +239,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `Strategy/PortraitViewer` (Debug → Portraits: units', commanders' and every face as our screens cut them, `UnitFaces`, through `Strategy/FacePictures`, which the deployment screen's party cards share; the owner's edits of a square, `FaceCropEditor`, are kept in `user://face-crops.txt`, `FaceCropFile`; `--portraits` opens it);
   `Battles/Effects` (our exchange effects after Sengoku Rance's, drawn by code: `EffectTextures`, particles from a seed
   as `MeleeEffect`, `BowEffect`, `MagicEffect`, drawn by `EffectCanvas` and laid over the scene by `EffectPlayer`; Debug → Effects, `EffectViewer`,
-  `--effects`; not wired into the exchange yet — docs/ui/battle-screen.md, "The exchange's effects");
+  `--effects`; played in the exchange from its shots by `BattleBoardView`, the choice `Original.Content/Battles/ExchangeEffect`, Option → Battle Screen… → "Effects" — docs/ui/battle-screen.md, "The exchange's effects");
   `Strategy/DeploymentTableView` and `Strategy/DeploymentPanels` (our own deployment screen, Option → Interface → New, `InterfaceChoice`;
   its colours Option → Palette, `DeploymentPalette`, steel by default;
   `GameScreen` feeds the script its gestures, `Original.Content/Strategy/DeploymentTable` the rows);
@@ -307,7 +307,7 @@ commit `local.env`.
   cancels; back at the turn, each enemy card's banners, two sample menus' two and three banners never
   answered, then a click on the target's Melee banner; dumps `menu`, `menu-orders`, `retreat`,
   `banners-E1`…, `sample-2-banners`, `sample-3-banners`, `banner-hover`, and without `--fast` `slide`
-(halfway through the first wait for the armies' slides; `--army-seconds 1` makes them long enough); it moves the system pointer,
+(halfway through the first wait for the armies' slides; `--army-seconds 1` makes them long enough) and each exchange effect once, at its peak (`effect-melee-player`, …); it moves the system pointer,
   so leave the mouse alone); its dumps need a window (no `--headless`).
 - **A look at one screen** (screen dumps for the owner) starts from a kept save, never from the
   prologue (owner's requests 2026-10-12): `user://saves-week18` holds the owner's own game at week 18

@@ -126,11 +126,25 @@ public sealed partial class BattlePresenter
 
     // ------------------------------------------------------------------ exchange (§5.5)
 
+    /// <summary>
+    /// The effect of the exchange whose shots started last (<see cref="ExchangeEffect.Of"/>, taken at the first shots
+    /// frame); null when neither side fires. <see cref="EffectsStarted"/> counts the starts, so a view plays each once.
+    /// </summary>
+    public ExchangeEffect? Effect { get; private set; }
+
+    /// <summary>How many exchanges' shots have started (<see cref="Effect"/>).</summary>
+    public int EffectsStarted { get; private set; }
+
     /// <summary>One frame of the shot counters (<c>FIGTATTK.ADV:34-126</c>).</summary>
     private void ShotsFrame(int t)
     {
         if (State is not { } s)
             return;
+        if (t == 0)
+        {
+            Effect = ExchangeEffect.Of(s);
+            EffectsStarted++;
+        }
         Surface.Copy(0, 400, 640, 400, 640, 0);
         int d = t * 5 / 11;
         int px = 48 + t, ex = 416 - t;

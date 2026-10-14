@@ -258,10 +258,31 @@ picture, the slot panels) is not shown. How it is built:
   actor's alone. Our scene is 640×256 shown ×1.6 (1024×410): a frame scales ×1.28 to 1024×402. Steps: (1) the
   references — done 2026-10-14; (2) the melee effect alone, as a Godot scene with Debug → Effects to play it over a
   battlefield, frames rendered next to the reference's for the owner — done 2026-10-14, the owner took its first look
-  ("v1") as it is; (3) the bow and the magic — done 2026-10-14, the owner took their first look ("v1") as it is; then
-  where an effect plays in the exchange (from the shots' flight or the blow; with the result hold and the cards'
-  counters; who is the actor in a mutual exchange) — options for the owner first.
-  **How it is built** (`godot/Battles/Effects`, presentation only, nothing wired into the exchange yet): the pictures
+  ("v1") as it is; (3) the bow and the magic — done 2026-10-14, the owner took their first look ("v1") as it is; (4)
+  the wiring into the exchange, decided by the owner (2026-10-14) — done 2026-10-14 (below, "Wired in"):
+  - **When**: from the shots' first frame (`ShotsFrameEvent` step 0, `FIGTATTK.ADV:33-131`). The shots take ~165 ms
+    and the pause after them (`:133`, `Y 3, 40`) 640 ms, so the effect's peak falls on the numbers' flight and its last
+    ~0.7 s on the result screen and the cards' counters, as Sengoku Rance's runs with its counters; nothing waits for
+    it and the exchange is no longer.
+  - **Whose**: an exchange is one-sided but for direct against direct (the defending side's action is 99 and it
+    fires nothing: the player's bow and magic, the enemy's back-row bow and magic, every special but Soaring Wave;
+    `Battle.Resolution.cs`, `Battle.Flow.Enemy.cs`). The effect is the firing side's, by its action (0 melee, 1 bow,
+    2 magic); in a two-sided exchange only the turn's actor's, as Sengoku Rance's blow has one actor and one effect.
+    Mirrored when the enemy fires.
+  - **Specials**: the player's specials get Sengoku Rance's own counterparts, ours as like them as we can make them —
+    Rance Attack first (Sengoku Rance has one: find its effect through the action table, `あべ/T_EFFDAT.JAF.jam`
+    `add1`, and make ours); the others by their action (melee or magic) until a counterpart is found for each (owner).
+  - **A setting**: Option → Battle Screen… → "Effects: on/off", on by default (Sengoku Rance's Combat Effect Display);
+    none while skipping (MsgSkip) or with `--fast`.
+  **Wired in**: the presenter takes the effect at the shots' first frame (`ExchangeEffect.Of` on the state,
+  `BattlePresenter.Effect`, counted by `EffectsStarted`); `BattleBoardView` plays each start once in its scene, an
+  `EffectPlayer` between the armies' layers and the front (the overlay and the numbers), at the scene's foot, scaled
+  with the screen, hidden when done; the setting is `BattleScreenSettings.Effects` (a check box). `ExchangeEffectTests`:
+  the rule on given states, and in every captured battle each exchange's shots start an effect whose side fires (its
+  action is not 99 and it has a shot), a two-sided exchange being direct against direct with the actor in
+  `Bt_MsgMode` 3 or 4. `--auto` in a window without `--fast` dumps each effect and side once a launch, at its peak
+  (`effect-melee-player`, `effect-magic-enemy`, …).
+  **How it is built** (`godot/Battles/Effects`, presentation only): the pictures
   are drawn by code (`EffectTextures`: a noisy puff, a crescent's body and its inner edge, an urchin, a four-point
   sparkle, a ring, a streak, a dot; for the bow an arrow, a release burst, a bow's arc, a hit's "crown", a bokeh disc;
   for the magic a glow, a flare's rays, a shockwave's lens), white with the shape in the alpha and tinted by each draw.

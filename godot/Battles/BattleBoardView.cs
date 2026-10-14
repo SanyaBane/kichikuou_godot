@@ -1,5 +1,6 @@
 using Godot;
 using Kichikuou.Content.Screen;
+using Kichikuou.Game.Battles.Effects;
 using Kichikuou.Game.Strategy;
 using Kichikuou.Original.Content.Battles;
 using Kichikuou.Original.Content.Strategy;
@@ -72,6 +73,8 @@ internal sealed partial class BattleBoardView : Control
     private readonly TextureRect _sides;
     private readonly Control _sceneClip;                    // the scene's layers, clipped to its area
     private readonly TextureRect _field, _front;
+    private readonly EffectPlayer _effect;
+    private int _effectsSeen;
     private readonly ArmySlide _playerArmy, _enemyArmy;
     private bool _armiesInstant, _jumpArmies = true;
     private readonly TextureRect _windows;
@@ -129,6 +132,8 @@ internal sealed partial class BattleBoardView : Control
         _field = Layer();
         _enemyArmy = new ArmySlide(BattleSide.Enemy, Layer());              // the player's over the enemy's, as the picture draws them
         _playerArmy = new ArmySlide(BattleSide.Player, Layer());
+        _effect = new EffectPlayer { HideWhenDone = true };                 // over the armies, under the numbers
+        _sceneClip.AddChild(_effect);
         _front = Layer();
         VisibilityChanged += () =>
         {
@@ -195,6 +200,31 @@ internal sealed partial class BattleBoardView : Control
         MouseFilter = MouseFilterEnum.Ignore,
     };
 
+    /// <summary>
+    /// The exchange's effect (docs/ui/battle-screen.md, "The exchange's effects"): from the shots' first frame, the
+    /// firing side's (<see cref="BattlePresenter.Effect"/>), mirrored for the enemy's, over the armies and under the
+    /// numbers. Each start plays once; none with Option → Battle Screen… → "Effects" off, or when it would be at once
+    /// (<paramref name="instant"/>: skipping, <c>--fast</c>). It plays out by itself, nothing waits for it.
+    /// </summary>
+    private void PlayEffect(GamePresenter presenter, bool instant)
+    {
+        var battle = presenter.Battle;
+        if (battle.EffectsStarted == _effectsSeen)
+            return;
+        _effectsSeen = battle.EffectsStarted;
+        if (instant || !presenter.Scene.InEngagement || BattleScreenSettings.Get(BattleScreenSettings.Effects) < 0.5
+            || battle.Effect is not { } effect)
+            return;
+        _effect.Mirrored = effect.Side == BattleSide.Enemy;
+        _effect.Start(effect.Kind switch
+        {
+            ExchangeEffectKind.Bow => BowEffect.Build(_effectsSeen),
+            ExchangeEffectKind.Magic => MagicEffect.Build(_effectsSeen),
+            _ => MeleeEffect.Build(_effectsSeen),
+        });
+        _effect.Playing = true;
+    }
+
     /// <summary>A layer of the scene (<see cref="BattleScene.FieldY"/>), over the ones before it.</summary>
     private TextureRect Layer()
     {
@@ -254,6 +284,8 @@ internal sealed partial class BattleBoardView : Control
         At(_sceneClip, SceneArea);
         foreach (var layer in new[] { _field, _front })
             (layer.Position, layer.Size) = (Vector2.Zero, _sceneClip.Size);
+        _effect.Position = new Vector2(0, SceneArea.Size.Y - EffectPlayer.Height) * scale;     // at the scene's foot
+        _effect.Scale = new Vector2(scale, scale);
         PlaceArmies();
         At(_windows, WindowsArea);
         At(_strip, StripArea);
@@ -298,6 +330,7 @@ internal sealed partial class BattleBoardView : Control
             _sceneVersion = presenter.Scene.Version;
             UploadScene(presenter.Scene);
         }
+        PlayEffect(presenter, slidesInstant);
         if (screenChanged || _windowsTexture is null)
         {
             var mask = presenter.BattleWindows(inputWindows);

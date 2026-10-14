@@ -5,7 +5,7 @@ using Kichikuou.Original.Content.Battles;
 namespace Kichikuou.Game.Battles;
 
 /// <summary>
-/// Option → Battle Screen… (owner, 2026-10-12): a slider per setting of our battle screen
+/// Option → Battle Screen… (owner, 2026-10-12): a slider per setting of our battle screen (a check box for an on/off one)
 /// (<see cref="BattleScreenSettings"/>), applied and saved as it moves, and a preview of the order strip
 /// (Preview makes a unit jump ahead and back; pressed again while it moves, the move hurries). The game
 /// goes on behind it, so a setting can be tried in a battle at once.
@@ -13,7 +13,7 @@ namespace Kichikuou.Game.Battles;
 internal sealed partial class BattleScreenSettingsDialog : AcceptDialog
 {
     private readonly OrderStrip _preview = new();
-    private readonly List<(BattleScreenSettings.Setting Setting, HSlider Slider)> _sliders = [];
+    private readonly List<Action> _defaults = [];                 // each setting's control back to its default
     private bool _jumped;
 
     // The week-26 battle's first round: Barres, hit hard, jumps ahead of Leila.
@@ -38,6 +38,15 @@ internal sealed partial class BattleScreenSettingsDialog : AcceptDialog
         {
             double value = BattleScreenSettings.Get(setting);
             grid.AddChild(new Label { Text = setting.Label, TooltipText = setting.Hint, MouseFilter = Control.MouseFilterEnum.Pass });
+            if (setting.Unit == BattleScreenSettings.Toggle)
+            {
+                var box = new CheckBox { Text = "on", ButtonPressed = value >= 0.5, TooltipText = setting.Hint };
+                box.Toggled += on => BattleScreenSettings.Set(setting, on ? 1 : 0);
+                grid.AddChild(box);
+                grid.AddChild(new Control());
+                _defaults.Add(() => box.ButtonPressed = setting.Default >= 0.5);
+                continue;
+            }
             var slider = new HSlider
             {
                 MinValue = setting.Min, MaxValue = setting.Max, Step = setting.Step, Value = value,
@@ -52,7 +61,7 @@ internal sealed partial class BattleScreenSettingsDialog : AcceptDialog
             };
             grid.AddChild(slider);
             grid.AddChild(shown);
-            _sliders.Add((setting, slider));
+            _defaults.Add(() => slider.Value = setting.Default);
         }
         column.AddChild(grid);
 
@@ -81,8 +90,8 @@ internal sealed partial class BattleScreenSettingsDialog : AcceptDialog
             }
             else if (action == "defaults")
             {
-                foreach (var (setting, slider) in _sliders)
-                    slider.Value = setting.Default;
+                foreach (var reset in _defaults)
+                    reset();
             }
         };
     }

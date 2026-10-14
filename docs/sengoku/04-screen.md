@@ -137,6 +137,22 @@ Surveyed as the reference for our own exchange effects (docs/ui/battle-screen.md
     (frame 3), a **fireball** of yellow, orange and white billows over the whole half (frames 6-15) with a pale
     **shockwave arc** running off its left edge toward the actor, then embers, gold four-point sparkles and a soft
     white glow fading by frame ~27.
+- **A correction** **[V]**: the third and fourth arguments of `add1`-`add3` (`:1260`: `nCgNo, nCount, nCgNo2,
+  nCount2, nActionNo…`) are not a solo battle's effect but a multi-target attack's (`m_nCgNo2`/`m_nCount2`, used only
+  with `bAllFlag`, `existAll`, `T_BATEFF:760-790`); a solo battle (`bSoloFlag`) changes only `getDefaultCgNo`'s
+  fallbacks and the time (750 ms). The lookup order (`tagEffectDataManager@get`, `T_EFFDAT:933-1094`): the action's
+  entry (`search1`), the action remapped (heal, defence, buff, debuff to 991-995) and `search1` again, the character's
+  (`search2`), the troop type's (`search3`); only then `getDefaultCgNo`.
+- **Rance Attack** **[V]** (surveyed 2026-10-14 for our own; docs/ui/battle-screen.md, "The exchange's effects"):
+  action **90** (`多田/▲技能データ.jaf.jam:690-700`, action type 3, a "hero" action; damage 100 %, wait 15; Rance is
+  character 1000, given it in skill slot 4 by `Ｃ技能変更(90, 4, 1000, 999, 0)`, `多田/Ｆコマンドイベント.jaf.jam:68934-68941`)
+  and **172** "S Rance Attack" (`:7490-7498`, type 1, an ordinary attack at 200 %, slot 14) both map to **CG 40500, 30
+  frames**, no multi-target variant (`あべ/T_EFFDAT.JAF.jam:222-230`: `add1(40500, 30, 0, 0, 90, 172, 0, 0)`). The
+  hero attack is two phases (`あべ/C_合戦.JAF.jam:1385-1422`, `合戦_勇者処理` `:2723-2965`): the spotlight, the
+  general's figure alone attacking (`createSpYushaAttack`, `T_BATUNI:253-308`: a sprite of one, not a cut-in) with
+  effect 40500, the damage, `EFFECT 1, 250`; then, if the target survives, the troop's charge as an ordinary exchange
+  (`合戦_攻撃_単体`, `:1095-1150`) whose effect comes from the character's skill slot 3 — 0 for Rance, so his troop
+  type's, Samurai **40000** (`▲武将データ.jaf.jam:113-157`; **[I]** that slot 3 stays 0 in normal play). No cut-in.
 - **Sound**: each effect's sound comes from a CG → sound table (`あべ/T_BATSND.JAF.jam:550-564`), played as it
   starts (`あべ/T_BATEFF.JAF.jam:280`) — not surveyed further.
 

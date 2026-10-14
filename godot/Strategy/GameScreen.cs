@@ -520,6 +520,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _presenter.Show(scriptEvent);
         if (scriptEvent is EngagementSceneEvent)
             await WaitForArmiesAsync();
+        if (scriptEvent is ShotsFrameEvent { Step.Value: 0 } && _options.Auto && !_options.Fast && BattleScreenShown
+            && _presenter.Battle.Effect is { } effect && _effectShots.Add(effect))
+            _ = EffectShotAsync($"effect-{effect.Kind}-{effect.Side}".ToLowerInvariant());
         if (scriptEvent is MessageEvent message)
             _skip.OnMessage(message.Text);
         else if (scriptEvent is ValueMessageEvent values)
@@ -575,6 +578,20 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     }
 
     private bool _slideShot;
+
+    /// <summary>
+    /// Unattended play's dump of an exchange's effect (in a window, without <c>--fast</c>): once a launch for each
+    /// effect and side, at its peak (frame 3, 150 ms after the shots' start), <c>effect-melee-player</c> and the like.
+    /// </summary>
+    private async Task EffectShotAsync(string what)
+    {
+        var watch = Stopwatch.StartNew();
+        while (watch.Elapsed.TotalSeconds < 0.15 && !_closing)
+            await NextFrameAsync();
+        Shot(what);
+    }
+
+    private readonly HashSet<ExchangeEffect> _effectShots = [];
 
     /// <summary>
     /// Animates a palette fade over its <see cref="FadeRequest.Duration"/>, never skipped, unless

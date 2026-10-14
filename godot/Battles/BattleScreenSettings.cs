@@ -6,7 +6,7 @@ namespace Kichikuou.Game.Battles;
 /// The settings of our own battle screen (Option → Battle Screen…, <see cref="BattleScreenSettingsDialog"/>),
 /// kept in <c>[battle_screen]</c> of <c>user://settings.cfg</c>; a change applies at once. So far the order
 /// strip's moves (<see cref="OrderStrip"/>), the armies' slides, the spotlight's darkness, the cards' counters (<see cref="BattleBoardView"/>),
-/// the exchange's result hold (<c>GameScreen</c>) and the opening's leave (<see cref="BattleOpeningLayer"/>).
+/// the exchange's result hold (<c>GameScreen</c>), the opening's leave (<see cref="BattleOpeningLayer"/>) and the exchange's effects.
 /// </summary>
 internal static class BattleScreenSettings
 {
@@ -52,8 +52,15 @@ internal static class BattleScreenSettings
         "How long an exchange's result stays before the battle goes on by itself; a click or a key goes on sooner (0: at once). "
         + "A result with ANNIHILATED or UNABLE TO FIGHT still waits for the click.");
 
+    /// <summary>Whether the exchanges play our effects (owner, 2026-10-14; Sengoku Rance's Combat Effect Display): 1 on, 0 off.</summary>
+    public static readonly Setting Effects = new("effects", "Effects", 0, 1, 1, 1, Toggle,
+        "Our attack effects over the scene from an exchange's shots, after Sengoku Rance's (melee, bow, magic). None while skipping.");
+
+    /// <summary>The unit of an on/off setting (a check box in the dialog).</summary>
+    public const string Toggle = "toggle";
+
     public static IReadOnlyList<Setting> All { get; } =
-        [StripSeconds, StripHurrySeconds, StripDropShare, ArmySeconds, SpotDarkness, MeterSeconds, ResultSeconds, OpeningAppearSeconds, OpeningSeconds];
+        [StripSeconds, StripHurrySeconds, StripDropShare, ArmySeconds, SpotDarkness, MeterSeconds, ResultSeconds, OpeningAppearSeconds, OpeningSeconds, Effects];
 
     /// <summary>The development switches that set a setting for the launch.</summary>
     private static readonly (string Switch, Setting Setting)[] Switches =

@@ -48,7 +48,7 @@ internal sealed partial class EffectPlayer : Control
         {
             Size = new Vector2I(Width, Height),
             TransparentBg = false,
-            RenderTargetUpdateMode = SubViewport.UpdateMode.Always,
+            RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled,       // hidden at first
         };
         var black = new ColorRect { Color = Colors.Black, Size = new Vector2(Width, Height) };
         _view.AddChild(black);
@@ -65,8 +65,13 @@ internal sealed partial class EffectPlayer : Control
             MouseFilter = MouseFilterEnum.Ignore,
         };
         AddChild(_output);
+        VisibilityChanged += () =>                                      // the viewport draws only while it is shown
+            _view.RenderTargetUpdateMode = IsVisibleInTree() ? SubViewport.UpdateMode.Always : SubViewport.UpdateMode.Disabled;
         Visible = false;
     }
+
+    /// <summary>Hides itself when an effect ends (the battle screen; the viewer keeps the last frame).</summary>
+    public bool HideWhenDone { get; init; }
 
     /// <summary>The time shown, in frames (<see cref="EffectCanvas.FrameSeconds"/>) from the effect's start.</summary>
     public float Frame
@@ -116,7 +121,11 @@ internal sealed partial class EffectPlayer : Control
         if (frame >= EffectCanvas.Frames)
         {
             if (!Loop)
+            {
                 Playing = false;
+                if (HideWhenDone)
+                    Visible = false;
+            }
             frame = Loop ? frame % EffectCanvas.Frames : EffectCanvas.Frames;
         }
         Frame = frame;
