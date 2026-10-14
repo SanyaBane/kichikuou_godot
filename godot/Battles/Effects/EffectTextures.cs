@@ -90,6 +90,17 @@ internal static class EffectTextures
 
     private static Texture2D? _lens;
 
+    /// <summary>A bar along x: even along its length, soft across it, its ends fading.</summary>
+    public static Texture2D Bar => _bar ??= Make(256, BarShape, 32);
+
+    /// <summary>A petal: a soft filled ellipse (stretched along x), brighter in its middle.</summary>
+    public static Texture2D Petal => _petal ??= Make(64, PetalShape);
+
+    /// <summary>A half-moon: a disc less a larger disc offset to −x, its hollow facing left, thickest at +x, its tips tapering; brighter at its outer edge.</summary>
+    public static Texture2D Moon => _moon ??= Make(128, MoonShape);
+
+    private static Texture2D? _bar, _petal, _moon;
+
     /// <summary>
     /// A size × <paramref name="height"/> texture (square by default) whose alpha at each pixel is <paramref name="alpha"/>
     /// of (x, y) in [−1, 1] — both axes, whatever the shape.
@@ -361,6 +372,22 @@ internal static class EffectTextures
         float ends = 1 - SmoothStep(0.8f, 1f, MathF.Abs(y));
         float glow = 0.75f * Gauss(d, 0.12f) + (d > 0 ? 0.65f * MathF.Exp(-d / 0.5f) : 0);
         return glow * ends * (1 - SmoothStep(0.2f, 1f, x));
+    }
+
+    // Along x from end to end; y is 8× finer.
+    private static float BarShape(float x, float y) => Gauss(y, 0.3f) * (1 - SmoothStep(0.8f, 1f, MathF.Abs(x)));
+
+    private static float MoonShape(float x, float y)
+    {
+        float r = MathF.Sqrt(x * x + y * y), hollow = MathF.Sqrt((x + 0.32f) * (x + 0.32f) + y * y);
+        float body = (1 - SmoothStep(0.88f, 0.96f, r)) * SmoothStep(0.86f, 0.94f, hollow);
+        return body * (0.6f + 0.4f * SmoothStep(0.6f, 0.95f, r));
+    }
+
+    private static float PetalShape(float x, float y)
+    {
+        float r = MathF.Sqrt(x * x + y * y);
+        return (0.6f + 0.4f * Math.Max(0, 1 - r)) * (1 - SmoothStep(0.5f, 1f, r));
     }
 
     /// <summary>A soft edge at <paramref name="v"/> = 0: 0 below −<paramref name="width"/>/2, 1 above +<paramref name="width"/>/2.</summary>

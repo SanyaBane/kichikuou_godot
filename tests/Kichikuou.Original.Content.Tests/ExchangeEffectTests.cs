@@ -34,12 +34,12 @@ public class ExchangeEffectTests(ITestOutputHelper output)
         Assert.Equal(new ExchangeEffect(kind, side), ExchangeEffect.Of(s));
     }
 
-    /// <summary>Special 1 is Rance Attack by Rance (unit 1) or Kentarou (unit 31), By la Way by Rick (unit 7), which plays by its action.</summary>
+    /// <summary>Special 1 is Rance Attack by Rance (unit 1) or Kentarou (unit 31), By la Way by Rick (unit 7), Rance Attack's in red.</summary>
     [Theory]
     [InlineData(1, ExchangeEffectKind.RanceAttack)]
     [InlineData(31, ExchangeEffectKind.RanceAttack)]
-    [InlineData(7, ExchangeEffectKind.Melee)]
-    public void The_Rance_Attack_command_plays_its_own(int unit, ExchangeEffectKind kind)
+    [InlineData(7, ExchangeEffectKind.ByLaWay)]
+    public void Special_1_plays_Rance_Attack_or_By_la_Way_by_the_actor(int unit, ExchangeEffectKind kind)
     {
         var s = new GameState();
         s.Bt_PlayerAction = (Sys3Int)0;
@@ -72,14 +72,14 @@ public class ExchangeEffectTests(ITestOutputHelper output)
     }
 
     /// <summary>
-    /// Special 3 is Whirlwind Shot by Isoroku (unit 27); by Meglass (unit 30, High Speed) or the ninja's follow-up
-    /// (record 51) it plays by its action for now.
+    /// Special 3 is Whirlwind Shot by Isoroku (unit 27) and High Speed by Meglass (unit 30); the ninja's follow-up
+    /// (record 51) plays by its action for now.
     /// </summary>
     [Theory]
     [InlineData(27, ExchangeEffectKind.WhirlwindShot)]
-    [InlineData(30, ExchangeEffectKind.Melee)]
+    [InlineData(30, ExchangeEffectKind.HighSpeed)]
     [InlineData(51, ExchangeEffectKind.Melee)]
-    public void Whirlwind_Shot_plays_its_own_by_Isoroku(int unit, ExchangeEffectKind kind)
+    public void Special_3_plays_Whirlwind_Shot_or_High_Speed_by_the_actor(int unit, ExchangeEffectKind kind)
     {
         var s = new GameState();
         s.Bt_PlayerAction = (Sys3Int)0;
@@ -126,8 +126,8 @@ public class ExchangeEffectTests(ITestOutputHelper output)
     /// <summary>
     /// In every captured battle each exchange's shots start an effect: its side fires (its action is not 99, and it
     /// has a shot), and a two-sided exchange is direct against direct with the turn's actor in <c>Bt_MsgMode</c> (3 or 4);
-    /// a Rance Attack's troops fire nothing, nor a beam's (nor its commander at the commander); a Whirlwind Shot fires only
-    /// the commander's one shot at the commander.
+    /// the troops of a Rance Attack or a By la Way fire nothing, nor a beam's (nor its commander at the commander); a
+    /// Whirlwind Shot or a High Speed fires only the commander's one shot at the commander.
     /// </summary>
     [CaptureTheory]
     [MemberData(nameof(BattleSceneTests.Captures), MemberType = typeof(BattleSceneTests))]
@@ -157,16 +157,17 @@ public class ExchangeEffectTests(ITestOutputHelper output)
                 : new[] { s.Bt_ETroopVsTroopShots, s.Bt_ETroopVsCmdrShots, s.Bt_ECmdrVsTroopShots, s.Bt_ECmdrVsCmdrShots };
             if ((player ? s.Bt_PlayerAction : s.Bt_EnemyAction) == 99 || shots.All(v => v == 0))
                 wrong.Add($"exchange {exchanges}: {key} does not fire");
-            // Rance Attack is the commander's blow alone: the troops' shots are zeroed (02-resolution.md §3.3).
-            if (effect.Kind == ExchangeEffectKind.RanceAttack && (shots[0] != 0 || shots[1] != 0))
-                wrong.Add($"exchange {exchanges}: Rance Attack with the troops firing");
+            // Rance Attack and By la Way are the commander's blow alone: the troops' shots are zeroed (02-resolution.md §3.3).
+            if (effect.Kind is ExchangeEffectKind.RanceAttack or ExchangeEffectKind.ByLaWay && (shots[0] != 0 || shots[1] != 0))
+                wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops firing");
             // A beam is the commander's blast at the troops: the troops' shots and the commander's at the commander
             // are zeroed (02-resolution.md §3.3).
             if (effect.Kind is ExchangeEffectKind.WhiteBeam or ExchangeEffectKind.BlackBeam && (shots[0] != 0 || shots[1] != 0 || shots[3] != 0))
                 wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops or at the commander firing");
-            // Whirlwind Shot is the commander's one shot at the commander: every other shot is zeroed (02-resolution.md §3.3).
-            if (effect.Kind == ExchangeEffectKind.WhirlwindShot && (shots[0] != 0 || shots[1] != 0 || shots[2] != 0 || shots[3] != 1))
-                wrong.Add($"exchange {exchanges}: Whirlwind Shot firing other than the commander's one shot at the commander");
+            // Whirlwind Shot and High Speed are the commander's one shot at the commander: every other shot is zeroed
+            // (02-resolution.md §3.3).
+            if (effect.Kind is ExchangeEffectKind.WhirlwindShot or ExchangeEffectKind.HighSpeed && (shots[0] != 0 || shots[1] != 0 || shots[2] != 0 || shots[3] != 1))
+                wrong.Add($"exchange {exchanges}: {effect.Kind} firing other than the commander's one shot at the commander");
             bool twoSided = s.Bt_PlayerAction != 99 && s.Bt_EnemyAction != 99;
             if (twoSided && (s.Bt_PlayerAction != 0 || s.Bt_EnemyAction != 0 || s.Bt_MsgMode.Value is not (3 or 4)))
                 wrong.Add($"exchange {exchanges}: two-sided, actions {s.Bt_PlayerAction.Value}, {s.Bt_EnemyAction.Value}, mode {s.Bt_MsgMode.Value}");

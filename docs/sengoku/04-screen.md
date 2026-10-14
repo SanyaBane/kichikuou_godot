@@ -196,6 +196,13 @@ Surveyed as the reference for our own exchange effects (docs/ui/battle-screen.md
   also for EPO Light (Gandhi's sprite is a beam) and, recoloured dark, for Black D. Beam; **47060** Shogun Whirlwind
   for Chuhai; **47400** Ieyasu's Special Move for C. War Dance; **40800** Kentarou-kun Slash for Kentarou's Rance
   Attack. T2 Soaring Wave later: likely Rance Attack's eruption made much smaller, four of them, as Rolex's sprite.
+  **Changed** (owner, 2026-10-15): High Speed takes **41400** Commander Charge (not Sonic Shuriken), and By la Way
+  Rance Attack's **40500** recoloured red, as Rick's red sprite (CG 1521).
+  *What 41400 shows* (looked at, every frame; 29 frames in the archive): a white burst at about (310, 160) on a thick
+  white bar across the whole frame in an orange-gold glow (frames 0-2), the bar thinning to a thread (gone by ~19);
+  yellow petals bursting out of it and flying out radially, turning tan and slowing (1-15, faint to ~22); a white disc
+  with a bright rim swelling from the burst (3-7) into a grey halo of concentric rings (7-15); then gold, cream and a
+  few grey crescents spinning in from x ~520 and drifting right with gold four-point sparkles (9-25), the sparkles to ~28.
 - **Sound**: each effect's sound comes from a CG → sound table (`あべ/T_BATSND.JAF.jam:550-564`), played as it
   starts (`あべ/T_BATEFF.JAF.jam:280`) — not surveyed further.
 

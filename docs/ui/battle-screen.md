@@ -276,7 +276,7 @@ picture, the slot panels) is not shown. How it is built:
     troop's charge with the Samurai effect (04-screen.md §2.4.1); Kichikuou's is the commander's blow alone (the troops'
     shots zeroed, no counter, the unit's own sprite; docs/battle/02-resolution.md §3.3), so it plays **one effect**, ours
     after 40500, for the command whoever uses it — Rance (unit 1) or Kentarou (unit 31); By la Way, Rick's (unit 7)
-    special 1, stays melee. No spotlight: the owner saw none in Sengoku Rance's Rance Attack either. The choice reads
+    special 1, stayed melee (now the same in red, below). No spotlight: the owner saw none in Sengoku Rance's Rance Attack either. The choice reads
     special 1 with the actor (`Bt_SpecialAtk`, `Unit_Cur`), since the shots' sound selection has reset `Bt_SkillSfx`.
     One captured battle has one (`20261008-111109-01-FIGT_A`, in the full run's captures only); `ExchangeEffectTests`
     checks the rule on given states and that a Rance Attack's troops fire nothing. The owner saw it in a battle and
@@ -284,8 +284,8 @@ picture, the slot panels) is not shown. How it is built:
     **The other specials** (owner, 2026-10-14, from the survey in 04-screen.md §2.4.1, "Counterparts for Kichikuou's
     other specials"; each told at the shots by `Bt_SpecialAtk` and `Unit_Cur`): White D. Beam and EPO Light after
     Sengoku Rance's White Destruction Beam (40460), Black D. Beam the same recoloured dark; Whirlwind Shot after
-    Piercing Tempest (40660); High Speed after Sonic Shuriken (41260); the ninja's follow-up after the Ninja troop's
-    effect (40100); By la Way after Commander Charge (41400); Vanish Bomb after Begone Bomb (40560); C. War Dance after
+    Piercing Tempest (40660); High Speed after Commander Charge (41400; owner, 2026-10-15, in place of Sonic Shuriken); the ninja's follow-up after the Ninja troop's
+    effect (40100); By la Way after Rance Attack (40500) recoloured red, as Rick's sprite (owner, 2026-10-15); Vanish Bomb after Begone Bomb (40560); C. War Dance after
     Ieyasu's Special Move (47400); Chuhai after Shogun Whirlwind (47060); T2 Goliath after Gigai Punch (46820, 15
     frames); Kentarou's Rance Attack after his own Kentarou-kun Slash (40800) — until it is built he plays Rance
     Attack's. **The beams** (2026-10-15, the owner took their v1 as it is): special 2 (`Bt_SpecialAtk == 2`) by Shizuka (unit 17), Magic (unit 39) or
@@ -294,10 +294,15 @@ picture, the slot panels) is not shown. How it is built:
     a beam: `ExchangeEffectTests` checks the rule on given states, and in the captures that a beam's troops fire nothing
     (nor its commander at the commander, 02-resolution.md §3.3). **Whirlwind Shot** (2026-10-15, the owner took its
     v1 as it is): special 3 (`Bt_SpecialAtk == 3`, `FIGT.ADV:1542-1550`) by Isoroku (unit 27) plays ours after
-    Piercing Tempest (`ExchangeEffectKind.WhirlwindShot`); special 3 is also Meglass's (unit 30) High Speed (the same
-    setter) and the ninja's follow-up (record 51, `FIGT.ADV:1980`), which play by their action until theirs are built.
-    No captured battle has one: `ExchangeEffectTests` checks the rule on given states, and in the captures that a
-    Whirlwind Shot fires only the commander's one shot at the commander (02-resolution.md §3.3). T2 Soaring Wave later (likely Rance Attack's eruption much smaller, four of them, as Rolex's sprite);
+    Piercing Tempest (`ExchangeEffectKind.WhirlwindShot`). **High Speed** (2026-10-15, the owner took its v1 as it is):
+    the same setter by Meglass (unit 30) plays ours after Commander Charge (`ExchangeEffectKind.HighSpeed`); the ninja's
+    follow-up (record 51, `FIGT.ADV:1980`) sets special 3 too and plays by its action until its own is built. **By la
+    Way** (2026-10-15, the owner took its v1 as it is): special 1 by Rick (unit 7) plays Rance Attack's effect
+    recoloured red (`ExchangeEffectKind.ByLaWay`). One captured battle has a By la Way (`20261008-111109-01-FIGT_A`,
+    the Rance Attack's, in the full run's captures only), none a Whirlwind Shot or a High Speed: `ExchangeEffectTests` checks
+    the rules on given states (one table, `ExchangeEffect.SpecialOf`), and in the captures that a Whirlwind Shot or a
+    High Speed fires only the commander's one shot at the commander and a By la Way's troops fire nothing
+    (02-resolution.md §3.3). T2 Soaring Wave later (likely Rance Attack's eruption much smaller, four of them, as Rolex's sprite);
     the Cheater Beam stays melee.
   - **A setting**: Option → Battle Screen… → "Effects: on/off", on by default (Sengoku Rance's Combat Effect Display);
     none while skipping (MsgSkip) or with `--fast`.
@@ -366,11 +371,24 @@ picture, the slot panels) is not shown. How it is built:
   turning teal as it fades (18-27); a thin white needle and cyan streaks rush right along the beam's line (18-25) over
   300 teal stars in clumps, twinkling (17-27). Timed on the reference's near-white share and mean brightness in eight
   column bands.
+  The High Speed effect (`HighSpeedEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Commander Charge, 41400 — 29 frames in
+  the archive; textures of its own: `Bar`, a band even along its length; `Petal`, a soft filled ellipse; `Moon`, a
+  half-moon): a white burst at (312, 162) on a thick white bar across the whole frame in an amber haze turning golden
+  (frames 0-3), the bar thinning to a thread in eight overlapping steps (gone by ~19); 170 petals bursting out of the
+  burst, yellow-white turning tan and dim, slowing as they fly (0-15, faint to ~22), most staying inside the halo; a
+  white disc with a bright rim swelling from the burst (2.5-7) into a grey halo of two rings (6-16, radius 290 by 16);
+  then 110 gold, cream and grey half-moons, each with two fainter copies trailing its turn, spinning in from x ~450
+  (frame 9) and drifting right at 16-30 a frame, the front moving right with them (9-24), and 240 gold four-point
+  sparkles among them, half with a glow (10-28). Timed on the reference's bands as the others. The **By la Way**
+  effect is Rance Attack's recoloured red (`RanceAttackEffect.BuildRed`, after Rick's red sprite, CG 1521): every
+  colour where blue leads or that is white turned red — white to salmon (white again where the light piles up), ice to red-orange, the
+  blues deep red; the sand dust as it is. Over a sand battlefield its peak still reads white, its red shows in the
+  rings, the flames and the motes.
   **Debug → Effects** (`EffectViewer`) plays them over our scene's battlefield (CG 900 and its overlay, with Rance's
   (unit 1) and Ex's (commander 1) armies once a game has booted) or black: the effect, Play, Loop, the enemy acting,
   the blend, the speed, the seed and a frame slider; the effect stands at the scene's foot (y 8).
   `--effects --shots DIR --quit` (in a window; `--effects white-beam,black-beam` for those alone) writes every frame of each with seed 1: the effect alone on black
-  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `white-beam-NN.png`, `whirlwind-shot-NN.png`; the black beam's picture is
+  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `white-beam-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`; the black beam's picture is
   its light, so it is saved over the battlefield only) and over the battlefield, the player acting and the enemy
   (`melee-scene-NN.png`, `melee-enemy-scene-NN.png`, …) — for a sheet next to the reference's frames, made outside the
   repository.
