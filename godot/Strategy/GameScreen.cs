@@ -888,6 +888,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         else if (_options.Auto)
         {
             Shot("key");
+            if (!_options.Fast && BattleScreenShown && _presenter.Opening is not null)
+                await OpeningAppearShotsAsync();
             await DelayAsync(_options.Fast ? 0 : 0.8);
             key = KeyReturn;
         }
@@ -901,6 +903,24 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (opening && _options.Auto && !_options.Fast && !_openingShot)
             await OpeningShotAsync();
         return key;
+    }
+
+    /// <summary>
+    /// Unattended play's dumps of the battle's opening fading in (in a window, once a launch): halfway and whole; the
+    /// key wait's own dump, just before, shows the field alone.
+    /// </summary>
+    private async Task OpeningAppearShotsAsync()
+    {
+        if (_openingShot)
+            return;
+        double seconds = BattleScreenSettings.Get(BattleScreenSettings.OpeningAppearSeconds);
+        var watch = Stopwatch.StartNew();
+        while (watch.Elapsed.TotalSeconds < seconds / 2 && !_closing)
+            await NextFrameAsync();
+        Shot("opening-appearing");
+        while (_battleView.OpeningShown < 1 && BattleScreenShown && !_closing)
+            await NextFrameAsync();
+        Shot("opening");
     }
 
     /// <summary>Unattended play's dump of the battle's opening leaving: once a launch, halfway (in a window).</summary>

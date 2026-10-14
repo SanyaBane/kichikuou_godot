@@ -207,7 +207,11 @@ picture, the slot panels) is not shown. How it is built:
   the longest name of the scenario, "A Certain Country’s People" (`BattleOpening.Wrap`) — and "Advantage +n" below
   it; "VS" between them; on top a plate (the cards' colours, the accent frame) in **Cinzel** Bold: "Oaks —
   Offensive Battle" (or "Duel", "Dungeon Battle"), "City: Battle Limit · up to 232" (Plains / Duel / City /
-  Dungeon, as the header's conditions), "5 turns" (not in a duel). The header's key wait stays the player's click;
+  Dungeon, as the header's conditions), "5 turns" (not in a duel). When our battle screen comes up with the first
+  header, the scene shows the field alone and the opening — the halves' tints, the names, "VS", the plate — fades in
+  over it from transparent (owner, 2026-10-14; Option → Battle Screen… → "Opening: appear", 0.35 s by default,
+  `--opening-appear-seconds x` for a launch; at once while skipping and with `--fast`; `--auto` in a window without
+  `--fast` dumps it halfway, `opening-appearing`, and whole, `opening`). The header's key wait stays the player's click;
   then, as Sengoku Rance's, the halves part to the sides and the plate rises (eased in; Option → Battle Screen… →
   "Opening: leave", 0.5 s by default, `--opening-seconds x` for a launch; at once while skipping and with
   `--fast`) while the battle goes on. A later round's header is answered at once by `GameScreen`, as a click (its

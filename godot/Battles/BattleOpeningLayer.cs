@@ -7,7 +7,7 @@ namespace Kichikuou.Game.Battles;
 /// <summary>
 /// The battle's opening on our battle screen (Option → Interface → New; docs/ui/battle-screen.md, "The opening";
 /// owner, 2026-10-14, variant C after Sengoku Rance's): over the scene while the battle's first round header waits
-/// for its click (<see cref="BattleOpening"/>) — the battle's own field cut in two along a slanted seam, the player's
+/// for its click (<see cref="BattleOpening"/>), fading in over the field (<see cref="BattleScreenSettings.OpeningAppearSeconds"/>) — the battle's own field cut in two along a slanted seam, the player's
 /// half tinted blue and the enemy's red, each with its army's name (Shojumaru, wrapped into up to three lines) and its
 /// advantage, "VS" between them, a plate on top with the battle's kind and place, its limit and its rounds (Cinzel).
 /// After the click the halves part to the sides and the plate rises (<see cref="BattleScreenSettings.OpeningSeconds"/>),
@@ -35,6 +35,7 @@ internal sealed partial class BattleOpeningLayer : Control
     private readonly Control _top;
     private BattleOpening? _opening;
     private double _leaving = -1;                   // seconds into the leave; -1 when not leaving
+    private double _appearing;                      // seconds since the opening came up (it fades in)
     private float _scale = 1;
 
     public BattleOpeningLayer()
@@ -90,6 +91,8 @@ internal sealed partial class BattleOpeningLayer : Control
                 _opening = opening;
                 _leaving = -1;
                 Visible = true;
+                _appearing = instant ? double.MaxValue : 0;     // the field alone first, then the opening fades in (owner, 2026-10-14)
+                Appear();
                 _player.Show(opening.PlayerArmy, opening.PlayerAdvantage);
                 _enemy.Show(opening.EnemyArmy, opening.EnemyAdvantage);
                 Step(0);
@@ -106,9 +109,25 @@ internal sealed partial class BattleOpeningLayer : Control
             Hide();
     }
 
+    /// <summary>How far the opening has faded in, 0 (the field alone) to 1 (<see cref="BattleScreenSettings.OpeningAppearSeconds"/>).</summary>
+    public float Shown => Visible ? Modulate.A : 0;
+
+    private void Appear()
+    {
+        double seconds = BattleScreenSettings.Get(BattleScreenSettings.OpeningAppearSeconds);
+        Modulate = new Color(1, 1, 1, seconds <= 0 ? 1 : (float)Math.Min(1, _appearing / seconds));
+    }
+
     public override void _Process(double delta)
     {
-        if (!Visible || _leaving < 0)
+        if (!Visible)
+            return;
+        if (Modulate.A < 1)
+        {
+            _appearing += delta;
+            Appear();
+        }
+        if (_leaving < 0)
             return;
         _leaving += delta;
         double seconds = BattleScreenSettings.Get(BattleScreenSettings.OpeningSeconds);

@@ -43,17 +43,23 @@ internal static class BattleScreenSettings
     public static readonly Setting OpeningSeconds = new("opening_seconds", "Opening: leave", 0, 3, 0.05, 0.5, "s",
         "How long the battle's opening takes to leave after the click: the two halves part to the sides, the plate rises (0: at once).");
 
-    public static IReadOnlyList<Setting> All { get; } = [StripSeconds, StripHurrySeconds, StripDropShare, ArmySeconds, SpotDarkness, MeterSeconds, OpeningSeconds];
+    /// <summary>How long the battle's opening takes to fade in over the field when the battle screen comes up.</summary>
+    public static readonly Setting OpeningAppearSeconds = new("opening_appear_seconds", "Opening: appear", 0, 3, 0.05, 0.35, "s",
+        "How long the battle's opening takes to fade in over the field when the battle screen comes up (0: at once).");
+
+    public static IReadOnlyList<Setting> All { get; } =
+        [StripSeconds, StripHurrySeconds, StripDropShare, ArmySeconds, SpotDarkness, MeterSeconds, OpeningAppearSeconds, OpeningSeconds];
 
     /// <summary>The development switches that set a setting for the launch.</summary>
     private static readonly (string Switch, Setting Setting)[] Switches =
-        [("--strip-seconds", StripSeconds), ("--army-seconds", ArmySeconds), ("--meter-seconds", MeterSeconds), ("--opening-seconds", OpeningSeconds)];
+        [("--strip-seconds", StripSeconds), ("--army-seconds", ArmySeconds), ("--meter-seconds", MeterSeconds), ("--opening-seconds", OpeningSeconds), ("--opening-appear-seconds", OpeningAppearSeconds)];
 
     private static Dictionary<string, double>? _values;
 
     /// <summary>
-    /// A setting's value: <c>--strip-seconds x</c> / <c>--army-seconds x</c> / <c>--meter-seconds x</c> / <c>--opening-seconds x</c> for the
-    /// launch (development) for <see cref="StripSeconds"/> / <see cref="ArmySeconds"/> / <see cref="MeterSeconds"/> / <see cref="OpeningSeconds"/>,
+    /// A setting's value: <c>--strip-seconds x</c> / <c>--army-seconds x</c> / <c>--meter-seconds x</c> / <c>--opening-seconds x</c> / <c>--opening-appear-seconds x</c>
+    /// for the launch (development) for <see cref="StripSeconds"/> / <see cref="ArmySeconds"/> / <see cref="MeterSeconds"/> /
+    /// <see cref="OpeningSeconds"/> / <see cref="OpeningAppearSeconds"/>,
     /// else the file's, else the default.
     /// </summary>
     public static double Get(Setting setting)

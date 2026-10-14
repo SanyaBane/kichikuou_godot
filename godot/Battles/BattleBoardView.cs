@@ -86,6 +86,9 @@ internal sealed partial class BattleBoardView : Control
     private readonly Label _playerName, _enemyName, _playerAdvantage, _enemyAdvantage;
     private readonly HBoxContainer _playerArmyLine, _enemyArmyLine;     // the army's name and its advantage over the cards
     private readonly BattleOpeningLayer _opening;
+
+    /// <summary>How far the battle's opening has faded in (0 none or not up, 1 whole).</summary>
+    public float OpeningShown => _opening.Shown;
     private readonly Control _gauge;
     private readonly Dictionary<BattlePlace, (PanelContainer Card, StyleBoxFlat Box)> _cards = [];
     private readonly Control _actingFrame;
