@@ -27,9 +27,17 @@ internal sealed partial class EffectPlayer : Control
         shader_type canvas_item;
         uniform sampler2D screen : hint_screen_texture, filter_linear;
         uniform bool add;
+        uniform bool dark;
+        uniform vec3 dark_glow = vec3(0.32, 0.3, 1.0);
         void fragment() {
             vec3 effect = texture(TEXTURE, UV).rgb;
             vec3 scene = texture(screen, SCREEN_UV).rgb;
+            if (dark) {
+                // The light read as shadow: its bright parts black out the scene, its fainter ones and its edges glow.
+                float light = max(effect.r, max(effect.g, effect.b));
+                scene *= 1.0 - 0.92 * smoothstep(0.25, 0.95, light);
+                effect = dark_glow * 2.2 * light * (1.0 - light);
+            }
             COLOR = vec4(add ? min(scene + effect, vec3(1.0)) : 1.0 - (1.0 - scene) * (1.0 - effect), 1.0);
         }
         """;
@@ -100,6 +108,16 @@ internal sealed partial class EffectPlayer : Control
     {
         get => (bool)_material.GetShaderParameter("add") ? EffectBlend.Add : EffectBlend.Screen;
         set => _material.SetShaderParameter("add", value == EffectBlend.Add);
+    }
+
+    /// <summary>
+    /// The effect laid over the scene as darkness (Black D. Beam, the White Destruction Beam recoloured dark): its bright
+    /// parts black the scene out, its fainter parts and edges glow blue-violet.
+    /// </summary>
+    public bool Dark
+    {
+        get => (bool)_material.GetShaderParameter("dark");
+        set => _material.SetShaderParameter("dark", value);
     }
 
     /// <summary>Shows an effect from its start; <see cref="Playing"/> runs it.</summary>

@@ -97,7 +97,8 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   `RecordFace.StandIn`, its square set in the viewer) — [ui/deployment-table.md](ui/deployment-table.md), step 7.
   Under way (owner, 2026-10-14): the exchange's effects on our battle screen, our own as like Sengoku Rance's as
   can be (melee, bow, magic: done), their wiring into the exchange (done), Rance Attack's after Sengoku Rance's
-  (done 2026-10-14, the owner took v1 as it is) — [ui/battle-screen.md](ui/battle-screen.md), "The exchange's effects". Next (owner, 2026-10-14): the other
+  (done 2026-10-14, the owner took v1 as it is), the white and the black beam after 40460 (done 2026-10-15, the owner took v1 as it is;
+  no captured battle has a beam) — [ui/battle-screen.md](ui/battle-screen.md), "The exchange's effects". Next (owner, 2026-10-14): the other
   specials' effects, each after the counterpart the owner chose from the survey (until then by their action) —
   ui/battle-screen.md, "The other specials"; T2 Soaring Wave's counterpart later (likely Rance Attack's, much smaller,
   four of them).

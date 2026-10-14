@@ -13,6 +13,10 @@ public enum ExchangeEffectKind
     Magic,
     /// <summary>The Rance Attack command, Rance's or Kentarou's (after Sengoku Rance's own Rance Attack, 40500).</summary>
     RanceAttack,
+    /// <summary>White D. Beam and EPO Light (after Sengoku Rance's White Destruction Beam, 40460).</summary>
+    WhiteBeam,
+    /// <summary>Black D. Beam (the White Destruction Beam recoloured dark).</summary>
+    BlackBeam,
 }
 
 /// <summary>
@@ -22,7 +26,8 @@ public enum ExchangeEffectKind
 /// is read from <c>Bt_MsgMode</c>, which the turn sets before the exchange (3 or 1 on the player's, 4 on the enemy's;
 /// <c>FIGT_M</c> turns 1 into 2 for the enemy's magic). The player's specials get Sengoku Rance's counterparts one by
 /// one (owner): the Rance Attack command its own (one effect: Kichikuou's is the commander's blow alone, as Sengoku
-/// Rance's first phase), Rance's or Kentarou's alike; the others play by their action for now.
+/// Rance's first phase), Rance's or Kentarou's alike; the beams (special 2) the White Destruction Beam's, white or
+/// dark by the actor; the others play by their action for now.
 /// </summary>
 /// <param name="Kind">The effect.</param>
 /// <param name="Side">Whose it is: the enemy's is mirrored, its actor's half on the right.</param>
@@ -42,6 +47,8 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
             : playerFires ? BattleSide.Player : BattleSide.Enemy;
         if (side == BattleSide.Player && IsRanceAttack(s))
             return new ExchangeEffect(ExchangeEffectKind.RanceAttack, side);
+        if (side == BattleSide.Player && BeamOf(s) is { } beam)
+            return new ExchangeEffect(beam, side);
         int action = side == BattleSide.Player ? player : enemy;
         return KindOf(action) is { } kind ? new ExchangeEffect(kind, side) : null;
     }
@@ -53,6 +60,18 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
     /// (<c>FIGTATTK.ADV</c> <c>L_00796</c>).
     /// </summary>
     private static bool IsRanceAttack(GameState s) => s.Bt_SpecialAtk.Value == 1 && s.Unit_Cur.Value is 1 or 31;
+
+    /// <summary>
+    /// Special 2 (<c>FIGT.ADV:1532-1541</c>), one setter for three menu items (<c>FIGT_SEL.ADV:608-643, 680</c>), told
+    /// apart only by the actor: White D. Beam by Shizuka (unit 17) or Magic (unit 39) and EPO Light by Gandhi (unit 37)
+    /// play the white beam, Black D. Beam by Chizuko (unit 38) or Nagi (unit 40) the dark one (owner, 2026-10-14).
+    /// </summary>
+    private static ExchangeEffectKind? BeamOf(GameState s) => s.Bt_SpecialAtk.Value != 2 ? null : s.Unit_Cur.Value switch
+    {
+        17 or 39 or 37 => ExchangeEffectKind.WhiteBeam,
+        38 or 40 => ExchangeEffectKind.BlackBeam,
+        _ => null,
+    };
 
     private static ExchangeEffectKind? KindOf(int action) => action switch
     {

@@ -216,11 +216,13 @@ internal sealed partial class BattleBoardView : Control
             || battle.Effect is not { } effect)
             return;
         _effect.Mirrored = effect.Side == BattleSide.Enemy;
+        _effect.Dark = effect.Kind == ExchangeEffectKind.BlackBeam;
         _effect.Start(effect.Kind switch
         {
             ExchangeEffectKind.Bow => BowEffect.Build(_effectsSeen),
             ExchangeEffectKind.Magic => MagicEffect.Build(_effectsSeen),
             ExchangeEffectKind.RanceAttack => RanceAttackEffect.Build(_effectsSeen),
+            ExchangeEffectKind.WhiteBeam or ExchangeEffectKind.BlackBeam => WhiteBeamEffect.Build(_effectsSeen),
             _ => MeleeEffect.Build(_effectsSeen),
         });
         _effect.Playing = true;

@@ -127,6 +127,9 @@ public sealed record GameOptions
     /// then the program ends with <see cref="QuitWhenDone"/>.
     /// </summary>
     public bool Effects { get; init; }
+
+    /// <summary>With <see cref="Effects"/>: the prefixes of the effects whose frames are saved (<c>white-beam</c>, …); null for all.</summary>
+    public IReadOnlyCollection<string>? EffectsOnly { get; init; }
 }
 
 /// <summary>

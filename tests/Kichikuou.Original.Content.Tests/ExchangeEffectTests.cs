@@ -50,6 +50,39 @@ public class ExchangeEffectTests(ITestOutputHelper output)
         Assert.Equal(new ExchangeEffect(kind, BattleSide.Player), ExchangeEffect.Of(s));
     }
 
+    /// <summary>
+    /// Special 2 is White D. Beam by Shizuka (unit 17) or Magic (unit 39), EPO Light by Gandhi (unit 37) — the white
+    /// beam — and Black D. Beam by Chizuko (unit 38) or Nagi (unit 40), the dark one.
+    /// </summary>
+    [Theory]
+    [InlineData(17, ExchangeEffectKind.WhiteBeam)]
+    [InlineData(39, ExchangeEffectKind.WhiteBeam)]
+    [InlineData(37, ExchangeEffectKind.WhiteBeam)]
+    [InlineData(38, ExchangeEffectKind.BlackBeam)]
+    [InlineData(40, ExchangeEffectKind.BlackBeam)]
+    public void The_beams_play_the_white_or_the_dark_beam_by_the_actor(int unit, ExchangeEffectKind kind)
+    {
+        var s = new GameState();
+        s.Bt_PlayerAction = (Sys3Int)2;
+        s.Bt_EnemyAction = (Sys3Int)99;
+        s.Bt_MsgMode = (Sys3Int)1;
+        s.Bt_SpecialAtk = (Sys3Int)2;
+        s.Unit_Cur = (Sys3Int)unit;
+        Assert.Equal(new ExchangeEffect(kind, BattleSide.Player), ExchangeEffect.Of(s));
+    }
+
+    /// <summary>A beam's actor without the special plays its magic.</summary>
+    [Fact]
+    public void A_beam_user_without_the_special_plays_by_the_action()
+    {
+        var s = new GameState();
+        s.Bt_PlayerAction = (Sys3Int)2;
+        s.Bt_EnemyAction = (Sys3Int)99;
+        s.Bt_MsgMode = (Sys3Int)1;
+        s.Unit_Cur = (Sys3Int)17;
+        Assert.Equal(new ExchangeEffect(ExchangeEffectKind.Magic, BattleSide.Player), ExchangeEffect.Of(s));
+    }
+
     [Fact]
     public void Nothing_plays_when_neither_side_fires()
     {
@@ -62,7 +95,7 @@ public class ExchangeEffectTests(ITestOutputHelper output)
     /// <summary>
     /// In every captured battle each exchange's shots start an effect: its side fires (its action is not 99, and it
     /// has a shot), and a two-sided exchange is direct against direct with the turn's actor in <c>Bt_MsgMode</c> (3 or 4);
-    /// a Rance Attack's troops fire nothing.
+    /// a Rance Attack's troops fire nothing, nor a beam's (nor its commander at the commander).
     /// </summary>
     [CaptureTheory]
     [MemberData(nameof(BattleSceneTests.Captures), MemberType = typeof(BattleSceneTests))]
@@ -95,6 +128,10 @@ public class ExchangeEffectTests(ITestOutputHelper output)
             // Rance Attack is the commander's blow alone: the troops' shots are zeroed (02-resolution.md §3.3).
             if (effect.Kind == ExchangeEffectKind.RanceAttack && (shots[0] != 0 || shots[1] != 0))
                 wrong.Add($"exchange {exchanges}: Rance Attack with the troops firing");
+            // A beam is the commander's blast at the troops: the troops' shots and the commander's at the commander
+            // are zeroed (02-resolution.md §3.3).
+            if (effect.Kind is ExchangeEffectKind.WhiteBeam or ExchangeEffectKind.BlackBeam && (shots[0] != 0 || shots[1] != 0 || shots[3] != 0))
+                wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops or at the commander firing");
             bool twoSided = s.Bt_PlayerAction != 99 && s.Bt_EnemyAction != 99;
             if (twoSided && (s.Bt_PlayerAction != 0 || s.Bt_EnemyAction != 0 || s.Bt_MsgMode.Value is not (3 or 4)))
                 wrong.Add($"exchange {exchanges}: two-sided, actions {s.Bt_PlayerAction.Value}, {s.Bt_EnemyAction.Value}, mode {s.Bt_MsgMode.Value}");

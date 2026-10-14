@@ -52,7 +52,8 @@ public partial class Main : Control
     /// key wait and menu (a game's event CGs masked, <c>GamePresenter.MaskEventCgs</c>).
     /// <c>--portraits</c> opens Debug → Portraits over the title (with <c>--shots DIR</c> it saves the
     /// units' list there; <c>--quit</c> then ends). <c>--effects</c> opens Debug → Effects the same way (with
-    /// <c>--shots DIR</c> it saves the effects' frames there; needs a window). Null without a switch: the title.
+    /// <c>--shots DIR</c> it saves the effects' frames there; needs a window; <c>--effects white-beam,black-beam</c> saves
+    /// only the effects with those prefixes). Null without a switch: the title.
     /// </summary>
     private static Node? FromCommandLine()
     {
@@ -92,7 +93,13 @@ public partial class Main : Control
         if (args.Contains("--portraits"))
             return new GameScreen(new GameOptions { Start = GameStart.Title, Portraits = true, ScreenshotDirectory = shots, QuitWhenDone = quit });
         if (args.Contains("--effects"))
-            return new GameScreen(new GameOptions { Start = GameStart.Title, Effects = true, ScreenshotDirectory = shots, QuitWhenDone = quit });
+        {
+            string[]? only = Value("--effects") is { } names && !names.StartsWith("--") ? names.Split(',') : null;
+            return new GameScreen(new GameOptions
+            {
+                Start = GameStart.Title, Effects = true, EffectsOnly = only, ScreenshotDirectory = shots, QuitWhenDone = quit,
+            });
+        }
         if ((Value("--play") ?? Value("--watch")) is { } capture)
         {
             return new BattleScreen(capture, Value("--play") is not null ? BattleMode.Play : BattleMode.Watch)

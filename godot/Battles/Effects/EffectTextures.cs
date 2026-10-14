@@ -71,6 +71,20 @@ internal static class EffectTextures
 
     private static Texture2D? _spike, _tongue, _billow;
 
+    /// <summary>A sphere of light: a faint mottled disc with a bright rim.</summary>
+    public static Texture2D Sphere => _sphere ??= Make(256, SphereShape);
+
+    /// <summary>A swirl: a thin glowing spiral of two turns round a bright eye.</summary>
+    public static Texture2D Swirl => _swirl ??= Make(128, SwirlShape);
+
+    /// <summary>A streak along x: a long thin needle, its tail (−x) longer than its head, brightest past the middle.</summary>
+    public static Texture2D Streak => _streak ??= Make(256, StreakShape, 16);
+
+    /// <summary>A haze: a broad soft glow, far flatter than <see cref="Glow"/>, fading to nothing at its edge.</summary>
+    public static Texture2D Haze => _haze ??= Make(128, HazeShape);
+
+    private static Texture2D? _sphere, _swirl, _streak, _haze;
+
     /// <summary>
     /// A size × <paramref name="height"/> texture (square by default) whose alpha at each pixel is <paramref name="alpha"/>
     /// of (x, y) in [−1, 1] — both axes, whatever the shape.
@@ -298,6 +312,41 @@ internal static class EffectTextures
         float body = Edge(1 - MathF.Abs(across), 0.25f);
         float rim = Gauss(across + 0.8f, 0.18f);
         return (0.45f * body + 0.55f * rim * body) * SmoothStep(1f, 0.7f, y);
+    }
+
+    private static float SphereShape(float x, float y)
+    {
+        float r = MathF.Sqrt(x * x + y * y);
+        float fill = 0.3f + 0.6f * MathF.Pow(Fbm(x * 3.5f + 21, y * 3.5f + 9), 3) + 0.2f * r * r;
+        float rim = 0.35f * Gauss(r - 0.92f, 0.06f) * (1 - 0.4f * Math.Max(0, x));      // softer on the right
+        return (fill + rim) * (1 - SmoothStep(0.9f, 1f, r));
+    }
+
+    private static float HazeShape(float x, float y) => MathF.Pow(Math.Max(0, 1 - MathF.Sqrt(x * x + y * y)), 1.6f);
+
+    // An Archimedean spiral of two turns, r = (angle + 2πn) / 4π, its line thinning and fading toward the eye.
+    private static float SwirlShape(float x, float y)
+    {
+        float r = MathF.Sqrt(x * x + y * y) / 0.9f;
+        if (r > 1.05f)
+            return 0;
+        float angle = MathF.Atan2(y, x);
+        if (angle < 0)
+            angle += MathF.Tau;
+        float line = 0;
+        for (int n = 0; n < 2; n++)
+        {
+            float along = (angle + MathF.Tau * n) / (2 * MathF.Tau);
+            line = Math.Max(line, Gauss(r - along, 0.02f + 0.03f * along) * (0.4f + 0.6f * along));
+        }
+        return line * (1 - SmoothStep(0.9f, 1.05f, r)) + 0.7f * Gauss(r, 0.1f);
+    }
+
+    // Along x from the tail (−1) to the head (+1); y is 16× finer.
+    private static float StreakShape(float x, float y)
+    {
+        float body = SmoothStep(-1f, 0.1f, x) * (1 - SmoothStep(0.55f, 1f, x));
+        return Gauss(y, 0.12f + 0.3f * body) * body;
     }
 
     /// <summary>A soft edge at <paramref name="v"/> = 0: 0 below −<paramref name="width"/>/2, 1 above +<paramref name="width"/>/2.</summary>

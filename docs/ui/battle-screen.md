@@ -288,7 +288,11 @@ picture, the slot panels) is not shown. How it is built:
     effect (40100); By la Way after Commander Charge (41400); Vanish Bomb after Begone Bomb (40560); C. War Dance after
     Ieyasu's Special Move (47400); Chuhai after Shogun Whirlwind (47060); T2 Goliath after Gigai Punch (46820, 15
     frames); Kentarou's Rance Attack after his own Kentarou-kun Slash (40800) — until it is built he plays Rance
-    Attack's. T2 Soaring Wave later (likely Rance Attack's eruption much smaller, four of them, as Rolex's sprite);
+    Attack's. **The beams** (2026-10-15, the owner took their v1 as it is): special 2 (`Bt_SpecialAtk == 2`) by Shizuka (unit 17), Magic (unit 39) or
+    Gandhi (unit 37) plays the white beam, by Chizuko (unit 38) or Nagi (unit 40) the dark one
+    (`ExchangeEffectKind.WhiteBeam`, `BlackBeam`); special 2 by anyone else plays by its action. No captured battle has
+    a beam: `ExchangeEffectTests` checks the rule on given states, and in the captures that a beam's troops fire nothing
+    (nor its commander at the commander, 02-resolution.md §3.3). T2 Soaring Wave later (likely Rance Attack's eruption much smaller, four of them, as Rolex's sprite);
     the Cheater Beam stays melee.
   - **A setting**: Option → Battle Screen… → "Effects: on/off", on by default (Sengoku Rance's Combat Effect Display);
     none while skipping (MsgSkip) or with `--fast`.
@@ -333,11 +337,24 @@ picture, the slot panels) is not shown. How it is built:
   trailing side burning in rows of blue tongues, each with two fainter copies trailing down-left (12-24); sand dust
   billowing on the actor's half (0-15) and a browner cloud over the target's (13-26); a cluster of pale blue motes in
   the middle (from ~7, gone by ~28).
+  The White Destruction Beam effect (`WhiteBeamEffect`, 2026-10-15, the owner took its v1 as it is; textures of its own: a sphere of light, a swirl,
+  a streak, a haze — a far flatter glow): a white disc in a haze of soft cyan-grey rays filling the frame (frames 0-3),
+  breaking up in a violet halo with pink-white lumps and glints on its rim (3-5); a white disc at ~5 swelling into a
+  mottled sphere of light whose clouds spread with it, fading by ~17; a needle shooting right from the flash (2-4),
+  then the beam with a glow at its root and a teal cone widening over the target's half (5-14) under a teal haze that
+  lingers (to ~27), swirls and white stars; then 640 horizontal streaks rushing right from the mass's back, which draws
+  back from x 230 at frame 11 to 500 at 22, white to ~19, then cyan, blue and violet, with white knots, the last violet
+  ones to ~27; teal sparkles in glows round the disc's rim from frame 4, scattering over the actor's half and
+  twinkling to ~26; a grey glow lingering in the middle (10-27). Timed on the reference's near-white share and mean
+  brightness in eight column bands. The **Black D. Beam** is the same effect laid over dark (`EffectPlayer.Dark`, a
+  shader mode): the effect's light read as shadow — its bright parts black the scene out (by 92 %), its fainter parts
+  and edges glow blue-violet (peaking at half light) — after Kichikuou's own dark sprites (CG 1525, 1526).
   **Debug → Effects** (`EffectViewer`) plays them over our scene's battlefield (CG 900 and its overlay, with Rance's
   (unit 1) and Ex's (commander 1) armies once a game has booted) or black: the effect, Play, Loop, the enemy acting,
   the blend, the speed, the seed and a frame slider; the effect stands at the scene's foot (y 8).
-  `--effects --shots DIR --quit` (in a window) writes every frame of each with seed 1: the effect alone on black
-  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`) and over the battlefield, the player acting and the enemy
+  `--effects --shots DIR --quit` (in a window; `--effects white-beam,black-beam` for those alone) writes every frame of each with seed 1: the effect alone on black
+  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `white-beam-NN.png`; the black beam's picture is
+  its light, so it is saved over the battlefield only) and over the battlefield, the player acting and the enemy
   (`melee-scene-NN.png`, `melee-enemy-scene-NN.png`, …) — for a sheet next to the reference's frames, made outside the
   repository.
 - **The windows over it** ("vs", the results, the info boxes, the

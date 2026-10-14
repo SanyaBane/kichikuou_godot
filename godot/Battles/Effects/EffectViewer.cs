@@ -10,7 +10,7 @@ namespace Kichikuou.Game.Battles.Effects;
 /// over a battlefield the size of our scene (1024×410), for the owner to judge before they are wired into the
 /// exchange. The battlefield is CG 900 with its overlay and, once a game has booted, Rance's (unit 1) and Ex's
 /// (commander 1) armies at the troop limit; or plain black, as Sengoku Rance's frames are. The effect stands at the
-/// scene's foot (y 8: 1024×402). The effect (melee, bow, magic, Rance Attack), Play, Loop, a frame slider (30 frames of 50 ms), the
+/// scene's foot (y 8: 1024×402). The effect (melee, bow, magic, Rance Attack, the white and the black beam), Play, Loop, a frame slider (30 frames of 50 ms), the
 /// enemy acting (mirrored), the blend, the speed and the seed. <see cref="SaveFramesAsync"/> writes every frame for a
 /// side-by-side sheet.
 /// </summary>
@@ -68,7 +68,7 @@ internal sealed partial class EffectViewer : Window
         var row = new HBoxContainer();
         row.AddThemeConstantOverride("separation", 10);
         _effect = new OptionButton();
-        foreach (var (name, _, _) in Effects)
+        foreach (var (name, _, _, _) in Effects)
             _effect.AddItem(name);
         _effect.ItemSelected += _ => Restart();
         row.AddChild(_effect);
@@ -144,22 +144,28 @@ internal sealed partial class EffectViewer : Window
     private void Restart()
     {
         bool playing = _player.Playing;
-        _player.Start(Effects[_effect.Selected].Build((int)_seed.Value));
+        var effect = Effects[_effect.Selected];
+        _player.Start(effect.Build((int)_seed.Value));
+        _player.Dark = effect.Dark;
         _player.Playing = playing;
     }
 
     /// <summary>
     /// Development (<c>--effects --shots DIR</c>): every frame of each effect with seed 1, the effect alone on black
     /// (<c>melee-NN.png</c>, <c>bow-NN.png</c>, 1024×402) and over the battlefield (<c>melee-scene-NN.png</c>, 1024×410), as
-    /// the player is and the enemy acting (<c>melee-enemy-scene-NN.png</c>). Needs a window (a headless run draws nothing).
+    /// the player is and the enemy acting (<c>melee-enemy-scene-NN.png</c>); a dark one over the battlefield only. Needs a
+    /// window (a headless run draws nothing). <paramref name="only"/> names the prefixes saved (null: all).
     /// </summary>
-    public async Task SaveFramesAsync(string dir)
+    public async Task SaveFramesAsync(string dir, IReadOnlyCollection<string>? only = null)
     {
         System.IO.Directory.CreateDirectory(dir);
         _player.Playing = false;
-        foreach (var (_, prefix, build) in Effects)
+        foreach (var (_, prefix, build, dark) in Effects)
         {
+            if (only is not null && !only.Contains(prefix))
+                continue;
             _player.Start(build(1));
+            _player.Dark = dark;
             foreach (bool mirrored in new[] { false, true })
             {
                 _player.Mirrored = mirrored;
@@ -168,7 +174,7 @@ internal sealed partial class EffectViewer : Window
                     _player.Frame = k;
                     for (int i = 0; i < 3; i++)
                         await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
-                    if (!mirrored)
+                    if (!mirrored && !dark)                         // a dark effect's picture is its light
                         _player.EffectImage().SavePng(System.IO.Path.Combine(dir, $"{prefix}-{k:00}.png"));
                     _stage.GetTexture().GetImage().SavePng(System.IO.Path.Combine(dir, $"{prefix}-{(mirrored ? "enemy-" : "")}scene-{k:00}.png"));
                 }
@@ -178,13 +184,15 @@ internal sealed partial class EffectViewer : Window
         Restart();
     }
 
-    /// <summary>The effects shown: the list's name, the saved frames' prefix, the builder.</summary>
-    private static readonly (string Name, string Prefix, Func<int, IReadOnlyList<Particle>> Build)[] Effects =
+    /// <summary>The effects shown: the list's name, the saved frames' prefix, the builder, laid over dark.</summary>
+    private static readonly (string Name, string Prefix, Func<int, IReadOnlyList<Particle>> Build, bool Dark)[] Effects =
     [
-        ("Melee (after 40000)", "melee", MeleeEffect.Build),
-        ("Bow (after 40260)", "bow", BowEffect.Build),
-        ("Magic (after 40360)", "magic", MagicEffect.Build),
-        ("Rance Attack (after 40500)", "rance-attack", RanceAttackEffect.Build),
+        ("Melee (after 40000)", "melee", MeleeEffect.Build, false),
+        ("Bow (after 40260)", "bow", BowEffect.Build, false),
+        ("Magic (after 40360)", "magic", MagicEffect.Build, false),
+        ("Rance Attack (after 40500)", "rance-attack", RanceAttackEffect.Build, false),
+        ("White Beam (after 40460)", "white-beam", WhiteBeamEffect.Build, false),
+        ("Black Beam (40460 dark)", "black-beam", WhiteBeamEffect.Build, true),
     ];
 
     /// <summary>

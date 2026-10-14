@@ -317,7 +317,7 @@ public partial class GameScreen
     /// <summary>Development (<see cref="GameOptions.Effects"/>): saves the effect's frames, then quits with <c>--quit</c>.</summary>
     private async Task SaveEffectsAsync(EffectViewer viewer, string dir)
     {
-        await viewer.SaveFramesAsync(dir);
+        await viewer.SaveFramesAsync(dir, _options.EffectsOnly);
         if (_options.QuitWhenDone)
             _tree.Quit();
     }
