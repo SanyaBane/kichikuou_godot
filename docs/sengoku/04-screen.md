@@ -153,6 +153,13 @@ Surveyed as the reference for our own exchange effects (docs/ui/battle-screen.md
   effect 40500, the damage, `EFFECT 1, 250`; then, if the target survives, the troop's charge as an ordinary exchange
   (`合戦_攻撃_単体`, `:1095-1150`) whose effect comes from the character's skill slot 3 — 0 for Rance, so his troop
   type's, Samurai **40000** (`▲武将データ.jaf.jam:113-157`; **[I]** that slot 3 stays 0 in normal play). No cut-in.
+  The owner saw no darkening of the scene in play (2026-10-14): the spotlight in the code may be unused.
+  *What 40500 shows* (looked at, every frame): an eruption in the middle — long white-cyan spikes fanning up from a
+  white-hot foot at about (400, 250) with flat glassy rings on the ground (frames 0-5), the spikes turning blue; the
+  white mass then spreads right (its front at ~620 by frame 6, the right edge by 10) behind a pale arc throwing sparks,
+  covers the right half to frame ~13 and draws back to the right edge, gone by ~22, its trailing side burning in rows of
+  translucent blue flame tongues (12-25); sand dust on the left (0-15) and later over the right (18-25); a cluster of
+  pale blue motes in the middle (x 320-480) from ~9 to ~27; the rings spread into a wide dark blue ellipse (to ~18).
 - **Sound**: each effect's sound comes from a CG → sound table (`あべ/T_BATSND.JAF.jam:550-564`), played as it
   starts (`あべ/T_BATEFF.JAF.jam:280`) — not surveyed further.
 

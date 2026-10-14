@@ -272,6 +272,13 @@ picture, the slot panels) is not shown. How it is built:
   - **Specials**: the player's specials get Sengoku Rance's own counterparts, ours as like them as we can make them —
     Rance Attack first (Sengoku Rance has one: find its effect through the action table, `あべ/T_EFFDAT.JAF.jam`
     `add1`, and make ours); the others by their action (melee or magic) until a counterpart is found for each (owner).
+    **Rance Attack** (owner, 2026-10-14): Sengoku Rance's is effect 40500 for the general's figure alone, then the
+    troop's charge with the Samurai effect (04-screen.md §2.4.1); Kichikuou's is the commander's blow alone (the troops'
+    shots zeroed, no counter, the unit's own sprite; docs/battle/02-resolution.md §3.3), so it plays **one effect**, ours
+    after 40500, for the command whoever uses it — Rance (unit 1) or Kentarou (unit 31); By la Way, Rick's (unit 7)
+    special 1, stays melee. No spotlight: the owner saw none in Sengoku Rance's Rance Attack either. The choice reads
+    special 1 with the actor (`Bt_SpecialAtk`, `Unit_Cur`), since the shots' sound selection has reset `Bt_SkillSfx`.
+    No captured battle has one (`ExchangeEffectTests` checks the rule on given states).
   - **A setting**: Option → Battle Screen… → "Effects: on/off", on by default (Sengoku Rance's Combat Effect Display);
     none while skipping (MsgSkip) or with `--fast`.
   **Wired in**: the presenter takes the effect at the shots' first frame (`ExchangeEffect.Of` on the state,
@@ -306,12 +313,20 @@ picture, the slot panels) is not shown. How it is built:
   out from the centre and slowing (born 2-10, white turning yellow, orange and smoke with age, the late and far ones
   sooner) with 45 smaller flames on the rim, a pale lens of a shockwave running left off the fireball (3-16), then a
   white core (from 12.5 to the end), gold sparkles, ember trails and embers. Over a bright battlefield, screen blending
-  leaves the late sparkles and the core faint.
+  leaves the late sparkles and the core faint. The Rance Attack effect (`RanceAttackEffect`, 2026-10-14, the owner took its v1 as it is; textures
+  of its own: a spike, a flame's tongue, a billow without the puff's grain): 140 spikes fanning up from a white-hot
+  foot in the middle (frames 0-6, white turning ice and blue) over a flat ground glow and five glassy rings spreading
+  and drifting left, darkening to blue over a dark blue disc (to ~18); a white mass of billows spreading right behind
+  a pale shock arc that throws sparks (front at x 545 at frame 5.5, 55 a frame), each billow dying as the mass draws
+  back to the right edge (the middle at ~10.5, the edge at ~22; timed on the reference's white coverage by band), its
+  trailing side burning in rows of blue tongues, each with two fainter copies trailing down-left (12-24); sand dust
+  billowing on the actor's half (0-15) and a browner cloud over the target's (13-26); a cluster of pale blue motes in
+  the middle (from ~7, gone by ~28).
   **Debug → Effects** (`EffectViewer`) plays them over our scene's battlefield (CG 900 and its overlay, with Rance's
   (unit 1) and Ex's (commander 1) armies once a game has booted) or black: the effect, Play, Loop, the enemy acting,
   the blend, the speed, the seed and a frame slider; the effect stands at the scene's foot (y 8).
   `--effects --shots DIR --quit` (in a window) writes every frame of each with seed 1: the effect alone on black
-  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`) and over the battlefield, the player acting and the enemy
+  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`) and over the battlefield, the player acting and the enemy
   (`melee-scene-NN.png`, `melee-enemy-scene-NN.png`, …) — for a sheet next to the reference's frames, made outside the
   repository.
 - **The windows over it** ("vs", the results, the info boxes, the

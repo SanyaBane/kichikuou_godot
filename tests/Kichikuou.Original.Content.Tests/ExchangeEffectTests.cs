@@ -34,6 +34,22 @@ public class ExchangeEffectTests(ITestOutputHelper output)
         Assert.Equal(new ExchangeEffect(kind, side), ExchangeEffect.Of(s));
     }
 
+    /// <summary>Special 1 is Rance Attack by Rance (unit 1) or Kentarou (unit 31), By la Way by Rick (unit 7), which plays by its action.</summary>
+    [Theory]
+    [InlineData(1, ExchangeEffectKind.RanceAttack)]
+    [InlineData(31, ExchangeEffectKind.RanceAttack)]
+    [InlineData(7, ExchangeEffectKind.Melee)]
+    public void The_Rance_Attack_command_plays_its_own(int unit, ExchangeEffectKind kind)
+    {
+        var s = new GameState();
+        s.Bt_PlayerAction = (Sys3Int)0;
+        s.Bt_EnemyAction = (Sys3Int)99;
+        s.Bt_MsgMode = (Sys3Int)3;
+        s.Bt_SpecialAtk = (Sys3Int)1;
+        s.Unit_Cur = (Sys3Int)unit;
+        Assert.Equal(new ExchangeEffect(kind, BattleSide.Player), ExchangeEffect.Of(s));
+    }
+
     [Fact]
     public void Nothing_plays_when_neither_side_fires()
     {
@@ -45,7 +61,8 @@ public class ExchangeEffectTests(ITestOutputHelper output)
 
     /// <summary>
     /// In every captured battle each exchange's shots start an effect: its side fires (its action is not 99, and it
-    /// has a shot), and a two-sided exchange is direct against direct with the turn's actor in <c>Bt_MsgMode</c> (3 or 4).
+    /// has a shot), and a two-sided exchange is direct against direct with the turn's actor in <c>Bt_MsgMode</c> (3 or 4);
+    /// a Rance Attack's troops fire nothing.
     /// </summary>
     [CaptureTheory]
     [MemberData(nameof(BattleSceneTests.Captures), MemberType = typeof(BattleSceneTests))]
@@ -75,6 +92,9 @@ public class ExchangeEffectTests(ITestOutputHelper output)
                 : new[] { s.Bt_ETroopVsTroopShots, s.Bt_ETroopVsCmdrShots, s.Bt_ECmdrVsTroopShots, s.Bt_ECmdrVsCmdrShots };
             if ((player ? s.Bt_PlayerAction : s.Bt_EnemyAction) == 99 || shots.All(v => v == 0))
                 wrong.Add($"exchange {exchanges}: {key} does not fire");
+            // Rance Attack is the commander's blow alone: the troops' shots are zeroed (02-resolution.md §3.3).
+            if (effect.Kind == ExchangeEffectKind.RanceAttack && (shots[0] != 0 || shots[1] != 0))
+                wrong.Add($"exchange {exchanges}: Rance Attack with the troops firing");
             bool twoSided = s.Bt_PlayerAction != 99 && s.Bt_EnemyAction != 99;
             if (twoSided && (s.Bt_PlayerAction != 0 || s.Bt_EnemyAction != 0 || s.Bt_MsgMode.Value is not (3 or 4)))
                 wrong.Add($"exchange {exchanges}: two-sided, actions {s.Bt_PlayerAction.Value}, {s.Bt_EnemyAction.Value}, mode {s.Bt_MsgMode.Value}");

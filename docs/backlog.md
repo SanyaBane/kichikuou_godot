@@ -96,8 +96,8 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   100 has one only in some scenes' battles); their battle sprite stands in (owner, 2026-10-12;
   `RecordFace.StandIn`, its square set in the viewer) — [ui/deployment-table.md](ui/deployment-table.md), step 7.
   Under way (owner, 2026-10-14): the exchange's effects on our battle screen, our own as like Sengoku Rance's as
-  can be (melee, bow, magic: done), their wiring into the exchange (done), Rance Attack's after Sengoku Rance's —
-  [ui/battle-screen.md](ui/battle-screen.md), "The exchange's effects". Later (owner, 2026-10-14): the other
+  can be (melee, bow, magic: done), their wiring into the exchange (done), Rance Attack's after Sengoku Rance's
+  (done 2026-10-14, the owner took v1 as it is) — [ui/battle-screen.md](ui/battle-screen.md), "The exchange's effects". Later (owner, 2026-10-14): the other
   specials' effects, each after a counterpart found in Sengoku Rance (until then by their action).
   Groundwork (survey §4.8): menus as data and the map helper are done (2026-10-12); the shared engine
   host (§4.8, "Items 2 and 4 are one step") is not needed for screens over the original layout.

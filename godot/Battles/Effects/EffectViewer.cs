@@ -10,7 +10,7 @@ namespace Kichikuou.Game.Battles.Effects;
 /// over a battlefield the size of our scene (1024×410), for the owner to judge before they are wired into the
 /// exchange. The battlefield is CG 900 with its overlay and, once a game has booted, Rance's (unit 1) and Ex's
 /// (commander 1) armies at the troop limit; or plain black, as Sengoku Rance's frames are. The effect stands at the
-/// scene's foot (y 8: 1024×402). The effect (melee, bow, magic), Play, Loop, a frame slider (30 frames of 50 ms), the
+/// scene's foot (y 8: 1024×402). The effect (melee, bow, magic, Rance Attack), Play, Loop, a frame slider (30 frames of 50 ms), the
 /// enemy acting (mirrored), the blend, the speed and the seed. <see cref="SaveFramesAsync"/> writes every frame for a
 /// side-by-side sheet.
 /// </summary>
@@ -184,6 +184,7 @@ internal sealed partial class EffectViewer : Window
         ("Melee (after 40000)", "melee", MeleeEffect.Build),
         ("Bow (after 40260)", "bow", BowEffect.Build),
         ("Magic (after 40360)", "magic", MagicEffect.Build),
+        ("Rance Attack (after 40500)", "rance-attack", RanceAttackEffect.Build),
     ];
 
     /// <summary>

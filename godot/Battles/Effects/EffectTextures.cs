@@ -60,6 +60,17 @@ internal static class EffectTextures
 
     private static Texture2D? _arrow, _burst, _bowArc, _splat, _bokeh, _glow, _rays, _shock;
 
+    /// <summary>A spike along x, its point at +x: a long thin wedge, widest near its foot (−x), with a bright spine.</summary>
+    public static Texture2D Spike => _spike ??= Make(256, SpikeShape, 32);
+
+    /// <summary>A flame's tongue: a filled blade rising from a wide foot (+y) to a point leaning right at the top, its left edge brightest.</summary>
+    public static Texture2D Tongue => _tongue ??= Make(128, TongueShape);
+
+    /// <summary>A billow of a bright mass: a soft noisy disc, like the puff without its grain.</summary>
+    public static Texture2D Billow => _billow ??= Make(128, BillowShape);
+
+    private static Texture2D? _spike, _tongue, _billow;
+
     /// <summary>
     /// A size × <paramref name="height"/> texture (square by default) whose alpha at each pixel is <paramref name="alpha"/>
     /// of (x, y) in [−1, 1] — both axes, whatever the shape.
@@ -258,6 +269,35 @@ internal static class EffectTextures
             rays += Gauss(d, 0.006f + 0.01f * r) * MathF.Pow(1 - r, 1.5f) * (0.4f + Spikes[i + 1]);
         }
         return rays * SmoothStep(0.05f, 0.2f, r);
+    }
+
+    // Along x from the foot (−1) to the point (+1); y is 8× finer.
+    private static float SpikeShape(float x, float y)
+    {
+        float along = (x + 1) / 2;
+        float width = 0.75f * MathF.Pow(1 - along, 1.3f) + 0.04f;
+        float wedge = Gauss(y, width * 0.5f) * 0.55f + Gauss(y, width * 0.15f) * 0.6f;
+        return wedge * SmoothStep(0f, 0.12f, along) * (1 - SmoothStep(0.85f, 1f, along));
+    }
+
+    private static float BillowShape(float x, float y)
+    {
+        float r = MathF.Sqrt(x * x + y * y);
+        return (1 - SmoothStep(0.45f, 1f, r)) * (0.7f + 0.3f * Fbm(x * 3 + 11, y * 3 + 5));
+    }
+
+    // From the foot (y = 1) to the point (y = −1): the spine leans right toward the top, the blade narrows to it.
+    private static float TongueShape(float x, float y)
+    {
+        float up = (1 - y) / 2;                                   // 0 at the foot, 1 at the point
+        float spine = 0.55f * up * up - 0.1f;
+        float half = 0.6f * MathF.Pow(Math.Max(0, 1 - up), 0.8f) + 0.01f;
+        float across = (x - spine) / half;                        // −1 on the left edge, +1 on the right
+        if (across is < -1.2f or > 1.2f)
+            return 0;
+        float body = Edge(1 - MathF.Abs(across), 0.25f);
+        float rim = Gauss(across + 0.8f, 0.18f);
+        return (0.45f * body + 0.55f * rim * body) * SmoothStep(1f, 0.7f, y);
     }
 
     /// <summary>A soft edge at <paramref name="v"/> = 0: 0 below −<paramref name="width"/>/2, 1 above +<paramref name="width"/>/2.</summary>

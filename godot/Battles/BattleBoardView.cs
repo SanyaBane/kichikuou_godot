@@ -220,6 +220,7 @@ internal sealed partial class BattleBoardView : Control
         {
             ExchangeEffectKind.Bow => BowEffect.Build(_effectsSeen),
             ExchangeEffectKind.Magic => MagicEffect.Build(_effectsSeen),
+            ExchangeEffectKind.RanceAttack => RanceAttackEffect.Build(_effectsSeen),
             _ => MeleeEffect.Build(_effectsSeen),
         });
         _effect.Playing = true;
