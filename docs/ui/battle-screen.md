@@ -278,7 +278,8 @@ picture, the slot panels) is not shown. How it is built:
     after 40500, for the command whoever uses it — Rance (unit 1) or Kentarou (unit 31); By la Way, Rick's (unit 7)
     special 1, stays melee. No spotlight: the owner saw none in Sengoku Rance's Rance Attack either. The choice reads
     special 1 with the actor (`Bt_SpecialAtk`, `Unit_Cur`), since the shots' sound selection has reset `Bt_SkillSfx`.
-    No captured battle has one (`ExchangeEffectTests` checks the rule on given states).
+    One captured battle has one (`20261008-111109-01-FIGT_A`, in the full run's captures only); `ExchangeEffectTests`
+    checks the rule on given states and that a Rance Attack's troops fire nothing.
   - **A setting**: Option → Battle Screen… → "Effects: on/off", on by default (Sengoku Rance's Combat Effect Display);
     none while skipping (MsgSkip) or with `--fast`.
   **Wired in**: the presenter takes the effect at the shots' first frame (`ExchangeEffect.Of` on the state,

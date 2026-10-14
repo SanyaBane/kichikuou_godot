@@ -4,9 +4,10 @@ namespace Kichikuou.Original.Content.Tests;
 
 /// <summary>
 /// How many random cases the differential tests (a port against its file run from the decompile)
-/// run. A quick run, the default, takes an eighth of each test's full count: enough to catch a port
-/// that went wrong while working on it. The full count also reaches the rare paths every test lists
-/// and must pass before a commit: <c>KICHIKUOU_FULL_TESTS=1</c> (CLAUDE.md, "Commands").
+/// run, and how many captured battles the battle-screen tests replay. A quick run, the default, takes
+/// an eighth of each test's full count: enough to catch a port that went wrong while working on it.
+/// The full count also reaches the rare paths every test lists: <c>KICHIKUOU_FULL_TESTS=1</c>, for
+/// the tests a change can break (CLAUDE.md, "Commands").
 /// </summary>
 internal static class DifferentialRuns
 {

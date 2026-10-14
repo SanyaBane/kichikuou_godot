@@ -276,16 +276,23 @@ commit `local.env`.
 - Tests: `dotnet test tests/Kichikuou.Engine.Tests`, `tests/Kichikuou.Content.Tests`,
   `tests/Kichikuou.Original.Tests` (seconds; "the core tests" below are these three) and
   `tests/Kichikuou.Original.Content.Tests` ("the content tests").
-  The content tests' differential tests (a port against its file run from the decompile on random
-  states) run an eighth of their random cases by default — the quick run, for checks while working
-  (`DifferentialRuns`). The full counts, `KICHIKUOU_FULL_TESTS=1 dotnet test tests/Kichikuou.Original.Content.Tests`
-  (~5 min; only the full run fails a test whose random states never reached a path it lists), are
-  **not for every commit — only when the change could break something they cover**: the rule code,
-  the script runtime, the content readers, the presenter. A change no content test reaches (docs,
-  comments, Godot-only code, a list the content tests do not read) needs the build, the core tests
-  and the targeted tests only. Judge by what the diff touches and say why in the reply; when the full
-  run is due, run it once, right before the commit, not while the owner may still ask for changes
-  (owner's request 2026-10-11). Report which run a result comes from.
+  The content tests run in two sizes (`DifferentialRuns`). The quick run, the default, takes an eighth
+  of two things: the random cases of the differential tests (a port against its file run from the
+  decompile on random states — the command phase, the command slices, the nation turns, the week
+  loop, the weekly events, the load/save screen — and the presenter's audit, `GamePresenterTests.Audit`)
+  and the captured battles the battle-screen tests replay (`BattleSceneTests.Captures`: the scene,
+  the opening, the result waits, the strikes, the windows, the exchange effects, the scout report).
+  `KICHIKUOU_FULL_TESTS=1` runs them all (the whole project ~15 min; only the full counts fail a test
+  whose random states never reached a path it lists). **Run the full counts only where they can find
+  what the quick run cannot** (owner, 2026-10-14): a change reaches the scaled tests whose code it
+  changes — run those, filtered, with the full counts
+  (`KICHIKUOU_FULL_TESTS=1 dotnet test tests/Kichikuou.Original.Content.Tests --filter "FullyQualifiedName~ExchangeEffectTests"`);
+  the whole project only when the change reaches what many of them share — the rule code the
+  differential tests compare, the script runtime, the content readers, the presenter's drawing. A
+  change no scaled test reaches (docs, comments, Godot-only code, a class only unscaled tests read)
+  needs the build, the core tests and its own tests only. Run a due full run once, when the change is
+  settled, not while the owner may still ask for changes (owner's request 2026-10-11). Say in the
+  reply which run a result comes from and why the full counts were or were not due.
 - Build everything: `dotnet build Kichikuou.sln`
 - Run the game headless (smoke test): `<Godot console exe> --headless --path godot --quit-after 30`;
   `<Godot console exe>` is `KICHIKUOU_GODOT_EXE` in `local.env` (the editor's exe is next to it).
