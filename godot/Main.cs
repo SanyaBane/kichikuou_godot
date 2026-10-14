@@ -85,6 +85,7 @@ public partial class Main : Control
                 SlotsFrom = Value("--slots-from"),
                 AutoTurnEnd = args.Contains("--turn-end"),
                 AutoParty = Value("--party") is { } party ? [.. party.Split(',').Select(int.Parse)] : null,
+                AutoScout = args.Contains("--scout"),
             });
         }
         if (args.Contains("--portraits"))

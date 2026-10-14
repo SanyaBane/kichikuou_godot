@@ -245,7 +245,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   cards and the round's order from `BattleBoard`/`RoundOrder`, the order strip `OrderStrip` moving on its own;
   `FIGT_SEL` answered by our own input, `BattleCommandLayer`: banners and context menus from
   `Original.Content/Battles/BattleCommands`; the retreat confirmation our dialog, `BattleDialogLayer`
-  from `BattleDialog`; the speech bubbles' lines our balloon, `SpeechBalloon` from `BattlePresenter.Speech`; its settings Option → Battle Screen…, `BattleScreenSettings`);
+  from `BattleDialog`; the speech bubbles' lines our balloon, `SpeechBalloon` from `BattlePresenter.Speech`; the ninja's scout report, before the field, our overlay `Battles/ScoutReportView` from `BattlePresenter.Scout` (`Original.Content/Battles/ScoutReport`); its settings Option → Battle Screen…, `BattleScreenSettings`);
   `GodotGlyphRenderer` (TextServer; MS Gothic or the bundled BIZ UDGothic in `godot/fonts`, Option →
   Fonts, `--font ms-gothic|biz-ud-gothic` for one launch), `BattleAudio`; `Screens` switches screens. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
 - `tools/analysis/` — Python scripts for reading the decompiled scenario; `tools/codegen/` —
@@ -326,6 +326,12 @@ commit `local.env`.
   ended at once and the first attack on it (on North (2)) repelled by Rance (unit 1), Menad (unit 10) and Asuka
   (unit 11) (the owner's choice; the second, on Wes (8), with the bot's own party), seconds —
   `--load --auto --fast --quit --seed 2 --turn-end --party 1,10,11 --weeks 25 --saves user://saves-week26 --slots-from user://saves-leazas`.
+  The scout report (owner, 2026-10-14): `--turn-end --scout` on the week-18 save ends the week at once; the rebels
+  attack Ys (5) the same week and `--scout` chooses Ninja Scout in `FIGT_B`'s menu at that first enemy attack (once
+  a launch; the ninja menu takes its first item, the first free ninja: Kanami), then it intercepts as usual —
+  `--load --auto --fast --quit --seed 2 --saves user://saves-scout --slots-from user://saves-week18 --turn-end --scout --until deployment [--interface new] --shots <dir>`
+  (Ex (commander 1), Sakanaku (commander 6), Dodge (commander 5), Jibul (commander 7); our overlay needs a window,
+  and `--until deployment` stops before the battle, so nothing moves the system pointer).
   Add another kept save the same way when a screen needs another phase.
 - Show an ending's `OVER` (its picture, staff roll, Completion Report) on a booted game:
   `<Godot console exe> --headless --path godot -- --ending <1-14> --auto --fast --quit [--shots <dir>]`

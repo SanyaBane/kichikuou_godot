@@ -53,7 +53,8 @@ draws what the core shows and answers what the core asks.
 4. **The 戦果 place**: troops of the two sides, advantages, strategy — or nothing.
 5. **Focus**: as squares on the card (Sengoku's action points' place) or a number.
 6. **Pre-battle**: the strategy screen and the scout report — our own panels or the original's
-   pictures in the scene.
+   pictures in the scene. The scout report is answered (owner, 2026-10-14: our own overlay, "The scout
+   report" below); the strategy screen waits.
 7. **Script menus** (retreat, intercept / ninja scout / abandon, the ninja): a dialog of ours.
 8. **Dungeon battles** (black field, no strategy): the scene's background.
 
@@ -168,6 +169,30 @@ picture, the slot panels) is not shown. How it is built:
   toward white) and stays while the counter runs, 0.2 s more, then drains in 0.35 s. At once while skipping
   (MsgSkip) and with `--fast`, when another unit takes the place, and when our screen is shown again
   (`BattleBoardView.Meters.cs`: the shown values outlive the cards' controls, built again on every change).
+- **The scout report** (owner, 2026-10-14, mock-up C of three, "all at once"): when the player sends a ninja to
+  scout an attacking army (`FIGT_B.ADV:506-648`, `NinjaScoutReportAsync`; the original prints it into window 113,
+  docs/battle/screen-layout.md §6.3), the report is our overlay over the original's screen (the map, before the
+  field is drawn), shown only in New (`godot/Battles/ScoutReportView`): the screen dimmed and blurred; the ninja's
+  whole portrait on the left (the original's framed 192×256 picture of op 321, Kanami's CG 9, 300×400 at
+  (40, 40), its top with the balloon's so the tail points at it — owner, 2026-10-14); our balloon (the dialogue panel's, `SpeechBalloon.DrawBalloon`) to its right at the top: "The
+  Approaching Enemy  [<army, string 10>]" bold, then "Commanders n      Total troops N"; the commanders as cards
+  in a 2×2 formation — the front row (places 1-2) in the left column, the back row (3-4) in the right one, "front
+  row" / "back row" below — in our battle cards' style (282×150, the face square with the crops, place and name,
+  troop type muted, "Troops" muted and the number large), an empty place "n  empty". **Only what the ninja
+  reports**: name, troop type, troops — no maximum, no HP, no bars; a commander without troops has no troop type
+  and troops "none" (the report leaves the line out). The report lists `Bt_EnemyParty1-4` in order and the battle's
+  `InitBattle` puts member i into slot i, so the places are the battle's. The model is
+  `Original.Content/Battles/ScoutReport` (taken from GameState by `BattlePresenter.Scout` when "The Approaching
+  Enemy", `:587`, prints — the parties' commanders, names and troop types through `Cmdr_StrBase`, the totals as the
+  script's `Tmp0002` / `Tmp0001` — and held until the window closes after the totals). **All at once**: the overlay
+  shows the whole army from the report's first key wait (after `:587`); the key waits of the commanders' lines and
+  of the totals are answered at once by `GameScreen` (`BattlePresenter.ScoutReported`, after the release wait, as
+  the "vs" window's), so the player clicks once; RetVal is kept (`FlowWaitKeyKeepRetValAsync`). The script's text
+  before and after (the ninja called, "Kanami returned with information", Rance's "Mhm... I see.", Maris's
+  comment) stays the original's windows. `ScoutReportTests`: the model on a GameState, the presenter's hold, and in
+  the captured defences (three with a scout report) the overlay's commanders, totals and places are what the
+  script prints and the battle then places. `--scout` (with `--auto`) sends the first free ninja to scout at the
+  first enemy attack, once a launch (CLAUDE.md, "Commands").
 - **The windows over it** (round header, "vs", the results, the info boxes, the
   prompt, the popups, the script menus) are the stage's screen as the original draws it, shown only
   inside the windows' own shapes (their frame CGs, the selection boxes): the 640×400 screen fitted to
@@ -345,7 +370,8 @@ picture, the slot panels) is not shown. How it is built:
 5. **The scene and the exchange**: the engagement's pictures, the shots and counters, the action
    labels, the wiped-out marks.
 6. **Windows**: the round header, the flavour lines, the results, the info boxes, the strategy
-   screen, the scout report — as the owner decides in question 3.
+   screen, the scout report — as the owner decides in question 3. ✓ 2026-10-14 the scout report
+   ("The scout report" above).
 7. **Checks**: the model's tests, the golden captures replayed through our input (the same
    choices give the same memory), `--auto --interface new` through the battles, the owner's look
    from a kept save (`--until battle`).

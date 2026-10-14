@@ -151,11 +151,22 @@ public static class BattleBoard
                 acted, state is >= 2 and <= 21);
         }
         var c = s.Cmdrs[record];
+        var (name, troopType, face, standIn) = Commander(s, record);
+        return new BattleCard(place, record, name, troopType,
+            face, standIn, c.Troops.Value, c.MaxTroops.Value, c.HP.Value, c.MaxHP.Value, null, 0, acted, state == 20);
+    }
+
+    /// <summary>
+    /// A commander as our screens show it: its name and troop type (the record's strings through <c>Cmdr_StrBase</c>),
+    /// its face CG and, without a face, its battle sprite as a stand-in (<see cref="UnitFaces.Commanders"/>; else 0).
+    /// </summary>
+    internal static (string Name, string TroopType, int FaceCg, int StandIn) Commander(GameState s, int record)
+    {
+        var c = s.Cmdrs[record];
         int cs = (s.Cmdr_StrBase + (Sys3Int)((record - 1) * 3)).Value;
         int face = c.FaceCg.Value;
         int standIn = face != 0 ? 0 : c.CgAlone != 0 ? c.CgAlone.Value : c.CgFull.Value;
-        return new BattleCard(place, record, DeploymentTable.StringAt(s, cs).Trim(), DeploymentTable.StringAt(s, cs + 1).Trim(),
-            face, standIn, c.Troops.Value, c.MaxTroops.Value, c.HP.Value, c.MaxHP.Value, null, 0, acted, state == 20);
+        return (DeploymentTable.StringAt(s, cs).Trim(), DeploymentTable.StringAt(s, cs + 1).Trim(), face, standIn);
     }
 
     /// <summary>

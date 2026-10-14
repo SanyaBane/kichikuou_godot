@@ -161,14 +161,23 @@ public sealed partial class BattlePresenter
             case MessageEvent e:
                 if (e.Text == OrderMessage)
                     _orderMessage = true;
+                if (e.Text == ScoutArmyLine && State is { } scouted)
+                    Scout = ScoutReport.Of(scouted, _portraitR);           // the army as the report will list it
                 Print(Read(e.Text, [], e.StringVariables));
                 break;
-            case ValueMessageEvent e: Print(Read(e.Text, e.Values, e.StringVariables)); break;
+            case ValueMessageEvent e:
+                if (e.Text == ScoutTotalsLine && Scout is not null)
+                    ScoutReported = true;
+                Print(Read(e.Text, e.Values, e.StringVariables));
+                break;
             case PrintStringEvent e: PrintString(e.Slot.Value); break;
             case FlowErrorEvent e: Error(e.Text); break;
             case UnitInfoEvent e: UnitInfo(e.Unit, e.Order); break;
             case EnemyInfoEvent e: EnemyInfo(e.Cmdr); break;
-            case ScoutReportEvent e: ScoutReport(e.Troops); break;
+            case ScoutReportEvent e:
+                ScoutReported = Scout is not null;
+                ScoutReportLine(e.Troops);
+                break;
             case StrategyScreenEvent e: StrategyScreen(e.Side.Value); break;
             case EngagementSceneEvent e: EngagementScene(e); break;
             case ActionLabelsEvent e: ActionLabels(e); break;
@@ -569,6 +578,8 @@ public sealed partial class BattlePresenter
         _winFrame = 0;
         _speech.Clear();
         ActionLabelsOpen = false;
+        Scout = null;
+        ScoutReported = false;
         if (_infoBox)
         {
             // FIGT.ADV:1013-1014 / 1112-1113 after the info box closes.
@@ -741,7 +752,23 @@ public sealed partial class BattlePresenter
 
     // ------------------------------------------------------------------ scout report (§6.3)
 
-    private void ScoutReport(Sys3Int troops)
+    private static readonly ScriptRef ScoutArmyLine = new("FIGT_B.ADV", 587);
+    private static readonly ScriptRef ScoutTotalsLine = new("FIGT_B.ADV", 613);
+
+    /// <summary>
+    /// The ninja's report while window 113 lists it (docs/ui/battle-screen.md, "The scout report"): from "The
+    /// Approaching Enemy" (<c>FIGT_B.ADV:587</c>) to the window's close after the totals; null otherwise. Taken from
+    /// GameState when that line prints, so our overlay shows the whole army from the report's first key wait.
+    /// </summary>
+    public ScoutReport? Scout { get; private set; }
+
+    /// <summary>
+    /// Whether the report has gone past its first key wait: a commander's line or the totals are printed. Our
+    /// overlay shows them all already, so the key waits from here to the window's close are answered at once.
+    /// </summary>
+    public bool ScoutReported { get; private set; }
+
+    private void ScoutReportLine(Sys3Int troops)
     {
         Writer.Print(Read(new ScriptRef("FIGT_B.ADV", 655), []));
         if (troops != 0)

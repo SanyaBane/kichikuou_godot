@@ -85,6 +85,12 @@ public sealed record GameOptions
     /// </summary>
     public IReadOnlyList<int>? AutoParty { get; init; }
 
+    /// <summary>
+    /// Development: at the first enemy attack on a province of the player's, the unattended player sends the
+    /// first free ninja to scout (Ninja Scout, <c>FIGT_B.ADV:57</c>) before it intercepts.
+    /// </summary>
+    public bool AutoScout { get; init; }
+
     /// <summary>Development: unattended play stops after the first deployment picker or the first battle (a look at one screen).</summary>
     public AutoUntil AutoUntil { get; init; }
 
@@ -175,6 +181,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     private DeploymentTableView _table = null!;         // our own screen over Sﾌﾞﾀｲ's grid (Option → Interface: New)
     private BattleBoardView _battleView = null!;        // our own battle screen over the stage (Option → Interface: New)
+    private ScoutReportView _scoutView = null!;         // our own scout report over the original's screen (Option → Interface: New)
     private DeploymentPanels _panels = null!;           // and over the rest of it but the portrait
     private PointerScript _tablePointer = new();        // the script's pointer while the player's is over the table
     private IReadOnlyList<int>? _wantedOrder;           // the party a drop asked for, while its clicks run
@@ -217,6 +224,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         var faces = new FacePictures(new CgLibrary(GameData.CgDirectory));
         _battleView = new BattleBoardView(GodotGlyphRenderer.Chosen, faces);
         _content.AddChild(_battleView);
+        _scoutView = new ScoutReportView(GodotGlyphRenderer.Chosen, faces);
+        _scoutView.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        _content.AddChild(_scoutView);
         _panels = new DeploymentPanels(GodotGlyphRenderer.Chosen, faces);
         _panels.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _panels.RemovePressed += TableRowPressed;
@@ -279,6 +289,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _notice.Text = "";
         UpdateDeploymentScreen();
         UpdateBattleScreen(Present());
+        UpdateScoutReport();
         if (_options.Portraits && !_portraitsOpened && _presenter.State is not null && !_modal)
         {
             _portraitsOpened = true;
@@ -580,7 +591,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.ScreenshotDirectory is not { } dir)
             return;
         System.IO.Directory.CreateDirectory(dir);
-        if ((_table.Visible || BattleScreenShown) && DisplayServer.GetName() != "headless")
+        if ((_table.Visible || BattleScreenShown || ScoutReportShown) && DisplayServer.GetName() != "headless")
         {
             // Our deployment and battle screens are drawn by Godot over the screen: the window's next frame (headless
             // draws none). No Compose here: the frame's Present must find the change to upload it.
@@ -852,6 +863,15 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             // window (owner, 2026-10-13): its click wait is answered at once, as by a click. A target's banner
             // is chosen at the press, so the button may still be held: wait for its release, as IK 0 does,
             // or the next key wait (the flavour line's) would take it.
+            key = KeyReturn;
+            await ReleaseWaitAsync(_input.PeekInput());
+            _ikKey = key;
+        }
+        else if (ScoutReportShown && _presenter.Battle.ScoutReported)
+        {
+            // Our scout report shows the whole army from its first key wait (owner, 2026-10-14): the waits of its
+            // commanders' lines and of its totals are answered at once, as by a click (RetVal is kept, FIGT_B.ADV:649-672),
+            // after the release of a button still held from the click that answered the first.
             key = KeyReturn;
             await ReleaseWaitAsync(_input.PeekInput());
             _ikKey = key;
@@ -1132,6 +1152,30 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _battleView.Refresh(_presenter, input, screenChanged, hovered,
             instant: _skip.IsSkipping,                                         // MsgSkip: the order strip's chips jump to their places
             slidesInstant: _skip.IsSkipping || _options.Fast);                 // and the armies and the counters (--fast: no runs)
+    }
+
+    /// <summary>
+    /// Our scout report (docs/ui/battle-screen.md, "The scout report") over the original's screen while Option →
+    /// Interface is on New and a ninja's report lists the approaching army (<see cref="BattlePresenter.Scout"/>).
+    /// </summary>
+    private bool ScoutReportShown => InterfaceChoice.New && _presenter.Battle.Scout is not null && !SkippingScene && _presenter.State is not null;
+
+    private void UpdateScoutReport()
+    {
+        bool show = ScoutReportShown;
+        if (show != _scoutView.Visible)
+        {
+            _scoutView.Visible = show;
+            if (show)
+                _scoutView.LoadCrops();
+        }
+        if (!show)
+            return;
+        var size = _view.Size;
+        float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
+        var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
+        _scoutView.Place(_view.Position + (size - drawn) / 2, scale);
+        _scoutView.Show(_presenter.Battle.Scout!);
     }
 
     /// <summary>
@@ -1457,6 +1501,12 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 _autoAbandon = false;
                 return menu.Options.First(o => o.Code == 3).Code;
             }
+            if (menu.Kind == BattleMenuKind.EnemyAttackResponse && _options.AutoScout && !_autoScouted)
+            {
+                // Ninja Scout (code 2) once a launch; the ninja menu then takes its first item, the first free ninja.
+                _autoScouted = true;
+                return menu.Options.First(o => o.Code == 2).Code;
+            }
             return menu.Options[0].Code;
         }
         _battleButtons = 0;
@@ -1610,6 +1660,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     /// <summary>The unattended player stopped a deployment picker: the next menu abandons the city.</summary>
     private bool _autoAbandon;
+
+    /// <summary>The unattended player has sent a ninja to scout (<see cref="GameOptions.AutoScout"/>).</summary>
+    private bool _autoScouted;
 
     /// <summary>The item screen the unattended player works in, and its steps left (<see cref="AutoItemSteps"/>).</summary>
     private PickerView? _autoItemsFrom;

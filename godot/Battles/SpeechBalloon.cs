@@ -83,10 +83,31 @@ internal sealed partial class SpeechBalloon : Control
         bool left = speech.Side == BattleSide.Player;
         float x = (left ? Side : 1280 - Side - Width) * s;
         var box = new Rect2(x, Bottom * s - height, Width * s, height);
+        var ink = DrawBalloon(this, box, left, s, speech.Thought);
 
-        var (fill, edge, ink) = speech.Thought ? (ThinkFill, ThinkEdge, ThinkInk) : (TalkFill, TalkEdge, TalkInk);
+        var origin = box.Position + new Vector2(Pad * s, Pad * s - 4 * s + _bold.GetAscent(size));
+        DrawMultilineString(_bold, origin, speech.Text, HorizontalAlignment.Left, textWidth, size, -1, ink, Breaks);
+
+        float bob = BobPixels * s * Mathf.Sin((float)(Time.GetTicksMsec() / 1000.0 * Mathf.Tau / BobSeconds));
+        var tip = new Vector2(box.End.X - 26 * s, box.End.Y - 17 * s + bob);
+        DrawColoredPolygon(
+        [
+            tip + new Vector2(-MarkerSize, -MarkerSize * 1.1f) * s,
+            tip + new Vector2(MarkerSize, -MarkerSize * 1.1f) * s,
+            tip,
+        ], _colours.Accent);
+    }
+
+    /// <summary>
+    /// The balloon's shape on <paramref name="canvas"/> at <paramref name="box"/> (window pixels, <paramref name="s"/> to a
+    /// layout pixel): rounded, a soft shadow, the tail out of its left or right side <see cref="TailFromTop"/> below its
+    /// top; white for talk, dark for a thought. Returns the colour of the text on it. The scout report's balloon is one too.
+    /// </summary>
+    internal static Color DrawBalloon(CanvasItem canvas, Rect2 box, bool tailLeft, float s, bool thought = false)
+    {
+        var (fill, edge, ink) = thought ? (ThinkFill, ThinkEdge, ThinkInk) : (TalkFill, TalkEdge, TalkInk);
         float tailY = box.Position.Y + TailFromTop * s;
-        float rim = left ? box.Position.X : box.End.X, outward = left ? -1 : 1;
+        float rim = tailLeft ? box.Position.X : box.End.X, outward = tailLeft ? -1 : 1;
         Vector2[] tail =
         [
             new(rim - outward * 2 * s, tailY - TailHalf * s),
@@ -104,21 +125,10 @@ internal sealed partial class SpeechBalloon : Control
         };
         style.SetCornerRadiusAll((int)Math.Round(Radius * s));
         style.SetBorderWidthAll(Math.Max(1, (int)Math.Round(2 * s)));
-        DrawColoredPolygon([.. tail.Select(p => p + new Vector2(0, 4 * s))], new Color(Shadow, Shadow.A * 0.5f));
-        DrawStyleBox(style, box);
-        DrawColoredPolygon(tail, fill);
-        DrawPolyline([tail[0], tail[1], tail[2]], edge, Math.Max(1, 2 * s), antialiased: true);
-
-        var origin = box.Position + new Vector2(Pad * s, Pad * s - 4 * s + _bold.GetAscent(size));
-        DrawMultilineString(_bold, origin, speech.Text, HorizontalAlignment.Left, textWidth, size, -1, ink, Breaks);
-
-        float bob = BobPixels * s * Mathf.Sin((float)(Time.GetTicksMsec() / 1000.0 * Mathf.Tau / BobSeconds));
-        var tip = new Vector2(box.End.X - 26 * s, box.End.Y - 17 * s + bob);
-        DrawColoredPolygon(
-        [
-            tip + new Vector2(-MarkerSize, -MarkerSize * 1.1f) * s,
-            tip + new Vector2(MarkerSize, -MarkerSize * 1.1f) * s,
-            tip,
-        ], _colours.Accent);
+        canvas.DrawColoredPolygon([.. tail.Select(p => p + new Vector2(0, 4 * s))], new Color(Shadow, Shadow.A * 0.5f));
+        canvas.DrawStyleBox(style, box);
+        canvas.DrawColoredPolygon(tail, fill);
+        canvas.DrawPolyline([tail[0], tail[1], tail[2]], edge, Math.Max(1, 2 * s), antialiased: true);
+        return ink;
     }
 }
