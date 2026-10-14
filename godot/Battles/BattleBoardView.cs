@@ -125,7 +125,11 @@ internal sealed partial class BattleBoardView : Control
         _enemyArmy = new ArmySlide(BattleSide.Enemy, Layer());              // the player's over the enemy's, as the picture draws them
         _playerArmy = new ArmySlide(BattleSide.Player, Layer());
         _front = Layer();
-        VisibilityChanged += () => _jumpArmies = true;                     // shown again: the armies stand where they are
+        VisibilityChanged += () =>
+        {
+            _jumpArmies = true;                                             // shown again: the armies stand where they are
+            _meters.Clear();                                                // and the counters show what they hold (another battle, perhaps)
+        };
 
         _speaker = Picture();                                               // the portrait has its own frame and name
         _speaker.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
@@ -259,14 +263,14 @@ internal sealed partial class BattleBoardView : Control
     /// Fills the screen from the presenter: the scene's picture when it changed, the windows' layer when
     /// <paramref name="screenChanged"/> (with the input screen's own windows, <paramref name="inputWindows"/>),
     /// the cards (<paramref name="hovered"/> lit), the strip, the gauge and the speaker when what they show changed.
-    /// <paramref name="instant"/>: the strip's chips jump to their places; <paramref name="slidesInstant"/>: the armies too.
+    /// <paramref name="instant"/>: the strip's chips jump to their places; <paramref name="slidesInstant"/>: the armies and the cards' counters too.
     /// </summary>
     public void Refresh(GamePresenter presenter, IEnumerable<WindowShape> inputWindows, bool screenChanged, BattlePlace? hovered,
         bool instant, bool slidesInstant)
     {
         if (presenter.State is not { } s)
             return;
-        _armiesInstant = slidesInstant;
+        _armiesInstant = _metersInstant = slidesInstant;
         if (presenter.Scene.Version != _sceneVersion)
         {
             _sceneVersion = presenter.Scene.Version;
@@ -288,7 +292,7 @@ internal sealed partial class BattleBoardView : Control
         }
         RefreshSpeaker(s);
         _balloon.Show(presenter.Battle.Speech);
-        RefreshCards(s, presenter.Order, hovered);
+        RefreshCards(s, presenter.Order, presenter.Battle.Strike, hovered);
         RefreshSpotlight(s, presenter.Scene);
         RefreshStrip(s, presenter.Order, instant);
         var gauge = (Math.Max(presenter.Order.Rounds, s.Bt_RoundsLeft.Value), s.Bt_RoundsLeft.Value);
@@ -641,10 +645,12 @@ internal sealed partial class BattleBoardView : Control
     /// The cards, built again only when what they show changed; the pointer moving over them changes their
     /// frames alone (owner, 2026-10-13: hovering must not cost frames).
     /// </summary>
-    private void RefreshCards(GameState s, RoundOrder order, BattlePlace? hovered)
+    private void RefreshCards(GameState s, RoundOrder order, BattleStrike? strike, BattlePlace? hovered)
     {
         var states = order.States(s);                                    // at a round header, the round to come
-        var cards = SlotSnapshot.Places.Select(p => BattleBoard.Card(s, p, states)).ToList();
+        var cards = SlotSnapshot.Places.Select(p => BattleBoard.Card(s, p, states))
+            .Select(c => c is not null && strike is not null ? strike.Apply(c) : c)   // the blow on the fighters, from the moment it lands
+            .ToList();
         string key = string.Join(";", cards) + $"|{order.Acting}";
         if (key == _cardsKey)
         {
@@ -706,6 +712,7 @@ internal sealed partial class BattleBoardView : Control
     {
         StepArmies(delta);
         StepSpotlight(delta);
+        StepMeters();
         if (_actingPlace is null)
             return;
         bool on = (Time.GetTicksMsec() - _blinkFrom) / BlinkMs % 2 == 0;
@@ -770,10 +777,14 @@ internal sealed partial class BattleBoardView : Control
         text.AddChild(name);
         text.AddChild(Line(card.TroopType == "" ? "—" : card.TroopType, _colours.Muted));
         var side = card.Place.Side == BattleSide.Player ? PlayerColour : EnemyColour;
-        text.AddChild(Line($"Troops {card.Troops}/{card.MaxTroops}"));
-        text.AddChild(Bar(card.MaxTroops > 0 ? (float)card.Troops / card.MaxTroops : 0, side));
-        text.AddChild(Line($"HP {card.Hp}/{card.MaxHp}"));
-        text.AddChild(Bar(card.MaxHp > 0 ? (float)card.Hp / card.MaxHp : 0, HpColour));
+        foreach (var (gauge, colour) in new[] { (Gauge.Troops, side), (Gauge.Hp, HpColour) })
+        {
+            var label = Line("");
+            var (bar, trail, fill) = Bar(colour);
+            text.AddChild(label);
+            text.AddChild(bar);
+            Track(card, gauge, label, trail, fill);                         // the number and the bar, running to a new value
+        }
         string state = card.Order switch
         {
             StandingOrder.AutoAttack => "Auto-Atk",
@@ -804,7 +815,8 @@ internal sealed partial class BattleBoardView : Control
         return line;
     }
 
-    private Control Bar(float fraction, Color colour)
+    /// <summary>A bar, its damage trail and its fill (their shares are their right anchors, set by <see cref="Track"/>).</summary>
+    private (Control Bar, Control Trail, Control Fill) Bar(Color colour)
     {
         var back = new ColorRect
         {
@@ -812,11 +824,14 @@ internal sealed partial class BattleBoardView : Control
             CustomMinimumSize = new Vector2(0, Math.Max(2, (float)Math.Round(5 * _scale))),
             MouseFilter = MouseFilterEnum.Ignore,
         };
+        var trail = new ColorRect { Color = colour.Lerp(Colors.White, TrailLight), MouseFilter = MouseFilterEnum.Ignore };
         var fill = new ColorRect { Color = colour, MouseFilter = MouseFilterEnum.Ignore };
-        fill.AnchorRight = Math.Clamp(fraction, 0, 1);
-        fill.AnchorBottom = 1;
-        back.AddChild(fill);
-        return back;
+        foreach (var part in new[] { trail, fill })                         // the fill over the trail
+        {
+            part.AnchorBottom = 1;
+            back.AddChild(part);
+        }
+        return (back, trail, fill);
     }
 
     private static Label Line(string text, Color? color = null, bool expand = true, bool center = false)

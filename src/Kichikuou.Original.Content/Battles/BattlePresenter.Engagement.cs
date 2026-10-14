@@ -157,6 +157,12 @@ public sealed partial class BattlePresenter
         }
     }
 
+    /// <summary>
+    /// The blow of the exchange on screen: the two fighters' troops and HP as its result screen shows them, from
+    /// that screen until the next event after its key wait — by then the core has written them (null otherwise).
+    /// </summary>
+    public BattleStrike? Strike { get; private set; }
+
     /// <summary><c>FIGTATTK.ADV:134-233</c>: predicted values and damages, shown at once.</summary>
     private void ExchangeResults()
     {
@@ -164,6 +170,11 @@ public sealed partial class BattlePresenter
             return;
         var unit = s.Units[s.Unit_Cur];
         var cmdr = s.Cmdrs[s.Cmdr_Cur];
+        Strike = new BattleStrike(
+            s.Unit_Cur.Value, (unit.Troops - s.Bt_ETroopVsTroopDmg - s.Bt_ECmdrVsTroopDmg).Value,
+            (unit.HP - s.Bt_ETroopVsCmdrDmg - s.Bt_ECmdrVsCmdrDmg).Value,
+            s.Cmdr_Cur.Value, (cmdr.Troops - s.Bt_PTroopVsTroopDmg - s.Bt_PCmdrVsTroopDmg).Value,
+            (cmdr.HP - s.Bt_PTroopVsCmdrDmg - s.Bt_PCmdrVsCmdrDmg).Value);
         Surface.Copy(0, 400, 640, 400, 640, 0);
         if (unit.Troops != 0)
         {

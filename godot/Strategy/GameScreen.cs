@@ -1131,7 +1131,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             : _sel is null ? null : _battleView.PlaceAt(GetLocalMousePosition() - _content.Position, _presenter.State!);
         _battleView.Refresh(_presenter, input, screenChanged, hovered,
             instant: _skip.IsSkipping,                                         // MsgSkip: the order strip's chips jump to their places
-            slidesInstant: _skip.IsSkipping || _options.Fast);                 // and the armies (--fast: no slides)
+            slidesInstant: _skip.IsSkipping || _options.Fast);                 // and the armies and the counters (--fast: no runs)
     }
 
     /// <summary>

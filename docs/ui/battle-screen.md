@@ -157,6 +157,17 @@ picture, the slot panels) is not shown. How it is built:
   and the erase stay the script's. `BattlePresenter.Windows` leaves the bubble's frame out of the windows'
   layer; the stage still draws it, so Original is unchanged. `BattleWindowsTests`: in the captured battles no
   bubble is in the layer and every bubble's key wait has a line.
+- **The cards' counters** (owner, 2026-10-14): a card's troops and HP — the number and its bar together —
+  run to a new value instead of jumping to it, eased out, in Option → Battle Screen… → "Cards: counters"
+  (0.6 s by default; `--meter-seconds x` for a launch), from the moment the blow lands (owner): the core writes
+  the exchange's damage only after its result screen's key wait (`ApplyExchangeAsync`), so from that screen
+  (`ExchangeResultsEvent`, `FIGTATTK.ADV:136-232`) to the next event after its key wait the two fighters' cards
+  show what it shows — the current values less the two damages (`BattlePresenter.Strike`, `BattleStrike`;
+  `BattleStrikeTests`: in the captured battles these are what the core then writes). Nothing waits for the run.
+  A loss leaves a damage trail (owner, 2026-10-14): the lost part of the bar turns light (the bar's colour 70 %
+  toward white) and stays while the counter runs, 0.2 s more, then drains in 0.35 s. At once while skipping
+  (MsgSkip) and with `--fast`, when another unit takes the place, and when our screen is shown again
+  (`BattleBoardView.Meters.cs`: the shown values outlive the cards' controls, built again on every change).
 - **The windows over it** (round header, "vs", the results, the info boxes, the
   prompt, the popups, the script menus) are the stage's screen as the original draws it, shown only
   inside the windows' own shapes (their frame CGs, the selection boxes): the 640×400 screen fitted to

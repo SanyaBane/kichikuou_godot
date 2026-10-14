@@ -5,7 +5,7 @@ namespace Kichikuou.Game.Battles;
 /// <summary>
 /// The settings of our own battle screen (Option → Battle Screen…, <see cref="BattleScreenSettingsDialog"/>),
 /// kept in <c>[battle_screen]</c> of <c>user://settings.cfg</c>; a change applies at once. So far the order
-/// strip's moves (<see cref="OrderStrip"/>), the armies' slides and the spotlight's darkness (<see cref="BattleBoardView"/>).
+/// strip's moves (<see cref="OrderStrip"/>), the armies' slides, the spotlight's darkness and the cards' counters (<see cref="BattleBoardView"/>).
 /// </summary>
 internal static class BattleScreenSettings
 {
@@ -34,16 +34,21 @@ internal static class BattleScreenSettings
     public static readonly Setting SpotDarkness = new("spot_darkness", "Spotlight: darkness", 0, 1, 0.05, 0.5, "%",
         "During an exchange, how dark the panel below the scene gets but the two fighters' cards (0: not at all).");
 
-    public static IReadOnlyList<Setting> All { get; } = [StripSeconds, StripHurrySeconds, StripDropShare, ArmySeconds, SpotDarkness];
+    /// <summary>How long a card's troops and HP take to run to a new value.</summary>
+    public static readonly Setting MeterSeconds = new("meter_seconds", "Cards: counters", 0, 3, 0.05, 0.6, "s",
+        "How long a card's troops and HP, the number and the bar, take to run to a new value after an exchange (0: at once).");
+
+    public static IReadOnlyList<Setting> All { get; } = [StripSeconds, StripHurrySeconds, StripDropShare, ArmySeconds, SpotDarkness, MeterSeconds];
 
     /// <summary>The development switches that set a setting for the launch.</summary>
-    private static readonly (string Switch, Setting Setting)[] Switches = [("--strip-seconds", StripSeconds), ("--army-seconds", ArmySeconds)];
+    private static readonly (string Switch, Setting Setting)[] Switches =
+        [("--strip-seconds", StripSeconds), ("--army-seconds", ArmySeconds), ("--meter-seconds", MeterSeconds)];
 
     private static Dictionary<string, double>? _values;
 
     /// <summary>
-    /// A setting's value: <c>--strip-seconds x</c> / <c>--army-seconds x</c> for the launch (development) for
-    /// <see cref="StripSeconds"/> / <see cref="ArmySeconds"/>, else the file's, else the default.
+    /// A setting's value: <c>--strip-seconds x</c> / <c>--army-seconds x</c> / <c>--meter-seconds x</c> for the launch (development) for
+    /// <see cref="StripSeconds"/> / <see cref="ArmySeconds"/> / <see cref="MeterSeconds"/>, else the file's, else the default.
     /// </summary>
     public static double Get(Setting setting)
     {

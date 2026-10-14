@@ -148,6 +148,8 @@ public sealed partial class BattlePresenter
             FinishRedraw();
         if (scriptEvent is not PauseEvent)
             _mapAnimation = MapAnimation.None;
+        if (scriptEvent is not WipedOutMarksEvent and not KeyWaitEvent)
+            Strike = null;                                              // the blow is over: the core has written it
 
         switch (scriptEvent)
         {
