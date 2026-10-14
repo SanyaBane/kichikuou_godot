@@ -95,10 +95,9 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   faces are in Debug → Portraits (`UnitFaces.Commanders`); nine commanders have none (and commander
   100 has one only in some scenes' battles); their battle sprite stands in (owner, 2026-10-12;
   `RecordFace.StandIn`, its square set in the viewer) — [ui/deployment-table.md](ui/deployment-table.md), step 7.
-  Later (owner, 2026-10-14, once the exchange's result hold is seen): the exchange's own motion on our battle
-  screen — a hit (the struck army shaking, the damages popping in) and a smoother flight of the shots' numbers,
-  Kichikuou having no troops' animation or effects of its own — [ui/battle-screen.md](ui/battle-screen.md),
-  "The exchange's result".
+  Under way (owner, 2026-10-14): the exchange's effects on our battle screen, our own as like Sengoku Rance's as
+  can be (melee, bow, magic), then where they play in the exchange — [ui/battle-screen.md](ui/battle-screen.md),
+  "The exchange's effects".
   Groundwork (survey §4.8): menus as data and the map helper are done (2026-10-12); the shared engine
   host (§4.8, "Items 2 and 4 are one step") is not needed for screens over the original layout.
 - **Quality-of-life features**, the README's second aim — *owner* (which), then *agent*; a survey of

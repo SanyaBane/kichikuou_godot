@@ -236,9 +236,25 @@ picture, the slot panels) is not shown. How it is built:
   ends the hold sooner and is the key, as `IK 0` returns it; at once with `--fast`, and under the message skip at
   once with 0, as `IK 0`. With ANNIHILATED or UNABLE TO FIGHT (`:235-246`) the player's click stays (owner). The
   presenter tells them apart (`BattlePresenter.ExchangeResultWaits`, `ExchangeResultWipedOut`); `BattleResultWaitTests`:
-  in the captured battles only the result screen's key wait is one, wiped out exactly when a mark is shown. Next to
-  think about (owner, 2026-10-14, after this): Kichikuou has no troops' animation and no effects but the shots'
-  numbers crossing the scene — a hit (the struck army shaking, the damages popping in) and a smoother flight.
+  in the captured battles only the result screen's key wait is one, wiped out exactly when a mark is shown. Kichikuou
+  has no troops' animation and no effects but the shots' numbers crossing the scene: the exchange's effects are next
+  ("The exchange's effects").
+- **The exchange's effects** (owner, 2026-10-14; under way): Sengoku Rance's attack effects on our scene, **made by
+  us** — the owner turned down both a hit of our own design (the struck army shaking, the damages popping in) and
+  Sengoku Rance's own pictures, which are the game's art: they may never enter the repository, and reading them from
+  the player's copy of Sengoku Rance would tie the screen to owning it. Ours are Godot particles and shaders with
+  textures drawn by code, **as like Sengoku Rance's as we can make them** (owner) — the composition, the colours, the
+  rhythm and the length — but **not traced frame by frame** (owner). The references are docs/sengoku/04-screen.md
+  §2.4.1 (the table, the 800×314 frames added over the scene, actor left and target right, mirrored for an enemy
+  actor, 30 frames of 50 ms) and the frames themselves, extracted into the scratchpad with
+  `tools/sengoku/effect_frames.py` (never committed). Kichikuou's attack types (`Bt_PlayerAtkType`, from the unit's
+  class: 0 melee, 1 bow, 2 magic; docs/battle/01-flow.md §8.1) take Sengoku Rance's **Samurai (40000)**
+  for melee, **Archer (40260)** for the bow and **Mage (40360, Fire Blast)** for magic (to confirm with the owner when
+  the first is seen). Our scene is 640×256 shown ×1.6 (1024×410): a frame scales ×1.28 to 1024×402. Steps: (1) the
+  references — done 2026-10-14; (2) the melee effect alone, as a Godot scene with Debug → Effects to play it over a
+  battlefield, frames rendered next to the reference's for the owner; (3) after the owner's word, the bow and the
+  magic, then where an effect plays in the exchange (from the shots' flight or the blow; with the result hold and the
+  cards' counters; who is the actor in a mutual exchange) — options for the owner first.
 - **The windows over it** ("vs", the results, the info boxes, the
   prompt, the popups, the script menus) are the stage's screen as the original draws it, shown only
   inside the windows' own shapes (their frame CGs, the selection boxes): the 640×400 screen fitted to

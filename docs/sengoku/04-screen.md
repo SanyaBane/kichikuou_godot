@@ -101,6 +101,45 @@ For multi-target "other" actions a copy is placed on each target **card** (card 
 +25 for enemy cards, y + 1, z card + 50) (`あべ/T_BATEFF.JAF.jam:516-562` `setPosFromBusho`, `あべ/C_BATTLE.JAF.jam:1477-1497`).
 A global option `getBattleEffect()` switches between pre-built and per-frame sprites (`あべ/T_BATEFF.JAF.jam:240,402`).
 
+#### 2.4.1 The effects' table and pictures (2026-10-14)
+Surveyed as the reference for our own exchange effects (docs/ui/battle-screen.md, "The exchange's effects").
+**[V]** = read in the code or the pictures, **[I]** = inferred.
+
+- **The table** **[V]** is built in `tagEffectDataManager@0` (`あべ/T_EFFDAT.JAF.jam:56-932`) by 95 calls:
+  `add3(cg, frames, soloCg, soloFrames, type…)` by troop type (14), `add1(cg, frames, soloCg, soloFrames, action…)`
+  by action (65), `add2(cg, frames, character)` by character (16); the lookups are `search1-3`, `:1101-1259`. By
+  troop type (types as in 02-resolution.md §2): 40000 Samurai (1) and the samurai- and ashigaru-like monsters
+  (27, 28); 40030 Ashigaru (3) and Cavalry (2); 40060 Tactician (13); 40100 Ninja (6); 40130 Musketeer (4); 40160
+  Onmyouji (8; solo 45040); 40200 Sohei (7; and 32, 33); 40230 Peasant (24) and 29; 40260 Archer (5) and Miko (9;
+  solo 45020); 40300 Knight (10); 40330 Cannoneer (12); 40360 Mage (11) and 31; 40530 Hanny (23) and 26. Without an
+  entry the default is 40230 for a physical action, 40360 for a magic one, 30 frames (solo 46180 / 46100, 15;
+  `tagBattleEffect@getDefaultCgNo`, `あべ/T_BATEFF.JAF.jam:927-977`). Every entry has 30 frames.
+- **The pictures** **[V]**: CGs in `Rance7GA.ald` (2279 of them in 40000-49999; WebP in the MangaGamer release — the
+  Japanese release's format was not looked at), each frame **800×314**, the whole top scene (§2), **opaque, black
+  where nothing is**: the effect sprite is drawn with draw method 1 (`tagEffectSp@setDrawMethod 1`,
+  `あべ/T_BATEFF.JAF.jam:96-100,478-482`), which adds the frame's light to the scene — screen rather than plain
+  addition after xsystem4's numbering **[I]**. One frame per 50 ms (§9.11). Mirrored for an enemy actor (above), so
+  the drawn side is: **the actor on the left, the target on the right**.
+- **What they show** (looked at, every third frame; `tools/sengoku/effect_frames.py` extracts them and makes the
+  sheets — into a folder outside the repository):
+  - *Samurai, 40000* (the melee reference): on the actor's half a **dust cloud**, sand-coloured (about
+    200, 190, 140): frame 0 a scatter of small round puffs, by frames 3-6 merged into one bright billowing cloud
+    with a fine speckled grain, then darkening slowly to nothing by frame ~27. On the target's half **crescent
+    slashes** (white cores, pale blue to violet edges, sizes from a few pixels to a third of the height, at every
+    angle), **"urchins"** (dark blue-teal rings with fine radial spikes), **four-point white sparkles** and small
+    rings; brightest at frame 3, new slashes until frame ~21, all gone by frame ~27.
+  - *Ashigaru/Cavalry, 40030*: the same dust; on the target's half **thrust wedges** (long white-blue spiky jets
+    pointing at the actor, as from spear points) instead of crescents, the same sparkles and small blue rings.
+  - *Archer, 40260*: no dust. White **arrows** with fletching fly from the actor's half up and to the right (frames
+    0-6), then yellow arrows streak in over the target's half and fall down-right (frames 6-27); on the target,
+    **gold bokeh puffs**, small gold splats and teal crescent streaks; a few bright arcs linger on the actor's side.
+  - *Mage, 40360* (Fire Blast): on the target's half a **glowing orb** with rays (frame 0), a white-hot ellipse
+    (frame 3), a **fireball** of yellow, orange and white billows over the whole half (frames 6-15) with a pale
+    **shockwave arc** running off its left edge toward the actor, then embers, gold four-point sparkles and a soft
+    white glow fading by frame ~27.
+- **Sound**: each effect's sound comes from a CG → sound table (`あべ/T_BATSND.JAF.jam:550-564`), played as it
+  starts (`あべ/T_BATEFF.JAF.jam:280`) — not surveyed further.
+
 ---
 
 ## 3. Top HUD

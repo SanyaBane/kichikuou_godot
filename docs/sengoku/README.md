@@ -26,7 +26,9 @@ survey reads its assembly dump, one file per original source, under `SENGOKU_RAN
 - `alice ain dump -c -o ain\code.jam Rance7.ain` — the code; `-t` → `ain\text.txt` (strings and
   messages by function), `-S` → `structures.txt`, `-g` → `globals.txt`, `-f` → `functions.txt`;
 - `python -I tools/sengoku/split_jam.py ain\code.jam ain\files` — one `.jam` per source
-  (`あべ/T_BATTLE.JAF.jam` …), the files the parts cite with their line numbers.
+  (`あべ/T_BATTLE.JAF.jam` …), the files the parts cite with their line numbers;
+- `python -I tools/sengoku/effect_frames.py <alice.exe> <Rance7GA.ald> <out> 40000 40260 40360` — the battle
+  effects' frames and contact sheets (04-screen.md §2.4.1), into a folder outside the repository.
 
 The battle is mostly Abe's (`あべ/`): `C_合戦`, `C_合戦敵` (the AI), `C_順番` (the queue), `T_BAT*`
 (time, bar, selection, numbers, cards …), `T_UNI*`; the data and the action table are Tada's
