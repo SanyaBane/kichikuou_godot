@@ -19,12 +19,17 @@ public class BattleWindowsTests(ITestOutputHelper output)
     private static readonly Lazy<CgLibrary> Cgs = new(() => new CgLibrary(LocalData.CgDirectory));
     private static readonly Lazy<ScenarioText> Texts = new(() => new ScenarioText(LocalData.ScenarioDirectory));
 
-    /// <summary>The window ops that open a window, with their frame CGs (docs/battle/screen-layout.md §2.2).</summary>
+    /// <summary>
+    /// The window ops that open a window of the layer, with their frame CGs (docs/battle/screen-layout.md §2.2);
+    /// the speech bubbles 141/142/151/152 are our dialogue panel instead (<see cref="BattlePresenter.Speech"/>).
+    /// </summary>
     private static readonly Dictionary<int, int> Frames = new()
     {
         [111] = 807, [112] = 808, [113] = 809, [123] = 809, [121] = 810, [122] = 811,
-        [141] = 895, [142] = 896, [143] = 894, [153] = 894, [151] = 897, [152] = 898,
+        [143] = 894, [153] = 894,
     };
+
+    private static readonly HashSet<int> Bubbles = [141, 142, 151, 152];
 
     [Fact]
     public void A_mask_is_the_union_of_its_shapes_and_the_screen_shows_only_there()
@@ -150,6 +155,43 @@ public class BattleWindowsTests(ITestOutputHelper output)
         Assert.Single(presenter.Windows);
     }
 
+    /// <summary>
+    /// Our screen shows a speech bubble's line in its own dialogue panel (owner, 2026-10-13): the bubble is no
+    /// window of the layer; its line is what was printed into it, flowed into one paragraph, until the key wait's
+    /// erase; 142/152 are thoughts, 151/152 the enemy's.
+    /// </summary>
+    [Fact]
+    public void A_speech_bubble_is_our_dialogue_panel_not_a_window_of_the_layer()
+    {
+        var presenter = new BattlePresenter(Texts.Value, Cgs.Value, new BoxGlyphs());
+        presenter.Start(new GameState());
+        var line = new MessageEvent(new ScriptRef("FIGT_M.ADV", 63));      // 'Sir Ex...' R 'Please forgive' R 'me...'
+        presenter.Show(new WindowEvent(141, 0));
+        Assert.Empty(presenter.Windows);
+        Assert.Null(presenter.Speech);
+        presenter.Show(line);
+        Assert.Equal(new BattleSpeech(BattleSide.Player, false, "Sir Ex... Please forgive me..."), presenter.Speech);
+        presenter.Show(new WindowEvent(11, 0));
+        Assert.NotNull(presenter.Speech);                                   // during the key wait
+        presenter.AfterKey();
+        Assert.Null(presenter.Speech);                                      // op 11 erased the text
+        presenter.Show(new WindowEvent(10, 0));
+        presenter.Show(new WindowEvent(152, 0));
+        presenter.Show(line);
+        Assert.Equal(new BattleSpeech(BattleSide.Enemy, true, "Sir Ex... Please forgive me..."), presenter.Speech);
+        presenter.Show(new WindowEvent(10, 0));
+        Assert.Null(presenter.Speech);
+        Assert.Empty(presenter.Windows);
+    }
+
+    [Theory]
+    [InlineData("Sir Ex...\nPlease forgive\nme...", "Sir Ex... Please forgive me...")]
+    [InlineData(" Surrender! \n\n", "Surrender!")]
+    [InlineData("おのれ\nリーザス", "おのれリーザス")]
+    [InlineData("Go\n。", "Go。")]
+    public void A_speech_flows_its_lines_into_one_paragraph(string printed, string flowed) =>
+        Assert.Equal(flowed, BattleSpeech.Flow(printed));
+
     [Fact]
     public void A_scene_the_battle_calls_turns_the_split_off_until_the_field_is_drawn_again()
     {
@@ -182,7 +224,7 @@ public class BattleWindowsTests(ITestOutputHelper output)
         var capture = GoldenCapture.Load(Path.Combine(LocalData.GoldenDirectory, file));
         var cgs = Cgs.Value;
         var presenter = new BattlePresenter(Texts.Value, cgs, new BoxGlyphs());
-        int opened = 0, redraws = 0;
+        int opened = 0, redraws = 0, bubble = 0;
         var wrong = new List<string>();
         bool redrawn = false;
         var view = new ObservingView(e =>
@@ -205,11 +247,25 @@ public class BattleWindowsTests(ITestOutputHelper output)
                 case WindowEvent w when Frames.TryGetValue(w.Op.Value, out int frame):
                     Check(frame, $"window {w.Op.Value}", null, null);
                     break;
+                case WindowEvent w when Bubbles.Contains(w.Op.Value):
+                    opened++;
+                    bubble = w.Op.Value;
+                    if (presenter.Windows.Count > 0)
+                        wrong.Add($"bubble {bubble}: {presenter.Windows.Count} window(s) in the layer");
+                    break;
+                case WindowEvent { Op.Value: 11 } when bubble != 0 && presenter.Speech is null:
+                    wrong.Add($"bubble {bubble}: a key wait with no line");
+                    break;
                 case WindowEvent { Op.Value: 311 or 321 } w:
                     Check(w.CallArg.Value, $"portrait {w.CallArg.Value}", null, w.Op == 311 ? (0, 0) : (448, 144));
                     break;
                 case WindowEvent { Op.Value: 10 } when presenter.Windows.Count > 0:
                     wrong.Add($"op 10 left {presenter.Windows.Count} window(s)");
+                    break;
+                case WindowEvent { Op.Value: 10 or 0 }:
+                    bubble = 0;
+                    if (presenter.Speech is not null)
+                        wrong.Add("a line left after its bubble closed");
                     break;
                 case BattlefieldBackgroundEvent:
                     redraws++;

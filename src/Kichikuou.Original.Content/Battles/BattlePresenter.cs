@@ -159,9 +159,9 @@ public sealed partial class BattlePresenter
             case MessageEvent e:
                 if (e.Text == OrderMessage)
                     _orderMessage = true;
-                Writer.Print(Read(e.Text, [], e.StringVariables));
+                Print(Read(e.Text, [], e.StringVariables));
                 break;
-            case ValueMessageEvent e: Writer.Print(Read(e.Text, e.Values, e.StringVariables)); break;
+            case ValueMessageEvent e: Print(Read(e.Text, e.Values, e.StringVariables)); break;
             case PrintStringEvent e: PrintString(e.Slot.Value); break;
             case FlowErrorEvent e: Error(e.Text); break;
             case UnitInfoEvent e: UnitInfo(e.Unit, e.Order); break;
@@ -388,8 +388,9 @@ public sealed partial class BattlePresenter
             var shapes = new List<WindowShape>();
             if (_roundHeader && Shape(887) is { } header)
                 shapes.Add(header);
-            if (_winType != 0 && !ActionLabelsOpen && Shape(_winFrame, opaque: _winType is >= 31 and <= 39) is { } frame)
-                shapes.Add(frame);                                      // not the "vs" window: our cards show the actions
+            // Not the "vs" window (our cards show the actions) nor a speech bubble (our dialogue panel shows its line, Speech).
+            if (_winType != 0 && !ActionLabelsOpen && !SpeechOpen && Shape(_winFrame, opaque: _winType is >= 31 and <= 39) is { } frame)
+                shapes.Add(frame);
             if (!_covered.HasFlag(Pictures.PortraitL) && Shape(_portraitL, (0, 0)) is { } left)
                 shapes.Add(left);
             if (!_covered.HasFlag(Pictures.PortraitR) && Shape(_portraitR, (448, 144)) is { } right)
@@ -510,6 +511,31 @@ public sealed partial class BattlePresenter
             Writer.Size = 24;
         _winFrame = frame;
         _winType = type;
+        _speech.Clear();
+    }
+
+    // ------------------------------------------------------------------ the speech bubbles' line
+
+    private readonly System.Text.StringBuilder _speech = new();
+
+    /// <summary>Whether a speech bubble is open: 141/142 (types 41/42, the player unit's) or 151/152 (51/52, the enemy commander's).</summary>
+    private bool SpeechOpen => _winType is 41 or 42 or 51 or 52;
+
+    /// <summary>
+    /// The line the open speech bubble holds (null when none is open or it holds nothing yet): what was printed
+    /// into it since it opened or its last key wait. Our screen shows it in its own dialogue panel and leaves the
+    /// bubble out of the windows' layer (<see cref="Windows"/>); the stage still draws the original's.
+    /// </summary>
+    public BattleSpeech? Speech => SpeechOpen && BattleSpeech.Flow(_speech.ToString()) is { Length: > 0 } text
+        ? new BattleSpeech(_winType < 50 ? BattleSide.Player : BattleSide.Enemy, _winType is 42 or 52, text)
+        : null;
+
+    /// <summary>Text into the open window, kept as the speech bubble's line too while one is open.</summary>
+    private void Print(string text)
+    {
+        Writer.Print(text);
+        if (SpeechOpen)
+            _speech.Append(text);
     }
 
     /// <summary>Op 0 (<c>L_005fc</c>): restore by window type.</summary>
@@ -539,6 +565,7 @@ public sealed partial class BattlePresenter
     {
         _winType = 0;
         _winFrame = 0;
+        _speech.Clear();
         ActionLabelsOpen = false;
         if (_infoBox)
         {
@@ -559,6 +586,7 @@ public sealed partial class BattlePresenter
     private void EraseText()
     {
         Writer.Home();
+        _speech.Clear();
         if (_winFrame != 0)
             G(_winFrame, keyed: true);
     }
@@ -567,6 +595,7 @@ public sealed partial class BattlePresenter
     private void ClearPage()
     {
         Writer.Home();
+        _speech.Clear();
         if (_winType is >= 31 and <= 39)
             G(_winFrame);
         if (_winFrame != 0)
@@ -612,7 +641,7 @@ public sealed partial class BattlePresenter
 
     /// <summary><c>MP slot, width</c> of the death scenes: 8 cells for slot 1, 18 for slot 4 (§2.7).</summary>
     private void PrintString(int slot) =>
-        Writer.Print(Hankaku.ToHalfWidth(TextRun.FormatString(StringVar(slot), slot == 1 ? 8 : 18)));
+        Print(Hankaku.ToHalfWidth(TextRun.FormatString(StringVar(slot), slot == 1 ? 8 : 18)));
 
     /// <summary>
     /// The two error boxes: <c>FIGT.ADV:772</c> prints into the open window 141;
@@ -625,7 +654,7 @@ public sealed partial class BattlePresenter
             WaitsForKey = true;
             return;
         }
-        Writer.Print(Read(text, []));
+        Print(Read(text, []));
     }
 
     // ------------------------------------------------------------------ info boxes (§6.1)

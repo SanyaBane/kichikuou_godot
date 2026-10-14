@@ -245,7 +245,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   cards and the round's order from `BattleBoard`/`RoundOrder`, the order strip `OrderStrip` moving on its own;
   `FIGT_SEL` answered by our own input, `BattleCommandLayer`: banners and context menus from
   `Original.Content/Battles/BattleCommands`; the retreat confirmation our dialog, `BattleDialogLayer`
-  from `BattleDialog`; its settings Option → Battle Screen…, `BattleScreenSettings`);
+  from `BattleDialog`; the speech bubbles' lines our balloon, `SpeechBalloon` from `BattlePresenter.Speech`; its settings Option → Battle Screen…, `BattleScreenSettings`);
   `GodotGlyphRenderer` (TextServer; MS Gothic or the bundled BIZ UDGothic in `godot/fonts`, Option →
   Fonts, `--font ms-gothic|biz-ud-gothic` for one launch), `BattleAudio`; `Screens` switches screens. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
 - `tools/analysis/` — Python scripts for reading the decompiled scenario; `tools/codegen/` —

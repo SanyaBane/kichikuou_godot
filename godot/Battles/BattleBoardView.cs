@@ -75,6 +75,7 @@ internal sealed partial class BattleBoardView : Control
     private readonly ArmySlide _playerArmy, _enemyArmy;
     private bool _armiesInstant, _jumpArmies = true;
     private readonly TextureRect _windows;
+    private readonly SpeechBalloon _balloon;
     private readonly BattleCommandLayer _commands;
     private readonly BattleDialogLayer _dialog;
 
@@ -133,6 +134,8 @@ internal sealed partial class BattleBoardView : Control
 
         _windows = Picture();
         AddChild(_windows);
+        _balloon = new SpeechBalloon();                                     // over the scene's lower edge and the strip
+        AddChild(_balloon);
 
         _strip = new OrderStrip();
         AddChild(_strip);
@@ -190,12 +193,17 @@ internal sealed partial class BattleBoardView : Control
         _strip.SetPalette(palette);
         _commands.SetPalette(palette);
         _dialog.SetPalette(palette);
+        _balloon.SetPalette(palette);
         _cardsKey = _stripKey = "?";
         _gauge.QueueRedraw();
     }
 
     /// <summary>Option → Fonts: the screen's text in the chosen font.</summary>
-    public void SetFont(GameFont font) => _theme.DefaultFont = DeploymentTableView.LoadFont(font);
+    public void SetFont(GameFont font)
+    {
+        _theme.DefaultFont = DeploymentTableView.LoadFont(font);
+        _balloon.SetFont(_theme.DefaultFont);
+    }
 
     /// <summary>The squares of the faces: the built-in ones and the owner's edits (read as the screen opens).</summary>
     public void LoadCrops()
@@ -238,6 +246,8 @@ internal sealed partial class BattleBoardView : Control
         _commands.Layout(CardArea, scale);
         At(_dialog, new Rect2(0, 0, 1280, 800));
         _dialog.Layout(scale);
+        At(_balloon, new Rect2(0, 0, 1280, 800));
+        _balloon.Layout(scale);
         foreach (var (place, (card, _)) in _cards)
             At(card, CardArea(place));
         if (_actingPlace is { } acting)
@@ -277,6 +287,7 @@ internal sealed partial class BattleBoardView : Control
             }
         }
         RefreshSpeaker(s);
+        _balloon.Show(presenter.Battle.Speech);
         RefreshCards(s, presenter.Order, hovered);
         RefreshSpotlight(s, presenter.Scene);
         RefreshStrip(s, presenter.Order, instant);

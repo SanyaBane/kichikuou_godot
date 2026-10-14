@@ -134,11 +134,30 @@ picture, the slot panels) is not shown. How it is built:
 - **The actions on the fighters' cards** (owner, 2026-10-13, mock-up D): the "vs" window (window 143 with
   the two sides' action labels, `FIGT.ADV:1739-1802`) is not shown — `BattlePresenter.ActionLabelsOpen`
   leaves it out of the windows' layer and `GameScreen` answers its click wait at once, as a click
-  (BSC-07). Instead each fighter's card shows a pill in the accent colour under its state line for the
+  (BSC-07) — after the release of a button still held, as `IK 0` does (`sys_key_releasewait`): a
+  target's banner is chosen at the press, and without the release wait the flavour line's key wait that
+  follows took the held button and closed at once (fixed 2026-10-13, `GameScreen.WaitForKeyAsync`). Instead each fighter's card shows a pill in the accent colour under its state line for the
   whole exchange: an icon and our name (`BattleCommands.ActionName`: Melee, Bow, Magic, Special — a
   special's own name is not known after the choice —, Defense; `BattleScene.Actions`, from the labels'
   event to the field's redraw). A player's special leaves the enemy's line blank: no pill there.
-- **The windows over it** (round header, "vs", the flavour lines, the results, the info boxes, the
+- **The dialogue panel** (owner, 2026-10-13, mock-up A of three, from the owner's Sengoku Rance example;
+  docs/sengoku/04-screen.md §10): the speech bubbles (`WAO_SUB` 141/142, the player unit's, and 151/152, the
+  enemy commander's — the flavour lines of `FIGT_M.ADV` and `FIGT.ADV:772`'s error line) are not shown;
+  their line is our balloon (`godot/Battles/SpeechBalloon`). The speaker's portrait stays the original's
+  framed picture with its name (the owner: the big portraits carry their own frame and name, and the
+  squares cut for the cards are too small to enlarge, so no Sengoku face box with a name band). The balloon
+  is 580 layout pixels wide beside the portrait (the player's at x 330, the enemy's ending 330 from the right),
+  its bottom at y 436 — across the scene's lower edge, over the order strip, as Sengoku's crosses into the
+  cards —, as tall as its text; rounded, a soft shadow, a tail towards the portrait 44 below its top; the
+  text bold, 30, in the screen's font. Talk (141/151) is white with dark text, a thought (142/152, the
+  original's dark bubbles) dark with white text. A marker in the accent colour bobs in the corner while the
+  line waits for the click. The text is what the script printed into the bubble since it opened or its last
+  key wait (`BattlePresenter.Speech`, `BattleSpeech`), its line breaks — made for the original's 240-pixel
+  bubble — flowed into one paragraph (a space between Latin letters, none next to Japanese); the key waits
+  and the erase stay the script's. `BattlePresenter.Windows` leaves the bubble's frame out of the windows'
+  layer; the stage still draws it, so Original is unchanged. `BattleWindowsTests`: in the captured battles no
+  bubble is in the layer and every bubble's key wait has a line.
+- **The windows over it** (round header, "vs", the results, the info boxes, the
   prompt, the popups, the script menus) are the stage's screen as the original draws it, shown only
   inside the windows' own shapes (their frame CGs, the selection boxes): the 640×400 screen fitted to
   the scene's height (×1.025, centred). The stage keeps drawing the original's screen unchanged —

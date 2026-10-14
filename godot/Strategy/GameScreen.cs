@@ -849,8 +849,12 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         else if (BattleScreenShown && _presenter.Battle.ActionLabelsOpen)
         {
             // QUIRK: BSC-07 — our battle screen shows the actions on the fighters' cards, not the "vs"
-            // window (owner, 2026-10-13): its click wait is answered at once, as by a click.
+            // window (owner, 2026-10-13): its click wait is answered at once, as by a click. A target's banner
+            // is chosen at the press, so the button may still be held: wait for its release, as IK 0 does,
+            // or the next key wait (the flavour line's) would take it.
             key = KeyReturn;
+            await ReleaseWaitAsync(_input.PeekInput());
+            _ikKey = key;
         }
         else if (_options.Auto)
         {
@@ -884,10 +888,16 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             await KeyWaitAsync(_options.Fast ? 0 : 0.6, cancelable: false);
         if (_repeating < 2)
             _repeating++;
-        for (ushort held = key; (held & KeyReturn) != 0;)
-            held = await KeyWaitAsync(0.05, cancelable: false);
+        await ReleaseWaitAsync(key);
         _ikKey = key;
         return key;
+    }
+
+    /// <summary><c>sys_key_releasewait</c> with the release mask 16: while Return or the left button is held, polls until it is released.</summary>
+    private async Task ReleaseWaitAsync(ushort held)
+    {
+        while ((held & KeyReturn) != 0)
+            held = await KeyWaitAsync(0.05, cancelable: false);
     }
 
     public async Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
