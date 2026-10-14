@@ -33,8 +33,9 @@ GPL-2.0-or-later, and the player brings their own copy of the game. What a relea
 - **Hide the development parts** in a release build — *agent*: the Debug menu, the capture viewer,
   the switches (`--auto`, `--watch`, `--ending`, …).
 - **Windows export** — *agent*: commit `export_presets.cfg` (git ignores it today); export templates
-  4.7.2 mono. The bundled font's license `godot/fonts/OFL.txt` must ship with it (a non-resource
-  file: the preset's include filter); the font itself is exported as is (`importer="keep"`).
+  4.7.2 mono. The bundled fonts' licenses `godot/fonts/OFL.txt`, `Shojumaru-OFL.txt` and `Cinzel-OFL.txt`
+  must ship with it (non-resource files: the preset's include filter); the fonts themselves are exported as
+  they are (`importer="keep"`).
 - **Android** — *agent* (the owner wants it, 2026-10-11): our own `.apk`, not Google Play. Godot 4.7
   exports C# to Android as experimental and needs .NET 9 or later (the project is on `net10.0`). It
   needs the C# import above (the player copies the game's files to the device; how a Godot 4.7 app

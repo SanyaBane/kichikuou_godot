@@ -112,6 +112,16 @@ public sealed partial class GamePresenter : IStageObserver
     public bool BattleSceneShows => BattleShows && Scene.Active;
 
     /// <summary>
+    /// The battle's opening while its first round header waits for its key (<see cref="BattleOpening"/>; docs/ui/battle-screen.md,
+    /// "The opening"), else null.
+    /// </summary>
+    public BattleOpening? Opening =>
+        BattleShows && Battle.RoundHeader is { } header && Order.Round == 1 && State is { } s ? BattleOpening.Of(header, s) : null;
+
+    /// <summary>Whether a later round's header waits for its key: our screen does not show it and answers it at once.</summary>
+    public bool LaterRoundHeader => BattleShows && Battle.RoundHeader is not null && Order.Round > 1;
+
+    /// <summary>
     /// The windows of the battle's screen now (<see cref="BattlePresenter.Windows"/>, plus those of the
     /// input screen open, <paramref name="extra"/>, and the menu a scene the battle called opened) as a
     /// mask over <see cref="Screen"/>; our battle screen shows the screen only there (<see cref="WindowMask.Compose"/>).

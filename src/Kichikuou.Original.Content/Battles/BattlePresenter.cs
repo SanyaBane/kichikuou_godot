@@ -156,7 +156,7 @@ public sealed partial class BattlePresenter
             case BattlefieldBackgroundEvent e: Background(e.Cg); break;
             case SlotPanelEvent e: SlotPanel(e.Panel, e.Record); break;
             case PanelHighlightEvent e: Highlight(e.Panel); break;
-            case RoundHeaderEvent e: RoundHeader(e); break;
+            case RoundHeaderEvent e: DrawRoundHeader(e); break;
             case WindowEvent e: Window(e.Op.Value, e.CallArg.Value); break;
             case MessageEvent e:
                 if (e.Text == OrderMessage)
@@ -346,7 +346,7 @@ public sealed partial class BattlePresenter
 
     // ------------------------------------------------------------------ round header (§3)
 
-    private void RoundHeader(RoundHeaderEvent e)
+    private void DrawRoundHeader(RoundHeaderEvent e)
     {
         Surface.Copy(0, 0, 640, 400, 640, 0);
         Writer.Open(138, 75, 360, 260);
@@ -374,22 +374,27 @@ public sealed partial class BattlePresenter
         if (e.IsDuel == 0)
             Writer.Print(Read(209, e.RoundsLeft));
         WaitsForKey = true;
-        _roundHeader = true;
+        RoundHeader = e;
         _afterKey = () =>
         {
             Surface.Copy(640, 0, 640, 400, 0, 0);
-            _roundHeader = false;
+            RoundHeader = null;
         };
     }
 
-    private bool _roundHeader;
+    /// <summary>
+    /// The round header while it waits for its key (CG 887 until the key's restore), else null. Our battle screen
+    /// does not show the original's box (it is not in <see cref="Windows"/>): the battle's first is our opening
+    /// (<see cref="BattleOpening"/>), the later ones are answered at once (docs/ui/battle-screen.md, "The opening").
+    /// </summary>
+    public RoundHeaderEvent? RoundHeader { get; private set; }
 
     // ------------------------------------------------------------------ the windows' shapes
 
     /// <summary>
-    /// The shapes of the screen that are windows now (<see cref="WindowShape"/>): the round header
-    /// (CG 887 until the key's restore), the open window's frame (<c>Ui_WinFrameCg</c>; the full-screen
-    /// 815 of window 131 whole), the portraits of ops 311/321 and the centre picture of op 331.
+    /// The shapes of the screen that are windows now (<see cref="WindowShape"/>): the open window's frame
+    /// (<c>Ui_WinFrameCg</c>; the full-screen 815 of window 131 whole), the portraits of ops 311/321 and the
+    /// centre picture of op 331 — not the round header (<see cref="RoundHeader"/>), which our screen draws its own way.
     /// <see cref="FigtSelScreen.Windows"/> and <see cref="BattleMenuScreen.Windows"/> add the input screens'.
     /// </summary>
     public IReadOnlyList<WindowShape> Windows
@@ -397,8 +402,6 @@ public sealed partial class BattlePresenter
         get
         {
             var shapes = new List<WindowShape>();
-            if (_roundHeader && Shape(887) is { } header)
-                shapes.Add(header);
             // Not the "vs" window (our cards show the actions) nor a speech bubble (our dialogue panel shows its line, Speech).
             if (_winType != 0 && !ActionLabelsOpen && !SpeechOpen && Shape(_winFrame, opaque: _winType is >= 31 and <= 39) is { } frame)
                 shapes.Add(frame);

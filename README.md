@@ -65,11 +65,20 @@ reproduces, and every line of text the port shows is theirs.
   Manzur and developed by the Godot community.
 - **.NET** and **C#**, **xUnit.net** for the tests, **Python** for the analysis tools, and
   **MSYS2**, **CMake** and **Ninja** to build the harness.
-- **MS Gothic** (Microsoft), the game's font. It is read from the Windows fonts and not bundled.
-- **[BIZ UDGothic](https://github.com/googlefonts/morisawa-biz-ud-gothic)** by **Morisawa** and
-  **Type Bank**, the bundled font, under the SIL Open Font License 1.1 (`godot/fonts/OFL.txt`).
 - **Claude Code** (Anthropic), the AI agent that writes most of the code under the project
   owner's direction.
+
+**Fonts**
+
+- **MS Gothic** (Microsoft), the game's font. It is read from the Windows fonts and not bundled.
+- **[BIZ UDGothic](https://github.com/googlefonts/morisawa-biz-ud-gothic)** by **Morisawa** and
+  **Type Bank**, the font of the game and of our own screens where MS Gothic is not installed (or when
+  chosen in Option → Fonts). Bundled under the SIL Open Font License 1.1 (`godot/fonts/OFL.txt`).
+- **[Shojumaru](https://fonts.google.com/specimen/Shojumaru)** by **Astigmatic**, the armies' names in
+  the battle's opening. Bundled under the SIL Open Font License 1.1 (`godot/fonts/Shojumaru-OFL.txt`).
+- **[Cinzel](https://github.com/NDISCOVER/Cinzel)** by **Natanael Gama** and the Cinzel Project
+  Authors, the plate of the battle's opening. Bundled under the SIL Open Font License 1.1
+  (`godot/fonts/Cinzel-OFL.txt`).
 
 ## License
 

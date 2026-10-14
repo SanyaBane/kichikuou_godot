@@ -213,9 +213,9 @@ public class BattleWindowsTests(ITestOutputHelper output)
     }
 
     /// <summary>
-    /// In every captured battle the mask covers each window while it is open — the round header and the
-    /// window frames and the portraits are on the screen at every pixel of their shapes when they open —
-    /// and is empty whenever the field has been drawn again.
+    /// In every captured battle the mask covers each window while it is open — the window frames and the
+    /// portraits are on the screen at every pixel of their shapes when they open —, leaves out the round header
+    /// (our opening, or nothing), and is empty whenever the field has been drawn again.
     /// </summary>
     [CaptureTheory]
     [MemberData(nameof(BattleSceneTests.Captures), MemberType = typeof(BattleSceneTests))]
@@ -241,8 +241,9 @@ public class BattleWindowsTests(ITestOutputHelper output)
             switch (e)
             {
                 case RoundHeaderEvent:
-                    // The header's text is printed with it: its frame is checked outside the text rectangle.
-                    Check(887, "round header", (138, 75, 360, 260), null);
+                    // Our screen draws the header its own way (the opening) or not at all: it is not in the layer.
+                    if (presenter.RoundHeader is null || presenter.Windows.Count > 0)
+                        wrong.Add($"round header: held {presenter.RoundHeader is not null}, {presenter.Windows.Count} window(s) in the layer");
                     break;
                 case WindowEvent w when Frames.TryGetValue(w.Op.Value, out int frame):
                     Check(frame, $"window {w.Op.Value}", null, null);

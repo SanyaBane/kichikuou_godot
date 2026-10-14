@@ -297,8 +297,11 @@ public class GamePresenterTests(ITestOutputHelper output)
         var menus = new List<(string[] Items, string Window, int Hit)>();
         var centres = new HashSet<int>();
         int sceneShown = 0, rounds = 0, stageDrawnInBattle = 0, splitOverStage = 0;
+        var headers = new List<(string? Opening, bool Later)>();
         player.OnShow = e =>
         {
+            if (e is RoundHeaderEvent)
+                headers.Add((run.Presenter.Opening?.Title, run.Presenter.LaterRoundHeader));
             if (e is BattleScreenEvent { Open: true })
                 battles.Add((s.Bt_Kind.Value, s.Bt_EnemyParty1.Value));
             if (run.Presenter.BattleSceneShows)
@@ -333,6 +336,8 @@ public class GamePresenterTests(ITestOutputHelper output)
         Assert.True(player.BattleFrames > 0, "the battle was drawn");
         Assert.True(sceneShown > 0, "our battle screen's scene followed the battle");
         Assert.True(rounds > 0, "the round order saw the round header");
+        Assert.Equal(("Dungeon Battle", false), headers[0]);                 // the battle's opening (docs/ui/battle-screen.md, "The opening")
+        Assert.All(headers.Skip(1), h => Assert.Equal((null, true), h));       // the later rounds' headers, answered at once on our screen
         output.WriteLine($"scene shown at {sceneShown} events; {stageDrawnInBattle} G in the battle, {splitOverStage} with the split on");
         Assert.Equal(0, splitOverStage);
         Assert.Contains(1031, centres);                                      // the cave's picture

@@ -83,7 +83,9 @@ internal sealed partial class BattleBoardView : Control
     private static float WindowScale => WindowsArea.Size.X / Surface.ScreenWidth;
     private readonly TextureRect _speaker;
     private readonly OrderStrip _strip;
-    private readonly Label _playerName, _enemyName;
+    private readonly Label _playerName, _enemyName, _playerAdvantage, _enemyAdvantage;
+    private readonly HBoxContainer _playerArmyLine, _enemyArmyLine;     // the army's name and its advantage over the cards
+    private readonly BattleOpeningLayer _opening;
     private readonly Control _gauge;
     private readonly Dictionary<BattlePlace, (PanelContainer Card, StyleBoxFlat Box)> _cards = [];
     private readonly Control _actingFrame;
@@ -138,15 +140,25 @@ internal sealed partial class BattleBoardView : Control
 
         _windows = Picture();
         AddChild(_windows);
+        _opening = new BattleOpeningLayer();                                // over the scene and the windows: the battle's first header
+        AddChild(_opening);
         _balloon = new SpeechBalloon();                                     // over the scene's lower edge and the strip
         AddChild(_balloon);
 
         _strip = new OrderStrip();
         AddChild(_strip);
         _playerName = new Label { MouseFilter = MouseFilterEnum.Ignore };
-        _enemyName = new Label { MouseFilter = MouseFilterEnum.Ignore, HorizontalAlignment = HorizontalAlignment.Right };
-        AddChild(_playerName);
-        AddChild(_enemyName);
+        _enemyName = new Label { MouseFilter = MouseFilterEnum.Ignore };
+        _playerAdvantage = new Label { MouseFilter = MouseFilterEnum.Ignore };
+        _enemyAdvantage = new Label { MouseFilter = MouseFilterEnum.Ignore };
+        _playerArmyLine = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
+        _enemyArmyLine = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore, Alignment = BoxContainer.AlignmentMode.End };
+        _playerArmyLine.AddChild(_playerName);
+        _playerArmyLine.AddChild(_playerAdvantage);
+        _enemyArmyLine.AddChild(_enemyAdvantage);
+        _enemyArmyLine.AddChild(_enemyName);
+        AddChild(_playerArmyLine);
+        AddChild(_enemyArmyLine);
         _gauge = new Control { MouseFilter = MouseFilterEnum.Ignore };
         _gauge.Draw += DrawGauge;
         AddChild(_gauge);
@@ -198,6 +210,9 @@ internal sealed partial class BattleBoardView : Control
         _commands.SetPalette(palette);
         _dialog.SetPalette(palette);
         _balloon.SetPalette(palette);
+        _opening.SetPalette(palette);
+        _playerAdvantage.AddThemeColorOverride("font_color", palette.Accent);
+        _enemyAdvantage.AddThemeColorOverride("font_color", palette.Accent);
         _cardsKey = _stripKey = "?";
         _gauge.QueueRedraw();
     }
@@ -240,8 +255,12 @@ internal sealed partial class BattleBoardView : Control
         At(_windows, WindowsArea);
         At(_strip, StripArea);
         _strip.SetScale(scale);
-        At(_playerName, PlayerNameArea);
-        At(_enemyName, EnemyNameArea);
+        At(_playerArmyLine, PlayerNameArea);
+        At(_enemyArmyLine, EnemyNameArea);
+        foreach (var line in new[] { _playerArmyLine, _enemyArmyLine })
+            line.AddThemeConstantOverride("separation", (int)Math.Round(16 * scale));
+        _opening.Position = origin + SidesArea.Position * scale;
+        _opening.Layout(scale);
         At(_gauge, GaugeArea);
         At(_speaker, _speakerArea);
         At(_spotlight, new Rect2(0, 0, 1280, 800));
@@ -304,6 +323,10 @@ internal sealed partial class BattleBoardView : Control
         var (player, enemy) = BattleBoard.Armies(s);
         _playerName.Text = player;
         _enemyName.Text = enemy;
+        var (playerAdvantage, enemyAdvantage) = BattleOpening.Advantages(s);  // the round header's, all battle long (owner, 2026-10-14)
+        _playerAdvantage.Text = $"Advantage +{playerAdvantage}";
+        _enemyAdvantage.Text = $"Advantage +{enemyAdvantage}";
+        _opening.Refresh(presenter.Opening, _sidesTexture, _fieldTexture, _frontTexture, instant: slidesInstant);
     }
 
     /// <summary>

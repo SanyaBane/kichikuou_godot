@@ -49,7 +49,8 @@ draws what the core shows and answers what the core asks.
 2. **The scene on top**: the engagement's pictures as they are (the battlefield 640×256, the two
    sprites) scaled into the top area; the faces then live on the cards, not under the scene.
 3. **Click waits**: which of the original's waits stay (round header, "vs", flavour lines,
-   results, info boxes) and which become a timed caption or a log line.
+   results, info boxes) and which become a timed caption or a log line. The round header is answered
+   (owner, 2026-10-14: "The opening" below); the rest waits.
 4. **The 戦果 place**: troops of the two sides, advantages, strategy — or nothing.
 5. **Focus**: as squares on the card (Sengoku's action points' place) or a number.
 6. **Pre-battle**: the strategy screen and the scout report — our own panels or the original's
@@ -90,8 +91,8 @@ portrait (mock-up B):
   accent, its edge black / accent / accent / black, and every 500 ms a frame shown or hidden over it one
   unit further out, accent / white / white / accent (a unit is a quarter of the card's padding); an empty place "n empty".
   "Rance Army" / the enemy army's name above the two sides.
-- The windows that wait for a click (round header, "vs", results, info) stay as they are, over the
-  scene, for now.
+- The windows that wait for a click ("vs", results, info) stay as they are, over the scene, for now;
+  the round header became the battle's opening ("The opening" below).
 
 ### The scene between exchanges (owner, 2026-10-12)
 
@@ -193,7 +194,35 @@ picture, the slot panels) is not shown. How it is built:
   the captured defences (three with a scout report) the overlay's commanders, totals and places are what the
   script prints and the battle then places. `--scout` (with `--auto`) sends the first free ninja to scout at the
   first enemy attack, once a launch (CLAUDE.md, "Commands").
-- **The windows over it** (round header, "vs", the results, the info boxes, the
+- **The opening** (owner, 2026-10-14, variant C of three after Sengoku Rance's opening; mock-ups and a font sheet
+  from the week-18 attack on Oaks (6)): the round header (`FIGT.ADV:112-216`) is shown once a battle, at its first
+  round, as our own opening over the scene (`godot/Battles/BattleOpeningLayer`), and the later rounds' headers not
+  at all — they differ only in the rounds left, which the gauge shows (the kind, the place, the limit and the
+  advantages are set before the first header: the walls' bonus before the battle, the strategy's result before the
+  first round). The opening: the battle's own field (the scene's pictures, the blurred sides too) cut in two along a
+  slanted seam (x 680 at the top, 600 at the bottom), the player's half tinted blue, the enemy's red (the cards'
+  colours, 47 %); in each its army's name (string 7 / string 10) in **Shojumaru**, white with a dark outline, its
+  last line's baseline at y 330, kept 90 px off the seam — the fewest lines up to three that fit, balanced (the
+  widest line the narrowest), at the largest size from 64 down; "Leazas Rebel Army" takes three lines, and so does
+  the longest name of the scenario, "A Certain Country’s People" (`BattleOpening.Wrap`) — and "Advantage +n" below
+  it; "VS" between them; on top a plate (the cards' colours, the accent frame) in **Cinzel** Bold: "Oaks —
+  Offensive Battle" (or "Duel", "Dungeon Battle"), "City: Battle Limit · up to 232" (Plains / Duel / City /
+  Dungeon, as the header's conditions), "5 turns" (not in a duel). The header's key wait stays the player's click;
+  then, as Sengoku Rance's, the halves part to the sides and the plate rises (eased in; Option → Battle Screen… →
+  "Opening: leave", 0.5 s by default, `--opening-seconds x` for a launch; at once while skipping and with
+  `--fast`) while the battle goes on. A later round's header is answered at once by `GameScreen`, as a click (its
+  key lands in RetVal, `FIGT.ADV:214`, which BTX-03 reads), after the release wait. The original's box is no longer
+  in the windows' layer. **The advantages** stay on the screen all battle long, over the cards next to the armies'
+  names ("Rance Army  Advantage +0", "Advantage +4  Leazas Rebel Army", in the accent colour), summed from
+  GameState as the header sums them (`BattleOpening.Advantages`; the full number — the header's `H 2` shows only the
+  last two digits of one ≥ 100). The battle limit has no place outside the opening for now (owner). The fonts are
+  bundled in `godot/fonts` under the SIL OFL 1.1 with their licenses (`Shojumaru-OFL.txt`, `Cinzel-OFL.txt`). The
+  model is `Original.Content/Battles/BattleOpening` (`GamePresenter.Opening` while the first header waits,
+  `GamePresenter.LaterRoundHeader`, `BattlePresenter.RoundHeader`); `BattleOpeningTests`: the texts, the advantages,
+  the wrap, and in the captured battles every header waits with the scene up, the first is the opening, the later
+  ones are not, and the advantages are the header's. `--auto --interface new` without `--fast` in a window dumps
+  the opening halfway out (`opening-leaving`).
+- **The windows over it** ("vs", the results, the info boxes, the
   prompt, the popups, the script menus) are the stage's screen as the original draws it, shown only
   inside the windows' own shapes (their frame CGs, the selection boxes): the 640×400 screen fitted to
   the scene's height (×1.025, centred). The stage keeps drawing the original's screen unchanged —

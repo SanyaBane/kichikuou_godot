@@ -867,6 +867,15 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             await ReleaseWaitAsync(_input.PeekInput());
             _ikKey = key;
         }
+        else if (BattleScreenShown && _presenter.LaterRoundHeader)
+        {
+            // Our battle screen shows the round header once, as the battle's opening (owner, 2026-10-14): a later round's
+            // differs only in the rounds left, which the gauge shows, so its key wait is answered at once, as by a click —
+            // the key lands in RetVal (FIGT.ADV:214), which a flavour line reads (BTX-03).
+            key = KeyReturn;
+            await ReleaseWaitAsync(_input.PeekInput());
+            _ikKey = key;
+        }
         else if (ScoutReportShown && _presenter.Battle.ScoutReported)
         {
             // Our scout report shows the whole army from its first key wait (owner, 2026-10-14): the waits of its
@@ -887,9 +896,25 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             Shot("key");
             key = await HitKeyAsync();
         }
+        bool opening = BattleScreenShown && _presenter.Opening is not null;
         _presenter.AfterKey();
+        if (opening && _options.Auto && !_options.Fast && !_openingShot)
+            await OpeningShotAsync();
         return key;
     }
+
+    /// <summary>Unattended play's dump of the battle's opening leaving: once a launch, halfway (in a window).</summary>
+    private async Task OpeningShotAsync()
+    {
+        _openingShot = true;
+        var watch = Stopwatch.StartNew();
+        double half = BattleScreenSettings.Get(BattleScreenSettings.OpeningSeconds) / 2;
+        while (watch.Elapsed.TotalSeconds < half && !_closing)
+            await NextFrameAsync();
+        Shot("opening-leaving");
+    }
+
+    private bool _openingShot;
 
     /// <summary>
     /// <c>IK 0</c> (<c>cmdi.c</c>): waits for anything held and returns it, after the release

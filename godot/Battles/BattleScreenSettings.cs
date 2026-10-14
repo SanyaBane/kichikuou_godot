@@ -5,7 +5,8 @@ namespace Kichikuou.Game.Battles;
 /// <summary>
 /// The settings of our own battle screen (Option → Battle Screen…, <see cref="BattleScreenSettingsDialog"/>),
 /// kept in <c>[battle_screen]</c> of <c>user://settings.cfg</c>; a change applies at once. So far the order
-/// strip's moves (<see cref="OrderStrip"/>), the armies' slides, the spotlight's darkness and the cards' counters (<see cref="BattleBoardView"/>).
+/// strip's moves (<see cref="OrderStrip"/>), the armies' slides, the spotlight's darkness, the cards' counters (<see cref="BattleBoardView"/>)
+/// and the opening's leave (<see cref="BattleOpeningLayer"/>).
 /// </summary>
 internal static class BattleScreenSettings
 {
@@ -38,17 +39,22 @@ internal static class BattleScreenSettings
     public static readonly Setting MeterSeconds = new("meter_seconds", "Cards: counters", 0, 3, 0.05, 0.6, "s",
         "How long a card's troops and HP, the number and the bar, take to run to a new value after an exchange (0: at once).");
 
-    public static IReadOnlyList<Setting> All { get; } = [StripSeconds, StripHurrySeconds, StripDropShare, ArmySeconds, SpotDarkness, MeterSeconds];
+    /// <summary>How long the battle's opening takes to leave after its click (Sengoku Rance's: the halves part, the plate rises).</summary>
+    public static readonly Setting OpeningSeconds = new("opening_seconds", "Opening: leave", 0, 3, 0.05, 0.5, "s",
+        "How long the battle's opening takes to leave after the click: the two halves part to the sides, the plate rises (0: at once).");
+
+    public static IReadOnlyList<Setting> All { get; } = [StripSeconds, StripHurrySeconds, StripDropShare, ArmySeconds, SpotDarkness, MeterSeconds, OpeningSeconds];
 
     /// <summary>The development switches that set a setting for the launch.</summary>
     private static readonly (string Switch, Setting Setting)[] Switches =
-        [("--strip-seconds", StripSeconds), ("--army-seconds", ArmySeconds), ("--meter-seconds", MeterSeconds)];
+        [("--strip-seconds", StripSeconds), ("--army-seconds", ArmySeconds), ("--meter-seconds", MeterSeconds), ("--opening-seconds", OpeningSeconds)];
 
     private static Dictionary<string, double>? _values;
 
     /// <summary>
-    /// A setting's value: <c>--strip-seconds x</c> / <c>--army-seconds x</c> / <c>--meter-seconds x</c> for the launch (development) for
-    /// <see cref="StripSeconds"/> / <see cref="ArmySeconds"/> / <see cref="MeterSeconds"/>, else the file's, else the default.
+    /// A setting's value: <c>--strip-seconds x</c> / <c>--army-seconds x</c> / <c>--meter-seconds x</c> / <c>--opening-seconds x</c> for the
+    /// launch (development) for <see cref="StripSeconds"/> / <see cref="ArmySeconds"/> / <see cref="MeterSeconds"/> / <see cref="OpeningSeconds"/>,
+    /// else the file's, else the default.
     /// </summary>
     public static double Get(Setting setting)
     {
