@@ -7,12 +7,15 @@ namespace Kichikuou.Game.Battles.Effects;
 /// <see cref="EffectCanvas.FrameSeconds"/>), centred at <see cref="Position"/> plus <see cref="Velocity"/> per frame,
 /// turned by <see cref="Rotation"/> plus <see cref="Spin"/> per frame, <see cref="Size"/> (a negative axis flips it)
 /// times <see cref="Grow"/>, tinted <see cref="Colour"/> times <see cref="Alpha"/>. <see cref="Alpha"/> and
-/// <see cref="Grow"/> take the age as a fraction of the life, 0 to 1. Positions and sizes are in the design space,
-/// <see cref="EffectCanvas.DesignWidth"/> × <see cref="EffectCanvas.DesignHeight"/>, the actor on the left.
+/// <see cref="Grow"/> take the age as a fraction of the life, 0 to 1, and so do the optional <see cref="Ramp"/> (the
+/// colour by age, in place of <see cref="Colour"/>) and <see cref="Move"/> (the offset from <see cref="Position"/> by age,
+/// added to the velocity's). Positions and sizes are in the design space, <see cref="EffectCanvas.DesignWidth"/> ×
+/// <see cref="EffectCanvas.DesignHeight"/>, the actor on the left.
 /// </summary>
 internal sealed record Particle(
     Texture2D Texture, float Birth, float Life, Vector2 Position, Vector2 Velocity, float Rotation, float Spin,
-    Vector2 Size, Color Colour, Func<float, float> Alpha, Func<float, float> Grow);
+    Vector2 Size, Color Colour, Func<float, float> Alpha, Func<float, float> Grow,
+    Func<float, Color>? Ramp = null, Func<float, Vector2>? Move = null);
 
 /// <summary>
 /// Draws an effect's particles as they stand at <see cref="Frame"/>, each added to what is under it (the canvas
@@ -70,9 +73,11 @@ internal sealed partial class EffectCanvas : Node2D
             if (alpha <= 0)
                 continue;
             var size = p.Size * p.Grow(t);
-            DrawSetTransform(p.Position + p.Velocity * age, p.Rotation + p.Spin * age, new Vector2(Math.Sign(size.X), Math.Sign(size.Y)));
+            var at = p.Position + p.Velocity * age + (p.Move?.Invoke(t) ?? Vector2.Zero);
+            DrawSetTransform(at, p.Rotation + p.Spin * age, new Vector2(Math.Sign(size.X), Math.Sign(size.Y)));
             var extent = size.Abs();
-            DrawTextureRect(p.Texture, new Rect2(-extent / 2, extent), false, p.Colour * new Color(1, 1, 1, alpha));
+            var colour = p.Ramp?.Invoke(t) ?? p.Colour;
+            DrawTextureRect(p.Texture, new Rect2(-extent / 2, extent), false, colour * new Color(1, 1, 1, alpha));
         }
         DrawSetTransform(Vector2.Zero);
     }

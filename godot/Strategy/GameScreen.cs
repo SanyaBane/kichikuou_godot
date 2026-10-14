@@ -123,7 +123,7 @@ public sealed record GameOptions
 
     /// <summary>
     /// Development: Debug → Effects opens once the game has booted; with <see cref="ScreenshotDirectory"/> it saves
-    /// the melee effect's frames there (<see cref="Battles.Effects.EffectViewer.SaveFramesAsync"/>; needs a window),
+    /// the effects' frames there (<see cref="Battles.Effects.EffectViewer.SaveFramesAsync"/>; needs a window),
     /// then the program ends with <see cref="QuitWhenDone"/>.
     /// </summary>
     public bool Effects { get; init; }

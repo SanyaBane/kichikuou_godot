@@ -52,7 +52,7 @@ public partial class Main : Control
     /// key wait and menu (a game's event CGs masked, <c>GamePresenter.MaskEventCgs</c>).
     /// <c>--portraits</c> opens Debug → Portraits over the title (with <c>--shots DIR</c> it saves the
     /// units' list there; <c>--quit</c> then ends). <c>--effects</c> opens Debug → Effects the same way (with
-    /// <c>--shots DIR</c> it saves the melee effect's frames there; needs a window). Null without a switch: the title.
+    /// <c>--shots DIR</c> it saves the effects' frames there; needs a window). Null without a switch: the title.
     /// </summary>
     private static Node? FromCommandLine()
     {

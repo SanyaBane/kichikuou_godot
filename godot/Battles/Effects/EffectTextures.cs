@@ -33,23 +33,53 @@ internal static class EffectTextures
     /// <summary>A soft dot (a speck of the dust's grain).</summary>
     public static Texture2D Dot => _dot ??= Make(16, DotShape);
 
-    private static Texture2D? _puff, _crescentBody, _crescentEdge, _urchin, _sparkle, _ring, _dash, _dot;
+    /// <summary>An arrow along x, its head at +x: a thin shaft, a pointed head and a V of fletching at the back (8:1).</summary>
+    public static Texture2D Arrow => _arrow ??= Make(256, ArrowShape, 32);
 
-    /// <summary>A size×size texture whose alpha at each pixel is <paramref name="alpha"/> of (x, y) in [−1, 1].</summary>
-    private static Texture2D Make(int size, Func<float, float, float> alpha)
+    /// <summary>A bow's release: thin spikes of every length bursting from a small bright core.</summary>
+    public static Texture2D Burst => _burst ??= Make(128, BurstShape);
+
+    /// <summary>A bow: a thin arc bulging toward +x, ±60° about it, its ends tapering.</summary>
+    public static Texture2D BowArc => _bowArc ??= Make(128, BowArcShape);
+
+    /// <summary>An arrow's hit: a "crown", the upper half of a ring with jagged points outward, and a glow.</summary>
+    public static Texture2D Splat => _splat ??= Make(128, SplatShape);
+
+    /// <summary>A bokeh disc: flat inside, a slightly brighter rim, a soft edge.</summary>
+    public static Texture2D Bokeh => _bokeh ??= Make(64, BokehShape);
+
+    private static Texture2D? _puff, _crescentBody, _crescentEdge, _urchin, _sparkle, _ring, _dash, _dot;
+    /// <summary>A soft glow: a bright core in a wide falling halo.</summary>
+    public static Texture2D Glow => _glow ??= Make(128, GlowShape);
+
+    /// <summary>A flare's rays: many fine lines from the centre, fading outward.</summary>
+    public static Texture2D Rays => _rays ??= Make(256, RaysShape);
+
+    /// <summary>A shockwave: a soft wide band on an arc bulging toward +x, ±70° about it, a faint glassy fill inside.</summary>
+    public static Texture2D Shock => _shock ??= Make(128, ShockShape);
+
+    private static Texture2D? _arrow, _burst, _bowArc, _splat, _bokeh, _glow, _rays, _shock;
+
+    /// <summary>
+    /// A size × <paramref name="height"/> texture (square by default) whose alpha at each pixel is <paramref name="alpha"/>
+    /// of (x, y) in [−1, 1] — both axes, whatever the shape.
+    /// </summary>
+    private static Texture2D Make(int size, Func<float, float, float> alpha, int height = 0)
     {
-        var data = new byte[size * size * 4];
-        for (int py = 0; py < size; py++)
+        int width = size;
+        height = height > 0 ? height : size;
+        var data = new byte[width * height * 4];
+        for (int py = 0; py < height; py++)
         {
-            for (int px = 0; px < size; px++)
+            for (int px = 0; px < width; px++)
             {
-                float x = (px + 0.5f) / size * 2 - 1, y = (py + 0.5f) / size * 2 - 1;
-                int at = (py * size + px) * 4;
+                float x = (px + 0.5f) / width * 2 - 1, y = (py + 0.5f) / height * 2 - 1;
+                int at = (py * width + px) * 4;
                 data[at] = data[at + 1] = data[at + 2] = 255;
                 data[at + 3] = (byte)Math.Round(Math.Clamp(alpha(x, y), 0, 1) * 255);
             }
         }
-        var image = Image.CreateFromData(size, size, false, Image.Format.Rgba8, data);
+        var image = Image.CreateFromData(width, height, false, Image.Format.Rgba8, data);
         image.GenerateMipmaps();
         return ImageTexture.CreateFromImage(image);
     }
@@ -146,6 +176,92 @@ internal static class EffectTextures
     private static float DashShape(float x, float y) => Gauss(y, 0.06f) * MathF.Pow(Math.Max(0, 1 - x * x), 2);
 
     private static float DotShape(float x, float y) => Gauss(MathF.Sqrt(x * x + y * y), 0.35f);
+
+    // The arrow's parts along x (y is 8× finer: 2/32 is a pixel across, 2/256 along).
+    private static float ArrowShape(float x, float y)
+    {
+        float ay = MathF.Abs(y);
+        float shaft = Edge(0.2f - ay, 0.06f) * Edge(x + 0.88f, 0.01f) * Edge(0.75f - x, 0.01f);
+        float head = Edge((1 - x) / 0.3f * 0.6f - ay, 0.06f) * Edge(x - 0.68f, 0.01f);
+        float t = (x + 1) / 0.26f;                       // 0 at the back end, 1 where the fletching meets the shaft
+        float fins = t is >= 0 and <= 1
+            ? Edge(0.7f * (1 - t) + 0.08f - ay, 0.06f) * Edge(ay - (0.7f * (1 - t) - 0.3f), 0.06f)
+            : 0;
+        return Math.Max(Math.Max(shaft, head), fins);
+    }
+
+    private static float BurstShape(float x, float y)
+    {
+        float r = MathF.Sqrt(x * x + y * y);
+        if (r > 1)
+            return 0;
+        float angle = MathF.Atan2(y, x);
+        float spikes = 0;
+        for (int i = 0; i < Spikes.Length; i += 4)
+        {
+            float d = MathF.Abs(MathF.IEEERemainder(angle - Spikes[i], MathF.Tau)) * r;
+            float t = r / (Spikes[i + 1] + 0.15f);
+            if (t < 1)
+                spikes += Gauss(d, 0.02f * (1 - t) + 0.004f) * (1 - t);
+        }
+        return spikes + Gauss(r, 0.1f);
+    }
+
+    private static float BowArcShape(float x, float y)
+    {
+        float r = MathF.Sqrt(x * x + y * y);
+        float angle = MathF.Abs(MathF.Atan2(y, x));
+        float taper = 1 - SmoothStep(0.6f, 1.1f, angle);
+        return Gauss(r - 0.8f, 0.045f + 0.04f * taper) * taper;
+    }
+
+    private static float SplatShape(float x, float y)
+    {
+        float r = MathF.Sqrt(x * x + y * y);
+        float angle = MathF.Atan2(y, x);                    // the upper half is −π..0
+        float upper = SmoothStep(0.15f, -0.25f, MathF.Sin(angle) + 0.1f);
+        float points = MathF.Pow(MathF.Abs(MathF.Cos(angle * 3.5f)), 6) * 0.25f;
+        float crown = Edge(0.6f + points - r, 0.03f) * Edge(r - 0.45f, 0.03f) * upper;
+        return crown + 0.35f * Gauss(r - 0.5f, 0.2f) * upper;
+    }
+
+    private static float BokehShape(float x, float y)
+    {
+        float r = MathF.Sqrt(x * x + y * y);
+        return (0.75f + 0.25f * SmoothStep(0.6f, 0.85f, r)) * (1 - SmoothStep(0.85f, 1f, r));
+    }
+
+    private static float ShockShape(float x, float y)
+    {
+        float r = MathF.Sqrt(x * x + y * y);
+        float taper = 1 - SmoothStep(0.8f, 1.25f, MathF.Abs(MathF.Atan2(y, x)));
+        float band = Gauss(r - 0.78f, 0.07f), fill = 0.35f * SmoothStep(0.35f, 0.75f, r) * (1 - SmoothStep(0.76f, 0.82f, r));
+        return (band + fill) * taper;
+    }
+
+    private static float GlowShape(float x, float y)
+    {
+        float r = MathF.Sqrt(x * x + y * y);
+        return (0.75f * Gauss(r, 0.2f) + 0.4f * MathF.Pow(Math.Max(0, 1 - r), 3)) * (1 - SmoothStep(0.85f, 1f, r));
+    }
+
+    private static float RaysShape(float x, float y)
+    {
+        float r = MathF.Sqrt(x * x + y * y);
+        if (r > 1)
+            return 0;
+        float angle = MathF.Atan2(y, x);
+        float rays = 0;
+        for (int i = 0; i < Spikes.Length; i += 2)
+        {
+            float d = MathF.Abs(MathF.IEEERemainder(angle - Spikes[i], MathF.Tau)) * r;
+            rays += Gauss(d, 0.006f + 0.01f * r) * MathF.Pow(1 - r, 1.5f) * (0.4f + Spikes[i + 1]);
+        }
+        return rays * SmoothStep(0.05f, 0.2f, r);
+    }
+
+    /// <summary>A soft edge at <paramref name="v"/> = 0: 0 below −<paramref name="width"/>/2, 1 above +<paramref name="width"/>/2.</summary>
+    private static float Edge(float v, float width) => Math.Clamp(v / width + 0.5f, 0, 1);
 
     private static float Gauss(float d, float width) => MathF.Exp(-(d * d) / (2 * width * width));
 

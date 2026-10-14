@@ -249,18 +249,25 @@ picture, the slot panels) is not shown. How it is built:
   actor, 30 frames of 50 ms) and the frames themselves, extracted into the scratchpad with
   `tools/sengoku/effect_frames.py` (never committed). Kichikuou's attack types (`Bt_PlayerAtkType`, from the unit's
   class: 0 melee, 1 bow, 2 magic; docs/battle/01-flow.md §8.1) take Sengoku Rance's **Samurai (40000)**
-  for melee, **Archer (40260)** for the bow and **Mage (40360, Fire Blast)** for magic (to confirm with the owner when
-  the first is seen). Our scene is 640×256 shown ×1.6 (1024×410): a frame scales ×1.28 to 1024×402. Steps: (1) the
+  for melee, **Archer (40260)** for the bow and **Mage (40360, Fire Blast)** for magic — every magic class alike
+  (confirmed by the owner, 2026-10-14). The effects are drawn under the exchange's numbers (the counters, the shots,
+  the damages), at their full brightness as Sengoku Rance's — the fireball whites out the target's half for ~0.4 s
+  (owner, 2026-10-14). The bow and the magic come first, then the wiring of all three into the exchange (owner,
+  2026-10-14); open for the wiring: Kichikuou's exchange has an action on each side (`Bt_PlayerAction`,
+  `Bt_EnemyAction`), where Sengoku Rance's blow has one actor and one effect — both effects at once, or the turn's
+  actor's alone. Our scene is 640×256 shown ×1.6 (1024×410): a frame scales ×1.28 to 1024×402. Steps: (1) the
   references — done 2026-10-14; (2) the melee effect alone, as a Godot scene with Debug → Effects to play it over a
   battlefield, frames rendered next to the reference's for the owner — done 2026-10-14, the owner took its first look
-  ("v1") as it is; (3) the bow and the magic, then where an effect plays in the exchange (from the shots' flight or
-  the blow; with the result hold and the cards' counters; who is the actor in a mutual exchange) — options for the
-  owner first.
+  ("v1") as it is; (3) the bow and the magic — done 2026-10-14, the owner took their first look ("v1") as it is; then
+  where an effect plays in the exchange (from the shots' flight or the blow; with the result hold and the cards'
+  counters; who is the actor in a mutual exchange) — options for the owner first.
   **How it is built** (`godot/Battles/Effects`, presentation only, nothing wired into the exchange yet): the pictures
   are drawn by code (`EffectTextures`: a noisy puff, a crescent's body and its inner edge, an urchin, a four-point
-  sparkle, a ring, a streak, a dot), white with the shape in the alpha and tinted by each draw. An effect is a list of
-  particles (`Particle`: texture, birth and life in frames, position and drift, turn and spin, size and growth, colour,
-  an alpha curve over its life) made from a seed (`MeleeEffect.Build`), drawn at a time in frames by `EffectCanvas`
+  sparkle, a ring, a streak, a dot; for the bow an arrow, a release burst, a bow's arc, a hit's "crown", a bokeh disc;
+  for the magic a glow, a flare's rays, a shockwave's lens), white with the shape in the alpha and tinted by each draw.
+  An effect is a list of particles (`Particle`: texture, birth and life in frames, position and drift, turn and spin,
+  size and growth, colour, an alpha curve over its life; optionally a colour by age and an eased path) made from a seed
+  (`MeleeEffect.Build`, `BowEffect.Build`, `MagicEffect.Build`), drawn at a time in frames by `EffectCanvas`
   (each particle added to what is under it) in Sengoku Rance's 800×314 design space. `EffectPlayer` draws the canvas on
   black in a viewport of its own, scaled ×1.28 to 1024×402, and lays that picture over the scene with a shader:
   **screen** (1 − (1 − scene)(1 − effect), Sengoku Rance's draw method 1 as we read it) or add; mirrored when the enemy
@@ -269,12 +276,23 @@ picture, the slot panels) is not shown. How it is built:
   twinkling specks over it; on the target's half slashes (five a frame at the start down to two by frame 21, small
   violet ones to 24; each lives 1.4-2.4 frames, turning a little), urchins (swelling and fading over 5-9 frames, to
   frame 16, five large deep blue ones), sparkles (nine a frame to frame 12, then four, to 22), rings and streaks.
-  **Debug → Effects** (`EffectViewer`) plays it over our scene's battlefield (CG 900 and its overlay, with Rance's
-  (unit 1) and Ex's (commander 1) armies once a game has booted) or black: Play, Loop, the enemy acting, the blend,
-  the speed, the seed and a frame slider; the effect stands at the scene's foot (y 8). `--effects --shots DIR --quit`
-  (in a window) writes every frame with seed 1: the effect alone on black (`melee-NN.png`) and over the battlefield,
-  the player acting and the enemy (`melee-scene-NN.png`, `melee-enemy-scene-NN.png`) — for a sheet next to the
-  reference's frames, made outside the repository.
+  The bow effect: on the actor's half a first volley of white arrows leaving up and to the right from release bursts
+  along a line running down to the left (frames 0-6; the bursts linger 6-11 frames), bows' arcs standing and fading
+  (from frame 3, 9-16 frames) and a level second volley (9-14); on the target's half gold arrows streaking in level
+  (2-17, high first, lower from 9), cream arrows falling down to the right (8-26), gold crowns and flat teal streaks
+  where they hit (6-21) and 90 bokeh discs fading to frame ~27. The magic effect, all on the target's half: an orb
+  (a white disc, a warm halo, rays; frames 0-2), a white-hot ellipse with flames licking up (2-5), 130 billows thrown
+  out from the centre and slowing (born 2-10, white turning yellow, orange and smoke with age, the late and far ones
+  sooner) with 45 smaller flames on the rim, a pale lens of a shockwave running left off the fireball (3-16), then a
+  white core (from 12.5 to the end), gold sparkles, ember trails and embers. Over a bright battlefield, screen blending
+  leaves the late sparkles and the core faint.
+  **Debug → Effects** (`EffectViewer`) plays them over our scene's battlefield (CG 900 and its overlay, with Rance's
+  (unit 1) and Ex's (commander 1) armies once a game has booted) or black: the effect, Play, Loop, the enemy acting,
+  the blend, the speed, the seed and a frame slider; the effect stands at the scene's foot (y 8).
+  `--effects --shots DIR --quit` (in a window) writes every frame of each with seed 1: the effect alone on black
+  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`) and over the battlefield, the player acting and the enemy
+  (`melee-scene-NN.png`, `melee-enemy-scene-NN.png`, …) — for a sheet next to the reference's frames, made outside the
+  repository.
 - **The windows over it** ("vs", the results, the info boxes, the
   prompt, the popups, the script menus) are the stage's screen as the original draws it, shown only
   inside the windows' own shapes (their frame CGs, the selection boxes): the 640×400 screen fitted to
