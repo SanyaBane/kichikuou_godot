@@ -77,7 +77,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
     /// Association's state, Lazeal's week around the current one, gold around the demands of
     /// Portugal (90) and Hanna (29, 30), Gengorou (commander 8) alive or not.
     /// </summary>
-    private static void ShapeNegotiation(GameState state, Random rng)
+    internal static void ShapeNegotiation(GameState state, Random rng)
     {
         int[] cities = [17, 18, 19, 20, 22, 23, 24, 25, 26, 28];
         state.Prov_Cur = (Sys3Int)(rng.Next(20) == 0 ? rng.Next(0, 100) : cities[rng.Next(cities.Length)]);
@@ -114,7 +114,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
     /// every refusal and exit, Patton's list alive or not, the merchant's, Shangri-La's and the DX
     /// Association's states.
     /// </summary>
-    private static void ShapeEnemyCity(GameState state, Random rng)
+    internal static void ShapeEnemyCity(GameState state, Random rng)
     {
         state.Prov_Cur = (Sys3Int)(rng.Next(17) switch
         {
@@ -238,7 +238,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
     /// Wendy met or not, Wendy's state 4, the cafe at 10/11 with the caravan past province 4), Cow
     /// Sill, Lia's counter around its cap, and the girls' flags around every bound of the list.
     /// </summary>
-    private static void ShapeHarem(GameState state, Random rng)
+    internal static void ShapeHarem(GameState state, Random rng)
     {
         state.F_SillCow_State = (Sys3Int)(rng.Next(8) switch { 0 => 5, 1 => 7, 2 => 8, _ => 0 });
         state.F_Lia_State = (Sys3Int)(rng.Next(4) switch { 0 => 1, 1 => 3, _ => 0 });
@@ -297,7 +297,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
     /// hired before or not, a budget around every price (one under it above all), the shop's items
     /// owned or not with their gates, a stale history cursor.
     /// </summary>
-    private static void ShapeMerchant(GameState state, Random rng)
+    internal static void ShapeMerchant(GameState state, Random rng)
     {
         state.F_SillCow_State = (Sys3Int)(rng.Next(10) switch { 0 => 2, 1 => 6, _ => rng.Next(0, 2) * 7 });
         state.F_Merchant_State = (Sys3Int)rng.Next(0, 6);
@@ -348,7 +348,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
     /// action mostly free, the economy, defence and girls of the city, the buildings, the flags
     /// around the bounds of the places and triggers, the items the levy can find owned or not.
     /// </summary>
-    private static void ShapeOwnCity(GameState state, Random rng)
+    internal static void ShapeOwnCity(GameState state, Random rng)
     {
         int[] places = [1, 1, 1, 1, 2, 4, 10, 11, 15, 17, 18, 20, 22, 23, 24, 25, 26, 29, 34, 35, 35, 36, 40, 41, 42, 42, 43, 43,
                         45, 45, 47, 48, 49, 53, 54, 55, 56, 59, 62, 65, 66, 68, 68, 69, 77, 84, 85, 86];
@@ -431,7 +431,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
     /// Zeth's Code; the Substitute Ninja in stock or not; the commanders a sabotage may hit alive or
     /// not, with troops around the draws.
     /// </summary>
-    private static void ShapeNinja(GameState state, Random rng)
+    internal static void ShapeNinja(GameState state, Random rng)
     {
         bool busy = rng.Next(15) == 0;
         foreach (var set in new Action<Sys3Int>[]
@@ -482,7 +482,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
     /// opening), a timer running or not, Maria in the army with her tulip, a budget around the prices,
     /// a stale history cursor.
     /// </summary>
-    private static void ShapeConstruction(GameState state, Random rng)
+    internal static void ShapeConstruction(GameState state, Random rng)
     {
         bool all = rng.Next(20) == 0;
         foreach (var set in new Action<Sys3Int>[]
@@ -666,7 +666,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
     /// bosses; the bosses' flags, the Snow Charm, the Battleship's key and the treasures owned or
     /// not; Merim and her inscriptions, KD's quest, the Fuuka arc, the Hanny King, the scenes' flags.
     /// </summary>
-    private static void ShapeDungeon(GameState state, Random rng)
+    internal static void ShapeDungeon(GameState state, Random rng)
     {
         state.Cmdrs[100].CgFull = (Sys3Int)(rng.Next(6) == 0 ? 1137 : rng.Next(0, 2000));
         int[] searches = [2, 2, 2, 4, 5, 6, 8, 10, 10, 11, 11, 11, 11, 14, 14, 15, 15, 16, 18, 19, 20, 21, 22, 23, 23, 24, 25, 25, 26, 30, 30, 30];
@@ -874,7 +874,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
     /// the items lost, in stock or equipped (each on one unit, which holds it; items 1 and 2 often;
     /// now and then a holder out of range), the alias of <c>Unit_Item[100]</c> and of the bar's 997.
     /// </summary>
-    private static void ShapeItems(GameState state, Random rng)
+    internal static void ShapeItems(GameState state, Random rng)
     {
         state.Ui_ItemViewMode = (Sys3Int)(rng.Next(25) == 0 ? rng.Next(2, 4) : rng.Next(0, 2));
         for (int u = 0; u <= 51; u++)
@@ -946,7 +946,7 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             mouse: DataPointer);
 
     /// <summary>The 16 weeks of history from nothing to past the scale, the scales unset or kept, the map markers, a stale history cursor.</summary>
-    private static void ShapeAllData(GameState state, Random rng)
+    internal static void ShapeAllData(GameState state, Random rng)
     {
         state.Ui_MoneyGraphDiv = (Sys3Int)(rng.Next(3) == 0 ? 0 : rng.Next(1, 220));
         state.Ui_DamageGraphDiv = (Sys3Int)(rng.Next(3) == 0 ? 0 : rng.Next(1, 220));

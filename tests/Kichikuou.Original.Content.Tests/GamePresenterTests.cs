@@ -19,7 +19,7 @@ namespace Kichikuou.Original.Content.Tests;
 /// the player's choices go through the presenter's own hit tests (the picker grid, the menu).
 /// Skipped without the decompile.
 /// </summary>
-public class GamePresenterTests(ITestOutputHelper output)
+public partial class GamePresenterTests(ITestOutputHelper output)
 {
     /// <summary>
     /// Week 9 of a new game played through <see cref="GameSession"/>: Sill's CG scene, Pillage on
@@ -219,6 +219,8 @@ public class GamePresenterTests(ITestOutputHelper output)
         s.CmdAvail_SubTalk = 1;
         s.Units[3].Status = 1;
         await run.Session.Script.EngineAsync("CF", [640, 400, 640, 400, 9]);                     // an older page
+        var audit = new PageAudit(Cgs.Value);
+        run.Presenter.Audit = audit;
         var player = run.Player;
         player.Pickers.Enqueue((PickerKind.Subordinates, PickerArea.Cell, 3));                   // Bound,
         player.Answers["Cﾌﾞｶ.ADV"] = new([0]);                                                  // the troop menu cancelled,
@@ -244,6 +246,7 @@ public class GamePresenterTests(ITestOutputHelper output)
         Assert.Empty(run.Presenter.Unresolved);
         Assert.Empty(player.Pickers);
         Assert.Equal(2, underPicker.Count);                                                      // opened, and back from the unit
+        Assert.Empty(audit.Findings);
         Assert.Equal(underPicker[0], underPicker[1]);
     }
 
@@ -1216,6 +1219,12 @@ public class GamePresenterTests(ITestOutputHelper output)
         /// <summary>The key every pause returns (held through it); 0 by default.</summary>
         public Sys3Int PauseKey { get; set; }
 
+        /// <summary>
+        /// A random player when set: where nothing is queued a menu gets a random item (or the cancel) and the pointer,
+        /// when idle, a random click, right click or move anywhere on the screen.
+        /// </summary>
+        public Random? Fuzz { get; set; }
+
         public Task ShowAsync(ScriptEvent e)
         {
             Shown.Add(e);
@@ -1310,6 +1319,18 @@ public class GamePresenterTests(ITestOutputHelper output)
                 else
                     _pointer.Click(320, 200);
             }
+            else if (Fuzz is { } rng && _pointer.Pending == 0)
+            {
+                int x = rng.Next(0, 640), y = rng.Next(0, 400), press = rng.Next(20);
+                if (presenter.Picker is not null && rng.Next(4) != 0)
+                    (x, y) = rng.Next(10) < 8 ? GesturePoints.PickerCell(rng.Next(1, 51)) : GesturePoints.PickerButton(rng.Next(1, 4));
+                if (press < 12)
+                    _pointer.Click(x, y);
+                else if (press < 16)
+                    _pointer.RightClick(x, y);
+                else
+                    _pointer.Move(x, y);
+            }
             Last = _pointer.Next(out _);
             return Task.FromResult(Last);
         }
@@ -1328,9 +1349,10 @@ public class GamePresenterTests(ITestOutputHelper output)
             int choice = file switch
             {
                 "" => 0,                                                        // an empty ] (DGN-07): only a cancel leaves it
-                "COMMAND.ADV" => _commands.Dequeue(),
-                "Cﾃｷﾄｼ.ADV" => items.Select((item, i) => (item, i)).Single(x => x.item.At.Line == 70).i + 1,
+                "COMMAND.ADV" when _commands.Count > 0 || Fuzz is null => _commands.Dequeue(),
+                "Cﾃｷﾄｼ.ADV" when Fuzz is null => items.Select((item, i) => (item, i)).Single(x => x.item.At.Line == 70).i + 1,
                 _ when Answers.TryGetValue(file, out var answers) && answers.Count > 0 => answers.Dequeue(),
+                _ when Fuzz is { } rng => rng.Next(0, items.Count + 1),
                 _ => 1,
             };
             presenter.CloseMenu();

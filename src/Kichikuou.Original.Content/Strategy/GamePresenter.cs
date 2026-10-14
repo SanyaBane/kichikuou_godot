@@ -536,9 +536,15 @@ public sealed partial class GamePresenter : IStageObserver
                 _target = TextTarget.Stage;
                 return;
         }
-        if (!DrawnByHand || KeepsPage(command, args))
+        bool runs = !DrawnByHand || KeepsPage(command, args);
+        Audit?.Before(command, args, runs, Picker is { } open ? open.Kind.ToString() : Data != DataView.Closed ? "All Data" : null);
+        if (runs)
             _engine.Draw(command, args);
+        Audit?.After();
     }
+
+    /// <summary>The tests' check of the off-screen pages a screen drawn by hand leaves stale (<see cref="PageAudit"/>), or null.</summary>
+    public PageAudit? Audit { get; set; }
 
     /// <summary>
     /// A copy or fill whose target lies wholly off the screen: the script keeps a page there to copy back later, also
@@ -560,7 +566,11 @@ public sealed partial class GamePresenter : IStageObserver
 
     void IStageObserver.BeforeCopy(int sourceX, int width) => PrepareCopy(sourceX, width);
 
-    void IStageObserver.Drawn(int x, int y, int width, int height, bool opaque) => Drawn(x, y, width, height, opaque);
+    void IStageObserver.Drawn(int x, int y, int width, int height, bool opaque)
+    {
+        Audit?.Drawn(x, y, width, height);
+        Drawn(x, y, width, height, opaque);
+    }
 
     /// <summary>The CG last loaded, and whether the stage shows an ending's picture or the gallery (<see cref="MaskEventCgs"/>).</summary>
     void IStageObserver.CgLoaded(int number)
