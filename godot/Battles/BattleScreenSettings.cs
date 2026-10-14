@@ -5,8 +5,8 @@ namespace Kichikuou.Game.Battles;
 /// <summary>
 /// The settings of our own battle screen (Option → Battle Screen…, <see cref="BattleScreenSettingsDialog"/>),
 /// kept in <c>[battle_screen]</c> of <c>user://settings.cfg</c>; a change applies at once. So far the order
-/// strip's moves (<see cref="OrderStrip"/>), the armies' slides, the spotlight's darkness, the cards' counters (<see cref="BattleBoardView"/>)
-/// and the opening's leave (<see cref="BattleOpeningLayer"/>).
+/// strip's moves (<see cref="OrderStrip"/>), the armies' slides, the spotlight's darkness, the cards' counters (<see cref="BattleBoardView"/>),
+/// the exchange's result hold (<c>GameScreen</c>) and the opening's leave (<see cref="BattleOpeningLayer"/>).
 /// </summary>
 internal static class BattleScreenSettings
 {
@@ -47,19 +47,25 @@ internal static class BattleScreenSettings
     public static readonly Setting OpeningAppearSeconds = new("opening_appear_seconds", "Opening: appear", 0, 3, 0.05, 0.35, "s",
         "How long the battle's opening takes to fade in over the field when the battle screen comes up (0: at once).");
 
+    /// <summary>How long the exchange's result stays before the battle goes on by itself (owner, 2026-10-14).</summary>
+    public static readonly Setting ResultSeconds = new("result_seconds", "Results: hold", 0, 5, 0.05, 1.2, "s",
+        "How long an exchange's result stays before the battle goes on by itself; a click or a key goes on sooner (0: at once). "
+        + "A result with ANNIHILATED or UNABLE TO FIGHT still waits for the click.");
+
     public static IReadOnlyList<Setting> All { get; } =
-        [StripSeconds, StripHurrySeconds, StripDropShare, ArmySeconds, SpotDarkness, MeterSeconds, OpeningAppearSeconds, OpeningSeconds];
+        [StripSeconds, StripHurrySeconds, StripDropShare, ArmySeconds, SpotDarkness, MeterSeconds, ResultSeconds, OpeningAppearSeconds, OpeningSeconds];
 
     /// <summary>The development switches that set a setting for the launch.</summary>
     private static readonly (string Switch, Setting Setting)[] Switches =
-        [("--strip-seconds", StripSeconds), ("--army-seconds", ArmySeconds), ("--meter-seconds", MeterSeconds), ("--opening-seconds", OpeningSeconds), ("--opening-appear-seconds", OpeningAppearSeconds)];
+        [("--strip-seconds", StripSeconds), ("--army-seconds", ArmySeconds), ("--meter-seconds", MeterSeconds), ("--opening-seconds", OpeningSeconds), ("--opening-appear-seconds", OpeningAppearSeconds),
+         ("--result-seconds", ResultSeconds)];
 
     private static Dictionary<string, double>? _values;
 
     /// <summary>
     /// A setting's value: <c>--strip-seconds x</c> / <c>--army-seconds x</c> / <c>--meter-seconds x</c> / <c>--opening-seconds x</c> / <c>--opening-appear-seconds x</c>
-    /// for the launch (development) for <see cref="StripSeconds"/> / <see cref="ArmySeconds"/> / <see cref="MeterSeconds"/> /
-    /// <see cref="OpeningSeconds"/> / <see cref="OpeningAppearSeconds"/>,
+    /// / <c>--result-seconds x</c> for the launch (development) for <see cref="StripSeconds"/> / <see cref="ArmySeconds"/> /
+    /// <see cref="MeterSeconds"/> / <see cref="OpeningSeconds"/> / <see cref="OpeningAppearSeconds"/> / <see cref="ResultSeconds"/>,
     /// else the file's, else the default.
     /// </summary>
     public static double Get(Setting setting)

@@ -50,7 +50,8 @@ draws what the core shows and answers what the core asks.
    sprites) scaled into the top area; the faces then live on the cards, not under the scene.
 3. **Click waits**: which of the original's waits stay (round header, "vs", flavour lines,
    results, info boxes) and which become a timed caption or a log line. The round header is answered
-   (owner, 2026-10-14: "The opening" below); the rest waits.
+   (owner, 2026-10-14: "The opening" below), and so is the exchange's result (owner, 2026-10-14: a hold, the
+   click only with a wiped-out mark; "The exchange's result" below); the rest waits.
 4. **The 戦果 place**: troops of the two sides, advantages, strategy — or nothing.
 5. **Focus**: as squares on the card (Sengoku's action points' place) or a number.
 6. **Pre-battle**: the strategy screen and the scout report — our own panels or the original's
@@ -226,6 +227,18 @@ picture, the slot panels) is not shown. How it is built:
   the wrap, and in the captured battles every header waits with the scene up, the first is the opening, the later
   ones are not, and the advantages are the header's. `--auto --interface new` without `--fast` in a window dumps
   the opening halfway out (`opening-leaving`).
+- **The exchange's result** (owner, 2026-10-14, after Sengoku Rance's, which never stops after an attack:
+  docs/sengoku/04-screen.md §9.11): the result screen's click (`FIGTATTK.ADV:247`, `IK 0`) is the battle's most
+  frequent, and our screen already shows the result in the scene and runs the cards' counters from it ("The cards'
+  counters" above). So when no wiped-out mark is on it, `GameScreen` holds it for Option → Battle Screen… →
+  "Results: hold" (1.2 s by default — the counters' run and the damage trail; `--result-seconds x` for a launch) and
+  goes on as by a click: the key lands in RetVal (BTX-03) as `KeyReturn`, after the release wait; a key or a click
+  ends the hold sooner and is the key, as `IK 0` returns it; at once with `--fast`, and under the message skip at
+  once with 0, as `IK 0`. With ANNIHILATED or UNABLE TO FIGHT (`:235-246`) the player's click stays (owner). The
+  presenter tells them apart (`BattlePresenter.ExchangeResultWaits`, `ExchangeResultWipedOut`); `BattleResultWaitTests`:
+  in the captured battles only the result screen's key wait is one, wiped out exactly when a mark is shown. Next to
+  think about (owner, 2026-10-14, after this): Kichikuou has no troops' animation and no effects but the shots'
+  numbers crossing the scene — a hit (the struck army shaking, the damages popping in) and a smoother flight.
 - **The windows over it** ("vs", the results, the info boxes, the
   prompt, the popups, the script menus) are the stage's screen as the original draws it, shown only
   inside the windows' own shapes (their frame CGs, the selection boxes): the 640×400 screen fitted to

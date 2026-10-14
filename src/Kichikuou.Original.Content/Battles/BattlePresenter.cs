@@ -136,6 +136,8 @@ public sealed partial class BattlePresenter
     {
         var action = _afterKey;
         _afterKey = null;
+        ExchangeResultWaits = false;
+        ExchangeResultWipedOut = false;
         action?.Invoke();
     }
 

@@ -228,12 +228,23 @@ public sealed partial class BattlePresenter
             G(892, keyed: true);
     }
 
+    /// <summary>
+    /// Whether the exchange's result screen waits for its key (<c>FIGTATTK.ADV:247</c>), until the key. Our screen
+    /// answers it itself after a hold when no wiped-out mark is on it (owner, 2026-10-14; <see cref="ExchangeResultWipedOut"/>).
+    /// </summary>
+    public bool ExchangeResultWaits { get; private set; }
+
+    /// <summary>Whether the waiting result screen shows ANNIHILATED or UNABLE TO FIGHT (<c>:235-246</c>): the player's click stays.</summary>
+    public bool ExchangeResultWipedOut { get; private set; }
+
     /// <summary><c>IK 0</c> (<c>:247</c>), then the commander marks are removed (<c>:248-253</c>).</summary>
     private void ExchangeKeyWait()
     {
         WaitsForKey = true;
         var marks = _marks;
         _marks = null;
+        ExchangeResultWaits = true;
+        ExchangeResultWipedOut = marks is { PlayerTroops: true } or { EnemyTroops: true } or { PlayerCmdr: true } or { EnemyCmdr: true };
         _afterKey = () =>
         {
             if (marks?.PlayerCmdr == true)

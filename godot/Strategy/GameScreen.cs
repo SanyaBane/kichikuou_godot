@@ -885,6 +885,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             await ReleaseWaitAsync(_input.PeekInput());
             _ikKey = key;
         }
+        else if (BattleScreenShown && _presenter.Battle.ExchangeResultWaits && !_presenter.Battle.ExchangeResultWipedOut)
+            key = await ExchangeResultHoldAsync();
         else if (_options.Auto)
         {
             Shot("key");
@@ -902,6 +904,27 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _presenter.AfterKey();
         if (opening && _options.Auto && !_options.Fast && !_openingShot)
             await OpeningShotAsync();
+        return key;
+    }
+
+    /// <summary>
+    /// The exchange's result screen without a wiped-out mark (owner, 2026-10-14): our screen shows the result in the scene
+    /// and runs the cards' counters from it, so instead of the click (<c>IK 0</c>, <c>FIGTATTK.ADV:247</c>) it holds for
+    /// Option → Battle Screen… → "Results: hold" and goes on as by a click — the key lands in RetVal (BTX-03). A key or a
+    /// click ends the hold sooner and is the key, as <c>IK 0</c> returns it. At once with <c>--fast</c>; under the message
+    /// skip at once with 0, as <c>IK 0</c>.
+    /// </summary>
+    private async Task<ushort> ExchangeResultHoldAsync()
+    {
+        Shot("key");
+        double seconds = _options.Fast ? 0 : BattleScreenSettings.Get(BattleScreenSettings.ResultSeconds);
+        ushort key = await KeyWaitAsync(seconds, cancelable: !_options.Auto, skippable: true);
+        if (_skip.IsSkipping)
+            return 0;
+        if (key == 0 || _options.Auto)
+            key = KeyReturn;
+        await ReleaseWaitAsync(_options.Auto ? (ushort)0 : key);
+        _ikKey = key;
         return key;
     }
 

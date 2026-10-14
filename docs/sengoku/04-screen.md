@@ -415,7 +415,8 @@ swap as above. No click is needed anywhere.
    down, the score bar slides;
 7. actor back to normal pose; counters drop, flags rise — 250 ms;
 8. destruction check (9.9); end of turn (9.3/6).
-No pause or click between steps; the whole attack is ≈ 250 + effect (750–1500 ms) + 250 ms plus the slides.
+No pause or click between steps; the whole attack is ≈ 250 + effect (750–1500 ms) + 250 ms plus the slides
+(the details, and what a wiped-out unit adds: §9.11).
 
 ### 9.6 Multi-target attack (`あべ/C_合戦.JAF.jam:1165-1374`)
 - Combined (`AoE effect` = 1): spotlight on the actor and **all** targets; if none of the targets is on stage
@@ -445,6 +446,74 @@ Bar wipe-fade; bar set to the final scores (100:0 / 0:100 on annihilation); resu
 win/loss effect (sound 221/222, music lowered), then a land panel (CG 10248 at (223,211), facilities at
 (267,217)) cross-fading the province's land count ±1 (sound 223/224); a click skips each phase.
 
+### 9.11 The end of an attack and its waits (2026-10-14)
+Surveyed for our battle screen's exchange result wait (docs/ui/battle-screen.md, question 3). **[V]** = read
+in the code, **[I]** = inferred.
+
+- **No click, no key, no pause of its own** **[V]**. Every step of an attack is a timed loop
+  (`while (nTime < X) { …; UPDATE; nTime = sTimer.Get }`), and `UPDATE` only updates the sprites, peeks the
+  message queue and sleeps 1 ms (`C_スクリ.jaf.jam:2-22`, `System/SACT/SCREEN/sact_screen.jaf.jam:2-44`). None
+  of `T_BATTLE`, `T_BATNUM`, `T_BATEFF`, `T_BATSEQ`, `T_BATUNI`, `T_BATBAR` reads a key or the mouse (no key
+  call in them at all). The only input read in a battle turn is the player's own choice (§8; `T_BATPLS:2907`,
+  `:3274-3313`) and, between actions, the system bar (`戦闘_システム確認`, `T_BATTLE:895-913`) **[I: polls only]**.
+- **The order after the blow** **[V]**: the damage loop ends (`T_BATTLE:1677-1702`: the counters, the cards'
+  troops, the bar and the effect all run on one clock) and everything is closed at once (`:1703-1716`); the
+  actor goes back to its normal pose (`C_合戦:2471-2477`, no time); the counters drop, **250 ms**
+  (`戦闘_兵数消去` → `hideNumber`, `C_合戦:2479`, `T_BATTLE:1538-1591`); the destruction check and its
+  processing (`C_合戦:1133-1144`, below); the assassination follow-up (`C_合戦:749-754`, only with `ＧＦ[55]`,
+  a text through `ＴＸ` — whether it waits was not traced); the turn's end (`合戦_行動終了`, `C_合戦:761-768`):
+  automatic heals (§9.7), then the target's and the actor's troops slide out, **250 ms each**
+  (`T_BATTLE:936-962`, `T_BATUNI:2716-2728`, loop `:574-620`), the time gauge ticks without blocking
+  (`T_BATTIM:296-313`, sound 211); the next actor at once (`C_合戦:33-88`).
+- **The counters do not hold** **[V]**: the drop follows the damage loop directly; rise and drop are 250 ms
+  whatever the speed (`T_BATTLE:1211,1344,1461,1540`). The number moves in 200 ms steps, each showing the value
+  due 200 ms later (`T_BATNUM:230,310-314,341-369`), so the final value stands still only the last 0-200 ms of
+  the loop **[I: from the arithmetic]**: ~100 ms with a 1500 ms effect, ~150 ms with 750 ms.
+- **The effect's length** **[V]** (`tagBattleEffect@getTime`, `T_BATEFF:656-697`): 750 ms at speed 0; else the
+  effect's own time if set (750 for the targets of a multi-target attack, `bAllFlag`, and for solo battles'
+  effects 47000-48999, `:749-754,807-827`); else its frame count × 50 ms (30 frames = **1500 ms** in a normal
+  battle, 15 in a solo battle, `:932-968`); else 1500 ms. An attack with the default effect therefore takes
+  250 + 1500 + 250 ms, then 500 ms of slides out: **≈ 2.5 s from the counters' rise to the next actor**, ≈ 1.75 s
+  at speed 0.
+- **A unit wiped out** **[V]**: `合戦_壊滅チェック` (`C_合戦:3166-3200`) sets `ＦＦ = 99` and logs a line that
+  is never shown (§11) — no mark, sound, effect, pause or click. `tagBattle@destroy` (`T_BATTLE:590-726`; the
+  actor's own `actionEnd` first if it was the one destroyed, `C_BATTLE:404-415`): the card's destroyed overlay
+  at once (`setBushoDestroy`, `T_BATBUS:1213-1232`); the flag sinks out of the strip and the strip closes the
+  gap, **500 ms each** (250 below speed 2; `T_BATSEQ:280-312,1256-1293,1319-1334`, `getMoveTime`
+  `:2220-2245`; several at once together, `moveDown2`/`moveLeft2`); +5 to the other side's score per unit
+  destroyed, the bar sliding **250 ms** (`T_BATTLE:694-723,300-308`, `T_BATBAR:250-281`). So a destruction adds
+  ≈ 1.25 s of movement and nothing to click. Solo battles: the card leaves (`leave2`, sounds 214/215,
+  `T_BATPLS:1278ff`) and a reserve comes in.
+- **Commanders who fall** **[V]**: no scene or message during the battle; dead / captured is shown only at the
+  battle's end, as the cards' result badges (§9.10; `tagBattlePlace@kekka`, `T_BATTLE:173,196`;
+  `T_BATPLS:555-602`; CG 10257 for 1000, 10256 for 2000, else 10255, `T_BATBUS:1294-1330` — which code is death
+  and which capture **[I]**).
+- **Settings** **[V]** (`T_SYSMEN:2118-2263`; the labels are English in this build): **Combat Speed** —
+  `getBattleSpeed() = (g_nBattleMode & 255) % 10` (`T_GLOB:284-294`, clamped 0-2 `:912-924`, default 2
+  `:41`): 2 "Standard", 1 "Lil Fast", 0 "Max Speed" (with a warning that it disturbs graphics and sound). Below 2
+  the strip's moves, the card blink (`T_BATPLS:4067-4092`) and the flags' fly-in (`T_BATFLG:849-870`) are halved;
+  at 0 every effect is 750 ms. The counters' rise and drop, the troops' slides, the bar and the 200 ms number
+  steps never change. **Combat Effect Display** (`getBattleEffect() = (mode & 255) / 10`): "Standard",
+  "Limited", "Don't Show" — only how the effect's sprites are made (`T_BATEFF:236-244,398-406`, `T_EFFSP:74,200`);
+  `getTime` does not read it, so "Don't Show" does not shorten the attack **[I]**. **Multi-Target Attacks**
+  (bit 9): "Animate Each Target" / "Animate All At Once" (§9.6). Message skip is off for the whole battle
+  (`msgSkipStop`, `T_BATTLE:72`, restored `:224`). No auto-battle and no skip-animation option.
+- **Hurrying it** **[V]**: impossible — no timing loop reads input, and the two screen transitions in an attack
+  are `EFFECT(1, 250, 0)` with the key flag 0 (`C_合戦:579-582,2956-2959`). The player's only lever is the speed
+  setting.
+- **The enemy's attacks** end the same way **[V]** (`合戦_敵行動` `C_合戦:369-499` mirrors `合戦_味方行動`
+  `:236-367`; `◆合戦味方ターン` only picks which counter shows which number, `:2179-2195,2428-2458`); the only
+  extra beat is before the blow: the target's card blinks 500 ms (250 below speed 2; `T_BATTLE:1017-1024`,
+  `T_BATPLS:2328-2391`, `C_合戦敵:1704`).
+- **Heals and multi-target attacks** **[V]**: the same pattern, no wait at the end (`C_合戦:2509-2713`,
+  `T_BATTLE:1861-1975`; revive 166 then `戦闘_復帰`, `C_合戦:1452-1457`). "Each Target": rise → effect → drop for
+  every target back to back, those after the first at 750 ms (`C_合戦:1304-1343`); "All At Once": one 750 ms
+  `damageall` loop (`T_BATTLE:2429-2561`); the destruction checks after all targets (`C_合戦:1345-1371`).
+
+In short: Sengoku Rance never stops after an attack. The result is read during the ≈ 1.5 s the counters run;
+the numbers vanish 250 ms after they settle; a wiped-out unit is told by its card's overlay, its flag leaving the
+strip and the bar, all moving, nothing to click; the player can only choose a faster speed.
+
 ---
 
 ## 10. Battle dialogue boxes (`あべ/T_BATMSG.JAF.jam` `Ｐ合戦会話`, called from the scenario scripts)
@@ -468,7 +537,8 @@ counters, the card numbers and the bar.
    written in this (English) build; whether the Japanese build drew a label is unknown. (Neither state
    is ever reached in battle, 03-skills.md §8.)
 3. The system bar (IDs 90000+) and its placement during battle were not surveyed (`tagSystemBar`).
-4. The battle-speed values (0/1/2…) and their names in the options menu — only the thresholds are read.
+4. ~~The battle-speed values and their names~~ — answered in §9.11 (2 "Standard", 1 "Lil Fast", 0 "Max
+   Speed").
 
 Settled while the four parts were made consistent: the result badges show `Ｆ戦闘結果` (1000 died,
 2000 captured, else the troop gain; §6.2, 01-flow.md §4.3), and every commander has Wait in slot 2,
