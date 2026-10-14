@@ -252,9 +252,29 @@ picture, the slot panels) is not shown. How it is built:
   for melee, **Archer (40260)** for the bow and **Mage (40360, Fire Blast)** for magic (to confirm with the owner when
   the first is seen). Our scene is 640×256 shown ×1.6 (1024×410): a frame scales ×1.28 to 1024×402. Steps: (1) the
   references — done 2026-10-14; (2) the melee effect alone, as a Godot scene with Debug → Effects to play it over a
-  battlefield, frames rendered next to the reference's for the owner; (3) after the owner's word, the bow and the
-  magic, then where an effect plays in the exchange (from the shots' flight or the blow; with the result hold and the
-  cards' counters; who is the actor in a mutual exchange) — options for the owner first.
+  battlefield, frames rendered next to the reference's for the owner — done 2026-10-14, the owner took its first look
+  ("v1") as it is; (3) the bow and the magic, then where an effect plays in the exchange (from the shots' flight or
+  the blow; with the result hold and the cards' counters; who is the actor in a mutual exchange) — options for the
+  owner first.
+  **How it is built** (`godot/Battles/Effects`, presentation only, nothing wired into the exchange yet): the pictures
+  are drawn by code (`EffectTextures`: a noisy puff, a crescent's body and its inner edge, an urchin, a four-point
+  sparkle, a ring, a streak, a dot), white with the shape in the alpha and tinted by each draw. An effect is a list of
+  particles (`Particle`: texture, birth and life in frames, position and drift, turn and spin, size and growth, colour,
+  an alpha curve over its life) made from a seed (`MeleeEffect.Build`), drawn at a time in frames by `EffectCanvas`
+  (each particle added to what is under it) in Sengoku Rance's 800×314 design space. `EffectPlayer` draws the canvas on
+  black in a viewport of its own, scaled ×1.28 to 1024×402, and lays that picture over the scene with a shader:
+  **screen** (1 − (1 − scene)(1 − effect), Sengoku Rance's draw method 1 as we read it) or add; mirrored when the enemy
+  acts. The melee effect: 44 dust puffs (a cloud whose top runs from high on the left down toward the middle; small at
+  frame 0, swelling into one cloud by frame ~4, full to frame 6, then fading straight to nothing at 27.5) with 700
+  twinkling specks over it; on the target's half slashes (five a frame at the start down to two by frame 21, small
+  violet ones to 24; each lives 1.4-2.4 frames, turning a little), urchins (swelling and fading over 5-9 frames, to
+  frame 16, five large deep blue ones), sparkles (nine a frame to frame 12, then four, to 22), rings and streaks.
+  **Debug → Effects** (`EffectViewer`) plays it over our scene's battlefield (CG 900 and its overlay, with Rance's
+  (unit 1) and Ex's (commander 1) armies once a game has booted) or black: Play, Loop, the enemy acting, the blend,
+  the speed, the seed and a frame slider; the effect stands at the scene's foot (y 8). `--effects --shots DIR --quit`
+  (in a window) writes every frame with seed 1: the effect alone on black (`melee-NN.png`) and over the battlefield,
+  the player acting and the enemy (`melee-scene-NN.png`, `melee-enemy-scene-NN.png`) — for a sheet next to the
+  reference's frames, made outside the repository.
 - **The windows over it** ("vs", the results, the info boxes, the
   prompt, the popups, the script menus) are the stage's screen as the original draws it, shown only
   inside the windows' own shapes (their frame CGs, the selection boxes): the 640×400 screen fitted to

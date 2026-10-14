@@ -6,6 +6,7 @@ using Godot;
 using Kichikuou.Content.Graphics;
 using Kichikuou.Content.Screen;
 using Kichikuou.Game.Battles;
+using Kichikuou.Game.Battles.Effects;
 
 namespace Kichikuou.Game.Strategy;
 
@@ -154,7 +155,8 @@ public partial class GameScreen
         UpdateSkipItem();
         row.AddChild(Menu("Debug",
             ("Battle Captures...", ConfirmCaptures),
-            ("Portraits...", OpenPortraits)));
+            ("Portraits...", OpenPortraits),
+            ("Effects...", OpenEffects)));
     }
 
     /// <summary>The id of an item that opens a submenu: past every item's index, so it runs nothing.</summary>
@@ -293,6 +295,29 @@ public partial class GameScreen
     private async Task SavePortraitsAsync(PortraitViewer viewer, string dir)
     {
         await viewer.SaveUnitsAsync(dir);
+        if (_options.QuitWhenDone)
+            _tree.Quit();
+    }
+
+    /// <summary>Debug → Effects (ours, development): our exchange effects over a battlefield, over the game, which waits while it is open.</summary>
+    private void OpenEffects()
+    {
+        if (_modal)
+            return;
+        _modal = true;
+        _input.Clear();
+        var viewer = new EffectViewer(new CgLibrary(GameData.CgDirectory), _presenter.State);
+        viewer.TreeExiting += () => _modal = false;
+        AddChild(viewer);
+        viewer.PopupCentered();
+        if (_options.Effects && _options.ScreenshotDirectory is { } shots)
+            _ = SaveEffectsAsync(viewer, shots);
+    }
+
+    /// <summary>Development (<see cref="GameOptions.Effects"/>): saves the effect's frames, then quits with <c>--quit</c>.</summary>
+    private async Task SaveEffectsAsync(EffectViewer viewer, string dir)
+    {
+        await viewer.SaveFramesAsync(dir);
         if (_options.QuitWhenDone)
             _tree.Quit();
     }

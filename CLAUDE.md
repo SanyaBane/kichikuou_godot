@@ -237,6 +237,9 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   docs/window-menu.md, plus our Debug menu; `Strategy/EngineState` keeps
   the random generator and the message skip for the whole launch); `Battles/CaptureList` (Debug → Battle Captures) picks a capture, `Battles/BattleScreen` shows its battle;
   `Strategy/PortraitViewer` (Debug → Portraits: units', commanders' and every face as our screens cut them, `UnitFaces`, through `Strategy/FacePictures`, which the deployment screen's party cards share; the owner's edits of a square, `FaceCropEditor`, are kept in `user://face-crops.txt`, `FaceCropFile`; `--portraits` opens it);
+  `Battles/Effects` (our exchange effects after Sengoku Rance's, drawn by code: `EffectTextures`, particles from a seed
+  as `MeleeEffect`, drawn by `EffectCanvas` and laid over the scene by `EffectPlayer`; Debug → Effects, `EffectViewer`,
+  `--effects`; not wired into the exchange yet — docs/ui/battle-screen.md, "The exchange's effects");
   `Strategy/DeploymentTableView` and `Strategy/DeploymentPanels` (our own deployment screen, Option → Interface → New, `InterfaceChoice`;
   its colours Option → Palette, `DeploymentPalette`, steel by default;
   `GameScreen` feeds the script its gestures, `Original.Content/Strategy/DeploymentTable` the rows);
@@ -336,6 +339,9 @@ commit `local.env`.
 - Show an ending's `OVER` (its picture, staff roll, Completion Report) on a booted game:
   `<Godot console exe> --headless --path godot -- --ending <1-14> --auto --fast --quit [--shots <dir>]`
   (without `--auto` the keys wait for the player; slots in `user://saves-ending`).
+- Render our exchange effects' frames (Debug → Effects; docs/ui/battle-screen.md, "The exchange's effects"), in a
+  window — the pointer is not moved: `<Godot console exe> --path godot -- --effects --shots <dir> --quit`. Sengoku
+  Rance's reference frames come from `tools/sengoku/effect_frames.py`, into a folder outside the repository.
 
 ## Rules
 

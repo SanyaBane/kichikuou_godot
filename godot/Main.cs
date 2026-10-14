@@ -51,7 +51,8 @@ public partial class Main : Control
     /// exits at the end (exit code 1 after an error), <c>--shots DIR</c> saves the screen at every
     /// key wait and menu (a game's event CGs masked, <c>GamePresenter.MaskEventCgs</c>).
     /// <c>--portraits</c> opens Debug → Portraits over the title (with <c>--shots DIR</c> it saves the
-    /// units' list there; <c>--quit</c> then ends). Null without a switch: the title.
+    /// units' list there; <c>--quit</c> then ends). <c>--effects</c> opens Debug → Effects the same way (with
+    /// <c>--shots DIR</c> it saves the melee effect's frames there; needs a window). Null without a switch: the title.
     /// </summary>
     private static Node? FromCommandLine()
     {
@@ -90,6 +91,8 @@ public partial class Main : Control
         }
         if (args.Contains("--portraits"))
             return new GameScreen(new GameOptions { Start = GameStart.Title, Portraits = true, ScreenshotDirectory = shots, QuitWhenDone = quit });
+        if (args.Contains("--effects"))
+            return new GameScreen(new GameOptions { Start = GameStart.Title, Effects = true, ScreenshotDirectory = shots, QuitWhenDone = quit });
         if ((Value("--play") ?? Value("--watch")) is { } capture)
         {
             return new BattleScreen(capture, Value("--play") is not null ? BattleMode.Play : BattleMode.Watch)

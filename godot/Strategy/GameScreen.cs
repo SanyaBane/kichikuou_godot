@@ -120,6 +120,13 @@ public sealed record GameOptions
     /// it saves the units' list there (<see cref="PortraitViewer.SaveUnitsAsync"/>), then the program ends with <see cref="QuitWhenDone"/>.
     /// </summary>
     public bool Portraits { get; init; }
+
+    /// <summary>
+    /// Development: Debug → Effects opens once the game has booted; with <see cref="ScreenshotDirectory"/> it saves
+    /// the melee effect's frames there (<see cref="Battles.Effects.EffectViewer.SaveFramesAsync"/>; needs a window),
+    /// then the program ends with <see cref="QuitWhenDone"/>.
+    /// </summary>
+    public bool Effects { get; init; }
 }
 
 /// <summary>
@@ -170,6 +177,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private MessageSkip _skip = null!;
     private bool _modal;                        // a confirmation box is open: the game waits
     private bool _portraitsOpened;              // GameOptions.Portraits: Debug → Portraits was opened
+    private bool _effectsOpened;                // GameOptions.Effects: Debug → Effects was opened
 
     private ushort _ikKey;                      // cmdi.c ik_key, repeating: IK 0's key repeat
     private int _repeating;
@@ -294,6 +302,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             _portraitsOpened = true;
             OpenPortraits();
+        }
+        if (_options.Effects && !_effectsOpened && _presenter.State is not null && !_modal)
+        {
+            _effectsOpened = true;
+            OpenEffects();
         }
     }
 
