@@ -505,7 +505,7 @@ public sealed partial class GamePresenter : IStageObserver
     /// and selection windows <c>B1</c>-<c>B4</c>, <c>T</c>) steer the text; the drawing commands
     /// run on the stage as in the engine (<see cref="EngineStage"/>), except while a picker or All
     /// Data is open (they are drawn by hand: the text placed with <c>T</c> goes nowhere, they print
-    /// it themselves).
+    /// it themselves) — then only the copies and fills that keep a page off the screen run (<see cref="KeepsPage"/>).
     /// </summary>
     private void Engine(string command, IReadOnlyList<Sys3Int> args)
     {
@@ -536,8 +536,26 @@ public sealed partial class GamePresenter : IStageObserver
                 _target = TextTarget.Stage;
                 return;
         }
-        if (!DrawnByHand)
+        if (!DrawnByHand || KeepsPage(command, args))
             _engine.Draw(command, args);
+    }
+
+    /// <summary>
+    /// A copy or fill whose target lies wholly off the screen: the script keeps a page there to copy back later, also
+    /// after a screen drawn by hand has closed — <c>Sﾌﾞｶ</c>'s mode 4 puts the page its mode 2 kept at (640, 400) back
+    /// once a unit's troop menu is done (<c>Cﾌﾞｶ</c>). So it runs while that screen is open too, and the page holds what
+    /// the screen shows under it (the map) instead of what an older page left there.
+    /// </summary>
+    private static bool KeepsPage(string command, IReadOnlyList<Sys3Int> args)
+    {
+        int A(int i) => i < args.Count ? args[i].Value : 0;
+        var (x, y) = command switch
+        {
+            "CC" or "CM" => (A(4), A(5)),
+            "CF" => (A(0), A(1)),
+            _ => (0, 0),
+        };
+        return x >= Surface.ScreenWidth || y >= Surface.ScreenHeight;
     }
 
     void IStageObserver.BeforeCopy(int sourceX, int width) => PrepareCopy(sourceX, width);

@@ -202,6 +202,52 @@ public class GamePresenterTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// Subordinates at stage 1: a unit picked, its troop menu cancelled, back in the picker, End. <c>Sﾌﾞｶ</c>'s mode 4
+    /// puts back the page its mode 2 kept at (640, 400), with the picker closed: the picker drawn by hand comes back
+    /// over the screen it opened over, not over what an older page left there (owner's report, 2026-10-14).
+    /// </summary>
+    [Fact]
+    public async Task Subordinates_comes_back_from_a_unit_over_the_screen_it_opened_over()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var run = await RunAsync(stopAtWeek: 0);
+        var s = run.Session.State;
+        s.StoryStage = 1;
+        s.Ui_CmdSubordAvail = 1;
+        s.CmdAvail_SubTroops = 1;
+        s.CmdAvail_SubTalk = 1;
+        s.Units[3].Status = 1;
+        await run.Session.Script.EngineAsync("CF", [640, 400, 640, 400, 9]);                     // an older page
+        var player = run.Player;
+        player.Pickers.Enqueue((PickerKind.Subordinates, PickerArea.Cell, 3));                   // Bound,
+        player.Answers["Cﾌﾞｶ.ADV"] = new([0]);                                                  // the troop menu cancelled,
+        player.Pickers.Enqueue((PickerKind.Subordinates, PickerArea.Button, 3));                 // End
+        var underPicker = new List<(byte, byte, byte, byte)[]>();
+        bool opened = false;
+        player.OnShow = e => opened |= e is PickerScreenEvent { Open: true };
+        player.OnRead = () =>
+        {
+            if (!opened || run.Presenter.Picker is not { Kind: PickerKind.Subordinates })
+                return;
+            opened = false;
+            var screen = run.Presenter.Screen;
+            var pixels = new List<(byte, byte, byte, byte)>();
+            for (int y = 260; y < 400; y += 2)                                                  // the map below the details panel
+                for (int x = 0; x < 320; x += 2)
+                    pixels.Add(screen.PixelAt(x, y));
+            underPicker.Add([.. pixels]);
+        };
+
+        await run.Session.Script.CallFileAsync("Cﾌﾞｶ.ADV");
+
+        Assert.Empty(run.Presenter.Unresolved);
+        Assert.Empty(player.Pickers);
+        Assert.Equal(2, underPicker.Count);                                                      // opened, and back from the unit
+        Assert.Equal(underPicker[0], underPicker[1]);
+    }
+
+    /// <summary>
     /// All Data (<c>各種DATA</c>) on the booted world with 16 weeks of distinct history: the map in
     /// miniature with the menu, the funds graph (a bar cut at 300 with "OV"), the scale menu from a
     /// right click and the graph again at 4x (the bar now 45 high), each other graph, Return. The
