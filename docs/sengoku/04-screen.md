@@ -113,7 +113,8 @@ Surveyed as the reference for our own exchange effects (docs/ui/battle-screen.md
   Onmyouji (8; solo 45040); 40200 Sohei (7; and 32, 33); 40230 Peasant (24) and 29; 40260 Archer (5) and Miko (9;
   solo 45020); 40300 Knight (10); 40330 Cannoneer (12); 40360 Mage (11) and 31; 40530 Hanny (23) and 26. Without an
   entry the default is 40230 for a physical action, 40360 for a magic one, 30 frames (solo 46180 / 46100, 15;
-  `tagBattleEffect@getDefaultCgNo`, `あべ/T_BATEFF.JAF.jam:927-977`). Every entry has 30 frames.
+  `tagBattleEffect@getDefaultCgNo`, `あべ/T_BATEFF.JAF.jam:927-977`). The troop types' entries have 30 frames; many
+  action entries have 15 (the 45000-46880 series, e.g. `add1(46020, 15, …)`, `T_EFFDAT:571-580`; corrected 2026-10-14).
 - **The pictures** **[V]**: CGs in `Rance7GA.ald` (2279 of them in 40000-49999; WebP in the MangaGamer release — the
   Japanese release's format was not looked at), each frame **800×314**, the whole top scene (§2), **opaque, black
   where nothing is**: the effect sprite is drawn with draw method 1 (`tagEffectSp@setDrawMethod 1`,
@@ -160,6 +161,41 @@ Surveyed as the reference for our own exchange effects (docs/ui/battle-screen.md
   covers the right half to frame ~13 and draws back to the right edge, gone by ~22, its trailing side burning in rows of
   translucent blue flame tongues (12-25); sand dust on the left (0-15) and later over the right (18-25); a cluster of
   pale blue motes in the middle (x 320-480) from ~9 to ~27; the rings spread into a wide dark blue ellipse (to ~18).
+- **Counterparts for Kichikuou's other specials** **[V]** (surveyed 2026-10-14, proposals for the owner;
+  docs/ui/battle-screen.md, "The exchange's effects"). Of Kichikuou's special users Sengoku Rance has Magic (1009),
+  Shizuka (1157), Isoroku (1026), Miki ("Archfiend Miki", 1017), Kentarou (1003) and Kanami (1004); Gandhi and
+  Chizuko are only speakers in Urza's scene; Rick, Meglass, Patton, Asuka, Nagi and Rolex are absent. Skills are
+  `ＣＨＢ` slots (`▲武将データ:14201-14441`, a 0 slot taking the troop type's default, `:17744+`) and the Power Up
+  menu (`関数／システム:2551`, `:3108`). At the shots Kichikuou's special is told by `Bt_SpecialAtk` and the actor
+  (`Unit_Cur`), `Bt_SkillSfx` being reset by then. Candidates (action, name, its effect by `add1`, `T_EFFDAT`):
+
+  | Kichikuou special (users) | Special, actor | Best fit | Others |
+  |---|---|---|---|
+  | White D. Beam (Shizuka (unit 17), Magic (unit 39)) | 2; 17, 39 | **47 White Destruction Beam** — the same move, Shizuka's slot 4 (`▲武将データ:1032`), Magic's by Power Up (`関数／システム:4260`); type 2, a row, 150 % (`▲技能データ:5533-5580`) → **40460, 30** (`:221-230`): a white orb, then a beam of light streaking right through a cloud of sparkles | — |
+  | Black D. Beam (Chizuko (unit 38), Nagi (unit 40)) | 2; 38, 40 | none in SR | 98 Black Flame (Fiend Nobunaga, Xavier; all, 30 %) → 47130, 30: red and black flames over the whole frame; 78 Orochi Beam → 47300, 30: purple lightning and a glowing band; 47's beam recoloured |
+  | EPO Light (Gandhi (unit 37)) | 2; 37 | none in SR | 46 Angel Cutter ("the power of light"; Rizna by Power Up, `関数／システム:4292`) → 40430, 30: a warm orb, then white and gold blades sweeping right; 47's beam |
+  | Whirlwind Shot (Isoroku (unit 27)) | 3; 27 | **91 Piercing Tempest** — Isoroku's slot 4 by Power Up (`関数／システム:4196`); a single target, 0 % damage, sniping the enemy commander (`▲技能データ:2203-2256`), as Kichikuou's special 3 hurts only the commander → **40660, 30** (`:281`): teal spirals winding in, then a shot streaking right | 171 Yamamoto Arrow Barrage (her signature, `:1813-1866`) has no entry: the Archer's 40260, our bow |
+  | High Speed (Meglass (unit 30)) | 3; 30 | 34 Sonic Shuriken (a single target, wait 2, "swiftly attack"; any ninja by Power Up) → 41260, 30: white four-point stars thrown right, gold ones landing | 145 Sekimei Sword (wait 2) → 46820, 15; 99 Sandal Shuriken → 46780, 15 |
+  | The ninja's follow-up (record 51 as Kanami, Freya, Kaoru or Wichita) | 3; 51 | the Ninja troop's 40100 (Kanami's Shuriken, 33, has no entry) | 34 Sonic Shuriken → 41260 |
+  | By la Way (Rick (unit 7)) | 1; 7 | **92 Commander Charge** (a hero action: the commander's special move, then the unit's charge; Kenshin, Tadakatsu, Baba, Hayate, Noir; `▲技能データ:811-870`) → **41400, 30** (`:501`): a white streak, a burst, gold crescents | 8 Royal Guard Charge (Leila, Leazas) → 40860, 30: dust and blue slashes, like the Samurai's |
+  | Vanish Bomb (Miki (unit 32)) | 4 | **68 Begone Bomb** — the same move (`シナリオ/Ｍ定義:3822-3839` names it `消えちゃえボム`); Miki's slot 3, a single target, 500 % (`▲技能データ:6187-6240`, `▲武将データ:7267`) → **40560, 30** (`:251-260`, shared with Atomic Explosion): white light rings in, a white blast, a flat burst | — |
+  | C. War Dance (Patton (unit 18)) | 5 | 179 Motonari Punch (Motonari, a brawler; 100 %) → 46620, **15**: dust and a blue punch burst | 26 Ally Avenger (Gon; damage taken returned) → 41360, 30: violet skulls; 167 Ieyasu's Special Move → 47400, 30: rows of pink crescents |
+  | Chuhai (Asuka (unit 11)) | 6 | none in SR | 159 Chirp Chirp Shuriken (Suzume, a young girl ninja) → 41230, 30: little birds thrown right; 46 Angel Cutter → 40430 |
+  | T2 Soaring Wave (Rolex (unit 47)) | 7 | 178 Shogun Whirlwind (Tamuramaro; all, 80 %, a whirlwind) → 47060, 30: blue blades in a sweeping arc | 95 Kentarou-kun Slash → 40800, 30 (an eruption much like Rance Attack's); 82 Xavier Slash → 47330 |
+  | T2 Goliath (record 51) | 10; 51 | 134 Gigai Punch (Gigai, a giant) → 46820, **15**: white claws, then orange | 167 Ieyasu's Special Move → 47400 |
+  | Cheater Beam (debug) | 100 | — (by its action, melee) | 47's beam |
+
+  Kentarou (unit 31) has his own move in SR, 95 Kentarou-kun Slash (`Ｆコマンドイベント:69477-69488`) → 40800. The
+  frames were looked at five a run. Kichikuou's own pictures of the specials are the units' special sprites shown in
+  the engagement (`SpecialSprite`, docs/battle/02-resolution.md §4: CG 1520-1530, 1121, 1222, 1252): Rance's and
+  Kentarou's a white eruption, Rick's a red cross slash, Shizuka's and Magic's a white disc of light, Gandhi's a white
+  beam with a ring, Nagi's and Chizuko's dark energy, Meglass's a blue dash, Isoroku drawing her bow, Miki's a huge
+  white sphere, Patton's a punch with after-images, Asuka's a ghostly giant, Rolex's four blue crescent waves.
+  **The owner's choices** (2026-10-14, docs/ui/battle-screen.md, "The exchange's effects"): the best fits above for
+  White D. Beam, Whirlwind Shot, High Speed, the ninja's follow-up, By la Way, Vanish Bomb and T2 Goliath; **40460**
+  also for EPO Light (Gandhi's sprite is a beam) and, recoloured dark, for Black D. Beam; **47060** Shogun Whirlwind
+  for Chuhai; **47400** Ieyasu's Special Move for C. War Dance; **40800** Kentarou-kun Slash for Kentarou's Rance
+  Attack. T2 Soaring Wave later: likely Rance Attack's eruption made much smaller, four of them, as Rolex's sprite.
 - **Sound**: each effect's sound comes from a CG → sound table (`あべ/T_BATSND.JAF.jam:550-564`), played as it
   starts (`あべ/T_BATEFF.JAF.jam:280`) — not surveyed further.
 

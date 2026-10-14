@@ -279,7 +279,17 @@ picture, the slot panels) is not shown. How it is built:
     special 1, stays melee. No spotlight: the owner saw none in Sengoku Rance's Rance Attack either. The choice reads
     special 1 with the actor (`Bt_SpecialAtk`, `Unit_Cur`), since the shots' sound selection has reset `Bt_SkillSfx`.
     One captured battle has one (`20261008-111109-01-FIGT_A`, in the full run's captures only); `ExchangeEffectTests`
-    checks the rule on given states and that a Rance Attack's troops fire nothing.
+    checks the rule on given states and that a Rance Attack's troops fire nothing. The owner saw it in a battle and
+    took it (2026-10-14).
+    **The other specials** (owner, 2026-10-14, from the survey in 04-screen.md §2.4.1, "Counterparts for Kichikuou's
+    other specials"; each told at the shots by `Bt_SpecialAtk` and `Unit_Cur`): White D. Beam and EPO Light after
+    Sengoku Rance's White Destruction Beam (40460), Black D. Beam the same recoloured dark; Whirlwind Shot after
+    Piercing Tempest (40660); High Speed after Sonic Shuriken (41260); the ninja's follow-up after the Ninja troop's
+    effect (40100); By la Way after Commander Charge (41400); Vanish Bomb after Begone Bomb (40560); C. War Dance after
+    Ieyasu's Special Move (47400); Chuhai after Shogun Whirlwind (47060); T2 Goliath after Gigai Punch (46820, 15
+    frames); Kentarou's Rance Attack after his own Kentarou-kun Slash (40800) — until it is built he plays Rance
+    Attack's. T2 Soaring Wave later (likely Rance Attack's eruption much smaller, four of them, as Rolex's sprite);
+    the Cheater Beam stays melee.
   - **A setting**: Option → Battle Screen… → "Effects: on/off", on by default (Sengoku Rance's Combat Effect Display);
     none while skipping (MsgSkip) or with `--fast`.
   **Wired in**: the presenter takes the effect at the shots' first frame (`ExchangeEffect.Of` on the state,
