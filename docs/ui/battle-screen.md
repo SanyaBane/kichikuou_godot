@@ -292,7 +292,12 @@ picture, the slot panels) is not shown. How it is built:
     Gandhi (unit 37) plays the white beam, by Chizuko (unit 38) or Nagi (unit 40) the dark one
     (`ExchangeEffectKind.WhiteBeam`, `BlackBeam`); special 2 by anyone else plays by its action. No captured battle has
     a beam: `ExchangeEffectTests` checks the rule on given states, and in the captures that a beam's troops fire nothing
-    (nor its commander at the commander, 02-resolution.md §3.3). T2 Soaring Wave later (likely Rance Attack's eruption much smaller, four of them, as Rolex's sprite);
+    (nor its commander at the commander, 02-resolution.md §3.3). **Whirlwind Shot** (2026-10-15, the owner took its
+    v1 as it is): special 3 (`Bt_SpecialAtk == 3`, `FIGT.ADV:1542-1550`) by Isoroku (unit 27) plays ours after
+    Piercing Tempest (`ExchangeEffectKind.WhirlwindShot`); special 3 is also Meglass's (unit 30) High Speed (the same
+    setter) and the ninja's follow-up (record 51, `FIGT.ADV:1980`), which play by their action until theirs are built.
+    No captured battle has one: `ExchangeEffectTests` checks the rule on given states, and in the captures that a
+    Whirlwind Shot fires only the commander's one shot at the commander (02-resolution.md §3.3). T2 Soaring Wave later (likely Rance Attack's eruption much smaller, four of them, as Rolex's sprite);
     the Cheater Beam stays melee.
   - **A setting**: Option → Battle Screen… → "Effects: on/off", on by default (Sengoku Rance's Combat Effect Display);
     none while skipping (MsgSkip) or with `--fast`.
@@ -349,11 +354,23 @@ picture, the slot panels) is not shown. How it is built:
   brightness in eight column bands. The **Black D. Beam** is the same effect laid over dark (`EffectPlayer.Dark`, a
   shader mode): the effect's light read as shadow — its bright parts black the scene out (by 92 %), its fainter parts
   and edges glow blue-violet (peaking at half light) — after Kichikuou's own dark sprites (CG 1525, 1526).
+  The Whirlwind Shot effect (`WhirlwindShotEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Piercing Tempest, 40660 — 29
+  frames in the archive, the 30th absent; a texture of its own, `Lens`: a tall arc with a bright rim on its outer side and
+  a glassy fill): a whirlwind in the middle (its eye at ~(414, 168)) — six arms of beads placed by the frame, their
+  heads winding in from a ring of radius ~210 (frame 0) to the eye (~11) as the arms turn, white glows with a soft haze
+  at the heads, teal ones with four-point glints down the tails, which grow out over the first seven frames, and six
+  all-teal strands just outside them from frame ~2; the whole draws in about the eye after frame 12 and fades by ~17;
+  a shot of white blobs streaks right from the eye (12-13), then a white burst there with 40 cream rays fanning up and
+  down (13-17) and a thick beam of white billows to the right edge (from 13), dying from its root (~18) to the edge
+  (~23); the burst closes into a tall white oval (16-19) that stands as the lens's arc, its rim to the left, glass
+  turning teal as it fades (18-27); a thin white needle and cyan streaks rush right along the beam's line (18-25) over
+  300 teal stars in clumps, twinkling (17-27). Timed on the reference's near-white share and mean brightness in eight
+  column bands.
   **Debug → Effects** (`EffectViewer`) plays them over our scene's battlefield (CG 900 and its overlay, with Rance's
   (unit 1) and Ex's (commander 1) armies once a game has booted) or black: the effect, Play, Loop, the enemy acting,
   the blend, the speed, the seed and a frame slider; the effect stands at the scene's foot (y 8).
   `--effects --shots DIR --quit` (in a window; `--effects white-beam,black-beam` for those alone) writes every frame of each with seed 1: the effect alone on black
-  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `white-beam-NN.png`; the black beam's picture is
+  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `white-beam-NN.png`, `whirlwind-shot-NN.png`; the black beam's picture is
   its light, so it is saved over the battlefield only) and over the battlefield, the player acting and the enemy
   (`melee-scene-NN.png`, `melee-enemy-scene-NN.png`, …) — for a sheet next to the reference's frames, made outside the
   repository.

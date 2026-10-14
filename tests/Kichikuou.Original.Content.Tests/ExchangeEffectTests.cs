@@ -71,6 +71,37 @@ public class ExchangeEffectTests(ITestOutputHelper output)
         Assert.Equal(new ExchangeEffect(kind, BattleSide.Player), ExchangeEffect.Of(s));
     }
 
+    /// <summary>
+    /// Special 3 is Whirlwind Shot by Isoroku (unit 27); by Meglass (unit 30, High Speed) or the ninja's follow-up
+    /// (record 51) it plays by its action for now.
+    /// </summary>
+    [Theory]
+    [InlineData(27, ExchangeEffectKind.WhirlwindShot)]
+    [InlineData(30, ExchangeEffectKind.Melee)]
+    [InlineData(51, ExchangeEffectKind.Melee)]
+    public void Whirlwind_Shot_plays_its_own_by_Isoroku(int unit, ExchangeEffectKind kind)
+    {
+        var s = new GameState();
+        s.Bt_PlayerAction = (Sys3Int)0;
+        s.Bt_EnemyAction = (Sys3Int)99;
+        s.Bt_MsgMode = (Sys3Int)3;
+        s.Bt_SpecialAtk = (Sys3Int)3;
+        s.Unit_Cur = (Sys3Int)unit;
+        Assert.Equal(new ExchangeEffect(kind, BattleSide.Player), ExchangeEffect.Of(s));
+    }
+
+    /// <summary>Isoroku (unit 27) without the special plays by her action.</summary>
+    [Fact]
+    public void Isoroku_without_the_special_plays_by_the_action()
+    {
+        var s = new GameState();
+        s.Bt_PlayerAction = (Sys3Int)1;
+        s.Bt_EnemyAction = (Sys3Int)99;
+        s.Bt_MsgMode = (Sys3Int)3;
+        s.Unit_Cur = (Sys3Int)27;
+        Assert.Equal(new ExchangeEffect(ExchangeEffectKind.Bow, BattleSide.Player), ExchangeEffect.Of(s));
+    }
+
     /// <summary>A beam's actor without the special plays its magic.</summary>
     [Fact]
     public void A_beam_user_without_the_special_plays_by_the_action()
@@ -95,7 +126,8 @@ public class ExchangeEffectTests(ITestOutputHelper output)
     /// <summary>
     /// In every captured battle each exchange's shots start an effect: its side fires (its action is not 99, and it
     /// has a shot), and a two-sided exchange is direct against direct with the turn's actor in <c>Bt_MsgMode</c> (3 or 4);
-    /// a Rance Attack's troops fire nothing, nor a beam's (nor its commander at the commander).
+    /// a Rance Attack's troops fire nothing, nor a beam's (nor its commander at the commander); a Whirlwind Shot fires only
+    /// the commander's one shot at the commander.
     /// </summary>
     [CaptureTheory]
     [MemberData(nameof(BattleSceneTests.Captures), MemberType = typeof(BattleSceneTests))]
@@ -132,6 +164,9 @@ public class ExchangeEffectTests(ITestOutputHelper output)
             // are zeroed (02-resolution.md §3.3).
             if (effect.Kind is ExchangeEffectKind.WhiteBeam or ExchangeEffectKind.BlackBeam && (shots[0] != 0 || shots[1] != 0 || shots[3] != 0))
                 wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops or at the commander firing");
+            // Whirlwind Shot is the commander's one shot at the commander: every other shot is zeroed (02-resolution.md §3.3).
+            if (effect.Kind == ExchangeEffectKind.WhirlwindShot && (shots[0] != 0 || shots[1] != 0 || shots[2] != 0 || shots[3] != 1))
+                wrong.Add($"exchange {exchanges}: Whirlwind Shot firing other than the commander's one shot at the commander");
             bool twoSided = s.Bt_PlayerAction != 99 && s.Bt_EnemyAction != 99;
             if (twoSided && (s.Bt_PlayerAction != 0 || s.Bt_EnemyAction != 0 || s.Bt_MsgMode.Value is not (3 or 4)))
                 wrong.Add($"exchange {exchanges}: two-sided, actions {s.Bt_PlayerAction.Value}, {s.Bt_EnemyAction.Value}, mode {s.Bt_MsgMode.Value}");

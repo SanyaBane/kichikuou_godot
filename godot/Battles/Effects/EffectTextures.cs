@@ -85,6 +85,11 @@ internal static class EffectTextures
 
     private static Texture2D? _sphere, _swirl, _streak, _haze;
 
+    /// <summary>A lens: a tall arc bulging toward −x, a bright rim on its outer (−x) side and a glassy fill fading toward +x, its ends soft.</summary>
+    public static Texture2D Lens => _lens ??= Make(128, LensShape, 256);
+
+    private static Texture2D? _lens;
+
     /// <summary>
     /// A size × <paramref name="height"/> texture (square by default) whose alpha at each pixel is <paramref name="alpha"/>
     /// of (x, y) in [−1, 1] — both axes, whatever the shape.
@@ -347,6 +352,15 @@ internal static class EffectTextures
     {
         float body = SmoothStep(-1f, 0.1f, x) * (1 - SmoothStep(0.55f, 1f, x));
         return Gauss(y, 0.12f + 0.3f * body) * body;
+    }
+
+    // The rim runs from x −0.55 in the middle to −0.1 at the ends; the fill falls off over ~0.5 behind it.
+    private static float LensShape(float x, float y)
+    {
+        float rim = -0.55f + 0.45f * y * y, d = x - rim;
+        float ends = 1 - SmoothStep(0.8f, 1f, MathF.Abs(y));
+        float glow = 0.75f * Gauss(d, 0.12f) + (d > 0 ? 0.65f * MathF.Exp(-d / 0.5f) : 0);
+        return glow * ends * (1 - SmoothStep(0.2f, 1f, x));
     }
 
     /// <summary>A soft edge at <paramref name="v"/> = 0: 0 below −<paramref name="width"/>/2, 1 above +<paramref name="width"/>/2.</summary>

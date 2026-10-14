@@ -17,6 +17,8 @@ public enum ExchangeEffectKind
     WhiteBeam,
     /// <summary>Black D. Beam (the White Destruction Beam recoloured dark).</summary>
     BlackBeam,
+    /// <summary>Isoroku's Whirlwind Shot (after Sengoku Rance's Piercing Tempest, 40660).</summary>
+    WhirlwindShot,
 }
 
 /// <summary>
@@ -27,7 +29,7 @@ public enum ExchangeEffectKind
 /// <c>FIGT_M</c> turns 1 into 2 for the enemy's magic). The player's specials get Sengoku Rance's counterparts one by
 /// one (owner): the Rance Attack command its own (one effect: Kichikuou's is the commander's blow alone, as Sengoku
 /// Rance's first phase), Rance's or Kentarou's alike; the beams (special 2) the White Destruction Beam's, white or
-/// dark by the actor; the others play by their action for now.
+/// dark by the actor; Isoroku's Whirlwind Shot (special 3) Piercing Tempest's; the others play by their action for now.
 /// </summary>
 /// <param name="Kind">The effect.</param>
 /// <param name="Side">Whose it is: the enemy's is mirrored, its actor's half on the right.</param>
@@ -49,6 +51,8 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
             return new ExchangeEffect(ExchangeEffectKind.RanceAttack, side);
         if (side == BattleSide.Player && BeamOf(s) is { } beam)
             return new ExchangeEffect(beam, side);
+        if (side == BattleSide.Player && IsWhirlwindShot(s))
+            return new ExchangeEffect(ExchangeEffectKind.WhirlwindShot, side);
         int action = side == BattleSide.Player ? player : enemy;
         return KindOf(action) is { } kind ? new ExchangeEffect(kind, side) : null;
     }
@@ -72,6 +76,14 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
         38 or 40 => ExchangeEffectKind.BlackBeam,
         _ => null,
     };
+
+    /// <summary>
+    /// Special 3 (<c>FIGT.ADV:1542-1550</c>; docs/battle/02-resolution.md §3.3: the commander's one shot at the
+    /// commander) by Isoroku (unit 27), Whirlwind Shot (<c>FIGT_SEL.ADV:653</c>). The same setter is Meglass's (unit 30)
+    /// High Speed (<c>FIGT_SEL.ADV:599</c>), and the ninja's follow-up (record 51) sets special 3 too
+    /// (<c>FIGT.ADV:1980</c>): they play by their action until theirs are built.
+    /// </summary>
+    private static bool IsWhirlwindShot(GameState s) => s.Bt_SpecialAtk.Value == 3 && s.Unit_Cur.Value == 27;
 
     private static ExchangeEffectKind? KindOf(int action) => action switch
     {
