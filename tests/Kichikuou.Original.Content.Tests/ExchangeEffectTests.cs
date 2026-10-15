@@ -90,6 +90,19 @@ public class ExchangeEffectTests(ITestOutputHelper output)
         Assert.Equal(new ExchangeEffect(kind, BattleSide.Player), ExchangeEffect.Of(s));
     }
 
+    /// <summary>Special 4 is Miki's (unit 32) Vanish Bomb (<c>FIGT.ADV:1560-1570</c>).</summary>
+    [Fact]
+    public void Special_4_by_Miki_plays_Vanish_Bomb()
+    {
+        var s = new GameState();
+        s.Bt_PlayerAction = (Sys3Int)2;
+        s.Bt_EnemyAction = (Sys3Int)99;
+        s.Bt_MsgMode = (Sys3Int)1;
+        s.Bt_SpecialAtk = (Sys3Int)4;
+        s.Unit_Cur = (Sys3Int)32;
+        Assert.Equal(new ExchangeEffect(ExchangeEffectKind.VanishBomb, BattleSide.Player), ExchangeEffect.Of(s));
+    }
+
     /// <summary>Isoroku (unit 27) without the special plays by her action.</summary>
     [Fact]
     public void Isoroku_without_the_special_plays_by_the_action()
@@ -164,6 +177,10 @@ public class ExchangeEffectTests(ITestOutputHelper output)
             // are zeroed (02-resolution.md §3.3).
             if (effect.Kind is ExchangeEffectKind.WhiteBeam or ExchangeEffectKind.BlackBeam && (shots[0] != 0 || shots[1] != 0 || shots[3] != 0))
                 wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops or at the commander firing");
+            // Vanish Bomb is the commander's blast at the commander and the troops: the troops' shots are zeroed
+            // (02-resolution.md §3.3).
+            if (effect.Kind is ExchangeEffectKind.VanishBomb && (shots[0] != 0 || shots[1] != 0))
+                wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops firing");
             // Whirlwind Shot, High Speed and the ninja's follow-up are the commander's one shot at the commander: every
             // other shot is zeroed (02-resolution.md §3.3).
             if (effect.Kind is ExchangeEffectKind.WhirlwindShot or ExchangeEffectKind.HighSpeed or ExchangeEffectKind.NinjaFollowUp && (shots[0] != 0 || shots[1] != 0 || shots[2] != 0 || shots[3] != 1))

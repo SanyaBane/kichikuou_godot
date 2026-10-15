@@ -197,6 +197,7 @@ internal sealed partial class EffectViewer : Window
         ("High Speed (after 41400)", "high-speed", HighSpeedEffect.Build, false),
         ("By la Way (40500 red)", "by-la-way", RanceAttackEffect.BuildRed, false),
         ("Ninja (after 40100)", "ninja", NinjaEffect.Build, false),
+        ("Vanish Bomb (after 40560)", "vanish-bomb", VanishBombEffect.Build, false),
     ];
 
     /// <summary>

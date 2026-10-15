@@ -299,12 +299,15 @@ picture, the slot panels) is not shown. How it is built:
     ninja's follow-up** (2026-10-15, the owner took its v1 as it is): the follow-up sets special 3 too
     (`FIGT.ADV:1980`) with the ninja — Kanami, Freya, Kaoru or Wichita alike — as record 51 (`Unit_Cur` 51,
     `:1922-1968`) and plays ours after the Ninja troop's 40100 (`ExchangeEffectKind.NinjaFollowUp`); one captured battle
-    has one (`20261010-213655-86-FIGT_A`, in the full run's captures only). **By la
+    has one (`20261010-213655-86-FIGT_A`, in the full run's captures only). **Vanish Bomb** (2026-10-15, the owner took its v1
+    as it is): special 4 (`FIGT.ADV:1560-1570`) is Miki's (unit 32) alone — the menu offers it to her only
+    (`FIGT_SEL.ADV:644`) and her involuntary bomb is hers too (`FIGT.ADV:1588-1590`) — and plays ours after Begone Bomb
+    (40560, `ExchangeEffectKind.VanishBomb`); no captured battle has one. **By la
     Way** (2026-10-15, the owner took its v1 as it is): special 1 by Rick (unit 7) plays Rance Attack's effect
     recoloured red (`ExchangeEffectKind.ByLaWay`). One captured battle has a By la Way (`20261008-111109-01-FIGT_A`,
-    the Rance Attack's, in the full run's captures only), none a Whirlwind Shot or a High Speed: `ExchangeEffectTests` checks
+    the Rance Attack's, in the full run's captures only), none a Whirlwind Shot, a High Speed or a Vanish Bomb: `ExchangeEffectTests` checks
     the rules on given states (one table, `ExchangeEffect.SpecialOf`), and in the captures that a Whirlwind Shot, a
-    High Speed or a ninja's follow-up fires only the commander's one shot at the commander and a By la Way's troops fire nothing
+    High Speed or a ninja's follow-up fires only the commander's one shot at the commander and a By la Way's or a Vanish Bomb's troops fire nothing
     (02-resolution.md §3.3). T2 Soaring Wave later (likely Rance Attack's eruption much smaller, four of them, as Rolex's sprite);
     the Cheater Beam stays melee.
   - **A setting**: Option → Battle Screen… → "Effects: on/off", on by default (Sengoku Rance's Combat Effect Display);
@@ -397,11 +400,21 @@ picture, the slot panels) is not shown. How it is built:
   280 (3-27); gold crescents in a glow, small first, larger later (9-27), and teal four-point sparkles in a glow with
   small white ones (10-27). Timed on the reference's mean brightness in four column quarters. Over the battlefield
   the shuriken and the crescents read, the needles hardly.
+  The Vanish Bomb effect (`VanishBombEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Begone Bomb, 40560 — 29 frames in
+  the archive; a texture of its own, `Rim`: a ring with a sharp inner edge and a frayed outer one): a wall of white
+  light — lumps and four-point sparkles, pink past x 430, fewer toward the right edge — lit from the frame's edges
+  inward as the hole in it closes on (295, 185) (its half-width 400 at frame 0, 200 at 4, 0 at 8), each lump dimming
+  after it lights; a white flash there swelling over the left two thirds under a violet haze over the whole frame
+  (8.4-13), shrinking with pink-white spikes thrown off its edge (11.5-15) and flattening into a white ellipse
+  (12-16); then a thick flat white rim spreading from it (half-width 220 at 14, 400 at 20; a third as high) and
+  blurring into a broad soft grey band as it fades (16-24), a grey glow inside it, long rays from the centre and a
+  star there (12.5-27), and inside it cyan, gold and white star bursts, orange motes and teal flecks drifting out with
+  it (13.5-25). Timed on the reference's mean brightness in four column quarters.
   **Debug → Effects** (`EffectViewer`) plays them over our scene's battlefield (CG 900 and its overlay, with Rance's
   (unit 1) and Ex's (commander 1) armies once a game has booted) or black: the effect, Play, Loop, the enemy acting,
   the blend, the speed, the seed and a frame slider; the effect stands at the scene's foot (y 8).
   `--effects --shots DIR --quit` (in a window; `--effects white-beam,black-beam` for those alone) writes every frame of each with seed 1: the effect alone on black
-  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `white-beam-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`; the black beam's picture is
+  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `white-beam-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `vanish-bomb-NN.png`; the black beam's picture is
   its light, so it is saved over the battlefield only) and over the battlefield, the player acting and the enemy
   (`melee-scene-NN.png`, `melee-enemy-scene-NN.png`, …) — for a sheet next to the reference's frames, made outside the
   repository.

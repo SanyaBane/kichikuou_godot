@@ -25,6 +25,8 @@ public enum ExchangeEffectKind
     ByLaWay,
     /// <summary>The ninja's follow-up (after Sengoku Rance's Ninja troop effect, 40100).</summary>
     NinjaFollowUp,
+    /// <summary>Miki's Vanish Bomb (after Sengoku Rance's Begone Bomb, 40560).</summary>
+    VanishBomb,
 }
 
 /// <summary>
@@ -36,7 +38,7 @@ public enum ExchangeEffectKind
 /// one (owner): the Rance Attack command its own (one effect: Kichikuou's is the commander's blow alone, as Sengoku
 /// Rance's first phase), Rance's or Kentarou's alike; the beams (special 2) the White Destruction Beam's, white or
 /// dark by the actor; Isoroku's Whirlwind Shot (special 3) Piercing Tempest's, Meglass's High Speed Commander Charge's,
-/// the ninja's follow-up the Ninja troop's; Rick's By la Way Rance Attack's recoloured red; the others play by their action for now.
+/// the ninja's follow-up the Ninja troop's; Miki's Vanish Bomb Begone Bomb's; Rick's By la Way Rance Attack's recoloured red; the others play by their action for now.
 /// </summary>
 /// <param name="Kind">The effect.</param>
 /// <param name="Side">Whose it is: the enemy's is mirrored, its actor's half on the right.</param>
@@ -72,8 +74,10 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
     /// §3.3: the commander's one shot at the commander), one setter for two menu items: Whirlwind Shot by Isoroku
     /// (unit 27, <c>FIGT_SEL.ADV:653</c>) and High Speed by Meglass (unit 30, <c>:599</c>; Commander Charge's, owner,
     /// 2026-10-15); the ninja's follow-up sets special 3 too (<c>FIGT.ADV:1980</c>) with the ninja as record 51
-    /// (<c>:1922-1968</c>, Kanami, Freya, Kaoru or Wichita alike) and plays the Ninja troop's. Any other plays by its
-    /// action.
+    /// (<c>:1922-1968</c>, Kanami, Freya, Kaoru or Wichita alike) and plays the Ninja troop's. Special 4
+    /// (<c>FIGT.ADV:1560-1570</c>) is Vanish Bomb, Miki's (unit 32) alone — the menu offers it to her only
+    /// (<c>FIGT_SEL.ADV:644</c>) and her involuntary bomb is hers too (<c>FIGT.ADV:1588-1590</c>) — and plays Begone
+    /// Bomb's. Any other plays by its action.
     /// </summary>
     private static ExchangeEffectKind? SpecialOf(GameState s) => (s.Bt_SpecialAtk.Value, s.Unit_Cur.Value) switch
     {
@@ -84,6 +88,7 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
         (3, 27) => ExchangeEffectKind.WhirlwindShot,
         (3, 30) => ExchangeEffectKind.HighSpeed,
         (3, 51) => ExchangeEffectKind.NinjaFollowUp,
+        (4, 32) => ExchangeEffectKind.VanishBomb,
         _ => null,
     };
 

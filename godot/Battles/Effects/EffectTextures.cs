@@ -109,6 +109,11 @@ internal static class EffectTextures
 
     private static Texture2D? _shuriken, _wing;
 
+    /// <summary>A blast's rim: a ring with a sharp inner edge (radius 0.8) and a frayed outer one fading by 0.97.</summary>
+    public static Texture2D Rim => _rim ??= Make(256, RimShape);
+
+    private static Texture2D? _rim;
+
     /// <summary>
     /// A size × <paramref name="height"/> texture (square by default) whose alpha at each pixel is <paramref name="alpha"/>
     /// of (x, y) in [−1, 1] — both axes, whatever the shape.
@@ -421,6 +426,13 @@ internal static class EffectTextures
         float d = Math.Min(outer, Math.Min(hollow, bites));
         float body = SmoothStep(-0.02f, 0.02f, d) * (0.7f + 0.3f * SmoothStep(0.12f, 0.02f, outer));
         return Math.Min(1, body + 0.4f * MathF.Exp(-Math.Max(0, -d) / 0.08f));
+    }
+
+    private static float RimShape(float x, float y)
+    {
+        float r = MathF.Sqrt(x * x + y * y), angle = MathF.Atan2(y, x);
+        float fray = 0.04f * (Fbm(MathF.Cos(angle) * 6 + 3, MathF.Sin(angle) * 6 + 5) - 0.5f);
+        return SmoothStep(0.76f, 0.8f, r) * (1 - SmoothStep(0.84f + fray, 0.97f + fray, r)) * (0.85f + 0.15f * Fbm(x * 9, y * 9));
     }
 
     /// <summary>A soft edge at <paramref name="v"/> = 0: 0 below −<paramref name="width"/>/2, 1 above +<paramref name="width"/>/2.</summary>
