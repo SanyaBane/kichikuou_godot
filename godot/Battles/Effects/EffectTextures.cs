@@ -127,6 +127,11 @@ internal static class EffectTextures
 
     private static Texture2D? _hook, _kite;
 
+    /// <summary>A claw: a solid blade along x from a thin root (−x) to a sharp point (+x), widest three quarters along, bowed a little toward −y, in a soft glow (4:1).</summary>
+    public static Texture2D Claw => _claw ??= Make(256, ClawShape, 64);
+
+    private static Texture2D? _claw;
+
     /// <summary>
     /// A size × <paramref name="height"/> texture (square by default) whose alpha at each pixel is <paramref name="alpha"/>
     /// of (x, y) in [−1, 1] — both axes, whatever the shape.
@@ -463,6 +468,15 @@ internal static class EffectTextures
     }
 
     private static float KiteShape(float x, float y) => 1 - SmoothStep(0.1f, 1, MathF.Abs(x) + MathF.Abs(y) / 0.6f);
+
+    // Along x from the root (−1) to the point (+1); y is 4× finer. The half-width peaks at 0.6 about three quarters along.
+    private static float ClawShape(float x, float y)
+    {
+        float along = Math.Clamp((x + 1) / 2, 0, 1);
+        float half = 1.67f * MathF.Pow(along, 1.4f) * MathF.Pow(1 - along, 0.45f) + 0.02f;
+        float d = MathF.Abs(y + 0.3f * MathF.Sin(MathF.PI * along)) - half;
+        return Math.Min(1, Edge(-d, 0.08f) + 0.35f * MathF.Exp(-Math.Max(0, d) / 0.12f) * SmoothStep(0, 0.3f, along));
+    }
 
     /// <summary>A soft edge at <paramref name="v"/> = 0: 0 below −<paramref name="width"/>/2, 1 above +<paramref name="width"/>/2.</summary>
     private static float Edge(float v, float width) => Math.Clamp(v / width + 0.5f, 0, 1);

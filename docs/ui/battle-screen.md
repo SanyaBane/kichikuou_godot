@@ -308,13 +308,18 @@ picture, the slot panels) is not shown. How it is built:
     `ExchangeEffectKind.WarDance`); no captured battle has one. **Chuhai** (2026-10-15, the owner took its v1 as it is):
     special 6 (`FIGT.ADV:1551-1559`) is Asuka's (unit 11) alone — its menu item (`FIGT_SEL.ADV:464`) is offered under
     `Unit_Cur = 11` only (`:671-673`) — and plays ours after Shogun Whirlwind (47060, `ExchangeEffectKind.Chuhai`); no
-    captured battle has one. **By la
+    captured battle has one. **T2 Goliath** (2026-10-15, the owner took its v1 as it is): special 10 is set by Goliath's strike alone (`L_01abd`,
+    `FIGT.ADV:1120-1148`: automatic, once a week when `Goliath_State == 1 and Goliath_Prov == Prov_Cur`; record 51
+    rebuilt as "T2 Goliath", the player's action 0 and the enemy's 99, so the effect is the player's whatever the stale
+    `Bt_MsgMode`) and plays ours after Gigai Punch (46820, `ExchangeEffectKind.Goliath`; `Unit_Cur` 51 with special 3 is
+    the ninja's follow-up, so the row is `(10, 51)`); Goliath has no special sprite (`CgFull` 0); no captured battle has
+    one. **By la
     Way** (2026-10-15, the owner took its v1 as it is): special 1 by Rick (unit 7) plays Rance Attack's effect
     recoloured red (`ExchangeEffectKind.ByLaWay`). One captured battle has a By la Way (`20261008-111109-01-FIGT_A`,
-    the Rance Attack's, in the full run's captures only), none a Whirlwind Shot, a High Speed, a Vanish Bomb, a War Dance or a Chuhai: `ExchangeEffectTests` checks
+    the Rance Attack's, in the full run's captures only), none a Whirlwind Shot, a High Speed, a Vanish Bomb, a War Dance, a Chuhai or a Goliath: `ExchangeEffectTests` checks
     the rules on given states (one table, `ExchangeEffect.SpecialOf`), and in the captures that a Whirlwind Shot, a
     High Speed or a ninja's follow-up fires only the commander's one shot at the commander, a By la Way's or a Vanish Bomb's troops fire nothing
-    and a War Dance's or a Chuhai's troops fire nothing, nor its commander at the commander
+    and a War Dance's, a Chuhai's or a Goliath's troops fire nothing, nor its commander at the commander
     (02-resolution.md §3.3). T2 Soaring Wave later (likely Rance Attack's eruption much smaller, four of them, as Rolex's sprite);
     the Cheater Beam stays melee.
   - **A setting**: Option → Battle Screen… → "Effects: on/off", on by default (Sengoku Rance's Combat Effect Display);
@@ -448,6 +453,20 @@ picture, the slot panels) is not shown. How it is built:
   the right (to 6) down round the bottom (12) to the lower left (from 16), about ±90° wide at frame 8 and ±60° by 16;
   grey-teal haze just outside the rim; the whole dying from frame 20, gone by ~27. Timed on the reference's mean
   brightness in four column quarters. Over the sand battlefield the white sector reads strongly, the blue blades faintly.
+  The T2 Goliath effect (`GoliathEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Gigai Punch, 46820 — 14 frames in the
+  archive, 46834 absent, and 46839 on another effect's; **15 frames as the reference**, the owner's choice, the rest of
+  ours empty; its size the reference's; a texture of its own, `Claw`, a solid blade from a thin root to a sharp point,
+  widest three quarters along, bowed a little): four white claws raking down and right over the enemy's half, from
+  roots along the top (x 410-490) to points at the foot (x 570-730), each lit for a frame and longer to frame 3 (35 % of
+  its length at 0, 60 % at 1, 85 % at 2), thin at first; their roots warming to short orange fingers from frame 2; a
+  white flash where they cross (555, 185): a starburst at frame 1, a white mass to 4, a pale yellow core at 5; the
+  claws turning yellow at 4-5 and softening into strokes (soft ellipses along them) from 5, orange to red by 7, dark red
+  by 9, crossed from frame 4 by a long slash rising to the right (and a shorter one right of it) a step redder; a fan of
+  thin gold rays thrown from the flash up and to the left (frames 3-9, between 188° and 288°), cooling to embers, with
+  four-point sparkles among them, and short orange embers strewn left of the flash (6-12); on the left a beige dust
+  cloud rising from the bottom (x 100-220) and drifting up and left, swelling, gone by 12, with a fine grain at the
+  bottom left. Timed on the reference's mean brightness in four column quarters. Over the sand battlefield the white
+  claws read strongly, the orange strokes faintly.
   **Debug → Effects** (`EffectViewer`) plays them over our scene's battlefield (CG 900 and its overlay, with Ex's
   (commander 1) army once a game has booted) or black: the effect and its user, Play, Loop, the enemy acting, the
   blend, the speed, the seed and a frame slider; the effect stands at the scene's foot (y 8). On the player's side
@@ -457,9 +476,10 @@ picture, the slot panels) is not shown. How it is built:
   (unit 17, 1522), Magic (unit 39, 1523) or Gandhi (unit 37, 1524), the dark one Nagi (unit 40, 1525) or Chizuko
   (unit 38, 1526), Whirlwind Shot Isoroku (unit 27, 1528), High Speed Meglass (unit 30, 1527), By la Way Rick (unit 7,
   1521), the ninja's follow-up Kanami, Freya, Kaoru or Wichita (their own sprites, 1164, 1176, 1182, 1185), Vanish Bomb
-  Miki (unit 32, 1529), C. War Dance Patton (unit 18, 1530), Chuhai Asuka (unit 11, 1121).
+  Miki (unit 32, 1529), C. War Dance Patton (unit 18, 1530), Chuhai Asuka (unit 11, 1121), T2 Goliath none (record 51,
+  no sprite: the battlefield bare on the player's side, as in the battle).
   `--effects --shots DIR --quit` (in a window; `--effects white-beam,black-beam` for those alone) writes every frame of each with seed 1: the effect alone on black
-  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `white-beam-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`, `chuhai-NN.png`; the black beam's picture is
+  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `white-beam-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`, `chuhai-NN.png`, `goliath-NN.png`; the black beam's picture is
   its light, so it is saved over the battlefield only) and over the battlefield with the effect's first user, the
   player acting and the enemy (`melee-scene-NN.png`, `melee-enemy-scene-NN.png`, …) — for a sheet next to the reference's frames, made outside the
   repository.

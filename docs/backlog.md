@@ -103,12 +103,13 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   owner's new choices), the ninja's follow-up after 40100 (done 2026-10-15, the owner took v1 as it is), Miki's Vanish Bomb
   after 40560 (done 2026-10-15, the owner took v1 as it is; no captured battle has one), Patton's C. War Dance after
   47400 (done 2026-10-15, the owner took v1 as it is; no captured battle has one), Asuka's Chuhai after 47060 (done
-  2026-10-15, the owner took v1 as it is; no captured battle has one); v2 of four after the owner's notes (2026-10-15,
+  2026-10-15, the owner took v1 as it is; no captured battle has one), T2 Goliath's after 46820 (done 2026-10-15, the owner
+  took v1 as it is; 15 frames as the reference; no captured battle has one); v2 of four after the owner's notes (2026-10-15,
   the owner took them as they are): High Speed in Meglass's blues, By la Way redder, Vanish Bomb far larger, War Dance a
   third fewer crescents —
   [ui/battle-screen.md](ui/battle-screen.md), "The exchange's effects". Next (owner, 2026-10-14): the other
   specials' effects one at a time —
-  T2 Goliath (46820), Kentarou's Rance Attack (40800) — each after the
+  Kentarou's Rance Attack (40800) — after the
   counterpart the owner chose from the survey (until then by their action) —
   ui/battle-screen.md, "The other specials"; T2 Soaring Wave's counterpart later (likely Rance Attack's, much smaller,
   four of them).

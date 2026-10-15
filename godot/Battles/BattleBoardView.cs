@@ -230,6 +230,7 @@ internal sealed partial class BattleBoardView : Control
             ExchangeEffectKind.VanishBomb => VanishBombEffect.Build(_effectsSeen),
             ExchangeEffectKind.WarDance => WarDanceEffect.Build(_effectsSeen),
             ExchangeEffectKind.Chuhai => ChuhaiEffect.Build(_effectsSeen),
+            ExchangeEffectKind.Goliath => GoliathEffect.Build(_effectsSeen),
             _ => MeleeEffect.Build(_effectsSeen),
         });
         _effect.Playing = true;
