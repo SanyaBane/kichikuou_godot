@@ -266,6 +266,7 @@ internal sealed partial class EffectViewer : Window
         ("C. War Dance (after 47400)", "war-dance", WarDanceEffect.Build, false, [("Patton (unit 18)", 1530)]),
         ("Chuhai (after 47060)", "chuhai", ChuhaiEffect.Build, false, [("Asuka (unit 11)", 1121)]),
         ("T2 Goliath (after 46820)", "goliath", GoliathEffect.Build, false, [("T2 Goliath (record 51), no sprite", 0)]),
+        ("T2 Soaring Wave (ours)", "soaring-wave", SoaringWaveEffect.Build, false, [("Rolex (unit 47)", 1252)]),
     ];
 
     /// <summary>

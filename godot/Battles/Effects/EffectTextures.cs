@@ -133,6 +133,17 @@ internal static class EffectTextures
     private static Texture2D? _claw;
 
     /// <summary>
+    /// A wave standing on the ground: a quarter arc rising from its foot at the right (+x, +y) up and back to a thin
+    /// tip at the top left, its hollow facing left and down, thickest near the foot; faintly streaked across.
+    /// </summary>
+    public static Texture2D SurgeBody => _surgeBody ??= Make(256, SurgeBodyShape);
+
+    /// <summary>The wave's crest: a bright rim along its outer (+x, −y) edge, fading toward the tip.</summary>
+    public static Texture2D SurgeEdge => _surgeEdge ??= Make(256, SurgeEdgeShape);
+
+    private static Texture2D? _surgeBody, _surgeEdge;
+
+    /// <summary>
     /// A size × <paramref name="height"/> texture (square by default) whose alpha at each pixel is <paramref name="alpha"/>
     /// of (x, y) in [−1, 1] — both axes, whatever the shape.
     /// </summary>
@@ -476,6 +487,38 @@ internal static class EffectTextures
         float half = 1.67f * MathF.Pow(along, 1.4f) * MathF.Pow(1 - along, 0.45f) + 0.02f;
         float d = MathF.Abs(y + 0.3f * MathF.Sin(MathF.PI * along)) - half;
         return Math.Min(1, Edge(-d, 0.08f) + 0.35f * MathF.Exp(-Math.Max(0, d) / 0.12f) * SmoothStep(0, 0.3f, along));
+    }
+
+    // The wave: an arc of the circle round (−0.85, 0.95), radius 1.75, from its tip at the top (−0.85, −0.8) to its foot
+    // at the right (0.9, 0.95); its depth inward from the outer edge grows from 0 at the tip to 0.62 at the foot.
+    private const float SurgeX = -0.85f, SurgeY = 0.95f, SurgeR = 1.75f;
+
+    /// <summary>Along the wave from its tip (0) to its foot (1), the depth inside its outer edge, the depth it has there.</summary>
+    private static (float Along, float Depth, float Thickness) Surge(float x, float y)
+    {
+        float along = (MathF.Atan2(y - SurgeY, x - SurgeX) + MathF.PI / 2) / (MathF.PI / 2);
+        float depth = SurgeR - MathF.Sqrt((x - SurgeX) * (x - SurgeX) + (y - SurgeY) * (y - SurgeY));
+        return (along, depth, 0.62f * MathF.Pow(Math.Clamp(along, 0, 1), 0.6f));
+    }
+
+    private static float SurgeBodyShape(float x, float y)
+    {
+        var (along, depth, thickness) = Surge(x, y);
+        if (along is < 0 or > 1.02f)
+            return 0;
+        float inside = Edge(depth, 0.03f) * Edge(thickness - depth, 0.06f);
+        // Streaks across it, ragged at its inner edge; brighter toward the outer edge; the foot soft on the ground.
+        float streaks = 0.7f + 0.3f * Fbm(along * 22, depth * 9);
+        float outer = 0.65f + 0.35f * (1 - Math.Clamp(depth / Math.Max(thickness, 0.01f), 0, 1));
+        return inside * streaks * outer * (1 - SmoothStep(0.93f, 1.02f, along)) * SmoothStep(0, 0.08f, along);
+    }
+
+    private static float SurgeEdgeShape(float x, float y)
+    {
+        var (along, depth, _) = Surge(x, y);
+        if (along is < 0 or > 1.02f)
+            return 0;
+        return Gauss(depth - 0.025f, 0.022f) * SmoothStep(0, 0.25f, along) * (1 - SmoothStep(0.9f, 1.02f, along));
     }
 
     /// <summary>A soft edge at <paramref name="v"/> = 0: 0 below −<paramref name="width"/>/2, 1 above +<paramref name="width"/>/2.</summary>

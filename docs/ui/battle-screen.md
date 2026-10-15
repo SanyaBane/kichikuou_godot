@@ -288,7 +288,8 @@ picture, the slot panels) is not shown. How it is built:
     Piercing Tempest (40660); High Speed after Commander Charge (41400; owner, 2026-10-15, in place of Sonic Shuriken); the ninja's follow-up after the Ninja troop's
     effect (40100); By la Way after Rance Attack (40500) recoloured red, as Rick's sprite (owner, 2026-10-15); Vanish Bomb after Begone Bomb (40560); C. War Dance after
     Ieyasu's Special Move (47400); Chuhai after Shogun Whirlwind (47060); T2 Goliath after Gigai Punch (46820, 15
-    frames); Kentarou's Rance Attack after his own Kentarou-kun Slash (40800). **Kentarou-kun Slash** (2026-10-15, the owner took it as it is):
+    frames); Kentarou's Rance Attack after his own Kentarou-kun Slash (40800); T2 Soaring Wave our own (no counterpart; the
+    owner's design, 2026-10-15). **Kentarou-kun Slash** (2026-10-15, the owner took it as it is):
     special 1 by Kentarou (unit 31) — the same Rance Attack command as Rance's (`FIGT_SEL.ADV:579-588`), its rule
     unchanged — plays ours after his own move in Sengoku Rance (`ExchangeEffectKind.KentarouSlash`; the row `(1, 31)`,
     Rance's `(1, 1)` keeps Rance Attack's). **The beams** (2026-10-15, the owner took their v1 as it is): special 2 (`Bt_SpecialAtk == 2`) by Shizuka (unit 17), Magic (unit 39) or
@@ -316,15 +317,18 @@ picture, the slot panels) is not shown. How it is built:
     rebuilt as "T2 Goliath", the player's action 0 and the enemy's 99, so the effect is the player's whatever the stale
     `Bt_MsgMode`) and plays ours after Gigai Punch (46820, `ExchangeEffectKind.Goliath`; `Unit_Cur` 51 with special 3 is
     the ninja's follow-up, so the row is `(10, 51)`); Goliath has no special sprite (`CgFull` 0); no captured battle has
-    one. **By la
+    one. **T2 Soaring Wave** (2026-10-15, our own, the owner's design; the owner took its v2 as it is): special 7 (`FIGT.ADV:1525-1531`) is Rolex's
+    (unit 47) alone (the menu's item 20, `FIGT_SEL.ADV:689`) and the only special the enemy answers: both actions 0, a
+    two-sided exchange whose actor is the player's, as `L_02528` sets `Bt_MsgMode` 3 before the shots; it plays ours
+    (`ExchangeEffectKind.SoaringWave`, the row `(7, 47)`); no captured battle has one. **By la
     Way** (2026-10-15, the owner took its v1 as it is): special 1 by Rick (unit 7) plays Rance Attack's effect
     recoloured red (`ExchangeEffectKind.ByLaWay`). One captured battle has a By la Way (`20261008-111109-01-FIGT_A`,
-    the Rance Attack's, in the full run's captures only), none a Whirlwind Shot, a High Speed, a Vanish Bomb, a War Dance, a Chuhai or a Goliath: `ExchangeEffectTests` checks
+    the Rance Attack's, in the full run's captures only), none a Whirlwind Shot, a High Speed, a Vanish Bomb, a War Dance, a Chuhai, a Goliath or a Soaring Wave: `ExchangeEffectTests` checks
     the rules on given states (one table, `ExchangeEffect.SpecialOf`), and in the captures that a Whirlwind Shot, a
     High Speed or a ninja's follow-up fires only the commander's one shot at the commander, a By la Way's or a Vanish Bomb's troops fire nothing
-    and a War Dance's, a Chuhai's or a Goliath's troops fire nothing, nor its commander at the commander
-    (02-resolution.md §3.3). T2 Soaring Wave later (likely Rance Attack's eruption much smaller, four of them, as Rolex's sprite);
-    the Cheater Beam stays melee.
+    and a War Dance's, a Chuhai's or a Goliath's troops fire nothing, nor its commander at the commander, and a Soaring
+    Wave's troops fire nothing and its commander two shots at the commander (02-resolution.md §3.3). The Cheater Beam
+    stays melee.
   - **A setting**: Option → Battle Screen… → "Effects: on/off", on by default (Sengoku Rance's Combat Effect Display);
     none while skipping (MsgSkip) or with `--fast`.
   **Wired in**: the presenter takes the effect at the shots' first frame (`ExchangeEffect.Of` on the state,
@@ -489,6 +493,22 @@ picture, the slot panels) is not shown. How it is built:
   (x 380). Timed on the reference's mean brightness in four column quarters before the core was moved and the spikes
   left out. Over the battlefield it whites out the scene for
   frames ~4-11, as the reference does on black.
+  The T2 Soaring Wave effect (`SoaringWaveEffect`, 2026-10-15, the owner took its v2 as it is; ours, no counterpart in Sengoku Rance: the owner's design —
+  the four arcs Rolex's sprite shows on the ground growing a little and running at the enemy, hurting it as they hit;
+  in the blues of his sprite, CG 1252's 215/250/255, 195/240/255, 175/205/235, 115/165/195 and 85/140/175, its dust
+  215/190/195; two textures of its own, `SurgeBody`, a quarter arc rising from its foot at the right to a thin tip at
+  the top left, its hollow facing left, thickest near the foot and faintly streaked, and `SurgeEdge`, its bright
+  crest): the four waves where CG 1252 shows them (its pixel bounds: middles (360, 194), (400, 175), (444, 225),
+  (507, 206), 75-88 wide and 112-150 high; Rolex's figure stands at x 5-175 of the scene, left of them all), drawn
+  1.3× as wide with their feet where the sprite's are and their bodies twice over, light blue with less red and the
+  sprite's mid blue, so that over the sand they read nearly solid and blue (owner, 2026-10-15: less see-through,
+  a little wider), light up with a glow (frames 0-2), then run right at ~30 units a frame, each a little faster or slower, growing to 1.3× with
+  their feet on the ground, two fainter copies trailing them; droplets of spray thrown up and back from their feet and
+  falling, pink spikes of dust kicked up behind them with a low haze of it; as each one's front runs through the
+  enemy's ranks (x 535-780) a burst every 55-80 units, two or three up its height: a white glow, a `Burst`, a small
+  shock front pushed right, white shards and droplets thrown forward and up; past the ranks they break up into a blue
+  mist (from ~10), gone by ~20. Nothing is drawn behind Rolex. Over the sand battlefield the bursts read faintly over
+  the white armour of Ex's army.
   **Debug → Effects** (`EffectViewer`) plays them over our scene's battlefield (CG 900 and its overlay, with Ex's
   (commander 1) army once a game has booted) or black: the effect and its user, Play, Loop, the enemy acting, the
   blend, the speed, the seed, a frame slider and an offset (owner, 2026-10-15): X and Y move the effect from its own
@@ -501,9 +521,9 @@ picture, the slot panels) is not shown. How it is built:
   (unit 38, 1526), Whirlwind Shot Isoroku (unit 27, 1528), High Speed Meglass (unit 30, 1527), By la Way Rick (unit 7,
   1521), the ninja's follow-up Kanami, Freya, Kaoru or Wichita (their own sprites, 1164, 1176, 1182, 1185), Vanish Bomb
   Miki (unit 32, 1529), C. War Dance Patton (unit 18, 1530), Chuhai Asuka (unit 11, 1121), T2 Goliath none (record 51,
-  no sprite: the battlefield bare on the player's side, as in the battle).
+  no sprite: the battlefield bare on the player's side, as in the battle), T2 Soaring Wave Rolex (unit 47, 1252).
   `--effects --shots DIR --quit` (in a window; `--effects white-beam,black-beam` for those alone) writes every frame of each with seed 1: the effect alone on black
-  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `kentarou-slash-NN.png`, `white-beam-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`, `chuhai-NN.png`, `goliath-NN.png`; the black beam's picture is
+  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `kentarou-slash-NN.png`, `white-beam-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`, `chuhai-NN.png`, `goliath-NN.png`, `soaring-wave-NN.png`; the black beam's picture is
   its light, so it is saved over the battlefield only) and over the battlefield with the effect's first user, the
   player acting and the enemy (`melee-scene-NN.png`, `melee-enemy-scene-NN.png`, …) — for a sheet next to the reference's frames, made outside the
   repository.

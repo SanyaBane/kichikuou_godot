@@ -148,6 +148,22 @@ public class ExchangeEffectTests(ITestOutputHelper output)
         Assert.Equal(new ExchangeEffect(ExchangeEffectKind.Goliath, BattleSide.Player), ExchangeEffect.Of(s));
     }
 
+    /// <summary>
+    /// Special 7 is Rolex's (unit 47) T2 Soaring Wave (<c>FIGT.ADV:1525-1531</c>): the enemy answers it (both actions 0)
+    /// and <c>L_02528</c> sets <c>Bt_MsgMode</c> 3, so the player's plays.
+    /// </summary>
+    [Fact]
+    public void Special_7_by_Rolex_plays_Soaring_Wave()
+    {
+        var s = new GameState();
+        s.Bt_PlayerAction = (Sys3Int)0;
+        s.Bt_EnemyAction = (Sys3Int)0;
+        s.Bt_MsgMode = (Sys3Int)3;
+        s.Bt_SpecialAtk = (Sys3Int)7;
+        s.Unit_Cur = (Sys3Int)47;
+        Assert.Equal(new ExchangeEffect(ExchangeEffectKind.SoaringWave, BattleSide.Player), ExchangeEffect.Of(s));
+    }
+
     /// <summary>Isoroku (unit 27) without the special plays by her action.</summary>
     [Fact]
     public void Isoroku_without_the_special_plays_by_the_action()
@@ -184,7 +200,8 @@ public class ExchangeEffectTests(ITestOutputHelper output)
     /// <summary>
     /// In every captured battle each exchange's shots start an effect: its side fires (its action is not 99, and it
     /// has a shot), and a two-sided exchange is direct against direct with the turn's actor in <c>Bt_MsgMode</c> (3 or 4);
-    /// the troops of a Rance Attack or a By la Way fire nothing, nor a beam's, a War Dance's, a Chuhai's or a Goliath's (nor its commander at the commander); a
+    /// the troops of a Rance Attack or a By la Way fire nothing, nor a beam's, a War Dance's, a Chuhai's or a Goliath's (nor its commander at the commander), nor a Soaring Wave's (its
+    /// commander fires two shots at the commander); a
     /// Whirlwind Shot or a High Speed fires only the commander's one shot at the commander.
     /// </summary>
     [CaptureTheory]
@@ -231,6 +248,10 @@ public class ExchangeEffectTests(ITestOutputHelper output)
             // (02-resolution.md §3.3).
             if (effect.Kind is ExchangeEffectKind.VanishBomb && (shots[0] != 0 || shots[1] != 0))
                 wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops firing");
+            // T2 Soaring Wave is the commander's blow at the troops and two shots at the commander: the troops' shots are
+            // zeroed (02-resolution.md §3.3).
+            if (effect.Kind is ExchangeEffectKind.SoaringWave && (shots[0] != 0 || shots[1] != 0 || shots[3] != 2))
+                wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops firing or other than two shots at the commander");
             // Whirlwind Shot, High Speed and the ninja's follow-up are the commander's one shot at the commander: every
             // other shot is zeroed (02-resolution.md §3.3).
             if (effect.Kind is ExchangeEffectKind.WhirlwindShot or ExchangeEffectKind.HighSpeed or ExchangeEffectKind.NinjaFollowUp && (shots[0] != 0 || shots[1] != 0 || shots[2] != 0 || shots[3] != 1))
