@@ -10,7 +10,8 @@ namespace Kichikuou.Game.Battles.Effects;
 /// throwing sparks (frames 5-10), fills it (9-12) and draws back to the right edge, its trailing side burning in rows
 /// of blue flame tongues (12-26), gone by ~22. Sand-coloured dust billows on the actor's half (0-15) and drifts over
 /// the target's later (14-26); a cluster of pale blue motes hangs in the middle from frame ~9, fading by ~27; the rings
-/// spread wide and darken to blue (to ~18). The same seed makes the same effect.
+/// spread wide and darken to blue (to ~18). Rance's is drawn 100 units right of where it was laid out (owner,
+/// 2026-10-15); By la Way where it was laid out. The same seed makes the same effect.
 /// </summary>
 internal static class RanceAttackEffect
 {
@@ -47,7 +48,14 @@ internal static class RanceAttackEffect
     private static readonly Color Mote = new(0.55f, 0.65f, 1f, 0.6f), MoteCore = new(0.75f, 0.82f, 1f), Flame = new(0.42f, 0.55f, 1f, 0.55f);
     private static readonly Color FlameHot = new(0.8f, 0.9f, 1f, 0.6f);
 
-    public static IReadOnlyList<Particle> Build(int seed)
+    /// <summary>Rance's: the effect as laid out, moved right (owner, 2026-10-15: +100 units).</summary>
+    public static IReadOnlyList<Particle> Build(int seed) =>
+        Layout(seed).Select(p => p with { Position = p.Position + Shift }).ToList();
+
+    /// <summary>Rance's effect moved right after it was laid out (owner, 2026-10-15); By la Way stays where it was laid out.</summary>
+    private static readonly Vector2 Shift = new(100, 0);
+
+    private static IReadOnlyList<Particle> Layout(int seed)
     {
         var random = new Random(seed);
         float Range(float from, float to) => from + (float)random.NextDouble() * (to - from);
@@ -204,7 +212,7 @@ internal static class RanceAttackEffect
     /// then white, only where the light piles up), ice to red, the blues deep red; the sand dust reddened to a rust brown.
     /// </summary>
     public static IReadOnlyList<Particle> BuildRed(int seed) =>
-        Build(seed).Select(p => p with { Colour = Red(p.Colour), Ramp = p.Ramp is { } ramp ? t => Red(ramp(t)) : null }).ToList();
+        Layout(seed).Select(p => p with { Colour = Red(p.Colour), Ramp = p.Ramp is { } ramp ? t => Red(ramp(t)) : null }).ToList();
 
     private static Color Red(Color c)
     {

@@ -9,7 +9,7 @@ namespace Kichikuou.Game.Battles.Effects;
 /// Debug → Effects (ours, development; docs/ui/battle-screen.md, "The exchange's effects"): our exchange effects
 /// over a battlefield the size of our scene (1024×410), for the owner to judge before they are wired into the
 /// exchange. The battlefield is CG 900 with its overlay and, once a game has booted, Ex's (commander 1) army at the
-/// troop limit; on the player's side Rance's (unit 1) army for melee, bow and magic (once a game has booted) and for
+/// troop limit; on the player's side Rance's (unit 1) army for melee and magic, Isoroku's (unit 27) archers for the bow (once a game has booted) and for
 /// a special the sprite its user shows while using it (<c>FIGT.ADV:1660-1713</c>: Patton's (unit 18) CG 1530, the
 /// ninjas' own; docs/battle/02-resolution.md §4), the user picked from the special's users; or plain black, as Sengoku
 /// Rance's frames are. The effect stands at the scene's foot (y 8: 1024×402). The effect and its user, Play, Loop, a
@@ -178,7 +178,7 @@ internal sealed partial class EffectViewer : Window
     private void FillUsers()
     {
         _user.Clear();
-        foreach (var (name, _) in UsersOf(Effects[_effect.Selected].Users))
+        foreach (var (name, _) in UsersOf(Effects[_effect.Selected]))
             _user.AddItem(name);
         _user.Disabled = _user.ItemCount < 2;
         _user.Select(0);
@@ -188,14 +188,19 @@ internal sealed partial class EffectViewer : Window
     /// <summary>The battlefield with the selected user on the player's side.</summary>
     private void ShowField()
     {
-        var users = UsersOf(Effects[_effect.Selected].Users);
+        var users = UsersOf(Effects[_effect.Selected]);
         var field = Battlefield(_cgs, _state, users[Math.Max(0, _user.Selected)].Cg);
         _field.Texture = field is null ? null : ImageTexture.CreateFromImage(field);
     }
 
-    /// <summary>The users to pick from: a special's, or for melee, bow and magic Rance's army (none before the boot).</summary>
-    private IReadOnlyList<(string Name, int Cg)> UsersOf(IReadOnlyList<(string Name, int Cg)>? users) =>
-        users ?? [("Rance's (unit 1) army", _state?.Units[1].CgFull.Value ?? 0)];
+    /// <summary>
+    /// The users to pick from: a special's, or for melee and magic Rance's army and for the bow Isoroku's (unit 27)
+    /// archers (owner, 2026-10-15; none before the boot).
+    /// </summary>
+    private IReadOnlyList<(string Name, int Cg)> UsersOf((string Name, string Prefix, Func<int, IReadOnlyList<Particle>> Build, bool Dark, (string Name, int Cg)[]? Users) effect) =>
+        effect.Users ?? (effect.Prefix == "bow"
+            ? [("Isoroku's (unit 27) archers", _state?.Units[27].CgFull.Value ?? 0)]
+            : [("Rance's (unit 1) army", _state?.Units[1].CgFull.Value ?? 0)]);
 
     private void Restart()
     {
@@ -216,11 +221,12 @@ internal sealed partial class EffectViewer : Window
     {
         System.IO.Directory.CreateDirectory(dir);
         _player.Playing = false;
-        foreach (var (_, prefix, build, dark, users) in Effects)
+        foreach (var effect in Effects)
         {
+            var (_, prefix, build, dark, _) = effect;
             if (only is not null && !only.Contains(prefix))
                 continue;
-            var field = Battlefield(_cgs, _state, UsersOf(users)[0].Cg);
+            var field = Battlefield(_cgs, _state, UsersOf(effect)[0].Cg);
             _field.Texture = field is null ? null : ImageTexture.CreateFromImage(field);
             _player.Start(build(1));
             _player.Dark = dark;

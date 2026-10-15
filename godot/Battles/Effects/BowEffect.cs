@@ -5,16 +5,17 @@ namespace Kichikuou.Game.Battles.Effects;
 /// <summary>
 /// The bow effect, ours after Sengoku Rance's Archer effect 40260 (docs/sengoku/04-screen.md §2.4.1; not traced): on
 /// the actor's half (left) a volley of white arrows leaving up and to the right from a line of release bursts (frames
-/// 0-6), the bows' arcs lingering (to ~21) and a second, level volley (frames 9-14); on the target's half gold arrows
-/// streaking in level (frames 2-17), cream arrows falling down to the right (frames 8-28), gold "crowns" where they
-/// hit, flat teal streaks and a cloud of bokeh that fades by frame ~27. No dust. The same seed makes the same effect.
+/// 0-6) and the bows' arcs lingering (to ~21); on the target's half cream arrows falling down to the right (frames
+/// 5-28), gold "crowns" where they hit, flat teal streaks and a cloud of bokeh that fades by frame ~27. No dust, and
+/// no arrow flying level (owner, 2026-10-15: the reference's second volley and gold arrows left out). The same seed
+/// makes the same effect.
 /// </summary>
 internal static class BowEffect
 {
     private const float Half = EffectCanvas.DesignWidth / 2, Width = EffectCanvas.DesignWidth, Height = EffectCanvas.DesignHeight;
 
     // The colours (light added over the scene).
-    private static readonly Color WhiteArrow = new(0.92f, 0.9f, 0.78f), GoldArrow = new(1f, 0.83f, 0.28f);
+    private static readonly Color WhiteArrow = new(0.92f, 0.9f, 0.78f);
     private static readonly Color FallingArrow = new(0.93f, 0.89f, 0.7f), Release = new(0.95f, 0.92f, 0.78f, 0.85f);
     private static readonly Color Bow = new(0.95f, 0.85f, 0.45f), Crown = new(0.85f, 0.62f, 0.14f);
     private static readonly Color Streak = new(0.35f, 0.6f, 0.66f, 0.8f), Bokeh = new(0.55f, 0.5f, 0.38f, 0.3f);
@@ -59,29 +60,13 @@ internal static class BowEffect
             }
         }
 
-        // The second volley: level white arrows leaving the actor's half to the right.
-        for (int k = 9; k <= 14; k++)
-        {
-            for (int n = Count(2.5f); n > 0; n--)
-                Arrow(k - Range(0, 1), 8, new Vector2(Range(60, 260), Range(190, 275)), Range(-0.05f, 0.05f), Range(55, 75),
-                    Range(80, 120), WhiteArrow);
-        }
+        // The reference's level arrows — a second volley on the actor's half and gold arrows over the target's — are left
+        // out (owner, 2026-10-15).
 
-        // The gold arrows over the target's half: level, high at first, lower later.
-        for (int k = 2; k <= 17; k++)
+        // The falling arrows: in from above, down and to the right, from frame 5 (in place of the level ones) to the end.
+        for (int k = 5; k <= 26; k++)
         {
-            for (int n = Count(k < 9 ? 2.5f : 1.5f); n > 0; n--)
-            {
-                float y = k < 9 ? Range(15, 150) : Range(140, 295);
-                Arrow(k - Range(0, 1), 7, new Vector2(Range(Half - 20, Half + 140), y), Range(-0.1f, 0f), Range(60, 90),
-                    Range(85, 125), GoldArrow);
-            }
-        }
-
-        // The falling arrows: in from above, down and to the right, to the end.
-        for (int k = 8; k <= 26; k++)
-        {
-            for (int n = Count(k <= 22 ? 1f : 0.5f); n > 0; n--)
+            for (int n = Count(k <= 14 ? 1.6f : k <= 22 ? 1f : 0.5f); n > 0; n--)
             {
                 float angle = Range(0.75f, 1f);
                 var at = new Vector2(Range(Half + 60, Width - 40), Range(-40, 120));

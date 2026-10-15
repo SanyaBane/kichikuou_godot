@@ -4,8 +4,10 @@ namespace Kichikuou.Game.Battles.Effects;
 
 /// <summary>
 /// The melee effect, ours after Sengoku Rance's Samurai effect 40000 (docs/sengoku/04-screen.md §2.4.1; not traced):
-/// on the actor's half (left) a sand-coloured dust cloud — small round puffs at the start, one bright billowing
-/// speckled cloud by frames 3-6, darkening to nothing by frame ~28; on the target's half (right) crescent slashes that
+/// on the actor's half (left) the dust the armies raise as they clash (owner, 2026-10-15: dust on the field, not a
+/// glow) — dim sand billows rising from the ground at the clash (x ~460), spreading back over the actor's ranks and
+/// up to ~90 % of the height,
+/// clods and jets of dirt kicked up, the billows settling by frame ~24; on the target's half (right) crescent slashes that
 /// flash for a frame or two (white cores, pale blue to violet edges, every size and angle), dark blue-teal "urchins"
 /// that swell and fade, four-point sparkles, small rings and streaks — brightest at frame 3, new slashes until frame
 /// ~21, all gone by frame ~27. The same seed makes the same effect.
@@ -14,11 +16,11 @@ internal static class MeleeEffect
 {
     private const float Half = EffectCanvas.DesignWidth / 2, Height = EffectCanvas.DesignHeight;
 
-    /// <summary>The dust's last frame.</summary>
-    private const float DustEnd = 27.5f;
+    /// <summary>Where the armies clash: the dust rises most there and spreads back to the left.</summary>
+    private const float Clash = 460;
 
     // The colours (light added over the scene).
-    private static readonly Color Dust = new(0.8f, 0.73f, 0.46f, 0.2f), DustLarge = new(0.8f, 0.73f, 0.46f, 0.1f), Speck = new(1f, 0.96f, 0.75f, 0.55f);
+    private static readonly Color Dust = new(0.3f, 0.25f, 0.17f, 0.28f), DustOld = new(0.18f, 0.14f, 0.1f, 0.28f), Clod = new(0.72f, 0.62f, 0.46f);
     private static readonly Color SlashWhite = new(0.9f, 0.92f, 0.95f), SlashWhiteEdge = new(0.55f, 0.78f, 1f);
     private static readonly Color SlashBlue = new(0.45f, 0.66f, 0.85f), SlashBlueEdge = new(0.7f, 0.88f, 1f);
     private static readonly Color SlashViolet = new(0.33f, 0.36f, 0.88f), SlashVioletEdge = new(0.55f, 0.55f, 1f);
@@ -34,35 +36,33 @@ internal static class MeleeEffect
         int Count(float mean) => (int)MathF.Floor(mean + (float)random.NextDouble());
         var particles = new List<Particle>();
 
-        // The dust: puffs that start small, swell into one cloud by frame ~4 and fade from frame 6, with a grain of
-        // bright specks over it.
-        var puffs = new List<(Vector2 At, float Radius)>();
-        for (int i = 0; i < 44; i++)
+        // The dust: dim sand billows rising from the ground, first at the clash, then back over the actor's ranks, and
+        // up to about a tenth of the height from the top (owner, 2026-10-15), the higher ones a little later, swelling
+        // and drifting up and back as they thin out.
+        for (int i = 0; i < 60; i++)
         {
-            // The cloud's top runs from y ~40 on the left down to ~130 at its right end, with a bump in the middle; each
-            // puff sits under it. The last few are large and faint and bind the cloud into one mass.
-            bool large = i >= 40;
-            float x = large ? Range(20, 300) : Range(0, 365);
-            float r0 = large ? Range(20, 30) : Range(9, 19), rf = large ? Range(100, 140) : Range(35, 90);
-            float top = 40 + 90 * x / 365 - 30 * MathF.Exp(-MathF.Pow((x - 230) / 50, 2));
-            float y = large ? Range(150, 260) : Range(Math.Min(top + rf * 0.7f, Height - 20), Height);
-            puffs.Add((new Vector2(x, y), rf));
-            particles.Add(new Particle(EffectTextures.Puff, -0.3f, DustEnd + 0.3f, new Vector2(x, y),
-                new Vector2(Range(-0.3f, 0.6f), Range(-0.9f, -0.2f)), Range(0, MathF.Tau), Range(-0.01f, 0.01f),
-                new Vector2(2, 2), large ? DustLarge : Dust,
-                t => DustAlpha(t * (DustEnd + 0.3f) - 0.3f),
-                t => PuffRadius(t * (DustEnd + 0.3f) - 0.3f, r0, rf)));
+            float back = (float)random.NextDouble(), x = Clash - 30 - 420 * back, size = Range(60, 100);
+            float high = MathF.Pow((float)random.NextDouble(), 0.8f), y = Height + 10 - high * (Height - 30);
+            float birth = back * 5 + high * 3 + Range(-0.5f, 1.5f), life = Range(13, 20);
+            particles.Add(new Particle(EffectTextures.Billow, birth, life, new Vector2(x, y),
+                new Vector2(Range(-1.4f, 0.2f), Range(-2.2f, -0.6f)), Range(0, MathF.Tau), Range(-0.01f, 0.01f),
+                new Vector2(size * 1.8f, size), Dust, Settle, t => 1 + 1.4f * MathF.Sqrt(t), Ramp: t => Dust.Lerp(DustOld, t)));
         }
-        for (int i = 0; i < 700; i++)
+        // The dirt kicked up at the clash: clods thrown up and falling back, and short jets of dust.
+        for (int i = 0; i < 70; i++)
         {
-            var (at, radius) = puffs[random.Next(puffs.Count)];
-            float angle = Range(0, MathF.Tau), distance = MathF.Sqrt((float)random.NextDouble()) * radius * 0.8f;
-            float twinkle = Range(0, MathF.Tau), size = Range(1.5f, 3.2f);
-            particles.Add(new Particle(EffectTextures.Dot, 1.5f, DustEnd - 1.5f,
-                at + new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * distance, new Vector2(Range(-0.2f, 0.5f), Range(-1f, -0.3f)),
-                0, 0, new Vector2(size, size), Speck,
-                t => DustAlpha(1.5f + t * (DustEnd - 1.5f)) * (0.6f + 0.4f * MathF.Sin(twinkle + t * 40)) * Math.Min(1, t * 20),
-                _ => 1));
+            float size = Range(2, 4.5f);
+            particles.Add(new Particle(EffectTextures.Dot, Range(0, 10), Range(3, 5), new Vector2(Clash - Range(0, 260), Range(280, Height)),
+                new Vector2(Range(-6, 4), Range(-15, -6)), 0, 0, new Vector2(size, size), Clod, t => 0.85f * (1 - t * t), _ => 1,
+                Move: t => new Vector2(0, 45 * t * t)));
+        }
+        for (int i = 0; i < 24; i++)
+        {
+            float angle = -MathF.PI / 2 - Range(-0.2f, 0.9f), length = Range(40, 85);
+            var direction = Vector2.FromAngle(angle);
+            particles.Add(new Particle(EffectTextures.Spike, Range(0, 9), Range(2, 3.5f),
+                new Vector2(Clash - Range(0, 280), Range(285, Height)) + direction * length / 2, direction * Range(3, 7), angle, 0,
+                new Vector2(length, length / 4), Dust, t => 0.8f * (1 - t), t => 0.6f + 0.6f * t));
         }
 
         // The slashes: several each frame, most at the start, new ones until frame ~21, small violet ones after.
@@ -106,15 +106,12 @@ internal static class MeleeEffect
             }
         }
 
-        // The sparkles: four-point stars blinking for a frame or three, a few over the dust too.
+        // The sparkles: four-point stars blinking for a frame or three, on the target's half alone.
         for (int k = 0; k <= 22; k++)
         {
             for (int n = Count(k < 13 ? 9 : 4); n > 0; n--)
             {
-                bool overDust = random.NextDouble() < 0.1 && k < 9;
-                var position = overDust
-                    ? new Vector2(Range(150, Half + 20), Range(150, Height))
-                    : new Vector2(Range(Half + 10, EffectCanvas.DesignWidth), Range(0, Height));
+                var position = new Vector2(Range(Half + 10, EffectCanvas.DesignWidth), Range(0, Height));
                 float rotation = random.NextDouble() < 0.7 ? Range(-0.15f, 0.15f) : Range(0, MathF.PI / 2);
                 float size = Range(22, 64);
                 particles.Add(new Particle(EffectTextures.Sparkle, k - Range(0, 1), Range(1, 3), position, Vector2.Zero,
@@ -144,19 +141,8 @@ internal static class MeleeEffect
         return particles;
     }
 
-    /// <summary>The dust's brightness at frame <paramref name="f"/>: most of it at the start, full from frame 3 to 6, then down to nothing at <see cref="DustEnd"/>.</summary>
-    private static float DustAlpha(float f) =>
-        f < 3 ? 0.7f + 0.3f * Math.Max(f, 0) / 3
-        : f < 6 ? 1
-        : Math.Max(0, (DustEnd - f) / (DustEnd - 6));
-
-    /// <summary>A puff's radius at frame <paramref name="f"/>: from <paramref name="r0"/> to <paramref name="rf"/> by frame ~4.5, then slowly larger.</summary>
-    private static float PuffRadius(float f, float r0, float rf)
-    {
-        float t = Math.Clamp(f / 4.5f, 0, 1);
-        float eased = 1 - (1 - t) * (1 - t) * (1 - t);
-        return (r0 + (rf - r0) * eased) * (1 + 0.12f * Math.Max(f, 0) / 27);
-    }
+    /// <summary>In over the first tenth, held, then thinning out over the second half (a dust billow).</summary>
+    private static float Settle(float t) => t < 0.1f ? t / 0.1f : t < 0.45f ? 1 : 1 - (t - 0.45f) / 0.55f;
 
     /// <summary>Full at once, then fading over the life (a slash).</summary>
     private static float Flash(float t) => t < 0.1f ? t / 0.1f : 1 - MathF.Pow((t - 0.1f) / 0.9f, 1.5f);

@@ -349,15 +349,18 @@ picture, the slot panels) is not shown. How it is built:
   (each particle added to what is under it) in Sengoku Rance's 800×314 design space. `EffectPlayer` draws the canvas on
   black in a viewport of its own, scaled ×1.28 to 1024×402, and lays that picture over the scene with a shader:
   **screen** (1 − (1 − scene)(1 − effect), Sengoku Rance's draw method 1 as we read it) or add; mirrored when the enemy
-  acts. The melee effect: 44 dust puffs (a cloud whose top runs from high on the left down toward the middle; small at
-  frame 0, swelling into one cloud by frame ~4, full to frame 6, then fading straight to nothing at 27.5) with 700
-  twinkling specks over it; on the target's half slashes (five a frame at the start down to two by frame 21, small
+  acts. The melee effect: on the actor's half the dust the armies raise as they clash (owner, 2026-10-15: the
+  reference's bright speckled cloud read as magic) — 60 dim sand billows rising from the ground, first at the clash
+  (x ~430, from frame 0) and back over the actor's ranks to x ~10 (by frame ~6), and up to ~90 % of the height (y 30-314;
+  owner, 2026-10-15), the higher ones up to 3 frames later, swelling, drifting up and
+  back and darkening, thinning out over the second half of their 13-20 frames, with 70 clods of dirt thrown up and
+  falling back and 24 jets of dust kicked up and back (frames 0-10); on the target's half slashes (five a frame at the start down to two by frame 21, small
   violet ones to 24; each lives 1.4-2.4 frames, turning a little), urchins (swelling and fading over 5-9 frames, to
   frame 16, five large deep blue ones), sparkles (nine a frame to frame 12, then four, to 22), rings and streaks.
-  The bow effect: on the actor's half a first volley of white arrows leaving up and to the right from release bursts
-  along a line running down to the left (frames 0-6; the bursts linger 6-11 frames), bows' arcs standing and fading
-  (from frame 3, 9-16 frames) and a level second volley (9-14); on the target's half gold arrows streaking in level
-  (2-17, high first, lower from 9), cream arrows falling down to the right (8-26), gold crowns and flat teal streaks
+  The bow effect: on the actor's half a volley of white arrows leaving up and to the right from release bursts
+  along a line running down to the left (frames 0-6; the bursts linger 6-11 frames) and bows' arcs standing and fading
+  (from frame 3, 9-16 frames); on the target's half cream arrows falling down to the right (5-26, denser to 14; no arrow
+  flies level: the reference's level second volley and gold arrows are left out, owner, 2026-10-15), gold crowns and flat teal streaks
   where they hit (6-21) and 90 bokeh discs fading to frame ~27. The magic effect, all on the target's half: an orb
   (a white disc, a warm halo, rays; frames 0-2), a white-hot ellipse with flames licking up (2-5), 130 billows thrown
   out from the centre and slowing (born 2-10, white turning yellow, orange and smoke with age, the late and far ones
@@ -371,7 +374,8 @@ picture, the slot panels) is not shown. How it is built:
   back to the right edge (the middle at ~10.5, the edge at ~22; timed on the reference's white coverage by band), its
   trailing side burning in rows of blue tongues, each with two fainter copies trailing down-left (12-24); sand dust
   billowing on the actor's half (0-15) and a browner cloud over the target's (13-26); a cluster of pale blue motes in
-  the middle (from ~7, gone by ~28).
+  the middle (from ~7, gone by ~28). Rance's is drawn 100 units right of that (owner, 2026-10-15; the positions here
+  are before the shift); By la Way stays where it was laid out.
   The White Destruction Beam effect (`WhiteBeamEffect`, 2026-10-15, the owner took its v1 as it is; textures of its own: a sphere of light, a swirl,
   a streak, a haze — a far flatter glow): a white disc in a haze of soft cyan-grey rays filling the frame (frames 0-3),
   breaking up in a violet halo with pink-white lumps and glints on its rim (3-5); a white disc at ~5 swelling into a
@@ -514,7 +518,8 @@ picture, the slot panels) is not shown. How it is built:
   blend, the speed, the seed, a frame slider and an offset (owner, 2026-10-15): X and Y move the effect from its own
   place, in the design space (800 × 314, +x toward the target, +y down; `EffectPlayer.Offset`), to try another place
   before it is built in — Reset puts it back; the effect stands at the scene's foot (y 8). On the player's side
-  stands Rance's (unit 1) army for melee, bow and magic (once a game has booted) and for a special the sprite its user
+  stands Rance's (unit 1) army for melee and magic and Isoroku's (unit 27) archers for the bow (owner, 2026-10-15;
+  once a game has booted) and for a special the sprite its user
   shows while using it (owner, 2026-10-15; `FIGT.ADV:1660-1713`, docs/battle/02-resolution.md §4): the user list holds
   the special's users — Rance Attack Rance (unit 1, CG 1520), Kentarou-kun Slash Kentarou (unit 31, 1222), the white beam Shizuka
   (unit 17, 1522), Magic (unit 39, 1523) or Gandhi (unit 37, 1524), the dark one Nagi (unit 40, 1525) or Chizuko
