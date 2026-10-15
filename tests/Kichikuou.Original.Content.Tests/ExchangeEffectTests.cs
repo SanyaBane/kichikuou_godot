@@ -34,10 +34,13 @@ public class ExchangeEffectTests(ITestOutputHelper output)
         Assert.Equal(new ExchangeEffect(kind, side), ExchangeEffect.Of(s));
     }
 
-    /// <summary>Special 1 is Rance Attack by Rance (unit 1) or Kentarou (unit 31), By la Way by Rick (unit 7), Rance Attack's in red.</summary>
+    /// <summary>
+    /// Special 1 is Rance Attack by Rance (unit 1), Kentarou-kun Slash's by Kentarou (unit 31), By la Way by Rick
+    /// (unit 7), Rance Attack's in red.
+    /// </summary>
     [Theory]
     [InlineData(1, ExchangeEffectKind.RanceAttack)]
-    [InlineData(31, ExchangeEffectKind.RanceAttack)]
+    [InlineData(31, ExchangeEffectKind.KentarouSlash)]
     [InlineData(7, ExchangeEffectKind.ByLaWay)]
     public void Special_1_plays_Rance_Attack_or_By_la_Way_by_the_actor(int unit, ExchangeEffectKind kind)
     {
@@ -212,8 +215,9 @@ public class ExchangeEffectTests(ITestOutputHelper output)
                 : new[] { s.Bt_ETroopVsTroopShots, s.Bt_ETroopVsCmdrShots, s.Bt_ECmdrVsTroopShots, s.Bt_ECmdrVsCmdrShots };
             if ((player ? s.Bt_PlayerAction : s.Bt_EnemyAction) == 99 || shots.All(v => v == 0))
                 wrong.Add($"exchange {exchanges}: {key} does not fire");
-            // Rance Attack and By la Way are the commander's blow alone: the troops' shots are zeroed (02-resolution.md §3.3).
-            if (effect.Kind is ExchangeEffectKind.RanceAttack or ExchangeEffectKind.ByLaWay && (shots[0] != 0 || shots[1] != 0))
+            // Rance Attack (Kentarou's too) and By la Way are the commander's blow alone: the troops' shots are zeroed
+            // (02-resolution.md §3.3).
+            if (effect.Kind is ExchangeEffectKind.RanceAttack or ExchangeEffectKind.KentarouSlash or ExchangeEffectKind.ByLaWay && (shots[0] != 0 || shots[1] != 0))
                 wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops firing");
             // A beam is the commander's blast at the troops: the troops' shots and the commander's at the commander
             // are zeroed (02-resolution.md §3.3).

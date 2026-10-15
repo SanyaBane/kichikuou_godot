@@ -104,15 +104,14 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   after 40560 (done 2026-10-15, the owner took v1 as it is; no captured battle has one), Patton's C. War Dance after
   47400 (done 2026-10-15, the owner took v1 as it is; no captured battle has one), Asuka's Chuhai after 47060 (done
   2026-10-15, the owner took v1 as it is; no captured battle has one), T2 Goliath's after 46820 (done 2026-10-15, the owner
-  took v1 as it is; 15 frames as the reference; no captured battle has one); v2 of four after the owner's notes (2026-10-15,
+  took v1 as it is; 15 frames as the reference; no captured battle has one), Kentarou's Rance Attack after his own
+  Kentarou-kun Slash, 40800 (done 2026-10-15, the owner took it as it is; in his sprite's mint, starting where his
+  sprite strikes, nothing behind him); v2 of four after the owner's notes (2026-10-15,
   the owner took them as they are): High Speed in Meglass's blues, By la Way redder, Vanish Bomb far larger, War Dance a
   third fewer crescents —
-  [ui/battle-screen.md](ui/battle-screen.md), "The exchange's effects". Next (owner, 2026-10-14): the other
-  specials' effects one at a time —
-  Kentarou's Rance Attack (40800) — after the
-  counterpart the owner chose from the survey (until then by their action) —
-  ui/battle-screen.md, "The other specials"; T2 Soaring Wave's counterpart later (likely Rance Attack's, much smaller,
-  four of them).
+  [ui/battle-screen.md](ui/battle-screen.md), "The exchange's effects". Next (owner, 2026-10-14): T2 Soaring
+  Wave's counterpart (likely Rance Attack's, much smaller, four of them; until then by its action) —
+  ui/battle-screen.md, "The other specials".
   Groundwork (survey §4.8): menus as data and the map helper are done (2026-10-12); the shared engine
   host (§4.8, "Items 2 and 4 are one step") is not needed for screens over the original layout.
 - **Quality-of-life features**, the README's second aim — *owner* (which), then *agent*; a survey of

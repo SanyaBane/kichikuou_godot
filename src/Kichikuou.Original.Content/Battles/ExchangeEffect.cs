@@ -11,8 +11,10 @@ public enum ExchangeEffectKind
     Bow,
     /// <summary>Action 2, the Magic attack (after the Mage's Fire Blast 40360).</summary>
     Magic,
-    /// <summary>The Rance Attack command, Rance's or Kentarou's (after Sengoku Rance's own Rance Attack, 40500).</summary>
+    /// <summary>The Rance Attack command, Rance's (after Sengoku Rance's own Rance Attack, 40500).</summary>
     RanceAttack,
+    /// <summary>The Rance Attack command by Kentarou (after Sengoku Rance's Kentarou-kun Slash, 40800).</summary>
+    KentarouSlash,
     /// <summary>White D. Beam and EPO Light (after Sengoku Rance's White Destruction Beam, 40460).</summary>
     WhiteBeam,
     /// <summary>Black D. Beam (the White Destruction Beam recoloured dark).</summary>
@@ -42,7 +44,7 @@ public enum ExchangeEffectKind
 /// is read from <c>Bt_MsgMode</c>, which the turn sets before the exchange (3 or 1 on the player's, 4 on the enemy's;
 /// <c>FIGT_M</c> turns 1 into 2 for the enemy's magic). The player's specials get Sengoku Rance's counterparts one by
 /// one (owner): the Rance Attack command its own (one effect: Kichikuou's is the commander's blow alone, as Sengoku
-/// Rance's first phase), Rance's or Kentarou's alike; the beams (special 2) the White Destruction Beam's, white or
+/// Rance's first phase), Kentarou's his own Kentarou-kun Slash's; the beams (special 2) the White Destruction Beam's, white or
 /// dark by the actor; Isoroku's Whirlwind Shot (special 3) Piercing Tempest's, Meglass's High Speed Commander Charge's,
 /// the ninja's follow-up the Ninja troop's; Miki's Vanish Bomb Begone Bomb's; Patton's C. War Dance Ieyasu's Special
 /// Move's; Asuka's Chuhai Shogun Whirlwind's; T2 Goliath's strike Gigai Punch's; Rick's By la Way Rance Attack's recoloured red; the others play by their action for now.
@@ -73,7 +75,8 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
     /// The player's special by its setter (<c>Bt_SpecialAtk</c>) and the actor (<c>Unit_Cur</c>); its
     /// <c>Bt_SkillSfx</c> would tell some apart, but the shots' sound selection has reset it by then (<c>FIGTATTK.ADV</c>
     /// <c>L_00796</c>). Special 1 (<c>FIGT.ADV:1507-1515</c>) is the Rance Attack command by Rance (unit 1) or Kentarou
-    /// (unit 31), the only ones it is offered to (<c>FIGT_SEL.ADV:579-588</c>), and By la Way by Rick (unit 7,
+    /// (unit 31), the only ones it is offered to (<c>FIGT_SEL.ADV:579-588</c>) — Rance's plays Rance Attack's,
+    /// Kentarou's Kentarou-kun Slash's, his own move in Sengoku Rance (owner, 2026-10-15) — and By la Way by Rick (unit 7,
     /// <c>:589-597</c>), Rance Attack's recoloured red (owner, 2026-10-15). Special 2 (<c>FIGT.ADV:1532-1541</c>), one
     /// setter for three menu items (<c>FIGT_SEL.ADV:608-643, 680</c>): White D. Beam by Shizuka (unit 17) or Magic
     /// (unit 39) and EPO Light by Gandhi (unit 37) play the white beam, Black D. Beam by Chizuko (unit 38) or Nagi
@@ -93,7 +96,8 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
     /// </summary>
     private static ExchangeEffectKind? SpecialOf(GameState s) => (s.Bt_SpecialAtk.Value, s.Unit_Cur.Value) switch
     {
-        (1, 1 or 31) => ExchangeEffectKind.RanceAttack,
+        (1, 1) => ExchangeEffectKind.RanceAttack,
+        (1, 31) => ExchangeEffectKind.KentarouSlash,
         (1, 7) => ExchangeEffectKind.ByLaWay,
         (2, 17 or 39 or 37) => ExchangeEffectKind.WhiteBeam,
         (2, 38 or 40) => ExchangeEffectKind.BlackBeam,

@@ -120,6 +120,17 @@ internal sealed partial class EffectPlayer : Control
         set => _material.SetShaderParameter("dark", value);
     }
 
+    /// <summary>
+    /// Where the effect is drawn, moved from its own place, in the design space (<see cref="EffectCanvas.DesignWidth"/>
+    /// × <see cref="EffectCanvas.DesignHeight"/>, +x toward the target, +y down); mirrored with the picture when the
+    /// enemy acts. Debug → Effects sets it to try a place out.
+    /// </summary>
+    public Vector2 Offset
+    {
+        get => _canvas.Position / DesignScale;
+        set => _canvas.Position = value * DesignScale;
+    }
+
     /// <summary>Shows an effect from its start; <see cref="Playing"/> runs it.</summary>
     public void Start(IReadOnlyList<Particle> particles)
     {

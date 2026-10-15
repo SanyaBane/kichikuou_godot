@@ -275,7 +275,8 @@ picture, the slot panels) is not shown. How it is built:
     **Rance Attack** (owner, 2026-10-14): Sengoku Rance's is effect 40500 for the general's figure alone, then the
     troop's charge with the Samurai effect (04-screen.md §2.4.1); Kichikuou's is the commander's blow alone (the troops'
     shots zeroed, no counter, the unit's own sprite; docs/battle/02-resolution.md §3.3), so it plays **one effect**, ours
-    after 40500, for the command whoever uses it — Rance (unit 1) or Kentarou (unit 31); By la Way, Rick's (unit 7)
+    after 40500, for the command whoever uses it — Rance (unit 1) or Kentarou (unit 31; his own counterpart since
+    2026-10-15, below); By la Way, Rick's (unit 7)
     special 1, stayed melee (now the same in red, below). No spotlight: the owner saw none in Sengoku Rance's Rance Attack either. The choice reads
     special 1 with the actor (`Bt_SpecialAtk`, `Unit_Cur`), since the shots' sound selection has reset `Bt_SkillSfx`.
     One captured battle has one (`20261008-111109-01-FIGT_A`, in the full run's captures only); `ExchangeEffectTests`
@@ -287,8 +288,10 @@ picture, the slot panels) is not shown. How it is built:
     Piercing Tempest (40660); High Speed after Commander Charge (41400; owner, 2026-10-15, in place of Sonic Shuriken); the ninja's follow-up after the Ninja troop's
     effect (40100); By la Way after Rance Attack (40500) recoloured red, as Rick's sprite (owner, 2026-10-15); Vanish Bomb after Begone Bomb (40560); C. War Dance after
     Ieyasu's Special Move (47400); Chuhai after Shogun Whirlwind (47060); T2 Goliath after Gigai Punch (46820, 15
-    frames); Kentarou's Rance Attack after his own Kentarou-kun Slash (40800) — until it is built he plays Rance
-    Attack's. **The beams** (2026-10-15, the owner took their v1 as it is): special 2 (`Bt_SpecialAtk == 2`) by Shizuka (unit 17), Magic (unit 39) or
+    frames); Kentarou's Rance Attack after his own Kentarou-kun Slash (40800). **Kentarou-kun Slash** (2026-10-15, the owner took it as it is):
+    special 1 by Kentarou (unit 31) — the same Rance Attack command as Rance's (`FIGT_SEL.ADV:579-588`), its rule
+    unchanged — plays ours after his own move in Sengoku Rance (`ExchangeEffectKind.KentarouSlash`; the row `(1, 31)`,
+    Rance's `(1, 1)` keeps Rance Attack's). **The beams** (2026-10-15, the owner took their v1 as it is): special 2 (`Bt_SpecialAtk == 2`) by Shizuka (unit 17), Magic (unit 39) or
     Gandhi (unit 37) plays the white beam, by Chizuko (unit 38) or Nagi (unit 40) the dark one
     (`ExchangeEffectKind.WhiteBeam`, `BlackBeam`); special 2 by anyone else plays by its action. No captured battle has
     a beam: `ExchangeEffectTests` checks the rule on given states, and in the captures that a beam's troops fire nothing
@@ -467,19 +470,40 @@ picture, the slot panels) is not shown. How it is built:
   cloud rising from the bottom (x 100-220) and drifting up and left, swelling, gone by 12, with a fine grain at the
   bottom left. Timed on the reference's mean brightness in four column quarters. Over the sand battlefield the white
   claws read strongly, the orange strokes faintly.
+  The Kentarou-kun Slash effect (`KentarouSlashEffect`, 2026-10-15, the owner took it as it is after four rounds of notes; after Sengoku Rance's own move of Kentarou's,
+  40800 — 29 frames, 40829 on another effect's; in the white and mint of Kentarou's sprite, CG 1222's 210/255/245,
+  160/215/205 and 100/175/165, where the reference is blue): a blast thrown right across the field from a white-hot
+  core at (410, 160) — where Kentarou's sprite strikes the ground (CG 1222: his figure at x 229-299 of the scene, the
+  eruption at 300-400; owner, 2026-10-15: the reference's core, at 265, stood behind his back), the reference's right
+  half compressed to fit between it and the edge, and the whole laid out so moved 20 units right (owner; the
+  positions here are before that shift); the core's glow and face a white mass to a bowed edge at x ~470 (0-4); a domed
+  shock front (the `Shock` arc) bursting from it at frame 3, a grey needle ahead of it, and running right (x 600 at 4,
+  670 at 6, 735 at 8, 800 at 10), filled white behind while it leaves the core and throwing sparks; a white mass
+  filling behind it and dying by place — the middle by frame ~8-9, the actor's half by ~11-13, the right edge last,
+  by ~15; pale teal crescents (the `Moon`, its hollow facing left, owner, 2026-10-15; the large ones alone, 110-150 high, the
+  small ones left out, owner) flying right through it (frames
+  5-17); a column of soft teal bars standing just right of the core (x 455-545, frames 7-16) with a band of fine mint
+  specks drifting right through it; sand-coloured dust over the target's half (9-26). Nothing is drawn behind
+  Kentarou (owner, 2026-10-15): the reference's spikes fanning back to the left from the core (frames 0-9), its
+  cluster of motes and its dust on the actor's half are left out, and the core's billows start right of his figure
+  (x 380). Timed on the reference's mean brightness in four column quarters before the core was moved and the spikes
+  left out. Over the battlefield it whites out the scene for
+  frames ~4-11, as the reference does on black.
   **Debug → Effects** (`EffectViewer`) plays them over our scene's battlefield (CG 900 and its overlay, with Ex's
   (commander 1) army once a game has booted) or black: the effect and its user, Play, Loop, the enemy acting, the
-  blend, the speed, the seed and a frame slider; the effect stands at the scene's foot (y 8). On the player's side
+  blend, the speed, the seed, a frame slider and an offset (owner, 2026-10-15): X and Y move the effect from its own
+  place, in the design space (800 × 314, +x toward the target, +y down; `EffectPlayer.Offset`), to try another place
+  before it is built in — Reset puts it back; the effect stands at the scene's foot (y 8). On the player's side
   stands Rance's (unit 1) army for melee, bow and magic (once a game has booted) and for a special the sprite its user
   shows while using it (owner, 2026-10-15; `FIGT.ADV:1660-1713`, docs/battle/02-resolution.md §4): the user list holds
-  the special's users — Rance Attack Rance (unit 1, CG 1520) or Kentarou (unit 31, 1222), the white beam Shizuka
+  the special's users — Rance Attack Rance (unit 1, CG 1520), Kentarou-kun Slash Kentarou (unit 31, 1222), the white beam Shizuka
   (unit 17, 1522), Magic (unit 39, 1523) or Gandhi (unit 37, 1524), the dark one Nagi (unit 40, 1525) or Chizuko
   (unit 38, 1526), Whirlwind Shot Isoroku (unit 27, 1528), High Speed Meglass (unit 30, 1527), By la Way Rick (unit 7,
   1521), the ninja's follow-up Kanami, Freya, Kaoru or Wichita (their own sprites, 1164, 1176, 1182, 1185), Vanish Bomb
   Miki (unit 32, 1529), C. War Dance Patton (unit 18, 1530), Chuhai Asuka (unit 11, 1121), T2 Goliath none (record 51,
   no sprite: the battlefield bare on the player's side, as in the battle).
   `--effects --shots DIR --quit` (in a window; `--effects white-beam,black-beam` for those alone) writes every frame of each with seed 1: the effect alone on black
-  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `white-beam-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`, `chuhai-NN.png`, `goliath-NN.png`; the black beam's picture is
+  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `kentarou-slash-NN.png`, `white-beam-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`, `chuhai-NN.png`, `goliath-NN.png`; the black beam's picture is
   its light, so it is saved over the battlefield only) and over the battlefield with the effect's first user, the
   player acting and the enemy (`melee-scene-NN.png`, `melee-enemy-scene-NN.png`, …) — for a sheet next to the reference's frames, made outside the
   repository.

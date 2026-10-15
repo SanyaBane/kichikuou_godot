@@ -13,7 +13,8 @@ namespace Kichikuou.Game.Battles.Effects;
 /// a special the sprite its user shows while using it (<c>FIGT.ADV:1660-1713</c>: Patton's (unit 18) CG 1530, the
 /// ninjas' own; docs/battle/02-resolution.md §4), the user picked from the special's users; or plain black, as Sengoku
 /// Rance's frames are. The effect stands at the scene's foot (y 8: 1024×402). The effect and its user, Play, Loop, a
-/// frame slider (30 frames of 50 ms), the enemy acting (mirrored), the blend, the speed and the seed. <see cref="SaveFramesAsync"/> writes every frame for a
+/// frame slider (30 frames of 50 ms), the enemy acting (mirrored), the blend, the speed, the seed and an offset to try
+/// the effect at another place (X and Y in the design space, 800 × 314; owner, 2026-10-15). <see cref="SaveFramesAsync"/> writes every frame for a
 /// side-by-side sheet.
 /// </summary>
 internal sealed partial class EffectViewer : Window
@@ -40,7 +41,7 @@ internal sealed partial class EffectViewer : Window
         _cgs = cgs;
         _state = state;
         Title = "Effects (debug)";
-        Size = new Vector2I(StageWidth + 24, StageHeight + 120);
+        Size = new Vector2I(StageWidth + 24, StageHeight + 160);
         Exclusive = true;
         Transient = true;
     }
@@ -117,6 +118,26 @@ internal sealed partial class EffectViewer : Window
         _seed.ValueChanged += _ => Restart();
         row.AddChild(_seed);
         root.AddChild(row);
+
+        // Where the effect is drawn, moved from its own place (design units, 800 × 314: +x toward the target, +y down).
+        var place = new HBoxContainer();
+        place.AddThemeConstantOverride("separation", 10);
+        place.AddChild(new Label { Text = "Offset (of 800 × 314)  X" });
+        var offsetX = new SpinBox { MinValue = -800, MaxValue = 800, Step = 1, Value = 0 };
+        place.AddChild(offsetX);
+        place.AddChild(new Label { Text = "Y" });
+        var offsetY = new SpinBox { MinValue = -314, MaxValue = 314, Step = 1, Value = 0 };
+        place.AddChild(offsetY);
+        offsetX.ValueChanged += v => _player.Offset = _player.Offset with { X = (float)v };
+        offsetY.ValueChanged += v => _player.Offset = _player.Offset with { Y = (float)v };
+        var reset = new Button { Text = "Reset", FocusMode = Control.FocusModeEnum.None };
+        reset.Pressed += () =>
+        {
+            offsetX.Value = 0;
+            offsetY.Value = 0;
+        };
+        place.AddChild(reset);
+        root.AddChild(place);
 
         var timeline = new HBoxContainer();
         _slider = new HSlider
@@ -232,7 +253,8 @@ internal sealed partial class EffectViewer : Window
         ("Melee (after 40000)", "melee", MeleeEffect.Build, false, null),
         ("Bow (after 40260)", "bow", BowEffect.Build, false, null),
         ("Magic (after 40360)", "magic", MagicEffect.Build, false, null),
-        ("Rance Attack (after 40500)", "rance-attack", RanceAttackEffect.Build, false, [("Rance (unit 1)", 1520), ("Kentarou (unit 31)", 1222)]),
+        ("Rance Attack (after 40500)", "rance-attack", RanceAttackEffect.Build, false, [("Rance (unit 1)", 1520)]),
+        ("Kentarou-kun Slash (after 40800)", "kentarou-slash", KentarouSlashEffect.Build, false, [("Kentarou (unit 31)", 1222)]),
         ("White Beam (after 40460)", "white-beam", WhiteBeamEffect.Build, false,
             [("Shizuka (unit 17)", 1522), ("Magic (unit 39)", 1523), ("Gandhi (unit 37)", 1524)]),
         ("Black Beam (40460 dark)", "black-beam", WhiteBeamEffect.Build, true, [("Nagi (unit 40)", 1525), ("Chizuko (unit 38)", 1526)]),
