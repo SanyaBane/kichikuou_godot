@@ -114,6 +114,11 @@ internal static class EffectTextures
 
     private static Texture2D? _rim;
 
+    /// <summary>A sickle: a crescent filled evenly with sharp edges, a disc less a disc of nearly its size offset to −x, its hollow facing left and its horns pointed.</summary>
+    public static Texture2D Sickle => _sickle ??= Make(256, SickleShape);
+
+    private static Texture2D? _sickle;
+
     /// <summary>
     /// A size × <paramref name="height"/> texture (square by default) whose alpha at each pixel is <paramref name="alpha"/>
     /// of (x, y) in [−1, 1] — both axes, whatever the shape.
@@ -433,6 +438,12 @@ internal static class EffectTextures
         float r = MathF.Sqrt(x * x + y * y), angle = MathF.Atan2(y, x);
         float fray = 0.04f * (Fbm(MathF.Cos(angle) * 6 + 3, MathF.Sin(angle) * 6 + 5) - 0.5f);
         return SmoothStep(0.76f, 0.8f, r) * (1 - SmoothStep(0.84f + fray, 0.97f + fray, r)) * (0.85f + 0.15f * Fbm(x * 9, y * 9));
+    }
+
+    private static float SickleShape(float x, float y)
+    {
+        float r = MathF.Sqrt(x * x + y * y), hollow = MathF.Sqrt((x + 0.55f) * (x + 0.55f) + y * y);
+        return Edge(0.95f - r, 0.015f) * Edge(hollow - 0.9f, 0.015f);
     }
 
     /// <summary>A soft edge at <paramref name="v"/> = 0: 0 below −<paramref name="width"/>/2, 1 above +<paramref name="width"/>/2.</summary>

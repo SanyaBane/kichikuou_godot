@@ -228,6 +228,7 @@ internal sealed partial class BattleBoardView : Control
             ExchangeEffectKind.ByLaWay => RanceAttackEffect.BuildRed(_effectsSeen),
             ExchangeEffectKind.NinjaFollowUp => NinjaEffect.Build(_effectsSeen),
             ExchangeEffectKind.VanishBomb => VanishBombEffect.Build(_effectsSeen),
+            ExchangeEffectKind.WarDance => WarDanceEffect.Build(_effectsSeen),
             _ => MeleeEffect.Build(_effectsSeen),
         });
         _effect.Playing = true;

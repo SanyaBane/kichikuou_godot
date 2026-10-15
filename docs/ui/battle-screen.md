@@ -302,12 +302,16 @@ picture, the slot panels) is not shown. How it is built:
     has one (`20261010-213655-86-FIGT_A`, in the full run's captures only). **Vanish Bomb** (2026-10-15, the owner took its v1
     as it is): special 4 (`FIGT.ADV:1560-1570`) is Miki's (unit 32) alone — the menu offers it to her only
     (`FIGT_SEL.ADV:644`) and her involuntary bomb is hers too (`FIGT.ADV:1588-1590`) — and plays ours after Begone Bomb
-    (40560, `ExchangeEffectKind.VanishBomb`); no captured battle has one. **By la
+    (40560, `ExchangeEffectKind.VanishBomb`); no captured battle has one. **C. War Dance** (2026-10-15, the owner took its
+    v1 as it is): special 5 (`FIGT.ADV:1571-1577`) is Patton's (unit 18) alone — its menu item (`FIGT_SEL.ADV:449`) is
+    offered under `Unit_Cur = 18` only (`:662-664`) — and plays ours after Ieyasu's Special Move (47400,
+    `ExchangeEffectKind.WarDance`). **By la
     Way** (2026-10-15, the owner took its v1 as it is): special 1 by Rick (unit 7) plays Rance Attack's effect
     recoloured red (`ExchangeEffectKind.ByLaWay`). One captured battle has a By la Way (`20261008-111109-01-FIGT_A`,
-    the Rance Attack's, in the full run's captures only), none a Whirlwind Shot, a High Speed or a Vanish Bomb: `ExchangeEffectTests` checks
+    the Rance Attack's, in the full run's captures only), none a Whirlwind Shot, a High Speed, a Vanish Bomb or a War Dance: `ExchangeEffectTests` checks
     the rules on given states (one table, `ExchangeEffect.SpecialOf`), and in the captures that a Whirlwind Shot, a
-    High Speed or a ninja's follow-up fires only the commander's one shot at the commander and a By la Way's or a Vanish Bomb's troops fire nothing
+    High Speed or a ninja's follow-up fires only the commander's one shot at the commander, a By la Way's or a Vanish Bomb's troops fire nothing
+    and a War Dance's troops fire nothing, nor its commander at the commander
     (02-resolution.md §3.3). T2 Soaring Wave later (likely Rance Attack's eruption much smaller, four of them, as Rolex's sprite);
     the Cheater Beam stays melee.
   - **A setting**: Option → Battle Screen… → "Effects: on/off", on by default (Sengoku Rance's Combat Effect Display);
@@ -410,11 +414,21 @@ picture, the slot panels) is not shown. How it is built:
   blurring into a broad soft grey band as it fades (16-24), a grey glow inside it, long rays from the centre and a
   star there (12.5-27), and inside it cyan, gold and white star bursts, orange motes and teal flecks drifting out with
   it (13.5-25). Timed on the reference's mean brightness in four column quarters.
+  The C. War Dance effect (`WarDanceEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Ieyasu's
+  Special Move, 47400 — 29 frames of it in the archive, the 30th a stray picture of something else; a texture of its
+  own, `Sickle`: a crescent filled evenly with sharp edges, its hollow facing left): rows of flat crescents bulging
+  right, each lit for one frame and a new set every frame (as the reference's, none lasting into the next), added one
+  over another so two make the next shade and three white — salmon to x ~430, grey by ~540, then grey turning violet
+  (frames 5-9) and plum late (14-22); larger and more often wide toward the right; their front running right from the
+  middle to the edge (x 390 at frame 2, 560 at 3, 830 by 8), most at the peak (frames 8-9, 72 a frame), crowding left
+  early and evening out late, their left edge drawing back to the right from frame 18 (x 300) to 25 (700); behind them
+  faint streaky wisps (the puff stretched flat) drifting right, a few frames each, salmon and then ash (from 19), the
+  last fading by ~27. Timed on the reference's mean brightness in four column quarters.
   **Debug → Effects** (`EffectViewer`) plays them over our scene's battlefield (CG 900 and its overlay, with Rance's
   (unit 1) and Ex's (commander 1) armies once a game has booted) or black: the effect, Play, Loop, the enemy acting,
   the blend, the speed, the seed and a frame slider; the effect stands at the scene's foot (y 8).
   `--effects --shots DIR --quit` (in a window; `--effects white-beam,black-beam` for those alone) writes every frame of each with seed 1: the effect alone on black
-  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `white-beam-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `vanish-bomb-NN.png`; the black beam's picture is
+  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `white-beam-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`; the black beam's picture is
   its light, so it is saved over the battlefield only) and over the battlefield, the player acting and the enemy
   (`melee-scene-NN.png`, `melee-enemy-scene-NN.png`, …) — for a sheet next to the reference's frames, made outside the
   repository.
