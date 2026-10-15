@@ -110,6 +110,10 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   sprite's four arcs running at the enemy and bursting on it; no captured battle has one); v2 of four after the owner's notes (2026-10-15,
   the owner took them as they are): High Speed in Meglass's blues, By la Way redder, Vanish Bomb far larger, War Dance a
   third fewer crescents —
+  then the owner's review of them all (2026-10-15, taken as it is): the attacker's melee dust, no level arrows,
+  each beam its user's own effect placed for its sprite (Shizuka's, Magic's, Gandhi's EPO Light, Chizuko's, Nagi's),
+  the beams and Whirlwind Shot stretched through the enemy's army, the specials moved onto their users' sprites,
+  By la Way's hits on the enemy —
   [ui/battle-screen.md](ui/battle-screen.md), "The exchange's effects". Every special has its effect now; the
   Cheater Beam stays melee.
   Groundwork (survey §4.8): menus as data and the map helper are done (2026-10-12); the shared engine
