@@ -58,6 +58,9 @@ internal sealed partial class BattleOpeningLayer : Control
 
     private static FontFile Load(string path) => new() { Data = Godot.FileAccess.GetFileAsBytes(path) };
 
+    /// <summary>The plate's font, Cinzel Bold (the rounds gauge's number shares it).</summary>
+    public Font CinzelBold => _plate;
+
     /// <summary>Whether the opening shows, standing or leaving.</summary>
     public bool Active => Visible;
 

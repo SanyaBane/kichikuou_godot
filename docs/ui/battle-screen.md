@@ -96,7 +96,12 @@ portrait (mock-up B):
 - **The cards**, y ~470-785: two columns of two cards a side, 282×150; the player's back row
   (places 3-4) on the far left, its front row (1-2) next to the centre, the enemy's front row next to
   the centre, its back row on the far right; between them **the rounds gauge** (one segment per
-  round of the battle, the spent ones dark, "n left" below). A card: the face (`UnitFaces` square,
+  round of the battle, the spent ones dark, "n left" below; since 2026-10-15 the owner's mock-up A of three, after
+  Sengoku Rance's time gauge, docs/sengoku/04-screen.md §7: a recessed dark tube 48×238 in the frame's colour, a
+  glowing pill per round left in the accent colour, lit from the bottom, the spent ones dark slots from the top; the
+  round under way pulses slowly (2 s, owner), a round that goes out flashes white and fades (0.4 s; not while
+  skipping); the number left below in Cinzel Bold and "TURNS LEFT", on the last round the warning colour and "LAST
+  TURN" — `BattleBoardView.DrawGauge`). A card: the face (`UnitFaces` square,
   118 px — since 2026-10-15 112 at the top with the unit's stats under it, "The cards' stats"; the enemy's on the card's right), place and name, troop type, troops now/max with a bar,
   HP now/max with a bar, the standing order (Manual / Auto-Atk / Auto-Def; the player's), "acted"
   (a word in the state line; the face is not dimmed, owner's request 2026-10-13); the acting unit's card as Sengoku Rance's

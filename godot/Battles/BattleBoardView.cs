@@ -119,6 +119,8 @@ internal sealed partial class BattleBoardView : Control
     private int _sceneVersion = -1, _pictureVersion = -1;
     private string _cardsKey = "?", _stripKey = "?", _speakerKey = "?";
     private (int Rounds, int Left) _gaugeValues;
+    private int _spentSegment = -1;                 // the gauge's segment that went out last, while it flashes
+    private ulong _spentAt;
     private Rect2 _speakerArea = SpeakerLeft;
     private Vector2 _origin;
     private float _scale = 1;                       // window pixels to a layout pixel
@@ -399,6 +401,10 @@ internal sealed partial class BattleBoardView : Control
         var gauge = (Math.Max(presenter.Order.Rounds, s.Bt_RoundsLeft.Value), s.Bt_RoundsLeft.Value);
         if (gauge != _gaugeValues)
         {
+            if (!instant && gauge.Item1 == _gaugeValues.Rounds && gauge.Item2 < _gaugeValues.Left)
+                (_spentSegment, _spentAt) = (_gaugeValues.Rounds - _gaugeValues.Left, Time.GetTicksMsec());   // the round that went out flashes
+            else
+                _spentSegment = -1;
             _gaugeValues = gauge;
             _gauge.QueueRedraw();
         }
@@ -946,6 +952,8 @@ internal sealed partial class BattleBoardView : Control
     public override void _Process(double delta)
     {
         StepCards(delta);
+        if (GaugeMoves && _gauge.IsVisibleInTree())
+            _gauge.QueueRedraw();
         _limit.Modulate = new Color(1, 1, 1, 1 - _opening.Cover);     // the opening's plate says the same while it covers the scene
         StepArmies(delta);
         StepSpotlight(delta);
@@ -1179,28 +1187,121 @@ internal sealed partial class BattleBoardView : Control
 
     private (int Battle, int Round) _stripRound = (-1, -1);
 
-    /// <summary>One segment per round of the battle, the spent ones dark, "n left" below.</summary>
+    // The rounds gauge (owner, 2026-10-15, mock-up A of three, after Sengoku Rance's time gauge, docs/sengoku/04-screen.md §7):
+    // a recessed tube in the frame's colour, a glowing segment per round left, lit from the bottom, the spent ones dark
+    // slots from the top; the round under way pulses slowly, a round that goes out flashes white and fades; the number
+    // left below in Cinzel and "TURNS LEFT", on the last round both in the warning colour ("LAST TURN"). Layout pixels.
+    private const float TubeWidth = 48, TubeHeight = 238, TubeRadius = 12, SegmentWidth = 32, SegmentPad = 8, SegmentGap = 6;
+    private const float PulseSeconds = 2, SpentFlashSeconds = 0.4f;
+    private static readonly Color TubeFill = Color.Color8(24, 25, 28), SlotFill = Color.Color8(36, 37, 41), SlotEdge = Color.Color8(70, 72, 78);
+
+    /// <summary>Whether the gauge animates now (the round under way pulses, or a spent one flashes).</summary>
+    private bool GaugeMoves => _gaugeValues.Left > 0 || _spentSegment >= 0;
+
     private void DrawGauge()
     {
         var (rounds, left) = _gaugeValues;
-        var size = _gauge.Size;
-        var font = _theme.DefaultFont;
-        int fontSize = _theme.DefaultFontSize;
-        float labelHeight = fontSize * 1.6f;
+        float s = _scale;
+        float cx = _gauge.Size.X / 2;
+        bool last = left == 1;
+        var lit = last ? _colours.Warning : _colours.Accent;
+        var tube = new Rect2(cx - TubeWidth / 2 * s, 0, TubeWidth * s, TubeHeight * s);
+        var box = new StyleBoxFlat { BgColor = TubeFill, BorderColor = _colours.Border, AntiAliasing = true };
+        box.SetCornerRadiusAll((int)Math.Round(TubeRadius * s));
+        box.SetBorderWidthAll(Math.Max(1, (int)Math.Round(2 * s)));
+        _gauge.DrawStyleBox(box, tube);
+        _gauge.DrawRect(new Rect2(tube.Position + new Vector2(4, 3) * s, new Vector2(tube.Size.X - 8 * s, 7 * s)), new Color(0, 0, 0, 0.35f));
         if (rounds > 0)
         {
-            float gap = 4 * _scale, width = size.X * 0.5f, x = (size.X - width) / 2;
-            float height = (size.Y - labelHeight - gap * (rounds - 1)) / rounds;
+            float height = (TubeHeight - 2 * SegmentPad - SegmentGap * (rounds - 1)) / rounds;
+            double pulse = 0.5 - 0.5 * Math.Cos(Time.GetTicksMsec() / 1000.0 * 2 * Math.PI / PulseSeconds);
+            double flash = _spentSegment >= 0 ? (Time.GetTicksMsec() - _spentAt) / 1000.0 / SpentFlashSeconds : 1;
+            if (flash >= 1)
+                _spentSegment = -1;
             for (int i = 0; i < rounds; i++)
             {
-                bool spent = i < rounds - left;
-                var rect = new Rect2(x, i * (height + gap), width, height);
-                _gauge.DrawRect(rect, spent ? _colours.ButtonDisabled : _colours.Accent.Darkened(0.2f));
-                _gauge.DrawRect(rect, _colours.Border, filled: false, width: 1);
+                var r = new Rect2(cx - SegmentWidth / 2 * s, (SegmentPad + i * (height + SegmentGap)) * s, SegmentWidth * s, height * s);
+                if (i < rounds - left)
+                {
+                    DrawSlot(r);
+                    if (i == _spentSegment)                                     // going out: white, then fading into the slot
+                        DrawSegment(r, Colors.White.Lerp(lit, (float)Math.Min(1, flash * 2)), 1 - (float)flash);
+                    continue;
+                }
+                if (i != rounds - left)
+                {
+                    DrawSegment(r, lit, 1);
+                    continue;
+                }
+                // The round under way (owner, 2026-10-15: the pulse was hardly seen): from a little darker than the others
+                // to nearly white, its halo growing and its edge thickening.
+                float p = (float)pulse;
+                DrawSegment(r, lit.Darkened(0.2f * (1 - p)).Lerp(Colors.White, 0.55f * p), 1, 0.4f + 0.6f * p, 8 + 10 * p, 1 + 1.5f * p);
             }
         }
-        if (font is not null)
-            _gauge.DrawString(font, new Vector2(0, size.Y - fontSize * 0.4f), $"{left} left", HorizontalAlignment.Center, size.X, fontSize, _colours.Text);
+        var font = _opening.CinzelBold;
+        var colour = last ? _colours.Warning : _colours.Accent;
+        int number = (int)Math.Round(34 * s), caption = Math.Max(8, (int)Math.Round(11 * s));
+        float y = (TubeHeight + 24) * s;
+        string digits = left.ToString();
+        float baseline = y + (font.GetAscent(number) - font.GetDescent(number)) / 2;
+        _gauge.DrawStringOutline(font, new Vector2(0, baseline), digits, HorizontalAlignment.Center, _gauge.Size.X, number,
+            Math.Max(2, (int)Math.Round(4 * s)), Color.Color8(20, 20, 24));
+        _gauge.DrawString(font, new Vector2(0, baseline), digits, HorizontalAlignment.Center, _gauge.Size.X, number, colour);
+        _gauge.DrawString(font, new Vector2(0, (TubeHeight + 58) * s), last ? "LAST TURN" : "TURNS LEFT", HorizontalAlignment.Center,
+            _gauge.Size.X, caption, last ? _colours.Warning : _colours.Muted);
+    }
+
+    /// <summary>A spent round: a dark slot.</summary>
+    private void DrawSlot(Rect2 r)
+    {
+        var slot = new StyleBoxFlat { BgColor = SlotFill, BorderColor = SlotEdge, AntiAliasing = true };
+        slot.SetCornerRadiusAll((int)Math.Round(6 * _scale));
+        slot.SetBorderWidthAll(1);
+        _gauge.DrawStyleBox(slot, r);
+    }
+
+    /// <summary>
+    /// A round left: a pill lit in <paramref name="colour"/> from light at the top to dark at the bottom, a light edge and a
+    /// highlight, glowing (<paramref name="glow"/> of the full glow, <paramref name="halo"/> layout pixels wide), its edge
+    /// <paramref name="edge"/> wide, all at <paramref name="alpha"/>.
+    /// </summary>
+    private void DrawSegment(Rect2 r, Color colour, float alpha, float glow = 0.55f, float halo = 8, float edge = 1)
+    {
+        float s = _scale;
+        int radius = (int)Math.Round(6 * s);
+        var shine = new StyleBoxFlat { DrawCenter = false, ShadowColor = new Color(colour.Darkened(0.1f), 0.8f * glow * alpha), ShadowSize = (int)Math.Round(halo * s) };
+        shine.SetCornerRadiusAll(radius);
+        _gauge.DrawStyleBox(shine, r);
+        var points = RoundedRect(r, radius * 1f);
+        var top = colour.Lightened(0.3f);
+        var bottom = colour.Darkened(0.25f);
+        _gauge.DrawPolygon(points, [.. points.Select(p => new Color(top.Lerp(bottom, (p.Y - r.Position.Y) / r.Size.Y), alpha))]);
+        _gauge.DrawPolyline([.. points, points[0]], new Color(1, 0.94f, 0.8f, alpha), Math.Max(1, edge * s), true);
+        _gauge.DrawLine(r.Position + new Vector2(5, 4) * s, new Vector2(r.End.X - 5 * s, r.Position.Y + 4 * s), new Color(1, 1, 1, 0.6f * alpha), Math.Max(1, 2 * s));
+    }
+
+    /// <summary>The outline of <paramref name="r"/> with corners of <paramref name="radius"/>, clockwise.</summary>
+    private static Vector2[] RoundedRect(Rect2 r, float radius)
+    {
+        radius = Math.Min(radius, Math.Min(r.Size.X, r.Size.Y) / 2);
+        var points = new List<Vector2>();
+        (Vector2 Centre, float From)[] corners =
+        [
+            (r.Position + new Vector2(radius, radius), MathF.PI),
+            (new Vector2(r.End.X - radius, r.Position.Y + radius), 1.5f * MathF.PI),
+            (r.End - new Vector2(radius, radius), 0),
+            (new Vector2(r.Position.X + radius, r.End.Y - radius), 0.5f * MathF.PI),
+        ];
+        foreach (var (centre, from) in corners)
+        {
+            for (int i = 0; i <= 4; i++)
+            {
+                float a = from + i * MathF.PI / 8;
+                points.Add(centre + new Vector2(MathF.Cos(a), MathF.Sin(a)) * radius);
+            }
+        }
+        return [.. points];
     }
 
     // The battle's limit (owner, 2026-10-15): a plate centred near the scene's foot, between the HP counters of an
