@@ -248,7 +248,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   cards and the round's order from `BattleBoard`/`RoundOrder`, the order strip `OrderStrip` moving on its own;
   `FIGT_SEL` answered by our own input, `BattleCommandLayer`: banners and context menus from
   `Original.Content/Battles/BattleCommands`; the retreat confirmation our dialog, `BattleDialogLayer`
-  from `BattleDialog`; the speech bubbles' lines our balloon, `SpeechBalloon` from `BattlePresenter.Speech`; the ninja's scout report, before the field, our overlay `Battles/ScoutReportView` from `BattlePresenter.Scout` (`Original.Content/Battles/ScoutReport`); the first round header our opening `Battles/BattleOpeningLayer` from `GamePresenter.Opening` (`Original.Content/Battles/BattleOpening`; the later headers answered at once; its fonts Shojumaru and Cinzel bundled in `godot/fonts`); the exchange's result held ("Results: hold") and answered by `GameScreen` unless a wiped-out mark is up; its settings Option → Battle Screen…, `BattleScreenSettings`);
+  from `BattleDialog`; the speech bubbles' lines our balloon, `SpeechBalloon` from `BattlePresenter.Speech`; the ninja's scout report, before the field, our overlay `Battles/ScoutReportView` from `BattlePresenter.Scout` (`Original.Content/Battles/ScoutReport`); the first round header our opening `Battles/BattleOpeningLayer` from `GamePresenter.Opening` (`Original.Content/Battles/BattleOpening`; the later headers answered at once; its fonts Shojumaru and Cinzel bundled in `godot/fonts`); the exchange's result held ("Results: hold") and answered by `GameScreen` unless a wiped-out mark is up; the order messages not shown, the card's order label flashing (`BattleBoardView.FlashOrder`, `BattlePresenter.OrderedUnit`); every card's stats always under its portrait, `Battles/CardPortrait` from `Original.Content/Battles/BattleCardStats` (no menu offers Info); its settings Option → Battle Screen…, `BattleScreenSettings`);
   `GodotGlyphRenderer` (TextServer; MS Gothic or the bundled BIZ UDGothic in `godot/fonts`, Option →
   Fonts, `--font ms-gothic|biz-ud-gothic` for one launch), `BattleAudio`; `Screens` switches screens. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
 - `tools/analysis/` — Python scripts for reading the decompiled scenario; `tools/codegen/` —
@@ -311,11 +311,14 @@ commit `local.env`.
   builds the parties in our own deployment table and swaps the first two places by drops and back,
   and in a window, once a launch, answers the first turn through the pointer on our command input
   (the acting unit's menu, another own card's, closed by a click off it; Retreat, whose dialog it
-  cancels; back at the turn, each enemy card's banners, two sample menus' two and three banners never
+  cancels; back at the turn, another own card given the order it has already, whose label flashes;
+  each enemy card's banners, two sample menus' two and three banners never
   answered, then a click on the target's Melee banner; dumps `menu`, `menu-orders`, `retreat`,
-  `banners-E1`…, `sample-2-banners`, `sample-3-banners`, `banner-hover`, and without `--fast` `slide`
+  `banners-E1`…, `sample-2-banners`, `sample-3-banners`, `banner-hover`, and without `--fast` `order-flash`, `slide`
 (halfway through the first wait for the armies' slides; `--army-seconds 1` makes them long enough) and each exchange effect once, at its peak (`effect-melee-player`, …); it moves the system pointer,
-  so leave the mouse alone); its dumps need a window (no `--headless`).
+  so leave the mouse alone); its dumps need a window (no `--headless`). With `--until battle` the exercise ends
+  the run once its attack's exchange is over (owner, 2026-10-15: the rest of the battle only cost time), so the
+  battle's result is not reached.
 - **A look at one screen** (screen dumps for the owner) starts from a kept save, never from the
   prologue (owner's requests 2026-10-12): `user://saves-week18` holds the owner's own game at week 18
   (LP 3, month 5, week 2; stage 1, the Leazas week) — the one to use, chosen by the owner (2026-10-13)
@@ -324,7 +327,8 @@ commit `local.env`.
   copies it into a working folder (the kept one stays unchanged), plays the week's attack on Oaks (6)
   — its deployment picker and its battle: Rance (unit 1), Haurein (unit 12), Cordoba (unit 8) and
   Barres (unit 6) against Ex (commander 1), Sakanaku (commander 6), Dodge (commander 5) and Jibul
-  (commander 7), lost with `--seed 2` — and stops (`--until deployment` stops after the picker). A load
+  (commander 7), lost with `--seed 2` — and stops (`--until deployment` stops after the picker; in a window with
+  `--interface new`, after the battle screen's exercise and its attack). A load
   replays the week from its autosave (a manual save is a copy of it, `LoadSaveScreen`): the load
   list, the banner, income and expenses, then the command menu. `--load --auto` always loads slot 1
   (the list's first item), so a kept folder holds one `slot01.ksav`: the owner's slot copied under that

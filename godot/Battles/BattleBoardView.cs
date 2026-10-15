@@ -56,6 +56,10 @@ internal sealed partial class BattleBoardView : Control
     private const float ActingTint = 0.3f;                          // the card's colour toward the accent
     private const ulong BlinkMs = 500;
 
+    // An order given (owner, 2026-10-15): instead of the original's message the order's label on the unit's card turns
+    // saturated for a moment and back — it rises, holds, then fades.
+    private const double FlashRise = 0.12, FlashHold = 0.35, FlashFade = 0.35;
+
     // The spotlight (Sengoku Rance's, docs/sengoku/04-screen.md §6.5; owner, 2026-10-13): while an exchange is on,
     // everything below the scene is darkened but the two cards that fight.
     private static readonly Rect2 PanelArea = new(0, 410, 1280, 390);
@@ -98,6 +102,9 @@ internal sealed partial class BattleBoardView : Control
     private BattlePlace? _actingPlace;
     private ulong _blinkFrom;
     private bool _blinkOn;
+    private readonly Dictionary<int, Label> _orderLabels = [];        // the player's cards' order labels by unit record
+    private int? _flashUnit;
+    private ulong _flashFrom;
     private readonly Dictionary<int, ImageTexture?> _portraits = [];
     private ImageTexture? _fieldTexture, _frontTexture, _sidesTexture, _windowsTexture;
     private byte[]? _frontRgba, _windowsRgba;
@@ -740,6 +747,7 @@ internal sealed partial class BattleBoardView : Control
         }
         _cardsKey = key;
         _cardsHovered = hovered;
+        _orderLabels.Clear();
         BattlePlace? actingPlace = null;
         for (int i = 0; i < cards.Count; i++)
         {
@@ -789,6 +797,7 @@ internal sealed partial class BattleBoardView : Control
         StepArmies(delta);
         StepSpotlight(delta);
         StepMeters();
+        StepOrderFlash();
         if (_actingPlace is null)
             return;
         bool on = (Time.GetTicksMsec() - _blinkFrom) / BlinkMs % 2 == 0;
@@ -825,24 +834,73 @@ internal sealed partial class BattleBoardView : Control
             Ring(i - 1, blink[i]);
     }
 
+    /// <summary>
+    /// An order message the script would show for <paramref name="unit"/> (<see cref="BattlePresenter.OrderedUnit"/>):
+    /// the order's label on its card flashes instead — the card built again while it flashes keeps it.
+    /// </summary>
+    public void FlashOrder(int unit)
+    {
+        RestoreOrderLabel();
+        (_flashUnit, _flashFrom) = (unit, Time.GetTicksMsec());
+        StepOrderFlash();
+    }
+
+    private void StepOrderFlash()
+    {
+        if (_flashUnit is not { } unit)
+            return;
+        if ((Time.GetTicksMsec() - _flashFrom) / 1000.0 >= FlashRise + FlashHold + FlashFade)
+        {
+            RestoreOrderLabel();
+            return;
+        }
+        if (_orderLabels.TryGetValue(unit, out var label) && IsInstanceValid(label))
+            label.AddThemeColorOverride("font_color", FlashColour());
+    }
+
+    private void RestoreOrderLabel()
+    {
+        if (_flashUnit is { } unit && _orderLabels.TryGetValue(unit, out var label) && IsInstanceValid(label))
+            label.AddThemeColorOverride("font_color", _colours.Muted);
+        _flashUnit = null;
+    }
+
+    /// <summary>The flashing label's colour now: the muted colour toward its saturated self and back.</summary>
+    private Color FlashColour()
+    {
+        double t = (Time.GetTicksMsec() - _flashFrom) / 1000.0;
+        float k = t < FlashRise ? (float)(t / FlashRise)
+            : t < FlashRise + FlashHold ? 1
+            : (float)Math.Max(0, 1 - (t - FlashRise - FlashHold) / FlashFade);
+        return _colours.Muted.Lerp(Saturated(_colours.Muted, _colours.Text), k * k * (3 - 2 * k));
+    }
+
+    /// <summary>
+    /// <paramref name="muted"/> made vivid: its hue at full saturation, as bright as the text on a dark card (as dark on a
+    /// light one); a grey without a hue of its own takes the accent's.
+    /// </summary>
+    private Color Saturated(Color muted, Color text)
+    {
+        muted.ToHsv(out float h, out float s, out float v);
+        if (s < 0.02f)
+            _colours.Accent.ToHsv(out h, out _, out _);
+        bool dark = text.Luminance > muted.Luminance;
+        return Color.FromHsv(h, 0.85f, dark ? 1f : Math.Min(v, 0.55f));
+    }
+
     private Label Empty(BattlePlace place) => Line($"{place.Slot}  empty", _colours.Muted, center: true);
 
-    /// <summary>A card: the face (the enemy's on the right), place and name, troop type, troops and HP with bars, the player's standing order, "Acting" / "Acted".</summary>
+    /// <summary>
+    /// A card: the portrait with the unit's stats (<see cref="CardPortrait"/>; the enemy's on the right), place and name,
+    /// troop type, troops and HP with bars, the player's standing order, "Acting" / "Acted".
+    /// </summary>
     private Control Contents(BattleCard card, bool acting, int pad)
     {
         var line = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
         line.AddThemeConstantOverride("separation", pad * 2);
-        int size = (int)Math.Round(FaceSize * _scale);
-        var face = new TextureRect
-        {
-            CustomMinimumSize = new Vector2(size, size),
-            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-            StretchMode = TextureRect.StretchModeEnum.KeepCentered,
-            SizeFlagsVertical = SizeFlags.ShrinkCenter,
-            MouseFilter = MouseFilterEnum.Ignore,
-        };
-        if (card.Picture != 0)
-            face.Texture = _faces.SquareTexture(card.Picture, _faces.CropOf(card.Picture, _crops), size);
+        int size = (int)Math.Round(CardPortrait.Face * _scale);
+        var face = new CardPortrait(card.Picture != 0 ? _faces.SquareTexture(card.Picture, _faces.CropOf(card.Picture, _crops), size) : null,
+            card.Stats, _colours, _scale);
 
         var text = new VBoxContainer { MouseFilter = MouseFilterEnum.Ignore, SizeFlagsHorizontal = SizeFlags.ExpandFill };
         text.AddThemeConstantOverride("separation", 0);
@@ -861,13 +919,14 @@ internal sealed partial class BattleBoardView : Control
             text.AddChild(bar);
             Track(card, gauge, label, trail, fill);                         // the number and the bar, running to a new value
         }
-        string state = card.Order switch
+        string order = card.Order switch
         {
             StandingOrder.AutoAttack => "Auto-Atk",
             StandingOrder.AutoDefend => "Auto-Def",
             StandingOrder.Manual => "Manual",
             _ => "",
         };
+        string state = "";
         if (card.Defending)
             state += (state == "" ? "" : " · ") + "Defending";
         if (card.Focus > 0)
@@ -876,7 +935,23 @@ internal sealed partial class BattleBoardView : Control
             state += (state == "" ? "" : " · ") + "Acting";
         else if (card.Acted && !card.Defending)
             state += (state == "" ? "" : " · ") + "Acted";
-        text.AddChild(Line(state, _colours.Muted));
+        var stateLine = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
+        stateLine.AddThemeConstantOverride("separation", 0);
+        if (order != "")
+        {
+            var orderLabel = Line(order, _colours.Muted, expand: false);   // its own label: it flashes (FlashOrder)
+            stateLine.AddChild(orderLabel);
+            if (card.Place.Side == BattleSide.Player)
+            {
+                _orderLabels[card.Record] = orderLabel;
+                if (card.Record == _flashUnit)
+                    orderLabel.AddThemeColorOverride("font_color", FlashColour());
+            }
+            if (state != "")
+                state = " · " + state;
+        }
+        stateLine.AddChild(Line(state, _colours.Muted));
+        text.AddChild(stateLine);
 
         if (card.Place.Side == BattleSide.Player)
         {

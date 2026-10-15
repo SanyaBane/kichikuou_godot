@@ -355,6 +355,46 @@ public class BattlePresenterGameDataTests
     }
 
     [CaptureFact]
+    public async Task An_order_message_names_its_unit_and_is_not_among_the_windows()
+    {
+        var presenter = NewPresenter();
+        await GoldenReplay.RunAsync(GoldenCapture.Load(LocalData.Captures.First()), view: new DelegateView(presenter.Show), started: presenter.Start);
+        var state = presenter.State!;
+        state.Tmp0002 = 12;
+        state.Unit_Cur = 1;
+
+        // L_0129e: another unit's order names the unit of Tmp0002 until the window closes.
+        presenter.Show(new WindowEvent(143, 0));
+        int frames = presenter.Windows.Count;
+        Assert.Null(presenter.OrderedUnit);
+        presenter.Show(new MessageEvent(new ScriptRef("FIGT.ADV", 801), [state.Unit_StrBase]));
+        Assert.Equal(12, presenter.OrderedUnit);
+        Assert.Equal(frames - 1, presenter.Windows.Count);
+        presenter.Show(new MessageEvent(new ScriptRef("FIGT.ADV", 814)));
+        presenter.Show(new WindowEvent(11, 0));
+        Assert.Equal(12, presenter.OrderedUnit);                   // through its key wait
+        presenter.AfterKey();
+        presenter.Show(new WindowEvent(10, 0));
+        Assert.Null(presenter.OrderedUnit);
+
+        // L_01f08 / L_01f42: the acting unit's own order names Unit_Cur.
+        foreach (int line in new[] { 1319, 1333 })
+        {
+            presenter.Show(new WindowEvent(143, 0));
+            presenter.Show(new MessageEvent(new ScriptRef("FIGT.ADV", line)));
+            Assert.Equal(1, presenter.OrderedUnit);
+            presenter.Show(new WindowEvent(10, 0));
+            Assert.Null(presenter.OrderedUnit);
+        }
+
+        // Another message in window 143 (the info box's) names none.
+        presenter.Show(new WindowEvent(143, 0));
+        presenter.Show(new MessageEvent(new ScriptRef("FIGT.ADV", 805)));
+        Assert.Null(presenter.OrderedUnit);
+        Assert.Equal(frames, presenter.Windows.Count);
+    }
+
+    [CaptureFact]
     public void FigtSel_targets_frames_and_popups()
     {
         var presenter = NewPresenter();

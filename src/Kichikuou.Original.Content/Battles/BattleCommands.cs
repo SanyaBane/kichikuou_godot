@@ -77,10 +77,11 @@ public sealed class BattleCommands(FigtSelMenu menu)
     }
 
     /// <summary>
-    /// The context menu of <paramref name="place"/>'s card: an enemy's Info (54); the acting unit's Defend,
-    /// Wait, the items without a target (the capsules, the Fog Card), Auto-Atk, Auto-Def, Info and Retreat
-    /// (Repel in debug mode); another own unit's standing orders Manual, Auto-Atk and Auto-Def
-    /// (50-52, <paramref name="order"/> marked) and Info. Only what the core allows.
+    /// The context menu of <paramref name="place"/>'s card: the acting unit's Defend, Wait, the items without a
+    /// target (the capsules, the Fog Card), Auto-Atk, Auto-Def and Retreat (Repel in debug mode); another own
+    /// unit's standing orders Manual, Auto-Atk and Auto-Def (50-52, <paramref name="order"/> marked); an enemy's
+    /// none. Only what the core allows. Info (53/54) is not offered (owner, 2026-10-15): every card shows its stats
+    /// under the portrait (<see cref="BattleCardStats"/>).
     /// </summary>
     /// <param name="place">The card's place (it holds a unit).</param>
     /// <param name="order">The unit's standing order now (own units).</param>
@@ -92,10 +93,8 @@ public sealed class BattleCommands(FigtSelMenu menu)
             items.Add(new BattleCommand(new ScriptRef(Sel, line), new FigtSelChoice(command, argument), current));
 
         if (place.Side == BattleSide.Enemy)
-        {
-            Add(266, FigtSelCommand.EnemyInfo, slot);
-        }
-        else if (place == Acting)
+            return [];
+        if (place == Acting)
         {
             Add(249, FigtSelCommand.Defend, NoButton);
             Add(253, FigtSelCommand.Wait, NoButton);
@@ -103,7 +102,6 @@ public sealed class BattleCommands(FigtSelMenu menu)
                 items.Add(new BattleCommand(ModeLabel(item), new FigtSelChoice(item, NoButton)));
             Add(257, FigtSelCommand.AutoAttack, NoButton);
             Add(261, FigtSelCommand.AutoDefend, NoButton);
-            Add(335, FigtSelCommand.UnitInfo, slot);
             Add(271, FigtSelCommand.Retreat, NoButton);
             Add(276, FigtSelCommand.Repel, NoButton);
         }
@@ -112,7 +110,6 @@ public sealed class BattleCommands(FigtSelMenu menu)
             Add(323, FigtSelCommand.OrderManual, slot, order == StandingOrder.Manual);
             Add(327, FigtSelCommand.OrderAttack, slot, order == StandingOrder.AutoAttack);
             Add(331, FigtSelCommand.OrderDefend, slot, order == StandingOrder.AutoDefend);
-            Add(335, FigtSelCommand.UnitInfo, slot);
         }
         return [.. items.Where(i => menu.Allows(i.Choice))];
     }

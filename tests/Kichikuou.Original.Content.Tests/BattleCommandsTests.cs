@@ -109,11 +109,11 @@ public class BattleCommandsTests(ITestOutputHelper output)
     {
         var commands = new BattleCommands(Menu(5, 0, slot: 2, item: 28));
         var menu = commands.ContextMenu(Own(2));
-        Assert.Equal(["4:99", "5:99", "32:99", "8:99", "9:99", "53:2", "6:99"], Codes(menu));
-        Assert.Equal(["Defend", "Wait", "Fog Card", "Auto-Atk", "Auto-Def", "Info", "Retreat"], Labels(menu));
+        Assert.Equal(["4:99", "5:99", "32:99", "8:99", "9:99", "6:99"], Codes(menu));
+        Assert.Equal(["Defend", "Wait", "Fog Card", "Auto-Atk", "Auto-Def", "Retreat"], Labels(menu));
 
         var capsule = new BattleCommands(Menu(5, 0, item: 27)).ContextMenu(Own(1));
-        Assert.Equal(["4:99", "5:99", "30:99", "8:99", "9:99", "53:1", "6:99"], Codes(capsule));
+        Assert.Equal(["4:99", "5:99", "30:99", "8:99", "9:99", "6:99"], Codes(capsule));
         var duel = new BattleCommands(Menu(5, 0, item: 28, set: s => s.Bt_IsDuel = 1)).ContextMenu(Own(1));
         Assert.DoesNotContain(duel, c => c.Choice.Command == FigtSelCommand.FogCard);   // the core leaves the Fog Card out of duels
         var debug = new BattleCommands(Menu(5, 0, set: s => s.DebugMode = 1)).ContextMenu(Own(1));
@@ -121,28 +121,30 @@ public class BattleCommandsTests(ITestOutputHelper output)
     }
 
     [Fact]
-    public void Another_own_card_gives_its_standing_orders_with_the_current_marked_and_info()
+    public void Another_own_card_gives_its_standing_orders_with_the_current_marked()
     {
         var commands = new BattleCommands(Menu(5, 0, slot: 2));
         var menu = commands.ContextMenu(Own(1), StandingOrder.AutoAttack);
-        Assert.Equal(["50:1", "51:1*", "52:1", "53:1"], Codes(menu));
-        Assert.Equal(["Manual", "Auto-Atk", "Auto-Def", "Info"], Labels(menu));
+        Assert.Equal(["50:1", "51:1*", "52:1"], Codes(menu));
+        Assert.Equal(["Manual", "Auto-Atk", "Auto-Def"], Labels(menu));
         Assert.Empty(commands.ContextMenu(Own(4)));                         // no unit there: the core allows nothing
     }
 
+    /// <summary>Every card shows its stats (owner, 2026-10-15): no menu offers Info, an enemy's card has none.</summary>
     [Fact]
-    public void An_enemy_card_gives_its_info()
+    public void No_card_offers_info_and_an_enemy_card_has_no_menu()
     {
         var commands = new BattleCommands(Menu(5, 0, enemies: 3));
-        Assert.Equal(["54:3"], Codes(commands.ContextMenu(Enemy(3))));
-        Assert.Equal(["Info"], Labels(commands.ContextMenu(Enemy(3))));
-        Assert.Empty(commands.ContextMenu(Enemy(4)));
+        Assert.Empty(commands.ContextMenu(Enemy(3)));
+        foreach (var place in new[] { Own(1), Own(2) })
+            Assert.DoesNotContain(commands.ContextMenu(place, StandingOrder.Manual),
+                c => c.Choice.Command == FigtSelCommand.UnitInfo || c.Choice.Command == FigtSelCommand.EnemyInfo);
     }
 
     /// <summary>
     /// Every <c>FIGT_SEL</c> answer of the captured battles can be given on our screen: an attack by a banner
     /// on its target's card, any other command by an item of a card's menu (the commands without a target with
-    /// 99 in ours, whatever button the original's pointer was on).
+    /// 99 in ours, whatever button the original's pointer was on) — but Info, whose stats every card shows.
     /// </summary>
     [Theory]
     [MemberData(nameof(Captures))]
@@ -167,6 +169,8 @@ public class BattleCommandsTests(ITestOutputHelper output)
             foreach (var c in offered)
                 Assert.True(menu.Allows(c.Choice), $"{c.Choice} is not allowed by the core");
             int code = choice.Command.Value;
+            if (code is 53 or 54)
+                return;                                                     // Info: every card shows its stats (BattleCardStats)
             if (code is >= 50 and <= 52 && choice.Argument == menu.ActingSlot)
             {
                 // The slot popup on the acting unit: Auto-Atk / Auto-Def become 8 / 9 in the core (OrderOtherAsync),
@@ -177,7 +181,7 @@ public class BattleCommandsTests(ITestOutputHelper output)
                 code = choice.Command.Value;
             }
             bool attack = code is (>= 1 and <= 3) or (>= 10 and <= 21);
-            bool targeted = attack || code is >= 50 and <= 54;
+            bool targeted = attack || code is >= 50 and <= 52;
             if (!offered.Any(c => c.Choice.Command == choice.Command && (!targeted || c.Choice.Argument == choice.Argument)))
                 missing.Add($"({code}, {choice.Argument.Value})");
         }

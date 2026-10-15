@@ -900,6 +900,21 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             await ReleaseWaitAsync(_input.PeekInput());
             _ikKey = key;
         }
+        else if (BattleScreenShown && _presenter.Battle.OrderedUnit is { } ordered)
+        {
+            // Our battle screen does not show the order messages (owner, 2026-10-15): the order's label on the unit's card
+            // flashes and the message's click wait is answered at once, as by a click (the key lands in RetVal), after the
+            // release of a button still held.
+            _battleView.FlashOrder(ordered);
+            if (_options.Auto && !_options.Fast)
+            {
+                await DelayAsync(0.25);                                         // the flash at its height
+                await AutoDumpAsync("order-flash");
+            }
+            key = KeyReturn;
+            await ReleaseWaitAsync(_input.PeekInput());
+            _ikKey = key;
+        }
         else if (BattleScreenShown && _presenter.LaterRoundHeader)
         {
             // Our battle screen shows the round header once, as the battle's opening (owner, 2026-10-14): a later round's
@@ -1369,7 +1384,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             await DelayAsync(_options.Fast ? 0 : 0.5);
             var direct = menu.Find(FigtSelCommand.Direct);
-            if (_autoCommandsPhase < 3 && BattleScreenShown && DisplayServer.GetName() != "headless" && direct is { Arguments.Count: > 0 })
+            if (_autoCommandsPhase < 4 && BattleScreenShown && DisplayServer.GetName() != "headless" && direct is { Arguments.Count: > 0 })
                 return await AutoCommandsAsync(menu, direct.Arguments[0]);
             return direct is { Arguments.Count: > 0 }
                 ? new FigtSelChoice(FigtSelCommand.Direct, direct.Arguments[0])
@@ -1426,8 +1441,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// pointer as a player's would. First a right click on the acting unit's card opens its menu (screen
     /// dump "menu", the pointer on its first item), one on another own card opens that one's
     /// ("menu-orders"), a left click off it closes it, and Retreat from the acting unit's menu asks the
-    /// retreat dialog, which <see cref="AutoRetreatDialogAsync"/> cancels. Back at the same turn: the
-    /// pointer on each enemy card shows its banners (dumps "banners-E1"…); two sample menus, never
+    /// retreat dialog, which <see cref="AutoRetreatDialogAsync"/> cancels. Back at the same turn, another own
+    /// card is given the order it has already (no rule changes: the core's message, our label's flash, dump
+    /// "order-flash" without <c>--fast</c>). Back at the same turn again: the pointer on each enemy card shows its banners (dumps "banners-E1"…); two sample menus, never
     /// answered, show two and three banners on the target ("sample-2-banners", "sample-3-banners": Rance
     /// Attack added; Bow and Whirlwind Shot added); then the pointer on the target's Melee banner
     /// ("banner-hover"), and a click there attacks. Anything else is an error.
@@ -1474,11 +1490,31 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                     return retreat;
                 }
                 await AutoClickAsync(new Vector2(640, 300), KeyReturn);
-                _autoCommandsPhase = 2;                                        // no Retreat in the menu: on to the banners
+                _autoCommandsPhase = 2;                                        // no Retreat in the menu: on to the order
+            }
+
+            if (_autoCommandsPhase == 2)
+            {
+                _autoCommandsPhase = 3;                                        // the banners next
+                var other = Enumerable.Range(1, menu.PlayerSlotsUsed.Value).Select(n => new BattlePlace(BattleSide.Player, n)).FirstOrDefault(p => p != model.Acting);
+                if (other.Slot != 0)
+                {
+                    // The order the unit has already (no rule changes): the core's message, our label's flash.
+                    var order = new FigtSelChoice((ushort)(FigtSelCommand.OrderManual + PlayerOrder(s, other.Slot)), (Sys3Int)other.Slot);
+                    GD.Print($"Kichikuou: --auto gives {other} its own order again (week {s.Week.Value}).");
+                    await AutoClickAsync(Centre(other), KeySpace);
+                    int item = commands.MenuItems.ToList().IndexOf(order);
+                    if (item < 0 || commands.ItemCentre(item) is not { } at)
+                        throw new InvalidOperationException($"--auto found no {order} in {other}'s menu ({string.Join(", ", commands.MenuItems)}).");
+                    await AutoClickAsync(at, KeyReturn);
+                    if (commands.Result != order)
+                        throw new InvalidOperationException($"--auto's click on {other}'s order answered {commands.Result}, not {order}.");
+                    return order;
+                }
             }
 
             GD.Print($"Kichikuou: --auto shows the banners and attacks by a banner (week {s.Week.Value}).");
-            _autoCommandsPhase = 3;
+            _autoCommandsPhase = 4;
             var target = new BattlePlace(BattleSide.Enemy, button.Value - 3);
             var expected = new FigtSelChoice(FigtSelCommand.Direct, button);
             for (int slot = 1; slot <= menu.EnemySlotsUsed.Value; slot++)
@@ -1519,6 +1555,13 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
         static Vector2 Centre(BattlePlace place) => BattleBoardView.CardArea(place).GetCenter();
         static Vector2 Face(BattlePlace place) => BattleBoardView.CardArea(place).Position + new Vector2(220, 75);   // an enemy's face, off its banners
+        static int PlayerOrder(GameState s, int slot) => slot switch
+        {
+            1 => s.Bt_PlayerOrder1.Value,
+            2 => s.Bt_PlayerOrder2.Value,
+            3 => s.Bt_PlayerOrder3.Value,
+            _ => s.Bt_PlayerOrder4.Value,
+        };
     }
 
     /// <summary>
@@ -1988,7 +2031,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     /// <summary>
     /// <see cref="GameOptions.AutoUntil"/>: the end of unattended play when the first deployment
-    /// picker closes, or when the first battle (<c>FIGT_A</c>, <c>FIGT_B</c>, <c>FIGT</c>) ends.
+    /// picker closes, or when the first battle (<c>FIGT_A</c>, <c>FIGT_B</c>, <c>FIGT</c>) ends — or, once
+    /// our battle screen's exercise (<see cref="AutoCommandsAsync"/>) has run, when its attack's exchange is over.
     /// </summary>
     private void AutoStopEarly(ScriptEvent scriptEvent)
     {
@@ -1999,6 +2043,13 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 throw new AutoStopException($"--auto stopped after the first deployment picker (week {week}).");
             case (AutoUntil.Battle, BattleScreenEvent { File: "FIGT_A.ADV" or "FIGT_B.ADV" or "FIGT.ADV", Open: false } battle):
                 throw new AutoStopException($"--auto stopped after the first battle, {battle.File} (week {week}).");
+            // Our battle screen's exercise done (owner, 2026-10-15: the rest of the battle only costs time): the exchange
+            // its banner started has run, and the field's redraw after it ends unattended play.
+            case (AutoUntil.Battle, ExchangeResultsEvent) when _autoCommandsPhase == 4:
+                _autoCommandsPhase = 5;
+                break;
+            case (AutoUntil.Battle, BattlefieldBackgroundEvent) when _autoCommandsPhase == 5:
+                throw new AutoStopException($"--auto stopped after our battle screen's exercise and its attack (week {week}).");
         }
     }
 

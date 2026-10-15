@@ -597,6 +597,7 @@ public sealed partial class Battle
     {
         State.Bt_CurOrder = order;
         await WaoAsync(143);
+        // QUIRK: BTX-10 — the line names string 1 (X 1), the battle's scratch name, not the acting unit.
         await FlowTextAsync(FigtFile, line);
         await FlowWaitKeyAsync();
         await WaoAsync(10);

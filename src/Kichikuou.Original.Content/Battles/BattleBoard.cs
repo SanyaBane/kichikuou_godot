@@ -103,9 +103,11 @@ public sealed class SlotSnapshot
 /// <param name="Focus">The focus a Wait has built (player units only, <c>Bt_PSlot1-4Focus</c>).</param>
 /// <param name="Acted">Whether the unit has acted this round (its slot state is not 0).</param>
 /// <param name="Defending">Whether it defends this round (player state 2-21, enemy state 20).</param>
+/// <param name="Stats">The stats under the portrait (<see cref="BattleCardStats"/>).</param>
 public sealed record BattleCard(
     BattlePlace Place, int Record, string Name, string TroopType, int FaceCg, int StandIn,
-    int Troops, int MaxTroops, int Hp, int MaxHp, StandingOrder? Order, int Focus, bool Acted, bool Defending)
+    int Troops, int MaxTroops, int Hp, int MaxHp, StandingOrder? Order, int Focus, bool Acted, bool Defending,
+    BattleCardStats? Stats = null)
 {
     /// <summary>The CG our screens cut for the card: the face, else the stand-in (0: none).</summary>
     public int Picture => FaceCg != 0 ? FaceCg : StandIn;
@@ -148,12 +150,13 @@ public static class BattleBoard
             return new BattleCard(place, record, DeploymentTable.StringAt(s, strings).Trim(), DeploymentTable.StringAt(s, strings + 1).Trim(),
                 u.FaceCg.Value, 0, u.Troops.Value, u.MaxTroops.Value, u.HP.Value, u.MaxHP.Value,
                 (StandingOrder)Math.Min((int)Order(s, place.Slot).Value, 2), Focus(s, place.Slot).Value,
-                acted, state is >= 2 and <= 21);
+                acted, state is >= 2 and <= 21, BattleCardStats.OfUnit(s, record));
         }
         var c = s.Cmdrs[record];
         var (name, troopType, face, standIn) = Commander(s, record);
         return new BattleCard(place, record, name, troopType,
-            face, standIn, c.Troops.Value, c.MaxTroops.Value, c.HP.Value, c.MaxHP.Value, null, 0, acted, state == 20);
+            face, standIn, c.Troops.Value, c.MaxTroops.Value, c.HP.Value, c.MaxHP.Value, null, 0, acted, state == 20,
+            BattleCardStats.OfCommander(s, record));
     }
 
     /// <summary>

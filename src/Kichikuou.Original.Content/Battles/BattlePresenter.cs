@@ -163,6 +163,8 @@ public sealed partial class BattlePresenter
             case MessageEvent e:
                 if (e.Text == OrderMessage)
                     _orderMessage = true;
+                if (State is { } ordered && (e.Text == OrderMessage || e.Text == OwnOrderAttack || e.Text == OwnOrderDefend))
+                    OrderedUnit = e.Text == OrderMessage ? ordered.Tmp0002.Value : ordered.Unit_Cur.Value;
                 if (e.Text == ScoutArmyLine && State is { } scouted)
                     Scout = ScoutReport.Of(scouted, _portraitR);           // the army as the report will list it
                 Print(Read(e.Text, [], e.StringVariables));
@@ -404,8 +406,9 @@ public sealed partial class BattlePresenter
         get
         {
             var shapes = new List<WindowShape>();
-            // Not the "vs" window (our cards show the actions) nor a speech bubble (our dialogue panel shows its line, Speech).
-            if (_winType != 0 && !ActionLabelsOpen && !SpeechOpen && Shape(_winFrame, opaque: _winType is >= 31 and <= 39) is { } frame)
+            // Not the "vs" window (our cards show the actions), a speech bubble (our dialogue panel shows its line, Speech)
+            // nor an order message (the card's label flashes, OrderedUnit).
+            if (_winType != 0 && !ActionLabelsOpen && !SpeechOpen && OrderedUnit is null && Shape(_winFrame, opaque: _winType is >= 31 and <= 39) is { } frame)
                 shapes.Add(frame);
             if (!_covered.HasFlag(Pictures.PortraitL) && Shape(_portraitL, (0, 0)) is { } left)
                 shapes.Add(left);
@@ -445,6 +448,17 @@ public sealed partial class BattlePresenter
     /// <summary>The first line of an order message (<c>L_0129e</c>, <c>FIGT.ADV:801</c>).</summary>
     private static readonly ScriptRef OrderMessage = new("FIGT.ADV", 801);
     private bool _orderMessage;
+
+    /// <summary>The acting unit's own standing orders' messages (<c>L_01f08</c> / <c>L_01f42</c>, <c>FIGT.ADV:1319</c>, <c>:1333</c>).</summary>
+    private static readonly ScriptRef OwnOrderAttack = new("FIGT.ADV", 1319), OwnOrderDefend = new("FIGT.ADV", 1333);
+
+    /// <summary>
+    /// The unit an order message names while window 143 shows it (<c>L_0129e</c>: another unit's order, the unit of
+    /// <c>Tmp0002</c>; <c>L_01f08</c> / <c>L_01f42</c>: the acting unit's own, <c>Unit_Cur</c>), else null. Our battle
+    /// screen does not show the message (it is not in <see cref="Windows"/>): the order's label on that unit's card
+    /// flashes instead and the message's key wait is answered at once (docs/ui/battle-screen.md, "The order messages").
+    /// </summary>
+    public int? OrderedUnit { get; private set; }
 
     private void Window(int op, int callArg)
     {
@@ -583,6 +597,7 @@ public sealed partial class BattlePresenter
         _winFrame = 0;
         _speech.Clear();
         ActionLabelsOpen = false;
+        OrderedUnit = null;
         Scout = null;
         ScoutReported = false;
         if (_infoBox)

@@ -52,11 +52,17 @@ draws what the core shows and answers what the core asks.
    results, info boxes) and which become a timed caption or a log line. The round header is answered
    (owner, 2026-10-14: "The opening" below), and so is the exchange's result (owner, 2026-10-14: a hold, the
    click only with a wiped-out mark; "The exchange's result" below); the rest waits.
+   Owner, 2026-10-15 (step 6): the order messages are not shown, their click answered at once, the order's label
+   on the card flashes instead ("The order messages" below); the info boxes are not needed: every card shows the
+   values under its portrait ("The cards' stats" below);
+   the other script windows a battle opens (111/112/121/122/113/131: narration and dialogue, e.g. in the story
+   battles) stay the original's for now (docs/backlog.md, "Interface").
 4. **The 戦果 place**: troops of the two sides, advantages, strategy — or nothing.
 5. **Focus**: as squares on the card (Sengoku's action points' place) or a number.
 6. **Pre-battle**: the strategy screen and the scout report — our own panels or the original's
    pictures in the scene. The scout report is answered (owner, 2026-10-14: our own overlay, "The scout
-   report" below); the strategy screen waits.
+   report" below); the strategy screen (`FIGT作`, docs/battle/screen-layout.md §6.2) stays the original's for
+   now (owner, 2026-10-15; docs/backlog.md, "Interface").
 7. **Script menus** (retreat, intercept / ninja scout / abandon, the ninja): a dialog of ours.
 8. **Dungeon battles** (black field, no strategy): the scene's background.
 
@@ -85,7 +91,7 @@ portrait (mock-up B):
   (places 3-4) on the far left, its front row (1-2) next to the centre, the enemy's front row next to
   the centre, its back row on the far right; between them **the rounds gauge** (one segment per
   round of the battle, the spent ones dark, "n left" below). A card: the face (`UnitFaces` square,
-  118 px; the enemy's on the card's right), place and name, troop type, troops now/max with a bar,
+  118 px — since 2026-10-15 112 at the top with the unit's stats under it, "The cards' stats"; the enemy's on the card's right), place and name, troop type, troops now/max with a bar,
   HP now/max with a bar, the standing order (Manual / Auto-Atk / Auto-Def; the player's), "acted"
   (a word in the state line; the face is not dimmed, owner's request 2026-10-13); the acting unit's card as Sengoku Rance's
   (owner, 2026-10-13; docs/sengoku/04-screen.md §6.2, §6.5): its fill the card's colour 30 % toward the
@@ -160,6 +166,36 @@ picture, the slot panels) is not shown. How it is built:
   and the erase stay the script's. `BattlePresenter.Windows` leaves the bubble's frame out of the windows'
   layer; the stage still draws it, so Original is unchanged. `BattleWindowsTests`: in the captured battles no
   bubble is in the layer and every bubble's key wait has a line.
+- **The order messages** (owner, 2026-10-15): an order given from a card's menu is announced by the script in
+  window 143 — another unit's (`L_0129e`, `FIGT.ADV:776-833`: "<unit> received orders to wait for instructions." /
+  "to keep attacking." / "to keep defending.") and the acting unit's own Auto-Atk / Auto-Def (`L_01f08` / `L_01f42`,
+  `:1315-1342`, "received orders to continually attack." / "defend."; its name is string 1, BTX-10). On our screen the
+  message is not shown (`BattlePresenter.OrderedUnit` names the unit while it is open and keeps the window out of the
+  windows' layer); `GameScreen` answers its key wait at once, as a click (the key lands in RetVal), after the release
+  of a button still held, as the "vs" window's (the script's own release loop, `:828-832`, follows the window's close;
+  the menu item was chosen at the release anyway). Instead the order's label on that unit's card flashes
+  (`BattleBoardView.FlashOrder`): the muted colour turns saturated in 0.12 s (its hue at full saturation, as bright
+  as the text on a dark palette; a grey takes the accent's hue), holds 0.35 s and fades back in 0.35 s — the card
+  built again meanwhile (the own order changes only after its message) keeps the flash. Nothing in the rules changes.
+  `BattleScreenTests` checks the presenter's side; `--auto --interface new` gives another own card its own order again
+  (dump `order-flash` without `--fast`).
+- **The cards' stats** (owner, 2026-10-15, after a Sengoku Rance fan mod's cards — the stats as numbers under the
+  portrait, the level by the face — and four rounds of mock-ups: the original's box as our panel or as an expanded card,
+  then a window at the top of the scene for the card under the pointer, with every line or four, or the four over the
+  portrait on hover; all set aside): **every card shows the info box's values always**, so no Info is needed. The
+  portrait shrinks to 112 (from 118, in the same 118-wide column) and moves to the top; under it a row of four numbers,
+  each centred in a quarter of the face's width, in the cards' font with a dark shadow: troop attack, troop defense, magic,
+  attacks — what the info box prints (docs/battle/screen-layout.md §6.1) but HP and troops (on the card already) and the
+  standing order. A troop modifier of the battle's kind tints its number (green up, red down; the box's decoding: 10, its
+  lone ")" (BSC-04), is none, and the enemy's are decoded as the player's though the battle adds them raw, BRS-08); without
+  troops the numbers are the commander's own attack and defense (`:883-899`), in light blue. The player's Battle LV is
+  "Lv n" in the portrait's bottom-right corner on a see-through dark plate (owner: the text alone was lost on the face);
+  an enemy commander has none. "Surging with power" (the unit's partner deployed, `:1001-1004`) is a badge with an up arrow
+  on the portrait's top-right corner, in the accent colour — grey while the unit has no troops, since the partner's
+  +2/+1/+0 raises the troops' attack and defense rolls only (`FIGT.ADV:2457-2482`), though the box still prints the line.
+  The model is `Original.Content/Battles/BattleCardStats` (`BattleCard.Stats`, from GameState; `BattleCardStatsTests`), the
+  portrait `godot/Battles/CardPortrait`. The cards' menus no longer offer Info (53/54) — an enemy's card has no menu now —
+  so the original's info box (window 143, its click) does not come up on our screen; Option → Interface → Original keeps it.
 - **The cards' counters** (owner, 2026-10-14): a card's troops and HP — the number and its bar together —
   run to a new value instead of jumping to it, eased out, in Option → Battle Screen… → "Cards: counters"
   (0.6 s by default; `--meter-seconds x` for a launch), from the moment the blow lands (owner): the core writes
@@ -695,7 +731,8 @@ picture, the slot panels) is not shown. How it is built:
      Auto-Atk (51), Auto-Def (52) — the current order marked — and Info (53). A left click on an item
      chooses it; a left click outside or Esc closes the menu (back to choosing); a right click on another
      card closes it and opens that card's menu at once; a right click elsewhere closes it. Only items the
-     core allows (`Allows`) are listed. The Info screens stay the original's windows for now.
+     core allows (`Allows`) are listed. The Info screens stay the original's windows for now. (Since 2026-10-15 no
+     menu offers Info and an enemy's card has none: every card shows its stats, "The cards' stats" above.)
    - `--auto --interface new` in a window exercises it once a launch (replacing today's popup run):
      hover the target's card (banners), click a banner; a right click on an own card (menu dump), a
      left click outside to close it.
@@ -746,6 +783,16 @@ picture, the slot panels) is not shown. How it is built:
 6. **Windows**: the round header, the flavour lines, the results, the info boxes, the strategy
    screen, the scout report — as the owner decides in question 3. ✓ 2026-10-14 the scout report
    ("The scout report" above).
+   The owner's answers (2026-10-15): (1) the **info boxes** (Info on an own or an enemy card: `UnitInfoEvent` /
+   `EnemyInfoEvent`, window 143, `FIGT.ADV:834-1119`, docs/battle/screen-layout.md §6.1) become ours — mock-ups
+   first, 2-3 at 1280×800 over a real battle screen with the info's real values (both sides: a unit with troops,
+   one without, an enemy commander); candidates: our panel over the scene in the cards' / scout report's style,
+   closed by a click (the script's one key wait), an expanded card beside the unit's card as Sengoku Rance's
+   details, or the original's window as now — then (owner, the same day) none of them: the stats on every card, always,
+   under the portrait ("The cards' stats" above; ✓ 2026-10-15); (2) the **order messages** (`L_0129e`, `FIGT.ADV:776-833`) are not
+   shown, the order's label on the card flashes instead ("The order messages" above; ✓ 2026-10-15); (3) the **strategy screen**
+   stays the original's for now; (4) the **other script windows** during a battle (111/112/121/122/113/131) stay
+   the original's for now — (3) and (4) in docs/backlog.md, "Interface".
 7. **Checks**: the model's tests, the golden captures replayed through our input (the same
    choices give the same memory), `--auto --interface new` through the battles, the owner's look
    from a kept save (`--until battle`).
