@@ -294,6 +294,10 @@ commit `local.env`.
   settled, not while the owner may still ask for changes (owner's request 2026-10-11). Say in the
   reply which run a result comes from and why the full counts were or were not due.
 - Build everything: `dotnet build Kichikuou.sln`
+- Build and play in a window without Rider or the editor: `run-game.cmd` at the root (a double-click), or
+  `powershell -ExecutionPolicy Bypass -File toolsun-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
+  `godot/Kichikuou.csproj` and starts `KICHIKUOU_GODOT_EXE` (the exe without `_console` unless `-Console`) on `godot`,
+  passing the rest after `--`.
 - Run the game headless (smoke test): `<Godot console exe> --headless --path godot --quit-after 30`;
   `<Godot console exe>` is `KICHIKUOU_GODOT_EXE` in `local.env` (the editor's exe is next to it).
   Commit the `*.uid` files Godot creates.
