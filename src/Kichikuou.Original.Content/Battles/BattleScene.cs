@@ -61,7 +61,7 @@ public sealed class BattleScene
     public const int FieldY = 560, ArmyY = 820, EnemyArmyX = 640, FrontY = 1080;
 
     /// <summary>Where the overlay alone is kept (right of the battlefield), copied under the front's numbers at every change.</summary>
-    private const int OverlayX = 640;
+    internal const int OverlayX = 640;
 
     /// <summary>
     /// A side's army in the picture: its record (the unit or the commander; 0: none drawn), the x span its
@@ -128,6 +128,26 @@ public sealed class BattleScene
 
     /// <summary>Where on <see cref="Surface"/> <see cref="ComposeWhole"/> puts the picture under the numbers (<see cref="Width"/> × <see cref="Height"/>).</summary>
     public const int PictureY = BaseY;
+
+    /// <summary>
+    /// Whether the front shows the exchange's numbers — the TROOPS and HP counters, the shots flying across and the damages
+    /// (on by default, as the original draws them). Our battle screen turns them off (owner, 2026-10-15): its cards show
+    /// the troops and HP and run them to the result. The wiped-out marks stay.
+    /// </summary>
+    public bool Numbers
+    {
+        get => _numbers;
+        set
+        {
+            if (value == _numbers)
+                return;
+            _numbers = value;
+            _frontNumbers = true;                               // the front drawn again without (or with) them
+            Render();
+        }
+    }
+
+    private bool _numbers = true;
 
     /// <summary>The player unit and the enemy commander the picture shows between exchanges (0: none).</summary>
     public (int Unit, int Cmdr) InFocus => _choosing && _mode == Mode.Between ? (_unit, _hovered) : (_unit, _cmdr);
@@ -538,7 +558,8 @@ public sealed class BattleScene
     /// The exchange's numbers in the picture: the counters (<c>L_02c00</c>), the shots of the frame
     /// (<c>FIGTATTK.ADV:34-126</c>), the results (<c>:134-233</c>) and the marks (<c>:235-246</c>),
     /// as the presenter draws them on the stage but with the rows below 255 moved up (<see cref="Y"/>),
-    /// on the picture at y <paramref name="oy"/> (the whole one, or the front layer).
+    /// on the picture at y <paramref name="oy"/> (the whole one, or the front layer); without <see cref="Numbers"/>
+    /// the marks alone.
     /// </summary>
     private void DrawNumbers(GameState s, int oy)
     {
@@ -546,7 +567,7 @@ public sealed class BattleScene
             return;
         var unit = s.Units[s.Unit_Cur];
         var cmdr = s.Cmdrs[s.Cmdr_Cur];
-        if (_results)
+        if (_numbers && _results)
         {
             Counters(unit.Troops != 0 ? (unit.Troops - s.Bt_ETroopVsTroopDmg - s.Bt_ECmdrVsTroopDmg).Value : null,
                 cmdr.Troops != 0 ? (cmdr.Troops - s.Bt_PTroopVsTroopDmg - s.Bt_PCmdrVsTroopDmg).Value : null,
@@ -559,11 +580,11 @@ public sealed class BattleScene
                     BattlePresenter.DrawNumber(Surface, damage, x, oy + Y(y), 1, AttackSheetY);
             }
         }
-        else if (_counters is { } c)
+        else if (_numbers && _counters is { } c)
         {
             Counters(c.UnitTroops != 0 ? c.UnitTroops : null, c.CmdrTroops != 0 ? c.CmdrTroops : null, c.UnitHp, c.CmdrHp, CounterSheetY, oy);
         }
-        if (_shotsStep is int step)
+        if (_shotsStep is int step && _numbers)
         {
             int d = step * 5 / 11;
             foreach (var (shots, _, x, y) in Rows(s, step, d, damages: false))

@@ -373,6 +373,7 @@ internal sealed partial class BattleBoardView : Control
         if (presenter.State is not { } s)
             return;
         _armiesInstant = _metersInstant = slidesInstant;
+        presenter.Scene.Numbers = false;                // the cards show the troops and HP (owner, 2026-10-15)
         if (presenter.Scene.Version != _sceneVersion)
         {
             _sceneVersion = presenter.Scene.Version;

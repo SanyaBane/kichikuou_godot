@@ -132,7 +132,11 @@ picture, the slot panels) is not shown. How it is built:
   numbers are drawn in the picture: the TROOPS counters, the flying shots and the damages; what the
   original draws below row 255 moves up — the HP counters to y 224, the commanders' rows halfway
   (y' = 80 + (y − 80) / 2), "UNABLE TO FIGHT" to y 112. The slide (the picture scrolling 112 rows
-  down) is not shown: the picture stands whole from the start.
+  down) is not shown: the picture stands whole from the start. **Since 2026-10-15 our screen shows none of these
+  numbers** (owner): no TROOPS or HP counters, no shots flying across, no damages — the cards show the troops and HP
+  and run them to the result ("The cards' counters" below); the wiped-out marks stay (`BattleScene.Numbers`, off in
+  `BattleBoardView`; on by default, so the tests still compare the scene with the original's screen;
+  `BattleSceneTests.Without_numbers_the_front_is_the_overlay_and_the_marks`). The script's waits for them are unchanged.
 - **The armies slide** (owner, 2026-10-13; Sengoku Rance's, docs/sengoku/04-screen.md §2.3): an army
   that comes into the picture slides in from outside the scene on its side (the player's from the left,
   the enemy's from the right), one that leaves slides out the same way; horizontally, evenly, in
@@ -314,8 +318,8 @@ picture, the slot panels) is not shown. How it is built:
   (`strip-flying`).
 - **The exchange's result** (owner, 2026-10-14, after Sengoku Rance's, which never stops after an attack:
   docs/sengoku/04-screen.md §9.11): the result screen's click (`FIGTATTK.ADV:247`, `IK 0`) is the battle's most
-  frequent, and our screen already shows the result in the scene and runs the cards' counters from it ("The cards'
-  counters" above). So when no wiped-out mark is on it, `GameScreen` holds it for Option → Battle Screen… →
+  frequent, and our screen already runs the cards' counters from the result ("The cards' counters" above; the scene
+  showed the result's numbers too until 2026-10-15). So when no wiped-out mark is on it, `GameScreen` holds it for Option → Battle Screen… →
   "Results: hold" (1.2 s by default — the counters' run and the damage trail; `--result-seconds x` for a launch) and
   goes on as by a click: the key lands in RetVal (BTX-03) as `KeyReturn`, after the release wait; a key or a click
   ends the hold sooner and is the key, as `IK 0` returns it; at once with `--fast`, and under the message skip at

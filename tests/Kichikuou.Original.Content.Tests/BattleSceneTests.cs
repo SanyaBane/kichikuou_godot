@@ -206,6 +206,49 @@ public class BattleSceneTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// Without <see cref="BattleScene.Numbers"/> (our battle screen, owner 2026-10-15) the front shows no counter, shot
+    /// or damage in the captured battles: through every exchange, until its wiped-out marks, it is the battlefield's
+    /// overlay alone (the marks come after it). Some defences end before any exchange.
+    /// </summary>
+    [CaptureTheory]
+    [MemberData(nameof(Captures))]
+    public async Task Without_numbers_the_front_is_the_overlay_and_the_marks(string file)
+    {
+        var capture = GoldenCapture.Load(Path.Combine(LocalData.GoldenDirectory, file));
+        var scene = new BattleScene(Cgs.Value) { Numbers = false };
+        var order = new RoundOrder();
+        GameState? state = null;
+        bool marked = false;
+        int checkedFronts = 0, engagements = 0;
+        var wrong = new List<string>();
+        var view = new ObservingView(e =>
+        {
+            order.Observe(e, state!);
+            scene.Observe(e, state!, order.Acting);
+            if (e is EngagementSceneEvent)
+                (marked, engagements) = (false, engagements + 1);
+            if (e is WipedOutMarksEvent)
+                marked = true;
+            if (e is CountersEvent or ShotsFrameEvent or ExchangeResultsEvent && scene.InEngagement && !marked)
+            {
+                checkedFronts++;
+                var front = scene.Surface.ReadArea(0, BattleScene.FrontY, BattleScene.Width, BattleScene.Height);
+                var overlay = scene.Surface.ReadArea(BattleScene.OverlayX, BattleScene.FieldY, BattleScene.Width, BattleScene.Height);
+                if (!front.AsSpan().SequenceEqual(overlay))
+                    wrong.Add($"front {checkedFronts} ({e.GetType().Name}) shows more than the overlay");
+            }
+        });
+        await GoldenReplay.RunAsync(capture, view: view, started: s =>
+        {
+            state = s;
+            scene.Start(s);
+        });
+        output.WriteLine($"{file}: {engagements} exchanges, {checkedFronts} fronts checked");
+        Assert.Empty(wrong);
+        Assert.True(engagements == 0 || checkedFronts > 0, "no exchange's front was checked");    // some defences end before any exchange
+    }
+
+    /// <summary>
     /// Every capture in the full run (<see cref="DifferentialRuns.Full"/>), every eighth in the quick
     /// one: the presenter and the scene draw each battle whole (minutes for all of them).
     /// </summary>
