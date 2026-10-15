@@ -1088,6 +1088,29 @@ public partial class GamePresenterTests(ITestOutputHelper output)
         Assert.Equal(mark, presenter.Stage.PixelAt(110, 130));
     }
 
+    /// <summary>
+    /// The same blink inside a battle file (<c>FIGT_B</c>'s enemy attack scrolls to the province and calls
+    /// <c>M.ADV</c> 10): the battle's presenter draws it, and its sound does not end the animation either.
+    /// </summary>
+    [Fact]
+    public void The_map_mark_blinks_after_the_selection_sound_in_a_battle_file()
+    {
+        var missing = Path.Combine(Path.GetTempPath(), "kichikuou-no-data");
+        var presenter = new GamePresenter(new ScenarioText(missing), new CgLibrary(missing), new BoxGlyphs());
+        var state = new GameState { Tmp0025 = 100, Tmp0026 = 120 };
+        presenter.Bind(state);
+        presenter.Show(new BattleScreenEvent("FIGT_B.ADV", true));
+        presenter.Show(new EngineEvent("CF", [(Sys3Int)640, Sys3Int.Zero, (Sys3Int)32, (Sys3Int)32, (Sys3Int)15]));
+        var mark = presenter.Stage.PixelAt(640, 0);
+        Assert.NotEqual(mark, presenter.Stage.PixelAt(110, 130));
+
+        presenter.Show(new MapEvent(10));
+        presenter.Show(new SoundEvent(Sys3Int.Zero, (Sys3Int)109));
+        presenter.Show(new PauseEvent((Sys3Int)8));
+
+        Assert.Equal(mark, presenter.Stage.PixelAt(110, 130));
+    }
+
     private sealed record Run(GameSession Session, GamePresenter Presenter, Player Player, StoppingSaves Saves);
 
     /// <summary>A booted session whose view is a presenter and whose input plays through it.</summary>

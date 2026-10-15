@@ -148,7 +148,9 @@ public sealed partial class BattlePresenter
         WaitsForKey = false;
         if (scriptEvent is not SlotPanelEvent and not PanelHighlightEvent)
             FinishRedraw();
-        if (scriptEvent is not PauseEvent)
+        // A map animation's steps are the pauses after it; sound draws nothing (M 10 plays its sound before the blink:
+        // FIGT_B's enemy attack, FIGT_B.ADV's lost province).
+        if (scriptEvent is not (PauseEvent or SoundEvent or SoundPairEvent or MusicEvent))
             _mapAnimation = MapAnimation.None;
         if (scriptEvent is not WipedOutMarksEvent and not KeyWaitEvent)
             Strike = null;                                              // the blow is over: the core has written it
