@@ -93,8 +93,8 @@ internal sealed partial class BattleOpeningLayer : Control
                 Visible = true;
                 _appearing = instant ? double.MaxValue : 0;     // the field alone first, then the opening fades in (owner, 2026-10-14)
                 Appear();
-                _player.Show(opening.PlayerArmy, opening.PlayerAdvantage);
-                _enemy.Show(opening.EnemyArmy, opening.EnemyAdvantage);
+                _player.Show(opening.PlayerArmy, opening.PlayerEffects.Text);
+                _enemy.Show(opening.EnemyArmy, opening.EnemyEffects.Text);
                 Step(0);
             }
             _player.SetPictures(sides, field, front);
@@ -229,7 +229,7 @@ internal sealed partial class BattleOpeningLayer : Control
         private readonly ColorRect _tint;
         private readonly Control _text;
         private string _name = "";
-        private int _advantage;
+        private string _advantage = "";                // what the side's advantage does, "" without one
         private float _scale = 1;
 
         public Half(BattleOpeningLayer layer, bool left)
@@ -278,7 +278,7 @@ internal sealed partial class BattleOpeningLayer : Control
         public void SetPictures(Texture2D? sides, Texture2D? field, Texture2D? front) =>
             (_sides.Texture, _field.Texture, _front.Texture) = (sides, field, front);
 
-        public void Show(string name, int advantage)
+        public void Show(string name, string advantage)
         {
             (_name, _advantage) = (name, advantage);
             _text.QueueRedraw();
@@ -324,8 +324,9 @@ internal sealed partial class BattleOpeningLayer : Control
                 float baseline = (NameBase - (lines.Count - 1 - i) * size) * s;
                 Outlined(_text, font, new Vector2(x, baseline), lines[i], namePx, Colors.White, Ink, (int)Math.Round(10 * s), align);
             }
-            Outlined(_text, font, new Vector2(x, (NameBase + 42) * s), $"Advantage +{_advantage}", (int)Math.Round(AdvantageSize * s),
-                AdvantageColour, Ink, (int)Math.Round(6 * s), align);
+            if (_advantage != "")
+                Outlined(_text, font, new Vector2(x, (NameBase + 42) * s), _advantage, (int)Math.Round(AdvantageSize * s),
+                    AdvantageColour, Ink, (int)Math.Round(6 * s), align);
         }
     }
 }

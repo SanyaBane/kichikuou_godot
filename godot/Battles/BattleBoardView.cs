@@ -93,6 +93,8 @@ internal sealed partial class BattleBoardView : Control
     private readonly Label _playerName, _enemyName, _playerAdvantage, _enemyAdvantage;
     private readonly HBoxContainer _playerArmyLine, _enemyArmyLine;     // the army's name and its advantage over the cards
     private readonly BattleOpeningLayer _opening;
+    private readonly Control _limit;                                    // the battle's limit at the scene's foot (owner, 2026-10-15)
+    private string _limitText = "";
 
     /// <summary>How far the battle's opening has faded in (0 none or not up, 1 whole).</summary>
     public float OpeningShown => _opening.Shown;
@@ -152,6 +154,10 @@ internal sealed partial class BattleBoardView : Control
         _speaker.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
         _speaker.Visible = false;
         AddChild(_speaker);
+
+        _limit = new Control { MouseFilter = MouseFilterEnum.Ignore };     // over the scene, under its windows
+        _limit.Draw += DrawLimit;
+        AddChild(_limit);
 
         _windows = Picture();
         AddChild(_windows);
@@ -272,6 +278,7 @@ internal sealed partial class BattleBoardView : Control
         _enemyAdvantage.AddThemeColorOverride("font_color", palette.Accent);
         _cardsKey = _stripKey = "?";
         _gauge.QueueRedraw();
+        _limit.QueueRedraw();
     }
 
     /// <summary>Option → Fonts: the screen's text in the chosen font.</summary>
@@ -311,6 +318,8 @@ internal sealed partial class BattleBoardView : Control
         _effect.Position = new Vector2(0, SceneArea.Size.Y - EffectPlayer.Height) * scale;     // at the scene's foot
         _effect.Scale = new Vector2(scale, scale);
         PlaceArmies();
+        At(_limit, SceneArea);
+        _limit.QueueRedraw();
         At(_windows, WindowsArea);
         At(_strip, StripArea);
         _strip.SetScale(scale);
@@ -383,9 +392,15 @@ internal sealed partial class BattleBoardView : Control
         var (player, enemy) = BattleBoard.Armies(s);
         _playerName.Text = player;
         _enemyName.Text = enemy;
-        var (playerAdvantage, enemyAdvantage) = BattleOpening.Advantages(s);  // the round header's, all battle long (owner, 2026-10-14)
-        _playerAdvantage.Text = $"Advantage +{playerAdvantage}";
-        _enemyAdvantage.Text = $"Advantage +{enemyAdvantage}";
+        var (playerAdvantage, enemyAdvantage) = BattleOpening.Effects(s);   // what the header's advantages do, all battle long (owner, 2026-10-15)
+        _playerAdvantage.Text = playerAdvantage.Text;
+        _enemyAdvantage.Text = enemyAdvantage.Text;
+        string limit = BattleOpening.LimitText(s);
+        if (limit != _limitText)
+        {
+            _limitText = limit;
+            _limit.QueueRedraw();
+        }
         _opening.Refresh(presenter.Opening, _sidesTexture, _fieldTexture, _frontTexture, instant: slidesInstant);
     }
 
@@ -900,7 +915,7 @@ internal sealed partial class BattleBoardView : Control
         line.AddThemeConstantOverride("separation", pad * 2);
         int size = (int)Math.Round(CardPortrait.Face * _scale);
         var face = new CardPortrait(card.Picture != 0 ? _faces.SquareTexture(card.Picture, _faces.CropOf(card.Picture, _crops), size) : null,
-            card.Stats, _colours, _scale);
+            card.Stats, card.Focus, _colours, _scale);
 
         var text = new VBoxContainer { MouseFilter = MouseFilterEnum.Ignore, SizeFlagsHorizontal = SizeFlags.ExpandFill };
         text.AddThemeConstantOverride("separation", 0);
@@ -929,8 +944,6 @@ internal sealed partial class BattleBoardView : Control
         string state = "";
         if (card.Defending)
             state += (state == "" ? "" : " · ") + "Defending";
-        if (card.Focus > 0)
-            state += (state == "" ? "" : " · ") + $"Focus {card.Focus}";
         if (acting)
             state += (state == "" ? "" : " · ") + "Acting";
         else if (card.Acted && !card.Defending)
@@ -1049,6 +1062,32 @@ internal sealed partial class BattleBoardView : Control
         }
         if (font is not null)
             _gauge.DrawString(font, new Vector2(0, size.Y - fontSize * 0.4f), $"{left} left", HorizontalAlignment.Center, size.X, fontSize, _colours.Text);
+    }
+
+    // The battle's limit (owner, 2026-10-15): a plate centred near the scene's foot, between the HP counters of an
+    // exchange — what the first round header's second and third lines say (BattleOpening.LimitText).
+    private const float LimitCentreY = 393, LimitHeight = 28, LimitPadding = 16;
+
+    private void DrawLimit()
+    {
+        var font = _theme.DefaultFont;
+        int fontSize = _theme.DefaultFontSize;
+        if (font is null || _limitText == "")
+            return;
+        float s = _scale;
+        float width = font.GetStringSize(_limitText, HorizontalAlignment.Left, -1, fontSize).X + 2 * LimitPadding * s;
+        var plate = new Rect2((_limit.Size.X - width) / 2, (LimitCentreY - LimitHeight / 2) * s, width, LimitHeight * s);
+        var box = new StyleBoxFlat
+        {
+            BgColor = new Color(_colours.Back, 0.8f),
+            BorderColor = _colours.Border,
+            BorderWidthLeft = 1, BorderWidthTop = 1, BorderWidthRight = 1, BorderWidthBottom = 1,
+        };
+        box.SetCornerRadiusAll((int)Math.Round(6 * s));
+        _limit.DrawStyleBox(box, plate);
+        float baseline = plate.Position.Y + (plate.Size.Y + font.GetAscent(fontSize) - font.GetDescent(fontSize)) / 2;
+        _limit.DrawString(font, new Vector2(plate.Position.X, baseline), _limitText, HorizontalAlignment.Center, plate.Size.X,
+            fontSize, _colours.Text);
     }
 
     // ------------------------------------------------------------------ the pointer

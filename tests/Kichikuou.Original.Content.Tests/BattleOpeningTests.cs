@@ -33,14 +33,15 @@ public class BattleOpeningTests(ITestOutputHelper output)
     public void The_opening_tells_what_the_first_header_prints()
     {
         var s = Armies();
-        Assert.Equal(new BattleOpening("Oaks — Offensive Battle", "City: Battle Limit  ·  up to 232", 5, "Rance Army", "Leazas Rebel Army", 0, 4),
+        Assert.Equal(new BattleOpening("Oaks — Offensive Battle", "City · Battle Limit: up to 232", 5, "Rance Army", "Leazas Rebel Army", 0, 4,
+            BattleAdvantage.None, BattleAdvantage.None),
             BattleOpening.Of(Header(0, 1, 232), s));
-        Assert.Equal(("Oaks — Defensive Battle", "Plains: Battle Limit  ·  up to 5000", (int?)3),
+        Assert.Equal(("Oaks — Defensive Battle", "Plains · Battle Limit: up to 5000", (int?)3),
             Parts(BattleOpening.Of(Header(0, 2, 5000, rounds: 3), s)));
-        Assert.Equal(("Duel", "Duel: Battle Limit  ·  up to 5000", (int?)null), Parts(BattleOpening.Of(Header(1, 1, 5000), s)));
-        Assert.Equal(("Dungeon Battle", "Dungeon: Battle Limit  ·  up to 300", (int?)4), Parts(BattleOpening.Of(Header(0, 3, 300, rounds: 4), s)));
+        Assert.Equal(("Duel", "Duel · Battle Limit: up to 5000", (int?)null), Parts(BattleOpening.Of(Header(1, 1, 5000), s)));
+        Assert.Equal(("Dungeon Battle", "Dungeon · Battle Limit: up to 300", (int?)4), Parts(BattleOpening.Of(Header(0, 3, 300, rounds: 4), s)));
         // A dungeon at the plains' limit reads "Plains", as the script's conditions have it.
-        Assert.Equal("Plains: Battle Limit  ·  up to 5000", BattleOpening.Of(Header(0, 3, 5000), s).Limit);
+        Assert.Equal("Plains · Battle Limit: up to 5000", BattleOpening.Of(Header(0, 3, 5000), s).Limit);
 
         static (string, string, int?) Parts(BattleOpening o) => (o.Title, o.Limit, o.Turns);
     }
@@ -55,6 +56,37 @@ public class BattleOpeningTests(ITestOutputHelper output)
         s.Bt_Kind = 2;
         s.Bt_StrategyResult = 11;
         Assert.Equal((4, 10), BattleOpening.Advantages(s));
+    }
+
+    [Fact]
+    public void The_advantages_show_what_they_do()
+    {
+        // Walls: twice the bonus off the attackers' troop hit chance, for the side that holds the city; strategy: ±10 % / 50 %.
+        var s = new GameState { Bt_Kind = 1, Bt_WallBonus = 4 };
+        Assert.Equal((BattleAdvantage.None, new BattleAdvantage(8, 0)), BattleOpening.Effects(s));
+        Assert.Equal("Walls +8%", BattleOpening.Effects(s).Enemy.Text);
+        Assert.Equal("", BattleOpening.Effects(s).Player.Text);
+        s.Bt_StrategyResult = 2;
+        Assert.Equal((new BattleAdvantage(0, 50), new BattleAdvantage(8, 0)), BattleOpening.Effects(s));
+        s.Bt_Kind = 2;
+        s.Bt_StrategyResult = 11;
+        Assert.Equal((new BattleAdvantage(8, 0), new BattleAdvantage(0, 10)), BattleOpening.Effects(s));
+        s.Bt_StrategyResult = 12;
+        Assert.Equal("Walls +8%  ·  Strategy +50%", (BattleOpening.Effects(s).Player with { Strategy = 50 }).Text);
+        Assert.Equal("Strategy +50%", BattleOpening.Effects(s).Enemy.Text);
+        // A dungeon: the header adds the walls to the enemy's sum, but the resolution applies them in kinds 1 and 2 only.
+        s.Bt_Kind = 3;
+        s.Bt_StrategyResult = 0;
+        Assert.Equal((BattleAdvantage.None, BattleAdvantage.None), BattleOpening.Effects(s));
+    }
+
+    [Fact]
+    public void The_limit_reads_from_the_state()
+    {
+        Assert.Equal("City · Battle Limit: up to 232", BattleOpening.LimitText(new GameState { Bt_Kind = 1, Bt_TroopLimit = 232 }));
+        Assert.Equal("Dungeon · Battle Limit: up to 80", BattleOpening.LimitText(new GameState { Bt_Kind = 3, Bt_TroopLimit = 80 }));
+        Assert.Equal("Duel · Battle Limit: up to 5000",
+            BattleOpening.LimitText(new GameState { Bt_Kind = 1, Bt_IsDuel = 1, Bt_TroopLimit = 5000 }));
     }
 
     [Fact]

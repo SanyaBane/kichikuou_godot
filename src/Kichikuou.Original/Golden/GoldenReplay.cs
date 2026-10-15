@@ -147,6 +147,7 @@ public sealed class GoldenReplay
     private bool _pointer;
     private Battle? _battle;
     private Action<FigtSelMenu, FigtSelChoice>? _commands;
+    private ReplayAnswers? _answers;
     private Mt19937Legacy _generator;
     private XSystem35Random _random;
 
@@ -173,6 +174,8 @@ public sealed class GoldenReplay
     /// runtime from the replay's hooks (the files it does not run as scenes stay hooks): the
     /// context then runs scene files, and the replay answers menus, the mouse and the clock.
     /// <paramref name="commands"/> sees each <c>FIGT_SEL</c> menu with the answer the capture gives it.
+    /// <paramref name="answers"/> gives the battle's answers in place of the capture's (each recorded answer is
+    /// still taken): a screen of ours answering through its own controls (docs/ui/battle-screen.md, step 7).
     /// </summary>
     public static async Task<GoldenReport> RunAsync(
         GoldenCapture capture,
@@ -181,9 +184,10 @@ public sealed class GoldenReplay
         Action<GameState>? started = null,
         Func<OriginalScriptContext, Task>? entryPoint = null,
         Func<IStoryHooks, SceneRunner>? scenes = null,
-        Action<FigtSelMenu, FigtSelChoice>? commands = null)
+        Action<FigtSelMenu, FigtSelChoice>? commands = null,
+        ReplayAnswers? answers = null)
     {
-        var replay = new GoldenReplay(capture, filter ?? GoldenFilter.For(capture)) { _commands = commands };
+        var replay = new GoldenReplay(capture, filter ?? GoldenFilter.For(capture)) { _commands = commands, _answers = answers };
         await replay.RunAsync(view ?? new NullView(), started, entryPoint, scenes);
         return replay._report;
     }
@@ -422,8 +426,11 @@ public sealed class GoldenReplay
         /// <summary><c>SR 1</c> (MIDI) is not recorded; the original plays CD audio, so no MIDI track plays.</summary>
         public Task<Sys3Int> GetMidiTrackAsync() => Task.FromResult(Sys3Int.Zero);
 
-        public Task<Sys3Int> WaitForKeyAsync() =>
-            Task.FromResult((Sys3Int)replay.Take<KeyRecord>("a key (IK)").Code);
+        public Task<Sys3Int> WaitForKeyAsync()
+        {
+            var key = (Sys3Int)replay.Take<KeyRecord>("a key (IK)").Code;
+            return Task.FromResult(replay._answers?.Key?.Invoke(key) ?? key);
+        }
 
         public Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
         {
@@ -443,6 +450,12 @@ public sealed class GoldenReplay
                     $"FIGT_SEL returned ({record.RetVal}, {record.Tmp0001}) at {record.Where} (line {record.Line}), which the core's menu does not offer");
             }
             replay._commands?.Invoke(menu, choice);
+            if (replay._answers?.Command?.Invoke(menu, choice) is { } answer && answer != choice)
+            {
+                if (!menu.Allows(answer))
+                    throw replay.Diverged($"the answer ({answer.Command}, {answer.Argument}) given for FIGT_SEL at {record.Where} (line {record.Line}) is not on its menu");
+                return Task.FromResult(answer);
+            }
             return Task.FromResult(choice);
         }
 
@@ -454,7 +467,8 @@ public sealed class GoldenReplay
                 throw replay.Diverged(
                     $"the {menu.Kind} menu has {menu.Options.Count} items in the core and {record.Count} in the original at {record.Where} (line {record.Line})");
             }
-            return Task.FromResult(record.Choice == 0 ? null : (Sys3Int?)menu.Options[record.Choice - 1].Code);
+            var code = record.Choice == 0 ? null : (Sys3Int?)menu.Options[record.Choice - 1].Code;
+            return Task.FromResult(replay._answers?.Menu is { } answer ? answer(menu, code) : code);
         }
 
         public Task<Sys3Int> GetPlayingTrackAsync() =>
@@ -488,3 +502,13 @@ public sealed class GoldenReplay
         public Task ShowAsync(ScriptEvent scriptEvent) => Task.CompletedTask;
     }
 }
+
+/// <summary>
+/// The battle's answers a screen of ours gives in a replay (<c>GoldenReplay.RunAsync</c>), each from the capture's:
+/// <see cref="Command"/> for <c>FIGT_SEL</c>, <see cref="Menu"/> for the script's menus (null: cancelled),
+/// <see cref="Key"/> for the key waits (<c>IK 0</c>). A missing one keeps the capture's.
+/// </summary>
+public sealed record ReplayAnswers(
+    Func<FigtSelMenu, FigtSelChoice, FigtSelChoice>? Command = null,
+    Func<BattleMenu, Sys3Int?, Sys3Int?>? Menu = null,
+    Func<Sys3Int, Sys3Int>? Key = null);

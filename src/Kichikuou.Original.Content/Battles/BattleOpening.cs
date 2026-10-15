@@ -13,14 +13,16 @@ namespace Kichikuou.Original.Content.Battles;
 /// in a duel), the two armies and their advantages.
 /// </summary>
 /// <param name="Title">"Oaks — Offensive Battle", "Duel", "Dungeon Battle" …</param>
-/// <param name="Limit">"City: Battle Limit  ·  up to 232" and the like.</param>
+/// <param name="Limit">"City · Battle Limit: up to 232" and the like (<see cref="LimitText(int, bool, int)"/>).</param>
 /// <param name="Turns">The rounds left (null in a duel, whose header leaves the line out).</param>
 /// <param name="PlayerArmy">String 7 (" Rance Army").</param>
 /// <param name="EnemyArmy">String 10, the enemy army's name.</param>
 /// <param name="PlayerAdvantage">The player's advantage (the header's <c>Tmp0001</c>).</param>
 /// <param name="EnemyAdvantage">The enemy's (<c>Tmp0002</c>).</param>
+/// <param name="PlayerEffects">The player's advantage as what it does (<see cref="Effects"/>), which our screen shows.</param>
+/// <param name="EnemyEffects">The enemy's.</param>
 public sealed record BattleOpening(string Title, string Limit, int? Turns, string PlayerArmy, string EnemyArmy,
-    int PlayerAdvantage, int EnemyAdvantage)
+    int PlayerAdvantage, int EnemyAdvantage, BattleAdvantage PlayerEffects, BattleAdvantage EnemyEffects)
 {
     /// <summary>The opening of the header <paramref name="header"/> shows, with the strings GameState holds then.</summary>
     public static BattleOpening Of(RoundHeaderEvent header, GameState s)
@@ -36,15 +38,28 @@ public sealed record BattleOpening(string Title, string Limit, int? Turns, strin
             3 => "Dungeon Battle",
             _ => "",
         };
-        // :145-160 — the second; a dungeon at the plains' limit reads "Plains", as the script's conditions have it.
+        var (player, enemy) = BattleBoard.Armies(s);
+        var (playerEffects, enemyEffects) = Effects(s);
+        return new BattleOpening(title, LimitText(kind, duel, limit), duel ? null : header.RoundsLeft.Value,
+            player, enemy, header.PlayerAdvantage.Value, header.EnemyAdvantage.Value, playerEffects, enemyEffects);
+    }
+
+    /// <summary>
+    /// The header's second and third lines (<c>FIGT.ADV:145-164</c>) as one, in the owner's form (2026-10-15): "City · Battle
+    /// Limit: up to 232" — the most troops of one unit that fight in an exchange (docs/battle/02-resolution.md, <c>:624</c>).
+    /// A dungeon at the plains' limit reads "Plains", as the script's conditions have it.
+    /// </summary>
+    public static string LimitText(int kind, bool duel, int limit)
+    {
         string field = limit == 5000 && !duel ? "Plains"
             : duel ? "Duel"
             : kind != 3 ? "City"
             : "Dungeon";
-        var (player, enemy) = BattleBoard.Armies(s);
-        return new BattleOpening(title, $"{field}: Battle Limit  ·  up to {limit}", duel ? null : header.RoundsLeft.Value,
-            player, enemy, header.PlayerAdvantage.Value, header.EnemyAdvantage.Value);
+        return $"{field} · Battle Limit: up to {limit}";
     }
+
+    /// <summary>The limit of the battle GameState holds (<see cref="LimitText(int, bool, int)"/>), which our screen shows at the scene's foot.</summary>
+    public static string LimitText(GameState s) => LimitText(s.Bt_Kind.Value, s.Bt_IsDuel == 1, s.Bt_TroopLimit.Value);
 
     /// <summary>
     /// The two sides' advantages as the round header sums them (<c>FIGT.ADV:179-198</c>, <c>RoundHeaderAsync</c>):
@@ -67,6 +82,22 @@ public sealed record BattleOpening(string Title, string Limit, int? Turns, strin
         if (s.Bt_StrategyResult == 12)
             enemy += 50;
         return (player.Value, enemy.Value);
+    }
+
+    /// <summary>
+    /// The two sides' advantages as what they do (owner, 2026-10-15: the header's sum, <see cref="Advantages"/>, adds up
+    /// two different things): the walls count for the side that holds the city in an offensive or a defensive battle, where
+    /// the resolution takes <c>Bt_WallBonus * 2</c> from the other side's troops' hit chance against its troops
+    /// (<c>FIGT.ADV:2548</c>, <c>:2741</c>; the header also adds them to the enemy's in a dungeon, where nothing applies
+    /// them); a successful strategy raises its side's troop damage and lowers the other's by a tenth or a half
+    /// (<c>:2294-2317</c>).
+    /// </summary>
+    public static (BattleAdvantage Player, BattleAdvantage Enemy) Effects(GameState s)
+    {
+        int walls = (s.Bt_WallBonus * 2).Value;
+        int strategy = s.Bt_StrategyResult.Value;
+        return (new BattleAdvantage(s.Bt_Kind == 2 ? walls : 0, strategy switch { 1 => 10, 2 => 50, _ => 0 }),
+            new BattleAdvantage(s.Bt_Kind == 1 ? walls : 0, strategy switch { 11 => 10, 12 => 50, _ => 0 }));
     }
 
     /// <summary>
@@ -113,5 +144,27 @@ public sealed record BattleOpening(string Title, string Limit, int? Turns, strin
     {
         var bounds = new[] { 0 }.Concat(cuts).Append(words.Length).ToArray();
         return [.. Enumerable.Range(0, bounds.Length - 1).Select(i => string.Join(' ', words[bounds[i]..bounds[i + 1]]))];
+    }
+}
+
+/// <summary>
+/// A side's advantage as what it does (<see cref="BattleOpening.Effects"/>): <paramref name="Walls"/> percentage points
+/// off the other side's troops' hit chance against its troops, <paramref name="Strategy"/> percent more troop damage
+/// dealt (and as much less taken).
+/// </summary>
+public sealed record BattleAdvantage(int Walls, int Strategy)
+{
+    /// <summary>No advantage.</summary>
+    public static readonly BattleAdvantage None = new(0, 0);
+
+    /// <summary>"Walls +8%", "Strategy +10%", both "Walls +8%  ·  Strategy +10%"; "" without either.</summary>
+    public string Text => string.Join("  ·  ", Parts());
+
+    private IEnumerable<string> Parts()
+    {
+        if (Walls != 0)
+            yield return $"Walls {Walls:+0;-0}%";
+        if (Strategy != 0)
+            yield return $"Strategy +{Strategy}%";
     }
 }

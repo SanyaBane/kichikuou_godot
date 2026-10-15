@@ -8,7 +8,8 @@ namespace Kichikuou.Game.Battles;
 /// A battle card's portrait with the unit's stats, always shown (owner, 2026-10-15, after a Sengoku Rance fan mod;
 /// docs/ui/battle-screen.md, "The cards' stats"): the face; the player's Battle LV in its bottom-right corner on a
 /// see-through dark plate (the face shows through, the text stays readable); "Surging with power" as a badge with an up
-/// arrow on its top-right corner, grey while it gives nothing (no troops); and under it the four numbers of
+/// arrow on its top-right corner, grey while it gives nothing (no troops); the focus a Wait has built as "◆ n" in its
+/// top-left corner on the same plate, in the accent colour (owner, 2026-10-15, mock-up 5B); and under it the four numbers of
 /// <see cref="BattleCardStats"/> — troop attack, troop defense, magic, attacks — a modifier tinting its number (green
 /// up, red down), the commander's own attack and defense (no troops) in light blue. Sizes are layout pixels.
 /// </summary>
@@ -24,12 +25,13 @@ internal sealed partial class CardPortrait : Control
 
     private readonly Texture2D? _face;
     private readonly BattleCardStats? _stats;
+    private readonly int _focus;
     private readonly DeploymentPalette _colours;
     private readonly float _scale;
 
-    public CardPortrait(Texture2D? face, BattleCardStats? stats, DeploymentPalette colours, float scale)
+    public CardPortrait(Texture2D? face, BattleCardStats? stats, int focus, DeploymentPalette colours, float scale)
     {
-        (_face, _stats, _colours, _scale) = (face, stats, colours, scale);
+        (_face, _stats, _focus, _colours, _scale) = (face, stats, focus, colours, scale);
         CustomMinimumSize = new Vector2(Width, Height) * scale;
         SizeFlagsVertical = SizeFlags.ShrinkCenter;
         MouseFilter = MouseFilterEnum.Ignore;
@@ -55,6 +57,25 @@ internal sealed partial class CardPortrait : Control
             DrawStyleBox(box, plate);
             DrawString(font, new Vector2(plate.Position.X + 3 * s, plate.Position.Y + 2 * s + font.GetAscent(px)), text,
                 HorizontalAlignment.Left, -1, px, _colours.Text);
+        }
+
+        if (_focus > 0)
+        {
+            // A diamond (drawn, so any font will do) and the number, on the Lv plate's see-through dark.
+            string text = _focus.ToString();
+            int px = Math.Max(6, (int)Math.Round(LevelText * s));
+            var size = font.GetStringSize(text, HorizontalAlignment.Left, -1, px);
+            float diamond = 10 * s, gap = 4 * s;
+            var plate = new Rect2(face.Position + new Vector2(3, 3) * s,
+                new Vector2(diamond + gap + size.X, size.Y) + new Vector2(10, 4) * s);
+            var box = new StyleBoxFlat { BgColor = Plate };
+            box.SetCornerRadiusAll((int)Math.Round(3 * s));
+            DrawStyleBox(box, plate);
+            var centre = new Vector2(plate.Position.X + 5 * s + diamond / 2, plate.Position.Y + plate.Size.Y / 2);
+            DrawColoredPolygon([centre + new Vector2(0, -diamond / 2), centre + new Vector2(diamond / 2, 0),
+                centre + new Vector2(0, diamond / 2), centre + new Vector2(-diamond / 2, 0)], _colours.Accent);
+            DrawString(font, new Vector2(centre.X + diamond / 2 + gap, plate.Position.Y + 2 * s + font.GetAscent(px)), text,
+                HorizontalAlignment.Left, -1, px, _colours.Accent);
         }
 
         if (stats.Surging)

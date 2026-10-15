@@ -35,7 +35,7 @@ draws what the core shows and answers what the core asks.
 |---|---|
 | Scene on top: the actor and its target, soldiers as a formation per troop type, the battlefield | The engagement's pictures: the battlefield (`Bt_BackgroundCg`, 900-918, and its overlay), the player unit's and the commander's sprites by troops (`Unit_Cg*`, `Cmdr_Cg*`, 320×256 halves), the specials' pictures; the exchange's shots and counters drawn there |
 | Six cards a side, 2 columns × 3 rows, the front column at the centre | **Four** a side, 2 × 2: places 1-2 front (at the centre), 3-4 back — as our deployment panel shows the party |
-| Card: face, name, troops now/max, six action-point squares, troop-type icon, buffs, frames | Face (`UnitFaces`; the commanders' faces and the monsters' stand-ins are ready), name, troops now/max, **HP now/max** (the commander's own), troop type, standing order, focus (squares?), "acted this round", the acting frame |
+| Card: face, name, troops now/max, six action-point squares, troop-type icon, buffs, frames | Face (`UnitFaces`; the commanders' faces and the monsters' stand-ins are ready), name, troops now/max, **HP now/max** (the commander's own), troop type, standing order, focus ("◆ n" on the portrait), "acted this round", the acting frame |
 | Name strip: the charge-time queue | **The round's order**: every unit acts once a round, fewest troops first, re-evaluated after each action, ties by slot, player before enemy (01-flow.md §6) — computed from the state, those who acted greyed or dropped |
 | Central gauge: battle time, 24 actions | **Rounds left** (4-5, or 3; the time-out loses for the attacker, wins for a defending player) |
 | 戦果 bar on top | No such thing in Kichikuou: the place could show the two sides' troops, the round header's advantages or the strategy result (owner) |
@@ -57,14 +57,20 @@ draws what the core shows and answers what the core asks.
    values under its portrait ("The cards' stats" below);
    the other script windows a battle opens (111/112/121/122/113/131: narration and dialogue, e.g. in the story
    battles) stay the original's for now (docs/backlog.md, "Interface").
-4. **The 戦果 place**: troops of the two sides, advantages, strategy — or nothing.
-5. **Focus**: as squares on the card (Sengoku's action points' place) or a number.
+4. **The 戦果 place**: troops of the two sides, advantages, strategy — or nothing. Owner, 2026-10-15 (mock-ups from the
+   week-18 battle): no bar — it would mean nothing in Kichikuou, where nothing judges a battle by a score; instead the
+   **battle's limit** gets a plate at the scene's foot and the **advantages** show what they do, in percent ("The
+   limit and the advantages" below).
+5. **Focus**: as squares on the card (Sengoku's action points' place) or a number. Owner, 2026-10-15 (mock-up 5B of
+   three): "◆ n" on the portrait's top-left corner ("The focus" below).
 6. **Pre-battle**: the strategy screen and the scout report — our own panels or the original's
    pictures in the scene. The scout report is answered (owner, 2026-10-14: our own overlay, "The scout
    report" below); the strategy screen (`FIGT作`, docs/battle/screen-layout.md §6.2) stays the original's for
    now (owner, 2026-10-15; docs/backlog.md, "Interface").
 7. **Script menus** (retreat, intercept / ninja scout / abandon, the ninja): a dialog of ours.
-8. **Dungeon battles** (black field, no strategy): the scene's background.
+8. **Dungeon battles** (black field, no strategy): the scene's background. Owner, 2026-10-15 (mock-ups from a battle
+   in the Monsters' Cave (dungeon 2) on 3F): as it is — the dungeon's battlefield (`Bt_BackgroundCg` 910 / 912 / 914,
+   916 for God's dungeon) like any other, the sides its blurred copy; no black sides, no dungeon plate.
 
 ## The layout (owner, 2026-10-12, from the mock-ups)
 
@@ -196,6 +202,26 @@ picture, the slot panels) is not shown. How it is built:
   The model is `Original.Content/Battles/BattleCardStats` (`BattleCard.Stats`, from GameState; `BattleCardStatsTests`), the
   portrait `godot/Battles/CardPortrait`. The cards' menus no longer offer Info (53/54) — an enemy's card has no menu now —
   so the original's info box (window 143, its click) does not come up on our screen; Option → Interface → Original keeps it.
+- **The limit and the advantages** (owner, 2026-10-15, question 4): Sengoku Rance's 戦果 bar has no counterpart — nothing
+  judges a Kichikuou battle by a score (a time-out loses for the attacker) — so its place stays empty. The round header's
+  "Advantage +n" (`FIGT.ADV:177-204`) adds up two things a player cannot tell apart, so our screen shows them as what they
+  do (`BattleOpening.Effects`, `BattleAdvantage`): **"Walls +n%"** for the side that holds the city in an offensive or a
+  defensive battle — the resolution takes `Bt_WallBonus * 2` from the other side's troops' hit chance against its troops
+  (`FIGT.ADV:2548`, `:2741`; Oaks (6): +4, so "Walls +8%"; the header also adds the walls to the enemy's sum in a dungeon,
+  where nothing applies them, and a dungeon's are 0) — and **"Strategy +10%" / "+50%"** for the side whose strategy
+  succeeded: its troops deal a tenth or a half more troop damage and take as much less (`:2294-2317`); both
+  "Walls +8%  ·  Strategy +10%", nothing without either. The same texts replace "Advantage +n" in the opening. **The
+  battle's limit** — the most troops of one unit that fight in an exchange (docs/battle/02-resolution.md, `:624`), which
+  the header prints as `<City: Battle Limit>` / `Up to 232` (`:145-164`) — is a plate centred near the scene's foot,
+  between an exchange's HP counters, in the owner's words: "City · Battle Limit: up to 232" (Plains / Duel / City /
+  Dungeon as the header's conditions; `BattleOpening.LimitText`, the opening's plate says the same); the cards' colours
+  at 80 %, the frame's colour, its centre at y 393, 28 high (`BattleBoardView.DrawLimit`), under the script's windows.
+  `BattleOpeningTests` checks the texts.
+- **The focus** (owner, 2026-10-15, question 5, mock-up 5B of three: squares at the card's foot, the badge, a number at
+  the name line's end): the focus a Wait builds (`Bt_PSlot1-4Focus`: +1 a Wait, reset only at the battle's start, spent
+  by the specials — 1, the beams 2, Vanish Bomb 3; docs/battle/01-flow.md §8.3) is "◆ n" on the portrait's top-left
+  corner, on the Lv plate's see-through dark, the diamond drawn and the number in the accent colour
+  (`godot/Battles/CardPortrait`); the state line no longer says "Focus n".
 - **The cards' counters** (owner, 2026-10-14): a card's troops and HP — the number and its bar together —
   run to a new value instead of jumping to it, eased out, in Option → Battle Screen… → "Cards: counters"
   (0.6 s by default; `--meter-seconds x` for a launch), from the moment the blow lands (owner): the core writes
@@ -241,9 +267,9 @@ picture, the slot panels) is not shown. How it is built:
   colours, 47 %); in each its army's name (string 7 / string 10) in **Shojumaru**, white with a dark outline, its
   last line's baseline at y 330, kept 90 px off the seam — the fewest lines up to three that fit, balanced (the
   widest line the narrowest), at the largest size from 64 down; "Leazas Rebel Army" takes three lines, and so does
-  the longest name of the scenario, "A Certain Country’s People" (`BattleOpening.Wrap`) — and "Advantage +n" below
-  it; "VS" between them; on top a plate (the cards' colours, the accent frame) in **Cinzel** Bold: "Oaks —
-  Offensive Battle" (or "Duel", "Dungeon Battle"), "City: Battle Limit · up to 232" (Plains / Duel / City /
+  the longest name of the scenario, "A Certain Country’s People" (`BattleOpening.Wrap`) — and its advantage below
+  it as what it does ("Walls +8%", nothing without one; "The limit and the advantages" below); "VS" between them; on top a plate (the cards' colours, the accent frame) in **Cinzel** Bold: "Oaks —
+  Offensive Battle" (or "Duel", "Dungeon Battle"), "City · Battle Limit: up to 232" (Plains / Duel / City /
   Dungeon, as the header's conditions), "5 turns" (not in a duel). When our battle screen comes up with the first
   header, the scene shows the field alone and the opening — the halves' tints, the names, "VS", the plate — fades in
   over it from transparent (owner, 2026-10-14; Option → Battle Screen… → "Opening: appear", 0.35 s by default,
@@ -254,9 +280,8 @@ picture, the slot panels) is not shown. How it is built:
   `--fast`) while the battle goes on. A later round's header is answered at once by `GameScreen`, as a click (its
   key lands in RetVal, `FIGT.ADV:214`, which BTX-03 reads), after the release wait. The original's box is no longer
   in the windows' layer. **The advantages** stay on the screen all battle long, over the cards next to the armies'
-  names ("Rance Army  Advantage +0", "Advantage +4  Leazas Rebel Army", in the accent colour), summed from
-  GameState as the header sums them (`BattleOpening.Advantages`; the full number — the header's `H 2` shows only the
-  last two digits of one ≥ 100). The battle limit has no place outside the opening for now (owner). The fonts are
+  names, in the accent colour — since 2026-10-15 as what they do, and the battle's limit at the scene's foot ("The
+  limit and the advantages" below). The fonts are
   bundled in `godot/fonts` under the SIL OFL 1.1 with their licenses (`Shojumaru-OFL.txt`, `Cinzel-OFL.txt`). The
   model is `Original.Content/Battles/BattleOpening` (`GamePresenter.Opening` while the first header waits,
   `GamePresenter.LaterRoundHeader`, `BattlePresenter.RoundHeader`); `BattleOpeningTests`: the texts, the advantages,
@@ -796,3 +821,17 @@ picture, the slot panels) is not shown. How it is built:
 7. **Checks**: the model's tests, the golden captures replayed through our input (the same
    choices give the same memory), `--auto --interface new` through the battles, the owner's look
    from a kept save (`--until battle`).
+
+   ✓ 2026-10-15: `BattleInputReplayTests` replays every captured battle (`BattleSceneTests.Captures`) with the answers
+   our screen gives (`GoldenReplay.RunAsync`'s `ReplayAnswers`): each `FIGT_SEL` answer is the banner's or the card menu
+   item's choice from `BattleCommands` (Auto-Atk / Auto-Def on the acting unit's slot as its menu's 8 / 9, the commands
+   without a target with 99), the retreat confirmation our dialog's, and the key waits our screen answers itself (the
+   "vs" window, an order's message, a later round's header, the scout report's lines, a result without a wiped-out mark)
+   a click's key, 16 (0 under the message skip). In the full run all 110 captures match the original: 277 answers, 77
+   of them given otherwise by ours, 464 key waits ours (10 where the original's player pressed another key). Kept as
+   captured, since our screen cannot give them: Info (53/54, every card shows the stats), Manual on the acting unit (50),
+   and a command without a target given with the pointer on an enemy's panel — the original then rebinds `Cmdr_Cur`
+   (BFL-19), which ours never does, as the original's with the pointer elsewhere; one captured retreat differs so at the
+   exit. `--newgame --auto --fast --quit --seed 2 --weeks 60 --stage 2 --interface new` (headless) plays stage 1 through
+   19 battles to Oaks (6) in week 34 and stops in week 36, as on the original's screen. The look: the week-18 attack on
+   Oaks (6) in a window (`--until battle --interface new`).
