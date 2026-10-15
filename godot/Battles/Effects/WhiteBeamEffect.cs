@@ -45,13 +45,14 @@ internal static class WhiteBeamEffect
     /// The beam laid out by <see cref="Build"/>, stretched right by <paramref name="reach"/> past the sphere
     /// (<see cref="ParticleLayout.StretchedRight"/> from <see cref="ReachFrom"/>), turned by <paramref name="tilt"/>
     /// (radians, + turning its far end down) about the flash and moved by <paramref name="offset"/> (the design space): a
-    /// user's own place.
+    /// user's own place; without <paramref name="orb"/> as <see cref="Build(int, bool)"/> draws it.
     /// </summary>
-    public static IReadOnlyList<Particle> Placed(int seed, Vector2 offset, float tilt = 0, float reach = 1)
+    public static IReadOnlyList<Particle> Placed(int seed, Vector2 offset, float tilt = 0, float reach = 1, bool orb = true)
     {
         var turn = Transform2D.Identity.Rotated(tilt);
         Vector2 Turned(Vector2 v) => turn.BasisXform(v);
-        var particles = reach == 1 ? Build(seed) : ParticleLayout.StretchedRight(Build(seed), ReachFrom, reach);
+        var beam = Build(seed, orb);
+        var particles = reach == 1 ? beam : ParticleLayout.StretchedRight(beam, ReachFrom, reach);
         return particles.Select(p => p with
         {
             Position = Orb + Turned(p.Position - Orb) + offset,

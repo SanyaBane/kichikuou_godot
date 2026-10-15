@@ -403,7 +403,9 @@ picture, the slot panels) is not shown. How it is built:
   beams too (owner, 2026-10-15): Chizuko's (`ChizukoBeamEffect`) moved 27 units left and 20 up; Nagi's
   (`NagiBeamEffect`) without its opening orb — `WhiteBeamEffect.Build(seed, orb: false)` leaves out the flash (its
   disc, glows, haze, rays and halo, frames 0-5), its break-up lumps, the sphere of light it turns into with its clouds
-  (5-17) and the sparkles round its rim, the rest drawn the same — so that it starts with the needle.
+  (5-17) and the sparkles round its rim, the rest drawn the same — so that it starts with the needle; moved 150 units
+  left and stretched right 1.45× from x 450, as Gandhi's, so that it runs on through the enemy's army (owner,
+  2026-10-15).
   The Whirlwind Shot effect (`WhirlwindShotEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Piercing Tempest, 40660 — 29
   frames in the archive, the 30th absent; a texture of its own, `Lens`: a tall arc with a bright rim on its outer side and
   a glassy fill): a whirlwind in the middle (its eye at ~(414, 168)) — six arms of beads placed by the frame, their
@@ -411,7 +413,9 @@ picture, the slot panels) is not shown. How it is built:
   at the heads, teal ones with four-point glints down the tails, which grow out over the first seven frames, and six
   all-teal strands just outside them from frame ~2; the whole draws in about the eye after frame 12 and fades by ~17;
   a shot of white blobs streaks right from the eye (12-13), then a white burst there with 40 cream rays fanning up and
-  down (13-17) and a thick beam of white billows to the right edge (from 13), dying from its root (~18) to the edge
+  down (13-17) and a slim stream of white billows to the right edge (from 13; 16-28 high, flat and unturned —
+  owner, 2026-10-15: v1's 45-75 high beam read as a blast, not an arrow's shot), led by a white arrow of light flying
+  from the burst to the edge (12.8-14.4) over a narrow glow, dying from its root (~18) to the edge
   (~23); the burst closes into a tall white oval (16-19) that stands as the lens's arc, its rim to the left, glass
   turning teal as it fades (18-27); a thin white needle and cyan streaks rush right along the beam's line (18-25) over
   300 teal stars in clumps, twinkling (17-27). Timed on the reference's near-white share and mean brightness in eight
@@ -422,15 +426,15 @@ picture, the slot panels) is not shown. How it is built:
   after the owner's note, which the owner took as it is; after Sengoku Rance's Commander Charge, 41400 — 29 frames in
   the archive; textures of its own: `Bar`, a band even along its length; `Petal`, a soft filled ellipse; `Moon`, a
   half-moon): a white burst at (312, 162) on a thick white bar across the whole frame in a royal-blue haze turning sky
-  blue (frames 0-3), the bar thinning to a thread in eight overlapping steps (gone by ~19); 170 petals bursting out of
-  the burst, ice turning blue and dim, slowing as they fly (0-15, faint to ~22), most staying inside the halo; a
+  blue (frames 0-3), the bar thinning to a thread in eight overlapping steps (gone by ~19); the reference's petals
+  bursting out of the burst are left out (owner, 2026-10-15); a
   white disc with a bright rim swelling from the burst (2.5-7) into a blue-grey halo of two rings (6-16, radius 290 by
   16); then 110 blue, ice and lavender half-moons, each with two fainter copies trailing its turn, spinning in from x
   ~450 (frame 9) and drifting right at 16-30 a frame, the front moving right with them (9-24), and 240 pale blue
   four-point sparkles among them, half with a glow (10-28). Timed on the reference's bands as the others. Its colours
   are Meglass's (her sprite, CG 1527: royal blue, sky blue, ice, lavender; owner, 2026-10-15: v1's amber and gold did
   not match the blue strike on her sprite). Its opening is moved onto her sprite (CG 1527; owner, 2026-10-15): the burst, the
-  disc and its halo and the petals 256 units left and 46 up, onto her afterimage on the left (the scene's x 10-80) on
+  disc and its halo 256 units left and 46 up, onto her afterimage on the left (the scene's x 10-80) on
   the line the sprite draws (its y 99: 116 here); the bar along that line, from x -40 to 640 — from left of her
   afterimage to where the line meets her figure on the right (the scene's x ~500) — at the same height; the
   half-moons and sparkles over the enemy stay. The **By la Way** effect is Rance Attack's recoloured red
@@ -438,7 +442,12 @@ picture, the slot panels) is not shown. How it is built:
   2026-10-15: v1 read orange; the owner took v2 as it is): every colour where blue leads or that is white turned red — white to a pinkish red
   (salmon, then white, only where the light piles up), ice to red, the blues deep red — and the sand dust reddened to
   a rust brown. The dust on the actor's half, which reddened piled up into a lone glow behind Rick, is out of both
-  (owner, 2026-10-15). Over a sand battlefield its peak's core still reads pale, its red shows in the mass's fringe, the
+  (owner, 2026-10-15), and the white mass over the target's half (its billows right of x 450) is a deep, denser red
+  (0.72, 0.06, 0.04 at 0.75) in place of the pinkish red, which read see-through there (owner). Its blows land on the enemy's ranks (owner,
+  2026-10-15: to show that they are hurt; `RanceAttackEffect.Hits`, By la Way's alone): 22 hits over x 530-780,
+  each as the mass's front reaches it or up to six frames after (frames ~6-16) — a white flash and a four-point star,
+  a gold burst of spikes (gold, to stand out of the red mass), a red slash with a white edge across it and red and
+  orange shards flying out. Over a sand battlefield its peak's core still reads pale, its red shows in the mass's fringe, the
   rings, the flames and the motes.
   The ninja's follow-up effect (`NinjaEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Ninja troop effect, 40100;
   textures of its own: `Shuriken`, a four-point star with concave sides and a round hole; `Wing`, a crescent bulging
@@ -456,16 +465,18 @@ picture, the slot panels) is not shown. How it is built:
   light — lumps and four-point sparkles, pink past x 430, fewer toward the right edge — lit from the frame's edges
   inward as the hole in it closes on (295, 185) (its half-width 400 at frame 0, 200 at 4, 0 at 8), each lump dimming
   after it lights. Then, larger than Sengoku Rance's (owner, 2026-10-15: v1 looked weaker than Rance Attack, while
-  Miki's sprite, CG 1529, is a huge bomb in a green blast — by the lore the mightiest blow of all): a white flash there
+  Miki's sprite, CG 1529, is a huge bomb, white and a little blue — by the lore the mightiest blow of all): a white flash there
   swelling over the whole frame (8.4-13.8) and a white-out of the whole frame (9.3-11.7, after a brief violet haze);
   an ice-white sphere with a bright rim and a white core swelling from it past the frame's height (radius 230 at 9.5,
   330 at 10.5, 400 at 13.5; 8.5-15.5), throwing 130 long, wide ice spikes off its edge (10-15.5), and the flash
-  flattening into a white ellipse (12-16); the blast's green glow over the whole frame (10-21); then a thick flat mint
+  flattening into a white ellipse (12-16); the blast's blue glow over the whole frame (10-21); then a thick flat ice-white
   rim spreading from it far past the frame's edges (half-width 290 at 14, 680 at 20, 880 at 24; nearly half as high),
-  the green shock wave just behind it in two rings (14-23), blurring into a broad soft grey band as it fades (16-24),
+  the blue shock wave just behind it in two rings (14-23), blurring into a broad soft grey band as it fades (16-24),
   a grey glow inside it, long rays from the centre (up to 560) and a star there (12.5-27), and inside it cyan, gold and
-  white star bursts, orange motes and teal flecks drifting out with it (13.5-25). The gathering light was timed on the
-  reference's mean brightness in four column quarters; the blast is ours.
+  white star bursts, orange motes and steel-blue flecks drifting out with it (13.5-25). The gathering light was timed on
+  the reference's mean brightness in four column quarters; the blast is ours. No green (owner, 2026-10-15: the bomb on
+  Miki's sprite is white and a little blue; v2's glow, shock wave and rim were green and mint, its flecks teal). The
+  positions here are as laid out; it is drawn 70 units left and 70 up of them, onto her bomb (owner).
   The C. War Dance effect (`WarDanceEffect`, 2026-10-15, the owner took its v1 as it is, then asked for a third fewer
   crescents and wisps — v2, which the owner took as it is; after Sengoku Rance's Ieyasu's
   Special Move, 47400 — 29 frames of it in the archive, the 30th a stray picture of something else; a texture of its

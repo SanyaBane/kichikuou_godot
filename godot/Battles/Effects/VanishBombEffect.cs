@@ -7,12 +7,14 @@ namespace Kichikuou.Game.Battles.Effects;
 /// traced; the owner's choice, 2026-10-14; 29 frames in the archive): Miki's (unit 32) blast. A wall of white light —
 /// lumps and four-point sparkles, sparser and pink toward the right edge — closes in on a point left of the middle from
 /// the frame's edges (frames 0-8), the hole in it shrinking to nothing; then, larger than Sengoku Rance's — the game's
-/// mightiest blow, as Miki's sprite (CG 1529: a huge white bomb in a green blast) shows it (owner, 2026-10-15) — a
+/// mightiest blow, as Miki's sprite (CG 1529: a huge bomb, white and a little blue) shows it (owner, 2026-10-15) — a
 /// white flash there whites out the whole frame (9-13) round an ice-white sphere swelling past the frame's height,
-/// which throws long spikes off its edge and flattens into a white ellipse (10-15); a flat mint rim then spreads from
-/// it far past the frame's edges with a green shock wave behind it and a green glow over the whole frame (13-24),
-/// with long rays from the centre, cyan, gold and white star bursts, orange motes and teal flecks inside it (13-26).
-/// The same seed makes the same effect.
+/// which throws long spikes off its edge and flattens into a white ellipse (10-15); a flat ice-white rim then spreads from
+/// it far past the frame's edges with a blue shock wave behind it and a blue glow over the whole frame (13-24),
+/// with long rays from the centre, cyan, gold and white star bursts, orange motes and steel-blue flecks inside it (13-26).
+/// White and a little blue, as her sprite's bomb, with no green (owner, 2026-10-15: v1's shock wave, glow and rim
+/// were green and mint, its flecks teal; now blue, ice and steel blue); drawn 70 units left and 70 up of where it is
+/// laid out. The same seed makes the same effect.
 /// </summary>
 internal static class VanishBombEffect
 {
@@ -43,12 +45,18 @@ internal static class VanishBombEffect
     private static readonly Color White = new(1f, 1f, 1f), Pink = new(1f, 0.78f, 1f), Lilac = new(0.95f, 0.85f, 1f);
     private static readonly Color Violet = new(0.6f, 0.45f, 0.63f), Ray = new(0.85f, 0.82f, 0.92f), Cyan = new(0.55f, 0.85f, 1f);
     private static readonly Color Gold = new(1f, 0.85f, 0.5f), Orange = new(1f, 0.6f, 0.2f), Amber = new(1f, 0.75f, 0.4f);
-    private static readonly Color Teal = new(0.35f, 0.62f, 0.68f);
+    private static readonly Color Teal = new(0.42f, 0.56f, 0.82f);
 
     // Miki's blast (CG 1529): the bomb's ice white, the rim's mint, the shock wave's green.
-    private static readonly Color Ice = new(0.77f, 0.94f, 1f), Mint = new(0.92f, 1f, 0.92f), Green = new(0.06f, 0.66f, 0.4f);
+    private static readonly Color Ice = new(0.77f, 0.94f, 1f), Mint = new(0.9f, 0.95f, 1f), Green = new(0.2f, 0.36f, 0.78f);
 
-    public static IReadOnlyList<Particle> Build(int seed)
+    /// <summary>The effect as laid out, moved onto Miki's bomb (owner, 2026-10-15).</summary>
+    public static IReadOnlyList<Particle> Build(int seed) =>
+        Layout(seed).Select(p => p with { Position = p.Position + Shift }).ToList();
+
+    private static readonly Vector2 Shift = new(-70, -70);
+
+    private static IReadOnlyList<Particle> Layout(int seed)
     {
         var random = new Random(seed);
         float Range(float from, float to) => from + (float)random.NextDouble() * (to - from);

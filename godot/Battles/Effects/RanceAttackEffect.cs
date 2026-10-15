@@ -182,10 +182,62 @@ internal static class RanceAttackEffect
     /// <summary>
     /// By la Way, Rick's (unit 7) special 1 (owner, 2026-10-15): the same effect recoloured red, as his sprite (CG 1521,
     /// red 245, 40, 35) — every colour where blue leads or that is white turned to red: white to a pinkish red (salmon,
-    /// then white, only where the light piles up), ice to red, the blues deep red; the sand dust reddened to a rust brown.
+    /// then white, only where the light piles up), ice to red, the blues deep red; the sand dust reddened to a rust brown; the
+    /// white mass over the target's half a deep, denser red (<see cref="RedMass"/>); and the blows landing on the enemy's
+    /// ranks as the mass reaches them (<see cref="Hits"/>).
     /// </summary>
     public static IReadOnlyList<Particle> BuildRed(int seed) =>
-        Layout(seed).Select(p => p with { Colour = Red(p.Colour), Ramp = p.Ramp is { } ramp ? t => Red(ramp(t)) : null }).ToList();
+        Layout(seed).Select(p => p.Texture == EffectTextures.Billow && p.Position.X > TargetHalf
+            ? p with { Colour = RedMass, Ramp = null }
+            : p with { Colour = Red(p.Colour), Ramp = p.Ramp is { } ramp ? t => Red(ramp(t)) : null })
+            .Concat(Hits(seed)).ToList();
+
+    /// <summary>
+    /// By la Way's blows on the enemy (owner, 2026-10-15: to show that they are hurt): 22 hits over the enemy's ranks
+    /// (x 530-780), each as the mass's front reaches it or up to six frames after (frames ~6-16) — a white flash and star, a gold
+    /// burst of spikes, a red slash with a white edge across it and red-orange shards flying out.
+    /// </summary>
+    private static IEnumerable<Particle> Hits(int seed)
+    {
+        var random = new Random(seed + 1);
+        float Range(float from, float to) => from + (float)random.NextDouble() * (to - from);
+        for (int i = 0; i < 22; i++)
+        {
+            var at = new Vector2(Range(530, 780), Range(90, 290));
+            float birth = 5.5f + Math.Max(0, at.X - 545) / 55 + Range(0, 6), size = Range(80, 130);
+            yield return new Particle(EffectTextures.Glow, birth, 3, at, Vector2.Zero, 0, 0, new Vector2(size, size) * 0.9f, White,
+                t => 1 - t, t => 1 + 0.3f * t);
+            yield return new Particle(EffectTextures.Burst, birth, 2.5f, at, Vector2.Zero, Range(0, MathF.Tau), 0, new Vector2(size, size) * 1.4f,
+                HitGold, t => 1 - t, t => 0.8f + 0.5f * t);
+            yield return new Particle(EffectTextures.Sparkle, birth, 2, at, Vector2.Zero, Range(-0.3f, 0.3f), 0, new Vector2(size, size) * 0.9f,
+                White, t => 1 - t, t => 1 - 0.3f * t);
+            float rotation = Range(-1, 1.3f);
+            var slash = new Vector2(size * 1.4f, size * (random.NextDouble() < 0.5 ? 1 : -1));
+            yield return new Particle(EffectTextures.CrescentBody, birth + 0.2f, 1.8f, at, Vector2.Zero, rotation, 0.1f, slash, HitRed, Flash, t => 1 + 0.15f * t);
+            yield return new Particle(EffectTextures.CrescentEdge, birth + 0.2f, 1.8f, at, Vector2.Zero, rotation, 0.1f, slash, White, Flash, t => 1 + 0.15f * t);
+            for (int k = 0; k < 6; k++)
+            {
+                float angle = Range(0, MathF.Tau), length = Range(16, 34);
+                var direction = Vector2.FromAngle(angle);
+                yield return new Particle(EffectTextures.Dash, birth, Range(2, 3), at + direction * Range(8, 20), direction * Range(12, 24), angle, 0,
+                    new Vector2(length, 3), random.NextDouble() < 0.5 ? HitRed : HitOrange, t => 1 - t, _ => 1);
+            }
+        }
+    }
+
+    // The hits' colours: Rick's red (CG 1521's 245, 40, 35), an orange and, for the bursts, a gold that stands out of the red mass.
+    private static readonly Color HitRed = new(0.96f, 0.16f, 0.12f), HitOrange = new(1f, 0.5f, 0.2f), HitGold = new(1f, 0.78f, 0.42f);
+
+    /// <summary>Full at once, then fading over the life (a slash).</summary>
+    private static float Flash(float t) => t < 0.1f ? t / 0.1f : 1 - MathF.Pow((t - 0.1f) / 0.9f, 1.5f);
+
+    /// <summary>
+    /// By la Way's mass over the target's half (its billows right of <see cref="TargetHalf"/>): a deep red, denser than
+    /// the rest recoloured (owner, 2026-10-15: v2's pinkish red read see-through there).
+    /// </summary>
+    private static readonly Color RedMass = new(0.72f, 0.06f, 0.04f, 0.75f);
+
+    private const float TargetHalf = 450;
 
     private static Color Red(Color c)
     {

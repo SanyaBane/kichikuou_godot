@@ -8,7 +8,7 @@ namespace Kichikuou.Game.Battles.Effects;
 /// beads, white at their heads and teal down their tails, with six teal strands outside them, winding in as they turn,
 /// from a wide ring (frame 0) to a tight spiral bright at its eye (~11), then drawing in and fading (12-17); a shot of
 /// white blobs streaks right from the eye (12-13), then a white burst there with long cream rays fanning up and down
-/// (13-17) and a thick white beam to the right edge, dying from its root (~18) to the edge (~23); the burst closes into a
+/// (13-17) and a slim white stream led by an arrow of light to the right edge, dying from its root (~18) to the edge (~23); the burst closes into a
 /// tall white oval (16-19) that stands as a glassy arc, its rim to the left, fading teal (18-27); teal stars twinkle in
 /// clumps along the beam's line (17-27) under a thin white needle and cyan streaks rushing right (18-25). The same seed
 /// makes the same effect. Its shot is stretched right 1.75× past the eye, through the enemy's army, and the whole drawn
@@ -140,17 +140,20 @@ internal static class WhirlwindShotEffect
                 t => 1 - 0.35f * t));
         }
 
-        // The beam: thick white billows from the burst to the right edge (frames 13-14), dying from the root (17.5-22.5),
-        // over a soft glow.
+        // The beam: a slim stream of white billows from the burst to the right edge (frames 13-14), dying from the root
+        // (17.5-22.5), over a soft glow — an arrow's shot, not a blast (owner, 2026-10-15: v1's were 45-75 high) — led by a
+        // white arrow of light flying from the burst to the edge (12.8-14.4).
         for (float x = 425; x <= Width + 30; x += 11)
         {
-            float birth = 13 + (x - 425) / 500, death = BeamEnd(x) + Range(-0.6f, 0.6f), size = Range(45, 75) * Math.Min(1, 0.6f + (x - 425) / 100);
+            float birth = 13 + (x - 425) / 500, death = BeamEnd(x) + Range(-0.6f, 0.6f), size = Range(16, 28) * Math.Min(1, 0.6f + (x - 425) / 100);
             particles.Add(new Particle(EffectTextures.Billow, birth, death - birth, new Vector2(x, Line + Range(-9, 9)), new Vector2(Range(0, 4), 0),
-                Range(0, MathF.Tau), 0, new Vector2(size * 1.3f, size), White, t => 0.85f * Held(t), t => 0.9f + 0.2f * t,
+                0, 0, new Vector2(size * 2.2f, size), White, t => 0.75f * Held(t), t => 0.9f + 0.2f * t,
                 Ramp: t => White.Lerp(BeamEdge, t)));
         }
-        particles.Add(new Particle(EffectTextures.Haze, 13.2f, 8.5f, new Vector2(640, Line), new Vector2(3, 0), 0, 0, new Vector2(520, 130), BeamEdge,
-            t => 0.5f * Held(t), _ => 1));
+        particles.Add(new Particle(EffectTextures.Haze, 13.2f, 8.5f, new Vector2(640, Line), new Vector2(3, 0), 0, 0, new Vector2(520, 50), BeamEdge,
+            t => 0.35f * Held(t), _ => 1));
+        particles.Add(new Particle(EffectTextures.Arrow, 12.8f, 1.6f, new Vector2(480, Line), new Vector2((Width + 60 - 480) / 1.6f, 0), 0, 0,
+            new Vector2(150, 22), White, _ => 1, _ => 1));
 
         // The flecks round the beam: white specks (frames 14-22).
         for (int i = 0; i < 90; i++)

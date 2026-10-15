@@ -6,11 +6,11 @@ namespace Kichikuou.Game.Battles.Effects;
 /// The High Speed effect, ours after Sengoku Rance's Commander Charge, effect 41400 (docs/sengoku/04-screen.md §2.4.1;
 /// not traced; the owner's choice, 2026-10-15): Meglass's (unit 30) dash at the enemy commander. A white burst on the
 /// actor's half on a thick white bar across the whole frame in a royal-blue glow (frames 0-2), the bar thinning to a
-/// thread (gone by ~19); ice petals bursting out of it, flying out and slowing, turning blue (1-15, faint to ~22); a
+/// thread (gone by ~19; the reference's petals bursting out of it are left out, owner, 2026-10-15); a
 /// white disc with a bright rim swelling from the burst (3-7) into a blue-grey halo of rings (7-15); then blue, ice and a
 /// few lavender crescents spinning in from the middle and drifting right with pale blue four-point sparkles (9-25), the sparkles
 /// to ~28. In Meglass's blues, after her sprite (CG 1527; owner, 2026-10-15). The opening (the bar, the burst, the disc,
-/// the halo, the petals) is moved onto her sprite: the burst onto her afterimage on the left, the bar along the line
+/// the halo) is moved onto her sprite: the burst onto her afterimage on the left, the bar along the line
 /// the sprite draws, from left of it to her figure on the right (owner, 2026-10-15). The same seed makes the same effect.
 /// </summary>
 internal static class HighSpeedEffect
@@ -40,7 +40,6 @@ internal static class HighSpeedEffect
 
     // The colours (light added over the scene): Meglass's blues.
     private static readonly Color White = new(1f, 1f, 1f), Royal = new(0.22f, 0.39f, 0.81f), Sky = new(0.47f, 0.71f, 0.94f);
-    private static readonly Color PetalIce = new(0.76f, 0.94f, 1f), PetalBlue = new(0.39f, 0.63f, 0.91f), PetalDim = new(0.2f, 0.28f, 0.6f);
     private static readonly Color Halo = new(0.5f, 0.55f, 0.75f), Blue = new(0.39f, 0.63f, 0.94f), Ice = new(0.76f, 0.94f, 1f);
     private static readonly Color Lavender = new(0.51f, 0.43f, 0.67f), Spark = new(0.57f, 0.8f, 1f);
 
@@ -76,19 +75,9 @@ internal static class HighSpeedEffect
             particles.Add(new Particle(EffectTextures.Sphere, 5.5f, 10.5f, Burst, Vector2.Zero, 0, 0, Vector2.One, Halo,
                 t => t < 0.15f ? t / 0.15f : 1 - (t - 0.15f) / 0.85f, t => 2 * share * DiscRadius(5.5f + 10.5f * t)));
 
-        // The petals: soft ellipses bursting out radially, ice turning blue and slowing (frames 0-15, faint to ~22).
-        for (int i = 0; i < 170; i++)
-        {
-            float birth = Range(-0.3f, 3), angle = Range(0, MathF.Tau), from = Range(20, 70), reach = 40 + 360 * MathF.Pow((float)random.NextDouble(), 1.2f), pace = Range(2, 4);
-            float life = Range(10, 21), length = Range(45, 75);
-            var direction = Vector2.FromAngle(angle) * new Vector2(1, 0.85f);
-            particles.Add(new Particle(EffectTextures.Petal, birth, life, Burst, Vector2.Zero, angle, 0, new Vector2(length, length * 0.3f),
-                PetalIce, t => t < 0.04f ? t / 0.04f : t < 0.3f ? 0.9f : 0.9f * MathF.Pow(1 - (t - 0.3f) / 0.7f, 1.5f), _ => 1,
-                Ramp: t => t < 0.2f ? PetalIce.Lerp(PetalBlue, t / 0.2f) : PetalBlue.Lerp(PetalDim, (t - 0.2f) / 0.8f),
-                Move: t => direction * (from + reach * (1 - MathF.Exp(-t * life / pace)))));
-        }
+        // The reference's petals bursting out of the burst are left out (owner, 2026-10-15).
 
-        // The opening — the bar, the burst, the disc and its halo, the petals — moved onto Meglass's sprite (owner,
+        // The opening — the bar, the burst, the disc and its halo — moved onto Meglass's sprite (owner,
         // 2026-10-15); the crescents and sparkles over the enemy stay where they are.
         for (int i = 0; i < particles.Count; i++)
             particles[i] = particles[i] with { Position = particles[i].Position + OpeningShift };
