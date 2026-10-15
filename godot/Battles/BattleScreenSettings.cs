@@ -6,7 +6,7 @@ namespace Kichikuou.Game.Battles;
 /// The settings of our own battle screen (Option → Battle Screen…, <see cref="BattleScreenSettingsDialog"/>),
 /// kept in <c>[battle_screen]</c> of <c>user://settings.cfg</c>; a change applies at once. So far the order
 /// strip's moves (<see cref="OrderStrip"/>), the armies' slides, the spotlight's darkness, the cards' counters (<see cref="BattleBoardView"/>),
-/// the exchange's result hold (<c>GameScreen</c>), the opening's leave (<see cref="BattleOpeningLayer"/>) and the exchange's effects.
+/// the exchange's result hold (<c>GameScreen</c>), the opening's leave (<see cref="BattleOpeningLayer"/>), the cards' slide and the strip's fly-in at a battle's start and the exchange's effects.
 /// </summary>
 internal static class BattleScreenSettings
 {
@@ -39,9 +39,20 @@ internal static class BattleScreenSettings
     public static readonly Setting MeterSeconds = new("meter_seconds", "Cards: counters", 0, 3, 0.05, 0.6, "s",
         "How long a card's troops and HP, the number and the bar, take to run to a new value after an exchange (0: at once).");
 
-    /// <summary>How long the battle's opening takes to leave after its click (Sengoku Rance's: the halves part, the plate rises).</summary>
+    /// <summary>How long the battle's opening takes to leave after its click (the tints fade, the names part, the plate rises).</summary>
     public static readonly Setting OpeningSeconds = new("opening_seconds", "Opening: leave", 0, 3, 0.05, 0.5, "s",
-        "How long the battle's opening takes to leave after the click: the two halves part to the sides, the plate rises (0: at once).");
+        "How long the battle's opening takes to leave after the click: the colours fade, the armies' names part to the sides, "
+        + "the plate rises (0: at once).");
+
+    /// <summary>How long the front row's cards take to slide in when a battle begins (owner, 2026-10-15; Sengoku Rance's 1 s).</summary>
+    public static readonly Setting CardsSlideSeconds = new("cards_slide_seconds", "Cards: slide in", 0, 3, 0.05, 1.0, "s",
+        "When a battle begins, how long the front row's cards take to slide in from their sides under the opening; "
+        + "the back row's come a little later (0: at once).");
+
+    /// <summary>How far apart the order strip's flags fly in after the opening's click (owner, 2026-10-15; Sengoku Rance's 0.25 s).</summary>
+    public static readonly Setting StripFlySeconds = new("strip_fly_seconds", "Strip: fly in", 0, 1, 0.01, 0.25, "s",
+        "After the opening's click, the order strip's flags fly in from the right one after another, this far apart; "
+        + "they fly as much slower or faster (0: at once).");
 
     /// <summary>How long the battle's opening takes to fade in over the field when the battle screen comes up.</summary>
     public static readonly Setting OpeningAppearSeconds = new("opening_appear_seconds", "Opening: appear", 0, 3, 0.05, 0.35, "s",
@@ -60,12 +71,13 @@ internal static class BattleScreenSettings
     public const string Toggle = "toggle";
 
     public static IReadOnlyList<Setting> All { get; } =
-        [StripSeconds, StripHurrySeconds, StripDropShare, ArmySeconds, SpotDarkness, MeterSeconds, ResultSeconds, OpeningAppearSeconds, OpeningSeconds, Effects];
+        [StripSeconds, StripHurrySeconds, StripDropShare, ArmySeconds, SpotDarkness, MeterSeconds, ResultSeconds, OpeningAppearSeconds, OpeningSeconds,
+         CardsSlideSeconds, StripFlySeconds, Effects];
 
     /// <summary>The development switches that set a setting for the launch.</summary>
     private static readonly (string Switch, Setting Setting)[] Switches =
         [("--strip-seconds", StripSeconds), ("--army-seconds", ArmySeconds), ("--meter-seconds", MeterSeconds), ("--opening-seconds", OpeningSeconds), ("--opening-appear-seconds", OpeningAppearSeconds),
-         ("--result-seconds", ResultSeconds)];
+         ("--result-seconds", ResultSeconds), ("--cards-slide-seconds", CardsSlideSeconds), ("--strip-fly-seconds", StripFlySeconds)];
 
     private static Dictionary<string, double>? _values;
 

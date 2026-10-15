@@ -10,14 +10,14 @@ namespace Kichikuou.Game.Battles;
 /// for its click (<see cref="BattleOpening"/>), fading in over the field (<see cref="BattleScreenSettings.OpeningAppearSeconds"/>) — the battle's own field cut in two along a slanted seam, the player's
 /// half tinted blue and the enemy's red, each with its army's name (Shojumaru, wrapped into up to three lines) and its
 /// advantage, "VS" between them, a plate on top with the battle's kind and place, its limit and its rounds (Cinzel).
-/// After the click the halves part to the sides and the plate rises (<see cref="BattleScreenSettings.OpeningSeconds"/>),
+/// After the click (<see cref="BattleScreenSettings.OpeningSeconds"/>) the tints, the seam and "VS" fade where they are,
+/// the names part to the sides and the plate rises (owner, 2026-10-15; the halves parted with their pictures before),
 /// uncovering the scene. It decides nothing: the click is the header's key wait, the script's. Points are layout
 /// pixels of the 1280×800 screen.
 /// </summary>
 internal sealed partial class BattleOpeningLayer : Control
 {
     private static readonly Rect2 SidesArea = new(0, 0, 1280, 410);
-    private static readonly Rect2 SceneArea = new(128, 0, 1024, 410);
     private const float SeamTop = 680, SeamBottom = 600, Height = 410;
     private const float NameEdge = 50, NameGap = 90, NameBase = 330, NameSize = 64, NameMin = 24, AdvantageSize = 28;
     private const float VsSize = 84, VsY = 300, Leave = 700, PlateRise = 200;
@@ -79,10 +79,10 @@ internal sealed partial class BattleOpeningLayer : Control
     }
 
     /// <summary>
-    /// The scene's pictures the halves carry (the blurred sides, the battlefield and its front), as our screen shows them
-    /// now; the layer stands while <paramref name="opening"/> is given, leaves when it goes (at once when <paramref name="instant"/>).
+    /// The layer stands while <paramref name="opening"/> is given, leaves when it goes (at once when <paramref name="instant"/>).
+    /// Whether an opening came up now (a battle's first header).
     /// </summary>
-    public void Refresh(BattleOpening? opening, Texture2D? sides, Texture2D? field, Texture2D? front, bool instant)
+    public bool Refresh(BattleOpening? opening, bool instant)
     {
         if (opening is not null)
         {
@@ -96,18 +96,24 @@ internal sealed partial class BattleOpeningLayer : Control
                 _player.Show(opening.PlayerArmy, opening.PlayerEffects.Text);
                 _enemy.Show(opening.EnemyArmy, opening.EnemyEffects.Text);
                 Step(0);
+                return true;
             }
-            _player.SetPictures(sides, field, front);
-            _enemy.SetPictures(sides, field, front);
-            return;
+            return false;
         }
         if (!Visible)
-            return;
+            return false;
         if (_leaving < 0)
-            _leaving = 0;                           // the click: the halves part
+            _leaving = 0;                           // the click: the opening leaves
         if (instant)
             Hide();
+        return false;
     }
+
+    /// <summary>Whether the opening stands (shown, the click not given yet).</summary>
+    public bool Standing => Visible && _leaving < 0;
+
+    /// <summary>How much the opening covers the scene: its fade-in while standing, then down to 0 as it leaves.</summary>
+    public float Cover => Visible ? Modulate.A * (1 - _left) : 0;
 
     /// <summary>How far the opening has faded in, 0 (the field alone) to 1 (<see cref="BattleScreenSettings.OpeningAppearSeconds"/>).</summary>
     public float Shown => Visible ? Modulate.A : 0;
@@ -146,17 +152,21 @@ internal sealed partial class BattleOpeningLayer : Control
         _leaving = -1;
     }
 
-    /// <summary>Places the halves and the plate <paramref name="t"/> (0-1) into the leave, eased in.</summary>
+    /// <summary>
+    /// <paramref name="t"/> (0-1) into the leave: the tints, the seam and "VS" fade as it goes, the names part and the
+    /// plate rises, eased in.
+    /// </summary>
     private void Step(float t)
     {
         float ease = t * t;
-        _player.Position = new Vector2(-Leave * ease * _scale, 0);
-        _enemy.Position = new Vector2(Leave * ease * _scale, 0);
+        _left = t;
+        _player.Leave(-Leave * ease, 1 - t);
+        _enemy.Leave(Leave * ease, 1 - t);
         _rise = PlateRise * ease;
         _top.QueueRedraw();
     }
 
-    private float _rise;
+    private float _rise, _left;
 
     /// <summary>The seams on the halves' edges, "VS" while standing, the plate.</summary>
     private void DrawTop()
@@ -165,11 +175,10 @@ internal sealed partial class BattleOpeningLayer : Control
             return;
         float s = _scale;
         float width = Math.Max(2, 4 * s);
-        _top.DrawLine(new Vector2(SeamTop, 0) * s + _player.Position, new Vector2(SeamBottom, Height) * s + _player.Position, Colors.White, width, true);
-        if (_leaving > 0)
-            _top.DrawLine(new Vector2(SeamTop, 0) * s + _enemy.Position, new Vector2(SeamBottom, Height) * s + _enemy.Position, Colors.White, width, true);
-        else
-            Outlined(_top, _names, new Vector2(640, VsY) * s, "VS", Px(VsSize), _colours.Accent, VsInk, Px(8), HorizontalAlignment.Center, centreY: true);
+        float shown = 1 - _left;
+        _top.DrawLine(new Vector2(SeamTop, 0) * s, new Vector2(SeamBottom, Height) * s, new Color(Colors.White, shown), width, true);
+        Outlined(_top, _names, new Vector2(640, VsY) * s, "VS", Px(VsSize), new Color(_colours.Accent, shown), new Color(VsInk, shown), Px(8),
+            HorizontalAlignment.Center, centreY: true);
 
         var plate = new Rect2((Plate.Position - new Vector2(0, _rise)) * s, Plate.Size * s);
         var box = new StyleBoxFlat
@@ -218,14 +227,13 @@ internal sealed partial class BattleOpeningLayer : Control
     }
 
     /// <summary>
-    /// One half of the opening: its own copy of the scene's pictures and its side's tint, clipped to its side of the
-    /// seam (the half draws the mask, its children show only inside it), with its army's name and advantage.
+    /// One half of the opening: its side's tint over the scene, clipped to its side of the seam (the half draws the mask,
+    /// its children show only inside it), with its army's name and advantage, which part outwards as the opening leaves.
     /// </summary>
     private sealed partial class Half : Control
     {
         private readonly BattleOpeningLayer _layer;
         private readonly bool _left;
-        private readonly TextureRect _sides, _field, _front;
         private readonly ColorRect _tint;
         private readonly Control _text;
         private string _name = "";
@@ -238,10 +246,6 @@ internal sealed partial class BattleOpeningLayer : Control
             _left = left;
             MouseFilter = MouseFilterEnum.Ignore;
             ClipChildren = ClipChildrenMode.Only;
-            _sides = Picture(TextureRect.StretchModeEnum.KeepAspectCovered);
-            _sides.Modulate = new Color(0.45f, 0.45f, 0.45f);           // as the screen's blurred sides
-            _field = Picture(TextureRect.StretchModeEnum.Scale);
-            _front = Picture(TextureRect.StretchModeEnum.Scale);
             _tint = new ColorRect { Color = left ? PlayerTint : EnemyTint, MouseFilter = MouseFilterEnum.Ignore };
             AddChild(_tint);
             _text = new Control { MouseFilter = MouseFilterEnum.Ignore };
@@ -249,34 +253,27 @@ internal sealed partial class BattleOpeningLayer : Control
             AddChild(_text);
         }
 
-        private TextureRect Picture(TextureRect.StretchModeEnum stretch)
-        {
-            var picture = new TextureRect
-            {
-                ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-                StretchMode = stretch,
-                TextureFilter = TextureFilterEnum.Linear,
-                MouseFilter = MouseFilterEnum.Ignore,
-            };
-            AddChild(picture);
-            return picture;
-        }
-
         public void Layout(float scale)
         {
             _scale = scale;
             Size = SidesArea.Size * scale;
-            (_sides.Position, _sides.Size) = (Vector2.Zero, Size);
-            (_field.Position, _field.Size) = (SceneArea.Position * scale, SceneArea.Size * scale);
-            (_front.Position, _front.Size) = (_field.Position, _field.Size);
             (_tint.Position, _tint.Size) = (Vector2.Zero, Size);
-            (_text.Position, _text.Size) = (Vector2.Zero, Size);
+            _text.Size = Size;
+            _text.Position = new Vector2(_shift * scale, 0);
             QueueRedraw();
             _text.QueueRedraw();
         }
 
-        public void SetPictures(Texture2D? sides, Texture2D? field, Texture2D? front) =>
-            (_sides.Texture, _field.Texture, _front.Texture) = (sides, field, front);
+        /// <summary>The leave: the names <paramref name="shift"/> layout pixels sideways, the tint at <paramref name="tint"/> of its alpha.</summary>
+        public void Leave(float shift, float tint)
+        {
+            _shift = shift;
+            _text.Position = new Vector2(shift * _scale, 0);
+            var colour = _left ? PlayerTint : EnemyTint;
+            _tint.Color = colour with { A = colour.A * tint };
+        }
+
+        private float _shift;
 
         public void Show(string name, string advantage)
         {

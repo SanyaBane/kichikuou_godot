@@ -992,9 +992,16 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         while (_battleView.OpeningShown < 1 && BattleScreenShown && !_closing)
             await NextFrameAsync();
         Shot("opening");
+        double cards = BattleScreenSettings.Get(BattleScreenSettings.CardsSlideSeconds) * 0.8;   // the cards on their way in
+        while (watch.Elapsed.TotalSeconds < cards && !_closing)
+            await NextFrameAsync();
+        Shot("cards-sliding");
     }
 
-    /// <summary>Unattended play's dump of the battle's opening leaving: once a launch, halfway (in a window).</summary>
+    /// <summary>
+    /// Unattended play's dumps of the battle's opening leaving: once a launch, halfway (in a window), and the order strip's
+    /// flags flying in, the fourth on its way.
+    /// </summary>
     private async Task OpeningShotAsync()
     {
         _openingShot = true;
@@ -1003,6 +1010,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         while (watch.Elapsed.TotalSeconds < half && !_closing)
             await NextFrameAsync();
         Shot("opening-leaving");
+        double flags = BattleScreenSettings.Get(BattleScreenSettings.StripFlySeconds) * 3.5;
+        while (watch.Elapsed.TotalSeconds < flags && !_closing)
+            await NextFrameAsync();
+        Shot("strip-flying");
     }
 
     private bool _openingShot;

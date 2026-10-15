@@ -102,6 +102,10 @@ internal sealed partial class BattleBoardView : Control
     public float OpeningShown => _opening.Shown;
     private readonly Control _gauge;
     private readonly Dictionary<BattlePlace, (PanelContainer Card, StyleBoxFlat Box)> _cards = [];
+    private readonly Control _cardsClip;
+    private readonly Dictionary<BattlePlace, float> _cardTravel = [];  // how far each card slides in (layout pixels)
+    private double _cardsSliding = -1;                                  // seconds into the cards' slide; -1 when they stand
+    private int _cardSlides;                                            // the slides so far (each its own random stagger)
     private readonly Control _actingFrame;
     private BattlePlace? _actingPlace;
     private ulong _blinkFrom;
@@ -185,12 +189,14 @@ internal sealed partial class BattleBoardView : Control
         _gauge = new Control { MouseFilter = MouseFilterEnum.Ignore };
         _gauge.Draw += DrawGauge;
         AddChild(_gauge);
+        _cardsClip = new Control { ClipContents = true, MouseFilter = MouseFilterEnum.Ignore };   // the cards slide in from beyond its edges
+        AddChild(_cardsClip);
         foreach (var place in SlotSnapshot.Places)
         {
             var box = new StyleBoxFlat { BorderWidthLeft = 2, BorderWidthTop = 2, BorderWidthRight = 2, BorderWidthBottom = 2 };
             var card = new PanelContainer { MouseFilter = MouseFilterEnum.Ignore };
             card.AddThemeStyleboxOverride("panel", box);
-            AddChild(card);
+            _cardsClip.AddChild(card);
             _cards[place] = (card, box);
         }
         _spotlight = new Control { MouseFilter = MouseFilterEnum.Ignore, ZIndex = 2 };   // over the cards and the strip (1), under the acting frame
@@ -346,8 +352,8 @@ internal sealed partial class BattleBoardView : Control
         _advantageTip.Layout(scale);
         At(_balloon, new Rect2(0, 0, 1280, 800));
         _balloon.Layout(scale);
-        foreach (var (place, (card, _)) in _cards)
-            At(card, CardArea(place));
+        At(_cardsClip, PanelArea);
+        PlaceCards();
         if (_actingPlace is { } acting)
             At(_actingFrame, CardArea(acting));
         _theme.DefaultFontSize = Math.Max(8, (int)Math.Round(TextSize * scale));
@@ -408,7 +414,9 @@ internal sealed partial class BattleBoardView : Control
             _limitText = limit;
             _limit.QueueRedraw();
         }
-        _opening.Refresh(presenter.Opening, _sidesTexture, _fieldTexture, _frontTexture, instant: slidesInstant);
+        if (_opening.Refresh(presenter.Opening, instant: slidesInstant) && !slidesInstant)
+            StartCardsSlide();                                                  // under the opening, as Sengoku Rance's
+        _strip.Hold(_opening.Standing, instant);                                // the flags fly in after the opening's click
     }
 
     /// <summary>
@@ -890,8 +898,55 @@ internal sealed partial class BattleBoardView : Control
         }
     }
 
+    /// <summary>
+    /// The cards' slide when a battle begins (owner, 2026-10-15; Sengoku Rance's, docs/sengoku/04-screen.md §6.5): each
+    /// from beyond its own side, linear, the front row in Option → Battle Screen… → "Cards: slide in" (640 layout pixels;
+    /// Sengoku Rance's 400 px in 1 s), each card a random distance further (the back row 160 more), so they come at
+    /// slightly different times. The stagger is our own random draw, never the script's.
+    /// </summary>
+    private void StartCardsSlide()
+    {
+        if (BattleScreenSettings.Get(BattleScreenSettings.CardsSlideSeconds) <= 0)
+            return;
+        var random = new Random(++_cardSlides);
+        foreach (var place in SlotSnapshot.Places)
+            _cardTravel[place] = CardsSlideDistance + (place.Slot <= 2 ? 0 : 160) + random.Next(160);
+        _cardsSliding = 0;
+        PlaceCards();
+    }
+
+    private const float CardsSlideDistance = 640;
+
+    private void StepCards(double delta)
+    {
+        if (_cardsSliding < 0)
+            return;
+        _cardsSliding += delta;
+        double seconds = BattleScreenSettings.Get(BattleScreenSettings.CardsSlideSeconds);
+        if (seconds <= 0 || _cardTravel.Values.All(d => _cardsSliding * CardsSlideDistance / seconds >= d))
+            _cardsSliding = -1;
+        PlaceCards();
+    }
+
+    /// <summary>The cards at their places, or where their slide has them.</summary>
+    private void PlaceCards()
+    {
+        double seconds = BattleScreenSettings.Get(BattleScreenSettings.CardsSlideSeconds);
+        foreach (var (place, (card, _)) in _cards)
+        {
+            float left = 0;
+            if (_cardsSliding >= 0 && seconds > 0 && _cardTravel.TryGetValue(place, out float travel))
+                left = (float)Math.Max(0, travel - _cardsSliding * CardsSlideDistance / seconds);
+            var at = CardArea(place).Position - PanelArea.Position + new Vector2(place.Side == BattleSide.Player ? -left : left, 0);
+            card.Position = at * _scale;
+            card.Size = CardSize * _scale;
+        }
+    }
+
     public override void _Process(double delta)
     {
+        StepCards(delta);
+        _limit.Modulate = new Color(1, 1, 1, 1 - _opening.Cover);     // the opening's plate says the same while it covers the scene
         StepArmies(delta);
         StepSpotlight(delta);
         StepMeters();

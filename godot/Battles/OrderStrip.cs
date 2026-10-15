@@ -10,7 +10,8 @@ namespace Kichikuou.Game.Battles;
 /// waiting units, 01-flow.md §6), a unit that jumps ahead drops a row, slides to its new place while the
 /// chips it passes make room, and rises into it; the rest slide. A change that comes while chips still
 /// move makes them finish at once (<see cref="HurrySeconds"/>), then the next one starts. While the
-/// message skip runs the chips stand at their places at once.
+/// message skip runs the chips stand at their places at once. While a battle's opening stands the strip is held back;
+/// after its click the chips fly in from the right one after another (<see cref="Hold"/>; Sengoku Rance's flags).
 /// </summary>
 internal sealed partial class OrderStrip : Control
 {
@@ -32,6 +33,17 @@ internal sealed partial class OrderStrip : Control
     private double _speed = 1;                                  // parts of the move per Seconds
     private float _scale = 1;
     private Vector2 _laidOut;                                   // the size the places were computed for
+    private bool _held;                                         // hidden while the battle's opening stands
+    private double _fly = -1;                                   // seconds into the fly-in; -1 when not flying
+
+    /// <summary>How far apart the chips start flying in (Option → Battle Screen…, "Strip: fly in"); 0 places them at once.</summary>
+    private static double FlySeconds => BattleScreenSettings.Get(BattleScreenSettings.StripFlySeconds);
+
+    /// <summary>
+    /// How fast a chip flies in, in layout pixels a second: Sengoku Rance's 0.6 px/ms on its 800-wide screen, ×1.6 on ours
+    /// (docs/sengoku/04-screen.md §4), at its 0.25 s apart; as much slower or faster as the setting is.
+    /// </summary>
+    private const double FlySpeed = 960, FlyApart = 0.25;
 
     private static readonly Color PlayerColour = new(0.27f, 0.46f, 0.86f);
     private static readonly Color EnemyColour = new(0.82f, 0.3f, 0.3f);
@@ -88,6 +100,12 @@ internal sealed partial class OrderStrip : Control
             Snap();
             return;
         }
+        if (_fly >= 0)
+        {
+            _target = chips;                                    // they fly to the new places
+            Sync(chips);
+            return;
+        }
         if (_t < 1)
         {
             if (moved || newTurn)
@@ -109,9 +127,64 @@ internal sealed partial class OrderStrip : Control
     private static (BattleSide, int)? Acting(IReadOnlyList<OrderChip> chips) =>
         chips.FirstOrDefault(c => c.State == ChipState.Acting) is { } a ? Key(a) : null;
 
+    /// <summary>
+    /// <paramref name="held"/>: the strip is hidden (a battle's opening stands). Let go, the chips fly in from the right
+    /// one after another, the first first (owner, 2026-10-15; Sengoku Rance's flags, docs/sengoku/04-screen.md §4), or
+    /// stand at their places at once when <paramref name="instant"/>.
+    /// </summary>
+    public void Hold(bool held, bool instant)
+    {
+        if (held == _held)
+            return;
+        _held = held;
+        Visible = !held;
+        if (held)
+        {
+            _fly = -1;
+            return;
+        }
+        if (_next is { } next)
+            _target = next;
+        _next = null;
+        Snap();
+        if (instant || FlySeconds <= 0)
+            return;
+        _fly = 0;
+        StepFly(0);
+    }
+
+    private void StepFly(double delta)
+    {
+        _fly += delta;
+        double apart = FlySeconds;
+        if (apart <= 0)
+        {
+            Snap();
+            return;
+        }
+        double speed = FlySpeed * FlyApart / apart * _scale;
+        var places = Places(_target);
+        float from = Size.X + 10 * _scale;                      // the screen's right edge
+        bool flying = false;
+        for (int i = 0; i < _target.Count; i++)
+        {
+            var c = _chips[Key(_target[i])];
+            var to = places[Key(_target[i])];
+            double flown = speed * (_fly - i * apart);
+            float x = (float)Math.Max(to.X, from - flown);
+            flying |= x > to.X;
+            c.Panel.Visible = flown > 0;
+            c.Panel.Position = new Vector2(x, to.Y);
+            c.Panel.Modulate = Colors.White;
+        }
+        if (!flying)
+            Snap();
+    }
+
     /// <summary>Every chip at its place now; the chips that left are gone.</summary>
     private void Snap()
     {
+        _fly = -1;
         var shown = _target.Select(Key).ToHashSet();
         foreach (var (key, c) in _chips.Where(p => !shown.Contains(p.Key)).ToList())
         {
@@ -127,6 +200,7 @@ internal sealed partial class OrderStrip : Control
             c.Jumps = c.Arriving = c.Leaving = false;
             c.Panel.Position = c.To;
             c.Panel.Modulate = Colors.White;
+            c.Panel.Visible = true;
         }
         _t = 1;
         _speed = 1;
@@ -258,6 +332,11 @@ internal sealed partial class OrderStrip : Control
 
     public override void _Process(double delta)
     {
+        if (_fly >= 0)
+        {
+            StepFly(delta);
+            return;
+        }
         if (Size != _laidOut && _t >= 1)
             Snap();                                             // resized: the places again
         if (_t >= 1)

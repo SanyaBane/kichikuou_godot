@@ -483,9 +483,12 @@ fixes every effect to 750 ms (`あべ/T_BATPLS.JAF.jam:4077-4090`, `あべ/T_BAT
 Clear the screen, battle music, then the **start card**: player banner `10600+clan` at (0,0), enemy banner
 `10650+clan` at (400,0), "VS" CG 10175 at (374,256), and for attack/defence battles a map plate (CG 10176 at
 (258,2): "Battle at <province>", "Controlled by <clan>", facilities) (`あべ/T_BATSTR.JAF.jam:64-152`,
-`あべ/T_BATMAP.JAF.jam`). **Waits for a click**, then the banners split apart 400 px and fade over 1000 ms
-(`あべ/T_BATSTR.JAF.jam:194-269`). Fade; cards slide in (§6.5); score bar / dungeon plate drop in and the flags fly
-in (§4); units created. No troops on stage yet.
+`あべ/T_BATMAP.JAF.jam`), with sound 216; then a 100 ms `EFFECT(1, 100, 0)` and the cards slide in under the start
+card (§6.5) before anything waits. **Then it waits for a click**, and the banners split apart 400 px and fade over
+1000 ms (`あべ/T_BATSTR.JAF.jam:179-269`); then the score bar / dungeon plate drop in and the flags fly in (§4), the
+bar slides by the start bonuses, units created. No troops on stage yet. Order checked against `T_BATTLE:95-136`
+(2026-10-15: start card, sound, `EFFECT`, `tagBattlePlace@create` / `@moveIn`, `tagBattleStart@move` (the click and
+the split), `@delete`, `tagBattle@create2`, `tagBattleSequence@moveIn`); this section said click, fade, cards before.
 
 ### 9.2 Each loop (`あべ/C_合戦.JAF.jam:27-93` `Ｐ合戦処理`)
 end check + front/back swap (§6.1) → turn-order time update → `戦闘_情報表示` (bar, strip, all cards

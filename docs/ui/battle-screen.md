@@ -282,9 +282,20 @@ picture, the slot panels) is not shown. How it is built:
   over it from transparent (owner, 2026-10-14; Option → Battle Screen… → "Opening: appear", 0.35 s by default,
   `--opening-appear-seconds x` for a launch; at once while skipping and with `--fast`; `--auto` in a window without
   `--fast` dumps it halfway, `opening-appearing`, and whole, `opening`). The header's key wait stays the player's click;
-  then, as Sengoku Rance's, the halves part to the sides and the plate rises (eased in; Option → Battle Screen… →
-  "Opening: leave", 0.5 s by default, `--opening-seconds x` for a launch; at once while skipping and with
-  `--fast`) while the battle goes on. A later round's header is answered at once by `GameScreen`, as a click (its
+  then the tints, the seam and "VS" fade where they are, the names (with their advantages) part to the sides and
+  the plate rises (eased in; owner, 2026-10-15 — until then the halves parted with copies of the scene; Option →
+  Battle Screen… → "Opening: leave", 0.5 s by default, `--opening-seconds x` for a launch; at once while skipping
+  and with `--fast`) while the battle goes on; the limit's plate at the scene's foot shows as the opening goes.
+  **The cards slide in** under the opening as it comes up, after Sengoku Rance's (owner, 2026-10-15; docs/sengoku/04-screen.md
+  §6.5): each from beyond its own side (the player's from the left, the enemy's from the right), linear, clipped to
+  the panel; the front row 640 layout pixels in Option → Battle Screen… → "Cards: slide in" (1 s by default, Sengoku
+  Rance's 400 px in 1 s ×1.6; `--cards-slide-seconds x` for a launch), each card a random 0-160 pixels further and
+  the back row 160 more, so the front row stands at 1-1.25 s and the back row at 1.25-1.5 s (our own random draw,
+  never the script's). **The order strip is held back** while the opening stands; at its click its flags fly in from
+  the screen's right edge one after another, the first first (Sengoku Rance's, 04-screen.md §4): Option → Battle
+  Screen… → "Strip: fly in" apart (0.25 s by default, `--strip-fly-seconds x`), at 960 layout pixels a second at that
+  (Sengoku Rance's 0.6 px/ms ×1.6), as much slower or faster as the setting is; at once while skipping and with
+  `--fast` (`OrderStrip.Hold`). A later round's header is answered at once by `GameScreen`, as a click (its
   key lands in RetVal, `FIGT.ADV:214`, which BTX-03 reads), after the release wait. The original's box is no longer
   in the windows' layer. **The advantages** stay on the screen all battle long, over the cards next to the armies'
   names, in the accent colour — since 2026-10-15 as what they do, and the battle's limit at the scene's foot ("The
@@ -294,7 +305,8 @@ picture, the slot panels) is not shown. How it is built:
   `GamePresenter.LaterRoundHeader`, `BattlePresenter.RoundHeader`); `BattleOpeningTests`: the texts, the advantages,
   the wrap, and in the captured battles every header waits with the scene up, the first is the opening, the later
   ones are not, and the advantages are the header's. `--auto --interface new` without `--fast` in a window dumps
-  the opening halfway out (`opening-leaving`).
+  the cards on their way in (`cards-sliding`), the opening halfway out (`opening-leaving`) and the flags flying in
+  (`strip-flying`).
 - **The exchange's result** (owner, 2026-10-14, after Sengoku Rance's, which never stops after an attack:
   docs/sengoku/04-screen.md §9.11): the result screen's click (`FIGTATTK.ADV:247`, `IK 0`) is the battle's most
   frequent, and our screen already shows the result in the scene and runs the cards' counters from it ("The cards'
