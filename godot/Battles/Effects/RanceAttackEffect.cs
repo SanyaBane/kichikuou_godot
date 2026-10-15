@@ -8,8 +8,8 @@ namespace Kichikuou.Game.Battles.Effects;
 /// long white spikes fanning up from a white-hot foot with flat glassy rings spreading on the ground (frames 0-6), the
 /// spikes turning blue; the white mass then spreads right over the target's half behind a pale arc of a shock front
 /// throwing sparks (frames 5-10), fills it (9-12) and draws back to the right edge, its trailing side burning in rows
-/// of blue flame tongues (12-26), gone by ~22. Sand-coloured dust billows on the actor's half (0-15) and drifts over
-/// the target's later (14-26); a cluster of pale blue motes hangs in the middle from frame ~9, fading by ~27; the rings
+/// of blue flame tongues (12-26), gone by ~22. Sand-coloured dust drifts over the target's half
+/// (14-26; none on the actor's half, owner, 2026-10-15); a cluster of pale blue motes hangs in the middle from frame ~9, fading by ~27; the rings
 /// spread wide and darken to blue (to ~18). Rance's is drawn 100 units right of where it was laid out (owner,
 /// 2026-10-15); By la Way where it was laid out. The same seed makes the same effect.
 /// </summary>
@@ -43,8 +43,7 @@ internal static class RanceAttackEffect
     private static readonly Color Mass = new(1f, 1f, 0.98f, 0.45f), MassEdge = new(0.55f, 0.75f, 1f, 0.45f), RingIce = new(0.7f, 0.92f, 1f, 0.75f);
     private static readonly Color RingBlue = new(0.25f, 0.35f, 0.85f, 0.4f), Disc = new(0.18f, 0.26f, 0.7f, 0.45f);
     private static readonly Color Front = new(0.88f, 0.92f, 0.95f, 1f);
-    private static readonly Color Dust = new(0.78f, 0.74f, 0.62f, 0.19f), DustLate = new(0.66f, 0.57f, 0.36f, 0.36f);
-    private static readonly Color Speck = new(1f, 0.96f, 0.8f, 0.45f), Fleck = new(0.9f, 0.97f, 1f, 0.9f);
+    private static readonly Color DustLate = new(0.66f, 0.57f, 0.36f, 0.36f);
     private static readonly Color Mote = new(0.55f, 0.65f, 1f, 0.6f), MoteCore = new(0.75f, 0.82f, 1f), Flame = new(0.42f, 0.55f, 1f, 0.55f);
     private static readonly Color FlameHot = new(0.8f, 0.9f, 1f, 0.6f);
 
@@ -134,34 +133,8 @@ internal static class RanceAttackEffect
         particles.Add(new Particle(EffectTextures.Glow, 4, 15, Foot + new Vector2(-60, 25), new Vector2(-8, -3), 0, 0,
             new Vector2(420, 120), Disc, Swell, t => 1 + 0.7f * t));
 
-        // The dust: billows on the actor's half, from a clump beside the foot spreading left and up, fading by frame
-        // ~15, with its grain and a few bright flecks; later a browner cloud over the target's half, behind the mass.
-        var puffs = new List<(Vector2 At, float Radius)>();
-        for (int i = 0; i < 40; i++)
-        {
-            float birth = 5 * MathF.Pow((float)random.NextDouble(), 1.5f) - 0.5f;
-            float spread = Math.Max(0, birth) / 5;
-            var at = new Vector2(215 - 150 * spread + Range(-70, 70), 215 - 120 * spread + Range(-50, 60));
-            float r0 = Range(25, 42), rf = Range(50, 90);
-            puffs.Add((at, rf));
-            particles.Add(new Particle(EffectTextures.Puff, birth, Range(14, 16.5f) - birth, at,
-                new Vector2(Range(-1.5f, 0.3f), Range(-1.5f, -0.3f)), Range(0, MathF.Tau), Range(-0.01f, 0.01f), new Vector2(2, 2),
-                Dust, t => t < 0.35f ? 1 : 1 - (t - 0.35f) / 0.65f, t => r0 + (rf - r0) * (1 - MathF.Pow(1 - Math.Min(1, t * 3), 3))));
-        }
-        for (int i = 0; i < 350; i++)
-        {
-            var (at, radius) = puffs[random.Next(puffs.Count)];
-            float angle = Range(0, MathF.Tau), distance = MathF.Sqrt((float)random.NextDouble()) * radius * 0.8f;
-            float size = Range(1.5f, 3.2f);
-            particles.Add(new Particle(EffectTextures.Dot, Range(1, 4), Range(8, 12), at + Vector2.FromAngle(angle) * distance,
-                new Vector2(Range(-0.8f, 0.3f), Range(-1.2f, -0.4f)), 0, 0, new Vector2(size, size), Speck, Fade, _ => 1));
-        }
-        for (int i = 0; i < 22; i++)
-        {
-            float size = Range(12, 30);
-            particles.Add(new Particle(EffectTextures.Glow, Range(5, 12), Range(2, 5), new Vector2(Range(140, 340), Range(30, 290)),
-                Vector2.Zero, 0, 0, new Vector2(size, size), Fleck, Fade, _ => 1));
-        }
+        // The dust: a browner cloud over the target's half, behind the mass. The reference's dust on the actor's half is
+        // left out (owner, 2026-10-15: reddened in By la Way it piled up into a lone glow behind Rick; out of both).
         for (int i = 0; i < 24; i++)
         {
             float size = Range(110, 190);

@@ -82,3 +82,30 @@ internal sealed partial class EffectCanvas : Node2D
         DrawSetTransform(Vector2.Zero);
     }
 }
+
+/// <summary>Changes to an effect laid out in the design space, to fit it to its user's sprite.</summary>
+internal static class ParticleLayout
+{
+    /// <summary>
+    /// The particles right of <paramref name="from"/> (x in the design space) stretched right by
+    /// <paramref name="factor"/>, so that a beam laid out to end mid-field runs on through the enemy's army (owner,
+    /// 2026-10-15): their distance from it, their drift and path along x and, but for the round textures (a sphere's
+    /// disc, sparkles, specks, rings, swirls), their width. Those for which <paramref name="which"/> is false stay.
+    /// </summary>
+    public static IReadOnlyList<Particle> StretchedRight(IReadOnlyList<Particle> particles, float from, float factor, Func<Particle, bool>? which = null) =>
+        particles.Select(p =>
+        {
+            if (p.Position.X <= from || which?.Invoke(p) == false)
+                return p;
+            bool round = p.Texture == EffectTextures.Sphere || p.Texture == EffectTextures.Bokeh || p.Texture == EffectTextures.Sparkle
+                || p.Texture == EffectTextures.Dot || p.Texture == EffectTextures.Ring || p.Texture == EffectTextures.Swirl;
+            var stretch = new Vector2(factor, 1);
+            return p with
+            {
+                Position = new Vector2(from + (p.Position.X - from) * factor, p.Position.Y),
+                Velocity = p.Velocity * stretch,
+                Size = round ? p.Size : p.Size * stretch,
+                Move = p.Move is { } move ? t => move(t) * stretch : null,
+            };
+        }).ToList();
+}

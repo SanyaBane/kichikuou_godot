@@ -8,7 +8,8 @@ namespace Kichikuou.Game.Battles.Effects;
 /// §3.3). Rows of flat crescents bulging right, each lit for one frame, a new set every frame — salmon over the middle,
 /// grey past it and violet toward the right edge, white where they pile up — their front running right from the
 /// middle to the edge (frames 2-7), thinning from frame ~10 and drawing back to the right (19-25); behind them faint
-/// streaky wisps drifting right, the last fading by ~27. The same seed makes the same effect.
+/// streaky wisps drifting right, the last fading by ~27. Drawn 150 units right of where it is laid out (owner,
+/// 2026-10-15). The same seed makes the same effect.
 /// </summary>
 internal static class WarDanceEffect
 {
@@ -38,7 +39,13 @@ internal static class WarDanceEffect
     private static readonly Color Violet = new(0.32f, 0.22f, 0.3f), Plum = new(0.29f, 0.14f, 0.29f);
     private static readonly Color Wisp = new(0.5f, 0.3f, 0.3f), Ash = new(0.42f, 0.3f, 0.36f);
 
-    public static IReadOnlyList<Particle> Build(int seed)
+    /// <summary>The effect as laid out, moved right (owner, 2026-10-15).</summary>
+    public static IReadOnlyList<Particle> Build(int seed) =>
+        Layout(seed).Select(p => p with { Position = p.Position + Shift }).ToList();
+
+    private static readonly Vector2 Shift = new(150, 0);
+
+    private static IReadOnlyList<Particle> Layout(int seed)
     {
         var random = new Random(seed);
         float Range(float from, float to) => from + (float)random.NextDouble() * (to - from);

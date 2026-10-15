@@ -9,7 +9,9 @@ namespace Kichikuou.Game.Battles.Effects;
 /// thread (gone by ~19); ice petals bursting out of it, flying out and slowing, turning blue (1-15, faint to ~22); a
 /// white disc with a bright rim swelling from the burst (3-7) into a blue-grey halo of rings (7-15); then blue, ice and a
 /// few lavender crescents spinning in from the middle and drifting right with pale blue four-point sparkles (9-25), the sparkles
-/// to ~28. In Meglass's blues, after her sprite (CG 1527; owner, 2026-10-15). The same seed makes the same effect.
+/// to ~28. In Meglass's blues, after her sprite (CG 1527; owner, 2026-10-15). The opening (the bar, the burst, the disc,
+/// the halo, the petals) is moved onto her sprite: the burst onto her afterimage on the left, the bar along the line
+/// the sprite draws, from left of it to her figure on the right (owner, 2026-10-15). The same seed makes the same effect.
 /// </summary>
 internal static class HighSpeedEffect
 {
@@ -17,6 +19,18 @@ internal static class HighSpeedEffect
 
     /// <summary>The burst's centre; the bar's line.</summary>
     private static readonly Vector2 Burst = new(312, 162);
+
+    /// <summary>
+    /// Where the opening is moved to from where it was laid out: the burst onto her afterimage on the left of her sprite
+    /// (CG 1527: x 10-80 of the scene), on the line the sprite draws (its y 99: 116 here) (owner, 2026-10-15).
+    /// </summary>
+    private static readonly Vector2 OpeningShift = new(-256, -46);
+
+    /// <summary>
+    /// Where the bar runs, after the move: the length of the line the sprite draws, from left of her afterimage to where
+    /// it meets her figure on the right (the scene's x ~500) (owner, 2026-10-15).
+    /// </summary>
+    private const float LineFrom = -40, LineTo = 640;
 
     /// <summary>The disc's radius at a frame: swelling from the burst, slower as it turns into the halo.</summary>
     private static float DiscRadius(float frame) => Lerp(frame, [2.5f, 4, 6, 9, 12, 16], [80, 115, 150, 205, 250, 290]);
@@ -36,15 +50,15 @@ internal static class HighSpeedEffect
         float Range(float from, float to) => from + (float)random.NextDouble() * (to - from);
         var particles = new List<Particle>();
 
-        // The bar: a thick white band across the whole frame thinning to a thread, each thinner one taking over as the one
+        // The bar: a thick white band along the sprite's line thinning to a thread, each thinner one taking over as the one
         // before fades (frames 0-19).
         foreach (var (birth, life, thickness) in new[]
                  {
                      (-0.5f, 2f, 280f), (0.3f, 2.2f, 170f), (1.3f, 2.5f, 90f), (2.5f, 3f, 52f), (4, 4.5f, 32f), (6.5f, 5.5f, 20f),
                      (10, 6, 11f), (14, 5f, 6f),
                  })
-            particles.Add(new Particle(EffectTextures.Bar, birth, life, new Vector2(Width / 2 + 20, Burst.Y), Vector2.Zero, 0, 0,
-                new Vector2(Width + 60, thickness), White, t => t < 0.2f ? t / 0.2f : t < 0.6f ? 1 : 1 - (t - 0.6f) / 0.4f, _ => 1));
+            particles.Add(new Particle(EffectTextures.Bar, birth, life, new Vector2((LineFrom + LineTo) / 2 - OpeningShift.X, Burst.Y), Vector2.Zero, 0, 0,
+                new Vector2(LineTo - LineFrom, thickness), White, t => t < 0.2f ? t / 0.2f : t < 0.6f ? 1 : 1 - (t - 0.6f) / 0.4f, _ => 1));
 
         // The burst: a white glow in a royal-blue haze turning sky blue (frames 0-3).
         particles.Add(new Particle(EffectTextures.Glow, -0.5f, 4, Burst, Vector2.Zero, 0, 0, new Vector2(460, 300), White,
@@ -73,6 +87,11 @@ internal static class HighSpeedEffect
                 Ramp: t => t < 0.2f ? PetalIce.Lerp(PetalBlue, t / 0.2f) : PetalBlue.Lerp(PetalDim, (t - 0.2f) / 0.8f),
                 Move: t => direction * (from + reach * (1 - MathF.Exp(-t * life / pace)))));
         }
+
+        // The opening — the bar, the burst, the disc and its halo, the petals — moved onto Meglass's sprite (owner,
+        // 2026-10-15); the crescents and sparkles over the enemy stay where they are.
+        for (int i = 0; i < particles.Count; i++)
+            particles[i] = particles[i] with { Position = particles[i].Position + OpeningShift };
 
         // The crescents: blue, ice and a few lavender half-moons spinning in from the middle and drifting right, each with
         // two fainter copies trailing its turn (frames 9-25).

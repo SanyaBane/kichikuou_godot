@@ -216,7 +216,7 @@ internal sealed partial class BattleBoardView : Control
             || battle.Effect is not { } effect)
             return;
         _effect.Mirrored = effect.Side == BattleSide.Enemy;
-        _effect.Dark = effect.Kind == ExchangeEffectKind.BlackBeam;
+        _effect.Dark = effect.Kind is ExchangeEffectKind.ChizukoBeam or ExchangeEffectKind.NagiBeam;
         _effect.Start(effect.Kind switch
         {
             ExchangeEffectKind.Bow => BowEffect.Build(_effectsSeen),
@@ -226,7 +226,8 @@ internal sealed partial class BattleBoardView : Control
             ExchangeEffectKind.ShizukaBeam => ShizukaBeamEffect.Build(_effectsSeen),
             ExchangeEffectKind.MagicBeam => MagicBeamEffect.Build(_effectsSeen),
             ExchangeEffectKind.EpoLight => EpoLightEffect.Build(_effectsSeen),
-            ExchangeEffectKind.BlackBeam => WhiteBeamEffect.Build(_effectsSeen),
+            ExchangeEffectKind.ChizukoBeam => ChizukoBeamEffect.Build(_effectsSeen),
+            ExchangeEffectKind.NagiBeam => NagiBeamEffect.Build(_effectsSeen),
             ExchangeEffectKind.WhirlwindShot => WhirlwindShotEffect.Build(_effectsSeen),
             ExchangeEffectKind.HighSpeed => HighSpeedEffect.Build(_effectsSeen),
             ExchangeEffectKind.ByLaWay => RanceAttackEffect.BuildRed(_effectsSeen),

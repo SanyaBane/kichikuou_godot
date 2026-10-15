@@ -11,7 +11,8 @@ namespace Kichikuou.Game.Battles.Effects;
 /// (13-17) and a thick white beam to the right edge, dying from its root (~18) to the edge (~23); the burst closes into a
 /// tall white oval (16-19) that stands as a glassy arc, its rim to the left, fading teal (18-27); teal stars twinkle in
 /// clumps along the beam's line (17-27) under a thin white needle and cyan streaks rushing right (18-25). The same seed
-/// makes the same effect.
+/// makes the same effect. Its shot is stretched right 1.75× past the eye, through the enemy's army, and the whole drawn
+/// 244 units left and 20 up of where it was laid out, onto Isoroku's sprite (owner, 2026-10-15).
 /// </summary>
 internal static class WhirlwindShotEffect
 {
@@ -39,7 +40,20 @@ internal static class WhirlwindShotEffect
     private static readonly Color Cream = new(1f, 0.94f, 0.72f), Glass = new(0.6f, 1f, 1f), GlassDim = new(0.3f, 0.58f, 0.62f);
     private static readonly Color Cyan = new(0.45f, 1f, 1f), BeamEdge = new(0.85f, 1f, 1f), Star = new(0.45f, 0.95f, 0.8f);
 
-    public static IReadOnlyList<Particle> Build(int seed)
+    /// <summary>
+    /// The effect as laid out, its shot (from frame 12: the burst, the beam, the oval, the needle, the streaks, the stars)
+    /// stretched right past the eye by <see cref="Reach"/> so that it runs on through the enemy's army, then moved onto
+    /// Isoroku's sprite (owner, 2026-10-15); the whirlwind keeps its shape.
+    /// </summary>
+    public static IReadOnlyList<Particle> Build(int seed) =>
+        ParticleLayout.StretchedRight(Layout(seed), Eye.X + 60, Reach, p => p.Birth >= 11.4f)
+            .Select(p => p with { Position = p.Position + Shift }).ToList();
+
+    private static readonly Vector2 Shift = new(-244, -20);
+
+    private const float Reach = 1.75f;
+
+    private static IReadOnlyList<Particle> Layout(int seed)
     {
         var random = new Random(seed);
         float Range(float from, float to) => from + (float)random.NextDouble() * (to - from);

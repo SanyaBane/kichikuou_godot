@@ -42,14 +42,17 @@ internal static class WhiteBeamEffect
     private static readonly Color StarViolet = new(0.6f, 0.55f, 1f), Cloud = new(0.9f, 0.95f, 0.95f, 0.8f);
 
     /// <summary>
-    /// The beam laid out by <see cref="Build"/>, turned by <paramref name="tilt"/> (radians, + turning its far end
-    /// down) about the flash and moved by <paramref name="offset"/> (the design space): a user's own place.
+    /// The beam laid out by <see cref="Build"/>, stretched right by <paramref name="reach"/> past the sphere
+    /// (<see cref="ParticleLayout.StretchedRight"/> from <see cref="ReachFrom"/>), turned by <paramref name="tilt"/>
+    /// (radians, + turning its far end down) about the flash and moved by <paramref name="offset"/> (the design space): a
+    /// user's own place.
     /// </summary>
-    public static IReadOnlyList<Particle> Placed(int seed, Vector2 offset, float tilt = 0)
+    public static IReadOnlyList<Particle> Placed(int seed, Vector2 offset, float tilt = 0, float reach = 1)
     {
         var turn = Transform2D.Identity.Rotated(tilt);
         Vector2 Turned(Vector2 v) => turn.BasisXform(v);
-        return Build(seed).Select(p => p with
+        var particles = reach == 1 ? Build(seed) : ParticleLayout.StretchedRight(Build(seed), ReachFrom, reach);
+        return particles.Select(p => p with
         {
             Position = Orb + Turned(p.Position - Orb) + offset,
             Velocity = Turned(p.Velocity),
@@ -58,24 +61,34 @@ internal static class WhiteBeamEffect
         }).ToList();
     }
 
-    public static IReadOnlyList<Particle> Build(int seed)
+    /// <summary>Where a stretched beam starts to stretch: right of the sphere, which keeps its shape.</summary>
+    private static readonly float ReachFrom = Orb.X + 150;
+
+    public static IReadOnlyList<Particle> Build(int seed) => Build(seed, true);
+
+    /// <summary>
+    /// The beam; without <paramref name="orb"/> its flash, the sphere of light it turns into and the sparkles round its
+    /// rim are left out (Nagi's, owner, 2026-10-15), the rest drawn the same.
+    /// </summary>
+    public static IReadOnlyList<Particle> Build(int seed, bool orb)
     {
         var random = new Random(seed);
         float Range(float from, float to) => from + (float)random.NextDouble() * (to - from);
         var particles = new List<Particle>();
+        List<Particle> sphere = orb ? particles : [];                          // the flash and the sphere, left out without the orb
 
         // The flash: a white disc in a white glow and a cyan-grey haze of soft rays filling the frame (frames 0-3), a
         // violet halo as it breaks up (3-5).
-        particles.Add(new Particle(EffectTextures.Bokeh, -0.5f, 5.3f, Orb, Vector2.Zero, 0, 0, Vector2.One, White,
+        sphere.Add(new Particle(EffectTextures.Bokeh, -0.5f, 5.3f, Orb, Vector2.Zero, 0, 0, Vector2.One, White,
             t => t < 0.87f ? 1 : 1 - (t - 0.87f) / 0.13f, t => Lerp(t, [0, 0.3f, 0.65f, 1], [300, 340, 280, 200])));
-        particles.Add(new Particle(EffectTextures.Glow, -0.5f, 4.5f, Orb, Vector2.Zero, 0, 0, new Vector2(720, 640), White,
+        sphere.Add(new Particle(EffectTextures.Glow, -0.5f, 4.5f, Orb, Vector2.Zero, 0, 0, new Vector2(720, 640), White,
             t => t < 0.55f ? 1 : 1 - (t - 0.55f) / 0.45f, t => 1 + 0.15f * t, Ramp: t => White.Lerp(Haze, t)));
-        particles.Add(new Particle(EffectTextures.Haze, -0.5f, 5, Orb + new Vector2(30, 0), Vector2.Zero, 0, 0, new Vector2(1000, 800), Haze,
+        sphere.Add(new Particle(EffectTextures.Haze, -0.5f, 5, Orb + new Vector2(30, 0), Vector2.Zero, 0, 0, new Vector2(1000, 800), Haze,
             t => t < 0.45f ? 1 : 1 - (t - 0.45f) / 0.55f, _ => 1));
         foreach (float turn in new[] { 0f, 0.4f, 0.9f })
-            particles.Add(new Particle(EffectTextures.Rays, -0.5f, 4.5f, Orb, Vector2.Zero, turn, 0.01f, new Vector2(1000, 1000), RayTint,
+            sphere.Add(new Particle(EffectTextures.Rays, -0.5f, 4.5f, Orb, Vector2.Zero, turn, 0.01f, new Vector2(1000, 1000), RayTint,
                 t => t < 0.5f ? 1 : 1 - (t - 0.5f) / 0.5f, t => 1 + 0.1f * t));
-        particles.Add(new Particle(EffectTextures.Haze, 2, 4, Orb, Vector2.Zero, 0, 0, new Vector2(900, 700), Halo,
+        sphere.Add(new Particle(EffectTextures.Haze, 2, 4, Orb, Vector2.Zero, 0, 0, new Vector2(900, 700), Halo,
             t => t < 0.3f ? t / 0.3f : 1 - (t - 0.3f) / 0.7f, t => 1 - 0.15f * t));
 
         // Its break-up: lumps of white round the rim, pink-tinged, with glints on them (frames 2.5-5).
@@ -83,18 +96,18 @@ internal static class WhiteBeamEffect
         {
             float angle = Range(0, MathF.Tau), distance = Range(80, 140), size = Range(28, 60);
             var at = Orb + Vector2.FromAngle(angle) * distance;
-            particles.Add(new Particle(EffectTextures.Billow, Range(2.6f, 3.6f), Range(1.6f, 2.4f), at, Vector2.FromAngle(angle) * 5,
+            sphere.Add(new Particle(EffectTextures.Billow, Range(2.6f, 3.6f), Range(1.6f, 2.4f), at, Vector2.FromAngle(angle) * 5,
                 Range(0, MathF.Tau), 0, new Vector2(size, size), i % 3 == 0 ? Pink : White, Fade, t => 1 + 0.3f * t));
             if (i % 2 == 0)
-                particles.Add(new Particle(EffectTextures.Sparkle, Range(3, 4.2f), Range(1.5f, 2.5f), at + Vector2.FromAngle(angle) * 15,
+                sphere.Add(new Particle(EffectTextures.Sparkle, Range(3, 4.2f), Range(1.5f, 2.5f), at + Vector2.FromAngle(angle) * 15,
                     Vector2.FromAngle(angle) * 5, 0, 0, new Vector2(30, 30), White, Fade, _ => 1));
         }
 
         // The disc: white and flat at frame 5, turning into a sphere of light that swells, mottled inside, and fades
         // (5-17).
-        particles.Add(new Particle(EffectTextures.Bokeh, 4.3f, 2.2f, Orb, Vector2.Zero, 0, 0, Vector2.One, White,
+        sphere.Add(new Particle(EffectTextures.Bokeh, 4.3f, 2.2f, Orb, Vector2.Zero, 0, 0, Vector2.One, White,
             t => t < 0.15f ? t / 0.15f : t < 0.45f ? 1 : 1 - (t - 0.45f) / 0.55f, t => 2 * SphereRadius(4.3f + 2.2f * t) * 1.02f));
-        particles.Add(new Particle(EffectTextures.Sphere, 4.8f, 12.5f, Orb, Vector2.Zero, 0, 0, Vector2.One, White,
+        sphere.Add(new Particle(EffectTextures.Sphere, 4.8f, 12.5f, Orb, Vector2.Zero, 0, 0, Vector2.One, White,
             t => (t < 0.08f ? t / 0.08f : 1) * (t < 0.45f ? 1 : 1 - MathF.Pow((t - 0.45f) / 0.55f, 0.8f)),
             t => 2 * SphereRadius(4.8f + 12.5f * t)));
         for (int i = 0; i < 130; i++)
@@ -105,7 +118,7 @@ internal static class WhiteBeamEffect
             var at = Orb + Vector2.FromAngle(angle) * radius * share;
             // Spreading with the sphere as it swells (~11 a frame at its rim), drifting right.
             var drift = Vector2.FromAngle(angle) * 11 * share + new Vector2(3, 0);
-            particles.Add(new Particle(EffectTextures.Billow, birth, Math.Max(2.5f, Math.Min(MassEnd(at.X) - 2, 14) - birth) + Range(-1, 1), at,
+            sphere.Add(new Particle(EffectTextures.Billow, birth, Math.Max(2.5f, Math.Min(MassEnd(at.X) - 2, 14) - birth) + Range(-1, 1), at,
                 drift, Range(0, MathF.Tau), 0, new Vector2(size, size * Range(0.6f, 1)), Cloud, t => 0.55f * Held(t), t => 0.8f + 0.5f * t));
         }
 
@@ -219,9 +232,10 @@ internal static class WhiteBeamEffect
             float size = Range(24, 60), twinkle = Range(0, MathF.Tau), end = Range(17, 27);
             var colour = i % 7 == 0 ? StarViolet : Star;
             float Alpha(float t) => (0.65f + 0.35f * MathF.Sin(twinkle + t * 25)) * (t < 0.04f ? t / 0.04f : 1 - MathF.Pow((t - 0.04f) / 0.96f, 1.3f));
-            particles.Add(new Particle(EffectTextures.Sparkle, birth, end - birth, at, drift, 0, 0, new Vector2(size, size), colour,
+            var list = ring ? sphere : particles;
+            list.Add(new Particle(EffectTextures.Sparkle, birth, end - birth, at, drift, 0, 0, new Vector2(size, size), colour,
                 t => 0.6f * Alpha(t), _ => 1));
-            particles.Add(new Particle(EffectTextures.Glow, birth, end - birth, at, drift, 0, 0, new Vector2(size, size) * 1.5f,
+            list.Add(new Particle(EffectTextures.Glow, birth, end - birth, at, drift, 0, 0, new Vector2(size, size) * 1.5f,
                 colour * new Color(0.6f, 0.9f, 0.9f, 0.9f), Alpha, _ => 1));
         }
 

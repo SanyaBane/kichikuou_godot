@@ -21,8 +21,10 @@ public enum ExchangeEffectKind
     MagicBeam,
     /// <summary>Gandhi's EPO Light (the same, placed for him).</summary>
     EpoLight,
-    /// <summary>Black D. Beam (the White Destruction Beam recoloured dark).</summary>
-    BlackBeam,
+    /// <summary>Chizuko's Black D. Beam (the White Destruction Beam laid over dark, placed for her).</summary>
+    ChizukoBeam,
+    /// <summary>Nagi's Black D. Beam (the same without its opening orb).</summary>
+    NagiBeam,
     /// <summary>Isoroku's Whirlwind Shot (after Sengoku Rance's Piercing Tempest, 40660).</summary>
     WhirlwindShot,
     /// <summary>Meglass's High Speed (after Sengoku Rance's Commander Charge, 41400).</summary>
@@ -87,7 +89,7 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
     /// setter for three menu items (<c>FIGT_SEL.ADV:608-643, 680</c>): White D. Beam by Shizuka (unit 17) or Magic
     /// (unit 39) and EPO Light by Gandhi (unit 37) play the white beam, each user's own (placed for its sprite; owner,
     /// 2026-10-15), Black D. Beam by Chizuko (unit 38) or Nagi
-    /// (unit 40) the dark one (owner, 2026-10-14). Special 3 (<c>FIGT.ADV:1542-1550</c>; docs/battle/02-resolution.md
+    /// (unit 40) the dark one (owner, 2026-10-14), each user's own too (owner, 2026-10-15). Special 3 (<c>FIGT.ADV:1542-1550</c>; docs/battle/02-resolution.md
     /// §3.3: the commander's one shot at the commander), one setter for two menu items: Whirlwind Shot by Isoroku
     /// (unit 27, <c>FIGT_SEL.ADV:653</c>) and High Speed by Meglass (unit 30, <c>:599</c>; Commander Charge's, owner,
     /// 2026-10-15); the ninja's follow-up sets special 3 too (<c>FIGT.ADV:1980</c>) with the ninja as record 51
@@ -111,7 +113,8 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
         (2, 17) => ExchangeEffectKind.ShizukaBeam,
         (2, 39) => ExchangeEffectKind.MagicBeam,
         (2, 37) => ExchangeEffectKind.EpoLight,
-        (2, 38 or 40) => ExchangeEffectKind.BlackBeam,
+        (2, 38) => ExchangeEffectKind.ChizukoBeam,
+        (2, 40) => ExchangeEffectKind.NagiBeam,
         (3, 27) => ExchangeEffectKind.WhirlwindShot,
         (3, 30) => ExchangeEffectKind.HighSpeed,
         (3, 51) => ExchangeEffectKind.NinjaFollowUp,

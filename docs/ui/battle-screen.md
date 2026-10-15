@@ -295,8 +295,8 @@ picture, the slot panels) is not shown. How it is built:
     Rance's `(1, 1)` keeps Rance Attack's). **The beams** (2026-10-15, the owner took their v1 as it is): special 2 (`Bt_SpecialAtk == 2`) by Shizuka (unit 17), Magic (unit 39) or
     Gandhi (unit 37) plays the white beam, each user's own since 2026-10-15 (owner: three effects, placed for each
     sprite, to be told apart in the debug panel and tuned apart later; `ExchangeEffectKind.ShizukaBeam`, `MagicBeam`,
-    `EpoLight`, the rows `(2, 17)`, `(2, 39)`, `(2, 37)`), by Chizuko (unit 38) or Nagi (unit 40) the dark one, one
-    for both (`BlackBeam`); special 2 by anyone else plays by its action. No captured battle has
+    `EpoLight`, the rows `(2, 17)`, `(2, 39)`, `(2, 37)`), by Chizuko (unit 38) or Nagi (unit 40) the dark one, each
+    user's own as well (owner, 2026-10-15; `ChizukoBeam`, `NagiBeam`, the rows `(2, 38)`, `(2, 40)`); special 2 by anyone else plays by its action. No captured battle has
     a beam: `ExchangeEffectTests` checks the rule on given states, and in the captures that a beam's troops fire nothing
     (nor its commander at the commander, 02-resolution.md §3.3). **Whirlwind Shot** (2026-10-15, the owner took its
     v1 as it is): special 3 (`Bt_SpecialAtk == 3`, `FIGT.ADV:1542-1550`) by Isoroku (unit 27) plays ours after
@@ -374,8 +374,9 @@ picture, the slot panels) is not shown. How it is built:
   and drifting left, darkening to blue over a dark blue disc (to ~18); a white mass of billows spreading right behind
   a pale shock arc that throws sparks (front at x 545 at frame 5.5, 55 a frame), each billow dying as the mass draws
   back to the right edge (the middle at ~10.5, the edge at ~22; timed on the reference's white coverage by band), its
-  trailing side burning in rows of blue tongues, each with two fainter copies trailing down-left (12-24); sand dust
-  billowing on the actor's half (0-15) and a browner cloud over the target's (13-26); a cluster of pale blue motes in
+  trailing side burning in rows of blue tongues, each with two fainter copies trailing down-left (12-24); a browner
+  dust cloud over the target's half (13-26; the reference's sand dust on the actor's half is left out, owner,
+  2026-10-15); a cluster of pale blue motes in
   the middle (from ~7, gone by ~28). Rance's is drawn 100 units right of that (owner, 2026-10-15; the positions here
   are before the shift); By la Way stays where it was laid out.
   The White Destruction Beam effect (`WhiteBeamEffect`, 2026-10-15, the owner took its v1 as it is; textures of its own: a sphere of light, a swirl,
@@ -394,8 +395,15 @@ picture, the slot panels) is not shown. How it is built:
   `WhiteBeamEffect.Placed` (turned about the flash, then moved; every particle's position, drift, turn and path):
   Shizuka's (`ShizukaBeamEffect`) moved 76 units left, Gandhi's EPO Light (`EpoLightEffect`) 150 left and 40 up,
   Magic's (`MagicBeamEffect`) 140 left and 120 up — the flash on the orb over her head — and turned down 0.28 rad
-  (~16°) so that it runs into the enemy's army, toward its middle at about (640, 185), not over its heads. The black
-  beam is drawn as laid out.
+  (~16°) so that it runs into the enemy's army, toward its middle at about (640, 185), not over its heads. Magic's and
+  Gandhi's are stretched right past the sphere so that they run on through the army instead of dying in its middle
+  (owner, 2026-10-15): `ParticleLayout.StretchedRight` from x 450 (the flash's 300 + 150) by 1.5 and 1.45 — every
+  particle right of it drawn that much further from it, its drift and path along x too, and but for the round ones
+  (the sphere's discs, sparkles, specks, rings, swirls) that much wider. The black
+  beams too (owner, 2026-10-15): Chizuko's (`ChizukoBeamEffect`) moved 27 units left and 20 up; Nagi's
+  (`NagiBeamEffect`) without its opening orb — `WhiteBeamEffect.Build(seed, orb: false)` leaves out the flash (its
+  disc, glows, haze, rays and halo, frames 0-5), its break-up lumps, the sphere of light it turns into with its clouds
+  (5-17) and the sparkles round its rim, the rest drawn the same — so that it starts with the needle.
   The Whirlwind Shot effect (`WhirlwindShotEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Piercing Tempest, 40660 — 29
   frames in the archive, the 30th absent; a texture of its own, `Lens`: a tall arc with a bright rim on its outer side and
   a glassy fill): a whirlwind in the middle (its eye at ~(414, 168)) — six arms of beads placed by the frame, their
@@ -407,7 +415,9 @@ picture, the slot panels) is not shown. How it is built:
   (~23); the burst closes into a tall white oval (16-19) that stands as the lens's arc, its rim to the left, glass
   turning teal as it fades (18-27); a thin white needle and cyan streaks rush right along the beam's line (18-25) over
   300 teal stars in clumps, twinkling (17-27). Timed on the reference's near-white share and mean brightness in eight
-  column bands.
+  column bands. The positions here are as laid out; its shot (the particles born from frame ~11.5) is stretched right
+  1.75× from x 474 (the eye's 414 + 60) so that it runs on through the enemy's army, the whirlwind keeping its shape,
+  and the whole drawn 244 units left and 20 up, onto Isoroku's sprite (owner, 2026-10-15).
   The High Speed effect (`HighSpeedEffect`, 2026-10-15, the owner took its v1 as it is; v2 recoloured to Meglass's blues
   after the owner's note, which the owner took as it is; after Sengoku Rance's Commander Charge, 41400 — 29 frames in
   the archive; textures of its own: `Bar`, a band even along its length; `Petal`, a soft filled ellipse; `Moon`, a
@@ -419,11 +429,16 @@ picture, the slot panels) is not shown. How it is built:
   ~450 (frame 9) and drifting right at 16-30 a frame, the front moving right with them (9-24), and 240 pale blue
   four-point sparkles among them, half with a glow (10-28). Timed on the reference's bands as the others. Its colours
   are Meglass's (her sprite, CG 1527: royal blue, sky blue, ice, lavender; owner, 2026-10-15: v1's amber and gold did
-  not match the blue strike on her sprite). The **By la Way** effect is Rance Attack's recoloured red
+  not match the blue strike on her sprite). Its opening is moved onto her sprite (CG 1527; owner, 2026-10-15): the burst, the
+  disc and its halo and the petals 256 units left and 46 up, onto her afterimage on the left (the scene's x 10-80) on
+  the line the sprite draws (its y 99: 116 here); the bar along that line, from x -40 to 640 — from left of her
+  afterimage to where the line meets her figure on the right (the scene's x ~500) — at the same height; the
+  half-moons and sparkles over the enemy stay. The **By la Way** effect is Rance Attack's recoloured red
   (`RanceAttackEffect.BuildRed`, after Rick's red sprite, CG 1521, red 245, 40, 35; v2 redder after the owner's note,
   2026-10-15: v1 read orange; the owner took v2 as it is): every colour where blue leads or that is white turned red — white to a pinkish red
   (salmon, then white, only where the light piles up), ice to red, the blues deep red — and the sand dust reddened to
-  a rust brown. Over a sand battlefield its peak's core still reads pale, its red shows in the mass's fringe, the
+  a rust brown. The dust on the actor's half, which reddened piled up into a lone glow behind Rick, is out of both
+  (owner, 2026-10-15). Over a sand battlefield its peak's core still reads pale, its red shows in the mass's fringe, the
   rings, the flames and the motes.
   The ninja's follow-up effect (`NinjaEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Ninja troop effect, 40100;
   textures of its own: `Shuriken`, a four-point star with concave sides and a round hole; `Wing`, a crescent bulging
@@ -461,7 +476,8 @@ picture, the slot panels) is not shown. How it is built:
   middle to the edge (x 390 at frame 2, 560 at 3, 830 by 8), most at the peak (frames 8-9, 48 a frame), crowding left
   early and evening out late, their left edge drawing back to the right from frame 18 (x 300) to 25 (700); behind them
   faint streaky wisps (the puff stretched flat) drifting right, a few frames each, salmon and then ash (from 19), the
-  last fading by ~27. Timed on the reference's mean brightness in four column quarters.
+  last fading by ~27. Timed on the reference's mean brightness in four column quarters. The positions here are as laid
+  out; it is drawn 150 units right of them (owner, 2026-10-15).
   The Chuhai effect (`ChuhaiEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Shogun Whirlwind,
   47060 — 29 frames in the archive; textures of its own: `Hook`, a thin arc thickening to a bright head, and `Kite`, a
   soft diamond): a whirlwind, a wheel of blue blades turning clockwise — swelling from a dome at the frame's foot in the
@@ -530,14 +546,14 @@ picture, the slot panels) is not shown. How it is built:
   once a game has booted) and for a special the sprite its user
   shows while using it (owner, 2026-10-15; `FIGT.ADV:1660-1713`, docs/battle/02-resolution.md §4): the user list holds
   the special's users — Rance Attack Rance (unit 1, CG 1520), Kentarou-kun Slash Kentarou (unit 31, 1222), the white beams one each, Shizuka's
-  (unit 17, 1522), Magic's (unit 39, 1523) and Gandhi's EPO Light (unit 37, 1524), the dark one Nagi (unit 40, 1525) or Chizuko
-  (unit 38, 1526), Whirlwind Shot Isoroku (unit 27, 1528), High Speed Meglass (unit 30, 1527), By la Way Rick (unit 7,
+  (unit 17, 1522), Magic's (unit 39, 1523) and Gandhi's EPO Light (unit 37, 1524), the dark ones Chizuko's
+  (unit 38, 1526) and Nagi's (unit 40, 1525), Whirlwind Shot Isoroku (unit 27, 1528), High Speed Meglass (unit 30, 1527), By la Way Rick (unit 7,
   1521), the ninja's follow-up Kanami, Freya, Kaoru or Wichita (their own sprites, 1164, 1176, 1182, 1185), Vanish Bomb
   Miki (unit 32, 1529), C. War Dance Patton (unit 18, 1530), Chuhai Asuka (unit 11, 1121), T2 Goliath none (record 51,
   no sprite: the battlefield bare on the player's side, as in the battle), T2 Soaring Wave Rolex (unit 47, 1252).
-  `--effects --shots DIR --quit` (in a window; `--effects white-beam-magic,black-beam` for those alone) writes every frame of each with seed 1: the effect alone on black
-  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `kentarou-slash-NN.png`, `white-beam-shizuka-NN.png`, `white-beam-magic-NN.png`, `epo-light-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`, `chuhai-NN.png`, `goliath-NN.png`, `soaring-wave-NN.png`; the black beam's picture is
-  its light, so it is saved over the battlefield only) and over the battlefield with the effect's first user, the
+  `--effects --shots DIR --quit` (in a window; `--effects white-beam-magic,black-beam-nagi` for those alone) writes every frame of each with seed 1: the effect alone on black
+  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `kentarou-slash-NN.png`, `white-beam-shizuka-NN.png`, `white-beam-magic-NN.png`, `epo-light-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`, `chuhai-NN.png`, `goliath-NN.png`, `soaring-wave-NN.png`; the black beams' (`black-beam-chizuko`,
+  `black-beam-nagi`) picture is its light, so they are saved over the battlefield only) and over the battlefield with the effect's first user, the
   player acting and the enemy (`melee-scene-NN.png`, `melee-enemy-scene-NN.png`, …) — for a sheet next to the reference's frames, made outside the
   repository.
 - **The windows over it** ("vs", the results, the info boxes, the
