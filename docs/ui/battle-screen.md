@@ -384,18 +384,22 @@ picture, the slot panels) is not shown. How it is built:
   turning teal as it fades (18-27); a thin white needle and cyan streaks rush right along the beam's line (18-25) over
   300 teal stars in clumps, twinkling (17-27). Timed on the reference's near-white share and mean brightness in eight
   column bands.
-  The High Speed effect (`HighSpeedEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Commander Charge, 41400 — 29 frames in
+  The High Speed effect (`HighSpeedEffect`, 2026-10-15, the owner took its v1 as it is; v2 recoloured to Meglass's blues
+  after the owner's note, which the owner took as it is; after Sengoku Rance's Commander Charge, 41400 — 29 frames in
   the archive; textures of its own: `Bar`, a band even along its length; `Petal`, a soft filled ellipse; `Moon`, a
-  half-moon): a white burst at (312, 162) on a thick white bar across the whole frame in an amber haze turning golden
-  (frames 0-3), the bar thinning to a thread in eight overlapping steps (gone by ~19); 170 petals bursting out of the
-  burst, yellow-white turning tan and dim, slowing as they fly (0-15, faint to ~22), most staying inside the halo; a
-  white disc with a bright rim swelling from the burst (2.5-7) into a grey halo of two rings (6-16, radius 290 by 16);
-  then 110 gold, cream and grey half-moons, each with two fainter copies trailing its turn, spinning in from x ~450
-  (frame 9) and drifting right at 16-30 a frame, the front moving right with them (9-24), and 240 gold four-point
-  sparkles among them, half with a glow (10-28). Timed on the reference's bands as the others. The **By la Way**
-  effect is Rance Attack's recoloured red (`RanceAttackEffect.BuildRed`, after Rick's red sprite, CG 1521): every
-  colour where blue leads or that is white turned red — white to salmon (white again where the light piles up), ice to red-orange, the
-  blues deep red; the sand dust as it is. Over a sand battlefield its peak still reads white, its red shows in the
+  half-moon): a white burst at (312, 162) on a thick white bar across the whole frame in a royal-blue haze turning sky
+  blue (frames 0-3), the bar thinning to a thread in eight overlapping steps (gone by ~19); 170 petals bursting out of
+  the burst, ice turning blue and dim, slowing as they fly (0-15, faint to ~22), most staying inside the halo; a
+  white disc with a bright rim swelling from the burst (2.5-7) into a blue-grey halo of two rings (6-16, radius 290 by
+  16); then 110 blue, ice and lavender half-moons, each with two fainter copies trailing its turn, spinning in from x
+  ~450 (frame 9) and drifting right at 16-30 a frame, the front moving right with them (9-24), and 240 pale blue
+  four-point sparkles among them, half with a glow (10-28). Timed on the reference's bands as the others. Its colours
+  are Meglass's (her sprite, CG 1527: royal blue, sky blue, ice, lavender; owner, 2026-10-15: v1's amber and gold did
+  not match the blue strike on her sprite). The **By la Way** effect is Rance Attack's recoloured red
+  (`RanceAttackEffect.BuildRed`, after Rick's red sprite, CG 1521, red 245, 40, 35; v2 redder after the owner's note,
+  2026-10-15: v1 read orange; the owner took v2 as it is): every colour where blue leads or that is white turned red — white to a pinkish red
+  (salmon, then white, only where the light piles up), ice to red, the blues deep red — and the sand dust reddened to
+  a rust brown. Over a sand battlefield its peak's core still reads pale, its red shows in the mass's fringe, the
   rings, the flames and the motes.
   The ninja's follow-up effect (`NinjaEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Ninja troop effect, 40100;
   textures of its own: `Shuriken`, a four-point star with concave sides and a round hole; `Wing`, a crescent bulging
@@ -407,23 +411,30 @@ picture, the slot panels) is not shown. How it is built:
   280 (3-27); gold crescents in a glow, small first, larger later (9-27), and teal four-point sparkles in a glow with
   small white ones (10-27). Timed on the reference's mean brightness in four column quarters. Over the battlefield
   the shuriken and the crescents read, the needles hardly.
-  The Vanish Bomb effect (`VanishBombEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Begone Bomb, 40560 — 29 frames in
+  The Vanish Bomb effect (`VanishBombEffect`, 2026-10-15, the owner took its v1 as it is; v2 larger after the owner's
+  note, which the owner took as it is; after Sengoku Rance's Begone Bomb, 40560 — 29 frames in
   the archive; a texture of its own, `Rim`: a ring with a sharp inner edge and a frayed outer one): a wall of white
   light — lumps and four-point sparkles, pink past x 430, fewer toward the right edge — lit from the frame's edges
   inward as the hole in it closes on (295, 185) (its half-width 400 at frame 0, 200 at 4, 0 at 8), each lump dimming
-  after it lights; a white flash there swelling over the left two thirds under a violet haze over the whole frame
-  (8.4-13), shrinking with pink-white spikes thrown off its edge (11.5-15) and flattening into a white ellipse
-  (12-16); then a thick flat white rim spreading from it (half-width 220 at 14, 400 at 20; a third as high) and
-  blurring into a broad soft grey band as it fades (16-24), a grey glow inside it, long rays from the centre and a
-  star there (12.5-27), and inside it cyan, gold and white star bursts, orange motes and teal flecks drifting out with
-  it (13.5-25). Timed on the reference's mean brightness in four column quarters.
-  The C. War Dance effect (`WarDanceEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Ieyasu's
+  after it lights. Then, larger than Sengoku Rance's (owner, 2026-10-15: v1 looked weaker than Rance Attack, while
+  Miki's sprite, CG 1529, is a huge bomb in a green blast — by the lore the mightiest blow of all): a white flash there
+  swelling over the whole frame (8.4-13.8) and a white-out of the whole frame (9.3-11.7, after a brief violet haze);
+  an ice-white sphere with a bright rim and a white core swelling from it past the frame's height (radius 230 at 9.5,
+  330 at 10.5, 400 at 13.5; 8.5-15.5), throwing 130 long, wide ice spikes off its edge (10-15.5), and the flash
+  flattening into a white ellipse (12-16); the blast's green glow over the whole frame (10-21); then a thick flat mint
+  rim spreading from it far past the frame's edges (half-width 290 at 14, 680 at 20, 880 at 24; nearly half as high),
+  the green shock wave just behind it in two rings (14-23), blurring into a broad soft grey band as it fades (16-24),
+  a grey glow inside it, long rays from the centre (up to 560) and a star there (12.5-27), and inside it cyan, gold and
+  white star bursts, orange motes and teal flecks drifting out with it (13.5-25). The gathering light was timed on the
+  reference's mean brightness in four column quarters; the blast is ours.
+  The C. War Dance effect (`WarDanceEffect`, 2026-10-15, the owner took its v1 as it is, then asked for a third fewer
+  crescents and wisps — v2, which the owner took as it is; after Sengoku Rance's Ieyasu's
   Special Move, 47400 — 29 frames of it in the archive, the 30th a stray picture of something else; a texture of its
   own, `Sickle`: a crescent filled evenly with sharp edges, its hollow facing left): rows of flat crescents bulging
   right, each lit for one frame and a new set every frame (as the reference's, none lasting into the next), added one
   over another so two make the next shade and three white — salmon to x ~430, grey by ~540, then grey turning violet
   (frames 5-9) and plum late (14-22); larger and more often wide toward the right; their front running right from the
-  middle to the edge (x 390 at frame 2, 560 at 3, 830 by 8), most at the peak (frames 8-9, 72 a frame), crowding left
+  middle to the edge (x 390 at frame 2, 560 at 3, 830 by 8), most at the peak (frames 8-9, 48 a frame), crowding left
   early and evening out late, their left edge drawing back to the right from frame 18 (x 300) to 25 (700); behind them
   faint streaky wisps (the puff stretched flat) drifting right, a few frames each, salmon and then ash (from 19), the
   last fading by ~27. Timed on the reference's mean brightness in four column quarters.

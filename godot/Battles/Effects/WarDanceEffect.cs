@@ -27,8 +27,11 @@ internal static class WarDanceEffect
     /// <summary>How the crescents crowd between their edges at a frame: above 1 toward the left, below 1 toward the right.</summary>
     private static float Bias(float frame) => Lerp(frame, [6, 10, 16, 20], [1.4f, 0.9f, 0.85f, 1]);
 
-    /// <summary>The crescents per count, the wisps per crescent and their strength.</summary>
-    private const float Density = 1.8f, WispShare = 1f, WispAlpha = 0.75f;
+    /// <summary>
+    /// The crescents per count, the wisps per count and their strength: a third fewer of both than the reference has
+    /// (owner, 2026-10-15).
+    /// </summary>
+    private const float Density = 1.2f, WispShare = 0.67f, WispAlpha = 0.75f;
 
     // The colours (light added over the scene): a crescent alone; two make the next shade, three white.
     private static readonly Color Salmon = new(0.48f, 0.29f, 0.29f), Grey = new(0.37f, 0.29f, 0.29f);

@@ -6,11 +6,13 @@ namespace Kichikuou.Game.Battles.Effects;
 /// The Vanish Bomb effect, ours after Sengoku Rance's Begone Bomb, effect 40560 (docs/sengoku/04-screen.md §2.4.1; not
 /// traced; the owner's choice, 2026-10-14; 29 frames in the archive): Miki's (unit 32) blast. A wall of white light —
 /// lumps and four-point sparkles, sparser and pink toward the right edge — closes in on a point left of the middle from
-/// the frame's edges (frames 0-8), the hole in it shrinking to nothing; a white flash there whites out the left two
-/// thirds of the frame under a violet haze (9-12), shrinks with spikes thrown off its edge and flattens into a white
-/// ellipse (12-14); a flat white rim then spreads from it past the frame's edges, greying as it fades (14-24), with long
-/// rays from the centre, cyan, gold and white star bursts, orange motes and teal flecks inside it (13-26). The same seed
-/// makes the same effect.
+/// the frame's edges (frames 0-8), the hole in it shrinking to nothing; then, larger than Sengoku Rance's — the game's
+/// mightiest blow, as Miki's sprite (CG 1529: a huge white bomb in a green blast) shows it (owner, 2026-10-15) — a
+/// white flash there whites out the whole frame (9-13) round an ice-white sphere swelling past the frame's height,
+/// which throws long spikes off its edge and flattens into a white ellipse (10-15); a flat mint rim then spreads from
+/// it far past the frame's edges with a green shock wave behind it and a green glow over the whole frame (13-24),
+/// with long rays from the centre, cyan, gold and white star bursts, orange motes and teal flecks inside it (13-26).
+/// The same seed makes the same effect.
 /// </summary>
 internal static class VanishBombEffect
 {
@@ -30,15 +32,21 @@ internal static class VanishBombEffect
         Lerp(distance, [0, 60, 120, 165, 200, 245, 290, 365, 400, 520], [8, 7, 6, 5, 4, 3, 2, 1, 0, -2]);
 
     /// <summary>The rim's outer half-width at a frame.</summary>
-    private static float RimWidth(float frame) => Lerp(frame, [13.5f, 14, 16, 18, 20, 22, 24], [180, 218, 300, 350, 400, 450, 490]);
+    private static float RimWidth(float frame) => Lerp(frame, [13.5f, 14, 16, 18, 20, 22, 24], [220, 290, 430, 560, 680, 790, 880]);
 
-    private const float RimAspect = 0.36f;
+    private const float RimAspect = 0.45f;
+
+    /// <summary>The sphere's radius at a frame: swelling from the flash past the frame's height.</summary>
+    private static float SphereRadius(float frame) => Lerp(frame, [8.5f, 9.5f, 10.5f, 12, 13.5f, 15.5f], [60, 230, 330, 380, 400, 420]);
 
     // The colours (light added over the scene).
     private static readonly Color White = new(1f, 1f, 1f), Pink = new(1f, 0.78f, 1f), Lilac = new(0.95f, 0.85f, 1f);
     private static readonly Color Violet = new(0.6f, 0.45f, 0.63f), Ray = new(0.85f, 0.82f, 0.92f), Cyan = new(0.55f, 0.85f, 1f);
     private static readonly Color Gold = new(1f, 0.85f, 0.5f), Orange = new(1f, 0.6f, 0.2f), Amber = new(1f, 0.75f, 0.4f);
     private static readonly Color Teal = new(0.35f, 0.62f, 0.68f);
+
+    // Miki's blast (CG 1529): the bomb's ice white, the rim's mint, the shock wave's green.
+    private static readonly Color Ice = new(0.77f, 0.94f, 1f), Mint = new(0.92f, 1f, 0.92f), Green = new(0.06f, 0.66f, 0.4f);
 
     public static IReadOnlyList<Particle> Build(int seed)
     {
@@ -74,37 +82,55 @@ internal static class VanishBombEffect
                 random.NextDouble() < 0.6 ? Pink : Lilac, t => 0.9f * Fade(t), _ => 1));
         }
 
-        // The flash: a white glow swelling over the left two thirds and shrinking (frames 8.4-13), under a violet haze
-        // over the whole frame (8.6-14), then flattening into a white ellipse (12.2-14.5).
+        // The flash: a white glow swelling over the whole frame and shrinking (frames 8.4-13.8), a white-out of the whole
+        // frame (9.3-11.7), a brief violet haze (8.6-11) and the green glow of the blast after it (10-21), then the flash
+        // flattening into a white ellipse (12.2-15).
         for (int i = 0; i < 3; i++)
             particles.Add(new Particle(EffectTextures.Haze, 8.4f, 5.4f, Centre, Vector2.Zero, 0, 0, new Vector2(1, 0.8f), White,
                 t => t < 0.08f ? t / 0.08f : t < 0.8f ? 1 : 1 - (t - 0.8f) / 0.2f,
-                t => Lerp(8.4f + 5.4f * t, [8.4f, 9, 10, 11, 12, 13, 13.8f], [250, 800, 1100, 1100, 850, 650, 500])));
-        particles.Add(new Particle(EffectTextures.Haze, 8.6f, 5.5f, Centre, Vector2.Zero, 0, 0, new Vector2(2600, 1800), Violet,
-            t => t < 0.08f ? t / 0.08f : t < 0.5f ? 1 : 1 - (t - 0.5f) / 0.5f, _ => 1));
+                t => Lerp(8.4f + 5.4f * t, [8.4f, 9, 10, 11, 12, 13, 13.8f], [300, 850, 1150, 1050, 850, 650, 500])));
+        particles.Add(new Particle(EffectTextures.Haze, 9.3f, 2.4f, new Vector2(Width / 2, Height / 2), Vector2.Zero, 0, 0, new Vector2(2600, 1800), White,
+            t => t < 0.15f ? t / 0.15f : t < 0.6f ? 1 : 1 - (t - 0.6f) / 0.4f, _ => 1));
+        particles.Add(new Particle(EffectTextures.Haze, 8.6f, 2.4f, Centre, Vector2.Zero, 0, 0, new Vector2(2600, 1800), Violet,
+            t => t < 0.2f ? t / 0.2f : 1 - (t - 0.2f) / 0.8f, _ => 1));
+        particles.Add(new Particle(EffectTextures.Haze, 10, 11, Centre, Vector2.Zero, 0, 0, new Vector2(2800, 2000), Green,
+            t => 0.85f * (t < 0.15f ? t / 0.15f : t < 0.35f ? 1 : 1 - (t - 0.35f) / 0.65f), _ => 1));
         for (int i = 0; i < 3; i++)
-            particles.Add(new Particle(EffectTextures.Haze, 12.2f, 3.8f, RimCentre, Vector2.Zero, 0, 0, new Vector2(520, 160), White,
+            particles.Add(new Particle(EffectTextures.Haze, 12.2f, 3.8f, RimCentre, Vector2.Zero, 0, 0, new Vector2(760, 280), White,
                 t => t < 0.2f ? t / 0.2f : 1 - (t - 0.2f) / 0.8f, t => 0.9f + 0.3f * t));
 
-        // The spikes thrown off the flash's edge as it shrinks (frames 11.5-15).
-        for (int i = 0; i < 70; i++)
+        // The bomb: an ice-white sphere with a bright rim swelling from the flash past the frame's height, its white core
+        // burning through the white-out (frames 8.5-15.5).
+        particles.Add(new Particle(EffectTextures.Sphere, 8.5f, 7, Centre, Vector2.Zero, 0, 0, Vector2.One, Ice,
+            t => t < 0.1f ? t / 0.1f : t < 0.6f ? 1 : 1 - (t - 0.6f) / 0.4f, t => 2 * SphereRadius(8.5f + 7 * t)));
+        particles.Add(new Particle(EffectTextures.Sphere, 9, 6, Centre, Vector2.Zero, 0, 0, Vector2.One, White,
+            t => 0.7f * (t < 0.1f ? t / 0.1f : t < 0.5f ? 1 : 1 - (t - 0.5f) / 0.5f), t => 1.7f * SphereRadius(9 + 6 * t)));
+        particles.Add(new Particle(EffectTextures.Glow, 8.5f, 6, Centre, Vector2.Zero, 0, 0, Vector2.One, White,
+            t => t < 0.1f ? t / 0.1f : t < 0.55f ? 1 : 1 - (t - 0.55f) / 0.45f, t => 2.4f * SphereRadius(8.5f + 6 * t)));
+
+        // The spikes thrown off the sphere's edge, long and wide (frames 10-15.5).
+        for (int i = 0; i < 130; i++)
         {
-            float angle = Range(0, MathF.Tau), length = Range(100, 260);
-            var direction = new Vector2(MathF.Cos(angle), MathF.Sin(angle) * 0.6f).Normalized();
-            var at = Centre + direction * (Range(150, 220) + length / 2);
-            particles.Add(new Particle(EffectTextures.Spike, Range(11.5f, 13), Range(2, 3), at, direction * 20, direction.Angle(), 0,
-                new Vector2(length, Range(10, 16)), Pink.Lerp(White, 0.6f), t => 0.9f * Fade(t), _ => 1));
+            float angle = Range(0, MathF.Tau), length = Range(180, 460), birth = Range(10, 13.5f);
+            var direction = new Vector2(MathF.Cos(angle), MathF.Sin(angle) * 0.85f).Normalized();
+            var at = Centre + direction * (SphereRadius(birth) * Range(0.8f, 1) + length / 2);
+            particles.Add(new Particle(EffectTextures.Spike, birth, Range(2, 3), at, direction * 30, direction.Angle(), 0,
+                new Vector2(length, Range(18, 34)), Ice.Lerp(White, 0.5f), t => 0.9f * Fade(t), _ => 1));
         }
 
-        // The rim: a thick flat white ring spreading from the burst past the frame's edges, greying as it fades (frames 13.5-20.5).
+        // The rim: a thick flat mint ring spreading from the burst far past the frame's edges, greying as it fades (frames
+        // 13.5-20.5), the blast's green shock wave just behind it (14-23).
         foreach (var (strength, scale) in new[] { (1f, 1f), (1f, 0.9f), (0.7f, 0.82f) })
-            particles.Add(new Particle(EffectTextures.Rim, 13.5f, 10.5f, RimCentre, Vector2.Zero, 0, 0, new Vector2(1, RimAspect), White,
+            particles.Add(new Particle(EffectTextures.Rim, 13.5f, 10.5f, RimCentre, Vector2.Zero, 0, 0, new Vector2(1, RimAspect), Mint,
                 t =>
                 {
                     float frame = 13.5f + 10.5f * t;
                     return strength * (frame < 14 ? (frame - 13.5f) / 0.5f : frame < 16.5f ? 1 : Lerp(frame, [16.5f, 19, 20.5f], [1, 0.3f, 0]));
                 },
                 t => 2 * scale * RimWidth(13.5f + 10.5f * t) / 0.97f));
+        foreach (float scale in new[] { 0.75f, 0.62f })
+            particles.Add(new Particle(EffectTextures.Rim, 14, 9, RimCentre, Vector2.Zero, 0, 0, new Vector2(1, RimAspect), Green,
+                t => Lerp(14 + 9 * t, [14, 15, 18, 23], [0, 1, 0.8f, 0]), t => 2 * scale * RimWidth(14 + 9 * t) / 0.97f));
         // As it fades it blurs into a broad soft grey band (frames 16-24).
         particles.Add(new Particle(EffectTextures.Ring, 16, 8, RimCentre, Vector2.Zero, 0, 0, new Vector2(1, RimAspect), White,
             t => Lerp(16 + 8 * t, [16, 18.5f, 21, 24], [0, 0.6f, 0.35f, 0]), t => 2 * 0.95f * RimWidth(16 + 8 * t) / 0.7f));
@@ -115,10 +141,10 @@ internal static class VanishBombEffect
         // The rays: long thin needles from the centre in every direction, longer across (frames 12.5-26).
         for (int i = 0; i < 70; i++)
         {
-            float angle = Range(0, MathF.Tau), length = Range(100, 380), birth = Range(12.5f, 15), life = Math.Min(Range(8, 12), 27 - birth);
+            float angle = Range(0, MathF.Tau), length = Range(160, 560), birth = Range(12.5f, 15), life = Math.Min(Range(8, 12), 27 - birth);
             var direction = new Vector2(MathF.Cos(angle), MathF.Sin(angle) * 0.7f).Normalized();
             particles.Add(new Particle(EffectTextures.Streak, birth, life, Centre + direction * (length / 2 + Range(0, 40)), Vector2.Zero,
-                direction.Angle(), 0, new Vector2(length, Range(5, 10)), Ray,
+                direction.Angle(), 0, new Vector2(length, Range(6, 12)), Ray,
                 t => 0.6f * (t < 0.1f ? t / 0.1f : t < 0.5f ? 1 : 1 - (t - 0.5f) / 0.5f), _ => 1));
         }
 

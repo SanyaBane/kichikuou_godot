@@ -199,9 +199,9 @@ internal static class RanceAttackEffect
     }
 
     /// <summary>
-    /// By la Way, Rick's (unit 7) special 1 (owner, 2026-10-15): the same effect recoloured red, as his sprite (CG 1521) —
-    /// every colour where blue leads or that is white turned to red: white to salmon (white again where the light piles
-    /// up), ice to red-orange, the blues deep red; the sand dust stays as it is.
+    /// By la Way, Rick's (unit 7) special 1 (owner, 2026-10-15): the same effect recoloured red, as his sprite (CG 1521,
+    /// red 245, 40, 35) — every colour where blue leads or that is white turned to red: white to a pinkish red (salmon,
+    /// then white, only where the light piles up), ice to red, the blues deep red; the sand dust reddened to a rust brown.
     /// </summary>
     public static IReadOnlyList<Particle> BuildRed(int seed) =>
         Build(seed).Select(p => p with { Colour = Red(p.Colour), Ramp = p.Ramp is { } ramp ? t => Red(ramp(t)) : null }).ToList();
@@ -209,9 +209,9 @@ internal static class RanceAttackEffect
     private static Color Red(Color c)
     {
         if (c.B < c.R - 0.05f)
-            return c;
+            return new Color(c.R, 0.7f * c.G, 0.6f * c.B, c.A);
         float top = Math.Max(c.G, c.B), white = Math.Min(c.R, Math.Min(c.G, c.B));
-        return new Color(top, 0.7f * white + (top - white) * 0.1f, 0.6f * white, c.A);
+        return new Color(top, 0.14f * white + (top - white) * 0.05f, 0.12f * white, c.A);
     }
 
     /// <summary>A standard normal draw (Box-Muller).</summary>
