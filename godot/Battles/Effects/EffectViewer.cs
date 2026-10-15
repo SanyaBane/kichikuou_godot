@@ -196,6 +196,7 @@ internal sealed partial class EffectViewer : Window
         ("Whirlwind Shot (after 40660)", "whirlwind-shot", WhirlwindShotEffect.Build, false),
         ("High Speed (after 41400)", "high-speed", HighSpeedEffect.Build, false),
         ("By la Way (40500 red)", "by-la-way", RanceAttackEffect.BuildRed, false),
+        ("Ninja (after 40100)", "ninja", NinjaEffect.Build, false),
     ];
 
     /// <summary>

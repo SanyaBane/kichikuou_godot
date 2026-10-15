@@ -226,6 +226,7 @@ internal sealed partial class BattleBoardView : Control
             ExchangeEffectKind.WhirlwindShot => WhirlwindShotEffect.Build(_effectsSeen),
             ExchangeEffectKind.HighSpeed => HighSpeedEffect.Build(_effectsSeen),
             ExchangeEffectKind.ByLaWay => RanceAttackEffect.BuildRed(_effectsSeen),
+            ExchangeEffectKind.NinjaFollowUp => NinjaEffect.Build(_effectsSeen),
             _ => MeleeEffect.Build(_effectsSeen),
         });
         _effect.Playing = true;

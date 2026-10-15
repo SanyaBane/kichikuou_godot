@@ -295,13 +295,16 @@ picture, the slot panels) is not shown. How it is built:
     (nor its commander at the commander, 02-resolution.md §3.3). **Whirlwind Shot** (2026-10-15, the owner took its
     v1 as it is): special 3 (`Bt_SpecialAtk == 3`, `FIGT.ADV:1542-1550`) by Isoroku (unit 27) plays ours after
     Piercing Tempest (`ExchangeEffectKind.WhirlwindShot`). **High Speed** (2026-10-15, the owner took its v1 as it is):
-    the same setter by Meglass (unit 30) plays ours after Commander Charge (`ExchangeEffectKind.HighSpeed`); the ninja's
-    follow-up (record 51, `FIGT.ADV:1980`) sets special 3 too and plays by its action until its own is built. **By la
+    the same setter by Meglass (unit 30) plays ours after Commander Charge (`ExchangeEffectKind.HighSpeed`). **The
+    ninja's follow-up** (2026-10-15, the owner took its v1 as it is): the follow-up sets special 3 too
+    (`FIGT.ADV:1980`) with the ninja — Kanami, Freya, Kaoru or Wichita alike — as record 51 (`Unit_Cur` 51,
+    `:1922-1968`) and plays ours after the Ninja troop's 40100 (`ExchangeEffectKind.NinjaFollowUp`); one captured battle
+    has one (`20261010-213655-86-FIGT_A`, in the full run's captures only). **By la
     Way** (2026-10-15, the owner took its v1 as it is): special 1 by Rick (unit 7) plays Rance Attack's effect
     recoloured red (`ExchangeEffectKind.ByLaWay`). One captured battle has a By la Way (`20261008-111109-01-FIGT_A`,
     the Rance Attack's, in the full run's captures only), none a Whirlwind Shot or a High Speed: `ExchangeEffectTests` checks
-    the rules on given states (one table, `ExchangeEffect.SpecialOf`), and in the captures that a Whirlwind Shot or a
-    High Speed fires only the commander's one shot at the commander and a By la Way's troops fire nothing
+    the rules on given states (one table, `ExchangeEffect.SpecialOf`), and in the captures that a Whirlwind Shot, a
+    High Speed or a ninja's follow-up fires only the commander's one shot at the commander and a By la Way's troops fire nothing
     (02-resolution.md §3.3). T2 Soaring Wave later (likely Rance Attack's eruption much smaller, four of them, as Rolex's sprite);
     the Cheater Beam stays melee.
   - **A setting**: Option → Battle Screen… → "Effects: on/off", on by default (Sengoku Rance's Combat Effect Display);
@@ -384,11 +387,21 @@ picture, the slot panels) is not shown. How it is built:
   colour where blue leads or that is white turned red — white to salmon (white again where the light piles up), ice to red-orange, the
   blues deep red; the sand dust as it is. Over a sand battlefield its peak still reads white, its red shows in the
   rings, the flames and the motes.
+  The ninja's follow-up effect (`NinjaEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Ninja troop effect, 40100;
+  textures of its own: `Shuriken`, a four-point star with concave sides and a round hole; `Wing`, a crescent bulging
+  left, its outer edge bitten into three points, in a soft glow): shuriken thrown from the actor's half — a first
+  volley in flight at frame 0, then chains of three or four to frame ~12 — flying right at 75-95 a frame, spinning,
+  some tumbling (flattened), white on the left, cream past x 200, gold past 300, the last gone by ~22; at the throws
+  olive sprays with small white ticks, and tall pale "(" arcs standing in rows and fading (1-19); over the target's
+  half a mesh of faint thin needles with bright heads, most running down to the right, spreading left from x 440 to
+  280 (3-27); gold crescents in a glow, small first, larger later (9-27), and teal four-point sparkles in a glow with
+  small white ones (10-27). Timed on the reference's mean brightness in four column quarters. Over the battlefield
+  the shuriken and the crescents read, the needles hardly.
   **Debug → Effects** (`EffectViewer`) plays them over our scene's battlefield (CG 900 and its overlay, with Rance's
   (unit 1) and Ex's (commander 1) armies once a game has booted) or black: the effect, Play, Loop, the enemy acting,
   the blend, the speed, the seed and a frame slider; the effect stands at the scene's foot (y 8).
   `--effects --shots DIR --quit` (in a window; `--effects white-beam,black-beam` for those alone) writes every frame of each with seed 1: the effect alone on black
-  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `white-beam-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`; the black beam's picture is
+  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `white-beam-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`; the black beam's picture is
   its light, so it is saved over the battlefield only) and over the battlefield, the player acting and the enemy
   (`melee-scene-NN.png`, `melee-enemy-scene-NN.png`, …) — for a sheet next to the reference's frames, made outside the
   repository.

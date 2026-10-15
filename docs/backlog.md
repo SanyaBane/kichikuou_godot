@@ -100,9 +100,9 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   (done 2026-10-14, the owner took v1 as it is), the white and the black beam after 40460 (done 2026-10-15, the owner took v1 as it is;
   no captured battle has a beam), Isoroku's Whirlwind Shot after 40660 (done 2026-10-15, the owner took v1 as it is),
   Meglass's High Speed after 41400 and Rick's By la Way as Rance Attack's in red (done 2026-10-15, the owner took v1 as it is; the
-  owner's new choices) —
+  owner's new choices), the ninja's follow-up after 40100 (done 2026-10-15, the owner took v1 as it is) —
   [ui/battle-screen.md](ui/battle-screen.md), "The exchange's effects". Next (owner, 2026-10-14): the other
-  specials' effects one at a time — the ninja's follow-up (40100), Vanish Bomb
+  specials' effects one at a time — Vanish Bomb
   (40560), C. War Dance (47400), Chuhai (47060), T2 Goliath (46820), Kentarou's Rance Attack (40800) — each after the
   counterpart the owner chose from the survey (until then by their action) —
   ui/battle-screen.md, "The other specials"; T2 Soaring Wave's counterpart later (likely Rance Attack's, much smaller,

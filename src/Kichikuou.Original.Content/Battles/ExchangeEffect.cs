@@ -23,6 +23,8 @@ public enum ExchangeEffectKind
     HighSpeed,
     /// <summary>Rick's By la Way (Rance Attack's recoloured red).</summary>
     ByLaWay,
+    /// <summary>The ninja's follow-up (after Sengoku Rance's Ninja troop effect, 40100).</summary>
+    NinjaFollowUp,
 }
 
 /// <summary>
@@ -33,8 +35,8 @@ public enum ExchangeEffectKind
 /// <c>FIGT_M</c> turns 1 into 2 for the enemy's magic). The player's specials get Sengoku Rance's counterparts one by
 /// one (owner): the Rance Attack command its own (one effect: Kichikuou's is the commander's blow alone, as Sengoku
 /// Rance's first phase), Rance's or Kentarou's alike; the beams (special 2) the White Destruction Beam's, white or
-/// dark by the actor; Isoroku's Whirlwind Shot (special 3) Piercing Tempest's, Meglass's High Speed Commander Charge's;
-/// Rick's By la Way Rance Attack's recoloured red; the others play by their action for now.
+/// dark by the actor; Isoroku's Whirlwind Shot (special 3) Piercing Tempest's, Meglass's High Speed Commander Charge's,
+/// the ninja's follow-up the Ninja troop's; Rick's By la Way Rance Attack's recoloured red; the others play by their action for now.
 /// </summary>
 /// <param name="Kind">The effect.</param>
 /// <param name="Side">Whose it is: the enemy's is mirrored, its actor's half on the right.</param>
@@ -69,8 +71,9 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
     /// (unit 40) the dark one (owner, 2026-10-14). Special 3 (<c>FIGT.ADV:1542-1550</c>; docs/battle/02-resolution.md
     /// §3.3: the commander's one shot at the commander), one setter for two menu items: Whirlwind Shot by Isoroku
     /// (unit 27, <c>FIGT_SEL.ADV:653</c>) and High Speed by Meglass (unit 30, <c>:599</c>; Commander Charge's, owner,
-    /// 2026-10-15); the ninja's follow-up (record 51) sets special 3 too (<c>FIGT.ADV:1980</c>) and plays by its action
-    /// until its own is built. Any other plays by its action.
+    /// 2026-10-15); the ninja's follow-up sets special 3 too (<c>FIGT.ADV:1980</c>) with the ninja as record 51
+    /// (<c>:1922-1968</c>, Kanami, Freya, Kaoru or Wichita alike) and plays the Ninja troop's. Any other plays by its
+    /// action.
     /// </summary>
     private static ExchangeEffectKind? SpecialOf(GameState s) => (s.Bt_SpecialAtk.Value, s.Unit_Cur.Value) switch
     {
@@ -80,6 +83,7 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
         (2, 38 or 40) => ExchangeEffectKind.BlackBeam,
         (3, 27) => ExchangeEffectKind.WhirlwindShot,
         (3, 30) => ExchangeEffectKind.HighSpeed,
+        (3, 51) => ExchangeEffectKind.NinjaFollowUp,
         _ => null,
     };
 

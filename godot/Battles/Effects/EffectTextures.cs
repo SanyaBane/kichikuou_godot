@@ -101,6 +101,14 @@ internal static class EffectTextures
 
     private static Texture2D? _bar, _petal, _moon;
 
+    /// <summary>A shuriken: a four-point star with concave sides and sharp tips on the axes, a round hole a little off its middle, its edges a little brighter.</summary>
+    public static Texture2D Shuriken => _shuriken ??= Make(128, ShurikenShape);
+
+    /// <summary>A shuriken's glint: a crescent bulging toward −x, its outer edge bitten into three points, in a soft glow.</summary>
+    public static Texture2D Wing => _wing ??= Make(128, WingShape);
+
+    private static Texture2D? _shuriken, _wing;
+
     /// <summary>
     /// A size × <paramref name="height"/> texture (square by default) whose alpha at each pixel is <paramref name="alpha"/>
     /// of (x, y) in [−1, 1] — both axes, whatever the shape.
@@ -388,6 +396,31 @@ internal static class EffectTextures
     {
         float r = MathF.Sqrt(x * x + y * y);
         return (0.6f + 0.4f * Math.Max(0, 1 - r)) * (1 - SmoothStep(0.5f, 1f, r));
+    }
+
+    private static float ShurikenShape(float x, float y)
+    {
+        float f = MathF.Pow(MathF.Abs(x), 0.56f) + MathF.Pow(MathF.Abs(y), 0.56f);
+        float hole = MathF.Sqrt((x - 0.03f) * (x - 0.03f) + (y - 0.02f) * (y - 0.02f));
+        float body = (1 - SmoothStep(0.92f, 1f, f)) * SmoothStep(0.21f, 0.25f, hole);
+        return body * (0.82f + 0.18f * SmoothStep(0.7f, 0.92f, f));
+    }
+
+    private static float WingShape(float x, float y)
+    {
+        // A crescent: a disc less a disc offset to +x (its tips at about (0.45, ±0.77)), two bites out of its outer edge
+        // leaving a point between them; brighter toward the outer edge, in a soft glow.
+        float outer = 0.8f - MathF.Sqrt((x - 0.25f) * (x - 0.25f) + y * y);
+        float hollow = MathF.Sqrt((x - 0.7f) * (x - 0.7f) + y * y) - 0.8f;
+        float bites = float.MaxValue;
+        foreach (float angle in new[] { -0.55f, 0.55f })
+        {
+            float bx = 0.25f - 0.98f * MathF.Cos(angle), by = 0.98f * MathF.Sin(angle);
+            bites = Math.Min(bites, MathF.Sqrt((x - bx) * (x - bx) + (y - by) * (y - by)) - 0.3f);
+        }
+        float d = Math.Min(outer, Math.Min(hollow, bites));
+        float body = SmoothStep(-0.02f, 0.02f, d) * (0.7f + 0.3f * SmoothStep(0.12f, 0.02f, outer));
+        return Math.Min(1, body + 0.4f * MathF.Exp(-Math.Max(0, -d) / 0.08f));
     }
 
     /// <summary>A soft edge at <paramref name="v"/> = 0: 0 below −<paramref name="width"/>/2, 1 above +<paramref name="width"/>/2.</summary>
