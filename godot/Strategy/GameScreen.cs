@@ -193,6 +193,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private DeploymentTableView _table = null!;         // our own screen over Sﾌﾞﾀｲ's grid (Option → Interface: New)
     private BattleBoardView _battleView = null!;        // our own battle screen over the stage (Option → Interface: New)
     private ScoutReportView _scoutView = null!;         // our own scout report over the original's screen (Option → Interface: New)
+    private StrategyCutInView _strategyView = null!;    // our own cut-in of a successful strategy over the original's screen (New)
     private DeploymentPanels _panels = null!;           // and over the rest of it but the portrait
     private PointerScript _tablePointer = new();        // the script's pointer while the player's is over the table
     private IReadOnlyList<int>? _wantedOrder;           // the party a drop asked for, while its clicks run
@@ -238,7 +239,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _scoutView = new ScoutReportView(GodotGlyphRenderer.Chosen, faces);
         _scoutView.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _content.AddChild(_scoutView);
-        _panels = new DeploymentPanels(GodotGlyphRenderer.Chosen, faces);
+        _strategyView = new StrategyCutInView(GodotGlyphRenderer.Chosen, faces);
+        _strategyView.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        _content.AddChild(_strategyView);
+        _panels =new DeploymentPanels(GodotGlyphRenderer.Chosen, faces);
         _panels.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _panels.RemovePressed += TableRowPressed;
         _panels.ButtonPressed += TableButtonPressed;
@@ -301,6 +305,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         UpdateDeploymentScreen();
         UpdateBattleScreen(Present());
         UpdateScoutReport();
+        UpdateStrategyCutIn();
         if (_options.Portraits && !_portraitsOpened && _presenter.State is not null && !_modal)
         {
             _portraitsOpened = true;
@@ -624,7 +629,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.ScreenshotDirectory is not { } dir)
             return;
         System.IO.Directory.CreateDirectory(dir);
-        if ((_table.Visible || BattleScreenShown || ScoutReportShown) && DisplayServer.GetName() != "headless")
+        if ((_table.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
         {
             // Our deployment and battle screens are drawn by Godot over the screen: the window's next frame (headless
             // draws none). No Compose here: the frame's Present must find the change to upload it.
@@ -933,11 +938,22 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             await ReleaseWaitAsync(_input.PeekInput());
             _ikKey = key;
         }
+        else if (StrategyCutInShown && _presenter.Battle.StrategyAnswered)
+        {
+            // Our strategy's cut-in shows the announcement as its title and the effect as its label (owner, 2026-10-15): the
+            // key waits of their boxes (window 143) are answered at once, as by a click, after the release of a button still
+            // held from the click on the strategist's line — the one wait the player answers.
+            key = KeyReturn;
+            await ReleaseWaitAsync(_input.PeekInput());
+            _ikKey = key;
+        }
         else if (BattleScreenShown && _presenter.Battle.ExchangeResultWaits && !_presenter.Battle.ExchangeResultWipedOut)
             key = await ExchangeResultHoldAsync();
         else if (_options.Auto)
         {
-            Shot("key");
+            if (StrategyCutInShown && !_options.Fast)
+                await DelayAsync(0.5);                                          // the cut-in in place
+            Shot(StrategyCutInShown ? "strategy" : "key");
             if (!_options.Fast && BattleScreenShown && _presenter.Opening is not null)
                 await OpeningAppearShotsAsync();
             await DelayAsync(_options.Fast ? 0 : 0.8);
@@ -1303,6 +1319,29 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
         _scoutView.Place(_view.Position + (size - drawn) / 2, scale);
         _scoutView.Show(_presenter.Battle.Scout!);
+    }
+
+    /// <summary>
+    /// Our strategy's cut-in (docs/ui/battle-screen.md, "The strategy's cut-in") over the original's strategy screen while
+    /// Option → Interface is on New and a successful strategy is under way (<see cref="BattlePresenter.Strategy"/>).
+    /// </summary>
+    private bool StrategyCutInShown => InterfaceChoice.New && _presenter.Battle.Strategy is not null && !SkippingScene && _presenter.State is not null;
+
+    private void UpdateStrategyCutIn()
+    {
+        bool show = StrategyCutInShown;
+        _strategyView.Visible = show;
+        if (!show)
+        {
+            _strategyView.Clear();
+            return;
+        }
+        var size = _view.Size;
+        float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
+        var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
+        _strategyView.Place(_view.Position + (size - drawn) / 2, scale);
+        _strategyView.Show(_presenter.Battle.Strategy!, _presenter.Battle.StrategyBackdrop,
+            Surface.ScreenWidth * Surface.Scale, Surface.ScreenHeight * Surface.Scale, instant: _skip.IsSkipping || _options.Fast);
     }
 
     /// <summary>

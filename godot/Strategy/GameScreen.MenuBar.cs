@@ -112,6 +112,7 @@ public partial class GameScreen
             _panels.SetFont(font);
             _battleView.SetFont(font);
             _scoutView.SetFont(font);
+            _strategyView.SetFont(font);
             CheckFont();
             _presenter.Invalidate();
         }
@@ -139,6 +140,7 @@ public partial class GameScreen
             _panels.SetPalette(palette);
             _battleView.SetPalette(palette);
             _scoutView.SetPalette(palette);
+            _strategyView.SetPalette(palette);
             CheckPalette();
         }
         void CheckPalette()

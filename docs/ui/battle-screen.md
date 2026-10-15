@@ -65,8 +65,9 @@ draws what the core shows and answers what the core asks.
    three): "◆ n" on the portrait's top-left corner ("The focus" below).
 6. **Pre-battle**: the strategy screen and the scout report — our own panels or the original's
    pictures in the scene. The scout report is answered (owner, 2026-10-14: our own overlay, "The scout
-   report" below); the strategy screen (`FIGT作`, docs/battle/screen-layout.md §6.2) stays the original's for
-   now (owner, 2026-10-15; docs/backlog.md, "Interface").
+   report" below); the strategy screen (`FIGT作`, docs/battle/screen-layout.md §6.2) stayed the original's at
+   first (owner, 2026-10-15), then became our cut-in (owner, 2026-10-15, mock-up A of three: "The strategy's
+   cut-in" below).
 7. **Script menus** (retreat, intercept / ninja scout / abandon, the ninja): a dialog of ours.
 8. **Dungeon battles** (black field, no strategy): the scene's background. Owner, 2026-10-15 (mock-ups from a battle
    in the Monsters' Cave (dungeon 2) on 3F): as it is — the dungeon's battlefield (`Bt_BackgroundCg` 910 / 912 / 914,
@@ -273,6 +274,28 @@ picture, the slot panels) is not shown. How it is built:
   the captured defences (three with a scout report) the overlay's commanders, totals and places are what the
   script prints and the battle then places. `--scout` (with `--auto`) sends the first free ninja to scout at the
   first enemy attack, once a launch (CLAUDE.md, "Commands").
+- **The strategy's cut-in** (owner, 2026-10-15, mock-up A of three — B put it into the opening, C into the dialogue
+  panel on the board): a successful pre-battle strategy (`FIGT作.ADV`, docs/battle/01-flow.md §4; the original shows
+  its own screen, docs/battle/screen-layout.md §6.2, and three boxes: the announcement, the strategist's line, the
+  effect) is our cut-in over the original's screen, shown only in New (`godot/Battles/StrategyCutInView`): its backdrop
+  the original's strategy screen as drawn before the face and the first box (`BattlePresenter.StrategyBackdrop`: the
+  field and the strategist's troops, none of the boxes nor an earlier dialogue's leftovers — owner, 2026-10-16), dimmed
+  and blurred; a slanted band in the side's colour (the opening's blue or red), strong at the strategist's side
+  and fading across, its edges in the accent colour; the strategist's whole portrait (the framed 192×256 face CG,
+  300×400) sliding in from that side (the player's left, the enemy's right), its top at the first line's, the whole
+  centred on the screen (owner, 2026-10-16); the script's announcement in Cinzel Bold
+  ("ALLY ARMY'S STRATEGY WAS SUCCESSFUL.") over a large title in Shojumaru — "Success", +50% "Great Success" in the
+  accent colour (owner, 2026-10-16: no "Strategy" in it); the strategist's line in our balloon (the
+  dialogue panel's, dark for the original's dark bubbles 142/152), **word for word**, its tail at the portrait; below
+  it the advantage as the opening and the armies' labels show it ("Strategy +10%", larger for +50%). No sentence of
+  what it does (owner, 2026-10-15): the label's tooltip on the board tells it. The model is
+  `Original.Content/Battles/BattleStrategy`, held by `BattlePresenter.Strategy` from the `StrategyScreenEvent` to the
+  close of the effect's box and filled in as the script goes (the announcement as printed, `Bt_StrategyResult`, the
+  bubble's line). **One click**: the announcement's and the effect's key waits (window 143,
+  `BattlePresenter.StrategyAnswered`) are answered at once by `GameScreen`, as by a click; the line's wait is the
+  player's. `BattleStrategyTests`: the model, the presenter's hold, and in the captured battles the cut-in at the line's
+  wait is the script's strategist, face, result and line, two waits answered for each strategy; `BattleInputReplayTests`
+  replays them answered so. `--auto` in a window dumps `strategy` at the line's wait.
 - **The opening** (owner, 2026-10-14, variant C of three after Sengoku Rance's opening; mock-ups and a font sheet
   from the week-18 attack on Oaks (6)): the round header (`FIGT.ADV:112-216`) is shown once a battle, at its first
   round, as our own opening over the scene (`godot/Battles/BattleOpeningLayer`), and the later rounds' headers not
@@ -844,8 +867,9 @@ picture, the slot panels) is not shown. How it is built:
    details, or the original's window as now — then (owner, the same day) none of them: the stats on every card, always,
    under the portrait ("The cards' stats" above; ✓ 2026-10-15); (2) the **order messages** (`L_0129e`, `FIGT.ADV:776-833`) are not
    shown, the order's label on the card flashes instead ("The order messages" above; ✓ 2026-10-15); (3) the **strategy screen**
-   stays the original's for now; (4) the **other script windows** during a battle (111/112/121/122/113/131) stay
-   the original's for now — (3) and (4) in docs/backlog.md, "Interface".
+   stays the original's for now — later the same day our cut-in ("The strategy's cut-in" above; ✓ 2026-10-15); (4) the
+   **other script windows** during a battle (111/112/121/122/113/131) stay the original's for now — in docs/backlog.md,
+   "Interface".
 7. **Checks**: the model's tests, the golden captures replayed through our input (the same
    choices give the same memory), `--auto --interface new` through the battles, the owner's look
    from a kept save (`--until battle`).

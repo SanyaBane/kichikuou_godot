@@ -107,6 +107,9 @@ public sealed partial class BattlePresenter
     public void Start(GameState state)
     {
         State = state;
+        Strategy = null;
+        StrategyBackdrop = null;
+        _strategyEffect = false;
         DrawMapTiles();
         BlitMapView();
     }
@@ -118,6 +121,9 @@ public sealed partial class BattlePresenter
     public void Attach(GameState state)
     {
         State = state;
+        Strategy = null;
+        StrategyBackdrop = null;
+        _strategyEffect = false;
         DrawMapTiles();
     }
 
@@ -169,7 +175,9 @@ public sealed partial class BattlePresenter
                     OrderedUnit = e.Text == OrderMessage ? ordered.Tmp0002.Value : ordered.Unit_Cur.Value;
                 if (e.Text == ScoutArmyLine && State is { } scouted)
                     Scout = ScoutReport.Of(scouted, _portraitR);           // the army as the report will list it
-                Print(Read(e.Text, [], e.StringVariables));
+                string printed = Read(e.Text, [], e.StringVariables);
+                StrategyText(e.Text, printed);
+                Print(printed);
                 break;
             case ValueMessageEvent e:
                 if (e.Text == ScoutTotalsLine && Scout is not null)
@@ -184,7 +192,10 @@ public sealed partial class BattlePresenter
                 ScoutReported = Scout is not null;
                 ScoutReportLine(e.Troops);
                 break;
-            case StrategyScreenEvent e: StrategyScreen(e.Side.Value); break;
+            case StrategyScreenEvent e:
+                StrategyScreen(e.Side.Value);
+                StartStrategy(e);
+                break;
             case EngagementSceneEvent e: EngagementScene(e); break;
             case ActionLabelsEvent e: ActionLabels(e); break;
             case EngagementSlideEvent e: Slide(e.Offset.Value); break;
@@ -203,6 +214,7 @@ public sealed partial class BattlePresenter
             case SoundEvent e: IBattleAudio.PcmPlay(_audio, e); break;
             case MusicEvent e: _audio?.PlayMusic(e.Track.Value); break;
         }
+        FollowStrategy();
         _lastEvent = scriptEvent;
     }
 
@@ -491,6 +503,7 @@ public sealed partial class BattlePresenter
                 Surface.Copy(0, 500, 320, 220, 160, 180);
                 Writer.Color = 15;
                 CloseWindowState();
+                EndStrategy();
                 break;
             case 0:
                 CloseByType();
@@ -795,5 +808,78 @@ public sealed partial class BattlePresenter
         Writer.Print(Read(new ScriptRef("FIGT_B.ADV", 655), []));
         if (troops != 0)
             Writer.Print(Read(new ScriptRef("FIGT_B.ADV", 662), [troops]));
+    }
+
+    // ------------------------------------------------------------------ the strategy (§6.2)
+
+    /// <summary>The announcements (<c>FIGT作.ADV:37</c> the player's, <c>:378</c> the enemy's) and the effects' first lines (<c>:321</c>, <c>:463</c>).</summary>
+    private static readonly ScriptRef PlayerAnnouncement = new("FIGT作.ADV", 37), EnemyAnnouncement = new("FIGT作.ADV", 378);
+    private static readonly ScriptRef PlayerEffect = new("FIGT作.ADV", 321), EnemyEffect = new("FIGT作.ADV", 463);
+
+    /// <summary>
+    /// A successful strategy from its screen (<see cref="StrategyScreenEvent"/>) to the close of its last box, the effect's
+    /// (docs/ui/battle-screen.md, "The strategy's cut-in"), filled in as the script goes; null otherwise. Our cut-in shows it.
+    /// </summary>
+    public BattleStrategy? Strategy { get; private set; }
+
+    /// <summary>
+    /// Whether a key wait of the strategy's is one our cut-in answers at once: the announcement's and the effect's (window
+    /// 143), which the cut-in's title and label show — the strategist's line (its bubble) stays the player's click.
+    /// </summary>
+    public bool StrategyAnswered => Strategy is not null && _winType == 43;
+
+    /// <summary>
+    /// The original's strategy screen before its first box opens and without the strategist's face — its field and the
+    /// strategist's troops (RGBA, the screen's stored pixels, <see cref="Surface.ReadArea"/>) — held with
+    /// <see cref="Strategy"/>: our cut-in's backdrop, which shows none of the boxes the script opens over it nor what an
+    /// earlier dialogue left on the screen (owner, 2026-10-16), and only our portrait of the strategist.
+    /// </summary>
+    public byte[]? StrategyBackdrop { get; private set; }
+
+    private bool _strategyEffect;                       // the effect's box is open: its close ends the strategy
+
+    private void StartStrategy(StrategyScreenEvent e)
+    {
+        if (State is not { } s)
+            return;
+        bool player = e.Side == 1;
+        int record = e.Strategist.Value;
+        int face = (player ? s.Units[e.Strategist].FaceCg : s.Cmdrs[e.Strategist].FaceCg).Value;
+        Strategy = new BattleStrategy(player ? BattleSide.Player : BattleSide.Enemy, record, face, "", s.Bt_StrategyResult.Value, null);
+        StrategyBackdrop = _strategyField;              // StrategyScreen has just drawn it
+        _strategyEffect = false;
+    }
+
+    private byte[]? _strategyField;
+
+    /// <summary>A text of the strategy's boxes: the announcement is kept, the effect's first line marks the last box.</summary>
+    private void StrategyText(ScriptRef text, string printed)
+    {
+        if (Strategy is not { } strategy)
+            return;
+        if (text == PlayerAnnouncement || text == EnemyAnnouncement)
+            Strategy = strategy with { Announcement = BattleSpeech.Flow(printed) };
+        if (text == PlayerEffect || text == EnemyEffect)
+            _strategyEffect = true;
+    }
+
+    /// <summary>After each event: the result as the script has set it, the strategist's line while its bubble holds it.</summary>
+    private void FollowStrategy()
+    {
+        if (Strategy is not { } strategy || State is not { } s)
+            return;
+        var line = Speech ?? strategy.Line;
+        if (strategy.Result != s.Bt_StrategyResult.Value || line != strategy.Line)
+            Strategy = strategy with { Result = s.Bt_StrategyResult.Value, Line = line };
+    }
+
+    /// <summary>A box closes (op 10): after the effect's, the strategy is over.</summary>
+    private void EndStrategy()
+    {
+        if (!_strategyEffect)
+            return;
+        _strategyEffect = false;
+        Strategy = null;
+        StrategyBackdrop = null;
     }
 }

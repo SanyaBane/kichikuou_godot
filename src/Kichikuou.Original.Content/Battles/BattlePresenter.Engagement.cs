@@ -295,6 +295,7 @@ public sealed partial class BattlePresenter
             GRel(partial.Value, 0, 400, keyed: true);
         if (troops == 0)
             GRel(alone.Value, 0, 400, keyed: true);
+        _strategyField = Surface.ReadArea(0, 400, 640, 400);  // our cut-in's backdrop: the field and the troops, not the face
         GAt(face.Value, side == 1 ? 0 : 448, 544, keyed: true);
         Surface.Copy(0, 400, 640, 400, 0, 0);
         PicturesCovered();

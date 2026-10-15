@@ -28,7 +28,8 @@ public class BattleInputReplayTests(ITestOutputHelper output)
     /// captured command (Auto-Atk / Auto-Def on the acting unit's own slot as its menu's 8 / 9; the commands without a
     /// target with ours, 99, whatever button the original's pointer was on); the retreat confirmation from our dialog; the
     /// key waits our screen answers itself (the "vs" window, an order's message, a later round's header, the scout
-    /// report's lines, an exchange's result without a wiped-out mark) with a click's key, as <c>GameScreen</c> does — the
+    /// report's lines, the strategy's announcement and effect, an exchange's result without a wiped-out mark) with a
+    /// click's key, as <c>GameScreen</c> does — the
     /// rest keep the capture's. Answers our screen cannot give (Info, Manual on the acting unit, a command without a
     /// target given with the pointer on an enemy's panel, BFL-19) keep the capture's and are listed. The replay must
     /// match the original.
@@ -96,7 +97,7 @@ public class BattleInputReplayTests(ITestOutputHelper output)
         Sys3Int Key(Sys3Int captured)
         {
             bool answered = presenter.ActionLabelsOpen || presenter.OrderedUnit is not null
-                || presenter.RoundHeader is not null && order.Round > 1 || presenter.ScoutReported
+                || presenter.RoundHeader is not null && order.Round > 1 || presenter.ScoutReported || presenter.StrategyAnswered
                 || presenter.ExchangeResultWaits && !presenter.ExchangeResultWipedOut;
             presenter.AfterKey();
             if (!answered || captured == 0)                                     // under the message skip our screen gives 0 too
