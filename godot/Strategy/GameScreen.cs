@@ -1443,7 +1443,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// ("menu-orders"), a left click off it closes it, and Retreat from the acting unit's menu asks the
     /// retreat dialog, which <see cref="AutoRetreatDialogAsync"/> cancels. Back at the same turn, another own
     /// card is given the order it has already (no rule changes: the core's message, our label's flash, dump
-    /// "order-flash" without <c>--fast</c>). Back at the same turn again: the pointer on each enemy card shows its banners (dumps "banners-E1"…); two sample menus, never
+    /// "order-flash" without <c>--fast</c>). Back at the same turn again: the pointer on each advantage next to the armies'
+    /// names shows its tooltip (dumps "advantage-tip-1"…), on each enemy card its banners (dumps "banners-E1"…); two sample menus, never
     /// answered, show two and three banners on the target ("sample-2-banners", "sample-3-banners": Rance
     /// Attack added; Bow and Whirlwind Shot added); then the pointer on the target's Melee banner
     /// ("banner-hover"), and a click there attacks. Anything else is an error.
@@ -1517,6 +1518,14 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _autoCommandsPhase = 4;
             var target = new BattlePlace(BattleSide.Enemy, button.Value - 3);
             var expected = new FigtSelChoice(FigtSelCommand.Direct, button);
+            int tips = 0;
+            foreach (var advantage in _battleView.AdvantageCentres())           // each advantage's tooltip
+            {
+                await AutoMoveAsync(advantage);
+                if (!_battleView.AdvantageTipShown)
+                    throw new InvalidOperationException("--auto's pointer on an advantage showed no tooltip.");
+                await AutoDumpAsync($"advantage-tip-{++tips}");
+            }
             for (int slot = 1; slot <= menu.EnemySlotsUsed.Value; slot++)
             {
                 await AutoMoveAsync(Face(new BattlePlace(BattleSide.Enemy, slot)));

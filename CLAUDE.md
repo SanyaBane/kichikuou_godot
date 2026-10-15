@@ -249,7 +249,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `FIGT_SEL` answered by our own input, `BattleCommandLayer`: banners and context menus from
   `Original.Content/Battles/BattleCommands`; the retreat confirmation our dialog, `BattleDialogLayer`
   from `BattleDialog`; the speech bubbles' lines our balloon, `SpeechBalloon` from `BattlePresenter.Speech`; the ninja's scout report, before the field, our overlay `Battles/ScoutReportView` from `BattlePresenter.Scout` (`Original.Content/Battles/ScoutReport`); the first round header our opening `Battles/BattleOpeningLayer` from `GamePresenter.Opening` (`Original.Content/Battles/BattleOpening`; the later headers answered at once; its fonts Shojumaru and Cinzel bundled in `godot/fonts`); the exchange's result held ("Results: hold") and answered by `GameScreen` unless a wiped-out mark is up; the order messages not shown, the card's order label flashing (`BattleBoardView.FlashOrder`, `BattlePresenter.OrderedUnit`); every card's stats always under its portrait, `Battles/CardPortrait` from `Original.Content/Battles/BattleCardStats` (no menu offers Info), the focus "◆ n" on it; the advantages as what they do ("Walls +8%", "Strategy +10%") and the battle's limit on a plate at the scene's foot (`BattleOpening.Effects`, `LimitText`); its settings Option → Battle Screen…, `BattleScreenSettings`);
-  `GodotGlyphRenderer` (TextServer; MS Gothic or the bundled BIZ UDGothic in `godot/fonts`, Option →
+  `Battles/AdvantageTip` (the instant tooltips of the advantages next to the armies' names, `BattleAdvantage.Parts`); `GodotGlyphRenderer` (TextServer; MS Gothic or the bundled BIZ UDGothic in `godot/fonts`, Option →
   Fonts, `--font ms-gothic|biz-ud-gothic` for one launch), `BattleAudio`; `Screens` switches screens. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
 - `tools/analysis/` — Python scripts for reading the decompiled scenario; `tools/codegen/` —
   generators for committed C# sources; `tools/golden/` — harness launcher and page classes.
@@ -316,9 +316,9 @@ commit `local.env`.
   and in a window, once a launch, answers the first turn through the pointer on our command input
   (the acting unit's menu, another own card's, closed by a click off it; Retreat, whose dialog it
   cancels; back at the turn, another own card given the order it has already, whose label flashes;
-  each enemy card's banners, two sample menus' two and three banners never
+  each advantage's tooltip, each enemy card's banners, two sample menus' two and three banners never
   answered, then a click on the target's Melee banner; dumps `menu`, `menu-orders`, `retreat`,
-  `banners-E1`…, `sample-2-banners`, `sample-3-banners`, `banner-hover`, and without `--fast` `order-flash`, `slide`
+  `advantage-tip-1`…, `banners-E1`…, `sample-2-banners`, `sample-3-banners`, `banner-hover`, and without `--fast` `order-flash`, `slide`
 (halfway through the first wait for the armies' slides; `--army-seconds 1` makes them long enough) and each exchange effect once, at its peak (`effect-melee-player`, …); it moves the system pointer,
   so leave the mouse alone); its dumps need a window (no `--headless`). With `--until battle` the exercise ends
   the run once its attack's exchange is over (owner, 2026-10-15: the rest of the battle only cost time), so the

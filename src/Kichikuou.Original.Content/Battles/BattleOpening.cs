@@ -158,13 +158,29 @@ public sealed record BattleAdvantage(int Walls, int Strategy)
     public static readonly BattleAdvantage None = new(0, 0);
 
     /// <summary>"Walls +8%", "Strategy +10%", both "Walls +8%  ·  Strategy +10%"; "" without either.</summary>
-    public string Text => string.Join("  ·  ", Parts());
+    public string Text => string.Join("  ·  ", Parts.Select(p => p.Label));
 
-    private IEnumerable<string> Parts()
+    /// <summary>
+    /// Each advantage's label and what it does in full (our screen's tooltip, owner 2026-10-15): the walls only lower the
+    /// troops' hit chance against the side's troops (<c>FIGT.ADV:2548</c>, <c>:2741</c>), the strategy only scales the
+    /// troops' damage to troops (<c>:2294-2317</c>); neither touches the commanders' attacks or the specials.
+    /// </summary>
+    public IReadOnlyList<(string Label, string Tip)> Parts
     {
-        if (Walls != 0)
-            yield return $"Walls {Walls:+0;-0}%";
-        if (Strategy != 0)
-            yield return $"Strategy +{Strategy}%";
+        get
+        {
+            var parts = new List<(string, string)>();
+            if (Walls != 0)
+                parts.Add(($"Walls {Walls:+0;-0}%",
+                    $"The city's walls: troops attacking this army's troops hit {Walls} points less often "
+                    + $"(a hit chance of 60% becomes {60 - Walls}%). Melee, bow and magic of troops only; "
+                    + "commanders' attacks and specials ignore the walls."));
+            if (Strategy != 0)
+                parts.Add(($"Strategy +{Strategy}%",
+                    $"The strategy succeeded: for the whole battle this army's troops kill {Strategy}% more enemy troops "
+                    + $"and lose {Strategy}% fewer to theirs (rounded down). Troops against troops only; "
+                    + "commanders' attacks and specials are not affected."));
+            return parts;
+        }
     }
 }

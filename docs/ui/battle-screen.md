@@ -210,7 +210,14 @@ picture, the slot panels) is not shown. How it is built:
   (`FIGT.ADV:2548`, `:2741`; Oaks (6): +4, so "Walls +8%"; the header also adds the walls to the enemy's sum in a dungeon,
   where nothing applies them, and a dungeon's are 0) — and **"Strategy +10%" / "+50%"** for the side whose strategy
   succeeded: its troops deal a tenth or a half more troop damage and take as much less (`:2294-2317`); both
-  "Walls +8%  ·  Strategy +10%", nothing without either. The same texts replace "Advantage +n" in the opening. **The
+  "Walls +8%  ·  Strategy +10%", nothing without either. The same texts replace "Advantage +n" in the opening.
+  Each has a **tooltip** (owner, 2026-10-15; the texts agreed with the owner, `BattleAdvantage.Parts`): up at once, no
+  delay, while the pointer is on its label (`godot/Battles/AdvantageTip`, in the context menus' style), not while the
+  opening or a dialog is up. Walls: "The city's walls: troops attacking this army's troops hit 8 points less often (a
+  hit chance of 60% becomes 52%). Melee, bow and magic of troops only; commanders' attacks and specials ignore the
+  walls." Strategy: "The strategy succeeded: for the whole battle this army's troops kill 10% more enemy troops and lose
+  10% fewer to theirs (rounded down). Troops against troops only; commanders' attacks and specials are not affected."
+  The label "Walls +8%" stays although it is points of hit chance (owner). **The
   battle's limit** — the most troops of one unit that fight in an exchange (docs/battle/02-resolution.md, `:624`), which
   the header prints as `<City: Battle Limit>` / `Up to 232` (`:145-164`) — is a plate centred near the scene's foot,
   between an exchange's HP counters, in the owner's words: "City · Battle Limit: up to 232" (Plains / Duel / City /

@@ -81,6 +81,22 @@ public class BattleOpeningTests(ITestOutputHelper output)
     }
 
     [Fact]
+    public void Each_advantage_has_its_tooltip()
+    {
+        // The texts the owner agreed (2026-10-15), with the side's own numbers.
+        var parts = new BattleAdvantage(8, 10).Parts;
+        Assert.Equal(2, parts.Count);
+        Assert.Equal(("Walls +8%",
+            "The city's walls: troops attacking this army's troops hit 8 points less often (a hit chance of 60% becomes 52%). "
+            + "Melee, bow and magic of troops only; commanders' attacks and specials ignore the walls."), parts[0]);
+        Assert.Equal(("Strategy +10%",
+            "The strategy succeeded: for the whole battle this army's troops kill 10% more enemy troops and lose 10% fewer to "
+            + "theirs (rounded down). Troops against troops only; commanders' attacks and specials are not affected."), parts[1]);
+        Assert.Equal("Strategy +50%", Assert.Single(new BattleAdvantage(0, 50).Parts).Label);
+        Assert.Empty(BattleAdvantage.None.Parts);
+    }
+
+    [Fact]
     public void The_limit_reads_from_the_state()
     {
         Assert.Equal("City · Battle Limit: up to 232", BattleOpening.LimitText(new GameState { Bt_Kind = 1, Bt_TroopLimit = 232 }));

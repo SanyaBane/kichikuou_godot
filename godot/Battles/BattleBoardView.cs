@@ -90,8 +90,10 @@ internal sealed partial class BattleBoardView : Control
     private static float WindowScale => WindowsArea.Size.X / Surface.ScreenWidth;
     private readonly TextureRect _speaker;
     private readonly OrderStrip _strip;
-    private readonly Label _playerName, _enemyName, _playerAdvantage, _enemyAdvantage;
+    private readonly Label _playerName, _enemyName;
+    private readonly AdvantageLabels _playerAdvantage = new(), _enemyAdvantage = new();
     private readonly HBoxContainer _playerArmyLine, _enemyArmyLine;     // the army's name and its advantage over the cards
+    private readonly AdvantageTip _advantageTip;
     private readonly BattleOpeningLayer _opening;
     private readonly Control _limit;                                    // the battle's limit at the scene's foot (owner, 2026-10-15)
     private string _limitText = "";
@@ -170,13 +172,13 @@ internal sealed partial class BattleBoardView : Control
         AddChild(_strip);
         _playerName = new Label { MouseFilter = MouseFilterEnum.Ignore };
         _enemyName = new Label { MouseFilter = MouseFilterEnum.Ignore };
-        _playerAdvantage = new Label { MouseFilter = MouseFilterEnum.Ignore };
-        _enemyAdvantage = new Label { MouseFilter = MouseFilterEnum.Ignore };
         _playerArmyLine = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
         _enemyArmyLine = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore, Alignment = BoxContainer.AlignmentMode.End };
         _playerArmyLine.AddChild(_playerName);
-        _playerArmyLine.AddChild(_playerAdvantage);
-        _enemyArmyLine.AddChild(_enemyAdvantage);
+        foreach (var label in _playerAdvantage.Labels)
+            _playerArmyLine.AddChild(label);
+        foreach (var label in _enemyAdvantage.Labels)
+            _enemyArmyLine.AddChild(label);
         _enemyArmyLine.AddChild(_enemyName);
         AddChild(_playerArmyLine);
         AddChild(_enemyArmyLine);
@@ -201,6 +203,8 @@ internal sealed partial class BattleBoardView : Control
         AddChild(_commands);
         _dialog = new BattleDialogLayer();                                  // over everything
         AddChild(_dialog);
+        _advantageTip = new AdvantageTip();                                 // shown only while no dialog is
+        AddChild(_advantageTip);
         SetPalette(_colours);
         SetFont(font);
     }
@@ -274,8 +278,9 @@ internal sealed partial class BattleBoardView : Control
         _dialog.SetPalette(palette);
         _balloon.SetPalette(palette);
         _opening.SetPalette(palette);
-        _playerAdvantage.AddThemeColorOverride("font_color", palette.Accent);
-        _enemyAdvantage.AddThemeColorOverride("font_color", palette.Accent);
+        _playerAdvantage.SetColour(palette.Accent);
+        _enemyAdvantage.SetColour(palette.Accent);
+        _advantageTip.SetPalette(palette);
         _cardsKey = _stripKey = "?";
         _gauge.QueueRedraw();
         _limit.QueueRedraw();
@@ -337,6 +342,8 @@ internal sealed partial class BattleBoardView : Control
         _commands.Layout(CardArea, scale);
         At(_dialog, new Rect2(0, 0, 1280, 800));
         _dialog.Layout(scale);
+        At(_advantageTip, new Rect2(0, 0, 1280, 800));
+        _advantageTip.Layout(scale);
         At(_balloon, new Rect2(0, 0, 1280, 800));
         _balloon.Layout(scale);
         foreach (var (place, (card, _)) in _cards)
@@ -393,8 +400,8 @@ internal sealed partial class BattleBoardView : Control
         _playerName.Text = player;
         _enemyName.Text = enemy;
         var (playerAdvantage, enemyAdvantage) = BattleOpening.Effects(s);   // what the header's advantages do, all battle long (owner, 2026-10-15)
-        _playerAdvantage.Text = playerAdvantage.Text;
-        _enemyAdvantage.Text = enemyAdvantage.Text;
+        _playerAdvantage.Set(playerAdvantage);
+        _enemyAdvantage.Set(enemyAdvantage);
         string limit = BattleOpening.LimitText(s);
         if (limit != _limitText)
         {
@@ -807,12 +814,89 @@ internal sealed partial class BattleBoardView : Control
     /// <summary>The cards' padding inside their frame, in window pixels: four units of the acting frame.</summary>
     private int Pad => Math.Max(1, (int)Math.Round(4 * _scale));
 
+    /// <summary>
+    /// The tooltip of the advantage under the pointer (owner, 2026-10-15): at once, while the screen shows, the battle's
+    /// opening is gone and no dialog is up.
+    /// </summary>
+    /// <summary>Unattended play: the layout centres of the advantages shown, the player's then the enemy's.</summary>
+    public IEnumerable<Vector2> AdvantageCentres() =>
+        _playerAdvantage.Centres().Concat(_enemyAdvantage.Centres()).Select(g => ToLayout(g - GlobalPosition)).ToList();
+
+    /// <summary>Whether the advantages' tooltip is up.</summary>
+    public bool AdvantageTipShown => _advantageTip.Visible;
+
+    private void StepAdvantageTip()
+    {
+        string? tip = null;
+        if (IsVisibleInTree() && _opening.Shown <= 0 && !_dialog.Active)
+        {
+            var pointer = GetGlobalMousePosition();
+            tip = _playerAdvantage.TipAt(pointer) ?? _enemyAdvantage.TipAt(pointer);
+        }
+        _advantageTip.ShowAt(tip);
+    }
+
+    /// <summary>
+    /// A side's advantages next to its army's name (<see cref="BattleAdvantage.Parts"/>), each its own label so that each
+    /// has its own tooltip: a part, the dot between two, a part.
+    /// </summary>
+    private sealed class AdvantageLabels
+    {
+        public readonly Label[] Labels = [new(), new() { Text = "·" }, new()];
+        private readonly string[] _tips = ["", ""];
+        private BattleAdvantage? _shown;
+
+        public AdvantageLabels()
+        {
+            foreach (var label in Labels)
+            {
+                label.MouseFilter = MouseFilterEnum.Ignore;
+                label.Visible = false;
+            }
+        }
+
+        public void SetColour(Color colour)
+        {
+            foreach (var label in Labels)
+                label.AddThemeColorOverride("font_color", colour);
+        }
+
+        public void Set(BattleAdvantage advantage)
+        {
+            if (advantage == _shown)
+                return;
+            _shown = advantage;
+            var parts = advantage.Parts;
+            for (int i = 0; i < 2; i++)
+            {
+                var label = Labels[i * 2];
+                label.Visible = i < parts.Count;
+                (label.Text, _tips[i]) = i < parts.Count ? parts[i] : ("", "");
+            }
+            Labels[1].Visible = parts.Count == 2;
+        }
+
+        /// <summary>The global centres of the parts shown.</summary>
+        public IEnumerable<Vector2> Centres() =>
+            new[] { Labels[0], Labels[2] }.Where(l => l.Visible).Select(l => l.GetGlobalRect().GetCenter());
+
+        /// <summary>The tooltip of the part at <paramref name="global"/> (a global point), null off them.</summary>
+        public string? TipAt(Vector2 global)
+        {
+            for (int i = 0; i < 2; i++)
+                if (Labels[i * 2].Visible && Labels[i * 2].GetGlobalRect().HasPoint(global))
+                    return _tips[i];
+            return null;
+        }
+    }
+
     public override void _Process(double delta)
     {
         StepArmies(delta);
         StepSpotlight(delta);
         StepMeters();
         StepOrderFlash();
+        StepAdvantageTip();
         if (_actingPlace is null)
             return;
         bool on = (Time.GetTicksMsec() - _blinkFrom) / BlinkMs % 2 == 0;
