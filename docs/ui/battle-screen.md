@@ -437,13 +437,20 @@ picture, the slot panels) is not shown. How it is built:
   the right (to 6) down round the bottom (12) to the lower left (from 16), about ±90° wide at frame 8 and ±60° by 16;
   grey-teal haze just outside the rim; the whole dying from frame 20, gone by ~27. Timed on the reference's mean
   brightness in four column quarters. Over the sand battlefield the white sector reads strongly, the blue blades faintly.
-  **Debug → Effects** (`EffectViewer`) plays them over our scene's battlefield (CG 900 and its overlay, with Rance's
-  (unit 1) and Ex's (commander 1) armies once a game has booted) or black: the effect, Play, Loop, the enemy acting,
-  the blend, the speed, the seed and a frame slider; the effect stands at the scene's foot (y 8).
+  **Debug → Effects** (`EffectViewer`) plays them over our scene's battlefield (CG 900 and its overlay, with Ex's
+  (commander 1) army once a game has booted) or black: the effect and its user, Play, Loop, the enemy acting, the
+  blend, the speed, the seed and a frame slider; the effect stands at the scene's foot (y 8). On the player's side
+  stands Rance's (unit 1) army for melee, bow and magic (once a game has booted) and for a special the sprite its user
+  shows while using it (owner, 2026-10-15; `FIGT.ADV:1660-1713`, docs/battle/02-resolution.md §4): the user list holds
+  the special's users — Rance Attack Rance (unit 1, CG 1520) or Kentarou (unit 31, 1222), the white beam Shizuka
+  (unit 17, 1522), Magic (unit 39, 1523) or Gandhi (unit 37, 1524), the dark one Nagi (unit 40, 1525) or Chizuko
+  (unit 38, 1526), Whirlwind Shot Isoroku (unit 27, 1528), High Speed Meglass (unit 30, 1527), By la Way Rick (unit 7,
+  1521), the ninja's follow-up Kanami, Freya, Kaoru or Wichita (their own sprites, 1164, 1176, 1182, 1185), Vanish Bomb
+  Miki (unit 32, 1529), C. War Dance Patton (unit 18, 1530), Chuhai Asuka (unit 11, 1121).
   `--effects --shots DIR --quit` (in a window; `--effects white-beam,black-beam` for those alone) writes every frame of each with seed 1: the effect alone on black
   (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `white-beam-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`, `chuhai-NN.png`; the black beam's picture is
-  its light, so it is saved over the battlefield only) and over the battlefield, the player acting and the enemy
-  (`melee-scene-NN.png`, `melee-enemy-scene-NN.png`, …) — for a sheet next to the reference's frames, made outside the
+  its light, so it is saved over the battlefield only) and over the battlefield with the effect's first user, the
+  player acting and the enemy (`melee-scene-NN.png`, `melee-enemy-scene-NN.png`, …) — for a sheet next to the reference's frames, made outside the
   repository.
 - **The windows over it** ("vs", the results, the info boxes, the
   prompt, the popups, the script menus) are the stage's screen as the original draws it, shown only
