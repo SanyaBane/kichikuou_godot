@@ -119,6 +119,14 @@ internal static class EffectTextures
 
     private static Texture2D? _sickle;
 
+    /// <summary>A blade's hook: a thin arc bulging toward +x, ±60° about it, faint at its foot (+y) and thickening to a bright head near its top (−y).</summary>
+    public static Texture2D Hook => _hook ??= Make(256, HookShape);
+
+    /// <summary>A kite: a soft diamond, longer along x, its points rounded off by the blur.</summary>
+    public static Texture2D Kite => _kite ??= Make(64, KiteShape);
+
+    private static Texture2D? _hook, _kite;
+
     /// <summary>
     /// A size × <paramref name="height"/> texture (square by default) whose alpha at each pixel is <paramref name="alpha"/>
     /// of (x, y) in [−1, 1] — both axes, whatever the shape.
@@ -445,6 +453,16 @@ internal static class EffectTextures
         float r = MathF.Sqrt(x * x + y * y), hollow = MathF.Sqrt((x + 0.55f) * (x + 0.55f) + y * y);
         return Edge(0.95f - r, 0.015f) * Edge(hollow - 0.9f, 0.015f);
     }
+
+    private static float HookShape(float x, float y)
+    {
+        // An arc of the circle round (−1.2, 0) through (0.7, 0); along it from the foot (y 0.9) to the head (y −0.9).
+        float d = MathF.Abs(MathF.Sqrt((x + 1.2f) * (x + 1.2f) + y * y) - 1.9f), along = Math.Clamp((0.92f - y) / 1.84f, 0, 1);
+        float width = 0.018f + 0.045f * along;
+        return Gauss(d, width) * MathF.Pow(along, 1.5f) * (1 - SmoothStep(0.86f, 0.96f, -y));
+    }
+
+    private static float KiteShape(float x, float y) => 1 - SmoothStep(0.1f, 1, MathF.Abs(x) + MathF.Abs(y) / 0.6f);
 
     /// <summary>A soft edge at <paramref name="v"/> = 0: 0 below −<paramref name="width"/>/2, 1 above +<paramref name="width"/>/2.</summary>
     private static float Edge(float v, float width) => Math.Clamp(v / width + 0.5f, 0, 1);

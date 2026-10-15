@@ -29,6 +29,8 @@ public enum ExchangeEffectKind
     VanishBomb,
     /// <summary>Patton's C. War Dance (after Sengoku Rance's Ieyasu's Special Move, 47400).</summary>
     WarDance,
+    /// <summary>Asuka's Chuhai (after Sengoku Rance's Shogun Whirlwind, 47060).</summary>
+    Chuhai,
 }
 
 /// <summary>
@@ -41,7 +43,7 @@ public enum ExchangeEffectKind
 /// Rance's first phase), Rance's or Kentarou's alike; the beams (special 2) the White Destruction Beam's, white or
 /// dark by the actor; Isoroku's Whirlwind Shot (special 3) Piercing Tempest's, Meglass's High Speed Commander Charge's,
 /// the ninja's follow-up the Ninja troop's; Miki's Vanish Bomb Begone Bomb's; Patton's C. War Dance Ieyasu's Special
-/// Move's; Rick's By la Way Rance Attack's recoloured red; the others play by their action for now.
+/// Move's; Asuka's Chuhai Shogun Whirlwind's; Rick's By la Way Rance Attack's recoloured red; the others play by their action for now.
 /// </summary>
 /// <param name="Kind">The effect.</param>
 /// <param name="Side">Whose it is: the enemy's is mirrored, its actor's half on the right.</param>
@@ -82,7 +84,9 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
     /// (<c>FIGT_SEL.ADV:644</c>) and her involuntary bomb is hers too (<c>FIGT.ADV:1588-1590</c>) — and plays Begone
     /// Bomb's. Special 5 (<c>FIGT.ADV:1571-1577</c>) is C. War Dance, Patton's (unit 18) alone — its menu item
     /// (<c>FIGT_SEL.ADV:449</c>) is offered under <c>Unit_Cur = 18</c> only (<c>:662-664</c>) — and plays Ieyasu's
-    /// Special Move's. Any other plays by its action.
+    /// Special Move's. Special 6 (<c>FIGT.ADV:1551-1559</c>) is Chuhai, Asuka's (unit 11) alone — its menu item
+    /// (<c>FIGT_SEL.ADV:464</c>) is offered under <c>Unit_Cur = 11</c> only (<c>:671-673</c>) — and plays Shogun
+    /// Whirlwind's. Any other plays by its action.
     /// </summary>
     private static ExchangeEffectKind? SpecialOf(GameState s) => (s.Bt_SpecialAtk.Value, s.Unit_Cur.Value) switch
     {
@@ -95,6 +99,7 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
         (3, 51) => ExchangeEffectKind.NinjaFollowUp,
         (4, 32) => ExchangeEffectKind.VanishBomb,
         (5, 18) => ExchangeEffectKind.WarDance,
+        (6, 11) => ExchangeEffectKind.Chuhai,
         _ => null,
     };
 

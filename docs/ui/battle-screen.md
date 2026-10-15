@@ -305,13 +305,16 @@ picture, the slot panels) is not shown. How it is built:
     (40560, `ExchangeEffectKind.VanishBomb`); no captured battle has one. **C. War Dance** (2026-10-15, the owner took its
     v1 as it is): special 5 (`FIGT.ADV:1571-1577`) is Patton's (unit 18) alone — its menu item (`FIGT_SEL.ADV:449`) is
     offered under `Unit_Cur = 18` only (`:662-664`) — and plays ours after Ieyasu's Special Move (47400,
-    `ExchangeEffectKind.WarDance`). **By la
+    `ExchangeEffectKind.WarDance`); no captured battle has one. **Chuhai** (2026-10-15, the owner took its v1 as it is):
+    special 6 (`FIGT.ADV:1551-1559`) is Asuka's (unit 11) alone — its menu item (`FIGT_SEL.ADV:464`) is offered under
+    `Unit_Cur = 11` only (`:671-673`) — and plays ours after Shogun Whirlwind (47060, `ExchangeEffectKind.Chuhai`); no
+    captured battle has one. **By la
     Way** (2026-10-15, the owner took its v1 as it is): special 1 by Rick (unit 7) plays Rance Attack's effect
     recoloured red (`ExchangeEffectKind.ByLaWay`). One captured battle has a By la Way (`20261008-111109-01-FIGT_A`,
-    the Rance Attack's, in the full run's captures only), none a Whirlwind Shot, a High Speed, a Vanish Bomb or a War Dance: `ExchangeEffectTests` checks
+    the Rance Attack's, in the full run's captures only), none a Whirlwind Shot, a High Speed, a Vanish Bomb, a War Dance or a Chuhai: `ExchangeEffectTests` checks
     the rules on given states (one table, `ExchangeEffect.SpecialOf`), and in the captures that a Whirlwind Shot, a
     High Speed or a ninja's follow-up fires only the commander's one shot at the commander, a By la Way's or a Vanish Bomb's troops fire nothing
-    and a War Dance's troops fire nothing, nor its commander at the commander
+    and a War Dance's or a Chuhai's troops fire nothing, nor its commander at the commander
     (02-resolution.md §3.3). T2 Soaring Wave later (likely Rance Attack's eruption much smaller, four of them, as Rolex's sprite);
     the Cheater Beam stays melee.
   - **A setting**: Option → Battle Screen… → "Effects: on/off", on by default (Sengoku Rance's Combat Effect Display);
@@ -424,11 +427,21 @@ picture, the slot panels) is not shown. How it is built:
   early and evening out late, their left edge drawing back to the right from frame 18 (x 300) to 25 (700); behind them
   faint streaky wisps (the puff stretched flat) drifting right, a few frames each, salmon and then ash (from 19), the
   last fading by ~27. Timed on the reference's mean brightness in four column quarters.
+  The Chuhai effect (`ChuhaiEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Shogun Whirlwind,
+  47060 — 29 frames in the archive; textures of its own: `Hook`, a thin arc thickening to a bright head, and `Kite`, a
+  soft diamond): a whirlwind, a wheel of blue blades turning clockwise — swelling from a dome at the frame's foot in the
+  middle (radius 40 at frame 0, 210 at 4, 245 at 8) while its centre climbs and drifts right, (390, 340) at 0, (410,
+  120) at 8, (590, 30) at 12, off the top right by the end (radius 300); over the wheel thin hooks with bright heads,
+  their chords rising to the right, and soft blue kites, each lit for a frame or two and moving with the turn, the eye
+  hardly emptier; a white sector of the rim, hooks piled on a mist, faint at first and full from frame 6, sweeping from
+  the right (to 6) down round the bottom (12) to the lower left (from 16), about ±90° wide at frame 8 and ±60° by 16;
+  grey-teal haze just outside the rim; the whole dying from frame 20, gone by ~27. Timed on the reference's mean
+  brightness in four column quarters. Over the sand battlefield the white sector reads strongly, the blue blades faintly.
   **Debug → Effects** (`EffectViewer`) plays them over our scene's battlefield (CG 900 and its overlay, with Rance's
   (unit 1) and Ex's (commander 1) armies once a game has booted) or black: the effect, Play, Loop, the enemy acting,
   the blend, the speed, the seed and a frame slider; the effect stands at the scene's foot (y 8).
   `--effects --shots DIR --quit` (in a window; `--effects white-beam,black-beam` for those alone) writes every frame of each with seed 1: the effect alone on black
-  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `white-beam-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`; the black beam's picture is
+  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `white-beam-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`, `chuhai-NN.png`; the black beam's picture is
   its light, so it is saved over the battlefield only) and over the battlefield, the player acting and the enemy
   (`melee-scene-NN.png`, `melee-enemy-scene-NN.png`, …) — for a sheet next to the reference's frames, made outside the
   repository.

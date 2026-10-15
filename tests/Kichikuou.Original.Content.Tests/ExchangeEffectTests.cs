@@ -116,6 +116,19 @@ public class ExchangeEffectTests(ITestOutputHelper output)
         Assert.Equal(new ExchangeEffect(ExchangeEffectKind.WarDance, BattleSide.Player), ExchangeEffect.Of(s));
     }
 
+    /// <summary>Special 6 is Asuka's (unit 11) Chuhai (<c>FIGT.ADV:1551-1559</c>).</summary>
+    [Fact]
+    public void Special_6_by_Asuka_plays_Chuhai()
+    {
+        var s = new GameState();
+        s.Bt_PlayerAction = (Sys3Int)2;
+        s.Bt_EnemyAction = (Sys3Int)99;
+        s.Bt_MsgMode = (Sys3Int)1;
+        s.Bt_SpecialAtk = (Sys3Int)6;
+        s.Unit_Cur = (Sys3Int)11;
+        Assert.Equal(new ExchangeEffect(ExchangeEffectKind.Chuhai, BattleSide.Player), ExchangeEffect.Of(s));
+    }
+
     /// <summary>Isoroku (unit 27) without the special plays by her action.</summary>
     [Fact]
     public void Isoroku_without_the_special_plays_by_the_action()
@@ -152,7 +165,7 @@ public class ExchangeEffectTests(ITestOutputHelper output)
     /// <summary>
     /// In every captured battle each exchange's shots start an effect: its side fires (its action is not 99, and it
     /// has a shot), and a two-sided exchange is direct against direct with the turn's actor in <c>Bt_MsgMode</c> (3 or 4);
-    /// the troops of a Rance Attack or a By la Way fire nothing, nor a beam's or a War Dance's (nor its commander at the commander); a
+    /// the troops of a Rance Attack or a By la Way fire nothing, nor a beam's, a War Dance's or a Chuhai's (nor its commander at the commander); a
     /// Whirlwind Shot or a High Speed fires only the commander's one shot at the commander.
     /// </summary>
     [CaptureTheory]
@@ -190,9 +203,9 @@ public class ExchangeEffectTests(ITestOutputHelper output)
             // are zeroed (02-resolution.md §3.3).
             if (effect.Kind is ExchangeEffectKind.WhiteBeam or ExchangeEffectKind.BlackBeam && (shots[0] != 0 || shots[1] != 0 || shots[3] != 0))
                 wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops or at the commander firing");
-            // C. War Dance is the commander's blows at the troops: the troops' shots and the commander's at the commander
-            // are zeroed (02-resolution.md §3.3).
-            if (effect.Kind is ExchangeEffectKind.WarDance && (shots[0] != 0 || shots[1] != 0 || shots[3] != 0))
+            // C. War Dance and Chuhai are the commander's blows at the troops: the troops' shots and the commander's at the
+            // commander are zeroed (02-resolution.md §3.3).
+            if (effect.Kind is ExchangeEffectKind.WarDance or ExchangeEffectKind.Chuhai && (shots[0] != 0 || shots[1] != 0 || shots[3] != 0))
                 wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops or at the commander firing");
             // Vanish Bomb is the commander's blast at the commander and the troops: the troops' shots are zeroed
             // (02-resolution.md §3.3).

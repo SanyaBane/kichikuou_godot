@@ -199,6 +199,7 @@ internal sealed partial class EffectViewer : Window
         ("Ninja (after 40100)", "ninja", NinjaEffect.Build, false),
         ("Vanish Bomb (after 40560)", "vanish-bomb", VanishBombEffect.Build, false),
         ("C. War Dance (after 47400)", "war-dance", WarDanceEffect.Build, false),
+        ("Chuhai (after 47060)", "chuhai", ChuhaiEffect.Build, false),
     ];
 
     /// <summary>
