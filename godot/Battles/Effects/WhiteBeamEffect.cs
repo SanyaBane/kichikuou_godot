@@ -11,7 +11,9 @@ namespace Kichikuou.Game.Battles.Effects;
 /// from it (2-4), widening into a teal cone over the target's half (6-13) with swirls and white stars; then a mass of
 /// horizontal streaks rushes right, white turning cyan, blue and violet, its back drawing toward the right edge
 /// (12-22), the last violet streaks gone by ~27. Teal sparkles twinkle on the actor's half throughout (4-26) and a
-/// grey glow lingers in the middle (12-25). The same seed makes the same effect.
+/// grey glow lingers in the middle (12-25). The same seed makes the same effect. Each white beam's user has its own
+/// class placing it (<see cref="ShizukaBeamEffect"/>, <see cref="MagicBeamEffect"/>, <see cref="EpoLightEffect"/>;
+/// owner, 2026-10-15); the black beam is drawn as laid out here.
 /// </summary>
 internal static class WhiteBeamEffect
 {
@@ -38,6 +40,23 @@ internal static class WhiteBeamEffect
     private static readonly Color TealHaze = new(0.42f, 0.62f, 0.62f), Cyan = new(0.6f, 0.95f, 1f), Blue = new(0.45f, 0.6f, 1f);
     private static readonly Color Violet = new(0.5f, 0.42f, 1f), Grey = new(0.5f, 0.53f, 0.53f), Star = new(0.8f, 1f, 1f);
     private static readonly Color StarViolet = new(0.6f, 0.55f, 1f), Cloud = new(0.9f, 0.95f, 0.95f, 0.8f);
+
+    /// <summary>
+    /// The beam laid out by <see cref="Build"/>, turned by <paramref name="tilt"/> (radians, + turning its far end
+    /// down) about the flash and moved by <paramref name="offset"/> (the design space): a user's own place.
+    /// </summary>
+    public static IReadOnlyList<Particle> Placed(int seed, Vector2 offset, float tilt = 0)
+    {
+        var turn = Transform2D.Identity.Rotated(tilt);
+        Vector2 Turned(Vector2 v) => turn.BasisXform(v);
+        return Build(seed).Select(p => p with
+        {
+            Position = Orb + Turned(p.Position - Orb) + offset,
+            Velocity = Turned(p.Velocity),
+            Rotation = p.Rotation + tilt,
+            Move = p.Move is { } move ? t => Turned(move(t)) : null,
+        }).ToList();
+    }
 
     public static IReadOnlyList<Particle> Build(int seed)
     {

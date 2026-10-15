@@ -293,8 +293,10 @@ picture, the slot panels) is not shown. How it is built:
     special 1 by Kentarou (unit 31) — the same Rance Attack command as Rance's (`FIGT_SEL.ADV:579-588`), its rule
     unchanged — plays ours after his own move in Sengoku Rance (`ExchangeEffectKind.KentarouSlash`; the row `(1, 31)`,
     Rance's `(1, 1)` keeps Rance Attack's). **The beams** (2026-10-15, the owner took their v1 as it is): special 2 (`Bt_SpecialAtk == 2`) by Shizuka (unit 17), Magic (unit 39) or
-    Gandhi (unit 37) plays the white beam, by Chizuko (unit 38) or Nagi (unit 40) the dark one
-    (`ExchangeEffectKind.WhiteBeam`, `BlackBeam`); special 2 by anyone else plays by its action. No captured battle has
+    Gandhi (unit 37) plays the white beam, each user's own since 2026-10-15 (owner: three effects, placed for each
+    sprite, to be told apart in the debug panel and tuned apart later; `ExchangeEffectKind.ShizukaBeam`, `MagicBeam`,
+    `EpoLight`, the rows `(2, 17)`, `(2, 39)`, `(2, 37)`), by Chizuko (unit 38) or Nagi (unit 40) the dark one, one
+    for both (`BlackBeam`); special 2 by anyone else plays by its action. No captured battle has
     a beam: `ExchangeEffectTests` checks the rule on given states, and in the captures that a beam's troops fire nothing
     (nor its commander at the commander, 02-resolution.md §3.3). **Whirlwind Shot** (2026-10-15, the owner took its
     v1 as it is): special 3 (`Bt_SpecialAtk == 3`, `FIGT.ADV:1542-1550`) by Isoroku (unit 27) plays ours after
@@ -388,6 +390,12 @@ picture, the slot panels) is not shown. How it is built:
   brightness in eight column bands. The **Black D. Beam** is the same effect laid over dark (`EffectPlayer.Dark`, a
   shader mode): the effect's light read as shadow — its bright parts black the scene out (by 92 %), its fainter parts
   and edges glow blue-violet (peaking at half light) — after Kichikuou's own dark sprites (CG 1525, 1526).
+  Each white beam's user has its own effect (owner, 2026-10-15), the beam above placed for its sprite by
+  `WhiteBeamEffect.Placed` (turned about the flash, then moved; every particle's position, drift, turn and path):
+  Shizuka's (`ShizukaBeamEffect`) moved 76 units left, Gandhi's EPO Light (`EpoLightEffect`) 150 left and 40 up,
+  Magic's (`MagicBeamEffect`) 140 left and 120 up — the flash on the orb over her head — and turned down 0.28 rad
+  (~16°) so that it runs into the enemy's army, toward its middle at about (640, 185), not over its heads. The black
+  beam is drawn as laid out.
   The Whirlwind Shot effect (`WhirlwindShotEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Piercing Tempest, 40660 — 29
   frames in the archive, the 30th absent; a texture of its own, `Lens`: a tall arc with a bright rim on its outer side and
   a glassy fill): a whirlwind in the middle (its eye at ~(414, 168)) — six arms of beads placed by the frame, their
@@ -521,14 +529,14 @@ picture, the slot panels) is not shown. How it is built:
   stands Rance's (unit 1) army for melee and magic and Isoroku's (unit 27) archers for the bow (owner, 2026-10-15;
   once a game has booted) and for a special the sprite its user
   shows while using it (owner, 2026-10-15; `FIGT.ADV:1660-1713`, docs/battle/02-resolution.md §4): the user list holds
-  the special's users — Rance Attack Rance (unit 1, CG 1520), Kentarou-kun Slash Kentarou (unit 31, 1222), the white beam Shizuka
-  (unit 17, 1522), Magic (unit 39, 1523) or Gandhi (unit 37, 1524), the dark one Nagi (unit 40, 1525) or Chizuko
+  the special's users — Rance Attack Rance (unit 1, CG 1520), Kentarou-kun Slash Kentarou (unit 31, 1222), the white beams one each, Shizuka's
+  (unit 17, 1522), Magic's (unit 39, 1523) and Gandhi's EPO Light (unit 37, 1524), the dark one Nagi (unit 40, 1525) or Chizuko
   (unit 38, 1526), Whirlwind Shot Isoroku (unit 27, 1528), High Speed Meglass (unit 30, 1527), By la Way Rick (unit 7,
   1521), the ninja's follow-up Kanami, Freya, Kaoru or Wichita (their own sprites, 1164, 1176, 1182, 1185), Vanish Bomb
   Miki (unit 32, 1529), C. War Dance Patton (unit 18, 1530), Chuhai Asuka (unit 11, 1121), T2 Goliath none (record 51,
   no sprite: the battlefield bare on the player's side, as in the battle), T2 Soaring Wave Rolex (unit 47, 1252).
-  `--effects --shots DIR --quit` (in a window; `--effects white-beam,black-beam` for those alone) writes every frame of each with seed 1: the effect alone on black
-  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `kentarou-slash-NN.png`, `white-beam-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`, `chuhai-NN.png`, `goliath-NN.png`, `soaring-wave-NN.png`; the black beam's picture is
+  `--effects --shots DIR --quit` (in a window; `--effects white-beam-magic,black-beam` for those alone) writes every frame of each with seed 1: the effect alone on black
+  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `kentarou-slash-NN.png`, `white-beam-shizuka-NN.png`, `white-beam-magic-NN.png`, `epo-light-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`, `chuhai-NN.png`, `goliath-NN.png`, `soaring-wave-NN.png`; the black beam's picture is
   its light, so it is saved over the battlefield only) and over the battlefield with the effect's first user, the
   player acting and the enemy (`melee-scene-NN.png`, `melee-enemy-scene-NN.png`, …) — for a sheet next to the reference's frames, made outside the
   repository.

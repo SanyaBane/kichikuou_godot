@@ -55,12 +55,12 @@ public class ExchangeEffectTests(ITestOutputHelper output)
 
     /// <summary>
     /// Special 2 is White D. Beam by Shizuka (unit 17) or Magic (unit 39), EPO Light by Gandhi (unit 37) — the white
-    /// beam — and Black D. Beam by Chizuko (unit 38) or Nagi (unit 40), the dark one.
+    /// beam, each user's own — and Black D. Beam by Chizuko (unit 38) or Nagi (unit 40), the dark one.
     /// </summary>
     [Theory]
-    [InlineData(17, ExchangeEffectKind.WhiteBeam)]
-    [InlineData(39, ExchangeEffectKind.WhiteBeam)]
-    [InlineData(37, ExchangeEffectKind.WhiteBeam)]
+    [InlineData(17, ExchangeEffectKind.ShizukaBeam)]
+    [InlineData(39, ExchangeEffectKind.MagicBeam)]
+    [InlineData(37, ExchangeEffectKind.EpoLight)]
     [InlineData(38, ExchangeEffectKind.BlackBeam)]
     [InlineData(40, ExchangeEffectKind.BlackBeam)]
     public void The_beams_play_the_white_or_the_dark_beam_by_the_actor(int unit, ExchangeEffectKind kind)
@@ -238,7 +238,7 @@ public class ExchangeEffectTests(ITestOutputHelper output)
                 wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops firing");
             // A beam is the commander's blast at the troops: the troops' shots and the commander's at the commander
             // are zeroed (02-resolution.md §3.3).
-            if (effect.Kind is ExchangeEffectKind.WhiteBeam or ExchangeEffectKind.BlackBeam && (shots[0] != 0 || shots[1] != 0 || shots[3] != 0))
+            if (effect.Kind is ExchangeEffectKind.ShizukaBeam or ExchangeEffectKind.MagicBeam or ExchangeEffectKind.EpoLight or ExchangeEffectKind.BlackBeam && (shots[0] != 0 || shots[1] != 0 || shots[3] != 0))
                 wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops or at the commander firing");
             // C. War Dance, Chuhai and T2 Goliath's strike are the commander's blows at the troops: the troops' shots and
             // the commander's at the commander are zeroed (02-resolution.md §3.3).

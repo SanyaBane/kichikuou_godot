@@ -15,8 +15,12 @@ public enum ExchangeEffectKind
     RanceAttack,
     /// <summary>The Rance Attack command by Kentarou (after Sengoku Rance's Kentarou-kun Slash, 40800).</summary>
     KentarouSlash,
-    /// <summary>White D. Beam and EPO Light (after Sengoku Rance's White Destruction Beam, 40460).</summary>
-    WhiteBeam,
+    /// <summary>Shizuka's White D. Beam (after Sengoku Rance's White Destruction Beam, 40460, placed for her).</summary>
+    ShizukaBeam,
+    /// <summary>Magic's White D. Beam (the same, placed and turned for her).</summary>
+    MagicBeam,
+    /// <summary>Gandhi's EPO Light (the same, placed for him).</summary>
+    EpoLight,
     /// <summary>Black D. Beam (the White Destruction Beam recoloured dark).</summary>
     BlackBeam,
     /// <summary>Isoroku's Whirlwind Shot (after Sengoku Rance's Piercing Tempest, 40660).</summary>
@@ -81,7 +85,8 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
     /// Kentarou's Kentarou-kun Slash's, his own move in Sengoku Rance (owner, 2026-10-15) — and By la Way by Rick (unit 7,
     /// <c>:589-597</c>), Rance Attack's recoloured red (owner, 2026-10-15). Special 2 (<c>FIGT.ADV:1532-1541</c>), one
     /// setter for three menu items (<c>FIGT_SEL.ADV:608-643, 680</c>): White D. Beam by Shizuka (unit 17) or Magic
-    /// (unit 39) and EPO Light by Gandhi (unit 37) play the white beam, Black D. Beam by Chizuko (unit 38) or Nagi
+    /// (unit 39) and EPO Light by Gandhi (unit 37) play the white beam, each user's own (placed for its sprite; owner,
+    /// 2026-10-15), Black D. Beam by Chizuko (unit 38) or Nagi
     /// (unit 40) the dark one (owner, 2026-10-14). Special 3 (<c>FIGT.ADV:1542-1550</c>; docs/battle/02-resolution.md
     /// §3.3: the commander's one shot at the commander), one setter for two menu items: Whirlwind Shot by Isoroku
     /// (unit 27, <c>FIGT_SEL.ADV:653</c>) and High Speed by Meglass (unit 30, <c>:599</c>; Commander Charge's, owner,
@@ -103,7 +108,9 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
         (1, 1) => ExchangeEffectKind.RanceAttack,
         (1, 31) => ExchangeEffectKind.KentarouSlash,
         (1, 7) => ExchangeEffectKind.ByLaWay,
-        (2, 17 or 39 or 37) => ExchangeEffectKind.WhiteBeam,
+        (2, 17) => ExchangeEffectKind.ShizukaBeam,
+        (2, 39) => ExchangeEffectKind.MagicBeam,
+        (2, 37) => ExchangeEffectKind.EpoLight,
         (2, 38 or 40) => ExchangeEffectKind.BlackBeam,
         (3, 27) => ExchangeEffectKind.WhirlwindShot,
         (3, 30) => ExchangeEffectKind.HighSpeed,

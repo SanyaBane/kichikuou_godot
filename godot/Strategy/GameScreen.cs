@@ -128,7 +128,7 @@ public sealed record GameOptions
     /// </summary>
     public bool Effects { get; init; }
 
-    /// <summary>With <see cref="Effects"/>: the prefixes of the effects whose frames are saved (<c>white-beam</c>, …); null for all.</summary>
+    /// <summary>With <see cref="Effects"/>: the prefixes of the effects whose frames are saved (<c>white-beam-magic</c>, …); null for all.</summary>
     public IReadOnlyCollection<string>? EffectsOnly { get; init; }
 }
 
