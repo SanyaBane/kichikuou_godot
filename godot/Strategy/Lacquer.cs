@@ -31,13 +31,13 @@ internal static class Lacquer
     /// <summary>Shojumaru, the names' brush face.</summary>
     public static FontFile Brush() => LoadFont("res://fonts/Shojumaru-Regular.ttf");
 
-    /// <summary>Cinzel at weight 500, the subtitles' face.</summary>
-    public static FontVariation Cinzel() => new()
+    /// <summary>Cinzel at <paramref name="weight"/> (500 by default), the subtitles' face.</summary>
+    public static FontVariation Cinzel(int weight = 500) => new()
     {
         BaseFont = LoadFont("res://fonts/Cinzel-VariableFont_wght.ttf"),
         VariationOpentype = new Godot.Collections.Dictionary
         {
-            [TextServerManager.Singleton.GetPrimaryInterface().NameToTag("wght")] = 500,
+            [TextServerManager.Singleton.GetPrimaryInterface().NameToTag("wght")] = weight,
         },
     };
 

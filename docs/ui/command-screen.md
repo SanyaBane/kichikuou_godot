@@ -305,20 +305,23 @@ brackets with captions under; the owner chose **the brackets**).
 
 - **Where and when.** Above the map, as wide as it, not over it (owner, 2026-10-16: at first it lay over the
   map's top, 980 wide): from the game's first map wait on and outside a battle, the view gives up a band at
-  its top (92 of the picture's 1280-wide pixels) and the screen's picture fits under it; every screen reckons
+  its top (50 of the picture's 1280-wide pixels) and the screen's picture fits under it; every screen reckons
   from the view, so the pointer, the plates, the panels and the deployment table follow; a battle keeps the whole
   view (`GameScreen.UpdateStatusStrip`). It shows in the scenes and screens between map waits too. A right click
   on it opens the menu as anywhere (`StatusStripView.Forward`).
-- **The first row** is the status window the right click prints, read now from the state: the nation with
-  its flag (CG 820; none for the thieves), the window's two lines as the files print them (`:443` "Budget
+- **One row** (owner, 2026-10-16: at first two, the status above the week's uses). From the left: the
+  nation's flag (CG 820; none for the thieves) without its name (the owner's, for room); the status window
+  the right click prints, read now from the state: its two lines as the files print them (`:443` "Budget
   116400K GOLD", "Troops 6251"; the thieves' `:472` Money and Subordinates), the troops summed as the files sum
-  them (units 1-50 with a status; the thieves' units 1, 3 and 4), and the date as "LP 3 · Month 5 · Week 2"
-  (`SetDate`; LP, `DateYear`, is computed by the original but not shown: ours, question 4).
-- **The second row** is the week's uses as tags, lit while free, dim when spent, in groups bracketed with
-  their captions: Castle (Construction `Ui_CmdBuildAvail`, Harem `Ui_CmdHaremAvail`, Merchant
-  `Ui_CmdMerchantAvail`), Subordinates (Troops `CmdAvail_SubTroops`, Talk `CmdAvail_SubTalk`, both dim while
-  `Ui_CmdSubordAvail` is 0, the menu's △), Map (Own city `Ui_CmdOwnCityAvail`, Attack `Ui_CmdAttackAvail`,
-  Dungeon `Ui_CmdDungeonAvail`). The thieves' week: Hideout (Harem, Subordinates as one), Map (Attack, Dungeon).
+  them (units 1-50 with a status; the thieves' units 1, 3 and 4); the week's uses as tags, lit while free, dim
+  when spent, in groups bracketed with their captions: Castle (Construction `Ui_CmdBuildAvail`, Harem
+  `Ui_CmdHaremAvail`, Merchant `Ui_CmdMerchantAvail`), Subordinates (Troops `CmdAvail_SubTroops`, Talk
+  `CmdAvail_SubTalk`, both dim while `Ui_CmdSubordAvail` is 0, the menu's △), Map (Own city
+  `Ui_CmdOwnCityAvail`, Attack `Ui_CmdAttackAvail`, Dungeon `Ui_CmdDungeonAvail`); the thieves' week: Hideout
+  (Harem, Subordinates as one), Map (Attack, Dungeon). At the right the date as "LP 3 · Month 5 · Week 2"
+  (`SetDate`; LP, `DateYear`, is computed by the original but not shown: ours, question 4), large and in the
+  names' gold (owner, 2026-10-16: the small dim one was lost on the lacquer), smaller only if the row leaves it
+  no room (the widest figures leave it ~70 of the 1280 pixels).
 - **Built (2026-10-16):** `Original.Content/Strategy/StatusStrip` (`StatusStripTests`, one test on the
   player's files), `GamePresenter.StatusStrip`, `godot/Strategy/StatusStripView`.
 

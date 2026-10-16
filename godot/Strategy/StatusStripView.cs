@@ -6,9 +6,10 @@ namespace Kichikuou.Game.Strategy;
 
 /// <summary>
 /// Our status strip above the map, as wide as it (docs/ui/command-screen.md, "The status strip"; the owner's
-/// mock-up C with groups d, 2026-10-16; the band <see cref="GameScreen"/> keeps for it): the first row is the status window <c>COMMAND.ADV</c> prints at a
-/// right click — the nation with its flag, its money and troops, the date with LP; the second the week's
-/// commands as tags, lit while free, grouped under brackets with their captions (Castle, Subordinates, Map).
+/// mock-up C with groups d, 2026-10-16; the band <see cref="GameScreen"/> keeps for it), in one row (owner, 2026-10-16):
+/// the status window <c>COMMAND.ADV</c> prints at a right click — the nation's flag (not its name), its money and
+/// troops; the week's commands as tags, lit while free, grouped under brackets with their captions (Castle,
+/// Subordinates, Map); the date with LP at the right, large and bright.
 /// Laid out in a 1280-wide band of the screen's pixels, scaled with the picture.
 /// </summary>
 internal sealed partial class StatusStripView : Control
@@ -16,7 +17,9 @@ internal sealed partial class StatusStripView : Control
     private const float Width = 1280;
 
     /// <summary>The band's height in the screen's pixels (1280 wide).</summary>
-    public const float Height = 92;
+    public const float Height = 50;
+
+    private const int CaptionSize = 10, DateSize = 21;
 
     /// <summary>The flags' CGs: <c>Prov.Owner + 819</c>, Leazas 820 (the map's markers).</summary>
     private const int LeazasFlag = 820;
@@ -24,6 +27,7 @@ internal sealed partial class StatusStripView : Control
     private readonly FacePictures _pictures;
     private readonly FontFile _brush = Lacquer.Brush();
     private readonly FontVariation _cinzel = Lacquer.Cinzel();
+    private readonly FontVariation _date = Lacquer.Cinzel(700);
     private FontFile _gothic;
     private StatusStrip? _strip;
     private ImageTexture? _flag;
@@ -90,47 +94,49 @@ internal sealed partial class StatusStripView : Control
         if (_strip is not { } s)
             return;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
-        float x = 0, y = 0;
-        Lacquer.DrawPanel(this, new Rect2(x, y, Width, Height), _k);
-        // The first row: the nation with its flag, the status window's figures, the date.
-        var row = new Rect2(x, y + 4, Width, 34);
-        float cx = x + 16;
+        Lacquer.DrawPanel(this, new Rect2(0, 0, Width, Height), _k);
+        // One row (owner, 2026-10-16): the flag, the status window's figures, the week's commands, the date.
+        var row = new Rect2(0, 10, Width, 22);
+        float cx = 18;
         if (_flag is not null && !s.Thieves)
         {
             DrawTextureRect(_flag, new Rect2(cx, row.GetCenter().Y - 9.5f, 24, 19), false);
-            cx += 32;
+            cx += 34;
         }
-        DrawString(_brush, new Vector2(cx, Lacquer.Baseline(row, _brush, 18)), s.Nation, fontSize: 18, modulate: Lacquer.Name);
-        cx += _brush.GetStringSize(s.Nation, fontSize: 18).X + 26;
         foreach (var (label, value) in s.Status)
         {
             DrawString(_gothic, new Vector2(cx, Lacquer.Baseline(row, _gothic, 13)), label, fontSize: 13, modulate: Lacquer.Label);
             cx += _gothic.GetStringSize(label, fontSize: 13).X + 8;
             DrawString(_gothic, new Vector2(cx, Lacquer.Baseline(row, _gothic, 15)), value, fontSize: 15, modulate: Lacquer.Value);
-            cx += _gothic.GetStringSize(value, fontSize: 15).X + 22;
+            cx += _gothic.GetStringSize(value, fontSize: 15).X + 20;
         }
-        float dw = _cinzel.GetStringSize(s.Date, fontSize: 13).X;
-        DrawString(_cinzel, new Vector2(x + Width - 20 - dw, Lacquer.Baseline(row, _cinzel, 13)), s.Date, fontSize: 13, modulate: Lacquer.Subtitle);
-        DrawLine(new Vector2(x + 14, y + 40), new Vector2(x + Width - 14, y + 40), Lacquer.DimGold, Lacquer.Line(1, _k));
-        // The second row: the week's commands, grouped under brackets with their captions.
-        cx = x + 20;
+        // The week's commands as tags, grouped under brackets with their captions.
+        cx += 6;
         foreach (var group in s.Groups)
         {
             float start = cx;
             foreach (var use in group.Uses)
             {
-                float cw = _gothic.GetStringSize(use.Text, fontSize: 13).X + 18;
-                Lacquer.DrawTag(this, _gothic, new Rect2(cx, y + 46, cw, 20), use.Text, ColourOf(use.Action), use.Free, _k);
-                cx += cw + 5;
+                float cw = _gothic.GetStringSize(use.Text, fontSize: 13).X + 16;
+                Lacquer.DrawTag(this, _gothic, new Rect2(cx, row.Position.Y, cw, row.Size.Y), use.Text, ColourOf(use.Action), use.Free, _k);
+                cx += cw + 4;
             }
-            float end = cx - 5, by = y + 76, mid = (start + end) / 2;
+            float end = cx - 4, by = row.End.Y + 6, mid = (start + end) / 2;
             DrawPolyline([new(start, by - 3), new(start, by), new(end, by), new(end, by - 3)], Lacquer.DimGold, Lacquer.Line(1, _k));
-            float tw = _cinzel.GetStringSize(group.Caption, fontSize: 11).X;
-            DrawRect(new Rect2(mid - tw / 2 - 6, by - 2, tw + 12, 4), Lacquer.Panel with { A = 1 });
-            DrawString(_cinzel, new Vector2(mid - tw / 2, by + (_cinzel.GetAscent(11) - _cinzel.GetDescent(11)) / 2), group.Caption,
-                fontSize: 11, modulate: Lacquer.Subtitle);
-            cx += 30;
+            float tw = _cinzel.GetStringSize(group.Caption, fontSize: CaptionSize).X;
+            DrawRect(new Rect2(mid - tw / 2 - 5, by - 2, tw + 10, 4), Lacquer.Panel with { A = 1 });
+            DrawString(_cinzel, new Vector2(mid - tw / 2, by + (_cinzel.GetAscent(CaptionSize) - _cinzel.GetDescent(CaptionSize)) / 2),
+                group.Caption, fontSize: CaptionSize, modulate: Lacquer.Subtitle);
+            cx += 22;
         }
+        // The date at the right, large and bright (owner, 2026-10-16: the small dim one was lost on the lacquer);
+        // smaller only when the row would not leave it room.
+        int size = DateSize;
+        float dw = _date.GetStringSize(s.Date, fontSize: size).X;
+        while (size > 12 && Width - 20 - dw < cx)
+            dw = _date.GetStringSize(s.Date, fontSize: --size).X;
+        DrawString(_date, new Vector2(Width - 20 - dw, Lacquer.Baseline(new Rect2(0, 0, Width, Height), _date, size)), s.Date,
+            fontSize: size, modulate: Lacquer.Name);
     }
 
     /// <summary>A command's tag colour (ours; the same as the command panel's and the province menu's tags).</summary>
