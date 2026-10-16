@@ -57,8 +57,10 @@ public sealed record ProvinceMenu(
     /// The province menu <paramref name="items"/> make, their <paramref name="texts"/> as shown (mark and
     /// text), or null when they are not a city's first menu: <c>Cｼﾊｲﾄｼ.ADV:32-507</c> (its Return at
     /// <c>:502</c>), <c>Cﾃｷﾄｼ.ADV:52-82</c> (Return at <c>:81</c>), <c>Cﾃｷﾄｼ2.ADV:50-56</c> (Return at
-    /// <c>:55</c>). <paramref name="text"/> reads a scenario line: the army's name, <c>Cｼﾊｲﾄｼ.ADV:21</c>
-    /// for ours, <c>Cﾃｷﾄｼ2.ADV:71 + 4 (owner − 2)</c> for the others (the lines <c>Cﾃｷﾄｼ</c> prints too).
+    /// <c>:55</c>). <paramref name="text"/> reads a text run (its numbers as zeros): the army's name is its first
+    /// line that is not blank — <c>Cｼﾊｲﾄｼ.ADV:20</c> for ours (the <c>R</c> before <c>:21</c>, where the run must
+    /// start, and the figures after it), <c>Cﾃｷﾄｼ2.ADV:71 + 4 (owner − 2)</c> for the others (the lines <c>Cﾃｷﾄｼ</c>
+    /// prints too).
     /// </summary>
     public static ProvinceMenu? For(GameState state, IReadOnlyList<SceneMenuItem> items, IReadOnlyList<string> texts,
         Func<ScriptRef, string?> text)
@@ -87,8 +89,10 @@ public sealed record ProvinceMenu(
         if (p < 1 || p > state.Prov_Count.Value)
             return null;
         int owner = state.Provs[p].Owner.Value;
-        ScriptRef? armyAt = owner == 1 ? new ScriptRef(OwnFile, 21) : owner is >= 2 and <= 11 ? new ScriptRef(DistantFile, 71 + 4 * (owner - 2)) : null;
-        string army = armyAt is { } at ? (text(at) ?? "").Trim('　', ' ', '（', '）', '(', ')') : "";
+        ScriptRef? armyAt = owner == 1 ? new ScriptRef(OwnFile, 20) : owner is >= 2 and <= 11 ? new ScriptRef(DistantFile, 71 + 4 * (owner - 2)) : null;
+        string army = armyAt is { } at
+            ? ((text(at) ?? "").Split('\n').FirstOrDefault(line => line.Trim('　', ' ').Length > 0) ?? "").Trim('　', ' ', '（', '）', '(', ')')
+            : "";
         return new ProvinceMenu(p, MapMarkers.ProvinceName(state, p).Replace('’', '\''), army, state.Provs[p].BgCg.Value,
             MapMarkers.CardOf(state, p), commands, items.Count);
     }

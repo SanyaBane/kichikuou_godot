@@ -2,6 +2,7 @@ using Kichikuou.Content;
 using Kichikuou.Content.Graphics;
 using Kichikuou.Content.Screen;
 using Kichikuou.Engine.Script;
+using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
 
@@ -229,8 +230,23 @@ public sealed partial class GamePresenter
     /// <summary>The open menu as a city's first menu (<see cref="Strategy.ProvinceMenu"/>), or null.</summary>
     public ProvinceMenu? ProvinceMenu =>
         _menuItems is { } items && MenuItems is { } texts && State is { } s && !BattleShows
-            ? Strategy.ProvinceMenu.For(s, items, texts, at => Read(at, [], null))
+            ? Strategy.ProvinceMenu.For(s, items, texts, ReadFixedText)
             : null;
+
+    /// <summary>A text run with zeros for its numbers and computed strings (for its fixed lines), or null when it does not resolve.</summary>
+    private string? ReadFixedText(ScriptRef at)
+    {
+        try
+        {
+            var run = _text.Read(at);
+            return run.Format(new Sys3Int[run.NumberCount], StringVar, new Sys3Int[run.ComputedStringCount]);
+        }
+        catch (Exception e) when (e is ScenarioTextException or ArgumentException or IOException)
+        {
+            Unresolved.Add($"{at}: {e.Message}");
+            return null;
+        }
+    }
 
     /// <summary>
     /// Our province menu covers the city's (docs/ui/command-screen.md, "The province menu"): while the menu

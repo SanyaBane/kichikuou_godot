@@ -247,7 +247,8 @@ Search, Battle, Ninja), and Return. The mock-ups hold the player's CGs and stay 
   `Cｼﾊｲﾄｼ.ADV:32-507` (the commands at 41-59, × 24 below; the places at 91-283, × 207 below; the Ruins
   Search's ○ at 436 too, CMD-09; Return 502), `Cﾃｷﾄｼ.ADV` 52/58 (the AL Church ○/×), 64/70 (Attack /
   Pillage), 76 (Ninja Maneuver), 81 (Return), `Cﾃｷﾄｼ2.ADV` 50 (Ninja Maneuver), 55 (Return). The army's
-  name is the line the files print (`Cｼﾊｲﾄｼ.ADV:21`, `Cﾃｷﾄｼ2.ADV:71 + 4 (owner − 2)`).
+  name is the line the files print (`Cｼﾊｲﾄｼ.ADV:21`, read from the `R` at `:20` where its run starts — read at
+  `:21` it showed as "[Cｼﾊｲﾄｼ.ADV:21]", owner 2026-10-16; `Cﾃｷﾄｼ2.ADV:71 + 4 (owner − 2)`).
 - **The answer is the original's.** A row's click answers the menu with its item's place; a × item (it
   only opens the menu again in the original) is a dimmed row, "used this week", not clickable; a right
   click or Esc cancels (0), as the original's menu. The files' later windows and menus stay the original's.

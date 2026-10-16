@@ -1,3 +1,5 @@
+using Kichikuou.Content;
+using Kichikuou.Content.Graphics;
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Content.Strategy;
@@ -26,7 +28,7 @@ public class ProvinceMenuTests
 
     private static string? Army(ScriptRef at) => (at.File, at.Line) switch
     {
-        ("Cｼﾊｲﾄｼ.ADV", 21) => "　　　（Leazas Army）",
+        ("Cｼﾊｲﾄｼ.ADV", 20) => "\n   (Leazas Army)\nEconomy: 0  Defense: 0\nBattle Area: 0",
         ("Cﾃｷﾄｼ2.ADV", 71) => "(Rebel Army)",
         _ => null,
     };
@@ -70,5 +72,33 @@ public class ProvinceMenuTests
         Assert.Null(ProvinceMenu.For(s, Items("Cﾃｷﾄｼ.ADV", 64, 99, 81), ["a", "b", "c"], Army));       // an unknown item
         var distant = ProvinceMenu.For(s, Items("Cﾃｷﾄｼ2.ADV", 50, 55), ["Ninja Maneuver", "Return"], Army)!;
         Assert.Equal([ProvinceAction.Ninja], distant.Items.Select(i => i.Action));
+    }
+
+    /// <summary>
+    /// The armies' names read from the player's files through the presenter, as the game reads them: ours
+    /// (<c>Cｼﾊｲﾄｼ.ADV:20</c>, a run that starts with its line break) and every other owner's, none unresolved
+    /// (the "[Cｼﾊｲﾄｼ.ADV:21]" the owner saw, 2026-10-16). Skipped without the player's files.
+    /// </summary>
+    [Fact]
+    public void Every_owners_army_name_resolves_from_the_players_files()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "Cｼﾊｲﾄｼ.ADV")))
+            return;
+        var missing = Path.Combine(Path.GetTempPath(), "kichikuou-no-data");
+        var presenter = new GamePresenter(new ScenarioText(LocalData.ScenarioDirectory), new CgLibrary(missing), new BoxGlyphs());
+        var names = new List<string>();
+        for (int owner = 1; owner <= 11; owner++)
+        {
+            var s = World(1, owner);
+            presenter.Bind(s);
+            var (file, lines) = owner == 1 ? ("Cｼﾊｲﾄｼ.ADV", new[] { 41, 502 }) : ("Cﾃｷﾄｼ2.ADV", new[] { 50, 55 });
+            var items = Items(file, lines);
+            presenter.OpenMenu(items);
+            names.Add(presenter.ProvinceMenu!.Army);
+            presenter.CloseMenu();
+        }
+        Assert.Empty(presenter.Unresolved);
+        Assert.Equal("Leazas Army", names[0]);
+        Assert.All(names, name => Assert.False(string.IsNullOrWhiteSpace(name) || name.Contains('[')));
     }
 }
