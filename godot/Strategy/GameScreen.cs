@@ -938,10 +938,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             await ReleaseWaitAsync(_input.PeekInput());
             _ikKey = key;
         }
-        else if (InterfaceChoice.New && _presenter.Battle.ScoutCommented && _presenter.State is not null)
+        else if (InterfaceChoice.New && _presenter.Battle.ScoutReplied && _presenter.State is not null)
         {
-            // Our scout report shows Maris's comment at its foot (owner, 2026-10-16): her window after Rance's line
-            // (FIGT_B.ADV:636-647) is answered at once, as by a click (RetVal is kept), before a frame shows it.
+            // Our scout report shows Rance's answer and Maris's comment at its foot (owner, 2026-10-16): their windows
+            // after the report (FIGT_B.ADV:629, 636-647) are answered at once, as by a click (RetVal is kept), before a
+            // frame shows them.
             key = KeyReturn;
             await ReleaseWaitAsync(_input.PeekInput());
             _ikKey = key;

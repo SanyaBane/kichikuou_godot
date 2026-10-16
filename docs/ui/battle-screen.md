@@ -297,18 +297,21 @@ picture, the slot panels) is not shown. How it is built:
   script's `Tmp0002` / `Tmp0001` — and held until the window closes after the totals). **All at once**: the overlay
   shows the whole army from the report's first key wait (after `:587`); the key waits of the commanders' lines and
   of the totals are answered at once by `GameScreen` (`BattlePresenter.ScoutReported`, after the release wait, as
-  the "vs" window's), so the player clicks once; RetVal is kept (`FlowWaitKeyKeepRetValAsync`). **Maris's comment**
-  (owner, 2026-10-16, variant A of four — B her portrait in the column right of the cards, C a strip in the cards'
-  style with her face, D her portrait under Kanami's): the overlay shows it at its foot from the start — her portrait
-  (CG 6, 154×205 at (1086, 572)) in the bottom right corner, our balloon from the cards' left edge to her with its
-  tail at her — "Quite a strong force. What shall we do?" (`:637`) past 5000 troops, "............" (`:644`) up to
-  5000 (`ScoutReport.Comment`, `CommentLine`). In the script she says it after Rance's "Mhm... I see." (`:629`);
-  her window there (`:636-647`) is answered at once before a frame shows it (`BattlePresenter.ScoutCommented`), and
-  her portrait stays drawn on the screen behind it as the original leaves it. The rest of the script's text before and
-  after (the ninja called, "Kanami returned with information", Rance's line) stays the original's windows.
-  `ScoutReportTests`: the model on a GameState, the presenter's hold and Maris's comment at 5000 and 5001 troops, and
-  in the captured defences (three with a scout report) the overlay's commanders, totals, places and comment are what
-  the script prints and the battle then places. `--scout` (with `--auto`) sends the first free ninja to scout at the
+  the "vs" window's), so the player clicks once; RetVal is kept (`FlowWaitKeyKeepRetValAsync`). **Rance's answer and
+  Maris's comment** (owner, 2026-10-16: Maris's first, variant A of four — B her portrait in the column right of the
+  cards, C a strip in the cards' style with her face, D her portrait under Kanami's; then Rance's, variant R2 of three —
+  R1 the two balloons side by side, R3 one panel with both faces): the overlay shows at its foot from the start what the
+  script has them say after the report's window, in its order — Rance's portrait (CG 1, 154×205 at (40, 572)) in the
+  bottom left corner, his balloon "Mhm... I see." (`:629`) high beside it with its tail at him; Maris's portrait (CG 6,
+  at (1086, 572)) in the bottom right corner, her balloon lower, from x 516 to her, with its tail at her: "Quite a
+  strong force. What shall we do?" (`:637`) past 5000 troops (`ScoutReport.Reply`, `Comment`, `CommentLine`). Up to
+  5000 she says only "............" (`:644`), which means nothing on our screen: her portrait and balloon are left out.
+  Their windows after the report (`:629`, `:636-647`) are answered at once before a frame shows them
+  (`BattlePresenter.ScoutReplied`); her portrait stays drawn on the screen behind as the original leaves it. The rest of
+  the script's text before (the ninja called, "Kanami returned with information") stays the original's windows.
+  `ScoutReportTests`: the model on a GameState, the presenter's hold and the replies at 5000 and 5001 troops, and in
+  the captured defences (three with a scout report) the overlay's commanders, totals, places, answer and comment are
+  what the script prints and the battle then places. `--scout` (with `--auto`) sends the first free ninja to scout at the
   first enemy attack, once a launch (CLAUDE.md, "Commands").
 - **The strategy's cut-in** (owner, 2026-10-15, mock-up A of three — B put it into the opening, C into the dialogue
   panel on the board): a successful pre-battle strategy (`FIGT作.ADV`, docs/battle/01-flow.md §4; the original shows

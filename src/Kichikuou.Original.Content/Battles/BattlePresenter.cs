@@ -110,7 +110,7 @@ public sealed partial class BattlePresenter
         Strategy = null;
         StrategyBackdrop = null;
         _strategyEffect = false;
-        _scoutComment = null;
+        _scoutReplies.Clear();
         DrawMapTiles();
         BlitMapView();
     }
@@ -125,7 +125,7 @@ public sealed partial class BattlePresenter
         Strategy = null;
         StrategyBackdrop = null;
         _strategyEffect = false;
-        _scoutComment = null;
+        _scoutReplies.Clear();
         DrawMapTiles();
     }
 
@@ -183,11 +183,16 @@ public sealed partial class BattlePresenter
                 if (e.Text == ScoutArmyLine && State is { } scouted)
                 {
                     var report = ScoutReport.Of(scouted, _portraitR);      // the army as the report will list it
-                    Scout = report with { Comment = Read(report.CommentLine, []) };
-                    _scoutComment = report.CommentLine;
+                    Scout = report with
+                    {
+                        Reply = Read(ScoutReport.RanceLine, []),
+                        Comment = report.Commented ? Read(report.CommentLine, []) : "",
+                    };
+                    _scoutReplies.Clear();
+                    _scoutReplies.AddRange([ScoutReport.RanceLine, report.CommentLine]);
                 }
-                if (e.Text == _scoutComment)
-                    (ScoutCommented, _scoutComment) = (true, null);
+                if (_scoutReplies.Remove(e.Text))
+                    ScoutReplied = true;
                 string printed = Read(e.Text, [], e.StringVariables);
                 StrategyText(e.Text, printed);
                 Print(printed);
@@ -629,7 +634,7 @@ public sealed partial class BattlePresenter
         OrderedUnit = null;
         Scout = null;
         ScoutReported = false;
-        ScoutCommented = false;
+        ScoutReplied = false;
         if (_infoBox)
         {
             // FIGT.ADV:1013-1014 / 1112-1113 after the info box closes.
@@ -819,13 +824,14 @@ public sealed partial class BattlePresenter
     public bool ScoutReported { get; private set; }
 
     /// <summary>
-    /// Whether Maris's comment on the report is in its window (<c>FIGT_B.ADV:636-647</c>, window 121) until it closes. Our
-    /// overlay shows it with the report already (<see cref="ScoutReport.Comment"/>), so its key wait is answered at once.
+    /// Whether Rance's answer to the report (<c>FIGT_B.ADV:629</c>, window 111) or Maris's comment (<c>:636-647</c>, window
+    /// 121) is in its window, until it closes. Our overlay shows both with the report already (<see cref="ScoutReport.Reply"/>,
+    /// <see cref="ScoutReport.Comment"/>), so their key waits are answered at once.
     /// </summary>
-    public bool ScoutCommented { get; private set; }
+    public bool ScoutReplied { get; private set; }
 
-    /// <summary>The line of the last report's comment, from the report until the comment prints.</summary>
-    private ScriptRef? _scoutComment;
+    /// <summary>The lines said after the last report — Rance's, then Maris's — from the report until each prints.</summary>
+    private readonly List<ScriptRef> _scoutReplies = [];
 
     private void ScoutReportLine(Sys3Int troops)
     {

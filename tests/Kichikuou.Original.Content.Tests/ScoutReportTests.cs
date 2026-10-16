@@ -80,7 +80,7 @@ public class ScoutReportTests(ITestOutputHelper output)
         Assert.Null(presenter.Scout);
 
         presenter.Show(new MessageEvent(new ScriptRef("FIGT_B.ADV", 587)));
-        Assert.Equal(ScoutReport.Of(s, 9) with { Comment = "............" }, presenter.Scout);   // 1370 troops
+        Assert.Equal(ScoutReport.Of(s, 9) with { Reply = "Mhm... I see." }, presenter.Scout);   // 1370 troops: no comment
         Assert.False(presenter.ScoutReported);
 
         presenter.Show(new ScoutReportEvent((Sys3Int)6, (Sys3Int)970));
@@ -91,18 +91,18 @@ public class ScoutReportTests(ITestOutputHelper output)
         presenter.Show(new WindowEvent(Sys3Int.Zero, Sys3Int.Zero));
         Assert.Null(presenter.Scout);
         Assert.False(presenter.ScoutReported);
-        Assert.False(presenter.ScoutCommented);
+        Assert.False(presenter.ScoutReplied);
     }
 
     /// <summary>
-    /// Maris's comment (<c>FIGT_B.ADV:636-647</c>) comes with the report — "Quite a strong force" past 5000 troops,
-    /// "............" up to 5000 — and once Rance's line is over her window holds it until it closes: its key wait is
-    /// the one our screen answers at once.
+    /// Rance's answer (<c>FIGT_B.ADV:629</c>) and Maris's comment (<c>:636-647</c>) come with the report — hers "Quite a
+    /// strong force" past 5000 troops, none up to 5000 (her "............" left out) — and once the report's window is
+    /// closed each of their windows holds its line until it closes: their key waits are the ones our screen answers at once.
     /// </summary>
     [Theory]
-    [InlineData(4600, 644, "............")]                              // 5000 with Jibul's 400 and Dodge's none
+    [InlineData(4600, 644, "")]                                          // 5000 with Jibul's 400 and Dodge's none
     [InlineData(4601, 637, "Quite a strong force.\nWhat shall we do?")]
-    public void Maris_comments_in_the_report_and_her_window_is_answered(int sakanaku, int line, string comment)
+    public void Rance_and_Maris_reply_in_the_report_and_their_windows_are_answered(int sakanaku, int line, string comment)
     {
         var s = Rebels();
         s.Cmdrs[6].Troops = (Sys3Int)sakanaku;
@@ -112,23 +112,25 @@ public class ScoutReportTests(ITestOutputHelper output)
         presenter.Show(new WindowEvent((Sys3Int)113, Sys3Int.Zero));
         presenter.Show(new MessageEvent(new ScriptRef("FIGT_B.ADV", 587)));
         Assert.Equal(new ScriptRef("FIGT_B.ADV", line), presenter.Scout!.CommentLine);
-        Assert.Equal(comment, presenter.Scout.Comment);
+        Assert.Equal(("Mhm... I see.", comment), (presenter.Scout.Reply, presenter.Scout.Comment));
         presenter.Show(new WindowEvent(Sys3Int.Zero, Sys3Int.Zero));
+        Assert.False(presenter.ScoutReplied);
 
         presenter.Show(new WindowEvent((Sys3Int)322, Sys3Int.Zero));
         presenter.Show(new WindowEvent((Sys3Int)111, Sys3Int.Zero));
         presenter.Show(new MessageEvent(new ScriptRef("FIGT_B.ADV", 629)));                  // Rance: "Mhm... I see."
-        Assert.False(presenter.ScoutCommented);
+        Assert.True(presenter.ScoutReplied);
         presenter.Show(new WindowEvent(Sys3Int.Zero, Sys3Int.Zero));
+        Assert.False(presenter.ScoutReplied);
         presenter.Show(new WindowEvent((Sys3Int)321, (Sys3Int)ScoutReport.AdvisorCg));
         presenter.Show(new WindowEvent((Sys3Int)121, Sys3Int.Zero));
         presenter.Show(new MessageEvent(new ScriptRef("FIGT_B.ADV", line)));
-        Assert.True(presenter.ScoutCommented);
+        Assert.True(presenter.ScoutReplied);
         presenter.Show(new WindowEvent(Sys3Int.Zero, Sys3Int.Zero));
-        Assert.False(presenter.ScoutCommented);
+        Assert.False(presenter.ScoutReplied);
 
         presenter.Show(new MessageEvent(new ScriptRef("FIGT_B.ADV", line)));                 // not after a report
-        Assert.False(presenter.ScoutCommented);
+        Assert.False(presenter.ScoutReplied);
     }
 
     /// <summary>
@@ -176,11 +178,18 @@ public class ScoutReportTests(ITestOutputHelper output)
                         wrong.Add($"report {reports}: not reported at its totals");
                     placed = toComment = report;
                     break;
+                case MessageEvent { Text: { File: "FIGT_B.ADV", Line: 629 } } when toComment is not null:
+                    // Rance's answer: the one the overlay showed, its window answered on our screen.
+                    if (toComment.Reply != presenter.Text(ScoutReport.RanceLine))
+                        wrong.Add($"report {reports}: Rance's answer shown \"{toComment.Reply}\"");
+                    if (!presenter.ScoutReplied)
+                        wrong.Add($"report {reports}: Rance's answer not answered");
+                    break;
                 case MessageEvent { Text: { File: "FIGT_B.ADV", Line: 637 or 644 } said } when toComment is not null:
-                    // Maris's comment: the one the overlay showed, its window answered on our screen.
-                    if (said != toComment.CommentLine || toComment.Comment != presenter.Text(said))
+                    // Maris's comment: the one the overlay showed (none for her "............"), its window answered.
+                    if (said != toComment.CommentLine || toComment.Comment != (said.Line == 637 ? presenter.Text(said) : ""))
                         wrong.Add($"report {reports}: commented {said}, shown {toComment.CommentLine} \"{toComment.Comment}\"");
-                    if (!presenter.ScoutCommented)
+                    if (!presenter.ScoutReplied)
                         wrong.Add($"report {reports}: its comment not answered");
                     toComment = null;
                     break;
