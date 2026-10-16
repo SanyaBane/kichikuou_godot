@@ -193,6 +193,7 @@ public sealed partial class BattlePresenter
                 }
                 if (_scoutReplies.Remove(e.Text))
                     ScoutReplied = true;
+                ScoutCalling = e.Text.File == ScoutArmyLine.File && e.Text.Line >= ScoutCallFirst && e.Text.Line < ScoutArmyLine.Line;
                 string printed = Read(e.Text, [], e.StringVariables);
                 StrategyText(e.Text, printed);
                 Print(printed);
@@ -635,6 +636,7 @@ public sealed partial class BattlePresenter
         Scout = null;
         ScoutReported = false;
         ScoutReplied = false;
+        ScoutCalling = false;
         if (_infoBox)
         {
             // FIGT.ADV:1013-1014 / 1112-1113 after the info box closes.
@@ -829,6 +831,17 @@ public sealed partial class BattlePresenter
     /// <see cref="ScoutReport.Comment"/>), so their key waits are answered at once.
     /// </summary>
     public bool ScoutReplied { get; private set; }
+
+    /// <summary>
+    /// Whether a line between the ninja's choice and the report is in its window (owner, 2026-10-16): the ninja called,
+    /// how they come, their answer, Rance's order, the wait and "… returned with information" (<c>FIGT_B.ADV:393-586</c>,
+    /// only the scout's path reaches them), until the window closes or another line prints. Our overlay comes straight
+    /// after the choice, so their key waits are answered at once.
+    /// </summary>
+    public bool ScoutCalling { get; private set; }
+
+    /// <summary>The first line of the ninjas' calls (<c>L_008c0</c>, Kanami's).</summary>
+    private const int ScoutCallFirst = 393;
 
     /// <summary>The lines said after the last report — Rance's, then Maris's — from the report until each prints.</summary>
     private readonly List<ScriptRef> _scoutReplies = [];

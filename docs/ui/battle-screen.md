@@ -307,8 +307,11 @@ picture, the slot panels) is not shown. How it is built:
   strong force. What shall we do?" (`:637`) past 5000 troops (`ScoutReport.Reply`, `Comment`, `CommentLine`). Up to
   5000 she says only "............" (`:644`), which means nothing on our screen: her portrait and balloon are left out.
   Their windows after the report (`:629`, `:636-647`) are answered at once before a frame shows them
-  (`BattlePresenter.ScoutReplied`); her portrait stays drawn on the screen behind as the original leaves it. The rest of
-  the script's text before (the ninja called, "Kanami returned with information") stays the original's windows.
+  (`BattlePresenter.ScoutReplied`); her portrait stays drawn on the screen behind as the original leaves it. **The way
+  to the report** (owner, 2026-10-16): the overlay comes straight after the ninja's choice — the lines between
+  (`:393-586`: Rance calls the ninja, how they come, their answer, Rance's order, the wait, "… returned with
+  information") are answered at once before a frame shows them (`BattlePresenter.ScoutCalling`); Rance's "Yeah, this
+  is a good time to use a ninja." before the ninja menu (`:314`) stays the original's window.
   `ScoutReportTests`: the model on a GameState, the presenter's hold and the replies at 5000 and 5001 troops, and in
   the captured defences (three with a scout report) the overlay's commanders, totals, places, answer and comment are
   what the script prints and the battle then places. `--scout` (with `--auto`) sends the first free ninja to scout at the

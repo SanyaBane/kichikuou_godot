@@ -95,6 +95,35 @@ public class ScoutReportTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// The lines between the ninja's choice and the report (<c>FIGT_B.ADV:393-586</c>) are answered at once on our screen,
+    /// each while its window holds it; Rance's line before the ninja menu (<c>:314</c>) and the report's first (<c>:587</c>)
+    /// stay the player's.
+    /// </summary>
+    [Fact]
+    public void The_lines_between_the_ninjas_choice_and_the_report_are_answered()
+    {
+        var presenter = new BattlePresenter(Texts.Value, Cgs.Value, new BoxGlyphs());
+        presenter.Attach(Rebels());
+        presenter.Show(new WindowEvent((Sys3Int)112, Sys3Int.Zero));
+        presenter.Show(new MessageEvent(new ScriptRef("FIGT_B.ADV", 314)));                  // "Yeah, this is a good time…"
+        Assert.False(presenter.ScoutCalling);
+        presenter.Show(new WindowEvent(Sys3Int.Zero, Sys3Int.Zero));
+
+        foreach (int line in new[] { 398, 406, 413, 509, 518, 524, 528, 532, 541 })        // Kanami's way to the report
+        {
+            presenter.Show(new WindowEvent((Sys3Int)111, Sys3Int.Zero));
+            presenter.Show(new MessageEvent(new ScriptRef("FIGT_B.ADV", line)));
+            Assert.True(presenter.ScoutCalling, $"line {line}");
+            presenter.Show(new WindowEvent(Sys3Int.Zero, Sys3Int.Zero));
+            Assert.False(presenter.ScoutCalling);
+        }
+        presenter.Show(new WindowEvent((Sys3Int)113, Sys3Int.Zero));
+        presenter.Show(new MessageEvent(new ScriptRef("FIGT_B.ADV", 541)));
+        presenter.Show(new MessageEvent(new ScriptRef("FIGT_B.ADV", 587)));                  // the report: in the same window
+        Assert.False(presenter.ScoutCalling);
+    }
+
+    /// <summary>
     /// Rance's answer (<c>FIGT_B.ADV:629</c>) and Maris's comment (<c>:636-647</c>) come with the report — hers "Quite a
     /// strong force" past 5000 troops, none up to 5000 (her "............" left out) — and once the report's window is
     /// closed each of their windows holds its line until it closes: their key waits are the ones our screen answers at once.
@@ -147,7 +176,7 @@ public class ScoutReportTests(ITestOutputHelper output)
         GameState? state = null;
         ScoutReport? report = null, placed = null, toComment = null;
         var lines = new List<ScoutedCommander>();
-        int reports = 0;
+        int reports = 0, called = 0;
         var wrong = new List<string>();
         var view = new ObservingView(e =>
         {
@@ -162,6 +191,12 @@ public class ScoutReportTests(ITestOutputHelper output)
             }
             switch (e)
             {
+                case MessageEvent { Text: { File: "FIGT_B.ADV", Line: >= 393 and < 587 } calling }:
+                    // Between the ninja's choice and the report: answered at once on our screen.
+                    called++;
+                    if (!presenter.ScoutCalling)
+                        wrong.Add($"{calling}: not answered at once");
+                    break;
                 case ScoutReportEvent line when report is not null:
                     int record = line.Cmdr.Value;
                     lines.Add(new ScoutedCommander(0, record, s.Strings[4].Trim(), line.Troops == 0 ? "" : s.Strings[5].Trim(),
@@ -214,7 +249,9 @@ public class ScoutReportTests(ITestOutputHelper output)
         });
         if (toComment is not null)
             wrong.Add($"report {reports}: no comment after it");
-        output.WriteLine($"{file}: {reports} scout reports");
+        output.WriteLine($"{file}: {reports} scout reports, {called} lines before them answered");
+        if (reports > 0 && called == 0)
+            wrong.Add("no line between the ninja's choice and the report");
         Assert.Empty(wrong);
     }
 

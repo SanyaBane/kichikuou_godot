@@ -943,11 +943,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             await ReleaseWaitAsync(_input.PeekInput());
             _ikKey = key;
         }
-        else if (InterfaceChoice.New && _presenter.Battle.ScoutReplied && _presenter.State is not null)
+        else if (InterfaceChoice.New && (_presenter.Battle.ScoutReplied || _presenter.Battle.ScoutCalling) && _presenter.State is not null)
         {
-            // Our scout report shows Rance's answer and Maris's comment at its foot (owner, 2026-10-16): their windows
-            // after the report (FIGT_B.ADV:629, 636-647) are answered at once, as by a click (RetVal is kept), before a
-            // frame shows them.
+            // Our scout report comes straight after the ninja's choice and shows Rance's answer and Maris's comment at its
+            // foot (owner, 2026-10-16): the windows between the choice and the report (FIGT_B.ADV:393-586) and after it
+            // (629, 636-647) are answered at once, as by a click (RetVal is kept), before a frame shows them.
             key = KeyReturn;
             await ReleaseWaitAsync(_input.PeekInput());
             _ikKey = key;
