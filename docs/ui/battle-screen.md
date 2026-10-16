@@ -59,7 +59,7 @@ draws what the core shows and answers what the core asks.
    battles) stay the original's for now (docs/backlog.md, "Interface").
 4. **The 戦果 place**: troops of the two sides, advantages, strategy — or nothing. Owner, 2026-10-15 (mock-ups from the
    week-18 battle): no bar — it would mean nothing in Kichikuou, where nothing judges a battle by a score; instead the
-   **battle's limit** gets a plate at the scene's foot and the **advantages** show what they do, in percent ("The
+   **battle's limit** gets a plate at the scene's top (its foot until 2026-10-16) and the **advantages** show what they do, in percent ("The
    limit and the advantages" below).
 5. **Focus**: as squares on the card (Sengoku's action points' place) or a number. Owner, 2026-10-15 (mock-up 5B of
    three): "◆ n" on the portrait's top-left corner ("The focus" below).
@@ -91,10 +91,14 @@ portrait (mock-up B):
   192×256 face (`Unit_FaceCg` / `Cmdr_FaceCg`) scaled ×1.56 to 300×400 on the speaker's side of the
   scene (the player's left, the enemy's right: the bubble's tail), framed in the accent colour, the
   name below it — so it is clear who speaks, as the original's faces beside the bubble show.
-- **The round's order**, y 412-446: a strip of name chips, the acted grey, the acting framed, the
+- **The round's order**, y 374-406 (over the scene's foot, where the limit's plate stood; y 412-446 under the scene
+  until 2026-10-16, owner): a strip of name chips, the acted grey, the acting framed, the
   rest blue (player) or red (enemy), in Kichikuou's order (fewest troops first, re-evaluated after
   each action; ties by slot, player first; 01-flow.md §6).
-- **The cards**, y ~470-785: two columns of two cards a side, 282×150; the player's back row
+- **The separator** (owner, 2026-10-16): a bar across the screen at the scene's foot, y 408-414, in the frames'
+  colour lit from above, an accent line along its top brightest in the middle, a shadow cast on the panel
+  (`BattleBoardView.DrawSeparator`); over the strip and the spotlight.
+- **The cards**, y 450-758 (474-782 until 2026-10-16: the owner raised them, with the armies' names at y 424 and the gauge, to just under the separator, the free room below them): two columns of two cards a side, 282×150; the player's back row
   (places 3-4) on the far left, its front row (1-2) next to the centre, the enemy's front row next to
   the centre, its back row on the far right; between them **the rounds gauge** (one segment per
   round of the battle, the spent ones dark, "n left" below; since 2026-10-15 the owner's mock-up A of three, after
@@ -229,10 +233,10 @@ picture, the slot panels) is not shown. How it is built:
   10% fewer to theirs (rounded down). Troops against troops only; commanders' attacks and specials are not affected."
   The label "Walls +8%" stays although it is points of hit chance (owner). **The
   battle's limit** — the most troops of one unit that fight in an exchange (docs/battle/02-resolution.md, `:624`), which
-  the header prints as `<City: Battle Limit>` / `Up to 232` (`:145-164`) — is a plate centred near the scene's foot,
-  between an exchange's HP counters, in the owner's words: "City · Battle Limit: up to 232" (Plains / Duel / City /
+  the header prints as `<City: Battle Limit>` / `Up to 232` (`:145-164`) — is a plate centred at the scene's top
+  (owner, 2026-10-16; near its foot, between an exchange's HP counters, until then), in the owner's words: "City · Battle Limit: up to 232" (Plains / Duel / City /
   Dungeon as the header's conditions; `BattleOpening.LimitText`, the opening's plate says the same); the cards' colours
-  at 80 %, the frame's colour, its centre at y 393, 28 high (`BattleBoardView.DrawLimit`), under the script's windows.
+  at 80 %, the frame's colour, its top 8 below the screen's edge, 28 high (`BattleBoardView.DrawLimit`), under the script's windows.
   `BattleOpeningTests` checks the texts.
 - **The focus** (owner, 2026-10-15, question 5, mock-up 5B of three: squares at the card's foot, the badge, a number at
   the name line's end): the focus a Wait builds (`Bt_PSlot1-4Focus`: +1 a Wait, reset only at the battle's start, spent
@@ -261,7 +265,8 @@ picture, the slot panels) is not shown. How it is built:
   digits as before the blow (a leading one falls away too), Oswald Bold (owner, 2026-10-16, of sixteen fonts on a sheet)
   in a white-to-gold gradient with a dark
   outline, "TROOPS" over them in gold (Oswald SemiBold); the HP in smaller digits in a mint gradient beside them (towards the scene's middle), "HP" before it; straight on the
-  field, with no band behind them (owner, 2026-10-16). They rise from below the scene's foot in 0.25 s as the shots start, count as
+  field, with no band behind them (owner, 2026-10-16), their baselines 36 + 10 over the scene's foot, above the order
+  strip (owner, 2026-10-16: the strip moved there). They rise from below the scene's foot in 0.25 s as the shots start, count as
   Sengoku Rance's do — every 0.2 s the value due 0.2 s later, from 0.1 s after the start, over Option → Battle Screen…
   → "Counters: run" (1.3 s by default; `--count-seconds x` for a launch) — and every digit that changes falls away:
   the old one drops 1.4 digit heights, drifts 10-24 pixels outward, turns half a turn and fades in 0.2 s. They hold
@@ -336,7 +341,7 @@ picture, the slot panels) is not shown. How it is built:
   then the tints, the seam and "VS" fade where they are, the names (with their advantages) part to the sides and
   the plate rises (eased in; owner, 2026-10-15 — until then the halves parted with copies of the scene; Option →
   Battle Screen… → "Opening: leave", 0.5 s by default, `--opening-seconds x` for a launch; at once while skipping
-  and with `--fast`) while the battle goes on; the limit's plate at the scene's foot shows as the opening goes.
+  and with `--fast`) while the battle goes on; the limit's plate at the scene's top shows as the opening goes.
   **The cards slide in** under the opening as it comes up, after Sengoku Rance's (owner, 2026-10-15; docs/sengoku/04-screen.md
   §6.5): each from beyond its own side (the player's from the left, the enemy's from the right), linear, clipped to
   the panel; the front row 640 layout pixels in Option → Battle Screen… → "Cards: slide in" (1 s by default, Sengoku
@@ -349,7 +354,7 @@ picture, the slot panels) is not shown. How it is built:
   `--fast` (`OrderStrip.Hold`). A later round's header is answered at once by `GameScreen`, as a click (its
   key lands in RetVal, `FIGT.ADV:214`, which BTX-03 reads), after the release wait. The original's box is no longer
   in the windows' layer. **The advantages** stay on the screen all battle long, over the cards next to the armies'
-  names, in the accent colour — since 2026-10-15 as what they do, and the battle's limit at the scene's foot ("The
+  names, in the accent colour — since 2026-10-15 as what they do, and the battle's limit at the scene's top ("The
   limit and the advantages" below). The fonts are
   bundled in `godot/fonts` under the SIL OFL 1.1 with their licenses (`Shojumaru-OFL.txt`, `Cinzel-OFL.txt`). The
   model is `Original.Content/Battles/BattleOpening` (`GamePresenter.Opening` while the first header waits,
@@ -761,7 +766,8 @@ picture, the slot panels) is not shown. How it is built:
    ✓ 2026-10-12 the strip moves (owner): `godot/Battles/OrderStrip`, on its own while the game goes on.
    When damage re-sorts the waiting units, the chip that jumps ahead (out of the longest run kept in
    order; among runs as long, the one that moved left) drops a row, slides to its place while the chips
-   it passes make room, and rises into it — 1 s by default. A new order
+   it passes make room, and rises into it — 1 s by default. Since 2026-10-16 (owner; the strip over the scene's
+   foot) it rises a row into the scene instead, and drops into its place. A new order
    or turn while chips move makes them finish within 0.15 s, then the next move starts; under MsgSkip
    the chips stand at their places at once, and so when a new round (or battle) begins (owner: the
    units that acted go back into the order without jumps).

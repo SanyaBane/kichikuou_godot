@@ -7,8 +7,8 @@ namespace Kichikuou.Game.Battles;
 /// <summary>
 /// The round's order on our battle screen (<see cref="RoundOrder.Chips"/>), a chip per unit, that moves
 /// on its own while the game goes on (owner, 2026-10-12): when the order changes (damage re-sorts the
-/// waiting units, 01-flow.md §6), a unit that jumps ahead drops a row, slides to its new place while the
-/// chips it passes make room, and rises into it; the rest slide. A change that comes while chips still
+/// waiting units, 01-flow.md §6), a unit that jumps ahead rises a row (over the strip, into the scene: owner,
+/// 2026-10-16), slides to its new place while the chips it passes make room, and drops into it; the rest slide. A change that comes while chips still
 /// move makes them finish at once (<see cref="HurrySeconds"/>), then the next one starts. While the
 /// message skip runs the chips stand at their places at once. While a battle's opening stands the strip is held back;
 /// after its click the chips fly in from the right one after another (<see cref="Hold"/>; Sengoku Rance's flags).
@@ -21,7 +21,7 @@ internal sealed partial class OrderStrip : Control
     /// <summary>How fast a move under way finishes when the next change comes.</summary>
     private static double HurrySeconds => Math.Max(0.001, BattleScreenSettings.Get(BattleScreenSettings.StripHurrySeconds));
 
-    // The phases of a jump, as parts of the move: down, across, up.
+    // The phases of a jump, as parts of the move: up, across, down.
     private static double DownEnd => BattleScreenSettings.Get(BattleScreenSettings.StripDropShare);
     private static double AcrossEnd => 1 - DownEnd;
 
@@ -342,7 +342,7 @@ internal sealed partial class OrderStrip : Control
         if (_t >= 1)
             return;
         _t = Math.Min(1, _t + delta * _speed / Seconds);
-        float drop = _chips.Values.Select(c => c.Panel.Size.Y).DefaultIfEmpty(0).Max() + 4 * _scale;
+        float rise = _chips.Values.Select(c => c.Panel.Size.Y).DefaultIfEmpty(0).Max() + 4 * _scale;
         foreach (var c in _chips.Values)
         {
             if (c.Leaving)
@@ -356,8 +356,8 @@ internal sealed partial class OrderStrip : Control
             var at = c.From.Lerp(c.To, across);
             if (c.Jumps)
             {
-                double down = Ease(Phase(_t, 0, DownEnd)) - Ease(Phase(_t, AcrossEnd, 1));
-                at.Y += (float)down * drop;
+                double up = Ease(Phase(_t, 0, DownEnd)) - Ease(Phase(_t, AcrossEnd, 1));
+                at.Y -= (float)up * rise;
             }
             c.Panel.Position = at;
         }

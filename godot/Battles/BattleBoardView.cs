@@ -24,14 +24,14 @@ internal sealed partial class BattleBoardView : Control
     private static readonly Rect2 SidesArea = new(0, 0, 1280, 410);
     private static readonly Rect2 SceneArea = new(128, 0, 1024, 410);
     private static readonly Rect2 WindowsArea = new(312, 0, 656, 410);       // 640×400 script pixels ×1.025
-    private static readonly Rect2 StripArea = new(10, 414, 1260, 32);
-    private static readonly Rect2 PlayerNameArea = new(10, 448, 574, 24);
-    private static readonly Rect2 EnemyNameArea = new(696, 448, 574, 24);
-    private static readonly Rect2 GaugeArea = new(594, 474, 92, 308);
+    private static readonly Rect2 StripArea = new(10, 374, 1260, 32);         // over the scene's foot (owner, 2026-10-16)
+    private static readonly Rect2 PlayerNameArea = new(10, 424, 574, 24);   // up under the separator (owner, 2026-10-16)
+    private static readonly Rect2 EnemyNameArea = new(696, 424, 574, 24);
+    private static readonly Rect2 GaugeArea = new(594, 450, 92, 308);
     private static readonly Rect2 SpeakerLeft = new(8, 6, 300, 398);
     private static readonly Rect2 SpeakerRight = new(972, 6, 300, 398);
     private static readonly Vector2 CardSize = new(282, 150);
-    private static readonly float[] CardRows = [474, 632];
+    private static readonly float[] CardRows = [450, 608];
     private const float FaceSize = 118;
     private const float TextSize = 17;
 
@@ -96,7 +96,7 @@ internal sealed partial class BattleBoardView : Control
     private readonly HBoxContainer _playerArmyLine, _enemyArmyLine;     // the army's name and its advantage over the cards
     private readonly AdvantageTip _advantageTip;
     private readonly BattleOpeningLayer _opening;
-    private readonly Control _limit;                                    // the battle's limit at the scene's foot (owner, 2026-10-15)
+    private readonly Control _limit;                                    // the battle's limit at the scene's top (owner, 2026-10-15/16)
     private string _limitText = "";
 
     /// <summary>How far the battle's opening has faded in (0 none or not up, 1 whole).</summary>
@@ -207,6 +207,9 @@ internal sealed partial class BattleBoardView : Control
         _spotlight = new Control { MouseFilter = MouseFilterEnum.Ignore, ZIndex = 2 };   // over the cards and the strip (1), under the acting frame
         _spotlight.Draw += DrawSpotlight;
         AddChild(_spotlight);
+        _separator = new Control { MouseFilter = MouseFilterEnum.Ignore, ZIndex = 2 };   // over the strip (1) and the spotlight, under the balloon (3)
+        _separator.Draw += DrawSeparator;
+        AddChild(_separator);
         _actingFrame = new Control { MouseFilter = MouseFilterEnum.Ignore, Visible = false, ZIndex = 2 };    // over the cards and the spotlight
         _actingFrame.Draw += DrawActingFrame;
         AddChild(_actingFrame);
@@ -295,6 +298,7 @@ internal sealed partial class BattleBoardView : Control
         _cardsKey = _stripKey = "?";
         _gauge.QueueRedraw();
         _limit.QueueRedraw();
+        _separator.QueueRedraw();
     }
 
     /// <summary>Option → Fonts: the screen's text in the chosen font.</summary>
@@ -350,6 +354,8 @@ internal sealed partial class BattleBoardView : Control
         At(_gauge, GaugeArea);
         At(_speaker, _speakerArea);
         At(_spotlight, new Rect2(0, 0, 1280, 800));
+        At(_separator, SeparatorArea);
+        _separator.QueueRedraw();
         _spotlight.QueueRedraw();
         At(_commands, new Rect2(0, 0, 1280, 800));
         _commands.Layout(CardArea, scale);
@@ -616,6 +622,7 @@ internal sealed partial class BattleBoardView : Control
     // ------------------------------------------------------------------ the spotlight
 
     private readonly Control _spotlight;
+    private readonly Control _separator;
     private readonly List<Fighter> _fighters = [];                   // the fighters' cards (layout pixels) and actions
     private float _spotShown;                                        // 0: off, 1: whole
     private float _spotDrawnDarkness;
@@ -1312,9 +1319,9 @@ internal sealed partial class BattleBoardView : Control
         return [.. points];
     }
 
-    // The battle's limit (owner, 2026-10-15): a plate centred near the scene's foot, between the HP counters of an
-    // exchange — what the first round header's second and third lines say (BattleOpening.LimitText).
-    private const float LimitCentreY = 393, LimitHeight = 28, LimitPadding = 16;
+    // The battle's limit (owner, 2026-10-15): a plate centred at the scene's top, 8 below the screen's edge (owner,
+    // 2026-10-16; at its foot until then) — what the first round header's second and third lines say (BattleOpening.LimitText).
+    private const float LimitCentreY = 8 + 28 / 2f, LimitHeight = 28, LimitPadding = 16;
 
     private void DrawLimit()
     {
@@ -1336,6 +1343,29 @@ internal sealed partial class BattleBoardView : Control
         float baseline = plate.Position.Y + (plate.Size.Y + font.GetAscent(fontSize) - font.GetDescent(fontSize)) / 2;
         _limit.DrawString(font, new Vector2(plate.Position.X, baseline), _limitText, HorizontalAlignment.Center, plate.Size.X,
             fontSize, _colours.Text);
+    }
+
+    // The separator between the scene and the panel (owner, 2026-10-16): a bar across the screen at the scene's foot in the
+    // frames' colour, lit from above, an accent line along its top brightest in the middle, a shadow cast on the panel.
+    private static readonly Rect2 SeparatorArea = new(0, 406, 1280, 22);
+    private const float SeparatorTop = 2, SeparatorBar = 6, SeparatorShadow = 12;
+
+    private void DrawSeparator()
+    {
+        float s = _scale, w = _separator.Size.X;
+        float top = SeparatorTop * s, bar = Math.Max(2, SeparatorBar * s), bottom = top + bar;
+        var shadow = new Color(0, 0, 0, 0.45f);
+        _separator.DrawRect(new Rect2(0, top - Math.Max(1, s), w, Math.Max(1, s)), shadow);           // its edge on the scene
+        _separator.DrawPolygon([new(0, bottom), new(w, bottom), new(w, bottom + SeparatorShadow * s), new(0, bottom + SeparatorShadow * s)],
+            [shadow, shadow, shadow with { A = 0 }, shadow with { A = 0 }]);
+        var (light, dark) = (_colours.Border.Lightened(0.3f), _colours.Border.Darkened(0.45f));
+        _separator.DrawPolygon([new(0, top), new(w, top), new(w, bottom), new(0, bottom)], [light, light, dark, dark]);
+        float line = Math.Max(1, 1.5f * s);
+        var faint = _colours.Accent with { A = 0.15f };
+        var bright = _colours.Accent with { A = 0.85f };
+        _separator.DrawPolygon([new(0, top), new(w / 2, top), new(w / 2, top + line), new(0, top + line)], [faint, bright, bright, faint]);
+        _separator.DrawPolygon([new(w / 2, top), new(w, top), new(w, top + line), new(w / 2, top + line)], [bright, faint, faint, bright]);
+        _separator.DrawRect(new Rect2(0, bottom - Math.Max(1, s), w, Math.Max(1, s)), new Color(0, 0, 0, 0.5f));
     }
 
     // ------------------------------------------------------------------ the pointer

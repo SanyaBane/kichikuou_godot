@@ -20,8 +20,9 @@ internal sealed partial class ExchangeCountersView : Control
     public static double RunSeconds => BattleScreenSettings.Get(BattleScreenSettings.CountSeconds);
 
     // The layout in layout pixels of the 1024×410 scene: each side's counters at its foot, straight on the field (owner,
-    // 2026-10-16: no band behind them), TROOPS over the troops' digits, HP and its digits beside them towards the middle.
-    private const float Edge = 12, Pad = 16, Foot = 16, Gap = 18;
+    // 2026-10-16: no band behind them), TROOPS over the troops' digits, HP and its digits beside them towards the middle;
+    // above the order strip, which stands at the scene's foot (owner, 2026-10-16).
+    private const float Edge = 12, Pad = 16, Foot = 36, Gap = 18;
     // Oswald (owner, 2026-10-16, of sixteen fonts): its digits stand 0.83 of the size, so 51 for the troops' 42-pixel digits.
     private const int TroopSize = 51, HpSize = 30, LabelSize = 14;
     private const float TroopCell = 30, HpCell = 19, TroopCap = 42, HpCap = 25, LabelGap = 9;
