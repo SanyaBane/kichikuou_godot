@@ -7,31 +7,23 @@ namespace Kichikuou.Game.Strategy;
 /// <summary>
 /// Our command panel (docs/ui/command-screen.md, "The command panel"; the owner's mock-up A, 2026-10-16):
 /// <c>COMMAND.ADV</c>'s command menu — the right click on the map — as a lacquer column in the screen's
-/// centre, where the original's menu opens: the nation with its flag, the date, the status window's two
-/// figures, the commands as rows with a tag and their uses left this week (diamonds), the other items, and
-/// Turn END. A row's click answers the script's menu with its choice; a right click or Esc anywhere cancels
+/// centre, where the original's menu opens: the commands as rows with a tag, the other items, and Turn END;
+/// the status window and the week's uses are on our status strip (<see cref="StatusStripView"/>). A row's click answers the script's menu with its choice; a right click or Esc anywhere cancels
 /// (0, back to the map), as the original's menu. Laid out in the 1280×800 screen's pixels, scaled with the picture.
 /// </summary>
 internal sealed partial class CommandMenuView : Control
 {
     private const float Width = 320, Pad = 18, RowPitch = 37, RowH = 30, LinkPitch = 28, LinkH = 26, EndH = 48;
 
-    /// <summary>The flags' CGs: <c>Prov.Owner + 819</c>, Leazas 820 (the map's markers).</summary>
-    private const int LeazasFlag = 820;
-
-    private readonly FacePictures _pictures;
     private readonly FontFile _brush = Lacquer.Brush();
-    private readonly FontVariation _cinzel = Lacquer.Cinzel();
     private FontFile _gothic;
     private CommandMenu? _menu;
-    private ImageTexture? _flag;
     private float _k = 1;                           // window pixels to a screen pixel
     private int _hovered = -1, _pressed = -1;       // the row: 0-based, the commands, the links, then Turn END
     private TaskCompletionSource<int>? _answer;
 
-    public CommandMenuView(GameFont font, FacePictures pictures)
+    public CommandMenuView(GameFont font)
     {
-        _pictures = pictures;
         _gothic = DeploymentTableView.LoadFont(font);
         MouseFilter = MouseFilterEnum.Stop;
         Visible = false;
@@ -47,7 +39,6 @@ internal sealed partial class CommandMenuView : Control
     public void Open(CommandMenu menu)
     {
         _menu = menu;
-        _flag = !menu.Thieves && _pictures.Picture(LeazasFlag) is { } image ? ImageTexture.CreateFromImage(image) : null;
         _hovered = _pressed = -1;
         Visible = true;
         QueueRedraw();
@@ -65,7 +56,6 @@ internal sealed partial class CommandMenuView : Control
         _answer?.TrySetCanceled();
         _answer = null;
         _menu = null;
-        _flag = null;
         Visible = false;
     }
 
@@ -87,7 +77,7 @@ internal sealed partial class CommandMenuView : Control
 
     private int RowCount => _menu is null ? 0 : Commands + Links + 1;
 
-    private const float StatusTop = Pad + 76, CommandsTop = StatusTop + 2 * 24 + 18;
+    private const float CommandsTop = Pad;
 
     private float LinksTop => CommandsTop + Commands * RowPitch + 14;
 
@@ -177,34 +167,11 @@ internal sealed partial class CommandMenuView : Control
 
     public override void _Draw()
     {
-        if (_menu is not { } m)
+        if (_menu is null)
             return;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         float x = PanelX, y = PanelY;
         Lacquer.DrawPanel(this, new Rect2(x, y, Width, Height), _k);
-        // The nation with its flag, the date.
-        float nx = x + Pad + 2;
-        if (_flag is not null)
-        {
-            DrawTextureRect(_flag, new Rect2(nx, y + Pad + 4, 30, 24), false);
-            nx += 40;
-        }
-        int nameSize = 22;
-        while (nameSize > 12 && _brush.GetStringSize(m.Nation, fontSize: nameSize).X > x + Width - Pad - nx)
-            nameSize--;
-        DrawString(_brush, new Vector2(nx, y + Pad + _brush.GetAscent(nameSize)), m.Nation, fontSize: nameSize, modulate: Lacquer.Name);
-        DrawString(_cinzel, new Vector2(x + Pad + 1, y + Pad + 38 + _cinzel.GetAscent(13)), m.Date, fontSize: 13, modulate: Lacquer.Subtitle);
-        Lacquer.DrawDivider(this, x + 16, x + Width - 16, y + StatusTop - 8, _k);
-        // The status window's figures.
-        float sy = y + StatusTop;
-        foreach (var (label, value) in m.Status)
-        {
-            DrawString(_gothic, new Vector2(x + 20, sy + _gothic.GetAscent(14)), label, fontSize: 14, modulate: Lacquer.Label);
-            float vw = _gothic.GetStringSize(value, fontSize: 16).X;
-            DrawString(_gothic, new Vector2(x + Width - 20 - vw, sy + _gothic.GetAscent(16) - 1), value, fontSize: 16, modulate: Lacquer.Value);
-            sy += 24;
-        }
-        Lacquer.DrawDivider(this, x + 16, x + Width - 16, y + CommandsTop - 9, _k);
         for (int r = 0; r < Commands; r++)
             DrawCommand(r);
         Lacquer.DrawDivider(this, x + 16, x + Width - 16, y + LinksTop - 7, _k);
@@ -228,14 +195,6 @@ internal sealed partial class CommandMenuView : Control
             const string spent = "used this week";
             float sw = _gothic.GetStringSize(spent, fontSize: 12).X;
             DrawString(_gothic, new Vector2(rect.End.X - 10 - sw, Lacquer.Baseline(rect, _gothic, 12)), spent, fontSize: 12, modulate: Lacquer.OffText);
-            return;
-        }
-        // The uses left this week: gold diamonds, the spent ones dim.
-        float cy = rect.GetCenter().Y;
-        for (int i = 0; i < item.Total; i++)
-        {
-            float cx = rect.End.X - 14 - (item.Total - 1 - i) * 14;
-            DrawColoredPolygon([new(cx, cy - 5), new(cx + 5, cy), new(cx, cy + 5), new(cx - 5, cy)], i < item.Left ? Lacquer.Gold : Lacquer.SpentPip);
         }
     }
 

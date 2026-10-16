@@ -233,14 +233,14 @@ public sealed partial class GamePresenter
             ? Strategy.ProvinceMenu.For(s, items, texts, ReadFixedText)
             : null;
 
-    /// <summary>The open menu as <c>COMMAND.ADV</c>'s command menu under its status window (<see cref="Strategy.CommandMenu"/>), or null.</summary>
+    /// <summary>The open menu as <c>COMMAND.ADV</c>'s command menu (<see cref="Strategy.CommandMenu"/>), or null.</summary>
     public CommandMenu? CommandMenu =>
-        _menuItems is { } items && MenuItems is { } texts && State is { } s && !BattleShows
-            ? Strategy.CommandMenu.For(s, items, texts, _commandStatus)
+        _menuItems is { } items && MenuItems is { } texts && State is not null && !BattleShows
+            ? Strategy.CommandMenu.For(items, texts)
             : null;
 
-    /// <summary>The status window's text as <c>COMMAND.ADV</c> last printed it (<see cref="Strategy.CommandMenu.IsStatus"/>).</summary>
-    private string? _commandStatus;
+    /// <summary>The status strip for the state now (<see cref="Strategy.StatusStrip"/>), or null.</summary>
+    public StatusStrip? StatusStrip => State is { } s ? Strategy.StatusStrip.For(s, (at, numbers) => Read(at, numbers, null)) : null;
 
     /// <summary>A text run with zeros for its numbers and computed strings (for its fixed lines), or null when it does not resolve.</summary>
     private string? ReadFixedText(ScriptRef at)

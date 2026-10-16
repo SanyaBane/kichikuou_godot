@@ -199,6 +199,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private MapMarkersView _markers = null!;            // our name plates over the map in COMMAND's map wait (New)
     private ProvinceMenuView _provinceView = null!;     // our province menu over a city file's first menu (New)
     private CommandMenuView _commandView = null!;       // our command panel over COMMAND's command menu (New)
+    private StatusStripView _strip = null!;             // our status strip along the map's top (New)
     private PointerScript _markerPointer = new();       // a plate's still click on its way to the script
     private readonly MapCameraForm _mapCamera = new();  // whether the map loop holds the camera as the view's corner
     private IReadOnlyList<int>? _wantedOrder;           // the party a drop asked for, while its clicks run
@@ -244,8 +245,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         var faces = new FacePictures(new CgLibrary(GameData.CgDirectory));
         _provinceView = new ProvinceMenuView(GodotGlyphRenderer.Chosen, faces);
         _content.AddChild(_provinceView);
-        _commandView = new CommandMenuView(GodotGlyphRenderer.Chosen, faces);
+        _commandView = new CommandMenuView(GodotGlyphRenderer.Chosen);
         _content.AddChild(_commandView);
+        _strip = new StatusStripView(GodotGlyphRenderer.Chosen, faces) { Forward = StripInput };
+        _content.AddChild(_strip);
         _battleView = new BattleBoardView(GodotGlyphRenderer.Chosen, faces);
         _content.AddChild(_battleView);
         _scoutView = new ScoutReportView(GodotGlyphRenderer.Chosen, faces);
@@ -316,6 +319,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _notice.Text = "";
         UpdateDeploymentScreen();
         UpdateMapMarkers();
+        UpdateStatusStrip();
         if (_commandView.Visible)
             _commandView.Place(PictureArea());
         if (_provinceView.Visible)
@@ -653,7 +657,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.ScreenshotDirectory is not { } dir)
             return;
         System.IO.Directory.CreateDirectory(dir);
-        if ((_table.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
+        if ((_table.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _strip.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
         {
             // Our deployment and battle screens are drawn by Godot over the screen: the window's next frame (headless
             // draws none). No Compose here: the frame's Present must find the change to upload it.
@@ -1330,6 +1334,42 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     }
 
     private bool _provinceDumped, _commandDumped;
+
+    /// <summary>
+    /// Our status strip (docs/ui/command-screen.md, "The status strip") is up in <c>COMMAND</c>'s map wait as
+    /// the plates are, and while our command panel or province menu is open. Between them (the script's steps
+    /// from the map wait to the menu and back, a frame or two) it stays: it goes after a few frames without
+    /// either, at once when a window, a picker, All Data or a battle shows.
+    /// </summary>
+    private void UpdateStatusStrip()
+    {
+        bool wanted = InterfaceChoice.New && _presenter.State is not null && !SkippingScene && !_presenter.InBattle
+            && (_markers.Visible || _commandView.Visible || _provinceView.Visible || _presenter.MenuCovered);
+        bool blocked = _presenter.State is null || _presenter.InBattle || _presenter.MessageWindowShown && !_presenter.MenuCovered
+            || _presenter.Picker is not null || _presenter.Data != DataView.Closed || !InterfaceChoice.New;
+        _stripIdle = wanted ? 0 : _stripIdle + 1;
+        if (wanted && _presenter.StatusStrip is { } strip)
+        {
+            _strip.Show(strip);
+            _strip.Place(PictureArea());
+        }
+        else if (blocked || _stripIdle > 3)
+        {
+            _strip.Close();
+        }
+    }
+
+    private int _stripIdle;
+
+    /// <summary>The strip's events but a left click's, as the screen's own (a right click opens the menu).</summary>
+    private void StripInput(InputEvent e)
+    {
+        if (e.Duplicate() is InputEventMouse mouse)
+        {
+            mouse.Position = GetGlobalTransformWithCanvas().AffineInverse() * mouse.GlobalPosition;
+            _GuiInput(mouse);
+        }
+    }
 
     private bool UpdateMapMarkers()
     {

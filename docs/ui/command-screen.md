@@ -279,28 +279,49 @@ Search, Battle, Ninja), and Return. The mock-ups hold the player's CGs and stay 
 
 ## The command panel (owner, 2026-10-16)
 
-**The fourth small step: the right click's menu as our panel.** Three drawn mock-ups in the style of 4a (a
-column at the left edge, a bar along the bottom, the status along the top with the commands at the right);
-the owner chose the column, **centred on the screen as the original's menu** — still opened by the right
-click, not on screen all the time.
+**The fourth small step: the right click's menu as our panel, and a status strip.** Three drawn mock-ups in
+the style of 4a (A: a column at the left edge, B: a bar along the bottom, C: the status along the top with
+the commands at the right). The owner first chose A centred on the screen as the original's menu (built as
+`aa6e054`, the status and the weekly uses as diamonds in the panel), then **C with the panel in the centre**:
+the status on a strip along the top, the panel holding only the menu. The week's uses moved to the strip
+(three mock-ups: tags in one row, a second row, struck-through words; the owner chose the second row), and
+Subordinates is two of them, Troops and Talk (four groupings: two tags, one split tag, captions in front,
+brackets with captions under; the owner chose **the brackets**).
 
 - **Which menu.** `COMMAND.ADV`'s command menu (`CommandPhase.CommandMenuAsync`, `:183-312`), recognised by
-  its items' places (`CommandMenu.For`, Turn END last at `:310`, the thieves' at `:218`) under the status
-  window the presenter saw printed (`:443` Leazas, `:472` the thieves; `CommandMenu.IsStatus`).
-- **What it shows.** The nation with its flag (CG 820; none for the thieves), the date as "LP 3 · Month 5 ·
-  Week 2" (LP, `DateYear`, is computed by the original but not shown: ours, question 4), the status window's two
-  lines as the files print them ("Budget 116400K GOLD", "Troops 6251"; the thieves' Money and Subordinates);
-  the commands as rows with a tag of ours (Build, Harem, Items, Trade, Units) and their uses left this week as
-  diamonds (○ one of one, ◎ two of two, ○ Subordinates one of two, × and △ none; Treasure has none): a × item
-  and Merchant's △ only re-open the menu in the original, so they are dimmed rows, "used this week", while
-  Subordinates' △ still opens `Cﾌﾞｶ`; the other items (→ Leazas Castle, Load/Save, All Data, Think, TADA)
-  as plain rows; Turn END as a large lacquer-red button.
+  its items' places (`CommandMenu.For`, Turn END last at `:310`, the thieves' at `:218`).
+- **What it shows.** Still opened by the right click, in the screen's centre: the commands as rows with a tag
+  of ours (Build, Harem, Items, Trade, Units); a × item and Merchant's △ only re-open the menu in the original,
+  so they are dimmed rows, "used this week", while Subordinates' △ still opens `Cﾌﾞｶ`; the other items
+  (→ Leazas Castle, Load/Save, All Data, Think, TADA) as plain rows; Turn END as a large lacquer-red button.
 - **The answer is the original's.** A row's click answers with its item's place; a right click or Esc
   cancels (0: back to the map). The status window and the menu are covered while it is open
   (`GamePresenter.MenuCovered`); after it, the way out is covered as after a province menu.
-- **Built (2026-10-16):** `Original.Content/Strategy/CommandMenu` (`CommandMenuTests`, one test on the
-  player's files), `GamePresenter.CommandMenu`, `godot/Strategy/CommandMenuView`; the province menu and the
-  command panel share `godot/Strategy/Lacquer`. `--auto --interface new` in a window dumps it once (`command-menu`).
+- **Built (2026-10-16):** `Original.Content/Strategy/CommandMenu` (`CommandMenuTests`),
+  `GamePresenter.CommandMenu`, `godot/Strategy/CommandMenuView`; the province menu, the command panel and the
+  strip share `godot/Strategy/Lacquer`. `--auto --interface new` in a window dumps it once (`command-menu`).
+
+## The status strip (owner, 2026-10-16)
+
+- **Where and when.** Along the top of the map (980×92 in the screen's 1280×800, centred), in `COMMAND`'s map
+  wait as the plates are and while our command panel or province menu is open; it stays a few frames across
+  the script's steps between them and goes at once when a window, a picker, All Data or a battle shows
+  (`GameScreen.UpdateStatusStrip`). A left click on it reaches no province or plate under it; a right click
+  opens the menu as anywhere (`StatusStripView.Forward`).
+- **The first row** is the status window the right click prints, read now from the state: the nation with
+  its flag (CG 820; none for the thieves), the window's two lines as the files print them (`:443` "Budget
+  116400K GOLD", "Troops 6251"; the thieves' `:472` Money and Subordinates), the troops summed as the files sum
+  them (units 1-50 with a status; the thieves' units 1, 3 and 4), and the date as "LP 3 · Month 5 · Week 2"
+  (`SetDate`; LP, `DateYear`, is computed by the original but not shown: ours, question 4).
+- **The second row** is the week's uses as tags, lit while free, dim when spent, in groups bracketed with
+  their captions: Castle (Construction `Ui_CmdBuildAvail`, Harem `Ui_CmdHaremAvail`, Merchant
+  `Ui_CmdMerchantAvail`), Subordinates (Troops `CmdAvail_SubTroops`, Talk `CmdAvail_SubTalk`, both dim while
+  `Ui_CmdSubordAvail` is 0, the menu's △), Map (Own city `Ui_CmdOwnCityAvail`, Attack `Ui_CmdAttackAvail`,
+  Dungeon `Ui_CmdDungeonAvail`). The thieves' week: Hideout (Harem, Subordinates as one), Map (Attack, Dungeon).
+- **Built (2026-10-16):** `Original.Content/Strategy/StatusStrip` (`StatusStripTests`, one test on the
+  player's files), `GamePresenter.StatusStrip`, `godot/Strategy/StatusStripView`.
+- **Not done:** the plates the strip covers (Log A, Alan at the top of the view) stay under it; drag the map
+  to reach them.
 
 ## Questions for the owner
 

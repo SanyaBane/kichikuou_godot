@@ -309,12 +309,7 @@ public sealed partial class GamePresenter : IStageObserver
             case SaveScreenEvent e: SaveScreenOpen = e.Open; break;
             case WindowEvent e: Window(e.Op.Value); break;
             case MessageEvent e: Print(Read(e.Text, [], e.StringVariables)); break;
-            case ValueMessageEvent e:
-                string printed = Read(e.Text, e.Values, e.StringVariables);
-                if (Strategy.CommandMenu.IsStatus(e.Text))
-                    _commandStatus = printed;                           // for our command panel (CommandMenu)
-                Print(printed);
-                break;
+            case ValueMessageEvent e: Print(Read(e.Text, e.Values, e.StringVariables)); break;
             case PrintStringEvent e: Print(Hankaku.ToHalfWidth(StringVar(e.Slot.Value))); break;
             case LineBreakEvent: NewLine(); break;
             case MessageClearEvent: ClearText(); break;
