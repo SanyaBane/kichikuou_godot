@@ -19,7 +19,7 @@ internal sealed partial class StatusStripView : Control
     /// <summary>The band's height in the screen's pixels (1280 wide).</summary>
     public const float Height = 50;
 
-    private const int CaptionSize = 10, DateSize = 21;
+    private const int CaptionSize = 10, DateSize = 18, LabelSize = 14, ValueSize = 17;
 
     /// <summary>The flags' CGs: <c>Prov.Owner + 819</c>, Leazas 820 (the map's markers).</summary>
     private const int LeazasFlag = 820;
@@ -105,10 +105,10 @@ internal sealed partial class StatusStripView : Control
         }
         foreach (var (label, value) in s.Status)
         {
-            DrawString(_gothic, new Vector2(cx, Lacquer.Baseline(row, _gothic, 13)), label, fontSize: 13, modulate: Lacquer.Label);
-            cx += _gothic.GetStringSize(label, fontSize: 13).X + 8;
-            DrawString(_gothic, new Vector2(cx, Lacquer.Baseline(row, _gothic, 15)), value, fontSize: 15, modulate: Lacquer.Value);
-            cx += _gothic.GetStringSize(value, fontSize: 15).X + 20;
+            DrawString(_gothic, new Vector2(cx, Lacquer.Baseline(row, _gothic, LabelSize)), label, fontSize: LabelSize, modulate: Lacquer.Label);
+            cx += _gothic.GetStringSize(label, fontSize: LabelSize).X + 8;
+            DrawString(_gothic, new Vector2(cx, Lacquer.Baseline(row, _gothic, ValueSize)), value, fontSize: ValueSize, modulate: Lacquer.Value);
+            cx += _gothic.GetStringSize(value, fontSize: ValueSize).X + 20;
         }
         // The week's commands as tags, grouped under brackets with their captions.
         cx += 6;
