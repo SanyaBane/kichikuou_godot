@@ -312,7 +312,8 @@ picture, the slot panels) is not shown. How it is built:
   `ScoutReportTests`: the model on a GameState, the presenter's hold and the replies at 5000 and 5001 troops, and in
   the captured defences (three with a scout report) the overlay's commanders, totals, places, answer and comment are
   what the script prints and the battle then places. `--scout` (with `--auto`) sends the first free ninja to scout at the
-  first enemy attack, once a launch (CLAUDE.md, "Commands").
+  first enemy attack, once a launch, clicking both menus as a player does and failing if the click is left for the
+  next key wait (CLAUDE.md, "Commands").
 - **The strategy's cut-in** (owner, 2026-10-15, mock-up A of three — B put it into the opening, C into the dialogue
   panel on the board): a successful pre-battle strategy (`FIGT作.ADV`, docs/battle/01-flow.md §4; the original shows
   its own screen, docs/battle/screen-layout.md §6.2, and three boxes: the announcement, the strategist's line, the

@@ -348,7 +348,9 @@ commit `local.env`.
   `--load --auto --fast --quit --seed 2 --turn-end --party 1,10,11 --weeks 25 --saves user://saves-week26 --slots-from user://saves-leazas`.
   The scout report (owner, 2026-10-14): `--turn-end --scout` on the week-18 save ends the week at once; the rebels
   attack Ys (5) the same week and `--scout` chooses Ninja Scout in `FIGT_B`'s menu at that first enemy attack (once
-  a launch; the ninja menu takes its first item, the first free ninja: Kanami), then it intercepts as usual —
+  a launch; the ninja menu takes its first item, the first free ninja: Kanami) — both menus clicked as a player clicks
+  them (press, held six frames, release; the system pointer stays), and the key wait after each must find no click
+  left, else the run fails (the bug of 2026-10-16, `Engine/Script/InputLatch`) — then it intercepts as usual —
   `--load --auto --fast --quit --seed 2 --saves user://saves-scout --slots-from user://saves-week18 --turn-end --scout --until deployment [--interface new] --shots <dir>`
   (Ex (commander 1), Sakanaku (commander 6), Dodge (commander 5), Jibul (commander 7); our overlay needs a window,
   and `--until deployment` stops before the battle, so nothing moves the system pointer).

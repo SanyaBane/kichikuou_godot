@@ -99,6 +99,9 @@ public sealed class SelectionBox
         return -1;
     }
 
+    /// <summary>The centre of item <paramref name="item"/>'s area of <see cref="HitTest"/>.</summary>
+    public (int X, int Y) ItemCentre(int item) => (X + (2 + Width) / 2, Y + item * Pitch + (2 + _size) / 2);
+
     /// <summary>Moves the hover outline to the item under the mouse (<c>encloseElement</c>).</summary>
     public void Hover(int mx, int my)
     {

@@ -1,4 +1,5 @@
 using Godot;
+using Kichikuou.Engine.Script;
 
 namespace Kichikuou.Game.Strategy;
 
@@ -8,12 +9,9 @@ namespace Kichikuou.Game.Strategy;
 /// <c>event_get_mouse</c>, <see cref="ReadInput"/> is <c>sys_getInputInfo</c>) and nothing is
 /// consumed — a button still held is seen again by the next read. The codes are the engine's
 /// <c>SYS35KEY_*</c> (<c>input.h</c>, <c>event.c</c>): the left button and Return are 16, the
-/// right button and Space 32.
+/// right button and Space 32. A quick tap shows in the next read, unless no read takes it by the
+/// end of the next frame (<see cref="InputLatch"/>, <see cref="EndFrame"/>).
 /// </summary>
-/// <remarks>
-/// One addition to the engine: a press that is released again before the next read (a tap
-/// shorter than a frame) still shows in that one read, so a quick click is never lost.
-/// </remarks>
 internal sealed class PlayerInput
 {
     public const ushort Up = 1;
@@ -25,66 +23,45 @@ internal sealed class PlayerInput
     public const ushort Escape = 64;
     public const ushort Tab = 128;
 
-    private ushort _buttons;
-    private ushort _keys;
-    private ushort _buttonsTapped;
-    private ushort _keysTapped;
+    private readonly InputLatch _buttons = new();
+    private readonly InputLatch _keys = new();
 
     /// <summary>The pointer in script coordinates (640×400).</summary>
     public Vector2I Position { get; set; }
 
     /// <summary>A mouse button (16 or 32) went down or up.</summary>
-    public void Button(ushort code, bool pressed)
-    {
-        if (pressed)
-        {
-            _buttons |= code;
-            _buttonsTapped |= code;
-        }
-        else
-        {
-            _buttons &= (ushort)~code;
-        }
-    }
+    public void Button(ushort code, bool pressed) => _buttons.Set(code, pressed);
 
     /// <summary>A key went down or up; keys the engine does not read are ignored.</summary>
     public void Key(Godot.Key key, bool pressed)
     {
         ushort code = Code(key);
-        if (code == 0)
-            return;
-        if (pressed)
-        {
-            _keys |= code;
-            _keysTapped |= code;
-        }
-        else
-        {
-            _keys &= (ushort)~code;
-        }
+        if (code != 0)
+            _keys.Set(code, pressed);
     }
 
     /// <summary>Everything released (the window lost the focus).</summary>
-    public void Clear() => _buttons = _keys = _buttonsTapped = _keysTapped = 0;
+    public void Clear()
+    {
+        _buttons.Clear();
+        _keys.Clear();
+    }
+
+    /// <summary>A frame is over: the taps no read took in it or the frame before are dropped.</summary>
+    public void EndFrame()
+    {
+        _buttons.EndFrame();
+        _keys.EndFrame();
+    }
 
     /// <summary><c>event_get_mouse</c> (<c>IM</c>): the buttons held, 16 | 32.</summary>
-    public ushort ReadMouse()
-    {
-        ushort code = (ushort)(_buttons | _buttonsTapped);
-        _buttonsTapped = 0;
-        return code;
-    }
+    public ushort ReadMouse() => _buttons.Read();
 
     /// <summary><c>sys_getInputInfo</c> (<c>Y 3</c>, <c>IK 0</c>, the menus): the buttons and keys held.</summary>
-    public ushort ReadInput()
-    {
-        ushort code = (ushort)(_buttons | _keys | _buttonsTapped | _keysTapped);
-        _buttonsTapped = _keysTapped = 0;
-        return code;
-    }
+    public ushort ReadInput() => (ushort)(_buttons.Read() | _keys.Read());
 
     /// <summary>What <see cref="ReadInput"/> would return, without reading.</summary>
-    public ushort PeekInput() => (ushort)(_buttons | _keys | _buttonsTapped | _keysTapped);
+    public ushort PeekInput() => (ushort)(_buttons.Peek() | _keys.Peek());
 
     /// <summary><c>event_get_key</c>: the arrows (and the keypad's 8, 2, 4, 6), Return, Space, Escape, Tab.</summary>
     private static ushort Code(Godot.Key key) => key switch

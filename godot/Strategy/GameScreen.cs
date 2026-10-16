@@ -316,6 +316,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _effectsOpened = true;
             OpenEffects();
         }
+        // A tap the script's reads did not take by now is dropped — but kept while MsgSkip runs, so a click during a
+        // fade still stops it at the next wait (STOP_ON_CLICK).
+        if (_skip?.IsSkipping != true)
+            _input.EndFrame();
     }
 
     public override void _Notification(int what)
@@ -889,6 +893,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         _pointer.Interrupt();
         _presenter.Flush();
+        CheckNoClickLeft();
         ushort key;
         if (SkippingScene)
         {
@@ -1680,6 +1685,44 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         await NextFrameAsync();
     }
 
+    /// <summary>
+    /// Unattended play with <c>--scout</c>: a click on the item of <paramref name="code"/> of the battle menu
+    /// <see cref="ChooseAsync"/> opens next, as a player's — the press, held six frames, the release that chooses
+    /// (<see cref="BattleButton"/>, as <see cref="_GuiInput"/> passes it) — without moving the system pointer. The next key
+    /// wait then finds nothing pressed (<see cref="CheckNoClickLeft"/>): the bug of 2026-10-16, where the press stayed
+    /// latched and Rance's next line was answered at once.
+    /// </summary>
+    private async Task AutoMenuClickAsync(Sys3Int code)
+    {
+        while (_battleMenu is null)
+            await NextFrameAsync();
+        var menu = _battleMenu;
+        var (x, y) = menu.ItemCentre(code);
+        _input.Position = ClampToScreen(x, y);
+        PointerMoved();
+        await NextFrameAsync();
+        _input.Button(KeyReturn, true);
+        BattleButton(KeyReturn, true);
+        for (int frame = 0; frame < 6; frame++)
+            await NextFrameAsync();
+        _autoMenuClicked = true;
+        _input.Button(KeyReturn, false);
+        BattleButton(KeyReturn, false);
+        if (!menu.IsDone || menu.Result != code)
+            throw new InvalidOperationException($"--scout's click on the battle menu's item {code} answered {menu.Result}.");
+    }
+
+    /// <summary>After <see cref="AutoMenuClickAsync"/>: the key wait that follows must find no click left.</summary>
+    private void CheckNoClickLeft()
+    {
+        if (!_autoMenuClicked)
+            return;
+        _autoMenuClicked = false;
+        if (_input.PeekInput() != 0)
+            throw new InvalidOperationException(
+                $"The click that answered a battle menu was left for the next key wait ({_input.PeekInput()}), which would take it at once.");
+    }
+
     /// <summary>Unattended play: a click (press and release) at layout point <paramref name="layout"/>.</summary>
     private async Task AutoClickAsync(Vector2 layout, ushort code)
     {
@@ -1710,6 +1753,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         _pointer.Interrupt();
         _presenter.Flush();
+        Task? clicking = null;
         if (_options.Auto)
         {
             await DelayAsync(_options.Fast ? 0 : 0.5);
@@ -1724,10 +1768,17 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             if (menu.Kind == BattleMenuKind.EnemyAttackResponse && _options.AutoScout && !_autoScouted)
             {
                 // Ninja Scout (code 2) once a launch; the ninja menu then takes its first item, the first free ninja.
+                // Both are clicked as a player clicks, through the menu below (AutoMenuClickAsync).
                 _autoScouted = true;
-                return menu.Options.First(o => o.Code == 2).Code;
+                _autoScoutClicks = 2;
             }
-            return menu.Options[0].Code;
+            if (_autoScoutClicks > 0 && menu.Kind is BattleMenuKind.EnemyAttackResponse or BattleMenuKind.NinjaScout)
+            {
+                _autoScoutClicks--;
+                clicking = AutoMenuClickAsync(menu.Kind == BattleMenuKind.EnemyAttackResponse ? (Sys3Int)2 : menu.Options[0].Code);
+            }
+            else
+                return menu.Options[0].Code;
         }
         _battleButtons = 0;
         _skip.OnMenu();
@@ -1755,6 +1806,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _presenter.Invalidate();
         try
         {
+            if (clicking is not null && await Task.WhenAny(_answered.Task, clicking) == clicking)
+                await clicking;                                             // its error, if the click did not answer
             await _answered.Task;
             return _battleMenu.Result;
         }
@@ -1762,6 +1815,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             _battleMenu = null;
             _presenter.Invalidate();
+            _input.ReadInput();                                             // the menu took the answering click
         }
     }
 
@@ -1883,6 +1937,12 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     /// <summary>The unattended player has sent a ninja to scout (<see cref="GameOptions.AutoScout"/>).</summary>
     private bool _autoScouted;
+
+    /// <summary>The battle menus left that the unattended scout answers by clicks (<see cref="AutoMenuClickAsync"/>).</summary>
+    private int _autoScoutClicks;
+
+    /// <summary>A battle menu was answered by an unattended click; the next key wait checks it left none (<see cref="CheckNoClickLeft"/>).</summary>
+    private bool _autoMenuClicked;
 
     /// <summary>The item screen the unattended player works in, and its steps left (<see cref="AutoItemSteps"/>).</summary>
     private PickerView? _autoItemsFrom;

@@ -34,6 +34,13 @@ public sealed class BattleMenuScreen
     /// <summary>The menu's box while it is open (<see cref="BattlePresenter.Windows"/>).</summary>
     public IReadOnlyList<WindowShape> Windows => IsDone ? [] : [WindowShape.Of(_box)];
 
+    /// <summary>The centre of the item of <paramref name="code"/> (script coordinates), for a click on it.</summary>
+    public (int X, int Y) ItemCentre(Sys3Int code)
+    {
+        int item = _menu.Options.ToList().FindIndex(o => o.Code == code);
+        return item >= 0 ? _box.ItemCentre(item) : throw new ArgumentException($"The menu has no item {code}.", nameof(code));
+    }
+
     /// <summary>The mouse moved (script coordinates).</summary>
     public void MouseMove(int x, int y)
     {
