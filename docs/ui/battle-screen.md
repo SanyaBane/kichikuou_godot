@@ -818,6 +818,11 @@ picture, the slot panels) is not shown. How it is built:
      outline, a soft shadow, white text with a dark outline. All yellow-orange (top (255, 228, 90),
      bottom (226, 128, 20)); the one under the pointer orange-red (top (255, 170, 90), bottom
      (196, 70, 30)) with a light glow.
+   - **The target's frame (owner, 2026-10-16; as Sengoku Rance's):** the enemy card whose banners show has a cyan
+     bracket (70, 205, 255) on each of its corners, never a whole ring (owner), under the banners: an L bent round a
+     corner of 7, its arms 60 layout pixels along the card and 46 down it, 3 out of the card's edge, 4 wide, a white
+     line inside and a cyan glow (`BattleCommandLayer.DrawTargetFrame`). Fixed colours, never the palette's
+     accent, which marks the acting card. An enemy card without banners gets none.
    - **Context menus of our own** (styled like the cards, the palette's colours and font), opened by a
      right click on a card at the pointer, kept on the screen: on an enemy card "Info" (54); on the
      acting unit's card Defend (4), Wait (5), the items without a target (Capsule 30/31, Fog Card 32)

@@ -28,6 +28,13 @@ internal sealed partial class BattleCommandLayer : Control
     private static readonly Color Glow = new(1f, 0.72f, 0.42f);
     private static readonly Color TextOutline = new(0.22f, 0.1f, 0.02f, 0.95f);
 
+    // The target's frame (as Sengoku Rance's): cyan brackets on the corners of the enemy card whose banners show — each
+    // an L bent round a corner of 7, its arms 60 along the card and 46 down it — 3 out of the card's edge, 4 wide, a white
+    // line inside and a cyan glow; under the banners. Fixed colours, as the banners', so it never reads as the acting
+    // card's frame (the palette's accent).
+    private const float TargetOut = 3, TargetWidth = 4, TargetRadius = 7, TargetGlow = 10, TargetArmX = 60, TargetArmY = 46;
+    private static readonly Color TargetColour = Color8(70, 205, 255), TargetInner = new(1, 1, 1, 0.85f);
+
     // The context menu: rows of the cards' text size, a column for the current order's mark.
     private const float RowHeight = 30, MenuPad = 8, MarkWidth = 18, MenuMinWidth = 130, MenuText = 17;
 
@@ -307,11 +314,54 @@ internal sealed partial class BattleCommandLayer : Control
         var font = GetThemeDefaultFont();
         if (_hovered is { } target && _menu is null)
         {
+            if (target.Side == BattleSide.Enemy && _banners.Count > 0)
+                DrawTargetFrame(_cardArea(target));
             for (int i = 0; i < _banners.Count; i++)
                 DrawBanner(BannerRect(target, i), _banners[i].Text, i == _hotBanner, font);
         }
         if (_menu is { } menu)
             DrawMenu(menu, font);
+    }
+
+    /// <summary>
+    /// The frame on the target's card <paramref name="card"/> (layout pixels): a bracket on each corner — its glow, the
+    /// cyan line, the white line inside it.
+    /// </summary>
+    private void DrawTargetFrame(Rect2 card)
+    {
+        float s = _scale;
+        var outer = new Rect2(card.Position * s, card.Size * s).Grow(TargetOut * s);
+        float width = Math.Max(2, TargetWidth * s);
+        foreach (var (hx, vy) in new[] { (1, 1), (-1, 1), (1, -1), (-1, -1) })
+        {
+            var corner = new Vector2(hx > 0 ? outer.Position.X : outer.End.X, vy > 0 ? outer.Position.Y : outer.End.Y);
+            var middle = Bracket(corner, hx, vy, width / 2);
+            DrawPolyline(middle, TargetColour with { A = 0.15f }, width + 2 * TargetGlow * s, antialiased: true);
+            DrawPolyline(middle, TargetColour with { A = 0.3f }, width + TargetGlow * s, antialiased: true);
+            DrawPolyline(middle, TargetColour, width, antialiased: true);
+            DrawPolyline(Bracket(corner, hx, vy, width), TargetInner, Math.Max(1, s), antialiased: true);
+        }
+    }
+
+    /// <summary>
+    /// The bracket on the frame's corner <paramref name="corner"/> (window pixels), <paramref name="inset"/> in from its outer
+    /// edge: from the end of its arm along the card, round the corner, to the end of its arm down the card; its arms run
+    /// towards <paramref name="hx"/> and <paramref name="vy"/> (±1).
+    /// </summary>
+    private Vector2[] Bracket(Vector2 corner, int hx, int vy, float inset)
+    {
+        float s = _scale;
+        var c = corner + new Vector2(hx, vy) * inset;
+        float radius = Math.Max(1, TargetRadius * s - inset);
+        var centre = c + new Vector2(hx, vy) * radius;
+        var points = new List<Vector2> { c + new Vector2(hx * (TargetArmX * s - inset), 0) };
+        for (int i = 0; i <= 6; i++)
+        {
+            float t = i * MathF.PI / 12;
+            points.Add(centre + new Vector2(-hx * radius * MathF.Sin(t), -vy * radius * MathF.Cos(t)));
+        }
+        points.Add(c + new Vector2(0, vy * (TargetArmY * s - inset)));
+        return [.. points];
     }
 
     private void DrawBanner(Rect2 r, string text, bool hot, Font? font)
