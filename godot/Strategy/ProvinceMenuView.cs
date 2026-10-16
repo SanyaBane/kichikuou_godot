@@ -6,7 +6,7 @@ namespace Kichikuou.Game.Strategy;
 
 /// <summary>
 /// Our province menu (docs/ui/command-screen.md, "The province menu"; the owner's mock-up 4a): a city's
-/// first menu as a lacquer panel with a double gold frame at the map's top left — the city's picture, its
+/// first menu as a lacquer panel with a double gold frame in the screen's centre — the city's picture, its
 /// name and army, the card's figures, the commands as rows with a tag each, Return. A row's click answers
 /// the script's menu with its choice; a right click or Esc anywhere cancels (0), as the original's menu.
 /// Laid out in the 1280×800 screen's pixels, scaled with the picture.
@@ -27,7 +27,7 @@ internal sealed partial class ProvinceMenuView : Control
     private static readonly Color OffText = Color.Color8(98, 88, 74);
     private static readonly Color OffTag = Color.Color8(52, 46, 40);
 
-    private const float PanelX = 14, PanelY = 14, Width = 470, Pad = 18, PictureW = 225, PictureH = 150, RowPitch = 36, RowH = 29;
+    private const float Width = 470, Pad = 18, PictureW = 225, PictureH = 150, RowPitch = 36, RowH = 29;
 
     private readonly FacePictures _pictures;
     private readonly FontFile _brush = LoadFont("res://fonts/Shojumaru-Regular.ttf");
@@ -100,6 +100,17 @@ internal sealed partial class ProvinceMenuView : Control
     private int RowCount => _menu is null ? 0 : _menu.Items.Count + 1;
 
     private float Height => Pad + PictureH + Pad + (RowCount - 1) * RowPitch + 50;
+
+    /// <summary>The panel's corner: centred on the screen, as the original's menu (owner, 2026-10-16).</summary>
+    private float PanelX => MathF.Round((1280 - Width) / 2);
+
+    private float PanelY => MathF.Round((800 - Height) / 2);
+
+    /// <summary>
+    /// A line's width, at least one window pixel: a thinner one may fall between the pixels' centres when the
+    /// screen is scaled down and vanish (the first row's top edge did, owner, 2026-10-16).
+    /// </summary>
+    private float Line(float width) => Math.Max(width, 1 / _k);
 
     private Rect2 RowRect(int row) => row < RowCount - 1
         ? new Rect2(PanelX + 16, PanelY + Pad + PictureH + Pad + row * RowPitch, Width - 32, RowH)
@@ -175,18 +186,18 @@ internal sealed partial class ProvinceMenuView : Control
         for (int i = 6; i >= 1; i--)
             DrawRect(new Rect2(x - i + 2, y - i + 6, Width + 2 * i, h + 2 * i), new Color(0, 0, 0, 0.06f));
         DrawRect(new Rect2(x, y, Width, h), Lacquer);
-        DrawRect(new Rect2(x + 1, y + 1, Width - 2, h - 2), Gold, false, 2);
-        DrawRect(new Rect2(x + 5.5f, y + 5.5f, Width - 11, h - 11), DimGold, false, 1);
+        DrawRect(new Rect2(x + 1, y + 1, Width - 2, h - 2), Gold, false, Line(2));
+        DrawRect(new Rect2(x + 5.5f, y + 5.5f, Width - 11, h - 11), DimGold, false, Line(1));
         foreach (var (cx, cy, sx, sy) in new[] { (x, y, 1, 1), (x + Width, y, -1, 1), (x, y + h, 1, -1), (x + Width, y + h, -1, -1) })
         {
-            DrawPolyline([new(cx + sx * 9, cy + sy * 2), new(cx + sx * 9, cy + sy * 9), new(cx + sx * 2, cy + sy * 9)], Gold, 2);
+            DrawPolyline([new(cx + sx * 9, cy + sy * 2), new(cx + sx * 9, cy + sy * 9), new(cx + sx * 2, cy + sy * 9)], Gold, Line(2));
             DrawColoredPolygon([new(cx + sx * 9, cy + sy * 14), new(cx + sx * 14, cy + sy * 9), new(cx + sx * 9, cy + sy * 4), new(cx + sx * 4, cy + sy * 9)], Gold);
         }
         // The city's picture.
         var picture = new Rect2(x + Pad, y + Pad, PictureW, PictureH);
         if (_picture is not null)
             DrawTextureRect(_picture, picture, false);
-        DrawRect(picture.Grow(1), DimGold, false, 1);
+        DrawRect(picture.Grow(1), DimGold, false, Line(1));
         // The name (made smaller to fit), the army, the figures.
         float tx = picture.End.X + Pad, room = x + Width - 16 - tx;
         int nameSize = 19;
@@ -214,7 +225,7 @@ internal sealed partial class ProvinceMenuView : Control
         var rect = RowRect(r);
         bool on = Enabled(r), hover = r == _hovered && on;
         DrawRect(rect, hover ? RowHover : Row);
-        DrawRect(rect, hover ? HoverLine : DimGold, false, hover ? 2 : 1);
+        DrawRect(rect, hover ? HoverLine : DimGold, false, Line(hover ? 2 : 1));
         float baseline(int size, Font font) => rect.Position.Y + rect.Size.Y / 2 + (font.GetAscent(size) - font.GetDescent(size)) / 2;
         if (r == RowCount - 1)
         {
@@ -228,7 +239,7 @@ internal sealed partial class ProvinceMenuView : Control
         var tagRect = new Rect2(rect.Position.X + 5, rect.Position.Y + 5, 62, rect.Size.Y - 10);
         DrawRect(tagRect, on ? colour : OffTag);
         if (on)
-            DrawRect(tagRect, Gold, false, 1);
+            DrawRect(tagRect, Gold, false, Line(1));
         float tw = _gothic.GetStringSize(tag, fontSize: 13).X;
         DrawString(_gothic, new Vector2(tagRect.GetCenter().X - tw / 2, baseline(13, _gothic)), tag, fontSize: 13, modulate: on ? Text : OffText);
         DrawString(_gothic, new Vector2(rect.Position.X + 80, baseline(16, _gothic)), item.Text, fontSize: 16, modulate: on ? Text : OffText);

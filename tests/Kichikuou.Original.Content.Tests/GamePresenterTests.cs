@@ -854,7 +854,9 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     /// With our province menu (<see cref="GamePresenter.CoverCityLeadIn"/>) a city file's lead-in is covered
     /// from its picture (<c>WAO_SUB</c> 331 of the city's <c>Prov.BgCg</c>) through the window 113 and its text
     /// to the menu, so the release wait before the menu shows nothing of the original's; the menu ends it,
-    /// and so does anything else the file shows (a key wait). Another picture, or no cover asked, starts nothing.
+    /// and so does anything else the file shows (a key wait). After our menu, the way out (the pointer put back,
+    /// the window closed, the picture removed) is covered up to the map. Another picture, or no cover asked,
+    /// starts nothing.
     /// </summary>
     [Fact]
     public void A_city_files_lead_in_is_covered_up_to_the_menu()
@@ -874,8 +876,22 @@ public partial class GamePresenterTests(ITestOutputHelper output)
         Assert.True(presenter.ProvinceMenuCovered);
         presenter.OpenMenu([]);
         Assert.False(presenter.ProvinceMenuCovered);                            // the UI covers the menu itself
+        presenter.ProvinceMenuCovered = true;
 
+        presenter.CloseMenu();                                                  // a cancel: the lead-out stays covered
+        Assert.True(presenter.ProvinceMenuCovered);
+        presenter.Show(new MessageClearEvent());
+        presenter.Show(new EngineEvent("IZ", [(Sys3Int)320, (Sys3Int)200]));
+        presenter.Show(new WindowEvent(0, 340));
+        presenter.Show(new WindowEvent(332, 340));
+        Assert.True(presenter.ProvinceMenuCovered);
+        presenter.Show(new MapEvent(0));                                        // back on the map
+        Assert.False(presenter.ProvinceMenuCovered);
+
+        presenter.OpenMenu([]);                                                 // another menu: nothing covered after it
         presenter.CloseMenu();
+        Assert.False(presenter.ProvinceMenuCovered);
+
         presenter.Show(new WindowEvent(331, 340));
         presenter.Show(new WindowEvent(1, 340));                                // a key wait: shown
         Assert.False(presenter.ProvinceMenuCovered);

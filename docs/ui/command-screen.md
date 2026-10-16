@@ -261,7 +261,13 @@ Search, Battle, Ninja), and Return. The mock-ups hold the player's CGs and stay 
   the menu: that showed the original's window for a few frames before our panel. With our panel chosen
   (`GamePresenter.CoverCityLeadIn`) the presenter covers them from the picture of `Prov.BgCg` (not on a
   forced trip, `Ev_CommandMode` 1/2) to the menu; anything else the files show (another window op, a key
-  wait, a pause, a screen event) ends it (`A_city_files_lead_in_is_covered_up_to_the_menu`).
+  wait, a pause, a screen event) ends it (`A_city_files_lead_in_is_covered_up_to_the_menu`). So is the
+  lead-out: a cancel (right click, Esc) puts the pointer back (`IZ`, frames pass) before the files close the
+  window (0) and remove the picture (332), and a frame of the original's showed; after our menu the cover
+  stays through the text cleared, `IZ`, 0/10 and 332, and ends with the next thing shown (the map).
+- **The owner's look (2026-10-16):** the panel sits in the screen's centre, as the original's menu (not at the
+  map's top left); its lines are at least one window pixel wide (`ProvinceMenuView.Line`), since a 1-pixel line
+  scaled down fell between the pixels' centres (the first row's top edge vanished).
 
 ## Questions for the owner
 

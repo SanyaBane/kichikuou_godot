@@ -218,6 +218,8 @@ public sealed partial class GamePresenter
     {
         Menu = null;
         _menuItems = null;
+        if (_provinceCovered)
+            _cityLeadIn = true;                                         // the files' way out: IZ (frames pass), then 0 and 332
         ProvinceMenuCovered = false;
         Invalidate();
     }
@@ -233,19 +235,21 @@ public sealed partial class GamePresenter
     /// <summary>
     /// Our province menu covers the city's (docs/ui/command-screen.md, "The province menu"): while the menu
     /// is open, the city's picture (<c>WAO_SUB</c> 331), the window and its text and the menu are not drawn,
-    /// only the map under them. <see cref="CloseMenu"/> ends it. Also true through a city's lead-in
-    /// (<see cref="CoverCityLeadIn"/>).
+    /// only the map under them. <see cref="CloseMenu"/> ends it. Also true through a city's lead-in and
+    /// lead-out (<see cref="CoverCityLeadIn"/>).
     /// </summary>
     public bool ProvinceMenuCovered
     {
-        get => field || _cityLeadIn;
+        get => _provinceCovered || _cityLeadIn;
         set
         {
-            if (field != value)
+            if (_provinceCovered != value)
                 Invalidate();
-            field = value;
+            _provinceCovered = value;
         }
     }
+
+    private bool _provinceCovered;
 
     /// <summary>
     /// Whether a UI covers the city files' first menus (<see cref="ProvinceMenuCovered"/>): then the
@@ -253,6 +257,8 @@ public sealed partial class GamePresenter
     /// the window 113 and its "[name]" lines, which the files draw before the release wait (<c>IM</c>,
     /// frames pass) that comes before the menu. It ends at the menu (<see cref="OpenMenu"/>: the UI covers
     /// it again if it is a city's first menu) or at anything else the files would show (<see cref="LeadInGoesOn"/>).
+    /// Nor the lead-out: after our menu closes, the files' way back to the map (a cancel puts the pointer back
+    /// with <c>IZ</c> first, frames pass) until the window and the picture are gone, or a command shows more.
     /// </summary>
     public bool CoverCityLeadIn { get; set; }
 
@@ -269,9 +275,13 @@ public sealed partial class GamePresenter
             SetLeadIn(false);
     }
 
-    /// <summary>What the city files show between the picture and the menu: the window 113 and its text.</summary>
-    private static bool LeadInGoesOn(ScriptEvent scriptEvent) => scriptEvent is WindowEvent { Op.Value: 113 }
-        or MessageEvent or ValueMessageEvent or PrintStringEvent or LineBreakEvent or SoundEvent or SoundPairEvent or MusicEvent;
+    /// <summary>
+    /// What the city files show between the picture and the menu — the window 113 and its text — and on the
+    /// way out after it: the text cleared, the pointer put back, the window closed (0, 10), the picture removed (332).
+    /// </summary>
+    private static bool LeadInGoesOn(ScriptEvent scriptEvent) => scriptEvent is WindowEvent { Op.Value: 113 or 0 or 10 or 332 }
+        or MessageEvent or ValueMessageEvent or PrintStringEvent or LineBreakEvent or MessageClearEvent
+        or EngineEvent { Command: "IZ" } or SoundEvent or SoundPairEvent or MusicEvent;
 
     /// <summary>The script waits for a key or a pause: whatever it drew is shown.</summary>
     public void EndCityLeadIn() => SetLeadIn(false);
