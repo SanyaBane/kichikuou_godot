@@ -160,6 +160,11 @@ picture, the slot panels) is not shown. How it is built:
   panel below the scene — the order strip, the armies' names, the gauge, the cards — is darkened (black at
   Option → Battle Screen… → "Spotlight: darkness", 50 % by default), but the two fighters' cards (`Unit_Cur`, `Cmdr_Cur`), so who fights shows at a glance. It fades in
   and out in 0.15 s (at once while skipping and with `--fast`); the acting card's frame stays over it.
+- **Out of the exchange's way** (owner, 2026-10-16, as Sengoku Rance's): on the spotlight's signal the limit's plate
+  slides up out over the screen's top and the order strip down behind the separator (clipped at its top, so it
+  never shows over the panel); when the exchange is over both come back, and only once the strip is back does it
+  move to the order's change that came meanwhile (`BattleBoardView.StepAway`, eased, 0.3 s; at once while
+  skipping and with `--fast`).
 - **The actions on the fighters' cards** (owner, 2026-10-13, mock-up D): the "vs" window (window 143 with
   the two sides' action labels, `FIGT.ADV:1739-1802`) is not shown — `BattlePresenter.ActionLabelsOpen`
   leaves it out of the windows' layer and `GameScreen` answers its click wait at once, as a click

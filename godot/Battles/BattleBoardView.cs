@@ -91,6 +91,7 @@ internal sealed partial class BattleBoardView : Control
     private static float WindowScale => WindowsArea.Size.X / Surface.ScreenWidth;
     private readonly TextureRect _speaker;
     private readonly OrderStrip _strip;
+    private readonly Control _stripClip;                                // the strip slides behind the separator (owner, 2026-10-16)
     private readonly Label _playerName, _enemyName;
     private readonly AdvantageLabels _playerAdvantage = new(), _enemyAdvantage = new();
     private readonly HBoxContainer _playerArmyLine, _enemyArmyLine;     // the army's name and its advantage over the cards
@@ -166,7 +167,7 @@ internal sealed partial class BattleBoardView : Control
         _speaker.Visible = false;
         AddChild(_speaker);
 
-        _limit = new Control { MouseFilter = MouseFilterEnum.Ignore };     // over the scene, under its windows
+        _limit = new Control { MouseFilter = MouseFilterEnum.Ignore, ClipContents = true };   // over the scene, under its windows; slides out over its top
         _limit.Draw += DrawLimit;
         AddChild(_limit);
 
@@ -177,8 +178,10 @@ internal sealed partial class BattleBoardView : Control
         _balloon = new SpeechBalloon();                                     // over the scene's lower edge and the strip
         AddChild(_balloon);
 
+        _stripClip = new Control { ClipContents = true, MouseFilter = MouseFilterEnum.Ignore };
+        AddChild(_stripClip);
         _strip = new OrderStrip();
-        AddChild(_strip);
+        _stripClip.AddChild(_strip);
         _playerName = new Label { MouseFilter = MouseFilterEnum.Ignore };
         _enemyName = new Label { MouseFilter = MouseFilterEnum.Ignore };
         _playerArmyLine = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
@@ -343,7 +346,8 @@ internal sealed partial class BattleBoardView : Control
         At(_limit, SceneArea);
         _limit.QueueRedraw();
         At(_windows, WindowsArea);
-        At(_strip, StripArea);
+        At(_stripClip, StripClipArea);
+        PlaceStrip();
         _strip.SetScale(scale);
         At(_playerArmyLine, PlayerNameArea);
         At(_enemyArmyLine, EnemyNameArea);
@@ -972,6 +976,7 @@ internal sealed partial class BattleBoardView : Control
         _limit.Modulate = new Color(1, 1, 1, 1 - _opening.Cover);     // the opening's plate says the same while it covers the scene
         StepArmies(delta);
         StepSpotlight(delta);
+        StepAway(delta);
         StepMeters();
         StepOrderFlash();
         StepAdvantageTip();
@@ -1197,7 +1202,53 @@ internal sealed partial class BattleBoardView : Control
         _stripKey = key;
         bool newRound = (order.Battle, order.Round) != _stripRound;     // a new round, or a new battle's first
         _stripRound = (order.Battle, order.Round);
+        if (_spotOn || _away > 0)
+        {
+            _stripPending = (chips, instant || newRound || (_stripPending?.Instant ?? false));   // shown when the strip is back
+            return;
+        }
+        _stripPending = null;
         _strip.Show(chips, instant || newRound);
+    }
+
+    private (IReadOnlyList<OrderChip> Chips, bool Instant)? _stripPending;
+
+    // ------------------------------------------------------------------ out of the exchange's way
+
+    // While an exchange is on (the spotlight's signal, BattleScene.InEngagement; owner, 2026-10-16, as Sengoku Rance's) the
+    // limit's plate slides up out over the screen's top and the order strip down behind the separator; they come back when
+    // it is over, and only then does the strip show the order's change. Eased, in AwaySeconds; at once while skipping and
+    // with --fast.
+    private const double AwaySeconds = 0.3;
+    private static readonly Rect2 StripClipArea = new(0, 0, 1280, 408);   // down to the separator's top
+    private const float StripAway = 408 - 374 + 2;                        // the strip's top below the clip's foot
+    private const float LimitAway = 8 + 28 + 12;                          // the plate's foot above the scene's top, its shadow too
+    private float _away;                                                  // 0: in place, 1: out of the way
+
+    private static float Eased(float x) => x * x * (3 - 2 * x);
+
+    private void StepAway(double delta)
+    {
+        float target = _spotOn ? 1 : 0;
+        if (_away != target)
+        {
+            float step = _armiesInstant ? 1 : (float)(delta / AwaySeconds);
+            _away = target > _away ? Math.Min(target, _away + step) : Math.Max(target, _away - step);
+            PlaceStrip();
+            _limit.QueueRedraw();
+        }
+        if (_away == 0 && !_spotOn && _stripPending is { } pending)
+        {
+            _stripPending = null;
+            _strip.Show(pending.Chips, pending.Instant);
+        }
+    }
+
+    /// <summary>The strip at its place in its clip, or as far down as it is out of the way.</summary>
+    private void PlaceStrip()
+    {
+        _strip.Position = (StripArea.Position - StripClipArea.Position + new Vector2(0, Eased(_away) * StripAway)) * _scale;
+        _strip.Size = StripArea.Size * _scale;
     }
 
     private (int Battle, int Round) _stripRound = (-1, -1);
@@ -1331,7 +1382,7 @@ internal sealed partial class BattleBoardView : Control
             return;
         float s = _scale;
         float width = font.GetStringSize(_limitText, HorizontalAlignment.Left, -1, fontSize).X + 2 * LimitPadding * s;
-        var plate = new Rect2((_limit.Size.X - width) / 2, (LimitCentreY - LimitHeight / 2) * s, width, LimitHeight * s);
+        var plate = new Rect2((_limit.Size.X - width) / 2, (LimitCentreY - LimitHeight / 2 - Eased(_away) * LimitAway) * s, width, LimitHeight * s);
         var box = new StyleBoxFlat
         {
             BgColor = new Color(_colours.Back, 0.8f),
