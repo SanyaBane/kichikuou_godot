@@ -200,6 +200,7 @@ public sealed partial class GamePresenter
     /// </summary>
     public void OpenMenu(IReadOnlyList<SceneMenuItem> items)
     {
+        _menuItems = items;
         Menu = MenuView.FromTexts(items.Select(item => string.Concat(item.Texts.Select(Read)).Replace("\n", "")),
             _engine.SelectionWindow);
         Invalidate();
@@ -215,7 +216,33 @@ public sealed partial class GamePresenter
     public void CloseMenu()
     {
         Menu = null;
+        _menuItems = null;
+        ProvinceMenuCovered = false;
         Invalidate();
+    }
+
+    private IReadOnlyList<SceneMenuItem>? _menuItems;
+
+    /// <summary>The open menu as a city's first menu (<see cref="Strategy.ProvinceMenu"/>), or null.</summary>
+    public ProvinceMenu? ProvinceMenu =>
+        _menuItems is { } items && MenuItems is { } texts && State is { } s && !BattleShows
+            ? Strategy.ProvinceMenu.For(s, items, texts, at => Read(at, [], null))
+            : null;
+
+    /// <summary>
+    /// Our province menu covers the city's (docs/ui/command-screen.md, "The province menu"): while the menu
+    /// is open, the city's picture (<c>WAO_SUB</c> 331), the window and its text and the menu are not drawn,
+    /// only the map under them. <see cref="CloseMenu"/> ends it.
+    /// </summary>
+    public bool ProvinceMenuCovered
+    {
+        get;
+        set
+        {
+            if (field != value)
+                Invalidate();
+            field = value;
+        }
     }
 
     /// <summary>The menu item (0-based) at a screen point, or −1.</summary>
@@ -286,13 +313,16 @@ public sealed partial class GamePresenter
             {
                 if (MaskEventCgs && (s.Ui_WinType == 31 || _endingCg != 0 || _gallery))
                     MaskStage();
-                DrawPictures(s);
-                Picker?.Draw(Screen, s);
-                Frame(s);
-                _window.Draw(Screen, _glyphs);
+                if (!ProvinceMenuCovered)
+                {
+                    DrawPictures(s);
+                    Picker?.Draw(Screen, s);
+                    Frame(s);
+                    _window.Draw(Screen, _glyphs);
+                }
             }
         }
-        if (State is not null && MenuBox() is { } menu)                 // also over a battle: a scene it called (Gﾒﾙﾌｪｲｽ from 死亡捕獲)
+        if (State is not null && !ProvinceMenuCovered && MenuBox() is { } menu)                 // also over a battle: a scene it called (Gﾒﾙﾌｪｲｽ from 死亡捕獲)
         {
             menu.Open();
             menu.Hover(_pointer.X, _pointer.Y);

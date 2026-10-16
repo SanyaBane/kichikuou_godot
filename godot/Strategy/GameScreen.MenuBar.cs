@@ -121,6 +121,7 @@ public partial class GameScreen
             _glyphs.Font = font;
             _table.SetFont(font);
             _markers.SetFont(font);
+            _provinceView.SetFont(font);
             _panels.SetFont(font);
             _battleView.SetFont(font);
             _scoutView.SetFont(font);

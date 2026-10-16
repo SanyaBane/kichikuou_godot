@@ -232,6 +232,31 @@ apply there; the card does not say so.
   --interface new` in a window shows it in `map-markers-hover` (Leazas Castle (1)) and `map-marker-hover`
   (the attack's target).
 
+## The province menu (owner, 2026-10-16)
+
+**The third small step: a city's first menu as our panel.** Mock-ups first: an interactive page was
+"a free-to-play browser game" to the owner (pill buttons, tags, capitals); four drawn styles followed
+(lacquer and gold, the original's PC-98 windows, parchment, a Sengoku Rance-like list), then the list in
+the colours of the first and of the third. The owner chose **4a**: the list at the map's top left in
+lacquer and gold — a near-black panel with a double gold frame and gold corners, the city's picture
+(`WAO_SUB` 331, `Prov.BgCg`) with the name in Shojumaru beside it, the army in Cinzel, the card's figures
+(`MapMarkers.CardOf`), then the commands as rows, each with a coloured tag of ours (Levy, Build, Plot, Visit,
+Search, Battle, Ninja), and Return. The mock-ups hold the player's CGs and stay outside the repository.
+
+- **Which menus.** A city file's first menu, recognised by its items' places (`ProvinceMenu.For`):
+  `Cｼﾊｲﾄｼ.ADV:32-507` (the commands at 41-59, × 24 below; the places at 91-283, × 207 below; the Ruins
+  Search's ○ at 436 too, CMD-09; Return 502), `Cﾃｷﾄｼ.ADV` 52/58 (the AL Church ○/×), 64/70 (Attack /
+  Pillage), 76 (Ninja Maneuver), 81 (Return), `Cﾃｷﾄｼ2.ADV` 50 (Ninja Maneuver), 55 (Return). The army's
+  name is the line the files print (`Cｼﾊｲﾄｼ.ADV:21`, `Cﾃｷﾄｼ2.ADV:71 + 4 (owner − 2)`).
+- **The answer is the original's.** A row's click answers the menu with its item's place; a × item (it
+  only opens the menu again in the original) is a dimmed row, "used this week", not clickable; a right
+  click or Esc cancels (0), as the original's menu. The files' later windows and menus stay the original's.
+- **Built (2026-10-16):** `Original.Content/Strategy/ProvinceMenu` (`ProvinceMenuTests`); the presenter keeps
+  the open menu's items (`GamePresenter.ProvinceMenu`) and, while `ProvinceMenuCovered`, draws neither the
+  city's picture nor the window and its text nor the menu; `godot/Strategy/ProvinceMenuView` draws the panel
+  and answers `GameScreen.SelectAsync`. `--auto --interface new` in a window dumps it once (`province-menu`,
+  the attack's target).
+
 ## Questions for the owner
 
 1. **Layout**: A, B or C (or a mix: e.g. A's map with C's zoom-out).

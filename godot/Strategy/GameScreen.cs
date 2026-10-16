@@ -197,6 +197,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private DeploymentPanels _panels = null!;           // and over the rest of it but the portrait
     private PointerScript _tablePointer = new();        // the script's pointer while the player's is over the table
     private MapMarkersView _markers = null!;            // our name plates over the map in COMMAND's map wait (New)
+    private ProvinceMenuView _provinceView = null!;     // our province menu over a city file's first menu (New)
     private PointerScript _markerPointer = new();       // a plate's still click on its way to the script
     private readonly MapCameraForm _mapCamera = new();  // whether the map loop holds the camera as the view's corner
     private IReadOnlyList<int>? _wantedOrder;           // the party a drop asked for, while its clicks run
@@ -240,6 +241,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _markers.Pressed += MarkerPressed;
         _content.AddChild(_markers);
         var faces = new FacePictures(new CgLibrary(GameData.CgDirectory));
+        _provinceView = new ProvinceMenuView(GodotGlyphRenderer.Chosen, faces);
+        _content.AddChild(_provinceView);
         _battleView = new BattleBoardView(GodotGlyphRenderer.Chosen, faces);
         _content.AddChild(_battleView);
         _scoutView = new ScoutReportView(GodotGlyphRenderer.Chosen, faces);
@@ -310,6 +313,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _notice.Text = "";
         UpdateDeploymentScreen();
         UpdateMapMarkers();
+        if (_provinceView.Visible)
+            _provinceView.Place(PictureArea());
         UpdateBattleScreen(Present());
         UpdateScoutReport();
         UpdateStrategyCutIn();
@@ -642,7 +647,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.ScreenshotDirectory is not { } dir)
             return;
         System.IO.Directory.CreateDirectory(dir);
-        if ((_table.Visible || _markers.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
+        if ((_table.Visible || _markers.Visible || _provinceView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
         {
             // Our deployment and battle screens are drawn by Godot over the screen: the window's next frame (headless
             // draws none). No Compose here: the frame's Present must find the change to upload it.
@@ -1174,18 +1179,31 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _skip.OnMenu();
         _presenter.OpenMenu(items);
         _presenter.Pointer(_input.Position.X, _input.Position.Y);
+        var province = InterfaceChoice.New ? _presenter.ProvinceMenu : null;
+        if (province is not null)
+        {
+            _presenter.ProvinceMenuCovered = true;                      // our panel instead (docs/ui/command-screen.md)
+            _provinceView.Open(province);
+            _provinceView.Place(PictureArea());
+        }
         Shot("menu");
         try
         {
             if (_options.Auto)
             {
                 await DelayAsync(_options.Fast ? 0 : 0.5);
+                if (province is not null && !_provinceDumped && DisplayServer.GetName() != "headless" && _options.ScreenshotDirectory is not null)
+                {
+                    _provinceDumped = true;
+                    await AutoDumpAsync("province-menu");
+                }
                 return AutoChoice(items);
             }
-            return await MenuAsync();
+            return province is not null ? await _provinceView.ChooseAsync() : await MenuAsync();
         }
         finally
         {
+            _provinceView.Close();
             _presenter.CloseMenu();
         }
     }
@@ -1279,6 +1297,17 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// read from the state when they appear (owners change only off the map). Returns whether they show.
     /// Shown or hidden, no plate's click stays queued.
     /// </summary>
+    /// <summary>The screen's picture in <c>_content</c>'s coordinates: the 1280×800 screen scaled to fit the view, centred.</summary>
+    private Rect2 PictureArea()
+    {
+        var size = _view.Size;
+        float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
+        var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
+        return new Rect2(_view.Position + (size - drawn) / 2, drawn);
+    }
+
+    private bool _provinceDumped;
+
     private bool UpdateMapMarkers()
     {
         bool show = InterfaceChoice.New && _presenter.MapWaiting && _mapCamera.Waiting
@@ -1293,11 +1322,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         if (!show)
             return false;
-        var size = _view.Size;
-        float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
-        var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
-        var origin = _view.Position + (size - drawn) / 2;
-        _markers.Place(new Rect2(origin, drawn), scale * Surface.Scale, _presenter.MapViewShown!.Value);
+        var area = PictureArea();
+        _markers.Place(area, area.Size.X / Surface.ScreenWidth, _presenter.MapViewShown!.Value);
         return true;
     }
 
