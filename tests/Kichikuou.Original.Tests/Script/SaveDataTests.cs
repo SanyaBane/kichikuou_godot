@@ -213,6 +213,46 @@ public class SaveDataTests
         Assert.Throws<InvalidDataException>(() => SaveData.ReadFrom(new MemoryStream(stream.ToArray()[..100])));
     }
 
+    /// <summary>
+    /// The port's own data (<see cref="ScriptState.Extras"/>) goes into the slot from format 2 on and a load
+    /// replaces it whole; a slot of format 1 still loads, with none.
+    /// </summary>
+    [Fact]
+    public void The_ports_own_data_round_trips_and_a_format_1_slot_has_none()
+    {
+        var state = new GameState();
+        state.MarkProvinceKnown(6);
+        state.MarkProvinceKnown(2);
+        var data = SaveData.Capture(state, Call);
+        var stream = new MemoryStream();
+        data.WriteTo(stream);
+        stream.Position = 0;
+        var read = SaveData.ReadFrom(stream);
+        Assert.Equal([2, 6], read.Extras[GameState.KnownProvincesKey]);
+
+        var loaded = new GameState();
+        loaded.MarkProvinceKnown(9);
+        read.Restore(loaded);
+        Assert.Equal([2, 6], loaded.KnownProvinces);
+
+        // Format 1: the version 1 and no extras' count at the end.
+        byte[] bytes = Write(SaveData.Capture(new GameState { Week = 12 }, Call));
+        Assert.Equal(2, BitConverter.ToInt32(bytes, 7));               // after the length-prefixed "KKSAVE"
+        BitConverter.GetBytes(1).CopyTo(bytes, 7);
+        var old = SaveData.ReadFrom(new MemoryStream(bytes[..^4]));
+        Assert.Empty(old.Extras);
+        Assert.Equal(12, old.Variables[517].Value);
+        old.Restore(loaded);
+        Assert.Empty(loaded.KnownProvinces);
+    }
+
+    private static byte[] Write(SaveData data)
+    {
+        var stream = new MemoryStream();
+        data.WriteTo(stream);
+        return stream.ToArray();
+    }
+
     [Fact]
     public void Slots_on_disk_survive_a_new_store_and_unreadable_files_are_empty()
     {

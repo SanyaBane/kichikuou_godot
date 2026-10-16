@@ -27,6 +27,13 @@ public abstract class ScriptState
     public string[] Strings => Memory.Strings;
 
     /// <summary>
+    /// The port's own data, by key, kept in the save slots next to the memory: what our interface
+    /// remembers and the original does not (the provinces whose figures the player has seen). No rule
+    /// reads it; a load replaces it whole (<see cref="SaveData.Restore(ScriptState)"/>).
+    /// </summary>
+    public Dictionary<string, int[]> Extras { get; } = [];
+
+    /// <summary>
     /// <c>VAR0000</c>, the engine's result register: <c>Y 4, n</c> draws into it, <c>IM</c> leaves the
     /// mouse button there, the save commands their status; scenarios also use it for menu and
     /// sub-file return codes and as a temporary.

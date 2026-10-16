@@ -34,7 +34,8 @@ public enum DungeonKind
 
 /// <summary>
 /// One marker of our map: a province or a dungeon at its map point (<c>MapX</c>, <c>MapY</c>, the
-/// middle of the town's picture and of the original's click square), with what its plate shows.
+/// middle of the town's picture and of the original's click square), with what its plate shows and,
+/// for a province, its card's lines (<see cref="MapMarkers.CardOf"/>).
 /// </summary>
 public sealed record MapMarker(
     MapHitKind Kind,
@@ -46,7 +47,8 @@ public sealed record MapMarker(
     MapRelation Relation,
     bool Open,
     DungeonKind Dungeon,
-    string? Progress);
+    string? Progress,
+    IReadOnlyList<string>? Card = null);
 
 /// <summary>
 /// The markers of our map during <c>COMMAND</c>'s map wait (docs/ui/command-screen.md, "The map's
@@ -70,7 +72,7 @@ public static class MapMarkers
             if (name.Length == 0 || (prov.MapX == 0 && prov.MapY == 0))
                 continue;
             markers.Add(new MapMarker(MapHitKind.Province, p, Plain(name), prov.MapX.Value, prov.MapY.Value,
-                CommandPhase.HitRadius((Sys3Int)p) > 12, RelationOf(state, p), true, DungeonKind.Event, null));
+                CommandPhase.HitRadius((Sys3Int)p) > 12, RelationOf(state, p), true, DungeonKind.Event, null, CardOf(state, p)));
         }
         for (int d = 1; d <= state.Dgn_Count.Value; d++)
         {
@@ -103,6 +105,24 @@ public static class MapMarkers
             if (adj != 0 && state.Provs[adj].Owner == 1)
                 return MapRelation.Bordering;
         return MapRelation.Other;
+    }
+
+    /// <summary>
+    /// The province's card on hover (docs/ui/command-screen.md, "The province card"): the three figures the
+    /// city's window prints, each with what it does — "Economy: 20 (2000K Gold)" (the weekly income, in the
+    /// 100K GOLD the budget counts), "Defense: 10 (Walls +20%)" (two points off the attackers' hit chance a
+    /// point), "Battle Area: 180 troops" (the most that fight at once in a city battle). Ours and the
+    /// provinces the player has seen (<see cref="GameState.IsProvinceKnown"/>) show them, the others "??",
+    /// as the original's window does for a city not scouted (<c>Cﾃｷﾄｼ.ADV:26-43</c>).
+    /// </summary>
+    public static IReadOnlyList<string> CardOf(GameState state, int province)
+    {
+        var prov = state.Provs[province];
+        if (prov.Owner != 1 && !state.IsProvinceKnown(province))
+            return ["Economy: ??", "Defense: ??", "Battle Area: ??"];
+        int economy = prov.Economy.Value, defense = prov.Defense.Value;
+        return [$"Economy: {economy} ({economy * 100}K Gold)", $"Defense: {defense} (Walls +{defense * 2}%)",
+            $"Battle Area: {prov.BattleArea.Value} troops"];
     }
 
     /// <summary>

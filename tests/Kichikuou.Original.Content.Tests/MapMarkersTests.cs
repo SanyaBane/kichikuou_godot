@@ -126,6 +126,36 @@ public class MapMarkersTests
         Assert.Empty(Gestures(p => Assert.False(MapMarkers.Press(s, markers.Single(m => m.Kind == MapHitKind.Province && m.Id == 4), p))));
     }
 
+    /// <summary>
+    /// A province's card: ours with its figures and what they do, one not ours "??" until it is known —
+    /// ours at a map wait once, or scouted (<see cref="GameState.KnownProvinces"/>) — and then its figures
+    /// as the state has them now. Dungeons have none.
+    /// </summary>
+    [Fact]
+    public void A_province_card_shows_the_figures_of_ours_and_of_the_known_ones_and_else_question_marks()
+    {
+        var s = World();
+        s.Provs[1].Economy = 20;
+        s.Provs[1].Defense = 10;
+        s.Provs[1].BattleArea = 180;
+        s.Provs[2].Economy = 12;
+        s.Provs[2].Defense = 0;
+        s.Provs[2].BattleArea = 232;
+        Assert.Equal(["Economy: 20 (2000K Gold)", "Defense: 10 (Walls +20%)", "Battle Area: 180 troops"], MapMarkers.CardOf(s, 1));
+        Assert.Equal(["Economy: ??", "Defense: ??", "Battle Area: ??"], MapMarkers.CardOf(s, 2));
+
+        s.MarkProvinceKnown(2);
+        Assert.Equal(["Economy: 12 (1200K Gold)", "Defense: 0 (Walls +0%)", "Battle Area: 232 troops"], MapMarkers.CardOf(s, 2));
+        var markers = MapMarkers.All(s, Literal);
+        Assert.Equal(MapMarkers.CardOf(s, 2), markers.Single(m => m is { Kind: MapHitKind.Province, Id: 2 }).Card);
+        Assert.All(markers.Where(m => m.Kind == MapHitKind.Dungeon), m => Assert.Null(m.Card));
+
+        s.MarkOwnProvincesKnown();                                       // Leazas Castle (1) and Out (4)
+        Assert.Equal([1, 2, 4], s.KnownProvinces);
+        s.Provs[4].Owner = 4;                                            // lost: still known
+        Assert.Equal("Economy: 0 (0K Gold)", MapMarkers.CardOf(s, 4)[0]);
+    }
+
     [Fact]
     public void The_camera_is_the_corner_from_the_release_wait_to_a_right_button()
     {

@@ -170,10 +170,10 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `Mt19937Legacy` + `XSystem35Random` (`Y 4,n`), `IScriptRandom` for injecting recorded draws,
   and `ScriptMemory` (variables, array pages, strings in the original engine's layout).
   `Script/` is the runtime: `ScriptState` (what the runtime sees: the memory, `RetVal`, the `DS`
-  bindings), `VariantProfile` (the facts the runtime takes from a variant — variable count, scene
+  bindings, and `Extras`, the port's own data kept with the saves — no rule reads it), `VariantProfile` (the facts the runtime takes from a variant — variable count, scene
   rule, saved pages), `ScriptContext` (the engine's side: state, draws, pauses, scene calls, saves;
   helper calls go through the virtual `CallHelperAsync`), the shared events (`ScriptEvent`) and the
-  view/input/hook interfaces, `SaveData` (the slot format), `MessageSkip`, `PointerScript` (the
+  view/input/hook interfaces, `SaveData` (the slot format, 2 since `Extras`; format 1 still loads), `MessageSkip`, `PointerScript` (the
   gesture queue), `IScenarioSource`, plus
   `ScriptStatements` — scenario code read at run time: a goto program that mirrors the
   decompile line for line (`ScriptProgram`, one statement per engine command, jumps resolved,
@@ -248,7 +248,10 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `Strategy/MapMarkersView` (our name plates over the map in `COMMAND`'s map wait, Option → Interface → New,
   docs/ui/command-screen.md, "The map's markers": the model `Original.Content/Strategy/MapMarkers`, a plate's click a
   still click at its marker's point, the camera's form `MapCameraForm`, placed at the view the screen shows,
-  `GamePresenter.MapViewShown`; the dimmed ones hidden by Option → Hide Dimmed Map Names, `MapNamesChoice`);
+  `GamePresenter.MapViewShown`; the dimmed ones hidden by Option → Hide Dimmed Map Names, `MapNamesChoice`;
+  a hovered province's card right of its plate, `MapMarkers.CardOf`: its figures for ours and the provinces the
+  player has seen — `GameState.KnownProvinces`, in `Extras`, marked at each map wait and by the ninja's scouting —
+  else "??");
   `Battles/BattleBoardView` (our own battle screen, Option → Interface → New, docs/ui/battle-screen.md:
   `Original.Content/Battles/BattleScene` on top, the stage's windows over it through `WindowMask`, the
   cards and the round's order from `BattleBoard`/`RoundOrder`, the order strip `OrderStrip` moving on its own;

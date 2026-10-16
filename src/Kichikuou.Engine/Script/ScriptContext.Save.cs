@@ -49,7 +49,7 @@ public partial class ScriptContext
             State.RetVal = SaveError;
             return;
         }
-        data.Restore(State.Memory);
+        data.Restore(State);
         State.RetVal = 0;
         throw new GameLoadedException(slot.Value, data.Resume);
     }

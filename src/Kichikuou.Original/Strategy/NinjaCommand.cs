@@ -253,6 +253,7 @@ public sealed class NinjaCommand(OriginalScriptContext script) : CommandFile(scr
         await ValuesAsync(419, Prov.Economy, Prov.Defense, Prov.BattleArea);
         await WaoAsync(1);
         State.Ui_CityScouted = 1;
+        State.MarkProvinceKnown(State.Prov_Cur.Value);                  // ours: the card remembers it (docs/ui/command-screen.md)
         await WaoAsync(0);
         await WaoAsync(322);
         await WaoAsync(312);
@@ -407,6 +408,7 @@ public sealed class NinjaCommand(OriginalScriptContext script) : CommandFile(scr
         if (State.Tmp0001 == 1)
         {
             State.Ui_CityScouted = 1;
+            State.MarkProvinceKnown(State.Prov_Cur.Value);                  // ours: the card remembers it (docs/ui/command-screen.md)
             await SpeakAsync(111, 656);
             await SpeakAsync(121, 661);
             await SpeakAsync(111, 666);
@@ -449,6 +451,7 @@ public sealed class NinjaCommand(OriginalScriptContext script) : CommandFile(scr
         if (State.Tmp0001 == 1)
         {
             State.Ui_CityScouted = 1;
+            State.MarkProvinceKnown(State.Prov_Cur.Value);                  // ours: the card remembers it (docs/ui/command-screen.md)
             await SpeakAsync(111, 774);
             await WaoAsync(121);
             await TextAsync(779);
@@ -495,6 +498,7 @@ public sealed class NinjaCommand(OriginalScriptContext script) : CommandFile(scr
         if (State.Tmp0001 == 1)
         {
             State.Ui_CityScouted = 1;
+            State.MarkProvinceKnown(State.Prov_Cur.Value);                  // ours: the card remembers it (docs/ui/command-screen.md)
             await SpeakAsync(111, 880);
             await SpeakAsync(121, 887, 892, 903);
             await SpeakAsync(111, 914);
@@ -529,6 +533,7 @@ public sealed class NinjaCommand(OriginalScriptContext script) : CommandFile(scr
         if (State.Tmp0001 == 1)
         {
             State.Ui_CityScouted = 1;
+            State.MarkProvinceKnown(State.Prov_Cur.Value);                  // ours: the card remembers it (docs/ui/command-screen.md)
             await SpeakAsync(111, 991);
             await SpeakAsync(121, 996, 1007);
             await SpeakAsync(111, 1020);

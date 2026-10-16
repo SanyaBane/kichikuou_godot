@@ -202,6 +202,36 @@ clicks the week's attack target through its plate as a player does (the system p
 `map-marker-hover`, a press and a release through Godot's input), so the attack runs from the plate's
 click.
 
+## The province card (owner, 2026-10-16)
+
+**The second small step: a card on hover**, the province's figures only, right of the hovered plate (left
+of it where the map ends), over the plates; nothing for a dungeon. Each line is the original's figure and
+what it does (the owner's format): "Economy: 20 (2000K Gold)" — the weekly income, in the 100K GOLD the
+budget counts; "Defense: 10 (Walls +20%)" — two points off the attackers' hit chance a point, as the
+battle screen's "Walls"; "Battle Area: 180 troops" — the most that fight at once in a city battle. A city
+with Defense 0 is fought on the field (`Bt_WallBonus` 0, a limit of 5000), so its Battle Area does not
+apply there; the card does not say so.
+
+- **Who shows figures.** Ours always, as `Cｼﾊｲﾄｼ`'s window (`Cｼﾊｲﾄｼ.ADV:15-31`); the others "??", as
+  `Cﾃｷﾄｼ`/`Cﾃｷﾄｼ2` print them for a city not scouted (`Cﾃｷﾄｼ.ADV:26-43`) — until the player has seen them.
+- **What the original remembers: nothing.** A ninja's report (`Cﾆﾝｼﾞｬ`, and Kanami's sabotage) sets only
+  `Ui_CityScouted`, which the city files reset on entering (`EnemyCityCommand.cs:45`,
+  `DistantCityCommand.cs:16`). The port remembers it for the card (beyond the original, the owner's choice):
+  `GameState.KnownProvinces`, marked where the ninja sets the flag (`NinjaCommand`, five places) and for every
+  province of ours at each map wait (`CommandPhase.MapAsync`), so a province lost stays known. It is the
+  port's own data, `ScriptState.Extras`, kept in the save slot (`SaveData` format 2; a slot of format 1 loads
+  with nothing known) and read by no rule.
+- **The fact, not the figures.** The card shows a known province's figures as the state has them now. No
+  nation's turn and no capture changes them; only Bolster Defense (`Cｼﾊｲﾄｼ.ADV:1609`, ours), Kanami's
+  sabotage (`Cﾆﾝｼﾞｬ.ADV:698`, scouted at once), a city defence (`FIGT_B.ADV:185`, ours, Battle Area +10 %,
+  Q-3) and three story scenes — Papaia's ruin (`Gﾊﾟﾊﾟｲｱ.ADV:1800, 4753`: 0 / 0 / 2000), Miki's at Leazas
+  Castle (1) (`Gﾐｷ.ADV:4645`: 1 / 1) and stage 4 (`Tﾙﾄﾞﾗ.ADV:66-68`: every province 0 / 0 / Battle Area × 2).
+  So remembered figures could only go stale after those scenes; showing the state's never does.
+- **Built (2026-10-16):** the lines are `MapMarkers.CardOf` (`MapMarker.Card`; `MapMarkersTests`), drawn by
+  `MapMarkersView`'s `ProvinceCard` (label muted, the rest in the text colour, "??" muted). `--auto
+  --interface new` in a window shows it in `map-markers-hover` (Leazas Castle (1)) and `map-marker-hover`
+  (the attack's target).
+
 ## Questions for the owner
 
 1. **Layout**: A, B or C (or a mix: e.g. A's map with C's zoom-out).

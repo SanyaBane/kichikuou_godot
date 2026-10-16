@@ -10,7 +10,8 @@ namespace Kichikuou.Game.Strategy;
 /// and dungeon of the view during <c>COMMAND</c>'s map wait, over the original's map and flags. The
 /// hover changes the colours only (a gold frame and glow, a lighter plate, a light spot under the
 /// town); a left click on a plate is <see cref="Pressed"/>, a right click goes on to the screen (the
-/// script's menu), a press anywhere else on the map stays the script's (its clicks and drags).
+/// script's menu), a press anywhere else on the map stays the script's (its clicks and drags). A
+/// hovered province's card (<see cref="MapMarker.Card"/>) shows right of its plate, over the plates.
 /// </summary>
 internal sealed partial class MapMarkersView : Control
 {
@@ -22,6 +23,7 @@ internal sealed partial class MapMarkersView : Control
     private (int X, int Y) _corner;
     private Plate? _shownHover;
     private bool _hideDimmed = MapNamesChoice.HideDimmed;
+    private readonly ProvinceCard _card;
 
     public MapMarkersView(GameFont font)
     {
@@ -29,6 +31,8 @@ internal sealed partial class MapMarkersView : Control
         ClipContents = true;                            // the plates stay on the map, not over the menu bar
         Visible = false;
         _font = DeploymentTableView.LoadFont(font);
+        _card = new ProvinceCard(this);
+        AddChild(_card);
         _badgeFont.VariationOpentype = new Godot.Collections.Dictionary
         {
             [TextServerManager.Singleton.GetPrimaryInterface().NameToTag("wght")] = 700,
@@ -46,6 +50,7 @@ internal sealed partial class MapMarkersView : Control
         _colours = palette;
         foreach (var plate in _plates)
             plate.QueueRedraw();
+        _card.QueueRedraw();
         QueueRedraw();
     }
 
@@ -61,6 +66,7 @@ internal sealed partial class MapMarkersView : Control
         _hideDimmed = hide;
         foreach (var plate in _plates)
             PlacePlate(plate);
+        UpdateCard();
         QueueRedraw();
     }
 
@@ -77,6 +83,7 @@ internal sealed partial class MapMarkersView : Control
             _plates.Add(plate);
             AddChild(plate);
         }
+        MoveChild(_card, -1);                           // over the plates
         Relayout();
     }
 
@@ -98,6 +105,7 @@ internal sealed partial class MapMarkersView : Control
         _corner = corner;
         foreach (var plate in _plates)
             PlacePlate(plate);
+        UpdateCard();
         QueueRedraw();
     }
 
@@ -110,9 +118,10 @@ internal sealed partial class MapMarkersView : Control
     /// <summary>Unattended play's dumps: the marker shown as hovered without the pointer (null: none).</summary>
     public void ShowHover(MapMarker? marker)
     {
-        _shownHover = marker is null ? null : _plates.FirstOrDefault(p => p.Marker == marker);
+        _shownHover = marker is null ? null : _plates.FirstOrDefault(p => p.Marker.Kind == marker.Kind && p.Marker.Id == marker.Id);
         foreach (var plate in _plates)
             plate.QueueRedraw();
+        UpdateCard();
         QueueRedraw();
     }
 
@@ -123,7 +132,27 @@ internal sealed partial class MapMarkersView : Control
             plate.Measure();
             PlacePlate(plate);
         }
+        UpdateCard();
         QueueRedraw();
+    }
+
+    /// <summary>The card of the hovered (or shown hovered) province, right of its plate — left of it where the map ends — or none.</summary>
+    private void UpdateCard()
+    {
+        var plate = _plates.FirstOrDefault(p => p.Visible && ShowsHover(p) && p.Marker.Card is not null);
+        if (plate is null)
+        {
+            _card.Visible = false;
+            return;
+        }
+        _card.SetLines(plate.Marker.Card!);
+        float gap = 5 * _pixels;
+        float x = plate.Position.X + plate.Size.X + gap;
+        if (x + _card.Size.X > Size.X - 2)
+            x = plate.Position.X - gap - _card.Size.X;
+        float y = Math.Clamp(plate.Position.Y + (plate.Size.Y - _card.Size.Y) / 2, 2, Math.Max(2, Size.Y - _card.Size.Y - 2));
+        _card.Position = new Vector2(x, y);
+        _card.Visible = true;
     }
 
     private void PlacePlate(Plate plate)
@@ -155,6 +184,67 @@ internal sealed partial class MapMarkersView : Control
         }
     }
 
+    /// <summary>
+    /// A province's card (docs/ui/command-screen.md, "The province card"): its three lines, each a label
+    /// ("Economy:") in the muted colour and the rest — the figure and what it does, or "??" muted too.
+    /// </summary>
+    private sealed partial class ProvinceCard : Control
+    {
+        private readonly MapMarkersView _layer;
+        private IReadOnlyList<string> _lines = [];
+
+        public ProvinceCard(MapMarkersView layer)
+        {
+            _layer = layer;
+            MouseFilter = MouseFilterEnum.Ignore;
+            Visible = false;
+        }
+
+        private float Px => _layer._pixels;
+
+        private int FontSize => (int)Math.Round(7.5f * Px);
+
+        private static (string Label, string Value) Split(string line)
+        {
+            int at = line.IndexOf(": ", StringComparison.Ordinal);
+            return at < 0 ? ("", line) : (line[..(at + 1)], line[(at + 2)..]);
+        }
+
+        /// <summary>Takes the lines and sizes the card to them: 6 script pixels in from the sides, lines 11.5 apart.</summary>
+        public void SetLines(IReadOnlyList<string> lines)
+        {
+            _lines = lines;
+            var font = _layer._font;
+            float space = font.GetStringSize(" ", fontSize: FontSize).X;
+            float width = lines.Select(Split).Max(l => font.GetStringSize(l.Label, fontSize: FontSize).X + space
+                + font.GetStringSize(l.Value, fontSize: FontSize).X);
+            Size = new Vector2(MathF.Ceiling(width + 12 * Px), MathF.Ceiling(lines.Count * 11.5f * Px + 7 * Px));
+            QueueRedraw();
+        }
+
+        public override void _Draw()
+        {
+            var c = _layer._colours;
+            float px = Px;
+            var box = new StyleBoxFlat { BgColor = new Color(c.Back, 0.94f), BorderColor = c.Border };
+            box.SetBorderWidthAll(Math.Max(1, (int)Math.Round(px / 2)));
+            box.SetCornerRadiusAll((int)Math.Round(2 * px));
+            DrawStyleBox(box, new Rect2(Vector2.Zero, Size));
+            var font = _layer._font;
+            float space = font.GetStringSize(" ", fontSize: FontSize).X;
+            float ascent = font.GetAscent(FontSize), descent = font.GetDescent(FontSize);
+            for (int i = 0; i < _lines.Count; i++)
+            {
+                var (label, value) = Split(_lines[i]);
+                float middle = 3.5f * px + (i + 0.5f) * 11.5f * px;
+                float baseline = middle + (ascent - descent) / 2;
+                DrawString(font, new Vector2(6 * px, baseline), label, fontSize: FontSize, modulate: c.Muted);
+                float x = 6 * px + font.GetStringSize(label, fontSize: FontSize).X + space;
+                DrawString(font, new Vector2(x, baseline), value, fontSize: FontSize, modulate: value == "??" ? c.Muted : c.Text);
+            }
+        }
+    }
+
     /// <summary>One marker's plate: a province's name, or a dungeon's icon, name and search.</summary>
     private sealed partial class Plate : Control
     {
@@ -171,8 +261,8 @@ internal sealed partial class MapMarkersView : Control
             Marker = marker;
             MouseFilter = MouseFilterEnum.Pass;
             MouseDefaultCursorShape = marker.Open ? CursorShape.PointingHand : CursorShape.Forbidden;
-            MouseEntered += () => { Hover = true; Redraw(); };
-            MouseExited += () => { Hover = false; _down = false; Redraw(); };
+            MouseEntered += () => { Hover = true; Redraw(); _layer.UpdateCard(); };
+            MouseExited += () => { Hover = false; _down = false; Redraw(); _layer.UpdateCard(); };
         }
 
         public MapMarker Marker { get; }

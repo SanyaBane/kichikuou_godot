@@ -12,20 +12,23 @@ namespace Kichikuou.Engine.Script;
 /// <c>QD</c> the scenario has (<c>ﾛｰﾄﾞｾｰﾌﾞ.ADV:33</c>). Presentation settings the original also
 /// saves (window rectangles, font sizes and colours) are not kept: the UI redraws from the state.
 /// The random generator's state is not saved either, as in the original. The slot format is the
-/// engine's; whether a slot fits a game is the context's check (its variable count).
+/// engine's; whether a slot fits a game is the context's check (its variable count). The port's own
+/// data (<see cref="ScriptState.Extras"/>) goes with the memory, from format 2 on.
 /// </summary>
 public sealed class SaveData
 {
     private const string Magic = "KKSAVE";
-    private const int FormatVersion = 1;
+    private const int FormatVersion = 2;
 
     /// <summary>Creates a slot's contents; the arrays are kept, not copied.</summary>
-    public SaveData(ScriptRef resume, Sys3Int[] variables, IReadOnlyDictionary<int, Sys3Int[]> pages, string[] strings)
+    public SaveData(ScriptRef resume, Sys3Int[] variables, IReadOnlyDictionary<int, Sys3Int[]> pages, string[] strings,
+        IReadOnlyDictionary<string, int[]>? extras = null)
     {
         Resume = resume;
         Variables = variables;
         Pages = pages;
         Strings = strings;
+        Extras = extras ?? new Dictionary<string, int[]>();
     }
 
     /// <summary>The call that saved: a load goes on right after it.</summary>
@@ -39,6 +42,9 @@ public sealed class SaveData
 
     /// <summary>The string variables, 1-based as in <see cref="ScriptMemory.Strings"/>.</summary>
     public string[] Strings { get; }
+
+    /// <summary>The port's own data (<see cref="ScriptState.Extras"/>); none in a slot of format 1.</summary>
+    public IReadOnlyDictionary<string, int[]> Extras { get; }
 
     /// <summary><c>QD</c>: the memory as it is now, with the pages the variant saves (<see cref="VariantProfile.SavedPages"/>).</summary>
     public static SaveData Capture(ScriptState state, ScriptRef resume)
@@ -58,7 +64,8 @@ public sealed class SaveData
                 values[i] = memory.ReadPage(page, i);
             pages[page] = values;
         }
-        return new SaveData(resume, variables, pages, (string[])memory.Strings.Clone());
+        return new SaveData(resume, variables, pages, (string[])memory.Strings.Clone(),
+            state.Extras.ToDictionary(e => e.Key, e => (int[])e.Value.Clone()));
     }
 
     /// <summary>
@@ -83,6 +90,15 @@ public sealed class SaveData
         }
     }
 
+    /// <summary><c>LD</c> into a state: its memory (<see cref="Restore(ScriptMemory)"/>), and the port's own data replaced whole.</summary>
+    public void Restore(ScriptState state)
+    {
+        Restore(state.Memory);
+        state.Extras.Clear();
+        foreach (var (key, values) in Extras)
+            state.Extras[key] = (int[])values.Clone();
+    }
+
     /// <summary>The saved values of <paramref name="page"/> (0 = the numbered variables), or null when the slot has no such page.</summary>
     public Sys3Int[]? Page(int page) => page == 0 ? Variables : Pages.GetValueOrDefault(page);
 
@@ -91,7 +107,8 @@ public sealed class SaveData
         Resume,
         (Sys3Int[])Variables.Clone(),
         Pages.ToDictionary(p => p.Key, p => (Sys3Int[])p.Value.Clone()),
-        (string[])Strings.Clone());
+        (string[])Strings.Clone(),
+        Extras.ToDictionary(e => e.Key, e => (int[])e.Value.Clone()));
 
     /// <summary>The port's own slot format (not the original's <c>.ASD</c>): versioned, little-endian.</summary>
     public void WriteTo(Stream stream)
@@ -111,6 +128,14 @@ public sealed class SaveData
         w.Write(Strings.Length);
         foreach (string s in Strings)
             w.Write(s);
+        w.Write(Extras.Count);
+        foreach (var (key, values) in Extras.OrderBy(e => e.Key, StringComparer.Ordinal))
+        {
+            w.Write(key);
+            w.Write(values.Length);
+            foreach (int value in values)
+                w.Write(value);
+        }
     }
 
     /// <summary>Reads a slot written by <see cref="WriteTo"/>; fails with <see cref="InvalidDataException"/> on anything else.</summary>
@@ -122,8 +147,8 @@ public sealed class SaveData
             if (r.ReadString() != Magic)
                 throw new InvalidDataException("Not a save slot of this port.");
             int version = r.ReadInt32();
-            if (version != FormatVersion)
-                throw new InvalidDataException($"Save format {version} is not supported (expected {FormatVersion}).");
+            if (version is < 1 or > FormatVersion)
+                throw new InvalidDataException($"Save format {version} is not supported (expected 1-{FormatVersion}).");
             var resume = new ScriptRef(r.ReadString(), r.ReadInt32());
             var variables = ReadValues(r);
             int pageCount = r.ReadInt32();
@@ -141,7 +166,25 @@ public sealed class SaveData
             var strings = new string[stringCount];
             for (int i = 0; i < stringCount; i++)
                 strings[i] = r.ReadString();
-            return new SaveData(resume, variables, pages, strings);
+            var extras = new Dictionary<string, int[]>();
+            if (version >= 2)
+            {
+                int extraCount = r.ReadInt32();
+                if (extraCount is < 0 or > 1024)
+                    throw new InvalidDataException($"Bad extra count {extraCount}.");
+                for (int i = 0; i < extraCount; i++)
+                {
+                    string key = r.ReadString();
+                    int count = r.ReadInt32();
+                    if (count is < 0 or > 65536 || extras.ContainsKey(key))
+                        throw new InvalidDataException($"Bad extra {key}.");
+                    var values = new int[count];
+                    for (int j = 0; j < count; j++)
+                        values[j] = r.ReadInt32();
+                    extras[key] = values;
+                }
+            }
+            return new SaveData(resume, variables, pages, strings, extras);
         }
         catch (EndOfStreamException e)
         {

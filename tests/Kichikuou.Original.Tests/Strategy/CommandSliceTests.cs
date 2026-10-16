@@ -1491,6 +1491,7 @@ public class CommandSliceTests
         Assert.Equal([[51, 57, 63, 69, 75, 80], [283, 299]], rig.MenuLines);
         Assert.Equal([5, 100], rig.Random.Draws);
         Is(1, rig.State.Ui_CityScouted);
+        Assert.Equal([rig.State.Prov_Cur.Value], rig.State.KnownProvinces);   // ours: the map's card remembers it
         Assert.Contains(393, rig.Lines);                                // "Kaoru came back with information."
         var info = rig.View.Events.OfType<ValueMessageEvent>().Single(v => v.Text.Line == 419);
         Assert.Equal([4, 3, 600], info.Values.Select(v => v.Value));
@@ -1510,6 +1511,7 @@ public class CommandSliceTests
         Assert.Equal([604, 625], rig.Lines[^2..]);                      // "never returned", "Kaoru was captured."
         Assert.Contains(rig.View.Events, e => e is MapEvent);
         Is(0, rig.State.Ui_CityScouted);
+        Assert.Empty(rig.State.KnownProvinces);
 
         rig = Ninja(4, 5, 1);
         rig.State.N_Kaoru_State = 2;

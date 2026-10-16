@@ -183,6 +183,7 @@ public sealed class CommandPhase(OriginalScriptContext script)
     private async Task<bool> MapAsync()
     {
     Wait:                                                               // L_0012e
+        State.MarkOwnProvincesKnown();                                  // ours: the cards remember them (docs/ui/command-screen.md)
         await Script.ShowAsync(new MapScreenEvent(true));
         await WaitForReleaseAsync();                                    // \L_003fe
         State.MapCamX = State.MapCamX - 320;                            // the camera as the view's corner
