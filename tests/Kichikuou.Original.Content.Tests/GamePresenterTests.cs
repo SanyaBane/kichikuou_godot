@@ -851,6 +851,52 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// With our province menu (<see cref="GamePresenter.CoverCityLeadIn"/>) a city file's lead-in is covered
+    /// from its picture (<c>WAO_SUB</c> 331 of the city's <c>Prov.BgCg</c>) through the window 113 and its text
+    /// to the menu, so the release wait before the menu shows nothing of the original's; the menu ends it,
+    /// and so does anything else the file shows (a key wait). Another picture, or no cover asked, starts nothing.
+    /// </summary>
+    [Fact]
+    public void A_city_files_lead_in_is_covered_up_to_the_menu()
+    {
+        var missing = Path.Combine(Path.GetTempPath(), "kichikuou-no-data");
+        var presenter = new GamePresenter(new ScenarioText(missing), new CgLibrary(missing), new BoxGlyphs());
+        var state = new GameState { Prov_Cur = 6 };
+        state.Provs[6].BgCg = 340;
+        presenter.Bind(state);
+        presenter.CoverCityLeadIn = true;
+
+        presenter.Show(new WindowEvent(331, 340));
+        Assert.True(presenter.ProvinceMenuCovered);
+        presenter.Show(new WindowEvent(113, 340));
+        presenter.Show(new MessageEvent(new ScriptRef("Cﾃｷﾄｼ.ADV", 20)));
+        presenter.Show(new LineBreakEvent());
+        Assert.True(presenter.ProvinceMenuCovered);
+        presenter.OpenMenu([]);
+        Assert.False(presenter.ProvinceMenuCovered);                            // the UI covers the menu itself
+
+        presenter.CloseMenu();
+        presenter.Show(new WindowEvent(331, 340));
+        presenter.Show(new WindowEvent(1, 340));                                // a key wait: shown
+        Assert.False(presenter.ProvinceMenuCovered);
+
+        presenter.Show(new WindowEvent(331, 341));                              // not the city's picture
+        Assert.False(presenter.ProvinceMenuCovered);
+        state.Ev_CommandMode = 1;                                               // a forced trip takes over
+        presenter.Show(new WindowEvent(331, 340));
+        Assert.False(presenter.ProvinceMenuCovered);
+        state.Ev_CommandMode = 0;
+        presenter.CoverCityLeadIn = false;
+        presenter.Show(new WindowEvent(331, 340));
+        Assert.False(presenter.ProvinceMenuCovered);
+
+        presenter.CoverCityLeadIn = true;
+        presenter.Show(new WindowEvent(331, 340));
+        presenter.EndCityLeadIn();                                              // GameScreen's key waits and pauses
+        Assert.False(presenter.ProvinceMenuCovered);
+    }
+
+    /// <summary>
     /// <c>Gｸﾘｰﾑ</c> 1, which <c>死亡捕獲</c> calls (<c>Battle.Flow.DeathCapture.cs</c>), run from the
     /// player's files inside the battle's screen: its pictures (<c>G 806</c>, <c>G 128</c>) reach the
     /// stage, its text resolves, and with the debug mask every frame under its full-screen window is the

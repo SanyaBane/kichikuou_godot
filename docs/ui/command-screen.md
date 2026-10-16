@@ -256,6 +256,12 @@ Search, Battle, Ninja), and Return. The mock-ups hold the player's CGs and stay 
   city's picture nor the window and its text nor the menu; `godot/Strategy/ProvinceMenuView` draws the panel
   and answers `GameScreen.SelectAsync`. `--auto --interface new` in a window dumps it once (`province-menu`,
   the attack's target).
+- **The lead-in is covered too (2026-10-16).** The files draw the city's picture (`WAO_SUB` 331) and the
+  window 113 with "［name］" and the figures, then wait for the button's release (`IM`, frames pass) before
+  the menu: that showed the original's window for a few frames before our panel. With our panel chosen
+  (`GamePresenter.CoverCityLeadIn`) the presenter covers them from the picture of `Prov.BgCg` (not on a
+  forced trip, `Ev_CommandMode` 1/2) to the menu; anything else the files show (another window op, a key
+  wait, a pause, a screen event) ends it (`A_city_files_lead_in_is_covered_up_to_the_menu`).
 
 ## Questions for the owner
 

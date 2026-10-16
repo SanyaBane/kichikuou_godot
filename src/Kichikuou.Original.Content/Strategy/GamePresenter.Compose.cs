@@ -201,6 +201,7 @@ public sealed partial class GamePresenter
     public void OpenMenu(IReadOnlyList<SceneMenuItem> items)
     {
         _menuItems = items;
+        SetLeadIn(false);                                               // the UI covers a city's first menu again
         Menu = MenuView.FromTexts(items.Select(item => string.Concat(item.Texts.Select(Read)).Replace("\n", "")),
             _engine.SelectionWindow);
         Invalidate();
@@ -232,17 +233,54 @@ public sealed partial class GamePresenter
     /// <summary>
     /// Our province menu covers the city's (docs/ui/command-screen.md, "The province menu"): while the menu
     /// is open, the city's picture (<c>WAO_SUB</c> 331), the window and its text and the menu are not drawn,
-    /// only the map under them. <see cref="CloseMenu"/> ends it.
+    /// only the map under them. <see cref="CloseMenu"/> ends it. Also true through a city's lead-in
+    /// (<see cref="CoverCityLeadIn"/>).
     /// </summary>
     public bool ProvinceMenuCovered
     {
-        get;
+        get => field || _cityLeadIn;
         set
         {
             if (field != value)
                 Invalidate();
             field = value;
         }
+    }
+
+    /// <summary>
+    /// Whether a UI covers the city files' first menus (<see cref="ProvinceMenuCovered"/>): then the
+    /// files' lead-in is not drawn either — the city's picture (<c>WAO_SUB</c> 331 of <c>Prov.BgCg</c>),
+    /// the window 113 and its "[name]" lines, which the files draw before the release wait (<c>IM</c>,
+    /// frames pass) that comes before the menu. It ends at the menu (<see cref="OpenMenu"/>: the UI covers
+    /// it again if it is a city's first menu) or at anything else the files would show (<see cref="LeadInGoesOn"/>).
+    /// </summary>
+    public bool CoverCityLeadIn { get; set; }
+
+    private bool _cityLeadIn;
+
+    /// <summary>A city's lead-in starts or ends with this event (before it is shown).</summary>
+    private void ObserveLeadIn(ScriptEvent scriptEvent)
+    {
+        if (scriptEvent is WindowEvent { Op.Value: 331 } picture && CoverCityLeadIn && State is { } s
+            && s.Prov_Cur.Value >= 1 && s.Prov_Cur.Value < s.Provs.Count && picture.CallArg == s.Provs[s.Prov_Cur].BgCg
+            && s.Ev_CommandMode.Value is not (1 or 2) && Picker is null && Data == DataView.Closed)
+            SetLeadIn(true);                                            // Cｼﾊｲﾄｼ/Cﾃｷﾄｼ/Cﾃｷﾄｼ2: the city's picture
+        else if (_cityLeadIn && !LeadInGoesOn(scriptEvent))
+            SetLeadIn(false);
+    }
+
+    /// <summary>What the city files show between the picture and the menu: the window 113 and its text.</summary>
+    private static bool LeadInGoesOn(ScriptEvent scriptEvent) => scriptEvent is WindowEvent { Op.Value: 113 }
+        or MessageEvent or ValueMessageEvent or PrintStringEvent or LineBreakEvent or SoundEvent or SoundPairEvent or MusicEvent;
+
+    /// <summary>The script waits for a key or a pause: whatever it drew is shown.</summary>
+    public void EndCityLeadIn() => SetLeadIn(false);
+
+    private void SetLeadIn(bool on)
+    {
+        if (_cityLeadIn != on)
+            Invalidate();
+        _cityLeadIn = on;
     }
 
     /// <summary>The menu item (0-based) at a screen point, or −1.</summary>

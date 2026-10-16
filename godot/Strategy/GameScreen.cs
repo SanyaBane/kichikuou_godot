@@ -541,6 +541,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             ClearSkippedStage();
         }
+        _presenter.CoverCityLeadIn = InterfaceChoice.New;                // our province menu: the city's lead-in hidden too
         _presenter.Show(scriptEvent);
         if (scriptEvent is EngagementSceneEvent)
             await WaitForArmiesAsync();
@@ -907,6 +908,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         _pointer.Interrupt();
         _presenter.Flush();
+        _presenter.EndCityLeadIn();                                     // whatever the script drew is shown at a key wait
         CheckNoClickLeft();
         ushort key;
         if (SkippingScene)
@@ -1105,6 +1107,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         // never come here) and passes it as cancelable.
         _pointer.Interrupt();
         _presenter.Flush();
+        _presenter.EndCityLeadIn();                                     // and at a pause
         if (SkippingScene)
         {
             await SkipYieldAsync();
