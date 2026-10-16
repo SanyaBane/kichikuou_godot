@@ -87,6 +87,11 @@ web build (seen only) by an option.
   menu) glides the system pointer there as `ags_setCursorLocation` does — seven points on its
   ease-out curve 7 ms apart, then the target (`Content/Screen/PointerGlide`); unchecked, only the
   position the script reads moves and the script waits 50 ms. `--auto` never moves the pointer.
+- **Option → Hide Dimmed Map Names** (ours, owner's request 2026-10-16; checkable, saved in
+  `user://settings.cfg`, `[display] hide_dimmed_map_names`, off by default): our map's plates
+  (docs/ui/command-screen.md, "The map's markers") leave out the dimmed ones — the provinces neither
+  ours nor next to ours and the dungeons not ours (`MapNamesChoice`). A click on such a town still
+  reaches the script as the original's. A change shows at once.
 - **Option → Fonts → MS Gothic / BIZ UDGothic** (ours, owner's requests 2026-10-11; a submenu, only
   the chosen font is marked, with a dot; saved in `user://settings.cfg`, `[display] font`): the font
   of the game's text. MS

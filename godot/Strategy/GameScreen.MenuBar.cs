@@ -12,7 +12,8 @@ namespace Kichikuou.Game.Strategy;
 
 // xsystem35's window menu bar over the game (docs/window-menu.md): File (Save Screenshot, Restart,
 // Exit), Screen (Window, Fullscreen), Option (Mouse Movement as xsystem35's; ours: Skip Unseen
-// Text, MsgSkip Speeds Up Fades, Forget Seen Messages, Battle Screen, Fonts, Interface, Palette),
+// Text, MsgSkip Speeds Up Fades, Forget Seen Messages, Battle Screen, Hide Dimmed Map Names, Fonts,
+// Interface, Palette),
 // MsgSkip[off|on]; hot keys F1 and F4 as xsystem35's, Alt+R; and ours for development, Debug
 // (Battle Captures: the capture viewer, which our own title had until ｽﾀMENU replaced it).
 public partial class GameScreen
@@ -48,7 +49,8 @@ public partial class GameScreen
             ("Skip Unseen Text", ToggleSkipUnseen),
             ("MsgSkip Speeds Up Fades", ToggleFastFades),
             ("Forget Seen Messages...", ConfirmForgetSeen),
-            ("Battle Screen...", OpenBattleScreenSettings));
+            ("Battle Screen...", OpenBattleScreenSettings),
+            ("Hide Dimmed Map Names", ToggleDimmedNames));
         options = option.GetPopup();
         options.SetItemAsCheckable(0, true);
         options.SetItemChecked(0, EngineState.MouseMovement);
@@ -56,6 +58,8 @@ public partial class GameScreen
         options.SetItemChecked(1, _skip.SkipUnseen);
         options.SetItemAsCheckable(2, true);
         options.SetItemChecked(2, _skip.FastFades);
+        options.SetItemAsCheckable(5, true);
+        options.SetItemChecked(5, MapNamesChoice.HideDimmed);
         PopupMenu fonts = null!;
         fonts = Submenu(
             ("MS Gothic", () => SetFont(GameFont.MsGothic)),
@@ -101,6 +105,13 @@ public partial class GameScreen
         {
             _skip.FastFades = !_skip.FastFades;
             options.SetItemChecked(2, _skip.FastFades);
+        }
+        // Saved for later launches; the map's plates follow at once.
+        void ToggleDimmedNames()
+        {
+            MapNamesChoice.HideDimmed = !MapNamesChoice.HideDimmed;
+            options.SetItemChecked(5, MapNamesChoice.HideDimmed);
+            _markers.SetHideDimmed(MapNamesChoice.HideDimmed);
         }
         // Saved for later launches; the windows, menus and pickers are drawn again at once, text the
         // script printed on the stage keeps its font until it is drawn again.

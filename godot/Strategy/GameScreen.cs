@@ -1361,7 +1361,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     /// <summary>
     /// Unattended play in a window with <c>--shots</c>: once a launch, the first map wait's plates
-    /// (<c>map-markers</c>), then the same with Leazas Castle (1) shown hovered (<c>map-markers-hover</c>).
+    /// (<c>map-markers</c>), then the same with Leazas Castle (1) shown hovered (<c>map-markers-hover</c>),
+    /// then without the dimmed plates (<c>map-markers-active</c>, Option → Hide Dimmed Map Names).
     /// </summary>
     private async Task DumpMarkersAsync()
     {
@@ -1370,6 +1371,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _markers.ShowHover(_presenter.MapMarkers().FirstOrDefault(m => m is { Kind: MapHitKind.Province, Id: 1 }));
         await AutoDumpAsync("map-markers-hover");
         _markers.ShowHover(null);
+        _markers.SetHideDimmed(true);
+        await AutoDumpAsync("map-markers-active");
+        _markers.SetHideDimmed(MapNamesChoice.HideDimmed);
     }
 
     // ---------------------------------------------------------------- the deployment table (owner's decision 25)

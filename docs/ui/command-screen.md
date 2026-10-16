@@ -174,6 +174,9 @@ five shapes (a ring, a pin, a name plate, corner brackets, a shield) and then th
   floors are `DungeonCommand.Parameters`), ✓ at state 2, none before the first search or at an event
   place — more than the original shows on the map. A dungeon not ours: the plate dimmed grey, no lock,
   a muted hover and the "not allowed" cursor.
+- **Option → Hide Dimmed Map Names** (owner's request 2026-10-16, off by default, saved): the dimmed
+  plates — the provinces neither ours nor next to ours, the dungeons not ours — are not shown
+  (`godot/Strategy/MapNamesChoice`; docs/window-menu.md).
 - The scenario's `’` is drawn wide by the Japanese font ("Monsters’  Cave"): the plates print `'`.
 
 **Built (2026-10-16).** The model is `Original.Content/Strategy/MapMarkers` (the markers from the state,
@@ -193,7 +196,8 @@ was centred they blinked at a click on no town; both fixed 2026-10-16). A left c
 the camera is the corner, queues the still click (`GameScreen.MarkerPressed`, its own
 `PointerScript`); a right click goes on to the script (the menu); presses elsewhere stay the
 script's. A press that starts on a plate does not drag the map. `--auto --interface new` in a window
-dumps the first map wait's plates (`map-markers`, `map-markers-hover` with Leazas Castle (1)) and
+dumps the first map wait's plates (`map-markers`, `map-markers-hover` with Leazas Castle (1),
+`map-markers-active` without the dimmed ones) and
 clicks the week's attack target through its plate as a player does (the system pointer onto it,
 `map-marker-hover`, a press and a release through Godot's input), so the attack runs from the plate's
 click.

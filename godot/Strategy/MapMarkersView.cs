@@ -21,6 +21,7 @@ internal sealed partial class MapMarkersView : Control
     private float _pixels = 2;
     private (int X, int Y) _corner;
     private Plate? _shownHover;
+    private bool _hideDimmed = MapNamesChoice.HideDimmed;
 
     public MapMarkersView(GameFont font)
     {
@@ -52,6 +53,15 @@ internal sealed partial class MapMarkersView : Control
     {
         _font = DeploymentTableView.LoadFont(font);
         Relayout();
+    }
+
+    /// <summary>Option → Hide Dimmed Map Names (<see cref="MapNamesChoice"/>): the dimmed plates shown or not.</summary>
+    public void SetHideDimmed(bool hide)
+    {
+        _hideDimmed = hide;
+        foreach (var plate in _plates)
+            PlacePlate(plate);
+        QueueRedraw();
     }
 
     /// <summary>The markers to show, as the state has them at the map wait's start.</summary>
@@ -120,7 +130,7 @@ internal sealed partial class MapMarkersView : Control
     {
         var m = plate.Marker;
         int x = m.MapX - _corner.X, y = m.MapY - _corner.Y;
-        plate.Visible = x is >= 0 and < 640 && y is >= 0 and < 400;
+        plate.Visible = x is >= 0 and < 640 && y is >= 0 and < 400 && !(_hideDimmed && plate.Dimmed);
         // Under the town: 7 script pixels below its point, 20 under the big castles, 5 under a dungeon's mouth.
         float below = m.Kind == MapHitKind.Dungeon ? 5 : m.Big ? 20 : 7;
         plate.Position = new Vector2(x * _pixels - plate.Size.X / 2, (y + below) * _pixels);
@@ -170,6 +180,9 @@ internal sealed partial class MapMarkersView : Control
         public bool Hover { get; private set; }
 
         private bool IsDungeon => Marker.Kind == MapHitKind.Dungeon;
+
+        /// <summary>Drawn dimmed: a dungeon not ours (grey), a province neither ours nor next to ours (70 %).</summary>
+        public bool Dimmed => IsDungeon ? !Marker.Open : Marker.Relation == MapRelation.Other;
 
         private float Px => _layer._pixels;
 
@@ -234,7 +247,7 @@ internal sealed partial class MapMarkersView : Control
                 box.BorderColor = new Color(0.72f, 0.73f, 0.75f);
                 box.BgColor = new Color(0.16f, 0.16f, 0.18f, 0.9f);
             }
-            Modulate = new Color(1, 1, 1, closed ? (hover ? 0.85f : 0.6f) : !hover && Marker.Relation == MapRelation.Other && !IsDungeon ? 0.7f : 1);
+            Modulate = new Color(1, 1, 1, closed ? (hover ? 0.85f : 0.6f) : !hover && Dimmed ? 0.7f : 1);
             DrawStyleBox(box, new Rect2(Vector2.Zero, Size));
 
             var text = closed ? new Color(0.79f, 0.79f, 0.8f) : hover ? Colors.White : c.Text;

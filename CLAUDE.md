@@ -247,7 +247,8 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `GameScreen` feeds the script its gestures, `Original.Content/Strategy/DeploymentTable` the rows);
   `Strategy/MapMarkersView` (our name plates over the map in `COMMAND`'s map wait, Option → Interface → New,
   docs/ui/command-screen.md, "The map's markers": the model `Original.Content/Strategy/MapMarkers`, a plate's click a
-  still click at its marker's point, the camera's form `MapCameraForm`);
+  still click at its marker's point, the camera's form `MapCameraForm`, placed at the view the screen shows,
+  `GamePresenter.MapViewShown`; the dimmed ones hidden by Option → Hide Dimmed Map Names, `MapNamesChoice`);
   `Battles/BattleBoardView` (our own battle screen, Option → Interface → New, docs/ui/battle-screen.md:
   `Original.Content/Battles/BattleScene` on top, the stage's windows over it through `WindowMask`, the
   cards and the round's order from `BattleBoard`/`RoundOrder`, the order strip `OrderStrip` moving on its own;
@@ -321,7 +322,7 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   (`--weeks n`) or two weeks after story stage `--stage n` is reached — `--seed 2 --weeks 60 --stage 2`
   takes Oaks in week 34 and stops in week 36, ~15 min (exit code 0; 1 after an error). `--interface new`
   builds the parties in our own deployment table and swaps the first two places by drops and back,
-  and in a window, once a launch, dumps the first map wait's plates (`map-markers`, `map-markers-hover`) and
+  and in a window, once a launch, dumps the first map wait's plates (`map-markers`, `map-markers-hover`, `map-markers-active`) and
   clicks the week's attack target through its plate (`map-marker-hover`; Godot's input, the system pointer
   moved), and answers the first turn through the pointer on our command input
   (the acting unit's menu, another own card's, closed by a click off it; Retreat, whose dialog it
