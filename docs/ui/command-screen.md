@@ -251,7 +251,14 @@ Search, Battle, Ninja), and Return. The mock-ups hold the player's CGs and stay 
   `:21` it showed as "[Cｼﾊｲﾄｼ.ADV:21]", owner 2026-10-16; `Cﾃｷﾄｼ2.ADV:71 + 4 (owner − 2)`).
 - **The answer is the original's.** A row's click answers the menu with its item's place; a × item (it
   only opens the menu again in the original) is a dimmed row, "used this week", not clickable; a right
-  click or Esc cancels (0), as the original's menu. The files' later windows and menus stay the original's.
+  click or Esc cancels (0), as the original's menu. The files' later windows and menus stay the original's,
+  but one: the dungeon's menu (below).
+- **The dungeon's menu (owner, 2026-10-16).** After the place Dungeon in Leazas Castle (1) `Cｼﾊｲﾄｼ` clears the
+  window and opens a second menu (`:732-763`: the prisoners' cells, Look Around, Return) over the city's picture
+  and the emptied window; with our panel that showed the original's picture, empty window and menu after our
+  panel. It is our panel too: the same header, the place's name ("Dungeon", the item at `:134`) as a caption,
+  the cells (tag Cell) and Look Around (tag Look) as rows, Return. A cancel only opens it again in the
+  original, so the panel ignores a right click and Esc there (`ProvinceMenu.CancelReopens`).
 - **Built (2026-10-16):** `Original.Content/Strategy/ProvinceMenu` (`ProvinceMenuTests`); the presenter keeps
   the open menu's items (`GamePresenter.ProvinceMenu`) and, while `ProvinceMenuCovered`, draws neither the
   city's picture nor the window and its text nor the menu; `godot/Strategy/ProvinceMenuView` draws the panel

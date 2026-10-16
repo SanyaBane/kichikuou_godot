@@ -8,7 +8,8 @@ namespace Kichikuou.Game.Strategy;
 /// Our province menu (docs/ui/command-screen.md, "The province menu"; the owner's mock-up 4a): a city's
 /// first menu as a lacquer panel with a double gold frame in the screen's centre — the city's picture, its
 /// name and army, the card's figures, the commands as rows with a tag each, Return. A row's click answers
-/// the script's menu with its choice; a right click or Esc anywhere cancels (0), as the original's menu.
+/// the script's menu with its choice; a right click or Esc anywhere cancels (0), as the original's menu —
+/// but not in the dungeon's menu (its place as a caption over the rows), where a cancel only opens it again.
 /// Laid out in the 1280×800 screen's pixels, scaled with the picture.
 /// </summary>
 internal sealed partial class ProvinceMenuView : Control
@@ -27,7 +28,7 @@ internal sealed partial class ProvinceMenuView : Control
     private static readonly Color OffText = Color.Color8(98, 88, 74);
     private static readonly Color OffTag = Color.Color8(52, 46, 40);
 
-    private const float Width = 470, Pad = 18, PictureW = 225, PictureH = 150, RowPitch = 36, RowH = 29;
+    private const float Width = 470, Pad = 18, PictureW = 225, PictureH = 150, RowPitch = 36, RowH = 29, Caption = 30;
 
     private readonly FacePictures _pictures;
     private readonly FontFile _brush = LoadFont("res://fonts/Shojumaru-Regular.ttf");
@@ -99,7 +100,10 @@ internal sealed partial class ProvinceMenuView : Control
 
     private int RowCount => _menu is null ? 0 : _menu.Items.Count + 1;
 
-    private float Height => Pad + PictureH + Pad + (RowCount - 1) * RowPitch + 50;
+    private float Height => Top + (RowCount - 1) * RowPitch + 50;
+
+    /// <summary>Where the rows start, under the header and the place's caption, if any.</summary>
+    private float Top => Pad + PictureH + Pad + (_menu?.Place is null ? 0 : Caption);
 
     /// <summary>The panel's corner: centred on the screen, as the original's menu (owner, 2026-10-16).</summary>
     private float PanelX => MathF.Round((1280 - Width) / 2);
@@ -113,8 +117,8 @@ internal sealed partial class ProvinceMenuView : Control
     private float Line(float width) => Math.Max(width, 1 / _k);
 
     private Rect2 RowRect(int row) => row < RowCount - 1
-        ? new Rect2(PanelX + 16, PanelY + Pad + PictureH + Pad + row * RowPitch, Width - 32, RowH)
-        : new Rect2(PanelX + Width - 118, PanelY + Pad + PictureH + Pad + (RowCount - 1) * RowPitch + 4, 102, 28);
+        ? new Rect2(PanelX + 16, PanelY + Top + row * RowPitch, Width - 32, RowH)
+        : new Rect2(PanelX + Width - 118, PanelY + Top + (RowCount - 1) * RowPitch + 4, 102, 28);
 
     private bool Enabled(int row) => _menu is { } m && (row == RowCount - 1 || m.Items[row].Enabled);
 
@@ -144,7 +148,7 @@ internal sealed partial class ProvinceMenuView : Control
                     QueueRedraw();
                 }
                 break;
-            case InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: false }:
+            case InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: false } when _menu is { CancelReopens: false }:
                 Answer(0);
                 break;
             case InputEventMouseButton { ButtonIndex: MouseButton.Left } button:
@@ -162,7 +166,7 @@ internal sealed partial class ProvinceMenuView : Control
 
     public override void _UnhandledKeyInput(InputEvent e)
     {
-        if (_answer is not null && e is InputEventKey { Keycode: Key.Escape, Pressed: true })
+        if (_answer is not null && _menu is { CancelReopens: false } && e is InputEventKey { Keycode: Key.Escape, Pressed: true })
         {
             Answer(0);
             GetViewport().SetInputAsHandled();
@@ -214,6 +218,15 @@ internal sealed partial class ProvinceMenuView : Control
             DrawString(_gothic, new Vector2(tx, sy2 + 15 + _gothic.GetAscent(15)), value, fontSize: 15, modulate: value == "??" ? Label : Value);
             sy2 += 34;
         }
+        // The place a later menu belongs to (the dungeon), between gold rules.
+        if (m.Place is { } place)
+        {
+            float cy = y + Pad + PictureH + Pad + Caption / 2 - 4, pw = _cinzel.GetStringSize(place, fontSize: 15).X;
+            DrawString(_cinzel, new Vector2(x + (Width - pw) / 2, cy + (_cinzel.GetAscent(15) - _cinzel.GetDescent(15)) / 2), place,
+                fontSize: 15, modulate: NameColour);
+            DrawLine(new Vector2(x + 16, cy), new Vector2(x + (Width - pw) / 2 - 12, cy), DimGold, Line(1));
+            DrawLine(new Vector2(x + (Width + pw) / 2 + 12, cy), new Vector2(x + Width - 16, cy), DimGold, Line(1));
+        }
         // The commands, then Return.
         for (int r = 0; r < RowCount; r++)
             DrawRow(r);
@@ -260,6 +273,8 @@ internal sealed partial class ProvinceMenuView : Control
         ProvinceAction.Visit => ("Visit", Color.Color8(70, 96, 52)),
         ProvinceAction.Search => ("Search", Color.Color8(36, 92, 96)),
         ProvinceAction.Battle => ("Battle", Color.Color8(128, 30, 30)),
+        ProvinceAction.Cell => ("Cell", Color.Color8(96, 40, 58)),
+        ProvinceAction.Look => ("Look", Color.Color8(70, 96, 52)),
         _ => ("Ninja", Color.Color8(74, 50, 96)),
     };
 }

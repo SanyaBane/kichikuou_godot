@@ -75,6 +75,26 @@ public class ProvinceMenuTests
     }
 
     /// <summary>
+    /// The dungeon's menu (<c>Cｼﾊｲﾄｼ.ADV:732-763</c>, after the place Dungeon in Leazas Castle (1)) is a province
+    /// menu too: the cells and Look Around as rows, Return last, the place's name from <c>:134</c>, and a cancel
+    /// that only opens it again; the first menus' cancel leaves.
+    /// </summary>
+    [Fact]
+    public void The_dungeons_menu_shows_its_cells_under_the_places_name()
+    {
+        var s = World(1, 1);
+        string? Text(ScriptRef at) => at is ("Cｼﾊｲﾄｼ.ADV", 134) ? "○Dungeon" : Army(at);
+        var menu = ProvinceMenu.For(s, Items("Cｼﾊｲﾄｼ.ADV", 741, 758, 762), ["Ruberan’s Cell", "Look Around", "Return"], Text)!;
+
+        Assert.Equal([new ProvinceMenuItem(1, "Ruberan's Cell", ProvinceAction.Cell, true), new ProvinceMenuItem(2, "Look Around", ProvinceAction.Look, true)],
+            menu.Items);
+        Assert.Equal((3, "Dungeon", true, "Leazas Army"), (menu.Return, menu.Place, menu.CancelReopens, menu.Army));
+        var first = ProvinceMenu.For(s, Items("Cｼﾊｲﾄｼ.ADV", 41, 502), ["○Temporary Levy", "Return"], Text)!;
+        Assert.Equal((null, false), (first.Place, first.CancelReopens));
+        Assert.Null(ProvinceMenu.For(s, Items("Cｼﾊｲﾄｼ.ADV", 700, 762), ["a", "Return"], Text));
+    }
+
+    /// <summary>
     /// The armies' names read from the player's files through the presenter, as the game reads them: ours
     /// (<c>Cｼﾊｲﾄｼ.ADV:20</c>, a run that starts with its line break) and every other owner's, none unresolved
     /// (the "[Cｼﾊｲﾄｼ.ADV:21]" the owner saw, 2026-10-16). Skipped without the player's files.
@@ -97,6 +117,10 @@ public class ProvinceMenuTests
             names.Add(presenter.ProvinceMenu!.Army);
             presenter.CloseMenu();
         }
+        presenter.Bind(World(1, 1));
+        presenter.OpenMenu(Items("Cｼﾊｲﾄｼ.ADV", 758, 762));
+        Assert.Equal("Dungeon", presenter.ProvinceMenu!.Place);
+        presenter.CloseMenu();
         Assert.Empty(presenter.Unresolved);
         Assert.Equal("Leazas Army", names[0]);
         Assert.All(names, name => Assert.False(string.IsNullOrWhiteSpace(name) || name.Contains('[')));

@@ -26,6 +26,12 @@ public enum ProvinceAction
 
     /// <summary>Ninja Maneuver.</summary>
     Ninja,
+
+    /// <summary>A prisoner's cell in Leazas Castle's dungeon.</summary>
+    Cell,
+
+    /// <summary>Look Around in the dungeon.</summary>
+    Look,
 }
 
 /// <summary>
@@ -41,6 +47,9 @@ public sealed record ProvinceMenuItem(int Choice, string Text, ProvinceAction Ac
 /// city's name, its army as the files print it, its picture (<c>WAO_SUB</c> 331, <c>Prov.BgCg</c>), the
 /// card's figures (<see cref="MapMarkers.CardOf"/>) and the commands; <see cref="Return"/> is Return's
 /// choice. The script is answered as the original's menu is: the item's choice, or 0 for a cancel.
+/// Also the one later menu the files show over the city's picture and an emptied window: the dungeon's
+/// (<c>Cｼﾊｲﾄｼ.ADV:732-763</c>, after the place Dungeon), with its <see cref="Place"/>; a cancel only opens
+/// it again there (<see cref="CancelReopens"/>).
 /// </summary>
 public sealed record ProvinceMenu(
     int Province,
@@ -49,7 +58,9 @@ public sealed record ProvinceMenu(
     int Picture,
     IReadOnlyList<string> Card,
     IReadOnlyList<ProvinceMenuItem> Items,
-    int Return)
+    int Return,
+    string? Place = null,
+    bool CancelReopens = false)
 {
     private const string OwnFile = "Cｼﾊｲﾄｼ.ADV", EnemyFile = "Cﾃｷﾄｼ.ADV", DistantFile = "Cﾃｷﾄｼ2.ADV";
 
@@ -60,7 +71,7 @@ public sealed record ProvinceMenu(
     /// <c>:55</c>). <paramref name="text"/> reads a text run (its numbers as zeros): the army's name is its first
     /// line that is not blank — <c>Cｼﾊｲﾄｼ.ADV:20</c> for ours (the <c>R</c> before <c>:21</c>, where the run must
     /// start, and the figures after it), <c>Cﾃｷﾄｼ2.ADV:71 + 4 (owner − 2)</c> for the others (the lines <c>Cﾃｷﾄｼ</c>
-    /// prints too).
+    /// prints too). The dungeon's menu (Return at <c>Cｼﾊｲﾄｼ.ADV:762</c>) is named by the place's item, <c>:134</c>.
     /// </summary>
     public static ProvinceMenu? For(GameState state, IReadOnlyList<SceneMenuItem> items, IReadOnlyList<string> texts,
         Func<ScriptRef, string?> text)
@@ -71,9 +82,16 @@ public sealed record ProvinceMenu(
         int last = items[^1].At.Line;
         if (items.Any(i => i.At.File != file))
             return null;
+        bool dungeon = file == OwnFile && last == 762;
         Func<int, (ProvinceAction, bool)?> kind = file switch
         {
             OwnFile when last == 502 => OwnItem,
+            OwnFile when dungeon => line => line switch
+            {
+                735 or 741 or 747 or 753 => (ProvinceAction.Cell, true),
+                758 => (ProvinceAction.Look, true),
+                _ => null,
+            },
             EnemyFile when last == 81 => EnemyItem,
             DistantFile when last == 55 => line => line == 50 ? (ProvinceAction.Ninja, true) : null,
             _ => _ => null,
@@ -90,12 +108,15 @@ public sealed record ProvinceMenu(
             return null;
         int owner = state.Provs[p].Owner.Value;
         ScriptRef? armyAt = owner == 1 ? new ScriptRef(OwnFile, 20) : owner is >= 2 and <= 11 ? new ScriptRef(DistantFile, 71 + 4 * (owner - 2)) : null;
-        string army = armyAt is { } at
-            ? ((text(at) ?? "").Split('\n').FirstOrDefault(line => line.Trim('　', ' ').Length > 0) ?? "").Trim('　', ' ', '（', '）', '(', ')')
-            : "";
+        string army = armyAt is { } at ? FirstLine(text(at)).Trim('（', '）', '(', ')') : "";
+        string? place = dungeon ? Unmarked(FirstLine(text(new ScriptRef(OwnFile, 134)))) : null;
         return new ProvinceMenu(p, MapMarkers.ProvinceName(state, p).Replace('’', '\''), army, state.Provs[p].BgCg.Value,
-            MapMarkers.CardOf(state, p), commands, items.Count);
+            MapMarkers.CardOf(state, p), commands, items.Count, place, CancelReopens: dungeon);
     }
+
+    /// <summary>A run's first line that is not blank, trimmed.</summary>
+    private static string FirstLine(string? run) =>
+        ((run ?? "").Split('\n').FirstOrDefault(line => line.Trim('　', ' ').Length > 0) ?? "").Trim('　', ' ');
 
     /// <summary>
     /// <c>Cｼﾊｲﾄｼ</c>'s menu item at <paramref name="line"/> (<c>OwnCityCommand.MenuAsync</c>): the four
