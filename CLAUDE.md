@@ -146,7 +146,9 @@ by the player, and an Android build later (docs/backlog.md). The game logic stay
 The UI survey's parts 1-4 are docs/ui/survey.md. Decision 25 (2026-10-12): our own screens come one by
 one over the original layout, chosen by Option → Interface; the first, the deployment table over
 `Sﾌﾞﾀｲ`'s grid, is built with the rest of its screen and its third part (the party as a formation with
-the units' faces, drag and drop; Debug → Portraits) — docs/ui/deployment-table.md.
+the units' faces, drag and drop; Debug → Portraits) — docs/ui/deployment-table.md. The battle screen
+followed (docs/ui/battle-screen.md); next (owner, 2026-10-16) the map and command screen, its survey
+and mock-ups in docs/ui/command-screen.md.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

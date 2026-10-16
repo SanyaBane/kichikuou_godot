@@ -120,6 +120,10 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   (111/112/121/122/113/131: narration and dialogue, e.g. in the story battles) stay the original's for now —
   [ui/battle-screen.md](ui/battle-screen.md), question 3 and step 6 (the strategy screen is our cut-in since
   2026-10-15, "The strategy's cut-in").
+  Next (owner, 2026-10-16): our own map and command screen (`COMMAND`'s map wait and command menu) —
+  the survey, Sengoku Rance's map screen and three mock-ups are [ui/command-screen.md](ui/command-screen.md);
+  the owner goes in small steps, first the map's markers (chosen 2026-10-16: name plates over the original's
+  flags, the dungeons named with their kind and search; ui/command-screen.md, "The map's markers").
   Groundwork (survey §4.8): menus as data and the map helper are done (2026-10-12); the shared engine
   host (§4.8, "Items 2 and 4 are one step") is not needed for screens over the original layout.
 - **Quality-of-life features**, the README's second aim — *owner* (which), then *agent*; a survey of
