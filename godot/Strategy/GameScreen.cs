@@ -956,7 +956,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             Shot(StrategyCutInShown ? "strategy" : "key");
             if (!_options.Fast && BattleScreenShown && _presenter.Opening is not null)
                 await OpeningAppearShotsAsync();
-            await DelayAsync(_options.Fast ? 0 : 0.8);
+            await DelayAsync(_options.Fast ? 0 : AutoKeySeconds());
             key = KeyReturn;
         }
         else
@@ -970,6 +970,14 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             await OpeningShotAsync();
         return key;
     }
+
+    /// <summary>
+    /// How long unattended play without <c>--fast</c> holds a key wait: over a battle's field or exchange 0.8 s, so they can be
+    /// watched (a strategy's cut-in too); the characters' lines — every other message (the turn's events, the scenes a battle
+    /// plays before its field) and a battle's speech — only long enough to be seen (owner, 2026-10-16).
+    /// </summary>
+    private double AutoKeySeconds() =>
+        StrategyCutInShown || _presenter.BattleSceneShows && _presenter.Battle.Speech is null ? 0.8 : 0.15;
 
     /// <summary>
     /// The exchange's result screen without a wiped-out mark (owner, 2026-10-14): our screen shows the result in the scene
