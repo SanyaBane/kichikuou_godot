@@ -493,6 +493,24 @@ public class FlowDefenceTests
         Assert.Contains(551, rig.Lines);
     }
 
+    /// <summary>
+    /// Maris's comment after the report (<c>FIGT_B.ADV:636-647</c>): "Quite a strong force. What shall we do?" (637)
+    /// once the reported troops (<c>Tmp0001</c>) pass 5000, "............" (644) up to 5000 itself.
+    /// </summary>
+    [Theory]
+    [InlineData(2000, 5000, 644)]
+    [InlineData(2001, 5001, 637)]
+    public async Task Maris_comments_on_a_force_of_more_than_5000(int secondTroops, int total, int comment)
+    {
+        var rig = Rig();
+        rig.State.Cmdrs[23].Troops = (Sys3Int)secondTroops;
+        rig.Input.MenuAnswers.Enqueue(1);   // Kanami
+        await rig.Battle.DefenceNinjaScoutAsync();
+        Is(total, rig.State.Tmp0001);
+        Assert.Equal(comment, rig.Lines[^1]);
+        Assert.DoesNotContain(comment == 637 ? 644 : 637, rig.Lines);
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(null)]
