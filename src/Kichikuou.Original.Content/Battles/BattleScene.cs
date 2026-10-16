@@ -51,6 +51,15 @@ public sealed class BattleScene
     public const int CmdrMarkY = 112;
 
     /// <summary>
+    /// Without <see cref="Numbers"/> (our screen, whose counters stand at the scene's foot, owner 2026-10-16) the marks
+    /// go higher: the commanders' to this y (their text, rows 71-124 of CG 891/892, ends above the counters at row 180)…
+    /// </summary>
+    public const int OwnCmdrMarkY = 56;
+
+    /// <summary>…and the troops' (CG 889/890, text in rows 66-184) this many rows up, so that both fit one above the other.</summary>
+    public const int OwnTroopMarkRise = 60;
+
+    /// <summary>
     /// The picture's layers on <see cref="Surface"/>, each <see cref="Width"/> × <see cref="Height"/>: the
     /// battlefield alone at (0, <see cref="FieldY"/>); the player's army at (0, <see cref="ArmyY"/>) and the
     /// enemy's at (<see cref="EnemyArmyX"/>, <see cref="ArmyY"/>), on the colour key
@@ -131,8 +140,9 @@ public sealed class BattleScene
 
     /// <summary>
     /// Whether the front shows the exchange's numbers — the TROOPS and HP counters, the shots flying across and the damages
-    /// (on by default, as the original draws them). Our battle screen turns them off (owner, 2026-10-15): its cards show
-    /// the troops and HP and run them to the result. The wiped-out marks stay.
+    /// (on by default, as the original draws them). Our battle screen turns them off (owner, 2026-10-15): its own
+    /// counters at the scene's foot and its cards show the troops and HP and run them to the result (2026-10-16). The
+    /// wiped-out marks stay, moved up above those counters (<see cref="OwnCmdrMarkY"/>, <see cref="OwnTroopMarkRise"/>).
     /// </summary>
     public bool Numbers
     {
@@ -595,14 +605,16 @@ public sealed class BattleScene
         }
         if (_marks is { } m)
         {
+            int troopY = _numbers ? oy : oy - OwnTroopMarkRise;         // the CGs' rows above their text are the key
+            int cmdrY = oy + (_numbers ? CmdrMarkY : OwnCmdrMarkY) - 256;
             if (m.PlayerTroops)
-                G(889, 0, oy, keyed: true, own: true);
+                G(889, 0, troopY, keyed: true, own: true);
             if (m.EnemyTroops)
-                G(890, 0, oy, keyed: true, own: true);
+                G(890, 0, troopY, keyed: true, own: true);
             if (m.PlayerCmdr)
-                G(891, 0, oy + CmdrMarkY - 256, keyed: true, own: true);
+                G(891, 0, cmdrY, keyed: true, own: true);
             if (m.EnemyCmdr)
-                G(892, 0, oy + CmdrMarkY - 256, keyed: true, own: true);
+                G(892, 0, cmdrY, keyed: true, own: true);
         }
     }
 

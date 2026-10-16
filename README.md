@@ -79,6 +79,9 @@ reproduces, and every line of text the port shows is theirs.
 - **[Cinzel](https://github.com/NDISCOVER/Cinzel)** by **Natanael Gama** and the Cinzel Project
   Authors, the plate of the battle's opening. Bundled under the SIL Open Font License 1.1
   (`godot/fonts/Cinzel-OFL.txt`).
+- **[Oswald](https://github.com/googlefonts/OswaldFont)** by **Vernon Adams** and the Oswald Project
+  Authors, the exchange's troops and HP counters on our battle screen. Bundled under the SIL Open Font
+  License 1.1 (`godot/fonts/Oswald-OFL.txt`).
 
 ## License
 

@@ -78,6 +78,7 @@ internal sealed partial class BattleBoardView : Control
     private readonly Control _sceneClip;                    // the scene's layers, clipped to its area
     private readonly TextureRect _field, _front;
     private readonly EffectPlayer _effect;
+    private readonly ExchangeCountersView _counters;
     private int _effectsSeen;
     private readonly ArmySlide _playerArmy, _enemyArmy;
     private bool _armiesInstant, _jumpArmies = true;
@@ -152,6 +153,8 @@ internal sealed partial class BattleBoardView : Control
         _effect = new EffectPlayer { HideWhenDone = true };                 // over the armies, under the numbers
         _sceneClip.AddChild(_effect);
         _front = Layer();
+        _counters = new ExchangeCountersView();                             // over the front: the scene's own marks are moved up
+        _sceneClip.AddChild(_counters);
         VisibilityChanged += () =>
         {
             _jumpArmies = true;                                             // shown again: the armies stand where they are
@@ -330,6 +333,8 @@ internal sealed partial class BattleBoardView : Control
             (layer.Position, layer.Size) = (Vector2.Zero, _sceneClip.Size);
         _effect.Position = new Vector2(0, SceneArea.Size.Y - EffectPlayer.Height) * scale;     // at the scene's foot
         _effect.Scale = new Vector2(scale, scale);
+        _counters.Position = Vector2.Zero;
+        _counters.Layout(_sceneClip.Size, scale);
         PlaceArmies();
         At(_limit, SceneArea);
         _limit.QueueRedraw();
@@ -373,13 +378,14 @@ internal sealed partial class BattleBoardView : Control
         if (presenter.State is not { } s)
             return;
         _armiesInstant = _metersInstant = slidesInstant;
-        presenter.Scene.Numbers = false;                // the cards show the troops and HP (owner, 2026-10-15)
+        presenter.Scene.Numbers = false;                // ours are the exchange's counters and the cards (owner, 2026-10-15, -16)
         if (presenter.Scene.Version != _sceneVersion)
         {
             _sceneVersion = presenter.Scene.Version;
             UploadScene(presenter.Scene);
         }
         PlayEffect(presenter, slidesInstant);
+        _counters.Show(presenter.Battle.ExchangeCounters, presenter.Battle.EffectsStarted, slidesInstant);
         if (screenChanged || _windowsTexture is null)
         {
             var mask = presenter.BattleWindows(inputWindows);
@@ -767,6 +773,7 @@ internal sealed partial class BattleBoardView : Control
     /// </summary>
     private void RefreshCards(GameState s, RoundOrder order, BattleStrike? strike, BattlePlace? hovered)
     {
+        _strike = strike;
         var states = order.States(s);                                    // at a round header, the round to come
         var cards = SlotSnapshot.Places.Select(p => BattleBoard.Card(s, p, states))
             .Select(c => c is not null && strike is not null ? strike.Apply(c) : c)   // the blow on the fighters, from the moment it lands

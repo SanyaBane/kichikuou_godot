@@ -5,7 +5,8 @@ namespace Kichikuou.Game.Battles;
 
 // The cards' troops and HP run to a new value instead of jumping to it (owner, 2026-10-14; docs/ui/battle-screen.md,
 // "The cards' counters"): the number and the bar together, eased out, in Option → Battle Screen… → "Cards: counters",
-// from the moment the blow lands (BattleStrike); a loss leaves a light trail on the bar that follows the run and then
+// from the moment the blow lands (BattleStrike) — an exchange's blow in the steps of the scene's counters (ExchangeCountersView,
+// owner 2026-10-16); a loss leaves a light trail on the bar that follows the run and then
 // drains; at once while skipping, with --fast, when another unit takes the place and when the screen is shown again.
 internal sealed partial class BattleBoardView
 {
@@ -27,6 +28,8 @@ internal sealed partial class BattleBoardView
         public float From, To, Shown;
         public float TrailFrom, Trail;
         public ulong Start;
+        public double Delay, Seconds;               // the run waits Delay, then takes Seconds
+        public bool Even;                           // in the scene's steps (an exchange's blow), else eased out
         public int Max;
         public string Prefix = "";
         public Label? Label;
@@ -50,6 +53,7 @@ internal sealed partial class BattleBoardView
     }
 
     private readonly Dictionary<(BattlePlace, Gauge), Meter> _meters = [];
+    private BattleStrike? _strike;                  // the blow the cards show now
     private bool _metersInstant = true;
 
     /// <summary>How long a counter runs to its new value (Option → Battle Screen…, 0.6 s by default).</summary>
@@ -74,6 +78,10 @@ internal sealed partial class BattleBoardView
         else if (value != meter.To)
         {
             (meter.From, meter.To, meter.Start) = (meter.Shown, value, Time.GetTicksMsec());
+            bool blow = _strike is { } k && card.Record == (card.Place.Side == BattleSide.Player ? k.Unit : k.Cmdr);
+            (meter.Delay, meter.Seconds, meter.Even) = blow
+                ? (ExchangeCountersView.Delay, ExchangeCountersView.RunSeconds, true)    // with the scene's counters
+                : (0, MeterSeconds, false);
             meter.TrailFrom = meter.Trail = value < meter.Shown ? Math.Max(meter.Trail, meter.Shown) : meter.Shown;
         }
         (meter.Max, meter.Prefix, meter.Label, meter.TrailBar, meter.Fill) =
@@ -84,12 +92,12 @@ internal sealed partial class BattleBoardView
     /// <summary>The counters that run go on; while skipping they reach their values at once.</summary>
     private void StepMeters()
     {
-        double seconds = MeterSeconds;
         ulong now = Time.GetTicksMsec();
         foreach (var meter in _meters.Values)
         {
             if (!meter.Running)
                 continue;
+            double seconds = meter.Seconds;
             if (_metersInstant || seconds <= 0)
             {
                 meter.Jump(meter.To);
@@ -97,10 +105,10 @@ internal sealed partial class BattleBoardView
                 continue;
             }
             double elapsed = (now - meter.Start) / 1000.0;
-            double t = Math.Min(1, elapsed / seconds);
-            double eased = 1 - (1 - t) * (1 - t);
+            double t = meter.Even ? ExchangeCountersView.Share(elapsed) : Math.Min(1, elapsed / seconds);   // the scene's steps
+            double eased = meter.Even ? t : 1 - (1 - t) * (1 - t);
             meter.Shown = t >= 1 ? meter.To : (float)(meter.From + (meter.To - meter.From) * eased);
-            double drain = Math.Clamp((elapsed - seconds - TrailHoldSeconds) / TrailDrainSeconds, 0, 1);
+            double drain = Math.Clamp((elapsed - meter.Delay - seconds - TrailHoldSeconds) / TrailDrainSeconds, 0, 1);
             meter.Trail = drain >= 1 ? meter.To : (float)(meter.TrailFrom + (meter.To - meter.TrailFrom) * drain * drain);
             meter.Apply();
         }

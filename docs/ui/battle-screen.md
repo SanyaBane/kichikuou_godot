@@ -133,9 +133,9 @@ picture, the slot panels) is not shown. How it is built:
   numbers are drawn in the picture: the TROOPS counters, the flying shots and the damages; what the
   original draws below row 255 moves up — the HP counters to y 224, the commanders' rows halfway
   (y' = 80 + (y − 80) / 2), "UNABLE TO FIGHT" to y 112. The slide (the picture scrolling 112 rows
-  down) is not shown: the picture stands whole from the start. **Since 2026-10-15 our screen shows none of these
-  numbers** (owner): no TROOPS or HP counters, no shots flying across, no damages — the cards show the troops and HP
-  and run them to the result ("The cards' counters" below); the wiped-out marks stay (`BattleScene.Numbers`, off in
+  down) is not shown: the picture stands whole from the start. **Since 2026-10-15 our screen draws none of the
+  original's numbers** (owner): no shots flying across, no damages, and the TROOPS and HP counters are our own since
+  2026-10-16 ("The exchange's counters" below); the wiped-out marks stay (`BattleScene.Numbers`, off in
   `BattleBoardView`; on by default, so the tests still compare the scene with the original's screen;
   `BattleSceneTests.Without_numbers_the_front_is_the_overlay_and_the_marks`). The script's waits for them are unchanged.
 - **The armies slide** (owner, 2026-10-13; Sengoku Rance's, docs/sengoku/04-screen.md §2.3): an army
@@ -242,14 +242,33 @@ picture, the slot panels) is not shown. How it is built:
 - **The cards' counters** (owner, 2026-10-14): a card's troops and HP — the number and its bar together —
   run to a new value instead of jumping to it, eased out, in Option → Battle Screen… → "Cards: counters"
   (0.6 s by default; `--meter-seconds x` for a launch), from the moment the blow lands (owner): the core writes
-  the exchange's damage only after its result screen's key wait (`ApplyExchangeAsync`), so from that screen
-  (`ExchangeResultsEvent`, `FIGTATTK.ADV:136-232`) to the next event after its key wait the two fighters' cards
-  show what it shows — the current values less the two damages (`BattlePresenter.Strike`, `BattleStrike`;
-  `BattleStrikeTests`: in the captured battles these are what the core then writes). Nothing waits for the run.
+  the exchange's damage only after its result screen's key wait (`ApplyExchangeAsync`), but `FIGT` computes it
+  before it calls `FIGTATTK` (`FIGT.ADV:2512-2847`), so from the shots' first frame (`ShotsFrameEvent` step 0) to the
+  next event after the result's key wait the two fighters' cards show what the result screen shows — the current
+  values less the two damages (`BattlePresenter.Strike`, `BattleStrike`; `BattleStrikeTests`: in the captured battles
+  these are what the core then writes). Since 2026-10-16 (owner) the exchange's blow runs on the cards with the
+  scene's counters ("The exchange's counters" below): in their steps, so both show the same numbers.
+  Nothing waits for the run.
   A loss leaves a damage trail (owner, 2026-10-14): the lost part of the bar turns light (the bar's colour 70 %
   toward white) and stays while the counter runs, 0.2 s more, then drains in 0.35 s. At once while skipping
   (MsgSkip) and with `--fast`, when another unit takes the place, and when our screen is shown again
   (`BattleBoardView.Meters.cs`: the shown values outlive the cards' controls, built again on every change).
+- **The exchange's counters** (owner, 2026-10-16, variant A of four mock-ups — B the original's places, C plates over
+  the armies, D versus bars —, after Sengoku Rance's: docs/sengoku/04-screen.md §5, §9.5): each side's TROOPS and HP
+  are big counters at the scene's foot, the player's at the left, the enemy's at the right (`godot/Battles/ExchangeCountersView`;
+  the values `Original.Content/Battles/ExchangeCounters`, `BattlePresenter.ExchangeCounters`: before the blow and after it, from
+  the shots' first frame). A side without troops has no TROOPS counter, as the original's. The troops in as many
+  digits as before the blow (a leading one falls away too), Oswald Bold (owner, 2026-10-16, of sixteen fonts on a sheet)
+  in a white-to-gold gradient with a dark
+  outline, "TROOPS" over them in gold (Oswald SemiBold); the HP in smaller digits in a mint gradient beside them (towards the scene's middle), "HP" before it; straight on the
+  field, with no band behind them (owner, 2026-10-16). They rise from below the scene's foot in 0.25 s as the shots start, count as
+  Sengoku Rance's do — every 0.2 s the value due 0.2 s later, from 0.1 s after the start, over Option → Battle Screen…
+  → "Counters: run" (1.3 s by default; `--count-seconds x` for a launch) — and every digit that changes falls away:
+  the old one drops 1.4 digit heights, drifts 10-24 pixels outward, turns half a turn and fades in 0.2 s. They hold
+  the result while its screen is up and sink in 0.25 s with the next event after its key wait. The wiped-out marks
+  (ANNIHILATED, UNABLE TO FIGHT) are moved up above them on our screen (`BattleScene.Numbers` off: the troops' marks 60
+  picture rows up, the commanders' to y 56). At once while skipping (MsgSkip) and with `--fast` (the result's values,
+  no rise, no falling digits).
 - **The scout report** (owner, 2026-10-14, mock-up C of three, "all at once"): when the player sends a ninja to
   scout an attacking army (`FIGT_B.ADV:506-648`, `NinjaScoutReportAsync`; the original prints it into window 113,
   docs/battle/screen-layout.md §6.3), the report is our overlay over the original's screen (the map, before the

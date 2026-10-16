@@ -1,5 +1,6 @@
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Combat;
+using Kichikuou.Original.State;
 
 namespace Kichikuou.Original.Content.Battles;
 
@@ -144,6 +145,8 @@ public sealed partial class BattlePresenter
         {
             Effect = ExchangeEffect.Of(s);
             EffectsStarted++;
+            Strike = Blow(s);                                   // FIGT has computed the damages before it calls FIGTATTK
+            ExchangeCounters = ExchangeCounters.Of(s, Strike);
         }
         Surface.Copy(0, 400, 640, 400, 640, 0);
         int d = t * 5 / 11;
@@ -173,9 +176,28 @@ public sealed partial class BattlePresenter
 
     /// <summary>
     /// The blow of the exchange on screen: the two fighters' troops and HP as its result screen shows them, from
-    /// that screen until the next event after its key wait — by then the core has written them (null otherwise).
+    /// the shots' first frame until the next event after the result's key wait — by then the core has written them
+    /// (null otherwise).
     /// </summary>
     public BattleStrike? Strike { get; private set; }
+
+    /// <summary>
+    /// The exchange's counters (<see cref="ExchangeCounters"/>): the fighters' troops and HP before the blow and
+    /// after it, for as long as <see cref="Strike"/> (null otherwise). <see cref="EffectsStarted"/> counts their starts too.
+    /// </summary>
+    public ExchangeCounters? ExchangeCounters { get; private set; }
+
+    /// <summary>The result screen's values (<c>FIGTATTK.ADV:136-232</c>): the current ones less the two damages.</summary>
+    private static BattleStrike Blow(GameState s)
+    {
+        var unit = s.Units[s.Unit_Cur];
+        var cmdr = s.Cmdrs[s.Cmdr_Cur];
+        return new BattleStrike(
+            s.Unit_Cur.Value, (unit.Troops - s.Bt_ETroopVsTroopDmg - s.Bt_ECmdrVsTroopDmg).Value,
+            (unit.HP - s.Bt_ETroopVsCmdrDmg - s.Bt_ECmdrVsCmdrDmg).Value,
+            s.Cmdr_Cur.Value, (cmdr.Troops - s.Bt_PTroopVsTroopDmg - s.Bt_PCmdrVsTroopDmg).Value,
+            (cmdr.HP - s.Bt_PTroopVsCmdrDmg - s.Bt_PCmdrVsCmdrDmg).Value);
+    }
 
     /// <summary><c>FIGTATTK.ADV:134-233</c>: predicted values and damages, shown at once.</summary>
     private void ExchangeResults()
@@ -184,11 +206,7 @@ public sealed partial class BattlePresenter
             return;
         var unit = s.Units[s.Unit_Cur];
         var cmdr = s.Cmdrs[s.Cmdr_Cur];
-        Strike = new BattleStrike(
-            s.Unit_Cur.Value, (unit.Troops - s.Bt_ETroopVsTroopDmg - s.Bt_ECmdrVsTroopDmg).Value,
-            (unit.HP - s.Bt_ETroopVsCmdrDmg - s.Bt_ECmdrVsCmdrDmg).Value,
-            s.Cmdr_Cur.Value, (cmdr.Troops - s.Bt_PTroopVsTroopDmg - s.Bt_PCmdrVsTroopDmg).Value,
-            (cmdr.HP - s.Bt_PTroopVsCmdrDmg - s.Bt_PCmdrVsCmdrDmg).Value);
+        Strike = Blow(s);
         Surface.Copy(0, 400, 640, 400, 640, 0);
         if (unit.Troops != 0)
         {

@@ -158,8 +158,13 @@ public sealed partial class BattlePresenter
         // FIGT_B's enemy attack, FIGT_B.ADV's lost province).
         if (scriptEvent is not (PauseEvent or SoundEvent or SoundPairEvent or MusicEvent))
             _mapAnimation = MapAnimation.None;
-        if (scriptEvent is not WipedOutMarksEvent and not KeyWaitEvent)
-            Strike = null;                                              // the blow is over: the core has written it
+        // The blow is over at the first event after the result's key wait, or at one FIGTATTK does not raise: the core
+        // has written it.
+        if (Strike is not null && (_blowWaited || scriptEvent is not (ShotsFrameEvent or PauseEvent or SoundPairEvent
+                or ExchangeResultsEvent or WipedOutMarksEvent or KeyWaitEvent)))
+            (Strike, ExchangeCounters, _blowWaited) = (null, null, false);
+        if (Strike is not null && scriptEvent is KeyWaitEvent)
+            _blowWaited = true;
 
         switch (scriptEvent)
         {
@@ -462,6 +467,7 @@ public sealed partial class BattlePresenter
     /// <summary>The first line of an order message (<c>L_0129e</c>, <c>FIGT.ADV:801</c>).</summary>
     private static readonly ScriptRef OrderMessage = new("FIGT.ADV", 801);
     private bool _orderMessage;
+    private bool _blowWaited;                           // the result's key wait has come: the next event ends the blow
 
     /// <summary>The acting unit's own standing orders' messages (<c>L_01f08</c> / <c>L_01f42</c>, <c>FIGT.ADV:1319</c>, <c>:1333</c>).</summary>
     private static readonly ScriptRef OwnOrderAttack = new("FIGT.ADV", 1319), OwnOrderDefend = new("FIGT.ADV", 1333);

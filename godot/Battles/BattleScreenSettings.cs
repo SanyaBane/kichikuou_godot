@@ -6,7 +6,7 @@ namespace Kichikuou.Game.Battles;
 /// The settings of our own battle screen (Option → Battle Screen…, <see cref="BattleScreenSettingsDialog"/>),
 /// kept in <c>[battle_screen]</c> of <c>user://settings.cfg</c>; a change applies at once. So far the order
 /// strip's moves (<see cref="OrderStrip"/>), the armies' slides, the spotlight's darkness, the cards' counters (<see cref="BattleBoardView"/>),
-/// the exchange's result hold (<c>GameScreen</c>), the opening's leave (<see cref="BattleOpeningLayer"/>), the cards' slide and the strip's fly-in at a battle's start and the exchange's effects.
+/// the exchange's counters (<see cref="ExchangeCountersView"/>), the exchange's result hold (<c>GameScreen</c>), the opening's leave (<see cref="BattleOpeningLayer"/>), the cards' slide and the strip's fly-in at a battle's start and the exchange's effects.
 /// </summary>
 internal static class BattleScreenSettings
 {
@@ -37,7 +37,13 @@ internal static class BattleScreenSettings
 
     /// <summary>How long a card's troops and HP take to run to a new value.</summary>
     public static readonly Setting MeterSeconds = new("meter_seconds", "Cards: counters", 0, 3, 0.05, 0.6, "s",
-        "How long a card's troops and HP, the number and the bar, take to run to a new value after an exchange (0: at once).");
+        "How long a card's troops and HP, the number and the bar, take to run to a new value (an exchange's blow runs with the "
+        + "scene's counters, Counters: run; 0: at once).");
+
+    /// <summary>How long the exchange's counters on the scene run down, and the fighters' cards with them (owner, 2026-10-16).</summary>
+    public static readonly Setting CountSeconds = new("count_seconds", "Counters: run", 0, 3, 0.1, 1.3, "s",
+        "How long the troops and HP counters at the scene's foot take to count down an exchange's losses, in Sengoku Rance's "
+        + "steps of 0.2 s; the two fighters' cards run with them (0: at once).");
 
     /// <summary>How long the battle's opening takes to leave after its click (the tints fade, the names part, the plate rises).</summary>
     public static readonly Setting OpeningSeconds = new("opening_seconds", "Opening: leave", 0, 3, 0.05, 0.5, "s",
@@ -71,20 +77,20 @@ internal static class BattleScreenSettings
     public const string Toggle = "toggle";
 
     public static IReadOnlyList<Setting> All { get; } =
-        [StripSeconds, StripHurrySeconds, StripDropShare, ArmySeconds, SpotDarkness, MeterSeconds, ResultSeconds, OpeningAppearSeconds, OpeningSeconds,
+        [StripSeconds, StripHurrySeconds, StripDropShare, ArmySeconds, SpotDarkness, MeterSeconds, CountSeconds, ResultSeconds, OpeningAppearSeconds, OpeningSeconds,
          CardsSlideSeconds, StripFlySeconds, Effects];
 
     /// <summary>The development switches that set a setting for the launch.</summary>
     private static readonly (string Switch, Setting Setting)[] Switches =
-        [("--strip-seconds", StripSeconds), ("--army-seconds", ArmySeconds), ("--meter-seconds", MeterSeconds), ("--opening-seconds", OpeningSeconds), ("--opening-appear-seconds", OpeningAppearSeconds),
+        [("--strip-seconds", StripSeconds), ("--army-seconds", ArmySeconds), ("--meter-seconds", MeterSeconds), ("--count-seconds", CountSeconds), ("--opening-seconds", OpeningSeconds), ("--opening-appear-seconds", OpeningAppearSeconds),
          ("--result-seconds", ResultSeconds), ("--cards-slide-seconds", CardsSlideSeconds), ("--strip-fly-seconds", StripFlySeconds)];
 
     private static Dictionary<string, double>? _values;
 
     /// <summary>
-    /// A setting's value: <c>--strip-seconds x</c> / <c>--army-seconds x</c> / <c>--meter-seconds x</c> / <c>--opening-seconds x</c> / <c>--opening-appear-seconds x</c>
+    /// A setting's value: <c>--strip-seconds x</c> / <c>--army-seconds x</c> / <c>--meter-seconds x</c> / <c>--count-seconds x</c> / <c>--opening-seconds x</c> / <c>--opening-appear-seconds x</c>
     /// / <c>--result-seconds x</c> for the launch (development) for <see cref="StripSeconds"/> / <see cref="ArmySeconds"/> /
-    /// <see cref="MeterSeconds"/> / <see cref="OpeningSeconds"/> / <see cref="OpeningAppearSeconds"/> / <see cref="ResultSeconds"/>,
+    /// <see cref="MeterSeconds"/> / <see cref="CountSeconds"/> / <see cref="OpeningSeconds"/> / <see cref="OpeningAppearSeconds"/> / <see cref="ResultSeconds"/>,
     /// else the file's, else the default.
     /// </summary>
     public static double Get(Setting setting)
