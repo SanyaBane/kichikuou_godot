@@ -14,25 +14,11 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal sealed partial class ProvinceMenuView : Control
 {
-    private static readonly Color Lacquer = new(22 / 255f, 16 / 255f, 12 / 255f, 0.96f);
-    private static readonly Color Gold = Color.Color8(196, 160, 86);
-    private static readonly Color DimGold = Color.Color8(110, 86, 46);
-    private static readonly Color NameColour = Color.Color8(232, 199, 122);
-    private static readonly Color ArmyColour = Color.Color8(160, 140, 104);
-    private static readonly Color Label = Color.Color8(150, 134, 108);
-    private static readonly Color Value = Color.Color8(236, 226, 204);
-    private static readonly Color Row = Color.Color8(34, 26, 20);
-    private static readonly Color RowHover = Color.Color8(64, 48, 28);
-    private static readonly Color HoverLine = Color.Color8(222, 186, 104);
-    private static readonly Color Text = Color.Color8(244, 232, 206);
-    private static readonly Color OffText = Color.Color8(98, 88, 74);
-    private static readonly Color OffTag = Color.Color8(52, 46, 40);
-
     private const float Width = 470, Pad = 18, PictureW = 225, PictureH = 150, RowPitch = 36, RowH = 29, Caption = 30;
 
     private readonly FacePictures _pictures;
-    private readonly FontFile _brush = LoadFont("res://fonts/Shojumaru-Regular.ttf");
-    private readonly FontVariation _cinzel = new() { BaseFont = LoadFont("res://fonts/Cinzel-VariableFont_wght.ttf") };
+    private readonly FontFile _brush = Lacquer.Brush();
+    private readonly FontVariation _cinzel = Lacquer.Cinzel();
     private FontFile _gothic;
     private ProvinceMenu? _menu;
     private ImageTexture? _picture;
@@ -44,15 +30,9 @@ internal sealed partial class ProvinceMenuView : Control
     {
         _pictures = pictures;
         _gothic = DeploymentTableView.LoadFont(font);
-        _cinzel.VariationOpentype = new Godot.Collections.Dictionary
-        {
-            [TextServerManager.Singleton.GetPrimaryInterface().NameToTag("wght")] = 500,
-        };
         MouseFilter = MouseFilterEnum.Stop;
         Visible = false;
     }
-
-    private static FontFile LoadFont(string path) => new() { Data = Godot.FileAccess.GetFileAsBytes(path) };
 
     public void SetFont(GameFont font)
     {
@@ -110,11 +90,7 @@ internal sealed partial class ProvinceMenuView : Control
 
     private float PanelY => MathF.Round((800 - Height) / 2);
 
-    /// <summary>
-    /// A line's width, at least one window pixel: a thinner one may fall between the pixels' centres when the
-    /// screen is scaled down and vanish (the first row's top edge did, owner, 2026-10-16).
-    /// </summary>
-    private float Line(float width) => Math.Max(width, 1 / _k);
+    private float Line(float width) => Lacquer.Line(width, _k);
 
     private Rect2 RowRect(int row) => row < RowCount - 1
         ? new Rect2(PanelX + 16, PanelY + Top + row * RowPitch, Width - 32, RowH)
@@ -186,36 +162,26 @@ internal sealed partial class ProvinceMenuView : Control
             return;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         float x = PanelX, y = PanelY, h = Height;
-        // The shadow, the lacquer, the double gold frame and its corners.
-        for (int i = 6; i >= 1; i--)
-            DrawRect(new Rect2(x - i + 2, y - i + 6, Width + 2 * i, h + 2 * i), new Color(0, 0, 0, 0.06f));
-        DrawRect(new Rect2(x, y, Width, h), Lacquer);
-        DrawRect(new Rect2(x + 1, y + 1, Width - 2, h - 2), Gold, false, Line(2));
-        DrawRect(new Rect2(x + 5.5f, y + 5.5f, Width - 11, h - 11), DimGold, false, Line(1));
-        foreach (var (cx, cy, sx, sy) in new[] { (x, y, 1, 1), (x + Width, y, -1, 1), (x, y + h, 1, -1), (x + Width, y + h, -1, -1) })
-        {
-            DrawPolyline([new(cx + sx * 9, cy + sy * 2), new(cx + sx * 9, cy + sy * 9), new(cx + sx * 2, cy + sy * 9)], Gold, Line(2));
-            DrawColoredPolygon([new(cx + sx * 9, cy + sy * 14), new(cx + sx * 14, cy + sy * 9), new(cx + sx * 9, cy + sy * 4), new(cx + sx * 4, cy + sy * 9)], Gold);
-        }
+        Lacquer.DrawPanel(this, new Rect2(x, y, Width, h), _k);
         // The city's picture.
         var picture = new Rect2(x + Pad, y + Pad, PictureW, PictureH);
         if (_picture is not null)
             DrawTextureRect(_picture, picture, false);
-        DrawRect(picture.Grow(1), DimGold, false, Line(1));
+        DrawRect(picture.Grow(1), Lacquer.DimGold, false, Line(1));
         // The name (made smaller to fit), the army, the figures.
         float tx = picture.End.X + Pad, room = x + Width - 16 - tx;
         int nameSize = 19;
         while (nameSize > 11 && _brush.GetStringSize(m.Name, fontSize: nameSize).X > room)
             nameSize--;
-        DrawString(_brush, new Vector2(tx, y + 16 + _brush.GetAscent(nameSize)), m.Name, fontSize: nameSize, modulate: NameColour);
-        DrawString(_cinzel, new Vector2(tx + 1, y + 46 + _cinzel.GetAscent(13)), m.Army, fontSize: 13, modulate: ArmyColour);
+        DrawString(_brush, new Vector2(tx, y + 16 + _brush.GetAscent(nameSize)), m.Name, fontSize: nameSize, modulate: Lacquer.Name);
+        DrawString(_cinzel, new Vector2(tx + 1, y + 46 + _cinzel.GetAscent(13)), m.Army, fontSize: 13, modulate: Lacquer.Subtitle);
         float sy2 = y + 70;
         foreach (string line in m.Card)
         {
             int colon = line.IndexOf(": ", StringComparison.Ordinal);
             string label = colon < 0 ? "" : line[..colon], value = colon < 0 ? line : line[(colon + 2)..];
-            DrawString(_gothic, new Vector2(tx, sy2 + _gothic.GetAscent(13)), label, fontSize: 13, modulate: Label);
-            DrawString(_gothic, new Vector2(tx, sy2 + 15 + _gothic.GetAscent(15)), value, fontSize: 15, modulate: value == "??" ? Label : Value);
+            DrawString(_gothic, new Vector2(tx, sy2 + _gothic.GetAscent(13)), label, fontSize: 13, modulate: Lacquer.Label);
+            DrawString(_gothic, new Vector2(tx, sy2 + 15 + _gothic.GetAscent(15)), value, fontSize: 15, modulate: value == "??" ? Lacquer.Label : Lacquer.Value);
             sy2 += 34;
         }
         // The place a later menu belongs to (the dungeon), between gold rules.
@@ -223,9 +189,9 @@ internal sealed partial class ProvinceMenuView : Control
         {
             float cy = y + Pad + PictureH + Pad + Caption / 2 - 4, pw = _cinzel.GetStringSize(place, fontSize: 15).X;
             DrawString(_cinzel, new Vector2(x + (Width - pw) / 2, cy + (_cinzel.GetAscent(15) - _cinzel.GetDescent(15)) / 2), place,
-                fontSize: 15, modulate: NameColour);
-            DrawLine(new Vector2(x + 16, cy), new Vector2(x + (Width - pw) / 2 - 12, cy), DimGold, Line(1));
-            DrawLine(new Vector2(x + (Width + pw) / 2 + 12, cy), new Vector2(x + Width - 16, cy), DimGold, Line(1));
+                fontSize: 15, modulate: Lacquer.Name);
+            DrawLine(new Vector2(x + 16, cy), new Vector2(x + (Width - pw) / 2 - 12, cy), Lacquer.DimGold, Line(1));
+            DrawLine(new Vector2(x + (Width + pw) / 2 + 12, cy), new Vector2(x + Width - 16, cy), Lacquer.DimGold, Line(1));
         }
         // The commands, then Return.
         for (int r = 0; r < RowCount; r++)
@@ -237,30 +203,25 @@ internal sealed partial class ProvinceMenuView : Control
         var m = _menu!;
         var rect = RowRect(r);
         bool on = Enabled(r), hover = r == _hovered && on;
-        DrawRect(rect, hover ? RowHover : Row);
-        DrawRect(rect, hover ? HoverLine : DimGold, false, Line(hover ? 2 : 1));
+        Lacquer.DrawRowBox(this, rect, hover, _k);
         float baseline(int size, Font font) => rect.Position.Y + rect.Size.Y / 2 + (font.GetAscent(size) - font.GetDescent(size)) / 2;
         if (r == RowCount - 1)
         {
             float w = _gothic.GetStringSize("Return", fontSize: 15).X;
             DrawString(_gothic, new Vector2(rect.GetCenter().X - w / 2, baseline(15, _gothic)), "Return", fontSize: 15,
-                modulate: hover ? Text : Color.Color8(176, 160, 130));
+                modulate: hover ? Lacquer.Text : Lacquer.Quiet);
             return;
         }
         var item = m.Items[r];
         var (tag, colour) = TagOf(item.Action);
         var tagRect = new Rect2(rect.Position.X + 5, rect.Position.Y + 5, 62, rect.Size.Y - 10);
-        DrawRect(tagRect, on ? colour : OffTag);
-        if (on)
-            DrawRect(tagRect, Gold, false, Line(1));
-        float tw = _gothic.GetStringSize(tag, fontSize: 13).X;
-        DrawString(_gothic, new Vector2(tagRect.GetCenter().X - tw / 2, baseline(13, _gothic)), tag, fontSize: 13, modulate: on ? Text : OffText);
-        DrawString(_gothic, new Vector2(rect.Position.X + 80, baseline(16, _gothic)), item.Text, fontSize: 16, modulate: on ? Text : OffText);
+        Lacquer.DrawTag(this, _gothic, tagRect, tag, colour, on, _k);
+        DrawString(_gothic, new Vector2(rect.Position.X + 80, baseline(16, _gothic)), item.Text, fontSize: 16, modulate: on ? Lacquer.Text : Lacquer.OffText);
         if (!on)
         {
             const string spent = "used this week";
             float sw = _gothic.GetStringSize(spent, fontSize: 12).X;
-            DrawString(_gothic, new Vector2(rect.End.X - 10 - sw, baseline(12, _gothic)), spent, fontSize: 12, modulate: OffText);
+            DrawString(_gothic, new Vector2(rect.End.X - 10 - sw, baseline(12, _gothic)), spent, fontSize: 12, modulate: Lacquer.OffText);
         }
     }
 

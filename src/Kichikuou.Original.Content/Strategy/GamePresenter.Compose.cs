@@ -221,7 +221,7 @@ public sealed partial class GamePresenter
         _menuItems = null;
         if (_provinceCovered)
             _cityLeadIn = true;                                         // the files' way out: IZ (frames pass), then 0 and 332
-        ProvinceMenuCovered = false;
+        MenuCovered = false;
         Invalidate();
     }
 
@@ -232,6 +232,15 @@ public sealed partial class GamePresenter
         _menuItems is { } items && MenuItems is { } texts && State is { } s && !BattleShows
             ? Strategy.ProvinceMenu.For(s, items, texts, ReadFixedText)
             : null;
+
+    /// <summary>The open menu as <c>COMMAND.ADV</c>'s command menu under its status window (<see cref="Strategy.CommandMenu"/>), or null.</summary>
+    public CommandMenu? CommandMenu =>
+        _menuItems is { } items && MenuItems is { } texts && State is { } s && !BattleShows
+            ? Strategy.CommandMenu.For(s, items, texts, _commandStatus)
+            : null;
+
+    /// <summary>The status window's text as <c>COMMAND.ADV</c> last printed it (<see cref="Strategy.CommandMenu.IsStatus"/>).</summary>
+    private string? _commandStatus;
 
     /// <summary>A text run with zeros for its numbers and computed strings (for its fixed lines), or null when it does not resolve.</summary>
     private string? ReadFixedText(ScriptRef at)
@@ -254,7 +263,7 @@ public sealed partial class GamePresenter
     /// only the map under them. <see cref="CloseMenu"/> ends it. Also true through a city's lead-in and
     /// lead-out (<see cref="CoverCityLeadIn"/>).
     /// </summary>
-    public bool ProvinceMenuCovered
+    public bool MenuCovered
     {
         get => _provinceCovered || _cityLeadIn;
         set
@@ -268,7 +277,7 @@ public sealed partial class GamePresenter
     private bool _provinceCovered;
 
     /// <summary>
-    /// Whether a UI covers the city files' first menus (<see cref="ProvinceMenuCovered"/>): then the
+    /// Whether a UI covers the city files' first menus (<see cref="MenuCovered"/>): then the
     /// files' lead-in is not drawn either — the city's picture (<c>WAO_SUB</c> 331 of <c>Prov.BgCg</c>),
     /// the window 113 and its "[name]" lines, which the files draw before the release wait (<c>IM</c>,
     /// frames pass) that comes before the menu. It ends at the menu (<see cref="OpenMenu"/>: the UI covers
@@ -377,7 +386,7 @@ public sealed partial class GamePresenter
             {
                 if (MaskEventCgs && (s.Ui_WinType == 31 || _endingCg != 0 || _gallery))
                     MaskStage();
-                if (!ProvinceMenuCovered)
+                if (!MenuCovered)
                 {
                     DrawPictures(s);
                     Picker?.Draw(Screen, s);
@@ -386,7 +395,7 @@ public sealed partial class GamePresenter
                 }
             }
         }
-        if (State is not null && !ProvinceMenuCovered && MenuBox() is { } menu)                 // also over a battle: a scene it called (Gﾒﾙﾌｪｲｽ from 死亡捕獲)
+        if (State is not null && !MenuCovered && MenuBox() is { } menu)                 // also over a battle: a scene it called (Gﾒﾙﾌｪｲｽ from 死亡捕獲)
         {
             menu.Open();
             menu.Hover(_pointer.X, _pointer.Y);

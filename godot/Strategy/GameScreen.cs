@@ -198,6 +198,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private PointerScript _tablePointer = new();        // the script's pointer while the player's is over the table
     private MapMarkersView _markers = null!;            // our name plates over the map in COMMAND's map wait (New)
     private ProvinceMenuView _provinceView = null!;     // our province menu over a city file's first menu (New)
+    private CommandMenuView _commandView = null!;       // our command panel over COMMAND's command menu (New)
     private PointerScript _markerPointer = new();       // a plate's still click on its way to the script
     private readonly MapCameraForm _mapCamera = new();  // whether the map loop holds the camera as the view's corner
     private IReadOnlyList<int>? _wantedOrder;           // the party a drop asked for, while its clicks run
@@ -243,6 +244,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         var faces = new FacePictures(new CgLibrary(GameData.CgDirectory));
         _provinceView = new ProvinceMenuView(GodotGlyphRenderer.Chosen, faces);
         _content.AddChild(_provinceView);
+        _commandView = new CommandMenuView(GodotGlyphRenderer.Chosen, faces);
+        _content.AddChild(_commandView);
         _battleView = new BattleBoardView(GodotGlyphRenderer.Chosen, faces);
         _content.AddChild(_battleView);
         _scoutView = new ScoutReportView(GodotGlyphRenderer.Chosen, faces);
@@ -313,6 +316,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _notice.Text = "";
         UpdateDeploymentScreen();
         UpdateMapMarkers();
+        if (_commandView.Visible)
+            _commandView.Place(PictureArea());
         if (_provinceView.Visible)
             _provinceView.Place(PictureArea());
         UpdateBattleScreen(Present());
@@ -648,7 +653,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.ScreenshotDirectory is not { } dir)
             return;
         System.IO.Directory.CreateDirectory(dir);
-        if ((_table.Visible || _markers.Visible || _provinceView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
+        if ((_table.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
         {
             // Our deployment and battle screens are drawn by Godot over the screen: the window's next frame (headless
             // draws none). No Compose here: the frame's Present must find the change to upload it.
@@ -1183,11 +1188,18 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _presenter.OpenMenu(items);
         _presenter.Pointer(_input.Position.X, _input.Position.Y);
         var province = InterfaceChoice.New ? _presenter.ProvinceMenu : null;
+        var command = InterfaceChoice.New && province is null ? _presenter.CommandMenu : null;
         if (province is not null)
         {
-            _presenter.ProvinceMenuCovered = true;                      // our panel instead (docs/ui/command-screen.md)
+            _presenter.MenuCovered = true;                      // our panel instead (docs/ui/command-screen.md)
             _provinceView.Open(province);
             _provinceView.Place(PictureArea());
+        }
+        else if (command is not null)
+        {
+            _presenter.MenuCovered = true;                      // our command panel, the status window with it
+            _commandView.Open(command);
+            _commandView.Place(PictureArea());
         }
         Shot("menu");
         try
@@ -1200,13 +1212,21 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                     _provinceDumped = true;
                     await AutoDumpAsync("province-menu");
                 }
+                if (command is not null && !_commandDumped && DisplayServer.GetName() != "headless" && _options.ScreenshotDirectory is not null)
+                {
+                    _commandDumped = true;
+                    await AutoDumpAsync("command-menu");
+                }
                 return AutoChoice(items);
             }
-            return province is not null ? await _provinceView.ChooseAsync() : await MenuAsync();
+            return province is not null ? await _provinceView.ChooseAsync()
+                : command is not null ? await _commandView.ChooseAsync()
+                : await MenuAsync();
         }
         finally
         {
             _provinceView.Close();
+            _commandView.Close();
             _presenter.CloseMenu();
         }
     }
@@ -1309,7 +1329,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         return new Rect2(_view.Position + (size - drawn) / 2, drawn);
     }
 
-    private bool _provinceDumped;
+    private bool _provinceDumped, _commandDumped;
 
     private bool UpdateMapMarkers()
     {

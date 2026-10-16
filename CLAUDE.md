@@ -253,8 +253,11 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   player has seen — `GameState.KnownProvinces`, in `Extras`, marked at each map wait and by the ninja's scouting —
   else "??");
   `Strategy/ProvinceMenuView` (our province menu over a city file's first menu, Option → Interface → New, the owner's
-  mock-up 4a in lacquer and gold: `Original.Content/Strategy/ProvinceMenu`, `GamePresenter.ProvinceMenuCovered`,
-  docs/ui/command-screen.md, "The province menu");
+  mock-up 4a in lacquer and gold: `Original.Content/Strategy/ProvinceMenu`, `GamePresenter.MenuCovered`,
+  docs/ui/command-screen.md, "The province menu"; also the dungeon's menu after it);
+  `Strategy/CommandMenuView` (our command panel over `COMMAND`'s right-click menu and its status window, Option →
+  Interface → New, the owner's mock-up A, centred as the original's menu: `Original.Content/Strategy/CommandMenu`,
+  docs/ui/command-screen.md, "The command panel"); both panels draw with `Strategy/Lacquer` (the style's colours and parts);
   `Battles/BattleBoardView` (our own battle screen, Option → Interface → New, docs/ui/battle-screen.md:
   `Original.Content/Battles/BattleScene` on top, the stage's windows over it through `WindowMask`, the
   cards and the round's order from `BattleBoard`/`RoundOrder`, the order strip `OrderStrip` moving on its own;

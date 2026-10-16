@@ -869,47 +869,47 @@ public partial class GamePresenterTests(ITestOutputHelper output)
         presenter.CoverCityLeadIn = true;
 
         presenter.Show(new WindowEvent(331, 340));
-        Assert.True(presenter.ProvinceMenuCovered);
+        Assert.True(presenter.MenuCovered);
         presenter.Show(new WindowEvent(113, 340));
         presenter.Show(new MessageEvent(new ScriptRef("Cﾃｷﾄｼ.ADV", 20)));
         presenter.Show(new LineBreakEvent());
-        Assert.True(presenter.ProvinceMenuCovered);
+        Assert.True(presenter.MenuCovered);
         presenter.OpenMenu([]);
-        Assert.False(presenter.ProvinceMenuCovered);                            // the UI covers the menu itself
-        presenter.ProvinceMenuCovered = true;
+        Assert.False(presenter.MenuCovered);                            // the UI covers the menu itself
+        presenter.MenuCovered = true;
 
         presenter.CloseMenu();                                                  // a cancel: the lead-out stays covered
-        Assert.True(presenter.ProvinceMenuCovered);
+        Assert.True(presenter.MenuCovered);
         presenter.Show(new MessageClearEvent());
         presenter.Show(new EngineEvent("IZ", [(Sys3Int)320, (Sys3Int)200]));
         presenter.Show(new WindowEvent(0, 340));
         presenter.Show(new WindowEvent(332, 340));
-        Assert.True(presenter.ProvinceMenuCovered);
+        Assert.True(presenter.MenuCovered);
         presenter.Show(new MapEvent(0));                                        // back on the map
-        Assert.False(presenter.ProvinceMenuCovered);
+        Assert.False(presenter.MenuCovered);
 
         presenter.OpenMenu([]);                                                 // another menu: nothing covered after it
         presenter.CloseMenu();
-        Assert.False(presenter.ProvinceMenuCovered);
+        Assert.False(presenter.MenuCovered);
 
         presenter.Show(new WindowEvent(331, 340));
         presenter.Show(new WindowEvent(1, 340));                                // a key wait: shown
-        Assert.False(presenter.ProvinceMenuCovered);
+        Assert.False(presenter.MenuCovered);
 
         presenter.Show(new WindowEvent(331, 341));                              // not the city's picture
-        Assert.False(presenter.ProvinceMenuCovered);
+        Assert.False(presenter.MenuCovered);
         state.Ev_CommandMode = 1;                                               // a forced trip takes over
         presenter.Show(new WindowEvent(331, 340));
-        Assert.False(presenter.ProvinceMenuCovered);
+        Assert.False(presenter.MenuCovered);
         state.Ev_CommandMode = 0;
         presenter.CoverCityLeadIn = false;
         presenter.Show(new WindowEvent(331, 340));
-        Assert.False(presenter.ProvinceMenuCovered);
+        Assert.False(presenter.MenuCovered);
 
         presenter.CoverCityLeadIn = true;
         presenter.Show(new WindowEvent(331, 340));
         presenter.EndCityLeadIn();                                              // GameScreen's key waits and pauses
-        Assert.False(presenter.ProvinceMenuCovered);
+        Assert.False(presenter.MenuCovered);
     }
 
     /// <summary>

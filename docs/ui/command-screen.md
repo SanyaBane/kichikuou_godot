@@ -260,7 +260,7 @@ Search, Battle, Ninja), and Return. The mock-ups hold the player's CGs and stay 
   the cells (tag Cell) and Look Around (tag Look) as rows, Return. A cancel only opens it again in the
   original, so the panel ignores a right click and Esc there (`ProvinceMenu.CancelReopens`).
 - **Built (2026-10-16):** `Original.Content/Strategy/ProvinceMenu` (`ProvinceMenuTests`); the presenter keeps
-  the open menu's items (`GamePresenter.ProvinceMenu`) and, while `ProvinceMenuCovered`, draws neither the
+  the open menu's items (`GamePresenter.ProvinceMenu`) and, while `MenuCovered`, draws neither the
   city's picture nor the window and its text nor the menu; `godot/Strategy/ProvinceMenuView` draws the panel
   and answers `GameScreen.SelectAsync`. `--auto --interface new` in a window dumps it once (`province-menu`,
   the attack's target).
@@ -276,6 +276,31 @@ Search, Battle, Ninja), and Return. The mock-ups hold the player's CGs and stay 
 - **The owner's look (2026-10-16):** the panel sits in the screen's centre, as the original's menu (not at the
   map's top left); its lines are at least one window pixel wide (`ProvinceMenuView.Line`), since a 1-pixel line
   scaled down fell between the pixels' centres (the first row's top edge vanished).
+
+## The command panel (owner, 2026-10-16)
+
+**The fourth small step: the right click's menu as our panel.** Three drawn mock-ups in the style of 4a (a
+column at the left edge, a bar along the bottom, the status along the top with the commands at the right);
+the owner chose the column, **centred on the screen as the original's menu** — still opened by the right
+click, not on screen all the time.
+
+- **Which menu.** `COMMAND.ADV`'s command menu (`CommandPhase.CommandMenuAsync`, `:183-312`), recognised by
+  its items' places (`CommandMenu.For`, Turn END last at `:310`, the thieves' at `:218`) under the status
+  window the presenter saw printed (`:443` Leazas, `:472` the thieves; `CommandMenu.IsStatus`).
+- **What it shows.** The nation with its flag (CG 820; none for the thieves), the date as "LP 3 · Month 5 ·
+  Week 2" (LP, `DateYear`, is computed by the original but not shown: ours, question 4), the status window's two
+  lines as the files print them ("Budget 116400K GOLD", "Troops 6251"; the thieves' Money and Subordinates);
+  the commands as rows with a tag of ours (Build, Harem, Items, Trade, Units) and their uses left this week as
+  diamonds (○ one of one, ◎ two of two, ○ Subordinates one of two, × and △ none; Treasure has none): a × item
+  and Merchant's △ only re-open the menu in the original, so they are dimmed rows, "used this week", while
+  Subordinates' △ still opens `Cﾌﾞｶ`; the other items (→ Leazas Castle, Load/Save, All Data, Think, TADA)
+  as plain rows; Turn END as a large lacquer-red button.
+- **The answer is the original's.** A row's click answers with its item's place; a right click or Esc
+  cancels (0: back to the map). The status window and the menu are covered while it is open
+  (`GamePresenter.MenuCovered`); after it, the way out is covered as after a province menu.
+- **Built (2026-10-16):** `Original.Content/Strategy/CommandMenu` (`CommandMenuTests`, one test on the
+  player's files), `GamePresenter.CommandMenu`, `godot/Strategy/CommandMenuView`; the province menu and the
+  command panel share `godot/Strategy/Lacquer`. `--auto --interface new` in a window dumps it once (`command-menu`).
 
 ## Questions for the owner
 
