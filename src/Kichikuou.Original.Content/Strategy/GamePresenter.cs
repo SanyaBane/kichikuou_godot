@@ -147,6 +147,14 @@ public sealed partial class GamePresenter : IStageObserver
     /// <summary>Whether <c>COMMAND</c>'s map loop waits for the player: its pointer reads are the map's.</summary>
     public bool MapWaiting { get; private set; }
 
+    /// <summary>
+    /// The map point at the screen's top-left corner as the screen shows it: the view last put on the
+    /// screen (<c>M.ADV</c> 0/12, a step of the drag), null before any. Our layers over the map follow
+    /// it rather than the camera, which <c>COMMAND</c> centres again at a still click's release
+    /// (<c>COMMAND.ADV:94-98</c>) a read before it leaves the wait, with the picture unchanged.
+    /// </summary>
+    public (int X, int Y)? MapViewShown { get; private set; }
+
     /// <summary>The open picker, or null.</summary>
     public PickerView? Picker { get; private set; }
 
@@ -540,6 +548,8 @@ public sealed partial class GamePresenter : IStageObserver
         Audit?.Before(command, args, runs, Picker is { } open ? open.Kind.ToString() : Data != DataView.Closed ? "All Data" : null);
         if (runs)
             _engine.Draw(command, args);
+        if (runs && command == "CC" && A(0) >= TileArea && A(2) == 640 && A(3) == 400 && A(4) == 0 && A(5) == 0)
+            MapViewShown = (A(0) - TileArea, A(1));                     // a step of the drag (WAO_MAP.ADV:39-42, 68-71)
         Audit?.After();
     }
 

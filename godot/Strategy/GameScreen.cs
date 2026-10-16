@@ -1274,13 +1274,15 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// Shows our name plates over the map while <c>COMMAND</c> waits on it with Option → Interface on New
     /// and the map loop holds the camera as the view's corner (<see cref="MapCameraForm"/>), but not under
     /// a message window or a menu; places them over the picture as the window is sized and the map
-    /// scrolls. The markers are read from the state when they appear (owners change only off the map).
+    /// scrolls — at the view the screen shows (<see cref="GamePresenter.MapViewShown"/>), not at the
+    /// camera, which a still click centres a frame before the wait ends. The markers are read from the state when they appear (owners change only off the map).
     /// Returns whether they show. Shown or hidden, no plate's click stays queued.
     /// </summary>
     private bool UpdateMapMarkers()
     {
         bool show = InterfaceChoice.New && _presenter.MapWaiting && _mapCamera.Waiting && _mapCamera.Corner
-            && !_presenter.MessageWindowShown && _presenter.Menu is null && !SkippingScene && _presenter.State is not null;
+            && !_presenter.MessageWindowShown && _presenter.Menu is null && !SkippingScene && _presenter.State is not null
+            && _presenter.MapViewShown is not null;
         if (show != _markers.Visible)
         {
             _markers.Visible = show;
@@ -1294,7 +1296,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
         var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
         var origin = _view.Position + (size - drawn) / 2;
-        _markers.Place(new Rect2(origin, drawn), scale * Surface.Scale, GesturePoints.ViewCorner(_presenter.State!, centred: false));
+        _markers.Place(new Rect2(origin, drawn), scale * Surface.Scale, _presenter.MapViewShown!.Value);
         return true;
     }
 

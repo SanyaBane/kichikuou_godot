@@ -129,6 +129,7 @@ public sealed partial class GamePresenter
     {
         EnsureTiles();
         Battle.BlitMapView();
+        MapViewShown = Battle.MapViewCorner();
         CoverScreen();
     }
 

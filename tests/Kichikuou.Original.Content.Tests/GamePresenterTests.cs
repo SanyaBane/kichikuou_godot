@@ -796,6 +796,36 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// <see cref="GamePresenter.MapViewShown"/> is the view on the screen: the map shown at the camera
+    /// centred, a drag's step at the corner it copies from — and unchanged when a still click's release
+    /// centres the camera again (<c>COMMAND.ADV:94-98</c>) without drawing.
+    /// </summary>
+    [Fact]
+    public void The_map_view_shown_follows_the_drawing_not_the_camera()
+    {
+        var missing = Path.Combine(Path.GetTempPath(), "kichikuou-no-data");
+        var presenter = new GamePresenter(new ScenarioText(missing), new CgLibrary(missing), new BoxGlyphs());
+        var state = new GameState { MapCamX = 700, MapCamY = 300 };
+        presenter.Bind(state);
+        Assert.Null(presenter.MapViewShown);
+        presenter.Show(new MapEvent(0));
+        Assert.Equal((380, 100), presenter.MapViewShown);
+
+        presenter.Show(new MapScreenEvent(true));
+        state.MapCamX = 380;                                                    // the release wait: the corner
+        state.MapCamY = 100;
+        state.MapCamX = 420;                                                    // a drag's step
+        presenter.Show(new EngineEvent("CC", [(Sys3Int)(420 + 1280), (Sys3Int)100, (Sys3Int)640, (Sys3Int)400, Sys3Int.Zero, Sys3Int.Zero]));
+        Assert.Equal((420, 100), presenter.MapViewShown);
+
+        state.MapCamX = 740;                                                    // a still click's release: centred, nothing drawn
+        state.MapCamY = 300;
+        Assert.Equal((420, 100), presenter.MapViewShown);
+        presenter.Show(new EngineEvent("CC", [(Sys3Int)1280, Sys3Int.Zero, (Sys3Int)32, (Sys3Int)32, (Sys3Int)8, (Sys3Int)8]));
+        Assert.Equal((420, 100), presenter.MapViewShown);                       // not a view of the map
+    }
+
+    /// <summary>
     /// A view that does not show the screen takes its changes without composing (<see cref="GamePresenter.TakeChange"/>,
     /// once per change); the next <see cref="GamePresenter.Compose"/> draws what changed meanwhile.
     /// </summary>
