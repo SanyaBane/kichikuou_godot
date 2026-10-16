@@ -257,8 +257,8 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   docs/ui/command-screen.md, "The province menu"; also the dungeon's menu after it);
   `Strategy/CommandMenuView` (our command panel over `COMMAND`'s right-click menu and its status window, Option →
   Interface → New, centred as the original's menu: `Original.Content/Strategy/CommandMenu`,
-  docs/ui/command-screen.md, "The command panel"); `Strategy/StatusStripView` (our status strip along the map's top in
-  the map wait and under the panels: the status window's lines and the week's uses in bracketed groups,
+  docs/ui/command-screen.md, "The command panel"); `Strategy/StatusStripView` (our status strip in a band above the map, from the
+  first map wait, outside battles: the status window's lines and the week's uses in bracketed groups,
   `Original.Content/Strategy/StatusStrip`, "The status strip"); the three draw with `Strategy/Lacquer` (the style's colours and parts);
   `Battles/BattleBoardView` (our own battle screen, Option → Interface → New, docs/ui/battle-screen.md:
   `Original.Content/Battles/BattleScene` on top, the stage's windows over it through `WindowMask`, the

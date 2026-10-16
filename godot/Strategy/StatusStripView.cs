@@ -5,16 +5,18 @@ using Kichikuou.Original.Content.Strategy;
 namespace Kichikuou.Game.Strategy;
 
 /// <summary>
-/// Our status strip along the top of the map (docs/ui/command-screen.md, "The status strip"; the owner's
-/// mock-up C with groups d, 2026-10-16): the first row is the status window <c>COMMAND.ADV</c> prints at a
+/// Our status strip above the map, as wide as it (docs/ui/command-screen.md, "The status strip"; the owner's
+/// mock-up C with groups d, 2026-10-16; the band <see cref="GameScreen"/> keeps for it): the first row is the status window <c>COMMAND.ADV</c> prints at a
 /// right click — the nation with its flag, its money and troops, the date with LP; the second the week's
 /// commands as tags, lit while free, grouped under brackets with their captions (Castle, Subordinates, Map).
-/// A left click on it reaches nothing under it. Laid out in the 1280×800 screen's pixels, scaled
-/// with the picture.
+/// Laid out in a 1280-wide band of the screen's pixels, scaled with the picture.
 /// </summary>
 internal sealed partial class StatusStripView : Control
 {
-    private const float Width = 980, Height = 92, Top = 6;
+    private const float Width = 1280;
+
+    /// <summary>The band's height in the screen's pixels (1280 wide).</summary>
+    public const float Height = 92;
 
     /// <summary>The flags' CGs: <c>Prov.Owner + 819</c>, Leazas 820 (the map's markers).</summary>
     private const int LeazasFlag = 820;
@@ -61,7 +63,7 @@ internal sealed partial class StatusStripView : Control
     /// <summary>Where the events on the strip go but a left click's: the screen's input (a right click opens the menu as anywhere).</summary>
     public Action<InputEvent>? Forward { get; set; }
 
-    public override bool _HasPoint(Vector2 point) => Visible && new Rect2(Left, Top, Width, Height).HasPoint(point / _k);
+    public override bool _HasPoint(Vector2 point) => Visible && new Rect2(0, 0, Width, Height).HasPoint(point / _k);
 
     /// <summary>A left click on the strip reaches no province or plate under it; the rest is the screen's.</summary>
     public override void _GuiInput(InputEvent e)
@@ -71,10 +73,10 @@ internal sealed partial class StatusStripView : Control
         AcceptEvent();
     }
 
-    /// <summary>Lays the layer over the screen's picture (<paramref name="area"/>, in its parent's coordinates).</summary>
+    /// <summary>Lays the strip in its band above the picture (<paramref name="area"/>, in its parent's coordinates).</summary>
     public void Place(Rect2 area)
     {
-        float k = area.Size.X / 1280f;
+        float k = area.Size.X / Width;
         if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f)
             return;
         Position = area.Position;
@@ -83,14 +85,12 @@ internal sealed partial class StatusStripView : Control
         QueueRedraw();
     }
 
-    private static float Left => (1280 - Width) / 2;
-
     public override void _Draw()
     {
         if (_strip is not { } s)
             return;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
-        float x = Left, y = Top;
+        float x = 0, y = 0;
         Lacquer.DrawPanel(this, new Rect2(x, y, Width, Height), _k);
         // The first row: the nation with its flag, the status window's figures, the date.
         var row = new Rect2(x, y + 4, Width, 34);
@@ -109,7 +109,8 @@ internal sealed partial class StatusStripView : Control
             DrawString(_gothic, new Vector2(cx, Lacquer.Baseline(row, _gothic, 15)), value, fontSize: 15, modulate: Lacquer.Value);
             cx += _gothic.GetStringSize(value, fontSize: 15).X + 22;
         }
-        DrawString(_cinzel, new Vector2(cx, Lacquer.Baseline(row, _cinzel, 13)), s.Date, fontSize: 13, modulate: Lacquer.Subtitle);
+        float dw = _cinzel.GetStringSize(s.Date, fontSize: 13).X;
+        DrawString(_cinzel, new Vector2(x + Width - 20 - dw, Lacquer.Baseline(row, _cinzel, 13)), s.Date, fontSize: 13, modulate: Lacquer.Subtitle);
         DrawLine(new Vector2(x + 14, y + 40), new Vector2(x + Width - 14, y + 40), Lacquer.DimGold, Lacquer.Line(1, _k));
         // The second row: the week's commands, grouped under brackets with their captions.
         cx = x + 20;

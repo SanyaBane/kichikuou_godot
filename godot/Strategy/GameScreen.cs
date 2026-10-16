@@ -318,8 +318,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_noticeLeft > 0 && (_noticeLeft -= delta) <= 0)
             _notice.Text = "";
         UpdateDeploymentScreen();
-        UpdateMapMarkers();
         UpdateStatusStrip();
+        UpdateMapMarkers();
         if (_commandView.Visible)
             _commandView.Place(PictureArea());
         if (_provinceView.Visible)
@@ -1336,30 +1336,35 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private bool _provinceDumped, _commandDumped;
 
     /// <summary>
-    /// Our status strip (docs/ui/command-screen.md, "The status strip") is up in <c>COMMAND</c>'s map wait as
-    /// the plates are, and while our command panel or province menu is open. Between them (the script's steps
-    /// from the map wait to the menu and back, a frame or two) it stays: it goes after a few frames without
-    /// either, at once when a window, a picker, All Data or a battle shows.
+    /// Our status strip (docs/ui/command-screen.md, "The status strip") sits above the screen's picture, as
+    /// wide as it, not over it (owner, 2026-10-16): from the game's first map wait on, outside a battle, the
+    /// view gives up a band at its top (<see cref="StatusStripView.Height"/> at the picture's scale) and the
+    /// picture fits under it — every screen reckons from the view, so the pointer and the layers follow. A
+    /// battle keeps the whole view (no strip).
     /// </summary>
     private void UpdateStatusStrip()
     {
-        bool wanted = InterfaceChoice.New && _presenter.State is not null && !SkippingScene && !_presenter.InBattle
-            && (_markers.Visible || _commandView.Visible || _provinceView.Visible || _presenter.MenuCovered);
-        bool blocked = _presenter.State is null || _presenter.InBattle || _presenter.MessageWindowShown && !_presenter.MenuCovered
-            || _presenter.Picker is not null || _presenter.Data != DataView.Closed || !InterfaceChoice.New;
-        _stripIdle = wanted ? 0 : _stripIdle + 1;
-        if (wanted && _presenter.StatusStrip is { } strip)
+        if (_markers.Visible)
+            _stripSeen = true;
+        bool on = InterfaceChoice.New && _stripSeen && _presenter.State is not null && !_presenter.InBattle;
+        var room = _content.Size;
+        float k = Math.Min(room.X / (Surface.ScreenWidth * Surface.Scale), room.Y / (Surface.ScreenHeight * Surface.Scale + StatusStripView.Height));
+        float band = on ? MathF.Round(StatusStripView.Height * k) : 0;
+        if (Math.Abs(_view.OffsetTop - band) > 0.5f)
+            _view.OffsetTop = band;
+        if (on && _presenter.StatusStrip is { } strip)
         {
+            var picture = PictureArea();
             _strip.Show(strip);
-            _strip.Place(PictureArea());
+            _strip.Place(new Rect2(picture.Position.X, picture.Position.Y - band, picture.Size.X, band));
         }
-        else if (blocked || _stripIdle > 3)
+        else
         {
             _strip.Close();
         }
     }
 
-    private int _stripIdle;
+    private bool _stripSeen;
 
     /// <summary>The strip's events but a left click's, as the screen's own (a right click opens the menu).</summary>
     private void StripInput(InputEvent e)

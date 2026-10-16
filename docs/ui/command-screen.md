@@ -303,11 +303,12 @@ brackets with captions under; the owner chose **the brackets**).
 
 ## The status strip (owner, 2026-10-16)
 
-- **Where and when.** Along the top of the map (980×92 in the screen's 1280×800, centred), in `COMMAND`'s map
-  wait as the plates are and while our command panel or province menu is open; it stays a few frames across
-  the script's steps between them and goes at once when a window, a picker, All Data or a battle shows
-  (`GameScreen.UpdateStatusStrip`). A left click on it reaches no province or plate under it; a right click
-  opens the menu as anywhere (`StatusStripView.Forward`).
+- **Where and when.** Above the map, as wide as it, not over it (owner, 2026-10-16: at first it lay over the
+  map's top, 980 wide): from the game's first map wait on and outside a battle, the view gives up a band at
+  its top (92 of the picture's 1280-wide pixels) and the screen's picture fits under it; every screen reckons
+  from the view, so the pointer, the plates, the panels and the deployment table follow; a battle keeps the whole
+  view (`GameScreen.UpdateStatusStrip`). It shows in the scenes and screens between map waits too. A right click
+  on it opens the menu as anywhere (`StatusStripView.Forward`).
 - **The first row** is the status window the right click prints, read now from the state: the nation with
   its flag (CG 820; none for the thieves), the window's two lines as the files print them (`:443` "Budget
   116400K GOLD", "Troops 6251"; the thieves' `:472` Money and Subordinates), the troops summed as the files sum
@@ -320,8 +321,6 @@ brackets with captions under; the owner chose **the brackets**).
   Dungeon `Ui_CmdDungeonAvail`). The thieves' week: Hideout (Harem, Subordinates as one), Map (Attack, Dungeon).
 - **Built (2026-10-16):** `Original.Content/Strategy/StatusStrip` (`StatusStripTests`, one test on the
   player's files), `GamePresenter.StatusStrip`, `godot/Strategy/StatusStripView`.
-- **Not done:** the plates the strip covers (Log A, Alan at the top of the view) stay under it; drag the map
-  to reach them.
 
 ## Questions for the owner
 
