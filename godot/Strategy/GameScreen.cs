@@ -196,6 +196,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private StrategyCutInView _strategyView = null!;    // our own cut-in of a successful strategy over the original's screen (New)
     private DeploymentPanels _panels = null!;           // and over the rest of it but the portrait
     private PointerScript _tablePointer = new();        // the script's pointer while the player's is over the table
+    private MapMarkersView _markers = null!;            // our name plates over the map in COMMAND's map wait (New)
+    private PointerScript _markerPointer = new();       // a plate's still click on its way to the script
+    private readonly MapCameraForm _mapCamera = new();  // whether the map loop holds the camera as the view's corner
     private IReadOnlyList<int>? _wantedOrder;           // the party a drop asked for, while its clicks run
     private readonly Stopwatch _skipYield = Stopwatch.StartNew();
     private Stopwatch? _sceneSkip;                      // since the message skip began to skip a scene whole
@@ -233,6 +236,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         };
         _view.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _content.AddChild(_view);
+        _markers = new MapMarkersView(GodotGlyphRenderer.Chosen);
+        _markers.Pressed += MarkerPressed;
+        _content.AddChild(_markers);
         var faces = new FacePictures(new CgLibrary(GameData.CgDirectory));
         _battleView = new BattleBoardView(GodotGlyphRenderer.Chosen, faces);
         _content.AddChild(_battleView);
@@ -303,6 +309,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_noticeLeft > 0 && (_noticeLeft -= delta) <= 0)
             _notice.Text = "";
         UpdateDeploymentScreen();
+        UpdateMapMarkers();
         UpdateBattleScreen(Present());
         UpdateScoutReport();
         UpdateStrategyCutIn();
@@ -539,6 +546,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _skip.OnMessage(message.Text);
         else if (scriptEvent is ValueMessageEvent values)
             _skip.OnMessage(values.Text);
+        if (scriptEvent is MapScreenEvent map)
+            _mapCamera.OnMapWait(map.Waiting);
         if (scriptEvent is MapScreenEvent { Waiting: true })
         {
             _autoMapWait = true;
@@ -633,7 +642,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.ScreenshotDirectory is not { } dir)
             return;
         System.IO.Directory.CreateDirectory(dir);
-        if ((_table.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
+        if ((_table.Visible || _markers.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
         {
             // Our deployment and battle screens are drawn by Godot over the screen: the window's next frame (headless
             // draws none). No Compose here: the frame's Present must find the change to upload it.
@@ -1217,11 +1226,22 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             if (_pointer.Pending == 0)
                 _wantedOrder = null;                    // the script asks again with nothing queued: a drop's clicks are done
             UpdateDeploymentScreen();
+            if (UpdateMapMarkers() && !_markersDumped && DisplayServer.GetName() != "headless" && _options.ScreenshotDirectory is not null)
+                await DumpMarkersAsync();
+            if (_autoPlateTarget != 0 && UpdateMapMarkers())
+                await AutoPlateClickAsync();
+            if (_markerPointer.Pending > 0)
+            {
+                var click = _markerPointer.Next(out bool clickRead);
+                if (!clickRead)
+                    await NextFrameAsync();
+                return Read(click);
+            }
             AutoPointer();
             var queued = _pointer.Next(out bool read);
             if (!read)
                 await NextFrameAsync();                 // the scripts poll the pointer: one read per frame
-            return queued;
+            return Read(queued);
         }
         await NextFrameAsync();
         if (_tablePointer.Pending == 0)
@@ -1236,7 +1256,112 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             }
             return _tablePointer.Next(out _);
         }
-        return new MouseState((Sys3Int)_input.ReadMouse(), (Sys3Int)_input.Position.X, (Sys3Int)_input.Position.Y);
+        if (UpdateMapMarkers() && _markerPointer.Pending > 0)
+            return Read(_markerPointer.Next(out _));    // a plate's still click
+        return Read(new MouseState((Sys3Int)_input.ReadMouse(), (Sys3Int)_input.Position.X, (Sys3Int)_input.Position.Y));
+    }
+
+    /// <summary>A mouse read handed to the script, told to <see cref="MapCameraForm"/>.</summary>
+    private MouseState Read(MouseState read)
+    {
+        _mapCamera.OnMouseRead(read.Button.Value);
+        return read;
+    }
+
+    // ---------------------------------------------------------------- our map's markers (docs/ui/command-screen.md)
+
+    /// <summary>
+    /// Shows our name plates over the map while <c>COMMAND</c> waits on it with Option → Interface on New
+    /// and the map loop holds the camera as the view's corner (<see cref="MapCameraForm"/>), but not under
+    /// a message window or a menu; places them over the picture as the window is sized and the map
+    /// scrolls. The markers are read from the state when they appear (owners change only off the map).
+    /// Returns whether they show. Shown or hidden, no plate's click stays queued.
+    /// </summary>
+    private bool UpdateMapMarkers()
+    {
+        bool show = InterfaceChoice.New && _presenter.MapWaiting && _mapCamera.Waiting && _mapCamera.Corner
+            && !_presenter.MessageWindowShown && _presenter.Menu is null && !SkippingScene && _presenter.State is not null;
+        if (show != _markers.Visible)
+        {
+            _markers.Visible = show;
+            _markerPointer = new PointerScript();
+            if (show)
+                _markers.Load(_presenter.MapMarkers());
+        }
+        if (!show)
+            return false;
+        var size = _view.Size;
+        float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
+        var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
+        var origin = _view.Position + (size - drawn) / 2;
+        _markers.Place(new Rect2(origin, drawn), scale * Surface.Scale, GesturePoints.ViewCorner(_presenter.State!, centred: false));
+        return true;
+    }
+
+    /// <summary>A plate clicked: the still click the original expects at its marker's point, unless one is on its way.</summary>
+    private void MarkerPressed(MapMarker marker)
+    {
+        if ((!_options.Auto || _autoPlateClicking) && _markerPointer.Pending == 0 && _markers.Visible && _presenter.State is { } s)
+            MapMarkers.Press(s, marker, _markerPointer);
+    }
+
+    private bool _markersDumped;
+    private int _autoPlateTarget;                       // the province --auto attacks through its plate, once a launch
+    private bool _autoPlateDone, _autoPlateClicking;
+
+    /// <summary>
+    /// Unattended play with <c>--interface new</c> in a window, once a launch: the week's attack target clicked
+    /// through its plate as a player clicks it — the system pointer onto the plate (dump
+    /// <c>map-marker-hover</c>), a press and a release through Godot's input — so the plate queues its
+    /// still click, which the script reads as the original's click on the province.
+    /// </summary>
+    private async Task AutoPlateClickAsync()
+    {
+        int target = _autoPlateTarget;
+        _autoPlateTarget = 0;
+        _autoPlateDone = true;
+        if (_markers.PlateOf(MapHitKind.Province, target) is not var (marker, at))
+            throw new InvalidOperationException($"--auto finds no plate of province {target} on the map.");
+        GetViewport().WarpMouse(at);
+        Input.ParseInputEvent(new InputEventMouseMotion { Position = at, GlobalPosition = at });   // the warp alone moves no hover
+        await NextFrameAsync();
+        await NextFrameAsync();
+        if (_markers.Hovered != marker)
+            throw new InvalidOperationException($"--auto's pointer on the plate of {marker.Name} does not hover it.");
+        await AutoDumpAsync("map-marker-hover");
+        _autoPlateClicking = true;
+        try
+        {
+            foreach (bool pressed in (bool[])[true, false])
+            {
+                Input.ParseInputEvent(new InputEventMouseButton
+                {
+                    ButtonIndex = Godot.MouseButton.Left, Pressed = pressed, Position = at, GlobalPosition = at,
+                    ButtonMask = pressed ? MouseButtonMask.Left : 0,
+                });
+                await NextFrameAsync();
+            }
+        }
+        finally
+        {
+            _autoPlateClicking = false;
+        }
+        if (_markerPointer.Pending == 0)
+            throw new InvalidOperationException($"--auto's click on the plate of {marker.Name} queued no click for the script.");
+        GD.Print($"Kichikuou: --auto clicks the plate of {marker.Name} (province {target}).");
+    }
+
+    /// <summary>
+    /// Unattended play in a window with <c>--shots</c>: once a launch, the first map wait's plates
+    /// (<c>map-markers</c>), then the same with Leazas Castle (1) shown hovered (<c>map-markers-hover</c>).
+    /// </summary>
+    private async Task DumpMarkersAsync()
+    {
+        _markersDumped = true;
+        await AutoDumpAsync("map-markers");
+        _markers.ShowHover(_presenter.MapMarkers().FirstOrDefault(m => m is { Kind: MapHitKind.Province, Id: 1 }));
+        await AutoDumpAsync("map-markers-hover");
+        _markers.ShowHover(null);
     }
 
     // ---------------------------------------------------------------- the deployment table (owner's decision 25)
@@ -2115,7 +2240,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                     _autoAttack = AutoAttack.Clicked;
                     _autoAttackWeek = s.Week.Value;
                     _autoAttackProv = target;
-                    _pointer.Click(x, y);
+                    if (InterfaceChoice.New && !_autoPlateDone && DisplayServer.GetName() != "headless")
+                        _autoPlateTarget = target;              // through its plate, as a player clicks it (AutoPlateClickAsync)
+                    else
+                        _pointer.Click(x, y);
                     return;
                 }
                 if (GesturePoints.DragToward(s, p.MapX, p.MapY, centred) is var (fromX, fromY, toX, toY))

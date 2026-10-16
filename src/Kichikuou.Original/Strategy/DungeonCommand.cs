@@ -45,6 +45,30 @@ public sealed partial class DungeonCommand(OriginalScriptContext script, IScenar
     ];
 
     /// <summary>
+    /// For a screen: the line of <c>Cﾒｲｷｭｳ.ADV</c> whose <c>MS 8</c> names the dungeon as a search of it
+    /// would name it now (Titi Lake (dungeon 25) reads Haniwa Temple, <c>:140</c>, once
+    /// <c>F_HannyKing_State</c> &gt; 1), or null for a record without a name.
+    /// </summary>
+    public static ScriptRef? NameAt(GameState state, int dungeon)
+    {
+        if (dungeon == 25 && state.F_HannyKing_State > 1)
+            return new ScriptRef("Cﾒｲｷｭｳ.ADV", 140);
+        foreach (var (d, line, _) in Names)
+            if (d == dungeon)
+                return new ScriptRef("Cﾒｲｷｭｳ.ADV", line);
+        return null;
+    }
+
+    /// <summary>For a screen: the last floor and the floor mode (1 a pit, 2 a tower) of a dungeon one searches, or null for an event place.</summary>
+    public static (int MaxFloor, int Mode)? SearchOf(int dungeon)
+    {
+        foreach (var p in Parameters)
+            if (p.Dungeon == dungeon)
+                return (p.MaxFloor, p.Mode);
+        return null;
+    }
+
+    /// <summary>
     /// The bosses in the order the moves (<c>:1020-1064</c>) and the battle (<c>:1197-1271</c>) test
     /// them: the dungeon, the floor, the flag that must still be 0 (none for Okayu Fever) and the
     /// first line of the setter that writes commander record 100 (read from the player's files).

@@ -289,7 +289,7 @@ public sealed class CommandPhase(OriginalScriptContext script)
     }
 
     /// <summary><c>COMMAND.ADV:101-137</c>: the half-size of a province's click box (12, larger for the big ones).</summary>
-    internal static Sys3Int HitRadius(Sys3Int province) => province.Value switch
+    public static Sys3Int HitRadius(Sys3Int province) => province.Value switch
     {
         1 or 56 or 69 or 78 or 79 => 30,
         25 => 36,

@@ -50,6 +50,9 @@ public sealed partial class GamePresenter
     internal string? Literal(ScriptRef at) =>
         (_scenario?.ReadStatement(at) as SetStringStatement)?.Text is { } text ? Hankaku.ToHalfWidth(text) : null;
 
+    /// <summary>Our map's markers as the state has them now (<see cref="Strategy.MapMarkers.All"/>), the dungeons named from the player's files.</summary>
+    public IReadOnlyList<MapMarker> MapMarkers() => State is { } s ? Strategy.MapMarkers.All(s, Literal) : [];
+
     /// <summary>The strings of the table <c>#label, 1:</c> at <paramref name="at"/> in the player's files (empty without them).</summary>
     internal IReadOnlyList<string> StringTable(ScriptRef at) =>
         (_scenario?.ReadStatement(at) as SetStringTableStatement)?.Strings ?? [];

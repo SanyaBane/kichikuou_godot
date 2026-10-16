@@ -109,6 +109,7 @@ public partial class GameScreen
             GodotGlyphRenderer.Chosen = font;
             _glyphs.Font = font;
             _table.SetFont(font);
+            _markers.SetFont(font);
             _panels.SetFont(font);
             _battleView.SetFont(font);
             _scoutView.SetFont(font);
@@ -137,6 +138,7 @@ public partial class GameScreen
         {
             DeploymentPalette.Chosen = palette;
             _table.SetPalette(palette);
+            _markers.SetPalette(palette);
             _panels.SetPalette(palette);
             _battleView.SetPalette(palette);
             _scoutView.SetPalette(palette);

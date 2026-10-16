@@ -176,6 +176,23 @@ five shapes (a ring, a pin, a name plate, corner brackets, a shield) and then th
   a muted hover and the "not allowed" cursor.
 - The scenario's `’` is drawn wide by the Japanese font ("Monsters’  Cave"): the plates print `'`.
 
+**Built (2026-10-16).** The model is `Original.Content/Strategy/MapMarkers` (the markers from the state,
+the dungeons named through `DungeonCommand.NameAt` and their search from `DungeonCommand.SearchOf`;
+`ClickPoint` checks with `GesturePoints.MapAt` that the script reads the click as the marker's — a
+plate whose click the script would read otherwise gives none; `MapMarkersTests`) and
+`MapCameraForm`, which follows the camera's form (the state does not record it: centred from the
+map wait's start through the release wait, the view's corner while the loop waits, drags and coasts,
+centred again at the menu's right click). The layer is `godot/Strategy/MapMarkersView` over the
+picture, shown by `GameScreen.UpdateMapMarkers` while the map waits with the camera as the corner,
+not under a message window or a menu; it reads the markers when it appears and follows the scroll
+each frame. A left click on a plate queues the still click (`GameScreen.MarkerPressed`, its own
+`PointerScript`); a right click goes on to the script (the menu); presses elsewhere stay the
+script's. A press that starts on a plate does not drag the map. `--auto --interface new` in a window
+dumps the first map wait's plates (`map-markers`, `map-markers-hover` with Leazas Castle (1)) and
+clicks the week's attack target through its plate as a player does (the system pointer onto it,
+`map-marker-hover`, a press and a release through Godot's input), so the attack runs from the plate's
+click.
+
 ## Questions for the owner
 
 1. **Layout**: A, B or C (or a mix: e.g. A's map with C's zoom-out).
