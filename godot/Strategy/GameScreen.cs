@@ -1228,7 +1228,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             UpdateDeploymentScreen();
             if (UpdateMapMarkers() && !_markersDumped && DisplayServer.GetName() != "headless" && _options.ScreenshotDirectory is not null)
                 await DumpMarkersAsync();
-            if (_autoPlateTarget != 0 && UpdateMapMarkers())
+            if (_autoPlateTarget != 0 && UpdateMapMarkers() && _mapCamera.Corner)
                 await AutoPlateClickAsync();
             if (_markerPointer.Pending > 0)
             {
@@ -1271,16 +1271,17 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     // ---------------------------------------------------------------- our map's markers (docs/ui/command-screen.md)
 
     /// <summary>
-    /// Shows our name plates over the map while <c>COMMAND</c> waits on it with Option → Interface on New
-    /// and the map loop holds the camera as the view's corner (<see cref="MapCameraForm"/>), but not under
-    /// a message window or a menu; places them over the picture as the window is sized and the map
-    /// scrolls — at the view the screen shows (<see cref="GamePresenter.MapViewShown"/>), not at the
-    /// camera, which a still click centres a frame before the wait ends. The markers are read from the state when they appear (owners change only off the map).
-    /// Returns whether they show. Shown or hidden, no plate's click stays queued.
+    /// Shows our name plates over the map while <c>COMMAND</c> waits on it with Option → Interface on New,
+    /// but not under a message window or a menu; places them over the picture as the window is sized and
+    /// the map scrolls — at the view the screen shows (<see cref="GamePresenter.MapViewShown"/>), not at
+    /// the camera, whose form changes under an unchanged picture: a still click centres it, and a click
+    /// on no town starts the wait again with it centred until the release wait's read. The markers are
+    /// read from the state when they appear (owners change only off the map). Returns whether they show.
+    /// Shown or hidden, no plate's click stays queued.
     /// </summary>
     private bool UpdateMapMarkers()
     {
-        bool show = InterfaceChoice.New && _presenter.MapWaiting && _mapCamera.Waiting && _mapCamera.Corner
+        bool show = InterfaceChoice.New && _presenter.MapWaiting && _mapCamera.Waiting
             && !_presenter.MessageWindowShown && _presenter.Menu is null && !SkippingScene && _presenter.State is not null
             && _presenter.MapViewShown is not null;
         if (show != _markers.Visible)
@@ -1300,10 +1301,15 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         return true;
     }
 
-    /// <summary>A plate clicked: the still click the original expects at its marker's point, unless one is on its way.</summary>
+    /// <summary>
+    /// A plate clicked: the still click the original expects at its marker's point, unless one is on its way
+    /// or the map loop does not hold the camera as the view's corner (<see cref="MapCameraForm"/>), which
+    /// the click's point is reckoned from.
+    /// </summary>
     private void MarkerPressed(MapMarker marker)
     {
-        if ((!_options.Auto || _autoPlateClicking) && _markerPointer.Pending == 0 && _markers.Visible && _presenter.State is { } s)
+        if ((!_options.Auto || _autoPlateClicking) && _markerPointer.Pending == 0 && _markers.Visible && _mapCamera.Corner
+            && _presenter.State is { } s)
             MapMarkers.Press(s, marker, _markerPointer);
     }
 

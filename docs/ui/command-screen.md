@@ -183,11 +183,14 @@ plate whose click the script would read otherwise gives none; `MapMarkersTests`)
 `MapCameraForm`, which follows the camera's form (the state does not record it: centred from the
 map wait's start through the release wait, the view's corner while the loop waits, drags and coasts,
 centred again at the menu's right click). The layer is `godot/Strategy/MapMarkersView` over the
-picture, shown by `GameScreen.UpdateMapMarkers` while the map waits with the camera as the corner,
-not under a message window or a menu; it reads the markers when it appears and follows the scroll
-each frame — at the view the screen shows (`GamePresenter.MapViewShown`: the map shown, a drag's
-step), not at the camera, which a still click's release centres a read before the wait ends with the
-picture unchanged (the plates jumped for a frame before the province's menu, fixed 2026-10-16). A left click on a plate queues the still click (`GameScreen.MarkerPressed`, its own
+picture, shown by `GameScreen.UpdateMapMarkers` while the map waits, not under a message window or a
+menu; it reads the markers when it appears and follows the scroll each frame — at the view the screen
+shows (`GamePresenter.MapViewShown`: the map shown, a drag's step), not at the camera, whose form
+changes under an unchanged picture: a still click's release centres it a read before the wait ends,
+and a click on no town starts the wait again with it centred until the release wait's read (placed
+from the camera, the plates jumped for a frame before the province's menu, and hidden while the camera
+was centred they blinked at a click on no town; both fixed 2026-10-16). A left click on a plate, while
+the camera is the corner, queues the still click (`GameScreen.MarkerPressed`, its own
 `PointerScript`); a right click goes on to the script (the menu); presses elsewhere stay the
 script's. A press that starts on a plate does not drag the map. `--auto --interface new` in a window
 dumps the first map wait's plates (`map-markers`, `map-markers-hover` with Leazas Castle (1)) and
