@@ -12,13 +12,17 @@ namespace Kichikuou.Game.Battles;
 /// portrait on the left; our balloon beside it at the top with the army's name and the totals; the approaching
 /// commanders as cards in the places the battle will give them, the front row (places 1-2) in the left column, the
 /// back row (3-4) in the right one. A card tells only what the ninja tells (<see cref="ScoutedCommander"/>): name,
-/// troop type and troops — no maximum, no HP. It decides nothing: the report's key waits stay the script's, and
-/// <see cref="GameScreen"/> answers all but the first at once. Points are layout pixels of the 1280×800 screen.
+/// troop type and troops — no maximum, no HP. At its foot Maris's comment on it, which the script has her say after
+/// Rance's line (owner, 2026-10-16). It decides nothing: the report's key waits stay the script's, and
+/// <see cref="GameScreen"/> answers all but the first at once, and her window's too. Points are layout pixels of the
+/// 1280×800 screen.
 /// </summary>
 internal sealed partial class ScoutReportView : Control
 {
     private static readonly Rect2 PortraitArea = new(40, 40, 300, 400);       // its top with the balloon's: the tail points at it
     private static readonly Rect2 BalloonArea = new(370, 40, 870, 110);
+    private static readonly Rect2 AdvisorArea = new(1086, 572, 154, 205);      // Maris's portrait at the foot, right; 192×256 at 0.8
+    private const float CommentLeft = 380, CommentGap = 30, CommentTop = 24;  // her balloon from the cards' left to her, its tail at her
     private static readonly Vector2 CardSize = new(282, 150);
     private static readonly float[] Columns = [380, 680];
     private static readonly float[] Rows = [190, 350];
@@ -48,6 +52,7 @@ internal sealed partial class ScoutReportView : Control
     private readonly Control _sheet;
     private ScoutReport? _report;
     private ImageTexture? _portrait;
+    private ImageTexture? _advisor;
     private int _portraitCg;
     private Vector2 _origin;
     private float _scale = 1;
@@ -113,6 +118,7 @@ internal sealed partial class ScoutReportView : Control
         if (report == _report)
             return;
         _report = report;
+        _advisor ??= _faces.Picture(ScoutReport.AdvisorCg) is { } maris ? ImageTexture.CreateFromImage(maris) : null;
         if (report.NinjaCg != _portraitCg)
         {
             _portraitCg = report.NinjaCg;
@@ -153,6 +159,38 @@ internal sealed partial class ScoutReportView : Control
             HorizontalAlignment.Left, -1, caption, _colours.Muted);
         _sheet.DrawString(_font, new Vector2(Columns[1], CaptionY) * s + new Vector2(0, _font.GetAscent(caption)), "back row",
             HorizontalAlignment.Left, -1, caption, _colours.Muted);
+
+        DrawComment(report.Comment, size, s);
+    }
+
+    /// <summary>
+    /// Maris's comment at the report's foot (owner, 2026-10-16, variant A of four): her portrait in the bottom right corner,
+    /// her balloon from the cards' left edge to her with its tail at her, as the ninja's at the top, one line per line of
+    /// the script's.
+    /// </summary>
+    private void DrawComment(string comment, int size, float s)
+    {
+        if (comment == "")
+            return;
+        var portrait = new Rect2(AdvisorArea.Position * s, AdvisorArea.Size * s);
+        if (_advisor is not null)
+        {
+            DrawShadow(portrait, s);
+            _sheet.DrawTextureRect(_advisor, portrait, false);
+        }
+        string[] lines = comment.Split('\n');
+        float lineHeight = size * 1.4f;
+        float height = Math.Max(70 * s, 2 * 18 * s + (lines.Length - 1) * lineHeight + size);
+        var box = new Rect2(CommentLeft * s, portrait.Position.Y + CommentTop * s,
+            portrait.Position.X - CommentGap * s - CommentLeft * s, height);
+        var ink = SpeechBalloon.DrawBalloon(_sheet, box, tailLeft: false, s);
+        var line = box.Position + new Vector2(BalloonPad * s, 18 * s);
+        foreach (string text in lines)
+        {
+            _sheet.DrawString(_font!, line + new Vector2(0, _font!.GetAscent(size)), text,
+                HorizontalAlignment.Left, box.Size.X - 2 * BalloonPad * s, size, ink);
+            line.Y += lineHeight;
+        }
     }
 
     /// <summary>A card as our battle cards look (the face on the right, as the enemy's): place and name, troop type, "Troops" and the number large; an empty place "n  empty".</summary>

@@ -110,6 +110,7 @@ public sealed partial class BattlePresenter
         Strategy = null;
         StrategyBackdrop = null;
         _strategyEffect = false;
+        _scoutComment = null;
         DrawMapTiles();
         BlitMapView();
     }
@@ -124,6 +125,7 @@ public sealed partial class BattlePresenter
         Strategy = null;
         StrategyBackdrop = null;
         _strategyEffect = false;
+        _scoutComment = null;
         DrawMapTiles();
     }
 
@@ -179,7 +181,13 @@ public sealed partial class BattlePresenter
                 if (State is { } ordered && (e.Text == OrderMessage || e.Text == OwnOrderAttack || e.Text == OwnOrderDefend))
                     OrderedUnit = e.Text == OrderMessage ? ordered.Tmp0002.Value : ordered.Unit_Cur.Value;
                 if (e.Text == ScoutArmyLine && State is { } scouted)
-                    Scout = ScoutReport.Of(scouted, _portraitR);           // the army as the report will list it
+                {
+                    var report = ScoutReport.Of(scouted, _portraitR);      // the army as the report will list it
+                    Scout = report with { Comment = Read(report.CommentLine, []) };
+                    _scoutComment = report.CommentLine;
+                }
+                if (e.Text == _scoutComment)
+                    (ScoutCommented, _scoutComment) = (true, null);
                 string printed = Read(e.Text, [], e.StringVariables);
                 StrategyText(e.Text, printed);
                 Print(printed);
@@ -621,6 +629,7 @@ public sealed partial class BattlePresenter
         OrderedUnit = null;
         Scout = null;
         ScoutReported = false;
+        ScoutCommented = false;
         if (_infoBox)
         {
             // FIGT.ADV:1013-1014 / 1112-1113 after the info box closes.
@@ -808,6 +817,15 @@ public sealed partial class BattlePresenter
     /// overlay shows them all already, so the key waits from here to the window's close are answered at once.
     /// </summary>
     public bool ScoutReported { get; private set; }
+
+    /// <summary>
+    /// Whether Maris's comment on the report is in its window (<c>FIGT_B.ADV:636-647</c>, window 121) until it closes. Our
+    /// overlay shows it with the report already (<see cref="ScoutReport.Comment"/>), so its key wait is answered at once.
+    /// </summary>
+    public bool ScoutCommented { get; private set; }
+
+    /// <summary>The line of the last report's comment, from the report until the comment prints.</summary>
+    private ScriptRef? _scoutComment;
 
     private void ScoutReportLine(Sys3Int troops)
     {

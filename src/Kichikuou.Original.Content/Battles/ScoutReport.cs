@@ -1,3 +1,4 @@
+using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.State;
 
@@ -21,18 +22,31 @@ public sealed record ScoutedCommander(int Slot, int Record, string Name, string 
 /// (docs/ui/battle-screen.md, "The scout report"): the approaching army's name (string 10), its commanders in the
 /// places the battle will give them, and the totals the script sums (<c>Tmp0002</c> commanders, <c>Tmp0001</c>
 /// troops). The report lists <c>Bt_EnemyParty1-4</c> in order, the empty ones skipped, and the battle's
-/// <c>InitBattle</c> puts party member i into enemy slot i.
+/// <c>InitBattle</c> puts party member i into enemy slot i. Maris's comment, which the script has her say after
+/// Rance's "Mhm... I see.", comes with it (<see cref="Comment"/>).
 /// </summary>
 /// <param name="NinjaCg">The reporting ninja's portrait (the op-321 picture, <c>CallArg</c>: Kanami 9).</param>
 /// <param name="Army">The approaching army's name (string 10).</param>
 /// <param name="Places">Places 1-4 (index 0-3); an empty one is null.</param>
 public sealed record ScoutReport(int NinjaCg, string Army, IReadOnlyList<ScoutedCommander?> Places)
 {
+    /// <summary>Maris's portrait, who comments on the report after Rance (the op-321 picture of <c>FIGT_B.ADV:634</c>, <c>CallArg</c> 6).</summary>
+    public const int AdvisorCg = 6;
+
     /// <summary>The commanders reported (<c>Tmp0002</c>).</summary>
     public int Commanders => Places.Count(p => p is not null);
 
     /// <summary>Their troops together, summed as the script does (<c>Tmp0001</c>, 16-bit saturating).</summary>
     public int Troops => Places.Aggregate(Sys3Int.Zero, (sum, p) => p is null ? sum : sum + (Sys3Int)p.Troops).Value;
+
+    /// <summary>
+    /// Maris's comment on the report (<c>FIGT_B.ADV:636-647</c>): "Quite a strong force. What shall we do?" (637) once the
+    /// troops (<c>Tmp0001</c>) pass 5000, else "............" (644).
+    /// </summary>
+    public ScriptRef CommentLine => new("FIGT_B.ADV", Troops > 5000 ? 637 : 644);
+
+    /// <summary>The text of <see cref="CommentLine"/>, one line per <c>R</c>; empty until the presenter reads it.</summary>
+    public string Comment { get; init; } = "";
 
     /// <summary>The report as GameState holds the approaching army now, told by the ninja whose portrait is <paramref name="ninjaCg"/>.</summary>
     public static ScoutReport Of(GameState s, int ninjaCg)
@@ -61,7 +75,8 @@ public sealed record ScoutReport(int NinjaCg, string Army, IReadOnlyList<Scouted
 
     /// <inheritdoc/>
     public bool Equals(ScoutReport? other) =>
-        other is not null && NinjaCg == other.NinjaCg && Army == other.Army && Places.SequenceEqual(other.Places);
+        other is not null && NinjaCg == other.NinjaCg && Army == other.Army && Places.SequenceEqual(other.Places)
+        && Comment == other.Comment;
 
     /// <inheritdoc/>
     public override int GetHashCode() => HashCode.Combine(NinjaCg, Army, Places.Count);

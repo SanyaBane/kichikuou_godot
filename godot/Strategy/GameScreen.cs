@@ -938,6 +938,14 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             await ReleaseWaitAsync(_input.PeekInput());
             _ikKey = key;
         }
+        else if (InterfaceChoice.New && _presenter.Battle.ScoutCommented && _presenter.State is not null)
+        {
+            // Our scout report shows Maris's comment at its foot (owner, 2026-10-16): her window after Rance's line
+            // (FIGT_B.ADV:636-647) is answered at once, as by a click (RetVal is kept), before a frame shows it.
+            key = KeyReturn;
+            await ReleaseWaitAsync(_input.PeekInput());
+            _ikKey = key;
+        }
         else if (StrategyCutInShown && _presenter.Battle.StrategyAnswered)
         {
             // Our strategy's cut-in shows the announcement as its title and the effect as its label (owner, 2026-10-15): the

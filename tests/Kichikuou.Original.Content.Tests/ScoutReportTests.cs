@@ -80,7 +80,7 @@ public class ScoutReportTests(ITestOutputHelper output)
         Assert.Null(presenter.Scout);
 
         presenter.Show(new MessageEvent(new ScriptRef("FIGT_B.ADV", 587)));
-        Assert.Equal(ScoutReport.Of(s, 9), presenter.Scout);
+        Assert.Equal(ScoutReport.Of(s, 9) with { Comment = "............" }, presenter.Scout);   // 1370 troops
         Assert.False(presenter.ScoutReported);
 
         presenter.Show(new ScoutReportEvent((Sys3Int)6, (Sys3Int)970));
@@ -91,6 +91,44 @@ public class ScoutReportTests(ITestOutputHelper output)
         presenter.Show(new WindowEvent(Sys3Int.Zero, Sys3Int.Zero));
         Assert.Null(presenter.Scout);
         Assert.False(presenter.ScoutReported);
+        Assert.False(presenter.ScoutCommented);
+    }
+
+    /// <summary>
+    /// Maris's comment (<c>FIGT_B.ADV:636-647</c>) comes with the report — "Quite a strong force" past 5000 troops,
+    /// "............" up to 5000 — and once Rance's line is over her window holds it until it closes: its key wait is
+    /// the one our screen answers at once.
+    /// </summary>
+    [Theory]
+    [InlineData(4600, 644, "............")]                              // 5000 with Jibul's 400 and Dodge's none
+    [InlineData(4601, 637, "Quite a strong force.\nWhat shall we do?")]
+    public void Maris_comments_in_the_report_and_her_window_is_answered(int sakanaku, int line, string comment)
+    {
+        var s = Rebels();
+        s.Cmdrs[6].Troops = (Sys3Int)sakanaku;
+        var presenter = new BattlePresenter(Texts.Value, Cgs.Value, new BoxGlyphs());
+        presenter.Attach(s);
+        presenter.Show(new WindowEvent((Sys3Int)321, (Sys3Int)9));
+        presenter.Show(new WindowEvent((Sys3Int)113, Sys3Int.Zero));
+        presenter.Show(new MessageEvent(new ScriptRef("FIGT_B.ADV", 587)));
+        Assert.Equal(new ScriptRef("FIGT_B.ADV", line), presenter.Scout!.CommentLine);
+        Assert.Equal(comment, presenter.Scout.Comment);
+        presenter.Show(new WindowEvent(Sys3Int.Zero, Sys3Int.Zero));
+
+        presenter.Show(new WindowEvent((Sys3Int)322, Sys3Int.Zero));
+        presenter.Show(new WindowEvent((Sys3Int)111, Sys3Int.Zero));
+        presenter.Show(new MessageEvent(new ScriptRef("FIGT_B.ADV", 629)));                  // Rance: "Mhm... I see."
+        Assert.False(presenter.ScoutCommented);
+        presenter.Show(new WindowEvent(Sys3Int.Zero, Sys3Int.Zero));
+        presenter.Show(new WindowEvent((Sys3Int)321, (Sys3Int)ScoutReport.AdvisorCg));
+        presenter.Show(new WindowEvent((Sys3Int)121, Sys3Int.Zero));
+        presenter.Show(new MessageEvent(new ScriptRef("FIGT_B.ADV", line)));
+        Assert.True(presenter.ScoutCommented);
+        presenter.Show(new WindowEvent(Sys3Int.Zero, Sys3Int.Zero));
+        Assert.False(presenter.ScoutCommented);
+
+        presenter.Show(new MessageEvent(new ScriptRef("FIGT_B.ADV", line)));                 // not after a report
+        Assert.False(presenter.ScoutCommented);
     }
 
     /// <summary>
@@ -105,7 +143,7 @@ public class ScoutReportTests(ITestOutputHelper output)
         var capture = GoldenCapture.Load(Path.Combine(LocalData.GoldenDirectory, file));
         var presenter = new BattlePresenter(Texts.Value, Cgs.Value, new BoxGlyphs());
         GameState? state = null;
-        ScoutReport? report = null, placed = null;
+        ScoutReport? report = null, placed = null, toComment = null;
         var lines = new List<ScoutedCommander>();
         int reports = 0;
         var wrong = new List<string>();
@@ -136,7 +174,15 @@ public class ScoutReportTests(ITestOutputHelper output)
                         wrong.Add($"report {reports}: totals {report.Commanders}/{report.Troops}, printed {totals.Values[0]}/{totals.Values[1]}");
                     if (!presenter.ScoutReported)
                         wrong.Add($"report {reports}: not reported at its totals");
-                    placed = report;
+                    placed = toComment = report;
+                    break;
+                case MessageEvent { Text: { File: "FIGT_B.ADV", Line: 637 or 644 } said } when toComment is not null:
+                    // Maris's comment: the one the overlay showed, its window answered on our screen.
+                    if (said != toComment.CommentLine || toComment.Comment != presenter.Text(said))
+                        wrong.Add($"report {reports}: commented {said}, shown {toComment.CommentLine} \"{toComment.Comment}\"");
+                    if (!presenter.ScoutCommented)
+                        wrong.Add($"report {reports}: its comment not answered");
+                    toComment = null;
                     break;
                 case SlotPanelEvent when placed is not null:
                     // The battle's first field: the commanders stand where the report put them.
@@ -157,6 +203,8 @@ public class ScoutReportTests(ITestOutputHelper output)
             state = s;
             presenter.Start(s);
         });
+        if (toComment is not null)
+            wrong.Add($"report {reports}: no comment after it");
         output.WriteLine($"{file}: {reports} scout reports");
         Assert.Empty(wrong);
     }
