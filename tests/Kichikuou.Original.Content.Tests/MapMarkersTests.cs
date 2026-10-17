@@ -98,7 +98,14 @@ public class MapMarkersTests
         s.MarkOwnProvincesKnown();
         Assert.Empty(s.KnownProvinces);
 
+        var hideout = s.Dgns[1];                                         // the Thieves' Hideout (dungeon 1), no province
+        hideout.MapX = 500;
+        hideout.MapY = 300;
+        string? Named(ScriptRef at) => at.Line == 31 ? "Thieves’ Hideout" : Literal(at);
+        Assert.Equal([1], MapMarkers.All(s, Named).Where(m => m.Kind == MapHitKind.Dungeon).Select(m => m.Id));   // DGN-20
+
         s.StoryStage = 1;
+        Assert.Equal([1, 2, 3, 11], MapMarkers.All(s, Named).Where(m => m.Kind == MapHitKind.Dungeon).Select(m => m.Id));
         Assert.Equal(MapRelation.Own, MapMarkers.RelationOf(s, 1));
         Assert.Equal(MapRelation.Other, MapMarkers.RelationOf(s, 33));
     }

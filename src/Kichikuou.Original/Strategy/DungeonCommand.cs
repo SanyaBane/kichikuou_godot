@@ -179,7 +179,7 @@ public sealed partial class DungeonCommand(OriginalScriptContext script, IScenar
                 await HideoutAsync();
                 return;
             }
-            if (State.StoryStage == 0)
+            if (State.StoryStage == 0)                                  // QUIRK: DGN-20 — the prologue's other dungeons: a camera pan only
                 return;
             // QUIRK: DGN-15 — :175-181 repeat the two tests above and are never reached.
             if (State.Dgn_Cur == 3)

@@ -179,7 +179,10 @@ five shapes (a ring, a pin, a name plate, corner brackets, a shield) and then th
   name shows the search: `B<floor>/<last floor>` while `Dgn_State` is 1 (`Dgn_SavedFloor`; the last
   floors are `DungeonCommand.Parameters`), ✓ at state 2, none before the first search or at an event
   place — more than the original shows on the map. A dungeon not ours: the plate dimmed grey, no lock,
-  a muted hover and the "not allowed" cursor.
+  a muted hover and the "not allowed" cursor. **In the prologue** only the Thieves' Hideout (dungeon 1) has a
+  plate (owner's request 2026-10-18): the Monsters' Cave (2), the Thieves' Cave (3) and Isolated Shrine
+  Island (15) take the original's click, which only pans the camera before stage 1 (DGN-20), so they get
+  none; a click at their place still goes to the script.
 - **Option → Hide Dimmed Map Names** (owner's request 2026-10-16, off by default, saved): the dimmed
   plates — the provinces neither ours nor next to ours, the dungeons not ours — are not shown
   (`godot/Strategy/MapNamesChoice`; docs/window-menu.md).
@@ -323,7 +326,8 @@ brackets with captions under; the owner chose **the brackets**).
   `Ui_CmdHaremAvail`, Merchant `Ui_CmdMerchantAvail`), Subordinates (Troops `CmdAvail_SubTroops`, Talk
   `CmdAvail_SubTalk`, both dim while `Ui_CmdSubordAvail` is 0, the menu's △), Map (Own city
   `Ui_CmdOwnCityAvail`, Attack `Ui_CmdAttackAvail`, Dungeon `Ui_CmdDungeonAvail`); the thieves' week: Hideout
-  (Harem, Subordinates as one), Map (Attack, Dungeon). At the right the date as "LP 3 · Month 5 · Week 2"
+  (Harem, Subordinates as one), Map (Attack — Pillage; no Dungeon: the hideout costs nothing and the other
+  dungeons give no search before stage 1, DGN-20; owner's request 2026-10-18). At the right the date as "LP 3 · Month 5 · Week 2"
   (`SetDate`; LP, `DateYear`, is computed by the original but not shown: ours, question 4), large and in the
   names' gold (owner, 2026-10-16: the small dim one was lost on the lacquer), smaller only if the row leaves it
   no room (the widest figures leave it ~70 of the 1280 pixels).

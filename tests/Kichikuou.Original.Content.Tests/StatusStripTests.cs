@@ -70,6 +70,7 @@ public class StatusStripTests
         Assert.True(thieves.Thieves);
         Assert.Equal(("Rance's Thieves", ("Subordinates", "2950")), (thieves.Nation, thieves.Status[1]));   // units 1, 3, 4 whatever their status
         Assert.Equal(["Hideout", "Map"], thieves.Groups.Select(g => g.Caption));
+        Assert.Equal(["Harem", "Subordinates", "Attack"], thieves.Groups.SelectMany(g => g.Uses).Select(u => u.Text));   // no Dungeon: DGN-20
     }
 
     /// <summary>The status window's text from the player's files (<c>COMMAND.ADV:443</c>) through the presenter. Skipped without them.</summary>
