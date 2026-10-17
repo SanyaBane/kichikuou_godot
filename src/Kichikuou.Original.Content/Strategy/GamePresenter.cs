@@ -291,6 +291,7 @@ public sealed partial class GamePresenter : IStageObserver
         if (scriptEvent is not (PauseEvent or SoundEvent or SoundPairEvent or MusicEvent))
             _mapAnimation = MapAnimation.None;
         ObserveLeadIn(scriptEvent);
+        ObserveWeekReport(scriptEvent);
         if (_afterKey is { } after)
         {
             _afterKey = null;

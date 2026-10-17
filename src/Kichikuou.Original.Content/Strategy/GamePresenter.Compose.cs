@@ -242,6 +242,36 @@ public sealed partial class GamePresenter
     /// <summary>The status strip for the state now (<see cref="Strategy.StatusStrip"/>), or null.</summary>
     public StatusStrip? StatusStrip => State is { } s ? Strategy.StatusStrip.For(s, (at, numbers) => Read(at, numbers, null)) : null;
 
+    /// <summary>
+    /// Whether a UI shows the week's start as our week report (<see cref="Strategy.WeekReport"/>; docs/ui/turn-start.md):
+    /// then a banner's title starts one, and the original's window, its text and its pictures are not drawn until
+    /// <see cref="EndWeekReport"/>.
+    /// </summary>
+    public bool CoverWeekReport { get; set; }
+
+    /// <summary>The week report being gathered or shown, or null. It is <see cref="Strategy.WeekReport.Complete"/> once the window closed.</summary>
+    public WeekReport? WeekReport { get; private set; }
+
+    /// <summary>The player answered the report: the original's screen (the window already closed) is drawn again.</summary>
+    public void EndWeekReport()
+    {
+        WeekReport = null;
+        Invalidate();
+    }
+
+    /// <summary>A banner's title starts the week report; what follows it goes into it.</summary>
+    private void ObserveWeekReport(ScriptEvent scriptEvent)
+    {
+        if (State is not { } s)
+            return;
+        if (WeekReport is { Complete: true })
+            WeekReport = null;                                          // not answered by a UI: the script went on without it
+        if (WeekReport is { } report)
+            report.Observe(scriptEvent, s, (at, numbers) => Read(at, numbers, null));
+        else if (CoverWeekReport)
+            WeekReport = Strategy.WeekReport.Start(scriptEvent, s, (at, numbers) => Read(at, numbers, null));
+    }
+
     /// <summary>A text run with zeros for its numbers and computed strings (for its fixed lines), or null when it does not resolve.</summary>
     private string? ReadFixedText(ScriptRef at)
     {
@@ -386,7 +416,7 @@ public sealed partial class GamePresenter
             {
                 if (MaskEventCgs && (s.Ui_WinType == 31 || _endingCg != 0 || _gallery))
                     MaskStage();
-                if (!MenuCovered)
+                if (!MenuCovered && WeekReport is null)
                 {
                     DrawPictures(s);
                     Picker?.Draw(Screen, s);

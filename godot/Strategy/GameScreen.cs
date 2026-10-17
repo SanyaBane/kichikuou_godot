@@ -200,6 +200,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private ProvinceMenuView _provinceView = null!;     // our province menu over a city file's first menu (New)
     private CommandMenuView _commandView = null!;       // our command panel over COMMAND's command menu (New)
     private StatusStripView _strip = null!;             // our status strip over the map's top with the command panel (New)
+    private WeekReportView _weekView = null!;           // our week report over the week start's windows (New)
     private PointerScript _markerPointer = new();       // a plate's still click on its way to the script
     private readonly MapCameraForm _mapCamera = new();  // whether the map loop holds the camera as the view's corner
     private IReadOnlyList<int>? _wantedOrder;           // the party a drop asked for, while its clicks run
@@ -249,6 +250,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _content.AddChild(_commandView);
         _strip = new StatusStripView(GodotGlyphRenderer.Chosen, faces) { Forward = StripInput };
         _content.AddChild(_strip);
+        _weekView = new WeekReportView(faces);
+        _content.AddChild(_weekView);
         _battleView = new BattleBoardView(GodotGlyphRenderer.Chosen, faces);
         _content.AddChild(_battleView);
         _scoutView = new ScoutReportView(GodotGlyphRenderer.Chosen, faces);
@@ -324,6 +327,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _commandView.Place(PictureArea());
         if (_provinceView.Visible)
             _provinceView.Place(PictureArea());
+        if (_weekView.Visible)
+            _weekView.Place(PictureArea());
         UpdateBattleScreen(Present());
         UpdateScoutReport();
         UpdateStrategyCutIn();
@@ -551,7 +556,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             ClearSkippedStage();
         }
         _presenter.CoverCityLeadIn = InterfaceChoice.New;                // our province menu: the city's lead-in hidden too
+        _presenter.CoverWeekReport = InterfaceChoice.New;                // our week report over the week start's windows
         _presenter.Show(scriptEvent);
+        if (_presenter.WeekReport is { Complete: true } report)
+            await WeekReportAsync(report);
         if (scriptEvent is EngagementSceneEvent)
             await WaitForArmiesAsync();
         if (scriptEvent is ShotsFrameEvent { Step.Value: 0 } && _options.Auto && !_options.Fast && BattleScreenShown
@@ -657,7 +665,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.ScreenshotDirectory is not { } dir)
             return;
         System.IO.Directory.CreateDirectory(dir);
-        if ((_table.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _strip.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
+        if ((_table.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _strip.Visible || _weekView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
         {
             // Our deployment and battle screens are drawn by Godot over the screen: the window's next frame (headless
             // draws none). No Compose here: the frame's Present must find the change to upload it.
@@ -988,6 +996,15 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         else if (BattleScreenShown && _presenter.Battle.ExchangeResultWaits && !_presenter.Battle.ExchangeResultWipedOut)
             key = await ExchangeResultHoldAsync();
+        else if (_presenter.WeekReport is { Complete: false })
+        {
+            // Our week report shows the week's start as one screen (owner, 2026-10-18; docs/ui/turn-start.md): the key waits
+            // of the banner's, the revenue's and the expenses' windows are answered at once, as by a click; the player
+            // answers the report itself when the window closes (WeekReportAsync).
+            key = KeyReturn;
+            await ReleaseWaitAsync(_input.PeekInput());
+            _ikKey = key;
+        }
         else if (_options.Auto)
         {
             if (StrategyCutInShown && !_options.Fast)
@@ -1009,6 +1026,43 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             await OpeningShotAsync();
         return key;
     }
+
+    /// <summary>
+    /// Our week report (docs/ui/turn-start.md, "The week report"), complete when the week start's window closed: shown
+    /// over the map until the player clicks or presses a key — the click the original's windows asked for, which the
+    /// script no longer reads (their waits were answered) — and released before the script goes on, so the next wait
+    /// finds nothing held. The message skip passes it, as it passes the windows; unattended play dumps it once in a window.
+    /// </summary>
+    private async Task WeekReportAsync(WeekReport report)
+    {
+        try
+        {
+            _weekView.Open(report);
+            _weekView.Place(PictureArea());
+            if (_skip.IsSkipping || SkippingScene)
+                return;
+            if (_options.Auto)
+            {
+                await DelayAsync(_options.Fast ? 0 : 0.5);
+                if (!_weekReportDumped && DisplayServer.GetName() != "headless" && _options.ScreenshotDirectory is not null)
+                {
+                    _weekReportDumped = true;
+                    await AutoDumpAsync("week-report");
+                }
+                return;
+            }
+            Shot("week-report");
+            for (ushort held = await KeyWaitAsync(double.PositiveInfinity, cancelable: true, skippable: true); held != 0;)
+                held = await KeyWaitAsync(0.05, cancelable: false);
+        }
+        finally
+        {
+            _weekView.Close();
+            _presenter.EndWeekReport();
+        }
+    }
+
+    private bool _weekReportDumped;
 
     /// <summary>
     /// How long unattended play without <c>--fast</c> holds a key wait: over a battle's field or exchange 0.8 s, so they can be

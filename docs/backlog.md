@@ -124,6 +124,10 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   the survey, Sengoku Rance's map screen and three mock-ups are [ui/command-screen.md](ui/command-screen.md);
   the owner goes in small steps, first the map's markers (chosen 2026-10-16: name plates over the original's
   flags, the dungeons named with their kind and search; ui/command-screen.md, "The map's markers").
+  Then (owner, 2026-10-18): the messages between Turn END and the next menu, surveyed in
+  [ui/turn-start.md](ui/turn-start.md); the week report is built. Put off (owner, 2026-10-18): the nations'
+  phase banners ("Helman Phase", …) and their news stay the original's windows for now (turn-start.md, §3 and
+  the questions).
   Groundwork (survey §4.8): menus as data and the map helper are done (2026-10-12); the shared engine
   host (§4.8, "Items 2 and 4 are one step") is not needed for screens over the original layout.
 - **Quality-of-life features**, the README's second aim — *owner* (which), then *agent*; a survey of

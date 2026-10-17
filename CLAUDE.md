@@ -148,7 +148,8 @@ one over the original layout, chosen by Option → Interface; the first, the dep
 `Sﾌﾞﾀｲ`'s grid, is built with the rest of its screen and its third part (the party as a formation with
 the units' faces, drag and drop; Debug → Portraits) — docs/ui/deployment-table.md. The battle screen
 followed (docs/ui/battle-screen.md); next (owner, 2026-10-16) the map and command screen, its survey
-and mock-ups in docs/ui/command-screen.md.
+and mock-ups in docs/ui/command-screen.md; then (owner, 2026-10-18) the messages of the turn's start,
+surveyed in docs/ui/turn-start.md — the week report is built, the nations' banners put off.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -259,7 +260,11 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   Interface → New, centred as the original's menu: `Original.Content/Strategy/CommandMenu`,
   docs/ui/command-screen.md, "The command panel"); `Strategy/StatusStripView` (our status strip over the map's top while the command
   panel is open, in one row: the status window's lines and the week's uses in bracketed groups,
-  `Original.Content/Strategy/StatusStrip`, "The status strip"); the three draw with `Strategy/Lacquer` (the style's colours and parts);
+  `Original.Content/Strategy/StatusStrip`, "The status strip"); `Strategy/WeekReportView` (our week report over the
+  week start's windows — the banner, the budget as an account, the troops replenished, a triangle asking for the click;
+  Option → Interface → New, docs/ui/turn-start.md: `Original.Content/Strategy/WeekReport` gathered by
+  `GamePresenter.CoverWeekReport`, the windows' waits answered at once, the player's click at their close,
+  `GameScreen.WeekReportAsync`); the four draw with `Strategy/Lacquer` (the style's colours and parts);
   `Battles/BattleBoardView` (our own battle screen, Option → Interface → New, docs/ui/battle-screen.md:
   `Original.Content/Battles/BattleScene` on top, the stage's windows over it through `WindowMask`, the
   cards and the round's order from `BattleBoard`/`RoundOrder`, the order strip `OrderStrip` moving on its own;
@@ -333,7 +338,7 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   (`--weeks n`) or two weeks after story stage `--stage n` is reached — `--seed 2 --weeks 60 --stage 2`
   takes Oaks in week 34 and stops in week 36, ~15 min (exit code 0; 1 after an error). `--interface new`
   builds the parties in our own deployment table and swaps the first two places by drops and back,
-  and in a window, once a launch, dumps the first map wait's plates (`map-markers`, `map-markers-hover`, `map-markers-active`), the province menu (`province-menu`) and
+  and in a window, once a launch, dumps the week report (`week-report`), the first map wait's plates (`map-markers`, `map-markers-hover`, `map-markers-active`), the province menu (`province-menu`) and
   clicks the week's attack target through its plate (`map-marker-hover`; Godot's input, the system pointer
   moved), and answers the first turn through the pointer on our command input
   (the acting unit's menu, another own card's, closed by a click off it; Retreat, whose dialog it
