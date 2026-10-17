@@ -28,11 +28,18 @@ public sealed partial class GameState
         Extras[KnownProvincesKey] = [.. known[..at], province, .. known[at..]];
     }
 
-    /// <summary>Adds every province of ours (<c>Owner</c> 1) to <see cref="KnownProvinces"/>.</summary>
+    /// <summary>
+    /// Whether <paramref name="province"/> is the player's: owner 1 (Leazas) from stage 1. In the thieves'
+    /// prologue (stage 0) Leazas holds owner 1 but the player holds nothing, and <c>COMMAND</c> sends every
+    /// click but Vladivostok's and Golak's to <c>Cﾃｷﾄｼ2</c> (<c>CommandPhase.ProvinceClickedAsync</c>).
+    /// </summary>
+    public bool IsOwnProvince(int province) => StoryStage != 0 && Provs[province].Owner == 1;
+
+    /// <summary>Adds every province of ours (<see cref="IsOwnProvince"/>) to <see cref="KnownProvinces"/>.</summary>
     public void MarkOwnProvincesKnown()
     {
         for (int p = 1; p <= Prov_Count.Value; p++)
-            if (Provs[p].Owner == 1)
+            if (IsOwnProvince(p))
                 MarkProvinceKnown(p);
     }
 }

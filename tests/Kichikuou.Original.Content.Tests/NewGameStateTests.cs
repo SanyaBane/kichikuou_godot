@@ -3,6 +3,7 @@ using Kichikuou.Engine.Golden;
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Combat;
+using Kichikuou.Original.Content.Strategy;
 using Kichikuou.Original.Golden;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.Setup;
@@ -38,6 +39,27 @@ public class NewGameStateTests(ITestOutputHelper output)
             return;
 
         Compare(captures, await NewGameAsync(), Unknowable);
+    }
+
+    /// <summary>
+    /// Our map's plates in the prologue (<see cref="MapMarkers"/>): Leazas holds owner 1 but none is the
+    /// thieves', so only Vladivostok (33) and Golak (34), which <c>COMMAND</c> sends to <c>Cﾃｷﾄｼ</c>, are
+    /// not dimmed, and no card shows figures.
+    /// </summary>
+    [Fact]
+    public async Task In_the_prologue_the_map_opens_Vladivostok_and_Golak_and_holds_no_province_of_ours()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var state = await NewGameAsync();
+        Assert.Equal(1, state.Provs[1].Owner.Value);                    // Leazas Castle (1): Leazas's
+        state.MarkOwnProvincesKnown();
+        Assert.Empty(state.KnownProvinces);
+
+        var provinces = MapMarkers.All(state, _ => null);
+        Assert.Equal([("Vladivostok", 33), ("Golak", 34)],
+            provinces.Where(m => m.Relation != MapRelation.Other).Select(m => (m.Name, m.Id)));
+        Assert.All(provinces, m => Assert.Equal(["Economy: ??", "Defense: ??", "Battle Area: ??"], m.Card!));
     }
 
     /// <summary>

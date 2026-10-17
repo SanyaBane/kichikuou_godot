@@ -9,10 +9,10 @@ namespace Kichikuou.Original.Content.Strategy;
 /// <summary>A province's place to the player, as our map's plates show it (docs/ui/command-screen.md, "The map's markers").</summary>
 public enum MapRelation
 {
-    /// <summary>Ours (owner 1): a click opens <c>Cｼﾊｲﾄｼ</c>.</summary>
+    /// <summary>Ours (owner 1, from stage 1): a click opens <c>Cｼﾊｲﾄｼ</c>.</summary>
     Own,
 
-    /// <summary>Not ours, next to one of ours (Adj1-5): a click opens <c>Cﾃｷﾄｼ</c>.</summary>
+    /// <summary>Not ours, next to one of ours (Adj1-5), or in the prologue Vladivostok (33) or Golak (34): a click opens <c>Cﾃｷﾄｼ</c>.</summary>
     Bordering,
 
     /// <summary>Any other: a click opens <c>Cﾃｷﾄｼ2</c>; its plate is dimmed.</summary>
@@ -95,9 +95,15 @@ public static class MapMarkers
         return at > 0 && at < state.Memory.Strings.Length ? state.Memory.Strings[at] : string.Empty;
     }
 
-    /// <summary>Ours, next to ours or other — the three ways <c>COMMAND</c> dispatches a click from stage 1 (<c>CommandPhase</c>).</summary>
+    /// <summary>
+    /// Ours, next to ours or other — the three ways <c>COMMAND</c> dispatches a click
+    /// (<c>CommandPhase.ProvinceClickedAsync</c>, <c>COMMAND.ADV:514-577</c>): in the prologue none is ours,
+    /// Vladivostok (33) and Golak (34) open <c>Cﾃｷﾄｼ</c> and every other <c>Cﾃｷﾄｼ2</c>.
+    /// </summary>
     public static MapRelation RelationOf(GameState state, int province)
     {
+        if (state.StoryStage == 0)
+            return province is 33 or 34 ? MapRelation.Bordering : MapRelation.Other;
         var prov = state.Provs[province];
         if (prov.Owner == 1)
             return MapRelation.Own;
@@ -118,7 +124,7 @@ public static class MapMarkers
     public static IReadOnlyList<string> CardOf(GameState state, int province)
     {
         var prov = state.Provs[province];
-        if (prov.Owner != 1 && !state.IsProvinceKnown(province))
+        if (!state.IsOwnProvince(province) && !state.IsProvinceKnown(province))
             return ["Economy: ??", "Defense: ??", "Battle Area: ??"];
         int economy = prov.Economy.Value, defense = prov.Defense.Value;
         return [$"Economy: {economy} ({economy * 100}K Gold)", $"Defense: {defense} (Walls +{defense * 2}%)",

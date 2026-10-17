@@ -14,11 +14,11 @@ public class MapMarkersTests
     /// Far (3, next to North only) at (300, 100), Out (4, ours) at (700, 100) out of the view; the
     /// Monsters' Cave (dungeon 2) in Leazas Castle searched to B5, the Thieves' Cave (dungeon 3) inside
     /// the castle's square, Rising Dragon Mountain (dungeon 11) in Far searched whole. The camera is
-    /// the view's corner at (0, 0).
+    /// the view's corner at (0, 0); story stage 1.
     /// </summary>
     private static GameState World()
     {
-        var s = new GameState { Prov_StrBase = 10, Prov_Count = 4, Dgn_Count = 30 };
+        var s = new GameState { Prov_StrBase = 10, Prov_Count = 4, Dgn_Count = 30, StoryStage = 1 };
         void Prov(int p, string name, int owner, int x, int y, params int[] adj)
         {
             s.Strings[10 + p - 1] = name;
@@ -78,6 +78,29 @@ public class MapMarkersTests
         Assert.Equal((DungeonKind.Event, (string?)null), (thieves.Dungeon, thieves.Progress));
         var tower = markers[(MapHitKind.Dungeon, 11)];
         Assert.Equal((DungeonKind.Tower, false, "✓"), (tower.Dungeon, tower.Open, tower.Progress));
+    }
+
+    /// <summary>
+    /// The prologue (stage 0): owner 1 is Leazas, not the thieves — no province is ours, Vladivostok (33)
+    /// and Golak (34) open <c>Cﾃｷﾄｼ</c> as the bordering ones do, every other is dimmed, and Leazas's
+    /// figures stay "??" and are not remembered.
+    /// </summary>
+    [Fact]
+    public void In_the_prologue_only_Vladivostok_and_Golak_are_not_dimmed()
+    {
+        var s = World();
+        s.StoryStage = 0;
+        Assert.Equal(MapRelation.Other, MapMarkers.RelationOf(s, 1));    // Leazas Castle (1), owner 1
+        Assert.Equal(MapRelation.Other, MapMarkers.RelationOf(s, 2));    // North (2), next to it
+        Assert.Equal(MapRelation.Bordering, MapMarkers.RelationOf(s, 33));
+        Assert.Equal(MapRelation.Bordering, MapMarkers.RelationOf(s, 34));
+        Assert.Equal("Economy: ??", MapMarkers.CardOf(s, 1)[0]);
+        s.MarkOwnProvincesKnown();
+        Assert.Empty(s.KnownProvinces);
+
+        s.StoryStage = 1;
+        Assert.Equal(MapRelation.Own, MapMarkers.RelationOf(s, 1));
+        Assert.Equal(MapRelation.Other, MapMarkers.RelationOf(s, 33));
     }
 
     [Fact]

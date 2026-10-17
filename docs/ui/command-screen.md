@@ -163,6 +163,12 @@ five shapes (a ring, a pin, a name plate, corner brackets, a shield) and then th
   opacity. **The hover** changes the colour only — the frame gold (2 px; 2 px transparent at rest, so
   nothing moves), a gold glow, the plate lighter, a light spot under the town; no growth, no second
   line.
+- **Ours, next to ours, other** follow the click's dispatch (`MapMarkers.RelationOf`): from stage 1 an
+  own province (owner 1), one next to it (Adj1-5), any other. **In the thieves' prologue** (stage 0)
+  owner 1 is Leazas, not the player's: none is ours, Vladivostok (33) and Golak (34) — the two `COMMAND`
+  sends to `Cﾃｷﾄｼ` — count as next to ours, every other is dimmed (`GameState.IsOwnProvince`; until
+  2026-10-18 Leazas's provinces showed as ours and Helman's next to them, so Option → Hide Dimmed Map
+  Names hid the two the prologue reaches).
 - **The original's flags stay** (CG `owner + 819` at (`MapX`, `MapY` − 18), 2×): they show who owns
   what; the plates carry no colour of their own.
 - **The dungeons** (variant D3): the dungeon's name from the player's files (`Cﾒｲｷｭｳ.ADV:29-150`,
@@ -212,7 +218,7 @@ battle screen's "Walls"; "Battle Area: 180 troops" — the most that fight at on
 with Defense 0 is fought on the field (`Bt_WallBonus` 0, a limit of 5000), so its Battle Area does not
 apply there; the card does not say so.
 
-- **Who shows figures.** Ours always, as `Cｼﾊｲﾄｼ`'s window (`Cｼﾊｲﾄｼ.ADV:15-31`); the others "??", as
+- **Who shows figures.** Ours always (none in the prologue), as `Cｼﾊｲﾄｼ`'s window (`Cｼﾊｲﾄｼ.ADV:15-31`); the others "??", as
   `Cﾃｷﾄｼ`/`Cﾃｷﾄｼ2` print them for a city not scouted (`Cﾃｷﾄｼ.ADV:26-43`) — until the player has seen them.
 - **What the original remembers: nothing.** A ninja's report (`Cﾆﾝｼﾞｬ`, and Kanami's sabotage) sets only
   `Ui_CityScouted`, which the city files reset on entering (`EnemyCityCommand.cs:45`,
