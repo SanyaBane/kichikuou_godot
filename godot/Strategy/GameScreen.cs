@@ -199,7 +199,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private MapMarkersView _markers = null!;            // our name plates over the map in COMMAND's map wait (New)
     private ProvinceMenuView _provinceView = null!;     // our province menu over a city file's first menu (New)
     private CommandMenuView _commandView = null!;       // our command panel over COMMAND's command menu (New)
-    private StatusStripView _strip = null!;             // our status strip along the map's top (New)
+    private StatusStripView _strip = null!;             // our status strip over the map's top with the command panel (New)
     private PointerScript _markerPointer = new();       // a plate's still click on its way to the script
     private readonly MapCameraForm _mapCamera = new();  // whether the map loop holds the camera as the view's corner
     private IReadOnlyList<int>? _wantedOrder;           // the party a drop asked for, while its clicks run
@@ -1204,6 +1204,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _presenter.MenuCovered = true;                      // our command panel, the status window with it
             _commandView.Open(command);
             _commandView.Place(PictureArea());
+            UpdateStatusStrip();
         }
         Shot("menu");
         try
@@ -1336,35 +1337,23 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private bool _provinceDumped, _commandDumped;
 
     /// <summary>
-    /// Our status strip (docs/ui/command-screen.md, "The status strip") sits above the screen's picture, as
-    /// wide as it, not over it (owner, 2026-10-16): from the game's first map wait on, outside a battle, the
-    /// view gives up a band at its top (<see cref="StatusStripView.Height"/> at the picture's scale) and the
-    /// picture fits under it — every screen reckons from the view, so the pointer and the layers follow. A
-    /// battle keeps the whole view (no strip).
+    /// Our status strip (docs/ui/command-screen.md, "The status strip") lies over the picture's top, as wide as
+    /// it, while our command panel is open — where the original prints its status window, with the command menu
+    /// (owner, 2026-10-17: a band of its own above the map, always shown, lived apart from the map).
     /// </summary>
     private void UpdateStatusStrip()
     {
-        if (_markers.Visible)
-            _stripSeen = true;
-        bool on = InterfaceChoice.New && _stripSeen && _presenter.State is not null && !_presenter.InBattle;
-        var room = _content.Size;
-        float k = Math.Min(room.X / (Surface.ScreenWidth * Surface.Scale), room.Y / (Surface.ScreenHeight * Surface.Scale + StatusStripView.Height));
-        float band = on ? MathF.Round(StatusStripView.Height * k) : 0;
-        if (Math.Abs(_view.OffsetTop - band) > 0.5f)
-            _view.OffsetTop = band;
-        if (on && _presenter.StatusStrip is { } strip)
+        if (_commandView.Visible && _presenter.State is not null && !_presenter.InBattle && _presenter.StatusStrip is { } strip)
         {
             var picture = PictureArea();
             _strip.Show(strip);
-            _strip.Place(new Rect2(picture.Position.X, picture.Position.Y - band, picture.Size.X, band));
+            _strip.Place(new Rect2(picture.Position, new Vector2(picture.Size.X, StatusStripView.Height * picture.Size.X / Surface.ScreenWidth)));
         }
         else
         {
             _strip.Close();
         }
     }
-
-    private bool _stripSeen;
 
     /// <summary>The strip's events but a left click's, as the screen's own (a right click opens the menu).</summary>
     private void StripInput(InputEvent e)

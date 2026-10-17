@@ -303,12 +303,11 @@ brackets with captions under; the owner chose **the brackets**).
 
 ## The status strip (owner, 2026-10-16)
 
-- **Where and when.** Above the map, as wide as it, not over it (owner, 2026-10-16: at first it lay over the
-  map's top, 980 wide): from the game's first map wait on and outside a battle, the view gives up a band at
-  its top (50 of the picture's 1280-wide pixels) and the screen's picture fits under it; every screen reckons
-  from the view, so the pointer, the plates, the panels and the deployment table follow; a battle keeps the whole
-  view (`GameScreen.UpdateStatusStrip`). It shows in the scenes and screens between map waits too. A right click
-  on it opens the menu as anywhere (`StatusStripView.Forward`).
+- **Where and when.** Over the map's top, as wide as it (50 of the picture's 1280-wide pixels), only while
+  our command panel is open — where and when the original prints its status window, with the command menu
+  (owner, 2026-10-17; `GameScreen.UpdateStatusStrip`). Before: at first over the map's top, 980 wide, from the
+  first map wait on; then (2026-10-16) in a band of its own above the map, which the owner found lived apart
+  from the map. A right click on it cancels the menu as anywhere (`StatusStripView.Forward`).
 - **One row** (owner, 2026-10-16: at first two, the status above the week's uses). From the left: the
   nation's flag (CG 820; none for the thieves) without its name (the owner's, for room); the status window
   the right click prints, read now from the state: its two lines as the files print them (`:443` "Budget

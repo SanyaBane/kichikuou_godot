@@ -6,17 +6,17 @@ namespace Kichikuou.Game.Strategy;
 
 /// <summary>
 /// Our status strip above the map, as wide as it (docs/ui/command-screen.md, "The status strip"; the owner's
-/// mock-up C with groups d, 2026-10-16; the band <see cref="GameScreen"/> keeps for it), in one row (owner, 2026-10-16):
+/// mock-up C with groups d, 2026-10-16), over the map's top while our command panel is open (owner, 2026-10-17), in one row (owner, 2026-10-16):
 /// the status window <c>COMMAND.ADV</c> prints at a right click — the nation's flag (not its name), its money and
 /// troops; the week's commands as tags, lit while free, grouped under brackets with their captions (Castle,
 /// Subordinates, Map); the date with LP at the right, large and bright.
-/// Laid out in a 1280-wide band of the screen's pixels, scaled with the picture.
+/// Laid out in a 1280-wide strip of the screen's pixels, scaled with the picture.
 /// </summary>
 internal sealed partial class StatusStripView : Control
 {
     private const float Width = 1280;
 
-    /// <summary>The band's height in the screen's pixels (1280 wide).</summary>
+    /// <summary>The strip's height in the screen's pixels (1280 wide).</summary>
     public const float Height = 50;
 
     private const int CaptionSize = 10, DateSize = 18, LabelSize = 14, ValueSize = 17;
