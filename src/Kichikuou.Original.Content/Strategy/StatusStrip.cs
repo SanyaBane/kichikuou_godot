@@ -105,18 +105,17 @@ public sealed record StatusStrip(string Nation, bool Thieves, string Date, IRead
     /// The week's commands: the castle's (Construction, Harem, Merchant), Subordinates' two (Troops, Talk: the
     /// menu's ◎/○/△ is their sum while <c>Ui_CmdSubordAvail</c> is set, △ when it is not), the map's (an own
     /// city, an attack, a dungeon). The thieves' week has Harem and Subordinates in its menu, and the map's attack
-    /// (Pillage) without a dungeon: the hideout costs nothing and the other dungeons give no search before stage 1
+    /// as Pillage, the item <c>Cﾃｷﾄｼ</c> offers then (<c>Iﾄｳｿﾞｸ.ADV:111, 311</c> read and spend its flag), without a dungeon: the hideout costs nothing and the other dungeons give no search before stage 1
     /// (<c>Cﾒｲｷｭｳ.ADV:168-173</c>, DGN-20).
     /// </summary>
     private static IReadOnlyList<WeekGroup> GroupsOf(GameState s, bool thieves)
     {
         bool subordinates = s.Ui_CmdSubordAvail != 0;
-        var attack = new WeekUse("Attack", WeekAction.Attack, s.Ui_CmdAttackAvail != 0);
         if (thieves)
             return [
                 new WeekGroup("Hideout", [new WeekUse("Harem", WeekAction.Harem, s.Ui_CmdHaremAvail != 0),
                     new WeekUse("Subordinates", WeekAction.Units, subordinates)]),
-                new WeekGroup("Map", [attack]),
+                new WeekGroup("Map", [new WeekUse("Pillage", WeekAction.Attack, s.Ui_CmdAttackAvail != 0)]),
             ];
         return [
             new WeekGroup("Castle", [
@@ -128,7 +127,7 @@ public sealed record StatusStrip(string Nation, bool Thieves, string Date, IRead
                 new WeekUse("Talk", WeekAction.Talk, subordinates && s.CmdAvail_SubTalk != 0)]),
             new WeekGroup("Map", [
                 new WeekUse("Own city", WeekAction.City, s.Ui_CmdOwnCityAvail > 0),
-                attack,
+                new WeekUse("Attack", WeekAction.Attack, s.Ui_CmdAttackAvail != 0),
                 new WeekUse("Dungeon", WeekAction.Dungeon, s.Ui_CmdDungeonAvail != 0)]),
         ];
     }

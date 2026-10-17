@@ -326,7 +326,7 @@ brackets with captions under; the owner chose **the brackets**).
   `Ui_CmdHaremAvail`, Merchant `Ui_CmdMerchantAvail`), Subordinates (Troops `CmdAvail_SubTroops`, Talk
   `CmdAvail_SubTalk`, both dim while `Ui_CmdSubordAvail` is 0, the menu's △), Map (Own city
   `Ui_CmdOwnCityAvail`, Attack `Ui_CmdAttackAvail`, Dungeon `Ui_CmdDungeonAvail`); the thieves' week: Hideout
-  (Harem, Subordinates as one), Map (Attack — Pillage; no Dungeon: the hideout costs nothing and the other
+  (Harem, Subordinates as one), Map (Pillage, `Ui_CmdAttackAvail`, which `Iﾄｳｿﾞｸ.ADV:111, 311` read and spend; no Dungeon: the hideout costs nothing and the other
   dungeons give no search before stage 1, DGN-20; owner's request 2026-10-18). At the right the date as "LP 3 · Month 5 · Week 2"
   (`SetDate`; LP, `DateYear`, is computed by the original but not shown: ours, question 4), large and in the
   names' gold (owner, 2026-10-16: the small dim one was lost on the lacquer), smaller only if the row leaves it
