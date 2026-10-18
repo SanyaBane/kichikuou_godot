@@ -91,6 +91,12 @@ public sealed record GameOptions
     /// </summary>
     public bool AutoScout { get; init; }
 
+    /// <summary>
+    /// Development: at the first map wait the unattended player visits the harem once and picks the girl in
+    /// this cell of its picker (1-51, left to right, top to bottom; 0: no visit), before its replenish and attack.
+    /// </summary>
+    public int AutoHarem { get; init; }
+
     /// <summary>Development: unattended play stops after the first deployment picker or the first battle (a look at one screen).</summary>
     public AutoUntil AutoUntil { get; init; }
 
@@ -203,7 +209,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private WeekReportView _weekView = null!;           // our week report over the week start's windows (New)
     private MessageWindowView _messageView = null!;     // our message windows over WAO_SUB's (New)
     private bool _keyWaiting;                           // the script waits for the player's key: our windows show the triangle
-    private readonly HashSet<MessageKind> _messageDumps = [];   // the kinds of window unattended play has dumped this launch
+    private readonly HashSet<string> _messageDumps = [];        // the kinds of window unattended play has dumped this launch
     private PointerScript _markerPointer = new();       // a plate's still click on its way to the script
     private readonly MapCameraForm _mapCamera = new();  // whether the map loop holds the camera as the view's corner
     private IReadOnlyList<int>? _wantedOrder;           // the party a drop asked for, while its clicks run
@@ -1020,8 +1026,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _keyWaiting = true;
             UpdateMessageWindow();
             if (_messageView.Window is { } window && DisplayServer.GetName() != "headless" && _options.ScreenshotDirectory is not null
-                && _messageDumps.Add(window.Kind))
-                await AutoDumpAsync(MessageDumpName(window.Kind));              // each kind of our windows once a launch
+                && _messageDumps.Add(MessageDumpName(window)))
+                await AutoDumpAsync(MessageDumpName(window));                   // each kind of our windows once a launch
             else
                 Shot(StrategyCutInShown ? "strategy" : "key");
             if (!_options.Fast && BattleScreenShown && _presenter.Opening is not null)
@@ -1096,14 +1102,18 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _messageView.Fade(_presenter.FadeAmount);
     }
 
-    /// <summary>Unattended play's dump of a kind of our windows: <c>message-speech-left</c> and the like.</summary>
-    private static string MessageDumpName(MessageKind kind) => "message-" + kind switch
+    /// <summary>
+    /// Unattended play's dump of a kind of our windows: <c>message-speech-left</c> and the like; 131 as
+    /// <c>message-cg-bar-speech</c>, <c>-thought</c> or <c>-narration</c>.
+    /// </summary>
+    private static string MessageDumpName(MessageWindow window) => "message-" + window.Kind switch
     {
         MessageKind.SpeechLeft => "speech-left",
         MessageKind.SpeechRight => "speech-right",
         MessageKind.ThoughtLeft => "thought-left",
         MessageKind.ThoughtRight => "thought-right",
         MessageKind.PlaceTitle => "place-title",
+        MessageKind.CgBar => window.Speaker.Length == 0 ? "cg-bar-narration" : window.Thinks ? "cg-bar-thought" : "cg-bar-speech",
         _ => "narration",
     };
 
@@ -2310,6 +2320,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private int _autoReplenishUnit;
     private int _autoReplenishWeek = -1;
 
+    /// <summary>Where the unattended harem visit stands (<see cref="GameOptions.AutoHarem"/>): wanted at the map, Harem chosen, the girl picked.</summary>
+    private enum AutoHarem { None, Wanted, Chosen, Picked }
+
+    private AutoHarem _autoHarem;
+
     /// <summary>The end of unattended play (<see cref="GameOptions.AutoWeeks"/>).</summary>
     private sealed class AutoStopException(string message) : Exception(message);
 
@@ -2406,6 +2421,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 _autoReplenish = AutoReplenish.Picked;
                 (x, y) = GesturePoints.PickerCell(_autoReplenishUnit);
             }
+            else if (picker.Kind == PickerKind.Harem && _autoHarem == AutoHarem.Chosen)
+            {
+                _autoHarem = AutoHarem.Picked;
+                (x, y) = GesturePoints.PickerCell(_options.AutoHarem);
+            }
             _pointer.Click(x, y);
         }
         else if (_presenter.MapWaiting && (_autoMapWait || _autoDragged) && _presenter.State is { } s)
@@ -2414,6 +2434,13 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             // Leazas Castle at the start of the week (:4-13); after a drag the loop holds it as the corner.
             bool centred = !_autoDragged;
             _autoMapWait = _autoDragged = false;
+            if (centred && _options.AutoHarem > 0 && _autoHarem == AutoHarem.None)
+            {
+                GD.Print($"Kichikuou: --auto visits the harem (week {s.Week.Value}).");
+                _autoHarem = AutoHarem.Wanted;
+                _pointer.RightClick(5, 6);                              // the menu: Harem
+                return;
+            }
             if (centred && AutoReplenishUnit(s) is { } unit)
             {
                 GD.Print($"Kichikuou: --auto replenishes unit {unit} ({s.Units[unit].Troops.Value} of {s.Units[unit].MaxTroops.Value} troops, week {s.Week.Value}).");
@@ -2822,6 +2849,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         if (_autoStageWeek >= 0 && week >= _autoStageWeek + 2)
             throw new AutoStopException($"--auto stopped in week {week}, two weeks after stage {_options.AutoStage} was reached (week {_autoStageWeek}).");
+        if (_autoHarem == AutoHarem.Wanted && Find("Harem") is var harem and > 0)
+        {
+            _autoHarem = AutoHarem.Chosen;
+            return harem;
+        }
         if (_autoReplenish == AutoReplenish.Wanted && Find("Subordinates") is var subordinates and > 0)
         {
             _autoReplenish = AutoReplenish.Chosen;

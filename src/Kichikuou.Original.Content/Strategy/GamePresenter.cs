@@ -451,6 +451,8 @@ public sealed partial class GamePresenter : IStageObserver
     {
         if (op is (>= 111 and <= 153) or 0 or 10)
             _covered &= ~Pictures.Frame;                                // the frame drawn again, or the window closed
+        if (op is >= 111 and <= 153)
+            _leftWindow = null;                                         // a window opens over the one left on the screen
         switch (op)
         {
             case 111 or 112: OpenWindow((235, 8, 378, 141), 15, 24); break;
@@ -468,12 +470,23 @@ public sealed partial class GamePresenter : IStageObserver
                 if (op == 10 || State?.Ui_WinType.Value is >= 11 and <= 29)
                     _engine.TextColor = 15;
                 _window.Clear();
+                _speech = null;
                 if (_target == TextTarget.Window && Picker is not null)
                     _target = TextTarget.None;
                 break;
             case 1 or 5 or 11:
                 if (State?.Ui_WinType != 0)
-                    _afterKey = _window.Clear;
+                {
+                    // 131's speech left open at this wait goes on in the next text (Strategy.MessageWindow.Unclosed).
+                    var bar = State is { Ui_WinType.Value: 31 } s
+                        ? Strategy.MessageWindow.Of(s.Ui_WinFrameCg.Value, _window, Stage.Color, _speech)
+                        : null;
+                    _afterKey = () =>
+                    {
+                        _speech = bar;
+                        _window.Clear();
+                    };
+                }
                 break;
             case 2: _window.Clear(); break;
             case >= 311 and <= 333: Uncover(op); break;

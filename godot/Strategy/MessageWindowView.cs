@@ -5,10 +5,11 @@ using Kichikuou.Original.Content.Strategy;
 namespace Kichikuou.Game.Strategy;
 
 /// <summary>
-/// Our message windows (docs/ui/messages.md, variant A, step 1; Option → Interface → New): the original's windows
-/// 111/112/121/122/113/123 where they are, as lacquer panels of their kind — speech with a tail at its portrait, a thought
-/// rounded with a dashed frame and a trail of bubbles, narration in a warmer lacquer, a place's title in Cinzel — the text
-/// at the cells the engine placed it in, in the game's font (Option → Fonts), bold as the surface draws it, and the
+/// Our message windows (docs/ui/messages.md, variant A, steps 1-2; Option → Interface → New): the original's windows
+/// 111/112/121/122/113/123 and 131 where they are, as lacquer panels of their kind — speech with a tail at its portrait, a
+/// thought rounded with a dashed frame and a trail of bubbles, narration in a warmer lacquer, a place's title in Cinzel, 131
+/// a bar under the event CG with its speaker on a plate — the text at the cells the engine placed it in (131's moved left
+/// by the name split off), in the game's font (Option → Fonts), bold as the surface draws it, and the
 /// click's triangle while the script waits for the key. A menu open over the window (<see cref="Kichikuou.Original.Content.Strategy.GamePresenter.MenuArea"/>)
 /// is shown again on top, cut from the screen's picture. It takes no input: the screen's own key wait answers it.
 /// Laid out in the 1280×800 screen's pixels, scaled with the picture.
@@ -110,6 +111,12 @@ internal sealed partial class MessageWindowView : Control
                 ThoughtPanel(box, w.AtLeft);
                 text = Lacquer.Quiet;
                 break;
+            case MessageKind.CgBar:
+                Lacquer.DrawPanel(this, box, _k, SpeechFill);
+                if (w.Speaker.Length > 0)
+                    NameTab(new Vector2(x + 32, y - 26), w.Speaker, w.Thinks);
+                text = w.Speaker.Length == 0 ? NarrationText : w.Thinks ? Lacquer.Quiet : Lacquer.Text;
+                break;
             default:
                 Lacquer.DrawPanel(this, box, _k, NarrationFill);
                 text = NarrationText;
@@ -181,9 +188,37 @@ internal sealed partial class MessageWindowView : Control
         }
     }
 
-    private void Dashes(Vector2 a, Vector2 b, float width)
+    /// <summary>
+    /// 131's speaker on a plate over the bar's top edge, half over the picture's foot (mock-ups A-7, A-8): the name in Cinzel
+    /// 600 at 30, capitals; a speech's plate a lacquer panel, a thought's rounded with a dashed frame and its name quieter.
+    /// </summary>
+    private void NameTab(Vector2 at, string name, bool thought)
     {
-        const float dash = 14, gap = 8;
+        const int size = 30;
+        string shown = name.ToUpperInvariant();
+        float textWidth = _title.GetStringSize(shown, fontSize: size).X;
+        var tab = new Rect2(at, textWidth + 64, 46);
+        if (thought)
+        {
+            const float r = 12;
+            var style = new StyleBoxFlat { BgColor = ThoughtFill, AntiAliasing = true };
+            style.SetCornerRadiusAll((int)r);
+            DrawStyleBox(style, tab);
+            float x = tab.Position.X, y = tab.Position.Y, w = tab.Size.X, h = tab.Size.Y, line = Lacquer.Line(2, _k);
+            Dashes(new(x + r, y + 1), new(x + w - r, y + 1), line, 10, 6);
+            Dashes(new(x + r, y + h - 1), new(x + w - r, y + h - 1), line, 10, 6);
+            foreach (var (cx, cy, from) in new[] { (x + r, y + r, Math.PI), (x + w - r, y + r, Math.PI * 1.5), (x + w - r, y + h - r, 0.0), (x + r, y + h - r, Math.PI * 0.5) })
+                DrawArc(new Vector2(cx, cy), r - 1, (float)from, (float)(from + Math.PI / 2), 8, Lacquer.Gold, line, true);
+        }
+        else
+        {
+            Lacquer.DrawPanel(this, tab, _k, SpeechFill);
+        }
+        Centred(_title, shown, size, tab.GetCenter().X, Lacquer.Baseline(tab, _title, size), thought ? Lacquer.Quiet : Lacquer.Name);
+    }
+
+    private void Dashes(Vector2 a, Vector2 b, float width, float dash = 14, float gap = 8)
+    {
         float length = a.DistanceTo(b);
         var step = (b - a) / length;
         for (float t = 0; t < length; t += dash + gap)

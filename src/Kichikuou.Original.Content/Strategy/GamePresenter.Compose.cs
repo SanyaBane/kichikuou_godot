@@ -173,6 +173,12 @@ public sealed partial class GamePresenter
     /// </summary>
     private void Cover(int x, int y, int w, int h, bool opaque = false)
     {
+        const int k = Surface.Scale;
+        if (_leftWindow is { Panel: var (px, py, pw, ph) } && w > 0 && h > 0
+            && x < (px + pw) / k && px / k < x + w && y < (py + ph) / k && py / k < y + h)
+            _leftWindow = null;                                         // drawn over: the original's window under ours shows
+        if (x <= 0 && y <= 0 && x + w >= Surface.ScreenWidth && y + h >= Surface.ScreenHeight)
+            _fullWindowLeft = false;
         if (State is not { } s || InBattle)
             return;
         if (opaque)
@@ -367,13 +373,36 @@ public sealed partial class GamePresenter
     /// <summary>
     /// The message window our UI draws now (<see cref="CoverMessages"/>), or null: outside a battle and the screens that
     /// cover the window already (All Data, our province menu, the week report), while <c>WAO_SUB</c>'s frame is up and not
-    /// drawn over (<see cref="Cover"/>), and only for the windows the model knows.
+    /// drawn over (<see cref="Cover"/>), and only for the windows the model knows — 131 not under a picker, which draws
+    /// its own text there (<c>FIGT_B.ADV:77-80</c> opens it for <c>Sﾌﾞﾀｲ</c>). After <c>WAO_SUB</c> 0 the full-screen
+    /// window stays on the screen until something draws over it (<see cref="LeaveWindowOnStage"/>): ours too.
     /// </summary>
-    public MessageWindow? MessageWindow =>
-        CoverMessages && !BattleShows && Data == DataView.Closed && !MenuCovered && WeekReport is null
-        && State is { } s && s.Ui_WinType != 0 && (_covered & Pictures.Frame) == 0
-            ? Strategy.MessageWindow.Of(s.Ui_WinFrameCg.Value, _window, Stage.Color)
-            : null;
+    public MessageWindow? MessageWindow
+    {
+        get
+        {
+            if (!CoverMessages || _uncovered || BattleShows || Data != DataView.Closed || MenuCovered || WeekReport is not null
+                || State is not { } s)
+                return null;
+            if (s.Ui_WinType == 0)
+                return _leftWindow;
+            if ((_covered & Pictures.Frame) != 0 || (s.Ui_WinFrameCg == Strategy.MessageWindow.CgBarCg && Picker is not null))
+                return null;
+            return Strategy.MessageWindow.Of(s.Ui_WinFrameCg.Value, _window, Stage.Color, _speech);
+        }
+    }
+
+    /// <summary>The 131 shown at its last key wait, whose speech the next text may go on with (<see cref="Strategy.MessageWindow.Unclosed"/>).</summary>
+    private MessageWindow? _speech;
+
+    /// <summary>Our 131 left on the screen after <c>WAO_SUB</c> 0, until something draws over its place or a window opens.</summary>
+    private MessageWindow? _leftWindow;
+
+    /// <summary><see cref="LeaveWindowOnStage"/> composes the original's window to leave it on the stage.</summary>
+    private bool _uncovered;
+
+    /// <summary>The full-screen window's scene stays on the stage after it closed, until the whole screen is drawn over (<see cref="MaskEventCgs"/>).</summary>
+    private bool _fullWindowLeft;
 
     /// <summary>
     /// The open menu's box with its frame (the 1280×800 screen's pixels) while <see cref="Screen"/> shows it, else null:
@@ -456,7 +485,7 @@ public sealed partial class GamePresenter
             }
             else
             {
-                if (MaskEventCgs && (s.Ui_WinType == 31 || _endingCg != 0 || _gallery))
+                if (MaskEventCgs && (s.Ui_WinType == 31 || _fullWindowLeft || _endingCg != 0 || _gallery))
                     MaskStage();
                 if (!MenuCovered && WeekReport is null)
                 {
@@ -485,19 +514,28 @@ public sealed partial class GamePresenter
     /// the frame, the text and the pictures stay on the screen until something draws over them
     /// (the last line of <c>Iﾄｳｿﾞｸ.ADV</c>'s escape, <c>:1839-1843</c>, while <c>ｵｰﾌﾟﾆﾝｸﾞ</c> waits for
     /// its music). The engine drew them into the screen; here the screen as shown (without the fade)
-    /// goes onto the stage under the frame, in its colours.
+    /// goes onto the stage under the frame, in its colours — the original's window, also while a UI
+    /// draws ours (<see cref="CoverMessages"/>), which stays over it as <see cref="MessageWindow"/>
+    /// until something draws over its place (<see cref="Cover"/>) or a window opens. The debug mask
+    /// stays on the scene left on the stage until the whole screen is drawn over.
     /// </summary>
     private void LeaveWindowOnStage(GameState s)
     {
-        if (_cgs.Get(s.Ui_WinFrameCg.Value) is not { } frame)
-            return;
-        byte fade = FadeAmount;
-        FadeAmount = 0;
-        Invalidate();
-        Compose();
-        FadeAmount = fade;
-        Invalidate();
-        Stage.CopyFrom(Screen, frame.X, frame.Y, frame.Width, frame.Height, Stage.View.X + frame.X, Stage.View.Y + frame.Y);
+        var ours = MessageWindow;
+        _fullWindowLeft = s.Ui_WinType == 31;
+        if (_cgs.Get(s.Ui_WinFrameCg.Value) is { } frame)
+        {
+            byte fade = FadeAmount;
+            FadeAmount = 0;
+            _uncovered = true;
+            Invalidate();
+            Compose();
+            _uncovered = false;
+            FadeAmount = fade;
+            Invalidate();
+            Stage.CopyFrom(Screen, frame.X, frame.Y, frame.Width, frame.Height, Stage.View.X + frame.X, Stage.View.Y + frame.Y);
+        }
+        _leftWindow = ours;
     }
 
     /// <summary>The debug placeholder of <see cref="MaskEventCgs"/>: the stage's picture greyed out, with the CG's number.</summary>

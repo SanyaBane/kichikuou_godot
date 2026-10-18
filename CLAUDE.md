@@ -151,7 +151,7 @@ followed (docs/ui/battle-screen.md); next (owner, 2026-10-16) the map and comman
 and mock-ups in docs/ui/command-screen.md; then (owner, 2026-10-18) the messages of the turn's start,
 surveyed in docs/ui/turn-start.md — the week report is built, the nations' banners put off; then (owner,
 2026-10-18) the message windows in our lacquer, variant A, the battle's included — docs/ui/messages.md; its step 1
-(the windows 111/112/121/122/113/123) is built, next window 131.
+(the windows 111/112/121/122/113/123) and step 2 (window 131, the speaker on a plate) are built, next the `]` menus.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -266,8 +266,8 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   week start's windows — the banner, the budget as an account, the troops replenished, a triangle asking for the click;
   Option → Interface → New, docs/ui/turn-start.md: `Original.Content/Strategy/WeekReport` gathered by
   `GamePresenter.CoverWeekReport`, the windows' waits answered at once, the player's click at their close,
-  `GameScreen.WeekReportAsync`); `Strategy/MessageWindowView` (our message windows 111/112/121/122/113/123 where the
-  original has them — speech with a tail, thought, narration, a place's title — the text at its cells in the game's font,
+  `GameScreen.WeekReportAsync`); `Strategy/MessageWindowView` (our message windows 111/112/121/122/113/123 and 131 where the
+  original has them — speech with a tail, thought, narration, a place's title, 131 with its speaker on a plate — the text at its cells in the game's font,
   the triangle while the player's key is awaited, a menu over it shown on top; Option → Interface → New, docs/ui/messages.md:
   `Original.Content/Strategy/MessageWindow` from `GamePresenter.MessageWindow` while `CoverMessages`); the five draw with
   `Strategy/Lacquer` (the style's colours and parts, the click's triangle);
@@ -348,7 +348,7 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   builds the parties in our own deployment table and swaps the first two places by drops and back,
   and in a window, once a launch, dumps the week report (`week-report`), each kind of our message windows
   (`message-speech-left`, `message-speech-right`, `message-thought-left`, `message-thought-right`, `message-narration`,
-  `message-place-title`; the kept save `saves-week26` reaches all but the right thought), the first map wait's plates (`map-markers`, `map-markers-hover`, `map-markers-active`), the province menu (`province-menu`) and
+  `message-place-title`; the kept save `saves-week26` reaches all but the right thought; 131 as `message-cg-bar-speech`, `-thought`, `-narration`, with `--harem`), the first map wait's plates (`map-markers`, `map-markers-hover`, `map-markers-active`), the province menu (`province-menu`) and
   clicks the week's attack target through its plate (`map-marker-hover`; Godot's input, the system pointer
   moved), and answers the first turn through the pointer on our command input
   (the acting unit's menu, another own card's, closed by a click off it; Retreat, whose dialog it
@@ -389,6 +389,10 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   `--load --auto --fast --quit --seed 2 --saves user://saves-scout --slots-from user://saves-week18 --turn-end --scout --until deployment [--interface new] --shots <dir>`
   (Ex (commander 1), Sakanaku (commander 6), Dodge (commander 5), Jibul (commander 7); our overlay needs a window,
   and `--until deployment` stops before the battle, so nothing moves the system pointer).
+  A harem scene (window 131 under an event CG, 2026-10-18): `--harem <cell>` on the week-18 save makes the first
+  map wait open the menu, choose Harem and pick the girl in that cell of its picker (left to right, top to bottom:
+  Lia 2, Maris 3, Kanami 6, Haurein 9), before the replenish and the attack —
+  `--load --auto --fast --quit --seed 2 --saves user://saves-look-131 --slots-from user://saves-week18 --harem 6 --until deployment [--interface new] --shots <dir>`.
   Add another kept save the same way when a screen needs another phase.
 - Show an ending's `OVER` (its picture, staff roll, Completion Report) on a booted game:
   `<Godot console exe> --headless --path godot -- --ending <1-14> --auto --fast --quit [--shots <dir>]`

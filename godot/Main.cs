@@ -88,6 +88,7 @@ public partial class Main : Control
                 AutoTurnEnd = args.Contains("--turn-end"),
                 AutoParty = Value("--party") is { } party ? [.. party.Split(',').Select(int.Parse)] : null,
                 AutoScout = args.Contains("--scout"),
+                AutoHarem = int.TryParse(Value("--harem"), out int harem) ? harem : 0,
             });
         }
         if (args.Contains("--portraits"))

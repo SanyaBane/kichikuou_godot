@@ -6,6 +6,11 @@ The dumps (Lia's and Maris's scene at the week's start, Cﾌﾞｶ's menu; headl
       --saves user://saves-look-msg --slots-from user://saves-week26 --until deployment --shots <shots dir>
 Then, from the repository's root (Pillow; the fonts of Windows and godot/fonts):
   python -I tools/ui/mock_messages.py <shots dir> <out dir> < /dev/null
+Window 131 (A-7 to A-9) over a harem scene of the kept save saves-week18 (Kanami, the picker's cell 6;
+00029-key.png is a key wait with 131 open, the CG masked):
+  <Godot console exe> --headless --path godot -- --load --auto --fast --quit --seed 2
+      --saves user://saves-look-131 --slots-from user://saves-week18 --harem 6 --until deployment --shots <harem dir>
+  python -I tools/ui/mock_messages.py <shots dir> <out dir> <harem dir> 00029-key.png < /dev/null
 The images hold the player's CGs: keep <out dir> outside the repository.
 Everything is in the 1280x800 screen's pixels; drawn at 2x and scaled down for smooth edges.
 """
@@ -384,6 +389,90 @@ def speed_dialog():
         text(c, bx_ + bw_ / 2, y + h - 42, label, SERIF(20), TEXT, anchor='mm')
     c.save('A-text-speed.png')
 
+
+# Window 131: the full-width bar under the event CGs (frame 815 at (0,588), 1280x212); the text at (16,610),
+# lines 52 apart, 52 cells; the speaker's name in the text: Name「…」, a thought Name（…）, the lines under
+# the first indented to the text's start.
+R131 = (0, 588, 1280, 212)
+BAR_TEXT = (16, 610)
+BAR_PITCH = 52
+SPEECH_131 = ['Rance「Right now, we aren’t a king and a ninja.', '      We’re an interrogator and a prisoner. So...」']
+THOUGHT_131 = ['Rance（They’re so persistent!', '      Whether it’s morning or night or I’m taking a', '      shit, I don’t get a break!）']
+NARRATION_131 = ['Rance was on the outskirts of Golak.', 'He was alone.']
+
+
+def split_name(lines):
+    """Name「…」 / Name（…）: the name, whether a thought, the lines without the name, the brackets and the indent."""
+    m = re.match(r'^(\S+?)([「（])(.*)$', lines[0])
+    if not m:
+        return None, False, lines, 0
+    name, bracket, first = m.groups()
+    body = [first] + [l.lstrip() for l in lines[1:]]
+    body[-1] = re.sub(r'[」）]$', '', body[-1])
+    return name, bracket == '（', body, len(name) + 1   # the prefix's cells: the name and the bracket
+
+
+def name_tab(c, x, y, name, thought=False):
+    """The speaker's plate on the bar's top edge: a small lacquer tab, half over the CG's foot."""
+    f = CINZEL(30, 600)
+    w = f.getlength(name.upper()) / S + 64
+    h = 46
+    if thought:
+        lay, d = c.draw()
+        d.rounded_rectangle(s(x, y, x + w, y + h), radius=12 * S, fill=(30, 26, 30, 255))
+        c.add(lay)
+        lay, d = c.draw()
+        t, dash, gap = 0, 10, 6
+        # dashes along the tab's outline (a rounded rectangle, straight parts only)
+        for (ax, ay, bx, by) in [(x + 12, y + 1, x + w - 12, y + 1), (x + 12, y + h - 1, x + w - 12, y + h - 1)]:
+            n = bx - ax
+            t = 0
+            while t < n:
+                d.line(pts([(ax + t, ay), (ax + min(t + dash, n), by)]), fill=GOLD, width=2 * S)
+                t += dash + gap
+        for (bx, by, start) in [(x + 1, y + 1, 180), (x + w - 25, y + 1, 270), (x + 1, y + h - 25, 90), (x + w - 25, y + h - 25, 0)]:
+            d.arc(s(bx, by, bx + 24, by + 24), start, start + 90, fill=GOLD, width=2 * S)
+        c.add(lay)
+        text(c, x + w / 2, y + h / 2 + 1, name.upper(), f, QUIET, anchor='mm')
+    else:
+        panel(c, x, y, w, h)
+        text(c, x + w / 2, y + h / 2 + 1, name.upper(), f, NAME, anchor='mm')
+
+
+def bar(shot, lines, out, mode='tab'):
+    """131 as one lacquer bar the width of the screen; the name split off onto a tab (mode 'tab') or kept at
+    its cells in gold without the brackets (mode 'inline'); narration in the narration's colours."""
+    c = Canvas(shot)
+    x, y, w, h = R131
+    panel(c, x, y, w, h)
+    name, thought, body, prefix = split_name(lines)
+    tx, ty = BAR_TEXT
+    colour = NARR_TEXT if name is None else QUIET if thought else TEXT
+    if name is not None and mode == 'tab':
+        name_tab(c, 32, y - 26, name, thought)
+        mono_lines(c, tx, ty + 8, body, pitch=BAR_PITCH, colour=colour)
+    elif name is not None:
+        # the name at its own cells, gold; the text after it at its cells (the prefix's cells kept)
+        f = GOTHIC(48)
+        text(c, tx, ty + 8, name, f, NAME, bold=True)
+        cells = [' ' * prefix + body[0]] + [' ' * prefix + l for l in body[1:]]
+        mono_lines(c, tx, ty + 8, cells, pitch=BAR_PITCH, colour=colour)
+    else:
+        mono_lines(c, tx, ty + 8, body, pitch=BAR_PITCH, colour=colour)
+    triangle(c, x + w - 30, y + h - 26)
+    return c.save(out)
+
+
+if len(sys.argv) > 3:
+    # The 131 set over a dump of a harem scene (the third argument: that run's shots, the fourth: one of its
+    # key waits with 131 open); see the header for the run.
+    SHOTS, shot = sys.argv[3], sys.argv[4]
+    bar(shot, SPEECH_131, 'A-7-cg-bar-speech.png')
+    bar(shot, SPEECH_131, 'A-7b-cg-bar-speech-inline.png', mode='inline')
+    bar(shot, THOUGHT_131, 'A-8-cg-bar-thought.png')
+    bar(shot, NARRATION_131, 'A-9-cg-bar-narration.png')
+    print('done')
+    sys.exit(0)
 
 speech_right('00015-key.png', MARIS, 'A-1-speech-right.png')
 speech_left('00004-key.png', RANCE, 'A-2-speech-left.png')

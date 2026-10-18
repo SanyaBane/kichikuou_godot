@@ -81,6 +81,12 @@ images hold the player's CGs, so they stay outside the repository.
   the script's breaks (ragged); a proportional face with the lines joined and rewrapped (as the battle's
   balloon does, `BattleSpeech.Flow`); a table line kept as lines with each column at its cell.
 - `A-text-speed`: Option → Text Speed…: the slider (Slow … Instant), the preview, Default / OK / Cancel.
+- **Window 131** (2026-10-18), over a harem scene of the kept save `saves-week18` (CLAUDE.md, "Commands", `--harem`):
+  `A-7-cg-bar-speech` — the bar a lacquer panel the screen's width, the speaker's name on a plate over its top edge, the
+  text without the name and the brackets, moved left by the name's cells; `A-7b-cg-bar-speech-inline` — the name kept at
+  its cells in gold instead; `A-8-cg-bar-thought` — `Name（…）`: the plate rounded with a dashed frame, the name and the
+  text quieter; `A-9-cg-bar-narration` — no plate, the narration's text colour. **The owner chose A-7, A-8 and A-9**
+  (2026-10-18).
 
 **Making them again:** `tools/ui/mock_messages.py` (its header gives the dump command and the call); the
 images go to a folder outside the repository. Its numbers are the build's starting point (screen pixels):
@@ -140,6 +146,22 @@ as it is. Where to start:
    panels fading with the screen); `MessageWindowTests`. `--auto` in a window dumps each kind once a launch
    (`message-speech-left`, `-speech-right`, `-thought-left`, `-thought-right`, `-narration`, `-place-title`).
 2. **Window 131** under the event CGs, the name of `Name「…」` split off.
+   **Built (2026-10-18):** `MessageKind.CgBar` (frame 815; the panel (0,588) 1280×212). The text's own colour is 190; a
+   speaker is a name at the first line's start before `「` (`｢` from a string variable) or `（` — words beginning with a
+   capital, a digit or `?` (`Rance`, `Pink-Haired Girl`, `PG-7`, `???`; the scenario has 8,942 speeches and 346 thoughts so)
+   — split off into `Speaker` / `Thinks`; the first line moves left by the name's cells, the lines under it by their
+   indent up to that, the closing bracket at the end is dropped. A speech not closed at a window's end (4 in the scenario)
+   is `Unclosed`; a next window without a name whose first line is indented to its text goes on with it
+   (`Gﾗﾌｧﾘｱ.ADV:652-657`; the presenter keeps the 131 of the last key wait). 131's text may run off the screen's edge and
+   foot as the engine's does (a 52-character line with a full-width `’`), so only where a character starts counts. The
+   presenter leaves 131 under a picker to the original (`FIGT_B.ADV:77-80`, `Cﾃｷﾄｼ`, `Cﾌﾞｶ` open it for `Sﾌﾞﾀｲ`/`Sﾌﾞｶ`).
+   After `WAO_SUB` 0 the original's window goes onto the stage as before (`LeaveWindowOnStage`, composed uncovered) and
+   ours stays over it until something is drawn over its place or a window opens; the debug mask stays on the scene left
+   on the stage until the whole screen is drawn over. `MessageWindowView` draws the bar, the name's plate (Cinzel 600 at
+   30, capitals; a thought's dashed and quieter) and the text in `Lacquer.Text`, `Lacquer.Quiet` or the narration's colour.
+   `--auto` in a window dumps `message-cg-bar-speech`, `-thought`, `-narration` once a launch; `--harem <cell>` on the
+   week-18 save reaches a harem scene (CLAUDE.md, "Commands"). Tests: `MessageWindowTests`. Not seen in the game yet: a
+   thought's plate (none of the four harem scenes the week-18 save reaches has one).
 3. **The `]` menus** as lacquer rows (the items are data already, `MenuView`).
 4. **Letter by letter** and Option → Text Speed… (the slider, the preview; kept in `settings.cfg`): a click
    while it types shows the whole text and is not passed to the script's wait.

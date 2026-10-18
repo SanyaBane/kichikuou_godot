@@ -17,13 +17,14 @@ public class MessageWindowTests
 {
     private static readonly Func<int, (byte, byte, byte)> NoColour = _ => (0, 0, 0);
 
-    /// <summary>Each frame <c>WAO_SUB</c> opens is its kind at the mock-ups' place; the full-screen window and none are not ours.</summary>
+    /// <summary>Each frame <c>WAO_SUB</c> opens is its kind at the mock-ups' place; the battle's bubbles and none are not ours.</summary>
     [Theory]
     [InlineData(807, MessageKind.SpeechLeft, 436, 4)]
     [InlineData(808, MessageKind.ThoughtLeft, 436, 4)]
     [InlineData(810, MessageKind.SpeechRight, 58, 512)]
     [InlineData(811, MessageKind.ThoughtRight, 58, 512)]
     [InlineData(809, MessageKind.Narration, 248, 536)]
+    [InlineData(815, MessageKind.CgBar, 0, 588)]
     public void A_frame_is_its_kind_of_window(int frame, MessageKind kind, int x, int y)
     {
         var window = MessageWindow.Of(frame, new TextBox((0, 0, 640, 400)), NoColour);
@@ -35,7 +36,6 @@ public class MessageWindowTests
 
     [Theory]
     [InlineData(0)]
-    [InlineData(815)]
     [InlineData(894)]
     public void Other_frames_are_not_ours(int frame) => Assert.Null(MessageWindow.Of(frame, new TextBox((0, 0, 640, 400)), NoColour));
 
@@ -137,15 +137,127 @@ public class MessageWindowTests
         Assert.Null(presenter.MessageWindow);
     }
 
-    /// <summary>In a battle (step 5), under All Data or the week report, and for the full-screen window (step 2) the presenter keeps drawing.</summary>
+    /// <summary>
+    /// 131: the speaker's name of <c>Name「…」</c> is split off, the closing bracket dropped and the line under it moved left by
+    /// the name's cells, so both start at the bar's text edge (<c>Gｶﾅﾐ.ADV:330-334</c>); the text's own colour (190) is the bar's.
+    /// </summary>
+    [Fact]
+    public void The_bar_splits_off_the_speakers_name()
+    {
+        var bar = Bar("Rance「Right now, we aren’t a king and a ninja.\n      We’re an interrogator and a prisoner. So...」");
+        Assert.Equal((MessageKind.CgBar, "Rance", false, false), (bar.Kind, bar.Speaker, bar.Thinks, bar.Unclosed));
+        Assert.Equal(["Right now, we aren’t a king and a ninja.", "We’re an interrogator and a prisoner. So..."], bar.Lines);
+        Assert.Equal(new MessageGlyph(16, 614, 48, 'R', null), bar.Glyphs[0]);
+        Assert.Equal((16, 614 + 52), (bar.Glyphs.First(g => g.C == 'W').X, bar.Glyphs.First(g => g.C == 'W').Y));
+        Assert.DoesNotContain(bar.Glyphs, g => g.C is '「' or '」');
+        Assert.Equal('.', bar.Glyphs[^1].C);
+    }
+
+    /// <summary>A thought (<c>Name（…）</c>, <c>Iﾄｳｿﾞｸ.ADV:1755-1759</c>), names of several words, and the lines that are no speech.</summary>
+    [Fact]
+    public void The_bar_knows_thoughts_names_and_narration()
+    {
+        var thought = Bar("Rance（They’re so persistent!\n      Whether it’s morning or night or I’m taking a\n      shit, I don’t get a break!）");
+        Assert.Equal(("Rance", true, false), (thought.Speaker, thought.Thinks, thought.Unclosed));
+        Assert.Equal(["They’re so persistent!", "Whether it’s morning or night or I’m taking a", "shit, I don’t get a break!"], thought.Lines);
+
+        Assert.Equal("Pink-Haired Girl", Bar("Pink-Haired Girl「Welcome!」").Speaker);
+        Assert.Equal("PG-7", Bar("PG-7「Yes.」").Speaker);
+        Assert.Equal("???", Bar("???「Who's there?」").Speaker);
+
+        var narration = Bar("Rance was on the outskirts of Golak.\nHe was alone.");
+        Assert.Equal(("", false), (narration.Speaker, narration.Unclosed));
+        Assert.Equal(["Rance was on the outskirts of Golak.", "He was alone."], narration.Lines);
+        Assert.Equal(["  ＜ptsssh＞"], Bar("  ＜ptsssh＞").Lines);                // a sound keeps its indent
+        Assert.Equal("", Bar("I’ll service（it）").Speaker);                    // not a name
+    }
+
+    /// <summary>
+    /// A speech not closed at the window's end goes on in the next window when its first line is indented to the speech's
+    /// text (<c>Gﾗﾌｧﾘｱ.ADV:652-657</c>); a narration after it does not.
+    /// </summary>
+    [Fact]
+    public void A_speech_left_open_goes_on_in_the_next_bar()
+    {
+        var open = Bar("Rance「Uuuh?");
+        Assert.Equal(("Rance", true), (open.Speaker, open.Unclosed));
+        Assert.Equal(["Uuuh?"], open.Lines);
+
+        var next = Bar("      ...Are you asking me to fire Rick?」", open);
+        Assert.Equal(("Rance", false), (next.Speaker, next.Unclosed));
+        Assert.Equal(["...Are you asking me to fire Rick?"], next.Lines);
+        Assert.Equal(16, next.Glyphs[0].X);
+
+        Assert.Equal("", Bar("      ...Are you asking me to fire Rick?」").Speaker);  // nothing open before
+        Assert.Equal("", Bar("Rance ran off.", open).Speaker);                 // not indented: narration
+    }
+
+    /// <summary>
+    /// The presenter hands 131 over (not under a picker, which prints its own text there: <c>FIGT_B.ADV:77-80</c>), and a
+    /// speech left open at a key wait goes on in the next text.
+    /// </summary>
+    [Fact]
+    public void The_presenter_hands_over_the_bar()
+    {
+        var (presenter, state) = Presenter();
+        presenter.CoverMessages = true;
+        Open(presenter, state, 131, 31, 815);
+        state.Strings[1] = "Rance「Uuuh?";
+        presenter.Show(new PrintStringEvent(1));
+        Assert.Equal(("Rance", MessageKind.CgBar), (presenter.MessageWindow!.Speaker, presenter.MessageWindow.Kind));
+
+        presenter.Show(new WindowEvent(11, 0));                                 // its key wait, then the next text
+        presenter.AfterKey();
+        state.Strings[1] = "      ...Are you asking me to fire Rick?」";
+        presenter.Show(new PrintStringEvent(1));
+        Assert.Equal("Rance", presenter.MessageWindow!.Speaker);
+        Assert.Equal(["...Are you asking me to fire Rick?"], presenter.MessageWindow.Lines);
+
+        presenter.Show(new PickerScreenEvent(PickerKind.Deployment, Sys3Int.Zero, true));
+        Assert.Null(presenter.MessageWindow);
+    }
+
+    /// <summary>
+    /// After <c>WAO_SUB</c> 0 the full-screen window stays on the screen (<c>WAO_SUB.ADV:267-270</c>): ours too, until something
+    /// is drawn over its place or a window opens; the debug mask stays on the scene left there until the whole screen is drawn.
+    /// </summary>
+    [Fact]
+    public void A_closed_bar_stays_until_drawn_over()
+    {
+        var (presenter, state) = Presenter();
+        presenter.CoverMessages = true;
+        presenter.MaskEventCgs = true;
+        Open(presenter, state, 131, 31, 815);
+        state.Strings[1] = "Rance「God damn iiiiiiiiiiit!!!!」";
+        presenter.Show(new PrintStringEvent(1));
+        Close(presenter, state);
+        Assert.Equal("Rance", presenter.MessageWindow?.Speaker);
+        Assert.True(Masked(presenter));
+
+        presenter.Show(new EngineEvent("CF", [Sys3Int.Zero, Sys3Int.Zero, (Sys3Int)640, (Sys3Int)100, (Sys3Int)15]));
+        Assert.NotNull(presenter.MessageWindow);                                // above the bar
+        Assert.True(Masked(presenter));
+        presenter.Show(new EngineEvent("CF", [Sys3Int.Zero, (Sys3Int)380, (Sys3Int)20, (Sys3Int)20, (Sys3Int)15]));
+        Assert.Null(presenter.MessageWindow);                                   // over it
+
+        Open(presenter, state, 131, 31, 815);
+        presenter.Show(new PrintStringEvent(1));
+        Close(presenter, state);
+        Open(presenter, state, 121, 21, 810);                                   // a window opens
+        Assert.Equal(MessageKind.SpeechRight, presenter.MessageWindow?.Kind);
+        Close(presenter, state);
+        Assert.Null(presenter.MessageWindow);
+        Assert.True(Masked(presenter));
+        presenter.Show(new EngineEvent("CF", [Sys3Int.Zero, Sys3Int.Zero, (Sys3Int)640, (Sys3Int)400, (Sys3Int)15]));
+        Assert.False(Masked(presenter));                                        // the whole screen drawn over
+    }
+
+    /// <summary>In a battle (step 5), under All Data or the week report the presenter keeps drawing.</summary>
     [Fact]
     public void The_presenter_keeps_the_windows_it_does_not_hand_over()
     {
         var (presenter, state) = Presenter();
         presenter.CoverMessages = true;
-        Open(presenter, state, 131, 31, 815);
-        Assert.Null(presenter.MessageWindow);
-
         Open(presenter, state, 111, 11, 807);
         Assert.NotNull(presenter.MessageWindow);
         presenter.Show(new BattleScreenEvent("FIGT.ADV", true));
@@ -184,6 +296,31 @@ public class MessageWindowTests
         state.Ui_WinType = (Sys3Int)type;
         state.Ui_WinFrameCg = (Sys3Int)frame;
         presenter.Invalidate();
+    }
+
+    /// <summary><c>WAO_SUB</c> 0: the event first, then the state.</summary>
+    private static void Close(GamePresenter presenter, GameState state)
+    {
+        presenter.Show(new WindowEvent(0, 0));
+        state.Ui_WinType = 0;
+        state.Ui_WinFrameCg = 0;
+        presenter.Invalidate();
+    }
+
+    /// <summary>131's text in its text box (<c>GamePresenter.Window</c>: (8, 305), size 24, colour 190), as the model reads it.</summary>
+    private static MessageWindow Bar(string text, MessageWindow? continuing = null)
+    {
+        var box = new TextBox((8, 305, 626, 140));
+        box.Print(text, 24, MessageWindow.CgBarColor);
+        return MessageWindow.Of(MessageWindow.CgBarCg, box, NoColour, continuing)!;
+    }
+
+    /// <summary>Whether the debug mask's grey is on the screen above the bar.</summary>
+    private static bool Masked(GamePresenter presenter)
+    {
+        presenter.Invalidate();
+        presenter.Compose();
+        return presenter.Screen.PixelAt(320, 100) == (96, 96, 96, 255);
     }
 
     /// <summary>Whether anything is drawn in 121's text area (the stage is black, no frame CG is there).</summary>

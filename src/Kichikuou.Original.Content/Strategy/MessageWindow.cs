@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.RegularExpressions;
 using Kichikuou.Content.Screen;
 
 namespace Kichikuou.Original.Content.Strategy;
@@ -23,21 +24,29 @@ public enum MessageKind
 
     /// <summary>113 holding a place's title: one line at <c>ZM 32</c>, the room under it at most (<c>Cｼﾊｲﾄｼ.ADV:1185-1192</c>).</summary>
     PlaceTitle,
+
+    /// <summary>131: the full-width bar under the event CGs, the speaker's name in its text (<c>Sill「Ah... My clothes...」</c>).</summary>
+    CgBar,
 }
 
 /// <summary>A character of the window's text at its cell (the 1280×800 screen's pixels), its colour when not the window's own.</summary>
 public readonly record struct MessageGlyph(int X, int Y, int Size, char C, (byte R, byte G, byte B)? Colour);
 
 /// <summary>
-/// The message window as our interface draws it (docs/ui/messages.md, variant A, step 1): the windows 111/112/121/122/113/123
-/// where the original has them, as a lacquer panel of their kind, the text at the cells <see cref="TextBox"/> placed it in
+/// The message window as our interface draws it (docs/ui/messages.md, variant A, steps 1-2): the windows 111/112/121/122/113/123
+/// and 131 where the original has them, as a lacquer panel of their kind, the text at the cells <see cref="TextBox"/> placed it in
 /// (monospaced, the script's own line breaks — owner, 2026-10-18). Everything is in the 1280×800 screen's pixels: the panel
-/// covers the original's frame and its tail whole (the mock-ups' numbers, §4).
+/// covers the original's frame and its tail whole (the mock-ups' numbers, §4). In 131 the speaker's name of
+/// <c>Name「…」</c> (a thought: <c>Name（…）</c>) is split off onto a plate (<see cref="Speaker"/>), its closing bracket
+/// dropped and the lines moved left by the name's cells (mock-ups A-7 to A-9).
 /// </summary>
 public sealed class MessageWindow
 {
     /// <summary>The colour every window opens with (<c>GamePresenter.Window</c>: 15): the panel's own text colour.</summary>
     public const int PlainColor = 15;
+
+    /// <summary>The colour 131 opens with (<c>GamePresenter.Window</c>: 190): its own text colour.</summary>
+    public const int CgBarColor = 190;
 
     /// <summary>The size of a place's title (<c>ZM 32</c>).</summary>
     public const int TitleSize = 32;
@@ -45,12 +54,24 @@ public sealed class MessageWindow
     // The frames WAO_SUB opens (OriginalScriptContext.Wao.cs): 111, 112, 113/123, 121, 122.
     private const int SpeechLeftCg = 807, ThoughtLeftCg = 808, NarrationCg = 809, SpeechRightCg = 810, ThoughtRightCg = 811;
 
+    /// <summary>The frame of 131 (<c>WAO_SUB.ADV:216-233</c>).</summary>
+    public const int CgBarCg = 815;
+
     private static readonly (int X, int Y, int W, int H) LeftPanel = (436, 4, 834, 254);
     private static readonly (int X, int Y, int W, int H) RightPanel = (58, 512, 822, 254);
     private static readonly (int X, int Y, int W, int H) NarrationPanel = (248, 536, 784, 258);
+    private static readonly (int X, int Y, int W, int H) CgBarPanel = (0, 588, 1280, 212);
+
+    /// <summary>
+    /// A speaker's name at the start of 131's text, before <c>「</c> (<c>｢</c> from a string variable, <c>Hankaku</c>) or <c>（</c>: words of letters, digits and signs, each
+    /// beginning with a capital, a digit or <c>?</c> (<c>Rance</c>, <c>Pink-Haired Girl</c>, <c>PG-7</c>, <c>???</c>) — not
+    /// a sentence that happens to quote (<c>I’ll service（</c>).
+    /// </summary>
+    private static readonly Regex SpeakerName =
+        new(@"^([A-Z0-9?][A-Za-z0-9?.'’\-]*(?: [A-Z0-9?][A-Za-z0-9?.'’\-]*)*)([「｢（])", RegexOptions.CultureInvariant);
 
     private MessageWindow(MessageKind kind, (int X, int Y, int W, int H) panel, IReadOnlyList<MessageGlyph> glyphs,
-        IReadOnlyList<string> lines, string title, string subtitle)
+        IReadOnlyList<string> lines, string title, string subtitle, Speech speech = default)
     {
         Kind = kind;
         Panel = panel;
@@ -58,7 +79,29 @@ public sealed class MessageWindow
         Lines = lines;
         Title = title;
         Subtitle = subtitle;
+        Speaker = speech.Name ?? "";
+        Thinks = speech.Thinks;
+        Unclosed = speech.Unclosed;
+        _prefix = speech.Prefix;
     }
+
+    /// <summary>131's speaker, the name split off the text; empty for narration and the other windows.</summary>
+    public string Speaker { get; }
+
+    /// <summary>131's speaker thinks: the text was <c>Name（…）</c>.</summary>
+    public bool Thinks { get; }
+
+    /// <summary>
+    /// 131's speech or thought is not closed at the window's end (<c>Gﾗﾌｧﾘｱ.ADV:652-657</c>): a next window without a
+    /// name, its first line indented to the speech's text, goes on with it (<see cref="Of"/>'s <c>continuing</c>).
+    /// </summary>
+    public bool Unclosed { get; }
+
+    /// <summary>The cells of the name and its bracket (screen pixels), which the lines under it are indented by.</summary>
+    private readonly int _prefix;
+
+    /// <summary>The speaker found in 131's text: the name, a thought or not, still open, the prefix's width.</summary>
+    private readonly record struct Speech(string? Name, bool Thinks, bool Unclosed, int Prefix);
 
     /// <summary>The window's kind.</summary>
     public MessageKind Kind { get; }
@@ -90,10 +133,12 @@ public sealed class MessageWindow
     /// <summary>
     /// The window of the frame <paramref name="frameCg"/> (<c>Ui_WinFrameCg</c>) with the text of <paramref name="text"/>,
     /// or null when the frame is not one of these windows or a character lies outside the panel (a text box moved by
-    /// <c>B4</c> while the window stays): then the original's drawing stays. <paramref name="colour"/> gives a palette
-    /// entry's colour, for characters printed in another colour than the window's own.
+    /// <c>B4</c> while the window stays; in 131 one that starts outside it): then the original's drawing stays.
+    /// <paramref name="colour"/> gives a palette entry's colour, for characters printed in another colour than the window's
+    /// own. <paramref name="continuing"/> is the 131 shown before, whose speech a window without a name may go on with
+    /// (<see cref="Unclosed"/>).
     /// </summary>
-    public static MessageWindow? Of(int frameCg, TextBox text, Func<int, (byte R, byte G, byte B)> colour)
+    public static MessageWindow? Of(int frameCg, TextBox text, Func<int, (byte R, byte G, byte B)> colour, MessageWindow? continuing = null)
     {
         (MessageKind Kind, (int X, int Y, int W, int H) Panel)? shape = frameCg switch
         {
@@ -102,20 +147,26 @@ public sealed class MessageWindow
             SpeechRightCg => (MessageKind.SpeechRight, RightPanel),
             ThoughtRightCg => (MessageKind.ThoughtRight, RightPanel),
             NarrationCg => (MessageKind.Narration, NarrationPanel),
+            CgBarCg => (MessageKind.CgBar, CgBarPanel),
             _ => null,
         };
         if (shape is not var (kind, panel))
             return null;
         const int k = Surface.Scale;
+        int plain = kind == MessageKind.CgBar ? CgBarColor : PlainColor;
         var glyphs = new List<MessageGlyph>(text.Chars.Count);
         foreach (var (x, y, size, index, c) in text.Chars)
         {
-            var glyph = new MessageGlyph(x * k, y * k, size * k, c, index == PlainColor ? null : colour(index));
-            int w = MessageWriter.CellWidth(c, size) * k;
-            if (glyph.X < panel.X || glyph.Y < panel.Y || glyph.X + w > panel.X + panel.W || glyph.Y + glyph.Size > panel.Y + panel.H)
+            var glyph = new MessageGlyph(x * k, y * k, size * k, c, index == plain ? null : colour(index));
+            // 131's text may run off the screen's edge and foot, as the engine's does (a line of 52 characters with a
+            // full-width ’ in it, Gｶﾅﾐ.ADV; a fourth line): only where a character starts counts there.
+            var (w, h) = kind == MessageKind.CgBar ? (1, 1) : (MessageWriter.CellWidth(c, size) * k, glyph.Size);
+            if (glyph.X < panel.X || glyph.Y < panel.Y || glyph.X + w > panel.X + panel.W || glyph.Y + h > panel.Y + panel.H)
                 return null;
             glyphs.Add(glyph);
         }
+        if (kind == MessageKind.CgBar)
+            return CgBar(panel, glyphs, text.Rect.X * k, continuing);
         var rows = text.Chars.GroupBy(c => c.Y).OrderBy(row => row.Key).ToArray();
         var lines = rows.Select(row => Line(row, text.Rect.X)).ToArray();
         string title = "", subtitle = "";
@@ -127,6 +178,65 @@ public sealed class MessageWindow
             subtitle = lines.Length > 1 ? lines[1].Trim() : "";
         }
         return new MessageWindow(kind, panel, glyphs, lines, title, subtitle);
+    }
+
+    /// <summary>
+    /// 131: the speaker's <c>Name「</c> / <c>Name（</c> off the first line, which moves left by its cells; the lines under it
+    /// move left by their indent, up to the name's cells; the closing bracket at the end dropped. A window without a name
+    /// whose first line is indented to <paramref name="continuing"/>'s speech, which was not closed, goes on with it.
+    /// </summary>
+    private static MessageWindow CgBar((int X, int Y, int W, int H) panel, List<MessageGlyph> glyphs, int left, MessageWindow? continuing)
+    {
+        var rows = glyphs.GroupBy(g => g.Y).OrderBy(row => row.Key).Select(row => row.OrderBy(g => g.X).ToList()).ToList();
+        var lines = rows.Select(row => LineOf(row, left)).ToList();
+        string? name = null;
+        bool thinks = false;
+        int prefix = 0, from = 1;
+        if (lines.Count > 0 && SpeakerName.Match(lines[0]) is { Success: true } m)
+        {
+            name = m.Groups[1].Value;
+            thinks = m.Groups[2].Value == "（";
+            int drop = name.Count(c => c != ' ') + 1;                           // the name's characters and its bracket
+            var bracket = rows[0][drop - 1];
+            prefix = bracket.X + MessageWriter.CellWidth(bracket.C, bracket.Size) - left;
+            rows[0] = [.. rows[0].Skip(drop).Select(g => g with { X = g.X - prefix })];
+        }
+        else if (continuing is { Unclosed: true } open && rows.Count > 0 && rows[0][0].X - left >= open._prefix - rows[0][0].Size)
+        {
+            (name, thinks, prefix, from) = (open.Speaker, open.Thinks, open._prefix, 0);
+        }
+        bool unclosed = false;
+        if (name is not null)
+        {
+            for (int i = from; i < rows.Count; i++)
+            {
+                int shift = Math.Min(rows[i][0].X - left, prefix);
+                rows[i] = [.. rows[i].Select(g => g with { X = g.X - shift })];
+            }
+            if (rows.Count > 0 && rows[^1] is { Count: > 0 } last && (thinks ? last[^1].C == '）' : last[^1].C is '」' or '｣'))
+                last.RemoveAt(last.Count - 1);
+            else
+                unclosed = true;
+            rows.RemoveAll(row => row.Count == 0);
+            lines = [.. rows.Select(row => LineOf(row, left))];
+        }
+        return new MessageWindow(MessageKind.CgBar, panel, [.. rows.SelectMany(row => row)], lines, "", "",
+            new Speech(name, thinks, unclosed, prefix));
+    }
+
+    /// <summary>A row of glyphs (screen pixels) from <paramref name="left"/>, a half-width space for each half cell between them.</summary>
+    private static string LineOf(IEnumerable<MessageGlyph> row, int left)
+    {
+        var line = new StringBuilder();
+        int at = left;
+        foreach (var g in row)
+        {
+            if (g.Size >= 2 && g.X > at)
+                line.Append(' ', (g.X - at) / (g.Size / 2));
+            line.Append(g.C);
+            at = g.X + MessageWriter.CellWidth(g.C, g.Size);
+        }
+        return line.ToString().TrimEnd();
     }
 
     /// <summary>A line's characters from the box's left edge, a half-width space for each half cell between them.</summary>
@@ -144,7 +254,8 @@ public sealed class MessageWindow
         return line.ToString().TrimEnd();
     }
 
-    /// <summary>Whether <paramref name="other"/> shows the same: the kind, the panel and every character.</summary>
+    /// <summary>Whether <paramref name="other"/> shows the same: the kind, the panel, the speaker and every character.</summary>
     public bool SameAs(MessageWindow? other) =>
-        other is not null && other.Kind == Kind && other.Panel == Panel && other.Glyphs.SequenceEqual(Glyphs);
+        other is not null && other.Kind == Kind && other.Panel == Panel && other.Speaker == Speaker && other.Thinks == Thinks
+        && other.Glyphs.SequenceEqual(Glyphs);
 }
