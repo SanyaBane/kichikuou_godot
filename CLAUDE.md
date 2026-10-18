@@ -313,7 +313,8 @@ commit `local.env`.
   loop, the weekly events, the load/save screen — and the presenter's audit, `GamePresenterTests.Audit`)
   and the captured battles the battle-screen tests replay (`BattleSceneTests.Captures`: the scene,
   the opening, the result waits, the strikes, the windows, the exchange effects, the scout report).
-  `KICHIKUOU_FULL_TESTS=1` runs them all (the whole project ~15 min; only the full counts fail a test
+  `KICHIKUOU_FULL_TESTS=1` runs them all (the whole project ~8 min, its long tests spread over classes
+  that xUnit runs in parallel, `Shards.cs` in the content tests; only the full counts fail a test
   whose random states never reached a path it lists). **Run the full counts only where they can find
   what the quick run cannot** (owner, 2026-10-14): a change reaches the scaled tests whose code it
   changes — run those, filtered, with the full counts

@@ -20,79 +20,97 @@ namespace Kichikuou.Original.Content.Tests;
 /// over what a battle or a scene may change — the commanders, the owners, the cursors, scratch,
 /// the retreat mode — and now and then ends the game by a jump. Skipped without the decompile.
 /// </summary>
-public class NationTurnDifferentialTests(ITestOutputHelper output)
+/// <remarks>
+/// Each test is a nested class of its own, named after its file, so that the tests run in parallel (Shards.cs).
+/// </remarks>
+public abstract class NationTurnDifferentialTests(ITestOutputHelper output)
 {
     private const int Cases = 3000;
 
-    [Fact]
-    public Task The_rebel_turn_runs_exactly_as_TCﾘｰｻﾞｽ() =>
-        CompareAsync(
-            "TCﾘｰｻﾞｽ.ADV",
-            (script, scenario) => new RebelTurn(script, scenario).RunAsync(),
-            (state, rng) =>
-            {
-                state.F_LeazasRebels_State = (Sys3Int)rng.Next(0, 3);
-                state.Prov_Cur = (Sys3Int)rng.Next(0, 101);
-            },
-            (before, after, _, log) => RebelTurnFeatures(before, after, log),
-            ["call Gｴｸｽ.ADV", "A at 4", "A at 3", "A at 2", "A at 1", "B at 7", "B at 8", "B at 1", "C at 6", "C at 5",
-             "C after B", "two attacks", "no attack", "jump", "record 0 picked"]);
+    public sealed class TCﾘｰｻﾞｽ(ITestOutputHelper output) : NationTurnDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_rebel_turn_runs_exactly_as_TCﾘｰｻﾞｽ() =>
+            CompareAsync(
+                "TCﾘｰｻﾞｽ.ADV",
+                (script, scenario) => new RebelTurn(script, scenario).RunAsync(),
+                (state, rng) =>
+                {
+                    state.F_LeazasRebels_State = (Sys3Int)rng.Next(0, 3);
+                    state.Prov_Cur = (Sys3Int)rng.Next(0, 101);
+                },
+                (before, after, _, log) => RebelTurnFeatures(before, after, log),
+                ["call Gｴｸｽ.ADV", "A at 4", "A at 3", "A at 2", "A at 1", "B at 7", "B at 8", "B at 1", "C at 6", "C at 5",
+                 "C after B", "two attacks", "no attack", "jump", "record 0 picked"]);
+    }
 
-    [Fact]
-    public Task The_rebel_defenders_are_picked_exactly_as_TCﾘｰｻﾞｽ2() =>
-        CompareAsync(
-            "TCﾘｰｻﾞｽ2.ADV",
-            (script, scenario) => new RebelDefenders(script, scenario).RunAsync(),
-            (state, rng) => state.Prov_Cur = (Sys3Int)(rng.Next(6) == 0 ? rng.Next(0, 101) : rng.Next(2, 9)),
-            (before, after, _, log) => RebelDefenderFeatures(before, after, log),
-            ["B at 7", "B at 8", "B elsewhere", "A at 2", "A at 3", "A at 4", "C at 5", "C at 6", "stale B", "stale A",
-             "empty party", "full party", "walls"]);
+    public sealed class TCﾘｰｻﾞｽ2(ITestOutputHelper output) : NationTurnDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_rebel_defenders_are_picked_exactly_as_TCﾘｰｻﾞｽ2() =>
+            CompareAsync(
+                "TCﾘｰｻﾞｽ2.ADV",
+                (script, scenario) => new RebelDefenders(script, scenario).RunAsync(),
+                (state, rng) => state.Prov_Cur = (Sys3Int)(rng.Next(6) == 0 ? rng.Next(0, 101) : rng.Next(2, 9)),
+                (before, after, _, log) => RebelDefenderFeatures(before, after, log),
+                ["B at 7", "B at 8", "B elsewhere", "A at 2", "A at 3", "A at 4", "C at 5", "C at 6", "stale B", "stale A",
+                 "empty party", "full party", "walls"]);
+    }
 
-    [Fact]
-    public Task The_Helman_defenders_are_picked_exactly_as_Tﾍﾙﾏﾝ2() =>
-        CompareAsync(
-            "Tﾍﾙﾏﾝ2.ADV",
-            (script, scenario) => new HelmanDefenders(script, scenario).RunAsync(),
-            AimAtHelman,
-            (before, after, _, log) => HelmanDefenderFeatures(before, after, log),
-            ["call Gｽﾃｯｾﾙ.ADV", "call Gｼｰﾗ.ADV 1", "call Gｼｰﾗ.ADV 2", "called off", "call Gﾈﾛ.ADV", "call Gﾊﾟｯﾄﾝ.ADV",
-             "call Gﾙｰﾍﾞﾗﾝ.ADV", "1st army", "1st army, first order", "Laumiere alone", "2nd army", "3rd army",
-             "3rd army with militia", "4th army", "5th army", "Lelyukov alone", "Ruberan", "militia", "leader dead",
-             "Mineva met", "pass against one unit", "filtered"],
-            ScribbleHelman);
+    public sealed class Tﾍﾙﾏﾝ2(ITestOutputHelper output) : NationTurnDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_Helman_defenders_are_picked_exactly_as_Tﾍﾙﾏﾝ2() =>
+            CompareAsync(
+                "Tﾍﾙﾏﾝ2.ADV",
+                (script, scenario) => new HelmanDefenders(script, scenario).RunAsync(),
+                AimAtHelman,
+                (before, after, _, log) => HelmanDefenderFeatures(before, after, log),
+                ["call Gｽﾃｯｾﾙ.ADV", "call Gｼｰﾗ.ADV 1", "call Gｼｰﾗ.ADV 2", "called off", "call Gﾈﾛ.ADV", "call Gﾊﾟｯﾄﾝ.ADV",
+                 "call Gﾙｰﾍﾞﾗﾝ.ADV", "1st army", "1st army, first order", "Laumiere alone", "2nd army", "3rd army",
+                 "3rd army with militia", "4th army", "5th army", "Lelyukov alone", "Ruberan", "militia", "leader dead",
+                 "Mineva met", "pass against one unit", "filtered"],
+                ScribbleHelman);
+    }
 
-    [Fact]
-    public Task The_Helman_turn_runs_exactly_as_Tﾍﾙﾏﾝ() =>
-        CompareAsync(
-            "Tﾍﾙﾏﾝ.ADV",
-            (script, scenario) => new HelmanTurn(script, scenario).RunAsync(),
-            AimAtHelmanTurn,
-            HelmanTurnFeatures,
-            [
-                "call Gｽﾃｯｾﾙ.ADV 3", "call Gｽﾃｯｾﾙ.ADV 4", "call Gｽﾃｯｾﾙ.ADV 5", "call Gｽﾃｯｾﾙ.ADV 6", "call Gｽﾃｯｾﾙ.ADV 14",
-                "call Gﾌﾚｲｱ.ADV 1", "call Gﾚﾘｭｰｺﾌ.ADV 1", "call Gﾚﾘｭｰｺﾌ.ADV 2", "call Gﾚﾘｭｰｺﾌ.ADV 5",
-                "call Gｱﾘｽﾄﾚｽ.ADV 1", "call Gｱﾘｽﾄﾚｽ.ADV 5", "call Gﾊﾟｯﾄﾝ.ADV 2", "call Gﾊﾟｯﾄﾝ.ADV 12",
-                "call Gﾐﾈﾊﾞ.ADV 1", "call Gﾐﾈﾊﾞ.ADV 4", "call Gﾈﾛ.ADV 2", "call Gﾛﾚｯｸｽ.ADV 1", "call Gﾛﾚｯｸｽ.ADV 2",
-                "call Gｵｰﾙﾊｳﾝﾄ.ADV 1",
-                .. HelmanAttacks,
-                "capture", "capture at 13", "capture at 2", "1st army, first order", "1st army, second order",
-                "two attacks", "three attacks", "no attack", "jump", "Tainyar revived", "Rolex 0 to 1", "Rolex 1 to 2",
-                "Rolex 2 at Rosesgrad", "Nero counted up", "Aristoles 1 to 2", "Aristoles 2 to 3", "filtered",
-            ],
-            ScribbleHelmanTurn,
-            cases: 4000);
+    public sealed class Tﾍﾙﾏﾝ(ITestOutputHelper output) : NationTurnDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_Helman_turn_runs_exactly_as_Tﾍﾙﾏﾝ() =>
+            CompareAsync(
+                "Tﾍﾙﾏﾝ.ADV",
+                (script, scenario) => new HelmanTurn(script, scenario).RunAsync(),
+                AimAtHelmanTurn,
+                HelmanTurnFeatures,
+                [
+                    "call Gｽﾃｯｾﾙ.ADV 3", "call Gｽﾃｯｾﾙ.ADV 4", "call Gｽﾃｯｾﾙ.ADV 5", "call Gｽﾃｯｾﾙ.ADV 6", "call Gｽﾃｯｾﾙ.ADV 14",
+                    "call Gﾌﾚｲｱ.ADV 1", "call Gﾚﾘｭｰｺﾌ.ADV 1", "call Gﾚﾘｭｰｺﾌ.ADV 2", "call Gﾚﾘｭｰｺﾌ.ADV 5",
+                    "call Gｱﾘｽﾄﾚｽ.ADV 1", "call Gｱﾘｽﾄﾚｽ.ADV 5", "call Gﾊﾟｯﾄﾝ.ADV 2", "call Gﾊﾟｯﾄﾝ.ADV 12",
+                    "call Gﾐﾈﾊﾞ.ADV 1", "call Gﾐﾈﾊﾞ.ADV 4", "call Gﾈﾛ.ADV 2", "call Gﾛﾚｯｸｽ.ADV 1", "call Gﾛﾚｯｸｽ.ADV 2",
+                    "call Gｵｰﾙﾊｳﾝﾄ.ADV 1",
+                    .. HelmanAttacks,
+                    "capture", "capture at 13", "capture at 2", "1st army, first order", "1st army, second order",
+                    "two attacks", "three attacks", "no attack", "jump", "Tainyar revived", "Rolex 0 to 1", "Rolex 1 to 2",
+                    "Rolex 2 at Rosesgrad", "Nero counted up", "Aristoles 1 to 2", "Aristoles 2 to 3", "filtered",
+                ],
+                ScribbleHelmanTurn,
+                cases: 4000);
+    }
 
-    [Fact]
-    public Task The_Patton_turn_runs_exactly_as_Tﾊﾟｯﾄﾝ() =>
-        CompareAsync(
-            "Tﾊﾟｯﾄﾝ.ADV",
-            (script, scenario) => new PattonTurn(script, scenario).RunAsync(),
-            AimAtPatton,
-            PattonFeatures,
-            ["call Gﾊﾟｯﾄﾝ.ADV 11", "call Gｱﾘｽﾄﾚｽ.ADV 3", "call Gﾊﾟｯﾄﾝ.ADV 9", "call Gﾊﾟｯﾄﾝ.ADV 8", "call Gﾊﾟｯﾄﾝ.ADV 7",
-             "two scenes", "at 46", "at 41", "at 40", "at 44", "at 45", "with Aristoles", "full party", "too weak",
-             "no target", "jump"],
-            ScribblePatton);
+    public sealed class Tﾊﾟｯﾄﾝ(ITestOutputHelper output) : NationTurnDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_Patton_turn_runs_exactly_as_Tﾊﾟｯﾄﾝ() =>
+            CompareAsync(
+                "Tﾊﾟｯﾄﾝ.ADV",
+                (script, scenario) => new PattonTurn(script, scenario).RunAsync(),
+                AimAtPatton,
+                PattonFeatures,
+                ["call Gﾊﾟｯﾄﾝ.ADV 11", "call Gｱﾘｽﾄﾚｽ.ADV 3", "call Gﾊﾟｯﾄﾝ.ADV 9", "call Gﾊﾟｯﾄﾝ.ADV 8", "call Gﾊﾟｯﾄﾝ.ADV 7",
+                 "two scenes", "at 46", "at 41", "at 40", "at 44", "at 45", "with Aristoles", "full party", "too weak",
+                 "no target", "jump"],
+                ScribblePatton);
+    }
 
     /// <summary>
     /// Patton's army state at its tested values and around them, Aristoles's state below and above
@@ -163,20 +181,23 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
             yield return "jump";
     }
 
-    [Fact]
-    public Task The_Zeth_defenders_are_picked_exactly_as_Tｾﾞｽ2() =>
-        CompareAsync(
-            "Tｾﾞｽ2.ADV",
-            (script, scenario) => new ZethDefenders(script, scenario).RunAsync(),
-            AimAtZeth,
-            ZethDefenderFeatures,
-            ["call Iｾﾞｽ.ADV 1", "call Gﾏｼﾞｯｸ.ADV 1", "call Gﾅｷﾞ.ADV 5", "call Gﾁｽﾞｺ.ADV 1", "call Gﾊﾟﾊﾟｲｱ.ADV 3",
-             "Magic's army", "Alex's army at Magic's Tower", "Nagi's army", "Chizuko's army", "Papaya's army",
-             "113's army", "117's army", "121's army", "125's army",
-             "113 with the Walls", "117 with the Walls", "121 with the Walls", "125 with the Walls",
-             "sent back at 66", "sent back at 67", "sent back at 68", "sent back at 70", "the Blade", "barrier down",
-             "garrison", "Mage Leader alone", "garrison weakened", "Parapara Fortress", "Papaya's trap"],
-            ScribbleZeth);
+    public sealed class Tｾﾞｽ2(ITestOutputHelper output) : NationTurnDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_Zeth_defenders_are_picked_exactly_as_Tｾﾞｽ2() =>
+            CompareAsync(
+                "Tｾﾞｽ2.ADV",
+                (script, scenario) => new ZethDefenders(script, scenario).RunAsync(),
+                AimAtZeth,
+                ZethDefenderFeatures,
+                ["call Iｾﾞｽ.ADV 1", "call Gﾏｼﾞｯｸ.ADV 1", "call Gﾅｷﾞ.ADV 5", "call Gﾁｽﾞｺ.ADV 1", "call Gﾊﾟﾊﾟｲｱ.ADV 3",
+                 "Magic's army", "Alex's army at Magic's Tower", "Nagi's army", "Chizuko's army", "Papaya's army",
+                 "113's army", "117's army", "121's army", "125's army",
+                 "113 with the Walls", "117 with the Walls", "121 with the Walls", "125 with the Walls",
+                 "sent back at 66", "sent back at 67", "sent back at 68", "sent back at 70", "the Blade", "barrier down",
+                 "garrison", "Mage Leader alone", "garrison weakened", "Parapara Fortress", "Papaya's trap"],
+                ScribbleZeth);
+    }
 
     /// <summary>Zeth's ministers (101-112 with their officers) and generals (113-128 with theirs).</summary>
     private static readonly int[] ZethLeaders = [.. Enumerable.Range(101, 28)];
@@ -276,26 +297,29 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
             };
     }
 
-    [Fact]
-    public Task The_Zeth_turn_runs_exactly_as_Tｾﾞｽ() =>
-        CompareAsync(
-            "Tｾﾞｽ.ADV",
-            (script, scenario) => new ZethTurn(script, scenario).RunAsync(),
-            AimAtZethTurn,
-            ZethTurnFeatures,
-            [
-                "call Gﾊﾟﾊﾟｲｱ.ADV 1", "call Gﾅｷﾞ.ADV 3", "call Gﾅｷﾞ.ADV 2", "call Gﾅｷﾞ.ADV 1",
-                .. new[] { 2, 3, 4, 5, 6, 30, 31, 32, 33, 34, 35, 36 }.Select(e => $"call Iｾﾞｽ.ADV {e}"),
-                "call Gﾏｼﾞｯｸ.ADV 3", "call Gﾁｽﾞｺ.ADV 6", "call Gﾊﾟﾊﾟｲｱ.ADV 9", "call Gﾅｷﾞ.ADV 22", "call Gﾏｼﾞｯｸ.ADV 24",
-                "call Gﾊﾟﾊﾟｲｱ.ADV 8", "call Gﾁｽﾞｺ.ADV 4", "call Gﾁｽﾞｺ.ADV 5", "call Gﾅｷﾞ.ADV 21", "call Gﾏｼﾞｯｸ.ADV 21",
-                "call Gﾏｼﾞｯｸ.ADV 22",
-                .. ZethAttacks,
-                "state 2: Saias alone", "state 2: Saias dead", "no scene the week Iｾﾞｽ 2 played", "6 without Alex",
-                "officer revived", "general too weak", "fell into Chizuko's army",
-                "no attack", "one attack", "two attacks", "three attacks", "jump",
-            ],
-            ScribbleZethTurn,
-            cases: 4000);
+    public sealed class Tｾﾞｽ(ITestOutputHelper output) : NationTurnDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_Zeth_turn_runs_exactly_as_Tｾﾞｽ() =>
+            CompareAsync(
+                "Tｾﾞｽ.ADV",
+                (script, scenario) => new ZethTurn(script, scenario).RunAsync(),
+                AimAtZethTurn,
+                ZethTurnFeatures,
+                [
+                    "call Gﾊﾟﾊﾟｲｱ.ADV 1", "call Gﾅｷﾞ.ADV 3", "call Gﾅｷﾞ.ADV 2", "call Gﾅｷﾞ.ADV 1",
+                    .. new[] { 2, 3, 4, 5, 6, 30, 31, 32, 33, 34, 35, 36 }.Select(e => $"call Iｾﾞｽ.ADV {e}"),
+                    "call Gﾏｼﾞｯｸ.ADV 3", "call Gﾁｽﾞｺ.ADV 6", "call Gﾊﾟﾊﾟｲｱ.ADV 9", "call Gﾅｷﾞ.ADV 22", "call Gﾏｼﾞｯｸ.ADV 24",
+                    "call Gﾊﾟﾊﾟｲｱ.ADV 8", "call Gﾁｽﾞｺ.ADV 4", "call Gﾁｽﾞｺ.ADV 5", "call Gﾅｷﾞ.ADV 21", "call Gﾏｼﾞｯｸ.ADV 21",
+                    "call Gﾏｼﾞｯｸ.ADV 22",
+                    .. ZethAttacks,
+                    "state 2: Saias alone", "state 2: Saias dead", "no scene the week Iｾﾞｽ 2 played", "6 without Alex",
+                    "officer revived", "general too weak", "fell into Chizuko's army",
+                    "no attack", "one attack", "two attacks", "three attacks", "jump",
+                ],
+                ScribbleZethTurn,
+                cases: 4000);
+    }
 
     /// <summary>The generals with the first commander of their armies: Saias (113) … Alex (125), each with his three officers after him.</summary>
     private static readonly (string Name, int Leader)[] ZethGenerals = [("Saias", 113), ("Uspira", 117), ("Kabachahn", 121), ("Alex", 125)];
@@ -454,47 +478,56 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
         }
     }
 
-    [Fact]
-    public Task The_Kayblis_defenders_are_picked_exactly_as_Tｹｲﾌﾞﾘｽ2() =>
-        CompareAsync(
-            "Tｹｲﾌﾞﾘｽ2.ADV",
-            (script, scenario) => new KayblisDefenders(script, scenario).RunAsync(),
-            AimAtKayblis,
-            KayblisDefenderFeatures,
-            ["call Gﾜｰｸﾞ.ADV 1", "call Gｹｲﾌﾞﾘｽ.ADV 4", "plains, two", "plains, four", "91 in the plains",
-             "gate at 78", "gate at 89", "gate at 90", "gate at 91", "gate in another stage",
-             "Kaybwan", "Kaybnyan", "Kesselring", "Camilla", "Camilla raised", "Kayblis", "Medusa", "Monster Generals",
-             "Monster Generals with walls", "attacked again", "a general without a draw"],
-            ScribbleKayblis);
+    public sealed class Tｹｲﾌﾞﾘｽ2(ITestOutputHelper output) : NationTurnDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_Kayblis_defenders_are_picked_exactly_as_Tｹｲﾌﾞﾘｽ2() =>
+            CompareAsync(
+                "Tｹｲﾌﾞﾘｽ2.ADV",
+                (script, scenario) => new KayblisDefenders(script, scenario).RunAsync(),
+                AimAtKayblis,
+                KayblisDefenderFeatures,
+                ["call Gﾜｰｸﾞ.ADV 1", "call Gｹｲﾌﾞﾘｽ.ADV 4", "plains, two", "plains, four", "91 in the plains",
+                 "gate at 78", "gate at 89", "gate at 90", "gate at 91", "gate in another stage",
+                 "Kaybwan", "Kaybnyan", "Kesselring", "Camilla", "Camilla raised", "Kayblis", "Medusa", "Monster Generals",
+                 "Monster Generals with walls", "attacked again", "a general without a draw"],
+                ScribbleKayblis);
+    }
 
-    [Fact]
-    public Task The_JAPAN_defenders_are_picked_exactly_as_TJAPAN2() =>
-        CompareAsync(
-            "TJAPAN2.ADV",
-            (script, scenario) => new JapanDefenders(script, scenario).RunAsync(),
-            AimAtJapan,
-            JapanDefenderFeatures,
-            ["Nagasaki", "Nagasaki too weak", "Osaka", "strongest 1", "strongest 2", "strongest 3", "too weak",
-             "retreat mode 4", "war over an alliance"]);
+    public sealed class TJAPAN2(ITestOutputHelper output) : NationTurnDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_JAPAN_defenders_are_picked_exactly_as_TJAPAN2() =>
+            CompareAsync(
+                "TJAPAN2.ADV",
+                (script, scenario) => new JapanDefenders(script, scenario).RunAsync(),
+                AimAtJapan,
+                JapanDefenderFeatures,
+                ["Nagasaki", "Nagasaki too weak", "Osaka", "strongest 1", "strongest 2", "strongest 3", "too weak",
+                 "retreat mode 4", "war over an alliance"]);
+    }
 
-    [Fact]
-    public Task The_JAPAN_turn_runs_exactly_as_TJAPAN() =>
-        CompareAsync(
-            "TJAPAN.ADV",
-            (script, scenario) => new JapanTurn(script, scenario).RunAsync(),
-            AimAtJapanTurn,
-            JapanTurnFeatures,
-            [
-                "call Gｺｳﾋﾒ.ADV 1", "call Gｺｳﾋﾒ.ADV 2", "call Gｺｳﾋﾒ.ADV 3", "call Gｺｳﾋﾒ.ADV 4", "call IJAPAN.ADV 7",
-                "call IJAPAN.ADV 8", "quiet week", "army 1", "army 2", "army 3", "army 4", "army 5", "no army", "too weak",
-                .. JapanTurnTargets.Select(p => $"attack at {p}"), .. new[] { 27, 26, 24, 23 }.Select(p => $"taken {p}"),
-                "M Land passed by", "the walk ran out", "a weak commander left out",
-                "Rance fought: draw in three", "Gekkou: half the gold", "Gekkou: a quarter", "Gekkou: nothing stolen",
-                "Gekkou: nobody found", .. GekkouTargets.SelectMany(u => new[] { $"Gekkou kills unit {u}", $"Gekkou fails at unit {u}" }),
-                "Shinobu fails", "Shinobu: ending 4", "Shinobu caught, Leila alive", "Shinobu caught, Leila dead",
-                "army after an attempt",
-            ],
-            ScribbleJapanTurn);
+    public sealed class TJAPAN(ITestOutputHelper output) : NationTurnDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_JAPAN_turn_runs_exactly_as_TJAPAN() =>
+            CompareAsync(
+                "TJAPAN.ADV",
+                (script, scenario) => new JapanTurn(script, scenario).RunAsync(),
+                AimAtJapanTurn,
+                JapanTurnFeatures,
+                [
+                    "call Gｺｳﾋﾒ.ADV 1", "call Gｺｳﾋﾒ.ADV 2", "call Gｺｳﾋﾒ.ADV 3", "call Gｺｳﾋﾒ.ADV 4", "call IJAPAN.ADV 7",
+                    "call IJAPAN.ADV 8", "quiet week", "army 1", "army 2", "army 3", "army 4", "army 5", "no army", "too weak",
+                    .. JapanTurnTargets.Select(p => $"attack at {p}"), .. new[] { 27, 26, 24, 23 }.Select(p => $"taken {p}"),
+                    "M Land passed by", "the walk ran out", "a weak commander left out",
+                    "Rance fought: draw in three", "Gekkou: half the gold", "Gekkou: a quarter", "Gekkou: nothing stolen",
+                    "Gekkou: nobody found", .. GekkouTargets.SelectMany(u => new[] { $"Gekkou kills unit {u}", $"Gekkou fails at unit {u}" }),
+                    "Shinobu fails", "Shinobu: ending 4", "Shinobu caught, Leila alive", "Shinobu caught, Leila dead",
+                    "army after an attempt",
+                ],
+                ScribbleJapanTurn);
+    }
 
     /// <summary>The units Gekkou's draw in six picks (<c>TJAPAN.ADV:490-514</c>): Barres (6), Rick (7), Cordoba (8), Ex (14), Eleanor (23), Gengorou (15).</summary>
     private static readonly int[] GekkouTargets = [6, 7, 8, 14, 23, 15];
@@ -755,62 +788,68 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
             yield return "Monster Generals with walls";
     }
 
-    [Fact]
-    public Task The_Kayblis_turn_runs_exactly_as_Tｹｲﾌﾞﾘｽ() =>
-        CompareAsync(
-            "Tｹｲﾌﾞﾘｽ.ADV",
-            (script, scenario) => new KayblisTurn(script, scenario).RunAsync(),
-            AimAtKayblisTurn,
-            KayblisTurnFeatures,
-            [
-                "week S", "call Gｹｲﾌﾞﾘｽ.ADV 2", "call Gﾒﾃﾞｨｳｻ.ADV 1", "call Gﾒﾃﾞｨｳｻ.ADV 2", "call Gﾒﾃﾞｨｳｻ.ADV 3",
-                "call Gﾒﾃﾞｨｳｻ.ADV 4", "call Gﾒﾃﾞｨｳｻ.ADV 5", "Medusa's counter moved", "call Gｶﾐｰﾗ.ADV 3", "call Gｶﾐｰﾗ.ADV 4",
-                "call Gｶﾐｰﾗ.ADV 5", "a marked week ends the chain",
-                .. new[] { 1, 2, 3, 4, 5, 6, 8, 9 }.Select(n => $"call Gｼﾙｷｨ.ADV {n}"), "the chain goes on after Gｼﾙｷｨ 8",
-                "call Gﾜｰｸﾞ.ADV 3", "call Gﾜｰｸﾞ.ADV 4", "call Gﾅｷﾞ.ADV 9", "call Gｹｲﾌﾞﾜﾝ.ADV 3", "call Gｹｲﾌﾞﾆｬﾝ.ADV 3",
-                "call Gｻﾃﾗ.ADV 2", "no scene", "guards", "guards again", "guards with portrait 415", "guards with portrait 466",
-                "call Gﾊﾞﾎﾞﾗ.ADV 1", "call Gﾚｯﾄﾞｱｲ.ADV 1", "call Gｶｲﾄ.ADV 1", "call Gｶﾞﾙﾃｨｱ.ADV 1", "call Gｹｯｾﾙ.ADV 1",
-                "call Gﾊﾟｲｱｰﾙ.ADV 1", "call Gｹｲﾌﾞﾘｽ.ADV 3", "the end", "jump",
-                .. new[] { 135, 156, 131, 157, 158, 87 }.Select(c => $"Kayblis's army led by {c}"),
-                .. KayblisGenerals[1].Line.Select(p => $"Kayblis's army attacks {p}"),
-                "Kayblis's army without Kayblis", "Monster Generals above their maximum",
-                .. KayblisGenerals.SelectMany(g => g.Line.Select(p => $"{g.Army} attacks {p}")),
-                .. KayblisGenerals.Where(g => g.Army != "Kesselring").Select(g => $"{g.Army} attacks again"),
-                .. KayblisGenerals.Select(g => $"{g.Army} killed"),
-                .. KayblisGenerals.SelectMany(g => g.Line).Distinct().Where(p => p != 89).Select(p => $"capture at {p}"),
-                "Kesselring captures", "Redeye alone at Maunes", "the battle at Maunes after Gﾚｯﾄﾞｱｲ 8",
-                "Gﾚｯﾄﾞｱｲ 8 calls the battle off", "Redeye's state 1 to 2", "Redeye's state 3 to 4", "Redeye's state 6 to 7",
-                "Kite's draw in ten", "Gｹｯｾﾙ 2 at Bone Forest", "Gｹｯｾﾙ 2 at the Red House",
-                "call Gﾊﾞﾎﾞﾗ.ADV 2", "call Gﾊﾞﾎﾞﾗ.ADV 4", .. new[] { 2, 4, 5, 6, 8 }.Select(n => $"call Gﾚｯﾄﾞｱｲ.ADV {n}"),
-                "call Gﾌﾘｰｸ.ADV 4", .. Enumerable.Range(2, 6).Select(n => $"call Gｶｲﾄ.ADV {n}"), "call Gｶﾞﾙﾃｨｱ.ADV 2",
-                "call Gｹｯｾﾙ.ADV 2",
-                "Piar draws again", "Piar gives up", "Piar's unit empty", "Piar attacks", "Piar captures",
-                "Piar's state 2 to 3", "Piar's state 4 to 5", .. Enumerable.Range(2, 5).Select(n => $"call Gﾊﾟｲｱｰﾙ.ADV {n}"),
-                .. Enumerable.Range(191, 8).Select(c => $"Assault Leader {c} marches"),
-                .. AssaultLists.SelectMany(l => l.Line.Select(p => $"{l.Name} list attacks {p}")),
-                .. AssaultLists.SelectMany(l => l.Line.Select(p => $"{l.Name} list captures at {p}")),
-                "the south list takes Leazas Castle again", "the north list all Kayblis's", "an Assault Leader alone at Maunes",
-                "an Assault Leader revived", "an Assault Leader too weak", "an Assault Leader held under 1000 by his maximum",
-                "a Monster General left out", "a Monster General called up without a draw",
-            ],
-            ScribbleKayblisTurn,
-            cases: 4000,
-            logPlaces: true);
+    public sealed class Tｹｲﾌﾞﾘｽ(ITestOutputHelper output) : NationTurnDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_Kayblis_turn_runs_exactly_as_Tｹｲﾌﾞﾘｽ() =>
+            CompareAsync(
+                "Tｹｲﾌﾞﾘｽ.ADV",
+                (script, scenario) => new KayblisTurn(script, scenario).RunAsync(),
+                AimAtKayblisTurn,
+                KayblisTurnFeatures,
+                [
+                    "week S", "call Gｹｲﾌﾞﾘｽ.ADV 2", "call Gﾒﾃﾞｨｳｻ.ADV 1", "call Gﾒﾃﾞｨｳｻ.ADV 2", "call Gﾒﾃﾞｨｳｻ.ADV 3",
+                    "call Gﾒﾃﾞｨｳｻ.ADV 4", "call Gﾒﾃﾞｨｳｻ.ADV 5", "Medusa's counter moved", "call Gｶﾐｰﾗ.ADV 3", "call Gｶﾐｰﾗ.ADV 4",
+                    "call Gｶﾐｰﾗ.ADV 5", "a marked week ends the chain",
+                    .. new[] { 1, 2, 3, 4, 5, 6, 8, 9 }.Select(n => $"call Gｼﾙｷｨ.ADV {n}"), "the chain goes on after Gｼﾙｷｨ 8",
+                    "call Gﾜｰｸﾞ.ADV 3", "call Gﾜｰｸﾞ.ADV 4", "call Gﾅｷﾞ.ADV 9", "call Gｹｲﾌﾞﾜﾝ.ADV 3", "call Gｹｲﾌﾞﾆｬﾝ.ADV 3",
+                    "call Gｻﾃﾗ.ADV 2", "no scene", "guards", "guards again", "guards with portrait 415", "guards with portrait 466",
+                    "call Gﾊﾞﾎﾞﾗ.ADV 1", "call Gﾚｯﾄﾞｱｲ.ADV 1", "call Gｶｲﾄ.ADV 1", "call Gｶﾞﾙﾃｨｱ.ADV 1", "call Gｹｯｾﾙ.ADV 1",
+                    "call Gﾊﾟｲｱｰﾙ.ADV 1", "call Gｹｲﾌﾞﾘｽ.ADV 3", "the end", "jump",
+                    .. new[] { 135, 156, 131, 157, 158, 87 }.Select(c => $"Kayblis's army led by {c}"),
+                    .. KayblisGenerals[1].Line.Select(p => $"Kayblis's army attacks {p}"),
+                    "Kayblis's army without Kayblis", "Monster Generals above their maximum",
+                    .. KayblisGenerals.SelectMany(g => g.Line.Select(p => $"{g.Army} attacks {p}")),
+                    .. KayblisGenerals.Where(g => g.Army != "Kesselring").Select(g => $"{g.Army} attacks again"),
+                    .. KayblisGenerals.Select(g => $"{g.Army} killed"),
+                    .. KayblisGenerals.SelectMany(g => g.Line).Distinct().Where(p => p != 89).Select(p => $"capture at {p}"),
+                    "Kesselring captures", "Redeye alone at Maunes", "the battle at Maunes after Gﾚｯﾄﾞｱｲ 8",
+                    "Gﾚｯﾄﾞｱｲ 8 calls the battle off", "Redeye's state 1 to 2", "Redeye's state 3 to 4", "Redeye's state 6 to 7",
+                    "Kite's draw in ten", "Gｹｯｾﾙ 2 at Bone Forest", "Gｹｯｾﾙ 2 at the Red House",
+                    "call Gﾊﾞﾎﾞﾗ.ADV 2", "call Gﾊﾞﾎﾞﾗ.ADV 4", .. new[] { 2, 4, 5, 6, 8 }.Select(n => $"call Gﾚｯﾄﾞｱｲ.ADV {n}"),
+                    "call Gﾌﾘｰｸ.ADV 4", .. Enumerable.Range(2, 6).Select(n => $"call Gｶｲﾄ.ADV {n}"), "call Gｶﾞﾙﾃｨｱ.ADV 2",
+                    "call Gｹｯｾﾙ.ADV 2",
+                    "Piar draws again", "Piar gives up", "Piar's unit empty", "Piar attacks", "Piar captures",
+                    "Piar's state 2 to 3", "Piar's state 4 to 5", .. Enumerable.Range(2, 5).Select(n => $"call Gﾊﾟｲｱｰﾙ.ADV {n}"),
+                    .. Enumerable.Range(191, 8).Select(c => $"Assault Leader {c} marches"),
+                    .. AssaultLists.SelectMany(l => l.Line.Select(p => $"{l.Name} list attacks {p}")),
+                    .. AssaultLists.SelectMany(l => l.Line.Select(p => $"{l.Name} list captures at {p}")),
+                    "the south list takes Leazas Castle again", "the north list all Kayblis's", "an Assault Leader alone at Maunes",
+                    "an Assault Leader revived", "an Assault Leader too weak", "an Assault Leader held under 1000 by his maximum",
+                    "a Monster General left out", "a Monster General called up without a draw",
+                ],
+                ScribbleKayblisTurn,
+                cases: 4000,
+                logPlaces: true);
+    }
 
-    [Fact]
-    public Task Kayblis_captures_exactly_as_L_026bf() =>
-        CompareAsync(
-            "Tｹｲﾌﾞﾘｽ.ADV",
-            (script, scenario) => new KayblisTurn(script, scenario).CaptureAsync(),
-            AimAtKayblisCapture,
-            KayblisCaptureFeatures,
-            [
-                "plain capture", "Helman falls", "Helman fallen already", "Shangri-La to Kayblis", "Shangri-La kept",
-                .. new[] { 101, 104, 107, 110 }.Select(c => $"minister {c} killed"), "Zeth's story moved on", "Zeth falls",
-                "Zeth fallen already", "Adam's Fortress to Kayblis", "Saias killed by the collapse",
-                .. new[] { 113, 117, 121, 125 }.Select(c => $"general {c} killed"), "general dead already",
-            ],
-            label: "L_026bf");
+    public sealed class L_026bf(ITestOutputHelper output) : NationTurnDifferentialTests(output)
+    {
+        [Fact]
+        public Task Kayblis_captures_exactly_as_L_026bf() =>
+            CompareAsync(
+                "Tｹｲﾌﾞﾘｽ.ADV",
+                (script, scenario) => new KayblisTurn(script, scenario).CaptureAsync(),
+                AimAtKayblisCapture,
+                KayblisCaptureFeatures,
+                [
+                    "plain capture", "Helman falls", "Helman fallen already", "Shangri-La to Kayblis", "Shangri-La kept",
+                    .. new[] { 101, 104, 107, 110 }.Select(c => $"minister {c} killed"), "Zeth's story moved on", "Zeth falls",
+                    "Zeth fallen already", "Adam's Fortress to Kayblis", "Saias killed by the collapse",
+                    .. new[] { 113, 117, 121, 125 }.Select(c => $"general {c} killed"), "general dead already",
+                ],
+                label: "L_026bf");
+    }
 
     /// <summary>
     /// Kayblis's commanders: Camilla (91), the generals and their officers (129-133, 148-155), Medusa
@@ -1655,19 +1694,22 @@ public class NationTurnDifferentialTests(ITestOutputHelper output)
             yield return "filtered";
     }
 
-    [Fact]
-    public Task The_Creator_turn_runs_exactly_as_Tﾙﾄﾞﾗ() =>
-        CompareAsync(
-            "Tﾙﾄﾞﾗ.ADV",
-            (script, scenario) => new CreatorTurn(script, scenario).RunAsync(),
-            AimAtCreator,
-            CreatorFeatures,
-            ["call Gﾙﾄﾞﾗ.ADV 1", "no scene off stage 4", "five attacks", "attack skipped", "two earthquakes",
-             "earthquake skipped", "Nothing drawn", "gave up after 19", "spared 1", "spared 35", "spared 38",
-             "unspared at 5", "castle roll", "castle roll missed", "Leazas Castle by the roll", "Leazas Castle quaked",
-             "battle area saturated", "counter saturated", "jump"],
-            ScribbleCreator,
-            logPlaces: true);
+    public sealed class Tﾙﾄﾞﾗ(ITestOutputHelper output) : NationTurnDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_Creator_turn_runs_exactly_as_Tﾙﾄﾞﾗ() =>
+            CompareAsync(
+                "Tﾙﾄﾞﾗ.ADV",
+                (script, scenario) => new CreatorTurn(script, scenario).RunAsync(),
+                AimAtCreator,
+                CreatorFeatures,
+                ["call Gﾙﾄﾞﾗ.ADV 1", "no scene off stage 4", "five attacks", "attack skipped", "two earthquakes",
+                 "earthquake skipped", "Nothing drawn", "gave up after 19", "spared 1", "spared 35", "spared 38",
+                 "unspared at 5", "castle roll", "castle roll missed", "Leazas Castle by the roll", "Leazas Castle quaked",
+                 "battle area saturated", "counter saturated", "jump"],
+                ScribbleCreator,
+                logPlaces: true);
+    }
 
     private static readonly int[] CreatorKnights = [146, 147];
 

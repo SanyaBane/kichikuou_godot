@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 namespace Kichikuou.Original.Content.Tests;
 
 /// <summary>The armies' scene of our battle screen (docs/ui/battle-screen.md, "The scene between exchanges").</summary>
-public class BattleSceneTests(ITestOutputHelper output)
+public class BattleSceneTests
 {
     // One reader for every capture: loading the CGs again for each is what takes the time.
     private static readonly Lazy<CgLibrary> Cgs = new(() => new CgLibrary(LocalData.CgDirectory));
@@ -107,146 +107,190 @@ public class BattleSceneTests(ITestOutputHelper output)
     }
 
     /// <summary>
-    /// In every captured battle the scene is on from the field's first drawing; when the original's
-    /// engagement stands whole with its counters (the slide's last step), the scene's rows 0-223 are the
-    /// original's screen there (the HP counters, moved to row 224, aside); between exchanges it shows a
-    /// player unit and an enemy commander that stand in the slots; the picture under the numbers changes
-    /// only with <see cref="BattleScene.PictureVersion"/>; each side's army is the one in focus. The scene's
-    /// picture is put together from the layers our screen shows (<see cref="BattleScene.ComposeWhole"/>), each
-    /// drawn again only when it changed — so the comparison with the original's screen checks them.
+    /// The test over every capture, spread over <see cref="Shards"/> classes (<c>Engagement0</c> and on) that run
+    /// in parallel (Shards.cs).
     /// </summary>
-    [CaptureTheory]
-    [MemberData(nameof(Captures))]
-    public async Task The_scene_shows_the_engagement_as_the_original_does(string file)
+    public abstract class EngagementShard(ITestOutputHelper output)
     {
-        var capture = GoldenCapture.Load(Path.Combine(LocalData.GoldenDirectory, file));
-        var cgs = Cgs.Value;
-        var presenter = new BattlePresenter(Texts.Value, cgs, new BoxGlyphs());
-        var scene = new BattleScene(cgs);
-        var order = new RoundOrder();
-        GameState? state = null;
-        int compared = 0, between = 0;
-        int lastOffset = -1;
-        var wrong = new List<string>();
-        byte[]? picture = null;
-        int pictureVersion = -1, pictures = 0, actors = 0;
-        var view = new ObservingView(e =>
+        private const int Shards = 12;
+
+        /// <summary>
+        /// In every captured battle the scene is on from the field's first drawing; when the original's
+        /// engagement stands whole with its counters (the slide's last step), the scene's rows 0-223 are the
+        /// original's screen there (the HP counters, moved to row 224, aside); between exchanges it shows a
+        /// player unit and an enemy commander that stand in the slots; the picture under the numbers changes
+        /// only with <see cref="BattleScene.PictureVersion"/>; each side's army is the one in focus. The scene's
+        /// picture is put together from the layers our screen shows (<see cref="BattleScene.ComposeWhole"/>), each
+        /// drawn again only when it changed — so the comparison with the original's screen checks them.
+        /// </summary>
+        [CaptureTheory]
+        [ShardedData(nameof(Captures), typeof(BattleSceneTests), Shards)]
+        public async Task The_scene_shows_the_engagement_as_the_original_does(string file)
         {
-            presenter.Show(e);
-            order.Observe(e, state!);
-            scene.Observe(e, state!, order.Acting);
-            if (e is PanelHighlightEvent other && BattleBoard.PanelPlace(other.Panel.Value) is { } p && order.Acting is { } a
-                && p.Side == a.Side && p != a)
-                wrong.Add($"{p} highlighted on the side of the actor {a}: a turn not seen");
-            if (e is PanelHighlightEvent && order.Acting is null)
-                wrong.Add("a panel highlighted with no actor");
-            if (e is RoundHeaderEvent && scene.InFocus != (0, 0))
-                wrong.Add($"a round header shows {scene.InFocus}");
-            if (e is PanelHighlightEvent h && BattleBoard.PanelPlace(h.Panel.Value) is { } lit && lit == order.Acting && ++actors > 0
-                && scene.InFocus != (lit.Side == BattleSide.Player ? (BattleBoard.Record(state!, lit), 0) : (0, BattleBoard.Record(state!, lit))))
-                wrong.Add($"the actor {lit} highlighted shows {scene.InFocus}");
-            if (e is BattlefieldBackgroundEvent or CountersEvent)
+            var capture = GoldenCapture.Load(Path.Combine(LocalData.GoldenDirectory, file));
+            var cgs = Cgs.Value;
+            var presenter = new BattlePresenter(Texts.Value, cgs, new BoxGlyphs());
+            var scene = new BattleScene(cgs);
+            var order = new RoundOrder();
+            GameState? state = null;
+            int compared = 0, between = 0;
+            int lastOffset = -1;
+            var wrong = new List<string>();
+            byte[]? picture = null;
+            int pictureVersion = -1, pictures = 0, actors = 0;
+            var view = new ObservingView(e =>
             {
-                // The picture under the numbers, put together from the layers, changes only with its version.
-                scene.ComposeWhole();
-                var now = scene.Surface.ReadArea(0, BattleScene.PictureY, BattleScene.Width, BattleScene.Height);
-                bool same = picture is not null && now.AsSpan().SequenceEqual(picture);
-                if (scene.PictureVersion == pictureVersion && !same && picture is not null)
-                    wrong.Add($"the picture under the numbers changed without its version ({e.GetType().Name})");
-                if (scene.PictureVersion != pictureVersion)
-                    pictures++;
-                picture = now;
-                pictureVersion = scene.PictureVersion;
-                var (unit, cmdr) = scene.InEngagement ? (state!.Unit_Cur.Value, state!.Cmdr_Cur.Value) : scene.InFocus;
-                int shownUnit = scene.PlayerArmy.Record, shownCmdr = scene.EnemyArmy.Record;     // 0: no sprite drawn
-                if ((shownUnit != 0 && shownUnit != unit) || (shownCmdr != 0 && shownCmdr != cmdr))
-                    wrong.Add($"the armies' layers show {scene.PlayerArmy.Record} / {scene.EnemyArmy.Record}, the picture {unit} / {cmdr}");
-            }
-            if (e is EngagementSlideEvent slide)
-                lastOffset = slide.Offset.Value;
-            if (e is CountersEvent && lastOffset == 0 && scene.InEngagement)
-            {
-                lastOffset = -1;
-                compared++;
-                int differ = 0;
-                for (int y = 0; y < BattleScene.HpY; y++)
+                presenter.Show(e);
+                order.Observe(e, state!);
+                scene.Observe(e, state!, order.Acting);
+                if (e is PanelHighlightEvent other && BattleBoard.PanelPlace(other.Panel.Value) is { } p && order.Acting is { } a
+                    && p.Side == a.Side && p != a)
+                    wrong.Add($"{p} highlighted on the side of the actor {a}: a turn not seen");
+                if (e is PanelHighlightEvent && order.Acting is null)
+                    wrong.Add("a panel highlighted with no actor");
+                if (e is RoundHeaderEvent && scene.InFocus != (0, 0))
+                    wrong.Add($"a round header shows {scene.InFocus}");
+                if (e is PanelHighlightEvent h && BattleBoard.PanelPlace(h.Panel.Value) is { } lit && lit == order.Acting && ++actors > 0
+                    && scene.InFocus != (lit.Side == BattleSide.Player ? (BattleBoard.Record(state!, lit), 0) : (0, BattleBoard.Record(state!, lit))))
+                    wrong.Add($"the actor {lit} highlighted shows {scene.InFocus}");
+                if (e is BattlefieldBackgroundEvent or CountersEvent)
                 {
-                    for (int x = 0; x < BattleScene.Width; x++)
-                    {
-                        var (r, g, b, _) = presenter.Surface.PixelAt(x, y);
-                        var (r2, g2, b2, _) = scene.Surface.PixelAt(x, y);
-                        if ((r, g, b) != (r2, g2, b2))
-                            differ++;
-                    }
+                    // The picture under the numbers, put together from the layers, changes only with its version.
+                    scene.ComposeWhole();
+                    var now = scene.Surface.ReadArea(0, BattleScene.PictureY, BattleScene.Width, BattleScene.Height);
+                    bool same = picture is not null && now.AsSpan().SequenceEqual(picture);
+                    if (scene.PictureVersion == pictureVersion && !same && picture is not null)
+                        wrong.Add($"the picture under the numbers changed without its version ({e.GetType().Name})");
+                    if (scene.PictureVersion != pictureVersion)
+                        pictures++;
+                    picture = now;
+                    pictureVersion = scene.PictureVersion;
+                    var (unit, cmdr) = scene.InEngagement ? (state!.Unit_Cur.Value, state!.Cmdr_Cur.Value) : scene.InFocus;
+                    int shownUnit = scene.PlayerArmy.Record, shownCmdr = scene.EnemyArmy.Record;     // 0: no sprite drawn
+                    if ((shownUnit != 0 && shownUnit != unit) || (shownCmdr != 0 && shownCmdr != cmdr))
+                        wrong.Add($"the armies' layers show {scene.PlayerArmy.Record} / {scene.EnemyArmy.Record}, the picture {unit} / {cmdr}");
                 }
-                if (differ > 0)
-                    wrong.Add($"engagement {compared}: {differ} pixels differ");
-            }
-            if (e is BattlefieldBackgroundEvent && state is { } s)
+                if (e is EngagementSlideEvent slide)
+                    lastOffset = slide.Offset.Value;
+                if (e is CountersEvent && lastOffset == 0 && scene.InEngagement)
+                {
+                    lastOffset = -1;
+                    compared++;
+                    int differ = 0;
+                    for (int y = 0; y < BattleScene.HpY; y++)
+                    {
+                        for (int x = 0; x < BattleScene.Width; x++)
+                        {
+                            var (r, g, b, _) = presenter.Surface.PixelAt(x, y);
+                            var (r2, g2, b2, _) = scene.Surface.PixelAt(x, y);
+                            if ((r, g, b) != (r2, g2, b2))
+                                differ++;
+                        }
+                    }
+                    if (differ > 0)
+                        wrong.Add($"engagement {compared}: {differ} pixels differ");
+                }
+                if (e is BattlefieldBackgroundEvent && state is { } s)
+                {
+                    between++;
+                    if (!scene.Active)
+                        wrong.Add("the field is drawn but the scene is off");
+                    var (unit, cmdr) = scene.InFocus;
+                    bool unitIn = BattleBoard.Cards(s, BattleSide.Player).Any(c => c?.Record == unit);
+                    bool cmdrIn = BattleBoard.Cards(s, BattleSide.Enemy).Any(c => c?.Record == cmdr);
+                    if ((unit != 0 && !unitIn) || (cmdr != 0 && !cmdrIn))
+                        wrong.Add($"redraw {between}: unit {unit} / commander {cmdr} not in a slot");
+                }
+            });
+            var report = await GoldenReplay.RunAsync(capture, view: view, started: s =>
             {
-                between++;
-                if (!scene.Active)
-                    wrong.Add("the field is drawn but the scene is off");
-                var (unit, cmdr) = scene.InFocus;
-                bool unitIn = BattleBoard.Cards(s, BattleSide.Player).Any(c => c?.Record == unit);
-                bool cmdrIn = BattleBoard.Cards(s, BattleSide.Enemy).Any(c => c?.Record == cmdr);
-                if ((unit != 0 && !unitIn) || (cmdr != 0 && !cmdrIn))
-                    wrong.Add($"redraw {between}: unit {unit} / commander {cmdr} not in a slot");
-            }
-        });
-        var report = await GoldenReplay.RunAsync(capture, view: view, started: s =>
-        {
-            state = s;
-            presenter.Start(s);
-            scene.Start(s);
-        });
-        output.WriteLine($"{file}: {compared} engagements compared, {between} redraws, {pictures} pictures, "
-            + $"{actors} actors highlighted; replay {(report.Passed ? "matches" : "diverges")}");
-        Assert.Empty(wrong);
+                state = s;
+                presenter.Start(s);
+                scene.Start(s);
+            });
+            output.WriteLine($"{file}: {compared} engagements compared, {between} redraws, {pictures} pictures, "
+                + $"{actors} actors highlighted; replay {(report.Passed ? "matches" : "diverges")}");
+            Assert.Empty(wrong);
+        }
     }
 
+    [Shard(0)] public sealed class Engagement0(ITestOutputHelper output) : EngagementShard(output);
+    [Shard(1)] public sealed class Engagement1(ITestOutputHelper output) : EngagementShard(output);
+    [Shard(2)] public sealed class Engagement2(ITestOutputHelper output) : EngagementShard(output);
+    [Shard(3)] public sealed class Engagement3(ITestOutputHelper output) : EngagementShard(output);
+    [Shard(4)] public sealed class Engagement4(ITestOutputHelper output) : EngagementShard(output);
+    [Shard(5)] public sealed class Engagement5(ITestOutputHelper output) : EngagementShard(output);
+    [Shard(6)] public sealed class Engagement6(ITestOutputHelper output) : EngagementShard(output);
+    [Shard(7)] public sealed class Engagement7(ITestOutputHelper output) : EngagementShard(output);
+    [Shard(8)] public sealed class Engagement8(ITestOutputHelper output) : EngagementShard(output);
+    [Shard(9)] public sealed class Engagement9(ITestOutputHelper output) : EngagementShard(output);
+    [Shard(10)] public sealed class Engagement10(ITestOutputHelper output) : EngagementShard(output);
+    [Shard(11)] public sealed class Engagement11(ITestOutputHelper output) : EngagementShard(output);
+
     /// <summary>
-    /// Without <see cref="BattleScene.Numbers"/> (our battle screen, owner 2026-10-15) the front shows no counter, shot
-    /// or damage in the captured battles: through every exchange, until its wiped-out marks, it is the battlefield's
-    /// overlay alone (the marks come after it). Some defences end before any exchange.
+    /// The test over every capture, spread over <see cref="Shards"/> classes (<c>Overlay0</c> and on) that run
+    /// in parallel (Shards.cs).
     /// </summary>
-    [CaptureTheory]
-    [MemberData(nameof(Captures))]
-    public async Task Without_numbers_the_front_is_the_overlay_and_the_marks(string file)
+    public abstract class OverlayShard(ITestOutputHelper output)
     {
-        var capture = GoldenCapture.Load(Path.Combine(LocalData.GoldenDirectory, file));
-        var scene = new BattleScene(Cgs.Value) { Numbers = false };
-        var order = new RoundOrder();
-        GameState? state = null;
-        bool marked = false;
-        int checkedFronts = 0, engagements = 0;
-        var wrong = new List<string>();
-        var view = new ObservingView(e =>
+        private const int Shards = 12;
+
+        /// <summary>
+        /// Without <see cref="BattleScene.Numbers"/> (our battle screen, owner 2026-10-15) the front shows no counter, shot
+        /// or damage in the captured battles: through every exchange, until its wiped-out marks, it is the battlefield's
+        /// overlay alone (the marks come after it). Some defences end before any exchange.
+        /// </summary>
+        [CaptureTheory]
+        [ShardedData(nameof(Captures), typeof(BattleSceneTests), Shards)]
+        public async Task Without_numbers_the_front_is_the_overlay_and_the_marks(string file)
         {
-            order.Observe(e, state!);
-            scene.Observe(e, state!, order.Acting);
-            if (e is EngagementSceneEvent)
-                (marked, engagements) = (false, engagements + 1);
-            if (e is WipedOutMarksEvent)
-                marked = true;
-            if (e is CountersEvent or ShotsFrameEvent or ExchangeResultsEvent && scene.InEngagement && !marked)
+            var capture = GoldenCapture.Load(Path.Combine(LocalData.GoldenDirectory, file));
+            var scene = new BattleScene(Cgs.Value) { Numbers = false };
+            var order = new RoundOrder();
+            GameState? state = null;
+            bool marked = false;
+            int checkedFronts = 0, engagements = 0;
+            var wrong = new List<string>();
+            var view = new ObservingView(e =>
             {
-                checkedFronts++;
-                var front = scene.Surface.ReadArea(0, BattleScene.FrontY, BattleScene.Width, BattleScene.Height);
-                var overlay = scene.Surface.ReadArea(BattleScene.OverlayX, BattleScene.FieldY, BattleScene.Width, BattleScene.Height);
-                if (!front.AsSpan().SequenceEqual(overlay))
-                    wrong.Add($"front {checkedFronts} ({e.GetType().Name}) shows more than the overlay");
-            }
-        });
-        await GoldenReplay.RunAsync(capture, view: view, started: s =>
-        {
-            state = s;
-            scene.Start(s);
-        });
-        output.WriteLine($"{file}: {engagements} exchanges, {checkedFronts} fronts checked");
-        Assert.Empty(wrong);
-        Assert.True(engagements == 0 || checkedFronts > 0, "no exchange's front was checked");    // some defences end before any exchange
+                order.Observe(e, state!);
+                scene.Observe(e, state!, order.Acting);
+                if (e is EngagementSceneEvent)
+                    (marked, engagements) = (false, engagements + 1);
+                if (e is WipedOutMarksEvent)
+                    marked = true;
+                if (e is CountersEvent or ShotsFrameEvent or ExchangeResultsEvent && scene.InEngagement && !marked)
+                {
+                    checkedFronts++;
+                    var front = scene.Surface.ReadArea(0, BattleScene.FrontY, BattleScene.Width, BattleScene.Height);
+                    var overlay = scene.Surface.ReadArea(BattleScene.OverlayX, BattleScene.FieldY, BattleScene.Width, BattleScene.Height);
+                    if (!front.AsSpan().SequenceEqual(overlay))
+                        wrong.Add($"front {checkedFronts} ({e.GetType().Name}) shows more than the overlay");
+                }
+            });
+            await GoldenReplay.RunAsync(capture, view: view, started: s =>
+            {
+                state = s;
+                scene.Start(s);
+            });
+            output.WriteLine($"{file}: {engagements} exchanges, {checkedFronts} fronts checked");
+            Assert.Empty(wrong);
+            Assert.True(engagements == 0 || checkedFronts > 0, "no exchange's front was checked");    // some defences end before any exchange
+        }
     }
+
+    [Shard(0)] public sealed class Overlay0(ITestOutputHelper output) : OverlayShard(output);
+    [Shard(1)] public sealed class Overlay1(ITestOutputHelper output) : OverlayShard(output);
+    [Shard(2)] public sealed class Overlay2(ITestOutputHelper output) : OverlayShard(output);
+    [Shard(3)] public sealed class Overlay3(ITestOutputHelper output) : OverlayShard(output);
+    [Shard(4)] public sealed class Overlay4(ITestOutputHelper output) : OverlayShard(output);
+    [Shard(5)] public sealed class Overlay5(ITestOutputHelper output) : OverlayShard(output);
+    [Shard(6)] public sealed class Overlay6(ITestOutputHelper output) : OverlayShard(output);
+    [Shard(7)] public sealed class Overlay7(ITestOutputHelper output) : OverlayShard(output);
+    [Shard(8)] public sealed class Overlay8(ITestOutputHelper output) : OverlayShard(output);
+    [Shard(9)] public sealed class Overlay9(ITestOutputHelper output) : OverlayShard(output);
+    [Shard(10)] public sealed class Overlay10(ITestOutputHelper output) : OverlayShard(output);
+    [Shard(11)] public sealed class Overlay11(ITestOutputHelper output) : OverlayShard(output);
 
     /// <summary>
     /// Every capture in the full run (<see cref="DifferentialRuns.Full"/>), every eighth in the quick

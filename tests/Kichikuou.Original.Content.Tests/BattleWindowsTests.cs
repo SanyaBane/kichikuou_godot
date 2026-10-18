@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 namespace Kichikuou.Original.Content.Tests;
 
 /// <summary>The windows over our battle screen's scene (docs/ui/battle-screen.md, "The scene between exchanges").</summary>
-public class BattleWindowsTests(ITestOutputHelper output)
+public class BattleWindowsTests
 {
     private static readonly Lazy<CgLibrary> Cgs = new(() => new CgLibrary(LocalData.CgDirectory));
     private static readonly Lazy<ScenarioText> Texts = new(() => new ScenarioText(LocalData.ScenarioDirectory));
@@ -213,100 +213,114 @@ public class BattleWindowsTests(ITestOutputHelper output)
     }
 
     /// <summary>
-    /// In every captured battle the mask covers each window while it is open — the window frames and the
-    /// portraits are on the screen at every pixel of their shapes when they open —, leaves out the round header
-    /// (our opening, or nothing), and is empty whenever the field has been drawn again.
+    /// The test over every capture, spread over <see cref="Shards"/> classes (<c>Captures0</c> and on) that run in
+    /// parallel (Shards.cs).
     /// </summary>
-    [CaptureTheory]
-    [MemberData(nameof(BattleSceneTests.Captures), MemberType = typeof(BattleSceneTests))]
-    public async Task The_mask_covers_each_window_while_it_is_open(string file)
+    public abstract class CaptureShard(ITestOutputHelper output)
     {
-        var capture = GoldenCapture.Load(Path.Combine(LocalData.GoldenDirectory, file));
-        var cgs = Cgs.Value;
-        var presenter = new BattlePresenter(Texts.Value, cgs, new BoxGlyphs());
-        int opened = 0, redraws = 0, bubble = 0;
-        var wrong = new List<string>();
-        bool redrawn = false;
-        var view = new ObservingView(e =>
-        {
-            if (redrawn && e is not SlotPanelEvent and not PanelHighlightEvent)
-            {
-                // The field's redraw is finished (its copy up) before the next event draws anything.
-                redrawn = false;
-                presenter.Flush();
-                if (presenter.Windows.Count > 0)
-                    wrong.Add($"redraw {redraws}: {presenter.Windows.Count} window(s) open");
-            }
-            presenter.Show(e);
-            switch (e)
-            {
-                case RoundHeaderEvent:
-                    // Our screen draws the header its own way (the opening) or not at all: it is not in the layer.
-                    if (presenter.RoundHeader is null || presenter.Windows.Count > 0)
-                        wrong.Add($"round header: held {presenter.RoundHeader is not null}, {presenter.Windows.Count} window(s) in the layer");
-                    break;
-                case WindowEvent w when Frames.TryGetValue(w.Op.Value, out int frame):
-                    Check(frame, $"window {w.Op.Value}", null, null);
-                    break;
-                case WindowEvent w when Bubbles.Contains(w.Op.Value):
-                    opened++;
-                    bubble = w.Op.Value;
-                    if (presenter.Windows.Count > 0)
-                        wrong.Add($"bubble {bubble}: {presenter.Windows.Count} window(s) in the layer");
-                    break;
-                case WindowEvent { Op.Value: 11 } when bubble != 0 && presenter.Speech is null:
-                    wrong.Add($"bubble {bubble}: a key wait with no line");
-                    break;
-                case WindowEvent { Op.Value: 311 or 321 } w:
-                    Check(w.CallArg.Value, $"portrait {w.CallArg.Value}", null, w.Op == 311 ? (0, 0) : (448, 144));
-                    break;
-                case WindowEvent { Op.Value: 10 } when presenter.Windows.Count > 0:
-                    wrong.Add($"op 10 left {presenter.Windows.Count} window(s)");
-                    break;
-                case WindowEvent { Op.Value: 10 or 0 }:
-                    bubble = 0;
-                    if (presenter.Speech is not null)
-                        wrong.Add("a line left after its bubble closed");
-                    break;
-                case BattlefieldBackgroundEvent:
-                    redraws++;
-                    redrawn = true;
-                    break;
-            }
-        });
-        await GoldenReplay.RunAsync(capture, view: view, started: presenter.Start);
-        output.WriteLine($"{file}: {opened} windows opened, {redraws} redraws");
-        Assert.True(opened > 0);
-        Assert.Empty(wrong.Distinct());
+        private const int Shards = 4;
 
-        void Check(int number, string what, (int X, int Y, int W, int H)? text, (int X, int Y)? at)
+        /// <summary>
+        /// In every captured battle the mask covers each window while it is open — the window frames and the
+        /// portraits are on the screen at every pixel of their shapes when they open —, leaves out the round header
+        /// (our opening, or nothing), and is empty whenever the field has been drawn again.
+        /// </summary>
+        [CaptureTheory]
+        [ShardedData(nameof(BattleSceneTests.Captures), typeof(BattleSceneTests), Shards)]
+        public async Task The_mask_covers_each_window_while_it_is_open(string file)
         {
-            opened++;
-            var cg = cgs.Get(number)!;
-            var mask = WindowMask.Of(presenter.Windows);
-            var surface = presenter.Surface;
-            int missing = 0, differ = 0;
-            for (int y = 0; y < cg.Height; y++)
+            var capture = GoldenCapture.Load(Path.Combine(LocalData.GoldenDirectory, file));
+            var cgs = Cgs.Value;
+            var presenter = new BattlePresenter(Texts.Value, cgs, new BoxGlyphs());
+            int opened = 0, redraws = 0, bubble = 0;
+            var wrong = new List<string>();
+            bool redrawn = false;
+            var view = new ObservingView(e =>
             {
-                for (int x = 0; x < cg.Width; x++)
+                if (redrawn && e is not SlotPanelEvent and not PanelHighlightEvent)
                 {
-                    int index = cg.IndexAt(x, y);
-                    if (index == Surface.SpriteKey)
-                        continue;
-                    int sx = (at?.X ?? cg.X) + x, sy = (at?.Y ?? cg.Y) + y;
-                    if (!mask.Contains(sx, sy))
-                        missing++;
-                    if (text is var (tx, ty, tw, th) && sx >= tx && sy >= ty && sx < tx + tw && sy < ty + th)
-                        continue;
-                    var (r, g, b, _) = surface.PixelAt(sx, sy);
-                    if ((r, g, b) != surface.Color(index))
-                        differ++;
+                    // The field's redraw is finished (its copy up) before the next event draws anything.
+                    redrawn = false;
+                    presenter.Flush();
+                    if (presenter.Windows.Count > 0)
+                        wrong.Add($"redraw {redraws}: {presenter.Windows.Count} window(s) open");
                 }
+                presenter.Show(e);
+                switch (e)
+                {
+                    case RoundHeaderEvent:
+                        // Our screen draws the header its own way (the opening) or not at all: it is not in the layer.
+                        if (presenter.RoundHeader is null || presenter.Windows.Count > 0)
+                            wrong.Add($"round header: held {presenter.RoundHeader is not null}, {presenter.Windows.Count} window(s) in the layer");
+                        break;
+                    case WindowEvent w when Frames.TryGetValue(w.Op.Value, out int frame):
+                        Check(frame, $"window {w.Op.Value}", null, null);
+                        break;
+                    case WindowEvent w when Bubbles.Contains(w.Op.Value):
+                        opened++;
+                        bubble = w.Op.Value;
+                        if (presenter.Windows.Count > 0)
+                            wrong.Add($"bubble {bubble}: {presenter.Windows.Count} window(s) in the layer");
+                        break;
+                    case WindowEvent { Op.Value: 11 } when bubble != 0 && presenter.Speech is null:
+                        wrong.Add($"bubble {bubble}: a key wait with no line");
+                        break;
+                    case WindowEvent { Op.Value: 311 or 321 } w:
+                        Check(w.CallArg.Value, $"portrait {w.CallArg.Value}", null, w.Op == 311 ? (0, 0) : (448, 144));
+                        break;
+                    case WindowEvent { Op.Value: 10 } when presenter.Windows.Count > 0:
+                        wrong.Add($"op 10 left {presenter.Windows.Count} window(s)");
+                        break;
+                    case WindowEvent { Op.Value: 10 or 0 }:
+                        bubble = 0;
+                        if (presenter.Speech is not null)
+                            wrong.Add("a line left after its bubble closed");
+                        break;
+                    case BattlefieldBackgroundEvent:
+                        redraws++;
+                        redrawn = true;
+                        break;
+                }
+            });
+            await GoldenReplay.RunAsync(capture, view: view, started: presenter.Start);
+            output.WriteLine($"{file}: {opened} windows opened, {redraws} redraws");
+            Assert.True(opened > 0);
+            Assert.Empty(wrong.Distinct());
+
+            void Check(int number, string what, (int X, int Y, int W, int H)? text, (int X, int Y)? at)
+            {
+                opened++;
+                var cg = cgs.Get(number)!;
+                var mask = WindowMask.Of(presenter.Windows);
+                var surface = presenter.Surface;
+                int missing = 0, differ = 0;
+                for (int y = 0; y < cg.Height; y++)
+                {
+                    for (int x = 0; x < cg.Width; x++)
+                    {
+                        int index = cg.IndexAt(x, y);
+                        if (index == Surface.SpriteKey)
+                            continue;
+                        int sx = (at?.X ?? cg.X) + x, sy = (at?.Y ?? cg.Y) + y;
+                        if (!mask.Contains(sx, sy))
+                            missing++;
+                        if (text is var (tx, ty, tw, th) && sx >= tx && sy >= ty && sx < tx + tw && sy < ty + th)
+                            continue;
+                        var (r, g, b, _) = surface.PixelAt(sx, sy);
+                        if ((r, g, b) != surface.Color(index))
+                            differ++;
+                    }
+                }
+                if (missing > 0 || differ > 0)
+                    wrong.Add($"{what}: {missing} frame pixels outside the mask, {differ} not on the screen");
             }
-            if (missing > 0 || differ > 0)
-                wrong.Add($"{what}: {missing} frame pixels outside the mask, {differ} not on the screen");
         }
     }
+
+    [Shard(0)] public sealed class Captures0(ITestOutputHelper output) : CaptureShard(output);
+    [Shard(1)] public sealed class Captures1(ITestOutputHelper output) : CaptureShard(output);
+    [Shard(2)] public sealed class Captures2(ITestOutputHelper output) : CaptureShard(output);
+    [Shard(3)] public sealed class Captures3(ITestOutputHelper output) : CaptureShard(output);
 
     private sealed class ObservingView(Action<ScriptEvent> show) : IScriptView
     {

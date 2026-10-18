@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 namespace Kichikuou.Original.Content.Tests;
 
 /// <summary>The effect an exchange plays from its shots (docs/ui/battle-screen.md, "The exchange's effects").</summary>
-public class ExchangeEffectTests(ITestOutputHelper output)
+public class ExchangeEffectTests
 {
     private static readonly Lazy<CgLibrary> Cgs = new(() => new CgLibrary(LocalData.CgDirectory));
     private static readonly Lazy<ScenarioText> Texts = new(() => new ScenarioText(LocalData.ScenarioDirectory));
@@ -198,73 +198,88 @@ public class ExchangeEffectTests(ITestOutputHelper output)
     }
 
     /// <summary>
-    /// In every captured battle each exchange's shots start an effect: its side fires (its action is not 99, and it
-    /// has a shot), and a two-sided exchange is direct against direct with the turn's actor in <c>Bt_MsgMode</c> (3 or 4);
-    /// the troops of a Rance Attack or a By la Way fire nothing, nor a beam's, a War Dance's, a Chuhai's or a Goliath's (nor its commander at the commander), nor a Soaring Wave's (its
-    /// commander fires two shots at the commander); a
-    /// Whirlwind Shot or a High Speed fires only the commander's one shot at the commander.
+    /// The test over every capture, spread over <see cref="Shards"/> classes (<c>Captures0</c> and on) that run in
+    /// parallel (Shards.cs).
     /// </summary>
-    [CaptureTheory]
-    [MemberData(nameof(BattleSceneTests.Captures), MemberType = typeof(BattleSceneTests))]
-    public async Task Every_exchange_plays_the_effect_of_a_side_that_fires(string file)
+    public abstract class CaptureShard(ITestOutputHelper output)
     {
-        var capture = GoldenCapture.Load(Path.Combine(LocalData.GoldenDirectory, file));
-        var presenter = new BattlePresenter(Texts.Value, Cgs.Value, new BoxGlyphs());
-        var wrong = new List<string>();
-        var kinds = new Dictionary<string, int>();
-        int exchanges = 0;
-        var view = new ObservingView(e =>
+        private const int Shards = 5;
+
+        /// <summary>
+        /// In every captured battle each exchange's shots start an effect: its side fires (its action is not 99, and it
+        /// has a shot), and a two-sided exchange is direct against direct with the turn's actor in <c>Bt_MsgMode</c> (3 or 4);
+        /// the troops of a Rance Attack or a By la Way fire nothing, nor a beam's, a War Dance's, a Chuhai's or a Goliath's (nor its commander at the commander), nor a Soaring Wave's (its
+        /// commander fires two shots at the commander); a
+        /// Whirlwind Shot or a High Speed fires only the commander's one shot at the commander.
+        /// </summary>
+        [CaptureTheory]
+        [ShardedData(nameof(BattleSceneTests.Captures), typeof(BattleSceneTests), Shards)]
+        public async Task Every_exchange_plays_the_effect_of_a_side_that_fires(string file)
         {
-            presenter.Show(e);
-            if (e is not ShotsFrameEvent { Step.Value: 0 } || presenter.State is not { } s)
-                return;
-            exchanges++;
-            if (presenter.Effect is not { } effect)
+            var capture = GoldenCapture.Load(Path.Combine(LocalData.GoldenDirectory, file));
+            var presenter = new BattlePresenter(Texts.Value, Cgs.Value, new BoxGlyphs());
+            var wrong = new List<string>();
+            var kinds = new Dictionary<string, int>();
+            int exchanges = 0;
+            var view = new ObservingView(e =>
             {
-                wrong.Add($"exchange {exchanges}: no effect (actions {s.Bt_PlayerAction.Value}, {s.Bt_EnemyAction.Value})");
-                return;
-            }
-            string key = $"{effect.Side} {effect.Kind}";
-            kinds[key] = kinds.GetValueOrDefault(key) + 1;
-            bool player = effect.Side == BattleSide.Player;
-            var shots = player
-                ? new[] { s.Bt_PTroopVsTroopShots, s.Bt_PTroopVsCmdrShots, s.Bt_PCmdrVsTroopShots, s.Bt_PCmdrVsCmdrShots }
-                : new[] { s.Bt_ETroopVsTroopShots, s.Bt_ETroopVsCmdrShots, s.Bt_ECmdrVsTroopShots, s.Bt_ECmdrVsCmdrShots };
-            if ((player ? s.Bt_PlayerAction : s.Bt_EnemyAction) == 99 || shots.All(v => v == 0))
-                wrong.Add($"exchange {exchanges}: {key} does not fire");
-            // Rance Attack (Kentarou's too) and By la Way are the commander's blow alone: the troops' shots are zeroed
-            // (02-resolution.md §3.3).
-            if (effect.Kind is ExchangeEffectKind.RanceAttack or ExchangeEffectKind.KentarouSlash or ExchangeEffectKind.ByLaWay && (shots[0] != 0 || shots[1] != 0))
-                wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops firing");
-            // A beam is the commander's blast at the troops: the troops' shots and the commander's at the commander
-            // are zeroed (02-resolution.md §3.3).
-            if (effect.Kind is ExchangeEffectKind.ShizukaBeam or ExchangeEffectKind.MagicBeam or ExchangeEffectKind.EpoLight or ExchangeEffectKind.ChizukoBeam or ExchangeEffectKind.NagiBeam && (shots[0] != 0 || shots[1] != 0 || shots[3] != 0))
-                wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops or at the commander firing");
-            // C. War Dance, Chuhai and T2 Goliath's strike are the commander's blows at the troops: the troops' shots and
-            // the commander's at the commander are zeroed (02-resolution.md §3.3).
-            if (effect.Kind is ExchangeEffectKind.WarDance or ExchangeEffectKind.Chuhai or ExchangeEffectKind.Goliath && (shots[0] != 0 || shots[1] != 0 || shots[3] != 0))
-                wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops or at the commander firing");
-            // Vanish Bomb is the commander's blast at the commander and the troops: the troops' shots are zeroed
-            // (02-resolution.md §3.3).
-            if (effect.Kind is ExchangeEffectKind.VanishBomb && (shots[0] != 0 || shots[1] != 0))
-                wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops firing");
-            // T2 Soaring Wave is the commander's blow at the troops and two shots at the commander: the troops' shots are
-            // zeroed (02-resolution.md §3.3).
-            if (effect.Kind is ExchangeEffectKind.SoaringWave && (shots[0] != 0 || shots[1] != 0 || shots[3] != 2))
-                wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops firing or other than two shots at the commander");
-            // Whirlwind Shot, High Speed and the ninja's follow-up are the commander's one shot at the commander: every
-            // other shot is zeroed (02-resolution.md §3.3).
-            if (effect.Kind is ExchangeEffectKind.WhirlwindShot or ExchangeEffectKind.HighSpeed or ExchangeEffectKind.NinjaFollowUp && (shots[0] != 0 || shots[1] != 0 || shots[2] != 0 || shots[3] != 1))
-                wrong.Add($"exchange {exchanges}: {effect.Kind} firing other than the commander's one shot at the commander");
-            bool twoSided = s.Bt_PlayerAction != 99 && s.Bt_EnemyAction != 99;
-            if (twoSided && (s.Bt_PlayerAction != 0 || s.Bt_EnemyAction != 0 || s.Bt_MsgMode.Value is not (3 or 4)))
-                wrong.Add($"exchange {exchanges}: two-sided, actions {s.Bt_PlayerAction.Value}, {s.Bt_EnemyAction.Value}, mode {s.Bt_MsgMode.Value}");
-        });
-        await GoldenReplay.RunAsync(capture, view: view, started: presenter.Start);
-        output.WriteLine($"{file}: {exchanges} exchanges; " + string.Join(", ", kinds.OrderBy(k => k.Key).Select(k => $"{k.Key} {k.Value}")));
-        Assert.Equal(exchanges, presenter.EffectsStarted);
-        Assert.Empty(wrong);
+                presenter.Show(e);
+                if (e is not ShotsFrameEvent { Step.Value: 0 } || presenter.State is not { } s)
+                    return;
+                exchanges++;
+                if (presenter.Effect is not { } effect)
+                {
+                    wrong.Add($"exchange {exchanges}: no effect (actions {s.Bt_PlayerAction.Value}, {s.Bt_EnemyAction.Value})");
+                    return;
+                }
+                string key = $"{effect.Side} {effect.Kind}";
+                kinds[key] = kinds.GetValueOrDefault(key) + 1;
+                bool player = effect.Side == BattleSide.Player;
+                var shots = player
+                    ? new[] { s.Bt_PTroopVsTroopShots, s.Bt_PTroopVsCmdrShots, s.Bt_PCmdrVsTroopShots, s.Bt_PCmdrVsCmdrShots }
+                    : new[] { s.Bt_ETroopVsTroopShots, s.Bt_ETroopVsCmdrShots, s.Bt_ECmdrVsTroopShots, s.Bt_ECmdrVsCmdrShots };
+                if ((player ? s.Bt_PlayerAction : s.Bt_EnemyAction) == 99 || shots.All(v => v == 0))
+                    wrong.Add($"exchange {exchanges}: {key} does not fire");
+                // Rance Attack (Kentarou's too) and By la Way are the commander's blow alone: the troops' shots are zeroed
+                // (02-resolution.md §3.3).
+                if (effect.Kind is ExchangeEffectKind.RanceAttack or ExchangeEffectKind.KentarouSlash or ExchangeEffectKind.ByLaWay && (shots[0] != 0 || shots[1] != 0))
+                    wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops firing");
+                // A beam is the commander's blast at the troops: the troops' shots and the commander's at the commander
+                // are zeroed (02-resolution.md §3.3).
+                if (effect.Kind is ExchangeEffectKind.ShizukaBeam or ExchangeEffectKind.MagicBeam or ExchangeEffectKind.EpoLight or ExchangeEffectKind.ChizukoBeam or ExchangeEffectKind.NagiBeam && (shots[0] != 0 || shots[1] != 0 || shots[3] != 0))
+                    wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops or at the commander firing");
+                // C. War Dance, Chuhai and T2 Goliath's strike are the commander's blows at the troops: the troops' shots and
+                // the commander's at the commander are zeroed (02-resolution.md §3.3).
+                if (effect.Kind is ExchangeEffectKind.WarDance or ExchangeEffectKind.Chuhai or ExchangeEffectKind.Goliath && (shots[0] != 0 || shots[1] != 0 || shots[3] != 0))
+                    wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops or at the commander firing");
+                // Vanish Bomb is the commander's blast at the commander and the troops: the troops' shots are zeroed
+                // (02-resolution.md §3.3).
+                if (effect.Kind is ExchangeEffectKind.VanishBomb && (shots[0] != 0 || shots[1] != 0))
+                    wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops firing");
+                // T2 Soaring Wave is the commander's blow at the troops and two shots at the commander: the troops' shots are
+                // zeroed (02-resolution.md §3.3).
+                if (effect.Kind is ExchangeEffectKind.SoaringWave && (shots[0] != 0 || shots[1] != 0 || shots[3] != 2))
+                    wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops firing or other than two shots at the commander");
+                // Whirlwind Shot, High Speed and the ninja's follow-up are the commander's one shot at the commander: every
+                // other shot is zeroed (02-resolution.md §3.3).
+                if (effect.Kind is ExchangeEffectKind.WhirlwindShot or ExchangeEffectKind.HighSpeed or ExchangeEffectKind.NinjaFollowUp && (shots[0] != 0 || shots[1] != 0 || shots[2] != 0 || shots[3] != 1))
+                    wrong.Add($"exchange {exchanges}: {effect.Kind} firing other than the commander's one shot at the commander");
+                bool twoSided = s.Bt_PlayerAction != 99 && s.Bt_EnemyAction != 99;
+                if (twoSided && (s.Bt_PlayerAction != 0 || s.Bt_EnemyAction != 0 || s.Bt_MsgMode.Value is not (3 or 4)))
+                    wrong.Add($"exchange {exchanges}: two-sided, actions {s.Bt_PlayerAction.Value}, {s.Bt_EnemyAction.Value}, mode {s.Bt_MsgMode.Value}");
+            });
+            await GoldenReplay.RunAsync(capture, view: view, started: presenter.Start);
+            output.WriteLine($"{file}: {exchanges} exchanges; " + string.Join(", ", kinds.OrderBy(k => k.Key).Select(k => $"{k.Key} {k.Value}")));
+            Assert.Equal(exchanges, presenter.EffectsStarted);
+            Assert.Empty(wrong);
+        }
     }
+
+    [Shard(0)] public sealed class Captures0(ITestOutputHelper output) : CaptureShard(output);
+    [Shard(1)] public sealed class Captures1(ITestOutputHelper output) : CaptureShard(output);
+    [Shard(2)] public sealed class Captures2(ITestOutputHelper output) : CaptureShard(output);
+    [Shard(3)] public sealed class Captures3(ITestOutputHelper output) : CaptureShard(output);
+    [Shard(4)] public sealed class Captures4(ITestOutputHelper output) : CaptureShard(output);
 
     private sealed class ObservingView(Action<ScriptEvent> show) : IScriptView
     {

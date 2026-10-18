@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 namespace Kichikuou.Original.Content.Tests;
 
 /// <summary>The ninja's scout report as our own overlay shows it (docs/ui/battle-screen.md, "The scout report").</summary>
-public class ScoutReportTests(ITestOutputHelper output)
+public class ScoutReportTests
 {
     private static readonly Lazy<CgLibrary> Cgs = new(() => new CgLibrary(LocalData.CgDirectory));
     private static readonly Lazy<ScenarioText> Texts = new(() => new ScenarioText(LocalData.ScenarioDirectory));
@@ -163,97 +163,110 @@ public class ScoutReportTests(ITestOutputHelper output)
     }
 
     /// <summary>
-    /// In every captured battle with a scout report, the report our overlay shows is what the script prints: its
-    /// commanders' lines (record, name, troop type, troops) in order, its totals (<c>Tmp0002</c>, <c>Tmp0001</c>), and
-    /// the places the battle then gives them (<c>Bt_EnemySlot1-4</c>).
+    /// The test over every capture, spread over <see cref="Shards"/> classes (<c>Captures0</c> and on) that run in
+    /// parallel (Shards.cs).
     /// </summary>
-    [CaptureTheory]
-    [MemberData(nameof(Defences))]
-    public async Task A_report_is_what_the_script_prints_and_the_battle_places(string file)
+    public abstract class CaptureShard(ITestOutputHelper output)
     {
-        var capture = GoldenCapture.Load(Path.Combine(LocalData.GoldenDirectory, file));
-        var presenter = new BattlePresenter(Texts.Value, Cgs.Value, new BoxGlyphs());
-        GameState? state = null;
-        ScoutReport? report = null, placed = null, toComment = null;
-        var lines = new List<ScoutedCommander>();
-        int reports = 0, called = 0;
-        var wrong = new List<string>();
-        var view = new ObservingView(e =>
+        private const int Shards = 3;
+
+        /// <summary>
+        /// In every captured battle with a scout report, the report our overlay shows is what the script prints: its
+        /// commanders' lines (record, name, troop type, troops) in order, its totals (<c>Tmp0002</c>, <c>Tmp0001</c>), and
+        /// the places the battle then gives them (<c>Bt_EnemySlot1-4</c>).
+        /// </summary>
+        [CaptureTheory]
+        [ShardedData(nameof(Defences), typeof(ScoutReportTests), Shards)]
+        public async Task A_report_is_what_the_script_prints_and_the_battle_places(string file)
         {
-            presenter.Show(e);
-            if (state is not { } s)
-                return;
-            if (presenter.Scout is { } shown && report is null)
+            var capture = GoldenCapture.Load(Path.Combine(LocalData.GoldenDirectory, file));
+            var presenter = new BattlePresenter(Texts.Value, Cgs.Value, new BoxGlyphs());
+            GameState? state = null;
+            ScoutReport? report = null, placed = null, toComment = null;
+            var lines = new List<ScoutedCommander>();
+            int reports = 0, called = 0;
+            var wrong = new List<string>();
+            var view = new ObservingView(e =>
             {
-                report = shown;
-                reports++;
-                lines.Clear();
-            }
-            switch (e)
+                presenter.Show(e);
+                if (state is not { } s)
+                    return;
+                if (presenter.Scout is { } shown && report is null)
+                {
+                    report = shown;
+                    reports++;
+                    lines.Clear();
+                }
+                switch (e)
+                {
+                    case MessageEvent { Text: { File: "FIGT_B.ADV", Line: >= 393 and < 587 } calling }:
+                        // Between the ninja's choice and the report: answered at once on our screen.
+                        called++;
+                        if (!presenter.ScoutCalling)
+                            wrong.Add($"{calling}: not answered at once");
+                        break;
+                    case ScoutReportEvent line when report is not null:
+                        int record = line.Cmdr.Value;
+                        lines.Add(new ScoutedCommander(0, record, s.Strings[4].Trim(), line.Troops == 0 ? "" : s.Strings[5].Trim(),
+                            0, line.Troops.Value));
+                        break;
+                    case ValueMessageEvent { Text: { File: "FIGT_B.ADV", Line: 613 } } totals when report is not null:
+                        var listed = report.Places.OfType<ScoutedCommander>().Select(c => c with { Slot = 0, Picture = 0 });
+                        if (!listed.SequenceEqual(lines))
+                            wrong.Add($"report {reports}: shown {string.Join(", ", listed)}; printed {string.Join(", ", lines)}");
+                        if ((report.Commanders, report.Troops) != (totals.Values[0].Value, totals.Values[1].Value)
+                            || (report.Commanders, report.Troops) != (s.Tmp0002.Value, s.Tmp0001.Value))
+                            wrong.Add($"report {reports}: totals {report.Commanders}/{report.Troops}, printed {totals.Values[0]}/{totals.Values[1]}");
+                        if (!presenter.ScoutReported)
+                            wrong.Add($"report {reports}: not reported at its totals");
+                        placed = toComment = report;
+                        break;
+                    case MessageEvent { Text: { File: "FIGT_B.ADV", Line: 629 } } when toComment is not null:
+                        // Rance's answer: the one the overlay showed, its window answered on our screen.
+                        if (toComment.Reply != presenter.Text(ScoutReport.RanceLine))
+                            wrong.Add($"report {reports}: Rance's answer shown \"{toComment.Reply}\"");
+                        if (!presenter.ScoutReplied)
+                            wrong.Add($"report {reports}: Rance's answer not answered");
+                        break;
+                    case MessageEvent { Text: { File: "FIGT_B.ADV", Line: 637 or 644 } said } when toComment is not null:
+                        // Maris's comment: the one the overlay showed (none for her "............"), its window answered.
+                        if (said != toComment.CommentLine || toComment.Comment != (said.Line == 637 ? presenter.Text(said) : ""))
+                            wrong.Add($"report {reports}: commented {said}, shown {toComment.CommentLine} \"{toComment.Comment}\"");
+                        if (!presenter.ScoutReplied)
+                            wrong.Add($"report {reports}: its comment not answered");
+                        toComment = null;
+                        break;
+                    case SlotPanelEvent when placed is not null:
+                        // The battle's first field: the commanders stand where the report put them.
+                        for (int slot = 1; slot <= 4; slot++)
+                        {
+                            int there = BattleBoard.Record(s, new BattlePlace(BattleSide.Enemy, slot));
+                            if (there != (placed.Places[slot - 1]?.Record ?? 0))
+                                wrong.Add($"report {reports}: place {slot} holds {there}");
+                        }
+                        placed = null;
+                        break;
+                }
+                if (report is not null && presenter.Scout is null)
+                    report = null;                                          // the window closed
+            });
+            await GoldenReplay.RunAsync(capture, view: view, started: s =>
             {
-                case MessageEvent { Text: { File: "FIGT_B.ADV", Line: >= 393 and < 587 } calling }:
-                    // Between the ninja's choice and the report: answered at once on our screen.
-                    called++;
-                    if (!presenter.ScoutCalling)
-                        wrong.Add($"{calling}: not answered at once");
-                    break;
-                case ScoutReportEvent line when report is not null:
-                    int record = line.Cmdr.Value;
-                    lines.Add(new ScoutedCommander(0, record, s.Strings[4].Trim(), line.Troops == 0 ? "" : s.Strings[5].Trim(),
-                        0, line.Troops.Value));
-                    break;
-                case ValueMessageEvent { Text: { File: "FIGT_B.ADV", Line: 613 } } totals when report is not null:
-                    var listed = report.Places.OfType<ScoutedCommander>().Select(c => c with { Slot = 0, Picture = 0 });
-                    if (!listed.SequenceEqual(lines))
-                        wrong.Add($"report {reports}: shown {string.Join(", ", listed)}; printed {string.Join(", ", lines)}");
-                    if ((report.Commanders, report.Troops) != (totals.Values[0].Value, totals.Values[1].Value)
-                        || (report.Commanders, report.Troops) != (s.Tmp0002.Value, s.Tmp0001.Value))
-                        wrong.Add($"report {reports}: totals {report.Commanders}/{report.Troops}, printed {totals.Values[0]}/{totals.Values[1]}");
-                    if (!presenter.ScoutReported)
-                        wrong.Add($"report {reports}: not reported at its totals");
-                    placed = toComment = report;
-                    break;
-                case MessageEvent { Text: { File: "FIGT_B.ADV", Line: 629 } } when toComment is not null:
-                    // Rance's answer: the one the overlay showed, its window answered on our screen.
-                    if (toComment.Reply != presenter.Text(ScoutReport.RanceLine))
-                        wrong.Add($"report {reports}: Rance's answer shown \"{toComment.Reply}\"");
-                    if (!presenter.ScoutReplied)
-                        wrong.Add($"report {reports}: Rance's answer not answered");
-                    break;
-                case MessageEvent { Text: { File: "FIGT_B.ADV", Line: 637 or 644 } said } when toComment is not null:
-                    // Maris's comment: the one the overlay showed (none for her "............"), its window answered.
-                    if (said != toComment.CommentLine || toComment.Comment != (said.Line == 637 ? presenter.Text(said) : ""))
-                        wrong.Add($"report {reports}: commented {said}, shown {toComment.CommentLine} \"{toComment.Comment}\"");
-                    if (!presenter.ScoutReplied)
-                        wrong.Add($"report {reports}: its comment not answered");
-                    toComment = null;
-                    break;
-                case SlotPanelEvent when placed is not null:
-                    // The battle's first field: the commanders stand where the report put them.
-                    for (int slot = 1; slot <= 4; slot++)
-                    {
-                        int there = BattleBoard.Record(s, new BattlePlace(BattleSide.Enemy, slot));
-                        if (there != (placed.Places[slot - 1]?.Record ?? 0))
-                            wrong.Add($"report {reports}: place {slot} holds {there}");
-                    }
-                    placed = null;
-                    break;
-            }
-            if (report is not null && presenter.Scout is null)
-                report = null;                                          // the window closed
-        });
-        await GoldenReplay.RunAsync(capture, view: view, started: s =>
-        {
-            state = s;
-            presenter.Start(s);
-        });
-        if (toComment is not null)
-            wrong.Add($"report {reports}: no comment after it");
-        output.WriteLine($"{file}: {reports} scout reports, {called} lines before them answered");
-        if (reports > 0 && called == 0)
-            wrong.Add("no line between the ninja's choice and the report");
-        Assert.Empty(wrong);
+                state = s;
+                presenter.Start(s);
+            });
+            if (toComment is not null)
+                wrong.Add($"report {reports}: no comment after it");
+            output.WriteLine($"{file}: {reports} scout reports, {called} lines before them answered");
+            if (reports > 0 && called == 0)
+                wrong.Add("no line between the ninja's choice and the report");
+            Assert.Empty(wrong);
+        }
     }
+
+    [Shard(0)] public sealed class Captures0(ITestOutputHelper output) : CaptureShard(output);
+    [Shard(1)] public sealed class Captures1(ITestOutputHelper output) : CaptureShard(output);
+    [Shard(2)] public sealed class Captures2(ITestOutputHelper output) : CaptureShard(output);
 
     /// <summary>The captures of a defence (<c>FIGT_B</c>, the only file with a scout report): every eighth in the quick run.</summary>
     public static IEnumerable<object[]> Defences =>

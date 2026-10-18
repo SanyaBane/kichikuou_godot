@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text;
 using Kichikuou.Engine.Script;
@@ -156,7 +157,7 @@ public sealed record TextRun(ScriptRef Source, IReadOnlyList<TextSegment> Segmen
 /// </summary>
 public sealed class ScenarioText(string directory)
 {
-    private readonly Dictionary<string, string[]> _files = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, string[]> _files = new(StringComparer.Ordinal);
 
     /// <summary>The folder with the decompiled <c>.ADV</c> files.</summary>
     public string Directory { get; } = directory;
@@ -191,18 +192,13 @@ public sealed class ScenarioText(string directory)
         return new TextRun(source, segments);
     }
 
-    private string[] Lines(string file)
+    private string[] Lines(string file) => _files.GetOrAdd(file, f =>
     {
-        if (!_files.TryGetValue(file, out var lines))
-        {
-            string path = Path.Combine(Directory, file);
-            if (!File.Exists(path))
-                throw new ScenarioTextException($"Scenario file {path} not found.");
-            lines = File.ReadAllLines(path, Encoding.UTF8);
-            _files[file] = lines;
-        }
-        return lines;
-    }
+        string path = Path.Combine(Directory, f);
+        if (!File.Exists(path))
+            throw new ScenarioTextException($"Scenario file {path} not found.");
+        return File.ReadAllLines(path, Encoding.UTF8);
+    });
 
     /// <summary>Adds the segment of one text command; false for any other command (the run ends).</summary>
     internal static bool TryParse(string line, List<TextSegment> segments)

@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 namespace Kichikuou.Original.Content.Tests;
 
 /// <summary>A successful pre-battle strategy as our cut-in shows it (docs/ui/battle-screen.md, "The strategy's cut-in").</summary>
-public class BattleStrategyTests(ITestOutputHelper output)
+public class BattleStrategyTests
 {
     private static readonly Lazy<CgLibrary> Cgs = new(() => new CgLibrary(LocalData.CgDirectory));
     private static readonly Lazy<ScenarioText> Texts = new(() => new ScenarioText(LocalData.ScenarioDirectory));
@@ -90,78 +90,93 @@ public class BattleStrategyTests(ITestOutputHelper output)
     }
 
     /// <summary>
-    /// In every captured battle with a successful strategy, the cut-in at the line's key wait is what the script shows: the
-    /// strategist (<c>Bt_PlayerStrategist</c> / <c>Bt_EnemyStrategist</c>) and its face, the result (<c>Bt_StrategyResult</c>),
-    /// the bubble's line as printed; the cut-in answers exactly the announcement's and the effect's waits, and it is gone
-    /// before the battle's field is drawn.
+    /// The test over every capture, spread over <see cref="Shards"/> classes (<c>Captures0</c> and on) that run in
+    /// parallel (Shards.cs).
     /// </summary>
-    [CaptureTheory]
-    [MemberData(nameof(BattleSceneTests.Captures), MemberType = typeof(BattleSceneTests))]
-    public async Task The_cut_in_is_what_the_script_shows(string file)
+    public abstract class CaptureShard(ITestOutputHelper output)
     {
-        var capture = GoldenCapture.Load(Path.Combine(LocalData.GoldenDirectory, file));
-        var presenter = new BattlePresenter(Texts.Value, Cgs.Value, new BoxGlyphs());
-        GameState? state = null;
-        var printed = new System.Text.StringBuilder();
-        int strategies = 0, answered = 0, lines = 0;
-        var wrong = new List<string>();
-        var view = new ObservingView(e =>
-        {
-            presenter.Show(e);
-            switch (e)
-            {
-                case StrategyScreenEvent:
-                    strategies++;
-                    printed.Clear();
-                    break;
-                case WindowEvent { Op.Value: 141 or 142 or 151 or 152 }:
-                    printed.Clear();
-                    break;
-                case MessageEvent m when presenter.Strategy is not null:
-                    printed.Append(Texts.Value.Read(m.Text).Format(strings: v => state is { } st && v >= 0 && v < st.Strings.Length ? st.Strings[v] : "", stringVariables: m.StringVariables));
-                    break;
-                case SlotPanelEvent or BattlefieldBackgroundEvent or RoundHeaderEvent when presenter.Strategy is not null:
-                    wrong.Add($"strategy {strategies}: still held at {e.GetType().Name}");
-                    break;
-            }
-        });
+        private const int Shards = 5;
 
-        Sys3Int Key(Sys3Int captured)
+        /// <summary>
+        /// In every captured battle with a successful strategy, the cut-in at the line's key wait is what the script shows: the
+        /// strategist (<c>Bt_PlayerStrategist</c> / <c>Bt_EnemyStrategist</c>) and its face, the result (<c>Bt_StrategyResult</c>),
+        /// the bubble's line as printed; the cut-in answers exactly the announcement's and the effect's waits, and it is gone
+        /// before the battle's field is drawn.
+        /// </summary>
+        [CaptureTheory]
+        [ShardedData(nameof(BattleSceneTests.Captures), typeof(BattleSceneTests), Shards)]
+        public async Task The_cut_in_is_what_the_script_shows(string file)
         {
-            if (presenter.Strategy is { } shown && state is { } s)
+            var capture = GoldenCapture.Load(Path.Combine(LocalData.GoldenDirectory, file));
+            var presenter = new BattlePresenter(Texts.Value, Cgs.Value, new BoxGlyphs());
+            GameState? state = null;
+            var printed = new System.Text.StringBuilder();
+            int strategies = 0, answered = 0, lines = 0;
+            var wrong = new List<string>();
+            var view = new ObservingView(e =>
             {
-                if (presenter.StrategyAnswered)
+                presenter.Show(e);
+                switch (e)
                 {
-                    answered++;
+                    case StrategyScreenEvent:
+                        strategies++;
+                        printed.Clear();
+                        break;
+                    case WindowEvent { Op.Value: 141 or 142 or 151 or 152 }:
+                        printed.Clear();
+                        break;
+                    case MessageEvent m when presenter.Strategy is not null:
+                        printed.Append(Texts.Value.Read(m.Text).Format(strings: v => state is { } st && v >= 0 && v < st.Strings.Length ? st.Strings[v] : "", stringVariables: m.StringVariables));
+                        break;
+                    case SlotPanelEvent or BattlefieldBackgroundEvent or RoundHeaderEvent when presenter.Strategy is not null:
+                        wrong.Add($"strategy {strategies}: still held at {e.GetType().Name}");
+                        break;
                 }
-                else
+            });
+
+            Sys3Int Key(Sys3Int captured)
+            {
+                if (presenter.Strategy is { } shown && state is { } s)
                 {
-                    lines++;
-                    bool player = shown.Side == BattleSide.Player;
-                    var record = player ? s.Bt_PlayerStrategist : s.Bt_EnemyStrategist;
-                    var face = player ? s.Units[record].FaceCg : s.Cmdrs[record].FaceCg;
-                    if ((shown.Record, shown.Portrait, shown.Result) != (record.Value, face.Value, s.Bt_StrategyResult.Value))
-                        wrong.Add($"strategy {strategies}: shown {shown}");
-                    if (shown.Line?.Text != BattleSpeech.Flow(printed.ToString()))
-                        wrong.Add($"strategy {strategies}: line \"{shown.Line?.Text}\", printed \"{BattleSpeech.Flow(printed.ToString())}\"");
-                    if (shown.Announcement == "" || shown.Label == "")
-                        wrong.Add($"strategy {strategies}: no announcement or label");
+                    if (presenter.StrategyAnswered)
+                    {
+                        answered++;
+                    }
+                    else
+                    {
+                        lines++;
+                        bool player = shown.Side == BattleSide.Player;
+                        var record = player ? s.Bt_PlayerStrategist : s.Bt_EnemyStrategist;
+                        var face = player ? s.Units[record].FaceCg : s.Cmdrs[record].FaceCg;
+                        if ((shown.Record, shown.Portrait, shown.Result) != (record.Value, face.Value, s.Bt_StrategyResult.Value))
+                            wrong.Add($"strategy {strategies}: shown {shown}");
+                        if (shown.Line?.Text != BattleSpeech.Flow(printed.ToString()))
+                            wrong.Add($"strategy {strategies}: line \"{shown.Line?.Text}\", printed \"{BattleSpeech.Flow(printed.ToString())}\"");
+                        if (shown.Announcement == "" || shown.Label == "")
+                            wrong.Add($"strategy {strategies}: no announcement or label");
+                    }
                 }
+                presenter.AfterKey();
+                return captured;
             }
-            presenter.AfterKey();
-            return captured;
+
+            await GoldenReplay.RunAsync(capture, view: view, started: s =>
+            {
+                state = s;
+                presenter.Start(s);
+            }, answers: new ReplayAnswers(Key: Key));
+            output.WriteLine($"{file}: {strategies} strategies, {lines} line waits, {answered} waits answered");
+            Assert.Equal(strategies, lines);
+            Assert.Equal(2 * strategies, answered);
+            Assert.Empty(wrong);
         }
-
-        await GoldenReplay.RunAsync(capture, view: view, started: s =>
-        {
-            state = s;
-            presenter.Start(s);
-        }, answers: new ReplayAnswers(Key: Key));
-        output.WriteLine($"{file}: {strategies} strategies, {lines} line waits, {answered} waits answered");
-        Assert.Equal(strategies, lines);
-        Assert.Equal(2 * strategies, answered);
-        Assert.Empty(wrong);
     }
+
+    [Shard(0)] public sealed class Captures0(ITestOutputHelper output) : CaptureShard(output);
+    [Shard(1)] public sealed class Captures1(ITestOutputHelper output) : CaptureShard(output);
+    [Shard(2)] public sealed class Captures2(ITestOutputHelper output) : CaptureShard(output);
+    [Shard(3)] public sealed class Captures3(ITestOutputHelper output) : CaptureShard(output);
+    [Shard(4)] public sealed class Captures4(ITestOutputHelper output) : CaptureShard(output);
 
     private sealed class ObservingView(Action<ScriptEvent> show) : IScriptView
     {

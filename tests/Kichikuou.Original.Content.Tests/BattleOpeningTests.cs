@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 namespace Kichikuou.Original.Content.Tests;
 
 /// <summary>The battle's opening on our battle screen (docs/ui/battle-screen.md, "The opening").</summary>
-public class BattleOpeningTests(ITestOutputHelper output)
+public class BattleOpeningTests
 {
     private static readonly Lazy<CgLibrary> Cgs = new(() => new CgLibrary(LocalData.CgDirectory));
     private static readonly Lazy<ScenarioText> Texts = new(() => new ScenarioText(LocalData.ScenarioDirectory));
@@ -117,50 +117,66 @@ public class BattleOpeningTests(ITestOutputHelper output)
     }
 
     /// <summary>
-    /// In every captured battle each round header waits for its key with our screen's scene up; the first is the
-    /// battle's opening and the later ones are not; the advantages our screen shows over the cards are the header's.
+    /// The test over every capture, spread over <see cref="Shards"/> classes (<c>Captures0</c> and on) that run in
+    /// parallel (Shards.cs).
     /// </summary>
-    [CaptureTheory]
-    [MemberData(nameof(BattleSceneTests.Captures), MemberType = typeof(BattleSceneTests))]
-    public async Task Each_header_is_the_opening_or_a_later_round(string file)
+    public abstract class CaptureShard(ITestOutputHelper output)
     {
-        var capture = GoldenCapture.Load(Path.Combine(LocalData.GoldenDirectory, file));
-        var presenter = new BattlePresenter(Texts.Value, Cgs.Value, new BoxGlyphs());
-        var scene = new BattleScene(Cgs.Value);
-        var order = new RoundOrder();
-        GameState? state = null;
-        int headers = 0;
-        var wrong = new List<string>();
-        var view = new ObservingView(e =>
+        private const int Shards = 6;
+
+        /// <summary>
+        /// In every captured battle each round header waits for its key with our screen's scene up; the first is the
+        /// battle's opening and the later ones are not; the advantages our screen shows over the cards are the header's.
+        /// </summary>
+        [CaptureTheory]
+        [ShardedData(nameof(BattleSceneTests.Captures), typeof(BattleSceneTests), Shards)]
+        public async Task Each_header_is_the_opening_or_a_later_round(string file)
         {
-            presenter.Show(e);
-            if (state is not { } s)
-                return;
-            order.Observe(e, s);
-            scene.Observe(e, s, order.Acting);
-            if (e is not RoundHeaderEvent header)
-                return;
-            headers++;
-            if (presenter.RoundHeader != header || !scene.Active)
-                wrong.Add($"header {headers}: held {presenter.RoundHeader is not null}, scene {scene.Active}");
-            if ((order.Round == 1) != (headers == 1))
-                wrong.Add($"header {headers}: round {order.Round}");
-            var opening = BattleOpening.Of(header, s);
-            if (BattleOpening.Advantages(s) != (opening.PlayerAdvantage, opening.EnemyAdvantage))
-                wrong.Add($"header {headers}: advantages {BattleOpening.Advantages(s)}, printed {(opening.PlayerAdvantage, opening.EnemyAdvantage)}");
-            if (opening.Turns is { } turns && turns != s.Bt_RoundsLeft.Value)
-                wrong.Add($"header {headers}: {turns} turns");
-        });
-        await GoldenReplay.RunAsync(capture, view: view, started: s =>
-        {
-            state = s;
-            presenter.Start(s);
-            scene.Start(s);
-            order.Reset();
-        });
-        output.WriteLine($"{file}: {headers} round headers");
-        Assert.Empty(wrong);
+            var capture = GoldenCapture.Load(Path.Combine(LocalData.GoldenDirectory, file));
+            var presenter = new BattlePresenter(Texts.Value, Cgs.Value, new BoxGlyphs());
+            var scene = new BattleScene(Cgs.Value);
+            var order = new RoundOrder();
+            GameState? state = null;
+            int headers = 0;
+            var wrong = new List<string>();
+            var view = new ObservingView(e =>
+            {
+                presenter.Show(e);
+                if (state is not { } s)
+                    return;
+                order.Observe(e, s);
+                scene.Observe(e, s, order.Acting);
+                if (e is not RoundHeaderEvent header)
+                    return;
+                headers++;
+                if (presenter.RoundHeader != header || !scene.Active)
+                    wrong.Add($"header {headers}: held {presenter.RoundHeader is not null}, scene {scene.Active}");
+                if ((order.Round == 1) != (headers == 1))
+                    wrong.Add($"header {headers}: round {order.Round}");
+                var opening = BattleOpening.Of(header, s);
+                if (BattleOpening.Advantages(s) != (opening.PlayerAdvantage, opening.EnemyAdvantage))
+                    wrong.Add($"header {headers}: advantages {BattleOpening.Advantages(s)}, printed {(opening.PlayerAdvantage, opening.EnemyAdvantage)}");
+                if (opening.Turns is { } turns && turns != s.Bt_RoundsLeft.Value)
+                    wrong.Add($"header {headers}: {turns} turns");
+            });
+            await GoldenReplay.RunAsync(capture, view: view, started: s =>
+            {
+                state = s;
+                presenter.Start(s);
+                scene.Start(s);
+                order.Reset();
+            });
+            output.WriteLine($"{file}: {headers} round headers");
+            Assert.Empty(wrong);
+        }
     }
+
+    [Shard(0)] public sealed class Captures0(ITestOutputHelper output) : CaptureShard(output);
+    [Shard(1)] public sealed class Captures1(ITestOutputHelper output) : CaptureShard(output);
+    [Shard(2)] public sealed class Captures2(ITestOutputHelper output) : CaptureShard(output);
+    [Shard(3)] public sealed class Captures3(ITestOutputHelper output) : CaptureShard(output);
+    [Shard(4)] public sealed class Captures4(ITestOutputHelper output) : CaptureShard(output);
+    [Shard(5)] public sealed class Captures5(ITestOutputHelper output) : CaptureShard(output);
 
     private sealed class ObservingView(Action<ScriptEvent> show) : IScriptView
     {

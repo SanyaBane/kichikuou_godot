@@ -24,51 +24,60 @@ namespace Kichikuou.Original.Content.Tests;
 /// fails with <see cref="NotSupportedException"/>; the run is then checked up to that point
 /// (the original's log must begin with the port's). Skipped without the decompile.
 /// </summary>
-public class CommandSliceDifferentialTests(ITestOutputHelper output)
+/// <remarks>
+/// Each test is a nested class of its own, named after its file, so that the tests run in parallel (Shards.cs).
+/// </remarks>
+public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
 {
     private const int Cases = 1500;
 
-    [Fact]
-    public Task The_enemy_city_runs_exactly_as_Cﾃｷﾄｼ() =>
-        CompareAsync(
-            "Cﾃｷﾄｼ.ADV",
-            (script, scenario) => new EnemyCityCommand(script, scenario).RunAsync(),
-            ShapeEnemyCity,
-            Scribble,
-            ["call Iﾄｳｿﾞｸ.ADV", "call ｵｰﾌﾟﾆﾝｸﾞ.ADV", "call Cﾆﾝｼﾞｬ.ADV", "call GAL.ADV", "call Gｶﾌｪ.ADV", "call Gﾏﾘｱ.ADV",
-             "text 28", "text 34", "text 4368", "text 4404", "item 52", "item 58", "item 64", "item 70", "item 76", "IZ", "M 0",
-             // the attack: Patton, the stage-2 gate, the picker, the defenders, the battle
-             "call Gﾊﾟｯﾄﾝ.ADV", "call Iｼﾚｲﾌﾞ.ADV", "call Sﾌﾞﾀｲ.ADV", "call TCﾘｰｻﾞｽ2.ADV", "call TJAPAN2.ADV", "call Tｾﾞｽ2.ADV",
-             "call Tﾍﾙﾏﾝ2.ADV", "call Tｹｲﾌﾞﾘｽ2.ADV", "call Gﾊﾟﾊﾟｲｱ.ADV", "call FIGT_A.ADV", "fleeing soldier",
-             "text 139", "text 162", "text 205", "text 231", "text 255", "text 281", "text 300", "text 311", "text 399",
-             // the refusals, the Land of Death and the barrier
-             "text 3834", "text 3868", "text 3953", "text 4014", "text 4064", "text 4138", "text 4256", "M 1", "M 3", "M 4",
-             // the independent cities: their exits, the menu, Stop, the way to a negotiation, Use Force
-             "call Iｼｬﾝｸﾞﾘﾗ.ADV", "call Gｻｰﾅｷｱ.ADV", "call Gﾚﾍﾞｯｶ.ADV", "call Gｶｾｲ.ADV", "item 493", "item 498", "item 502",
-             "text 448", "text 476", "text 510", "text 532", "text 2442", "text 2689", "text 3652", "text 595"],
-            cases: 5000);
+    public sealed class Cﾃｷﾄｼ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_enemy_city_runs_exactly_as_Cﾃｷﾄｼ() =>
+            CompareAsync(
+                "Cﾃｷﾄｼ.ADV",
+                (script, scenario) => new EnemyCityCommand(script, scenario).RunAsync(),
+                ShapeEnemyCity,
+                Scribble,
+                ["call Iﾄｳｿﾞｸ.ADV", "call ｵｰﾌﾟﾆﾝｸﾞ.ADV", "call Cﾆﾝｼﾞｬ.ADV", "call GAL.ADV", "call Gｶﾌｪ.ADV", "call Gﾏﾘｱ.ADV",
+                 "text 28", "text 34", "text 4368", "text 4404", "item 52", "item 58", "item 64", "item 70", "item 76", "IZ", "M 0",
+                 // the attack: Patton, the stage-2 gate, the picker, the defenders, the battle
+                 "call Gﾊﾟｯﾄﾝ.ADV", "call Iｼﾚｲﾌﾞ.ADV", "call Sﾌﾞﾀｲ.ADV", "call TCﾘｰｻﾞｽ2.ADV", "call TJAPAN2.ADV", "call Tｾﾞｽ2.ADV",
+                 "call Tﾍﾙﾏﾝ2.ADV", "call Tｹｲﾌﾞﾘｽ2.ADV", "call Gﾊﾟﾊﾟｲｱ.ADV", "call FIGT_A.ADV", "fleeing soldier",
+                 "text 139", "text 162", "text 205", "text 231", "text 255", "text 281", "text 300", "text 311", "text 399",
+                 // the refusals, the Land of Death and the barrier
+                 "text 3834", "text 3868", "text 3953", "text 4014", "text 4064", "text 4138", "text 4256", "M 1", "M 3", "M 4",
+                 // the independent cities: their exits, the menu, Stop, the way to a negotiation, Use Force
+                 "call Iｼｬﾝｸﾞﾘﾗ.ADV", "call Gｻｰﾅｷｱ.ADV", "call Gﾚﾍﾞｯｶ.ADV", "call Gｶｾｲ.ADV", "item 493", "item 498", "item 502",
+                 "text 448", "text 476", "text 510", "text 532", "text 2442", "text 2689", "text 3652", "text 595"],
+                cases: 5000);
+    }
 
-    [Fact]
-    public Task The_independent_cities_negotiate_exactly_as_Cﾃｷﾄｼ() =>
-        CompareAsync(
-            "Cﾃｷﾄｼ.ADV",
-            (script, scenario) => new EnemyCityCommand(script, scenario).RunAsync(),
-            ShapeNegotiation,
-            Scribble,
-            [// Mars (22), Diphtheria (19), Rockearth (17), Ice (18)
-             "text 637", "item 810", "item 814", "text 822", "text 859", "text 924",
-             "text 960", "item 1258", "item 1262", "text 1271", "text 1327", "text 1434",
-             // Lazeal (20): the question, the wait, the scene
-             "text 1545", "item 1665", "item 1669", "text 1677", "text 1699", "text 1849", "call Gﾚｨﾘｨ.ADV",
-             // Red (23), Portugal (28), Zeo (24)
-             "text 1985", "item 2085", "item 2089", "text 2097", "text 2149",
-             "text 2206", "text 2306", "item 2319", "item 2323", "text 2332", "text 2375", "text 2386", "text 2701",
-             // M Land (25), Hanna (26)
-             "text 2814", "item 3022", "item 3026", "text 3034", "text 3082",
-             "text 3314", "text 3491", "item 3504", "item 3508", "text 3518", "text 3529", "text 3544", "text 3611",
-             "M 0", "M 3", "M 4", "M 10"],
-            cases: 3000,
-            choose: ChooseNegotiation);
+    public sealed class CﾃｷﾄｼTalks(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_independent_cities_negotiate_exactly_as_Cﾃｷﾄｼ() =>
+            CompareAsync(
+                "Cﾃｷﾄｼ.ADV",
+                (script, scenario) => new EnemyCityCommand(script, scenario).RunAsync(),
+                ShapeNegotiation,
+                Scribble,
+                [// Mars (22), Diphtheria (19), Rockearth (17), Ice (18)
+                 "text 637", "item 810", "item 814", "text 822", "text 859", "text 924",
+                 "text 960", "item 1258", "item 1262", "text 1271", "text 1327", "text 1434",
+                 // Lazeal (20): the question, the wait, the scene
+                 "text 1545", "item 1665", "item 1669", "text 1677", "text 1699", "text 1849", "call Gﾚｨﾘｨ.ADV",
+                 // Red (23), Portugal (28), Zeo (24)
+                 "text 1985", "item 2085", "item 2089", "text 2097", "text 2149",
+                 "text 2206", "text 2306", "item 2319", "item 2323", "text 2332", "text 2375", "text 2386", "text 2701",
+                 // M Land (25), Hanna (26)
+                 "text 2814", "item 3022", "item 3026", "text 3034", "text 3082",
+                 "text 3314", "text 3491", "item 3504", "item 3508", "text 3518", "text 3529", "text 3544", "text 3611",
+                 "M 0", "M 3", "M 4", "M 10"],
+                cases: 3000,
+                choose: ChooseNegotiation);
+    }
 
     /// <summary>
     /// A city that negotiates at story stage 2 or 3 — Rockearth (17), Ice (18), Diphtheria (19),
@@ -162,64 +171,73 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             state.Cmdrs[c].Status = (Sys3Int)(rng.Next(3) == 0 ? 0 : 1);
     }
 
-    [Fact]
-    public Task The_distant_city_runs_exactly_as_Cﾃｷﾄｼ2() =>
-        CompareAsync(
-            "Cﾃｷﾄｼ2.ADV",
-            (script, _) => new DistantCityCommand(script).RunAsync(),
-            (state, rng) => state.Prov_Cur = (Sys3Int)rng.Next(0, 100),
-            Scribble,
-            ["call Cﾆﾝｼﾞｬ.ADV", "call Gｶﾌｪ.ADV", "call Gﾏﾘｱ.ADV", "text 26", "text 32", "text 71", "text 107", "item 50", "item 55", "IZ"]);
+    public sealed class Cﾃｷﾄｼ2(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_distant_city_runs_exactly_as_Cﾃｷﾄｼ2() =>
+            CompareAsync(
+                "Cﾃｷﾄｼ2.ADV",
+                (script, _) => new DistantCityCommand(script).RunAsync(),
+                (state, rng) => state.Prov_Cur = (Sys3Int)rng.Next(0, 100),
+                Scribble,
+                ["call Cﾆﾝｼﾞｬ.ADV", "call Gｶﾌｪ.ADV", "call Gﾏﾘｱ.ADV", "text 26", "text 32", "text 71", "text 107", "item 50", "item 55", "IZ"]);
+    }
 
-    [Fact]
-    public Task The_subordinates_command_runs_exactly_as_Cﾌﾞｶ() =>
-        CompareAsync(
-            "Cﾌﾞｶ.ADV",
-            (script, _) => new SubordinatesCommand(script).RunAsync(),
-            (state, rng) =>
-            {
-                state.Ui_CmdSubordAvail = (Sys3Int)rng.Next(0, 2);
-                state.F_SillCow_State = (Sys3Int)(rng.Next(6) == 0 ? 3 : 0);
-                state.N_RanceSelfTalk = (Sys3Int)rng.Next(0, 25);
-                state.Unit48_Identity = (Sys3Int)rng.Next(0, 3);
-                // The troop menu of the later stages: the week's two sub-commands, the offers by
-                // class and troop attack, full and short units, a budget around the prices.
-                if (rng.Next(2) == 0)
-                    state.StoryStage = (Sys3Int)rng.Next(1, 5);
-                state.CmdAvail_SubTroops = (Sys3Int)(rng.Next(4) == 0 ? 0 : 1);
-                state.CmdAvail_SubTalk = (Sys3Int)(rng.Next(4) == 0 ? 0 : 1);
-                state.Week = (Sys3Int)rng.Next(9, 120);
-                state.Gold = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(0, 40) : rng.Next(0, 3000));
-                for (int u = 1; u <= 50; u++)
+    public sealed class Cﾌﾞｶ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_subordinates_command_runs_exactly_as_Cﾌﾞｶ() =>
+            CompareAsync(
+                "Cﾌﾞｶ.ADV",
+                (script, _) => new SubordinatesCommand(script).RunAsync(),
+                (state, rng) =>
                 {
-                    var unit = state.Units[u];
-                    unit.Class = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(0, 13) : rng.Next(0, 4));
-                    unit.TroopAtk = (Sys3Int)(rng.Next(2) == 0 ? rng.Next(0, 15) : rng.Next(3) switch { 0 => 10, 1 => 11, _ => 8 });
-                    unit.MaxTroops = (Sys3Int)rng.Next(0, 3000);
-                    unit.Troops = rng.Next(3) switch { 0 => unit.MaxTroops, 1 => (Sys3Int)rng.Next(0, 3000), _ => (Sys3Int)rng.Next(0, unit.MaxTroops.Value + 1) };
-                }
-            },
-            Scribble,
-            ["call Sﾌﾞｶ.ADV", "call Gｼｨﾙ.ADV", "call Gﾊﾞｳﾝﾄﾞ.ADV", "call Gｿｳﾙ.ADV", "call Gﾖｳﾍｲ.ADV", "call Gﾊﾆｰ.ADV",
-             "call Gｵｳｼﾞ.ADV", "call Gﾛﾚｯｸｽ.ADV", "text 1348", "text 1357", "text 1374", "text 1116", "text 1149",
-             "text 1174", "text 1179", "text 1254", "text 1280", "text 1286", "text 1328", "text 199",
-             // the troop menu: header, offer and Add More, budget refusals, replenish, talk
-             "text 729", "text 738", "text 744", "text 870", "text 883", "text 927", "text 945", "text 979", "text 995",
-             "text 1012", "text 1046", "text 1053", "text 1073", "text 1080", "text 1104",
-             "item 807", "item 812", "item 817", "item 824", "item 829", "item 836", "item 842", "item 847", "item 904",
-             "item 909", "item 914", "item 1026", "item 1030", "M 0", "IZ"],
-            cases: 4000);
+                    state.Ui_CmdSubordAvail = (Sys3Int)rng.Next(0, 2);
+                    state.F_SillCow_State = (Sys3Int)(rng.Next(6) == 0 ? 3 : 0);
+                    state.N_RanceSelfTalk = (Sys3Int)rng.Next(0, 25);
+                    state.Unit48_Identity = (Sys3Int)rng.Next(0, 3);
+                    // The troop menu of the later stages: the week's two sub-commands, the offers by
+                    // class and troop attack, full and short units, a budget around the prices.
+                    if (rng.Next(2) == 0)
+                        state.StoryStage = (Sys3Int)rng.Next(1, 5);
+                    state.CmdAvail_SubTroops = (Sys3Int)(rng.Next(4) == 0 ? 0 : 1);
+                    state.CmdAvail_SubTalk = (Sys3Int)(rng.Next(4) == 0 ? 0 : 1);
+                    state.Week = (Sys3Int)rng.Next(9, 120);
+                    state.Gold = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(0, 40) : rng.Next(0, 3000));
+                    for (int u = 1; u <= 50; u++)
+                    {
+                        var unit = state.Units[u];
+                        unit.Class = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(0, 13) : rng.Next(0, 4));
+                        unit.TroopAtk = (Sys3Int)(rng.Next(2) == 0 ? rng.Next(0, 15) : rng.Next(3) switch { 0 => 10, 1 => 11, _ => 8 });
+                        unit.MaxTroops = (Sys3Int)rng.Next(0, 3000);
+                        unit.Troops = rng.Next(3) switch { 0 => unit.MaxTroops, 1 => (Sys3Int)rng.Next(0, 3000), _ => (Sys3Int)rng.Next(0, unit.MaxTroops.Value + 1) };
+                    }
+                },
+                Scribble,
+                ["call Sﾌﾞｶ.ADV", "call Gｼｨﾙ.ADV", "call Gﾊﾞｳﾝﾄﾞ.ADV", "call Gｿｳﾙ.ADV", "call Gﾖｳﾍｲ.ADV", "call Gﾊﾆｰ.ADV",
+                 "call Gｵｳｼﾞ.ADV", "call Gﾛﾚｯｸｽ.ADV", "text 1348", "text 1357", "text 1374", "text 1116", "text 1149",
+                 "text 1174", "text 1179", "text 1254", "text 1280", "text 1286", "text 1328", "text 199",
+                 // the troop menu: header, offer and Add More, budget refusals, replenish, talk
+                 "text 729", "text 738", "text 744", "text 870", "text 883", "text 927", "text 945", "text 979", "text 995",
+                 "text 1012", "text 1046", "text 1053", "text 1073", "text 1080", "text 1104",
+                 "item 807", "item 812", "item 817", "item 824", "item 829", "item 836", "item 842", "item 847", "item 904",
+                 "item 909", "item 914", "item 1026", "item 1030", "M 0", "IZ"],
+                cases: 4000);
+    }
 
-    [Fact]
-    public Task The_harem_runs_exactly_as_Cﾊｰﾚﾑ() =>
-        CompareAsync(
-            "Cﾊｰﾚﾑ.ADV",
-            (script, _) => new HaremCommand(script).RunAsync(),
-            ShapeHarem,
-            Scribble,
-            ["call Sﾊｰﾚﾑ.ADV", "draw 4", "call Gｽｽﾞﾒ.ADV", "call Gｳｪﾝﾃﾞｨ.ADV", "call Gｶﾌｪ.ADV", "text 376", "text 566", "M 0",
-             .. HaremScenes.Select(f => "call " + f)],
-            cases: 4000);
+    public sealed class Cﾊｰﾚﾑ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_harem_runs_exactly_as_Cﾊｰﾚﾑ() =>
+            CompareAsync(
+                "Cﾊｰﾚﾑ.ADV",
+                (script, _) => new HaremCommand(script).RunAsync(),
+                ShapeHarem,
+                Scribble,
+                ["call Sﾊｰﾚﾑ.ADV", "draw 4", "call Gｽｽﾞﾒ.ADV", "call Gｳｪﾝﾃﾞｨ.ADV", "call Gｶﾌｪ.ADV", "text 376", "text 566", "M 0",
+                 .. HaremScenes.Select(f => "call " + f)],
+                cases: 4000);
+    }
 
     /// <summary>Every girl's scene file of <c>Cﾊｰﾚﾑ.ADV:384-546</c>.</summary>
     private static readonly string[] HaremScenes =
@@ -273,24 +291,27 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         state.F_Elena_State = (Sys3Int)rng.Next(4, 9);
     }
 
-    [Fact]
-    public Task The_merchant_runs_exactly_as_Cｼｮｳﾆﾝ() =>
-        CompareAsync(
-            "Cｼｮｳﾆﾝ.ADV",
-            (script, _) => new MerchantCommand(script).RunAsync(),
-            ShapeMerchant,
-            Scribble,
-            ["call Gｼｨﾙ.ADV", "call Gﾚﾍﾞｯｶ.ADV", "M 0",
-             // the arrivals, Send Away, the contracts and their refusals, the hires, Rebecca
-             "text 30", "text 61", "text 1407", "text 1600", "text 134", "text 158", "text 176", "text 250", "text 587",
-             "text 307", "text 381", "text 644", "text 728", "text 934",
-             // the shop: the budget, every page, the refusal, Buy and Don't Buy
-             "text 1062", "text 1075", "text 1299", "text 1311", "text 1323", "text 1338", "text 1352", "text 1366",
-             "text 1380", "text 1394", "text 1158", "text 1203", "text 1268",
-             "item 95", "item 100", "item 106", "item 113", "item 120", "item 125", "item 266", "item 270", "item 274",
-             "item 603", "item 607", "item 611", "item 1088", "item 1095", "item 1102", "item 1109", "item 1116",
-             "item 1124", "item 1132", "item 1139", "item 1144", "item 1183", "item 1187"],
-            cases: 3000);
+    public sealed class Cｼｮｳﾆﾝ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_merchant_runs_exactly_as_Cｼｮｳﾆﾝ() =>
+            CompareAsync(
+                "Cｼｮｳﾆﾝ.ADV",
+                (script, _) => new MerchantCommand(script).RunAsync(),
+                ShapeMerchant,
+                Scribble,
+                ["call Gｼｨﾙ.ADV", "call Gﾚﾍﾞｯｶ.ADV", "M 0",
+                 // the arrivals, Send Away, the contracts and their refusals, the hires, Rebecca
+                 "text 30", "text 61", "text 1407", "text 1600", "text 134", "text 158", "text 176", "text 250", "text 587",
+                 "text 307", "text 381", "text 644", "text 728", "text 934",
+                 // the shop: the budget, every page, the refusal, Buy and Don't Buy
+                 "text 1062", "text 1075", "text 1299", "text 1311", "text 1323", "text 1338", "text 1352", "text 1366",
+                 "text 1380", "text 1394", "text 1158", "text 1203", "text 1268",
+                 "item 95", "item 100", "item 106", "item 113", "item 120", "item 125", "item 266", "item 270", "item 274",
+                 "item 603", "item 607", "item 611", "item 1088", "item 1095", "item 1102", "item 1109", "item 1116",
+                 "item 1124", "item 1132", "item 1139", "item 1144", "item 1183", "item 1187"],
+                cases: 3000);
+    }
 
     /// <summary>
     /// Every arrival (the merchant's states 0-5, Sill's two scenes), the mercenaries free or not and
@@ -320,28 +341,31 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         state.Hist_Cur = (Sys3Int)rng.Next(0, 300);
     }
 
-    [Fact]
-    public Task The_own_city_runs_exactly_as_Cｼﾊｲﾄｼ() =>
-        CompareAsync(
-            "Cｼﾊｲﾄｼ.ADV",
-            (script, _) => new OwnCityCommand(script).RunAsync(),
-            ShapeOwnCity,
-            Scribble,
-            ["M 0", "draw 3", "draw 5", "draw 10", "item 41", "item 47", "item 53", "item 59", "item 65", "item 71", "item 340",
-             "item 436", "item 442", "item 502", "item 735", "item 741", "item 747", "item 753", "item 758", "item 762",
-             "item 1583", "item 1587", "text 17", "text 887", "text 1062", "text 1150", "text 1242", "text 1355", "text 1532",
-             "text 1597", "text 1687", "text 1704",
-             // the places and the castle
-             .. new[]
-             {
-                 "Gｶﾌｪ", "Gﾏﾘｱ", "Gﾊﾞﾎﾞﾗ", "Gｶﾞﾙﾃｨｱ", "Gｱﾋﾞｧﾄｰﾙ", "Gｱｰﾔ", "Gﾏｹﾝ", "Gｽｽﾞﾒ", "Gｱｵｲ", "Gﾐｷ", "Gﾄｸﾍﾞﾂ", "Gｶﾊﾟｰﾗ",
-                 "Gﾚｲ", "Gｶｾｲ", "Gｾﾙ", "Gｼﾉﾀﾞ", "IMﾗﾝﾄﾞ", "Gｱﾘｽ", "Gｱﾃﾅ2", "GDX", "Iｼｬﾝｸﾞﾘﾗ", "Gｴﾚﾅ", "Gﾊﾟﾊﾟｲｱ", "Gﾏｼﾞｯｸ",
-                 "Gﾌｳｶ", "Gﾏﾙﾁﾅ", "Gｻｲｾﾞﾙ", "Gｹｲﾌﾞﾜﾝ", "Gｹｲﾌﾞﾆｬﾝ", "GAL", "Cﾒｲｷｭｳ", "Gﾕｳﾚｲ", "Gｿｳﾙ", "Gﾚｨﾘｨ", "Gｱﾆｽ",
-                 "Gﾏﾘｽ", "G1", "Gﾚﾘｭｰｺﾌ", "Gﾙｰﾍﾞﾗﾝ",
-                 // the levy's triggers
-                 "Gﾌﾚｲｱ", "Gﾓｺﾓｺ", "Gﾏｺﾄ", "Gﾒﾙｼｨ", "Gｱﾅｾﾙ", "Gｱﾐﾗﾝ", "Gﾛﾚｯｸｽ", "Gｵｰﾙﾊｳﾝﾄ", "G2", "Gｽﾃｯｾﾙ", "Gｶﾞﾝｼﾞｰ", "Iｾﾞｽ",
-             }.Select(f => $"call {f}.ADV")],
-            cases: 12000);
+    public sealed class Cｼﾊｲﾄｼ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_own_city_runs_exactly_as_Cｼﾊｲﾄｼ() =>
+            CompareAsync(
+                "Cｼﾊｲﾄｼ.ADV",
+                (script, _) => new OwnCityCommand(script).RunAsync(),
+                ShapeOwnCity,
+                Scribble,
+                ["M 0", "draw 3", "draw 5", "draw 10", "item 41", "item 47", "item 53", "item 59", "item 65", "item 71", "item 340",
+                 "item 436", "item 442", "item 502", "item 735", "item 741", "item 747", "item 753", "item 758", "item 762",
+                 "item 1583", "item 1587", "text 17", "text 887", "text 1062", "text 1150", "text 1242", "text 1355", "text 1532",
+                 "text 1597", "text 1687", "text 1704",
+                 // the places and the castle
+                 .. new[]
+                 {
+                     "Gｶﾌｪ", "Gﾏﾘｱ", "Gﾊﾞﾎﾞﾗ", "Gｶﾞﾙﾃｨｱ", "Gｱﾋﾞｧﾄｰﾙ", "Gｱｰﾔ", "Gﾏｹﾝ", "Gｽｽﾞﾒ", "Gｱｵｲ", "Gﾐｷ", "Gﾄｸﾍﾞﾂ", "Gｶﾊﾟｰﾗ",
+                     "Gﾚｲ", "Gｶｾｲ", "Gｾﾙ", "Gｼﾉﾀﾞ", "IMﾗﾝﾄﾞ", "Gｱﾘｽ", "Gｱﾃﾅ2", "GDX", "Iｼｬﾝｸﾞﾘﾗ", "Gｴﾚﾅ", "Gﾊﾟﾊﾟｲｱ", "Gﾏｼﾞｯｸ",
+                     "Gﾌｳｶ", "Gﾏﾙﾁﾅ", "Gｻｲｾﾞﾙ", "Gｹｲﾌﾞﾜﾝ", "Gｹｲﾌﾞﾆｬﾝ", "GAL", "Cﾒｲｷｭｳ", "Gﾕｳﾚｲ", "Gｿｳﾙ", "Gﾚｨﾘｨ", "Gｱﾆｽ",
+                     "Gﾏﾘｽ", "G1", "Gﾚﾘｭｰｺﾌ", "Gﾙｰﾍﾞﾗﾝ",
+                     // the levy's triggers
+                     "Gﾌﾚｲｱ", "Gﾓｺﾓｺ", "Gﾏｺﾄ", "Gﾒﾙｼｨ", "Gｱﾅｾﾙ", "Gｱﾐﾗﾝ", "Gﾛﾚｯｸｽ", "Gｵｰﾙﾊｳﾝﾄ", "G2", "Gｽﾃｯｾﾙ", "Gｶﾞﾝｼﾞｰ", "Iｾﾞｽ",
+                 }.Select(f => $"call {f}.ADV")],
+                cases: 12000);
+    }
 
     /// <summary>
     /// A city with a place or a levy trigger most of the time (the castle above all), the week's
@@ -407,23 +431,26 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
             state.Items[item].Holder = (Sys3Int)(rng.Next(3) == 0 ? 100 : 0);
     }
 
-    [Fact]
-    public Task The_ninja_runs_exactly_as_Cﾆﾝｼﾞｬ() =>
-        CompareAsync(
-            "Cﾆﾝｼﾞｬ.ADV",
-            (script, _) => new NinjaCommand(script).RunAsync(),
-            ShapeNinja,
-            Scribble,
-            ["draw 5", "draw 100", "draw 300", "draw 2", "draw 200", "draw 30", "draw 12", "draw 28", "M 0",
-             "call Gｶﾅﾐ.ADV", "call Gｺｰﾄﾞ.ADV", "call Gﾌﾚｲｱ.ADV",
-             "item 51", "item 57", "item 63", "item 69", "item 75", "item 80", "item 283", "item 288", "item 294", "item 299",
-             "text 16", "text 87", "text 119", "text 146", "text 169", "text 203", "text 235", "text 306", "text 373",
-             "text 383", "text 393", "text 403", "text 413", "text 419", "text 586", "text 604", "text 608", "text 615",
-             "text 625", "text 631", "text 637",
-             // each ninja's sabotage, success and failure
-             "text 441", "text 450", "text 459", "text 468", "text 477", "text 656", "text 703", "text 774", "text 787",
-             "text 807", "text 880", "text 923", "text 991", "text 1027", "text 1096"],
-            cases: 6000);
+    public sealed class Cﾆﾝｼﾞｬ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_ninja_runs_exactly_as_Cﾆﾝｼﾞｬ() =>
+            CompareAsync(
+                "Cﾆﾝｼﾞｬ.ADV",
+                (script, _) => new NinjaCommand(script).RunAsync(),
+                ShapeNinja,
+                Scribble,
+                ["draw 5", "draw 100", "draw 300", "draw 2", "draw 200", "draw 30", "draw 12", "draw 28", "M 0",
+                 "call Gｶﾅﾐ.ADV", "call Gｺｰﾄﾞ.ADV", "call Gﾌﾚｲｱ.ADV",
+                 "item 51", "item 57", "item 63", "item 69", "item 75", "item 80", "item 283", "item 288", "item 294", "item 299",
+                 "text 16", "text 87", "text 119", "text 146", "text 169", "text 203", "text 235", "text 306", "text 373",
+                 "text 383", "text 393", "text 403", "text 413", "text 419", "text 586", "text 604", "text 608", "text 615",
+                 "text 625", "text 631", "text 637",
+                 // each ninja's sabotage, success and failure
+                 "text 441", "text 450", "text 459", "text 468", "text 477", "text 656", "text 703", "text 774", "text 787",
+                 "text 807", "text 880", "text 923", "text 991", "text 1027", "text 1096"],
+                cases: 6000);
+    }
 
     /// <summary>
     /// The five ninjas free, spent or not recruited (now and then all of them busy), Kanami's scene 4
@@ -462,20 +489,23 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         }
     }
 
-    [Fact]
-    public Task The_construction_runs_exactly_as_Cﾃｲﾄ() =>
-        CompareAsync(
-            "Cﾃｲﾄ.ADV",
-            (script, _) => new ConstructionCommand(script).RunAsync(),
-            ShapeConstruction,
-            Scribble,
-            ["M 0", "item 62", "item 66", "item 246", "item 252", "item 258", "item 264", "item 271", "item 277", "item 282",
-             "item 355", "item 359", "item 442", "item 446", "item 544", "item 548", "item 725", "item 729", "item 830",
-             "item 834", "item 920", "item 924", "item 928",
-             "text 8", "text 80", "text 107", "text 111", "text 115", "text 119", "text 123", "text 127", "text 135",
-             "text 142", "text 339", "text 426", "text 528", "text 709", "text 814", "text 904", "text 966",
-             "text 377", "text 464", "text 566", "text 747", "text 852", "text 946"],
-            cases: 4000);
+    public sealed class Cﾃｲﾄ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_construction_runs_exactly_as_Cﾃｲﾄ() =>
+            CompareAsync(
+                "Cﾃｲﾄ.ADV",
+                (script, _) => new ConstructionCommand(script).RunAsync(),
+                ShapeConstruction,
+                Scribble,
+                ["M 0", "item 62", "item 66", "item 246", "item 252", "item 258", "item 264", "item 271", "item 277", "item 282",
+                 "item 355", "item 359", "item 442", "item 446", "item 544", "item 548", "item 725", "item 729", "item 830",
+                 "item 834", "item 920", "item 924", "item 928",
+                 "text 8", "text 80", "text 107", "text 111", "text 115", "text 119", "text 123", "text 127", "text 135",
+                 "text 142", "text 339", "text 426", "text 528", "text 709", "text 814", "text 904", "text 966",
+                 "text 377", "text 464", "text 566", "text 747", "text 852", "text 946"],
+                cases: 4000);
+    }
 
     /// <summary>
     /// The buildings not started, under way or built (now and then all of them and the pool, the dead
@@ -500,41 +530,44 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         state.Hist_Cur = (Sys3Int)rng.Next(0, 300);
     }
 
-    [Fact]
-    public Task The_dungeon_runs_exactly_as_Cﾒｲｷｭｳ() =>
-        CompareAsync(
-            "Cﾒｲｷｭｳ.ADV",
-            (script, scenario) => new DungeonCommand(script, scenario).RunAsync(),
-            ShapeDungeon,
-            ScribbleDungeon,
-            ["draw 3", "draw 4", "draw 10", "draw 20", "draw 5", "draw 40", "call Gﾊﾞｳﾝﾄﾞ.ADV", "call Gﾎﾗｶﾞ.ADV", "call Gｶﾌｪ.ADV",
-             "text 2763", "text 2795", "text 2811", "text 2827", "text 2852", "M 0", "M 1", "M 10", "IZ", "boss fight",
-             // God's Door: found by either item, its menu, the statues, the door opening, Rance's talk, Kouhime's hint, Iｶﾐ
-             "text 3513", "text 3554", "text 3691", "item 290", "text 3866", "text 3879", "item 3890", "item 3897", "item 3904",
-             "item 3911", "item 3917", "item 3923", "item 3928", "text 3953", "text 3973", "text 3993", "text 4013", "text 4032",
-             "text 4084", "text 4381", "text 4415", "text 4445", "text 4455", "text 4463", "text 4473", "text 4480",
-             "call Iｶﾐ.ADV", "jump OVER.ADV",
-             // the dispatch, the menu, the picker and the refusals, the week's refusal
-             .. new[]
-             {
-                 "Gﾌﾞﾘﾃｨ", "Gｷｬﾛﾘ", "Gﾊﾟｲｱｰﾙ", "Gｶﾗｰ", "Gﾄｳｹﾞﾝ", "G1", "G2", "Sﾌﾞﾀｲ", "FIGT", "死亡捕獲", "Gｻｲｾﾞﾙ", "Gﾒﾘﾑ", "Gﾌｳｶ",
-                 "Gｹｲﾌﾞﾜﾝ", "Gｹｲﾌﾞﾆｬﾝ", "Gﾊﾆｰ", "Gﾐﾘ", "Gﾒﾙﾌｪｲｽ", "Gﾐﾙ", "Gﾙｰﾍﾞﾗﾝ", "Gｱｰﾔ",
-             }.Select(f => $"call {f}.ADV"),
-             "item 267", "item 272", "item 278", "item 284", "item 295", "text 243", "text 250", "text 254", "text 258", "text 312",
-             "text 5064", "text 5139", "text 5218", "text 5260", "text 5315", "text 5350", "text 5377", "text 5423", "text 5509",
-             "text 5540", "text 5584",
-             // the way, the resume floor, the floors, the moves, the battle, the end
-             "text 374", "text 398", "text 427", "text 634", "item 652", "item 657", "text 692", "text 914", "item 866", "item 872",
-             "item 878", "item 884", "item 889", "text 1006", "text 1011", "text 1088", "text 1093", "text 1178", "text 1304",
-             "text 1347", "text 1359", "text 927", "item 934", "item 938", "text 975",
-             // the chests, Orochi, the spring, KD and his quiz, Merim's inscriptions
-             "text 1455", "text 1487", "text 1517", "text 1547", "text 1577", "text 1607", "text 1637", "text 1667", "text 1697",
-             "text 1727", "text 1755", "text 1786", "text 1825", "text 1854", "text 1884", "text 1913", "text 1381", "text 1940",
-             "item 1954", "item 1958", "text 1966", "text 1989", "text 2036", "text 2051", "text 2081", "text 2122", "text 2209",
-             "text 2266", "item 2363", "item 2367", "text 2375", "text 2449", "text 2464", "text 2493", "text 2526", "text 2557",
-             "text 2586", "text 2620", "text 2634", "text 2699", "text 4600", "text 4736", "text 4856"],
-            cases: 8000,
-            choose: ChooseInDungeon);
+    public sealed class Cﾒｲｷｭｳ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_dungeon_runs_exactly_as_Cﾒｲｷｭｳ() =>
+            CompareAsync(
+                "Cﾒｲｷｭｳ.ADV",
+                (script, scenario) => new DungeonCommand(script, scenario).RunAsync(),
+                ShapeDungeon,
+                ScribbleDungeon,
+                ["draw 3", "draw 4", "draw 10", "draw 20", "draw 5", "draw 40", "call Gﾊﾞｳﾝﾄﾞ.ADV", "call Gﾎﾗｶﾞ.ADV", "call Gｶﾌｪ.ADV",
+                 "text 2763", "text 2795", "text 2811", "text 2827", "text 2852", "M 0", "M 1", "M 10", "IZ", "boss fight",
+                 // God's Door: found by either item, its menu, the statues, the door opening, Rance's talk, Kouhime's hint, Iｶﾐ
+                 "text 3513", "text 3554", "text 3691", "item 290", "text 3866", "text 3879", "item 3890", "item 3897", "item 3904",
+                 "item 3911", "item 3917", "item 3923", "item 3928", "text 3953", "text 3973", "text 3993", "text 4013", "text 4032",
+                 "text 4084", "text 4381", "text 4415", "text 4445", "text 4455", "text 4463", "text 4473", "text 4480",
+                 "call Iｶﾐ.ADV", "jump OVER.ADV",
+                 // the dispatch, the menu, the picker and the refusals, the week's refusal
+                 .. new[]
+                 {
+                     "Gﾌﾞﾘﾃｨ", "Gｷｬﾛﾘ", "Gﾊﾟｲｱｰﾙ", "Gｶﾗｰ", "Gﾄｳｹﾞﾝ", "G1", "G2", "Sﾌﾞﾀｲ", "FIGT", "死亡捕獲", "Gｻｲｾﾞﾙ", "Gﾒﾘﾑ", "Gﾌｳｶ",
+                     "Gｹｲﾌﾞﾜﾝ", "Gｹｲﾌﾞﾆｬﾝ", "Gﾊﾆｰ", "Gﾐﾘ", "Gﾒﾙﾌｪｲｽ", "Gﾐﾙ", "Gﾙｰﾍﾞﾗﾝ", "Gｱｰﾔ",
+                 }.Select(f => $"call {f}.ADV"),
+                 "item 267", "item 272", "item 278", "item 284", "item 295", "text 243", "text 250", "text 254", "text 258", "text 312",
+                 "text 5064", "text 5139", "text 5218", "text 5260", "text 5315", "text 5350", "text 5377", "text 5423", "text 5509",
+                 "text 5540", "text 5584",
+                 // the way, the resume floor, the floors, the moves, the battle, the end
+                 "text 374", "text 398", "text 427", "text 634", "item 652", "item 657", "text 692", "text 914", "item 866", "item 872",
+                 "item 878", "item 884", "item 889", "text 1006", "text 1011", "text 1088", "text 1093", "text 1178", "text 1304",
+                 "text 1347", "text 1359", "text 927", "item 934", "item 938", "text 975",
+                 // the chests, Orochi, the spring, KD and his quiz, Merim's inscriptions
+                 "text 1455", "text 1487", "text 1517", "text 1547", "text 1577", "text 1607", "text 1637", "text 1667", "text 1697",
+                 "text 1727", "text 1755", "text 1786", "text 1825", "text 1854", "text 1884", "text 1913", "text 1381", "text 1940",
+                 "item 1954", "item 1958", "text 1966", "text 1989", "text 2036", "text 2051", "text 2081", "text 2122", "text 2209",
+                 "text 2266", "item 2363", "item 2367", "text 2375", "text 2449", "text 2464", "text 2493", "text 2526", "text 2557",
+                 "text 2586", "text 2620", "text 2634", "text 2699", "text 4600", "text 4736", "text 4856"],
+                cases: 8000,
+                choose: ChooseInDungeon);
+    }
 
     /// <summary>
     /// <c>FIGT表示</c> (the scenes' scripted battles, every entry) with its 24 calls of
@@ -543,33 +576,36 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
     /// draws and calls and the same memory. The screen events are not compared — the port raises
     /// the battle's own events where the file draws.
     /// </summary>
-    [Fact]
-    public async Task FIGTATTK_called_from_FIGT表示_runs_as_the_file()
+    public sealed class FIGTATTK(ITestOutputHelper output)
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "FIGTATTK.ADV")))
-            return;
-        var scenario = new ScenarioScripts(LocalData.ScenarioDirectory);
-        var programs = new[] { "FIGT表示.ADV", "FIGTATTK.ADV" }.ToDictionary(f => f, scenario.ReadProgram);
-        int[] entries = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 21, 22, 23, 24, 26];
-        var seen = new HashSet<int>();
-        int cases = DifferentialRuns.Cases(1900);
-        for (int seed = 1; seed <= cases; seed++)
+        [Fact]
+        public async Task FIGTATTK_called_from_FIGT表示_runs_as_the_file()
         {
-            var rng = new Random(seed);
-            var state = RandomState(rng);
-            state.Ev_Entry = (Sys3Int)entries[rng.Next(entries.Length)];
-            var mine = await RunCutsceneAsync(Copy(state), seed, programs, port: true);
-            var original = await RunCutsceneAsync(Copy(state), seed, programs, port: false);
-            int at = FirstDifference(original.Log, mine.Log);
-            Assert.True(at < 0, $"seed {seed}: the runs differ at entry {at}\n{Around("FIGTATTK.ADV", original.Log, mine.Log, at)}");
-            var differences = Differences("FIGTATTK.ADV", original.State.Memory, mine.State.Memory, v => VariableCatalog.Variables[v].Name).Take(10).ToList();
-            Assert.True(differences.Count == 0, $"seed {seed}: memory differs\n  " + string.Join("\n  ", differences));
-            if (mine.Log.Any(e => e.StartsWith("rnd ", StringComparison.Ordinal)))
-                seen.Add(state.Ev_Entry.Value);
+            if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "FIGTATTK.ADV")))
+                return;
+            var scenario = new ScenarioScripts(LocalData.ScenarioDirectory);
+            var programs = new[] { "FIGT表示.ADV", "FIGTATTK.ADV" }.ToDictionary(f => f, scenario.ReadProgram);
+            int[] entries = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 21, 22, 23, 24, 26];
+            var seen = new HashSet<int>();
+            int cases = DifferentialRuns.Cases(1900);
+            for (int seed = 1; seed <= cases; seed++)
+            {
+                var rng = new Random(seed);
+                var state = RandomState(rng);
+                state.Ev_Entry = (Sys3Int)entries[rng.Next(entries.Length)];
+                var mine = await RunCutsceneAsync(Copy(state), seed, programs, port: true);
+                var original = await RunCutsceneAsync(Copy(state), seed, programs, port: false);
+                int at = FirstDifference(original.Log, mine.Log);
+                Assert.True(at < 0, $"seed {seed}: the runs differ at entry {at}\n{Around("FIGTATTK.ADV", original.Log, mine.Log, at)}");
+                var differences = Differences("FIGTATTK.ADV", original.State.Memory, mine.State.Memory, v => VariableCatalog.Variables[v].Name).Take(10).ToList();
+                Assert.True(differences.Count == 0, $"seed {seed}: memory differs\n  " + string.Join("\n  ", differences));
+                if (mine.Log.Any(e => e.StartsWith("rnd ", StringComparison.Ordinal)))
+                    seen.Add(state.Ev_Entry.Value);
+            }
+            output.WriteLine($"FIGT表示.ADV: {cases} runs, entries with an animation: {string.Join(",", seen.Order())}");
+            int[] animated = [2, 3, 4, 5, 6, 7, 11, 12, 13, 14, 26];         // 1, 8-10, 21-24 call no FIGTATTK
+            DifferentialRuns.AssertReached(animated.Where(e => !seen.Contains(e)).Select(e => $"entry {e}").ToList(), output);
         }
-        output.WriteLine($"FIGT表示.ADV: {cases} runs, entries with an animation: {string.Join(",", seen.Order())}");
-        int[] animated = [2, 3, 4, 5, 6, 7, 11, 12, 13, 14, 26];         // 1, 8-10, 21-24 call no FIGTATTK
-        DifferentialRuns.AssertReached(animated.Where(e => !seen.Contains(e)).Select(e => $"entry {e}").ToList(), output);
     }
 
     /// <summary>
@@ -800,74 +836,86 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         }
     }
 
-    [Fact]
-    public Task The_deployment_screen_runs_exactly_as_Sﾌﾞﾀｲ() =>
-        CompareAsync(
-            "Sﾌﾞﾀｲ.ADV",
-            (script, scenario) => new DeploymentScreen(script, scenario).RunAsync(),
-            (state, rng) =>
-            {
-                state.Tmp0021 = (Sys3Int)(rng.Next(8) == 0 ? rng.Next(0, 7) : 4);
-                state.Tmp0022 = (Sys3Int)(rng.Next(8) == 0 ? rng.Next(0, 6) : rng.Next(1, 4));
-                state.Gold = (Sys3Int)rng.Next(0, 400);
-                for (int u = 1; u <= 51; u++)
+    public sealed class Sﾌﾞﾀｲ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_deployment_screen_runs_exactly_as_Sﾌﾞﾀｲ() =>
+            CompareAsync(
+                "Sﾌﾞﾀｲ.ADV",
+                (script, scenario) => new DeploymentScreen(script, scenario).RunAsync(),
+                (state, rng) =>
                 {
-                    state.Units[u].Status = (Sys3Int)(rng.Next(4) == 0 ? rng.Next(0, 4) : 1);
-                    state.Units[u].Troops = (Sys3Int)rng.Next(0, 3000);
-                    state.Units[u].DeployCost = (Sys3Int)rng.Next(0, 40);
-                    state.Units[u].Class = (Sys3Int)rng.Next(0, 13);
-                    state.Units[u].Item = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(1, 51) : 0);
-                }
-                state.Hist_Cur = (Sys3Int)rng.Next(0, 300);
-            },
-            Scribble,
-            ["text 22", "text 49", "text 79", "text 167", "text 179", "text 255", "text 261", "text 264", "text 329",
-             "text 349", "text 370", "text 394", "text 530", "text 551", "text 555", "text 559", "text 563"]);
+                    state.Tmp0021 = (Sys3Int)(rng.Next(8) == 0 ? rng.Next(0, 7) : 4);
+                    state.Tmp0022 = (Sys3Int)(rng.Next(8) == 0 ? rng.Next(0, 6) : rng.Next(1, 4));
+                    state.Gold = (Sys3Int)rng.Next(0, 400);
+                    for (int u = 1; u <= 51; u++)
+                    {
+                        state.Units[u].Status = (Sys3Int)(rng.Next(4) == 0 ? rng.Next(0, 4) : 1);
+                        state.Units[u].Troops = (Sys3Int)rng.Next(0, 3000);
+                        state.Units[u].DeployCost = (Sys3Int)rng.Next(0, 40);
+                        state.Units[u].Class = (Sys3Int)rng.Next(0, 13);
+                        state.Units[u].Item = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(1, 51) : 0);
+                    }
+                    state.Hist_Cur = (Sys3Int)rng.Next(0, 300);
+                },
+                Scribble,
+                ["text 22", "text 49", "text 79", "text 167", "text 179", "text 255", "text 261", "text 264", "text 329",
+                 "text 349", "text 370", "text 394", "text 530", "text 551", "text 555", "text 559", "text 563"]);
+    }
 
-    [Fact]
-    public Task The_subordinate_picker_runs_exactly_as_Sﾌﾞｶ() =>
-        CompareAsync(
-            "Sﾌﾞｶ.ADV",
-            (script, scenario) => new SubordinateScreen(script, scenario).RunAsync(),
-            (state, rng) =>
-            {
-                state.CallArg = (Sys3Int)(rng.Next(4) == 0 ? rng.Next(0, 7) : 1);
-                state.RetVal = (Sys3Int)rng.Next(0, 2);
-            },
-            Scribble,
-            ["text 25", "text 71", "text 80", "text 208", "text 213"]);
+    public sealed class Sﾌﾞｶ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_subordinate_picker_runs_exactly_as_Sﾌﾞｶ() =>
+            CompareAsync(
+                "Sﾌﾞｶ.ADV",
+                (script, scenario) => new SubordinateScreen(script, scenario).RunAsync(),
+                (state, rng) =>
+                {
+                    state.CallArg = (Sys3Int)(rng.Next(4) == 0 ? rng.Next(0, 7) : 1);
+                    state.RetVal = (Sys3Int)rng.Next(0, 2);
+                },
+                Scribble,
+                ["text 25", "text 71", "text 80", "text 208", "text 213"]);
+    }
 
-    [Fact]
-    public Task The_harem_picker_runs_exactly_as_Sﾊｰﾚﾑ() =>
-        CompareAsync(
-            "Sﾊｰﾚﾑ.ADV",
-            (script, scenario) => new HaremScreen(script, scenario).RunAsync(),
-            (state, rng) =>
-            {
-                for (int i = 0; i < 50; i++)
-                    state.Memory.Var(249 + i) = (Sys3Int)(rng.Next(3) == 0 ? 1 : 0);
-                state.F_Mill_State = (Sys3Int)rng.Next(0, 4);
-                state.Week = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(0, 65536) : rng.Next(9, 30));
-                for (int k = 1; k <= 50; k++)
-                    state.History[k].Harem_LastWeek = (Sys3Int)(rng.Next(2) == 0 ? 0 : rng.Next(0, 65536));
-            },
-            Scribble,
-            ["text 14", "text 62", "text 235", "text 241", "text 253", "text 256", "text 260", "text 264", "text 268",
-             "text 276", "text 280", "text 283"]);
+    public sealed class Sﾊｰﾚﾑ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_harem_picker_runs_exactly_as_Sﾊｰﾚﾑ() =>
+            CompareAsync(
+                "Sﾊｰﾚﾑ.ADV",
+                (script, scenario) => new HaremScreen(script, scenario).RunAsync(),
+                (state, rng) =>
+                {
+                    for (int i = 0; i < 50; i++)
+                        state.Memory.Var(249 + i) = (Sys3Int)(rng.Next(3) == 0 ? 1 : 0);
+                    state.F_Mill_State = (Sys3Int)rng.Next(0, 4);
+                    state.Week = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(0, 65536) : rng.Next(9, 30));
+                    for (int k = 1; k <= 50; k++)
+                        state.History[k].Harem_LastWeek = (Sys3Int)(rng.Next(2) == 0 ? 0 : rng.Next(0, 65536));
+                },
+                Scribble,
+                ["text 14", "text 62", "text 235", "text 241", "text 253", "text 256", "text 260", "text 264", "text 268",
+                 "text 276", "text 280", "text 283"]);
+    }
 
-    [Fact]
-    public Task The_item_screen_runs_exactly_as_Sｱｲﾃﾑ() =>
-        CompareAsync(
-            "Sｱｲﾃﾑ.ADV",
-            (script, scenario) => new ItemScreen(script, scenario).RunAsync(),
-            ShapeItems,
-            Scribble,
-            ["M 0", "item 399", "sound 90", "sound 108", "sound 110", "sound 111",
-             "text 104", "text 121", "text 185", "text 194", "text 215", "text 225", "text 254", "text 291", "text 301",
-             "text 311", "text 322", "text 341", "text 367", "text 540", "text 546", "text 549", "text 556", "text 559",
-             "text 587", "text 600", "text 604", "text 607", "text 612"],
-            cases: 4000,
-            mouse: ItemPointer);
+    public sealed class Sｱｲﾃﾑ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_item_screen_runs_exactly_as_Sｱｲﾃﾑ() =>
+            CompareAsync(
+                "Sｱｲﾃﾑ.ADV",
+                (script, scenario) => new ItemScreen(script, scenario).RunAsync(),
+                ShapeItems,
+                Scribble,
+                ["M 0", "item 399", "sound 90", "sound 108", "sound 110", "sound 111",
+                 "text 104", "text 121", "text 185", "text 194", "text 215", "text 225", "text 254", "text 291", "text 301",
+                 "text 311", "text 322", "text 341", "text 367", "text 540", "text 546", "text 549", "text 556", "text 559",
+                 "text 587", "text 600", "text 604", "text 607", "text 612"],
+                cases: 4000,
+                mouse: ItemPointer);
+    }
 
     /// <summary>
     /// The view kept from the last visit (now and then one the file never sets), the units' states,
@@ -918,32 +966,38 @@ public class CommandSliceDifferentialTests(ITestOutputHelper output)
         return new MouseState(button, (Sys3Int)x, (Sys3Int)y);
     }
 
-    [Fact]
-    public Task The_treasure_command_runs_exactly_as_Cﾀｶﾗ() =>
-        CompareAsync(
-            "Cﾀｶﾗ.ADV",
-            (script, _) => new TreasureCommand(script).RunAsync(),
-            (state, rng) =>
-            {
-                for (int k = 1; k <= 50; k++)
-                    state.Items[k].Holder = (Sys3Int)(rng.Next(6) switch { 0 => 0, 1 => 100, 5 => rng.Next(0, 1200), _ => rng.Next(1, 52) });
-                for (int u = 1; u <= 51; u++)
-                    state.Units[u].Status = (Sys3Int)(rng.Next(3) == 0 ? 0 : rng.Next(1, 3));
-            },
-            Scribble,
-            ["call Sｱｲﾃﾑ.ADV"],
-            cases: 500);
+    public sealed class Cﾀｶﾗ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_treasure_command_runs_exactly_as_Cﾀｶﾗ() =>
+            CompareAsync(
+                "Cﾀｶﾗ.ADV",
+                (script, _) => new TreasureCommand(script).RunAsync(),
+                (state, rng) =>
+                {
+                    for (int k = 1; k <= 50; k++)
+                        state.Items[k].Holder = (Sys3Int)(rng.Next(6) switch { 0 => 0, 1 => 100, 5 => rng.Next(0, 1200), _ => rng.Next(1, 52) });
+                    for (int u = 1; u <= 51; u++)
+                        state.Units[u].Status = (Sys3Int)(rng.Next(3) == 0 ? 0 : rng.Next(1, 3));
+                },
+                Scribble,
+                ["call Sｱｲﾃﾑ.ADV"],
+                cases: 500);
+    }
 
-    [Fact]
-    public Task The_all_data_screen_runs_exactly_as_各種DATA() =>
-        CompareAsync(
-            "各種DATA.ADV",
-            (script, _) => new AllDataCommand(script).RunAsync(),
-            ShapeAllData,
-            Scribble,
-            ["item 28", "item 316", "IM 48", "text 71", "text 117", "text 124", "text 146", "text 166", "text 173", "text 195",
-             "text 215", "text 222", "text 244", "text 264", "text 271", "text 395"],
-            mouse: DataPointer);
+    public sealed class 各種DATA(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
+    {
+        [Fact]
+        public Task The_all_data_screen_runs_exactly_as_各種DATA() =>
+            CompareAsync(
+                "各種DATA.ADV",
+                (script, _) => new AllDataCommand(script).RunAsync(),
+                ShapeAllData,
+                Scribble,
+                ["item 28", "item 316", "IM 48", "text 71", "text 117", "text 124", "text 146", "text 166", "text 173", "text 195",
+                 "text 215", "text 222", "text 244", "text 264", "text 271", "text 395"],
+                mouse: DataPointer);
+    }
 
     /// <summary>The 16 weeks of history from nothing to past the scale, the scales unset or kept, the map markers, a stale history cursor.</summary>
     internal static void ShapeAllData(GameState state, Random rng)
