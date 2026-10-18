@@ -1139,11 +1139,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// <summary>
     /// Our message windows (docs/ui/messages.md, step 1; Option → Interface → New) over the picture: the window the presenter
     /// leaves out (<see cref="GamePresenter.MessageWindow"/>), the triangle while the player's key is awaited, a menu open
-    /// over it shown again on top; hidden over our battle screen and while a scene is skipped whole.
+    /// over it shown again on top; in a battle its own windows (the results after the field, the captures); hidden while a scene is skipped whole.
     /// </summary>
     private void UpdateMessageWindow()
     {
-        var window = InterfaceChoice.New && !SkippingScene && !BattleScreenShown ? _presenter.MessageWindow : null;
+        var window = InterfaceChoice.New && !SkippingScene ? _presenter.MessageWindow : null;
         _messageView.Show(window, _keyWaiting, _texture, window is null ? null : _presenter.MenuArea);
         if (window is null)
             return;

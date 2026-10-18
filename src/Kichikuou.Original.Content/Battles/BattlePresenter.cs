@@ -6,6 +6,7 @@ using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Combat;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
+using WindowModel = Kichikuou.Original.Content.Strategy.MessageWindow;
 
 namespace Kichikuou.Original.Content.Battles;
 
@@ -75,7 +76,7 @@ public sealed partial class BattlePresenter
         _glyphs = glyphs;
         _audio = audio;
         Surface = surface;
-        Writer = new MessageWriter(Surface, glyphs);
+        Writer = new MessageWriter(Surface, glyphs) { Printed = WindowPrinted };
     }
 
     /// <summary>The engine's surface; its (0, 0)-(640, 400) corner is the screen.</summary>
@@ -160,6 +161,8 @@ public sealed partial class BattlePresenter
         // FIGT_B's enemy attack, FIGT_B.ADV's lost province).
         if (scriptEvent is not (PauseEvent or SoundEvent or SoundPairEvent or MusicEvent))
             _mapAnimation = MapAnimation.None;
+        if (scriptEvent is not (PauseEvent or SoundEvent or SoundPairEvent or MusicEvent or KeyWaitEvent))
+            _leftBar = null;                                    // something is drawn: the 131 left goes with it
         // The blow is over at the first event after the result's key wait, or at one FIGTATTK does not raise: the core
         // has written it.
         if (Strike is not null && (_blowWaited || scriptEvent is not (ShotsFrameEvent or PauseEvent or SoundPairEvent
@@ -506,6 +509,8 @@ public sealed partial class BattlePresenter
             case 131:
                 Surface.Copy(0, 296, 640, 104, 640, 300);
                 Writer.Open(8, 305, 626, 140);
+                _windowText.Open((8, 305, 626, 140));
+                _leftBar = null;
                 G(815);
                 G(815, keyed: true);
                 Writer.Color = 190;
@@ -564,11 +569,39 @@ public sealed partial class BattlePresenter
         }
     }
 
+    // ------------------------------------------------------------------ the window's text for our message windows
+
+    /// <summary>The open window's text as placed (<see cref="MessageWindow"/>): what the writer printed into its rectangle.</summary>
+    private readonly TextBox _windowText = new((0, 0, 0, 0));
+
+    /// <summary>The 131 left on the screen after op 0 (<see cref="CloseByType"/>: its copy onto itself leaves it) until the next drawing.</summary>
+    private WindowModel? _leftBar;
+
+    private void WindowPrinted(int x, int y, int size, int color, char c)
+    {
+        if (_winType != 0 && Writer.Window == _windowText.Rect)
+            _windowText.Put(x, y, size, color, c);
+    }
+
+    /// <summary>
+    /// The open message window as our interface draws it (docs/ui/messages.md; Option → Interface → New): a speech, a
+    /// thought, a narration or 131 the battle or a scene it calls opens — the results after the field, the captures, the
+    /// deaths —, from its frame and the text printed into it (<see cref="WindowModel.Of"/>); null for the other
+    /// windows (the bubbles, the order messages, the "vs" window, the scout's and the strategy's, which our battle screen
+    /// shows its own way) and when none is open. Our panel covers the original's frame whole, which the surface still draws.
+    /// </summary>
+    public WindowModel? MessageWindow =>
+        _winType == 0 ? _leftBar
+        : ActionLabelsOpen || SpeechOpen || OrderedUnit is not null || Scout is not null || ScoutCalling || ScoutReplied ? null
+        : WindowModel.Of(_winFrame, _windowText, Surface.Color);
+
     private void OpenWindow((int X, int Y, int W, int H, int DX, int DY) save, (int X, int Y, int W, int H) text,
         int frame, int? color, int type)
     {
         Surface.Copy(save.X, save.Y, save.W, save.H, save.DX, save.DY);
         Writer.Open(text.X, text.Y, text.W, text.H);
+        _windowText.Open(text);
+        _leftBar = null;
         G(frame, keyed: true);
         if (color is int c)
             Writer.Color = c;
@@ -618,6 +651,7 @@ public sealed partial class BattlePresenter
                 break;
             case >= 31 and <= 39:
                 Writer.Color = 15; // the copy onto itself leaves the window visible
+                _leftBar = MessageWindow;   // and ours stays over it until the next drawing
                 break;
             case >= 41 and <= 49:
                 Surface.Copy(640, 150, 640, 150, 0, 250);
@@ -630,6 +664,7 @@ public sealed partial class BattlePresenter
     {
         _winType = 0;
         _winFrame = 0;
+        _windowText.Clear();
         _speech.Clear();
         ActionLabelsOpen = false;
         OrderedUnit = null;
@@ -656,6 +691,7 @@ public sealed partial class BattlePresenter
     private void EraseText()
     {
         Writer.Home();
+        _windowText.Clear();
         _speech.Clear();
         if (_winFrame != 0)
             G(_winFrame, keyed: true);
@@ -665,6 +701,7 @@ public sealed partial class BattlePresenter
     private void ClearPage()
     {
         Writer.Home();
+        _windowText.Clear();
         _speech.Clear();
         if (_winType is >= 31 and <= 39)
             G(_winFrame);

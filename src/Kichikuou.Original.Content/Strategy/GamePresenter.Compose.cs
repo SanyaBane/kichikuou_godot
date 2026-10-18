@@ -390,8 +390,8 @@ public sealed partial class GamePresenter
     }
 
     /// <summary>
-    /// The message window our UI draws now (<see cref="CoverMessages"/>), or null: outside a battle and the screens that
-    /// cover the window already (All Data, our province menu, the week report), while <c>WAO_SUB</c>'s frame is up and not
+    /// The message window our UI draws now (<see cref="CoverMessages"/>), or null: in a battle the battle's own
+    /// (<see cref="Battles.BattlePresenter.MessageWindow"/>); outside it, not under the screens that cover the window already (All Data, our province menu, the week report), while <c>WAO_SUB</c>'s frame is up and not
     /// drawn over (<see cref="Cover"/>), and only for the windows the model knows — 131 not under a picker, which draws
     /// its own text there (<c>FIGT_B.ADV:77-80</c> opens it for <c>Sﾌﾞﾀｲ</c>). After <c>WAO_SUB</c> 0 the full-screen
     /// window stays on the screen until something draws over it (<see cref="LeaveWindowOnStage"/>): ours too.
@@ -400,6 +400,8 @@ public sealed partial class GamePresenter
     {
         get
         {
+            if (CoverMessages && BattleShows)
+                return Battle.MessageWindow;                    // the battle's own windows (BattlePresenter.MessageWindow)
             if (!CoverMessages || _uncovered || BattleShows || Data != DataView.Closed || MenuCovered || WeekReport is not null
                 || State is not { } s)
                 return null;

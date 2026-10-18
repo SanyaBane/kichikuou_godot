@@ -280,7 +280,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   original has them — speech with a tail, thought, narration, a place's title, 131 with its speaker on a plate — the text at its cells in the game's font,
   typed letter by letter (its speed Option → Text Speed…, `Strategy/TextSpeedView` over the picture with the game's 121 as the preview, `Strategy/TextSpeedChoice`; a click while it types shows it whole, `GameScreen.FinishTypingAsync`),
   the triangle while the player's key is awaited, a menu over it shown on top; Option → Interface → New, docs/ui/messages.md:
-  `Original.Content/Strategy/MessageWindow` from `GamePresenter.MessageWindow` while `CoverMessages`);
+  `Original.Content/Strategy/MessageWindow` from `GamePresenter.MessageWindow` while `CoverMessages`, in a battle `BattlePresenter.MessageWindow`);
   `Strategy/SceneMenuView` (our `]` menus: lacquer rows at the selection box's place, `GamePresenter.MenuBoxArea`, while
   `SceneMenuCovered`; not over our battle screen; docs/ui/messages.md, §5 step 3); the six and the Subordinates screen draw with `Strategy/Lacquer` (the style's colours and parts, the ledger's, the click's triangle);
   `Battles/BattleBoardView` (our own battle screen, Option → Interface → New, docs/ui/battle-screen.md:

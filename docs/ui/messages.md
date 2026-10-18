@@ -195,6 +195,15 @@ as it is. Where to start:
    8, 12, 18, 25, 35, 50, 70, 100, 150 letters a second and Instant; default 9). Tests: `MessageWindowTests`
    (`A_sample_is_a_121_printed_as_WAO_SUB_prints`).
 5. **The battle's windows** (`BattlePresenter.Window`, through `WindowMask` on our battle screen).
+   **Built in part (owner, 2026-10-18: the windows after the battle were still the original's):** the battle presenter
+   prints into the surface, so it now keeps what its writer prints into the open window (`MessageWriter.Printed`,
+   `TextBox.Put`) and hands 111/112/121/122/113/123 and 131 over as `BattlePresenter.MessageWindow`
+   (`GamePresenter.MessageWindow` in a battle); our panel covers the original's frame, which the surface still draws, and a
+   131 left after op 0 stays until the next drawing. So the windows a battle file opens off the field are ours: Rance's
+   lines before `FIGT_B`'s battle, "[ Defeat ]" / "Ys was successfully defended." over the map, the captures and deaths.
+   Still the original's: the battle's own info boxes 143/153 (frame 894) on our battle screen — the strategies' "prepared
+   for the enemy's attack", "fell in battle", "The battle dragged on…", the damages and EXP at the end — which need
+   their own design on our battle screen. Tests: `MessageWindowTests.The_battles_windows_are_handed_over`.
 6. **The message log** — its design discussed first (backlog).
 
 ## 6. Open questions

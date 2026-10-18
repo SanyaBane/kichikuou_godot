@@ -39,6 +39,12 @@ public sealed class MessageWriter(Surface surface, IGlyphRenderer glyphs)
     /// <summary><c>ZM</c>: the message size in script pixels.</summary>
     public int Size { get; set; } = 24;
 
+    /// <summary>
+    /// Told of each character <see cref="Print"/> places (not the spaces), before it is drawn: the left edge and top of its
+    /// cell (script pixels), its size and colour — for a UI that draws the window's text itself (<see cref="TextBox.Put"/>).
+    /// </summary>
+    public Action<int, int, int, int, char>? Printed { get; set; }
+
     /// <summary><c>B3 n, x, y, w, h</c> + <c>B4 n, 0, 0, 0, 1, 0</c>: selects a window and puts the cursor home.</summary>
     public void Open(int x, int y, int w, int h)
     {
@@ -62,6 +68,8 @@ public sealed class MessageWriter(Surface surface, IGlyphRenderer glyphs)
                 NewLine();
                 continue;
             }
+            if (c != ' ' && c != '　')
+                Printed?.Invoke(Cursor.X, Cursor.Y, Size, Color, c);
             Cursor = (Cursor.X + DrawChar(surface, glyphs, c, Cursor.X, Cursor.Y, Size, surface.Color(Color)), Cursor.Y);
         }
     }

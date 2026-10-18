@@ -152,6 +152,37 @@ public class MessageWindowTests
     }
 
     /// <summary>
+    /// In a battle the battle's own windows are handed over too (the results after the field: <c>FIGT_A</c>'s narrations):
+    /// a narration with the text printed into it, emptied after its key, none once it closes; a speech bubble is not ours.
+    /// </summary>
+    [Fact]
+    public void The_battles_windows_are_handed_over()
+    {
+        var (presenter, state) = Presenter();
+        presenter.CoverMessages = true;
+        presenter.Show(new BattleScreenEvent("FIGT_A.ADV", true));
+        presenter.Show(new WindowEvent(113, 0));
+        state.Strings[2] = "The battle ended.";                                // the battle prints slot 2 in 18 cells
+        presenter.Show(new PrintStringEvent(2));
+
+        var window = presenter.MessageWindow!;
+        Assert.Equal(MessageKind.Narration, window.Kind);
+        Assert.Equal(["The battle ended."], window.Lines);
+        Assert.Equal(new MessageGlyph(280, 560, 48, 'T', null), window.Glyphs[0]);
+
+        presenter.Show(new WindowEvent(1, 0));                                  // its key wait
+        presenter.AfterKey();
+        Assert.Empty(presenter.MessageWindow!.Glyphs);
+
+        presenter.Show(new WindowEvent(0, 0));
+        Assert.Null(presenter.MessageWindow);
+
+        presenter.Show(new WindowEvent(141, 0));                                // the player unit's bubble
+        presenter.Show(new PrintStringEvent(2));
+        Assert.Null(presenter.MessageWindow);
+    }
+
+    /// <summary>
     /// 131: the speaker's name of <c>Name「…」</c> is split off, the closing bracket dropped and the line under it moved left by
     /// the name's cells, so both start at the bar's text edge (<c>Gｶﾅﾐ.ADV:330-334</c>); the text's own colour (190) is the bar's.
     /// </summary>

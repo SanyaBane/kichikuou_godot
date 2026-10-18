@@ -45,6 +45,16 @@ public sealed class TextBox((int X, int Y, int W, int H) rect)
     /// <summary><c>Y 1, 1</c>: the cursor to the first line; the text stays.</summary>
     public void Home() => Cursor = (Rect.X, Rect.Y + 2);
 
+    /// <summary>
+    /// A character another writer placed (<see cref="MessageWriter.Printed"/>) at its cell (<paramref name="x"/>,
+    /// <paramref name="y"/>), with its size and colour; the cursor moves past it.
+    /// </summary>
+    public void Put(int x, int y, int size, int color, char c)
+    {
+        _chars.Add((x, y, size, color, c));
+        Cursor = (x + MessageWriter.CellWidth(c, size), y);
+    }
+
     /// <summary><c>R</c> at <paramref name="size"/>.</summary>
     public void NewLine(int size) => Cursor = (Rect.X, Cursor.Y + size + 2);
 
