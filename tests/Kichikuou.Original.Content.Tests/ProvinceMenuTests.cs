@@ -10,9 +10,10 @@ namespace Kichikuou.Original.Content.Tests;
 /// <summary><see cref="ProvinceMenu"/>: a city file's first menu as our panel shows it (docs/ui/command-screen.md, "The province menu").</summary>
 public class ProvinceMenuTests
 {
+    /// <summary>A stage-1 world: <c>Cｼﾊｲﾄｼ</c> is reached from stage 1 only, and owner 1 is the player's from then (<see cref="GameState.IsOwnProvince"/>).</summary>
     private static GameState World(int province, int owner)
     {
-        var s = new GameState { Prov_StrBase = 10, Prov_Count = 6, Prov_Cur = (Sys3Int)province };
+        var s = new GameState { Prov_StrBase = 10, Prov_Count = 6, Prov_Cur = (Sys3Int)province, StoryStage = 1 };
         s.Strings[10 + province - 1] = "Oaks";
         var p = s.Provs[province];
         p.Owner = (Sys3Int)owner;
