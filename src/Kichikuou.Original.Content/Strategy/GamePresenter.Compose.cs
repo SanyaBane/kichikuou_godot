@@ -228,7 +228,26 @@ public sealed partial class GamePresenter
         if (_provinceCovered)
             _cityLeadIn = true;                                         // the files' way out: IZ (frames pass), then 0 and 332
         MenuCovered = false;
+        SceneMenuCovered = false;
         Invalidate();
+    }
+
+    /// <summary>
+    /// Our own <c>]</c> menu draws the open menu (docs/ui/messages.md, §5 step 3: mock-up M1): the selection box
+    /// alone is left out, the rest of the screen (pictures, windows) drawn as ever. <see cref="CloseMenu"/> ends it.
+    /// </summary>
+    public bool SceneMenuCovered { get; set; }
+
+    /// <summary>The open menu's box without its frame, in the 1280×800 screen's pixels (covered or not), else null.</summary>
+    public (int X, int Y, int W, int H)? MenuBoxArea
+    {
+        get
+        {
+            if (State is null || MenuBox() is not { Box: var (x, y, w, h) })
+                return null;
+            const int k = Surface.Scale;
+            return (x * k, y * k, w * k, h * k);
+        }
     }
 
     private IReadOnlyList<SceneMenuItem>? _menuItems;
@@ -412,7 +431,7 @@ public sealed partial class GamePresenter
     {
         get
         {
-            if (State is null || MenuCovered || MenuBox() is not { Box: var (x, y, w, h) })
+            if (State is null || MenuCovered || SceneMenuCovered || MenuBox() is not { Box: var (x, y, w, h) })
                 return null;
             const int k = Surface.Scale;
             return ((x - 8) * k, (y - 8) * k, (w + 16) * k, (h + 16) * k);
@@ -499,7 +518,7 @@ public sealed partial class GamePresenter
                 }
             }
         }
-        if (State is not null && !MenuCovered && MenuBox() is { } menu)                 // also over a battle: a scene it called (Gﾒﾙﾌｪｲｽ from 死亡捕獲)
+        if (State is not null && !MenuCovered && !SceneMenuCovered && MenuBox() is { } menu)                 // also over a battle: a scene it called (Gﾒﾙﾌｪｲｽ from 死亡捕獲)
         {
             menu.Open();
             menu.Hover(_pointer.X, _pointer.Y);

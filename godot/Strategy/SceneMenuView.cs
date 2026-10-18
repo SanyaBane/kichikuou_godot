@@ -1,0 +1,200 @@
+using Godot;
+using Kichikuou.Game.Battles;
+using Kichikuou.Original.Content.Strategy;
+
+namespace Kichikuou.Game.Strategy;
+
+/// <summary>
+/// Our <c>]</c> menu (docs/ui/messages.md, §5 step 3; the owner's mock-up M1, 2026-10-18): a scene's menu as a lacquer
+/// panel of rows where the original's selection box opens — the rows as the command panel's, the hovered one lit; the
+/// marks ○ a gold ring, × a dim cross, △ a gold triangle, the text in the game's font. A row's click answers the
+/// script's menu with its item (1-based); a right click cancels (0), as the original's box. Laid out in the 1280×800
+/// screen's pixels, scaled with the picture.
+/// </summary>
+internal sealed partial class SceneMenuView : Control
+{
+    private const float Pad = 14, MarkRoom = 34;
+
+    // The rows: the mock-up's for a short menu; from six items the original's pitch (36), so a long one (the save slots)
+    // takes about the box's room and leaves the window under it free.
+    private float RowPitch => Rows >= 6 ? 36 : 44;
+
+    private float RowH => Rows >= 6 ? 30 : 36;
+
+    private int TextSize => Rows >= 6 ? 26 : 30;
+
+    private FontFile _gothic;
+    private MenuView? _menu;
+    private Rect2 _box;                             // the original's box (screen pixels): our panel starts at its corner
+    private float _width;
+    private float _k = 1;                           // window pixels to a screen pixel
+    private int _hovered = -1, _pressed = -1;
+    private TaskCompletionSource<int>? _answer;
+
+    public SceneMenuView(GameFont font)
+    {
+        _gothic = DeploymentTableView.LoadFont(font);
+        MouseFilter = MouseFilterEnum.Stop;
+        Visible = false;
+    }
+
+    public void SetFont(GameFont font)
+    {
+        _gothic = DeploymentTableView.LoadFont(font);
+        if (_menu is not null)
+            _width = PanelWidth(_menu);
+        QueueRedraw();
+    }
+
+    /// <summary>Shows <paramref name="menu"/> at the original box's place (<paramref name="box"/>, screen pixels).</summary>
+    public void Open(MenuView menu, (int X, int Y, int W, int H) box)
+    {
+        _menu = menu;
+        _box = new Rect2(box.X, box.Y, box.W, box.H);
+        _width = PanelWidth(menu);
+        _hovered = _pressed = -1;
+        Visible = true;
+        QueueRedraw();
+    }
+
+    /// <summary>The script's answer: an item (1-based), or 0 for a cancel.</summary>
+    public Task<int> ChooseAsync()
+    {
+        _answer = new TaskCompletionSource<int>();
+        return _answer.Task;
+    }
+
+    public void Close()
+    {
+        _answer?.TrySetCanceled();
+        _answer = null;
+        _menu = null;
+        Visible = false;
+    }
+
+    /// <summary>Lays the layer over the screen's picture (<paramref name="area"/>, in its parent's coordinates).</summary>
+    public void Place(Rect2 area)
+    {
+        float k = area.Size.X / 1280f;
+        if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f)
+            return;
+        Position = area.Position;
+        Size = area.Size;
+        _k = k;
+        QueueRedraw();
+    }
+
+    private int Rows => _menu?.Items.Count ?? 0;
+
+    /// <summary>As wide as the original's box, or its widest item, plus the rows' margins; kept inside the screen.</summary>
+    private float PanelWidth(MenuView menu)
+    {
+        float widest = menu.Items.Max(i => _gothic.GetStringSize(i.Text, fontSize: TextSize).X + (i.Mark is null ? 0 : MarkRoom));
+        return Math.Min(1280 - 16, Math.Max(_box.Size.X + 2 * Pad, widest + 2 * Pad + 36));
+    }
+
+    private Rect2 Panel
+    {
+        get
+        {
+            float h = 2 * Pad + Rows * RowPitch - (RowPitch - RowH);
+            float x = Math.Clamp(_box.Position.X - Pad, 8, 1280 - 8 - _width);
+            float y = Math.Clamp(_box.Position.Y - Pad, 8, Math.Max(8, 800 - 8 - h));
+            return new Rect2(x, y, _width, h);
+        }
+    }
+
+    private Rect2 RowRect(int row)
+    {
+        var p = Panel;
+        return new Rect2(p.Position.X + Pad, p.Position.Y + Pad + row * RowPitch, p.Size.X - 2 * Pad, RowH);
+    }
+
+    private int RowAt(Vector2 window)
+    {
+        var at = window / _k;
+        for (int r = 0; r < Rows; r++)
+            if (RowRect(r).HasPoint(at))
+                return r;
+        return -1;
+    }
+
+    public override void _GuiInput(InputEvent e)
+    {
+        if (_answer is null)
+            return;
+        switch (e)
+        {
+            case InputEventMouseMotion motion:
+                int row = RowAt(motion.Position);
+                if (row != _hovered)
+                {
+                    _hovered = row;
+                    MouseDefaultCursorShape = row >= 0 ? CursorShape.PointingHand : CursorShape.Arrow;
+                    QueueRedraw();
+                }
+                break;
+            case InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: false }:
+                Answer(0);
+                break;
+            case InputEventMouseButton { ButtonIndex: MouseButton.Left } button:
+                int at = RowAt(button.Position);
+                if (button.Pressed)
+                    _pressed = at;
+                else if (at >= 0 && at == _pressed)
+                    Answer(at + 1);
+                else
+                    _pressed = -1;
+                break;
+        }
+        AcceptEvent();
+    }
+
+    private void Answer(int choice)
+    {
+        var answer = _answer;
+        _answer = null;
+        answer?.TrySetResult(choice);
+    }
+
+    private float Line(float width) => Lacquer.Line(width, _k);
+
+    public override void _Draw()
+    {
+        if (_menu is null)
+            return;
+        DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
+        Lacquer.DrawPanel(this, Panel, _k);
+        for (int r = 0; r < Rows; r++)
+            DrawRow(r, _menu.Items[r]);
+    }
+
+    private void DrawRow(int r, MenuEntry item)
+    {
+        var rect = RowRect(r);
+        bool hover = r == _hovered;
+        Lacquer.DrawRowBox(this, rect, hover, _k);
+        float x = rect.Position.X + 14;
+        if (item.Mark is { } mark)
+        {
+            var at = new Vector2(rect.Position.X + 20, rect.GetCenter().Y);
+            switch (mark)
+            {
+                case '○':
+                    DrawArc(at, 7, 0, Mathf.Tau, 24, Lacquer.Gold, Line(2), true);
+                    break;
+                case '×':
+                    DrawLine(at + new Vector2(-6, -6), at + new Vector2(6, 6), Lacquer.OffText, Line(2), true);
+                    DrawLine(at + new Vector2(-6, 6), at + new Vector2(6, -6), Lacquer.OffText, Line(2), true);
+                    break;
+                default:
+                    DrawPolyline([at + new Vector2(0, -7), at + new Vector2(7, 6), at + new Vector2(-7, 6), at + new Vector2(0, -7)],
+                        Lacquer.Gold, Line(2), true);
+                    break;
+            }
+            x = rect.Position.X + MarkRoom + 4;
+        }
+        DrawString(_gothic, new Vector2(x, Lacquer.Baseline(rect, _gothic, (int)TextSize)), item.Text, fontSize: TextSize,
+            modulate: hover ? Lacquer.Name : Lacquer.Text);
+    }
+}

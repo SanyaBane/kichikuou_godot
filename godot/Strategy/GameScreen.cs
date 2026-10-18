@@ -208,6 +208,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private StatusStripView _strip = null!;             // our status strip over the map's top with the command panel (New)
     private WeekReportView _weekView = null!;           // our week report over the week start's windows (New)
     private MessageWindowView _messageView = null!;     // our message windows over WAO_SUB's (New)
+    private SceneMenuView _sceneMenuView = null!;       // our ] menus over the selection box (New)
     private bool _keyWaiting;                           // the script waits for the player's key: our windows show the triangle
     private readonly HashSet<string> _messageDumps = [];        // the kinds of window unattended play has dumped this launch
     private PointerScript _markerPointer = new();       // a plate's still click on its way to the script
@@ -282,6 +283,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _content.AddChild(_table);
         _messageView = new MessageWindowView(GodotGlyphRenderer.Chosen);
         _content.AddChild(_messageView);
+        _sceneMenuView = new SceneMenuView(GodotGlyphRenderer.Chosen);
+        _content.AddChild(_sceneMenuView);                      // over the message windows: the menu asks below them
         ReadySubordinates(faces);
         _overlay =OutlinedLabel(VerticalAlignment.Center, 32);
         _notice = OutlinedLabel(VerticalAlignment.Top, 18);
@@ -341,6 +344,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         UpdateMapMarkers();
         if (_commandView.Visible)
             _commandView.Place(PictureArea());
+        if (_sceneMenuView.Visible)
+            _sceneMenuView.Place(PictureArea());
         if (_provinceView.Visible)
             _provinceView.Place(PictureArea());
         if (_weekView.Visible)
@@ -685,7 +690,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.ScreenshotDirectory is not { } dir)
             return;
         System.IO.Directory.CreateDirectory(dir);
-        if ((_table.Visible || _subordinates.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
+        if ((_table.Visible || _subordinates.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _sceneMenuView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
         {
             // Our deployment and battle screens are drawn by Godot over the screen: the window's next frame (headless
             // draws none). No Compose here: the frame's Present must find the change to upload it.
@@ -1329,6 +1334,17 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _commandView.Place(PictureArea());
             UpdateStatusStrip();
         }
+        // Our ] menu at the selection box's place (docs/ui/messages.md, §5 step 3); a battle's menus stay the original's
+        // with the battle's windows (step 5).
+        bool scene = province is null && command is null && InterfaceChoice.New && !BattleScreenShown
+            && _presenter.Menu is not null && _presenter.MenuBoxArea is not null;
+        if (scene)
+        {
+            _presenter.SceneMenuCovered = true;
+            _presenter.Invalidate();
+            _sceneMenuView.Open(_presenter.Menu!, _presenter.MenuBoxArea!.Value);
+            _sceneMenuView.Place(PictureArea());
+        }
         Shot("menu");
         try
         {
@@ -1345,16 +1361,23 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                     _commandDumped = true;
                     await AutoDumpAsync("command-menu");
                 }
+                if (scene && !_sceneMenuDumped && DisplayServer.GetName() != "headless" && _options.ScreenshotDirectory is not null)
+                {
+                    _sceneMenuDumped = true;
+                    await AutoDumpAsync("scene-menu");
+                }
                 return AutoChoice(items);
             }
             return province is not null ? await _provinceView.ChooseAsync()
                 : command is not null ? await _commandView.ChooseAsync()
+                : scene ? await _sceneMenuView.ChooseAsync()
                 : await MenuAsync();
         }
         finally
         {
             _provinceView.Close();
             _commandView.Close();
+            _sceneMenuView.Close();
             _presenter.CloseMenu();
         }
     }
@@ -1471,7 +1494,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         return new Rect2(_view.Position + (size - drawn) / 2, drawn);
     }
 
-    private bool _provinceDumped, _commandDumped;
+    private bool _provinceDumped, _commandDumped, _sceneMenuDumped;
 
     /// <summary>
     /// Our status strip (docs/ui/command-screen.md, "The status strip") lies over the picture's top, as wide as

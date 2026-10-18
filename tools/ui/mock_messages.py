@@ -463,6 +463,144 @@ def bar(shot, lines, out, mode='tab'):
     return c.save(out)
 
 
+# ---------------------------------------------------------------- the ']' menus (step 3, 2026-10-18)
+# Over window dumps of our own interface (the Godot window, 1280x800 with the menu bar): Cﾌﾞｶ's troop menu and its
+# Do / Don't over our 121, as the original interface still shows them (the Subordinates screen covers them in ours,
+# but they are the scene menus' shape: a question in a window, the answers in a box above).
+#   python -I tools/ui/mock_messages.py <shots dir> <out dir> menus <dump with 5 items> <dump with Do / Don't> <clean dump> < /dev/null
+# The original's lilac box is cleared from the picture with the map from a dump of the same view without a menu (the key
+# wait just before them: "Rance gained experience?" in the week-18 run with --harem 6, 00082-key.png).
+
+def window_area(path):
+    """The game's 640x400 area of a window dump (under the 24-px menu bar, centred), at 1280x800."""
+    im = Image.open(path).convert('RGBA')
+    k = (im.height - 24) / 400
+    left = (im.width - 640 * k) / 2
+    return im.crop((round(left), 24, round(left + 640 * k), im.height)).resize((1280, 800), Image.LANCZOS)
+
+
+BOX = (480, 78, 830, 304)          # the lilac box of the five items, with its frame (screen px)
+
+
+def cleared(path, clean):
+    """The dump with the original's menu box painted out: the map under it from a dump of the same view without it."""
+    base = window_area(path)
+    base.paste(window_area(clean).crop(BOX), BOX[:2])
+    return base
+
+
+class WindowCanvas(Canvas):
+    def __init__(self, image, dim=0.0, keep=()):
+        base = image
+        if dim:
+            dark = Image.alpha_composite(base, Image.new('RGBA', base.size, (0, 0, 0, int(255 * dim))))
+            for r in keep:                                  # what stays lit: the asking window, its speaker
+                dark.paste(base.crop(r), r[:2])
+            base = dark
+        self.base = base
+        self.ov = Image.new('RGBA', (1280 * S, 800 * S), (0, 0, 0, 0))
+
+
+MENU5 = ['Info', '○Replenish Troops', '○Add New Troops', '○Talk', 'Do Nothing']
+MENU2 = ['Do', "Don’t"]
+ROW_FONT = lambda: GOTHIC(30)
+
+
+def ring(d, cx, cy, r=7):
+    d.ellipse(s(cx - r, cy - r, cx + r, cy + r), outline=GOLD, width=2 * S)
+
+
+def menu_rows(c, x, y, w, items, hover, pitch=44, rh=36):
+    """Rows as the command panel's: a dark box each, the hovered one lit; ○ a gold ring, the text the game's font."""
+    f = ROW_FONT()
+    for i, label in enumerate(items):
+        ry = y + i * pitch
+        lit = i == hover
+        lay, d = c.draw()
+        d.rectangle(s(x, ry, x + w, ry + rh), fill=ROW_HOVER if lit else ROW,
+                    outline=HOVER_LINE if lit else DIM_GOLD, width=(2 if lit else 1) * S)
+        marked = label.startswith('○')
+        if marked:
+            ring(d, x + 22, ry + rh / 2)
+        c.add(lay)
+        text(c, x + (40 if marked else 16), ry + rh / 2 + 1, label.lstrip('○'), f, NAME if lit else TEXT, anchor='lm')
+
+
+def m1_in_place(path, twin, items, name, hover=1):
+    """M1: the box's own place, a lacquer panel of rows."""
+    c = WindowCanvas(cleared(path, twin))
+    pitch, rh = 44, 36
+    w = 360
+    h = 28 + len(items) * pitch - (pitch - rh)
+    x, y = 480, 80
+    panel(c, x, y, w, h)
+    menu_rows(c, x + 14, y + 14, w - 28, items, hover, pitch, rh)
+    return c.save(name)
+
+
+def m2_docked(path, twin, items, name, hover=1):
+    """M2: the answers grow out of the asking window's top edge on its speaker's side, one lacquer piece."""
+    c = WindowCanvas(cleared(path, twin))
+    wx, wy, ww, wh = 76, 524, 794, 240             # our 121 as the game draws it (window_area px)
+    pitch, rh = 44, 36
+    w = 360
+    h = 26 + len(items) * pitch - (pitch - rh) + 10
+    x, y = wx + ww - w - 24, wy - h + 8
+    panel(c, x, y, w, h)
+    lay, d = c.draw()                              # the seam: lacquer over both frames, gold down its sides
+    d.rectangle(s(x + 2, wy - 6, x + w - 2, wy + 8), fill=PANEL)
+    for sx in (x + 1, x + w - 1):
+        d.line(pts([(sx, wy - 8), (sx, wy + 2)]), fill=GOLD, width=2 * S)
+    for sx in (x, x + w):
+        d.polygon(pts([(sx, wy - 4), (sx + 4, wy), (sx, wy + 4), (sx - 4, wy)]), fill=GOLD)
+    c.add(lay)
+    menu_rows(c, x + 14, y + 14, w - 28, items, hover, pitch, rh)
+    return c.save(name)
+
+
+def m3_banners(path, twin, items, name, hover=1):
+    """M3: the scene dimmed but the window and its speaker; the answers as wide banners in the middle."""
+    keep = [(58, 512, 884, 772), (884, 300, 1280, 800)]
+    c = WindowCanvas(cleared(path, twin), dim=0.5, keep=keep)
+    bw, bh, pitch = 560, 50, 62
+    x = 640 - bw / 2 - 60
+    y0 = 300 - (len(items) * pitch) / 2
+    f = CINZEL(26, 600)
+    for i, label in enumerate(items):
+        y = y0 + i * pitch
+        lit = i == hover
+        lay, d = c.draw()
+        top, bottom = ((150, 40, 30), (96, 20, 14)) if lit else ((40, 30, 22), (22, 16, 12))
+        for j in range(bh * S):
+            t = j / (bh * S - 1)
+            d.line([(x * S, y * S + j), ((x + bw) * S, y * S + j)],
+                   fill=tuple(round(a + (b - a) * t) for a, b in zip(top, bottom)) + (240,))
+        d.line(pts([(x, y), (x + bw, y)]), fill=HOVER_LINE if lit else GOLD, width=2 * S)
+        d.line(pts([(x, y + bh), (x + bw, y + bh)]), fill=HOVER_LINE if lit else GOLD, width=2 * S)
+        for ex, sx in ((x, -1), (x + bw, 1)):        # the banner's pointed ends
+            d.polygon(pts([(ex, y), (ex + sx * 18, y + bh / 2), (ex, y + bh)]), fill=bottom + (240,))
+            d.line(pts([(ex, y), (ex + sx * 18, y + bh / 2), (ex, y + bh)]), fill=HOVER_LINE if lit else GOLD, width=2 * S)
+        marked = label.startswith('○')
+        tw = d.textlength(label.lstrip('○'), font=f) / S
+        tx = x + bw / 2 - tw / 2 + (14 if marked else 0)
+        if marked:
+            ring(d, tx - 22, y + bh / 2)
+        c.add(lay)
+        text(c, tx, y + bh / 2 + 2, label.lstrip('○'), f, (250, 226, 160, 255) if lit else TEXT, anchor='lm')
+    return c.save(name)
+
+
+if len(sys.argv) > 3 and sys.argv[3] == 'menus':
+    five, two, clean = (os.path.join(SHOTS, a) for a in sys.argv[4:7])
+    m1_in_place(five, clean, MENU5, 'M1-in-place.png')
+    m1_in_place(two, clean, MENU2, 'M1b-in-place-2.png', hover=0)
+    m2_docked(five, clean, MENU5, 'M2-docked.png')
+    m2_docked(two, clean, MENU2, 'M2b-docked-2.png', hover=0)
+    m3_banners(five, clean, MENU5, 'M3-banners.png')
+    m3_banners(two, clean, MENU2, 'M3b-banners-2.png', hover=0)
+    print('done')
+    sys.exit(0)
+
 if len(sys.argv) > 3:
     # The 131 set over a dump of a harem scene (the third argument: that run's shots, the fourth: one of its
     # key waits with 131 open); see the header for the run.

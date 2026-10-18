@@ -163,6 +163,18 @@ as it is. Where to start:
    week-18 save reaches a harem scene (CLAUDE.md, "Commands"). Tests: `MessageWindowTests`. Not seen in the game yet: a
    thought's plate (none of the four harem scenes the week-18 save reaches has one).
 3. **The `]` menus** as lacquer rows (the items are data already, `MenuView`).
+   **Mock-ups (2026-10-18):** `tools/ui/mock_messages.py`, round `menus`, over our 121 and `Cﾌﾞｶ`'s menus of a week-18
+   run with `--harem 6`: M1 at the original box's place, M2 docked on the asking window's top edge, M3 wide banners
+   over the dimmed scene, each with five items and with Do / Don't. **The owner chose M1.**
+   **Built (2026-10-18):** `godot/Strategy/SceneMenuView` — `Lacquer.DrawPanel` from the box's corner
+   (`GamePresenter.MenuBoxArea`, screen pixels) as wide as the box or the widest item, rows as the command panel's
+   (`DrawRowBox`, the hovered one lit), ○ a gold ring, × a dim cross, △ a gold triangle, the text in the game's font
+   (30 px at a 44 pitch; from six items 26 at the original's 36, so the save slots keep the box's room); a row's click
+   answers its item, a right click 0. `GamePresenter.SceneMenuCovered` leaves out the selection box alone (not
+   `MenuCovered`, which hides the pictures and the windows too), `MenuArea` is then null, so `MessageWindowView` no
+   longer pastes the box over itself. Not over our battle screen (step 5). `--auto` in a window dumps it once a launch
+   (`scene-menu`: with `--load`, the load list). Not seen in the game yet: a short scene menu over a window (none that
+   the kept saves reach with `--interface new`; `Cﾌﾞｶ`'s are our Subordinates screen's now).
 4. **Letter by letter** and Option → Text Speed… (the slider, the preview; kept in `settings.cfg`): a click
    while it types shows the whole text and is not passed to the script's wait.
 5. **The battle's windows** (`BattlePresenter.Window`, through `WindowMask` on our battle screen).

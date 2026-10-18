@@ -151,7 +151,7 @@ followed (docs/ui/battle-screen.md); next (owner, 2026-10-16) the map and comman
 and mock-ups in docs/ui/command-screen.md; then (owner, 2026-10-18) the messages of the turn's start,
 surveyed in docs/ui/turn-start.md — the week report is built, the nations' banners put off; then (owner,
 2026-10-18) the message windows in our lacquer, variant A, the battle's included — docs/ui/messages.md; its step 1
-(the windows 111/112/121/122/113/123) and step 2 (window 131, the speaker on a plate) are built, next the `]` menus;
+(the windows 111/112/121/122/113/123) and step 2 (window 131, the speaker on a plate) and step 3 (the `]` menus, `Strategy/SceneMenuView`, mock-up M1) are built, next letter by letter;
 then (owner, 2026-10-18) our own Subordinates screen after mock-up F1 (no dialogue with Maris; the orders on our
 buttons, answered through `SubordinateOrder`) — docs/ui/subordinates.md, built; its look (owner, 2026-10-18) is mock-up
 G3, lacquer with the table a paper ledger, built, awaiting the owner's look in a window.
@@ -279,8 +279,9 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `GameScreen.WeekReportAsync`); `Strategy/MessageWindowView` (our message windows 111/112/121/122/113/123 and 131 where the
   original has them — speech with a tail, thought, narration, a place's title, 131 with its speaker on a plate — the text at its cells in the game's font,
   the triangle while the player's key is awaited, a menu over it shown on top; Option → Interface → New, docs/ui/messages.md:
-  `Original.Content/Strategy/MessageWindow` from `GamePresenter.MessageWindow` while `CoverMessages`); the five and the
-  Subordinates screen draw with `Strategy/Lacquer` (the style's colours and parts, the ledger's, the click's triangle);
+  `Original.Content/Strategy/MessageWindow` from `GamePresenter.MessageWindow` while `CoverMessages`);
+  `Strategy/SceneMenuView` (our `]` menus: lacquer rows at the selection box's place, `GamePresenter.MenuBoxArea`, while
+  `SceneMenuCovered`; not over our battle screen; docs/ui/messages.md, §5 step 3); the six and the Subordinates screen draw with `Strategy/Lacquer` (the style's colours and parts, the ledger's, the click's triangle);
   `Battles/BattleBoardView` (our own battle screen, Option → Interface → New, docs/ui/battle-screen.md:
   `Original.Content/Battles/BattleScene` on top, the stage's windows over it through `WindowMask`, the
   cards and the round's order from `BattleBoard`/`RoundOrder`, the order strip `OrderStrip` moving on its own;
