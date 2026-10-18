@@ -132,6 +132,13 @@ as it is. Where to start:
    or right, thought left or right, narration, a place's title at `ZM 32` — the rectangle, the characters
    `TextBox` placed), `GamePresenter` leaving out the frame and the text while it is covered, a Godot view
    drawing the panel, the text at its cells in the game's font and the marker while the script waits.
+   **Built (2026-10-18):** `Original.Content/Strategy/MessageWindow` (the kind from `Ui_WinFrameCg`, the panel, the
+   glyphs at their cells in screen pixels, the lines with their spaces put back; a place's title is a 113 whose first
+   line is at `ZM 32` with one line under it at most; text outside the panel leaves the window to the original),
+   `GamePresenter.CoverMessages` / `MessageWindow` / `MenuArea`, `godot/Strategy/MessageWindowView` (the triangle
+   while `GameScreen` waits for the player's key, a menu over the window cut from the screen's picture on top, the
+   panels fading with the screen); `MessageWindowTests`. `--auto` in a window dumps each kind once a launch
+   (`message-speech-left`, `-speech-right`, `-thought-left`, `-thought-right`, `-narration`, `-place-title`).
 2. **Window 131** under the event CGs, the name of `Name「…」` split off.
 3. **The `]` menus** as lacquer rows (the items are data already, `MenuView`).
 4. **Letter by letter** and Option → Text Speed… (the slider, the preview; kept in `settings.cfg`): a click

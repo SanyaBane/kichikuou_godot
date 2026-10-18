@@ -126,6 +126,7 @@ public partial class GameScreen
             _battleView.SetFont(font);
             _scoutView.SetFont(font);
             _strategyView.SetFont(font);
+            _messageView.SetFont(font);
             CheckFont();
             _presenter.Invalidate();
         }

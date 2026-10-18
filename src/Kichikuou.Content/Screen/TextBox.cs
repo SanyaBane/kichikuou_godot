@@ -22,6 +22,12 @@ public sealed class TextBox((int X, int Y, int W, int H) rect)
     /// <summary>The characters printed, in order (for tests and a UI that lays text out itself).</summary>
     public string Text => new(_chars.Select(c => c.C).ToArray());
 
+    /// <summary>
+    /// The characters printed, in order, each at the left edge and top of its cell (script pixels) with the size and
+    /// palette colour it was printed in; the spaces are not kept (a UI that draws the text itself puts each at its cell).
+    /// </summary>
+    public IReadOnlyList<(int X, int Y, int Size, int Color, char C)> Chars => _chars;
+
     /// <summary>Moves the box (a window opened) and clears it.</summary>
     public void Open((int X, int Y, int W, int H) rect)
     {

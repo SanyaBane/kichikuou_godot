@@ -51,13 +51,13 @@ internal static class Lacquer
     public static float Baseline(Rect2 rect, Font font, int size) =>
         rect.Position.Y + rect.Size.Y / 2 + (font.GetAscent(size) - font.GetDescent(size)) / 2;
 
-    /// <summary>The panel: its shadow, the lacquer, the double gold frame and its corners.</summary>
-    public static void DrawPanel(CanvasItem c, Rect2 box, float k)
+    /// <summary>The panel: its shadow, the lacquer (<see cref="Panel"/> unless <paramref name="fill"/>), the double gold frame and its corners.</summary>
+    public static void DrawPanel(CanvasItem c, Rect2 box, float k, Color? fill = null)
     {
         float x = box.Position.X, y = box.Position.Y, w = box.Size.X, h = box.Size.Y;
         for (int i = 6; i >= 1; i--)
             c.DrawRect(new Rect2(x - i + 2, y - i + 6, w + 2 * i, h + 2 * i), new Color(0, 0, 0, 0.06f));
-        c.DrawRect(box, Panel);
+        c.DrawRect(box, fill ?? Panel);
         c.DrawRect(new Rect2(x + 1, y + 1, w - 2, h - 2), Gold, false, Line(2, k));
         c.DrawRect(new Rect2(x + 5.5f, y + 5.5f, w - 11, h - 11), DimGold, false, Line(1, k));
         foreach (var (cx, cy, sx, sy) in new[] { (x, y, 1, 1), (x + w, y, -1, 1), (x, y + h, 1, -1), (x + w, y + h, -1, -1) })
@@ -82,6 +82,21 @@ internal static class Lacquer
             c.DrawRect(rect, Gold, false, Line(1, k));
         float tw = font.GetStringSize(tag, fontSize: 13).X;
         c.DrawString(font, new Vector2(rect.GetCenter().X - tw / 2, Baseline(rect, font, 13)), tag, fontSize: 13, modulate: on ? Text : OffText);
+    }
+
+    /// <summary>
+    /// The click's triangle centred at <paramref name="at"/>, pointing down, bobbing and breathing (owner, 2026-10-18: instead
+    /// of "Click to continue"); its caller draws again every frame while it shows.
+    /// </summary>
+    public static void DrawTriangle(CanvasItem c, Vector2 at, float k)
+    {
+        double t = Time.GetTicksMsec() / 1000.0;
+        float bob = (float)(Math.Sin(t * Math.PI * 2 * 0.9) * 3);
+        float alpha = (float)(0.65 + 0.35 * Math.Sin(t * Math.PI * 2 * 0.9 + 1));
+        var p = at + new Vector2(0, bob);
+        c.DrawColoredPolygon([p + new Vector2(-8, -6), p + new Vector2(8, -6), p + new Vector2(0, 7)], Gold with { A = alpha });
+        c.DrawPolyline([p + new Vector2(-8, -6), p + new Vector2(8, -6), p + new Vector2(0, 7), p + new Vector2(-8, -6)],
+            Name with { A = alpha }, Line(1, k));
     }
 
     /// <summary>A divider: two dim rules with a gold diamond between them.</summary>

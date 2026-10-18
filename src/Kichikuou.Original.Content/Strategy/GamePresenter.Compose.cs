@@ -348,6 +348,48 @@ public sealed partial class GamePresenter
         _cityLeadIn = on;
     }
 
+    /// <summary>
+    /// Whether a UI draws the message windows 111/112/121/122/113/123 itself (<see cref="Strategy.MessageWindow"/>;
+    /// docs/ui/messages.md, step 1): then, while one is up (<see cref="MessageWindow"/>), its frame and its text are not
+    /// drawn — the portraits and the centre picture are, and the key waits stay the script's.
+    /// </summary>
+    public bool CoverMessages
+    {
+        get;
+        set
+        {
+            if (field != value)
+                Invalidate();
+            field = value;
+        }
+    }
+
+    /// <summary>
+    /// The message window our UI draws now (<see cref="CoverMessages"/>), or null: outside a battle and the screens that
+    /// cover the window already (All Data, our province menu, the week report), while <c>WAO_SUB</c>'s frame is up and not
+    /// drawn over (<see cref="Cover"/>), and only for the windows the model knows.
+    /// </summary>
+    public MessageWindow? MessageWindow =>
+        CoverMessages && !BattleShows && Data == DataView.Closed && !MenuCovered && WeekReport is null
+        && State is { } s && s.Ui_WinType != 0 && (_covered & Pictures.Frame) == 0
+            ? Strategy.MessageWindow.Of(s.Ui_WinFrameCg.Value, _window, Stage.Color)
+            : null;
+
+    /// <summary>
+    /// The open menu's box with its frame (the 1280×800 screen's pixels) while <see cref="Screen"/> shows it, else null:
+    /// a UI that draws over the screen (<see cref="MessageWindow"/>) shows the menu again there, on top.
+    /// </summary>
+    public (int X, int Y, int W, int H)? MenuArea
+    {
+        get
+        {
+            if (State is null || MenuCovered || MenuBox() is not { Box: var (x, y, w, h) })
+                return null;
+            const int k = Surface.Scale;
+            return ((x - 8) * k, (y - 8) * k, (w + 16) * k, (h + 16) * k);
+        }
+    }
+
     /// <summary>The menu item (0-based) at a screen point, or −1.</summary>
     public int MenuHitTest(int x, int y) => MenuBox()?.HitTest(x, y) ?? -1;
 
@@ -420,8 +462,11 @@ public sealed partial class GamePresenter
                 {
                     DrawPictures(s);
                     Picker?.Draw(Screen, s);
-                    Frame(s);
-                    _window.Draw(Screen, _glyphs);
+                    if (MessageWindow is null)
+                    {
+                        Frame(s);
+                        _window.Draw(Screen, _glyphs);
+                    }
                 }
             }
         }

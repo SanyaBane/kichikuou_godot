@@ -201,6 +201,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private CommandMenuView _commandView = null!;       // our command panel over COMMAND's command menu (New)
     private StatusStripView _strip = null!;             // our status strip over the map's top with the command panel (New)
     private WeekReportView _weekView = null!;           // our week report over the week start's windows (New)
+    private MessageWindowView _messageView = null!;     // our message windows over WAO_SUB's (New)
+    private bool _keyWaiting;                           // the script waits for the player's key: our windows show the triangle
+    private readonly HashSet<MessageKind> _messageDumps = [];   // the kinds of window unattended play has dumped this launch
     private PointerScript _markerPointer = new();       // a plate's still click on its way to the script
     private readonly MapCameraForm _mapCamera = new();  // whether the map loop holds the camera as the view's corner
     private IReadOnlyList<int>? _wantedOrder;           // the party a drop asked for, while its clicks run
@@ -271,6 +274,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _table.RowPressed += TableRowPressed;
         _table.RightPressed += TableRightPressed;
         _content.AddChild(_table);
+        _messageView = new MessageWindowView(GodotGlyphRenderer.Chosen);
+        _content.AddChild(_messageView);
         _overlay = OutlinedLabel(VerticalAlignment.Center, 32);
         _notice = OutlinedLabel(VerticalAlignment.Top, 18);
 
@@ -329,7 +334,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _provinceView.Place(PictureArea());
         if (_weekView.Visible)
             _weekView.Place(PictureArea());
+        _presenter.CoverMessages = InterfaceChoice.New;                  // also when the interface changed with a window open
         UpdateBattleScreen(Present());
+        UpdateMessageWindow();
         UpdateScoutReport();
         UpdateStrategyCutIn();
         if (_options.Portraits && !_portraitsOpened && _presenter.State is not null && !_modal)
@@ -557,6 +564,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         _presenter.CoverCityLeadIn = InterfaceChoice.New;                // our province menu: the city's lead-in hidden too
         _presenter.CoverWeekReport = InterfaceChoice.New;                // our week report over the week start's windows
+        _presenter.CoverMessages = InterfaceChoice.New;                  // our message windows (docs/ui/messages.md)
         _presenter.Show(scriptEvent);
         if (_presenter.WeekReport is { Complete: true } report)
             await WeekReportAsync(report);
@@ -665,7 +673,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.ScreenshotDirectory is not { } dir)
             return;
         System.IO.Directory.CreateDirectory(dir);
-        if ((_table.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _strip.Visible || _weekView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
+        if ((_table.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
         {
             // Our deployment and battle screens are drawn by Godot over the screen: the window's next frame (headless
             // draws none). No Compose here: the frame's Present must find the change to upload it.
@@ -1009,7 +1017,13 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             if (StrategyCutInShown && !_options.Fast)
                 await DelayAsync(0.5);                                          // the cut-in in place
-            Shot(StrategyCutInShown ? "strategy" : "key");
+            _keyWaiting = true;
+            UpdateMessageWindow();
+            if (_messageView.Window is { } window && DisplayServer.GetName() != "headless" && _options.ScreenshotDirectory is not null
+                && _messageDumps.Add(window.Kind))
+                await AutoDumpAsync(MessageDumpName(window.Kind));              // each kind of our windows once a launch
+            else
+                Shot(StrategyCutInShown ? "strategy" : "key");
             if (!_options.Fast && BattleScreenShown && _presenter.Opening is not null)
                 await OpeningAppearShotsAsync();
             await DelayAsync(_options.Fast ? 0 : AutoKeySeconds());
@@ -1017,9 +1031,12 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         else
         {
+            _keyWaiting = true;
+            UpdateMessageWindow();
             Shot("key");
             key = await HitKeyAsync();
         }
+        _keyWaiting = false;
         bool opening = BattleScreenShown && _presenter.Opening is not null;
         _presenter.AfterKey();
         if (opening && _options.Auto && !_options.Fast && !_openingShot)
@@ -1063,6 +1080,32 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     }
 
     private bool _weekReportDumped;
+
+    /// <summary>
+    /// Our message windows (docs/ui/messages.md, step 1; Option → Interface → New) over the picture: the window the presenter
+    /// leaves out (<see cref="GamePresenter.MessageWindow"/>), the triangle while the player's key is awaited, a menu open
+    /// over it shown again on top; hidden over our battle screen and while a scene is skipped whole.
+    /// </summary>
+    private void UpdateMessageWindow()
+    {
+        var window = InterfaceChoice.New && !SkippingScene && !BattleScreenShown ? _presenter.MessageWindow : null;
+        _messageView.Show(window, _keyWaiting, _texture, window is null ? null : _presenter.MenuArea);
+        if (window is null)
+            return;
+        _messageView.Place(PictureArea());
+        _messageView.Fade(_presenter.FadeAmount);
+    }
+
+    /// <summary>Unattended play's dump of a kind of our windows: <c>message-speech-left</c> and the like.</summary>
+    private static string MessageDumpName(MessageKind kind) => "message-" + kind switch
+    {
+        MessageKind.SpeechLeft => "speech-left",
+        MessageKind.SpeechRight => "speech-right",
+        MessageKind.ThoughtLeft => "thought-left",
+        MessageKind.ThoughtRight => "thought-right",
+        MessageKind.PlaceTitle => "place-title",
+        _ => "narration",
+    };
 
     /// <summary>
     /// How long unattended play without <c>--fast</c> holds a key wait: over a battle's field or exchange 0.8 s, so they can be

@@ -131,7 +131,7 @@ internal sealed partial class WeekReportView : Control
             DrawString(_cinzel, new Vector2(x0 + 16, Lacquer.Baseline(row, _cinzel, LabelSize)), troops.Label, fontSize: LabelSize, modulate: Lacquer.Text);
             Amount(x1 - 16, Lacquer.Baseline(row, _bold, 22), "+" + troops.Amount.ToString("N0", CultureInfo.InvariantCulture), _bold, 22, Gain, null);
         }
-        DrawTriangle(new Vector2(card.End.X - Pad - 2, card.End.Y - 26));
+        Lacquer.DrawTriangle(this, new Vector2(card.End.X - Pad - 2, card.End.Y - 26), _k);
     }
 
     private void Caption(string text, float x, float y) =>
@@ -160,18 +160,6 @@ internal sealed partial class WeekReportView : Control
             DrawString(_cinzel, new Vector2(right - uw, baseline), unit, fontSize: UnitSize, modulate: Lacquer.Quiet);
         float aw = font.GetStringSize(amount, fontSize: size).X;
         DrawString(font, new Vector2(right - uw - (unit is null ? 0 : 6) - aw, baseline), amount, fontSize: size, modulate: colour);
-    }
-
-    /// <summary>The click's triangle, pointing down, bobbing and breathing (owner, 2026-10-18: instead of "Click to continue").</summary>
-    private void DrawTriangle(Vector2 at)
-    {
-        double t = Time.GetTicksMsec() / 1000.0;
-        float bob = (float)(Math.Sin(t * Math.PI * 2 * 0.9) * 3);
-        float alpha = (float)(0.65 + 0.35 * Math.Sin(t * Math.PI * 2 * 0.9 + 1));
-        var c = at + new Vector2(0, bob);
-        DrawColoredPolygon([c + new Vector2(-8, -6), c + new Vector2(8, -6), c + new Vector2(0, 7)], Lacquer.Gold with { A = alpha });
-        DrawPolyline([c + new Vector2(-8, -6), c + new Vector2(8, -6), c + new Vector2(0, 7), c + new Vector2(-8, -6)],
-            Lacquer.Name with { A = alpha }, Lacquer.Line(1, _k));
     }
 
     /// <summary>An amount in K GOLD with thousands' commas: 20200 → "20,200".</summary>
