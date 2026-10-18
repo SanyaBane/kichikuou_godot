@@ -17,10 +17,13 @@ namespace Kichikuou.Game.Strategy;
 internal sealed partial class DeploymentTableView : Tree
 {
     /// <summary>The text size in script pixels (the grid's names are 12); scaled with the screen.</summary>
-    private const float TextSize = 10;
+    private readonly float _textSize;
 
     /// <summary>The party column's header: a circle (both fonts have it), its full name the tooltip.</summary>
     private const string PartyMark = "●";
+
+    /// <summary>A chooser's mark on the chosen row.</summary>
+    private const string ChosenMark = "▶";
 
     private DeploymentPalette _colours = DeploymentPalette.Chosen;   // Option → Palette
 
@@ -40,20 +43,50 @@ internal sealed partial class DeploymentTableView : Tree
     /// <summary>A right press anywhere on the table.</summary>
     public event Action? RightPressed;
 
-    public DeploymentTableView(GameFont font)
+    /// <summary>The columns shown after the first (the deployment table's, or another screen's).</summary>
+    private readonly IReadOnlyList<DeploymentColumnInfo> _columns;
+
+    /// <summary>Whether the first column marks the chosen row (<see cref="Chosen"/>) instead of the party's places.</summary>
+    private readonly bool _chooser;
+
+    /// <summary>The chosen unit's row, marked and highlighted when the table is a chooser (our Subordinates screen).</summary>
+    public int Chosen
     {
-        Columns = DeploymentTable.Columns.Count + 1;
+        get;
+        set
+        {
+            if (field == value)
+                return;
+            field = value;
+            Fill();
+        }
+    }
+
+    public DeploymentTableView(GameFont font) : this(font, DeploymentTable.Columns, chooser: false, textSize: 10)
+    {
+    }
+
+    /// <summary>
+    /// A table of <paramref name="columns"/>, its text <paramref name="textSize"/> script pixels; a
+    /// <paramref name="chooser"/> marks its chosen row in the first column.
+    /// </summary>
+    public DeploymentTableView(GameFont font, IReadOnlyList<DeploymentColumnInfo> columns, bool chooser, float textSize)
+    {
+        _columns = columns;
+        _chooser = chooser;
+        _textSize = textSize;
+        Columns = _columns.Count + 1;
         HideRoot = true;
         ColumnTitlesVisible = true;
         FocusMode = FocusModeEnum.None;
         SelectMode = SelectModeEnum.Row;
         Visible = false;
-        SetColumnTitle(0, PartyMark);
+        SetColumnTitle(0, chooser ? "" : PartyMark);
         SetColumnTitleAlignment(0, HorizontalAlignment.Center);
-        SetColumnTitleTooltipText(0, "Place in the party");
-        for (int c = 0; c < DeploymentTable.Columns.Count; c++)
+        SetColumnTitleTooltipText(0, chooser ? "" : "Place in the party");
+        for (int c = 0; c < _columns.Count; c++)
         {
-            var info = DeploymentTable.Columns[c];
+            var info = _columns[c];
             SetColumnTitle(c + 1, info.Header);
             SetColumnTitleTooltipText(c + 1, info.FullName);
             SetColumnTitleAlignment(c + 1, Alignment(info));
@@ -71,7 +104,7 @@ internal sealed partial class DeploymentTableView : Tree
         ColumnTitleClicked += (column, button) =>
         {
             if (button == (long)MouseButton.Left && column > 0)
-                SortBy(DeploymentTable.Columns[(int)column - 1].Column);
+                SortBy(_columns[(int)column - 1].Column);
         };
         SetFont(font);
     }
@@ -147,7 +180,7 @@ internal sealed partial class DeploymentTableView : Tree
     {
         Position = rect.Position;
         Size = rect.Size;
-        int size = Math.Max(8, (int)Math.Round(TextSize * pixelsPerScript));
+        int size = Math.Max(8, (int)Math.Round(_textSize * pixelsPerScript));
         if (size == _fontSize)
             return;
         _fontSize = size;
@@ -233,11 +266,11 @@ internal sealed partial class DeploymentTableView : Tree
         var widths = new float[Columns];
         float Width(string text) => _font.GetStringSize(text, HorizontalAlignment.Left, -1, Math.Max(_fontSize, 8)).X;
         void Fit(int column, string text) => widths[column] = Math.Max(widths[column], Width(text));
-        Fit(0, PartyMark);
+        Fit(0, _chooser ? ChosenMark : PartyMark);
         Fit(0, "4");
-        for (int c = 0; c < DeploymentTable.Columns.Count; c++)
+        for (int c = 0; c < _columns.Count; c++)
         {
-            var info = DeploymentTable.Columns[c];
+            var info = _columns[c];
             string header = info.Header + (info.Column == _sort ? _descending ? _down : _up : "");
             SetColumnTitle(c + 1, header);
             Fit(c + 1, info.Header + _down);                           // room for the mark: a sort never widens a column
@@ -246,11 +279,12 @@ internal sealed partial class DeploymentTableView : Tree
         {
             var item = CreateItem(root);
             item.SetMetadata(0, row.Unit);
-            item.SetText(0, row.PartyPlace > 0 ? row.PartyPlace.ToString() : "");
+            bool marked = _chooser ? row.Unit == Chosen : row.PartyPlace > 0;
+            item.SetText(0, _chooser ? marked ? ChosenMark : "" : row.PartyPlace > 0 ? row.PartyPlace.ToString() : "");
             item.SetTextAlignment(0, HorizontalAlignment.Center);
-            for (int c = 0; c < DeploymentTable.Columns.Count; c++)
+            for (int c = 0; c < _columns.Count; c++)
             {
-                var info = DeploymentTable.Columns[c];
+                var info = _columns[c];
                 string text = row.Text(info.Column);
                 item.SetText(c + 1, text);
                 item.SetTextAlignment(c + 1, Alignment(info));
@@ -260,7 +294,7 @@ internal sealed partial class DeploymentTableView : Tree
             {
                 if (row.Grey)
                     item.SetCustomColor(c, _colours.GreyText);
-                if (row.PartyPlace > 0)
+                if (marked)
                     item.SetCustomBgColor(c, _colours.MemberRow);
             }
         }

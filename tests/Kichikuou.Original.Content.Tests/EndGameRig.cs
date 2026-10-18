@@ -118,6 +118,9 @@ internal sealed class MenuAnswers
 
     public void Enqueue(int choice) => _answers.Enqueue(_ => choice);
 
+    /// <summary>An answer decided by the menu's items (a UI's, such as our Subordinates screen's order).</summary>
+    public void Enqueue(Func<IReadOnlyList<SceneMenuItem>, int> answer) => _answers.Enqueue(answer);
+
     /// <summary>The item at <paramref name="file"/>:<paramref name="line"/>.</summary>
     public void Enqueue(string file, int line) => _answers.Enqueue(items =>
     {
@@ -169,9 +172,13 @@ internal sealed class EndInput(GameState state) : IGameInput
         }
     }
 
+    /// <summary>Runs at every key wait (a UI that answers some itself, such as our Subordinates screen's order).</summary>
+    public Action? OnKey { get; set; }
+
     public Task<Sys3Int> WaitForKeyAsync()
     {
         Pointer.Interrupt();
+        OnKey?.Invoke();
         return Task.FromResult(Sys3Int.Zero);
     }
 

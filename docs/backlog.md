@@ -133,6 +133,9 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   Step 1 (the windows 111/112/121/122/113/123) and step 2 (window 131) are built (2026-10-18); steps 3-6 remain (§5).
   Put off (owner, 2026-10-18): **a message log** — wanted, its design discussed separately, the last step of
   the message windows (ui/messages.md, §3 item 4).
+  Then (owner, 2026-10-18): our own Subordinates screen (`Cﾌﾞｶ`/`Sﾌﾞｶ`) after mock-up F1 —
+  [ui/subordinates.md](ui/subordinates.md). Put off (owner, 2026-10-18): **the units' situational modifiers**
+  (the status page's attack and defence on offense, on defense, in dungeons) are not shown on it.
   Groundwork (survey §4.8): menus as data and the map helper are done (2026-10-12); the shared engine
   host (§4.8, "Items 2 and 4 are one step") is not needed for screens over the original layout.
 - **Quality-of-life features**, the README's second aim — *owner* (which), then *agent*; a survey of

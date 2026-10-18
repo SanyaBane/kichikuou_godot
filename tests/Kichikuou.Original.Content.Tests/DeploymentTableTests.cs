@@ -60,8 +60,9 @@ public class DeploymentTableTests
     public void Every_column_has_a_header_a_full_name_a_text_and_a_key()
     {
         var row = DeploymentTable.Rows(World())[0];
-        Assert.Equal(Enum.GetValues<DeploymentColumn>(), DeploymentTable.Columns.Select(c => c.Column));
-        Assert.All(DeploymentTable.Columns, c =>
+        var columns = DeploymentTable.Columns.Concat(SubordinatesScreen.Columns).ToList();      // the two screens' tables
+        Assert.Equal(Enum.GetValues<DeploymentColumn>(), columns.Select(c => c.Column).Distinct().Order());
+        Assert.All(columns, c =>
         {
             Assert.NotEmpty(c.Header);
             Assert.NotEmpty(c.FullName);

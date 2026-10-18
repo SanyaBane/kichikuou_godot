@@ -151,7 +151,9 @@ followed (docs/ui/battle-screen.md); next (owner, 2026-10-16) the map and comman
 and mock-ups in docs/ui/command-screen.md; then (owner, 2026-10-18) the messages of the turn's start,
 surveyed in docs/ui/turn-start.md — the week report is built, the nations' banners put off; then (owner,
 2026-10-18) the message windows in our lacquer, variant A, the battle's included — docs/ui/messages.md; its step 1
-(the windows 111/112/121/122/113/123) and step 2 (window 131, the speaker on a plate) are built, next the `]` menus.
+(the windows 111/112/121/122/113/123) and step 2 (window 131, the speaker on a plate) are built, next the `]` menus;
+then (owner, 2026-10-18) our own Subordinates screen after mock-up F1 (no dialogue with Maris; the orders on our
+buttons, answered through `SubordinateOrder`) — docs/ui/subordinates.md, built, awaiting the owner's look.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -248,6 +250,12 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `Strategy/DeploymentTableView` and `Strategy/DeploymentPanels` (our own deployment screen, Option → Interface → New, `InterfaceChoice`;
   its colours Option → Palette, `DeploymentPalette`, steel by default;
   `GameScreen` feeds the script its gestures, `Original.Content/Strategy/DeploymentTable` the rows);
+  `Strategy/SubordinatesView` (our Subordinates screen over `Sﾌﾞｶ` and `Cﾌﾞｶ`'s troop menu, Option → Interface → New,
+  docs/ui/subordinates.md: the table across the top — `DeploymentTableView` as a chooser with
+  `Original.Content/Strategy/SubordinatesScreen.Columns` —, the status CG, the orders' panel; an order is
+  `Original.Content/Strategy/SubordinateOrder`, fed by `GameScreen.Subordinates.cs`: the cell's click, the menus and key
+  waits answered unseen, the command opened again on COMMAND's map after a troop order; the figures are
+  `SubordinatesCommand.Offer`/`AddMore`/`Refill`);
   `Strategy/MapMarkersView` (our name plates over the map in `COMMAND`'s map wait, Option → Interface → New,
   docs/ui/command-screen.md, "The map's markers": the model `Original.Content/Strategy/MapMarkers`, a plate's click a
   still click at its marker's point, the camera's form `MapCameraForm`, placed at the view the screen shows,

@@ -123,6 +123,7 @@ public partial class GameScreen
             _markers.SetFont(font);
             _provinceView.SetFont(font);
             _panels.SetFont(font);
+            _subordinates.SetFont(font);
             _battleView.SetFont(font);
             _scoutView.SetFont(font);
             _strategyView.SetFont(font);
@@ -153,6 +154,7 @@ public partial class GameScreen
             _table.SetPalette(palette);
             _markers.SetPalette(palette);
             _panels.SetPalette(palette);
+            _subordinates.SetPalette(palette);
             _battleView.SetPalette(palette);
             _scoutView.SetPalette(palette);
             _strategyView.SetPalette(palette);

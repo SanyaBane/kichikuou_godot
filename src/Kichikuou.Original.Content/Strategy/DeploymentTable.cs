@@ -3,6 +3,7 @@ using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
+using Kichikuou.Original.Strategy;
 
 namespace Kichikuou.Original.Content.Strategy;
 
@@ -50,6 +51,15 @@ public enum DeploymentColumn
 
     /// <summary>Magic.</summary>
     Magic,
+
+    /// <summary>The troop type (the unit's second string).</summary>
+    TroopType,
+
+    /// <summary>Replenish's price (<c>Cﾌﾞｶ</c>), none when the troops are at their maximum.</summary>
+    Refill,
+
+    /// <summary>The unit's item.</summary>
+    Item,
 }
 
 /// <summary>A column's compact header, its full name (the header's tooltip) and whether it is text.</summary>
@@ -62,7 +72,7 @@ public sealed record DeploymentColumnInfo(DeploymentColumn Column, string Header
 public sealed record DeploymentRow(
     int Unit, string Name, int Troops, int MaxTroops, int Hp, int MaxHp, int Exp, int NextExp,
     int Level, int Atk, int Def, int Attacks, int Strategy, int Magic, int TroopAtk, int TroopDef, int Cost,
-    bool Grey, int PartyPlace)
+    bool Grey, int PartyPlace, string TroopType = "", int Refill = 0, string Item = "")
 {
     /// <summary>The cell's text.</summary>
     public string Text(DeploymentColumn column) => column switch
@@ -81,6 +91,9 @@ public sealed record DeploymentRow(
         DeploymentColumn.TroopAtk => TroopAtk.ToString(),
         DeploymentColumn.TroopDef => TroopDef.ToString(),
         DeploymentColumn.Cost => $"{Cost * 100}K",
+        DeploymentColumn.TroopType => TroopType,
+        DeploymentColumn.Refill => Refill == 0 ? "—" : $"{Refill * 100}K",
+        DeploymentColumn.Item => Item == "" ? "—" : Item,
         _ => throw new ArgumentOutOfRangeException(nameof(column)),
     };
 
@@ -101,6 +114,9 @@ public sealed record DeploymentRow(
         DeploymentColumn.TroopAtk => TroopAtk,
         DeploymentColumn.TroopDef => TroopDef,
         DeploymentColumn.Cost => Cost,
+        DeploymentColumn.TroopType => TroopType,
+        DeploymentColumn.Refill => Refill,
+        DeploymentColumn.Item => Item,
         _ => throw new ArgumentOutOfRangeException(nameof(column)),
     };
 }
@@ -179,7 +195,10 @@ public static class DeploymentTable
                 u.Exp.Value, ((Sys3Int)100 + u.Level * 30).Value,
                 u.Level.Value, u.Atk.Value, u.Def.Value, u.Attacks.Value, u.Strategy.Value, u.Magic.Value,
                 u.TroopAtk.Value, u.TroopDef.Value, (u.DeployCost + u.Troops / 300).Value,
-                Grey: u.Status == 2, PartyPlace: order is null ? PartyPlace(state, n) : order.ToList().IndexOf(n) + 1));
+                Grey: u.Status == 2, PartyPlace: order is null ? PartyPlace(state, n) : order.ToList().IndexOf(n) + 1,
+                TroopType: StringAt(state, strings + 1),
+                Refill: u.Troops == u.MaxTroops ? 0 : SubordinatesCommand.Refill(u).Price.Value,
+                Item: u.Item == 0 ? "" : StringAt(state, (state.Item_StrBase + u.Item - 1).Value)));
         }
         return rows;
     }

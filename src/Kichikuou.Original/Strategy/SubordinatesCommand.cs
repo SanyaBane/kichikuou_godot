@@ -1,6 +1,7 @@
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Script;
+using Kichikuou.Original.State;
 
 namespace Kichikuou.Original.Strategy;
 
@@ -205,40 +206,71 @@ public sealed class SubordinatesCommand(OriginalScriptContext script) : CommandF
             await TextAsync(738);                                       // "The King's personal unit."
         }
         await ValuesAsync(744, Unit.HP, Unit.MaxHP, Unit.Troops, Unit.MaxTroops);
-        State.Tmp0001 = 0;                                              // :757-799 the offer
-        State.Tmp0003 = 25;
-        if (Unit.Class == 0 && Unit.TroopAtk == 10)
-            State.Tmp0001 = 110;
-        if (Unit.Class == 0 && Unit.TroopAtk == 11)
-            State.Tmp0001 = 300;
-        if (Unit.Class == 0 && Unit.TroopAtk == 8)
-            State.Tmp0001 = 50;
-        if (Unit.Class == 2 && Unit.TroopAtk == 3)
-            State.Tmp0001 = 100;
-        if (State.Unit_Cur == 3 || State.Unit_Cur == 4)
+        (State.Tmp0001, State.Tmp0003) = Offer(State, State.Unit_Cur);  // :757-799 the offer
+    }
+
+    /// <summary>
+    /// <c>:757-799</c> — the new troops offered to <paramref name="unit"/>: the price (hundreds of gold,
+    /// <c>Tmp0001</c>; 0 when none is offered) and the men (<c>Tmp0003</c>). Our own Subordinates screen
+    /// shows the same (docs/ui/subordinates.md).
+    /// </summary>
+    public static (Sys3Int Price, Sys3Int Men) Offer(GameState state, Sys3Int unit)
+    {
+        var u = state.Units[unit];
+        Sys3Int price = 0;
+        Sys3Int men = 25;
+        if (u.Class == 0 && u.TroopAtk == 10)
+            price = 110;
+        if (u.Class == 0 && u.TroopAtk == 11)
+            price = 300;
+        if (u.Class == 0 && u.TroopAtk == 8)
+            price = 50;
+        if (u.Class == 2 && u.TroopAtk == 3)
+            price = 100;
+        if (unit == 3 || unit == 4)
         {
-            State.Tmp0001 = 30;
-            State.Tmp0003 = 50;
+            price = 30;
+            men = 50;
         }
-        if (State.Unit_Cur == 5 || State.Unit_Cur == 33 || State.Unit_Cur == 36 || State.Unit_Cur == 18)
-            State.Tmp0001 = 200;
-        if (State.Unit_Cur == 16)
-            State.Tmp0001 = 120;
-        if (Unit.Class == 3)
-            State.Tmp0001 = 150;
-        if (State.Tmp0001 == 0)
+        if (unit == 5 || unit == 33 || unit == 36 || unit == 18)
+            price = 200;
+        if (unit == 16)
+            price = 120;
+        if (u.Class == 3)
+            price = 150;
+        if (price == 0)
         {
-            State.Tmp0001 = 320;
-            State.Tmp0003 = 10;
+            price = 320;
+            men = 10;
         }
-        if (State.Unit_Cur > 47)
-            State.Tmp0001 = 0;
-        if (State.Unit_Cur == 25)
-            State.Tmp0001 = 0;
-        if (State.Unit_Cur == 41)
-            State.Tmp0001 = 0;
-        if (State.Tmp0001 != 0)
-            State.Tmp0001 = State.Tmp0001 + State.Week / 4;
+        if (unit > 47)
+            price = 0;
+        if (unit == 25)
+            price = 0;
+        if (unit == 41)
+            price = 0;
+        if (price != 0)
+            price = price + state.Week / 4;
+        return (price, men);
+    }
+
+    /// <summary><c>L_012a9</c> — Add More: twice the men for three times the price.</summary>
+    public static (Sys3Int Price, Sys3Int Men) AddMore(Sys3Int price, Sys3Int men) => (price * 3, men * 2);
+
+    /// <summary><c>:906</c> — Add More is offered while the price is under 10000.</summary>
+    public static bool CanAddMore(Sys3Int price) => price < 10000;
+
+    /// <summary>
+    /// <c>:1005-1009</c> — Replenish's deficiency (<c>Tmp0621</c>) and its price (<c>Tmp0226</c>, one per
+    /// 50 men, at least 1). CMD-20: above the maximum the deficiency is 0 and the price 1.
+    /// </summary>
+    public static (Sys3Int Deficiency, Sys3Int Price) Refill(UnitRecord unit)
+    {
+        Sys3Int deficiency = unit.MaxTroops - unit.Troops;
+        Sys3Int price = deficiency / 50;
+        if (price == 0)
+            price = 1;
+        return (deficiency, price);
     }
 
     /// <summary>
@@ -315,7 +347,7 @@ public sealed class SubordinatesCommand(OriginalScriptContext script) : CommandF
             await ValuesAsync(883, State.Tmp0001, State.Tmp0003, State.Gold);
             await WaitForReleaseAsync();                                // L_01358
             var items = new List<SceneMenuItem> { MenuItem(904) };      // Do It
-            if (State.Tmp0001 < 10000)
+            if (CanAddMore(State.Tmp0001))
                 items.Add(MenuItem(909));                               // Add More
             items.Add(MenuItem(914));                                   // Don't
             int choice = await SelectAsync(items);
@@ -323,8 +355,7 @@ public sealed class SubordinatesCommand(OriginalScriptContext script) : CommandF
                 return Next.Menu;                                       // :918 @L_0117d — QUIRK: CMD-12, the multiplied offer stays
             if (items[choice - 1].At.Line == 909)
             {
-                State.Tmp0003 = State.Tmp0003 * 2;                      // L_012a9
-                State.Tmp0001 = State.Tmp0001 * 3;
+                (State.Tmp0001, State.Tmp0003) = AddMore(State.Tmp0001, State.Tmp0003);  // L_012a9
                 continue;
             }
             if (items[choice - 1].At.Line == 914)
@@ -410,10 +441,7 @@ public sealed class SubordinatesCommand(OriginalScriptContext script) : CommandF
             return Next.Header;
         }
         // QUIRK: CMD-20 — above the maximum the deficiency is 0, priced 1, and Do lowers the troops.
-        State.Tmp0621 = Unit.MaxTroops - Unit.Troops;                   // :1005-1009
-        State.Tmp0226 = State.Tmp0621 / 50;
-        if (State.Tmp0226 == 0)
-            State.Tmp0226 = 1;
+        (State.Tmp0621, State.Tmp0226) = Refill(Unit);                  // :1005-1009
         await WaoAsync(121);                                            // \L_01e3a
         await ValuesAsync(1012, State.Tmp0621, State.Tmp0226);          // "Replenish X's unit? …"
         var items = new List<SceneMenuItem> { MenuItem(1026) };         // Do

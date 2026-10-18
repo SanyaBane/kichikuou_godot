@@ -282,7 +282,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _content.AddChild(_table);
         _messageView = new MessageWindowView(GodotGlyphRenderer.Chosen);
         _content.AddChild(_messageView);
-        _overlay = OutlinedLabel(VerticalAlignment.Center, 32);
+        ReadySubordinates(faces);
+        _overlay =OutlinedLabel(VerticalAlignment.Center, 32);
         _notice = OutlinedLabel(VerticalAlignment.Top, 18);
 
         _audio = new BattleAudio();
@@ -335,6 +336,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_noticeLeft > 0 && (_noticeLeft -= delta) <= 0)
             _notice.Text = "";
         UpdateDeploymentScreen();
+        UpdateSubordinatesScreen(delta);
         UpdateStatusStrip();
         UpdateMapMarkers();
         if (_commandView.Visible)
@@ -606,6 +608,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                     + $"{(_autoDungeonBattle ? "a battle fought" : "no battle")}, the searcher's status {s.Units[s.Bt_PlayerParty1].Status.Value}.");
             }
         }
+        await SubordinatesEventAsync(scriptEvent);
         if (scriptEvent is BattleScreenEvent { Open: true } && _autoDungeon == AutoDungeon.Searching)
             _autoDungeonBattle = true;
         if (scriptEvent is BattleScreenEvent { File: "FIGT_A.ADV" or "FIGT_B.ADV" } battle && _options.Auto)
@@ -682,7 +685,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.ScreenshotDirectory is not { } dir)
             return;
         System.IO.Directory.CreateDirectory(dir);
-        if ((_table.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
+        if ((_table.Visible || _subordinates.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
         {
             // Our deployment and battle screens are drawn by Godot over the screen: the window's next frame (headless
             // draws none). No Compose here: the frame's Present must find the change to upload it.
@@ -744,7 +747,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             return;
         x = Math.Max(x, 0) - _presenter.Stage.View.X;
         y = Math.Max(y, 0) - _presenter.Stage.View.Y;
-        if (!EngineState.MouseMovement || _options.Auto)
+        if (!EngineState.MouseMovement || _options.Auto || OrderRunning)  // an order's way puts back a pointer that was never the player's
         {
             _input.Position = ClampToScreen(x, y);
             await DelayAsync(_options.Fast ? 0 : 0.05);
@@ -949,6 +952,14 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             await SkipYieldAsync();
             key = 0;
+        }
+        else if (SubordinatesAnswersKey())
+        {
+            // An order of our Subordinates screen (docs/ui/subordinates.md): the command's windows on its way are
+            // answered at once, as by a click, under the screen — Maris's lines, the result, Rance's thought.
+            key = KeyReturn;
+            await ReleaseWaitAsync(_input.PeekInput());
+            _ikKey = key;
         }
         else if (BattleScreenShown && _presenter.Battle.ActionLabelsOpen)
         {
@@ -1298,6 +1309,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     public async Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
     {
         _pointer.Interrupt();
+        if (SubordinatesChoice(items) is { } ordered)
+            return ordered;                                     // an order of our Subordinates screen answers it, unseen
         _skip.OnMenu();
         _presenter.OpenMenu(items);
         _presenter.Pointer(_input.Position.X, _input.Position.Y);
@@ -1400,6 +1413,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             return Read(queued);
         }
         await NextFrameAsync();
+        if (UpdateSubordinatesScreen())
+            return Read(SubordinatesRead());            // over our Subordinates screen the script's pointer is the screen's
         if (_tablePointer.Pending == 0)
             _wantedOrder = null;                        // the script asks again with nothing queued: a drop's clicks are done
         if (UpdateDeploymentScreen() && (_tablePointer.Pending > 0 || _table.HasPointer || _panels.HasPointer))
@@ -2343,8 +2358,16 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// </summary>
     private void AutoPointer()
     {
-        if (_pointer.Pending > 0)
+        if (_pointer.Pending > 0 || OrderRunning)
+            return;                                     // an order of our Subordinates screen has the pointer
+        if (_presenter.Picker is { Kind: PickerKind.Subordinates } && _autoReplenish == AutoReplenish.Chosen && UpdateSubordinatesScreen()
+            && _presenter.State is { } ordering)
+        {
+            _autoReplenish = AutoReplenish.None;        // our own screen: its Replenish button
+            GD.Print($"Kichikuou: --auto replenishes through our Subordinates screen (week {ordering.Week.Value}).");
+            _subordinates.Press(SubordinateOrderKind.Replenish, _autoReplenishUnit);
             return;
+        }
         if (_presenter.Data is not (DataView.Closed or DataView.Map))
         {
             Shot("data");
