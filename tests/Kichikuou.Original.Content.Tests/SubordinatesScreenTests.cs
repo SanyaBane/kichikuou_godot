@@ -107,7 +107,7 @@ public class SubordinatesScreenTests
         s.Gold = 1114;
         s.CmdAvail_SubTroops = 0;
 
-        Assert.True(order.OnMapWait(s));                                                    // COMMAND's map: the right click
+        Assert.True(order.OnMapWait());                                                    // COMMAND's map: the right click
         Assert.Equal(3, order.Choose(CommandMenu));                                         // ○Subordinates
         Assert.True(order.Running);
         order.OnPicker(new PickerScreenEvent(PickerKind.Subordinates, 2, true));            // Sﾌﾞｶ again
@@ -132,7 +132,7 @@ public class SubordinatesScreenTests
         s.Units[12].MaxTroops = 1500;
         s.Gold = 1141 - 486;
 
-        Assert.True(order.OnMapWait(s));
+        Assert.True(order.OnMapWait());
         Assert.Equal(new SubordinateResult(SubordinateOrderKind.AddTroops, "New troops: +100 → 150/1500", "Budget −48600K"), order.Result(s));
     }
 
@@ -147,7 +147,7 @@ public class SubordinatesScreenTests
         Assert.False(order.Running);                                                        // the talk scene is the player's
         Assert.False(order.AnswerKey());
         Assert.Null(order.Result(s));
-        Assert.False(order.OnMapWait(s));
+        Assert.False(order.OnMapWait());
     }
 
     [Fact]
@@ -185,18 +185,5 @@ public class SubordinatesScreenTests
         Assert.Equal(5, order.Choose(TroopMenu));                                           // "we don't have the budget": the menu again
         Assert.False(order.Running);
         Assert.Null(order.Result(s));
-    }
-
-    [Fact]
-    public void Sills_scene_waiting_at_the_commands_start_keeps_the_command_closed()
-    {
-        var s = World();
-        var order = SubordinateOrder.Start(s, SubordinateOrderKind.Replenish, 12, 0, new PointerScript());
-        order.Choose(TroopMenu);
-        order.Choose([Item("Cﾌﾞｶ.ADV", 1026), Item("Cﾌﾞｶ.ADV", 1030)]);
-        s.F_SillCow_State = 3;
-
-        Assert.False(order.OnMapWait(s));                                                   // Cﾌﾞｶ.ADV:21-24 would play it under our screen
-        Assert.False(order.Running);
     }
 }

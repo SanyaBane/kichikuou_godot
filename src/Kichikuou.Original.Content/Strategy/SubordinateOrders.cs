@@ -278,14 +278,15 @@ public sealed class SubordinateOrder
 
     /// <summary>
     /// COMMAND waits on the map: after a troop order the command is opened again — true when the right
-    /// click is to be queued — unless Sill's scene would play at its start (<c>F_SillCow_State</c> 3,
-    /// <c>Cﾌﾞｶ.ADV:21-24</c>), which the player is to see: then the order ends on the map.
+    /// click is to be queued. Sill's scene at the command's start (<c>F_SillCow_State</c> 3,
+    /// <c>Cﾌﾞｶ.ADV:21-24</c>) cannot play under the reopened screen: the state is 3 only after the
+    /// merchant's scene (<c>Gｼｨﾙ</c> 2), and the entry that led to the order already turned it to 4.
     /// </summary>
-    public bool OnMapWait(GameState state)
+    public bool OnMapWait()
     {
         if (_phase is Phase.Done or Phase.Reopening or Phase.Thought)
             return false;
-        if (_phase != Phase.Finishing || !Succeeded || state.F_SillCow_State == 3)
+        if (_phase != Phase.Finishing || !Succeeded)
         {
             _phase = Phase.Done;
             return false;

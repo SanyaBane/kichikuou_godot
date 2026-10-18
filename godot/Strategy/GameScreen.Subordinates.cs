@@ -111,7 +111,7 @@ public partial class GameScreen
         bool wasRunning = OrderRunning;
         if (scriptEvent is PickerScreenEvent picker)
             _order?.OnPicker(picker);
-        if (scriptEvent is MapScreenEvent { Waiting: true } && OrderRunning && _order!.OnMapWait(s))
+        if (scriptEvent is MapScreenEvent { Waiting: true } && OrderRunning && _order!.OnMapWait())
         {
             var (x, y) = SubordinateOrder.RightClickAt;
             SubordinatesPointer.RightClick(x, y);
