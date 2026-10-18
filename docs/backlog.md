@@ -136,6 +136,9 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   Then (owner, 2026-10-18): our own Subordinates screen (`Cﾌﾞｶ`/`Sﾌﾞｶ`) after mock-up F1 —
   [ui/subordinates.md](ui/subordinates.md). Put off (owner, 2026-10-18): **the units' situational modifiers**
   (the status page's attack and defence on offense, on defense, in dungeons) are not shown on it.
+  Its look is mock-up G3 (owner, 2026-10-18: lacquer panels, the table as a paper ledger; ui/subordinates.md, §5).
+  Put off (owner, 2026-10-18): **the deployment screen in the same look** — `DeploymentTableView` as a ledger and
+  its panels in lacquer, a step of its own with mock-ups; until then it keeps Option → Palette's colours.
   Groundwork (survey §4.8): menus as data and the map helper are done (2026-10-12); the shared engine
   host (§4.8, "Items 2 and 4 are one step") is not needed for screens over the original layout.
 - **Quality-of-life features**, the README's second aim — *owner* (which), then *agent*; a survey of

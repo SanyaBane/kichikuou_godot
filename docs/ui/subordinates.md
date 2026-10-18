@@ -98,9 +98,9 @@ screen only chooses what the original's player would have chosen, through the in
   CMD-20 still can: a unit above its maximum is replenished down to it for 100K, as in the original.
 - **End** clicks the bar's End (`GesturePoints.PickerButton(3)`), a right click on the screen likewise.
 
-The agent's own choices in this plan, for the owner's look: Rance's thought before a talk is hidden;
-after a talk the map comes back (after a troop order the screen re-opens); the first row chosen is the
-first unit at status 1.
+The agent's own choices in this plan, kept by the owner (2026-10-18): Rance's thought before a talk is
+hidden; after a talk the map comes back (after a troop order the screen re-opens); the first row chosen
+is the first unit at status 1.
 
 ## 4. Steps
 
@@ -128,3 +128,32 @@ dumps it as it opens (`subordinates`) and after the order (`subordinates-done`):
 `--load --auto --fast --quit --seed 2 --saves user://saves-look-sub --slots-from user://saves-week18 --until deployment --interface new --shots <dir>`
 (Haurein (unit 12): +1191 → 1400 for 2300K, the command opened again, then End). Not yet looked at by the
 owner; Add New Troops and Talk are covered by the tests, not by a look.
+
+## 5. The look (owner, 2026-10-18)
+
+The owner approved the layout but not the look: the first build (flat steel boxes of `DeploymentPalette`, thin
+borders, Godot's own buttons on a grey backdrop) read as a browser game, not a game's screen. Round 4 of the mock-ups
+(`tools/ui/mock_subordinates.py`, round `g`, drawn over the dumps of our screen and the map) kept the layout and moved
+it to the lacquer and gold of our map panels (command-screen.md, the province menu, the command panel; the week
+report): G1 a dark lacquer backdrop with a faint gold wave pattern, G2 the map blurred behind with red-lacquer title
+bands, G3 G1 with the table as a paper ledger, G4 G1 after a replenish. The owner chose **G3**:
+
+- **The backdrop:** dark lacquer under a faint gold seigaiha (wave) pattern, darkened towards the edges.
+- **The table's panel:** `Lacquer.DrawPanel` with a title band — "Subordinates" in Shojumaru, the units ready this
+  week in Cinzel, the date ("LP 3 · Month 5 · Week 2") at the right — and a divider over the ledger.
+- **The ledger** (`DeploymentTableView` with `ledger: true`): paper with ink text, the headers in Cinzel in
+  vermilion ink over a rule, the rows' rules, the type and the item in a quieter ink, the refill's price in
+  vermilion, the deployed units in grey ink; under the troops a thin bar of their strength (green from three
+  quarters, amber from a third, else red — a look only); the chosen row tinted with a vermilion bar and diamond in
+  the first column; the last column reaches the paper's edge. Option → Palette does not touch it.
+- **The picture panel** as before (the original's gold frame), with a shadow.
+- **The orders' panel:** `Lacquer.DrawPanel`; its header "Orders" in Shojumaru with the budget in Cinzel ("Budget
+  116,400 K GOLD"); Replenish in red lacquer framed in gold, as Turn END; Add New Troops' label in Cinzel with a rule,
+  its steps, Talk (the face in a gold frame, "with <name>" or why it is greyed) and End as dark row boxes — lit with
+  a bright frame when hovered, grey when they cannot be clicked; a greyed step's and Talk's reason as a tooltip; the
+  plate after an order in green: its label and figure, the budget's cost in red.
+- Everything is drawn by hand in the 1280×800 screen's pixels (`SubordinatesView`, its layers: the backdrop, the
+  panels; the ledger a `Tree` over them), as the other lacquer views.
+
+Built (2026-10-18) and looked at from `saves-week18` (the dumps `subordinates`, `subordinates-done`). Put off: the
+deployment screen in the same look (docs/backlog.md).

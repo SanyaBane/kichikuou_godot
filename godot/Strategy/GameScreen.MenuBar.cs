@@ -154,7 +154,6 @@ public partial class GameScreen
             _table.SetPalette(palette);
             _markers.SetPalette(palette);
             _panels.SetPalette(palette);
-            _subordinates.SetPalette(palette);
             _battleView.SetPalette(palette);
             _scoutView.SetPalette(palette);
             _strategyView.SetPalette(palette);

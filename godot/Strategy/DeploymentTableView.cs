@@ -12,7 +12,8 @@ namespace Kichikuou.Game.Strategy;
 /// again descending, a small mark on the header with its room kept; by number at first),
 /// scrolling both ways, the units deployed this week grey, the party's members marked with their
 /// place in a first column. It decides nothing: the presses go to <see cref="GameScreen"/>, which
-/// answers the script with the gestures it expects.
+/// answers the script with the gestures it expects. Our Subordinates screen shows it as a ledger (the
+/// owner's mock-up G3, docs/ui/subordinates.md): paper and ink in the screen's lacquer, not the palette's colours.
 /// </summary>
 internal sealed partial class DeploymentTableView : Tree
 {
@@ -49,6 +50,15 @@ internal sealed partial class DeploymentTableView : Tree
     /// <summary>Whether the first column marks the chosen row (<see cref="Chosen"/>) instead of the party's places.</summary>
     private readonly bool _chooser;
 
+    /// <summary>Whether the table is drawn as a ledger (paper, ink, headers in Cinzel, the troops' bars) instead of in the palette.</summary>
+    private readonly bool _ledger;
+
+    /// <summary>The headers' font: the text's, or Cinzel over it in a ledger (the text's font the fallback for the sort marks).</summary>
+    private Font _titleFont = null!;
+
+    /// <summary>The headers' size: the text's, smaller in a ledger (Cinzel's capitals are wide).</summary>
+    private int TitleSize => _ledger ? Math.Max(8, (int)Math.Round(_fontSize * 0.82f)) : Math.Max(_fontSize, 8);
+
     /// <summary>The chosen unit's row, marked and highlighted when the table is a chooser (our Subordinates screen).</summary>
     public int Chosen
     {
@@ -68,12 +78,13 @@ internal sealed partial class DeploymentTableView : Tree
 
     /// <summary>
     /// A table of <paramref name="columns"/>, its text <paramref name="textSize"/> script pixels; a
-    /// <paramref name="chooser"/> marks its chosen row in the first column.
+    /// <paramref name="chooser"/> marks its chosen row in the first column; a <paramref name="ledger"/> is paper and ink.
     /// </summary>
-    public DeploymentTableView(GameFont font, IReadOnlyList<DeploymentColumnInfo> columns, bool chooser, float textSize)
+    public DeploymentTableView(GameFont font, IReadOnlyList<DeploymentColumnInfo> columns, bool chooser, float textSize, bool ledger = false)
     {
         _columns = columns;
         _chooser = chooser;
+        _ledger = ledger;
         _textSize = textSize;
         Columns = _columns.Count + 1;
         HideRoot = true;
@@ -93,7 +104,7 @@ internal sealed partial class DeploymentTableView : Tree
         }
         for (int c = 0; c < Columns; c++)
         {
-            SetColumnExpand(c, false);
+            SetColumnExpand(c, ledger && c == Columns - 1);         // a ledger's last column to the paper's edge
             SetColumnClipContent(c, true);
         }
         AddThemeStyleboxOverride("focus", new StyleBoxEmpty());
@@ -109,7 +120,7 @@ internal sealed partial class DeploymentTableView : Tree
         SetFont(font);
     }
 
-    /// <summary>Option → Palette: the table in <paramref name="palette"/>'s colours at once.</summary>
+    /// <summary>Option → Palette: the table in <paramref name="palette"/>'s colours at once (a ledger keeps its own).</summary>
     public void SetPalette(DeploymentPalette palette)
     {
         _colours = palette;
@@ -119,6 +130,11 @@ internal sealed partial class DeploymentTableView : Tree
 
     private void ApplyPalette()
     {
+        if (_ledger)
+        {
+            ApplyLedger();
+            return;
+        }
         var c = _colours;
         AddThemeStyleboxOverride("panel", new StyleBoxFlat { BgColor = c.TableBack });
         var title = new StyleBoxFlat { BgColor = c.TableTitle, ContentMarginLeft = 4, ContentMarginRight = 4 };
@@ -145,6 +161,41 @@ internal sealed partial class DeploymentTableView : Tree
         Theme = bars;
     }
 
+    /// <summary>The ledger's look: the paper, its header in vermilion ink over a rule, the rows' rules, a faint hover.</summary>
+    private void ApplyLedger()
+    {
+        AddThemeStyleboxOverride("panel", new StyleBoxFlat
+        {
+            BgColor = Lacquer.Paper, BorderColor = Lacquer.DimGold,
+            BorderWidthLeft = 1, BorderWidthTop = 1, BorderWidthRight = 1, BorderWidthBottom = 1,
+        });
+        StyleBoxFlat Head(Color colour) => new()
+        {
+            BgColor = colour, BorderColor = Lacquer.HeadInk, BorderWidthBottom = 1,
+            ContentMarginLeft = 4, ContentMarginRight = 4, ContentMarginTop = 3, ContentMarginBottom = 3,
+        };
+        AddThemeStyleboxOverride("title_button_normal", Head(Lacquer.PaperHead));
+        AddThemeStyleboxOverride("title_button_hover", Head(Lacquer.PaperHead.Lightened(0.12f)));
+        AddThemeStyleboxOverride("title_button_pressed", Head(Lacquer.PaperHead));
+        AddThemeColorOverride("font_color", Lacquer.Ink);
+        AddThemeColorOverride("title_button_color", Lacquer.HeadInk);
+        AddThemeColorOverride("guide_color", Lacquer.PaperRule);
+        foreach (var state in new[] { "font_hovered_color", "font_selected_color", "font_hovered_selected_color" })
+            AddThemeColorOverride(state, Lacquer.Ink);
+        AddThemeStyleboxOverride("hovered", new StyleBoxFlat { BgColor = Lacquer.Vermilion with { A = 0.08f } });
+        foreach (var state in new[] { "selected", "selected_focus", "hovered_selected", "hovered_selected_focus" })
+            AddThemeStyleboxOverride(state, new StyleBoxEmpty());          // the chosen row is marked by Fill
+        var bars = new Theme();
+        foreach (string bar in new[] { "HScrollBar", "VScrollBar" })
+        {
+            bars.SetStylebox("scroll", bar, BarBox(Lacquer.PaperHead));
+            bars.SetStylebox("grabber", bar, BarBox(Lacquer.InkQuiet));
+            bars.SetStylebox("grabber_highlight", bar, BarBox(Lacquer.VermilionInk));
+            bars.SetStylebox("grabber_pressed", bar, BarBox(Lacquer.VermilionInk));
+        }
+        Theme = bars;
+    }
+
     /// <summary>A scroll bar's part: its margins make the bar as thick as the default theme's.</summary>
     private static StyleBoxFlat BarBox(Color color) => new()
     {
@@ -155,13 +206,22 @@ internal sealed partial class DeploymentTableView : Tree
     public void SetFont(GameFont font)
     {
         _font = LoadFont(font);
+        _titleFont = _ledger ? CinzelOver(_font) : _font;
         AddThemeFontOverride("font", _font);
-        AddThemeFontOverride("title_button_font", _font);
+        AddThemeFontOverride("title_button_font", _titleFont);
         // The sort mark: the narrowest pair the font has, so the header grows little.
         (_up, _down) = SortMarks
             .Where(m => _font.HasChar(m.Up[0]) && _font.HasChar(m.Down[0]))
             .MinBy(m => Math.Max(_font.GetStringSize(m.Up, fontSize: 16).X, _font.GetStringSize(m.Down, fontSize: 16).X));
         Fill();
+    }
+
+    /// <summary>Cinzel at 700 for a ledger's headers, <paramref name="text"/> its fallback (the sort marks).</summary>
+    private static FontVariation CinzelOver(FontFile text)
+    {
+        var cinzel = Lacquer.Cinzel(700);
+        cinzel.Fallbacks = [text];
+        return cinzel;
     }
 
     /// <summary>The font of our own screens: the Option → Fonts face, regular (MS Gothic where installed, else BIZ UDGothic).</summary>
@@ -185,7 +245,9 @@ internal sealed partial class DeploymentTableView : Tree
             return;
         _fontSize = size;
         AddThemeFontSizeOverride("font_size", size);
-        AddThemeFontSizeOverride("title_button_font_size", size);
+        AddThemeFontSizeOverride("title_button_font_size", TitleSize);
+        if (_ledger)
+            AddThemeConstantOverride("v_separation", (int)Math.Round(1.5f * pixelsPerScript));   // the ledger's rows breathe
         Fill();
     }
 
@@ -204,6 +266,9 @@ internal sealed partial class DeploymentTableView : Tree
 
     /// <summary>Whether <paramref name="unit"/> has a row.</summary>
     public bool Lists(int unit) => _rows.Any(r => r.Unit == unit);
+
+    /// <summary>The rows not greyed: the units that can still act this week.</summary>
+    public int ReadyCount => _rows.Count(r => !r.Grey);
 
     /// <summary>A press on <paramref name="unit"/>'s row as the mouse makes it (unattended play goes through here).</summary>
     public void Press(int unit)
@@ -266,6 +331,8 @@ internal sealed partial class DeploymentTableView : Tree
         var widths = new float[Columns];
         float Width(string text) => _font.GetStringSize(text, HorizontalAlignment.Left, -1, Math.Max(_fontSize, 8)).X;
         void Fit(int column, string text) => widths[column] = Math.Max(widths[column], Width(text));
+        void FitTitle(int column, string text) =>
+            widths[column] = Math.Max(widths[column], _titleFont.GetStringSize(text, HorizontalAlignment.Left, -1, TitleSize).X);
         Fit(0, _chooser ? ChosenMark : PartyMark);
         Fit(0, "4");
         for (int c = 0; c < _columns.Count; c++)
@@ -273,15 +340,22 @@ internal sealed partial class DeploymentTableView : Tree
             var info = _columns[c];
             string header = info.Header + (info.Column == _sort ? _descending ? _down : _up : "");
             SetColumnTitle(c + 1, header);
-            Fit(c + 1, info.Header + _down);                           // room for the mark: a sort never widens a column
+            FitTitle(c + 1, info.Header + _down);                      // room for the mark: a sort never widens a column
         }
         foreach (var row in DeploymentTable.Sort(_rows, _sort, _descending))
         {
             var item = CreateItem(root);
             item.SetMetadata(0, row.Unit);
             bool marked = _chooser ? row.Unit == Chosen : row.PartyPlace > 0;
-            item.SetText(0, _chooser ? marked ? ChosenMark : "" : row.PartyPlace > 0 ? row.PartyPlace.ToString() : "");
+            item.SetText(0, _chooser ? marked && !_ledger ? ChosenMark : "" : row.PartyPlace > 0 ? row.PartyPlace.ToString() : "");
             item.SetTextAlignment(0, HorizontalAlignment.Center);
+            if (_ledger)
+            {
+                LedgerRow(item, row, marked);
+                for (int c = 0; c < _columns.Count; c++)
+                    Fit(c + 1, row.Text(_columns[c].Column));
+                continue;
+            }
             for (int c = 0; c < _columns.Count; c++)
             {
                 var info = _columns[c];
@@ -299,7 +373,64 @@ internal sealed partial class DeploymentTableView : Tree
             }
         }
         int separation = GetThemeConstant("h_separation");
+        if (_ledger)
+            widths[0] = Math.Max(widths[0], _fontSize * 0.9f);              // the chosen row's bar and diamond
         for (int c = 0; c < Columns; c++)
             SetColumnCustomMinimumWidth(c, (int)Math.Ceiling(widths[c]) + separation + 6);
+    }
+
+    /// <summary>
+    /// A ledger's row: the chosen one tinted with a vermilion bar and diamond in the first column, the deployed ones
+    /// in grey ink, the refill's price in vermilion, the troops with a bar of their strength under them.
+    /// </summary>
+    private void LedgerRow(TreeItem item, DeploymentRow row, bool chosen)
+    {
+        for (int c = 0; c < _columns.Count; c++)
+        {
+            var info = _columns[c];
+            item.SetText(c + 1, row.Text(info.Column));
+            item.SetTextAlignment(c + 1, Alignment(info));
+            if (row.Grey)
+                item.SetCustomColor(c + 1, Lacquer.InkGrey);
+            else if (info.Column == DeploymentColumn.Refill && row.Refill > 0)
+                item.SetCustomColor(c + 1, Lacquer.VermilionInk);
+            else if (info.IsText && info.Column != DeploymentColumn.Name)
+                item.SetCustomColor(c + 1, Lacquer.InkQuiet);
+            if (info.Column == DeploymentColumn.Troops && row.MaxTroops > 0)
+            {
+                item.SetCellMode(c + 1, TreeItem.TreeCellMode.Custom);
+                var (text, troops, max, grey) = (row.Text(info.Column), row.Troops, row.MaxTroops, row.Grey);
+                item.SetCustomDrawCallback(c + 1, Callable.From<TreeItem, Rect2>((_, rect) => DrawTroops(rect, text, troops, max, grey)));
+            }
+        }
+        if (!chosen)
+            return;
+        for (int c = 0; c < Columns; c++)
+            item.SetCustomBgColor(c, Lacquer.ChosenRow);
+        item.SetCellMode(0, TreeItem.TreeCellMode.Custom);
+        item.SetCustomDrawCallback(0, Callable.From<TreeItem, Rect2>((_, rect) =>
+        {
+            DrawRect(new Rect2(rect.Position.X, rect.Position.Y, Math.Max(2, rect.Size.Y * 0.14f), rect.Size.Y), Lacquer.Vermilion);
+            Lacquer.DrawDiamond(this, rect.GetCenter() + new Vector2(rect.Size.Y * 0.1f, 0), rect.Size.Y * 0.2f, Lacquer.Vermilion);
+        }));
+    }
+
+    /// <summary>
+    /// The troops' figures (a custom cell draws no text of its own) a little raised, and their strength under them:
+    /// green from three quarters, amber from a third, else red.
+    /// </summary>
+    private void DrawTroops(Rect2 cell, string text, int troops, int max, bool grey)
+    {
+        float h = Math.Max(2, cell.Size.Y * 0.11f);
+        float baseline = cell.GetCenter().Y + (_font.GetAscent(_fontSize) - _font.GetDescent(_fontSize)) / 2 - h / 2;
+        DrawString(_font, new Vector2(cell.Position.X + 2, baseline), text, HorizontalAlignment.Left, cell.Size.X - 2, _fontSize,
+            grey ? Lacquer.InkGrey : Lacquer.Ink);
+        float f = Math.Clamp(troops / (float)max, 0, 1);
+        var colour = f >= 0.75f ? Lacquer.BarGood : f >= 0.35f ? Lacquer.BarLow : Lacquer.BarBad;
+        if (grey)
+            colour = colour with { A = 0.45f };
+        var bar = new Rect2(cell.Position.X + 2, cell.End.Y - h - 1, cell.Size.X - 4, h);
+        DrawRect(bar, Lacquer.PaperRule);
+        DrawRect(bar with { Size = new Vector2(Math.Max(1, bar.Size.X * f), h) }, colour);
     }
 }

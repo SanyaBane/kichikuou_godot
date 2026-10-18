@@ -901,6 +901,348 @@ def f3_line():
            'Replenish\'s button is its figure (+1350 · 2700K) like the steps, its name a label; the orders on lines, Talk and End below.')
 
 
+# ---------------------------------------------------------------- round 4: F1 as a game's screen (2026-10-18)
+# The layout the owner approved stays; the look moves from the steel boxes to the lacquer and gold of our map
+# panels (godot/Strategy/Lacquer.cs). Drawn over the real screen's dumps: the picture panel (the status CG in the
+# original's gold frame) is cut from a dump of our screen, the map from a dump of the map wait.
+#   python -I tools/ui/mock_subordinates.py <units.json> <cg_png> <out> g <subordinates dump> <done dump> <map dump>
+# The dumps are the Godot window (1280x800 with the menu bar); the game's area is scaled back to 1280x800.
+
+LQ_PANEL, LQ_GOLD, LQ_DIM = (22, 16, 12, 245), (196, 160, 86, 255), (110, 86, 46, 255)
+LQ_NAME, LQ_SUB, LQ_LABEL = (232, 199, 122, 255), (160, 140, 104, 255), (150, 134, 108, 255)
+LQ_VALUE, LQ_ROW, LQ_ROW2 = (236, 226, 204, 255), (34, 26, 20, 255), (28, 21, 16, 255)
+LQ_HOVER, LQ_HOVER_LINE, LQ_TEXT = (64, 48, 28, 255), (222, 186, 104, 255), (244, 232, 206, 255)
+LQ_QUIET, LQ_OFF_TEXT, LQ_OFF = (176, 160, 130, 255), (98, 88, 74, 255), (40, 35, 30, 255)
+LQ_GREEN, LQ_RED = (150, 196, 110, 255), (222, 110, 90, 255)
+SHOJUMARU = REPO + '/godot/fonts/Shojumaru-Regular.ttf'
+G_TABLE, G_PORTRAIT, G_PANEL = (16, 16, 1264, 360), (16, 368, 682, 784), (690, 368, 1264, 784)
+
+
+def brush(size):
+    return font(size, SHOJUMARU)
+
+
+def game_area(path):
+    """The game's 640x400 area of a window dump (under the 24-px menu bar, centred), at 1280x800."""
+    im = Image.open(path).convert('RGBA')
+    k = (im.height - 24) / 400
+    left = (im.width - 640 * k) / 2
+    return im.crop((round(left), 24, round(left + 640 * k), im.height)).resize((W * S, H * S), Image.LANCZOS)
+
+
+def g_setup():
+    """The table as the week-18 save shows it on our screen; Barres (unit 6) and Rick (unit 7) deployed for the mock."""
+    troops = {1: 1000, 5: 800, 6: 980, 7: 612, 8: 1000, 9: 901, 10: 649, 11: 100, 12: 209}
+    for u in data['units']:
+        u['Troops'] = troops[u['Index']]
+        u['Status'] = 2 if u['Index'] in (6, 7) else 1
+    global GOLD
+    GOLD = 1164
+
+
+def lq_panel(c, r, fill=LQ_PANEL, shadow=True):
+    """Lacquer.DrawPanel: the shadow, the lacquer, the double gold frame and its corners."""
+    x0, y0, x1, y1 = r
+    if shadow:
+        for i in range(10, 0, -1):
+            c.overlay((x0 - i + 3, y0 - i + 8, x1 + i + 3, y1 + i + 8), (0, 0, 0, 14))
+    c.overlay(r, fill)
+    c.rect((x0 + 1, y0 + 1, x1 - 1, y1 - 1), outline=LQ_GOLD, width=2)
+    c.rect((x0 + 5, y0 + 5, x1 - 5, y1 - 5), outline=LQ_DIM, width=1)
+    for cx, cy, sx, sy in ((x0, y0, 1, 1), (x1, y0, -1, 1), (x0, y1, 1, -1), (x1, y1, -1, -1)):
+        c.d.line([((cx + sx * 9) * S, (cy + sy * 2) * S), ((cx + sx * 9) * S, (cy + sy * 9) * S),
+                  ((cx + sx * 2) * S, (cy + sy * 9) * S)], fill=LQ_GOLD, width=2 * S)
+        c.d.polygon([((cx + sx * 9) * S, (cy + sy * 14) * S), ((cx + sx * 14) * S, (cy + sy * 9) * S),
+                     ((cx + sx * 9) * S, (cy + sy * 4) * S), ((cx + sx * 4) * S, (cy + sy * 9) * S)], fill=LQ_GOLD)
+
+
+def lq_divider(c, x0, x1, y):
+    m = (x0 + x1) / 2
+    c.line((x0, y), (m - 10, y), fill=LQ_DIM)
+    c.line((m + 10, y), (x1, y), fill=LQ_DIM)
+    c.d.polygon([(m * S, (y - 4) * S), ((m + 4) * S, y * S), (m * S, (y + 4) * S), ((m - 4) * S, y * S)], fill=LQ_GOLD)
+
+
+def lq_diamond(c, x, y, r, fill):
+    c.d.polygon([(x * S, (y - r) * S), ((x + r) * S, y * S), (x * S, (y + r) * S), ((x - r) * S, y * S)], fill=fill)
+
+
+def seigaiha(c, colour=(196, 160, 86, 13), radius=34):
+    """The backdrop's wave pattern, faint gold on the dark lacquer."""
+    layer = Image.new('RGBA', c.im.size, (0, 0, 0, 0))
+    dd = ImageDraw.Draw(layer)
+    rs, step = radius * S, radius * S
+    for row in range(-1, H * S // (step // 2) + 3):
+        y = row * step // 2
+        off = 0 if row % 2 == 0 else step
+        for x in range(-2 * step + off, W * S + 2 * step, 2 * step):
+            for k in (1.0, 0.72, 0.44):
+                rr = rs * k
+                dd.ellipse([x - rr, y - rr, x + rr, y + rr], fill=(14, 10, 8, 255) if k == 1.0 else None,
+                           outline=colour, width=S)
+    c.im = Image.alpha_composite(c.im, layer)
+    c.d = ImageDraw.Draw(c.im)
+
+
+def vignette(c, strength=170):
+    mask = Image.new('L', (W, H), 0)
+    md = ImageDraw.Draw(mask)
+    for i in range(60):
+        a = int(strength * (1 - i / 60) ** 2)
+        md.rectangle([i * 6, i * 4, W - 1 - i * 6, H - 1 - i * 4], outline=a, width=6)
+    dark = Image.new('RGBA', (W, H), (0, 0, 0, 255))
+    dark.putalpha(mask)
+    c.im = Image.alpha_composite(c.im, dark.resize(c.im.size, Image.LANCZOS))
+    c.d = ImageDraw.Draw(c.im)
+
+
+def backdrop(c, kind, map_dump):
+    if kind == 'map':
+        from PIL import ImageFilter, ImageEnhance
+        m = game_area(map_dump).filter(ImageFilter.GaussianBlur(5 * S))
+        m = ImageEnhance.Brightness(ImageEnhance.Color(m).enhance(0.6)).enhance(0.5)
+        c.im.paste(m, (0, 0))
+        c.d = ImageDraw.Draw(c.im)
+        vignette(c, 150)
+    else:
+        c.rect((0, 0, W, H), fill=(14, 10, 8, 255))
+        seigaiha(c)
+        vignette(c, 200)
+
+
+def picture(c, dump):
+    """The picture panel cut from our screen's dump: the CG in the original's gold frame, with a shadow under it."""
+    x0, y0, x1, y1 = G_PORTRAIT
+    for i in range(10, 0, -1):
+        c.overlay((x0 - i + 3, y0 - i + 8, x1 + i + 3, y1 + i + 8), (0, 0, 0, 16))
+    area = game_area(dump)
+    c.im.paste(area.crop((x0 * S, y0 * S, x1 * S, y1 * S)), (x0 * S, y0 * S))
+    c.d = ImageDraw.Draw(c.im)
+
+
+G_COLUMNS = [('', 22), ('No.', 38), ('Name', 100), ('Type', 150), ('Troops', 112), ('Refill', 76), ('T.Atk', 60),
+             ('T.Def', 60), ('Str%', 56), ('HP', 56), ('Lv', 36), ('EXP', 80), ('Atk', 48), ('Def', 48), ('Act', 48),
+             ('Mag', 48), ('Item', 150)]
+
+
+def troop_bar(c, x, y, w, u, ink=False):
+    f = u['Troops'] / u['MaxTroops']
+    colour = LQ_GREEN if f >= 0.75 else ((214, 170, 80, 255) if f >= 0.35 else LQ_RED)
+    if ink:
+        colour = (70, 110, 50, 255) if f >= 0.75 else ((160, 110, 30, 255) if f >= 0.35 else (170, 50, 36, 255))
+    c.rect((x, y, x + w, y + 3), fill=(0, 0, 0, 90) if not ink else (120, 100, 70, 90))
+    c.rect((x, y, x + max(1, round(w * f)), y + 3), fill=colour)
+
+
+def g_table(c, selected, style='lacquer'):
+    """The table in a lacquer panel: a title band, the headers in Cinzel, banded rows, the chosen one lit."""
+    x0, y0, x1, y1 = G_TABLE
+    lq_panel(c, G_TABLE)
+    ledger = style == 'ledger'
+    if style == 'vermilion':
+        red_band(c, (x0 + 6, y0 + 6, x1 - 6, y0 + 44))
+    c.text((x0 + 22, y0 + 25), 'Subordinates', brush(24), fill=LQ_NAME, anchor='lm')
+    c.text((x0 + 22 + c.width('Subordinates', brush(24)) + 16, y0 + 27), f'{sum(u["Status"] == 1 for u in data["units"])} units ready',
+           cinzel(13, 600), fill=LQ_SUB, anchor='lm')
+    c.text((x1 - 22, y0 + 27), 'LP 3 · Month 5 · Week 2', cinzel(15, 700), fill=LQ_NAME, anchor='rm')
+    lq_divider(c, x0 + 16, x1 - 16, y0 + 44)
+    ix0, ix1 = x0 + 14, x1 - 14
+    top = y0 + 50
+    if ledger:
+        c.rect((ix0, top, ix1, y1 - 12), fill=(224, 208, 172, 255), outline=LQ_DIM)
+    head_fill = (44, 33, 24, 255) if not ledger else (196, 176, 136, 255)
+    if style == 'vermilion':
+        head_fill = (58, 22, 16, 255)
+    c.rect((ix0, top, ix1, top + 26), fill=head_fill)
+    head_ink = LQ_LABEL if not ledger else (120, 40, 26, 255)
+    x = ix0 + 4
+    for name, w in G_COLUMNS:
+        right = name not in ('Name', 'Type', 'Item', '')
+        if right:
+            c.text((x + w - 6, top + 13), name, cinzel(13, 700), fill=head_ink, anchor='rm')
+        elif name:
+            c.text((x + (16 if name == 'Item' else 2), top + 13), name, cinzel(13, 700), fill=head_ink, anchor='lm')
+        x += w
+    c.line((ix0, top + 26), (ix1, top + 26), fill=LQ_GOLD if not ledger else (120, 40, 26, 255))
+    y, row_h = top + 28, 28
+    for i, u in enumerate(data['units']):
+        ready = u['Status'] == 1
+        chosen = u['Index'] == selected
+        if ledger:
+            if chosen:
+                c.overlay((ix0 + 1, y, ix1 - 1, y + row_h), (190, 60, 40, 60))
+                c.rect((ix0 + 1, y, ix0 + 5, y + row_h), fill=(170, 40, 28, 255))
+            c.line((ix0 + 6, y + row_h), (ix1 - 6, y + row_h), fill=(150, 120, 80, 110))
+        else:
+            c.rect((ix0, y, ix1, y + row_h), fill=LQ_HOVER if chosen else (LQ_ROW if i % 2 == 0 else LQ_ROW2))
+            if chosen:
+                c.line((ix0, y), (ix1, y), fill=LQ_HOVER_LINE, width=1)
+                c.line((ix0, y + row_h - 1), (ix1, y + row_h - 1), fill=LQ_HOVER_LINE, width=1)
+        if ledger:
+            ink, quiet, num = ((40, 28, 18, 255), (100, 80, 56, 255), (40, 28, 18, 255)) if ready else \
+                ((150, 132, 104, 255),) * 3
+        else:
+            ink, quiet, num = (LQ_TEXT, LQ_QUIET, LQ_VALUE) if ready else (LQ_OFF_TEXT,) * 3
+        if chosen and not ledger:
+            ink = LQ_NAME
+        x = ix0 + 4
+        values = cells(u)
+        values['No.'] = values['№']
+        mid = y + row_h / 2
+        for name, w in G_COLUMNS:
+            v = values[name]
+            if name == '':
+                if chosen:
+                    lq_diamond(c, x + w / 2 + 2, mid, 5, LQ_GOLD if not ledger else (170, 40, 28, 255))
+                elif not ready:
+                    c.text((x + w / 2 + 2, mid), '—', font(12), fill=quiet, anchor='mm')
+            elif name == 'Troops':
+                c.text((x + w - 6, mid - 4), v, font(15), fill=num, anchor='rm')
+                troop_bar(c, x + 10, y + row_h - 6, w - 16, u, ledger)
+            elif name == 'Refill' and v != '—' and ready:
+                c.text((x + w - 6, mid), v, font(15), fill=LQ_NAME if not ledger else (150, 52, 30, 255), anchor='rm')
+            elif name in ('Name', 'Type', 'Item'):
+                c.text((x + (16 if name == 'Item' else 2), mid), v, font(16 if name == 'Name' else 14),
+                       fill=ink if name == 'Name' else quiet, anchor='lm')
+            else:
+                c.text((x + w - 6, mid), v, font(15), fill=num, anchor='rm')
+            x += w
+        y += row_h
+
+
+def lq_button(c, r, title, sub=None, kind='normal', title_font=None, sub_font=None):
+    """Our buttons: 'primary' red lacquer (as Turn END), 'normal' a dark row box, 'hover' lit, 'off' greyed."""
+    x0, y0, x1, y1 = r
+    if kind == 'primary' or kind == 'primary-hover':
+        top, bottom = ((150, 40, 30), (96, 20, 14)) if kind == 'primary-hover' else ((128, 32, 24), (80, 16, 12))
+        for i in range(y1 - y0):
+            t = i / max(1, y1 - y0 - 1)
+            c.line((x0, y0 + i), (x1, y0 + i), fill=tuple(round(a + (b - a) * t) for a, b in zip(top, bottom)) + (255,))
+        c.rect(r, outline=LQ_GOLD, width=2)
+        c.rect((x0 + 4, y0 + 4, x1 - 4, y1 - 4), outline=(150, 96, 52, 255), width=1)
+        tc, sc = LQ_NAME, (236, 206, 160, 255)
+    elif kind == 'off':
+        c.rect(r, fill=LQ_OFF, outline=(66, 58, 48, 255), width=1)
+        tc, sc = LQ_OFF_TEXT, LQ_OFF_TEXT
+    else:
+        hover = kind == 'hover'
+        c.rect(r, fill=LQ_HOVER if hover else LQ_ROW, outline=LQ_HOVER_LINE if hover else LQ_DIM, width=2 if hover else 1)
+        tc, sc = (LQ_NAME if hover else LQ_TEXT), LQ_QUIET
+    cx = (x0 + x1) / 2
+    tf, sf = title_font or brush(20), sub_font or font(14)
+    if sub:
+        c.text((cx, y0 + (y1 - y0) * 0.40), title, tf, fill=tc, anchor='mm')
+        c.text((cx, y0 + (y1 - y0) * 0.76), sub, sf, fill=sc, anchor='mm')
+    else:
+        c.text((cx, (y0 + y1) / 2), title, tf, fill=tc, anchor='mm')
+
+
+def g_budget(c, spent=0):
+    x1, y = G_PANEL[2] - 18, G_PANEL[1] + 24
+    f = cinzel(20, 700)
+    c.text((x1, y), 'K GOLD', cinzel(11, 600), fill=LQ_SUB, anchor='rm')
+    w = c.width('K GOLD', cinzel(11, 600)) + 6
+    c.text((x1 - w, y), f'{(GOLD - spent) * 100:,}', f, fill=LQ_NAME, anchor='rm')
+    c.text((G_PANEL[0] + 18, y), 'Orders', brush(18), fill=LQ_NAME, anchor='lm')
+    c.text((x1 - w - c.width(f'{(GOLD - spent) * 100:,}', f) - 10, y + 1), 'Budget', cinzel(12, 600), fill=LQ_LABEL, anchor='rm')
+
+
+def g_talk(c, r, u, kind='normal'):
+    x0, y0, x1, y1 = r
+    if kind == 'off':
+        c.rect(r, fill=LQ_OFF, outline=(66, 58, 48, 255))
+    else:
+        hover = kind == 'hover'
+        c.rect(r, fill=LQ_HOVER if hover else LQ_ROW, outline=LQ_HOVER_LINE if hover else LQ_DIM, width=2 if hover else 1)
+    size = y1 - y0 - 12
+    face(c, x0 + 6, y0 + 6, size, u['FaceCg'], dim=kind == 'off')
+    c.rect((x0 + 6, y0 + 6, x0 + 6 + size, y0 + 6 + size), outline=LQ_GOLD if kind != 'off' else (80, 70, 58, 255), width=1)
+    tx = (x0 + size + 12 + x1) / 2
+    c.text((tx, y0 + (y1 - y0) * 0.42), 'Talk', brush(20), fill=LQ_TEXT if kind != 'off' else LQ_OFF_TEXT, anchor='mm')
+    c.text((tx, y0 + (y1 - y0) * 0.74), f"with {u['Name']}", cinzel(11, 600), fill=LQ_SUB if kind != 'off' else LQ_OFF_TEXT, anchor='mm')
+
+
+def g_result(c, r):
+    x0, y0, x1, y1 = r
+    c.rect(r, fill=(18, 26, 14, 240), outline=(120, 160, 84, 255), width=1)
+    c.rect((x0 + 3, y0 + 3, x1 - 3, y1 - 3), outline=(60, 84, 44, 255), width=1)
+    c.text((x0 + 14, y0 + 22), 'Replenished', cinzel(13, 700), fill=LQ_GREEN, anchor='lm')
+    c.text((x1 - 14, y0 + 22), '+1191 → 1400', font(16), fill=LQ_TEXT, anchor='rm')
+    c.text((x0 + 14, y0 + 56), 'Budget', cinzel(12, 600), fill=LQ_LABEL, anchor='lm')
+    c.text((x1 - 14, y0 + 56), '−2,300 K GOLD', font(15), fill=LQ_RED, anchor='rm')
+
+
+def red_band(c, r):
+    """A title band in red lacquer (the vermilion variant): a gradient with a gold rule under it."""
+    x0, y0, x1, y1 = r
+    for i in range(y1 - y0):
+        t = i / max(1, y1 - y0 - 1)
+        c.line((x0, y0 + i), (x1, y0 + i), fill=(round(120 - 50 * t), round(28 - 12 * t), round(20 - 8 * t), 255))
+    c.line((x0, y1), (x1, y1), fill=LQ_GOLD, width=2)
+
+
+def g_orders(c, u, used=False, hover=None, style='lacquer'):
+    x0, y0, x1, y1 = G_PANEL
+    lq_panel(c, G_PANEL)
+    if style == 'vermilion':
+        red_band(c, (x0 + 6, y0 + 6, x1 - 6, y0 + 44))
+    g_budget(c, spent=23 if used else 0)
+    if style != 'vermilion':
+        lq_divider(c, x0 + 14, x1 - 14, y0 + 44)
+    r = refill(u)
+    if used:
+        lq_button(c, (702, 408, 1252, 470), 'Replenish', 'used this week', 'off')
+    else:
+        lq_button(c, (702, 408, 1252, 470), 'Replenish', f'+{r[0]} troops  ·  {gold(r[1])}',
+                  'primary-hover' if hover == 'replenish' else 'primary', title_font=brush(22), sub_font=font(15))
+    c.text((704, 488), 'Add New Troops', cinzel(14, 700), fill=LQ_OFF_TEXT if used else LQ_LABEL, anchor='lm')
+    c.line((704 + c.width('Add New Troops', cinzel(14, 700)) + 10, 488), (1250, 488), fill=LQ_DIM)
+    ts = tiers(u, 6)
+    n = len(ts)
+    w = (550 - 6 * (n - 1)) / n
+    for i, (men, price) in enumerate(ts):
+        bx = 702 + i * (w + 6)
+        kind = 'off' if used or price > GOLD else ('hover' if hover == i else 'normal')
+        lq_button(c, (round(bx), 502, round(bx + w), 560), f'+{men}', gold(price), kind, title_font=brush(17), sub_font=font(12))
+    c.line((704, 584), (1250, 584), fill=LQ_DIM)
+    g_talk(c, (702, 598, 922, 682), u)
+    if used:
+        g_result(c, (934, 598, 1252, 682))
+    lq_button(c, (1112, 718, 1252, 770), 'End', kind='normal', title_font=cinzel(17, 700))
+
+
+def g_round(kind, style, name, caption, note, used=False, hover=None):
+    c = Canvas()
+    backdrop(c, kind, sys.argv[7])
+    u = HAUREIN
+    if used:
+        u['Troops'] = 1400
+    g_table(c, 12, style)
+    picture(c, sys.argv[6])
+    g_orders(c, u, used, hover, style)
+    if used:
+        u['Troops'] = 209
+    c.save(name, caption, note)
+
+
+def g_variants():
+    g_setup()
+    g_round('lacquer', 'lacquer', 'G1-lacquer-hall.png', 'G1 — Lacquer hall',
+            'A dark lacquer backdrop with a faint gold wave pattern; table and orders as our map panels; Replenish red lacquer as Turn END.',
+            hover=0)
+    g_round('map', 'vermilion', 'G2-vermilion-over-the-map.png', 'G2 — Vermilion bands over the map',
+            "The map stays behind, dimmed and blurred; the panels' title bands and the table's header in red lacquer, after Sengoku Rance's red, black and gold.",
+            hover='replenish')
+    g_round('lacquer', 'ledger', 'G3-ledger.png', 'G3 — The ledger',
+            'G1 with the table as a paper ledger in its lacquer frame (ink, a vermilion mark for the chosen unit), after Sengoku Rance\'s lists.')
+    g_round('lacquer', 'lacquer', 'G4-lacquer-used.png', 'G1 after a replenish (a state)',
+            'The troop orders greyed for the week, the plate beside Talk says what was done; End and Talk still lit.', used=True)
+
+
+if len(sys.argv) > 4 and sys.argv[4] == 'g':
+    g_variants()
+    print('done:', OUT)
+    sys.exit(0)
 if len(sys.argv) > 4 and sys.argv[4] == 'f':
     f1_rows(); f2_columns(); f3_line(); f1_rows(used=True)
     print('done:', OUT)

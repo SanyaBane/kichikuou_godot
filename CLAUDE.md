@@ -153,7 +153,8 @@ surveyed in docs/ui/turn-start.md — the week report is built, the nations' ban
 2026-10-18) the message windows in our lacquer, variant A, the battle's included — docs/ui/messages.md; its step 1
 (the windows 111/112/121/122/113/123) and step 2 (window 131, the speaker on a plate) are built, next the `]` menus;
 then (owner, 2026-10-18) our own Subordinates screen after mock-up F1 (no dialogue with Maris; the orders on our
-buttons, answered through `SubordinateOrder`) — docs/ui/subordinates.md, built, awaiting the owner's look.
+buttons, answered through `SubordinateOrder`) — docs/ui/subordinates.md, built; its look (owner, 2026-10-18) is mock-up
+G3, lacquer with the table a paper ledger, built, awaiting the owner's look in a window.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -251,7 +252,8 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   its colours Option → Palette, `DeploymentPalette`, steel by default;
   `GameScreen` feeds the script its gestures, `Original.Content/Strategy/DeploymentTable` the rows);
   `Strategy/SubordinatesView` (our Subordinates screen over `Sﾌﾞｶ` and `Cﾌﾞｶ`'s troop menu, Option → Interface → New,
-  docs/ui/subordinates.md: the table across the top — `DeploymentTableView` as a chooser with
+  docs/ui/subordinates.md: drawn by hand in lacquer (mock-up G3) over a wave-patterned backdrop — the table across the
+  top, `DeploymentTableView` as a chooser and a paper ledger (`ledger: true`, not the palette's colours) with
   `Original.Content/Strategy/SubordinatesScreen.Columns` —, the status CG, the orders' panel; an order is
   `Original.Content/Strategy/SubordinateOrder`, fed by `GameScreen.Subordinates.cs`: the cell's click, the menus and key
   waits answered unseen, the command opened again on COMMAND's map after a troop order; the figures are
@@ -277,8 +279,8 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `GameScreen.WeekReportAsync`); `Strategy/MessageWindowView` (our message windows 111/112/121/122/113/123 and 131 where the
   original has them — speech with a tail, thought, narration, a place's title, 131 with its speaker on a plate — the text at its cells in the game's font,
   the triangle while the player's key is awaited, a menu over it shown on top; Option → Interface → New, docs/ui/messages.md:
-  `Original.Content/Strategy/MessageWindow` from `GamePresenter.MessageWindow` while `CoverMessages`); the five draw with
-  `Strategy/Lacquer` (the style's colours and parts, the click's triangle);
+  `Original.Content/Strategy/MessageWindow` from `GamePresenter.MessageWindow` while `CoverMessages`); the five and the
+  Subordinates screen draw with `Strategy/Lacquer` (the style's colours and parts, the ledger's, the click's triangle);
   `Battles/BattleBoardView` (our own battle screen, Option → Interface → New, docs/ui/battle-screen.md:
   `Original.Content/Battles/BattleScene` on top, the stage's windows over it through `WindowMask`, the
   cards and the round's order from `BattleBoard`/`RoundOrder`, the order strip `OrderStrip` moving on its own;

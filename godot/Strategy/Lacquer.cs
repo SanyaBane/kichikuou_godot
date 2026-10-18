@@ -6,7 +6,7 @@ namespace Kichikuou.Game.Strategy;
 /// The lacquer-and-gold style of our map panels (the owner's mock-up 4a, docs/ui/command-screen.md): the
 /// colours, the fonts, and the parts both the province menu (<see cref="ProvinceMenuView"/>) and the command
 /// panel (<see cref="CommandMenuView"/>) draw — the panel with its double gold frame and corners, a row's box,
-/// a tag, a divider. Sizes are in the 1280×800 screen's pixels; <c>k</c> is the window pixels to a screen pixel.
+/// a tag, a divider — and the ledger's paper and inks (<see cref="SubordinatesView"/>'s table). Sizes are in the 1280×800 screen's pixels; <c>k</c> is the window pixels to a screen pixel.
 /// </summary>
 internal static class Lacquer
 {
@@ -25,6 +25,25 @@ internal static class Lacquer
     public static readonly Color OffText = Color.Color8(98, 88, 74);
     public static readonly Color OffTag = Color.Color8(52, 46, 40);
     public static readonly Color SpentPip = Color.Color8(60, 50, 38);
+    public static readonly Color OffButton = Color.Color8(40, 35, 30);
+    public static readonly Color OffLine = Color.Color8(66, 58, 48);
+
+    // The ledger: our Subordinates screen's table as paper in its lacquer frame (the owner's mock-up G3, docs/ui/subordinates.md).
+    public static readonly Color Paper = Color.Color8(224, 208, 172);
+    public static readonly Color PaperHead = Color.Color8(196, 176, 136);
+    public static readonly Color PaperRule = Color.Color8(150, 120, 80, 110);
+    public static readonly Color Ink = Color.Color8(40, 28, 18);
+    public static readonly Color InkQuiet = Color.Color8(100, 80, 56);
+    public static readonly Color InkGrey = Color.Color8(150, 132, 104);
+    public static readonly Color VermilionInk = Color.Color8(150, 52, 30);
+    public static readonly Color HeadInk = Color.Color8(120, 40, 26);
+    public static readonly Color Vermilion = Color.Color8(170, 40, 28);
+    public static readonly Color ChosenRow = Color.Color8(190, 60, 40, 60);
+    public static readonly Color BarGood = Color.Color8(70, 110, 50);
+    public static readonly Color BarLow = Color.Color8(160, 110, 30);
+    public static readonly Color BarBad = Color.Color8(170, 50, 36);
+    public static readonly Color Plus = Color.Color8(150, 196, 110);
+    public static readonly Color Minus = Color.Color8(222, 110, 90);
 
     public static FontFile LoadFont(string path) => new() { Data = Godot.FileAccess.GetFileAsBytes(path) };
 
@@ -98,6 +117,10 @@ internal static class Lacquer
         c.DrawPolyline([p + new Vector2(-8, -6), p + new Vector2(8, -6), p + new Vector2(0, 7), p + new Vector2(-8, -6)],
             Name with { A = alpha }, Line(1, k));
     }
+
+    /// <summary>A small diamond centred at <paramref name="at"/>.</summary>
+    public static void DrawDiamond(CanvasItem c, Vector2 at, float r, Color colour) =>
+        c.DrawColoredPolygon([at + new Vector2(0, -r), at + new Vector2(r, 0), at + new Vector2(0, r), at + new Vector2(-r, 0)], colour);
 
     /// <summary>A divider: two dim rules with a gold diamond between them.</summary>
     public static void DrawDivider(CanvasItem c, float x0, float x1, float y, float k)
