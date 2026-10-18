@@ -177,6 +177,23 @@ as it is. Where to start:
    the kept saves reach with `--interface new`; `Cﾌﾞｶ`'s are our Subordinates screen's now).
 4. **Letter by letter** and Option → Text Speed… (the slider, the preview; kept in `settings.cfg`): a click
    while it types shows the whole text and is not passed to the script's wait.
+   **Mock-ups (2026-10-18):** `tools/ui/mock_messages.py`, round `speed`, over window dumps of our interface (a 121 key
+   wait and the map's plates): the text while it types — T1 cut off at the next cell (T1b: three moments, the triangle
+   only once the text is whole), T2 with a gold caret at the next cell, T3 the last six letters fading in; Option → Text
+   Speed… — S1 one dialog in the middle with a small speech panel typing inside it, S2 a smaller dialog over the map's
+   top and the game's own 121 at its place and size as the preview. Both sliders have ten steps, 8 to 150 letters a
+   second and Instant (the numbers a proposal). **The owner chose T1 and S2** (2026-10-18), the default step 9 for now,
+   and no speed caption under the slider.
+   **Built (2026-10-18):** `MessageWindowView` types the glyphs at `LettersPerSecond`, cut off at the next one; text the
+   script adds to the same window (its glyphs begin with those typed) goes on from there, a place's title shows whole; the
+   triangle once the text is whole. `GameScreen.FinishTypingAsync` holds the player's key wait until then: a click or a key
+   while it types shows it whole and is released before the wait begins; the message skip, unattended play and a menu
+   opening over the window show it whole at once. Option → Text Speed… is `godot/Strategy/TextSpeedView` (S2: the dialog at
+   (330,90) 620×300 over the picture dimmed by 45 %, the preview `MessageWindow.Sample` — Maris's line as `WAO_SUB` prints
+   121 — in a `MessageWindowView` without the tail, typing again 1.2 s after it is whole); the game waits while it is open
+   (as under the confirmation boxes). The step is `TextSpeedChoice` (`[display] text_speed` in `settings.cfg`, 1-10:
+   8, 12, 18, 25, 35, 50, 70, 100, 150 letters a second and Instant; default 9). Tests: `MessageWindowTests`
+   (`A_sample_is_a_121_printed_as_WAO_SUB_prints`).
 5. **The battle's windows** (`BattlePresenter.Window`, through `WindowMask` on our battle screen).
 6. **The message log** — its design discussed first (backlog).
 

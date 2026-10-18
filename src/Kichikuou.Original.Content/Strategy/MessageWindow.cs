@@ -181,6 +181,25 @@ public sealed class MessageWindow
     }
 
     /// <summary>
+    /// A speech of the right portrait's (121) holding <paramref name="lines"/>, printed where <c>WAO_SUB</c> prints it
+    /// (<c>WAO_SUB.ADV:198, 212-214</c>: <c>ZM 24</c>, <c>B3 8, 43, 265, 378, 141</c>) in the window's own colour: Option →
+    /// Text Speed…'s preview (docs/ui/messages.md, §5 step 4).
+    /// </summary>
+    public static MessageWindow Sample(IReadOnlyList<string> lines)
+    {
+        const int size = 24;
+        var box = new TextBox((43, 265, 378, 141));
+        for (int i = 0; i < lines.Count; i++)
+        {
+            if (i > 0)
+                box.NewLine(size);
+            box.Print(lines[i], size, PlainColor);
+        }
+        return Of(SpeechRightCg, box, _ => (0, 0, 0))
+            ?? throw new ArgumentException("The lines do not fit 121's text box.", nameof(lines));
+    }
+
+    /// <summary>
     /// 131: the speaker's <c>Name「</c> / <c>Name（</c> off the first line, which moves left by its cells; the lines under it
     /// move left by their indent, up to the name's cells; the closing bracket at the end dropped. A window without a name
     /// whose first line is indented to <paramref name="continuing"/>'s speech, which was not closed, goes on with it.

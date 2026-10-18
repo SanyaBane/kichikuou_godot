@@ -590,6 +590,160 @@ def m3_banners(path, twin, items, name, hover=1):
     return c.save(name)
 
 
+# ---------------------------------------------------------------- letter by letter (step 4, 2026-10-18)
+# Over window dumps of our own interface (--interface new, the kept save saves-week18 or saves-week26: a 121 key wait,
+# message-speech-right, and the map's plates, map-markers):
+#   python -I tools/ui/mock_messages.py <shots dir> <out dir> speed <121 dump> <map dump> < /dev/null
+# T1-T3: three ways of showing the text while it types (our 121 redrawn over the dump's); S1-S2: Option → Text Speed….
+
+CELL = 24                       # a half-width cell at the game's 48-px font (screen px)
+SPEEDS = [8, 12, 18, 25, 35, 50, 70, 100, 150]   # letters a second at steps 1-9; step 10 is Instant
+
+
+def typed(c, x, y, lines, count, style, size=48, pitch=46, cell=CELL):
+    """The first `count` characters of the lines at their cells; 'plain' cuts them off, 'caret' adds a gold bar at the
+    next cell, 'fade' brings the last few in from transparent. Returns where the next character goes."""
+    f = GOTHIC(size)
+    shown, nx, ny = 0, x, y
+    fade = 6
+    for i, line in enumerate(lines):
+        ly = y + i * pitch
+        for j, ch in enumerate(line):
+            if shown >= count:
+                break
+            alpha = 255
+            if style == 'fade' and count - shown <= fade:
+                alpha = round(255 * (count - shown) / (fade + 1))
+            text(c, x + j * cell, ly, ch, f, TEXT[:3] + (alpha,), bold=True)
+            shown += 1
+            nx, ny = x + (j + 1) * cell, ly
+        if shown >= count:
+            break
+        nx, ny = x, ly + pitch          # the next line's start, if this one was whole
+    return nx, ny
+
+
+def window_121(c, lines, count, style, done=False, tail=True):
+    x, y, w, h = R121
+    panel(c, x, y, w, h)
+    if tail:
+        speech_tail(c, x + w, y + 150, y + 196, (x + w + 30, y + 188), 'right')
+    nx, ny = typed(c, x + 30, y + 22, lines, count, style)
+    if style == 'caret' and not done:
+        lay, d = c.draw()
+        d.rectangle(s(nx + 3, ny + 6, nx + 7, ny + 46), fill=GOLD)
+        c.add(lay)
+    if done:
+        triangle(c, x + w - 30, y + h - 28)
+
+
+def typing(path, style, name, count):
+    c = WindowCanvas(window_area(path))
+    window_121(c, MARIS, count, style)
+    return c.save(name)
+
+
+def typing_frames(path, name):
+    """T1 in three moments: just opened, halfway, whole with the triangle (the panel's crops stacked)."""
+    total = sum(len(l) for l in MARIS)
+    crops = []
+    for count, done in [(14, False), (total // 2 + 6, False), (total, True)]:
+        c = WindowCanvas(window_area(path))
+        window_121(c, MARIS, count, 'plain', done)
+        img = Image.alpha_composite(c.base, c.ov.resize((1280, 800), Image.LANCZOS))
+        crops.append(img.crop((40, 496, 920, 780)))
+    sheet = Image.new('RGB', (880, 3 * 284 + 2 * 12), (12, 10, 8))
+    for i, im in enumerate(crops):
+        sheet.paste(im.convert('RGB'), (0, i * 296))
+    sheet.save(os.path.join(OUT, name))
+
+
+def divider(c, x0, x1, y):
+    lay, d = c.draw()
+    m = (x0 + x1) / 2
+    d.line(pts([(x0, y), (m - 12, y)]), fill=DIM_GOLD, width=1 * S)
+    d.line(pts([(m + 12, y), (x1, y)]), fill=DIM_GOLD, width=1 * S)
+    d.polygon(pts([(m, y - 5), (m + 5, y), (m, y + 5), (m - 5, y)]), fill=GOLD)
+    c.add(lay)
+
+
+def slider(c, x0, x1, y, step):
+    """Ten steps, the last Instant; the knob a gold diamond with its step over it, its speed under the track."""
+    lay, d = c.draw()
+    d.rounded_rectangle(s(x0, y - 4, x1, y + 4), radius=4 * S, fill=ROW, outline=DIM_GOLD, width=1 * S)
+    knob = x0 + (x1 - x0) * (step - 1) / 9
+    d.rounded_rectangle(s(x0, y - 4, knob, y + 4), radius=4 * S, fill=(150, 118, 58, 255))
+    for i in range(10):
+        px = x0 + (x1 - x0) * i / 9
+        d.line(pts([(px, y + 12), (px, y + 20)]), fill=GOLD if i == 9 else DIM_GOLD, width=(2 if i == 9 else 1) * S)
+    d.polygon(pts([(knob, y - 16), (knob + 14, y), (knob, y + 16), (knob - 14, y)]), fill=GOLD, outline=NAME)
+    c.add(lay)
+    small = CINZEL(18, 600)
+    text(c, x0, y + 46, 'SLOW', small, LABEL, anchor='ms')
+    text(c, x1, y + 46, 'INSTANT', small, NAME, anchor='ms')
+    text(c, knob, y - 26, str(step), CINZEL(22, 700), NAME, anchor='ms')
+
+
+def buttons(c, x, y, w):
+    for label, bx, bw, lit in [('Default', x + 40, 120, False), ('OK', x + w - 250, 100, True), ('Cancel', x + w - 140, 100, False)]:
+        lay, d = c.draw()
+        d.rectangle(s(bx, y, bx + bw, y + 34), fill=ROW_HOVER if lit else ROW,
+                    outline=HOVER_LINE if lit else DIM_GOLD, width=(2 if lit else 1) * S)
+        c.add(lay)
+        text(c, bx + bw / 2, y + 18, label, GOTHIC(24), NAME if lit else TEXT, bold=True, anchor='mm')
+
+
+def speed_small(path, name, step=9):
+    """S1: one dialog in the middle over the dimmed map; the preview a small speech panel inside it."""
+    c = WindowCanvas(window_area(path), dim=0.45)
+    x, y, w, h = 300, 140, 680, 500
+    panel(c, x, y, w, h)
+    text(c, x + w / 2, y + 58, 'Text Speed', BRUSH(34), NAME, anchor='ms')
+    divider(c, x + 60, x + w - 60, y + 82)
+    slider(c, x + 90, x + w - 90, y + 150, step)
+    text(c, x + 52, y + 226, 'PREVIEW', CINZEL(18, 600), SUBTITLE)
+    px, py, pw, ph = x + 50, y + 252, w - 100, 170
+    lay, d = c.draw()
+    d.rectangle(s(px, py, px + pw, py + ph), fill=(14, 10, 8, 255), outline=DIM_GOLD, width=1 * S)
+    c.add(lay)
+    bx, by, bw, bh = px + 20, py + 16, pw - 70, ph - 32
+    panel(c, bx, by, bw, bh)
+    speech_tail(c, bx + bw, by + 60, by + 90, (bx + bw + 22, by + 86), 'right')
+    typed(c, bx + 20, by + 16, MARIS[:3], 44, 'plain', size=30, pitch=32, cell=15)
+    buttons(c, x, y + h - 58, w)
+    return c.save(name)
+
+
+def speed_real(path, name, step=9):
+    """S2: the dialog over the map's top; the preview the game's own 121 at its place and size, typing over and over."""
+    c = WindowCanvas(window_area(path), dim=0.45)
+    x, y, w, h = 330, 90, 620, 300
+    panel(c, x, y, w, h)
+    text(c, x + w / 2, y + 58, 'Text Speed', BRUSH(34), NAME, anchor='ms')
+    divider(c, x + 60, x + w - 60, y + 82)
+    slider(c, x + 80, x + w - 80, y + 150, step)
+    buttons(c, x, y + h - 58, w)
+    window_121(c, MARIS, 52, 'plain', tail=False)
+    xx, yy, ww, hh = R121
+    lay, d = c.draw()                       # the preview's label: a small plate on the panel's top edge
+    d.rectangle(s(xx + 40, yy - 15, xx + 190, yy + 15), fill=PANEL, outline=GOLD, width=2 * S)
+    c.add(lay)
+    text(c, xx + 115, yy + 1, 'PREVIEW', CINZEL(18, 600), NAME, anchor='mm')
+    return c.save(name)
+
+
+if len(sys.argv) > 3 and sys.argv[3] == 'speed':
+    speech, map_ = (os.path.join(SHOTS, a) for a in sys.argv[4:6])
+    total = sum(len(l) for l in MARIS)
+    typing(speech, 'plain', 'T1-typing-plain.png', 70)
+    typing(speech, 'caret', 'T2-typing-caret.png', 70)
+    typing(speech, 'fade', 'T3-typing-fade.png', 70)
+    typing_frames(speech, 'T1b-typing-plain-frames.png')
+    speed_small(map_, 'S1-speed-dialog.png')
+    speed_real(map_, 'S2-speed-real-preview.png')
+    print('done')
+    sys.exit(0)
+
 if len(sys.argv) > 3 and sys.argv[3] == 'menus':
     five, two, clean = (os.path.join(SHOTS, a) for a in sys.argv[4:7])
     m1_in_place(five, clean, MENU5, 'M1-in-place.png')

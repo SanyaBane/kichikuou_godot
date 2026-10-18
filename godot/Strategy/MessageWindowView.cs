@@ -12,7 +12,9 @@ namespace Kichikuou.Game.Strategy;
 /// by the name split off), in the game's font (Option → Fonts), bold as the surface draws it, and the
 /// click's triangle while the script waits for the key. A menu open over the window (<see cref="Kichikuou.Original.Content.Strategy.GamePresenter.MenuArea"/>)
 /// is shown again on top, cut from the screen's picture. It takes no input: the screen's own key wait answers it.
-/// Laid out in the 1280×800 screen's pixels, scaled with the picture.
+/// The text types letter by letter at <see cref="LettersPerSecond"/> (step 4, the owner's mock-up T1: the letters
+/// cut off at the next cell, the triangle once the text is whole); text the script adds to a window goes on from where it
+/// was. Laid out in the 1280×800 screen's pixels, scaled with the picture.
 /// </summary>
 internal sealed partial class MessageWindowView : Control
 {
@@ -32,6 +34,7 @@ internal sealed partial class MessageWindowView : Control
     private Texture2D? _screen;
     private (int X, int Y, int W, int H)? _menu;
     private float _k = 1;                           // window pixels to a screen pixel
+    private double _typed;                          // the glyphs typed so far, a fraction of the next one included
 
     public MessageWindowView(GameFont font)
     {
@@ -50,6 +53,31 @@ internal sealed partial class MessageWindowView : Control
     /// <summary>The window drawn now, or null.</summary>
     public MessageWindow? Window => _window;
 
+    /// <summary>Whether a speech's tail is drawn (not in Option → Text Speed…'s preview, which has no portrait).</summary>
+    public bool Tail { get; init; } = true;
+
+    /// <summary>How fast the text types (Option → Text Speed…); infinity shows it whole at once.</summary>
+    public double LettersPerSecond { get; set; } = double.PositiveInfinity;
+
+    /// <summary>Whether the window's text is still typing.</summary>
+    public bool Typing => _window is { } w && _typed < w.Glyphs.Count;
+
+    /// <summary>Shows the whole text at once (a click while it types, the message skip, a menu over it).</summary>
+    public void Complete()
+    {
+        if (!Typing)
+            return;
+        _typed = _window!.Glyphs.Count;
+        QueueRedraw();
+    }
+
+    /// <summary>Types the text again from its start (the preview of Option → Text Speed…).</summary>
+    public void Restart()
+    {
+        _typed = 0;
+        QueueRedraw();
+    }
+
     /// <summary>
     /// Shows <paramref name="window"/> (hidden when null), the triangle while <paramref name="waiting"/>, and the menu at
     /// <paramref name="menu"/> (screen pixels) cut from <paramref name="screen"/>, the screen's picture, over it.
@@ -64,6 +92,10 @@ internal sealed partial class MessageWindowView : Control
         }
         if (window.SameAs(_window) && waiting == _waiting && menu == _menu && screen == _screen)
             return;
+        if (!window.SameAs(_window))
+            _typed = window.Kind == MessageKind.PlaceTitle || double.IsPositiveInfinity(LettersPerSecond)
+                ? window.Glyphs.Count
+                : Continued(_window, window, _typed);
         _window = window;
         _waiting = waiting;
         _screen = screen;
@@ -86,11 +118,38 @@ internal sealed partial class MessageWindowView : Control
         QueueRedraw();
     }
 
-    /// <summary>The triangle and the menu's hover move: drawn again every frame while either shows.</summary>
+    /// <summary>
+    /// Where <paramref name="next"/> goes on typing: from the glyphs <paramref name="shown"/> typed of <paramref name="before"/>
+    /// when it is the same window with text added (its glyphs begin with those), else from its start.
+    /// </summary>
+    private static double Continued(MessageWindow? before, MessageWindow next, double shown)
+    {
+        if (before is null || before.Kind != next.Kind || before.Panel != next.Panel || before.Speaker != next.Speaker)
+            return 0;
+        int kept = Math.Min((int)shown, before.Glyphs.Count);
+        if (kept > next.Glyphs.Count)
+            return 0;
+        for (int i = 0; i < kept; i++)
+            if (before.Glyphs[i] != next.Glyphs[i])
+                return 0;
+        return kept;
+    }
+
+    /// <summary>The text types on; the triangle and the menu's hover move: drawn again every frame while any of them shows.</summary>
     public override void _Process(double delta)
     {
-        if (Visible && (_waiting || _menu is not null))
+        if (!Visible)
+            return;
+        if (Typing)
+        {
+            int count = _window!.Glyphs.Count;
+            _typed = double.IsPositiveInfinity(LettersPerSecond) ? count : Math.Min(count, _typed + delta * LettersPerSecond);
             QueueRedraw();
+        }
+        else if (_waiting || _menu is not null)
+        {
+            QueueRedraw();
+        }
     }
 
     public override void _Draw()
@@ -105,7 +164,8 @@ internal sealed partial class MessageWindowView : Control
         {
             case MessageKind.SpeechLeft or MessageKind.SpeechRight:
                 Lacquer.DrawPanel(this, box, _k, SpeechFill);
-                SpeechTail(box, w.AtLeft);
+                if (Tail)
+                    SpeechTail(box, w.AtLeft);
                 break;
             case MessageKind.ThoughtLeft or MessageKind.ThoughtRight:
                 ThoughtPanel(box, w.AtLeft);
@@ -125,10 +185,10 @@ internal sealed partial class MessageWindowView : Control
         if (w.Kind == MessageKind.PlaceTitle)
             PlaceTitle(box, w.Title, w.Subtitle);
         else
-            foreach (var g in w.Glyphs)
+            foreach (var g in w.Glyphs.Take((int)_typed))
                 DrawString(_gothic, new Vector2(g.X, g.Y + _gothic.GetAscent(g.Size)), g.C.ToString(), fontSize: g.Size,
                     modulate: g.Colour is { } c ? Color.Color8(c.R, c.G, c.B) : text);
-        if (_waiting)
+        if (_waiting && !Typing)
             Lacquer.DrawTriangle(this, new Vector2(box.End.X - 30, box.End.Y - 28), _k);
         if (_menu is { } m && _screen is not null)
         {

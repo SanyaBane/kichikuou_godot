@@ -60,6 +60,20 @@ public class MessageWindowTests
         Assert.Equal("", window.Title);
     }
 
+    /// <summary>Option → Text Speed…'s preview: a 121 with the lines where <c>WAO_SUB</c> prints them, one glyph for each character but the spaces.</summary>
+    [Fact]
+    public void A_sample_is_a_121_printed_as_WAO_SUB_prints()
+    {
+        string[] lines = ["I believe that we should first", "prepare our cities for their"];
+        var window = MessageWindow.Sample(lines);
+
+        Assert.Equal(MessageKind.SpeechRight, window.Kind);
+        Assert.Equal(lines, window.Lines);
+        Assert.Equal(lines.Sum(l => l.Count(c => c != ' ')), window.Glyphs.Count);
+        Assert.Equal(new MessageGlyph(86, 534, 48, 'I', null), window.Glyphs[0]);
+        Assert.Equal((86, 534 + 52), (window.Glyphs.First(g => g.C == 'p').X, window.Glyphs.First(g => g.C == 'p').Y));
+    }
+
     /// <summary>A narration whose first line is at <c>ZM 32</c> is a place's title, the room under it (<c>Cｼﾊｲﾄｼ.ADV:1185-1192</c>).</summary>
     [Fact]
     public void A_line_at_ZM_32_is_a_places_title()

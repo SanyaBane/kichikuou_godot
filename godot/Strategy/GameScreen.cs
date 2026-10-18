@@ -281,7 +281,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _table.RowPressed += TableRowPressed;
         _table.RightPressed += TableRightPressed;
         _content.AddChild(_table);
-        _messageView = new MessageWindowView(GodotGlyphRenderer.Chosen);
+        _messageView = new MessageWindowView(GodotGlyphRenderer.Chosen)
+        {
+            LettersPerSecond = TextSpeedChoice.LettersPerSecond(TextSpeedChoice.Step),
+        };
         _content.AddChild(_messageView);
         _sceneMenuView = new SceneMenuView(GodotGlyphRenderer.Chosen);
         _content.AddChild(_sceneMenuView);                      // over the message windows: the menu asks below them
@@ -350,6 +353,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _provinceView.Place(PictureArea());
         if (_weekView.Visible)
             _weekView.Place(PictureArea());
+        _textSpeed?.Place(PictureArea());
         _presenter.CoverMessages = InterfaceChoice.New;                  // also when the interface changed with a window open
         UpdateBattleScreen(Present());
         UpdateMessageWindow();
@@ -1058,6 +1062,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             _keyWaiting = true;
             UpdateMessageWindow();
+            await FinishTypingAsync();
             Shot("key");
             key = await HitKeyAsync();
         }
@@ -1107,6 +1112,31 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private bool _weekReportDumped;
 
     /// <summary>
+    /// Our window's text typing at a key wait (docs/ui/messages.md, §5 step 4): the wait begins once it is whole. A click or
+    /// a key while it types shows it whole and is not passed to the script — the next one answers the wait, so the
+    /// press is released first; the message skip shows it whole at once.
+    /// </summary>
+    private async Task FinishTypingAsync()
+    {
+        while (_messageView.Visible && _messageView.Typing)
+        {
+            if (_skip.IsSkipping)
+            {
+                _messageView.Complete();
+                return;
+            }
+            await NextFrameAsync();
+            if (_input.ReadInput() is var held and not 0)
+            {
+                _messageView.Complete();
+                while (held != 0)
+                    held = await KeyWaitAsync(0.05, cancelable: false);
+                return;
+            }
+        }
+    }
+
+    /// <summary>
     /// Our message windows (docs/ui/messages.md, step 1; Option → Interface → New) over the picture: the window the presenter
     /// leaves out (<see cref="GamePresenter.MessageWindow"/>), the triangle while the player's key is awaited, a menu open
     /// over it shown again on top; hidden over our battle screen and while a scene is skipped whole.
@@ -1117,6 +1147,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _messageView.Show(window, _keyWaiting, _texture, window is null ? null : _presenter.MenuArea);
         if (window is null)
             return;
+        if (_skip.IsSkipping || _options.Auto)
+            _messageView.Complete();                    // the message skip and unattended play do not wait for the typing
         _messageView.Place(PictureArea());
         _messageView.Fade(_presenter.FadeAmount);
     }
@@ -1317,6 +1349,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (SubordinatesChoice(items) is { } ordered)
             return ordered;                                     // an order of our Subordinates screen answers it, unseen
         _skip.OnMenu();
+        _messageView.Complete();                                // the question is whole under its menu
         _presenter.OpenMenu(items);
         _presenter.Pointer(_input.Position.X, _input.Position.Y);
         var province = InterfaceChoice.New ? _presenter.ProvinceMenu : null;

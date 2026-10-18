@@ -151,7 +151,7 @@ followed (docs/ui/battle-screen.md); next (owner, 2026-10-16) the map and comman
 and mock-ups in docs/ui/command-screen.md; then (owner, 2026-10-18) the messages of the turn's start,
 surveyed in docs/ui/turn-start.md — the week report is built, the nations' banners put off; then (owner,
 2026-10-18) the message windows in our lacquer, variant A, the battle's included — docs/ui/messages.md; its step 1
-(the windows 111/112/121/122/113/123) and step 2 (window 131, the speaker on a plate) and step 3 (the `]` menus, `Strategy/SceneMenuView`, mock-up M1) are built, next letter by letter;
+(the windows 111/112/121/122/113/123) and step 2 (window 131, the speaker on a plate) and step 3 (the `]` menus, `Strategy/SceneMenuView`, mock-up M1) and step 4 (the text typed letter by letter, Option → Text Speed…, mock-ups T1 and S2) are built, next the battle's windows;
 then (owner, 2026-10-18) our own Subordinates screen after mock-up F1 (no dialogue with Maris; the orders on our
 buttons, answered through `SubordinateOrder`) — docs/ui/subordinates.md, built; its look (owner, 2026-10-18) is mock-up
 G3, lacquer with the table a paper ledger, built, awaiting the owner's look in a window.
@@ -278,6 +278,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `GamePresenter.CoverWeekReport`, the windows' waits answered at once, the player's click at their close,
   `GameScreen.WeekReportAsync`); `Strategy/MessageWindowView` (our message windows 111/112/121/122/113/123 and 131 where the
   original has them — speech with a tail, thought, narration, a place's title, 131 with its speaker on a plate — the text at its cells in the game's font,
+  typed letter by letter (its speed Option → Text Speed…, `Strategy/TextSpeedView` over the picture with the game's 121 as the preview, `Strategy/TextSpeedChoice`; a click while it types shows it whole, `GameScreen.FinishTypingAsync`),
   the triangle while the player's key is awaited, a menu over it shown on top; Option → Interface → New, docs/ui/messages.md:
   `Original.Content/Strategy/MessageWindow` from `GamePresenter.MessageWindow` while `CoverMessages`);
   `Strategy/SceneMenuView` (our `]` menus: lacquer rows at the selection box's place, `GamePresenter.MenuBoxArea`, while

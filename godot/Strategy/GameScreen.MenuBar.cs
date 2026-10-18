@@ -50,7 +50,8 @@ public partial class GameScreen
             ("MsgSkip Speeds Up Fades", ToggleFastFades),
             ("Forget Seen Messages...", ConfirmForgetSeen),
             ("Battle Screen...", OpenBattleScreenSettings),
-            ("Hide Dimmed Map Names", ToggleDimmedNames));
+            ("Hide Dimmed Map Names", ToggleDimmedNames),
+            ("Text Speed...", OpenTextSpeed));
         options = option.GetPopup();
         options.SetItemAsCheckable(0, true);
         options.SetItemChecked(0, EngineState.MouseMovement);
@@ -362,6 +363,35 @@ public partial class GameScreen
         };
         AddChild(dialog);
         dialog.PopupCentered();
+    }
+
+    private TextSpeedView? _textSpeed;
+
+    /// <summary>
+    /// Option → Text Speed… (ours, docs/ui/messages.md, §5 step 4): how fast our message windows type, over the game, which
+    /// waits while it is open; OK saves the step for later launches and the windows follow at once.
+    /// </summary>
+    private void OpenTextSpeed()
+    {
+        if (_modal)
+            return;
+        _modal = true;
+        _input.Clear();
+        var view = new TextSpeedView(GodotGlyphRenderer.Chosen, TextSpeedChoice.Step);
+        view.Chosen += step =>
+        {
+            TextSpeedChoice.Step = step;
+            _messageView.LettersPerSecond = TextSpeedChoice.LettersPerSecond(step);
+        };
+        view.Closed += () =>
+        {
+            _textSpeed = null;
+            _modal = false;
+            _input.Clear();
+        };
+        _textSpeed = view;
+        _content.AddChild(view);
+        view.Place(PictureArea());
     }
 
     /// <summary>Forget Seen Messages (ours): after the confirmation, every message counts as unseen again.</summary>
