@@ -369,7 +369,7 @@ public class BattlePresenterGameDataTests
         Assert.Null(presenter.OrderedUnit);
         presenter.Show(new MessageEvent(new ScriptRef("FIGT.ADV", 801), [state.Unit_StrBase]));
         Assert.Equal(12, presenter.OrderedUnit);
-        Assert.Equal(frames - 1, presenter.Windows.Count);
+        Assert.Equal(frames, presenter.Windows.Count);                  // never in the layer: an info box is ours (InfoBox)
         presenter.Show(new MessageEvent(new ScriptRef("FIGT.ADV", 814)));
         presenter.Show(new WindowEvent(11, 0));
         Assert.Equal(12, presenter.OrderedUnit);                   // through its key wait

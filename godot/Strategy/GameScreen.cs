@@ -995,6 +995,24 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             await ReleaseWaitAsync(_input.PeekInput());
             _ikKey = key;
         }
+        else if (BattleScreenShown && _presenter.Battle.InfoBox is { AnsweredAtOnce: true } passed)
+        {
+            // Our battle screen shows these info boxes elsewhere (docs/ui/messages.md, §5 step 5; owner, 2026-10-19): a defence's
+            // badge flashes on the unit's card, the end's reason waits for the results plate, a level-up's first page for its
+            // row. The wait is answered at once, as by a click (the key lands in RetVal), after the release of a button still held.
+            if (passed.Kind == InfoBoxKind.Defence)
+            {
+                _battleView.Info.Flash(passed);
+                if (_options.Auto && Windowed && _messageDumps.Add("info-defence"))
+                {
+                    await DelayAsync(0.35);                                     // the badge at its height
+                    await AutoDumpAsync("info-defence");
+                }
+            }
+            key = KeyReturn;
+            await ReleaseWaitAsync(_input.PeekInput());
+            _ikKey = key;
+        }
         else if (BattleScreenShown && _presenter.LaterRoundHeader)
         {
             // Our battle screen shows the round header once, as the battle's opening (owner, 2026-10-14): a later round's
@@ -1048,9 +1066,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 await DelayAsync(0.5);                                          // the cut-in in place
             _keyWaiting = true;
             UpdateMessageWindow();
-            if (_messageView.Window is { } window && DisplayServer.GetName() != "headless" && _options.ScreenshotDirectory is not null
-                && _messageDumps.Add(MessageDumpName(window)))
+            UpdateInfoBox();
+            if (_messageView.Window is { } window && Windowed && _messageDumps.Add(MessageDumpName(window)))
                 await AutoDumpAsync(MessageDumpName(window));                   // each kind of our windows once a launch
+            else if (BattleScreenShown && _presenter.Battle.InfoBox is { } box && Windowed && _messageDumps.Add(InfoDumpName(box)))
+                await AutoDumpAsync(InfoDumpName(box));                         // and of the battle's info boxes
             else
                 Shot(StrategyCutInShown ? "strategy" : "key");
             if (!_options.Fast && BattleScreenShown && _presenter.Opening is not null)
@@ -1062,6 +1082,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             _keyWaiting = true;
             UpdateMessageWindow();
+            UpdateInfoBox();
             await FinishTypingAsync();
             Shot("key");
             key = await HitKeyAsync();
@@ -1152,6 +1173,21 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _messageView.Place(PictureArea());
         _messageView.Fade(_presenter.FadeAmount);
     }
+
+    /// <summary>Whether unattended play can dump our screens: in a window, with a folder for the shots.</summary>
+    private bool Windowed => DisplayServer.GetName() != "headless" && _options.ScreenshotDirectory is not null;
+
+    /// <summary>The battle's info box on our battle screen (docs/ui/messages.md, §5 step 5), the triangle while the player's key is awaited.</summary>
+    private void UpdateInfoBox() => _battleView.Info.Show(BattleScreenShown ? _presenter.Battle.InfoBox : null, _keyWaiting);
+
+    /// <summary>Unattended play's dump of a kind of the battle's info boxes: <c>info-panel</c>, <c>info-fall</c>, <c>info-results</c>, <c>info-level-up</c>.</summary>
+    private static string InfoDumpName(BattleInfoBox box) => "info-" + box switch
+    {
+        { Kind: InfoBoxKind.Fall } => "fall",
+        { Kind: InfoBoxKind.Results, Results.LevelUps.Count: > 0 } => "level-up",
+        { Kind: InfoBoxKind.Results } => "results",
+        _ => "panel",
+    };
 
     /// <summary>
     /// Unattended play's dump of a kind of our windows: <c>message-speech-left</c> and the like; 131 as
@@ -1730,6 +1766,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _battleView.Refresh(_presenter, input, screenChanged, hovered,
             instant: _skip.IsSkipping,                                         // MsgSkip: the order strip's chips jump to their places
             slidesInstant: _skip.IsSkipping || _options.Fast);                 // and the armies and the counters (--fast: no runs)
+        UpdateInfoBox();
     }
 
     /// <summary>

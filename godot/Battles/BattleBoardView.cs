@@ -84,6 +84,7 @@ internal sealed partial class BattleBoardView : Control
     private bool _armiesInstant, _jumpArmies = true;
     private readonly TextureRect _windows;
     private readonly SpeechBalloon _balloon;
+    private readonly BattleInfoLayer _info;
     private readonly BattleCommandLayer _commands;
     private readonly BattleDialogLayer _dialog;
 
@@ -216,6 +217,8 @@ internal sealed partial class BattleBoardView : Control
         _actingFrame = new Control { MouseFilter = MouseFilterEnum.Ignore, Visible = false, ZIndex = 2 };    // over the cards and the spotlight
         _actingFrame.Draw += DrawActingFrame;
         AddChild(_actingFrame);
+        _info = new BattleInfoLayer();                                      // the info boxes: over the cards and the scene
+        AddChild(_info);
         _commands = new BattleCommandLayer();                               // over the cards
         AddChild(_commands);
         _dialog = new BattleDialogLayer();                                  // over everything
@@ -309,7 +312,11 @@ internal sealed partial class BattleBoardView : Control
     {
         _theme.DefaultFont = DeploymentTableView.LoadFont(font);
         _balloon.SetFont(_theme.DefaultFont);
+        _info.SetFont(_theme.DefaultFont);
     }
+
+    /// <summary>The battle's info boxes as ours (docs/ui/messages.md, §5 step 5).</summary>
+    public BattleInfoLayer Info => _info;
 
     /// <summary>The squares of the faces: the built-in ones and the owner's edits (read as the screen opens).</summary>
     public void LoadCrops()
@@ -361,6 +368,8 @@ internal sealed partial class BattleBoardView : Control
         At(_separator, SeparatorArea);
         _separator.QueueRedraw();
         _spotlight.QueueRedraw();
+        At(_info, new Rect2(0, 0, 1280, 800));
+        _info.Layout(scale);
         At(_commands, new Rect2(0, 0, 1280, 800));
         _commands.Layout(CardArea, scale);
         At(_dialog, new Rect2(0, 0, 1280, 800));

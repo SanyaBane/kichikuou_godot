@@ -173,10 +173,16 @@ public sealed partial class BattlePresenter
 
         switch (scriptEvent)
         {
-            case BattlefieldBackgroundEvent e: Background(e.Cg); break;
+            case BattlefieldBackgroundEvent e:
+                ForgetResults();
+                Background(e.Cg);
+                break;
             case SlotPanelEvent e: SlotPanel(e.Panel, e.Record); break;
             case PanelHighlightEvent e: Highlight(e.Panel); break;
-            case RoundHeaderEvent e: DrawRoundHeader(e); break;
+            case RoundHeaderEvent e:
+                ForgetResults();
+                DrawRoundHeader(e);
+                break;
             case WindowEvent e: Window(e.Op.Value, e.CallArg.Value); break;
             case MessageEvent e:
                 if (e.Text == OrderMessage)
@@ -199,11 +205,13 @@ public sealed partial class BattlePresenter
                 ScoutCalling = e.Text.File == ScoutArmyLine.File && e.Text.Line >= ScoutCallFirst && e.Text.Line < ScoutArmyLine.Line;
                 string printed = Read(e.Text, [], e.StringVariables);
                 StrategyText(e.Text, printed);
+                BoxText(e.Text, []);
                 Print(printed);
                 break;
             case ValueMessageEvent e:
                 if (e.Text == ScoutTotalsLine && Scout is not null)
                     ScoutReported = true;
+                BoxText(e.Text, e.Values);
                 Print(Read(e.Text, e.Values, e.StringVariables));
                 break;
             case PrintStringEvent e: PrintString(e.Slot.Value); break;
@@ -442,9 +450,9 @@ public sealed partial class BattlePresenter
         get
         {
             var shapes = new List<WindowShape>();
-            // Not the "vs" window (our cards show the actions), a speech bubble (our dialogue panel shows its line, Speech)
-            // nor an order message (the card's label flashes, OrderedUnit).
-            if (_winType != 0 && !ActionLabelsOpen && !SpeechOpen && OrderedUnit is null && Shape(_winFrame, opaque: _winType is >= 31 and <= 39) is { } frame)
+            // Not the "vs" window (our cards show the actions), a speech bubble (our dialogue panel shows its line, Speech),
+            // an order message (the card's label flashes, OrderedUnit) nor an info box (ours, InfoBox).
+            if (_winType != 0 && !ActionLabelsOpen && !SpeechOpen && OrderedUnit is null && !InfoBoxOpen && Shape(_winFrame, opaque: _winType is >= 31 and <= 39) is { } frame)
                 shapes.Add(frame);
             if (!_covered.HasFlag(Pictures.PortraitL) && Shape(_portraitL, (0, 0)) is { } left)
                 shapes.Add(left);
@@ -525,6 +533,7 @@ public sealed partial class BattlePresenter
             case 151: OpenWindow((160, 180, 320, 220, 0, 500), (224, 196, 240, 200), 897, null, 51); break;
             case 152: OpenWindow((160, 180, 320, 220, 0, 500), (224, 196, 240, 200), 898, 11, 52); break;
             case 10:
+                CloseInfoBox();
                 Surface.Copy(0, 500, 320, 220, 160, 180);
                 Writer.Color = 15;
                 CloseWindowState();
@@ -601,6 +610,7 @@ public sealed partial class BattlePresenter
         Surface.Copy(save.X, save.Y, save.W, save.H, save.DX, save.DY);
         Writer.Open(text.X, text.Y, text.W, text.H);
         _windowText.Open(text);
+        _boxTexts.Clear();
         _leftBar = null;
         G(frame, keyed: true);
         if (color is int c)
@@ -665,6 +675,7 @@ public sealed partial class BattlePresenter
         _winType = 0;
         _winFrame = 0;
         _windowText.Clear();
+        _boxTexts.Clear();
         _speech.Clear();
         ActionLabelsOpen = false;
         OrderedUnit = null;

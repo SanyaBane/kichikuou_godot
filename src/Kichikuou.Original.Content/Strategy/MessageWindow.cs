@@ -259,7 +259,7 @@ public sealed class MessageWindow
     }
 
     /// <summary>A line's characters from the box's left edge, a half-width space for each half cell between them.</summary>
-    private static string Line(IEnumerable<(int X, int Y, int Size, int Color, char C)> row, int left)
+    internal static string Line(IEnumerable<(int X, int Y, int Size, int Color, char C)> row, int left)
     {
         var line = new StringBuilder();
         int at = left;

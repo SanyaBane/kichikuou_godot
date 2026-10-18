@@ -20,8 +20,8 @@ internal sealed partial class MessageWindowView : Control
 {
     private static readonly Color SpeechFill = Lacquer.Panel with { A = 1 };
     private static readonly Color ThoughtFill = Color.Color8(30, 26, 30);
-    private static readonly Color NarrationFill = Color.Color8(52, 38, 24);
-    private static readonly Color NarrationText = Color.Color8(226, 204, 150);
+    internal static readonly Color NarrationFill = Color.Color8(52, 38, 24);
+    internal static readonly Color NarrationText = Color.Color8(226, 204, 150);
 
     /// <summary>Synthetic bold, as <see cref="GodotGlyphRenderer"/> makes the surface's text.</summary>
     private const float Embolden = 0.6f;

@@ -26,8 +26,10 @@ public class BattleWindowsTests
     private static readonly Dictionary<int, int> Frames = new()
     {
         [111] = 807, [112] = 808, [113] = 809, [123] = 809, [121] = 810, [122] = 811,
-        [143] = 894, [153] = 894,
     };
+
+    /// <summary>The battle's info boxes (frame 894): ours, never in the layer (<see cref="BattlePresenter.InfoBox"/>).</summary>
+    private static readonly HashSet<int> InfoBoxes = [143, 153];
 
     private static readonly HashSet<int> Bubbles = [141, 142, 151, 152];
 
@@ -144,15 +146,20 @@ public class BattleWindowsTests
         var presenter = new BattlePresenter(Texts.Value, Cgs.Value, new BoxGlyphs());
         presenter.Start(new GameState());
         presenter.Show(new WindowEvent(143, 0));
-        Assert.Single(presenter.Windows);
+        Assert.Empty(presenter.Windows);                                // window 143 is one of our info boxes (InfoBox)
         Assert.False(presenter.ActionLabelsOpen);
         presenter.Show(new ActionLabelsEvent(new ScriptRef("FIGT.ADV", 1753), new ScriptRef("FIGT.ADV", 1786)));
         Assert.True(presenter.ActionLabelsOpen);
         Assert.Empty(presenter.Windows);
+        presenter.Show(new WindowEvent(11, 0));
+        Assert.Null(presenter.InfoBox);                                 // the "vs" window is not an info box: the cards show it
+        presenter.AfterKey();
         presenter.Show(new WindowEvent(10, 0));
         Assert.False(presenter.ActionLabelsOpen);
-        presenter.Show(new WindowEvent(143, 0));                        // the next message in the window shows again
-        Assert.Single(presenter.Windows);
+        presenter.Show(new WindowEvent(143, 0));                        // the next message is an info box again
+        presenter.Show(new WindowEvent(11, 0));
+        Assert.Equal(InfoBoxKind.Panel, presenter.InfoBox?.Kind);
+        Assert.Empty(presenter.Windows);
     }
 
     /// <summary>
@@ -255,6 +262,13 @@ public class BattleWindowsTests
                         break;
                     case WindowEvent w when Frames.TryGetValue(w.Op.Value, out int frame):
                         Check(frame, $"window {w.Op.Value}", null, null);
+                        break;
+                    case WindowEvent w when InfoBoxes.Contains(w.Op.Value):
+                        opened++;
+                        if (presenter.Strategy is not null)
+                            Check(894, $"strategy's window {w.Op.Value}", null, null);     // the strategy's screen: the original's
+                        else if (presenter.Windows.Any(shape => shape.W == cgs.Get(894)!.Width && shape.H == cgs.Get(894)!.Height))
+                            wrong.Add($"info box {w.Op.Value}: its frame in the layer");
                         break;
                     case WindowEvent w when Bubbles.Contains(w.Op.Value):
                         opened++;

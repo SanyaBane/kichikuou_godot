@@ -201,9 +201,58 @@ as it is. Where to start:
    (`GamePresenter.MessageWindow` in a battle); our panel covers the original's frame, which the surface still draws, and a
    131 left after op 0 stays until the next drawing. So the windows a battle file opens off the field are ours: Rance's
    lines before `FIGT_B`'s battle, "[ Defeat ]" / "Ys was successfully defended." over the map, the captures and deaths.
-   Still the original's: the battle's own info boxes 143/153 (frame 894) on our battle screen — the strategies' "prepared
-   for the enemy's attack", "fell in battle", "The battle dragged on…", the damages and EXP at the end — which need
-   their own design on our battle screen. Tests: `MessageWindowTests.The_battles_windows_are_handed_over`.
+   The battle's own info boxes 143/153 (frame 894) on our battle screen — "prepared for the enemy's attack", "fell in
+   battle", "The battle dragged on…", the damages and EXP at the end — got their own design, below. Tests: `MessageWindowTests.The_battles_windows_are_handed_over`.
+   **The info boxes 143/153 (survey, 2026-10-18).** Both ops run one routine (`WAO_SUB` `L_00c65`: frame 894, text box
+   200,196 240×200); a box holds pages — text, op 11 (the key wait, the frame redrawn), more text — and op 10 closes it.
+   44 call sites in `FIGT.ADV`, `FIGT作`, `FIGT表示`, `FIGTﾃｷDE`, `FIGTﾐｶDE` (`FIGT_M`'s entries are dead). Our battle
+   screen has its own for the "vs" window, the order messages, Info and the strategy's announcement; the rest:
+   - per round: the Land of Death's damage (`FIGT.ADV:270`, `Prov_Cur` 82);
+   - per command: a unit's defence ("X prepared for the enemy's attack. Defense Increase: n", `:1397`, n 1-20), focus
+     ("X is focusing.", `:1306`; Miki's "couldn't concentrate", `:1283`), the Fog Card (two pages, `:1239`), "We can't run
+     from this battle." / "It's impossible to run in this narrow dungeon." (`:550`, `:560`);
+   - per unit down, after its last words in a bubble: "X fell in battle." (`FIGTﾐｶDE.ADV:721`, `FIGTﾃｷDE.ADV:1804`) and
+     the variants — wounded, injured and couldn't move, died, ran away, Ex's retreat, Rance's and Sill's own;
+   - at the end, once: the result ("Our army was annihilated." / "retreated.", "The enemy was annihilated." / "has
+     retreated.", `:496-583`), the time limit ("The battle dragged on and it became night." / "time ran out.", `:451`), the
+     tally (`:2991`: each side's damages, the EXP), then one box per unit that levels up (two pages: "X leveled up.",
+     the stat raised, `:3064`);
+   - scripted: the kaiju's rampages in the dungeon (several pages between shouts), Maha's raid, Xacalite's contract
+     (`FIGT表示.ADV`).
+   **Mock-ups (2026-10-18):** `tools/ui/mock_messages.py`, round `boxes`, over window dumps of our battle screen (the
+   week-18 save played to the week's end; the original's box painted out): K1 — our narration panel (113's lacquer) in the
+   scene's middle, the box's narrow line breaks joined into sentences, the triangle (night, tally, defence); K2 — a band
+   across the scene in the battle screen's steel, the sentence in Cinzel, the tally as two columns; K3 — the events where
+   they happen: the defence a "DEF +2" badge on the unit's card with a small plate, a fall a red stamp across the
+   commander's dimmed card, the end one results plate (the reason as its title, each side's damages, the EXP); K3 needs
+   K1 or K2 for the kinds without a card. **The owner chose K3, the other kinds as K1's panel** (2026-10-18).
+   **The owner's answers (2026-10-19)**, with two more mock-ups of the round: K3d — the level-ups as rows on the plate
+   under the EXP ("LEVEL UP", the name, the gains); K3e — a "LEVEL UP" badge on the unit's card with the gains on a small
+   plate. The defence's badge flashes and its wait is answered at once (as the order's label, docs/ui/battle-screen.md,
+   "The order messages"); a fall's stamp waits for the player's click. The end: the reason's wait (the result or the time
+   limit) is answered at once, so the plate shows the reason, the damages and the EXP together at the tally's wait, one
+   click (a scene between them, `Gﾀﾐ`, plays before the plate); then **K3d**: each level-up adds its row to the plate, one
+   click (its first page answered at once). Which units level up is a rule the presenter cannot know beforehand, so the
+   plate grows.
+   **Built (2026-10-19):** `Original.Content/Battles/BattleInfoBox` (the kinds `Panel`, `Defence`, `Fall`, `Passed`,
+   `Results`; `BattleResults`, `BattleLevelUp`) from `BattlePresenter.InfoBox` (`BattlePresenter.InfoBoxes.cs`): the presenter
+   keeps the script locations printed into an open 143/153 (frame 894; not the "vs" window, the order messages, the units'
+   info, the strategy's or the scout's) and decides at its key wait — `FIGT.ADV:1399` a defence on the acting slot's card
+   (the badge the printed increase, the plate the sentence without the name and the number); a text of `FIGTﾐｶDE` /
+   `FIGTﾃｷDE` a fall on the card of `Unit_Cur` / `Cmdr_Cur`, its stamp by the line (FELL IN BATTLE, WOUNDED, DIED, RAN
+   AWAY, CAN'T MOVE, RETREATED, FAINTED, COLLAPSED, DEFEATED: the 12 boxes of the defeat scenes); the reasons (`:453`,
+   `:458`, `:465`, `:498`, `:518`, `:542`, `:585`) passed and kept at their close (a second, the enemy annihilated after the
+   night, joins the first and gives the title: Night Falls, Time Runs Out, Victory, Defeat, Retreat; none, a duel's:
+   `Bt_Result`); the tally (`:2994`/`:2999`, `:3003`) the plate (each army's name as the tally prints it, the damages, the
+   EXP); a level-up (`:3065`) passed on its first page and a row on its second (the unit's name, "Leader Attacks +1" and
+   the rest flowed: a modifier's "… UP", " UP" alone for BTX-09, Mill's beasts, the Popularity Staff); a fall or a defence
+   without its card, and every other box, our panel with the page's lines flowed into sentences. The windows' layer leaves
+   frame 894 out but on the strategy's screen. `godot/Battles/BattleInfoLayer` (on `BattleBoardView`, over the cards)
+   draws them; `GameScreen.WaitForKeyAsync` answers a defence (its badge flashing 1.8 s) and a passed box at once.
+   `--auto` in a window dumps `info-defence`, `info-fall`, `info-results`, `info-level-up`, `info-panel` once a launch.
+   Tests: `BattleInfoBoxTests` (the kinds, and over every capture: the badge is the slot's new state, the stamp's card is
+   down, the plate holds the losses and the EXP and one row more per level-up, every tally a plate). Seen in a window from
+   the week-18 save (the stamp, the badge, the plate); not seen yet in the game: our panel and a level-up's row.
 6. **The message log** — its design discussed first (backlog).
 
 ## 6. Open questions

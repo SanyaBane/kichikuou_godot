@@ -732,6 +732,246 @@ def speed_real(path, name, step=9):
     return c.save(name)
 
 
+# ---------------------------------------------------------------- the battle's info boxes 143/153 (2026-10-18)
+# Over window dumps of our battle screen (--interface new, the week-18 save played to the week's end in a window:
+# --load --auto --fast --quit --seed 2 --saves user://saves-look-after2 --slots-from user://saves-week18 --weeks 18
+# --interface new --shots <dir>), in window pixels (the dumps' own 1280x800 with the menu bar):
+#   python -I tools/ui/mock_messages.py <shots dir> <out dir> boxes <prepared> <fell> <night> <tally> <clean> <clean fell> < /dev/null
+# The original's cream box is painted out with the scene of a dump of the same battle without it. K1: our narration
+# panel in the scene; K2: a banner across the scene in the battle screen's steel; K3: the events on the cards, the end
+# as one results plate.
+
+BOX143 = (512, 214, 770, 418)               # the original's box over the scene (window px), down to the scene's foot
+SCENE = (143, 24, 1136, 418)                # the battle scene's picture
+STEEL = dict(back=(43, 45, 49), card=(59, 62, 68), border=(168, 138, 74), text=(240, 240, 238), muted=(165, 167, 171),
+             warning=(226, 114, 91), accent=(242, 199, 92))
+BARRES_CARD = (30, 615, 302, 757)
+SAKANAKU_CARD = (695, 462, 967, 605)
+
+PREPARED = ['Barres prepared for the', "enemy's attack.", 'Defense Increase: 2']
+FELL = ['Sakanaku fell in battle.']
+NIGHT = ['The battle dragged', 'on and it became', 'night.']
+TALLY = ['Leazas: Damages', ' (822)', 'Leazas Reb: Damages', ' (1105)', '', '2 EXP obtained.']
+
+
+def boxless(path, clean):
+    base = Image.open(path).convert('RGBA')
+    base.paste(Image.open(clean).convert('RGBA').crop(BOX143), BOX143[:2])
+    return base
+
+
+def joined(lines):
+    """The box's own line breaks (made for its 20 cells) joined into sentences; an empty line parts them."""
+    out, cur = [], []
+    for l in lines + ['']:
+        if l.strip():
+            cur.append(l.strip())
+        elif cur:
+            out.append(' '.join(cur))
+            cur = []
+    return out
+
+
+def k1_panel(base, lines, name, rows=None):
+    """K1: our narration panel (113's lacquer) in the scene's middle, the lines joined, the triangle."""
+    c = WindowCanvas(base)
+    f = GOTHIC(30)
+    rows = rows or joined(lines)
+    w = max(f.getlength(r) / S for r in rows) + 80
+    h = 40 + len(rows) * 40 + 20
+    x, y = (SCENE[0] + SCENE[2]) / 2 - w / 2, 150 - h / 2 + 60
+    panel(c, x, y, w, h, fill=NARR)
+    for i, r in enumerate(rows):
+        text(c, x + 40, y + 26 + i * 40, r, f, NARR_TEXT, bold=True)
+    triangle(c, x + w - 24, y + h - 20)
+    return c.save(name)
+
+
+def steel_band(c, y, h):
+    x0, x1 = SCENE[0], SCENE[2]
+    lay, d = c.draw()
+    for j in range(int(h * S)):                                   # darker at the edges, the scene showing faintly through
+        t = abs(j / (h * S) - 0.5) * 2
+        d.line([(x0 * S, y * S + j), (x1 * S, y * S + j)], fill=STEEL['back'] + (int(225 + 25 * t),))
+    for yy in (y, y + h):
+        d.line(pts([(x0, yy), (x1, yy)]), fill=STEEL['border'] + (255,), width=2 * S)
+    c.add(lay)
+
+
+def k2_band(base, lines, name, tally=False):
+    """K2: a band across the scene in the battle screen's steel: one sentence centred, or the tally in two columns."""
+    c = WindowCanvas(base)
+    f = CINZEL(26, 600)
+    if tally:
+        y, h = 196, 132
+        steel_band(c, y, h)
+        cx = (SCENE[0] + SCENE[2]) / 2
+        for side, (army, dmg) in enumerate([('LEAZAS', '822'), ('LEAZAS REB', '1105')]):
+            ax = cx - 230 if side == 0 else cx + 230
+            text(c, ax, y + 40, army, CINZEL(20, 600), STEEL['muted'] + (255,), anchor='ms')
+            text(c, ax, y + 82, 'Damages ' + dmg, CINZEL(30, 700), STEEL['warning'] + (255,), anchor='ms')
+        lay, d = c.draw()
+        d.line(pts([(cx, y + 20), (cx, y + 92)]), fill=STEEL['border'] + (255,), width=1 * S)
+        c.add(lay)
+        text(c, cx, y + 118, '2 EXP obtained', CINZEL(22, 600), STEEL['accent'] + (255,), anchor='ms')
+    else:
+        rows = joined(lines)
+        y, h = 230, 30 + len(rows) * 38
+        steel_band(c, y, h)
+        for i, r in enumerate(rows):
+            text(c, (SCENE[0] + SCENE[2]) / 2, y + 42 + i * 38, r, f, STEEL['text'] + (255,), anchor='ms')
+    triangle(c, SCENE[2] - 30, y + h - 18)
+    return c.save(name)
+
+
+def card_glow(c, rect, colour):
+    x0, y0, x1, y1 = rect
+    lay, d = c.draw()
+    for i in range(6, 0, -1):
+        d.rectangle(s(x0 - i, y0 - i, x1 + i, y1 + i), outline=colour + (int(30 + 20 * (6 - i)),), width=S)
+    d.rectangle(s(x0, y0, x1, y1), outline=colour + (255,), width=2 * S)
+    c.add(lay)
+
+
+def k3_prepared(base, name):
+    """K3a: the unit's card lit, a badge 'DEF +2' over its portrait, the sentence on a small plate above the card."""
+    c = WindowCanvas(base)
+    card_glow(c, BARRES_CARD, STEEL['accent'])
+    x0, y0, x1, y1 = BARRES_CARD
+    lay, d = c.draw()                                             # the badge over the portrait's top right
+    bx, by = x0 + 70, y0 + 10
+    d.rounded_rectangle(s(bx, by, bx + 92, by + 30), radius=15 * S, fill=(52, 92, 150, 245), outline=STEEL['accent'] + (255,), width=2 * S)
+    c.add(lay)
+    text(c, bx + 46, by + 16, 'DEF +2', CINZEL(18, 700), (255, 255, 255, 255), anchor='mm')
+    f = GOTHIC(24)
+    msg = "Prepared for the enemy's attack"
+    w = f.getlength(msg) / S + 40
+    px, py = x0, y0 - 52
+    panel(c, px, py, w, 40, fill=NARR)
+    text(c, px + 20, py + 9, msg, f, NARR_TEXT, bold=True)
+    triangle(c, px + w - 16, py + 26)
+    return c.save(name)
+
+
+def k3_fell(base, name):
+    """K3b: a red 'FELL IN BATTLE' stamp across the commander's card, the card dimmed; the click's triangle by it."""
+    c = WindowCanvas(base)
+    x0, y0, x1, y1 = SAKANAKU_CARD
+    lay, d = c.draw()
+    d.rectangle(s(x0, y0, x1, y1), fill=(0, 0, 0, 120))
+    c.add(lay)
+    stamp = Image.new('RGBA', (300 * S, 70 * S), (0, 0, 0, 0))
+    sd = ImageDraw.Draw(stamp)
+    sd.rounded_rectangle((4 * S, 4 * S, 296 * S, 66 * S), radius=8 * S, outline=(200, 40, 30, 235), width=4 * S)
+    sd.text((150 * S, 36 * S), 'FELL IN BATTLE', font=CINZEL(30, 700), fill=(210, 46, 34, 235), anchor='mm')
+    stamp = stamp.rotate(-8, resample=Image.BICUBIC, expand=True)
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    c.ov.alpha_composite(stamp, (int(cx * S - stamp.width / 2), int(cy * S - stamp.height / 2)))
+    triangle(c, x1 - 18, y1 - 16)
+    return c.save(name)
+
+
+def k3_results(base, name):
+    """K3c: the end as one plate over the scene: the reason as its title, each army's damages under its name, the EXP."""
+    c = WindowCanvas(base, dim=0.0)
+    lay, d = c.draw()
+    d.rectangle(s(*SCENE), fill=(0, 0, 0, 110))
+    c.add(lay)
+    w, h = 620, 250
+    x, y = (SCENE[0] + SCENE[2]) / 2 - w / 2, 92
+    panel(c, x, y, w, h)
+    cx = x + w / 2
+    text(c, cx, y + 50, 'Night Falls', BRUSH(32), NAME, anchor='ms')
+    text(c, cx, y + 80, 'The battle dragged on and it became night.', SERIF_I(20), SUBTITLE, anchor='ms')
+    divider(c, x + 60, x + w - 60, y + 100)
+    for side, (army, dmg) in enumerate([('Leazas', '822'), ('Leazas Reb', '1105')]):
+        ax = cx - 150 if side == 0 else cx + 150
+        text(c, ax, y + 138, army.upper(), CINZEL(20, 600), LABEL, anchor='ms')
+        text(c, ax, y + 180, dmg, CINZEL(38, 700), (222, 110, 90, 255), anchor='ms')
+        text(c, ax, y + 200, 'damages', SERIF_I(18), QUIET, anchor='ms')
+    lay, d = c.draw()
+    d.line(pts([(cx, y + 118), (cx, y + 200)]), fill=DIM_GOLD, width=1 * S)
+    c.add(lay)
+    text(c, cx, y + 234, '2 EXP obtained', CINZEL(22, 600), NAME, anchor='ms')
+    triangle(c, x + w - 26, y + h - 22)
+    return c.save(name)
+
+
+LEVEL_UPS = [('Barres', 1, ['Leader Attacks +1', 'Def on Defense UP']),
+             ('Haurein', 1, ['Leader Attacks +1', 'Atk on Offense UP'])]
+
+
+def k3_results_levels(base, name):
+    """K3d: the plate grown by the level-ups, one row each under the EXP (each the click of its own box)."""
+    c = WindowCanvas(base, dim=0.0)
+    lay, d = c.draw()
+    d.rectangle(s(*SCENE), fill=(0, 0, 0, 110))
+    c.add(lay)
+    w, h = 620, 250 + 30 + 44 * len(LEVEL_UPS)
+    x, y = (SCENE[0] + SCENE[2]) / 2 - w / 2, 40
+    panel(c, x, y, w, h)
+    cx = x + w / 2
+    text(c, cx, y + 50, 'Night Falls', BRUSH(32), NAME, anchor='ms')
+    text(c, cx, y + 80, 'The battle dragged on and it became night.', SERIF_I(20), SUBTITLE, anchor='ms')
+    divider(c, x + 60, x + w - 60, y + 100)
+    for side, (army, dmg) in enumerate([('Leazas', '822'), ('Leazas Reb', '1105')]):
+        ax = cx - 150 if side == 0 else cx + 150
+        text(c, ax, y + 138, army.upper(), CINZEL(20, 600), LABEL, anchor='ms')
+        text(c, ax, y + 180, dmg, CINZEL(38, 700), (222, 110, 90, 255), anchor='ms')
+        text(c, ax, y + 200, 'damages', SERIF_I(18), QUIET, anchor='ms')
+    lay, d = c.draw()
+    d.line(pts([(cx, y + 118), (cx, y + 200)]), fill=DIM_GOLD, width=1 * S)
+    c.add(lay)
+    text(c, cx, y + 234, '2 EXP obtained', CINZEL(22, 600), NAME, anchor='ms')
+    divider(c, x + 60, x + w - 60, y + 254)
+    for i, (unit, level, gains) in enumerate(LEVEL_UPS):
+        ry = y + 268 + i * 44
+        lay, d = c.draw()
+        d.rounded_rectangle(s(x + 40, ry, x + w - 40, ry + 36), radius=6 * S, fill=ROW)
+        c.add(lay)
+        text(c, x + 60, ry + 26, 'LEVEL UP', CINZEL(16, 700), STEEL['accent'] + (255,), anchor='ls')
+        text(c, x + 160, ry + 27, unit, CINZEL(20, 600), NAME, anchor='ls')
+        text(c, x + 280, ry + 26, '  ·  '.join(gains), SERIF(18), VALUE, anchor='ls')
+    triangle(c, x + w - 26, y + h - 22)
+    return c.save(name)
+
+
+def k3_card_level(base, name):
+    """K3e: a level-up on the unit's card: the card lit, a 'LEVEL UP' badge, the gains on a small plate above it."""
+    c = WindowCanvas(base)
+    card_glow(c, BARRES_CARD, STEEL['accent'])
+    x0, y0, x1, y1 = BARRES_CARD
+    lay, d = c.draw()
+    bx, by = x0 + 54, y0 + 10
+    d.rounded_rectangle(s(bx, by, bx + 124, by + 30), radius=15 * S, fill=(150, 112, 30, 245), outline=(255, 226, 140, 255), width=2 * S)
+    c.add(lay)
+    text(c, bx + 62, by + 16, 'LEVEL UP', CINZEL(18, 700), (255, 255, 255, 255), anchor='mm')
+    f = GOTHIC(24)
+    msg = 'Leader Attacks +1 / Def on Defense UP'
+    w = f.getlength(msg) / S + 40
+    px, py = x0, y0 - 52
+    panel(c, px, py, w, 40, fill=NARR)
+    text(c, px + 20, py + 9, msg, f, NARR_TEXT, bold=True)
+    triangle(c, px + w - 16, py + 26)
+    return c.save(name)
+
+
+if len(sys.argv) > 3 and sys.argv[3] == 'boxes':
+    prepared, fell, night, tally, clean, clean_fell = (os.path.join(SHOTS, a) for a in sys.argv[4:10])
+    k1_panel(boxless(night, clean), NIGHT, 'K1-panel-night.png')
+    k1_panel(boxless(tally, clean), TALLY, 'K1b-panel-tally.png',
+             rows=['Leazas: Damages (822)', 'Leazas Reb: Damages (1105)', '2 EXP obtained.'])
+    k1_panel(boxless(prepared, clean), PREPARED, 'K1c-panel-prepared.png')
+    k2_band(boxless(night, clean), NIGHT, 'K2-band-night.png')
+    k2_band(boxless(tally, clean), TALLY, 'K2b-band-tally.png', tally=True)
+    k3_prepared(boxless(prepared, clean), 'K3-card-prepared.png')
+    k3_fell(boxless(fell, clean_fell), 'K3b-card-fell.png')
+    k3_results(boxless(tally, clean), 'K3c-results.png')
+    k3_results_levels(boxless(tally, clean), 'K3d-results-levels.png')
+    k3_card_level(boxless(tally, clean), 'K3e-card-level.png')
+    print('done')
+    sys.exit(0)
+
 if len(sys.argv) > 3 and sys.argv[3] == 'speed':
     speech, map_ = (os.path.join(SHOTS, a) for a in sys.argv[4:6])
     total = sum(len(l) for l in MARIS)
