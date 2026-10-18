@@ -329,6 +329,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     public override void _Process(double delta)
     {
+        // Ctrl held skips as MsgSkip does (ours); polled, so a release no control passes on is still seen.
+        if (_skip is not null)
+            _skip.Held = Input.IsKeyPressed(Godot.Key.Ctrl) && GetWindow().HasFocus();
         if (_noticeLeft > 0 && (_noticeLeft -= delta) <= 0)
             _notice.Text = "";
         UpdateDeploymentScreen();

@@ -112,7 +112,7 @@ web build (seen only) by an option.
   colours of our own screens (`DeploymentPalette`). A change recolours an open screen at once.
   `--palette <name>` picks one for the launch without saving it (development).
 - Hot keys: **F1** MsgSkip and **F4** full screen (on release, as xsystem35's `event.c`), and
-  **Alt+R** Restart (ours, after System 3.9's). Backspace still returns to the title at once,
+  **Alt+R** Restart (ours, after System 3.9's); **Ctrl** held skips messages (ours, see MsgSkip). Backspace still returns to the title at once,
   without asking (development).
 - **Save Screenshot** saves the screen as shown (1280×800, event CGs not masked) as
   `user://screenshots/kichikuou-<date>-<time>.png` and names the file on screen.
@@ -155,7 +155,12 @@ web build (seen only) by an option.
   Messages...** (asks first) makes every message unseen again. The seen messages are one
   `File:Line` per line in `msgskip.txt` next to the save slots (`%APPDATA%\Godot\app_userdata\Kichikuou\saves`,
   `saves-auto` for `--auto`; deleting it with the game closed resets them too), exact where
-  xsystem35 uses a Bloom filter. `--msgskip` starts a game with it on (development).
+  xsystem35 uses a Bloom filter. `--msgskip` starts a game with it on (development). **Ctrl held**
+  (ours, owner's request 2026-10-18; xsystem35 has no such key) skips as MsgSkip does while it is
+  held (`MessageSkip.Held`, polled once a frame while the window has the focus), the switch and its
+  label untouched: input does not stop it, a `]` menu waits for its choice and the skip goes on
+  after it while Ctrl is still held; with Skip Unseen Text unchecked, an unseen message stops it
+  until a seen one, as it stops MsgSkip.
 
 ## System 3.9 (the original; reference only)
 

@@ -88,8 +88,16 @@ public sealed class MessageSkip
     /// <summary>Whether a selection menu turns skipping off (<c>IY 2</c> / <c>IY 3</c>; the scenario never changes it).</summary>
     public bool StopOnMenu { get; set; } = true;
 
-    /// <summary><c>msgskip_isSkipping</c>: the skippable waits return at once.</summary>
-    public bool IsSkipping => Enabled && Activated;
+    /// <summary>
+    /// Ours (owner's request 2026-10-18): Ctrl is held, which skips as the switch does while it is held,
+    /// leaving the switch (<see cref="Activated"/>) as it is. Neither input nor a menu stops it — a menu
+    /// still waits for its choice, and the skip goes on after it while Ctrl is held; an unseen message
+    /// stops it as it stops the switch, unless <see cref="SkipUnseen"/>. xsystem35 has no such key.
+    /// </summary>
+    public bool Held { get; set; }
+
+    /// <summary><c>msgskip_isSkipping</c>: the skippable waits return at once (also while <see cref="Held"/>).</summary>
+    public bool IsSkipping => Enabled && (Activated || Held);
 
     /// <summary>The number of messages seen.</summary>
     public int SeenCount => _seen.Count;

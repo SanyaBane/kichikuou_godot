@@ -20,6 +20,24 @@ public class MessageSkipTests
         Assert.False(skip.IsSkipping);
     }
 
+    /// <summary>Ctrl held (ours) skips while it is held, the switch untouched; a menu does not stop it, an unseen message does.</summary>
+    [Fact]
+    public void Holding_skips_while_held_and_leaves_the_switch()
+    {
+        var skip = new MessageSkip([MessageSkip.Key(Seen)]) { SkipUnseen = false };
+        skip.Held = true;
+        Assert.True(skip.IsSkipping);
+        Assert.False(skip.Activated);
+        skip.OnMenu();
+        Assert.True(skip.IsSkipping);
+        skip.OnMessage(New);
+        Assert.False(skip.IsSkipping);                                    // STOP_ON_UNSEEN
+        skip.OnMessage(Seen);
+        Assert.True(skip.IsSkipping);                                     // still held
+        skip.Held = false;
+        Assert.False(skip.IsSkipping);
+    }
+
     /// <summary>The skip skips a listed scene whole, also when another scene runs inside it, and only while it is on.</summary>
     [Fact]
     public void A_listed_scene_is_skipped_whole_while_skipping()
