@@ -149,7 +149,8 @@ one over the original layout, chosen by Option → Interface; the first, the dep
 the units' faces, drag and drop; Debug → Portraits) — docs/ui/deployment-table.md. The battle screen
 followed (docs/ui/battle-screen.md); next (owner, 2026-10-16) the map and command screen, its survey
 and mock-ups in docs/ui/command-screen.md; then (owner, 2026-10-18) the messages of the turn's start,
-surveyed in docs/ui/turn-start.md — the week report is built, the nations' banners put off.
+surveyed in docs/ui/turn-start.md — the week report is built, the nations' banners put off; then (owner,
+2026-10-18) the message windows in our lacquer, variant A, the battle's included — docs/ui/messages.md.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -276,7 +277,8 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `Battles/AdvantageTip` (the instant tooltips of the advantages next to the armies' names, `BattleAdvantage.Parts`); `GodotGlyphRenderer` (TextServer; MS Gothic or the bundled BIZ UDGothic in `godot/fonts`, Option →
   Fonts, `--font ms-gothic|biz-ud-gothic` for one launch), `BattleAudio`; `Screens` switches screens. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
 - `tools/analysis/` — Python scripts for reading the decompiled scenario; `tools/codegen/` —
-  generators for committed C# sources; `tools/golden/` — harness launcher and page classes.
+  generators for committed C# sources; `tools/golden/` — harness launcher and page classes;
+  `tools/ui/` — mock-ups of our screens drawn over screen dumps (the images stay outside the repository).
 - `docs/` — brief, spike findings, variable dictionary; `window-menu.md` records
   xsystem35's window menu bar (our reference; File/Screen/Option/MsgSkip) and what its commands do;
   `ui/survey.md` surveys the screens and input for our own interface; `sengoku/` surveys Sengoku

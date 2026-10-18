@@ -128,6 +128,10 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   [ui/turn-start.md](ui/turn-start.md); the week report is built. Put off (owner, 2026-10-18): the nations'
   phase banners ("Helman Phase", …) and their news stay the original's windows for now (turn-start.md, §3 and
   the questions).
+  Then (owner, 2026-10-18): the message windows in our lacquer, variant A — the survey, the mock-ups and the
+  owner's choices are [ui/messages.md](ui/messages.md); the battle's script windows put off above come with it.
+  Put off (owner, 2026-10-18): **a message log** — wanted, its design discussed separately, the last step of
+  the message windows (ui/messages.md, §3 item 4).
   Groundwork (survey §4.8): menus as data and the map helper are done (2026-10-12); the shared engine
   host (§4.8, "Items 2 and 4 are one step") is not needed for screens over the original layout.
 - **Quality-of-life features**, the README's second aim — *owner* (which), then *agent*; a survey of
