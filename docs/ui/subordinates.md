@@ -84,7 +84,10 @@ screen only chooses what the original's player would have chosen, through the in
      (`:904`);
   4. the command ends and `COMMAND` waits on the map: a right click opens its menu, and the menu is
      answered with Subordinates (`COMMAND.ADV:270/276/283`, the thieves' `:199/205`), so `Cﾌﾞｶ` opens again
-     and the screen with it, the troop buttons greyed and the plate up.
+     and the screen with it, the troop buttons greyed and the plate up. The screen's pointer settles again at
+     every key wait, pause and menu, as unattended play's does (`GameScreen.InterruptPointers`): unsettled, the
+     right click was read by `WAO_MAP`'s own read instead of the map's wait, and the order never ended (the
+     owner's first replenish by hand, 2026-10-18: every button grey, no way out).
 - **Talk** runs steps 1-2, answers Rance's thought (one key wait, so Maris's portrait, still up from the
   menu, is not seen), and lets go: the talk scene plays with our message windows as any scene. Afterwards
   the map, as in the original (no re-opening).

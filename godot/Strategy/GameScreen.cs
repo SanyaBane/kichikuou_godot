@@ -943,7 +943,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     public async Task<Sys3Int> WaitForKeyAsync()
     {
-        _pointer.Interrupt();
+        InterruptPointers();
         _presenter.Flush();
         _presenter.EndCityLeadIn();                                     // whatever the script drew is shown at a key wait
         CheckNoClickLeft();
@@ -1235,7 +1235,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         // Y 3 (cmdy.c): 0 reads the input once; the core keeps Y3waitFlags (Y 3, 10000 / 10001
         // never come here) and passes it as cancelable.
-        _pointer.Interrupt();
+        InterruptPointers();
         _presenter.Flush();
         _presenter.EndCityLeadIn();                                     // and at a pause
         if (SkippingScene)
@@ -1308,7 +1308,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     public async Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
     {
-        _pointer.Interrupt();
+        InterruptPointers();
         if (SubordinatesChoice(items) is { } ordered)
             return ordered;                                     // an order of our Subordinates screen answers it, unseen
         _skip.OnMenu();
@@ -1386,6 +1386,18 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     }
 
     // ---------------------------------------------------------------- input: the pointer
+
+    /// <summary>
+    /// Another input came between the pointer reads (a key wait, a pause, a menu): every queue of gestures
+    /// settles again — unattended play's and our Subordinates screen's alike. A queue left unsettled starts its
+    /// next gesture too early: the map's right click that opens the command again after a troop order was read
+    /// by <c>WAO_MAP</c>'s own read instead of the map's wait, and the order never ended (2026-10-18).
+    /// </summary>
+    private void InterruptPointers()
+    {
+        _pointer.Interrupt();
+        _subPointer.Interrupt();
+    }
 
     public async Task<MouseState> GetMouseAsync()
     {
@@ -1795,7 +1807,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// </summary>
     public async Task<FigtSelChoice> SelectCommandAsync(FigtSelMenu menu)
     {
-        _pointer.Interrupt();
+        InterruptPointers();
         _presenter.Flush();
         if (_options.Auto)
         {
@@ -2096,7 +2108,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// </summary>
     public async Task<Sys3Int?> ChooseAsync(BattleMenu menu)
     {
-        _pointer.Interrupt();
+        InterruptPointers();
         _presenter.Flush();
         Task? clicking = null;
         if (_options.Auto)
