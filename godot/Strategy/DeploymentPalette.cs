@@ -3,9 +3,10 @@ using Godot;
 namespace Kichikuou.Game.Strategy;
 
 /// <summary>
-/// The colours of our deployment screen (<see cref="DeploymentPanels"/>, <see cref="DeploymentTableView"/>):
-/// the first, dark blue, sat badly with the portrait's gold frame, so the owner looked at four more
-/// (2026-10-12), kept them all for the player to choose (Option → Palette) and made steel the default.
+/// The colours first made for our deployment screen: the first, dark blue, sat badly with the portrait's gold
+/// frame, so the owner looked at four more (2026-10-12), kept them all for the player to choose (Option → Palette)
+/// and made steel the default. The deployment screen has been lacquer since the owner's E1/E2 (2026-10-19,
+/// docs/ui/deployment-table.md); the palette still colours our battle screen and the map's name plates.
 /// </summary>
 internal sealed record DeploymentPalette(
     string Name,

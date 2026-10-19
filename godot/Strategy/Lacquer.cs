@@ -28,7 +28,8 @@ internal static class Lacquer
     public static readonly Color OffButton = Color.Color8(40, 35, 30);
     public static readonly Color OffLine = Color.Color8(66, 58, 48);
 
-    // The ledger: our Subordinates screen's table as paper in its lacquer frame (the owner's mock-up G3, docs/ui/subordinates.md).
+    // The ledger: our tables as paper in their lacquer frames (the owner's mock-ups G3, docs/ui/subordinates.md, and E1/E2,
+    // docs/ui/deployment-table.md).
     public static readonly Color Paper = Color.Color8(224, 208, 172);
     public static readonly Color PaperHead = Color.Color8(196, 176, 136);
     public static readonly Color PaperRule = Color.Color8(150, 120, 80, 110);
@@ -39,6 +40,8 @@ internal static class Lacquer
     public static readonly Color HeadInk = Color.Color8(120, 40, 26);
     public static readonly Color Vermilion = Color.Color8(170, 40, 28);
     public static readonly Color ChosenRow = Color.Color8(190, 60, 40, 60);
+    public static readonly Color PartyRow = Color.Color8(200, 160, 80, 70);
+    public static readonly Color SealText = Color.Color8(246, 230, 206);
     public static readonly Color BarGood = Color.Color8(70, 110, 50);
     public static readonly Color BarLow = Color.Color8(160, 110, 30);
     public static readonly Color BarBad = Color.Color8(170, 50, 36);
@@ -86,6 +89,49 @@ internal static class Lacquer
         }
     }
 
+    /// <summary>
+    /// A whole screen's backdrop (our Subordinates and deployment screens): dark lacquer under a faint gold wave pattern
+    /// (seigaiha), darkened towards the edges; drawn in the 1280×800 screen's pixels.
+    /// </summary>
+    public static void DrawWaveBackdrop(CanvasItem c, float k)
+    {
+        var lacquer = Color.Color8(14, 10, 8);
+        c.DrawRect(new Rect2(0, 0, 1280, 800), lacquer);
+        const float R = 34;
+        var wave = Gold with { A = 0.05f };
+        for (int row = -1; row * R / 2 < 800 + R; row++)
+        {
+            float y = row * R / 2, off = row % 2 == 0 ? 0 : R;
+            for (float x = -2 * R + off; x < 1280 + 2 * R; x += 2 * R)
+            {
+                var at = new Vector2(x, y);
+                c.DrawCircle(at, R, lacquer);
+                foreach (float r in (float[])[R, R * 0.72f, R * 0.44f])
+                    c.DrawArc(at, r, 0, Mathf.Tau, 40, wave, Line(1, k), true);
+            }
+        }
+        const float Inset = 220;
+        var edge = new Color(0, 0, 0, 0.7f);
+        var clear = new Color(0, 0, 0, 0);
+        Vector2[] outer = [new(0, 0), new(1280, 0), new(1280, 800), new(0, 800)];
+        Vector2[] inner = [new(Inset, Inset * 0.62f), new(1280 - Inset, Inset * 0.62f), new(1280 - Inset, 800 - Inset * 0.62f), new(Inset, 800 - Inset * 0.62f)];
+        for (int i = 0; i < 4; i++)
+        {
+            int j = (i + 1) % 4;
+            c.DrawPolygon([outer[i], outer[j], inner[j], inner[i]], [edge, edge, clear, clear]);
+        }
+    }
+
+    /// <summary>A main button's face: red lacquer framed in gold, as Turn END on the command panel; lit when hovered, sunk when pressed.</summary>
+    public static void DrawRedButton(CanvasItem c, Rect2 rect, bool hover, bool down, float k)
+    {
+        Color top = down ? Color.Color8(96, 22, 16) : hover ? Color.Color8(150, 40, 30) : Color.Color8(128, 32, 24);
+        Color bottom = down ? Color.Color8(70, 14, 10) : hover ? Color.Color8(96, 20, 14) : Color.Color8(80, 16, 12);
+        c.DrawPolygon([rect.Position, new(rect.End.X, rect.Position.Y), rect.End, new(rect.Position.X, rect.End.Y)], [top, top, bottom, bottom]);
+        c.DrawRect(rect, hover ? HoverLine : Gold, false, Line(2, k));
+        c.DrawRect(rect.Grow(-4), Color.Color8(150, 96, 52), false, Line(1, k));
+    }
+
     /// <summary>A row's box: dark with a dim frame, or lit with a bright one when hovered.</summary>
     public static void DrawRowBox(CanvasItem c, Rect2 rect, bool hover, float k)
     {
@@ -116,6 +162,28 @@ internal static class Lacquer
         c.DrawColoredPolygon([p + new Vector2(-8, -6), p + new Vector2(8, -6), p + new Vector2(0, 7)], Gold with { A = alpha });
         c.DrawPolyline([p + new Vector2(-8, -6), p + new Vector2(8, -6), p + new Vector2(0, 7), p + new Vector2(-8, -6)],
             Name with { A = alpha }, Line(1, k));
+    }
+
+    /// <summary>A party's place as a vermilion seal (hanko): a red square, a paler rule inside, the numeral in paper colour.</summary>
+    public static void DrawSeal(CanvasItem c, Font font, Rect2 rect, int place)
+    {
+        c.DrawRect(rect, Vermilion);
+        c.DrawRect(rect.Grow(-Math.Max(1, rect.Size.X * 0.1f)), SealText with { A = 0.45f }, false, 1);
+        int size = Math.Max(6, (int)Math.Round(rect.Size.Y * 0.7f));
+        string text = place.ToString();
+        float w = font.GetStringSize(text, fontSize: size).X;
+        c.DrawString(font, new Vector2(rect.GetCenter().X - w / 2, Baseline(rect, font, size)), text, fontSize: size, modulate: SealText);
+    }
+
+    /// <summary>A place's number on a gold diamond of radius <paramref name="r"/> (our deployment screen's cards).</summary>
+    public static void DrawBadge(CanvasItem c, Font font, Vector2 at, float r, int place)
+    {
+        DrawDiamond(c, at, r, Gold);
+        DrawDiamond(c, at, r - 2, Color.Color8(60, 44, 24));
+        int size = Math.Max(6, (int)Math.Round(r * 1.1f));
+        string text = place.ToString();
+        float w = font.GetStringSize(text, fontSize: size).X;
+        c.DrawString(font, new Vector2(at.X - w / 2, at.Y + (font.GetAscent(size) - font.GetDescent(size)) / 2), text, fontSize: size, modulate: Name);
     }
 
     /// <summary>A small diamond centred at <paramref name="at"/>.</summary>

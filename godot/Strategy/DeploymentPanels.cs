@@ -1,3 +1,4 @@
+using System.Globalization;
 using Godot;
 using Kichikuou.Game.Battles;
 using Kichikuou.Original.Content.Strategy;
@@ -6,69 +7,71 @@ using Kichikuou.Original.State;
 namespace Kichikuou.Game.Strategy;
 
 /// <summary>
-/// The rest of our own deployment screen around the <see cref="DeploymentTableView"/> (owner's
-/// decision 25, docs/ui/deployment-table.md): everything of <c>Sﾌﾞﾀｲ</c>'s screen but the
-/// portrait and its description is covered — the details of the hovered unit
-/// (<see cref="DeploymentTable.Details"/>), the party as the battle sets it up — the back row on the
-/// left, the front row on the right, a card per place with the member's face and a remove button —
-/// and its totals against the gold (<see cref="DeploymentTable.Party"/>), and the bar's three buttons
-/// labelled from the player's files. It decides nothing: the presses go to <see cref="GameScreen"/>,
-/// which answers the script with the gestures it expects; a left click elsewhere on it does
-/// nothing, a right click is the script's own (the last member out). A member's card under the
-/// pointer is hovered as its row is (<see cref="HoveredUnit"/>): the script shows its details.
+/// Our own deployment screen around the <see cref="DeploymentTableView"/> (owner's decision 25,
+/// docs/ui/deployment-table.md), in the lacquer look and the layout of our Subordinates screen (the owner's E1/E2):
+/// over the whole screen — a dark lacquer backdrop with a faint gold wave pattern; the table's panel across the top
+/// (a title band over the ledger, which <see cref="GameScreen"/> places in <see cref="TableArea"/>); the hovered
+/// unit's picture panel at the bottom left, as the script would show it; the party at the bottom right as the
+/// battle sets it up — the back row on the left, the front row on the right, a card per place with the member's
+/// face, its place on a gold diamond and a remove button — with its totals against the budget and the bar's buttons:
+/// those that send the party in red lacquer (Attack or Search; Plains and City in a defence), Stop small. Drawn by
+/// hand in the 1280×800 screen's pixels, as our map panels (<see cref="Lacquer"/>). It decides nothing: the presses
+/// go to <see cref="GameScreen"/>, which answers the script with the gestures it expects; a left click elsewhere
+/// does nothing, a right click is the script's own (the last member out). A member's card under the pointer is
+/// hovered as its row is (<see cref="HoveredUnit"/>): the script shows its details, the picture with them.
 /// </summary>
 internal sealed partial class DeploymentPanels : Control
 {
-    /// <summary>The text size in script pixels, as the table's.</summary>
-    private const float TextSize = 10;
+    // In the 1280×800 screen's pixels (the script's 640×400 at 2×), after the mock-ups (tools/ui/mock_deployment.py, round e).
+    private static readonly Rect2 TablePanel = new(16, 16, 1248, 344);
 
-    // The covered areas, in script pixels: the right half and the left part below the portrait.
-    private static readonly Rect2 RightArea = new(320, 0, 320, 400);
-    private static readonly Rect2 LeftArea = new(0, 202, 320, 198);
-    private static readonly Rect2 DetailsArea = new(6, 204, 314, 46);
-    private static readonly Rect2 PartyArea = new(6, 254, 314, 142);
-    private static readonly Rect2 BarArea = new(322, 326, 316, 70);
+    /// <summary>Where the ledger goes, in the 1280×800 screen's pixels.</summary>
+    public static readonly Rect2 TableArea = new(30, 66, 1220, 282);
 
-    /// <summary>A face's square on a member's card, in script pixels (90 screen pixels in a 1280×800 window).</summary>
-    private const float FaceSize = 45;
+    private static readonly Rect2 PictureArea = new(16, 368, 666, 416);
+    private static readonly Rect2 PartyPanel = new(690, 368, 574, 416);
+    private const float RowLabelsY = 428, CardsTop = 440, CardHeight = 104, CardGap = 8, TotalsY = 678;
+    private static readonly Rect2 BarArea = new(704, 712, 546, 58);
+    private const float StopWidth = 130, ButtonGap = 8;
 
-    private DeploymentPalette _colours = DeploymentPalette.Chosen;   // Option → Palette
-    private Color Back => _colours.Back;
-    private Color CardBack => _colours.Card;
-    private Color Border => _colours.Border;
-    private Color Muted => _colours.Muted;
-    private Color Warning => _colours.Warning;
-    private readonly List<StyleBoxFlat> _panelBoxes = [];   // the details' and the party's frames
-    private readonly List<Label> _headers = [];             // "Back row", "Front row"
+    /// <summary>The strip right of the cards where the facing mark stands (the owner's U5), with the gap before it.</summary>
+    private const float FacingStrip = 30, FacingGap = 6;
 
-    private readonly ColorRect _right;
-    private readonly ColorRect _left;
-    private readonly PanelContainer _details;
-    private readonly RichTextLabel _detailsText;
-    private readonly PanelContainer _party;
-    private readonly HBoxContainer _rows;                   // the back row's column, then the front row's
-    private readonly RichTextLabel _partyTotals;
+    /// <summary>A dragged face's size under the pointer.</summary>
+    private const float GhostSize = 64;
+
+    /// <summary>How far, in window pixels, a press moves before it is a drag.</summary>
+    private const float DragDistance = 6;
+
+    // The pressable parts: the bar's buttons 1-3, a member's remove button from RemoveButton + place.
+    private const int NoPart = -1, RemoveButton = 10;
+
     private readonly FacePictures _faces;
-    private readonly List<PlaceCard> _cards = [];           // the offered places' cards
-    private readonly TextureRect _ghost;                    // the dragged member's face under the pointer
+    private readonly Layer _backdrop, _screen;
+    private readonly FontFile _brush = Lacquer.Brush();
+    private readonly FontVariation _cinzel = Lacquer.Cinzel(700), _cinzelLight = Lacquer.Cinzel(600);
+    private FontFile _gothic;
+    private FaceCrops _crops = new();
+    private Vector2 _origin;
+    private float _k = 1;                                   // window pixels to a screen pixel
+    private DeploymentParty? _party;
+    private string[] _labels = ["", "", ""];
+    private int _mode;
+    private string _date = "", _key = "";
+    private ImageTexture? _picture;
+    private int _hovered = NoPart, _pressed = NoPart, _hoveredPlace;
     private int _dragFrom;                                  // the place a left press fell on (0: none)
     private Vector2 _dragStart;
     private bool _dragging;
     private int _dropOn;                                    // the place under the pointer while dragging (0: none)
-    private FaceCrops _crops = new();
-    private float _pixels = 1;                              // screen pixels to a script pixel
-    private readonly HBoxContainer _bar;
-    private readonly Button[] _buttons = new Button[3];
-    private readonly Theme _theme = new();
-    private string _detailsKey = "?", _partyKey = "?", _barKey = "?";
 
     /// <summary>The remove button of a member (the unit's number).</summary>
     public event Action<int>? RemovePressed;
 
-    /// <summary>A bar button, 1-3 from the left.</summary>
+    /// <summary>A bar button, 1-3 from the left as on the original's bar.</summary>
     public event Action<int>? ButtonPressed;
 
-    /// <summary>A right press anywhere on the panels.</summary>
+    /// <summary>A right press anywhere on the screen.</summary>
     public event Action? RightPressed;
 
     /// <summary>A member's card dragged onto another place: the places (1-4), from and to.</summary>
@@ -77,145 +80,50 @@ internal sealed partial class DeploymentPanels : Control
     /// <summary>Whether a drop's clicks are under way: no drag starts until they are done.</summary>
     public bool Busy { get; set; }
 
-    /// <summary>An offered place's card: its box (the border shows a drop), its member (0 for none) and the member's face.</summary>
-    private sealed record PlaceCard(Control Card, StyleBoxFlat Box, int Place, int Unit, Texture2D? Face);
-
-    /// <summary>How far, in screen pixels, a press moves before it is a drag.</summary>
-    private const float DragDistance = 6;
-
     public DeploymentPanels(GameFont font, FacePictures faces)
     {
         _faces = faces;
-        MouseFilter = MouseFilterEnum.Ignore;
+        _gothic = DeploymentTableView.LoadFont(font);
+        MouseFilter = MouseFilterEnum.Stop;                     // over the whole screen; the table over it is its own
         Visible = false;
-        Theme = _theme;
-        _right = Backdrop();
-        _left = Backdrop();
-
-        _details = Panel();
-        _detailsText = Text();
-        _details.AddChild(_detailsText);
-
-        _party = Panel();
-        var column = new VBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
-        column.AddThemeConstantOverride("separation", 2);
-        var headers = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
-        headers.AddThemeConstantOverride("separation", 6);
-        foreach (string header in new[] { "Back row", "Front row  ▶" })
-        {
-            var label = new Label { Text = header, HorizontalAlignment = HorizontalAlignment.Center, SizeFlagsHorizontal = SizeFlags.ExpandFill };
-            _headers.Add(label);
-            headers.AddChild(label);
-        }
-        column.AddChild(headers);
-        _rows = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore, SizeFlagsVertical = SizeFlags.ExpandFill };
-        _rows.AddThemeConstantOverride("separation", 6);
-        column.AddChild(_rows);
-        _partyTotals = Text();
-        column.AddChild(_partyTotals);
-        _party.AddChild(column);
-
-        _bar = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
-        _bar.AddThemeConstantOverride("separation", 6);
-        AddChild(_bar);
-        for (int i = 0; i < 3; i++)
-        {
-            int button = i + 1;
-            var b = new Button { FocusMode = FocusModeEnum.None, SizeFlagsHorizontal = SizeFlags.ExpandFill };
-            b.Pressed += () => ButtonPressed?.Invoke(button);
-            b.GuiInput += RightClick;
-            _buttons[i] = b;
-            _bar.AddChild(b);
-        }
-        _ghost = new TextureRect
-        {
-            MouseFilter = MouseFilterEnum.Ignore,
-            Visible = false,
-            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
-            Modulate = new Color(1, 1, 1, 0.85f),
-        };
-        AddChild(_ghost);                                       // over everything else of the panels
-        ApplyPalette();
-        SetFont(font);
+        _backdrop = new Layer(DrawBackdrop) { ClipContents = true };
+        AddChild(_backdrop);
+        _screen = new Layer(DrawScreen);
+        AddChild(_screen);
     }
 
-    /// <summary>Option → Palette: the panels in <paramref name="palette"/>'s colours at once.</summary>
-    public void SetPalette(DeploymentPalette palette)
+    /// <summary>Option → Fonts: the screen's text in the chosen font, as the table's.</summary>
+    public void SetFont(GameFont font)
     {
-        _colours = palette;
-        ApplyPalette();
+        _gothic = DeploymentTableView.LoadFont(font);
+        _screen.QueueRedraw();
     }
 
-    private void ApplyPalette()
-    {
-        _theme.SetColor("font_color", "Label", _colours.Text);
-        _theme.SetColor("default_color", "RichTextLabel", _colours.Text);
-        _right.Color = _left.Color = Back;
-        foreach (var box in _panelBoxes)
-        {
-            box.BgColor = Back;
-            box.BorderColor = Border;
-        }
-        foreach (var header in _headers)
-            header.AddThemeColorOverride("font_color", Muted);
-        foreach (var b in _buttons)
-        {
-            b.AddThemeStyleboxOverride("normal", ButtonBox(_colours.Button));
-            b.AddThemeStyleboxOverride("hover", ButtonBox(_colours.ButtonHover));
-            b.AddThemeStyleboxOverride("pressed", ButtonBox(_colours.ButtonPressed));
-            b.AddThemeStyleboxOverride("disabled", ButtonBox(_colours.ButtonDisabled));
-            foreach (var state in new[] { "font_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color" })
-                b.AddThemeColorOverride(state, _colours.ButtonText);
-            b.AddThemeColorOverride("font_disabled_color", _colours.ButtonText.Lerp(_colours.ButtonDisabled, 0.6f));
-        }
-        _detailsKey = _partyKey = "?";                          // the details and the cards filled in again in these colours
-    }
-
-    /// <summary>Option → Fonts: the panels' text in the chosen font, as the table's.</summary>
-    public void SetFont(GameFont font) => _theme.DefaultFont = DeploymentTableView.LoadFont(font);
-
-    /// <summary>Whether the pointer is over the covered areas.</summary>
-    public bool HasPointer => Visible && (_right.GetGlobalRect().HasPoint(GetGlobalMousePosition())
-        || _left.GetGlobalRect().HasPoint(GetGlobalMousePosition()));
+    /// <summary>Whether the pointer is over the screen.</summary>
+    public bool HasPointer => Visible && GetGlobalRect().HasPoint(GetGlobalMousePosition());
 
     /// <summary>The unit whose card is under the pointer, or 0.</summary>
-    public int HoveredUnit
-    {
-        get
-        {
-            if (!Visible)
-                return 0;
-            return CardAt(GetGlobalMousePosition())?.Unit ?? 0;
-        }
-    }
-
-    /// <summary>The offered place's card at <paramref name="at"/> (global), or null.</summary>
-    private PlaceCard? CardAt(Vector2 at) => _cards.Find(c => c.Card.GetGlobalRect().HasPoint(at));
+    public int HoveredUnit => Visible && MemberAt(PlaceAt(ScreenPoint(GetLocalMousePosition()))) is { } member ? member.Unit : 0;
 
     /// <summary>
-    /// Covers the areas over the screen whose script pixel (0, 0) is at <paramref name="origin"/>
-    /// (in its parent's coordinates), <paramref name="pixelsPerScript"/> screen pixels to a script pixel.
+    /// Covers the screen whose script pixel (0, 0) is at <paramref name="origin"/> (in its parent's
+    /// coordinates), <paramref name="pixelsPerScript"/> window pixels to a script pixel.
     /// </summary>
     public void Place(Vector2 origin, float pixelsPerScript)
     {
-        void At(Control c, Rect2 area)
+        Position = Vector2.Zero;
+        Size = GetParentAreaSize();
+        float k = pixelsPerScript / 2;
+        var area = new Vector2(1280, 800) * k;
+        if (origin == _origin && Math.Abs(k - _k) < 0.0001f && _backdrop.Size == area)
+            return;
+        _origin = origin;
+        _k = k;
+        foreach (var layer in new[] { _backdrop, _screen })
         {
-            c.Position = origin + area.Position * pixelsPerScript;
-            c.Size = area.Size * pixelsPerScript;
-        }
-        At(_right, RightArea);
-        At(_left, LeftArea);
-        At(_details, DetailsArea);
-        At(_party, PartyArea);
-        At(_bar, BarArea);
-        _theme.DefaultFontSize = Math.Max(8, (int)Math.Round(TextSize * pixelsPerScript));
-        foreach (var b in _buttons)
-            b.AddThemeFontSizeOverride("font_size", Math.Max(10, (int)Math.Round(16 * pixelsPerScript)));
-        if (pixelsPerScript != _pixels)
-        {
-            _pixels = pixelsPerScript;
-            _partyKey = "?";                                    // the faces are shrunk to the new size
+            layer.Position = origin;
+            layer.Size = area;
+            layer.QueueRedraw();
         }
     }
 
@@ -223,285 +131,487 @@ internal sealed partial class DeploymentPanels : Control
     public void LoadCrops()
     {
         _crops = FaceCropFile.Load();
-        _partyKey = "?";
+        _key = "";
     }
 
     /// <summary>
-    /// The panels from <paramref name="state"/> and the bar's labels from <paramref name="picker"/>,
-    /// filled in again when anything shown changed; the party in <paramref name="order"/> while a
-    /// drop's clicks run (the order it asked for, not the orders on the way).
+    /// The screen from <paramref name="state"/> and the bar's labels and mode from <paramref name="picker"/>, drawn
+    /// again when anything shown changed; the party in <paramref name="order"/> while a drop's clicks run (the
+    /// order it asked for, not the orders on the way).
     /// </summary>
     public void Refresh(GameState state, PickerView picker, IReadOnlyList<int>? order = null)
     {
-        var details = DeploymentTable.Details(state);
-        string detailsKey = details?.ToString() ?? "";
-        if (detailsKey != _detailsKey)
-        {
-            _detailsKey = detailsKey;
-            _detailsText.Text = details is null ? "" :
-                $"{details.Name}   {Label("Type")} {details.TroopType}\n"
-                + $"{Label("Expense")} {details.Cost * 100}K   {Label("Troops")} {details.Troops}/{details.MaxTroops}\n"
-                + $"{Label("Rows")} {(details.Rows == "" ? "—" : details.Rows)}   {Label("Item")} {(details.Item == "" ? "—" : details.Item)}";
-        }
-
         var party = DeploymentTable.Party(state, order);
-        string partyKey = string.Join(";", party.Places) + $"|{party.Troops}|{party.Cost}|{party.Gold}";
-        if (partyKey != _partyKey)
-        {
-            _partyKey = partyKey;
-            FillParty(party);
-        }
-
+        var details = DeploymentTable.Details(state);
         var labels = picker.BarLabelTexts();
-        string barKey = string.Join("|", labels);
-        if (barKey != _barKey)
-        {
-            _barKey = barKey;
-            for (int i = 0; i < 3; i++)
-            {
-                _buttons[i].Text = labels[i];
-                _buttons[i].Disabled = labels[i].Trim().Trim('-', '－', 'ー') == "";      // "---": no button there
-            }
-        }
+        var (year, month, week) = StatusStrip.DateOf(state.Week.Value);
+        string date = $"LP {year} · Month {month} · Week {week}";
+        int portrait = details is null ? 0 : state.Units[details.Unit].PortraitCg.Value;
+        string key = $"{string.Join(";", party.Places)}|{party.Troops}|{party.Cost}|{party.Gold}|{string.Join("|", labels)}"
+            + $"|{picker.Mode.Value}|{date}|{portrait}|{Busy}";
+        if (key == _key)
+            return;
+        _key = key;
+        if (_party is null || !party.Places.SequenceEqual(_party.Places))
+            EndDrag();
+        _party = party;
+        _labels = [.. labels];
+        _mode = picker.Mode.Value;
+        _date = date;
+        _picture = _faces.PicturePanel(portrait);
+        _screen.QueueRedraw();
     }
 
     /// <summary>A bar button as the mouse presses it (unattended play goes through here).</summary>
     public void PressButton(int button)
     {
-        if (_buttons[button - 1].Disabled)
+        if (!HasButton(button))
             throw new InvalidOperationException($"The bar has no button {button} here.");
         ButtonPressed?.Invoke(button);
     }
 
-    /// <summary>
-    /// The party as the battle sets it up (variant B, owner 2026-10-12): places 1-2 are the front row,
-    /// 3-4 the back row (docs/battle/01-flow.md §0.2), the back row's column on the left and the
-    /// front row's on the right, towards the enemy. A member's card has its face (<see cref="UnitFaces"/>),
-    /// name, troop type, troops and war expense, its place and its remove button; a place the screen
-    /// does not offer (<c>Tmp0040</c>) is left blank. A member's card is dragged onto another place
-    /// (<see cref="Dropped"/>).
-    /// </summary>
-    private void FillParty(DeploymentParty party)
+    // ---------------------------------------------------------------- the parts and the input
+
+    /// <summary>Whether the bar has button <paramref name="button"/> here ("---": none).</summary>
+    private bool HasButton(int button) => _labels[button - 1].Trim().Trim('-', '－', 'ー') != "";
+
+    /// <summary>The bar's buttons that send the party (1, and 2 in a defence) and Stop (3), with their places.</summary>
+    private IEnumerable<(int Button, Rect2 Rect)> BarButtons()
     {
-        EndDrag();
-        foreach (var child in _rows.GetChildren())
+        int[] sends = [.. new[] { 1, 2 }.Where(HasButton)];
+        float x = BarArea.Position.X;
+        float w = sends.Length == 0 ? 0 : (BarArea.Size.X - StopWidth - ButtonGap * sends.Length) / sends.Length;
+        foreach (int button in sends)
         {
-            _rows.RemoveChild(child);
-            child.QueueFree();
+            yield return (button, new Rect2(x, BarArea.Position.Y, w, BarArea.Size.Y));
+            x += w + ButtonGap;
         }
-        _cards.Clear();
-        foreach (int[] places in new[] { new[] { 3, 4 }, new[] { 1, 2 } })
-        {
-            var row = new VBoxContainer { MouseFilter = MouseFilterEnum.Ignore, SizeFlagsHorizontal = SizeFlags.ExpandFill };
-            row.AddThemeConstantOverride("separation", (int)Math.Round(3 * _pixels));
-            foreach (int place in places)
-                row.AddChild(Card(place, place <= party.Places.Count, place <= party.Places.Count ? party.Places[place - 1] : null));
-            _rows.AddChild(row);
-        }
-        string cost = $"{party.Cost * 100}K";
-        _partyTotals.Text = $"{Label("Troop total")} {party.Troops}      {Label("War expenses")} "
-            + (party.Affordable ? cost : $"[color=#{Warning.ToHtml(false)}]{cost}[/color]")
-            + $" {Label("of")} {party.Gold * 100}K";
+        if (HasButton(3))
+            yield return (3, new Rect2(BarArea.End.X - StopWidth, BarArea.Position.Y, StopWidth, BarArea.Size.Y));
     }
 
-    /// <summary>
-    /// Place <paramref name="place"/>'s card: blank where the screen does not offer it, "empty" where
-    /// no member stands, else the member's face and lines with the remove button and the expense.
-    /// </summary>
-    private Control Card(int place, bool offered, DeploymentMember? member)
+    /// <summary>Place <paramref name="place"/>'s card: the back row (3, 4) on the left, the front row (1, 2) on the right.</summary>
+    private static Rect2 CardRect(int place)
     {
-        int pad = Math.Max(1, (int)Math.Round(2 * _pixels));
-        var card = new PanelContainer { MouseFilter = MouseFilterEnum.Ignore, SizeFlagsVertical = SizeFlags.ExpandFill };
-        var cardBox = new StyleBoxFlat
-        {
-            BgColor = member is null ? Back : CardBack, BorderColor = offered ? Border : Back,
-            BorderWidthLeft = 1, BorderWidthTop = 1, BorderWidthRight = 1, BorderWidthBottom = 1,
-            ContentMarginLeft = pad, ContentMarginRight = pad, ContentMarginTop = pad, ContentMarginBottom = pad,
-        };
-        card.AddThemeStyleboxOverride("panel", cardBox);
-        if (!offered)
-            return card;
-        var line = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
-        line.AddThemeConstantOverride("separation", pad * 2);
-        card.AddChild(line);
-        if (member is null)
-        {
-            line.AddChild(Line($"{place}  empty", Muted, center: true));
-            _cards.Add(new PlaceCard(card, cardBox, place, 0, null));
-            return card;
-        }
-
-        int size = (int)Math.Round(FaceSize * _pixels);
-        var face = new TextureRect
-        {
-            CustomMinimumSize = new Vector2(size, size),
-            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-            StretchMode = TextureRect.StretchModeEnum.KeepCentered,
-            SizeFlagsVertical = SizeFlags.ShrinkCenter,
-            MouseFilter = MouseFilterEnum.Ignore,
-        };
-        if (member.FaceCg != 0)
-            face.Texture = _faces.SquareTexture(member.FaceCg, _faces.CropOf(member.FaceCg, _crops), size);
-        line.AddChild(face);
-
-        var text = new VBoxContainer { MouseFilter = MouseFilterEnum.Ignore, SizeFlagsHorizontal = SizeFlags.ExpandFill };
-        text.AddThemeConstantOverride("separation", 0);
-        var name = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
-        name.AddThemeConstantOverride("separation", pad * 2);
-        name.AddChild(Line(place.ToString(), Muted, expand: false));
-        name.AddChild(Line(member.Name));
-        text.AddChild(name);
-        text.AddChild(Line(member.TroopType, Muted));
-        text.AddChild(Line($"{member.Troops} troops"));
-        text.AddChild(new Control { SizeFlagsVertical = SizeFlags.ExpandFill, MouseFilter = MouseFilterEnum.Ignore });
-        var cost = Line($"Cost: {member.Cost * 100}K", expand: false);       // under the text, so the lines keep the card's width (owner, 2026-10-12)
-        cost.HorizontalAlignment = HorizontalAlignment.Right;
-        text.AddChild(cost);
-        line.AddChild(text);
-
-        var remove = new Button { Text = "×", Flat = true, FocusMode = FocusModeEnum.None, TooltipText = "Take out of the party", SizeFlagsVertical = SizeFlags.ShrinkBegin };
-        remove.AddThemeColorOverride("font_color", Warning);
-        remove.AddThemeColorOverride("font_hover_color", Warning.Lightened(0.3f));
-        foreach (var box in new[] { "normal", "hover", "pressed", "focus" })
-            remove.AddThemeStyleboxOverride(box, new StyleBoxEmpty());     // as tall as the labels
-        int unit = member.Unit;
-        remove.Pressed += () => RemovePressed?.Invoke(unit);
-        remove.GuiInput += RightClick;
-        line.AddChild(remove);
-        _cards.Add(new PlaceCard(card, cardBox, place, member.Unit, face.Texture));
-        return card;
+        float x0 = PartyPanel.Position.X + 14, x1 = PartyPanel.End.X - 14 - FacingStrip - FacingGap, mid = (x0 + x1) / 2;
+        float w = mid - 3 - x0;
+        float x = place is 3 or 4 ? x0 : mid + 3;
+        float y = CardsTop + (place is 2 or 4 ? CardHeight + CardGap : 0);
+        return new Rect2(x, y, w, CardHeight);
     }
 
-    /// <summary>A line of a card: one that takes the room left is cut with an ellipsis where it does not fit, the others are whole.</summary>
-    private static Label Line(string text, Color? color = null, bool expand = true, bool center = false)
+    private static Rect2 RemoveRect(int place)
     {
-        var label = new Label
-        {
-            Text = text,
-            ClipText = expand,
-            TextOverrunBehavior = expand ? TextServer.OverrunBehavior.TrimEllipsis : TextServer.OverrunBehavior.NoTrimming,
-            SizeFlagsHorizontal = expand ? SizeFlags.ExpandFill : SizeFlags.Fill,
-            MouseFilter = MouseFilterEnum.Ignore,
-        };
-        if (center)
-        {
-            label.HorizontalAlignment = HorizontalAlignment.Center;
-            label.VerticalAlignment = VerticalAlignment.Center;
-            label.SizeFlagsVertical = SizeFlags.ExpandFill;
-        }
-        if (color is { } c)
-            label.AddThemeColorOverride("font_color", c);
-        return label;
+        var card = CardRect(place);
+        return new Rect2(card.End.X - 26, card.Position.Y + 6, 20, 20);
     }
 
-    private string Label(string text) => $"[color=#{Muted.ToHtml(false)}]{text}[/color]";
-
-    private ColorRect Backdrop()
+    /// <summary>The offered place at <paramref name="at"/> (screen pixels), or 0.</summary>
+    private int PlaceAt(Vector2 at)
     {
-        var rect = new ColorRect { Color = Back, MouseFilter = MouseFilterEnum.Stop };
-        rect.GuiInput += e =>
-        {
-            RightClick(e);
-            Drag(e);
-            if (e is InputEventMouseButton)
-                rect.AcceptEvent();                                     // a left click on the panels does nothing
-        };
-        AddChild(rect);
-        return rect;
+        for (int place = 1; place <= (_party?.Places.Count ?? 0); place++)
+            if (CardRect(place).HasPoint(at))
+                return place;
+        return 0;
     }
 
-    /// <summary>
-    /// A left press on a member's card, moved further than <see cref="DragDistance"/>, drags it: its
-    /// face follows the pointer and the place under it is framed; released over another place, the
-    /// drop goes to <see cref="Dropped"/>. No drag starts while <see cref="Busy"/>.
-    /// </summary>
-    private void Drag(InputEvent e)
+    private DeploymentMember? MemberAt(int place) => place >= 1 && _party is { } p && place <= p.Places.Count ? p.Places[place - 1] : null;
+
+    private int PartAt(Vector2 at)
     {
-        var at = GetGlobalMousePosition();
+        foreach (var (button, rect) in BarButtons())
+            if (rect.HasPoint(at))
+                return button;
+        int place = PlaceAt(at);
+        return MemberAt(place) is not null && RemoveRect(place).HasPoint(at) ? RemoveButton + place : NoPart;
+    }
+
+    private Vector2 ScreenPoint(Vector2 local) => (local - _origin) / _k;
+
+    public override void _GuiInput(InputEvent e)
+    {
         switch (e)
         {
-            case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true }:
-                EndDrag();
-                _dragFrom = !Busy && CardAt(at) is { Unit: not 0 } pressed ? pressed.Place : 0;
-                _dragStart = at;
+            case InputEventMouseMotion motion:
+                Hover(ScreenPoint(motion.Position));
+                if (_dragFrom != 0)
+                    DragTo(motion.Position);
                 break;
-            case InputEventMouseMotion when _dragFrom != 0:
-                if (!_dragging)
+            case InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true }:
+                RightPressed?.Invoke();
+                AcceptEvent();
+                break;
+            case InputEventMouseButton { ButtonIndex: MouseButton.Left } click:
+                var at = ScreenPoint(click.Position);
+                int part = PartAt(at);
+                if (click.Pressed)
                 {
-                    if (at.DistanceTo(_dragStart) < DragDistance || _cards.Find(c => c.Place == _dragFrom) is not { } source)
-                        return;
-                    _dragging = true;
-                    source.Card.Modulate = new Color(1, 1, 1, 0.4f);
-                    float size = (float)Math.Round(FaceSize * _pixels);
-                    _ghost.Texture = source.Face;
-                    _ghost.Size = new Vector2(size, size);
-                    _ghost.Visible = true;
+                    EndDrag();
+                    _pressed = part;
+                    _dragFrom = part == NoPart && !Busy && MemberAt(PlaceAt(at)) is not null ? PlaceAt(at) : 0;
+                    _dragStart = click.Position;
                 }
-                _ghost.GlobalPosition = at - _ghost.Size / 2;
-                ShowDropOn(CardAt(at) is { } over && over.Place != _dragFrom ? over.Place : 0);
-                break;
-            case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false } when _dragFrom != 0:
-                int from = _dragFrom, to = _dropOn;
-                EndDrag();
-                if (to != 0 && !Busy)
-                    Dropped?.Invoke(from, to);
+                else
+                {
+                    if (_dragging)
+                    {
+                        int from = _dragFrom, to = _dropOn;
+                        EndDrag();
+                        if (to != 0 && !Busy)
+                            Dropped?.Invoke(from, to);
+                    }
+                    else if (part != NoPart && part == _pressed)
+                        Click(part);
+                    _dragFrom = 0;
+                    _pressed = NoPart;
+                }
+                _screen.QueueRedraw();
+                AcceptEvent();                                  // a left click elsewhere does nothing
                 break;
         }
     }
 
-    /// <summary>The place <paramref name="place"/> framed as where a drop goes (0: none).</summary>
-    private void ShowDropOn(int place)
+    public override void _Notification(int what)
     {
-        if (place == _dropOn)
-            return;
-        foreach (var c in _cards)
-            c.Box.BorderColor = c.Place == place ? _colours.Accent : Border;
-        _dropOn = place;
+        if (what == NotificationMouseExit)
+            Hover(new Vector2(-1, -1));
     }
 
-    /// <summary>Any drag under way given up: the cards as they were, the face hidden.</summary>
+    private void Hover(Vector2 at)
+    {
+        int part = PartAt(at), place = PlaceAt(at);
+        if (part == _hovered && place == _hoveredPlace)
+            return;
+        _hovered = part;
+        _hoveredPlace = place;
+        _screen.QueueRedraw();
+    }
+
+    private void Click(int part)
+    {
+        if (part >= RemoveButton)
+        {
+            if (MemberAt(part - RemoveButton) is { } member)
+                RemovePressed?.Invoke(member.Unit);
+        }
+        else
+            ButtonPressed?.Invoke(part);
+    }
+
+    public override string _GetTooltip(Vector2 atPosition) =>
+        PartAt(ScreenPoint(atPosition)) >= RemoveButton ? "Take out of the party" : "";
+
+    /// <summary>
+    /// A left press on a member's card, moved further than <see cref="DragDistance"/>, drags it: the card dims, its
+    /// face follows the pointer and the place under it glows; released over another place, the drop goes to
+    /// <see cref="Dropped"/>. No drag starts while <see cref="Busy"/>.
+    /// </summary>
+    private void DragTo(Vector2 local)
+    {
+        if (!_dragging)
+        {
+            if (local.DistanceTo(_dragStart) < DragDistance || Busy)
+                return;
+            _dragging = true;
+            _pressed = NoPart;
+        }
+        int over = PlaceAt(ScreenPoint(local));
+        _dropOn = over != _dragFrom ? over : 0;
+        _screen.QueueRedraw();
+    }
+
+    /// <summary>Any drag under way given up.</summary>
     private void EndDrag()
     {
-        ShowDropOn(0);
-        foreach (var c in _cards)
-            c.Card.Modulate = Colors.White;
-        _ghost.Visible = false;
         _dragFrom = 0;
         _dragging = false;
+        _dropOn = 0;
+        _screen.QueueRedraw();
     }
 
-    private void RightClick(InputEvent e)
+    // ---------------------------------------------------------------- drawing
+
+    private float Line(float width) => Lacquer.Line(width, _k);
+
+    private void DrawBackdrop(Control c)
     {
-        if (e is InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true })
-            RightPressed?.Invoke();
+        c.DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
+        Lacquer.DrawWaveBackdrop(c, _k);
     }
 
-    private PanelContainer Panel()
+    private void DrawScreen(Control c)
     {
-        var panel = new PanelContainer { MouseFilter = MouseFilterEnum.Ignore };
-        var box = new StyleBoxFlat
+        c.DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
+        DrawTablePanel(c);
+        DrawPicture(c);
+        DrawParty(c);
+        if (_dragging && MemberAt(_dragFrom) is { } dragged)
+            DrawGhost(c, dragged);
+    }
+
+    /// <summary>The table's panel: the title band (the screen's name, the mode and the places offered, the date) over the ledger.</summary>
+    private void DrawTablePanel(Control c)
+    {
+        Lacquer.DrawPanel(c, TablePanel, _k);
+        var band = new Rect2(TablePanel.Position.X + 22, TablePanel.Position.Y + 8, TablePanel.Size.X - 44, 34);
+        const string title = "Deployment";
+        c.DrawString(_brush, new Vector2(band.Position.X, Lacquer.Baseline(band, _brush, 24)), title, fontSize: 24, modulate: Lacquer.Name);
+        float tw = _brush.GetStringSize(title, fontSize: 24).X;
+        int places = _party?.Places.Count ?? 0;
+        string mode = _mode switch { 1 => "Attack", 2 => "Defence", 3 => "Dungeon search", _ => "" };
+        string subtitle = (mode == "" ? "" : mode + " · ") + (places == 1 ? "1 unit" : $"up to {places} units");
+        c.DrawString(_cinzelLight, new Vector2(band.Position.X + tw + 16, Lacquer.Baseline(band, _cinzelLight, 13) + 1),
+            subtitle, fontSize: 13, modulate: Lacquer.Subtitle);
+        float dw = _cinzel.GetStringSize(_date, fontSize: 15).X;
+        c.DrawString(_cinzel, new Vector2(band.End.X - dw, Lacquer.Baseline(band, _cinzel, 15) + 1), _date, fontSize: 15, modulate: Lacquer.Name);
+        Lacquer.DrawDivider(c, TablePanel.Position.X + 16, TablePanel.End.X - 16, TablePanel.Position.Y + 44, _k);
+    }
+
+    /// <summary>The picture panel with a shadow under it (its gold frame is the original's).</summary>
+    private void DrawPicture(Control c)
+    {
+        var p = PictureArea;
+        for (int i = 10; i >= 1; i--)
+            c.DrawRect(new Rect2(p.Position.X - i + 3, p.Position.Y - i + 8, p.Size.X + 2 * i, p.Size.Y + 2 * i), new Color(0, 0, 0, 0.06f));
+        if (_picture is not null)
+            c.DrawTextureRect(_picture, p, false);
+        else
+            c.DrawRect(p, Colors.Black);
+    }
+
+    /// <summary>The party's panel: its header with the budget, the rows' labels, the cards, the totals and the bar.</summary>
+    private void DrawParty(Control c)
+    {
+        Lacquer.DrawPanel(c, PartyPanel, _k);
+        if (_party is not { } party)
+            return;
+        var head = new Rect2(PartyPanel.Position.X + 18, PartyPanel.Position.Y + 10, PartyPanel.Size.X - 36, 30);
+        c.DrawString(_brush, new Vector2(head.Position.X, Lacquer.Baseline(head, _brush, 20)), "Party", fontSize: 20, modulate: Lacquer.Name);
+        float x = head.End.X;
+        x = RightString(c, _cinzelLight, "K GOLD", 11, Lacquer.Subtitle, x, head) - 6;
+        x = RightString(c, _cinzel, (party.Gold * 100).ToString("N0", CultureInfo.InvariantCulture), 20, Lacquer.Name, x, head) - 10;
+        RightString(c, _cinzelLight, "Budget", 12, Lacquer.Label, x, head);
+        Lacquer.DrawDivider(c, PartyPanel.Position.X + 14, PartyPanel.End.X - 14, PartyPanel.Position.Y + 44, _k);
+
+        var back = CardRect(3);
+        var front = CardRect(1);
+        CentredString(c, _cinzel, "Back row", 13, Lacquer.Label, back.GetCenter().X, RowLabelsY + 5);
+        const string frontLabel = "Front row";
+        float fw = _cinzel.GetStringSize(frontLabel, fontSize: 13).X;
+        CentredString(c, _cinzel, frontLabel, 13, Lacquer.Label, front.GetCenter().X - 8, RowLabelsY + 5);
+        c.DrawString(_gothic, new Vector2(front.GetCenter().X - 8 + fw / 2 + 6, RowLabelsY + 5), "▶", fontSize: 11, modulate: Lacquer.Label);
+
+        for (int place = 1; place <= party.Places.Count; place++)
+            DrawCard(c, place, party.Places[place - 1]);
+        if (_dropOn != 0)
+            DrawDrop(c, _dropOn);
+        DrawFacing(c);
+
+        float left = PartyPanel.Position.X + 20;
+        var totals = new Rect2(left, TotalsY - 14, PartyPanel.Size.X - 40, 28);
+        DrawFigure(c, totals.Position.X, totals, "Troops", party.Troops.ToString("N0", CultureInfo.InvariantCulture), Lacquer.Value);
+        DrawFigure(c, totals.Position.X + 180, totals, "War expenses", $"{(party.Cost * 100).ToString("N0", CultureInfo.InvariantCulture)}K",
+            party.Affordable ? Lacquer.Value : Lacquer.Minus);
+        c.DrawLine(new Vector2(PartyPanel.Position.X + 16, TotalsY + 18), new Vector2(PartyPanel.End.X - 16, TotalsY + 18), Lacquer.DimGold, Line(1));
+
+        int sends = BarButtons().Count(b => b.Button != 3);
+        string cost = $"{(party.Cost * 100).ToString("N0", CultureInfo.InvariantCulture)}K";
+        foreach (var (button, rect) in BarButtons())
         {
-            BorderWidthLeft = 1, BorderWidthTop = 1, BorderWidthRight = 1, BorderWidthBottom = 1,
-            ContentMarginLeft = 8, ContentMarginRight = 8, ContentMarginTop = 3, ContentMarginBottom = 3,
-        };
-        _panelBoxes.Add(box);                                   // coloured by ApplyPalette
-        panel.AddThemeStyleboxOverride("panel", box);
-        AddChild(panel);
-        return panel;
+            bool hover = button == _hovered, down = hover && button == _pressed;
+            string label = _labels[button - 1].Trim();
+            if (button == 3)
+            {
+                c.DrawRect(rect, down ? Lacquer.Row : hover ? Lacquer.RowHover : Lacquer.Row);
+                c.DrawRect(rect, hover ? Lacquer.HoverLine : Lacquer.DimGold, false, Line(hover ? 2 : 1));
+                CentredString(c, _cinzel, label, 18, hover ? Lacquer.Name : Lacquer.Text, rect.GetCenter().X, Lacquer.Baseline(rect, _cinzel, 18));
+                continue;
+            }
+            Lacquer.DrawRedButton(c, rect, hover, down, _k);
+            string note = (_mode, button) switch
+            {
+                (2, 1) => "Fight on the plains",
+                (2, 2) => "Fight in the city",
+                (3, _) => $"Into the dungeon  ·  {cost}",
+                _ => $"Go to war  ·  {cost}",
+            };
+            var top = new Rect2(rect.Position, new Vector2(rect.Size.X, rect.Size.Y * 0.62f));
+            var bottom = new Rect2(rect.Position.X, rect.Position.Y + rect.Size.Y * 0.56f, rect.Size.X, rect.Size.Y * 0.38f);
+            int size = sends == 1 ? 21 : 19;
+            CentredString(c, _brush, label, size, Color.Color8(250, 226, 160), rect.GetCenter().X, Lacquer.Baseline(top, _brush, size));
+            if (sends == 1)
+                CentredString(c, _gothic, note, 13, Color.Color8(236, 206, 160), rect.GetCenter().X, Lacquer.Baseline(bottom, _gothic, 13));
+            else
+                CentredString(c, _cinzelLight, note, 11, Color.Color8(236, 206, 160), rect.GetCenter().X, Lacquer.Baseline(bottom, _cinzelLight, 11));
+        }
     }
 
-    private static RichTextLabel Text() => new()
+    /// <summary>
+    /// The way the whole party faces (the owner's U5): one gold triangle right of the cards at the two rows' middle,
+    /// pointing at the enemy's side, a dark one inside it.
+    /// </summary>
+    private void DrawFacing(Control c)
     {
-        BbcodeEnabled = true,
-        ScrollActive = false,
-        FitContent = true,
-        AutowrapMode = TextServer.AutowrapMode.Off,
-        MouseFilter = MouseFilterEnum.Ignore,
-    };
+        float x0 = PartyPanel.End.X - 14 - FacingStrip, x1 = PartyPanel.End.X - 14;
+        float cy = CardsTop + CardHeight + CardGap / 2;
+        c.DrawColoredPolygon([new(x0 + 2, cy - 18), new(x1, cy), new(x0 + 2, cy + 18)], Lacquer.Gold);
+        c.DrawColoredPolygon([new(x0 + 6, cy - 10), new(x1 - 7, cy), new(x0 + 6, cy + 10)], Color.Color8(90, 66, 34));
+    }
 
-    private StyleBoxFlat ButtonBox(Color color) => new()
+    /// <summary>A label in Cinzel and its figure in the game's font after it, centred in <paramref name="band"/>.</summary>
+    private void DrawFigure(Control c, float x, Rect2 band, string label, string figure, Color colour)
     {
-        BgColor = color, BorderColor = _colours.ButtonBorder,
-        BorderWidthLeft = 1, BorderWidthTop = 1, BorderWidthRight = 1, BorderWidthBottom = 1,
-    };
+        c.DrawString(_cinzel, new Vector2(x, Lacquer.Baseline(band, _cinzel, 12)), label, fontSize: 12, modulate: Lacquer.Label);
+        float lw = _cinzel.GetStringSize(label, fontSize: 12).X;
+        c.DrawString(_gothic, new Vector2(x + lw + 10, Lacquer.Baseline(band, _gothic, 17)), figure, fontSize: 17, modulate: colour);
+    }
+
+    /// <summary>
+    /// Place <paramref name="place"/>'s card: "empty" in a dashed frame where no member stands, else a dark row box —
+    /// lit when hovered, dimmed while dragged — with the face in gold, the place on a gold diamond, the name, the
+    /// troop type, the troops with their bar, the war expense and the remove button.
+    /// </summary>
+    private void DrawCard(Control c, int place, DeploymentMember? member)
+    {
+        var rect = CardRect(place);
+        if (member is null)
+        {
+            c.DrawRect(rect, Lacquer.Row with { A = 0.6f });
+            DrawDashed(c, rect, Lacquer.DimGold);
+            CentredString(c, _cinzel, place.ToString(CultureInfo.InvariantCulture), 22, Lacquer.DimGold, rect.GetCenter().X, rect.GetCenter().Y + 2);
+            CentredString(c, _cinzelLight, "empty", 12, Lacquer.DimGold, rect.GetCenter().X, rect.GetCenter().Y + 24);
+            return;
+        }
+        bool dragged = _dragging && place == _dragFrom;
+        float a = dragged ? 0.35f : 1;
+        bool hover = !_dragging && place == _hoveredPlace;
+        c.DrawRect(rect, (hover ? Lacquer.RowHover : Lacquer.Row) with { A = a });
+        c.DrawRect(rect, (hover ? Lacquer.HoverLine : Lacquer.DimGold) with { A = a }, false, Line(hover ? 2 : 1));
+
+        float size = rect.Size.Y - 16;
+        var face = new Rect2(rect.Position + new Vector2(8, 8), new Vector2(size, size));
+        c.DrawRect(face, Color.Color8(52, 40, 28) with { A = a });
+        if (FaceTexture(member.FaceCg, size) is { } texture)
+            c.DrawTextureRect(texture, face, false, new Color(1, 1, 1, a));
+        c.DrawRect(face, Lacquer.Gold with { A = a }, false, Line(1));
+
+        float tx = face.End.X + 12;
+        Lacquer.DrawBadge(c, _cinzel, new Vector2(tx + 10, rect.Position.Y + 19), 11, place);
+        if (dragged)
+            Lacquer.DrawDiamond(c, new Vector2(tx + 10, rect.Position.Y + 19), 12, Lacquer.Row with { A = 0.65f });
+        var nameBand = new Rect2(tx + 28, rect.Position.Y + 8, rect.End.X - 30 - tx - 28, 22);
+        c.DrawString(_gothic, new Vector2(nameBand.Position.X, Lacquer.Baseline(nameBand, _gothic, 18)), member.Name,
+            HorizontalAlignment.Left, nameBand.Size.X, 18, Lacquer.Name with { A = a });
+        var typeBand = new Rect2(tx, rect.Position.Y + 32, rect.End.X - 12 - tx, 20);
+        c.DrawString(_gothic, new Vector2(tx, Lacquer.Baseline(typeBand, _gothic, 14)), member.TroopType,
+            HorizontalAlignment.Left, typeBand.Size.X, 14, Lacquer.Quiet with { A = a });
+
+        var line = new Rect2(tx, rect.End.Y - 34, rect.End.X - 12 - tx, 20);
+        string troops = rect.Size.X > 280 ? $"{member.Troops} troops" : member.Troops.ToString(CultureInfo.InvariantCulture);
+        c.DrawString(_gothic, new Vector2(tx, Lacquer.Baseline(line, _gothic, 15)), troops, fontSize: 15, modulate: Lacquer.Text with { A = a });
+        string cost = $"{(member.Cost * 100).ToString("N0", CultureInfo.InvariantCulture)}K";
+        float cx = RightString(c, _gothic, cost, 15, Lacquer.Text with { A = a }, line.End.X, line) - 6;
+        RightString(c, _cinzel, "Cost", 11, Lacquer.Quiet with { A = a }, cx, line);
+        DrawStrength(c, new Rect2(tx, line.End.Y + 1, line.Size.X, 3), member.Troops, member.MaxTroops, a);
+
+        var remove = RemoveRect(place);
+        bool lit = !_dragging && _hovered == RemoveButton + place;
+        c.DrawRect(remove, (lit ? Color.Color8(80, 30, 20) : Color.Color8(40, 22, 16)) with { A = a });
+        c.DrawRect(remove, (lit ? Lacquer.Minus : Color.Color8(150, 70, 52)) with { A = a }, false, Line(1));
+        CentredString(c, _gothic, "×", 16, (lit ? Lacquer.Text : Lacquer.Minus) with { A = a }, remove.GetCenter().X,
+            Lacquer.Baseline(remove, _gothic, 16));
+    }
+
+    /// <summary>The troops' strength under their figure: green from three quarters, amber from a third, else red (a look only).</summary>
+    private static void DrawStrength(Control c, Rect2 bar, int troops, int max, float a)
+    {
+        c.DrawRect(bar, new Color(0, 0, 0, 0.47f * a));
+        if (max <= 0)
+            return;
+        float f = Math.Clamp(troops / (float)max, 0, 1);
+        var colour = f >= 0.75f ? Lacquer.Plus : f >= 0.35f ? Color.Color8(214, 170, 80) : Lacquer.Minus;
+        c.DrawRect(bar with { Size = new Vector2(Math.Max(1, bar.Size.X * f), bar.Size.Y) }, colour with { A = a });
+    }
+
+    /// <summary>A frame of short dashes around <paramref name="rect"/>.</summary>
+    private void DrawDashed(Control c, Rect2 rect, Color colour)
+    {
+        const float Dash = 8, Step = 14;
+        for (float x = rect.Position.X; x < rect.End.X; x += Step)
+        {
+            float x1 = Math.Min(x + Dash, rect.End.X);
+            c.DrawLine(new Vector2(x, rect.Position.Y), new Vector2(x1, rect.Position.Y), colour, Line(1));
+            c.DrawLine(new Vector2(x, rect.End.Y), new Vector2(x1, rect.End.Y), colour, Line(1));
+        }
+        for (float y = rect.Position.Y; y < rect.End.Y; y += Step)
+        {
+            float y1 = Math.Min(y + Dash, rect.End.Y);
+            c.DrawLine(new Vector2(rect.Position.X, y), new Vector2(rect.Position.X, y1), colour, Line(1));
+            c.DrawLine(new Vector2(rect.End.X, y), new Vector2(rect.End.X, y1), colour, Line(1));
+        }
+    }
+
+    /// <summary>
+    /// The place a drag would drop on (the owner's gold highlight, mock-up D3): a gold glow, a bright double frame and a
+    /// tag on its top edge — "Swap" onto a member, "Move" onto an empty place (the member goes to the party's end).
+    /// </summary>
+    private void DrawDrop(Control c, int place)
+    {
+        var rect = CardRect(place);
+        for (int i = 8; i >= 1; i--)
+            c.DrawRect(rect.Grow(i), Lacquer.Name with { A = 0.035f });
+        c.DrawRect(rect, Lacquer.Name with { A = 0.12f });
+        c.DrawRect(rect, Lacquer.HoverLine, false, Line(3));
+        c.DrawRect(rect.Grow(-5), Lacquer.Gold, false, Line(1));
+        string tag = MemberAt(place) is null ? "Move" : "Swap";
+        var box = new Rect2(rect.GetCenter().X - 34, rect.Position.Y - 12, 68, 24);
+        c.DrawRect(box, Color.Color8(60, 44, 24));
+        c.DrawRect(box, Lacquer.Gold, false, Line(1));
+        CentredString(c, _cinzel, tag, 13, Lacquer.Name, box.GetCenter().X, Lacquer.Baseline(box, _cinzel, 13));
+    }
+
+    /// <summary>The dragged member's face under the pointer, framed and a little see-through.</summary>
+    private void DrawGhost(Control c, DeploymentMember member)
+    {
+        var at = ScreenPoint(GetLocalMousePosition());
+        var rect = new Rect2(at - new Vector2(GhostSize, GhostSize) / 2, new Vector2(GhostSize, GhostSize));
+        for (int i = 8; i >= 1; i--)
+            c.DrawRect(new Rect2(rect.Position.X - i + 3, rect.Position.Y - i + 6, rect.Size.X + 2 * i, rect.Size.Y + 2 * i), new Color(0, 0, 0, 0.07f));
+        c.DrawRect(rect, Color.Color8(52, 40, 28) with { A = 0.9f });
+        if (FaceTexture(member.FaceCg, GhostSize) is { } texture)
+            c.DrawTextureRect(texture, rect, false, new Color(1, 1, 1, 0.9f));
+        c.DrawRect(rect, Lacquer.HoverLine, false, Line(2));
+    }
+
+    /// <summary>A face cut to its square at <paramref name="size"/> screen pixels, as many window pixels as it covers.</summary>
+    private ImageTexture? FaceTexture(int faceCg, float size) =>
+        faceCg == 0 ? null : _faces.SquareTexture(faceCg, _faces.CropOf(faceCg, _crops), Math.Max(16, (int)Math.Round(size * _k)));
+
+    /// <summary>Draws <paramref name="text"/> ending at <paramref name="right"/>, centred in <paramref name="band"/>; returns where it starts.</summary>
+    private static float RightString(Control c, Font font, string text, int size, Color colour, float right, Rect2 band)
+    {
+        float w = font.GetStringSize(text, fontSize: size).X;
+        c.DrawString(font, new Vector2(right - w, Lacquer.Baseline(band, font, size)), text, fontSize: size, modulate: colour);
+        return right - w;
+    }
+
+    private static void CentredString(Control c, Font font, string text, int size, Color colour, float centre, float baseline)
+    {
+        float w = font.GetStringSize(text, fontSize: size).X;
+        c.DrawString(font, new Vector2(centre - w / 2, baseline), text, fontSize: size, modulate: colour);
+    }
+
+    /// <summary>A layer of the screen drawn by its view (the backdrop under the table, the panels over it).</summary>
+    private sealed partial class Layer : Control
+    {
+        private readonly Action<Control> _paint;
+
+        public Layer(Action<Control> paint)
+        {
+            _paint = paint;
+            MouseFilter = MouseFilterEnum.Ignore;
+        }
+
+        public override void _Draw() => _paint(this);
+    }
 }

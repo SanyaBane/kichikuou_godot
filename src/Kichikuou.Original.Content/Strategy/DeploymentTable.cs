@@ -60,6 +60,9 @@ public enum DeploymentColumn
 
     /// <summary>The unit's item.</summary>
     Item,
+
+    /// <summary>The rows the unit fights from (its class: "Front", "Back" or "Front, Back").</summary>
+    Rows,
 }
 
 /// <summary>A column's compact header, its full name (the header's tooltip) and whether it is text.</summary>
@@ -72,7 +75,7 @@ public sealed record DeploymentColumnInfo(DeploymentColumn Column, string Header
 public sealed record DeploymentRow(
     int Unit, string Name, int Troops, int MaxTroops, int Hp, int MaxHp, int Exp, int NextExp,
     int Level, int Atk, int Def, int Attacks, int Strategy, int Magic, int TroopAtk, int TroopDef, int Cost,
-    bool Grey, int PartyPlace, string TroopType = "", int Refill = 0, string Item = "")
+    bool Grey, int PartyPlace, string TroopType = "", int Refill = 0, string Item = "", string Rows = "")
 {
     /// <summary>The cell's text.</summary>
     public string Text(DeploymentColumn column) => column switch
@@ -94,6 +97,7 @@ public sealed record DeploymentRow(
         DeploymentColumn.TroopType => TroopType,
         DeploymentColumn.Refill => Refill == 0 ? "—" : $"{Refill * 100}K",
         DeploymentColumn.Item => Item == "" ? "—" : Item,
+        DeploymentColumn.Rows => Rows == "" ? "—" : Rows,
         _ => throw new ArgumentOutOfRangeException(nameof(column)),
     };
 
@@ -117,6 +121,7 @@ public sealed record DeploymentRow(
         DeploymentColumn.TroopType => TroopType,
         DeploymentColumn.Refill => Refill,
         DeploymentColumn.Item => Item,
+        DeploymentColumn.Rows => Rows,
         _ => throw new ArgumentOutOfRangeException(nameof(column)),
     };
 }
@@ -131,10 +136,10 @@ public sealed record DeploymentRow(
 public sealed record DeploymentDetails(int Unit, string Name, string TroopType, int Cost, int Troops, int MaxTroops, string Rows, string Item);
 
 /// <summary>
-/// A place of the party panel: the member's number, name, war expense, troops, troop type and face CG
-/// (<c>Unit_FaceCg</c>, 0 = none; <see cref="UnitFaces"/> cuts it).
+/// A place of the party panel: the member's number, name, war expense, troops, troop type, face CG
+/// (<c>Unit_FaceCg</c>, 0 = none; <see cref="UnitFaces"/> cuts it) and maximum troops (the card's strength bar).
 /// </summary>
-public sealed record DeploymentMember(int Place, int Unit, string Name, int Cost, int Troops, string TroopType, int FaceCg);
+public sealed record DeploymentMember(int Place, int Unit, string Name, int Cost, int Troops, string TroopType, int FaceCg, int MaxTroops);
 
 /// <summary>
 /// The party panel of our deployment screen: the places the screen offers (<c>Tmp0040</c>, at most
@@ -154,16 +159,22 @@ public sealed record DeploymentParty(IReadOnlyList<DeploymentMember?> Places, in
 /// </summary>
 public static class DeploymentTable
 {
-    /// <summary>The columns in order, with their compact headers and full names.</summary>
+    /// <summary>
+    /// The columns in order, with their compact headers and full names: across the whole screen's top, so the
+    /// details the original shows for the hovered unit (type, rows, item) are columns too (the owner's E1/E2,
+    /// docs/ui/deployment-table.md, "The lacquer look").
+    /// </summary>
     public static IReadOnlyList<DeploymentColumnInfo> Columns { get; } =
     [
         new(DeploymentColumn.Number, "№", "Unit number"),
         new(DeploymentColumn.Name, "Name", "Name", IsText: true),
+        new(DeploymentColumn.TroopType, "Type", "Troop type", IsText: true),
         new(DeploymentColumn.Troops, "Troops", "Troops / maximum"),
+        new(DeploymentColumn.Cost, "Cost", "War expense (GOLD)"),
+        new(DeploymentColumn.Rows, "Rows", "The rows the unit fights from", IsText: true),
         new(DeploymentColumn.TroopAtk, "T.Atk", "Troop attack"),
         new(DeploymentColumn.TroopDef, "T.Def", "Troop defense"),
         new(DeploymentColumn.Strategy, "Str%", "Strategy success chance"),
-        new(DeploymentColumn.Cost, "Cost", "War expense (GOLD)"),
         new(DeploymentColumn.Hp, "HP", "Commander HP / maximum"),
         new(DeploymentColumn.Level, "Lv", "Level"),
         new(DeploymentColumn.Exp, "EXP", "Experience / next level"),
@@ -171,6 +182,7 @@ public static class DeploymentTable
         new(DeploymentColumn.Def, "Def", "Commander defense"),
         new(DeploymentColumn.Attacks, "Act", "Attacks"),
         new(DeploymentColumn.Magic, "Mag", "Magic"),
+        new(DeploymentColumn.Item, "Item", "Item", IsText: true),
     ];
 
     /// <summary>The highest unit the deployment screen lists (<c>Sﾌﾞﾀｲ</c>'s grid: 1-50, <c>PickerScreen</c>).</summary>
@@ -198,7 +210,8 @@ public static class DeploymentTable
                 Grey: u.Status == 2, PartyPlace: order is null ? PartyPlace(state, n) : order.ToList().IndexOf(n) + 1,
                 TroopType: StringAt(state, strings + 1),
                 Refill: u.Troops == u.MaxTroops ? 0 : SubordinatesCommand.Refill(u).Price.Value,
-                Item: u.Item == 0 ? "" : StringAt(state, (state.Item_StrBase + u.Item - 1).Value)));
+                Item: u.Item == 0 ? "" : StringAt(state, (state.Item_StrBase + u.Item - 1).Value),
+                Rows: RowsOf(u.Class.Value)));
         }
         return rows;
     }
@@ -307,6 +320,15 @@ public static class DeploymentTable
         pointer.RightClick(at.X, at.Y);
     }
 
+    /// <summary>The rows a unit of <paramref name="unitClass"/> fights from, as <c>Sﾌﾞﾀｲ</c>'s details name them (<c>:524-569</c>).</summary>
+    public static string RowsOf(int unitClass) => unitClass switch
+    {
+        0 or 4 or 10 => "Front",
+        1 or 2 or 11 => "Back",
+        3 => "Front, Back",
+        _ => "",
+    };
+
     /// <summary>
     /// The details the script shows now (<c>Tmp0026</c> set, for the listed unit <c>Tmp0033</c>, as
     /// the picker draws its portrait), or null.
@@ -317,13 +339,7 @@ public static class DeploymentTable
         if (state.Tmp0026 == 0 || unit is < 1 or > LastUnit || state.Units[unit].Status == 0)
             return null;
         var u = state.Units[unit];
-        string rows = u.Class.Value switch
-        {
-            0 or 4 or 10 => "Front",
-            1 or 2 or 11 => "Back",
-            3 => "Front, Back",
-            _ => "",
-        };
+        string rows = RowsOf(u.Class.Value);
         string item = u.Item == 0 ? "" : StringAt(state, (state.Item_StrBase + u.Item - 1).Value);
         return new DeploymentDetails(unit, UnitName(state, unit), StringAt(state, (state.Unit_StrBase + (Sys3Int)((unit - 1) * 3)).Value + 1),
             (u.DeployCost + u.Troops / 300).Value, u.Troops.Value, u.MaxTroops.Value, rows, item);
@@ -352,7 +368,7 @@ public static class DeploymentTable
             cost += u.DeployCost + u.Troops / 300;
             int strings = (state.Unit_StrBase + (Sys3Int)((unit - 1) * 3)).Value;
             members[place - 1] = new DeploymentMember(place, unit, StringAt(state, strings),
-                (u.DeployCost + u.Troops / 300).Value, u.Troops.Value, StringAt(state, strings + 1), u.FaceCg.Value);
+                (u.DeployCost + u.Troops / 300).Value, u.Troops.Value, StringAt(state, strings + 1), u.FaceCg.Value, u.MaxTroops.Value);
         }
         return new DeploymentParty(members, troops.Value, cost.Value, state.Gold.Value);
     }

@@ -199,3 +199,130 @@ the details panel (2026-10-12, after the look at step 8):
    the script reads the pointer again with nothing queued — meanwhile the table and the panels show
    that order, no drag starts and presses on our screen are dropped. `--auto --interface new` drops
    place 1 onto place 2 and back once the party is built, and fails unless the party comes out as it was.
+
+## The lacquer look (survey, 2026-10-19)
+
+Put off when our Subordinates screen took mock-up G3 (docs/backlog.md, "Interface"; subordinates.md, §5): the
+deployment screen in the same lacquer and gold, its table a paper ledger. The layout, the gestures and the
+script's answers stay as above; only the drawing changes. No rule moves.
+
+**What it draws now** (Option → Interface → New; screen pixels of a 1280×800 window):
+
+- **The portrait and its description** (0,0)-(640,404): the script's own drawing (the unit's CG in the original's
+  gold frame, its text in the CG). Stays.
+- **The table** (`DeploymentTableView`, a `Tree`) over (644,8)-(1276,644): 15 columns (place, №, Name, Troops …
+  Mag) at text 10, a horizontal scroll bar (they reach HP at this width), the party's rows tinted with their place
+  in the first column, the deployed ones grey, the sorted header marked. Coloured from `DeploymentPalette`; its
+  `ledger: true` (paper, ink, Cinzel headers, the troops' bars, a chooser's vermilion mark) is the Subordinates
+  screen's and already built — the ledger has no mark for the party's places yet.
+- **The panels** (`DeploymentPanels`, Godot controls): a backdrop over the right half and the left part below
+  the portrait (`ColorRect`s), the details panel (12,408) 628×92 (a `RichTextLabel`: name, type, expense,
+  troops, rows, item), the party panel (12,508) 628×284 ("Back row" / "Front row ▶" labels, a `PanelContainer`
+  card per offered place — face 90×90, place and name, type, troops, "Cost: …K", a flat × — "n empty" for an
+  empty place, the totals line), the bar (644,652) 632×140 (three Godot `Button`s labelled from the player's
+  files, "---" disabled).
+- **The drag**: the dragged card at 40 % alpha, its face (90×90, 85 %) under the pointer, the place under it
+  framed in the palette's accent.
+- **The palette** (Option → Palette: navy, gold, steel — the default —, parchment, crimson) colours all of it,
+  `[display] palette` in `user://settings.cfg`, `--palette` for a launch. It also colours our battle screen and the
+  map's name plates (`DeploymentPalette`); the Subordinates screen's ledger ignores it.
+
+**What changes:** the backdrop as the Subordinates screen's (dark lacquer, a faint gold seigaiha, a vignette);
+the table in a lacquer panel with a title band ("Deployment", the mode and the places offered, the date) over
+the ledger; the details and the party as lacquer panels drawn by hand (`Lacquer.DrawPanel`, Cinzel labels,
+Shojumaru titles, figures in the game's font); the cards, the drop's highlight and the bar's buttons in one
+of the variants below. Everything is drawn in Godot; `DeploymentTable`'s model stays as it is.
+
+### Mock-ups (2026-10-19)
+
+`tools/ui/mock_deployment.py` (its header gives the dump command and the call), drawn over a window dump of the
+kept save `saves-week18` (`--until deployment --interface new`, the picker with Cordoba (unit 8) hovered); the
+party Rance (unit 1), Haurein (unit 12) in the front row, Cordoba, Barres (unit 6) in the back row. The images
+hold the player's CGs and stay outside the repository.
+
+- **D1 — lacquer cards, three buttons.** The ledger (the party's rows gilt, their place a vermilion seal in the
+  first column); a card a dark row box, the face on dark lacquer in a gold frame, the place on a gold diamond,
+  the troops with their bar, the cost, × a small red box; the bar as now: Attack red lacquer (as Turn END),
+  "---" a greyed plate, Stop a dark row box.
+- **D2 — paper cards, Attack wide.** The cards as muster slips (paper, ink, the place a vermilion seal), an
+  empty place dashed; Attack wide with the war expenses on it, Stop small, no plate where the bar has none.
+- **D3 — a drag, the gold highlight** (on D1): the dragged card dimmed, the face (64) under the pointer, the
+  place under it glowing gold, framed twice, a "⇄ Swap" tag on its top edge.
+- **D4 — a drag, the vermilion highlight** (on D2): the place tinted and framed in seal red, a red tag.
+- **D5 — the Subordinates screen's layout**, for comparison: the ledger across the top with every column (Type,
+  Rows and Item too) and no scroll, the portrait panel below left as that screen cuts it, the party, its totals
+  and the bar right, no details panel.
+
+**The owner's look (2026-10-19): D5's layout** — the ledger across the top, the portrait below left, as the
+Subordinates screen — and more mock-ups in it. A defence's bar has two buttons that send the party, Plains and City
+(`Sﾌﾞﾀｲ.ADV:45-63`), where an attack has Attack and "---" (`:14-33`) and a dungeon search Search and "---" (`:75-93`);
+Stop is the third in every mode.
+
+**Round E** (the same script, round `e`): the ledger and the portrait as D5; the party panel at the bottom right
+(574×416) varied.
+
+- **E1 — 2×2 cards, an attack.** D5 tidied: lacquer cards two by two (back row left, front row right), the totals,
+  Attack wide with the war expenses, Stop small.
+- **E2 — 2×2 cards, a defence.** Plains and City side by side in red lacquer, Stop small.
+- **E3a / E3b — four standing cards in a line**, an attack and a defence: back row 3, 4 | front row 1, 2 towards the
+  enemy; each card a large face with the place's mark and × on it, the name, the type, the troops and the cost.
+- **E4 — the bar a column** at the panel's right (Plains, City, Stop); the cards 2×2, narrower (a smaller face with
+  the place's mark on it); a defence of three places, the fourth not offered (`Tmp0040`) a dark slot.
+- **E5 — E3 with paper cards** (muster slips, vermilion seals) and a drag: Barres (unit 6) from place 4 onto place 1,
+  the gold highlight.
+- **E6 — the formation as a field**: the rows on a dark ground, the enemy's side a vermilion band with chevrons at
+  the right, compact cards; the totals, Plains, City and Stop below.
+
+**The owner's choice (2026-10-19): E1/E2** — the 2×2 lacquer cards, the gold highlight of D3, the bar as E1 in an
+attack or a search (the sending button wide with the war expenses, Stop small) and as E2 in a defence (Plains and City
+side by side). Option → Palette leaves the deployment screen; it stays for our battle screen and the map's name plates,
+which it colours too (the survey above missed them).
+
+### Built (2026-10-19)
+
+- **The model:** `DeploymentTable.Columns` are E's (№, Name, Type, Troops, Cost, Rows, T.Atk, T.Def, Str%, HP, Lv, EXP,
+  Atk, Def, Act, Mag, Item): the details the original shows for the hovered unit are columns, so there is no details
+  panel; `DeploymentColumn.Rows` (`DeploymentTable.RowsOf`, the class's rows as `Details` names them);
+  `DeploymentMember.MaxTroops` for the card's strength bar.
+- **The table** (`DeploymentTableView`) is always a ledger now (the palette's look and its `ledger` switch are gone): the
+  party's rows gilt (`Lacquer.PartyRow`), their place a vermilion seal in the first column (`Lacquer.DrawSeal`), text
+  8.3 script pixels (every column fits a 1280×800 window without a scroll bar).
+  `GameScreen` places it in `DeploymentPanels.TableArea` (screen pixels (30, 66), 1220×282), as the Subordinates screen's.
+- **The panels** (`DeploymentPanels`) are drawn by hand over the whole screen, as `SubordinatesView`: the wave backdrop
+  (`Lacquer.DrawWaveBackdrop`, shared), the table's panel with its title band ("Deployment", the mode and the places
+  offered, the date), the picture panel at (16, 368) 666×416 — the hovered unit's status CG in the screen's frame, cut as
+  the Subordinates screen cuts it (`FacePictures.PicturePanel`, shared; the empty frame while no unit is hovered, as the
+  script clears its details) — and the party's panel at (690, 368) 574×416: "Party" and the budget, "Back row" /
+  "Front row ▶", the four cards (face in gold, the place on a gold diamond, `Lacquer.DrawBadge`, name, type, troops with
+  their bar, cost, ×), the totals (war expenses in red beyond the budget), the bar (`Lacquer.DrawRedButton`, shared).
+  The gestures are as before: × and the bar's buttons on release, a drag from six window pixels (the card dimmed, its face
+  64 under the pointer, the place under it glowing gold with "Swap", or "Move" onto an empty place), a right click the
+  script's own; the whole screen is the screen's pointer, so the script's pointer stays ours over it.
+
+### The facing mark (mock-ups, 2026-10-19)
+
+The owner looked at the built E1/E2 and asked for a triangle right of each card's face that shows which way the unit
+faces (towards the enemy, on the right, as "Front row ▶"). Round F of `tools/ui/mock_deployment.py` (round `f`) draws
+six marks on E1, each moving the card's text over by its room, and a sheet of the six party panels side by side:
+
+- **T1** a solid gold arrowhead in the gap right of the face;
+- **T2** a pointed tab out of the face's gold frame, as the message windows' tails;
+- **T3** the face's plate a pentagon, its right side running out to a point, framed in gold;
+- **T4** two vermilion chevrons;
+- **T5** a narrow gold strip along the face's right edge with a pale arrowhead;
+- **T6** T1 bright gold in the front row, dim gold in the back row.
+
+The owner (2026-10-19): not a mark per face but one for the whole party, right of the cards, showing which way all the
+units face. Round U (round `u`) draws six on E1; the cards give up a strip at the panel's right edge where the mark
+needs one (U2's cards are narrow enough to drop the "Cost" label and put the place's mark on the face):
+
+- **U1** one slim triangle as high as both rows, dark gold framed in gold;
+- **U2** the enemy's side: a vermilion band with three chevrons, as E6's field;
+- **U3** the rule under the cards drawn in gold, ending in an arrowhead at the right (the cards keep their width);
+- **U4** three small arrowheads stacked, the middle one bright;
+- **U5** one medium gold triangle at the rows' middle, a dim rule above and below it;
+- **U6** a narrow lacquer tab, "ENEMY" written up it, an arrowhead under the word.
+
+**The owner's choice (2026-10-19): U5 without its rules** — one gold triangle (a dark one inside it) right of the cards
+at the two rows' middle; the cards give up a strip of 30 screen pixels and a gap of 6 for it
+(`DeploymentPanels.DrawFacing`). Built the same day and looked at in a window (the defence of Ys (5) from `saves-week18`).

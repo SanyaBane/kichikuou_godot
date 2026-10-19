@@ -1,6 +1,5 @@
 using System.Globalization;
 using Godot;
-using Kichikuou.Content.Screen;
 using Kichikuou.Game.Battles;
 using Kichikuou.Original.Content.Strategy;
 using Kichikuou.Original.State;
@@ -71,7 +70,7 @@ internal sealed partial class SubordinatesView : Control
         AddChild(_backdrop);
         _face = new Layer(DrawScreen);
         AddChild(_face);
-        _table = new DeploymentTableView(font, SubordinatesScreen.Columns, chooser: true, textSize: 9, ledger: true) { Visible = true };
+        _table = new DeploymentTableView(font, SubordinatesScreen.Columns, chooser: true, textSize: 9) { Visible = true };
         _table.RowPressed += unit => _table.Chosen = unit;
         _table.RightPressed += () => EndPressed?.Invoke();
         AddChild(_table);
@@ -148,7 +147,7 @@ internal sealed partial class SubordinatesView : Control
         if (panel is not null && panel.PortraitCg != _portraitCg)
         {
             _portraitCg = panel.PortraitCg;
-            _portrait = PicturePanel(panel.PortraitCg);
+            _portrait = _faces.PicturePanel(panel.PortraitCg);
         }
         _face.QueueRedraw();
     }
@@ -160,31 +159,6 @@ internal sealed partial class SubordinatesView : Control
         _resultLeft = ResultSeconds;
         _face.QueueRedraw();
     }
-
-    /// <summary>
-    /// The picture panel as <c>Sﾌﾞｶ</c> shows it: the screen's frame (<c>G 870, 40</c>, then <c>G 600</c>,
-    /// <c>Sﾌﾞｶ.ADV:5-13</c>) with the unit's status CG drawn into it at its own place (<c>:144</c>), cut out
-    /// as the item picker's prompt cuts the same panel (script pixels (6, 6), 314×196) — the frame is the
-    /// background's, not the CG's.
-    /// </summary>
-    private ImageTexture? PicturePanel(int portraitCg)
-    {
-        var cgs = _faces.Cgs;
-        if (cgs.Get(portraitCg) is not { } portrait)
-            return null;
-        var screen = new Surface(Surface.ScreenWidth, Surface.ScreenHeight);
-        if (cgs.Get(870) is { } frame)
-            screen.DrawCg(frame, frame.X, frame.Y, Surface.SpriteKey);
-        if (cgs.Get(600) is { } empty)
-            screen.DrawCg(empty, empty.X, empty.Y);
-        screen.DrawCg(portrait, portrait.X, portrait.Y);
-        var (x, y, w, h) = PictureCut;
-        return ImageTexture.CreateFromImage(Image.CreateFromData(w * Surface.Scale, h * Surface.Scale, false,
-            Image.Format.Rgba8, screen.ReadArea(x, y, w, h)));
-    }
-
-    /// <summary>The picture panel on the original's screen (script pixels), <c>Sｱｲﾃﾑ.ADV:101-110</c>'s cut.</summary>
-    private static readonly (int X, int Y, int W, int H) PictureCut = (6, 6, 314, 196);
 
     /// <summary>An order's button as the mouse presses it (unattended play goes through here).</summary>
     public void Press(SubordinateOrderKind kind, int unit, int step = 0)
@@ -318,31 +292,7 @@ internal sealed partial class SubordinatesView : Control
     private void DrawBackdrop(Control c)
     {
         c.DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
-        var lacquer = Color.Color8(14, 10, 8);
-        c.DrawRect(new Rect2(0, 0, 1280, 800), lacquer);
-        const float R = 34;
-        var wave = Lacquer.Gold with { A = 0.05f };
-        for (int row = -1; row * R / 2 < 800 + R; row++)
-        {
-            float y = row * R / 2, off = row % 2 == 0 ? 0 : R;
-            for (float x = -2 * R + off; x < 1280 + 2 * R; x += 2 * R)
-            {
-                var at = new Vector2(x, y);
-                c.DrawCircle(at, R, lacquer);
-                foreach (float r in (float[])[R, R * 0.72f, R * 0.44f])
-                    c.DrawArc(at, r, 0, Mathf.Tau, 40, wave, Line(1), true);
-            }
-        }
-        const float Inset = 220;
-        var edge = new Color(0, 0, 0, 0.7f);
-        var clear = new Color(0, 0, 0, 0);
-        Vector2[] outer = [new(0, 0), new(1280, 0), new(1280, 800), new(0, 800)];
-        Vector2[] inner = [new(Inset, Inset * 0.62f), new(1280 - Inset, Inset * 0.62f), new(1280 - Inset, 800 - Inset * 0.62f), new(Inset, 800 - Inset * 0.62f)];
-        for (int i = 0; i < 4; i++)
-        {
-            int j = (i + 1) % 4;
-            c.DrawPolygon([outer[i], outer[j], inner[j], inner[i]], [edge, edge, clear, clear]);
-        }
+        Lacquer.DrawWaveBackdrop(c, _k);
     }
 
     private void DrawScreen(Control c)
@@ -456,11 +406,7 @@ internal sealed partial class SubordinatesView : Control
     private void DrawPrimary(Control c, Rect2 rect, string title, string note, int button)
     {
         bool hover = button == _hovered, down = hover && button == _pressed;
-        Color top = down ? Color.Color8(96, 22, 16) : hover ? Color.Color8(150, 40, 30) : Color.Color8(128, 32, 24);
-        Color bottom = down ? Color.Color8(70, 14, 10) : hover ? Color.Color8(96, 20, 14) : Color.Color8(80, 16, 12);
-        c.DrawPolygon([rect.Position, new(rect.End.X, rect.Position.Y), rect.End, new(rect.Position.X, rect.End.Y)], [top, top, bottom, bottom]);
-        c.DrawRect(rect, hover ? Lacquer.HoverLine : Lacquer.Gold, false, Line(2));
-        c.DrawRect(rect.Grow(-4), Color.Color8(150, 96, 52), false, Line(1));
+        Lacquer.DrawRedButton(c, rect, hover, down, _k);
         DrawLabels(c, rect, title, _brush, 22, Color.Color8(250, 226, 160), note, _gothic, 15, Color.Color8(236, 206, 160));
     }
 

@@ -127,7 +127,7 @@ public class DeploymentTableTests
 
         var party = DeploymentTable.Party(s);
 
-        Assert.Equal([new DeploymentMember(1, 3, "Bound", 3, 600, "Thieves", 3), new DeploymentMember(2, 2, "Sill", 2, 300, "Mages", 0), null], party.Places);
+        Assert.Equal([new DeploymentMember(1, 3, "Bound", 3, 600, "Thieves", 3, 1000), new DeploymentMember(2, 2, "Sill", 2, 300, "Mages", 0, 1000), null], party.Places);
         Assert.Equal(900, party.Troops);
         Assert.Equal(5, party.Cost);                                        // Bound 1 + 600/300, Sill 1 + 300/300
         Assert.True(party.Affordable);

@@ -147,7 +147,7 @@ public sealed record GameOptions
 /// frame, so the map's clicks and drags and the pickers' hit tests and highlight are the
 /// script's own. The battle's input screens work as in <see cref="BattleScreen"/>, fed only the
 /// presses that begin while they are open. With Option → Interface on New our own deployment screen
-/// covers <c>Sﾌﾞﾀｲ</c>'s but the portrait (<see cref="UpdateDeploymentScreen"/>, docs/ui/deployment-table.md) and
+/// covers <c>Sﾌﾞﾀｲ</c>'s (<see cref="UpdateDeploymentScreen"/>, docs/ui/deployment-table.md) and
 /// answers the script with its gestures. Over it, xsystem35's menu bar (File, Screen,
 /// MsgSkip; docs/window-menu.md) with its hot keys F1 (MsgSkip) and F4 (full screen), and Alt+R for
 /// Restart; Backspace returns to the title at once (development).
@@ -196,11 +196,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     private SceneRunner? _scenes;                       // the session's, for the scenes running now
 
-    private DeploymentTableView _table = null!;         // our own screen over Sﾌﾞﾀｲ's grid (Option → Interface: New)
+    private DeploymentTableView _table = null!;         // our own deployment screen's ledger (Option → Interface: New)
     private BattleBoardView _battleView = null!;        // our own battle screen over the stage (Option → Interface: New)
     private ScoutReportView _scoutView = null!;         // our own scout report over the original's screen (Option → Interface: New)
     private StrategyCutInView _strategyView = null!;    // our own cut-in of a successful strategy over the original's screen (New)
-    private DeploymentPanels _panels = null!;           // and over the rest of it but the portrait
+    private DeploymentPanels _panels = null!;           // and the rest of it, over the whole of Sﾌﾞﾀｲ's screen
     private PointerScript _tablePointer = new();        // the script's pointer while the player's is over the table
     private MapMarkersView _markers = null!;            // our name plates over the map in COMMAND's map wait (New)
     private ProvinceMenuView _provinceView = null!;     // our province menu over a city file's first menu (New)
@@ -1747,15 +1747,12 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     // ---------------------------------------------------------------- the deployment table (owner's decision 25)
 
-    /// <summary>The grid area the table covers, in script pixels: right of the portrait and above the bar (<c>Sﾌﾞﾀｲ.ADV:498-523</c>).</summary>
-    private static readonly Rect2 TableArea = new(322, 4, 316, 318);
-
     /// <summary>
-    /// Shows our deployment screen — the table over <c>Sﾌﾞﾀｲ</c>'s grid and the panels over the rest
-    /// but the portrait — while the deployment picker is open with Option → Interface on New (the
-    /// presenter draws only the background and the portrait under it), but not while a message
-    /// window is up over the screen; places it over the picture as the window is sized and fills it
-    /// from GameState. Returns whether it shows. A screen shown or hidden starts with no gestures queued.
+    /// Shows our deployment screen — the panels over the whole of <c>Sﾌﾞﾀｲ</c>'s screen and the table across their
+    /// top (<see cref="DeploymentPanels.TableArea"/>; the owner's E1/E2) — while the deployment picker is open with
+    /// Option → Interface on New, but not while a message window is up over the screen; places it over the picture
+    /// as the window is sized and fills it from GameState. Returns whether it shows. A screen shown or hidden starts
+    /// with no gestures queued.
     /// </summary>
     private bool UpdateDeploymentScreen()
     {
@@ -1780,7 +1777,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _panels.Busy = (_options.Auto ? _pointer : _tablePointer).Pending > 0 || _wantedOrder is not null;
         _panels.Place(origin, pixels);
         _panels.Refresh(_presenter.State!, _presenter.Picker!, _wantedOrder);
-        _table.Place(new Rect2(origin + TableArea.Position * pixels, TableArea.Size * pixels), pixels);
+        float k = pixels / 2;                                   // window pixels to a pixel of the 1280×800 screen
+        _table.Place(new Rect2(origin + DeploymentPanels.TableArea.Position * k, DeploymentPanels.TableArea.Size * k), pixels);
         _table.Refresh(_presenter.State!, _wantedOrder);
         return true;
     }

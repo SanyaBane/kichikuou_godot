@@ -12,8 +12,9 @@ namespace Kichikuou.Game.Strategy;
 /// again descending, a small mark on the header with its room kept; by number at first),
 /// scrolling both ways, the units deployed this week grey, the party's members marked with their
 /// place in a first column. It decides nothing: the presses go to <see cref="GameScreen"/>, which
-/// answers the script with the gestures it expects. Our Subordinates screen shows it as a ledger (the
-/// owner's mock-up G3, docs/ui/subordinates.md): paper and ink in the screen's lacquer, not the palette's colours.
+/// answers the script with the gestures it expects. Drawn as a ledger in our screens' lacquer (the owner's
+/// mock-up G3, docs/ui/subordinates.md, and E1/E2, docs/ui/deployment-table.md): paper and ink, the headers in
+/// Cinzel, the troops' bars; the party's places vermilion seals on gilt rows, a chooser's row a vermilion mark.
 /// </summary>
 internal sealed partial class DeploymentTableView : Tree
 {
@@ -23,10 +24,6 @@ internal sealed partial class DeploymentTableView : Tree
     /// <summary>The party column's header: a circle (both fonts have it), its full name the tooltip.</summary>
     private const string PartyMark = "●";
 
-    /// <summary>A chooser's mark on the chosen row.</summary>
-    private const string ChosenMark = "▶";
-
-    private DeploymentPalette _colours = DeploymentPalette.Chosen;   // Option → Palette
 
     private IReadOnlyList<DeploymentRow> _rows = [];
     private DeploymentColumn _sort = DeploymentColumn.Number;
@@ -50,14 +47,14 @@ internal sealed partial class DeploymentTableView : Tree
     /// <summary>Whether the first column marks the chosen row (<see cref="Chosen"/>) instead of the party's places.</summary>
     private readonly bool _chooser;
 
-    /// <summary>Whether the table is drawn as a ledger (paper, ink, headers in Cinzel, the troops' bars) instead of in the palette.</summary>
-    private readonly bool _ledger;
-
-    /// <summary>The headers' font: the text's, or Cinzel over it in a ledger (the text's font the fallback for the sort marks).</summary>
+    /// <summary>The headers' font: Cinzel over the text's (the text's font the fallback for the sort marks).</summary>
     private Font _titleFont = null!;
 
-    /// <summary>The headers' size: the text's, smaller in a ledger (Cinzel's capitals are wide).</summary>
-    private int TitleSize => _ledger ? Math.Max(8, (int)Math.Round(_fontSize * 0.82f)) : Math.Max(_fontSize, 8);
+    /// <summary>The seals' numerals.</summary>
+    private readonly FontVariation _sealFont = Lacquer.Cinzel(700);
+
+    /// <summary>The headers' size: smaller than the text's (Cinzel's capitals are wide).</summary>
+    private int TitleSize => Math.Max(8, (int)Math.Round(_fontSize * 0.82f));
 
     /// <summary>The chosen unit's row, marked and highlighted when the table is a chooser (our Subordinates screen).</summary>
     public int Chosen
@@ -72,19 +69,19 @@ internal sealed partial class DeploymentTableView : Tree
         }
     }
 
-    public DeploymentTableView(GameFont font) : this(font, DeploymentTable.Columns, chooser: false, textSize: 10)
+    /// <summary>The deployment screen's table: <see cref="DeploymentTable.Columns"/>, the party's places marked.</summary>
+    public DeploymentTableView(GameFont font) : this(font, DeploymentTable.Columns, chooser: false, textSize: 8.3f)
     {
     }
 
     /// <summary>
     /// A table of <paramref name="columns"/>, its text <paramref name="textSize"/> script pixels; a
-    /// <paramref name="chooser"/> marks its chosen row in the first column; a <paramref name="ledger"/> is paper and ink.
+    /// <paramref name="chooser"/> marks its chosen row in the first column.
     /// </summary>
-    public DeploymentTableView(GameFont font, IReadOnlyList<DeploymentColumnInfo> columns, bool chooser, float textSize, bool ledger = false)
+    public DeploymentTableView(GameFont font, IReadOnlyList<DeploymentColumnInfo> columns, bool chooser, float textSize)
     {
         _columns = columns;
         _chooser = chooser;
-        _ledger = ledger;
         _textSize = textSize;
         Columns = _columns.Count + 1;
         HideRoot = true;
@@ -104,11 +101,11 @@ internal sealed partial class DeploymentTableView : Tree
         }
         for (int c = 0; c < Columns; c++)
         {
-            SetColumnExpand(c, ledger && c == Columns - 1);         // a ledger's last column to the paper's edge
+            SetColumnExpand(c, c == Columns - 1);                  // the last column to the paper's edge
             SetColumnClipContent(c, true);
         }
         AddThemeStyleboxOverride("focus", new StyleBoxEmpty());
-        ApplyPalette();
+        ApplyLedger();
         AddThemeConstantOverride("h_separation", 6);
         AddThemeConstantOverride("v_separation", 2);
         AddThemeConstantOverride("item_margin", 0);
@@ -118,47 +115,6 @@ internal sealed partial class DeploymentTableView : Tree
                 SortBy(_columns[(int)column - 1].Column);
         };
         SetFont(font);
-    }
-
-    /// <summary>Option → Palette: the table in <paramref name="palette"/>'s colours at once (a ledger keeps its own).</summary>
-    public void SetPalette(DeploymentPalette palette)
-    {
-        _colours = palette;
-        ApplyPalette();
-        Fill();
-    }
-
-    private void ApplyPalette()
-    {
-        if (_ledger)
-        {
-            ApplyLedger();
-            return;
-        }
-        var c = _colours;
-        AddThemeStyleboxOverride("panel", new StyleBoxFlat { BgColor = c.TableBack });
-        var title = new StyleBoxFlat { BgColor = c.TableTitle, ContentMarginLeft = 4, ContentMarginRight = 4 };
-        AddThemeStyleboxOverride("title_button_normal", title);
-        AddThemeStyleboxOverride("title_button_hover", new StyleBoxFlat { BgColor = c.TableTitle.Lightened(0.2f), ContentMarginLeft = 4, ContentMarginRight = 4 });
-        AddThemeStyleboxOverride("title_button_pressed", title);
-        AddThemeColorOverride("font_color", c.Text);
-        AddThemeColorOverride("title_button_color", c.Text);
-        AddThemeColorOverride("guide_color", c.Border with { A = 0.35f });
-        foreach (var state in new[] { "font_hovered_color", "font_selected_color", "font_hovered_selected_color" })
-            AddThemeColorOverride(state, c.Text);
-        AddThemeStyleboxOverride("hovered", new StyleBoxFlat { BgColor = c.Accent with { A = 0.12f } });
-        foreach (var state in new[] { "selected", "selected_focus", "hovered_selected", "hovered_selected_focus" })
-            AddThemeStyleboxOverride(state, new StyleBoxFlat { BgColor = c.Accent with { A = 0.2f } });
-        // The scroll bars: the panels' frame colour on the table's.
-        var bars = new Theme();
-        foreach (string bar in new[] { "HScrollBar", "VScrollBar" })
-        {
-            bars.SetStylebox("scroll", bar, BarBox(c.TableTitle));
-            bars.SetStylebox("grabber", bar, BarBox(c.Border));
-            bars.SetStylebox("grabber_highlight", bar, BarBox(c.Accent));
-            bars.SetStylebox("grabber_pressed", bar, BarBox(c.Accent));
-        }
-        Theme = bars;
     }
 
     /// <summary>The ledger's look: the paper, its header in vermilion ink over a rule, the rows' rules, a faint hover.</summary>
@@ -206,7 +162,7 @@ internal sealed partial class DeploymentTableView : Tree
     public void SetFont(GameFont font)
     {
         _font = LoadFont(font);
-        _titleFont = _ledger ? CinzelOver(_font) : _font;
+        _titleFont = CinzelOver(_font);
         AddThemeFontOverride("font", _font);
         AddThemeFontOverride("title_button_font", _titleFont);
         // The sort mark: the narrowest pair the font has, so the header grows little.
@@ -216,7 +172,7 @@ internal sealed partial class DeploymentTableView : Tree
         Fill();
     }
 
-    /// <summary>Cinzel at 700 for a ledger's headers, <paramref name="text"/> its fallback (the sort marks).</summary>
+    /// <summary>Cinzel at 700 for the headers, <paramref name="text"/> its fallback (the sort marks).</summary>
     private static FontVariation CinzelOver(FontFile text)
     {
         var cinzel = Lacquer.Cinzel(700);
@@ -246,8 +202,7 @@ internal sealed partial class DeploymentTableView : Tree
         _fontSize = size;
         AddThemeFontSizeOverride("font_size", size);
         AddThemeFontSizeOverride("title_button_font_size", TitleSize);
-        if (_ledger)
-            AddThemeConstantOverride("v_separation", (int)Math.Round(1.5f * pixelsPerScript));   // the ledger's rows breathe
+        AddThemeConstantOverride("v_separation", (int)Math.Round(1.5f * pixelsPerScript));   // the ledger's rows breathe
         Fill();
     }
 
@@ -333,8 +288,7 @@ internal sealed partial class DeploymentTableView : Tree
         void Fit(int column, string text) => widths[column] = Math.Max(widths[column], Width(text));
         void FitTitle(int column, string text) =>
             widths[column] = Math.Max(widths[column], _titleFont.GetStringSize(text, HorizontalAlignment.Left, -1, TitleSize).X);
-        Fit(0, _chooser ? ChosenMark : PartyMark);
-        Fit(0, "4");
+        Fit(0, PartyMark);
         for (int c = 0; c < _columns.Count; c++)
         {
             var info = _columns[c];
@@ -346,44 +300,22 @@ internal sealed partial class DeploymentTableView : Tree
         {
             var item = CreateItem(root);
             item.SetMetadata(0, row.Unit);
-            bool marked = _chooser ? row.Unit == Chosen : row.PartyPlace > 0;
-            item.SetText(0, _chooser ? marked && !_ledger ? ChosenMark : "" : row.PartyPlace > 0 ? row.PartyPlace.ToString() : "");
-            item.SetTextAlignment(0, HorizontalAlignment.Center);
-            if (_ledger)
-            {
-                LedgerRow(item, row, marked);
-                for (int c = 0; c < _columns.Count; c++)
-                    Fit(c + 1, row.Text(_columns[c].Column));
-                continue;
-            }
+            LedgerRow(item, row, chosen: _chooser && row.Unit == Chosen, place: _chooser ? 0 : row.PartyPlace);
             for (int c = 0; c < _columns.Count; c++)
-            {
-                var info = _columns[c];
-                string text = row.Text(info.Column);
-                item.SetText(c + 1, text);
-                item.SetTextAlignment(c + 1, Alignment(info));
-                Fit(c + 1, text);
-            }
-            for (int c = 0; c < Columns; c++)
-            {
-                if (row.Grey)
-                    item.SetCustomColor(c, _colours.GreyText);
-                if (marked)
-                    item.SetCustomBgColor(c, _colours.MemberRow);
-            }
+                Fit(c + 1, row.Text(_columns[c].Column));
         }
         int separation = GetThemeConstant("h_separation");
-        if (_ledger)
-            widths[0] = Math.Max(widths[0], _fontSize * 0.9f);              // the chosen row's bar and diamond
+        widths[0] = Math.Max(widths[0], _fontSize * 1.3f);                  // the chosen row's bar and diamond, a place's seal
         for (int c = 0; c < Columns; c++)
             SetColumnCustomMinimumWidth(c, (int)Math.Ceiling(widths[c]) + separation + 6);
     }
 
     /// <summary>
-    /// A ledger's row: the chosen one tinted with a vermilion bar and diamond in the first column, the deployed ones
-    /// in grey ink, the refill's price in vermilion, the troops with a bar of their strength under them.
+    /// A ledger's row: the chosen one tinted with a vermilion bar and diamond in the first column, a member of the
+    /// party gilt with its place a vermilion seal there, the deployed ones in grey ink, the refill's price in
+    /// vermilion, the troops with a bar of their strength under them.
     /// </summary>
-    private void LedgerRow(TreeItem item, DeploymentRow row, bool chosen)
+    private void LedgerRow(TreeItem item, DeploymentRow row, bool chosen, int place)
     {
         for (int c = 0; c < _columns.Count; c++)
         {
@@ -402,6 +334,17 @@ internal sealed partial class DeploymentTableView : Tree
                 var (text, troops, max, grey) = (row.Text(info.Column), row.Troops, row.MaxTroops, row.Grey);
                 item.SetCustomDrawCallback(c + 1, Callable.From<TreeItem, Rect2>((_, rect) => DrawTroops(rect, text, troops, max, grey)));
             }
+        }
+        if (place > 0)
+        {
+            for (int c = 0; c < Columns; c++)
+                item.SetCustomBgColor(c, Lacquer.PartyRow);
+            item.SetCellMode(0, TreeItem.TreeCellMode.Custom);
+            item.SetCustomDrawCallback(0, Callable.From<TreeItem, Rect2>((_, rect) =>
+            {
+                float size = Math.Min(rect.Size.Y - 2, _fontSize * 1.15f);
+                Lacquer.DrawSeal(this, _sealFont, new Rect2(rect.GetCenter() - new Vector2(size, size) / 2, new Vector2(size, size)), place);
+            }));
         }
         if (!chosen)
             return;

@@ -149,13 +149,12 @@ public partial class GameScreen
             interfaces.SetItemChecked(0, !InterfaceChoice.New);
             interfaces.SetItemChecked(1, InterfaceChoice.New);
         }
-        // Our screens' colours (DeploymentPalette); saved for later launches, an open screen recoloured at once.
+        // Our battle screen's and the map plates' colours (DeploymentPalette; the deployment screen is lacquer since the
+        // owner's E1/E2); saved for later launches, an open screen recoloured at once.
         void SetPalette(DeploymentPalette palette)
         {
             DeploymentPalette.Chosen = palette;
-            _table.SetPalette(palette);
             _markers.SetPalette(palette);
-            _panels.SetPalette(palette);
             _battleView.SetPalette(palette);
             _scoutView.SetPalette(palette);
             _strategyView.SetPalette(palette);

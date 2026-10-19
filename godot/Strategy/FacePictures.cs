@@ -1,5 +1,6 @@
 using Godot;
 using Kichikuou.Content.Graphics;
+using Kichikuou.Content.Screen;
 using Kichikuou.Original.Content.Strategy;
 
 namespace Kichikuou.Game.Strategy;
@@ -12,6 +13,7 @@ internal sealed class FacePictures(CgLibrary cgs)
 {
     private readonly Dictionary<int, Image?> _images = [];
     private readonly Dictionary<(int Cg, FaceCrop Crop, int Size), ImageTexture?> _squares = [];
+    private readonly Dictionary<int, ImageTexture?> _panels = [];
 
     /// <summary>The player's CGs.</summary>
     public CgLibrary Cgs { get; } = cgs;
@@ -56,6 +58,39 @@ internal sealed class FacePictures(CgLibrary cgs)
         }
         return texture;
     }
+
+    /// <summary>
+    /// The picture panel as the unit pickers show it (<c>Sﾌﾞｶ</c>, <c>Sﾌﾞﾀｲ</c>): the screen's frame (<c>G 870, 40</c>,
+    /// then <c>G 600</c>, <c>Sﾌﾞｶ.ADV:5-13</c>) with the unit's status CG drawn into it at its own place (<c>Sﾌﾞｶ.ADV:144</c>,
+    /// <c>Sﾌﾞﾀｲ</c>'s details), cut out as the item picker's prompt cuts the same panel (script pixels (6, 6), 314×196) —
+    /// the frame is the background's, not the CG's. <paramref name="portraitCg"/> 0: the empty panel (<c>G 600</c> alone, as
+    /// the pickers clear their details). Kept for the next call that asks for the same; null without the player's CGs.
+    /// </summary>
+    public ImageTexture? PicturePanel(int portraitCg)
+    {
+        if (_panels.TryGetValue(portraitCg, out var kept))
+            return kept;
+        ImageTexture? texture = null;
+        var portrait = portraitCg == 0 ? null : Cgs.Get(portraitCg);
+        if (portraitCg == 0 || portrait is not null)
+        {
+            var screen = new Surface(Surface.ScreenWidth, Surface.ScreenHeight);
+            if (Cgs.Get(870) is { } frame)
+                screen.DrawCg(frame, frame.X, frame.Y, Surface.SpriteKey);
+            if (Cgs.Get(600) is { } empty)
+                screen.DrawCg(empty, empty.X, empty.Y);
+            if (portrait is not null)
+                screen.DrawCg(portrait, portrait.X, portrait.Y);
+            var (x, y, w, h) = PictureCut;
+            texture = ImageTexture.CreateFromImage(Image.CreateFromData(w * Surface.Scale, h * Surface.Scale, false,
+                Image.Format.Rgba8, screen.ReadArea(x, y, w, h)));
+        }
+        _panels[portraitCg] = texture;
+        return texture;
+    }
+
+    /// <summary>The picture panel on the original's screen (script pixels), <c>Sｱｲﾃﾑ.ADV:101-110</c>'s cut.</summary>
+    private static readonly (int X, int Y, int W, int H) PictureCut = (6, 6, 314, 196);
 
     /// <summary>
     /// <paramref name="image"/> resized to <paramref name="size"/>² without the colour key's magenta
