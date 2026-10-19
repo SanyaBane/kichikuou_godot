@@ -1,3 +1,4 @@
+using System.Globalization;
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Script;
@@ -34,8 +35,38 @@ public sealed record SubordinatePanel(
     int Unit, string Name, int FaceCg, int PortraitCg, int Gold,
     SubordinateButton Replenish, bool AddOffered, IReadOnlyList<SubordinateButton> Steps, SubordinateButton Talk);
 
-/// <summary>What an order did, for the plate beside Talk: a line and the budget's change.</summary>
-public sealed record SubordinateResult(SubordinateOrderKind Kind, string Line, string Budget);
+/// <summary>
+/// What a troop order did, for the plate in the middle of the screen (docs/ui/subordinates.md, §6, R4/R5): the unit
+/// (name, troop type, face), its troops and maximum before and after, the cost and the budget left (both ×100K).
+/// </summary>
+public sealed record SubordinateResult(
+    SubordinateOrderKind Kind, string Name, string TroopType, int FaceCg,
+    int TroopsBefore, int Troops, int MaxBefore, int MaxTroops, int Cost, int Gold)
+{
+    /// <summary>The plate's title.</summary>
+    public string Title => Kind == SubordinateOrderKind.Replenish ? "Troops Replenished" : "New Troops";
+
+    /// <summary>"Haurein · Leazas Soldiers".</summary>
+    public string Who => TroopType.Length == 0 ? Name : $"{Name} · {TroopType}";
+
+    /// <summary>The troops before and after: "209 → 1400" (Replenish), "1000/1000 → 1050/1050" (new troops, the maximum raised).</summary>
+    public string TroopsLine => Kind == SubordinateOrderKind.Replenish
+        ? $"{TroopsBefore} → {Troops}"
+        : $"{TroopsBefore}/{MaxBefore} → {Troops}/{MaxTroops}";
+
+    /// <summary>The men gained: "+1191" (a unit above its maximum loses some, CMD-20: "−50").</summary>
+    public string Gain => Signed(Troops - TroopsBefore);
+
+    /// <summary>"−2,300 K".</summary>
+    public string CostLine => $"−{Thousands(Cost)} K";
+
+    /// <summary>"114,100 K".</summary>
+    public string BudgetLine => $"{Thousands(Gold)} K";
+
+    private static string Thousands(int hundreds) => (hundreds * 100).ToString("N0", CultureInfo.InvariantCulture);
+
+    private static string Signed(int n) => n < 0 ? $"−{-n}" : $"+{n}";
+}
 
 /// <summary>
 /// Our own Subordinates screen over <c>Sﾌﾞｶ</c> and <c>Cﾌﾞｶ</c>'s troop menu (docs/ui/subordinates.md): the
@@ -117,6 +148,13 @@ public static class SubordinatesScreen
         return new SubordinatePanel(unit, DeploymentTable.UnitName(state, unit), u.FaceCg.Value, u.PortraitCg.Value, gold,
             replenish, offered, steps, talk);
     }
+
+    /// <summary>
+    /// Our question before a troop order, Replenish or a step of Add New Troops (the owner's C3, docs/ui/subordinates.md,
+    /// §6; the button it asks about shows the men and the price). It stands for the original's Do / Don't, which the
+    /// order then answers with Do.
+    /// </summary>
+    public static IReadOnlyList<string> Question { get; } = ["Are you sure?"];
 }
 
 /// <summary>
@@ -151,7 +189,7 @@ public sealed class SubordinateOrder
 
     private Phase _phase = Phase.Picking;
     private int _addMoreLeft;
-    private readonly int _troops, _gold;
+    private readonly int _troops, _maxTroops, _gold;
 
     private SubordinateOrder(SubordinateOrderKind kind, int unit, int step, GameState state)
     {
@@ -160,7 +198,7 @@ public sealed class SubordinateOrder
         Step = step;
         _addMoreLeft = step;
         var u = state.Units[unit];
-        (_troops, _gold) = (u.Troops.Value, state.Gold.Value);
+        (_troops, _maxTroops, _gold) = (u.Troops.Value, u.MaxTroops.Value, state.Gold.Value);
         Prologue = state.StoryStage == 0;
     }
 
@@ -301,13 +339,9 @@ public sealed class SubordinateOrder
         if (!Succeeded || Kind == SubordinateOrderKind.Talk)
             return null;
         var u = state.Units[Unit];
-        string budget = $"Budget −{(_gold - state.Gold.Value) * 100}K";
-        return Kind == SubordinateOrderKind.Replenish
-            ? new SubordinateResult(Kind, $"Replenished: {Signed(u.Troops.Value - _troops)} → {u.Troops.Value}", budget)
-            : new SubordinateResult(Kind, $"New troops: {Signed(u.Troops.Value - _troops)} → {u.Troops.Value}/{u.MaxTroops.Value}", budget);
+        return new SubordinateResult(Kind, DeploymentTable.UnitName(state, Unit), DeploymentTable.TroopType(state, Unit),
+            u.FaceCg.Value, _troops, u.Troops.Value, _maxTroops, u.MaxTroops.Value, _gold - state.Gold.Value, state.Gold.Value);
     }
-
-    private static string Signed(int n) => n < 0 ? $"−{-n}" : $"+{n}";
 
     /// <summary>The map's point COMMAND's right click is made at: the top left corner, clear of the map's plates.</summary>
     public static (int X, int Y) RightClickAt => (5, 6);

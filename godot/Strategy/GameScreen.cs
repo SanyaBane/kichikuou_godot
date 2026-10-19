@@ -2623,14 +2623,14 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// </summary>
     private void AutoPointer()
     {
-        if (_pointer.Pending > 0 || OrderRunning)
-            return;                                     // an order of our Subordinates screen has the pointer
+        if (_pointer.Pending > 0 || OrderRunning || _subordinates.Asking)
+            return;                                     // an order of our Subordinates screen has the pointer, or asks
         if (_presenter.Picker is { Kind: PickerKind.Subordinates } && _autoReplenish == AutoReplenish.Chosen && UpdateSubordinatesScreen()
             && _presenter.State is { } ordering)
         {
-            _autoReplenish = AutoReplenish.None;        // our own screen: its Replenish button
+            _autoReplenish = AutoReplenish.None;        // our own screen: its Replenish button, its question answered Yes
             GD.Print($"Kichikuou: --auto replenishes through our Subordinates screen (week {ordering.Week.Value}).");
-            _subordinates.Press(SubordinateOrderKind.Replenish, _autoReplenishUnit);
+            AutoReplenishThroughScreen(_autoReplenishUnit);
             return;
         }
         if (_presenter.Data is not (DataView.Closed or DataView.Map))

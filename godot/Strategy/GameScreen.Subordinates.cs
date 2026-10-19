@@ -100,6 +100,23 @@ public partial class GameScreen
     private bool SubordinatesAnswersKey() => _order is { } order && order.AnswerKey();
 
     /// <summary>
+    /// Unattended play's replenish through our screen: Replenish pressed, its question (<c>subordinates-question</c> in a
+    /// window with screen dumps on) answered Yes.
+    /// </summary>
+    private async void AutoReplenishThroughScreen(int unit)
+    {
+        _subordinates.Press(SubordinateOrderKind.Replenish, unit);
+        if (!_subordinates.Asking)
+        {
+            GD.PushError($"Kichikuou: --auto found no question before replenishing unit {unit}.");
+            return;
+        }
+        if (DisplayServer.GetName() != "headless" && _options.ScreenshotDirectory is not null)
+            await AutoDumpAsync("subordinates-question");
+        _subordinates.Answer(true);
+    }
+
+    /// <summary>
     /// The script's events for an order: <c>Sﾌﾞｶ</c> opening or closing, COMMAND's map wait (the right click
     /// that opens the command again); the plate once a troop order is over. Unattended play dumps the screen
     /// as it opens and after its order.
@@ -120,7 +137,7 @@ public partial class GameScreen
         bool dumps = _options.Auto && DisplayServer.GetName() != "headless" && _options.ScreenshotDirectory is not null;
         if (wasRunning && !OrderRunning && _order!.Result(s) is { } result)
         {
-            GD.Print($"Kichikuou: Subordinates order done, the command open again: {result.Line}, {result.Budget}.");
+            GD.Print($"Kichikuou: Subordinates order done, the command open again: {result.Title} {result.TroopsLine} ({result.Gain}), cost {result.CostLine}, budget {result.BudgetLine}.");
             UpdateSubordinatesScreen();
             _subordinates.ShowResult(result);
             if (dumps)

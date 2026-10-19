@@ -12,10 +12,11 @@ namespace Kichikuou.Game.Strategy;
 /// gold wave pattern; the table of the units across the top as a paper ledger in a lacquer panel
 /// (<see cref="SubordinatesScreen.Columns"/>, <see cref="DeploymentTableView"/> as a ledger); the chosen unit's
 /// status CG at the bottom left, in the original screen's gold frame; the orders' panel at the bottom right (the
-/// budget, Replenish in red lacquer, Add New Troops' steps, Talk with the unit's face, End) and, after an order, a
-/// plate saying what it did. Drawn by hand in the 1280×800 screen's pixels, as our map panels (<see cref="Lacquer"/>).
-/// It decides nothing: the presses go to <see cref="GameScreen"/>, which answers the script through a
-/// <see cref="SubordinateOrder"/>.
+/// budget, Replenish in red lacquer, Add New Troops' steps, Talk with the unit's face, End). A troop order asks first
+/// in a callout at its button (the owner's C3, docs/ui/subordinates.md, §6: the Treasure screen's
+/// <see cref="TreasureCallout"/>, Yes / No); after it a plate in the middle of the screen says what it did (R4/R5).
+/// Drawn by hand in the 1280×800 screen's pixels, as our map panels (<see cref="Lacquer"/>). It decides nothing: the
+/// presses go to <see cref="GameScreen"/>, which answers the script through a <see cref="SubordinateOrder"/>.
 /// </summary>
 internal sealed partial class SubordinatesView : Control
 {
@@ -27,18 +28,23 @@ internal sealed partial class SubordinatesView : Control
     private static readonly Rect2 ReplenishArea = new(702, 424, 550, 60);
     private const float AddLabelY = 500, StepsTop = 514, StepsHeight = 56, StepGap = 6, RuleY = 586;
     private static readonly Rect2 TalkArea = new(702, 598, 220, 84);
-    private static readonly Rect2 ResultArea = new(934, 598, 318, 84);
     private static readonly Rect2 EndArea = new(1112, 718, 140, 52);
+    private static readonly Rect2 PlateArea = new(250, 315, 780, 150);    // the plate after an order, in the middle
 
-    /// <summary>How long the plate stays (seconds).</summary>
-    private const double ResultSeconds = 4;
+    /// <summary>How long the plate stays (seconds), unless a click closes it first.</summary>
+    private const double ResultSeconds = 2.5;
+
+    private static readonly Color PlateFill = Color.Color8(22, 16, 12, 248);
+    private static readonly Color PlateDim = new(0, 0, 0, 0.27f);
+    private static readonly Color AskedLine = Color.Color8(190, 60, 40);   // the button the callout asks about
 
     // The buttons, as the view tells them apart: Replenish, Talk, End, then Add More's steps from StepButton.
     private const int NoButton = -1, ReplenishButton = 0, TalkButton = 1, EndButton = 2, StepButton = 10;
 
     private readonly FacePictures _faces;
-    private readonly Layer _backdrop, _face;
+    private readonly Layer _backdrop, _face, _over;
     private readonly DeploymentTableView _table;
+    private readonly TreasureCallout _callout;
     private readonly FontFile _brush = Lacquer.Brush();
     private readonly FontVariation _cinzel = Lacquer.Cinzel(700), _cinzelLight = Lacquer.Cinzel(600);
     private FontFile _gothic;
@@ -48,11 +54,13 @@ internal sealed partial class SubordinatesView : Control
     private SubordinatePanel? _panel;
     private string _panelKey = "", _date = "";
     private int _ready;
-    private int _portraitCg = -1, _faceCg = -1, _faceSize;
-    private ImageTexture? _portrait, _faceTexture;
+    private int _portraitCg = -1;
+    private ImageTexture? _portrait;
+    private readonly FaceCache _talkFace = new(), _plateFace = new();
+    private GameState? _state;
     private SubordinateResult? _result;
     private double _resultLeft;
-    private int _hovered = NoButton, _pressed = NoButton;
+    private int _hovered = NoButton, _pressed = NoButton, _asked = NoButton;
 
     /// <summary>An order's button pressed: the order, the unit and Add More's step.</summary>
     public event Action<SubordinateOrderKind, int, int>? OrderPressed;
@@ -74,6 +82,10 @@ internal sealed partial class SubordinatesView : Control
         _table.RowPressed += unit => _table.Chosen = unit;
         _table.RightPressed += () => EndPressed?.Invoke();
         AddChild(_table);
+        _over = new Layer(DrawOver) { Input = OverInput };      // the plate, over the ledger too
+        AddChild(_over);
+        _callout = new TreasureCallout(font);
+        AddChild(_callout);
     }
 
     /// <summary>The unit chosen in the table.</summary>
@@ -87,6 +99,7 @@ internal sealed partial class SubordinatesView : Control
     {
         _gothic = DeploymentTableView.LoadFont(font);
         _table.SetFont(font);
+        _callout.SetFont(font);
         _face.QueueRedraw();
     }
 
@@ -94,7 +107,8 @@ internal sealed partial class SubordinatesView : Control
     public void LoadCrops()
     {
         _crops = FaceCropFile.Load();
-        _faceCg = -1;
+        _talkFace.Clear();
+        _plateFace.Clear();
         _face.QueueRedraw();
     }
 
@@ -109,11 +123,12 @@ internal sealed partial class SubordinatesView : Control
         float k = pixelsPerScript / 2;
         var area = new Vector2(1280, 800) * k;
         _table.Place(new Rect2(origin + TableArea.Position * k, TableArea.Size * k), pixelsPerScript);
+        _callout.Place(new Rect2(origin, area));
         if (origin == _origin && Math.Abs(k - _k) < 0.0001f && _backdrop.Size == area)
             return;
         _origin = origin;
         _k = k;
-        foreach (var layer in new[] { _backdrop, _face })
+        foreach (var layer in new[] { _backdrop, _face, _over })
         {
             layer.Position = origin;
             layer.Size = area;
@@ -127,14 +142,12 @@ internal sealed partial class SubordinatesView : Control
     /// </summary>
     public void Refresh(GameState state, double delta)
     {
+        _state = state;
         _table.Refresh(state);
         if (_table.Chosen == 0 || !_table.Lists(_table.Chosen))
             _table.Chosen = SubordinatesScreen.FirstChoice(state);
         if (_resultLeft > 0 && (_resultLeft -= delta) <= 0)
-        {
-            _result = null;
-            _face.QueueRedraw();
-        }
+            ShowResult(null);
         var (year, month, week) = StatusStrip.DateOf(state.Week.Value);
         _date = $"LP {year} · Month {month} · Week {week}";
         _ready = _table.ReadyCount;
@@ -152,19 +165,65 @@ internal sealed partial class SubordinatesView : Control
         _face.QueueRedraw();
     }
 
-    /// <summary>What an order did, on the plate beside Talk for a few seconds.</summary>
-    public void ShowResult(SubordinateResult result)
+    /// <summary>
+    /// What an order did, on the plate in the middle for a few seconds (null takes it away); a click anywhere closes it
+    /// first, and the screen takes no other click while it shows.
+    /// </summary>
+    public void ShowResult(SubordinateResult? result)
     {
         _result = result;
-        _resultLeft = ResultSeconds;
-        _face.QueueRedraw();
+        _resultLeft = result is null ? 0 : ResultSeconds;
+        _over.MouseFilter = result is null ? MouseFilterEnum.Ignore : MouseFilterEnum.Stop;
+        _over.QueueRedraw();
     }
 
-    /// <summary>An order's button as the mouse presses it (unattended play goes through here).</summary>
+    /// <summary>
+    /// An order's button as the mouse presses it (unattended play goes through here): a troop order asks first
+    /// (<see cref="Answer"/> answers it as a click would), Talk goes at once.
+    /// </summary>
     public void Press(SubordinateOrderKind kind, int unit, int step = 0)
     {
         _table.Chosen = unit;
-        OrderPressed?.Invoke(kind, unit, step);
+        if (_state is not null)
+            _panel = SubordinatesScreen.Panel(_state, unit);
+        if (kind == SubordinateOrderKind.Talk)
+            OrderPressed?.Invoke(kind, unit, step);
+        else
+            Ask(kind, unit, step, kind == SubordinateOrderKind.Replenish ? ReplenishButton : StepButton + step);
+    }
+
+    /// <summary>Whether the callout asks about a troop order.</summary>
+    public bool Asking => _callout.MenuOpen;
+
+    /// <summary>Answers the callout as a click on Yes or No would (unattended play).</summary>
+    public void Answer(bool yes) => _callout.Choose(yes ? 1 : 2);
+
+    /// <summary>
+    /// The question before a troop order (<see cref="SubordinatesScreen.Question"/>) in a callout at its button, the
+    /// button marked; Yes gives the order, No or a right click leaves it. Nothing reaches the script before Yes.
+    /// </summary>
+    private async void Ask(SubordinateOrderKind kind, int unit, int step, int button)
+    {
+        if (_panel is null || _callout.MenuOpen || RectOf(button) is not { } rect)
+            return;
+        _asked = button;
+        _callout.Show(SubordinatesScreen.Question, rect, waiting: false);
+        _callout.OpenMenu(["Yes", "No"]);
+        _face.QueueRedraw();
+        int answer;
+        try
+        {
+            answer = await _callout.ChooseAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            answer = 0;                                         // the screen closed under the question
+        }
+        _callout.Hide();
+        _asked = NoButton;
+        _face.QueueRedraw();
+        if (answer == 1 && IsVisibleInTree() && !Busy)
+            OrderPressed?.Invoke(kind, unit, step);
     }
 
     // ---------------------------------------------------------------- the buttons
@@ -244,6 +303,18 @@ internal sealed partial class SubordinatesView : Control
     {
         if (what == NotificationMouseExit)
             Hover(NoButton);
+        else if (what == NotificationVisibilityChanged && !Visible && _callout is not null)   // not the constructor's own hiding
+        {
+            _callout.Hide();                                    // a question left open is a No
+            ShowResult(null);
+        }
+    }
+
+    /// <summary>The plate's input: any press closes it.</summary>
+    private void OverInput(InputEvent e)
+    {
+        if (_result is not null && e is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left or MouseButton.Right })
+            ShowResult(null);
     }
 
     private void Hover(int button)
@@ -258,15 +329,14 @@ internal sealed partial class SubordinatesView : Control
     {
         if (button == EndButton)
             EndPressed?.Invoke();
+        else if (button == TalkButton && _table.Chosen != 0)
+            OrderPressed?.Invoke(SubordinateOrderKind.Talk, _table.Chosen, 0);
         else if (_table.Chosen != 0)
         {
-            var (kind, step) = button switch
-            {
-                ReplenishButton => (SubordinateOrderKind.Replenish, 0),
-                TalkButton => (SubordinateOrderKind.Talk, 0),
-                _ => (SubordinateOrderKind.AddTroops, button - StepButton),
-            };
-            OrderPressed?.Invoke(kind, _table.Chosen, step);
+            var (kind, step) = button == ReplenishButton
+                ? (SubordinateOrderKind.Replenish, 0)
+                : (SubordinateOrderKind.AddTroops, button - StepButton);
+            Ask(kind, _table.Chosen, step, button);
         }
     }
 
@@ -367,8 +437,6 @@ internal sealed partial class SubordinatesView : Control
         c.DrawLine(new Vector2(ReplenishArea.Position.X + 2, RuleY), new Vector2(ReplenishArea.End.X - 2, RuleY), Lacquer.DimGold, Line(1));
 
         DrawTalk(c, panel);
-        if (_result is { } result)
-            DrawResult(c, result);
         DrawPlain(c, EndArea, "End", null, EndButton, _cinzel, 17, 0);
     }
 
@@ -405,7 +473,7 @@ internal sealed partial class SubordinatesView : Control
     /// <summary>The main order: red lacquer framed in gold, as Turn END on the command panel.</summary>
     private void DrawPrimary(Control c, Rect2 rect, string title, string note, int button)
     {
-        bool hover = button == _hovered, down = hover && button == _pressed;
+        bool hover = button == _hovered || button == _asked, down = button == _hovered && button == _pressed;
         Lacquer.DrawRedButton(c, rect, hover, down, _k);
         DrawLabels(c, rect, title, _brush, 22, Color.Color8(250, 226, 160), note, _gothic, 15, Color.Color8(236, 206, 160));
     }
@@ -426,9 +494,11 @@ internal sealed partial class SubordinatesView : Control
         }
         DrawLabels(c, rect, title, titleFont, titleSize, !on ? Lacquer.OffText : hover ? Lacquer.Name : Lacquer.Text,
             note, _gothic, noteSize, on ? Lacquer.Quiet : Lacquer.OffText);
+        if (button == _asked)
+            c.DrawRect(rect, AskedLine, false, Line(2));
     }
 
-    /// <summary>Talk: the unit's face in a gold frame, "Talk" and whom with (or why it is greyed).</summary>
+    /// <summary>Talk:the unit's face in a gold frame, "Talk" and whom with (or why it is greyed).</summary>
     private void DrawTalk(Control c, SubordinatePanel panel)
     {
         var rect = TalkArea;
@@ -445,7 +515,7 @@ internal sealed partial class SubordinatesView : Control
         }
         float size = rect.Size.Y - 12;
         var faceRect = new Rect2(rect.Position + new Vector2(6, 6), new Vector2(size, size));
-        if (FaceTexture(panel.FaceCg, size) is { } face)
+        if (_talkFace.Get(_faces, _crops, panel.FaceCg, size * _k) is { } face)
             c.DrawTextureRect(face, faceRect, false, on ? Colors.White : new Color(0.45f, 0.42f, 0.4f));
         c.DrawRect(faceRect, on ? Lacquer.Gold : Lacquer.OffLine, false, Line(1));
         var text = new Rect2(faceRect.End.X + 6, rect.Position.Y, rect.End.X - faceRect.End.X - 12, rect.Size.Y);
@@ -454,50 +524,91 @@ internal sealed partial class SubordinatesView : Control
             note, _cinzelLight, 11, on ? Lacquer.Subtitle : Lacquer.OffText);
     }
 
-    /// <summary>The unit's face cut to its square, made again only when the face or the window's size changes.</summary>
-    private ImageTexture? FaceTexture(int faceCg, float size)
+    /// <summary>Over the ledger: the plate after an order, the screen dimmed a little under it.</summary>
+    private void DrawOver(Control c)
     {
-        if (faceCg == 0)
-            return null;
-        int pixels = Math.Max(16, (int)Math.Round(size * _k));
-        if (faceCg != _faceCg || pixels != _faceSize)
+        if (_result is not { } result)
+            return;
+        c.DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
+        c.DrawRect(new Rect2(0, 0, 1280, 800), PlateDim);
+        DrawPlate(c, result);
+    }
+
+    /// <summary>
+    /// The plate (R4/R5): the unit's face, the order's title, the unit and its troop type, the troops before and after
+    /// with the men gained; right of a rule the cost and the budget left.
+    /// </summary>
+    private void DrawPlate(Control c, SubordinateResult r)
+    {
+        var box = PlateArea;
+        Lacquer.DrawPanel(c, box, _k, PlateFill);
+        float size = box.Size.Y - 52;
+        var faceRect = new Rect2(box.Position + new Vector2(26, 26), new Vector2(size, size));
+        if (_plateFace.Get(_faces, _crops, r.FaceCg, size * _k) is { } face)
+            c.DrawTextureRect(face, faceRect, false);
+        c.DrawRect(faceRect, Lacquer.Gold, false, Line(1));
+
+        float x = faceRect.End.X + 24, y = box.Position.Y;
+        Rect2 Band(float middle, float height = 30) => new(x, middle - height / 2, 400, height);
+        c.DrawString(_brush, new Vector2(x, Lacquer.Baseline(Band(y + 42, 40), _brush, 28)), r.Title, fontSize: 28, modulate: Lacquer.Name);
+        c.DrawString(_cinzel, new Vector2(x + 2, Lacquer.Baseline(Band(y + 76), _cinzel, 15)), r.Who, fontSize: 15, modulate: Lacquer.Subtitle);
+        float w = DrawFigures(c, x + 2, Band(y + 112), r.TroopsLine, 22, Lacquer.Value);
+        c.DrawString(_cinzel, new Vector2(x + 2 + w + 14, Lacquer.Baseline(Band(y + 113), _cinzel, 18)), r.Gain, fontSize: 18,
+            modulate: r.Gain.StartsWith('−') ? Lacquer.Minus : Lacquer.Plus);
+
+        float rx = box.End.X - 232, my = box.GetCenter().Y, right = box.End.X - 28;
+        c.DrawLine(new Vector2(rx, my - 40), new Vector2(rx, my + 40), Lacquer.DimGold, Line(1));
+        var cost = new Rect2(rx + 20, my - 33, right - rx - 20, 30);
+        var budget = new Rect2(rx + 20, my + 3, right - rx - 20, 30);
+        c.DrawString(_cinzel, new Vector2(cost.Position.X, Lacquer.Baseline(cost, _cinzel, 13)), "Cost", fontSize: 13, modulate: Lacquer.Label);
+        RightString(c, _cinzel, r.CostLine, 18, Lacquer.Minus, right, cost);
+        c.DrawString(_cinzel, new Vector2(budget.Position.X, Lacquer.Baseline(budget, _cinzel, 13)), "Budget", fontSize: 13, modulate: Lacquer.Label);
+        RightString(c, _cinzel, r.BudgetLine, 18, Lacquer.Name, right, budget);
+    }
+
+    /// <summary>Figures in Cinzel from <paramref name="x"/>, their arrows in the game's font (Cinzel has none); returns the width.</summary>
+    private float DrawFigures(Control c, float x, Rect2 band, string text, int size, Color colour)
+    {
+        const float ArrowGap = 10;
+        float start = x;
+        string[] parts = text.Split('→', StringSplitOptions.TrimEntries);
+        for (int i = 0; i < parts.Length; i++)
         {
-            _faceCg = faceCg;
-            _faceSize = pixels;
-            _faceTexture = _faces.SquareTexture(faceCg, _faces.CropOf(faceCg, _crops), pixels);
+            if (i > 0)
+            {
+                x += ArrowGap;
+                c.DrawString(_gothic, new Vector2(x, Lacquer.Baseline(band, _gothic, size - 2)), "→", fontSize: size - 2, modulate: Lacquer.Gold);
+                x += _gothic.GetStringSize("→", fontSize: size - 2).X + ArrowGap;
+            }
+            c.DrawString(_cinzel, new Vector2(x, Lacquer.Baseline(band, _cinzel, size)), parts[i], fontSize: size, modulate: colour);
+            x += _cinzel.GetStringSize(parts[i], fontSize: size).X;
         }
-        return _faceTexture;
+        return x - start;
     }
 
-    /// <summary>The plate: what the order did and what it cost, label and figure on each line.</summary>
-    private void DrawResult(Control c, SubordinateResult result)
+    /// <summary>A unit's face cut to its square, made again only when the face or its size in window pixels changes.</summary>
+    private sealed class FaceCache
     {
-        var rect = ResultArea;
-        c.DrawRect(rect, Color.Color8(18, 26, 14, 240));
-        c.DrawRect(rect, Color.Color8(120, 160, 84), false, Line(1));
-        c.DrawRect(rect.Grow(-3), Color.Color8(60, 84, 44), false, Line(1));
-        var lines = new[] { (result.Line, Lacquer.Plus, Lacquer.Text), (result.Budget, Lacquer.Label, Lacquer.Minus) };
-        for (int i = 0; i < lines.Length; i++)
+        private int _cg = -1, _pixels;
+        private ImageTexture? _texture;
+
+        public void Clear() => _cg = -1;
+
+        public ImageTexture? Get(FacePictures faces, FaceCrops crops, int faceCg, float windowSize)
         {
-            var (text, labelColour, valueColour) = lines[i];
-            var (label, value) = Split(text);
-            var row = new Rect2(rect.Position.X + 14, rect.Position.Y + 8 + i * 34, rect.Size.X - 28, 34);
-            c.DrawString(_cinzel, new Vector2(row.Position.X, Lacquer.Baseline(row, _cinzel, 13)), label, fontSize: 13, modulate: labelColour);
-            RightString(c, _gothic, value, 16, valueColour, row.End.X, row);
+            if (faceCg == 0)
+                return null;
+            int pixels = Math.Max(16, (int)Math.Round(windowSize));
+            if (faceCg != _cg || pixels != _pixels)
+            {
+                (_cg, _pixels) = (faceCg, pixels);
+                _texture = faces.SquareTexture(faceCg, faces.CropOf(faceCg, crops), pixels);
+            }
+            return _texture;
         }
     }
 
-    /// <summary>"Replenished: +1191 → 1400" as its label and figure; "Budget −2300K" likewise at its first space.</summary>
-    private static (string Label, string Value) Split(string line)
-    {
-        int at = line.IndexOf(": ", StringComparison.Ordinal);
-        if (at >= 0)
-            return (line[..at], line[(at + 2)..]);
-        at = line.IndexOf(' ');
-        return at >= 0 ? (line[..at], line[(at + 1)..]) : ("", line);
-    }
-
-    /// <summary>A layer of the screen drawn by its view (the backdrop under the table, the panels over it).</summary>
+    /// <summary>A layer of the screen drawn by its view (the backdrop under the table, the panels over it, the plate over all).</summary>
     private sealed partial class Layer : Control
     {
         private readonly Action<Control> _paint;
@@ -508,6 +619,17 @@ internal sealed partial class SubordinatesView : Control
             MouseFilter = MouseFilterEnum.Ignore;
         }
 
+        /// <summary>The layer's input while its mouse filter stops the mouse (the plate's).</summary>
+        public Action<InputEvent>? Input { get; init; }
+
         public override void _Draw() => _paint(this);
+
+        public override void _GuiInput(InputEvent e)
+        {
+            if (Input is null)
+                return;
+            Input(e);
+            AcceptEvent();
+        }
     }
 }

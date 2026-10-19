@@ -64,7 +64,9 @@ public class SubordinatesScriptTests(ITestOutputHelper output)
         Assert.Equal(1000, s.Units[2].Troops.Value);
         Assert.Equal(1000 - 18, s.Gold.Value);                              // 900 men at one per 50
         Assert.Equal((0, 1, 1), (s.CmdAvail_SubTroops.Value, s.CmdAvail_SubTalk.Value, s.Ui_CmdSubordAvail.Value));
-        Assert.Equal(new SubordinateResult(SubordinateOrderKind.Replenish, "Replenished: +900 → 1000", "Budget −1800K"), order.Result(s));
+        var result = order.Result(s)!;
+        Assert.Equal((100, 1000, 1000, 1000, 18, 1000 - 18), (result.TroopsBefore, result.Troops, result.MaxBefore, result.MaxTroops, result.Cost, result.Gold));
+        Assert.Equal(DeploymentTable.UnitName(s, 2), result.Name);
     }
 
     [Fact]

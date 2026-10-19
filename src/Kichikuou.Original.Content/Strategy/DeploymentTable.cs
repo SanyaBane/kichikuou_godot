@@ -341,7 +341,7 @@ public static class DeploymentTable
         var u = state.Units[unit];
         string rows = RowsOf(u.Class.Value);
         string item = u.Item == 0 ? "" : StringAt(state, (state.Item_StrBase + u.Item - 1).Value);
-        return new DeploymentDetails(unit, UnitName(state, unit), StringAt(state, (state.Unit_StrBase + (Sys3Int)((unit - 1) * 3)).Value + 1),
+        return new DeploymentDetails(unit, UnitName(state, unit), TroopType(state, unit),
             (u.DeployCost + u.Troops / 300).Value, u.Troops.Value, u.MaxTroops.Value, rows, item);
     }
 
@@ -386,6 +386,10 @@ public static class DeploymentTable
     /// <summary>Unit <paramref name="unit"/>'s name: its first string (<c>Unit_StrBase + (n-1)·3</c>; scenes may rename it).</summary>
     public static string UnitName(GameState state, int unit) =>
         StringAt(state, (state.Unit_StrBase + (Sys3Int)((unit - 1) * 3)).Value);
+
+    /// <summary>Unit <paramref name="unit"/>'s troop type ("Leazas Soldiers"): its second string.</summary>
+    public static string TroopType(GameState state, int unit) =>
+        StringAt(state, (state.Unit_StrBase + (Sys3Int)((unit - 1) * 3)).Value + 1);
 
     internal static string StringAt(GameState state, int index) =>
         index >= 0 && index < state.Strings.Length ? Hankaku.ToHalfWidth(state.Strings[index]) : "";

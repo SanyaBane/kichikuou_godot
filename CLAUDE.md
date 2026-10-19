@@ -164,7 +164,8 @@ STR-11 is fixed (docs/strategy/README.md, decision 26).
 Then (owner, 2026-10-20) our own Save/Load screen in lacquer over `ﾛｰﾄﾞｾｰﾌﾞ`'s slot lists: the survey and mock-up round 1
 are docs/ui/save-load.md (`tools/ui/mock_saves.py`); the owner chose C (a list and the slot's page, the map large, a red
 button), built after the plan in its §5 (`Original.Content/Strategy/SaveSlots`, `godot/Strategy/SaveLoadView`), awaiting
-the owner's look in a window.
+the owner's look in a window. Then (owner, 2026-10-20) the Subordinates screen's troop orders ask first (mock-up C3, a callout
+at the button, Replenish too) and report on a plate in the middle (R4/R5): docs/ui/subordinates.md, §6, built.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -266,7 +267,9 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `Strategy/SubordinatesView` (our Subordinates screen over `Sﾌﾞｶ` and `Cﾌﾞｶ`'s troop menu, Option → Interface → New,
   docs/ui/subordinates.md: drawn by hand in lacquer (mock-up G3) over a wave-patterned backdrop — the table across the
   top, `DeploymentTableView` as a chooser and a paper ledger (`ledger: true`, not the palette's colours) with
-  `Original.Content/Strategy/SubordinatesScreen.Columns` —, the status CG, the orders' panel; an order is
+  `Original.Content/Strategy/SubordinatesScreen.Columns` —, the status CG, the orders' panel; a troop order asks first in
+  a `TreasureCallout` at its button (`SubordinatesScreen.Question`, the owner's C3) and reports on a plate in the middle
+  (`SubordinateResult`, R4/R5; docs/ui/subordinates.md, §6); an order is
   `Original.Content/Strategy/SubordinateOrder`, fed by `GameScreen.Subordinates.cs`: the cell's click, the menus and key
   waits answered unseen, the command opened again on COMMAND's map after a troop order; the figures are
   `SubordinatesCommand.Offer`/`AddMore`/`Refill`);

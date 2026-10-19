@@ -160,3 +160,55 @@ bands, G3 G1 with the table as a paper ledger, G4 G1 after a replenish. The owne
 
 Built (2026-10-18) and looked at from `saves-week18` (the dumps `subordinates`, `subordinates-done`). Put off: the
 deployment screen in the same look (docs/backlog.md).
+
+## 6. A question before Add New Troops, the report in the middle (owner, 2026-10-20)
+
+The owner asked (2026-10-20) for two changes: a click on an Add New Troops step asks first ("Are you sure you want
+to …", Yes / No), and the report of a troop order — the plate beside Talk (§5) — becomes a panel in the middle of the
+screen. The original asks before both troop orders: Add New Troops' offer ("Giving n new troops will cost …", the
+cost and the budget; Do It / Add More / Don't, `Cﾌﾞｶ.ADV:870-916`) and Replenish's ("Replenish X's unit?", the
+deficiency and the cost; Do / Don't, `:1012-1031`); it reports in window 113 ("X got n additional troops. t/m is now
+their troop count.", `:946-959`; "X's … replenished by n to t.", `:1081-1091`). Our question stays the screen's own:
+nothing reaches the script before Yes, so No needs no Don't.
+
+Round 5 of the mock-ups (`tools/ui/mock_subordinates_orders.py`, over the dumps `subordinates` and
+`subordinates-done` of the week-18 look in §4; Rance (unit 1) adds +50 for 34,200K, Haurein (unit 12) replenishes
++1191 for 2,300K):
+
+- **C1 — the question alone, in the middle:** the screen dimmed, the clicked step left lit; a lacquer dialog with
+  "Add New Troops", the question with the men, the unit and the price, Yes in red lacquer and No.
+- **C2 — the question with the order's account:** the week report's manner — the face, the troops before and after
+  on one bar, the weekly recovery's +1 (`Unit_Recovery`, which the original never shows), the cost and the budget
+  after it, then "Are you sure?" Yes / No. Its panel is R1's, so Yes can turn it into the report in place.
+- **C3 — a callout at the clicked step:** the Treasure screen's W2 (pickers.md): no dimming, the step marked in
+  vermilion, the question and Yes / No under it.
+- **R1 — the report in the middle, as the week report:** the face, "Troops Replenished", the troops before and after
+  on one bar, the men, the cost, the budget left; a click closes it (the triangle).
+- **R2 — a band across the middle:** a lacquer band over the whole width, as a cut-in; gone after about two seconds
+  or at a click.
+- **R3 — R1 after Add New Troops:** "New Troops", the troops and their maximum raised (the bar's tick at the old
+  maximum), the weekly recovery +1, the cost, the budget left.
+
+**The owner's choices (2026-10-20):** **C3** — the question in a callout at the clicked button — and **Replenish asks
+too**, in the same callout under its button. The report is **R2's look as a plate in the middle**, not over the whole width: round 6 of the same script,
+**R4** (after Replenish: the face, "Troops Replenished", the unit, the troops before and after with the men gained;
+cost and budget right of a rule) and **R5** (after Add New Troops: "New Troops", the troops and their maximum; the
+weekly recovery's +1 left out at the owner's word). The screen dimmed a little under it; it goes by itself after about two
+seconds or at a click. These replace §2's "a click does the order at once" and its plate beside Talk. After the first
+build (owner, 2026-10-20) the question is only "Are you sure?" for both orders: the button it points at shows the men and
+the price.
+
+**Built (2026-10-20):**
+
+- `SubordinatesScreen.Question` is the question ("Are you sure?"); `SubordinateResult` carries the plate's figures — the unit's name, troop type and face, the
+  troops and maximum before and after, the cost and the budget left — and its lines (`Title`, `Who`, `TroopsLine`,
+  `Gain`, `CostLine`, `BudgetLine`); `DeploymentTable.TroopType` names a unit's troop type.
+- `SubordinatesView` asks in the Treasure screen's `TreasureCallout` at the clicked button (Replenish or a step), the
+  button marked (a step in vermilion, Replenish lit); Yes gives the order (`OrderPressed`, the script then answered with
+  Do / Do It as before), No or a right click leaves it, and a question left open when the screen closes is a No. The
+  plate (`DrawPlate`, 780×150 in the middle) lies on a layer over the ledger that takes the mouse while it shows: any
+  click closes it, else it goes after 2.5 seconds.
+- Unattended play answers the question Yes (`GameScreen.AutoReplenishThroughScreen`) and in a window dumps it as
+  `subordinates-question`, between `subordinates` and `subordinates-done` (the §4 command). Looked at from
+  `saves-week18`: Haurein (unit 12)'s replenish, +1191 → 1400 for 2,300K. Add New Troops' question and plate R5 are
+  covered by the tests (`SubordinatesScreenTests`), not by a look in a window.
