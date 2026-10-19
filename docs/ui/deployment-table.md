@@ -96,7 +96,8 @@ the details panel (2026-10-12, after the look at step 8):
 
 - Sorting by any column (a header click: the values where more is better — Troops, T.Atk, T.Def, Str%, HP,
   Lv, EXP, Atk, Def, Act, Mag — descending, № and the text columns and the prices Cost and Refill ascending
-  (the owner's choice, 2026-10-20); again the other way); by № at first. The Subordinates screen's table
+  (the owner's choice, 2026-10-20); Rows by rank, descending first: Front, then "Front, Back", then Back (the
+  owner's choice, 2026-10-20); again the other way); by № at first. The Subordinates screen's table
   sorts the same way. A sort key of
   "a / b" is a. Units deployed this week (status 2) are grey but sort like the rest — Rance stays first
   by number after he has fought this week. Members of the party are marked with their place (1-4).

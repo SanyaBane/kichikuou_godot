@@ -69,12 +69,14 @@ public enum DeploymentColumn
 public sealed record DeploymentColumnInfo(DeploymentColumn Column, string Header, string FullName, bool IsText = false)
 {
     /// <summary>
-    /// Whether a first click on the header sorts descending: the values where more is better (the owner's
-    /// choice, 2026-10-20); the number, the texts and the prices (cheaper is better) sort ascending first.
+    /// Whether a first click on the header sorts descending: the values where more is better, and the rows,
+    /// front first (the owner's choices, 2026-10-20); the number, the texts and the prices (cheaper is better)
+    /// sort ascending first.
     /// </summary>
     public bool HighFirst => Column is DeploymentColumn.Troops or DeploymentColumn.TroopAtk or DeploymentColumn.TroopDef
         or DeploymentColumn.Strategy or DeploymentColumn.Hp or DeploymentColumn.Level or DeploymentColumn.Exp
-        or DeploymentColumn.Atk or DeploymentColumn.Def or DeploymentColumn.Attacks or DeploymentColumn.Magic;
+        or DeploymentColumn.Atk or DeploymentColumn.Def or DeploymentColumn.Attacks or DeploymentColumn.Magic
+        or DeploymentColumn.Rows;
 }
 
 /// <summary>
@@ -110,7 +112,7 @@ public sealed record DeploymentRow(
         _ => throw new ArgumentOutOfRangeException(nameof(column)),
     };
 
-    /// <summary>The cell's sort key: the number (of "a / b", a), or the text for a text column.</summary>
+    /// <summary>The cell's sort key: the number (of "a / b", a), the text for a text column but the rows (<see cref="RowsRank"/>).</summary>
     public IComparable Key(DeploymentColumn column) => column switch
     {
         DeploymentColumn.Name => Name,
@@ -130,8 +132,20 @@ public sealed record DeploymentRow(
         DeploymentColumn.TroopType => TroopType,
         DeploymentColumn.Refill => Refill,
         DeploymentColumn.Item => Item,
-        DeploymentColumn.Rows => Rows,
+        DeploymentColumn.Rows => RowsRank,
         _ => throw new ArgumentOutOfRangeException(nameof(column)),
+    };
+
+    /// <summary>
+    /// The rows' sort key: Front 3, "Front, Back" 2, Back 1, none 0 — so descending, the first click
+    /// (<see cref="DeploymentColumnInfo.HighFirst"/>), lists the front first (the owner's choice, 2026-10-20).
+    /// </summary>
+    private int RowsRank => Rows switch
+    {
+        "Front" => 3,
+        "Front, Back" => 2,
+        "Back" => 1,
+        _ => 0,
     };
 }
 

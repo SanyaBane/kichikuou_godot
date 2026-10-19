@@ -67,16 +67,27 @@ public class DeploymentTableTests
             Assert.NotEmpty(c.Header);
             Assert.NotEmpty(c.FullName);
             Assert.NotNull(row.Text(c.Column));
-            Assert.Equal(c.IsText, row.Key(c.Column) is string);
+            Assert.Equal(c.IsText && c.Column != DeploymentColumn.Rows, row.Key(c.Column) is string);   // the rows by rank
         });
     }
 
     [Fact]
-    public void Values_where_more_is_better_sort_descending_first_the_number_texts_and_prices_ascending()
+    public void Values_where_more_is_better_and_the_rows_sort_descending_first_the_number_texts_and_prices_ascending()
     {
         var columns = DeploymentTable.Columns.Concat(SubordinatesScreen.Columns).DistinctBy(c => c.Column).ToList();
         DeploymentColumn[] ascending = [DeploymentColumn.Number, DeploymentColumn.Cost, DeploymentColumn.Refill];
-        Assert.All(columns, c => Assert.Equal(!c.IsText && !ascending.Contains(c.Column), c.HighFirst));
+        Assert.All(columns, c => Assert.Equal(
+            c.Column == DeploymentColumn.Rows || !c.IsText && !ascending.Contains(c.Column), c.HighFirst));
+    }
+
+    [Fact]
+    public void The_rows_sort_descending_front_then_front_and_back_then_back_then_none()
+    {
+        DeploymentRow Unit(int n, string rows) => new(n, "", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false, 0, Rows: rows);
+        DeploymentRow[] rows = [Unit(1, "Back"), Unit(2, ""), Unit(3, "Front, Back"), Unit(4, "Front"), Unit(5, "Back")];
+
+        Assert.Equal([4, 3, 1, 5, 2], DeploymentTable.Sort(rows, DeploymentColumn.Rows, descending: true).Select(r => r.Unit));
+        Assert.Equal([2, 1, 5, 3, 4], DeploymentTable.Sort(rows, DeploymentColumn.Rows, descending: false).Select(r => r.Unit));
     }
 
     [Fact]
