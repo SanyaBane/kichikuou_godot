@@ -168,6 +168,33 @@ screen up over the question's window while the order runs. `--treasure` opens it
 "Commands"); with `--interface new` unattended play takes Rance's L. Holy Sword (item 6) off and gives it back by a drop.
 Looked at in dumps from `saves-week18`; not yet by the owner.
 
+**The owner on the built S5 (2026-10-19): not accepted.** Sengoku Rance's layout lives on its item icons, and ours
+have none: text tablets beside a sprite and a large picture look poor. Other ways wanted, as mock-ups. The code stays
+as built until a choice (only the view would change; `TreasureRoster` and `TreasureOrder` serve any layout).
+
+What the items have (every CG 750 + n, 304×196): the left two thirds a scene — a maid presenting the item, in her
+hands (the weapons, rods), on a table (statues, the bonsai, food) or in a thought bubble (rings, charms, capsules) —
+with the item's name in its corner; the right third the blue description panel. No small picture of an item exists.
+
+**Round T (2026-10-19)** — `tools/ui/mock_pickers.py`, round `t`, on I1b's made-up stock (twelve items), Cordoba
+(unit 8) chosen, Crystal Ring (item 21) dragged onto him:
+
+- **T1 — S5 with emblems of our own**: the items column an icon grid (3 to a row, as Sengoku Rance's inventory); each
+  item a gold emblem drawn by code on a roundel tinted by kind (weapons red, rods and rings blue, charms plum, food and
+  plants green), the holder's face in the tile's corner, a padlock on Chaos and Nikkou, greyed where it cannot be
+  dragged; under the grid the hovered item's name, where it is and its description panel (cut from its CG). The
+  characters' rows carry the held item's emblem. Needs a kind table of ours for the 50 items (UI data, no rule).
+- **T2 — S5 with icons cut out of the items' pictures**: as T1, the icon a square of the item's own CG — the maid with
+  the weapon, the table, the inside of the bubble. Needs a crop table of ours for the 50 items, as the faces' squares
+  (could be edited as `FaceCropEditor` edits faces).
+- **T3 — item-first, the pictures as cards**: no sprite; the items as cards cut from their pictures (the scene third
+  with the name), on two shelves — Equipped (the holder's face and name on the card) and In stock; the chosen card's
+  whole picture with its description at the top right, the characters (face, name, item) under it. A stock card dragged
+  onto a character equips it (his own item back to stock), an equipped card dragged onto In stock takes it off. Needs
+  no table.
+
+Open for the owner: T1, T2 or T3 (or a mix — e.g. T3's shelves with T2's icons)?
+
 ## 4. How the screens would answer the script (a sketch, before the choice)
 
 - **Harem:** while `Sﾊｰﾚﾑ` is the open picker (`PickerKind.Harem`) our screen covers it; a summon is a click on her cell

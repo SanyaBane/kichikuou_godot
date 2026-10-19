@@ -9,8 +9,9 @@ save (the harem picker, headless) and of an unattended new game at week 26 (the 
       --saves user://saves-look-items --shots <items dir>
 (the harem's first "picker" dump; the item screen's first "picker" dump in the item view). Then, from the repository's
 root (Pillow; the fonts of godot/fonts):
-  python -I tools/ui/mock_pickers.py <slot01.ksav> <cg_png dir> <harem dump> <items dump> <out dir> [s] < /dev/null
-Round 1 (no sixth argument): H0-H3, I0-I3; round s: S1-S5, the treasure in Sengoku Rance's manner.
+  python -I tools/ui/mock_pickers.py <slot01.ksav> <cg_png dir> <harem dump> <items dump> <out dir> [s|t] < /dev/null
+Round 1 (no sixth argument): H0-H3, I0-I3; round s: S1-S5, the treasure in Sengoku Rance's manner; round t: T1-T3, S5 with
+icons of our own (emblems, or squares cut out of the items' pictures) and an item-first screen of picture cards.
 The images hold the player's CGs: keep <out dir> outside the repository. Everything is in the 1280x800 screen's pixels
 (plus a caption band below); drawn at 2x and scaled down.
 """
@@ -713,7 +714,7 @@ def unit_card(c, r, n, items, state='normal'):
         for i in range(6, 0, -1):
             c.overlay((slot[0] - i, slot[1] - i, slot[2] + i, slot[3] + i), (232, 199, 122, 10))
         c.rect(slot, fill=(80, 60, 30, 255), outline=HOVER_LINE, width=2)
-        c.text(((slot[0] + slot[2]) / 2, (slot[1] + slot[3]) / 2), '⇄ Equip here', font(13), fill=NAME, anchor='mm')
+        c.text(((slot[0] + slot[2]) / 2, (slot[1] + slot[3]) / 2), 'Equip here', font(13), fill=NAME, anchor='mm')
     elif it:
         c.rect(slot, fill=(46, 34, 22, 255), outline=GOLD, width=1)
         diamond(c, slot[0] + 12, (slot[1] + slot[3]) / 2, 5, GOLD)
@@ -899,7 +900,7 @@ def slot_window(c, r, n, items, state='normal', dragged=None):
         c.rect(pic, outline=HOVER_LINE, width=3)
         c.rect(((pic[0] + pic[2]) / 2 - 64, pic[3] - 14, (pic[0] + pic[2]) / 2 + 64, pic[3] + 14), fill=(60, 44, 24, 255),
                outline=GOLD)
-        c.text(((pic[0] + pic[2]) / 2, pic[3]), '⇄ Equip here', font(15), fill=NAME, anchor='mm')
+        c.text(((pic[0] + pic[2]) / 2, pic[3]), 'Equip here', font(15), fill=NAME, anchor='mm')
         c.text((x0 + 18, pic[3] + 34), items[dragged]['Name'], font(18), fill=NAME, anchor='lm')
         c.text((x0 + 18, pic[3] + 58), f"{it['Name']} goes back to stock" if it else 'from the stock', font(13),
                fill=QUIET, anchor='lm')
@@ -1038,8 +1039,315 @@ def s_round():
 
 # ---------------------------------------------------------------- the round
 
+# ---------------------------------------------------------------- round t: the treasure with icons of its own, or item-first
+
+# The items have no icons of their own: each CG 750 + n is a maid presenting the item (in her hands, on a table, or in a
+# thought bubble) beside its description. T1 draws an emblem by the item's kind (a table of ours); T2 cuts a square out
+# of the item's picture (a table of ours, as the faces' squares): item -> (x, y, size) in the CG's 304x196 pixels.
+KINDS = {1: 'sword', 2: 'sword', 3: 'staff', 6: 'sword', 7: 'spear', 10: 'plant', 11: 'charm', 12: 'sword', 21: 'ring',
+         23: 'ring', 35: 'staff', 43: 'fruit', 48: 'vial'}
+KIND_TINT = {'sword': (150, 52, 30), 'spear': (150, 52, 30), 'staff': (70, 90, 150), 'ring': (70, 90, 150),
+             'charm': (120, 40, 90), 'plant': (60, 110, 60), 'fruit': (60, 110, 60), 'vial': (60, 110, 60)}
+ICON_CROPS = {1: (47, 56, 112), 6: (70, 55, 120), 7: (50, 50, 120), 3: (55, 55, 110), 10: (62, 62, 84), 21: (22, 14, 58),
+              23: (20, 14, 58), 11: (18, 14, 62), 43: (72, 92, 62), 12: (65, 55, 120), 35: (60, 60, 112), 48: (20, 12, 60)}
+
+
+def emblem(c, box, kind, off=False):
+    """T1: the item's kind as a gold emblem on a dark roundel tinted by kind (weapons red, rods and rings blue, charms
+    plum, things that are eaten or grown green)."""
+    x0, y0, x1, y1 = box
+    cx, cy, r = (x0 + x1) / 2, (y0 + y1) / 2, (x1 - x0) / 2
+    tint = (60, 54, 46) if off else KIND_TINT.get(kind, (90, 70, 40))
+    c.d.ellipse([(cx - r) * S, (cy - r) * S, (cx + r) * S, (cy + r) * S], fill=tuple(v // 3 for v in tint) + (255,),
+                outline=tint + (255,), width=2 * S)
+    c.d.ellipse([(cx - r + 5) * S, (cy - r + 5) * S, (cx + r - 5) * S, (cy + r - 5) * S], outline=(GOLD if not off else OFF_LINE)[:3] + (90,),
+                width=S)
+    g = OFF_TEXT if off else NAME
+    k = r / 30
+
+    def P(pts):
+        return [(cx + px * k, cy + py * k) for px, py in pts]
+    if kind in ('sword', 'spear', 'staff'):
+        if kind == 'sword':
+            c.poly(P([(-15, 15), (12, -12), (16, -16), (14, -10), (-13, 17)]), fill=g)                # the blade
+            c.poly(P([(-19, 7), (-7, 19), (-9, 21), (-21, 9)]), fill=g)                             # the guard
+            c.line(*P([(-15, 15), (-22, 22)]), fill=g, width=3 * k)
+            c.d.ellipse([(cx - 24 * k) * S, (cy + 21 * k) * S, (cx - 20 * k) * S, (cy + 25 * k) * S], fill=g)
+        else:
+            c.line(*P([(-20, 20), (14, -14)]), fill=g, width=2.4 * k)
+            if kind == 'spear':
+                c.poly(P([(12, -12), (21, -21), (16, -9)]), fill=g)
+                c.poly(P([(12, -12), (21, -21), (9, -16)]), fill=g)
+            else:
+                c.d.ellipse([(cx + 11 * k) * S, (cy - 22 * k) * S, (cx + 22 * k) * S, (cy - 11 * k) * S], fill=g)
+                c.d.ellipse([(cx + 7 * k) * S, (cy - 26 * k) * S, (cx + 26 * k) * S, (cy - 7 * k) * S], outline=g, width=round(1.4 * k * S))
+    elif kind == 'ring':
+        c.d.ellipse([(cx - 15 * k) * S, (cy - 6 * k) * S, (cx + 15 * k) * S, (cy + 20 * k) * S], outline=g, width=round(4 * k * S))
+        diamond(c, cx, cy - 10 * k, 8 * k, g)
+    elif kind == 'charm':
+        c.rect((cx - 10 * k, cy - 12 * k, cx + 10 * k, cy + 20 * k), outline=g, width=2.5 * k)
+        c.d.arc([(cx - 7 * k) * S, (cy - 24 * k) * S, (cx + 7 * k) * S, (cy - 8 * k) * S], 180, 360, fill=g, width=round(2 * k * S))
+        for i in range(3):
+            c.line((cx - 5 * k, cy - 4 * k + i * 7 * k), (cx + 5 * k, cy - 4 * k + i * 7 * k), fill=g, width=2 * k)
+    elif kind == 'plant':
+        c.poly(P([(-11, 10), (11, 10), (8, 21), (-8, 21)]), fill=g)
+        c.line(*P([(0, 10), (-3, 0)]), fill=g, width=2.5 * k)
+        c.line(*P([(-3, 0), (4, -8)]), fill=g, width=2.5 * k)
+        for px, py, pr in ((-10, -6, 7), (6, -14, 8), (12, -3, 6), (-2, -18, 6)):
+            c.d.ellipse([(cx + (px - pr) * k) * S, (cy + (py - pr) * k) * S, (cx + (px + pr) * k) * S, (cy + (py + pr) * k) * S], fill=g)
+    elif kind == 'fruit':
+        c.d.ellipse([(cx - 15 * k) * S, (cy - 10 * k) * S, (cx + 15 * k) * S, (cy + 18 * k) * S], fill=g)
+        c.poly(P([(0, -10), (12, -22), (14, -14)]), fill=g)
+    elif kind == 'vial':
+        c.rect((cx - 4 * k, cy - 22 * k, cx + 4 * k, cy - 8 * k), outline=g, width=2 * k)
+        c.d.ellipse([(cx - 13 * k) * S, (cy - 10 * k) * S, (cx + 13 * k) * S, (cy + 18 * k) * S], outline=g, width=round(2.5 * k * S))
+        c.d.chord([(cx - 11 * k) * S, (cy - 8 * k) * S, (cx + 11 * k) * S, (cy + 16 * k) * S], 0, 180, fill=g)
+
+
+def crop_icon(n, size, off=False):
+    """T2: the item's own square cut out of its picture (CG 750 + n)."""
+    x, y, s = ICON_CROPS[n]
+    img = cg(750 + n).crop((x, y, x + s, y + s)).resize((round(size * S), round(size * S)), Image.LANCZOS)
+    if off:
+        grey = img.convert('L').convert('RGBA')
+        img = Image.blend(grey, Image.new('RGBA', img.size, (20, 16, 12, 255)), 0.45)
+    return img
+
+
+def draw_icon(c, style, box, n, off=False):
+    x0, y0, x1, y1 = box
+    if style == 'emblem':
+        emblem(c, box, KINDS.get(n, 'sword'), off)
+    else:
+        c.rect(box, fill=(10, 8, 6, 255))
+        c.paste(crop_icon(n, x1 - x0, off), (x0, y0))
+        c.rect(box, outline=OFF_LINE if off else GOLD, width=1)
+
+
+def face_badge(c, x, y, unit, size=26):
+    c.rect((x - 1, y - 1, x + size + 1, y + size + 1), fill=(52, 40, 28, 255), outline=GOLD, width=1)
+    c.paste(face_image(UNITS[unit]['FaceCg'], size), (x, y))
+
+
+def icon_tile(c, r, it, style, state='normal'):
+    """An item's tile in the icon grid: its icon, the holder's face in the corner, a padlock on Chaos and Nikkou, greyed
+    when it cannot be dragged; the name under it."""
+    x0, y0, x1, y1 = r
+    fixed, cant = it['Index'] in FIXED, not it['Effect']
+    held = it['Holder'] in UNITS
+    off = fixed or cant
+    row_box(c, (x0, y0, x1, y0 + (x1 - x0)), 'hover' if state in ('hover', 'ghost') else ('off' if off else 'normal'))
+    pad = 6
+    draw_icon(c, style, (x0 + pad, y0 + pad, x1 - pad, y0 + (x1 - x0) - pad), it['Index'], off)
+    if state == 'dragged':
+        c.overlay((x0, y0, x1, y0 + (x1 - x0)), (14, 10, 8, 170))
+    if held and state != 'ghost':
+        face_badge(c, x1 - 28, y0 + (x1 - x0) - 28, it['Holder'], 24)
+    if fixed:
+        c.rect((x1 - 22, y0 + 4, x1 - 4, y0 + 22), fill=(20, 16, 12, 230))
+        lock(c, x1 - 13, y0 + 15, QUIET)
+    if state == 'ghost':
+        return
+    name = it['Name']
+    f = font(11)
+    words, lines = name.split(), ['']
+    for w in words:
+        trial = (lines[-1] + ' ' + w).strip()
+        if c.width(trial, f) > x1 - x0 + 6 and lines[-1]:
+            lines.append(w)
+        else:
+            lines[-1] = trial
+    for i, line in enumerate(lines[:2]):
+        c.text(((x0 + x1) / 2, y0 + (x1 - x0) + 11 + i * 13), line, f, fill=OFF_TEXT if off else (TEXT if held or True else QUIET),
+               anchor='mm')
+
+
+def icon_grid(c, r, items, style, dragged=None, hover=None):
+    x0, y0, x1, y1 = r
+    lq_panel(c, r)
+    c.text((x0 + 20, y0 + 26), 'Items', brush(20), fill=NAME, anchor='lm')
+    c.text((x1 - 20, y0 + 28), f'{len(owned(items))}', cinzel(14, 700), fill=SUB, anchor='rm')
+    divider(c, x0 + 14, x1 - 14, y0 + 46)
+    tw, gap = 80, 8
+    for i, it in enumerate(sorted(owned(items), key=lambda v: v['Index'])):
+        x = x0 + 14 + (i % 3) * (tw + gap)
+        y = y0 + 58 + (i // 3) * 116
+        icon_tile(c, (x, y, x + tw, y + tw + 30), it, style,
+                  'dragged' if it['Index'] == dragged else ('hover' if it['Index'] == hover else 'normal'))
+    return y0 + 58 + ((len(owned(items)) + 2) // 3) * 116
+
+
+def hovered_item(c, r, it, items):
+    """Under the grid: the hovered item's name, where it is and what it does (the picture's own description panel)."""
+    x0, y0, x1, y1 = r
+    divider(c, x0, x1, y0)
+    c.text((x0 + 4, y0 + 22), it['Name'], brush(17), fill=NAME, anchor='lm')
+    c.text((x0 + 4, y0 + 44), holder_text(it), font(13), fill=QUIET, anchor='lm')
+    desc = cg(750 + it['Index']).crop((206, 0, 304, 196))
+    w = x1 - x0
+    h = min(y1 - y0 - 62, round(w * 196 / 98))
+    dw = round(h * 98 / 196)
+    c.paste(desc.resize((round(dw * S), round(h * S)), Image.LANCZOS), (x0 + (w - dw) / 2, y0 + 58))
+
+
+def char_rows(c, r, items, chosen, style, target=None):
+    """The characters as compact rows (the owner, 2026-10-19): name, type, the held item's icon and name."""
+    x0, y0, x1, y1 = r
+    lq_panel(c, r)
+    c.text((x0 + 20, y0 + 26), 'Characters', brush(20), fill=NAME, anchor='lm')
+    c.text((x1 - 20, y0 + 28), f'{len(UNITS)}', cinzel(14, 700), fill=SUB, anchor='rm')
+    divider(c, x0 + 14, x1 - 14, y0 + 46)
+    held = item_of(items)
+    y = y0 + 58
+    for n, u in UNITS.items():
+        row = (x0 + 14, y, x1 - 14, y + 40)
+        if n == target:
+            for i in range(6, 0, -1):
+                c.overlay((row[0] - i, row[1] - i, row[2] + i, row[3] + i), (232, 199, 122, 10))
+        row_box(c, row, 'chosen' if n == chosen else ('hover' if n == target else 'normal'))
+        mid = y + 20
+        c.text((row[0] + 10, mid), u['Name'], font(15), fill=NAME if n == chosen else TEXT, anchor='lm')
+        c.text((row[0] + 112, mid + 1), u['Type'], font(11), fill=QUIET, anchor='lm')
+        it = held.get(n)
+        if n == target:
+            c.text((row[2] - 10, mid), 'Equip here', font(13), fill=NAME, anchor='rm')
+        elif it:
+            c.text((row[2] - 10, mid), it['Name'], font(12), fill=TEXT, anchor='rm')
+            w = c.width(it['Name'], font(12))
+            draw_icon(c, style, (row[2] - 10 - w - 36, mid - 15, row[2] - 10 - w - 6, mid + 15), it['Index'], it['Index'] in FIXED)
+        else:
+            c.text((row[2] - 10, mid), '—', font(13), fill=DIM, anchor='rm')
+        if n == chosen:
+            c.poly([(row[0] - 10, mid - 8), (row[0] - 1, mid), (row[0] - 10, mid + 8)], fill=GOLD)
+        y += 44
+
+
+def t_icons(name, style, caption, note):
+    """T1/T2: S5's three columns with the items as an icon grid, as Sengoku Rance's inventory."""
+    late = items_with(LATE_STOCK)
+    c = Canvas()
+    backdrop(c)
+    left = (16, 16, 300, 784)
+    bottom = icon_grid(c, left, late, style, dragged=21, hover=None)
+    hovered_item(c, (30, bottom + 4, 286, 770), late[35], late)
+    _, _, floor = stage(c, (308, 16, 864, 784), 8, late, slot_at='under')
+    slot_window(c, (324, floor + 30, 848, 768), 8, late, 'drop', 21)
+    char_rows(c, (872, 16, 1264, 728), late, 8, style)
+    small_button(c, (1264 - 130, 740, 1264, 784), 'End')
+    gx, gy = 520, 560
+    shadow(c, (gx - 40, gy - 40, gx + 40, gy + 40), 20)
+    icon_tile(c, (gx - 40, gy - 40, gx + 40, gy + 70), late[21], style, 'ghost')
+    pointer(c, gx + 18, gy + 14)
+    c.save(name, caption, note)
+
+
+def card_art(n, w):
+    """T3: the item's card — the scene half of its picture (the maid presenting it, its name in the corner)."""
+    img = cg(750 + n).crop((0, 0, 206, 196))
+    return img.resize((round(w * S), round(w * 196 / 206 * S)), Image.LANCZOS)
+
+
+def item_card(c, x, y, it, state='normal', w=128):
+    h = round(w * 196 / 206)
+    fixed, cant = it['Index'] in FIXED, not it['Effect']
+    off = fixed or cant
+    if state == 'chosen':
+        for i in range(6, 0, -1):
+            c.overlay((x - i, y - i, x + w + i, y + h + 22 + i), (232, 199, 122, 12))
+    art = card_art(it['Index'], w)
+    if off:
+        grey = art.convert('L').convert('RGBA')
+        art = Image.blend(grey, Image.new('RGBA', art.size, (20, 16, 12, 255)), 0.4)
+    c.paste(art, (x, y))
+    if state == 'dragged':
+        c.overlay((x, y, x + w, y + h), (14, 10, 8, 170))
+    c.rect((x, y, x + w, y + h), outline=HOVER_LINE if state == 'chosen' else (OFF_LINE if off else GOLD), width=2 if state == 'chosen' else 1)
+    plate = (x, y + h + 2, x + w, y + h + 22)
+    c.rect(plate, fill=(60, 30, 22, 255) if state == 'chosen' else (OFF if off else ROW), outline=DIM, width=1)
+    if it['Holder'] in UNITS:
+        face_badge(c, x + w - 30, y + h - 30, it['Holder'], 26)
+        c.text((x + 6, y + h + 12), UNITS[it['Holder']]['Name'], font(12), fill=NAME if state == 'chosen' else TEXT, anchor='lm')
+    else:
+        c.text((x + 6, y + h + 12), "can't equip" if cant else 'In stock', font(12), fill=OFF_TEXT if off else QUIET, anchor='lm')
+    if fixed:
+        c.rect((x + w - 24, y + 4, x + w - 4, y + 24), fill=(20, 16, 12, 230))
+        lock(c, x + w - 14, y + 16, QUIET)
+
+
+def t_cards():
+    """T3: item-first — the pictures are the items' art; two shelves of cards, the chosen card large, the characters."""
+    late = items_with(LATE_STOCK)
+    c = Canvas()
+    backdrop(c)
+    left = (16, 16, 860, 784)
+    lq_panel(c, left)
+    title_band(c, left, 'Treasure', f'{len(owned(late))} items', HEADER_DATE)
+    shelves = [('Equipped', [it for it in sorted(owned(late), key=lambda v: v['Index']) if it['Holder'] in UNITS],
+                'drag a card here to take it off'),
+               ('In stock', [it for it in sorted(owned(late), key=lambda v: v['Index']) if it['Holder'] == 100],
+                'drag a card onto a character to equip')]
+    y = 76
+    for title, cards, hint in shelves:
+        c.text((36, y + 12), title, cinzel(14, 700), fill=LABEL, anchor='lm')
+        c.text((840, y + 12), hint, font(12), fill=DIM, anchor='rm')
+        c.line((36 + c.width(title, cinzel(14, 700)) + 12, y + 12), (840 - c.width(hint, font(12)) - 12, y + 12), fill=DIM)
+        for i, it in enumerate(cards):
+            x = 32 + (i % 6) * 136
+            cy = y + 30 + (i // 6) * 152
+            item_card(c, x, cy, it, 'dragged' if it['Index'] == 21 else ('chosen' if it['Index'] == 35 else 'normal'))
+        y += 30 + ((len(cards) + 5) // 6) * 152 + 16
+    right = (872, 16, 1264, 784)
+    lq_panel(c, right)
+    sel = late[35]
+    c.text((892, 42), sel['Name'], brush(20), fill=NAME, anchor='lm')
+    c.text((1244, 44), holder_text(sel), font(13), fill=QUIET, anchor='rm')
+    divider(c, 886, 1250, 62)
+    put_picture(c, item_picture(35), (886, 72, 1250, 307))
+    held = item_of(late)
+    c.text((892, 332), 'Characters', cinzel(13, 700), fill=LABEL, anchor='lm')
+    yy = 346
+    for n, u in UNITS.items():
+        row = (886, yy, 1250, yy + 36)
+        target = n == 8
+        if target:
+            for i in range(6, 0, -1):
+                c.overlay((row[0] - i, row[1] - i, row[2] + i, row[3] + i), (232, 199, 122, 10))
+        row_box(c, row, 'hover' if target else 'normal')
+        c.rect((row[0] + 4, yy + 4, row[0] + 32, yy + 32), fill=(52, 40, 28, 255))
+        c.paste(face_image(u['FaceCg'], 28), (row[0] + 4, yy + 4))
+        c.text((row[0] + 42, yy + 18), u['Name'], font(15), fill=NAME if target else TEXT, anchor='lm')
+        it = held.get(n)
+        if target:
+            c.text((row[2] - 10, yy + 18), 'Equip here · Magic Barrier to stock', font(12), fill=NAME, anchor='rm')
+        else:
+            c.text((row[2] - 10, yy + 18), it['Name'] if it else '—', font(12), fill=TEXT if it else DIM, anchor='rm')
+        yy += 40
+    small_button(c, (1250 - 120, 740, 1250, 772), 'End', f=cinzel(14, 700))
+    gx, gy = 1010, 700
+    shadow(c, (gx - 64, gy - 61, gx + 64, gy + 61), 20)
+    c.paste(card_art(21, 128), (gx - 64, gy - 61))
+    c.rect((gx - 64, gy - 61, gx + 64, gy + 61), outline=HOVER_LINE, width=2)
+    pointer(c, gx + 30, gy + 20)
+    c.save('T3-cards.png', 'T3 — item-first: the pictures as cards (a later game\'s stock, made up)',
+           'Two shelves, Equipped (the holder\'s face on the card) and In stock; a card dragged onto a character equips it, onto '
+           'In stock takes it off. The chosen card\'s full picture top right. Here Crystal Ring onto Cordoba.')
+
+
+def t_round():
+    t_icons('T1-emblems.png', 'emblem', 'T1 — S5 with emblems of our own by the item\'s kind (a later game\'s stock, made up)',
+            'Each item a gold emblem drawn by code (sword, spear, rod, ring, charm, plant, fruit, vial…) from a kind table of ours; '
+            'the holder\'s face on the tile; Crystal Ring dragged onto Cordoba.')
+    t_icons('T2-cut-icons.png', 'cut', 'T2 — S5 with icons cut out of the items\' pictures (a later game\'s stock, made up)',
+            'A square of each item\'s own CG (the maid holding it, the table, the bubble) — a crop table of ours, as the faces\' '
+            'squares; the holder\'s face on the tile.')
+    t_cards()
+
+
 if len(sys.argv) > 6 and sys.argv[6] == 's':
     s_round()
+    sys.exit()
+if len(sys.argv) > 6 and sys.argv[6] == 't':
+    t_round()
     sys.exit()
 original(HAREM_DUMP, 'H0-original.png', 'H0 — the original\'s harem picker (week 18)',
          'Sﾊｰﾚﾑ: the girls by their number in a 3x16 grid, her picture and her count/last date when hovered, End.')
