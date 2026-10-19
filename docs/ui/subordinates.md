@@ -41,8 +41,10 @@ Three rounds of mock-ups (`tools/ui/mock_subordinates.py`, over the units of the
 E1. The owner chose **F1**:
 
 - **The table across the whole top**, every column without a scroll bar: №, Name, Type (the troop type),
-  Troops, Refill (Replenish's price, "—" when full), T.Atk, T.Def, Str%, HP, Lv, EXP, Atk, Def, Act, Mag,
-  Item (the unit's item, the one value the status page has that the table had not). The units deployed
+  Troops, Refill (Replenish's price, "—" when full), Cost (the war expense of sending the unit now, as the
+  deployment table has it; added by the owner, 2026-10-20 — it grows with the troops, so after a Replenish;
+  with it the table is a little wider than its panel and scrolls, which the owner accepted), T.Atk, T.Def,
+  Str%, HP, Lv, EXP, Atk, Def, Act, Mag, Item (the unit's item, the one value the status page has that the table had not). The units deployed
   this week grey, the chosen one highlighted. **The situational modifiers** (the status page's attack and
   defence on offense, on defense, in dungeons) **are not shown** for now (docs/backlog.md).
 - **The status CG** (600 + n) at the bottom left, whole with the gold frame it has on the original's screen,

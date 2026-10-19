@@ -75,7 +75,10 @@ public sealed record SubordinateResult(
 /// </summary>
 public static class SubordinatesScreen
 {
-    /// <summary>The table's columns (the owner's choice, F1): every value of the status page but the modifiers.</summary>
+    /// <summary>
+    /// The table's columns (the owner's choice, F1): every value of the status page but the modifiers, and the
+    /// war expense of sending the unit now after Replenish's price (the owner's choice, 2026-10-20).
+    /// </summary>
     public static IReadOnlyList<DeploymentColumnInfo> Columns { get; } =
     [
         new(DeploymentColumn.Number, "№", "Unit number"),
@@ -83,6 +86,7 @@ public static class SubordinatesScreen
         new(DeploymentColumn.TroopType, "Type", "Troop type", IsText: true),
         new(DeploymentColumn.Troops, "Troops", "Troops / maximum"),
         new(DeploymentColumn.Refill, "Refill", "Replenish's price (GOLD)"),
+        new(DeploymentColumn.Cost, "Cost", "War expense (GOLD)"),
         new(DeploymentColumn.TroopAtk, "T.Atk", "Troop attack"),
         new(DeploymentColumn.TroopDef, "T.Def", "Troop defense"),
         new(DeploymentColumn.Strategy, "Str%", "Strategy success chance"),
