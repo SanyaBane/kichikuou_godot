@@ -9,11 +9,13 @@ save (the harem picker, headless) and of an unattended new game at week 26 (the 
       --saves user://saves-look-items --shots <items dir>
 (the harem's first "picker" dump; the item screen's first "picker" dump in the item view). Then, from the repository's
 root (Pillow; the fonts of godot/fonts):
-  python -I tools/ui/mock_pickers.py <slot01.ksav> <cg_png dir> <harem dump> <items dump> <out dir> [s|t|u|v] < /dev/null
+  python -I tools/ui/mock_pickers.py <slot01.ksav> <cg_png dir> <harem dump> <items dump> <out dir> [s|t|u|v|w] < /dev/null
 Round 1 (no sixth argument): H0-H3, I0-I3; round s: S1-S5, the treasure in Sengoku Rance's manner; round t: T1-T3, S5 with
 icons of our own (emblems, or squares cut out of the items' pictures) and an item-first screen of picture cards; round u:
 U1-U3, a showcase of one item, character cards with a chooser, the Subordinates ledger with an Item column; round v:
-V1-V3, the original's screen in lacquer, as the harem's H2.
+V1-V3, the original's screen in lacquer, as the harem's H2; round w: W1-W4b, the script's question and its Yes/No in one
+place over V (a dialog, a callout at the cell, the answers in the message window, the info panel). Rounds s-w read
+neither dump.
 The images hold the player's CGs: keep <out dir> outside the repository. Everything is in the 1280x800 screen's pixels
 (plus a caption band below); drawn at 2x and scaled down.
 """
@@ -1602,7 +1604,8 @@ def v_cell(n):
     return (x, y, x + 176, y + 32)
 
 
-def v_screen(name, caption, note, view, hover, picked=None, items=None, question=None):
+def v_base(view, hover, picked=None, items=None, hint=True, marked=None):
+    """V's screen without the pointer: hint=False leaves the info panel's foot empty; marked is a cell drawn chosen."""
     items = items or ITEMS
     held = item_of(items)
     c = Canvas()
@@ -1648,7 +1651,7 @@ def v_screen(name, caption, note, view, hover, picked=None, items=None, question
             c.text((tx, y0 + 188), items[n]['Name'], brush(22), fill=NAME, anchor='lm')
             c.text((tx, y0 + 216), 'Which character?', font(16), fill=TEXT, anchor='lm')
         small_button(c, (x1 - 24 - 110, y0 + 214, x1 - 24, y0 + 248), 'Back', f=cinzel(14, 700))
-    else:
+    elif hint:
         c.text((x0 + 24, y0 + 148), 'Pick a character, then the item to equip —', font(14), fill=QUIET, anchor='lm')
         c.text((x0 + 24, y0 + 170), 'or an item, then who is to equip it.', font(14), fill=QUIET, anchor='lm')
     # the grid
@@ -1665,7 +1668,7 @@ def v_screen(name, caption, note, view, hover, picked=None, items=None, question
             c.rect(r, outline=OFF_LINE + (0,) if False else (66, 58, 48, 150), width=1)
             continue
         is_hover = n == hover
-        is_picked = picked is not None and picked[1] == n and picked[0] == entry[0]
+        is_picked = (picked is not None and picked[1] == n and picked[0] == entry[0]) or n == marked
         row_box(c, r, 'chosen' if is_picked else ('hover' if is_hover else 'normal'))
         mid = (r[1] + r[3]) / 2
         if view == 0:
@@ -1689,6 +1692,11 @@ def v_screen(name, caption, note, view, hover, picked=None, items=None, question
         c.rect(r, fill=(60, 30, 22, 255) if on else ROW, outline=GOLD if on else DIM, width=2 if on else 1)
         c.text(((r[0] + r[2]) / 2, (r[1] + r[3]) / 2), label, cinzel(15, 700), fill=NAME if on else QUIET, anchor='mm')
     small_button(c, (1106, 726, 1246, 766), 'End', f=cinzel(16, 700))
+    return c
+
+
+def v_screen(name, caption, note, view, hover, picked=None, items=None, question=None):
+    c = v_base(view, hover, picked, items)
     hx, hy = (v_cell(hover)[0] + 120, v_cell(hover)[1] + 18)
     if question:
         # the script's own question, in our message window and menu (docs/ui/messages.md)
@@ -1723,6 +1731,129 @@ def v_round():
              ['By Lord is equipped to Rick, but would you', 'like to remove it and equip Cordoba instead?'])
 
 
+# ---------------------------------------------------------------- round w: the script's question and its Yes/No in one place
+
+UNEQUIP = ['By Lord is equipped to', 'Rick, but would you', 'like to unequip it?']          # Sｱｲﾃﾑ.ADV:320-328
+REPLACE = ['By Lord is equipped to', 'Rick, but would you', 'like to remove it and equip', 'Cordoba instead?']  # :339-350
+W_TEXT = (238, 222, 176, 255)
+
+
+def click_triangle(c, x, y):
+    """Lacquer's triangle asking for the click (the key wait)."""
+    c.poly([(x - 7, y - 5), (x + 7, y - 5), (x, y + 5)], fill=GOLD)
+
+
+def w_lines(c, x, y, lines, size=19, step=28, anchor='lm'):
+    for i, line in enumerate(lines):
+        c.text((x, y + i * step), line, font(size), fill=W_TEXT, anchor=anchor)
+
+
+def w_answers(c, x, y, w=136, h=38, gap=14, vertical=False, hover=0):
+    """Yes (red lacquer, the script's first item) and No, side by side or stacked."""
+    for i, label in enumerate(('Yes', 'No')):
+        dx, dy = (0, i * (h + gap)) if vertical else (i * (w + gap), 0)
+        r = (x + dx, y + dy, x + dx + w, y + dy + h)
+        if i == 0:
+            red_button(c, r, label, hover=hover == 0, tf=cinzel(17, 700))
+        else:
+            small_button(c, r, label, 'hover' if hover == 1 else 'normal', f=cinzel(17, 700))
+    return (x + 30, y + h / 2)
+
+
+def w_popover(c, cell, lines, answers=True, width=440):
+    """A lacquer callout under the clicked cell, its tail on the cell; the question and its answers inside."""
+    x0 = min(cell[0] - 8, 1256 - width)
+    y0 = cell[3] + 14
+    h = 28 + len(lines) * 28 + (64 if answers else 30)
+    r = (x0, y0, x0 + width, y0 + h)
+    lq_panel(c, r, fill=(30, 22, 16, 250))
+    tx = cell[0] + 60
+    c.poly([(tx - 13, y0 + 2), (tx, y0 - 13), (tx + 13, y0 + 2)], fill=GOLD)
+    c.poly([(tx - 10, y0 + 3), (tx, y0 - 8), (tx + 10, y0 + 3)], fill=(30, 22, 16, 255))
+    w_lines(c, x0 + 26, y0 + 30, lines)
+    if answers:
+        return w_answers(c, x0 + 26, y0 + h - 56)
+    click_triangle(c, x0 + width - 26, y0 + h - 22)
+    return None
+
+
+def w_round():
+    late = items_with(LATE_STOCK)
+    cell = v_cell(7)
+    at_cell = (cell[0] + 120, cell[1] + 18)
+
+    # W1 — a dialog in the middle of the screen, the rest dimmed
+    c = v_base(1, 7, marked=7)
+    c.overlay((0, 0, W, H), (0, 0, 0, 120))
+    r = (370, 290, 910, 480)
+    lq_panel(c, r, fill=(30, 22, 16, 252))
+    w_lines(c, 640, 334, UNEQUIP, anchor='mm')
+    w_answers(c, 640 - 143, 418, hover=None)
+    pointer(c, *at_cell)
+    c.save('W1-dialog.png', 'W1 — one dialog in the middle: the question over its Yes and No, the screen dimmed',
+           'As the battle\'s retreat dialog: the asked item stays marked in the grid; Yes in red lacquer, No beside it. '
+           'The pointer has to travel from the cell to the middle.')
+
+    # W2 — a callout at the clicked cell
+    c = v_base(1, 7, marked=7, hint=False)
+    yes = w_popover(c, cell, UNEQUIP)
+    pointer(c, *yes)
+    c.save('W2-callout.png', 'W2 — a callout at the clicked cell: the question and Yes/No where the click was',
+           'Its tail on the asked item; the eyes and the pointer stay by the cell, as the original\'s menu at the pointer. '
+           'It covers part of the grid, never the picture.')
+
+    # W2b — the longer question, a unit picked first (a later game's stock, made up)
+    c = v_base(1, 7, ('unit', 8), late, marked=7)
+    yes = w_popover(c, cell, REPLACE)
+    pointer(c, *yes)
+    c.save('W2b-callout-replace.png', 'W2b — W2 with the longer question: Cordoba picked, By Lord held by Rick (made-up stock)',
+           'Four lines of the script\'s text; the callout grows down. Cordoba\'s pick stays in the panel at the left.')
+
+    # W2c — a refusal in the same callout: a key wait, any click closes it
+    cordoba_item = v_cell(35)
+    c = v_base(1, 35, ('unit', 8), late, marked=35)
+    w_popover(c, cordoba_item, ['Already equipped.'], answers=False, width=300)
+    pointer(c, cordoba_item[0] + 120, cordoba_item[1] + 18)
+    c.save('W2c-callout-refusal.png', f'W2c — a refusal in the same callout: "Already equipped." (Cordoba\'s own {late[35]["Name"]})',
+           'The script\'s key wait: the triangle asks for a click anywhere, as our message windows do.')
+
+    # W3 — the message window keeps its place, the answers move into it
+    c = v_base(1, 7, marked=7)
+    r = (262, 560, 1020, 790)
+    lq_panel(c, r, fill=(44, 32, 22, 250))
+    w_lines(c, 300, 612, UNEQUIP, size=22, step=34)
+    c.line((842, 586), (842, 764), fill=DIM)
+    yes = w_answers(c, 866, 612, w=128, h=42, gap=16, vertical=True)
+    pointer(c, *yes)
+    c.save('W3-window-answers.png', 'W3 — the message window where the script opens it, Yes and No inside it at its right',
+           'The smallest change: no menu at the pointer any more; the answers stand beside the text they answer.')
+
+    # W4 — no window: the question in the info panel, under the asked item's figures
+    c = v_base(1, 7, marked=7, hint=False)
+    x0, y0, _, _ = V_INFO
+    seal(c, x0 + 24, y0 + 136, '?', size=22)
+    w_lines(c, x0 + 60, y0 + 147, [' '.join(UNEQUIP[:2]), UNEQUIP[2]])
+    yes = w_answers(c, x0 + 60, y0 + 206)
+    pointer(c, *yes)
+    c.save('W4-panel.png', 'W4 — no window: the question in the info panel, under the asked item\'s name and holder',
+           'The panel already tells By Lord and Rick; the question and Yes/No take the hint\'s place, the item marked in the '
+           'grid. Nothing covers the screen.')
+
+    # W4b — a refusal in the panel
+    c = v_base(1, 35, ('unit', 8), late, marked=35)
+    r = (x0 + 24 + 186 * 1.1 + 14, y0 + 134, 666, y0 + 204)
+    c.rect(r, fill=(60, 30, 22, 255), outline=VERMILION, width=2)
+    seal(c, r[0] + 12, (r[1] + r[3]) / 2 - 11, '!', size=22)
+    c.text((r[0] + 46, (r[1] + r[3]) / 2), 'Already equipped.', font(19), fill=W_TEXT, anchor='lm')
+    click_triangle(c, r[2] - 22, (r[1] + r[3]) / 2)
+    pointer(c, cordoba_item[0] + 120, cordoba_item[1] + 18)
+    c.save('W4b-panel-refusal.png', 'W4b — a refusal in the panel: a vermilion strip over the pick\'s prompt, any click closes it',
+           f'Cordoba picked, his own {late[35]["Name"]} clicked (made-up stock).')
+
+
+if len(sys.argv) > 6 and sys.argv[6] == 'w':
+    w_round()
+    sys.exit()
 if len(sys.argv) > 6 and sys.argv[6] == 'v':
     v_round()
     sys.exit()
