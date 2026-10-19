@@ -93,13 +93,13 @@ public class TreasureRosterTests(ITestOutputHelper output)
     public void The_prompt_follows_the_first_pick()
     {
         var s = State();
-        s.Units[6].PortraitCg = 606;
+        s.Units[6].FaceCg = 506;
         Assert.Null(TreasureRoster.Prompt(s));
         s.Ui_ItemUnitSel = 6;
-        Assert.Equal(new TreasurePrompt(true, 6, "Barres", 606, 600), TreasureRoster.Prompt(s));
+        Assert.Equal(new TreasurePrompt(true, 6, "Barres", 506), TreasureRoster.Prompt(s));
         s.Ui_ItemUnitSel = 0;
         s.Ui_ItemSel = 7;
-        Assert.Equal(new TreasurePrompt(false, 7, "Ring", 757, 692), TreasureRoster.Prompt(s));
+        Assert.Equal(new TreasurePrompt(false, 7, "Ring", 0), TreasureRoster.Prompt(s));
     }
 
     [Fact]
@@ -181,7 +181,7 @@ public class TreasureRosterTests(ITestOutputHelper output)
             });
 
         output.WriteLine($"unit {other}: item {s.Units[other].Item.Value}; view {s.Ui_ItemViewMode.Value}");
-        Assert.Equal(new TreasurePrompt(true, other, DeploymentTable.UnitName(s, other), s.Units[other].PortraitCg.Value, 600), prompt);
+        Assert.Equal(new TreasurePrompt(true, other, DeploymentTable.UnitName(s, other), s.Units[other].FaceCg.Value), prompt);
         Assert.Equal(stock, s.Units[other].Item.Value);
         Assert.Equal(other, s.Items[stock].Holder.Value);
         Assert.Equal(100, s.Items[held].Holder.Value);

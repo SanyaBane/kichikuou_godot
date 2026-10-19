@@ -36,9 +36,11 @@ public sealed record TreasureDetails(int PictureCg, int EmptyCg, string Name, st
 
 /// <summary>
 /// The first pick's prompt (<c>Sｱｲﾃﾑ.ADV:96-122</c>): a unit picked ("X is equipping — Which item?") or an item picked
-/// ("Equipping X — Which character?"), with the picture shrunk beside it.
+/// ("Equipping X — Which character?"). The original shrinks the picked entry's picture panel beside it, where its
+/// description cannot be read (the owner, 2026-10-19): ours shows a unit's face (<c>Unit_FaceCg</c>, cut as
+/// <see cref="UnitFaces"/>; 0 when it has none) and an item by its name alone (<paramref name="FaceCg"/> 0).
 /// </summary>
-public sealed record TreasurePrompt(bool UnitFirst, int Number, string Name, int PictureCg, int EmptyCg);
+public sealed record TreasurePrompt(bool UnitFirst, int Number, string Name, int FaceCg);
 
 /// <summary>
 /// Our own Treasure screen's model (docs/ui/pickers.md, round V: <c>Sｱｲﾃﾑ</c>'s own screen in lacquer): the view the
@@ -143,9 +145,9 @@ public static class TreasureRoster
     {
         int unit = s.Ui_ItemUnitSel.Value, item = s.Ui_ItemSel.Value;
         if (unit is >= 1 and <= 50 && item == 0)
-            return new TreasurePrompt(true, unit, DeploymentTable.UnitName(s, unit), s.Units[unit].PortraitCg.Value, UnitEmptyCg);
+            return new TreasurePrompt(true, unit, DeploymentTable.UnitName(s, unit), s.Units[unit].FaceCg.Value);
         if (item is >= 1 and <= 50 && unit == 0)
-            return new TreasurePrompt(false, item, ItemName(s, item), 750 + item, ItemEmptyCg);
+            return new TreasurePrompt(false, item, ItemName(s, item), 0);
         return null;
     }
 

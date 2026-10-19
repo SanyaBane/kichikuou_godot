@@ -129,6 +129,8 @@ public partial class GameScreen
         if (show != _treasure.Visible)
         {
             _treasure.Visible = show;
+            if (show)
+                _treasure.LoadCrops();                                  // the owner's squares from Debug → Portraits
             _treasureAsked = 0;
             _treasurePointer = new PointerScript();
             var (x, y) = TreasureRoster.Rest;

@@ -22,7 +22,7 @@ internal sealed partial class TreasureView : Control
     private static readonly Rect2 PictureArea = new(16, 88, 666, 416);
     private static readonly Rect2 InfoPanel = new(16, 516, 666, 268);
     private static readonly Rect2 GridPanel = new(690, 88, 574, 696);
-    private static readonly Rect2 PromptPicture = new(40, 646, 205, 128);
+    private static readonly Rect2 PromptFace = new(40, 650, 112, 112);
     private static readonly Rect2 BackArea = new(548, 730, 110, 34);
     private static readonly Rect2 EndArea = new(1106, 726, 140, 40);
     private const float TabletW = 176, TabletH = 32, TabletStepX = 180, TabletStepY = 36, GridX = 708, GridY = 106;
@@ -45,8 +45,10 @@ internal sealed partial class TreasureView : Control
     private TreasurePrompt? _prompt;
     private int _shown;                                 // the entry whose picture shows: the one hovered last
     private string _key = "", _date = "";
-    private ImageTexture? _picture, _promptPicture;
-    private (int, int) _pictureKey = (-1, -1), _promptKey = (-1, -1);
+    private ImageTexture? _picture, _faceTexture;
+    private (int, int) _pictureKey = (-1, -1);
+    private FaceCrops _crops = new();
+    private int _faceCg = -1, _faceSize;
     private int _hovered = NoButton, _pressed = NoButton;
 
     /// <summary>A cell's click: the entry's number.</summary>
@@ -102,6 +104,14 @@ internal sealed partial class TreasureView : Control
         _face.QueueRedraw();
     }
 
+    /// <summary>The squares of the faces: the built-in ones and the owner's edits from Debug → Portraits (read as the screen opens).</summary>
+    public void LoadCrops()
+    {
+        _crops = FaceCropFile.Load();
+        _faceCg = -1;
+        _face.QueueRedraw();
+    }
+
     /// <summary>Covers the screen whose script pixel (0, 0) is at <paramref name="origin"/>, <paramref name="pixelsPerScript"/> screen pixels to a script pixel.</summary>
     public void Place(Vector2 origin, float pixelsPerScript)
     {
@@ -140,12 +150,6 @@ internal sealed partial class TreasureView : Control
         {
             _pictureKey = pictureKey;
             _picture = _faces.PicturePanel(pictureKey.Item1, TreasureRoster.ScreenCg, pictureKey.Item2);
-        }
-        var promptKey = prompt is null ? (-1, -1) : (prompt.PictureCg, prompt.EmptyCg);
-        if (promptKey != _promptKey)
-        {
-            _promptKey = promptKey;
-            _promptPicture = prompt is null ? null : _faces.PicturePanel(prompt.PictureCg, TreasureRoster.ScreenCg, prompt.EmptyCg);
         }
         string key = $"{view}|{string.Join(",", entries)}|{details?.Name}|{string.Join(",", details?.Figures ?? [])}|{prompt}|{_date}|{Busy}";
         if (key == _key)
@@ -315,10 +319,16 @@ internal sealed partial class TreasureView : Control
             c.DrawString(_gothic, new Vector2(x, y + 174), "or an item, then who is to equip it.", fontSize: 14, modulate: Lacquer.Quiet);
             return;
         }
-        Shadowed(c, PromptPicture);
-        if (_promptPicture is not null)
-            c.DrawTextureRect(_promptPicture, PromptPicture, false);
-        float tx = PromptPicture.End.X + 24;
+        // A unit's face as the deployment screen cuts it; an item by its name alone (the original's shrunk picture with its
+        // description could not be read).
+        float tx = x;
+        if (p.UnitFirst && FaceTexture(p.FaceCg, PromptFace.Size.X) is { } face)
+        {
+            Shadowed(c, PromptFace);
+            c.DrawTextureRect(face, PromptFace, false);
+            c.DrawRect(PromptFace, Lacquer.Gold, false, Line(1));
+            tx = PromptFace.End.X + 24;
+        }
         if (p.UnitFirst)
         {
             c.DrawString(_brush, new Vector2(tx, y + 168), p.Name, fontSize: 22, modulate: Lacquer.Name);
@@ -408,6 +418,21 @@ internal sealed partial class TreasureView : Control
         c.DrawRect(r, hover ? Lacquer.RowHover : Lacquer.Row);
         c.DrawRect(r, hover ? Lacquer.HoverLine : Lacquer.DimGold, false, Line(hover ? 2 : 1));
         Centred(c, _cinzel, label, size, hover ? Lacquer.Name : Lacquer.Text, r.GetCenter().X, Lacquer.Baseline(r, _cinzel, size));
+    }
+
+    /// <summary>The unit's face cut to its square, made again only when the face or the window's size changes.</summary>
+    private ImageTexture? FaceTexture(int faceCg, float size)
+    {
+        if (faceCg == 0)
+            return null;
+        int pixels = Math.Max(16, (int)Math.Round(size * _k));
+        if (faceCg != _faceCg || pixels != _faceSize)
+        {
+            _faceCg = faceCg;
+            _faceSize = pixels;
+            _faceTexture = _faces.SquareTexture(faceCg, _faces.CropOf(faceCg, _crops), pixels);
+        }
+        return _faceTexture;
     }
 
     private static void Shadowed(Control c, Rect2 p)

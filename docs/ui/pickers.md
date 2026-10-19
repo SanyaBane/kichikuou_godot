@@ -278,6 +278,9 @@ as they are (`Sｱｲﾃﾑ.ADV:320-350`, `L_00a3f`), only where they are drawn 
   same callout: "Rick already has By Lord equipped. / Replace it with L. Holy Sword?" (`TreasureRoster.ReplaceQuestion`,
   null where the script refuses or would not equip that way); Yes sends the cell's click, No (or a right click) sends
   nothing and the pick stays. Interface only: the rule is untouched.
+- **The first pick's prompt** (the owner, the same day): the original's picture panel shrunk beside "Which item?" /
+  "Which character?" left its description unreadable. A unit picked first now shows his face (`Unit_FaceCg`, the
+  deployment screen's square, `TreasurePrompt.FaceCg`); an item picked first only its name.
 - `GameScreen.Treasure.cs` remembers the clicked cell (`TreasurePick`) and `UpdateTreasureCallout` shows the callout in
   our message window's place while the screen shows; `SelectAsync` opens the menu in the callout instead of
   `SceneMenuView`; `TreasureView.Asked` marks the cell in vermilion while the callout is up.
