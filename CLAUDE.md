@@ -168,6 +168,9 @@ the owner's look in a window. Then (owner, 2026-10-20) the Subordinates screen's
 at the button, Replenish too) and report on a plate in the middle (R4/R5): docs/ui/subordinates.md, §6, built. Then (owner,
 2026-10-20) each save slot keeps the time its game was saved (ENG-07), and the Save/Load list sorts its manual saves by
 slot or by date with Auto in a panel of its own (mock-up rounds 2-3, the owner's E as F1-F4): docs/ui/save-load.md, §7, built.
+Then (owner, 2026-10-20) Replenish on the deployment screen, in a defence too while the week's troop order is unspent (a
+rule change on purpose): docs/ui/deployment-table.md, "Replenish on the deployment screen", mock-ups A1-B2 and R
+(`tools/ui/mock_deployment_refill.py`), awaiting the owner's choice.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

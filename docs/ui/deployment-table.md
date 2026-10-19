@@ -330,3 +330,36 @@ needs one (U2's cards are narrow enough to drop the "Cost" label and put the pla
 **The owner's choice (2026-10-19): U5 without its rules** — one gold triangle (a dark one inside it) right of the cards
 at the two rows' middle; the cards give up a strip of 30 screen pixels and a gap of 6 for it
 (`DeploymentPanels.DrawFacing`). Built the same day and looked at in a window (the defence of Ys (5) from `saves-week18`).
+
+## Replenish on the deployment screen (owner's request, 2026-10-20)
+
+The owner asked for Replenish (`Cﾌﾞｶ`'s troop menu; not Add New Troops) on the deployment screen. What the rules say:
+
+- Replenish is the week's **one troop order for the whole army** (`CmdAvail_SubTroops`, shared with Add New Troops; set
+  again at each `COMMAND` start, `CommandPhase.cs:127`), priced one per 50 men short, at least 1 (×100K;
+  `SubordinatesCommand.Refill`, CMD-20), its gold counted as military spending (CMD-14).
+- `Sﾌﾞﾀｲ` opens in the player's `COMMAND` (an attack, `Cﾃｷﾄｼ`, three calls; a dungeon search, `Cﾒｲｷｭｳ`) and in a
+  defence (`FIGT_B`, in the nations' turns, after the week's `COMMAND`). In `COMMAND` a Replenish there is a shortcut the
+  original has a way to: Stop leaves the week's attack unspent (and the dungeon's Return gives its week back), then
+  Subordinates → Replenish, then the attack again. In a defence the original never offers it.
+- **The owner's choice (2026-10-20): Replenish works in a defence too, while the week's troop order is unspent** — a
+  rule change on purpose, as decision 26 was (to be registered when built).
+- Built, it would be the Subordinates screen's order applied while `Sﾌﾞﾀｲ` waits (one rule method shared with
+  `SubordinatesCommand`), then the party panel summed again (`Tmp0016`, else Go would charge the war expenses of the
+  troops before it: Cost grows with the troops).
+
+### Mock-ups (2026-10-20)
+
+`tools/ui/mock_deployment_refill.py` (its header gives the dump command and the call), over a window dump of the kept
+save `saves-week18` with the party built — Cordoba (unit 8), Barres (unit 6) in the back row, Rance (unit 1), Haurein
+(unit 12) in the front row; Barres 980/1000, Replenish 100K. The question and the report are the Subordinates screen's
+(C3, a callout at the clicked place with Yes / No; R4, a plate in the middle).
+
+- **A1 — a Refill column** after Cost, as the Subordinates screen's, each price a button (a vermilion-ruled chip,
+  filled when hovered), "—" when full; any listed unit can be replenished. The table no longer fits: it scrolls, Item
+  cut. **A2**: the order spent — the prices grey, no buttons, the header's tooltip "Replenish: used this week".
+- **B1 — a ribbon on a member's face**: only the party's members short of men, the price across the foot of the card's
+  face, red lacquer when hovered; the callout beside it. The table stays as it is. **B2**: the order spent — no
+  ribbons, "Replenish used this week" by the party panel's title.
+- **R — the report** (either variant): R4's plate, then the screen with the troops, the card's cost and the war
+  expenses summed again.
