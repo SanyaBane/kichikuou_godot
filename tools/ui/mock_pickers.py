@@ -9,10 +9,11 @@ save (the harem picker, headless) and of an unattended new game at week 26 (the 
       --saves user://saves-look-items --shots <items dir>
 (the harem's first "picker" dump; the item screen's first "picker" dump in the item view). Then, from the repository's
 root (Pillow; the fonts of godot/fonts):
-  python -I tools/ui/mock_pickers.py <slot01.ksav> <cg_png dir> <harem dump> <items dump> <out dir> [s|t|u] < /dev/null
+  python -I tools/ui/mock_pickers.py <slot01.ksav> <cg_png dir> <harem dump> <items dump> <out dir> [s|t|u|v] < /dev/null
 Round 1 (no sixth argument): H0-H3, I0-I3; round s: S1-S5, the treasure in Sengoku Rance's manner; round t: T1-T3, S5 with
 icons of our own (emblems, or squares cut out of the items' pictures) and an item-first screen of picture cards; round u:
-U1-U3, a showcase of one item, character cards with a chooser, the Subordinates ledger with an Item column.
+U1-U3, a showcase of one item, character cards with a chooser, the Subordinates ledger with an Item column; round v:
+V1-V3, the original's screen in lacquer, as the harem's H2.
 The images hold the player's CGs: keep <out dir> outside the repository. Everything is in the 1280x800 screen's pixels
 (plus a caption band below); drawn at 2x and scaled down.
 """
@@ -1587,6 +1588,144 @@ def u_round():
     u3_ledger()
 
 
+# ---------------------------------------------------------------- round v: the original's screen in lacquer (as the harem's H2)
+
+CLASSES = {0: 'Assault Troops', 1: 'Archers', 2: 'Mages', 3: 'Magic Warriors', 4: 'Phantom Beasts', 10: 'Demon Assault',
+           11: 'Demon Magic'}
+V_TITLE, V_PICTURE, V_INFO, V_GRID = (16, 16, 1264, 72), (16, 88, 682, 504), (16, 516, 682, 784), (690, 88, 1264, 784)
+
+
+def v_cell(n):
+    """The picker's cell n (Sｱｲﾃﾑ's 3x17 grid, left to right, top to bottom), as the harem's tablets."""
+    col, row = (n - 1) % 3, (n - 1) // 3
+    x, y = 708 + col * 180, 106 + row * 36
+    return (x, y, x + 176, y + 32)
+
+
+def v_screen(name, caption, note, view, hover, picked=None, items=None, question=None):
+    items = items or ITEMS
+    held = item_of(items)
+    c = Canvas()
+    backdrop(c)
+    lq_panel(c, V_TITLE)
+    c.text((38, 44), 'Treasure', brush(24), fill=NAME, anchor='lm')
+    c.text((1242, 45), HEADER_DATE, cinzel(15, 700), fill=NAME, anchor='rm')
+    # the picture: what the pointer is on, as the original's panel
+    if view == 0:
+        put_picture(c, unit_picture(hover), (V_PICTURE[0], V_PICTURE[1], V_PICTURE[2], V_PICTURE[3]))
+    else:
+        put_picture(c, item_picture(hover), V_PICTURE)
+    lq_panel(c, V_INFO)
+    x0, y0, x1, _ = V_INFO
+    if view == 0:
+        u = UNITS[hover]
+        c.text((x0 + 24, y0 + 32), u['Name'], brush(24), fill=NAME, anchor='lm')
+        c.text((x0 + 24 + c.width(u['Name'], brush(24)) + 14, y0 + 35), CLASSES.get(u.get('Class', 0), ''), cinzel(13, 700),
+               fill=SUB, anchor='lm')
+        stat(c, x0 + 24, y0 + 70, 'War cost', f"{u['DeployCost'] * 100:,}K")
+        stat(c, x0 + 150, y0 + 70, 'Troops', str(u['Troops']))
+        stat(c, x0 + 260, y0 + 70, 'Equipping', held[hover]['Name'] if hover in held else '—')
+    else:
+        it = items[hover]
+        c.text((x0 + 24, y0 + 32), it['Name'], brush(24), fill=NAME, anchor='lm')
+        ok = bool(it['Effect'])
+        c.text((x0 + 24 + c.width(it['Name'], brush(24)) + 14, y0 + 35), 'Equippable' if ok else 'Unequippable', cinzel(13, 700),
+               fill=SUB if ok else RED, anchor='lm')
+        who = ('Nobody (in stock)' if it['Holder'] == 100 else UNITS[it['Holder']]['Name']) if ok else '—'
+        stat(c, x0 + 24, y0 + 70, 'Held by', who)
+    divider(c, x0 + 16, x1 - 16, y0 + 116)
+    if picked:
+        kind, n = picked
+        img = unit_picture(n) if kind == 'unit' else item_picture(n)
+        put_picture(c, img, (x0 + 24, y0 + 130, x0 + 24 + 186 * 1.1, y0 + 130 + 116 * 1.1))
+        tx = x0 + 24 + 186 * 1.1 + 24
+        if kind == 'unit':
+            c.text((tx, y0 + 160), UNITS[n]['Name'], brush(22), fill=NAME, anchor='lm')
+            c.text((tx, y0 + 190), 'is equipping —', font(16), fill=TEXT, anchor='lm')
+            c.text((tx, y0 + 216), 'Which item?', font(16), fill=TEXT, anchor='lm')
+        else:
+            c.text((tx, y0 + 160), 'Equipping', font(16), fill=TEXT, anchor='lm')
+            c.text((tx, y0 + 188), items[n]['Name'], brush(22), fill=NAME, anchor='lm')
+            c.text((tx, y0 + 216), 'Which character?', font(16), fill=TEXT, anchor='lm')
+        small_button(c, (x1 - 24 - 110, y0 + 214, x1 - 24, y0 + 248), 'Back', f=cinzel(14, 700))
+    else:
+        c.text((x0 + 24, y0 + 148), 'Pick a character, then the item to equip —', font(14), fill=QUIET, anchor='lm')
+        c.text((x0 + 24, y0 + 170), 'or an item, then who is to equip it.', font(14), fill=QUIET, anchor='lm')
+    # the grid
+    lq_panel(c, V_GRID)
+    for n in range(1, 52):
+        r = v_cell(n)
+        entry = None
+        if view == 0 and n in UNITS:
+            entry = ('unit', n)
+        if view == 1 and items.get(n, {}).get('Holder'):
+            entry = ('item', n)
+        if n == 51 or entry is None:
+            c.overlay(r, (40, 35, 30, 140))
+            c.rect(r, outline=OFF_LINE + (0,) if False else (66, 58, 48, 150), width=1)
+            continue
+        is_hover = n == hover
+        is_picked = picked is not None and picked[1] == n and picked[0] == entry[0]
+        row_box(c, r, 'chosen' if is_picked else ('hover' if is_hover else 'normal'))
+        mid = (r[1] + r[3]) / 2
+        if view == 0:
+            u = UNITS[n]
+            c.text((r[0] + 10, mid), u['Name'], font(14), fill=NAME if is_hover else TEXT, anchor='lm')
+            if n in held:
+                diamond(c, r[2] - 12, mid, 4, OFF_LINE if held[n]['Index'] in FIXED else GOLD)
+        else:
+            it = items[n]
+            cant, fixed = not it['Effect'], n in FIXED
+            ink = OFF_TEXT if cant else (NAME if it['Holder'] in UNITS else TEXT)
+            c.text((r[0] + 10, mid), it['Name'], font(14), fill=ink, anchor='lm')
+            if it['Holder'] in UNITS:
+                c.text((r[2] - 8, mid + 1), UNITS[it['Holder']]['Name'], font(10), fill=QUIET, anchor='rm')
+            if fixed:
+                lock(c, r[2] - 12 - c.width(UNITS[it['Holder']]['Name'], font(10)) - 10, mid + 3, QUIET)
+    # the bar: the view's tabs and End
+    for i, label in enumerate(('Characters', 'Items')):
+        r = (708 + i * 182, 726, 708 + i * 182 + 176, 766)
+        on = i == view
+        c.rect(r, fill=(60, 30, 22, 255) if on else ROW, outline=GOLD if on else DIM, width=2 if on else 1)
+        c.text(((r[0] + r[2]) / 2, (r[1] + r[3]) / 2), label, cinzel(15, 700), fill=NAME if on else QUIET, anchor='mm')
+    small_button(c, (1106, 726, 1246, 766), 'End', f=cinzel(16, 700))
+    hx, hy = (v_cell(hover)[0] + 120, v_cell(hover)[1] + 18)
+    if question:
+        # the script's own question, in our message window and menu (docs/ui/messages.md)
+        q = (120, 300, 760, 420)
+        shadow(c, q, 22)
+        lq_panel(c, q)
+        for i, line in enumerate(question):
+            c.text((q[0] + 30, q[1] + 34 + i * 26), line, font(17), fill=TEXT, anchor='lm')
+        m = (hx - 40, hy + 18, hx + 120, hy + 18 + 84)
+        shadow(c, m, 18)
+        c.rect(m, fill=(26, 19, 14, 252), outline=GOLD, width=2)
+        for i, label in enumerate(('Yes', 'No')):
+            rr = (m[0] + 8, m[1] + 8 + i * 36, m[2] - 8, m[1] + 8 + i * 36 + 32)
+            row_box(c, rr, 'hover' if i == 0 else 'normal')
+            c.text((rr[0] + 16, (rr[1] + rr[3]) / 2), label, font(16), fill=NAME if i == 0 else TEXT, anchor='lm')
+        pointer(c, m[0] + 60, m[1] + 22)
+    else:
+        pointer(c, hx, hy)
+    c.save(name, caption, note)
+
+
+def v_round():
+    late = items_with(LATE_STOCK)
+    v_screen('V1-characters.png', 'V1 — the original\'s screen in lacquer: the characters\' view (week 18)',
+             'As the harem\'s screen: the picture panel of what the pointer is on, its line under it, the 3x17 grid with each '
+             'character at his number\'s cell; the bar\'s Item/Character as two tabs, End.', 0, 8)
+    v_screen('V2-which-item.png', 'V2 — Cordoba picked: the items\' view asks "Which item?" (a later game\'s stock, made up)',
+             'The view turns as in the original, the first pick shrunk below with its prompt and Back (the original\'s right '
+             'click); the items at their numbers\' cells, the held ones in gold with their holder.', 1, 21, ('unit', 8), late)
+    v_screen('V3-question.png', 'V3 — an item another unit holds: the original\'s question, in our window and menu',
+             'Refusals and questions stay the script\'s own, drawn as our message windows and menus.', 1, 7, ('unit', 8), late,
+             ['By Lord is equipped to Rick, but would you', 'like to remove it and equip Cordoba instead?'])
+
+
+if len(sys.argv) > 6 and sys.argv[6] == 'v':
+    v_round()
+    sys.exit()
 if len(sys.argv) > 6 and sys.argv[6] == 'u':
     u_round()
     sys.exit()

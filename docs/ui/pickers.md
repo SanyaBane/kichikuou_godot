@@ -212,6 +212,26 @@ The owner (2026-10-19): all three rejected — something else.
 Open for the owner: U1, U2 or U3 — or, if none, what fails in them (the dark look, the pictures, the density, the way
 an item is given)?
 
+The owner (2026-10-19): closer to the original's interface.
+
+**Round V (2026-10-19)** — round `v`: `Sｱｲﾃﾑ`'s own screen in lacquer, as the harem's built H2 (which the owner took
+once its grid was the original's): the title band; at the left the picture panel of what the pointer is on (a unit's
+status CG, an item's CG with its description) and under it the original's line as figures (war cost, troops, class,
+the item equipped; or Equippable/Unequippable and who holds it), then the prompt of a first pick; at the right the
+3×17 grid, each character or item at its number's cell, the empty cells shown; the bar's Item/Character as two tabs,
+End. The flow is the original's: a pick, the view turns, the other pick equips; the script's refusals and questions
+stay its own, in our message windows and menus.
+
+- **V1 — the characters' view** (week 18): Cordoba (unit 8) under the pointer; a gold diamond on a cell whose unit holds
+  an item (grey on Chaos's bearer).
+- **V2 — "Which item?"** (I1b's stock): Cordoba picked, the view turned to the items, his picture shrunk under the line
+  with "Cordoba is equipping — Which item?" and Back (the original's right click, 998); held items in gold with their
+  holder, Chaos with a padlock, Snow Charm grey.
+- **V3 — the original's question**: By Lord (item 7), held by Rick (unit 7), clicked: "By Lord is equipped to Rick, but
+  would you like to remove it and equip Cordoba instead?" in our window, Yes/No as our menu at the pointer.
+
+Open for the owner: V as it is, or what to change.
+
 ## 4. How the screens would answer the script (a sketch, before the choice)
 
 - **Harem:** while `Sﾊｰﾚﾑ` is the open picker (`PickerKind.Harem`) our screen covers it; a summon is a click on her cell
