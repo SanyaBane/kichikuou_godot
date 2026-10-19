@@ -57,6 +57,7 @@ public partial class GameScreen
             default:
                 Expect(list == SaveList.Load && _saveView.Chosen == 2, "the load list with Slot 1 chosen");
                 await AutoDumpAsync("save-load");
+                await AutoSortAsync();
                 await AutoViewClickAsync(_saveView.RowCentre(1), MouseButton.Left);
                 Expect(_saveView.Chosen == 1, "Auto chosen");
                 await AutoDumpAsync("save-load-auto");
@@ -70,6 +71,43 @@ public partial class GameScreen
         if (other is { } next)
             _saveShortcut.Switch(next);
         return choice;
+    }
+
+    /// <summary>
+    /// The order's switch (docs/ui/save-load.md, §7) from the player's order back to it: by slot ascending, then Date
+    /// (<c>save-load-date</c>, newest first) and Date again (<c>save-load-date-oldest</c>), Slot, and Slot again
+    /// (<c>save-load-slot-down</c>, 9 at the top); the player's order is clicked back, so the setting is theirs.
+    /// </summary>
+    private async Task AutoSortAsync()
+    {
+        var players = _saveView.Order;
+        await ClickOrderUntilAsync(SlotOrder.Default);
+        (SlotSortKey Key, SlotOrder Then, string Dump)[] steps =
+        [
+            (SlotSortKey.Date, new(SlotSortKey.Date, true), "save-load-date"),
+            (SlotSortKey.Date, new(SlotSortKey.Date, false), "save-load-date-oldest"),
+            (SlotSortKey.Slot, SlotOrder.Default, ""),
+            (SlotSortKey.Slot, new(SlotSortKey.Slot, true), "save-load-slot-down"),
+        ];
+        foreach (var (key, then, dump) in steps)
+        {
+            await AutoViewClickAsync(_saveView.SortCentre(key), MouseButton.Left);
+            Expect(_saveView.Order == then, $"the order {then}");
+            Expect(_saveView.ManualSlots.Count == SaveSlots.Count - 1 && _saveView.ManualSlots.Order().SequenceEqual(Enumerable.Range(2, SaveSlots.Count - 1)),
+                "the nine manual saves listed");
+            if (dump != "")
+                await AutoDumpAsync(dump);
+        }
+        Expect(_saveView.ManualSlots[0] == 10, "Slot 9 at the top");
+        await ClickOrderUntilAsync(players);
+    }
+
+    /// <summary>Clicks <paramref name="order"/>'s button until the view's order is it: its key first, then its direction.</summary>
+    private async Task ClickOrderUntilAsync(SlotOrder order)
+    {
+        for (int i = 0; i < 2 && _saveView.Order != order; i++)
+            await AutoViewClickAsync(_saveView.SortCentre(order.Key), MouseButton.Left);
+        Expect(_saveView.Order == order, $"the order {order}");
     }
 
     private static void Expect(bool holds, string what)

@@ -6,30 +6,34 @@ namespace Kichikuou.Game.Strategy;
 
 /// <summary>
 /// Our Save/Load screen over <c>ﾛｰﾄﾞｾｰﾌﾞ</c>'s slot lists (docs/ui/save-load.md, §5: the owner's layout C, 2026-10-20):
-/// one lacquer panel, the ten slots as a narrow list on the left — a seal, the short date, the kind, the time written —
+/// one lacquer panel, the ten slots as a narrow list on the left — a seal, the short date, the kind, the time written;
+/// Auto in a gold-framed panel of its own on top, the nine manual saves under it in the order of the Slot | Date switch
+/// (§7, the owner's E: a second click on the active button turns its direction; <see cref="SaveOrderChoice"/> keeps it) —
 /// and the chosen slot's page on the right: its map large (All Data's miniature, <see cref="SaveSlot.Tiles"/> and
 /// <see cref="SaveSlot.Marks"/>), its figures, and a red button that answers the script's menu with the slot's item
-/// ("Load this game", "Save over Slot n", "Save here") — the second click, so no question. A row's click only chooses
-/// it; an empty slot takes none in Load, Auto none in Save. From <c>COMMAND</c> the Load | Save tabs switch lists
+/// ("Load", "Save over Slot n", "Save"; one line each, the owner's 2026-10-20) — the second click, so no question. A
+/// row's click only chooses it; an empty slot takes none in Load, Auto none in Save. From <c>COMMAND</c> the Load | Save tabs switch lists
 /// (<see cref="LoadSaveShortcut.Switch"/>: the list left with 0, the script's Load / Save / Don't menu answered with the
 /// other). A right click or Esc answers 0. Laid out in the 1280×800 screen's pixels, scaled with the picture. After its
 /// answer the screen stays drawn, taking no clicks, until the script shows the next list or the save screen closes.
 /// </summary>
 internal sealed partial class SaveLoadView : Control
 {
-    private const int ButtonHit = 200, TabHit = 100;          // hits: 1-10 the slots' rows, 101/102 the tabs, the button
+    // hits: 1-10 the slots' rows, 101/102 the tabs, the button, 300/301 the order's Slot and Date
+    private const int ButtonHit = 200, TabHit = 100, SortHit = 300;
 
     private static readonly Rect2 PanelRect = new(30, 24, 1220, 752);
     private static readonly Rect2 MapRect = new(406, 118, 820, 341);
     private static readonly Rect2 ButtonRect = new(896, 694, 330, 58);
-    private const float RowX = 52, RowY = 84, RowW = 330, RowH = 63, RowPitch = 68, PageX = 406, PageY = 84;
+    private static readonly Rect2 AutoRect = new(52, 96, 330, 60);
+    private const float RowX = 52, RowW = 330, RowH = 57, RowPitch = 62, ManualY = 212, PageX = 406, PageY = 84;
+    private const float AutoHeadY = 86, StripY = 168, StripHeadY = 190, SortY = 177;
 
     private static readonly Color ChosenFill = Color.Color8(60, 30, 22);
     private static readonly Color AutoGold = Color.Color8(138, 104, 34);
     private static readonly Color TurnStartTag = Color.Color8(86, 70, 50);
     private static readonly Color MidTurnTag = Color.Color8(36, 92, 96);       // the command panel's Trade colour
     private static readonly Color TagText = Color.Color8(246, 232, 206);
-    private static readonly Color ButtonSub = Color.Color8(236, 206, 160);
 
     private readonly FacePictures _pictures;
     private readonly FontFile _brush = Lacquer.Brush();
@@ -38,6 +42,8 @@ internal sealed partial class SaveLoadView : Control
     private FontFile _gothic;
     private SaveList? _list;
     private IReadOnlyList<SaveSlot?> _slots = [];
+    private SlotOrder _order = SaveOrderChoice.Order;
+    private int[] _manual = [];
     private SaveSlot? _now;
     private bool _tabs;
     private string _back = "";
@@ -66,6 +72,12 @@ internal sealed partial class SaveLoadView : Control
     /// <summary>The slot whose page is shown, or null.</summary>
     public int? Chosen => _chosen;
 
+    /// <summary>The manual saves' order.</summary>
+    public SlotOrder Order => _order;
+
+    /// <summary>The manual saves (slots 2-10) top to bottom.</summary>
+    public IReadOnlyList<int> ManualSlots => _manual;
+
     /// <summary>
     /// Shows <paramref name="list"/> over <paramref name="slots"/> (slots 1-10, null for an empty one); <paramref name="now"/>
     /// is the game a save stores. The slot chosen before is kept when the same list opens again (after a save the script
@@ -76,6 +88,7 @@ internal sealed partial class SaveLoadView : Control
         bool again = Visible && _list == list && _chosen is { } kept && SaveSlots.Takes(list, kept, slots[kept - 1]);
         _list = list;
         _slots = slots;
+        _manual = [.. SaveSlots.Order(slots, _order)];
         _now = now;
         _tabs = tabs;
         _back = back;
@@ -135,13 +148,28 @@ internal sealed partial class SaveLoadView : Control
     /// <summary>The red button's centre in global coordinates.</summary>
     public Vector2 ButtonCentre => Global(ButtonRect.GetCenter());
 
+    /// <summary>An order button's centre in global coordinates.</summary>
+    public Vector2 SortCentre(SlotSortKey key) => Global(SortRect(key).GetCenter());
+
     private Vector2 Global(Vector2 layout) => GetGlobalTransformWithCanvas() * (layout * _k);
 
     // ---------------------------------------------------------------- input
 
-    private static Rect2 RowRect(int slot) => new(RowX, RowY + (slot - 1) * RowPitch, RowW, RowH);
+    /// <summary>Auto's panel, or a manual save's row at its place in the order.</summary>
+    private Rect2 RowRect(int slot)
+    {
+        if (slot == 1)
+            return AutoRect;
+        int place = Array.IndexOf(_manual, slot);
+        return place < 0 ? new Rect2() : new Rect2(RowX, ManualY + place * RowPitch, RowW, RowH);
+    }
 
     private static Rect2 TabRect(SaveList list) => new(PanelRect.End.X - 220 + (list == SaveList.Save ? 96 : 0), PanelRect.Position.Y + 11, 90, 30);
+
+    /// <summary>Slot | Date, right-aligned with the list over the manual saves.</summary>
+    private static Rect2 SortRect(SlotSortKey key) => key == SlotSortKey.Slot
+        ? new Rect2(RowX + RowW - 144, SortY, 66, 26)
+        : new Rect2(RowX + RowW - 74, SortY, 74, 26);
 
     private bool Takes(int slot) => _list is { } list && slot >= 1 && slot <= _slots.Count && SaveSlots.Takes(list, slot, _slots[slot - 1]);
 
@@ -156,6 +184,9 @@ internal sealed partial class SaveLoadView : Control
             foreach (var list in (SaveList[])[SaveList.Load, SaveList.Save])
                 if (list != _list && TabRect(list).HasPoint(at))
                     return TabHit + (int)list;
+        foreach (var key in (SlotSortKey[])[SlotSortKey.Slot, SlotSortKey.Date])
+            if (SortRect(key).HasPoint(at))
+                return SortHit + (int)key;
         for (int slot = 1; slot <= _slots.Count; slot++)
             if (Takes(slot) && RowRect(slot).HasPoint(at))
                 return slot;
@@ -211,6 +242,12 @@ internal sealed partial class SaveLoadView : Control
         _pressed = 0;
         if (hit == ButtonHit && _list is { } list && _chosen is { } slot)
             Answer((SaveSlots.ItemOf(list, slot), null));
+        else if (hit >= SortHit)
+        {
+            _order = _order.Clicked((SlotSortKey)(hit - SortHit));
+            SaveOrderChoice.Order = _order;
+            _manual = [.. SaveSlots.Order(_slots, _order)];
+        }
         else if (hit > TabHit)
             Answer((0, (SaveList)(hit - TabHit)));
         else
@@ -259,9 +296,53 @@ internal sealed partial class SaveLoadView : Control
             DrawTab(SaveList.Load);
             DrawTab(SaveList.Save);
         }
-        for (int slot = 1; slot <= _slots.Count; slot++)
-            DrawRow(slot);
+        DrawList();
         DrawPage(list);
+    }
+
+    /// <summary>Auto's panel under its heading, then the manual saves under theirs with the order's switch, in that order.</summary>
+    private void DrawList()
+    {
+        float right = RowX + RowW;
+        Text(_cinzel, 11, RowX, AutoHeadY, "AUTO-SAVE", Lacquer.Subtitle);
+        TextRight(_gothic, 11, right, AutoHeadY, "the game's own, each turn", Lacquer.Label);
+        if (_slots.Count > 0)
+            DrawRow(1);
+        DrawLine(new Vector2(RowX, StripY), new Vector2(right, StripY), Lacquer.DimGold, Line(1));
+        Text(_cinzel, 11, RowX, StripHeadY, "MANUAL SAVES", Lacquer.Subtitle);
+        DrawSort(SlotSortKey.Slot);
+        DrawSort(SlotSortKey.Date);
+        foreach (int slot in _manual)
+            DrawRow(slot);
+    }
+
+    /// <summary>An order button as a tab; the active one with its direction, a triangle down for descending.</summary>
+    private void DrawSort(SlotSortKey key)
+    {
+        var rect = SortRect(key);
+        bool active = key == _order.Key, hover = _hovered == SortHit + (int)key;
+        if (active)
+        {
+            DrawRect(rect, ChosenFill);
+            DrawRect(rect, Lacquer.Vermilion, false, Line(2));
+        }
+        else
+            Lacquer.DrawRowBox(this, rect, hover, _k);
+        var colour = active ? Lacquer.Name : hover ? Lacquer.Text : Lacquer.Quiet;
+        string text = key.ToString();
+        float cx = rect.GetCenter().X, cy = rect.GetCenter().Y;
+        if (!active)
+        {
+            TextCentred(_cinzel, 13, cx, cy, text, colour);
+            return;
+        }
+        float tx = cx - 6;
+        TextCentred(_cinzel, 13, tx, cy, text, colour);
+        float ax = tx + _cinzel.GetStringSize(text, fontSize: 13).X / 2 + 9;
+        Vector2[] arrow = _order.Descending
+            ? [new(ax - 4, cy - 2), new(ax + 4, cy - 2), new(ax, cy + 3)]
+            : [new(ax - 4, cy + 3), new(ax + 4, cy + 3), new(ax, cy - 2)];
+        DrawColoredPolygon(arrow, colour);
     }
 
     private void DrawTab(SaveList tab)
@@ -294,8 +375,12 @@ internal sealed partial class SaveLoadView : Control
             DrawRect(rect, Lacquer.Vermilion, false, Line(2));
         }
         else
+        {
             Lacquer.DrawRowBox(this, rect, slot == _hovered, _k);
-        float x0 = rect.Position.X, y0 = rect.Position.Y;
+            if (slot == 1)
+                DrawRect(rect, AutoGold, false, Line(2));                // Auto's panel: a gold frame
+        }
+        float x0 = rect.Position.X, y0 = rect.Position.Y, top = rect.Size.Y >= 60 ? 17 : 15;
         DrawSeal(new Rect2(x0 + 10, rect.GetCenter().Y - 12, 24, 24), slot == 1 ? "A" : (slot - 1).ToString(),
             held is null || off ? Lacquer.OffLine : slot == 1 ? AutoGold : Lacquer.Vermilion);
         if (held is null)
@@ -303,9 +388,11 @@ internal sealed partial class SaveLoadView : Control
             Text(_cinzelLight, 15, x0 + 46, rect.GetCenter().Y, "Empty", Lacquer.OffText);
             return;
         }
-        Text(_cinzel, 15, x0 + 46, y0 + 17, held.ShortDate, off ? Lacquer.OffText : Lacquer.Name);
-        DrawKindTag(x0 + 46, y0 + 30, held, off);
-        TextRight(_gothic, 12, rect.End.X - 10, y0 + 40, held.WrittenShort, off ? Lacquer.OffText : Lacquer.Label);
+        Text(_cinzel, 15, x0 + 46, y0 + top, held.ShortDate, off ? Lacquer.OffText : Lacquer.Name);
+        DrawKindTag(x0 + 46, y0 + top + 13, held, off);
+        bool key = _order.Key == SlotSortKey.Date && slot != 1 && !off;   // sorted by date: the time is the bright line
+        TextRight(_gothic, key ? 13 : 12, rect.End.X - 10, y0 + top + 23, held.WrittenShort,
+            off ? Lacquer.OffText : key ? Lacquer.Value : Lacquer.Label);
     }
 
     private void DrawSeal(Rect2 rect, string text, Color fill)
@@ -383,13 +470,13 @@ internal sealed partial class SaveLoadView : Control
                 Text(_gothic, 15, PageX, by + 16, $"Saving: {now.DateText}, mid-turn", Lacquer.Text);
                 Text(_gothic, 14, PageX, by + 40, $"{now.BudgetText} · {now.RealmText} · {now.Troops} troops", Lacquer.Quiet);
             }
-            DrawButton(held is null ? "Save here" : $"Save over {label}", held is null ? $"into {label}" : $"it holds {held.DateText}");
+            DrawButton(held is null ? "Save" : $"Save over {label}");
         }
         else if (held is not null)
         {
             Text(_gothic, 15, PageX, by + 16, LoadNote(held), Lacquer.Text);
             Text(_gothic, 13, PageX, by + 40, $"Right click: {_back}", Lacquer.Quiet);
-            DrawButton("Load this game", held.Kind == SlotKind.MidTurn ? "from the middle of its week" : "from the start of its week");
+            DrawButton("Load");
         }
     }
 
@@ -401,13 +488,11 @@ internal sealed partial class SaveLoadView : Control
         _ => _slots[0] is { } auto ? $"Auto stays as it is: {auto.DateText}." : "Auto stays as it is.",
     };
 
-    private void DrawButton(string title, string sub)
+    private void DrawButton(string title)
     {
         bool hover = _hovered == ButtonHit;
         Lacquer.DrawRedButton(this, ButtonRect, hover, hover && _pressed == ButtonHit, _k);
-        float cx = ButtonRect.GetCenter().X, y0 = ButtonRect.Position.Y, h = ButtonRect.Size.Y;
-        TextCentred(_brush, 22, cx, y0 + h * 0.40f, title, Lacquer.Name);
-        TextCentred(_gothic, 13, cx, y0 + h * 0.76f, sub, ButtonSub);
+        TextCentred(_brush, 22, ButtonRect.GetCenter().X, ButtonRect.GetCenter().Y, title, Lacquer.Name);
     }
 
     /// <summary>

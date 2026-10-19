@@ -165,7 +165,9 @@ Then (owner, 2026-10-20) our own Save/Load screen in lacquer over `ﾛｰﾄﾞ�
 are docs/ui/save-load.md (`tools/ui/mock_saves.py`); the owner chose C (a list and the slot's page, the map large, a red
 button), built after the plan in its §5 (`Original.Content/Strategy/SaveSlots`, `godot/Strategy/SaveLoadView`), awaiting
 the owner's look in a window. Then (owner, 2026-10-20) the Subordinates screen's troop orders ask first (mock-up C3, a callout
-at the button, Replenish too) and report on a plate in the middle (R4/R5): docs/ui/subordinates.md, §6, built.
+at the button, Replenish too) and report on a plate in the middle (R4/R5): docs/ui/subordinates.md, §6, built. Then (owner,
+2026-10-20) each save slot keeps the time its game was saved (ENG-07), and the Save/Load list sorts its manual saves by
+slot or by date with Auto in a panel of its own (mock-up rounds 2-3, the owner's E as F1-F4): docs/ui/save-load.md, §7, built.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -299,7 +301,8 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `Strategy/SceneMenuView` (our `]` menus: lacquer rows at the selection box's place, `GamePresenter.MenuBoxArea`, while
   `SceneMenuCovered`; not over our battle screen; docs/ui/messages.md, §5 step 3);
   `Strategy/SaveLoadView` (our Save/Load screen over `ﾛｰﾄﾞｾｰﾌﾞ`'s load and save lists, Option → Interface → New, the
-  owner's layout C, docs/ui/save-load.md: the ten slots as a list, the chosen slot's page with its map as All Data draws it
+  owner's layout C, docs/ui/save-load.md: the ten slots as a list — Auto in a panel of its own, the nine manual saves in
+  the order of a Slot | Date switch (§7, the owner's E; `SaveSlots.Order`, `SlotOrder`, kept by `Strategy/SaveOrderChoice`) —, the chosen slot's page with its map as All Data draws it
   and its figures, a red button that answers the list with the slot's item; Load | Save tabs from `COMMAND`,
   `LoadSaveShortcut.Switch`; the model `Original.Content/Strategy/SaveSlots` — each slot's summary read from the
   `ISaveStore`, the lists recognised by their lines —, the window 113 under it not drawn, `GamePresenter.SaveScreenCovered`);
@@ -441,8 +444,10 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   Add another kept save the same way when a screen needs another phase.
   Our Save/Load screen (2026-10-20): `--saveload` on the week-18 save makes the first map wait open the command panel's
   Save row; with `--interface new` in a window it saves into the first empty slot ("Slot 1") by the red button, opens the
-  Load tab, clicks Auto's row and leaves by a right click, then plays on — dumps `save-load-title` (the title's load list
-  at the `--load`), `save-load-save`, `save-load-button`, `save-load-saved`, `save-load`, `save-load-auto` —
+  Load tab, clicks through the four orders of its manual saves (the player's own clicked back), clicks Auto's row and leaves
+  by a right click, then plays on — dumps `save-load-title` (the title's load list at the `--load`), `save-load-save`,
+  `save-load-button`, `save-load-saved`, `save-load`, `save-load-date`, `save-load-date-oldest`, `save-load-slot-down`,
+  `save-load-auto` —
   `--load --auto --fast --quit --seed 2 --saves user://saves-look-saves --slots-from user://saves-week18 --saveload --until deployment --interface new --shots <dir>`.
 - Show an ending's `OVER` (its picture, staff roll, Completion Report) on a booted game:
   `<Godot console exe> --headless --path godot -- --ending <1-14> --auto --fast --quit [--shots <dir>]`

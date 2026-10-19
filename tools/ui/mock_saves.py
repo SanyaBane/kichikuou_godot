@@ -6,9 +6,11 @@ moment, owner's decision 26); the background is a dump of the map in COMMAND's m
   <Godot console exe> --path godot -- --load --auto --fast --quit --seed 2 --saves user://saves-look-save
       --slots-from user://saves-week18 --until deployment --interface new --shots <dir>
 (its "map-markers" dump). Then, from the repository's root (Pillow; the fonts of godot/fonts):
-  python -I tools/ui/mock_saves.py <slots dir> <cg_png dir> <map dump> <out dir> [summary] < /dev/null
+  python -I tools/ui/mock_saves.py <slots dir> <cg_png dir> <map dump> <out dir> [summary|sort] < /dev/null
 "summary" prints what each slot holds and draws nothing. Round 1: A1/A2 (a ledger), B1/B2 (cards with the slot's
-map), C1/C2 (a list and the hovered slot's page), each in Load and Save.
+map), C1/C2 (a list and the hovered slot's page), each in Load and Save. "sort" draws round 2 instead, the list of
+C sorted by number or by the time written: D (the switch in the title band) and E (Auto in a panel of its own, the
+switch over the other nine); its times are made up (the owner's slots were all stamped alike by ENG-07).
 The images hold the player's CGs: keep <out dir> outside the repository. Everything is in the 1280x800 screen's pixels
 (plus a caption band below); drawn at 2x and scaled down.
 """
@@ -16,7 +18,8 @@ import sys, os, re, struct, datetime
 from PIL import Image, ImageDraw, ImageFont
 
 SLOTS, CGS, MAP_DUMP, OUT = sys.argv[1:5]
-SUMMARY = len(sys.argv) > 5 and sys.argv[5] == 'summary'
+ROUND = sys.argv[5] if len(sys.argv) > 5 else ''
+SUMMARY = ROUND == 'summary'
 sys.stdout.reconfigure(encoding='utf-8')
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 S = 2
@@ -625,7 +628,184 @@ def c_screen(save_mode):
            + ('saves — the second click is the question.' if save_mode else 'loads it (a second click).'))
 
 
-for save_mode in (False, True):
-    a_screen(save_mode)
-    b_screen(save_mode)
-    c_screen(save_mode)
+# ---------------------------------------------------------------- round 2: sorting the list (D, E)
+
+AUTO_GOLD, CHOSEN = (138, 104, 34, 255), (60, 30, 22, 255)
+SORT_TIMES = {1: (20, 1, 32), 2: (18, 21, 5), 3: (18, 21, 40), 4: (19, 22, 10), 5: (18, 23, 2), 6: (19, 20, 47),
+              7: (19, 23, 55), 8: (20, 0, 58), 9: (20, 1, 21), 10: (20, 0, 14)}
+
+
+def sort_order(order, slots, desc=None):
+    """By number: 1-10 (desc: Auto, then 9 down to 1). By date: Auto first, then the games newest first (desc, the
+    default) or oldest first; the empty slots last by number either way."""
+    if order in ('No.', 'Slot'):
+        return [1] + (list(range(10, 1, -1)) if desc else list(range(2, 11)))
+    filled = sorted((n for n in range(2, 11) if slots.get(n)), key=lambda n: slots[n]['time'], reverse=desc is not False)
+    return [1] + filled + [n for n in range(2, 11) if not slots.get(n)]
+
+
+def sort_switch(c, right, y, order, label=True, first='No.', desc=None):
+    """Two segments, the slot's number and Date, as the tabs: the active one in the chosen row's colours. Round 2: Date
+    always newest first (a triangle down). Round 3 (desc given): the active one shows its direction, a second click
+    turns it (up: 1 at the top, the oldest at the top)."""
+    f = cinzel(13, 700)
+    segs = [(first, 66 if desc is not None else 58), ('Date', 74)]
+    x = right - sum(w for _, w in segs) - 4
+    if label:
+        c.text((x - 10, y + 13), 'Order', cinzel(12, 600), fill=SUB, anchor='rm')
+    for name, w in segs:
+        r = (x, y, x + w, y + 26)
+        active = name == order
+        if active:
+            c.rect(r, fill=CHOSEN, outline=VERMILION, width=2)
+            colour = NAME
+        else:
+            c.rect(r, fill=ROW, outline=DIM, width=1)
+            colour = QUIET
+        down = (desc is None and name == 'Date') or (desc is not None and active and desc)
+        up = desc is not None and active and not desc
+        if down or up:
+            tx = x + w / 2 - 6
+            c.text((tx, y + 13), name, f, fill=colour, anchor='mm')
+            ax = tx + c.width(name, f) / 2 + 9
+            if down:
+                c.poly([(ax - 4, y + 11), (ax + 4, y + 11), (ax, y + 16)], fill=colour)
+            else:
+                c.poly([(ax - 4, y + 16), (ax + 4, y + 16), (ax, y + 11)], fill=colour)
+        else:
+            c.text((x + w / 2, y + 13), name, f, fill=colour, anchor='mm')
+        x += w + 4
+
+
+def sort_row(c, r, n, s, state, save_mode, order, auto_panel=False):
+    """C's row; by date the time written is the bright line (the key)."""
+    x0, y0, x1, y1 = r
+    h = y1 - y0
+    off = save_mode and n == 1
+    row_box(c, r, 'chosen' if state == 'chosen' else ('off' if off else 'normal'))
+    if auto_panel and n == 1 and not off and state != 'chosen':
+        c.rect(r, outline=AUTO_GOLD, width=2)
+    seal(c, x0 + 10, y0 + h / 2 - 12, 'A' if n == 1 else str(n - 1), 24,
+         fill=OFF_LINE if s is None or off else (AUTO_GOLD if n == 1 else VERMILION))
+    if s is None:
+        c.text((x0 + 46, (y0 + y1) / 2), 'Empty', cinzel(15, 600), fill=OFF_TEXT, anchor='lm')
+        return
+    top = 17 if h >= 60 else 15
+    c.text((x0 + 46, y0 + top), date_text(s['week'], short=True), cinzel(15, 700), fill=OFF_TEXT if off else NAME, anchor='lm')
+    kind_tag(c, x0 + 46, y0 + top + 13, kind(n, s), off=off)
+    key = order == 'Date' and not off
+    c.text((x1 - 10, y0 + top + 23), s['time'].strftime('%d %b, %H:%M'), font(13 if key else 12),
+           fill=OFF_TEXT if off else (VALUE if key else LABEL), anchor='rm')
+
+
+def sort_page(c, r, px0, py0, px1, chosen, slots, save_mode):
+    """C's page: the chosen slot (an empty one to save into shows the game being saved), its figures and the button."""
+    s = slots.get(chosen)
+    shown = s or NOW
+    if s:
+        title = label_of(chosen) + ' · ' + date_text(s['week'])
+        c.text((px0, py0 + 14), title, cinzel(22, 700), fill=NAME, anchor='lm')
+        kind_tag(c, px0 + c.width(title, cinzel(22, 700)) + 16, py0 + 4, kind(chosen, s))
+    else:
+        title = label_of(chosen) + ' · Empty'
+        c.text((px0, py0 + 14), title, cinzel(22, 700), fill=NAME, anchor='lm')
+        c.text((px0 + c.width(title, cinzel(22, 700)) + 16, py0 + 15), 'the game below will be saved here', cinzel(13, 600),
+               fill=SUB, anchor='lm')
+    mh = round((px1 - px0) * 266 / 640)
+    put_map(c, shown, (px0, py0 + 34, px1, py0 + 34 + mh))
+    gy = py0 + 34 + mh + 16
+    cols = [('Stage', STAGES.get(shown['stage'], '')), ('Budget', gold_text(shown)), ('Realm', realm_text(shown)),
+            ('Units', str(shown['units'])), ('Troops', str(shown['troops'])), ('Written', when(shown) if s else 'now')]
+    for i, (label, value) in enumerate(cols):
+        stat(c, px0 + (i % 3) * 280, gy + (i // 3) * 50, label, value)
+    by = r[3] - 82
+    if save_mode:
+        red_button(c, (px1 - 330, by, px1, by + 58), 'Save here' if s is None else 'Save over ' + label_of(chosen),
+                   'into ' + label_of(chosen) if s is None else 'it holds ' + date_text(s['week']))
+        c.text((px0, by + 16), 'Saving: ' + date_text(NOW['week']) + ', mid-turn', font(15), fill=TEXT, anchor='lm')
+        c.text((px0, by + 40), f"{gold_text(NOW)} · {realm_text(NOW)} · {NOW['troops']} troops", font(14), fill=QUIET, anchor='lm')
+    else:
+        red_button(c, (px1 - 330, by, px1, by + 58), 'Load this game', 'from the middle of its week')
+        c.text((px0, by + 16), 'Auto stays as it is: ' + date_text(slots[1]['week']) + '.', font(15), fill=TEXT, anchor='lm')
+        c.text((px0, by + 40), 'Right click: back to the map', font(13), fill=QUIET, anchor='lm')
+
+
+def sort_frame(save_mode):
+    c = background()
+    r = (30, 24, 1250, 776)
+    lq_panel(c, r)
+    title_band(c, r, 'Save' if save_mode else 'Load', 'the game as it is now' if save_mode else 'choose a game to go on with')
+    tabs(c, r[2] - 220, r[1] + 11, 'Save' if save_mode else 'Load')
+    return c, r
+
+
+def d_screen(name, order, save_mode, slots, chosen, caption, note):
+    """D: the list as built, the switch in the title band left of the tabs; Auto stays the first row either way."""
+    c, r = sort_frame(save_mode)
+    sw_right = r[2] - 220 - 24
+    sort_switch(c, sw_right, r[1] + 13, order)
+    lx0, ly0, rh = r[0] + 22, r[1] + 60, 63
+    for i, n in enumerate(sort_order(order, slots)):
+        sort_row(c, (lx0, ly0 + i * (rh + 5), lx0 + 330, ly0 + i * (rh + 5) + rh), n, slots.get(n),
+                 'chosen' if n == chosen else 'normal', save_mode, order)
+    sort_page(c, r, lx0 + 354, ly0, r[2] - 24, chosen, slots, save_mode)
+    if order == 'Date':
+        pointer(c, sw_right - 40, r[1] + 28)
+    c.save(name, caption, note)
+
+
+def e_screen(name, order, save_mode, slots, chosen, caption, note, heading='YOUR SAVES', first='No.', desc=None):
+    """E: Auto in a panel of its own over the list; the other nine under a strip with the switch, rows a little lower."""
+    c, r = sort_frame(save_mode)
+    lx0, lx1, ly0 = r[0] + 22, r[0] + 352, r[1] + 60
+    c.text((lx0, ly0 + 2), 'AUTO-SAVE', cinzel(11, 700), fill=SUB, anchor='lm')
+    c.text((lx1, ly0 + 2), "the game's own, each turn", font(11), fill=LABEL, anchor='rm')
+    auto = (lx0, ly0 + 12, lx1, ly0 + 72)
+    sort_row(c, auto, 1, slots.get(1), 'chosen' if chosen == 1 else 'normal', save_mode, order, auto_panel=True)
+    sy = auto[3] + 12
+    c.line((lx0, sy), (lx1, sy), fill=DIM)
+    c.text((lx0, sy + 22), heading, cinzel(11, 700), fill=SUB, anchor='lm')
+    sort_switch(c, lx1 + 4, sy + 9, order, label=False, first=first, desc=desc)
+    y, rh, pitch = sy + 44, 57, 62
+    for n in sort_order(order, slots, desc)[1:]:
+        sort_row(c, (lx0, y, lx1, y + rh), n, slots.get(n), 'chosen' if n == chosen else 'normal', save_mode, order)
+        y += pitch
+    sort_page(c, r, lx0 + 354, ly0, r[2] - 24, chosen, slots, save_mode)
+    if order == 'Date' or desc:
+        pointer(c, lx1 - (40 if order == 'Date' else 110), sy + 26)
+    c.save(name, caption, note)
+
+
+if ROUND == 'sort':
+    for n, (day, hour, minute) in SORT_TIMES.items():
+        if n in SLOT:
+            SLOT[n]['time'] = datetime.datetime(2026, 10, day, hour, minute)
+    saving = {n: s for n, s in SLOT.items() if n != 7}               # one slot emptied to show where the empty ones go
+    made_up = 'The times are made up for the mock-up.'
+    d_screen('D1-number.png', 'No.', False, SLOT, 9, 'D1 — sorted by number (Load), the switch in the title band',
+             'As built, plus "Order: No. | Date" left of the tabs. ' + made_up)
+    d_screen('D2-date.png', 'Date', False, SLOT, 9, 'D2 — sorted by date (Load): Auto first, then the newest',
+             'Auto stays the first row; the rest newest first, the time the bright line. ' + made_up)
+    d_screen('D3-date-save.png', 'Date', True, saving, 7, 'D3 — sorted by date (Save): the empty slots at the end',
+             'Slot 6 emptied for the mock-up: by date the empty slots go last, in number order. ' + made_up)
+    e_screen('E1-number.png', 'No.', False, SLOT, 9, 'E1 — Auto in a panel of its own (Load, by number)',
+             'Auto over the list in a gold frame; "Your saves" with the switch next to them, nine rows. ' + made_up)
+    e_screen('E2-date.png', 'Date', False, SLOT, 9, 'E2 — Auto in a panel of its own (Load, by date)',
+             'The nine sorted newest first; Auto stays in its panel whatever the order. ' + made_up)
+    e_screen('E3-date-save.png', 'Date', True, saving, 7, 'E3 — Auto in a panel of its own (Save, by date)',
+             'Auto greyed (the game writes it), the empty slots last. Slot 6 emptied for the mock-up. ' + made_up)
+    # Round 3: the owner's E, the first button "Slot", each button two directions (a second click turns it).
+    e3 = dict(heading='MANUAL SAVES', first='Slot')
+    e_screen('F1-slot-up.png', 'Slot', False, SLOT, 9, 'F1 — E as chosen: by slot, 1 at the top (the default)',
+             'As the original lists them. "Slot" for "No.", "Manual saves" for "Your saves". ' + made_up, desc=False, **e3)
+    e_screen('F2-slot-down.png', 'Slot', False, SLOT, 9, 'F2 — Slot clicked again: 9 at the top',
+             'The active button shows its direction; a second click turns it. ' + made_up, desc=True, **e3)
+    e_screen('F3-date-down.png', 'Date', False, SLOT, 9, 'F3 — by date: the newest at the top',
+             'Date opens newest first; the empty slots stay last either way. ' + made_up, desc=True, **e3)
+    e_screen('F4-date-up.png', 'Date', True, saving, 7, 'F4 — Date clicked again: the oldest at the top (Save)',
+             'Slot 6 emptied for the mock-up: it stays last. The order is kept across launches. ' + made_up, desc=False, **e3)
+else:
+    for save_mode in (False, True):
+        a_screen(save_mode)
+        b_screen(save_mode)
+        c_screen(save_mode)

@@ -19,6 +19,29 @@ public enum SlotKind
     MidTurn,
 }
 
+/// <summary>What our Save/Load screen's manual saves are sorted by (docs/ui/save-load.md, §7).</summary>
+public enum SlotSortKey
+{
+    /// <summary>The slot's number, as the original lists them.</summary>
+    Slot,
+
+    /// <summary>The time the slot was written (<see cref="SaveSlot.Written"/>).</summary>
+    Date,
+}
+
+/// <summary>
+/// The order of the manual saves (slots 2-10; Auto has a panel of its own): a key and its direction — ascending is
+/// slot 1 at the top, or the oldest game at the top. The default is the original's, by slot ascending.
+/// </summary>
+public readonly record struct SlotOrder(SlotSortKey Key, bool Descending)
+{
+    /// <summary>By slot, 1 at the top.</summary>
+    public static SlotOrder Default => new(SlotSortKey.Slot, false);
+
+    /// <summary>A click on <paramref name="key"/>'s button: the active one turns its direction; the other opens by slot ascending or by date newest first.</summary>
+    public SlotOrder Clicked(SlotSortKey key) => key == Key ? this with { Descending = !Descending } : new(key, key == SlotSortKey.Date);
+}
+
 /// <summary>A marker on a slot's miniature map: its CG, its corner in the miniature's pixels (640×266).</summary>
 public sealed record SlotMark(int Cg, int X, int Y);
 
@@ -203,6 +226,22 @@ public static class SaveSlots
 
     /// <summary>Whether <paramref name="list"/> takes a click on <paramref name="slot"/>: a filled one to load, any but Auto to save.</summary>
     public static bool Takes(SaveList list, int slot, SaveSlot? held) => list == SaveList.Load ? held is not null : slot >= 2;
+
+    /// <summary>
+    /// The manual saves, slots 2 to <paramref name="slots"/>' count, in <paramref name="order"/>: by slot, or by the time
+    /// written (a slot with none as the oldest; equal times by slot); the empty slots last, by slot, in either direction.
+    /// </summary>
+    public static IReadOnlyList<int> Order(IReadOnlyList<SaveSlot?> slots, SlotOrder order)
+    {
+        var manual = Enumerable.Range(2, Math.Max(0, slots.Count - 1)).ToList();
+        if (order.Key == SlotSortKey.Slot)
+            return order.Descending ? [.. Enumerable.Reverse(manual)] : manual;
+        var filled = manual.Where(n => slots[n - 1] is not null);
+        var dated = order.Descending
+            ? filled.OrderByDescending(n => slots[n - 1]!.Written ?? DateTime.MinValue)
+            : filled.OrderBy(n => slots[n - 1]!.Written ?? DateTime.MinValue);
+        return [.. dated.ThenBy(n => n), .. manual.Where(n => slots[n - 1] is null)];
+    }
 
     /// <summary>
     /// The slot chosen when the list opens: to load, the one written last; to save, the first empty one, else the one

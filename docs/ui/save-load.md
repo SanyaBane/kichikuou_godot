@@ -143,3 +143,39 @@ The six steps above, with these details settled while building (to be changed af
 2. A question before saving over a filled slot — wanted (ours; the original has none)?
 3. Load | Save tabs on the screen (from `COMMAND`), or only the list the panel's row opened?
 4. Which figures a slot shows: the date and kind surely; the stage, budget, realm, troops, the time it was written?
+
+## 7. Round 2: sorting the list (owner's request 2026-10-20)
+
+The owner asked for the list in two orders: by number (as built) and by date, with Auto at the very top — in a panel
+of its own if need be. `tools/ui/mock_saves.py ... sort` draws it over the owner's ten slots (their times made up:
+ENG-07 had stamped them all alike; one slot emptied in the Save pictures):
+
+- **D — the switch in the title band** (D1 by number, D2 by date, D3 Save by date): "Order: No. | Date ▾" left of the
+  tabs; the list as built, Auto its first row in either order.
+- **E — Auto in a panel of its own** (E1, E2, E3): "Auto-save" over the list in a gold frame, then "Your saves" with
+  the switch beside them and the nine rows a little lower (57 px for 63).
+
+In both, by date: Auto first, then the games newest first, the empty slots last in number order; the time written is
+the row's bright line. A row's seal keeps its slot's number, so the button and the page still name "Slot n".
+
+### The owner's choice (2026-10-20): E, drawn again as F1-F4
+
+**E**, with the first button named "Slot" (not "No.") and the second heading "Manual saves" (not "Your saves"). Each
+button has two directions: a click on the active one turns it; a click on the other opens it by slot ascending or by
+date newest first. The default is the original's, by slot with 1 at the top; the order chosen is kept across launches.
+F1-F4 (the same script) draw it: F1 by slot ascending, F2 descending, F3 by date newest first, F4 oldest first (Save).
+
+### What was built (2026-10-20)
+
+- **The model**: `SlotSortKey`, `SlotOrder` (`Default`, `Clicked`) and `SaveSlots.Order` — slots 2-10 by slot or by
+  `Written` (none as the oldest, equal times by slot), the empty slots last by slot either way (`SaveSlotsTests`).
+- **The setting**: `godot/Strategy/SaveOrderChoice`, `[display] save_order` / `save_order_descending` in
+  `user://settings.cfg`, as the Option menu's choices.
+- **The screen**: `SaveLoadView` lays the list out as E — "Auto-save" and its gold-framed row (96-156), a rule, "Manual
+  saves" with Slot | Date right-aligned (177-203; the active one in the chosen row's colours with a triangle, down for
+  descending), the nine rows 57 high every 62 from 212. Sorted by date, a row's time is the bright line. The chosen slot
+  stays chosen when the order changes.
+- **The red button** (owner, 2026-10-20): one line, no second — "Load", "Save over Slot n", "Save" (for an empty slot;
+  "Load this game" and "Save here" before).
+- **Unattended play**: `--saveload` clicks through the four orders on the load list (dumps `save-load-date`,
+  `save-load-date-oldest`, `save-load-slot-down`) and clicks the player's own order back.

@@ -120,6 +120,33 @@ public class SaveSlotsTests
         Assert.Null(SaveSlots.FirstChoice(SaveList.Load, SaveSlots.ReadAll(new MemorySaveStore())));
     }
 
+    /// <summary>The manual saves by slot or by date, each both ways; the empty slots last either way.</summary>
+    [Fact]
+    public void The_manual_saves_sort_by_slot_or_by_date()
+    {
+        var clock = new DateTime(2026, 10, 20, 0, 0, 0);
+        var saves = new MemorySaveStore(() => clock = clock.AddMinutes(1));
+        foreach (int n in (int[])[1, 5, 2, 9, 4])                     // written in this order
+            saves.Write(n, SaveData.Capture(Game(12), Autosave));
+        saves.Write(7, SaveData.Capture(Game(12), Autosave).Stamped(new DateTime(2026, 10, 20, 0, 3, 0)));   // as slot 2
+        var slots = SaveSlots.ReadAll(saves);
+
+        Assert.Equal([2, 3, 4, 5, 6, 7, 8, 9, 10], SaveSlots.Order(slots, SlotOrder.Default));
+        Assert.Equal([10, 9, 8, 7, 6, 5, 4, 3, 2], SaveSlots.Order(slots, new SlotOrder(SlotSortKey.Slot, true)));
+        Assert.Equal([4, 9, 2, 7, 5, 3, 6, 8, 10], SaveSlots.Order(slots, new SlotOrder(SlotSortKey.Date, true)));
+        Assert.Equal([5, 2, 7, 9, 4, 3, 6, 8, 10], SaveSlots.Order(slots, new SlotOrder(SlotSortKey.Date, false)));
+    }
+
+    [Fact]
+    public void A_click_turns_the_active_order_and_opens_the_other()
+    {
+        var bySlot = SlotOrder.Default;
+        Assert.Equal(new SlotOrder(SlotSortKey.Slot, true), bySlot.Clicked(SlotSortKey.Slot));
+        Assert.Equal(new SlotOrder(SlotSortKey.Date, true), bySlot.Clicked(SlotSortKey.Date));          // newest first
+        Assert.Equal(new SlotOrder(SlotSortKey.Date, false), bySlot.Clicked(SlotSortKey.Date).Clicked(SlotSortKey.Date));
+        Assert.Equal(SlotOrder.Default, new SlotOrder(SlotSortKey.Date, false).Clicked(SlotSortKey.Slot));
+    }
+
     [Fact]
     public void An_item_answers_its_slot()
     {
