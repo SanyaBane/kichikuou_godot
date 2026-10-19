@@ -90,6 +90,7 @@ public partial class Main : Control
                 AutoScout = args.Contains("--scout"),
                 AutoHarem = int.TryParse(Value("--harem"), out int harem) ? harem : 0,
                 AutoTreasure = args.Contains("--treasure"),
+                AutoSaveLoad = args.Contains("--saveload"),
             });
         }
         if (args.Contains("--portraits"))

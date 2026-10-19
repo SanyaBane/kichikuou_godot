@@ -161,6 +161,10 @@ docs/ui/pickers.md (`tools/ui/mock_pickers.py`): the harem is H2 with a Summon b
 is now (`ScriptContext.SaveHere`, set by `WeekLoop` around its `COMMAND` call), resuming in that `COMMAND` after a load
 (`CommandPhase.ResumeAfterSaveAsync`); loading it leaves Auto alone; the save window says so in our words (`PortTextEvent`);
 STR-11 is fixed (docs/strategy/README.md, decision 26).
+Then (owner, 2026-10-20) our own Save/Load screen in lacquer over `ﾛｰﾄﾞｾｰﾌﾞ`'s slot lists: the survey and mock-up round 1
+are docs/ui/save-load.md (`tools/ui/mock_saves.py`); the owner chose C (a list and the slot's page, the map large, a red
+button), built after the plan in its §5 (`Original.Content/Strategy/SaveSlots`, `godot/Strategy/SaveLoadView`), awaiting
+the owner's look in a window.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -291,6 +295,11 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `Original.Content/Strategy/MessageWindow` from `GamePresenter.MessageWindow` while `CoverMessages`, in a battle `BattlePresenter.MessageWindow`);
   `Strategy/SceneMenuView` (our `]` menus: lacquer rows at the selection box's place, `GamePresenter.MenuBoxArea`, while
   `SceneMenuCovered`; not over our battle screen; docs/ui/messages.md, §5 step 3);
+  `Strategy/SaveLoadView` (our Save/Load screen over `ﾛｰﾄﾞｾｰﾌﾞ`'s load and save lists, Option → Interface → New, the
+  owner's layout C, docs/ui/save-load.md: the ten slots as a list, the chosen slot's page with its map as All Data draws it
+  and its figures, a red button that answers the list with the slot's item; Load | Save tabs from `COMMAND`,
+  `LoadSaveShortcut.Switch`; the model `Original.Content/Strategy/SaveSlots` — each slot's summary read from the
+  `ISaveStore`, the lists recognised by their lines —, the window 113 under it not drawn, `GamePresenter.SaveScreenCovered`);
   `Strategy/MessageLogView` (the message log, a paper chronicle, mock-up L3a, in either interface: the wheel up at a key wait
   opens it, the game waits; `Original.Content/Strategy/MessageLog` from `GamePresenter.Log` — each key wait's page, a
   dialogue question's answer, `MenuAnswered` (an event scene's menu or one after a speech, never the play's; the play's narration left out, `MessageLog.Keeps`) — the speakers by the portraits' plates, `PortraitNames`; kept for the launch,
@@ -427,6 +436,11 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   `treasure-replace` (our question), `treasure-equipped`, `treasure-refusal`; else it plays the original picker (`AutoItemSteps`) —
   `--load --auto --fast --quit --seed 2 --saves user://saves-look-items --slots-from user://saves-week18 --treasure --until deployment [--interface new] --shots <dir>`.
   Add another kept save the same way when a screen needs another phase.
+  Our Save/Load screen (2026-10-20): `--saveload` on the week-18 save makes the first map wait open the command panel's
+  Save row; with `--interface new` in a window it saves into the first empty slot ("Slot 1") by the red button, opens the
+  Load tab, clicks Auto's row and leaves by a right click, then plays on — dumps `save-load-title` (the title's load list
+  at the `--load`), `save-load-save`, `save-load-button`, `save-load-saved`, `save-load`, `save-load-auto` —
+  `--load --auto --fast --quit --seed 2 --saves user://saves-look-saves --slots-from user://saves-week18 --saveload --until deployment --interface new --shots <dir>`.
 - Show an ending's `OVER` (its picture, staff roll, Completion Report) on a booted game:
   `<Godot console exe> --headless --path godot -- --ending <1-14> --auto --fast --quit [--shots <dir>]`
   (without `--auto` the keys wait for the player; slots in `user://saves-ending`).

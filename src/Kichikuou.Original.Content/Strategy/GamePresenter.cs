@@ -161,6 +161,9 @@ public sealed partial class GamePresenter : IStageObserver
     /// <summary>Whether the save screen's lists or menu are open.</summary>
     public bool SaveScreenOpen { get; private set; }
 
+    /// <summary>The open save screen's mode (<c>ﾛｰﾄﾞｾｰﾌﾞ.ADV:1-29</c>: 0 the title's load list, 2 <c>COMMAND</c>'s menu), −1 when it is closed.</summary>
+    public int SaveScreenMode { get; private set; } = -1;
+
     /// <summary>
     /// Our own deployment screen covers <c>Sﾌﾞﾀｲ</c>'s (owner's decision 25,
     /// docs/ui/deployment-table.md): the deployment picker is drawn with its background and the
@@ -307,7 +310,11 @@ public sealed partial class GamePresenter : IStageObserver
                 break;
             case PickerScreenEvent e: PickerScreen(e); break;
             case DataScreenEvent e: DataScreen(e.View); break;
-            case SaveScreenEvent e: SaveScreenOpen = e.Open; break;
+            case SaveScreenEvent e:
+                SaveScreenOpen = e.Open;
+                SaveScreenMode = e.Open ? e.Mode.Value : -1;
+                SaveScreenCovered &= e.Open;                                // the notices after it are drawn again
+                break;
             case WindowEvent e: Window(e.Op.Value); break;
             case MessageEvent e: NoteWindowFile(e.Text); Print(Read(e.Text, [], e.StringVariables)); break;
             case ValueMessageEvent e: NoteWindowFile(e.Text); Print(Read(e.Text, e.Values, e.StringVariables)); break;

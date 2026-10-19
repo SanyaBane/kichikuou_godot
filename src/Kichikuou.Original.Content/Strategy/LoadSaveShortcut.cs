@@ -37,6 +37,16 @@ public sealed class LoadSaveShortcut
         _opened = false;
     }
 
+    /// <summary>
+    /// Our Save/Load screen's other tab (docs/ui/save-load.md, §5): the list is left (the screen answers it with 0) and the
+    /// menu that comes back is answered with <paramref name="list"/> instead of Don't. Only while a list is under way.
+    /// </summary>
+    public void Switch(SaveList list)
+    {
+        if (Running)
+            Start(list);
+    }
+
     /// <summary>The save screen closed (<c>SaveScreenEvent</c>, also after a load): nothing under way.</summary>
     public void Stop() => Start(null);
 

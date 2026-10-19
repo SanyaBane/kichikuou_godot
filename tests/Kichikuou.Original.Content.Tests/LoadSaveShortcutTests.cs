@@ -41,6 +41,21 @@ public class LoadSaveShortcutTests
     }
 
     [Fact]
+    public void A_tab_answers_the_menu_with_the_other_list()
+    {
+        var shortcut = new LoadSaveShortcut();
+        shortcut.Switch(SaveList.Load);                                 // no list under way: nothing to switch
+        Assert.False(shortcut.Running);
+
+        shortcut.Start(SaveList.Save);
+        Assert.Equal(2, shortcut.Choose(Menu));
+        shortcut.Switch(SaveList.Load);                                 // our screen's Load tab: the save list left with 0
+        Assert.Equal(1, shortcut.Choose(Menu));
+        Assert.Equal(3, shortcut.Choose(Menu));                         // the load list left: Don't
+        Assert.False(shortcut.Running);
+    }
+
+    [Fact]
     public void A_load_ends_it()
     {
         var shortcut = new LoadSaveShortcut();

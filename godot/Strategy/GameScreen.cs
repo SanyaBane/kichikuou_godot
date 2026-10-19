@@ -103,6 +103,13 @@ public sealed record GameOptions
     /// </summary>
     public bool AutoTreasure { get; init; }
 
+    /// <summary>
+    /// Development: at the first map wait the unattended player opens the command panel's Save row once, before its
+    /// replenish and attack; with Option → Interface on New it clicks through our Save/Load screen
+    /// (<c>GameScreen.AutoSaveLoadAsync</c>).
+    /// </summary>
+    public bool AutoSaveLoad { get; init; }
+
     /// <summary>Development: unattended play stops after the first deployment picker or the first battle (a look at one screen).</summary>
     public AutoUntil AutoUntil { get; init; }
 
@@ -216,6 +223,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private WeekReportView _weekView = null!;           // our week report over the week start's windows (New)
     private MessageWindowView _messageView = null!;     // our message windows over WAO_SUB's (New)
     private SceneMenuView _sceneMenuView = null!;       // our ] menus over the selection box (New)
+    private SaveLoadView _saveView = null!;             // our Save/Load screen over ﾛｰﾄﾞｾｰﾌﾞ's slot lists (New)
+    private ISaveStore? _saves;                         // the session's slots, which our Save/Load screen reads
     private bool _keyWaiting;                           // the script waits for the player's key: our windows show the triangle
     private readonly HashSet<string> _messageDumps = [];        // the kinds of window unattended play has dumped this launch
     private PointerScript _markerPointer = new();       // a plate's still click on its way to the script
@@ -295,6 +304,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _content.AddChild(_messageView);
         _sceneMenuView = new SceneMenuView(GodotGlyphRenderer.Chosen);
         _content.AddChild(_sceneMenuView);                      // over the message windows: the menu asks below them
+        _saveView = new SaveLoadView(GodotGlyphRenderer.Chosen, faces);
+        _content.AddChild(_saveView);                           // over the message windows: they are not drawn under it
         ReadySubordinates(faces);
         ReadyHarem(faces);
         ReadyTreasure(faces);
@@ -365,6 +376,13 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _provinceView.Place(PictureArea());
         if (_weekView.Visible)
             _weekView.Place(PictureArea());
+        if (_saveView.Visible)
+        {
+            if (_presenter.SaveScreenOpen)
+                _saveView.Place(PictureArea());
+            else
+                _saveView.Close();                              // the save screen left without its event reaching us
+        }
         _textSpeed?.Place(PictureArea());
         _logView?.Place(PictureArea());
         _presenter.CoverMessages = InterfaceChoice.New;                  // also when the interface changed with a window open
@@ -455,6 +473,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             var state = new GameState();
             _presenter.Bind(state);
             var saves = new DirectorySaveStore(SaveDirectory);
+            _saves = saves;
             var session = new GameSession(state, EngineState.Random, new ViewProxy(this), new GameInputProxy(this),
                 scripts, scripts, saves, new UnportedFiles(this));
             _scenes = session.Scenes;
@@ -632,7 +651,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         await SubordinatesEventAsync(scriptEvent);
         if (scriptEvent is SaveScreenEvent { Open: false })
+        {
             _saveShortcut.Stop();                               // the save screen left, a load's included
+            _saveView.Close();
+        }
         if (scriptEvent is BattleScreenEvent { Open: true } && _autoDungeon == AutoDungeon.Searching)
             _autoDungeonBattle = true;
         if (scriptEvent is BattleScreenEvent { File: "FIGT_A.ADV" or "FIGT_B.ADV" } battle && _options.Auto)
@@ -709,7 +731,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.ScreenshotDirectory is not { } dir)
             return;
         System.IO.Directory.CreateDirectory(dir);
-        if ((_table.Visible || _subordinates.Visible || _harem.Visible || _treasure.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _sceneMenuView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
+        if ((_table.Visible || _subordinates.Visible || _harem.Visible || _treasure.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _sceneMenuView.Visible || _saveView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
         {
             // Our deployment and battle screens are drawn by Godot over the screen: the window's next frame (headless
             // draws none). No Compose here: the frame's Present must find the change to upload it.
@@ -1420,9 +1442,15 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _messageView.Complete();                                // the question is whole under its menu
         _presenter.OpenMenu(items);
         _presenter.Pointer(_input.Position.X, _input.Position.Y);
-        var province = InterfaceChoice.New ? _presenter.ProvinceMenu : null;
-        var command = InterfaceChoice.New && province is null ? _presenter.CommandMenu : null;
-        if (province is not null)
+        var saveList = InterfaceChoice.New && _presenter.SaveScreenOpen ? SaveSlots.ListOf(items) : null;
+        var province = InterfaceChoice.New && saveList is null ? _presenter.ProvinceMenu : null;
+        var command = InterfaceChoice.New && province is null && saveList is null ? _presenter.CommandMenu : null;
+        if (saveList is { } shownList)
+        {
+            _presenter.SaveScreenCovered = true;                // our Save/Load screen (docs/ui/save-load.md, §5)
+            OpenSaveView(shownList);
+        }
+        else if (province is not null)
         {
             _presenter.MenuCovered = true;                      // our panel instead (docs/ui/command-screen.md)
             _provinceView.Open(province);
@@ -1437,7 +1465,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         // Our ] menu at the selection box's place (docs/ui/messages.md, §5 step 3); a battle's menus stay the original's
         // with the battle's windows (step 5).
-        bool scene = province is null && command is null && InterfaceChoice.New && !BattleScreenShown
+        bool scene = province is null && command is null && saveList is null && InterfaceChoice.New && !BattleScreenShown
             && _presenter.Menu is not null && _presenter.MenuBoxArea is not null;
         // Over our Treasure screen the question's window is a callout at the clicked cell, its Yes/No inside it
         // (docs/ui/pickers.md, round W): opened with its buttons at once.
@@ -1480,9 +1508,12 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                     _sceneMenuDumped = true;
                     await AutoDumpAsync("scene-menu");
                 }
+                if (saveList is { } autoList)
+                    return Answered(await AutoSaveLoadAsync(autoList, items));
                 return Answered(AutoChoice(items));
             }
-            return Answered(province is not null ? await _provinceView.ChooseAsync()
+            return Answered(saveList is not null ? await SaveAnswerAsync()
+                : province is not null ? await _provinceView.ChooseAsync()
                 : command is not null ? await CommandAnswerAsync()
                 : callout ? await _treasureCallout.ChooseAsync()
                 : scene ? await _sceneMenuView.ChooseAsync()
@@ -1492,6 +1523,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             _provinceView.Close();
             _commandView.Close();
+            _saveView.Release();                                // drawn on until the next list or the screen's end
             _sceneMenuView.Close();
             _treasureCallout.CloseMenu();
             _presenter.CloseMenu();
@@ -1503,6 +1535,28 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         var (choice, opens) = await _commandView.ChooseAsync();
         _saveShortcut.Start(opens);
+        return choice;
+    }
+
+    /// <summary>
+    /// Our Save/Load screen over <paramref name="list"/>: the slots read again (after a save the script lists them again),
+    /// the game now for a save; the tabs while our panel's row runs the screen (<see cref="LoadSaveShortcut"/>).
+    /// </summary>
+    private void OpenSaveView(SaveList list)
+    {
+        var slots = _saves is { } saves ? SaveSlots.ReadAll(saves) : new SaveSlot?[SaveSlots.Count];
+        var now = list == SaveList.Save && _presenter.State is { } s ? SaveSlots.Now(s) : null;
+        string back = _presenter.SaveScreenMode == 0 ? "back to the title" : _saveShortcut.Running ? "back to the map" : "back to the menu";
+        _saveView.Open(list, slots, now, _saveShortcut.Running, back);
+        _saveView.Place(PictureArea());
+    }
+
+    /// <summary>Our Save/Load screen's answer; a tab leaves the list for the other (<see cref="LoadSaveShortcut.Switch"/>).</summary>
+    private async Task<int> SaveAnswerAsync()
+    {
+        var (choice, other) = await _saveView.ChooseAsync();
+        if (other is { } list)
+            _saveShortcut.Switch(list);
         return choice;
     }
 
@@ -2685,6 +2739,13 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 _pointer.RightClick(5, 6);                              // the menu: Treasure
                 return;
             }
+            if (centred && _options.AutoSaveLoad && !_autoSaveLoadWanted.HasValue)
+            {
+                GD.Print($"Kichikuou: --auto opens Load/Save (week {s.Week.Value}).");
+                _autoSaveLoadWanted = true;
+                _pointer.RightClick(5, 6);                              // the menu: Load/Save
+                return;
+            }
             if (centred && AutoReplenishUnit(s) is { } unit)
             {
                 GD.Print($"Kichikuou: --auto replenishes unit {unit} ({s.Units[unit].Troops.Value} of {s.Units[unit].MaxTroops.Value} troops, week {s.Week.Value}).");
@@ -3097,6 +3158,12 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             _autoHarem = AutoHarem.Chosen;
             return harem;
+        }
+        if (_autoSaveLoadWanted == true && Find("Load") is var loadSave and > 0)
+        {
+            _autoSaveLoadWanted = false;
+            _saveShortcut.Start(SaveList.Save);                         // the panel's Save row
+            return loadSave;
         }
         if (_autoTreasureWanted == true && Find("Treasure") is var treasure and > 0)
         {

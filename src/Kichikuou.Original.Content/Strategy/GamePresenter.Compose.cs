@@ -242,6 +242,22 @@ public sealed partial class GamePresenter
     /// </summary>
     public bool SceneMenuCovered { get; set; }
 
+    /// <summary>
+    /// Our Save/Load screen covers <c>ﾛｰﾄﾞｾｰﾌﾞ</c>'s slot lists (docs/ui/save-load.md, §5): while it is up, the pictures, the
+    /// window 113 with its header and the slot menu are not drawn, only the stage (the map) under them; the notices after it
+    /// ("Load Complete", "Auto-Save") are drawn as ever once a UI sets it false again.
+    /// </summary>
+    public bool SaveScreenCovered
+    {
+        get;
+        set
+        {
+            if (field != value)
+                Invalidate();
+            field = value;
+        }
+    }
+
     /// <summary>The open menu's box without its frame, in the 1280×800 screen's pixels (covered or not), else null.</summary>
     public (int X, int Y, int W, int H)? MenuBoxArea
     {
@@ -406,8 +422,8 @@ public sealed partial class GamePresenter
         {
             if (CoverMessages && BattleShows)
                 return Battle.MessageWindow;                    // the battle's own windows (BattlePresenter.MessageWindow)
-            if (!CoverMessages || _uncovered || BattleShows || Data != DataView.Closed || MenuCovered || WeekReport is not null
-                || State is not { } s)
+            if (!CoverMessages || _uncovered || BattleShows || Data != DataView.Closed || MenuCovered || SaveScreenCovered
+                || WeekReport is not null || State is not { } s)
                 return null;
             if (s.Ui_WinType == 0)
                 return _leftWindow;
@@ -437,7 +453,7 @@ public sealed partial class GamePresenter
     {
         get
         {
-            if (State is null || MenuCovered || SceneMenuCovered || MenuBox() is not { Box: var (x, y, w, h) })
+            if (State is null || MenuCovered || SceneMenuCovered || SaveScreenCovered || MenuBox() is not { Box: var (x, y, w, h) })
                 return null;
             const int k = Surface.Scale;
             return ((x - 8) * k, (y - 8) * k, (w + 16) * k, (h + 16) * k);
@@ -512,7 +528,7 @@ public sealed partial class GamePresenter
             {
                 if (MaskEventCgs && (s.Ui_WinType == 31 || _fullWindowLeft || _endingCg != 0 || _gallery))
                     MaskStage();
-                if (!MenuCovered && WeekReport is null)
+                if (!MenuCovered && !SaveScreenCovered && WeekReport is null)
                 {
                     DrawPictures(s);
                     Picker?.Draw(Screen, s);
@@ -524,7 +540,7 @@ public sealed partial class GamePresenter
                 }
             }
         }
-        if (State is not null && !MenuCovered && !SceneMenuCovered && MenuBox() is { } menu)                 // also over a battle: a scene it called (Gﾒﾙﾌｪｲｽ from 死亡捕獲)
+        if (State is not null && !MenuCovered && !SceneMenuCovered && !SaveScreenCovered && MenuBox() is { } menu)                 // also over a battle: a scene it called (Gﾒﾙﾌｪｲｽ from 死亡捕獲)
         {
             menu.Open();
             menu.Hover(_pointer.X, _pointer.Y);
