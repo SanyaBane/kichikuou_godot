@@ -9,110 +9,68 @@ using Kichikuou.Original.State;
 namespace Kichikuou.Game.Strategy;
 
 /// <summary>
-/// Our own Treasure screen (docs/ui/pickers.md, mock-up S5) in the game: shown over <c>Sｱｲﾃﾑ</c> (Option → Interface →
-/// New) and while one of its orders runs; an order's clicks reach the script through the screen's pointer and its
-/// question is answered here (<see cref="TreasureOrder"/>). Unattended play gives the same orders through the screen with
-/// its own pointer (<see cref="AutoTreasureAsync"/>).
+/// Our own Treasure screen (docs/ui/pickers.md, round V) in the game: shown over <c>Sｱｲﾃﾑ</c> (Option → Interface → New),
+/// under the message windows and menus, so the script's refusals and questions show over it as the original's do; a
+/// cell's click, a tab, Back and End are the picker's player's clicks through the screen's pointer
+/// (<see cref="TreasureRoster"/>). Unattended play clicks through the screen with its own pointer
+/// (<see cref="AutoTreasureAsync"/>).
 /// </summary>
 public partial class GameScreen
 {
     private TreasureView _treasure = null!;
     private PointerScript _treasurePointer = new();     // the script's pointer while our Treasure screen shows
-    private TreasureOrder? _treasureOrder;              // the order under way, or the last one
 
-    /// <summary>The pointer an order's clicks go to: unattended play's own, else the screen's.</summary>
+    /// <summary>The pointer the screen's clicks go to: unattended play's own, else the screen's.</summary>
     private PointerScript TreasurePointer => _options.Auto ? _pointer : _treasurePointer;
-
-    private bool TreasureRunning => _treasureOrder is { Running: true };
 
     private void ReadyTreasure(FacePictures faces)
     {
         _treasure = new TreasureView(GodotGlyphRenderer.Chosen, faces);
         _treasure.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        _treasure.EquipPressed += TreasureEquipPressed;
-        _treasure.UnequipPressed += TreasureUnequipPressed;
-        _treasure.EndPressed += TreasureEndPressed;
+        _treasure.PickPressed += n => TreasureGesture(p => TreasureRoster.Pick(n, p));
+        _treasure.TurnPressed += () => TreasureGesture(TreasureRoster.Turn);
+        _treasure.BackPressed += () => TreasureGesture(TreasureRoster.Back);
+        _treasure.EndPressed += () => TreasureGesture(TreasureRoster.End);
         _content.AddChild(_treasure);
+        _content.MoveChild(_treasure, _messageView.GetIndex());        // the script's windows and menus over it
     }
 
     /// <summary>
-    /// Shows our Treasure screen while <c>Sｱｲﾃﾑ</c> is open with Option → Interface on New — not under a message window,
-    /// unless an order runs (its question's window stays under the screen); places it over the picture and fills it from
-    /// GameState. Returns whether it shows.
+    /// Shows our Treasure screen while <c>Sｱｲﾃﾑ</c> is open with Option → Interface on New; places it over the picture and
+    /// fills it from GameState. While a message window is up (a refusal's key wait) the clicks pass through it to the
+    /// window. Returns whether it shows.
     /// </summary>
     private bool UpdateTreasureScreen()
     {
-        bool running = TreasureRunning;
-        bool show = InterfaceChoice.New && _presenter.Picker is { Kind: PickerKind.Items } && (running || !_presenter.MessageWindowShown)
-            && !SkippingScene && _presenter.State is not null;
+        bool show = InterfaceChoice.New && _presenter.Picker is { Kind: PickerKind.Items } && !SkippingScene && _presenter.State is not null;
         if (show != _treasure.Visible)
         {
             _treasure.Visible = show;
-            if (!running)
-                _treasurePointer = new PointerScript();
+            _treasurePointer = new PointerScript();
+            var (x, y) = TreasureRoster.Rest;
+            _treasurePointer.Move(x, y);                                // then where the last click was, as the player's pointer
         }
         if (!show)
             return false;
         var size = _view.Size;
         float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
         var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
-        _treasure.Busy = running || TreasurePointer.Pending > 0;
+        _treasure.MouseFilter = _presenter.MessageWindowShown ? MouseFilterEnum.Ignore : MouseFilterEnum.Stop;
+        _treasure.Busy = TreasurePointer.Pending > 0;
         _treasure.Place(_view.Position + (size - drawn) / 2, scale * Surface.Scale);
         _treasure.Refresh(_presenter.State!);
         return true;
     }
 
-    /// <summary>The script reads the pointer over our screen: an order's clicks, else at rest on the empty 51st cell (the picker hovers nothing).</summary>
-    private MouseState TreasureRead()
-    {
-        if (_treasurePointer.Pending == 0)
-        {
-            var (x, y) = TreasureRoster.Rest;
-            _treasurePointer.Move(x, y);
-        }
-        return _treasurePointer.Next(out _);
-    }
+    /// <summary>The script reads the pointer over our screen: the screen's clicks, else at rest where the last one was.</summary>
+    private MouseState TreasureRead() => _treasurePointer.Next(out _);
 
-    private void TreasureEquipPressed(int unit, int item)
+    /// <summary>A click of the screen for the picker, unless one is still on its way.</summary>
+    private void TreasureGesture(Action<PointerScript> gesture)
     {
-        if (TreasureRunning || TreasurePointer.Pending > 0 || _presenter.State is not { } s)
+        if (TreasurePointer.Pending > 0)
             return;
-        _treasureOrder = TreasureOrder.Equip(s, unit, item, TreasurePointer);
-        if (_treasureOrder is not null)
-            GD.Print($"Kichikuou: Treasure equips item {item} on unit {unit} (week {s.Week.Value}).");
-    }
-
-    private void TreasureUnequipPressed(int unit)
-    {
-        if (TreasureRunning || TreasurePointer.Pending > 0 || _presenter.State is not { } s)
-            return;
-        _treasureOrder = TreasureOrder.Unequip(s, unit, TreasurePointer);
-        if (_treasureOrder is not null)
-            GD.Print($"Kichikuou: Treasure takes item {_treasureOrder.Item} off unit {unit} (week {s.Week.Value}).");
-    }
-
-    /// <summary>End, or a right press on the screen: a click on the bar's End.</summary>
-    private void TreasureEndPressed()
-    {
-        if (TreasureRunning || TreasurePointer.Pending > 0)
-            return;
-        TreasureRoster.End(TreasurePointer);
-    }
-
-    /// <summary>A menu while an order runs: Unequip's Yes, or null (the menu is the player's).</summary>
-    private int? TreasureChoice(IReadOnlyList<SceneMenuItem> items) => TreasureRunning ? _treasureOrder!.Choose(items) : null;
-
-    /// <summary>
-    /// A key wait while an order runs: a refusal the screen did not foresee — the order is over, its clicks left dropped,
-    /// and the window is the player's (the screen hides under it).
-    /// </summary>
-    private void TreasureKeyWait()
-    {
-        if (!TreasureRunning)
-            return;
-        GD.PushWarning("Kichikuou: a key wait under a Treasure order; the order is dropped.");
-        _treasureOrder!.KeyWait();
-        _treasurePointer = new PointerScript();
+        gesture(TreasurePointer);
     }
 
     // ---------------------------------------------------------------- unattended play
@@ -121,15 +79,14 @@ public partial class GameScreen
     private Queue<Func<Task>> _autoTreasureSteps = new();
 
     /// <summary>
-    /// Unattended play on our Treasure screen (its pointer is the unattended one): <see cref="AutoTreasureSteps"/> one at a
-    /// time while no order runs, then End. False when the screen does not show (the original picker is played by
-    /// <see cref="AutoItemSteps"/>).
+    /// Unattended play on our Treasure screen: <see cref="AutoTreasureSteps"/> one at a time while no click is on its way,
+    /// then End. False when the screen does not show (the original picker is played by <see cref="AutoItemSteps"/>).
     /// </summary>
     private async Task<bool> AutoTreasureAsync()
     {
         if (_presenter.Picker is not { Kind: PickerKind.Items } picker || !UpdateTreasureScreen() || _presenter.State is not { } s)
             return false;
-        if (_pointer.Pending > 0 || TreasureRunning)
+        if (_pointer.Pending > 0)
             return true;
         if (_autoTreasureFrom != picker)
         {
@@ -144,11 +101,12 @@ public partial class GameScreen
     }
 
     /// <summary>
-    /// What the unattended player does on our Treasure screen, leaving the items where they were: the first character
-    /// whose item can be taken off is chosen, the item taken off and given back by a drop on the window (in a window with
-    /// screen dumps on: <c>treasure</c>, <c>treasure-tooltip</c> over another unit's item, <c>treasure-held</c>,
-    /// <c>treasure-unequipped</c>, <c>treasure-drag</c>, <c>treasure-equipped</c>); with nobody holding one, a stock item
-    /// is equipped on the first character that takes it and taken off again.
+    /// What the unattended player does on our Treasure screen, leaving the items where they were: the first character at
+    /// status 1 or 2 holding an item that moves is picked ("Which item?"), the pick dropped with Back; in the items' view his
+    /// item is clicked with no pick (the script asks, the first answer, Yes, takes it off), then he is picked and the item
+    /// given back. In a window with screen dumps on: <c>treasure</c>, <c>treasure-hover</c>, <c>treasure-which-item</c>,
+    /// <c>treasure-items</c>, <c>treasure-unequipped</c>, <c>treasure-equipped</c>. With nobody holding such an item,
+    /// only the first dumps, then End.
     /// </summary>
     private Queue<Func<Task>> AutoTreasureSteps(GameState s)
     {
@@ -163,51 +121,49 @@ public partial class GameScreen
         {
             if (!dumps)
                 return;
-            UpdateTreasureScreen();                                 // an order's result: the step runs once it is over
+            UpdateTreasureScreen();                                 // a click's result: the step runs once the script read it
             await AutoDumpAsync(name);
         });
-        var characters = TreasureRoster.Characters(s);
-        int holder = characters.FirstOrDefault(c => TreasureRoster.CanTakeOff(s, c.Unit))?.Unit ?? 0;
-        int item = holder != 0 ? s.Units[holder].Item.Value : 0;
-        if (holder == 0)
+        void TurnTo(int view) => Act(() =>
         {
-            item = TreasureRoster.Items(s, 0).FirstOrDefault(i => i.Refusal is null)?.Number ?? 0;
-            holder = item == 0 ? 0 : characters.FirstOrDefault(c => TreasureRoster.DropRefusal(s, c.Unit, item) is null)?.Unit ?? 0;
-        }
-        GD.Print($"Kichikuou: --auto opens our Treasure screen (week {s.Week.Value}; unit {holder}, item {item}).");
+            if (_presenter.State is { } now && TreasureRoster.View(now) != view)
+                TreasureRoster.Turn(_pointer);
+        });
+        int unit = Enumerable.Range(1, 50).FirstOrDefault(n => s.Units[n].Status.Value is 1 or 2
+            && s.Units[n].Item.Value is var item && item != 0 && !TreasureRoster.Fixed(item));
+        int held = unit == 0 ? 0 : s.Units[unit].Item.Value;
+        GD.Print($"Kichikuou: --auto opens our Treasure screen (week {s.Week.Value}; unit {unit}, item {held}).");
         Dump("treasure");
-        if (holder == 0)
+        if (unit == 0)
             return steps;
-        int first = _treasure.Chosen;
-        int other = TreasureRoster.Items(s, first).FirstOrDefault(i => i.Holder != 100 && i.Holder != first)?.Number ?? 0;
-        if (other != 0 && _treasure.ItemPoint(other) is { } at)
+        TurnTo(0);
+        Act(() => _treasure.ShowHover(unit));
+        Dump("treasure-hover");
+        Act(() =>
         {
-            Act(() => _treasure.ShowPointer(at));
-            Dump("treasure-tooltip");
-            Act(() => _treasure.ShowPointer(new Vector2(-1, -1)));
-        }
-        Act(() => _treasure.Choose(holder));
-        Dump("treasure-held");
-        if (s.Units[holder].Item.Value == item)
+            _treasure.ShowHover(0);
+            TreasureRoster.Pick(unit, _pointer);
+        });
+        Dump("treasure-which-item");
+        Act(() => TreasureRoster.Back(_pointer));                   // the pick dropped: the characters again
+        TurnTo(1);
+        Act(() => _treasure.ShowHover(held));
+        Dump("treasure-items");
+        Act(() =>
         {
-            Act(_treasure.Unequip);
-            Dump("treasure-unequipped");
-            Act(() => _treasure.ShowDrag(item, TreasureView.WindowCentre + new Vector2(60, 20)));
-            Dump("treasure-drag");
-            Act(() =>
-            {
-                _treasure.ShowDrag(0, new Vector2(-1, -1));
-                _treasure.Equip(item);
-            });
-            Dump("treasure-equipped");
-        }
-        else
+            _treasure.ShowHover(0);
+            TreasureRoster.Pick(held, _pointer);                    // asked; the menu's first answer is Yes
+        });
+        Dump("treasure-unequipped");
+        TurnTo(0);
+        Act(() => TreasureRoster.Pick(unit, _pointer));
+        Act(() => TreasureRoster.Pick(held, _pointer));
+        Dump("treasure-equipped");
+        Act(() =>
         {
-            Act(() => _treasure.Equip(item));
-            Dump("treasure-equipped");
-            Act(_treasure.Unequip);
-            Dump("treasure-unequipped");
-        }
+            if (_presenter.State is { } now && now.Units[unit].Item.Value != held)
+                GD.PushError($"Kichikuou: --auto did not give item {held} back to unit {unit}.");
+        });
         return steps;
     }
 }

@@ -230,7 +230,24 @@ stay its own, in our message windows and menus.
 - **V3 — the original's question**: By Lord (item 7), held by Rick (unit 7), clicked: "By Lord is equipped to Rick, but
   would you like to remove it and equip Cordoba instead?" in our window, Yes/No as our menu at the pointer.
 
-Open for the owner: V as it is, or what to change.
+**The owner's choice (2026-10-19): V, as drawn, in S5's place.** Built the same day:
+
+- `Original.Content/Strategy/TreasureRoster` (rewritten): the view shown (`Ui_ItemViewMode`), its entries at their
+  numbers' cells as `Sｱｲﾃﾑ` lists them (the units with a status, grey but at 1 and 2; the items owned, white in stock,
+  gold when held with the holder's name, grey without effect; Chaos and Nikkou marked), an entry's picture panel and
+  line (`L_00eac`, `L_0101d`: a unit's status CG over 600, its war cost, troops, class and item; an item's CG over 692,
+  Equippable/Unequippable and who holds it), the first pick's prompt (`Ui_ItemUnitSel` / `Ui_ItemSel`), and the
+  gestures — a cell's click, Item/Character (502), Back as the original's right click (998), End (503). S5's
+  `TreasureOrder` is gone: nothing is answered unseen any more.
+- `godot/Strategy/TreasureView` draws V; the picture shows the entry hovered last (the view's empty panel after a turn).
+  `GameScreen.Treasure.cs` shows it over `Sｱｲﾃﾑ` but under the message windows and menus: the script's refusals and
+  questions (`:322`, `:341`, the refusal windows) show over it in our windows, and while a window is up the screen lets
+  the clicks through to it. The script's pointer rests on the empty 51st cell until the first click, then where the
+  last click was, as a player's pointer (so `L_00a3f`'s Yes/No opens by the clicked cell).
+- `TreasureRosterTests`: the model on hand-made states; `Cﾀｶﾗ` from the player's files — a unit then an item (his own
+  back to stock), the view turned and an item then a unit, a held item without a pick asked about and Yes, Back.
+- Unattended play with `--interface new` clicks through the screen (`--treasure` on `saves-week18`: Rance (unit 1)
+  picked and dropped, his L. Holy Sword (item 6) taken off and given back; CLAUDE.md, "Commands").
 
 ## 4. How the screens would answer the script (a sketch, before the choice)
 

@@ -99,7 +99,7 @@ public sealed record GameOptions
 
     /// <summary>
     /// Development: at the first map wait the unattended player opens Treasure once, before its replenish and attack
-    /// (with Option → Interface on New it plays our own screen's orders, <c>GameScreen.AutoTreasureAsync</c>).
+    /// (with Option → Interface on New it clicks through our own screen, <c>GameScreen.AutoTreasureAsync</c>).
     /// </summary>
     public bool AutoTreasure { get; init; }
 
@@ -974,7 +974,6 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     public async Task<Sys3Int> WaitForKeyAsync()
     {
         InterruptPointers();
-        TreasureKeyWait();
         _presenter.Flush();
         _presenter.EndCityLeadIn();                                     // whatever the script drew is shown at a key wait
         CheckNoClickLeft();
@@ -1408,8 +1407,6 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         InterruptPointers();
         if (SubordinatesChoice(items) is { } ordered)
             return ordered;                                     // an order of our Subordinates screen answers it, unseen
-        if (TreasureChoice(items) is { } yes)
-            return yes;                                         // an order of our Treasure screen: its Yes, unseen
         _skip.OnMenu();
         _messageView.Complete();                                // the question is whole under its menu
         _presenter.OpenMenu(items);
@@ -1582,7 +1579,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 return Read(click);
             }
             if (!await AutoTreasureAsync())
-                AutoPointer();                          // our Treasure screen plays its own orders
+                AutoPointer();                          // over our Treasure screen it clicks through the screen
             var queued = _pointer.Next(out bool read);
             if (!read)
                 await NextFrameAsync();                 // the scripts poll the pointer: one read per frame
