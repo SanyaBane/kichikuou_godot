@@ -156,7 +156,7 @@ then (owner, 2026-10-18) our own Subordinates screen after mock-up F1 (no dialog
 buttons, answered through `SubordinateOrder`) — docs/ui/subordinates.md, built; its look (owner, 2026-10-18) is mock-up
 G3, lacquer with the table a paper ledger, built, awaiting the owner's look in a window; then (owner, 2026-10-19) the
 Harem and Treasure screens (`Sﾊｰﾚﾑ`, `Sｱｲﾃﾑ`) in the same lacquer — the survey and mock-ups are
-docs/ui/pickers.md (`tools/ui/mock_pickers.py`): the harem is H2 with a Summon button, built (`godot/Strategy/HaremView`, `Original.Content/Strategy/HaremRoster`), not yet looked at by the owner; the treasure in Sengoku Rance's manner (round S) awaits the owner's choice.
+docs/ui/pickers.md (`tools/ui/mock_pickers.py`): the harem is H2 with a Summon button, built (`godot/Strategy/HaremView`, `Original.Content/Strategy/HaremRoster`), not yet looked at by the owner; the treasure is S5 (Sengoku Rance's manner, three columns), its questions answered there, not built yet.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

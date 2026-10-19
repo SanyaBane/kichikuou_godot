@@ -118,6 +118,20 @@ The owner (2026-10-19): the sprite smaller, the item's picture with its descript
 the Equipment window 470 wide beside it (the item's picture 432×270, ×1.4 the original's), in S5 the picture 496×310
 under the sprite.
 
+**The treasure: the owner's choice (2026-10-19) is S5** — three columns: the items owned at the left, the chosen
+character in the middle (name, type, the strip of figures, the sprite ×2 on a lit floor, the Equipment window under it
+with the item's picture and description), every character at the right. The open questions answered the same day:
+
+- **An item another unit holds cannot be dragged at all**: the player takes it off that unit first, by hand. (So the
+  original's question "remove it and equip X instead?" is never reached.) A stock item dropped on a character who holds
+  one: his own goes back to stock, as the original's `L_0043a` does.
+- **The refusals greyed with their reason as a tooltip** (question 5): Chaos and Nikkou, the items without effect, the
+  item the character already holds — never dragged, so the script's refusal windows are never reached.
+- **The characters' list: compact rows without faces** (name, type, the item held), scrolled with the wheel when they
+  outgrow the column.
+- **Taking an item off: only by dragging it out of the Equipment window** back to the items' column (no ×). Chaos and
+  Nikkou stay (the window takes no drag out of them).
+
 **The harem, built (2026-10-19)** — H2 with Summon: the model `Original.Content/Strategy/HaremRoster` (the girls
 on offer from `HaremAvail_*` with their visits and last week from the history records, their pictures as the picker
 chooses them, the first choice — the girl chosen before, else the one summoned last, `Harem_LastPick`, else the first —,
