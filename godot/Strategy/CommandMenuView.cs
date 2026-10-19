@@ -9,7 +9,8 @@ namespace Kichikuou.Game.Strategy;
 /// <c>COMMAND.ADV</c>'s command menu — the right click on the map — as a lacquer column in the screen's
 /// centre, where the original's menu opens: the commands as rows with a tag, the other items, and Turn END;
 /// the status window and the week's uses are on our status strip (<see cref="StatusStripView"/>). A row's click answers the script's menu with its choice; a right click or Esc anywhere cancels
-/// (0, back to the map), as the original's menu. Laid out in the 1280×800 screen's pixels, scaled with the picture.
+/// (0, back to the map), as the original's menu. Load/Save is two rows, Load and Save, the list each opens answered
+/// with the choice (<see cref="LoadSaveShortcut"/>). Laid out in the 1280×800 screen's pixels, scaled with the picture.
 /// </summary>
 internal sealed partial class CommandMenuView : Control
 {
@@ -20,7 +21,7 @@ internal sealed partial class CommandMenuView : Control
     private CommandMenu? _menu;
     private float _k = 1;                           // window pixels to a screen pixel
     private int _hovered = -1, _pressed = -1;       // the row: 0-based, the commands, the links, then Turn END
-    private TaskCompletionSource<int>? _answer;
+    private TaskCompletionSource<(int Choice, SaveList? Opens)>? _answer;
 
     public CommandMenuView(GameFont font)
     {
@@ -44,10 +45,10 @@ internal sealed partial class CommandMenuView : Control
         QueueRedraw();
     }
 
-    /// <summary>The script's answer: a row's choice, or 0 for a cancel.</summary>
-    public Task<int> ChooseAsync()
+    /// <summary>The script's answer: a row's choice, or 0 for a cancel; with the list a Load or Save row opens.</summary>
+    public Task<(int Choice, SaveList? Opens)> ChooseAsync()
     {
-        _answer = new TaskCompletionSource<int>();
+        _answer = new TaskCompletionSource<(int, SaveList?)>();
         return _answer.Task;
     }
 
@@ -104,10 +105,10 @@ internal sealed partial class CommandMenuView : Control
 
     private bool Enabled(int row) => _menu is { } m && (row >= Commands || m.Commands[row].Enabled);
 
-    private int Choice(int row) => _menu is not { } m ? 0
-        : row < Commands ? m.Commands[row].Choice
-        : row < Commands + Links ? m.Links[row - Commands].Choice
-        : m.TurnEnd;
+    private (int, SaveList?) Choice(int row) => _menu is not { } m ? (0, null)
+        : row < Commands ? (m.Commands[row].Choice, null)
+        : row < Commands + Links ? (m.Links[row - Commands].Choice, m.Links[row - Commands].Opens)
+        : (m.TurnEnd, null);
 
     private int RowAt(Vector2 window)
     {
@@ -134,7 +135,7 @@ internal sealed partial class CommandMenuView : Control
                 }
                 break;
             case InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: false }:
-                Answer(0);
+                Answer((0, null));
                 break;
             case InputEventMouseButton { ButtonIndex: MouseButton.Left } button:
                 int at = RowAt(button.Position);
@@ -153,12 +154,12 @@ internal sealed partial class CommandMenuView : Control
     {
         if (_answer is not null && e is InputEventKey { Keycode: Key.Escape, Pressed: true })
         {
-            Answer(0);
+            Answer((0, null));
             GetViewport().SetInputAsHandled();
         }
     }
 
-    private void Answer(int choice)
+    private void Answer((int, SaveList?) choice)
     {
         var answer = _answer;
         _answer = null;

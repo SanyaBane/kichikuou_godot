@@ -156,7 +156,7 @@ then (owner, 2026-10-18) our own Subordinates screen after mock-up F1 (no dialog
 buttons, answered through `SubordinateOrder`) — docs/ui/subordinates.md, built; its look (owner, 2026-10-18) is mock-up
 G3, lacquer with the table a paper ledger, built, awaiting the owner's look in a window; then (owner, 2026-10-19) the
 Harem and Treasure screens (`Sﾊｰﾚﾑ`, `Sｱｲﾃﾑ`) in the same lacquer — the survey and mock-ups are
-docs/ui/pickers.md (`tools/ui/mock_pickers.py`): the harem is H2 with a Summon button, built (`godot/Strategy/HaremView`, `Original.Content/Strategy/HaremRoster`), looked at by the owner and changed after it; the treasure was S5 (Sengoku Rance's manner), built and not accepted (no item icons); after rounds T and U the owner chose V, `Sｱｲﾃﾑ`'s own screen in lacquer as the harem's, built in its place (`godot/Strategy/TreasureView`, `GameScreen.Treasure.cs`, the model `Original.Content/Strategy/TreasureRoster`: the picker's clicks); after the owner's look its refusals and questions are round W's W2, a callout at the clicked cell with the Yes/No inside (`godot/Strategy/TreasureCallout`), plus our own question before an item picked first replaces a character's (`TreasureRoster.ReplaceQuestion`), built, awaiting the owner's look.
+docs/ui/pickers.md (`tools/ui/mock_pickers.py`): the harem is H2 with a Summon button, built (`godot/Strategy/HaremView`, `Original.Content/Strategy/HaremRoster`), looked at by the owner and changed after it; the treasure was S5 (Sengoku Rance's manner), built and not accepted (no item icons); after rounds T and U the owner chose V, `Sｱｲﾃﾑ`'s own screen in lacquer as the harem's, built in its place (`godot/Strategy/TreasureView`, `GameScreen.Treasure.cs`, the model `Original.Content/Strategy/TreasureRoster`: the picker's clicks); after the owner's look its refusals and questions are round W's W2, a callout at the clicked cell with the Yes/No inside (`godot/Strategy/TreasureCallout`), plus our own question before an item picked first replaces a character's (`TreasureRoster.ReplaceQuestion`), built and accepted by the owner (2026-10-19); then (owner, 2026-10-19) the command panel's Load/Save split into Load and Save rows, the file's Load / Save / Don't menu answered unseen (`Original.Content/Strategy/LoadSaveShortcut`; docs/ui/command-screen.md, "The command panel").
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -273,8 +273,8 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   mock-up 4a in lacquer and gold: `Original.Content/Strategy/ProvinceMenu`, `GamePresenter.MenuCovered`,
   docs/ui/command-screen.md, "The province menu"; also the dungeon's menu after it);
   `Strategy/CommandMenuView` (our command panel over `COMMAND`'s right-click menu and its status window, Option →
-  Interface → New, centred as the original's menu: `Original.Content/Strategy/CommandMenu`,
-  docs/ui/command-screen.md, "The command panel"); `Strategy/StatusStripView` (our status strip over the map's top while the command
+  Interface → New, centred as the original's menu: `Original.Content/Strategy/CommandMenu`, Load/Save as two rows
+  answered through `LoadSaveShortcut`, docs/ui/command-screen.md, "The command panel"); `Strategy/StatusStripView` (our status strip over the map's top while the command
   panel is open, in one row: the status window's lines and the week's uses in bracketed groups,
   `Original.Content/Strategy/StatusStrip`, "The status strip"); `Strategy/WeekReportView` (our week report over the
   week start's windows — the banner, the budget as an account, the troops replenished, a triangle asking for the click;

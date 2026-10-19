@@ -29,8 +29,12 @@ public enum CommandAction
 /// </summary>
 public sealed record CommandMenuItem(int Choice, string Text, CommandAction Action, bool Enabled);
 
-/// <summary>One of the menu's other items (→ Leazas Castle, Load/Save, All Data, Think, TADA).</summary>
-public sealed record CommandMenuLink(int Choice, string Text);
+/// <summary>
+/// One of the menu's other items (→ Leazas Castle, All Data, Think, TADA), or one half of Load/Save: our panel
+/// shows it as two rows, Load and Save, both answering the menu with its <paramref name="Choice"/>; then
+/// <paramref name="Opens"/> answers <c>ﾛｰﾄﾞｾｰﾌﾞ</c>'s Load / Save / Don't menu unseen (<see cref="LoadSaveShortcut"/>).
+/// </summary>
+public sealed record CommandMenuLink(int Choice, string Text, SaveList? Opens = null);
 
 /// <summary>
 /// <c>COMMAND.ADV</c>'s command menu (the right click on the map, <c>CommandPhase.CommandMenuAsync</c>,
@@ -66,7 +70,14 @@ public sealed record CommandMenu(
             int line = items[i].At.Line;
             if (CommandOf(line) is var (action, enabled))
                 commands.Add(new CommandMenuItem(i + 1, text, action, enabled));
-            else if (line is 288 or 292 or 296 or 300 or 305 or 210 or 214)
+            else if (line is 292 or 214)
+            {
+                // Load/Save as two rows (owner, 2026-10-19): the words the item joins, else ours.
+                string[] words = text.Split('/');
+                links.Add(new CommandMenuLink(i + 1, words.Length == 2 ? words[0].Trim() : "Load", SaveList.Load));
+                links.Add(new CommandMenuLink(i + 1, words.Length == 2 ? words[1].Trim() : "Save", SaveList.Save));
+            }
+            else if (line is 288 or 296 or 300 or 305 or 210)
                 links.Add(new CommandMenuLink(i + 1, text));
             else
                 return null;

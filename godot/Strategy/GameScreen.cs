@@ -211,6 +211,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private MapMarkersView _markers = null!;            // our name plates over the map in COMMAND's map wait (New)
     private ProvinceMenuView _provinceView = null!;     // our province menu over a city file's first menu (New)
     private CommandMenuView _commandView = null!;       // our command panel over COMMAND's command menu (New)
+    private readonly LoadSaveShortcut _saveShortcut = new(); // its Load and Save rows: ﾛｰﾄﾞｾｰﾌﾞ's menu answered unseen
     private StatusStripView _strip = null!;             // our status strip over the map's top with the command panel (New)
     private WeekReportView _weekView = null!;           // our week report over the week start's windows (New)
     private MessageWindowView _messageView = null!;     // our message windows over WAO_SUB's (New)
@@ -630,6 +631,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             }
         }
         await SubordinatesEventAsync(scriptEvent);
+        if (scriptEvent is SaveScreenEvent { Open: false })
+            _saveShortcut.Stop();                               // the save screen left, a load's included
         if (scriptEvent is BattleScreenEvent { Open: true } && _autoDungeon == AutoDungeon.Searching)
             _autoDungeonBattle = true;
         if (scriptEvent is BattleScreenEvent { File: "FIGT_A.ADV" or "FIGT_B.ADV" } battle && _options.Auto)
@@ -1411,6 +1414,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         InterruptPointers();
         if (SubordinatesChoice(items) is { } ordered)
             return ordered;                                     // an order of our Subordinates screen answers it, unseen
+        if (_saveShortcut.Choose(items) is { } list)
+            return list;                                        // our panel's Load or Save row answers Load / Save / Don't, unseen
         _skip.OnMenu();
         _messageView.Complete();                                // the question is whole under its menu
         _presenter.OpenMenu(items);
@@ -1478,7 +1483,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 return Answered(AutoChoice(items));
             }
             return Answered(province is not null ? await _provinceView.ChooseAsync()
-                : command is not null ? await _commandView.ChooseAsync()
+                : command is not null ? await CommandAnswerAsync()
                 : callout ? await _treasureCallout.ChooseAsync()
                 : scene ? await _sceneMenuView.ChooseAsync()
                 : await MenuAsync());
@@ -1491,6 +1496,14 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _treasureCallout.CloseMenu();
             _presenter.CloseMenu();
         }
+    }
+
+    /// <summary>Our command panel's answer; a Load or Save row starts its list (<see cref="LoadSaveShortcut"/>).</summary>
+    private async Task<int> CommandAnswerAsync()
+    {
+        var (choice, opens) = await _commandView.ChooseAsync();
+        _saveShortcut.Start(opens);
+        return choice;
     }
 
     /// <summary>The menu's answer, into the message log when it asked over a window (docs/ui/messages.md, §5 step 6).</summary>

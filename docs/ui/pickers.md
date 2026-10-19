@@ -287,6 +287,8 @@ as they are (`Sｱｲﾃﾑ.ADV:320-350`, `L_00a3f`), only where they are drawn 
 - Unattended play (`--treasure`, `--interface new`) also gives Rance his own sword back, which the script refuses
   ("Already equipped."); in a window it dumps `treasure-question` and `treasure-refusal` as well.
 
+**Accepted by the owner (2026-10-19)** after a look in a window.
+
 ## 4. How the screens would answer the script (a sketch, before the choice)
 
 - **Harem:** while `Sﾊｰﾚﾑ` is the open picker (`PickerKind.Harem`) our screen covers it; a summon is a click on her cell

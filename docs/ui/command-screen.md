@@ -309,6 +309,14 @@ brackets with captions under; the owner chose **the brackets**).
 - **Built (2026-10-16):** `Original.Content/Strategy/CommandMenu` (`CommandMenuTests`),
   `GamePresenter.CommandMenu`, `godot/Strategy/CommandMenuView`; the province menu, the command panel and the
   strip share `godot/Strategy/Lacquer`. `--auto --interface new` in a window dumps it once (`command-menu`).
+- **Load and Save (owner, 2026-10-19):** the Load / Save / Don't menu `ﾛｰﾄﾞｾｰﾌﾞ` opens after Load/Save
+  (`L_001c2`, `:82-104`; mode 2) only asks again what the item could have said, so the panel shows Load/Save as two
+  rows, Load and Save (the item's two words, `CommandMenu.For`). Both answer the command menu with Load/Save's
+  place; then `LoadSaveShortcut` (`LoadSaveShortcutTests`) answers the file's menu unseen — the row's list first,
+  Don't when it comes back (the list left by a right click), so the player is back on the map; the save screen
+  closing (`SaveScreenEvent`, a load's "Load Complete" included) ends it. The script runs as it is; the original
+  interface keeps the menu. Tried once from the week-18 save (2026-10-19, a temporary unattended run): Save, a
+  save into slot 1, the list left, back on the map.
 
 ## The status strip (owner, 2026-10-16)
 

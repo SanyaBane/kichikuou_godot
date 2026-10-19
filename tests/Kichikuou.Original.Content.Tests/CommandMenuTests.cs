@@ -21,8 +21,8 @@ public class CommandMenuTests
             new CommandMenuItem(3, "Treasure", CommandAction.Items, true),
             new CommandMenuItem(4, "Merchant", CommandAction.Trade, false),
             new CommandMenuItem(5, "Subordinates", CommandAction.Units, true)], menu.Commands);
-        Assert.Equal([new CommandMenuLink(6, "→Leazas Castle"), new CommandMenuLink(7, "Load/Save"), new CommandMenuLink(8, "All Data"),
-            new CommandMenuLink(9, "Think")], menu.Links);
+        Assert.Equal([new CommandMenuLink(6, "→Leazas Castle"), new CommandMenuLink(7, "Load", SaveList.Load),
+            new CommandMenuLink(7, "Save", SaveList.Save), new CommandMenuLink(8, "All Data"), new CommandMenuLink(9, "Think")], menu.Links);
         Assert.Equal((10, "Turn END"), (menu.TurnEnd, menu.TurnEndText));
     }
 
@@ -34,7 +34,9 @@ public class CommandMenuTests
 
         var thieves = CommandMenu.For(Items(187, 205, 210, 214, 218), ["○Harem", "△Subordinates", "→Thieves’ Hideout", "Load/Save", "Turn END"])!;
         Assert.Equal([CommandAction.Harem, CommandAction.Units], thieves.Commands.Select(c => c.Action));
-        Assert.Equal(["→Thieves' Hideout", "Load/Save"], thieves.Links.Select(l => l.Text));
+        Assert.Equal(["→Thieves' Hideout", "Load", "Save"], thieves.Links.Select(l => l.Text));
+        Assert.Equal([null, SaveList.Load, SaveList.Save], thieves.Links.Select(l => l.Opens));
+        Assert.Equal([4, 4], thieves.Links.Skip(1).Select(l => l.Choice));
     }
 
     [Fact]
