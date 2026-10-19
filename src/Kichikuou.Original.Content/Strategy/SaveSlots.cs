@@ -114,7 +114,7 @@ public sealed record SaveSlot(
     /// <summary>The budget as the game prints it: <c>Gold</c> then "00K GOLD".</summary>
     public string BudgetText => $"{Gold * 100}K GOLD";
 
-    /// <summary>The provinces Leazas holds, or the hideout in the prologue.</summary>
+    /// <summary>The provinces Leazas holds on the map (Nothing (75) left out), or the hideout in the prologue.</summary>
     public string RealmText => Stage == 0 ? "the hideout" : Provinces == 1 ? "1 province" : $"{Provinces} provinces";
 
     /// <summary>When the slot was written, "20 Oct, 00:14"; empty for the game being played.</summary>
@@ -179,9 +179,9 @@ public static class SaveSlots
             if (s.StoryStage != 0)
                 troops += s.Units[unit].Troops;
         }
-        int provinces = 0;
+        int provinces = 0;                                               // not Nothing (75): Leazas's, off the map (STR-58)
         for (int prov = 1; prov < s.Provs.Count; prov++)
-            if (s.Provs[prov].Owner == 1)
+            if (s.Provs[prov].Owner == 1 && prov != 75)
                 provinces++;
         int[] tiles = [s.Ui_MapCgTopL.Value, s.Ui_MapCgTopM.Value, s.Ui_MapCgTopR.Value, s.Ui_MapCgBotL.Value, s.Ui_MapCgBotM.Value, s.Ui_MapCgBotR.Value];
         return new SaveSlot(slot, kind, week, s.StoryStage.Value, s.Gold.Value, provinces, units, troops.Value, written, tiles, MarksOf(s));

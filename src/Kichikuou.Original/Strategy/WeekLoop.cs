@@ -272,7 +272,7 @@ public sealed class WeekLoop(OriginalScriptContext script, IScenarioSource? scen
         State.Tmp0024 = 0;
         while (true)                                                    // L_00298
         {
-            if (Prov.Owner == 1)
+            if (Prov.Owner == 1)                                        // QUIRK: STR-58 — Nothing (75) too
             {
                 State.Tmp0022 = State.Tmp0022 + Prov.Economy;
                 State.Tmp0021 = State.Tmp0021 + 1;

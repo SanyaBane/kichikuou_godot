@@ -175,6 +175,8 @@ F1-F4 (the same script) draw it: F1 by slot ascending, F2 descending, F3 by date
   saves" with Slot | Date right-aligned (177-203; the active one in the chosen row's colours with a triangle, down for
   descending), the nine rows 57 high every 62 from 212. Sorted by date, a row's time is the bright line. The chosen slot
   stays chosen when the order changes.
+- **Realm** (owner's report 2026-10-20) counts the provinces Leazas holds on the map: Nothing (75), Leazas's record off
+  the map, is left out (it showed 16 where the map has 15; its hidden income is STR-58).
 - **The red button** (owner, 2026-10-20): one line, no second — "Load", "Save over Slot n", "Save" (for an empty slot;
   "Load this game" and "Save here" before).
 - **Unattended play**: `--saveload` clicks through the four orders on the load list (dumps `save-load-date`,

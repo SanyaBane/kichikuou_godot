@@ -37,6 +37,7 @@ public class SaveSlotsTests
         s.Provs[1].Owner = 1;
         s.Provs[6].Owner = 1;
         s.Provs[4].Owner = 2;
+        s.Provs[75].Owner = 1;                                          // Nothing (75): Leazas's, off the map, not counted
         s.Marks[(Sys3Int)0].Cg = 10200;
         s.Marks[(Sys3Int)0].X = 300;
         s.Marks[(Sys3Int)0].Y = 120;
