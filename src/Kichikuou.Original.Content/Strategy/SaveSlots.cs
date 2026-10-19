@@ -119,7 +119,7 @@ public static class SaveSlots
 
     /// <summary>Slot <paramref name="slot"/>'s summary, or null when it is empty or cannot be read.</summary>
     public static SaveSlot? Read(ISaveStore store, int slot) =>
-        store.Read(slot) is { } data ? Of(data, slot, store.Timestamp(slot)) : null;
+        store.Read(slot) is { } data ? Of(data, slot, data.Written) : null;
 
     /// <summary>Slots 1-10 in order, null for an empty one.</summary>
     public static IReadOnlyList<SaveSlot?> ReadAll(ISaveStore store) => [.. Enumerable.Range(1, Count).Select(n => Read(store, n))];

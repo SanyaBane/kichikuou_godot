@@ -228,20 +228,20 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
         return slots;
     }
 
-    /// <summary>Slots in memory with a clock that ticks per write; some slots refuse writes; every access is logged.</summary>
+    /// <summary>Slots in memory with a clock that ticks per stamp; some slots refuse writes; every access is logged.</summary>
     private sealed class TestStore(IReadOnlySet<int> failing, List<string> log) : ISaveStore
     {
-        private readonly Dictionary<int, (SaveData Data, DateTime Time)> _slots = [];
+        private readonly Dictionary<int, SaveData> _slots = [];
         private DateTime _now = new(2026, 10, 9, 12, 0, 0);
 
-        public void Fill(int slot, SaveData data) => _slots[slot] = (data.Clone(), Tick());
+        public void Fill(int slot, SaveData data) => _slots[slot] = data.Clone().Stamped(Tick());
 
-        public SaveData? Peek(int slot) => _slots.TryGetValue(slot, out var s) ? s.Data : null;
+        public SaveData? Peek(int slot) => _slots.GetValueOrDefault(slot);
 
         public SaveData? Read(int slot)
         {
             log.Add($"read {slot}{(_slots.ContainsKey(slot) ? "" : " empty")}");
-            return _slots.TryGetValue(slot, out var s) ? s.Data.Clone() : null;
+            return _slots.TryGetValue(slot, out var s) ? s.Clone() : null;
         }
 
         public bool Write(int slot, SaveData data)
@@ -251,7 +251,7 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
                 log.Add($"write {slot} refused");
                 return false;
             }
-            _slots[slot] = (data.Clone(), Tick());
+            _slots[slot] = data.Clone().Stamped(data.Written ?? Tick());
             log.Add($"write {slot} {data.Resume}");
             return true;
         }
@@ -259,7 +259,7 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
         public DateTime? Timestamp(int slot)
         {
             log.Add($"time {slot}");
-            return _slots.TryGetValue(slot, out var s) ? s.Time : null;
+            return _slots.GetValueOrDefault(slot)?.Written;
         }
 
         private DateTime Tick() => _now = _now.AddSeconds(37);

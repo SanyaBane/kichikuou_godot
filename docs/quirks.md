@@ -4,7 +4,8 @@ A **quirk** is behaviour of the original game that a modern designer would likel
 oddity — a slip in the scenario script, an odd design decision, or an artefact of the System 3 /
 xsystem35 engine — and that the port **reproduces on purpose**. The port follows the original in
 every one of them; this register exists so that some can later be offered as optional fixes
-(default off). Nothing here is fixed today, except STR-10's interface (owner's decision 19).
+(default off). Nothing here is fixed today, except STR-10's interface (owner's decision 19), STR-11
+(decision 26) and ENG-07 (the slots' times, 2026-10-20).
 
 Rules:
 
@@ -344,6 +345,7 @@ General engine behaviour behind many entries above ([spike-findings.md](spike-fi
 | ENG-04 (Q13 / README O1) | Key waits (`IK 0`) and timed pauses (`Y 3`) store the key that ended the wait in `RetVal` (0 while message skip is on). | None by itself; behind BTX-03. | engine artefact | xsystem35 `cmdi.c` `commandIK`; bREADME #1 and port notes; golden-tests "Findings so far"; port `Battle.Flavour.cs` (marker `Q13 / README O1`) | no |
 | ENG-05 | The script has no locals: scratch variables (`Tmp*`, `RetVal`, `CallArg`) and record cursors (`Unit_Cur`, `Cmdr_Cur`, `Prov_Cur`, `Item_Cur`, `Hist_Cur`, `Bt_TargetProv`) carry over between procedures and files — e.g. map/window helpers leave `Tmp0021-0030` and the camera, the boot leaves the last record's cursors and strings, commands leave `Unit_Cur` Maria (16) / Miki (32) / 503 / 51, `Prov_Cur := 1` (Leazas Castle) after the Zeth barrier. Whether the strategic leftovers are read before being reset is open. | None by itself; behind STR-02, NAT-07, DGN-01, DGN-02, CMD-14, BRS-21 and others. | engine artefact | porting-conventions "State"; main §4, §9 #5; commands §5, §10 #3; events §4.5; data §4.1, §7 #2; golden-tests "Findings so far" | no |
 | ENG-06 | Record fields are bound onto array pages with a fixed stride; an index outside 1..count reads or writes the neighbouring field: item 0 ↔ item 50 (BRS-16), dungeon 30 (Ancient Ruins) ↔ dungeon 0 (STR-12, CMD-09), `Unit_Item[100]` ↔ `Unit_DgnAtkMod[48]` (CMD-17, written by every equip), commander 0 ↔ the previous field's record 220 (NAT-12), unit 0's item ↔ the previous field's last record (an empty party slot in `Tｾﾞｽ2`'s Barrier Blade test, `:74-90`). | None by itself; see the entries named. | engine artefact | spike-findings "Engine semantics"; data §4.3; dungeon §4; port `State/RecordTable` | no |
+| ENG-07 | `QP` (`save_savePartial`) writes the whole slot file back, so the file's time — what `LT` reads as the time the slot was written — becomes the time of the patch. `ﾛｰﾄﾞｾｰﾌﾞ` patches page 4 into every slot that holds a save after each manual save, each weekly autosave and each ending (`L_00ad6`, STR-31). | Every slot's file time is the last save's: a slot list showing the times shows one time for all; STR-22's `Tmp0006` takes that second. | engine artefact | `ﾛｰﾄﾞｾｰﾌﾞ.ADV:46, 511, 529-544`; xsystem35 `savedata.c`, `cmdl.c:68-107`; port `Script/ScriptContext.Save.cs`, `Script/SaveData.cs` | fixed, always (owner, 2026-10-20): a slot keeps the time its game was saved (`SaveData.Written`, format 3), stamped by `QD` and `QC`, kept by `QP`, read by `LT` and our Save/Load screen; a slot of format 1-2 is dated by its file's time |
 
 ## Sources
 

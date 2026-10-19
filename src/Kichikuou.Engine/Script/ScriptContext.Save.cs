@@ -87,7 +87,7 @@ public partial class ScriptContext
     /// <summary>
     /// <c>QP n, var, count:</c> — the values from where <paramref name="var"/> points into slot n,
     /// the rest of the slot kept (<c>save_savePartial</c>); <c>RetVal</c> 1, or 255 for an empty
-    /// slot or a page without the save flag.
+    /// slot or a page without the save flag. Ours: the slot keeps the time it was saved (ENG-07).
     /// </summary>
     public void SavePartial(Sys3Int slot, int var, Sys3Int count)
     {
@@ -107,7 +107,8 @@ public partial class ScriptContext
 
     /// <summary>
     /// <c>QC to, from:</c> — slot <paramref name="from"/> copied whole into <paramref name="to"/> (<c>RetVal</c> 1, or
-    /// 255). Ours: a slot whose resume point <paramref name="skip"/> names is not copied (<c>RetVal</c> 1 all the same).
+    /// 255), stamped with the time now. Ours: a slot whose resume point <paramref name="skip"/> names is not copied
+    /// (<c>RetVal</c> 1 all the same).
     /// </summary>
     public void CopySave(Sys3Int to, Sys3Int from, Func<ScriptRef, bool>? skip = null)
     {
@@ -117,13 +118,13 @@ public partial class ScriptContext
             State.RetVal = 1;
             return;
         }
-        State.RetVal = data is not null && Saves.Write(to.Value, data) ? (Sys3Int)1 : SaveError;
+        State.RetVal = data is not null && Saves.Write(to.Value, data.Stamped(null)) ? (Sys3Int)1 : SaveError;
     }
 
     /// <summary>
-    /// <c>LT n, var:</c> — when slot n was written, as year, month, day, hour, minute, second into
-    /// <paramref name="var"/> and the five variables after it; all 0 and <c>RetVal</c> 255 when
-    /// the slot is empty.
+    /// <c>LT n, var:</c> — when slot n was saved (<see cref="ISaveStore.Timestamp"/>; ENG-07), as year, month, day,
+    /// hour, minute, second into <paramref name="var"/> and the five variables after it; all 0 and <c>RetVal</c> 255
+    /// when the slot is empty.
     /// </summary>
     public void ReadSaveTime(Sys3Int slot, int var)
     {

@@ -13,17 +13,19 @@ namespace Kichikuou.Engine.Script;
 /// saves (window rectangles, font sizes and colours) are not kept: the UI redraws from the state.
 /// The random generator's state is not saved either, as in the original. The slot format is the
 /// engine's; whether a slot fits a game is the context's check (its variable count). The port's own
-/// data (<see cref="ScriptState.Extras"/>) goes with the memory, from format 2 on.
+/// data (<see cref="ScriptState.Extras"/>) goes with the memory, from format 2 on, and the time the
+/// slot was written (<see cref="Written"/>) from format 3 on.
 /// </summary>
 public sealed class SaveData
 {
     private const string Magic = "KKSAVE";
-    private const int FormatVersion = 2;
+    private const int FormatVersion = 3;
 
     /// <summary>Creates a slot's contents; the arrays are kept, not copied.</summary>
     public SaveData(ScriptRef resume, Sys3Int[] variables, IReadOnlyDictionary<int, Sys3Int[]> pages, string[] strings,
-        IReadOnlyDictionary<string, int[]>? extras = null)
+        IReadOnlyDictionary<string, int[]>? extras = null, DateTime? written = null)
     {
+        Written = written;
         Resume = resume;
         Variables = variables;
         Pages = pages;
@@ -45,6 +47,16 @@ public sealed class SaveData
 
     /// <summary>The port's own data (<see cref="ScriptState.Extras"/>); none in a slot of format 1.</summary>
     public IReadOnlyDictionary<string, int[]> Extras { get; }
+
+    /// <summary>
+    /// When the game in the slot was saved (local time): stamped by the store at a write that brings none
+    /// (<c>QD</c>, <c>QC</c>), kept by <c>QP</c>, which only patches the slot (ENG-07); null before the first
+    /// write, and in a slot of format 1-2 until its store dates it by the file's time.
+    /// </summary>
+    public DateTime? Written { get; }
+
+    /// <summary>The same contents (the arrays shared) with another stamp; null for the store to stamp it anew.</summary>
+    public SaveData Stamped(DateTime? written) => new(Resume, Variables, Pages, Strings, Extras, written);
 
     /// <summary><c>QD</c>: the memory as it is now, with the pages the variant saves (<see cref="VariantProfile.SavedPages"/>).</summary>
     public static SaveData Capture(ScriptState state, ScriptRef resume)
@@ -108,7 +120,8 @@ public sealed class SaveData
         (Sys3Int[])Variables.Clone(),
         Pages.ToDictionary(p => p.Key, p => (Sys3Int[])p.Value.Clone()),
         (string[])Strings.Clone(),
-        Extras.ToDictionary(e => e.Key, e => (int[])e.Value.Clone()));
+        Extras.ToDictionary(e => e.Key, e => (int[])e.Value.Clone()),
+        Written);
 
     /// <summary>The port's own slot format (not the original's <c>.ASD</c>): versioned, little-endian.</summary>
     public void WriteTo(Stream stream)
@@ -136,6 +149,7 @@ public sealed class SaveData
             foreach (int value in values)
                 w.Write(value);
         }
+        w.Write(Written?.Ticks ?? 0L);
     }
 
     /// <summary>Reads a slot written by <see cref="WriteTo"/>; fails with <see cref="InvalidDataException"/> on anything else.</summary>
@@ -184,7 +198,14 @@ public sealed class SaveData
                     extras[key] = values;
                 }
             }
-            return new SaveData(resume, variables, pages, strings, extras);
+            DateTime? written = null;
+            if (version >= 3 && r.ReadInt64() is var ticks and not 0)
+            {
+                if (ticks < DateTime.MinValue.Ticks || ticks > DateTime.MaxValue.Ticks)
+                    throw new InvalidDataException($"Bad time {ticks}.");
+                written = new DateTime(ticks, DateTimeKind.Local);
+            }
+            return new SaveData(resume, variables, pages, strings, extras, written);
         }
         catch (EndOfStreamException e)
         {
@@ -221,13 +242,19 @@ public interface ISaveStore
     /// <summary>The engine's slot count (xsystem35 <c>SAVE_MAXNUMBER</c>).</summary>
     const int SlotCount = 26;
 
-    /// <summary>The slot's contents, or null when it is empty or cannot be read.</summary>
+    /// <summary>The slot's contents with their stamp (<see cref="SaveData.Written"/>), or null when it is empty or cannot be read.</summary>
     SaveData? Read(int slot);
 
-    /// <summary>Writes the slot whole; false when it cannot be written.</summary>
+    /// <summary>
+    /// Writes the slot whole, stamped with <see cref="SaveData.Written"/>, or with the time now when it brings none;
+    /// false when it cannot be written.
+    /// </summary>
     bool Write(int slot, SaveData data);
 
-    /// <summary>When the slot was last written (local time, as the file's mtime), or null when it is empty.</summary>
+    /// <summary>
+    /// When the game in the slot was saved (local time, what <c>LT</c> reads), or null when it is empty. The original
+    /// reads the file's time, which every <c>QP</c> renews; ours is the slot's stamp (ENG-07).
+    /// </summary>
     DateTime? Timestamp(int slot);
 }
 
@@ -247,9 +274,10 @@ public sealed class MemorySaveStore(Func<DateTime>? clock = null) : ISaveStore
     /// <inheritdoc />
     public bool Write(int slot, SaveData data)
     {
+        var time = data.Written ?? _clock();
         var stream = new MemoryStream();
-        data.WriteTo(stream);
-        _slots[slot] = (stream.ToArray(), _clock());
+        data.Stamped(time).WriteTo(stream);
+        _slots[slot] = (stream.ToArray(), time);
         return true;
     }
 
@@ -260,7 +288,10 @@ public sealed class MemorySaveStore(Func<DateTime>? clock = null) : ISaveStore
     public void Delete(int slot) => _slots.Remove(slot);
 }
 
-/// <summary>Save slots as files <c>slotNN.ksav</c> in a directory (created on the first write).</summary>
+/// <summary>
+/// Save slots as files <c>slotNN.ksav</c> in a directory (created on the first write); a slot of format 1-2, which has no
+/// stamp, is dated by the file's time.
+/// </summary>
 public sealed class DirectorySaveStore(string directory) : ISaveStore
 {
     /// <summary>The directory the slots are in.</summary>
@@ -277,7 +308,8 @@ public sealed class DirectorySaveStore(string directory) : ISaveStore
         try
         {
             using var stream = File.OpenRead(path);
-            return SaveData.ReadFrom(stream);
+            var data = SaveData.ReadFrom(stream);
+            return data.Written is null ? data.Stamped(File.GetLastWriteTime(path)) : data;
         }
         catch (Exception e) when (e is IOException or InvalidDataException or UnauthorizedAccessException)
         {
@@ -294,7 +326,7 @@ public sealed class DirectorySaveStore(string directory) : ISaveStore
             string path = PathOf(slot);
             string temp = path + ".tmp";
             using (var stream = File.Create(temp))
-                data.WriteTo(stream);
+                data.Stamped(data.Written ?? DateTime.Now).WriteTo(stream);
             File.Move(temp, path, overwrite: true);
             return true;
         }
@@ -305,11 +337,7 @@ public sealed class DirectorySaveStore(string directory) : ISaveStore
     }
 
     /// <inheritdoc />
-    public DateTime? Timestamp(int slot)
-    {
-        string path = PathOf(slot);
-        return File.Exists(path) ? File.GetLastWriteTime(path) : null;
-    }
+    public DateTime? Timestamp(int slot) => Read(slot)?.Written;
 }
 
 /// <summary>

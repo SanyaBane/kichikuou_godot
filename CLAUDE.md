@@ -190,7 +190,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   bindings, and `Extras`, the port's own data kept with the saves — no rule reads it), `VariantProfile` (the facts the runtime takes from a variant — variable count, scene
   rule, saved pages), `ScriptContext` (the engine's side: state, draws, pauses, scene calls, saves;
   helper calls go through the virtual `CallHelperAsync`), the shared events (`ScriptEvent`) and the
-  view/input/hook interfaces, `SaveData` (the slot format, 2 since `Extras`; format 1 still loads), `MessageSkip`, `PointerScript` (the
+  view/input/hook interfaces, `SaveData` (the slot format, 3 since the slot's own time `Written`, ENG-07; formats 1-2 still load), `MessageSkip`, `PointerScript` (the
   gesture queue), `IScenarioSource`, plus
   `ScriptStatements` — scenario code read at run time: a goto program that mirrors the
   decompile line for line (`ScriptProgram`, one statement per engine command, jumps resolved,

@@ -132,8 +132,10 @@ The six steps above, with these details settled while building (to be changed af
   the map, the title, or the Load / Save / Don't menu when the interface was changed with that menu open.
 - **The tabs**: `LoadSaveShortcut.Switch` — the list left with 0, the menu answered with the other list.
 - **Unattended play**: `--saveload` (CLAUDE.md, "A look at one screen"); the title's load list is dumped too.
-- The time written is the file's, as `LT` reads it: every save writes page 4 into every slot (`WritePersistentPage`,
-  `:511`), so after a save each slot shows that time — Auto included.
+- The time written is the slot's own stamp (`SaveData.Written`), as `LT` reads it: set when its game is saved (`QD`,
+  `QC`), kept when a save writes page 4 into every slot (`WritePersistentPage`, `:511`, a `QP`). The original reads the
+  file's time, which that sync renews in every slot, so all showed the last save's time (ENG-07, fixed 2026-10-20). A
+  slot of format 1-2 is dated by its file's time.
 
 ## 6. Questions for the owner (answered by the choice above)
 

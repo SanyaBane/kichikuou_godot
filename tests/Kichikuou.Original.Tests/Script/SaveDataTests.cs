@@ -252,15 +252,71 @@ public class SaveDataTests
         read.Restore(loaded);
         Assert.Equal([2, 6], loaded.KnownProvinces);
 
-        // Format 1: the version 1 and no extras' count at the end.
+        // Format 1: the version 1 and no extras' count (nor format 3's stamp) at the end.
         byte[] bytes = Write(SaveData.Capture(new GameState { Week = 12 }, Call));
-        Assert.Equal(2, BitConverter.ToInt32(bytes, 7));               // after the length-prefixed "KKSAVE"
+        Assert.Equal(3, BitConverter.ToInt32(bytes, 7));               // after the length-prefixed "KKSAVE"
         BitConverter.GetBytes(1).CopyTo(bytes, 7);
-        var old = SaveData.ReadFrom(new MemoryStream(bytes[..^4]));
+        var old = SaveData.ReadFrom(new MemoryStream(bytes[..^12]));
         Assert.Empty(old.Extras);
         Assert.Equal(12, old.Variables[517].Value);
         old.Restore(loaded);
         Assert.Empty(loaded.KnownProvinces);
+    }
+
+    /// <summary>
+    /// ENG-07: the slot keeps the time its game was saved. <c>QD</c> and <c>QC</c> stamp it, <c>QP</c> (the page-4 sync
+    /// into every slot after each save) keeps it, and <c>LT</c> reads it.
+    /// </summary>
+    [Fact]
+    public void A_partial_save_keeps_the_time_a_slot_was_saved()
+    {
+        var clock = new DateTime(2026, 10, 20, 9, 0, 0);
+        var rig = Rig(new MemorySaveStore(() => clock = clock.AddMinutes(1)));
+        rig.Script.SaveAll(1);                                          // 9:01
+        rig.Script.CopySave(2, 1);                                      // 9:02
+        rig.Script.SaveAll(3);                                          // 9:03
+
+        rig.State.Glob_FateCur = 0;
+        foreach (int slot in (int[])[1, 2, 3])
+            rig.Script.SavePartial((Sys3Int)slot, 195, 2100);           // QP n, Glob_Fate, 2100
+
+        Assert.Equal(new DateTime(2026, 10, 20, 9, 1, 0), rig.Script.Saves.Timestamp(1));
+        Assert.Equal(new DateTime(2026, 10, 20, 9, 2, 0), rig.Script.Saves.Timestamp(2));
+        Assert.Equal(new DateTime(2026, 10, 20, 9, 3, 0), rig.Script.Saves.Read(3)!.Written);
+        rig.Script.ReadSaveTime(2, 1);                                  // LT 2, Tmp0001
+        Assert.Equal(2, rig.State.Tmp0005.Value);                       // the minute
+    }
+
+    /// <summary>Format 3 keeps the stamp; a slot of format 2 has none and the directory dates it by the file's time.</summary>
+    [Fact]
+    public void The_stamp_round_trips_and_an_older_slot_is_dated_by_its_file()
+    {
+        var written = new DateTime(2026, 10, 20, 9, 30, 15);
+        var data = SaveData.Capture(new GameState { Week = 12 }, Call).Stamped(written);
+        Assert.Equal(written, SaveData.ReadFrom(new MemoryStream(Write(data))).Written);
+        Assert.Null(SaveData.ReadFrom(new MemoryStream(Write(data.Stamped(null)))).Written);
+
+        string directory = Path.Combine(Path.GetTempPath(), "kichikuou-saves-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var store = new DirectorySaveStore(directory);
+            Assert.True(store.Write(2, data));
+            Assert.Equal(written, store.Timestamp(2));
+
+            byte[] bytes = Write(data);
+            BitConverter.GetBytes(2).CopyTo(bytes, 7);                  // format 2: no stamp at the end
+            string path = Path.Combine(directory, "slot03.ksav");
+            File.WriteAllBytes(path, bytes[..^8]);
+            var fileTime = new DateTime(2026, 10, 1, 8, 0, 0);
+            File.SetLastWriteTime(path, fileTime);
+            Assert.Equal(fileTime, store.Read(3)!.Written);
+            Assert.Equal(fileTime, store.Timestamp(3));
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+                Directory.Delete(directory, recursive: true);
+        }
     }
 
     private static byte[] Write(SaveData data)
