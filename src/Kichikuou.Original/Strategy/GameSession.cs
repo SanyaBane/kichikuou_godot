@@ -14,7 +14,8 @@ namespace Kichikuou.Original.Strategy;
 /// for ever. A load (<c>LD</c>, from the title or from <c>COMMAND</c>'s Load/Save) leaves
 /// whatever runs by <see cref="GameLoadedException"/>; the session catches it and goes on where the
 /// slot was saved — the save screen's "Load Complete" (<see cref="LoadSaveScreen.ResumeAsync"/>),
-/// then the rest of that week (<see cref="WeekLoop.ResumeAsync"/>). The game ends at a jump to
+/// then the rest of that week (<see cref="WeekLoop.ResumeAsync"/>: after its autosave, or for a save
+/// of the moment, owner's decision 26, in its <c>COMMAND</c>). The game ends at a jump to
 /// <c>OVER.ADV</c> (an ending, <c>EndingId</c>): the file runs from the player's files (owner's
 /// decision 19) — the ending's picture, the staff roll, the Completion Report recorded on page 4 and
 /// kept in the slots — up to its <c>ZZ0</c>, and the session returns the ending. A path not ported

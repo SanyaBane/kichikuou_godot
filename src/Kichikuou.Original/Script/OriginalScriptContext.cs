@@ -24,6 +24,12 @@ public sealed partial class OriginalScriptContext(
     public new GameState State { get; } = state;
 
     /// <summary>
+    /// Ours (owner's decision 26): the next call of <c>COMMAND.ADV</c> goes on where its Load/Save returns,
+    /// after a load of a save made in it (<c>CommandPhase.ResumeAfterSaveAsync</c>); the call takes it back.
+    /// </summary>
+    public bool ResumeCommand { get; set; }
+
+    /// <summary>
     /// The helper files run their ports with the arguments the statements left in <c>CallArg</c> /
     /// <c>Ui_WaoOp</c>; any other file is a hook.
     /// </summary>

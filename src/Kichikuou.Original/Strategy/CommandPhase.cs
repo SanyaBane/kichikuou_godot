@@ -58,6 +58,22 @@ public sealed class CommandPhase(OriginalScriptContext script)
     public async Task RunAsync()
     {
         await StartAsync();
+        await LoopAsync();
+    }
+
+    /// <summary>
+    /// Ours (owner's decision 26): <c>COMMAND</c> again after a load of a save made in it — where its Load/Save
+    /// returns (<see cref="Command.LoadSave"/>: the date, then the map).
+    /// </summary>
+    public async Task ResumeAfterSaveAsync()
+    {
+        SetDate();
+        await LoopAsync();
+    }
+
+    /// <summary><c>@L_00129</c> on: the map and the command menu until the player phase ends.</summary>
+    private async Task LoopAsync()
+    {
         var next = Next.Map;
         while (true)
         {

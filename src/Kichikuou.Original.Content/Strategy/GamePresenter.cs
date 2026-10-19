@@ -312,6 +312,7 @@ public sealed partial class GamePresenter : IStageObserver
             case MessageEvent e: NoteWindowFile(e.Text); Print(Read(e.Text, [], e.StringVariables)); break;
             case ValueMessageEvent e: NoteWindowFile(e.Text); Print(Read(e.Text, e.Values, e.StringVariables)); break;
             case PrintStringEvent e: Print(Hankaku.ToHalfWidth(StringVar(e.Slot.Value))); break;
+            case PortTextEvent e: Print(Hankaku.ToHalfWidth(e.Text)); break;
             case LineBreakEvent: NewLine(); break;
             case MessageClearEvent: ClearText(); break;
             case MessageResetEvent e:

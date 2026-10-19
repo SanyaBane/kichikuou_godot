@@ -54,6 +54,14 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
         _script = script;
     }
 
+    /// <summary><c>COMMAND</c> from its start, or where its Load/Save returns after a load of a save made in it (<see cref="OriginalScriptContext.ResumeCommand"/>).</summary>
+    private Task Command()
+    {
+        bool resume = Script.ResumeCommand;
+        Script.ResumeCommand = false;
+        return resume ? new CommandPhase(Script).ResumeAfterSaveAsync() : new CommandPhase(Script).RunAsync();
+    }
+
     /// <summary>A battle on the bound context, with its input.</summary>
     private Battle Battle => new(Script, (IGameInput)Script.Input);
 
@@ -62,7 +70,7 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
     {
         "MAIN.ADV" => new WeekLoop(Script, scenario).RunAsync(),
         "COM.ADV" => new WeeklyEvents(Script).RunAsync(),
-        "COMMAND.ADV" => new CommandPhase(Script).RunAsync(),
+        "COMMAND.ADV" => Command(),
         "Cﾃｷﾄｼ.ADV" => new EnemyCityCommand(Script, scenario).RunAsync(),
         "Cﾃｷﾄｼ2.ADV" => new DistantCityCommand(Script).RunAsync(),
         "Cﾌﾞｶ.ADV" => new SubordinatesCommand(Script).RunAsync(),

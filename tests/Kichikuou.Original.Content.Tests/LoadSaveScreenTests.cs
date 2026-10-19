@@ -112,4 +112,46 @@ public class LoadSaveScreenTests
         Assert.Contains(rig.View.Events, e => e is MusicEvent { Track.Value: 7 });
         Assert.Equal(0, rig.State.RetVal.Value);                        // RetVal := Tmp0022 = 2 picks slot 2 for LT, which sets 0
     }
+
+    /// <summary>
+    /// Ours (owner's decision 26): a save from <c>COMMAND</c> (<see cref="ScriptContext.SaveHere"/>) is the game
+    /// as it is now, its window says so in our words, and loading it leaves the autosave alone.
+    /// </summary>
+    [Fact]
+    public async Task A_save_from_COMMAND_is_the_moment_and_loading_it_keeps_the_autosave()
+    {
+        if (NewRig() is not { } rig)
+            return;
+        await AutosaveAsync(rig, 13);
+        var here = new ScriptRef("MAIN.ADV", 213);
+        rig.Script.SaveHere = here;
+        rig.State.Gold = 999;                                           // spent and earned since the turn's start
+
+        rig.State.RetVal = 2;
+        rig.Input.Choices.Enqueue(2);                                   // Save
+        rig.Input.Choices.Enqueue(1);                                   // slot "1" = slot 2
+        rig.Input.Choices.Enqueue(0);                                   // leave the list
+        rig.Input.Choices.Enqueue(3);                                   // Don't
+        await rig.Screen.RunAsync();
+
+        var saved = rig.Saves.Read(2)!;
+        Assert.Equal(here, saved.Resume);
+        Assert.Equal(13, saved.Variables[21].Value);                    // the slot's week, for the lists
+        Assert.Equal(2, saved.Variables[22].Value);                     // its number, for "Load Complete"
+        Assert.Equal(["　ＬＰ：   3, Month  4, Week  1", "　Saving the game as it is now."],
+            rig.View.Events.OfType<PortTextEvent>().Select(e => e.Text));
+        Assert.DoesNotContain(rig.View.Events, e => e is ValueMessageEvent { Text.Line: 338 });   // "Auto ＬＰ…", "from the beginning of this turn"
+        Assert.Equal([(Sys3Int)3, (Sys3Int)4, (Sys3Int)1], rig.Input.Menus[2][0].Texts.Single().Numbers);
+
+        rig.State.Gold = 5;
+        rig.State.RetVal = 2;
+        rig.Input.Choices.Enqueue(1);                                   // Load
+        rig.Input.Choices.Enqueue(2);                                   // "1" = slot 2
+        var loaded = await Assert.ThrowsAsync<GameLoadedException>(() => rig.Screen.RunAsync());
+
+        Assert.Equal(here, loaded.Resume);
+        Assert.Equal(999, rig.State.Gold.Value);
+        Assert.Equal(Call, rig.Saves.Read(1)!.Resume);                  // Auto is still the turn's start
+        Assert.Equal(1, rig.Saves.Read(1)!.Variables[22].Value);
+    }
 }

@@ -155,7 +155,9 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   host (§4.8, "Items 2 and 4 are one step") is not needed for screens over the original layout.
 - **Quality-of-life features**, the README's second aim — *owner* (which), then *agent*; a survey of
   candidates first. Done so far: MsgSkip skips the opening whole (2026-10-11,
-  [window-menu.md](window-menu.md), MsgSkip).
+  [window-menu.md](window-menu.md), MsgSkip); a manual save is the game as it is now, not the turn's start
+  (2026-10-19, owner's decision 26 in [strategy/README.md](strategy/README.md); STR-11 fixed). Put off with it: the
+  slot lists cannot tell a save of the moment from the turn's autosave (same date) — for our own Save/Load screen.
 - **Optional fixes** — *owner* (which), then *agent*: the quirks register ([quirks.md](quirks.md),
   decision 5) lists every reproduced bug; some can become options.
 

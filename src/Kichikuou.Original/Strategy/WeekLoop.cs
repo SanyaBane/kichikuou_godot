@@ -32,6 +32,18 @@ public sealed class WeekLoop(OriginalScriptContext script, IScenarioSource? scen
     /// <summary>The autosave of the Leazas week (<c>MAIN.ADV:83</c>).</summary>
     private const int LeazasAutosave = 83;
 
+    /// <summary>The thieves' <c>COMMAND</c> (<c>MAIN.ADV:69</c>): where a save of the moment made in it resumes.</summary>
+    private const int ThievesCommand = 69;
+
+    /// <summary>The Leazas week's <c>COMMAND</c> (<c>MAIN.ADV:213</c>): where a save of the moment made in it resumes.</summary>
+    private const int LeazasCommand = 213;
+
+    /// <summary>
+    /// Whether a slot resuming at <paramref name="resume"/> is a save of the moment (ours, owner's decision 26:
+    /// made in <c>COMMAND</c>, resuming there), not the autosave or a copy of it.
+    /// </summary>
+    public static bool IsMomentSave(ScriptRef resume) => resume is { File: "MAIN.ADV", Line: ThievesCommand or LeazasCommand };
+
     /// <summary><c>L_00020</c>: the week loop, for ever (<c>@L_00020</c> at <c>MAIN.ADV:81, 1045</c>).</summary>
     public async Task RunAsync()
     {
@@ -62,7 +74,9 @@ public sealed class WeekLoop(OriginalScriptContext script, IScenarioSource? scen
     /// After a load: the rest of the week whose autosave the slot holds (the call at
     /// <paramref name="autosave"/>, <c>MAIN.ADV:20</c> or <c>:83</c> — the original comes back there
     /// from <c>LD</c> through the save screen's "Load Complete", <see cref="LoadSaveScreen.ResumeAsync"/>,
-    /// which the caller runs first), then the loop for ever.
+    /// which the caller runs first), then the loop for ever. A save of the moment (ours, owner's
+    /// decision 26) resumes at its <c>COMMAND</c> call (<c>:69</c>, <c>:213</c>): <c>COMMAND</c> goes on
+    /// where its Load/Save returns (<see cref="CommandPhase.ResumeAfterSaveAsync"/>), then the week after it.
     /// </summary>
     public async Task ResumeAsync(ScriptRef autosave)
     {
@@ -70,9 +84,39 @@ public sealed class WeekLoop(OriginalScriptContext script, IScenarioSource? scen
             await ThievesWeekAfterAutosaveAsync();
         else if (autosave == Ref(LeazasAutosave))
             await LeazasWeekAfterAutosaveAsync();
+        else if (autosave == Ref(ThievesCommand))
+        {
+            await CommandAsync(ThievesCommand, resume: true);
+            await ThievesWeekAfterCommandAsync();
+        }
+        else if (autosave == Ref(LeazasCommand))
+        {
+            await CommandAsync(LeazasCommand, resume: true);
+            await LeazasWeekAfterCommandAsync();
+        }
         else
             throw new ArgumentException($"{autosave} is not an autosave of {File}.", nameof(autosave));
         await RunAsync();
+    }
+
+    /// <summary>
+    /// <c>&amp;#COMMAND.ADV:</c> at <paramref name="line"/>, a save made in it resuming here (ours, owner's
+    /// decision 26: <see cref="ScriptContext.SaveHere"/> for the call's length); with <paramref name="resume"/>,
+    /// <c>COMMAND</c> going on after a load of such a save.
+    /// </summary>
+    private async Task CommandAsync(int line, bool resume = false)
+    {
+        Script.SaveHere = Ref(line);
+        Script.ResumeCommand = resume;
+        try
+        {
+            await Script.CallFileAsync("COMMAND.ADV");
+        }
+        finally
+        {
+            Script.SaveHere = null;
+            Script.ResumeCommand = false;
+        }
     }
 
     /// <summary>
@@ -120,7 +164,16 @@ public sealed class WeekLoop(OriginalScriptContext script, IScenarioSource? scen
         await WaoAsync(1);                                              // :66 \L_01a0b
         await WaoAsync(0);                                              // :67 \L_019fe
         Hist.Funds = State.Gold;                                        // :68
-        await Script.CallFileAsync("COMMAND.ADV");                      // :69
+        await CommandAsync(ThievesCommand);                             // :69
+        await ThievesWeekAfterCommandAsync();
+    }
+
+    /// <summary>
+    /// <c>MAIN.ADV:70-80</c> — after the thieves' <c>COMMAND</c>: a prologue ended by the lost duel becomes
+    /// stage 1 with <c>Iﾊﾝﾗﾝ</c>; then "Then some time passed".
+    /// </summary>
+    private async Task ThievesWeekAfterCommandAsync()
+    {
         if (State.StoryStage == 99)                                     // :70-73 the prologue is over
         {
             State.StoryStage = 1;
@@ -175,7 +228,16 @@ public sealed class WeekLoop(OriginalScriptContext script, IScenarioSource? scen
         await WaoAsync(1);                                              // :184 \L_01a0b
         await ExpensesAsync();                                          // :185-211
         await WaoAsync(0);                                              // :212 \L_019fe
-        await Script.CallFileAsync("COMMAND.ADV");                      // :213
+        await CommandAsync(LeazasCommand);                              // :213
+        await LeazasWeekAfterCommandAsync();
+    }
+
+    /// <summary>
+    /// <c>MAIN.ADV:214-1044</c> — the Leazas week after its <c>COMMAND</c>: the scenes after it, the nation
+    /// phases, the end-of-week story checks, "Then some time passed".
+    /// </summary>
+    private async Task LeazasWeekAfterCommandAsync()
+    {
         await Script.MapCallAsync(0);                                   // :214-215
         await ScenesAfterCommandAsync();                                // :216-228
         await MarsPhaseAsync();                                         // :229-259

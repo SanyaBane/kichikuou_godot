@@ -431,6 +431,59 @@ public class WeekLoopTests
     }
 
     [Fact]
+    public async Task COMMAND_runs_with_its_call_as_the_place_a_save_of_the_moment_resumes()
+    {
+        var rig = new WeekRig();
+        (ScriptRef?, bool)? during = null;
+        rig.Story.OnCall = (file, _) =>
+        {
+            if (file == "COMMAND.ADV")
+            {
+                during = (rig.Script.SaveHere, rig.Script.ResumeCommand);
+                throw new OperationCanceledException();
+            }
+        };
+
+        await Assert.ThrowsAsync<OperationCanceledException>(rig.RunWeekAsync);
+
+        Assert.Equal((new ScriptRef("MAIN.ADV", 69), false), during);     // owner's decision 26
+        Assert.Null(rig.Script.SaveHere);
+        Assert.False(WeekLoop.IsMomentSave(new ScriptRef("MAIN.ADV", 20)));
+        Assert.True(WeekLoop.IsMomentSave(new ScriptRef("MAIN.ADV", 213)));
+    }
+
+    [Fact]
+    public async Task A_save_of_the_moment_goes_on_in_COMMAND_without_the_week_s_start()
+    {
+        var rig = new WeekRig();
+        var during = new List<(ScriptRef?, bool)>();
+        rig.Story.OnCall = (file, _) =>
+        {
+            if (file == "COMMAND.ADV")
+                during.Add((rig.Script.SaveHere, rig.Script.ResumeCommand));
+            if (file == "ﾛｰﾄﾞｾｰﾌﾞ.ADV")
+                throw new OperationCanceledException();             // the next week's autosave
+        };
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() => new WeekLoop(rig.Script).ResumeAsync(new ScriptRef("MAIN.ADV", 69)));
+
+        Assert.Equal(["COMMAND.ADV", "ﾛｰﾄﾞｾｰﾌﾞ.ADV"], rig.Files);     // COMMAND at once, then the next week
+        Assert.Equal([(new ScriptRef("MAIN.ADV", 69), true)], during);
+        Assert.DoesNotContain(rig.View.Events, e => e is ValueMessageEvent { Text.Line: 40 });   // no banner, no refresh
+        Is(9, rig.State.Week);
+
+        rig.State.StoryStage = 1;
+        rig.View.Events.Clear();
+        await Assert.ThrowsAsync<OperationCanceledException>(() => new WeekLoop(rig.Script).ResumeAsync(new ScriptRef("MAIN.ADV", 213)));
+
+        Assert.Equal((new ScriptRef("MAIN.ADV", 213), true), during[^1]);
+        Assert.DoesNotContain(rig.View.Events, e => e is MessageEvent { Text: { File: "MAIN.ADV", Line: 98 } });   // no "Leazas Army Phase"
+        Is(10, rig.State.Week);                                     // the week after COMMAND ran to its end
+        Assert.False(rig.Script.ResumeCommand);
+        Assert.Null(rig.Script.SaveHere);
+    }
+
+    [Fact]
     public async Task A_load_goes_on_after_either_autosave()
     {
         var rig = new WeekRig();

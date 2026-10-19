@@ -237,6 +237,20 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     this week are grey but sort like the rest (Rance (unit 1) stays first by number). The left part
     and the bar buttons stay the original's. Rejected for now: a whole second UI behind
     `InterfaceSwitch` (removed again).
+26. **A manual save is the game as it is now** (2026-10-19, the owner's request; the agent proposed an
+    option, the owner chose always, without one): the first rule change the port makes on purpose, a
+    quality-of-life feature. The original saves only at a turn's start (`MAIN.ADV:20`, `:83`); a manual
+    save copies that autosave (STR-11), so a load replays the week's start. Now a save from `COMMAND`'s
+    Load/Save writes the memory as it is (`QD` into the slot) and resumes at that `COMMAND` call
+    (`MAIN.ADV:69`, `:213`, `ScriptContext.SaveHere`): after "Load Complete" `COMMAND` goes on where
+    its Load/Save returns (`CommandPhase.ResumeAfterSaveAsync`, through `OriginalScriptContext.ResumeCommand`),
+    then the rest of the week (`WeekLoop.ResumeAsync`). Loading such a slot does not copy it into Auto
+    (`QC 1, n` skipped, `WeekLoop.IsMomentSave`): Auto stays the turn's start. The save window says so in
+    our words (`PortTextEvent`: the date now, "Saving the game as it is now.") instead of `:338`'s "from
+    the beginning of this turn". Saves elsewhere (in a battle, a scene, a dungeon) stay impossible, as in
+    the original: there the port's code is under way and cannot be stored; the random generator is not
+    saved (decision 11). The differential tests run `ﾛｰﾄﾞｾｰﾌﾞ` without `SaveHere`, so the file runs as
+    the original there.
 
 ## Milestone 1 — the prologue
 

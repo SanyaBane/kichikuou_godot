@@ -157,6 +157,10 @@ buttons, answered through `SubordinateOrder`) — docs/ui/subordinates.md, built
 G3, lacquer with the table a paper ledger, built, awaiting the owner's look in a window; then (owner, 2026-10-19) the
 Harem and Treasure screens (`Sﾊｰﾚﾑ`, `Sｱｲﾃﾑ`) in the same lacquer — the survey and mock-ups are
 docs/ui/pickers.md (`tools/ui/mock_pickers.py`): the harem is H2 with a Summon button, built (`godot/Strategy/HaremView`, `Original.Content/Strategy/HaremRoster`), looked at by the owner and changed after it; the treasure was S5 (Sengoku Rance's manner), built and not accepted (no item icons); after rounds T and U the owner chose V, `Sｱｲﾃﾑ`'s own screen in lacquer as the harem's, built in its place (`godot/Strategy/TreasureView`, `GameScreen.Treasure.cs`, the model `Original.Content/Strategy/TreasureRoster`: the picker's clicks); after the owner's look its refusals and questions are round W's W2, a callout at the clicked cell with the Yes/No inside (`godot/Strategy/TreasureCallout`), plus our own question before an item picked first replaces a character's (`TreasureRoster.ReplaceQuestion`), built and accepted by the owner (2026-10-19); then (owner, 2026-10-19) the command panel's Load/Save split into Load and Save rows, the file's Load / Save / Don't menu answered unseen (`Original.Content/Strategy/LoadSaveShortcut`; docs/ui/command-screen.md, "The command panel").
+**Owner's decision 26** (2026-10-19), the port's first rule change on purpose: a manual save from `COMMAND` is the game as it
+is now (`ScriptContext.SaveHere`, set by `WeekLoop` around its `COMMAND` call), resuming in that `COMMAND` after a load
+(`CommandPhase.ResumeAfterSaveAsync`); loading it leaves Auto alone; the save window says so in our words (`PortTextEvent`);
+STR-11 is fixed (docs/strategy/README.md, decision 26).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

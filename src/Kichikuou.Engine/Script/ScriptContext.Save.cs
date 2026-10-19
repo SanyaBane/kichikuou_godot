@@ -24,16 +24,26 @@ public partial class ScriptContext
     /// </summary>
     public ScriptRef? SaveResume { get; set; }
 
-    /// <summary><c>QD n:</c> — the memory into slot n (<c>RetVal</c> 1, or 255).</summary>
-    public void SaveAll(Sys3Int slot)
+    /// <summary>
+    /// Ours: where a manual save of the moment resumes after a load — a variant's own place (the original's
+    /// <c>COMMAND</c> call under way, owner's decision 26), set by its caller for the length of the call; null
+    /// where a manual save is the script's own (the original's: a copy of the autosave).
+    /// </summary>
+    public ScriptRef? SaveHere { get; set; }
+
+    /// <summary>
+    /// <c>QD n:</c> — the memory into slot n (<c>RetVal</c> 1, or 255), resuming after a load at
+    /// <paramref name="resume"/>, else at <see cref="SaveResume"/>.
+    /// </summary>
+    public void SaveAll(Sys3Int slot, ScriptRef? resume = null)
     {
         if (!IsSlot(slot))
         {
             State.RetVal = SaveError;
             return;
         }
-        var resume = SaveResume ?? throw new InvalidOperationException("QD with no resume point: the autosave's caller sets SaveResume.");
-        State.RetVal = Saves.Write(slot.Value, SaveData.Capture(State, resume)) ? (Sys3Int)1 : SaveError;
+        var at = resume ?? SaveResume ?? throw new InvalidOperationException("QD with no resume point: the autosave's caller sets SaveResume.");
+        State.RetVal = Saves.Write(slot.Value, SaveData.Capture(State, at)) ? (Sys3Int)1 : SaveError;
     }
 
     /// <summary>
@@ -95,10 +105,18 @@ public partial class ScriptContext
         State.RetVal = Saves.Write(slot.Value, data) ? (Sys3Int)1 : SaveError;
     }
 
-    /// <summary><c>QC to, from:</c> — slot <paramref name="from"/> copied whole into <paramref name="to"/> (<c>RetVal</c> 1, or 255).</summary>
-    public void CopySave(Sys3Int to, Sys3Int from)
+    /// <summary>
+    /// <c>QC to, from:</c> — slot <paramref name="from"/> copied whole into <paramref name="to"/> (<c>RetVal</c> 1, or
+    /// 255). Ours: a slot whose resume point <paramref name="skip"/> names is not copied (<c>RetVal</c> 1 all the same).
+    /// </summary>
+    public void CopySave(Sys3Int to, Sys3Int from, Func<ScriptRef, bool>? skip = null)
     {
         var data = IsSlot(to) ? ReadSave(from) : null;
+        if (data is not null && skip?.Invoke(data.Resume) == true)
+        {
+            State.RetVal = 1;
+            return;
+        }
         State.RetVal = data is not null && Saves.Write(to.Value, data) ? (Sys3Int)1 : SaveError;
     }
 

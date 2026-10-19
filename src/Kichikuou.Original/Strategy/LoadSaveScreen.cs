@@ -22,6 +22,13 @@ namespace Kichikuou.Original.Strategy;
 /// Complete"). The menus are read as the script builds them (an item's text is captured when
 /// printed, <c>ﾛｰﾄﾞｾｰﾌﾞ.ADV:129-131</c>); the literals (<c>MS 1, "Auto"</c>, …) come from the
 /// player's files.
+/// <para>
+/// Ours (owner's decision 26): a save from <c>COMMAND</c> (the week loop sets
+/// <see cref="ScriptContext.SaveHere"/>) is the game as it is now, not a copy of the autosave — the
+/// memory into the slot (<c>QD</c>) resuming in that <c>COMMAND</c> after a load, its window saying so
+/// in our words; loading such a slot leaves the autosave as it is. Without <c>SaveHere</c> (the
+/// differential tests) the file runs as the original.
+/// </para>
 /// </remarks>
 public sealed class LoadSaveScreen(OriginalScriptContext script, IScenarioSource scenario)
     : CommandFile(script, "ﾛｰﾄﾞｾｰﾌﾞ.ADV", scenario)
@@ -249,8 +256,9 @@ public sealed class LoadSaveScreen(OriginalScriptContext script, IScenarioSource
             return Next.LoadSlots;                                      // $L_0027f$
         await WaoAsync(0);                                              // \L_00d25
         ReadPersistentPage();                                           // \L_00a7b
+        // Ours (owner's decision 26): a save of the moment is not made the autosave; Auto keeps its turn's start.
         if (chosen > 1)
-            Script.CopySave(1, (Sys3Int)chosen);                        // QC 1, n
+            Script.CopySave(1, (Sys3Int)chosen, WeekLoop.IsMomentSave); // QC 1, n
         Script.LoadAll((Sys3Int)chosen);                                // LD n: leaves on success
         return Next.LoadSlots;                                          // @L_0061d → @L_0027f
     }
@@ -294,6 +302,16 @@ public sealed class LoadSaveScreen(OriginalScriptContext script, IScenarioSource
         await EngineAsync("ZM", 24);
         await TextAsync(331);                                           // "＜　Saving Data　＞"
         await EngineAsync("ZM", 16);                                    // :333
+        if (Script.SaveHere is not null)
+        {
+            // Ours (owner's decision 26): the save is the game as it is now, so the window says so.
+            State.Tmp0001 = State.Week;
+            SetDate();
+            await Script.ShowAsync(new PortTextEvent($"　ＬＰ：{State.DateYear.Value,4}, Month {State.DateMonth.Value,2}, Week {State.DateWeek.Value,2}"));
+            await LineBreakAsync();
+            await Script.ShowAsync(new PortTextEvent("　Saving the game as it is now."));
+            return Next.SaveSlots;
+        }
         Script.LoadPartial(1, VarTmp0021, 1);                           // :334 LP 1, Tmp0021, 1
         State.Tmp0001 = State.Tmp0021;                                  // :335
         SetDate();                                                      // :336 \L_00ba9
@@ -328,8 +346,18 @@ public sealed class LoadSaveScreen(OriginalScriptContext script, IScenarioSource
             return await CancelAsync();
         }
         State.Tmp0022 = (Sys3Int)(choice + 1);                          // L_0099d … L_009e5
-        Script.CopySave(State.Tmp0022, 1);                              // :509 QC Tmp0022, 1  QUIRK: STR-11
-        Script.SavePartial(State.Tmp0022, VarTmp0022, 1);               // :510 QP Tmp0022, Tmp0022, 1
+        if (Script.SaveHere is { } here)
+        {
+            // Ours (owner's decision 26): the game as it is now, resuming in COMMAND after a load; the slot's
+            // week in Tmp0021 as the autosave keeps it (:31), its number in Tmp0022 as a copy gets it (STR-11).
+            State.Tmp0021 = State.Week;
+            Script.SaveAll(State.Tmp0022, here);
+        }
+        else
+        {
+            Script.CopySave(State.Tmp0022, 1);                          // :509 QC Tmp0022, 1  QUIRK: STR-11
+            Script.SavePartial(State.Tmp0022, VarTmp0022, 1);           // :510 QP Tmp0022, Tmp0022, 1
+        }
         WritePersistentPage();                                          // :511 \L_00ad6
         return Next.SaveSlots;                                          // :512 @L_00739
     }

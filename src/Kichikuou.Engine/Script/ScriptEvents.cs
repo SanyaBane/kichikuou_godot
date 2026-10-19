@@ -24,6 +24,12 @@ public sealed record MessageEvent(ScriptRef Text, IReadOnlyList<Sys3Int>? String
 /// </summary>
 public sealed record ValueMessageEvent(ScriptRef Text, IReadOnlyList<Sys3Int> Values, IReadOnlyList<Sys3Int>? StringVariables = null) : ScriptEvent;
 
+/// <summary>
+/// A text of the port's own where an owner's decision changed what the script does (none in the scenario
+/// says it), printed as a message run; no line breaks in it.
+/// </summary>
+public sealed record PortTextEvent(string Text) : ScriptEvent;
+
 /// <summary><c>R</c> outside a text run (e.g. between menu items): a line break in the message window.</summary>
 public sealed record LineBreakEvent : ScriptEvent;
 

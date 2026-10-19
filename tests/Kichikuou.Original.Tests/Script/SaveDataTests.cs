@@ -49,6 +49,23 @@ public class SaveDataTests
     }
 
     [Fact]
+    public void A_save_can_name_its_own_resume_point_and_a_copy_can_skip_it()
+    {
+        var rig = Rig();
+        var here = new ScriptRef("MAIN.ADV", 213);
+        rig.Script.SaveAll(2, here);
+        rig.Script.SaveAll(1);
+        Assert.Equal(here, rig.Script.Saves.Read(2)!.Resume);
+
+        rig.Script.CopySave(1, 2, resume => resume == here);
+
+        Assert.Equal(1, rig.State.RetVal.Value);
+        Assert.Equal(Call, rig.Script.Saves.Read(1)!.Resume);           // not copied
+        rig.Script.CopySave(3, 2, resume => resume == Call);
+        Assert.Equal(here, rig.Script.Saves.Read(3)!.Resume);           // copied
+    }
+
+    [Fact]
     public void Loading_restores_the_slot_sets_RetVal_0_and_leaves_the_running_code()
     {
         var rig = Rig();
