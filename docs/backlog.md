@@ -145,7 +145,7 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   (2026-10-19).
   Then (owner, 2026-10-19): **the Harem and Treasure screens** (`Sﾊｰﾚﾑ`, `Sｱｲﾃﾑ`) in the same lacquer — surveyed with
   mock-ups ([ui/pickers.md](ui/pickers.md)): the harem H2 chosen and built; the treasure S5 chosen and built
-  (2026-10-19), then not accepted by the owner (no item icons for Sengoku Rance's layout): mock-up round T (T1-T3)
+  (2026-10-19), then not accepted by the owner (no item icons for Sengoku Rance's layout): mock-up rounds T (T1-T3, rejected) and U (U1-U3)
   awaits the owner's choice.
   Groundwork (survey §4.8): menus as data and the map helper are done (2026-10-12); the shared engine
   host (§4.8, "Items 2 and 4 are one step") is not needed for screens over the original layout.

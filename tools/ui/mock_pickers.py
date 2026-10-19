@@ -9,9 +9,10 @@ save (the harem picker, headless) and of an unattended new game at week 26 (the 
       --saves user://saves-look-items --shots <items dir>
 (the harem's first "picker" dump; the item screen's first "picker" dump in the item view). Then, from the repository's
 root (Pillow; the fonts of godot/fonts):
-  python -I tools/ui/mock_pickers.py <slot01.ksav> <cg_png dir> <harem dump> <items dump> <out dir> [s|t] < /dev/null
+  python -I tools/ui/mock_pickers.py <slot01.ksav> <cg_png dir> <harem dump> <items dump> <out dir> [s|t|u] < /dev/null
 Round 1 (no sixth argument): H0-H3, I0-I3; round s: S1-S5, the treasure in Sengoku Rance's manner; round t: T1-T3, S5 with
-icons of our own (emblems, or squares cut out of the items' pictures) and an item-first screen of picture cards.
+icons of our own (emblems, or squares cut out of the items' pictures) and an item-first screen of picture cards; round u:
+U1-U3, a showcase of one item, character cards with a chooser, the Subordinates ledger with an Item column.
 The images hold the player's CGs: keep <out dir> outside the repository. Everything is in the 1280x800 screen's pixels
 (plus a caption band below); drawn at 2x and scaled down.
 """
@@ -1343,6 +1344,252 @@ def t_round():
     t_cards()
 
 
+# ---------------------------------------------------------------- round u: other ideas (the owner rejected S5 and round T)
+
+def thumb(c, n, box, off=False):
+    """An item's scene (the left two thirds of its picture) shrunk into box, framed."""
+    x0, y0, x1, y1 = box
+    art = cg(750 + n).crop((0, 0, 206, 196)).resize((round((x1 - x0) * S), round((y1 - y0) * S)), Image.LANCZOS)
+    if off:
+        art = Image.blend(art.convert('L').convert('RGBA'), Image.new('RGBA', art.size, (20, 16, 12, 255)), 0.45)
+    c.paste(art, (x0, y0))
+    c.rect(box, outline=OFF_LINE if off else DIM, width=1)
+
+
+def arrow_button(c, cx, cy, left):
+    c.d.ellipse([(cx - 24) * S, (cy - 24) * S, (cx + 24) * S, (cy + 24) * S], fill=ROW, outline=GOLD, width=2 * S)
+    k = -1 if left else 1
+    c.line((cx - 5 * k, cy - 10), (cx + 6 * k, cy), fill=NAME, width=3)
+    c.line((cx + 6 * k, cy), (cx - 5 * k, cy + 10), fill=NAME, width=3)
+
+
+def tooltip(c, x, y, lines):
+    w = max(c.width(s, font(13)) for s in lines) + 24
+    r = (x, y, x + w, y + 12 + 20 * len(lines))
+    shadow(c, r, 18)
+    c.rect(r, fill=(22, 16, 12, 250), outline=GOLD, width=1)
+    for i, s in enumerate(lines):
+        c.text((x + 12, y + 16 + 20 * i), s, font(13), fill=VALUE if i == 0 else QUIET, anchor='lm')
+
+
+def u1_showcase():
+    """U1: one item at a time, its picture large, the owned items a film strip, the bearer chosen among faces."""
+    late = items_with(LATE_STOCK)
+    order = [it['Index'] for it in sorted(owned(late), key=lambda v: v['Index'])]
+    sel = 35
+    c = Canvas()
+    backdrop(c)
+    frame = (16, 16, 1264, 784)
+    lq_panel(c, frame)
+    title_band(c, frame, 'Treasure', f'{order.index(sel) + 1} of {len(order)}', HEADER_DATE)
+    put_picture(c, item_picture(sel), (84, 80, 784, 531))
+    arrow_button(c, 50, 305, True)
+    arrow_button(c, 818, 305, False)
+    it = late[sel]
+    x = 862
+    c.text((x, 104), it['Name'], brush(28), fill=NAME, anchor='lm')
+    c.text((x, 138), 'Equippable', cinzel(13, 700), fill=LABEL, anchor='lm')
+    divider(c, x, 1244, 162)
+    c.text((x, 188), 'Borne by', cinzel(13, 700), fill=LABEL, anchor='lm')
+    c.rect((x, 204, x + 112, 316), fill=(52, 40, 28, 255))
+    c.paste(face_image(UNITS[8]['FaceCg'], 112), (x, 204))
+    c.rect((x, 204, x + 112, 316), outline=GOLD, width=2)
+    c.text((x + 128, 228), UNITS[8]['Name'], brush(24), fill=NAME, anchor='lm')
+    c.text((x + 128, 258), UNITS[8]['Type'], font(13), fill=QUIET, anchor='lm')
+    small_button(c, (x + 128, 280, 1244, 316), 'Return to stock', f=cinzel(13, 700))
+    c.text((x, 352), 'Pick another bearer below: his own', font(13), fill=QUIET, anchor='lm')
+    c.text((x, 372), 'item goes back to stock.', font(13), fill=QUIET, anchor='lm')
+    # the film strip
+    y = 552
+    divider(c, 30, 1250, y - 8)
+    tw, th = 86, 82
+    x0 = (1280 - len(order) * (tw + 10) + 10) / 2
+    for i, n in enumerate(order):
+        bx = x0 + i * (tw + 10)
+        item = late[n]
+        off = n in FIXED or not item['Effect']
+        if n == sel:
+            for k in range(6, 0, -1):
+                c.overlay((bx - k, y - k, bx + tw + k, y + th + k), (232, 199, 122, 14))
+        thumb(c, n, (bx, y, bx + tw, y + th), off)
+        if n == sel:
+            c.rect((bx, y, bx + tw, y + th), outline=HOVER_LINE, width=2)
+        if item['Holder'] in UNITS:
+            face_badge(c, bx + tw - 22, y + th - 22, item['Holder'], 20)
+        if n in FIXED:
+            lock(c, bx + 12, y + 14, QUIET)
+    # the bearers
+    y = 656
+    divider(c, 30, 1250, y - 8)
+    held = item_of(late)
+    fs = 72
+    x0 = (1280 - len(UNITS) * 118 + 46) / 2
+    for i, (n, u) in enumerate(UNITS.items()):
+        bx = x0 + i * 118
+        locked = n in held and held[n]['Index'] in FIXED
+        c.rect((bx, y, bx + fs, y + fs), fill=(52, 40, 28, 255))
+        c.paste(face_image(u['FaceCg'], fs, alpha=0.45 if locked else 1.0), (bx, y))
+        bearer, hover = n == 8, n == 9
+        c.rect((bx, y, bx + fs, y + fs), outline=VERMILION if bearer else (HOVER_LINE if hover else DIM), width=3 if bearer or hover else 1)
+        if bearer:
+            c.rect((bx + 4, y - 9, bx + fs - 4, y + 7), fill=VERMILION)
+            c.text((bx + fs / 2, y - 1), 'BEARER', cinzel(9, 700), fill=(246, 230, 206, 255), anchor='mm')
+        if locked:
+            lock(c, bx + fs - 12, y + 16, QUIET)
+        c.text((bx + fs / 2, y + fs + 13), u['Name'], font(13), fill=NAME if bearer else (OFF_TEXT if locked else TEXT), anchor='mm')
+        c.text((bx + fs / 2, y + fs + 29), held[n]['Name'] if n in held else '—', font(10), fill=OFF_TEXT if locked else QUIET, anchor='mm')
+        if hover:
+            tip = (bx, y)
+    pointer(c, tip[0] + 44, tip[1] + 40)
+    tooltip(c, tip[0] + fs + 8, tip[1] + 4, ['Give Magic Barrier to Kinkaid', 'Safety Bonsai goes back to stock'])
+    small_button(c, (1244 - 120, 470, 1244, 506), 'End', f=cinzel(14, 700))
+    c.save('U1-showcase.png', 'U1 — one item at a time: its picture large, a film strip of the items, the bearer among faces',
+           'The arrows or the strip page through the items; a click on a face gives it the item (his own back to stock); Return to '
+           'stock takes it off. Chaos\'s bearer greyed with a padlock.')
+
+
+def u2_roster():
+    """U2: the characters as portrait cards with an item slot; a click on a slot opens a chooser of the items."""
+    late = items_with(LATE_STOCK)
+    held = item_of(late)
+    c = Canvas()
+    backdrop(c)
+    left = (16, 16, 856, 784)
+    lq_panel(c, left)
+    title_band(c, left, 'Treasure', f'{len(UNITS)} characters · {len(owned(late))} items', HEADER_DATE)
+    cw, ch, gap = 196, 160, 8
+    slot_of = {}
+    for i, (n, u) in enumerate(UNITS.items()):
+        x = 30 + (i % 4) * (cw + gap)
+        y = 72 + (i // 4) * (ch + gap)
+        open_ = n == 8
+        row_box(c, (x, y, x + cw, y + ch), 'chosen' if open_ else 'normal')
+        c.rect((x + 8, y + 8, x + 80, y + 80), fill=(52, 40, 28, 255))
+        c.paste(face_image(u['FaceCg'], 72), (x + 8, y + 8))
+        c.rect((x + 8, y + 8, x + 80, y + 80), outline=GOLD if open_ else DIM, width=1)
+        c.text((x + 90, y + 24), u['Name'], font(17), fill=NAME if open_ else TEXT, anchor='lm')
+        c.text((x + 90, y + 46), u['Type'], font(11), fill=QUIET, anchor='lm')
+        c.text((x + 90, y + 66), f"Lv {u['Level']} · Atk {u['Atk']}", font(11), fill=QUIET, anchor='lm')
+        slot = (x + 8, y + 92, x + cw - 8, y + ch - 8)
+        slot_of[n] = slot
+        it = held.get(n)
+        if it:
+            c.rect(slot, fill=(46, 34, 22, 255), outline=HOVER_LINE if open_ else GOLD, width=2 if open_ else 1)
+            thumb(c, it['Index'], (slot[0] + 4, slot[1] + 4, slot[0] + 4 + 60, slot[3] - 4), it['Index'] in FIXED)
+            c.text((slot[0] + 72, (slot[1] + slot[3]) / 2 - 8), it['Name'], font(13), fill=TEXT, anchor='lm')
+            c.text((slot[0] + 72, (slot[1] + slot[3]) / 2 + 12), 'never leaves him' if it['Index'] in FIXED else 'click to change',
+                   font(10), fill=QUIET, anchor='lm')
+            if it['Index'] in FIXED:
+                lock(c, slot[2] - 12, slot[1] + 16, QUIET)
+        else:
+            c.rect(slot, fill=(30, 24, 18, 255), outline=DIM, width=1)
+            c.text(((slot[0] + slot[2]) / 2, (slot[1] + slot[3]) / 2), '+ Equip an item', cinzel(12, 700), fill=DIM, anchor='mm')
+    # the stock at the foot
+    y = 72 + 3 * (ch + gap) + 6
+    c.text((36, y + 10), 'In stock', cinzel(13, 700), fill=LABEL, anchor='lm')
+    stock = [it for it in sorted(owned(late), key=lambda v: v['Index']) if it['Holder'] == 100]
+    for i, it in enumerate(stock):
+        bx, by = 36 + (i % 3) * 270, y + 26 + (i // 3) * 46
+        off = not it['Effect']
+        thumb(c, it['Index'], (bx, by, bx + 42, by + 40), off)
+        c.text((bx + 52, by + 20), it['Name'], font(14), fill=OFF_TEXT if off else TEXT, anchor='lm')
+    # the chooser on Cordoba's slot
+    sx0, sy0, sx1, sy1 = slot_of[8]
+    pop = (sx1 + 10, sy0 - 120, sx1 + 10 + 330, sy0 - 120 + 330)
+    shadow(c, pop, 24)
+    c.rect(pop, fill=(26, 19, 14, 252), outline=GOLD, width=2)
+    c.poly([(sx1 + 10, sy0 + 20), (sx1 - 2, sy0 + 30), (sx1 + 10, sy0 + 40)], fill=GOLD)
+    c.text((pop[0] + 16, pop[1] + 22), 'Equip on Cordoba', cinzel(14, 700), fill=NAME, anchor='lm')
+    divider(c, pop[0] + 12, pop[2] - 12, pop[1] + 40)
+    yy = pop[1] + 50
+    for it in stock:
+        off = not it['Effect']
+        hover = it['Index'] == 21
+        r = (pop[0] + 10, yy, pop[2] - 10, yy + 38)
+        if hover:
+            c.rect(r, fill=HOVER, outline=HOVER_LINE, width=1)
+        thumb(c, it['Index'], (r[0] + 4, yy + 3, r[0] + 38, yy + 35), off)
+        c.text((r[0] + 48, yy + 19), it['Name'], font(14), fill=OFF_TEXT if off else (NAME if hover else TEXT), anchor='lm')
+        c.text((r[2] - 8, yy + 19), "can't be equipped" if off else 'In stock', font(11), fill=OFF_TEXT if off else QUIET, anchor='rm')
+        yy += 40
+    c.line((pop[0] + 14, yy + 4), (pop[2] - 14, yy + 4), fill=DIM)
+    c.text((pop[0] + 24, yy + 24), 'Take off Magic Barrier', font(14), fill=RED, anchor='lm')
+    pointer(c, pop[0] + 200, pop[1] + 50 + 2 * 40 + 22)
+    # the item looked at
+    right = (872, 16, 1264, 784)
+    lq_panel(c, right)
+    c.text((892, 42), late[21]['Name'], brush(20), fill=NAME, anchor='lm')
+    c.text((1244, 44), 'In stock', font(13), fill=QUIET, anchor='rm')
+    divider(c, 886, 1250, 62)
+    put_picture(c, item_picture(21), (886, 76, 1250, 310))
+    c.text((892, 340), 'For Cordoba', cinzel(13, 700), fill=LABEL, anchor='lm')
+    c.text((892, 366), 'Magic Barrier goes back to stock.', font(14), fill=QUIET, anchor='lm')
+    small_button(c, (1250 - 120, 740, 1250, 772), 'End', f=cinzel(14, 700))
+    c.save('U2-roster.png', 'U2 — the characters as cards with an item slot; a click on the slot opens a chooser',
+           'No dragging: Cordoba\'s slot clicked, the items in stock listed with their pictures, one click equips (his own back to '
+           'stock), "Take off" at the foot. The hovered item\'s picture right; the stock under the cards.')
+
+
+def u3_ledger():
+    """U3: the Subordinates screen's ledger with an Item column; the item cell opens a list."""
+    late = items_with(LATE_STOCK)
+    held = item_of(late)
+    c = Canvas()
+    backdrop(c)
+    # below: the character and the item (first: the open list lies over them)
+    put_picture(c, unit_picture(8), (16, 440, 506, 746))
+    caption_plate(c, (16, 752, 506, 772), 'Character', UNITS[8]['Name'])
+    put_picture(c, item_picture(21), (530, 440, 1020, 746))
+    caption_plate(c, (530, 752, 1020, 772), 'Item', late[21]['Name'])
+    small_button(c, (1264 - 130, 740, 1264, 784), 'End')
+    top = (16, 16, 1264, 420)
+    lq_panel(c, top)
+    title_band(c, top, 'Treasure', f'{len(owned(late))} items · {sum(1 for it in owned(late) if it["Holder"] == 100)} in stock', HEADER_DATE)
+    cols = [('', 26, 'mark', 'r'), ('No.', 36, 'n', 'r'), ('Name', 120, 'name', 'l'), ('Type', 150, 'type', 'l'),
+            ('Troops', 100, 'troops', 'r'), ('Lv', 44, 'lv', 'r'), ('Atk', 50, 'atk', 'r'), ('Def', 50, 'def', 'r'),
+            ('Act', 50, 'act', 'r'), ('Mag', 50, 'mag', 'r'), ('', 20, 'gap', 'l'), ('Item', 400, 'item', 'l')]
+    rows = []
+    for n, u in UNITS.items():
+        it = held.get(n)
+        rows.append((n, {'n': str(n), 'name': u['Name'], 'type': u['Type'], 'troops': f"{u['Troops']}/{u['MaxTroops']}",
+                         'lv': str(u['Level']), 'atk': str(u['Atk']), 'def': str(u['Def']), 'act': str(u['Attacks']),
+                         'mag': str(u['Magic']), 'item': (it['Name'] + (' · never moves' if it['Index'] in FIXED else '')) if it else '!— none'}))
+    ledger(c, (30, 70, 1250, 406), cols, rows, row_h=34, size=15, chosen=8)
+    # the Item cell of Cordoba, open
+    idx = list(UNITS).index(8)
+    cx0 = 30 + 4 + sum(w for _, w, _, _ in cols[:-1])
+    cy0 = 70 + 33 + 2 + idx * 34
+    c.rect((cx0, cy0 + 2, 1246, cy0 + 32), outline=VERMILION, width=2)
+    c.poly([(1230, cy0 + 13), (1240, cy0 + 13), (1235, cy0 + 20)], fill=VERMILION_INK)
+    stock = [it for it in sorted(owned(late), key=lambda v: v['Index']) if it['Holder'] == 100]
+    drop = (cx0, cy0 + 34, 1246, cy0 + 34 + 30 * (len(stock) + 1) + 12)
+    shadow(c, drop, 20)
+    c.rect(drop, fill=PAPER, outline=HEAD_INK, width=1)
+    yy = drop[1] + 6
+    for it in stock:
+        off = not it['Effect']
+        if it['Index'] == 21:
+            c.overlay((drop[0] + 2, yy, drop[2] - 2, yy + 30), (170, 40, 28, 40))
+        c.text((drop[0] + 14, yy + 15), it['Name'], font(15), fill=INK_GREY if off else INK, anchor='lm')
+        c.text((drop[2] - 12, yy + 15), "can't be equipped" if off else 'in stock', font(12), fill=INK_GREY if off else INK_QUIET, anchor='rm')
+        yy += 30
+    c.line((drop[0] + 8, yy + 2), (drop[2] - 8, yy + 2), fill=PAPER_RULE)
+    c.text((drop[0] + 14, yy + 17), 'Take off Magic Barrier', font(15), fill=VERMILION_INK, anchor='lm')
+    pointer(c, drop[0] + 160, drop[1] + 6 + 2 * 30 + 10)
+    c.save('U3-ledger.png', 'U3 — the Subordinates screen\'s ledger with an Item column; its cell opens a list',
+           'Every character a row of the paper ledger as on the Subordinates screen; Cordoba\'s Item cell clicked: the stock as a '
+           'list, one click equips, "Take off" at its foot. His status picture and the hovered item\'s picture below.')
+
+
+def u_round():
+    u1_showcase()
+    u2_roster()
+    u3_ledger()
+
+
+if len(sys.argv) > 6 and sys.argv[6] == 'u':
+    u_round()
+    sys.exit()
 if len(sys.argv) > 6 and sys.argv[6] == 's':
     s_round()
     sys.exit()

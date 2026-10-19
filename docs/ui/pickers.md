@@ -193,7 +193,24 @@ with the item's name in its corner; the right third the blue description panel. 
   onto a character equips it (his own item back to stock), an equipped card dragged onto In stock takes it off. Needs
   no table.
 
-Open for the owner: T1, T2 or T3 (or a mix — e.g. T3's shelves with T2's icons)?
+The owner (2026-10-19): all three rejected — something else.
+
+**Round U (2026-10-19)** — round `u`, the same stock; no icons and no dragging:
+
+- **U1 — a showcase of one item**: the item's whole picture large (its description in it), arrows and a film strip of
+  the owned items (their scenes) to page through them; at the right its name and its bearer's face with Return to
+  stock; at the foot the characters' faces — a click gives the item to that face (his own back to stock; a tooltip says
+  so), the bearer marked, Chaos's bearer greyed with a padlock.
+- **U2 — character cards with a chooser**: the characters as cards (face, name, type, level and attack) with an item
+  slot (the item's scene and name, or "+ Equip an item"); a click on the slot opens a chooser by it — the items in
+  stock with their scenes, the unequippable greyed, "Take off" at its foot — one click equips; the hovered item's
+  picture at the right, the stock under the cards.
+- **U3 — the Subordinates screen's ledger with an Item column**: every character a row of the paper ledger (G3) with
+  his figures and his item; a click on the Item cell opens a paper list of the stock and "Take off"; his status picture
+  and the hovered item's picture below, as the Subordinates screen's lower half.
+
+Open for the owner: U1, U2 or U3 — or, if none, what fails in them (the dark look, the pictures, the density, the way
+an item is given)?
 
 ## 4. How the screens would answer the script (a sketch, before the choice)
 
