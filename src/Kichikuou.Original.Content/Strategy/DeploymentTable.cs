@@ -81,12 +81,15 @@ public sealed record DeploymentColumnInfo(DeploymentColumn Column, string Header
 
 /// <summary>
 /// One listed unit of the deployment screen (<c>Sﾌﾞﾀｲ</c>) as the table shows it: its values from
-/// GameState, whether it is grey (deployed this week, status 2) and its place in the party (1-4, or 0).
+/// GameState, whether it is grey (deployed this week, status 2) and its place in the party (1-4, or 0);
+/// whether its Refill cell is a button (<see cref="SubordinatesCommand.CanReplenish"/>, owner's decision 27) and, when
+/// it has a price but is none, why (<see cref="DeploymentTable.RefillNote"/>).
 /// </summary>
 public sealed record DeploymentRow(
     int Unit, string Name, int Troops, int MaxTroops, int Hp, int MaxHp, int Exp, int NextExp,
     int Level, int Atk, int Def, int Attacks, int Strategy, int Magic, int TroopAtk, int TroopDef, int Cost,
-    bool Grey, int PartyPlace, string TroopType = "", int Refill = 0, string Item = "", string Rows = "")
+    bool Grey, int PartyPlace, string TroopType = "", int Refill = 0, string Item = "", string Rows = "",
+    bool CanRefill = false, string RefillNote = "")
 {
     /// <summary>The cell's text.</summary>
     public string Text(DeploymentColumn column) => column switch
@@ -194,6 +197,7 @@ public static class DeploymentTable
         new(DeploymentColumn.TroopType, "Type", "Troop type", IsText: true),
         new(DeploymentColumn.Troops, "Troops", "Troops / maximum"),
         new(DeploymentColumn.Cost, "Cost", "War expense (GOLD)"),
+        new(DeploymentColumn.Refill, "Refill", "Replenish's price (GOLD): a click replenishes"),
         new(DeploymentColumn.Rows, "Rows", "The rows the unit fights from", IsText: true),
         new(DeploymentColumn.TroopAtk, "T.Atk", "Troop attack"),
         new(DeploymentColumn.TroopDef, "T.Def", "Troop defense"),
@@ -234,10 +238,39 @@ public static class DeploymentTable
                 TroopType: StringAt(state, strings + 1),
                 Refill: u.Troops == u.MaxTroops ? 0 : SubordinatesCommand.Refill(u).Price.Value,
                 Item: u.Item == 0 ? "" : StringAt(state, (state.Item_StrBase + u.Item - 1).Value),
-                Rows: RowsOf(u.Class.Value)));
+                Rows: RowsOf(u.Class.Value),
+                CanRefill: SubordinatesCommand.CanReplenish(state, (Sys3Int)n),
+                RefillNote: RefillNote(state, n)));
         }
         return rows;
     }
+
+    /// <summary>
+    /// Why a Refill cell with a price is no button (owner's decision 27; "" when it is one, or when the troops are
+    /// full): the week's troop order spent, not offered yet (the prologue; a Sill scene waiting in Subordinates), the
+    /// unit deployed this week, or the gold short.
+    /// </summary>
+    public static string RefillNote(GameState state, int unit)
+    {
+        var u = state.Units[unit];
+        if (u.Troops == u.MaxTroops || SubordinatesCommand.CanReplenish(state, (Sys3Int)unit))
+            return "";
+        if (state.CmdAvail_SubTroops == 0 || state.Ui_CmdSubordAvail == 0)
+            return "Replenish: used this week";
+        if (!SubordinatesCommand.TroopOrderOpen(state))
+            return "Replenish: not now (Subordinates first)";
+        if (u.Status != 1)
+            return "Replenish: deployed this week";
+        return "Replenish: not enough gold";
+    }
+
+    /// <summary>The question before a Replenish (the Subordinates screen's C3 at the cell): "Replenish Barres's unit?", the men and the price.</summary>
+    public static IReadOnlyList<string> ReplenishQuestion(DeploymentRow row) =>
+    [
+        $"Replenish {row.Name}'s unit?",
+        $"{row.MaxTroops - row.Troops:+#;−#;0} troops ({row.Troops} → {row.MaxTroops}) for "    // CMD-20: above the maximum, fewer
+            + $"{(row.Refill * 100).ToString("N0", System.Globalization.CultureInfo.InvariantCulture)} K Gold.",
+    ];
 
     /// <summary>
     /// <paramref name="rows"/> sorted by <paramref name="column"/>, ties by number; grey rows sort like

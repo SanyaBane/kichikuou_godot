@@ -41,6 +41,28 @@ internal sealed partial class DeploymentTableView : Tree
     /// <summary>A right press anywhere on the table.</summary>
     public event Action? RightPressed;
 
+    /// <summary>A left press on a unit's Refill button (the unit's number; owner's decision 27).</summary>
+    public event Action<int>? RefillPressed;
+
+    /// <summary>Whether a Refill cell the unit can be replenished from is a button (the deployment screen's, not Subordinates').</summary>
+    private readonly bool _refillButtons;
+
+    /// <summary>The unit whose Refill button is under the pointer (0: none).</summary>
+    private int _refillHovered;
+
+    /// <summary>The unit whose Replenish the screen asks about: its button stays lit (0: none).</summary>
+    public int AskedRefill
+    {
+        get;
+        set
+        {
+            if (field == value)
+                return;
+            field = value;
+            QueueRedraw();
+        }
+    }
+
     /// <summary>The columns shown after the first (the deployment table's, or another screen's).</summary>
     private readonly IReadOnlyList<DeploymentColumnInfo> _columns;
 
@@ -69,20 +91,23 @@ internal sealed partial class DeploymentTableView : Tree
         }
     }
 
-    /// <summary>The deployment screen's table: <see cref="DeploymentTable.Columns"/>, the party's places marked.</summary>
-    public DeploymentTableView(GameFont font) : this(font, DeploymentTable.Columns, chooser: false, textSize: 8.3f)
+    /// <summary>The deployment screen's table: <see cref="DeploymentTable.Columns"/>, the party's places marked, the Refill buttons.</summary>
+    public DeploymentTableView(GameFont font) : this(font, DeploymentTable.Columns, chooser: false, textSize: 8.3f, refillButtons: true)
     {
     }
 
     /// <summary>
     /// A table of <paramref name="columns"/>, its text <paramref name="textSize"/> script pixels; a
-    /// <paramref name="chooser"/> marks its chosen row in the first column.
+    /// <paramref name="chooser"/> marks its chosen row in the first column; with <paramref name="refillButtons"/> a Refill
+    /// cell is a button where the unit can be replenished.
     /// </summary>
-    public DeploymentTableView(GameFont font, IReadOnlyList<DeploymentColumnInfo> columns, bool chooser, float textSize)
+    public DeploymentTableView(GameFont font, IReadOnlyList<DeploymentColumnInfo> columns, bool chooser, float textSize,
+        bool refillButtons = false)
     {
         _columns = columns;
         _chooser = chooser;
         _textSize = textSize;
+        _refillButtons = refillButtons;
         Columns = _columns.Count + 1;
         HideRoot = true;
         ColumnTitlesVisible = true;
@@ -249,9 +274,23 @@ internal sealed partial class DeploymentTableView : Tree
         return GetItemAtPosition(local) is { } item ? item.GetMetadata(0).AsInt32() : 0;
     }
 
-    /// <summary>Left presses on rows and right presses anywhere are the game's; the rest (the header, the wheel, the scroll bars) the tree's own.</summary>
+    /// <summary>
+    /// Left presses on rows and right presses anywhere are the game's — a left press on a Refill button its own; the rest
+    /// (the header, the wheel, the scroll bars) the tree's own. The pointer over a Refill button lights it.
+    /// </summary>
     public override void _GuiInput(InputEvent @event)
     {
+        if (@event is InputEventMouseMotion motion)
+        {
+            int over = RefillAt(motion.Position);
+            if (over != _refillHovered)
+            {
+                _refillHovered = over;
+                MouseDefaultCursorShape = over != 0 ? CursorShape.PointingHand : CursorShape.Arrow;
+                QueueRedraw();
+            }
+            return;
+        }
         if (@event is not InputEventMouseButton { Pressed: true } button)
             return;
         if (button.ButtonIndex == MouseButton.Right)
@@ -259,11 +298,63 @@ internal sealed partial class DeploymentTableView : Tree
             RightPressed?.Invoke();
             AcceptEvent();
         }
+        else if (button.ButtonIndex == MouseButton.Left && RefillAt(button.Position) is var refill and > 0)
+        {
+            RefillPressed?.Invoke(refill);
+            AcceptEvent();
+        }
         else if (button.ButtonIndex == MouseButton.Left && UnitAt(button.Position) is var unit and > 0)
         {
             RowPressed?.Invoke(unit);
             AcceptEvent();
         }
+    }
+
+    public override void _Notification(int what)
+    {
+        if (what == NotificationMouseExit && _refillHovered != 0)
+        {
+            _refillHovered = 0;
+            MouseDefaultCursorShape = CursorShape.Arrow;
+            QueueRedraw();
+        }
+    }
+
+    /// <summary>The Refill column's index in the tree (-1 without one, or without buttons).</summary>
+    private int RefillColumn => _refillButtons ? _columns.ToList().FindIndex(c => c.Column == DeploymentColumn.Refill) + 1 is var c and > 0 ? c : -1 : -1;
+
+    /// <summary>The unit whose Refill button is at <paramref name="local"/>, or 0.</summary>
+    private int RefillAt(Vector2 local)
+    {
+        if (RefillColumn < 0 || GetColumnAtPosition(local) != RefillColumn || UnitAt(local) is not (var unit and > 0))
+            return 0;
+        return _rows.FirstOrDefault(r => r.Unit == unit) is { CanRefill: true } ? unit : 0;
+    }
+
+    /// <summary>Whether <paramref name="unit"/>'s Refill cell is a button now (unattended play).</summary>
+    public bool CanRefill(int unit) => RefillColumn >= 0 && _rows.FirstOrDefault(r => r.Unit == unit) is { CanRefill: true };
+
+    /// <summary>A unit's Refill cell in global coordinates (the callout's place), or null when its row is not shown.</summary>
+    public Rect2? RefillCellRect(int unit)
+    {
+        if (RefillColumn < 0)
+            return null;
+        for (var item = GetRoot()?.GetFirstChild(); item is not null; item = item.GetNext())
+        {
+            if (item.GetMetadata(0).AsInt32() != unit)
+                continue;
+            var rect = GetItemAreaRect(item, RefillColumn);
+            return GetGlobalTransform() * rect;
+        }
+        return null;
+    }
+
+    /// <summary>A unit's Refill button pressed as the mouse presses it (unattended play goes through here).</summary>
+    public void PressRefill(int unit)
+    {
+        if (!CanRefill(unit))
+            throw new InvalidOperationException($"Unit {unit} has no Refill button in the deployment table.");
+        RefillPressed?.Invoke(unit);
     }
 
     /// <summary>Text columns and the troops (the owner's choice) on the left, the numbers on the right.</summary>
@@ -306,6 +397,8 @@ internal sealed partial class DeploymentTableView : Tree
         }
         int separation = GetThemeConstant("h_separation");
         widths[0] = Math.Max(widths[0], _fontSize * 1.3f);                  // the chosen row's bar and diamond, a place's seal
+        if (RefillColumn > 0)
+            widths[RefillColumn] += _fontSize * 0.8f;                       // the buttons' rule and padding
         for (int c = 0; c < Columns; c++)
             SetColumnCustomMinimumWidth(c, (int)Math.Ceiling(widths[c]) + separation + 6);
     }
@@ -313,7 +406,8 @@ internal sealed partial class DeploymentTableView : Tree
     /// <summary>
     /// A ledger's row: the chosen one tinted with a vermilion bar and diamond in the first column, a member of the
     /// party gilt with its place a vermilion seal there, the deployed ones in grey ink, the refill's price in
-    /// vermilion, the troops with a bar of their strength under them.
+    /// vermilion (on the deployment screen a button where the unit can be replenished, else greyed with its reason as the
+    /// tooltip), the troops with a bar of their strength under them.
     /// </summary>
     private void LedgerRow(TreeItem item, DeploymentRow row, bool chosen, int place)
     {
@@ -324,8 +418,19 @@ internal sealed partial class DeploymentTableView : Tree
             item.SetTextAlignment(c + 1, Alignment(info));
             if (row.Grey)
                 item.SetCustomColor(c + 1, Lacquer.InkGrey);
+            else if (info.Column == DeploymentColumn.Refill && row.Refill > 0 && _refillButtons && !row.CanRefill)
+                item.SetCustomColor(c + 1, Lacquer.InkQuiet);           // a price that is no button: greyed, its reason the tooltip
             else if (info.Column == DeploymentColumn.Refill && row.Refill > 0)
                 item.SetCustomColor(c + 1, Lacquer.VermilionInk);
+            if (info.Column == DeploymentColumn.Refill && _refillButtons && row.RefillNote != "")
+                item.SetTooltipText(c + 1, row.RefillNote);
+            if (info.Column == DeploymentColumn.Refill && _refillButtons && row.CanRefill)
+            {
+                item.SetCellMode(c + 1, TreeItem.TreeCellMode.Custom);
+                var (text, unit) = (row.Text(info.Column), row.Unit);
+                item.SetCustomDrawCallback(c + 1, Callable.From<TreeItem, Rect2>((_, rect) => DrawRefill(rect, text, unit)));
+                item.SetTooltipText(c + 1, $"Replenish: {row.MaxTroops - row.Troops:+#;−#;0} troops");
+            }
             else if (info.IsText && info.Column != DeploymentColumn.Name)
                 item.SetCustomColor(c + 1, Lacquer.InkQuiet);
             if (info.Column == DeploymentColumn.Troops && row.MaxTroops > 0)
@@ -356,6 +461,29 @@ internal sealed partial class DeploymentTableView : Tree
             DrawRect(new Rect2(rect.Position.X, rect.Position.Y, Math.Max(2, rect.Size.Y * 0.14f), rect.Size.Y), Lacquer.Vermilion);
             Lacquer.DrawDiamond(this, rect.GetCenter() + new Vector2(rect.Size.Y * 0.1f, 0), rect.Size.Y * 0.2f, Lacquer.Vermilion);
         }));
+    }
+
+    /// <summary>
+    /// A Refill button (owner's decision 27, mock-up A1): the price right in a vermilion-ruled chip, filled vermilion with
+    /// the paper's colour for its text while hovered or asked about.
+    /// </summary>
+    private void DrawRefill(Rect2 cell, string text, int unit)
+    {
+        bool lit = unit == _refillHovered || unit == AskedRefill;
+        var chip = new Rect2(cell.Position.X + 3, cell.Position.Y + 2, cell.Size.X - 6, cell.Size.Y - 4);
+        float corner = Math.Max(2, chip.Size.Y * 0.18f);
+        var box = new StyleBoxFlat
+        {
+            BgColor = lit ? Lacquer.Vermilion : new Color(0, 0, 0, 0),
+            BorderColor = Lacquer.VermilionInk with { A = lit ? 1 : 0.6f },
+            BorderWidthLeft = 1, BorderWidthTop = 1, BorderWidthRight = 1, BorderWidthBottom = 1,
+            CornerRadiusTopLeft = (int)corner, CornerRadiusTopRight = (int)corner,
+            CornerRadiusBottomLeft = (int)corner, CornerRadiusBottomRight = (int)corner,
+        };
+        DrawStyleBox(box, chip);
+        float baseline = cell.GetCenter().Y + (_font.GetAscent(_fontSize) - _font.GetDescent(_fontSize)) / 2;
+        DrawString(_font, new Vector2(chip.Position.X, baseline), text, HorizontalAlignment.Right, chip.Size.X - 5, _fontSize,
+            lit ? Lacquer.Paper : Lacquer.VermilionInk);
     }
 
     /// <summary>

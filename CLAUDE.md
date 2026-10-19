@@ -168,9 +168,12 @@ the owner's look in a window. Then (owner, 2026-10-20) the Subordinates screen's
 at the button, Replenish too) and report on a plate in the middle (R4/R5): docs/ui/subordinates.md, §6, built. Then (owner,
 2026-10-20) each save slot keeps the time its game was saved (ENG-07), and the Save/Load list sorts its manual saves by
 slot or by date with Auto in a panel of its own (mock-up rounds 2-3, the owner's E as F1-F4): docs/ui/save-load.md, §7, built.
-Then (owner, 2026-10-20) Replenish on the deployment screen, in a defence too while the week's troop order is unspent (a
-rule change on purpose): docs/ui/deployment-table.md, "Replenish on the deployment screen", mock-ups A1-B2 and R
-(`tools/ui/mock_deployment_refill.py`), awaiting the owner's choice.
+Then (owner, 2026-10-20) Replenish on the deployment screen, in a defence too while the week's troop order is unspent —
+**owner's decision 27**, the second rule change on purpose: the owner chose mock-up A1 (a Refill column of buttons, the
+question at the cell, the Subordinates screen's plate), built (`SubordinatesCommand.CanReplenish`/`ReplenishNow`,
+`OriginalScriptContext.ReplenishRequest` answered by `DeploymentScreen.ReplenishCode`, `Original.Content/Strategy/DeploymentReplenish`,
+`godot/Strategy/GameScreen.Replenish.cs`, the plate now `godot/Strategy/OrderResultPlate`): docs/ui/deployment-table.md,
+"Replenish on the deployment screen", awaiting the owner's look in a window.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -452,6 +455,11 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   `save-load-button`, `save-load-saved`, `save-load`, `save-load-date`, `save-load-date-oldest`, `save-load-slot-down`,
   `save-load-auto` —
   `--load --auto --fast --quit --seed 2 --saves user://saves-look-saves --slots-from user://saves-week18 --saveload --until deployment --interface new --shots <dir>`.
+  Replenish on our deployment screen (2026-10-20, decision 27): `--refill` keeps unattended play from replenishing
+  through Subordinates; with `--interface new` it replenishes once a launch through the deployment table's Refill button
+  instead (the unit with the fewest troops of its maximum: Haurein (unit 12) on the week-18 save), the question answered
+  Yes — in a window dumps `deployment-refill-question` and `deployment-refill-done` —
+  `--load --auto --fast --quit --seed 2 --saves user://saves-look-refill --slots-from user://saves-week18 --refill --until deployment --interface new --shots <dir>`.
 - Show an ending's `OVER` (its picture, staff roll, Completion Report) on a booted game:
   `<Godot console exe> --headless --path godot -- --ending <1-14> --auto --fast --quit [--shots <dir>]`
   (without `--auto` the keys wait for the player; slots in `user://saves-ending`).

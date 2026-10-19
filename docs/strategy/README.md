@@ -251,6 +251,21 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     the original: there the port's code is under way and cannot be stored; the random generator is not
     saved (decision 11). The differential tests run `ﾛｰﾄﾞｾｰﾌﾞ` without `SaveHere`, so the file runs as
     the original there.
+27. **Replenish on the deployment screen** (2026-10-20, the owner's request and choices, mock-up A1 of
+    docs/ui/deployment-table.md): the second rule change on purpose. The week's one troop order
+    (`CmdAvail_SubTroops`, `Cﾌﾞｶ`'s Replenish or Add New Troops) can be spent on a Replenish from our deployment
+    screen's Refill column, in an attack, a dungeon search and a defence alike. In `COMMAND` it is a shortcut the
+    original has a way to (Stop, Subordinates, Replenish, the command again); in a defence (`FIGT_B`, in the
+    nations' turns) the original never offers it — the owner wants it there too while the order is unspent. It is
+    offered only where `Cﾌﾞｶ` would offer and do it (`SubordinatesCommand.TroopOrderOpen`/`CanReplenish`: past the
+    prologue, the command not spent, no Sill scene waiting at its door — `F_SillCow_State` 3, which the shortcut
+    would skip —, the unit at status 1, short of troops, the gold for the price) and does what `Cﾌﾞｶ` does without
+    its windows (`ReplenishNow`: the order spent, the command too when the talk is, the price paid and booked
+    (CMD-14), the troops at their maximum; `Ev_Entry` is not set to 20, which every event call sets anew). The
+    request goes on the context (`OriginalScriptContext.ReplenishRequest`); the port of `Sﾌﾞﾀｲ` answers the next
+    press with its own code (`DeploymentScreen.ReplenishCode`, 700), does it and sums the party panel again, so Go
+    pays the war expenses of the new troops. The differential tests run `Sﾌﾞﾀｲ` without a request, so the file runs
+    as the original there; `DeploymentReplenishTests` compares the shortcut with `Cﾌﾞｶ`'s Replenish.
 
 ## Milestone 1 — the prologue
 

@@ -33,9 +33,16 @@ public sealed class DeploymentScreen(OriginalScriptContext script, IScenarioSour
     /// <inheritdoc />
     protected override bool Listed => Unit.Status != 0;
 
+    /// <summary>
+    /// Ours (owner's decision 27): the code a press answers while our screen asks for a Replenish
+    /// (<see cref="OriginalScriptContext.ReplenishRequest"/>) — above the bar's 501-503, not a code of the original's.
+    /// </summary>
+    public const int ReplenishCode = 700;
+
     /// <summary><c>Sﾌﾞﾀｲ.ADV:1-158</c>: the screen, then the party editing until it is sent or stopped.</summary>
     public async Task RunAsync()
     {
+        Script.ReplenishRequest = 0;
         await Script.ShowAsync(new PickerScreenEvent(PickerKind.Deployment, State.Tmp0022, true));
         State.Bt_PlayerParty1 = 0;
         State.Bt_PlayerParty2 = 0;
@@ -63,6 +70,11 @@ public sealed class DeploymentScreen(OriginalScriptContext script, IScenarioSour
             await PickAsync();                                          // \L_00910
             if (State.CallArg == 0)
                 continue;
+            if (State.CallArg == ReplenishCode)
+            {
+                await ReplenishAsync();
+                continue;
+            }
             if (State.CallArg == 501 || State.CallArg == 502)
             {
                 if (State.CallArg == 502 && State.Ui_SquadMode != 2)
@@ -100,6 +112,20 @@ public sealed class DeploymentScreen(OriginalScriptContext script, IScenarioSour
             await ToggleAsync();                                        // \L_00557
             await PartyAsync();
         }
+    }
+
+    /// <summary>
+    /// Ours (owner's decision 27): the Replenish our screen asked for, as <c>Cﾌﾞｶ</c> does it
+    /// (<see cref="SubordinatesCommand.ReplenishNow"/>; nothing when it no longer can), then the party panel summed
+    /// again — the war expenses grow with the troops, and Go pays what the panel summed (<c>Tmp0016</c>).
+    /// </summary>
+    private async Task ReplenishAsync()
+    {
+        var unit = Script.ReplenishRequest;
+        Script.ReplenishRequest = 0;
+        if (SubordinatesCommand.CanReplenish(State, unit))
+            SubordinatesCommand.ReplenishNow(State, unit);
+        await PartyAsync();
     }
 
     /// <summary><c>L_003f7</c> (<c>:150-158</c>) — Stop: the party emptied.</summary>
@@ -363,6 +389,15 @@ public sealed class DeploymentScreen(OriginalScriptContext script, IScenarioSour
     protected override async Task HitTestAsync()
     {
         await ReadPointerAsync();
+        HitOriginal();
+        // Ours (decision 27): a press while our screen asks for a Replenish answers its code, wherever the pointer is.
+        if (State.RetVal != 0 && Script.ReplenishRequest != 0)
+            State.Tmp0025 = ReplenishCode;
+    }
+
+    /// <summary><c>L_00c80</c>'s codes for the pointer just read.</summary>
+    private void HitOriginal()
+    {
         if (State.Tmp0021 > 319)
         {
             if (State.Tmp0022 < 324)

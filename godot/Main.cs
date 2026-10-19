@@ -91,6 +91,7 @@ public partial class Main : Control
                 AutoHarem = int.TryParse(Value("--harem"), out int harem) ? harem : 0,
                 AutoTreasure = args.Contains("--treasure"),
                 AutoSaveLoad = args.Contains("--saveload"),
+                AutoRefill = args.Contains("--refill"),
             });
         }
         if (args.Contains("--portraits"))

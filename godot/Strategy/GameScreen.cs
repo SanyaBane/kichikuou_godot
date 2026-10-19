@@ -104,6 +104,13 @@ public sealed record GameOptions
     public bool AutoTreasure { get; init; }
 
     /// <summary>
+    /// Development (owner's decision 27): the unattended player does not replenish through Subordinates; with Option →
+    /// Interface on New it replenishes once a launch through the deployment table's Refill button instead
+    /// (<c>GameScreen.AutoRefill</c>).
+    /// </summary>
+    public bool AutoRefill { get; init; }
+
+    /// <summary>
     /// Development: at the first map wait the unattended player opens the command panel's Save row once, before its
     /// replenish and attack; with Option → Interface on New it clicks through our Save/Load screen
     /// (<c>GameScreen.AutoSaveLoadAsync</c>).
@@ -297,6 +304,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _table.RowPressed += TableRowPressed;
         _table.RightPressed += TableRightPressed;
         _content.AddChild(_table);
+        ReadyDeploymentReplenish(faces);                        // over the table: its question and its plate
         _messageView = new MessageWindowView(GodotGlyphRenderer.Chosen)
         {
             LettersPerSecond = TextSpeedChoice.LettersPerSecond(TextSpeedChoice.Step),
@@ -477,6 +485,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             var session = new GameSession(state, EngineState.Random, new ViewProxy(this), new GameInputProxy(this),
                 scripts, scripts, saves, new UnportedFiles(this));
             _scenes = session.Scenes;
+            _script = session.Script;
             await session.BootAsync();
             var end = _options.Start switch
             {
@@ -1870,13 +1879,17 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 _panels.LoadCrops();                            // the owner's squares from Debug → Portraits
         }
         if (!show)
+        {
+            UpdateDeploymentReplenish(false, default);
             return false;
+        }
         var size = _view.Size;
         float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
         var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
         float pixels = scale * Surface.Scale;
         var origin = _view.Position + (size - drawn) / 2;
-        _panels.Busy = (_options.Auto ? _pointer : _tablePointer).Pending > 0 || _wantedOrder is not null;
+        UpdateDeploymentReplenish(true, new Rect2(origin, new Vector2(1280, 800) * (pixels / 2)));
+        _panels.Busy = (_options.Auto ? _pointer : _tablePointer).Pending > 0 || _wantedOrder is not null || RefillBusy;
         _panels.Place(origin, pixels);
         _panels.Refresh(_presenter.State!, _presenter.Picker!, _wantedOrder);
         float k = pixels / 2;                                   // window pixels to a pixel of the 1280×800 screen
@@ -1981,7 +1994,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private void TableRowPressed(int unit)
     {
         var pointer = _options.Auto ? _pointer : _tablePointer;
-        if (pointer.Pending > 0 || _wantedOrder is not null || _presenter.State is not { } s)
+        if (pointer.Pending > 0 || _wantedOrder is not null || RefillBusy || _presenter.State is not { } s)
             return;
         DeploymentTable.Press(s, unit, pointer);
     }
@@ -1990,7 +2003,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private void TableButtonPressed(int button)
     {
         var pointer = _options.Auto ? _pointer : _tablePointer;
-        if (pointer.Pending > 0 || _wantedOrder is not null)
+        if (pointer.Pending > 0 || _wantedOrder is not null || RefillBusy)
             return;
         var (x, y) = GesturePoints.PickerButton(button);
         pointer.Click(x, y);
@@ -2004,7 +2017,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private void PartyDropped(int from, int to)
     {
         var pointer = _options.Auto ? _pointer : _tablePointer;
-        if (pointer.Pending > 0 || _wantedOrder is not null || _presenter.State is not { } s)
+        if (pointer.Pending > 0 || _wantedOrder is not null || RefillBusy || _presenter.State is not { } s)
             return;
         _wantedOrder = DeploymentTable.Drop(s, from, to, pointer);
     }
@@ -2012,7 +2025,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// <summary>A right press on our screen: a right click where the script's pointer is, which takes the last member out.</summary>
     private void TableRightPressed()
     {
-        if (_options.Auto || _tablePointer.Pending > 0 || _wantedOrder is not null)
+        if (_options.Auto || _tablePointer.Pending > 0 || _wantedOrder is not null || RefillBusy)
             return;
         DeploymentTable.RightPress(HoveredUnit, _tablePointer);
     }
@@ -2669,6 +2682,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_presenter.Picker is { Kind: PickerKind.Deployment } deployment && _presenter.State is { } d)
         {
             Shot("picker");
+            if (AutoRefill(d))
+                return;
             if (AutoDrop(deployment, d))
                 return;
             var (step, value) = AutoDeploy(deployment, d);
@@ -2746,7 +2761,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 _pointer.RightClick(5, 6);                              // the menu: Load/Save
                 return;
             }
-            if (centred && AutoReplenishUnit(s) is { } unit)
+            if (centred && !_options.AutoRefill && AutoReplenishUnit(s) is { } unit)
             {
                 GD.Print($"Kichikuou: --auto replenishes unit {unit} ({s.Units[unit].Troops.Value} of {s.Units[unit].MaxTroops.Value} troops, week {s.Week.Value}).");
                 _autoReplenish = AutoReplenish.Wanted;

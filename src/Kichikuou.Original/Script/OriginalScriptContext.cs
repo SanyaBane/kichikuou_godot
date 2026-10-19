@@ -30,6 +30,12 @@ public sealed partial class OriginalScriptContext(
     public bool ResumeCommand { get; set; }
 
     /// <summary>
+    /// Ours (owner's decision 27): the unit our deployment screen asks to replenish (0: none). The next press
+    /// <c>Sﾌﾞﾀｲ</c> reads answers <c>DeploymentScreen.ReplenishCode</c>, which does it and takes the request back.
+    /// </summary>
+    public Sys3Int ReplenishRequest { get; set; }
+
+    /// <summary>
     /// The helper files run their ports with the arguments the statements left in <c>CallArg</c> /
     /// <c>Ui_WaoOp</c>; any other file is a hook.
     /// </summary>

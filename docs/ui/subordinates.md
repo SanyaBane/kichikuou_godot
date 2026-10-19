@@ -208,8 +208,9 @@ the price.
 - `SubordinatesView` asks in the Treasure screen's `TreasureCallout` at the clicked button (Replenish or a step), the
   button marked (a step in vermilion, Replenish lit); Yes gives the order (`OrderPressed`, the script then answered with
   Do / Do It as before), No or a right click leaves it, and a question left open when the screen closes is a No. The
-  plate (`DrawPlate`, 780×150 in the middle) lies on a layer over the ledger that takes the mouse while it shows: any
-  click closes it, else it goes after 2.5 seconds.
+  plate (780×150 in the middle) lies on a layer over the ledger that takes the mouse while it shows: any click closes
+  it, else it goes after 2.5 seconds. Since 2026-10-20 the plate is its own control, `OrderResultPlate`, which the
+  deployment screen's Replenish shows too (decision 27, docs/ui/deployment-table.md).
 - Unattended play answers the question Yes (`GameScreen.AutoReplenishThroughScreen`) and in a window dumps it as
   `subordinates-question`, between `subordinates` and `subordinates-done` (the §4 command). Looked at from
   `saves-week18`: Haurein (unit 12)'s replenish, +1191 → 1400 for 2,300K. Add New Troops' question and plate R5 are

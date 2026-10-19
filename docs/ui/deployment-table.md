@@ -343,10 +343,10 @@ The owner asked for Replenish (`Cﾌﾞｶ`'s troop menu; not Add New Troops) on
   original has a way to: Stop leaves the week's attack unspent (and the dungeon's Return gives its week back), then
   Subordinates → Replenish, then the attack again. In a defence the original never offers it.
 - **The owner's choice (2026-10-20): Replenish works in a defence too, while the week's troop order is unspent** — a
-  rule change on purpose, as decision 26 was (to be registered when built).
-- Built, it would be the Subordinates screen's order applied while `Sﾌﾞﾀｲ` waits (one rule method shared with
-  `SubordinatesCommand`), then the party panel summed again (`Tmp0016`, else Go would charge the war expenses of the
-  troops before it: Cost grows with the troops).
+  rule change on purpose, as decision 26 was: decision 27 (docs/strategy/README.md).
+- It is the Subordinates screen's order applied while `Sﾌﾞﾀｲ` waits (one rule method in `SubordinatesCommand`),
+  then the party panel summed again (`Tmp0016`, else Go would charge the war expenses of the troops before it: Cost
+  grows with the troops).
 
 ### Mock-ups (2026-10-20)
 
@@ -363,3 +363,27 @@ save `saves-week18` with the party built — Cordoba (unit 8), Barres (unit 6) i
   ribbons, "Replenish used this week" by the party panel's title.
 - **R — the report** (either variant): R4's plate, then the screen with the troops, the card's cost and the war
   expenses summed again.
+
+**The owner's choice (2026-10-20): A1/A2**, with the question at the cell (C3) and the plate (R); decision 27 in
+docs/strategy/README.md.
+
+### Built (2026-10-20)
+
+- **The rule** (`Kichikuou.Original`): `SubordinatesCommand.TroopOrderOpen`, `CanReplenish` and `ReplenishNow` (what
+  `Cﾌﾞｶ`'s Replenish does, without its windows); the request `OriginalScriptContext.ReplenishRequest`, which the port
+  of `Sﾌﾞﾀｲ` answers at the next press with `DeploymentScreen.ReplenishCode` — the Replenish, then the party panel
+  summed again (`Tmp0016`).
+- **The model** (`Original.Content`): the Refill column after Cost in `DeploymentTable.Columns`;
+  `DeploymentRow.CanRefill` and `RefillNote` (why a price is no button: "used this week", "not now (Subordinates
+  first)", "deployed this week", "not enough gold"); `DeploymentTable.ReplenishQuestion`; `DeploymentReplenish` (the
+  request and the click at the unit's cell, the plate's `SubordinateResult` after it).
+- **Godot**: `DeploymentTableView` draws a Refill cell the unit can be replenished from as a chip (vermilion-ruled,
+  filled while hovered or asked about) and raises `RefillPressed` for it — the rest of the row still joins the unit;
+  `GameScreen.Replenish.cs` asks in a `TreasureCallout` at the cell, sets the request on Yes and shows the plate,
+  `OrderResultPlate` — the Subordinates screen's R4/R5, now one control both screens use. The table's other presses
+  wait while the question or the Replenish is under way.
+- **Checks**: `SubordinatesFiguresTests` (the rule), `DeploymentReplenishTests` (the shortcut against `Cﾌﾞｶ`'s
+  Replenish; `Sﾌﾞﾀｲ`'s port replenishing at the request and sending the party at its new expenses; no request once
+  the order is spent); `--refill` (unattended play replenishes through the table instead of Subordinates; in a window
+  the dumps `deployment-refill-question` and `deployment-refill-done`). The table no longer fits a 1280×800 window: it
+  scrolls, as the Subordinates screen's since its Cost column.

@@ -274,6 +274,49 @@ public sealed class SubordinatesCommand(OriginalScriptContext script) : CommandF
     }
 
     /// <summary>
+    /// Ours (owner's decision 27): whether the week's troop order is still there for a Replenish outside <c>Cﾌﾞｶ</c> —
+    /// as <c>Cﾌﾞｶ</c> would offer it: past the prologue (<c>:713-720</c> has no troop menu), the command not spent
+    /// (<c>:1-20</c>), no Sill scene waiting at its door (<c>:21-24</c>, which our shortcut would skip) and the troop
+    /// order left (<c>:800-851</c>).
+    /// </summary>
+    public static bool TroopOrderOpen(GameState state) =>
+        state.StoryStage != 0 && state.Ui_CmdSubordAvail != 0 && state.F_SillCow_State != 3 && state.CmdAvail_SubTroops == 1;
+
+    /// <summary>
+    /// Ours (owner's decision 27): whether <paramref name="unit"/> can be replenished outside <c>Cﾌﾞｶ</c> now — the
+    /// troop order open (<see cref="TroopOrderOpen"/>), the unit able to act (<c>:28-43</c>: status 1), its troops not at
+    /// their maximum (<c>:976-1004</c>) and the gold for the price (<c>:1040-1053</c>).
+    /// </summary>
+    public static bool CanReplenish(GameState state, Sys3Int unit)
+    {
+        if (unit < 1 || unit > 50 || !TroopOrderOpen(state))
+            return false;
+        var u = state.Units[unit];
+        return u.Status == 1 && u.Troops != u.MaxTroops && state.Gold >= Refill(u).Price;
+    }
+
+    /// <summary>
+    /// Ours (owner's decision 27): what a Replenish of <paramref name="unit"/> does to the game in <c>Cﾌﾞｶ</c>
+    /// (<see cref="ReplenishAsync"/>, <c>:1054-1076</c>) without its windows — the troop order spent (and the command
+    /// with it when the talk is spent too), the price paid and booked as military spending (CMD-14), the troops at their
+    /// maximum (CMD-20: above it, lowered to it for 1). Only where <see cref="CanReplenish"/> holds.
+    /// </summary>
+    public static void ReplenishNow(GameState state, Sys3Int unit)
+    {
+        if (!CanReplenish(state, unit))
+            throw new InvalidOperationException($"Unit {unit.Value} cannot be replenished now.");
+        var u = state.Units[unit];
+        var price = Refill(u).Price;
+        state.CmdAvail_SubTroops = 0;
+        if (state.CmdAvail_SubTalk == 0)
+            state.Ui_CmdSubordAvail = 0;
+        state.Gold = state.Gold - price;
+        var hist = state.History[state.Hist_Cur];
+        hist.MilitaryExp = hist.MilitaryExp + price;                    // QUIRK: CMD-14
+        u.Troops = u.MaxTroops;
+    }
+
+    /// <summary>
     /// <c>L_0117d</c> (<c>:800-851</c>): the release wait, the pointer saved, the menu (Add New
     /// Troops only with an offer); a "×" item starts again from the wait, a cancel is Do Nothing.
     /// </summary>

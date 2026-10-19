@@ -67,4 +67,68 @@ public sealed class SubordinatesFiguresTests
         Assert.Equal(deficiency, d.Value);
         Assert.Equal(price, p.Value);
     }
+
+    /// <summary>Stage 1, the week's troop order and talk left, Barres (unit 6) at 980 of 1000, 100 gold (×100K).</summary>
+    private static GameState Replenishable()
+    {
+        var state = new GameState { StoryStage = 1, Gold = 100, Hist_Cur = 1 };
+        (state.Ui_CmdSubordAvail, state.CmdAvail_SubTroops, state.CmdAvail_SubTalk) = (1, 1, 1);
+        state.Units[6].Status = 1;
+        state.Units[6].Troops = 980;
+        state.Units[6].MaxTroops = 1000;
+        return state;
+    }
+
+    [Fact]
+    public void Replenish_now_spends_the_troop_order_pays_the_price_and_fills_the_troops()
+    {
+        var state = Replenishable();
+        state.History[1].MilitaryExp = 5;
+
+        Assert.True(SubordinatesCommand.CanReplenish(state, 6));
+        SubordinatesCommand.ReplenishNow(state, 6);
+
+        Assert.Equal(1000, state.Units[6].Troops.Value);
+        Assert.Equal(99, state.Gold.Value);                                 // 20 men short: 1
+        Assert.Equal(6, state.History[1].MilitaryExp.Value);                // QUIRK: CMD-14
+        Assert.Equal((0, 1, 1), (state.CmdAvail_SubTroops.Value, state.CmdAvail_SubTalk.Value, state.Ui_CmdSubordAvail.Value));
+        Assert.False(SubordinatesCommand.CanReplenish(state, 6));
+    }
+
+    [Fact]
+    public void Replenish_now_spends_the_command_when_the_talk_is_spent_too()
+    {
+        var state = Replenishable();
+        state.CmdAvail_SubTalk = 0;
+
+        SubordinatesCommand.ReplenishNow(state, 6);
+
+        Assert.Equal(0, state.Ui_CmdSubordAvail.Value);
+    }
+
+    [Theory]
+    [InlineData("prologue")]
+    [InlineData("order spent")]
+    [InlineData("command spent")]
+    [InlineData("Sill waits")]
+    [InlineData("deployed")]
+    [InlineData("full")]
+    [InlineData("poor")]
+    public void Replenish_is_not_offered_where_subordinates_would_not_offer_or_do_it(string why)
+    {
+        var state = Replenishable();
+        switch (why)
+        {
+            case "prologue": state.StoryStage = 0; break;
+            case "order spent": state.CmdAvail_SubTroops = 0; break;
+            case "command spent": state.Ui_CmdSubordAvail = 0; break;
+            case "Sill waits": state.F_SillCow_State = 3; break;
+            case "deployed": state.Units[6].Status = 2; break;
+            case "full": state.Units[6].Troops = 1000; break;
+            case "poor": state.Gold = 0; break;
+        }
+
+        Assert.False(SubordinatesCommand.CanReplenish(state, 6));
+        Assert.Throws<InvalidOperationException>(() => SubordinatesCommand.ReplenishNow(state, 6));
+    }
 }
