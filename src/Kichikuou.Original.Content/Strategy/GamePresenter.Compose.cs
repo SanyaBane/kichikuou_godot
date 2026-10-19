@@ -54,6 +54,9 @@ public sealed partial class GamePresenter
     /// <summary>Our map's markers as the state has them now (<see cref="Strategy.MapMarkers.All"/>), the dungeons named from the player's files.</summary>
     public IReadOnlyList<MapMarker> MapMarkers() => State is { } s ? Strategy.MapMarkers.All(s, Literal) : [];
 
+    /// <summary>The harem's girls on offer as the state has them now (<see cref="HaremRoster.Girls"/>), named from the player's files.</summary>
+    public IReadOnlyList<HaremGirl> HaremGirls() => State is { } s ? HaremRoster.Girls(s, StringTable(HaremRoster.NamesAt)) : [];
+
     /// <summary>The strings of the table <c>#label, 1:</c> at <paramref name="at"/> in the player's files (empty without them).</summary>
     internal IReadOnlyList<string> StringTable(ScriptRef at) =>
         (_scenario?.ReadStatement(at) as SetStringTableStatement)?.Strings ?? [];

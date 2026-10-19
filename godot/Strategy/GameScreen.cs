@@ -289,6 +289,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _sceneMenuView = new SceneMenuView(GodotGlyphRenderer.Chosen);
         _content.AddChild(_sceneMenuView);                      // over the message windows: the menu asks below them
         ReadySubordinates(faces);
+        ReadyHarem(faces);
         _overlay =OutlinedLabel(VerticalAlignment.Center, 32);
         _notice = OutlinedLabel(VerticalAlignment.Top, 18);
 
@@ -344,6 +345,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _notice.Text = "";
         UpdateDeploymentScreen();
         UpdateSubordinatesScreen(delta);
+        UpdateHaremScreen();
         UpdateStatusStrip();
         UpdateMapMarkers();
         if (_commandView.Visible)
@@ -696,7 +698,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.ScreenshotDirectory is not { } dir)
             return;
         System.IO.Directory.CreateDirectory(dir);
-        if ((_table.Visible || _subordinates.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _sceneMenuView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
+        if ((_table.Visible || _subordinates.Visible || _harem.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _sceneMenuView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
         {
             // Our deployment and battle screens are drawn by Godot over the screen: the window's next frame (headless
             // draws none). No Compose here: the frame's Present must find the change to upload it.
@@ -1576,6 +1578,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         await NextFrameAsync();
         if (UpdateSubordinatesScreen())
             return Read(SubordinatesRead());            // over our Subordinates screen the script's pointer is the screen's
+        if (UpdateHaremScreen())
+            return Read(HaremRead());                   // likewise over our Harem screen
         if (_tablePointer.Pending == 0)
             _wantedOrder = null;                        // the script asks again with nothing queued: a drop's clicks are done
         if (UpdateDeploymentScreen() && (_tablePointer.Pending > 0 || _table.HasPointer || _panels.HasPointer))

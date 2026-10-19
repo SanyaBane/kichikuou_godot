@@ -154,7 +154,9 @@ surveyed in docs/ui/turn-start.md — the week report is built, the nations' ban
 (the windows 111/112/121/122/113/123) and step 2 (window 131, the speaker on a plate) and step 3 (the `]` menus, `Strategy/SceneMenuView`, mock-up M1) and step 4 (the text typed letter by letter, Option → Text Speed…, mock-ups T1 and S2) are built, and so is step 5 (the battle's windows: those it opens off the field, and its info boxes 143/153 as the owner's mock-ups K3 and K1 — a defence's badge, a fall's stamp, the results plate, our panel; `Battles/BattleInfoBox`, `godot/Battles/BattleInfoLayer`), and so is step 6 (the message log, mock-up L3a: `Strategy/MessageLog` filled by `GamePresenter.Log`, the speakers by `Strategy/PortraitNames`, `godot/Strategy/MessageLogView` on the wheel up at a key wait, kept for the launch in `EngineState.Log`);
 then (owner, 2026-10-18) our own Subordinates screen after mock-up F1 (no dialogue with Maris; the orders on our
 buttons, answered through `SubordinateOrder`) — docs/ui/subordinates.md, built; its look (owner, 2026-10-18) is mock-up
-G3, lacquer with the table a paper ledger, built, awaiting the owner's look in a window.
+G3, lacquer with the table a paper ledger, built, awaiting the owner's look in a window; then (owner, 2026-10-19) the
+Harem and Treasure screens (`Sﾊｰﾚﾑ`, `Sｱｲﾃﾑ`) in the same lacquer — the survey and mock-ups are
+docs/ui/pickers.md (`tools/ui/mock_pickers.py`): the harem is H2 with a Summon button, built (`godot/Strategy/HaremView`, `Original.Content/Strategy/HaremRoster`), not yet looked at by the owner; the treasure in Sengoku Rance's manner (round S) awaits the owner's choice.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

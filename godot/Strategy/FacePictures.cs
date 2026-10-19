@@ -13,7 +13,7 @@ internal sealed class FacePictures(CgLibrary cgs)
 {
     private readonly Dictionary<int, Image?> _images = [];
     private readonly Dictionary<(int Cg, FaceCrop Crop, int Size), ImageTexture?> _squares = [];
-    private readonly Dictionary<int, ImageTexture?> _panels = [];
+    private readonly Dictionary<(int, int, int), ImageTexture?> _panels = [];
 
     /// <summary>The player's CGs.</summary>
     public CgLibrary Cgs { get; } = cgs;
@@ -66,26 +66,34 @@ internal sealed class FacePictures(CgLibrary cgs)
     /// the frame is the background's, not the CG's. <paramref name="portraitCg"/> 0: the empty panel (<c>G 600</c> alone, as
     /// the pickers clear their details). Kept for the next call that asks for the same; null without the player's CGs.
     /// </summary>
-    public ImageTexture? PicturePanel(int portraitCg)
+    public ImageTexture? PicturePanel(int portraitCg) => PicturePanel(portraitCg, 870, 600);
+
+    /// <summary>
+    /// The picture panel of a picker whose screen is <paramref name="screenCg"/> and whose empty picture is
+    /// <paramref name="emptyCg"/>, with <paramref name="pictureCg"/> (0: none) drawn into it at its own place — the
+    /// harem's 818/700 and a girl's 700 + n (<c>Sﾊｰﾚﾑ.ADV:5-8</c>, <c>:112-148</c>), cut as above.
+    /// </summary>
+    public ImageTexture? PicturePanel(int pictureCg, int screenCg, int emptyCg)
     {
-        if (_panels.TryGetValue(portraitCg, out var kept))
+        var key = (pictureCg, screenCg, emptyCg);
+        if (_panels.TryGetValue(key, out var kept))
             return kept;
         ImageTexture? texture = null;
-        var portrait = portraitCg == 0 ? null : Cgs.Get(portraitCg);
-        if (portraitCg == 0 || portrait is not null)
+        var picture = pictureCg == 0 ? null : Cgs.Get(pictureCg);
+        if (pictureCg == 0 || picture is not null)
         {
             var screen = new Surface(Surface.ScreenWidth, Surface.ScreenHeight);
-            if (Cgs.Get(870) is { } frame)
+            if (Cgs.Get(screenCg) is { } frame)
                 screen.DrawCg(frame, frame.X, frame.Y, Surface.SpriteKey);
-            if (Cgs.Get(600) is { } empty)
+            if (Cgs.Get(emptyCg) is { } empty)
                 screen.DrawCg(empty, empty.X, empty.Y);
-            if (portrait is not null)
-                screen.DrawCg(portrait, portrait.X, portrait.Y);
+            if (picture is not null)
+                screen.DrawCg(picture, picture.X, picture.Y);
             var (x, y, w, h) = PictureCut;
             texture = ImageTexture.CreateFromImage(Image.CreateFromData(w * Surface.Scale, h * Surface.Scale, false,
                 Image.Format.Rgba8, screen.ReadArea(x, y, w, h)));
         }
-        _panels[portraitCg] = texture;
+        _panels[key] = texture;
         return texture;
     }
 

@@ -125,6 +125,7 @@ public partial class GameScreen
             _provinceView.SetFont(font);
             _panels.SetFont(font);
             _subordinates.SetFont(font);
+            _harem.SetFont(font);
             _battleView.SetFont(font);
             _scoutView.SetFont(font);
             _strategyView.SetFont(font);
