@@ -145,6 +145,29 @@ harem's screen and empty picture (818/700, the prologue's 694/696). Looked at in
 (`--harem 9 --until deployment --interface new`: Lia (2), Maris (3), Kanami (6), Haurein (9) on offer, Haurein summoned
 by unattended play). The mock-up's "Leads" (the girl's unit) is left out: nothing in `Sﾊｰﾚﾑ` ties a girl to a unit.
 
+**The treasure, built (2026-10-19)** — S5: the model `Original.Content/Strategy/TreasureRoster` — the items owned
+(`Item_Holder` not 0) with where each one is ("In stock", "On Rance", "never moves", "can't be equipped") and why it
+cannot be dragged (Chaos and Nikkou, no effect, the chosen one's own item, another unit's item: "take it off Rick
+first"); the characters (units at status 1 or 2) with their items; the chosen one's figures (Troops, Cost =
+`Unit_DeployCost` ×100K, Lv, HP, Atk, Def, Act, Mag) and sprite (`Unit_CgAlone`); why a window takes no drop (a unit
+holding Chaos or Nikkou) — and `TreasureOrder`, an order as the picker's clicks: Equip the unit view (502 if the item
+view is up), the unit's cell, the item's cell (`L_0043a` equips, his own item back to stock); Unequip the item view (502
+if the unit view is up), the held item's cell with no unit picked, Yes to `:322`'s question (504, `L_00b39`). An order
+runs while its clicks are on their way and, for Unequip, until its Yes; a key wait on the way (a refusal the screen
+did not foresee) drops it and leaves the window to the player. `TreasureRosterTests`: the model on hand-made states, and
+`Cﾀｶﾗ` run with the orders (Equip from either view, Equip on a unit holding an item, Unequip from either view).
+`godot/Strategy/TreasureView` draws S5 by hand: the items a column at the left, the stage in the middle (name and type,
+the strip, the sprite cut to its pixels ×2 on a lit floor — ×1 if it would not fit —, the Equipment window under it
+with the item's picture 496×310, `FacePictures.PicturePanel(750 + n, 819, 692)`), the characters right as compact rows
+(name, type, the item held, a padlock on Chaos and Nikkou), both lists scrolled with the wheel, End. A stock item is
+dragged onto the window or onto a character's row (the row lit, "Equip here"; a refused target framed red, its reason
+under the window); the held item is dragged out of the window onto the items' column; a greyed item's reason, or Chaos's
+in the window, is a tooltip; a right press drops a drag, else is End. `GameScreen.Treasure.cs` feeds the script the
+order's clicks through the screen's pointer (at rest on the empty 51st cell), answers its Yes unseen, and keeps the
+screen up over the question's window while the order runs. `--treasure` opens it from a kept save (CLAUDE.md,
+"Commands"); with `--interface new` unattended play takes Rance's L. Holy Sword (item 6) off and gives it back by a drop.
+Looked at in dumps from `saves-week18`; not yet by the owner.
+
 ## 4. How the screens would answer the script (a sketch, before the choice)
 
 - **Harem:** while `Sﾊｰﾚﾑ` is the open picker (`PickerKind.Harem`) our screen covers it; a summon is a click on her cell

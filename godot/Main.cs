@@ -89,6 +89,7 @@ public partial class Main : Control
                 AutoParty = Value("--party") is { } party ? [.. party.Split(',').Select(int.Parse)] : null,
                 AutoScout = args.Contains("--scout"),
                 AutoHarem = int.TryParse(Value("--harem"), out int harem) ? harem : 0,
+                AutoTreasure = args.Contains("--treasure"),
             });
         }
         if (args.Contains("--portraits"))

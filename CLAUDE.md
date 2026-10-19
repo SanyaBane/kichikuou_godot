@@ -156,7 +156,7 @@ then (owner, 2026-10-18) our own Subordinates screen after mock-up F1 (no dialog
 buttons, answered through `SubordinateOrder`) — docs/ui/subordinates.md, built; its look (owner, 2026-10-18) is mock-up
 G3, lacquer with the table a paper ledger, built, awaiting the owner's look in a window; then (owner, 2026-10-19) the
 Harem and Treasure screens (`Sﾊｰﾚﾑ`, `Sｱｲﾃﾑ`) in the same lacquer — the survey and mock-ups are
-docs/ui/pickers.md (`tools/ui/mock_pickers.py`): the harem is H2 with a Summon button, built (`godot/Strategy/HaremView`, `Original.Content/Strategy/HaremRoster`), not yet looked at by the owner; the treasure is S5 (Sengoku Rance's manner, three columns), its questions answered there, not built yet.
+docs/ui/pickers.md (`tools/ui/mock_pickers.py`): the harem is H2 with a Summon button, built (`godot/Strategy/HaremView`, `Original.Content/Strategy/HaremRoster`), looked at by the owner and changed after it; the treasure is S5 (Sengoku Rance's manner, three columns), built (`godot/Strategy/TreasureView`, `GameScreen.Treasure.cs`; the model and the orders, drags answered as the picker's clicks, `Original.Content/Strategy/TreasureRoster`), not yet looked at by the owner.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -414,6 +414,12 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   map wait open the menu, choose Harem and pick the girl in that cell of its picker (left to right, top to bottom:
   Lia 2, Maris 3, Kanami 6, Haurein 9), before the replenish and the attack —
   `--load --auto --fast --quit --seed 2 --saves user://saves-look-131 --slots-from user://saves-week18 --harem 6 --until deployment [--interface new] --shots <dir>`.
+  The Treasure screen (2026-10-19): `--treasure` on the week-18 save makes the first map wait open Treasure (the
+  L. Holy Sword (item 6) on Rance (unit 1), By Lord (item 7) on Rick (unit 7)); with `--interface new` unattended play
+  gives our screen's orders — Rance's sword taken off and given back by a drop — and in a window dumps `treasure`,
+  `treasure-tooltip`, `treasure-held`, `treasure-unequipped`, `treasure-drag`, `treasure-equipped`; else it plays the
+  original picker (`AutoItemSteps`) —
+  `--load --auto --fast --quit --seed 2 --saves user://saves-look-items --slots-from user://saves-week18 --treasure --until deployment [--interface new] --shots <dir>`.
   Add another kept save the same way when a screen needs another phase.
 - Show an ending's `OVER` (its picture, staff roll, Completion Report) on a booted game:
   `<Godot console exe> --headless --path godot -- --ending <1-14> --auto --fast --quit [--shots <dir>]`

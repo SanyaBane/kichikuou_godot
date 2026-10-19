@@ -97,6 +97,12 @@ public sealed record GameOptions
     /// </summary>
     public int AutoHarem { get; init; }
 
+    /// <summary>
+    /// Development: at the first map wait the unattended player opens Treasure once, before its replenish and attack
+    /// (with Option → Interface on New it plays our own screen's orders, <c>GameScreen.AutoTreasureAsync</c>).
+    /// </summary>
+    public bool AutoTreasure { get; init; }
+
     /// <summary>Development: unattended play stops after the first deployment picker or the first battle (a look at one screen).</summary>
     public AutoUntil AutoUntil { get; init; }
 
@@ -290,6 +296,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _content.AddChild(_sceneMenuView);                      // over the message windows: the menu asks below them
         ReadySubordinates(faces);
         ReadyHarem(faces);
+        ReadyTreasure(faces);
         _overlay =OutlinedLabel(VerticalAlignment.Center, 32);
         _notice = OutlinedLabel(VerticalAlignment.Top, 18);
 
@@ -346,6 +353,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         UpdateDeploymentScreen();
         UpdateSubordinatesScreen(delta);
         UpdateHaremScreen();
+        UpdateTreasureScreen();
         UpdateStatusStrip();
         UpdateMapMarkers();
         if (_commandView.Visible)
@@ -698,7 +706,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.ScreenshotDirectory is not { } dir)
             return;
         System.IO.Directory.CreateDirectory(dir);
-        if ((_table.Visible || _subordinates.Visible || _harem.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _sceneMenuView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
+        if ((_table.Visible || _subordinates.Visible || _harem.Visible || _treasure.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _sceneMenuView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
         {
             // Our deployment and battle screens are drawn by Godot over the screen: the window's next frame (headless
             // draws none). No Compose here: the frame's Present must find the change to upload it.
@@ -966,6 +974,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     public async Task<Sys3Int> WaitForKeyAsync()
     {
         InterruptPointers();
+        TreasureKeyWait();
         _presenter.Flush();
         _presenter.EndCityLeadIn();                                     // whatever the script drew is shown at a key wait
         CheckNoClickLeft();
@@ -1399,6 +1408,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         InterruptPointers();
         if (SubordinatesChoice(items) is { } ordered)
             return ordered;                                     // an order of our Subordinates screen answers it, unseen
+        if (TreasureChoice(items) is { } yes)
+            return yes;                                         // an order of our Treasure screen: its Yes, unseen
         _skip.OnMenu();
         _messageView.Complete();                                // the question is whole under its menu
         _presenter.OpenMenu(items);
@@ -1548,6 +1559,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         _pointer.Interrupt();
         _subPointer.Interrupt();
+        _treasurePointer.Interrupt();
     }
 
     public async Task<MouseState> GetMouseAsync()
@@ -1569,7 +1581,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                     await NextFrameAsync();
                 return Read(click);
             }
-            AutoPointer();
+            if (!await AutoTreasureAsync())
+                AutoPointer();                          // our Treasure screen plays its own orders
             var queued = _pointer.Next(out bool read);
             if (!read)
                 await NextFrameAsync();                 // the scripts poll the pointer: one read per frame
@@ -1580,6 +1593,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             return Read(SubordinatesRead());            // over our Subordinates screen the script's pointer is the screen's
         if (UpdateHaremScreen())
             return Read(HaremRead());                   // likewise over our Harem screen
+        if (UpdateTreasureScreen())
+            return Read(TreasureRead());                // and over our Treasure screen
         if (_tablePointer.Pending == 0)
             _wantedOrder = null;                        // the script asks again with nothing queued: a drop's clicks are done
         if (UpdateDeploymentScreen() && (_tablePointer.Pending > 0 || _table.HasPointer || _panels.HasPointer))
@@ -2507,6 +2522,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     private AutoHarem _autoHarem;
 
+    /// <summary>The unattended treasure visit (<see cref="GameOptions.AutoTreasure"/>): null not yet, true wanted at the menu, false chosen.</summary>
+    private bool? _autoTreasureWanted;
+
     /// <summary>The end of unattended play (<see cref="GameOptions.AutoWeeks"/>).</summary>
     private sealed class AutoStopException(string message) : Exception(message);
 
@@ -2629,6 +2647,13 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 GD.Print($"Kichikuou: --auto visits the harem (week {s.Week.Value}).");
                 _autoHarem = AutoHarem.Wanted;
                 _pointer.RightClick(5, 6);                              // the menu: Harem
+                return;
+            }
+            if (centred && _options.AutoTreasure && !_autoTreasureWanted.HasValue)
+            {
+                GD.Print($"Kichikuou: --auto visits the treasure (week {s.Week.Value}).");
+                _autoTreasureWanted = true;
+                _pointer.RightClick(5, 6);                              // the menu: Treasure
                 return;
             }
             if (centred && AutoReplenishUnit(s) is { } unit)
@@ -3043,6 +3068,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             _autoHarem = AutoHarem.Chosen;
             return harem;
+        }
+        if (_autoTreasureWanted == true && Find("Treasure") is var treasure and > 0)
+        {
+            _autoTreasureWanted = false;
+            return treasure;
         }
         if (_autoReplenish == AutoReplenish.Wanted && Find("Subordinates") is var subordinates and > 0)
         {

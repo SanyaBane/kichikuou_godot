@@ -144,8 +144,8 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   Subordinates screen's layout, 2×2 lacquer cards, the gold drop highlight) and took Option → Palette off it; built
   (2026-10-19).
   Then (owner, 2026-10-19): **the Harem and Treasure screens** (`Sﾊｰﾚﾑ`, `Sｱｲﾃﾑ`) in the same lacquer — surveyed with
-  mock-ups ([ui/pickers.md](ui/pickers.md)): the harem H2 chosen and built; the treasure S5 chosen, its questions answered, to be built
-  (agent).
+  mock-ups ([ui/pickers.md](ui/pickers.md)): the harem H2 chosen and built; the treasure S5 chosen and built
+  (2026-10-19), awaiting the owner's look in a window.
   Groundwork (survey §4.8): menus as data and the map helper are done (2026-10-12); the shared engine
   host (§4.8, "Items 2 and 4 are one step") is not needed for screens over the original layout.
 - **Quality-of-life features**, the README's second aim — *owner* (which), then *agent*; a survey of
