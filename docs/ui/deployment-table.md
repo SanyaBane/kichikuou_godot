@@ -94,7 +94,10 @@ the details panel (2026-10-12, after the look at step 8):
 | Act | Attacks | `Attacks` |
 | Mag | Magic | `Magic` |
 
-- Sorting by any column (a header click: ascending, again descending); by № at first. A sort key of
+- Sorting by any column (a header click: the values where more is better — Troops, T.Atk, T.Def, Str%, HP,
+  Lv, EXP, Atk, Def, Act, Mag — descending, № and the text columns and the prices Cost and Refill ascending
+  (the owner's choice, 2026-10-20); again the other way); by № at first. The Subordinates screen's table
+  sorts the same way. A sort key of
   "a / b" is a. Units deployed this week (status 2) are grey but sort like the rest — Rance stays first
   by number after he has fought this week. Members of the party are marked with their place (1-4).
 - Scrolling both ways (51 rows at most; the columns may not fit the grid's width). The owner judges

@@ -72,6 +72,14 @@ public class DeploymentTableTests
     }
 
     [Fact]
+    public void Values_where_more_is_better_sort_descending_first_the_number_texts_and_prices_ascending()
+    {
+        var columns = DeploymentTable.Columns.Concat(SubordinatesScreen.Columns).DistinctBy(c => c.Column).ToList();
+        DeploymentColumn[] ascending = [DeploymentColumn.Number, DeploymentColumn.Cost, DeploymentColumn.Refill];
+        Assert.All(columns, c => Assert.Equal(!c.IsText && !ascending.Contains(c.Column), c.HighFirst));
+    }
+
+    [Fact]
     public void A_sort_keeps_grey_rows_in_place_and_breaks_ties_by_number()
     {
         var rows = DeploymentTable.Rows(World());

@@ -66,7 +66,16 @@ public enum DeploymentColumn
 }
 
 /// <summary>A column's compact header, its full name (the header's tooltip) and whether it is text.</summary>
-public sealed record DeploymentColumnInfo(DeploymentColumn Column, string Header, string FullName, bool IsText = false);
+public sealed record DeploymentColumnInfo(DeploymentColumn Column, string Header, string FullName, bool IsText = false)
+{
+    /// <summary>
+    /// Whether a first click on the header sorts descending: the values where more is better (the owner's
+    /// choice, 2026-10-20); the number, the texts and the prices (cheaper is better) sort ascending first.
+    /// </summary>
+    public bool HighFirst => Column is DeploymentColumn.Troops or DeploymentColumn.TroopAtk or DeploymentColumn.TroopDef
+        or DeploymentColumn.Strategy or DeploymentColumn.Hp or DeploymentColumn.Level or DeploymentColumn.Exp
+        or DeploymentColumn.Atk or DeploymentColumn.Def or DeploymentColumn.Attacks or DeploymentColumn.Magic;
+}
 
 /// <summary>
 /// One listed unit of the deployment screen (<c>Sﾌﾞﾀｲ</c>) as the table shows it: its values from

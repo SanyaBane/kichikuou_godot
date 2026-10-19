@@ -8,9 +8,9 @@ namespace Kichikuou.Game.Strategy;
 /// <summary>
 /// The deployment table (owner's decision 25, docs/ui/deployment-table.md): our own screen over
 /// <c>Sﾌﾞﾀｲ</c>'s unit grid — a row per listed unit (<see cref="DeploymentTable.Rows"/>), the
-/// columns' compact headers with their full names as tooltips, sorted by a header click (ascending,
-/// again descending, a small mark on the header with its room kept; by number at first),
-/// scrolling both ways, the units deployed this week grey, the party's members marked with their
+/// columns' compact headers with their full names as tooltips, sorted by a header click (the values
+/// where more is better descending first, the rest ascending; again the other way; a small mark on the
+/// header with its room kept; by number at first), scrolling both ways, the units deployed this week grey, the party's members marked with their
 /// place in a first column. It decides nothing: the presses go to <see cref="GameScreen"/>, which
 /// answers the script with the gestures it expects. Drawn as a ledger in our screens' lacquer (the owner's
 /// mock-up G3, docs/ui/subordinates.md, and E1/E2, docs/ui/deployment-table.md): paper and ink, the headers in
@@ -112,7 +112,7 @@ internal sealed partial class DeploymentTableView : Tree
         ColumnTitleClicked += (column, button) =>
         {
             if (button == (long)MouseButton.Left && column > 0)
-                SortBy(_columns[(int)column - 1].Column);
+                SortBy(_columns[(int)column - 1]);
         };
         SetFont(font);
     }
@@ -270,11 +270,11 @@ internal sealed partial class DeploymentTableView : Tree
     private static HorizontalAlignment Alignment(DeploymentColumnInfo info) =>
         info.IsText || info.Column == DeploymentColumn.Troops ? HorizontalAlignment.Left : HorizontalAlignment.Right;
 
-    /// <summary>A header click: by that column ascending, again descending.</summary>
-    private void SortBy(DeploymentColumn column)
+    /// <summary>A header click: by that column, best first for a value where more is better (<see cref="DeploymentColumnInfo.HighFirst"/>), else ascending; again the other way.</summary>
+    private void SortBy(DeploymentColumnInfo column)
     {
-        _descending = column == _sort && !_descending;
-        _sort = column;
+        _descending = column.Column == _sort ? !_descending : column.HighFirst;
+        _sort = column.Column;
         Fill();
     }
 
