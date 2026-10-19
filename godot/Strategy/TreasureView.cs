@@ -80,6 +80,21 @@ internal sealed partial class TreasureView : Control
     /// <summary>Whether the screen takes presses (not while a click is on its way to the script).</summary>
     public bool Busy { get; set; }
 
+    /// <summary>The cell a callout of the script's asks or refuses about, marked in vermilion (0: none).</summary>
+    public int Asked
+    {
+        get => _asked;
+        set
+        {
+            if (value == _asked)
+                return;
+            _asked = value;
+            _face.QueueRedraw();
+        }
+    }
+
+    private int _asked;
+
     /// <summary>Option → Fonts.</summary>
     public void SetFont(GameFont font)
     {
@@ -148,7 +163,7 @@ internal sealed partial class TreasureView : Control
     // ---------------------------------------------------------------- the buttons
 
     /// <summary>Cell <paramref name="number"/>: the picker's grid, left to right, top to bottom.</summary>
-    private static Rect2 CellRect(int number) =>
+    internal static Rect2 CellRect(int number) =>
         new(GridX + (number - 1) % Columns * TabletStepX, GridY + (number - 1) / Columns * TabletStepY, TabletW, TabletH);
 
     private static Rect2 TabRect(int view) => new(TabX + view * TabStep, TabY, TabW, TabH);
@@ -338,8 +353,16 @@ internal sealed partial class TreasureView : Control
                 continue;
             }
             bool hover = n == _hovered && !Busy;
-            c.DrawRect(r, hover ? Lacquer.RowHover : Lacquer.Row);
-            c.DrawRect(r, hover ? Lacquer.HoverLine : Lacquer.DimGold, false, Line(hover ? 2 : 1));
+            if (n == _asked)
+            {
+                c.DrawRect(r, Color.Color8(60, 30, 22));            // the cell the callout asks about
+                c.DrawRect(r, Lacquer.Vermilion, false, Line(2));
+            }
+            else
+            {
+                c.DrawRect(r, hover ? Lacquer.RowHover : Lacquer.Row);
+                c.DrawRect(r, hover ? Lacquer.HoverLine : Lacquer.DimGold, false, Line(hover ? 2 : 1));
+            }
             float mid = r.Position.Y + r.Size.Y / 2;
             Color ink = entry.Ink switch
             {

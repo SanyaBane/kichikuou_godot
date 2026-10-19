@@ -102,6 +102,21 @@ public class TreasureRosterTests(ITestOutputHelper output)
         Assert.Equal(new TreasurePrompt(false, 7, "Ring", 757, 692), TreasureRoster.Prompt(s));
     }
 
+    [Fact]
+    public void An_item_picked_first_asks_before_it_replaces_a_unit_s_own()
+    {
+        var s = State();
+        Assert.Null(TreasureRoster.ReplaceQuestion(s, 6));                // nothing picked first
+        s.Ui_ItemSel = 7;
+
+        Assert.Equal(["Barres already has Sword equipped.", "Replace it with Ring?"], TreasureRoster.ReplaceQuestion(s, 6));
+        Assert.Null(TreasureRoster.ReplaceQuestion(s, 7));                // Rick holds nothing
+        Assert.Null(TreasureRoster.ReplaceQuestion(s, 1));                // Chaos: the script refuses
+        Assert.Null(TreasureRoster.ReplaceQuestion(s, 9));                // a captive: no pick
+        s.Ui_ItemViewMode = 1;
+        Assert.Null(TreasureRoster.ReplaceQuestion(s, 6));
+    }
+
     /// <summary>
     /// The booted game with Rance (unit 1) and the next unit at status 1, two items with an effect: the first in stock,
     /// the second on the other unit; the picker's view <paramref name="view"/>.

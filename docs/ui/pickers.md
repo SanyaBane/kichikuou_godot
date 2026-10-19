@@ -249,6 +249,41 @@ stay its own, in our message windows and menus.
 - Unattended play with `--interface new` clicks through the screen (`--treasure` on `saves-week18`: Rance (unit 1)
   picked and dropped, his L. Holy Sword (item 6) taken off and given back; CLAUDE.md, "Commands").
 
+The owner on the built screen (2026-10-19): the script's question and its Yes/No are too far apart — the message
+window at the screen's foot, the menu at the pointer by the clicked cell — so the eyes go back and forth. **Round W**
+(round `w`, drawn over V) puts the question and its answers in one place; the script's text and its menu items stay
+as they are (`Sｱｲﾃﾑ.ADV:320-350`, `L_00a3f`), only where they are drawn changes:
+
+- **W1 — a dialog in the middle**: the question over Yes (red lacquer) and No, the screen dimmed, as the battle's
+  retreat dialog; the asked item marked vermilion in the grid. The pointer travels from the cell to the middle.
+- **W2 — a callout at the clicked cell**: a lacquer box under the cell, its tail on the asked item, the question and
+  Yes/No inside; the eyes and the pointer stay where the click was, as the original's menu at the pointer.
+  **W2b** the longer question (Cordoba picked, By Lord held by Rick; made-up stock), **W2c** a refusal ("Already
+  equipped.") in the same callout with the click's triangle.
+- **W3 — the answers inside the message window**: the window where the script opens it, Yes and No stacked at its right
+  behind a rule; no menu at the pointer.
+- **W4 — no window, the info panel**: the question and Yes/No in the left panel under the asked item's name and holder,
+  where the hint stands; **W4b** a refusal as a vermilion strip over the first pick's prompt.
+
+**The owner's choice (2026-10-19): W2, the refusals as W2c.** Built the same day:
+
+- `godot/Strategy/TreasureCallout` draws the script's window over our Treasure screen as the callout at the cell clicked
+  last — under it, or over it when there is no room below — with the window's lines (`MessageWindow.Lines`, the
+  script's own breaks); a refusal shows the click's triangle and takes no input (the screen's key wait answers it); a
+  question's menu is its buttons, the first in red lacquer, a click answering the menu with its item, a right click 0.
+  The script prints the question a few frames before it opens the menu, so the callout stays hidden until the key wait
+  or the menu and appears at its whole size (the owner, the same day: it grew its buttons in sight).
+- **Our own question** (the owner, the same day): an item picked first and then a character who holds another one —
+  the picker equips at once and puts his item back in stock without asking (`L_0043a`). Our screen asks first, in the
+  same callout: "Rick already has By Lord equipped. / Replace it with L. Holy Sword?" (`TreasureRoster.ReplaceQuestion`,
+  null where the script refuses or would not equip that way); Yes sends the cell's click, No (or a right click) sends
+  nothing and the pick stays. Interface only: the rule is untouched.
+- `GameScreen.Treasure.cs` remembers the clicked cell (`TreasurePick`) and `UpdateTreasureCallout` shows the callout in
+  our message window's place while the screen shows; `SelectAsync` opens the menu in the callout instead of
+  `SceneMenuView`; `TreasureView.Asked` marks the cell in vermilion while the callout is up.
+- Unattended play (`--treasure`, `--interface new`) also gives Rance his own sword back, which the script refuses
+  ("Already equipped."); in a window it dumps `treasure-question` and `treasure-refusal` as well.
+
 ## 4. How the screens would answer the script (a sketch, before the choice)
 
 - **Harem:** while `Sﾊｰﾚﾑ` is the open picker (`PickerKind.Harem`) our screen covers it; a summon is a click on her cell

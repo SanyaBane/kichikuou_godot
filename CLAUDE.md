@@ -156,7 +156,7 @@ then (owner, 2026-10-18) our own Subordinates screen after mock-up F1 (no dialog
 buttons, answered through `SubordinateOrder`) — docs/ui/subordinates.md, built; its look (owner, 2026-10-18) is mock-up
 G3, lacquer with the table a paper ledger, built, awaiting the owner's look in a window; then (owner, 2026-10-19) the
 Harem and Treasure screens (`Sﾊｰﾚﾑ`, `Sｱｲﾃﾑ`) in the same lacquer — the survey and mock-ups are
-docs/ui/pickers.md (`tools/ui/mock_pickers.py`): the harem is H2 with a Summon button, built (`godot/Strategy/HaremView`, `Original.Content/Strategy/HaremRoster`), looked at by the owner and changed after it; the treasure was S5 (Sengoku Rance's manner), built and not accepted (no item icons); after rounds T and U the owner chose V, `Sｱｲﾃﾑ`'s own screen in lacquer as the harem's, built in its place (`godot/Strategy/TreasureView`, `GameScreen.Treasure.cs`, the model `Original.Content/Strategy/TreasureRoster`: the picker's clicks, its refusals and questions in our windows over the screen), not yet looked at by the owner.
+docs/ui/pickers.md (`tools/ui/mock_pickers.py`): the harem is H2 with a Summon button, built (`godot/Strategy/HaremView`, `Original.Content/Strategy/HaremRoster`), looked at by the owner and changed after it; the treasure was S5 (Sengoku Rance's manner), built and not accepted (no item icons); after rounds T and U the owner chose V, `Sｱｲﾃﾑ`'s own screen in lacquer as the harem's, built in its place (`godot/Strategy/TreasureView`, `GameScreen.Treasure.cs`, the model `Original.Content/Strategy/TreasureRoster`: the picker's clicks); after the owner's look its refusals and questions are round W's W2, a callout at the clicked cell with the Yes/No inside (`godot/Strategy/TreasureCallout`), plus our own question before an item picked first replaces a character's (`TreasureRoster.ReplaceQuestion`), built, awaiting the owner's look.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -417,8 +417,10 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   The Treasure screen (2026-10-19): `--treasure` on the week-18 save makes the first map wait open Treasure (the
   L. Holy Sword (item 6) on Rance (unit 1), By Lord (item 7) on Rick (unit 7)); with `--interface new` unattended play
   clicks through our screen — Rance picked and the pick dropped, his sword taken off (the script's question answered
-  Yes) and given back — and in a window dumps `treasure`, `treasure-hover`, `treasure-which-item`, `treasure-items`,
-  `treasure-unequipped`, `treasure-equipped`; else it plays the original picker (`AutoItemSteps`) —
+  Yes) and given back (picked first and offered to Rick, whose cell asks our question, answered No, then to Rance),
+  then given again (refused, "Already equipped.") — and in a window dumps `treasure`, `treasure-hover`,
+  `treasure-which-item`, `treasure-items`, `treasure-unequipped`, `treasure-question` (the callout),
+  `treasure-replace` (our question), `treasure-equipped`, `treasure-refusal`; else it plays the original picker (`AutoItemSteps`) —
   `--load --auto --fast --quit --seed 2 --saves user://saves-look-items --slots-from user://saves-week18 --treasure --until deployment [--interface new] --shots <dir>`.
   Add another kept save the same way when a screen needs another phase.
 - Show an ending's `OVER` (its picture, staff roll, Completion Report) on a booted game:

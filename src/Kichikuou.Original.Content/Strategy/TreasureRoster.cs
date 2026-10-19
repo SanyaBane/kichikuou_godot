@@ -149,6 +149,25 @@ public static class TreasureRoster
         return null;
     }
 
+    /// <summary>
+    /// Our own question before an item picked first goes to unit <paramref name="unit"/>, who holds another one
+    /// (docs/ui/pickers.md, round W; the owner, 2026-10-19): the picker equips at once and puts the unit's item back in
+    /// stock without asking (<c>L_0043a</c>), so our screen asks first and a No never sends the click. Null where the
+    /// script would not equip that way: no item picked first, a unit not at status 1 or 2, one holding nothing, the
+    /// picked item itself, or Chaos or Nikkou (refused by the script).
+    /// </summary>
+    public static IReadOnlyList<string>? ReplaceQuestion(GameState s, int unit)
+    {
+        int item = s.Ui_ItemSel.Value;
+        if (View(s) != 0 || s.Ui_ItemUnitSel.Value != 0 || item is < 1 or > 50 || Fixed(item) || unit is < 1 or > 50)
+            return null;
+        var u = s.Units[unit];
+        int held = u.Item.Value;
+        if (u.Status.Value is not (1 or 2) || held == 0 || held == item || Fixed(held))
+            return null;
+        return [$"{DeploymentTable.UnitName(s, unit)} already has {ItemName(s, held)} equipped.", $"Replace it with {ItemName(s, item)}?"];
+    }
+
     /// <summary>Where the script's pointer rests before the first click: the grid's empty 51st cell, so the picker hovers nothing.</summary>
     public static (int X, int Y) Rest => GesturePoints.PickerCell(Cells);
 

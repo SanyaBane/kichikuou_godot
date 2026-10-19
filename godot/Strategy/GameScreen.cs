@@ -1090,7 +1090,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             UpdateInfoBox();
             if (Windowed && _presenter.Log.Pages.Count >= 20 && _messageDumps.Add("message-log"))
                 await LogDumpAsync();                                           // the message log once a launch
-            if (_messageView.Window is { } window && Windowed && _messageDumps.Add(MessageDumpName(window)))
+            if (_treasureCallout.Visible && Windowed && _messageDumps.Add("treasure-refusal"))
+                await AutoDumpAsync("treasure-refusal");                        // our Treasure screen's callout
+            else if (_messageView.Window is { } window && Windowed && _messageDumps.Add(MessageDumpName(window)))
                 await AutoDumpAsync(MessageDumpName(window));                   // each kind of our windows once a launch
             else if (BattleScreenShown && _presenter.Battle.InfoBox is { } box && Windowed && _messageDumps.Add(InfoDumpName(box)))
                 await AutoDumpAsync(InfoDumpName(box));                         // and of the battle's info boxes
@@ -1188,6 +1190,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private void UpdateMessageWindow()
     {
         var window = InterfaceChoice.New && !SkippingScene ? _presenter.MessageWindow : null;
+        if (UpdateTreasureCallout(window))
+            window = null;                              // at the clicked cell over our Treasure screen instead
         _messageView.Show(window, _keyWaiting, _texture, window is null ? null : _presenter.MenuArea);
         if (window is null)
             return;
@@ -1430,12 +1434,23 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         // with the battle's windows (step 5).
         bool scene = province is null && command is null && InterfaceChoice.New && !BattleScreenShown
             && _presenter.Menu is not null && _presenter.MenuBoxArea is not null;
+        // Over our Treasure screen the question's window is a callout at the clicked cell, its Yes/No inside it
+        // (docs/ui/pickers.md, round W): opened with its buttons at once.
+        bool callout = scene && TreasureCalloutFor(InterfaceChoice.New && !SkippingScene ? _presenter.MessageWindow : null);
         if (scene)
         {
             _presenter.SceneMenuCovered = true;
             _presenter.Invalidate();
-            _sceneMenuView.Open(_presenter.Menu!, _presenter.MenuBoxArea!.Value);
-            _sceneMenuView.Place(PictureArea());
+            if (callout)
+            {
+                _treasureCallout.OpenMenu(_presenter.Menu!.Items.Select(i => i.Text).ToList());
+                UpdateMessageWindow();
+            }
+            else
+            {
+                _sceneMenuView.Open(_presenter.Menu!, _presenter.MenuBoxArea!.Value);
+                _sceneMenuView.Place(PictureArea());
+            }
         }
         Shot("menu");
         try
@@ -1453,7 +1468,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                     _commandDumped = true;
                     await AutoDumpAsync("command-menu");
                 }
-                if (scene && !_sceneMenuDumped && DisplayServer.GetName() != "headless" && _options.ScreenshotDirectory is not null)
+                if (callout && Windowed && _messageDumps.Add("treasure-question"))
+                    await AutoDumpAsync("treasure-question");
+                else if (scene && !callout && !_sceneMenuDumped && DisplayServer.GetName() != "headless" && _options.ScreenshotDirectory is not null)
                 {
                     _sceneMenuDumped = true;
                     await AutoDumpAsync("scene-menu");
@@ -1462,6 +1479,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             }
             return Answered(province is not null ? await _provinceView.ChooseAsync()
                 : command is not null ? await _commandView.ChooseAsync()
+                : callout ? await _treasureCallout.ChooseAsync()
                 : scene ? await _sceneMenuView.ChooseAsync()
                 : await MenuAsync());
         }
@@ -1470,6 +1488,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _provinceView.Close();
             _commandView.Close();
             _sceneMenuView.Close();
+            _treasureCallout.CloseMenu();
             _presenter.CloseMenu();
         }
     }
