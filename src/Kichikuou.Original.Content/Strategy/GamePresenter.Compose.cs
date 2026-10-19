@@ -211,6 +211,7 @@ public sealed partial class GamePresenter
         SetLeadIn(false);                                               // the UI covers a city's first menu again
         Menu = MenuView.FromTexts(items.Select(item => string.Concat(item.Texts.Select(Read)).Replace("\n", "")),
             _engine.SelectionWindow);
+        _menuAsks = !BattleShows && items.Count > 0 && (_speechOpen || MessageLog.IsEventScene(items[0].At.File));
         Invalidate();
     }
 

@@ -300,6 +300,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _glyphs, scripts, _audio)
         {
             MaskEventCgs = _options.ScreenshotDirectory is not null,
+            Log = EngineState.Log,
         };
         _skip = EngineState.Skip(SaveDirectory);
         if (_options.MsgSkip)
@@ -354,6 +355,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_weekView.Visible)
             _weekView.Place(PictureArea());
         _textSpeed?.Place(PictureArea());
+        _logView?.Place(PictureArea());
         _presenter.CoverMessages = InterfaceChoice.New;                  // also when the interface changed with a window open
         UpdateBattleScreen(Present());
         UpdateMessageWindow();
@@ -799,6 +801,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 _input.Button(code, button.Pressed);
                 BattleButton(code, button.Pressed);
                 break;
+            case InputEventMouseButton { ButtonIndex: Godot.MouseButton.WheelUp, Pressed: true } when CanOpenLog:
+                OpenLog();
+                break;
         }
         AcceptEvent();
     }
@@ -810,6 +815,12 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (key.Pressed && key.Keycode == Godot.Key.Backspace)
         {
             Screens.ToTitle(this);
+            return;
+        }
+        if (_logView is not null)
+        {
+            if (key.Pressed && key.Keycode == Godot.Key.Escape)
+                _logView.Close();                                           // closes the message log
             return;
         }
         if (key.Pressed && key.Keycode == Godot.Key.Escape && _battleView.Dialog.Escape())
@@ -1067,6 +1078,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _keyWaiting = true;
             UpdateMessageWindow();
             UpdateInfoBox();
+            if (Windowed && _presenter.Log.Pages.Count >= 20 && _messageDumps.Add("message-log"))
+                await LogDumpAsync();                                           // the message log once a launch
             if (_messageView.Window is { } window && Windowed && _messageDumps.Add(MessageDumpName(window)))
                 await AutoDumpAsync(MessageDumpName(window));                   // each kind of our windows once a launch
             else if (BattleScreenShown && _presenter.Battle.InfoBox is { } box && Windowed && _messageDumps.Add(InfoDumpName(box)))
@@ -1435,12 +1448,12 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                     _sceneMenuDumped = true;
                     await AutoDumpAsync("scene-menu");
                 }
-                return AutoChoice(items);
+                return Answered(AutoChoice(items));
             }
-            return province is not null ? await _provinceView.ChooseAsync()
+            return Answered(province is not null ? await _provinceView.ChooseAsync()
                 : command is not null ? await _commandView.ChooseAsync()
                 : scene ? await _sceneMenuView.ChooseAsync()
-                : await MenuAsync();
+                : await MenuAsync());
         }
         finally
         {
@@ -1449,6 +1462,50 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _sceneMenuView.Close();
             _presenter.CloseMenu();
         }
+    }
+
+    /// <summary>The menu's answer, into the message log when it asked over a window (docs/ui/messages.md, §5 step 6).</summary>
+    private int Answered(int answer)
+    {
+        _presenter.MenuAnswered(answer);
+        return answer;
+    }
+
+    private MessageLogView? _logView;
+
+    /// <summary>
+    /// The wheel up opens the message log (docs/ui/messages.md, §5 step 6; owner, 2026-10-19) while the player is asked for a
+    /// key, in either interface; not in unattended play, nor over a dialog or the log itself.
+    /// </summary>
+    private bool CanOpenLog => _keyWaiting && !_options.Auto && !_modal && _logView is null && _presenter.Log.Pages.Count > 0;
+
+    /// <summary>The message log over the game, which waits while it is open (as under Option → Text Speed…).</summary>
+    private void OpenLog()
+    {
+        _modal = true;
+        _input.Clear();
+        var view = new MessageLogView(GodotGlyphRenderer.Chosen, _presenter.Log);
+        view.Closed += () =>
+        {
+            _logView = null;
+            _modal = false;
+            _input.Clear();
+        };
+        _logView = view;
+        _content.AddChild(view);
+        view.Place(PictureArea());
+        Shot("message-log");
+    }
+
+    /// <summary>Unattended play in a window: the message log opened at a key wait, dumped and closed again.</summary>
+    private async Task LogDumpAsync()
+    {
+        var view = new MessageLogView(GodotGlyphRenderer.Chosen, _presenter.Log);
+        _content.AddChild(view);
+        view.Place(PictureArea());
+        await DelayAsync(0.3);
+        await AutoDumpAsync("message-log");
+        view.Close();
     }
 
     /// <summary>

@@ -254,6 +254,82 @@ as it is. Where to start:
    down, the plate holds the losses and the EXP and one row more per level-up, every tally a plate). Seen in a window from
    the week-18 save (the stamp, the badge, the plate); not seen yet in the game: our panel and a level-up's row.
 6. **The message log** — its design discussed first (backlog).
+   **Survey (2026-10-19).** The original has none (xsystem35 neither); Sengoku Rance has no battle text log either
+   (docs/sengoku/04-screen.md:636). What a log can hold, and where our presenters already have it:
+   - **One entry is one key wait's page.** A scene's window keeps its text until the key (`GamePresenter.Window`, ops 1/5/11:
+     `_afterKey` clears it), and one open window may hold several pages (`Gﾏﾘｽ.ADV`: Maris's 121 holds four pages
+     between `\L_03c38` waits before it closes). At that wait `MessageWindow.Of` already gives the kind (speech left or right,
+     thought, narration, a place's title, 131), the lines at the script's breaks and 131's speaker; so an entry needs no new
+     reading of the text, only a copy taken at the wait. This works in both interfaces (the model does not depend on the cover).
+   - **The speaker.** 131 names it in the text (`Speaker`, `Thinks`, `Unclosed` across windows). 111/112 speak for the left
+     portrait, 121/122 for the right one (`Ui_PortraitL` / `Ui_PortraitR`, set by `WAO_SUB` 311/321 from `CallArg`): the
+     scenes set a portrait 2,056 times on the left (162 CGs) and 3,971 on the right (230 CGs). A record's name
+     (`Unit_FaceCg` / `Cmdr_FaceCg` in `SET_CHR.ADV`) names one face alone for 1,643 of the left settings and 1,606 of the
+     right; Lia (CG 5, 276 right) and Maris (CG 6, 508 right) have no record, so names from the records miss half the right
+     side. **Every portrait carries its name on a plate baked into its bottom right** (192×256 at 1×, the plate in about
+     (48,220)-(190,254): `RANCE`, `LIA / PARAPARA LEAZAS`, `MARIS AMARYLLIS`, `LEAZAS GREEN KNIGHT`): the log can show that
+     plate cut from the CG, which names every portrait without a table. A window without its portrait (0) has no speaker.
+   - **Narration and places' titles** (113/123, `MessageKind.PlaceTitle`) are entries of their own; a title can mark where a
+     scene starts. **Status windows** (`Cﾌﾞｶ`'s `HP    4/    5`) are 113/123 too — kept at their cells they stay tables.
+   - **The `]` menus' answers:** the presenter opens a menu (`OpenMenu`) and closes it without the answer (`CloseMenu`), so
+     logging a choice needs the answer passed in. Only the scenes' questions are dialogue; the command menus (`COMMAND`, the
+     cities') would be noise (an open window does not tell them apart: see "Built" below).
+   - **The battle:** its windows off the field (`BattlePresenter.MessageWindow`, the same model), the bubbles' lines
+     (`BattlePresenter.Speech`: the side and the text; the speaker is the acting card's unit or commander), the info boxes
+     (`BattlePresenter.InfoBox`: falls, the results plate).
+   - **The message skip** still runs every window op (only the waits are answered), so skipped pages can be logged as read
+     (visual novels do) or left out. **`--auto`** answers the same waits: the log fills the same way.
+   - **How long:** the launch (memory, a cap of pages), or kept with the saves in `ScriptState.Extras` (as
+     `KnownProvinces`; a slot format change, the autosave every week grows by the log).
+   - **Rules:** none — the log is presentation; the waits stay the script's.
+   **Mock-ups (2026-10-19):** `tools/ui/mock_log.py` over the week-26 save's dumps (Maris's scene, the page "I believe that we
+   should first…" open; our 121 drawn under the log): **L1** — a lacquer "Message Log" panel over the dimmed screen, one run
+   of a speaker's pages under the face (`UnitFaces`' square) and the portrait's own plate, the text at the script's breaks in
+   the game's font, narration on a brown band, a place's title as a divider, the newest page marked by a gold bar, opened at
+   the bottom; **L1b** — the same scrolled to the scene's start; **L2** — compact: our names in Cinzel in a column (the
+   records' names, so a table for the rest), more pages a screen; **L3** — the chronicle: the ledger's paper (`Lacquer.Paper`,
+   vermilion names, ruled lines); **L4** — no panel: the wheel turns the open window back page by page (a "LOG 4 / 14" plate,
+   the speaker's plate on its edge, no tail — the portraits on the screen stay the present ones, so a tail would point at
+   the wrong speaker). Ways to open it, for the owner to choose: the wheel up at a key wait (unused in the game now), a key,
+   a small button on the window, a menu bar item.
+   **The owner's answers (2026-10-19):** L3, its rules a little paler, in a few more mock-ups; opened by **the wheel up**;
+   kept **for the launch** (memory, a cap of pages; the save format unchanged); **the skipped pages** and **the answers of
+   the dialogues' questions** are logged (not the play's menus, below); the battle's lines and week markers are not.
+   **Mock-ups of L3 (2026-10-19)**, the rules at alpha 45 (the ledger's 110 for comparison, `L3-chronicle-paper`): **L3a** —
+   L3 as it was; **L3b** — a blank ruled line between speakers, narration indented by a cell, the newest page marked by a
+   vermilion bar at the margin; **L3c** — L3b with the portrait's own name plate cut from its CG in the margin instead of our
+   names (no name table: our names need one for the portraits without a record, Lia's and Maris's among them); **L3d** —
+   L3b over `GAL.ADV`'s church scene (Maris's advice, the question): the choice under a "CHOICE" label, the chosen item
+   `◆` in vermilion, the other `◇` greyed; **L3e** — L3b scrolled to the scene's start: a place's title as a heading line
+   in `Lacquer.HeadInk`. **The owner chose L3a** (2026-10-19): the lines close, no blank line between speakers, no mark on
+   the newest page; the speaker's name in vermilion at a run's first line (a choice and a place's title as in L3d/L3e,
+   without the blank lines).
+   **Built (2026-10-19):** `Original.Content/Strategy/MessageLog` (the pages `LogPage`: speech, thought, narration, a place,
+   a choice; `PageOf` a window at its key wait; `Lines` the ruled lines of L3a; the last 500 pages) filled by
+   `GamePresenter.Log` at every key wait of a window outside a battle (ops 1/5/11, either interface, the message skip's
+   included) and by `MenuAnswered` for a dialogue's question. The speaker of 111/112 is the left portrait's, of 121/122
+   the right one's, named by `PortraitNames` — the plate's text of the 244 portraits that have one (read from the plates,
+   2026-10-19; a two-line plate by its first line, `LIA`, but where the lines are one title: `CITY AUTHORITY`, `FREE CITY
+   ARMY GENERAL`, `Demon Blood Soul`; `P G - 7` as `PG-7`; 401's record says "Civilian General", its plate `HELMAN GUARD`).
+   `godot/Strategy/MessageLogView` draws L3a (paper in a lacquer frame (190,28) 900×744, rules at alpha 45, the game's font
+   at 28, a line too long for the column — 131's run to 52 cells — drawn smaller to fit, names in Cinzel shrunk to the
+   margin); `GameScreen` opens it on the wheel up while the player is asked for a key (`CanOpenLog`; not in unattended
+   play), the game waiting as under Option → Text Speed…; the wheel scrolls three lines, a right click, Escape or the wheel
+   down at the newest line closes it. The log lives in `EngineState.Log` for the launch. `--auto` in a window dumps it once
+   (`message-log`, from 20 pages). Tests: `MessageLogTests`, `NewGameStateTests.Every_face_of_a_new_game_has_its_plates_name`.
+   **The owner (2026-10-19, after two looks): the play's information and choices stay out of the log, a dialogue's stay in.**
+   The first build logged a menu's answer whenever a window was open — `COMMAND`'s menu (its status window is open) and
+   `ﾛｰﾄﾞｾｰﾌﾞ`'s slots went in — and every window's narration: `ﾛｰﾄﾞｾｰﾌﾞ`'s "< Load Complete >", `MAIN`'s week banner, revenue
+   and expenses. The second logged only the event scenes' menus and lost `Cﾃｲﾄ`'s question (Maris's "You summoned me, King
+   Rance?", then "NEW Library"). Now (`MessageLog.Keeps`, `MessageLog.IsEventScene`, `GamePresenter.LogPage`):
+   - a speech or a thought is logged from any file (the play's files have dialogues: `Cﾃｲﾄ`, `Cﾃｷﾄｼ`'s negotiations);
+   - narration and a place's title only when the window's first message is an event scene's, `G*` or `I*` (the file of its
+     `MessageEvent`; a window of strings alone has none and is not logged);
+   - a menu's answer when the menu is an event scene's, or when the last page logged was a speech or a thought and no window
+     or picker opened since — the window may have closed: `Cﾃｲﾄ` and `GAL` close it (`WAO_SUB` 0) before the menu, while
+     `COMMAND` opens its status window (`COMMAND.ADV:655-659`, 113) before its own, `ﾛｰﾄﾞｾｰﾌﾞ` its windows before the slots.
+   **The owner (2026-10-19):** a choice shows **the chosen item alone** — one line, "CHOICE" in the margin, `◆` and the item
+   in vermilion — not the menu's other items (the page keeps them all; `MessageLog.Lines` lays out the chosen one).
 
 ## 6. Open questions
 

@@ -309,8 +309,8 @@ public sealed partial class GamePresenter : IStageObserver
             case DataScreenEvent e: DataScreen(e.View); break;
             case SaveScreenEvent e: SaveScreenOpen = e.Open; break;
             case WindowEvent e: Window(e.Op.Value); break;
-            case MessageEvent e: Print(Read(e.Text, [], e.StringVariables)); break;
-            case ValueMessageEvent e: Print(Read(e.Text, e.Values, e.StringVariables)); break;
+            case MessageEvent e: NoteWindowFile(e.Text); Print(Read(e.Text, [], e.StringVariables)); break;
+            case ValueMessageEvent e: NoteWindowFile(e.Text); Print(Read(e.Text, e.Values, e.StringVariables)); break;
             case PrintStringEvent e: Print(Hankaku.ToHalfWidth(StringVar(e.Slot.Value))); break;
             case LineBreakEvent: NewLine(); break;
             case MessageClearEvent: ClearText(); break;
@@ -453,6 +453,10 @@ public sealed partial class GamePresenter : IStageObserver
             _covered &= ~Pictures.Frame;                                // the frame drawn again, or the window closed
         if (op is >= 111 and <= 153)
             _leftWindow = null;                                         // a window opens over the one left on the screen
+        if (op is (>= 111 and <= 153) or 0 or 10)
+            _windowFile = null;                                         // the message log's: a new window, or none
+        if (op is >= 111 and <= 153)
+            _speechOpen = false;                                        // a menu after it no longer answers the speech
         switch (op)
         {
             case 111 or 112: OpenWindow((235, 8, 378, 141), 15, 24); break;
@@ -481,6 +485,7 @@ public sealed partial class GamePresenter : IStageObserver
                     var bar = State is { Ui_WinType.Value: 31 } s
                         ? Strategy.MessageWindow.Of(s.Ui_WinFrameCg.Value, _window, Stage.Color, _speech)
                         : null;
+                    LogPage();
                     _afterKey = () =>
                     {
                         _speech = bar;
@@ -491,6 +496,59 @@ public sealed partial class GamePresenter : IStageObserver
             case 2: _window.Clear(); break;
             case >= 311 and <= 333: Uncover(op); break;
         }
+    }
+
+    // ------------------------------------------------------------------ the message log
+
+    /// <summary>
+    /// The message log (docs/ui/messages.md, §5 step 6): the pages of the windows' key waits (not a battle's; the play's
+    /// narration left out, <see cref="MessageLog.Keeps"/>) and the answers of the dialogues' questions. The UI may hand in one kept for the launch.
+    /// </summary>
+    public MessageLog Log { get; set; } = new();
+
+    /// <summary>The name a portrait CG shows on its plate (<see cref="PortraitNames"/>).</summary>
+    public Func<int, string> PortraitName { get; set; } = PortraitNames.Of;
+
+    /// <summary>The open menu is a dialogue's question — an event scene's menu, or one under a speech: its answer goes into the log.</summary>
+    private bool _menuAsks;
+
+    /// <summary>The file the open window's text came from (its first message), null before any.</summary>
+    private string? _windowFile;
+
+    /// <summary>
+    /// The last page logged was a speech or a thought and no window or picker opened since: a menu now asks in the dialogue,
+    /// though the window closed before it (<c>Cﾃｲﾄ.ADV</c>: Maris's "You summoned me, King Rance?", <c>WAO_SUB</c> 0, the
+    /// buildings); <c>COMMAND</c> opens its status window before its menu.
+    /// </summary>
+    private bool _speechOpen;
+
+    /// <summary>A message printed: the open window's file, for the log.</summary>
+    private void NoteWindowFile(ScriptRef text)
+    {
+        if (_target == TextTarget.Window)
+            _windowFile ??= text.File;
+    }
+
+    /// <summary>
+    /// A key wait of the open window: its page into the log, in either interface — a speech or a thought from any file,
+    /// narration and a place's title only from an event scene (<see cref="MessageLog.Keeps"/>).
+    /// </summary>
+    private void LogPage()
+    {
+        if (BattleShows || State is not { } s
+            || Strategy.MessageWindow.Of(s.Ui_WinFrameCg.Value, _window, Stage.Color, _speech) is not { } window
+            || MessageLog.PageOf(window, s.Ui_PortraitL.Value, s.Ui_PortraitR.Value, PortraitName) is not { } page
+            || !MessageLog.Keeps(page, _windowFile))
+            return;
+        Log.Add(page);
+        _speechOpen = page.Kind is LogKind.Speech or LogKind.Thought;
+    }
+
+    /// <summary>The open menu answered with item <paramref name="answer"/> (from 1; 0 cancelled): logged when it is a dialogue's question.</summary>
+    public void MenuAnswered(int answer)
+    {
+        if (_menuAsks && Menu is { } menu && answer >= 1 && answer <= menu.Items.Count)
+            Log.Add(new LogPage(LogKind.Choice, "", [.. menu.Items.Select(item => item.Text)], answer));
     }
 
     private void OpenWindow((int X, int Y, int W, int H) text, int? color, int? size)
@@ -512,6 +570,7 @@ public sealed partial class GamePresenter : IStageObserver
     {
         if (e.Open)
         {
+            _speechOpen = false;
             if (Picker?.Kind != e.Kind)
                 Picker = new PickerView(e.Kind, e.Mode, this);
             _target = TextTarget.None;

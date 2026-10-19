@@ -151,7 +151,7 @@ followed (docs/ui/battle-screen.md); next (owner, 2026-10-16) the map and comman
 and mock-ups in docs/ui/command-screen.md; then (owner, 2026-10-18) the messages of the turn's start,
 surveyed in docs/ui/turn-start.md — the week report is built, the nations' banners put off; then (owner,
 2026-10-18) the message windows in our lacquer, variant A, the battle's included — docs/ui/messages.md; its step 1
-(the windows 111/112/121/122/113/123) and step 2 (window 131, the speaker on a plate) and step 3 (the `]` menus, `Strategy/SceneMenuView`, mock-up M1) and step 4 (the text typed letter by letter, Option → Text Speed…, mock-ups T1 and S2) are built, and so is step 5 (the battle's windows: those it opens off the field, and its info boxes 143/153 as the owner's mock-ups K3 and K1 — a defence's badge, a fall's stamp, the results plate, our panel; `Battles/BattleInfoBox`, `godot/Battles/BattleInfoLayer`), next the message log;
+(the windows 111/112/121/122/113/123) and step 2 (window 131, the speaker on a plate) and step 3 (the `]` menus, `Strategy/SceneMenuView`, mock-up M1) and step 4 (the text typed letter by letter, Option → Text Speed…, mock-ups T1 and S2) are built, and so is step 5 (the battle's windows: those it opens off the field, and its info boxes 143/153 as the owner's mock-ups K3 and K1 — a defence's badge, a fall's stamp, the results plate, our panel; `Battles/BattleInfoBox`, `godot/Battles/BattleInfoLayer`), and so is step 6 (the message log, mock-up L3a: `Strategy/MessageLog` filled by `GamePresenter.Log`, the speakers by `Strategy/PortraitNames`, `godot/Strategy/MessageLogView` on the wheel up at a key wait, kept for the launch in `EngineState.Log`);
 then (owner, 2026-10-18) our own Subordinates screen after mock-up F1 (no dialogue with Maris; the orders on our
 buttons, answered through `SubordinateOrder`) — docs/ui/subordinates.md, built; its look (owner, 2026-10-18) is mock-up
 G3, lacquer with the table a paper ledger, built, awaiting the owner's look in a window.
@@ -282,7 +282,11 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   the triangle while the player's key is awaited, a menu over it shown on top; Option → Interface → New, docs/ui/messages.md:
   `Original.Content/Strategy/MessageWindow` from `GamePresenter.MessageWindow` while `CoverMessages`, in a battle `BattlePresenter.MessageWindow`);
   `Strategy/SceneMenuView` (our `]` menus: lacquer rows at the selection box's place, `GamePresenter.MenuBoxArea`, while
-  `SceneMenuCovered`; not over our battle screen; docs/ui/messages.md, §5 step 3); the six and the Subordinates screen draw with `Strategy/Lacquer` (the style's colours and parts, the ledger's, the click's triangle);
+  `SceneMenuCovered`; not over our battle screen; docs/ui/messages.md, §5 step 3);
+  `Strategy/MessageLogView` (the message log, a paper chronicle, mock-up L3a, in either interface: the wheel up at a key wait
+  opens it, the game waits; `Original.Content/Strategy/MessageLog` from `GamePresenter.Log` — each key wait's page, a
+  dialogue question's answer, `MenuAnswered` (an event scene's menu or one after a speech, never the play's; the play's narration left out, `MessageLog.Keeps`) — the speakers by the portraits' plates, `PortraitNames`; kept for the launch,
+  `EngineState.Log`; docs/ui/messages.md, §5 step 6); the six and the Subordinates screen draw with `Strategy/Lacquer` (the style's colours and parts, the ledger's, the click's triangle);
   `Battles/BattleBoardView` (our own battle screen, Option → Interface → New, docs/ui/battle-screen.md:
   `Original.Content/Battles/BattleScene` on top, the stage's windows over it through `WindowMask`, the
   cards and the round's order from `BattleBoard`/`RoundOrder`, the order strip `OrderStrip` moving on its own;
@@ -360,7 +364,7 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   builds the parties in our own deployment table and swaps the first two places by drops and back,
   and in a window, once a launch, dumps the week report (`week-report`), each kind of our message windows
   (`message-speech-left`, `message-speech-right`, `message-thought-left`, `message-thought-right`, `message-narration`,
-  `message-place-title`; the kept save `saves-week26` reaches all but the right thought; 131 as `message-cg-bar-speech`, `-thought`, `-narration`, with `--harem`), the battle's info boxes (`info-defence`, `info-fall`, `info-results`, `info-level-up`, `info-panel`; the week-18 save played to the week's end, `--weeks 18`, reaches the first three), the first map wait's plates (`map-markers`, `map-markers-hover`, `map-markers-active`), the province menu (`province-menu`) and
+  `message-place-title`; the kept save `saves-week26` reaches all but the right thought; 131 as `message-cg-bar-speech`, `-thought`, `-narration`, with `--harem`), the message log (`message-log`, once 20 pages are logged; plain `--auto` in a window shows it too, without moving the pointer), the battle's info boxes (`info-defence`, `info-fall`, `info-results`, `info-level-up`, `info-panel`; the week-18 save played to the week's end, `--weeks 18`, reaches the first three), the first map wait's plates (`map-markers`, `map-markers-hover`, `map-markers-active`), the province menu (`province-menu`) and
   clicks the week's attack target through its plate (`map-marker-hover`; Godot's input, the system pointer
   moved), and answers the first turn through the pointer on our command input
   (the acting unit's menu, another own card's, closed by a click off it; Retreat, whose dialog it

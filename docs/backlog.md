@@ -130,9 +130,11 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   the questions).
   Then (owner, 2026-10-18): the message windows in our lacquer, variant A — the survey, the mock-ups and the
   owner's choices are [ui/messages.md](ui/messages.md); the battle's script windows put off above come with it.
-  Step 1 (the windows 111/112/121/122/113/123) and step 2 (window 131) are built (2026-10-18); steps 3-6 remain (§5).
+  Steps 1-5 (the windows, 131, the `]` menus, letter by letter, the battle's windows and info boxes) are built (2026-10-18/19); step 6, the log, remains (§5).
   Put off (owner, 2026-10-18): **a message log** — wanted, its design discussed separately, the last step of
-  the message windows (ui/messages.md, §3 item 4).
+  the message windows (ui/messages.md, §3 item 4). Surveyed with mock-ups L1-L4 (2026-10-19, ui/messages.md, §5
+  step 6); the owner chose L3 (the paper chronicle), the wheel up, the launch, skipped pages and choices logged;
+  then its variant L3a (2026-10-19); built (2026-10-19), so the message windows' steps are all built.
   Then (owner, 2026-10-18): our own Subordinates screen (`Cﾌﾞｶ`/`Sﾌﾞｶ`) after mock-up F1 —
   [ui/subordinates.md](ui/subordinates.md). Put off (owner, 2026-10-18): **the units' situational modifiers**
   (the status page's attack and defence on offense, on defense, in dungeons) are not shown on it.

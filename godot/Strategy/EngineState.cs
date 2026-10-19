@@ -21,6 +21,9 @@ internal static class EngineState
     public static bool MouseMovement { get; set; } = true;
     private static readonly Dictionary<string, MessageSkip> Skips = [];
 
+    /// <summary>The message log, kept for the launch (docs/ui/messages.md, §5 step 6; owner, 2026-10-19): not saved.</summary>
+    public static Original.Content.Strategy.MessageLog Log { get; } = new();
+
     /// <summary>
     /// The random generator, seeded on first use with <c>--seed N</c> or the tick count; with
     /// <c>--rnglog</c> every draw is printed (<see cref="RandomLog"/>).

@@ -42,6 +42,23 @@ public class NewGameStateTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// The message log names a speaker by the plate on its portrait (<see cref="PortraitNames"/>): every unit's and commander's
+    /// face a new game sets up has one.
+    /// </summary>
+    [Fact]
+    public async Task Every_face_of_a_new_game_has_its_plates_name()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var state = await NewGameAsync();
+        var faces = Enumerable.Range(0, 52).Select(i => state.Units[i].FaceCg.Value)
+            .Concat(Enumerable.Range(0, 220).Select(i => state.Cmdrs[i].FaceCg.Value))
+            .Where(cg => cg > 0).Distinct().ToList();
+        Assert.True(faces.Count > 100);
+        Assert.Equal([], faces.Where(cg => PortraitNames.Of(cg).Length == 0).ToArray());
+    }
+
+    /// <summary>
     /// Our map's plates in the prologue (<see cref="MapMarkers"/>): Leazas holds owner 1 but none is the
     /// thieves', so only Vladivostok (33) and Golak (34), which <c>COMMAND</c> sends to <c>Cﾃｷﾄｼ</c>, are
     /// not dimmed, and no card shows figures.
