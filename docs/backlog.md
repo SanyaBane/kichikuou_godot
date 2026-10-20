@@ -153,7 +153,9 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   Save / Don't menu between — built ([ui/command-screen.md](ui/command-screen.md), "The command panel").
   Then (owner, 2026-10-20): **our own Save/Load screen** in the same lacquer — surveyed with mock-up round 1 (A: a
   paper ledger, B: cards with each game's map, C: a list and the slot's page), [ui/save-load.md](ui/save-load.md);
-  the owner chose C (2026-10-20), built after §5's plan; it awaits the owner's look in a window.
+  the owner chose C (2026-10-20), built after §5's plan; after the owner's look, each slot's own save time and the
+  manual saves sorted by slot or by date with Auto in a panel of its own (mock-up rounds 2-3, the owner's E as F1-F4;
+  [ui/save-load.md](ui/save-load.md), §7), built (2026-10-20).
   Groundwork (survey §4.8): menus as data and the map helper are done (2026-10-12); the shared engine
   host (§4.8, "Items 2 and 4 are one step") is not needed for screens over the original layout.
 - **Quality-of-life features**, the README's second aim — *owner* (which), then *agent*; a survey of
@@ -161,6 +163,9 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   [window-menu.md](window-menu.md), MsgSkip); a manual save is the game as it is now, not the turn's start
   (2026-10-19, owner's decision 26 in [strategy/README.md](strategy/README.md); STR-11 fixed). Our Save/Load screen
   tells them apart (a kind tag; [ui/save-load.md](ui/save-load.md), §5); the original's lists still cannot.
+  Replenish from the deployment screen's Refill column, in a defence too while the week's troop order is unspent
+  (owner's decision 27 in [strategy/README.md](strategy/README.md); [ui/deployment-table.md](ui/deployment-table.md),
+  "Replenish on the deployment screen"), built and accepted by the owner (2026-10-20).
 - **Optional fixes** — *owner* (which), then *agent*: the quirks register ([quirks.md](quirks.md),
   decision 5) lists every reproduced bug; some can become options.
 
