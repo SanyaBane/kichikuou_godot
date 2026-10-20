@@ -261,7 +261,11 @@ as it is. Where to start:
    the unit's name as a lacquer caption at the scene's foot on the defender's side, above the order strip, left out while
    a speech bubble or its portrait is up (`BattleInfoLayer.Speaking`); the card's order line says "Defend" (it overran
    as "Defending"). Seen in a window from the week-18 save (Barres's (unit 6) defence; Cordoba's (unit 3) under Haurein's
-   speech, the caption left out).
+   speech, the caption left out). **The ribbon's label (owner, 2026-10-21):** "DEF +n" read as a gain of the Defense
+   stat, while it is n points off the enemy's hit chance against the unit till the round's end (docs/battle/01-flow.md
+   §8.3, 02-resolution.md §6.10). Label rounds L1-L7, M1-M6 and N1-N6 (`tools/ui/mock_defend.py`, each N drawn at −2 %
+   and −21 %, the increase's range); **the owner chose N5**, built: "DEFEND" at 19 px, "ENEMY HIT −n%" in gold at 16 px
+   right-aligned (`BattlePresenter.DefenceMark`), the shield moved onto the ribbon's left tail to make room.
 6. **The message log** — its design discussed first (backlog).
    **Survey (2026-10-19).** The original has none (xsystem35 neither); Sengoku Rance has no battle text log either
    (docs/sengoku/04-screen.md:636). What a log can hold, and where our presenters already have it:

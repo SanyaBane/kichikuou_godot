@@ -49,7 +49,7 @@ public class BattleInfoBoxTests
         Wait(presenter);
 
         var box = presenter.InfoBox!;
-        Assert.Equal((InfoBoxKind.Defence, new BattlePlace(BattleSide.Player, 2), "DEF +7"), (box.Kind, box.Place, box.Mark));
+        Assert.Equal((InfoBoxKind.Defence, new BattlePlace(BattleSide.Player, 2), "ENEMY HIT \u22127%"), (box.Kind, box.Place, box.Mark));
         Assert.Equal(["Prepared for the enemy's attack"], box.Sentences);
         Assert.True(box.AnsweredAtOnce);
         Assert.Empty(presenter.Windows);                                        // the original's box is not in the windows' layer
@@ -212,7 +212,7 @@ public class BattleInfoBoxTests
                     switch (box)
                     {
                         case { Kind: InfoBoxKind.Defence, Place: { } place }:
-                            if (box.Mark != "DEF +" + BattleBoard.StateOf(s, place))
+                            if (box.Mark != BattlePresenter.DefenceMark(BattleBoard.StateOf(s, place)))
                                 wrong.Add($"defence {box.Mark} at {place}, state {BattleBoard.StateOf(s, place)}");
                             break;
                         case { Kind: InfoBoxKind.Fall, Place: { } place }:

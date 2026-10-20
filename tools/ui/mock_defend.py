@@ -164,9 +164,15 @@ def d1_shield():
 def d2_ribbon():
     """D2: a ribbon across the card's middle, its tails past the card's edges: a shield, DEFEND, the increase."""
     c = Canvas(os.path.join(BARE, '00093-info-defence.png'))
+    ribbon(c, lambda x1, mid: text(c, x1 - 10, mid, 'DEF +5', CINZEL(22, 800), ACCENT, anchor='rm', stroke=1.5))
+    return c.save('D2-ribbon.png')
+
+
+def ribbon(c, right, left='DEFEND', y0=664, h=46, left_size=25, badge=True, left_y=None, badge_x=26, left_x=48):
+    """D2's ribbon on Barres's card; right(x1, mid) draws its right-hand label (left None: no word; badge False: no shield)."""
     glow(c, BARRES_CARD, DEFEND_GLOW)
     x0, _, x1, _ = BARRES_CARD
-    y0, y1 = 664, 710
+    y1 = y0 + h
     lay, d = c.draw()
     for side in (-1, 1):                                # the tails, darker, notched
         ex = x0 - 16 if side < 0 else x1 + 16
@@ -182,10 +188,70 @@ def d2_ribbon():
     d.line(s(x0 - 6, y0 + 2, x1 + 6, y0 + 2), fill=ACCENT + (255,), width=2 * S)
     d.line(s(x0 - 6, y1 - 2, x1 + 6, y1 - 2), fill=ACCENT + (255,), width=2 * S)
     c.add(lay)
-    shield(c, x0 + 26, y0 + 7, 26, 32, rim=2)
-    text(c, x0 + 48, (y0 + y1) / 2 + 1, 'DEFEND', CINZEL(25, 800), (255, 255, 255), anchor='lm', stroke=1.5)
-    text(c, x1 - 10, (y0 + y1) / 2 + 1, 'DEF +5', CINZEL(22, 800), ACCENT, anchor='rm', stroke=1.5)
-    return c.save('D2-ribbon.png')
+    if badge:
+        shield(c, x0 + badge_x, y0 + 7, 26, 32, rim=2)
+    if left:
+        text(c, x0 + left_x, left_y or (y0 + y1) / 2 + 1, left, CINZEL(left_size, 800), (255, 255, 255), anchor='lm', stroke=1.5)
+    right(x1, (y0 + y1) / 2 + 1)
+
+
+# ---------------------------------------------------------------------------------------------------- the ribbon's label
+
+# What "DEF +n" means (docs/battle/01-flow.md §8.3): n percentage points off the enemy's hit chance against the unit till the
+# round's end, not the Defense stat. L1-L6: the label in other words (owner, 2026-10-21); MINUS is U+2212.
+MINUS = '\u2212'
+CAPTION_X, CAPTION_Y, CAPTION_H = 150, 334, 50
+
+
+def label(name, right, left='DEFEND', caption=None):
+    c = Canvas(os.path.join(BARE, '00093-info-defence.png'))
+    ribbon(c, lambda x1, mid: right(c, x1, mid), left)
+    sentence = caption or SENTENCE
+    name_w = CINZEL(19, 700).getlength('Barres') / S
+    w = 50 + name_w + 12 + GOTHIC(18).getlength(sentence) / S + 24
+    lacquer_panel(c, CAPTION_X, CAPTION_Y, w, CAPTION_H)
+    shield(c, CAPTION_X + 26, CAPTION_Y + 9, 28, 33, rim=2)
+    text(c, CAPTION_X + 50, CAPTION_Y + CAPTION_H / 2, 'Barres', CINZEL(19, 700), NAME, anchor='lm')
+    text(c, CAPTION_X + 50 + name_w + 12, CAPTION_Y + CAPTION_H / 2, sentence, GOTHIC(18), NARR_TEXT, anchor='lm')
+    return c.save(name)
+
+
+def gold(t, size=22):
+    return lambda c, x1, mid: text(c, x1 - 10, mid, t, CINZEL(size, 800), ACCENT, anchor='rm', stroke=1.5)
+
+
+def stacked(small, big):
+    """A small line over a large one, right-aligned."""
+    def draw(c, x1, mid):
+        text(c, x1 - 10, mid - 10, small, CINZEL(11, 800), ACCENT, anchor='rm', stroke=1)
+        text(c, x1 - 10, mid + 7, big, CINZEL(24, 800), ACCENT, anchor='rm', stroke=1.5)
+    return draw
+
+
+def labels():
+    shots = [
+        ('L0 now: DEF +5', label('L0-def.png', gold('DEF +5'))),
+        ('L1 ' + MINUS + '5% HIT', label('L1-minus-hit.png', gold(MINUS + '5% HIT'))),
+        ('L2 HIT ' + MINUS + '5%', label('L2-hit-minus.png', gold('HIT ' + MINUS + '5%'))),
+        ('L3 GUARD +5', label('L3-guard.png', gold('+5', 26), left='GUARD')),
+        ('L4 ENEMY HIT over ' + MINUS + '5%', label('L4-stacked.png', stacked('ENEMY HIT', MINUS + '5%'))),
+        ('L5 GUARD ' + MINUS + '5% HIT', label('L5-guard-hit.png', gold(MINUS + '5% HIT'), left='GUARD')),
+        ('L6 ' + MINUS + '5%, the caption says what', label('L6-caption.png', gold(MINUS + '5%', 26),
+                                                     caption="Prepared: enemy hit chance " + MINUS + "5%")),
+        ('L7 DEFEND alone, the caption says it', label('L7-caption-only.png', lambda c, x1, mid: None,
+                                                       caption="Prepared: enemy hit chance " + MINUS + "5%")),
+    ]
+    crop = (0, 320, 640, 770)
+    w, h = crop[2] - crop[0], crop[3] - crop[1]
+    top = 34
+    out = Image.new('RGB', (2 * w + 30, 4 * (h + top) + 20), (16, 16, 18))
+    d = ImageDraw.Draw(out)
+    f = ImageFont.truetype(REPO + '/godot/fonts/BIZUDGothic-Regular.ttf', 22)
+    for i, (title, img) in enumerate(shots):
+        x, y = 10 + (i % 2) * (w + 10), 10 + (i // 2) * (h + top)
+        d.text((x + 4, y + 4), title, font=f, fill=(236, 226, 204))
+        out.paste(img.crop(crop).convert('RGB'), (x, y + top))
+    out.save(os.path.join(OUT, 'L-sheet.png'))
 
 
 def d3_scene():
@@ -256,8 +322,178 @@ def sheet(images):
     out.save(os.path.join(OUT, 'D-sheet.png'))
 
 
+# ---------------------------------------------------------------------------------------------------- "ENEMY HIT" readable
+
+# The owner (2026-10-21) likes L4's "ENEMY HIT" (whose hit chance falls), but it is too small: M1-M6 make room for it.
+
+def framed(name, draw, caption=None):
+    """A frame with the caption at the scene's foot; draw(c) draws the card's part."""
+    c = Canvas(os.path.join(BARE, '00093-info-defence.png'))
+    draw(c)
+    sentence = caption or SENTENCE
+    name_w = CINZEL(19, 700).getlength('Barres') / S
+    w = 50 + name_w + 12 + GOTHIC(18).getlength(sentence) / S + 24
+    lacquer_panel(c, CAPTION_X, CAPTION_Y, w, CAPTION_H)
+    shield(c, CAPTION_X + 26, CAPTION_Y + 9, 28, 33, rim=2)
+    text(c, CAPTION_X + 50, CAPTION_Y + CAPTION_H / 2, 'Barres', CINZEL(19, 700), NAME, anchor='lm')
+    text(c, CAPTION_X + 50 + name_w + 12, CAPTION_Y + CAPTION_H / 2, sentence, GOTHIC(18), NARR_TEXT, anchor='lm')
+    return c.save(name)
+
+
+def hit_line(c, x, mid, size, anchor='lm', white=True):
+    """'ENEMY HIT' (white) and the value (gold) on one line from x."""
+    f = CINZEL(size, 800)
+    if anchor == 'rm':
+        vw = f.getlength(' ' + MINUS + '5%') / S
+        text(c, x, mid, ' ' + MINUS + '5%', f, ACCENT, anchor='rm', stroke=1.5)
+        text(c, x - vw, mid, 'ENEMY HIT', f, (255, 255, 255) if white else ACCENT, anchor='rm', stroke=1.5)
+        return
+    text(c, x, mid, 'ENEMY HIT', f, (255, 255, 255) if white else ACCENT, anchor='lm', stroke=1.5)
+    text(c, x + f.getlength('ENEMY HIT ') / S, mid, MINUS + '5%', f, ACCENT, anchor='lm', stroke=1.5)
+
+
+def m1(c):
+    """M1: no word: the shield says DEFEND; ENEMY HIT −5% across the ribbon."""
+    x0 = BARRES_CARD[0]
+    ribbon(c, lambda x1, mid: hit_line(c, x0 + 48, mid, 20), left=None)
+
+
+def m2(c):
+    """M2: GUARD (shorter than DEFEND) and ENEMY HIT −5% smaller after it."""
+    ribbon(c, lambda x1, mid: hit_line(c, x1 - 10, mid + 1, 14, anchor='rm', white=False), left='GUARD', left_size=21)
+
+
+def m3(c):
+    """M3: two lines at the right, the top one larger than L4's (14 px, not 11)."""
+    def right(x1, mid):
+        text(c, x1 - 10, mid - 10, 'ENEMY HIT', CINZEL(14, 800), (255, 255, 255), anchor='rm', stroke=1)
+        text(c, x1 - 10, mid + 9, MINUS + '5%', CINZEL(22, 800), ACCENT, anchor='rm', stroke=1.5)
+    ribbon(c, right, left_size=23)
+
+
+def m4(c):
+    """M4: a large shield over the ribbon's left end holds the value; ENEMY HIT large after it."""
+    x0 = BARRES_CARD[0]
+    ribbon(c, lambda x1, mid: text(c, x0 + 70, mid, 'ENEMY HIT', CINZEL(22, 800), (255, 255, 255), anchor='lm', stroke=1.5),
+           left=None, badge=False)
+    cx, y = x0 + 30, 652
+    shield(c, cx, y, 52, 62, rim=3)
+    text(c, cx, y + 26, MINUS + '5%', CINZEL(17, 900), (255, 255, 255), anchor='mm', stroke=2)
+
+
+def m5(c):
+    """M5: DEFEND on the ribbon, ENEMY HIT −5% on a gold tag hanging from its lower edge at the right."""
+    x0, _, x1, _ = BARRES_CARD
+    ribbon(c, lambda x1_, mid: None)
+    f = CINZEL(15, 800)
+    t = 'ENEMY HIT ' + MINUS + '5%'
+    w = f.getlength(t) / S + 20
+    tx, ty = x1 - 4 - w, 708
+    lay, d = c.draw()
+    d.rectangle(s(tx + 2, ty + 3, tx + w + 2, ty + 25), fill=(0, 0, 0, 110))
+    d.rectangle(s(tx, ty, tx + w, ty + 22), fill=ACCENT + (255,), outline=(120, 90, 36, 255), width=S)
+    c.add(lay)
+    text(c, tx + w / 2, ty + 11, t, f, INK, anchor='mm')
+
+
+def m6(c):
+    """M6: a taller ribbon in two rows: DEFEND, then ENEMY HIT −5% under it."""
+    x0 = BARRES_CARD[0]
+    ribbon(c, lambda x1, mid: hit_line(c, x0 + 48, mid + 13, 16), y0=656, h=60, left_size=23, left_y=673)
+
+
+def enemy_hit():
+    shots = [('L4 (the last round)', label('L4-stacked.png', stacked('ENEMY HIT', MINUS + '5%'))),
+             ('M1 shield + ENEMY HIT ' + MINUS + '5%', framed('M1-no-word.png', m1)),
+             ('M2 GUARD + ENEMY HIT ' + MINUS + '5%', framed('M2-guard.png', m2)),
+             ('M3 two lines, larger', framed('M3-two-lines.png', m3)),
+             ('M4 the value in a large shield', framed('M4-big-shield.png', m4)),
+             ('M5 a gold tag under the ribbon', framed('M5-tag.png', m5)),
+             ('M6 a taller ribbon, two rows', framed('M6-two-rows.png', m6))]
+    crop = (0, 560, 330, 770)
+    k = 2
+    w, h = (crop[2] - crop[0]) * k, (crop[3] - crop[1]) * k
+    top = 34
+    out = Image.new('RGB', (2 * w + 30, 4 * (h + top) + 20), (16, 16, 18))
+    d = ImageDraw.Draw(out)
+    f = ImageFont.truetype(REPO + '/godot/fonts/BIZUDGothic-Regular.ttf', 22)
+    for i, (title, img) in enumerate(shots):
+        x, y = 10 + (i % 2) * (w + 10), 10 + (i // 2) * (h + top)
+        d.text((x + 4, y + 4), title, font=f, fill=(236, 226, 204))
+        out.paste(img.crop(crop).convert('RGB').resize((w, h), Image.LANCZOS), (x, y + top))
+    out.save(os.path.join(OUT, 'M-sheet.png'))
+
+
+
+# ---------------------------------------------------------------------------------------------------- M2 with DEFEND
+
+# The owner (2026-10-21): M2's one line, but DEFEND, not GUARD; DEFEND smaller or the shield further left if it does not fit.
+# Each is drawn with the smallest and the largest value (−2% and −21%, RND(20) + 1), so the fit is the worst case's.
+
+def n_variant(badge_x, defend_size, hit_size, value, hit_white=False):
+    x0, _, x1, _ = BARRES_CARD
+    left_x = badge_x + 22
+    f = CINZEL(hit_size, 800)
+    t = 'ENEMY HIT ' + MINUS + value + '%'
+
+    def draw(c):
+        def right(x1_, mid):
+            vw = f.getlength(' ' + MINUS + value + '%') / S
+            text(c, x1 - 10, mid + 1, ' ' + MINUS + value + '%', f, ACCENT, anchor='rm', stroke=1.5)
+            text(c, x1 - 10 - vw, mid + 1, 'ENEMY HIT', f, (255, 255, 255) if hit_white else ACCENT, anchor='rm', stroke=1.5)
+        ribbon(c, right, left_size=defend_size, badge_x=badge_x, left_x=left_x)
+    gap = (x1 - 10 - f.getlength(t) / S) - (x0 + left_x + CINZEL(defend_size, 800).getlength('DEFEND') / S)
+    return draw, gap
+
+
+def n_sheet():
+    variants = [
+        ('N1 DEFEND 21, ENEMY HIT 14', 26, 21, 14, False),
+        ('N2 shield left, DEFEND 20, ENEMY HIT 15', 14, 20, 15, False),
+        ('N3 shield left, DEFEND 18, ENEMY HIT 16', 14, 18, 16, False),
+        ('N4 as N3, ENEMY HIT white', 14, 18, 16, True),
+        ('N5 shield on the tail, DEFEND 19, ENEMY HIT 16', 4, 19, 16, False),
+        ('N6 shield on the tail, DEFEND 17, ENEMY HIT 17', 4, 17, 17, False),
+    ]
+    rows = []
+    for title, bx, ds, hs, white in variants:
+        pair = []
+        for value in ('2', '21'):
+            draw, gap = n_variant(bx, ds, hs, value, white)
+            pair.append(framed('N-%s-%s.png' % (title.split()[0], value), draw))
+            print('%s  value %s: gap %.0f px' % (title, value, gap))
+        rows.append((title, pair))
+    crop = (0, 600, 330, 770)
+    k = 1.5
+    w, h = int((crop[2] - crop[0]) * k), int((crop[3] - crop[1]) * k)
+    top = 34
+    out = Image.new('RGB', (2 * w + 30, len(rows) * (h + top) + 20), (16, 16, 18))
+    d = ImageDraw.Draw(out)
+    f = ImageFont.truetype(REPO + '/godot/fonts/BIZUDGothic-Regular.ttf', 22)
+    for r, (title, pair) in enumerate(rows):
+        y = 10 + r * (h + top)
+        d.text((14, y + 4), title + '   (' + MINUS + '2% | ' + MINUS + '21%)', font=f, fill=(236, 226, 204))
+        for i, img in enumerate(pair):
+            out.paste(img.crop(crop).convert('RGB').resize((w, h), Image.LANCZOS), (10 + i * (w + 10), y + top))
+    out.save(os.path.join(OUT, 'N-sheet.png'))
+    # the same at the game's size, for reading
+    k = 1
+    w, h = crop[2] - crop[0], crop[3] - crop[1]
+    out = Image.new('RGB', (2 * w + 30, len(rows) * (h + top) + 20), (16, 16, 18))
+    d = ImageDraw.Draw(out)
+    for r, (title, pair) in enumerate(rows):
+        y = 10 + r * (h + top)
+        d.text((14, y + 4), title.split()[0], font=f, fill=(236, 226, 204))
+        for i, img in enumerate(pair):
+            out.paste(img.crop(crop).convert('RGB'), (10 + i * (w + 10), y + top))
+    out.save(os.path.join(OUT, 'N-sheet-1x.png'))
+
+
 if __name__ == '__main__':
     shots = [('D0 now', d0_now()), ('D1 shield on the portrait', d1_shield()), ('D2 ribbon across the card', d2_ribbon()),
              ('D3 over the army in the scene', d3_scene()), ('D4 rising number', d4_floating()),
              ('D5 caption at the scene\'s foot', d5_caption())]
     sheet(shots)
+    labels()
+    enemy_hit()
+    n_sheet()

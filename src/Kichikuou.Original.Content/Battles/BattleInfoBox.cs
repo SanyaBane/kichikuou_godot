@@ -6,7 +6,7 @@ public enum InfoBoxKind
     /// <summary>Our narration panel in the scene's middle, the box's sentences in it (mock-up K1): every box not below.</summary>
     Panel,
 
-    /// <summary>A unit's defence (<c>FIGT.ADV:1399</c>): a "DEF +n" badge flashing on its card, the wait answered at once.</summary>
+    /// <summary>A unit's defence (<c>FIGT.ADV:1399</c>): an "ENEMY HIT −n%" ribbon flashing on its card, the wait answered at once.</summary>
     Defence,
 
     /// <summary>A unit or a commander down (<c>FIGTﾐｶDE.ADV</c>, <c>FIGTﾃｷDE.ADV</c>): a stamp across its dimmed card, the player's click.</summary>
@@ -28,7 +28,7 @@ public enum InfoBoxKind
 /// <param name="Kind">How the box shows.</param>
 /// <param name="Sentences">The page's text: the box's narrow line breaks flowed into sentences, one per paragraph (an empty line parts them).</param>
 /// <param name="Place">The card a <see cref="InfoBoxKind.Defence"/> or a <see cref="InfoBoxKind.Fall"/> lands on.</param>
-/// <param name="Mark">The badge's text ("DEF +7") or the stamp's ("FELL IN BATTLE").</param>
+/// <param name="Mark">A defence's ribbon's text ("ENEMY HIT −7%", <see cref="BattlePresenter.DefenceMark"/>) or the stamp's ("FELL IN BATTLE").</param>
 /// <param name="Results">The results plate as it stands now.</param>
 public sealed record BattleInfoBox(InfoBoxKind Kind, IReadOnlyList<string> Sentences, BattlePlace? Place = null, string Mark = "",
     BattleResults? Results = null)

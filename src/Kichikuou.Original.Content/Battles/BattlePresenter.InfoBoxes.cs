@@ -84,7 +84,7 @@ public sealed partial class BattlePresenter
                 if (slot is < 1 or > 4 || values.Count == 0)
                     return panel;
                 return new BattleInfoBox(InfoBoxKind.Defence, [DefenceSentence(page)], new BattlePlace(BattleSide.Player, slot),
-                    "DEF +" + values[0].Value);
+                    DefenceMark(values[0].Value));
             }
             if (text.File is PlayerDownFile or EnemyDownFile)
             {
@@ -134,8 +134,15 @@ public sealed partial class BattlePresenter
     }
 
     /// <summary>
-    /// The defence's plate: its sentence without the unit's name (the first line, which the card shows) and the increase (the
-    /// last, the badge's), "Prepared for the enemy's attack"; the whole page when it is not so.
+    /// The defence's ribbon text for the printed increase (<c>FIGT.ADV:1399</c>, the slot's new state, 2-21): what it does —
+    /// that many points off the enemy's hit chance against the unit till the round's end (docs/battle/02-resolution.md §6.10),
+    /// not the Defense stat (owner, 2026-10-21, mock-up N5).
+    /// </summary>
+    public static string DefenceMark(int increase) => $"ENEMY HIT −{increase}%";
+
+    /// <summary>
+    /// The defence's caption: its sentence without the unit's name (the first line, which the caption has apart) and the
+    /// increase (the last, the ribbon's), "Prepared for the enemy's attack"; the whole page when it is not so.
     /// </summary>
     private string DefenceSentence(IReadOnlyList<string> page)
     {

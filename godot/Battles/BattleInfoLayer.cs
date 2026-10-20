@@ -6,7 +6,7 @@ namespace Kichikuou.Game.Battles;
 
 /// <summary>
 /// The battle's info boxes (<c>WAO_SUB</c> 143/153) on our battle screen (docs/ui/messages.md, §5 step 5; the owner's
-/// mock-ups K3 and K1, 2026-10-18/19), drawn from <see cref="BattleInfoBox"/>: a defence flashing as a "DEFEND · DEF +n" ribbon
+/// mock-ups K3 and K1, 2026-10-18/19), drawn from <see cref="BattleInfoBox"/>: a defence flashing as a "DEFEND · ENEMY HIT −n%" ribbon
 /// across the unit's card and its sentence as a caption at the scene's foot (mock-ups D2 and D5, 2026-10-21); a fall's stamp across the dimmed card; the end as one results plate — the
 /// reason as its title, each army's damages, the EXP, a row for each level-up —; every other box as our narration panel in
 /// the scene's middle. The click's triangle while the player's key is awaited. It takes no input: the screen's click answers
@@ -178,7 +178,8 @@ internal sealed partial class BattleInfoLayer : Control
 
     /// <summary>
     /// A defence (mock-ups D2 and D5, 2026-10-21, in place of K3a's badge and plate): the card glows blue, a steel ribbon
-    /// across its middle — tails past the card's edges, a shield, "DEFEND", the increase ("DEF +n") in gold — and the sentence
+    /// across its middle — tails past the card's edges, a shield on the left one, "DEFEND", what the defence does in gold
+    /// ("ENEMY HIT −n%", mock-up N5: n points off the enemy's hit chance, not the Defense stat) — and the sentence
     /// with the unit's name as a caption at the scene's foot on its side, above the order strip, unless a speech is up.
     /// </summary>
     private void DrawDefence(BattleInfoBox box, string name, Rect2 card, float alpha)
@@ -200,11 +201,11 @@ internal sealed partial class BattleInfoLayer : Control
             [SteelTop * tint, SteelTop * tint, SteelFoot * tint, SteelFoot * tint]);
         DrawLine(new Vector2(x0 - 6, y0 + 2), new Vector2(x1 + 6, y0 + 2), Accent * tint, Lacquer.Line(2, _k));
         DrawLine(new Vector2(x0 - 6, y1 - 2), new Vector2(x1 + 6, y1 - 2), Accent * tint, Lacquer.Line(2, _k));
-        DrawShield(x0 + 26, y0 + 7, 26, 32, 2, alpha);
+        DrawShield(x0 + 4, y0 + 7, 26, 32, 2, alpha);                      // on the tail: room for the mark at −21% (N5)
         var ribbon = new Rect2(x0, y0, x1 - x0, y1 - y0);
-        Outlined(_heavy, new Vector2(x0 + 48, Lacquer.Baseline(ribbon, _heavy, 25)), "DEFEND", 25, Colors.White * tint, tint);
-        float markWidth = _heavy.GetStringSize(box.Mark, fontSize: 22).X;
-        Outlined(_heavy, new Vector2(x1 - 10 - markWidth, Lacquer.Baseline(ribbon, _heavy, 22)), box.Mark, 22, Accent * tint, tint);
+        Outlined(_heavy, new Vector2(x0 + 26, Lacquer.Baseline(ribbon, _heavy, 19)), "DEFEND", 19, Colors.White * tint, tint);
+        float markWidth = _heavy.GetStringSize(box.Mark, fontSize: 16).X;
+        Outlined(_heavy, new Vector2(x1 - 10 - markWidth, Lacquer.Baseline(ribbon, _heavy, 16) + 1), box.Mark, 16, Accent * tint, tint);
 
         if (_speaking || box.Sentences is not [var sentence, ..])
             return;
