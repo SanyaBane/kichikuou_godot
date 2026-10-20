@@ -71,7 +71,6 @@ public class SaveSlotsTests
         Assert.Equal(SlotKind.MidTurn, moment.Kind);
         Assert.Equal("8", moment.Seal);
         Assert.Equal("LP 3 · M5 · W2", moment.ShortDate);
-        Assert.Equal("Mid-turn", moment.KindText);
         Assert.Equal("Stage 1 · Leazas civil war", moment.StageText);
         Assert.Equal("116400K GOLD", moment.BudgetText);
         Assert.Equal("2 provinces", moment.RealmText);

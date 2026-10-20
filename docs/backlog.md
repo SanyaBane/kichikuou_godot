@@ -162,7 +162,8 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   candidates first. Done so far: MsgSkip skips the opening whole (2026-10-11,
   [window-menu.md](window-menu.md), MsgSkip); a manual save is the game as it is now, not the turn's start
   (2026-10-19, owner's decision 26 in [strategy/README.md](strategy/README.md); STR-11 fixed). Our Save/Load screen
-  tells them apart (a kind tag; [ui/save-load.md](ui/save-load.md), §5); the original's lists still cannot.
+  tells them apart on a load (its note says what becomes of Auto; [ui/save-load.md](ui/save-load.md), §5, §8); the
+  original's lists still cannot.
   Replenish from the deployment screen's Refill column, in a defence too while the week's troop order is unspent
   (owner's decision 27 in [strategy/README.md](strategy/README.md); [ui/deployment-table.md](ui/deployment-table.md),
   "Replenish on the deployment screen"), built and accepted by the owner (2026-10-20).

@@ -91,14 +91,6 @@ public sealed record SaveSlot(
         }
     }
 
-    /// <summary>The kind's tag: "Auto", "Turn start", "Mid-turn".</summary>
-    public string KindText => Kind switch
-    {
-        SlotKind.Auto => "Auto",
-        SlotKind.TurnStart => "Turn start",
-        _ => "Mid-turn",
-    };
-
     /// <summary>The story stage (<c>StoryStage</c>, docs/variables.tsv).</summary>
     public string StageText => Stage switch
     {

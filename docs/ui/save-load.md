@@ -181,3 +181,10 @@ F1-F4 (the same script) draw it: F1 by slot ascending, F2 descending, F3 by date
   "Load this game" and "Save here" before).
 - **Unattended play**: `--saveload` clicks through the four orders on the load list (dumps `save-load-date`,
   `save-load-date-oldest`, `save-load-slot-down`) and clicks the player's own order back.
+
+## 8. No kind tags on the manual saves (owner, 2026-10-20)
+
+Since decision 26 every manual save is a save of the moment, so the owner had the "Mid-turn" and "Turn start" tags
+taken off the rows and the page, and ", mid-turn" off the Save page's "Saving:" line; Auto keeps its gold tag in its
+row. A slot written before decision 26 still loads as a turn's start (Auto becomes it); only the load's note above
+the red button says so. The rows' time written is drawn about a fifth larger (14 px, 16 when sorted by date).

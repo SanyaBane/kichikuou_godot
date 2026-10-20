@@ -31,8 +31,6 @@ internal sealed partial class SaveLoadView : Control
 
     private static readonly Color ChosenFill = Color.Color8(60, 30, 22);
     private static readonly Color AutoGold = Color.Color8(138, 104, 34);
-    private static readonly Color TurnStartTag = Color.Color8(86, 70, 50);
-    private static readonly Color MidTurnTag = Color.Color8(36, 92, 96);       // the command panel's Trade colour
     private static readonly Color TagText = Color.Color8(246, 232, 206);
 
     private readonly FacePictures _pictures;
@@ -389,9 +387,10 @@ internal sealed partial class SaveLoadView : Control
             return;
         }
         Text(_cinzel, 15, x0 + 46, y0 + top, held.ShortDate, off ? Lacquer.OffText : Lacquer.Name);
-        DrawKindTag(x0 + 46, y0 + top + 13, held, off);
+        if (held.Kind == SlotKind.Auto)
+            DrawAutoTag(x0 + 46, y0 + top + 13, off);
         bool key = _order.Key == SlotSortKey.Date && slot != 1 && !off;   // sorted by date: the time is the bright line
-        TextRight(_gothic, key ? 13 : 12, rect.End.X - 10, y0 + top + 23, held.WrittenShort,
+        TextRight(_gothic, key ? 16 : 14, rect.End.X - 10, y0 + top + 23, held.WrittenShort,
             off ? Lacquer.OffText : key ? Lacquer.Value : Lacquer.Label);
     }
 
@@ -402,20 +401,13 @@ internal sealed partial class SaveLoadView : Control
         TextCentred(_cinzel, 14, rect.GetCenter().X, rect.GetCenter().Y + 1, text, Lacquer.SealText);
     }
 
-    /// <summary>The slot's kind as a tag: Auto gold, a turn's start quiet, a save of the moment teal. Returns its width.</summary>
-    private float DrawKindTag(float x, float y, SaveSlot slot, bool off = false)
+    /// <summary>Auto's tag, gold (the manual saves have none: every new one is a save of the moment, decision 26).</summary>
+    private void DrawAutoTag(float x, float y, bool off = false)
     {
-        string text = slot.KindText;
+        const string text = "Auto";
         float w = _gothic.GetStringSize(text, fontSize: 12).X + 14;
-        var colour = slot.Kind switch
-        {
-            SlotKind.Auto => AutoGold,
-            SlotKind.TurnStart => TurnStartTag,
-            _ => MidTurnTag,
-        };
-        DrawRect(new Rect2(x, y, w, 20), off ? Lacquer.OffButton : colour);
+        DrawRect(new Rect2(x, y, w, 20), off ? Lacquer.OffButton : AutoGold);
         Text(_gothic, 12, x + 7, y + 10, text, off ? Lacquer.OffText : TagText);
-        return w;
     }
 
     private void DrawPage(SaveList list)
@@ -434,7 +426,6 @@ internal sealed partial class SaveLoadView : Control
         {
             string title = $"{label} · {held.DateText}";
             Text(_cinzel, 22, PageX, PageY + 14, title, Lacquer.Name);
-            DrawKindTag(PageX + _cinzel.GetStringSize(title, fontSize: 22).X + 16, PageY + 4, held);
         }
         else
         {
@@ -467,7 +458,7 @@ internal sealed partial class SaveLoadView : Control
         {
             if (_now is { } now)
             {
-                Text(_gothic, 15, PageX, by + 16, $"Saving: {now.DateText}, mid-turn", Lacquer.Text);
+                Text(_gothic, 15, PageX, by + 16, $"Saving: {now.DateText}", Lacquer.Text);
                 Text(_gothic, 14, PageX, by + 40, $"{now.BudgetText} · {now.RealmText} · {now.Troops} troops", Lacquer.Quiet);
             }
             DrawButton(held is null ? "Save" : $"Save over {label}");
