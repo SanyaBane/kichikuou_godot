@@ -282,19 +282,21 @@ internal sealed partial class BattleBoardView : Control
     private int _guards;
 
     /// <summary>
-    /// A unit's Defend (<c>FIGT.ADV:1399</c>, its badge flashing on the card): our Guard effect after Sengoku Rance's
-    /// guard actions' (docs/ui/battle-screen.md, "The exchange's effects"), a wall of light raised in front of the
-    /// defender, who stands alone on the player's half then. It plays out by itself; none with Option → Battle Screen… →
-    /// "Effects" off, or when the armies' moves are at once (skipping, <c>--fast</c>).
+    /// A defence (docs/ui/battle-screen.md, "The exchange's effects"): our Guard effect after Sengoku Rance's guard
+    /// actions', a wall of light raised in front of the defender on <paramref name="side"/>'s half, mirrored for the
+    /// enemy's — a unit's Defend (<c>FIGT.ADV:1399</c>, its badge flashing on the card), a commander's
+    /// (<see cref="BattlePresenter.EnemyDefence"/>). False when it does not play: Option → Battle Screen… → "Effects"
+    /// off, or the armies' moves at once (skipping, <c>--fast</c>); else it lasts <see cref="GuardEffect.Seconds"/>.
     /// </summary>
-    public void PlayGuard()
+    public bool PlayGuard(BattleSide side)
     {
         if (_armiesInstant || BattleScreenSettings.Get(BattleScreenSettings.Effects) < 0.5)
-            return;
-        _effect.Mirrored = false;
+            return false;
+        _effect.Mirrored = side == BattleSide.Enemy;
         _effect.Dark = false;
         _effect.Start(GuardEffect.Build(++_guards));
         _effect.Playing = true;
+        return true;
     }
 
     /// <summary>A layer of the scene (<see cref="BattleScene.FieldY"/>), over the ones before it.</summary>

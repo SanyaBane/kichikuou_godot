@@ -12,6 +12,7 @@ using Kichikuou.Content.Scripts;
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Game.Battles;
+using Kichikuou.Game.Battles.Effects;
 using Kichikuou.Original.Combat;
 using Kichikuou.Original.Content.Battles;
 using Kichikuou.Original.Content.Strategy;
@@ -631,6 +632,12 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             await WeekReportAsync(report);
         if (scriptEvent is EngagementSceneEvent)
             await WaitForArmiesAsync();
+        if (scriptEvent is BattlefieldBackgroundEvent && _presenter.Battle.EnemyDefences != _enemyDefencesSeen)
+        {
+            _enemyDefencesSeen = _presenter.Battle.EnemyDefences;
+            if (BattleScreenShown)
+                await GuardAsync(BattleSide.Enemy);                     // the enemy's defence prints nothing: its redraw shows it
+        }
         if (scriptEvent is ShotsFrameEvent { Step.Value: 0 } && _options.Auto && !_options.Fast && BattleScreenShown
             && _presenter.Battle.Effect is { } effect && _effectShots.Add(effect))
             _ = EffectShotAsync($"effect-{effect.Kind}-{effect.Side}".ToLowerInvariant());
@@ -701,7 +708,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// <summary>
     /// Unattended play's dump of an exchange's effect (in a window, without <c>--fast</c>): once a launch for each
     /// effect and side, at its peak (frame 3, 150 ms after the shots' start), <c>effect-melee-player</c> and the like; a
-    /// Defend's Guard (<c>effect-guard-player</c>) at its wall's height, <paramref name="after"/> 400 ms.
+    /// defence's Guard (<see cref="GuardAsync"/>) after <paramref name="after"/>.
     /// </summary>
     private async Task EffectShotAsync(string what, double after = 0.15)
     {
@@ -712,7 +719,24 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     }
 
     private readonly HashSet<ExchangeEffect> _effectShots = [];
-    private bool _guardShot = true;
+
+    /// <summary>
+    /// A defence's Guard effect on our battle screen (docs/ui/battle-screen.md, "The exchange's effects"), waited for
+    /// before the battle goes on (owner, 2026-10-20: with Auto-Def the next turn took the defender off the scene at once);
+    /// nothing when it does not play. Unattended play dumps it once a side, at its wall's height
+    /// (<c>effect-guard-player</c>, <c>effect-guard-enemy</c>).
+    /// </summary>
+    private async Task GuardAsync(BattleSide side)
+    {
+        if (!_battleView.PlayGuard(side))
+            return;
+        if (_options.Auto && _guardShots.Add(side))
+            _ = EffectShotAsync($"effect-guard-{side}".ToLowerInvariant(), 0.4);
+        await DelayAsync(GuardEffect.Seconds);
+    }
+
+    private readonly HashSet<BattleSide> _guardShots = [];
+    private int _enemyDefencesSeen;
 
     /// <summary>
     /// Animates a palette fade over its <see cref="FadeRequest.Duration"/>, never skipped, unless
@@ -1060,12 +1084,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             if (passed.Kind == InfoBoxKind.Defence)
             {
                 _battleView.Info.Flash(passed);
-                _battleView.PlayGuard();
-                if (_options.Auto && !_options.Fast && _guardShot)
-                {
-                    _guardShot = false;
-                    _ = EffectShotAsync("effect-guard-player", 0.4);            // the wall at its height
-                }
+                await GuardAsync(BattleSide.Player);
                 if (_options.Auto && Windowed && _messageDumps.Add("info-defence"))
                 {
                     await DelayAsync(0.35);                                     // the badge at its height

@@ -187,6 +187,59 @@ public sealed partial class BattlePresenter
     /// </summary>
     public ExchangeCounters? ExchangeCounters { get; private set; }
 
+    // ------------------------------------------------------------------ the enemy's defence
+
+    /// <summary>
+    /// The place of the enemy's last defence (<c>FIGT.ADV:1450-1464</c>: the actor's slot state set to 20, then the
+    /// field's redraw, <c>L_0232f</c>; it prints nothing), taken at a redraw's start where a commander's state has become
+    /// 20 since the last one; null before any. Only once the round's turns have started (its first panel highlight): the
+    /// redraws before (<c>L_00295</c>, <c>FIGT.ADV:105-313</c>: the header, the redraw, the Land of Death's, then the slots'
+    /// states reset; and those before a battle's first round) still show the last round's states — at a battle's start
+    /// an earlier battle's. <see cref="EnemyDefences"/> counts them, so a view plays each once (our
+    /// Guard effect, docs/ui/battle-screen.md, "The exchange's effects"). Told by the record, not the slot: a defender
+    /// keeps its state when it moves up (docs/battle/01-flow.md §9.4).
+    /// </summary>
+    public BattlePlace? EnemyDefence { get; private set; }
+
+    /// <summary>How many of the enemy's defences the redraws have shown (<see cref="EnemyDefence"/>).</summary>
+    public int EnemyDefences { get; private set; }
+
+    private HashSet<int> _defendingCmdrs = [];
+
+    /// <summary>Whether the round's turns have started (its first panel highlight).</summary>
+    private bool _turnsStarted;
+
+    /// <summary>A round's header or a battle's start: its states are reset before its first turn.</summary>
+    private void RoundStarts()
+    {
+        _turnsStarted = false;
+        _defendingCmdrs.Clear();
+    }
+
+    /// <summary>At a redraw's start: the commanders defending now, and a defence for each that was not at the last one.</summary>
+    private void NoteEnemyDefences()
+    {
+        if (State is not { } s)
+            return;
+        if (!_turnsStarted)
+            return;
+        var defending = new HashSet<int>();
+        for (int slot = 1; slot <= 4; slot++)
+        {
+            var place = new BattlePlace(BattleSide.Enemy, slot);
+            int record = BattleBoard.Record(s, place);
+            if (record == 0 || BattleBoard.StateOf(s, place) != 20)
+                continue;
+            defending.Add(record);
+            if (!_defendingCmdrs.Contains(record))
+            {
+                EnemyDefence = place;
+                EnemyDefences++;
+            }
+        }
+        _defendingCmdrs = defending;
+    }
+
     /// <summary>The result screen's values (<c>FIGTATTK.ADV:136-232</c>): the current ones less the two damages.</summary>
     private static BattleStrike Blow(GameState s)
     {

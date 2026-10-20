@@ -210,20 +210,47 @@ public class ExchangeEffectTests
         /// has a shot), and a two-sided exchange is direct against direct with the turn's actor in <c>Bt_MsgMode</c> (3 or 4);
         /// the troops of a Rance Attack or a By la Way fire nothing, nor a beam's, a War Dance's, a Chuhai's or a Goliath's (nor its commander at the commander), nor a Soaring Wave's (its
         /// commander fires two shots at the commander); a
-        /// Whirlwind Shot or a High Speed fires only the commander's one shot at the commander.
+        /// Whirlwind Shot or a High Speed fires only the commander's one shot at the commander. And each of the enemy's
+        /// defences — its turn (an enemy panel highlighted, <c>Bt_MsgMode</c> 4) ending in a redraw without an exchange, its
+        /// actor's state 20 — is one <see cref="BattlePresenter.EnemyDefence"/> at the actor's place (its Guard), and no
+        /// other redraw notes one.
         /// </summary>
         [CaptureTheory]
         [ShardedData(nameof(BattleSceneTests.Captures), typeof(BattleSceneTests), Shards)]
-        public async Task Every_exchange_plays_the_effect_of_a_side_that_fires(string file)
+        public async Task Every_exchange_and_enemy_defence_plays_its_effect(string file)
         {
             var capture = GoldenCapture.Load(Path.Combine(LocalData.GoldenDirectory, file));
             var presenter = new BattlePresenter(Texts.Value, Cgs.Value, new BoxGlyphs());
             var wrong = new List<string>();
             var kinds = new Dictionary<string, int>();
-            int exchanges = 0;
+            int exchanges = 0, defences = 0;
+            bool engaged = false, enemyTurn = false;
             var view = new ObservingView(e =>
             {
                 presenter.Show(e);
+                if (e is EngagementSceneEvent)
+                    engaged = true;
+                if (e is PanelHighlightEvent highlight && BattleBoard.PanelPlace(highlight.Panel.Value) is { Side: BattleSide.Enemy })
+                    enemyTurn = true;
+                if (e is BattlefieldBackgroundEvent && presenter.State is { } r)
+                {
+                    int slot = r.Bt_EnemyActSlot.Value;
+                    var actor = new BattlePlace(BattleSide.Enemy, slot);
+                    int record = slot is >= 1 and <= 4 ? BattleBoard.Record(r, actor) : 0;
+                    if (enemyTurn && !engaged && r.Bt_MsgMode == 4 && record != 0 && BattleBoard.StateOf(r, actor) == 20)
+                    {
+                        defences++;
+                        if (presenter.EnemyDefences != defences || presenter.EnemyDefence != actor)
+                            wrong.Add($"enemy defence {defences} by commander {record}: {presenter.EnemyDefences} noted, at {presenter.EnemyDefence}");
+                    }
+                    else if (presenter.EnemyDefences != defences)
+                    {
+                        wrong.Add($"a defence noted at {presenter.EnemyDefence} after exchange {exchanges} with no enemy turn defending: "
+                            + $"turn {enemyTurn}, engaged {engaged}, mode {r.Bt_MsgMode.Value}, the enemy's acting slot {slot}");
+                        defences = presenter.EnemyDefences;
+                    }
+                    (engaged, enemyTurn) = (false, false);
+                }
                 if (e is not ShotsFrameEvent { Step.Value: 0 } || presenter.State is not { } s)
                     return;
                 exchanges++;
@@ -269,9 +296,10 @@ public class ExchangeEffectTests
                     wrong.Add($"exchange {exchanges}: two-sided, actions {s.Bt_PlayerAction.Value}, {s.Bt_EnemyAction.Value}, mode {s.Bt_MsgMode.Value}");
             });
             await GoldenReplay.RunAsync(capture, view: view, started: presenter.Start);
-            output.WriteLine($"{file}: {exchanges} exchanges; " + string.Join(", ", kinds.OrderBy(k => k.Key).Select(k => $"{k.Key} {k.Value}")));
-            Assert.Equal(exchanges, presenter.EffectsStarted);
+            output.WriteLine($"{file}: {exchanges} exchanges, {defences} enemy defences; " + string.Join(", ", kinds.OrderBy(k => k.Key).Select(k => $"{k.Key} {k.Value}")));
             Assert.Empty(wrong);
+            Assert.Equal(exchanges, presenter.EffectsStarted);
+            Assert.Equal(defences, presenter.EnemyDefences);
         }
     }
 

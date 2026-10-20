@@ -112,6 +112,7 @@ public sealed partial class BattlePresenter
         StrategyBackdrop = null;
         _strategyEffect = false;
         _scoutReplies.Clear();
+        RoundStarts();
         DrawMapTiles();
         BlitMapView();
     }
@@ -127,6 +128,7 @@ public sealed partial class BattlePresenter
         StrategyBackdrop = null;
         _strategyEffect = false;
         _scoutReplies.Clear();
+        RoundStarts();
         DrawMapTiles();
     }
 
@@ -175,12 +177,17 @@ public sealed partial class BattlePresenter
         {
             case BattlefieldBackgroundEvent e:
                 ForgetResults();
+                NoteEnemyDefences();
                 Background(e.Cg);
                 break;
             case SlotPanelEvent e: SlotPanel(e.Panel, e.Record); break;
-            case PanelHighlightEvent e: Highlight(e.Panel); break;
+            case PanelHighlightEvent e:
+                _turnsStarted = true;
+                Highlight(e.Panel);
+                break;
             case RoundHeaderEvent e:
                 ForgetResults();
+                RoundStarts();
                 DrawRoundHeader(e);
                 break;
             case WindowEvent e: Window(e.Op.Value, e.CallArg.Value); break;

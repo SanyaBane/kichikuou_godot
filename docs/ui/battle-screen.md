@@ -492,9 +492,20 @@ picture, the slot panels) is not shown. How it is built:
     "Defense Increase" into box 143 (`:1399`), which our screen shows as the badge on the unit's card
     (`InfoBoxKind.Defence`, docs/ui/messages.md, §5 step 5); the effect starts with the badge's flash
     (`BattleBoardView.PlayGuard`, from `GameScreen` where the badge's wait is answered), over the defender, who stands
-    alone on the player's half then ("The scene between exchanges"). The enemy's defence (`EState := 20`, `:1451-1464`)
-    prints nothing and goes to the redraw (`L_0232f`), so it plays none. No test reaches it (Godot only); `--auto` in a window without
-    `--fast` dumps it once a launch, at the wall's height (`effect-guard-player`, 400 ms after the badge).
+    alone on the player's half then ("The scene between exchanges"). The enemy's defence too (owner, 2026-10-20),
+    mirrored over the defending commander, the player's unit it picked as its target on the other half: it prints
+    nothing (`EState := 20`, `:1451-1464`, then the redraw, `L_0232f`), so the presenter tells it at the redraw's start
+    where a commander's state has become 20 since the last one (`BattlePresenter.EnemyDefence`, counted by
+    `EnemyDefences`; by the record, as a defender keeps its state when it moves up) — only once the round's turns have
+    started (its first panel highlight): the redraws before (the round's header, its redraw, the Land of Death's, then
+    the states' reset, `FIGT.ADV:105-313`; and those before a battle's first round) still show the last round's
+    states, at a battle's start an earlier battle's. **The battle waits for it** (owner, 2026-10-20: with Auto-Def the
+    next turn took the defender off the scene at once): `GameScreen.GuardAsync` holds the badge's wait, or the enemy's
+    redraw, for the effect's 0.7 s (`GuardEffect.Seconds`); nothing when it does not play. `ExchangeEffectTests` checks
+    in every captured battle that each enemy turn ending in a redraw without an exchange with its actor's state 20 is
+    one defence at its place and no other redraw notes one (46 in 24 captures); `--auto` in a window without `--fast`
+    dumps each side's once a launch, at the wall's height (`effect-guard-player`, `effect-guard-enemy`, 400 ms after its
+    start).
   - **A setting**: Option → Battle Screen… → "Effects: on/off", on by default (Sengoku Rance's Combat Effect Display);
     none while skipping (MsgSkip) or with `--fast`.
   **Wired in**: the presenter takes the effect at the shots' first frame (`ExchangeEffect.Of` on the state,

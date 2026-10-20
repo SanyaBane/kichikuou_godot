@@ -13,6 +13,9 @@ namespace Kichikuou.Game.Battles.Effects;
 /// </summary>
 internal static class GuardEffect
 {
+    /// <summary>How long it lasts: the reference's 14 frames.</summary>
+    public const double Seconds = 14 * EffectCanvas.FrameSeconds;
+
     /// <summary>Where the wall stands: its face, the curtain's front from frame 3 on.</summary>
     public const float Face = 400;
 
