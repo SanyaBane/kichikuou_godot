@@ -7,7 +7,7 @@ folder, with no tools of ours or anyone else's to run first. Today the port need
 all three with C# that runs on every platform the game is built for (Android cannot run a bundled
 native tool, [backlog.md](backlog.md), "Release").
 
-Status: **under way** (2026-10-20): steps 1-5 ✓. The facts come from a read-only sweep of the code and
+Status: **under way** (2026-10-20): steps 1-6 ✓. The facts come from a read-only sweep of the code and
 of xsys35c 1.13's source on 2026-10-20, at commit `3ce2455`.
 
 ## Why the decompiler is translated, not replaced (option B)
@@ -117,18 +117,24 @@ agent days, rough.
    rows 0xeb-0xee and 0xfa) — measured by `SjisTests`, so a platform decoder would not do. Content tests:
    the archive's names decode to `xsys35dc.hed`'s, every `.ain` message decodes, and all 577 distinct
    non-ASCII characters of `_extract\scenario` are characters of the table.
-6. **The decompiler** (~3-4 days), `Kichikuou.Content/Decompiler/`, translated from xsys35c
-   `decompiler/` (`xsys35dc.c`, `preprocess.c`, `decompile.c`, `cali.c`; ~2,800 lines of C, of which this
-   game reaches ~1,200-1,800): the `S380` header; the pre-pass marking code, data and labels (its byte
-   scans for `#` tables and `2F 80` kept exactly); the passes repeated until nothing changes (the
-   `analyzed` flag, the sticky `disable_else`); labels `L_%05x`; the command table with its argument
-   signatures (the ~76 commands and constructs this game uses; any other fails); expressions (`cali`);
-   the data blocks split into `"string"` and `[words]` lines; texts cut at marked bytes, a following
-   `R`/`A` on the same line, the escapes of `"`, `\` and `<`; UTF-8 out with CRLF; file names from the
-   archive. Not translated: `**` functions and `~` calls, `else`/`while`/`for` reconstruction beyond what
-   the passes need, `pragma`, the `<0x…>` escapes, the side files — this game has none of them (measured
-   on the extract), so each stays a loud failure. Test (content): all 201 files byte-identical to
-   `_extract\scenario`; and the time the whole decompile takes.
+6. **The decompiler** ✓ (2026-10-20). `Kichikuou.Content/Decompiler/`, translated from xsys35c 1.13
+   `decompiler/` (`decompile.c`, `preprocess.c`, `cali.c`, `xsys35dc.c`'s `sco_new`): `ScenarioDecompiler.Decompile`
+   turns the scenario archive and the `.ain` (or a list of pages and the `.ain`'s texts and names) into the files,
+   each named by its page's header (`Cﾒｲｷｭｳ.ADV`), UTF-8 without a byte order mark, CRLF; `WriteTo` writes them.
+   As xsys35dc it builds each page in Shift JIS and converts it at the end (`DecompileOutput`, `Sjis.Decode`), marks
+   every byte (code, data, label and a construct type) first by the byte scans of `preprocess.c` (the `#` tables and
+   `2F 80`, kept exactly), then by decompiling every page without output until no pass changes a mark an earlier
+   part of a page depends on (the `analyzed` flag; the sticky `disable_else`), then writes. Expressions are
+   `Cali.cs`. The command table is xsys35dc's whole (`ScenarioDecompiler.Commands.cs`), not only the ~70 commands
+   this game uses: its analysis passes read data as code before they know it is data, and a command it knows there
+   is not retried as data, so a shorter table could mark a page otherwise. Not translated, each a failure with the
+   file and the address: pages other than `S380`, a Unicode scenario, functions (`**`, `~`, the commands taking a
+   function), DLL calls, a page missing from the archive (xsys35dc's `_missing<n>.adv`), the side files
+   (`xsys35dc.hed`, `xsys35c.cfg`, `variables.txt`). Content test `DecompilerTests`: all 201 files byte-identical
+   to `_extract\scenario` (503,161 lines), in the order of `xsys35dc.hed`; the whole decompile, the archive read
+   included, takes ~0.6 s on the owner's machine, in 2 analysis passes, with no warning. Core tests
+   `ScenarioDecompilerTests` on pages written there (expressions, a condition and an `.ain` text, a data table found
+   in the second pass, an unknown command read as data, the refusals).
 7. **The version check** (~0.5 day). `Kichikuou.Content/GameFiles`: the SHA-256 of `KICHIKUSA.ALD`,
    `System39.ain`, `KICHIKUGA.ALD`, `KICHIKUGB.ALD`, `KICHIKUWA.ALD` and `_inmm.ini` against the table of
    the one version we read (hashes of the player's files are not their content, so the table is
