@@ -44,6 +44,9 @@ public static class GameData
 
     private static string DefaultGame => LocalPaths.GameDirectory ?? "";
 
+    /// <summary>The game folder the settings keep (the import screen's last), whatever is open now.</summary>
+    public static string SavedGameDirectory => Setting("game_dir", DefaultGame);
+
     /// <summary>The import of the game folder, once it is open (<see cref="OpenImport"/>, or the import screen).</summary>
     public static ImportedGame? Imported { get; set; }
 
@@ -64,7 +67,7 @@ public static class GameData
     public static bool OpenImport(out string? problem)
     {
         problem = null;
-        string folder = Setting("game_dir", DefaultGame);
+        string folder = SavedGameDirectory;
         if (folder.Length == 0)
         {
             problem = "No game folder is chosen yet.";

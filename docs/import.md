@@ -7,7 +7,7 @@ folder, with no tools of ours or anyone else's to run first. Today the port need
 all three with C# that runs on every platform the game is built for (Android cannot run a bundled
 native tool, [backlog.md](backlog.md), "Release").
 
-Status: **under way** (2026-10-20): steps 1-7 ✓, step 8 part 1 ✓. The facts come from a read-only sweep of the code and
+Status: **under way** (2026-10-20): steps 1-8 ✓. The facts come from a read-only sweep of the code and
 of xsys35c 1.13's source on 2026-10-20, at commit `3ce2455`.
 
 ## Why the decompiler is translated, not replaced (option B)
@@ -160,14 +160,24 @@ agent days, rough.
      `--import [DIR]` makes a launch read the import even where an extract is set, importing first (~0.8 s).
      Content test `DecompilerTests.The_import_caches_the_extracts_scenario`; a headless run from the kept save
      `user://saves-week18` with `--import --until battle` plays the week's attack on Oaks (6) as the extract does.
-   - Part 2: the import screen, at the start when there is no data (no extract, no whole import of the saved
-     folder). Mock-up round 1 (2026-10-20, `tools/ui/mock_import.py`, drawn on our wave backdrop: nothing of the
+   - **Part 2 ✓** (2026-10-20): the import screen, at the start when there is no data (no extract, no whole import
+     of the saved folder). Mock-up round 1 (2026-10-20, `tools/ui/mock_import.py`, drawn on our wave backdrop: nothing of the
      game can be drawn before the import), three looks in three states each — 1 choose the folder (Godot's native
      folder dialog), 2 importing (the stage and the bar), 3 refused (`GameFolderException`'s message):
      **A** a lacquer panel in the middle (the folder as a row, the steps with ticks, a gold bar, the refusal in a
      vermilion box); **B** a paper sheet in a lacquer frame (the steps as a numbered list 一 二 三, a vermilion bar,
      a stamp on a refusal); **C** a title card (the name large, one line and one button, a thin bar along the
-     screen's foot). Awaiting the owner's choice.
+     screen's foot). **The owner chose B** (2026-10-20), built as `godot/ImportScreen`: the paper sheet with the
+     steps 一 二 三, the folder field opening Godot's native folder dialog (`FileDialog`, `UseNativeDialog`), Import
+     running `GameImport.Import` on a worker thread under the vermilion bar (its stage as the second step's title),
+     a refusal in vermilion ink with the hashes on a small line and the stamp, "Choose another folder". Once
+     imported, the folder is kept (`game_dir` in `user://settings.cfg`) and the title (or what the development
+     switches asked for) opens. `Main` opens the screen when `GameData` has no data; with a saved folder it imports
+     at once (a whole cache is just opened, without the screen). `--import-screen [DIR]` shows it whatever data there
+     is; with DIR it imports DIR without the dialog into a fresh `user://import-look` and, with `--shots`, saves
+     `import-choose`, `import-progress`, `import-done` or `import-refused` (a window is needed). Checked in a window
+     on the owner's folder and on its `bgm` folder (refused: no `KICHIKUSA.ALD`). Not run: the start with no extract
+     set, which would need the owner's `user://settings.cfg` changed (its `extract_dir` is the extract).
 9. **Docs** (~0.5 day). CLAUDE.md, spike-findings ("Local layout": the extract is for development),
    README (installing: where to get the game and the translation, what to point the game at), the
    backlog.

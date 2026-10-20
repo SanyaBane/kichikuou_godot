@@ -182,7 +182,8 @@ docs/import.md (steps 1-4 done: `Content/Archives/AldArchive` reads the `.ALD` s
 `System39.ain`, `Content/Text/Sjis` decodes Shift JIS with xsys35c's own table; step 6 done: `Content/Decompiler`
 is xsys35dc 1.13's decompiler translated, its 201 files byte-identical to the extract; step 7 done:
 `Content/GameFiles` checks the folder's SHA-256 against the one known version; step 8 part 1 done:
-`Content/GameImport` decompiles into a cache, Godot's `GameData` reads the import where no extract is set, `--import`),
+`Content/GameImport` decompiles into a cache, Godot's `GameData` reads the import where no extract is set, `--import`;
+part 2 done: `godot/ImportScreen`, the owner's mock-up B, at the start when there is no data),
 the release's other items
 docs/backlog.md, "Release".
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
@@ -274,7 +275,9 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   and memory differences) and the like.
 - `godot/` — Godot 4.7.2 .NET project (`Kichikuou.csproj`, namespace `Kichikuou.Game`, references
   the four libraries; its build does not make warnings errors, so check it at run time);
-  presentation only: `Main` opens the title (a `GameScreen` running `ｽﾀMENU`) or what the
+  presentation only: `GameData` is where the data comes from (the extract where one is set, else the import of the
+  player's folder; docs/import.md, step 8), `ImportScreen` imports that folder when there is no data yet (mock-up B);
+  `Main` opens the title (a `GameScreen` running `ｽﾀMENU`) or what the
   development switches ask for; `Strategy/GameScreen` runs one game from the boot (`GameSession` on a `GamePresenter`;
   mouse and keys are a state, `Strategy/PlayerInput`, that `IM`, `Y 3`, `IK 0` and the menus poll
   once a frame as xsystem35 does — the map and the pickers decide clicks and drags themselves;
@@ -393,6 +396,8 @@ commit `local.env`.
 - Build everything: `dotnet build Kichikuou.sln`
 - Read the player's game folder as the release does, not the extract: add `--import [DIR]` to any game switches
   (DIR, else the saved game folder; imported into `user://import` first when its cache is not whole).
+  The import screen: `<Godot console exe> --path godot -- --import-screen [DIR] [--shots <dir>] [--quit]` (with DIR
+  unattended, into a fresh `user://import-look`; its dumps need a window).
 - Build and play in a window without Rider or the editor: `run-game.cmd` at the root (a double-click), or
   `powershell -ExecutionPolicy Bypass -File tools
 un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds

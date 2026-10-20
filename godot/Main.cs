@@ -28,11 +28,23 @@ public partial class Main : Control
         {
             _commandLineRead = true;
             ImportFromCommandLine();
-            if (!GameData.UsesExtract && GameData.Imported is null && !GameData.OpenImport(out string? problem))
-                GD.PrintErr($"No game data: {problem}");
-            screen = FromCommandLine();
+            if (ImportScreenFromCommandLine() is { } look)
+            {
+                screen = look;
+            }
+            else if (!GameData.UsesExtract && GameData.Imported is null && !GameData.OpenImport(out string? problem))
+            {
+                // No data yet: the import screen first, then what was asked for (docs/import.md, step 8).
+                GD.Print($"Import screen: {problem}");
+                string folder = GameData.SavedGameDirectory;
+                screen = new ImportScreen(folder, start: folder.Length > 0, next: () => FromCommandLine() ?? Title());
+            }
+            else
+            {
+                screen = FromCommandLine();
+            }
         }
-        screen ??= new GameScreen(new GameOptions { Start = GameStart.Title });
+        screen ??= Title();
         Callable.From(() => Screens.Open(this, screen)).CallDeferred();     // the tree is busy during _Ready
     }
 
@@ -67,6 +79,26 @@ public partial class Main : Control
             if (OS.GetCmdlineUserArgs().Contains("--quit"))
                 GetTree().Quit(1);
         }
+    }
+
+    private static Node Title() => new GameScreen(new GameOptions { Start = GameStart.Title });
+
+    /// <summary>
+    /// <c>--import-screen [DIR]</c>: the import screen whatever data there is (the launch reads the import). With DIR it
+    /// imports DIR without the dialog into a fresh cache of its own (<c>user://import-look</c>), saving the screen at each
+    /// phase into <c>--shots DIR</c> (a window is needed), and with <c>--quit</c> ends there; else the title follows.
+    /// </summary>
+    private static ImportScreen? ImportScreenFromCommandLine()
+    {
+        var args = OS.GetCmdlineUserArgs();
+        int at = Array.IndexOf(args, "--import-screen");
+        if (at < 0)
+            return null;
+        GameData.ForceImport = true;
+        string? folder = at + 1 < args.Length && !args[at + 1].StartsWith("--", StringComparison.Ordinal) ? args[at + 1] : null;
+        int shots = Array.IndexOf(args, "--shots");
+        return new ImportScreen(GameData.SavedGameDirectory, start: false, next: Title, unattended: folder,
+            shots: shots >= 0 && shots + 1 < args.Length ? args[shots + 1] : null, quit: args.Contains("--quit"));
     }
 
     /// <summary>A progress report on the reporting thread.</summary>
