@@ -316,7 +316,7 @@ internal sealed partial class TreasureView : Control
         if (_prompt is not { } p)
         {
             c.DrawString(_gothic, new Vector2(x, y + 152), "Pick a character, then the item to equip —", fontSize: 14, modulate: Lacquer.Quiet);
-            c.DrawString(_gothic, new Vector2(x, y + 174), "or an item, then who is to equip it.", fontSize: 14, modulate: Lacquer.Quiet);
+            c.DrawString(_gothic, new Vector2(x, y + 174), "or an item, then the character to equip it.", fontSize: 14, modulate: Lacquer.Quiet);
             return;
         }
         // A unit's face as the deployment screen cuts it; an item by its name alone (the original's shrunk picture with its

@@ -79,14 +79,14 @@ public class TreasureRosterTests(ITestOutputHelper output)
         var unit = TreasureRoster.Details(s, 6)!;
 
         Assert.Equal((606, 600, "Barres", "Assault Troops"), (unit.PictureCg, unit.EmptyCg, unit.Name, unit.Subtitle));
-        Assert.Equal(["War cost 800K", "Troops 918", "Equipping Sword"], unit.Figures.Select(f => $"{f.Label} {f.Value}"));
+        Assert.Equal(["War cost 800K", "Troops 918", "Equipped Sword"], unit.Figures.Select(f => $"{f.Label} {f.Value}"));
         Assert.Null(TreasureRoster.Details(s, 8));
 
         s.Ui_ItemViewMode = 1;
         Assert.Equal(["Held by Barres"], TreasureRoster.Details(s, 6)!.Figures.Select(f => $"{f.Label} {f.Value}"));
         Assert.Equal(["Held by Nobody (in stock)"], TreasureRoster.Details(s, 7)!.Figures.Select(f => $"{f.Label} {f.Value}"));
         var stone = TreasureRoster.Details(s, 8)!;
-        Assert.Equal((758, 692, "Unequippable", true), (stone.PictureCg, stone.EmptyCg, stone.Subtitle, stone.SubtitleOff));
+        Assert.Equal((758, 692, "Can't be equipped", true), (stone.PictureCg, stone.EmptyCg, stone.Subtitle, stone.SubtitleOff));
     }
 
     [Fact]

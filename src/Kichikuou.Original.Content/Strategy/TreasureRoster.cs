@@ -29,7 +29,7 @@ public sealed record TreasureFigure(string Label, string Value);
 
 /// <summary>
 /// The picture panel and its line for an entry: the CG drawn into the panel and the panel's empty picture (a unit's status
-/// CG over 600, an item's 750 + n over 692), the name, a subtitle (the unit's class, or Equippable/Unequippable) and the
+/// CG over 600, an item's 750 + n over 692), the name, a subtitle (the unit's class, or Equippable/Can't be equipped) and the
 /// figures (<c>L_00eac</c>, <c>L_0101d</c>).
 /// </summary>
 public sealed record TreasureDetails(int PictureCg, int EmptyCg, string Name, string Subtitle, bool SubtitleOff, IReadOnlyList<TreasureFigure> Figures);
@@ -126,14 +126,14 @@ public static class TreasureRoster
                 [
                     new("War cost", $"{u.DeployCost.Value * 100:N0}K"),
                     new("Troops", u.Troops.Value.ToString()),
-                    new("Equipping", item == 0 ? "—" : ItemName(s, item)),
+                    new("Equipped", item == 0 ? "—" : ItemName(s, item)),
                 ]);
         }
         var it = s.Items[number];
         bool equippable = it.Effect != 0;
         int holder = it.Holder.Value;
         string heldBy = !equippable ? "—" : holder == 100 ? "Nobody (in stock)" : DeploymentTable.UnitName(s, holder);
-        return new TreasureDetails(750 + number, ItemEmptyCg, ItemName(s, number), equippable ? "Equippable" : "Unequippable",
+        return new TreasureDetails(750 + number, ItemEmptyCg, ItemName(s, number), equippable ? "Equippable" : "Can't be equipped",
             !equippable, [new("Held by", heldBy)]);
     }
 
