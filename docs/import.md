@@ -7,7 +7,7 @@ folder, with no tools of ours or anyone else's to run first. Today the port need
 all three with C# that runs on every platform the game is built for (Android cannot run a bundled
 native tool, [backlog.md](backlog.md), "Release").
 
-Status: **under way** (2026-10-20): steps 1-4 ✓. The facts come from a read-only sweep of the code and
+Status: **under way** (2026-10-20): steps 1-5 ✓. The facts come from a read-only sweep of the code and
 of xsys35c 1.13's source on 2026-10-20, at commit `3ce2455`.
 
 ## Why the decompiler is translated, not replaced (option B)
@@ -106,10 +106,17 @@ agent days, rough.
    extract's dump `aindump\System39.ain.txt` is lossy: its Shift JIS bytes were read as UTF-8 on the way to
    the file, so every non-ASCII run is a U+FFFD there; the test compares the same reading of our bytes
    (a run of U+FFFD as one) and one message decoded in full. The full check of the texts is step 6's.
-5. **SJIS text** (~0.5 day). xsys35c's own table (`common/s2utbl.h`, `common/sjisutf.c`), translated —
-   not .NET's code page 932, so the output cannot drift with the platform; the half-width forms as
-   xsys35dc writes them (file names such as `Cﾒｲｷｭｳ.ADV`). Test: every non-ASCII character of the
-   extract round-trips.
+5. **SJIS text** ✓ (2026-10-20). `Content/Text/Sjis`, after xsys35c `common/sjisutf.c`: `Decode` is
+   `sjis2utf` (ASCII as is, 0xa0-0xdf as U+FF60-U+FF9F — the file names such as `Cﾒｲｷｭｳ.ADV` —, a pair
+   through the table, anything else an error), with the checks the decompiler uses (`IsValid`,
+   `IsUnicodeSafe` — no gaiji, none of the code points several pairs map to —, `IsCompacted`/`Expand`
+   for the compiler's half-width forms of full-width text). The table is xsys35c's own `common/s2utbl.h`,
+   generated into `SjisTable.g.cs` by `tools/codegen/gen_sjis_table.py` (the header is not in the
+   repository; the generator says where to get it). It agrees with .NET's code page 932 wherever both map
+   a pair, and maps 587 pairs more that .NET reads as "?" (ゔ, NEC symbols in row 0x87, the user-defined
+   rows 0xeb-0xee and 0xfa) — measured by `SjisTests`, so a platform decoder would not do. Content tests:
+   the archive's names decode to `xsys35dc.hed`'s, every `.ain` message decodes, and all 577 distinct
+   non-ASCII characters of `_extract\scenario` are characters of the table.
 6. **The decompiler** (~3-4 days), `Kichikuou.Content/Decompiler/`, translated from xsys35c
    `decompiler/` (`xsys35dc.c`, `preprocess.c`, `decompile.c`, `cali.c`; ~2,800 lines of C, of which this
    game reaches ~1,200-1,800): the `S380` header; the pre-pass marking code, data and labels (its byte

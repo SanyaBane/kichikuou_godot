@@ -3,6 +3,7 @@ using System.Text;
 using Kichikuou.Content.Archives;
 using Kichikuou.Content.Audio;
 using Kichikuou.Content.Graphics;
+using Kichikuou.Content.Text;
 using Kichikuou.Original.Content.Audio;
 using Xunit.Abstractions;
 
@@ -14,10 +15,8 @@ namespace Kichikuou.Original.Content.Tests;
 /// </summary>
 public class GameArchiveTests(ITestOutputHelper output)
 {
-    static GameArchiveTests() => Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-    /// <summary>A name as xsys35c decodes it (Shift JIS); the decoder of our own comes with step 5.</summary>
-    private static string Name(AldEntry entry) => Encoding.GetEncoding(932).GetString(entry.RawName.Span);
+    /// <summary>A name as xsys35c decodes it (Shift JIS, its own table).</summary>
+    private static string Name(AldEntry entry) => Sjis.Decode(entry.RawName.Span);
 
     /// <summary>
     /// <c>KICHIKUSA.ALD</c>: the scenario in the order of xsys35dc's <c>xsys35dc.hed</c>, each page an
@@ -167,7 +166,56 @@ public class GameArchiveTests(ITestOutputHelper output)
         foreach (int i in differing.Take(5))
             output.WriteLine($"  {i}: '{Encoding.UTF8.GetString(ain.Messages[i])}' vs '{messages[i]}'");
         Assert.Empty(differing);
-        Assert.Equal("０１２３４５６７８９", Encoding.GetEncoding(932).GetString(ain.Messages[0]));
+        Assert.Equal("０１２３４５６７８９", Sjis.Decode(ain.Messages[0]));
+    }
+
+    /// <summary>
+    /// Every message of <c>System39.ain</c> is Shift JIS the table maps whole (docs/import.md, step 5): none
+    /// would need xsys35dc's <c>&lt;0xXXXX&gt;</c> for a pair the table does not know.
+    /// </summary>
+    [LocalFolderFact("game")]
+    public void Every_ain_message_decodes()
+    {
+        var ain = AinFile.Read(Path.Combine(LocalData.GameDirectory, "System39.ain"));
+        var failing = new List<string>();
+        for (int i = 0; i < ain.Messages.Count; i++)
+        {
+            try
+            {
+                Sjis.Decode(ain.Messages[i]);
+            }
+            catch (SjisFormatException e)
+            {
+                failing.Add($"{i}: {e.Message}");
+            }
+        }
+        Assert.Empty(failing);
+    }
+
+    /// <summary>
+    /// Every character of xsys35dc's decompile (<c>_extract\scenario</c>, its <c>.ADV</c> files and
+    /// <c>xsys35dc.hed</c>) is one the table gives — a pair's code point or a half-width form — so the import
+    /// can write all of it (docs/import.md, step 5).
+    /// </summary>
+    [LocalFolderFact("scenario")]
+    public void Every_character_of_the_decompile_is_in_the_table()
+    {
+        var known = new HashSet<char>(Enumerable.Range(0xff60, 0x40).Select(c => (char)c));
+        for (int lead = 0x81; lead <= 0xfc; lead++)
+        {
+            for (int trail = 0x40; trail <= 0xfc; trail++)
+            {
+                if (Sjis.IsValid((byte)lead, (byte)trail))
+                    known.Add(Sjis.Decode([(byte)lead, (byte)trail])[0]);
+            }
+        }
+        var seen = new HashSet<char>();
+        foreach (string path in Directory.EnumerateFiles(LocalData.ScenarioDirectory).Where(p => p.EndsWith(".ADV") || p.EndsWith(".hed")))
+            seen.UnionWith(File.ReadAllText(path, Encoding.UTF8).Where(c => c >= 0x80));
+
+        output.WriteLine($"{seen.Count} distinct non-ASCII characters");
+        Assert.Empty(seen.Where(c => !known.Contains(c)).Select(c => $"U+{(int)c:X4}"));
+        Assert.True(seen.Count > 500);
     }
 
     /// <summary>
