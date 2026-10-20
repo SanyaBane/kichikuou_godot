@@ -995,7 +995,7 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     [Fact]
     public void Closing_the_full_screen_window_leaves_it_on_the_screen()
     {
-        if (!File.Exists(Path.Combine(LocalData.CgDirectory, "CG815.png")))
+        if (!File.Exists(Path.Combine(LocalData.CgDirectory, "CG0815.png")))
             return;
         var missing = Path.Combine(Path.GetTempPath(), "kichikuou-no-data");
         var presenter = new GamePresenter(new ScenarioText(missing), new CgLibrary(LocalData.CgDirectory), new BoxGlyphs());
