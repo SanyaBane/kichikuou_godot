@@ -7,7 +7,7 @@ folder, with no tools of ours or anyone else's to run first. Today the port need
 all three with C# that runs on every platform the game is built for (Android cannot run a bundled
 native tool, [backlog.md](backlog.md), "Release").
 
-Status: **under way** (2026-10-20): steps 1-3 ✓. The facts come from a read-only sweep of the code and
+Status: **under way** (2026-10-20): steps 1-4 ✓. The facts come from a read-only sweep of the code and
 of xsys35c 1.13's source on 2026-10-20, at commit `3ce2455`.
 
 ## Why the decompiler is translated, not replaced (option B)
@@ -97,9 +97,15 @@ agent days, rough.
    (`AudioStreamWav.LoadFromBuffer`, in Godot 4.7.2) instead of a file. Test:
    `GameArchiveTests.Every_sound_from_the_archive_equals_its_wav` — the 51 sounds byte for byte, nothing
    where the table links nothing. The game still reads `wav\`; the switch is step 8's.
-4. **The `.ain` reader** (~0.5 day). The bytes after the first 4 rotated left by 2 bits; the sections
-   `HEL0`, `FUNC`, `VARI`, `MSGI`; the messages SJIS. After xsys35c `decompiler/ain.c`. Test: the messages
-   and variables against `_extract\aindump\System39.ain.txt`.
+4. **The `.ain` reader** ✓ (2026-10-20). `Content/Archives/AinFile`, after xsys35c `decompiler/ain.c`: the
+   magic `AINI`/`AIN2` and the version (1 or 2) read as stored, then every byte after the first 4 rotated
+   left by 2 bits; the sections `VARI` and `MSGI` (a count and NUL-terminated strings, kept as raw Shift JIS
+   until step 5); `HEL0` and `FUNC` must be empty, as in this game (the decompiler reads no game with them).
+   The player's file: version 1, 806 variables, 126,306 messages (85,024 of them plain ASCII). Tests:
+   `AinFileTests` (core, files written here) and `GameArchiveTests.Ain_matches_the_dump` (content). The
+   extract's dump `aindump\System39.ain.txt` is lossy: its Shift JIS bytes were read as UTF-8 on the way to
+   the file, so every non-ASCII run is a U+FFFD there; the test compares the same reading of our bytes
+   (a run of U+FFFD as one) and one message decoded in full. The full check of the texts is step 6's.
 5. **SJIS text** (~0.5 day). xsys35c's own table (`common/s2utbl.h`, `common/sjisutf.c`), translated —
    not .NET's code page 932, so the output cannot drift with the platform; the half-width forms as
    xsys35dc writes them (file names such as `Cﾒｲｷｭｳ.ADV`). Test: every non-ASCII character of the

@@ -138,6 +138,39 @@ public class GameArchiveTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// <c>System39.ain</c>: the variables and the messages equal xsys35dc's JSON dump of it
+    /// (<c>aindump\System39.ain.txt</c>; docs/import.md, step 4).
+    /// </summary>
+    [LocalFolderFact("game", "aindump")]
+    public void Ain_matches_the_dump()
+    {
+        var ain = AinFile.Read(Path.Combine(LocalData.GameDirectory, "System39.ain"));
+        using var dump = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(LocalData.AinDumpDirectory, "System39.ain.txt")));
+        var root = dump.RootElement;
+        Assert.Empty(root.GetProperty("HEL0").EnumerateObject());
+        Assert.Empty(root.GetProperty("FUNC").EnumerateObject());
+
+        string[] variables = [.. root.GetProperty("VARI").EnumerateArray().Select(v => v.GetString()!)];
+        Assert.Equal(806, ain.Variables.Count);
+        Assert.Equal(variables, ain.Variables.Select(v => Encoding.ASCII.GetString(v)));
+
+        // The dump went through a UTF-8 reading of its Shift JIS bytes on its way to the file, which made every
+        // byte sequence that is no UTF-8 a U+FFFD; the same reading of ours must give the same strings, up to how
+        // many U+FFFD a run of such bytes makes (decoders differ in that, so a run counts as one).
+        static string Lossy(string s) => System.Text.RegularExpressions.Regex.Replace(s, "�+", "�");
+        string[] messages = [.. root.GetProperty("MSGI").EnumerateArray().Select(v => Lossy(v.GetString()!))];
+        Assert.Equal(126306, ain.Messages.Count);
+        Assert.Equal(messages.Length, ain.Messages.Count);
+        var differing = Enumerable.Range(0, messages.Length).Where(i => Lossy(Encoding.UTF8.GetString(ain.Messages[i])) != messages[i]).ToList();
+        int plain = ain.Messages.Count(m => m.All(b => b < 0x80));
+        output.WriteLine($"{ain.Messages.Count} messages ({plain} ASCII), version {ain.Version}, {differing.Count} differ");
+        foreach (int i in differing.Take(5))
+            output.WriteLine($"  {i}: '{Encoding.UTF8.GetString(ain.Messages[i])}' vs '{messages[i]}'");
+        Assert.Empty(differing);
+        Assert.Equal("０１２３４５６７８９", Encoding.GetEncoding(932).GetString(ain.Messages[0]));
+    }
+
+    /// <summary>
     /// The sound library over the archive gives every sound number the library over <c>wav\</c> gives, with
     /// the same bytes, and nothing where the table links nothing (docs/import.md, step 3).
     /// </summary>

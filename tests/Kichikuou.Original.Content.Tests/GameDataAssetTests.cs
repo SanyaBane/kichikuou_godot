@@ -18,6 +18,7 @@ public sealed class LocalFolderFactAttribute : FactAttribute
                 "pms" => LocalData.PmsDirectory,
                 "wav" => LocalData.WavDirectory,
                 "scenario" => LocalData.ScenarioDirectory,
+                "aindump" => LocalData.AinDumpDirectory,
                 _ => LocalData.GameDirectory,
             };
             if (!Directory.Exists(path))

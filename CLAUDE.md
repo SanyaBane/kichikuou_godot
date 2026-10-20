@@ -177,8 +177,9 @@ question at the cell, the Subordinates screen's plate), built (`SubordinatesComm
 Then (owner, 2026-10-20) a public release — **owner's decision 28**: the game imports the player's own folder
 directly, xsys35dc translated to C# with its output byte-identical to `_extract\scenario` (every line reference
 stays), the CGs and sounds read from the `.ALD` archives, the version checked by the files' hashes; the plan is
-docs/import.md (steps 1-3 done: `Content/Archives/AldArchive` reads the `.ALD` sets, `CgLibrary` the CGs and
-`Content/Audio/SoundLibrary` the sounds from the archives or the extract alike), the release's other items
+docs/import.md (steps 1-4 done: `Content/Archives/AldArchive` reads the `.ALD` sets, `CgLibrary` the CGs and
+`Content/Audio/SoundLibrary` the sounds from the archives or the extract alike, `Content/Archives/AinFile` the
+`System39.ain`), the release's other items
 docs/backlog.md, "Release".
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
@@ -232,7 +233,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `*Turn` (`T*.ADV`, e.g. `RebelTurn`) and `*Defenders` (`T*2.ADV`), and `StrategyRules` routes calls of these files to their ports (the rule hooks of a `SceneRunner`).
 - `src/Kichikuou.Content` — engine-independent access to the player's own game data (never
   part of the repository; references the engine only): `Archives/AldArchive` reads the game's `.ALD`
-  archive sets (docs/import.md, step 1); `ScenarioText` reads message texts from the decompiled scenario by
+  archive sets and `Archives/AinFile` its `System39.ain` (docs/import.md, steps 1 and 4); `ScenarioText` reads message texts from the decompiled scenario by
   `ScriptRef`; `Scripts/ScenarioScripts` reads the data files' statements and whole files as programs
   (`ScenarioParser`; strictly: anything unexpected fails with its location); `Graphics/` decodes the CGs keeping palette indices (`IndexedPng`, `Pms`,
   `CgLibrary`, `Palette` with the engine's reserved entries; `ToRgba(40)` = `G n, 40`);
@@ -251,7 +252,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `PointerScript` (`Picker.HitTest`).
 - `tests/` — xUnit, one project per library: `Kichikuou.Engine.Tests` (Sys3, local paths, the
   timer, the message skip and the pauses, on a `TestState` of plain variables),
-  `Kichikuou.Content.Tests` (graphics, scenario text, the ALD reader), `Kichikuou.Original.Tests` (the rules, the
+  `Kichikuou.Content.Tests` (graphics, scenario text, the ALD and `.ain` readers), `Kichikuou.Original.Tests` (the rules, the
   battle, the engine's runtime on the original's state; `Golden/GoldenBattleTests` replays the
   captures in `_extract\golden` (`KICHIKUOU_GOLDEN_DIR`) and is skipped when there are none) and
   `Kichikuou.Original.Content.Tests` (everything that reads the player's files: the differential

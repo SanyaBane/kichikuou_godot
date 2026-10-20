@@ -31,6 +31,8 @@ public static class LocalData
 
     public static string WavDirectory => Path.Combine(Extract, "wav");
 
+    public static string AinDumpDirectory => Path.Combine(Extract, "aindump");
+
     public static string GameDirectory => LocalPaths.GameDirectory ?? "";
 
     public static IEnumerable<string> Captures =>
