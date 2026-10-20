@@ -20,10 +20,10 @@ GPL-2.0-or-later, and the player brings their own copy of the game. What a relea
 
 The owner aims at a public release (decision 28, 2026-10-20).
 
-- **Read the player's game folder directly** — *agent*, planned in [import.md](import.md) (decision 28,
-  2026-10-20): the ALD reader, the `.ain` reader, xsys35dc translated to C# with a byte-for-byte check
-  against `_extract\scenario`, CGs and sounds from the archives, the version check by the files'
-  hashes, the import into `user://` with the folder picker (its step 8).
+- **The import's open ends** — *agent* ([import.md](import.md) is done, 2026-10-20): the start with no
+  extract set has not been run end to end (the owner's `user://settings.cfg` sets the extract; a release
+  build has none); the content tests still read `_extract` and could move to the import; the music still
+  goes through `_inmm.ini` (it is hashed with the rest).
 - **Hide the development parts** in a release build — *agent*: the Debug menu, the capture viewer,
   the switches (`--auto`, `--watch`, `--ending`, …).
 - **Windows export** — *agent*: commit `export_presets.cfg` (git ignores it today); export templates
@@ -32,8 +32,9 @@ The owner aims at a public release (decision 28, 2026-10-20).
   they are (`importer="keep"`).
 - **Android** — *agent* (the owner wants it, 2026-10-11): our own `.apk`, not Google Play. Godot 4.7
   exports C# to Android as experimental and needs .NET 9 or later (the project is on `net10.0`). It
-  needs the C# import above (the player copies the game's files to the device; how a Godot 4.7 app
-  reaches them under Android's scoped storage is to be checked) and a touch interface (the font is
+  needs the import (done, [import.md](import.md); the player copies the game's files to the device; how a
+  Godot 4.7 app reaches them under Android's scoped storage, and whether the native folder dialog does, is to
+  be checked) and a touch interface (the font is
   done: BIZ UDGothic is bundled, docs/window-menu.md, Option → Fonts; `OFL.txt` ships as for
   Windows): the original is played with a mouse — the right button cancels (menus, the map, the empty
   dungeon menu, All Data's scale menu), the pickers' highlight and info panel follow the hover, keys

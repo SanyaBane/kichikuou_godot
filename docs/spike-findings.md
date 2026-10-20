@@ -5,6 +5,10 @@ Confidence: **[C]** confirmed by reading code / disassembly, **[I]** strong infe
 
 ## Local layout (outside the repo, never committed)
 
+These are the **developer's** folders. A player needs none of them: the game imports the player's own game
+folder at its first start (docs/import.md, decision 28), and the extract below is for development — the
+tests, the golden captures, the analysis tools — and wins over the import where it is set.
+
 The folders live on the developer's machine; their paths are in `local.env` at the repository root,
 which git ignores (the template `local.env.example` lists every key; an environment variable of the
 same name overrides a line). The docs name the key, never the path; `_extract` in the docs is the
@@ -13,7 +17,7 @@ folder `KICHIKUOU_EXTRACT_DIR` names.
 | What | Key in `local.env` |
 |---|---|
 | Game (EN) | `KICHIKUOU_GAME_DIR` |
-| Extracted data (`_extract`): `scenario\` (decompiled `.ADV`), `scenario_named\` (renamed copy), `aindump\`, `cg_pms\`, `cg_png\`, `wav\`, `golden\` (captures) | `KICHIKUOU_EXTRACT_DIR` (`KICHIKUOU_SCENARIO_DIR` / `KICHIKUOU_GOLDEN_DIR` move one subfolder) |
+| Extracted data (`_extract`, development only): `scenario\` (decompiled `.ADV`, the import's oracle), `scenario_named\` (renamed copy), `aindump\`, `cg_pms\`, `cg_png\`, `wav\`, `golden\` (captures) | `KICHIKUOU_EXTRACT_DIR` (`KICHIKUOU_SCENARIO_DIR` / `KICHIKUOU_GOLDEN_DIR` move one subfolder) |
 | Godot 4.7.2 .NET (portable): the console executable, the editor's next to it | `KICHIKUOU_GODOT_EXE` |
 | xsystem35-sdl2 source (golden-test harness, branch `golden-harness`) | `KICHIKUOU_XSYSTEM35_DIR` |
 | MSYS2 (toolchain for xsystem35) | `KICHIKUOU_MSYS2_DIR` |

@@ -28,6 +28,31 @@ that make the game more convenient to play.
 This is an unofficial fan project. It is not affiliated with or endorsed by AliceSoft, and it
 contains no part of the original game.
 
+## Installing
+
+**What you need: your own copy of the game with the English translation.** The port reads one version,
+Kichikuou Rance with the **Kichikuou Rance English Translation v1.0** applied: a folder holding
+`system39.exe`, `KICHIKUSA.ALD`, `KICHIKUGA.ALD`, `KICHIKUGB.ALD`, `KICHIKUWA.ALD`, `System39.ain`,
+`_inmm.ini` and the music in `bgm\`. Getting the game and the translation is up to you; none of their
+files are here, and nothing else of theirs has to be installed or run (the `_inmm` music driver neither).
+
+There are no release builds yet. To build and play from the source (Windows):
+
+1. Install the **.NET 10 SDK** and **Godot 4.7.2 .NET** (the portable build will do).
+2. Copy `local.env.example` to `local.env` and set `KICHIKUOU_GODOT_EXE` to Godot's console executable.
+3. Run `run-game.cmd` (it builds the game and starts it in a window).
+
+**The first start imports your game.** The game asks for the game folder (the system's folder dialog),
+checks that its files are the translation v1.0 (by their SHA-256; another version or a missing file is
+refused with the file's name), and reads the scenario once into its own data folder
+(`%APPDATA%\Godot\app_userdata\Kichikuou\import\` on Windows), which takes about a second. The pictures,
+the sounds and the music are read from your folder as you play, so keep it where it is; choosing it again
+is only needed if it moves. The details are in [docs/import.md](docs/import.md).
+
+Developers can point the game at a folder of data extracted with xsys35c's tools instead
+(`KICHIKUOU_EXTRACT_DIR`, [docs/spike-findings.md](docs/spike-findings.md), "Local layout"); the tests read
+that one.
+
 ## Credits
 
 **The game**
@@ -50,8 +75,10 @@ reproduces, and every line of text the port shows is theirs.
   by **Masaki Chikama (Wren)**, with **Fumihiko Murata**, **TAJIRI Yasuhiro** and other
   contributors. It is our reference for how the engine behaves, and a patched fork of it records
   the captures for the golden tests.
-- **[xsys35c](https://github.com/kichikuou/xsys35c)** by **kichikuou** decompiled the scenario
-  that the port reads, and its tools unpack the game's archives and pictures.
+- **[xsys35c](https://github.com/kichikuou/xsys35c)** by **kichikuou**: its decompiler `xsys35dc`
+  (1.13) is translated into the port, which decompiles the player's scenario with it at the first
+  start; its Shift JIS table and its readers of the archives and of `System39.ain` are translated too,
+  and its tools made the extract the port is developed and tested on.
 - **[alice-tools](https://github.com/nunuhara/alice-tools)** by **Nunuhara Cabbage** (with
   contributions from kichikuou) unpacks and converts AliceSoft's file formats. It was our
   reference for those formats.
@@ -91,8 +118,8 @@ License, or (at your option) any later version. It is distributed in the hope th
 useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE. See [LICENSE](LICENSE) for the full text.
 
-A few files contain code translated from xsystem35 (GPL-2.0-or-later) and from the Mersenne
-Twister's reference code `mt19937-1.c` (LGPL-2.0-or-later). The header of each of those files
+A few files contain code translated from xsystem35 (GPL-2.0-or-later), from xsys35c
+(GPL-2.0-or-later) and from the Mersenne Twister's reference code `mt19937-1.c` (LGPL-2.0-or-later). The header of each of those files
 names what it comes from and who holds the copyright.
 
 The license covers the project's own work only. *Kichikuou Rance* belongs to AliceSoft, and the

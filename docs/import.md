@@ -7,7 +7,7 @@ folder, with no tools of ours or anyone else's to run first. Today the port need
 all three with C# that runs on every platform the game is built for (Android cannot run a bundled
 native tool, [backlog.md](backlog.md), "Release").
 
-Status: **under way** (2026-10-20): steps 1-8 ✓. The facts come from a read-only sweep of the code and
+Status: **done** (2026-10-20): steps 1-9 ✓. The facts come from a read-only sweep of the code and
 of xsys35c 1.13's source on 2026-10-20, at commit `3ce2455`.
 
 ## Why the decompiler is translated, not replaced (option B)
@@ -178,9 +178,10 @@ agent days, rough.
      `import-choose`, `import-progress`, `import-done` or `import-refused` (a window is needed). Checked in a window
      on the owner's folder and on its `bgm` folder (refused: no `KICHIKUSA.ALD`). Not run: the start with no extract
      set, which would need the owner's `user://settings.cfg` changed (its `extract_dir` is the extract).
-9. **Docs** (~0.5 day). CLAUDE.md, spike-findings ("Local layout": the extract is for development),
-   README (installing: where to get the game and the translation, what to point the game at), the
-   backlog.
+9. **Docs** ✓ (2026-10-20). CLAUDE.md (status, layout, commands), spike-findings ("Local layout": the extract
+   is the developer's), the README ("Installing": the version needed, the build from source, the first start's
+   import; where to get the game is left to the player — the brief's "AliceSoft released it as freeware" is
+   still unverified), the backlog ("Release": the import's open ends).
 
 Total: ~8-10 agent days. Steps 1-5 can go in any order; 6 needs 1, 4 and 5; 7 and 8 come last.
 

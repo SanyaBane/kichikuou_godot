@@ -176,14 +176,14 @@ question at the cell, the Subordinates screen's plate), built (`SubordinatesComm
 "Replenish on the deployment screen", looked at and accepted by the owner (2026-10-20).
 Then (owner, 2026-10-20) a public release — **owner's decision 28**: the game imports the player's own folder
 directly, xsys35dc translated to C# with its output byte-identical to `_extract\scenario` (every line reference
-stays), the CGs and sounds read from the `.ALD` archives, the version checked by the files' hashes; the plan is
-docs/import.md (steps 1-4 done: `Content/Archives/AldArchive` reads the `.ALD` sets, `CgLibrary` the CGs and
+stays), the CGs and sounds read from the `.ALD` archives, the version checked by the files' hashes; the import is **done**
+(docs/import.md, steps 1-9, 2026-10-20: `Content/Archives/AldArchive` reads the `.ALD` sets, `CgLibrary` the CGs and
 `Content/Audio/SoundLibrary` the sounds from the archives or the extract alike, `Content/Archives/AinFile` the
 `System39.ain`, `Content/Text/Sjis` decodes Shift JIS with xsys35c's own table; step 6 done: `Content/Decompiler`
 is xsys35dc 1.13's decompiler translated, its 201 files byte-identical to the extract; step 7 done:
 `Content/GameFiles` checks the folder's SHA-256 against the one known version; step 8 part 1 done:
 `Content/GameImport` decompiles into a cache, Godot's `GameData` reads the import where no extract is set, `--import`;
-part 2 done: `godot/ImportScreen`, the owner's mock-up B, at the start when there is no data),
+part 2 done: `godot/ImportScreen`, the owner's mock-up B, at the start when there is no data; step 9: README "Installing"),
 the release's other items
 docs/backlog.md, "Release".
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
