@@ -113,8 +113,9 @@ public partial class Main : Control
     /// <c>user://saves-ending</c>, so the clear it records stays out of the player's); <c>--auto</c> plays it unattended (keys answered, Turn END every week, the battles
     /// fought with the first attack, from stage 1 a replenish and an attack on the rebels once a
     /// week, a strong party sent) up to week 30 or <c>--weeks N</c>, or to the command menu two weeks after story stage
-    /// <c>--stage N</c> was reached, or earlier with <c>--until deployment|battle</c> (after the first
-    /// deployment picker or the first battle: a look at one screen); <c>--seed N</c> fixes the random generator (once per launch: a
+    /// <c>--stage N</c> was reached, or earlier with <c>--until deployment|battle|battle-end</c> (after the first
+    /// deployment picker or the first battle: a look at one screen; <c>battle</c> after our battle screen's exercise and
+    /// its attack where it runs, <c>battle-end</c> at the battle's end always); <c>--seed N</c> fixes the random generator (once per launch: a
     /// later game goes on with it, as after xsystem35's Restart); <c>--rnglog</c> prints every
     /// draw to the console; <c>--msgskip</c> starts with MsgSkip
     /// on; <c>--interface new</c> uses our own screens for the launch (Option → Interface); <c>--saves DIR</c>
@@ -157,6 +158,7 @@ public partial class Main : Control
                 {
                     "deployment" => AutoUntil.Deployment,
                     "battle" => AutoUntil.Battle,
+                    "battle-end" => AutoUntil.BattleEnd,
                     _ => AutoUntil.None,
                 },
                 SlotsFrom = Value("--slots-from"),

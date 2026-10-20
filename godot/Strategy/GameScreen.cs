@@ -48,8 +48,11 @@ public enum AutoUntil
     /// <summary>When the first deployment picker closes.</summary>
     Deployment,
 
-    /// <summary>When the first battle ends.</summary>
+    /// <summary>When the first battle ends — with our battle screen's exercise, when its attack's exchange is over.</summary>
     Battle,
+
+    /// <summary>When the first battle ends, whatever our battle screen's exercise: a check of a later turn (a defence, a level-up).</summary>
+    BattleEnd,
 }
 
 /// <summary>What a <see cref="GameScreen"/> plays and how (the development switches of <see cref="Main"/>).</summary>
@@ -2862,7 +2865,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// <summary>
     /// <see cref="GameOptions.AutoUntil"/>: the end of unattended play when the first deployment
     /// picker closes, or when the first battle (<c>FIGT_A</c>, <c>FIGT_B</c>, <c>FIGT</c>) ends — or, once
-    /// our battle screen's exercise (<see cref="AutoCommandsAsync"/>) has run, when its attack's exchange is over.
+    /// our battle screen's exercise (<see cref="AutoCommandsAsync"/>) has run, when its attack's exchange is over; with
+    /// <see cref="AutoUntil.BattleEnd"/> when that battle ends whatever the exercise (owner, 2026-10-20: a check inside a
+    /// battle stops with it, not with the week).
     /// </summary>
     private void AutoStopEarly(ScriptEvent scriptEvent)
     {
@@ -2871,7 +2876,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             case (AutoUntil.Deployment, PickerScreenEvent { Kind: PickerKind.Deployment, Open: false }):
                 throw new AutoStopException($"--auto stopped after the first deployment picker (week {week}).");
-            case (AutoUntil.Battle, BattleScreenEvent { File: "FIGT_A.ADV" or "FIGT_B.ADV" or "FIGT.ADV", Open: false } battle):
+            case (AutoUntil.Battle or AutoUntil.BattleEnd, BattleScreenEvent { File: "FIGT_A.ADV" or "FIGT_B.ADV" or "FIGT.ADV", Open: false } battle):
                 throw new AutoStopException($"--auto stopped after the first battle, {battle.File} (week {week}).");
             // Our battle screen's exercise done (owner, 2026-10-15: the rest of the battle only costs time): the exchange
             // its banner started has run, and the field's redraw after it ends unattended play.
