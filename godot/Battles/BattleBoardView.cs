@@ -444,6 +444,7 @@ internal sealed partial class BattleBoardView : Control
         }
         RefreshSpeaker(s);
         _balloon.Show(presenter.Battle.Speech);
+        _info.Speaking = _speaker.Visible || presenter.Battle.Speech is not null;     // the defence's caption gives way
         RefreshCards(s, presenter.Order, presenter.Battle.Strike, hovered);
         RefreshSpotlight(s, presenter.Scene);
         RefreshStrip(s, presenter.Order, instant);
@@ -1142,7 +1143,7 @@ internal sealed partial class BattleBoardView : Control
         };
         string state = "";
         if (card.Defending)
-            state += (state == "" ? "" : " · ") + "Defending";
+            state += (state == "" ? "" : " · ") + "Defend";      // "Manual · Defending" overran the line (owner, 2026-10-21)
         if (acting)
             state += (state == "" ? "" : " · ") + "Acting";
         else if (card.Acted && !card.Defending)

@@ -253,6 +253,15 @@ as it is. Where to start:
    Tests: `BattleInfoBoxTests` (the kinds, and over every capture: the badge is the slot's new state, the stamp's card is
    down, the plate holds the losses and the EXP and one row more per level-up, every tally a plate). Seen in a window from
    the week-18 save (the stamp, the badge, the plate); not seen yet in the game: our panel and a level-up's row.
+   **The defence redrawn (owner, 2026-10-21):** the badge was hard to read and its plate above the card covered the card
+   above it (or a speech). Mock-ups D1-D5 (`tools/ui/mock_defend.py`: a shield on the portrait, a ribbon across the card,
+   the event over the army in the scene, a rising number, a caption at the scene's foot); **the owner chose D2 and D5
+   together**, built: the card glows blue (the acting card's is gold), a steel ribbon with gold edges across its middle —
+   its tails past the card's edges, a shield, "DEFEND", the printed increase ("DEF +5") in gold —, and the sentence with
+   the unit's name as a lacquer caption at the scene's foot on the defender's side, above the order strip, left out while
+   a speech bubble or its portrait is up (`BattleInfoLayer.Speaking`); the card's order line says "Defend" (it overran
+   as "Defending"). Seen in a window from the week-18 save (Barres's (unit 6) defence; Cordoba's (unit 3) under Haurein's
+   speech, the caption left out).
 6. **The message log** — its design discussed first (backlog).
    **Survey (2026-10-19).** The original has none (xsystem35 neither); Sengoku Rance has no battle text log either
    (docs/sengoku/04-screen.md:636). What a log can hold, and where our presenters already have it:

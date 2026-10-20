@@ -1095,7 +1095,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             // row. The wait is answered at once, as by a click (the key lands in RetVal), after the release of a button still held.
             if (passed.Kind == InfoBoxKind.Defence)
             {
-                _battleView.Info.Flash(passed);
+                _battleView.Info.Flash(passed, passed.Place is { } at && BattleBoard.Card(_presenter.State!, at) is { } card ? card.Name : "");
                 await GuardAsync(BattleSide.Player);
                 if (_options.Auto && Windowed && _messageDumps.Add("info-defence"))
                 {
