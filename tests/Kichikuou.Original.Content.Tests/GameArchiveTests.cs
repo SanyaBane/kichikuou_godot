@@ -1,0 +1,102 @@
+using System.Buffers.Binary;
+using System.Text;
+using Kichikuou.Content.Archives;
+using Kichikuou.Original.Content.Audio;
+using Xunit.Abstractions;
+
+namespace Kichikuou.Original.Content.Tests;
+
+/// <summary>
+/// The ALD reader against the player's own game folder and the extract xsys35c 1.13 made from it
+/// (docs/import.md, step 1): every resource where the extract says, with the same bytes.
+/// </summary>
+public class GameArchiveTests(ITestOutputHelper output)
+{
+    static GameArchiveTests() => Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+    /// <summary>A name as xsys35c decodes it (Shift JIS); the decoder of our own comes with step 5.</summary>
+    private static string Name(AldEntry entry) => Encoding.GetEncoding(932).GetString(entry.RawName.Span);
+
+    /// <summary>
+    /// <c>KICHIKUSA.ALD</c>: the scenario in the order of xsys35dc's <c>xsys35dc.hed</c>, each page an
+    /// <c>S380</c> file whose header names its own page, which is its link-table index.
+    /// </summary>
+    [LocalFolderFact("game", "scenario")]
+    public void Scenario_archive_holds_the_decompiled_files_in_order()
+    {
+        var archive = AldArchive.Open(LocalData.GameDirectory, "KICHIKUS");
+        string[] hed = File.ReadAllLines(Path.Combine(LocalData.ScenarioDirectory, "xsys35dc.hed"), Encoding.UTF8);
+        Assert.Equal("#SYSTEM35", hed[0]);
+        string[] files = hed[1..];
+
+        var entries = archive.Entries.ToList();
+        Assert.Equal(201, entries.Count);
+        Assert.Equal(files.Length, entries.Count);
+        for (int i = 0; i < entries.Count; i++)
+        {
+            var entry = entries[i];
+            Assert.Equal(files[i], Path.ChangeExtension(Name(entry), ".ADV"));
+            Assert.True(File.Exists(Path.Combine(LocalData.ScenarioDirectory, files[i])), files[i]);
+            byte[] sco = entry.ReadAllBytes();
+            Assert.Equal("S380", Encoding.ASCII.GetString(sco, 0, 4));
+            Assert.Equal(sco.Length, BinaryPrimitives.ReadInt32LittleEndian(sco.AsSpan(8)));
+            Assert.Equal(entry.Index, BinaryPrimitives.ReadInt32LittleEndian(sco.AsSpan(12)));
+        }
+        output.WriteLine($"{entries.Count} pages, link table {archive.Count}, first {Name(entries[0])}");
+    }
+
+    /// <summary>
+    /// <c>KICHIKUGA.ALD</c> + <c>KICHIKUGB.ALD</c>: the 1222 CGs equal the PMS files <c>ald</c> extracted, in
+    /// the volume <c>cg_manifest.txt</c> gives; the CG n is the link-table index n − 1.
+    /// </summary>
+    [LocalFolderFact("game", "pms")]
+    public void Cg_archive_matches_the_extracted_pms()
+    {
+        var archive = AldArchive.Open(LocalData.GameDirectory, "KICHIKUG");
+        var manifest = File.ReadAllLines(Path.Combine(LocalData.PmsDirectory, "..", "cg_manifest.txt"))
+            .Select(line => line.Split(','))
+            .ToDictionary(fields => fields[2], fields => (Volume: int.Parse(fields[0]), Number: int.Parse(fields[1])));
+
+        int count = 0;
+        foreach (var entry in archive.Entries)
+        {
+            string name = Name(entry);
+            Assert.True(manifest.TryGetValue(name, out var listed), name);
+            Assert.Equal(listed.Volume, entry.Volume);
+            Assert.Equal(listed.Number, entry.Index + 1);
+            Assert.Equal($"CG{entry.Index + 1:D4}.PMS", name);
+            Assert.True(File.ReadAllBytes(Path.Combine(LocalData.PmsDirectory, name)).AsSpan().SequenceEqual(entry.ReadAllBytes()), name);
+            count++;
+        }
+        Assert.Equal(1222, count);
+        Assert.Equal(manifest.Count, count);
+        Assert.Null(archive[193]); // CG 194, a gap (GameDataAssetTests.Library_resolves_numbers_and_gaps)
+        output.WriteLine($"{count} CGs, link table {archive.Count}, volume B {archive.Entries.Count(e => e.Volume == 2)}");
+    }
+
+    /// <summary>
+    /// <c>KICHIKUWA.ALD</c>: the 51 sounds equal the extracted WAVs, and the sound n is the link-table index
+    /// n − 1 with the name the sound table gives it.
+    /// </summary>
+    [LocalFolderFact("game", "wav")]
+    public void Sound_archive_matches_the_extracted_wavs()
+    {
+        var archive = AldArchive.Open(LocalData.GameDirectory, "KICHIKUW");
+
+        int count = 0;
+        foreach (var entry in archive.Entries)
+        {
+            string name = Name(entry);
+            Assert.True(File.ReadAllBytes(Path.Combine(LocalData.WavDirectory, name)).AsSpan().SequenceEqual(entry.ReadAllBytes()), name);
+            count++;
+        }
+        Assert.Equal(51, count);
+        Assert.Equal(Directory.GetFiles(LocalData.WavDirectory, "*.WAV").Length, count);
+        foreach (int number in SoundTable.Numbers)
+        {
+            Assert.Equal(SoundTable.FileName(number), archive[number - 1] is { } entry ? Name(entry) : null);
+            Assert.Same(archive[number - 1], archive.Find(SoundTable.FileName(number)!.ToLowerInvariant()));
+        }
+        Assert.Equal(SoundTable.Numbers.Count, count);
+    }
+}

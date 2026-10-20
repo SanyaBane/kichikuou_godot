@@ -8,17 +8,24 @@ namespace Kichikuou.Original.Content.Tests;
 /// <summary>A fact that needs a local folder; skipped without it.</summary>
 public sealed class LocalFolderFactAttribute : FactAttribute
 {
-    public LocalFolderFactAttribute(string folder)
+    public LocalFolderFactAttribute(params string[] folders)
     {
-        string path = folder switch
+        foreach (string folder in folders)
         {
-            "cg" => LocalData.CgDirectory,
-            "pms" => LocalData.PmsDirectory,
-            "wav" => LocalData.WavDirectory,
-            _ => LocalData.GameDirectory,
-        };
-        if (!Directory.Exists(path))
-            Skip = $"No local folder {path}.";
+            string path = folder switch
+            {
+                "cg" => LocalData.CgDirectory,
+                "pms" => LocalData.PmsDirectory,
+                "wav" => LocalData.WavDirectory,
+                "scenario" => LocalData.ScenarioDirectory,
+                _ => LocalData.GameDirectory,
+            };
+            if (!Directory.Exists(path))
+            {
+                Skip = $"No local folder {path}.";
+                return;
+            }
+        }
     }
 }
 

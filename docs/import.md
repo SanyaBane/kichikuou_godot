@@ -7,7 +7,7 @@ folder, with no tools of ours or anyone else's to run first. Today the port need
 all three with C# that runs on every platform the game is built for (Android cannot run a bundled
 native tool, [backlog.md](backlog.md), "Release").
 
-Status: **planned** (2026-10-20); no step started. The facts come from a read-only sweep of the code and
+Status: **under way** (2026-10-20): step 1 ✓. The facts come from a read-only sweep of the code and
 of xsys35c 1.13's source on 2026-10-20, at commit `3ce2455`.
 
 ## Why the decompiler is translated, not replaced (option B)
@@ -71,11 +71,18 @@ decompiler's side files (`xsys35dc.hed`, `variables.txt`, `xsys35c.cfg`).
 Each step is one or a few commits, with the build, the core tests and its own tests green. Effort is in
 agent days, rough.
 
-1. **ALD reader** (~0.5 day). `Kichikuou.Content/Archives/AldArchive`: the 256-byte sectors, the pointer
-   table (3-byte sector numbers), the link table (volume byte + 16-bit index), each entry's header (size,
-   data size, timestamp, SJIS name); more than one volume (`KICHIKUGA` + `KICHIKUGB`); entries by number
-   and by name. After xsys35c `common/ald.c`'s read half. Tests: the entry counts (201, 1222, 51), the
-   names, the PMS bytes against `_extract\cg_pms`, the WAV bytes against `_extract\wav`.
+1. **ALD reader** ✓ (2026-10-20). `Kichikuou.Content/Archives/AldArchive`: the 256-byte sectors, the
+   pointer table (3-byte sector numbers), the link table (volume byte + 16-bit index), each entry's header
+   (its size, the data's size, a Windows file time, the name in Shift JIS, kept as raw bytes until step 5);
+   the data read from the file on demand. As xsystem35 opens a set (`dri.c`): the volume is the file's
+   letter (`<prefix>A.ALD` = 1, matched without case), and only volume A's link table counts (System 3.9);
+   the footer's signature is checked as xsys35c does. The link table is padded to whole sectors, so it is
+   longer than the resources (256 for the scenario's 201 pages, 1792 for the CGs); the indices past them
+   are gaps. Confirmed on the player's files: the scenario page n is index n (each `S380` header names
+   it), the CG n and the sound n are index n − 1. Tests: `AldArchiveTests` (core, archives written as
+   `ald_write` does) and `GameArchiveTests` (content): the 201 pages in `xsys35dc.hed`'s order, the 1222
+   CGs equal to `_extract\cg_pms` in `cg_manifest.txt`'s volumes, the 51 sounds equal to `_extract\wav`
+   at `SoundTable`'s numbers.
 2. **CGs from the archive** (~1 day). `CgLibrary` reads through a source: the PNG folder (today's) or the
    archive with `Graphics/Pms.cs` (written, used only by tests so far). The PMS header gives what
    `pms.exe` wrote as `oFFs` (the default position) and `pmSk` (the palette mask). Test: all 1222 CGs equal
