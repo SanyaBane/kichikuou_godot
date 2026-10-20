@@ -266,6 +266,16 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     press with its own code (`DeploymentScreen.ReplenishCode`, 700), does it and sums the party panel again, so Go
     pays the war expenses of the new troops. The differential tests run `Sﾌﾞﾀｲ` without a request, so the file runs
     as the original there; `DeploymentReplenishTests` compares the shortcut with `Cﾌﾞｶ`'s Replenish.
+28. **A public release, importing the player's game folder directly** (2026-10-20, the owner's choice of
+    the agent's option B; plan in [docs/import.md](../import.md)): the release aims at the public, so the
+    game reads the player's own folder (the `.ALD` archives, `System39.ain`, the music) with no tool to
+    run first — decision 1's "reading the original archive directly". The scenario is decompiled by a C#
+    translation of xsys35dc 1.13, the part this game reaches, whose output must equal today's
+    `_extract\scenario` byte for byte, because every hand port, doc citation and save names a line of
+    that text (`ScriptRef`); the CGs and sounds are read from their archives; the files' hashes check the
+    version (English translation v1.0) before anything is parsed. Rejected: bundling `xsys35dc.exe`
+    (native, no Android) and our own `.SCO` loader building programs directly (it still needs the lines,
+    or every line reference moves to byte addresses).
 
 ## Milestone 1 — the prologue
 

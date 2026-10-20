@@ -18,18 +18,12 @@ The model is decided (brief, "Risks"; decision 23): only our engine is distribut
 GPL-2.0-or-later, and the player brings their own copy of the game. What a release still needs
 (discussed with the owner 2026-10-11):
 
-- **Read the player's game folder directly** (decision 1 foresaw it) — *agent*. Today the port needs
-  the developer's extract (`_extract`: the decompile, CGs as PNG, the sounds). An import on the
-  first launch into `user://`: the `.ALD` archives read directly (the PMS decoder exists,
-  `Content/Graphics/Pms.cs`), the scenario decompiled by a bundled `xsys35dc` pinned to 1.13 (the
-  parser knows only its output; GPL-2, shipped with its source) or by our own loader of the `.SCO`
-  bytecode. Android (below) cannot run a bundled native tool, so the import has to be C# whole: our
-  own `.SCO` loader, or `xsys35dc` translated to C# (GPL-2, a header naming its origin).
-- **Check the game's version** — *agent*: the port reads only the English translation v1.0; check the
-  archives' hashes and refuse another version clearly instead of failing somewhere in the parser.
-- **A folder picker** for the game folder — *agent*. Today only `user://settings.cfg` or the field in
-  Debug → Battle Captures; `local.env` is for development only and is not read outside the
-  repository.
+The owner aims at a public release (decision 28, 2026-10-20).
+
+- **Read the player's game folder directly** — *agent*, planned in [import.md](import.md) (decision 28,
+  2026-10-20): the ALD reader, the `.ain` reader, xsys35dc translated to C# with a byte-for-byte check
+  against `_extract\scenario`, CGs and sounds from the archives, the version check by the files'
+  hashes, the import into `user://` with the folder picker (its step 8).
 - **Hide the development parts** in a release build — *agent*: the Debug menu, the capture viewer,
   the switches (`--auto`, `--watch`, `--ending`, …).
 - **Windows export** — *agent*: commit `export_presets.cfg` (git ignores it today); export templates
