@@ -7,7 +7,7 @@ folder, with no tools of ours or anyone else's to run first. Today the port need
 all three with C# that runs on every platform the game is built for (Android cannot run a bundled
 native tool, [backlog.md](backlog.md), "Release").
 
-Status: **under way** (2026-10-20): steps 1-2 ✓. The facts come from a read-only sweep of the code and
+Status: **under way** (2026-10-20): steps 1-3 ✓. The facts come from a read-only sweep of the code and
 of xsys35c 1.13's source on 2026-10-20, at commit `3ce2455`.
 
 ## Why the decompiler is translated, not replaced (option B)
@@ -91,9 +91,12 @@ agent days, rough.
    palette mask). Test: `GameArchiveTests.Every_cg_from_the_archive_equals_its_png` — all 1222 CGs equal
    their PNG (size, position, mask, the 256 palette entries, indices), the same gaps, numbers and sizes.
    The game and the tests still read the PNGs; the switch is step 8's.
-3. **Sounds from the archive** (~0.5 day). `SoundTable`'s names are the archive's; `BattleAudio` builds the
-   stream from bytes (`AudioStreamWav.LoadFromBuffer`, to be checked in 4.7) instead of a file. Test: the
-   51 entries equal `_extract\wav`.
+3. **Sounds from the archive** ✓ (2026-10-20). `Content/Audio/SoundLibrary` gives a sound's WAV bytes by
+   its number from the game's sound archive (the sound n at index n − 1) or from the extract's `wav\`
+   (under `SoundTable`'s names, which are the archive's); `BattleAudio` builds the stream from the bytes
+   (`AudioStreamWav.LoadFromBuffer`, in Godot 4.7.2) instead of a file. Test:
+   `GameArchiveTests.Every_sound_from_the_archive_equals_its_wav` — the 51 sounds byte for byte, nothing
+   where the table links nothing. The game still reads `wav\`; the switch is step 8's.
 4. **The `.ain` reader** (~0.5 day). The bytes after the first 4 rotated left by 2 bits; the sections
    `HEL0`, `FUNC`, `VARI`, `MSGI`; the messages SJIS. After xsys35c `decompiler/ain.c`. Test: the messages
    and variables against `_extract\aindump\System39.ain.txt`.

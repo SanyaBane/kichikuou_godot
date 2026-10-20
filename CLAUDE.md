@@ -177,8 +177,8 @@ question at the cell, the Subordinates screen's plate), built (`SubordinatesComm
 Then (owner, 2026-10-20) a public release — **owner's decision 28**: the game imports the player's own folder
 directly, xsys35dc translated to C# with its output byte-identical to `_extract\scenario` (every line reference
 stays), the CGs and sounds read from the `.ALD` archives, the version checked by the files' hashes; the plan is
-docs/import.md (steps 1-2 done: `Content/Archives/AldArchive` reads the `.ALD` sets, `CgLibrary` reads the CGs
-from the archive or the extract's PNGs alike), the release's other items
+docs/import.md (steps 1-3 done: `Content/Archives/AldArchive` reads the `.ALD` sets, `CgLibrary` the CGs and
+`Content/Audio/SoundLibrary` the sounds from the archives or the extract alike), the release's other items
 docs/backlog.md, "Release".
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
@@ -236,7 +236,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `ScriptRef`; `Scripts/ScenarioScripts` reads the data files' statements and whole files as programs
   (`ScenarioParser`; strictly: anything unexpected fails with its location); `Graphics/` decodes the CGs keeping palette indices (`IndexedPng`, `Pms`,
   `CgLibrary`, `Palette` with the engine's reserved entries; `ToRgba(40)` = `G n, 40`);
-  `Audio/MusicTable` maps music numbers to files. `Screen/` emulates the engine's drawing
+  `Audio/MusicTable` maps music numbers to files, `Audio/SoundLibrary` sound numbers to WAV bytes. `Screen/` emulates the engine's drawing
   surface (3200×800 at 2×, 8-bit indexed as the engine's: a palette load recolours what is
   drawn), its drawing commands (`EngineStage`: `G`/`CC`/`CS`/`CF`/`CM`, `WV`, the fades, the text
   state; its owner is told of the drawing through `IStageObserver`), message text (`TextBox`) and selection windows.

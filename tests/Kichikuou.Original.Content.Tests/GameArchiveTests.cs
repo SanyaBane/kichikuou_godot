@@ -1,6 +1,7 @@
 using System.Buffers.Binary;
 using System.Text;
 using Kichikuou.Content.Archives;
+using Kichikuou.Content.Audio;
 using Kichikuou.Content.Graphics;
 using Kichikuou.Original.Content.Audio;
 using Xunit.Abstractions;
@@ -134,5 +135,34 @@ public class GameArchiveTests(ITestOutputHelper output)
             Assert.Same(archive[number - 1], archive.Find(SoundTable.FileName(number)!.ToLowerInvariant()));
         }
         Assert.Equal(SoundTable.Numbers.Count, count);
+    }
+
+    /// <summary>
+    /// The sound library over the archive gives every sound number the library over <c>wav\</c> gives, with
+    /// the same bytes, and nothing where the table links nothing (docs/import.md, step 3).
+    /// </summary>
+    [LocalFolderFact("game", "wav")]
+    public void Every_sound_from_the_archive_equals_its_wav()
+    {
+        var archive = AldArchive.Open(LocalData.GameDirectory, "KICHIKUW");
+        var fromArchive = new SoundLibrary(archive);
+        var fromWav = new SoundLibrary(LocalData.WavDirectory, SoundTable.FileName);
+
+        int count = 0;
+        for (int n = -1; n <= archive.Count + 1; n++)
+        {
+            byte[]? wav = fromWav.Get(n);
+            byte[]? ald = fromArchive.Get(n);
+            Assert.Equal(SoundTable.FileName(n) is not null, wav is not null);
+            if (wav is null)
+            {
+                Assert.Null(ald);
+                continue;
+            }
+            Assert.NotNull(ald);
+            Assert.True(wav.AsSpan().SequenceEqual(ald), $"sound {n}");
+            count++;
+        }
+        Assert.Equal(51, count);
     }
 }

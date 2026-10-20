@@ -6,7 +6,7 @@ using Kichikuou.Original.Content.Battles;
 namespace Kichikuou.Game.Battles;
 
 /// <summary>
-/// Sound effects from the extracted <c>wav\</c> folder and music from the game folder's
+/// Sound effects from a <see cref="SoundLibrary"/> (the extracted <c>wav\</c> folder) and music from the game folder's
 /// <c>_inmm.ini</c> playlist (docs/assets.md §4-§5). <c>SQ l, r</c> plays its two sounds on
 /// buses panned hard left and right, as xsystem35 mixes them into one stereo stream.
 /// </summary>
@@ -15,6 +15,7 @@ public partial class BattleAudio : Node, IBattleAudio
     private const string LeftBus = "SfxLeft", RightBus = "SfxRight";
 
     private readonly Dictionary<int, AudioStream?> _sounds = [];
+    private SoundLibrary? _library;
     private MusicTable? _music;
     private AudioStreamPlayer _sfx = null!, _left = null!, _right = null!, _bgm = null!;
 
@@ -104,13 +105,10 @@ public partial class BattleAudio : Node, IBattleAudio
     {
         if (_sounds.TryGetValue(number, out var cached))
             return cached;
-        AudioStream? stream = null;
-        if (SoundTable.FileName(number) is { } name)
-        {
-            string path = System.IO.Path.Combine(GameData.WavDirectory, name);
-            if (System.IO.File.Exists(path))
-                stream = AudioStreamWav.LoadFromFile(path, new Godot.Collections.Dictionary());
-        }
+        _library ??= new SoundLibrary(GameData.WavDirectory, SoundTable.FileName);
+        AudioStream? stream = _library.Get(number) is { } wav
+            ? AudioStreamWav.LoadFromBuffer(wav, new Godot.Collections.Dictionary())
+            : null;
         _sounds[number] = stream;
         return stream;
     }
