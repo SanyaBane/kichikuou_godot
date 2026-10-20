@@ -181,7 +181,9 @@ docs/import.md (steps 1-4 done: `Content/Archives/AldArchive` reads the `.ALD` s
 `Content/Audio/SoundLibrary` the sounds from the archives or the extract alike, `Content/Archives/AinFile` the
 `System39.ain`, `Content/Text/Sjis` decodes Shift JIS with xsys35c's own table; step 6 done: `Content/Decompiler`
 is xsys35dc 1.13's decompiler translated, its 201 files byte-identical to the extract; step 7 done:
-`Content/GameFiles` checks the folder's SHA-256 against the one known version), the release's other items
+`Content/GameFiles` checks the folder's SHA-256 against the one known version; step 8 part 1 done:
+`Content/GameImport` decompiles into a cache, Godot's `GameData` reads the import where no extract is set, `--import`),
+the release's other items
 docs/backlog.md, "Release".
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
@@ -239,7 +241,9 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   (`SjisTable.g.cs` is **generated** by `python tools/codegen/gen_sjis_table.py <s2utbl.h>`; docs/import.md, steps 1, 4, 5);
   `Decompiler/ScenarioDecompiler` is xsys35dc 1.13 translated: the scenario archive and the `.ain` become the `.ADV`
   files of `_extract\scenario` byte for byte (step 6; `Cali` the expressions, `ScenarioDecompiler.Commands` the
-  command table); `GameFiles` checks a game folder's files against the known version (SHA-256, step 7);
+  command table); `GameFiles` checks a game folder's files against the known version (SHA-256, step 7); `GameImport` imports a
+  game folder: checked, its scenario decompiled into a cache (`ImportedGame`: the scenario folder, the CGs and
+  sounds from the archives; step 8);
   `ScenarioText` reads message texts from the decompiled scenario by
   `ScriptRef`; `Scripts/ScenarioScripts` reads the data files' statements and whole files as programs
   (`ScenarioParser`; strictly: anything unexpected fails with its location); `Graphics/` decodes the CGs keeping palette indices (`IndexedPng`, `Pms`,
@@ -387,6 +391,8 @@ commit `local.env`.
   settled, not while the owner may still ask for changes (owner's request 2026-10-11). Say in the
   reply which run a result comes from and why the full counts were or were not due.
 - Build everything: `dotnet build Kichikuou.sln`
+- Read the player's game folder as the release does, not the extract: add `--import [DIR]` to any game switches
+  (DIR, else the saved game folder; imported into `user://import` first when its cache is not whole).
 - Build and play in a window without Rider or the editor: `run-game.cmd` at the root (a double-click), or
   `powershell -ExecutionPolicy Bypass -File tools
 un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
