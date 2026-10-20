@@ -444,7 +444,10 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   `--interface new`, after the battle screen's exercise and its attack). A check of a later turn of that battle stops
   with it, never with the week (owner, 2026-10-20): `--until battle-end` ends the run at the battle's end whatever the
   exercise, ~100 s in a window without `--fast` — Barres's (unit 6) Defend and Dodge's (commander 5) defence are in it,
-  their Guard dumped as `effect-guard-player` and `effect-guard-enemy`. A load
+  their Guard dumped as `effect-guard-player` and `effect-guard-enemy`; `--until round-N` ends it already when the
+  battle's round N starts (owner, 2026-10-20: the rounds after the one checked only cost time) — Barres and another
+  back-row unit defend from round 1 (`--until round-2`, ~45 s), Dodge first in round 3 (`--until round-4`, ~70 s); the
+  log names the round of each Guard. A load
   replays the week from its autosave (a manual save is a copy of it, `LoadSaveScreen`): the load
   list, the banner, income and expenses, then the command menu. `--load --auto` always loads slot 1
   (the list's first item), so a kept folder holds one `slot01.ksav`: the owner's slot copied under that

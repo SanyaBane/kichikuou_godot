@@ -53,6 +53,9 @@ public enum AutoUntil
 
     /// <summary>When the first battle ends, whatever our battle screen's exercise: a check of a later turn (a defence, a level-up).</summary>
     BattleEnd,
+
+    /// <summary>When a battle's round <see cref="GameOptions.AutoUntilRound"/> starts (its header), or with the first battle's end.</summary>
+    Round,
 }
 
 /// <summary>What a <see cref="GameScreen"/> plays and how (the development switches of <see cref="Main"/>).</summary>
@@ -123,6 +126,9 @@ public sealed record GameOptions
 
     /// <summary>Development: unattended play stops after the first deployment picker or the first battle (a look at one screen).</summary>
     public AutoUntil AutoUntil { get; init; }
+
+    /// <summary>Development: the round whose start ends unattended play (<see cref="AutoUntil.Round"/>, <c>--until round-N</c>).</summary>
+    public int AutoUntilRound { get; init; }
 
     /// <summary>
     /// Development: a folder whose save slots are copied into <see cref="SaveDirectory"/> before the
@@ -733,6 +739,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         if (!_battleView.PlayGuard(side))
             return;
+        if (_options.Auto)
+            GD.Print($"Kichikuou: --auto saw the {side.ToString().ToLowerInvariant()}'s Guard in round {_autoRound}.");
         if (_options.Auto && _guardShots.Add(side))
             _ = EffectShotAsync($"effect-guard-{side}".ToLowerInvariant(), 0.4);
         await DelayAsync(GuardEffect.Seconds);
@@ -2860,6 +2868,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     }
 
     private int _autoBattleProv;
+
+    /// <summary>The round of the battle under way (its headers counted), for unattended play's stop and log.</summary>
+    private int _autoRound;
     private string _autoBattleEnemy = "";
 
     /// <summary>
@@ -2867,16 +2878,23 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// picker closes, or when the first battle (<c>FIGT_A</c>, <c>FIGT_B</c>, <c>FIGT</c>) ends — or, once
     /// our battle screen's exercise (<see cref="AutoCommandsAsync"/>) has run, when its attack's exchange is over; with
     /// <see cref="AutoUntil.BattleEnd"/> when that battle ends whatever the exercise (owner, 2026-10-20: a check inside a
-    /// battle stops with it, not with the week).
+    /// battle stops with it, not with the week); with <see cref="AutoUntil.Round"/> already when a battle's round
+    /// <see cref="GameOptions.AutoUntilRound"/> starts (owner, 2026-10-20: the rounds after the one checked only cost time).
     /// </summary>
     private void AutoStopEarly(ScriptEvent scriptEvent)
     {
         int week = _presenter.State?.Week.Value ?? 0;
+        if (scriptEvent is BattleScreenEvent { File: "FIGT_A.ADV" or "FIGT_B.ADV" or "FIGT.ADV", Open: true })
+            _autoRound = 0;
+        if (scriptEvent is RoundHeaderEvent)
+            _autoRound++;
         switch (_options.AutoUntil, scriptEvent)
         {
+            case (AutoUntil.Round, RoundHeaderEvent) when _autoRound >= _options.AutoUntilRound:
+                throw new AutoStopException($"--auto stopped at the start of round {_autoRound} of a battle (week {week}).");
             case (AutoUntil.Deployment, PickerScreenEvent { Kind: PickerKind.Deployment, Open: false }):
                 throw new AutoStopException($"--auto stopped after the first deployment picker (week {week}).");
-            case (AutoUntil.Battle or AutoUntil.BattleEnd, BattleScreenEvent { File: "FIGT_A.ADV" or "FIGT_B.ADV" or "FIGT.ADV", Open: false } battle):
+            case (AutoUntil.Battle or AutoUntil.BattleEnd or AutoUntil.Round, BattleScreenEvent { File: "FIGT_A.ADV" or "FIGT_B.ADV" or "FIGT.ADV", Open: false } battle):
                 throw new AutoStopException($"--auto stopped after the first battle, {battle.File} (week {week}).");
             // Our battle screen's exercise done (owner, 2026-10-15: the rest of the battle only costs time): the exchange
             // its banner started has run, and the field's redraw after it ends unattended play.
