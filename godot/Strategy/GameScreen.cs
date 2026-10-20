@@ -1189,7 +1189,21 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _presenter.AfterKey();
         if (opening && _options.Auto && !_options.Fast && !_openingShot)
             await OpeningShotAsync();
+        if (opening)
+            await OpeningLeaveAsync();
         return key;
+    }
+
+    /// <summary>
+    /// After the opening's click the battle goes on only once the opening has left and the order strip's flags have flown
+    /// in (owner, 2026-10-21): else an enemy that acts first starts its turn while they still move, and the player's
+    /// banners come up over them. At once while skipping and with <c>--fast</c> (both put the opening and the flags away at once).
+    /// </summary>
+    private async Task OpeningLeaveAsync()
+    {
+        do
+            await NextFrameAsync();                                             // the view sees the click first
+        while (!_battleView.OpeningSettled && BattleScreenShown && !_skip.IsSkipping && !SkippingScene);
     }
 
     /// <summary>

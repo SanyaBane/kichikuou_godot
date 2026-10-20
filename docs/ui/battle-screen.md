@@ -370,7 +370,9 @@ picture, the slot panels) is not shown. How it is built:
   the screen's right edge one after another, the first first (Sengoku Rance's, 04-screen.md §4): Option → Battle
   Screen… → "Strip: fly in" apart (0.25 s by default, `--strip-fly-seconds x`), at 960 layout pixels a second at that
   (Sengoku Rance's 0.6 px/ms ×1.6), as much slower or faster as the setting is; at once while skipping and with
-  `--fast` (`OrderStrip.Hold`). A later round's header is answered at once by `GameScreen`, as a click (its
+  `--fast` (`OrderStrip.Hold`). The opening's key wait returns only once the opening has left and the last flag stands
+  (owner, 2026-10-21, `GameScreen.OpeningLeaveAsync`): neither side acts while they move — before, an enemy that acted
+  first began its turn under them. A later round's header is answered at once by `GameScreen`, as a click (its
   key lands in RetVal, `FIGT.ADV:214`, which BTX-03 reads), after the release wait. The original's box is no longer
   in the windows' layer. **The advantages** stay on the screen all battle long, over the cards next to the armies'
   names, in the accent colour — since 2026-10-15 as what they do, and the battle's limit at the scene's top ("The

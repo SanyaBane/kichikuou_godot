@@ -122,6 +122,9 @@ internal sealed partial class OrderStrip : Control
             _target = chips;
     }
 
+    /// <summary>Whether the chips are flying in after the opening's click (<see cref="Hold"/>).</summary>
+    public bool Flying => _fly >= 0;
+
     private static (BattleSide, int) Key(OrderChip chip) => (chip.Side, chip.Record);
 
     private static (BattleSide, int)? Acting(IReadOnlyList<OrderChip> chips) =>

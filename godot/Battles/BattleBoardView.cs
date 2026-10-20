@@ -103,6 +103,9 @@ internal sealed partial class BattleBoardView : Control
 
     /// <summary>How far the battle's opening has faded in (0 none or not up, 1 whole).</summary>
     public float OpeningShown => _opening.Shown;
+
+    /// <summary>Whether the battle's opening has left and the order strip's flags have flown in (<see cref="OrderStrip.Hold"/>).</summary>
+    public bool OpeningSettled => !_opening.Visible && !_strip.Flying;
     private readonly Control _gauge;
     private readonly Dictionary<BattlePlace, (PanelContainer Card, StyleBoxFlat Box)> _cards = [];
     private readonly Control _cardsClip;
@@ -468,7 +471,7 @@ internal sealed partial class BattleBoardView : Control
         }
         if (_opening.Refresh(presenter.Opening, instant: slidesInstant) && !slidesInstant)
             StartCardsSlide();                                                  // under the opening, as Sengoku Rance's
-        _strip.Hold(_opening.Standing, instant);                                // the flags fly in after the opening's click
+        _strip.Hold(_opening.Standing, slidesInstant);                          // the flags fly in after the opening's click
     }
 
     /// <summary>
