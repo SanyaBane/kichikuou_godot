@@ -143,6 +143,11 @@ internal static class EffectTextures
 
     private static Texture2D? _surgeBody, _surgeEdge;
 
+    /// <summary>A tile: a flat rectangle, its edges a little soft (the mosaic a barrier breaks up into).</summary>
+    public static Texture2D Tile => _tile ??= Make(64, TileShape);
+
+    private static Texture2D? _tile;
+
     /// <summary>
     /// A size × <paramref name="height"/> texture (square by default) whose alpha at each pixel is <paramref name="alpha"/>
     /// of (x, y) in [−1, 1] — both axes, whatever the shape.
@@ -418,6 +423,8 @@ internal static class EffectTextures
 
     // Along x from end to end; y is 8× finer.
     private static float BarShape(float x, float y) => Gauss(y, 0.3f) * (1 - SmoothStep(0.8f, 1f, MathF.Abs(x)));
+
+    private static float TileShape(float x, float y) => (1 - SmoothStep(0.94f, 1f, MathF.Abs(x))) * (1 - SmoothStep(0.94f, 1f, MathF.Abs(y)));
 
     private static float MoonShape(float x, float y)
     {

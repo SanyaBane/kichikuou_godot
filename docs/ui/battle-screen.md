@@ -486,6 +486,15 @@ picture, the slot panels) is not shown. How it is built:
     and a War Dance's, a Chuhai's or a Goliath's troops fire nothing, nor its commander at the commander, and a Soaring
     Wave's troops fire nothing and its commander two shots at the commander (02-resolution.md §3.3). The Cheater Beam
     stays melee.
+  - **Defend** (owner, 2026-10-20): a unit's Defend plays Sengoku Rance's guard actions' counterpart, ours after
+    **45080** (docs/sengoku/04-screen.md §2.4.1, "Guard"), though no shot is fired: the command (`L_02078`,
+    `FIGT.ADV:1382-1410`; also an Auto-Def order and an Auto-Atk falling back to defend, 01-flow.md §8.4) prints its
+    "Defense Increase" into box 143 (`:1399`), which our screen shows as the badge on the unit's card
+    (`InfoBoxKind.Defence`, docs/ui/messages.md, §5 step 5); the effect starts with the badge's flash
+    (`BattleBoardView.PlayGuard`, from `GameScreen` where the badge's wait is answered), over the defender, who stands
+    alone on the player's half then ("The scene between exchanges"). The enemy's defence (`EState := 20`, `:1451-1464`)
+    prints nothing and goes to the redraw (`L_0232f`), so it plays none. No test reaches it (Godot only); `--auto` in a window without
+    `--fast` dumps it once a launch, at the wall's height (`effect-guard-player`, 400 ms after the badge).
   - **A setting**: Option → Battle Screen… → "Effects: on/off", on by default (Sengoku Rance's Combat Effect Display);
     none while skipping (MsgSkip) or with `--fast`.
   **Wired in**: the presenter takes the effect at the shots' first frame (`ExchangeEffect.Of` on the state,
@@ -703,6 +712,20 @@ picture, the slot panels) is not shown. How it is built:
   shock front pushed right, white shards and droplets thrown forward and up; past the ranks they break up into a blue
   mist (from ~10), gone by ~20. Nothing is drawn behind Rolex. Over the sand battlefield the bursts read faintly over
   the white armour of Ex's army.
+  The Guard effect (`GuardEffect`, 2026-10-20, a Defend's; after Sengoku Rance's guard actions' 45080 — 14 frames in
+  the archive, the 15th absent; **14 frames as the reference**, the rest of ours empty; a texture of its own, `Tile`, a
+  flat rectangle with barely softened edges), all on the actor's half: a curtain of 90 rows of horizontal blue-violet
+  streaks (`Streak`, 0.36/0.36/0.86, a fifth of them with a lavender-white core), the full height of the frame,
+  sweeping in from the left edge (its front at x 150, 240, 330 at frames 0-2) and stopping at the middle, x 400 (from
+  frame 3), its tail trailing back 190-280 units and dimming once it has stopped; there its front stands as a wall of
+  light (3-10) — a soft lavender band widening from 16 to 70 units, blocks stacked down the face from frame 5, lavender
+  turning pinkish white toward the foot, a faint straight edge at the face —; the wall then breaks up pixelated
+  (10-13): a grid of blocks from the face back to the left (its left end at x 310, 200, 70, 0, each row's a little
+  uneven; the blocks 26, 40, 54, 66 units, some wider), brighter toward the face and the foot, blue-lavender, then blue,
+  then dark navy, gone by 14; nothing passes the face. Timed on the reference's mean brightness in twenty-unit column
+  bands. Its multi-target variant (49060, 152×78, a card's size) is not used: a Defend is one unit's. Over the sand
+  battlefield the curtain runs through the defender's ranks and the wall stands at their front, faint under screen
+  blending but for the wall's peak (frames 9-11).
   **Debug → Effects** (`EffectViewer`) plays them over our scene's battlefield (CG 900 and its overlay, with Ex's
   (commander 1) army once a game has booted) or black: the effect and its user, Play, Loop, the enemy acting, the
   blend, the speed, the seed, a frame slider and an offset (owner, 2026-10-15): X and Y move the effect from its own
@@ -716,9 +739,10 @@ picture, the slot panels) is not shown. How it is built:
   (unit 38, 1526) and Nagi's (unit 40, 1525), Whirlwind Shot Isoroku (unit 27, 1528), High Speed Meglass (unit 30, 1527), By la Way Rick (unit 7,
   1521), the ninja's follow-up Kanami, Freya, Kaoru or Wichita (their own sprites, 1164, 1176, 1182, 1185), Vanish Bomb
   Miki (unit 32, 1529), C. War Dance Patton (unit 18, 1530), Chuhai Asuka (unit 11, 1121), T2 Goliath none (record 51,
-  no sprite: the battlefield bare on the player's side, as in the battle), T2 Soaring Wave Rolex (unit 47, 1252).
+  no sprite: the battlefield bare on the player's side, as in the battle), T2 Soaring Wave Rolex (unit 47, 1252);
+  Guard has Rance's army, as melee.
   `--effects --shots DIR --quit` (in a window; `--effects white-beam-magic,black-beam-nagi` for those alone) writes every frame of each with seed 1: the effect alone on black
-  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `kentarou-slash-NN.png`, `white-beam-shizuka-NN.png`, `white-beam-magic-NN.png`, `epo-light-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`, `chuhai-NN.png`, `goliath-NN.png`, `soaring-wave-NN.png`; the black beams' (`black-beam-chizuko`,
+  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `kentarou-slash-NN.png`, `white-beam-shizuka-NN.png`, `white-beam-magic-NN.png`, `epo-light-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`, `chuhai-NN.png`, `goliath-NN.png`, `soaring-wave-NN.png`, `guard-NN.png`; the black beams' (`black-beam-chizuko`,
   `black-beam-nagi`) picture is its light, so they are saved over the battlefield only) and over the battlefield with the effect's first user, the
   player acting and the enemy (`melee-scene-NN.png`, `melee-enemy-scene-NN.png`, …) — for a sheet next to the reference's frames, made outside the
   repository.

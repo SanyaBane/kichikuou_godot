@@ -279,6 +279,24 @@ internal sealed partial class BattleBoardView : Control
         _effect.Playing = true;
     }
 
+    private int _guards;
+
+    /// <summary>
+    /// A unit's Defend (<c>FIGT.ADV:1399</c>, its badge flashing on the card): our Guard effect after Sengoku Rance's
+    /// guard actions' (docs/ui/battle-screen.md, "The exchange's effects"), a wall of light raised in front of the
+    /// defender, who stands alone on the player's half then. It plays out by itself; none with Option → Battle Screen… →
+    /// "Effects" off, or when the armies' moves are at once (skipping, <c>--fast</c>).
+    /// </summary>
+    public void PlayGuard()
+    {
+        if (_armiesInstant || BattleScreenSettings.Get(BattleScreenSettings.Effects) < 0.5)
+            return;
+        _effect.Mirrored = false;
+        _effect.Dark = false;
+        _effect.Start(GuardEffect.Build(++_guards));
+        _effect.Playing = true;
+    }
+
     /// <summary>A layer of the scene (<see cref="BattleScene.FieldY"/>), over the ones before it.</summary>
     private TextureRect Layer()
     {

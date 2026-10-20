@@ -700,17 +700,19 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     /// <summary>
     /// Unattended play's dump of an exchange's effect (in a window, without <c>--fast</c>): once a launch for each
-    /// effect and side, at its peak (frame 3, 150 ms after the shots' start), <c>effect-melee-player</c> and the like.
+    /// effect and side, at its peak (frame 3, 150 ms after the shots' start), <c>effect-melee-player</c> and the like; a
+    /// Defend's Guard (<c>effect-guard-player</c>) at its wall's height, <paramref name="after"/> 400 ms.
     /// </summary>
-    private async Task EffectShotAsync(string what)
+    private async Task EffectShotAsync(string what, double after = 0.15)
     {
         var watch = Stopwatch.StartNew();
-        while (watch.Elapsed.TotalSeconds < 0.15 && !_closing)
+        while (watch.Elapsed.TotalSeconds < after && !_closing)
             await NextFrameAsync();
         Shot(what);
     }
 
     private readonly HashSet<ExchangeEffect> _effectShots = [];
+    private bool _guardShot = true;
 
     /// <summary>
     /// Animates a palette fade over its <see cref="FadeRequest.Duration"/>, never skipped, unless
@@ -1058,6 +1060,12 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             if (passed.Kind == InfoBoxKind.Defence)
             {
                 _battleView.Info.Flash(passed);
+                _battleView.PlayGuard();
+                if (_options.Auto && !_options.Fast && _guardShot)
+                {
+                    _guardShot = false;
+                    _ = EffectShotAsync("effect-guard-player", 0.4);            // the wall at its height
+                }
                 if (_options.Auto && Windowed && _messageDumps.Add("info-defence"))
                 {
                     await DelayAsync(0.35);                                     // the badge at its height

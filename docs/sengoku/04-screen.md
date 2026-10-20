@@ -198,6 +198,18 @@ Surveyed as the reference for our own exchange effects (docs/ui/battle-screen.md
   Attack. T2 Soaring Wave later: likely Rance Attack's eruption made much smaller, four of them, as Rolex's sprite.
   **Changed** (owner, 2026-10-15): High Speed takes **41400** Commander Charge (not Sonic Shuriken), and By la Way
   Rance Attack's **40500** recoloured red, as Rick's red sprite (CG 1521).
+- **Guard** **[V]** (surveyed 2026-10-20 for Kichikuou's Defend; docs/ui/battle-screen.md, "The exchange's effects"):
+  no guard action has an entry of its own; `tagEffectDataManager@get` remaps it through `checkAction`
+  (`あべ/T_EFFDAT.JAF.jam:1506-1561`): `行動_防御` (`あべ/C_行動.jaf.jam`, `FUNC 1364`) — actions 3, 21 (Ally Guard),
+  22 (Neo Ally Guard), 23 (All Guard) and 143 — gives **993**, whose entry is `add1(45080, 15, 49060, 15, 993, …)`:
+  **CG 45080**, 15 frames (14 in the archive, 45094 absent), and for a multi-target use 49060, 15 frames of 152×78 (a
+  card's size; 14 in the archive). The other remaps: 991 heal (40400 / 49000), 992 auto-heal and a solo battle's heal
+  (45000), 994 buff (45100 / 49020), 995 debuff (45120 / 49040).
+  *What 45080 shows* (looked at, every frame): all on the actor's half — a column of horizontal blue-violet streaks
+  (about 95, 95, 217), the frame's full height and ~140 wide, sweeping in from the left edge (its front at x 150, 240,
+  330, 400 at frames 0-3) and stopping at the middle; its front stands there as a lavender wall, white and pink toward
+  the foot, its tail stretching back to x ~140 (4-9); at 10-11 the wall flares and breaks up into blocks (a pixelated
+  dissolve) spreading back to the left edge, blue at 12, dark navy at 13; nothing past x ~430.
   *What 41400 shows* (looked at, every frame; 29 frames in the archive): a white burst at about (310, 160) on a thick
   white bar across the whole frame in an orange-gold glow (frames 0-2), the bar thinning to a thread (gone by ~19);
   yellow petals bursting out of it and flying out radially, turning tan and slowing (1-15, faint to ~22); a white disc
