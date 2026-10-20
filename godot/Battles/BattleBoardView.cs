@@ -112,6 +112,7 @@ internal sealed partial class BattleBoardView : Control
     private readonly Dictionary<BattlePlace, float> _cardTravel = [];  // how far each card slides in (layout pixels)
     private double _cardsSliding = -1;                                  // seconds into the cards' slide; -1 when they stand
     private int _cardSlides;                                            // the slides so far (each its own random stagger)
+    private bool _cardsFade;                                            // a dungeon's: the cards fade in at their places instead
     private readonly Control _actingFrame;
     private BattlePlace? _actingPlace;
     private ulong _blinkFrom;
@@ -471,7 +472,7 @@ internal sealed partial class BattleBoardView : Control
             _limit.QueueRedraw();
         }
         if (_opening.Refresh(presenter.Opening, instant: slidesInstant) && !slidesInstant)
-            StartCardsSlide();                                                  // under the opening, as Sengoku Rance's
+            StartCardsSlide(fade: s.Bt_Kind == 3);                              // under the opening, as Sengoku Rance's
         _strip.Hold(_opening.Standing, slidesInstant);                          // the flags fly in after the opening's click
     }
 
@@ -960,15 +961,18 @@ internal sealed partial class BattleBoardView : Control
     /// The cards' slide when a battle begins (owner, 2026-10-15; Sengoku Rance's, docs/sengoku/04-screen.md §6.5): each
     /// from beyond its own side, linear, the front row in Option → Battle Screen… → "Cards: slide in" (640 layout pixels;
     /// Sengoku Rance's 400 px in 1 s), each card a random distance further (the back row 160 more), so they come at
-    /// slightly different times. The stagger is our own random draw, never the script's.
+    /// slightly different times. The stagger is our own random draw, never the script's. In a dungeon
+    /// (<paramref name="fade"/>, <c>Bt_Kind</c> 3) the cards stand at their places and come out of the dark instead
+    /// (owner, 2026-10-21): each grows opaque in the time its slide would take.
     /// </summary>
-    private void StartCardsSlide()
+    private void StartCardsSlide(bool fade)
     {
         if (BattleScreenSettings.Get(BattleScreenSettings.CardsSlideSeconds) <= 0)
             return;
         var random = new Random(++_cardSlides);
         foreach (var place in SlotSnapshot.Places)
             _cardTravel[place] = CardsSlideDistance + (place.Slot <= 2 ? 0 : 160) + random.Next(160);
+        _cardsFade = fade;
         _cardsSliding = 0;
         PlaceCards();
     }
@@ -986,18 +990,24 @@ internal sealed partial class BattleBoardView : Control
         PlaceCards();
     }
 
-    /// <summary>The cards at their places, or where their slide has them.</summary>
+    /// <summary>The cards at their places, or where their slide has them (in a dungeon, as opaque as their fade has them).</summary>
     private void PlaceCards()
     {
         double seconds = BattleScreenSettings.Get(BattleScreenSettings.CardsSlideSeconds);
         foreach (var (place, (card, _)) in _cards)
         {
-            float left = 0;
+            float left = 0, alpha = 1;
             if (_cardsSliding >= 0 && seconds > 0 && _cardTravel.TryGetValue(place, out float travel))
-                left = (float)Math.Max(0, travel - _cardsSliding * CardsSlideDistance / seconds);
+            {
+                if (_cardsFade)
+                    alpha = (float)Math.Min(1, _cardsSliding * CardsSlideDistance / seconds / travel);
+                else
+                    left = (float)Math.Max(0, travel - _cardsSliding * CardsSlideDistance / seconds);
+            }
             var at = CardArea(place).Position - PanelArea.Position + new Vector2(place.Side == BattleSide.Player ? -left : left, 0);
             card.Position = at * _scale;
             card.Size = CardSize * _scale;
+            card.Modulate = new Color(1, 1, 1, alpha);
         }
     }
 

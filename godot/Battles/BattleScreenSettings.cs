@@ -53,7 +53,7 @@ internal static class BattleScreenSettings
     /// <summary>How long the front row's cards take to slide in when a battle begins (owner, 2026-10-15; Sengoku Rance's 1 s).</summary>
     public static readonly Setting CardsSlideSeconds = new("cards_slide_seconds", "Cards: slide in", 0, 3, 0.05, 1.0, "s",
         "When a battle begins, how long the front row's cards take to slide in from their sides under the opening; "
-        + "the back row's come a little later (0: at once).");
+        + "the back row's come a little later; in a dungeon they fade in at their places as long (0: at once).");
 
     /// <summary>How far apart the order strip's flags fly in after the opening's click (owner, 2026-10-15; Sengoku Rance's 0.25 s).</summary>
     public static readonly Setting StripFlySeconds = new("strip_fly_seconds", "Strip: fly in", 0, 1, 0.01, 0.25, "s",

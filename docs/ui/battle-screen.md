@@ -366,7 +366,9 @@ picture, the slot panels) is not shown. How it is built:
   the panel; the front row 640 layout pixels in Option → Battle Screen… → "Cards: slide in" (1 s by default, Sengoku
   Rance's 400 px in 1 s ×1.6; `--cards-slide-seconds x` for a launch), each card a random 0-160 pixels further and
   the back row 160 more, so the front row stands at 1-1.25 s and the back row at 1.25-1.5 s (our own random draw,
-  never the script's). **The order strip is held back** while the opening stands; at its click its flags fly in from
+  never the script's). In a dungeon (`Bt_Kind` 3) no armies collide: the cards stand at their places and come out of
+  the dark instead (owner, 2026-10-21), each growing opaque in the time its slide would take
+  (`BattleBoardView.StartCardsSlide`; a look: `--dungeon` on the week-18 save). **The order strip is held back** while the opening stands; at its click its flags fly in from
   the screen's right edge one after another, the first first (Sengoku Rance's, 04-screen.md §4): Option → Battle
   Screen… → "Strip: fly in" apart (0.25 s by default, `--strip-fly-seconds x`), at 960 layout pixels a second at that
   (Sengoku Rance's 0.6 px/ms ×1.6), as much slower or faster as the setting is; at once while skipping and with
