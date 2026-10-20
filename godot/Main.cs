@@ -1,4 +1,5 @@
 using Godot;
+using Kichikuou.Content;
 using Kichikuou.Game.Battles;
 using Kichikuou.Game.Strategy;
 
@@ -26,10 +27,52 @@ public partial class Main : Control
         if (!_commandLineRead)
         {
             _commandLineRead = true;
+            ImportFromCommandLine();
+            if (!GameData.UsesExtract && GameData.Imported is null && !GameData.OpenImport(out string? problem))
+                GD.PrintErr($"No game data: {problem}");
             screen = FromCommandLine();
         }
         screen ??= new GameScreen(new GameOptions { Start = GameStart.Title });
         Callable.From(() => Screens.Open(this, screen)).CallDeferred();     // the tree is busy during _Ready
+    }
+
+    /// <summary>
+    /// <c>--import [DIR]</c>: the launch reads the import of the game folder DIR (else the saved one) even where an
+    /// extract is set, importing it first when its cache is not whole (docs/import.md, step 8; the cache in
+    /// <c>user://import</c>). A folder that is no known version or a scenario that does not decompile is an error
+    /// (with <c>--quit</c>, exit code 1).
+    /// </summary>
+    private void ImportFromCommandLine()
+    {
+        var args = OS.GetCmdlineUserArgs();
+        int at = Array.IndexOf(args, "--import");
+        if (at < 0)
+            return;
+        GameData.ForceImport = true;
+        string folder = at + 1 < args.Length && !args[at + 1].StartsWith("--", StringComparison.Ordinal) ? args[at + 1] : GameData.GameDirectory;
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        string? stage = null;
+        try
+        {
+            GameData.Imported = GameImport.Import(folder, GameData.ImportCache, new Progress(p =>
+            {
+                if (p.Stage != stage)
+                    GD.Print($"Import: {stage = p.Stage} ({p.Fraction:P0})");
+            }));
+            GD.Print($"Import: {GameData.Imported.Folder.Version.Name} from {folder}, scenario in {GameData.Imported.ScenarioDirectory}, {watch.ElapsedMilliseconds} ms");
+        }
+        catch (Exception e) when (e is GameFolderException or Kichikuou.Content.Decompiler.DecompileException)
+        {
+            GD.PrintErr($"Import failed: {e.Message}");
+            if (OS.GetCmdlineUserArgs().Contains("--quit"))
+                GetTree().Quit(1);
+        }
+    }
+
+    /// <summary>A progress report on the reporting thread.</summary>
+    private sealed class Progress(Action<ImportProgress> report) : IProgress<ImportProgress>
+    {
+        public void Report(ImportProgress value) => report(value);
     }
 
     /// <summary>

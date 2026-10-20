@@ -7,7 +7,7 @@ folder, with no tools of ours or anyone else's to run first. Today the port need
 all three with C# that runs on every platform the game is built for (Android cannot run a bundled
 native tool, [backlog.md](backlog.md), "Release").
 
-Status: **under way** (2026-10-20): steps 1-7 ✓. The facts come from a read-only sweep of the code and
+Status: **under way** (2026-10-20): steps 1-7 ✓, step 8 part 1 ✓. The facts come from a read-only sweep of the code and
 of xsys35c 1.13's source on 2026-10-20, at commit `3ce2455`.
 
 ## Why the decompiler is translated, not replaced (option B)
@@ -150,6 +150,17 @@ agent days, rough.
    and keep the folder for the CGs, sounds and music, read from the archives at run time. A progress
    screen while it runs; a clear message when it fails. `GameData` takes the import when there is no
    `KICHIKUOU_EXTRACT_DIR`; the developer's extract wins where it is set.
+   - **Part 1 ✓** (2026-10-20): the import without its screen. `Kichikuou.Content/GameImport.Import(folder, cache)`
+     checks the version (step 7), then decompiles the scenario into `<cache>/<GameFolder.Key>-<ImporterVersion>/scenario`
+     unless a whole one is there (a marker `import.done` written last; a folder cut short is done again), and
+     reports `ImportProgress` (a stage and a fraction that never goes back); `ImportedGame` opens the CGs and the
+     sounds from the folder's archives. Godot's `GameData` has the two sources: the extract wins where one is set
+     and holds `scenario\`, else `Imported` (opened at the start by `GameData.OpenImport` from the saved
+     `game_dir` when its cache is whole); `GameData.Cgs()` and `Sounds()` give the libraries either way.
+     `--import [DIR]` makes a launch read the import even where an extract is set, importing first (~0.8 s).
+     Content test `DecompilerTests.The_import_caches_the_extracts_scenario`; a headless run from the kept save
+     `user://saves-week18` with `--import --until battle` plays the week's attack on Oaks (6) as the extract does.
+   - Part 2: the import screen (mock-ups first), at the start when there is no data.
 9. **Docs** (~0.5 day). CLAUDE.md, spike-findings ("Local layout": the extract is for development),
    README (installing: where to get the game and the translation, what to point the game at), the
    backlog.

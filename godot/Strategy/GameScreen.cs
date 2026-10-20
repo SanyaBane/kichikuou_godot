@@ -276,7 +276,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _markers = new MapMarkersView(GodotGlyphRenderer.Chosen);
         _markers.Pressed += MarkerPressed;
         _content.AddChild(_markers);
-        var faces = new FacePictures(new CgLibrary(GameData.CgDirectory));
+        var faces = new FacePictures(GameData.Cgs());
         _provinceView = new ProvinceMenuView(GodotGlyphRenderer.Chosen, faces);
         _content.AddChild(_provinceView);
         _commandView = new CommandMenuView(GodotGlyphRenderer.Chosen);
@@ -324,7 +324,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         AddChild(_audio);
         _glyphs = new GodotGlyphRenderer();
         var scripts = new ScenarioScripts(GameData.ScenarioDirectory);
-        _presenter = new GamePresenter(new ScenarioText(GameData.ScenarioDirectory), new CgLibrary(GameData.CgDirectory),
+        _presenter = new GamePresenter(new ScenarioText(GameData.ScenarioDirectory), GameData.Cgs(),
             _glyphs, scripts, _audio)
         {
             MaskEventCgs = _options.ScreenshotDirectory is not null,

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using Kichikuou.Content;
 using Kichikuou.Content.Archives;
 using Kichikuou.Content.Decompiler;
 using Xunit.Abstractions;
@@ -45,6 +46,51 @@ public class DecompilerTests(ITestOutputHelper output)
         foreach (string difference in differing.Take(10))
             output.WriteLine(difference);
         Assert.Empty(differing);
+    }
+
+    /// <summary>
+    /// The import (docs/import.md, step 8) of the player's folder into a cache: the extract's scenario, reused the
+    /// second time, and the CGs and sounds read from the folder's archives.
+    /// </summary>
+    [LocalFolderFact("game", "scenario")]
+    public void The_import_caches_the_extracts_scenario()
+    {
+        string cacheRoot = Directory.CreateTempSubdirectory("import-tests-").FullName;
+        try
+        {
+            var stages = new List<ImportProgress>();
+            var imported = GameImport.Import(LocalData.GameDirectory, cacheRoot, new SyncImportProgress(stages.Add));
+            Assert.Equal(1, stages[^1].Fraction);
+            var back = stages.Zip(stages.Skip(1)).FirstOrDefault(pair => pair.First.Fraction > pair.Second.Fraction);
+            Assert.True(back == default, $"the bar goes back: {back}");
+
+            string[] expected = [.. Directory.EnumerateFiles(LocalData.ScenarioDirectory, "*.ADV").Select(Path.GetFileName).Order()!];
+            string[] written = [.. Directory.EnumerateFiles(imported.ScenarioDirectory).Select(Path.GetFileName).Order()!];
+            Assert.Equal(expected, written);
+            foreach (string name in expected)
+            {
+                Assert.True(File.ReadAllBytes(Path.Combine(LocalData.ScenarioDirectory, name))
+                    .AsSpan().SequenceEqual(File.ReadAllBytes(Path.Combine(imported.ScenarioDirectory, name))), name);
+            }
+
+            var again = new List<ImportProgress>();
+            var reused = GameImport.Import(LocalData.GameDirectory, cacheRoot, new SyncImportProgress(again.Add));
+            Assert.Equal(imported.ScenarioDirectory, reused.ScenarioDirectory);
+            Assert.DoesNotContain(again, p => p.Stage == "Decompiling the scenario");
+
+            Assert.NotNull(imported.OpenCgs().Get(844));
+            Assert.NotNull(imported.OpenSounds().Get(Kichikuou.Original.Content.Audio.SoundTable.Numbers.First()));
+            output.WriteLine($"{written.Length} files in {imported.ScenarioDirectory}");
+        }
+        finally
+        {
+            Directory.Delete(cacheRoot, recursive: true);
+        }
+    }
+
+    private sealed class SyncImportProgress(Action<ImportProgress> report) : IProgress<ImportProgress>
+    {
+        public void Report(ImportProgress value) => report(value);
     }
 
     /// <summary>The first line where two files differ, both versions.</summary>

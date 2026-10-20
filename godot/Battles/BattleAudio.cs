@@ -105,7 +105,7 @@ public partial class BattleAudio : Node, IBattleAudio
     {
         if (_sounds.TryGetValue(number, out var cached))
             return cached;
-        _library ??= new SoundLibrary(GameData.WavDirectory, SoundTable.FileName);
+        _library ??= GameData.Sounds();
         AudioStream? stream = _library.Get(number) is { } wav
             ? AudioStreamWav.LoadFromBuffer(wav, new Godot.Collections.Dictionary())
             : null;

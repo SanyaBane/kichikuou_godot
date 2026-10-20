@@ -306,7 +306,7 @@ public partial class GameScreen
             return;
         _modal = true;
         _input.Clear();
-        var viewer = new PortraitViewer(new CgLibrary(GameData.CgDirectory), _presenter.State);
+        var viewer = new PortraitViewer(GameData.Cgs(), _presenter.State);
         viewer.TreeExiting += () => _modal = false;
         AddChild(viewer);
         viewer.PopupCentered();
@@ -329,7 +329,7 @@ public partial class GameScreen
             return;
         _modal = true;
         _input.Clear();
-        var viewer = new EffectViewer(new CgLibrary(GameData.CgDirectory), _presenter.State);
+        var viewer = new EffectViewer(GameData.Cgs(), _presenter.State);
         viewer.TreeExiting += () => _modal = false;
         AddChild(viewer);
         viewer.PopupCentered();

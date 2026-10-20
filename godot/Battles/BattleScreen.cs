@@ -104,7 +104,7 @@ public partial class BattleScreen : Control, IScriptView, IBattleInput
         _audio = new BattleAudio();
         AddChild(_audio);
         _glyphs = new GodotGlyphRenderer();
-        _presenter = new BattlePresenter(new ScenarioText(GameData.ScenarioDirectory), new CgLibrary(GameData.CgDirectory),
+        _presenter = new BattlePresenter(new ScenarioText(GameData.ScenarioDirectory), GameData.Cgs(),
             _glyphs, _audio);
         _ = RunAsync();
     }
