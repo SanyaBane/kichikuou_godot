@@ -160,7 +160,14 @@ agent days, rough.
      `--import [DIR]` makes a launch read the import even where an extract is set, importing first (~0.8 s).
      Content test `DecompilerTests.The_import_caches_the_extracts_scenario`; a headless run from the kept save
      `user://saves-week18` with `--import --until battle` plays the week's attack on Oaks (6) as the extract does.
-   - Part 2: the import screen (mock-ups first), at the start when there is no data.
+   - Part 2: the import screen, at the start when there is no data (no extract, no whole import of the saved
+     folder). Mock-up round 1 (2026-10-20, `tools/ui/mock_import.py`, drawn on our wave backdrop: nothing of the
+     game can be drawn before the import), three looks in three states each — 1 choose the folder (Godot's native
+     folder dialog), 2 importing (the stage and the bar), 3 refused (`GameFolderException`'s message):
+     **A** a lacquer panel in the middle (the folder as a row, the steps with ticks, a gold bar, the refusal in a
+     vermilion box); **B** a paper sheet in a lacquer frame (the steps as a numbered list 一 二 三, a vermilion bar,
+     a stamp on a refusal); **C** a title card (the name large, one line and one button, a thin bar along the
+     screen's foot). Awaiting the owner's choice.
 9. **Docs** (~0.5 day). CLAUDE.md, spike-findings ("Local layout": the extract is for development),
    README (installing: where to get the game and the translation, what to point the game at), the
    backlog.
