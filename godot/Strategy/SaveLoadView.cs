@@ -283,11 +283,8 @@ internal sealed partial class SaveLoadView : Control
         DrawRect(new Rect2(0, 0, 1280, 800), new Color(0, 0, 0, 120 / 255f));
         Lacquer.DrawPanel(this, PanelRect, _k);
         bool save = list == SaveList.Save;
-        string title = save ? "Save" : "Load";
         float x = PanelRect.Position.X + 22, y = PanelRect.Position.Y + 25;
-        Text(_brush, 24, x, y, title, Lacquer.Name);
-        Text(_cinzelLight, 13, x + _brush.GetStringSize(title, fontSize: 24).X + 14, y + 2,
-            save ? "the game as it is now" : "choose a game to go on with", Lacquer.Subtitle);
+        Text(_brush, 24, x, y, save ? "Save" : "Load", Lacquer.Name);
         Lacquer.DrawDivider(this, PanelRect.Position.X + 16, PanelRect.End.X - 16, PanelRect.Position.Y + 44, _k);
         if (_tabs)
         {
