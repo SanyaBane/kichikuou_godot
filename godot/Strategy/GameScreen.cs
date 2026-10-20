@@ -124,6 +124,12 @@ public sealed record GameOptions
     /// </summary>
     public bool AutoSaveLoad { get; init; }
 
+    /// <summary>
+    /// Development (owner, 2026-10-21): at the first map wait the unattended player searches the Monsters' Cave at once
+    /// with Rance (unit 1), before any replenish, and attacks nothing that week (a look at a dungeon battle).
+    /// </summary>
+    public bool AutoDungeon { get; init; }
+
     /// <summary>Development: unattended play stops after the first deployment picker or the first battle (a look at one screen).</summary>
     public AutoUntil AutoUntil { get; init; }
 
@@ -2823,6 +2829,17 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 _pointer.RightClick(5, 6);                              // the menu: Load/Save
                 return;
             }
+            if (centred && _options.AutoDungeon && _autoDungeon == AutoDungeon.NotYet)
+            {
+                if (AutoCaveOnScreen(s) is var (sx, sy))
+                {
+                    _autoDungeon = AutoDungeon.Searching;              // at once, with Rance (AutoParty)
+                    _pointer.Click(sx, sy);
+                    return;
+                }
+                throw new AutoStopException($"--dungeon: the Monsters' Cave cannot be searched now (week {s.Week.Value}, stage {s.StoryStage.Value}, "
+                    + $"dungeon command {s.Ui_CmdDungeonAvail.Value}, the cave's province owner {s.Provs[s.Dgns[AutoCave].Prov].Owner.Value}).");
+            }
             if (centred && !_options.AutoRefill && AutoReplenishUnit(s) is { } unit)
             {
                 GD.Print($"Kichikuou: --auto replenishes unit {unit} ({s.Units[unit].Troops.Value} of {s.Units[unit].MaxTroops.Value} troops, week {s.Week.Value}).");
@@ -2832,7 +2849,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 _pointer.RightClick(5, 6);                              // the menu: Subordinates
                 return;
             }
-            if (AutoAttackTarget(s) is { } target)
+            if (!_options.AutoDungeon && AutoAttackTarget(s) is { } target)
             {
                 var p = s.Provs[target];
                 if (GesturePoints.OnScreen(s, p.MapX, p.MapY, centred) is var (x, y))
@@ -3029,7 +3046,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_autoPartyFrom != picker)
         {
             _autoPartyFrom = picker;
-            _autoParty = ChosenParty(s) ?? AutoParty(picker.Mode.Value, s);
+            _autoParty = ChosenParty(s)
+                ?? (picker.Mode == 3 && _options.AutoDungeon && s.Units[1].Status == 1 ? [1] : AutoParty(picker.Mode.Value, s));
         }
         int[] party = [.. new[] { s.Bt_PlayerParty1, s.Bt_PlayerParty2, s.Bt_PlayerParty3, s.Bt_PlayerParty4 }
             .Select(u => u.Value).Where(u => u != 0)];

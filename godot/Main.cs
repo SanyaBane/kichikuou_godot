@@ -172,6 +172,7 @@ public partial class Main : Control
                 AutoTreasure = args.Contains("--treasure"),
                 AutoSaveLoad = args.Contains("--saveload"),
                 AutoRefill = args.Contains("--refill"),
+                AutoDungeon = args.Contains("--dungeon"),
             });
         }
         if (args.Contains("--portraits"))

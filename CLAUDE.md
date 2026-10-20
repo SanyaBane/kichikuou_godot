@@ -495,6 +495,10 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   instead (the unit with the fewest troops of its maximum: Haurein (unit 12) on the week-18 save), the question answered
   Yes — in a window dumps `deployment-refill-question` and `deployment-refill-done` —
   `--load --auto --fast --quit --seed 2 --saves user://saves-look-refill --slots-from user://saves-week18 --refill --until deployment --interface new --shots <dir>`.
+  A dungeon battle (owner, 2026-10-21): `--dungeon` makes the first map wait search the Monsters' Cave (dungeon 2) at
+  once with Rance (unit 1) — no replenish, no attack that week; on the week-18 save its first floor meets Sergeant
+  Hanny, and the cards' fade-in is dumped as `opening-appearing` and `cards-sliding` (a window, without `--fast`) —
+  `--load --auto --quit --seed 2 --saves user://saves-look-dungeon --slots-from user://saves-week18 --dungeon --until round-2 --interface new --shots <dir>`.
 - Show an ending's `OVER` (its picture, staff roll, Completion Report) on a booted game:
   `<Godot console exe> --headless --path godot -- --ending <1-14> --auto --fast --quit [--shots <dir>]`
   (without `--auto` the keys wait for the player; slots in `user://saves-ending`).
