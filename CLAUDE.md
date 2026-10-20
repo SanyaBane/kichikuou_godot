@@ -180,7 +180,8 @@ stays), the CGs and sounds read from the `.ALD` archives, the version checked by
 docs/import.md (steps 1-4 done: `Content/Archives/AldArchive` reads the `.ALD` sets, `CgLibrary` the CGs and
 `Content/Audio/SoundLibrary` the sounds from the archives or the extract alike, `Content/Archives/AinFile` the
 `System39.ain`, `Content/Text/Sjis` decodes Shift JIS with xsys35c's own table; step 6 done: `Content/Decompiler`
-is xsys35dc 1.13's decompiler translated, its 201 files byte-identical to the extract), the release's other items
+is xsys35dc 1.13's decompiler translated, its 201 files byte-identical to the extract; step 7 done:
+`Content/GameFiles` checks the folder's SHA-256 against the one known version), the release's other items
 docs/backlog.md, "Release".
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
@@ -238,7 +239,8 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   (`SjisTable.g.cs` is **generated** by `python tools/codegen/gen_sjis_table.py <s2utbl.h>`; docs/import.md, steps 1, 4, 5);
   `Decompiler/ScenarioDecompiler` is xsys35dc 1.13 translated: the scenario archive and the `.ain` become the `.ADV`
   files of `_extract\scenario` byte for byte (step 6; `Cali` the expressions, `ScenarioDecompiler.Commands` the
-  command table); `ScenarioText` reads message texts from the decompiled scenario by
+  command table); `GameFiles` checks a game folder's files against the known version (SHA-256, step 7);
+  `ScenarioText` reads message texts from the decompiled scenario by
   `ScriptRef`; `Scripts/ScenarioScripts` reads the data files' statements and whole files as programs
   (`ScenarioParser`; strictly: anything unexpected fails with its location); `Graphics/` decodes the CGs keeping palette indices (`IndexedPng`, `Pms`,
   `CgLibrary`, `Palette` with the engine's reserved entries; `ToRgba(40)` = `G n, 40`);

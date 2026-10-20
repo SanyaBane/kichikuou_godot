@@ -1,5 +1,6 @@
 using System.Buffers.Binary;
 using System.Text;
+using Kichikuou.Content;
 using Kichikuou.Content.Archives;
 using Kichikuou.Content.Audio;
 using Kichikuou.Content.Graphics;
@@ -216,6 +217,17 @@ public class GameArchiveTests(ITestOutputHelper output)
         output.WriteLine($"{seen.Count} distinct non-ASCII characters");
         Assert.Empty(seen.Where(c => !known.Contains(c)).Select(c => $"U+{(int)c:X4}"));
         Assert.True(seen.Count > 500);
+    }
+
+    /// <summary>The player's folder is the one version the port knows (docs/import.md, step 7).</summary>
+    [LocalFolderFact("game")]
+    public void The_game_folder_is_the_known_version()
+    {
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        var folder = GameFiles.Check(LocalData.GameDirectory);
+        output.WriteLine($"{folder.Version.Name}, key {folder.Key}, checked in {watch.ElapsedMilliseconds} ms");
+        Assert.Same(GameFiles.EnglishTranslation10, folder.Version);
+        Assert.Equal(6, folder.Paths.Count);
     }
 
     /// <summary>

@@ -7,7 +7,7 @@ folder, with no tools of ours or anyone else's to run first. Today the port need
 all three with C# that runs on every platform the game is built for (Android cannot run a bundled
 native tool, [backlog.md](backlog.md), "Release").
 
-Status: **under way** (2026-10-20): steps 1-6 ✓. The facts come from a read-only sweep of the code and
+Status: **under way** (2026-10-20): steps 1-7 ✓. The facts come from a read-only sweep of the code and
 of xsys35c 1.13's source on 2026-10-20, at commit `3ce2455`.
 
 ## Why the decompiler is translated, not replaced (option B)
@@ -135,12 +135,15 @@ agent days, rough.
    included, takes ~0.6 s on the owner's machine, in 2 analysis passes, with no warning. Core tests
    `ScenarioDecompilerTests` on pages written there (expressions, a condition and an `.ain` text, a data table found
    in the second pass, an unknown command read as data, the refusals).
-7. **The version check** (~0.5 day). `Kichikuou.Content/GameFiles`: the SHA-256 of `KICHIKUSA.ALD`,
-   `System39.ain`, `KICHIKUGA.ALD`, `KICHIKUGB.ALD`, `KICHIKUWA.ALD` and `_inmm.ini` against the table of
-   the one version we read (hashes of the player's files are not their content, so the table is
-   committed). A known file missing, or an unknown hash, refuses the folder with a message that names the
-   file and the version expected — before any parser runs, instead of failing somewhere inside it. The
-   decompile's own checks back it up for a version whose hash we lack.
+7. **The version check** ✓ (2026-10-20). `Kichikuou.Content/GameFiles`: `Check(folder)` hashes (SHA-256)
+   `KICHIKUSA.ALD`, `System39.ain`, `KICHIKUGA.ALD`, `KICHIKUGB.ALD`, `KICHIKUWA.ALD` and `_inmm.ini` (names matched
+   without case) against the table of the one version we read, `GameFiles.EnglishTranslation10` (the hashes of the
+   player's files are not their content, so the table is committed). The result, `GameFolder`, holds each file's
+   path and `Key`, 16 hex digits of the version's hash lines, for step 8's cache. A known file missing, or another
+   hash, throws `GameFolderException` with a message that names the file and the version expected (both hashes for
+   a different file) — before any reader runs. The decompile's own checks back it up for a version whose hash we
+   lack. Tests: `GameFilesTests` (core, folders and tables written there) and
+   `GameArchiveTests.The_game_folder_is_the_known_version` (content; the check takes ~60 ms on the owner's machine).
 8. **The import** (~1-1.5 days). On the first launch, or when the folder changes: pick the game folder
    (Godot's native dialog), check the version, decompile the scenario into `user://import/<hash>/scenario/`
    (the cache keyed by the files' hashes and the importer's version; the readers stay directory-based),
