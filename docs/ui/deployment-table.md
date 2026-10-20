@@ -386,4 +386,4 @@ docs/strategy/README.md.
   Replenish; `Sﾌﾞﾀｲ`'s port replenishing at the request and sending the party at its new expenses; no request once
   the order is spent); `--refill` (unattended play replenishes through the table instead of Subordinates; in a window
   the dumps `deployment-refill-question` and `deployment-refill-done`). The table no longer fits a 1280×800 window: it
-  scrolls, as the Subordinates screen's since its Cost column.
+  scrolls, as the Subordinates screen's since its Cost column. The owner looked at it and accepted it (2026-10-20).

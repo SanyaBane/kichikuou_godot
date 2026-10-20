@@ -173,7 +173,7 @@ Then (owner, 2026-10-20) Replenish on the deployment screen, in a defence too wh
 question at the cell, the Subordinates screen's plate), built (`SubordinatesCommand.CanReplenish`/`ReplenishNow`,
 `OriginalScriptContext.ReplenishRequest` answered by `DeploymentScreen.ReplenishCode`, `Original.Content/Strategy/DeploymentReplenish`,
 `godot/Strategy/GameScreen.Replenish.cs`, the plate now `godot/Strategy/OrderResultPlate`): docs/ui/deployment-table.md,
-"Replenish on the deployment screen", awaiting the owner's look in a window.
+"Replenish on the deployment screen", looked at and accepted by the owner (2026-10-20).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
