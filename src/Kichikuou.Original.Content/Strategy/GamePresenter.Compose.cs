@@ -371,8 +371,10 @@ public sealed partial class GamePresenter
             && s.Prov_Cur.Value >= 1 && s.Prov_Cur.Value < s.Provs.Count && picture.CallArg == s.Provs[s.Prov_Cur].BgCg
             && s.Ev_CommandMode.Value is not (1 or 2) && Picker is null && Data == DataView.Closed)
             SetLeadIn(true);                                            // Cｼﾊｲﾄｼ/Cﾃｷﾄｼ/Cﾃｷﾄｼ2: the city's picture
-        else if (_cityLeadIn && !LeadInGoesOn(scriptEvent))
-            SetLeadIn(false);
+        else if (_cityLeadIn && !LeadInGoesOn(scriptEvent)
+            && !(CoverAttackBriefing && scriptEvent is WindowEvent { Op.Value: 311 or 111 }))
+            SetLeadIn(false);                                           // the briefing's portrait and window wait for its text
+        ObserveBriefing(scriptEvent);
     }
 
     /// <summary>
@@ -394,6 +396,42 @@ public sealed partial class GamePresenter
     }
 
     /// <summary>
+    /// Whether a UI leaves out <c>Cﾃｷﾄｼ</c>'s briefing before the deployment picker (owner, 2026-10-21; docs/ui/command-screen.md,
+    /// "The province menu"): Rance's "Let's begin the battle" (<c>:135-143</c>) and Maris's two lines (<c>:158-171</c>), the same
+    /// on every attack. Then <see cref="AttackBriefing"/> is up from Rance's text: the pictures and the window are not drawn, the
+    /// pages not logged, and the UI answers the key waits at once.
+    /// </summary>
+    public bool CoverAttackBriefing { get; set; }
+
+    /// <summary>
+    /// The briefing is being played unseen (<see cref="CoverAttackBriefing"/>). Anything else the file shows ends it and is
+    /// shown as ever: Maris's line about the one unit (<c>:202-214</c>), a refusal after Rance's line (<c>L_04786</c>), the
+    /// scenes of <c>Iｼﾚｲﾌﾞ</c>, the picker.
+    /// </summary>
+    public bool AttackBriefing
+    {
+        get;
+        private set
+        {
+            if (field != value)
+                Invalidate();
+            field = value;
+        }
+    }
+
+    /// <summary>Rance's text starts the briefing; its windows, Maris's portrait and her two lines go on with it.</summary>
+    private void ObserveBriefing(ScriptEvent scriptEvent)
+    {
+        if (scriptEvent is MessageEvent { Text: { File: "Cﾃｷﾄｼ.ADV", Line: 139 } } && CoverAttackBriefing && !BattleShows)
+            AttackBriefing = true;
+        else if (AttackBriefing && !BriefingGoesOn(scriptEvent))
+            AttackBriefing = false;
+    }
+
+    private static bool BriefingGoesOn(ScriptEvent scriptEvent) => scriptEvent is WindowEvent { Op.Value: 0 or 1 or 111 or 121 or 321 }
+        or MessageEvent { Text: { File: "Cﾃｷﾄｼ.ADV", Line: 162 or 165 } } or LineBreakEvent or MessageClearEvent;
+
+    /// <summary>
     /// Whether a UI draws the message windows 111/112/121/122/113/123 itself (<see cref="Strategy.MessageWindow"/>;
     /// docs/ui/messages.md, step 1): then, while one is up (<see cref="MessageWindow"/>), its frame and its text are not
     /// drawn — the portraits and the centre picture are, and the key waits stay the script's.
@@ -411,7 +449,7 @@ public sealed partial class GamePresenter
 
     /// <summary>
     /// The message window our UI draws now (<see cref="CoverMessages"/>), or null: in a battle the battle's own
-    /// (<see cref="Battles.BattlePresenter.MessageWindow"/>); outside it, not under the screens that cover the window already (All Data, our province menu, the week report), while <c>WAO_SUB</c>'s frame is up and not
+    /// (<see cref="Battles.BattlePresenter.MessageWindow"/>); outside it, not under the screens that cover the window already (All Data, our province menu, the week report, the attack's briefing), while <c>WAO_SUB</c>'s frame is up and not
     /// drawn over (<see cref="Cover"/>), and only for the windows the model knows — 131 not under a picker, which draws
     /// its own text there (<c>FIGT_B.ADV:77-80</c> opens it for <c>Sﾌﾞﾀｲ</c>). After <c>WAO_SUB</c> 0 the full-screen
     /// window stays on the screen until something draws over it (<see cref="LeaveWindowOnStage"/>): ours too.
@@ -422,7 +460,7 @@ public sealed partial class GamePresenter
         {
             if (CoverMessages && BattleShows)
                 return Battle.MessageWindow;                    // the battle's own windows (BattlePresenter.MessageWindow)
-            if (!CoverMessages || _uncovered || BattleShows || Data != DataView.Closed || MenuCovered || SaveScreenCovered
+            if (!CoverMessages || _uncovered || BattleShows || Data != DataView.Closed || MenuCovered || SaveScreenCovered || AttackBriefing
                 || WeekReport is not null || State is not { } s)
                 return null;
             if (s.Ui_WinType == 0)
@@ -528,7 +566,7 @@ public sealed partial class GamePresenter
             {
                 if (MaskEventCgs && (s.Ui_WinType == 31 || _fullWindowLeft || _endingCg != 0 || _gallery))
                     MaskStage();
-                if (!MenuCovered && !SaveScreenCovered && WeekReport is null)
+                if (!MenuCovered && !SaveScreenCovered && WeekReport is null && !AttackBriefing)
                 {
                     DrawPictures(s);
                     Picker?.Draw(Screen, s);

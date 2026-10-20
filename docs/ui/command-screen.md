@@ -285,6 +285,17 @@ Search, Battle, Ninja), and Return. The mock-ups hold the player's CGs and stay 
 - **The owner's look (2026-10-16):** the panel sits in the screen's centre, as the original's menu (not at the
   map's top left); its lines are at least one window pixel wide (`ProvinceMenuView.Line`), since a 1-pixel line
   scaled down fell between the pixels' centres (the first row's top edge vanished).
+- **Attack goes straight to the deployment screen (owner, 2026-10-21).** `Cﾃｷﾄｼ`'s briefing before `Sﾌﾞﾀｲ` —
+  Rance's "Let's begin the battle, then. Make preparations, Maris." (`:135-143`) and Maris's "Yes, King Rance." /
+  "Please select the units…" (`:158-171`) — is the same on every attack, so our interface plays it unseen
+  (`GamePresenter.CoverAttackBriefing`, `AttackBriefing`): the lead-out's cover goes on through Rance's portrait
+  (311) and window (111), his text starts the briefing, and while it lasts the pictures, the window and the log
+  pages are left out and `GameScreen.WaitForKeyAsync` answers its key waits at once, as by a click (`WAO_SUB` 1 keeps
+  `RetVal`). The script runs as ever. Anything else ends it and is shown: Maris's line that only one unit can attack
+  (`:202-214`, Log A (32) and Log B (31)), the refusal in the rebels' first week (`L_04786`) and `Iｼﾚｲﾌﾞ` 5/6 after
+  Rance's line, the units that refuse to go after the picker; the refusals before the briefing (stage 4, the week's
+  conquest made, stage 1 off the rebels) and the warnings (Land of Death (82), Patton) never start it
+  (`An_attacks_briefing_is_played_unseen`).
 
 ## The command panel (owner, 2026-10-16)
 

@@ -186,6 +186,9 @@ is xsys35dc 1.13's decompiler translated, its 201 files byte-identical to the ex
 part 2 done: `godot/ImportScreen`, the owner's mock-up B, at the start when there is no data; step 9: README "Installing"),
 the release's other items
 docs/backlog.md, "Release".
+Then (owner, 2026-10-21) our interface goes from the province menu's Attack straight to the deployment screen: `Cﾃｷﾄｼ`'s
+briefing (Rance's and Maris's lines, the same on every attack) is played unseen (`GamePresenter.CoverAttackBriefing`;
+docs/ui/command-screen.md, "The province menu").
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

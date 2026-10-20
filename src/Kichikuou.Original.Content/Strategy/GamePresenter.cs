@@ -543,7 +543,7 @@ public sealed partial class GamePresenter : IStageObserver
     /// </summary>
     private void LogPage()
     {
-        if (BattleShows || State is not { } s
+        if (BattleShows || AttackBriefing || State is not { } s
             || Strategy.MessageWindow.Of(s.Ui_WinFrameCg.Value, _window, Stage.Color, _speech) is not { } window
             || MessageLog.PageOf(window, s.Ui_PortraitL.Value, s.Ui_PortraitR.Value, PortraitName) is not { } page
             || !MessageLog.Keeps(page, _windowFile))

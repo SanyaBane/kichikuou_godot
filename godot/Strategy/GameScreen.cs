@@ -635,6 +635,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         _presenter.CoverCityLeadIn = InterfaceChoice.New;                // our province menu: the city's lead-in hidden too
         _presenter.CoverWeekReport = InterfaceChoice.New;                // our week report over the week start's windows
+        _presenter.CoverAttackBriefing = InterfaceChoice.New;            // an attack goes straight to the deployment screen
         _presenter.CoverMessages = InterfaceChoice.New;                  // our message windows (docs/ui/messages.md)
         _presenter.Show(scriptEvent);
         if (_presenter.WeekReport is { Complete: true } report)
@@ -1149,6 +1150,15 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             // Our week report shows the week's start as one screen (owner, 2026-10-18; docs/ui/turn-start.md): the key waits
             // of the banner's, the revenue's and the expenses' windows are answered at once, as by a click; the player
             // answers the report itself when the window closes (WeekReportAsync).
+            key = KeyReturn;
+            await ReleaseWaitAsync(_input.PeekInput());
+            _ikKey = key;
+        }
+        else if (_presenter.AttackBriefing)
+        {
+            // Our interface goes from the province menu's Attack straight to the deployment screen (owner, 2026-10-21): the
+            // briefing's key waits — Rance's "Let's begin the battle" and Maris's two lines (Cﾃｷﾄｼ.ADV:135-171), the same on every
+            // attack — are answered at once, as by a click (WAO_SUB 1 keeps RetVal), after the release of the menu's click.
             key = KeyReturn;
             await ReleaseWaitAsync(_input.PeekInput());
             _ikKey = key;

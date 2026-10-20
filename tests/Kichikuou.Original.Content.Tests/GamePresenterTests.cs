@@ -913,6 +913,74 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// With <see cref="GamePresenter.CoverAttackBriefing"/> <c>Cﾃｷﾄｼ</c>'s briefing after our province menu's Attack is played
+    /// unseen: the lead-out stays covered through Rance's portrait and window, his text starts the briefing, which goes on
+    /// through its key waits, Maris's portrait and her two lines and ends at what else the file shows — the window, the
+    /// pictures and the log as ever then. A refusal after Rance's line ends it at its own text; no cover asked, no briefing.
+    /// </summary>
+    [Fact]
+    public void An_attacks_briefing_is_played_unseen()
+    {
+        var missing = Path.Combine(Path.GetTempPath(), "kichikuou-no-data");
+        var presenter = new GamePresenter(new ScenarioText(missing), new CgLibrary(missing), new BoxGlyphs());
+        var state = new GameState { Prov_Cur = 6, Ui_WinType = 21, Ui_WinFrameCg = 810 };   // the window the script keeps open
+        state.Provs[6].BgCg = 340;
+        presenter.Bind(state);
+        presenter.CoverCityLeadIn = true;
+        presenter.CoverAttackBriefing = true;
+        presenter.CoverMessages = true;
+
+        void Attack()
+        {
+            presenter.Show(new WindowEvent(331, 340));
+            presenter.Show(new WindowEvent(113, 340));
+            presenter.OpenMenu([]);
+            presenter.MenuCovered = true;
+            presenter.CloseMenu();                                              // Attack chosen on our menu
+            presenter.Show(new WindowEvent(0, 340));
+            presenter.Show(new WindowEvent(311, 1));                            // Rance
+            presenter.Show(new WindowEvent(111, 1));
+            Assert.True(presenter.MenuCovered);
+            Assert.False(presenter.AttackBriefing);
+            presenter.Show(new MessageEvent(new ScriptRef("Cﾃｷﾄｼ.ADV", 139)));
+            Assert.True(presenter.AttackBriefing);
+            presenter.Show(new WindowEvent(1, 1));                              // the key wait, answered by the UI
+            presenter.EndCityLeadIn();
+            Assert.False(presenter.MenuCovered);
+            Assert.True(presenter.AttackBriefing);
+            Assert.Null(presenter.MessageWindow);
+            presenter.AfterKey();
+            presenter.Show(new WindowEvent(0, 1));
+            presenter.Show(new WindowEvent(321, 6));                            // Maris
+            presenter.Show(new WindowEvent(121, 6));
+        }
+
+        Attack();
+        presenter.Show(new MessageEvent(new ScriptRef("Cﾃｷﾄｼ.ADV", 162)));
+        presenter.Show(new WindowEvent(1, 6));
+        presenter.AfterKey();
+        presenter.Show(new MessageEvent(new ScriptRef("Cﾃｷﾄｼ.ADV", 165)));
+        presenter.Show(new WindowEvent(1, 6));
+        presenter.AfterKey();
+        presenter.Show(new WindowEvent(0, 6));
+        Assert.True(presenter.AttackBriefing);
+        Assert.Empty(presenter.Log.Pages);
+        presenter.Show(new WindowEvent(322, 6));                                // on to the picker
+        Assert.False(presenter.AttackBriefing);
+
+        Attack();
+        presenter.Show(new MessageEvent(new ScriptRef("Cﾃｷﾄｼ.ADV", 3833)));      // the rebels' first week: Maris refuses
+        Assert.False(presenter.AttackBriefing);
+        Assert.NotNull(presenter.MessageWindow);
+
+        presenter.Show(new WindowEvent(0, 6));
+        presenter.CoverAttackBriefing = false;
+        presenter.Show(new WindowEvent(111, 1));
+        presenter.Show(new MessageEvent(new ScriptRef("Cﾃｷﾄｼ.ADV", 139)));
+        Assert.False(presenter.AttackBriefing);
+    }
+
+    /// <summary>
     /// <c>Gｸﾘｰﾑ</c> 1, which <c>死亡捕獲</c> calls (<c>Battle.Flow.DeathCapture.cs</c>), run from the
     /// player's files inside the battle's screen: its pictures (<c>G 806</c>, <c>G 128</c>) reach the
     /// stage, its text resolves, and with the debug mask every frame under its full-screen window is the
