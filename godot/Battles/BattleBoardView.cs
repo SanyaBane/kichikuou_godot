@@ -1222,8 +1222,9 @@ internal sealed partial class BattleBoardView : Control
 
     /// <summary>
     /// The round's order (<see cref="OrderStrip"/>): the chips move on their own; at once while
-    /// <paramref name="instant"/> (the message skip) and when a new round begins (owner, 2026-10-12: the
-    /// units that acted go back into the order, no jumps).
+    /// <paramref name="instant"/> (the message skip), when a new round begins (owner, 2026-10-12: the
+    /// units that acted go back into the order, no jumps) and while the strip is out of the exchange's way
+    /// (owner, 2026-10-21: it comes back with the new order; a move after its return came while the next turn had begun).
     /// </summary>
     private void RefreshStrip(GameState s, RoundOrder order, bool instant)
     {
@@ -1234,23 +1235,15 @@ internal sealed partial class BattleBoardView : Control
         _stripKey = key;
         bool newRound = (order.Battle, order.Round) != _stripRound;     // a new round, or a new battle's first
         _stripRound = (order.Battle, order.Round);
-        if (_spotOn || _away > 0)
-        {
-            _stripPending = (chips, instant || newRound || (_stripPending?.Instant ?? false));   // shown when the strip is back
-            return;
-        }
-        _stripPending = null;
-        _strip.Show(chips, instant || newRound);
+        _strip.Show(chips, instant || newRound || _spotOn || _away > 0);
     }
-
-    private (IReadOnlyList<OrderChip> Chips, bool Instant)? _stripPending;
 
     // ------------------------------------------------------------------ out of the exchange's way
 
     // While an exchange is on (the spotlight's signal, BattleScene.InEngagement; owner, 2026-10-16, as Sengoku Rance's) the
     // limit's plate slides up out over the screen's top and the order strip down behind the separator; they come back when
-    // it is over, and only then does the strip show the order's change. Eased, in AwaySeconds; at once while skipping and
-    // with --fast.
+    // it is over, the strip with the order's change already in place (RefreshStrip). Eased, in AwaySeconds; at once while
+    // skipping and with --fast.
     private const double AwaySeconds = 0.3;
     private static readonly Rect2 StripClipArea = new(0, 0, 1280, 408);   // down to the separator's top
     private const float StripAway = 408 - 374 + 2;                        // the strip's top below the clip's foot
@@ -1268,11 +1261,6 @@ internal sealed partial class BattleBoardView : Control
             _away = target > _away ? Math.Min(target, _away + step) : Math.Max(target, _away - step);
             PlaceStrip();
             _limit.QueueRedraw();
-        }
-        if (_away == 0 && !_spotOn && _stripPending is { } pending)
-        {
-            _stripPending = null;
-            _strip.Show(pending.Chips, pending.Instant);
         }
     }
 

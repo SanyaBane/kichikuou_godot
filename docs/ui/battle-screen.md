@@ -162,9 +162,9 @@ picture, the slot panels) is not shown. How it is built:
   and out in 0.15 s (at once while skipping and with `--fast`); the acting card's frame stays over it.
 - **Out of the exchange's way** (owner, 2026-10-16, as Sengoku Rance's): on the spotlight's signal the limit's plate
   slides up out over the screen's top and the order strip down behind the separator (clipped at its top, so it
-  never shows over the panel); when the exchange is over both come back, and only once the strip is back does it
-  move to the order's change that came meanwhile (`BattleBoardView.StepAway`, eased, 0.3 s; at once while
-  skipping and with `--fast`).
+  never shows over the panel); when the exchange is over both come back (`BattleBoardView.StepAway`, eased, 0.3 s;
+  at once while skipping and with `--fast`), the strip with the order's change that came meanwhile already in place:
+  no move (owner, 2026-10-21 — played once the strip was back, it came while the next turn had begun).
 - **The actions on the fighters' cards** (owner, 2026-10-13, mock-up D): the "vs" window (window 143 with
   the two sides' action labels, `FIGT.ADV:1739-1802`) is not shown — `BattlePresenter.ActionLabelsOpen`
   leaves it out of the windows' layer and `GameScreen` answers its click wait at once, as a click
