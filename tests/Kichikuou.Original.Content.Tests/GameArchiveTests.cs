@@ -1,6 +1,7 @@
 using System.Buffers.Binary;
 using System.Text;
 using Kichikuou.Content.Archives;
+using Kichikuou.Content.Graphics;
 using Kichikuou.Original.Content.Audio;
 using Xunit.Abstractions;
 
@@ -72,6 +73,41 @@ public class GameArchiveTests(ITestOutputHelper output)
         Assert.Equal(manifest.Count, count);
         Assert.Null(archive[193]); // CG 194, a gap (GameDataAssetTests.Library_resolves_numbers_and_gaps)
         output.WriteLine($"{count} CGs, link table {archive.Count}, volume B {archive.Entries.Count(e => e.Volume == 2)}");
+    }
+
+    /// <summary>
+    /// The CG library over the archive gives every CG the library over <c>cg_png</c> gives — size, position,
+    /// palette mask, palette, indices — and the same gaps, numbers and header sizes (docs/import.md, step 2).
+    /// </summary>
+    [LocalFolderFact("game", "cg")]
+    public void Every_cg_from_the_archive_equals_its_png()
+    {
+        var archive = AldArchive.Open(LocalData.GameDirectory, "KICHIKUG");
+        var fromArchive = new CgLibrary(archive);
+        var fromPng = new CgLibrary(LocalData.CgDirectory);
+
+        Assert.Equal(fromPng.Numbers, fromArchive.Numbers);
+        int count = 0;
+        for (int n = -1; n <= archive.Count + 1; n++)
+        {
+            var png = fromPng.Get(n);
+            var pms = fromArchive.Get(n);
+            Assert.Equal(fromPng.SizeOf(n), fromArchive.SizeOf(n));
+            if (png is null)
+            {
+                Assert.Null(pms);
+                continue;
+            }
+            Assert.NotNull(pms);
+            Assert.True((pms.Width, pms.Height) == (png.Width, png.Height), $"CG {n}: size");
+            Assert.True((pms.X, pms.Y) == (png.X, png.Y), $"CG {n}: position");
+            Assert.True(pms.PaletteMask == png.PaletteMask, $"CG {n}: mask");
+            Assert.True(pms.FilePalette.AsSpan().SequenceEqual(png.FilePalette), $"CG {n}: palette");
+            Assert.True(pms.Indices.AsSpan().SequenceEqual(png.Indices), $"CG {n}: pixels");
+            Assert.Equal((pms.Width, pms.Height), fromArchive.SizeOf(n));
+            count++;
+        }
+        Assert.Equal(1222, count);
     }
 
     /// <summary>

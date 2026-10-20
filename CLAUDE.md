@@ -177,7 +177,8 @@ question at the cell, the Subordinates screen's plate), built (`SubordinatesComm
 Then (owner, 2026-10-20) a public release — **owner's decision 28**: the game imports the player's own folder
 directly, xsys35dc translated to C# with its output byte-identical to `_extract\scenario` (every line reference
 stays), the CGs and sounds read from the `.ALD` archives, the version checked by the files' hashes; the plan is
-docs/import.md (step 1 done: `Content/Archives/AldArchive` reads the `.ALD` sets), the release's other items
+docs/import.md (steps 1-2 done: `Content/Archives/AldArchive` reads the `.ALD` sets, `CgLibrary` reads the CGs
+from the archive or the extract's PNGs alike), the release's other items
 docs/backlog.md, "Release".
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant

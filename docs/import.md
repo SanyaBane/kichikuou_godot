@@ -7,7 +7,7 @@ folder, with no tools of ours or anyone else's to run first. Today the port need
 all three with C# that runs on every platform the game is built for (Android cannot run a bundled
 native tool, [backlog.md](backlog.md), "Release").
 
-Status: **under way** (2026-10-20): step 1 ✓. The facts come from a read-only sweep of the code and
+Status: **under way** (2026-10-20): steps 1-2 ✓. The facts come from a read-only sweep of the code and
 of xsys35c 1.13's source on 2026-10-20, at commit `3ce2455`.
 
 ## Why the decompiler is translated, not replaced (option B)
@@ -83,10 +83,14 @@ agent days, rough.
    `ald_write` does) and `GameArchiveTests` (content): the 201 pages in `xsys35dc.hed`'s order, the 1222
    CGs equal to `_extract\cg_pms` in `cg_manifest.txt`'s volumes, the 51 sounds equal to `_extract\wav`
    at `SoundTable`'s numbers.
-2. **CGs from the archive** (~1 day). `CgLibrary` reads through a source: the PNG folder (today's) or the
-   archive with `Graphics/Pms.cs` (written, used only by tests so far). The PMS header gives what
-   `pms.exe` wrote as `oFFs` (the default position) and `pmSk` (the palette mask). Test: all 1222 CGs equal
-   their PNG — size, indices, the 256 palette entries, position, mask (`docs/assets.md` §2 has the facts).
+2. **CGs from the archive** ✓ (2026-10-20). `CgLibrary` has two sources: the extract's PNG folder
+   (`new CgLibrary(directory)`, as before) or the game's CG archive set (`new CgLibrary(AldArchive)`, the CG
+   n at index n − 1 decoded by `Graphics/Pms.cs`); `Numbers` lists the CGs there are and `SizeOf` reads a
+   size from the header alone (the portrait viewer's list of faces, which read the PNG headers itself
+   before). The PMS header gives what `pms.exe` wrote as `oFFs` (the default position) and `pmSk` (the
+   palette mask). Test: `GameArchiveTests.Every_cg_from_the_archive_equals_its_png` — all 1222 CGs equal
+   their PNG (size, position, mask, the 256 palette entries, indices), the same gaps, numbers and sizes.
+   The game and the tests still read the PNGs; the switch is step 8's.
 3. **Sounds from the archive** (~0.5 day). `SoundTable`'s names are the archive's; `BattleAudio` builds the
    stream from bytes (`AudioStreamWav.LoadFromBuffer`, to be checked in 4.7) instead of a file. Test: the
    51 entries equal `_extract\wav`.

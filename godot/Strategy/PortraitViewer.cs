@@ -279,26 +279,7 @@ internal sealed partial class PortraitViewer : Window
     /// <summary>The <paramref name="crop"/> of CG <paramref name="cg"/> at <see cref="TileSize"/>, or null.</summary>
     private Image? Square(int cg, FaceCrop crop) => _pictures.Square(cg, crop, TileSize);
 
-    /// <summary>Every CG of a face's size in the player's files, read from the PNG headers.</summary>
-    private List<int> AllFaces()
-    {
-        if (_allFaces is not null)
-            return _allFaces;
-        _allFaces = [];
-        if (!System.IO.Directory.Exists(_pictures.Cgs.Directory))
-            return _allFaces;
-        var header = new byte[24];
-        foreach (string path in System.IO.Directory.EnumerateFiles(_pictures.Cgs.Directory, "CG*.png").Order(StringComparer.Ordinal))
-        {
-            if (!int.TryParse(System.IO.Path.GetFileNameWithoutExtension(path)[2..], out int cg))
-                continue;
-            using (var file = System.IO.File.OpenRead(path))
-                file.ReadExactly(header);
-            int width = System.Buffers.Binary.BinaryPrimitives.ReadInt32BigEndian(header.AsSpan(16));
-            int height = System.Buffers.Binary.BinaryPrimitives.ReadInt32BigEndian(header.AsSpan(20));
-            if (width == UnitFaces.Width && height == UnitFaces.Height)
-                _allFaces.Add(cg);
-        }
-        return _allFaces;
-    }
+    /// <summary>Every CG of a face's size in the player's files, read from the CGs' headers.</summary>
+    private List<int> AllFaces() =>
+        _allFaces ??= [.. _pictures.Cgs.Numbers.Where(cg => _pictures.Cgs.SizeOf(cg) == (UnitFaces.Width, UnitFaces.Height))];
 }
