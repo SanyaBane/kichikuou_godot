@@ -137,18 +137,18 @@ dry run (§2) has no such error: it runs the scene. 236 variables, in three clas
   `F_Melfeis_Fate`, `F_Menad_Fate`, `F_Wendy_BedroomSeen`) or only by another event entry (`F_Kanami_Scene1`/`2` by
   Code's event 4, `F_Merim_Relation`, `F_Sill_SMTowerVisited`, `F_Thieves_State`, `F_Elisabeth_State`).
 
-Proposed refinements (for the owner):
+Refinements:
 
 - **Flags whose only other reader is the Think command** (`Iｶﾝｶﾞｴ`, its hints): `F_Haurein_State2`,
-  `F_Maris_State2`, `F_Menad_Flag`, `F_Sill_State` — they change a hint's text, not the game: count them as text
-  only.
-- **What every visit pays or earns is not news.** Some writes happen on every branch of every visit: Rance's (unit 1)
+  `F_Maris_State2`, `F_Menad_Flag`, `F_Sill_State` — they change a hint's text, not the game. Proposed: count them
+  as text only. Open (the owner discusses it later, 2026-10-22).
+- **What every visit pays or earns is not news** (owner, 2026-10-22: as proposed). Some writes happen on every branch of every visit: Rance's (unit 1)
   EXP from the harem; Rebecca's `Bt_ExpBonusNext` (the next battle's EXP bonus, `Gﾚﾍﾞｯｶ:14`, `FIGT:2980`);
   Shariela's `Shariela_EvWeek` (her 40/42-week timer restarted, `Gｼｬﾘｴﾗ:18`, `COM:868`, `:873`); `N_Lia_Neglect`
   (+1 per visit to another girl while `F_Lia_State = 1`, `Cﾊｰﾚﾑ:30-33`, reset by Lia's visit, read by `COM:162`,
-  `:167`). Counted, they would keep these visits from ever being "read". Proposed: a write the visit makes on every
-  branch is part of the visit, not something new.
-- **Compare values, not writes**: Rolex's (unit 47) talk sets `F_Rolex_GraveSeen = 1` every time (`Gﾛﾚｯｸｽ:17`);
+  `:167`). Counted, they would keep these visits from ever being "read". So a write the visit makes on every branch
+  is part of the visit, not something new.
+- **Compare values, not writes** (owner, 2026-10-22): Rolex's (unit 47) talk sets `F_Rolex_GraveSeen = 1` every time (`Gﾛﾚｯｸｽ:17`);
   only the first changes anything.
 
 ## 5. Proposed rule change: an unread harmless variant comes for certain
@@ -173,6 +173,9 @@ line stays untouched, the 1/3 stays.
 ## 6. Open questions
 
 - The menus inside the scenes (kind 4, §3): the owner discusses them apart.
+- The Think-only flags (§4): the owner discusses them later.
+- The draws that change the state (kind 3, §3.3-3.6): the owner may want them treated as the harmless variants — the
+  usual scene first, and once it is read the drawn outcome for certain.
 - Decision 30: always or an option.
 - Kentarou's line: its wording.
 - Where the marks are drawn (the Subordinates picker's cells and Talk, the harem picker's cells): the mock-ups, later.
