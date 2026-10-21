@@ -406,6 +406,11 @@ commit `local.env`.
 un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   `godot/Kichikuou.csproj` and starts `KICHIKUOU_GODOT_EXE` (the exe without `_console` unless `-Console`) on `godot`,
   passing the rest after `--`.
+- Export the Windows release build (the export templates 4.7.2 mono installed):
+  `powershell -ExecutionPolicy Bypass -File tools/export-release.ps1 -Out <folder outside the repository>` — the
+  preset `godot/export_presets.cfg`, the licenses copied next to the exe. The build keeps its data in
+  `%APPDATA%\Kichikuou`, not the development runs' `app_userdata\Kichikuou`; deleting that folder makes the next
+  launch a first one (the import screen with no folder chosen).
 - Run the game headless (smoke test): `<Godot console exe> --headless --path godot --quit-after 30`;
   `<Godot console exe>` is `KICHIKUOU_GODOT_EXE` in `local.env` (the editor's exe is next to it).
   Commit the `*.uid` files Godot creates.

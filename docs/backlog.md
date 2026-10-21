@@ -26,10 +26,13 @@ The owner aims at a public release (decision 28, 2026-10-20).
   goes through `_inmm.ini` (it is hashed with the rest).
 - **Hide the development parts** in a release build — *agent*: the Debug menu, the capture viewer,
   the switches (`--auto`, `--watch`, `--ending`, …).
-- **Windows export** — *agent*: commit `export_presets.cfg` (git ignores it today); export templates
-  4.7.2 mono. The bundled fonts' licenses `godot/fonts/OFL.txt`, `Shojumaru-OFL.txt`, `Cinzel-OFL.txt` and `Oswald-OFL.txt`
-  must ship with it (non-resource files: the preset's include filter); the fonts themselves are exported as
-  they are (`importer="keep"`).
+- **Windows export** — *agent*: the preset `godot/export_presets.cfg` ("Windows Desktop") and
+  `tools/export-release.ps1` export a release build outside the repository (2026-10-21; templates 4.7.2 mono
+  installed on the owner's machine). The build keeps its data in `%APPDATA%\Kichikuou` (project.godot's
+  `.template` overrides), apart from the development runs, so it starts as a new player's would; the fonts'
+  OFL texts go into the pack (the include filter) and next to the exe (`licenses\`) with `LICENSE`. Still open:
+  an icon and version info (`application/modify_resources` is off), the archive a player downloads, and the
+  owner's look at a first launch.
 - **Android** — *agent* (the owner wants it, 2026-10-11): our own `.apk`, not Google Play. Godot 4.7
   exports C# to Android as experimental and needs .NET 9 or later (the project is on `net10.0`). It
   needs the import (done, [import.md](import.md); the player copies the game's files to the device; how a

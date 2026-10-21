@@ -4,7 +4,6 @@
 # Godot
 .godot/
 *.translation
-export_presets.cfg
 
 # .NET
 bin/
