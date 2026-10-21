@@ -215,6 +215,22 @@ lines differ a little, so the second is not a repeat. The owner chose (2026-10-2
 on to the move."** (5 → 6) and **"Kentarou has nearly caught on to the move."** (6 → 7). The original lines stay
 untouched.
 
-## 6. Open questions
+## 6. Mock-ups, round 1 (2026-10-22)
+
+Drawn over dumps of our screens from `saves-week18` (`tools/ui/mock_marks.py`; the marks are made up). Our Harem screen's
+tablets already show "new" in green where the girl was never summoned (`HaremView`), else her visits; the marks take
+that place's meaning.
+
+- **HA — the slot**: the tablet's right slot shows NEW (green), ??? (amber) or, when read, the visits; the info panel
+  gains a third figure, "This visit: Something new" (or "Something may happen").
+- **HB — a corner**: a folded corner at the tablet's top right, green or amber with "?", none when read; the slot always
+  shows the visits ("—" for none).
+- **HC — read tablets dimmed**: a read tablet fades (still a click); NEW and ??? as filled pills.
+- **SA — a pill in the ledger's margin**: NEW (green ink) or ??? (vermilion) left of No., nothing when read; the chosen
+  unit's Talk button carries the same pill.
+- **SB — a speech bubble per unit**: a filled green "!" new, a vermilion "?" a draw decides, an empty outline read; Talk
+  for a read unit says "nothing new".
+
+## 7. Open questions
 
 - Where the marks are drawn (the Subordinates picker's cells and Talk, the harem picker's cells): the mock-ups, later.
