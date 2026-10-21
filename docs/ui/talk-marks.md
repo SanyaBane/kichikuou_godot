@@ -211,13 +211,11 @@ event (`COM:315`), event 3 another such mission (`:355`, `:554`). The other two 
 
 **Kentarou's hint** (owner, 2026-10-22): when his training moves the state (5 → 6, 6 → 7), our own short narration
 line after the scene (the port's text, as decision 26's save window) tells the player he is getting closer; the two
-lines differ a little, so the second is not a repeat. Proposed pairs: A "Kentarou parried a little more easily this
-time." / "Kentarou parried easier still. He has almost got it."; B "Kentarou seems to be catching on to the move." /
-"Kentarou has nearly caught on to the move."; C "Kentarou watched Rance's swing closely." / "Kentarou read Rance's
-swing before it came." The original lines stay untouched.
+lines differ a little, so the second is not a repeat. The owner chose (2026-10-22): **"Kentarou seems to be catching
+on to the move."** (5 → 6) and **"Kentarou has nearly caught on to the move."** (6 → 7). The original lines stay
+untouched.
 
 ## 6. Open questions
 
 - The wording of Kanami's two items in Code's event 4 (§5).
-- Kentarou's two lines: the proposed wording (§5).
 - Where the marks are drawn (the Subordinates picker's cells and Talk, the harem picker's cells): the mock-ups, later.
