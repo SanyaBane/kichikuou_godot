@@ -674,12 +674,15 @@ picture, the slot panels) is not shown. How it is built:
   three blows at the front of the enemy's army, two jabs and a harder last one (1.5, 3.5, 6), each a bundle of speed
   lines driving in from the left, a white-lavender burst of spikes, a white spark, a violet shockwave arc pushed right
   and four sparks; then a little dust and lavender motes (6-14). Over the silver armour the bursts read white.
-  Wichita's follow-up effect (`WichitaEffect`, 2026-10-21, the owner took its v1 flipped, the cut first laid out from
-  the upper right as in the reference; her flaming sword, the slash and its fire after Sengoku Rance's Fiend Slash,
-  46800, small): a flare and a few embers at her blade's tip (CG 1185; frames 0-2), then one diagonal cut across the
-  front of the enemy's army from the upper left down to the right (1-2.6): a white-hot line drawn along it in an
-  orange band, its head a bright spark, a small flash and burst where it ends; flame tongues licking up along the cut
-  and a few small fire billows (2-10), embers rising and drifting (2-14).
+  Wichita's follow-up effect (`WichitaEffect`, 2026-10-21, the owner took its v2: v1 flipped, the cut first laid out
+  from the upper right as in the reference, and recoloured from the reference's orange to the burning sword of her
+  sprite, CG 1185 — a white core, peach and amber flames, coral and a crimson halo of specks; her flaming sword, the
+  slash and its fire after Sengoku Rance's Fiend Slash, 46800, small): a peach flare and a few coral embers at her
+  blade's tip (frames 0-2), then one diagonal cut across the front of the enemy's army from the upper left down to the
+  right (1-2.6): a thin white line in an amber band, a coral band and a wide crimson halo drawn along it, its head a
+  bright spark, a small peach flash and burst where it ends; amber and coral flame tongues licking up along the cut and
+  a few small coral and crimson fire billows (2-10), embers in amber, coral and crimson rising and drifting (2-14). The
+  amber band keeps the cut from reading pink over the sand.
   The Vanish Bomb effect (`VanishBombEffect`, 2026-10-15, the owner took its v1 as it is; v2 larger after the owner's
   note, which the owner took as it is; after Sengoku Rance's Begone Bomb, 40560 — 29 frames in
   the archive; a texture of its own, `Rim`: a ring with a sharp inner edge and a frayed outer one): a wall of white

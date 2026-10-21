@@ -3,7 +3,7 @@ using Godot;
 namespace Kichikuou.Game.Battles.Effects;
 
 /// <summary>
-/// Wichita's follow-up effect, ours (the owner took its v1 flipped, 2026-10-21; the ninja's one weak shot at the enemy commander,
+/// Wichita's follow-up effect, ours (the owner took its v2, 2026-10-21: flipped and in her sprite's colours; the ninja's one weak shot at the enemy commander,
 /// docs/battle/02-resolution.md §7.3, as a cut of her flaming sword, CG 1185; the slash and its fire after Sengoku Rance's
 /// Fiend Slash, 46800, small). A flare at her blade's tip with a few embers (frames 0-2), then one diagonal cut at the
 /// front of the enemy's army, from its upper left down to the right (1-3): a white-hot line in amber drawn along the cut in a
