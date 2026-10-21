@@ -13,7 +13,7 @@ namespace Kichikuou.Game;
 /// sealed in red. The folder field opens the system's folder dialog; Import runs <see cref="GameImport"/> on a
 /// worker thread under a vermilion bar; a refusal (<see cref="GameFolderException"/>'s message) is written in
 /// vermilion ink with a stamp beside it and "Choose another folder". Once imported, the folder is kept
-/// (<see cref="GameData.GameDirectory"/>) and <see cref="_next"/> opens. Opened from Option → Game Folder… it has a
+/// (<see cref="GameData.GameDirectory"/>) and <see cref="_next"/> opens. Opened from Option → Game it has a
 /// way back (<see cref="_back"/>: "Back to the title" or Esc) that leaves the open import as it is. Laid out in the
 /// 1280×800 screen's pixels, letterboxed into the window.
 /// </summary>

@@ -47,7 +47,7 @@ checks that its files are the translation v1.0 (by their SHA-256; another versio
 refused with the file's name), and reads the scenario once into its own data folder
 (`%APPDATA%\KichikuouGodot\import\` on Windows), which takes about a second. The pictures,
 the sounds and the music are read from your folder as you play, so keep it where it is; if it moves, or to
-play another copy, choose the folder again with Option → Game Folder…. The details are in
+play another copy, choose the folder again in Option → Game. The details are in
 [docs/import.md](docs/import.md).
 
 Developers can point the game at a folder of data extracted with xsys35c's tools instead
@@ -101,7 +101,7 @@ reproduces, and every line of text the port shows is theirs.
 - **MS Gothic** (Microsoft), the game's font. It is read from the Windows fonts and not bundled.
 - **[BIZ UDGothic](https://github.com/googlefonts/morisawa-biz-ud-gothic)** by **Morisawa** and
   **Type Bank**, the font of the game and of our own screens where MS Gothic is not installed (or when
-  chosen in Option → Fonts). Bundled under the SIL Open Font License 1.1 (`godot/fonts/OFL.txt`).
+  chosen in Option → Display). Bundled under the SIL Open Font License 1.1 (`godot/fonts/OFL.txt`).
 - **[Shojumaru](https://fonts.google.com/specimen/Shojumaru)** by **Astigmatic**, the armies' names in
   the battle's opening. Bundled under the SIL Open Font License 1.1 (`godot/fonts/Shojumaru-OFL.txt`).
 - **[Cinzel](https://github.com/NDISCOVER/Cinzel)** by **Natanael Gama** and the Cinzel Project

@@ -60,7 +60,7 @@ public class MessageWindowTests
         Assert.Equal("", window.Title);
     }
 
-    /// <summary>Option → Text Speed…'s preview: a 121 with the lines where <c>WAO_SUB</c> prints them, one glyph for each character but the spaces.</summary>
+    /// <summary>Option → Messages's preview: a 121 with the lines where <c>WAO_SUB</c> prints them, one glyph for each character but the spaces.</summary>
     [Fact]
     public void A_sample_is_a_121_printed_as_WAO_SUB_prints()
     {

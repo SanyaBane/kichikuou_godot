@@ -56,7 +56,7 @@ internal sealed partial class SpeechBalloon : Control
         QueueRedraw();
     }
 
-    /// <summary>Option → Fonts: the line in the screen's font, bold.</summary>
+    /// <summary>Option → Display: the line in the screen's font, bold.</summary>
     public void SetFont(Font font)
     {
         _font = font;

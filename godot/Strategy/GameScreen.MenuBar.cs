@@ -11,9 +11,8 @@ using Kichikuou.Game.Battles.Effects;
 namespace Kichikuou.Game.Strategy;
 
 // xsystem35's window menu bar over the game (docs/window-menu.md): File (Save Screenshot, Restart,
-// Exit), Screen (Window, Fullscreen), Option (Mouse Movement as xsystem35's; ours: Skip Unseen
-// Text, MsgSkip Speeds Up Fades, Forget Seen Messages, Battle Screen, Text Speed, Game Folder, Fonts, Palette),
-// MsgSkip[off|on]; hot keys F1 and F4 as xsystem35's, Alt+R; and ours for development, Debug
+// Exit), Screen (Window, Fullscreen), Option (ours: the options window, OptionsView, with xsystem35's Mouse
+// Movement among its settings), MsgSkip[off|on]; hot keys F1 and F4 as xsystem35's, Alt+R; and ours for development, Debug
 // (Battle Captures: the capture viewer, which our own title had until ｽﾀMENU replaced it; Portraits,
 // Effects, Hide Dimmed Map Names).
 public partial class GameScreen
@@ -43,105 +42,9 @@ public partial class GameScreen
         row.AddChild(Menu("Screen",
             ("Window", () => SetFullscreen(false)),
             ("Fullscreen", () => SetFullscreen(true))));
-        PopupMenu options = null!;
-        var option = Menu("Option",
-            ("Mouse Movement", ToggleMouseMovement),
-            ("Skip Unseen Text", ToggleSkipUnseen),
-            ("MsgSkip Speeds Up Fades", ToggleFastFades),
-            ("Forget Seen Messages...", ConfirmForgetSeen),
-            ("Battle Screen...", OpenBattleScreenSettings),
-            ("Text Speed...", OpenTextSpeed),
-            ("Game Folder...", ConfirmGameFolder));
-        options = option.GetPopup();
-        // The developer's extract wins over any import (GameData.UsesExtract): a folder chosen here would change nothing.
-        options.SetItemDisabled(6, GameData.UsesExtract);
-        options.SetItemAsCheckable(0, true);
-        options.SetItemChecked(0, EngineState.MouseMovement);
-        options.SetItemAsCheckable(1, true);
-        options.SetItemChecked(1, _skip.SkipUnseen);
-        options.SetItemAsCheckable(2, true);
-        options.SetItemChecked(2, _skip.FastFades);
-        PopupMenu fonts = null!;
-        fonts = Submenu(
-            ("MS Gothic", () => SetFont(GameFont.MsGothic)),
-            ("BIZ UDGothic", () => SetFont(GameFont.BizUdGothic)));
-        fonts.SetItemAsRadioCheckable(0, true);
-        fonts.SetItemAsRadioCheckable(1, true);
-        fonts.SetItemDisabled(0, !GodotGlyphRenderer.MsGothicInstalled);
-        // Only the chosen font is marked: the unchecked mark is blank, as wide as the checked one.
-        var mark = fonts.GetThemeIcon("radio_checked").GetSize();
-        var blank = ImageTexture.CreateFromImage(
-            Image.CreateEmpty(Math.Max(1, (int)mark.X), Math.Max(1, (int)mark.Y), false, Image.Format.Rgba8));
-        fonts.AddThemeIconOverride("radio_unchecked", blank);
-        fonts.AddThemeIconOverride("radio_unchecked_disabled", blank);
-        CheckFont();
-        options.AddSubmenuNodeItem(Padded("Fonts"), fonts, SubmenuId);
-        PopupMenu palettes = null!;
-        palettes = Submenu([.. DeploymentPalette.All.Select(p => (p.Title, (Action)(() => SetPalette(p))))]);
-        for (int i = 0; i < DeploymentPalette.All.Count; i++)
-            palettes.SetItemAsRadioCheckable(i, true);
-        palettes.AddThemeIconOverride("radio_unchecked", blank);
-        CheckPalette();
-        options.AddSubmenuNodeItem(Padded("Palette"), palettes, SubmenuId);
-        void ToggleMouseMovement()
-        {
-            EngineState.MouseMovement = !EngineState.MouseMovement;
-            options.SetItemChecked(0, EngineState.MouseMovement);
-        }
-        void ToggleSkipUnseen()
-        {
-            _skip.SkipUnseen = !_skip.SkipUnseen;
-            options.SetItemChecked(1, _skip.SkipUnseen);
-        }
-        void ToggleFastFades()
-        {
-            _skip.FastFades = !_skip.FastFades;
-            options.SetItemChecked(2, _skip.FastFades);
-        }
-        // Saved for later launches; the windows, menus and pickers are drawn again at once, text the
-        // script printed on the stage keeps its font until it is drawn again.
-        void SetFont(GameFont font)
-        {
-            GodotGlyphRenderer.Chosen = font;
-            _glyphs.Font = font;
-            _table.SetFont(font);
-            _markers.SetFont(font);
-            _provinceView.SetFont(font);
-            _saveView.SetFont(font);
-            _panels.SetFont(font);
-            _subordinates.SetFont(font);
-            _harem.SetFont(font);
-            _treasure.SetFont(font);
-            _treasureCallout.SetFont(font);
-            _battleView.SetFont(font);
-            _scoutView.SetFont(font);
-            _strategyView.SetFont(font);
-            _messageView.SetFont(font);
-            _sceneMenuView.SetFont(font);
-            CheckFont();
-            _presenter.Invalidate();
-        }
-        void CheckFont()
-        {
-            fonts.SetItemChecked(0, _glyphs.Font == GameFont.MsGothic);
-            fonts.SetItemChecked(1, _glyphs.Font == GameFont.BizUdGothic);
-        }
-        // Our battle screen's and the map plates' colours (DeploymentPalette; the deployment screen is lacquer since the
-        // owner's E1/E2); saved for later launches, an open screen recoloured at once.
-        void SetPalette(DeploymentPalette palette)
-        {
-            DeploymentPalette.Chosen = palette;
-            _markers.SetPalette(palette);
-            _battleView.SetPalette(palette);
-            _scoutView.SetPalette(palette);
-            _strategyView.SetPalette(palette);
-            CheckPalette();
-        }
-        void CheckPalette()
-        {
-            for (int i = 0; i < DeploymentPalette.All.Count; i++)
-                palettes.SetItemChecked(i, DeploymentPalette.All[i] == DeploymentPalette.Chosen);
-        }
+        var option = new Button { Text = "Option" };
+        BarItem(option);
+        option.Pressed += () => OpenOptions();
         row.AddChild(option);
         _skipItem = new Button();
         BarItem(_skipItem);
@@ -168,23 +71,12 @@ public partial class GameScreen
         }
     }
 
-    /// <summary>The id of an item that opens a submenu: past every item's index, so it runs nothing.</summary>
-    private const int SubmenuId = 1000;
-
     private static MenuButton Menu(string title, params (string Text, Action Run)[] items)
     {
         var menu = new MenuButton { Text = title };
         BarItem(menu);
         Fill(menu.GetPopup(), items);
         return menu;
-    }
-
-    /// <summary>A submenu (<c>AddSubmenuNodeItem</c>), looking as the bar's menus do.</summary>
-    private static PopupMenu Submenu(params (string Text, Action Run)[] items)
-    {
-        var popup = new PopupMenu();
-        Fill(popup, items);
-        return popup;
     }
 
     /// <summary>The bar's look on a menu, and its items, whose ids are their indices.</summary>
@@ -331,70 +223,73 @@ public partial class GameScreen
             _tree.Quit();
     }
 
-    private BattleScreenSettingsDialog? _battleSettings;
-
-    /// <summary>Option → Battle Screen… (ours): our battle screen's settings; the game goes on behind it.</summary>
-    private void OpenBattleScreenSettings()
-    {
-        if (_battleSettings is not null)
-        {
-            _battleSettings.GrabFocus();
-            return;
-        }
-        var dialog = new BattleScreenSettingsDialog();
-        _battleSettings = dialog;
-        dialog.VisibilityChanged += () =>
-        {
-            if (dialog.Visible)
-                return;
-            _battleSettings = null;
-            dialog.QueueFree();
-        };
-        AddChild(dialog);
-        dialog.PopupCentered();
-    }
-
-    private TextSpeedView? _textSpeed;
+    private OptionsView? _optionsView;
 
     /// <summary>
-    /// Option → Text Speed… (ours, docs/ui/messages.md, §5 step 4): how fast our message windows type, over the game, which
-    /// waits while it is open; OK saves the step for later launches and the windows follow at once.
+    /// Option (ours, docs/ui/options.md; the owner's mock-up D): the options window over the game, which waits while it is
+    /// open. Its changes are kept at once; the screens follow them here. The game folder's change leaves the game for the
+    /// import screen (and a fresh title after it); the developer's extract, which wins over any import
+    /// (<see cref="GameData.UsesExtract"/>), locks it.
     /// </summary>
-    private void OpenTextSpeed()
+    private OptionsView? OpenOptions(OptionsView.Tab tab = OptionsView.Tab.Messages)
     {
         if (_modal)
-            return;
+            return null;
         _modal = true;
         _input.Clear();
-        var view = new TextSpeedView(GodotGlyphRenderer.Chosen, TextSpeedChoice.Step);
-        view.Chosen += step =>
-        {
-            TextSpeedChoice.Step = step;
-            _messageView.LettersPerSecond = TextSpeedChoice.LettersPerSecond(step);
-        };
+        var view = new OptionsView(_skip, folderLocked: GameData.UsesExtract, tab);
+        view.TextSpeedChanged += step => _messageView.LettersPerSecond = TextSpeedChoice.LettersPerSecond(step);
+        view.FontChosen += ApplyFont;
+        view.PaletteChosen += ApplyPalette;
+        view.GameFolderChosen += () => Screens.Open(this,
+            new ImportScreen(GameData.SavedGameDirectory, start: false, next: Main.Title, back: Main.Title));
         view.Closed += () =>
         {
-            _textSpeed = null;
+            _optionsView = null;
             _modal = false;
             _input.Clear();
         };
-        _textSpeed = view;
+        _optionsView = view;
         _content.AddChild(view);
         view.Place(PictureArea());
+        return view;
     }
 
     /// <summary>
-    /// Option → Game Folder… (ours): after the confirmation, the import screen for another copy of the game; once it is
-    /// imported, or by the screen's way back without an import, a fresh title.
+    /// A font chosen in the options (saved already): the windows, menus and pickers are drawn again at once, text the
+    /// script printed on the stage keeps its font until it is drawn again.
     /// </summary>
-    private void ConfirmGameFolder() =>
-        Confirm("Change the game folder?", "Change", () => Screens.Open(this,
-            new ImportScreen(GameData.SavedGameDirectory, start: false, next: Main.Title, back: Main.Title)));
+    private void ApplyFont(GameFont font)
+    {
+        _glyphs.Font = font;
+        _table.SetFont(font);
+        _markers.SetFont(font);
+        _provinceView.SetFont(font);
+        _saveView.SetFont(font);
+        _panels.SetFont(font);
+        _subordinates.SetFont(font);
+        _harem.SetFont(font);
+        _treasure.SetFont(font);
+        _treasureCallout.SetFont(font);
+        _battleView.SetFont(font);
+        _scoutView.SetFont(font);
+        _strategyView.SetFont(font);
+        _messageView.SetFont(font);
+        _sceneMenuView.SetFont(font);
+        _presenter.Invalidate();
+    }
 
-    /// <summary>Forget Seen Messages (ours): after the confirmation, every message counts as unseen again.</summary>
-    private void ConfirmForgetSeen() =>
-        Confirm("Forget seen messages?", "Forget", () => _skip.ForgetSeen(),
-            $"All {_skip.SeenCount} messages seen so far will count as unseen again.");
+    /// <summary>
+    /// A palette chosen in the options (saved already): our battle screen's and the map plates' colours (the deployment
+    /// screen is lacquer since the owner's E1/E2), an open screen recoloured at once.
+    /// </summary>
+    private void ApplyPalette(DeploymentPalette palette)
+    {
+        _markers.SetPalette(palette);
+        _battleView.SetPalette(palette);
+        _scoutView.SetPalette(palette);
+        _strategyView.SetPalette(palette);
+    }
 
     /// <summary><c>confirm_lose_progress</c>: a modal box; the game waits while it is open.</summary>
     private void Confirm(string title, string confirm, Action confirmed, string text = "Any unsaved progress will be lost.")

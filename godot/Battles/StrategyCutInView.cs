@@ -86,14 +86,14 @@ internal sealed partial class StrategyCutInView : Control
 
     private static FontFile Load(string path) => new() { Data = Godot.FileAccess.GetFileAsBytes(path) };
 
-    /// <summary>Option → Palette: the accent in <paramref name="palette"/>'s colour.</summary>
+    /// <summary>Option → Display: the accent in <paramref name="palette"/>'s colour.</summary>
     public void SetPalette(DeploymentPalette palette)
     {
         _colours = palette;
         _sheet.QueueRedraw();
     }
 
-    /// <summary>Option → Fonts: the strategist's line in the chosen font, bold.</summary>
+    /// <summary>Option → Display: the strategist's line in the chosen font, bold.</summary>
     public void SetFont(GameFont font)
     {
         _bold.BaseFont = DeploymentTableView.LoadFont(font);

@@ -92,7 +92,7 @@ internal sealed partial class DeploymentPanels : Control
         AddChild(_screen);
     }
 
-    /// <summary>Option → Fonts: the screen's text in the chosen font, as the table's.</summary>
+    /// <summary>Option → Display: the screen's text in the chosen font, as the table's.</summary>
     public void SetFont(GameFont font)
     {
         _gothic = DeploymentTableView.LoadFont(font);

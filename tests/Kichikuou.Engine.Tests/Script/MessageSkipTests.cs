@@ -52,7 +52,7 @@ public class MessageSkipTests
         Assert.False(skip.SkipsScene([], whole));
     }
 
-    /// <summary>Option → MsgSkip Speeds Up Fades (ours, on by default): only while skipping, and only shortening.</summary>
+    /// <summary>Option → Messages → MsgSkip speeds up fades (ours, on by default): only while skipping, and only shortening.</summary>
     [Fact]
     public void Fades_are_cut_short_only_while_skipping_with_the_option()
     {

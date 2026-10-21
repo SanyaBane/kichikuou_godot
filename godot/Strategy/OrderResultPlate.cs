@@ -43,7 +43,7 @@ internal sealed partial class OrderResultPlate : Control
     /// <summary>Whether the plate shows.</summary>
     public bool Showing => _result is not null;
 
-    /// <summary>Option → Fonts (the arrows are in the game's font).</summary>
+    /// <summary>Option → Display (the arrows are in the game's font).</summary>
     public void SetFont(GameFont font)
     {
         _gothic = DeploymentTableView.LoadFont(font);

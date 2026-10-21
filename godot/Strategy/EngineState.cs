@@ -15,7 +15,7 @@ internal static class EngineState
     private static IScriptRandom? _random;
 
     /// <summary>
-    /// Option → Mouse Movement (<c>ags.mouse_warp_enabled</c>, on at start as <c>menu_init</c>): the
+    /// Option → Messages → Mouse movement (<c>ags.mouse_warp_enabled</c>, on at start as <c>menu_init</c>): the
     /// script's <c>IZ</c> moves the system pointer; off, only the position the script reads.
     /// </summary>
     public static bool MouseMovement { get; set; } = true;

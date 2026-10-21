@@ -51,7 +51,7 @@ public sealed class MessageSkip
     }
 
     /// <summary>
-    /// Ours (Option → MsgSkip Speeds Up Fades; on by default, for the launch, not saved): while
+    /// Ours (Option → Messages → MsgSkip speeds up fades; on by default, for the launch, not saved): while
     /// skipping (<see cref="IsSkipping"/>), the palette fades are cut short. xsystem35 never shortens
     /// them (<c>ags_runEffect</c> waits without <c>KEYWAIT_SKIPPABLE</c>); off, they keep their length
     /// as there. Display only: no fade changes what the script reads.

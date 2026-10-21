@@ -170,6 +170,12 @@ public sealed record GameOptions
     /// </summary>
     public bool Effects { get; init; }
 
+    /// <summary>
+    /// Development: the options window opens once the game has booted; with <see cref="ScreenshotDirectory"/> in a window it
+    /// saves each tab there (<c>options-messages</c>, …), then the program ends with <see cref="QuitWhenDone"/>.
+    /// </summary>
+    public bool Options { get; init; }
+
     /// <summary>With <see cref="Effects"/>: the prefixes of the effects whose frames are saved (<c>white-beam-magic</c>, …); null for all.</summary>
     public IReadOnlyCollection<string>? EffectsOnly { get; init; }
 }
@@ -222,6 +228,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private MessageSkip _skip = null!;
     private bool _modal;                        // a confirmation box is open: the game waits
     private bool _portraitsOpened;              // GameOptions.Portraits: Debug → Portraits was opened
+    private bool _optionsOpened;                // GameOptions.Options: the options window was opened
     private bool _effectsOpened;                // GameOptions.Effects: Debug → Effects was opened
 
     private ushort _ikKey;                      // cmdi.c ik_key, repeating: IK 0's key repeat
@@ -407,7 +414,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             else
                 _saveView.Close();                              // the save screen left without its event reaching us
         }
-        _textSpeed?.Place(PictureArea());
+        _optionsView?.Place(PictureArea());
         _logView?.Place(PictureArea());
         _presenter.CoverMessages = InterfaceChoice.New;                  // also when the interface changed with a window open
         UpdateBattleScreen(Present());
@@ -423,6 +430,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             _effectsOpened = true;
             OpenEffects();
+        }
+        if (_options.Options && !_optionsOpened && _presenter.State is not null && !_modal)
+        {
+            _optionsOpened = true;
+            _ = OptionsLookAsync();
         }
         // A tap the script's reads did not take by now is dropped — but kept while MsgSkip runs, so a click during a
         // fade still stops it at the next wait (STOP_ON_CLICK).
@@ -758,7 +770,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     /// <summary>
     /// Animates a palette fade over its <see cref="FadeRequest.Duration"/>, never skipped, unless
-    /// Option → MsgSkip Speeds Up Fades cuts it short while skipping (<see cref="MessageSkip.FadeDuration"/>);
+    /// Option → Messages → MsgSkip speeds up fades cuts it short while skipping (<see cref="MessageSkip.FadeDuration"/>);
     /// the presenter already holds its end.
     /// </summary>
     private async Task FadeAsync(FadeRequest fade)
@@ -784,7 +796,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.ScreenshotDirectory is not { } dir)
             return;
         System.IO.Directory.CreateDirectory(dir);
-        if ((_table.Visible || _subordinates.Visible || _harem.Visible || _treasure.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _sceneMenuView.Visible || _saveView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
+        if ((_optionsView is not null || _table.Visible || _subordinates.Visible || _harem.Visible || _treasure.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _sceneMenuView.Visible || _saveView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
         {
             // Our deployment and battle screens are drawn by Godot over the screen: the window's next frame (headless
             // draws none). No Compose here: the frame's Present must find the change to upload it.
@@ -835,7 +847,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// <summary>
     /// <c>IZ x, y</c> (<c>cmdi.c</c> → <c>ags_setCursorLocation</c>): nothing when the point lies right
     /// of or below the 3200×800 surface, else it is clamped at 0 and taken relative to the <c>WV</c>
-    /// view. With Option → Mouse Movement (on, as <c>menu_init</c>) the pointer glides there in
+    /// view. With Option → Messages → Mouse movement (on, as <c>menu_init</c>) the pointer glides there in
     /// seven steps 7 ms apart on the engine's ease-out curve and lands; off, only the position the
     /// script reads moves and the script waits 50 ms. <c>COMMAND.ADV:618</c> puts the pointer back
     /// where it was before a menu.
@@ -1359,7 +1371,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// <summary>
     /// The exchange's result screen without a wiped-out mark (owner, 2026-10-14): our screen shows the result in the scene
     /// and runs the cards' counters from it, so instead of the click (<c>IK 0</c>, <c>FIGTATTK.ADV:247</c>) it holds for
-    /// Option → Battle Screen… → "Results: hold" and goes on as by a click — the key lands in RetVal (BTX-03). A key or a
+    /// Option → Battle → "Results: hold" and goes on as by a click — the key lands in RetVal (BTX-03). A key or a
     /// click ends the hold sooner and is the key, as <c>IK 0</c> returns it. At once with <c>--fast</c>; under the message
     /// skip at once with 0, as <c>IK 0</c>.
     /// </summary>
@@ -1667,7 +1679,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// </summary>
     private bool CanOpenLog => _keyWaiting && !_options.Auto && !_modal && _logView is null && _presenter.Log.Pages.Count > 0;
 
-    /// <summary>The message log over the game, which waits while it is open (as under Option → Text Speed…).</summary>
+    /// <summary>The message log over the game, which waits while it is open (as under Option → Messages).</summary>
     private void OpenLog()
     {
         _modal = true;
@@ -1683,6 +1695,35 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _content.AddChild(view);
         view.Place(PictureArea());
         Shot("message-log");
+    }
+
+    /// <summary>Development (<see cref="GameOptions.Options"/>): the options window, each tab dumped in a window; then the end with <c>--quit</c>.</summary>
+    private async Task OptionsLookAsync()
+    {
+        if (OpenOptions() is not { } view)
+            return;
+        if (DisplayServer.GetName() != "headless" && _options.ScreenshotDirectory is not null)
+        {
+            foreach (var tab in Enum.GetValues<OptionsView.Tab>())
+            {
+                view.ShowTab(tab);
+                await FramesAsync(tab == OptionsView.Tab.Messages ? 1.0 : 0.3);   // the preview types a while
+                Shot("options-" + tab.ToString().ToLowerInvariant());
+                await FramesAsync(0.1);
+            }
+            view.Close();
+        }
+        if (_options.QuitWhenDone)
+            _tree.Quit();
+
+        // Not NextFrameAsync: it waits while the window, a modal one, is open.
+        async Task FramesAsync(double seconds)
+        {
+            var watch = Stopwatch.StartNew();
+            do
+                await ToSignal(_tree, SceneTree.SignalName.ProcessFrame);
+            while (watch.Elapsed.TotalSeconds < seconds);
+        }
     }
 
     /// <summary>Unattended play in a window: the message log opened at a key wait, dumped and closed again.</summary>
@@ -1925,7 +1966,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// <summary>
     /// Unattended play in a window with <c>--shots</c>: once a launch, the first map wait's plates
     /// (<c>map-markers</c>), then the same with Leazas Castle (1) shown hovered (<c>map-markers-hover</c>),
-    /// then without the dimmed plates (<c>map-markers-active</c>, Option → Hide Dimmed Map Names).
+    /// then without the dimmed plates (<c>map-markers-active</c>, Debug → Hide Dimmed Map Names).
     /// </summary>
     private async Task DumpMarkersAsync()
     {

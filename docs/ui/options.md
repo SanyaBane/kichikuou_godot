@@ -42,4 +42,15 @@ The owner chose **C in B's colours** (2026-10-21).
   the switches and Forget right), D2 Display (the fonts with samples, the palettes as swatches), D3 Battle (Effects,
   the twelve timings in two columns, the order strip's preview), D4 Game (the game folder, Change…).
 
-The owner's go-ahead: pending.
+The owner's go-ahead: 2026-10-21.
+
+## Built (2026-10-21)
+
+`godot/Strategy/OptionsView` after D, drawn by hand in the 1280×800 screen's pixels over the picture (as the old Text
+Speed dialog was); `GameScreen.OpenOptions` opens it from the bar's Option button (a plain button now, no drop-down) and
+applies the font and the palette to the open screens (`ApplyFont`, `ApplyPalette`). The text speed now applies at once
+(the old dialog had OK / Cancel); the battle's settings now wait with the game (the old dialog was not modal). Forget
+and the folder's Change… ask in a lacquer box over the sheet (Esc or a right click take it away). The preview of the
+text speed is the game's 121 scaled into its column; the order strip's is `OrderStrip` itself with the old dialog's
+chips. `TextSpeedView` and `BattleScreenSettingsDialog` are gone. `--options [--shots DIR] [--quit]` opens it over the
+title and dumps each tab in a window (`options-messages`, `-display`, `-battle`, `-game`).

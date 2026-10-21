@@ -60,7 +60,7 @@ internal sealed partial class MapMarkersView : Control
         Relayout();
     }
 
-    /// <summary>Option → Hide Dimmed Map Names (<see cref="MapNamesChoice"/>): the dimmed plates shown or not.</summary>
+    /// <summary>Debug → Hide Dimmed Map Names (<see cref="MapNamesChoice"/>): the dimmed plates shown or not.</summary>
     public void SetHideDimmed(bool hide)
     {
         _hideDimmed = hide;

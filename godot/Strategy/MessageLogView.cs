@@ -8,7 +8,7 @@ namespace Kichikuou.Game.Strategy;
 /// The message log (docs/ui/messages.md, §5 step 6; the owner's mock-up L3a): a paper chronicle in a lacquer frame over the
 /// picture dimmed, the pages of the message windows as ruled lines — the lines close, the speaker's name in vermilion at a
 /// run's first line, narration in a quieter ink, a place's title as a heading, a menu's answer under "CHOICE" — in the game's
-/// font (Option → Fonts) at the script's own breaks. It opens at the newest line; the wheel scrolls, a right click, Escape or
+/// font (Option → Display) at the script's own breaks. It opens at the newest line; the wheel scrolls, a right click, Escape or
 /// the wheel down at the newest line closes it. Laid out in the 1280×800 screen's pixels, scaled with the picture.
 /// </summary>
 internal sealed partial class MessageLogView : Control

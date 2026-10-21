@@ -16,7 +16,7 @@ internal sealed partial class ExchangeCountersView : Control
     /// <summary>Sengoku Rance's beats: the rise and the sink, the first step's delay, a step (seconds).</summary>
     public const double Rise = 0.25, Sink = 0.25, Delay = 0.1, Step = 0.2;
 
-    /// <summary>How long the counters run (Option → Battle Screen…, 1.3 s by default).</summary>
+    /// <summary>How long the counters run (Option → Battle, 1.3 s by default).</summary>
     public static double RunSeconds => BattleScreenSettings.Get(BattleScreenSettings.CountSeconds);
 
     // The layout in layout pixels of the 1024×410 scene: each side's counters at its foot, straight on the field (owner,

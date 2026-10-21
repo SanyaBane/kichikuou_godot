@@ -4,7 +4,7 @@ using Kichikuou.Original.Content.Battles;
 namespace Kichikuou.Game.Battles;
 
 // The cards' troops and HP run to a new value instead of jumping to it (owner, 2026-10-14; docs/ui/battle-screen.md,
-// "The cards' counters"): the number and the bar together, eased out, in Option → Battle Screen… → "Cards: counters",
+// "The cards' counters"): the number and the bar together, eased out, in Option → Battle → "Cards: counters",
 // from the moment the blow lands (BattleStrike) — an exchange's blow in the steps of the scene's counters (ExchangeCountersView,
 // owner 2026-10-16); a loss leaves a light trail on the bar that follows the run and then
 // drains; at once while skipping, with --fast, when another unit takes the place and when the screen is shown again.
@@ -56,7 +56,7 @@ internal sealed partial class BattleBoardView
     private BattleStrike? _strike;                  // the blow the cards show now
     private bool _metersInstant = true;
 
-    /// <summary>How long a counter runs to its new value (Option → Battle Screen…, 0.6 s by default).</summary>
+    /// <summary>How long a counter runs to its new value (Option → Battle, 0.6 s by default).</summary>
     private static double MeterSeconds => BattleScreenSettings.Get(BattleScreenSettings.MeterSeconds);
 
     /// <summary>

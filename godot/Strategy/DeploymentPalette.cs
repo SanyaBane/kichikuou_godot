@@ -4,7 +4,7 @@ namespace Kichikuou.Game.Strategy;
 
 /// <summary>
 /// The colours first made for our deployment screen: the first, dark blue, sat badly with the portrait's gold
-/// frame, so the owner looked at four more (2026-10-12), kept them all for the player to choose (Option → Palette)
+/// frame, so the owner looked at four more (2026-10-12), kept them all for the player to choose (Option → Display)
 /// and made steel the default. The deployment screen has been lacquer since the owner's E1/E2 (2026-10-19,
 /// docs/ui/deployment-table.md); the palette still colours our battle screen and the map's name plates.
 /// </summary>

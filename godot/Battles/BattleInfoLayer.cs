@@ -56,7 +56,7 @@ internal sealed partial class BattleInfoLayer : Control
         ZIndex = 3;                                                     // over the cards, the spotlight and the acting frame
     }
 
-    /// <summary>Option → Fonts: the boxes' sentences in the game's font, bold as the surface's text.</summary>
+    /// <summary>Option → Display: the boxes' sentences in the game's font, bold as the surface's text.</summary>
     public void SetFont(Font font)
     {
         _gothic = new FontVariation { BaseFont = font, VariationEmbolden = 0.6f };

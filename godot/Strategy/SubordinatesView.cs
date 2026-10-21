@@ -86,7 +86,7 @@ internal sealed partial class SubordinatesView : Control
     /// <summary>Whether the panel's buttons take presses (not while an order runs).</summary>
     public bool Busy { get; set; }
 
-    /// <summary>Option → Fonts: the screen's text in the chosen font, as the deployment table's.</summary>
+    /// <summary>Option → Display: the screen's text in the chosen font, as the deployment table's.</summary>
     public void SetFont(GameFont font)
     {
         _gothic = DeploymentTableView.LoadFont(font);

@@ -82,14 +82,14 @@ internal sealed partial class ScoutReportView : Control
         SetFont(font);
     }
 
-    /// <summary>Option → Palette: the cards in <paramref name="palette"/>'s colours.</summary>
+    /// <summary>Option → Display: the cards in <paramref name="palette"/>'s colours.</summary>
     public void SetPalette(DeploymentPalette palette)
     {
         _colours = palette;
         _sheet.QueueRedraw();
     }
 
-    /// <summary>Option → Fonts: the overlay's text in the chosen font.</summary>
+    /// <summary>Option → Display: the overlay's text in the chosen font.</summary>
     public void SetFont(GameFont font)
     {
         _font = DeploymentTableView.LoadFont(font);

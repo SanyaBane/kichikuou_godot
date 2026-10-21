@@ -97,7 +97,7 @@ internal sealed partial class TreasureView : Control
 
     private int _asked;
 
-    /// <summary>Option → Fonts.</summary>
+    /// <summary>Option → Display.</summary>
     public void SetFont(GameFont font)
     {
         _gothic = DeploymentTableView.LoadFont(font);

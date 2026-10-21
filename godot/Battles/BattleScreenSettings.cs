@@ -3,7 +3,7 @@ using Godot;
 namespace Kichikuou.Game.Battles;
 
 /// <summary>
-/// The settings of our own battle screen (Option → Battle Screen…, <see cref="BattleScreenSettingsDialog"/>),
+/// The settings of our own battle screen (Option → Battle, <see cref="Strategy.OptionsView"/>),
 /// kept in <c>[battle_screen]</c> of <c>user://settings.cfg</c>; a change applies at once. So far the order
 /// strip's moves (<see cref="OrderStrip"/>), the armies' slides, the spotlight's darkness, the cards' counters (<see cref="BattleBoardView"/>),
 /// the exchange's counters (<see cref="ExchangeCountersView"/>), the exchange's result hold (<c>GameScreen</c>), the opening's leave (<see cref="BattleOpeningLayer"/>), the cards' slide and the strip's fly-in at a battle's start and the exchange's effects.

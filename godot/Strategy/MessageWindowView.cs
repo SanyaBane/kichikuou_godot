@@ -9,7 +9,7 @@ namespace Kichikuou.Game.Strategy;
 /// 111/112/121/122/113/123 and 131 where they are, as lacquer panels of their kind — speech with a tail at its portrait, a
 /// thought rounded with a dashed frame and a trail of bubbles, narration in a warmer lacquer, a place's title in Cinzel, 131
 /// a bar under the event CG with its speaker on a plate — the text at the cells the engine placed it in (131's moved left
-/// by the name split off), in the game's font (Option → Fonts), bold as the surface draws it, and the
+/// by the name split off), in the game's font (Option → Display), bold as the surface draws it, and the
 /// click's triangle while the script waits for the key. A menu open over the window (<see cref="Kichikuou.Original.Content.Strategy.GamePresenter.MenuArea"/>)
 /// is shown again on top, cut from the screen's picture. It takes no input: the screen's own key wait answers it.
 /// The text types letter by letter at <see cref="LettersPerSecond"/> (step 4, the owner's mock-up T1: the letters
@@ -43,7 +43,7 @@ internal sealed partial class MessageWindowView : Control
         SetFont(font);
     }
 
-    /// <summary>Option → Fonts changed the game's font.</summary>
+    /// <summary>Option → Display changed the game's font.</summary>
     public void SetFont(GameFont font)
     {
         _gothic = new FontVariation { BaseFont = DeploymentTableView.LoadFont(font), VariationEmbolden = Embolden };
@@ -53,10 +53,10 @@ internal sealed partial class MessageWindowView : Control
     /// <summary>The window drawn now, or null.</summary>
     public MessageWindow? Window => _window;
 
-    /// <summary>Whether a speech's tail is drawn (not in Option → Text Speed…'s preview, which has no portrait).</summary>
+    /// <summary>Whether a speech's tail is drawn (not in Option → Messages's preview, which has no portrait).</summary>
     public bool Tail { get; init; } = true;
 
-    /// <summary>How fast the text types (Option → Text Speed…); infinity shows it whole at once.</summary>
+    /// <summary>How fast the text types (Option → Messages); infinity shows it whole at once.</summary>
     public double LettersPerSecond { get; set; } = double.PositiveInfinity;
 
     /// <summary>Whether the window's text is still typing.</summary>
@@ -71,7 +71,7 @@ internal sealed partial class MessageWindowView : Control
         QueueRedraw();
     }
 
-    /// <summary>Types the text again from its start (the preview of Option → Text Speed…).</summary>
+    /// <summary>Types the text again from its start (the preview of Option → Messages).</summary>
     public void Restart()
     {
         _typed = 0;

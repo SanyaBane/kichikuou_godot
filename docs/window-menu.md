@@ -77,12 +77,21 @@ xsystem35's; both skip modes, as the owner's desktop xsystem35 (everything) by d
 web build (seen only) by an option.
 
 - A light bar above the game screen: **File** (Save Screenshot, Restart, Exit), **Screen**
-  (Window, Fullscreen), **Option** (ours, see MsgSkip and Font), **MsgSkip[off]** (toggles, `[on]` while
+  (Window, Fullscreen), **Option** (ours: no drop-down, the options window below), **MsgSkip[off]** (toggles, `[on]` while
   on, greyed out while not allowed), and ours for development at the end, **Debug** (Battle
   Captures...: asks first, then the battle-capture viewer, which our own title had until `ｽﾀMENU`
   replaced it, 2026-10-11; Portraits..., Effects..., Hide Dimmed Map Names). Not done: Integer Scaling, Auto Copy Text to Clipboard
   (no text hook), the bar hiding in full screen.
-- **Option → Mouse Movement** (checked at start, for the launch; 2026-10-10): the script's
+- **Option** (ours, owner's request 2026-10-21; docs/ui/options.md, mock-up D): the options window, `OptionsView`, over
+  the game, which waits while it is open — a paper sheet in a lacquer frame with the tabs **Messages** (text speed with
+  the game's 121 typing as its preview, Skip unseen text, MsgSkip speeds up fades, Forget them…, Mouse movement),
+  **Display** (Font, Palette), **Battle** (our battle screen's Exchange effects and twelve timings, the order strip as
+  their preview), **Game** (the game folder). Each change is kept at once; Defaults resets the tab shown; Close, Esc or
+  a right click shut it; Forget and the folder's Change… ask first in a box over the sheet. Until 2026-10-21 these were
+  the Option drop-down's items, with Text Speed… and Battle Screen… as dialogs of their own; the entries below keep
+  their history. `--options [--shots DIR] [--quit]` opens it over the title and, in a window, dumps each tab
+  (development).
+- **Option → Messages → Mouse movement** (checked at start, for the launch; 2026-10-10): the script's
   `IZ x, y` (`COMMAND.ADV:618` and the command files put the pointer back where it was before a
   menu) glides the system pointer there as `ags_setCursorLocation` does — seven points on its
   ease-out curve 7 ms apart, then the target (`Content/Screen/PointerGlide`); unchecked, only the
@@ -93,8 +102,8 @@ web build (seen only) by an option.
   (docs/ui/command-screen.md, "The map's markers") leave out the dimmed ones — the provinces neither
   ours nor next to ours and the dungeons not ours (`MapNamesChoice`). A click on such a town still
   reaches the script as the original's. A change shows at once.
-- **Option → Fonts → MS Gothic / BIZ UDGothic** (ours, owner's requests 2026-10-11; a submenu, only
-  the chosen font is marked, with a dot; saved in `user://settings.cfg`, `[display] font`): the font
+- **Option → Display → Font: MS Gothic / BIZ UDGothic** (ours, owner's requests 2026-10-11; radio buttons, each with
+  a sample; saved in `user://settings.cfg`, `[display] font`): the font
   of the game's text. MS
   Gothic is the original's (docs/assets.md §6), read from the Windows fonts and greyed out where
   it is not installed; BIZ UDGothic (Morisawa, SIL OFL 1.1) is bundled in `godot/fonts` with its
@@ -108,13 +117,13 @@ web build (seen only) by an option.
   Since 2026-10-21 (owner) the player always has ours: the submenu is gone and `[display] interface`
   in `user://settings.cfg` is no longer read (`InterfaceChoice`). `--interface original` shows the
   original's screens for one launch (development checks).
-- **Option → Palette → Navy / Gold / Steel / Parchment / Crimson** (ours, owner's choice 2026-10-12;
-  a submenu like Fonts; saved in `user://settings.cfg`, `[display] palette`, Steel by default): the
+- **Option → Display → Palette: Navy / Gold / Steel / Parchment / Crimson** (ours, owner's choice 2026-10-12;
+  swatches; saved in `user://settings.cfg`, `[display] palette`, Steel by default): the
   colours of our battle screen and the map's name plates (`DeploymentPalette`; the deployment screen is lacquer
   since 2026-10-19, docs/ui/deployment-table.md). A change recolours an open screen at once.
   `--palette <name>` picks one for the launch without saving it (development).
-- **Option → Game Folder…** (ours, owner's request 2026-10-21): after a confirmation ("Any unsaved progress
-  will be lost."), the import screen (docs/import.md, step 8) with the saved folder in its field and "← Back to the
+- **Option → Game → Change…** (ours, owner's request 2026-10-21): after the window's question ("Any unsaved progress
+  will be lost"), the import screen (docs/import.md, step 8) with the saved folder in its field and "← Back to the
   title" (or Esc) under it; an import of another folder keeps it (`game_dir`) and opens a fresh title, the way back
   leaves the open import as it was. Greyed out while the developer's extract is the data (`GameData.UsesExtract`:
   a folder would change nothing); `--import` turns it on.
@@ -133,11 +142,11 @@ web build (seen only) by an option.
   The skippable waits — `IK 0` / `A` and `Y 3` — return 0 after one frame while it is on; input
   held then turns it off and is returned (`STOP_ON_CLICK`); a `]` menu (`SelectAsync`, the
   battle's `ChooseAsync`) turns it off (`STOP_ON_MENU`); every `MessageEvent` /
-  `ValueMessageEvent` marks its `ScriptRef` seen. **Option → Skip Unseen Text** (checked by
+  `ValueMessageEvent` marks its `ScriptRef` seen. **Option → Messages → Skip unseen text** (checked by
   default, `MSGSKIP_SKIP_UNSEEN`; for the launch, not saved): unseen messages are skipped too, as
   the owner's xsystem35 does; unchecked, an unseen message turns the skip off and greys it out
-  (`STOP_ON_UNSEEN`) until a seen one, as the web build does. **Option → MsgSkip Speeds Up
-  Fades** (ours, owner's request 2026-10-10; checked by default, for the launch, not saved):
+  (`STOP_ON_UNSEEN`) until a seen one, as the web build does. **Option → Messages → MsgSkip speeds up
+  fades** (ours, owner's request 2026-10-10; checked by default, for the launch, not saved):
   while MsgSkip is on, a `PF`/`PW` fade lasts 150 ms at most (`MessageSkip.FadeDuration`);
   unchecked, fades keep xsystem35's length while skipping too (`ags_runEffect` waits without
   `KEYWAIT_SKIPPABLE`; `rate * 16 * 1000 / 60` ms). **MsgSkip skips the opening whole** (ours,
@@ -161,8 +170,8 @@ web build (seen only) by an option.
   ends each of its waits exactly on schedule, so it loads every CG a watched opening does
   (`Glob_CgSeen`; a jump of the timer would trip its `RetVal > 6900` cuts and lose some);
   `OpeningSkipTests`. xsystem35's MsgSkip fast-forwards every scene alike and leaves the timer
-  alone. **Option → Forget Seen
-  Messages...** (asks first) makes every message unseen again. The seen messages are one
+  alone. **Option → Messages → Forget
+  them…** (asks first) makes every message unseen again. The seen messages are one
   `File:Line` per line in `msgskip.txt` next to the save slots (`%APPDATA%\Godot\app_userdata\Kichikuou\saves`,
   `saves-auto` for `--auto`; deleting it with the game closed resets them too), exact where
   xsystem35 uses a Bloom filter. `--msgskip` starts a game with it on (development). **Ctrl held**

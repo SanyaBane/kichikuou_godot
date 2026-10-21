@@ -65,7 +65,7 @@ internal sealed partial class BattleBoardView : Control
     private static readonly Rect2 PanelArea = new(0, 410, 1280, 390);
     private const double SpotFadeSeconds = 0.15;
 
-    /// <summary>How dark the spotlight makes the panel (Option → Battle Screen…, 0.5 by default).</summary>
+    /// <summary>How dark the spotlight makes the panel (Option → Battle, 0.5 by default).</summary>
     private static float SpotDarkness => (float)BattleScreenSettings.Get(BattleScreenSettings.SpotDarkness);
 
     private DeploymentPalette _colours = DeploymentPalette.Chosen;
@@ -244,7 +244,7 @@ internal sealed partial class BattleBoardView : Control
     /// <summary>
     /// The exchange's effect (docs/ui/battle-screen.md, "The exchange's effects"): from the shots' first frame, the
     /// firing side's (<see cref="BattlePresenter.Effect"/>), mirrored for the enemy's, over the armies and under the
-    /// numbers. Each start plays once; none with Option → Battle Screen… → "Effects" off, or when it would be at once
+    /// numbers. Each start plays once; none with Option → Battle → "Effects" off, or when it would be at once
     /// (<paramref name="instant"/>: skipping, <c>--fast</c>). It plays out by itself, nothing waits for it.
     /// </summary>
     private void PlayEffect(GamePresenter presenter, bool instant)
@@ -298,7 +298,7 @@ internal sealed partial class BattleBoardView : Control
     /// A defence (docs/ui/battle-screen.md, "The exchange's effects"): our Guard effect after Sengoku Rance's guard
     /// actions', a wall of light raised in front of the defender on <paramref name="side"/>'s half, mirrored for the
     /// enemy's — a unit's Defend (<c>FIGT.ADV:1399</c>, its badge flashing on the card), a commander's
-    /// (<see cref="BattlePresenter.EnemyDefence"/>). False when it does not play: Option → Battle Screen… → "Effects"
+    /// (<see cref="BattlePresenter.EnemyDefence"/>). False when it does not play: Option → Battle → "Effects"
     /// off, or the armies' moves at once (skipping, <c>--fast</c>); else it lasts <see cref="GuardEffect.Seconds"/>.
     /// </summary>
     public bool PlayGuard(BattleSide side)
@@ -320,7 +320,7 @@ internal sealed partial class BattleBoardView : Control
         return layer;
     }
 
-    /// <summary>Option → Palette: the screen in <paramref name="palette"/>'s colours at once.</summary>
+    /// <summary>Option → Display: the screen in <paramref name="palette"/>'s colours at once.</summary>
     public void SetPalette(DeploymentPalette palette)
     {
         _colours = palette;
@@ -340,7 +340,7 @@ internal sealed partial class BattleBoardView : Control
         _separator.QueueRedraw();
     }
 
-    /// <summary>Option → Fonts: the screen's text in the chosen font.</summary>
+    /// <summary>Option → Display: the screen's text in the chosen font.</summary>
     public void SetFont(GameFont font)
     {
         _theme.DefaultFont = DeploymentTableView.LoadFont(font);
@@ -968,7 +968,7 @@ internal sealed partial class BattleBoardView : Control
 
     /// <summary>
     /// The cards' slide when a battle begins (owner, 2026-10-15; Sengoku Rance's, docs/sengoku/04-screen.md §6.5): each
-    /// from beyond its own side, linear, the front row in Option → Battle Screen… → "Cards: slide in" (640 layout pixels;
+    /// from beyond its own side, linear, the front row in Option → Battle → "Cards: slide in" (640 layout pixels;
     /// Sengoku Rance's 400 px in 1 s), each card a random distance further (the back row 160 more), so they come at
     /// slightly different times. The stagger is our own random draw, never the script's. In a dungeon
     /// (<paramref name="fade"/>, <c>Bt_Kind</c> 3) the cards stand at their places and come out of the dark instead

@@ -3,7 +3,7 @@ using Godot;
 namespace Kichikuou.Game.Strategy;
 
 /// <summary>
-/// Option → Text Speed… (docs/ui/messages.md, §5 step 4): how fast our message windows type their text, a step of ten —
+/// Option → Messages (docs/ui/messages.md, §5 step 4): how fast our message windows type their text, a step of ten —
 /// 1 to 9 letters a second from <see cref="LettersPerSecond"/>, 10 the whole text at once.
 /// </summary>
 internal static class TextSpeedChoice

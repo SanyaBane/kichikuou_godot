@@ -15,7 +15,7 @@ namespace Kichikuou.Game.Battles;
 /// </summary>
 internal sealed partial class OrderStrip : Control
 {
-    /// <summary>How long a change of the order moves (Option → Battle Screen…); 0 places the chips at once.</summary>
+    /// <summary>How long a change of the order moves (Option → Battle); 0 places the chips at once.</summary>
     private static double Seconds => BattleScreenSettings.Get(BattleScreenSettings.StripSeconds);
 
     /// <summary>How fast a move under way finishes when the next change comes.</summary>
@@ -36,7 +36,7 @@ internal sealed partial class OrderStrip : Control
     private bool _held;                                         // hidden while the battle's opening stands
     private double _fly = -1;                                   // seconds into the fly-in; -1 when not flying
 
-    /// <summary>How far apart the chips start flying in (Option → Battle Screen…, "Strip: fly in"); 0 places them at once.</summary>
+    /// <summary>How far apart the chips start flying in (Option → Battle, "Strip: fly in"); 0 places them at once.</summary>
     private static double FlySeconds => BattleScreenSettings.Get(BattleScreenSettings.StripFlySeconds);
 
     /// <summary>
@@ -63,7 +63,7 @@ internal sealed partial class OrderStrip : Control
         ZIndex = 1;                                             // a jumping chip passes over the names and the cards
     }
 
-    /// <summary>Option → Palette.</summary>
+    /// <summary>Option → Display.</summary>
     public void SetPalette(DeploymentPalette palette)
     {
         _colours = palette;

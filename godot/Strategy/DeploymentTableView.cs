@@ -183,7 +183,7 @@ internal sealed partial class DeploymentTableView : Tree
         BgColor = color, ContentMarginLeft = 4, ContentMarginRight = 4, ContentMarginTop = 4, ContentMarginBottom = 4,
     };
 
-    /// <summary>Option → Fonts: the table's text in the chosen font (regular, unlike the surface's bold).</summary>
+    /// <summary>Option → Display: the table's text in the chosen font (regular, unlike the surface's bold).</summary>
     public void SetFont(GameFont font)
     {
         _font = LoadFont(font);
@@ -205,7 +205,7 @@ internal sealed partial class DeploymentTableView : Tree
         return cinzel;
     }
 
-    /// <summary>The font of our own screens: the Option → Fonts face, regular (MS Gothic where installed, else BIZ UDGothic).</summary>
+    /// <summary>The font of our own screens: the Option → Display face, regular (MS Gothic where installed, else BIZ UDGothic).</summary>
     public static FontFile LoadFont(GameFont font) => new()
     {
         Data = font == GameFont.MsGothic && GodotGlyphRenderer.MsGothicInstalled
