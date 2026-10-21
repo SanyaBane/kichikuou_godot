@@ -6,7 +6,7 @@ namespace Kichikuou.Game.Battles.Effects;
 /// Freya's follow-up effect, ours (owner, 2026-10-21: the ninja's one weak shot at the enemy commander,
 /// docs/battle/02-resolution.md §7.3, as a lash of the whip in her hands, CG 1176, forked at its end). A pale swish at
 /// her hand as she swings (frames 0-1.5); then the whip's end comes down on the target out of the air above it: a
-/// silver line sweeping down from the upper right, its tip lagging and catching up as it straightens, splitting into its
+/// silver line sweeping down from above, from her side (turned 35° counter-clockwise), its tip lagging and catching up as it straightens, splitting into its
 /// two tails, a faint blur behind it (1-3); the two tails crack at once: two parallel welts cut across the target,
 /// white in a pink glow, a small ring and spark at each tip (3-8), then a few sparks and pink motes (3-11). The same seed
 /// makes the same effect.
@@ -19,11 +19,17 @@ internal static class FreyaEffect
     /// <summary>Where the tails crack: the front of the enemy's army.</summary>
     private static readonly Vector2 Target = new(585, 168);
 
-    /// <summary>The whip's end shown, its length; the direction it lies in at the crack (down to the right).</summary>
-    private const float Length = 200, Landing = 0.75f;
+    /// <summary>
+    /// The whole sweep turned 35° counter-clockwise from where it was first laid out, so the whip comes from her side
+    /// rather than out of the sky (owner, 2026-10-21).
+    /// </summary>
+    private const float Turned = -35 * MathF.PI / 180;
 
-    /// <summary>The direction it sweeps down from (up to the right) and how far its tip lags behind at the start.</summary>
-    private const float Raised = -0.9f, Lag = 1f;
+    /// <summary>The whip's end shown, its length; the direction it lies in at the crack (a little down to the right).</summary>
+    private const float Length = 200, Landing = 0.75f + Turned;
+
+    /// <summary>The direction it sweeps down from (straight up) and how far its tip lags behind at the start.</summary>
+    private const float Raised = -0.9f + Turned, Lag = 1f;
 
     /// <summary>When the sweep starts and the tails crack.</summary>
     private const float SweepAt = 1, Crack = 3;
