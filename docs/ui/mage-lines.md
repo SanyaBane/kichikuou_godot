@@ -86,12 +86,18 @@ variants later, if the owner wants them.
      snowflakes, frosty billows, cold glows, thin wind arcs and a few curls turning about a centre that
      climbs to (635, 165) by frame 12, fullest at 12-18, thinning to frame ~29; Miko Storm's petals became
      shards and flakes, its mint white-blue.
-   - **Lightning** — built (2026-10-21), awaiting the owner's look: `godot/Battles/Effects/LightningEffect`,
+   - **Lightning** — built (2026-10-21), accepted by the owner (2026-10-21): `godot/Battles/Effects/LightningEffect`,
      wired for `LightningMagic`. Thunderstrike in blue-white (the owner's colours; its own is green-white): a
      bolt down on the target at (605, 235) with jagged branches over the sky above it, struck anew each frame
      and thinning from frame 7 (0-9); a white flash at its foot with rays fanning out (1-5); a bright filled
      ellipse on the ground (5-9) spreading as a ring (to ~17) while thin strands linger; star sparkles and soft
      specks over the target's half and thinly beyond it, gone by frame ~27.
+   - **Dark** — built (2026-10-21), awaiting the owner's look: `godot/Battles/Effects/DarkEffect`, wired for
+     `DarkMagic`. 47030 in its own colours: a small magenta orb among faint violet specks (0) swelling into a
+     sparkling white ball (2-3), pink-violet specks bursting out round a violet rim (3-7), a white blast of soft
+     glows with a darker mottled heart swelling over the half toward the actor (7-15) and turning magenta in a
+     magenta afterglow (10-18), a dark violet sphere with a bright rim (15-23), then violet glows, glints and small
+     cyan curls fading by frame ~29.
 8. **Docs** — docs/ui/battle-screen.md, "The exchange's effects", says how a magic attack picks its
    effect; CLAUDE.md's effect list gets the new effects.
 
