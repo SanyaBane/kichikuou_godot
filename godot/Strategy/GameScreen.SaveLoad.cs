@@ -21,7 +21,8 @@ public partial class GameScreen
     /// <summary>
     /// A list over our Save/Load screen in unattended play. With <c>--saveload</c> from the command panel (decision 29): the
     /// save list (<c>save-load-save</c>, New save chosen; the button hovered, <c>save-load-button</c>) saved as a new manual
-    /// save by the red button; listed again with it chosen (<c>save-load-saved</c>), its comment written through Edit
+    /// save by the red button; listed again with it chosen (<c>save-load-saved</c>), the sweep of the saves without a
+    /// comment asked and answered Keep (<c>save-load-sweep</c>), its comment written through Edit
     /// (<c>save-load-comment</c>, then kept by Enter), Delete asked and answered Keep (<c>save-load-delete</c>), the
     /// auto-saves' side (<c>save-load-autos-save</c>, no Save there), the Load tab; the load list (<c>save-load</c>, the save
     /// just written chosen), the newest auto-save chosen (<c>save-load-auto</c>), a right click
@@ -54,6 +55,13 @@ public partial class GameScreen
                 Expect(list == SaveList.Save && _saveView.Chosen is { Kind: SaveKind.Manual } written
                     && _library?.Read(written) is { } saved && WeekLoop.IsMomentSave(saved.Resume), "a new manual save of the game as it is now, chosen");
                 await AutoDumpAsync("save-load-saved");
+                int bare = _saveView.UncommentedCount;
+                Expect(bare >= 1, "the new save without a comment, counted by the sweep");
+                await AutoViewClickAsync(_saveView.SweepCentre, MouseButton.Left);
+                Expect(_saveView.SweepAsked, "the sweep's question open");
+                await AutoDumpAsync("save-load-sweep");
+                await AutoViewClickAsync(_saveView.SweepAnswerCentre(yes: false), MouseButton.Left);
+                Expect(!_saveView.SweepAsked && _library?.Read(_saveView.Chosen!.Value) is not null, "the sweep answered Keep, the save kept");
                 await AutoViewClickAsync(_saveView.EditCentre, MouseButton.Left);
                 _saveView.CommentField.Text = "before the attack on Oaks";
                 await NextFrameAsync();
@@ -61,6 +69,7 @@ public partial class GameScreen
                 _saveView.CommentField.EmitSignal(LineEdit.SignalName.TextSubmitted, _saveView.CommentField.Text);
                 await NextFrameAsync();
                 Expect(_library?.Read(_saveView.Chosen!.Value)?.Comment == "before the attack on Oaks", "the comment kept");
+                Expect(_saveView.UncommentedCount == bare - 1, "the commented save starred, out of the sweep's count");
                 await AutoViewClickAsync(_saveView.DeleteCentre, MouseButton.Left);
                 await AutoDumpAsync("save-load-delete");
                 await AutoViewClickAsync(_saveView.DeleteAnswerCentre(yes: false), MouseButton.Left);

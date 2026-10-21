@@ -341,7 +341,9 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `Strategy/SaveLoadView` (our Save/Load screen over `ﾛｰﾄﾞｾｰﾌﾞ`'s lists on the save library, in either interface, the
   owner's layout G, docs/ui/save-load.md, §9 (decision 29): a switch between the manual saves — newest first, no order to
   choose (the owner, 2026-10-21; `SaveSlots.NewestFirst`), the number on the seal, scrolling, the comment a row's
-  second line, "+ New save" heading them in Save — and the ten auto-saves, newest first; the chosen save's page with its
+  second line and a gold star on the seal, "+ New save" heading them in Save, "Delete all without ★ (n)" in their heading
+  asking in a callout beside it (`SaveSlots.DeleteUncommented`; Sengoku Rance's notes, §10, the owner's N1) — and the
+  ten auto-saves, newest first; the chosen save's page with its
   map as All Data draws it, its figures, a manual save's comment (Edit, written in place), Delete (a callout at the
   button) and a red button that answers the script's menu with the save's item; Load | Save tabs from `COMMAND`,
   `LoadSaveShortcut.Switch`; the model `Original.Content/Strategy/SaveSlots` (`ReadLibrary`, `SaveShelf`) — each save's
@@ -503,9 +505,10 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   `--load --auto --fast --quit --seed 2 --saves user://saves-look-items --slots-from user://saves-week18 --treasure --until deployment [--interface new] --shots <dir>`.
   Add another kept save the same way when a screen needs another phase.
   Our Save/Load screen (2026-10-20): `--saveload` on the week-18 save makes the first map wait open the command panel's
-  Save row; in a window it saves a new manual save by the red button, writes its comment through Edit, asks Delete and
+  Save row; in a window it saves a new manual save by the red button, asks the sweep of the saves without a comment and
+  keeps them, writes its comment through Edit, asks Delete and
   keeps it, shows the auto-saves, opens the Load tab, chooses the newest auto-save and leaves by a right click, then plays on — dumps `save-load-title` (the
-  title's load list at the `--load`), `save-load-save`, `save-load-button`, `save-load-saved`, `save-load-comment`,
+  title's load list at the `--load`), `save-load-save`, `save-load-button`, `save-load-saved`, `save-load-sweep`, `save-load-comment`,
   `save-load-delete`, `save-load-autos-save`, `save-load`, `save-load-auto` —
   `--load --auto --fast --quit --seed 2 --saves user://saves-look-saves --slots-from user://saves-week18 --saveload --until deployment --interface new --shots <dir>`.
   Replenish on our deployment screen (2026-10-20, decision 27): `--refill` keeps unattended play from replenishing

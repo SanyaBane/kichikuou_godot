@@ -51,6 +51,9 @@ public sealed record SaveSlot(
     /// <summary>"Auto", or "Slot n" as the lists number it (slot 2 is "1"); a library's save "Auto-save" or "No. n".</summary>
     public string Label => Id is { } id ? (id.Kind == SaveKind.Auto ? "Auto-save" : $"No. {id.Number}") : SaveSlots.LabelOf(Number);
 
+    /// <summary>Whether the player wrote a comment: the star on the seal, kept by the sweep (docs/ui/save-load.md, §10).</summary>
+    public bool Commented => !string.IsNullOrWhiteSpace(Comment);
+
     /// <summary>The seal's text: "A", or the list's number; a manual save's number.</summary>
     public string Seal => Id is { Kind: SaveKind.Manual } manual ? manual.Number.ToString(CultureInfo.InvariantCulture)
         : Number == 1 || Id is not null ? "A" : (Number - 1).ToString(CultureInfo.InvariantCulture);
@@ -162,6 +165,23 @@ public static class SaveSlots
     /// </summary>
     public static IReadOnlyList<SaveSlot> NewestFirst(IReadOnlyList<SaveSlot> manuals) =>
         [.. manuals.OrderByDescending(s => s.Written ?? DateTime.MinValue).ThenByDescending(s => s.Id?.Number ?? 0)];
+
+    /// <summary>The manual saves the sweep would delete: those without a comment (Sengoku Rance's, docs/ui/save-load.md, §10).</summary>
+    public static IReadOnlyList<SaveSlot> Uncommented(IReadOnlyList<SaveSlot> manuals) => [.. manuals.Where(s => !s.Commented)];
+
+    /// <summary>
+    /// The sweep (owner, 2026-10-22, after Sengoku Rance's <c>deleteNoMark</c>): every manual save of
+    /// <paramref name="library"/> without a comment deleted, the comment read from the save itself (one that cannot be read
+    /// is left); auto-saves take no comment and are left. The number deleted.
+    /// </summary>
+    public static int DeleteUncommented(ISaveLibrary library)
+    {
+        int deleted = 0;
+        foreach (var id in library.Manuals)
+            if (library.Read(id) is { } data && string.IsNullOrWhiteSpace(data.Comment) && library.Delete(id))
+                deleted++;
+        return deleted;
+    }
 
     /// <summary>The game being played, as a save from <c>COMMAND</c> would store it (owner's decision 26).</summary>
     public static SaveSlot Now(GameState state) => Of(state, 0, SlotKind.MidTurn, state.Week.Value, null);

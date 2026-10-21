@@ -13,16 +13,18 @@ namespace Kichikuou.Game.Strategy;
 /// miniature), its figures, a manual save's comment (Edit writes it in place: Enter keeps it, Esc leaves the old one),
 /// Delete (asking in a callout at the button) and a red button that answers the script's menu with the save's item
 /// ("Load", "Save over No. n", "Save") — the second click, so no question. An auto-save takes no Save; Delete works in
-/// either list and either tab. From <c>COMMAND</c> the Load | Save tabs switch lists (<see cref="LoadSaveShortcut.Switch"/>).
+/// either list and either tab. After Sengoku Rance's notes (docs/ui/save-load.md, §10, the owner's N1, 2026-10-22): a
+/// manual save with a comment has a gold star on its seal's top left corner, and the manual saves' heading has a button
+/// deleting every one without a comment, asking first in a callout beside it while the rows to go are struck through. From <c>COMMAND</c> the Load | Save tabs switch lists (<see cref="LoadSaveShortcut.Switch"/>).
 /// A right click or Esc answers 0. Laid out in the 1280×800 screen's pixels, scaled with the picture. After its answer the
 /// screen stays drawn, taking no clicks, until the script shows the next list or the save screen closes.
 /// </summary>
 internal sealed partial class SaveLoadView : Control
 {
-    // hits: the button, the tabs, the lists' switch, Delete and its answers, Edit, New save, and from RowHit the rows
-    // shown, top to bottom
+    // hits: the button, the tabs, the lists' switch, Delete and its answers, Edit, New save, the sweep and its answers,
+    // and from RowHit the rows shown, top to bottom
     private const int ButtonHit = 200, TabHit = 100, SideHit = 400, DeleteHit = 500, DeleteYesHit = 501,
-        DeleteNoHit = 502, EditHit = 600, NewHit = 700, RowHit = 1000;
+        DeleteNoHit = 502, EditHit = 600, NewHit = 700, SweepHit = 800, SweepYesHit = 801, SweepNoHit = 802, RowHit = 1000;
 
     private static readonly Rect2 PanelRect = new(30, 24, 1220, 752);
     private static readonly Rect2 MapRect = new(426, 118, 800, 333);
@@ -32,6 +34,9 @@ internal sealed partial class SaveLoadView : Control
     private static readonly Rect2 EditRect = new(1132, 585, 94, 34);
     private static readonly Rect2 CalloutRect = new(614, 562, 420, 132);
     private static readonly Rect2 YesRect = new(812, 640, 100, 30), NoRect = new(922, 640, 90, 30);
+    private static readonly Rect2 SweepRect = new(206, 128, 176, 26);
+    private static readonly Rect2 SweepCalloutRect = new(400, 75, 440, 132);
+    private static readonly Rect2 SweepYesRect = new(608, 153, 120, 30), SweepNoRect = new(738, 153, 80, 30);
     private const float ListX = 52, ListW = 330, SideY = 84, SideH = 30, HeadY = 141, ListTop = 162, ListBottom = 756;
     private const float ManualW = 318, ManualH = 52, ManualPitch = 57, NewH = 44, AutoH = 55, AutoPitch = 60, PageX = 426, PageY = 84;
     private const int CommentLength = 60;
@@ -39,6 +44,8 @@ internal sealed partial class SaveLoadView : Control
     private static readonly Color ChosenFill = Color.Color8(60, 30, 22);
     private static readonly Color AutoGold = Color.Color8(138, 104, 34);
     private static readonly Color TagText = Color.Color8(246, 232, 206);
+    private static readonly Color StarRim = Color.Color8(26, 18, 12);
+    private static readonly Color GoneVeil = Color.Color8(14, 10, 8, 150);
 
     private readonly FacePictures _pictures;
     private readonly FontFile _brush = Lacquer.Brush();
@@ -52,7 +59,7 @@ internal sealed partial class SaveLoadView : Control
     private SaveShelf _shelf = new([], []);
     private IReadOnlyList<SaveSlot> _manuals = [];
     private SaveSlot? _now;
-    private bool _tabs, _autoSide, _chosenNew, _confirm, _editing;
+    private bool _tabs, _autoSide, _chosenNew, _confirm, _sweep, _editing;
     private string _back = "";
     private SaveId? _chosen;
     private int _scroll;
@@ -128,7 +135,7 @@ internal sealed partial class SaveLoadView : Control
             Choose(written);
         else if (!again || (_chosen is { } kept && Find(kept) is null) || (_chosenNew && list != SaveList.Save))
             ChooseFirst(list);
-        _confirm = false;
+        _confirm = _sweep = false;
         _hovered = _pressed = 0;
         Visible = true;
         QueueRedraw();
@@ -147,7 +154,7 @@ internal sealed partial class SaveLoadView : Control
         EndEdit(keep: true);
         _answer?.TrySetCanceled();
         _answer = null;
-        _confirm = false;
+        _confirm = _sweep = false;
         _hovered = _pressed = 0;
         MouseDefaultCursorShape = CursorShape.Arrow;
         QueueRedraw();
@@ -199,6 +206,17 @@ internal sealed partial class SaveLoadView : Control
     public Vector2 DeleteCentre => Global(DeleteRect.GetCenter());
 
     public Vector2 DeleteAnswerCentre(bool yes) => Global((yes ? YesRect : NoRect).GetCenter());
+
+    /// <summary>The sweep's centre, and its question's answers.</summary>
+    public Vector2 SweepCentre => Global(SweepRect.GetCenter());
+
+    public Vector2 SweepAnswerCentre(bool yes) => Global((yes ? SweepYesRect : SweepNoRect).GetCenter());
+
+    /// <summary>Whether the sweep's question is open.</summary>
+    public bool SweepAsked => _sweep;
+
+    /// <summary>The manual saves the sweep would delete (those without a comment).</summary>
+    public int UncommentedCount => SaveSlots.Uncommented(_shelf.Manuals).Count;
 
     /// <summary>Edit's centre in global coordinates.</summary>
     public Vector2 EditCentre => Global(EditRect.GetCenter());
@@ -308,6 +326,10 @@ internal sealed partial class SaveLoadView : Control
         var at = window / _k;
         if (_confirm)
             return YesRect.HasPoint(at) ? DeleteYesHit : NoRect.HasPoint(at) ? DeleteNoHit : 0;
+        if (_sweep)
+            return SweepYesRect.HasPoint(at) ? SweepYesHit : SweepNoRect.HasPoint(at) ? SweepNoHit : 0;
+        if (!_autoSide && UncommentedCount > 0 && SweepRect.HasPoint(at))
+            return SweepHit;
         if (ButtonShown && ButtonRect.HasPoint(at))
             return ButtonHit;
         if (ChosenSave is not null && DeleteRect.HasPoint(at))
@@ -352,7 +374,7 @@ internal sealed partial class SaveLoadView : Control
                 }
                 break;
             case InputEventMouseButton { ButtonIndex: MouseButton.WheelUp or MouseButton.WheelDown, Pressed: true } wheel:
-                if (!_autoSide && !_confirm)
+                if (!_autoSide && !_confirm && !_sweep)
                 {
                     ScrollBy(wheel.ButtonIndex == MouseButton.WheelUp ? -1 : 1);
                     _hovered = HitAt(wheel.Position);
@@ -360,9 +382,9 @@ internal sealed partial class SaveLoadView : Control
                 }
                 break;
             case InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: false }:
-                if (_confirm)
+                if (_confirm || _sweep)
                 {
-                    _confirm = false;
+                    _confirm = _sweep = false;
                     QueueRedraw();
                 }
                 else
@@ -390,9 +412,9 @@ internal sealed partial class SaveLoadView : Control
     {
         if (_answer is null || e is not InputEventKey { Keycode: Key.Escape, Pressed: true })
             return;
-        if (_confirm)
+        if (_confirm || _sweep)
         {
-            _confirm = false;
+            _confirm = _sweep = false;
             QueueRedraw();
         }
         else
@@ -416,6 +438,15 @@ internal sealed partial class SaveLoadView : Control
                 break;
             case DeleteNoHit:
                 _confirm = false;
+                break;
+            case SweepHit:
+                _sweep = true;
+                break;
+            case SweepYesHit:
+                Sweep();
+                break;
+            case SweepNoHit:
+                _sweep = false;
                 break;
             case EditHit:
                 StartEdit();
@@ -457,6 +488,35 @@ internal sealed partial class SaveLoadView : Control
         else if (_list == SaveList.Save && id.Kind == SaveKind.Manual)
             _chosenNew = true;                                          // the last manual save gone: New save
         ScrollBy(0);
+    }
+
+    /// <summary>
+    /// The sweep answered Delete: every manual save without a comment deleted (<see cref="SaveSlots.DeleteUncommented"/>);
+    /// a chosen save that went gives its place to the newest manual save left, else New save (Save) or the save written
+    /// last (Load).
+    /// </summary>
+    private void Sweep()
+    {
+        _sweep = false;
+        if (_library is not { } library)
+            return;
+        SaveSlots.DeleteUncommented(library);
+        Reload();
+        _scroll = 0;
+        if (_chosen is { } id && Find(id) is null)
+        {
+            if (_manuals.Count > 0 && _manuals[0].Id is { } newest)
+                Choose(newest);
+            else if (_list == SaveList.Save)
+            {
+                _chosen = null;
+                _chosenNew = true;
+            }
+            else
+                ChooseFirst(SaveList.Load);
+        }
+        else if (_chosen is { Kind: SaveKind.Manual } kept)
+            ScrollTo(kept);
     }
 
     private void Answer((int, SaveList?) answer)
@@ -557,6 +617,8 @@ internal sealed partial class SaveLoadView : Control
         DrawPage(save);
         if (_confirm)
             DrawCallout();
+        if (_sweep)
+            DrawSweepCallout();
     }
 
     private void DrawSide(bool auto, string text)
@@ -587,7 +649,7 @@ internal sealed partial class SaveLoadView : Control
     private void DrawManuals(bool save)
     {
         Text(_cinzel, 11, ListX, HeadY, "NEWEST FIRST", Lacquer.Subtitle);
-        TextRight(_gothic, 11, ListX + ListW, HeadY, "as many as you keep", Lacquer.Label);
+        DrawSweepButton();
         if (save)
             DrawNewRow();
         foreach (var (id, rect) in Rows())
@@ -677,8 +739,74 @@ internal sealed partial class SaveLoadView : Control
         TextRight(_gothic, 14, rect.End.X - 10, y0 + 16, held.WrittenShort, Lacquer.Value);   // the lists' order: the bright line
         if (auto)
             Text(_gothic, 12, tx, y0 + 38, "start of the week", Lacquer.Label);
-        else if (held.Comment.Length > 0)
+        else if (held.Commented)
+        {
             Text(_gothic, 12, tx, y0 + 37, "“" + Fit(held.Comment, 12, rect.End.X - tx - 22) + "”", Lacquer.Quiet);
+            var corner = new Vector2(x0 + 9, rect.GetCenter().Y - 11);         // the seal's top left (the right is near the date)
+            DrawStar(corner, 9, StarRim);
+            DrawStar(corner, 7, Lacquer.Gold);
+        }
+        else if (_sweep)
+        {
+            DrawRect(rect, GoneVeil);                                   // the sweep asking: this row would go
+            DrawLine(new Vector2(x0 + 6, rect.GetCenter().Y), new Vector2(rect.End.X - 6, rect.GetCenter().Y), Lacquer.Vermilion, Line(1.5f));
+        }
+    }
+
+    /// <summary>A five-pointed star centred at <paramref name="centre"/>, its points at <paramref name="radius"/>.</summary>
+    private void DrawStar(Vector2 centre, float radius, Color colour)
+    {
+        var points = new Vector2[10];
+        for (int i = 0; i < 10; i++)
+        {
+            float angle = -MathF.PI / 2 + i * MathF.PI / 5, r = i % 2 == 0 ? radius : radius * 0.45f;
+            points[i] = centre + new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * r;
+        }
+        DrawColoredPolygon(points, colour);
+    }
+
+    /// <summary>
+    /// The sweep in the manual saves' heading: "Delete all without ★ (n)", counting the saves it would delete; off while
+    /// every manual save has a comment.
+    /// </summary>
+    private void DrawSweepButton()
+    {
+        int count = UncommentedCount;
+        bool off = count == 0, hover = _hovered == SweepHit || _sweep;
+        if (off)
+        {
+            DrawRect(SweepRect, Lacquer.OffButton);
+            DrawRect(SweepRect, Lacquer.OffLine, false, Line(1));
+        }
+        else
+            Lacquer.DrawRowBox(this, SweepRect, hover, _k);
+        const string label = "Delete all without";
+        string tail = $"({count})";
+        float lw = _gothic.GetStringSize(label, fontSize: 12).X, tw = _gothic.GetStringSize(tail, fontSize: 12).X;
+        float x = SweepRect.GetCenter().X - (lw + 22 + tw) / 2, y = SweepRect.GetCenter().Y;
+        var colour = off ? Lacquer.OffText : hover ? Lacquer.Name : Lacquer.Text;
+        Text(_gothic, 12, x, y, label, colour);
+        DrawStar(new Vector2(x + lw + 11, y), 6, off ? Lacquer.OffText : Lacquer.Gold);
+        Text(_gothic, 12, x + lw + 22, y, tail, colour);
+    }
+
+    /// <summary>The sweep's question beside its button, the tip pointing left at it so the list stays in view: Delete n | Keep.</summary>
+    private void DrawSweepCallout()
+    {
+        var shelf = _shelf.Manuals;
+        int gone = SaveSlots.Uncommented(shelf).Count;
+        Lacquer.DrawPanel(this, SweepCalloutRect, _k);
+        float left = SweepCalloutRect.Position.X, tip = SweepRect.GetCenter().Y;
+        DrawColoredPolygon([new(left + 2, tip - 10), new(left + 2, tip + 10), new(left - 12, tip)], Lacquer.Gold);
+        Text(_gothic, 16, left + 22, SweepCalloutRect.Position.Y + 32,
+            gone == 1 ? "Delete the manual save without a comment?" : $"Delete the {gone} manual saves without a comment?", Lacquer.Text);
+        int kept = shelf.Count - gone;
+        string stay = kept == 0 ? "That is every manual save." : kept == 1 ? "The one with a comment (★) stays." : $"The {kept} with one (★) stay.";
+        Text(_gothic, 16, left + 22, SweepCalloutRect.Position.Y + 56, stay + " It cannot be undone.", Lacquer.Text);
+        bool yes = _hovered == SweepYesHit;
+        Lacquer.DrawRedButton(this, SweepYesRect, yes, yes && _pressed == SweepYesHit, _k);
+        TextCentred(_brush, 16, SweepYesRect.GetCenter().X, SweepYesRect.GetCenter().Y, $"Delete {gone}", Lacquer.Name);
+        DrawSmallButton(SweepNoRect, "Keep", SweepNoHit);
     }
 
     private void DrawSeal(Rect2 rect, string text, Color fill)

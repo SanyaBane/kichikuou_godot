@@ -386,3 +386,20 @@ choose); the saves are G's made-up fourteen, five with a comment:
   to go are dimmed and struck through. One question, not Sengoku Rance's two.
 - **N5 — after it**: the five saves with a comment, the button off (0) until there is a save without one again.
 - **N6 — Save**: the same button and stars; "+ New save" heads the list as built.
+
+### The owner's choice (2026-10-22): N1, built
+
+The owner chose **N1**: the button in the list's heading, the star on the seal's top left corner, the question beside
+the button. Built:
+
+- **The model** `Original.Content/Strategy/SaveSlots` (`SaveSlotsTests`): `SaveSlot.Commented` (a comment of spaces
+  alone is none), `SaveSlots.Uncommented` (the manual saves the sweep would delete) and `SaveSlots.DeleteUncommented`
+  (every manual save without a comment deleted, the comment read from the save itself; auto-saves left).
+- **The screen** `godot/Strategy/SaveLoadView`: the star (gold with a dark rim) over the seal of a manual save with a
+  comment; "Delete all without ★ (n)" in the manual saves' heading, off at (0); its question in a callout beside it —
+  "Delete the n manual saves without a comment? The m with one (★) stay. It cannot be undone." (or "That is every manual
+  save."), Delete n | Keep, a right click or Esc as Keep — while the rows to go are veiled and struck through. After
+  the sweep a chosen save that went gives its place to the newest manual save left, else New save (Save) or the save
+  written last (Load).
+- **Unattended play**: `--saveload` asks the sweep while the new save has no comment (`save-load-sweep`), answers Keep,
+  and checks the count falls by one once the comment is written.

@@ -199,4 +199,26 @@ public class SaveSlotsTests
         Assert.Equal(("1", "No. 1", SlotKind.MidTurn), (shelf.Manuals[0].Seal, shelf.Manuals[0].Label, shelf.Manuals[0].Kind));
         Assert.Equal([first, second], SaveSlots.NewestFirst(shelf.Manuals).Select(s => s.Id!.Value));   // No. 1 written over last
     }
+
+    /// <summary>Ours (owner, 2026-10-22, docs/ui/save-load.md, §10): the sweep deletes the manual saves without a comment, nothing else.</summary>
+    [Fact]
+    public void The_sweep_deletes_the_manual_saves_without_a_comment()
+    {
+        var library = new MemorySaveLibrary(() => new DateTime(2026, 10, 22, 9, 0, 0));
+        library.WriteAuto(SaveData.Capture(Game(18), Autosave));
+        var kept = library.WriteManual(SaveData.Capture(Game(15), Moment))!.Value;
+        var bare = library.WriteManual(SaveData.Capture(Game(16), Moment))!.Value;
+        var blank = library.WriteManual(SaveData.Capture(Game(17), Moment))!.Value;
+        library.SetComment(kept, "before Oaks");
+        library.SetComment(blank, "   ");                                  // only spaces: no comment
+
+        var shelf = SaveSlots.ReadLibrary(library);
+        Assert.Equal([true, false, false], shelf.Manuals.Select(s => s.Commented));
+        Assert.Equal([bare, blank], SaveSlots.Uncommented(shelf.Manuals).Select(s => s.Id!.Value));
+
+        Assert.Equal(2, SaveSlots.DeleteUncommented(library));
+        Assert.Equal([kept], library.Manuals);
+        Assert.Single(library.Autos);                                       // auto-saves take no comment: left
+        Assert.Equal(0, SaveSlots.DeleteUncommented(library));
+    }
 }
