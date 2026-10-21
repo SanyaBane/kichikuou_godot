@@ -190,3 +190,69 @@ row. A slot written before decision 26 still loads as a turn's start (Auto becom
 the red button says so. The rows' time written is drawn about a fifth larger (14 px, 16 when sorted by date).
 The panel's title is "Save" or "Load" alone: the line beside it ("the game as it is now", "choose a game to go on
 with") is gone (owner, 2026-10-20).
+
+## 9. Auto-saves and manual saves (owner's decision 29, 2026-10-21)
+
+The owner asked (2026-10-21) for saves to be **deletable** from both lists, and for two lists in place of the ten
+slots: **auto-saves**, ten at most (the eleventh pushes the oldest out), and **manual saves** without the nine-slot
+limit. The owner's answers to the agent's questions:
+
+1. An auto-save is written at each turn's start, as now — the list is the last ten weeks.
+2. Page 4 goes to a file of its own (STR-31's fix, the third option of 2026-10-20, see ENG-07).
+3. Loading a save never makes it the auto-save (the original's `QC 1, n`): not wanted.
+4. Saves of either list can be deleted by the player. Auto-saves are not sortable — newest at the top, oldest at the
+   bottom; manual saves are sortable.
+5. The original interface's save lists need not be kept: the project aims at our interface alone.
+6. No names; a **comment** can be added to (and changed on) a save already made.
+
+### What the ten slots hold today
+
+- `ﾛｰﾄﾞｾｰﾌﾞ.ADV` (`Strategy/LoadSaveScreen`) numbers everything: slot 1 is the auto-save (`QD 1`, mode 3), the save
+  list writes slots 2-10, a load is `QC 1, n` then `LD n`; page 4 is written into slots 1-10 after every save
+  (`L_00ad6`, `:529-544`) and read from them at the boot and before a load (`L_00a7b`, mode 10). `Iｱﾘｽ.ADV:19` reads
+  `F_OpeningSeen` from slot 1 (`LP 1, VAR0514, 1`).
+- The engine's `ISaveStore` (`Script/SaveData.cs`) is numbered slots 1-26 (xsystem35's `SAVE_MAXNUMBER`), files
+  `slotNN.ksav`, about 60 KB each; it cannot delete.
+- Our screen answers the script's two menus (`SaveSlots.ListOf`: ten items and nine) with an item number.
+
+With many saves the page-4 sync would rewrite every file at every save and every week; that, and the gallery lost
+with the last save deleted, are why page 4 moves out.
+
+### Round 4: two layouts (2026-10-21)
+
+`tools/ui/mock_saves.py ... library`, over the map dump of the week-18 save; the saves are made up from the owner's
+slots (ten auto-saves of consecutive weeks, fourteen manual saves with a few comments). Both keep C's page (the map,
+the figures) and E's order switch for the manual saves:
+
+- **G — the two lists as a switch over one column** (G1-G6): "Manual saves · 14 | Auto-saves · 10" over the list.
+  Manual saves (G1): the order switch No. | Date, rows with the save's number on its seal, the date, the time
+  written and the comment as a quiet second line; the list scrolls. Auto-saves (G2): the ten, newest first, a gold
+  "A" seal, "start of the week". Save (G3): "+ New save" heads the manual list (a new save never replaces one);
+  choosing a manual save offers "Save over No. n". Delete (G4): a button left of the red one, asking in a callout at
+  it ("It cannot be undone."; Delete | Keep), the same in Load and Save and for both lists. The comment (G5): a field
+  under the figures with Edit; written in place, Enter keeps it, Esc leaves the old one, 60 letters at most. Save on
+  the Auto-saves side (G6): the red button off, Delete still works.
+- **H — the two lists stacked** (H1-H3): the ten auto-saves as short rows (date, time) over the column's top half,
+  the manual saves under them, about four in view; one save chosen across both. The page is G's.
+
+### The plan (after the owner's choice of layout)
+
+1. **The library** (engine, `Script/`): the saves as two lists of files next to each other — auto-saves numbered as
+   written, the ten newest kept; manual saves numbered as made (a new one after the highest), any number of them —
+   plus `persistent`, page 4 and `VAR0194`; a delete; a slot's `Comment` in the slot format (format 4; changing it
+   keeps `Written`). The first open of a folder of `slotNN.ksav` migrates it: slot 1 the newest auto-save, slots
+   2-10 manual saves 1-9 (their list numbers) with their times, page 4 read from them by `L_00a7b`'s rule (the last
+   one wins); the old files are moved aside, not deleted.
+2. **`ﾛｰﾄﾞｾｰﾌﾞ` on the library** (ours, as decision 26's `SaveHere`: the port only, the differential tests keep the
+   plain slots): mode 3 writes a new auto-save; the lists ask our screen for a save, not a menu item; a load is `LD`
+   of that save, never `QC 1, n`; a save is `QD` into a new manual save or the one chosen; page 4 is read and written
+   through `persistent` (modes 10 and 11, after a save); slot 1 for `Iｱﾘｽ` is the newest auto-save. The notices
+   ("Auto-Save", "Load Complete") name the save in our words, not "Data Number (n)".
+3. **The screen** (`godot/Strategy/SaveLoadView`, the model `Original.Content/Strategy/SaveSlots`): the chosen layout,
+   the scrolling list, "New save", Delete with its callout, the comment's field; Auto's panel goes. The original
+   interface uses it too.
+4. **Tools**: `--load --auto` loads the newest auto-save; `--slots-from` copies a folder (migrated in the copy, the
+   kept saves stay as they are); `--saveload` exercises New save, a comment, a delete and both lists.
+5. **Tests**: the library (the ring, the numbering, delete, the migration, a comment keeping `Written`), the port
+   (the ring through `WeekLoop`, a load leaving the auto-saves, page 4 through `persistent`), `SaveSlots`.
+6. **Docs**: quirks (STR-31 fixed, STR-11 and ENG-07 noted), this file, CLAUDE.md.

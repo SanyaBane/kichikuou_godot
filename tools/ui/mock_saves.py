@@ -11,6 +11,9 @@ moment, owner's decision 26); the background is a dump of the map in COMMAND's m
 map), C1/C2 (a list and the hovered slot's page), each in Load and Save. "sort" draws round 2 instead, the list of
 C sorted by number or by the time written: D (the switch in the title band) and E (Auto in a panel of its own, the
 switch over the other nine); its times are made up (the owner's slots were all stamped alike by ENG-07).
+"library" draws round 4 (owner's decision 29): ten auto-saves newest first and as many manual saves as the player
+keeps, each deletable, a manual save with a comment — G (the two lists as tabs over one column), H (the two stacked),
+the delete question and the comment being written; its saves are made up from the owner's slots.
 The images hold the player's CGs: keep <out dir> outside the repository. Everything is in the 1280x800 screen's pixels
 (plus a caption band below); drawn at 2x and scaled down.
 """
@@ -776,7 +779,270 @@ def e_screen(name, order, save_mode, slots, chosen, caption, note, heading='YOUR
     c.save(name, caption, note)
 
 
-if ROUND == 'sort':
+# ---------------------------------------------------------------- round 4: auto-saves and manual saves (G, H)
+
+COMMENTS = {3: 'before the attack on Oaks', 5: 'Haurein joined', 8: 'safe point, all troops full', 11: '',
+            12: 'try the Monsters\' Cave with Rance alone', 14: 'Sill\'s scene next week'}
+
+
+def library():
+    """Made-up saves from the owner's slots: ten auto-saves of consecutive weeks (newest first) and fourteen manual
+    saves numbered as they were made, each with a time written and a comment."""
+    autos = []
+    base = SLOT[9]
+    for i in range(10):
+        s = dict(SLOT[[9, 8, 10, 7, 6, 4, 9, 8, 10, 7][i]])
+        s['week'] = base['week'] - i
+        s['time'] = datetime.datetime(2026, 10, 21, 23, 40) - datetime.timedelta(minutes=17 * i + (i * i) % 7)
+        autos.append(s)
+    manual = {}
+    sources = [3, 5, 2, 4, 6, 7, 10, 8, 9, 3, 6, 10, 8, 9]
+    for no, src in enumerate(sources, start=1):
+        s = dict(SLOT[src])
+        s['time'] = datetime.datetime(2026, 10, 19, 20, 5) + datetime.timedelta(hours=3 * no + no % 4, minutes=11 * no % 60)
+        s['comment'] = COMMENTS.get(no, '')
+        s['no'] = no
+        manual[no] = s
+    return autos, manual
+
+
+def lib_row(c, r, seal_text, s, state, gold=False, order='Date', compact=False, dim=False):
+    """A row of either list: the seal, the date, the time written right; under them the comment, quiet."""
+    x0, y0, x1, y1 = r
+    h = y1 - y0
+    row_box(c, r, state if state in ('chosen', 'hover') else 'normal')
+    if gold and state != 'chosen':
+        c.rect(r, outline=AUTO_GOLD, width=1)
+    size = 20 if compact else 24
+    seal(c, x0 + 8, y0 + h / 2 - size / 2, seal_text, size, fill=AUTO_GOLD if gold else VERMILION)
+    tx = x0 + 18 + size
+    key = order == 'Date'
+    if compact:
+        c.text((tx, y0 + h / 2), date_text(s['week'], short=True), cinzel(14, 700), fill=NAME, anchor='lm')
+        c.text((x1 - 10, y0 + h / 2), s['time'].strftime('%d %b, %H:%M'), font(13), fill=VALUE, anchor='rm')
+        return
+    c.text((tx, y0 + 16), date_text(s['week'], short=True), cinzel(15, 700), fill=OFF_TEXT if dim else NAME, anchor='lm')
+    c.text((x1 - 10, y0 + 16), s['time'].strftime('%d %b, %H:%M'), font(13 if key else 12),
+           fill=OFF_TEXT if dim else (VALUE if key else LABEL), anchor='rm')
+    comment = s.get('comment', '')
+    if comment:
+        f = font(12)
+        while c.width('“' + comment + '”', f) > x1 - tx - 12:
+            comment = comment[:-2] + '…'
+        c.text((tx, y0 + 37), '“' + comment.rstrip('…') + ('…' if comment.endswith('…') else '') + '”', f,
+               fill=OFF_TEXT if dim else QUIET, anchor='lm')
+    elif gold:
+        c.text((tx, y0 + 37), 'start of the week', font(12), fill=OFF_TEXT if dim else LABEL, anchor='lm')
+
+
+def new_row(c, r, state):
+    """The Save list's first row: a new save, numbered after the last one."""
+    x0, y0, x1, y1 = r
+    if state == 'chosen':
+        row_box(c, r, 'chosen')
+    else:
+        c.rect(r, fill=(26, 20, 16, 230))
+        dashed(c, r)
+    c.text((x0 + 18, (y0 + y1) / 2), '+', cinzel(22, 700), fill=NAME, anchor='lm')
+    c.text((x0 + 44, (y0 + y1) / 2), 'New save', cinzel(15, 700), fill=NAME if state == 'chosen' else QUIET, anchor='lm')
+
+
+def scrollbar(c, x, top, bottom, first, shown, total):
+    c.rect((x, top, x + 5, bottom), fill=(40, 32, 24, 255), radius=2)
+    span = bottom - top
+    a = top + span * first / total
+    b = top + span * min(total, first + shown) / total
+    c.rect((x, a, x + 5, b), fill=GOLD, radius=2)
+
+
+def segment(c, r, labels, active):
+    """Two halves of one switch: the active one in the chosen row's colours."""
+    x0, y0, x1, y1 = r
+    w = (x1 - x0 - 4) / len(labels)
+    for i, label in enumerate(labels):
+        rr = (x0 + i * (w + 4), y0, x0 + i * (w + 4) + w, y1)
+        on = i == active
+        c.rect(rr, fill=CHOSEN if on else ROW, outline=VERMILION if on else DIM, width=2 if on else 1)
+        c.text(((rr[0] + rr[2]) / 2, (y0 + y1) / 2), label, cinzel(14, 700), fill=NAME if on else QUIET, anchor='mm')
+
+
+def comment_box(c, x0, x1, y, s, editing=False, text=None):
+    """The chosen manual save's comment: a paper slip with Edit; written in place (Enter keeps it, Esc leaves it)."""
+    c.text((x0, y), 'Comment', font(13), fill=LABEL)
+    r = (x0, y + 20, x1 - (0 if editing else 104), y + 54)
+    c.rect(r, fill=PAPER if editing else (34, 26, 20, 255), outline=VERMILION if editing else DIM, width=2 if editing else 1)
+    shown = text if text is not None else s.get('comment', '')
+    if editing:
+        c.text((r[0] + 10, (r[1] + r[3]) / 2), shown, font(16), fill=INK, anchor='lm')
+        cx = r[0] + 12 + c.width(shown, font(16))
+        c.line((cx, r[1] + 8), (cx, r[3] - 8), fill=INK, width=2)
+        c.text((r[2], r[3] + 14), 'Enter: keep it  ·  Esc: leave it as it was  ·  60 letters at most', font(12),
+               fill=QUIET, anchor='rm')
+    else:
+        c.text((r[0] + 10, (r[1] + r[3]) / 2), shown or 'none — Edit writes one', font(16),
+               fill=VALUE if shown else LABEL, anchor='lm')
+        small_button(c, (x1 - 94, r[1], x1, r[3]), 'Edit', f=cinzel(14, 700))
+
+
+def lib_page(c, r, px0, py0, px1, title, s, save_mode, kind_, editing=None, delete_q=False, new=False):
+    """The chosen save's page: its map and figures, the comment (manual saves), Delete and the red button."""
+    c.text((px0, py0 + 14), title, cinzel(22, 700), fill=NAME, anchor='lm')
+    if kind_ == 'auto':
+        w = c.width(title, cinzel(22, 700))
+        c.rect((px0 + w + 16, py0 + 4, px0 + w + 16 + 52, py0 + 24), fill=AUTO_GOLD, radius=3)
+        c.text((px0 + w + 42, py0 + 14), 'Auto', font(12), fill=(246, 232, 206, 255), anchor='mm')
+    mh = round((px1 - px0) * 266 / 640)
+    put_map(c, s, (px0, py0 + 34, px1, py0 + 34 + mh))
+    stats = [('Stage', STAGES.get(s['stage'], '')), ('Budget', gold_text(s)), ('Realm', realm_text(s)),
+             ('Units', str(s['units'])), ('Troops', str(s['troops'])), ('Written', 'now' if new else when(s))]
+    sy = py0 + 34 + mh + 14
+    for i, (label, value) in enumerate(stats):
+        stat(c, px0 + (i % 3) * 280, sy + (i // 3) * 46, label, value)
+    gy = sy + 100
+    if kind_ == 'manual' and not new:
+        comment_box(c, px0, px1, gy, s, editing is not None, editing)
+    elif kind_ == 'auto':
+        c.text((px0, gy + 2), 'The game writes one at the start of every week and keeps the last ten;', font(15), fill=TEXT)
+        c.text((px0, gy + 24), 'the eleventh pushes the oldest out. Loading one leaves the list as it is.', font(15), fill=TEXT)
+    else:
+        c.text((px0, gy + 2), 'A new manual save, No. 15. Its comment can be written once it is saved.', font(15), fill=TEXT)
+    by = r[3] - 82
+    button = (px1 - 330, by, px1, by + 58)
+    if save_mode:
+        if kind_ == 'auto':
+            red_button(c, button, 'Save', 'auto-saves are the game\'s own')
+            c.overlay(button, (20, 16, 12, 150))
+        else:
+            red_button(c, button, 'Save' if new else 'Save over No. ' + str(s['no']), None if new else 'it holds ' + date_text(s['week']))
+        c.text((px0, by + 16), 'Saving: ' + date_text(NOW['week']), font(15), fill=TEXT, anchor='lm')
+        c.text((px0, by + 40), f"{gold_text(NOW)} · {realm_text(NOW)} · {NOW['troops']} troops", font(14), fill=QUIET, anchor='lm')
+    else:
+        red_button(c, button, 'Load')
+        c.text((px0, by + 40), 'Right click: back to the map', font(13), fill=QUIET, anchor='lm')
+    delete = (px1 - 330 - 132, by + 14, px1 - 342, by + 44)
+    if not new:
+        small_button(c, delete, 'Delete', 'hover' if delete_q else 'normal', f=cinzel(14, 700))
+    return button, delete
+
+
+def lib_frame(save_mode):
+    """The panel as built (docs/ui/save-load.md, §8): the title alone, the tabs."""
+    c = background()
+    r = (30, 24, 1250, 776)
+    lq_panel(c, r)
+    title_band(c, r, 'Save' if save_mode else 'Load', '')
+    tabs(c, r[2] - 220, r[1] + 11, 'Save' if save_mode else 'Load')
+    return c, r
+
+
+def g_screen(name, save_mode, tab, chosen, caption, note, order='Date', desc=True, editing=None, delete_q=False):
+    """G: one column, the two lists as a switch over it — Manual saves (sortable, scrolling) or Auto-saves (ten,
+    newest first, no order); the chosen save's page right of it."""
+    autos, manual = library()
+    c, r = lib_frame(save_mode)
+    lx0, lx1, ly0 = r[0] + 22, r[0] + 352, r[1] + 60
+    segment(c, (lx0, ly0, lx1, ly0 + 30), ('Manual saves · ' + str(len(manual)), 'Auto-saves · 10'), 0 if tab == 'manual' else 1)
+    hy = ly0 + 44
+    top, bottom = hy + 34, r[3] - 20
+    rw = lx1 - 12
+    if tab == 'manual':
+        c.text((lx0, hy + 13), 'ORDER', cinzel(11, 700), fill=SUB, anchor='lm')
+        sort_switch(c, lx1 + 4, hy, 'Date' if order == 'Date' else 'No.', label=False, first='No.', desc=desc)
+        nos = sorted(manual, key=lambda n: manual[n]['time'] if order == 'Date' else n, reverse=desc)
+        y = top
+        if save_mode:
+            new_row(c, (lx0, y, rw, y + 44), 'chosen' if chosen == 'new' else 'normal')
+            y += 50
+        for n in nos:
+            if y + 52 > bottom:
+                break
+            lib_row(c, (lx0, y, rw, y + 52), str(n), manual[n], 'chosen' if n == chosen else 'normal', order=order)
+            y += 57
+        scrollbar(c, lx1 - 6, top, bottom, 0, 10 if not save_mode else 9, len(manual))
+    else:
+        c.text((lx0, hy + 13), 'NEWEST FIRST', cinzel(11, 700), fill=SUB, anchor='lm')
+        c.text((lx1, hy + 13), 'the game keeps the last ten', font(11), fill=LABEL, anchor='rm')
+        for i, s in enumerate(autos):
+            y = top + i * 60
+            lib_row(c, (lx0, y, lx1, y + 55), 'A', s, 'chosen' if i == chosen else 'normal', gold=True, order='Date')
+    px0, py0, px1 = lx0 + 374, ly0, r[2] - 24
+    if chosen == 'new':
+        lib_page(c, r, px0, py0, px1, 'New save · ' + date_text(NOW['week']), NOW, save_mode, 'manual', new=True)
+    elif tab == 'manual':
+        s = manual[chosen]
+        _, delete = lib_page(c, r, px0, py0, px1, 'No. ' + str(chosen) + ' · ' + date_text(s['week']), s, save_mode,
+                             'manual', editing=editing, delete_q=delete_q)
+        if delete_q:
+            callout(c, delete, ['Delete No. ' + str(chosen) + ', ' + date_text(s['week']) + '?', 'It cannot be undone.'],
+                    answers=('Delete', 'Keep'))
+            pointer(c, delete[0] + 60, delete[1] + 18)
+    else:
+        s = autos[chosen]
+        lib_page(c, r, px0, py0, px1, date_text(s['week']), s, save_mode, 'auto')
+    c.save(name, caption, note)
+
+
+def h_screen(name, save_mode, chosen, caption, note):
+    """H: the two lists stacked — the ten auto-saves as short rows at the top (all of them shown), the manual saves
+    under them, scrolling; one save chosen in either."""
+    autos, manual = library()
+    c, r = lib_frame(save_mode)
+    lx0, lx1, ly0 = r[0] + 22, r[0] + 352, r[1] + 60
+    c.text((lx0, ly0 + 2), 'AUTO-SAVES', cinzel(11, 700), fill=SUB, anchor='lm')
+    c.text((lx1, ly0 + 2), 'newest first · the last ten', font(11), fill=LABEL, anchor='rm')
+    for i, s in enumerate(autos):
+        y = ly0 + 14 + i * 31
+        lib_row(c, (lx0, y, lx1, y + 28), 'A', s, 'chosen' if chosen == ('auto', i) else 'normal', gold=True, compact=True)
+    sy = ly0 + 14 + 10 * 31 + 8
+    c.line((lx0, sy), (lx1, sy), fill=DIM)
+    c.text((lx0, sy + 22), 'MANUAL SAVES · ' + str(len(manual)), cinzel(11, 700), fill=SUB, anchor='lm')
+    sort_switch(c, lx1 + 4, sy + 9, 'Date', label=False, first='No.', desc=True)
+    top, bottom = sy + 44, r[3] - 20
+    y = top
+    if save_mode:
+        new_row(c, (lx0, y, lx1 - 12, y + 40), 'chosen' if chosen == 'new' else 'normal')
+        y += 46
+    nos = sorted(manual, key=lambda n: manual[n]['time'], reverse=True)
+    for n in nos:
+        if y + 52 > bottom:
+            break
+        lib_row(c, (lx0, y, lx1 - 12, y + 52), str(n), manual[n], 'chosen' if chosen == ('manual', n) else 'normal')
+        y += 57
+    scrollbar(c, lx1 - 6, top, bottom, 0, 4, len(manual))
+    px0, py0, px1 = lx0 + 374, ly0, r[2] - 24
+    if chosen == 'new':
+        lib_page(c, r, px0, py0, px1, 'New save · ' + date_text(NOW['week']), NOW, save_mode, 'manual', new=True)
+    elif chosen[0] == 'manual':
+        s = manual[chosen[1]]
+        lib_page(c, r, px0, py0, px1, 'No. ' + str(chosen[1]) + ' · ' + date_text(s['week']), s, save_mode, 'manual')
+    else:
+        s = autos[chosen[1]]
+        lib_page(c, r, px0, py0, px1, date_text(s['week']), s, save_mode, 'auto')
+    c.save(name, caption, note)
+
+
+if ROUND == 'library':
+    made_up = 'The saves are made up from the owner\'s slots.'
+    g_screen('G1-manual-load.png', False, 'manual', 12, 'G1 — two lists as a switch: Manual saves (Load)',
+             'Fourteen manual saves, newest first, scrolling; a row\'s second line is its comment. ' + made_up)
+    g_screen('G2-auto-load.png', False, 'auto', 0, 'G2 — the switch on Auto-saves (Load)',
+             'The ten the game keeps, newest first, no order to choose; each can be deleted. ' + made_up)
+    g_screen('G3-new-save.png', True, 'manual', 'new', 'G3 — Save: "New save" first, then the saves to save over',
+             'A save never has to replace another; the list grows as long as the player wants. ' + made_up)
+    g_screen('G4-delete.png', True, 'manual', 12, 'G4 — Delete asks first, in a callout at the button',
+             'The same in Load and Save, for a manual save and an auto-save alike. ' + made_up, delete_q=True)
+    g_screen('G5-comment.png', False, 'manual', 12, 'G5 — the comment written in place (Edit)',
+             'Enter keeps it, Esc leaves the old one; the row shows it at once. ' + made_up,
+             editing='try the Monsters\' Cave with Rance alone, then Oaks')
+    g_screen('G6-auto-save-tab.png', True, 'auto', 2, 'G6 — Save on the Auto-saves side: no Save, Delete only',
+             'Auto-saves are the game\'s own: the red button is off here, Delete still works. ' + made_up)
+    h_screen('H1-stacked-load.png', False, ('manual', 12), 'H1 — the two lists stacked (Load)',
+             'All ten auto-saves as short rows on top; the manual saves under them, about four in view. ' + made_up)
+    h_screen('H2-stacked-auto.png', False, ('auto', 1), 'H2 — stacked, an auto-save chosen (Load)',
+             'One chosen save across both lists; the page is the same as G\'s. ' + made_up)
+    h_screen('H3-stacked-save.png', True, 'new', 'H3 — stacked (Save): "New save" at the top of the manual saves',
+             'Fewer manual saves in view than in G: the auto-saves take the column\'s top half. ' + made_up)
+elif ROUND == 'sort':
     for n, (day, hour, minute) in SORT_TIMES.items():
         if n in SLOT:
             SLOT[n]['time'] = datetime.datetime(2026, 10, day, hour, minute)

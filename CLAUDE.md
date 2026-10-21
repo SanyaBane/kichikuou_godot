@@ -190,6 +190,10 @@ docs/backlog.md, "Release".
 Then (owner, 2026-10-21) our interface goes from the province menu's Attack straight to the deployment screen: `Cﾃｷﾄｼ`'s
 briefing (Rance's and Maris's lines, the same on every attack) is played unseen (`GamePresenter.CoverAttackBriefing`;
 docs/ui/command-screen.md, "The province menu").
+**Owner's decision 29** (2026-10-21): the ten slots give way to two lists — the last ten auto-saves (one each turn's
+start, newest first) and as many manual saves as the player keeps, any of them deletable, a manual save with a comment;
+a load never makes a save the auto-save; page 4 in a file of its own (STR-31). The plan and mock-up round 4 (G, H) are
+docs/ui/save-load.md, §9, awaiting the owner's choice of layout.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

@@ -276,6 +276,18 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     version (English translation v1.0) before anything is parsed. Rejected: bundling `xsys35dc.exe`
     (native, no Android) and our own `.SCO` loader building programs directly (it still needs the lines,
     or every line reference moves to byte addresses).
+29. **Auto-saves and manual saves as two lists, without the ten slots** (2026-10-21, the owner's request and
+    answers; plan and mock-ups in [docs/ui/save-load.md](../ui/save-load.md), §9): the third change on purpose, to
+    the saves alone, no rule of play. The game keeps the last **ten auto-saves**, one at each turn's start as now
+    (`MAIN.ADV:20`, `:83`), the eleventh pushing the oldest out; listed newest first, never sorted. The player keeps
+    **as many manual saves as wanted**, sortable as today; any save of either list can be **deleted**, and a manual
+    save can carry a **comment** written after it was saved (no names). **Loading never makes a save the auto-save**
+    any more (`QC 1, n` dropped for every save, not only decision 26's saves of the moment): the original's way is
+    not wanted. **Page 4** (`Glob_Fate`, `Glob_CgSeen`, `Glob_MenuItem`, `VAR0194`) moves to a file of its own next
+    to the saves, so a save no longer rewrites every other one and deleting saves loses no gallery, clears or
+    unlocks (STR-31 fixed). The original interface's slot lists are not kept working: our Save/Load screen is
+    the only one (the owner, 2026-10-21: the project aims at our interface alone). The differential tests run
+    `ﾛｰﾄﾞｾｰﾌﾞ` on the plain ten slots, so the file still runs as the original there.
 
 ## Milestone 1 — the prologue
 
