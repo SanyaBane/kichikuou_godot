@@ -231,6 +231,14 @@ that place's meaning.
 - **SB — a speech bubble per unit**: a filled green "!" new, a vermilion "?" a draw decides, an empty outline read; Talk
   for a read unit says "nothing new".
 
+**The owner's choice (2026-10-22), drawn as H and S:**
+
+- **The harem: HA without the visits** — the tablet's right slot shows NEW (green) or ??? (amber), and nothing when read;
+  the tablet no longer shows the visits (they stay in the panel below the picture, which gains "This visit").
+- **Subordinates: SB's bubbles in the ledger, SA's pill on Talk** — a speech bubble left of No. in every row (filled
+  green "!", vermilion "?", an empty outline when read); the chosen unit's Talk button carries a NEW or ??? pill at its
+  top right, none when read.
+
 ## 7. Open questions
 
-- Where the marks are drawn (the Subordinates picker's cells and Talk, the harem picker's cells): the mock-ups, later.
+None: the condition and the look are settled (2026-10-22). Next, the build: a plan of steps.

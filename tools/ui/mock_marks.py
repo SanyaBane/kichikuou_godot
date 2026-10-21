@@ -245,6 +245,40 @@ def subs_bubble():
            'Talk for a read unit says "nothing new" (Rance read here).')
 
 
+def harem_chosen():
+    """The owner's choice (round 2): HA without the visits — a read tablet's slot stays empty."""
+    c = Canvas(HAREM_DUMP)
+    for (col, row), (name, visits, mark) in GIRLS.items():
+        r = tablet(col, row)
+        clear_slot(c, r)
+        mid = (r[1] + r[3]) / 2
+        if mark == 'new':
+            c.text((r[2] - 10, mid + 1), 'NEW', font(12), NEW, 'rm')
+        elif mark == 'maybe':
+            c.text((r[2] - 10, mid + 1), '???', font(12), MAYBE, 'rm')
+    summon_line(c, 'This visit', NEW, 'Something new')
+    c.save('H-chosen.png', 'H — HA without the visits (the owner\'s choice)',
+           'NEW green, ??? amber, a read tablet\'s slot empty (Maris); the visits stay in the panel below the picture.')
+
+
+def subs_chosen():
+    """The owner's choice (round 2): SB's bubbles in the ledger, SA's pill on Talk."""
+    c = Canvas(SUBS_DUMP)
+    for i, mark in enumerate(UNITS):
+        mid = row_mid(i)
+        if mark == 'new':
+            bubble(c, 92, mid, fill=INK_GREEN, label='!')
+        elif mark == 'maybe':
+            bubble(c, 92, mid, fill=VERMILION_INK, label='?')
+        else:
+            bubble(c, 92, mid, outline=(150, 132, 104, 160))
+    talk_button(c, UNITS[0])
+    c.save('S-chosen.png', 'S — SB\'s bubbles in the ledger, SA\'s pill on Talk (the owner\'s choice)',
+           'Rance new here: a green bubble in his row and NEW on Talk; a read unit\'s Talk has no pill.')
+
+
+harem_chosen()
+subs_chosen()
 harem_slot()
 harem_corner()
 harem_dim()
