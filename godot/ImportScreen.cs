@@ -52,6 +52,7 @@ public partial class ImportScreen : Control
     private Rect2 _field;                          // the folder field, in screen pixels (laid out by the drawing)
     private bool _hoverField, _hoverButton, _pressedButton, _hoverBack;
     private FileDialog? _dialog;
+    private bool _dialogOpen;                      // the native dialog leaves the node's Visible false and takes no input away
     private float _k = 1;
     private Vector2 _origin;
     private int _shot;
@@ -199,6 +200,8 @@ public partial class ImportScreen : Control
 
     private void ChooseFolder()
     {
+        if (_dialogOpen)
+            return;
         if (_dialog is null)
         {
             _dialog = new FileDialog
@@ -210,14 +213,23 @@ public partial class ImportScreen : Control
             };
             _dialog.DirSelected += dir =>
             {
+                _dialogOpen = false;
                 _folder = dir;
                 _phase = Phase.Choose;
+                QueueRedraw();
+            };
+            _dialog.Canceled += () =>
+            {
+                _dialogOpen = false;
                 QueueRedraw();
             };
             AddChild(_dialog);
         }
         if (_folder.Length > 0 && System.IO.Directory.Exists(_folder))
             _dialog.CurrentDir = _folder;
+        _dialogOpen = true;
+        _hoverField = _hoverButton = _hoverBack = false;
+        QueueRedraw();
         _dialog.PopupCentered(new Vector2I(900, 600));
     }
 
@@ -226,16 +238,16 @@ public partial class ImportScreen : Control
     /// <summary>The red button: Import (narrow) or Choose another folder (wide).</summary>
     private Rect2 Button => _phase == Phase.Refused ? WideButton : NarrowButton;
 
-    private bool ButtonLive => _phase switch
+    private bool ButtonLive => !_dialogOpen && _phase switch
     {
         Phase.Choose => _folder.Length > 0,
         Phase.Refused => true,
         _ => false,
     };
 
-    private bool FieldLive => _phase is Phase.Choose or Phase.Refused;
+    private bool FieldLive => !_dialogOpen && _phase is Phase.Choose or Phase.Refused;
 
-    private bool BackLive => _back is not null && _unattended is null && _phase is Phase.Choose or Phase.Refused;
+    private bool BackLive => !_dialogOpen && _back is not null && _unattended is null && _phase is Phase.Choose or Phase.Refused;
 
     private void GoBack()
     {
@@ -245,7 +257,7 @@ public partial class ImportScreen : Control
 
     public override void _UnhandledKeyInput(InputEvent e)
     {
-        if (e is InputEventKey { Pressed: true, Keycode: Key.Escape } && BackLive && _dialog?.Visible != true)
+        if (e is InputEventKey { Pressed: true, Keycode: Key.Escape } && BackLive)
         {
             GetViewport().SetInputAsHandled();
             GoBack();
