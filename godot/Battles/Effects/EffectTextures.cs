@@ -154,6 +154,22 @@ internal static class EffectTextures
     private static Texture2D? _tile;
 
     /// <summary>
+    /// A light blade's body: a crescent bulging toward +x, its hollow behind it (−x), filled faintly at the hollow and
+    /// brightening toward its outer edge, its horns sweeping back and dissolving into wisps.
+    /// </summary>
+    public static Texture2D BladeBody => _bladeBody ??= Make(128, BladeBodyShape);
+
+    /// <summary>The blade's cutting edge: a thin bright rim along its outer (+x) edge in a soft halo, the horns fading.</summary>
+    public static Texture2D BladeEdge => _bladeEdge ??= Make(128, BladeEdgeShape);
+
+    private static Texture2D? _bladeBody, _bladeEdge;
+
+    /// <summary>A feather along x, its tip at +x: a thin curved shaft, a bare quill, vanes of fine slanting barbs, a few splits.</summary>
+    public static Texture2D Feather => _feather ??= Make(128, FeatherShape, 48);
+
+    private static Texture2D? _feather;
+
+    /// <summary>
     /// A size × <paramref name="height"/> texture (square by default) whose alpha at each pixel is <paramref name="alpha"/>
     /// of (x, y) in [−1, 1] — both axes, whatever the shape.
     /// </summary>
@@ -556,6 +572,46 @@ internal static class EffectTextures
         if (along is < 0 or > 1.02f)
             return 0;
         return Gauss(depth - 0.025f, 0.022f) * SmoothStep(0, 0.25f, along) * (1 - SmoothStep(0.9f, 1.02f, along));
+    }
+
+    // The blade lies between an outer ellipse (centre −0.3, semi-axes 1.2 × 0.95: its front at x 0.9) and the hollow's
+    // (centre −0.95, 1.45 × 1.05: its front at 0.5); the distances to both come from the implicit functions over their
+    // gradients. Returns the distance inside the outer edge, outside the hollow, and how far across from hollow to edge.
+    private static (float ToEdge, float ToHollow, float Across) Blade(float x, float y)
+    {
+        float ox = (x + 0.3f) / 1.2f, oy = y / 0.95f, hx = (x + 0.95f) / 1.45f, hy = y / 1.05f;
+        float toEdge = (1 - ox * ox - oy * oy) / (2 * MathF.Sqrt(ox * ox / 1.44f + oy * oy / 0.9025f) + 1e-4f);
+        float toHollow = (hx * hx + hy * hy - 1) / (2 * MathF.Sqrt(hx * hx / 2.1025f + hy * hy / 1.1025f) + 1e-4f);
+        float across = Math.Clamp(toHollow / (toHollow + Math.Max(toEdge, 0) + 1e-4f), 0, 1);
+        return (toEdge, toHollow, across);
+    }
+
+    private static float BladeBodyShape(float x, float y)
+    {
+        var (toEdge, toHollow, across) = Blade(x, y);
+        float horns = (1 - SmoothStep(0.4f, 0.93f, MathF.Abs(y))) * (0.65f + 0.35f * Fbm(x * 5 + 2, y * 5 + 9));
+        return Edge(toEdge, 0.02f) * Edge(toHollow, 0.03f) * (0.2f + 0.8f * across * across) * horns;
+    }
+
+    private static float BladeEdgeShape(float x, float y)
+    {
+        var (toEdge, toHollow, _) = Blade(x, y);
+        float horns = 1 - SmoothStep(0.55f, 0.95f, MathF.Abs(y));
+        return Edge(toHollow, 0.04f) * (Gauss(toEdge, 0.016f) + 0.35f * Gauss(toEdge, 0.08f)) * horns;
+    }
+
+    // The shaft bows a little toward −y; the vanes start a fifth along, widest past the middle, closing to the tip;
+    // the barbs slant back from the shaft (y is 128/48 finer than x).
+    private static float FeatherShape(float x, float y)
+    {
+        float s = (x + 1) / 2, shaftY = -0.12f * (1 - x * x);
+        float d = MathF.Abs(y - shaftY);
+        float shaft = Gauss(d, 0.05f) * SmoothStep(0.02f, 0.06f, s) * (1 - SmoothStep(0.94f, 0.99f, s));
+        float width = 0.85f * MathF.Pow(MathF.Max(0, MathF.Sin(MathF.PI * Math.Clamp((s - 0.18f) / 0.8f, 0, 1))), 0.6f);
+        float vane = 1 - SmoothStep(width * 0.8f, width, d);
+        float barbs = 0.8f + 0.2f * (0.5f + 0.5f * MathF.Cos((x - d * 0.35f) * 70));
+        float splits = SmoothStep(0.25f, 0.45f, Fbm(x * 6 + (y > shaftY ? 3 : 11), 1.5f));
+        return Math.Max(shaft, vane * barbs * (0.6f + 0.4f * splits) * 0.75f);
     }
 
     /// <summary>A soft edge at <paramref name="v"/> = 0: 0 below −<paramref name="width"/>/2, 1 above +<paramref name="width"/>/2.</summary>

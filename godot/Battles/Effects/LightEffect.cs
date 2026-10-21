@@ -19,7 +19,8 @@ internal static class LightEffect
     private static readonly Vector2 Orb = new(305, 170);
 
     // The colours (light added over the scene).
-    private static readonly Color White = new(1f, 0.99f, 0.95f), Blade = new(0.78f, 0.78f, 0.75f);
+    private static readonly Color White = new(1f, 0.99f, 0.95f), Body = new(0.8f, 0.9f, 1f), Cutting = new(1f, 0.93f, 0.72f);
+    private static readonly Color Plume = new(1f, 0.97f, 0.88f);
     private static readonly Color Orange = new(1f, 0.55f, 0.25f), Gold = new(1f, 0.8f, 0.4f), Yellow = new(1f, 0.88f, 0.3f);
 
     public static IReadOnlyList<Particle> Build(int seed)
@@ -69,22 +70,46 @@ internal static class LightEffect
         particles.Add(new Particle(EffectTextures.Sphere, 5.5f, 11, Orb + new Vector2(25, -5), Vector2.Zero, 0, 0,
             new Vector2(240, 240), White * new Color(1, 1, 1, 0.45f), Swell, t => 1 + 0.15f * t));
 
-        // The blades: crescents, their hollows facing back, flying right from the orb in a broadening stream, the bigger
-        // ones paler, each with a white streak behind it (3-27).
-        for (int i = 0; i < 130; i++)
+        // The blades: blades of light, their hollows behind them, flying right from the orb in a broadening stream (3-27) —
+        // a few big ones crossing the field slowly, smaller ones quicker round them — each a pale blue-white body under a
+        // gold-white cutting edge, tilting and growing a little as it flies, with fading afterimages of itself behind it.
+        for (int i = 0; i < 36; i++)
         {
-            float birth = 3 + 15 * MathF.Pow((float)random.NextDouble(), 1.3f), life = Range(6, 10);
+            bool big = i < 4;
+            float birth = big ? 4 + i * 2.5f + Range(0, 1) : 3 + 16 * MathF.Pow((float)random.NextDouble(), 1.2f);
+            float life = big ? Range(13, 16) : Range(6, 10);
             float spread = Math.Min(1, (birth - 2) / 6);
-            var from = Orb + new Vector2(Range(-20, 60), Range(-120, 120) * (0.4f + 0.6f * spread));
-            float speed = Range(40, 110), climb = Range(-6f, 6f) * (0.3f + 0.7f * spread);
-            float size = Range(30, 100) * (random.NextDouble() < 0.12 ? 1.6f : 1);
-            var colour = (size > 90 ? Blade : White.Lerp(Blade, Range(0, 0.8f))) * new Color(1, 1, 1, Range(0.45f, 0.85f));
+            var from = Orb + new Vector2(Range(-10, 60), Range(-120, 120) * (0.4f + 0.6f * spread) * (big ? 0.6f : 1));
+            float speed = big ? Range(35, 50) : Range(55, 110), climb = Range(-6f, 6f) * (0.3f + 0.7f * spread);
+            float size = big ? Range(160, 230) : Range(40, 100);
             var velocity = new Vector2(speed, climb);
-            particles.Add(new Particle(EffectTextures.Sickle, birth, life, from, velocity, Range(-0.15f, 0.15f), 0,
-                new Vector2(size * 1.25f, size * 0.85f), colour, Swell, t => 0.8f + 0.4f * t));
-            if (random.NextDouble() < 0.6)
-                particles.Add(new Particle(EffectTextures.Streak, birth, life, from - new Vector2(size * 0.8f, 0), velocity, 0, 0,
-                    new Vector2(size * 3, size * 0.35f), White * new Color(1, 1, 1, 0.55f), Swell, _ => 1));
+            float tilt = MathF.Atan2(climb, speed) + Range(-0.2f, 0.2f), spin = Range(-0.02f, 0.02f);
+            float alpha = big ? 0.8f : Range(0.6f, 1);
+            for (int echo = 2; echo >= 0; echo--)
+            {
+                // The afterimages trail close behind, bodies only, a blur of its motion.
+                var at = from - velocity * echo * 0.07f;
+                float fade = echo == 0 ? 1 : 0.22f / echo;
+                particles.Add(new Particle(EffectTextures.BladeBody, birth, life, at, velocity, tilt, spin,
+                    new Vector2(size * 0.75f, size), Body * new Color(1, 1, 1, alpha * fade), Swell, t => 0.85f + 0.35f * t));
+                if (echo == 0)
+                    particles.Add(new Particle(EffectTextures.BladeEdge, birth, life, at, velocity, tilt, spin,
+                        new Vector2(size * 0.75f, size), Cutting * new Color(1, 1, 1, alpha), Swell, t => 0.85f + 0.35f * t));
+            }
+        }
+
+        // The feathers: a few, drifting down slowly among the blades and swaying as they fall (5-26).
+        for (int i = 0; i < 6; i++)
+        {
+            float birth = Range(5, 14), life = Range(11, 15);
+            var at = new Vector2(Range(400, 700), Range(30, 200));
+            var drift = new Vector2(Range(2, 5), Range(1, 2.2f));
+            float size = Range(70, 100), phase = Range(0, MathF.Tau), sway = Range(12, 22);
+            particles.Add(new Particle(EffectTextures.Feather, birth, life, at, drift, Range(-0.6f, 0.6f) + MathF.PI * random.Next(2),
+                Range(-0.03f, 0.03f), new Vector2(size, size * 0.38f), Plume, Swell, _ => 1,
+                Move: t => new Vector2(MathF.Sin(phase + t * 7) * sway, 0)));
+            particles.Add(new Particle(EffectTextures.Glow, birth, life, at, drift, 0, 0, new Vector2(size, size * 0.6f),
+                Gold * new Color(1, 1, 1, 0.35f), Swell, _ => 1, Move: t => new Vector2(MathF.Sin(phase + t * 7) * sway, 0)));
         }
         // The light at the stream's root: a white glow the blades leave from (4-12).
         particles.Add(new Particle(EffectTextures.Glow, 3.5f, 9, Orb + new Vector2(70, 5), Vector2.Zero, 0, 0,
