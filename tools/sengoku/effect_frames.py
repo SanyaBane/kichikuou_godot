@@ -21,7 +21,8 @@ def extract(alice, archive, out, first, frames):
     folder = os.path.join(out, str(first))
     os.makedirs(folder, exist_ok=True)
     for frame in range(frames):
-        subprocess.run([alice, 'ar', 'extract', '-i', str(first + frame), '--image-format', 'png', '-f',
+        # alice's index is the archive's 0-based link number: index n holds CG n + 1.
+        subprocess.run([alice, 'ar', 'extract', '-i', str(first + frame - 1), '--image-format', 'png', '-f',
                         '-o', os.path.join(folder, f'{frame:02d}.png'), archive],
                        check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     return folder
