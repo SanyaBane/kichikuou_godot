@@ -98,18 +98,19 @@ internal static class LightEffect
             }
         }
 
-        // The feathers: a few, drifting down slowly among the blades and swaying as they fall (5-26).
+        // The feathers: a few small ones, appearing low already, still sinking and swaying as they drift on toward the
+        // target, some of them off the screen (5-27).
         for (int i = 0; i < 6; i++)
         {
-            float birth = Range(5, 14), life = Range(11, 15);
-            var at = new Vector2(Range(400, 700), Range(30, 200));
-            var drift = new Vector2(Range(2, 5), Range(1, 2.2f));
-            float size = Range(70, 100), phase = Range(0, MathF.Tau), sway = Range(12, 22);
+            float birth = Range(5, 13), life = Range(14, 18);
+            var at = new Vector2(Range(380, 620), Range(220, 285));
+            var drift = new Vector2(Range(10, 18), Range(1.5f, 3));
+            float size = Range(12, 17), phase = Range(0, MathF.Tau), sway = Range(3, 5);
             particles.Add(new Particle(EffectTextures.Feather, birth, life, at, drift, Range(-0.6f, 0.6f) + MathF.PI * random.Next(2),
-                Range(-0.03f, 0.03f), new Vector2(size, size * 0.38f), Plume, Swell, _ => 1,
-                Move: t => new Vector2(MathF.Sin(phase + t * 7) * sway, 0)));
-            particles.Add(new Particle(EffectTextures.Glow, birth, life, at, drift, 0, 0, new Vector2(size, size * 0.6f),
-                Gold * new Color(1, 1, 1, 0.35f), Swell, _ => 1, Move: t => new Vector2(MathF.Sin(phase + t * 7) * sway, 0)));
+                Range(-0.05f, 0.05f), new Vector2(size, size * 0.38f), Plume, Drift, _ => 1,
+                Move: t => new Vector2(0, MathF.Sin(phase + t * 9) * sway)));
+            particles.Add(new Particle(EffectTextures.Glow, birth, life, at, drift, 0, 0, new Vector2(size, size * 0.6f) * 1.4f,
+                Gold * new Color(1, 1, 1, 0.35f), Drift, _ => 1, Move: t => new Vector2(0, MathF.Sin(phase + t * 9) * sway)));
         }
         // The light at the stream's root: a white glow the blades leave from (4-12).
         particles.Add(new Particle(EffectTextures.Glow, 3.5f, 9, Orb + new Vector2(70, 5), Vector2.Zero, 0, 0,
@@ -135,6 +136,9 @@ internal static class LightEffect
         }
         return particles;
     }
+
+    /// <summary>In quickly, full most of its life (to leave the screen while seen), then out.</summary>
+    private static float Drift(float t) => t < 0.1f ? t / 0.1f : t < 0.8f ? 1 : 1 - (t - 0.8f) / 0.2f;
 
     /// <summary>In quickly, full to the middle of its life, then out.</summary>
     private static float Swell(float t) => t < 0.15f ? t / 0.15f : t < 0.55f ? 1 : MathF.Pow(1 - (t - 0.55f) / 0.45f, 1.4f);

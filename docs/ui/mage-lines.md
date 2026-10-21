@@ -105,7 +105,8 @@ variants later, if the owner wants them.
      blades of light sweeping right across the field (3-27) — v2 after the owner's look (v1's many flat crescents
      "too simple", 2026-10-21): 36 instead of 130, four big ones crossing slowly, each a pale blue-white body fading
      toward its hollow (`EffectTextures.BladeBody`) under a gold-white cutting edge in a halo (`BladeEdge`), tilting
-     and growing as it flies with a blur of afterimages; six feathers (`Feather`) drifting down among them —, a faint glassy sphere where the orb was (6-16), warm glints lingering on the actor's
+     and growing as it flies with a blur of afterimages; six small feathers (`Feather`, the owner's sixth of v2's)
+     appearing low already, sinking and drifting on toward the target, some off the screen —, a faint glassy sphere where the orb was (6-16), warm glints lingering on the actor's
      side and yellow glints and curls among the blades on the target's (11-26).
 8. **Docs** — docs/ui/battle-screen.md, "The exchange's effects", says how a magic attack picks its
    effect; CLAUDE.md's effect list gets the new effects.
