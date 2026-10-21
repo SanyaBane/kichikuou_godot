@@ -111,8 +111,8 @@ internal sealed partial class EffectPlayer : Control
     }
 
     /// <summary>
-    /// The effect laid over the scene as darkness (Black D. Beam, the White Destruction Beam recoloured dark): its bright
-    /// parts black the scene out, its fainter parts and edges glow blue-violet.
+    /// The effect laid over the scene as darkness (Black D. Beam, the White Destruction Beam recoloured dark; the dark
+    /// magic, <see cref="DarkEffect"/>): its bright parts black the scene out, its fainter parts and edges glow blue-violet.
     /// </summary>
     public bool Dark
     {

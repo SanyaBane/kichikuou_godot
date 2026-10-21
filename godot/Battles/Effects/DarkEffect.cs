@@ -8,7 +8,9 @@ namespace Kichikuou.Game.Battles.Effects;
 /// target's half: a small magenta orb among faint violet specks (frame 0) swelling into a white ball (2), pink-violet
 /// specks bursting out of it in a ring round a violet rim (3-7), a white blast, mottled and pink at its heart, swelling
 /// over the whole half with a violet haze at its edge (7-15) and turning magenta, a dark violet sphere left where it was
-/// (16-22), then violet glows, glints and small cyan curls fading by frame ~29. The same seed makes the same effect.
+/// (16-22), then violet glows, glints and small cyan curls fading by frame ~29. Played laid over dark
+/// (<see cref="EffectPlayer.Dark"/>; owner, 2026-10-21): the light blacks the scene out, its edges glow. The same seed
+/// makes the same effect.
 /// </summary>
 internal static class DarkEffect
 {

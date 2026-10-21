@@ -257,7 +257,7 @@ internal sealed partial class BattleBoardView : Control
             || battle.Effect is not { } effect)
             return;
         _effect.Mirrored = effect.Side == BattleSide.Enemy;
-        _effect.Dark = effect.Kind is ExchangeEffectKind.ChizukoBeam or ExchangeEffectKind.NagiBeam;
+        _effect.Dark = effect.Kind is ExchangeEffectKind.ChizukoBeam or ExchangeEffectKind.NagiBeam or ExchangeEffectKind.DarkMagic;
         _effect.Start(effect.Kind switch
         {
             ExchangeEffectKind.Bow => BowEffect.Build(_effectsSeen),

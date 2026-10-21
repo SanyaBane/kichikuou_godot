@@ -92,8 +92,9 @@ variants later, if the owner wants them.
      and thinning from frame 7 (0-9); a white flash at its foot with rays fanning out (1-5); a bright filled
      ellipse on the ground (5-9) spreading as a ring (to ~17) while thin strands linger; star sparkles and soft
      specks over the target's half and thinly beyond it, gone by frame ~27.
-   - **Dark** — built (2026-10-21), awaiting the owner's look: `godot/Battles/Effects/DarkEffect`, wired for
-     `DarkMagic`. 47030 in its own colours: a small magenta orb among faint violet specks (0) swelling into a
+   - **Dark** — built (2026-10-21), accepted by the owner (2026-10-21): `godot/Battles/Effects/DarkEffect`, wired
+     for `DarkMagic`, laid over dark as the Black D. Beam (`EffectPlayer.Dark`; the owner found it too bright
+     as light, 2026-10-21): its bright parts black the scene out, its edges glow blue-violet. 47030's shapes: a small magenta orb among faint violet specks (0) swelling into a
      sparkling white ball (2-3), pink-violet specks bursting out round a violet rim (3-7), a white blast of soft
      glows with a darker mottled heart swelling over the half toward the actor (7-15) and turning magenta in a
      magenta afterglow (10-18), a dark violet sphere with a bright rim (15-23), then violet glows, glints and small
