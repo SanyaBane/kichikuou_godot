@@ -264,9 +264,10 @@ internal sealed partial class BattleBoardView : Control
             ExchangeEffectKind.IceMagic => IceEffect.Build(_effectsSeen),
             ExchangeEffectKind.LightningMagic => LightningEffect.Build(_effectsSeen),
             ExchangeEffectKind.DarkMagic => DarkEffect.Build(_effectsSeen),
-            // The other elements' own effects come one by one (docs/ui/mage-lines.md, steps 6-7); till then the Fire Blast.
+            ExchangeEffectKind.LightMagic => LightEffect.Build(_effectsSeen),
+            // The other elements' own effects come one by one (docs/ui/mage-lines.md, step 7); till then the Fire Blast.
             ExchangeEffectKind.Magic
-                or ExchangeEffectKind.LightMagic or ExchangeEffectKind.PoisonMagic
+                or ExchangeEffectKind.PoisonMagic
                 => MagicEffect.Build(_effectsSeen),
             ExchangeEffectKind.RanceAttack => RanceAttackEffect.Build(_effectsSeen),
             ExchangeEffectKind.KentarouSlash => KentarouSlashEffect.Build(_effectsSeen),

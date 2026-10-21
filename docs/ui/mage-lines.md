@@ -99,6 +99,12 @@ variants later, if the owner wants them.
      glows with a darker mottled heart swelling over the half toward the actor (7-15) and turning magenta in a
      magenta afterglow (10-18), a dark violet sphere with a bright rim (15-23), then violet glows, glints and small
      cyan curls fading by frame ~29.
+   - **Light** — built (2026-10-21), awaiting the owner's look: `godot/Battles/Effects/LightEffect`, wired for
+     `LightMagic`. Angel Cutter in its own colours, thrown from the actor's side as 40430 is: a warm orb at
+     (305, 170) swelling into a white sun in an orange-gold halo with rays (0-3), gold glints gathering round it, a
+     stream of glassy crescent blades (the `Sickle`, stretched along their flight) with white streaks sweeping right
+     across the field (3-27), a faint glassy sphere where the orb was (6-16), warm glints lingering on the actor's
+     side and yellow glints and curls among the blades on the target's (11-26).
 8. **Docs** — docs/ui/battle-screen.md, "The exchange's effects", says how a magic attack picks its
    effect; CLAUDE.md's effect list gets the new effects.
 
