@@ -242,4 +242,71 @@ that place's meaning.
 
 ## 7. Open questions
 
-None: the condition and the look are settled (2026-10-22). Next, the build: a plan of steps.
+None: the condition and the look are settled (2026-10-22).
+
+## 8. The build — plan (2026-10-22)
+
+What the code has today (an agent's survey, 2026-10-22): scenes run in `Engine/Script/SceneRunner` (a sealed runner, one
+`switch` over `ScriptProgram`'s statements, jumps resolved to indexes; no hook on a statement); a shown line is a
+`MessageEvent`/`ValueMessageEvent` carrying its `ScriptRef`, raised by the runner and by hand ports' `TextAsync`, and
+menu items carry theirs as captured text; every draw goes through `ScriptContext.Rnd` → `IScriptRandom`
+(`godot/Strategy/RandomLog.cs` is a decorator over it); a state copy exists only in the tests
+(`TestSupport/Differential.Copy`, without `Extras`); `Extras` (`Dictionary<string, int[]>`) is saved whole, a new key
+needs no format change; the only "seen" record is MsgSkip's, global (`msgskip.txt`); no setting reaches rule code
+today — the rule-visible switches are context properties off by default (`ResumeCommand`, `ReplenishRequest`), which
+is what keeps the differential tests (which build their contexts by hand) running the files as the original;
+Option → Game holds only the game folder.
+
+Steps, each committed with its tests:
+
+1. **The read lines, per save** (Engine). The context notes every line it shows — `MessageEvent`, `ValueMessageEvent`,
+   the items of a menu shown — in `Extras`, one key per file (`read:<file>`, its lines a sorted `int[]`, as
+   `KnownProvinces`). Notes only: no rule reads them, the differential tests compare no `Extras`. An old save starts
+   empty. Tests: the record, a save and load keep it.
+2. **A state copy in the engine**: `ScriptState`'s copy (variables, pages, strings and `Extras`) moves out of the
+   tests' `Differential.Copy` into the engine, which the tests then use.
+3. **The dry run** (Engine, `Script/ScenePreview`): runs a given start (an async entry on a context) on copies of a
+   state again and again, each run with a script of decisions — the value of each draw, the item of each menu, key
+   waits answered at once —, branching at the first decision its script does not hold, until every path is run
+   (a cap on the paths; past it the mark is ???). A run's view records the lines; nothing is shown, played, counted
+   or saved (a fresh context: no `Glob_CgSeen` binding, a memory save store). A path ends at the start's end, at a
+   jump out (`&`, an ending), or at a call the scene router does not run (a battle, `FIGT_A`): such a call counts as
+   something happening. Per path: its decisions (which were draws), its lines, the state at its end. Tests on
+   hand-made programs.
+4. **The mark** (Original): the talk and the visit as entries the dry run can start — `SubordinatesCommand`'s talk of a
+   unit and `HaremCommand`'s visit of a girl, the same code the commands run (with the visit's writes before and
+   after the scene). A path is new when, as of the start, it shows an unread line or changes a variable that counts
+   (§4: by value; not the bookkeeping, not `N_RanceSelfTalk`; not a write every path makes); a path that ends the
+   game does not count. Read: no path is new. New: a new path the player reaches by menus alone, or one the rule
+   change (step 5) makes certain. ???: new only by a draw — the draws that change the state listed in decision 30
+   (Haurein `Gﾊｳﾚｰﾝ:2299`, Kentarou `Gｹﾝﾀﾛｳ:608`, Isoroku `Gｲｿﾛｸ:4599`; Kanami's `Gｶﾅﾐ:182` is New), any other
+   such draw the dry run meets, and, with the option off, every draw. Content tests on the player's files: Sill's
+   silent step (§4), Rance's talks 1, 2, 10, Maria's variants, Haurein, Kentarou, Isoroku, Kanami, a talk with a menu
+   (Leila), an ending path (Katyusha) left out.
+5. **What is unread comes first** (Original; the option's flag on `OriginalScriptContext`, off by default). During a
+   real talk or visit a random decorator draws as the original does, then replaces the value: at each draw it runs
+   the dry run from the scene's start (a copy taken there) with the decisions made so far, and (a) chooses at random
+   among the values whose continuation is new and changes nothing that counts (a harmless unread variant), else (b) at
+   a listed draw, the outcome that changes the state when neither the path so far nor the other values'
+   continuations hold a line unread at the scene's start (the usual scene read: Haurein's kiss, Kentarou's training,
+   Isoroku's stage-2 visit, Kanami's usual visit), else (c) keeps the value. Suzume's and Wendy's draw (`Cﾊｰﾚﾑ:6`)
+   is outside the scenes and keeps its odds. Content tests: Cafe's Satella scene on the next talk, Haurein's leaving
+   on the talk after the kiss, Kentarou's four training talks, Isoroku's second stage-2 visit, Kanami's scenes; the
+   draws consumed one for one; with the flag off, the original's values.
+6. **Scene hooks** (Engine `SceneRunner`, Original): a hook the rule set gives the runner, called at statements of
+   chosen `ScriptRef`s — a condition answered by the rules, a step after a statement. With the option on: **Kanami's
+   choice** at `Gｺｰﾄﾞ:1457` (`{Tmp0001 > 1:`): when the count is two or more, our menu "Stop Code" / "Go with Code"
+   (a menu of the port's own text, as `PortTextEvent` is for text) answers the test; **Kentarou's line** after
+   `Gｹﾝﾀﾛｳ:609-611` when the state moved to 6 or 7: our narration (the window opened through `WAO_SUB`'s ops, the
+   line as `PortTextEvent`, a key wait). Tests on the player's files; with the option off nothing is asked or shown.
+7. **The option**: Option → Game, a check box "New scenes first" (a `*Choice` over `settings.cfg`, on by default),
+   copied onto the game's context where `GameScreen` takes `session.Script`.
+8. **The screens** (§6, the owner's H and S): `HaremRoster`'s girls and `SubordinatesScreen`'s rows and Talk button
+   get their marks, computed by the dry run when `Sﾊｰﾚﾑ` or `Sﾌﾞｶ` opens (from the state the picker sees: `Ev_Entry`
+   and the command's own writes as at the call); `HaremView`: the slot NEW/??? (no visits), the Summon pill, "This
+   visit"; `SubordinatesView`: the bubbles left of No., the Talk pill. Dumps from `saves-week18` for the owner's look.
+9. **Docs**: decision 30 built, CLAUDE.md, the backlog.
+
+Steps 1, 3 and 6 reach the script runtime, so the full content tests are due once the build is settled; steps 4-5 run
+the Talk and harem files the differential tests compare (`CommandSliceDifferentialTests`), which must see no
+difference with the flag off.
