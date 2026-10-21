@@ -112,6 +112,7 @@ public sealed partial class BattlePresenter
         StrategyBackdrop = null;
         _strategyEffect = false;
         _scoutReplies.Clear();
+        _shoutedSpell = null;
         RoundStarts();
         DrawMapTiles();
         BlitMapView();
@@ -128,6 +129,7 @@ public sealed partial class BattlePresenter
         StrategyBackdrop = null;
         _strategyEffect = false;
         _scoutReplies.Clear();
+        _shoutedSpell = null;
         RoundStarts();
         DrawMapTiles();
     }
@@ -210,6 +212,8 @@ public sealed partial class BattlePresenter
                 if (_scoutReplies.Remove(e.Text))
                     ScoutReplied = true;
                 ScoutCalling = e.Text.File == ScoutArmyLine.File && e.Text.Line >= ScoutCallFirst && e.Text.Line < ScoutArmyLine.Line;
+                if (MagicSpells.OfLine(e.Text) is { } spell)
+                    _shoutedSpell = spell;
                 string printed = Read(e.Text, [], e.StringVariables);
                 StrategyText(e.Text, printed);
                 BoxText(e.Text, []);

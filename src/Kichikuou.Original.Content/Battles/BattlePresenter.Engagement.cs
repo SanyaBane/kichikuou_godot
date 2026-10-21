@@ -133,6 +133,12 @@ public sealed partial class BattlePresenter
     /// </summary>
     public ExchangeEffect? Effect { get; private set; }
 
+    /// <summary>
+    /// The element of the spell the last flavour line named since the last exchange's shots (<see cref="MagicSpells"/>):
+    /// a spell line is shown only before a magic exchange, whose effect takes it.
+    /// </summary>
+    private MagicElement? _shoutedSpell;
+
     /// <summary>How many exchanges' shots have started (<see cref="Effect"/>).</summary>
     public int EffectsStarted { get; private set; }
 
@@ -143,7 +149,8 @@ public sealed partial class BattlePresenter
             return;
         if (t == 0)
         {
-            Effect = ExchangeEffect.Of(s);
+            Effect = ExchangeEffect.Of(s, _shoutedSpell);
+            _shoutedSpell = null;
             EffectsStarted++;
             Strike = Blow(s);                                   // FIGT has computed the damages before it calls FIGTATTK
             ExchangeCounters = ExchangeCounters.Of(s, Strike);

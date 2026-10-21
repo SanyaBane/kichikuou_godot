@@ -65,8 +65,11 @@ variants later, if the owner wants them.
    survey); the owner chooses one per element. The owner settled the casters above (2026-10-21: Sill fire, Hanty
    lightning, the demons without a spell dark, Hanny King light, Annis fire).
 2. **The choice** — `MagicSpells` (the spell lines and the casters), the presenter's memory,
-   `ExchangeEffect.Of` and the new kinds; until an element's effect exists it plays the Fire Blast.
-   Tests: `ExchangeEffectTests` on given states (a spell line, a generic line, a line for the target,
+   `ExchangeEffect.Of` and the new kinds; until an element's effect exists it plays the Fire Blast. **Done**
+   (2026-10-21): `Original.Content/Battles/MagicSpells` (29 spell lines, 13 units, 14 commanders, class 11 dark),
+   `BattlePresenter` keeps the last spell line until the shots (`_shoutedSpell`), `godot/Battles/BattleBoardView` plays
+   the Fire Blast for every element so far.
+   Tests (`MagicSpellsTests`): on given states (a spell line, a generic line, a line for the target,
    no line, the enemy's side, Melfeis and Magic on both sides, a special, a Direct attack); a content
    test that each spell line of the table reads its spell's name in the player's scenario and that
    every unit and commander of a magic class in `SET_CHR.ADV` is in the casters' table or the list

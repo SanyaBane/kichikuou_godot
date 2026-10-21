@@ -9,8 +9,18 @@ public enum ExchangeEffectKind
     Melee,
     /// <summary>Action 1, the Indirect attack (after the Archer's 40260).</summary>
     Bow,
-    /// <summary>Action 2, the Magic attack (after the Mage's Fire Blast 40360).</summary>
+    /// <summary>Action 2, the Magic attack of fire or of a caster without an element (after the Mage's Fire Blast 40360).</summary>
     Magic,
+    /// <summary>A Magic attack of ice (docs/ui/mage-lines.md, "The plan: magic effects by element").</summary>
+    IceMagic,
+    /// <summary>A Magic attack of lightning.</summary>
+    LightningMagic,
+    /// <summary>A Magic attack of darkness.</summary>
+    DarkMagic,
+    /// <summary>A Magic attack of light.</summary>
+    LightMagic,
+    /// <summary>A Magic attack of poison.</summary>
+    PoisonMagic,
     /// <summary>The Rance Attack command, Rance's (after Sengoku Rance's own Rance Attack, 40500).</summary>
     RanceAttack,
     /// <summary>The Rance Attack command by Kentarou (after Sengoku Rance's Kentarou-kun Slash, 40800).</summary>
@@ -56,6 +66,8 @@ public enum ExchangeEffectKind
 /// dark by the actor; Isoroku's Whirlwind Shot (special 3) Piercing Tempest's, Meglass's High Speed Commander Charge's,
 /// the ninja's follow-up the Ninja troop's; Miki's Vanish Bomb Begone Bomb's; Patton's C. War Dance Ieyasu's Special
 /// Move's; Asuka's Chuhai Shogun Whirlwind's; T2 Goliath's strike Gigai Punch's; Rolex's T2 Soaring Wave our own; Rick's By la Way Rance Attack's recoloured red; the others play by their action for now.
+/// A magic attack plays its element's (owner, 2026-10-21; docs/ui/mage-lines.md): the spell the caster shouted, else
+/// the caster's own (<see cref="MagicSpells"/>).
 /// </summary>
 /// <param name="Kind">The effect.</param>
 /// <param name="Side">Whose it is: the enemy's is mirrored, its actor's half on the right.</param>
@@ -63,8 +75,11 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
 {
     private const int None = 99;
 
-    /// <summary>The effect of the exchange the state is in; null when neither side fires.</summary>
-    public static ExchangeEffect? Of(GameState s)
+    /// <summary>
+    /// The effect of the exchange the state is in; null when neither side fires. <paramref name="shouted"/> is the
+    /// element of the spell a flavour line named before the exchange (<see cref="MagicSpells.OfLine"/>), null when none.
+    /// </summary>
+    public static ExchangeEffect? Of(GameState s, MagicElement? shouted = null)
     {
         int player = s.Bt_PlayerAction.Value, enemy = s.Bt_EnemyAction.Value;
         bool playerFires = player != None, enemyFires = enemy != None;
@@ -76,8 +91,20 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
         if (side == BattleSide.Player && SpecialOf(s) is { } special)
             return new ExchangeEffect(special, side);
         int action = side == BattleSide.Player ? player : enemy;
+        if (action == 2)
+            return new ExchangeEffect(MagicKindOf(shouted ?? MagicSpells.OfCaster(s, side)), side);
         return KindOf(action) is { } kind ? new ExchangeEffect(kind, side) : null;
     }
+
+    private static ExchangeEffectKind MagicKindOf(MagicElement element) => element switch
+    {
+        MagicElement.Ice => ExchangeEffectKind.IceMagic,
+        MagicElement.Lightning => ExchangeEffectKind.LightningMagic,
+        MagicElement.Dark => ExchangeEffectKind.DarkMagic,
+        MagicElement.Light => ExchangeEffectKind.LightMagic,
+        MagicElement.Poison => ExchangeEffectKind.PoisonMagic,
+        _ => ExchangeEffectKind.Magic,
+    };
 
     /// <summary>
     /// The player's special by its setter (<c>Bt_SpecialAtk</c>) and the actor (<c>Unit_Cur</c>); its
@@ -130,7 +157,6 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
     {
         0 => ExchangeEffectKind.Melee,
         1 => ExchangeEffectKind.Bow,
-        2 => ExchangeEffectKind.Magic,
         _ => null,
     };
 }
