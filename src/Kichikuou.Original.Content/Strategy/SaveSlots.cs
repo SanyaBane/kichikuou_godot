@@ -19,29 +19,6 @@ public enum SlotKind
     MidTurn,
 }
 
-/// <summary>What our Save/Load screen's manual saves are sorted by (docs/ui/save-load.md, §7).</summary>
-public enum SlotSortKey
-{
-    /// <summary>The slot's number, as the original lists them.</summary>
-    Slot,
-
-    /// <summary>The time the slot was written (<see cref="SaveSlot.Written"/>).</summary>
-    Date,
-}
-
-/// <summary>
-/// The order of the manual saves (slots 2-10; Auto has a panel of its own): a key and its direction — ascending is
-/// slot 1 at the top, or the oldest game at the top. The default is the original's, by slot ascending.
-/// </summary>
-public readonly record struct SlotOrder(SlotSortKey Key, bool Descending)
-{
-    /// <summary>By slot, 1 at the top.</summary>
-    public static SlotOrder Default => new(SlotSortKey.Slot, false);
-
-    /// <summary>A click on <paramref name="key"/>'s button: the active one turns its direction; the other opens by slot ascending or by date newest first.</summary>
-    public SlotOrder Clicked(SlotSortKey key) => key == Key ? this with { Descending = !Descending } : new(key, key == SlotSortKey.Date);
-}
-
 /// <summary>The library's saves as our Save/Load screen lists them: the auto-saves newest first, the manual saves by number.</summary>
 public sealed record SaveShelf(IReadOnlyList<SaveSlot> Autos, IReadOnlyList<SaveSlot> Manuals);
 
@@ -180,16 +157,11 @@ public static class SaveSlots
     }
 
     /// <summary>
-    /// The manual saves in <paramref name="order"/>: by number, or by the time written (none as the oldest, equal times by
-    /// number); ascending is the first made, or the oldest, at the top.
+    /// The manual saves as the screen lists them (owner, 2026-10-21: by date alone, no order to choose): the one written
+    /// last at the top; none written as the oldest, equal times the higher number first.
     /// </summary>
-    public static IReadOnlyList<SaveSlot> OrderManuals(IReadOnlyList<SaveSlot> manuals, SlotOrder order)
-    {
-        var sorted = order.Key == SlotSortKey.Slot
-            ? manuals.OrderBy(s => s.Id?.Number ?? 0)
-            : manuals.OrderBy(s => s.Written ?? DateTime.MinValue).ThenBy(s => s.Id?.Number ?? 0);
-        return order.Descending ? [.. sorted.Reverse()] : [.. sorted];
-    }
+    public static IReadOnlyList<SaveSlot> NewestFirst(IReadOnlyList<SaveSlot> manuals) =>
+        [.. manuals.OrderByDescending(s => s.Written ?? DateTime.MinValue).ThenByDescending(s => s.Id?.Number ?? 0)];
 
     /// <summary>The game being played, as a save from <c>COMMAND</c> would store it (owner's decision 26).</summary>
     public static SaveSlot Now(GameState state) => Of(state, 0, SlotKind.MidTurn, state.Week.Value, null);
@@ -258,22 +230,6 @@ public static class SaveSlots
 
     /// <summary>Whether <paramref name="list"/> takes a click on <paramref name="slot"/>: a filled one to load, any but Auto to save.</summary>
     public static bool Takes(SaveList list, int slot, SaveSlot? held) => list == SaveList.Load ? held is not null : slot >= 2;
-
-    /// <summary>
-    /// The manual saves, slots 2 to <paramref name="slots"/>' count, in <paramref name="order"/>: by slot, or by the time
-    /// written (a slot with none as the oldest; equal times by slot); the empty slots last, by slot, in either direction.
-    /// </summary>
-    public static IReadOnlyList<int> Order(IReadOnlyList<SaveSlot?> slots, SlotOrder order)
-    {
-        var manual = Enumerable.Range(2, Math.Max(0, slots.Count - 1)).ToList();
-        if (order.Key == SlotSortKey.Slot)
-            return order.Descending ? [.. Enumerable.Reverse(manual)] : manual;
-        var filled = manual.Where(n => slots[n - 1] is not null);
-        var dated = order.Descending
-            ? filled.OrderByDescending(n => slots[n - 1]!.Written ?? DateTime.MinValue)
-            : filled.OrderBy(n => slots[n - 1]!.Written ?? DateTime.MinValue);
-        return [.. dated.ThenBy(n => n), .. manual.Where(n => slots[n - 1] is null)];
-    }
 
     /// <summary>
     /// The slot chosen when the list opens: to load, the one written last; to save, the first empty one, else the one

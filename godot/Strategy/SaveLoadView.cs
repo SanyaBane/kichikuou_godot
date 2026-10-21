@@ -8,9 +8,8 @@ namespace Kichikuou.Game.Strategy;
 /// <summary>
 /// Our Save/Load screen over <c>ﾛｰﾄﾞｾｰﾌﾞ</c>'s lists on the save library (owner's decision 29; docs/ui/save-load.md, §9,
 /// the owner's layout G, 2026-10-21): one lacquer panel; on the left a switch between the two lists — the manual saves,
-/// in the order of the No. | Date switch (§7: a second click on the active button turns its direction;
-/// <see cref="SaveOrderChoice"/> keeps it), scrolling, a row's second line its comment, "+ New save" heading them in Save;
-/// and the ten auto-saves, newest first, never sorted — and the chosen save's page on the right: its map large (All Data's
+/// newest first (no order to choose, the owner's 2026-10-21; the number stays on the seal), scrolling, a row's second
+/// line its comment, "+ New save" heading them in Save; and the ten auto-saves, newest first — and the chosen save's page on the right: its map large (All Data's
 /// miniature), its figures, a manual save's comment (Edit writes it in place: Enter keeps it, Esc leaves the old one),
 /// Delete (asking in a callout at the button) and a red button that answers the script's menu with the save's item
 /// ("Load", "Save over No. n", "Save") — the second click, so no question. An auto-save takes no Save; Delete works in
@@ -20,9 +19,9 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal sealed partial class SaveLoadView : Control
 {
-    // hits: the button, the tabs, the order's No. and Date, the lists' switch, Delete and its answers, Edit, New save,
-    // and from RowHit the rows shown, top to bottom
-    private const int ButtonHit = 200, TabHit = 100, SortHit = 300, SideHit = 400, DeleteHit = 500, DeleteYesHit = 501,
+    // hits: the button, the tabs, the lists' switch, Delete and its answers, Edit, New save, and from RowHit the rows
+    // shown, top to bottom
+    private const int ButtonHit = 200, TabHit = 100, SideHit = 400, DeleteHit = 500, DeleteYesHit = 501,
         DeleteNoHit = 502, EditHit = 600, NewHit = 700, RowHit = 1000;
 
     private static readonly Rect2 PanelRect = new(30, 24, 1220, 752);
@@ -33,7 +32,7 @@ internal sealed partial class SaveLoadView : Control
     private static readonly Rect2 EditRect = new(1132, 585, 94, 34);
     private static readonly Rect2 CalloutRect = new(614, 562, 420, 132);
     private static readonly Rect2 YesRect = new(812, 640, 100, 30), NoRect = new(922, 640, 90, 30);
-    private const float ListX = 52, ListW = 330, SideY = 84, SideH = 30, HeadY = 141, SortY = 128, ListTop = 162, ListBottom = 756;
+    private const float ListX = 52, ListW = 330, SideY = 84, SideH = 30, HeadY = 141, ListTop = 162, ListBottom = 756;
     private const float ManualW = 318, ManualH = 52, ManualPitch = 57, NewH = 44, AutoH = 55, AutoPitch = 60, PageX = 426, PageY = 84;
     private const int CommentLength = 60;
 
@@ -52,7 +51,6 @@ internal sealed partial class SaveLoadView : Control
     private ISaveLibrary? _library;
     private SaveShelf _shelf = new([], []);
     private IReadOnlyList<SaveSlot> _manuals = [];
-    private SlotOrder _order = SaveOrderChoice.Order;
     private SaveSlot? _now;
     private bool _tabs, _autoSide, _chosenNew, _confirm, _editing;
     private string _back = "";
@@ -104,10 +102,7 @@ internal sealed partial class SaveLoadView : Control
     /// <summary>Whether the auto-saves are shown, not the manual saves.</summary>
     public bool AutoSide => _autoSide;
 
-    /// <summary>The manual saves' order.</summary>
-    public SlotOrder Order => _order;
-
-    /// <summary>The manual saves top to bottom, in the order.</summary>
+    /// <summary>The manual saves top to bottom, newest first.</summary>
     public IReadOnlyList<SaveId> ManualSaves => [.. _manuals.Select(s => s.Id!.Value)];
 
     /// <summary>The auto-saves, newest first.</summary>
@@ -208,9 +203,6 @@ internal sealed partial class SaveLoadView : Control
     /// <summary>Edit's centre in global coordinates.</summary>
     public Vector2 EditCentre => Global(EditRect.GetCenter());
 
-    /// <summary>An order button's centre in global coordinates.</summary>
-    public Vector2 SortCentre(SlotSortKey key) => Global(SortRect(key).GetCenter());
-
     /// <summary>The comment's field while it is written (unattended play types into it).</summary>
     public LineEdit CommentField => _edit;
 
@@ -221,7 +213,7 @@ internal sealed partial class SaveLoadView : Control
     private void Reload()
     {
         _shelf = _library is { } library ? SaveSlots.ReadLibrary(library) : new SaveShelf([], []);
-        _manuals = SaveSlots.OrderManuals(_shelf.Manuals, _order);
+        _manuals = SaveSlots.NewestFirst(_shelf.Manuals);
     }
 
     private SaveSlot? Find(SaveId id) =>
@@ -293,11 +285,6 @@ internal sealed partial class SaveLoadView : Control
 
     private static Rect2 SideRect(bool auto) => new(ListX + (auto ? ListW / 2 + 2 : 0), SideY, ListW / 2 - 2, SideH);
 
-    /// <summary>No. | Date, right-aligned over the manual saves.</summary>
-    private static Rect2 SortRect(SlotSortKey key) => key == SlotSortKey.Slot
-        ? new Rect2(ListX + ListW - 144, SortY, 66, 26)
-        : new Rect2(ListX + ListW - 74, SortY, 74, 26);
-
     /// <summary>The chosen save's item in the script's menu, or 0 when the menu has none for it (an auto-save in Save).</summary>
     private int ItemOfChosen
     {
@@ -334,14 +321,8 @@ internal sealed partial class SaveLoadView : Control
         foreach (bool auto in (bool[])[false, true])
             if (auto != _autoSide && SideRect(auto).HasPoint(at))
                 return SideHit + (auto ? 1 : 0);
-        if (!_autoSide)
-        {
-            foreach (var key in (SlotSortKey[])[SlotSortKey.Slot, SlotSortKey.Date])
-                if (SortRect(key).HasPoint(at))
-                    return SortHit + (int)key;
-            if (_list == SaveList.Save && NewRect.HasPoint(at))
-                return NewHit;
-        }
+        if (!_autoSide && _list == SaveList.Save && NewRect.HasPoint(at))
+            return NewHit;
         int place = 0;
         foreach (var (_, rect) in Rows())
         {
@@ -451,13 +432,6 @@ internal sealed partial class SaveLoadView : Control
                 break;
             case >= SideHit:
                 _autoSide = hit == SideHit + 1;
-                break;
-            case >= SortHit:
-                _order = _order.Clicked((SlotSortKey)(hit - SortHit));
-                SaveOrderChoice.Order = _order;
-                _manuals = SaveSlots.OrderManuals(_shelf.Manuals, _order);
-                if (_chosen is { Kind: SaveKind.Manual } chosen)
-                    ScrollTo(chosen);
                 break;
             case > TabHit:
                 Answer((0, (SaveList)(hit - TabHit)));
@@ -612,9 +586,8 @@ internal sealed partial class SaveLoadView : Control
 
     private void DrawManuals(bool save)
     {
-        Text(_cinzel, 11, ListX, HeadY, "ORDER", Lacquer.Subtitle);
-        DrawSort(SlotSortKey.Slot);
-        DrawSort(SlotSortKey.Date);
+        Text(_cinzel, 11, ListX, HeadY, "NEWEST FIRST", Lacquer.Subtitle);
+        TextRight(_gothic, 11, ListX + ListW, HeadY, "as many as you keep", Lacquer.Label);
         if (save)
             DrawNewRow();
         foreach (var (id, rect) in Rows())
@@ -667,35 +640,6 @@ internal sealed partial class SaveLoadView : Control
         }
     }
 
-    /// <summary>An order button as a tab; the active one with its direction, a triangle down for descending.</summary>
-    private void DrawSort(SlotSortKey key)
-    {
-        var rect = SortRect(key);
-        bool active = key == _order.Key, hover = _hovered == SortHit + (int)key;
-        if (active)
-        {
-            DrawRect(rect, ChosenFill);
-            DrawRect(rect, Lacquer.Vermilion, false, Line(2));
-        }
-        else
-            Lacquer.DrawRowBox(this, rect, hover, _k);
-        var colour = active ? Lacquer.Name : hover ? Lacquer.Text : Lacquer.Quiet;
-        string text = key == SlotSortKey.Slot ? "No." : "Date";
-        float cx = rect.GetCenter().X, cy = rect.GetCenter().Y;
-        if (!active)
-        {
-            TextCentred(_cinzel, 13, cx, cy, text, colour);
-            return;
-        }
-        float tx = cx - 6;
-        TextCentred(_cinzel, 13, tx, cy, text, colour);
-        float ax = tx + _cinzel.GetStringSize(text, fontSize: 13).X / 2 + 9;
-        Vector2[] arrow = _order.Descending
-            ? [new(ax - 4, cy - 2), new(ax + 4, cy - 2), new(ax, cy + 3)]
-            : [new(ax - 4, cy + 3), new(ax + 4, cy + 3), new(ax, cy - 2)];
-        DrawColoredPolygon(arrow, colour);
-    }
-
     private void DrawTab(SaveList tab)
     {
         var rect = TabRect(tab);
@@ -730,8 +674,7 @@ internal sealed partial class SaveLoadView : Control
         DrawSeal(new Rect2(x0 + 8, rect.GetCenter().Y - 12, 24, 24), held.Seal, auto ? AutoGold : Lacquer.Vermilion);
         float tx = x0 + 42;
         Text(_cinzel, 15, tx, y0 + 16, held.ShortDate, Lacquer.Name);
-        bool key = auto || _order.Key == SlotSortKey.Date;              // sorted by date: the time is the bright line
-        TextRight(_gothic, key ? 14 : 13, rect.End.X - 10, y0 + 16, held.WrittenShort, key ? Lacquer.Value : Lacquer.Label);
+        TextRight(_gothic, 14, rect.End.X - 10, y0 + 16, held.WrittenShort, Lacquer.Value);   // the lists' order: the bright line
         if (auto)
             Text(_gothic, 12, tx, y0 + 38, "start of the week", Lacquer.Label);
         else if (held.Comment.Length > 0)

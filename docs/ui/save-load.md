@@ -280,3 +280,11 @@ The owner chose **G**, the two lists as a switch (no remarks). Built after the p
 - **Unattended play**: `--saveload` (CLAUDE.md, "A look at one screen") saves a new manual save, writes its comment, asks
   Delete and keeps the save, shows the auto-saves, then the load list's orders and the newest auto-save. `--slots-from`
   copies a library's files or a kept folder's slots.
+
+### No order to choose (owner, 2026-10-21)
+
+With as many manual saves as the player keeps, numbered as they are made, the No. order only repeated Date but for a save
+written over (it keeps its number) and the slots migrated from the ten. The owner had the No. | Date switch taken off:
+the manual saves are listed newest first, like the auto-saves ("NEWEST FIRST" in its place), the number stays on the
+seal. `SaveSlots.NewestFirst` replaces `SlotOrder` and `OrderManuals`; the setting `Strategy/SaveOrderChoice` is gone,
+and so are `--saveload`'s order dumps.

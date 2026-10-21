@@ -24,7 +24,7 @@ public partial class GameScreen
     /// save by the red button; listed again with it chosen (<c>save-load-saved</c>), its comment written through Edit
     /// (<c>save-load-comment</c>, then kept by Enter), Delete asked and answered Keep (<c>save-load-delete</c>), the
     /// auto-saves' side (<c>save-load-autos-save</c>, no Save there), the Load tab; the load list (<c>save-load</c>, the save
-    /// just written chosen), the order clicked through, the newest auto-save chosen (<c>save-load-auto</c>), a right click
+    /// just written chosen), the newest auto-save chosen (<c>save-load-auto</c>), a right click
     /// back to the map. Any other list (the title's at <c>--load</c>) is answered as before (<see cref="AutoChoice"/>: the
     /// first item, the newest auto-save), the title's dumped once in a window (<c>save-load-title</c>).
     /// </summary>
@@ -73,8 +73,8 @@ public partial class GameScreen
                 break;
             default:
                 Expect(list == SaveList.Load && _saveView.Chosen is { Kind: SaveKind.Manual }, "the load list with the new manual save chosen");
+                Expect(_saveView.ManualSaves[0] == _saveView.Chosen, "the save just written at the top");
                 await AutoDumpAsync("save-load");
-                await AutoSortAsync();
                 await AutoViewClickAsync(_saveView.SideCentre(auto: true), MouseButton.Left);
                 if (_saveView.AutoSaves.Count > 0)
                 {
@@ -92,44 +92,6 @@ public partial class GameScreen
         if (other is { } next)
             _saveShortcut.Switch(next);
         return choice;
-    }
-
-    /// <summary>
-    /// The order's switch (docs/ui/save-load.md, §7) from the player's order back to it: by number ascending, then Date
-    /// (<c>save-load-date</c>, newest first) and Date again (<c>save-load-date-oldest</c>), No., and No. again
-    /// (<c>save-load-slot-down</c>, the highest number at the top); the player's order is clicked back, so the setting is
-    /// theirs.
-    /// </summary>
-    private async Task AutoSortAsync()
-    {
-        var players = _saveView.Order;
-        int count = _saveView.ManualSaves.Count;
-        await ClickOrderUntilAsync(SlotOrder.Default);
-        (SlotSortKey Key, SlotOrder Then, string Dump)[] steps =
-        [
-            (SlotSortKey.Date, new(SlotSortKey.Date, true), "save-load-date"),
-            (SlotSortKey.Date, new(SlotSortKey.Date, false), "save-load-date-oldest"),
-            (SlotSortKey.Slot, SlotOrder.Default, ""),
-            (SlotSortKey.Slot, new(SlotSortKey.Slot, true), "save-load-slot-down"),
-        ];
-        foreach (var (key, then, dump) in steps)
-        {
-            await AutoViewClickAsync(_saveView.SortCentre(key), MouseButton.Left);
-            Expect(_saveView.Order == then, $"the order {then}");
-            Expect(_saveView.ManualSaves.Count == count, "the manual saves listed");
-            if (dump != "")
-                await AutoDumpAsync(dump);
-        }
-        Expect(_saveView.ManualSaves[0].Number == _saveView.ManualSaves.Max(id => id.Number), "the highest number at the top");
-        await ClickOrderUntilAsync(players);
-    }
-
-    /// <summary>Clicks <paramref name="order"/>'s button until the view's order is it: its key first, then its direction.</summary>
-    private async Task ClickOrderUntilAsync(SlotOrder order)
-    {
-        for (int i = 0; i < 2 && _saveView.Order != order; i++)
-            await AutoViewClickAsync(_saveView.SortCentre(order.Key), MouseButton.Left);
-        Expect(_saveView.Order == order, $"the order {order}");
     }
 
     private static void Expect(bool holds, string what)
