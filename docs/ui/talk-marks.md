@@ -164,6 +164,12 @@ third rule change on purpose**:
 - Never for a branch that changes what counts: Haurein's leaving, Kanami's scenes, Isoroku's stage, Kentarou's steps
   keep their odds.
 - So kinds 1, 2 and 5 never need a mark of their own: an unread variant is a certain New.
+- **A point of its own: the draws that change the state** (owner, 2026-10-22, for Haurein, Kentarou and Isoroku):
+  the usual scene first; once it is read, the drawn outcome comes for certain whenever its conditions hold — Haurein
+  leaves on the talk after her kiss prank was read (§3.3); Kentarou's training moves his state on every talk after
+  the first (Rance Attack after four training talks, not about seven, §3.5); Isoroku's pregnancy comes on her second
+  stage-2 visit with the Hospital built (§3.6). Their mark is "???", never New. Kanami (§3.4) is open, Suzume's and
+  Wendy's first meetings (`Cﾊｰﾚﾑ:6`) keep the original's 1 in 4 (owner).
 - The differential tests run without it, so the files run as the original there.
 
 **Kentarou's hint** (part of it, or a decision of its own): when his training draw moves the state, our own line
@@ -174,8 +180,14 @@ line stays untouched, the 1/3 stays.
 
 - The menus inside the scenes (kind 4, §3): the owner discusses them apart.
 - The Think-only flags (§4): the owner discusses them later.
-- The draws that change the state (kind 3, §3.3-3.6): the owner may want them treated as the harmless variants — the
-  usual scene first, and once it is read the drawn outcome for certain.
+- Kanami's harem draws (§3.4) under §5's point on the draws that change the state. The ending is not in the harem:
+  Code's event 4 (`Gｺｰﾄﾞ` 4) is a weekly event (`COM:248-252`, `F_Code_State = 3` during the Zeth war) that comes
+  once, the week after Code's event 3, and counts the four flags then (`Gｺｰﾄﾞ:1444-1459`): two or more → ending 3
+  (`F_Code_State` 5), fewer → Code dies (4); after it the flags change nothing. The chain: event 1 on a ninja
+  mission of Kanami's (`Bt_ScoutNinja = 1`) into a province of Zeth's (`Cﾆﾝｼﾞｬ:351`, `:548`), event 2 a weekly event
+  (`COM:315`), event 3 another such mission (`:355`, `:554`). The other two flags come from the ninja command:
+  `F_Kanami_Scene3` by its "Get Me A Burger" item (offered 1 in 5 when Kanami is sent, `Cﾆﾝｼﾞｬ:281-294`),
+  `F_Kanami_Scene4` by a 1 in 5 scene when she is sent (`:92-98`).
 - Decision 30: always or an option.
 - Kentarou's line: its wording.
 - Where the marks are drawn (the Subordinates picker's cells and Talk, the harem picker's cells): the mock-ups, later.
