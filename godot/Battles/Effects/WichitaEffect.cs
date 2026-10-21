@@ -6,7 +6,7 @@ namespace Kichikuou.Game.Battles.Effects;
 /// Wichita's follow-up effect, ours (owner, 2026-10-21: the ninja's one weak shot at the enemy commander,
 /// docs/battle/02-resolution.md §7.3, as a cut of her flaming sword, CG 1185; the slash and its fire after Sengoku Rance's
 /// Fiend Slash, 46800, small). A flare at her blade's tip with a few embers (frames 0-2), then one diagonal cut at the
-/// front of the enemy's army, from its upper right down to the left (1-3): a white-hot line drawn along the cut in an
+/// front of the enemy's army, from its upper left down to the right (1-3): a white-hot line drawn along the cut in an
 /// orange band, a small flash where it ends; flames licking up along the cut and a few small fire billows (2-10), embers
 /// rising and drifting (2-14). In her sword's fire. The same seed makes the same effect.
 /// </summary>
@@ -15,8 +15,11 @@ internal static class WichitaEffect
     /// <summary>Her blade's tip (CG 1185: the sword from x ~195, y ~155 to ~270, ~95 of the scene).</summary>
     private static readonly Vector2 Tip = new(334, 116);
 
-    /// <summary>The cut: where it starts (upper right) and ends (lower left), across the front of the enemy's army.</summary>
-    private static readonly Vector2 From = new(640, 95), To = new(545, 240);
+    /// <summary>
+    /// The cut: where it starts (upper left) and ends (lower right), across the front of the enemy's army — first laid
+    /// out from the upper right, after the reference, and flipped (owner, 2026-10-21).
+    /// </summary>
+    private static readonly Vector2 From = new(545, 95), To = new(640, 240);
 
     /// <summary>When the cut starts and the frames it takes.</summary>
     private const float CutAt = 1, CutTakes = 1.6f;
