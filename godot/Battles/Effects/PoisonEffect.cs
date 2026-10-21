@@ -22,8 +22,8 @@ internal static class PoisonEffect
     private static readonly Vector2 FlashAt = new(680, 215);
 
     // The colours (light added over the scene).
-    private static readonly Color White = new(1f, 0.97f, 1f), Mint = new(0.72f, 1f, 0.76f), Green = new(0.42f, 0.88f, 0.48f);
-    private static readonly Color Lilac = new(0.82f, 0.6f, 1f), Pink = new(1f, 0.7f, 0.95f), Slate = new(0.52f, 0.52f, 0.95f);
+    private static readonly Color White = new(1f, 0.97f, 1f), Mint = new(0.72f, 1f, 0.76f), Green = new(0.32f, 0.85f, 0.4f);
+    private static readonly Color Lilac = new(0.75f, 0.48f, 1f), Pink = new(1f, 0.58f, 0.9f), Slate = new(0.52f, 0.52f, 0.95f);
     private static readonly Color Ash = new(0.58f, 0.64f, 0.62f);
 
     public static IReadOnlyList<Particle> Build(int seed)
@@ -64,7 +64,7 @@ internal static class PoisonEffect
         for (int i = 0; i < first.Length; i++)
         {
             float birth = i < 3 ? Range(-0.8f, 0) : Range(0.5f, 1.5f);
-            Clump(first[i], birth, Range(6, 8), Range(80, 115), i % 2 == 0 ? Lilac : Green, 0.75f,
+            Clump(first[i], birth, Range(6, 8), Range(80, 115), i % 2 == 0 ? Lilac : Green, 0.5f,
                 (first[i] - Centre).Normalized() * Range(0.6f, 1.4f), 0.6f);
             for (int k = 0; k < 9; k++)
                 Glitter(first[i] + Direction() * Range(0, 45), birth + Range(0, 2), Range(2.5f, 4));
@@ -72,9 +72,9 @@ internal static class PoisonEffect
         // The flash at their foot (1-3).
         var footAt = new Vector2(470, 305);
         particles.Add(new Particle(EffectTextures.Glow, 0.3f, 3.2f, footAt, Vector2.Zero, 0, 0, new Vector2(240, 200),
-            Mint * new Color(1, 1, 1, 0.55f), Swell, t => 1 + 0.4f * t));
+            Mint * new Color(1, 1, 1, 0.35f), Swell, t => 1 + 0.4f * t));
         particles.Add(new Particle(EffectTextures.Rays, 0.5f, 3, footAt, Vector2.Zero, Range(0, MathF.Tau), 0.05f,
-            new Vector2(220, 220), White * new Color(1, 1, 1, 0.5f), Swell, t => 1 + 0.3f * t));
+            new Vector2(220, 220), White * new Color(1, 1, 1, 0.3f), Swell, t => 1 + 0.3f * t));
 
         // The burst: larger clumps welling out round the target (2-8), pink and lilac low, green high.
         for (int i = 0; i < 16; i++)
@@ -82,15 +82,15 @@ internal static class PoisonEffect
             var direction = Direction() * new Vector2(1.3f, 0.85f);
             var at = Centre + direction * Range(30, 120);
             var colour = at.Y > Centre.Y ? (random.NextDouble() < 0.6 ? Pink : Lilac) : (random.NextDouble() < 0.6 ? Green : Ash);
-            Clump(at, Range(2, 4.5f), Range(7, 9), Range(130, 200), colour, 0.5f, direction * Range(1, 2.5f), 0.7f);
+            Clump(at, Range(2, 4.5f), Range(7, 9), Range(130, 200), colour, 0.3f, direction * Range(1, 2.5f), 0.7f);
         }
         // The flash they burst out of: a white sun with rays in a pink halo beside the target (3-7).
         particles.Add(new Particle(EffectTextures.Glow, 2.5f, 5, FlashAt, Vector2.Zero, 0, 0, new Vector2(330, 300),
-            Pink * new Color(1, 1, 1, 0.6f), Swell, t => 1 + 0.3f * t));
+            Pink * new Color(1, 1, 1, 0.35f), Swell, t => 1 + 0.3f * t));
         particles.Add(new Particle(EffectTextures.Glow, 3, 4.5f, FlashAt, Vector2.Zero, 0, 0, new Vector2(150, 130),
-            White, Swell, t => 1 + 0.5f * t));
+            White * new Color(1, 1, 1, 0.6f), Swell, t => 1 + 0.5f * t));
         particles.Add(new Particle(EffectTextures.Rays, 3, 4.5f, FlashAt, Vector2.Zero, Range(0, MathF.Tau), 0.04f,
-            new Vector2(300, 300), White * new Color(1, 1, 1, 0.7f), Swell, t => 1 + 0.3f * t));
+            new Vector2(300, 300), White * new Color(1, 1, 1, 0.4f), Swell, t => 1 + 0.3f * t));
         // The glitter of the burst, flung out over the half and past it (2-11).
         for (int i = 0; i < 220; i++)
         {
@@ -103,26 +103,26 @@ internal static class PoisonEffect
         {
             var direction = Direction() * new Vector2(1.4f, 0.9f);
             var at = Centre + new Vector2(20, 0) + direction * 200 * MathF.Sqrt((float)random.NextDouble());
-            Clump(at, Range(5, 8.5f), Range(10, 13), Range(170, 280), GasColour(), Range(0.24f, 0.38f),
+            Clump(at, Range(5, 8.5f), Range(10, 13), Range(170, 280), GasColour(), Range(0.13f, 0.22f),
                 direction * Range(0.6f, 1.6f) + new Vector2(Range(0.5f, 1.5f), 0), 0.45f, Hold);
         }
         // Its bright hearts: a green-white glow high on the right, a pink-white one low (7-12).
         foreach (var (at, colour) in new[] { (new Vector2(640, 55), Mint), (new Vector2(560, 255), Pink), (new Vector2(760, 205), White) })
         {
             particles.Add(new Particle(EffectTextures.Glow, Range(6, 7.5f), Range(4.5f, 6), at, Vector2.Zero, 0, 0,
-                new Vector2(170, 150), colour * new Color(1, 1, 1, 0.5f), Swell, t => 1 + 0.4f * t));
+                new Vector2(170, 150), colour * new Color(1, 1, 1, 0.3f), Swell, t => 1 + 0.4f * t));
             for (int k = 0; k < 3; k++)
-                Clump(at + Direction() * Range(0, 40), Range(6, 7.5f), Range(5, 7), Range(90, 130), White, 0.3f,
+                Clump(at + Direction() * Range(0, 40), Range(6, 7.5f), Range(5, 7), Range(90, 130), White, 0.15f,
                     Vector2.Zero, 0.4f);
         }
         // The slate haze toward the actor: slate blue and lilac clumps over the half's left edge (7-15), drifting left.
         var hazeAt = new Vector2(420, 90);
         particles.Add(new Particle(EffectTextures.Haze, 6.5f, 9, hazeAt, Vector2.Zero, 0, 0, new Vector2(380, 300),
-            Slate * new Color(1, 1, 1, 0.45f), Swell, t => 1 + 0.2f * t));
+            Slate * new Color(1, 1, 1, 0.28f), Swell, t => 1 + 0.2f * t));
         for (int i = 0; i < 9; i++)
         {
             var at = hazeAt + Direction() * new Vector2(110, 70) * MathF.Sqrt((float)random.NextDouble());
-            Clump(at, Range(6, 8), Range(7, 9), Range(110, 170), random.NextDouble() < 0.65 ? Slate : Lilac, 0.5f,
+            Clump(at, Range(6, 8), Range(7, 9), Range(110, 170), random.NextDouble() < 0.65 ? Slate : Lilac, 0.3f,
                 new Vector2(Range(-1.2f, -0.2f), Range(-0.4f, 0.4f)), 0.4f);
         }
 
@@ -133,17 +133,17 @@ internal static class PoisonEffect
             var at = new Vector2(Range(560, 760), high ? Range(20, 140) : Range(150, 290));
             var drift = new Vector2(Range(1, 2.5f), high ? Range(-1.2f, -0.2f) : Range(0.1f, 1));
             var colour = random.NextDouble() < 0.6 ? Green : random.NextDouble() < 0.6 ? Lilac : Ash;
-            Clump(at, Range(12, 16), Range(9, 14), Range(130, 240), colour, Range(0.3f, 0.45f), drift, 0.3f, Linger);
+            Clump(at, Range(12, 16), Range(9, 14), Range(130, 240), colour, Range(0.18f, 0.28f), drift, 0.3f, Linger);
         }
         // The last two, green, slowest to go: one at the top, one at the right (20-28).
-        Clump(new Vector2(640, 30), 18, 10, 110, Green, 0.5f, new Vector2(0.6f, -0.3f), 0.2f, Linger);
-        Clump(new Vector2(720, 205), 18, 11, 120, Green, 0.5f, new Vector2(0.8f, 0.2f), 0.2f, Linger);
+        Clump(new Vector2(640, 30), 18, 10, 110, Green, 0.32f, new Vector2(0.6f, -0.3f), 0.2f, Linger);
+        Clump(new Vector2(720, 205), 18, 11, 120, Green, 0.32f, new Vector2(0.8f, 0.2f), 0.2f, Linger);
         // The strays: small clumps floating toward the actor (5-24), faint, a few glints on them.
         for (int i = 0; i < 16; i++)
         {
             var at = new Vector2(Range(150, 520), Range(15, Height - 15));
             float birth = Range(5, 12);
-            Clump(at, birth, Range(9, 14), Range(40, 80), random.NextDouble() < 0.5 ? Green : Lilac, 0.55f,
+            Clump(at, birth, Range(9, 14), Range(40, 80), random.NextDouble() < 0.5 ? Green : Lilac, 0.38f,
                 new Vector2(Range(-0.8f, 0.3f), Range(-0.4f, 0.4f)), 0.15f);
             if (i % 2 == 0)
                 Glitter(at, birth + Range(1, 4), Range(3, 5));
