@@ -3,7 +3,7 @@ using Godot;
 namespace Kichikuou.Game.Battles.Effects;
 
 /// <summary>
-/// The ninja's follow-up effect, ours after Sengoku Rance's Ninja troop effect, 40100 (docs/sengoku/04-screen.md
+/// The ninja's follow-up effect (unused since 2026-10-21, when each ninja got her own), ours after Sengoku Rance's Ninja troop effect, 40100 (docs/sengoku/04-screen.md
 /// §2.4.1; not traced; the owner's choice, 2026-10-14): the ninja's one shot at the enemy commander after an attack
 /// (docs/battle/02-resolution.md §7.3). Shuriken thrown from the actor's half in a stream, spinning and tumbling as they
 /// fly right across the frame, white-cream where they leave and gold over the target's half (frames 0-14 thrown, the

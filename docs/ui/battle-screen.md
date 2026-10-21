@@ -454,8 +454,8 @@ picture, the slot panels) is not shown. How it is built:
     **The other specials** (owner, 2026-10-14, from the survey in 04-screen.md §2.4.1, "Counterparts for Kichikuou's
     other specials"; each told at the shots by `Bt_SpecialAtk` and `Unit_Cur`): White D. Beam and EPO Light after
     Sengoku Rance's White Destruction Beam (40460), Black D. Beam the same recoloured dark; Whirlwind Shot after
-    Piercing Tempest (40660); High Speed after Commander Charge (41400; owner, 2026-10-15, in place of Sonic Shuriken); the ninja's follow-up after the Ninja troop's
-    effect (40100), Kanami's our own weak throw after Sandal Shuriken (46780; owner, 2026-10-21); By la Way after Rance Attack (40500) recoloured red, as Rick's sprite (owner, 2026-10-15); Vanish Bomb after Begone Bomb (40560); C. War Dance after
+    Piercing Tempest (40660); High Speed after Commander Charge (41400; owner, 2026-10-15, in place of Sonic Shuriken); the ninja's follow-up each ninja's own, weak
+    (owner, 2026-10-21; first after the Ninja troop's effect, 40100): Kanami's throw after Sandal Shuriken (46780), Freya's whip our own, Kaoru's fists after Motonari Punch (46620), Wichita's flaming sword after Fiend Slash (46800); By la Way after Rance Attack (40500) recoloured red, as Rick's sprite (owner, 2026-10-15); Vanish Bomb after Begone Bomb (40560); C. War Dance after
     Ieyasu's Special Move (47400); Chuhai after Shogun Whirlwind (47060); T2 Goliath after Gigai Punch (46820, 15
     frames); Kentarou's Rance Attack after his own Kentarou-kun Slash (40800); T2 Soaring Wave our own (no counterpart; the
     owner's design, 2026-10-15). **Kentarou-kun Slash** (2026-10-15, the owner took it as it is):
@@ -473,9 +473,11 @@ picture, the slot panels) is not shown. How it is built:
     the same setter by Meglass (unit 30) plays ours after Commander Charge (`ExchangeEffectKind.HighSpeed`). **The
     ninja's follow-up** (2026-10-15, the owner took its v1 as it is): the follow-up sets special 3 too
     (`FIGT.ADV:1980`) with the ninja as record 51 (`Unit_Cur` 51, `:1922-1968`) and plays ours after the Ninja troop's 40100
-    (`ExchangeEffectKind.NinjaFollowUp`) — but Kanami's, told by her sprite in record 51 (`CgFull` 1164), which plays
-    her own weak throw (`ExchangeEffectKind.KanamiFollowUp`; owner, 2026-10-21: the follow-up does one HP to the
-    commander and must look far weaker than a whole troop's attack); one captured battle
+    (`ExchangeEffectKind.NinjaFollowUp`); since 2026-10-21 each ninja plays her own, told by her sprite in record 51
+    (`CgFull`; `ExchangeEffect.NinjaKindOf`): Kanami (1164) `KanamiFollowUp`, Freya (1176) `FreyaFollowUp`, Kaoru (1182)
+    `KaoruFollowUp`, Wichita (1185) `WichitaFollowUp` (owner: the follow-up does one HP to the commander and must look far
+    weaker than a whole troop's attack); `NinjaFollowUp` is left for a sprite none of the four, which play never sets;
+    one captured battle
     has one (`20261010-213655-86-FIGT_A`, in the full run's captures only). **Vanish Bomb** (2026-10-15, the owner took its v1
     as it is): special 4 (`FIGT.ADV:1560-1570`) is Miki's (unit 32) alone — the menu offers it to her only
     (`FIGT_SEL.ADV:644`) and her involuntary bomb is hers too (`FIGT.ADV:1588-1590`) — and plays ours after Begone Bomb
@@ -640,7 +642,7 @@ picture, the slot panels) is not shown. How it is built:
   a gold burst of spikes (gold, to stand out of the red mass), a red slash with a white edge across it and red and
   orange shards flying out. Over a sand battlefield its peak's core still reads pale, its red shows in the mass's fringe, the
   rings, the flames and the motes.
-  The ninja's follow-up effect (`NinjaEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Ninja troop effect, 40100;
+  The ninja's follow-up effect (`NinjaEffect`, 2026-10-15, the owner took its v1 as it is; unused since 2026-10-21, when each ninja got her own; after Sengoku Rance's Ninja troop effect, 40100;
   textures of its own: `Shuriken`, a four-point star with concave sides and a round hole; `Wing`, a crescent bulging
   left, its outer edge bitten into three points, in a soft glow): shuriken thrown from the actor's half — a first
   volley in flight at frame 0, then chains of three or four to frame ~12 — flying right at 75-95 a frame, spinning,
@@ -657,6 +659,27 @@ picture, the slot panels) is not shown. How it is built:
   at each hit a small white flash, a warm four-point spark with a white core and five sparks thrown out in gold and
   ember, her scarf's colours (4-9); then eight small gold glints drifting down (5-16); nothing after. Over the
   battlefield the shuriken and the hits read, small.
+  Freya's follow-up effect (`FreyaEffect`, 2026-10-21, ours: Sengoku Rance has no whip; the owner took v4): a lash of the
+  whip in her hands (CG 1176), forked at its end. v1, a lash snaking from her hand across the field, and v2, a curl
+  over her hand and a long lash splitting into its tails, were not taken (the owner did not like the whip's flight);
+  v3 brought the whip's end down on the target out of the air, which looked like a blow out of the sky, and v4 is v3
+  turned 35° counter-clockwise (`Turned`). A pale swish and a glint at her hand (frames 0-1.5); then the whip's end,
+  200 long, swings about a point left of the target from straight up down to nearly level, its tip lagging and
+  catching up as it straightens, its two tails parting over the last fifth, drawn at short steps that fade fast into a
+  faint blur, its root fading into the air (1-3); the tails crack at once: two parallel welts, 40 apart and nearly
+  level, drawn across the target in half a frame, white in her hair's pink glow, a small ring and a spark at each tip
+  and a white flash (3-8); then sparks and pink and white motes (3-11).
+  Kaoru's follow-up effect (`KaoruEffect`, 2026-10-21, the owner took its v1 as it is; her fists, the burst and the
+  speed lines after Sengoku Rance's Motonari Punch, 46620, small): a glint at her raised palm (CG 1182; frames 0-2), then
+  three blows at the front of the enemy's army, two jabs and a harder last one (1.5, 3.5, 6), each a bundle of speed
+  lines driving in from the left, a white-lavender burst of spikes, a white spark, a violet shockwave arc pushed right
+  and four sparks; then a little dust and lavender motes (6-14). Over the silver armour the bursts read white.
+  Wichita's follow-up effect (`WichitaEffect`, 2026-10-21, the owner took its v1 flipped, the cut first laid out from
+  the upper right as in the reference; her flaming sword, the slash and its fire after Sengoku Rance's Fiend Slash,
+  46800, small): a flare and a few embers at her blade's tip (CG 1185; frames 0-2), then one diagonal cut across the
+  front of the enemy's army from the upper left down to the right (1-2.6): a white-hot line drawn along it in an
+  orange band, its head a bright spark, a small flash and burst where it ends; flame tongues licking up along the cut
+  and a few small fire billows (2-10), embers rising and drifting (2-14).
   The Vanish Bomb effect (`VanishBombEffect`, 2026-10-15, the owner took its v1 as it is; v2 larger after the owner's
   note, which the owner took as it is; after Sengoku Rance's Begone Bomb, 40560 — 29 frames in
   the archive; a texture of its own, `Rim`: a ring with a sharp inner edge and a frayed outer one): a wall of white
@@ -771,13 +794,13 @@ picture, the slot panels) is not shown. How it is built:
   the special's users — Rance Attack Rance (unit 1, CG 1520), Kentarou-kun Slash Kentarou (unit 31, 1222), the white beams one each, Shizuka's
   (unit 17, 1522), Magic's (unit 39, 1523) and Gandhi's EPO Light (unit 37, 1524), the dark ones Chizuko's
   (unit 38, 1526) and Nagi's (unit 40, 1525), Whirlwind Shot Isoroku (unit 27, 1528), High Speed Meglass (unit 30, 1527), By la Way Rick (unit 7,
-  1521), the ninja's follow-up Freya, Kaoru or Wichita (their own sprites, 1176, 1182, 1185), Kanami's her own (1164), Vanish Bomb
+  1521), the ninjas' follow-ups each with its ninja (Kanami 1164, Freya 1176, Kaoru 1182, Wichita 1185; the unused Ninja troop's over Rance's army), Vanish Bomb
   Miki (unit 32, 1529), C. War Dance Patton (unit 18, 1530), Chuhai Asuka (unit 11, 1121), T2 Goliath none (record 51,
   no sprite: the battlefield bare on the player's side, as in the battle), T2 Soaring Wave Rolex (unit 47, 1252);
   Guard has Rance's army, as melee.
   `--effects --shots DIR --quit` (in a window; `--effects white-beam-magic,black-beam-nagi` for those alone) writes every frame of each with seed 1: the effect alone on black
   (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `ice-magic-NN.png`, `lightning-magic-NN.png`, `light-magic-NN.png`,
-  `poison-magic-NN.png`, `rance-attack-NN.png`, `kentarou-slash-NN.png`, `white-beam-shizuka-NN.png`, `white-beam-magic-NN.png`, `epo-light-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `kanami-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`, `chuhai-NN.png`, `goliath-NN.png`, `soaring-wave-NN.png`, `guard-NN.png`; the black beams' (`black-beam-chizuko`,
+  `poison-magic-NN.png`, `rance-attack-NN.png`, `kentarou-slash-NN.png`, `white-beam-shizuka-NN.png`, `white-beam-magic-NN.png`, `epo-light-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `kanami-NN.png`, `freya-NN.png`, `kaoru-NN.png`, `wichita-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`, `chuhai-NN.png`, `goliath-NN.png`, `soaring-wave-NN.png`, `guard-NN.png`; the black beams' (`black-beam-chizuko`,
   `black-beam-nagi`) and the dark magic's (`dark-magic`) picture is its light, so they are saved over the battlefield only) and over the battlefield with the effect's first user, the
   player acting and the enemy (`melee-scene-NN.png`, `melee-enemy-scene-NN.png`, …) — for a sheet next to the reference's frames, made outside the
   repository.

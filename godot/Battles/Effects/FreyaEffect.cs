@@ -3,7 +3,7 @@ using Godot;
 namespace Kichikuou.Game.Battles.Effects;
 
 /// <summary>
-/// Freya's follow-up effect, ours (owner, 2026-10-21: the ninja's one weak shot at the enemy commander,
+/// Freya's follow-up effect, ours (the owner took its v4, 2026-10-21; the ninja's one weak shot at the enemy commander,
 /// docs/battle/02-resolution.md §7.3, as a lash of the whip in her hands, CG 1176, forked at its end). A pale swish at
 /// her hand as she swings (frames 0-1.5); then the whip's end comes down on the target out of the air above it: a
 /// silver line sweeping down from above, from her side (turned 35° counter-clockwise), its tip lagging and catching up as it straightens, splitting into its

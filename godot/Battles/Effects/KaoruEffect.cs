@@ -3,7 +3,7 @@ using Godot;
 namespace Kichikuou.Game.Battles.Effects;
 
 /// <summary>
-/// Kaoru's follow-up effect, ours (owner, 2026-10-21: the ninja's one weak shot at the enemy commander,
+/// Kaoru's follow-up effect, ours (the owner took its v1 as it is, 2026-10-21; the ninja's one weak shot at the enemy commander,
 /// docs/battle/02-resolution.md §7.3, as her bare fists, CG 1182; the punch's burst and speed lines after Sengoku Rance's
 /// Motonari Punch, 46620, small). A small glint at her raised palm (frames 0-2), then three blows at the front of the
 /// enemy's army, two jabs and a harder last one (1.5, 3.5, 6): each a bundle of speed lines driving in from the left, a
