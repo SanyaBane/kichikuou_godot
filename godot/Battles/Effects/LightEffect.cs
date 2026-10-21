@@ -5,11 +5,11 @@ namespace Kichikuou.Game.Battles.Effects;
 /// <summary>
 /// The light magic (docs/ui/mage-lines.md, "The plan: magic effects by element"), ours after Sengoku Rance's Angel Cutter,
 /// 40430 (owner, 2026-10-21; docs/sengoku/04-screen.md §2.4.1, "The magic's elements"; not traced). Thrown from the
-/// actor's side: a small warm orb (frame 0) swelling into a white sun in an orange-gold halo with rays (1-2), gold specks
-/// gathering round it (3), then a stream of crescent blades, white and pale grey, their hollows behind them, sweeping right
-/// across the field with white streaks (3-27), a faint glassy sphere left where the orb was (6-16), warm glints lingering
-/// on the actor's side and yellow glints and curls among the blades on the target's (12-26). The same seed makes the
-/// same effect.
+/// actor's side: a small warm orb (frame 0) swelling into a white sun in a cream halo with rays (1-2), pale gold specks
+/// gathering round it (3), then a stream of blades of light, their hollows behind them, sweeping right across the field
+/// (3-27), a faint glassy sphere left where the orb was (6-16), glints and curls among the blades on the target's side
+/// (11-26), none lingering on the actor's; its warm colours nearly white (owner, 2026-10-21). The same seed
+/// makes the same effect.
 /// </summary>
 internal static class LightEffect
 {
@@ -20,8 +20,7 @@ internal static class LightEffect
 
     // The colours (light added over the scene).
     private static readonly Color White = new(1f, 0.99f, 0.95f), Body = new(0.8f, 0.9f, 1f), Cutting = new(1f, 0.93f, 0.72f);
-    private static readonly Color Plume = new(1f, 0.97f, 0.88f, 0.25f);
-    private static readonly Color Orange = new(1f, 0.55f, 0.25f), Gold = new(1f, 0.8f, 0.4f), Yellow = new(1f, 0.88f, 0.3f);
+    private static readonly Color Orange = new(1f, 0.82f, 0.66f), Gold = new(1f, 0.92f, 0.76f), Yellow = new(1f, 0.95f, 0.8f);
 
     public static IReadOnlyList<Particle> Build(int seed)
     {
@@ -49,14 +48,12 @@ internal static class LightEffect
                 new Vector2(size, size), White * new Color(1, 1, 1, 0.75f), Swell, t => 1 + 0.3f * t));
         }
 
-        // The specks: warm glints gathering round the sun (2-5), then scattered on the actor's side, lingering (to ~26).
-        for (int i = 0; i < 150; i++)
+        // The specks: pale glints gathering round the sun (2-5), going out with it (none lingers by the actor: owner,
+        // 2026-10-21).
+        for (int i = 0; i < 50; i++)
         {
-            bool round = i < 50;
-            var at = round
-                ? Orb + Vector2.Right.Rotated(Range(0, MathF.Tau)) * new Vector2(1.1f, 1) * Range(45, 95)
-                : new Vector2(Range(60, 480), Range(0, Height));
-            float birth = round ? Range(1.8f, 3.5f) : Range(4, 9), life = round ? Range(5, 9) : Range(10, 18);
+            var at = Orb + Vector2.Right.Rotated(Range(0, MathF.Tau)) * new Vector2(1.1f, 1) * Range(45, 95);
+            float birth = Range(1.8f, 3.5f), life = Range(2.5f, 4);
             float size = Range(20, 44), phase = Range(0, MathF.Tau);
             var colour = random.NextDouble() < 0.5 ? Gold : Orange;
             particles.Add(new Particle(EffectTextures.Sparkle, birth, life, at, new Vector2(Range(-0.3f, 0.3f), Range(-0.3f, 0.3f)),
@@ -98,20 +95,6 @@ internal static class LightEffect
             }
         }
 
-        // The feathers: a few small ones, appearing low already, still sinking and swaying as they drift on toward the
-        // target, some of them off the screen (5-27).
-        for (int i = 0; i < 6; i++)
-        {
-            float birth = Range(5, 13), life = Range(14, 18);
-            var at = new Vector2(Range(380, 620), Range(220, 285));
-            var drift = new Vector2(Range(10, 18), Range(1.5f, 3));
-            float size = Range(36, 51), phase = Range(0, MathF.Tau), sway = Range(3, 5);
-            particles.Add(new Particle(EffectTextures.Feather, birth, life, at, drift, Range(-0.6f, 0.6f) + MathF.PI * random.Next(2),
-                Range(-0.05f, 0.05f), new Vector2(size, size * 0.38f), Plume, Drift, _ => 1,
-                Move: t => new Vector2(0, MathF.Sin(phase + t * 9) * sway)));
-            particles.Add(new Particle(EffectTextures.Glow, birth, life, at, drift, 0, 0, new Vector2(size, size * 0.6f) * 1.4f,
-                Gold * new Color(1, 1, 1, 0.08f), Drift, _ => 1, Move: t => new Vector2(0, MathF.Sin(phase + t * 9) * sway)));
-        }
         // The light at the stream's root: a white glow the blades leave from (4-12).
         particles.Add(new Particle(EffectTextures.Glow, 3.5f, 9, Orb + new Vector2(70, 5), Vector2.Zero, 0, 0,
             new Vector2(300, 220), White * new Color(1, 1, 1, 0.8f), Swell, t => 1 + 0.4f * t));
@@ -136,9 +119,6 @@ internal static class LightEffect
         }
         return particles;
     }
-
-    /// <summary>In quickly, full most of its life (to leave the screen while seen), then out.</summary>
-    private static float Drift(float t) => t < 0.1f ? t / 0.1f : t < 0.8f ? 1 : 1 - (t - 0.8f) / 0.2f;
 
     /// <summary>In quickly, full to the middle of its life, then out.</summary>
     private static float Swell(float t) => t < 0.15f ? t / 0.15f : t < 0.55f ? 1 : MathF.Pow(1 - (t - 0.55f) / 0.45f, 1.4f);

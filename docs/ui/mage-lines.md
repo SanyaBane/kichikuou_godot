@@ -99,15 +99,17 @@ variants later, if the owner wants them.
      glows with a darker mottled heart swelling over the half toward the actor (7-15) and turning magenta in a
      magenta afterglow (10-18), a dark violet sphere with a bright rim (15-23), then violet glows, glints and small
      cyan curls fading by frame ~29.
-   - **Light** — built (2026-10-21), awaiting the owner's look: `godot/Battles/Effects/LightEffect`, wired for
+   - **Light** — built (2026-10-21), accepted by the owner (2026-10-21): `godot/Battles/Effects/LightEffect`, wired for
      `LightMagic`. Angel Cutter in its own colours, thrown from the actor's side as 40430 is: a warm orb at
-     (305, 170) swelling into a white sun in an orange-gold halo with rays (0-3), gold glints gathering round it,
+     (305, 170) swelling into a white sun in a cream halo with rays (0-3), pale gold glints gathering round it,
      blades of light sweeping right across the field (3-27) — v2 after the owner's look (v1's many flat crescents
      "too simple", 2026-10-21): 68 instead of 130 (64 small, as the owner doubled them), four big ones crossing slowly, each a pale blue-white body fading
      toward its hollow (`EffectTextures.BladeBody`) under a gold-white cutting edge in a halo (`BladeEdge`), tilting
-     and growing as it flies with a blur of afterimages; six small faint feathers (`Feather`, half of v2's size, at 25%: the owner's)
-     appearing low already, sinking and drifting on toward the target, some off the screen —, a faint glassy sphere where the orb was (6-16), warm glints lingering on the actor's
-     side and yellow glints and curls among the blades on the target's (11-26).
+     and growing as it flies with a blur of afterimages —, a faint glassy sphere where the orb was (6-16), glints and
+     curls among the blades on the target's side (11-26); the glints round the sun go out with it, and none lingers on
+     the actor's side (the owner's). The owner tried a few
+     feathers among the blades and took them out again; the orange, gold and yellow of the glints and halo are nearly
+     white (2026-10-21).
 8. **Docs** — docs/ui/battle-screen.md, "The exchange's effects", says how a magic attack picks its
    effect; CLAUDE.md's effect list gets the new effects.
 

@@ -164,11 +164,6 @@ internal static class EffectTextures
 
     private static Texture2D? _bladeBody, _bladeEdge;
 
-    /// <summary>A feather along x, its tip at +x: a thin curved shaft, a bare quill, vanes of fine slanting barbs, a few splits.</summary>
-    public static Texture2D Feather => _feather ??= Make(128, FeatherShape, 48);
-
-    private static Texture2D? _feather;
-
     /// <summary>
     /// A size × <paramref name="height"/> texture (square by default) whose alpha at each pixel is <paramref name="alpha"/>
     /// of (x, y) in [−1, 1] — both axes, whatever the shape.
@@ -598,20 +593,6 @@ internal static class EffectTextures
         var (toEdge, toHollow, _) = Blade(x, y);
         float horns = 1 - SmoothStep(0.55f, 0.95f, MathF.Abs(y));
         return Edge(toHollow, 0.04f) * (Gauss(toEdge, 0.016f) + 0.35f * Gauss(toEdge, 0.08f)) * horns;
-    }
-
-    // The shaft bows a little toward −y; the vanes start a fifth along, widest past the middle, closing to the tip;
-    // the barbs slant back from the shaft (y is 128/48 finer than x).
-    private static float FeatherShape(float x, float y)
-    {
-        float s = (x + 1) / 2, shaftY = -0.12f * (1 - x * x);
-        float d = MathF.Abs(y - shaftY);
-        float shaft = Gauss(d, 0.05f) * SmoothStep(0.02f, 0.06f, s) * (1 - SmoothStep(0.94f, 0.99f, s));
-        float width = 0.85f * MathF.Pow(MathF.Max(0, MathF.Sin(MathF.PI * Math.Clamp((s - 0.18f) / 0.8f, 0, 1))), 0.6f);
-        float vane = 1 - SmoothStep(width * 0.8f, width, d);
-        float barbs = 0.8f + 0.2f * (0.5f + 0.5f * MathF.Cos((x - d * 0.35f) * 70));
-        float splits = SmoothStep(0.25f, 0.45f, Fbm(x * 6 + (y > shaftY ? 3 : 11), 1.5f));
-        return Math.Max(shaft, vane * barbs * (0.6f + 0.4f * splits) * 0.75f);
     }
 
     /// <summary>A soft edge at <paramref name="v"/> = 0: 0 below −<paramref name="width"/>/2, 1 above +<paramref name="width"/>/2.</summary>
