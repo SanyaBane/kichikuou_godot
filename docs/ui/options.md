@@ -32,4 +32,14 @@ or a right click shut it.
 - **C** — a wide lacquer panel, the same sections as tabs across its top: C1 Display (fonts with samples, palette
   swatches, the game folder), C2 Messages (the speed left, the switches right).
 
-The owner's choice: pending.
+The owner chose **C in B's colours** (2026-10-21).
+
+## Mock-ups, round 2
+
+- **D** — C's tabs on B's paper: the paper sheet in the lacquer frame, the tabs paper too (the current one joined to
+  the sheet, a vermilion edge on it, the others darker paper), "Options" in the brush right of them, Defaults (the tab
+  shown) as a vermilion link at the sheet's foot, Close the red button. D1 Messages (the speed with its preview left,
+  the switches and Forget right), D2 Display (the fonts with samples, the palettes as swatches), D3 Battle (Effects,
+  the twelve timings in two columns, the order strip's preview), D4 Game (the game folder, Change…).
+
+The owner's go-ahead: pending.

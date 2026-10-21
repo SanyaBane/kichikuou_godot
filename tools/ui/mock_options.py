@@ -467,6 +467,120 @@ def c2():
            'Two columns on a page: the speed with its preview left, the switches right. Changes apply at once; Close, Esc or a right click.')
 
 
-for f in (a1, a2, b1, b2, c1, c2):
+# ---------------------------------------------------------------- D (round 2): C's tabs in B's paper
+
+def d_frame(c, current):
+    """The lacquer frame round a paper sheet; the tabs are paper too, the current one joined to the sheet."""
+    r = (100, 56, 1180, 760)
+    panel(c, r)
+    paper = (126, 126, 1154, 734)
+    tabs = ['Messages', 'Display', 'Battle', 'Game']
+    x = 126
+    for name in tabs:
+        tw = c.width(name, cinzel(18, 700)) + 52
+        on = name == current
+        tab = (x, 82 if on else 88, x + tw, 127)
+        c.rect(tab, fill=PAPER if on else PAPER_HEAD, outline=INK_GREY if not on else PAPER_HEAD, width=1)
+        if on:
+            c.rect((x + 1, 120, x + tw - 1, 130), fill=PAPER)
+            c.rect((x, 82, x + tw, 86), fill=VERMILION)
+        c.text((x + tw / 2, 107 if on else 109), name, cinzel(18, 700 if on else 600), fill=HEAD_INK if on else INK_QUIET, anchor='mm')
+        x += tw + 6
+    c.rect(paper, fill=None, outline=PAPER_HEAD, width=1)
+    c.rect((paper[0] + 1, paper[1], paper[2] - 1, paper[3] - 1), fill=PAPER)
+    # the current tab's foot opens into the sheet
+    x = 126
+    for name in tabs:
+        tw = c.width(name, cinzel(18, 700)) + 52
+        if name == current:
+            c.rect((x + 1, 124, x + tw - 1, 130), fill=PAPER)
+        x += tw + 6
+    c.text((1150, 104), 'Options', brush(28), fill=NAME, anchor='rm')
+    c.text((150, 706), 'Defaults', font(15), fill=VERMILION_INK, anchor='lm')
+    red_button(c, (1004, 686, 1134, 726), 'Close', size=17)
+    return 166, 156, 948
+
+
+def d_messages(c, x, y, w):
+    lw = 470
+    section_head(c, x, y, 'Text speed', paper=True, width=lw)
+    slider(c, x + 60, x + lw - 70, y + 66, (SPEED_STEP - 1) / 9, paper=True, knob_label=str(SPEED_STEP))
+    c.text((x, y + 66), 'Slow', font(14), fill=INK_QUIET, anchor='lm')
+    c.text((x + lw, y + 66), 'Instant', font(14), fill=INK_QUIET, anchor='rm')
+    sample_window(c, (x, y + 94, x + lw, y + 190))
+    rx, rw = x + lw + 50, w - lw - 50
+    section_head(c, rx, y, 'Message skip', paper=True, width=rw)
+    check_box(c, rx, y + 38, False, 'Skip unseen text', 'MsgSkip and Ctrl skip unread ones too.', paper=True)
+    check_box(c, rx, y + 92, True, 'MsgSkip speeds up fades', 'Fades and waits run fast.', paper=True)
+    c.text((rx, y + 160), '3 412 messages seen.', font(14), fill=INK_QUIET, anchor='lm')
+    c.text((rx + rw, y + 160), 'Forget them…', font(15), fill=VERMILION_INK, anchor='rm')
+    section_head(c, rx, y + 220, 'Mouse', paper=True, width=rw)
+    check_box(c, rx, y + 258, True, 'Mouse movement', 'The pointer moves to the chosen item.', paper=True)
+
+
+def d1():
+    c = Canvas()
+    x, y, w = d_frame(c, 'Messages')
+    d_messages(c, x, y, w)
+    c.save('options-D1-messages.png', 'D1 — C\'s tabs in B\'s paper: Messages',
+           'The sheet in the lacquer frame, the tabs paper too (the current one joined to the sheet, a vermilion edge on it). Defaults resets the tab shown.')
+
+
+def d2():
+    c = Canvas()
+    x, y, w = d_frame(c, 'Display')
+    section_head(c, x, y, 'Font', paper=True, width=w)
+    ms = font(18, MS_GOTHIC) if os.path.exists(MS_GOTHIC) else font(18)
+    radio(c, x, y + 38, False, 'MS Gothic — 鬼畜王ランス, Rance', ms, paper=True)
+    radio(c, x, y + 74, True, 'BIZ UDGothic — 鬼畜王ランス, Rance', font(18), paper=True)
+    y += 132
+    section_head(c, x, y, 'Palette of the battle screen and the map\'s plates', paper=True, width=w)
+    for i, (name, back, accent) in enumerate(PALETTES):
+        swatch(c, x + i * 90, y + 40, name, back, accent, name == 'Steel', paper=True)
+    c.save('options-D2-display.png', 'D2 — the same: Display',
+           'The fonts with a sample each, the palettes as swatches (the chosen one framed in vermilion).')
+
+
+def d3():
+    c = Canvas()
+    x, y, w = d_frame(c, 'Battle')
+    section_head(c, x, y, 'Effects', paper=True, width=w)
+    check_box(c, x, y + 36, True, 'Exchange effects', 'Our effects over the exchange, after Sengoku Rance\'s.', paper=True)
+    y += 96
+    section_head(c, x, y, 'Timings', paper=True, width=w)
+    y += 36
+    col_w = (w - 40) / 2
+    for i, (label, value, lo, hi, unit) in enumerate(BATTLE):
+        cx = x + (i % 2) * (col_w + 40)
+        cy = y + (i // 2) * 46
+        c.text((cx, cy + 8), label, font(14), fill=INK, anchor='lm')
+        slider(c, cx, cx + col_w - 80, cy + 29, (value - lo) / (hi - lo), paper=True)
+        c.text((cx + col_w, cy + 29), fmt(value, unit), font(14), fill=INK, anchor='rm')
+    y += 6 * 46 + 6
+    strip_preview(c, x, y, w - 130)
+    c.rect((x + w - 110, y + 6, x + w, y + 40), fill=FIELD, outline=INK_GREY, width=1)
+    c.text((x + w - 55, y + 23), 'Preview', font(15), fill=VERMILION_INK, anchor='mm')
+    c.save('options-D3-battle.png', 'D3 — the same: Battle',
+           'Effects, the twelve timings in two columns, the order strip as their preview (Preview makes Barres jump ahead and back).')
+
+
+def d4():
+    c = Canvas()
+    x, y, w = d_frame(c, 'Game')
+    section_head(c, x, y, 'Game folder', paper=True, width=w)
+    c.rect((x, y + 36, x + w, y + 76), fill=FIELD, outline=INK_GREY, width=1)
+    folder_x = x + 12
+    c.d.polygon([(folder_x * S, (y + 49) * S), ((folder_x + 7) * S, (y + 49) * S), ((folder_x + 9) * S, (y + 52) * S),
+                 ((folder_x + 20) * S, (y + 52) * S), ((folder_x + 20) * S, (y + 64) * S), (folder_x * S, (y + 64) * S)],
+                outline=INK_QUIET, width=2 * S)
+    c.text((x + 44, y + 56), FOLDER, font(17), fill=INK, anchor='lm')
+    c.text((x + w - 14, y + 56), 'Change…', font(15), fill=VERMILION_INK, anchor='rm')
+    c.text((x, y + 100), 'Kichikuou Rance English Translation v1.0, imported. Another folder opens the import screen '
+                         '(the game is left for the title).', font(14), fill=INK_QUIET, anchor='lm')
+    c.save('options-D4-game.png', 'D4 — the same: Game',
+           'The game folder; Change… asks first ("Any unsaved progress will be lost."), then the import screen.')
+
+
+for f in (a1, a2, b1, b2, c1, c2, d1, d2, d3, d4):
     f()
 print('wrote', len(os.listdir(OUT)), 'images to', OUT)
