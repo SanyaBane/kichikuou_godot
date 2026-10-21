@@ -408,9 +408,18 @@ picture, the slot panels) is not shown. How it is built:
   actor, 30 frames of 50 ms) and the frames themselves, extracted into the scratchpad with
   `tools/sengoku/effect_frames.py` (never committed). Kichikuou's attack types (`Bt_PlayerAtkType`, from the unit's
   class: 0 melee, 1 bow, 2 magic; docs/battle/01-flow.md §8.1) take Sengoku Rance's **Samurai (40000)**
-  for melee, **Archer (40260)** for the bow and **Mage (40360, Fire Blast)** for magic — every magic class alike
-  (confirmed by the owner, 2026-10-14; to change: one effect per element, by the spell the caster shouts, else
-  the caster's element — owner, 2026-10-21, the plan in docs/ui/mage-lines.md). The effects are drawn under the exchange's numbers (the counters, the shots,
+  for melee, **Archer (40260)** for the bow and **Mage (40360, Fire Blast)** for magic — every magic class alike at
+  first (confirmed by the owner, 2026-10-14). **Since 2026-10-21 a magic attack plays its element's effect** (owner;
+  the plan, the spells and the casters in docs/ui/mage-lines.md): when the firing side's action is magic (2) and no
+  special applies, the element of the **spell its caster shouts** — the last spell line the presenter was shown since
+  the engagement started (`MagicSpells`, `BattlePresenter`), whether or not the line was drawn —, else the **caster's
+  element** (kept per record and side: a unit by `Unit_Cur`, a commander by `Cmdr_Cur`; a Demon Magic caster (class 11)
+  not in the table is dark), else **fire** (`ExchangeEffect.Of`, the kinds `IceMagic`, `LightningMagic`, `DarkMagic`,
+  `LightMagic`, `PoisonMagic`; `Magic` stays fire). The effects, each ours after the reference the owner chose: fire
+  the Fire Blast (`MagicEffect`, 40360), ice `IceEffect` (40730 recoloured white-blue), lightning `LightningEffect`
+  (40630 in blue-white), dark `DarkEffect` (47030, **laid over dark** as the black beams, `EffectPlayer.Dark`: its light
+  blacks the scene out), light `LightEffect` (40430, Angel Cutter), poison `PoisonEffect` (41300, Death by Poison:
+  marbled gas clumps, `EffectTextures.Gas`). A mage's Direct attack stays melee. The effects are drawn under the exchange's numbers (the counters, the shots,
   the damages), at their full brightness as Sengoku Rance's — the fireball whites out the target's half for ~0.4 s
   (owner, 2026-10-14). The bow and the magic come first, then the wiring of all three into the exchange (owner,
   2026-10-14); open for the wiring: Kichikuou's exchange has an action on each side (`Bt_PlayerAction`,
@@ -758,8 +767,9 @@ picture, the slot panels) is not shown. How it is built:
   no sprite: the battlefield bare on the player's side, as in the battle), T2 Soaring Wave Rolex (unit 47, 1252);
   Guard has Rance's army, as melee.
   `--effects --shots DIR --quit` (in a window; `--effects white-beam-magic,black-beam-nagi` for those alone) writes every frame of each with seed 1: the effect alone on black
-  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `rance-attack-NN.png`, `kentarou-slash-NN.png`, `white-beam-shizuka-NN.png`, `white-beam-magic-NN.png`, `epo-light-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`, `chuhai-NN.png`, `goliath-NN.png`, `soaring-wave-NN.png`, `guard-NN.png`; the black beams' (`black-beam-chizuko`,
-  `black-beam-nagi`) picture is its light, so they are saved over the battlefield only) and over the battlefield with the effect's first user, the
+  (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `ice-magic-NN.png`, `lightning-magic-NN.png`, `light-magic-NN.png`,
+  `poison-magic-NN.png`, `rance-attack-NN.png`, `kentarou-slash-NN.png`, `white-beam-shizuka-NN.png`, `white-beam-magic-NN.png`, `epo-light-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`, `chuhai-NN.png`, `goliath-NN.png`, `soaring-wave-NN.png`, `guard-NN.png`; the black beams' (`black-beam-chizuko`,
+  `black-beam-nagi`) and the dark magic's (`dark-magic`) picture is its light, so they are saved over the battlefield only) and over the battlefield with the effect's first user, the
   player acting and the enemy (`melee-scene-NN.png`, `melee-enemy-scene-NN.png`, …) — for a sheet next to the reference's frames, made outside the
   repository.
 - **The windows over it** ("vs", the results, the info boxes, the

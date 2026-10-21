@@ -110,8 +110,17 @@ variants later, if the owner wants them.
      the actor's side (the owner's). The owner tried a few
      feathers among the blades and took them out again; the orange, gold and yellow of the glints and halo are nearly
      white (2026-10-21).
+   - **Poison** — built (2026-10-21), accepted by the owner (2026-10-21): `godot/Battles/Effects/PoisonEffect` (a new
+     texture, `EffectTextures.Gas`: a lumpy clump of gas marbled with creases and folds, in three variants), wired for
+     `PoisonMagic`. Death by Poison's clumps in green, lilac, pink and slate blue on the target's half: a few small
+     ones popping up round the target among glittering stars with a flash at their foot (0-3), larger ones bursting out
+     of a white flash with rays beside the target (3-7), the cloud swelling over the whole half with a mint-white and a
+     pink-white heart and a slate haze toward the actor (7-14), then drifting off to the top and bottom right and
+     thinning, a few stray clumps floating toward the actor, gone by frame ~28. v2 after the owner's look (v1 "too
+     bright", 2026-10-21): every part at about three fifths of its strength, the green, lilac and pink more saturated.
+   So every element has its effect; the Fire Blast plays for fire only.
 8. **Docs** — docs/ui/battle-screen.md, "The exchange's effects", says how a magic attack picks its
-   effect; CLAUDE.md's effect list gets the new effects.
+   effect; CLAUDE.md's effect list gets the new effects. **Done** (2026-10-21).
 
 ## How a line is chosen
 
