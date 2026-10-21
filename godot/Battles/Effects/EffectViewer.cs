@@ -263,6 +263,7 @@ internal sealed partial class EffectViewer : Window
         ("Lightning Magic (after 40630)", "lightning-magic", LightningEffect.Build, false, null),
         ("Dark Magic (after 47030)", "dark-magic", DarkEffect.Build, true, null),
         ("Light Magic (after 40430)", "light-magic", LightEffect.Build, false, null),
+        ("Poison Magic (after 41300)", "poison-magic", PoisonEffect.Build, false, null),
         ("Rance Attack (after 40500)", "rance-attack", RanceAttackEffect.Build, false, [("Rance (unit 1)", 1520)]),
         ("Kentarou-kun Slash (after 40800)", "kentarou-slash", KentarouSlashEffect.Build, false, [("Kentarou (unit 31)", 1222)]),
         ("White Beam: Shizuka (after 40460)", "white-beam-shizuka", ShizukaBeamEffect.Build, false, [("Shizuka (unit 17)", 1522)]),

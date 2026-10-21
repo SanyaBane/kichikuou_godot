@@ -165,7 +165,17 @@ internal static class EffectTextures
     private static Texture2D? _bladeBody, _bladeEdge;
 
     /// <summary>
-    /// A size × <paramref name="height"/> texture (square by default) whose alpha at each pixel is <paramref name="alpha"/>
+    /// A clump of poison gas, one of <see cref="GasVariants"/>: a lumpy blob, its outline frayed, its body marbled with
+    /// dark creases between brighter folds, a few highlights on the folds.
+    /// </summary>
+    public static Texture2D Gas(int variant) => _gas[variant] ??= Make(256, (x, y) => GasShape(x, y, variant));
+
+    public const int GasVariants = 3;
+
+    private static readonly Texture2D?[] _gas = new Texture2D?[GasVariants];
+
+    /// <summary>
+    /// A size ×<paramref name="height"/> texture (square by default) whose alpha at each pixel is <paramref name="alpha"/>
     /// of (x, y) in [−1, 1] — both axes, whatever the shape.
     /// </summary>
     private static Texture2D Make(int size, Func<float, float, float> alpha, int height = 0)
@@ -593,6 +603,24 @@ internal static class EffectTextures
         var (toEdge, toHollow, _) = Blade(x, y);
         float horns = 1 - SmoothStep(0.55f, 0.95f, MathF.Abs(y));
         return Edge(toHollow, 0.04f) * (Gauss(toEdge, 0.016f) + 0.35f * Gauss(toEdge, 0.08f)) * horns;
+    }
+
+    // The outline: a disc whose radius the noise pushes in and out; the marbling: the contour lines of a warped noise,
+    // dark where it crosses them (the creases), bright halfway between (the folds), a little brighter toward the top left.
+    private static float GasShape(float x, float y, int variant)
+    {
+        float ox = 13.7f * variant + 3, oy = 7.3f * variant + 1;
+        float r = MathF.Sqrt(x * x + y * y);
+        float lobes = r + 0.85f * (Fbm(x * 1.6f + ox, y * 1.6f + oy) - 0.5f) + 0.2f * (Fbm(x * 4.5f + oy, y * 4.5f + ox) - 0.5f);
+        float body = (1 - SmoothStep(0.3f, 0.75f, lobes)) * (1 - SmoothStep(0.8f, 1f, r));
+        if (body <= 0)
+            return 0;
+        float warp = Fbm(x * 1.8f + oy, y * 1.8f + ox);
+        float marble = Fbm(x * 2.2f + warp * 1.8f + ox, y * 2.2f - warp * 1.8f + oy);
+        float wave = MathF.Sin(marble * 16);
+        float crease = Gauss(wave + 0.9f, 0.4f), fold = Gauss(wave - 0.5f, 0.6f);
+        float light = 0.55f + 0.3f * fold - 0.3f * crease + 0.15f * Math.Max(0, -(x + y) * 0.5f);
+        return body * Math.Clamp(light, 0.15f, 1);
     }
 
     /// <summary>A soft edge at <paramref name="v"/> = 0: 0 below −<paramref name="width"/>/2, 1 above +<paramref name="width"/>/2.</summary>
