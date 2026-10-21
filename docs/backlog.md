@@ -28,7 +28,7 @@ The owner aims at a public release (decision 28, 2026-10-20).
   the switches (`--auto`, `--watch`, `--ending`, …).
 - **Windows export** — *agent*: the preset `godot/export_presets.cfg` ("Windows Desktop") and
   `tools/export-release.ps1` export a release build outside the repository (2026-10-21; templates 4.7.2 mono
-  installed on the owner's machine). The build keeps its data in `%APPDATA%\Kichikuou` (project.godot's
+  installed on the owner's machine). The build keeps its data in `%APPDATA%\KichikuouGodot` (project.godot's
   `.template` overrides), apart from the development runs, so it starts as a new player's would; the fonts'
   OFL texts go into the pack (the include filter) and next to the exe (`licenses\`) with `LICENSE`. Still open:
   an icon and version info (`application/modify_resources` is off), the archive a player downloads, and the

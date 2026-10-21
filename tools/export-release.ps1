@@ -10,7 +10,7 @@ copies the licenses beside it: LICENSE and the bundled fonts' OFL texts in "lice
 
 The folder must lie outside the repository: Kichikuou.Engine.LocalPaths looks for local.env up from the exe,
 and an exe inside the repository would read the developer's extract and game folder. The exported build keeps
-its data in a user folder of its own (%APPDATA%\Kichikuou, project.godot's ".template" overrides), apart from
+its data in a user folder of its own (%APPDATA%\KichikuouGodot, project.godot's ".template" overrides), apart from
 the development runs' app_userdata\Kichikuou, so it starts as a new player's would.
 
 .EXAMPLE
