@@ -129,10 +129,12 @@ dry run (§2) has no such error: it runs the scene. 236 variables, in three clas
   picker), `Harem_ExpReward`, `Harem_LastPick`, `Harem_LastWeek`, `Harem_SexCount`, the cursors (`Unit_Cur`,
   `Cmdr_Cur`, `Item_Cur`, `Prov_Cur`, `Hist_Cur`), `Ev_Entry`, `CallArg`, the `Tmp*`, the window and map camera state,
   `Ui_CmdHaremAvail`.
-- **Text only (13), ignored**: read only on talk and harem paths, so they only pick a later scene, which the dry run
-  of that later talk sees. `N_RanceSelfTalk`; `F_Asuka_IntroSeen`, `F_Freak_TalkSeen`, `F_Hubert_TalkSeen`,
-  `F_Menad_TrainingSeen`; `F_Isoroku_Flag`, `F_Leila_Flag`, `F_Milli_Flag1`, `F_Milli_Flag2`, `VAR0068` (Shizuka),
-  `VAR0448` (Miki); `F_Suzume_Met`, `F_Wendy_Met` (they add the girls to the harem's picker).
+- **Read only on talk and harem paths (13)**: `N_RanceSelfTalk`; `F_Asuka_IntroSeen`, `F_Freak_TalkSeen`,
+  `F_Hubert_TalkSeen`, `F_Menad_TrainingSeen`; `F_Isoroku_Flag`, `F_Leila_Flag`, `F_Milli_Flag1`, `F_Milli_Flag2`,
+  `VAR0068` (Shizuka), `VAR0448` (Miki); `F_Suzume_Met`, `F_Wendy_Met` (they add the girls to the harem's picker).
+  They were to be ignored as "text only", on the reasoning that they only pick a later scene, which the dry run of
+  that later talk sees. That fails when a read branch moves such a variable silently (below), so **they count**
+  (owner, 2026-10-22), all but `N_RanceSelfTalk`: the owner wants no mark on Rance's talks 2-9 and 11-19 (§1).
 - **Counts (150)**: read elsewhere — weekly events, commands, nation turns, battles, other event entries, the
   endings. The story flags (most `F_*_State`, `N_*_Stage`); the records (a unit's status, troops, strategy; item
   holders; a province's owner; the battle variables of Satella's (unit 29) duel); `EndingId` (Satella's talk → ending
@@ -143,8 +145,12 @@ dry run (§2) has no such error: it runs the scene. 236 variables, in three clas
 Refinements:
 
 - **Flags whose only other reader is the Think command** (`Iｶﾝｶﾞｴ`, its hints): `F_Haurein_State2`,
-  `F_Maris_State2`, `F_Menad_Flag`, `F_Sill_State` — they change a hint's text, not the game. Proposed: count them
-  as text only. Open (the owner asked what else they do, 2026-10-22). Every reader in the scenario (besides the boot's
+  `F_Maris_State2`, `F_Menad_Flag`, `F_Sill_State` — they change a hint's text, not the game. Proposed first: count
+  them as text only. **They count** (owner, 2026-10-22), as everything but the bookkeeping and Rance's counter does:
+  a silent step hides a scene otherwise. Sill's (unit 2) harem night `L_020a7` sets her state 2 (`Gｼｨﾙ:1773`); her
+  next talk plays her repeated line (read) and sets 3 silently (`Gｼｨﾙ:1025`); only the talk after it plays the new
+  scene (`:83` → `L_00297`). Counted as text only, the talk at 2 would be "read", the player would have no reason to
+  talk, and the new scene would stay hidden. Every reader in the scenario (besides the boot's
   and the debug start's resets): `F_Haurein_State2` her harem scenes (`Gﾊｳﾚｰﾝ:2710`, `:3133`) and her leaving on a
   talk (`:2300`), the hint `Iｶﾝｶﾞｴ:360`; `F_Maris_State2` which of Maris's scenes plays (`Gﾏﾘｽ:957-960`), the hint
   `Iｶﾝｶﾞｴ:93`; `F_Menad_Flag` which of Menad's scenes plays (`Gﾒﾅﾄﾞ:32-35`), the hint `Iｶﾝｶﾞｴ:461`; `F_Sill_State`
@@ -205,12 +211,13 @@ event (`COM:315`), event 3 another such mission (`:355`, `:554`). The other two 
 
 **Kentarou's hint** (owner, 2026-10-22): when his training moves the state (5 → 6, 6 → 7), our own short narration
 line after the scene (the port's text, as decision 26's save window) tells the player he is getting closer; the two
-lines differ a little, so the second is not a repeat. Proposed: "Kentarou's guard is getting sharper." and
-"Kentarou's guard is sharper still." The original lines stay untouched.
+lines differ a little, so the second is not a repeat. Proposed pairs: A "Kentarou parried a little more easily this
+time." / "Kentarou parried easier still. He has almost got it."; B "Kentarou seems to be catching on to the move." /
+"Kentarou has nearly caught on to the move."; C "Kentarou watched Rance's swing closely." / "Kentarou read Rance's
+swing before it came." The original lines stay untouched.
 
 ## 6. Open questions
 
-- The Think-only flags (§4): their readers listed for the owner.
 - The wording of Kanami's two items in Code's event 4 (§5).
 - Kentarou's two lines: the proposed wording (§5).
 - Where the marks are drawn (the Subordinates picker's cells and Talk, the harem picker's cells): the mock-ups, later.
