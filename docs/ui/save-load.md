@@ -288,3 +288,79 @@ written over (it keeps its number) and the slots migrated from the ten. The owne
 the manual saves are listed newest first, like the auto-saves ("NEWEST FIRST" in its place), the number stays on the
 seal. `SaveSlots.NewestFirst` replaces `SlotOrder` and `OrderManuals`; the setting `Strategy/SaveOrderChoice` is gone,
 and so are `--saveload`'s order dumps.
+
+## 10. Sengoku Rance's notes on saves (survey, 2026-10-21)
+
+The owner asked (2026-10-21) how Sengoku Rance, the reference for our interface, lets the player comment a save. Read
+from its code (the assembly dump under `SENGOKU_RANCE_EXTRACT_DIR`, docs/sengoku/README.md; references below are
+relative to its `ain\files\`). Its save files are compressed, so no real note was read from them.
+
+### Its "Save Data Storage" (`データ倉庫`)
+
+- One screen for saving, loading and deleting (`あべ/T_STORE.JAF`, `tagSaveStore`; a row `あべ/T_STODAT.JAF`; the save's
+  record `あべ/T_SAVINF.JAF`, `tagSaveInfo`; the files `あべ/S_SAVE.JAF`). The system menu's Save saves first and opens
+  it after (`T_SYSMEN:283-288`); its Load and the title's Load open it as well (`T_GAME:179`).
+- Saves 1-999 and the auto-save 0: a save always takes the first free number and never overwrites one ("Your save data
+  storage is full." when none is free, `S_SAVE:107`). One list, newest first, nine rows in view with a scroll bar, and
+  "n／m saved games" under it (`T_STORE:847`, `:872`, `:2156-2160`).
+- A row: the file's date and time, "Turn n [route]", the save's running number, a book icon (another for the newest).
+  No thumbnail. Load and delete by dragging the book onto a load or a delete area, each with "Are you sure?"
+  (`T_STORE:62-76`). The auto-save sits apart, under "Auto-Save Data".
+- The auto-save is written once a turn at the map's place choice (`T_SYSMEN:125`, `C_MAPCTL:159`); the quick save and
+  load in the system menu are dead code (`T_SYSMEN:1685`, `:1700`).
+
+### The note
+
+- **What it is**: a free text kept with the save's record (`tagSaveInfo.m_szComment`, `structures.txt:880`), all the
+  records together in the system file (`Rance7_Sys.ASD`, `T_GLOB:124`, `:697`), not in the save itself.
+- **When**: only afterwards. A save is made with an empty note (`S_PUSH ""` before `saveProc`, `T_SYSMEN:81-82`). The
+  storage screen has a note button (`T_STORE:583`); it puts the screen in a note mode (a cover, the other buttons off,
+  `T_STORE:1029`) in which a click on a row opens that save's note (`inputComment`, `:1111`); a right click leaves the
+  mode. From either way into the screen (Save, Load, the title).
+- **Typing**: its own dialog (`あべ/T_INPUT.JAF`, `tagInput2`: a full-screen backdrop, a text box, one OK button) with the
+  OS's IME through the `InputString` library (`OpenIME`, `GetResultString`; font MS Gothic 20, `T_TEXT:1333-1335`,
+  `:1489-1490`). No on-screen keyboard, no filter on the characters. The box is 358×96 at 24 px a line
+  (`TextBox2@InitSaveDescription`, `WordWrapper/TextBox2:1293`): **four wrapped lines** is the limit, not a count of
+  letters (the Japanese layout's 17 letters × 4 is still passed, `T_INPUT:669-673`); Enter adds no line break. OK or
+  Enter keeps, a right click leaves the old text (`T_INPUT:617-626`); an unchanged text writes nothing, an empty one
+  removes the note (`T_STORE:1193-1208`, `:1240-1246`).
+- **Prefill**: none from the game — a new save's note is empty, the dialog opens with the note as it is
+  (`T_STORE:1168-1184`). The turn, the route and the date are the row's own fields.
+- **Shown**: never as text in the row — a **★** on the book (`T_STODAT:347-386`); the whole note in a **tooltip** that
+  follows the pointer over the row (`showComment`, `T_STORE:2687-2689`, `:3310-3314`; a white box, black text, cut
+  every 34 bytes, mid-word too, `S_TOOL:299`). The button's own tooltip says what notes are for: "You can type up notes
+  to describe / what was going on in a given save / A save with notes will be marked with a [★]" (`T_STORE:3239-3251`).
+- **The auto-save** takes none: the note mode skips its row (`T_STORE:2740-2743`, `:3558-3565`).
+- **A keep mark**: a second button deletes every save *without* a note, after two questions, and is only lit while
+  there is one (`deleteNoMark`, `T_STORE:1251`, `:3166-3212`). The ★ is what keeps a save from the sweep.
+
+### Against ours (§9)
+
+| | Sengoku Rance | Ours (layout G) |
+|---|---|---|
+| Written | afterwards only, a note mode, then a click on the row | afterwards only, Edit on the chosen save's page |
+| Opened from | the storage screen (Save, Load, the title) | the Save/Load screen, Save and Load alike |
+| Typing | its own dialog, the OS's IME | a `LineEdit` over the slip, in place |
+| Limit | four wrapped lines (about 4 × 34 letters) | 60 letters, one line |
+| Prefill | none | none |
+| In the list | a ★ only | the second line of a manual save's row, cut to fit |
+| In full | a tooltip at the pointer | the slip on the save's page |
+| Auto-save | none | none |
+| Else | delete every save without a note | — |
+
+### What we could take, each with its cost
+
+1. **The ★ on a row's seal** for a save with a comment — small (drawing only). Our row already shows the comment's
+   start, so the mark adds little unless the second line goes.
+2. **The whole comment as a tooltip** over a row — small (the tooltips as the battle's advantages draw them). Useful
+   only if comments grow longer than the row shows.
+3. **Longer comments**: several lines (Sengoku Rance's four) in a wrapped field on the page — medium: the page's
+   layout (the slip grows into the figures' room), a `TextEdit` with wrapping in place of the `LineEdit`, the row's
+   line and the tooltip for the rest; mock-ups first.
+4. **Delete the saves without a comment** in one go, after a question (the comment as a keep mark) — medium: a
+   library call over the manual saves, a button and its callout, tests. Most useful with many saves, which decision
+   29 now allows.
+5. **Writing it while saving** (Sengoku Rance does not): after "+ New save" the comment's field opens at once on the
+   new save, Esc leaves it empty — small; or a field on the New save page before the red button — medium.
+6. Not taken from it: the note mode (ours is a button on the chosen save, one click fewer), its own dialog over the
+   whole screen, the drag to load or delete, a prefilled text (it has none; the row's date and figures do that work).
