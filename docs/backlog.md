@@ -167,8 +167,8 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   "Replenish on the deployment screen"), built and accepted by the owner (2026-10-20).
   Under way (owner, 2026-10-22): marks on Talk and the harem telling whether a talk or a visit can bring something
   new — the condition is surveyed in [ui/talk-marks.md](ui/talk-marks.md) (the rule, the random draws, the variables
-  that count, decision 30 proposed: an unread harmless variant comes for certain). Put off: the menus inside the
-  scenes (owner, "discussed apart", §6) and the marks' mock-ups (owner, "later").
+  that count, decision 30 agreed as an option: an unread harmless variant comes for certain, Kanami chooses in
+  Code's event 4). Put off: the marks' mock-ups (owner, "later").
 - **Optional fixes** — *owner* (which), then *agent*: the quirks register ([quirks.md](quirks.md),
   decision 5) lists every reproduced bug; some can become options.
 

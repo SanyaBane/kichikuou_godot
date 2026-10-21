@@ -47,7 +47,10 @@ The marks:
 The port computes it by a dry run of the scene on a copy of the state (as the differential tests do), every draw
 forked, nothing shown, played or counted (no sound, no `Glob_CgSeen`, no save). Predicting the real draw from the
 generator would tell the outcome of chance (whether Haurein leaves this week) — **not done** (owner, 2026-10-22).
-Menus inside the scenes are discussed apart (§6).
+**The menus inside the scenes** (owner, 2026-10-22): a menu is the player's choice, so every item counts as
+reachable — a talk or a visit whose menu has an item leading to an unread line has a New (what it changes is the
+player's choice). Only the character's cell is marked; the menu's items are not. Lines past an ending (a game over
+included) do not count: the mark gives no reason to end the game.
 
 ## 3. The random draws
 
@@ -141,7 +144,13 @@ Refinements:
 
 - **Flags whose only other reader is the Think command** (`Iｶﾝｶﾞｴ`, its hints): `F_Haurein_State2`,
   `F_Maris_State2`, `F_Menad_Flag`, `F_Sill_State` — they change a hint's text, not the game. Proposed: count them
-  as text only. Open (the owner discusses it later, 2026-10-22).
+  as text only. Open (the owner asked what else they do, 2026-10-22). Every reader in the scenario (besides the boot's
+  and the debug start's resets): `F_Haurein_State2` her harem scenes (`Gﾊｳﾚｰﾝ:2710`, `:3133`) and her leaving on a
+  talk (`:2300`), the hint `Iｶﾝｶﾞｴ:360`; `F_Maris_State2` which of Maris's scenes plays (`Gﾏﾘｽ:957-960`), the hint
+  `Iｶﾝｶﾞｴ:93`; `F_Menad_Flag` which of Menad's scenes plays (`Gﾒﾅﾄﾞ:32-35`), the hint `Iｶﾝｶﾞｴ:461`; `F_Sill_State`
+  which of Sill's scenes plays (`Gｼｨﾙ:75-89`, `:1025`), whether the harem offers her (`Cﾊｰﾚﾑ:56`), the hint
+  `Iｶﾝｶﾞｴ:21`. Besides the hints they only pick the character's own talk and harem scenes, which the dry run of
+  the next talk or visit sees.
 - **What every visit pays or earns is not news** (owner, 2026-10-22: as proposed). Some writes happen on every branch of every visit: Rance's (unit 1)
   EXP from the harem; Rebecca's `Bt_ExpBonusNext` (the next battle's EXP bonus, `Gﾚﾍﾞｯｶ:14`, `FIGT:2980`);
   Shariela's `Shariela_EvWeek` (her 40/42-week timer restarted, `Gｼｬﾘｴﾗ:18`, `COM:868`, `:873`); `N_Lia_Neglect`
@@ -153,8 +162,9 @@ Refinements:
 
 ## 5. Proposed rule change: an unread harmless variant comes for certain
 
-Proposed (owner agreed in principle, 2026-10-22; whether always or an option is open). It would be **decision 30, the
-third rule change on purpose**:
+Agreed by the owner (2026-10-22): **an option, on by default** (Option → Game), one switch for all of it — the
+harmless variants, the draws that change the state, Kanami's choice; off, the original's odds and Code's event 4 as
+the original has it. It would be **decision 30, the third rule change on purpose**:
 
 - In Talk and the harem, when a draw's outcomes include branches that are harmless (they change no variable that
   counts, §4) and show a line not read yet, the outcome is one of those, at random among them; once all are read the
@@ -193,15 +203,14 @@ event (`COM:315`), event 3 another such mission (`:355`, `:554`). The other two 
   and general. The differential tests run without it.
 - The differential tests run without it, so the files run as the original there.
 
-**Kentarou's hint** (part of it, or a decision of its own): when his training draw moves the state, our own line
-after the scene (the port's text, as decision 26's save window) tells the player he is getting closer; the original
-line stays untouched, the 1/3 stays.
+**Kentarou's hint** (owner, 2026-10-22): when his training moves the state (5 → 6, 6 → 7), our own short narration
+line after the scene (the port's text, as decision 26's save window) tells the player he is getting closer; the two
+lines differ a little, so the second is not a repeat. Proposed: "Kentarou's guard is getting sharper." and
+"Kentarou's guard is sharper still." The original lines stay untouched.
 
 ## 6. Open questions
 
-- The menus inside the scenes (kind 4, §3): the owner discusses them apart.
-- The Think-only flags (§4): the owner discusses them later.
+- The Think-only flags (§4): their readers listed for the owner.
 - The wording of Kanami's two items in Code's event 4 (§5).
-- Decision 30: always or an option.
-- Kentarou's line: its wording.
+- Kentarou's two lines: the proposed wording (§5).
 - Where the marks are drawn (the Subordinates picker's cells and Talk, the harem picker's cells): the mock-ups, later.
