@@ -20,7 +20,7 @@ internal static class LightEffect
 
     // The colours (light added over the scene).
     private static readonly Color White = new(1f, 0.99f, 0.95f), Body = new(0.8f, 0.9f, 1f), Cutting = new(1f, 0.93f, 0.72f);
-    private static readonly Color Plume = new(1f, 0.97f, 0.88f, 0.45f);
+    private static readonly Color Plume = new(1f, 0.97f, 0.88f, 0.25f);
     private static readonly Color Orange = new(1f, 0.55f, 0.25f), Gold = new(1f, 0.8f, 0.4f), Yellow = new(1f, 0.88f, 0.3f);
 
     public static IReadOnlyList<Particle> Build(int seed)
@@ -110,7 +110,7 @@ internal static class LightEffect
                 Range(-0.05f, 0.05f), new Vector2(size, size * 0.38f), Plume, Drift, _ => 1,
                 Move: t => new Vector2(0, MathF.Sin(phase + t * 9) * sway)));
             particles.Add(new Particle(EffectTextures.Glow, birth, life, at, drift, 0, 0, new Vector2(size, size * 0.6f) * 1.4f,
-                Gold * new Color(1, 1, 1, 0.15f), Drift, _ => 1, Move: t => new Vector2(0, MathF.Sin(phase + t * 9) * sway)));
+                Gold * new Color(1, 1, 1, 0.08f), Drift, _ => 1, Move: t => new Vector2(0, MathF.Sin(phase + t * 9) * sway)));
         }
         // The light at the stream's root: a white glow the blades leave from (4-12).
         particles.Add(new Particle(EffectTextures.Glow, 3.5f, 9, Orb + new Vector2(70, 5), Vector2.Zero, 0, 0,
