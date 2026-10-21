@@ -45,9 +45,10 @@ There are no release builds yet. To build and play from the source (Windows):
 **The first start imports your game.** The game asks for the game folder (the system's folder dialog),
 checks that its files are the translation v1.0 (by their SHA-256; another version or a missing file is
 refused with the file's name), and reads the scenario once into its own data folder
-(`%APPDATA%\Godot\app_userdata\Kichikuou\import\` on Windows), which takes about a second. The pictures,
-the sounds and the music are read from your folder as you play, so keep it where it is; choosing it again
-is only needed if it moves. The details are in [docs/import.md](docs/import.md).
+(`%APPDATA%\KichikuouGodot\import\` on Windows), which takes about a second. The pictures,
+the sounds and the music are read from your folder as you play, so keep it where it is; if it moves, or to
+play another copy, choose the folder again with Option → Game Folder…. The details are in
+[docs/import.md](docs/import.md).
 
 Developers can point the game at a folder of data extracted with xsys35c's tools instead
 (`KICHIKUOU_EXTRACT_DIR`, [docs/spike-findings.md](docs/spike-findings.md), "Local layout"); the tests read

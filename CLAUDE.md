@@ -280,7 +280,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
 - `godot/` — Godot 4.7.2 .NET project (`Kichikuou.csproj`, namespace `Kichikuou.Game`, references
   the four libraries; its build does not make warnings errors, so check it at run time);
   presentation only: `GameData` is where the data comes from (the extract where one is set, else the import of the
-  player's folder; docs/import.md, step 8), `ImportScreen` imports that folder when there is no data yet (mock-up B);
+  player's folder; docs/import.md, step 8), `ImportScreen` imports that folder when there is no data yet (mock-up B), or another one from Option → Game Folder…;
   `Main` opens the title (a `GameScreen` running `ｽﾀMENU`) or what the
   development switches ask for; `Strategy/GameScreen` runs one game from the boot (`GameSession` on a `GamePresenter`;
   mouse and keys are a state, `Strategy/PlayerInput`, that `IM`, `Y 3`, `IK 0` and the menus poll

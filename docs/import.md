@@ -178,6 +178,8 @@ agent days, rough.
      `import-choose`, `import-progress`, `import-done` or `import-refused` (a window is needed). Checked in a window
      on the owner's folder and on its `bgm` folder (refused: no `KICHIKUSA.ALD`). Not run: the start with no extract
      set, which would need the owner's `user://settings.cfg` changed (its `extract_dir` is the extract).
+   - **Another folder later** (owner, 2026-10-21): Option → Game Folder… opens the screen from the game, with a way
+     back to the title without an import (docs/window-menu.md).
 9. **Docs** ✓ (2026-10-20). CLAUDE.md (status, layout, commands), spike-findings ("Local layout": the extract
    is the developer's), the README ("Installing": the version needed, the build from source, the first start's
    import; where to get the game is left to the player — the brief's "AliceSoft released it as freeware" is

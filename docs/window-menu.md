@@ -113,6 +113,11 @@ web build (seen only) by an option.
   colours of our battle screen and the map's name plates (`DeploymentPalette`; the deployment screen is lacquer
   since 2026-10-19, docs/ui/deployment-table.md). A change recolours an open screen at once.
   `--palette <name>` picks one for the launch without saving it (development).
+- **Option → Game Folder…** (ours, owner's request 2026-10-21): after a confirmation ("Any unsaved progress
+  will be lost."), the import screen (docs/import.md, step 8) with the saved folder in its field and "← Back to the
+  title" (or Esc) under it; an import of another folder keeps it (`game_dir`) and opens a fresh title, the way back
+  leaves the open import as it was. Greyed out while the developer's extract is the data (`GameData.UsesExtract`:
+  a folder would change nothing); `--import` turns it on.
 - Hot keys: **F1** MsgSkip and **F4** full screen (on release, as xsystem35's `event.c`), and
   **Alt+R** Restart (ours, after System 3.9's); **Ctrl** held skips messages (ours, see MsgSkip). Backspace still returns to the title at once,
   without asking (development).

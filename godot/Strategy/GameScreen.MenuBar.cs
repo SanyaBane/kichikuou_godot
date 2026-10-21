@@ -12,7 +12,7 @@ namespace Kichikuou.Game.Strategy;
 
 // xsystem35's window menu bar over the game (docs/window-menu.md): File (Save Screenshot, Restart,
 // Exit), Screen (Window, Fullscreen), Option (Mouse Movement as xsystem35's; ours: Skip Unseen
-// Text, MsgSkip Speeds Up Fades, Forget Seen Messages, Battle Screen, Text Speed, Fonts, Palette),
+// Text, MsgSkip Speeds Up Fades, Forget Seen Messages, Battle Screen, Text Speed, Game Folder, Fonts, Palette),
 // MsgSkip[off|on]; hot keys F1 and F4 as xsystem35's, Alt+R; and ours for development, Debug
 // (Battle Captures: the capture viewer, which our own title had until ｽﾀMENU replaced it; Portraits,
 // Effects, Hide Dimmed Map Names).
@@ -50,8 +50,11 @@ public partial class GameScreen
             ("MsgSkip Speeds Up Fades", ToggleFastFades),
             ("Forget Seen Messages...", ConfirmForgetSeen),
             ("Battle Screen...", OpenBattleScreenSettings),
-            ("Text Speed...", OpenTextSpeed));
+            ("Text Speed...", OpenTextSpeed),
+            ("Game Folder...", ConfirmGameFolder));
         options = option.GetPopup();
+        // The developer's extract wins over any import (GameData.UsesExtract): a folder chosen here would change nothing.
+        options.SetItemDisabled(6, GameData.UsesExtract);
         options.SetItemAsCheckable(0, true);
         options.SetItemChecked(0, EngineState.MouseMovement);
         options.SetItemAsCheckable(1, true);
@@ -379,6 +382,14 @@ public partial class GameScreen
         _content.AddChild(view);
         view.Place(PictureArea());
     }
+
+    /// <summary>
+    /// Option → Game Folder… (ours): after the confirmation, the import screen for another copy of the game; once it is
+    /// imported, or by the screen's way back without an import, a fresh title.
+    /// </summary>
+    private void ConfirmGameFolder() =>
+        Confirm("Change the game folder?", "Change", () => Screens.Open(this,
+            new ImportScreen(GameData.SavedGameDirectory, start: false, next: Main.Title, back: Main.Title)));
 
     /// <summary>Forget Seen Messages (ours): after the confirmation, every message counts as unseen again.</summary>
     private void ConfirmForgetSeen() =>

@@ -81,7 +81,7 @@ public partial class Main : Control
         }
     }
 
-    private static Node Title() => new GameScreen(new GameOptions { Start = GameStart.Title });
+    internal static Node Title() => new GameScreen(new GameOptions { Start = GameStart.Title });
 
     /// <summary>
     /// <c>--import-screen [DIR]</c>: the import screen whatever data there is (the launch reads the import). With DIR it

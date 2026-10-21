@@ -13,8 +13,9 @@ namespace Kichikuou.Game;
 /// sealed in red. The folder field opens the system's folder dialog; Import runs <see cref="GameImport"/> on a
 /// worker thread under a vermilion bar; a refusal (<see cref="GameFolderException"/>'s message) is written in
 /// vermilion ink with a stamp beside it and "Choose another folder". Once imported, the folder is kept
-/// (<see cref="GameData.GameDirectory"/>) and <see cref="_next"/> opens. Laid out in the 1280×800 screen's pixels,
-/// letterboxed into the window.
+/// (<see cref="GameData.GameDirectory"/>) and <see cref="_next"/> opens. Opened from Option → Game Folder… it has a
+/// way back (<see cref="_back"/>: "Back to the title" or Esc) that leaves the open import as it is. Laid out in the
+/// 1280×800 screen's pixels, letterboxed into the window.
 /// </summary>
 public partial class ImportScreen : Control
 {
@@ -23,6 +24,7 @@ public partial class ImportScreen : Control
     private static readonly Rect2 Frame = new(250, 110, 780, 580);
     private static readonly Rect2 Paper = new(276, 136, 728, 528);
     private static readonly Rect2 WideButton = new(500, 588, 280, 48), NarrowButton = new(540, 588, 200, 48);
+    private static readonly Rect2 BackLink = new(StepX, 600, 170, 24);
     private const float StepX = 316, TextX = 364, TextRight = 964;
 
     private static readonly Color FieldFill = Color.Color8(236, 224, 194);
@@ -33,6 +35,7 @@ public partial class ImportScreen : Control
     private readonly FontVariation _cinzelBold = Lacquer.Cinzel(800);
     private readonly FontFile _gothic = DeploymentTableView.LoadFont(GodotGlyphRenderer.Chosen);
     private readonly Func<Node> _next;
+    private readonly Func<Node>? _back;
     private readonly string? _unattended;
     private readonly string? _shots;
     private readonly bool _quit;
@@ -47,7 +50,7 @@ public partial class ImportScreen : Control
     private bool _finished;
     private double _doneFor;
     private Rect2 _field;                          // the folder field, in screen pixels (laid out by the drawing)
-    private bool _hoverField, _hoverButton, _pressedButton;
+    private bool _hoverField, _hoverButton, _pressedButton, _hoverBack;
     private FileDialog? _dialog;
     private float _k = 1;
     private Vector2 _origin;
@@ -59,11 +62,14 @@ public partial class ImportScreen : Control
     /// it imports that folder at once. <paramref name="next"/> makes the screen that follows the import.
     /// <paramref name="unattended"/> (the development switch <c>--import-screen DIR</c>) imports DIR without the dialog,
     /// saving the screen at each phase into <paramref name="shots"/>, and quits at the end with <paramref name="quit"/>.
+    /// <paramref name="back"/>, when given, makes the screen that a way back without an import opens.
     /// </summary>
-    public ImportScreen(string folder, bool start, Func<Node> next, string? unattended = null, string? shots = null, bool quit = false)
+    public ImportScreen(string folder, bool start, Func<Node> next, string? unattended = null, string? shots = null, bool quit = false,
+        Func<Node>? back = null)
     {
         _folder = unattended ?? folder;
         _next = next;
+        _back = back;
         _unattended = unattended;
         _shots = shots;
         _quit = quit;
@@ -229,6 +235,23 @@ public partial class ImportScreen : Control
 
     private bool FieldLive => _phase is Phase.Choose or Phase.Refused;
 
+    private bool BackLive => _back is not null && _unattended is null && _phase is Phase.Choose or Phase.Refused;
+
+    private void GoBack()
+    {
+        if (BackLive)
+            Screens.Open(this, _back!());
+    }
+
+    public override void _UnhandledKeyInput(InputEvent e)
+    {
+        if (e is InputEventKey { Pressed: true, Keycode: Key.Escape } && BackLive && _dialog?.Visible != true)
+        {
+            GetViewport().SetInputAsHandled();
+            GoBack();
+        }
+    }
+
     private void Press()
     {
         if (!ButtonLive)
@@ -246,11 +269,13 @@ public partial class ImportScreen : Control
             case InputEventMouseMotion motion:
             {
                 var at = (motion.Position - _origin) / _k;
-                bool field = FieldLive && _field.HasPoint(at), button = ButtonLive && Button.HasPoint(at);
-                if (field != _hoverField || button != _hoverButton)
+                bool field = FieldLive && _field.HasPoint(at), button = ButtonLive && Button.HasPoint(at),
+                    back = BackLive && BackLink.HasPoint(at);
+                if (field != _hoverField || button != _hoverButton || back != _hoverBack)
                 {
                     _hoverField = field;
                     _hoverButton = button;
+                    _hoverBack = back;
                     QueueRedraw();
                 }
                 break;
@@ -271,6 +296,8 @@ public partial class ImportScreen : Control
                         ChooseFolder();
                     else if (wasPressed && Button.HasPoint(at))
                         Press();
+                    else if (BackLive && BackLink.HasPoint(at))
+                        GoBack();
                     QueueRedraw();
                 }
                 AcceptEvent();
@@ -317,6 +344,9 @@ public partial class ImportScreen : Control
                 DrawRefused();
                 break;
         }
+        if (BackLive)
+            DrawString(_cinzel, new Vector2(BackLink.Position.X, Lacquer.Baseline(BackLink, _cinzel, 15)), "← Back to the title",
+                fontSize: 15, modulate: _hoverBack ? Lacquer.Vermilion : Lacquer.InkQuiet);
     }
 
     private void DrawChoose()
