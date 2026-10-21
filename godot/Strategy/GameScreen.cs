@@ -629,7 +629,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (SkippingScene)
         {
             // A scene skipped whole is not drawn: its stage commands (seconds of work for the opening) are dropped.
-            if (scriptEvent is EngineEvent { Command: "G" or "CC" or "CE" or "CS" or "CF" or "CM" or "CB" or "CL" })
+            if (GamePresenter.IsSkippedStageCommand(scriptEvent))
             {
                 _stageSkipped = true;
                 return;

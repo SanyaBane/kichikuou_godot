@@ -433,6 +433,82 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// <c>ｵｰﾌﾟﾆﾝｸﾞ</c> skipped whole by the message skip, its stage commands dropped as a UI drops them
+    /// (<see cref="GamePresenter.IsSkippedStageCommand"/>), then <c>Iﾊﾝﾗﾝ</c>: the wedding's picture (<c>G 105</c>,
+    /// <c>:1146</c>, the scene's first <c>G</c>) is on the screen at the priest's line (<c>:1182</c>). The opening's last
+    /// <c>J0 0, 400</c> (<c>:1407</c>) was kept while its <c>G</c> was dropped and placed the wedding below the screen, its
+    /// palette over the map. Skipped without the player's files.
+    /// </summary>
+    [Fact]
+    public async Task The_rebellion_draws_the_wedding_after_a_skipped_opening()
+    {
+        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
+            return;
+        var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
+        var state = new GameState();
+        var cgs = new CgLibrary(LocalData.CgDirectory);
+        var p = new GamePresenter(new ScenarioText(LocalData.ScenarioDirectory), cgs, new BoxGlyphs(), scripts);
+        var player = new Player(state, p);
+        var view = new SkippingView(player, p);
+        var session = new GameSession(state, new QueuedRandom { DefaultToOne = true }, view, player, scripts, scripts,
+            new MemorySaveStore(), new RecordingRules { State = state });
+        p.Bind(state);
+        await session.BootAsync();
+        var wedding = cgs.Get(105)!;
+        int? differ = null;
+        player.OnShow = e =>
+        {
+            if (e is not MessageEvent { Text: { File: "Iﾊﾝﾗﾝ.ADV", Line: 1182 } })
+                return;
+            p.Compose();
+            var rgba = wedding.ToRgba(null, p.Stage.Palette);
+            differ = 0;
+            for (int y = 0; y < wedding.Height; y += 7)
+                for (int x = 0; x < wedding.Width; x += 7)
+                {
+                    var (r, g, b, _) = p.Screen.PixelAt(x, y);
+                    int i = (y * wedding.Width + x) * 4;
+                    if (r != rgba[i] || g != rgba[i + 1] || b != rgba[i + 2])
+                        differ++;
+                }
+            throw new WeekOverException();
+        };
+
+        view.Skipping = true;
+        await session.Script.CallFileAsync("ｵｰﾌﾟﾆﾝｸﾞ.ADV");
+        view.Skipping = false;
+        await Assert.ThrowsAsync<WeekOverException>(() => session.Script.CallFileAsync("Iﾊﾝﾗﾝ.ADV"));
+
+        Assert.Equal(0, differ);
+    }
+
+    /// <summary>
+    /// A UI's skip of a whole scene (<c>GameScreen.ShowAsync</c>): while <see cref="Skipping"/>, the stage commands
+    /// are dropped; the first event after them clears the stage (<c>EC 0</c>) before it is shown.
+    /// </summary>
+    private sealed class SkippingView(IScriptView inner, GamePresenter presenter) : IScriptView
+    {
+        private bool _dropped;
+
+        public bool Skipping { get; set; }
+
+        public Task ShowAsync(ScriptEvent e)
+        {
+            if (Skipping && GamePresenter.IsSkippedStageCommand(e))
+            {
+                _dropped = true;
+                return Task.CompletedTask;
+            }
+            if (!Skipping && _dropped)
+            {
+                _dropped = false;
+                presenter.Show(new EngineEvent("EC", [Sys3Int.Zero]));
+            }
+            return inner.ShowAsync(e);
+        }
+    }
+
+    /// <summary>
     /// <c>OVER</c> run on the booted game for ending 13, a second clear (milestone 6): the ending's
     /// picture, the staff roll's first frame (skipped by a key held through the pauses, <c>:79-81</c>:
     /// its 1200 steps would compose 1200 screens) and the Completion Report draw on the stage, the

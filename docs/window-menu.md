@@ -140,7 +140,10 @@ web build (seen only) by an option.
   (`OriginalVariant.WholeScenes`; `SceneRunner.RunningScenes` says which scenes run), the skippable
   waits and the fades take no time and nothing is shown — a frame passes only every 100 ms so the
   window stays responsive. Its stage commands (`G`, `CC`, `CE`, `CS`, `CF`, `CM`, `CB`, `CL`) are
-  dropped: drawing its 3,400 of them on the emulated surface alone takes ~7 s; the stage is cleared
+  dropped: drawing its 3,400 of them on the emulated surface alone takes ~7 s — and so are the jumps
+  `J0`/`J1` that place the next `G` (`GamePresenter.IsSkippedStageCommand`): its last `J0 0, 400`
+  (`:1407`), kept while its `G` was dropped, put the rebellion's first picture (the wedding, `Iﾊﾝﾗﾝ.ADV:1146`)
+  below the screen and its palette over the map (2026-10-21); the stage is cleared
   (`EC 0`) when the skip ends, before anything else is drawn. It goes in about a tenth of a second
   (it may first wait up to ~1/3 s for its music, `SC`); turned on mid-way, from there on. The
   rebellion `Iﾊﾝﾗﾝ` comes next with nothing shown in between: from its first scene (Northern Leazas

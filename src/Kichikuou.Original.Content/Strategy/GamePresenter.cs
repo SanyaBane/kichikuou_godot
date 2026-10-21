@@ -241,6 +241,16 @@ public sealed partial class GamePresenter : IStageObserver
     /// <summary>The fade the last event started, once (the engine animates it; the amount is already the end).</summary>
     public FadeRequest? TakeFade() => _engine.TakeFade();
 
+    /// <summary>
+    /// The stage commands a UI drops while the message skip skips a scene whole (the opening; docs/window-menu.md): the
+    /// drawing commands, and the jumps <c>J0</c>/<c>J1</c> that place the next <c>G</c> — kept, the last jump of a dropped
+    /// <c>G</c> would place the first <c>G</c> after the scene (<c>ｵｰﾌﾟﾆﾝｸﾞ.ADV:1407</c>'s <c>J0 0, 400</c> put
+    /// <c>Iﾊﾝﾗﾝ.ADV:1146</c>'s wedding below the screen, its palette over the map). <c>PC</c> stays: it is a mode, set again
+    /// before each of its uses.
+    /// </summary>
+    public static bool IsSkippedStageCommand(ScriptEvent scriptEvent) =>
+        scriptEvent is EngineEvent { Command: "G" or "J0" or "J1" or "CC" or "CE" or "CS" or "CF" or "CM" or "CB" or "CL" };
+
     /// <summary>Finishes the drawing the script does without an event of its own; call before waiting for input.</summary>
     public void Flush()
     {
