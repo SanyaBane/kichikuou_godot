@@ -234,7 +234,8 @@ that place's meaning.
 **The owner's choice (2026-10-22), drawn as H and S:**
 
 - **The harem: HA without the visits** — the tablet's right slot shows NEW (green) or ??? (amber), and nothing when read;
-  the tablet no longer shows the visits (they stay in the panel below the picture, which gains "This visit").
+  the tablet no longer shows the visits (they stay in the panel below the picture, which gains "This visit"). The
+  Summon button carries the chosen girl's NEW or ??? pill at its top right, as Talk does, none when read (owner).
 - **Subordinates: SB's bubbles in the ledger, SA's pill on Talk** — a speech bubble left of No. in every row (filled
   green "!", vermilion "?", an empty outline when read); the chosen unit's Talk button carries a NEW or ??? pill at its
   top right, none when read.

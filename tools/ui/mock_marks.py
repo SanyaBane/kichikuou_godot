@@ -100,6 +100,14 @@ def tag(c, right, mid, label, colour, ink=(24, 18, 12, 255), size=10, filled=Tru
     return r
 
 
+def big_tag(c, right, mid, label, colour, ink=(24, 18, 12, 255)):
+    """A larger pill for a large button."""
+    f = font(14)
+    w = c.width(label, f) + 18
+    c.rounded((right - w, mid - 11, right, mid + 11), 11, fill=colour)
+    c.text((right - w / 2, mid + 0.5), label, f, ink, 'mm')
+
+
 # ---- the harem ---------------------------------------------------------------------------------------------------
 # Tablets (HaremView.TabletRect) in the dump: three columns, 32 px rows from y 126.
 COLS = [(705, 877), (880, 1051), (1054, 1225)]
@@ -257,8 +265,10 @@ def harem_chosen():
         elif mark == 'maybe':
             c.text((r[2] - 10, mid + 1), '???', font(12), MAYBE, 'rm')
     summon_line(c, 'This visit', NEW, 'Something new')
-    c.save('H-chosen.png', 'H — HA without the visits (the owner\'s choice)',
-           'NEW green, ??? amber, a read tablet\'s slot empty (Maris); the visits stay in the panel below the picture.')
+    big_tag(c, 652, 691, 'NEW', NEW)                     # the chosen girl's mark on Summon, as Talk's pill
+    c.save('H-chosen.png', 'H — HA without the visits, the mark on Summon too (the owner\'s choice)',
+           'NEW green, ??? amber, a read tablet\'s slot empty (Maris); Summon carries the chosen girl\'s pill, none when '
+           'read; the visits stay in the panel.')
 
 
 def subs_chosen():
