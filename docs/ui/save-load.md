@@ -364,3 +364,25 @@ relative to its `ain\files\`). Its save files are compressed, so no real note wa
    new save, Esc leaves it empty — small; or a field on the New save page before the red button — medium.
 6. Not taken from it: the note mode (ours is a button on the chosen save, one click fewer), its own dialog over the
    whole screen, the drag to load or delete, a prefilled text (it has none; the row's date and figures do that work).
+
+### The owner's choice (2026-10-22): the star and the sweep
+
+The owner took ideas 1 and 4: **a ★ on the seal of a save with a comment** and **a button that deletes every manual
+save without a comment, after a question**. Auto-saves take no comment, so the button reaches the manual saves only.
+
+#### Round 5: mock-ups (2026-10-22)
+
+`tools/ui/mock_saves.py ... notes`, over the map dump of the week-18 save and the screen as built (§9, no order to
+choose); the saves are G's made-up fourteen, five with a comment:
+
+- **The star**: gold, with a dark rim, over the seal's top left corner (the right one is too near the date); the
+  comment's line stays as it is.
+- **N1 — the button in the list's heading**, where "as many as you keep" was: "Delete all without ★ (9)", counting the
+  saves it would delete; on the Manual saves side only.
+- **N2 — the button under the list**, the width of a row: "Delete every manual save without ★ (9)"; one row fewer in
+  view, the heading keeps its line.
+- **N3, N4 — the question**: a callout beside the button, its tip pointing left so the list stays in view: "Delete the 9
+  manual saves without a comment? The 5 with one (★) stay. It cannot be undone." — Delete 9 | Keep; meanwhile the rows
+  to go are dimmed and struck through. One question, not Sengoku Rance's two.
+- **N5 — after it**: the five saves with a comment, the button off (0) until there is a save without one again.
+- **N6 — Save**: the same button and stars; "+ New save" heads the list as built.

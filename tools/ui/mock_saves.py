@@ -14,10 +14,13 @@ switch over the other nine); its times are made up (the owner's slots were all s
 "library" draws round 4 (owner's decision 29): ten auto-saves newest first and as many manual saves as the player
 keeps, each deletable, a manual save with a comment — G (the two lists as tabs over one column), H (the two stacked),
 the delete question and the comment being written; its saves are made up from the owner's slots.
+"notes" draws round 5 (docs/ui/save-load.md, §10) over the screen as built: a star on the seal of a save with a
+comment and a button deleting every manual save without one (Sengoku Rance's), in the list's heading (N1) or under the
+list (N2), asking (N3, N4), after it (N5) and in Save (N6).
 The images hold the player's CGs: keep <out dir> outside the repository. Everything is in the 1280x800 screen's pixels
 (plus a caption band below); drawn at 2x and scaled down.
 """
-import sys, os, re, struct, datetime
+import sys, os, re, math, struct, datetime
 from PIL import Image, ImageDraw, ImageFont
 
 SLOTS, CGS, MAP_DUMP, OUT = sys.argv[1:5]
@@ -1021,6 +1024,114 @@ def h_screen(name, save_mode, chosen, caption, note):
     c.save(name, caption, note)
 
 
+# ---------------------------------------------------------------- round 5: the star and the sweep (§10)
+
+def star(c, x, y, r, fill=GOLD):
+    """A five-pointed star centred at (x, y), its points at radius r."""
+    pts = []
+    for i in range(10):
+        a = -math.pi / 2 + i * math.pi / 5
+        rr = r if i % 2 == 0 else r * 0.45
+        pts.append((x + rr * math.cos(a), y + rr * math.sin(a)))
+    c.poly(pts, fill=fill)
+
+
+def notes_row(c, r, n, s, state, gone=False):
+    """A manual save's row as built (§9, no order to choose); a save with a comment has a gold star on its seal's
+    top left corner (the right one is too near the date). gone: a row the sweep would delete, dimmed and struck through while the question is open."""
+    x0, y0, x1, y1 = r
+    h = y1 - y0
+    row_box(c, r, state if state in ('chosen', 'hover') else 'normal')
+    sx, sy = x0 + 8, y0 + h / 2 - 12
+    seal(c, sx, sy, str(n), 24)
+    tx = x0 + 42
+    c.text((tx, y0 + 16), date_text(s['week'], short=True), cinzel(15, 700), fill=NAME, anchor='lm')
+    c.text((x1 - 10, y0 + 16), s['time'].strftime('%d %b, %H:%M'), font(14), fill=VALUE, anchor='rm')
+    comment = s.get('comment', '')
+    if comment:
+        f = font(12)
+        while c.width('“' + comment + '”', f) > x1 - tx - 22:
+            comment = comment[:-2] + '…'
+        c.text((tx, y0 + 37), '“' + comment.rstrip('…') + ('…' if comment.endswith('…') else '') + '”', f, fill=QUIET, anchor='lm')
+        star(c, sx + 1, sy + 1, 9, fill=(26, 18, 12, 255))             # a dark rim, then the gold star over the corner
+        star(c, sx + 1, sy + 1, 7)
+    if gone:
+        c.overlay(r, (14, 10, 8, 150))
+        c.line((x0 + 6, (y0 + y1) / 2), (x1 - 6, (y0 + y1) / 2), fill=VERMILION, width=1.5)
+
+
+def sweep_button(c, r, count, state='normal'):
+    """Delete every manual save without a comment, counting them: quiet, as Delete; off when every save has one."""
+    off = count == 0
+    row_box(c, r, 'off' if off else state)
+    x0, y0, x1, y1 = r
+    label = 'Delete all without' if x1 - x0 < 240 else 'Delete every manual save without'
+    f, tail, my = font(12), ' (%d)' % count, (y0 + y1) / 2
+    x = (x0 + x1) / 2 - (c.width(label + tail, f) + 24) / 2
+    colour = OFF_TEXT if off else (NAME if state == 'hover' else TEXT)
+    c.text((x, my), label, f, fill=colour, anchor='lm')
+    x += c.width(label, f) + 12
+    star(c, x, my, 6, fill=OFF_TEXT if off else GOLD)
+    c.text((x + 8, my), tail, f, fill=colour, anchor='lm')
+
+
+def callout_side(c, cell, lines, answers):
+    """The question beside its button, the tip pointing left at it, so the list stays in view."""
+    x0, y0, x1, y1 = cell
+    w, h = 440, 40 + 24 * len(lines) + 44
+    left = x1 + 18
+    top = min(max((y0 + y1) / 2 - h / 2, 40), H - 40 - h)
+    lq_panel(c, (left, top, left + w, top + h))
+    my = (y0 + y1) / 2
+    c.poly([(left + 2, my - 10), (left + 2, my + 10), (left - 12, my)], fill=GOLD)
+    for i, line in enumerate(lines):
+        c.text((left + 22, top + 24 + 24 * i), line, font(16), fill=TEXT)
+    by = top + 30 + 24 * len(lines)
+    red_button(c, (left + w - 232, by, left + w - 112, by + 30), answers[0])
+    small_button(c, (left + w - 102, by, left + w - 22, by + 30), answers[1])
+
+
+def notes_screen(name, place, caption, note, save_mode=False, chosen=12, asking=False, swept=False):
+    """The screen as built (§9) with the star on a commented save's seal and the sweep: in the list's heading
+    (place 'head', where "as many as you keep" was) or under the list, the width of a row (place 'foot')."""
+    _, manual = library()
+    if swept:
+        manual = {n: s for n, s in manual.items() if s.get('comment')}
+    c, r = lib_frame(save_mode)
+    lx0, lx1, ly0 = 52, 382, 84
+    segment(c, (lx0, ly0, lx1, ly0 + 30), ('Manual saves · ' + str(len(manual)), 'Auto-saves · 10'), 0)
+    c.text((lx0, 141), 'NEWEST FIRST', cinzel(11, 700), fill=SUB, anchor='lm')
+    bare = [n for n, s in manual.items() if not s.get('comment')]
+    top, bottom, rw = 162, 756, lx0 + 318
+    if place == 'head':
+        button = (lx1 - 176, 128, lx1, 154)
+    else:
+        bottom = 712
+        button = (lx0, 722, rw, 752)
+        c.text((lx1, 141), 'as many as you keep', font(11), fill=LABEL, anchor='rm')
+    y = top
+    if save_mode:
+        new_row(c, (lx0, y, rw, y + 44), 'normal')
+        y += 50
+    shown = 0
+    for n in sorted(manual, key=lambda n: manual[n]['time'], reverse=True):
+        if y + 52 > bottom:
+            break
+        notes_row(c, (lx0, y, rw, y + 52), n, manual[n], 'chosen' if n == chosen else 'normal', gone=asking and n in bare)
+        y += 57
+        shown += 1
+    scrollbar(c, lx1 - 6, top, bottom, 0, shown, max(shown, len(manual)))
+    sweep_button(c, button, len(bare), 'hover' if asking else 'normal')
+    s = manual[chosen]
+    lib_page(c, r, lx0 + 374, ly0, r[2] - 24, 'No. ' + str(chosen) + ' · ' + date_text(s['week']), s, save_mode, 'manual')
+    if asking:
+        callout_side(c, button, ['Delete the %d manual saves without a comment?' % len(bare),
+                                 'The %d with one (★) stay. It cannot be undone.' % (len(manual) - len(bare))],
+                     ('Delete %d' % len(bare), 'Keep'))
+        pointer(c, button[0] + 90, button[1] + 14)
+    c.save(name, caption, note)
+
+
 if ROUND == 'library':
     made_up = 'The saves are made up from the owner\'s slots.'
     g_screen('G1-manual-load.png', False, 'manual', 12, 'G1 — two lists as a switch: Manual saves (Load)',
@@ -1042,6 +1153,20 @@ if ROUND == 'library':
              'One chosen save across both lists; the page is the same as G\'s. ' + made_up)
     h_screen('H3-stacked-save.png', True, 'new', 'H3 — stacked (Save): "New save" at the top of the manual saves',
              'Fewer manual saves in view than in G: the auto-saves take the column\'s top half. ' + made_up)
+elif ROUND == 'notes':
+    made_up = 'Made-up saves: five of the fourteen have a comment.'
+    notes_screen('N1-star-head.png', 'head', 'N1 — a star on a commented save\'s seal; the sweep in the list\'s heading',
+                 'The button takes the place of "as many as you keep" and counts the saves it would delete. ' + made_up)
+    notes_screen('N2-star-foot.png', 'foot', 'N2 — the same star; the sweep under the list, the width of a row',
+                 'One row fewer in view; the heading keeps its line. ' + made_up)
+    notes_screen('N3-ask-head.png', 'head', 'N3 — N1 asking: the question beside the button, the saves to go struck',
+                 'Delete 9 deletes them; Keep (or a right click) leaves everything. ' + made_up, asking=True)
+    notes_screen('N4-ask-foot.png', 'foot', 'N4 — N2 asking: the same question beside the button at the foot',
+                 'The rows to go are dimmed and struck through while the question is open. ' + made_up, asking=True)
+    notes_screen('N5-after.png', 'head', 'N5 — after Delete 9: the five saves with a comment, the button off',
+                 'Lit again once there is a manual save without a comment. ' + made_up, swept=True)
+    notes_screen('N6-save-head.png', 'head', 'N6 — N1 in Save: the button works in Save and Load alike',
+                 '"+ New save" heads the list as built. ' + made_up, save_mode=True)
 elif ROUND == 'sort':
     for n, (day, hour, minute) in SORT_TIMES.items():
         if n in SLOT:
