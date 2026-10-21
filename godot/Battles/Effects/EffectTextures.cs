@@ -143,6 +143,11 @@ internal static class EffectTextures
 
     private static Texture2D? _surgeBody, _surgeEdge;
 
+    /// <summary>A snowflake: six thin arms from a small bright core, each with two pairs of short side branches, in a soft glow.</summary>
+    public static Texture2D Flake => _flake ??= Make(128, FlakeShape);
+
+    private static Texture2D? _flake;
+
     /// <summary>A tile: a flat rectangle, its edges a little soft (the mosaic a barrier breaks up into).</summary>
     public static Texture2D Tile => _tile ??= Make(64, TileShape);
 
@@ -431,6 +436,31 @@ internal static class EffectTextures
         float r = MathF.Sqrt(x * x + y * y), hollow = MathF.Sqrt((x + 0.32f) * (x + 0.32f) + y * y);
         float body = (1 - SmoothStep(0.88f, 0.96f, r)) * SmoothStep(0.86f, 0.94f, hollow);
         return body * (0.6f + 0.4f * SmoothStep(0.6f, 0.95f, r));
+    }
+
+    // Six arms at 60°, each a line to radius 0.85 with branches at 0.4 and 0.62 of its length, angled ±60° outward.
+    private static float FlakeShape(float x, float y)
+    {
+        float r = MathF.Sqrt(x * x + y * y);
+        if (r > 1)
+            return 0;
+        float angle = MathF.Atan2(y, x);
+        float sector = MathF.Round(angle / (MathF.PI / 3)) * (MathF.PI / 3);
+        // The point in its arm's frame: u along the arm, v across it.
+        float u = r * MathF.Cos(angle - sector), v = MathF.Abs(r * MathF.Sin(angle - sector));
+        float arm = Gauss(v, 0.035f) * (1 - SmoothStep(0.75f, 0.88f, u)) * SmoothStep(-0.05f, 0.05f, u);
+        float branches = 0;
+        foreach (var (at, length) in new[] { (0.4f, 0.22f), (0.62f, 0.15f) })
+        {
+            // A branch from (at, 0) outward at 60°: its distance to that segment.
+            float du = u - at, along = du * 0.5f + v * 0.866f;
+            float across = MathF.Abs(-du * 0.866f + v * 0.5f);
+            if (along > 0 && along < length)
+                branches = Math.Max(branches, Gauss(across, 0.03f) * (1 - along / length * 0.5f));
+        }
+        float core = Gauss(r, 0.1f);
+        float glow = 0.25f * MathF.Pow(Math.Max(0, 1 - r), 2);
+        return Math.Max(arm, branches) + core + glow;
     }
 
     private static float PetalShape(float x, float y)

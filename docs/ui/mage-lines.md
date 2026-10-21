@@ -78,7 +78,14 @@ variants later, if the owner wants them.
    order (the first two are the player's units' too), as the others were made: drawn by code after
    its reference, in Debug → Effects and `--effects` (`ice-magic`, `lightning-magic`, `dark-magic`,
    `light-magic`, `poison-magic`), its frames next to the reference's for the owner's look, then wired
-   in place of the Fire Blast.
+   in place of the Fire Blast. The references (owner, 2026-10-21): ice **40730** recoloured white-blue,
+   lightning **40630**, dark **47030**, light **40430**, poison **41300**.
+   - **Ice** — v1 built (2026-10-21), awaiting the owner's look: `godot/Battles/Effects/IceEffect` (a new
+     texture, `EffectTextures.Flake`, the snowflake), wired for `IceMagic`. Miko Storm's flurry in white and
+     ice blue: blowing in at the bottom right (2-5), a dense whirl of ice shards (diamonds, `Kite`),
+     snowflakes, frosty billows, cold glows, thin wind arcs and a few curls turning about a centre that
+     climbs to (635, 165) by frame 12, fullest at 12-18, thinning to frame ~29; Miko Storm's petals became
+     shards and flakes, its mint white-blue.
 8. **Docs** — docs/ui/battle-screen.md, "The exchange's effects", says how a magic attack picks its
    effect; CLAUDE.md's effect list gets the new effects.
 
