@@ -22,11 +22,11 @@ after a Sengoku Rance counterpart the owner chooses (step 1 below).
 
 | Element | Spells that pick it (by the line shown) | Callers of the element when no spell is named |
 |---|---|---|
-| **Fire** (Fire Blast, ours) | Flame Arrow, Fire Laser, Super Royal Fire Laser | Sill (unit 2) *(proposal)*, Shizuka (unit 17), Gandhi (unit 37), Magic (unit 39), Nagi (unit 40); Nagi (commander 107), Saias (commander 113), Annis (commander 168) *(proposal)* — and everyone without an element of their own (below) |
+| **Fire** (Fire Blast, ours) | Flame Arrow, Fire Laser, Super Royal Fire Laser | Sill (unit 2), Shizuka (unit 17), Gandhi (unit 37), Magic (unit 39), Nagi (unit 40); Nagi (commander 107), Saias (commander 113), Annis (commander 168) — and everyone without an element of their own (below) |
 | **Ice** | Ice Arrow, White Chill, Snow Laser, "There, freeze!" | Asuka (unit 11), Melfeis (unit 13); La Seizel (commander 90), Uspira (commander 117) |
-| **Lightning** | Lightning, Lightning Laser | Hanty (unit 19) *(proposal: her spell as an enemy)*, Eleanor (unit 23), Somita (unit 46); Melfeis (commander 4), Hanty (commander 57), Magic (commander 110), Kabachahn (commander 121) |
-| **Dark** | Darkness Beam, Black Wave | Chizuko (unit 38); Chizuko (commander 101); *proposal:* the demons without a spell — Satella (unit 29, and as commander 100), Miki (unit 32), La Vaswald (commander 98) |
-| **Light** | Friendship Beam, Light Bomb, Miracle Straight Flash | Seizel Sisters (unit 42); Alex (commander 125), Redeye (commander 130); *proposal:* Hanny King (unit 48) |
+| **Lightning** | Lightning, Lightning Laser | Hanty (unit 19; her spell as an enemy), Eleanor (unit 23), Somita (unit 46); Melfeis (commander 4), Hanty (commander 57), Magic (commander 110), Kabachahn (commander 121) |
+| **Dark** | Darkness Beam, Black Wave | Chizuko (unit 38); Chizuko (commander 101); the demons without a spell — Satella (unit 29, and as commander 100), Miki (unit 32), La Vaswald (commander 98) |
+| **Light** | Friendship Beam, Light Bomb, Miracle Straight Flash | Seizel Sisters (unit 42); Alex (commander 125), Redeye (commander 130); Hanny King (unit 48) |
 | **Poison** | nerve gas, Poison Gauntlet | Papaya (commander 104), Ragarl (commander 109) |
 
 The element of a caster is kept per record and side: Melfeis casts Ice Arrow as our unit (13) but
@@ -35,7 +35,7 @@ Lightning as the enemy's commander (4), Magic Fire Laser as unit 39 but Lightnin
 (unit 45), the Monster Generals (commanders 88, 89), Marder (commander 100), Zeth's chanting rank and
 file (Mage Leader (commander 96) and the others in "Zeth's rank-and-file mages"), Ouzawa (commander
 150), Deckmaster (commander 152), Strength (commander 153). Sill shouts fire and ice alike; her
-generic lines take Fire unless the owner chooses otherwise.
+generic lines take Fire.
 
 One effect per element, not per spell's shape (an arrow, a laser, a beam, a burst): the shapes can be
 variants later, if the owner wants them.
@@ -47,7 +47,8 @@ variants later, if the owner wants them.
   Flame Arrow `:8893`, Ice Arrow `:8901`). A table in `Original.Content/Battles` (`MagicSpells`) maps the
   spell lines to their element; `BattlePresenter` remembers the element of the last spell line it was
   shown since the engagement started, and forgets it when the exchange's shots start.
-- **The caster.** The same table maps the casters to their element: a player's unit by `Unit_Cur`, an
+- **The caster.** The same table maps the casters to their element (a Demon Magic caster (class 11) not in it is
+  Dark: Satella, Miki, La Vaswald, and commander 100 when it is Satella — Marder in the same slot is a Mage): a player's unit by `Unit_Cur`, an
   enemy's commander by `Cmdr_Cur`, read at the shots (where stage 4's substitute commander 200,
   BTX-08, has been put back already).
 - **The effect.** `ExchangeEffect.Of` takes the element heard: when the firing side's action is magic
@@ -61,7 +62,8 @@ variants later, if the owner wants them.
 
 1. **The references** — Sengoku Rance's magic effects for ice, lightning, dark, light and poison,
    their frames looked at and offered to the owner (docs/sengoku/04-screen.md §2.4.1 gets the
-   survey); the owner chooses one per element and settles the proposals above.
+   survey); the owner chooses one per element. The owner settled the casters above (2026-10-21: Sill fire, Hanty
+   lightning, the demons without a spell dark, Hanny King light, Annis fire).
 2. **The choice** — `MagicSpells` (the spell lines and the casters), the presenter's memory,
    `ExchangeEffect.Of` and the new kinds; until an element's effect exists it plays the Fire Blast.
    Tests: `ExchangeEffectTests` on given states (a spell line, a generic line, a line for the target,
