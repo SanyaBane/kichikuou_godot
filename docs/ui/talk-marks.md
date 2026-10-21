@@ -161,15 +161,36 @@ third rule change on purpose**:
   original's odds hold. E.g. Cafe's (unit 45) 1/3 scene comes on the next talk.
 - **The draw is still made** and the generator moves as in the original; only the outcome is replaced (through
   `IScriptRandom`), so every later draw — battles, events — is the same.
-- Never for a branch that changes what counts: Haurein's leaving, Kanami's scenes, Isoroku's stage, Kentarou's steps
-  keep their odds.
+- This point is for the harmless branches only; the draws that change what counts have a point of their own below.
 - So kinds 1, 2 and 5 never need a mark of their own: an unread variant is a certain New.
 - **A point of its own: the draws that change the state** (owner, 2026-10-22, for Haurein, Kentarou and Isoroku):
   the usual scene first; once it is read, the drawn outcome comes for certain whenever its conditions hold — Haurein
   leaves on the talk after her kiss prank was read (§3.3); Kentarou's training moves his state on every talk after
   the first (Rance Attack after four training talks, not about seven, §3.5); Isoroku's pregnancy comes on her second
-  stage-2 visit with the Hospital built (§3.6). Their mark is "???", never New. Kanami (§3.4) is open, Suzume's and
-  Wendy's first meetings (`Cﾊｰﾚﾑ:6`) keep the original's 1 in 4 (owner).
+  stage-2 visit with the Hospital built (§3.6). Their mark is "???", never New. Kanami's scene 2 and tower scene
+  (§3.4) come for certain the same way once her usual visit is read, with a plain New: Code's event 4 asks the
+  player (below), so they hold no danger (owner, 2026-10-22). Suzume's and Wendy's first meetings (`Cﾊｰﾚﾑ:6`) keep
+  the original's 1 in 4 (owner).
+
+**Kanami chooses in Code's event 4** (owner, 2026-10-22; the first change of a story branch, so a decision of its
+own, 31, or a point of 30). In the original the ending is not in the harem: Code's event 4 (`Gｺｰﾄﾞ` 4) is a weekly
+event (`COM:248-252`, `F_Code_State = 3` during the Zeth war) that comes once, the week after Code's event 3, and
+counts the four flags (`Gｺｰﾄﾞ:1444-1459`): two or more → Kanami goes with Code, he kills Rance, ending 3
+(`F_Code_State` 5); fewer → she stops him, he dies (4); after it the flags change nothing. The chain: event 1 on a
+ninja mission of Kanami's (`Bt_ScoutNinja = 1`) into a province of Zeth's (`Cﾆﾝｼﾞｬ:351`, `:548`), event 2 a weekly
+event (`COM:315`), event 3 another such mission (`:355`, `:554`). The other two flags come from the ninja command:
+`F_Kanami_Scene3` by its "Get Me A Burger" item (offered 1 in 5 when Kanami is sent, `Cﾆﾝｼﾞｬ:281-294`),
+`F_Kanami_Scene4` by a 1 in 5 scene when she is sent (`:92-98`); they stay as they are.
+
+- With fewer than two flags, the original's path: Kanami is loyal, a choice would not fit.
+- With two or more, our menu right after her doubts (the scene's lead-in ends with her asking herself whether to stop
+  Code, then the clock strikes one) and before the count: **"Stop Code"** plays the fewer-than-two branch (it opens
+  with her "I'm a ninja before a woman" and reads as her decision; nothing in it tells the flags), **"Go with Code"**
+  the branch of ending 3. The items are the port's own English text, their wording to settle.
+- So ending 3 stays reachable, but only on purpose.
+- It needs a new mechanism: `Gｺｰﾄﾞ` runs from the player's files, and the port can route a whole file to its own code
+  but not answer one test inside a scene. A scene patch — one test (`Gｺｰﾄﾞ:1457`) answered by our menu — is small
+  and general. The differential tests run without it.
 - The differential tests run without it, so the files run as the original there.
 
 **Kentarou's hint** (part of it, or a decision of its own): when his training draw moves the state, our own line
@@ -180,14 +201,7 @@ line stays untouched, the 1/3 stays.
 
 - The menus inside the scenes (kind 4, §3): the owner discusses them apart.
 - The Think-only flags (§4): the owner discusses them later.
-- Kanami's harem draws (§3.4) under §5's point on the draws that change the state. The ending is not in the harem:
-  Code's event 4 (`Gｺｰﾄﾞ` 4) is a weekly event (`COM:248-252`, `F_Code_State = 3` during the Zeth war) that comes
-  once, the week after Code's event 3, and counts the four flags then (`Gｺｰﾄﾞ:1444-1459`): two or more → ending 3
-  (`F_Code_State` 5), fewer → Code dies (4); after it the flags change nothing. The chain: event 1 on a ninja
-  mission of Kanami's (`Bt_ScoutNinja = 1`) into a province of Zeth's (`Cﾆﾝｼﾞｬ:351`, `:548`), event 2 a weekly event
-  (`COM:315`), event 3 another such mission (`:355`, `:554`). The other two flags come from the ninja command:
-  `F_Kanami_Scene3` by its "Get Me A Burger" item (offered 1 in 5 when Kanami is sent, `Cﾆﾝｼﾞｬ:281-294`),
-  `F_Kanami_Scene4` by a 1 in 5 scene when she is sent (`:92-98`).
+- The wording of Kanami's two items in Code's event 4 (§5).
 - Decision 30: always or an option.
 - Kentarou's line: its wording.
 - Where the marks are drawn (the Subordinates picker's cells and Talk, the harem picker's cells): the mock-ups, later.
