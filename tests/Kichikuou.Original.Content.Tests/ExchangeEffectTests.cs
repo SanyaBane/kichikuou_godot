@@ -94,15 +94,16 @@ public class ExchangeEffectTests
     }
 
     /// <summary>
-    /// The ninja's follow-up is Kanami's own weak throw when record 51 holds her sprite, the Ninja troop's for the
-    /// others (<c>FIGT.ADV:1922-1968</c>; owner, 2026-10-21).
+    /// The ninja's follow-up is each ninja's own, told by her sprite in record 51 (<c>FIGT.ADV:1922-1968</c>; owner,
+    /// 2026-10-21); any other sprite plays the Ninja troop's.
     /// </summary>
     [Theory]
     [InlineData(1164, ExchangeEffectKind.KanamiFollowUp)]
-    [InlineData(1176, ExchangeEffectKind.NinjaFollowUp)]
-    [InlineData(1182, ExchangeEffectKind.NinjaFollowUp)]
-    [InlineData(1185, ExchangeEffectKind.NinjaFollowUp)]
-    public void The_ninja_follow_up_is_Kanami_s_own_by_her_sprite(int sprite, ExchangeEffectKind kind)
+    [InlineData(1176, ExchangeEffectKind.FreyaFollowUp)]
+    [InlineData(1182, ExchangeEffectKind.KaoruFollowUp)]
+    [InlineData(1185, ExchangeEffectKind.WichitaFollowUp)]
+    [InlineData(0, ExchangeEffectKind.NinjaFollowUp)]
+    public void The_ninja_follow_up_is_each_ninja_s_own_by_her_sprite(int sprite, ExchangeEffectKind kind)
     {
         var s = new GameState();
         s.Bt_PlayerAction = (Sys3Int)0;
@@ -310,7 +311,8 @@ public class ExchangeEffectTests
                     wrong.Add($"exchange {exchanges}: {effect.Kind} with the troops firing or other than two shots at the commander");
                 // Whirlwind Shot, High Speed and the ninja's follow-up are the commander's one shot at the commander: every
                 // other shot is zeroed (02-resolution.md §3.3).
-                if (effect.Kind is ExchangeEffectKind.WhirlwindShot or ExchangeEffectKind.HighSpeed or ExchangeEffectKind.NinjaFollowUp or ExchangeEffectKind.KanamiFollowUp && (shots[0] != 0 || shots[1] != 0 || shots[2] != 0 || shots[3] != 1))
+                if (effect.Kind is ExchangeEffectKind.WhirlwindShot or ExchangeEffectKind.HighSpeed or ExchangeEffectKind.NinjaFollowUp or ExchangeEffectKind.KanamiFollowUp
+                    or ExchangeEffectKind.FreyaFollowUp or ExchangeEffectKind.KaoruFollowUp or ExchangeEffectKind.WichitaFollowUp && (shots[0] != 0 || shots[1] != 0 || shots[2] != 0 || shots[3] != 1))
                     wrong.Add($"exchange {exchanges}: {effect.Kind} firing other than the commander's one shot at the commander");
                 bool twoSided = s.Bt_PlayerAction != 99 && s.Bt_EnemyAction != 99;
                 if (twoSided && (s.Bt_PlayerAction != 0 || s.Bt_EnemyAction != 0 || s.Bt_MsgMode.Value is not (3 or 4)))

@@ -41,10 +41,16 @@ public enum ExchangeEffectKind
     HighSpeed,
     /// <summary>Rick's By la Way (Rance Attack's recoloured red).</summary>
     ByLaWay,
-    /// <summary>The ninja's follow-up by Freya, Kaoru or Wichita (after Sengoku Rance's Ninja troop effect, 40100).</summary>
+    /// <summary>The ninja's follow-up by a ninja none of the four (after Sengoku Rance's Ninja troop effect, 40100; never in play).</summary>
     NinjaFollowUp,
     /// <summary>Kanami's follow-up (ours, a single weak throw after Sengoku Rance's Sandal Shuriken, 46780).</summary>
     KanamiFollowUp,
+    /// <summary>Freya's follow-up (ours, a lash of her whip).</summary>
+    FreyaFollowUp,
+    /// <summary>Kaoru's follow-up (ours, her fists, after Sengoku Rance's Motonari Punch, 46620).</summary>
+    KaoruFollowUp,
+    /// <summary>Wichita's follow-up (ours, a cut of her flaming sword, after Sengoku Rance's Fiend Slash, 46800).</summary>
+    WichitaFollowUp,
     /// <summary>Miki's Vanish Bomb (after Sengoku Rance's Begone Bomb, 40560).</summary>
     VanishBomb,
     /// <summary>Patton's C. War Dance (after Sengoku Rance's Ieyasu's Special Move, 47400).</summary>
@@ -66,7 +72,7 @@ public enum ExchangeEffectKind
 /// one (owner): the Rance Attack command its own (one effect: Kichikuou's is the commander's blow alone, as Sengoku
 /// Rance's first phase), Kentarou's his own Kentarou-kun Slash's; the beams (special 2) the White Destruction Beam's, white or
 /// dark by the actor; Isoroku's Whirlwind Shot (special 3) Piercing Tempest's, Meglass's High Speed Commander Charge's,
-/// the ninja's follow-up the Ninja troop's, Kanami's our own weak throw; Miki's Vanish Bomb Begone Bomb's; Patton's C. War Dance Ieyasu's Special
+/// the ninja's follow-up each ninja's own, weak (Kanami's throw, Freya's whip, Kaoru's fists, Wichita's flaming sword); Miki's Vanish Bomb Begone Bomb's; Patton's C. War Dance Ieyasu's Special
 /// Move's; Asuka's Chuhai Shogun Whirlwind's; T2 Goliath's strike Gigai Punch's; Rolex's T2 Soaring Wave our own; Rick's By la Way Rance Attack's recoloured red; the others play by their action for now.
 /// A magic attack plays its element's (owner, 2026-10-21; docs/ui/mage-lines.md): the spell the caster shouted, else
 /// the caster's own (<see cref="MagicSpells"/>).
@@ -77,8 +83,6 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
 {
     private const int None = 99;
 
-    /// <summary>Kanami's sprite, which tells her apart as record 51 (<c>FIGT.ADV:1922-1927</c>).</summary>
-    private const int KanamiSprite = 1164;
 
     /// <summary>
     /// The effect of the exchange the state is in; null when neither side fires. <paramref name="shouted"/> is the
@@ -125,8 +129,8 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
     /// §3.3: the commander's one shot at the commander), one setter for two menu items: Whirlwind Shot by Isoroku
     /// (unit 27, <c>FIGT_SEL.ADV:653</c>) and High Speed by Meglass (unit 30, <c>:599</c>; Commander Charge's, owner,
     /// 2026-10-15); the ninja's follow-up sets special 3 too (<c>FIGT.ADV:1980</c>) with the ninja as record 51
-    /// (<c>:1922-1968</c>, Kanami, Freya, Kaoru or Wichita, told apart by its sprite) and plays the Ninja troop's, Kanami's our own
-    /// weak throw (owner, 2026-10-21). Special 4
+    /// (<c>:1922-1968</c>, Kanami, Freya, Kaoru or Wichita, told apart by its sprite) and plays her own weak effect (owner,
+    /// 2026-10-21). Special 4
     /// (<c>FIGT.ADV:1560-1570</c>) is Vanish Bomb, Miki's (unit 32) alone — the menu offers it to her only
     /// (<c>FIGT_SEL.ADV:644</c>) and her involuntary bomb is hers too (<c>FIGT.ADV:1588-1590</c>) — and plays Begone
     /// Bomb's. Special 5 (<c>FIGT.ADV:1571-1577</c>) is C. War Dance, Patton's (unit 18) alone — its menu item
@@ -150,14 +154,26 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
         (2, 40) => ExchangeEffectKind.NagiBeam,
         (3, 27) => ExchangeEffectKind.WhirlwindShot,
         (3, 30) => ExchangeEffectKind.HighSpeed,
-        (3, 51) when s.Units[51].CgFull.Value == KanamiSprite => ExchangeEffectKind.KanamiFollowUp,
-        (3, 51) => ExchangeEffectKind.NinjaFollowUp,
+        (3, 51) => NinjaKindOf(s.Units[51].CgFull.Value),
         (4, 32) => ExchangeEffectKind.VanishBomb,
         (5, 18) => ExchangeEffectKind.WarDance,
         (6, 11) => ExchangeEffectKind.Chuhai,
         (10, 51) => ExchangeEffectKind.Goliath,
         (7, 47) => ExchangeEffectKind.SoaringWave,
         _ => null,
+    };
+
+    /// <summary>
+    /// The ninja's follow-up by the ninja record 51 holds, told by its sprite (<c>FIGT.ADV:1922-1968</c>): each of the four
+    /// plays her own (owner, 2026-10-21).
+    /// </summary>
+    private static ExchangeEffectKind NinjaKindOf(int sprite) => sprite switch
+    {
+        1164 => ExchangeEffectKind.KanamiFollowUp,
+        1176 => ExchangeEffectKind.FreyaFollowUp,
+        1182 => ExchangeEffectKind.KaoruFollowUp,
+        1185 => ExchangeEffectKind.WichitaFollowUp,
+        _ => ExchangeEffectKind.NinjaFollowUp,
     };
 
     private static ExchangeEffectKind? KindOf(int action) => action switch
