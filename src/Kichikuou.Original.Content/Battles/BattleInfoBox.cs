@@ -9,7 +9,7 @@ public enum InfoBoxKind
     /// <summary>A unit's defence (<c>FIGT.ADV:1399</c>): an "ENEMY HIT −n%" ribbon flashing on its card, the wait answered at once.</summary>
     Defence,
 
-    /// <summary>A unit or a commander down (<c>FIGTﾐｶDE.ADV</c>, <c>FIGTﾃｷDE.ADV</c>): a stamp across its dimmed card, the player's click.</summary>
+    /// <summary>A unit or a commander down (<c>FIGTﾐｶDE.ADV</c>, <c>FIGTﾃｷDE.ADV</c>): a stamp flashing across its dimmed card, the wait answered at once (owner, 2026-10-21).</summary>
     Fall,
 
     /// <summary>A box our screen shows elsewhere: the battle's end reason (on the results plate) and a level-up's first page.</summary>
@@ -33,8 +33,8 @@ public enum InfoBoxKind
 public sealed record BattleInfoBox(InfoBoxKind Kind, IReadOnlyList<string> Sentences, BattlePlace? Place = null, string Mark = "",
     BattleResults? Results = null)
 {
-    /// <summary>Whether its key wait is answered at once, as by a click: a defence (its badge flashes) and a passed box.</summary>
-    public bool AnsweredAtOnce => Kind is InfoBoxKind.Defence or InfoBoxKind.Passed;
+    /// <summary>Whether its key wait is answered at once, as by a click: a defence (its ribbon flashes), a fall (its stamp flashes) and a passed box.</summary>
+    public bool AnsweredAtOnce => Kind is InfoBoxKind.Defence or InfoBoxKind.Fall or InfoBoxKind.Passed;
 
     /// <summary>
     /// A page's lines as sentences: the lines trimmed and flowed into one paragraph (<see cref="BattleSpeech.Flow"/>) up to an

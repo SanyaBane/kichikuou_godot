@@ -229,11 +229,11 @@ as it is. Where to start:
    **The owner's answers (2026-10-19)**, with two more mock-ups of the round: K3d — the level-ups as rows on the plate
    under the EXP ("LEVEL UP", the name, the gains); K3e — a "LEVEL UP" badge on the unit's card with the gains on a small
    plate. The defence's badge flashes and its wait is answered at once (as the order's label, docs/ui/battle-screen.md,
-   "The order messages"); a fall's stamp waits for the player's click. The end: the reason's wait (the result or the time
-   limit) is answered at once, so the plate shows the reason, the damages and the EXP together at the tally's wait, one
-   click (a scene between them, `Gﾀﾐ`, plays before the plate); then **K3d**: each level-up adds its row to the plate, one
-   click (its first page answered at once). Which units level up is a rule the presenter cannot know beforehand, so the
-   plate grows.
+   "The order messages"); a fall's stamp waits for the player's click (since 2026-10-21 answered at once, below). The
+   end: the reason's wait (the result or the time limit) is answered at once, so the plate shows the reason, the damages
+   and the EXP together at the tally's wait, one click (a scene between them, `Gﾀﾐ`, plays before the plate); then
+   **K3d**: each level-up adds its row to the plate, one click (its first page answered at once). Which units level up is
+   a rule the presenter cannot know beforehand, so the plate grows.
    **Built (2026-10-19):** `Original.Content/Battles/BattleInfoBox` (the kinds `Panel`, `Defence`, `Fall`, `Passed`,
    `Results`; `BattleResults`, `BattleLevelUp`) from `BattlePresenter.InfoBox` (`BattlePresenter.InfoBoxes.cs`): the presenter
    keeps the script locations printed into an open 143/153 (frame 894; not the "vs" window, the order messages, the units'
@@ -248,7 +248,8 @@ as it is. Where to start:
    the rest flowed: a modifier's "… UP", " UP" alone for BTX-09, Mill's beasts, the Popularity Staff); a fall or a defence
    without its card, and every other box, our panel with the page's lines flowed into sentences. The windows' layer leaves
    frame 894 out but on the strategy's screen. `godot/Battles/BattleInfoLayer` (on `BattleBoardView`, over the cards)
-   draws them; `GameScreen.WaitForKeyAsync` answers a defence (its badge flashing 1.8 s) and a passed box at once.
+   draws them; `GameScreen.WaitForKeyAsync` answers a defence (its badge flashing 1.8 s), a fall (since 2026-10-21, below)
+   and a passed box at once.
    `--auto` in a window dumps `info-defence`, `info-fall`, `info-results`, `info-level-up`, `info-panel` once a launch.
    Tests: `BattleInfoBoxTests` (the kinds, and over every capture: the badge is the slot's new state, the stamp's card is
    down, the plate holds the losses and the EXP and one row more per level-up, every tally a plate). Seen in a window from
@@ -266,6 +267,12 @@ as it is. Where to start:
    §8.3, 02-resolution.md §6.10). Label rounds L1-L7, M1-M6 and N1-N6 (`tools/ui/mock_defend.py`, each N drawn at −2 %
    and −21 %, the increase's range); **the owner chose N5**, built: "DEFEND" at 19 px, "ENEMY HIT −n%" in gold at 16 px
    right-aligned (`BattlePresenter.DefenceMark`), the shield moved onto the ribbon's left tail to make room.
+   **The fall without its click (owner, 2026-10-21):** a defeat played two clicks — the fallen one's line in its bubble
+   (`WAO_SUB` 151 or 141, then 11's wait), then the box 153 or 143 with its sentence ("… was injured and couldn't move.",
+   `FIGTﾃｷDE.ADV:1811-1830`; "… fell in battle.", `FIGTﾐｶDE.ADV:721-727`) and its own wait, our stamp. Now the stamp's
+   wait is answered at once, as the defence's: the stamp flashes on the fallen card (`BattleInfoLayer.Flash`: it rises,
+   holds and fades as the ribbon, the card dimmed under it, in 1.1 s, `BattleInfoLayer.FallSeconds`), the battle held for
+   the whole of it — a stamp still fading when it went on lay on the card that moved up into the fallen one's place.
 6. **The message log** — its design discussed first (backlog).
    **Survey (2026-10-19).** The original has none (xsystem35 neither); Sengoku Rance has no battle text log either
    (docs/sengoku/04-screen.md:636). What a log can hold, and where our presenters already have it:

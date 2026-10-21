@@ -1097,9 +1097,24 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         else if (BattleScreenShown && _presenter.Battle.InfoBox is { AnsweredAtOnce: true } passed)
         {
             // Our battle screen shows these info boxes elsewhere (docs/ui/messages.md, §5 step 5; owner, 2026-10-19): a defence's
-            // badge flashes on the unit's card, the end's reason waits for the results plate, a level-up's first page for its
-            // row. The wait is answered at once, as by a click (the key lands in RetVal), after the release of a button still held.
-            if (passed.Kind == InfoBoxKind.Defence)
+            // ribbon flashes on the unit's card, a fall's stamp on the fallen card (owner, 2026-10-21: no second click after the
+            // defeat's line; the battle held for the whole flash), the end's reason waits for the results plate, a level-up's first
+            // page for its row. The wait is answered at once, as by a click (the key lands in RetVal), after the release of a
+            // button still held.
+            if (passed.Kind == InfoBoxKind.Fall)
+            {
+                _battleView.Info.Flash(passed, "");
+                double waited = 0;
+                if (_options.Auto && Windowed && _messageDumps.Add("info-fall"))
+                {
+                    await DelayAsync(waited = BattleInfoLayer.FallPeak);         // the stamp at its height
+                    await AutoDumpAsync("info-fall");
+                }
+                if (!_options.Fast)
+                    await DelayAsync(BattleInfoLayer.FallSeconds - waited);
+                _battleView.Info.EndFlash(passed);                              // the cards move up once the battle goes on
+            }
+            else if (passed.Kind == InfoBoxKind.Defence)
             {
                 _battleView.Info.Flash(passed, passed.Place is { } at && BattleBoard.Card(_presenter.State!, at) is { } card ? card.Name : "");
                 await GuardAsync(BattleSide.Player);

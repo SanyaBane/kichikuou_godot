@@ -59,7 +59,7 @@ public class BattleInfoBoxTests
         Assert.Null(presenter.InfoBox);
     }
 
-    /// <summary>A unit down (<c>FIGTﾐｶDE.ADV:724</c>): a stamp on Barres's (unit 6) card, the player's click; Ex's (commander 1) retreat.</summary>
+    /// <summary>A unit down (<c>FIGTﾐｶDE.ADV:724</c>): a stamp on Barres's (unit 6) card, answered at once; Ex's (commander 1) retreat.</summary>
     [Fact]
     public void A_fall_is_a_stamp_on_the_fallen_card()
     {
@@ -72,7 +72,7 @@ public class BattleInfoBoxTests
         presenter.Show(new MessageEvent(new ScriptRef("FIGTﾐｶDE.ADV", 724)));
         Wait(presenter);
         var box = presenter.InfoBox!;
-        Assert.Equal((InfoBoxKind.Fall, new BattlePlace(BattleSide.Player, 3), "FELL IN BATTLE", false),
+        Assert.Equal((InfoBoxKind.Fall, new BattlePlace(BattleSide.Player, 3), "FELL IN BATTLE", true),
             (box.Kind, box.Place, box.Mark, box.AnsweredAtOnce));
         Close(presenter);
 
