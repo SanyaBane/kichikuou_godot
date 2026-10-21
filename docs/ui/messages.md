@@ -113,7 +113,7 @@ images go to a folder outside the repository. Its numbers are the build's starti
 
 ## 5. Steps (proposed, 2026-10-18)
 
-Each step behind Option → Interface → New (`godot/Strategy/InterfaceChoice`); the original's layout stays
+Each step behind our interface (`godot/Strategy/InterfaceChoice`); the original's layout stays
 as it is. Where to start:
 
 - **The cover pattern** the windows follow: `GamePresenter.CoverWeekReport` (the presenter's flag, which

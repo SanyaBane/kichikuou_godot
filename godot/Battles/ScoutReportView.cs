@@ -7,7 +7,7 @@ using Kichikuou.Original.Content.Strategy;
 namespace Kichikuou.Game.Battles;
 
 /// <summary>
-/// The ninja's scout report as our own overlay (Option → Interface → New; docs/ui/battle-screen.md, "The scout
+/// The ninja's scout report as our own overlay (our interface; docs/ui/battle-screen.md, "The scout
 /// report"; owner, 2026-10-14, mock-up C): the original's screen dimmed and blurred under it; the ninja's whole
 /// portrait on the left; our balloon beside it at the top with the army's name and the totals; the approaching
 /// commanders as cards in the places the battle will give them, the front row (places 1-2) in the left column, the

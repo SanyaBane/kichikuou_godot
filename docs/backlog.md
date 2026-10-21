@@ -84,7 +84,7 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   ideally also during play), 9 and 12 (what a redesign replaces). The survey's parts 1-4 are done
   (2026-10-12, [ui/survey.md](ui/survey.md): the screens, the classes of work, input on mouse and
   touch, how a second UI plugs in). Decision 25 (2026-10-12): screen by screen over the original
-  layout, the deployment table first — built (2026-10-12, Option → Interface → New, its second part
+  layout, the deployment table first — built (2026-10-12, our interface, its second part
   too, and the third, the party as a formation with faces and drag and drop): [ui/deployment-table.md](ui/deployment-table.md).
   Next (owner, 2026-10-12): our own battle screen, the whole battle in the manner of Sengoku Rance;
   its battle is surveyed from its code in [sengoku/README.md](sengoku/README.md); the plan is

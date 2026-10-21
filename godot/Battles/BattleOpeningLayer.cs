@@ -5,7 +5,7 @@ using Kichikuou.Original.Content.Battles;
 namespace Kichikuou.Game.Battles;
 
 /// <summary>
-/// The battle's opening on our battle screen (Option → Interface → New; docs/ui/battle-screen.md, "The opening";
+/// The battle's opening on our battle screen (our interface; docs/ui/battle-screen.md, "The opening";
 /// owner, 2026-10-14, variant C after Sengoku Rance's): over the scene while the battle's first round header waits
 /// for its click (<see cref="BattleOpening"/>), fading in over the field (<see cref="BattleScreenSettings.OpeningAppearSeconds"/>) — the battle's own field cut in two along a slanted seam, the player's
 /// half tinted blue and the enemy's red, each with its army's name (Shojumaru, wrapped into up to three lines) and its

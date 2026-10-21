@@ -5,7 +5,7 @@ using Kichikuou.Original.Content.Strategy;
 namespace Kichikuou.Game.Strategy;
 
 /// <summary>
-/// Our message windows (docs/ui/messages.md, variant A, steps 1-2; Option → Interface → New): the original's windows
+/// Our message windows (docs/ui/messages.md, variant A, steps 1-2; our interface): the original's windows
 /// 111/112/121/122/113/123 and 131 where they are, as lacquer panels of their kind — speech with a tail at its portrait, a
 /// thought rounded with a dashed frame and a trail of bubbles, narration in a warmer lacquer, a place's title in Cinzel, 131
 /// a bar under the event CG with its speaker on a plate — the text at the cells the engine placed it in (131's moved left

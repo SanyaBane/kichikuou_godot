@@ -144,7 +144,8 @@ the project is GPL-2.0-or-later (`LICENSE`; README, "License").
 Next (owner's requests 2026-10-11/12): an interface of our own next to the original layout, chosen
 by the player, and an Android build later (docs/backlog.md). The game logic stays the original's.
 The UI survey's parts 1-4 are docs/ui/survey.md. Decision 25 (2026-10-12): our own screens come one by
-one over the original layout, chosen by Option → Interface; the first, the deployment table over
+one over the original layout, chosen by Option → Interface (since 2026-10-21 always ours, the original's
+screens left to `--interface original`; BIZ UDGothic is the default font); the first, the deployment table over
 `Sﾌﾞﾀｲ`'s grid, is built with the rest of its screen and its third part (the party as a formation with
 the units' faces, drag and drop; Debug → Portraits) — docs/ui/deployment-table.md. The battle screen
 followed (docs/ui/battle-screen.md); next (owner, 2026-10-16) the map and command screen, its survey
@@ -292,12 +293,12 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `Battles/Effects` (our exchange effects after Sengoku Rance's, drawn by code: `EffectTextures`, particles from a seed
   as `MeleeEffect`, `BowEffect`, `MagicEffect`, `IceEffect` (the ice magic, by the shouted spell or the caster's element: `Original.Content/Battles/MagicSpells`, docs/ui/mage-lines.md), `LightningEffect`, `DarkEffect`, `LightEffect` and `PoisonEffect` (the lightning, the dark, the light and the poison magic, the same way; the dark laid over dark, `EffectPlayer.Dark`), `RanceAttackEffect`, `KentarouSlashEffect` (Kentarou's Rance Attack), `WhiteBeamEffect` (the Black D. Beam: the same laid over dark, `EffectPlayer.Dark`; the beams each placed for its user: `ShizukaBeamEffect`, `MagicBeamEffect`, `EpoLightEffect`, `ChizukoBeamEffect`, `NagiBeamEffect`), `WhirlwindShotEffect`, `HighSpeedEffect` (By la Way: Rance Attack's in red, `RanceAttackEffect.BuildRed`), `KanamiEffect`, `FreyaEffect`, `KaoruEffect`, `WichitaEffect` (the ninjas' follow-ups, each her own and weak: a throw, the forked whip, the fists, the flaming sword; `NinjaEffect`, the Ninja troop's, unused), `VanishBombEffect`, `WarDanceEffect`, `ChuhaiEffect`, `GoliathEffect` (T2 Goliath's, 15 frames), `SoaringWaveEffect` (Rolex's T2 Soaring Wave, our own), `GuardEffect` (a defence's, after Sengoku Rance's guard effect 45080: the player's with the defence's badge, the enemy's at its redraw, `BattlePresenter.EnemyDefence`; `BattleBoardView.PlayGuard`, waited for by `GameScreen.GuardAsync`), drawn by `EffectCanvas` and laid over the scene by `EffectPlayer`; Debug → Effects, `EffectViewer` (a special over the sprite its user shows),
   `--effects` (`--effects white-beam-magic,black-beam-nagi --shots DIR` saves only those); played in the exchange from its shots by `BattleBoardView`, the choice `Original.Content/Battles/ExchangeEffect`, Option → Battle Screen… → "Effects" — docs/ui/battle-screen.md, "The exchange's effects");
-  `Strategy/DeploymentTableView` and `Strategy/DeploymentPanels` (our own deployment screen, Option → Interface → New, `InterfaceChoice`;
+  `Strategy/DeploymentTableView` and `Strategy/DeploymentPanels` (our own deployment screen, our interface, `InterfaceChoice`;
   the owner's E1/E2 in lacquer, the Subordinates screen's layout: the ledger across the top, the hovered unit's picture
   panel (`FacePictures.PicturePanel`) below left, the party's 2×2 cards with one gold triangle right of them (the way the
   party faces), totals and bar below right — docs/ui/deployment-table.md,
   "The lacquer look"; `GameScreen` feeds the script its gestures, `Original.Content/Strategy/DeploymentTable` the rows);
-  `Strategy/SubordinatesView` (our Subordinates screen over `Sﾌﾞｶ` and `Cﾌﾞｶ`'s troop menu, Option → Interface → New,
+  `Strategy/SubordinatesView` (our Subordinates screen over `Sﾌﾞｶ` and `Cﾌﾞｶ`'s troop menu, our interface,
   docs/ui/subordinates.md: drawn by hand in lacquer (mock-up G3) over a wave-patterned backdrop — the table across the
   top, `DeploymentTableView` as a chooser and a paper ledger (`ledger: true`, not the palette's colours) with
   `Original.Content/Strategy/SubordinatesScreen.Columns` —, the status CG, the orders' panel; a troop order asks first in
@@ -306,14 +307,14 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `Original.Content/Strategy/SubordinateOrder`, fed by `GameScreen.Subordinates.cs`: the cell's click, the menus and key
   waits answered unseen, the command opened again on COMMAND's map after a troop order; the figures are
   `SubordinatesCommand.Offer`/`AddMore`/`Refill`);
-  `Strategy/MapMarkersView` (our name plates over the map in `COMMAND`'s map wait, Option → Interface → New,
+  `Strategy/MapMarkersView` (our name plates over the map in `COMMAND`'s map wait, our interface,
   docs/ui/command-screen.md, "The map's markers": the model `Original.Content/Strategy/MapMarkers`, a plate's click a
   still click at its marker's point, the camera's form `MapCameraForm`, placed at the view the screen shows,
-  `GamePresenter.MapViewShown`; the dimmed ones hidden by Option → Hide Dimmed Map Names, `MapNamesChoice`;
+  `GamePresenter.MapViewShown`; the dimmed ones hidden by Debug → Hide Dimmed Map Names (on by default), `MapNamesChoice`;
   a hovered province's card right of its plate, `MapMarkers.CardOf`: its figures for ours and the provinces the
   player has seen — `GameState.KnownProvinces`, in `Extras`, marked at each map wait and by the ninja's scouting —
   else "??");
-  `Strategy/ProvinceMenuView` (our province menu over a city file's first menu, Option → Interface → New, the owner's
+  `Strategy/ProvinceMenuView` (our province menu over a city file's first menu, our interface, the owner's
   mock-up 4a in lacquer and gold: `Original.Content/Strategy/ProvinceMenu`, `GamePresenter.MenuCovered`,
   docs/ui/command-screen.md, "The province menu"; also the dungeon's menu after it);
   `Strategy/CommandMenuView` (our command panel over `COMMAND`'s right-click menu and its status window, Option →
@@ -322,16 +323,16 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   panel is open, in one row: the status window's lines and the week's uses in bracketed groups,
   `Original.Content/Strategy/StatusStrip`, "The status strip"); `Strategy/WeekReportView` (our week report over the
   week start's windows — the banner, the budget as an account, the troops replenished, a triangle asking for the click;
-  Option → Interface → New, docs/ui/turn-start.md: `Original.Content/Strategy/WeekReport` gathered by
+  our interface, docs/ui/turn-start.md: `Original.Content/Strategy/WeekReport` gathered by
   `GamePresenter.CoverWeekReport`, the windows' waits answered at once, the player's click at their close,
   `GameScreen.WeekReportAsync`); `Strategy/MessageWindowView` (our message windows 111/112/121/122/113/123 and 131 where the
   original has them — speech with a tail, thought, narration, a place's title, 131 with its speaker on a plate — the text at its cells in the game's font,
   typed letter by letter (its speed Option → Text Speed…, `Strategy/TextSpeedView` over the picture with the game's 121 as the preview, `Strategy/TextSpeedChoice`; a click while it types shows it whole, `GameScreen.FinishTypingAsync`),
-  the triangle while the player's key is awaited, a menu over it shown on top; Option → Interface → New, docs/ui/messages.md:
+  the triangle while the player's key is awaited, a menu over it shown on top; our interface, docs/ui/messages.md:
   `Original.Content/Strategy/MessageWindow` from `GamePresenter.MessageWindow` while `CoverMessages`, in a battle `BattlePresenter.MessageWindow`);
   `Strategy/SceneMenuView` (our `]` menus: lacquer rows at the selection box's place, `GamePresenter.MenuBoxArea`, while
   `SceneMenuCovered`; not over our battle screen; docs/ui/messages.md, §5 step 3);
-  `Strategy/SaveLoadView` (our Save/Load screen over `ﾛｰﾄﾞｾｰﾌﾞ`'s load and save lists, Option → Interface → New, the
+  `Strategy/SaveLoadView` (our Save/Load screen over `ﾛｰﾄﾞｾｰﾌﾞ`'s load and save lists, our interface, the
   owner's layout C, docs/ui/save-load.md: the ten slots as a list — Auto in a panel of its own, the nine manual saves in
   the order of a Slot | Date switch (§7, the owner's E; `SaveSlots.Order`, `SlotOrder`, kept by `Strategy/SaveOrderChoice`) —, the chosen slot's page with its map as All Data draws it
   and its figures, a red button that answers the list with the slot's item; Load | Save tabs from `COMMAND`,
@@ -341,7 +342,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   opens it, the game waits; `Original.Content/Strategy/MessageLog` from `GamePresenter.Log` — each key wait's page, a
   dialogue question's answer, `MenuAnswered` (an event scene's menu or one after a speech, never the play's; the play's narration left out, `MessageLog.Keeps`) — the speakers by the portraits' plates, `PortraitNames`; kept for the launch,
   `EngineState.Log`; docs/ui/messages.md, §5 step 6); the six and the Subordinates screen draw with `Strategy/Lacquer` (the style's colours and parts, the ledger's, the click's triangle);
-  `Battles/BattleBoardView` (our own battle screen, Option → Interface → New, docs/ui/battle-screen.md:
+  `Battles/BattleBoardView` (our own battle screen, our interface, docs/ui/battle-screen.md:
   `Original.Content/Battles/BattleScene` on top, the stage's windows over it through `WindowMask`, the
   cards and the round's order from `BattleBoard`/`RoundOrder`, the order strip `OrderStrip` moving on its own;
   the exchange's troops and HP counters at the scene's foot after Sengoku Rance's, `Battles/ExchangeCountersView` from
@@ -416,6 +417,10 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   Commit the `*.uid` files Godot creates.
 - Watch a capture headless and save the screen at every key wait and long pause:
   `<Godot console exe> --headless --path godot -- --watch <capture> --fast --quit --shots <dir>`.
+- **Our interface is the default** (owner, 2026-10-21: Option → Interface is gone, the player always has ours):
+  `--interface new` in the commands below changes nothing any more, `--interface original` shows the original's
+  screens for the launch. So unattended play in a window runs our screens' exercises, which move the system pointer,
+  unless `--interface original` is given.
 - Play the game unattended headless (slots in `user://saves-auto`; `--load` resumes them):
   `<Godot console exe> --headless --path godot -- --newgame --auto --fast --quit [--seed n] [--shots <dir>] [--weeks n] [--stage n] [--interface new]`;
   one visit each to Harem, Subordinates and the hideout in the prologue and to Treasure and All Data

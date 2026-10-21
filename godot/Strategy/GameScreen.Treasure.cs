@@ -9,7 +9,7 @@ using Kichikuou.Original.State;
 namespace Kichikuou.Game.Strategy;
 
 /// <summary>
-/// Our own Treasure screen (docs/ui/pickers.md, round V) in the game: shown over <c>Sｱｲﾃﾑ</c> (Option → Interface → New),
+/// Our own Treasure screen (docs/ui/pickers.md, round V) in the game: shown over <c>Sｱｲﾃﾑ</c> (our interface),
 /// under the message windows and menus; the script's refusals and questions show over it at the clicked cell
 /// (<see cref="TreasureCallout"/>, round W), its Yes/No inside them. A cell's click, a tab, Back and End are the
 /// picker's player's clicks through the screen's pointer
@@ -119,7 +119,7 @@ public partial class GameScreen
     private bool TreasureCalloutFor(MessageWindow? window) => window is not null && _treasure.Visible && _treasureAsked > 0;
 
     /// <summary>
-    /// Shows our Treasure screen while <c>Sｱｲﾃﾑ</c> is open with Option → Interface on New; places it over the picture and
+    /// Shows our Treasure screen while <c>Sｱｲﾃﾑ</c> is open with our interface on; places it over the picture and
     /// fills it from GameState. While a message window is up (a refusal's key wait) the clicks pass through it to the
     /// window. Returns whether it shows.
     /// </summary>

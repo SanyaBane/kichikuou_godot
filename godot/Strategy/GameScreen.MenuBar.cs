@@ -12,10 +12,10 @@ namespace Kichikuou.Game.Strategy;
 
 // xsystem35's window menu bar over the game (docs/window-menu.md): File (Save Screenshot, Restart,
 // Exit), Screen (Window, Fullscreen), Option (Mouse Movement as xsystem35's; ours: Skip Unseen
-// Text, MsgSkip Speeds Up Fades, Forget Seen Messages, Battle Screen, Hide Dimmed Map Names, Fonts,
-// Interface, Palette),
+// Text, MsgSkip Speeds Up Fades, Forget Seen Messages, Battle Screen, Text Speed, Fonts, Palette),
 // MsgSkip[off|on]; hot keys F1 and F4 as xsystem35's, Alt+R; and ours for development, Debug
-// (Battle Captures: the capture viewer, which our own title had until ｽﾀMENU replaced it).
+// (Battle Captures: the capture viewer, which our own title had until ｽﾀMENU replaced it; Portraits,
+// Effects, Hide Dimmed Map Names).
 public partial class GameScreen
 {
     private const int MenuBarHeight = 24;
@@ -50,7 +50,6 @@ public partial class GameScreen
             ("MsgSkip Speeds Up Fades", ToggleFastFades),
             ("Forget Seen Messages...", ConfirmForgetSeen),
             ("Battle Screen...", OpenBattleScreenSettings),
-            ("Hide Dimmed Map Names", ToggleDimmedNames),
             ("Text Speed...", OpenTextSpeed));
         options = option.GetPopup();
         options.SetItemAsCheckable(0, true);
@@ -59,8 +58,6 @@ public partial class GameScreen
         options.SetItemChecked(1, _skip.SkipUnseen);
         options.SetItemAsCheckable(2, true);
         options.SetItemChecked(2, _skip.FastFades);
-        options.SetItemAsCheckable(5, true);
-        options.SetItemChecked(5, MapNamesChoice.HideDimmed);
         PopupMenu fonts = null!;
         fonts = Submenu(
             ("MS Gothic", () => SetFont(GameFont.MsGothic)),
@@ -76,15 +73,6 @@ public partial class GameScreen
         fonts.AddThemeIconOverride("radio_unchecked_disabled", blank);
         CheckFont();
         options.AddSubmenuNodeItem(Padded("Fonts"), fonts, SubmenuId);
-        PopupMenu interfaces = null!;
-        interfaces = Submenu(
-            ("Original", () => SetInterface(false)),
-            ("New", () => SetInterface(true)));
-        interfaces.SetItemAsRadioCheckable(0, true);
-        interfaces.SetItemAsRadioCheckable(1, true);
-        interfaces.AddThemeIconOverride("radio_unchecked", blank);
-        CheckInterface();
-        options.AddSubmenuNodeItem(Padded("Interface"), interfaces, SubmenuId);
         PopupMenu palettes = null!;
         palettes = Submenu([.. DeploymentPalette.All.Select(p => (p.Title, (Action)(() => SetPalette(p))))]);
         for (int i = 0; i < DeploymentPalette.All.Count; i++)
@@ -106,13 +94,6 @@ public partial class GameScreen
         {
             _skip.FastFades = !_skip.FastFades;
             options.SetItemChecked(2, _skip.FastFades);
-        }
-        // Saved for later launches; the map's plates follow at once.
-        void ToggleDimmedNames()
-        {
-            MapNamesChoice.HideDimmed = !MapNamesChoice.HideDimmed;
-            options.SetItemChecked(5, MapNamesChoice.HideDimmed);
-            _markers.SetHideDimmed(MapNamesChoice.HideDimmed);
         }
         // Saved for later launches; the windows, menus and pickers are drawn again at once, text the
         // script printed on the stage keeps its font until it is drawn again.
@@ -142,17 +123,6 @@ public partial class GameScreen
             fonts.SetItemChecked(0, _glyphs.Font == GameFont.MsGothic);
             fonts.SetItemChecked(1, _glyphs.Font == GameFont.BizUdGothic);
         }
-        // Saved for later launches; an open screen of ours appears or goes at once (UpdateTable).
-        void SetInterface(bool ours)
-        {
-            InterfaceChoice.New = ours;
-            CheckInterface();
-        }
-        void CheckInterface()
-        {
-            interfaces.SetItemChecked(0, !InterfaceChoice.New);
-            interfaces.SetItemChecked(1, InterfaceChoice.New);
-        }
         // Our battle screen's and the map plates' colours (DeploymentPalette; the deployment screen is lacquer since the
         // owner's E1/E2); saved for later launches, an open screen recoloured at once.
         void SetPalette(DeploymentPalette palette)
@@ -176,10 +146,23 @@ public partial class GameScreen
         row.AddChild(_skipItem);
         _skip.Changed += UpdateSkipItem;
         UpdateSkipItem();
-        row.AddChild(Menu("Debug",
+        PopupMenu debug = null!;
+        var debugMenu = Menu("Debug",
             ("Battle Captures...", ConfirmCaptures),
             ("Portraits...", OpenPortraits),
-            ("Effects...", OpenEffects)));
+            ("Effects...", OpenEffects),
+            ("Hide Dimmed Map Names", ToggleDimmedNames));
+        debug = debugMenu.GetPopup();
+        debug.SetItemAsCheckable(3, true);
+        debug.SetItemChecked(3, MapNamesChoice.HideDimmed);
+        row.AddChild(debugMenu);
+        // Saved for later launches; the map's plates follow at once.
+        void ToggleDimmedNames()
+        {
+            MapNamesChoice.HideDimmed = !MapNamesChoice.HideDimmed;
+            debug.SetItemChecked(3, MapNamesChoice.HideDimmed);
+            _markers.SetHideDimmed(MapNamesChoice.HideDimmed);
+        }
     }
 
     /// <summary>The id of an item that opens a submenu: past every item's index, so it runs nothing.</summary>

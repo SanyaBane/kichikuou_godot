@@ -119,7 +119,7 @@ public partial class Main : Control
     /// starts); <c>--seed N</c> fixes the random generator (once per launch: a
     /// later game goes on with it, as after xsystem35's Restart); <c>--rnglog</c> prints every
     /// draw to the console; <c>--msgskip</c> starts with MsgSkip
-    /// on; <c>--interface new</c> uses our own screens for the launch (Option → Interface); <c>--saves DIR</c>
+    /// on; <c>--interface original</c> uses the original's screens for the launch instead of ours; <c>--saves DIR</c>
     /// keeps its slots there (<c>--auto</c> defaults to <c>user://saves-auto</c>); <c>--slots-from DIR</c>
     /// copies DIR's slots there first, so a kept save is loaded unchanged every time; <c>--turn-end</c>
     /// makes the unattended player end every week at once, <c>--party 1,10,11</c> send those units

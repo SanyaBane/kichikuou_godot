@@ -9,7 +9,7 @@ namespace Kichikuou.Game.Strategy;
 
 /// <summary>
 /// Our own Subordinates screen (docs/ui/subordinates.md) in the game: shown over <c>Sﾌﾞｶ</c> and while one of
-/// its orders runs (Option → Interface → New); an order's inputs reach the script through the screen's
+/// its orders runs (our interface); an order's inputs reach the script through the screen's
 /// pointer, its menus and key waits are answered here (<see cref="SubordinateOrder"/>).
 /// </summary>
 public partial class GameScreen
@@ -34,7 +34,7 @@ public partial class GameScreen
     }
 
     /// <summary>
-    /// Shows our Subordinates screen while <c>Sﾌﾞｶ</c> is open with Option → Interface on New (not while a
+    /// Shows our Subordinates screen while <c>Sﾌﾞｶ</c> is open with our interface on (not while a
     /// message window is up over it) and while an order runs; places it over the picture and fills it from
     /// GameState. Returns whether it shows.
     /// </summary>

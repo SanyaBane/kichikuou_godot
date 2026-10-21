@@ -8,7 +8,7 @@ using Kichikuou.Original.State;
 namespace Kichikuou.Game.Battles;
 
 /// <summary>
-/// Our own command input on the battle screen (Option → Interface → New; docs/ui/battle-screen.md, step 4,
+/// Our own command input on the battle screen (our interface; docs/ui/battle-screen.md, step 4,
 /// "Next — our own command input"): <c>FIGT_SEL</c> answered without the original's prompt and popups.
 /// The attacks are banners on the enemy card under the pointer (<see cref="BattleCommands.Banners"/>), the
 /// only way to attack; a right click on a card opens its context menu at the pointer

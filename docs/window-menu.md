@@ -80,15 +80,16 @@ web build (seen only) by an option.
   (Window, Fullscreen), **Option** (ours, see MsgSkip and Font), **MsgSkip[off]** (toggles, `[on]` while
   on, greyed out while not allowed), and ours for development at the end, **Debug** (Battle
   Captures...: asks first, then the battle-capture viewer, which our own title had until `ｽﾀMENU`
-  replaced it, 2026-10-11). Not done: Integer Scaling, Auto Copy Text to Clipboard
+  replaced it, 2026-10-11; Portraits..., Effects..., Hide Dimmed Map Names). Not done: Integer Scaling, Auto Copy Text to Clipboard
   (no text hook), the bar hiding in full screen.
 - **Option → Mouse Movement** (checked at start, for the launch; 2026-10-10): the script's
   `IZ x, y` (`COMMAND.ADV:618` and the command files put the pointer back where it was before a
   menu) glides the system pointer there as `ags_setCursorLocation` does — seven points on its
   ease-out curve 7 ms apart, then the target (`Content/Screen/PointerGlide`); unchecked, only the
   position the script reads moves and the script waits 50 ms. `--auto` never moves the pointer.
-- **Option → Hide Dimmed Map Names** (ours, owner's request 2026-10-16; checkable, saved in
-  `user://settings.cfg`, `[display] hide_dimmed_map_names`, off by default): our map's plates
+- **Debug → Hide Dimmed Map Names** (ours, owner's request 2026-10-16; in Option until 2026-10-21, when
+  the owner moved it to Debug and made it on by default; checkable, saved in `user://settings.cfg`,
+  `[display] hide_dimmed_map_names`): our map's plates
   (docs/ui/command-screen.md, "The map's markers") leave out the dimmed ones — the provinces neither
   ours nor next to ours and the dungeons not ours (`MapNamesChoice`). A click on such a town still
   reaches the script as the original's. A change shows at once.
@@ -97,16 +98,16 @@ web build (seen only) by an option.
   of the game's text. MS
   Gothic is the original's (docs/assets.md §6), read from the Windows fonts and greyed out where
   it is not installed; BIZ UDGothic (Morisawa, SIL OFL 1.1) is bundled in `godot/fonts` with its
-  license. By default MS Gothic where installed, else BIZ UDGothic. Every character takes a fixed
+  license. By default BIZ UDGothic (owner, 2026-10-21; before, MS Gothic where installed). Every character takes a fixed
   cell, so the layout is the same in both. A change shows at once in the message windows, menus
   and pickers; text the script printed on the stage keeps its font until drawn again.
   `--font ms-gothic|biz-ud-gothic` picks one for the launch without saving it (development).
   The deployment table's text uses the same font, regular.
-- **Option → Interface → Original / New** (ours, owner's decision 25, 2026-10-12; a submenu like
-  Fonts; saved in `user://settings.cfg`, `[display] interface`, Original by default): New shows our
-  own screens over the original layout where there is one — so far the deployment table over
-  `Sﾌﾞﾀｲ`'s unit grid (docs/ui/deployment-table.md). A change shows at once.
-  `--interface original|new` picks one for the launch without saving it (development).
+- **Option → Interface → Original / New** (ours, owner's decision 25, 2026-10-12; removed 2026-10-21):
+  New showed our own screens over the original layout where there is one, Original the original's.
+  Since 2026-10-21 (owner) the player always has ours: the submenu is gone and `[display] interface`
+  in `user://settings.cfg` is no longer read (`InterfaceChoice`). `--interface original` shows the
+  original's screens for one launch (development checks).
 - **Option → Palette → Navy / Gold / Steel / Parchment / Crimson** (ours, owner's choice 2026-10-12;
   a submenu like Fonts; saved in `user://settings.cfg`, `[display] palette`, Steel by default): the
   colours of our battle screen and the map's name plates (`DeploymentPalette`; the deployment screen is lacquer

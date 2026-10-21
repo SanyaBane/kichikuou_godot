@@ -3,7 +3,7 @@
 Owner's choice (2026-10-16): after the battle screen ([battle-screen.md](battle-screen.md)), our own
 screen for **the strategic map and the command menu** — `COMMAND.ADV`'s player phase
 (`Strategy/CommandPhase`) — first a survey and two or three mock-ups. Chosen by the same setting as
-our other screens (Option → Interface → New), coloured by Option → Palette. **The rules stay the
+our other screens (our interface), coloured by Option → Palette. **The rules stay the
 original's**: `CommandPhase` and the command files run unchanged and decide everything; the screen
 draws what they show and answers what they ask with the gestures they expect (`PointerScript`), as
 the deployment table does.
@@ -183,7 +183,7 @@ five shapes (a ring, a pin, a name plate, corner brackets, a shield) and then th
   plate (owner's request 2026-10-18): the Monsters' Cave (2), the Thieves' Cave (3) and Isolated Shrine
   Island (15) take the original's click, which only pans the camera before stage 1 (DGN-20), so they get
   none; a click at their place still goes to the script.
-- **Option → Hide Dimmed Map Names** (owner's request 2026-10-16, off by default, saved): the dimmed
+- **Debug → Hide Dimmed Map Names** (owner's request 2026-10-16, saved; since 2026-10-21 in Debug and on by default): the dimmed
   plates — the provinces neither ours nor next to ours, the dungeons not ours — are not shown
   (`godot/Strategy/MapNamesChoice`; docs/window-menu.md).
 - The scenario's `’` is drawn wide by the Japanese font ("Monsters’  Cave"): the plates print `'`.

@@ -5,7 +5,7 @@ using Kichikuou.Original.Content.Battles;
 namespace Kichikuou.Game.Battles;
 
 /// <summary>
-/// Our dialogue panel on the battle screen (Option → Interface → New; docs/ui/battle-screen.md, "The dialogue
+/// Our dialogue panel on the battle screen (our interface; docs/ui/battle-screen.md, "The dialogue
 /// panel"; owner, 2026-10-13, mock-up A after Sengoku Rance's battle dialogue boxes, docs/sengoku/04-screen.md §10):
 /// the line of the open speech bubble (<see cref="BattleSpeech"/>) in a rounded balloon beside the speaker's
 /// portrait, its tail towards it, across the scene's lower edge; the player's on the left, the enemy's on the

@@ -210,7 +210,7 @@ Put off when our Subordinates screen took mock-up G3 (docs/backlog.md, "Interfac
 deployment screen in the same lacquer and gold, its table a paper ledger. The layout, the gestures and the
 script's answers stay as above; only the drawing changes. No rule moves.
 
-**What it draws now** (Option → Interface → New; screen pixels of a 1280×800 window):
+**What it draws now** (our interface; screen pixels of a 1280×800 window):
 
 - **The portrait and its description** (0,0)-(640,404): the script's own drawing (the unit's CG in the original's
   gold frame, its text in the CG). Stays.

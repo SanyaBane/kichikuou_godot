@@ -106,7 +106,7 @@ public sealed record GameOptions
 
     /// <summary>
     /// Development: at the first map wait the unattended player opens Treasure once, before its replenish and attack
-    /// (with Option → Interface on New it clicks through our own screen, <c>GameScreen.AutoTreasureAsync</c>).
+    /// (with our interface it clicks through our own screen, <c>GameScreen.AutoTreasureAsync</c>).
     /// </summary>
     public bool AutoTreasure { get; init; }
 
@@ -119,7 +119,7 @@ public sealed record GameOptions
 
     /// <summary>
     /// Development: at the first map wait the unattended player opens the command panel's Save row once, before its
-    /// replenish and attack; with Option → Interface on New it clicks through our Save/Load screen
+    /// replenish and attack; with our interface it clicks through our Save/Load screen
     /// (<c>GameScreen.AutoSaveLoadAsync</c>).
     /// </summary>
     public bool AutoSaveLoad { get; init; }
@@ -182,7 +182,7 @@ public sealed record GameOptions
 /// (<see cref="PlayerInput"/>) that <c>IM</c>, <c>Y 3</c>, <c>IK 0</c> and the menus poll once a
 /// frame, so the map's clicks and drags and the pickers' hit tests and highlight are the
 /// script's own. The battle's input screens work as in <see cref="BattleScreen"/>, fed only the
-/// presses that begin while they are open. With Option → Interface on New our own deployment screen
+/// presses that begin while they are open. With our interface, our own deployment screen
 /// covers <c>Sﾌﾞﾀｲ</c>'s (<see cref="UpdateDeploymentScreen"/>, docs/ui/deployment-table.md) and
 /// answers the script with its gestures. Over it, xsystem35's menu bar (File, Screen,
 /// MsgSkip; docs/window-menu.md) with its hot keys F1 (MsgSkip) and F4 (full screen), and Alt+R for
@@ -232,9 +232,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     private SceneRunner? _scenes;                       // the session's, for the scenes running now
 
-    private DeploymentTableView _table = null!;         // our own deployment screen's ledger (Option → Interface: New)
-    private BattleBoardView _battleView = null!;        // our own battle screen over the stage (Option → Interface: New)
-    private ScoutReportView _scoutView = null!;         // our own scout report over the original's screen (Option → Interface: New)
+    private DeploymentTableView _table = null!;         // our own deployment screen's ledger (our interface)
+    private BattleBoardView _battleView = null!;        // our own battle screen over the stage (our interface)
+    private ScoutReportView _scoutView = null!;         // our own scout report over the original's screen (our interface)
     private StrategyCutInView _strategyView = null!;    // our own cut-in of a successful strategy over the original's screen (New)
     private DeploymentPanels _panels = null!;           // and the rest of it, over the whole of Sﾌﾞﾀｲ's screen
     private PointerScript _tablePointer = new();        // the script's pointer while the player's is over the table
@@ -1285,7 +1285,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     }
 
     /// <summary>
-    /// Our message windows (docs/ui/messages.md, step 1; Option → Interface → New) over the picture: the window the presenter
+    /// Our message windows (docs/ui/messages.md, step 1; our interface) over the picture: the window the presenter
     /// leaves out (<see cref="GamePresenter.MessageWindow"/>), the triangle while the player's key is awaited, a menu open
     /// over it shown again on top; in a battle its own windows (the results after the field, the captures); hidden while a scene is skipped whole.
     /// </summary>
@@ -1782,7 +1782,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     // ---------------------------------------------------------------- our map's markers (docs/ui/command-screen.md)
 
     /// <summary>
-    /// Shows our name plates over the map while <c>COMMAND</c> waits on it with Option → Interface on New,
+    /// Shows our name plates over the map while <c>COMMAND</c> waits on it with our interface on,
     /// but not under a message window or a menu; places them over the picture as the window is sized and
     /// the map scrolls — at the view the screen shows (<see cref="GamePresenter.MapViewShown"/>), not at
     /// the camera, whose form changes under an unchanged picture: a still click centres it, and a click
@@ -1929,7 +1929,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// <summary>
     /// Shows our deployment screen — the panels over the whole of <c>Sﾌﾞﾀｲ</c>'s screen and the table across their
     /// top (<see cref="DeploymentPanels.TableArea"/>; the owner's E1/E2) — while the deployment picker is open with
-    /// Option → Interface on New, but not while a message window is up over the screen; places it over the picture
+    /// our interface on, but not while a message window is up over the screen; places it over the picture
     /// as the window is sized and fills it from GameState. Returns whether it shows. A screen shown or hidden starts
     /// with no gestures queued.
     /// </summary>
@@ -1969,7 +1969,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     // ---------------------------------------------------------------- our battle screen (docs/ui/battle-screen.md)
 
     /// <summary>
-    /// Shows our battle screen over the stage while Option → Interface is on New and the battle's field
+    /// Shows our battle screen over the stage while our interface is on and the battle's field
     /// or an exchange is on (<see cref="GamePresenter.BattleSceneShows"/>; the pre-battle map, the
     /// strategy and scout screens and the scenes a battle calls stay the original's); places it over the
     /// picture as the window is sized and fills it (<paramref name="screenChanged"/>: the windows' layer
@@ -2033,7 +2033,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     /// <summary>
     /// Our strategy's cut-in (docs/ui/battle-screen.md, "The strategy's cut-in") over the original's strategy screen while
-    /// Option → Interface is on New and a successful strategy is under way (<see cref="BattlePresenter.Strategy"/>).
+    /// our interface is on and a successful strategy is under way (<see cref="BattlePresenter.Strategy"/>).
     /// </summary>
     private bool StrategyCutInShown => InterfaceChoice.New && _presenter.Battle.Strategy is not null && !SkippingScene && _presenter.State is not null;
 
@@ -2132,7 +2132,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     // ---------------------------------------------------------------- input: the battle
 
     /// <summary>
-    /// <c>FIGT_SEL</c>: on our battle screen (Option → Interface → New) our own command input answers it
+    /// <c>FIGT_SEL</c>: on our battle screen (our interface) our own command input answers it
     /// (<see cref="BattleCommandLayer"/>: the banners on the enemy cards, the cards' context menus); else, or
     /// once the interface changes while the player chooses, the original's prompt and popups (<see cref="FigtSelScreen"/>).
     /// </summary>
@@ -3004,7 +3004,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     }
 
     /// <summary>
-    /// With our screen (Option → Interface: New), once the party is built: place 1's member dropped
+    /// With our screen (our interface), once the party is built: place 1's member dropped
     /// onto place 2 and back, as the player's drags make them (<see cref="PartyDropped"/>); the party
     /// must come out as it was. Returns whether a drop was made.
     /// </summary>

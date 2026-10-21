@@ -7,7 +7,7 @@ using Kichikuou.Original.Content.Battles;
 namespace Kichikuou.Game.Battles;
 
 /// <summary>
-/// A script menu of the battle as our own dialog on the battle screen (Option → Interface → New;
+/// A script menu of the battle as our own dialog on the battle screen (our interface;
 /// docs/ui/battle-screen.md, step 4; owner's mock-up B, 2026-10-13): the screen dimmed, a box centred over
 /// the scene with our question (<see cref="BattleDialog"/>) over the script's items, styled as the cards'
 /// context menus. A left release on an item chooses it; Esc, a right press or a left press off the box

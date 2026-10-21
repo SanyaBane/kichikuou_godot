@@ -5,7 +5,7 @@ using Kichikuou.Original.Content.Battles;
 namespace Kichikuou.Game.Battles;
 
 /// <summary>
-/// A successful pre-battle strategy as our own cut-in (Option → Interface → New; docs/ui/battle-screen.md, "The strategy's
+/// A successful pre-battle strategy as our own cut-in (our interface; docs/ui/battle-screen.md, "The strategy's
 /// cut-in"; owner, 2026-10-15, mock-up A): the original's strategy screen as it stood before its first box
 /// (<see cref="BattlePresenter.StrategyBackdrop"/>: none of the boxes, nor an earlier dialogue's leftovers), dimmed and
 /// blurred; a slanted band in the strategist's side's colour, strong at its side; the strategist's whole portrait sliding

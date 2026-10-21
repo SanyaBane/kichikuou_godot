@@ -8,8 +8,8 @@ using Kichikuou.Original.Script;
 namespace Kichikuou.Game.Strategy;
 
 /// <summary>
-/// Our own Harem screen (docs/ui/pickers.md, mock-up H2) in the game: shown over <c>Sﾊｰﾚﾑ</c> (Option → Interface →
-/// New); Summon is a click on the girl's cell and End a click on the bar's End, through the screen's pointer
+/// Our own Harem screen (docs/ui/pickers.md, mock-up H2) in the game: shown over <c>Sﾊｰﾚﾑ</c> (our
+/// interface); Summon is a click on the girl's cell and End a click on the bar's End, through the screen's pointer
 /// (<see cref="HaremRoster"/>). Unattended play keeps its own pointer and only sees the screen.
 /// </summary>
 public partial class GameScreen
@@ -27,7 +27,7 @@ public partial class GameScreen
     }
 
     /// <summary>
-    /// Shows our Harem screen while <c>Sﾊｰﾚﾑ</c> is open with Option → Interface on New (not under a message window);
+    /// Shows our Harem screen while <c>Sﾊｰﾚﾑ</c> is open with our interface on (not under a message window);
     /// places it over the picture and fills it from GameState. Returns whether it shows.
     /// </summary>
     private bool UpdateHaremScreen()

@@ -116,4 +116,4 @@ the thieves' week the same card with the banner alone; the nations' banners put 
 - **Built (2026-10-18):** `Original.Content/Strategy/WeekReport` (gathered from the printed runs;
   `WeekReportTests` run `WeekLoop` to `COMMAND` with the player's files), `GamePresenter.CoverWeekReport` /
   `WeekReport` / `EndWeekReport` (the window not drawn while it is gathered), `godot/Strategy/WeekReportView`,
-  `GameScreen.WeekReportAsync`. Option → Interface → New. `--auto` in a window dumps it once (`week-report`).
+  `GameScreen.WeekReportAsync`. Our interface. `--auto` in a window dumps it once (`week-report`).

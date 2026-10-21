@@ -2,8 +2,8 @@
 
 The owner asked (2026-10-18) for the Subordinates command (`Cﾌﾞｶ`) to be reworked in earnest: a unit
 picker like our deployment screen, the troop orders on our own buttons, and no dialogue with Maris.
-Like the other screens of our own interface it comes with Option → Interface → New
-(`InterfaceChoice`); with Original nothing changes.
+Like the other screens of our own interface it comes over the original layout
+(`InterfaceChoice`); with `--interface original` nothing changes.
 
 ## 1. What the original does (`Cﾌﾞｶ.ADV`, `Sﾌﾞｶ.ADV`)
 

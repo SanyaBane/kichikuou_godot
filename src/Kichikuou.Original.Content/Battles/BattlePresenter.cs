@@ -604,7 +604,7 @@ public sealed partial class BattlePresenter
     }
 
     /// <summary>
-    /// The open message window as our interface draws it (docs/ui/messages.md; Option → Interface → New): a speech, a
+    /// The open message window as our interface draws it (docs/ui/messages.md; our interface): a speech, a
     /// thought, a narration or 131 the battle or a scene it calls opens — the results after the field, the captures, the
     /// deaths —, from its frame and the text printed into it (<see cref="WindowModel.Of"/>); null for the other
     /// windows (the bubbles, the order messages, the "vs" window, the scout's and the strategy's, which our battle screen

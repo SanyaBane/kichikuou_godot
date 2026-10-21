@@ -9,7 +9,7 @@ using Kichikuou.Original.State;
 namespace Kichikuou.Game.Battles;
 
 /// <summary>
-/// Our own battle screen (Option → Interface → New, docs/ui/battle-screen.md, "The layout" and "The
+/// Our own battle screen (our interface, docs/ui/battle-screen.md, "The layout" and "The
 /// scene between exchanges"): the armies' scene on top (<see cref="BattleScene"/>, its sides the same
 /// picture blurred and darkened), the original's windows over it (the stage's screen shown only inside
 /// them, <see cref="WindowMask"/>), the speaker's portrait beside a speech bubble, the round's order

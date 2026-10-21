@@ -3,7 +3,7 @@
 Owner's choice (2026-10-12): after the deployment table ([deployment-table.md](deployment-table.md)),
 our own screen for **the whole battle**, in the manner of Sengoku Rance's — surveyed from its code in
 [../sengoku/README.md](../sengoku/README.md). Chosen by the same setting as the deployment table
-(Option → Interface → New), coloured by Option → Palette. **The battle's rules stay Kichikuou's**
+(our interface), coloured by Option → Palette. **The battle's rules stay Kichikuou's**
 (docs/battle/): the core (`Original/Combat`) runs unchanged and decides everything; the screen
 draws what the core shows and answers what the core asks.
 
@@ -220,7 +220,7 @@ picture, the slot panels) is not shown. How it is built:
   +2/+1/+0 raises the troops' attack and defense rolls only (`FIGT.ADV:2457-2482`), though the box still prints the line.
   The model is `Original.Content/Battles/BattleCardStats` (`BattleCard.Stats`, from GameState; `BattleCardStatsTests`), the
   portrait `godot/Battles/CardPortrait`. The cards' menus no longer offer Info (53/54) — an enemy's card has no menu now —
-  so the original's info box (window 143, its click) does not come up on our screen; Option → Interface → Original keeps it.
+  so the original's info box (window 143, its click) does not come up on our screen; `--interface original` keeps it.
 - **The limit and the advantages** (owner, 2026-10-15, question 4): Sengoku Rance's 戦果 bar has no counterpart — nothing
   judges a Kichikuou battle by a score (a time-out loses for the attacker) — so its place stays empty. The round header's
   "Advantage +n" (`FIGT.ADV:177-204`) adds up two things a player cannot tell apart, so our screen shows them as what they
@@ -811,7 +811,7 @@ picture, the slot panels) is not shown. How it is built:
   prompt, the popups, the script menus) are the stage's screen as the original draws it, shown only
   inside the windows' own shapes (their frame CGs, the selection boxes): the 640×400 screen fitted to
   the scene's height (×1.025, centred). The stage keeps drawing the original's screen unchanged —
-  Option → Interface → Original shows it as today.
+  `--interface original` shows it as today.
 - **The input**: `FIGT_SEL` is answered by our own command input on the cards (step 4, "Next — our own
   command input", built 2026-10-13); the script menus and the key waits stay the script's.
 

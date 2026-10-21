@@ -2,7 +2,7 @@
 
 The owner asked (2026-10-19) for the next screens of our own interface: the harem picker `Sﾊｰﾚﾑ` and the item screen
 `Sｱｲﾃﾑ` in the lacquer look of the Subordinates and deployment screens (subordinates.md, §5; deployment-table.md, "The
-lacquer look"), mock-ups over dumps first. Like the other screens they come with Option → Interface → New
+lacquer look"), mock-ups over dumps first. Like the other screens they come with our interface
 (`InterfaceChoice`); with Original nothing changes. The script decides everything, as with the Subordinates screen: our
 screens only choose what the original's player would have chosen, through the inputs the script reads.
 

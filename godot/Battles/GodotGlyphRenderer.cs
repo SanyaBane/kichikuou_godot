@@ -15,7 +15,7 @@ public enum GameFont
 
 /// <summary>
 /// The game font for the emulated surface, bold, as xsystem35 uses it (docs/assets.md §6):
-/// MS Gothic where it is installed, or the bundled BIZ UDGothic — whichever Option → Fonts chose —
+/// the bundled BIZ UDGothic, or MS Gothic where it is installed — whichever Option → Fonts chose —
 /// rasterised by Godot's TextServer at the surface's resolution. Every character takes a fixed
 /// cell (<see cref="MessageWriter.CellWidth"/>), so the font changes how the glyphs look, never the
 /// layout. Glyph bitmaps are read back from the TextServer's cache texture and kept.
@@ -41,7 +41,7 @@ public sealed class GodotGlyphRenderer : IGlyphRenderer, IDisposable
 
     /// <summary>
     /// The font the player chose: <c>--font ms-gothic|biz-ud-gothic</c> for the launch (development),
-    /// else <c>[display] font</c> in <c>user://settings.cfg</c>, else MS Gothic where installed.
+    /// else <c>[display] font</c> in <c>user://settings.cfg</c>, else BIZ UDGothic (owner, 2026-10-21).
     /// </summary>
     public static GameFont Chosen
     {
@@ -54,7 +54,7 @@ public sealed class GodotGlyphRenderer : IGlyphRenderer, IDisposable
             var config = new ConfigFile();
             if (config.Load(GameData.SettingsPath) == Error.Ok && Parse((string)config.GetValue("display", "font", "")) is { } saved)
                 return saved;
-            return MsGothicInstalled ? GameFont.MsGothic : GameFont.BizUdGothic;
+            return GameFont.BizUdGothic;
         }
         set
         {
