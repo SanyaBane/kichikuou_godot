@@ -256,3 +256,27 @@ the figures) and E's order switch for the manual saves:
 5. **Tests**: the library (the ring, the numbering, delete, the migration, a comment keeping `Written`), the port
    (the ring through `WeekLoop`, a load leaving the auto-saves, page 4 through `persistent`), `SaveSlots`.
 6. **Docs**: quirks (STR-31 fixed, STR-11 and ENG-07 noted), this file, CLAUDE.md.
+
+### The owner's choice (2026-10-21): G, built
+
+The owner chose **G**, the two lists as a switch (no remarks). Built after the plan above:
+
+- **The library** `Engine/Script/SaveLibrary.cs` (`SaveLibraryTests`): `ISaveLibrary`, `MemorySaveLibrary`,
+  `DirectorySaveLibrary` (`auto-NNNN.ksav`, `save-NNNN.ksav`, `persistent.ksav`; a folder of `slotNN.ksav` and no save of
+  the library migrated as it opens: slot 1 auto-save 1, slots 2-10 manual saves 1-9, the slots moved into `legacy`);
+  `LibrarySlots` answers the scenario's own slot commands (slot 1 the newest auto-save). The slot format is 4: the
+  comment (`SaveData.Comment`), kept when a save is written over it, changed without touching `Written`.
+- **The context** `Engine/Script/ScriptContext.Library.cs`: `Library` (setting it puts `LibrarySlots` in `Saves`),
+  `SaveAuto`, `SaveManual` (a new one or over a number; with no resume point a copy of the newest auto-save, the
+  original's `QC n, 1`), `LoadSave` (the persistent page laid over the loaded save's copy), `LoadPersistent` /
+  `SavePersistent` (before the library has a persistent page it is read from the save written last), `LastSave`.
+- **The port** (`Strategy/LoadSaveScreen`, `LoadSaveScreenTests`): with a library the autosave is `SaveAuto`, the lists are
+  `SaveLibraryListEvent` (each item's save) over items printing our label on the empty slot's line (`:319-320`), page 4
+  goes through the persistent page, and "Data Number (n)" is our "Auto-save" / "Manual save n". Without one the file
+  runs as the original (the differential tests).
+- **The screen** `godot/Strategy/SaveLoadView` as drawn in G1-G6 (the comment a `LineEdit` over the slip, 60 letters;
+  a click off it keeps it), opened in either interface from `GamePresenter.SaveLibraryList`; after a save the new save
+  is chosen (`ScriptContext.LastSave`). A list opened to load chooses the save written last.
+- **Unattended play**: `--saveload` (CLAUDE.md, "A look at one screen") saves a new manual save, writes its comment, asks
+  Delete and keeps the save, shows the auto-saves, then the load list's orders and the newest auto-save. `--slots-from`
+  copies a library's files or a kept folder's slots.

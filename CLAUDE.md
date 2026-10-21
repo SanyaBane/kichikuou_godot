@@ -193,7 +193,9 @@ docs/ui/command-screen.md, "The province menu").
 **Owner's decision 29** (2026-10-21): the ten slots give way to two lists — the last ten auto-saves (one each turn's
 start, newest first) and as many manual saves as the player keeps, any of them deletable, a manual save with a comment;
 a load never makes a save the auto-save; page 4 in a file of its own (STR-31). The plan and mock-up round 4 (G, H) are
-docs/ui/save-load.md, §9, awaiting the owner's choice of layout.
+docs/ui/save-load.md, §9; the owner chose G, built: the library `Engine/Script/SaveLibrary` (`DirectorySaveLibrary` migrates a
+folder of slots the first time), `ﾛｰﾄﾞｾｰﾌﾞ`'s port on it while `ScriptContext.Library` is set (`ScriptContext.Library.cs`),
+the screen in either interface.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -218,7 +220,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   bindings, and `Extras`, the port's own data kept with the saves — no rule reads it), `VariantProfile` (the facts the runtime takes from a variant — variable count, scene
   rule, saved pages), `ScriptContext` (the engine's side: state, draws, pauses, scene calls, saves;
   helper calls go through the virtual `CallHelperAsync`), the shared events (`ScriptEvent`) and the
-  view/input/hook interfaces, `SaveData` (the slot format, 3 since the slot's own time `Written`, ENG-07; formats 1-2 still load), `MessageSkip`, `PointerScript` (the
+  view/input/hook interfaces, `SaveData` (the slot format, 4 since the player's `Comment`, 3 the slot's own time `Written`, ENG-07; formats 1-3 still load), `SaveLibrary` (ours, decision 29: `ISaveLibrary`, the ten auto-saves, the manual saves, the persistent page; `LibrarySlots` gives the scenario's slot 1 the newest auto-save), `MessageSkip`, `PointerScript` (the
   gesture queue), `IScenarioSource`, plus
   `ScriptStatements` — scenario code read at run time: a goto program that mirrors the
   decompile line for line (`ScriptProgram`, one statement per engine command, jumps resolved,
@@ -336,12 +338,15 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `Original.Content/Strategy/MessageWindow` from `GamePresenter.MessageWindow` while `CoverMessages`, in a battle `BattlePresenter.MessageWindow`);
   `Strategy/SceneMenuView` (our `]` menus: lacquer rows at the selection box's place, `GamePresenter.MenuBoxArea`, while
   `SceneMenuCovered`; not over our battle screen; docs/ui/messages.md, §5 step 3);
-  `Strategy/SaveLoadView` (our Save/Load screen over `ﾛｰﾄﾞｾｰﾌﾞ`'s load and save lists, our interface, the
-  owner's layout C, docs/ui/save-load.md: the ten slots as a list — Auto in a panel of its own, the nine manual saves in
-  the order of a Slot | Date switch (§7, the owner's E; `SaveSlots.Order`, `SlotOrder`, kept by `Strategy/SaveOrderChoice`) —, the chosen slot's page with its map as All Data draws it
-  and its figures, a red button that answers the list with the slot's item; Load | Save tabs from `COMMAND`,
-  `LoadSaveShortcut.Switch`; the model `Original.Content/Strategy/SaveSlots` — each slot's summary read from the
-  `ISaveStore`, the lists recognised by their lines —, the window 113 under it not drawn, `GamePresenter.SaveScreenCovered`);
+  `Strategy/SaveLoadView` (our Save/Load screen over `ﾛｰﾄﾞｾｰﾌﾞ`'s lists on the save library, in either interface, the
+  owner's layout G, docs/ui/save-load.md, §9 (decision 29): a switch between the manual saves — in the order of a No. | Date
+  switch (§7; `SaveSlots.OrderManuals`, `SlotOrder`, kept by `Strategy/SaveOrderChoice`), scrolling, the comment a row's
+  second line, "+ New save" heading them in Save — and the ten auto-saves, newest first; the chosen save's page with its
+  map as All Data draws it, its figures, a manual save's comment (Edit, written in place), Delete (a callout at the
+  button) and a red button that answers the script's menu with the save's item; Load | Save tabs from `COMMAND`,
+  `LoadSaveShortcut.Switch`; the model `Original.Content/Strategy/SaveSlots` (`ReadLibrary`, `SaveShelf`) — each save's
+  summary read from the `ISaveLibrary`, the menu's saves from `GamePresenter.SaveLibraryList` —, the window 113 under it
+  not drawn, `GamePresenter.SaveScreenCovered`);
   `Strategy/MessageLogView` (the message log, a paper chronicle, mock-up L3a, in either interface: the wheel up at a key wait
   opens it, the game waits; `Original.Content/Strategy/MessageLog` from `GamePresenter.Log` — each key wait's page, a
   dialogue question's answer, `MenuAnswered` (an event scene's menu or one after a speech, never the play's; the play's narration left out, `MessageLog.Keeps`) — the speakers by the portraits' plates, `PortraitNames`; kept for the launch,
@@ -466,9 +471,9 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   back-row unit defend from round 1 (`--until round-2`, ~45 s), Dodge first in round 3 (`--until round-4`, ~70 s); the
   log names the round of each Guard. A load
   replays the week from its autosave (a manual save is a copy of it, `LoadSaveScreen`): the load
-  list, the banner, income and expenses, then the command menu. `--load --auto` always loads slot 1
-  (the list's first item), so a kept folder holds one `slot01.ksav`: the owner's slot copied under that
-  name. It cannot be made again by a command; when the save format or the boot changes, ask the owner
+  list, the banner, income and expenses, then the command menu. `--load --auto` always loads the load list's first item,
+  the newest auto-save, so a kept folder holds one `slot01.ksav`: the owner's slot copied under that
+  name, which the copy's library makes its auto-save (decision 29; the kept folder itself stays as it is). It cannot be made again by a command; when the save format or the boot changes, ask the owner
   for a new one. The older kept save `user://saves-week26` (the bot's own game, the second Leazas week:
   the attack on South (4)) plays the week's events (Lia's scene, Maris's schedule) first. Making it
   again: first week 25, the first Leazas week, ~2 min headless —
@@ -498,10 +503,11 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   `--load --auto --fast --quit --seed 2 --saves user://saves-look-items --slots-from user://saves-week18 --treasure --until deployment [--interface new] --shots <dir>`.
   Add another kept save the same way when a screen needs another phase.
   Our Save/Load screen (2026-10-20): `--saveload` on the week-18 save makes the first map wait open the command panel's
-  Save row; with `--interface new` in a window it saves into the first empty slot ("Slot 1") by the red button, opens the
-  Load tab, clicks through the four orders of its manual saves (the player's own clicked back), clicks Auto's row and leaves
-  by a right click, then plays on — dumps `save-load-title` (the title's load list at the `--load`), `save-load-save`,
-  `save-load-button`, `save-load-saved`, `save-load`, `save-load-date`, `save-load-date-oldest`, `save-load-slot-down`,
+  Save row; in a window it saves a new manual save by the red button, writes its comment through Edit, asks Delete and
+  keeps it, shows the auto-saves, opens the Load tab, clicks through the four orders of the manual saves (the player's own
+  clicked back), chooses the newest auto-save and leaves by a right click, then plays on — dumps `save-load-title` (the
+  title's load list at the `--load`), `save-load-save`, `save-load-button`, `save-load-saved`, `save-load-comment`,
+  `save-load-delete`, `save-load-autos-save`, `save-load`, `save-load-date`, `save-load-date-oldest`, `save-load-slot-down`,
   `save-load-auto` —
   `--load --auto --fast --quit --seed 2 --saves user://saves-look-saves --slots-from user://saves-week18 --saveload --until deployment --interface new --shots <dir>`.
   Replenish on our deployment screen (2026-10-20, decision 27): `--refill` keeps unattended play from replenishing
