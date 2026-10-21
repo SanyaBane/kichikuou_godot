@@ -51,10 +51,11 @@ public partial class ScriptContext
     }
 
     /// <summary>
-    /// <c>LD</c> of a save: back into the memory, <c>RetVal</c> 0, and the running code is left by
+    /// <c>LD</c> of a save: back into the memory, then <paramref name="restored"/> (the variant's persistent values laid
+    /// over the save's older copy of them), <c>RetVal</c> 0, and the running code is left by
     /// <see cref="GameLoadedException"/>; a save that is gone only sets <c>RetVal</c> 255.
     /// </summary>
-    public void LoadSave(SaveId id)
+    public void LoadSave(SaveId id, Action? restored = null)
     {
         var data = ReadLibrary(id);
         if (data is null)
@@ -63,6 +64,7 @@ public partial class ScriptContext
             return;
         }
         data.Restore(State);
+        restored?.Invoke();
         State.RetVal = 0;
         LastSave = id;
         throw new GameLoadedException(id.Number, data.Resume);

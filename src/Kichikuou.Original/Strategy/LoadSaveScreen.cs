@@ -29,6 +29,14 @@ namespace Kichikuou.Original.Strategy;
 /// in our words; loading such a slot leaves the autosave as it is. Without <c>SaveHere</c> (the
 /// differential tests) the file runs as the original.
 /// </para>
+/// <para>
+/// Ours (owner's decision 29): with the context's <see cref="ScriptContext.Library"/> the saves are its two lists, not
+/// slots 1-10 — the autosave a new auto-save (the oldest past ten dropped), the load list every auto-save and manual
+/// save, the save list a new manual save and the manual saves to save over (<see cref="SaveLibraryListEvent"/> names
+/// each item's save), a load never copied into the auto-save, page 4 read and written once in the library's persistent
+/// page instead of in every slot, the notices naming the save in our words. Without it (the differential tests) the
+/// file runs on the slots as the original.
+/// </para>
 /// </remarks>
 public sealed class LoadSaveScreen(OriginalScriptContext script, IScenarioSource scenario)
     : CommandFile(script, "ﾛｰﾄﾞｾｰﾌﾞ.ADV", scenario)
@@ -124,7 +132,10 @@ public sealed class LoadSaveScreen(OriginalScriptContext script, IScenarioSource
     {
         State.Tmp0021 = State.Week;                                     // :31
         State.Tmp0022 = 1;                                              // :32
-        Script.SaveAll(1);                                              // :33 QD 1
+        if (Script.Library is not null)
+            Script.SaveAuto();                                          // ours (decision 29): a new auto-save
+        else
+            Script.SaveAll(1);                                          // :33 QD 1
         await ResumeAsync();
     }
 
@@ -226,6 +237,8 @@ public sealed class LoadSaveScreen(OriginalScriptContext script, IScenarioSource
     /// </summary>
     private async Task<Next> LoadSlotsAsync()
     {
+        if (Script.Library is { } library)
+            return await LibraryLoadAsync(library);
         var items = new List<SceneMenuItem>();
         var slots = new List<int>();                                    // the slot of each item; 0 = list again
         State.Tmp0021 = 1;                                              // :121
@@ -262,6 +275,66 @@ public sealed class LoadSaveScreen(OriginalScriptContext script, IScenarioSource
         Script.LoadAll((Sys3Int)chosen);                                // LD n: leaves on success
         return Next.LoadSlots;                                          // @L_0061d → @L_0027f
     }
+
+    /// <summary>
+    /// Ours (decision 29): the load list over the library — the auto-saves newest first, then the manual saves by number;
+    /// a chosen save is loaded after page 4 is read (<c>L_00a7b</c>), never made the auto-save; one that is gone lists
+    /// them again.
+    /// </summary>
+    private async Task<Next> LibraryLoadAsync(ISaveLibrary library)
+    {
+        List<SaveId?> ids = [.. library.Autos.Concat(library.Manuals).Select(id => (SaveId?)id)];
+        await Script.ShowAsync(new SaveLibraryListEvent(false, ids));
+        int choice = await SelectAsync([.. ids.Select(LibraryItem)]);
+        await WaoAsync(0);                                              // \L_00d25
+        if (choice == 0)
+            return await CancelAsync();
+        ReadPersistentPage();                                           // \L_00a7b
+        Script.LoadSave(ids[choice - 1]!.Value, KeepPersistentPage);    // leaves on success
+        return Next.LoadSlots;
+    }
+
+    /// <summary>
+    /// Ours (decision 29): after a load the library's page 4 over the save's copy — the original's slots all held the
+    /// same page, a save of the library may hold an older one — the loaded cursors and loop counter kept.
+    /// </summary>
+    private void KeepPersistentPage()
+    {
+        var (counter, fate, cg, menu) = (State.Tmp0040, State.Glob_FateCur, State.Glob_CgCur, State.Glob_MenuCur);
+        ReadPersistentPage();
+        (State.Tmp0040, State.Glob_FateCur, State.Glob_CgCur, State.Glob_MenuCur) = (counter, fate, cg, menu);
+    }
+
+    /// <summary>Ours (decision 29): the save list over the library — a new manual save first, then the manual saves to save over.</summary>
+    private async Task<Next> LibrarySaveAsync(ISaveLibrary library)
+    {
+        List<SaveId?> ids = [null, .. library.Manuals.Select(id => (SaveId?)id)];
+        await Script.ShowAsync(new SaveLibraryListEvent(true, ids));
+        int choice = await SelectAsync([.. ids.Select(LibraryItem)]);
+        if (choice == 0)
+        {
+            await WaoAsync(0);                                          // \L_00d25
+            return await CancelAsync();
+        }
+        var manuals = library.Manuals;
+        int number = ids[choice - 1]?.Number ?? (manuals.Count == 0 ? 1 : manuals[^1].Number + 1);
+        State.Tmp0022 = (Sys3Int)number;
+        if (Script.SaveHere is { } here)
+        {
+            State.Tmp0021 = State.Week;                                 // as SaveSlotsAsync's save of the moment
+            Script.SaveManual(ids[choice - 1]?.Number, here);
+        }
+        else
+            Script.SaveManual(ids[choice - 1]?.Number, null);           // a copy of the newest auto-save, as QC n, 1
+        WritePersistentPage();                                          // :511 \L_00ad6
+        return Next.SaveSlots;
+    }
+
+    /// <summary>A library list's item, an empty slot's line (<c>:319-320</c>) printing our label as string 1.</summary>
+    private SceneMenuItem LibraryItem(SaveId? id) =>
+        new(Ref(319), [new CapturedText(Ref(320), [], [id is not { } save ? "New save" : LibraryLabel(save)])]);
+
+    private static string LibraryLabel(SaveId id) => id.Kind == SaveKind.Auto ? "Auto-save" : $"Manual save {id.Number}";
 
     /// <summary><c>:233-238</c> / <c>:452-457</c> — a cancelled list: back to the caller when entered directly, else the menu.</summary>
     private async Task<Next> CancelAsync()
@@ -326,6 +399,8 @@ public sealed class LoadSaveScreen(OriginalScriptContext script, IScenarioSource
     /// </summary>
     private async Task<Next> SaveSlotsAsync()
     {
+        if (Script.Library is { } library)
+            return await LibrarySaveAsync(library);
         var items = new List<SceneMenuItem>();
         for (int slot = 2; slot <= 10; slot++)
         {
@@ -373,6 +448,13 @@ public sealed class LoadSaveScreen(OriginalScriptContext script, IScenarioSource
         State.Glob_FateCur = 0;
         State.Glob_CgCur = 0;
         State.Glob_MenuCur = 0;
+        if (Script.Library is not null)
+        {
+            // Ours (decision 29, STR-31): the library's persistent page, once.
+            Script.LoadPersistent(VarUnused0194, 1);
+            Script.LoadPersistent(VarGlobFate, 2100);
+            return;
+        }
         while (true)                                                    // L_00a8e
         {
             Script.LoadPartial(State.Tmp0040, VarTmp0039, 1);           // QUIRK: STR-23
@@ -397,6 +479,13 @@ public sealed class LoadSaveScreen(OriginalScriptContext script, IScenarioSource
         State.Glob_FateCur = 0;
         State.Glob_CgCur = 0;
         State.Glob_MenuCur = 0;
+        if (Script.Library is not null)
+        {
+            // Ours (decision 29, STR-31): the library's persistent page, once, not every save rewritten.
+            Script.SavePersistent(VarUnused0194, 1);
+            Script.SavePersistent(VarGlobFate, 2100);
+            return;
+        }
         while (true)                                                    // L_00ae9
         {
             Script.LoadPartial(State.Tmp0040, VarTmp0039, 1);           // QUIRK: STR-23
@@ -422,8 +511,19 @@ public sealed class LoadSaveScreen(OriginalScriptContext script, IScenarioSource
     private async Task SlotInfoAsync()
     {
         await EngineAsync("ZM", 16);                                    // :546
-        Script.ReadSaveTime(State.RetVal, VarTmp0001);                  // :547 LT RetVal, Tmp0001  QUIRK: STR-22
-        await ValuesAsync(549, State.Tmp0022);                          // "Data Number（n）"
+        if (Script.Library is not null && Script.LastSave is { } save)
+        {
+            // Ours (decision 29): the save in our words for "Data Number (n)", its time as LT reads it.
+            Script.ReadSaveTime(save, VarTmp0001);                      // QUIRK: STR-22
+            await LineBreakAsync();
+            await Script.ShowAsync(new PortTextEvent("　" + LibraryLabel(save)));
+            await LineBreakAsync();
+        }
+        else
+        {
+            Script.ReadSaveTime(State.RetVal, VarTmp0001);              // :547 LT RetVal, Tmp0001  QUIRK: STR-22
+            await ValuesAsync(549, State.Tmp0022);                      // "Data Number（n）"
+        }
         State.Tmp0001 = State.Week;                                     // :555
         SetDate();                                                      // :556 \L_00ba9
         await ValuesAsync(558, State.DateYear, State.DateMonth, State.DateWeek); // "ＬＰ：y, Month m, Week w"

@@ -154,4 +154,91 @@ public class LoadSaveScreenTests
         Assert.Equal(Call, rig.Saves.Read(1)!.Resume);                  // Auto is still the turn's start
         Assert.Equal(1, rig.Saves.Read(1)!.Variables[22].Value);
     }
+
+    private static Rig? LibraryRig(MemorySaveLibrary library)
+    {
+        if (NewRig() is not { } rig)
+            return null;
+        rig.Script.Library = library;
+        return rig;
+    }
+
+    /// <summary>
+    /// Ours (owner's decision 29): with the library the autosave is a new auto-save each week (ten kept), page 4 goes
+    /// to the library's persistent page once, and the notice names the save in our words.
+    /// </summary>
+    [Fact]
+    public async Task With_the_library_each_autosave_is_a_new_auto_save_and_page_4_is_kept_once()
+    {
+        var library = new MemorySaveLibrary(() => new DateTime(2026, 10, 21, 12, 0, 45));
+        if (LibraryRig(library) is not { } rig)
+            return;
+        rig.State.Fates[2].Fate = 100;
+
+        for (int week = 13; week <= 24; week++)
+            await AutosaveAsync(rig, week);
+
+        Assert.Equal(10, library.Autos.Count);
+        Assert.Equal(24, library.Read(library.Autos[0])!.Variables[517].Value);
+        Assert.Equal(100, library.ReadPersistent()!.Pages[4][2].Value);
+        Assert.Contains(rig.View.Events, e => e is PortTextEvent { Text: "　Auto-save" });
+        Assert.DoesNotContain(rig.View.Events, e => e is ValueMessageEvent { Text.Line: 549 });   // "Data Number (1)"
+        Assert.Equal(45, rig.State.Tmp0006.Value);                      // the save's second (STR-22)
+    }
+
+    /// <summary>
+    /// Ours (decision 29): the save list offers a new manual save first, then the manual saves; the load list every
+    /// auto-save and manual save; a load leaves the auto-saves as they are and reads page 4 from the library.
+    /// </summary>
+    [Fact]
+    public async Task With_the_library_a_save_is_a_new_manual_save_and_a_load_leaves_the_auto_saves()
+    {
+        var library = new MemorySaveLibrary();
+        if (LibraryRig(library) is not { } rig)
+            return;
+        await AutosaveAsync(rig, 13);
+        await AutosaveAsync(rig, 14);
+        var here = new ScriptRef("MAIN.ADV", 213);
+        rig.Script.SaveHere = here;
+        rig.State.Gold = 999;
+
+        rig.State.RetVal = 2;
+        rig.Input.Choices.Enqueue(2);                                   // Save
+        rig.Input.Choices.Enqueue(1);                                   // New save
+        rig.Input.Choices.Enqueue(1);                                   // New save again
+        rig.Input.Choices.Enqueue(2);                                   // over manual save 1
+        rig.Input.Choices.Enqueue(0);                                   // leave the list
+        rig.Input.Choices.Enqueue(3);                                   // Don't
+        await rig.Screen.RunAsync();
+
+        Assert.Equal([new SaveId(SaveKind.Manual, 1), new SaveId(SaveKind.Manual, 2)], library.Manuals);
+        Assert.Equal(here, library.Read(new SaveId(SaveKind.Manual, 1))!.Resume);
+        var lists = rig.View.Events.OfType<SaveLibraryListEvent>().ToList();
+        Assert.Equal([null], lists[0].Items);
+        Assert.Equal([null, new SaveId(SaveKind.Manual, 1), new SaveId(SaveKind.Manual, 2)], lists[2].Items);
+        Assert.True(lists.All(l => l.Save));
+
+        rig.State.Gold = 5;
+        rig.State.Fates[2].Fate = 0;
+        var persistent = library.ReadPersistent()!;
+        persistent.Pages[4][2] = 10;
+        library.WritePersistent(persistent);
+        rig.State.RetVal = 2;
+        rig.Input.Choices.Enqueue(1);                                   // Load
+        rig.Input.Choices.Enqueue(3);                                   // after the two auto-saves: manual save 1
+        var loaded = await Assert.ThrowsAsync<GameLoadedException>(() => rig.Screen.RunAsync());
+
+        Assert.Equal(here, loaded.Resume);
+        Assert.Equal(999, rig.State.Gold.Value);
+        Assert.Equal(10, rig.State.Fates[2].Fate.Value);                // page 4 from the library
+        var load = rig.View.Events.OfType<SaveLibraryListEvent>().Last();
+        Assert.False(load.Save);
+        Assert.Equal([.. library.Autos, .. library.Manuals], load.Items.Select(i => i!.Value));
+        Assert.Equal(2, library.Autos.Count);
+        Assert.Equal(14, library.Read(library.Autos[0])!.Variables[517].Value);   // not replaced by the load
+
+        rig.View.Events.Clear();
+        await rig.Screen.ResumeAsync();
+        Assert.Contains(rig.View.Events, e => e is PortTextEvent { Text: "　Manual save 1" });
+    }
 }

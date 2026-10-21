@@ -82,6 +82,13 @@ public sealed record DataScreenEvent(DataView View) : ScreenEvent;
 public sealed record SaveScreenEvent(Sys3Int Mode, bool Open) : ScreenEvent;
 
 /// <summary>
+/// Ours (owner's decision 29): the save screen's next menu is a list over the save library — the load list
+/// (<paramref name="Save"/> false) or the save list — with the save each item stands for, in the menu's order; null for
+/// the save list's new manual save.
+/// </summary>
+public sealed record SaveLibraryListEvent(bool Save, IReadOnlyList<SaveId?> Items) : ScreenEvent;
+
+/// <summary>
 /// A battle file (<c>FIGT_A</c>, <c>FIGT_B</c>, <c>FIGT</c>, <c>死亡捕獲</c>) started or returned; in
 /// between, the battle's own events draw the screen (they may nest: <c>死亡捕獲</c> runs inside a battle).
 /// </summary>
