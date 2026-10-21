@@ -80,12 +80,18 @@ variants later, if the owner wants them.
    `light-magic`, `poison-magic`), its frames next to the reference's for the owner's look, then wired
    in place of the Fire Blast. The references (owner, 2026-10-21): ice **40730** recoloured white-blue,
    lightning **40630**, dark **47030**, light **40430**, poison **41300**.
-   - **Ice** — v1 built (2026-10-21), awaiting the owner's look: `godot/Battles/Effects/IceEffect` (a new
+   - **Ice** — built (2026-10-21), accepted by the owner (2026-10-21): `godot/Battles/Effects/IceEffect` (a new
      texture, `EffectTextures.Flake`, the snowflake), wired for `IceMagic`. Miko Storm's flurry in white and
      ice blue: blowing in at the bottom right (2-5), a dense whirl of ice shards (diamonds, `Kite`),
      snowflakes, frosty billows, cold glows, thin wind arcs and a few curls turning about a centre that
      climbs to (635, 165) by frame 12, fullest at 12-18, thinning to frame ~29; Miko Storm's petals became
      shards and flakes, its mint white-blue.
+   - **Lightning** — built (2026-10-21), awaiting the owner's look: `godot/Battles/Effects/LightningEffect`,
+     wired for `LightningMagic`. Thunderstrike in blue-white (the owner's colours; its own is green-white): a
+     bolt down on the target at (605, 235) with jagged branches over the sky above it, struck anew each frame
+     and thinning from frame 7 (0-9); a white flash at its foot with rays fanning out (1-5); a bright filled
+     ellipse on the ground (5-9) spreading as a ring (to ~17) while thin strands linger; star sparkles and soft
+     specks over the target's half and thinly beyond it, gone by frame ~27.
 8. **Docs** — docs/ui/battle-screen.md, "The exchange's effects", says how a magic attack picks its
    effect; CLAUDE.md's effect list gets the new effects.
 
