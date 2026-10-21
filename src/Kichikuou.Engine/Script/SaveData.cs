@@ -14,18 +14,19 @@ namespace Kichikuou.Engine.Script;
 /// The random generator's state is not saved either, as in the original. The slot format is the
 /// engine's; whether a slot fits a game is the context's check (its variable count). The port's own
 /// data (<see cref="ScriptState.Extras"/>) goes with the memory, from format 2 on, and the time the
-/// slot was written (<see cref="Written"/>) from format 3 on.
+/// slot was written (<see cref="Written"/>) from format 3 on, the player's comment (<see cref="Comment"/>) from format 4 on.
 /// </summary>
 public sealed class SaveData
 {
     private const string Magic = "KKSAVE";
-    private const int FormatVersion = 3;
+    private const int FormatVersion = 4;
 
     /// <summary>Creates a slot's contents; the arrays are kept, not copied.</summary>
     public SaveData(ScriptRef resume, Sys3Int[] variables, IReadOnlyDictionary<int, Sys3Int[]> pages, string[] strings,
-        IReadOnlyDictionary<string, int[]>? extras = null, DateTime? written = null)
+        IReadOnlyDictionary<string, int[]>? extras = null, DateTime? written = null, string comment = "")
     {
         Written = written;
+        Comment = comment;
         Resume = resume;
         Variables = variables;
         Pages = pages;
@@ -55,8 +56,14 @@ public sealed class SaveData
     /// </summary>
     public DateTime? Written { get; }
 
+    /// <summary>Ours (owner's decision 29): the player's comment on the save, written after it was made; empty for none.</summary>
+    public string Comment { get; }
+
     /// <summary>The same contents (the arrays shared) with another stamp; null for the store to stamp it anew.</summary>
-    public SaveData Stamped(DateTime? written) => new(Resume, Variables, Pages, Strings, Extras, written);
+    public SaveData Stamped(DateTime? written) => new(Resume, Variables, Pages, Strings, Extras, written, Comment);
+
+    /// <summary>The same contents (the arrays shared) and stamp with another comment.</summary>
+    public SaveData Commented(string comment) => new(Resume, Variables, Pages, Strings, Extras, Written, comment);
 
     /// <summary><c>QD</c>: the memory as it is now, with the pages the variant saves (<see cref="VariantProfile.SavedPages"/>).</summary>
     public static SaveData Capture(ScriptState state, ScriptRef resume)
@@ -121,7 +128,8 @@ public sealed class SaveData
         Pages.ToDictionary(p => p.Key, p => (Sys3Int[])p.Value.Clone()),
         (string[])Strings.Clone(),
         Extras.ToDictionary(e => e.Key, e => (int[])e.Value.Clone()),
-        Written);
+        Written,
+        Comment);
 
     /// <summary>The port's own slot format (not the original's <c>.ASD</c>): versioned, little-endian.</summary>
     public void WriteTo(Stream stream)
@@ -150,6 +158,7 @@ public sealed class SaveData
                 w.Write(value);
         }
         w.Write(Written?.Ticks ?? 0L);
+        w.Write(Comment);
     }
 
     /// <summary>Reads a slot written by <see cref="WriteTo"/>; fails with <see cref="InvalidDataException"/> on anything else.</summary>
@@ -205,7 +214,8 @@ public sealed class SaveData
                     throw new InvalidDataException($"Bad time {ticks}.");
                 written = new DateTime(ticks, DateTimeKind.Local);
             }
-            return new SaveData(resume, variables, pages, strings, extras, written);
+            string comment = version >= 4 ? r.ReadString() : "";
+            return new SaveData(resume, variables, pages, strings, extras, written, comment);
         }
         catch (EndOfStreamException e)
         {

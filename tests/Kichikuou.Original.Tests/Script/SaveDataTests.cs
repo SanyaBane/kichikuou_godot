@@ -252,11 +252,11 @@ public class SaveDataTests
         read.Restore(loaded);
         Assert.Equal([2, 6], loaded.KnownProvinces);
 
-        // Format 1: the version 1 and no extras' count (nor format 3's stamp) at the end.
+        // Format 1: the version 1 and no extras' count (nor format 3's stamp, nor format 4's comment) at the end.
         byte[] bytes = Write(SaveData.Capture(new GameState { Week = 12 }, Call));
-        Assert.Equal(3, BitConverter.ToInt32(bytes, 7));               // after the length-prefixed "KKSAVE"
+        Assert.Equal(4, BitConverter.ToInt32(bytes, 7));               // after the length-prefixed "KKSAVE"
         BitConverter.GetBytes(1).CopyTo(bytes, 7);
-        var old = SaveData.ReadFrom(new MemoryStream(bytes[..^12]));
+        var old = SaveData.ReadFrom(new MemoryStream(bytes[..^13]));
         Assert.Empty(old.Extras);
         Assert.Equal(12, old.Variables[517].Value);
         old.Restore(loaded);
@@ -304,9 +304,9 @@ public class SaveDataTests
             Assert.Equal(written, store.Timestamp(2));
 
             byte[] bytes = Write(data);
-            BitConverter.GetBytes(2).CopyTo(bytes, 7);                  // format 2: no stamp at the end
+            BitConverter.GetBytes(2).CopyTo(bytes, 7);                  // format 2: no stamp nor comment at the end
             string path = Path.Combine(directory, "slot03.ksav");
-            File.WriteAllBytes(path, bytes[..^8]);
+            File.WriteAllBytes(path, bytes[..^9]);
             var fileTime = new DateTime(2026, 10, 1, 8, 0, 0);
             File.SetLastWriteTime(path, fileTime);
             Assert.Equal(fileTime, store.Read(3)!.Written);

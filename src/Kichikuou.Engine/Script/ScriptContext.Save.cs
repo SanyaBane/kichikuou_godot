@@ -69,10 +69,12 @@ public partial class ScriptContext
     /// <paramref name="var"/> points to now, into the memory there (<c>save_loadPartial</c>);
     /// <c>RetVal</c> 0, or 255 for an empty slot or a page the slot lacks.
     /// </summary>
-    public void LoadPartial(Sys3Int slot, int var, Sys3Int count)
+    public void LoadPartial(Sys3Int slot, int var, Sys3Int count) => LoadPartial(ReadSave(slot), var, count);
+
+    private void LoadPartial(SaveData? data, int var, Sys3Int count)
     {
         var (page, index) = State.Locate(var);
-        var saved = ReadSave(slot)?.Page(page);
+        var saved = data?.Page(page);
         if (saved is null)
         {
             State.RetVal = SaveError;
@@ -89,11 +91,13 @@ public partial class ScriptContext
     /// the rest of the slot kept (<c>save_savePartial</c>); <c>RetVal</c> 1, or 255 for an empty
     /// slot or a page without the save flag. Ours: the slot keeps the time it was saved (ENG-07).
     /// </summary>
-    public void SavePartial(Sys3Int slot, int var, Sys3Int count)
+    public void SavePartial(Sys3Int slot, int var, Sys3Int count) =>
+        SavePartial(ReadSave(slot), var, count, data => Saves.Write(slot.Value, data));
+
+    private void SavePartial(SaveData? data, int var, Sys3Int count, Func<SaveData, bool> write)
     {
         var (page, index) = State.Locate(var);
-        var data = page == 0 || State.Profile.SavedPages.Contains(page) ? ReadSave(slot) : null;
-        var saved = data?.Page(page);
+        var saved = page == 0 || State.Profile.SavedPages.Contains(page) ? data?.Page(page) : null;
         if (data is null || saved is null)
         {
             State.RetVal = SaveError;
@@ -102,7 +106,7 @@ public partial class ScriptContext
         int n = SliceCount(page, index, count);
         for (int i = 0; i < n && index + i < saved.Length; i++)
             saved[index + i] = ReadSlot(page, index + i);
-        State.RetVal = Saves.Write(slot.Value, data) ? (Sys3Int)1 : SaveError;
+        State.RetVal = write(data) ? (Sys3Int)1 : SaveError;
     }
 
     /// <summary>
@@ -126,9 +130,10 @@ public partial class ScriptContext
     /// hour, minute, second into <paramref name="var"/> and the five variables after it; all 0 and <c>RetVal</c> 255
     /// when the slot is empty.
     /// </summary>
-    public void ReadSaveTime(Sys3Int slot, int var)
+    public void ReadSaveTime(Sys3Int slot, int var) => WriteSaveTime(IsSlot(slot) ? Saves.Timestamp(slot.Value) : null, var);
+
+    private void WriteSaveTime(DateTime? time, int var)
     {
-        var time = IsSlot(slot) ? Saves.Timestamp(slot.Value) : null;
         int[] values = time is { } t ? [t.Year, t.Month, t.Day, t.Hour, t.Minute, t.Second] : [0, 0, 0, 0, 0, 0];
         for (int i = 0; i < values.Length; i++)
             State.WriteRun(var, i, (Sys3Int)values[i]);
