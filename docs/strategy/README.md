@@ -288,6 +288,26 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     unlocks (STR-31 fixed). The original interface's slot lists are not kept working: our Save/Load screen is
     the only one (the owner, 2026-10-21: the project aims at our interface alone). The differential tests run
     `ﾛｰﾄﾞｾｰﾌﾞ` on the plain ten slots, so the file still runs as the original there.
+30. **Talk and the harem: marks, and what is unread comes first** (2026-10-22, the owner's request and answers;
+    survey in [docs/ui/talk-marks.md](../ui/talk-marks.md)): the fourth change on purpose, the third to the rules of
+    play; not built yet. **The marks:** a talk (`Cﾌﾞｶ`, the unit's scene with `Ev_Entry = 20`) or a harem visit
+    (`Cﾊｰﾚﾑ`, `Ev_Entry = 10`) is "read" only when, in the current state, no branch of its scene shows a line not read
+    in this playthrough and none changes a variable other than the bookkeeping and Rance's self-talk counter
+    (compared by value; a write every branch of a visit makes is part of the visit); a menu's every item counts, lines
+    past an ending do not. Otherwise it has a mark: New when something new is certain, "???" when it hangs on a draw
+    that changes the state. The port finds it by a dry run of the scene on a copy of the state, every draw forked; it
+    never predicts the real draw. The read lines are kept per save. Only the characters' cells are marked. **The
+    rule change**, an option on by default (Option → Game; off, everything as the original): (1) an unread harmless
+    variant (no variable that counts changed) comes for certain, at random among the unread ones (e.g. `Gｶﾌｪ:396`);
+    (2) the draws that change the state give their outcome for certain once the usual scene is read — Haurein's
+    leaving (`Gﾊｳﾚｰﾝ:2299`), Kentarou's training steps (`Gｹﾝﾀﾛｳ:608`), Isoroku's pregnancy (`Gｲｿﾛｸ:4599`),
+    Kanami's scene 2 and tower scene (`Gｶﾅﾐ:182`), each under "???" but Kanami's (New); Suzume's and Wendy's first
+    meetings (`Cﾊｰﾚﾑ:6`) keep their odds; (3) **Kanami chooses in Code's event 4**, the first change of a story
+    branch: with two or more of her flags (`Gｺｰﾄﾞ:1444-1459`) our menu "Stop Code" / "Go with Code" follows her
+    doubts, so ending 3 comes only on purpose; with fewer the original's path; (4) Kentarou's training steps end
+    with our narration, "Kentarou seems to be catching on to the move." (5 → 6) and "Kentarou has nearly caught on
+    to the move." (6 → 7). Every draw is still made, only its outcome replaced, so the generator moves as in the
+    original. The differential tests run without any of it.
 
 ## Milestone 1 — the prologue
 

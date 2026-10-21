@@ -196,6 +196,10 @@ a load never makes a save the auto-save; page 4 in a file of its own (STR-31). T
 docs/ui/save-load.md, §9; the owner chose G, built: the library `Engine/Script/SaveLibrary` (`DirectorySaveLibrary` migrates a
 folder of slots the first time), `ﾛｰﾄﾞｾｰﾌﾞ`'s port on it while `ScriptContext.Library` is set (`ScriptContext.Library.cs`),
 the screen in either interface.
+**Owner's decision 30** (2026-10-22): marks on Talk and the harem telling whether a talk or a visit can bring anything
+new, and, as an option on by default, what is unread comes first (harmless variants and the draws that change the
+state given for certain once the usual scene is read), Kanami's choice in Code's event 4, Kentarou's hint lines —
+surveyed in docs/ui/talk-marks.md, not built; the marks' mock-ups later.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

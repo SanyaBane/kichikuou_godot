@@ -202,7 +202,7 @@ event (`COM:315`), event 3 another such mission (`:355`, `:554`). The other two 
 - With two or more, our menu right after her doubts (the scene's lead-in ends with her asking herself whether to stop
   Code, then the clock strikes one) and before the count: **"Stop Code"** plays the fewer-than-two branch (it opens
   with her "I'm a ninja before a woman" and reads as her decision; nothing in it tells the flags), **"Go with Code"**
-  the branch of ending 3. The items are the port's own English text, their wording to settle.
+  the branch of ending 3. The items are the port's own English text, as worded here (owner, 2026-10-22).
 - So ending 3 stays reachable, but only on purpose.
 - It needs a new mechanism: `Gｺｰﾄﾞ` runs from the player's files, and the port can route a whole file to its own code
   but not answer one test inside a scene. A scene patch — one test (`Gｺｰﾄﾞ:1457`) answered by our menu — is small
@@ -217,5 +217,4 @@ untouched.
 
 ## 6. Open questions
 
-- The wording of Kanami's two items in Code's event 4 (§5).
 - Where the marks are drawn (the Subordinates picker's cells and Talk, the harem picker's cells): the mock-ups, later.
