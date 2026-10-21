@@ -409,7 +409,8 @@ picture, the slot panels) is not shown. How it is built:
   `tools/sengoku/effect_frames.py` (never committed). Kichikuou's attack types (`Bt_PlayerAtkType`, from the unit's
   class: 0 melee, 1 bow, 2 magic; docs/battle/01-flow.md §8.1) take Sengoku Rance's **Samurai (40000)**
   for melee, **Archer (40260)** for the bow and **Mage (40360, Fire Blast)** for magic — every magic class alike
-  (confirmed by the owner, 2026-10-14). The effects are drawn under the exchange's numbers (the counters, the shots,
+  (confirmed by the owner, 2026-10-14; to change: one effect per element, by the spell the caster shouts, else
+  the caster's element — owner, 2026-10-21, the plan in docs/ui/mage-lines.md). The effects are drawn under the exchange's numbers (the counters, the shots,
   the damages), at their full brightness as Sengoku Rance's — the fireball whites out the target's half for ~0.4 s
   (owner, 2026-10-14). The bow and the magic come first, then the wiring of all three into the exchange (owner,
   2026-10-14); open for the wiring: Kichikuou's exchange has an action on each side (`Bt_PlayerAction`,
