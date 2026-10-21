@@ -103,9 +103,9 @@ variants later, if the owner wants them.
      `LightMagic`. Angel Cutter in its own colours, thrown from the actor's side as 40430 is: a warm orb at
      (305, 170) swelling into a white sun in an orange-gold halo with rays (0-3), gold glints gathering round it,
      blades of light sweeping right across the field (3-27) — v2 after the owner's look (v1's many flat crescents
-     "too simple", 2026-10-21): 36 instead of 130, four big ones crossing slowly, each a pale blue-white body fading
+     "too simple", 2026-10-21): 68 instead of 130 (64 small, as the owner doubled them), four big ones crossing slowly, each a pale blue-white body fading
      toward its hollow (`EffectTextures.BladeBody`) under a gold-white cutting edge in a halo (`BladeEdge`), tilting
-     and growing as it flies with a blur of afterimages; six small feathers (`Feather`, the owner's sixth of v2's)
+     and growing as it flies with a blur of afterimages; six small feathers (`Feather`, the owner's third of v2's)
      appearing low already, sinking and drifting on toward the target, some off the screen —, a faint glassy sphere where the orb was (6-16), warm glints lingering on the actor's
      side and yellow glints and curls among the blades on the target's (11-26).
 8. **Docs** — docs/ui/battle-screen.md, "The exchange's effects", says how a magic attack picks its

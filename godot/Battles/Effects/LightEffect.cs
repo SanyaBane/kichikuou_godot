@@ -73,7 +73,7 @@ internal static class LightEffect
         // The blades: blades of light, their hollows behind them, flying right from the orb in a broadening stream (3-27) —
         // a few big ones crossing the field slowly, smaller ones quicker round them — each a pale blue-white body under a
         // gold-white cutting edge, tilting and growing a little as it flies, with fading afterimages of itself behind it.
-        for (int i = 0; i < 36; i++)
+        for (int i = 0; i < 68; i++)
         {
             bool big = i < 4;
             float birth = big ? 4 + i * 2.5f + Range(0, 1) : 3 + 16 * MathF.Pow((float)random.NextDouble(), 1.2f);
@@ -105,7 +105,7 @@ internal static class LightEffect
             float birth = Range(5, 13), life = Range(14, 18);
             var at = new Vector2(Range(380, 620), Range(220, 285));
             var drift = new Vector2(Range(10, 18), Range(1.5f, 3));
-            float size = Range(12, 17), phase = Range(0, MathF.Tau), sway = Range(3, 5);
+            float size = Range(24, 34), phase = Range(0, MathF.Tau), sway = Range(3, 5);
             particles.Add(new Particle(EffectTextures.Feather, birth, life, at, drift, Range(-0.6f, 0.6f) + MathF.PI * random.Next(2),
                 Range(-0.05f, 0.05f), new Vector2(size, size * 0.38f), Plume, Drift, _ => 1,
                 Move: t => new Vector2(0, MathF.Sin(phase + t * 9) * sway)));
