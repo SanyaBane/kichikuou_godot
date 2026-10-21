@@ -3,7 +3,7 @@ using Godot;
 namespace Kichikuou.Game.Battles.Effects;
 
 /// <summary>
-/// Kanami's follow-up effect, ours (owner, 2026-10-21: the ninja's one weak shot at the enemy commander,
+/// Kanami's follow-up effect, ours (the owner took its v1 as it is, 2026-10-21; the ninja's one weak shot at the enemy commander,
 /// docs/battle/02-resolution.md §7.3, should look far weaker than Sengoku Rance's Ninja troop, 40100; laid out after
 /// Sandal Shuriken, 46780, a single throw). A small white glint where she throws, right of her figure (CG 1164), three
 /// shuriken in a tight fan with faint trails flying to the target (frames 0-5), at each hit a small white flash, a
