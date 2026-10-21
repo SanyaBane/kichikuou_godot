@@ -62,7 +62,7 @@ variants later, if the owner wants them.
 
 1. **The references** — Sengoku Rance's magic effects for ice, lightning, dark, light and poison,
    their frames looked at and offered to the owner (docs/sengoku/04-screen.md §2.4.1 gets the
-   survey); the owner chooses one per element. The owner settled the casters above (2026-10-21: Sill fire, Hanty
+   survey — done 2026-10-21, docs/sengoku/04-screen.md §2.4.1, "The magic's elements"); the owner chooses one per element. The owner settled the casters above (2026-10-21: Sill fire, Hanty
    lightning, the demons without a spell dark, Hanny King light, Annis fire).
 2. **The choice** — `MagicSpells` (the spell lines and the casters), the presenter's memory,
    `ExchangeEffect.Of` and the new kinds; until an element's effect exists it plays the Fire Blast. **Done**

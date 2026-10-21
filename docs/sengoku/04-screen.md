@@ -198,6 +198,28 @@ Surveyed as the reference for our own exchange effects (docs/ui/battle-screen.md
   Attack. T2 Soaring Wave later: likely Rance Attack's eruption made much smaller, four of them, as Rolex's sprite.
   **Changed** (owner, 2026-10-15): High Speed takes **41400** Commander Charge (not Sonic Shuriken), and By la Way
   Rance Attack's **40500** recoloured red, as Rick's red sprite (CG 1521).
+- **The magic's elements** **[V]** (surveyed 2026-10-21 for Kichikuou's magic by element, docs/ui/mage-lines.md,
+  "The plan: magic effects by element"; frames looked at every third). Skills from `多田/▲技能データ.jaf.jam` (type 1
+  physical, 2 magic), entries from `T_EFFDAT`. Proposals for the owner, **bold** the best fit:
+
+  | Element (Kichikuou's spells) | Sengoku Rance's effect | What it shows |
+  |---|---|---|
+  | Ice (Ice Arrow, White Chill, Snow Laser) | none in SR: no skill, character entry or unreferenced CG of 40000-49999 shows ice. **40730** (97 Miko Storm, magic, all; `:301-310`) recoloured white-blue | pale mint petals and curly wind lines whirling over the target's half (3-24) — a flurry |
+  | | 46360, 15 (Mageman's single monster magic, action 204 by `add2`, `:686-690`) recoloured cyan | a star at the actor, a bolt flying to a starburst on the target — a small projectile, for Ice Arrow |
+  | Lightning (Lightning, Lightning Laser) | **40630** (44 Thunderstrike, magic, all; Omachi, Madou, troop type 31; `:271-280`) | a green-white bolt down on the target (0), a white flash with rays (3), a glowing ring spreading on the ground among sparkles (6-15) |
+  | | 40830 (180 Great Thunderstrike, `:331-340`) | the same, larger: several bolts, the flash over half the frame, ripples running toward the actor |
+  | | 47300 (78 Orochi Beam, physical, a row; `:891-900`) | purple lightning over the whole frame and a glowing band across the middle swelling into white globes — for Lightning Laser |
+  | Dark (Darkness Beam, Black Wave) | **47030** (77 All-Targeting Monster Magic, magic; `:861-870`) | a violet orb swelling into a pink-white ball, a white-violet blast over the target's half (9-15), a dark violet sphere (18-21) |
+  | | 46280, 15 (Rommel's spell attack by `add2`, `:676-680`) | a pink ring and a beam of parallel violet lines through sparkles, small, at mid-height — for Darkness Beam |
+  | Light (Friendship Beam, Light Bomb, Miracle Straight Flash) | **40430** (46 Angel Cutter, "the power of light", magic; `:211-220`) | a warm orb, a gold-white sun (3), then white crescent blades sweeping right with gold sparkles (6-18) |
+  | | 47330 (82 Xavier Slash, physical; `:901-910`) | white starbursts at the target, a white-gold bokeh explosion (6-12) decaying into orange — for Light Bomb |
+  | Poison (nerve gas, Poison Gauntlet) | **41300** (28 Death by Poison, physical; `:471-480`), SR's only poison | green, lilac and blue-grey bubbling clouds with a white glare over the right half (3-9), drifting off |
+  | Fire, a laser (Fire Laser) — optional | 46220, 15 (Uppy's S Flamethrower by `add2`, `:666-670`) | a small flame jet across mid-height (0-12) |
+
+  Looked at and set aside: 47130 Black Flame (reads as fire), 41360 Ally Avenger (violet skulls), 47430 Guna Beam
+  (mixed palette), 40760 Miko Storm 2 (a violet vortex), 41060 Summon Suzaku (too grand), 46820 Seven Head Claws
+  (claws), the onmyouji's 40160 / 45040. **[I]** `tools/sengoku/effect_frames.py` may extract one CG late (`-i` is an
+  archive index, and the survey's listing put `cgN` at index N−1); not checked — the frames above came from a fixed copy.
 - **Guard** **[V]** (surveyed 2026-10-20 for Kichikuou's Defend; docs/ui/battle-screen.md, "The exchange's effects"):
   no guard action has an entry of its own; `tagEffectDataManager@get` remaps it through `checkAction`
   (`あべ/T_EFFDAT.JAF.jam:1506-1561`): `行動_防御` (`あべ/C_行動.jaf.jam`, `FUNC 1364`) — actions 3, 21 (Ally Guard),
