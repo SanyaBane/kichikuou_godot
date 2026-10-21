@@ -57,9 +57,10 @@ New-Item -ItemType Directory -Force $Out | Out-Null
 
 $target = Join-Path $Out 'Kichikuou.exe'
 Write-Host "Exporting the release build to $target ..."
-# The export's dotnet publish would leave MSBuild nodes behind that hold the console exe's output open, so the
-# export never seems to end.
+# The export's dotnet publish would leave servers behind — MSBuild's nodes and Roslyn's VBCSCompiler — that
+# inherit the console exe's output and hold it open, so the export never seems to end.
 $env:MSBUILDDISABLENODEREUSE = '1'
+$env:UseSharedCompilation = 'false'
 & $exe --headless --path (Join-Path $root 'godot') --export-release 'Windows Desktop' $target
 if ($LASTEXITCODE -ne 0 -or -not (Test-Path $target)) {
     throw "The export failed (exit code $LASTEXITCODE)."
