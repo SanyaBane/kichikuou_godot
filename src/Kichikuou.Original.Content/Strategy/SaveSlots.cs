@@ -42,6 +42,9 @@ public readonly record struct SlotOrder(SlotSortKey Key, bool Descending)
     public SlotOrder Clicked(SlotSortKey key) => key == Key ? this with { Descending = !Descending } : new(key, key == SlotSortKey.Date);
 }
 
+/// <summary>The library's saves as our Save/Load screen lists them: the auto-saves newest first, the manual saves by number.</summary>
+public sealed record SaveShelf(IReadOnlyList<SaveSlot> Autos, IReadOnlyList<SaveSlot> Manuals);
+
 /// <summary>A marker on a slot's miniature map: its CG, its corner in the miniature's pixels (640×266).</summary>
 public sealed record SlotMark(int Cg, int X, int Y);
 
@@ -50,7 +53,8 @@ public sealed record SlotMark(int Cg, int X, int Y);
 /// memory. <paramref name="Number"/> is the slot (1 Auto, 2-10 the lists' "1"-"9"), 0 for the game being played;
 /// <paramref name="Week"/> the week the lists date it by; <paramref name="Troops"/> the status window's sum;
 /// <paramref name="Tiles"/> the map's six tile CGs, top row then bottom, left to right; <paramref name="Marks"/> its markers
-/// as All Data draws them. Presentation only: no rule reads it.
+/// as All Data draws them; <paramref name="Id"/> the save of the library it is (owner's decision 29), with the player's
+/// <paramref name="Comment"/>. Presentation only: no rule reads it.
 /// </summary>
 public sealed record SaveSlot(
     int Number,
@@ -63,13 +67,16 @@ public sealed record SaveSlot(
     int Troops,
     DateTime? Written,
     IReadOnlyList<int> Tiles,
-    IReadOnlyList<SlotMark> Marks)
+    IReadOnlyList<SlotMark> Marks,
+    SaveId? Id = null,
+    string Comment = "")
 {
-    /// <summary>"Auto", or "Slot n" as the lists number it (slot 2 is "1").</summary>
-    public string Label => SaveSlots.LabelOf(Number);
+    /// <summary>"Auto", or "Slot n" as the lists number it (slot 2 is "1"); a library's save "Auto-save" or "No. n".</summary>
+    public string Label => Id is { } id ? (id.Kind == SaveKind.Auto ? "Auto-save" : $"No. {id.Number}") : SaveSlots.LabelOf(Number);
 
-    /// <summary>The seal's text: "A", or the list's number.</summary>
-    public string Seal => Number == 1 ? "A" : (Number - 1).ToString(CultureInfo.InvariantCulture);
+    /// <summary>The seal's text: "A", or the list's number; a manual save's number.</summary>
+    public string Seal => Id is { Kind: SaveKind.Manual } manual ? manual.Number.ToString(CultureInfo.InvariantCulture)
+        : Number == 1 || Id is not null ? "A" : (Number - 1).ToString(CultureInfo.InvariantCulture);
 
     /// <summary>"LP 3 · Month 5 · Week 2".</summary>
     public string DateText
@@ -149,6 +156,39 @@ public static class SaveSlots
         data.Restore(state);
         var kind = slot == 1 ? SlotKind.Auto : WeekLoop.IsMomentSave(data.Resume) ? SlotKind.MidTurn : SlotKind.TurnStart;
         return Of(state, slot, kind, state.Tmp0021.Value, written);
+    }
+
+    /// <summary>
+    /// The library's saves (owner's decision 29): the auto-saves newest first and the manual saves by number, those that
+    /// cannot be read left out.
+    /// </summary>
+    public static SaveShelf ReadLibrary(ISaveLibrary library) => new(
+        [.. library.Autos.Select(id => Read(library, id)).OfType<SaveSlot>()],
+        [.. library.Manuals.Select(id => Read(library, id)).OfType<SaveSlot>()]);
+
+    /// <summary>One save of the library, or null when it is gone or cannot be read.</summary>
+    public static SaveSlot? Read(ISaveLibrary library, SaveId id)
+    {
+        if (library.Read(id) is not { } data)
+            return null;
+        var state = new GameState();
+        if (data.Variables.Length != state.Memory.VariableCount)
+            return null;
+        data.Restore(state);
+        var kind = id.Kind == SaveKind.Auto ? SlotKind.Auto : WeekLoop.IsMomentSave(data.Resume) ? SlotKind.MidTurn : SlotKind.TurnStart;
+        return Of(state, 0, kind, state.Tmp0021.Value, data.Written) with { Id = id, Comment = data.Comment };
+    }
+
+    /// <summary>
+    /// The manual saves in <paramref name="order"/>: by number, or by the time written (none as the oldest, equal times by
+    /// number); ascending is the first made, or the oldest, at the top.
+    /// </summary>
+    public static IReadOnlyList<SaveSlot> OrderManuals(IReadOnlyList<SaveSlot> manuals, SlotOrder order)
+    {
+        var sorted = order.Key == SlotSortKey.Slot
+            ? manuals.OrderBy(s => s.Id?.Number ?? 0)
+            : manuals.OrderBy(s => s.Written ?? DateTime.MinValue).ThenBy(s => s.Id?.Number ?? 0);
+        return order.Descending ? [.. sorted.Reverse()] : [.. sorted];
     }
 
     /// <summary>The game being played, as a save from <c>COMMAND</c> would store it (owner's decision 26).</summary>

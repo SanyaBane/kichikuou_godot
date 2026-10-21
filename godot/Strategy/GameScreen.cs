@@ -254,7 +254,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private MessageWindowView _messageView = null!;     // our message windows over WAO_SUB's (New)
     private SceneMenuView _sceneMenuView = null!;       // our ] menus over the selection box (New)
     private SaveLoadView _saveView = null!;             // our Save/Load screen over ﾛｰﾄﾞｾｰﾌﾞ's slot lists (New)
-    private ISaveStore? _saves;                         // the session's slots, which our Save/Load screen reads
+    private ISaveLibrary? _library;                     // the session's saves (decision 29), which our Save/Load screen reads
     private bool _keyWaiting;                           // the script waits for the player's key: our windows show the triangle
     private readonly HashSet<string> _messageDumps = [];        // the kinds of window unattended play has dumped this launch
     private PointerScript _markerPointer = new();       // a plate's still click on its way to the script
@@ -508,10 +508,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 CopySlots(ProjectSettings.GlobalizePath(from), SaveDirectory);
             var state = new GameState();
             _presenter.Bind(state);
-            var saves = new DirectorySaveStore(SaveDirectory);
-            _saves = saves;
+            var library = new DirectorySaveLibrary(SaveDirectory);  // the ten slots migrated the first time (decision 29)
+            _library = library;
             var session = new GameSession(state, EngineState.Random, new ViewProxy(this), new GameInputProxy(this),
-                scripts, scripts, saves, new UnportedFiles(this));
+                scripts, scripts, new LibrarySlots(library), new UnportedFiles(this));
+            session.Script.Library = library;
             _scenes = session.Scenes;
             _script = session.Script;
             await session.BootAsync();
@@ -584,19 +585,23 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             Screens.ToTitle(this);
     }
 
+    /// <summary>The files of a save folder: the engine's slots (a kept folder) and the save library's (decision 29).</summary>
+    private static readonly string[] SaveFilePatterns = ["slot*.ksav", "auto-*.ksav", "save-*.ksav", "persistent.ksav"];
+
     /// <summary>
-    /// <see cref="GameOptions.SlotsFrom"/>: the save slots of <paramref name="from"/> replace those in
-    /// <paramref name="to"/> (the slots there without a copy are removed); none there is an error.
+    /// <see cref="GameOptions.SlotsFrom"/>: the saves of <paramref name="from"/> — a kept folder's slots, which the library
+    /// migrates as it opens the copy, or a library's saves — replace those in <paramref name="to"/> (the saves there
+    /// without a copy are removed); none there is an error.
     /// </summary>
     private static void CopySlots(string from, string to)
     {
-        var slots = System.IO.Directory.Exists(from) ? System.IO.Directory.GetFiles(from, "slot*.ksav") : [];
+        string[] slots = System.IO.Directory.Exists(from) ? [.. SaveFilePatterns.SelectMany(p => System.IO.Directory.GetFiles(from, p))] : [];
         if (slots.Length == 0)
             throw new InvalidOperationException($"No save slots to copy in {from}.");
         if (System.IO.Path.GetFullPath(from) == System.IO.Path.GetFullPath(to))
             throw new InvalidOperationException("--slots-from names the run's own save folder.");
         System.IO.Directory.CreateDirectory(to);
-        foreach (string old in System.IO.Directory.GetFiles(to, "slot*.ksav"))
+        foreach (string old in SaveFilePatterns.SelectMany(p => System.IO.Directory.GetFiles(to, p)))
             System.IO.File.Delete(old);
         foreach (string slot in slots)
             System.IO.File.Copy(slot, System.IO.Path.Combine(to, System.IO.Path.GetFileName(slot)));
@@ -1546,7 +1551,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _messageView.Complete();                                // the question is whole under its menu
         _presenter.OpenMenu(items);
         _presenter.Pointer(_input.Position.X, _input.Position.Y);
-        var saveList = InterfaceChoice.New && _presenter.SaveScreenOpen ? SaveSlots.ListOf(items) : null;
+        // Our Save/Load screen in either interface (decision 29: the original's slot lists are not kept).
+        var saveList = _presenter.SaveScreenOpen && _presenter.SaveLibraryList is { } shelf ? shelf.Save ? SaveList.Save : SaveList.Load : (SaveList?)null;
         var province = InterfaceChoice.New && saveList is null ? _presenter.ProvinceMenu : null;
         var command = InterfaceChoice.New && province is null && saveList is null ? _presenter.CommandMenu : null;
         if (saveList is { } shownList)
@@ -1643,15 +1649,16 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     }
 
     /// <summary>
-    /// Our Save/Load screen over <paramref name="list"/>: the slots read again (after a save the script lists them again),
-    /// the game now for a save; the tabs while our panel's row runs the screen (<see cref="LoadSaveShortcut"/>).
+    /// Our Save/Load screen over <paramref name="list"/>: the library's saves read again (after a save the script lists them
+    /// again, the one just written chosen), the game now for a save; the tabs while our panel's row runs the screen
+    /// (<see cref="LoadSaveShortcut"/>).
     /// </summary>
     private void OpenSaveView(SaveList list)
     {
-        var slots = _saves is { } saves ? SaveSlots.ReadAll(saves) : new SaveSlot?[SaveSlots.Count];
+        var library = _library ?? new MemorySaveLibrary();
         var now = list == SaveList.Save && _presenter.State is { } s ? SaveSlots.Now(s) : null;
         string back = _presenter.SaveScreenMode == 0 ? "back to the title" : _saveShortcut.Running ? "back to the map" : "back to the menu";
-        _saveView.Open(list, slots, now, _saveShortcut.Running, back);
+        _saveView.Open(list, _presenter.SaveLibraryList?.Items ?? [], library, now, _script?.LastSave, _saveShortcut.Running, back);
         _saveView.Place(PictureArea());
     }
 

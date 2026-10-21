@@ -19,12 +19,14 @@ public partial class GameScreen
     private int _autoSaveStep;
 
     /// <summary>
-    /// A slot list over our Save/Load screen in unattended play. With <c>--saveload</c> from the command panel: the save list
-    /// (<c>save-load-save</c>, the first empty slot chosen; the button hovered, <c>save-load-button</c>) saved into its slot
-    /// by the red button; listed again (<c>save-load-saved</c>, "Save over Slot 1"), the Load tab; the load list
-    /// (<c>save-load</c>, the slot just written chosen), Auto's row clicked (<c>save-load-auto</c>), a right click back to the
-    /// map. Any other list (the title's at <c>--load</c>) is answered as before (<see cref="AutoChoice"/>), the title's dumped
-    /// once in a window (<c>save-load-title</c>).
+    /// A list over our Save/Load screen in unattended play. With <c>--saveload</c> from the command panel (decision 29): the
+    /// save list (<c>save-load-save</c>, New save chosen; the button hovered, <c>save-load-button</c>) saved as a new manual
+    /// save by the red button; listed again with it chosen (<c>save-load-saved</c>), its comment written through Edit
+    /// (<c>save-load-comment</c>, then kept by Enter), Delete asked and answered Keep (<c>save-load-delete</c>), the
+    /// auto-saves' side (<c>save-load-autos-save</c>, no Save there), the Load tab; the load list (<c>save-load</c>, the save
+    /// just written chosen), the order clicked through, the newest auto-save chosen (<c>save-load-auto</c>), a right click
+    /// back to the map. Any other list (the title's at <c>--load</c>) is answered as before (<see cref="AutoChoice"/>: the
+    /// first item, the newest auto-save), the title's dumped once in a window (<c>save-load-title</c>).
     /// </summary>
     private async Task<int> AutoSaveLoadAsync(SaveList list, IReadOnlyList<SceneMenuItem> items)
     {
@@ -42,27 +44,46 @@ public partial class GameScreen
         switch (_autoSaveStep++)
         {
             case 0:
-                Expect(list == SaveList.Save && _saveView.Chosen == 2, "the save list with Slot 1 chosen");
+                Expect(list == SaveList.Save && _saveView.NewChosen, "the save list with New save chosen");
                 await AutoDumpAsync("save-load-save");
                 await AutoViewMoveAsync(_saveView.ButtonCentre);
                 await AutoDumpAsync("save-load-button");
                 await AutoViewClickAsync(_saveView.ButtonCentre, MouseButton.Left);
                 break;
             case 1:
-                Expect(list == SaveList.Save && _saves?.Read(2) is { } saved && WeekLoop.IsMomentSave(saved.Resume),
-                    "Slot 1 saved as the game is now");
+                Expect(list == SaveList.Save && _saveView.Chosen is { Kind: SaveKind.Manual } written
+                    && _library?.Read(written) is { } saved && WeekLoop.IsMomentSave(saved.Resume), "a new manual save of the game as it is now, chosen");
                 await AutoDumpAsync("save-load-saved");
+                await AutoViewClickAsync(_saveView.EditCentre, MouseButton.Left);
+                _saveView.CommentField.Text = "before the attack on Oaks";
+                await NextFrameAsync();
+                await AutoDumpAsync("save-load-comment");
+                _saveView.CommentField.EmitSignal(LineEdit.SignalName.TextSubmitted, _saveView.CommentField.Text);
+                await NextFrameAsync();
+                Expect(_library?.Read(_saveView.Chosen!.Value)?.Comment == "before the attack on Oaks", "the comment kept");
+                await AutoViewClickAsync(_saveView.DeleteCentre, MouseButton.Left);
+                await AutoDumpAsync("save-load-delete");
+                await AutoViewClickAsync(_saveView.DeleteAnswerCentre(yes: false), MouseButton.Left);
+                Expect(_library?.Read(_saveView.Chosen!.Value) is not null, "the save kept");
+                await AutoViewClickAsync(_saveView.SideCentre(auto: true), MouseButton.Left);
+                if (_saveView.AutoSaves.Count > 0)
+                    await AutoViewClickAsync(_saveView.RowCentre(_saveView.AutoSaves[0])!.Value, MouseButton.Left);
+                await AutoDumpAsync("save-load-autos-save");
                 await AutoViewClickAsync(_saveView.TabCentre(SaveList.Load), MouseButton.Left);
                 break;
             default:
-                Expect(list == SaveList.Load && _saveView.Chosen == 2, "the load list with Slot 1 chosen");
+                Expect(list == SaveList.Load && _saveView.Chosen is { Kind: SaveKind.Manual }, "the load list with the new manual save chosen");
                 await AutoDumpAsync("save-load");
                 await AutoSortAsync();
-                await AutoViewClickAsync(_saveView.RowCentre(1), MouseButton.Left);
-                Expect(_saveView.Chosen == 1, "Auto chosen");
+                await AutoViewClickAsync(_saveView.SideCentre(auto: true), MouseButton.Left);
+                if (_saveView.AutoSaves.Count > 0)
+                {
+                    await AutoViewClickAsync(_saveView.RowCentre(_saveView.AutoSaves[0])!.Value, MouseButton.Left);
+                    Expect(_saveView.Chosen == _saveView.AutoSaves[0], "the newest auto-save chosen");
+                }
                 await AutoDumpAsync("save-load-auto");
-                await AutoViewClickAsync(_saveView.RowCentre(1), MouseButton.Right);
-                GD.Print("Kichikuou: --auto saved into Slot 1 through our Save/Load screen and left it.");
+                await AutoViewClickAsync(_saveView.ButtonCentre, MouseButton.Right);
+                GD.Print("Kichikuou: --auto saved a new manual save through our Save/Load screen, wrote its comment and left it.");
                 break;
         }
         if (!answer.IsCompleted)
@@ -74,13 +95,15 @@ public partial class GameScreen
     }
 
     /// <summary>
-    /// The order's switch (docs/ui/save-load.md, §7) from the player's order back to it: by slot ascending, then Date
-    /// (<c>save-load-date</c>, newest first) and Date again (<c>save-load-date-oldest</c>), Slot, and Slot again
-    /// (<c>save-load-slot-down</c>, 9 at the top); the player's order is clicked back, so the setting is theirs.
+    /// The order's switch (docs/ui/save-load.md, §7) from the player's order back to it: by number ascending, then Date
+    /// (<c>save-load-date</c>, newest first) and Date again (<c>save-load-date-oldest</c>), No., and No. again
+    /// (<c>save-load-slot-down</c>, the highest number at the top); the player's order is clicked back, so the setting is
+    /// theirs.
     /// </summary>
     private async Task AutoSortAsync()
     {
         var players = _saveView.Order;
+        int count = _saveView.ManualSaves.Count;
         await ClickOrderUntilAsync(SlotOrder.Default);
         (SlotSortKey Key, SlotOrder Then, string Dump)[] steps =
         [
@@ -93,12 +116,11 @@ public partial class GameScreen
         {
             await AutoViewClickAsync(_saveView.SortCentre(key), MouseButton.Left);
             Expect(_saveView.Order == then, $"the order {then}");
-            Expect(_saveView.ManualSlots.Count == SaveSlots.Count - 1 && _saveView.ManualSlots.Order().SequenceEqual(Enumerable.Range(2, SaveSlots.Count - 1)),
-                "the nine manual saves listed");
+            Expect(_saveView.ManualSaves.Count == count, "the manual saves listed");
             if (dump != "")
                 await AutoDumpAsync(dump);
         }
-        Expect(_saveView.ManualSlots[0] == 10, "Slot 9 at the top");
+        Expect(_saveView.ManualSaves[0].Number == _saveView.ManualSaves.Max(id => id.Number), "the highest number at the top");
         await ClickOrderUntilAsync(players);
     }
 

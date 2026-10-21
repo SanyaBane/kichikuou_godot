@@ -202,4 +202,31 @@ public class SaveSlotsTests
         Assert.Equal([true, false, false, true, false, false, false, false, false, false],
             load.Select(item => item.At.Line != 319));                  // the filled slots' items, Auto and slot 4
     }
+
+    /// <summary>Ours (owner's decision 29): the library's saves as the screen lists them, a manual save with its comment.</summary>
+    [Fact]
+    public void The_library_lists_auto_saves_newest_first_and_orders_the_manual_saves()
+    {
+        var clock = new DateTime(2026, 10, 21, 20, 0, 0);
+        var library = new MemorySaveLibrary(() => clock = clock.AddMinutes(1));
+        library.WriteAuto(SaveData.Capture(Game(17), Autosave));
+        library.WriteAuto(SaveData.Capture(Game(18), Autosave));
+        var first = library.WriteManual(SaveData.Capture(Game(16), Moment))!.Value;
+        var second = library.WriteManual(SaveData.Capture(Game(15), Moment))!.Value;
+        library.SetComment(first, "before Oaks");
+        library.WriteManual(SaveData.Capture(Game(19), Moment), over: first.Number);   // written last
+
+        var shelf = SaveSlots.ReadLibrary(library);
+
+        Assert.Equal([18, 17], shelf.Autos.Select(s => s.Week));
+        Assert.All(shelf.Autos, s => Assert.Equal(SlotKind.Auto, s.Kind));
+        Assert.Equal("A", shelf.Autos[0].Seal);
+        Assert.Equal([first, second], shelf.Manuals.Select(s => s.Id!.Value));
+        Assert.Equal("before Oaks", shelf.Manuals[0].Comment);
+        Assert.Equal(("1", "No. 1", SlotKind.MidTurn), (shelf.Manuals[0].Seal, shelf.Manuals[0].Label, shelf.Manuals[0].Kind));
+        Assert.Equal([first, second], SaveSlots.OrderManuals(shelf.Manuals, SlotOrder.Default).Select(s => s.Id!.Value));
+        Assert.Equal([second, first], SaveSlots.OrderManuals(shelf.Manuals, new(SlotSortKey.Slot, true)).Select(s => s.Id!.Value));
+        Assert.Equal([first, second], SaveSlots.OrderManuals(shelf.Manuals, new(SlotSortKey.Date, true)).Select(s => s.Id!.Value));
+        Assert.Equal([second, first], SaveSlots.OrderManuals(shelf.Manuals, new(SlotSortKey.Date, false)).Select(s => s.Id!.Value));
+    }
 }
