@@ -227,9 +227,9 @@ public partial class GameScreen
 
     /// <summary>
     /// Option (ours, docs/ui/options.md; the owner's mock-up D): the options window over the game, which waits while it is
-    /// open. Its changes are kept at once; the screens follow them here. The game folder's change leaves the game for the
-    /// import screen (and a fresh title after it); the developer's extract, which wins over any import
-    /// (<see cref="GameData.UsesExtract"/>), locks it.
+    /// open. Its changes are kept at once; the screens follow them here, and the game's context follows "New scenes first"
+    /// (decision 30). The game folder's change leaves the game for the import screen (and a fresh title after it); the
+    /// developer's extract, which wins over any import (<see cref="GameData.UsesExtract"/>), locks it.
     /// </summary>
     private OptionsView? OpenOptions(OptionsView.Tab tab = OptionsView.Tab.Messages)
     {
@@ -241,6 +241,11 @@ public partial class GameScreen
         view.TextSpeedChanged += step => _messageView.LettersPerSecond = TextSpeedChoice.LettersPerSecond(step);
         view.FontChosen += ApplyFont;
         view.PaletteChosen += ApplyPalette;
+        view.NewScenesFirstChanged += on =>
+        {
+            if (_script is not null)
+                _script.NewScenesFirst = on;    // at once: the next talk or visit, the next patched statement
+        };
         view.GameFolderChosen += () => Screens.Open(this,
             new ImportScreen(GameData.SavedGameDirectory, start: false, next: Main.Title, back: Main.Title));
         view.Closed += () =>

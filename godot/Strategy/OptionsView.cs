@@ -11,8 +11,8 @@ namespace Kichikuou.Game.Strategy;
 /// the game, which waits while it is open. A paper sheet in a lacquer frame with paper tabs across its top — Messages
 /// (the text speed with the game's 121 typing as its preview, the message skip's switches, Forget, the mouse), Display
 /// (the font, the palette), Battle (our battle screen's effects and timings, <see cref="BattleScreenSettings"/>, the order
-/// strip as their preview), Game (the game folder). Every change applies and is kept at once; Defaults resets the tab
-/// shown; Close, Esc or a right click shut it. Forget and the game folder ask first, in a box over the sheet. Laid out
+/// strip as their preview), Game (the game folder, "New scenes first", <see cref="NewScenesChoice"/>). Every change applies
+/// and is kept at once; Defaults resets the tab shown (not the game folder); Close, Esc or a right click shut it. Forget and the game folder ask first, in a box over the sheet. Laid out
 /// in the 1280×800 screen's pixels, scaled with the picture.
 /// </summary>
 internal sealed partial class OptionsView : Control
@@ -85,6 +85,9 @@ internal sealed partial class OptionsView : Control
 
     /// <summary>A palette was chosen (it is kept already).</summary>
     public event Action<DeploymentPalette>? PaletteChosen;
+
+    /// <summary>"New scenes first" was switched (it is kept already).</summary>
+    public event Action<bool>? NewScenesFirstChanged;
 
     /// <summary>The player asked for another game folder and confirmed it: the import screen follows.</summary>
     public event Action? GameFolderChosen;
@@ -185,6 +188,12 @@ internal sealed partial class OptionsView : Control
         TextSpeedChanged?.Invoke(TextSpeedChoice.Step);
     }
 
+    private void SetNewScenesFirst(bool on)
+    {
+        NewScenesChoice.On = on;
+        NewScenesFirstChanged?.Invoke(on);
+    }
+
     /// <summary>Defaults: the tab shown back to its settings' defaults.</summary>
     private void Defaults()
     {
@@ -203,6 +212,9 @@ internal sealed partial class OptionsView : Control
             case Tab.Battle:
                 foreach (var setting in BattleScreenSettings.All)
                     BattleScreenSettings.Set(setting, setting.Default);
+                break;
+            case Tab.Game:
+                SetNewScenesFirst(true);                // the game folder is not a setting with a default
                 break;
         }
         QueueRedraw();
@@ -341,8 +353,7 @@ internal sealed partial class OptionsView : Control
                 DrawGame();
                 break;
         }
-        if (_tab != Tab.Game)
-            DrawLink("defaults", "Defaults", new Vector2(150, 706), Defaults);
+        DrawLink("defaults", "Defaults", new Vector2(150, 706), Defaults);
         bool closeLit = _hover == "close";
         Lacquer.DrawRedButton(this, CloseButton, closeLit, closeLit && _pressed == "close", _k);
         DrawString(_cinzelBold, new Vector2(CloseButton.Position.X, Lacquer.Baseline(CloseButton, _cinzelBold, 17)), "Close",
@@ -475,6 +486,12 @@ internal sealed partial class OptionsView : Control
             ? "The developer's extract is the data (local.env or settings.cfg): a game folder would change nothing. --import turns this on."
             : "Another copy of the game: the import screen checks it and reads its scenario, then the title opens.";
         Wrap(note, x, y + 104, w, 14, Lacquer.InkQuiet);
+
+        y += 170;
+        SectionHead(x, y, "Scenes", w);
+        CheckBox("new-scenes", x, y + 38, NewScenesChoice.On, "New scenes first",
+            "Talks and harem visits play unread scenes first, with a few hints and a choice of ours.",
+            () => SetNewScenesFirst(!NewScenesChoice.On));
     }
 
     // ---------------------------------------------------------------- the parts

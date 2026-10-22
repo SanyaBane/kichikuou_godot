@@ -513,6 +513,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             var session = new GameSession(state, EngineState.Random, new ViewProxy(this), new GameInputProxy(this),
                 scripts, scripts, new LibrarySlots(library), new UnportedFiles(this));
             session.Script.Library = library;
+            session.Script.NewScenesFirst = NewScenesChoice.On;     // Option → Game (decision 30); the options window keeps it current
             _scenes = session.Scenes;
             _script = session.Script;
             await session.BootAsync();

@@ -525,3 +525,25 @@ during the build, for the owner to review.
   1: the two lines after the first two talks (window 113 after "Ah... Yes.", then ops 1 and 0, then `M 0`), none on the
   third (Rance Attack); off, the same steps and nothing shown. `SceneChoicesTests`' four training talks still need four
   with the hints in them and no fallback. `MessageLogTests`: the port menu drawn and logged, the hint logged.
+- **2026-10-22, step 7 — the option's place and key.** Option → Game, a section "Scenes" under the game folder with the
+  check box "New scenes first" and the hint "Talks and harem visits play unread scenes first, with a few hints and a
+  choice of ours." — it names what the switch adds (the hints, Kanami's choice) without telling the story (no Code, no
+  Kanami: the options window is open from the first launch). Kept as `[game] new_scenes_first` in `settings.cfg`
+  (`godot/Strategy/NewScenesChoice`, the `*Choice` pattern; a section of its own, as the other `[display]` keys are the
+  look's). Alternative: the hint the plan suggested ("…; Kanami chooses in Code's event.") — a spoiler of stage 2.
+- **2026-10-22, step 7 — the copy and a change during a game.** `GameScreen.RunAsync` sets
+  `session.Script.NewScenesFirst` from the choice next to `Library`, before the boot; the options window raises
+  `NewScenesFirstChanged` and `GameScreen.OpenOptions` sets the running context's flag at once (as the text speed, the
+  font and the palette reach the screens). The patches (Kanami's choice, Kentarou's line) read the flag at their
+  statement, so they follow at once; `SceneChoices` reads it at a talk's or visit's start (`Begin`), so a switch while
+  a talk or a visit is under way (the window opened at one of its key waits) takes hold from the next one. No change of
+  the rule code: a talk half under each setting would make the dry run's forced decisions mean nothing.
+- **2026-10-22, step 7 — Defaults on the Game tab.** The Game tab now shows Defaults like the other tabs; it turns New
+  scenes first back on and leaves the game folder alone (a folder has no default). Alternative: no Defaults on the tab
+  as before — then the one tab with a switch would be the one that cannot reset it.
+- **2026-10-22, step 7 — unattended play.** `--auto` and the development switches use the saved choice (on unless the
+  developer turned it off), as a player's game does: they are smoke tests of the game as it is played, and nothing in
+  them needs the original's odds — `AutoChoice` answers Kanami's menu with its first item, "Stop Code" (step 6), and
+  Kentarou's line is a key wait like any other. The generator is untouched by the rule, so the kept saves' looks
+  (battles, events) draw the same; only a talk's or visit's outcome, and what follows from it, may differ. Alternative: a fixed value for
+  `--auto` (on or off) — a switch of its own nobody asked for, and runs that would not match the developer's play.

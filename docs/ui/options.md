@@ -54,3 +54,12 @@ and the folder's Change… ask in a lacquer box over the sheet (Esc or a right c
 text speed is the game's 121 scaled into its column; the order strip's is `OrderStrip` itself with the old dialog's
 chips. `TextSpeedView` and `BattleScreenSettingsDialog` are gone. `--options [--shots DIR] [--quit]` opens it over the
 title and dumps each tab in a window (`options-messages`, `-display`, `-battle`, `-game`).
+
+## New scenes first (2026-10-22)
+
+Owner's decision 30 (docs/ui/talk-marks.md §5, §8 step 7): the Game tab holds, under the game folder, a section
+**Scenes** with the check box **New scenes first** ("Talks and harem visits play unread scenes first, with a few hints
+and a choice of ours."), on by default — `NewScenesChoice`, `[game] new_scenes_first` in `settings.cfg`. `GameScreen`
+copies it onto the game's context (`OriginalScriptContext.NewScenesFirst`) when the session starts, and the window's
+`NewScenesFirstChanged` keeps that context current when the player switches it during a game. The Game tab now has
+Defaults too: it turns New scenes first back on (the game folder has no default and stays as it is).
