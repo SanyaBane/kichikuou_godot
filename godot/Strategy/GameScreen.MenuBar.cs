@@ -245,6 +245,7 @@ public partial class GameScreen
         {
             if (_script is not null)
                 _script.NewScenesFirst = on;    // at once: the next talk or visit, the next patched statement
+            _pickerMarks?.SetNewScenesFirst(on);  // the open picker's marks read with it
         };
         view.GameFolderChosen += () => Screens.Open(this,
             new ImportScreen(GameData.SavedGameDirectory, start: false, next: Main.Title, back: Main.Title));

@@ -3,14 +3,16 @@ using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
+using Kichikuou.Original.Strategy;
 
 namespace Kichikuou.Original.Content.Strategy;
 
 /// <summary>
 /// A girl on offer in the harem: her number (her cell in <c>Sﾊｰﾚﾑ</c>'s grid), her name from its string table, how
-/// often she was summoned, the week she last was (0: never) and her picture (0: none).
+/// often she was summoned, the week she last was (0: never), her picture (0: none) and her visit's mark (ours, decision
+/// 30: NEW, ??? or read; null when none is known).
 /// </summary>
-public sealed record HaremGirl(int Number, string Name, int Visits, int LastWeek, int PictureCg);
+public sealed record HaremGirl(int Number, string Name, int Visits, int LastWeek, int PictureCg, SceneMark? Mark = null);
 
 /// <summary>
 /// Our own Harem screen's model (docs/ui/pickers.md, mock-up H2): the girls <c>Cﾊｰﾚﾑ</c> offers, read from the
@@ -25,9 +27,10 @@ public static class HaremRoster
     /// <summary>
     /// The girls on offer in their numbers' order: <c>HaremAvail_*</c> (<c>VAR0249</c>-<c>VAR0298</c>, which
     /// <c>Sﾊｰﾚﾑ.ADV:15-16</c> copies into its list), their counts from the history records
-    /// (<c>Hist.Harem_SexCount</c>, <c>Hist.Harem_LastWeek</c>, <c>:131-148</c>).
+    /// (<c>Hist.Harem_SexCount</c>, <c>Hist.Harem_LastWeek</c>, <c>:131-148</c>), their visits' marks from
+    /// <paramref name="marks"/> (<see cref="PickerMarks.Visits"/>).
     /// </summary>
-    public static IReadOnlyList<HaremGirl> Girls(GameState s, IReadOnlyList<string> names)
+    public static IReadOnlyList<HaremGirl> Girls(GameState s, IReadOnlyList<string> names, IReadOnlyDictionary<int, SceneMark>? marks = null)
     {
         var girls = new List<HaremGirl>();
         for (int n = 1; n <= 50; n++)
@@ -36,7 +39,8 @@ public static class HaremRoster
                 continue;
             var history = s.History[(Sys3Int)n];
             string name = n - 1 < names.Count ? Hankaku.ToHalfWidth(names[n - 1]) : "";
-            girls.Add(new HaremGirl(n, name, history.Harem_SexCount.Value, history.Harem_LastWeek.Value, PictureOf(s, n)));
+            SceneMark? mark = marks is not null && marks.TryGetValue(n, out var m) ? m : null;
+            girls.Add(new HaremGirl(n, name, history.Harem_SexCount.Value, history.Harem_LastWeek.Value, PictureOf(s, n), mark));
         }
         return girls;
     }
@@ -68,6 +72,18 @@ public static class HaremRoster
         int last = s.Harem_LastPick.Value;
         return girls.Any(g => g.Number == last) ? last : girls.Count > 0 ? girls[0].Number : 0;
     }
+
+    /// <summary>
+    /// Ours (decision 30, the owner's H): the info panel's "This visit" — "Something new" (NEW), "Something may happen" (???),
+    /// "Nothing new" (read); null without a mark.
+    /// </summary>
+    public static string? VisitText(SceneMark? mark) => mark switch
+    {
+        SceneMark.New => "Something new",
+        SceneMark.Maybe => "Something may happen",
+        SceneMark.Read => "Nothing new",
+        _ => null,
+    };
 
     /// <summary>"LP 3 · Month 5 · Week 2", or null for week 0 (never).</summary>
     public static string? DateText(int week)

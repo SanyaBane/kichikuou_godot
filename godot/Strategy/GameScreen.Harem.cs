@@ -46,7 +46,7 @@ public partial class GameScreen
         var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
         _harem.Busy = _haremPointer.Pending > 0;
         _harem.Place(_view.Position + (size - drawn) / 2, scale * Surface.Scale);
-        _harem.Refresh(_presenter.State!, _presenter.HaremGirls());
+        _harem.Refresh(_presenter.State!, _presenter.HaremGirls(_pickerMarks?.Visits));
         return true;
     }
 

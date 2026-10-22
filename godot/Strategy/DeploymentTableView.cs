@@ -2,6 +2,7 @@ using Godot;
 using Kichikuou.Game.Battles;
 using Kichikuou.Original.Content.Strategy;
 using Kichikuou.Original.State;
+using Kichikuou.Original.Strategy;
 
 namespace Kichikuou.Game.Strategy;
 
@@ -14,7 +15,9 @@ namespace Kichikuou.Game.Strategy;
 /// place in a first column. It decides nothing: the presses go to <see cref="GameScreen"/>, which
 /// answers the script with the gestures it expects. Drawn as a ledger in our screens' lacquer (the owner's
 /// mock-up G3, docs/ui/subordinates.md, and E1/E2, docs/ui/deployment-table.md): paper and ink, the headers in
-/// Cinzel, the troops' bars; the party's places vermilion seals on gilt rows, a chooser's row a vermilion mark.
+/// Cinzel, the troops' bars; the party's places vermilion seals on gilt rows, a chooser's row a vermilion mark. A chooser's
+/// first column also holds each unit's talk mark (owner's decision 30, docs/ui/talk-marks.md §6, S): a speech bubble left
+/// of No., filled green with "!" (new), vermilion with "?" (a draw decides), an empty outline (read).
 /// </summary>
 internal sealed partial class DeploymentTableView : Tree
 {
@@ -74,6 +77,32 @@ internal sealed partial class DeploymentTableView : Tree
 
     /// <summary>The seals' numerals.</summary>
     private readonly FontVariation _sealFont = Lacquer.Cinzel(700);
+
+    /// <summary>The talk bubbles' "!" and "?".</summary>
+    private readonly FontVariation _bubbleFont = Lacquer.Cinzel(900);
+
+    private IReadOnlyDictionary<int, SceneMark> _talkMarks = new Dictionary<int, SceneMark>();
+    private string _talkMarksKey = "";
+
+    /// <summary>
+    /// A chooser's talk marks by unit (<see cref="SubordinatesScreen.TalkMarks"/>): a bubble in each marked unit's row,
+    /// none in the others' (decision 30). Filled in again only when they change.
+    /// </summary>
+    public IReadOnlyDictionary<int, SceneMark> TalkMarks
+    {
+        get => _talkMarks;
+        set
+        {
+            string key = string.Join(",", value.OrderBy(m => m.Key).Select(m => $"{m.Key}:{(int)m.Value}"));
+            if (key == _talkMarksKey)
+                return;
+            (_talkMarks, _talkMarksKey) = (value, key);
+            Fill();
+        }
+    }
+
+    /// <summary>The room the talk bubbles take at the first column's right, in the text's size.</summary>
+    private float BubbleRoom => _chooser ? _fontSize * 1.45f : 0;
 
     /// <summary>The headers' size: smaller than the text's (Cinzel's capitals are wide).</summary>
     private int TitleSize => Math.Max(8, (int)Math.Round(_fontSize * 0.82f));
@@ -396,7 +425,7 @@ internal sealed partial class DeploymentTableView : Tree
                 Fit(c + 1, row.Text(_columns[c].Column));
         }
         int separation = GetThemeConstant("h_separation");
-        widths[0] = Math.Max(widths[0], _fontSize * 1.3f);                  // the chosen row's bar and diamond, a place's seal
+        widths[0] = Math.Max(widths[0], _fontSize * 1.3f) + BubbleRoom;     // the chosen row's bar and diamond, a place's seal; the talk's bubble
         if (RefillColumn > 0)
             widths[RefillColumn] += _fontSize * 0.8f;                       // the buttons' rule and padding
         for (int c = 0; c < Columns; c++)
@@ -451,16 +480,64 @@ internal sealed partial class DeploymentTableView : Tree
                 Lacquer.DrawSeal(this, _sealFont, new Rect2(rect.GetCenter() - new Vector2(size, size) / 2, new Vector2(size, size)), place);
             }));
         }
-        if (!chosen)
+        SceneMark? talk = _chooser && _talkMarks.TryGetValue(row.Unit, out var m) ? m : null;
+        if (talk is { } t)
+            item.SetTooltipText(0, SubordinatesScreen.TalkNote(t));
+        if (!chosen && talk is null)
             return;
-        for (int c = 0; c < Columns; c++)
-            item.SetCustomBgColor(c, Lacquer.ChosenRow);
+        if (chosen)
+            for (int c = talk is null ? 0 : 1; c < Columns; c++)
+                item.SetCustomBgColor(c, Lacquer.ChosenRow);    // the tree tints over a custom cell: the bubble's cell tinted below
         item.SetCellMode(0, TreeItem.TreeCellMode.Custom);
         item.SetCustomDrawCallback(0, Callable.From<TreeItem, Rect2>((_, rect) =>
         {
-            DrawRect(new Rect2(rect.Position.X, rect.Position.Y, Math.Max(2, rect.Size.Y * 0.14f), rect.Size.Y), Lacquer.Vermilion);
-            Lacquer.DrawDiamond(this, rect.GetCenter() + new Vector2(rect.Size.Y * 0.1f, 0), rect.Size.Y * 0.2f, Lacquer.Vermilion);
+            var mark = rect with { Size = new Vector2(rect.Size.X - BubbleRoom, rect.Size.Y) };
+            if (chosen && talk is not null)
+                DrawRect(rect, Lacquer.ChosenRow);
+            if (chosen)
+            {
+                DrawRect(new Rect2(rect.Position.X, rect.Position.Y, Math.Max(2, rect.Size.Y * 0.14f), rect.Size.Y), Lacquer.Vermilion);
+                Lacquer.DrawDiamond(this, mark.GetCenter() + new Vector2(rect.Size.Y * 0.1f, 0), rect.Size.Y * 0.2f, Lacquer.Vermilion);
+            }
+            if (talk is { } shown)
+                DrawBubble(new Vector2(mark.End.X + BubbleRoom / 2, rect.GetCenter().Y), rect.Size.Y, shown);
         }));
+    }
+
+    /// <summary>
+    /// A talk's speech bubble centred at <paramref name="at"/> in a row <paramref name="h"/> tall (mock-up S): a rounded
+    /// box with its tail at the bottom left, filled green with "!" (new), vermilion with "?" (???), an empty outline (read).
+    /// </summary>
+    private void DrawBubble(Vector2 at, float h, SceneMark mark)
+    {
+        var box = new Rect2(at.X - h * 0.46f, at.Y - h * 0.3f, h * 0.92f, h * 0.54f);
+        int r = Math.Max(2, (int)Math.Round(h * 0.21f));
+        bool read = mark == SceneMark.Read;
+        var colour = mark switch { SceneMark.New => Lacquer.InkGreen, SceneMark.Maybe => Lacquer.VermilionInk, _ => Lacquer.ReadOutline };
+        Vector2[] tail = [new(at.X - h * 0.25f, box.End.Y - 1), new(at.X - h * 0.04f, box.End.Y - 1), new(at.X - h * 0.33f, at.Y + h * 0.42f)];
+        if (read)
+        {
+            DrawPolyline([tail[0], tail[2], tail[1]], colour, 1, true);
+            DrawStyleBox(new StyleBoxFlat
+            {
+                BgColor = Lacquer.Paper, BorderColor = colour,
+                BorderWidthLeft = 1, BorderWidthTop = 1, BorderWidthRight = 1, BorderWidthBottom = 1,
+                CornerRadiusTopLeft = r, CornerRadiusTopRight = r, CornerRadiusBottomLeft = r, CornerRadiusBottomRight = r,
+                AntiAliasing = true,
+            }, box);
+            return;
+        }
+        DrawColoredPolygon(tail, colour);
+        DrawStyleBox(new StyleBoxFlat
+        {
+            BgColor = colour,
+            CornerRadiusTopLeft = r, CornerRadiusTopRight = r, CornerRadiusBottomLeft = r, CornerRadiusBottomRight = r,
+            AntiAliasing = true,
+        }, box);
+        string label = mark == SceneMark.New ? "!" : "?";
+        int size = Math.Max(6, (int)Math.Round(h * 0.42f));
+        float baseline = box.GetCenter().Y + (_bubbleFont.GetAscent(size) - _bubbleFont.GetDescent(size)) / 2;
+        DrawString(_bubbleFont, new Vector2(box.Position.X, baseline), label, HorizontalAlignment.Center, box.Size.X, size, Lacquer.Paper);
     }
 
     /// <summary>

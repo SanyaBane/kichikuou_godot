@@ -58,7 +58,7 @@ public partial class GameScreen
         var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
         _subordinates.Busy = running || SubordinatesPointer.Pending > 0;
         _subordinates.Place(_view.Position + (size - drawn) / 2, scale * Surface.Scale);
-        _subordinates.Refresh(_presenter.State!, delta);
+        _subordinates.Refresh(_presenter.State!, delta, _pickerMarks?.Talks);
         return true;
     }
 

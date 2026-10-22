@@ -302,3 +302,13 @@ as they are (`Sｱｲﾃﾑ.ADV:320-350`, `L_00a3f`), only where they are drawn 
   unit picked, Yes (504). The refusals are never reached when the screen greys what they refuse. End the bar's End.
 - No rule moves into the UI: what can be equipped and what the script would refuse are read from the state the way
   `ItemScreen.PickAsync` decides them, into a model in `Original.Content/Strategy`, with tests.
+
+## 5. The marks on the harem (owner's decision 30, built 2026-10-22)
+
+The owner's H (docs/ui/talk-marks.md §6): each tablet's right slot, where "new" and the visits were, shows her visit's
+mark — **NEW** in green, **???** in amber, nothing when the visit can bring nothing new; the visits stay in the panel
+below her picture, which gains a third figure, **This visit** ("Something new", "Something may happen", "Nothing new");
+**Summon** carries her NEW or ??? pill at its top right, none when read. The marks are computed once as `Sﾊｰﾚﾑ` opens
+(`Original.Content/Strategy/PickerMarks`, the dry run of `SceneMarks` on the state at that call), carried on
+`HaremGirl.Mark` (`HaremRoster.Girls`, `GamePresenter.HaremGirls`), and drawn by `HaremView` (`Lacquer.DrawPill`). Our
+interface only. Looked at from `saves-week18` (`--harem 9`): every girl NEW (the save predates the read lines).

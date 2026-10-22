@@ -3,6 +3,7 @@ using Godot;
 using Kichikuou.Game.Battles;
 using Kichikuou.Original.Content.Strategy;
 using Kichikuou.Original.State;
+using Kichikuou.Original.Strategy;
 
 namespace Kichikuou.Game.Strategy;
 
@@ -15,6 +16,9 @@ namespace Kichikuou.Game.Strategy;
 /// budget, Replenish in red lacquer, Add New Troops' steps, Talk with the unit's face, End). A troop order asks first
 /// in a callout at its button (the owner's C3, docs/ui/subordinates.md, §6: the Treasure screen's
 /// <see cref="TreasureCallout"/>, Yes / No); after it a plate in the middle of the screen says what it did (R4/R5).
+/// The talks' marks (owner's decision 30, docs/ui/talk-marks.md §6, S): a speech bubble left of No. in each row of a unit
+/// that can talk, and Talk's NEW or ??? pill at its top right (none when read); none of them while the week's talk is
+/// spent (<see cref="SubordinatesScreen.TalkMarks"/>).
 /// Drawn by hand in the 1280×800 screen's pixels, as our map panels (<see cref="Lacquer"/>). It decides nothing: the
 /// presses go to <see cref="GameScreen"/>, which answers the script through a <see cref="SubordinateOrder"/>.
 /// </summary>
@@ -52,6 +56,7 @@ internal sealed partial class SubordinatesView : Control
     private ImageTexture? _portrait;
     private readonly FaceCache _talkFace = new();
     private GameState? _state;
+    private IReadOnlyDictionary<int, SceneMark> _talkMarks = new Dictionary<int, SceneMark>();
     private int _hovered = NoButton, _pressed = NoButton, _asked = NoButton;
 
     /// <summary>An order's button pressed: the order, the unit and Add More's step.</summary>
@@ -131,19 +136,22 @@ internal sealed partial class SubordinatesView : Control
     }
 
     /// <summary>
-    /// The table and the panel from <paramref name="state"/>; the chosen row kept while it is listed, else
-    /// the first unit that can act (<see cref="SubordinatesScreen.FirstChoice"/>).
+    /// The table and the panel from <paramref name="state"/>, the talks' marks from <paramref name="talks"/>
+    /// (<see cref="PickerMarks.Talks"/>, shown as <see cref="SubordinatesScreen.TalkMarks"/> has them); the chosen row kept
+    /// while it is listed, else the first unit that can act (<see cref="SubordinatesScreen.FirstChoice"/>).
     /// </summary>
-    public void Refresh(GameState state, double delta)
+    public void Refresh(GameState state, double delta, IReadOnlyDictionary<int, SceneMark>? talks = null)
     {
         _state = state;
+        _talkMarks = SubordinatesScreen.TalkMarks(state, talks);
         _table.Refresh(state);
+        _table.TalkMarks = _talkMarks;
         if (_table.Chosen == 0 || !_table.Lists(_table.Chosen))
             _table.Chosen = SubordinatesScreen.FirstChoice(state);
         var (year, month, week) = StatusStrip.DateOf(state.Week.Value);
         _date = $"LP {year} · Month {month} · Week {week}";
         _ready = _table.ReadyCount;
-        var panel = _table.Chosen == 0 ? null : SubordinatesScreen.Panel(state, _table.Chosen);
+        var panel = _table.Chosen == 0 ? null : SubordinatesScreen.Panel(state, _table.Chosen, _talkMarks);
         string key = panel is null ? "" : $"{panel}|{string.Join(",", panel.Steps)}|{Busy}|{_date}|{_ready}";
         if (key == _panelKey)
             return;
@@ -174,7 +182,7 @@ internal sealed partial class SubordinatesView : Control
     {
         _table.Chosen = unit;
         if (_state is not null)
-            _panel = SubordinatesScreen.Panel(_state, unit);
+            _panel = SubordinatesScreen.Panel(_state, unit, _talkMarks);
         if (kind == SubordinateOrderKind.Talk)
             OrderPressed?.Invoke(kind, unit, step);
         else
@@ -480,7 +488,7 @@ internal sealed partial class SubordinatesView : Control
             c.DrawRect(rect, AskedLine, false, Line(2));
     }
 
-    /// <summary>Talk:the unit's face in a gold frame, "Talk" and whom with (or why it is greyed).</summary>
+    /// <summary>Talk: the unit's face in a gold frame, "Talk" and whom with (or why it is greyed); its talk's NEW or ??? pill at the top right.</summary>
     private void DrawTalk(Control c, SubordinatePanel panel)
     {
         var rect = TalkArea;
@@ -504,6 +512,9 @@ internal sealed partial class SubordinatesView : Control
         string note = on || string.IsNullOrEmpty(panel.Talk.Note) ? $"with {panel.Name}" : panel.Talk.Note;
         DrawLabels(c, text, "Talk", _brush, 20, !on ? Lacquer.OffText : hover ? Lacquer.Name : Lacquer.Text,
             note, _cinzelLight, 11, on ? Lacquer.Subtitle : Lacquer.OffText);
+        if (on && PickerMarks.Label(panel.TalkMark) is { } pill)
+            Lacquer.DrawPill(c, _cinzel, rect.End.X - 6, rect.Position.Y + 12, pill,
+                panel.TalkMark == SceneMark.New ? Lacquer.MarkNew : Lacquer.MarkMaybe, 10, 14);
     }
 
     /// <summary>A unit's face cut to its square, made again only when the face or its size in window pixels changes.</summary>

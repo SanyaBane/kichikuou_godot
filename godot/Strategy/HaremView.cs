@@ -2,6 +2,7 @@ using Godot;
 using Kichikuou.Game.Battles;
 using Kichikuou.Original.Content.Strategy;
 using Kichikuou.Original.State;
+using Kichikuou.Original.Strategy;
 
 namespace Kichikuou.Game.Strategy;
 
@@ -11,7 +12,9 @@ namespace Kichikuou.Game.Strategy;
 /// the left, in the original screen's gold frame, with her name, her visits and the date she was last summoned under it
 /// and "Summon" in red lacquer; at the right the picker's grid, each girl at her own number's cell and the others' cells empty
 /// (the owner, 2026-10-19: as the original), End under it. A click on a tablet only chooses her (the owner, 2026-10-19);
-/// Summon summons. Drawn by hand in the 1280×800 screen's pixels (<see cref="Lacquer"/>). It decides nothing: the
+/// Summon summons. The marks (owner's decision 30, docs/ui/talk-marks.md §6, H): a tablet's right slot NEW in green or
+/// ??? in amber, nothing when her visit is read (her visits stay in the panel); the panel's "This visit" in words; Summon's
+/// pill at its top right, none when read. Drawn by hand in the 1280×800 screen's pixels (<see cref="Lacquer"/>). It decides nothing: the
 /// presses go to <see cref="GameScreen"/>, which clicks the picker's cell or its End (<see cref="HaremRoster"/>).
 /// </summary>
 internal sealed partial class HaremView : Control
@@ -25,7 +28,7 @@ internal sealed partial class HaremView : Control
     private static readonly Rect2 EndArea = new(1106, 724, 140, 42);
     private const float TabletW = 176, TabletH = 32, TabletGap = 4, GridX = 708, GridY = 106;
     private const int Columns = 3, Cells = 50;          // every girl at her own number's cell, as Sﾊｰﾚﾑ's grid; the rest empty
-    private static readonly Color Plum = Color.Color8(128, 44, 70), PlumDim = Color.Color8(90, 60, 66), New = Color.Color8(150, 196, 110);
+    private static readonly Color Plum = Color.Color8(128, 44, 70), PlumDim = Color.Color8(90, 60, 66);
 
     private const int NoButton = -1, SummonButton = -2, EndButton = -3;    // a tablet is its girl's number
 
@@ -235,7 +238,7 @@ internal sealed partial class HaremView : Control
             c.DrawRect(p, Colors.Black);
     }
 
-    /// <summary>Her name, visits and the last date; Summon.</summary>
+    /// <summary>Her name, visits, the last date and what this visit may bring (decision 30); Summon with her mark's pill.</summary>
     private void DrawInfo(Control c)
     {
         Lacquer.DrawPanel(c, InfoPanel, _k);
@@ -246,21 +249,33 @@ internal sealed partial class HaremView : Control
         c.DrawString(_brush, new Vector2(x + 22, y + 12), girl.Name, fontSize: 32, modulate: Lacquer.Name);
         DrawStat(c, x, InfoPanel.Position.Y + 88, "Visits", girl.Visits == 0 ? "None yet" : girl.Visits.ToString());
         DrawStat(c, x + 160, InfoPanel.Position.Y + 88, "Last summoned", HaremRoster.DateText(girl.LastWeek) ?? "Never");
+        if (HaremRoster.VisitText(girl.Mark) is { } visit)
+            DrawStat(c, x + 328, InfoPanel.Position.Y + 88, "This visit", visit, MarkColour(girl.Mark) ?? Lacquer.Quiet);
         bool on = Enabled(SummonButton), hover = on && _hovered == SummonButton;
         Lacquer.DrawRedButton(c, SummonArea, hover, hover && _pressed == SummonButton, _k);
         CentredString(c, _brush, $"Summon {girl.Name}", 28, Color.Color8(250, 226, 160), SummonArea.GetCenter().X, Lacquer.Baseline(SummonArea, _brush, 28));
+        if (PickerMarks.Label(girl.Mark) is { } pill)
+            Lacquer.DrawPill(c, _cinzel, SummonArea.End.X - 12, SummonArea.Position.Y + 23, pill, MarkColour(girl.Mark)!.Value, 14, 22);
     }
 
-    private void DrawStat(Control c, float x, float y, string label, string value)
+    /// <summary>A mark's colour: NEW green, ??? amber; null when read or unknown.</summary>
+    private static Color? MarkColour(SceneMark? mark) => mark switch
+    {
+        SceneMark.New => Lacquer.MarkNew,
+        SceneMark.Maybe => Lacquer.MarkMaybe,
+        _ => null,
+    };
+
+    private void DrawStat(Control c, float x, float y, string label, string value, Color? colour = null)
     {
         c.DrawString(_cinzel, new Vector2(x, y), label, fontSize: 11, modulate: Lacquer.Label);
-        c.DrawString(_gothic, new Vector2(x, y + 26), value, fontSize: 20, modulate: Lacquer.Value);
+        c.DrawString(_gothic, new Vector2(x, y + 26), value, fontSize: 20, modulate: colour ?? Lacquer.Value);
     }
 
     /// <summary>
     /// The picker's grid: every girl at her own number's cell, three to a row (<c>Sﾊｰﾚﾑ</c>'s 3×17, its last cell unused), the
-    /// cells of the girls not on offer empty; a girl's tablet a heart, her name and her visits ("new" before the first),
-    /// the chosen one lit in gold; End.
+    /// cells of the girls not on offer empty; a girl's tablet a heart, her name and her visit's mark (decision 30: NEW or
+    /// ???, nothing when read), the chosen one lit in gold; End.
     /// </summary>
     private void DrawGrid(Control c)
     {
@@ -282,9 +297,11 @@ internal sealed partial class HaremView : Control
             DrawHeart(c, new Vector2(r.Position.X + 14, mid - 1), 6, girl.Visits > 0 ? Plum : PlumDim);
             c.DrawString(_brush, new Vector2(r.Position.X + 26, mid + 6), girl.Name, fontSize: 15,
                 modulate: chosen || hover ? Lacquer.Name : Lacquer.Text);
-            string visits = girl.Visits > 0 ? $"{girl.Visits}×" : "new";
-            float vw = _cinzel.GetStringSize(visits, fontSize: 12).X;
-            c.DrawString(_cinzel, new Vector2(r.End.X - 10 - vw, mid + 5), visits, fontSize: 12, modulate: girl.Visits > 0 ? Lacquer.Quiet : New);
+            if (PickerMarks.Label(girl.Mark) is { } mark)
+            {
+                float mw = _cinzel.GetStringSize(mark, fontSize: 12).X;
+                c.DrawString(_cinzel, new Vector2(r.End.X - 10 - mw, mid + 5), mark, fontSize: 12, modulate: MarkColour(girl.Mark)!.Value);
+            }
         }
         bool hoverEnd = !Busy && _hovered == EndButton;
         c.DrawRect(EndArea, hoverEnd ? Lacquer.RowHover : Lacquer.Row);

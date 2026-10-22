@@ -48,6 +48,14 @@ internal static class Lacquer
     public static readonly Color Plus = Color.Color8(150, 196, 110);
     public static readonly Color Minus = Color.Color8(222, 110, 90);
 
+    // The marks on Talk and the harem (owner's decision 30, docs/ui/talk-marks.md §6: H and S): NEW green, ??? amber on the
+    // lacquer, a pill's dark ink; on the ledger's paper green and vermilion ink, a read talk's faint outline.
+    public static readonly Color MarkNew = Color.Color8(150, 196, 110);
+    public static readonly Color MarkMaybe = Color.Color8(226, 168, 72);
+    public static readonly Color PillInk = Color.Color8(24, 18, 12);
+    public static readonly Color InkGreen = Color.Color8(52, 104, 40);
+    public static readonly Color ReadOutline = Color.Color8(150, 132, 104, 160);
+
     public static FontFile LoadFont(string path) => new() { Data = Godot.FileAccess.GetFileAsBytes(path) };
 
     /// <summary>Shojumaru, the names' brush face.</summary>
@@ -184,6 +192,24 @@ internal static class Lacquer
         string text = place.ToString();
         float w = font.GetStringSize(text, fontSize: size).X;
         c.DrawString(font, new Vector2(at.X - w / 2, at.Y + (font.GetAscent(size) - font.GetDescent(size)) / 2), text, fontSize: size, modulate: Name);
+    }
+
+    /// <summary>
+    /// A mark's pill (decision 30, mock-ups H and S): a filled capsule <paramref name="height"/> tall ending at
+    /// <paramref name="right"/>, centred on <paramref name="mid"/>, its <paramref name="label"/> in the pill's ink — Talk's
+    /// (10 in 14) and Summon's (14 in 22).
+    /// </summary>
+    public static void DrawPill(CanvasItem c, Font font, float right, float mid, string label, Color fill, int size, float height)
+    {
+        float w = font.GetStringSize(label, fontSize: size).X + height * 0.75f;
+        var rect = new Rect2(right - w, mid - height / 2, w, height);
+        int r = (int)Math.Round(height / 2);
+        c.DrawStyleBox(new StyleBoxFlat
+        {
+            BgColor = fill, CornerRadiusTopLeft = r, CornerRadiusTopRight = r, CornerRadiusBottomLeft = r, CornerRadiusBottomRight = r,
+            AntiAliasing = true,
+        }, rect);
+        c.DrawString(font, new Vector2(rect.Position.X, Baseline(rect, font, size) + 0.5f), label, HorizontalAlignment.Center, w, size, PillInk);
     }
 
     /// <summary>A small diamond centred at <paramref name="at"/>.</summary>

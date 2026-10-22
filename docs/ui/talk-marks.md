@@ -240,6 +240,8 @@ that place's meaning.
   green "!", vermilion "?", an empty outline when read); the chosen unit's Talk button carries a NEW or ??? pill at its
   top right, none when read.
 
+**Built (2026-10-22, step 8):** H and S as drawn, in code (docs/ui/pickers.md §5, docs/ui/subordinates.md §7).
+
 ## 7. Open questions
 
 None: the condition and the look are settled (2026-10-22).
@@ -547,3 +549,42 @@ during the build, for the owner to review.
   Kentarou's line is a key wait like any other. The generator is untouched by the rule, so the kept saves' looks
   (battles, events) draw the same; only a talk's or visit's outcome, and what follows from it, may differ. Alternative: a fixed value for
   `--auto` (on or off) — a switch of its own nobody asked for, and runs that would not match the developer's play.
+- **2026-10-22, step 8 — when the marks are computed.** At the picker's own event: `GameScreen.ShowAsync` hands every
+  `PickerScreenEvent` that opens `Sﾊｰﾚﾑ` or `Sﾌﾞｶ` to `PickerMarks.OnPicker` right after the presenter, so the state is the
+  one at the picker's call (`HaremAvail_*` set, `Ev_Entry` 20 for `Sﾌﾞｶ`), and the screens read the result each frame
+  (never computed in the draw). `Sﾌﾞｶ` raises the event at its mode 2 and again at its mode 1 (and after the status page),
+  so a Subordinates opening computes twice — 25-33 ms each on `saves-week18`; the harem's 19-35 ms (the Godot build's
+  timings). After a troop order the screen opens again and computes again; after a talk the talk is spent. Our interface
+  only (`InterfaceChoice.New`). Alternative: once per command (a fingerprint of the state to skip the second) — not worth
+  its code at these costs.
+- **2026-10-22, step 8 — the model.** `Original.Content/Strategy/PickerMarks` (over the session's `SceneMarks`) keeps the
+  last opening's trees and the marks read from them (`Visits`, `Talks`); a switch of "New scenes first" while a picker is
+  open reads the kept trees with the other rules (`SetNewScenesFirst`, from `NewScenesFirstChanged`), no run and no stale
+  state. A talk or visit whose dry run throws gets no mark (`Failures`, logged as a warning); the rest are marked.
+  `HaremGirl.Mark` and `SubordinatePanel.TalkMark` carry the marks, `HaremRoster.VisitText` and `PickerMarks.Label` the
+  words. Alternative: the marks in `GamePresenter` — it serves the original's interface too, which shows none.
+- **2026-10-22, step 8 — the talk spent, in the model.** `SubordinatesScreen.TalkOpen` is Talk's own condition (not the
+  view-only picker, and past the prologue `CmdAvail_SubTalk` 1); `SubordinatesScreen.TalkMarks` gives no mark at all while
+  it does not hold, so the ledger has no bubbles and Talk no pill; `PickerMarks` runs nothing then. Tested on hand-made
+  states (`PickerMarksTests`).
+- **2026-10-22, step 8 — the units that cannot talk.** No bubble: a unit not at status 1 (deployed this week, wounded,
+  …) cannot be given Talk, its pick opens the status page. A read talk's bubble is the empty outline (S); every bubble's
+  tooltip says it in words ("Talk: something new", "… may happen", "… nothing new"). Talk's pill also goes while the button
+  is greyed (an order under way).
+- **2026-10-22, step 8 — a read visit, and no mark.** A read visit: the slot empty and no pill (H), "This visit: Nothing
+  new" in the panel's quiet colour (the mock-up drew only "Something new"; a figure that vanishes would read as missing).
+  No mark known (a failed dry run): nothing in the slot, no "This visit", no pill.
+- **2026-10-22, step 8 — the bubbles' place.** In the ledger's first column (the chooser's), widened by the bubble's room
+  on the right, the chosen row's bar and diamond in the rest; widened always on the Subordinates screen, so the columns do
+  not move when the marks go (a spent talk). Godot's `Tree` tints a custom cell over its drawing, which turned the chosen
+  row's bubble olive: that cell's tint is drawn by its callback under the bubble instead.
+- **2026-10-22, step 8 — the scenes read ahead.** At COMMAND's map waits (our interface), once a session, one talk or visit
+  per frame — the units able to act and the girls on offer at the first such wait (`PickerMarks.Warm`) — so the first
+  picker does not read the scenes: on `saves-week18` 134-162 ms spread over the frames. Alternatives: at the boot (the
+  state is not the game's yet, and another stall behind the title), all at the first map wait (a stall of up to ~0.8 s on
+  a full stage-1 game), none (the first opening reads them: up to ~0.5 s late in a game). A picker opened before the
+  reading is done (`--harem` at the first map wait) reads what it needs itself.
+- **2026-10-22, step 8 — the look.** From `saves-week18` (`--harem 9 --until deployment --interface new`): every girl and
+  every unit NEW, as expected (the save predates the read lines). A second look a week on (the save played through week
+  18 with Haurein's (girl 9) visit, then `--harem 9` again) still shows NEW everywhere: her second visit has unread lines.
+  The ??? and read bubbles and the absent pill were not seen in a window; the models are tested.

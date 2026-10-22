@@ -29,11 +29,14 @@ public sealed record SubordinateButton(bool Enabled, int Men, int Price, string 
 /// <summary>
 /// The orders' panel for the chosen unit: its name, face and status CG, the budget (×100K), Replenish,
 /// whether new troops are offered and Add More's steps (the first is the offer, each next one twice the
-/// men for three times the price while the price is under 10000), and Talk.
+/// men for three times the price while the price is under 10000), Talk, and Talk's mark (ours, decision 30: null
+/// unless Talk can be clicked and the unit's talk has a mark; Talk's pill shows NEW or ???, none for
+/// <see cref="SceneMark.Read"/>).
 /// </summary>
 public sealed record SubordinatePanel(
     int Unit, string Name, int FaceCg, int PortraitCg, int Gold,
-    SubordinateButton Replenish, bool AddOffered, IReadOnlyList<SubordinateButton> Steps, SubordinateButton Talk);
+    SubordinateButton Replenish, bool AddOffered, IReadOnlyList<SubordinateButton> Steps, SubordinateButton Talk,
+    SceneMark? TalkMark = null);
 
 /// <summary>
 /// What a troop order did, for the plate in the middle of the screen (docs/ui/subordinates.md, §6, R4/R5): the unit
@@ -115,9 +118,10 @@ public static class SubordinatesScreen
     /// Greyed: everything when the week's actions are spent (<c>Ui_CmdSubordAvail</c> 0: the view-only
     /// picker) or the unit cannot act (status not 1: its pick opens the status page); the troop orders in
     /// the prologue (no troop menu) and once the week's troop order is spent; Replenish when the unit is
-    /// full (refused) or the budget short; a step dearer than the budget; Talk once spent.
+    /// full (refused) or the budget short; a step dearer than the budget; Talk once spent. Talk's mark from
+    /// <paramref name="talkMarks"/> (<see cref="TalkMarks"/>) while Talk can be clicked.
     /// </summary>
-    public static SubordinatePanel Panel(GameState state, int unit)
+    public static SubordinatePanel Panel(GameState state, int unit, IReadOnlyDictionary<int, SceneMark>? talkMarks = null)
     {
         var u = state.Units[unit];
         int gold = state.Gold.Value;
@@ -147,11 +151,43 @@ public static class SubordinatesScreen
             (price, men) = SubordinatesCommand.AddMore(price, men);
         }
 
-        string? talkOff = all ?? (state.StoryStage != 0 && state.CmdAvail_SubTalk != 1 ? "used this week" : null);
+        string? talkOff = all ?? (!TalkOpen(state) ? "used this week" : null);
         var talk = new SubordinateButton(talkOff is null, 0, 0, talkOff ?? "");
+        SceneMark? talkMark = talk.Enabled && TalkMarks(state, talkMarks).TryGetValue(unit, out var mark) ? mark : null;
         return new SubordinatePanel(unit, DeploymentTable.UnitName(state, unit), u.FaceCg.Value, u.PortraitCg.Value, gold,
-            replenish, offered, steps, talk);
+            replenish, offered, steps, talk, talkMark);
     }
+
+    /// <summary>
+    /// Whether the week's talk can still be given: the picker is not the view-only one (<c>Ui_CmdSubordAvail</c> 0) and,
+    /// past the prologue (where the pick itself is the talk), <c>CmdAvail_SubTalk</c> is 1 — Talk's button is clickable for
+    /// a unit that can act.
+    /// </summary>
+    public static bool TalkOpen(GameState state) =>
+        state.Ui_CmdSubordAvail != 0 && (state.StoryStage == 0 || state.CmdAvail_SubTalk == 1);
+
+    /// <summary>
+    /// Ours (owner's decision 30, docs/ui/talk-marks.md §6, S): the marks the ledger's speech bubbles show, by unit — those
+    /// of <paramref name="marks"/> (<see cref="PickerMarks.Talks"/>) for the units that can act (status 1); none at all
+    /// while the week's talk is spent (<see cref="TalkOpen"/>; the owner, 2026-10-22: the marks only where they can be acted
+    /// on), so neither the bubbles nor Talk's pill show then.
+    /// </summary>
+    public static IReadOnlyDictionary<int, SceneMark> TalkMarks(GameState state, IReadOnlyDictionary<int, SceneMark>? marks)
+    {
+        if (marks is null || marks.Count == 0 || !TalkOpen(state))
+            return NoMarks;
+        return marks.Where(m => m.Key is >= 1 and <= 50 && state.Units[m.Key].Status == 1).ToDictionary(m => m.Key, m => m.Value);
+    }
+
+    private static readonly IReadOnlyDictionary<int, SceneMark> NoMarks = new Dictionary<int, SceneMark>();
+
+    /// <summary>A speech bubble's tooltip.</summary>
+    public static string TalkNote(SceneMark mark) => mark switch
+    {
+        SceneMark.New => "Talk: something new",
+        SceneMark.Maybe => "Talk: something may happen",
+        _ => "Talk: nothing new",
+    };
 
     /// <summary>
     /// Our question before a troop order, Replenish or a step of Add New Troops (the owner's C3, docs/ui/subordinates.md,

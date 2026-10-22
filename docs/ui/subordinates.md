@@ -215,3 +215,15 @@ the price.
   `subordinates-question`, between `subordinates` and `subordinates-done` (the §4 command). Looked at from
   `saves-week18`: Haurein (unit 12)'s replenish, +1191 → 1400 for 2,300K. Add New Troops' question and plate R5 are
   covered by the tests (`SubordinatesScreenTests`), not by a look in a window.
+
+## 7. The talks' marks (owner's decision 30, built 2026-10-22)
+
+The owner's S (docs/ui/talk-marks.md §6): a speech bubble left of No. in the row of every unit that can talk (status 1)
+— filled green with "!" (new), vermilion with "?" (a draw decides), an empty outline (nothing new; its tooltip says
+which) — and the chosen unit's NEW or ??? pill at Talk's top right, none when read. Neither shows while the week's talk
+is spent (`CmdAvail_SubTalk` 0) nor in the view-only picker (the owner, 2026-10-22): `SubordinatesScreen.TalkOpen`,
+`SubordinatesScreen.TalkMarks`, `SubordinatePanel.TalkMark`. The marks are computed once each time `Sﾌﾞｶ` opens
+(`Original.Content/Strategy/PickerMarks`; not at all while the talk is spent); the bubbles sit in the ledger's first
+column, widened for them, after the chosen row's bar and diamond (`DeploymentTableView.TalkMarks`, a chooser only); the
+pill is `Lacquer.DrawPill`. Our interface only. Looked at from `saves-week18`: every unit NEW (the save predates the read
+lines).

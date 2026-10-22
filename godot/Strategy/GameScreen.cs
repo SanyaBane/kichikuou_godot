@@ -396,6 +396,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         UpdateDeploymentScreen();
         UpdateSubordinatesScreen(delta);
         UpdateHaremScreen();
+        WarmMarks();
         UpdateTreasureScreen();
         UpdateStatusStrip();
         UpdateMapMarkers();
@@ -516,6 +517,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             session.Script.NewScenesFirst = NewScenesChoice.On;     // Option → Game (decision 30); the options window keeps it current
             _scenes = session.Scenes;
             _script = session.Script;
+            _pickerMarks = new PickerMarks(session.Marks);          // our screens' marks (decision 30)
             await session.BootAsync();
             var end = _options.Start switch
             {
@@ -662,6 +664,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _presenter.CoverAttackBriefing = InterfaceChoice.New;            // an attack goes straight to the deployment screen
         _presenter.CoverMessages = InterfaceChoice.New;                  // our message windows (docs/ui/messages.md)
         _presenter.Show(scriptEvent);
+        MarkPicker(scriptEvent);                                         // the state as the picker opens (decision 30)
         if (_presenter.WeekReport is { Complete: true } report)
             await WeekReportAsync(report);
         if (scriptEvent is EngagementSceneEvent)
