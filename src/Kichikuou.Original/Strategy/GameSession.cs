@@ -39,8 +39,10 @@ public sealed class GameSession
         IScenarioSource scenario, ISceneSource scenes, ISaveStore saves, IStoryHooks unported)
     {
         _scenario = scenario;
+        var cached = scenes as CachedSceneSource ?? new CachedSceneSource(scenes);
         Rules = new StrategyRules(scenario, unported);
-        Scenes = new SceneRunner(scenes, Rules);
+        Scenes = new SceneRunner(cached, Rules);
+        Marks = new SceneMarks(cached);
         Script = new OriginalScriptContext(state, random, view, input, Scenes) { Saves = saves };
         Scenes.Bind(Script);
         Rules.Bind(Script);
@@ -57,6 +59,12 @@ public sealed class GameSession
 
     /// <summary>The game state.</summary>
     public GameState State => Script.State;
+
+    /// <summary>
+    /// Ours (owner's decision 30): the marks on Talk and the harem over the game's scenes, for the screens to ask with
+    /// <see cref="State"/> when <c>Sﾌﾞｶ</c> or <c>Sﾊｰﾚﾑ</c> opens (docs/ui/talk-marks.md §8 step 8).
+    /// </summary>
+    public SceneMarks Marks { get; }
 
     /// <summary>The boot: <c>ｽﾀｰﾄ.ADV</c>'s state lines and <c>SET.ADV</c> (which reads page 4 from the slots, <c>ﾛｰﾄﾞｾｰﾌﾞ</c> 10).</summary>
     public Task BootAsync() => new GameSetup(Script, _scenario).BootAsync();

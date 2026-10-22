@@ -81,10 +81,7 @@ public sealed class HaremCommand(OriginalScriptContext script) : CommandFile(scr
                 State.Ui_CmdHaremAvail = State.Ui_CmdHaremAvail + 1;
                 return;
             }
-            State.Hist_Cur = State.CallArg;
-            State.Harem_LastPick = State.CallArg;
-            Hist.Harem_LastWeek = State.Week;
-            State.Hist_Cur = 0;
+            Pick();
             if (State.CallArg <= 50)
                 break;
             await Script.ShowAsync(new MessageResetEvent(Sys3Int.Zero));   // :374-383 Y 1, 0 and the error
@@ -92,7 +89,42 @@ public sealed class HaremCommand(OriginalScriptContext script) : CommandFile(scr
             await HitAnyKeyAsync();
         }
 
-        if (await VisitAsync(State.CallArg.Value))
+        await VisitAndRewardAsync(State.CallArg.Value);
+    }
+
+    /// <summary>
+    /// Ours (owner's decision 30, docs/ui/talk-marks.md §8 step 4): the visit of <paramref name="girl"/> as the dry run
+    /// starts it, from the state the picker <c>Sﾊｰﾚﾑ</c> sees (<see cref="SceneMarks"/>) — the command's writes of
+    /// <see cref="RunAsync"/> from the pick on: <c>Ev_Entry</c> 10 and <c>Harem_ExpReward</c> 0 (<c>:35-37</c>, already
+    /// so when the picker is open), the picker's answer in <c>CallArg</c>, the pick's bookkeeping (<see cref="Pick"/>),
+    /// her scene and the reward (<see cref="VisitAndRewardAsync"/>). Only for a girl the picker offers (1-50).
+    /// </summary>
+    public Task PreviewVisitAsync(Sys3Int girl)
+    {
+        if (girl < 1 || girl > 50)
+            throw new ArgumentOutOfRangeException(nameof(girl), girl.Value, "A girl of the harem is 1-50.");
+        State.Ev_Entry = 10;                                            // :35, :37
+        State.Harem_ExpReward = 0;
+        State.CallArg = girl;                                           // Sﾊｰﾚﾑ's answer
+        State.Tmp0001 = State.CallArg;
+        State.CallArg = State.Tmp0001;
+        Pick();
+        return VisitAndRewardAsync(girl.Value);
+    }
+
+    /// <summary><c>:220-223</c>: the girl picked (<c>CallArg</c>) noted — her last pick and the week she was last summoned.</summary>
+    private void Pick()
+    {
+        State.Hist_Cur = State.CallArg;
+        State.Harem_LastPick = State.CallArg;
+        Hist.Harem_LastWeek = State.Week;
+        State.Hist_Cur = 0;
+    }
+
+    /// <summary>Her label (<see cref="VisitAsync"/>) and, unless it leaves the file, the reward (<see cref="RewardAsync"/>).</summary>
+    private async Task VisitAndRewardAsync(int girl)
+    {
+        if (await VisitAsync(girl))
             await RewardAsync();
     }
 

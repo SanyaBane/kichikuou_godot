@@ -92,7 +92,10 @@ public sealed class ScenePreview<TState>(TState source, Func<PreviewRun<TState>,
             var run = new PreviewRun<TState>(state, pending.Pop(), MaxSteps, pending);
             var (end, reason) = Execute(run);
             run.CheckPrefixUsed();
-            var path = new PreviewPath([.. run.Decisions], [.. run.Lines], end, reason, KeepEndStates ? state : null);
+            var path = new PreviewPath([.. run.Decisions], [.. run.Lines], end, reason, KeepEndStates ? state : null)
+            {
+                DecisionLines = [.. run.DecisionLines],
+            };
             paths.Add(path);
             inspect?.Invoke(path, state);
         }
@@ -129,6 +132,10 @@ public sealed class ScenePreview<TState>(TState source, Func<PreviewRun<TState>,
         catch (PreviewAbortedException abort) when (ReferenceEquals(abort.Run, run))
         {
             return (PreviewEnd.Aborted, abort.Reason);
+        }
+        catch (PreviewRepeatedException repeat) when (ReferenceEquals(repeat.Run, run))
+        {
+            return (PreviewEnd.Repeated, repeat.Reason);
         }
     }
 }
@@ -180,6 +187,14 @@ public enum PreviewEnd
 
     /// <summary>The run took more than its steps (<see cref="ScenePreview{TState}.MaxSteps"/>): a loop that does not end.</summary>
     Aborted,
+
+    /// <summary>
+    /// The run met a decision at a place where it had made one already, of the same kind and count, with the same memory
+    /// (<see cref="Sys3.ScriptMemory.Fingerprint"/>): from there it would go on as from the first time — a menu's cancel that
+    /// shows the menu again, a draw drawn again until another value comes —, so the path ends before it. Decisions a
+    /// caller forces are never cut. A decision without a place (a hand port's draw) is not checked.
+    /// </summary>
+    Repeated,
 }
 
 /// <summary>
@@ -195,6 +210,13 @@ public sealed record PreviewPath(
     string? Reason,
     ScriptState? EndState)
 {
+    /// <summary>
+    /// For each of <see cref="Decisions"/>, how many of <see cref="Lines"/> the path had shown before it (a menu's items
+    /// among them: they are on the screen before the choice); so the lines between two decisions are the ones the first
+    /// decision's value led to. Empty for a path made by hand without them (every line then counts as shown first).
+    /// </summary>
+    public IReadOnlyList<int> DecisionLines { get; init; } = [];
+
     /// <summary>The path's draws (its decisions that were <see cref="PreviewDecisionKind.Draw"/>s), in order.</summary>
     public IEnumerable<PreviewDecision> Draws => Decisions.Where(d => d.Kind == PreviewDecisionKind.Draw);
 

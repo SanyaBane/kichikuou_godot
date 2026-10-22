@@ -16,6 +16,8 @@ public abstract class PreviewRun
     private readonly int _maxSteps;
     private readonly Stack<PreviewDecision[]> _pending;
     private readonly List<PreviewDecision> _decisions = [];
+    private readonly List<int> _decisionLines = [];
+    private readonly List<(PreviewDecisionKind Kind, int Count, ScriptRef Place, ulong Memory)> _places = [];
     private readonly List<ScriptRef> _lines = [];
     private int _steps;
 
@@ -59,6 +61,9 @@ public abstract class PreviewRun
     /// <summary>The lines shown so far, in order (<see cref="PreviewPath.Lines"/>).</summary>
     public IReadOnlyList<ScriptRef> Lines => _lines;
 
+    /// <summary>How many of <see cref="Lines"/> were shown before each decision (<see cref="PreviewPath.DecisionLines"/>).</summary>
+    public IReadOnlyList<int> DecisionLines => _decisionLines;
+
     /// <summary>
     /// Ends the path here as <see cref="PreviewEnd.Stopped"/> with <paramref name="reason"/>: for the caller's hooks at a
     /// call the preview does not run (a battle, <c>FIGT_A</c>), which counts as something happening.
@@ -85,6 +90,17 @@ public abstract class PreviewRun
     {
         Step();
         int index = _decisions.Count;
+        if (at is { } where)
+        {
+            ulong memory = StateCopy.Memory.Fingerprint();
+            if (index >= _prefix.Length)
+            {
+                int earlier = _places.FindIndex(p => p.Kind == kind && p.Count == count && p.Place == where && p.Memory == memory);
+                if (earlier >= 0)
+                    throw new PreviewRepeatedException(this, $"{kind} at {where} again with the same memory");
+            }
+            _places.Add((kind, count, where, memory));
+        }
         int value;
         if (index < _prefix.Length)
         {
@@ -103,6 +119,7 @@ public abstract class PreviewRun
                 _pending.Push([.. _decisions, new PreviewDecision(kind, count, values[i], at)]);
         }
         _decisions.Add(new PreviewDecision(kind, count, value, at));
+        _decisionLines.Add(_lines.Count);
         return value;
     }
 
@@ -294,6 +311,16 @@ public class PreviewInput(PreviewRun run) : ISceneInput
         run.Step();
         return Task.FromResult(Sys3Int.Zero);
     }
+}
+
+/// <summary>A run of the dry run that met a decision again with the same memory (<see cref="PreviewEnd.Repeated"/>).</summary>
+internal sealed class PreviewRepeatedException(PreviewRun run, string reason) : Exception($"The dry run repeats: {reason}.")
+{
+    /// <summary>The run that repeats.</summary>
+    public PreviewRun Run { get; } = run;
+
+    /// <summary>Which decision came again.</summary>
+    public string Reason { get; } = reason;
 }
 
 /// <summary>A run of the dry run stopped by its caller (<see cref="PreviewRun.Stop"/>); the preview ends the path with it.</summary>

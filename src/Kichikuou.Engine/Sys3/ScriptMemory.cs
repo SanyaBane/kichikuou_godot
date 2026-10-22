@@ -98,6 +98,32 @@ public sealed class ScriptMemory(int variableCount)
     }
 
     /// <summary>
+    /// A 64-bit fingerprint of the whole memory — the variables, every page with its number and size, the strings —
+    /// for telling within one process whether two moments hold the same memory (the dry run's repeated decisions,
+    /// <c>Script.ScenePreview</c>); equal memories give equal fingerprints, different ones almost surely not. Not
+    /// stable across processes (the strings' hash codes are not).
+    /// </summary>
+    public ulong Fingerprint()
+    {
+        const ulong prime = 1099511628211UL;
+        ulong hash = 14695981039346656037UL;
+        foreach (var v in _vars)
+            hash = (hash ^ (uint)v.Value) * prime;
+        for (int page = 1; page < PageLimit; page++)
+        {
+            var values = _pages[page];
+            if (values is null)
+                continue;
+            hash = (hash ^ (uint)page ^ ((ulong)(uint)values.Length << 32)) * prime;
+            foreach (var v in values)
+                hash = (hash ^ (uint)v.Value) * prime;
+        }
+        foreach (var s in Strings)
+            hash = (hash ^ (uint)(s?.GetHashCode(StringComparison.Ordinal) ?? 0)) * prime;
+        return hash;
+    }
+
+    /// <summary>
     /// Reads <c>page[index]</c>. Outside the page the original engine resolves the reference to
     /// nothing and the read yields 0 (<c>v_ref_indexed</c> returns NULL, <c>getCaliValue</c>
     /// substitutes 0).

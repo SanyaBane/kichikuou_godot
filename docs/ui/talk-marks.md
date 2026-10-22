@@ -364,3 +364,77 @@ during the build, for the owner to review.
   repeats included, whatever the copy's record held.
 - **2026-10-22, step 3 — the programs.** `CachedSceneSource` keeps every program read, shared by the runner each run
   builds.
+- **2026-10-22, step 4 — the talk and the visit as entries.** `SubordinatesCommand.PreviewTalkAsync(unit)` and
+  `HaremCommand.PreviewVisitAsync(girl)` run the command's own code from the pick on, from the state the picker sees:
+  the talk sets `Ev_Entry` 20, the picker's answer, the unit's names, then the talk chosen (`TalkChoiceAsync`, or the
+  prologue's `PrologueTalk`, both shared with `RunAsync`) and `TalkAsync`; the visit sets `Ev_Entry` 10 and
+  `Harem_ExpReward` 0, the picker's answer, the pick's bookkeeping (`Pick`) and `VisitAndRewardAsync` (her scene and the
+  reward), both shared with `RunAsync`. Left out of the talk: the picker's close and, past the prologue, the troop menu
+  before Talk (the header, the offer, the menu) — they show only the command's lines and write only windows and
+  temporaries. `CommandSliceDifferentialTests` (full counts) see no difference. Alternative: run `RunAsync` with the
+  picker and the menu answered — slower, and every talk would carry the offer's lines.
+- **2026-10-22, step 4 — the command's own lines.** "Maybe I'll meet with X." (`Cﾌﾞｶ:1104`, before every talk past
+  the prologue) and "Rance gained experience" (`Cﾊｰﾚﾑ:566`, after a visit that pays) are never unread for the marks
+  (`SceneMarks.FrameLines`): the same on every talk or visit, they would mark every one New until first read. Rance's
+  self-talk lines (`Cﾌﾞｶ:1338-1377`) are his talk and count (his talk 10 is New by line 1357).
+- **2026-10-22, step 4 — the files the scenes call.** Every call in the scene files (`G*`, `I*`, `FIGT表示`):
+  `WAO_SUB`, `M`, `WAO_MAP`, `PCMPLAY` run in the context as always; the scenes (`Gｱﾘｽ2`, `Iｼﾚｲﾌﾞ`, `FIGT表示`, …) in the
+  runner; `FIGTATTK` (the exchange's animation, from `FIGT表示`) runs its port with its draws given 1 and no decision (its
+  one draw, `FIGTATTK.ADV:234`, is never read; as decisions it would double the paths at each exchange); the battles
+  (`FIGT_A`, `FIGT_B`, `FIGT`, `死亡捕獲`), the party picker `Sﾌﾞﾀｲ` and any file not foreseen stop the path (something
+  happens there); `&#OVER.ADV` (14 jumps: endings, game overs) ends it, left out. The preview's router is its own
+  (`SceneMarks.PreviewRouter`), not `StrategyRules`; its input is a `PreviewInput` that is an `IGameInput` (a battle's
+  command or menu stops the path, never reached). Alternative: route through `StrategyRules` and stop only the battles —
+  every other ported file would be one more way to touch the game.
+- **2026-10-22, step 4 — what counts.** `SceneMarkState`: every variable, page slot and record name, by value, except
+  the bookkeeping — the dictionary's groups `scratch`, `ui`, `system`, `array`, `unused`, `debug` (the temporaries, the
+  window, map, camera and mouse state, the harem's availability flags, `Harem_LastPick`, the week's command flags,
+  `RetVal`, `CallArg`, the persistent page 4 with `Glob_CgSeen`, the scratch page 3, the map marks' page 10) and by name
+  the record cursors and strides, the string bases, `Ev_Entry`, `Harem_ExpReward`, `Harem_SexCount`, `Harem_LastWeek`,
+  `CmdAvail_SubTalk`, `CmdAvail_SubTroops` and `N_RanceSelfTalk`. A bound variable is compared on its page (a slot takes
+  its field's class; an unbound slot counts unless its page is all bookkeeping). Strings: only the records' names
+  (`Unit_StrBase` to the last item's, `SET.ADV:298-301`; scenes rename records), the rest is scratch. `Extras` never
+  (the read lines, the provinces seen). Alternative: the §4 walk's 73 names alone — the groups cover them and whatever
+  the walk did not meet.
+- **2026-10-22, step 4 — what every visit pays.** An explicit list, on visits only (`SceneMarkState.VisitFeeNames` and
+  Rance's (unit 1) experience): `Bt_ExpBonusNext`, `Shariela_EvWeek`, `N_Lia_Neglect`, `Units[1].Exp`. Rejected: "a slot
+  that differs on every path of the result is ignored" — Sill's (unit 2) silent step is a single path, so it would hide
+  exactly the change §4 is about.
+- **2026-10-22, step 4 — the paths' ends.** Returned: new by an unread line or a counted change. Stopped (a battle, the
+  party picker, save data) and Loaded: new. Jumped and Quit (an ending, a game over): left out — read, whatever lines
+  they show, and never chosen by the rule change. Aborted (the steps' cap) and a result past the paths' cap: at least
+  ???.
+- **2026-10-22, step 4 — repeated decisions (engine).** A menu's cancel that shows the menu again (Leila's (unit 5)
+  "who do I like", Somita's (unit 46) talk, Aoi's, Arlcoate's, Chizuko's, Warg's visits) and a draw drawn again until
+  another value comes (Gandhi's (unit 37) talk, `Gｶﾞﾝｼﾞｰ:59`) made endless trees, cut at 256 paths (??? for six talks
+  and visits, ~500 ms each). The dry run now ends a path where it meets a decision at a place it made one already, of
+  the same kind and count, with the same memory (`ScriptMemory.Fingerprint`, 64 bits; `PreviewEnd.Repeated`): from there
+  it would go on as the first time. Forced decisions are never cut. In the tree such a value is no outcome
+  (`MarkNode.Outcomes`): a menu's cancel that only comes back is no choice, a redraw ends with another value. The call
+  stack is not part of the fingerprint (a recursion with the same memory would be cut; none was met).
+- **2026-10-22, step 4 — where a decision falls among the lines (engine).** `PreviewPath.DecisionLines`: how many lines
+  the path had shown before each decision (a menu's items among them), so the tree knows each value's own lines.
+- **2026-10-22, step 4 — the tree's rule.** `MarkTree`: a leaf as above; a menu its best outcome; a draw by `Choose`,
+  the one function step 5 will call: (a) the outcomes that are harmless — every path under them returns (no ending, stop,
+  abort or missing value) and changes nothing beyond what every returning path through the draw changes alike
+  (`MarkTree.Common`: the prefix's writes, so a draw after a first-time flag still finds its harmless values) — and whose
+  continuation is New, evaluated from the value's own lines on with the changes ignored and every draw below by the same
+  rule: one of them, the mark New; (b) at a listed draw, when no line before the draw and no line under the other values
+  is unread, the outcomes that change what counts (never one that may end the game or stops): one of them, the mark the
+  listed one — ??? for Haurein (unit 12), Kentarou (unit 31), Isoroku (unit 27), New for Kanami — no better than the
+  chosen outcomes' worst; (c) the odds: New if every outcome is, Read if every one is, else ???. Option off: (c) always.
+  The four listed references are verified as the `Y 4` statements' lines (`Gﾊｳﾚｰﾝ:2299`, `Gｹﾝﾀﾛｳ:608`, `Gｲｿﾛｸ:4599`,
+  `Gｶﾅﾐ:182`). Alternative for (a): a value with any unread path — would choose a value whose unread line hides behind
+  a further draw it cannot make certain. With the scene before a draw unread and nothing new after it, (a) and (b) do
+  not apply and the odds keep the draw — the talk is New anyway (Kentarou's first training: no step).
+- **2026-10-22, step 4 — the API.** `SceneMarks` (Original), built over the scenes once: `Talk(state, unit, on)`,
+  `Visit(state, girl, on)` (a `SceneMarkReport`: the mark and the tree, each path's end and why it is new), `Talks` and
+  `Visits` (the marks of every unit `Sﾌﾞｶ` lets talk, status 1, and every girl `Sﾊｰﾚﾑ` offers, her `HaremAvail_*` flag),
+  `Explore(state, target, forced)` and `Preview` for step 5, `Rules(on)`. `GameSession.Marks` holds one, sharing a
+  `CachedSceneSource` with the game's runner. Nothing of the game is touched (a test checks the memory's fingerprint and
+  `Extras`). Timing (2026-10-22): the owner's week-18 save, 6 talks 10 ms and 5 visits 8 ms once the scenes are read
+  (126 ms and 43 ms the first time, reading them); all 50 talks and all 50 visits of a booted game at stage 1, about
+  150 ms each once read (470 ms and 290 ms the first time). Step 8 may read the scenes ahead (a first mark at the boot).
+- **2026-10-22, step 4 — Katyusha's ending.** Ending 12 (`Gｶﾁｭｰｼｬ:2293`) comes from "Have Threesome" on Katyusha's visit or on
+  Saulnia's (which calls `Gｶﾁｭｰｼｬ` 100), and only while Sill (unit 2) is out of the army (`:1847-1848`: with her there,
+  Rance is saved); the test sets her out.

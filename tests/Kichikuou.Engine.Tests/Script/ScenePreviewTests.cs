@@ -249,6 +249,55 @@ public class ScenePreviewTests
         Assert.Equal([1], LinesOf(path));
     }
 
+    /// <summary>Each decision notes how many lines the path had shown before it: the lines between are its value's.</summary>
+    [Fact]
+    public void A_path_notes_the_lines_shown_before_each_decision()
+    {
+        var program = Program(
+            Message(1),                                             // 0
+            new RandomStatement(At(2), Const(2)),                   // 1
+            Message(3),                                             // 2
+            new RandomStatement(At(4), Const(2)),                   // 3
+            Message(5),                                             // 4
+            new ReturnStatement(At(6)));                            // 5
+
+        var result = Preview(new TestState(), program).Run();
+
+        Assert.Equal(4, result.Paths.Count);
+        Assert.All(result.Paths, p => Assert.Equal([1, 2], p.DecisionLines));
+        Assert.All(result.Paths, p => Assert.Equal([1, 3, 5], LinesOf(p)));
+    }
+
+    /// <summary>
+    /// <c>*L: Y 4, 2: {RetVal = 2: @L:}</c> — a draw drawn again until 1 comes: the first redraw still differs (RetVal was 0
+    /// before the first draw, 2 before the second), the next meets the same memory and is cut as repeated.
+    /// </summary>
+    [Fact]
+    public void A_decision_met_again_with_the_same_memory_ends_its_path_as_repeated()
+    {
+        var program = Program(
+            Message(1),                                             // 0
+            new RandomStatement(At(2), Const(2)),                   // 1
+            new IfStatement(At(3), Is(0, 2), 4),                    // 2
+            new GotoStatement(At(4), "L", 1),                       // 3
+            Message(5),                                             // 4
+            new ReturnStatement(At(6)));                            // 5
+
+        var result = Preview(new TestState(), program).Run();
+
+        Assert.Equal(
+            [[PreviewDecision.Draw(2, 1, At(2))], [PreviewDecision.Draw(2, 2, At(2)), PreviewDecision.Draw(2, 1, At(2))],
+             [PreviewDecision.Draw(2, 2, At(2)), PreviewDecision.Draw(2, 2, At(2))]],
+            result.Paths.Select(p => p.Decisions.ToArray()));
+        Assert.Equal([PreviewEnd.Returned, PreviewEnd.Returned, PreviewEnd.Repeated], result.Paths.Select(p => p.End));
+        Assert.Equal([1], LinesOf(result.Paths[2]));
+
+        var forced = Preview(new TestState(), program).Run([PreviewDecision.Draw(2, 2), PreviewDecision.Draw(2, 2), PreviewDecision.Draw(2, 2)]);
+        var path = Assert.Single(forced.Paths);                         // forced decisions are never cut, the next one is
+        Assert.Equal(3, path.Decisions.Count);
+        Assert.Equal(PreviewEnd.Repeated, path.End);
+    }
+
     [Fact]
     public void Past_the_path_cap_the_result_is_truncated()
     {

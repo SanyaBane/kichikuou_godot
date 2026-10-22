@@ -88,6 +88,35 @@ public sealed class SubordinatesCommand(OriginalScriptContext script) : CommandF
     }
 
     /// <summary>
+    /// Ours (owner's decision 30, docs/ui/talk-marks.md §8 step 4): the talk of <paramref name="unit"/> as the dry run
+    /// starts it, from the state the picker <c>Sﾌﾞｶ</c> sees (<see cref="SceneMarks"/>) — the command's writes of
+    /// <see cref="RunAsync"/> from the pick on, then the talk: <c>Ev_Entry</c> 20 (<c>:25</c>, already so when the
+    /// picker is open), the picker's answer (<c>CallArg</c>, <c>Unit_Cur</c>), the unit's names, the talk chosen
+    /// (<see cref="TalkChoiceAsync"/>, or the prologue's <see cref="PrologueTalk"/>) and the unit's talk
+    /// (<see cref="TalkAsync"/>). Left out, as they show only the command's own lines and write only windows and
+    /// temporaries: the picker's close (mode 3) and, past the prologue, the troop menu before Talk is chosen (the
+    /// header, the offer, the menu). Only for a unit that can act (<c>Unit_Status</c> 1).
+    /// </summary>
+    public async Task PreviewTalkAsync(Sys3Int unit)
+    {
+        if (unit < 1 || unit > 50)
+            throw new ArgumentOutOfRangeException(nameof(unit), unit.Value, "A unit is 1-50.");
+        State.Ev_Entry = 20;                                            // :25
+        State.CallArg = unit;                                           // Sﾌﾞｶ's answer
+        State.Unit_Cur = unit;
+        UnitNames();
+        State.Tmp0021 = State.CallArg;                                  // :44-47
+        State.CallArg = State.Tmp0021;
+        State.Unit_Cur = unit;
+        ActionNames();
+        if (State.StoryStage == 0)
+            PrologueTalk();
+        else
+            await TalkChoiceAsync();
+        await TalkAsync(unit.Value);
+    }
+
+    /// <summary>
     /// <c>:1-20</c> — the week's actions are spent: pick a unit to see its status page, until
     /// the picker is cancelled.
     /// </summary>
@@ -157,12 +186,10 @@ public sealed class SubordinatesCommand(OriginalScriptContext script) : CommandF
     /// </summary>
     private async Task ActionAsync()
     {
-        CopyString(1, State.Unit_StrBase + (State.Unit_Cur - 1) * 3);
-        CopyString(2, State.Unit_StrBase + (State.Unit_Cur - 1) * 3 + 1);
+        ActionNames();
         if (State.StoryStage == 0)
         {
-            State.Ui_CmdSubordAvail = 0;
-            State.Tmp0001 = 2;
+            PrologueTalk();
             return;
         }
         State.CallArg = Unit.FaceCg;                                    // :721-724
@@ -185,6 +212,20 @@ public sealed class SubordinatesCommand(OriginalScriptContext script) : CommandF
             if (next == Next.Done)
                 return;
         }
+    }
+
+    /// <summary><c>:714-715</c>: the unit's name and troop type into strings 1-2.</summary>
+    private void ActionNames()
+    {
+        CopyString(1, State.Unit_StrBase + (State.Unit_Cur - 1) * 3);
+        CopyString(2, State.Unit_StrBase + (State.Unit_Cur - 1) * 3 + 1);
+    }
+
+    /// <summary><c>:716-720</c>, the prologue: no menu — the command is spent and the talk follows (<c>Tmp0001</c> 2).</summary>
+    private void PrologueTalk()
+    {
+        State.Ui_CmdSubordAvail = 0;
+        State.Tmp0001 = 2;
     }
 
     /// <summary>

@@ -128,6 +128,31 @@ public class StateCopyTests
         AssertSame(Filled(), state);
     }
 
+    /// <summary>The memory's fingerprint (the dry run's repeated decisions): equal for a copy, other for any part changed.</summary>
+    [Fact]
+    public void A_copys_memory_has_the_same_fingerprint_and_a_change_another()
+    {
+        var source = Filled();
+        ulong print = source.Memory.Fingerprint();
+
+        Assert.Equal(print, ScriptState.Copy(source).Memory.Fingerprint());
+        source.Extras["known-provinces"] = [3];                         // the port's own data is no memory
+        Assert.Equal(print, source.Memory.Fingerprint());
+        var changes = new Action<TestState>[]
+        {
+            s => s.Memory.Var(42) = (Sys3Int)4243,
+            s => s.Memory.WritePage(5, 0, (Sys3Int)1),
+            s => s.Memory.AllocatePage(7, 1),
+            s => s.Strings[2] = "Sill",
+        };
+        foreach (var change in changes)
+        {
+            var copy = ScriptState.Copy(Filled());
+            change(copy);
+            Assert.NotEqual(print, copy.Memory.Fingerprint());
+        }
+    }
+
     [Fact]
     public void A_copy_needs_a_state_of_the_same_type()
     {
