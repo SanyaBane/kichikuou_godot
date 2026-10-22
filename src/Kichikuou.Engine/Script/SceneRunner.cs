@@ -159,7 +159,7 @@ public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<str
                         break;
                     }
                 case RandomStatement s:
-                    Script.Rnd(Eval(s.Max));
+                    Script.Rnd(Eval(s.Max), s.At);
                     break;
 
                 // --- Control flow

@@ -65,3 +65,24 @@ public interface ISceneSource
     /// <exception cref="ScenarioFormatException">The file holds a form outside the supported ones (the message names the line).</exception>
     ScriptProgram ReadProgram(string file);
 }
+
+/// <summary>
+/// A scene source that reads each file once: the programs are kept and shared by every runner over it (a
+/// <see cref="SceneRunner"/> keeps its own only for its life). For the dry run, which builds a runner per
+/// path (<see cref="ScenePreview{TState}"/>); not thread-safe.
+/// </summary>
+public sealed class CachedSceneSource(ISceneSource source) : ISceneSource
+{
+    private readonly Dictionary<string, ScriptProgram> _programs = new(StringComparer.Ordinal);
+
+    /// <inheritdoc />
+    public ScriptProgram ReadProgram(string file)
+    {
+        if (!_programs.TryGetValue(file, out var program))
+        {
+            program = source.ReadProgram(file);
+            _programs[file] = program;
+        }
+        return program;
+    }
+}

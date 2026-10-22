@@ -53,6 +53,18 @@ public interface IScriptInput
     Task<Sys3Int> GetPlayingTrackAsync();
 }
 
+/// <summary>
+/// A generator that also hears where a draw is made: <see cref="ScriptContext.Rnd"/> calls
+/// <see cref="Next(Sys3Int, ScriptRef)"/> for a scene's <c>Y 4, n</c> (its statement's place) and the plain
+/// <see cref="IScriptRandom.Next"/> for a hand port's. Ours: the dry run's decisions name their draws
+/// (<see cref="ScenePreview{TState}"/>, docs/ui/talk-marks.md §8).
+/// </summary>
+public interface IPlacedRandom : IScriptRandom
+{
+    /// <summary><c>Y 4, n</c> at <paramref name="at"/>: as <see cref="IScriptRandom.Next"/>.</summary>
+    Sys3Int Next(Sys3Int n, ScriptRef at);
+}
+
 /// <summary>Calls from ported rules into non-rule scenario files (story and death scenes, unported screens).</summary>
 public interface IStoryHooks
 {

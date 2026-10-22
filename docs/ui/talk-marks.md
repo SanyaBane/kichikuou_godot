@@ -342,3 +342,25 @@ during the build, for the owner to review.
   reuses its pages, for the dry run's many copies. The `DS` bindings are the state type's, not copied. `Differential.Copy`
   is gone; the tests call the engine's copy. Alternative: a clone each variant implements — needless, the memory is the
   whole state.
+- **2026-10-22, step 3 — the start's shape.** `ScenePreview<TState>(source, Func<PreviewRun<TState>, Task> start)`: the
+  caller builds its own context and runner over the run's parts (`State`, `Random`, `View`, `Input`, `Saves`), so the
+  engine knows no rule; `Run(forced, inspect)` is synchronous (every part answers at once), so step 5 can call it from
+  inside a real draw. Alternative: an async `RunAsync` — no caller could use it inside `IScriptRandom.Next`.
+- **2026-10-22, step 3 — the draws' places.** A scene's draw names its `Y 4` statement: `ScriptContext.Rnd(n, at)` hands
+  the place to a generator that is an `IPlacedRandom` (the dry run's), the runner passes `s.At`; a plain generator draws as
+  before, a hand port's draw has no place. Steps 4-5 need it for the listed draws (`Gﾊｳﾚｰﾝ:2299`, …). Alternative: the
+  draw's index in the path only — the listed draws could not be told apart.
+- **2026-10-22, step 3 — the order of the values.** A draw's 1..n, a menu's items 1..n and then its cancel (0, a reachable
+  right click), depth first: under the path cap the cancel is what is cut first.
+- **2026-10-22, step 3 — the answers.** A key wait is a click (Return, 16; a right click, 32, closes windows), a pause runs
+  out (0), the mouse is released at (0, 0), the cursor keeps the engine's shapes (1 at first), the date is fixed (Saturday,
+  1 January 2000; only `Gﾜｵ:555` reads it in the scenes), the timer runs a second at each read (a wait on it ends), nothing
+  plays. The caps: 256 paths (`Truncated` past it), 100,000 steps a run (an event, an input or a draw; past it the path is
+  `Aborted`) — a forever release loop costs about 25 ms. A loop that shows and asks nothing is not caught.
+- **2026-10-22, step 3 — the save data.** `PreviewRun.Saves` ends the path (`Stopped`, "save data") at any read or write:
+  a preview never touches a slot nor plays on with a slot it cannot read.
+- **2026-10-22, step 3 — the end states.** One state is reused for every run and seen through `Run`'s `inspect` as each
+  path ends; `KeepEndStates` gives each path its own (`PreviewPath.EndState`). A path's lines are what its run showed,
+  repeats included, whatever the copy's record held.
+- **2026-10-22, step 3 — the programs.** `CachedSceneSource` keeps every program read, shared by the runner each run
+  builds.

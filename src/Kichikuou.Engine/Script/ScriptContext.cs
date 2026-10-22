@@ -37,11 +37,13 @@ public partial class ScriptContext(
 
     /// <summary>
     /// <c>Y 4, n:</c> — draws 1..n (n of 0 or 1 returns n without drawing) into <c>RetVal</c>.
-    /// The only caller of <see cref="IScriptRandom.Next"/>.
+    /// The only caller of <see cref="IScriptRandom.Next"/>. A scene gives the draw's place
+    /// <paramref name="at"/> (<see cref="SceneRunner"/>; the hand ports give none), which a generator that
+    /// wants it receives (<see cref="IPlacedRandom"/>, the dry run's); the draw is the same either way.
     /// </summary>
-    public Sys3Int Rnd(Sys3Int n)
+    public Sys3Int Rnd(Sys3Int n, ScriptRef? at = null)
     {
-        State.RetVal = random.Next(n);
+        State.RetVal = at is { } place && random is IPlacedRandom placed ? placed.Next(n, place) : random.Next(n);
         return State.RetVal;
     }
 
