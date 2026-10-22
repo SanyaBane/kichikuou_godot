@@ -199,7 +199,12 @@ the screen in either interface.
 **Owner's decision 30** (2026-10-22): marks on Talk and the harem telling whether a talk or a visit can bring anything
 new, and, as an option on by default, what is unread comes first (harmless variants and the draws that change the
 state given for certain once the usual scene is read), Kanami's choice in Code's event 4, Kentarou's hint lines —
-surveyed in docs/ui/talk-marks.md, the marks' look chosen from its mock-ups (§6), not built.
+surveyed in docs/ui/talk-marks.md, the marks' look chosen from its mock-ups (§6); **built** (2026-10-22, §8 steps 1-8,
+the agent's decisions in §9): the read lines kept per save (`ScriptState.ReadLines.cs`), the engine's dry run
+(`Script/ScenePreview`), the marks (`Strategy/SceneMarks`, `MarkTree`, `SceneMarkState`), the rule change on
+`OriginalScriptContext.NewScenesFirst` (`Strategy/SceneChoices`; Kanami's menu and Kentarou's lines as scene hooks,
+`Engine/Script/SceneHooks`, `Strategy/ScenePatches`), Option → Game → "New scenes first" (`godot/Strategy/NewScenesChoice`),
+the marks on our Harem and Subordinates screens (`Original.Content/Strategy/PickerMarks`).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

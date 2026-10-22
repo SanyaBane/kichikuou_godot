@@ -290,7 +290,7 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     `ﾛｰﾄﾞｾｰﾌﾞ` on the plain ten slots, so the file still runs as the original there.
 30. **Talk and the harem: marks, and what is unread comes first** (2026-10-22, the owner's request and answers;
     survey in [docs/ui/talk-marks.md](../ui/talk-marks.md)): the fourth change on purpose, the third to the rules of
-    play; not built yet. **The marks:** a talk (`Cﾌﾞｶ`, the unit's scene with `Ev_Entry = 20`) or a harem visit
+    play; built (2026-10-22, the build's plan and the agent's decisions in talk-marks.md §8-§9). **The marks:** a talk (`Cﾌﾞｶ`, the unit's scene with `Ev_Entry = 20`) or a harem visit
     (`Cﾊｰﾚﾑ`, `Ev_Entry = 10`) is "read" only when, in the current state, no branch of its scene shows a line not read
     in this playthrough and none changes a variable other than the bookkeeping and Rance's self-talk counter
     (compared by value; a write every branch of a visit makes is part of the visit); a menu's every item counts, lines

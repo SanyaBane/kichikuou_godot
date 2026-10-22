@@ -246,7 +246,7 @@ that place's meaning.
 
 None: the condition and the look are settled (2026-10-22).
 
-## 8. The build — plan (2026-10-22)
+## 8. The build — plan (2026-10-22; built the same day, §9)
 
 What the code has today (an agent's survey, 2026-10-22): scenes run in `Engine/Script/SceneRunner` (a sealed runner, one
 `switch` over `ScriptProgram`'s statements, jumps resolved to indexes; no hook on a statement); a shown line is a

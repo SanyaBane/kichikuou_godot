@@ -168,7 +168,9 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   Under way (owner, 2026-10-22): marks on Talk and the harem telling whether a talk or a visit can bring something
   new — the condition is surveyed in [ui/talk-marks.md](ui/talk-marks.md) (the rule, the random draws, the variables
   that count, decision 30 agreed as an option: an unread harmless variant comes for certain, Kanami chooses in
-  Code's event 4); the look chosen from mock-up round 1 (§6). Not built yet.
+  Code's event 4); the look chosen from mock-up round 1 (§6). Built (2026-10-22, §8-§9); left: the owner's review of
+  the decisions in §9 and a look at the ??? and read marks in a window (the kept saves predate the read-line record,
+  so every talk and visit shows New there).
 - **Optional fixes** — *owner* (which), then *agent*: the quirks register ([quirks.md](quirks.md),
   decision 5) lists every reproduced bug; some can become options.
 
