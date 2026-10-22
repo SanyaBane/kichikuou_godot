@@ -345,7 +345,7 @@ public class SceneChoicesTests(ITestOutputHelper output)
     }
 
     /// <summary>The booted new game at story stage 1 and the player's scenes; null without the decompile.</summary>
-    private static async Task<Rig?> BootAsync()
+    internal static async Task<Rig?> BootAsync()
     {
         var game = await EndGame.BootAsync();
         if (game is null)
@@ -356,7 +356,7 @@ public class SceneChoicesTests(ITestOutputHelper output)
     }
 
     /// <summary>The booted game and the scenes shared by every run of a test.</summary>
-    private sealed record Rig(GameState Booted, ScenarioScripts Scripts, CachedSceneSource Scenes, SceneMarks Marks)
+    internal sealed record Rig(GameState Booted, ScenarioScripts Scripts, CachedSceneSource Scenes, SceneMarks Marks)
     {
         /// <summary>A copy of the booted game at stage 1, week 18, the gold for anything, every first meeting of the harem made.</summary>
         public GameState Start()
@@ -375,10 +375,11 @@ public class SceneChoicesTests(ITestOutputHelper output)
         {
             var state = ScriptState.Copy(from);
             var rules = new StrategyRules(Scripts, new RecordingRules { State = state });
-            var runner = new SceneRunner(Scenes, rules);
+            var runner = new SceneRunner(Scenes, rules, hooks: ScenePatches.Instance);
             var input = new EndInput(state);
             var counting = new CountingRandom(random);
-            var script = new OriginalScriptContext(state, counting, new RecordingView(), input, runner)
+            var view = new RecordingView();
+            var script = new OriginalScriptContext(state, counting, view, input, runner)
             {
                 Saves = new MemorySaveStore(),
                 NewScenesFirst = on,
@@ -386,12 +387,12 @@ public class SceneChoicesTests(ITestOutputHelper output)
             };
             runner.Bind(script);
             rules.Bind(script);
-            return new Play(state, script, input, counting);
+            return new Play(state, script, input, counting, view);
         }
     }
 
     /// <summary>One game: its talks and visits run through the commands, a week's orders given back before each.</summary>
-    private sealed record Play(GameState State, OriginalScriptContext Script, EndInput Input, CountingRandom Random)
+    internal sealed record Play(GameState State, OriginalScriptContext Script, EndInput Input, CountingRandom Random, RecordingView View)
     {
         public SceneChoices Choices => Script.SceneChoices;
 
@@ -433,7 +434,7 @@ public class SceneChoicesTests(ITestOutputHelper output)
     }
 
     /// <summary>Each draw of 2 or more of the generator it wraps, with its count and value, in order.</summary>
-    private sealed class CountingRandom(IScriptRandom inner) : IScriptRandom
+    internal sealed class CountingRandom(IScriptRandom inner) : IScriptRandom
     {
         public List<(int Count, int Value)> Draws { get; } = [];
 
@@ -447,7 +448,7 @@ public class SceneChoicesTests(ITestOutputHelper output)
     }
 
     /// <summary>Every draw of 2 or more gives <paramref name="value"/> (at most n).</summary>
-    private sealed class ConstantRandom(int value) : IScriptRandom
+    internal sealed class ConstantRandom(int value) : IScriptRandom
     {
         public Sys3Int Next(Sys3Int n) => n.Value <= 1 ? n : (Sys3Int)Math.Min(value, n.Value);
     }

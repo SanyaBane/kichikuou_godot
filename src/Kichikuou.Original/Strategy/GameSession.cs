@@ -41,7 +41,7 @@ public sealed class GameSession
         _scenario = scenario;
         var cached = scenes as CachedSceneSource ?? new CachedSceneSource(scenes);
         Rules = new StrategyRules(scenario, unported);
-        Scenes = new SceneRunner(cached, Rules);
+        Scenes = new SceneRunner(cached, Rules, hooks: ScenePatches.Instance);  // ours: decision 30's patches, while the option is on
         Marks = new SceneMarks(cached);
         Script = new OriginalScriptContext(state, random, view, input, Scenes) { Saves = saves, Marks = Marks };
         Scenes.Bind(Script);

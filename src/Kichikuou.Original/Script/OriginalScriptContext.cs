@@ -41,7 +41,7 @@ public sealed partial class OriginalScriptContext(
     /// a context built by hand (the differential tests) runs the files as the original. On, it is one switch for all of
     /// it: during a talk or a visit an unread harmless variant comes, and a listed draw that changes the state gives that
     /// change once its usual scene is read (<see cref="SceneChoices"/>, with <see cref="Marks"/>); Kanami's choice in
-    /// Code's event 4 and Kentarou's hint lines (docs/ui/talk-marks.md §8 step 6) follow it too.
+    /// Code's event 4 and Kentarou's hint lines follow it too (<see cref="Strategy.ScenePatches"/>, the game's runner's hooks).
     /// </summary>
     public bool NewScenesFirst { get; set; }
 

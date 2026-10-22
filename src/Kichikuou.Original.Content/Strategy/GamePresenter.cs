@@ -335,7 +335,11 @@ public sealed partial class GamePresenter : IStageObserver
             case MessageEvent e: NoteWindowFile(e.Text); Print(Read(e.Text, [], e.StringVariables)); break;
             case ValueMessageEvent e: NoteWindowFile(e.Text); Print(Read(e.Text, e.Values, e.StringVariables)); break;
             case PrintStringEvent e: Print(Hankaku.ToHalfWidth(StringVar(e.Slot.Value))); break;
-            case PortTextEvent e: Print(Hankaku.ToHalfWidth(e.Text)); break;
+            case PortTextEvent e:
+                if (e.At is { } at)
+                    NoteWindowFile(at);                                 // ours in a scene: the log keeps it as the scene's
+                Print(Hankaku.ToHalfWidth(e.Text));
+                break;
             case LineBreakEvent: NewLine(); break;
             case MessageClearEvent: ClearText(); break;
             case MessageResetEvent e:
@@ -409,9 +413,11 @@ public sealed partial class GamePresenter : IStageObserver
     /// <summary>The text at a script location with its numbers (the screens drawn by hand print the script's lines themselves).</summary>
     internal string ReadText(ScriptRef source, params Sys3Int[] numbers) => Read(source, numbers, null);
 
-    /// <summary>A menu item's text as it was printed into the item.</summary>
+    /// <summary>A menu item's text as it was printed into the item; the port's own as it is (ours, <see cref="CapturedText.Port"/>).</summary>
     internal string Read(CapturedText captured)
     {
+        if (captured.Port is { } port)
+            return Hankaku.ToHalfWidth(port);
         try
         {
             return _text.Read(captured.Text).FormatCaptured(captured.Numbers, captured.Strings);

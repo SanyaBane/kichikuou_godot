@@ -13,7 +13,7 @@ public partial class ScriptContext
     /// <c>]</c>: shows <paramref name="items"/> and returns the one the player picks, 1-based, or 0 for a
     /// cancel (<see cref="ISceneInput.SelectAsync"/>). Every item's texts are noted as read first — the
     /// whole menu was on the screen, the items not chosen too; an item's <see cref="SceneMenuItem.At"/> (its
-    /// <c>$label$</c>) holds no words and is not noted.
+    /// <c>$label$</c>) holds no words and is not noted, nor is the port's own text (<see cref="CapturedText.Port"/>).
     /// </summary>
     /// <exception cref="InvalidOperationException">The context's input does not answer menus (no <see cref="ISceneInput"/>).</exception>
     public async Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
@@ -21,7 +21,7 @@ public partial class ScriptContext
         var input = Input as ISceneInput
             ?? throw new InvalidOperationException("A menu is shown: the context's input must answer the scene inputs (ISceneInput).");
         foreach (var item in items)
-            foreach (var text in item.Texts)
+            foreach (var text in item.Texts.Where(t => t.Port is null))
                 State.MarkLineRead(text.Text);
         int choice = await input.SelectAsync(items);
         Selected(items, choice);

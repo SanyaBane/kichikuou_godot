@@ -161,7 +161,7 @@ public sealed class SceneMarks
         var random = new MutableRandom(run);
         var input = new GamePreviewInput(run);
         var router = new PreviewRouter(run, random);
-        var runner = new SceneRunner(_scenes, router);
+        var runner = new SceneRunner(_scenes, router);                 // no ScenePatches: the files as the original
         var script = new OriginalScriptContext(run.State, random, run.View, input, runner) { Saves = run.Saves };
         runner.Bind(script);
         router.Script = script;

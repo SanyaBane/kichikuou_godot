@@ -26,9 +26,11 @@ public sealed record ValueMessageEvent(ScriptRef Text, IReadOnlyList<Sys3Int> Va
 
 /// <summary>
 /// A text of the port's own where an owner's decision changed what the script does (none in the scenario
-/// says it), printed as a message run; no line breaks in it.
+/// says it), printed as a message run; no line breaks in it. <paramref name="At"/>, when given, is the place in a scene
+/// it stands at (no line: it is never noted as read), so a presenter treats it as that file's text (the message log
+/// keeps a scene's narration).
 /// </summary>
-public sealed record PortTextEvent(string Text) : ScriptEvent;
+public sealed record PortTextEvent(string Text, ScriptRef? At = null) : ScriptEvent;
 
 /// <summary><c>R</c> outside a text run (e.g. between menu items): a line break in the message window.</summary>
 public sealed record LineBreakEvent : ScriptEvent;

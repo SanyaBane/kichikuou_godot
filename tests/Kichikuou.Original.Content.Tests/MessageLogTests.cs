@@ -179,6 +179,40 @@ public class MessageLogTests
         Assert.Equal(3, presenter.Log.Pages.Count);
     }
 
+    /// <summary>
+    /// The port's own words (ours, owner's decision 30): a menu of its items (Kanami's choice in <c>Gｺｰﾄﾞ</c>) shows their texts as
+    /// they are, nothing unresolved, and its answer is logged as an event scene's; a narration it prints in a scene
+    /// (Kentarou's hint, a <see cref="PortTextEvent"/> standing at <c>Gｹﾝﾀﾛｳ:610</c>) is logged as the scene's, one at no
+    /// place (a save's text) is not.
+    /// </summary>
+    [Fact]
+    public void The_ports_own_menu_and_narration_are_shown_and_logged()
+    {
+        var (presenter, state) = Presenter();
+        presenter.OpenMenu([SceneMenuItem.OfPort(new ScriptRef("Gｺｰﾄﾞ.ADV", 1460), "Stop Code"),
+            SceneMenuItem.OfPort(new ScriptRef("Gｺｰﾄﾞ.ADV", 1458), "Go with Code")]);
+        Assert.Equal(["Stop Code", "Go with Code"], presenter.MenuItems);
+        presenter.MenuAnswered(2);
+        presenter.CloseMenu();
+        Assert.Equal(new LogPage(LogKind.Choice, "", ["Stop Code", "Go with Code"], 2), presenter.Log.Pages.Single(), new PageComparer());
+        Assert.Empty(presenter.Unresolved);
+
+        var hint = new ScriptRef("Gｹﾝﾀﾛｳ.ADV", 610);
+        Open(presenter, state, 113, 13, 809);
+        presenter.Show(new PortTextEvent("Kentarou seems to be catching", hint));
+        presenter.Show(new LineBreakEvent());
+        presenter.Show(new PortTextEvent("on to the move.", hint));
+        Wait(presenter);
+        Close(presenter, state);
+        Assert.Equal(new LogPage(LogKind.Narration, "", ["Kentarou seems to be catching", "on to the move."]), presenter.Log.Pages[^1],
+            new PageComparer());
+
+        Open(presenter, state, 113, 13, 809);
+        presenter.Show(new PortTextEvent("　Saving the game as it is now."));
+        Wait(presenter);
+        Assert.Equal(2, presenter.Log.Pages.Count);
+    }
+
     /// <summary>The event scenes are <c>G*</c> and <c>I*</c>; the commands', pickers', data's, battle's, week's, saves' and title's files are not.</summary>
     [Theory]
     [InlineData("GAL.ADV", true)]

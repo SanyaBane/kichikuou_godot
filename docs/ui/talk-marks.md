@@ -477,3 +477,51 @@ during the build, for the owner to review.
   second her pregnancy (stage 3). Haurein's (unit 12) first talk the kiss, the second her leaving; Cafe's (unit 45)
   Satella scene and Kanami's scene 2 or tower scene on every seed. A real talk with the rule takes about 4 ms once the
   scenes are read (31 ms the first time).
+- **2026-10-22, step 6 — the hook's shape (engine).** `ISceneHooks`, given to `SceneRunner` as an optional constructor
+  argument (none by default, so every runner built so far runs as before): `Conditions` and `Steps`, the places
+  (`ScriptRef`s), and `ConditionAsync(script, at, holds)` — the test evaluated first, the rules return the answer the
+  scene goes on with — and `AfterAsync(script, at)`, after the statement ran (not after one that leaves the page). The
+  runner marks the places once per file (a flag array beside the cached program; a file without places costs one
+  dictionary look-up a call, a statement one test). A condition's place counts only on an `IfStatement`. Whether a
+  patch acts is read from the context at the moment (`NewScenesFirst`), so step 7 can switch it during a game.
+  Alternatives: a settable property (the marks would have to be dropped when it changes), a call at every statement
+  (a hash of a string per statement).
+- **2026-10-22, step 6 — the original's patches.** `Strategy/ScenePatches` (one stateless `Instance`), given by
+  `GameSession`; the dry run's runner gets none (`SceneMarks`: its context has the flag off anyway, Kanami's menu is not in a
+  talk or a visit, and Kentarou's hint shows no line and makes no decision). The places are verified on the decompile:
+  `Gｺｰﾄﾞ:1457` is `{Tmp0001 > 1:` (`{VAR0001 > 1:` in the raw decompile), its block `:1458` `@L_021f7` (`F_Code_State` 5
+  at `:1864`, ending 3 at `:2117-2118`), the fewer-than-two branch `:1460` (`F_Code_State` stays the 4 set at `:1337`);
+  `Gｹﾝﾀﾛｳ:610` is `!F_Kentarou_State : F_Kentarou_State + 1!` inside `{RetVal = 1:` (`:609`).
+- **2026-10-22, step 6 — where Kanami's menu comes.** At the test, as the hook answers it: right after "The clock struck
+  one." (`:1441`) with its key wait and the window closed (`:1442-1443`, ops 1 and 0) and the silent count — the same screen
+  her own menu in `Gｶﾅﾐ` (`:774-794`) comes on (a key wait, op 0, then `]`). The window is cleared after it, as the runner's
+  `]` does. A cancel (a right click) asks again until an item is chosen: a story choice must be made, and a cancel in the
+  original's menus goes on after the `]`, which here would be no choice at all. Alternative: a cancel as "Stop Code" —
+  a slip of the hand would decide the story.
+- **2026-10-22, step 6 — the port's menu items.** `SceneMenuItem.OfPort(at, text)`: an item whose one text is a
+  `CapturedText` with `Port` set (the port's words, as `PortTextEvent` is for text); its `At` and its text's place are the
+  statement its choice runs next ("Stop Code" `Gｺｰﾄﾞ:1460`, "Go with Code" `:1458`), so inputs that name items by place
+  (the tests' `MenuAnswers`) can. `GamePresenter.Read(CapturedText)` returns the port's text as it is, so the original's
+  `SelectionBox`, our `SceneMenuView` (fed by the presenter's `Menu`) and the message log (`MenuAnswered`: the first item's
+  file is an event scene, so the answer is logged) draw it with no change of theirs; `ScriptContext.SelectAsync` and the dry
+  run's input never note a port text as read. Unattended play (`AutoChoice`) takes the first item, "Stop Code".
+  Alternatives: a new item type (every consumer of `SceneMenuItem` would have to tell the two apart), an item at the test's
+  line (the two items would share one place).
+- **2026-10-22, step 6 — Kentarou's hint.** After `Gｹﾝﾀﾛｳ:610` (the step, so only when the state moved), at the state 6
+  the first line, at 7 the second (never else). It comes after the scene's last line and its closed window
+  (`:603-607`) and before `M 0` (`:612-613`) brings the map back: window 113 through `WAO_SUB` (`WaoAsync(113)`, the
+  scene's narration window `\L_022ad`), the line as `PortTextEvent`s, a key wait (op 1, which keeps `RetVal`), the window
+  closed (op 0) — as decision 26's save text is printed, and leaving the window state as the scene's own op 0 left it.
+  The owner's line is broken in two where it passes the scene's 30 cells ("Kentarou seems to be catching" / "on to the
+  move.", "Kentarou has nearly caught on" / "to the move."), as the scene breaks its lines with `R`; the words are the
+  owner's, joined by a space. `PortTextEvent` gained an optional `At` (here `Gｹﾝﾀﾛｳ:610`): the presenter takes it as the
+  scene's text, so the message log keeps the narration as an event scene's (a port text at no place, decision 26's,
+  stays out as before); it is never noted as read. MsgSkip treats it as decision 26's text (no line to have seen).
+- **2026-10-22, step 6 — the tests.** Engine (`SceneHookTests`): a test answered both ways, the scenario's answer kept, a
+  step after its statement, nothing asked away from the places, a port menu not noted. Content (`ScenePatchesTests`, on
+  the player's files with `SceneChoicesTests`' rig, which now wires `ScenePatches` as `GameSession` does): Code's event 4
+  with two flags — "Go with Code" → `F_Code_State` 5, ending 3 (`&OVER`); "Stop Code" after a cancel → `F_Code_State` 4,
+  the event returns; one flag → no menu; off with two or four flags → no menu, ending 3. Kentarou from state 5, every draw
+  1: the two lines after the first two talks (window 113 after "Ah... Yes.", then ops 1 and 0, then `M 0`), none on the
+  third (Rance Attack); off, the same steps and nothing shown. `SceneChoicesTests`' four training talks still need four
+  with the hints in them and no fallback. `MessageLogTests`: the port menu drawn and logged, the hint logged.

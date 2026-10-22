@@ -60,10 +60,28 @@ public readonly record struct MouseState(Sys3Int Button, Sys3Int X, Sys3Int Y);
 /// they were printed — the engine copies the text into the item, so later changes to the string
 /// variables do not reach it (<c>sel_addElement</c>).
 /// </summary>
-public sealed record SceneMenuItem(ScriptRef At, IReadOnlyList<CapturedText> Texts);
+public sealed record SceneMenuItem(ScriptRef At, IReadOnlyList<CapturedText> Texts)
+{
+    /// <summary>
+    /// Ours: an item of a menu the port asks where an owner's decision changed what the script does (none in the scenario
+    /// says it, as <see cref="PortTextEvent"/> is for text): its text <paramref name="text"/>, at <paramref name="at"/>, the
+    /// statement its choice runs next.
+    /// </summary>
+    public static SceneMenuItem OfPort(ScriptRef at, string text) => new(at, [CapturedText.OfPort(at, text)]);
+}
 
 /// <summary>
 /// A text run as printed at one moment: its location, the numbers of its <c>H</c>/<c>HH</c> and
 /// the contents of the string variables of its <c>X</c>/<c>MP</c>, in order.
 /// </summary>
-public sealed record CapturedText(ScriptRef Text, IReadOnlyList<Sys3Int> Numbers, IReadOnlyList<string> Strings);
+public sealed record CapturedText(ScriptRef Text, IReadOnlyList<Sys3Int> Numbers, IReadOnlyList<string> Strings)
+{
+    /// <summary>
+    /// Ours: the port's own words in place of a scenario line (<see cref="SceneMenuItem.OfPort"/>), shown as they are;
+    /// <see cref="Text"/> is then only the place it stands at, no line to read nor to note as read. Null for the scenario's.
+    /// </summary>
+    public string? Port { get; init; }
+
+    /// <summary>Ours: the port's own <paramref name="text"/> standing at <paramref name="at"/> (<see cref="Port"/>).</summary>
+    public static CapturedText OfPort(ScriptRef at, string text) => new(at, [], []) { Port = text };
+}

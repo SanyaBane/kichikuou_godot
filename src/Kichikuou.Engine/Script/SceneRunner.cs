@@ -22,11 +22,14 @@ namespace Kichikuou.Engine.Script;
 /// engine state shared by all pages, as <c>nact-&gt;sel</c> is. The save-data commands (<c>LD</c>,
 /// <c>QD</c>, <c>LP</c>, <c>QP</c>, <c>QC</c>, <c>LT</c>; only the save screen uses them) run on
 /// the context's slots; quitting (<c>ZZ0, 0</c>, the end of <c>OVER</c>) leaves by
-/// <see cref="GameQuitException"/>.
+/// <see cref="GameQuitException"/>. The rule set's patches inside the scenes (ours, <see cref="ISceneHooks"/>, none by
+/// default) are asked only at their places, marked once per program.
 /// </remarks>
-public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<string, bool>? isScene = null) : IStoryHooks
+public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<string, bool>? isScene = null, ISceneHooks? hooks = null)
+    : IStoryHooks
 {
     private readonly Dictionary<string, ScriptProgram> _programs = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, HookMark[]?> _hookMarks = new(StringComparer.Ordinal);
     private readonly List<SceneMenuItem> _menu = [];
     private readonly List<(ScriptProgram Program, int Target)> _menuTargets = [];
     private MenuItemBuilder? _item;
@@ -82,6 +85,7 @@ public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<str
     private async Task RunProgramAsync(string file)
     {
         var program = Program(file);
+        var marks = HookMarks(program);
         var stack = new List<StackEntry>();
         var statements = program.Statements;
         int pc = 0;
@@ -89,6 +93,7 @@ public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<str
         {
             if (pc >= statements.Count)
                 throw new ScenarioFormatException($"{file}: the script ran past the end of the file.");
+            var mark = marks is null ? HookMark.None : marks[pc];
             var statement = statements[pc++];
             switch (statement)
             {
@@ -167,9 +172,14 @@ public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<str
                     pc = s.Target;
                     break;
                 case IfStatement s:
-                    if (Eval(s.Condition) == Sys3Int.Zero)
-                        pc = s.EndTarget;
-                    break;
+                    {
+                        bool holds = Eval(s.Condition) != Sys3Int.Zero;
+                        if ((mark & HookMark.Condition) != 0)
+                            holds = await hooks!.ConditionAsync(Script, s.At, holds);   // ours: the rules answer the test
+                        if (!holds)
+                            pc = s.EndTarget;
+                        break;
+                    }
                 case CallLabelStatement s:
                     stack.Add(new LabelCall(pc));
                     pc = s.Target;
@@ -284,7 +294,51 @@ public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<str
                 default:
                     throw new ScenarioFormatException($"{statement.At}: {statement.GetType().Name} cannot run in a scene.");
             }
+            if ((mark & HookMark.Step) != 0)
+                await hooks!.AfterAsync(Script, statement.At);              // ours: the rules' step after the statement
         }
+    }
+
+    /// <summary>
+    /// The hooks' places in <paramref name="program"/>, one mark a statement, or null when it has none (or there are no
+    /// hooks): computed once per file, so a statement elsewhere costs one test.
+    /// </summary>
+    private HookMark[]? HookMarks(ScriptProgram program)
+    {
+        if (hooks is null)
+            return null;
+        if (_hookMarks.TryGetValue(program.File, out var cached))
+            return cached;
+        var conditions = hooks.Conditions.Where(at => at.File == program.File).ToHashSet();
+        var steps = hooks.Steps.Where(at => at.File == program.File).ToHashSet();
+        HookMark[]? marks = null;
+        if (conditions.Count > 0 || steps.Count > 0)
+        {
+            marks = new HookMark[program.Statements.Count];
+            for (int i = 0; i < marks.Length; i++)
+            {
+                var statement = program.Statements[i];
+                if (statement is IfStatement && conditions.Contains(statement.At))
+                    marks[i] |= HookMark.Condition;
+                if (steps.Contains(statement.At))
+                    marks[i] |= HookMark.Step;
+            }
+        }
+        _hookMarks[program.File] = marks;
+        return marks;
+    }
+
+    /// <summary>What the hooks do at a statement.</summary>
+    [Flags]
+    private enum HookMark : byte
+    {
+        None = 0,
+
+        /// <summary>An <see cref="IfStatement"/> whose condition <see cref="ISceneHooks.ConditionAsync"/> answers.</summary>
+        Condition = 1,
+
+        /// <summary>A statement after which <see cref="ISceneHooks.AfterAsync"/> runs.</summary>
+        Step = 2,
     }
 
     /// <summary>The save-data commands on the context's slots; a successful <c>LD</c> leaves by <see cref="GameLoadedException"/>.</summary>

@@ -253,7 +253,7 @@ public class PreviewInput(PreviewRun run) : ISceneInput
     public Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
     {
         foreach (var item in items)
-            foreach (var text in item.Texts)
+            foreach (var text in item.Texts.Where(t => t.Port is null))
                 run.Line(text.Text);
         return Task.FromResult(run.Decide(PreviewDecisionKind.Menu, items.Count, items.Count > 0 ? items[0].At : null));
     }
