@@ -43,7 +43,7 @@ public sealed class GameSession
         Rules = new StrategyRules(scenario, unported);
         Scenes = new SceneRunner(cached, Rules);
         Marks = new SceneMarks(cached);
-        Script = new OriginalScriptContext(state, random, view, input, Scenes) { Saves = saves };
+        Script = new OriginalScriptContext(state, random, view, input, Scenes) { Saves = saves, Marks = Marks };
         Scenes.Bind(Script);
         Rules.Bind(Script);
     }

@@ -102,7 +102,8 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
         "FIGT_B.ADV" => BattleAsync(file, battle => battle.DefendProvinceAsync()),
         "FIGT.ADV" => BattleAsync(file, battle => battle.FightAsync()),
         "死亡捕獲.ADV" => BattleAsync(file, battle => battle.DeathCaptureAsync()),
-        "FIGTATTK.ADV" => Battle.PlayExchangeAnimationAsync(),            // from FIGT表示, inside its own screen
+        // from FIGT表示, inside its own screen; its draws are no decision for "New scenes first" (decision 30)
+        "FIGTATTK.ADV" => Script.SceneChoices.MutedAsync(Battle.PlayExchangeAnimationAsync),
         "ﾛｰﾄﾞｾｰﾌﾞ.ADV" => new LoadSaveScreen(Script, scenario).RunAsync(),
         _ => unported.RunEventAsync(file, entry),
     };

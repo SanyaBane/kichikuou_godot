@@ -16,14 +16,25 @@ public partial class ScriptContext
     /// <c>$label$</c>) holds no words and is not noted.
     /// </summary>
     /// <exception cref="InvalidOperationException">The context's input does not answer menus (no <see cref="ISceneInput"/>).</exception>
-    public Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
+    public async Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
     {
         var input = Input as ISceneInput
             ?? throw new InvalidOperationException("A menu is shown: the context's input must answer the scene inputs (ISceneInput).");
         foreach (var item in items)
             foreach (var text in item.Texts)
                 State.MarkLineRead(text.Text);
-        return input.SelectAsync(items);
+        int choice = await input.SelectAsync(items);
+        Selected(items, choice);
+        return choice;
+    }
+
+    /// <summary>
+    /// A menu answered (<see cref="SelectAsync"/>): <paramref name="choice"/> of <paramref name="items"/>. Nothing here; a
+    /// variant's rule notes it (ours, owner's decision 30: the decisions a talk or a visit makes, which "New scenes first"
+    /// replays in the dry run).
+    /// </summary>
+    protected virtual void Selected(IReadOnlyList<SceneMenuItem> items, int choice)
+    {
     }
 
     /// <summary>The context's view: notes the line of each message it passes on (<see cref="MessageEvent"/>, <see cref="ValueMessageEvent"/>).</summary>

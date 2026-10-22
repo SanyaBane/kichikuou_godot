@@ -43,9 +43,18 @@ public partial class ScriptContext(
     /// </summary>
     public Sys3Int Rnd(Sys3Int n, ScriptRef? at = null)
     {
-        State.RetVal = at is { } place && random is IPlacedRandom placed ? placed.Next(n, place) : random.Next(n);
+        var drawn = at is { } place && random is IPlacedRandom placed ? placed.Next(n, place) : random.Next(n);
+        State.RetVal = Drawn(n, at, drawn);
         return State.RetVal;
     }
+
+    /// <summary>
+    /// The value a draw gives the script (<see cref="Rnd"/>), once the generator has drawn <paramref name="drawn"/>:
+    /// that value, unless a variant's rule replaces it (ours, owner's decision 30: "New scenes first" during a talk or
+    /// a visit, the original's <c>OriginalScriptContext</c>). The generator has moved exactly as without it, so every
+    /// later draw is the same; an override never draws.
+    /// </summary>
+    protected virtual Sys3Int Drawn(Sys3Int n, ScriptRef? at, Sys3Int drawn) => drawn;
 
     /// <summary>Shows one presentation event.</summary>
     public Task ShowAsync(ScriptEvent scriptEvent) => View.ShowAsync(scriptEvent);

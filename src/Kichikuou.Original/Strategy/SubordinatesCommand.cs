@@ -76,14 +76,21 @@ public sealed class SubordinatesCommand(OriginalScriptContext script) : CommandF
                 return;                                                 // L_00550
             }
             State.Unit_Cur = (Sys3Int)unit;
-            await ActionAsync();                                        // \L_00f4b
-            if (State.Tmp0001 == 1)
+            try
             {
-                await PickerAsync(4);                                   // L_00553
-                continue;
+                await ActionAsync();                                    // \L_00f4b
+                if (State.Tmp0001 == 1)
+                {
+                    await PickerAsync(4);                               // L_00553
+                    continue;
+                }
+                await TalkAsync(unit);
+                return;
             }
-            await TalkAsync(unit);
-            return;
+            finally
+            {
+                Script.SceneChoices.End();                              // ours (decision 30): the talk is over
+            }
         }
     }
 
@@ -189,6 +196,7 @@ public sealed class SubordinatesCommand(OriginalScriptContext script) : CommandF
         ActionNames();
         if (State.StoryStage == 0)
         {
+            TalkBegins();
             PrologueTalk();
             return;
         }
@@ -206,12 +214,23 @@ public sealed class SubordinatesCommand(OriginalScriptContext script) : CommandF
                 TroopChoice.Info => await InfoAsync(),
                 TroopChoice.Replenish => await ReplenishAsync(),
                 TroopChoice.AddTroops => await AddTroopsAsync(),
-                TroopChoice.Talk => await TalkChoiceAsync(),
+                TroopChoice.Talk => await TalkBegins().TalkChoiceAsync(),
                 _ => await NothingAsync(),
             };
             if (next == Next.Done)
                 return;
         }
+    }
+
+    /// <summary>
+    /// Ours (owner's decision 30, docs/ui/talk-marks.md §8 step 5): the talk starts here for "New scenes first"
+    /// (<see cref="SceneChoices.Begin"/>, the state copied as <see cref="PreviewTalkAsync"/> takes it: the troop menu
+    /// done, the talk chosen); <see cref="RunAsync"/> ends it.
+    /// </summary>
+    private SubordinatesCommand TalkBegins()
+    {
+        Script.SceneChoices.Begin(MarkTarget.Talk(State.Unit_Cur.Value));
+        return this;
     }
 
     /// <summary><c>:714-715</c>: the unit's name and troop type into strings 1-2.</summary>

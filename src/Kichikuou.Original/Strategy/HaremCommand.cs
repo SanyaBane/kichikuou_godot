@@ -89,7 +89,17 @@ public sealed class HaremCommand(OriginalScriptContext script) : CommandFile(scr
             await HitAnyKeyAsync();
         }
 
-        await VisitAndRewardAsync(State.CallArg.Value);
+        // Ours (owner's decision 30, docs/ui/talk-marks.md §8 step 5): the visit starts here for "New scenes first", the
+        // state copied as PreviewVisitAsync takes it (the girl picked); IntroAsync's draw (:6) is before it.
+        Script.SceneChoices.Begin(MarkTarget.Visit(State.CallArg.Value));
+        try
+        {
+            await VisitAndRewardAsync(State.CallArg.Value);
+        }
+        finally
+        {
+            Script.SceneChoices.End();
+        }
     }
 
     /// <summary>

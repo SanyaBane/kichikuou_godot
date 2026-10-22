@@ -438,3 +438,42 @@ during the build, for the owner to review.
 - **2026-10-22, step 4 — Katyusha's ending.** Ending 12 (`Gｶﾁｭｰｼｬ:2293`) comes from "Have Threesome" on Katyusha's visit or on
   Saulnia's (which calls `Gｶﾁｭｰｼｬ` 100), and only while Sill (unit 2) is out of the army (`:1847-1848`: with her there,
   Rance is saved); the test sets her out.
+- **2026-10-22, step 5 — the flag.** `OriginalScriptContext.NewScenesFirst`, off by default (as `ResumeCommand` and
+  `ReplenishRequest`), one switch for steps 5-7: step 6's Kanami's choice and Kentarou's lines read it too, step 7 copies
+  the option onto it. The dry run it needs is `OriginalScriptContext.Marks` (`GameSession` gives its `Marks`); without
+  them the rule does not act. The differential tests build their contexts by hand and set neither.
+- **2026-10-22, step 5 — where the rule hooks in.** Two virtual hooks in the engine's context, overridden by the
+  original's: `ScriptContext.Drawn` (in `Rnd`, after the generator has drawn: the value the script gets) and
+  `ScriptContext.Selected` (after `SelectAsync`: the menu's answer). `Rnd` stays the only caller of `Next`, one `Next` per
+  draw, so the generator's sequence is the original's (a test compares a logging generator's draws with the rule on and
+  off). Alternative: a decorator around `IScriptRandom` — the context's generator is fixed when it is built (the launch's,
+  `EngineState`), the decorator would still need the menus from the context, and two routes would note one run.
+- **2026-10-22, step 5 — where a talk or a visit starts.** The talk where Talk is chosen (`Cﾌﾞｶ`'s `L_014b2`, before
+  `TalkChoiceAsync`, or the prologue's pick, before `PrologueTalk`), the visit where the girl is picked (after `Pick`,
+  before `VisitAndRewardAsync`); both end in a `finally` (a jump out, a load). The copy is taken there, and the dry run's
+  start (`PreviewTalkAsync`, `PreviewVisitAsync`) repeats on it only the writes the real run has just made (the picker's
+  answer, the names, `Tmp0021`, the pick's bookkeeping), then runs the same code. Alternative: the copy at the picker's
+  state, as the marks take it — a Replenish or Add before Talk in the same command would leave it stale (the scenes read
+  the troops: Sill's (unit 2) `Unit_Troops < 50`). `Cﾊｰﾚﾑ:6` (Suzume's and Wendy's draw) is before the visit's start.
+- **2026-10-22, step 5 — the decisions noted.** As the dry run makes them: each draw of 2 or more as the value the script
+  got, with its place; each menu as its item or 0, its first item's place; `FIGTATTK`'s draws (the exchange's
+  animation, from `FIGT表示`) as none, since the dry run gives them 1 — `StrategyRules` runs it in
+  `SceneChoices.MutedAsync`. "Unread" is as of the copy (the start), as the tree reads it: a line the talk shows before
+  the draw counts as unread, so Kentarou's (unit 31) first training (unread before his draw) keeps the odds.
+- **2026-10-22, step 5 — the value among the rule's.** The drawn value when it is one of the values the choice gives,
+  else the ((drawn − 1) mod count)-th of them: no draw of its own, the same for the same seed. Not uniform when the
+  draw's n is no multiple of their count: Kanami's `Y 4,5` gives scene 2 for 1, 3 and 5, the tower scene for 2 and 4.
+  Alternatives: a second draw (the generator would move unlike the original's), a generator of the rule's own (one more
+  piece of state to keep with the saves).
+- **2026-10-22, step 5 — the fallback.** At each draw the dry run's node at the decisions so far must be a draw of the
+  same count and place; when it is not (the forced decisions no longer fit — after a battle, which the dry run stops at —,
+  a key answered otherwise than the dry run's click, anything unforeseen) or the dry run throws, the rest of that talk or
+  visit keeps the values drawn, and `SceneChoices.Fallbacks` / `LastFallback` keep it (a test makes the dry run fail).
+  A node the dry run ends as a repeat (a draw drawn again with the same memory, as Gandhi's (unit 37) `Gｶﾞﾝｼﾞｰ:59` may be;
+  not met in the tests) keeps the value and the rule goes on.
+- **2026-10-22, step 5 — what the tests found.** Kentarou (unit 31) from state 5: the first training talk keeps the odds,
+  the second steps 5 → 6, the third 6 → 7, the fourth plays Rance Attack (state 8, no draw) — four training talks, as §5
+  says. Isoroku's (unit 27) first stage-2 visit gets a harmless unread value (her scene after the draw is unread too), the
+  second her pregnancy (stage 3). Haurein's (unit 12) first talk the kiss, the second her leaving; Cafe's (unit 45)
+  Satella scene and Kanami's scene 2 or tower scene on every seed. A real talk with the rule takes about 4 ms once the
+  scenes are read (31 ms the first time).

@@ -36,6 +36,36 @@ public sealed partial class OriginalScriptContext(
     public Sys3Int ReplenishRequest { get; set; }
 
     /// <summary>
+    /// Ours (owner's decision 30, the third rule change on purpose; docs/ui/talk-marks.md §5): "New scenes first", the
+    /// player's option (Option → Game, on by default in the game; copied here by the UI). Off by default on a context, so
+    /// a context built by hand (the differential tests) runs the files as the original. On, it is one switch for all of
+    /// it: during a talk or a visit an unread harmless variant comes, and a listed draw that changes the state gives that
+    /// change once its usual scene is read (<see cref="SceneChoices"/>, with <see cref="Marks"/>); Kanami's choice in
+    /// Code's event 4 and Kentarou's hint lines (docs/ui/talk-marks.md §8 step 6) follow it too.
+    /// </summary>
+    public bool NewScenesFirst { get; set; }
+
+    /// <summary>
+    /// Ours (owner's decision 30): the marks over the game's scenes, whose dry run "New scenes first" runs at a draw of a
+    /// talk or a visit (<c>GameSession.Marks</c>); without them the rule does not act.
+    /// </summary>
+    public Strategy.SceneMarks? Marks { get; set; }
+
+    /// <summary>Ours (owner's decision 30): "New scenes first" during the real talks and visits (<see cref="NewScenesFirst"/>).</summary>
+    public Strategy.SceneChoices SceneChoices => _sceneChoices ??= new Strategy.SceneChoices(this);
+
+    private Strategy.SceneChoices? _sceneChoices;
+
+    /// <inheritdoc />
+    /// <remarks>Ours (owner's decision 30): during a talk or a visit "New scenes first" may replace the value (<see cref="SceneChoices"/>).</remarks>
+    protected override Sys3Int Drawn(Sys3Int n, ScriptRef? at, Sys3Int drawn) =>
+        _sceneChoices is { } choices ? choices.Draw(n, at, drawn) : drawn;
+
+    /// <inheritdoc />
+    /// <remarks>Ours (owner's decision 30): noted for "New scenes first" during a talk or a visit (<see cref="SceneChoices"/>).</remarks>
+    protected override void Selected(IReadOnlyList<SceneMenuItem> items, int choice) => _sceneChoices?.Selected(items, choice);
+
+    /// <summary>
     /// The helper files run their ports with the arguments the statements left in <c>CallArg</c> /
     /// <c>Ui_WaoOp</c>; any other file is a hook.
     /// </summary>
