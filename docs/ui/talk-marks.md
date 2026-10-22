@@ -337,3 +337,8 @@ during the build, for the owner to review.
   briefing, the Load/Save menu answered by our panel) are still noted: the script showed them, and they are command
   lines, not the talk and visit scenes the marks are about. The battle's own labels (`ActionLabelsEvent` and the like)
   are not noted: no talk or visit reaches a battle file.
+- **2026-10-22, step 2 — the copy's form.** `ScriptState.CopyTo(target)` (exact: a page the source lacks is freed on
+  the target, `Extras` replaced whole and cloned) and a factory `ScriptState.Copy(source)`; copying into one target again
+  reuses its pages, for the dry run's many copies. The `DS` bindings are the state type's, not copied. `Differential.Copy`
+  is gone; the tests call the engine's copy. Alternative: a clone each variant implements — needless, the memory is the
+  whole state.

@@ -1885,8 +1885,8 @@ public abstract class NationTurnDifferentialTests(ITestOutputHelper output)
             var rng = new Random(seed);
             var state = RandomState(rng);
             aim(state, rng);
-            var ported = await RunAsync(Copy(state), seed, script => port(script, scenario), null, file, scribble, logPlaces);
-            var original = await RunAsync(Copy(state), seed, null, program, file, scribble, logPlaces);
+            var ported = await RunAsync(ScriptState.Copy(state), seed, script => port(script, scenario), null, file, scribble, logPlaces);
+            var original = await RunAsync(ScriptState.Copy(state), seed, null, program, file, scribble, logPlaces);
 
             if (ported.Unported is not null)
             {
@@ -2086,7 +2086,7 @@ public abstract class NationTurnDifferentialTests(ITestOutputHelper output)
 
         protected override void Arrive(string file)
         {
-            AtFirstCall ??= Copy(State);
+            AtFirstCall ??= ScriptState.Copy(State);
         }
 
         protected override string Describe() =>

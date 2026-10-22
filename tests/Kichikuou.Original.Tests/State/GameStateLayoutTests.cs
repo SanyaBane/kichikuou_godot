@@ -1,3 +1,4 @@
+using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.State;
 
@@ -82,5 +83,30 @@ public class GameStateLayoutTests
         state.Hist_PrevCur = 5;
         // Hist_PrevFunds (VAR0172) is bound to the same offset as Hist_Funds with Hist_PrevCur.
         Assert.Equal((Sys3Int)9, state.History[state.Hist_PrevCur].Funds);
+    }
+
+    [Fact]
+    public void A_copy_reads_every_variable_as_its_source_through_the_same_bindings()
+    {
+        // The DS bindings are the type's, not the state's: a copy of the memory is enough for the script's reads.
+        var state = new GameState();
+        state.Unit_Cur = 7;
+        state.Units[7].Troops = 1234;
+        state.Units[7].Recovery = 6;
+        state.Hist_PrevCur = 5;
+        state.History[5].Funds = 9;
+        state.MarkProvinceKnown(6);
+
+        var copy = ScriptState.Copy(state);
+
+        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
+        {
+            Assert.Equal(state.IsBound(v), copy.IsBound(v));
+            Assert.Equal(state.ReadVariable(v), copy.ReadVariable(v));
+        }
+        Assert.Equal((Sys3Int)1234, copy.Units[copy.Unit_Cur].Troops);
+        Assert.Equal([6], copy.KnownProvinces);
+        foreach (int page in state.Memory.AllocatedPages)
+            Assert.Equal(state.Memory.PageSize(page), copy.Memory.PageSize(page));
     }
 }

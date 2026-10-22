@@ -52,13 +52,13 @@ public class WeeklyEventsDifferentialTests(ITestOutputHelper output)
                 for (int attempt = 0; attempt < AimAttempts; attempt++)
                 {
                     var rng = new Random(seed * 100 + attempt);
-                    var candidate = Copy(state);
+                    var candidate = ScriptState.Copy(state);
                     RandomVariables(candidate, rng);
                     var wanted = guide.Aim(candidate, target.Index, rng);
                     bool reachedTarget = false;
                     for (int repair = 0; repair < Repairs; repair++)
                     {
-                        var trial = await RunAsync(Copy(candidate), seed * 100 + attempt, scenes: null, wanted);
+                        var trial = await RunAsync(ScriptState.Copy(candidate), seed * 100 + attempt, scenes: null, wanted);
                         reachedTarget = trial.Calls.Contains((target.File, target.Entry));
                         if (reachedTarget || trial.Calls.Count == 0
                             || !guide.Repair(candidate, trial.Calls[0].File, trial.Calls[0].Entry, target.Index, rng, wanted))
@@ -76,8 +76,8 @@ public class WeeklyEventsDifferentialTests(ITestOutputHelper output)
                 state = aimedState!;
             }
 
-            var port = await RunAsync(Copy(state), runSeed, scenes: null, rolls);
-            var original = await RunAsync(Copy(state), runSeed, scenes, rolls);
+            var port = await RunAsync(ScriptState.Copy(state), runSeed, scenes: null, rolls);
+            var original = await RunAsync(ScriptState.Copy(state), runSeed, scenes, rolls);
 
             Assert.True(original.Calls.SequenceEqual(port.Calls),
                 $"seed {seed}: scene calls differ\n  COM.ADV: {string.Join(", ", original.Calls)}\n  port:    {string.Join(", ", port.Calls)}");

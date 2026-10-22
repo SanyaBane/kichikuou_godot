@@ -68,6 +68,36 @@ public sealed class ScriptMemory(int variableCount)
     }
 
     /// <summary>
+    /// Makes <paramref name="target"/> a copy of this memory: the numbered variables, every array page
+    /// at its size (a page this memory has not allocated is freed there), the strings. A target page of
+    /// the same size keeps its buffer, so copying into one target again and again allocates nothing.
+    /// </summary>
+    /// <exception cref="ArgumentException"><paramref name="target"/> has another number of variables.</exception>
+    public void CopyTo(ScriptMemory target)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        if (target.VariableCount != VariableCount)
+            throw new ArgumentException($"The target has {target.VariableCount} variables, this memory {VariableCount}.", nameof(target));
+        if (ReferenceEquals(target, this))
+            return;
+        Array.Copy(_vars, target._vars, _vars.Length);
+        for (int page = 1; page < PageLimit; page++)
+        {
+            var values = _pages[page];
+            if (values is null)
+            {
+                target._pages[page] = null;
+                continue;
+            }
+            var copy = target._pages[page];
+            if (copy is null || copy.Length != values.Length)
+                target._pages[page] = copy = new Sys3Int[values.Length];
+            Array.Copy(values, copy, values.Length);
+        }
+        Array.Copy(Strings, target.Strings, Strings.Length);
+    }
+
+    /// <summary>
     /// Reads <c>page[index]</c>. Outside the page the original engine resolves the reference to
     /// nothing and the read yields 0 (<c>v_ref_indexed</c> returns NULL, <c>getCaliValue</c>
     /// substitutes 0).

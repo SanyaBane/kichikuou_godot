@@ -98,7 +98,7 @@ public class NewGameStateTests(ITestOutputHelper output)
         game.OnCall = file =>
         {
             if (file == "Iﾌﾟﾛﾛｰｸﾞ.ADV" && atPrologue is null)
-                atPrologue = Snapshot(game.State);
+                atPrologue = ScriptState.Copy(game.State);
         };
         game.Input.Pointer.Click(347, 331);                             // Start (button 6)
 
@@ -116,23 +116,6 @@ public class NewGameStateTests(ITestOutputHelper output)
             .Select(path => GoldenCapture.Parse(new StringReader(File.ReadAllText(path)), path))
             .Where(c => c.RootCall.ToString().Contains("ｽﾀMENU.ADV@69d", StringComparison.Ordinal))
             .ToList();
-    }
-
-    /// <summary>A copy of the memory as it is now.</summary>
-    private static GameState Snapshot(GameState state)
-    {
-        var copy = new GameState();
-        var (from, to) = (state.Memory, copy.Memory);
-        for (int v = 0; v < VariableCatalog.Variables.Count; v++)
-            to.Var(v) = from.Var(v);
-        foreach (int page in from.AllocatedPages)
-        {
-            to.AllocatePage(page, from.PageSize(page));
-            for (int i = 0; i < from.PageSize(page); i++)
-                to.WritePage(page, i, from.ReadPage(page, i));
-        }
-        Array.Copy(from.Strings, to.Strings, from.Strings.Length);
-        return copy;
     }
 
     private void Compare(List<GoldenCapture> captures, GameState state, IReadOnlyCollection<string> unknowable)

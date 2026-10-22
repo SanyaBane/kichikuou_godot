@@ -40,8 +40,8 @@ public class WeekLoopDifferentialTests(ITestOutputHelper output)
             var rng = new Random(seed);
             var state = RandomState(rng);
             int weeks = rng.Next(1, 4);
-            var port = await RunAsync(Copy(state), seed, weeks, null, scenario);
-            var original = await RunAsync(Copy(state), seed, weeks, program, scenario);
+            var port = await RunAsync(ScriptState.Copy(state), seed, weeks, null, scenario);
+            var original = await RunAsync(ScriptState.Copy(state), seed, weeks, program, scenario);
 
             int at = FirstDifference(original.Log, port.Log);
             Assert.True(at < 0, $"seed {seed}: the runs differ at entry {at}\n{Around(Main, original.Log, port.Log, at)}");

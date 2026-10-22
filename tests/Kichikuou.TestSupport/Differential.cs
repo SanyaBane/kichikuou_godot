@@ -6,24 +6,11 @@ namespace Kichikuou.TestSupport;
 
 /// <summary>
 /// What a differential test compares: a port against its file run from the decompile, each on a
-/// copy of one random state, logging every input, draw, event and call; the two logs and the two
-/// states after the runs must match.
+/// copy of one random state (<see cref="ScriptState.Copy"/>), logging every input, draw, event and
+/// call; the two logs and the two memories after the runs must match.
 /// </summary>
 public static class Differential
 {
-    /// <summary>A copy of <paramref name="source"/>: the variables, every allocated page, the strings.</summary>
-    public static T Copy<T>(T source) where T : ScriptState, new()
-    {
-        var copy = new T();
-        for (int v = 0; v < source.Memory.VariableCount; v++)
-            copy.Memory.Var(v) = source.Memory.Var(v);
-        foreach (int page in source.Memory.AllocatedPages)
-            for (int i = 0; i < source.Memory.PageSize(page); i++)
-                copy.Memory.WritePage(page, i, source.Memory.ReadPage(page, i));
-        Array.Copy(source.Strings, copy.Strings, source.Strings.Length);
-        return copy;
-    }
-
     /// <summary>The first entry where the logs differ (the shorter one's length when it is a prefix of the other), or -1.</summary>
     public static int FirstDifference(List<string> a, List<string> b)
     {

@@ -56,10 +56,10 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
             // The way back after a load starts with RetVal 0; 1 and 255 (what QD leaves) take the autosave's notice and error paths.
             state.RetVal = (Sys3Int)(mode >= 0 ? mode : rng.Next(3) == 0 ? rng.Next(2) * 254 + 1 : 0);
 
-            var port = await RunAsync(Copy(state), slots, failing, seed, script => mode >= 0
+            var port = await RunAsync(ScriptState.Copy(state), slots, failing, seed, script => mode >= 0
                 ? new LoadSaveScreen(script, scripts).RunAsync()
                 : new LoadSaveScreen(script, scripts).ResumeAsync());
-            var original = await RunAsync(Copy(state), slots, failing, seed, script =>
+            var original = await RunAsync(ScriptState.Copy(state), slots, failing, seed, script =>
             {
                 var runner = new SceneRunner(new OneProgram(mode >= 0 ? program : resume), new NoHooks(), file => file == LoadSave);
                 runner.Bind(script);
@@ -205,7 +205,7 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
     private static Dictionary<int, SaveData> RandomSlots(Random rng, GameState state)
     {
         var slots = new Dictionary<int, SaveData>();
-        var source = Copy(state);
+        var source = ScriptState.Copy(state);
         source.Week = (Sys3Int)rng.Next(1, 600);
         var baseline = SaveData.Capture(source, AutosaveCall);
         double empty = rng.NextDouble();

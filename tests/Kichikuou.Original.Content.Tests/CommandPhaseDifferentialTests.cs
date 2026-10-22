@@ -35,8 +35,8 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
         for (int seed = 1; seed <= cases; seed++)
         {
             var state = RandomState(new Random(seed));
-            var port = await RunAsync(Copy(state), seed, null);
-            var original = await RunAsync(Copy(state), seed, program);
+            var port = await RunAsync(ScriptState.Copy(state), seed, null);
+            var original = await RunAsync(ScriptState.Copy(state), seed, program);
 
             int at = FirstDifference(original.Log, port.Log);
             Assert.True(at < 0, $"seed {seed}: the runs differ at entry {at}\n{Around(Command, original.Log, port.Log, at)}");
@@ -90,8 +90,8 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
             for (int v = 21; v <= 30; v++)
                 state.Memory.Var(v) = (Sys3Int)rng.Next(0, 50);
 
-            var port = await DragAsync(Copy(state), seed, null);
-            var original = await DragAsync(Copy(state), seed, program);
+            var port = await DragAsync(ScriptState.Copy(state), seed, null);
+            var original = await DragAsync(ScriptState.Copy(state), seed, program);
             int at = FirstDifference(original.Log, port.Log);
             Assert.True(at < 0, $"seed {seed}: the runs differ at entry {at}\n{Around("WAO_MAP.ADV", original.Log, port.Log, at)}");
             var differences = Differences("WAO_MAP.ADV", original.State.Memory, port.State.Memory, v => VariableCatalog.Variables[v].Name).Take(10).ToList();

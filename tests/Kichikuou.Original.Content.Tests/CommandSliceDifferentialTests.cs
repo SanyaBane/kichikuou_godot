@@ -593,8 +593,8 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
                 var rng = new Random(seed);
                 var state = RandomState(rng);
                 state.Ev_Entry = (Sys3Int)entries[rng.Next(entries.Length)];
-                var mine = await RunCutsceneAsync(Copy(state), seed, programs, port: true);
-                var original = await RunCutsceneAsync(Copy(state), seed, programs, port: false);
+                var mine = await RunCutsceneAsync(ScriptState.Copy(state), seed, programs, port: true);
+                var original = await RunCutsceneAsync(ScriptState.Copy(state), seed, programs, port: false);
                 int at = FirstDifference(original.Log, mine.Log);
                 Assert.True(at < 0, $"seed {seed}: the runs differ at entry {at}\n{Around("FIGTATTK.ADV", original.Log, mine.Log, at)}");
                 var differences = Differences("FIGTATTK.ADV", original.State.Memory, mine.State.Memory, v => VariableCatalog.Variables[v].Name).Take(10).ToList();
@@ -1092,8 +1092,8 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
         var rng = new Random(seed);
         var state = RandomState(rng);
         shape(state, rng);
-        var mine = await RunAsync(Copy(state), seed, file, null, port, scenario, scribble, mouse, choose);
-        var original = await RunAsync(Copy(state), seed, file, program, port, scenario, scribble, mouse, choose);
+        var mine = await RunAsync(ScriptState.Copy(state), seed, file, null, port, scenario, scribble, mouse, choose);
+        var original = await RunAsync(ScriptState.Copy(state), seed, file, program, port, scenario, scribble, mouse, choose);
 
         if (mine.Unported is not null)
         {
