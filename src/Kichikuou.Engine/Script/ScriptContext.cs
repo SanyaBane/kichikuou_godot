@@ -7,7 +7,8 @@ namespace Kichikuou.Engine.Script;
 /// The engine's side of a running game, which every part that runs the scenario shares: the
 /// state, the script's random generator, the presentation and input interfaces, the calls into
 /// other files, the pauses, the CG load counter and the music commands; the save commands are in
-/// <c>ScriptContext.Save.cs</c>, the statements and strings in <c>ScriptContext.Statements.cs</c>.
+/// <c>ScriptContext.Save.cs</c>, the statements and strings in <c>ScriptContext.Statements.cs</c>, the
+/// record of the read lines and the menus in <c>ScriptContext.ReadLines.cs</c>.
 /// A variant's context derives from it with the ports of its helper files, which
 /// <see cref="CallHelperAsync"/> reaches (the original's <c>OriginalScriptContext</c>). One context
 /// serves a whole game.
@@ -22,8 +23,11 @@ public partial class ScriptContext(
     /// <summary>The game state the scripts read and change.</summary>
     public ScriptState State { get; } = state;
 
-    /// <summary>Receives the presentation events in script order.</summary>
-    public IScriptView View { get; } = view;
+    /// <summary>
+    /// Receives the presentation events in script order: the view given, behind the record of the read
+    /// lines, which notes every message it shows (<c>ScriptContext.ReadLines.cs</c>).
+    /// </summary>
+    public IScriptView View { get; } = new ReadLineView(state, view);
 
     /// <summary>Answers the engine's input commands.</summary>
     public IScriptInput Input { get; } = input;

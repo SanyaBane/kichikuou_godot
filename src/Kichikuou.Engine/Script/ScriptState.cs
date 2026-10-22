@@ -8,7 +8,7 @@ namespace Kichikuou.Engine.Script;
 /// through their <c>DS</c> bindings, which the variant's state type knows. That type (the original's
 /// <c>GameState</c>, generated from its dictionary) adds the named variables and the record tables.
 /// </summary>
-public abstract class ScriptState
+public abstract partial class ScriptState
 {
     /// <summary>Creates the memory of a variant with <paramref name="profile"/>; no array page is allocated.</summary>
     protected ScriptState(VariantProfile profile)
@@ -28,8 +28,9 @@ public abstract class ScriptState
 
     /// <summary>
     /// The port's own data, by key, kept in the save slots next to the memory: what our interface
-    /// remembers and the original does not (the provinces whose figures the player has seen). No rule
-    /// reads it; a load replaces it whole (<see cref="SaveData.Restore(ScriptState)"/>).
+    /// remembers and the original does not (the provinces whose figures the player has seen, the lines
+    /// the player has read, <c>ScriptState.ReadLines.cs</c>). No rule reads it; a load replaces it whole
+    /// (<see cref="SaveData.Restore(ScriptState)"/>).
     /// </summary>
     public Dictionary<string, int[]> Extras { get; } = [];
 

@@ -140,7 +140,7 @@ public abstract class CommandFile(OriginalScriptContext script, string file, ISc
     /// </summary>
     protected async Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
     {
-        int choice = await Input.SelectAsync(items);
+        int choice = await Script.SelectAsync(items);
         if (choice < 0 || choice > items.Count)
             throw new InvalidOperationException($"{File}: choice {choice} of a menu with {items.Count} items.");
         await Script.ShowAsync(new MessageClearEvent());

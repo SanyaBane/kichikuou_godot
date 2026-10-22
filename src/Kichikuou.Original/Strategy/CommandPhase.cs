@@ -504,7 +504,7 @@ public sealed class CommandPhase(OriginalScriptContext script)
             Add(310, Command.TurnEnd);
         }
 
-        int choice = await Input.SelectAsync(menu.Select(i => i.Item).ToArray());   // ]
+        int choice = await Script.SelectAsync(menu.Select(i => i.Item).ToArray());  // ]
         if (choice < 0 || choice > menu.Count)
             throw new InvalidOperationException($"{File}: choice {choice} of a menu with {menu.Count} items.");
         await Script.ShowAsync(new MessageClearEvent());

@@ -364,7 +364,7 @@ public sealed class SceneRunner(ISceneSource scenes, IStoryHooks rules, Func<str
         var targets = _menuTargets.ToArray();
         _menu.Clear();
         _menuTargets.Clear();
-        int choice = await Input.SelectAsync(items);
+        int choice = await Script.SelectAsync(items);
         if (choice < 0 || choice > items.Length)
             throw new InvalidOperationException($"{menu.At}: choice {choice} of a menu with {items.Length} items.");
         await View.ShowAsync(new MessageClearEvent());

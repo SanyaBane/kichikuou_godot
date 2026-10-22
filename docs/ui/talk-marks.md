@@ -310,3 +310,30 @@ Steps, each committed with its tests:
 Steps 1, 3 and 6 reach the script runtime, so the full content tests are due once the build is settled; steps 4-5 run
 the Talk and harem files the differential tests compare (`CommandSliceDifferentialTests`), which must see no
 difference with the flag off.
+
+## 9. Decisions taken during the build
+
+The owner answered two questions before the build (2026-10-22); every other choice below was taken by the agent
+during the build, for the owner to review.
+
+**The owner's answers at the start (2026-10-22):**
+
+- **The marks while Talk is spent**: when the week's talk is spent (`CmdAvail_SubTalk = 0`), the Subordinates screen
+  shows neither the bubbles nor the Talk pill — the marks appear only when they can be acted on.
+- **Old saves**: the record of read lines starts empty for a save from before the feature; MsgSkip's global record
+  (`msgskip.txt`) is not used to seed it.
+
+**The agent's decisions** (date, step, the question, the choice, why, the alternatives):
+
+- **2026-10-22, step 1 — which line a menu item is.** The item's texts (`CapturedText.Text`), not its `$label$`
+  (`SceneMenuItem.At`), which holds no words; every item of a menu shown is noted, the ones not chosen too (they were on
+  the screen). Alternative: only the chosen item — but the others were read as much.
+- **2026-10-22, step 1 — where the lines are noted.** The context's `View` is wrapped (`ScriptContext.ReadLines.cs`), so
+  every message — the scenes, the hand ports, the battle's direct calls — is noted in one place; menus go through a new
+  `ScriptContext.SelectAsync`, which the runner, `CommandFile` and `CommandPhase` now call (the input could not be
+  wrapped: it is compared and cast elsewhere). Alternative: a noting call at each call site — a later one would slip past.
+- **2026-10-22, step 1 — noting is always on.** No switch: it changes no run (no rule reads it, no comparison sees
+  `Extras`), and the marks need it whatever "New scenes first" says. Lines our interface answers unseen (the attack
+  briefing, the Load/Save menu answered by our panel) are still noted: the script showed them, and they are command
+  lines, not the talk and visit scenes the marks are about. The battle's own labels (`ActionLabelsEvent` and the like)
+  are not noted: no talk or visit reaches a battle file.
