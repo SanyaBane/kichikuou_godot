@@ -48,8 +48,11 @@ The owner aims at a public release (decision 28, 2026-10-20).
   the current build on a device, a tap as a left click. Its setup is made (2026-10-24): the preset
   "Android" (arm64, debug-signed, package `org.kichikuou.port`) and `tools/export-android.ps1` (`-Install`,
   `-PushGame`); the build finds the game folder copied into the app's own external folder
-  (`GameData.AndroidGameFolder`, no permission, no folder dialog) and imports it at its first start. Not yet
-  run on a device.
+  (`GameData.AndroidGameFolder`, no permission, no folder dialog) and imports it at its first start. The
+  libraries and the Godot project build for `net9.0` when Godot exports for Android (`GodotTargetPlatform`),
+  since Godot 4.7's Android templates take .NET 9 only; everything else stays on `net10.0`. First run on a
+  Galaxy Tab S7 FE (2026-10-24): the import takes ~5 s, the opening plays full screen (Vulkan, Adreno 619).
+  Still to measure: the speed in play, and touch beyond a tap (no right click, no hover).
 - **CI** — *owner* (a remote first), then *agent*: build, core tests, export. Without the game data
   the content tests no longer fail (2026-10-23): a test that reads the scenario, the CGs or a capture group
   is `[ScenarioFact]`/`[ScenarioTheory]`, `[LocalFolderFact]` or `[CaptureGroupFact]`/`[CaptureGroupTheory]`

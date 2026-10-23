@@ -61,12 +61,14 @@ public static class LocalPaths
     /// <summary>
     /// The local file of the repository the process runs in: the first folder that holds
     /// <c>Kichikuou.sln</c>, up from the assemblies (tests) or the working directory (Godot runs in
-    /// its project folder).
+    /// its project folder). Either may be empty (Android): it is skipped.
     /// </summary>
     private static string? FindFile()
     {
         foreach (string start in new[] { AppContext.BaseDirectory, Environment.CurrentDirectory })
         {
+            if (string.IsNullOrEmpty(start))
+                continue;
             for (var dir = new DirectoryInfo(start); dir is not null; dir = dir.Parent)
             {
                 if (File.Exists(Path.Combine(dir.FullName, "Kichikuou.sln")))
