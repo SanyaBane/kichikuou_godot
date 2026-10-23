@@ -557,6 +557,13 @@ public sealed partial class GamePresenter : IStageObserver
     /// <summary>The name a portrait CG shows on its plate (<see cref="PortraitNames"/>).</summary>
     public Func<int, string> PortraitName { get; set; } = PortraitNames.Of;
 
+    /// <summary>
+    /// Whether the UI answers the windows' key waits now unseen — an order of our Subordinates screen (Rance's "Replenish the
+    /// troops.", Maris's answer, the result, Rance's thought before a talk): the player never sees them, so they stay out of
+    /// the log (owner, 2026-10-23). Asked at the wait's <c>WAO_SUB</c> call, before the UI answers it.
+    /// </summary>
+    public Func<bool> AnswersUnseen { get; set; } = () => false;
+
     /// <summary>The open menu is a dialogue's question — an event scene's menu, or one under a speech: its answer goes into the log.</summary>
     private bool _menuAsks;
 
@@ -579,11 +586,12 @@ public sealed partial class GamePresenter : IStageObserver
 
     /// <summary>
     /// A key wait of the open window: its page into the log, in either interface — a speech or a thought from any file,
-    /// narration and a place's title only from an event scene (<see cref="MessageLog.Keeps"/>).
+    /// narration and a place's title only from an event scene (<see cref="MessageLog.Keeps"/>); none the player does not see
+    /// (<see cref="AttackBriefing"/>, <see cref="AnswersUnseen"/>).
     /// </summary>
     private void LogPage()
     {
-        if (BattleShows || AttackBriefing || State is not { } s
+        if (BattleShows || AttackBriefing || AnswersUnseen() || State is not { } s
             || Strategy.MessageWindow.Of(s.Ui_WinFrameCg.Value, _window, Stage.Color, _speech) is not { } window
             || MessageLog.PageOf(window, s.Ui_PortraitL.Value, s.Ui_PortraitR.Value, PortraitName) is not { } page
             || !MessageLog.Keeps(page, _windowFile))

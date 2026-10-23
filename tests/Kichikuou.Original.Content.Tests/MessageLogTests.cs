@@ -141,6 +141,31 @@ public class MessageLogTests
     }
 
     /// <summary>
+    /// The windows the UI answers unseen (<see cref="GamePresenter.AnswersUnseen"/>: an order of our Subordinates screen, its
+    /// <c>Cﾌﾞｶ</c> dialogue) are not logged; once the order is over they are again (owner, 2026-10-23).
+    /// </summary>
+    [Fact]
+    public void Windows_answered_unseen_are_not_logged()
+    {
+        var (presenter, state) = Presenter();
+        bool unseen = true;
+        presenter.AnswersUnseen = () => unseen;
+        state.Ui_PortraitR = 6;
+        Open(presenter, state, 121, 21, 810);
+        Print(presenter, state, "Understood.");
+        Wait(presenter);
+        Close(presenter, state);
+        Assert.Empty(presenter.Log.Pages);
+
+        unseen = false;
+        Open(presenter, state, 121, 21, 810);
+        Print(presenter, state, "Understood.");
+        Wait(presenter);
+        Close(presenter, state);
+        Assert.Equal("Understood.", presenter.Log.Pages.Single().Lines[0]);
+    }
+
+    /// <summary>
     /// A dialogue's question logs its answer, a cancelled one not: an event scene's menu (<c>GAL</c>), or a play file's asked
     /// after a speech, its window closed (<c>Cﾃｲﾄ</c>: Maris's "You summoned me, King Rance?", <c>WAO_SUB</c> 0, the buildings).
     /// The play's menus never (owner, 2026-10-19): <c>COMMAND</c>'s opens its status window after the speech, <c>ﾛｰﾄﾞｾｰﾌﾞ</c>'s

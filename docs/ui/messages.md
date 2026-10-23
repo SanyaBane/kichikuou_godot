@@ -350,6 +350,11 @@ as it is. Where to start:
      `COMMAND` opens its status window (`COMMAND.ADV:655-659`, 113) before its own, `ﾛｰﾄﾞｾｰﾌﾞ` its windows before the slots.
    **The owner (2026-10-19):** a choice shows **the chosen item alone** — one line, "CHOICE" in the margin, `◆` and the item
    in vermilion — not the menu's other items (the page keeps them all; `MessageLog.Lines` lays out the chosen one).
+   **The owner (2026-10-23):** what our interface plays unseen stays out of the log — the attack's briefing
+   (`GamePresenter.AttackBriefing`, docs/ui/command-screen.md) and an order of our Subordinates screen: `Cﾌﾞｶ`'s dialogue on
+   its way (Rance's "Replenish the troops.", Maris's "Understood.", Rance's thought before a talk), which `GameScreen`
+   answers unseen (`GamePresenter.AnswersUnseen` while the `SubordinateOrder` runs; the talk scene itself is logged).
+   The menus answered unseen never reach `MenuAnswered`.
 
 ## 6. Open questions
 

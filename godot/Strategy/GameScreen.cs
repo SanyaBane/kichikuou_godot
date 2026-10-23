@@ -352,6 +352,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             MaskEventCgs = _options.ScreenshotDirectory is not null,
             Log = EngineState.Log,
+            AnswersUnseen = () => OrderRunning,                         // an order's windows: answered unseen, not logged
         };
         _skip = EngineState.Skip(SaveDirectory);
         _presenter.ReadBefore = _skip.HasSeen;                          // asked before OnMessage notes it (docs/ui/read-text.md)
