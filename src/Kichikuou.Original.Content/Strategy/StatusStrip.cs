@@ -85,10 +85,22 @@ public sealed record StatusStrip(string Nation, bool Thieves, string Date, IRead
         string[] lines = [.. printed.Split('\n').Select(l => l.Trim(' ', '　'))];
         if (lines.Length < 4)
             return null;
-        var status = lines[1..3].Select(l => l.IndexOfAny([':', '：']) is var at and >= 0 ? (l[..at].Trim(), Grouped(l[(at + 1)..].Trim())) : ("", Grouped(l))).ToArray();
+        var status = lines[1..3].Select(Split).ToArray();
+        if (thieves)
+        {
+            // The thieves' window calls the troop sum "Subordinates" (:478), which reads as the band's head count:
+            // ours labels it as Leazas's window does (owner, 2026-10-24).
+            string[] leazas = text(new ScriptRef(File, 443), [Sys3Int.Zero, Sys3Int.Zero, Sys3Int.Zero, Sys3Int.Zero]).Split('\n');
+            if (leazas.Length >= 3 && Split(leazas[2].Trim(' ', '　')).Label is { Length: > 0 } label)
+                status[1] = (label, status[1].Value);
+        }
         string date = $"LP {year} · {lines[3].Replace(", ", " · ").Replace(",", " ·")}";
         return new StatusStrip(lines[0].Replace('’', '\''), thieves, date, status, GroupsOf(state, thieves));
     }
+
+    /// <summary>A printed status line as its label and its value ("Troops: 6251" → "Troops", "6,251").</summary>
+    private static (string Label, string Value) Split(string line) =>
+        line.IndexOfAny([':', '：']) is var at and >= 0 ? (line[..at].Trim(), Grouped(line[(at + 1)..].Trim())) : ("", Grouped(line));
 
     /// <summary>A printed value with its number written as our screens write it: "116400K GOLD" → "116,400K GOLD".</summary>
     private static string Grouped(string value) =>

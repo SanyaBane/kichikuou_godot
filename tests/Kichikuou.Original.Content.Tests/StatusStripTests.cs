@@ -68,7 +68,7 @@ public class StatusStripTests
         s.Units[4].Troops = 50;
         var thieves = StatusStrip.For(s, Fake)!;
         Assert.True(thieves.Thieves);
-        Assert.Equal(("Rance's Thieves", ("Subordinates", "2,950")), (thieves.Nation, thieves.Status[1]));   // units 1, 3, 4 whatever their status
+        Assert.Equal(("Rance's Thieves", ("Troops", "2,950")), (thieves.Nation, thieves.Status[1]));   // units 1, 3, 4 whatever their status; :443's label
         Assert.Equal(["Hideout", "Map"], thieves.Groups.Select(g => g.Caption));
         Assert.Equal(["Harem", "Subordinates", "Pillage"], thieves.Groups.SelectMany(g => g.Uses).Select(u => u.Text));   // no Dungeon: DGN-20
     }
@@ -85,5 +85,10 @@ public class StatusStripTests
         Assert.Empty(presenter.Unresolved);
         Assert.Equal(("Leazas", "LP 3 · Month 5 · Week 2"), (strip.Nation, strip.Date));
         Assert.Equal([("Budget", "116,400K GOLD"), ("Troops", "2,251")], strip.Status);
+
+        var thieves = Week18();
+        thieves.StoryStage = 0;
+        presenter.Bind(thieves);
+        Assert.Equal([("Money", "116,400K GOLD"), ("Troops", "2,900")], presenter.StatusStrip!.Status);   // :472's "Subordinates" relabelled
     }
 }

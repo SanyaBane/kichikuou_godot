@@ -340,7 +340,8 @@ brackets with captions under; the owner chose **the brackets**).
   nation's flag (CG 820; none for the thieves) without its name (the owner's, for room); the status window
   the right click prints, read now from the state: its two lines as the files print them (`:443` "Budget
   116400K GOLD", "Troops 6251"; the thieves' `:472` Money and Subordinates), the troops summed as the files sum
-  them (units 1-50 with a status; the thieves' units 1, 3 and 4); the week's uses as tags, lit while free, dim
+  them (units 1-50 with a status; the thieves' units 1, 3 and 4) — the thieves' troop line labelled with `:443`'s
+  "Troops", since their "Subordinates" read as the band's head count (owner, 2026-10-24); the week's uses as tags, lit while free, dim
   when spent, in groups bracketed with their captions: Castle (Construction `Ui_CmdBuildAvail`, Harem
   `Ui_CmdHaremAvail`, Merchant `Ui_CmdMerchantAvail`), Subordinates (Troops `CmdAvail_SubTroops`, Talk
   `CmdAvail_SubTalk`, both dim while `Ui_CmdSubordAvail` is 0, the menu's △), Map (Own city
