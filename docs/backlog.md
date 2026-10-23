@@ -259,8 +259,6 @@ Other:
 - **`--msgskip` cannot test the skip in `--auto` runs** — *agent*, low priority: MsgSkip stops at the
   first menu (`STOP_ON_MENU`), so an unattended run reaches the opening with it off; checking the
   opening's skip (2026-10-11) took a temporary line.
-- **"2 ObjectDB instances were leaked at exit"** on every headless run — *agent*, low priority:
-  harmless so far, not looked into.
 - **Unverified facts in the brief** — *agent*: Godot 4.7's video playback (Ogg Theora only?) and
   AliceSoft's freeware release of the game ([project-brief.md](project-brief.md), "What is known").
 

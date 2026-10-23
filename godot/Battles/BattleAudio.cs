@@ -37,6 +37,20 @@ public partial class BattleAudio : Node, IBattleAudio
             _music = new MusicTable(GameData.GameDirectory);
     }
 
+    /// <summary>
+    /// A sound still playing when the game quits would outlive the tree in the audio server, and Godot reports
+    /// its stream and playback as leaked; stopping the players and letting go of the streams here frees both.
+    /// </summary>
+    public override void _ExitTree()
+    {
+        foreach (var player in new[] { _sfx, _left, _right, _bgm })
+        {
+            player.Stop();
+            player.Stream = null;
+        }
+        _sounds.Clear();
+    }
+
     private AudioStreamPlayer AddPlayer(string bus)
     {
         var player = new AudioStreamPlayer { Bus = bus };
