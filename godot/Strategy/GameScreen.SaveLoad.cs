@@ -112,7 +112,7 @@ public partial class GameScreen
     /// <summary>The pointer moved to <paramref name="at"/> (global) through Godot's input: the view's hover follows.</summary>
     private async Task AutoViewMoveAsync(Vector2 at)
     {
-        Input.ParseInputEvent(new InputEventMouseMotion { Position = at, GlobalPosition = at });
+        SendPointerMotion(at);
         await NextFrameAsync();
         await NextFrameAsync();
     }
@@ -121,13 +121,9 @@ public partial class GameScreen
     private async Task AutoViewClickAsync(Vector2 at, MouseButton button)
     {
         await AutoViewMoveAsync(at);
-        var mask = button == MouseButton.Left ? MouseButtonMask.Left : MouseButtonMask.Right;
         foreach (bool pressed in (bool[])[true, false])
         {
-            Input.ParseInputEvent(new InputEventMouseButton
-            {
-                ButtonIndex = button, Pressed = pressed, Position = at, GlobalPosition = at, ButtonMask = pressed ? mask : 0,
-            });
+            SendPointerButton(at, button, pressed);
             await NextFrameAsync();
         }
     }

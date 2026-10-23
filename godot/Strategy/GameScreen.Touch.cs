@@ -18,15 +18,10 @@ public partial class GameScreen
     /// <summary>
     /// Android's Back (the button or the gesture; project.godot keeps it from quitting) is a right click where the
     /// last touch left the pointer: the original cancels with the right button, and a touch screen has none. It goes
-    /// through Godot's input, so the script's reads and our own screens see it as a mouse's. Godot's input takes the
-    /// window's pixels, the pointer is read in the viewport's: on the tablet two apart, and each Back would have
-    /// halved the point until it fell on the menu bar.
+    /// through Godot's input, so the script's reads and our own screens see it as a mouse's.
     /// </summary>
-    private void BackAsRightClick()
-    {
-        var viewport = GetViewport();
-        _ = AutoViewClickAsync(viewport.GetScreenTransform() * viewport.GetMousePosition(), MouseButton.Right);
-    }
+    private void BackAsRightClick() =>
+        _ = AutoViewClickAsync(GetViewport().GetMousePosition(), MouseButton.Right);
 
     /// <summary>
     /// A long press on a card of our battle screen opens its menu, as a right click does (owner, 2026-10-24): while the

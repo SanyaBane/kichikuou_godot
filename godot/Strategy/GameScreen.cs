@@ -1957,7 +1957,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_markers.PlateOf(MapHitKind.Province, target) is not var (marker, at))
             throw new InvalidOperationException($"--auto finds no plate of province {target} on the map.");
         GetViewport().WarpMouse(at);
-        Input.ParseInputEvent(new InputEventMouseMotion { Position = at, GlobalPosition = at });   // the warp alone moves no hover
+        SendPointerMotion(at);                                                                  // the warp alone moves no hover
         await NextFrameAsync();
         await NextFrameAsync();
         if (_markers.Hovered != marker)
@@ -1968,11 +1968,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             foreach (bool pressed in (bool[])[true, false])
             {
-                Input.ParseInputEvent(new InputEventMouseButton
-                {
-                    ButtonIndex = Godot.MouseButton.Left, Pressed = pressed, Position = at, GlobalPosition = at,
-                    ButtonMask = pressed ? MouseButtonMask.Left : 0,
-                });
+                SendPointerButton(at, Godot.MouseButton.Left, pressed);
                 await NextFrameAsync();
             }
         }
