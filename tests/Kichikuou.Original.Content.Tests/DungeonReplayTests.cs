@@ -13,12 +13,10 @@ namespace Kichikuou.Original.Content.Tests;
 /// </summary>
 public sealed class DungeonReplayTests(ITestOutputHelper output)
 {
-    [Fact]
+    [CaptureGroupFact("dungeon")]
     public async Task The_dungeon_captures_replay_through_the_port()
     {
         string dir = Path.Combine(LocalData.GoldenDirectory, "dungeon");
-        if (!Directory.Exists(dir) || !Directory.Exists(LocalData.ScenarioDirectory))
-            return;
         var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
         var failed = new List<string>();
         foreach (string path in Directory.EnumerateFiles(dir, "*.golden").Order(StringComparer.Ordinal))

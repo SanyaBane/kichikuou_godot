@@ -45,11 +45,9 @@ public class NewGameStateTests(ITestOutputHelper output)
     /// The message log names a speaker by the plate on its portrait (<see cref="PortraitNames"/>): every unit's and commander's
     /// face a new game sets up has one.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Every_face_of_a_new_game_has_its_plates_name()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var state = await NewGameAsync();
         var faces = Enumerable.Range(0, 52).Select(i => state.Units[i].FaceCg.Value)
             .Concat(Enumerable.Range(0, 220).Select(i => state.Cmdrs[i].FaceCg.Value))
@@ -63,11 +61,9 @@ public class NewGameStateTests(ITestOutputHelper output)
     /// thieves', so only Vladivostok (33) and Golak (34), which <c>COMMAND</c> sends to <c>Cﾃｷﾄｼ</c>, are
     /// not dimmed, and no card shows figures.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task In_the_prologue_the_map_opens_Vladivostok_and_Golak_and_holds_no_province_of_ours()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var state = await NewGameAsync();
         Assert.Equal(1, state.Provs[1].Owner.Value);                    // Leazas Castle (1): Leazas's
         state.MarkOwnProvincesKnown();

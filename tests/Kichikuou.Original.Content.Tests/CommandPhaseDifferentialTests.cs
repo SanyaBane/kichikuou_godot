@@ -23,11 +23,9 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
     private const string Command = "COMMAND.ADV";
     private const int Cases = 800;
 
-    [Fact]
+    [ScenarioFact]
     public async Task The_port_runs_COMMAND_exactly_as_the_decompile()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, Command)))
-            return;
         var program = new ScenarioScripts(LocalData.ScenarioDirectory).ReadProgram(Command);
         var seen = new Dictionary<string, int>(StringComparer.Ordinal);
         int stopped = 0, cases = DifferentialRuns.Cases(Cases);
@@ -70,11 +68,9 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
     /// share) against the file run from the decompile, on random cameras and random pointer
     /// sequences (presses, moves, other buttons, presses while the view coasts).
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_drag_scroll_runs_exactly_as_WAO_MAP()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "WAO_MAP.ADV")))
-            return;
         var program = new ScenarioScripts(LocalData.ScenarioDirectory).ReadProgram("WAO_MAP.ADV");
         int steps = 0, drags = DifferentialRuns.Cases(2000);
         for (int seed = 1; seed <= drags; seed++)

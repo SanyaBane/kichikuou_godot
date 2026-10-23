@@ -25,11 +25,9 @@ public class LoadSaveDifferentialTests(ITestOutputHelper output)
     private const int Cases = 800;
     private static readonly ScriptRef AutosaveCall = new("MAIN.ADV", 20);
 
-    [Fact]
+    [ScenarioFact]
     public async Task The_port_runs_LoadSave_exactly_as_the_decompile()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, LoadSave)))
-            return;
         var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
         var program = scripts.ReadProgram(LoadSave);
         var resume = FromStatement(program, AfterQd(program));

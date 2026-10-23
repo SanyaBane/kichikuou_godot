@@ -93,14 +93,12 @@ public sealed class SceneReplayTests(ITestOutputHelper output) : IDisposable
     /// The owner's captures of the prologue scenes (group <c>scenes</c>) and of every other scene
     /// (group <c>events</c>), replayed through the runtime with their group's roots run inline.
     /// </summary>
-    [Theory]
+    [CaptureGroupTheory("scenes", "events")]
     [InlineData("scenes")]
     [InlineData("events")]
     public async Task The_scene_captures_replay_through_the_runtime(string group)
     {
         string dir = Path.Combine(LocalData.GoldenDirectory, group);
-        if (!Directory.Exists(dir) || !Directory.Exists(LocalData.ScenarioDirectory))
-            return;
         Func<string, bool> isRoot = group == "scenes" ? SceneRoots.Contains : IsEventRoot;
         var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
         var failed = new List<string>();

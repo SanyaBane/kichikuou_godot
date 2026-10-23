@@ -29,7 +29,7 @@ public abstract class NationTurnDifferentialTests(ITestOutputHelper output)
 
     public sealed class TCﾘｰｻﾞｽ(ITestOutputHelper output) : NationTurnDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_rebel_turn_runs_exactly_as_TCﾘｰｻﾞｽ() =>
             CompareAsync(
                 "TCﾘｰｻﾞｽ.ADV",
@@ -46,7 +46,7 @@ public abstract class NationTurnDifferentialTests(ITestOutputHelper output)
 
     public sealed class TCﾘｰｻﾞｽ2(ITestOutputHelper output) : NationTurnDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_rebel_defenders_are_picked_exactly_as_TCﾘｰｻﾞｽ2() =>
             CompareAsync(
                 "TCﾘｰｻﾞｽ2.ADV",
@@ -59,7 +59,7 @@ public abstract class NationTurnDifferentialTests(ITestOutputHelper output)
 
     public sealed class Tﾍﾙﾏﾝ2(ITestOutputHelper output) : NationTurnDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_Helman_defenders_are_picked_exactly_as_Tﾍﾙﾏﾝ2() =>
             CompareAsync(
                 "Tﾍﾙﾏﾝ2.ADV",
@@ -75,7 +75,7 @@ public abstract class NationTurnDifferentialTests(ITestOutputHelper output)
 
     public sealed class Tﾍﾙﾏﾝ(ITestOutputHelper output) : NationTurnDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_Helman_turn_runs_exactly_as_Tﾍﾙﾏﾝ() =>
             CompareAsync(
                 "Tﾍﾙﾏﾝ.ADV",
@@ -99,7 +99,7 @@ public abstract class NationTurnDifferentialTests(ITestOutputHelper output)
 
     public sealed class Tﾊﾟｯﾄﾝ(ITestOutputHelper output) : NationTurnDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_Patton_turn_runs_exactly_as_Tﾊﾟｯﾄﾝ() =>
             CompareAsync(
                 "Tﾊﾟｯﾄﾝ.ADV",
@@ -183,7 +183,7 @@ public abstract class NationTurnDifferentialTests(ITestOutputHelper output)
 
     public sealed class Tｾﾞｽ2(ITestOutputHelper output) : NationTurnDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_Zeth_defenders_are_picked_exactly_as_Tｾﾞｽ2() =>
             CompareAsync(
                 "Tｾﾞｽ2.ADV",
@@ -299,7 +299,7 @@ public abstract class NationTurnDifferentialTests(ITestOutputHelper output)
 
     public sealed class Tｾﾞｽ(ITestOutputHelper output) : NationTurnDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_Zeth_turn_runs_exactly_as_Tｾﾞｽ() =>
             CompareAsync(
                 "Tｾﾞｽ.ADV",
@@ -480,7 +480,7 @@ public abstract class NationTurnDifferentialTests(ITestOutputHelper output)
 
     public sealed class Tｹｲﾌﾞﾘｽ2(ITestOutputHelper output) : NationTurnDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_Kayblis_defenders_are_picked_exactly_as_Tｹｲﾌﾞﾘｽ2() =>
             CompareAsync(
                 "Tｹｲﾌﾞﾘｽ2.ADV",
@@ -496,7 +496,7 @@ public abstract class NationTurnDifferentialTests(ITestOutputHelper output)
 
     public sealed class TJAPAN2(ITestOutputHelper output) : NationTurnDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_JAPAN_defenders_are_picked_exactly_as_TJAPAN2() =>
             CompareAsync(
                 "TJAPAN2.ADV",
@@ -509,7 +509,7 @@ public abstract class NationTurnDifferentialTests(ITestOutputHelper output)
 
     public sealed class TJAPAN(ITestOutputHelper output) : NationTurnDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_JAPAN_turn_runs_exactly_as_TJAPAN() =>
             CompareAsync(
                 "TJAPAN.ADV",
@@ -790,7 +790,7 @@ public abstract class NationTurnDifferentialTests(ITestOutputHelper output)
 
     public sealed class Tｹｲﾌﾞﾘｽ(ITestOutputHelper output) : NationTurnDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_Kayblis_turn_runs_exactly_as_Tｹｲﾌﾞﾘｽ() =>
             CompareAsync(
                 "Tｹｲﾌﾞﾘｽ.ADV",
@@ -835,7 +835,7 @@ public abstract class NationTurnDifferentialTests(ITestOutputHelper output)
 
     public sealed class L_026bf(ITestOutputHelper output) : NationTurnDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task Kayblis_captures_exactly_as_L_026bf() =>
             CompareAsync(
                 "Tｹｲﾌﾞﾘｽ.ADV",
@@ -1696,7 +1696,7 @@ public abstract class NationTurnDifferentialTests(ITestOutputHelper output)
 
     public sealed class Tﾙﾄﾞﾗ(ITestOutputHelper output) : NationTurnDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_Creator_turn_runs_exactly_as_Tﾙﾄﾞﾗ() =>
             CompareAsync(
                 "Tﾙﾄﾞﾗ.ADV",
@@ -1871,8 +1871,6 @@ public abstract class NationTurnDifferentialTests(ITestOutputHelper output)
         string? label = null,
         bool logPlaces = false)
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, file)))
-            return;
         var scenario = new ScenarioScripts(LocalData.ScenarioDirectory);
         var program = scenario.ReadProgram(file);
         if (label is not null)

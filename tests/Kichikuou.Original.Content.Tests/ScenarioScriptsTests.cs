@@ -170,12 +170,10 @@ public class PlayerBootTests(ITestOutputHelper output)
     /// The boot captures (group <c>boot</c>, root <c>SET.ADV</c>) replayed through
     /// <c>GameSetup.SetAsync</c> with the record files from the player's decompile.
     /// </summary>
-    [Fact]
+    [CaptureGroupFact("boot")]
     public async Task The_boot_captures_replay_through_SET()
     {
         string dir = Path.Combine(LocalData.GoldenDirectory, "boot");
-        if (!Directory.Exists(dir) || !File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var captures = Directory.EnumerateFiles(dir, "*.golden").Order(StringComparer.Ordinal).ToList();
         foreach (string path in captures)
         {

@@ -33,7 +33,7 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
 
     public sealed class Cﾃｷﾄｼ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_enemy_city_runs_exactly_as_Cﾃｷﾄｼ() =>
             CompareAsync(
                 "Cﾃｷﾄｼ.ADV",
@@ -56,7 +56,7 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
 
     public sealed class CﾃｷﾄｼTalks(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_independent_cities_negotiate_exactly_as_Cﾃｷﾄｼ() =>
             CompareAsync(
                 "Cﾃｷﾄｼ.ADV",
@@ -173,7 +173,7 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
 
     public sealed class Cﾃｷﾄｼ2(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_distant_city_runs_exactly_as_Cﾃｷﾄｼ2() =>
             CompareAsync(
                 "Cﾃｷﾄｼ2.ADV",
@@ -185,7 +185,7 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
 
     public sealed class Cﾌﾞｶ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_subordinates_command_runs_exactly_as_Cﾌﾞｶ() =>
             CompareAsync(
                 "Cﾌﾞｶ.ADV",
@@ -227,7 +227,7 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
 
     public sealed class Cﾊｰﾚﾑ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_harem_runs_exactly_as_Cﾊｰﾚﾑ() =>
             CompareAsync(
                 "Cﾊｰﾚﾑ.ADV",
@@ -293,7 +293,7 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
 
     public sealed class Cｼｮｳﾆﾝ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_merchant_runs_exactly_as_Cｼｮｳﾆﾝ() =>
             CompareAsync(
                 "Cｼｮｳﾆﾝ.ADV",
@@ -343,7 +343,7 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
 
     public sealed class Cｼﾊｲﾄｼ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_own_city_runs_exactly_as_Cｼﾊｲﾄｼ() =>
             CompareAsync(
                 "Cｼﾊｲﾄｼ.ADV",
@@ -433,7 +433,7 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
 
     public sealed class Cﾆﾝｼﾞｬ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_ninja_runs_exactly_as_Cﾆﾝｼﾞｬ() =>
             CompareAsync(
                 "Cﾆﾝｼﾞｬ.ADV",
@@ -491,7 +491,7 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
 
     public sealed class Cﾃｲﾄ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_construction_runs_exactly_as_Cﾃｲﾄ() =>
             CompareAsync(
                 "Cﾃｲﾄ.ADV",
@@ -532,7 +532,7 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
 
     public sealed class Cﾒｲｷｭｳ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_dungeon_runs_exactly_as_Cﾒｲｷｭｳ() =>
             CompareAsync(
                 "Cﾒｲｷｭｳ.ADV",
@@ -578,11 +578,9 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
     /// </summary>
     public sealed class FIGTATTK(ITestOutputHelper output)
     {
-        [Fact]
+        [ScenarioFact]
         public async Task FIGTATTK_called_from_FIGT表示_runs_as_the_file()
         {
-            if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "FIGTATTK.ADV")))
-                return;
             var scenario = new ScenarioScripts(LocalData.ScenarioDirectory);
             var programs = new[] { "FIGT表示.ADV", "FIGTATTK.ADV" }.ToDictionary(f => f, scenario.ReadProgram);
             int[] entries = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 21, 22, 23, 24, 26];
@@ -838,7 +836,7 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
 
     public sealed class Sﾌﾞﾀｲ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_deployment_screen_runs_exactly_as_Sﾌﾞﾀｲ() =>
             CompareAsync(
                 "Sﾌﾞﾀｲ.ADV",
@@ -865,7 +863,7 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
 
     public sealed class Sﾌﾞｶ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_subordinate_picker_runs_exactly_as_Sﾌﾞｶ() =>
             CompareAsync(
                 "Sﾌﾞｶ.ADV",
@@ -881,7 +879,7 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
 
     public sealed class Sﾊｰﾚﾑ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_harem_picker_runs_exactly_as_Sﾊｰﾚﾑ() =>
             CompareAsync(
                 "Sﾊｰﾚﾑ.ADV",
@@ -902,7 +900,7 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
 
     public sealed class Sｱｲﾃﾑ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_item_screen_runs_exactly_as_Sｱｲﾃﾑ() =>
             CompareAsync(
                 "Sｱｲﾃﾑ.ADV",
@@ -968,7 +966,7 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
 
     public sealed class Cﾀｶﾗ(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_treasure_command_runs_exactly_as_Cﾀｶﾗ() =>
             CompareAsync(
                 "Cﾀｶﾗ.ADV",
@@ -987,7 +985,7 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
 
     public sealed class 各種DATA(ITestOutputHelper output) : CommandSliceDifferentialTests(output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task The_all_data_screen_runs_exactly_as_各種DATA() =>
             CompareAsync(
                 "各種DATA.ADV",
@@ -1048,8 +1046,6 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
         string file, Port port, Action<GameState, Random> shape, Scribbler scribble, string[] expected, int cases = Cases,
         Func<Random, MouseState>? mouse = null, MenuPolicy? choose = null)
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, file)))
-            return;
         var scenario = new ScenarioScripts(LocalData.ScenarioDirectory);
         var program = scenario.ReadProgram(file);
         cases = DifferentialRuns.Cases(cases);

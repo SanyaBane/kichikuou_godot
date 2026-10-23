@@ -74,11 +74,9 @@ public class StatusStripTests
     }
 
     /// <summary>The status window's text from the player's files (<c>COMMAND.ADV:443</c>) through the presenter. Skipped without them.</summary>
-    [Fact]
+    [ScenarioFact]
     public void The_strip_reads_the_status_window_from_the_players_files()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "COMMAND.ADV")))
-            return;
         var missing = Path.Combine(Path.GetTempPath(), "kichikuou-no-data");
         var presenter = new GamePresenter(new ScenarioText(LocalData.ScenarioDirectory), new CgLibrary(missing), new BoxGlyphs());
         presenter.Bind(Week18());

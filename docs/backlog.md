@@ -47,7 +47,11 @@ The owner aims at a public release (decision 28, 2026-10-20).
   measured: the speed of the engine surface's per-pixel C# drawing on a phone. A cheap spike first:
   the current build on a device with the extract copied by hand, a tap as a left click.
 - **CI** — *owner* (a remote first), then *agent*: build, core tests, export. Without the game data
-  some content tests fail instead of skipping; they must skip.
+  the content tests no longer fail (2026-10-23): a test that reads the scenario, the CGs or a capture group
+  is `[ScenarioFact]`/`[ScenarioTheory]`, `[LocalFolderFact]` or `[CaptureGroupFact]`/`[CaptureGroupTheory]`
+  (`ScenarioTextGoldenTests.cs`), skipped with its reason. Still passing silently without the data: ~100 tests
+  in ~25 files whose helper returns null without the scenario (`EndGameRig.BootAsync`, `GameAsync`, `NewRig`, …)
+  and return on it — they would want the same attributes and non-null helpers.
 - **Rights** — *owner*: the license covers only our own work; the rule code ports AliceSoft's
   scenario logic, the risk the brief accepts for personal use. Any public release is the owner's call.
 

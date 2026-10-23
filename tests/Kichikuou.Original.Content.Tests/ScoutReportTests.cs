@@ -68,7 +68,7 @@ public class ScoutReportTests
     /// reported (its key waits answered at once on our screen) from the first commander's line on — the first key
     /// wait, after line 587, stays the player's.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public void The_presenter_holds_the_report_while_window_113_lists_it()
     {
         var s = Rebels();
@@ -128,7 +128,7 @@ public class ScoutReportTests
     /// strong force" past 5000 troops, none up to 5000 (her "............" left out) — and once the report's window is
     /// closed each of their windows holds its line until it closes: their key waits are the ones our screen answers at once.
     /// </summary>
-    [Theory]
+    [ScenarioTheory]
     [InlineData(4600, 644, "")]                                          // 5000 with Jibul's 400 and Dodge's none
     [InlineData(4601, 637, "Quite a strong force.\nWhat shall we do?")]
     public void Rance_and_Maris_reply_in_the_report_and_their_windows_are_answered(int sakanaku, int line, string comment)

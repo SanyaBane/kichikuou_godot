@@ -14,12 +14,10 @@ namespace Kichikuou.Original.Content.Tests;
 /// </summary>
 public sealed class ScreenReplayTests(ITestOutputHelper output)
 {
-    [Fact]
+    [CaptureGroupFact("screens")]
     public async Task The_screen_captures_replay_through_the_ports()
     {
         string dir = Path.Combine(LocalData.GoldenDirectory, "screens");
-        if (!Directory.Exists(dir) || !Directory.Exists(LocalData.ScenarioDirectory))
-            return;
         var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
         var failed = new List<string>();
         foreach (string path in Directory.EnumerateFiles(dir, "*.golden").Order(StringComparer.Ordinal))

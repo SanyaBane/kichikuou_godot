@@ -36,12 +36,10 @@ public sealed class NationReplayTests(ITestOutputHelper output)
         _ => null,
     };
 
-    [Fact]
+    [CaptureGroupFact("nations")]
     public async Task The_nation_captures_replay_through_the_port()
     {
         string dir = Path.Combine(LocalData.GoldenDirectory, "nations");
-        if (!Directory.Exists(dir) || !Directory.Exists(LocalData.ScenarioDirectory))
-            return;
         var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
         var failed = new List<string>();
         foreach (string path in Directory.EnumerateFiles(dir, "*.golden").Order(StringComparer.Ordinal))

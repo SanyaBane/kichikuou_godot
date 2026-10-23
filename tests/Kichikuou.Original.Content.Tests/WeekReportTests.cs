@@ -22,11 +22,9 @@ public class WeekReportTests
     /// M Land not, Galtia (unit 41) absent; 102700K before. The banner's, the revenue's and the expenses' key waits
     /// all come before the window closes, which completes the report with 116400K.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task A_Leazas_week_gathers_the_banner_the_revenue_and_the_expenses()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "MAIN.ADV")))
-            return;
         var state = new GameState { Week = 17, StoryStage = 1, Gold = 1027, Prov_Count = 3, N_ALChurch_Stage = 0 };
         state.Provs[1].Owner = 1;
         state.Provs[1].Economy = 150;
@@ -54,11 +52,9 @@ public class WeekReportTests
     }
 
     /// <summary>All three expenses, and none: the caption only when one applies; the revenue's wait is then the last.</summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_expenses_are_the_ones_printed()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "MAIN.ADV")))
-            return;
         var all = new GameState { Week = 30, StoryStage = 1, Gold = 2000, Prov_Count = 1, N_ALChurch_Stage = 0, F_MLand_Funded = 1 };
         all.Units[41].Status = 1;
         var (_, report, _) = await RunToCommandAsync(all);
@@ -74,11 +70,9 @@ public class WeekReportTests
     }
 
     /// <summary>The thieves' week: the banner alone, its one key wait, then the window closes.</summary>
-    [Fact]
+    [ScenarioFact]
     public async Task A_thieves_week_has_the_banner_alone()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "MAIN.ADV")))
-            return;
         var (_, report, waits) = await RunToCommandAsync(new GameState { Week = 0, StoryStage = 0, Gold = 3 });
         Assert.Equal(("Rance's Thieves Phase", true, "LP 3 · Month 1 · Week 1"), (report.Title, report.Thieves, report.Date));
         Assert.Null(report.Revenue);

@@ -92,11 +92,9 @@ public class UnitFacesTests
     }
 
     /// <summary>Every square of the table lies inside its CG, a face's 192×256 or a battle sprite's 320×256.</summary>
-    [Fact]
+    [LocalFolderFact("cg")]
     public void Every_exception_lies_inside_its_picture()
     {
-        if (!Directory.Exists(LocalData.CgDirectory))
-            return;
         var cgs = new CgLibrary(LocalData.CgDirectory);
         Assert.All(UnitFaces.Exceptions, e =>
         {

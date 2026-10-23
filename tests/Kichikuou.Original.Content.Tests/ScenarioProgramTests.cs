@@ -329,11 +329,9 @@ public class ScenarioProgramSweepTests(ITestOutputHelper output)
             .Order(StringComparer.Ordinal)
             .ToList()!;
 
-    [Fact]
+    [ScenarioFact]
     public void Every_scene_file_reads_as_a_program_and_its_texts_resolve()
     {
-        if (!Directory.Exists(LocalData.ScenarioDirectory))
-            return;
         var scenes = SceneFiles();
         Assert.Equal(136, scenes.Count);
         Assert.Empty(Milestone1.Concat(OtherFiles).Except(scenes.Concat(OtherFiles)));
@@ -381,11 +379,9 @@ public class ScenarioProgramSweepTests(ITestOutputHelper output)
     /// it is a scene, a file the router ports or a helper of the context — none falls to the
     /// unported hooks (<c>FIGTATTK</c>, the battle's animation, did until 2026-10-11).
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public void Every_file_the_scenes_call_is_a_scene_a_port_or_a_helper()
     {
-        if (!Directory.Exists(LocalData.ScenarioDirectory))
-            return;
         string[] helpers = ["M.ADV", "WAO_MAP.ADV", "WAO_SUB.ADV", "PCMPLAY.ADV"];
         var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
         var missing = SceneFiles().Concat(["ｵｰﾌﾟﾆﾝｸﾞ.ADV", "FIGT表示.ADV"])
@@ -402,11 +398,9 @@ public class ScenarioProgramSweepTests(ITestOutputHelper output)
     /// the music room's, <c>MMODE</c>, included) run somewhere too, but for the dead <c>XSPEC</c>
     /// (<c>ｽﾀMENU.ADV:179</c>; the boot does not run it either, DAT-04).
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public void The_title_calls_only_files_that_run_but_those_left_for_later()
     {
-        if (!Directory.Exists(LocalData.ScenarioDirectory))
-            return;
         string[] helpers = ["M.ADV", "WAO_MAP.ADV", "WAO_SUB.ADV", "PCMPLAY.ADV"];
         var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
         var missing = new[] { "ｽﾀMENU.ADV", "ﾌﾟﾛﾛｰｸﾞ.ADV", "HAPPY_C.ADV", "CG.ADV", "MMODE.ADV" }
@@ -423,11 +417,9 @@ public class ScenarioProgramSweepTests(ITestOutputHelper output)
     /// run them against their ports (<c>COM</c>, <c>COMMAND</c>) and the unported ones can run
     /// as programs while a part is checked.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public void The_strategic_rule_files_read_as_programs_and_their_texts_resolve()
     {
-        if (!Directory.Exists(LocalData.ScenarioDirectory))
-            return;
         string[] files =
         [
             "MAIN.ADV", "COMMAND.ADV", "COM.ADV", "Cﾃｷﾄｼ.ADV", "Cﾃｷﾄｼ2.ADV", "Cﾌﾞｶ.ADV", "Cﾊｰﾚﾑ.ADV",

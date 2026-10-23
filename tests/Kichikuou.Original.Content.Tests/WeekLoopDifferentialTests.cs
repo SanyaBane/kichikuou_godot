@@ -25,11 +25,9 @@ public class WeekLoopDifferentialTests(ITestOutputHelper output)
     private const string Main = "MAIN.ADV";
     private const int Cases = 3000;
 
-    [Fact]
+    [ScenarioFact]
     public async Task The_port_runs_MAIN_exactly_as_the_decompile()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, Main)))
-            return;
         var scenario = new ScenarioScripts(LocalData.ScenarioDirectory);
         var program = scenario.ReadProgram(Main);
         var seen = new Dictionary<string, int>(StringComparer.Ordinal);

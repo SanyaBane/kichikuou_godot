@@ -100,11 +100,9 @@ public class ProvinceMenuTests
     /// (<c>Cｼﾊｲﾄｼ.ADV:20</c>, a run that starts with its line break) and every other owner's, none unresolved
     /// (the "[Cｼﾊｲﾄｼ.ADV:21]" the owner saw, 2026-10-16). Skipped without the player's files.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public void Every_owners_army_name_resolves_from_the_players_files()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "Cｼﾊｲﾄｼ.ADV")))
-            return;
         var missing = Path.Combine(Path.GetTempPath(), "kichikuou-no-data");
         var presenter = new GamePresenter(new ScenarioText(LocalData.ScenarioDirectory), new CgLibrary(missing), new BoxGlyphs());
         var names = new List<string>();

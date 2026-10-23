@@ -81,7 +81,7 @@ public class BattleCommandsTests(ITestOutputHelper output)
         Assert.Empty(back.Banners(Enemy(1)));
     }
 
-    [Fact]
+    [ScenarioFact]
     public void A_bowman_s_own_attack_comes_first_then_direct_where_it_reaches()
     {
         var bow = new BattleCommands(Menu(5, 1, slot: 2));
@@ -95,7 +95,7 @@ public class BattleCommandsTests(ITestOutputHelper output)
         Assert.Equal(["3:6", "13:6"], Codes(mage.Banners(Enemy(3))));
     }
 
-    [Fact]
+    [ScenarioFact]
     public void Rance_Attack_comes_with_focus_only()
     {
         Assert.Equal(["1:4"], Codes(new BattleCommands(Menu(1, 0)).Banners(Enemy(1))));
@@ -104,7 +104,7 @@ public class BattleCommandsTests(ITestOutputHelper output)
         Assert.Equal(["Melee", "Rance Attack"], Labels(focused.Banners(Enemy(1))));
     }
 
-    [Fact]
+    [ScenarioFact]
     public void The_acting_unit_s_menu_holds_the_commands_without_a_target()
     {
         var commands = new BattleCommands(Menu(5, 0, slot: 2, item: 28));
@@ -120,7 +120,7 @@ public class BattleCommandsTests(ITestOutputHelper output)
         Assert.Equal("7:99", Codes(debug)[^1]);
     }
 
-    [Fact]
+    [ScenarioFact]
     public void Another_own_card_gives_its_standing_orders_with_the_current_marked()
     {
         var commands = new BattleCommands(Menu(5, 0, slot: 2));
@@ -191,7 +191,7 @@ public class BattleCommandsTests(ITestOutputHelper output)
     }
 
     /// <summary>The retreat confirmation the core asks (cancelled here) opens our dialog: its question, Retreat as a warning, Cease Retreat.</summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_retreat_confirmation_is_our_dialog_and_the_enemy_s_attack_menus_are_not()
     {
         var input = new MenuInput();

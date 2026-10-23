@@ -36,7 +36,7 @@ public class BattleInfoBoxTests
     /// A defence (<c>FIGT.ADV:1399</c>): Barres (unit 6) in the second slot prepares, 7 — the badge on his card, the sentence
     /// without his name and the increase; its wait answered at once.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public void A_defence_is_a_badge_on_the_acting_units_card()
     {
         var (presenter, s) = Presenter();
@@ -93,7 +93,7 @@ public class BattleInfoBoxTests
     }
 
     /// <summary>Any other box is our panel with its sentences: the Land of Death's damage (<c>FIGT.ADV:272</c>).</summary>
-    [Fact]
+    [ScenarioFact]
     public void Another_box_is_our_panel()
     {
         var (presenter, _) = Presenter();
@@ -109,7 +109,7 @@ public class BattleInfoBoxTests
     /// The end: the night's box answered at once, the tally the plate with its reason (one click), Barres's (unit 6) level-up
     /// its first page answered at once and its second a row on the plate; a new battle forgets them.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public void The_end_gathers_into_one_plate()
     {
         var (presenter, s) = Presenter();

@@ -108,11 +108,9 @@ public class MagicSpellsTests
     }
 
     /// <summary>The presenter takes the spell of the line shown before the shots, and forgets it at them.</summary>
-    [Fact]
+    [ScenarioFact]
     public void The_presenter_takes_the_line_shown_before_the_shots()
     {
-        if (!Directory.Exists(LocalData.ScenarioDirectory))
-            return;
         var presenter = new BattlePresenter(new ScenarioText(LocalData.ScenarioDirectory), new CgLibrary(LocalData.CgDirectory), new BoxGlyphs());
         var s = PlayerMagic(2);
         presenter.Start(s);
@@ -127,11 +125,9 @@ public class MagicSpellsTests
     /// Each line of the table starts a text run of <c>FIGT_M</c> that names its spell, and every run of <c>FIGT_M</c>
     /// that names a spell is in the table but the specials' and the talk about the Flash.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public void The_table_holds_every_spell_line_of_the_scenario()
     {
-        if (!Directory.Exists(LocalData.ScenarioDirectory))
-            return;
         var texts = new ScenarioText(LocalData.ScenarioDirectory);
         var names = new Dictionary<MagicElement, Regex>
         {

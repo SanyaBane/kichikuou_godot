@@ -21,11 +21,9 @@ namespace Kichikuou.Original.Content.Tests;
 /// </summary>
 public class PrologueCommandTests(ITestOutputHelper output)
 {
-    [Fact]
+    [ScenarioFact]
     public async Task A_prologue_week_runs_through_the_ported_commands_and_the_players_scenes()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var game = await NewGameAsync(stubBattle: true);
         var (state, script, input, view, unported, random) = (game.State, game.Script, game.Input, game.View, game.Unported, game.Random);
 
@@ -76,11 +74,9 @@ public class PrologueCommandTests(ITestOutputHelper output)
     /// as the battle on the game's context and input (owner's decision 7), so nothing reaches the
     /// unported hooks.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task A_pillage_is_fought_as_a_battle_through_the_router()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var game = await NewGameAsync();
         var state = game.State;
         state.Week = 10;
@@ -112,11 +108,9 @@ public class PrologueCommandTests(ITestOutputHelper output)
     /// calls the ported picker (answered with clicks), the rebels' defenders (<c>TCﾘｰｻﾞｽ2</c>) and the
     /// battle, all through the router: nothing reaches the unported hooks.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task An_attack_on_the_rebels_is_fought_through_the_router()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var game = await NewGameAsync();
         var state = game.State;
         await game.Script.EventAsync("Iﾊﾝﾗﾝ.ADV", 1);
@@ -153,11 +147,9 @@ public class PrologueCommandTests(ITestOutputHelper output)
     /// week 9 opens with Sill's scene, week 10 with Soul's message, each week autosaves, refreshes
     /// the thieves and runs the player phase to Turn END.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_first_prologue_weeks_run_through_the_week_loop()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var game = await NewGameAsync();
         game.Saves.Written = (slot, data) =>
         {
@@ -190,11 +182,9 @@ public class PrologueCommandTests(ITestOutputHelper output)
     /// lost), the opening, <c>StoryStage 99 → 1</c> and <c>Iﾊﾝﾗﾝ</c> in the week loop; the next week
     /// is Leazas's, stopped at its autosave (<c>MAIN.ADV:83</c>).
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Turn_END_in_week_23_ends_the_prologue_through_the_week_loop()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var game = await NewGameAsync(stubBattle: true);
         game.State.Week = 22;
         game.Unported.Effects["FIGT_A.ADV"] = s => s.Bt_Result = 1;     // the duel is lost
@@ -223,11 +213,9 @@ public class PrologueCommandTests(ITestOutputHelper output)
     /// autosave — "Load Complete", the week's date and banner, Sill's scene, the player phase — to
     /// week 10's autosave.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task A_game_saved_at_the_start_of_a_week_loads_from_the_title_and_goes_on_from_there()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var saves = new WatchedSaves
         {
             Written = (slot, data) =>
@@ -258,11 +246,9 @@ public class PrologueCommandTests(ITestOutputHelper output)
     /// Load/Save in the player phase, Load, "Auto": the session leaves the week for its start —
     /// "Load Complete", the week's banner again — and the replayed week goes on to Turn END.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Loading_from_the_command_menu_goes_back_to_the_start_of_the_week()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var saves = new WatchedSaves
         {
             Written = (slot, data) =>
@@ -289,11 +275,9 @@ public class PrologueCommandTests(ITestOutputHelper output)
     /// player's files to its <c>ZZ0</c>, and the session returns the ending; the clear is counted on
     /// page 4 and kept in slot 1, which holds week 9's autosave.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task A_game_that_reaches_an_ending_runs_OVER_and_keeps_the_clear_in_its_slots()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         Played? game = null;
         bool ended = false;
         var saves = new WatchedSaves
@@ -321,11 +305,9 @@ public class PrologueCommandTests(ITestOutputHelper output)
         Assert.Contains(game.View.Events, e => e is MessageEvent { Text: { File: "OVER.ADV", Line: 201 } });   // "Completion Report"
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task Backing_out_of_the_load_list_returns_to_the_title()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var game = await SessionAsync(new WatchedSaves());               // no slots: every item lists them again…
         game.Input.CancelMenus = true;                                   // …so the player cancels
 

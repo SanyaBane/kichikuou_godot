@@ -91,7 +91,7 @@ public class BattleWindowsTests
         Assert.True(Enumerable.Range(0, target.Length / 4).All(i => target[i * 4 + 3] == 0), "an empty mask shows nothing");
     }
 
-    [Fact]
+    [ScenarioFact]
     public void The_input_screens_add_the_prompt_and_their_boxes_until_they_answer()
     {
         var presenter = new BattlePresenter(Texts.Value, Cgs.Value, new BoxGlyphs());
@@ -167,7 +167,7 @@ public class BattleWindowsTests
     /// window of the layer; its line is what was printed into it, flowed into one paragraph, until the key wait's
     /// erase; 142/152 are thoughts, 151/152 the enemy's.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public void A_speech_bubble_is_our_dialogue_panel_not_a_window_of_the_layer()
     {
         var presenter = new BattlePresenter(Texts.Value, Cgs.Value, new BoxGlyphs());

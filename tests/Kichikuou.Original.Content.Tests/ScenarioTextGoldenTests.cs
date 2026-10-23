@@ -39,6 +39,41 @@ public static class LocalData
         Directory.Exists(GoldenDirectory)
             ? Directory.EnumerateFiles(GoldenDirectory, "*.golden").Order(StringComparer.Ordinal)
             : [];
+
+    /// <summary>The decompiled scenario is there (it is whole or missing, so its first file stands for all).</summary>
+    public static bool HasScenario => File.Exists(Path.Combine(ScenarioDirectory, "SET.ADV"));
+
+    /// <summary>Why a test that reads the scenario is skipped, or null when it can run.</summary>
+    public static string? NoScenario => HasScenario ? null : $"No decompiled scenario in {ScenarioDirectory}.";
+}
+
+/// <summary>A fact that reads the decompiled scenario; skipped without it.</summary>
+public sealed class ScenarioFactAttribute : FactAttribute
+{
+    public ScenarioFactAttribute() => Skip = LocalData.NoScenario;
+}
+
+/// <summary>A theory that reads the decompiled scenario; skipped without it.</summary>
+public sealed class ScenarioTheoryAttribute : TheoryAttribute
+{
+    public ScenarioTheoryAttribute() => Skip = LocalData.NoScenario;
+}
+
+/// <summary>A fact over one group's captures (a folder of the golden captures); skipped without them or the scenario.</summary>
+public sealed class CaptureGroupFactAttribute : FactAttribute
+{
+    public CaptureGroupFactAttribute(string group) => Skip = CaptureGroupTheoryAttribute.Missing([group]);
+}
+
+/// <summary>A theory over the captures of its groups; skipped while any of them or the scenario is missing.</summary>
+public sealed class CaptureGroupTheoryAttribute : TheoryAttribute
+{
+    public CaptureGroupTheoryAttribute(params string[] groups) => Skip = Missing(groups);
+
+    internal static string? Missing(string[] groups) =>
+        LocalData.NoScenario
+        ?? groups.Select(g => Path.Combine(LocalData.GoldenDirectory, g)).Where(d => !Directory.Exists(d))
+            .Select(d => $"No captures in {d}.").FirstOrDefault();
 }
 
 /// <summary>A theory over the golden captures; skipped without captures or scenario.</summary>

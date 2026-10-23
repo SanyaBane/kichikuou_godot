@@ -37,7 +37,7 @@ public class BattleStrategyTests
     /// The presenter's hold through <c>FIGT作</c>'s player side as the port shows it: from the strategy screen to the
     /// close of the effect's box; the announcement's and the effect's key waits answered by the cut-in, the line's not.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public void The_presenter_holds_the_strategy_from_its_screen_to_the_effects_close()
     {
         var s = new GameState();

@@ -28,11 +28,9 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     /// the subordinate picker left with End (its file leaves it open, the map covers it), Turn END.
     /// Every text resolves and every screen is drawn; no picker outlives the map.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task A_prologue_week_is_drawn_through_the_presenter()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var run = await RunAsync(stopAtWeek: 11);
         var player = run.Player;
         player.Map.Enqueue(Gesture.Province(34));                           // Pillage → Sﾌﾞﾀｲ
@@ -89,11 +87,9 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     /// the deployment picker inside the battle — drawn by hand over the battle's screen and clicked
     /// through its own hit test (a unit, then Intercept) — and the battle is fought.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task A_defence_picks_its_party_in_a_picker_drawn_over_the_battle()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var run = await RunAsync(stopAtWeek: 0);
         var state = run.Session.State;
         state.StoryStage = 1;
@@ -131,11 +127,9 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     /// pointer, which sits on No) and kept, an item from stock picked first (its prompt) and
     /// equipped on a unit, End. Every click goes through the drawn screen's hit test.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_item_screen_is_drawn_from_its_views_and_picks()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var run = await RunAsync(stopAtWeek: 0);
         var s = run.Session.State;
         s.StoryStage = 1;
@@ -206,11 +200,9 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     /// puts back the page its mode 2 kept at (640, 400), with the picker closed: the picker drawn by hand comes back
     /// over the screen it opened over, not over what an older page left there (owner's report, 2026-10-14).
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Subordinates_comes_back_from_a_unit_over_the_screen_it_opened_over()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var run = await RunAsync(stopAtWeek: 0);
         var s = run.Session.State;
         s.StoryStage = 1;
@@ -256,11 +248,9 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     /// right click and the graph again at 4x (the bar now 45 high), each other graph, Return. The
     /// screen is drawn by hand; the file's own drawing never reaches the stage.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task All_data_draws_the_map_view_and_every_graph()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var run = await RunAsync(stopAtWeek: 0);
         var s = run.Session.State;
         for (int k = 0; k < 16; k++)
@@ -328,11 +318,9 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     /// second, empty menu (DGN-07: an empty box that nothing hits, left by a cancel), the floor again,
     /// Retreat, Finish.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task A_dungeon_search_draws_its_floors_menus_and_battle()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var run = await RunAsync(stopAtWeek: 0);
         var s = run.Session.State;
         s.StoryStage = 1;
@@ -417,11 +405,9 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     /// <c>ｵｰﾌﾟﾆﾝｸﾞ</c> run on the booted game: its drawing commands run on the stage (CGs off screen,
     /// copies onto the screen, fills), its texts resolve, and the screen shows pictures.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_opening_draws_on_the_stage()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var run = await RunAsync(stopAtWeek: 0);
 
         await run.Session.Script.CallFileAsync("ｵｰﾌﾟﾆﾝｸﾞ.ADV");
@@ -439,11 +425,9 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     /// <c>J0 0, 400</c> (<c>:1407</c>) was kept while its <c>G</c> was dropped and placed the wedding below the screen, its
     /// palette over the map. Skipped without the player's files.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_rebellion_draws_the_wedding_after_a_skipped_opening()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
         var state = new GameState();
         var cgs = new CgLibrary(LocalData.CgDirectory);
@@ -517,11 +501,9 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     /// masked (it is not drawn in the full-screen window) — without the window's frame, which the
     /// picture covers (<c>:29-34</c>) — while the report is not.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_ending_draws_on_the_stage_with_its_picture_masked_for_the_agent()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var run = await RunAsync(stopAtWeek: 0);
         var p = run.Presenter;
         p.MaskEventCgs = true;
@@ -571,11 +553,9 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     /// sheet (CG 303 at (640, 400)) composed at (640, 0) and copied onto the screen — and a click on
     /// "Start" begins the game: the prologue scene, then <c>MAIN</c> up to week 9's autosave.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_title_draws_on_the_stage_and_Start_begins_the_game()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var run = await RunAsync(stopAtWeek: 9);
         var p = run.Presenter;
         bool clicked = false;
@@ -609,11 +589,9 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     /// portrait, the six lines — then shown whole; a right click goes back to the title. The
     /// portraits are not event CGs: <see cref="GamePresenter.MaskEventCgs"/> leaves the screen as drawn.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Fortune_Check_draws_its_pages_and_a_detail_on_the_stage()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var run = await RunAsync(stopAtWeek: 0);
         var p = run.Presenter;
         p.MaskEventCgs = true;
@@ -691,11 +669,9 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     /// map's tile area (CG 846 at (1280, 0), survey-gallery §4.3): composing the screen does not draw
     /// the map over it, so the tab shows the sheet as it was loaded.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_gallery_draws_its_pages_on_the_stage_masked_for_the_agent()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var run = await RunAsync(stopAtWeek: 0);
         var p = run.Presenter;
         run.Session.State.Fates[79].Fate = 1;                           // a clear: the button is there
@@ -752,11 +728,9 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     /// played starts its track, and End puts the title back — silent (STR-37). No event CG: the mask
     /// leaves it as drawn.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_music_room_draws_on_the_stage_and_End_puts_the_title_back()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var run = await RunAsync(stopAtWeek: 0);
         var p = run.Presenter;
         p.MaskEventCgs = true;
@@ -1062,11 +1036,9 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     /// stage, its text resolves, and with the debug mask every frame under its full-screen window is the
     /// grey placeholder. Skipped without the player's files.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task A_death_scene_draws_its_pictures_over_the_battle()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var run = await RunAsync(stopAtWeek: 0);
         var p = run.Presenter;
         var s = run.Session.State;
@@ -1101,11 +1073,9 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     /// left out in a battle, an invisible menu the player could still click) and is a window of our
     /// battle screen's layer. Skipped without the player's files.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task A_menu_of_a_scene_the_battle_called_is_drawn_over_the_battle()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var run = await RunAsync(stopAtWeek: 0);
         var p = run.Presenter;
         var menus = new List<(string[] Items, int Changed, bool Masked)>();
@@ -1136,11 +1106,9 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     /// screen while <c>ｵｰﾌﾟﾆﾝｸﾞ</c> waits for its music, until something draws over them.
     /// Skipped without the player's CGs.
     /// </summary>
-    [Fact]
+    [LocalFolderFact("cg")]
     public void Closing_the_full_screen_window_leaves_it_on_the_screen()
     {
-        if (!File.Exists(Path.Combine(LocalData.CgDirectory, "CG0815.png")))
-            return;
         var missing = Path.Combine(Path.GetTempPath(), "kichikuou-no-data");
         var presenter = new GamePresenter(new ScenarioText(missing), new CgLibrary(LocalData.CgDirectory), new BoxGlyphs());
         var state = new GameState();
@@ -1171,11 +1139,9 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     /// CG drawn there with <c>PC 7</c>, though another CG's palette was loaded when it was drawn
     /// (<c>cg_fflg</c>: 1 draws, 4 loads). Skipped without the player's CGs.
     /// </summary>
-    [Fact]
+    [LocalFolderFact("cg")]
     public void A_cg_drawn_without_its_palette_shows_in_the_palette_loaded_later()
     {
-        if (!File.Exists(Path.Combine(LocalData.CgDirectory, "CG1734.png")))
-            return;
         var missing = Path.Combine(Path.GetTempPath(), "kichikuou-no-data");
         Sys3Int[] Args(params int[] values) => values.Select(v => (Sys3Int)v).ToArray();
         GamePresenter Presenter()
@@ -1266,11 +1232,9 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     /// right portrait is drawn again (<c>321</c>), so Rance and the centre picture stay gone.
     /// Skipped without the player's CGs.
     /// </summary>
-    [Fact]
+    [LocalFolderFact("cg")]
     public void A_map_scroll_wipes_the_pictures_until_they_are_drawn_again()
     {
-        if (!File.Exists(Path.Combine(LocalData.CgDirectory, "CG1008.png")))
-            return;
         var missing = Path.Combine(Path.GetTempPath(), "kichikuou-no-data");
         var presenter = new GamePresenter(new ScenarioText(missing), new CgLibrary(LocalData.CgDirectory), new BoxGlyphs());
         var state = new GameState { Ui_PortraitL = 1, Ui_PortraitR = 4, Ui_CenterCg = 1008 };

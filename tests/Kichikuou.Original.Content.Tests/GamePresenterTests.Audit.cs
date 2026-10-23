@@ -38,7 +38,7 @@ public partial class GamePresenterTests
     /// </remarks>
     public abstract class AuditShard(ITestOutputHelper output)
     {
-        [Fact]
+        [ScenarioFact]
         public Task Random_runs_of_the_commands_never_read_a_page_a_screen_drawn_by_hand_left_stale() =>
             AuditAsync(GetType().GetCustomAttribute<ShardAttribute>()!.Index, output);
     }
@@ -70,8 +70,6 @@ public partial class GamePresenterTests
 
     private static async Task AuditAsync(int shard, ITestOutputHelper output)
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         int cases = DifferentialRuns.Cases(48);
         var findings = new List<PageAudit.Finding>();
         var ends = new Dictionary<string, int>(StringComparer.Ordinal);

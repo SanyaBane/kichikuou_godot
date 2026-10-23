@@ -28,11 +28,9 @@ public class WeeklyEventsDifferentialTests(ITestOutputHelper output)
     private static readonly int[] Interesting =
         [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 20, 21, 22, 30, 40, 41, 42, 43, 49, 52, 90, 99, 100, 200];
 
-    [Fact]
+    [ScenarioFact]
     public async Task The_port_runs_COM_exactly_as_the_decompile()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, Com)))
-            return;
         var program = new ScenarioScripts(LocalData.ScenarioDirectory).ReadProgram(Com);
         var scenes = new OneProgram(program);
         var guide = new Guide(program);

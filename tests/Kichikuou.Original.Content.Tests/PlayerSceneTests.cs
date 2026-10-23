@@ -33,11 +33,9 @@ public class PlayerSceneTests(ITestOutputHelper output)
         return rig;
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task The_prologue_scene_sets_only_the_music_and_the_dungeon_cursor()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var rig = new SceneRig(LocalData.ScenarioDirectory);
         var setup = new GameSetup(rig.Script, new ScenarioScripts(LocalData.ScenarioDirectory));
         await setup.BootAsync();
@@ -152,11 +150,9 @@ public class PlayerSceneTests(ITestOutputHelper output)
     /// answers (first menu item, key 0, draws of 1) and the rule files stubbed, and ends with its
     /// page return or a jump to OVER — a smoke test of the runtime over real scenes.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Every_entry_of_the_milestone_scenes_runs_to_its_end()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return;
         var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
         var failures = new List<string>();
         foreach (string file in Milestone1)
