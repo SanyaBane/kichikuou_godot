@@ -286,6 +286,11 @@ debug starts are not ported (`GameSetup.NewGameAsync` rejects `DebugMode ≠ 0`)
 4. The boot-time smoke dump mentioned in `golden-tests.md` (first `PCMPLAY.ADV` after `SET.ADV`)
    is not in the golden folder; unknown whether it was kept.
 5. Meaning of the third unit string slot (written by `Iﾊﾝﾗﾝ.ADV:26`, `FIGT.ADV:1975`) — belongs to
-   the survey of those files.
+   the survey of those files. Answered 2026-10-23 from every `MM`/`MS`/`X` of string 3 and of the
+   slot: it has no meaning. The slot is only ever copied from string 3 (`Iﾊﾝﾗﾝ.ADV:26`,
+   `FIGT.ADV:1975`, `ｽﾀMENU.ADV:353, 447`, each right after `MS 1`/`MS 2` set the other two) and back
+   into string 3 (`Cﾌﾞｶ.ADV:11, 37`), and string 3 is set (`MS 3`) and shown (`X 3`) only by
+   `HAPPY_C` (Fortune Check, `HAPPY_C.ADV:316-400, 357`) — so the slot holds an empty string, or
+   Fortune Check's last line when it ran before in that launch, and nothing ever shows it.
 6. `VAR0055` starts at 100 and is never read (dictionary: write-only tally); it still has to be
    kept for memory equality — confirm the "never read" when the strategic files are surveyed.

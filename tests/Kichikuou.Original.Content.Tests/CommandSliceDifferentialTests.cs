@@ -758,7 +758,7 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
         state.FogCard_Price = (Sys3Int)(rng.Next(2) == 0 ? 0 : 120);
         state.F_Fuuka_State = (Sys3Int)(rng.Next(2) == 0 ? 9 : rng.Next(0, 20));
         state.F_Fuuka_ShrineVisited = (Sys3Int)rng.Next(0, 2);
-        state.VAR0427 = (Sys3Int)(rng.Next(2) == 0 ? 3 : rng.Next(0, 5));
+        state.N_Milli_CureStage = (Sys3Int)(rng.Next(2) == 0 ? 3 : rng.Next(0, 5));
         state.F_Wenlina_CureMilli = (Sys3Int)rng.Next(0, 2);
         state.N_Melfeis_Stage = (Sys3Int)rng.Next(8, 13);
         state.F_Ruberan_State = (Sys3Int)rng.Next(0, 2);

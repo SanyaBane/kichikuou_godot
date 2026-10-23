@@ -455,7 +455,7 @@ public sealed partial class DungeonCommand(OriginalScriptContext script, IScenar
         await FootstepsAsync();                                         // \L_074d0
         if (State.BgmEnabled == 1)
             await Script.MusicAsync(21);
-        if (State.Bt_PlayerParty1 == 1 && State.VAR0427 == 3 && State.Dgn_Cur == 23)
+        if (State.Bt_PlayerParty1 == 1 && State.N_Milli_CureStage == 3 && State.Dgn_Cur == 23)
         {
             State.Ev_Entry = 2;
             await WaoAsync(3);

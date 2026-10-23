@@ -225,7 +225,7 @@ public sealed partial class WeeklyEvents
             return;
         }
         State.Unit_Cur = 24;                                                                // :519
-        if (Unit.Status != 0 && State.Week > State.VAR0541 + 12 && State.VAR0427 != 4 && State.F_Mill_State < 2) // :520-524
+        if (Unit.Status != 0 && State.Week > State.N_Custom_JoinWeek + 12 && State.N_Milli_CureStage != 4 && State.F_Mill_State < 2) // :520-524
         {
             await EventAsync("Gﾐﾘ.ADV", 1);
             return;

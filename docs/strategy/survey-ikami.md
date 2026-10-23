@@ -368,13 +368,36 @@ With `N_Warg_Stage` below 2 the second Think plays "Can't think of anything" and
    (`Cｼﾊｲﾄｼ:227-232`, `:538-547`), which runs on Ancient Ruins (35), and nothing up to `:4556` moves
    the cursor — `Prov_Cur` is 35 when `Iｶﾐ` starts.
 3. `Bt_IsDuel` at entry: every duel caller resets it (01-flow §2.6) [I]; a stale 1 would make the
-   fights endless until a side is annihilated.
+   fights endless until a side is annihilated. Answered 2026-10-23 from every write of `Bt_IsDuel`
+   in the scenario and the captures' dumps: it is 0 at entry. Each scene sets it just before its
+   `FIGT`/`FIGT_A` and clears it right after (the widest gap `Gｹｯｾﾙ.ADV:2433-2437`, with `死亡捕獲`
+   between); the dungeon's bosses set it while being set up and `Cﾒｲｷｭｳ.ADV:1290` clears it after
+   every dungeon fight, Gunagan's included, before God's Door can lead on to `Iｶﾐ`; the new game clears
+   it (`ｽﾀｰﾄ.ADV:323`), and no save is taken inside a duel. In the 885 captures it is 1 only inside
+   duels (the `FIGT`/`FIGT_A` dumps of 8 duels and their callers' hook dumps), 0 at every scene's
+   entry and exit.
 4. Does Repel at the first turn really skip the kaiju's turn (turn order by troops, 01-flow §6)?
    The recipes in §9 assume it; the first test run answers it. **Answered** (`IkamiEndTests`): Repel
    wins every one of the 20 fights with the four garrisons of the new game's units, none lost.
 5. Unit record 0's `Unit_Status` (Q8): which slot it aliases and whether it can be non-zero.
+   Answered 2026-10-23 from `SET.ADV:137-169`, the harness's bindings (`Unit_Status` page 1 offset
+   988, `Unit_DgnDefMod` offset 936) and the captures' dumps: page 1 slot 988, which is `Unit_DgnDefMod`
+   of unit record 52 (ENG-06). Unit 52 has no `SET_CHR` record and no literal cursor names it (they stop
+   at 51; the unit loops' bounds are `< 51` or lower), so nothing writes it [I: computed cursors were
+   not followed one by one]; it is 0 in all 3,438 dumps of the 885 captures. Record 0's status reads 0:
+   EVT-17's "normally 0" holds.
 6. `N_Warg_Stage 2`'s path (`Gﾜｰｸﾞ` entry 10 from `Cﾊｰﾚﾑ:35`) was not traced: needed only to tell
-   the owner how a player reaches "Leave it to Warg".
+   the owner how a player reaches "Leave it to Warg". Answered 2026-10-23 from `Gﾜｰｸﾞ.ADV`,
+   `COM.ADV:96-98`, `Tｹｲﾌﾞﾘｽ2.ADV:124-127`, `Gｹｲﾌﾞﾘｽ.ADV:503-504` and `Cﾊｰﾚﾑ.ADV:35, 179-181,
+   514-515`: Warg joins in stage 3 — once the player has attacked the Demon Lord's Castle (79)
+   (`F_DemonCastle_Attacked`) and while `F_Kayblis_War` is 0, `COM` plays `Gﾜｰｸﾞ` 2 (`:3603-3605`:
+   `F_Warg_State 2`, `N_Warg_Stage 1`) — and is then in the harem. A visit to her (`Gﾜｰｸﾞ` 10,
+   `:926-1049`) offers Word Game, Hide & Seek, Sumo, Sex and Secret Wish…; Secret Wish… is refused
+   until she has played once (Word Game, Hide & Seek or Sumo set `F_Warg_State 3`, `:1234`, `:1497`,
+   `:1719`; the refusal `:1878-1893`), so on a later visit Secret Wish… and any of its four dreams
+   (Being Popular, Fun, Scary, Becoming a Girl, `:1923-1945`) end in `L_03f6d` (`:3524-3525`):
+   `N_Warg_Stage 2`. Two harem visits to her, then (each spends one of the week's harem uses,
+   `Cﾊｰﾚﾑ.ADV:36`).
 7. Register Q1-Q10 (areas EVT/DGN) after the end tests, citing this survey as `ikami` (step 3). Q3
    (the picker never ends with only Rance free: three Stops, four pickers), Q4 and Q5 (Rance picked:
    his war expenses stay paid) are confirmed by runs in `IkamiEndTests`. **Done** (step 3): EVT-10 to

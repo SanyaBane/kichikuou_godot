@@ -334,8 +334,29 @@ interactive Godot before, so stage 3 had no Kayblis phase at all). Since step 5 
 1. Can a player hold Grief Valley (89) through a Kayblis phase before Silky's Castle (81) — i.e. is
    the guards' loop really ended only by abandoning or losing (NAT-02)? It decides the shortest path.
 2. Can Kesselring's Castle (87) be won with Kesselring alive (troops gone, HP left)? `Gｹｯｾﾙ` 2's
-   branch at `:871` reads a `Tmp0001` left by the battle before it — duel or not [I: stale].
-3. Can Kayblis at 40 HP be killed without Silky's `Gｼﾙｷｨ` 9 — and at war (60000 HP) at all?
+   branch at `:871` reads a `Tmp0001` left by the battle before it — duel or not [I: stale]. Answered
+   2026-10-23 from `Tｹｲﾌﾞﾘｽ2:97-99, 160-171` (`L_004a2` takes every listed commander still alive),
+   `FIGT.ADV:320-326` (docs/battle/01-flow.md §7), `死亡捕獲:348-353`, `Gｹｯｾﾙ:306-329, 547-603, 656, 871-876,
+   3011-3041`: no. While Kesselring (commander 133) lives he leads the castle's party (with 87-89), retreat
+   mode 1; a commander without troops fights on until his HP is 0, and an attack is won only by
+   annihilation (a timeout loses it), so every win there kills him — and `死亡捕獲` then plays `Gｹｯｾﾙ` 10
+   (not in a duel), which revives him (status 1, HP 20, +200 troops) and gives the castle back to Kayblis
+   (owner 8). The `Tmp0001` at `:871` is not stale: `Gｹｯｾﾙ` 2 sets it to 1 as its first line (`:656`;
+   nothing up to `:871` but `M` and `WAO_SUB`, which do not write it), and `L_03607` (`:3011-3041`) sets it
+   to 0 once Kesselring's march along `Kesselring_LastProv` (4, 23, 19, 61, 70) has no province left that
+   is not Kayblis's; only then do the later tests (`:1351, 1741, 2154, 2273`) go to the final fight
+   `L_032fd`, so `:871` itself always calls `L_03588`.
+3. Can Kayblis at 40 HP be killed without Silky's `Gｼﾙｷｨ` 9 — and at war (60000 HP) at all? Answered
+   2026-10-23 from `Tｹｲﾌﾞﾘｽ:53` → `L_02662` (`:1601-1613`), `FIGT.ADV:2357-2358, 2428-2435`
+   (docs/battle/02-resolution.md §3.3, §6), `死亡捕獲:362-368`, `Gｹｲﾌﾞﾘｽ:1369-1390`: yes at 40 HP, and in
+   principle at war too. His HP is not refilled between battles: each Kayblis phase gives him only +3
+   (capped at the maximum), and his death in any battle — won, lost or retreated from — plays `Gｹｲﾌﾞﾘｽ` 10.
+   Only a class ≥ 10 unit or one holding Chaos (item 1) or Nikkou (item 2) hurts him (Miki (unit 32) and
+   Satella (unit 29) are class 11, Meglass (unit 30) and Galtia (unit 41) 10): up to 6 HP an exchange in
+   person, Rance Attack the same, and Miki's Vanish Bomb (special 4) takes half his current HP. So 40 HP
+   falls in one battle at the Demon Lord's Castle (79) or over a few weeks of attacks. At war (`Gｹｲﾌﾞﾘｽ` 2,
+   from `Tｹｲﾌﾞﾘｽ:9-11`: 60000 HP, recovery 0) only the halving makes it thinkable — about 14 Vanish Bombs
+   against his +3 a week — so practically no [I: rate not measured].
 4. Medusa's replays (NAT-25): confirm by capture. (`Gｼﾙｷｨ` 8 does not replay: NAT-26.)
 5. Is La Vaswald reached at stage 3 in practice (`N_Saizel_Weeks > 40`)?
 6. ~~`docs/variables.tsv`~~ Renamed with step 1 (2026-10-11): VAR0744 is `F_DemonCastle_Attacked` (the

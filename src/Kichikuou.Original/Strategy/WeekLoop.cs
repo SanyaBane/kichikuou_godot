@@ -694,7 +694,8 @@ public sealed class WeekLoop(OriginalScriptContext script, IScenarioSource? scen
                 await AttackAsync(91);
         }
 
-        // QUIRK: STR-02 — RetVal is 91's roll only if 91 lives; else whatever came last.
+        // QUIRK: STR-02 — RetVal is 91's roll only if 91 lives and does not attack; else whatever came
+        // last (after her FIGT_B: 1 won, 0 lost, 2 abandoned).
         if (State.RetVal == 2 && State.F_Camilla_State == 1)            // :798-807
         {
             State.Ev_Entry = 2;

@@ -285,9 +285,55 @@ the player's files — but `FIGTATTK` (the battle's animation, which the scene `
 2. Shangri-La (29) after a lost duel: still taken the next week (`COM:137` does not test the
    result)?
 3. Does taking a Zeth tower kill or capture its minister (they are also units 38-40)? It sets the
-   Zeth path's length.
-4. What `RetVal` holds after the Camilla Unit's `FIGT_B`, which `MAIN:798-806` tests.
+   Zeth path's length. Answered 2026-10-23 from `Tｾﾞｽ2:91-130` and its parties `:143-217`,
+   `FIGT.ADV:320-326` (docs/battle/01-flow.md §7), `死亡捕獲:181-219, 237-255, 256-260`: it kills her —
+   always. While the minister lives she defends her own tower (Chizuko (commander 101) third behind 103,
+   102; Papaya (104) behind 106, 105; Nagi (107) behind 108 and Ragarl (109); Magic (110) behind 112, 111),
+   retreat mode 1, and an attack is won only by annihilation (a timeout loses it), so the win that takes the
+   tower leaves her at status 0: Chizuko, Papaya and Magic stay dead after any won battle (`Gﾁｽﾞｺ` 2,
+   `Gﾊﾟﾊﾟｲｱ` 4, `Gﾏｼﾞｯｸ` 23), Nagi only at Nagi's Tower (67) (`Gﾅｷﾞ` 6; anywhere else she is revived at
+   HP 1). At Magic's Tower (66) with Alex (commander 125) alive (`Gﾏｼﾞｯｸ` 1 → `Tmp0001 = 1`) the party is
+   Alex and 126-128 without Magic, and Alex's death there plays `Gﾏｼﾞｯｸ` 2, which sets Magic to status 0
+   (`Gﾏｼﾞｯｸ:5808-5809`). The death scenes give no status back (only `Gﾅｷﾞ` 3, the Ragarl ritual from
+   `Tｾﾞｽ:8-10`, sets Nagi and Ragarl to 1, `Gﾅｷﾞ:3424-3427` [I: whether it can follow her death is not
+   traced]); the only taking-in is Nagi
+   (unit 40) in `Gﾅｷﾞ` 6's choice when Shizuka (unit 17) is in the party with `VAR0069 = 1` (Shizuka leaves,
+   `Gﾅｷﾞ:6455-6459`). So the four towers are the four deaths `Iｾﾞｽ` 100 needs.
+4. What `RetVal` holds after the Camilla Unit's `FIGT_B`, which `MAIN:798-806` tests. Answered
+   2026-10-23 from `FIGT_B:253, 714-826, 830-866`, `M.ADV` `CallArg = 4` → `WAO_MAP:116-122, 183-196`,
+   `WAO_SUB:292-294` (a key wait keeps `RetVal`): it is never Camilla's (commander 91) roll after her own
+   battle. Won: 1 (`:253`). Lost: 0 — `L_01165` sets 2 (`:836`), but the map's marker call `M` 4 (`:861-862`)
+   then looks the province's marker up and leaves 0 (every province has one from `SET_MAP`), 1 only if none
+   is found. Abandoned ("Abandon City", `:714`): 2 (`:791`), so `Gｶﾐｰﾗ` 1 or 2 plays right after the
+   battle. A scene `死亡捕獲` plays (a fallen unit's, `Gｴｸｽ` 6) may leave another value. The port does the
+   same (`Combat/Battle.Flow.Defence.cs`, `Script/OriginalScriptContext.Map.cs` `MapFindMarker`). STR-02
+   holds while she lives too.
 5. Is `Iﾏｼﾞﾝ` 1's `:1569-1719` ever reached? Can Satella (29) or Meglass (30) join after "Rape
-   Demon Lord"? Are endings 5 and 12 reachable at stage 2?
+   Demon Lord"? Are endings 5 and 12 reachable at stage 2? Answered 2026-10-23: (a) No — `L_01cc0`
+   (`:1569`, untranslated Japanese) is reached only on `Bt_Result = 1` after a `FIGT_B` of Leazas Castle
+   (1) (`:80-83`, `:596-599`), and both ways to it — the lost battle (`FIGT_B:830-882`) and "Abandon City"
+   (`:714-826`) — end the game there with ending 2 (`&#OVER`) at `Prov_Cur = 1`; `FIGT` never writes
+   `Prov_Cur`. Dead code. (b) No — they join only in `Gｻﾃﾗ` 1 (`Gｻﾃﾗ:4401-4404`), called only by
+   `MAIN:742-746` at `N_Camilla_Stage = 4` inside the Camilla Unit block, which needs the stage ≠ 100;
+   "Rape Demon Lord" sets 100 (`Gﾐｷ:3754`) and nothing lowers it (its writers: `Iﾏｼﾞﾝ:84, 2054, 2096`,
+   `Gｻﾃﾗ:3642`, `MAIN:809, 894`, the boot), so `MAIN:986-993` never resets the war and ending 6 follows.
+   (c) Yes, both: ending 12 is `Gｿﾙﾆｱ` 10 (a harem visit) with Saulnia's state 2-8 and Katyusha's > 1 →
+   "Have Threesome" (`Gｿﾙﾆｱ:1349-1366`) → `Gｶﾁｭｰｼｬ` 100 → ending 12 unless Sill (unit 2) is back
+   (`Gｶﾁｭｰｼｬ:1844-2068, 2293`); both witches are the Helman 5th Army's (`Tﾍﾙﾏﾝ:450-454`, `Tﾍﾙﾏﾝ2:239-244`,
+   captured through `死亡捕獲:148-161`), and Sill is away from `Iﾊﾝﾗﾝ:35-36` until her rescue. Ending 5 is
+   `Cｼﾊｲﾄｼ`'s Tulip Research (`:87-93`: Maria (unit 16) alive, her lab built in `Cﾃｲﾄ`, which needs
+   `F_Maria_Tulip > 1`) → `Gﾏﾘｱ` 1: each visit adds 1 to the tulip count (`:3463-3465`), at 9 or 13 (unless
+   `F_Maria_Flag2 = 2`) "Look" → ending 5 (`:3846-3857, 4098-4109, 4244-4864`); no stage gate, so from
+   stage 1 on.
 6. Use Force on a city whose listed commanders are all dead goes to `FIGT_A` with an empty enemy
-   party (no unopposed exit there) — can it happen?
+   party (no unopposed exit there) — can it happen? Answered 2026-10-23 from `Cﾃｷﾄｼ:3649-3828` and
+   `L_04f2a`, `FIGT.ADV:320-326`, docs/battle/01-flow.md §9.3, `死亡捕獲` (docs/battle/01-flow.md §11.4):
+   only through a lost Use Force whose last defender dies in the same exchange as the player's last unit
+   (Rance (unit 1) not in the party, or the game ends): the step tests the player's side first, so the
+   battle is lost (`Bt_Result = 1`) with every defender at status 0, and `死亡捕獲` revives none of the
+   cities' commanders (8-17, 63-71). Any other last kill wins and takes the city; a successful negotiation
+   zeroes them but takes it too; no other battle fights them while the city is independent (Mars
+   (commander 71) only after Mars (22) is taken, `Gｶｾｲ:2750, 3089`; the Desert Guides (18-20) only in
+   `Iｼｬﾝｸﾞﾘﾗ` 2, Shangri-La never reaching the menu, `Cﾃｷﾄｼ:434-442`). The next Use Force then puts
+   nobody in the party and `FIGT`'s first step goes to "the enemy was annihilated" (`:324-326`): the city
+   is taken unopposed [I: by the flow; not run].

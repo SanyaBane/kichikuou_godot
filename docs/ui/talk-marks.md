@@ -131,7 +131,7 @@ dry run (§2) has no such error: it runs the scene. 236 variables, in three clas
   `Ui_CmdHaremAvail`.
 - **Read only on talk and harem paths (13)**: `N_RanceSelfTalk`; `F_Asuka_IntroSeen`, `F_Freak_TalkSeen`,
   `F_Hubert_TalkSeen`, `F_Menad_TrainingSeen`; `F_Isoroku_Flag`, `F_Leila_Flag`, `F_Milli_Flag1`, `F_Milli_Flag2`,
-  `VAR0068` (Shizuka), `VAR0448` (Miki); `F_Suzume_Met`, `F_Wendy_Met` (they add the girls to the harem's picker).
+  `VAR0068` (Shizuka), `F_Miki_PowerScene` (Miki); `F_Suzume_Met`, `F_Wendy_Met` (they add the girls to the harem's picker).
   They were to be ignored as "text only", on the reasoning that they only pick a later scene, which the dry run of
   that later talk sees. That fails when a read branch moves such a variable silently (below), so **they count**
   (owner, 2026-10-22), all but `N_RanceSelfTalk`: the owner wants no mark on Rance's talks 2-9 and 11-19 (§1).

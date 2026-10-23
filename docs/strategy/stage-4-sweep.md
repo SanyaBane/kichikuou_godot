@@ -322,11 +322,29 @@ stops at it in S4, and nothing stage 4 reaches is left unported but `OVER` (`Gam
    (`GodsDoorEndTests`): both branches behave as read — Kou at 8 reaches `Iｶﾐ` in S4+2, Kou at 7 or 0
    leaves the statue with Ho Raga and the door shut; "the only way" still rests on the grep.
 2. Are Siberia (38) and Ancient Ruins (35) then lost for good to the Angels from phase 4 — i.e. is a
-   dungeon on a province of owner 10 really closed (survey-dungeon §2, `COMMAND:151`)?
+   dungeon on a province of owner 10 really closed (survey-dungeon §2, `COMMAND:151`)? Answered 2026-10-23
+   from `COMMAND:146-153, 514-529`, `Cｼﾊｲﾄｼ:227-232, 538-547`, `Cﾃｷﾄｼ:108-110` and a grep of every
+   `Prov_Owner := 1`: yes, for good. A dungeon on the map opens only when `Prov_Owner = 1` or `Dgn_Prov = 0`
+   (`:150`), so Ho Raga's Tower (dungeon 5) closes with Siberia (38); the Ancient Ruins (dungeon 30) have no
+   map entry of their own — only `Cｼﾊｲﾄｼ`'s Ruins Search, and `COMMAND` routes a province to `Cｼﾊｲﾄｼ` only
+   when it is the player's (`:527-528`). Nothing gives either back at stage 4: Attack is refused there
+   (`Cﾃｷﾄｼ:108-110`), and the other writers of owner 1 (`FIGT_A` after an attack, `Cﾃｷﾄｼ`'s negotiations,
+   `Gｹｯｾﾙ` (87), `Gﾊﾟｯﾄﾝ`, `Gﾐﾈﾊﾞ`, `Iｼｬﾝｸﾞﾘﾗ`, `Iｼﾚｲﾌﾞ`, `Iｾﾞｽ`, the boot, `ｽﾀMENU`) never run on them then;
+   `Tﾙﾄﾞﾗ`, `Gﾙﾄﾞﾗ`, `Gｺｳﾋﾒ`, `Gﾎﾗｶﾞ`, `Cﾒｲｷｭｳ`, `Iｶﾐ` write no owner. Lost from phase 4 on, they close the
+   winning endings unless the statue and the door are done first.
 3. Does milestone 5 include W4 (`OVER`, `ｽﾀMENU`) — decision 16 says "up to the game's end", and stage
    4 ends only there — or does every ending stay `GameEnd`? **Answered** (decision 17): `GameEnd`;
    W4 is not in milestone 5.
 4. Path 2 (Kayblis killed by his own army, the Demon Lord's Castle (79) held): reachable at all?
+   Answered 2026-10-23 from `Tｹｲﾌﾞﾘｽ2:32-62, 105-107, 124-140, 201-212` (`L_004a2` takes every listed
+   commander still alive), `FIGT.ADV:320-326` (docs/battle/01-flow.md §7), `Cﾃｷﾄｼ:147-157`,
+   `Iｼﾚｲﾌﾞ:150-168, 1466-1467`: no. The castle can be attacked only at stage 3 (its neighbours Tower of Evil
+   (78), Sulfur Forest (80) and Grief Valley (89) are demon land, and the first attack on demon land starts
+   stage 3); there its party is commanders 181-183 with Kayblis (commander 135) fourth whenever he lives,
+   retreat mode 1, and an attack is won only by annihilation — so taking it kills him in that battle
+   (path 1), and no scene gives it to the player. Kayblis dying in his own army's `FIGT_B` therefore always
+   finds the castle his, and `Iｼﾚｲﾌﾞ` 7 ends the game there with ending 8 (`&#OVER`) before the rest of the
+   phase runs: NAT-31's freeze and EVT-20's own-army effect cannot happen.
 5. `Iｶﾐ` needs its survey (rearguard rules, `FIGT表示` 21-24, the party restore `:4838-4854`) — with
    this milestone, or apart? **Answered** (decision 17): its own survey, before step 2's end tests.
 6. `docs/variables.tsv`: `N_Rudrasaum_Turns` (above; corrected in step 1); `F_GodsDoor_Quest` reads "3 got gold statue, 4

@@ -13,9 +13,35 @@ Open questions (merged from 01 §14 and 02 §11):
    0xa07d):** `*` binds before `+`, so the Mill-state test applies to slot 4 only — quirk BTX-04
    ([../quirks.md](../quirks.md)); `FIGT_M.ADV:8326`.
 3. Content of unit record 51 before any kaiju is summoned (drives Goliath/ninja draws) — `FIGT.ADV:1126-1137`, `1972-1979`, `2592`, `2648`.
+   Answered 2026-10-23 from `SET.ADV:135`, `:225`, `:329`, `ｽﾀｰﾄ.ADV:871`, `FIGT表示.ADV` and the
+   captures: every field is 0. The boot's `DF Unit_Troops, 10000 * 2, 0` (`SET.ADV:225`) clears all
+   of page 1 before `SET_CHR` fills units 1-50 only; every game starts from that boot (the game
+   ends with `ZZ0, 0`, `OVER.ADV:2083`, `HAPPY_C.ADV:91`, which quits the engine) and the saves
+   carry page 1 (`DC 1, …, 1`). Before a kaiju the only other writers of record 51 are the ninja
+   and Goliath builders and the story battles of `FIGT表示.ADV` (called from `G*`/`I*` scenes), and
+   they set only CGs, face, status, troops, max troops, HP and max HP — so `Unit_Atk`, `Unit_Def`,
+   `Unit_Attacks`, `Unit_Magic`, `Unit_Level`, `Unit_Class`, `Unit_Partner`, `Unit_Strategy` and the
+   modifiers stay 0, and `Unit_Item` too unless the player equips an item on the record through
+   `Sｱｲﾃﾑ`'s empty 51st cell once one of them has left `Unit_Status 1` (`Sｱｲﾃﾑ.ADV:244-248`, quirk
+   CMD-24). The 885 captures agree: 3081 memory dumps hold record 51 all zero, the other 339 only
+   Kanami's ninja fields (HP 3/3, status 1, face 9, CGs 1164).
 4. Can the original `system39.exe` `Y 4` return n+1 like xsystem35? — every `Y 4` site, e.g. `FIGT.ADV:2178`.
 5. Background overlay test `Bt_EnemyParty1 ≠ 1137` is always true (probably meant `Cmdr_CgFull`) — `FIGT.ADV:1715`.
 6. Can `Bt_MsgMode` be outside 1..4 at a Goliath strike (0 at new game), letting `FIGT_M.ADV:5`'s draw pick the side? — `FIGT.ADV:1144`, `FIGT_M.ADV:5-23`, `SET_VER.ADV:515`.
+   Answered 2026-10-23 from `ｽﾀｰﾄ.ADV:619`, every writer of `Bt_MsgMode` and the captures: yes, with
+   0 only, and only when the strike is the first exchange since the boot in that game's history. The
+   boot's straight-line `ｽﾀｰﾄ.ADV:619` is the only 0 a game sees (`SET_VER.ADV` is called from
+   nowhere); every exchange sets 1, 3 or 4 (`FIGT.ADV:1364`, `1370`, `1376`, `1449`, `1595`, `1606`),
+   FIGT_M 2 (`FIGT_M.ADV:3`), and the saves carry it. The strike opens a round of a battle in
+   Goliath's city (`FIGT.ADV:327-328`), so it meets the last exchange's value from an earlier battle.
+   A game begun normally fights the prologue's forced last battle (`COMMAND.ADV:419-421` →
+   `Iﾄｳｿﾞｸ.ADV:1384-1397`) long before Maria builds the T2 Goliath (`Gﾏﾘｱ.ADV:3907-3909`), so it
+   meets 0 only if no battle of it ever ran an exchange (every one retreated from before anyone
+   struck — not traced); a debug
+   chapter start (`ｽﾀMENU.ADV:304-359`, `:360-546`, `DebugMode` from `Iｱﾘｽ.ADV:119`) reaches story
+   stage 2 with no battle behind it, so a Goliath built there whose battle is that game's first
+   meets 0 and `FIGT_M.ADV:5`'s draw picks the side. In the captures each run's first battle entered
+   with 0 (10 runs) and all 110 battle captures leave with 1, 3 or 4.
 7. Who restores Rance's `Unit_Status` after a prologue defeat? — `FIGTﾐｶDE.ADV:1-21`, `死亡捕獲.ADV:26-39`.
 8. ~~Can `Sﾌﾞﾀｲ` return a code other than 501/502/503 to FIGT_B?~~ **Resolved:** no — it returns only
    501, 502 (mode 2) or 503 (`Sﾌﾞﾀｲ.ADV:106-149`); the plains fall-through is unreachable.

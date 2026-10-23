@@ -188,6 +188,9 @@ Facts the dictionary pass added **[C unless marked]**:
 ## Open questions
 
 - The 10 G-level variables and the 144 I-level ones — confirm when the code that uses them is ported.
+  Answered 2026-10-23 from the scenario and the port: 141 raised to C (about 25 meanings corrected),
+  `VAR0427`, `VAR0448`, `VAR0541` named; left: `Cmdr_Item` (I, never read), `VAR0333` (G, written once
+  at `Iﾏｼﾞﾝ.ADV:1570`, never read), `F_Isoroku_Flag` (I, read only by its own set-once test).
 - Whether the fan translation changed any logic (it was a script hack) — compare only if a
   discrepancy shows up; the Japanese original is out of scope.
 - How to port: hand-written C# rules vs. translating/interpreting the script (see the brief).

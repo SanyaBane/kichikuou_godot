@@ -206,33 +206,20 @@ Need a run or capture of the original:
 
 Research the agent can do:
 
-- battle/README.md Q3 (`:15`): what the summon slot (unit 51) holds before any summon — probably
-  closable (survey-data.md `:66-68`: never initialised; BRS-13). Q6 (`:18`): can `Bt_MsgMode` be
-  outside 1..4 at a Goliath strike? (BTX-02)
-- [battle/screen-layout.md](battle/screen-layout.md) `:727`: does `#L_05126, 1` select `L_0512e`?
-  (`Battle.Display.cs:141` assumes it; the battle captures may prove it.)
-- [spike-findings.md](spike-findings.md) `:186`: confirm the variables still at I or G confidence in
-  [variables.tsv](variables.tsv) (136 at I, 8 at G).
-- stage-2-sweep.md `:287` (does taking a Zeth tower kill or capture its minister?), `:289` (`RetVal`
-  after the Camilla Unit's `FIGT_B` while she lives; STR-02), `:290` (is `Iﾏｼﾞﾝ` 1 `:1569-1719`
-  reachable; endings 5 and 12 at stage 2?), `:292` (Use Force with every listed commander dead).
-- stage-3-sweep.md `:336` (Kesselring's Castle won with Kesselring alive?), `:338` (Kayblis killed
-  without `Gｼﾙｷｨ` 9?).
-- stage-4-sweep.md `:324` (Siberia and the Ancient Ruins lost for good to the Angels?), `:329` (is
-  path 2 reachable? NAT-31).
-- survey-commands.md `:381` (= survey-main `:340`: does anything read the stale cursors? single cases
-  in ENG-05, EVT-08/17/20, NAT-28), `:383` (`Gｼｨﾙ` #2/#5/#6 command flags), `:384` (`Gﾊﾟｯﾄﾝ` 3 then 4
-  in one pass?), `:385` (where Mars the Great's troops come from), `:386` (the Mineva
-  `TroopAtk = 20` gate, `OwnCityCommand.cs:428`), `:387` (where Rance levels up from harem EXP),
-  `:388` (is the item record 100 live when `Cﾆﾝｼﾞｬ` zeroes it? EVT-04).
-- [strategy/survey-data.md](strategy/survey-data.md) `:288`: the third unit string slot's meaning.
-- survey-dungeon.md `:344` (who sets `F_Merim_MillArc = 3`? DGN-11), `:353` (`VAR0427` unnamed).
-- [strategy/survey-events.md](strategy/survey-events.md) `:393` (the owner of the empty province
-  record 0 for `Gｻｲｾﾞﾙ`, EVT-02; dumps may answer), `:394` (who calls `Gｶﾌｪ` with the Lady-unit
-  entry?), `:395` (Shangri-La's date calculation vs `L_01881`; low priority), `:398` (Lelyukov's
-  `{Prov_Owner \ 0: %0:}`), `:400` (`FIGT表示` has no survey; strategy/README.md `:23`).
-- survey-ikami.md `:370` (is `Bt_IsDuel` ever stale at entry?), `:375` (the empty unit record 0's
-  status, EVT-17), `:376` (the `N_Warg_Stage` 2 path, for telling the owner how a player gets there).
+The 2026-10-11 list was answered on 2026-10-23 (each answer in place in its doc; new quirks BFL-26,
+CMD-26, CMD-27, EVT-21 to EVT-24). Left from it:
+
+- **Rename proposals** — *owner* (whether), then *agent*: the dictionary check found names that mislead —
+  `N_Camilla_Stage` (the demon invasion's stage), `F_PG9_State` (counts PG-7 and PG-9 defeats),
+  `F_Merim_MillArc`, `F_Sheila_Flag`, `F_Pool_Built` (a building, `Bld_*`), `N_Saizel_Weeks` (vs
+  `F_Seizel_State`), `F_Satella_LineCmdr91/92`, `F_HQMeeting_Done`, `N_Miri_DeadlineWeek`, `F_Menad_Flag`;
+  a rename touches the generated state and the code that uses it.
+- stage-2-sweep.md, open question 3: can `Gﾅｷﾞ` 3 (`:3424-3427`, Nagi and Ragarl back at status 1) follow
+  Nagi's death? Not traced.
+- A battle with no enemy (CMD-26's Use Force) has never been run in the port or our screens — *agent*, a
+  test if it matters.
+- Three variables stay below C ([spike-findings.md](spike-findings.md), open questions): `Cmdr_Item`,
+  `VAR0333`, `F_Isoroku_Flag` — nothing reads them that could tell more.
 
 Other:
 

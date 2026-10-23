@@ -189,7 +189,7 @@ or any `T*` file [C].
 | unit (cursor `Unit_Cur`) | `Unit_Troops`, `Unit_Item`, `Unit_Status`, `Unit_FaceCg` | `Unit_Troops` (blizzard), `Unit_Status := 1` (refusals), `Unit_MaxHP/Atk/Def/Magic` (inscriptions `:4688`, `:4848`, `:5031-5034`) |
 | enemy commander (cursor `Cmdr_Cur`) | `Cmdr_MaxHP`, `Cmdr_CgFull` | `Cmdr_Troops`, `Cmdr_HP` of the monster record (`:1192-1195`); whole record 100 by the setters |
 | items (cursor `Item_Cur`) | `Item_Holder` of 1, 2, 9-11, 15-18, 21-23, 28-30, 33-34, 36, 38-39, 41-42, 45, 48 | `Item_Holder := 100` (treasures), `:= 0` (statues placed); `FogCard_Price := 120` |
-| story | `StoryStage`, `DateWeek`, `Ev_CommandMode`, `F_Merim_*`, `N_Merim_Inscriptions`, `F_Kou_State`, `F_Fuuka_*`, `F_Seizel_State`, `F_HannyKing_State`, `F_Kaybwan/Kaybnyan_State`, `N_Aaya_Stage`, `N_Melfeis_Stage`, `N_Soul_Stage`, `F_PG9_State`, `F_SillCow_State`, `F_Ruberan_State`, `F_Wenlina_CureMilli`, `VAR0427`, `Bld_Hospital`, `DebugMode` | `Ev_CommandMode := 0` (`:989`), `F_Merim_MillArc` 3→4 (`:8-10`), `F_Merim_Dungeon` 2/3, `N_Merim_Inscriptions`, `F_GodsDoor_Quest` 4/6, `F_Gunagan_State` |
+| story | `StoryStage`, `DateWeek`, `Ev_CommandMode`, `F_Merim_*`, `N_Merim_Inscriptions`, `F_Kou_State`, `F_Fuuka_*`, `F_Seizel_State`, `F_HannyKing_State`, `F_Kaybwan/Kaybnyan_State`, `N_Aaya_Stage`, `N_Melfeis_Stage`, `N_Soul_Stage`, `F_PG9_State`, `F_SillCow_State`, `F_Ruberan_State`, `F_Wenlina_CureMilli`, `N_Milli_CureStage`, `Bld_Hospital`, `DebugMode` | `Ev_CommandMode := 0` (`:989`), `F_Merim_MillArc` 3→4 (`:8-10`), `F_Merim_Dungeon` 2/3, `N_Merim_Inscriptions`, `F_GodsDoor_Quest` 4/6, `F_Gunagan_State` |
 | ui | `Ui_CmdDungeonAvail` | `:= 0` on entry (`:25`), `:= 1` on Return / Thieves' Hideout (Dgn 1) (`:169`, `:176`, `:302`); `Ui_MouseX/Y`, `Ui_WaoOp` |
 | scratch | — | `RetVal`, `CallArg`, `Tmp0690` (roll copies), `Tmp0621` (quiz count), `Tmp0001-0004` (door overlays `:3834-3849`), `Tmp0019/0020` (pointer, `:5647`), `MapTargetX/Y`, `MapCamX/Y` |
 | strings | — | `MS 8` dungeon name (`MS 9` for Piar's Ship (Dgn 9), `:70`), `MS 10` "Monsters" (`:27`), `MS 4/5` + `MM` boss names into the commander-100 name slots, `MM 1` unit name (`:155`, `:343`) |
@@ -342,6 +342,15 @@ reproduce the conditional items and their order); key waits through WAO op 1.
 ## 9. Open questions
 
 1. Who sets `F_Merim_MillArc = 3` during a search, so that `Gﾐﾙ` 2 at `:990` can fire? (`Gﾐﾙ.ADV:917`.)
+   Answered 2026-10-23 from `Cﾒｲｷｭｳ.ADV:725-728`, `Gﾒﾘﾑ.ADV:216-227, 283-284` and
+   `Gﾐﾙ.ADV:915-917, 1045-1056`: `Gﾐﾙ` 1, called by `Gﾒﾘﾑ` 4, which the Uncurse Dungeon (dungeon 10)
+   plays on floor 27 (the Fountain of Growth) with Merim in the party. The first such visit sets the
+   arc to 2 (`L_00562`); a later one sets 3 through `Gﾐﾙ` 1 when Mill (unit 25) is the searching unit
+   (`Bt_PlayerParty1 = 25`), `F_Mill_State < 2`, no Milli deadline runs (`N_Miri_DeadlineWeek = 0`)
+   and `F_Asuka_State` is 0 or 8. `Gﾐﾙ` 1 grows Mill (her CGs, `MaxTroops + 230`, `MaxHP + 2`) and
+   `:990` plays `Gﾐﾙ` 2 (the follow-up at Leazas Castle (1), arc 4) when that search ends by Return
+   (`L_018cd`, `:966-998`). The scene is reachable; `:8-10` drops only the follow-up, when the search
+   ends another way [I: the defeat path `:1291-1297` was not followed further].
 2. Is `:11-13` meant as a recovery after an unfinished Gunagan fight, and can `Cmdr_Cur = 100`
    with `Cmdr_CgFull = 1137` survive to a later entry in practice (`FIGT.ADV:1715` battle
    question 5 is related)?
@@ -350,7 +359,17 @@ reproduce the conditional items and their order); key waits through WAO op 1.
    stale `DgnRun_*` parameters.
 4. `RetVal` after `L_0755b` reaches the caller on "Return": can it be non-zero (`IM` button
    state)? A capture answers it.
-5. `VAR0427` (Mill quest chain) is unnamed (G); it gates `G2` 2 (`:617`) and `Gﾐﾘ` 3 (`:1808`).
+5. `VAR0427` (now `N_Milli_CureStage`; was "Mill quest chain") was unnamed (G); it gates `G2` 2 (`:617`) and `Gﾐﾘ` 3 (`:1808`).
+   Answered 2026-10-23 from its every write and test: it is the stage of **Milli's (unit 24) cure**,
+   not a Mill quest. 0 at boot (`ｽﾀｰﾄ.ADV:428`); Milli falls ill in `Gﾐﾘ` 1 (`COM.ADV:519-523`, while
+   it is not 4; `Gﾐﾘ.ADV:1356-1359`: status 0, `N_Miri_DeadlineWeek := Week + 20`); 1 = Milli's Room
+   visited at the Genius Hospital (`Gｱｰﾔ.ADV:89-93, 989-991`); 2 = Cell gives 20 weeks more
+   (`Gｾﾙ.ADV:2873-2874, 6010-6012`, from 1); 3 = Talk with Wenlina in the Holy Gal's Dungeon
+   (dungeon 23) while the deadline runs (`G2.ADV:2794-2796, 2944-2945`, from 0, 1 or 2). At 3 a search
+   there led by Rance (unit 1) plays `G2` 2 at its start (`:617-620`; `F_Wenlina_CureMilli := 1`,
+   `G2.ADV:3003-3004`), and floor 33 then plays `Gﾐﾘ` 3 (`:780-781`, `:1806-1811`); 4 = cured
+   (`Gﾐﾘ.ADV:916-920`: deadline 0, Milli back at status 1). If the deadline passes first, `Gﾐﾘ` 2
+   (`COM.ADV:525-528`) ends it (`F_Milli_Fate := 2`, `Gﾐﾘ.ADV:1679-1681`).
 6. `Iｶﾐ.ADV` (6528 lines, 4 `FIGT` sites, its own rearguard state `VAR0304-0319`) is rule-heavy
    and needs its own survey. It is reachable only from God's Door here.
 7. *Answered (2026-10-10):* `Sﾌﾞﾀｲ` was ported whole with W3 part 3 (`DeploymentScreen`), mode 3 included;

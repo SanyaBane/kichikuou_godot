@@ -71,7 +71,7 @@ public sealed partial class DungeonCommand
     private async Task HolyGalAsync()
     {
         await WaoAsync(0);
-        if (State.VAR0427 == 3 && State.F_Wenlina_CureMilli == 1)
+        if (State.N_Milli_CureStage == 3 && State.F_Wenlina_CureMilli == 1)
         {
             await Script.EventAsync("Gﾐﾘ.ADV", 3);
             return;

@@ -130,7 +130,8 @@ public sealed partial class KayblisTurn
             return;
         }
         State.Bt_EnemyRetreatMode = 2;
-        // QUIRK: NAT-31 — Kayblis dying here moves the story to stage 4, and the phase marches on.
+        // QUIRK: NAT-31 — Kayblis dying here would move the story to stage 4 with the phase marching on;
+        // unreachable, as his castle is still his and Iｼﾚｲﾌﾞ 7 ends the game with ending 8.
         await Script.CallFileAsync("FIGT_B.ADV");
     }
 }

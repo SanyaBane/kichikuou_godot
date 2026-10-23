@@ -389,7 +389,8 @@ EnemySide:                                                 // L_036f2, :2824
 
 So: player-initiated → speaker is the player unit (`Unit_Cur`); enemy-initiated physical (4)
 or magic (2) → speaker is the enemy commander. The RND(2) at :5 only matters when
-`Bt_MsgMode` is outside 1..4 (never in normal play; possible only with a stale value, Q11).
+`Bt_MsgMode` is outside 1..4 (never in normal play; possible only with a stale value, Q11) — only
+the boot's 0 before a game's first exchange, at a Goliath strike (O6, answered 2026-10-23).
 
 ### 5.2 Player side — dispatch on `Unit_Cur`
 
@@ -1150,10 +1151,10 @@ Merged with the flow spec's open questions in [README.md](README.md).
 |---|---|---|
 | O1 | Does `IK 0` (in `WAO_SUB.ADV` `L_00ce1`, run after every window) overwrite `RetVal`? `WAO_SUB.ADV:292-294` saves/restores `RetVal` around another `IK 0`, which suggests it does. Affects only which flavour lines show for Sergeant Hanny (C83) / Lieutenant Hanny (C84) / Bound (U3) (Q13). | FIGT_M:5014-5077, 8859-8888; WAO_SUB:292-294, 510-519 |
 | O2 | Operator precedence of the decompiled expression in Q8 — confirm against the bytecode (RPN order) before relying on it. | FIGT_M:8326 |
-| O3 | What record 51 holds at a new game / after loading, before any kaiju is summoned (affects `RND(Unit_Attacks)` for Goliath and ninjas). | FIGT:1126-1137, 1922-1979, 2592, 2648 |
+| O3 | What record 51 holds at a new game / after loading, before any kaiju is summoned (affects `RND(Unit_Attacks)` for Goliath and ninjas). Answered 2026-10-23 from `SET.ADV:225` and the captures: 0 in every field but those the ninja/Goliath builders and `FIGT表示.ADV` write (CGs, face, status, troops, HP); `Unit_Item` only if the player equips the record through `Sｱｲﾃﾑ`'s 51st cell (CMD-24) — [README](README.md) #3. | FIGT:1126-1137, 1922-1979, 2592, 2648 |
 | O4 | Whether the original `system39.exe` RNG can return `n+1` like xsystem35. | — |
 | O5 | Meaning of the overlay test `Bt_EnemyParty1 != 1137` (display only). | FIGT:1715 |
-| O6 | Whether `Bt_MsgMode` can be outside 1..4 at a Goliath strike (fresh game: `SET_VER` sets 0) — then FIGT_M:5's draw picks the side. | FIGT:1144, FIGT_M:5-23 |
+| O6 | Whether `Bt_MsgMode` can be outside 1..4 at a Goliath strike (fresh game: `SET_VER` sets 0) — then FIGT_M:5's draw picks the side. Answered 2026-10-23 from `ｽﾀｰﾄ.ADV:619` (the boot's 0; `SET_VER` is never called) and the writers `FIGT:1364-1606`, `FIGT_M:3`: yes, 0, only when the strike is the game's first exchange since the boot — reachable through a debug chapter start (`ｽﾀMENU.ADV:304-546`) — [README](README.md) #6. | FIGT:1144, FIGT_M:5-23 |
 
 ---
 

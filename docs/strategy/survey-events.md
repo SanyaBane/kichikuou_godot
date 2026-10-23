@@ -314,7 +314,7 @@ calculation `Iｼｬﾝｸﾞﾘﾗ.ADV:5309`, and long text bodies called once 
 - Commander slot 100 is shared by AL raiders and several duel opponents (§4.2) [C].
 - `Iｼｬﾝｸﾞﾘﾗ` advances `Week` without running the week loop [C].
 - 19 unnamed variables are written here (`VAR0126/0127/0129` zeroed with commander records,
-  `VAR0427` Mill quest, …) — see `docs/variables.tsv` [C].
+  `N_Milli_CureStage` (Milli's cure), …) — see `docs/variables.tsv` [C].
 
 ## 8. Porting proposal
 
@@ -391,11 +391,80 @@ Dependencies: EV1 → EV2 → EV3; RULE parts need EV2 only for their dialogue f
    answered (E1): `sl_retFar` (`scenario.c`) drops every pending label call down to the page
    call, so `%0:` returns from the page at any call depth.
 3. `Gｻｲｾﾞﾙ.ADV:474-478` at `Tmp0621 = 0`: owner of province record 0; reachable at all?
+   Answered 2026-10-23 from `SET.ADV:196-198`, `FIGT_B.ADV:808-825, 867-881` and the captures' dumps:
+   not reachable. At `Tmp0621 = 1`, `RND(1)` is 1 without a draw (ENG-03): Leazas Castle (1), the
+   player's whenever a phase runs — the only write that gives it to another owner is a lost defence in
+   `FIGT_B`, which ends the game there (ending 2), and it is the player's in every one of the 3,438
+   dumps of the 885 captures but the 18 taken before the boot. So the search stops at 1 at the latest.
+   Were record 0 read, its owner is page 1 slot 6944 (`Prov_Owner`'s offset + 0), the last field of
+   commander record 220 (`Cmdr_CgAlone`, ENG-06), a commander `SET_CHR` never sets and 0 in every dump:
+   `Owner ≠ 1` would hold, `Tmp0621 - 1` would stay 0 and the search would loop for ever. EVT-02's
+   bias toward low-numbered provinces stays; its endless loop cannot happen.
 4. Who calls `Gｶﾌｪ` with the entry that reaches the Lady-unit battle (`Gｶﾌｪ.ADV:2019`)? Unknown.
+   Answered 2026-10-23 from `Cｼﾊｲﾄｼ.ADV:287-291, 611-614` and `Gｶﾌｪ.ADV:1-3, 801-823, 995-998,
+   1079-1134, 1430-1468, 1715-1792, 1815-1959`: entry 1, from Own City. In the province where the Lady
+   Caravan stands (`Prov_Cur = LadyCaravan_Prov`, `F_Cafe_State < 10`) `Cｼﾊｲﾄｼ` offers "○Lady
+   Caravan", which calls `Gｶﾌｪ` 1; every `F_Cafe_State` but 4 (`L_05a95`) and the God's Door case
+   (`F_GodsDoor_Quest > 1`, state 2, `L_049f2`) ends in the Lady's menu `L_019d8`, whose "Rape Lady" → "I'll
+   still do it" (`L_02095`) opens `Sﾌﾞﾀｲ` and fights the Lady Unit, the Carfeknights (commanders
+   143-145), at Leazas Castle (1) as a duel (`:2019-2051`). R8's host is the player's command, not a
+   nation phase.
 5. Is the date calculation `Iｼｬﾝｸﾞﾘﾗ.ADV:5309-5325` identical to `MAIN`'s `L_01881`?
+   Answered 2026-10-23 from `Iｼｬﾝｸﾞﾘﾗ.ADV:5309-5325` against `MAIN.ADV:1060-1076`: yes, statement for
+   statement (year `3 + (Week - 1) / 48`, then 4-week months, into `DateYear`, `DateMonth`,
+   `DateWeek`); `Iｼｬﾝｸﾞﾘﾗ` calls its copy at `:2263`, `:2586` and `:2872`.
 6. May converted event IR (logic, no text) be committed like `Battle.Flavour.g.cs`, or must it
    be generated from the player's files at install time?
 7. `R7` (Lelyukov) and the exact meaning of `{Prov_Owner \ 0: %0:}` after each attack
    (`Gﾚﾘｭｰｺﾌ.ADV:30-50`) — confirm by reading `Tﾍﾙﾏﾝ.ADV:40-55`.
+   Answered 2026-10-23 from `Gﾚﾘｭｰｺﾌ.ADV:19-66`, `Tﾍﾙﾏﾝ.ADV:170-192`, `FIGT_B.ADV:273-288` and the
+   captures' dumps: entry 5's only caller is Helman's phase at Maunes (13) while the player holds it,
+   on one roll in two (the other sends Tainyar (commander 26) from `Tﾍﾙﾏﾝ` itself; `Tﾍﾙﾏﾝ:40-55` calls
+   entries 2 and 1). `L_00158` attacks Maunes with `FIGT_B` if its commander lives, else returns at
+   once; `FIGT_B` puts `Prov_Cur` back to Maunes, whose owner is then 1 or Helman (4). Every province
+   1-91 has a non-zero owner in every dump (only record 0 and 92-100 hold 0), so `{Prov_Owner \ 0:
+   %0:}` returns after the first slot whatever happened: only Tainyar (commander 26) ever attacks
+   (once — the party `:61` names is his), with Tainyar dead nobody does, and Laumiere (commander 27),
+   Luc (commander 28), Gadman (commander 23), Jackal (commander 24), Samisukan (commander 25) and
+   Lelyukov (commander 22) are dead code. The test was probably meant as `\ 1` (stop once Maunes
+   falls). The port runs the scene from the player's files (`Strategy/HelmanTurn.cs:137-143`).
 8. `FIGT表示.ADV` (3,077 lines, `Ev_Entry`-dispatched story inserts) belongs to no survey yet;
-   it should go through the converter with the scenes.
+   it should go through the converter with the scenes. Answered 2026-10-23: surveyed in §10; it runs
+   from the player's files (`OriginalVariant.IsSceneFile`), its `FIGTATTK` calls routed to the battle's
+   port.
+
+## 10. `FIGT表示.ADV`
+
+Scripted fights shown on the battle screen, not fought: each entry draws a face-off of one player
+unit against one commander and plays the exchange's animation `FIGTATTK` with fixed figures in
+`Bt_P*Vs*`/`Bt_E*Vs*` (shots and damage), never `FIGT`, so no rule decides the outcome. Dispatch
+`:1-57` on `Ev_Entry`; one caller per entry (19 entries, 19 call sites, every one `!Ev_Entry : n!`
+on the line before). Shared helpers: `L_02808` (`:2193-2222`) draws the face-off on `Bt_BackgroundCg`
+(each side's partial CG while it has troops, else its alone CG; the faces; CG 888), `L_028e1`
+(`:2223-2252`) the same on background 900, `L_0365b` (`:2937-2951`) slides it in, `L_03714` and
+`L_0382a` (`:2952-3028`) print troops and HP, `L_039be`…`L_03a73` (`:3029-3077`) are `WAO_SUB` stubs.
+
+| Entry | Lines | Player side | Enemy | `FIGTATTK` | Caller |
+|---|---|---|---|---|---|
+| 1 | `:1873-2192` | Rance (unit 1) | Aladdin (commander 21) | — (text; `L_028e1`) | `Iｼｬﾝｸﾞﾘﾗ.ADV:3779` |
+| 2 | `:2253-2480` | Freak (unit 20; troops 0, HP 20) | Redeye (commander 130; troops 500) | 4 | `Gﾌﾘｰｸ.ADV:1429` |
+| 3 | `:1034-1311` | unit record 51 as "Silky", then "Hawzel" | Galtia (commander 131; troops 23000, then back to max), then Babolat (commander 129) | 2 | `Iﾏｼﾞﾝ.ADV:4026` |
+| 4 | `:957-1033` | Patton (unit 18; troops 500) | Yasutoeh (commander 36) | 1 | `Gﾊﾟｯﾄﾝ.ADV:3006` |
+| 5 | `:1312-1593` | unit record 51 as "Hawzel", then "Silky" | Monster General (commander 86), PG-X mk2 (commander 138), Medusa (commander 134) | 3 | `Iﾏｼﾞﾝ.ADV:4943` |
+| 6 | `:1594-1768` | unit record 51 as "Silky", then "Hawzel" | Redeye (commander 130), then Kesselring (commander 133; troops back to max) | 2 | `Iﾏｼﾞﾝ.ADV:5821` |
+| 7 | `:1769-1872` | unit record 51 as "Hawzel" | Kesselring (commander 133; troops back to max) | 1 | `Iﾏｼﾞﾝ.ADV:6051` |
+| 8 | `:876-956` | Rance (unit 1) | Xacalite (commander 97) | — (text) | `Gﾏｼﾞｯｸ.ADV:3451` |
+| 9 | `:695-875` | Magic (unit 39; troops 0) | Xacalite (commander 97) | — (text) | `Gﾏｼﾞｯｸ.ADV:5161` |
+| 10 | `:637-694` | Shizuka (unit 17) | Nagi (commander 107) | — (text, background 902) | `Gﾅｷﾞ.ADV:3246` |
+| 11 | `:579-636` | Shizuka (unit 17) | Nagi (commander 107; HP 1, troops 0) | 1 | `Gﾅｷﾞ.ADV:5208` |
+| 12 | `:541-578` | Shizuka (unit 17) | Ragarl (commander 109; HP 3) | 1 | `Gﾅｷﾞ.ADV:5258` |
+| 13 | `:433-540` | unit record 51 as "Kalar" (the Kalars) | Maha (commander 41) | 1 (background 906) | `Gﾐﾈﾊﾞ.ADV:1124` |
+| 14 | `:2481-2936` | unit record 51 as "Hornet" (`Bt_TroopLimit := 5000`) | Monster General (commander 86), then commanders 129-134 (Babolat, Redeye, Galtia, Kite, Kesselring, Medusa) | 7 | `Iﾏｼﾞﾝ.ADV:7609` |
+| 21-24 | `:117-432` | unit record 51, blank | Kaiju Gaga, Zeze, Dada, Bobo (commanders 187-190) | — (a wiped garrison) | `Iｶﾐ.ADV:4582, 4645, 4708, 4771` (ikami §4.6) |
+| 26 | `:58-116` | unit record 51 as "Silky" | Kayblis (commander 135; troops and HP back to max) | 1 | `Gｼﾙｷｨ.ADV:1320` |
+
+State: no draw of its own (`FIGTATTK` draws for the animation), no story flag. It writes unit record 51
+(renamed through `MM`, status 1, troops 0 — CMD-24, ikami Q9), the troops and HP it shows of the real
+records named above (left so, except where the table says "back to max"), `Unit_Cur`/`Cmdr_Cur`,
+strings 1-2 and `Bt_BackgroundCg` (back to 900 where it changed it). [I: whether the real records'
+written troops and HP matter afterwards was not traced per caller.]

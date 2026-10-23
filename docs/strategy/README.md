@@ -20,7 +20,7 @@ survey → spec per part → port per part → golden captures.
 | [survey-w4.md](survey-w4.md) (2026-10-11, decision 18) | `OVER`, `ｽﾀMENU`, `HAPPY_C` | ≈4.5k | the clear and the fate record, the title's unlocks; mostly presentation |
 | [survey-gallery.md](survey-gallery.md) (2026-10-11, decision 20) | `CG`, `MMODE` | ≈4.5k | none but the engine's CG load counter the gallery reads; 141 scene replays, all clean |
 
-Not yet surveyed: `FIGT表示.ADV` beyond its entries 21-24.
+`FIGT表示.ADV` is surveyed in [survey-events.md](survey-events.md), §10 (2026-10-23).
 
 ## What the surveys established
 

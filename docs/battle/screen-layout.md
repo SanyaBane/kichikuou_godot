@@ -727,7 +727,13 @@ Unknown / unverified:
 2. ~~`Ui_FaceOverMap` during battles~~ — resolved: taken from the state, both values occur (§2.4).
 3. ~~Contents of button index 99~~ — resolved: zero in every capture, nothing drawn (§4.2).
 4. That `#L_05126, 1` selects `L_0512e` (as the core assumes) — the panel geometry depends on it;
-   `L_0516e` is never selected.
+   `L_0516e` is never selected. Answered 2026-10-23 from xsystem35 `cmd_check.c:93-104` and the
+   captures: it does. `#label, n` with n ≠ 0 reads the n-th 4-byte address of the table at the
+   label (`sl_getdAt(index + 4 * (n - 1))`) and points `F3` there, so `#L_05126, 1` takes the
+   first entry, `_L_0512e` (`FIGT.ADV:3264-3267`); `F3` then reads 16-bit words from it
+   (`cmdf.c:110-116`). All 310 memory dumps of the battle captures taken after `FIGT.ADV:601-613`
+   hold `L_0512e`'s rectangles in `Ui_BtnX1`/`Ui_BtnY1`/`Ui_BtnW`/`Ui_BtnH` (12, 8, 182, 84 …),
+   none `L_0516e`'s (8, 8, 182, 82 …).
 5. Exact `EC 0` fill size in the original (xsystem35: 639×399 without `patch_ec`).
 6. Frame pacing of the four slide steps (`FIGT.ADV:1816-1827` has no pause between them).
 7. The run-time `ZC 1` value for each individual message was derived from the write sites listed
@@ -735,5 +741,5 @@ Unknown / unverified:
 
 Items 1, 5 and 6 are purely visual and will not be pursued: the owner decided (2026-10-08) that
 the port's look need not match the original pixel for pixel — mechanics stay exact, the
-interface may be our own. Item 4 stays open because the panel rectangles are also the click
-targets.
+interface may be our own. Item 4 mattered because the panel rectangles are also the click
+targets; it is answered (2026-10-23).

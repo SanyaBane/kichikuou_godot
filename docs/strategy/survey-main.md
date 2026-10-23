@@ -338,7 +338,11 @@ Golden harness additions:
 4. Identity of commanders 90-93 — answered from `SET_CHR` (2026-10-10): La Seizel (90),
    Camilla (91), Lei (92), Sieg (93).
 5. Does anything rely on the cursor leftovers (`Unit_Cur = 51` after the status line,
-   `Cmdr_Cur 98` after the La Vaswald gate) inside `C*`/`T*` files?
+   `Cmdr_Cur 98` after the La Vaswald gate) inside `C*`/`T*` files? Answered 2026-10-23 from a
+   reaching-definitions pass over all 201 files (commands §10 #3): no. No `T*` file reads `Unit_Cur`
+   or `Cmdr_Cur` before setting it (only their own troop-sum cursor, NAT-12, NAT-28); among the `C*`
+   files only `Cﾒｲｷｭｳ.ADV:11` reads a leftover `Cmdr_Cur` (DGN-01; 98's `Cmdr_CgFull` is not 1137),
+   and `Unit_Cur = 51` reaches no read — `Cﾌﾞｶ.ADV:35` comes after `Sﾌﾞｶ` set it (`Sﾌﾞｶ.ADV:55`).
 6. `SET_VER.ADV` is called from nowhere; `ｽﾀｰﾄ.ADV` contains the same resets — confirm it is
    dead and which one the port's new-game init follows.
 7. Does viewing gallery entries (`CG`, entry 300) change story state before a new game?
