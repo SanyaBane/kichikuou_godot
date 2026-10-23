@@ -57,6 +57,29 @@ public class DeploymentTableTests
     }
 
     [Fact]
+    public void A_modifier_is_what_the_battle_adds_below_10_itself_above_10_minus_the_excess_10_none()
+    {
+        Assert.Equal([0, 3, 9, 0, -1, -9], new[] { 0, 3, 9, 10, 11, 19 }.Select(v => DeploymentTable.Modifier((Sys3Int)v)));
+    }
+
+    [Fact]
+    public void The_six_modifier_cells_are_signed_in_the_status_pages_order_and_a_unit_without_troops_has_none()
+    {
+        var s = World();
+        var bound = s.Units[3];
+        (bound.OffAtkMod, bound.OffDefMod, bound.DefAtkMod, bound.DefDefMod, bound.DgnAtkMod, bound.DgnDefMod) = (2, 10, 12, 0, 5, 11);
+        s.Units[50].MaxTroops = 0;
+        var rows = DeploymentTable.Rows(s);
+        DeploymentColumn[] six = [.. DeploymentTable.ModifierColumns.Select(c => c.Column)];
+
+        Assert.Equal(["+2", "0", "−2", "0", "+5", "−1"], six.Select(c => rows[2].Text(c)));
+        Assert.All(six, c => Assert.Equal("—", rows[3].Text(c)));      // Cﾌﾞｶ.ADV:1168: no troops, no modifiers
+        Assert.Equal([3, 1, 2, 50], DeploymentTable.Sort(rows, DeploymentColumn.DgnAtkMod, descending: true).Select(r => r.Unit));
+        Assert.All([DeploymentTable.Columns, SubordinatesScreen.Columns], columns => Assert.Equal(six,
+            columns.SkipWhile(c => c.Column != DeploymentColumn.TroopDef).Skip(1).Take(6).Select(c => c.Column)));   // after T.Def
+    }
+
+    [Fact]
     public void Every_column_has_a_header_a_full_name_a_text_and_a_key()
     {
         var row = DeploymentTable.Rows(World())[0];

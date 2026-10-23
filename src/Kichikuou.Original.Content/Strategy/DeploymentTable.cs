@@ -63,6 +63,24 @@ public enum DeploymentColumn
 
     /// <summary>The rows the unit fights from (its class: "Front", "Back" or "Front, Back").</summary>
     Rows,
+
+    /// <summary>The troops' attack modifier on offense (<c>Unit_OffAtkMod</c>, <see cref="DeploymentTable.Modifier"/>).</summary>
+    OffAtkMod,
+
+    /// <summary>The troops' defense modifier on offense (<c>Unit_OffDefMod</c>).</summary>
+    OffDefMod,
+
+    /// <summary>The troops' attack modifier on defense (<c>Unit_DefAtkMod</c>).</summary>
+    DefAtkMod,
+
+    /// <summary>The troops' defense modifier on defense (<c>Unit_DefDefMod</c>).</summary>
+    DefDefMod,
+
+    /// <summary>The troops' attack modifier in dungeons (<c>Unit_DgnAtkMod</c>).</summary>
+    DgnAtkMod,
+
+    /// <summary>The troops' defense modifier in dungeons (<c>Unit_DgnDefMod</c>).</summary>
+    DgnDefMod,
 }
 
 /// <summary>A column's compact header, its full name (the header's tooltip) and whether it is text.</summary>
@@ -76,20 +94,25 @@ public sealed record DeploymentColumnInfo(DeploymentColumn Column, string Header
     public bool HighFirst => Column is DeploymentColumn.Troops or DeploymentColumn.TroopAtk or DeploymentColumn.TroopDef
         or DeploymentColumn.Strategy or DeploymentColumn.Hp or DeploymentColumn.Level or DeploymentColumn.Exp
         or DeploymentColumn.Atk or DeploymentColumn.Def or DeploymentColumn.Attacks or DeploymentColumn.Magic
-        or DeploymentColumn.Rows;
+        or DeploymentColumn.Rows || IsModifier;
+
+    /// <summary>Whether the column is one of the six situational modifiers.</summary>
+    public bool IsModifier => Column is DeploymentColumn.OffAtkMod or DeploymentColumn.OffDefMod or DeploymentColumn.DefAtkMod
+        or DeploymentColumn.DefDefMod or DeploymentColumn.DgnAtkMod or DeploymentColumn.DgnDefMod;
 }
 
 /// <summary>
 /// One listed unit of the deployment screen (<c>Sﾌﾞﾀｲ</c>) as the table shows it: its values from
 /// GameState, whether it is grey (deployed this week, status 2) and its place in the party (1-4, or 0);
 /// whether its Refill cell is a button (<see cref="SubordinatesCommand.CanReplenish"/>, owner's decision 27) and, when
-/// it has a price but is none, why (<see cref="DeploymentTable.RefillNote"/>).
+/// it has a price but is none, why (<see cref="DeploymentTable.RefillNote"/>); the six situational modifiers as
+/// the battle adds them (<see cref="DeploymentTable.Modifier"/>), in <see cref="DeploymentColumn"/>'s order.
 /// </summary>
 public sealed record DeploymentRow(
     int Unit, string Name, int Troops, int MaxTroops, int Hp, int MaxHp, int Exp, int NextExp,
     int Level, int Atk, int Def, int Attacks, int Strategy, int Magic, int TroopAtk, int TroopDef, int Cost,
     bool Grey, int PartyPlace, string TroopType = "", int Refill = 0, string Item = "", string Rows = "",
-    bool CanRefill = false, string RefillNote = "")
+    bool CanRefill = false, string RefillNote = "", IReadOnlyList<int>? Modifiers = null)
 {
     /// <summary>The cell's text.</summary>
     public string Text(DeploymentColumn column) => column switch
@@ -112,8 +135,17 @@ public sealed record DeploymentRow(
         DeploymentColumn.Refill => Refill == 0 ? "—" : $"{Refill * 100}K",
         DeploymentColumn.Item => Item == "" ? "—" : Item,
         DeploymentColumn.Rows => Rows == "" ? "—" : Rows,
+        >= DeploymentColumn.OffAtkMod and <= DeploymentColumn.DgnDefMod =>
+            ModifierAt(column) is { } m ? m switch { > 0 => $"+{m}", < 0 => $"−{-m}", _ => "0" } : "—",
         _ => throw new ArgumentOutOfRangeException(nameof(column)),
     };
+
+    /// <summary>
+    /// The modifier of <paramref name="column"/>, or null for a unit without troops (its maximum 0), whose status page
+    /// shows none (<c>Cﾌﾞｶ.ADV:1168</c>), or a row made without them.
+    /// </summary>
+    private int? ModifierAt(DeploymentColumn column) =>
+        MaxTroops == 0 || Modifiers is null ? null : Modifiers[column - DeploymentColumn.OffAtkMod];
 
     /// <summary>The cell's sort key: the number (of "a / b", a), the text for a text column but the rows (<see cref="RowsRank"/>).</summary>
     public IComparable Key(DeploymentColumn column) => column switch
@@ -136,6 +168,7 @@ public sealed record DeploymentRow(
         DeploymentColumn.Refill => Refill,
         DeploymentColumn.Item => Item,
         DeploymentColumn.Rows => RowsRank,
+        >= DeploymentColumn.OffAtkMod and <= DeploymentColumn.DgnDefMod => ModifierAt(column) ?? int.MinValue,   // none below any
         _ => throw new ArgumentOutOfRangeException(nameof(column)),
     };
 
@@ -186,6 +219,21 @@ public sealed record DeploymentParty(IReadOnlyList<DeploymentMember?> Places, in
 public static class DeploymentTable
 {
     /// <summary>
+    /// The six situational modifiers after the troops' attack and defense they change (the owner, 2026-10-23), in the
+    /// status page's order (<c>Cﾌﾞｶ.ADV:1168-1240</c>): on offense, on defense, in dungeons, each attack then defense.
+    /// Declared before <see cref="Columns"/>, whose initializer reads it.
+    /// </summary>
+    public static IReadOnlyList<DeploymentColumnInfo> ModifierColumns { get; } =
+    [
+        new(DeploymentColumn.OffAtkMod, "Off.A", "Troop attack on offense"),
+        new(DeploymentColumn.OffDefMod, "Off.D", "Troop defense on offense"),
+        new(DeploymentColumn.DefAtkMod, "Dfn.A", "Troop attack on defense"),
+        new(DeploymentColumn.DefDefMod, "Dfn.D", "Troop defense on defense"),
+        new(DeploymentColumn.DgnAtkMod, "Dgn.A", "Troop attack in dungeons"),
+        new(DeploymentColumn.DgnDefMod, "Dgn.D", "Troop defense in dungeons"),
+    ];
+
+    /// <summary>
     /// The columns in order, with their compact headers and full names: across the whole screen's top, so the
     /// details the original shows for the hovered unit (type, rows, item) are columns too (the owner's E1/E2,
     /// docs/ui/deployment-table.md, "The lacquer look").
@@ -201,6 +249,7 @@ public static class DeploymentTable
         new(DeploymentColumn.Rows, "Rows", "The rows the unit fights from", IsText: true),
         new(DeploymentColumn.TroopAtk, "T.Atk", "Troop attack"),
         new(DeploymentColumn.TroopDef, "T.Def", "Troop defense"),
+        .. ModifierColumns,
         new(DeploymentColumn.Strategy, "Str%", "Strategy success chance"),
         new(DeploymentColumn.Hp, "HP", "Commander HP / maximum"),
         new(DeploymentColumn.Level, "Lv", "Level"),
@@ -211,6 +260,13 @@ public static class DeploymentTable
         new(DeploymentColumn.Magic, "Mag", "Magic"),
         new(DeploymentColumn.Item, "Item", "Item", IsText: true),
     ];
+
+    /// <summary>
+    /// A situational modifier as the battle adds it to the troops' attack or defense (<c>FIGT.ADV:2450-2483</c>):
+    /// below 10 the value itself, above 10 minus the excess, 10 none. The status page prints the same, but 0 as "+0"
+    /// and 10 as nothing (<c>Cﾌﾞｶ.ADV:1172-1240</c>); both add nothing, so both are 0 here.
+    /// </summary>
+    public static int Modifier(Sys3Int raw) => raw.Value is var v && v < 10 ? v : v > 10 ? 10 - v : 0;
 
     /// <summary>The highest unit the deployment screen lists (<c>Sﾌﾞﾀｲ</c>'s grid: 1-50, <c>PickerScreen</c>).</summary>
     public const int LastUnit = 50;
@@ -240,7 +296,8 @@ public static class DeploymentTable
                 Item: u.Item == 0 ? "" : StringAt(state, (state.Item_StrBase + u.Item - 1).Value),
                 Rows: RowsOf(u.Class.Value),
                 CanRefill: SubordinatesCommand.CanReplenish(state, (Sys3Int)n),
-                RefillNote: RefillNote(state, n)));
+                RefillNote: RefillNote(state, n),
+                Modifiers: [.. new[] { u.OffAtkMod, u.OffDefMod, u.DefAtkMod, u.DefDefMod, u.DgnAtkMod, u.DgnDefMod }.Select(Modifier)]));
         }
         return rows;
     }

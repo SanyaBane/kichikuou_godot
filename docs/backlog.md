@@ -134,8 +134,7 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   step 6); the owner chose L3 (the paper chronicle), the wheel up, the launch, skipped pages and choices logged;
   then its variant L3a (2026-10-19); built (2026-10-19), so the message windows' steps are all built.
   Then (owner, 2026-10-18): our own Subordinates screen (`Cﾌﾞｶ`/`Sﾌﾞｶ`) after mock-up F1 —
-  [ui/subordinates.md](ui/subordinates.md). Put off (owner, 2026-10-18): **the units' situational modifiers**
-  (the status page's attack and defence on offense, on defense, in dungeons) are not shown on it.
+  [ui/subordinates.md](ui/subordinates.md).
   Its look is mock-up G3 (owner, 2026-10-18: lacquer panels, the table as a paper ledger; ui/subordinates.md, §5).
   Then (owner, 2026-10-18): **the deployment screen in the same look** — surveyed with mock-ups D1-D5 and E1-E6
   (2026-10-19, [ui/deployment-table.md](ui/deployment-table.md), "The lacquer look"); the owner chose E1/E2 (the

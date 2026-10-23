@@ -44,9 +44,11 @@ E1. The owner chose **F1**:
   Troops, Refill (Replenish's price, "—" when full), Cost (the war expense of sending the unit now, as the
   deployment table has it; added by the owner, 2026-10-20 — it grows with the troops, so after a Replenish;
   with it the table is a little wider than its panel and scrolls, which the owner accepted), T.Atk, T.Def,
+  the six situational modifiers (the status page's troop attack and defence on offense, on defense, in dungeons:
+  Off.A, Off.D, Dfn.A, Dfn.D, Dgn.A, Dgn.D; put off on 2026-10-18, added by the owner on 2026-10-23, as the
+  deployment table shows them — docs/ui/deployment-table.md, "The table"),
   Str%, HP, Lv, EXP, Atk, Def, Act, Mag, Item (the unit's item, the one value the status page has that the table had not). The units deployed
-  this week grey, the chosen one highlighted. **The situational modifiers** (the status page's attack and
-  defence on offense, on defense, in dungeons) **are not shown** for now (docs/backlog.md).
+  this week grey, the chosen one highlighted.
 - **The status CG** (600 + n) at the bottom left, whole with the gold frame it has on the original's screen,
   with no frame of ours (owner, 2026-10-18, after the first look: the CG alone, stretched over the space,
   read as cut off). The frame is the screen's background, not the CG's: the view draws `G 870, 40` and
