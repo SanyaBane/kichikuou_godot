@@ -452,7 +452,7 @@ internal sealed partial class DeploymentTableView : Tree
             else if (info.Column == DeploymentColumn.Refill && row.Refill > 0)
                 item.SetCustomColor(c + 1, Lacquer.VermilionInk);
             else if (info.IsModifier && row.Text(info.Column) is "0" or "—")
-                item.SetCustomColor(c + 1, Lacquer.InkQuiet);           // no modifier: quiet, so +n and −n stand out (the owner, 2026-10-23)
+                item.SetCustomColor(c + 1, Lacquer.InkFaint);           // no modifier: faint, so +n and −n stand out (the owner, 2026-10-23)
             if (info.Column == DeploymentColumn.Refill && _refillButtons && row.RefillNote != "")
                 item.SetTooltipText(c + 1, row.RefillNote);
             if (info.Column == DeploymentColumn.Refill && _refillButtons && row.CanRefill)

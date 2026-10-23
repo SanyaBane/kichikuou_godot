@@ -35,6 +35,7 @@ internal static class Lacquer
     public static readonly Color PaperRule = Color.Color8(150, 120, 80, 110);
     public static readonly Color Ink = Color.Color8(40, 28, 18);
     public static readonly Color InkQuiet = Color.Color8(100, 80, 56);
+    public static readonly Color InkFaint = Color.Color8(130, 112, 86);     // fainter than quiet, still apart from the grey rows
     public static readonly Color InkGrey = Color.Color8(150, 132, 104);
     public static readonly Color VermilionInk = Color.Color8(150, 52, 30);
     public static readonly Color HeadInk = Color.Color8(120, 40, 26);
