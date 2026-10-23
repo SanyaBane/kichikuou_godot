@@ -50,7 +50,7 @@ public class DeploymentTableTests
         Assert.Equal([true, false, false, false], rows.Select(r => r.Grey));       // status 2: deployed this week
         Assert.Equal([0, 2, 1, 0], rows.Select(r => r.PartyPlace));
         var rance = rows[0];
-        Assert.Equal("900/1000", rance.Text(DeploymentColumn.Troops));
+        Assert.Equal("900/1,000", rance.Text(DeploymentColumn.Troops));
         Assert.Equal("40/160", rance.Text(DeploymentColumn.Exp));                 // the next level at 100 + 2·30
         Assert.Equal("400K", rance.Text(DeploymentColumn.Cost));                  // 1 + 900/300, ×100K
         Assert.Equal("300K", rows[2].Text(DeploymentColumn.Cost));                // Bound: 1 + 600/300

@@ -1,6 +1,7 @@
 using System.Globalization;
 using Godot;
 using Kichikuou.Game.Battles;
+using Kichikuou.Original.Content;
 using Kichikuou.Original.Content.Strategy;
 using Kichikuou.Original.State;
 
@@ -148,7 +149,7 @@ internal sealed partial class DeploymentPanels : Control
         string date = $"LP {year} · Month {month} · Week {week}";
         int portrait = details is null ? 0 : state.Units[details.Unit].PortraitCg.Value;
         string key = $"{string.Join(";", party.Places)}|{party.Troops}|{party.Cost}|{party.Gold}|{string.Join("|", labels)}"
-            + $"|{picker.Mode.Value}|{date}|{portrait}|{Busy}";
+            + $"|{picker.Mode.Value}|{date}|{portrait}|{Busy}|{Figures.Separator}";
         if (key == _key)
             return;
         _key = key;
@@ -389,7 +390,7 @@ internal sealed partial class DeploymentPanels : Control
         c.DrawString(_brush, new Vector2(head.Position.X, Lacquer.Baseline(head, _brush, 20)), "Party", fontSize: 20, modulate: Lacquer.Name);
         float x = head.End.X;
         x = RightString(c, _cinzelLight, "K GOLD", 11, Lacquer.Subtitle, x, head) - 6;
-        x = RightString(c, _cinzel, (party.Gold * 100).ToString("N0", CultureInfo.InvariantCulture), 20, Lacquer.Name, x, head) - 10;
+        x = RightString(c, _cinzel, Figures.Number(party.Gold * 100), 20, Lacquer.Name, x, head) - 10;
         RightString(c, _cinzelLight, "Budget", 12, Lacquer.Label, x, head);
         Lacquer.DrawDivider(c, PartyPanel.Position.X + 14, PartyPanel.End.X - 14, PartyPanel.Position.Y + 44, _k);
 
@@ -409,13 +410,13 @@ internal sealed partial class DeploymentPanels : Control
 
         float left = PartyPanel.Position.X + 20;
         var totals = new Rect2(left, TotalsY - 14, PartyPanel.Size.X - 40, 28);
-        DrawFigure(c, totals.Position.X, totals, "Troops", party.Troops.ToString("N0", CultureInfo.InvariantCulture), Lacquer.Value);
-        DrawFigure(c, totals.Position.X + 180, totals, "War expenses", $"{(party.Cost * 100).ToString("N0", CultureInfo.InvariantCulture)}K",
+        DrawFigure(c, totals.Position.X, totals, "Troops", Figures.Number(party.Troops), Lacquer.Value);
+        DrawFigure(c, totals.Position.X + 180, totals, "War expenses", Figures.GoldShort(party.Cost * 100),
             party.Affordable ? Lacquer.Value : Lacquer.Minus);
         c.DrawLine(new Vector2(PartyPanel.Position.X + 16, TotalsY + 18), new Vector2(PartyPanel.End.X - 16, TotalsY + 18), Lacquer.DimGold, Line(1));
 
         int sends = BarButtons().Count(b => b.Button != 3);
-        string cost = $"{(party.Cost * 100).ToString("N0", CultureInfo.InvariantCulture)}K";
+        string cost = Figures.GoldShort(party.Cost * 100);
         foreach (var (button, rect) in BarButtons())
         {
             bool hover = button == _hovered, down = hover && button == _pressed;
@@ -507,9 +508,9 @@ internal sealed partial class DeploymentPanels : Control
             HorizontalAlignment.Left, typeBand.Size.X, 14, Lacquer.Quiet with { A = a });
 
         var line = new Rect2(tx, rect.End.Y - 34, rect.End.X - 12 - tx, 20);
-        string troops = rect.Size.X > 280 ? $"{member.Troops} troops" : member.Troops.ToString(CultureInfo.InvariantCulture);
+        string troops = rect.Size.X > 280 ? $"{Figures.Number(member.Troops)} troops" : Figures.Number(member.Troops);
         c.DrawString(_gothic, new Vector2(tx, Lacquer.Baseline(line, _gothic, 15)), troops, fontSize: 15, modulate: Lacquer.Text with { A = a });
-        string cost = $"{(member.Cost * 100).ToString("N0", CultureInfo.InvariantCulture)}K";
+        string cost = Figures.GoldShort(member.Cost * 100);
         float cx = RightString(c, _gothic, cost, 15, Lacquer.Text with { A = a }, line.End.X, line) - 6;
         RightString(c, _cinzel, "Cost", 11, Lacquer.Quiet with { A = a }, cx, line);
         DrawStrength(c, new Rect2(tx, line.End.Y + 1, line.Size.X, 3), member.Troops, member.MaxTroops, a);

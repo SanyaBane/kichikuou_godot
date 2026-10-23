@@ -1,5 +1,5 @@
-using System.Globalization;
 using Godot;
+using Kichikuou.Original.Content;
 using Kichikuou.Original.Content.Strategy;
 
 namespace Kichikuou.Game.Strategy;
@@ -113,7 +113,7 @@ internal sealed partial class WeekReportView : Control
             LedgerLine(x0, x1, ref y, "", "Budget", "last week", Gold(r.BudgetBefore), Lacquer.Value);
             LedgerLine(x0, x1, ref y, "+", revenue.Label, "provinces", "+" + Gold(revenue.Amount), Gain);
             foreach (var expense in r.Expenses)
-                LedgerLine(x0, x1, ref y, "–", expense.Label, "special expense", "–" + Gold(-expense.Amount), Loss);
+                LedgerLine(x0, x1, ref y, Figures.Minus, expense.Label, "special expense", Figures.Minus + Gold(-expense.Amount), Loss);
             y += 10;
             var total = new Rect2(x0, y, x1 - x0, TotalHeight);
             DrawRect(total, Lacquer.Row);
@@ -129,7 +129,7 @@ internal sealed partial class WeekReportView : Control
             var row = new Rect2(x0, y + 10, x1 - x0, RowHeight);
             Lacquer.DrawRowBox(this, row, false, _k);
             DrawString(_cinzel, new Vector2(x0 + 16, Lacquer.Baseline(row, _cinzel, LabelSize)), troops.Label, fontSize: LabelSize, modulate: Lacquer.Text);
-            Amount(x1 - 16, Lacquer.Baseline(row, _bold, 22), "+" + troops.Amount.ToString("N0", CultureInfo.InvariantCulture), _bold, 22, Gain, null);
+            Amount(x1 - 16, Lacquer.Baseline(row, _bold, 22), "+" + Figures.Number(troops.Amount), _bold, 22, Gain, null);
         }
         Lacquer.DrawTriangle(this, new Vector2(card.End.X - Pad - 2, card.End.Y - 26), _k);
     }
@@ -162,6 +162,6 @@ internal sealed partial class WeekReportView : Control
         DrawString(font, new Vector2(right - uw - (unit is null ? 0 : 6) - aw, baseline), amount, fontSize: size, modulate: colour);
     }
 
-    /// <summary>An amount in K GOLD with thousands' commas: 20200 → "20,200".</summary>
-    private static string Gold(int amount) => amount.ToString("N0", CultureInfo.InvariantCulture);
+    /// <summary>An amount in K GOLD, its thousands separated as Option chose: 20200 → "20,200".</summary>
+    private static string Gold(int amount) => Figures.Number(amount);
 }

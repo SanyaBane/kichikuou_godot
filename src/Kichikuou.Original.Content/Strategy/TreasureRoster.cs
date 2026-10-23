@@ -124,8 +124,8 @@ public static class TreasureRoster
             return new TreasureDetails(u.PortraitCg.Value, UnitEmptyCg, DeploymentTable.UnitName(s, number),
                 Classes.GetValueOrDefault(u.Class.Value, ""), false,
                 [
-                    new("War cost", $"{u.DeployCost.Value * 100:N0}K"),
-                    new("Troops", u.Troops.Value.ToString()),
+                    new("War cost", Figures.GoldShort(u.DeployCost.Value * 100)),
+                    new("Troops", Figures.Number(u.Troops.Value)),
                     new("Equipped", item == 0 ? "—" : ItemName(s, item)),
                 ]);
         }

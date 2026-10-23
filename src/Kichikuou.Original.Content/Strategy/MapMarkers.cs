@@ -120,7 +120,7 @@ public static class MapMarkers
 
     /// <summary>
     /// The province's card on hover (docs/ui/command-screen.md, "The province card"): the three figures the
-    /// city's window prints, each with what it does — "Economy: 20 (2000K Gold)" (the weekly income, in the
+    /// city's window prints, each with what it does — "Economy: 20 (2,000K GOLD)" (the weekly income, in the
     /// 100K GOLD the budget counts), "Defense: 10 (Walls +20%)" (two points off the attackers' hit chance a
     /// point), "Battle Area: 180 troops" (the most that fight at once in a city battle). Ours and the
     /// provinces the player has seen (<see cref="GameState.IsProvinceKnown"/>) show them, the others "??",
@@ -132,8 +132,8 @@ public static class MapMarkers
         if (!state.IsOwnProvince(province) && !state.IsProvinceKnown(province))
             return ["Economy: ??", "Defense: ??", "Battle Area: ??"];
         int economy = prov.Economy.Value, defense = prov.Defense.Value;
-        return [$"Economy: {economy} ({economy * 100}K Gold)", $"Defense: {defense} (Walls +{defense * 2}%)",
-            $"Battle Area: {prov.BattleArea.Value} troops"];
+        return [$"Economy: {economy} ({Figures.Gold(economy * 100)})", $"Defense: {defense} (Walls +{defense * 2}%)",
+            $"Battle Area: {Figures.Number(prov.BattleArea.Value)} troops"];
     }
 
     /// <summary>

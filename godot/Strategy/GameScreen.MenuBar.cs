@@ -242,6 +242,7 @@ public partial class GameScreen
         view.FontChosen += ApplyFont;
         view.ReadColourChosen += () => _messageView.QueueRedraw();
         view.PaletteChosen += ApplyPalette;
+        view.ThousandsChosen += () => RedrawAll(this);   // the figures drawn already, in the new way
         view.NewScenesFirstChanged += on =>
         {
             if (_script is not null)
@@ -290,6 +291,14 @@ public partial class GameScreen
     /// A palette chosen in the options (saved already): our battle screen's and the map plates' colours (the deployment
     /// screen is lacquer since the owner's E1/E2), an open screen recoloured at once.
     /// </summary>
+    private static void RedrawAll(Node node)
+    {
+        if (node is CanvasItem item)
+            item.QueueRedraw();
+        foreach (var child in node.GetChildren())
+            RedrawAll(child);
+    }
+
     private void ApplyPalette(DeploymentPalette palette)
     {
         _markers.SetPalette(palette);

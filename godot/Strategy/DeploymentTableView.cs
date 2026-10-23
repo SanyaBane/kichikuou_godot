@@ -1,5 +1,6 @@
 using Godot;
 using Kichikuou.Game.Battles;
+using Kichikuou.Original.Content;
 using Kichikuou.Original.Content.Strategy;
 using Kichikuou.Original.State;
 using Kichikuou.Original.Strategy;
@@ -29,6 +30,7 @@ internal sealed partial class DeploymentTableView : Tree
 
 
     private IReadOnlyList<DeploymentRow> _rows = [];
+    private ThousandsSeparator _separator = Figures.Separator;      // the rows' figures were written with it
     private DeploymentColumn _sort = DeploymentColumn.Number;
     private bool _descending;
     private FontFile _font = null!;
@@ -267,9 +269,10 @@ internal sealed partial class DeploymentTableView : Tree
     public void Refresh(GameState state, IReadOnlyList<int>? order = null)
     {
         var rows = DeploymentTable.Rows(state, order);
-        if (rows.SequenceEqual(_rows))
+        if (rows.SequenceEqual(_rows) && _separator == Figures.Separator)
             return;
         _rows = rows;
+        _separator = Figures.Separator;
         Fill();
     }
 
@@ -460,7 +463,7 @@ internal sealed partial class DeploymentTableView : Tree
                 item.SetCellMode(c + 1, TreeItem.TreeCellMode.Custom);
                 var (text, unit) = (row.Text(info.Column), row.Unit);
                 item.SetCustomDrawCallback(c + 1, Callable.From<TreeItem, Rect2>((_, rect) => DrawRefill(rect, text, unit)));
-                item.SetTooltipText(c + 1, $"Replenish: {row.MaxTroops - row.Troops:+#;−#;0} troops");
+                item.SetTooltipText(c + 1, $"Replenish: {Figures.Signed(row.MaxTroops - row.Troops)} troops");
             }
             else if (info.IsText && info.Column != DeploymentColumn.Name)
                 item.SetCustomColor(c + 1, Lacquer.InkQuiet);

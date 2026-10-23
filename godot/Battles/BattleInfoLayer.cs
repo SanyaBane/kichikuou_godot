@@ -1,5 +1,6 @@
 using Godot;
 using Kichikuou.Game.Strategy;
+using Kichikuou.Original.Content;
 using Kichikuou.Original.Content.Battles;
 
 namespace Kichikuou.Game.Battles;
@@ -324,7 +325,7 @@ internal sealed partial class BattleInfoLayer : Control
         foreach (var (army, damages, ax) in new[] { (r.PlayerArmy, r.PlayerDamages, cx - 150), (r.EnemyArmy, r.EnemyDamages, cx + 150) })
         {
             Middle(_semi, ax, y + 138, Fit(_semi, army.ToUpperInvariant(), 20, 260), 20, Lacquer.Label);
-            Middle(_bold, ax, y + 180, damages.ToString("N0", System.Globalization.CultureInfo.InvariantCulture), 38, Lacquer.Minus);
+            Middle(_bold, ax, y + 180, Figures.Number(damages), 38, Lacquer.Minus);
             Middle(_cinzel, ax, y + 200, "damages", 16, Lacquer.Quiet);
         }
         DrawLine(new Vector2(cx, y + 118), new Vector2(cx, y + 200), Lacquer.DimGold, Lacquer.Line(1, _k));

@@ -90,8 +90,8 @@ public sealed record SaveSlot(
         _ => $"Stage {Stage}",
     };
 
-    /// <summary>The budget as the game prints it: <c>Gold</c> then "00K GOLD".</summary>
-    public string BudgetText => $"{Gold * 100}K GOLD";
+    /// <summary>The budget: "116,400K GOLD".</summary>
+    public string BudgetText => Figures.Gold(Gold * 100);
 
     /// <summary>The provinces Leazas holds on the map (Nothing (75) left out), or the hideout in the prologue.</summary>
     public string RealmText => Stage == 0 ? "the hideout" : Provinces == 1 ? "1 province" : $"{Provinces} provinces";

@@ -58,7 +58,7 @@ public class ProvinceMenuTests
         Assert.Equal([("Temporary Levy", ProvinceAction.Levy, false), ("Bolster Defense", ProvinceAction.Build, false),
             ("Dungeon", ProvinceAction.Visit, false), ("Ruins Search", ProvinceAction.Search, true)],
             menu.Items.Select(i => (i.Text, i.Action, i.Enabled)));
-        Assert.Equal("Economy: 12 (1200K Gold)", menu.Card[0]);
+        Assert.Equal("Economy: 12 (1,200K GOLD)", menu.Card[0]);
 
         var free = ProvinceMenu.For(s, Items("Cｼﾊｲﾄｼ.ADV", 41, 47, 133, 502), ["○Temporary Levy", "○Bolster Defense", "○Dungeon", "Return"], Army)!;
         Assert.All(free.Items, i => Assert.True(i.Enabled));

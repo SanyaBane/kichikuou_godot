@@ -1,6 +1,7 @@
 using System.Globalization;
 using Godot;
 using Kichikuou.Game.Strategy;
+using Kichikuou.Original.Content;
 using Kichikuou.Original.Content.Battles;
 using Kichikuou.Original.Content.Strategy;
 
@@ -264,5 +265,5 @@ internal sealed partial class ScoutReportView : Control
 
     private int Px(float size) => Math.Max(8, (int)Math.Round(size * _scale));
 
-    private static string Number(int n) => n.ToString("N0", CultureInfo.InvariantCulture);
+    private static string Number(int n) => Figures.Number(n);
 }

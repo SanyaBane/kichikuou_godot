@@ -63,3 +63,20 @@ and a choice of ours."), on by default — `NewScenesChoice`, `[game] new_scenes
 copies it onto the game's context (`OriginalScriptContext.NewScenesFirst`) when the session starts, and the window's
 `NewScenesFirstChanged` keeps that context current when the player switches it during a game. The Game tab now has
 Defaults too: it turns New scenes first back on (the game folder has no default and stays as it is).
+
+## Thousands (2026-10-23)
+
+Owner's request: one standard for the figures of our own screens, the separator of their thousands a choice. The Display
+tab holds, under the palettes, a section **Thousands in gold, troops and damage** with five radios, each its sample:
+`129,300K GOLD` (Comma, the default), `129.300K GOLD` (Period), `129 300K GOLD` (Space: a no-break space, since none of
+the bundled fonts has a thin one), `129'300K GOLD` (Apostrophe), `129300K GOLD` (None, as the original prints) —
+`ThousandsChoice`, `[display] thousands` in `settings.cfg`; Defaults turns it back to the comma. The window's
+`ThousandsChosen` redraws the open screens.
+
+Every figure goes through `Original.Content/Figures` (the separator `Figures.Separator`, set from the choice at the
+launch). Its rules, the owner's S3: gold in K — **`K GOLD`** where the amount stands alone or in a sentence (the budget
+over the Subordinates and deployment screens and the week report, a save's page, the status strip, the province card,
+the Refill question), **`K`** in tables, buttons and cards (Cost and Refill, the orders' buttons, the order's plate,
+War expenses, War cost) —, no space before the K, a minus as U+2212. Troops, HP, EXP and damage take the separator
+too; the exchange's rolling counters (`ExchangeCountersView`, one digit a cell after Sengoku Rance's) keep plain digits.
+The screens of the original engine (`--interface original`, the merchant, construction) keep the original's numbers.

@@ -1,6 +1,7 @@
 using Godot;
 using Kichikuou.Engine.Script;
 using Kichikuou.Game.Battles;
+using Kichikuou.Original.Content;
 using Kichikuou.Original.Content.Battles;
 using Kichikuou.Original.Content.Strategy;
 
@@ -89,6 +90,9 @@ internal sealed partial class OptionsView : Control
 
     /// <summary>A palette was chosen (it is kept already).</summary>
     public event Action<DeploymentPalette>? PaletteChosen;
+
+    /// <summary>The thousands' separator was chosen (it is kept already, <see cref="ThousandsChoice"/>).</summary>
+    public event Action? ThousandsChosen;
 
     /// <summary>"New scenes first" was switched (it is kept already).</summary>
     public event Action<bool>? NewScenesFirstChanged;
@@ -183,6 +187,12 @@ internal sealed partial class OptionsView : Control
         PaletteChosen?.Invoke(palette);
     }
 
+    private void SetThousands(ThousandsSeparator separator)
+    {
+        ThousandsChoice.Chosen = separator;
+        ThousandsChosen?.Invoke();
+    }
+
     private void SetTextSpeed(int step)
     {
         TextSpeedChoice.Step = step;
@@ -220,6 +230,7 @@ internal sealed partial class OptionsView : Control
             case Tab.Display:
                 SetFont(GameFont.BizUdGothic);
                 SetPalette(DeploymentPalette.Steel);
+                SetThousands(ThousandsSeparator.Comma);
                 break;
             case Tab.Battle:
                 foreach (var setting in BattleScreenSettings.All)
@@ -478,6 +489,14 @@ internal sealed partial class OptionsView : Control
         SectionHead(x, y, "Palette of the battle screen and the map's plates", w);
         for (int i = 0; i < DeploymentPalette.All.Count; i++)
             Swatch(x + i * 90, y + 40, DeploymentPalette.All[i]);
+        y += 132;
+        SectionHead(x, y, "Thousands in gold, troops and damage", w);
+        for (int i = 0; i < ThousandsChoice.All.Length; i++)
+        {
+            var separator = ThousandsChoice.All[i];
+            Radio("thousands-" + separator, x + i * (w / ThousandsChoice.All.Length), y + 38, ThousandsChoice.Chosen == separator,
+                ThousandsChoice.Sample(separator), _gothic, () => SetThousands(separator));
+        }
     }
 
     private void DrawBattle()

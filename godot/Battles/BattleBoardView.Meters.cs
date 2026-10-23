@@ -1,4 +1,5 @@
 using Godot;
+using Kichikuou.Original.Content;
 using Kichikuou.Original.Content.Battles;
 
 namespace Kichikuou.Game.Battles;
@@ -44,7 +45,7 @@ internal sealed partial class BattleBoardView
         {
             float Share(float v) => Max > 0 ? Math.Clamp(v / Max, 0, 1) : 0;
             if (Label is not null && GodotObject.IsInstanceValid(Label))
-                Label.Text = $"{Prefix} {(int)Math.Round(Shown)}/{Max}";
+                Label.Text = $"{Prefix} {Figures.Number((int)Math.Round(Shown))}/{Figures.Number(Max)}";
             if (Fill is not null && GodotObject.IsInstanceValid(Fill))
                 Fill.AnchorRight = Share(Shown);
             if (TrailBar is not null && GodotObject.IsInstanceValid(TrailBar))

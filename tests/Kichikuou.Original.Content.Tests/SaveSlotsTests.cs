@@ -72,7 +72,7 @@ public class SaveSlotsTests
         Assert.Equal("8", moment.Seal);
         Assert.Equal("LP 3 · M5 · W2", moment.ShortDate);
         Assert.Equal("Stage 1 · Leazas civil war", moment.StageText);
-        Assert.Equal("116400K GOLD", moment.BudgetText);
+        Assert.Equal("116,400K GOLD", moment.BudgetText);
         Assert.Equal("2 provinces", moment.RealmText);
         Assert.Equal(2, moment.Units);
         Assert.Equal(2000, moment.Troops);

@@ -1,6 +1,6 @@
-using System.Globalization;
 using Godot;
 using Kichikuou.Game.Battles;
+using Kichikuou.Original.Content;
 using Kichikuou.Original.Content.Strategy;
 using Kichikuou.Original.State;
 using Kichikuou.Original.Strategy;
@@ -152,7 +152,7 @@ internal sealed partial class SubordinatesView : Control
         _date = $"LP {year} · Month {month} · Week {week}";
         _ready = _table.ReadyCount;
         var panel = _table.Chosen == 0 ? null : SubordinatesScreen.Panel(state, _table.Chosen, _talkMarks);
-        string key = panel is null ? "" : $"{panel}|{string.Join(",", panel.Steps)}|{Busy}|{_date}|{_ready}";
+        string key = panel is null ? "" : $"{panel}|{string.Join(",", panel.Steps)}|{Busy}|{_date}|{_ready}|{Figures.Separator}";
         if (key == _panelKey)
             return;
         _panelKey = key;
@@ -400,15 +400,15 @@ internal sealed partial class SubordinatesView : Control
         c.DrawString(_brush, new Vector2(head.Position.X, Lacquer.Baseline(head, _brush, 18)), "Orders", fontSize: 18, modulate: Lacquer.Name);
         float x = head.End.X;
         x = RightString(c, _cinzelLight, "K GOLD", 11, Lacquer.Subtitle, x, head) - 6;
-        x = RightString(c, _cinzel, (panel.Gold * 100).ToString("N0", CultureInfo.InvariantCulture), 20, Lacquer.Name, x, head) - 10;
+        x = RightString(c, _cinzel, Figures.Number(panel.Gold * 100), 20, Lacquer.Name, x, head) - 10;
         RightString(c, _cinzelLight, "Budget", 12, Lacquer.Label, x, head);
         Lacquer.DrawDivider(c, OrdersPanel.Position.X + 14, OrdersPanel.End.X - 14, OrdersPanel.Position.Y + 46, _k);
 
         var r = panel.Replenish;
         if (Enabled(ReplenishButton))
-            DrawPrimary(c, ReplenishArea, "Replenish", $"+{r.Men} troops  ·  {r.Price * 100}K", ReplenishButton);
+            DrawPrimary(c, ReplenishArea, "Replenish", $"{Figures.Signed(r.Men)} troops  ·  {Figures.GoldShort(r.Price * 100)}", ReplenishButton);
         else
-            DrawPlain(c, ReplenishArea, "Replenish", r.Enabled ? $"+{r.Men} troops  ·  {r.Price * 100}K" : r.Note, ReplenishButton, _brush, 22, 14);
+            DrawPlain(c, ReplenishArea, "Replenish", r.Enabled ? $"{Figures.Signed(r.Men)} troops  ·  {Figures.GoldShort(r.Price * 100)}" : r.Note, ReplenishButton, _brush, 22, 14);
 
         if (panel.AddOffered)
         {
@@ -421,7 +421,7 @@ internal sealed partial class SubordinatesView : Control
             for (int i = 0; i < panel.Steps.Count; i++)
             {
                 var s = panel.Steps[i];
-                DrawPlain(c, StepRect(i), $"+{s.Men}", $"{s.Price * 100}K", StepButton + i, _brush, 17, 12);
+                DrawPlain(c, StepRect(i), Figures.Signed(s.Men), Figures.GoldShort(s.Price * 100), StepButton + i, _brush, 17, 12);
             }
         }
         c.DrawLine(new Vector2(ReplenishArea.Position.X + 2, RuleY), new Vector2(ReplenishArea.End.X - 2, RuleY), Lacquer.DimGold, Line(1));

@@ -119,9 +119,9 @@ public sealed record DeploymentRow(
     {
         DeploymentColumn.Number => Unit.ToString(),
         DeploymentColumn.Name => Name,
-        DeploymentColumn.Troops => $"{Troops}/{MaxTroops}",
-        DeploymentColumn.Hp => $"{Hp}/{MaxHp}",
-        DeploymentColumn.Exp => $"{Exp}/{NextExp}",
+        DeploymentColumn.Troops => $"{Figures.Number(Troops)}/{Figures.Number(MaxTroops)}",
+        DeploymentColumn.Hp => $"{Figures.Number(Hp)}/{Figures.Number(MaxHp)}",
+        DeploymentColumn.Exp => $"{Figures.Number(Exp)}/{Figures.Number(NextExp)}",
         DeploymentColumn.Level => Level.ToString(),
         DeploymentColumn.Atk => Atk.ToString(),
         DeploymentColumn.Def => Def.ToString(),
@@ -130,9 +130,9 @@ public sealed record DeploymentRow(
         DeploymentColumn.Magic => Magic.ToString(),
         DeploymentColumn.TroopAtk => TroopAtk.ToString(),
         DeploymentColumn.TroopDef => TroopDef.ToString(),
-        DeploymentColumn.Cost => $"{Cost * 100}K",
+        DeploymentColumn.Cost => Figures.GoldShort(Cost * 100),
         DeploymentColumn.TroopType => TroopType,
-        DeploymentColumn.Refill => Refill == 0 ? "—" : $"{Refill * 100}K",
+        DeploymentColumn.Refill => Refill == 0 ? "—" : Figures.GoldShort(Refill * 100),
         DeploymentColumn.Item => Item == "" ? "—" : Item,
         DeploymentColumn.Rows => Rows == "" ? "—" : Rows,
         >= DeploymentColumn.OffAtkMod and <= DeploymentColumn.DgnDefMod =>
@@ -325,8 +325,8 @@ public static class DeploymentTable
     public static IReadOnlyList<string> ReplenishQuestion(DeploymentRow row) =>
     [
         $"Replenish {row.Name}'s unit?",
-        $"{row.MaxTroops - row.Troops:+#;−#;0} troops ({row.Troops} → {row.MaxTroops}) for "    // CMD-20: above the maximum, fewer
-            + $"{(row.Refill * 100).ToString("N0", System.Globalization.CultureInfo.InvariantCulture)} K Gold.",
+        $"{Figures.Signed(row.MaxTroops - row.Troops)} troops ({Figures.Number(row.Troops)} → {Figures.Number(row.MaxTroops)}) for "    // CMD-20: above the maximum, fewer
+            + $"{Figures.Gold(row.Refill * 100)}.",
     ];
 
     /// <summary>

@@ -49,7 +49,7 @@ public class StatusStripTests
         var strip = StatusStrip.For(Week18(), Fake)!;
 
         Assert.Equal(("Leazas", false, "LP 3 · Month 5 · Week 2"), (strip.Nation, strip.Thieves, strip.Date));
-        Assert.Equal([("Budget", "116400K GOLD"), ("Troops", "2251")], strip.Status);
+        Assert.Equal([("Budget", "116,400K GOLD"), ("Troops", "2,251")], strip.Status);
         Assert.Equal(["Castle", "Subordinates", "Map"], strip.Groups.Select(g => g.Caption));
         Assert.Equal([("Construction", true), ("Harem", false), ("Merchant", true), ("Troops", false), ("Talk", true),
             ("Own city", true), ("Attack", true), ("Dungeon", false)], strip.Groups.SelectMany(g => g.Uses).Select(u => (u.Text, u.Free)));
@@ -68,7 +68,7 @@ public class StatusStripTests
         s.Units[4].Troops = 50;
         var thieves = StatusStrip.For(s, Fake)!;
         Assert.True(thieves.Thieves);
-        Assert.Equal(("Rance's Thieves", ("Subordinates", "2950")), (thieves.Nation, thieves.Status[1]));   // units 1, 3, 4 whatever their status
+        Assert.Equal(("Rance's Thieves", ("Subordinates", "2,950")), (thieves.Nation, thieves.Status[1]));   // units 1, 3, 4 whatever their status
         Assert.Equal(["Hideout", "Map"], thieves.Groups.Select(g => g.Caption));
         Assert.Equal(["Harem", "Subordinates", "Pillage"], thieves.Groups.SelectMany(g => g.Uses).Select(u => u.Text));   // no Dungeon: DGN-20
     }
@@ -86,6 +86,6 @@ public class StatusStripTests
         var strip = presenter.StatusStrip!;
         Assert.Empty(presenter.Unresolved);
         Assert.Equal(("Leazas", "LP 3 · Month 5 · Week 2"), (strip.Nation, strip.Date));
-        Assert.Equal([("Budget", "116400K GOLD"), ("Troops", "2251")], strip.Status);
+        Assert.Equal([("Budget", "116,400K GOLD"), ("Troops", "2,251")], strip.Status);
     }
 }

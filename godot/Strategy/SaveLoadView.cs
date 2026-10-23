@@ -1,6 +1,7 @@
 using Godot;
 using Kichikuou.Engine.Script;
 using Kichikuou.Game.Battles;
+using Kichikuou.Original.Content;
 using Kichikuou.Original.Content.Strategy;
 
 namespace Kichikuou.Game.Strategy;
@@ -844,7 +845,7 @@ internal sealed partial class SaveLoadView : Control
         (string, string)[] stats =
         [
             ("Stage", shown.StageText), ("Budget", shown.BudgetText), ("Realm", shown.RealmText),
-            ("Units", shown.Units.ToString()), ("Troops", shown.Troops.ToString()), ("Written", _chosenNew ? "now" : shown.WrittenText),
+            ("Units", shown.Units.ToString()), ("Troops", Figures.Number(shown.Troops)), ("Written", _chosenNew ? "now" : shown.WrittenText),
         ];
         for (int i = 0; i < stats.Length; i++)
         {
@@ -868,7 +869,7 @@ internal sealed partial class SaveLoadView : Control
             if (_now is { } now)
             {
                 Text(_gothic, 15, PageX, by + 16, $"Saving: {now.DateText}", Lacquer.Text);
-                Text(_gothic, 14, PageX, by + 40, $"{now.BudgetText} · {now.RealmText} · {now.Troops} troops", Lacquer.Quiet);
+                Text(_gothic, 14, PageX, by + 40, $"{now.BudgetText} · {now.RealmText} · {Figures.Number(now.Troops)} troops", Lacquer.Quiet);
             }
         }
         else

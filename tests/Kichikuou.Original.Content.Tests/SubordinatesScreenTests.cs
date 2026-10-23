@@ -116,7 +116,7 @@ public class SubordinatesScreenTests
         Assert.False(order.AnswerKey());
         var result = order.Result(s)!;
         Assert.Equal(new SubordinateResult(SubordinateOrderKind.Replenish, "Haurein", "", 12, 50, 1400, 1400, 1400, 27, 1114), result);
-        Assert.Equal(("Troops Replenished", "Haurein", "50 → 1400", "+1350", "−2,700 K", "111,400 K"),
+        Assert.Equal(("Troops Replenished", "Haurein", "50 → 1,400", "+1,350", "−2,700K", "111,400K"),
             (result.Title, result.Who, result.TroopsLine, result.Gain, result.CostLine, result.BudgetLine));
     }
 
@@ -138,7 +138,7 @@ public class SubordinatesScreenTests
         Assert.True(order.OnMapWait());
         var result = order.Result(s)!;
         Assert.Equal(new SubordinateResult(SubordinateOrderKind.AddTroops, "Haurein", "", 12, 50, 150, 1400, 1500, 486, 655), result);
-        Assert.Equal(("New Troops", "50/1400 → 150/1500", "+100", "−48,600 K", "65,500 K"),
+        Assert.Equal(("New Troops", "50/1,400 → 150/1,500", "+100", "−48,600K", "65,500K"),
             (result.Title, result.TroopsLine, result.Gain, result.CostLine, result.BudgetLine));
     }
 

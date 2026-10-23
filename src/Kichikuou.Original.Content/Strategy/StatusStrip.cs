@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.State;
@@ -84,10 +85,14 @@ public sealed record StatusStrip(string Nation, bool Thieves, string Date, IRead
         string[] lines = [.. printed.Split('\n').Select(l => l.Trim(' ', '　'))];
         if (lines.Length < 4)
             return null;
-        var status = lines[1..3].Select(l => l.IndexOfAny([':', '：']) is var at and >= 0 ? (l[..at].Trim(), l[(at + 1)..].Trim()) : ("", l)).ToArray();
+        var status = lines[1..3].Select(l => l.IndexOfAny([':', '：']) is var at and >= 0 ? (l[..at].Trim(), Grouped(l[(at + 1)..].Trim())) : ("", Grouped(l))).ToArray();
         string date = $"LP {year} · {lines[3].Replace(", ", " · ").Replace(",", " ·")}";
         return new StatusStrip(lines[0].Replace('’', '\''), thieves, date, status, GroupsOf(state, thieves));
     }
+
+    /// <summary>A printed value with its number written as our screens write it: "116400K GOLD" → "116,400K GOLD".</summary>
+    private static string Grouped(string value) =>
+        Regex.Replace(value, "-?[0-9]+", m => int.TryParse(m.Value, out int n) ? Figures.Number(n) : m.Value);
 
     /// <summary>
     /// <c>SetDate</c> (<c>COMMAND.ADV:621-637</c>): LP, month and week from <c>Week</c> — 48 weeks a year

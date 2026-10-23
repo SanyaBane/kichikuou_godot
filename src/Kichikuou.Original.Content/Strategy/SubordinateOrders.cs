@@ -52,23 +52,19 @@ public sealed record SubordinateResult(
     /// <summary>"Haurein · Leazas Soldiers".</summary>
     public string Who => TroopType.Length == 0 ? Name : $"{Name} · {TroopType}";
 
-    /// <summary>The troops before and after: "209 → 1400" (Replenish), "1000/1000 → 1050/1050" (new troops, the maximum raised).</summary>
+    /// <summary>The troops before and after: "209 → 1,400" (Replenish), "1,000/1,000 → 1,050/1,050" (new troops, the maximum raised).</summary>
     public string TroopsLine => Kind == SubordinateOrderKind.Replenish
-        ? $"{TroopsBefore} → {Troops}"
-        : $"{TroopsBefore}/{MaxBefore} → {Troops}/{MaxTroops}";
+        ? $"{Figures.Number(TroopsBefore)} → {Figures.Number(Troops)}"
+        : $"{Figures.Number(TroopsBefore)}/{Figures.Number(MaxBefore)} → {Figures.Number(Troops)}/{Figures.Number(MaxTroops)}";
 
-    /// <summary>The men gained: "+1191" (a unit above its maximum loses some, CMD-20: "−50").</summary>
-    public string Gain => Signed(Troops - TroopsBefore);
+    /// <summary>The men gained: "+1,191" (a unit above its maximum loses some, CMD-20: "−50").</summary>
+    public string Gain => Troops == TroopsBefore ? "+0" : Figures.Signed(Troops - TroopsBefore);
 
-    /// <summary>"−2,300 K".</summary>
-    public string CostLine => $"−{Thousands(Cost)} K";
+    /// <summary>"−2,300K".</summary>
+    public string CostLine => Figures.Minus + Figures.GoldShort(Cost * 100);
 
-    /// <summary>"114,100 K".</summary>
-    public string BudgetLine => $"{Thousands(Gold)} K";
-
-    private static string Thousands(int hundreds) => (hundreds * 100).ToString("N0", CultureInfo.InvariantCulture);
-
-    private static string Signed(int n) => n < 0 ? $"−{-n}" : $"+{n}";
+    /// <summary>"114,100K".</summary>
+    public string BudgetLine => Figures.GoldShort(Gold * 100);
 }
 
 /// <summary>
