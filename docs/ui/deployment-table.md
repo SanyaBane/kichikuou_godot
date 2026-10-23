@@ -84,7 +84,7 @@ the details panel (2026-10-12, after the look at step 8):
 | Troops | Troops | `Troops / MaxTroops` |
 | T.Atk | Troop attack | `TroopAtk` |
 | T.Def | Troop defense | `TroopDef` |
-| Off.A, Off.D, Dfn.A, Dfn.D, Dgn.A, Dgn.D | Troop attack / defense on offense, on defense, in dungeons | the situational modifiers `OffAtkMod`, `OffDefMod`, `DefAtkMod`, `DefDefMod`, `DgnAtkMod`, `DgnDefMod` as the battle adds them (`DeploymentTable.Modifier`, `FIGT.ADV:2450-2483`: below 10 +n, above 10 −(n−10), 10 none; "0" for both 0 and 10, which the status page prints as "+0" and nothing); "—" for a unit without troops, whose status page shows none (`Cﾌﾞｶ.ADV:1168`). Added by the owner, 2026-10-23, here and on the Subordinates screen |
+| Off.A, Off.D, Dfn.A, Dfn.D, Dgn.A, Dgn.D | Troop attack / defense on offense, on defense, in dungeons | the situational modifiers `OffAtkMod`, `OffDefMod`, `DefAtkMod`, `DefDefMod`, `DgnAtkMod`, `DgnDefMod` as the battle adds them (`DeploymentTable.Modifier`, `FIGT.ADV:2450-2483`: below 10 +n, above 10 −(n−10), 10 none; "0" for both 0 and 10, which the status page prints as "+0" and nothing); "—" for a unit without troops, whose status page shows none (`Cﾌﾞｶ.ADV:1168`); "0" and "—" in the quiet ink, so +n and −n stand out. Added by the owner, 2026-10-23, here and on the Subordinates screen |
 | Str% | Strategy | `Strategy` (success chance) |
 | Cost | War expense | `DeployCost + Troops / 300` (×100K GOLD), as the script sums it |
 | HP | Commander HP | `HP / MaxHP` |
