@@ -217,13 +217,13 @@ public sealed partial class BattlePresenter
                 string printed = Read(e.Text, [], e.StringVariables);
                 StrategyText(e.Text, printed);
                 BoxText(e.Text, []);
-                Print(printed);
+                Print(printed, ReadBefore?.Invoke(e.Text) ?? false);
                 break;
             case ValueMessageEvent e:
                 if (e.Text == ScoutTotalsLine && Scout is not null)
                     ScoutReported = true;
                 BoxText(e.Text, e.Values);
-                Print(Read(e.Text, e.Values, e.StringVariables));
+                Print(Read(e.Text, e.Values, e.StringVariables), false);    // its numbers change: never read before
                 break;
             case PrintStringEvent e: PrintString(e.Slot.Value); break;
             case FlowErrorEvent e: Error(e.Text); break;
@@ -597,10 +597,19 @@ public sealed partial class BattlePresenter
     /// <summary>The 131 left on the screen after op 0 (<see cref="CloseByType"/>: its copy onto itself leaves it) until the next drawing.</summary>
     private WindowModel? _leftBar;
 
+    /// <summary>
+    /// Whether the player read a message before, asked as it is printed (<see cref="Strategy.GamePresenter.ReadBefore"/>):
+    /// the window's text keeps it for the already-read text's colour (docs/ui/read-text.md).
+    /// </summary>
+    public Func<ScriptRef, bool>? ReadBefore { get; set; }
+
+    /// <summary>Whether the message being printed was read before; null while the text comes from none.</summary>
+    private bool? _printing;
+
     private void WindowPrinted(int x, int y, int size, int color, char c)
     {
         if (_winType != 0 && Writer.Window == _windowText.Rect)
-            _windowText.Put(x, y, size, color, c);
+            _windowText.Put(x, y, size, color, c, _printing);
     }
 
     /// <summary>
@@ -649,10 +658,15 @@ public sealed partial class BattlePresenter
         ? new BattleSpeech(_winType < 50 ? BattleSide.Player : BattleSide.Enemy, _winType is 42 or 52, text)
         : null;
 
-    /// <summary>Text into the open window, kept as the speech bubble's line too while one is open.</summary>
-    private void Print(string text)
+    /// <summary>
+    /// Text into the open window, kept as the speech bubble's line too while one is open; <paramref name="read"/>: whether
+    /// its message was read before, null when it comes from none.
+    /// </summary>
+    private void Print(string text, bool? read = null)
     {
+        _printing = read;
         Writer.Print(text);
+        _printing = null;
         if (SpeechOpen)
             _speech.Append(text);
     }

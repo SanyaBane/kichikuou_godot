@@ -103,6 +103,19 @@ public class MessageSkipTests
         Assert.Equal([MessageSkip.Key(New)], recorded);
     }
 
+    /// <summary>The already-read text's colour asks before the message is noted (docs/ui/read-text.md).</summary>
+    [Fact]
+    public void A_message_is_seen_once_noted_and_until_forgotten()
+    {
+        var skip = new MessageSkip([MessageSkip.Key(Seen)]);
+        Assert.True(skip.HasSeen(Seen));
+        Assert.False(skip.HasSeen(New));
+        skip.OnMessage(New);
+        Assert.True(skip.HasSeen(New));
+        skip.ForgetSeen();
+        Assert.False(skip.HasSeen(Seen));
+    }
+
     [Fact]
     public void Allowing_unseen_messages_enables_skipping_again()
     {

@@ -9,7 +9,8 @@ namespace Kichikuou.Game.Strategy;
 /// <summary>
 /// The options window (docs/ui/options.md; the owner's mock-up D, 2026-10-21): every setting of the menu bar's Option, over
 /// the game, which waits while it is open. A paper sheet in a lacquer frame with paper tabs across its top — Messages
-/// (the text speed with the game's 121 typing as its preview, the message skip's switches, Forget, the mouse), Display
+/// (the text speed with the game's 121 typing as its preview, the message skip's switches, Forget, the mouse, the
+/// already-read text's colour, <see cref="ReadTextChoice"/>, docs/ui/read-text.md), Display
 /// (the font, the palette), Battle (our battle screen's effects and timings, <see cref="BattleScreenSettings"/>, the order
 /// strip as their preview), Game (the game folder, "New scenes first", <see cref="NewScenesChoice"/>). Every change applies
 /// and is kept at once; Defaults resets the tab shown (not the game folder); Close, Esc or a right click shut it. Forget and the game folder ask first, in a box over the sheet. Laid out
@@ -49,7 +50,7 @@ internal sealed partial class OptionsView : Control
     private readonly MessageSkip _skip;
     private readonly bool _folderLocked;
     private readonly MessageWindowView _preview;
-    private readonly MessageWindow _sample = MessageWindow.Sample(PreviewLines);
+    private readonly MessageWindow _sample = MessageWindow.Sample(PreviewLines, read: true);
     private readonly OrderStrip _strip = new();
 
     private Tab _tab;
@@ -82,6 +83,9 @@ internal sealed partial class OptionsView : Control
 
     /// <summary>A font was chosen (it is kept already).</summary>
     public event Action<GameFont>? FontChosen;
+
+    /// <summary>The already-read text's colour was chosen (it is kept already, <see cref="ReadTextChoice"/>).</summary>
+    public event Action? ReadColourChosen;
 
     /// <summary>A palette was chosen (it is kept already).</summary>
     public event Action<DeploymentPalette>? PaletteChosen;
@@ -188,6 +192,13 @@ internal sealed partial class OptionsView : Control
         TextSpeedChanged?.Invoke(TextSpeedChoice.Step);
     }
 
+    private void SetReadColour(int index)
+    {
+        ReadTextChoice.Index = index;
+        _preview.QueueRedraw();
+        ReadColourChosen?.Invoke();
+    }
+
     private void SetNewScenesFirst(bool on)
     {
         NewScenesChoice.On = on;
@@ -201,6 +212,7 @@ internal sealed partial class OptionsView : Control
         {
             case Tab.Messages:
                 SetTextSpeed(TextSpeedChoice.DefaultStep);
+                SetReadColour(ReadTextChoice.DefaultIndex);
                 _skip.SkipUnseen = false;
                 _skip.FastFades = true;
                 EngineState.MouseMovement = true;
@@ -413,6 +425,44 @@ internal sealed partial class OptionsView : Control
         SectionHead(rx, y + 220, "Mouse", rw);
         CheckBox("mouse", rx, y + 258, EngineState.MouseMovement, "Mouse movement", "The pointer moves to the chosen item.",
             () => EngineState.MouseMovement = !EngineState.MouseMovement);
+
+        int chosen = ReadTextChoice.Index;
+        DrawString(_gothic, new Vector2(x + 14, y + 281), chosen == ReadTextChoice.None ? "Read text keeps the window's colour."
+            : "The preview counts as read.", fontSize: 13, modulate: Lacquer.InkQuiet);
+        y += 330;
+        SectionHead(x, y, "Already-read text", ContentW);
+        float tx = x;
+        ReadTile("read-none", new Rect2(tx, y + 40, 150, 44), chosen == ReadTextChoice.None, null, ReadTextChoice.None);
+        tx += 160;
+        for (int i = 0; i < ReadTextChoice.Colours.Length; i++, tx += 54)
+            ReadTile("read-" + i, new Rect2(tx, y + 40, 44, 44), chosen == i, ReadTextChoice.Colours[i].Colour, i);
+        DrawString(_gothic, new Vector2(x, y + 128), chosen == ReadTextChoice.None ? "Don't change" : ReadTextChoice.Colours[chosen].Name,
+            fontSize: 17, modulate: Lacquer.Ink);
+        DrawString(_gothic, new Vector2(x, y + 150), "A message window you have read before, in any game, shows its text in this colour.",
+            fontSize: 13, modulate: Lacquer.InkQuiet);
+        DrawString(_gothic, new Vector2(x, y + 170), "Speech balloons, menus and our screens keep their own. Forget them… counts them unread.",
+            fontSize: 13, modulate: Lacquer.InkQuiet);
+    }
+
+    /// <summary>
+    /// A tile of "Already-read text" (after Rance X's row): lacquer, so the colour shows as on the windows, with its colour as
+    /// a square, or "Don't change" when <paramref name="colour"/> is null; framed in vermilion when chosen.
+    /// </summary>
+    private void ReadTile(string id, Rect2 rect, bool on, Color? colour, int index)
+    {
+        bool lit = _hover == id;
+        DrawRect(rect, Lacquer.Panel with { A = 1 });
+        DrawRect(rect, Lacquer.DimGold, false, Line(1));
+        if (colour is { } c)
+            DrawRect(rect.Grow(-8), c);
+        else
+            DrawString(_gothic, new Vector2(rect.Position.X, Lacquer.Baseline(rect, _gothic, 16)), "Don't change",
+                HorizontalAlignment.Center, rect.Size.X, 16, Lacquer.Text);
+        if (on)
+            DrawRect(rect.Grow(3), Lacquer.Vermilion, false, Line(3));
+        else if (lit)
+            DrawRect(rect.Grow(2), Lacquer.HeadInk, false, Line(2));
+        _spots.Add(new Spot(id, rect.Grow(4), () => { SetReadColour(index); QueueRedraw(); }));
     }
 
     private void DrawDisplay()

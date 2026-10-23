@@ -182,6 +182,8 @@ internal sealed partial class MessageWindowView : Control
                 text = NarrationText;
                 break;
         }
+        if (w.Read && ReadTextChoice.Colour is { } read)
+            text = ReadTextChoice.Of(read, text);                       // the already-read text's colour (docs/ui/read-text.md)
         if (w.Kind == MessageKind.PlaceTitle)
             PlaceTitle(box, w.Title, w.Subtitle);
         else

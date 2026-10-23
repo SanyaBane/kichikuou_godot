@@ -106,6 +106,12 @@ public sealed class MessageWindow
     /// <summary>The window's kind.</summary>
     public MessageKind Kind { get; }
 
+    /// <summary>
+    /// Whether the player read every message on the window before (<see cref="TextBox.ReadBefore"/>): its text takes the
+    /// already-read text's colour (docs/ui/read-text.md).
+    /// </summary>
+    public bool Read { get; private init; }
+
     /// <summary>The panel's rectangle (screen pixels), without its tail.</summary>
     public (int X, int Y, int W, int H) Panel { get; }
 
@@ -166,7 +172,7 @@ public sealed class MessageWindow
             glyphs.Add(glyph);
         }
         if (kind == MessageKind.CgBar)
-            return CgBar(panel, glyphs, text.Rect.X * k, continuing);
+            return CgBar(panel, glyphs, text.Rect.X * k, continuing, text.ReadBefore);
         var rows = text.Chars.GroupBy(c => c.Y).OrderBy(row => row.Key).ToArray();
         var lines = rows.Select(row => Line(row, text.Rect.X)).ToArray();
         string title = "", subtitle = "";
@@ -177,15 +183,16 @@ public sealed class MessageWindow
             title = lines[0].Trim();
             subtitle = lines.Length > 1 ? lines[1].Trim() : "";
         }
-        return new MessageWindow(kind, panel, glyphs, lines, title, subtitle);
+        return new MessageWindow(kind, panel, glyphs, lines, title, subtitle) { Read = text.ReadBefore };
     }
 
     /// <summary>
     /// A speech of the right portrait's (121) holding <paramref name="lines"/>, printed where <c>WAO_SUB</c> prints it
     /// (<c>WAO_SUB.ADV:198, 212-214</c>: <c>ZM 24</c>, <c>B3 8, 43, 265, 378, 141</c>) in the window's own colour: Option →
-    /// Text Speed…'s preview (docs/ui/messages.md, §5 step 4).
+    /// Text Speed…'s preview (docs/ui/messages.md, §5 step 4), <paramref name="read"/> when it counts as read before (the
+    /// already-read text's colour, docs/ui/read-text.md).
     /// </summary>
-    public static MessageWindow Sample(IReadOnlyList<string> lines)
+    public static MessageWindow Sample(IReadOnlyList<string> lines, bool read = false)
     {
         const int size = 24;
         var box = new TextBox((43, 265, 378, 141));
@@ -193,7 +200,7 @@ public sealed class MessageWindow
         {
             if (i > 0)
                 box.NewLine(size);
-            box.Print(lines[i], size, PlainColor);
+            box.Print(lines[i], size, PlainColor, read);
         }
         return Of(SpeechRightCg, box, _ => (0, 0, 0))
             ?? throw new ArgumentException("The lines do not fit 121's text box.", nameof(lines));
@@ -204,7 +211,8 @@ public sealed class MessageWindow
     /// move left by their indent, up to the name's cells; the closing bracket at the end dropped. A window without a name
     /// whose first line is indented to <paramref name="continuing"/>'s speech, which was not closed, goes on with it.
     /// </summary>
-    private static MessageWindow CgBar((int X, int Y, int W, int H) panel, List<MessageGlyph> glyphs, int left, MessageWindow? continuing)
+    private static MessageWindow CgBar((int X, int Y, int W, int H) panel, List<MessageGlyph> glyphs, int left, MessageWindow? continuing,
+        bool read)
     {
         var rows = glyphs.GroupBy(g => g.Y).OrderBy(row => row.Key).Select(row => row.OrderBy(g => g.X).ToList()).ToList();
         var lines = rows.Select(row => LineOf(row, left)).ToList();
@@ -240,7 +248,7 @@ public sealed class MessageWindow
             lines = [.. rows.Select(row => LineOf(row, left))];
         }
         return new MessageWindow(MessageKind.CgBar, panel, [.. rows.SelectMany(row => row)], lines, "", "",
-            new Speech(name, thinks, unclosed, prefix));
+            new Speech(name, thinks, unclosed, prefix)) { Read = read };
     }
 
     /// <summary>A row of glyphs (screen pixels) from <paramref name="left"/>, a half-width space for each half cell between them.</summary>
@@ -276,5 +284,5 @@ public sealed class MessageWindow
     /// <summary>Whether <paramref name="other"/> shows the same: the kind, the panel, the speaker and every character.</summary>
     public bool SameAs(MessageWindow? other) =>
         other is not null && other.Kind == Kind && other.Panel == Panel && other.Speaker == Speaker && other.Thinks == Thinks
-        && other.Glyphs.SequenceEqual(Glyphs);
+        && other.Read == Read && other.Glyphs.SequenceEqual(Glyphs);
 }

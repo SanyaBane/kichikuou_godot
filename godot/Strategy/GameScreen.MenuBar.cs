@@ -240,6 +240,7 @@ public partial class GameScreen
         var view = new OptionsView(_skip, folderLocked: GameData.UsesExtract, tab);
         view.TextSpeedChanged += step => _messageView.LettersPerSecond = TextSpeedChoice.LettersPerSecond(step);
         view.FontChosen += ApplyFont;
+        view.ReadColourChosen += () => _messageView.QueueRedraw();
         view.PaletteChosen += ApplyPalette;
         view.NewScenesFirstChanged += on =>
         {

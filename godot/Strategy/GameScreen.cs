@@ -354,6 +354,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             Log = EngineState.Log,
         };
         _skip = EngineState.Skip(SaveDirectory);
+        _presenter.ReadBefore = _skip.HasSeen;                          // asked before OnMessage notes it (docs/ui/read-text.md)
         if (_options.MsgSkip)
             _skip.Activate(true);
         BuildMenuBar();

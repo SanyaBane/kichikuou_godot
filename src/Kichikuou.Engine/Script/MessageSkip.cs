@@ -102,6 +102,9 @@ public sealed class MessageSkip
     /// <summary>The number of messages seen.</summary>
     public int SeenCount => _seen.Count;
 
+    /// <summary>Whether the message at <paramref name="at"/> has been seen (before <see cref="OnMessage"/> notes it, whether it was seen before).</summary>
+    public bool HasSeen(ScriptRef at) => _seen.Contains(Key(at));
+
     /// <summary><see cref="Enabled"/> or <see cref="Activated"/> changed.</summary>
     public event Action? Changed;
 

@@ -42,7 +42,9 @@ seen before it is drawn (`GameScreen`'s `_skip.OnMessage`), so whether it was re
 
 Our message windows (`godot/Strategy/MessageWindowView`, `Original.Content/Strategy/MessageWindow`) — 111, 112, 121,
 122, 113, 123 and 131 — wherever they open: the scenes, the command files' lines, the battle's windows off the field.
-A character the script prints in a colour of its own (not the window's) keeps it.
+A character the script prints in a colour of its own (not the window's) keeps it; a place's title keeps its gold.
+A message with numbers (`ValueMessageEvent`: troops, gold, damages) never counts as read, since its numbers change, so a
+window holding one keeps its own colour; a string variable printed on a window (a name) counts neither way.
 
 Never: the battle's speech balloons and info boxes, the week report, the status strip, the `]` menus (`SceneMenuView`),
 the message log, our screens and the port's own text (`PortTextEvent`) — they are drawn by their own views, which the
@@ -68,11 +70,21 @@ The colours, after Rance X's row: Salmon (240, 120, 120), Rose (240, 128, 184), 
 (192, 128, 255), Periwinkle (128, 128, 255), Sky (128, 184, 255), Cyan (128, 255, 255), Mint (128, 255, 192), Green
 (128, 255, 128). The default is the first, Salmon (the owner, 2026-10-23).
 
-## 5. The build (after the owner's choice)
+## 5. The build
 
-1. `MessageSkip` tells whether a message was seen before it is noted; the presenter keeps that flag with the characters
-   it prints (`TextBox`), and `MessageWindow` passes it on with each glyph.
-2. `MessageWindowView` draws the window's own-coloured glyphs in the chosen colour when every message on the window was
-   read before (dimmed in a thought); the choice is a setting kept with the others (`ReadTextChoice`, as `TextSpeedChoice`).
-3. Option → Messages: the section of R1, Defaults back to Salmon; the preview read.
-4. Tests of the flag through `TextBox` and `MessageWindow`; a look in a window from the week-26 save.
+The owner chose round 2 (2026-10-23: whole windows, Salmon by default). Built:
+
+1. `Engine/Script/MessageSkip.HasSeen` tells whether a message was seen; `GameScreen` gives it to the presenters as
+   `GamePresenter.ReadBefore` (the battle's `BattlePresenter.ReadBefore` the same), asked as a message is printed, before
+   `OnMessage` notes it. `Content/Screen/TextBox` keeps each character's flag (`Print`/`Put`'s `read`, gone with the
+   character in `Clear` and `Wipe`) and answers `ReadBefore` for the whole box; `MessageWindow.Read` carries it.
+2. `godot/Strategy/MessageWindowView` draws a read window's own-coloured text in the chosen colour (a thought's dimmed,
+   `ReadTextChoice.Of`); the choice is `godot/Strategy/ReadTextChoice`, `[display] read_text_colour` in
+   `user://settings.cfg` (-1 "Don't change", else the colour's index; Salmon, 0, by default).
+3. Option → Messages: the section of R1 (`OptionsView.ReadTile`), Defaults back to Salmon; the preview counts as read
+   (`MessageWindow.Sample(…, read: true)`).
+4. Tests: `TextBoxTests` (Content), `MessageWindowTests` (the presenter's and the battle's windows, the sample),
+   `MessageSkipTests.A_message_is_seen_once_noted_and_until_forgotten`.
+
+The seen record is kept per save folder (`EngineState.Skip`), as the message skip's always was: the player's own folder
+holds one, the agent's look folders (`user://saves-look-*`) their own.

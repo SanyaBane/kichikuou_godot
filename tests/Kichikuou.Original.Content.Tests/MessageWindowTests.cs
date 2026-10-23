@@ -152,6 +152,75 @@ public class MessageWindowTests
     }
 
     /// <summary>
+    /// The already-read text's colour (docs/ui/read-text.md): a window is read when every message printed on it was read
+    /// before, as <see cref="GamePresenter.ReadBefore"/> answers while it prints; a string variable counts neither way, a
+    /// message with numbers never as read; one new message makes the whole window unread.
+    /// </summary>
+    [Fact]
+    public void A_window_is_read_when_every_message_on_it_was()
+    {
+        var (presenter, state) = Presenter();
+        presenter.CoverMessages = true;
+        ScriptRef read = new("Iﾏｼﾞﾝ.ADV", 125), unread = new("Iﾏｼﾞﾝ.ADV", 127);
+        presenter.ReadBefore = at => at == read;
+        Open(presenter, state, 121, 21, 810);
+        Assert.False(presenter.MessageWindow!.Read);                            // nothing on it yet
+
+        presenter.Show(new MessageEvent(read));
+        Assert.True(presenter.MessageWindow!.Read);
+        state.Strings[1] = "Rance";
+        presenter.Show(new PrintStringEvent(1));
+        Assert.True(presenter.MessageWindow!.Read);
+        presenter.Show(new LineBreakEvent());
+        presenter.Show(new MessageEvent(unread));
+        Assert.False(presenter.MessageWindow!.Read);
+
+        Open(presenter, state, 121, 21, 810);                                   // a window opens over it: empty again
+        presenter.Show(new ValueMessageEvent(read, [5]));
+        Assert.False(presenter.MessageWindow!.Read);
+
+        Open(presenter, state, 121, 21, 810);
+        presenter.Show(new PrintStringEvent(1));
+        Assert.False(presenter.MessageWindow!.Read);                            // no message on it
+
+        presenter.ReadBefore = null;
+        Open(presenter, state, 121, 21, 810);
+        presenter.Show(new MessageEvent(read));
+        Assert.False(presenter.MessageWindow!.Read);                            // nobody keeps a record: nothing is read
+    }
+
+    /// <summary>The battle's windows know it too: the presenter asks the battle's the same.</summary>
+    [Fact]
+    public void A_battles_window_is_read_too()
+    {
+        var (presenter, _) = Presenter();
+        presenter.CoverMessages = true;
+        ScriptRef read = new("FIGT.ADV", 1), unread = new("FIGT.ADV", 2);      // no data: printed as "[FIGT.ADV:1]"
+        presenter.ReadBefore = at => at == read;
+        presenter.Show(new BattleScreenEvent("FIGT_A.ADV", true));
+        presenter.Show(new WindowEvent(113, 0));
+        presenter.Show(new MessageEvent(read));
+        Assert.True(presenter.MessageWindow!.Read);
+
+        presenter.Show(new MessageEvent(unread));                               // "[FIGT.ADV:1][FIGT.ADV:2]": one row
+        Assert.False(presenter.MessageWindow!.Read);
+    }
+
+    /// <summary>Option → Messages's preview counts as read when asked; a window read and one not are not the same window.</summary>
+    [Fact]
+    public void The_sample_can_count_as_read()
+    {
+        string[] lines = ["I believe that we should first"];
+        var read = MessageWindow.Sample(lines, read: true);
+        var plain = MessageWindow.Sample(lines);
+
+        Assert.True(read.Read);
+        Assert.False(plain.Read);
+        Assert.False(read.SameAs(plain));
+        Assert.True(read.SameAs(MessageWindow.Sample(lines, read: true)));
+    }
+
+    /// <summary>
     /// In a battle the battle's own windows are handed over too (the results after the field: <c>FIGT_A</c>'s narrations):
     /// a narration with the text printed into it, emptied after its key, none once it closes; a speech bubble is not ours.
     /// </summary>

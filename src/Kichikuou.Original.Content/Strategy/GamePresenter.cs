@@ -229,6 +229,17 @@ public sealed partial class GamePresenter : IStageObserver
     /// <summary>The message window's text (for tests and other UIs).</summary>
     public TextBox WindowText => _window;
 
+    /// <summary>
+    /// Whether the player read a message before, asked as it is printed (the UI's record, which notes the message after
+    /// it): the window's text keeps it (<see cref="TextBox.ReadBefore"/>) for the already-read text's colour
+    /// (docs/ui/read-text.md). None: no message counts as read. The battle's presenter asks the same.
+    /// </summary>
+    public Func<ScriptRef, bool>? ReadBefore
+    {
+        get => Battle.ReadBefore;
+        set => Battle.ReadBefore = value;
+    }
+
     /// <summary>Takes the game's state: the screens are drawn from it.</summary>
     public void Bind(GameState state)
     {
@@ -332,8 +343,14 @@ public sealed partial class GamePresenter : IStageObserver
                 break;
             case SaveLibraryListEvent e: SaveLibraryList = e; break;
             case WindowEvent e: Window(e.Op.Value); break;
-            case MessageEvent e: NoteWindowFile(e.Text); Print(Read(e.Text, [], e.StringVariables)); break;
-            case ValueMessageEvent e: NoteWindowFile(e.Text); Print(Read(e.Text, e.Values, e.StringVariables)); break;
+            case MessageEvent e:
+                NoteWindowFile(e.Text);
+                Print(Read(e.Text, [], e.StringVariables), ReadBefore?.Invoke(e.Text) ?? false);
+                break;
+            case ValueMessageEvent e:
+                NoteWindowFile(e.Text);
+                Print(Read(e.Text, e.Values, e.StringVariables), false);    // its numbers change: never read before
+                break;
             case PrintStringEvent e: Print(Hankaku.ToHalfWidth(StringVar(e.Slot.Value))); break;
             case PortTextEvent e:
                 if (e.At is { } at)
@@ -438,7 +455,8 @@ public sealed partial class GamePresenter : IStageObserver
         _ => null,
     };
 
-    private void Print(string text)
+    /// <summary>Text at the cursor; <paramref name="read"/>: whether its message was read before, null when it comes from none.</summary>
+    private void Print(string text, bool? read = null)
     {
         if (_target == TextTarget.Stage)
         {
@@ -447,7 +465,7 @@ public sealed partial class GamePresenter : IStageObserver
             _stageWriter.Print(text);
             return;
         }
-        TargetBox?.Print(text, _engine.TextSize, _engine.TextColor);
+        TargetBox?.Print(text, _engine.TextSize, _engine.TextColor, read);
     }
 
     private void NewLine()
