@@ -247,10 +247,12 @@ internal sealed partial class HaremView : Control
         float x = InfoPanel.Position.X + 26, y = InfoPanel.Position.Y + 40;
         DrawHeart(c, new Vector2(x + 2, y), 11, Plum);
         c.DrawString(_brush, new Vector2(x + 22, y + 12), girl.Name, fontSize: 32, modulate: Lacquer.Name);
+        // The columns one after another at their widest values, so they never overlap and stay put from girl to girl.
+        float last = x + StatWidth("Visits", "None yet") + StatGap, visitX = last + StatWidth("Last summoned", "LP 9 · Month 12 · Week 4") + StatGap;
         DrawStat(c, x, InfoPanel.Position.Y + 88, "Visits", girl.Visits == 0 ? "None yet" : girl.Visits.ToString());
-        DrawStat(c, x + 160, InfoPanel.Position.Y + 88, "Last summoned", HaremRoster.DateText(girl.LastWeek) ?? "Never");
+        DrawStat(c, last, InfoPanel.Position.Y + 88, "Last summoned", HaremRoster.DateText(girl.LastWeek) ?? "Never");
         if (HaremRoster.VisitText(girl.Mark) is { } visit)
-            DrawStat(c, x + 328, InfoPanel.Position.Y + 88, "This visit", visit, MarkColour(girl.Mark) ?? Lacquer.Quiet);
+            DrawStat(c, visitX, InfoPanel.Position.Y + 88, "This visit", visit, MarkColour(girl.Mark) ?? Lacquer.Quiet);
         bool on = Enabled(SummonButton), hover = on && _hovered == SummonButton;
         Lacquer.DrawRedButton(c, SummonArea, hover, hover && _pressed == SummonButton, _k);
         CentredString(c, _brush, $"Summon {girl.Name}", 28, Color.Color8(250, 226, 160), SummonArea.GetCenter().X, Lacquer.Baseline(SummonArea, _brush, 28));
@@ -265,6 +267,12 @@ internal sealed partial class HaremView : Control
         SceneMark.Maybe => Lacquer.MarkMaybe,
         _ => null,
     };
+
+    private const float StatGap = 32;
+
+    /// <summary>A stat's column in the font chosen: its label or its widest value.</summary>
+    private float StatWidth(string label, string widest) =>
+        Math.Max(_cinzel.GetStringSize(label, fontSize: 11).X, _gothic.GetStringSize(widest, fontSize: 20).X);
 
     private void DrawStat(Control c, float x, float y, string label, string value, Color? colour = null)
     {
