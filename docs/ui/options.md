@@ -80,3 +80,5 @@ the Refill question), **`K`** in tables, buttons and cards (Cost and Refill, the
 War expenses, War cost) —, no space before the K, a minus as U+2212. Troops, HP, EXP and damage take the separator
 too; the exchange's rolling counters (`ExchangeCountersView`, one digit a cell after Sengoku Rance's) keep plain digits.
 The screens of the original engine (`--interface original`, the merchant, construction) keep the original's numbers.
+The scenario's own sums in our message windows are surveyed in docs/ui/gold-figures.md (2026-10-24): each place
+classified, the separator to come only at the places verified to be money.
