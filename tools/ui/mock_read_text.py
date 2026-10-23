@@ -33,7 +33,7 @@ VERMILION, HEAD_INK, PAPER_RULE = (170, 40, 28, 255), (120, 40, 26, 255), (150, 
 COLOURS = [('Salmon', (240, 120, 120)), ('Rose', (240, 128, 184)), ('Magenta', (255, 128, 255)),
            ('Violet', (192, 128, 255)), ('Periwinkle', (128, 128, 255)), ('Sky', (128, 184, 255)),
            ('Cyan', (128, 255, 255)), ('Mint', (128, 255, 192)), ('Green', (128, 255, 128))]
-CHOSEN = 5                                    # Sky: the proposed default
+CHOSEN = 0                                    # Salmon: the default (the owner, 2026-10-23)
 THOUGHT_DIM = 0.72                            # a thought's read text: the colour as dim as Quiet is against Text
 
 
@@ -259,11 +259,11 @@ def swatch_row(c, x, y, chosen, hover=None):
 
 def options(name, chosen, caption, note, hover=None):
     c = Canvas(os.path.join(OPTIONS, '00000-options-messages.png'))
-    # the preview's first two lines count as read (screen px of the dump's 121)
+    # the preview counts as read (screen px of the dump's 121)
     if chosen > 0:
-        recolour(c.base, (186, 278, 630, 337), COLOURS[chosen - 1][1])
+        recolour(c.base, (186, 278, 606, 396), COLOURS[chosen - 1][1])
     lay, d = c.draw()
-    d.text(s(180, 432), 'The first two lines count as read.' if chosen > 0 else 'Read lines keep the window\'s colour.',
+    d.text(s(180, 432), 'The preview counts as read.' if chosen > 0 else 'Read text keeps the window\'s colour.',
            font=GOTHIC(13), fill=INK_QUIET)
     x, y, w = 166, 486, 948
     d.text(s(x, y + 14), 'ALREADY-READ TEXT', font=CINZEL(13, 800), fill=HEAD_INK, anchor='ls')
@@ -273,7 +273,7 @@ def options(name, chosen, caption, note, hover=None):
     lay, d = c.draw()
     label = 'Don\'t change' if chosen == 0 else COLOURS[chosen - 1][0]
     d.text(s(x, y + 112), label, font=GOTHIC(17), fill=INK)
-    d.text(s(x, y + 138), 'Lines you have read before, in any game, show in this colour in the message windows.',
+    d.text(s(x, y + 138), 'A message window you have read before, in any game, shows its text in this colour.',
            font=GOTHIC(13), fill=INK_QUIET)
     d.text(s(x, y + 158), 'The battle\'s lines, the menus and our screens keep their own. Forget them… counts them unread.',
            font=GOTHIC(13), fill=INK_QUIET)
@@ -284,42 +284,42 @@ def options(name, chosen, caption, note, hover=None):
 # ---------------------------------------------------------------- the images
 
 def r1():
-    options('R1-options.png', CHOSEN + 1, 'R1 — Option, Messages: "Already-read text", Sky chosen',
-            'A row after Rance X\'s: "Don\'t change" and nine colours on lacquer tiles; the preview\'s first two lines show the choice.')
+    options('R1-options.png', CHOSEN + 1, 'R1 — Option, Messages: "Already-read text", Salmon chosen (the default)',
+            'A row after Rance X\'s: "Don\'t change" and nine colours on lacquer tiles; the preview shows the choice.')
     options('R1b-options-off.png', 0, 'R1b — the same, "Don\'t change" chosen (Rose under the pointer)',
             'Read lines keep the window\'s own colour; a click on a tile chooses it at once, as the palette does.', hover=2)
 
 
 def r2():
-    sky = COLOURS[CHOSEN][1]
+    colour = COLOURS[CHOSEN][1]
     c = Canvas(os.path.join(SHOTS, '00015-key.png'))
-    speech_right(c, read(MARIS, sky, TEXT, 2))
-    c.save('R2-speech-mixed.png', 'R2 — a speech (121) read in part: two lines read before, two new',
-           'One colour per script line: a page that runs from read lines into new ones shows where the new text starts.')
+    speech_right(c, read(MARIS, colour, TEXT))
+    c.save('R2-speech-read.png', 'R2 — a speech (121) read before',
+           'The window is read when every line on it was read before; then its whole text takes the colour.')
 
 
 def r3():
-    sky = COLOURS[CHOSEN][1]
+    colour = COLOURS[CHOSEN][1]
     c = Canvas(os.path.join(SHOTS, '00004-key.png'))
-    speech_left(c, read(RANCE, sky, TEXT))
-    c.save('R3-speech-read.png', 'R3 — a speech (111) read before, whole',
+    speech_left(c, read(RANCE, colour, TEXT))
+    c.save('R3-speech-read.png', 'R3 — a speech (111) read before',
            'Rance\'s line as it shows when the scene is played again (a load, a second game).')
 
 
 def r4():
-    sky = COLOURS[CHOSEN][1]
+    colour = COLOURS[CHOSEN][1]
     c = Canvas(os.path.join(SHOTS, '00020-key.png'))
-    thought(c, read(THOUGHT, dim(sky, THOUGHT_DIM), QUIET))
+    thought(c, read(THOUGHT, dim(colour, THOUGHT_DIM), QUIET))
     c.save('R4-thought-read.png', 'R4 — a thought (112) read before: the colour dimmed as a thought\'s text is',
            'A thought keeps its quieter look: the chosen colour at the strength Quiet has against the speech\'s text.')
 
 
 def r5():
-    sky = COLOURS[CHOSEN][1]
+    colour = COLOURS[CHOSEN][1]
     c = Canvas(os.path.join(SHOTS, '00003-key.png'))
-    narration(c, read(NARRATION, sky, NARR_TEXT, 3))
-    c.save('R5-narration.png', 'R5 — narration (113): three lines read, the last new',
-           'Narration\'s browner lacquer and its own text colour for the new line; read lines in the chosen colour.')
+    narration(c, read(NARRATION, colour, NARR_TEXT))
+    c.save('R5-narration.png', 'R5 — narration (113) read before',
+           'Narration\'s browner lacquer; its text in the chosen colour.')
 
 
 def r6():
