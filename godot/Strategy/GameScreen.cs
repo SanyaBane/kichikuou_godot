@@ -903,16 +903,14 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         switch (@event)
         {
             case InputEventMouseMotion motion:
+                TouchMoved(motion);
                 _battlePointer = motion.Position;
                 _input.Position = ToScript(motion.Position);
                 PointerMoved();
                 break;
             case InputEventMouseButton { ButtonIndex: Godot.MouseButton.Left or Godot.MouseButton.Right } button:
-                _battlePointer = button.Position;
-                _input.Position = ToScript(button.Position);
-                ushort code = button.ButtonIndex == Godot.MouseButton.Left ? KeyReturn : KeySpace;
-                _input.Button(code, button.Pressed);
-                BattleButton(code, button.Pressed);
+                if (!CardTouch(button))
+                    PointerButton(button.Position, button.ButtonIndex == Godot.MouseButton.Left ? KeyReturn : KeySpace, button.Pressed);
                 break;
             case InputEventMouseButton { ButtonIndex: Godot.MouseButton.WheelUp, Pressed: true } when CanOpenLog:
                 OpenLog();
@@ -946,6 +944,15 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (MenuHotKey(key))
             return;
         _input.Key(key.Keycode, key.Pressed);
+    }
+
+    /// <summary>A mouse button (<see cref="KeyReturn"/> or <see cref="KeySpace"/>) went down or up at <paramref name="at"/>.</summary>
+    private void PointerButton(Vector2 at, ushort code, bool pressed)
+    {
+        _battlePointer = at;
+        _input.Position = ToScript(at);
+        _input.Button(code, pressed);
+        BattleButton(code, pressed);
     }
 
     /// <summary>The menus' highlight and the battle's input screens follow the pointer.</summary>
