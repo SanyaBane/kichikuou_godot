@@ -51,10 +51,10 @@ Main procedures of `Cﾒｲｷｭｳ.ADV` (labels are byte addresses; lines are 
 | `L_023da` `:1376-1444` | Orochi duel (Orochi's Pit (Dgn 14) F38, Fuuka arc), then `Gﾌｳｶ` 5/6 |
 | `L_02528`…`L_02da1` `:1445-1932` | 15 treasure-chest routines (`Item_Holder := 100`, fanfare) and `L_02bce` (Milli/G2 scene) |
 | `L_02e29` `:1933-2008` | Uncurse Spring menu (Uncurse Dungeon (Dgn 10) F28) |
-| `L_02f97` / `L_0319e` / `L_036f1` `:2009-2749` | KD at the Rising Dragon summit (Dgn 11 F30); "take by force" → floor 20; 3-question quiz for item 17 |
+| `L_02f97` / `L_0319e` / `L_036f1` `:2009-2749` | KD at the Rising Dragon summit (Dgn 11 F30); "take by force" → floor 20; 3-question quiz for the Flower Statue (item 17) |
 | `L_03cbd` `:2750-2871` | Thieves' Hideout (Dgn 1): `Gﾊﾞｳﾝﾄﾞ`, stage-1 refusal text, prologue random banter |
 | `L_03f14`…`L_04c61` `:2872-3470` | Enemy-record setters for commander 100 (bosses, Okayu Fever, Orochi, Hanny tiers); `:3471-3499` dead (Hanny King) |
-| `L_04ddc` `:3500-3827` | God's Door found (Ancient Ruins (Dgn 30), holder of item 1 or 2) |
+| `L_04ddc` `:3500-3827` | God's Door found (Ancient Ruins (Dgn 30), holder of Chaos (item 1) or Nikkou (item 2)) |
 | `L_0539e` `:3828-3854` | Draws the door with the placed statues (`Tmp0001-0004` = overlay CGs, WAO op 333) |
 | `L_05437` / `L_054b8` `:3855-4076` | God's Door menu: place statues 15-18, Rance's dialogue, open the door; all four → `L_057b6` (`F_GodsDoor_Quest := 6`) |
 | `L_0589d` `:4077-4410` | Rance at the door (dialogue, CG 212) |
@@ -118,17 +118,17 @@ values are at `:28-150` and `:456-465`. Battle background: 910, 912 for Rising D
 | Uncurse Dungeon (10) | 28 | — | Uncurse Spring menu (`L_02e29`), state 2 |
 | Rising Dragon Mountain (11) | 30 | — | KD / quiz (`L_02f97`), state 2 |
 | Orochi's Pit (14) | 38 | `F_Fuuka_State = 9`, shrine visited | Orochi duel (`L_023da`); on unit loss: exit command |
-| Orochi's Pit (14) | 20 | state 1 | item 22, state 2 |
+| Orochi's Pit (14) | 20 | state 1 | item 22 Orgasmic Men, state 2 |
 | Isolated Shrine Island (15) | 4 / 38 | `F_Arcy_State = 1` / — | `G1` 5 / `G1` 6 |
 | Giant Battleship (16) | 20 | — | `G1` 14, then **end of search** (`@L_018cd`) |
-| Stone-Cutter Dungeon (18) / Dungeon of Lies (19) | 27 / 25 | state 1 | item 33 / item 21, state 2 |
-| Holy Gal's Dungeon (23) | 33 / 76 | — / state 1 | `L_02bce` (`Gﾐﾘ` 3 or `G2` 1) / item 34, state 2 |
-| Dangerous Hole (24) | 50 / 10 | state 1 / `Item_Holder(28) = 0` and `FogCard_Price = 0` | item 29, state 2 / item 28 Fog Card, `FogCard_Price := 120` |
+| Stone-Cutter Dungeon (18) / Dungeon of Lies (19) | 27 / 25 | state 1 | item 33 Evil Statue / item 21 Crystal Ring, state 2 |
+| Holy Gal's Dungeon (23) | 33 / 76 | — / state 1 | `L_02bce` (`Gﾐﾘ` 3 or `G2` 1) / item 34 Tange Dog, state 2 |
+| Dangerous Hole (24) | 50 / 10 | state 1 / `Item_Holder(28) = 0` and `FogCard_Price = 0` | item 29 Happiness Ring, state 2 / item 28 Fog Card, `FogCard_Price := 120` |
 | Rex's Dungeon (22) / Mos's Dungeon (20) | 50 | `F_Kaybwan_State` / `F_Kaybnyan_State` ∈ {2,3} | `Gｹｲﾌﾞﾜﾝ` 4 / `Gｹｲﾌﾞﾆｬﾝ` 4 |
-| Mos's Dungeon (20) / Maid Graveyard (21) | 5 / 16 | holder 0 | item 38 / item 39 |
-| Titi Lake / Haniwa Temple (25) | 2 / 8 / 66 | — / holder(30)=0 / `F_HannyKing_State < 7` | `G1` 18 / item 30 / `Gﾊﾆｰ` 1, state 2 |
+| Mos's Dungeon (20) / Maid Graveyard (21) | 5 / 16 | holder 0 | item 38 Vevetar Mutant / item 39 Jugon |
+| Titi Lake / Haniwa Temple (25) | 2 / 8 / 66 | — / holder(30)=0 / `F_HannyKing_State < 7` | `G1` 18 / item 30 Space Shell / `Gﾊﾆｰ` 1, state 2 |
 | Hyper Building (26) | 201 | state 1 | item 23 Wisdom Ring, state 2 |
-| Ancient Ruins (30) | 20 / 50 | holder 0 | item 48 / item 36 |
+| Ancient Ruins (30) | 20 / 50 | holder 0 | item 48 Doping Drug / item 36 Bird Corpse |
 
 ### 2.3 Bosses (forced battle: `RetVal := 1` on that floor while the flag is 0, `:1020-1064`)
 
@@ -294,7 +294,7 @@ through stubs, so rules and drawing separate cleanly. Quirks to reproduce or dec
 15. `F_GrowthFountain_State` 3→4 on every entry (`:8-10`), so the end-of-search `Gﾐﾙ` 2 (`:990`) fires
     only if 3 was set during this run [I]. Who sets it mid-run is unknown.
 16. KD: "take by force" or a wrong answer sets `DgnRun_Floor := 20` (`:2420`, `:2694`); the quiz
-    can be retaken on every visit; the prize needs `F_GodsDoor_Quest > 1` and item 17 not owned [C].
+    can be retaken on every visit; the prize needs `F_GodsDoor_Quest > 1` and the Flower Statue (item 17) not owned [C].
 17. Cafe mode (`Ev_CommandMode = 1`, Uncurse Dungeon (Dgn 10)) skips `Sﾌﾞﾀｲ`: Rance goes alone,
     at no cost and without status 2 (`:151-160`) [C].
 18. Treasure routines `L_02abb`…`L_02da1` do not reset `Unit_Cur := Bt_PlayerParty1` as the

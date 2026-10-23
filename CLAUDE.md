@@ -569,5 +569,7 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   Monsters' Cave (dungeon 2)"). Provinces: the `MS 8` strings of `SET_MAP.ADV` (record `VAR0158`);
   units and commanders: `MS 1` / `MS 4` of `SET_CHR.ADV` (records `Unit_Cur` / `Cmdr_Cur`; some
   scenes rename a record at run time — `MM Unit_StrBase…` / `MM Cmdr_StrBase…` — so check the
-  context); dungeons: docs/strategy/survey-dungeon.md §2.1.
+  context); dungeons: docs/strategy/survey-dungeon.md §2.1. Items the same ("the Doping Drug
+  (item 48)", "Chaos (item 1) or Nikkou (item 2)"): the `MS 7` strings of `SET_ITEM.ADV` (record
+  `Item_Cur`).
 - IDE is JetBrains Rider.

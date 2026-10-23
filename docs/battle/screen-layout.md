@@ -416,7 +416,7 @@ script menus).
   (Info); used only by the clamp.
 - Items in order:
   1. mode items (`L_00bc0`): `Direct` (mode ≠ 1); `Bow` (bow unit, mode ≠ 2); `Magic` (magic unit,
-     mode ≠ 3); `Capsule` (item 27 → 30); `Capsule` (item 26 → 31); `Fog Card` (not duel, item 28
+     mode ≠ 3); `Capsule` (C. Kaiju B, item 27 → 30); `Capsule` (C. Kaiju A, item 26 → 31); `Fog Card` (not duel, item 28
      → 32); then, only when mode ≤ 3 and `Bt_ActFocus > 0` (`:576-578`): `Rance Attack` (slot 1-2,
      Rance (unit 1) or Kentarou (unit 31) with `F_Kentarou_State > 7`) 11, `By la Way` (slot 1-2,
      Rick (unit 7)) 12, `High Speed` (Meglass (unit 30)) 14, `WD Beam` (Shizuka (unit 17) or Magic

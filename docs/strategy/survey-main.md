@@ -72,7 +72,7 @@ Main procedures:
 | 3b | **Leazas phase**: autosave (`:83`); date, BGM 4, pan to Leazas Castle (1), banner | otherwise | `:83-112` |
 | 4 | Income: sum `Prov_Economy` of owner-1 provinces (`Tmp0022`; count in `Tmp0021`, unused) | — | `:113-126` |
 | 5 | Cream counter (unit 28): status 1 & `F_Cream_State > 10` → +1; status 2 → 11 | — | `:127-133` |
-| 6 | Units 1-48 alive: item 48 → status 1, troops −= rnd(troops/20), **skip rest**; item 50 → troops += rnd(max/10); status := 1; HP +2 (cap); not full → troops += rnd(2×Recovery) + Recovery (cap); `Tmp0024` = total replenished | — | `:134-167` |
+| 6 | Units 1-48 alive: Doping Drug (item 48) → status 1, troops −= rnd(troops/20), **skip rest**; E. Nurse (item 50) → troops += rnd(max/10); status := 1; HP +2 (cap); not full → troops += rnd(2×Recovery) + Recovery (cap); `Tmp0024` = total replenished | — | `:134-167` |
 | 7 | `Gold += income`; `Hist_Funds := Gold`; report window | — | `:168-184` |
 | 8 | Expenses: M Land −20, AL Church −65, Galtia food −45 (each to `Hist_SundryExp`) | `F_MLand_Funded = 1`; `N_ALChurch_Stage < 19`; Galtia (unit 41) alive | `:185-211` |
 | 9 | `COMMAND` (player phase, §2.2), then `M` op 0 | — | `:213-215` |
@@ -135,7 +135,7 @@ script count]. Callers set `Ev_Entry` and page-call the file; there is no centra
 | Section | Lines | Behaviour |
 |---|---|---|
 | Early exits | `:1-10` | `Week = 9` → `Iｼﾚｲﾌﾞ` 10, return; `StoryStage = 0` → `Gｿｳﾙ` 4 (weekly thieves message), return — **upkeep below is skipped** |
-| Upkeep | `:11-84` | ninja-used flags := 99 then 0 per available ninja; clear garrison battle vars; Goliath 2→1; counters (`N_Melfeis_Stage`, `N_Isoroku_Stage 5→6`, `N_Aviator_StudyWeeks −1`, `N_Miki_Timer −1` until 5, `N_Aaya_Stage`, `N_Seizel_Weeks`, `N_ALChurch_Stage <3`, `N_Soul_Stage`); Lady Caravan walk (rnd 2 = ±1 province, or +1 after capture); `TangeDog_UsedThisWeek := 0`; kaiju attack growth (items 26/27, cap 2000) |
+| Upkeep | `:11-84` | ninja-used flags := 99 then 0 per available ninja; clear garrison battle vars; Goliath 2→1; counters (`N_Melfeis_Stage`, `N_Isoroku_Stage 5→6`, `N_Aviator_StudyWeeks −1`, `N_Miki_Timer −1` until 5, `N_Aaya_Stage`, `N_Seizel_Weeks`, `N_ALChurch_Stage <3`, `N_Soul_Stage`); Lady Caravan walk (rnd 2 = ±1 province, or +1 after capture); `TangeDog_UsedThisWeek := 0`; kaiju attack growth (C. Kaiju A/B, items 26/27, cap 2000) |
 | Tier 1 "all that apply" | `:85-300` | 38 calls; each sets `Ev_WeeklyEventDone := 1` and execution **continues**, so several scenes may play in one week; `:301-303` return if any fired |
 | Tier 2 "first match" | `:304-946` | 111 calls; each followed by `%0`, except 5 that fall through (`Gﾕｳﾚｲ` 6 `:400`, `Gﾌﾘｰｸ` 2 `:406`, `Gｱﾋﾞｧﾄｰﾙ` 3 `:662`, `Gｱｰﾔ` 3 `:666`, `Gｵｳｼﾞ` 1 `:940`); 11 random rolls interleaved (§5); `N_Miki_Stage 4 → 5` returns without a scene (`:557-560`) |
 
@@ -206,9 +206,9 @@ Cursor leftovers that later code may see: `Unit_Cur = 51` after the Leazas statu
 
 | File:line | n | Condition / use |
 |---|---|---|
-| `MAIN.ADV:143` | `Unit_Troops/20` | unit alive with item 48: troop loss |
-| `MAIN.ADV:148` | `Unit_MaxTroops/10` | unit alive with item 50: troop gain |
-| `MAIN.ADV:160` | `Unit_Recovery*2` | each unit 1-48 alive, not item 48, troops < max |
+| `MAIN.ADV:143` | `Unit_Troops/20` | unit alive with the Doping Drug (item 48): troop loss |
+| `MAIN.ADV:148` | `Unit_MaxTroops/10` | unit alive with E. Nurse (item 50): troop gain |
+| `MAIN.ADV:160` | `Unit_Recovery*2` | each unit 1-48 alive, not holding the Doping Drug (item 48), troops < max |
 | `MAIN.ADV:689, 691` | 16, 2 | Camilla phase, Sieg (commander 93) alive: target province, attack if roll ≠ 2 |
 | `MAIN.ADV:725, 727` | 16, 3 | La Seizel (commander 90) alive: province, attack if roll ≠ 2 and HP full |
 | `MAIN.ADV:751, 753` | 16, 3 | Lei (commander 92) alive: province, attack if roll ≠ 2 |
@@ -267,7 +267,7 @@ Quirks (port them):
    [C].
 4. `COM` early exits (`:1-10`) skip all upkeep in week 9 and in the whole thieves phase
    (Lady Caravan does not move, timers do not tick) [C].
-5. Item 48 holders skip HP recovery (`MAIN.ADV:141-146`) [C]; expenses can drive `Gold` to 0
+5. Doping Drug (item 48) holders skip HP recovery (`MAIN.ADV:141-146`) [C]; expenses can drive `Gold` to 0
    only (saturating subtraction, no debt) [C].
 6. Patton commanders Patton (54), Hubert (55), Freak (56), Hanty (57) are refreshed twice if
    both the Helman and Patton phases run (`:431-448`, `:484-501`) [C]; the gates are never open

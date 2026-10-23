@@ -202,7 +202,7 @@ public sealed partial class GameState
     /// <summary>VAR0062 [C] — Milli's genfluenza deadline week: Week+20 when she falls ill (Gﾐﾘ 1; cleared at once with F_Milli_Fate 2 when no General Hospital), +20 by Cell's remedy (Gｾﾙ, N_Milli_CureStage 1→2); COM fires Gﾐﾘ 2 (Milli dies, F_Milli_Fate 2) once Week passes it; 0 = not ill, cured (Gﾐﾘ 3) or dead. Nonzero adds the cure scenes/menu items (G1, Gｱｰﾔ, Gﾐﾙ, Iｶﾝｶﾞｴ).</summary>
     public ref Sys3Int N_Milli_DeadlineWeek => ref Memory.Var(62);
 
-    /// <summary>VAR0063 [C] — Zeth Palace barrier: 0 never met, 1 met (Cﾃｷﾄｼ plays the long "lost the way" dialogue once when Tｾﾞｽ2 turns an attack back, then the short one), 2 broken (Gﾊﾟﾊﾟｲｱ, Tｹｲﾌﾞﾘｽ); Tｾﾞｽ2 empties the party on 66/67/68/70 while it is not 2 and no deployed unit holds item 12; G1/Gﾎﾗｶﾞ/Gﾏｹﾝ offer barrier hints at 1.</summary>
+    /// <summary>VAR0063 [C] — Zeth Palace barrier: 0 never met, 1 met (Cﾃｷﾄｼ plays the long "lost the way" dialogue once when Tｾﾞｽ2 turns an attack back, then the short one), 2 broken (Gﾊﾟﾊﾟｲｱ, Tｹｲﾌﾞﾘｽ); Tｾﾞｽ2 empties the party on 66/67/68/70 while it is not 2 and no deployed unit holds the Barrier Blade (item 12); G1/Gﾎﾗｶﾞ/Gﾏｹﾝ offer barrier hints at 1.</summary>
     public ref Sys3Int F_ZethBarrier_State => ref Memory.Var(63);
 
     /// <summary>VAR0064 [C] — Province where Lady's caravan is: SET 40, COM walks it ±1 by RND(2) each week while F_Cafe_State &lt; 10 (no bounds, STR-18); an own city equal to it offers the caravan (Cｼﾊｲﾄｼ). From Lady's capture (Gｶﾌｪ sets F_Cafe_State 10 and this 1) a weeks counter: COM +1 per week while F_Cafe_State is 10/11, opening Harem at &gt; 4 forces Lady's scene (Gｶﾌｪ 3), which resets it to 0.</summary>
@@ -988,7 +988,7 @@ public sealed partial class GameState
     /// <summary>VAR0432 [C] — Milli's first talk (Gﾐﾘ 20) seen: 0 → that scene (→ 1), then the usual one.</summary>
     public ref Sys3Int F_Milli_Flag1 => ref Memory.Var(432);
 
-    /// <summary>VAR0433 [C] — Milli's harem training with Sill (Gﾐﾘ 10, Sill (unit 2) serving, item 22 not held): 0 → first scene (→ 1), else the second scene (→ 2); only 0 is tested.</summary>
+    /// <summary>VAR0433 [C] — Milli's harem training with Sill (Gﾐﾘ 10, Sill (unit 2) serving, Orgasmic Men (item 22) not held): 0 → first scene (→ 1), else the second scene (→ 2); only 0 is tested.</summary>
     public ref Sys3Int F_Milli_Flag2 => ref Memory.Var(433);
 
     /// <summary>VAR0434 [C] — Eleanor Ran arc 1-5 (4-5 after sex); 0=good ending (never had sex)</summary>
@@ -1582,7 +1582,7 @@ public sealed partial class GameState
     /// <summary>VAR0630 [C] — Player commander protection: 1 if unit type &gt;9 (no damage from enemy troops or commander), 2 if enemy also &gt;9 (commander-vs-commander allowed); forced to 0 against commanders 146, 147 and 187-190.</summary>
     public ref Sys3Int Bt_PlayerCmdrShield => ref Memory.Var(630);
 
-    /// <summary>VAR0631 [C] — Enemy commander protection (enemy type &gt;9); 2 when player type &gt;9 or item 1/2 equipped.</summary>
+    /// <summary>VAR0631 [C] — Enemy commander protection (enemy type &gt;9); 2 when player type &gt;9 or Chaos (item 1) or Nikkou (item 2) equipped.</summary>
     public ref Sys3Int Bt_EnemyCmdrShield => ref Memory.Var(631);
 
     /// <summary>VAR0632 [C] — Set by Rebecca: next battle EXP = rnd(50) (the usual rnd(15) is still drawn first and discarded), then cleared.</summary>
@@ -1675,7 +1675,7 @@ public sealed partial class GameState
     /// <summary>VAR0661 [C] — AliceSoft building intro seen (first visit)</summary>
     public ref Sys3Int F_AliceBldg_Visited => ref Memory.Var(661);
 
-    /// <summary>VAR0662 [C] — One-shot scene at prov 20 (old aluminium axe, Youko's lake) done; grants item 46</summary>
+    /// <summary>VAR0662 [C] — One-shot scene at prov 20 (old aluminium axe, Youko's lake) done; grants the Aluminum Axe (item 46)</summary>
     public ref Sys3Int F_Youko_AxeEventDone => ref Memory.Var(662);
 
     /// <summary>VAR0663 [C] — Fuuka / Orochi arc (Nagasaki): 1-3 shrine scenes, 9=Orochi sacrifice night pending, 10-13 rescue scenes, 19=Fuuka sacrificed (bad end), 20/21=Orochi killed, Fuuka saved</summary>
@@ -2266,7 +2266,7 @@ public sealed class UnitRecord(ScriptMemory memory, int index) : IRecord<UnitRec
         set => memory.WritePage(1, 780 + index, value);
     }
 
-    /// <summary>VAR0101 [C] — Equipped item index (Item_Cur), 0 = none; item 48 drains troops and item 50 adds troops weekly.</summary>
+    /// <summary>VAR0101 [C] — Equipped item index (Item_Cur), 0 = none; the Doping Drug (item 48) drains troops and E. Nurse (item 50) adds troops weekly.</summary>
     public Sys3Int Item
     {
         get => memory.ReadPage(1, 832 + index);

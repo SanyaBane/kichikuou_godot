@@ -125,7 +125,7 @@ public sealed partial class DungeonCommand
 
     /// <summary>
     /// <c>L_02f97</c> (<c>:2009-2118</c>): KD at the Rising Dragon Mountain's summit. Another unit
-    /// is sent away; Rance meets the cat, and once the quest needs the statue and item 17 is not
+    /// is sent away; Rance meets the cat, and once the quest needs the statue and the Flower Statue (item 17) is not
     /// owned, the statue and the quiz (<c>L_0319e</c>).
     /// </summary>
     private async Task SummitAsync()

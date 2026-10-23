@@ -144,9 +144,9 @@ public partial class GamePresenterTests(ITestOutputHelper output)
         player.Pickers.Enqueue((PickerKind.Items, PickerArea.Cell, 5));                          // picked,
         player.Pickers.Enqueue(new(PickerKind.Items, PickerArea.Cell, 5, PickerPress.Right));   // dropped (998)
         player.Pickers.Enqueue((PickerKind.Items, PickerArea.Button, 2));                        // the item view
-        player.Pickers.Enqueue((PickerKind.Items, PickerArea.Cell, 4));                          // item 4, held: unequip it?
+        player.Pickers.Enqueue((PickerKind.Items, PickerArea.Cell, 4));                          // item 4 (N. Writings), held: unequip it?
         player.Answers["Sｱｲﾃﾑ.ADV"] = new([2]);                                                  // No
-        player.Pickers.Enqueue((PickerKind.Items, PickerArea.Cell, 3));                          // item 3 from stock,
+        player.Pickers.Enqueue((PickerKind.Items, PickerArea.Cell, 3));                          // item 3 (Pop. Staff) from stock,
         player.Pickers.Enqueue((PickerKind.Items, PickerArea.Cell, 5));                          // on unit 5
         player.Pickers.Enqueue((PickerKind.Items, PickerArea.Button, 3));                        // End
         var prompts = new List<string[]>();

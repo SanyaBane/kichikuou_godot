@@ -91,7 +91,7 @@ Meglass). Class histogram — units: 0×29, 1×3, 2×10, 3×3, 10×2, 11×3; com
 every province; `VAR0144` never (both `unused` in the dictionary).
 
 Two item/unit pairs disagree at boot **[C]**: item 6 (L. Holy Sword) has `Item_Holder 1` while
-Rance's `Unit_Item` is 0 until `Iﾊﾝﾗﾝ.ADV:32`; Kentarou (unit 31) has `Unit_Item 2` while item 2
+Rance's `Unit_Item` is 0 until `Iﾊﾝﾗﾝ.ADV:32`; Kentarou (unit 31) has `Unit_Item 2` while Nikkou (item 2)
 has `Item_Holder 0` until `Gｹﾝﾀﾛｳ.ADV:1636-1637`. Consistent with "holder set = equipped";
 reproduce as is.
 

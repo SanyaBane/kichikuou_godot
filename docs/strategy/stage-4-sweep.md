@@ -187,7 +187,7 @@ It opens with four statues (`Cﾒｲｷｭｳ:4003-4005`, `4023-4025` → `L_057
 `:4052`). Three have no stage condition: Gourd Statue (item 15) from British (`Gﾌﾞﾘﾃｨ:1976`), Monkey
 Statue (item 16) from Cafe (`Gｶﾌｪ:545`, `:2351`), Flower Statue (item 17) from KD (`Cﾒｲｷｭｳ:2745`). The
 **Bonsai Statue (item 18)** comes only from Ho Raga (`Gﾎﾗｶﾞ:507-508`; every `Item_Cur : 18` checked):
-his menu item "Get Gold Statue" (`:276-282`: item 18 not held, quest > 1, Rance leading the party)
+his menu item "Get Gold Statue" (`:276-282`: the Bonsai Statue (item 18) not held, quest > 1, Rance leading the party)
 leads to `L_00578` (`:289-295`), which hands it over only with `F_GodsDoor_Quest = 4` or
 `StoryStage = 4` and `F_Kou_State > 9` (`:290`); quest 2 → 3 is his refusal (`L_0096e`, `:510`), 3
 another refusal (`:296-357`). Quest 4 is Kou's hint at the door (`Cﾒｲｷｭｳ:3874-3876` → `L_05ea4`,
@@ -317,7 +317,7 @@ stops at it in S4, and nothing stage 4 reaches is left unported but `OVER` (`Gam
 
 ## Open questions
 
-1. Is Kou at 8 really the only way to a winning end? Every writer of `F_Kou_State > 9` and of item 18
+1. Is Kou at 8 really the only way to a winning end? Every writer of `F_Kou_State > 9` and of the Bonsai Statue (item 18)
    was checked by grep; a capture of S4 with Kou at 8 and one with Kou below would settle it. **Run**
    (`GodsDoorEndTests`): both branches behave as read — Kou at 8 reaches `Iｶﾐ` in S4+2, Kou at 7 or 0
    leaves the statue with Ho Raga and the door shut; "the only way" still rests on the grep.

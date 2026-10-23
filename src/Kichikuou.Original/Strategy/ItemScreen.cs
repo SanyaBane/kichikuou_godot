@@ -12,7 +12,7 @@ namespace Kichikuou.Original.Strategy;
 /// (<c>Ui_ItemUnitSel</c> / <c>Ui_ItemSel</c>) and turns to the other; the second pick equips the
 /// item on the unit, the unit's own item going back to stock (<c>L_0043a</c>). An item another unit
 /// holds is first taken off it after a Yes (<c>L_00b39</c>); in the item view without a unit
-/// picked, a held item can only be taken off. Items 1 and 2 never move, and neither does what a
+/// picked, a held item can only be taken off. Chaos and Nikkou (items 1 and 2) never move, and neither does what a
 /// unit holding one of them equips; an item without effect cannot be equipped. The bar: its first
 /// place (997, no label) is taken for a pick (CMD-17), "Item/Character" turns the view (502), "End"
 /// (503) leaves; a right click (998) drops a half-made pick, or leaves when there is none.
@@ -265,7 +265,7 @@ public sealed class ItemScreen(OriginalScriptContext script, IScenarioSource sce
 
     /// <summary>
     /// <c>L_004ee</c> (<c>:170-375</c>): the grid of the view, then the pointer until a pick the
-    /// view accepts (a unit at status 1 or 2 not holding item 1 or 2; an owned item that can move
+    /// view accepts (a unit at status 1 or 2 not holding Chaos (item 1) or Nikkou (item 2); an owned item that can move
     /// to the unit picked) or anything that is not a grid entry. A held item asked about is taken
     /// off after a Yes: 504 without a unit picked, the item picked otherwise.
     /// </summary>
@@ -289,7 +289,7 @@ public sealed class ItemScreen(OriginalScriptContext script, IScenarioSource sce
                         await RefuseAsync(254, State.Unit_StrBase + (State.Unit_Cur - 1) * 3, State.Item_StrBase + Unit.Item - 1);
                         continue;                                       // "<unit>'s equipment, <item>, can't be unequipped."
                     }
-                    // QUIRK: CMD-20 — dead: a pick of item 1 or 2 is refused when it is made.
+                    // QUIRK: CMD-20 — dead: a pick of Chaos (item 1) or Nikkou (item 2) is refused when it is made.
                     if (State.Ui_ItemSel == 1 || State.Ui_ItemSel == 2)
                     {
                         await RefuseAsync(268, State.Unit_StrBase + (State.Unit_Cur - 1) * 3, State.Item_StrBase + State.Ui_ItemSel - 1);

@@ -100,7 +100,7 @@ World state written:
 - Unit record 51 (overwritten by ninja / Goliath builders), `N_Hubert_FreyaUses` (+1 per Freya
   follow-up).
 - Flavour-text side effects (§5.4): `F_Asuka_State`, `F_Satella_LineCamilla..93`,
-  `N_Freak_Stage`, Sieg event (`F_Sieg_State`, `F_Sieg_Defeated`, `N_Miki_Stage`, item 1,
+  `N_Freak_Stage`, Sieg event (`F_Sieg_State`, `F_Sieg_Defeated`, `N_Miki_Stage`, Chaos (item 1),
   Rance's `Unit_Item`/CGs, Sieg's (commander 93) CGs/face/item/VAR0126/VAR0127, `Ev_Entry`).
 - Death scenes (§7.4): `F_Sill_Died`, `F_Asuka_State`, `EndingId` + game over.
 
@@ -1118,8 +1118,8 @@ Then `Bt_SkillSfx = 0`.
   Dance/spread can "kill" more than present; troops floor at 0). It drives retreat modes
   3/4.
 - **Q17 Item record 0.** `Unit_Item = 0` binds item record 0; with stride 50, its fields
-  alias item 50's (`Item_Effect[0]` ≡ item 50's amount = 0), so "no item" has no effect.
-  Item 50's own effect aliases dungeon record 0 — out of scope.
+  alias E. Nurse's (item 50; `Item_Effect[0]` ≡ E. Nurse's amount = 0), so "no item" has no
+  effect. E. Nurse's own effect aliases dungeon record 0 — out of scope.
 - **Q18 Player-side `Mode = 2` guard is dead** (FIGT_M:8845); `Bt_MsgMode = 2` always routes
   to the enemy side.
 - **Q19 Special names in string slot 7** are written but never printed; the UI only says

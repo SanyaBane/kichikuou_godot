@@ -213,7 +213,7 @@ level-up here) (`:553-577`). `N_Lia_Neglect`: +1 per visit (cap 10) while `F_Lia
 ### 3.9 Treasure / items (`Cﾀｶﾗ` + `Sｱｲﾃﾑ`) [C] — ported whole (`Strategy/TreasureCommand`, `Strategy/ItemScreen`, 2026-10-10)
 
 `Cﾀｶﾗ.ADV:1-15`: items held by a unit with `Status = 0` are lost (`Item_Holder := 0`), then
-`Sｱｲﾃﾑ`. Equip / unequip / swap are free and unlimited; items 1 and 2 are locked (and lock their
+`Sｱｲﾃﾑ`. Equip / unequip / swap are free and unlimited; Chaos and Nikkou (items 1 and 2) are locked (and lock their
 holder); `Item_Effect = 0` cannot be equipped (`Sｱｲﾃﾑ.ADV:139-160, 250-371, 416-427`).
 `Item_Holder`: 0 not owned, 100 in stock, 1..50 held by unit. Two views (`Ui_ItemViewMode`, kept
 between visits): units or items; a first pick turns the view and the second equips (the unit's

@@ -284,7 +284,7 @@ freely as long as the order of waits and choices is kept.
 | R9 | Freya ninja mission target: province from `DateWeek` × rnd(2), `N_Freya_Missions + 1` | `Gﾌﾚｲｱ.ADV:2412-2445` | `Tﾍﾙﾏﾝ.ADV:39` (entry 1) |
 | R10 | Kapala sponsorship: pay 10/50/100 gold, rank += rnd(n) − 1, capped 12; report flag | `Gｶﾊﾟｰﾗ.ADV:2035, 2104-2200` | `Cｼﾊｲﾄｼ`, `COM` |
 | R11 | Magic Research Institute projects: done week = `Week + Unit_Magic * 2` / +10 / +4, cancelled when the unit is gone | `Gﾏｹﾝ.ADV:338-339, 427, 511, 2545-2552` | `Cｼﾊｲﾄｼ` |
-| R12 | Tougen bunny contest: automatic duel of two 100-point pools hit by `rnd(Tmp0226)`/`rnd(Tmp0228)`, items 49/50 as prizes, record kept | `Gﾄｳｹﾞﾝ.ADV:1486-1600` | `Cﾒｲｷｭｳ` |
+| R12 | Tougen bunny contest: automatic duel of two 100-point pools hit by `rnd(Tmp0226)`/`rnd(Tmp0228)`, the Charge Horn and E. Nurse (items 49/50) as prizes, record kept | `Gﾄｳｹﾞﾝ.ADV:1486-1600` | `Cﾒｲｷｭｳ` |
 | R13 | God dungeon: per-floor garrison `FIGT` (`Bt_Kind 3`, enemy Kaiju Gaga (187)…), rearguard units saved in `Ev_GodRear2F-5F_*`, party picker loop | `Iｶﾐ.ADV:1-12, 4561-4900` | `Cﾒｲｷｭｳ.ADV:4556` |
 | R14 | Shangri-La: time passes (`Week + 1` and its own date calculation `L_05f62`, duplicating `MAIN`'s), adjacency rewired, Shangri-La (29) changes hands | `Iｼｬﾝｸﾞﾘﾗ.ADV:908-922, 1088-1100, 2262, 5309-5325` | `Gﾏﾘｽ.ADV:1037`, `COM` |
 | R15 | Stage-1 setup: `StoryStage := 1`, `Week + 1`, Rance's units built, `Gold := 685`, Thieves' Hideout (dungeon 1) placed | `Iﾊﾝﾗﾝ.ADV:1-60` | `MAIN.ADV:72`, `ｽﾀMENU.ADV:302` |

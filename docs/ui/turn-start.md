@@ -30,8 +30,8 @@ Castle (1); each waits for a click (`\L_01a0b`), the last closes (`\L_019fe`).
 | Special expenses | "Special Expenses (Donations)" / up to three lines | "M Land: -2000K GOLD" (`F_MLand_Funded = 1`), "AL Church: -6500K GOLD" (`N_ALChurch_Stage < 19`), "Galtia's Food: -4500K GOLD" (Galtia (unit 41) alive) | when any applies |
 
 - **What the report leaves out**: the budget before or after, how many provinces pay (`Tmp0021` is counted
-  and never shown), which units gained troops, the units whose item changes the refill (item 48 loses
-  troops, item 50 gains more) — the state holds them, the windows do not.
+  and never shown), which units gained troops, the units whose item changes the refill (the Doping Drug (item 48) loses
+  troops, E. Nurse (item 50) gains more) — the state holds them, the windows do not.
 - **The thieves' week** (`StoryStage = 0`, `:19-82`) has only the banner, "Rance's Thieves Phase": no
   revenue, no expenses (Rance (unit 1), Sill (unit 2), Bound (unit 3) and Soul (unit 4) heal and gain 2
   troops in silence), then `Gｿｳﾙ` 4, Soul's three-window line, every week but week 9.

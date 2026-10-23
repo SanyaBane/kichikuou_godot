@@ -615,7 +615,7 @@ public sealed partial class Battle
         State.Bt_EnemyAllEngaged = 1;
         State.Bt_PlayerEngaged = Unit.Troops;
         State.Bt_EnemyEngaged = Cmdr.Troops;
-        // QUIRK: 02 Q17 — Unit_Item 0 binds item record 0 (its effect aliases item 50's amount).
+        // QUIRK: 02 Q17 — Unit_Item 0 binds item record 0 (its effect aliases E. Nurse's (item 50) amount).
         State.Item_Cur = Unit.Item;
         State.Bt_PTroopVsCmdrShots = 0;
         State.Bt_PTroopVsCmdrDmg = 0;

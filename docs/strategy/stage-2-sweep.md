@@ -167,7 +167,7 @@ Dungeon (dungeon 23, Italia (60)), Summit's Mouth (dungeon 8) once moved to Scal
 **God's Door has no stage test** (`Cﾒｲｷｭｳ.ADV:232-236`): found in the Ancient Ruins (dungeon 30)
 with `F_GodsDoor_Quest > 1`, `F_GodsDoor_Found = 0` and Rance holding Chaos (item 1) or Nikkou
 (item 2, given by `Iﾏｼﾞﾝ` 3) — `L_04ddc` (`:3500-3827`); the room `L_05437` (`:3855-4497`; the four
-statues, items 15-18, set quest 6; Dance) → "Enter God's Door" → `Iｶﾐ` (`:4498-4556`; a scene file
+statues, the Gourd, Monkey, Flower and Bonsai Statues (items 15-18), set quest 6; Dance) → "Enter God's Door" → `Iｶﾐ` (`:4498-4556`; a scene file
 that runs from the player's files, 6528 lines with four battles, it ends only in `&#OVER` — six
 sites, no `%0` [C]). The quest steps: Ho Raga with Chaos or Nikkou (`Gﾎﾗｶﾞ:266-270`, Siberia (38)),
 British (`Gﾌﾞﾘﾃｨ:1014`), Ho Raga again (`Gﾎﾗｶﾞ:511`). ~~Reachable at stage 2 [I] after about six

@@ -4,15 +4,15 @@ using Kichikuou.Engine.Sys3;
 namespace Kichikuou.Original.Strategy;
 
 // Cﾒｲｷｭｳ.ADV's God's Door (survey-dungeon.md §2.2, part D2): found in the Ancient Ruins (dungeon
-// 30) by Rance holding item 1 or 2 once KD's quest is under way, then its own menu in the dungeon's
-// — the four statues placed, Rance's talk, Kouhime's hint, and the way into Iｶﾐ.
+// 30) by Rance holding Chaos (item 1) or Nikkou (item 2) once KD's quest is under way, then its own
+// menu in the dungeon's — the four statues placed, Rance's talk, Kouhime's hint, and the way into Iｶﾐ.
 public sealed partial class DungeonCommand
 {
     /// <summary>
     /// <c>L_04ddc</c> (<c>:3500-3827</c>, called from the dispatch with Rance (unit 1) under the
     /// cursor): God's Door found — the map closed, the ruins' picture (1015), Rance and Maris; then
-    /// by Rance's item the scene with portrait 80 (item 1) or 34 (item 2), the door's music and its
-    /// picture, and the dungeon's music again.
+    /// by Rance's item the scene with portrait 80 (Chaos, item 1) or 34 (Nikkou, item 2), the door's
+    /// music and its picture, and the dungeon's music again.
     /// </summary>
     private async Task GodsDoorFoundAsync()
     {
@@ -95,7 +95,7 @@ public sealed partial class DungeonCommand
             await Script.MusicAsync(21);
             return;
         }
-        await DoorPictureAsync();                                       // falls into L_0539e (the gate needs item 1 or 2)
+        await DoorPictureAsync();                                       // falls into L_0539e (the gate needs Chaos (item 1) or Nikkou (item 2))
     }
 
     /// <summary>The door's header in window 113 (<paramref name="line"/> at 32 dots, the run 4 lines on at 24), closed.</summary>
@@ -145,8 +145,8 @@ public sealed partial class DungeonCommand
     /// <c>L_05437</c> and its menu <c>L_054b8</c> (<c>:3855-3932</c>), from the dungeon's menu: the
     /// door's music and picture, its header, Kouhime's hint (<c>L_05ea4</c>) while her state is
     /// past 9 and KD's quest at 3, else Rance's line; then the menu until Leave — a statue for each
-    /// of items 15-18 someone holds, Rance's talk while Rance (unit 1) is under the cursor and the
-    /// door shut, Enter once it is open (into <c>Iｶﾐ</c>, for good), Leave (back to the dungeon's
+    /// of the Gourd, Monkey, Flower and Bonsai Statues (items 15-18) someone holds, Rance's talk
+    /// while Rance (unit 1) is under the cursor and the door shut, Enter once it is open (into <c>Iｶﾐ</c>, for good), Leave (back to the dungeon's
     /// menu, <c>@L_0076a</c>); a cancel asks again.
     /// </summary>
     private async Task GodsDoorAsync()
@@ -224,8 +224,8 @@ public sealed partial class DungeonCommand
 
     /// <summary>
     /// <c>L_055f6</c>, <c>L_05666</c>, <c>L_056d6</c>, <c>L_05746</c> (<c>:3947-4026</c>): a statue
-    /// (item 15-18) placed — nobody holds it any more, its flag set, its line, the door redrawn, and
-    /// with all four the door opens (<c>L_057b6</c>).
+    /// (the Gourd, Monkey, Flower or Bonsai Statue, item 15-18) placed — nobody holds it any more,
+    /// its flag set, its line, the door redrawn, and with all four the door opens (<c>L_057b6</c>).
     /// </summary>
     private async Task PlaceStatueAsync(int item, int line)
     {

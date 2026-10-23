@@ -299,8 +299,8 @@ public sealed class WeekLoop(OriginalScriptContext script, IScenarioSource? scen
     /// <summary>
     /// <c>MAIN.ADV:134-167</c> — units 1-48 with a status ≠ 0 stand up (status 1), get 2 HP up to
     /// their maximum and <c>RND(Recovery × 2) + Recovery</c> troops up to theirs, summed into
-    /// <c>Tmp0024</c>; the holder of item 48 loses troops instead and the holder of item 50 gains
-    /// some first. Leaves <c>Unit_Cur</c> at 49 and <c>Tmp0023</c> at the last refilled unit's troops before.
+    /// <c>Tmp0024</c>; the holder of the Doping Drug (item 48) loses troops instead and the
+    /// holder of E. Nurse (item 50) gains some first. Leaves <c>Unit_Cur</c> at 49 and <c>Tmp0023</c> at the last refilled unit's troops before.
     /// </summary>
     private void RefillUnits()
     {
@@ -314,7 +314,7 @@ public sealed class WeekLoop(OriginalScriptContext script, IScenarioSource? scen
                 continue;
             if (Unit.Item == 48)
             {
-                // QUIRK: STR-06 — the holder of item 48 loses troops and skips the rest.
+                // QUIRK: STR-06 — the holder of the Doping Drug (item 48) loses troops and skips the rest.
                 Unit.Status = 1;
                 Script.Rnd(Unit.Troops / 20);
                 Unit.Troops = Unit.Troops - State.RetVal;

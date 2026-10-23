@@ -168,7 +168,7 @@ Facts the dictionary pass added **[C unless marked]**:
   9 Hornet, 10 Angels, 11 ALism. `VAR0527` holds the code of the nation whose phase runs.
 - **Troop class**: 0 Assault, 1 Archers, 2 Mages, 3 Magic Warriors, 4 Phantom Beasts,
   10 Demon Assault, 11 Demon Magic. Demon commanders take HP damage only from demons or
-  item 1/2 holders (`FIGT.ADV:2416-2446`).
+  Chaos (item 1) / Nikkou (item 2) holders (`FIGT.ADV:2416-2446`).
 - **Province** also has girls left for Temporary Levy (`0131`), up to five adjacent provinces
   (`0137-0141`) and map position (`0142-0143`).
 - **Battle**: slot state values (0 not acted, 1 acted, 2-21 player defending = defence bonus,

@@ -3199,7 +3199,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// What the unattended player does on the item screen, one step each time the pointer has
     /// nothing queued (a step without a gesture lets the screen be drawn and dumped): an entry the
     /// screen takes without a refusal or a question (<c>Sｱｲﾃﾑ.ADV:240-375</c>) is hovered and
-    /// picked — in the unit view a unit at status 1 or 2 not holding item 1 or 2, in the item view
+    /// picked — in the unit view a unit at status 1 or 2 not holding Chaos (item 1) or Nikkou (item 2), in the item view
     /// an item past 2 in stock with an effect, else the view is turned to the units first and back
     /// after — its prompt is looked at, the pick is dropped with a right click (998, which turns the
     /// view back), then End. Nothing is equipped.
