@@ -22,3 +22,7 @@ window/stretch/aspect="keep"
 
 project/assembly_name="Kichikuou"
 project/solution_directory="../"
+
+[rendering]
+
+textures/vram_compression/import_etc2_astc=true

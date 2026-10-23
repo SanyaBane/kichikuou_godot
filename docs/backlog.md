@@ -45,7 +45,11 @@ The owner aims at a public release (decision 28, 2026-10-20).
   phone; every dependency in [ui/survey.md](ui/survey.md) §3). The touch interface belongs with our
   own interface (Interface, below). Unknown until
   measured: the speed of the engine surface's per-pixel C# drawing on a phone. A cheap spike first:
-  the current build on a device with the extract copied by hand, a tap as a left click.
+  the current build on a device, a tap as a left click. Its setup is made (2026-10-24): the preset
+  "Android" (arm64, debug-signed, package `org.kichikuou.port`) and `tools/export-android.ps1` (`-Install`,
+  `-PushGame`); the build finds the game folder copied into the app's own external folder
+  (`GameData.AndroidGameFolder`, no permission, no folder dialog) and imports it at its first start. Not yet
+  run on a device.
 - **CI** — *owner* (a remote first), then *agent*: build, core tests, export. Without the game data
   the content tests no longer fail (2026-10-23): a test that reads the scenario, the CGs or a capture group
   is `[ScenarioFact]`/`[ScenarioTheory]`, `[LocalFolderFact]` or `[CaptureGroupFact]`/`[CaptureGroupTheory]`

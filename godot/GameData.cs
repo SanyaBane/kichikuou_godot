@@ -42,7 +42,21 @@ public static class GameData
         set => SetSetting("game_dir", value);
     }
 
-    private static string DefaultGame => LocalPaths.GameDirectory ?? "";
+    private static string DefaultGame => LocalPaths.GameDirectory ?? AndroidGameDirectory ?? "";
+
+    /// <summary>The Android build's package, as <c>export_presets.cfg</c> names it.</summary>
+    public const string AndroidPackage = "org.kichikuou.port";
+
+    /// <summary>
+    /// On Android, the game folder the player copied into the app's own external folder, when it is there: the
+    /// app reads it without a permission, and the native folder dialog would give a <c>content://</c> URI that
+    /// <c>System.IO</c> cannot open (docs/backlog.md, "Android").
+    /// </summary>
+    public static string? AndroidGameDirectory =>
+        OS.GetName() == "Android" && System.IO.Directory.Exists(AndroidGameFolder) ? AndroidGameFolder : null;
+
+    /// <summary>Where the Android build looks for the game folder (<see cref="AndroidGameDirectory"/>).</summary>
+    public const string AndroidGameFolder = "/storage/emulated/0/Android/data/" + AndroidPackage + "/files/game";
 
     /// <summary>The game folder the settings keep (the import screen's last), whatever is open now.</summary>
     public static string SavedGameDirectory => Setting("game_dir", DefaultGame);
