@@ -16,8 +16,9 @@ config/quit_on_go_back=false
 
 window/size/viewport_width=1280
 window/size/viewport_height=800
+window/size/window_height_override=824
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
+window/stretch/aspect="expand"
 
 [dotnet]
 
