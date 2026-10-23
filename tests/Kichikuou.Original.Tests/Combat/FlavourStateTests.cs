@@ -68,13 +68,13 @@ public class FlavourStateTests
 
         await rig.RunAsync();
 
-        Assert.Equal(1, rig.State.F_Satella_LineCmdr91.Value);
+        Assert.Equal(1, rig.State.F_Satella_LineCamilla.Value);
         Assert.Equal(9681, rig.Lines[0]);
         Assert.Equal([2, 3], rig.Draws);
 
         var again = new FlavourRig(1, 1).Player(unit: 29, cmdr: 91);
         again.State.StoryStage = 2;
-        again.State.F_Satella_LineCmdr91 = 1;
+        again.State.F_Satella_LineCamilla = 1;
         await again.RunAsync();
         Assert.Equal([1294], again.Lines);
     }
@@ -87,7 +87,7 @@ public class FlavourStateTests
 
         await rig.RunAsync();
 
-        Assert.Equal(0, rig.State.F_Satella_LineCmdr91.Value);
+        Assert.Equal(0, rig.State.F_Satella_LineCamilla.Value);
         Assert.Equal([1294], rig.Lines);
     }
 
@@ -99,8 +99,8 @@ public class FlavourStateTests
 
         await rig.RunAsync();
 
-        Assert.Equal(1, rig.State.F_Satella_LineCmdr92.Value);
-        Assert.Equal(0, rig.State.F_Satella_LineCmdr91.Value);
+        Assert.Equal(1, rig.State.F_Satella_LineLei.Value);
+        Assert.Equal(0, rig.State.F_Satella_LineCamilla.Value);
         Assert.Equal(9759, rig.Lines[0]);
     }
 
@@ -112,7 +112,7 @@ public class FlavourStateTests
 
         await rig.RunAsync();
 
-        Assert.Equal(1, rig.State.F_Meglass_LineCmdr93.Value);
+        Assert.Equal(1, rig.State.F_Meglass_LineSieg.Value);
         Assert.Equal(9830, rig.Lines[0]);
     }
 
@@ -121,7 +121,7 @@ public class FlavourStateTests
     {
         var rig = new FlavourRig(1, 1).Player(unit: 30, cmdr: 93);
         rig.State.StoryStage = 2;
-        rig.State.F_Meglass_LineCmdr93 = 1;
+        rig.State.F_Meglass_LineSieg = 1;
 
         await rig.RunAsync();
 

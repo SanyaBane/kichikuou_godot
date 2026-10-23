@@ -101,8 +101,8 @@ public sealed partial class WeeklyEvents(OriginalScriptContext script)
             State.N_Miki_Timer = State.N_Miki_Timer - 1;
         if (State.N_Aaya_Stage != 0 && State.N_Aaya_Stage < 4)                  // :46-48
             State.N_Aaya_Stage = State.N_Aaya_Stage + 1;
-        if (State.N_Saizel_Weeks != 0)                                          // :49-51
-            State.N_Saizel_Weeks = State.N_Saizel_Weeks + 1;
+        if (State.N_Seizel_Weeks != 0)                                          // :49-51
+            State.N_Seizel_Weeks = State.N_Seizel_Weeks + 1;
         if (State.N_ALChurch_Stage != 0 && State.N_ALChurch_Stage < 3)          // :52-54
             State.N_ALChurch_Stage = State.N_ALChurch_Stage + 1;
         if (State.F_Cafe_State == 10 || State.F_Cafe_State == 11)               // :55-57 weeks since the capture
@@ -152,9 +152,9 @@ public sealed partial class WeeklyEvents(OriginalScriptContext script)
         State.Prov_Cur = 28;                                                                // :101
         if (Prov.Owner == 1 && State.F_Japan_State == 0)                                    // :102-106
             await FireAsync("IJAPAN.ADV", 1);
-        if (State.N_Camilla_Stage == 3)                                                     // :107-111
+        if (State.N_DemonInvasion_Stage == 3)                                                     // :107-111
             await FireAsync("Iﾏｼﾞﾝ.ADV", 3);
-        if (State.N_Camilla_Stage == 2)                                                     // :112-116
+        if (State.N_DemonInvasion_Stage == 2)                                                     // :112-116
             await FireAsync("Iﾏｼﾞﾝ.ADV", 2);
         if (State.F_Kentarou_State == 2)                                                    // :117-121
             await FireAsync("Gｹﾝﾀﾛｳ.ADV", 2);
@@ -192,7 +192,7 @@ public sealed partial class WeeklyEvents(OriginalScriptContext script)
         }
         if (State.Papaya_EventWeek == State.Week)                                           // :187-191
             await FireAsync("Gﾊﾟﾊﾟｲｱ.ADV", 5);
-        if (State.F_HQMeeting_Done == 0 && State.F_Zeth_War == 2 && State.F_Helman_War == 2 && State.StoryStage == 2) // :192-196
+        if (State.F_UnitedAudience_Done == 0 && State.F_Zeth_War == 2 && State.F_Helman_War == 2 && State.StoryStage == 2) // :192-196
             await FireAsync("Iｼﾚｲﾌﾞ.ADV", 4);
         if (State.N_Aaya_Stage == 7)                                                        // :197-201
             await FireAsync("Gｱｰﾔ.ADV", 5);

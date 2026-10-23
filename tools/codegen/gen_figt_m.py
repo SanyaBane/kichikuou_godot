@@ -58,9 +58,9 @@ WAIT, CLOSE = "L_0c576", "L_0c569"
 
 # Labelled regions that are not a unit/commander dispatch target: name and description.
 NAMED = {
-    "L_0ba24": ("FlavourSatellaVsCmdr91Async", "unit 29 vs commander 91, one-shot scene (sets <c>F_Satella_LineCmdr91</c>)"),
-    "L_0bb6d": ("FlavourSatellaVsCmdr92Async", "unit 29 vs commander 92, one-shot scene (sets <c>F_Satella_LineCmdr92</c>)"),
-    "L_0bc93": ("FlavourUnit30VsCmdr93Async", "unit 30 vs commander 93, one-shot scene (sets <c>F_Meglass_LineCmdr93</c>)"),
+    "L_0ba24": ("FlavourSatellaVsCmdr91Async", "unit 29 vs commander 91, one-shot scene (sets <c>F_Satella_LineCamilla</c>)"),
+    "L_0bb6d": ("FlavourSatellaVsCmdr92Async", "unit 29 vs commander 92, one-shot scene (sets <c>F_Satella_LineLei</c>)"),
+    "L_0bc93": ("FlavourUnit30VsCmdr93Async", "unit 30 vs commander 93, one-shot scene (sets <c>F_Meglass_LineSieg</c>)"),
     "L_0bddd": ("FlavourFreakSceneAsync", "unit 20 vs commander 130 (advances <c>N_Freak_Stage</c>)"),
     "L_0c0fc": ("FlavourSiegEventAsync", "Rance vs commander 93 while <c>F_Sieg_State</c> is 2/3: Chaos changes hands"),
 }

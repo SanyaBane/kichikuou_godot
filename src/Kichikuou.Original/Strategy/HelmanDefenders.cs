@@ -33,7 +33,7 @@ public sealed class HelmanDefenders(OriginalScriptContext script, IScenarioSourc
         {
             SetLiteral(11);                                             // MS 10, "A Certain Country's People"
             State.Unit_Cur = 43;
-            if (State.F_Sheila_State != 0 && State.F_Sheila_Flag != 0 && Unit.Status == 0)
+            if (State.F_Sheila_State != 0 && State.F_SheilaDevotees_State != 0 && Unit.Status == 0)
             {
                 await Script.EventAsync("Gｼｰﾗ.ADV", 2);
                 if (State.Tmp0001 == 1)                                 // the attack is called off
@@ -42,7 +42,7 @@ public sealed class HelmanDefenders(OriginalScriptContext script, IScenarioSourc
                     return;
                 }
             }
-            if (State.F_Sheila_Flag == 0)
+            if (State.F_SheilaDevotees_State == 0)
                 await Script.EventAsync("Gｼｰﾗ.ADV", 1);
             Militia();                                                  // @L_00210
             return;

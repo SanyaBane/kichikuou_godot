@@ -145,7 +145,7 @@ dry run (§2) has no such error: it runs the scene. 236 variables, in three clas
 Refinements:
 
 - **Flags whose only other reader is the Think command** (`Iｶﾝｶﾞｴ`, its hints): `F_Haurein_State2`,
-  `F_Maris_State2`, `F_Menad_Flag`, `F_Sill_State` — they change a hint's text, not the game. Proposed first: count
+  `F_Maris_State2`, `F_Menad_HaremSeen`, `F_Sill_State` — they change a hint's text, not the game. Proposed first: count
   them as text only. **They count** (owner, 2026-10-22), as everything but the bookkeeping and Rance's counter does:
   a silent step hides a scene otherwise. Sill's (unit 2) harem night `L_020a7` sets her state 2 (`Gｼｨﾙ:1773`); her
   next talk plays her repeated line (read) and sets 3 silently (`Gｼｨﾙ:1025`); only the talk after it plays the new
@@ -153,7 +153,7 @@ Refinements:
   talk, and the new scene would stay hidden. Every reader in the scenario (besides the boot's
   and the debug start's resets): `F_Haurein_State2` her harem scenes (`Gﾊｳﾚｰﾝ:2710`, `:3133`) and her leaving on a
   talk (`:2300`), the hint `Iｶﾝｶﾞｴ:360`; `F_Maris_State2` which of Maris's scenes plays (`Gﾏﾘｽ:957-960`), the hint
-  `Iｶﾝｶﾞｴ:93`; `F_Menad_Flag` which of Menad's scenes plays (`Gﾒﾅﾄﾞ:32-35`), the hint `Iｶﾝｶﾞｴ:461`; `F_Sill_State`
+  `Iｶﾝｶﾞｴ:93`; `F_Menad_HaremSeen` which of Menad's scenes plays (`Gﾒﾅﾄﾞ:32-35`), the hint `Iｶﾝｶﾞｴ:461`; `F_Sill_State`
   which of Sill's scenes plays (`Gｼｨﾙ:75-89`, `:1025`), whether the harem offers her (`Cﾊｰﾚﾑ:56`), the hint
   `Iｶﾝｶﾞｴ:21`. Besides the hints they only pick the character's own talk and harem scenes, which the dry run of
   the next talk or visit sees.

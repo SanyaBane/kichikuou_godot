@@ -99,7 +99,7 @@ World state written:
 - `Unit_CurAtkMod`/`Unit_CurDefMod` of `Unit_Cur` (copied from the `Bt_Kind` modifiers, 1727-1738).
 - Unit record 51 (overwritten by ninja / Goliath builders), `N_Hubert_FreyaUses` (+1 per Freya
   follow-up).
-- Flavour-text side effects (§5.4): `F_Asuka_State`, `F_Satella_LineCmdr91..93`,
+- Flavour-text side effects (§5.4): `F_Asuka_State`, `F_Satella_LineCamilla..93`,
   `N_Freak_Stage`, Sieg event (`F_Sieg_State`, `F_Sieg_Defeated`, `N_Miki_Stage`, item 1,
   Rance's `Unit_Item`/CGs, Sieg's (commander 93) CGs/face/item/VAR0126/VAR0127, `Ev_Entry`).
 - Death scenes (§7.4): `F_Sill_Died`, `F_Asuka_State`, `EndingId` + game over.
@@ -437,10 +437,10 @@ U23 :942    Mode=1 | else RND(3)@951
 U24 :988    RND(3)@989    U25 :1030 RND(3)@1031    U26 :1066 RND(3)@1067
 U27 :1102   Spec!=0 | Mode=1 | fixed
 U28 :1136   C=22 | C=32 | C=33 | C=39 | C=44 | C=50 | else RND(3)@1215
-U29 :1254   StoryStage<3 and C=91 and F_Satella_LineCmdr91=0 → set flag, scene
-            | StoryStage<3 and C=92 and F_Satella_LineCmdr92=0 → set flag, scene
+U29 :1254   StoryStage<3 and C=91 and F_Satella_LineCamilla=0 → set flag, scene
+            | StoryStage<3 and C=92 and F_Satella_LineLei=0 → set flag, scene
             | C=72 | C=90 | C=91 | C=92 | C=93 | C=98 | C=129 | C=130 | C=135 | else RND(3)@1375
-U30 :1414   StoryStage<3 and C=93 and F_Meglass_LineCmdr93=0 → set flag, scene
+U30 :1414   StoryStage<3 and C=93 and F_Meglass_LineSieg=0 → set flag, scene
             | Spec!=0 | C=135 | fixed
 U31 :1441   Spec=1 | C=135 | else RND(3)@1464
 U32 :1493   Spec!=0 | C=135 | else RND(3)@1512
@@ -539,7 +539,7 @@ nothing:         C94, C95 (the two "Wall" commanders, class 5), C61, C99, C>=200
 | :1 | always | `Tmp0621 = 0` |
 | :2-3 | `Bt_MsgMode=1` and `Bt_EnemyAction=2` | `Bt_MsgMode = 2` (persists; disables the ninja roll, §7.3) |
 | :8325-8327 | Asuka (U11), see 5.2 | `F_Asuka_State = 1` |
-| :9677-9678, :9755-9756, :9826-9827 | Satella (U29) vs Camilla (C91) / Lei (C92), Meglass (U30) vs Sieg (C93), StoryStage<3, flag 0 | `F_Satella_LineCmdr91/92/93 = 1` (one-shot scenes) |
+| :9677-9678, :9755-9756, :9826-9827 | Satella (U29) vs Camilla (C91) / Lei (C92), Meglass (U30) vs Sieg (C93), StoryStage<3, flag 0 | `F_Satella_LineCamilla`/`F_Satella_LineLei`/`F_Meglass_LineSieg` = 1 (one-shot scenes) |
 | `L_0bddd` :9900-9902 | Freak (U20) vs Redeye (C130) | if `N_Freak_Stage = 0`: `N_Freak_Stage = 1` + long scene; else short scene |
 | `L_0c0fc` :10090-10115 | Rance vs Sieg (C93) with `F_Sieg_State` 2/3 (player side only) | **SiegEvent**: `Ev_Entry=4`; `F_Sieg_State=4`; `F_Sieg_Defeated=1`; if `N_Miki_Stage=1` → 2; `Item_Cur=1`, `Item_Holder=1`; commander 93 renamed "Sieg"/"Maneshitas", CgFull/Partial/Alone = 1325/1326/1327, FaceCg 59, `Cmdr_Item=0`, `VAR0126=0`, `VAR0127=0`; `Unit_Cur=1` (Rance), `Unit_Item=1` (Chaos), `Unit_CgPartial=1358`, `Unit_CgAlone=1361`; long scene |
 

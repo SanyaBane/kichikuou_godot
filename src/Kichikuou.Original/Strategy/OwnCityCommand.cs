@@ -409,7 +409,7 @@ public sealed class OwnCityCommand(OriginalScriptContext script) : CommandFile(s
         if (State.Prov_Cur == State.Freya_TargetProv)
             return await SceneAsync("Gﾌﾚｲｱ.ADV", 2);
         State.Cmdr_Cur = 92;
-        if (p == 15 && Cmdr.Status != 0 && State.N_Camilla_Stage != 100 && State.N_Rei_Stage == 1)
+        if (p == 15 && Cmdr.Status != 0 && State.N_DemonInvasion_Stage != 100 && State.N_Rei_Stage == 1)
             return await SceneAsync("Gﾚｲ.ADV", 2);
         if (p == 4 && State.F_Mokomoko_State == 0)
         {

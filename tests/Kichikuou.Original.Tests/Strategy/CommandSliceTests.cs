@@ -1754,7 +1754,7 @@ public class CommandSliceTests
         await new ConstructionCommand(rig.Script).RunAsync();
         Assert.Equal([[62, 66]], rig.MenuLines);                        // QUIRK: CMD-20
 
-        rig.State.F_Pool_Built = 2;
+        rig.State.Bld_Pool = 2;
         rig.Input.Menus.Clear();
         await new ConstructionCommand(rig.Script).RunAsync();
         Assert.Empty(rig.Input.Menus);

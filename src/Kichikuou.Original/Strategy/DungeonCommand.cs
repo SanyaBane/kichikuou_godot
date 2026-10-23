@@ -122,12 +122,12 @@ public sealed partial class DungeonCommand(OriginalScriptContext script, IScenar
             return;
         }
         State.DgnRun_MerimInParty = 0;                                  // :7-16
-        if (State.F_Merim_MillArc == 3)
-            State.F_Merim_MillArc = 4;
+        if (State.F_GrowthFountain_State == 3)
+            State.F_GrowthFountain_State = 4;
         // QUIRK: DGN-01 — whatever commander record the cursor was left on.
         if (Cmdr.CgFull == 1137)
             State.F_Gunagan_State = 2;
-        if (State.Dgn_Cur == 9 && State.F_PG9_State != 2)
+        if (State.Dgn_Cur == 9 && State.N_PiarPGs_Stage != 2)
             return;
         State.MapTargetX = Dgn.MapX;                                    // :17-24 the camera on the dungeon
         State.MapTargetY = Dgn.MapY;
@@ -194,7 +194,7 @@ public sealed partial class DungeonCommand(OriginalScriptContext script, IScenar
             }
             if (State.Dgn_Cur == 9)
             {
-                if (State.F_PG9_State != 2)
+                if (State.N_PiarPGs_Stage != 2)
                     return;
                 await Script.EventAsync("Gﾊﾟｲｱｰﾙ.ADV", 7);
                 return;
@@ -853,7 +853,7 @@ public sealed partial class DungeonCommand(OriginalScriptContext script, IScenar
             await Script.EventAsync("Gﾒﾙﾌｪｲｽ.ADV", 4);
         State.Ev_CommandMode = 0;
         // QUIRK: DGN-11 — reset to 4 on entry, so only a 3 set during this search plays it.
-        if (State.F_Merim_MillArc == 3)
+        if (State.F_GrowthFountain_State == 3)
             await Script.EventAsync("Gﾐﾙ.ADV", 2);
         if (State.Dgn_Cur == 30 && State.F_Ruberan_State == 0 && State.DgnRun_MerimInParty == 1)
             await Script.EventAsync("Gﾙｰﾍﾞﾗﾝ.ADV", 3);

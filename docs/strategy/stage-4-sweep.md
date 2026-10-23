@@ -28,7 +28,7 @@ Door can open only at stage 4**, only if Kou's arc stood at state 8 when the Cre
   Rance's, "then there was peace", `:169-237`), `%0`. The loop leaves `Prov_Cur = 92` (`:154`), which
   `死亡捕獲` reads after the return (`:380` Camilla's castle test, `:425` Leila's `Prov_Cur ≠ 1`) until
   `FIGT_A:190` / `FIGT_B:275` restore it from `Bt_TargetProv` (stale cursor, candidate below).
-- **State at stage 4**: no other write. `F_DemonWar_Stage = 20` and `N_Camilla_Stage = 100` (from
+- **State at stage 4**: no other write. `F_DemonWar_Stage = 20` and `N_DemonInvasion_Stage = 100` (from
   `Gｹｲﾌﾞﾘｽ` 1 in week S of stage 3 [I: every way to Kayblis's death passes a Kayblis phase]),
   `N_Rudrasaum_Turns = 0`, every province 1-91 but 29 and 75 Leazas's.
 
@@ -39,7 +39,7 @@ Door can open only at stage 4**, only if Kou's arc stood at state 8 when the Cre
    `死亡捕獲` (`:189`), so a won battle counts it; Kayblis dead but the battle lost leaves it his →
    ending 8. S4 then goes on after `COMMAND` (`MAIN:213`): the post-command scenes (`:214-228`), Mars,
    the AL Church, JAPAN, Helman, Patton, Zeth if their flags are on, **no Kayblis phase** (`:594`
-   needs stage 3), no Camilla Unit (`:631`, `N_Camilla_Stage = 100`), the **Creator phase** (`:816`,
+   needs stage 3), no Camilla Unit (`:631`, `N_DemonInvasion_Stage = 100`), the **Creator phase** (`:816`,
    phase 1), La Vaswald, the week's end.
 2. **His own army at war** (`Tｹｲﾌﾞﾘｽ:1333`, `FIGT_B`), with the Demon Lord's Castle (79) already the
    player's [I: reachable only if it was taken with Kayblis alive]. The rest of that Kayblis phase

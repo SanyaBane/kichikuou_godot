@@ -19,7 +19,7 @@ Stronghold (72) – Bone Forest (90) – Kesselring's Castle (87) – Red House 
 
 ## Start
 
-- **`Iｼﾚｲﾌﾞ` 6** (`:1526-1711`): `StoryStage := 3`, `F_HQMeeting_Done := 1` (`:1527-1528`); the
+- **`Iｼﾚｲﾌﾞ` 6** (`:1526-1711`): `StoryStage := 3`, `F_UnitedAudience_Done := 1` (`:1527-1528`); the
   rest is text (branches on Sill (unit 2), Miki (unit 32), Kentarou (unit 31)). Back in `Cﾃｷﾄｼ` the
   attack goes on (`Sﾌﾞﾀｲ`, `Tｹｲﾌﾞﾘｽ2`, `FIGT_A`): at Tower of Evil (78) with `N_Warg_Stage = 0`
   `Gﾜｰｸﾞ` 1 replaces the battle (`Tｹｲﾌﾞﾘｽ2:92-96`, `Cﾃｷﾄｼ:356-358`), so stage 3 starts with nothing
@@ -27,18 +27,18 @@ Stronghold (72) – Bone Forest (90) – Kesselring's Castle (87) – Red House 
   Generals (commanders 86-89) in the plains (`Tｹｲﾌﾞﾘｽ2:112-123`, NAT-21). Both wars are won here
   (the gate's precondition, `Cﾃｷﾄｼ:147-153`).
 - **`Iﾏｼﾞﾝ` 51** (`:8979-9195`): `F_DemonWar_Stage := 12`, `N_Majin_EventTimer := 8`, `StoryStage
-  := 3`, `F_HQMeeting_Done := 1` (`:8980-8983`), at the week's end (`MAIN:937-940`, after that week's
+  := 3`, `F_UnitedAudience_Done := 1` (`:8980-8983`), at the week's end (`MAIN:937-940`, after that week's
   Kayblis gate at `:594`). Any war state; about week 103 with `--seed 2` [I, stage-2-sweep], i.e.
   past week 100, so the Assault Leaders march from S on (below).
 - **Week S, the Kayblis phase** (`MAIN:594-629`, after the player phase and the JAPAN, Helman,
   Patton and Zeth phases; `Ev_PhaseNation := 8`, army name "Kayblis Unit", no commander refresh in
   `MAIN`): `Tｹｲﾌﾞﾘｽ:3-8` plays `Gｹｲﾌﾞﾘｽ` 1 (`:1393-2109`, the war council; text branches on
   `F_DemonWar_Stage = 12` at `:1434`/`:1485` and on Lei (commander 92) and Sieg (commander 93) alive,
-  `:1914-2086`), which sets `F_DemonWar_Stage := 20` and `N_Camilla_Stage := 100` (`:2105-2106`), and
+  `:1914-2086`), which sets `F_DemonWar_Stage := 20` and `N_DemonInvasion_Stage := 100` (`:2105-2106`), and
   jumps to the dispatch `L_004d1` — the `Ai_*` reset, the recovery and the event chain are skipped
   this once.
 
-**Closed from S:** the Camilla Unit (`MAIN:631` needs `N_Camilla_Stage` 2-99; it runs after the
+**Closed from S:** the Camilla Unit (`MAIN:631` needs `N_DemonInvasion_Stage` 2-99; it runs after the
 Kayblis phase, so not even in S) and the scenes it hosts (`Gｼﾞｰｸ` 1-5, `Gｻｲｾﾞﾙ` 1/2 at `:653-662`,
 `Gｶﾐｰﾗ` 1/2/8, `Gﾚｲ` 1, `Gｻﾃﾗ` 1 — an `F_Seizel_State` of 1 or 2 left at stage 3 stays [I]); the demon
 war (`:936-985`: 12 and 20 match none of its entries 0-11); the Kayblis-war branch (`:986`, needs
@@ -61,7 +61,7 @@ Open at stage 3, besides what stage 2 has:
   is the one rule file of the week not ported. Creator (`:816`, `Tﾙﾄﾞﾗ`) needs stage 4.
 - **La Vaswald** (`:848-886`, La Vaswald (commander 98) alive): `Gｻｲｾﾞﾙ` 12 every week — a random
   player province (`Gｻｲｾﾞﾙ:471-491`, `Y 4, Tmp0621` from 80 down, survey-events R3) and `FIGT_B`.
-  Opened by `Gｻｲｾﾞﾙ` 9 (`COM:694-699`: `Y 4, 10` = 1 once `N_Saizel_Weeks > 40`; it also kills
+  Opened by `Gｻｲｾﾞﾙ` 9 (`COM:694-699`: `Y 4, 10` = 1 once `N_Seizel_Weeks > 40`; it also kills
   Medusa (commander 134), `Gｻｲｾﾞﾙ:2817-2824`, unless `F_Seizel_State > 4`). The counter runs from
   `Gｻｲｾﾞﾙ` 1 (stage 2, `COM:49-50`), so a slow stage 3 reaches it [I; stage-2-sweep's estimate].
 - **The week's end:** the Sill chain (`:896`, `F_Helman_War ≠ 2`) and `Gﾏｼﾞｯｸ` 5 (`:926`) as at
@@ -358,7 +358,7 @@ interactive Godot before, so stage 3 had no Kayblis phase at all). Since step 5 
    from `Tｹｲﾌﾞﾘｽ:9-11`: 60000 HP, recovery 0) only the halving makes it thinkable — about 14 Vanish Bombs
    against his +3 a week — so practically no [I: rate not measured].
 4. Medusa's replays (NAT-25): confirm by capture. (`Gｼﾙｷｨ` 8 does not replay: NAT-26.)
-5. Is La Vaswald reached at stage 3 in practice (`N_Saizel_Weeks > 40`)?
+5. Is La Vaswald reached at stage 3 in practice (`N_Seizel_Weeks > 40`)?
 6. ~~`docs/variables.tsv`~~ Renamed with step 1 (2026-10-11): VAR0744 is `F_DemonCastle_Attacked` (the
    first attack on the Demon Lord's Castle (79) reported, `Gｹｲﾌﾞﾘｽ` 4), VAR0637
    `F_Galtia_DefectedToKayblis` (Galtia (unit 41) defected, `Gｹｲﾌﾞﾘｽ` 7, read at `Tｹｲﾌﾞﾘｽ:226, 1360`) —

@@ -106,7 +106,7 @@ public class WeeklyEventsTests
         s.N_Aviator_StudyWeeks = 0;        // floors at 0
         s.N_Miki_Timer = 5;                // stops at 5
         s.N_Aaya_Stage = 1;
-        s.N_Saizel_Weeks = 41;
+        s.N_Seizel_Weeks = 41;
         s.N_Soul_Stage = 200;              // stops at 200
         s.TangeDog_UsedThisWeek = 1;
         s.Items[(Sys3Int)26].Holder = 100; // the kaiju items: attacks grow while owned, up to 2000
@@ -128,7 +128,7 @@ public class WeeklyEventsTests
         Assert.Equal(0, s.N_Aviator_StudyWeeks.Value);
         Assert.Equal(5, s.N_Miki_Timer.Value);
         Assert.Equal(2, s.N_Aaya_Stage.Value);
-        Assert.Equal(42, s.N_Saizel_Weeks.Value);
+        Assert.Equal(42, s.N_Seizel_Weeks.Value);
         Assert.Equal(200, s.N_Soul_Stage.Value);
         Assert.Equal(0, s.TangeDog_UsedThisWeek.Value);
         Assert.Equal(2000, s.Kaiju_JagiJagiAttacks.Value);

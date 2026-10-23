@@ -503,10 +503,10 @@ A (commanders Pegasus (3), Dodge (5), Melfeis (4)) South (4), Oku (3), North (2)
 Oaks (6), Ys (5) — so holding Ys (5) keeps the castle out of their reach. A unit that fought
 this week cannot be replenished: `Cﾌﾞｶ.ADV:38-43` shows its status page instead of the troop menu.
 At that week's end `MAIN:893-895` sets
-`N_Camilla_Stage` 0 → 1; the next week `COM:152` plays `GAL` 1, and at its end `MAIN:887` plays
+`N_DemonInvasion_Stage` 0 → 1; the next week `COM:152` plays `GAL` 1, and at its end `MAIN:887` plays
 `Iﾏｼﾞﾝ` 1: two `FIGT_B` defences of Leazas Castle (1) (commanders Monster Generals 86+87, then
 86+87 + La Seizel (90);
-`N_Camilla_Stage := 2`). The milestone ends at the player phase after that week.
+`N_DemonInvasion_Stage := 2`). The milestone ends at the player phase after that week.
 **Game over** at stage 1: losing Leazas Castle (1) (`FIGT_B:816-826, 877-882`, ending 2) or Rance's
 death (`死亡捕獲:29-31`, ending 1).
 

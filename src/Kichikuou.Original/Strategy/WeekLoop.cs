@@ -548,7 +548,7 @@ public sealed class WeekLoop(OriginalScriptContext script, IScenarioSource? scen
     }
 
     /// <summary>
-    /// <c>MAIN.ADV:631-815</c> — the Camilla unit's phase (<c>N_Camilla_Stage</c> 2-99 and beyond 100),
+    /// <c>MAIN.ADV:631-815</c> — the Camilla unit's phase (<c>N_DemonInvasion_Stage</c> 2-99 and beyond 100),
     /// its AI written inline: the Sieg and Seizel scenes, then commanders 93, 90, 92 and 91 in turn
     /// each roll a province among 1-16 and attack it through <c>FIGT_B</c> if Leazas holds it and
     /// their roll allows, one battle a week as a rule (<c>Ev_WeeklyEventDone</c>); then Camilla's
@@ -556,7 +556,7 @@ public sealed class WeekLoop(OriginalScriptContext script, IScenarioSource? scen
     /// </summary>
     private async Task CamillaPhaseAsync()
     {
-        if (!(State.N_Camilla_Stage > 1 && State.N_Camilla_Stage != 100))
+        if (!(State.N_DemonInvasion_Stage > 1 && State.N_DemonInvasion_Stage != 100))
             return;
         SetDate();
         await PlayAsync(16);
@@ -634,7 +634,7 @@ public sealed class WeekLoop(OriginalScriptContext script, IScenarioSource? scen
             Script.Rnd(16);
             State.Prov_Cur = State.RetVal;
             Script.Rnd(3);
-            if (State.N_Camilla_Stage == 4)
+            if (State.N_DemonInvasion_Stage == 4)
             {
                 State.RetVal = 1;
                 State.Prov_Cur = 1;
@@ -643,7 +643,7 @@ public sealed class WeekLoop(OriginalScriptContext script, IScenarioSource? scen
             if (Prov.Owner == 1 && State.RetVal != 2 && Cmdr.HP == Cmdr.MaxHP)
                 await AttackAsync(90);
         }
-        if (State.N_Camilla_Stage == 4)                                 // :742-746
+        if (State.N_DemonInvasion_Stage == 4)                                 // :742-746
         {
             State.Ev_Entry = 1;
             State.Ev_WeeklyEventDone = 1;
@@ -661,7 +661,7 @@ public sealed class WeekLoop(OriginalScriptContext script, IScenarioSource? scen
             // QUIRK: STR-03 — while Rei has not joined, 92 may attack even after another battle this week.
             if (State.N_Rei_Stage == 0)
                 State.Ev_WeeklyEventDone = 0;
-            if (State.N_Camilla_Stage == 5)
+            if (State.N_DemonInvasion_Stage == 5)
             {
                 State.RetVal = 1;
                 State.Ev_WeeklyEventDone = 0;
@@ -670,7 +670,7 @@ public sealed class WeekLoop(OriginalScriptContext script, IScenarioSource? scen
             {
                 await AttackAsync(92);
                 State.Cmdr_Cur = 92;
-                if (Cmdr.Status != 0 && State.N_Rei_Stage == 0 && State.N_Camilla_Stage > 5)
+                if (Cmdr.Status != 0 && State.N_Rei_Stage == 0 && State.N_DemonInvasion_Stage > 5)
                     await Script.EventAsync("Gﾚｲ.ADV", 1);
                 if (Cmdr.Status == 0)
                     State.N_Rei_Stage = 0;
@@ -685,7 +685,7 @@ public sealed class WeekLoop(OriginalScriptContext script, IScenarioSource? scen
             Script.Rnd(16);
             State.Prov_Cur = State.RetVal;
             Script.Rnd(2);
-            if (State.N_Camilla_Stage == 5)
+            if (State.N_DemonInvasion_Stage == 5)
             {
                 State.RetVal = 1;
                 State.Ev_WeeklyEventDone = 0;
@@ -708,8 +708,8 @@ public sealed class WeekLoop(OriginalScriptContext script, IScenarioSource? scen
             State.Ev_WeeklyEventDone = 1;
             await Script.CallFileAsync("Gｶﾐｰﾗ.ADV");
         }
-        if (State.N_Camilla_Stage == 5)                                 // :808-814
-            State.N_Camilla_Stage = 6;
+        if (State.N_DemonInvasion_Stage == 5)                                 // :808-814
+            State.N_DemonInvasion_Stage = 6;
         if (State.Ev_WeeklyEventDone == 0)
             await Script.EventAsync("Gｶﾐｰﾗ.ADV", 8);
     }
@@ -769,15 +769,15 @@ public sealed class WeekLoop(OriginalScriptContext script, IScenarioSource? scen
     /// </summary>
     private async Task EndOfWeekAsync()
     {
-        if (State.StoryStage == 2 && State.N_Camilla_Stage == 1)        // :887-892
+        if (State.StoryStage == 2 && State.N_DemonInvasion_Stage == 1)        // :887-892
         {
             // QUIRK: STR-24 — the music is played without testing BgmEnabled.
             await Script.MusicAsync(16);
             await Script.EventAsync("Iﾏｼﾞﾝ.ADV", 1);
             await Script.MusicAsync(Sys3Int.Zero);
         }
-        if (State.StoryStage == 2 && State.N_Camilla_Stage == 0)        // :893-895
-            State.N_Camilla_Stage = 1;
+        if (State.StoryStage == 2 && State.N_DemonInvasion_Stage == 0)        // :893-895
+            State.N_DemonInvasion_Stage = 1;
         if (State.F_Helman_War != 2)                                    // :896-925
         {
             // Each scene sets the next stage first, so later lines may follow it the same week.
@@ -807,7 +807,7 @@ public sealed class WeekLoop(OriginalScriptContext script, IScenarioSource? scen
         State.N_Majin_EventTimer = State.N_Majin_EventTimer - 1;        // :932-935
         if (State.F_Zeth_War == 2 && State.F_Helman_War == 2 && State.F_DemonWar_Stage < 10)
             State.N_Majin_EventTimer = 0;
-        if (State.F_Kayblis_War == 0 && State.N_Camilla_Stage > 5 && State.N_Majin_EventTimer == 0)  // :936-985
+        if (State.F_Kayblis_War == 0 && State.N_DemonInvasion_Stage > 5 && State.N_Majin_EventTimer == 0)  // :936-985
         {
             // QUIRK: STR-08 — tested from the last stage down, each on the state the scenes before it left.
             foreach (var (stage, entry) in DemonWar)

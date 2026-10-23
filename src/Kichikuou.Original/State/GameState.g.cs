@@ -199,8 +199,8 @@ public sealed partial class GameState
     /// <summary>VAR0061 [C] — Warg (and Lassie) stage: 0 = untouched — COM fires Gﾜｰｸﾞ 2 once the Demon Lord's Castle was attacked and F_Kayblis_War = 0, the Kayblis turn fires 3/4 (F_Stessel_State 4/5), attacking the Tower of Evil (78) fires 1 (leaves it 0); 1 = Warg moved to the Tower of Evil (Gﾜｰｸﾞ 2); 2 = her illusion scenes done (Gﾜｰｸﾞ 3/4/10); &gt; 1 offers the chaos choice in Iｶﾐ.</summary>
     public ref Sys3Int N_Warg_Stage => ref Memory.Var(61);
 
-    /// <summary>VAR0062 [C] — Milli's genfluenza deadline week: Week+20 when she falls ill (Gﾐﾘ 1; cleared at once with F_Milli_Fate 2 when no General Hospital), +20 by Cell's remedy (Gｾﾙ, VAR0427 1→2); COM fires Gﾐﾘ 2 (Milli dies, F_Milli_Fate 2) once Week passes it; 0 = not ill, cured (Gﾐﾘ 3) or dead. Nonzero adds the cure scenes/menu items (G1, Gｱｰﾔ, Gﾐﾙ, Iｶﾝｶﾞｴ).</summary>
-    public ref Sys3Int N_Miri_DeadlineWeek => ref Memory.Var(62);
+    /// <summary>VAR0062 [C] — Milli's genfluenza deadline week: Week+20 when she falls ill (Gﾐﾘ 1; cleared at once with F_Milli_Fate 2 when no General Hospital), +20 by Cell's remedy (Gｾﾙ, N_Milli_CureStage 1→2); COM fires Gﾐﾘ 2 (Milli dies, F_Milli_Fate 2) once Week passes it; 0 = not ill, cured (Gﾐﾘ 3) or dead. Nonzero adds the cure scenes/menu items (G1, Gｱｰﾔ, Gﾐﾙ, Iｶﾝｶﾞｴ).</summary>
+    public ref Sys3Int N_Milli_DeadlineWeek => ref Memory.Var(62);
 
     /// <summary>VAR0063 [C] — Zeth Palace barrier: 0 never met, 1 met (Cﾃｷﾄｼ plays the long "lost the way" dialogue once when Tｾﾞｽ2 turns an attack back, then the short one), 2 broken (Gﾊﾟﾊﾟｲｱ, Tｹｲﾌﾞﾘｽ); Tｾﾞｽ2 empties the party on 66/67/68/70 while it is not 2 and no deployed unit holds item 12; G1/Gﾎﾗｶﾞ/Gﾏｹﾝ offer barrier hints at 1.</summary>
     public ref Sys3Int F_ZethBarrier_State => ref Memory.Var(63);
@@ -659,7 +659,7 @@ public sealed partial class GameState
     public ref Sys3Int Bt_IsDuel => ref Memory.Var(322);
 
     /// <summary>VAR0323 [C] — Humanity-united audience done: set by Iｼﾚｲﾌﾞ 4 (COM at stage 2 once Zeth and Helman fell; Rance declares war on the demons), and with StoryStage 3 by Iｼﾚｲﾌﾞ 6 (first attack on a demon-realm province) and Iﾏｼﾞﾝ; read only by COM's trigger.</summary>
-    public ref Sys3Int F_HQMeeting_Done => ref Memory.Var(323);
+    public ref Sys3Int F_UnitedAudience_Done => ref Memory.Var(323);
 
     /// <summary>VAR0324 [C] — Sayori ending: 1=let go, returned to M Land (good), 2=married Shinoda (bad)</summary>
     public ref Sys3Int F_Sayori_Fate => ref Memory.Var(324);
@@ -691,10 +691,10 @@ public sealed partial class GameState
     /// <summary>VAR0333 [G] — Set to 2 in Iﾏｼﾞﾝ 1 when either FIGT_B defence of Leazas Castle (1) against the Monster Army is lost (Bt_Result 1: the branch where Miki and Nikkou flee alone); never read.</summary>
     public ref Sys3Int VAR0333 => ref Memory.Var(333);
 
-    /// <summary>VAR0334 [C] — Demon war (Hornet vs Kayblis) chapter: while F_Kayblis_War = 0, N_Camilla_Stage &gt; 5 and the timer is out, MAIN plays Iﾏｼﾞﾝ 11-20/50/51 at 0-11, each setting the next (1-12; the timer forced out once Zeth and Helman fell while &lt; 10); with F_Kayblis_War = 1 (Demon Lord Miki route) Iﾏｼﾞﾝ2 21-30 at 0-9 instead, reset to 0 before each while Satella (unit 29) or Meglass (unit 30) serves; &lt; 10 keeps the demon realm's gate shut (Cﾃｷﾄｼ → Iｼﾚｲﾌﾞ 5) and selects Iｼﾚｲﾌﾞ 4's text; 20 = Kayblis's war council done (Gｹｲﾌﾞﾘｽ 1, which the Kayblis turn plays while &lt; 20).</summary>
+    /// <summary>VAR0334 [C] — Demon war (Hornet vs Kayblis) chapter: while F_Kayblis_War = 0, N_DemonInvasion_Stage &gt; 5 and the timer is out, MAIN plays Iﾏｼﾞﾝ 11-20/50/51 at 0-11, each setting the next (1-12; the timer forced out once Zeth and Helman fell while &lt; 10); with F_Kayblis_War = 1 (Demon Lord Miki route) Iﾏｼﾞﾝ2 21-30 at 0-9 instead, reset to 0 before each while Satella (unit 29) or Meglass (unit 30) serves; &lt; 10 keeps the demon realm's gate shut (Cﾃｷﾄｼ → Iｼﾚｲﾌﾞ 5) and selects Iｼﾚｲﾌﾞ 4's text; 20 = Kayblis's war council done (Gｹｲﾌﾞﾘｽ 1, which the Kayblis turn plays while &lt; 20).</summary>
     public ref Sys3Int F_DemonWar_Stage => ref Memory.Var(334);
 
-    /// <summary>VAR0335 [C] — Hawzel/Seizel sisters: 1 = Iﾏｼﾞﾝ chapter 6; MAIN at 1 plays Gｻｲｾﾞﾙ 1 → 2 (Hawzel becomes Rance's ally), at 2 Gｻｲｾﾞﾙ 2 → 3 (Hawzel captured by Medusa, Seizel waits on floor 30 of the Summit's Mouth (dungeon 8)); there with Rance leading (Gｻｲｾﾞﾙ 3): 3 → 4, 5 → 6; Gｻｲｾﾞﾙ 4 (own-city menu): &lt; 5 → 5; COM at 6 Gｻｲｾﾞﾙ 5 → 7 = Seizel joined Rance; 7 → 8 a talk with F_MLand_Funded; 20 = La Vaswald born (Gｻｲｾﾞﾙ 9 from COM after N_Saizel_Weeks &gt; 40 on a draw; nothing at 3/4 once F_Medusa_State = 10); OVER's misfortune at 20.</summary>
+    /// <summary>VAR0335 [C] — Hawzel/Seizel sisters: 1 = Iﾏｼﾞﾝ chapter 6; MAIN at 1 plays Gｻｲｾﾞﾙ 1 → 2 (Hawzel becomes Rance's ally), at 2 Gｻｲｾﾞﾙ 2 → 3 (Hawzel captured by Medusa, Seizel waits on floor 30 of the Summit's Mouth (dungeon 8)); there with Rance leading (Gｻｲｾﾞﾙ 3): 3 → 4, 5 → 6; Gｻｲｾﾞﾙ 4 (own-city menu): &lt; 5 → 5; COM at 6 Gｻｲｾﾞﾙ 5 → 7 = Seizel joined Rance; 7 → 8 a talk with F_MLand_Funded; 20 = La Vaswald born (Gｻｲｾﾞﾙ 9 from COM after N_Seizel_Weeks &gt; 40 on a draw; nothing at 3/4 once F_Medusa_State = 10); OVER's misfortune at 20.</summary>
     public ref Sys3Int F_Seizel_State => ref Memory.Var(335);
 
     /// <summary>VAR0336 [C] — Ragarl's LV30-mage sacrifice plot (Zeth): 1 = Zeth's council asks for a LV30 mage (Iｾﾞｽ); the Zeth turn plays Gﾅｷﾞ 1/2/3 at 1/2/3: → 2, → 3, then Shizuka's duel with Ragarl → 5 (Shizuka taken: unit 17 out) or 4 when Rance stops it (VAR0069 1); any step → 4 when Shizuka (unit 17) is gone; the Zeth turn plays Gﾊﾟﾊﾟｲｱ 1 at 4/5: 4 → 6 (Annis used as the ingredient), 5 → 7 (Shizuka sacrificed); 6 also when Kayblis takes Zeth (Tｹｲﾌﾞﾘｽ). Selects Gﾁｽﾞｺ/Iｾﾞｽ texts; OVER's misfortunes at 6 (Annis) and 7 (Shizuka).</summary>
@@ -809,7 +809,7 @@ public sealed partial class GameState
     public ref Sys3Int F_SpecialRoom_Visited => ref Memory.Var(372);
 
     /// <summary>VAR0373 [C] — Piar's PGs beaten: the first of PG-7 (commander 136) or PG-9 (137) beaten (Gﾊﾟｲｱｰﾙ 11/12 from 死亡捕獲) → 1 (she goes home); the next → 2 (she knew where Piar's ship rests: north of Tearing Forest (91)); Piar's Ship (dungeon 9) opens only at 2, and entering it (Gﾊﾟｲｱｰﾙ 7) sets 3.</summary>
-    public ref Sys3Int F_PG9_State => ref Memory.Var(373);
+    public ref Sys3Int N_PiarPGs_Stage => ref Memory.Var(373);
 
     /// <summary>VAR0374 [C] — Pending Monster Army assault on the humans: set when Miki leaves Leazas Castle (Gﾐｷ 8), when Miki and Kentarou leave (Gﾐｷ 6) or when Piar's unit meets Miki (Gﾊﾟｲｱｰﾙ 6); the Kayblis turn plays Gｹｲﾌﾞﾘｽ 2, which clears it and sets F_Kayblis_War 2.</summary>
     public ref Sys3Int Ev_KayblisAssault => ref Memory.Var(374);
@@ -908,7 +908,7 @@ public sealed partial class GameState
     public ref Sys3Int F_Menad_State => ref Memory.Var(405);
 
     /// <summary>VAR0406 [C] — Menad's first harem scene (Gﾒﾅﾄﾞ 10 while F_Menad_State &lt; 7) seen: 0 → that scene (→ 1), 1 → the usual one; nonzero with Menad serving and F_Menad_State &lt; 7 gives Iｶﾝｶﾞｴ's hint.</summary>
-    public ref Sys3Int F_Menad_Flag => ref Memory.Var(406);
+    public ref Sys3Int F_Menad_HaremSeen => ref Memory.Var(406);
 
     /// <summary>VAR0407 [C] — Menad: 1=becoming a good woman, 2=betrayed by Zarak (bad ending)</summary>
     public ref Sys3Int F_Menad_Fate => ref Memory.Var(407);
@@ -970,7 +970,7 @@ public sealed partial class GameState
     /// <summary>VAR0426 [C] — Maria: harem (Gﾏﾘｱ 10) at 0 or without a tulip → 1, at 1 with a tulip → 2; the reactor accident (Gﾏﾘｱ 2, COM with Maria (unit 16) serving at F_Maria_Tulip 14): 3 = hospitalized (General Hospital built), else 100 = killed; Genius Hospital visits (Gｱｰﾔ) 3 → 4 → 5; COM at 5 plays Gﾏﾘｱ 3 → 6 (discharged); harem at 6 → 7.</summary>
     public ref Sys3Int F_Maria_State => ref Memory.Var(426);
 
-    /// <summary>VAR0427 [C] — Milli's genfluenza cure quest: 1 = Rance saw her at the Genius Hospital (Gｱｰﾔ); 2 = Cell's remedy (Gｾﾙ 2 at 1 while N_Miri_DeadlineWeek is set; deadline +20); 3 = Wenlina met in the Holy Gal's Dungeon (dungeon 23, G2); 4 = cured by Wenlina (Gﾐﾘ 3 from Cﾒｲｷｭｳ with F_Wenlina_CureMilli); COM's illness event Gﾐﾘ 1 only while ≠ 4.</summary>
+    /// <summary>VAR0427 [C] — Milli's genfluenza cure quest: 1 = Rance saw her at the Genius Hospital (Gｱｰﾔ); 2 = Cell's remedy (Gｾﾙ 2 at 1 while N_Milli_DeadlineWeek is set; deadline +20); 3 = Wenlina met in the Holy Gal's Dungeon (dungeon 23, G2); 4 = cured by Wenlina (Gﾐﾘ 3 from Cﾒｲｷｭｳ with F_Wenlina_CureMilli); COM's illness event Gﾐﾘ 1 only while ≠ 4.</summary>
     public ref Sys3Int N_Milli_CureStage => ref Memory.Var(427);
 
     /// <summary>VAR0428 [C] — Maria's tulip/reactor research progress 1-15 (+1 per work session), 100=killed by reactor explosion (bad ending)</summary>
@@ -1031,7 +1031,7 @@ public sealed partial class GameState
     public ref Sys3Int F_Sheila_State => ref Memory.Var(446);
 
     /// <summary>VAR0447 [C] — Sheila's devotees once Helman has fallen (Tﾍﾙﾏﾝ2, the militia defends): 0 → Gｼｰﾗ 1 (→1); nonzero with Sheila taken (F_Sheila_State≠0) and Aristoles (unit 43) not in the forces → Gｼｰﾗ 2, whose humiliating tactic sets 2 and calls the attack off; 0 again by Gｱﾘｽﾄﾚｽ 3</summary>
-    public ref Sys3Int F_Sheila_Flag => ref Memory.Var(447);
+    public ref Sys3Int F_SheilaDevotees_State => ref Memory.Var(447);
 
     /// <summary>VAR0448 [C] — Dead flag: Gﾐｷ 20 jumps to the "Demon Lord's power" audience scene (L_028a5, which sets 2) only at 1, and nothing sets 1 — the scene is unreachable</summary>
     public ref Sys3Int F_Miki_PowerScene => ref Memory.Var(448);
@@ -1291,13 +1291,13 @@ public sealed partial class GameState
     /// <summary>VAR0533 [C] — Enemy commander id for battle slot 4 (0 = none), set by AI/city defence before FIGT; read after battle for capture events.</summary>
     public ref Sys3Int Bt_EnemyParty4 => ref Memory.Var(533);
 
-    /// <summary>VAR0534 [C] — Lei (cmdr 92) / Mary arc: 0 makes Lei's Camilla Unit attack run even after a weekly event; after it, Lei alive and N_Camilla_Stage&gt;5 → Gﾚｲ 1 (→1); 0 again when Lei dies; 1 + own-city search at Rich (15) (Lei alive, N_Camilla_Stage≠100) → Gﾚｲ 2 (→2); &gt;1 opens Mary's House at Rich (Gﾚｲ 3), whose choices set 10 (Mary held at sword point) or 11 (Mary dead), later visits playing that variant</summary>
+    /// <summary>VAR0534 [C] — Lei (cmdr 92) / Mary arc: 0 makes Lei's Camilla Unit attack run even after a weekly event; after it, Lei alive and N_DemonInvasion_Stage&gt;5 → Gﾚｲ 1 (→1); 0 again when Lei dies; 1 + own-city search at Rich (15) (Lei alive, N_DemonInvasion_Stage≠100) → Gﾚｲ 2 (→2); &gt;1 opens Mary's House at Rich (Gﾚｲ 3), whose choices set 10 (Mary held at sword point) or 11 (Mary dead), later visits playing that variant</summary>
     public ref Sys3Int N_Rei_Stage => ref Memory.Var(534);
 
     /// <summary>VAR0535 [C] — Stage-2 demon invasion: 0→1 when story stage 2 starts; 1 → Iﾏｼﾞﾝ 1 (monsters repelled, Miki in the castle, →2); COM: 2 → Iﾏｼﾞﾝ 2 (→3), 3 → Iﾏｼﾞﾝ 3 (→4, N_Miki_Stage 1); Camilla Unit phase runs while &gt;1 and ≠100; 4 → Gｻﾃﾗ 1 (→5); 5 forces the phase's attacks and becomes 6 at its end; &gt;5 enables Gﾚｲ 1 and the Iﾏｼﾞﾝ chain on N_Majin_EventTimer; 100 = over (Kayblis beaten in Gｹｲﾌﾞﾘｽ 1, or Miki gone in Gﾐｷ)</summary>
-    public ref Sys3Int N_Camilla_Stage => ref Memory.Var(535);
+    public ref Sys3Int N_DemonInvasion_Stage => ref Memory.Var(535);
 
-    /// <summary>VAR0536 [C] — Weeks to the next demon-war scene: -1 every week (stops at 0), forced 0 once Zeth and Helman have both fallen while F_DemonWar_Stage&lt;10; at 0 MAIN plays Iﾏｼﾞﾝ 11-20/50/51 by F_DemonWar_Stage (F_Kayblis_War=0, N_Camilla_Stage&gt;5) or Iﾏｼﾞﾝ2 21-30 (F_Kayblis_War=1); each scene sets it again (2-10)</summary>
+    /// <summary>VAR0536 [C] — Weeks to the next demon-war scene: -1 every week (stops at 0), forced 0 once Zeth and Helman have both fallen while F_DemonWar_Stage&lt;10; at 0 MAIN plays Iﾏｼﾞﾝ 11-20/50/51 by F_DemonWar_Stage (F_Kayblis_War=0, N_DemonInvasion_Stage&gt;5) or Iﾏｼﾞﾝ2 21-30 (F_Kayblis_War=1); each scene sets it again (2-10)</summary>
     public ref Sys3Int N_Majin_EventTimer => ref Memory.Var(536);
 
     /// <summary>VAR0537 [C] — Displayed LP year derived from Week.</summary>
@@ -1385,7 +1385,7 @@ public sealed partial class GameState
     public ref Sys3Int N_Aaya_Stage => ref Memory.Var(564);
 
     /// <summary>VAR0565 [C] — Weeks since Gｻｲｾﾞﾙ 1 (Camilla summons Seizel): set 1 there, +1 a week while nonzero; over 40 with F_Seizel_State≠20 COM plays Gｻｲｾﾞﾙ 9 on a 1/10 roll; 0 when Rance finds Seizel (Gｻｲｾﾞﾙ L_025fa)</summary>
-    public ref Sys3Int N_Saizel_Weeks => ref Memory.Var(565);
+    public ref Sys3Int N_Seizel_Weeks => ref Memory.Var(565);
 
     /// <summary>VAR0566 [C] — AL Church: 0 → GAL 1 when story stage 2 starts (→1); 1-2 +1 a week to 3; 3 → GAL 2, the messenger (→4, or 20 if Rance refuses); 4-19 "Go to AL Church" at Temple AL HQ (77) (GAL 7 visits: 5, 6, 7); &lt;19 Leazas pays the 6500K donation each week; 20 = broken with the church (refused, GAL 3, or Cell's GAL 8 once Zeth and Helman have fallen) → COM plays GAL 4 (→21); 21 and 100 run the AL Church phase; winning at 77 below 50 → GAL 10: 50 = Rance poses as the Pope (GAL 6 visit → 51, Cell's scenes), 100 = church crushed, COM plays GAL 5; the HQ's own-city menu while ≠100</summary>
     public ref Sys3Int N_ALChurch_Stage => ref Memory.Var(566);
@@ -1592,13 +1592,13 @@ public sealed partial class GameState
     public ref Sys3Int VAR0633 => ref Memory.Var(633);
 
     /// <summary>VAR0634 [C] — Satella (unit 29) has said her one-shot line to Camilla (cmdr 91) in a battle before story stage 3 (FIGT_M)</summary>
-    public ref Sys3Int F_Satella_LineCmdr91 => ref Memory.Var(634);
+    public ref Sys3Int F_Satella_LineCamilla => ref Memory.Var(634);
 
     /// <summary>VAR0635 [C] — Satella (unit 29) has said her one-shot line to Lei (cmdr 92) in a battle before story stage 3 (FIGT_M)</summary>
-    public ref Sys3Int F_Satella_LineCmdr92 => ref Memory.Var(635);
+    public ref Sys3Int F_Satella_LineLei => ref Memory.Var(635);
 
     /// <summary>VAR0636 [C] — One-shot battle line of unit 30 (Meglass) vs enemy commander 93 already shown.</summary>
-    public ref Sys3Int F_Meglass_LineCmdr93 => ref Memory.Var(636);
+    public ref Sys3Int F_Meglass_LineSieg => ref Memory.Var(636);
 
     /// <summary>VAR0637 [C] — Galtia (unit 41) defected to Kayblis in a defence against Kayblis's army (Gｹｲﾌﾞﾘｽ 7, from FIGT_B:217-231; the unit to status 0, Galtia (commander 131) to 1): Galtia then marches with Kayblis's army (Tｹｲﾌﾞﾘｽ:1360), no longer with his own unit (:226)</summary>
     public ref Sys3Int F_Galtia_DefectedToKayblis => ref Memory.Var(637);
@@ -1658,7 +1658,7 @@ public sealed partial class GameState
     public ref Sys3Int N_Rudrasaum_Turns => ref Memory.Var(655);
 
     /// <summary>VAR0656 [C] — Pool construction: set 2 (ordered, as Bld_* 2 = building) only in Cﾃｲﾄ's pool offer (:588-657), which has no way in (CMD-20), so it stays 0 and the all-built check at :1 is never true</summary>
-    public ref Sys3Int F_Pool_Built => ref Memory.Var(656);
+    public ref Sys3Int Bld_Pool => ref Memory.Var(656);
 
     /// <summary>VAR0657 [C] — Gｱﾘｽ2 zoo menu: Dog Girl visited (hides the option)</summary>
     public ref Sys3Int F_Zoo_DogGirlSeen => ref Memory.Var(657);
@@ -1826,7 +1826,7 @@ public sealed partial class GameState
     public ref Sys3Int F_Cecil_HiredBefore => ref Memory.Var(711);
 
     /// <summary>VAR0712 [C] — Merim / Mill and the Fountain of Growth: 0 → with Mill (unit 25) in the forces, F_Mill_State=1 and F_Merim_Dungeon=1 COM plays Gﾒﾘﾑ 5 (→1); Gﾒﾘﾑ 4 in the dungeon at 0/1: Merim finds the muddy spring (→2), or, Mill in the party (F_Mill_State&lt;2, F_Asuka_State 0/8), Gﾐﾙ 1 at the fountain (→3); 3 → Gﾐﾙ 2 when the search ends (→4; the next Dungeon command also makes it 4)</summary>
-    public ref Sys3Int F_Merim_MillArc => ref Memory.Var(712);
+    public ref Sys3Int F_GrowthFountain_State => ref Memory.Var(712);
 
     /// <summary>VAR0713 [C] — Background CG number of the current dungeon (1008/1016/1017/1025/...), passed to the display routine</summary>
     public ref Sys3Int DungeonBgCg => ref Memory.Var(713);

@@ -230,7 +230,7 @@ public sealed partial class WeeklyEvents
             await EventAsync("Gﾐﾘ.ADV", 1);
             return;
         }
-        if (State.N_Miri_DeadlineWeek != 0 && State.N_Miri_DeadlineWeek < State.Week)       // :525-529
+        if (State.N_Milli_DeadlineWeek != 0 && State.N_Milli_DeadlineWeek < State.Week)       // :525-529
         {
             await EventAsync("Gﾐﾘ.ADV", 2);
             return;
@@ -404,7 +404,7 @@ public sealed partial class WeeklyEvents
             return;
         }
         Rnd(10);                                                                            // :694 QUIRK: STR-14
-        if (State.N_Saizel_Weeks > 40 && State.F_Seizel_State != 20 && State.RetVal == 1)   // :695-699
+        if (State.N_Seizel_Weeks > 40 && State.F_Seizel_State != 20 && State.RetVal == 1)   // :695-699
         {
             await EventAsync("Gｻｲｾﾞﾙ.ADV", 9);
             return;
@@ -559,7 +559,7 @@ public sealed partial class WeeklyEvents
             await EventAsync("Gｶﾄﾞﾐｭｳﾑ.ADV", 7);
             return;
         }
-        if (Unit.Status != 0 && State.F_Mill_State == 1 && State.F_Merim_Dungeon == 1 && State.F_Merim_MillArc == 0) // :848-852
+        if (Unit.Status != 0 && State.F_Mill_State == 1 && State.F_Merim_Dungeon == 1 && State.F_GrowthFountain_State == 0) // :848-852
         {
             await EventAsync("Gﾒﾘﾑ.ADV", 5);
             return;

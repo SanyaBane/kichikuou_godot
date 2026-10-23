@@ -192,7 +192,7 @@ public class WeekLoopDifferentialTests(ITestOutputHelper output)
         state.F_Zeth_War = Pick(0, 0, 1, 2);
         state.F_Zeth_State = Pick(0, 2, 9);
         state.F_Kayblis_War = Pick(0, 1, 2, 3);
-        state.N_Camilla_Stage = Pick(0, 1, 2, 3, 4, 5, 6, 100, 101);
+        state.N_DemonInvasion_Stage = Pick(0, 1, 2, 3, 4, 5, 6, 100, 101);
         state.F_Sieg_State = Pick(0, 1, 2);
         state.F_Seizel_State = Pick(0, 1, 2, 3);
         state.N_Miki_Stage = Pick(0, 1, 2);

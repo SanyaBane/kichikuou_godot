@@ -21,16 +21,16 @@ Tower of Evil (78) through Cascade Bau (83) and Grief Valley (89) are Hornet's; 
 
 **The fixed opening** (milestone 2 ends in W+2's player phase):
 
-- **W, at its end:** `N_Camilla_Stage` 0 → 1 (`MAIN:893-895`).
+- **W, at its end:** `N_DemonInvasion_Stage` 0 → 1 (`MAIN:893-895`).
 - **W+1:** `COM:152-156` plays `GAL` 1 (`N_ALChurch_Stage := 1`, `GAL:366`); at the week's end
   `MAIN:887-892` plays `Iﾏｼﾞﾝ` 1 — two `FIGT_B` defences of Leazas Castle (1) (Monster Generals
-  (commanders 86, 87), then 86 + 87 + La Seizel (commander 90)); `N_Camilla_Stage := 2`, La Seizel
+  (commanders 86, 87), then 86 + 87 + La Seizel (commander 90)); `N_DemonInvasion_Stage := 2`, La Seizel
   (90), Camilla (91) and Lei (92) to status 1 (`Iﾏｼﾞﾝ:84-92`).
 - **W+2:** `COM:52` moves `N_ALChurch_Stage` 1 → 2; `COM:112-116` plays `Iﾏｼﾞﾝ` 2 with a question
-  (`Iﾏｼﾞﾝ:2034-2051`): "Watch For Now" → `N_Camilla_Stage := 3`; "Rape Demon Lord" → `Gﾐｷ` 1:
-  `F_Kayblis_War := 1`, `N_Camilla_Stage := 100` (`Gﾐｷ:3752-3757`) — a game over about six weeks
+  (`Iﾏｼﾞﾝ:2034-2051`): "Watch For Now" → `N_DemonInvasion_Stage := 3`; "Rape Demon Lord" → `Gﾐｷ` 1:
+  `F_Kayblis_War := 1`, `N_DemonInvasion_Stage := 100` (`Gﾐｷ:3752-3757`) — a game over about six weeks
   later (below).
-- **W+3:** `Iﾏｼﾞﾝ` 3 (`COM:107-111`): `N_Camilla_Stage := 4`, `N_Miki_Stage := 1`, Nikkou (item 2)
+- **W+3:** `Iﾏｼﾞﾝ` 3 (`COM:107-111`): `N_DemonInvasion_Stage := 4`, `N_Miki_Stage := 1`, Nikkou (item 2)
   to Rance (`:3305-3317`), `N_Majin_EventTimer := 4` (`:3318`). `GAL` 2 (`COM:157-160`):
   `N_ALChurch_Stage := 4` and a menu (`GAL:980-994`): Keep Donating (−65 a week goes on) or Stop
   Donating (20). That week's Camilla Unit phase (`MAIN:631-815`) has up to three battles: La Seizel
@@ -65,15 +65,15 @@ Open at stage 2, besides what stage 1 has (autosave, income, refill, report, `CO
   player's.
 - **The nation phases** JAPAN, Helman, Patton, Zeth — open once their wars start (next section).
   Kayblis (`:594`) needs stage 3; Creator (`:816`) stays closed; La Vaswald (`:849`) is
-  unreachable [I: `Gｻｲｾﾞﾙ` 9 needs `N_Saizel_Weeks > 40`, which starts after `Iﾏｼﾞﾝ` 16; the slow
+  unreachable [I: `Gｻｲｾﾞﾙ` 9 needs `N_Seizel_Weeks > 40`, which starts after `Iﾏｼﾞﾝ` 16; the slow
   path ends the stage about 38 weeks later — by about three weeks].
-- **The Camilla Unit** (`:631-815`, `N_Camilla_Stage` 2-99; losses go to owner 8, `:663`): Sieg
+- **The Camilla Unit** (`:631-815`, `N_DemonInvasion_Stage` 2-99; losses go to owner 8, `:663`): Sieg
   (commander 93, revived by `Gｼﾞｰｸ` 1 once Lei (92) is dead, `:666-670`), La Seizel (90), Lei (92),
   Camilla (91), each if alive: a refresh, `Y 4, 16` picks a province 1-16, a second roll, `FIGT_B`
   if it is the player's; `Gｶﾐｰﾗ` 1/2 on `RetVal = 2`, else `Gｶﾐｰﾗ` 8.
 - **`Gﾏｼﾞｯｸ` 5** (`:926`) in the Zeth war: a `FIGT_A` duel of a random unit (`Y 4, 48`, up to 10
   tries) against Xacalite (commander 97) (`Gﾏｼﾞｯｸ:2283-2402`).
-- **The demon war** (`:932-985`): open while `F_Kayblis_War = 0`, `N_Camilla_Stage > 5` and
+- **The demon war** (`:932-985`): open while `F_Kayblis_War = 0`, `N_DemonInvasion_Stage > 5` and
   `N_Majin_EventTimer = 0`. The timer drops by 1 at every week's end (saturating at 0, `Sys3Int`);
   while both wars are won and the stage is below 10 it is forced to 0 (`:933-935`). The entries
   are tested from the highest stage down, so one plays per week: `Iﾏｼﾞﾝ` 11-19 set stages 1-9
@@ -183,7 +183,7 @@ state past 9 and the quest at 3) moves the quest to 4.
 
 Three places write `StoryStage := 3`:
 
-1. **`Iｼﾚｲﾌﾞ` 6** (`:1526-1711`; also `F_HQMeeting_Done := 1`): humanity declares war on the
+1. **`Iｼﾚｲﾌﾞ` 6** (`:1526-1711`; also `F_UnitedAudience_Done := 1`): humanity declares war on the
    monsters. `Cﾃｷﾄｼ.ADV:147-157`: an attack at stage 2 on Tower of Evil (78), Grief Valley (89),
    Bone Forest (90) or Tearing Forest (91) plays `Iｼﾚｲﾌﾞ` 5 (Maris refuses, back to the header)
    unless `F_Zeth_War = 2`, `F_Helman_War = 2` and `F_DemonWar_Stage ≥ 10`; then `Iｼﾚｲﾌﾞ` 6 sets
@@ -207,7 +207,7 @@ the gate attack in W+21.
 
 **The first week of stage 3** opens the Kayblis Empire phase (`MAIN:594-630`, after the player
 phase): `Tｹｲﾌﾞﾘｽ:3-8` plays `Gｹｲﾌﾞﾘｽ` 1 (the war council; `F_DemonWar_Stage := 20`,
-`N_Camilla_Stage := 100`, `:2105-2106`), then its army logic (`Gﾊﾞﾎﾞﾗ` 1 and Babolat's
+`N_DemonInvasion_Stage := 100`, `:2105-2106`), then its army logic (`Gﾊﾞﾎﾞﾗ` 1 and Babolat's
 (commander 129) attack at once, `Gｹｯｾﾙ` 1, …) — `Tｹｲﾌﾞﾘｽ` is 1855 lines (N3). Closed from then:
 the Camilla Unit, the demon war, `Iｼﾚｲﾌﾞ` 4/5/6, `GAL` 1.
 
@@ -242,7 +242,7 @@ stage-2 captures start from the owner's own saves (or a harness that sets `Debug
 | 1 | 2118-2687 | `COM:91-95` (stage 1) | the first Leazas week; `F_LeazasRebels_State := 1` |
 | 2 | 2688-3057 | `FIGT_A:192-195` (Oaks (6) won); `ｽﾀMENU:357-358` | stage 2 (above) |
 | 3 | 3058-4465 | `Cﾃｷﾄｼ:456-459` (Custom (21)) | Custom joins without a battle |
-| 4 | 1712-2117 | `COM:192-196` (stage 2, both wars won) | the HQ meeting; `F_HQMeeting_Done := 1` |
+| 4 | 1712-2117 | `COM:192-196` (stage 2, both wars won) | the HQ meeting; `F_UnitedAudience_Done := 1` |
 | 5 | 1468-1525 | `Cﾃｷﾄｼ:148-153` | Maris refuses the gate attack |
 | 6 | 1526-1711 | `Cﾃｷﾄｼ:155-156` | stage 3; the attack goes on |
 | 7 | 149-1467 | `Gｹｲﾌﾞﾘｽ:3128-3129` (Kayblis dead) | stage 4, or ending 8 |
@@ -314,7 +314,7 @@ the player's files — but `FIGTATTK` (the battle's animation, which the scene `
    (1) (`:80-83`, `:596-599`), and both ways to it — the lost battle (`FIGT_B:830-882`) and "Abandon City"
    (`:714-826`) — end the game there with ending 2 (`&#OVER`) at `Prov_Cur = 1`; `FIGT` never writes
    `Prov_Cur`. Dead code. (b) No — they join only in `Gｻﾃﾗ` 1 (`Gｻﾃﾗ:4401-4404`), called only by
-   `MAIN:742-746` at `N_Camilla_Stage = 4` inside the Camilla Unit block, which needs the stage ≠ 100;
+   `MAIN:742-746` at `N_DemonInvasion_Stage = 4` inside the Camilla Unit block, which needs the stage ≠ 100;
    "Rape Demon Lord" sets 100 (`Gﾐｷ:3754`) and nothing lowers it (its writers: `Iﾏｼﾞﾝ:84, 2054, 2096`,
    `Gｻﾃﾗ:3642`, `MAIN:809, 894`, the boot), so `MAIN:986-993` never resets the war and ending 6 follows.
    (c) Yes, both: ending 12 is `Gｿﾙﾆｱ` 10 (a harem visit) with Saulnia's state 2-8 and Katyusha's > 1 →

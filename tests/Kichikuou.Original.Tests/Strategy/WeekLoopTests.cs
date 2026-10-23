@@ -311,7 +311,7 @@ public class WeekLoopTests
     {
         var rig = LeazasRig(1, 5, 1, 16, 2);            // unit 1's refill, then 93: province 5, attack; 92: province 16, no attack
         rig.State.StoryStage = 2;
-        rig.State.N_Camilla_Stage = 3;
+        rig.State.N_DemonInvasion_Stage = 3;
         rig.State.N_Rei_Stage = 1;
         rig.State.Provs[5].Owner = 1;
         rig.State.Provs[16].Owner = 1;
@@ -344,7 +344,7 @@ public class WeekLoopTests
     {
         var rig = LeazasRig(1);
         rig.State.StoryStage = 2;
-        rig.State.N_Camilla_Stage = 1;
+        rig.State.N_DemonInvasion_Stage = 1;
         rig.State.BgmEnabled = 0;
 
         await rig.RunWeekAsync();

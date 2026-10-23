@@ -188,7 +188,7 @@ public class HelmanTests
         var rig = new HelmanRig(1, 1);
         rig.State.F_Helman_War = 2;
         rig.State.F_Sheila_State = 3;
-        rig.State.F_Sheila_Flag = 1;
+        rig.State.F_SheilaDevotees_State = 1;
         rig.Story.OnCall = (file, entry) =>
         {
             if (file == "Gｼｰﾗ.ADV" && entry == 2)
@@ -204,7 +204,7 @@ public class HelmanTests
         Assert.Empty(rig.Random.Draws);
 
         rig.Story.OnCall = null;
-        rig.State.F_Sheila_Flag = 0;
+        rig.State.F_SheilaDevotees_State = 0;
         await rig.DefendersAsync(40);
         Assert.Equal(("Gｼｰﾗ.ADV", 1), rig.Story.Calls[^1]);
         Assert.Equal([58, 59, 0, 0], rig.Party);

@@ -1593,7 +1593,7 @@ public abstract class NationTurnDifferentialTests(ITestOutputHelper output)
         state.F_StesselSheila_Stage = (Sys3Int)(rng.Next(3) == 0 ? 0 : 1);
         state.F_Helman_War = (Sys3Int)(rng.Next(5) == 0 ? 2 : 1);
         state.F_Sheila_State = (Sys3Int)rng.Next(0, 2);
-        state.F_Sheila_Flag = (Sys3Int)rng.Next(0, 2);
+        state.F_SheilaDevotees_State = (Sys3Int)rng.Next(0, 2);
         state.Units[43].Status = (Sys3Int)rng.Next(0, 2);
         state.F_Mineva_State = (Sys3Int)rng.Next(0, 2);
         state.F_Lelyukov_State = (Sys3Int)(rng.Next(3) switch { 0 => 1, 1 => 10, _ => 0 });
@@ -1623,7 +1623,7 @@ public abstract class NationTurnDifferentialTests(ITestOutputHelper output)
         if (rng.Next(2) == 0)
             state.Tmp0001 = (Sys3Int)rng.Next(0, 3);
         if (rng.Next(3) == 0)
-            state.F_Sheila_Flag = (Sys3Int)rng.Next(0, 2);
+            state.F_SheilaDevotees_State = (Sys3Int)rng.Next(0, 2);
         if (rng.Next(3) == 0)
             state.F_Helman_War = (Sys3Int)rng.Next(1, 3);
         for (int c = 22; c <= 59; c++)

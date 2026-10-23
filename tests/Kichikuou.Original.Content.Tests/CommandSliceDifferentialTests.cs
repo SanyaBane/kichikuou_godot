@@ -413,7 +413,7 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
         state.F_Fuuka_State = (Sys3Int)(rng.Next(3) == 0 ? 19 : rng.Next(0, 3));
         state.F_Martina_State = (Sys3Int)(rng.Next(3) == 0 ? 100 : 0);
         state.N_ALChurch_Stage = (Sys3Int)(rng.Next(3) == 0 ? 100 : 0);
-        state.N_Camilla_Stage = (Sys3Int)(rng.Next(3) == 0 ? 100 : 0);
+        state.N_DemonInvasion_Stage = (Sys3Int)(rng.Next(3) == 0 ? 100 : 0);
         state.N_Olhound_Stage = (Sys3Int)(rng.Next(3) switch { 0 => 100, 1 => 0, _ => 1 });
         state.F_Cafe_State = (Sys3Int)(rng.Next(4) switch { 0 => 10, 1 => 11, _ => rng.Next(0, 10) });
         state.F_Papaya_State = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(6, 12) : rng.Next(0, 12));
@@ -521,7 +521,7 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
                      v => state.Bld_SMTower = v, v => state.Bld_MariaLab = v, v => state.Bld_MagicLab = v,
                  })
             set((Sys3Int)(all ? 2 : rng.Next(5) switch { 0 => 1, 1 => 2, _ => 0 }));
-        state.F_Pool_Built = (Sys3Int)(all ? 2 : rng.Next(0, 3));
+        state.Bld_Pool = (Sys3Int)(all ? 2 : rng.Next(0, 3));
         state.BuildWeeksLeft = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(1, 17) : 0);
         state.Units[16].Status = (Sys3Int)(rng.Next(3) == 0 ? 0 : 1);
         state.F_Maria_Tulip = (Sys3Int)rng.Next(0, 4);
@@ -716,11 +716,11 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
         if (state.Ev_CommandMode == 1 && rng.Next(2) == 0)
             state.Dgn_Cur = 10;
         state.Ui_CmdDungeonAvail = (Sys3Int)(rng.Next(10) == 0 ? 0 : 1);
-        state.F_Merim_MillArc = (Sys3Int)rng.Next(0, 5);
+        state.F_GrowthFountain_State = (Sys3Int)rng.Next(0, 5);
         state.Cmdr_Cur = (Sys3Int)rng.Next(0, 221);
         if (rng.Next(8) == 0)
             state.Cmdrs[state.Cmdr_Cur].CgFull = 1137;
-        state.F_PG9_State = (Sys3Int)rng.Next(0, 4);
+        state.N_PiarPGs_Stage = (Sys3Int)rng.Next(0, 4);
         state.N_Soul_Stage = (Sys3Int)(rng.Next(4) == 0 ? 5 : rng.Next(0, 5));
         state.F_HannyKing_State = (Sys3Int)(rng.Next(3) == 0 ? rng.Next(0, 2) : rng.Next(2, 9));
         var dungeon = state.Dgns[state.Dgn_Cur];
@@ -829,7 +829,7 @@ public abstract class CommandSliceDifferentialTests(ITestOutputHelper output)
             default:
                 // A scene of the search may start Mill's part of Merim's story (DGN-11).
                 if (rng.Next(8) == 0)
-                    state.F_Merim_MillArc = 3;
+                    state.F_GrowthFountain_State = 3;
                 break;
         }
     }

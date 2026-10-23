@@ -341,7 +341,7 @@ Quirks a faithful port must keep (or consciously decide on) [C unless tagged]:
 14. **Sｱｲﾃﾑ**: `Unit_Item[100]` alias write on every equip — `Unit_DgnAtkMod[48] := 0` (confirmed from the page layout, 2026-10-10); bottom-bar id 997 unfiltered → "unit/item 997" (`Cmdr_Troops[165]`, unused slots); item-first view reads `Unit_Item[0]` (CMD-17).
 15. **Cﾀｶﾗ**: items of dead units are destroyed, not returned to stock.
 16. Dead code: `Cｹﾝｷｭｳ` call, `Cｼﾊｲﾄｼ.ADV:1182-1235`, Cﾊｰﾚﾑ random stat routine (`:578-633`), Cﾃｷﾄｼ Shangri-La list (`:3800-3812`), WAO stub tails after `\0` in every file.
-17. Dictionary fixes: `DXTalk_RetryWeek` is Lazeal's surrender wait; `VAR0469` = Rance self-talk count (not debug); `F_Warg_State` reset at `Cﾃｷﾄｼ.ADV:357` contradicts "1 = joined" (resolved 2026-10-10 with the attack's port: 1 is the transient "met Warg at Tower of Evil (78)" that `Gﾜｰｸﾞ` 1 sets and `Cﾃｷﾄｼ` clears; 2 = joined); `VAR0063` is the Zeth barrier (`F_ZethBarrier_State`: 0 never met, 1 met, 2 broken); `F_Pool_Built` never set; `Hist_Cur` stale after harem.
+17. Dictionary fixes: `DXTalk_RetryWeek` is Lazeal's surrender wait; `VAR0469` = Rance self-talk count (not debug); `F_Warg_State` reset at `Cﾃｷﾄｼ.ADV:357` contradicts "1 = joined" (resolved 2026-10-10 with the attack's port: 1 is the transient "met Warg at Tower of Evil (78)" that `Gﾜｰｸﾞ` 1 sets and `Cﾃｷﾄｼ` clears; 2 = joined); `VAR0063` is the Zeth barrier (`F_ZethBarrier_State`: 0 never met, 1 met, 2 broken); `Bld_Pool` never set; `Hist_Cur` stale after harem.
 
 ## 9. Porting proposal
 

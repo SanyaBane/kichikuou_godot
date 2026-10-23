@@ -34,7 +34,7 @@ Main procedures of `Cﾒｲｷｭｳ.ADV` (labels are byte addresses; lines are 
 
 | Label / lines | Purpose |
 |---|---|
-| (top) `:1-166` | Entry gates (`Ev_CommandMode = 2` returns; already searched this week → `L_07418`; Piar's Ship (Dgn 9) closed unless `F_PG9_State = 2`), resets `DgnRun_MerimInParty`, stale-cursor Gunagan test `:11-13`, map camera (`M` ops 1, 10), `Ui_CmdDungeonAvail := 0`, dungeon name into string 8 and `DungeonBgCg` per dungeon (`:26-150`), Cafe-guide mode (`:151-166`) |
+| (top) `:1-166` | Entry gates (`Ev_CommandMode = 2` returns; already searched this week → `L_07418`; Piar's Ship (Dgn 9) closed unless `N_PiarPGs_Stage = 2`), resets `DgnRun_MerimInParty`, stale-cursor Gunagan test `:11-13`, map camera (`M` ops 1, 10), `Ui_CmdDungeonAvail := 0`, dungeon name into string 8 and `DungeonBgCg` per dungeon (`:26-150`), Cafe-guide mode (`:151-166`) |
 | `L_005b6` `:167-237` | Dispatch: Thieves' Hideout (Dgn 1) → `L_03cbd`; prologue (`StoryStage = 0`) returns; event-only dungeons call their scene and return; Isolated Shrine Island (Dgn 15) / Giant Battleship (Dgn 16) pre-scenes; Ancient Ruins (Dgn 30) God's Door discovery `L_04ddc` |
 | `L_0076a` `:238-305` | Dungeon screen: name, state (Unsearched / In progress / Fully searched), main menu: Start Search, Bring/Leave Merim, Bring Pink Cow, God's Door, Return (`Return` gives the week's action back: `:302`) |
 | `L_008d1` `:306-368` | Start search: dialogue, Snow Charm advice (`L_06fe4`) for Snow Dungeon (Dgn 4) / Ho Raga's Tower (Dgn 5) / Giant Battleship (Dgn 16), squad pick `Sﾌﾞﾀｲ` (1 unit, mode 3), refusals by units Satella (29) / Meglass (30) / Miki (32) / Galtia (41) / Seizel Sisters (42) |
@@ -189,7 +189,7 @@ or any `T*` file [C].
 | unit (cursor `Unit_Cur`) | `Unit_Troops`, `Unit_Item`, `Unit_Status`, `Unit_FaceCg` | `Unit_Troops` (blizzard), `Unit_Status := 1` (refusals), `Unit_MaxHP/Atk/Def/Magic` (inscriptions `:4688`, `:4848`, `:5031-5034`) |
 | enemy commander (cursor `Cmdr_Cur`) | `Cmdr_MaxHP`, `Cmdr_CgFull` | `Cmdr_Troops`, `Cmdr_HP` of the monster record (`:1192-1195`); whole record 100 by the setters |
 | items (cursor `Item_Cur`) | `Item_Holder` of 1, 2, 9-11, 15-18, 21-23, 28-30, 33-34, 36, 38-39, 41-42, 45, 48 | `Item_Holder := 100` (treasures), `:= 0` (statues placed); `FogCard_Price := 120` |
-| story | `StoryStage`, `DateWeek`, `Ev_CommandMode`, `F_Merim_*`, `N_Merim_Inscriptions`, `F_Kou_State`, `F_Fuuka_*`, `F_Seizel_State`, `F_HannyKing_State`, `F_Kaybwan/Kaybnyan_State`, `N_Aaya_Stage`, `N_Melfeis_Stage`, `N_Soul_Stage`, `F_PG9_State`, `F_SillCow_State`, `F_Ruberan_State`, `F_Wenlina_CureMilli`, `N_Milli_CureStage`, `Bld_Hospital`, `DebugMode` | `Ev_CommandMode := 0` (`:989`), `F_Merim_MillArc` 3→4 (`:8-10`), `F_Merim_Dungeon` 2/3, `N_Merim_Inscriptions`, `F_GodsDoor_Quest` 4/6, `F_Gunagan_State` |
+| story | `StoryStage`, `DateWeek`, `Ev_CommandMode`, `F_Merim_*`, `N_Merim_Inscriptions`, `F_Kou_State`, `F_Fuuka_*`, `F_Seizel_State`, `F_HannyKing_State`, `F_Kaybwan/Kaybnyan_State`, `N_Aaya_Stage`, `N_Melfeis_Stage`, `N_Soul_Stage`, `N_PiarPGs_Stage`, `F_SillCow_State`, `F_Ruberan_State`, `F_Wenlina_CureMilli`, `N_Milli_CureStage`, `Bld_Hospital`, `DebugMode` | `Ev_CommandMode := 0` (`:989`), `F_GrowthFountain_State` 3→4 (`:8-10`), `F_Merim_Dungeon` 2/3, `N_Merim_Inscriptions`, `F_GodsDoor_Quest` 4/6, `F_Gunagan_State` |
 | ui | `Ui_CmdDungeonAvail` | `:= 0` on entry (`:25`), `:= 1` on Return / Thieves' Hideout (Dgn 1) (`:169`, `:176`, `:302`); `Ui_MouseX/Y`, `Ui_WaoOp` |
 | scratch | — | `RetVal`, `CallArg`, `Tmp0690` (roll copies), `Tmp0621` (quiz count), `Tmp0001-0004` (door overlays `:3834-3849`), `Tmp0019/0020` (pointer, `:5647`), `MapTargetX/Y`, `MapCamX/Y` |
 | strings | — | `MS 8` dungeon name (`MS 9` for Piar's Ship (Dgn 9), `:70`), `MS 10` "Monsters" (`:27`), `MS 4/5` + `MM` boss names into the commander-100 name slots, `MM 1` unit name (`:155`, `:343`) |
@@ -291,7 +291,7 @@ through stubs, so rules and drawing separate cleanly. Quirks to reproduce or dec
 14. Treasures gated on `Item_Holder = 0` (dungeons Summit's Mouth (8), Mos's Dungeon (20), Maid
     Graveyard (21), Dangerous Hole (24) F10, Titi Lake / Haniwa Temple (25), Ancient Ruins (30))
     can be found again after `Cﾀｶﾗ` drops an item held by a status-0 unit [I].
-15. `F_Merim_MillArc` 3→4 on every entry (`:8-10`), so the end-of-search `Gﾐﾙ` 2 (`:990`) fires
+15. `F_GrowthFountain_State` 3→4 on every entry (`:8-10`), so the end-of-search `Gﾐﾙ` 2 (`:990`) fires
     only if 3 was set during this run [I]. Who sets it mid-run is unknown.
 16. KD: "take by force" or a wrong answer sets `DgnRun_Floor := 20` (`:2420`, `:2694`); the quiz
     can be retaken on every visit; the prize needs `F_GodsDoor_Quest > 1` and item 17 not owned [C].
@@ -341,12 +341,12 @@ reproduce the conditional items and their order); key waits through WAO op 1.
 
 ## 9. Open questions
 
-1. Who sets `F_Merim_MillArc = 3` during a search, so that `Gﾐﾙ` 2 at `:990` can fire? (`Gﾐﾙ.ADV:917`.)
+1. Who sets `F_GrowthFountain_State = 3` during a search, so that `Gﾐﾙ` 2 at `:990` can fire? (`Gﾐﾙ.ADV:917`.)
    Answered 2026-10-23 from `Cﾒｲｷｭｳ.ADV:725-728`, `Gﾒﾘﾑ.ADV:216-227, 283-284` and
    `Gﾐﾙ.ADV:915-917, 1045-1056`: `Gﾐﾙ` 1, called by `Gﾒﾘﾑ` 4, which the Uncurse Dungeon (dungeon 10)
    plays on floor 27 (the Fountain of Growth) with Merim in the party. The first such visit sets the
    arc to 2 (`L_00562`); a later one sets 3 through `Gﾐﾙ` 1 when Mill (unit 25) is the searching unit
-   (`Bt_PlayerParty1 = 25`), `F_Mill_State < 2`, no Milli deadline runs (`N_Miri_DeadlineWeek = 0`)
+   (`Bt_PlayerParty1 = 25`), `F_Mill_State < 2`, no Milli deadline runs (`N_Milli_DeadlineWeek = 0`)
    and `F_Asuka_State` is 0 or 8. `Gﾐﾙ` 1 grows Mill (her CGs, `MaxTroops + 230`, `MaxHP + 2`) and
    `:990` plays `Gﾐﾙ` 2 (the follow-up at Leazas Castle (1), arc 4) when that search ends by Return
    (`L_018cd`, `:966-998`). The scene is reachable; `:8-10` drops only the follow-up, when the search
@@ -362,7 +362,7 @@ reproduce the conditional items and their order); key waits through WAO op 1.
 5. `VAR0427` (now `N_Milli_CureStage`; was "Mill quest chain") was unnamed (G); it gates `G2` 2 (`:617`) and `Gﾐﾘ` 3 (`:1808`).
    Answered 2026-10-23 from its every write and test: it is the stage of **Milli's (unit 24) cure**,
    not a Mill quest. 0 at boot (`ｽﾀｰﾄ.ADV:428`); Milli falls ill in `Gﾐﾘ` 1 (`COM.ADV:519-523`, while
-   it is not 4; `Gﾐﾘ.ADV:1356-1359`: status 0, `N_Miri_DeadlineWeek := Week + 20`); 1 = Milli's Room
+   it is not 4; `Gﾐﾘ.ADV:1356-1359`: status 0, `N_Milli_DeadlineWeek := Week + 20`); 1 = Milli's Room
    visited at the Genius Hospital (`Gｱｰﾔ.ADV:89-93, 989-991`); 2 = Cell gives 20 weeks more
    (`Gｾﾙ.ADV:2873-2874, 6010-6012`, from 1); 3 = Talk with Wenlina in the Holy Gal's Dungeon
    (dungeon 23) while the deadline runs (`G2.ADV:2794-2796, 2944-2945`, from 0, 1 or 2). At 3 a search

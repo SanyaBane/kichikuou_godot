@@ -209,11 +209,6 @@ Research the agent can do:
 The 2026-10-11 list was answered on 2026-10-23 (each answer in place in its doc; new quirks BFL-26,
 CMD-26, CMD-27, EVT-21 to EVT-24). Left from it:
 
-- **Rename proposals** — *owner* (whether), then *agent*: the dictionary check found names that mislead —
-  `N_Camilla_Stage` (the demon invasion's stage), `F_PG9_State` (counts PG-7 and PG-9 defeats),
-  `F_Merim_MillArc`, `F_Sheila_Flag`, `F_Pool_Built` (a building, `Bld_*`), `N_Saizel_Weeks` (vs
-  `F_Seizel_State`), `F_Satella_LineCmdr91/92`, `F_HQMeeting_Done`, `N_Miri_DeadlineWeek`, `F_Menad_Flag`;
-  a rename touches the generated state and the code that uses it.
 - stage-2-sweep.md, open question 3: can `Gﾅｷﾞ` 3 (`:3424-3427`, Nagi and Ragarl back at status 1) follow
   Nagi's death? Not traced.
 - A battle with no enemy (CMD-26's Use Force) has never been run in the port or our screens — *agent*, a

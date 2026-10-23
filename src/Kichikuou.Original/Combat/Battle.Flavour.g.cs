@@ -553,12 +553,12 @@ public sealed partial class Battle
     /// </summary>
     private async Task FlavourUnit29Async()
     {
-        if (State.StoryStage < 3 && State.Cmdr_Cur == 91 && State.F_Satella_LineCmdr91 == 0) // :1255
+        if (State.StoryStage < 3 && State.Cmdr_Cur == 91 && State.F_Satella_LineCamilla == 0) // :1255
         {
             await FlavourSatellaVsCmdr91Async(); // @L_0ba24
             return;
         }
-        if (State.StoryStage < 3 && State.Cmdr_Cur == 92 && State.F_Satella_LineCmdr92 == 0) // :1258
+        if (State.StoryStage < 3 && State.Cmdr_Cur == 92 && State.F_Satella_LineLei == 0) // :1258
         {
             await FlavourSatellaVsCmdr92Async(); // @L_0bb6d
             return;
@@ -584,7 +584,7 @@ public sealed partial class Battle
     /// </summary>
     private async Task FlavourUnit30Async()
     {
-        if (State.StoryStage < 3 && State.Cmdr_Cur == 93 && State.F_Meglass_LineCmdr93 == 0) // :1415
+        if (State.StoryStage < 3 && State.Cmdr_Cur == 93 && State.F_Meglass_LineSieg == 0) // :1415
         {
             await FlavourUnit30VsCmdr93Async(); // @L_0bc93
             return;
@@ -3048,11 +3048,11 @@ public sealed partial class Battle
     }
 
     /// <summary>
-    /// FlavourText — unit 29 vs commander 91, one-shot scene (sets <c>F_Satella_LineCmdr91</c>) (<c>L_0ba24</c>): <c>FIGT_M.ADV:9677-9754</c> (spec 02 §5.4).
+    /// FlavourText — unit 29 vs commander 91, one-shot scene (sets <c>F_Satella_LineCamilla</c>) (<c>L_0ba24</c>): <c>FIGT_M.ADV:9677-9754</c> (spec 02 §5.4).
     /// </summary>
     private async Task FlavourSatellaVsCmdr91Async()
     {
-        State.F_Satella_LineCmdr91 = 1; // :9678
+        State.F_Satella_LineCamilla = 1; // :9678
         await SayAsync(FlavourWindow.Left, 9681);
         await SayAsync(FlavourWindow.Right, 9686, 9689, 9698);
         await SayAsync(FlavourWindow.Left, 9707);
@@ -3062,11 +3062,11 @@ public sealed partial class Battle
     }
 
     /// <summary>
-    /// FlavourText — unit 29 vs commander 92, one-shot scene (sets <c>F_Satella_LineCmdr92</c>) (<c>L_0bb6d</c>): <c>FIGT_M.ADV:9755-9825</c> (spec 02 §5.4).
+    /// FlavourText — unit 29 vs commander 92, one-shot scene (sets <c>F_Satella_LineLei</c>) (<c>L_0bb6d</c>): <c>FIGT_M.ADV:9755-9825</c> (spec 02 §5.4).
     /// </summary>
     private async Task FlavourSatellaVsCmdr92Async()
     {
-        State.F_Satella_LineCmdr92 = 1; // :9756
+        State.F_Satella_LineLei = 1; // :9756
         await SayAsync(FlavourWindow.Left, 9759);
         await SayAsync(FlavourWindow.Right, 9768, 9775, 9782);
         await SayAsync(FlavourWindow.Left, 9793, 9796);
@@ -3074,11 +3074,11 @@ public sealed partial class Battle
     }
 
     /// <summary>
-    /// FlavourText — unit 30 vs commander 93, one-shot scene (sets <c>F_Meglass_LineCmdr93</c>) (<c>L_0bc93</c>): <c>FIGT_M.ADV:9826-9899</c> (spec 02 §5.4).
+    /// FlavourText — unit 30 vs commander 93, one-shot scene (sets <c>F_Meglass_LineSieg</c>) (<c>L_0bc93</c>): <c>FIGT_M.ADV:9826-9899</c> (spec 02 §5.4).
     /// </summary>
     private async Task FlavourUnit30VsCmdr93Async()
     {
-        State.F_Meglass_LineCmdr93 = 1; // :9827
+        State.F_Meglass_LineSieg = 1; // :9827
         await SayAsync(FlavourWindow.Left, 9830);
         await SayAsync(FlavourWindow.Right, 9835);
         await SayAsync(FlavourWindow.Left, 9844);

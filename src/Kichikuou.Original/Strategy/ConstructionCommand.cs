@@ -21,8 +21,8 @@ public sealed class ConstructionCommand(OriginalScriptContext script) : CommandF
     /// <summary><c>Cﾃｲﾄ.ADV:1-286</c>: the command, up to its return.</summary>
     public async Task RunAsync()
     {
-        // QUIRK: CMD-20 — F_Pool_Built is never 2 (the pool's offer is dead), so this never holds.
-        if (State.Bld_GirlsAcademy == 2 && State.Bld_Library == 2 && State.Bld_Hospital == 2 && State.F_Pool_Built == 2
+        // QUIRK: CMD-20 — Bld_Pool is never 2 (the pool's offer is dead), so this never holds.
+        if (State.Bld_GirlsAcademy == 2 && State.Bld_Library == 2 && State.Bld_Hospital == 2 && State.Bld_Pool == 2
             && State.Bld_SMTower == 2 && State.Bld_MariaLab == 2 && State.Bld_MagicLab == 2)   // :1-59
         {
             await RanceAsync();

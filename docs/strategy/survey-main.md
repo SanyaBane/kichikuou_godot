@@ -85,10 +85,10 @@ Main procedures:
 | 16 | Patton Army: cmdrs Patton (54) through Hanty (57); `Tﾊﾟｯﾄﾝ` | `F_PattonArmy_State ≠ 0` | `:454-506` |
 | 17 | Zeth: BGM 10/12; capital = first of Zeth Palace (69) / Chizuko's Tower (68) / Magic's Tower (66) / Papaya's Tower (70) / Nagi's Tower (67) owned by 7; cmdrs Chizuko (101) through Shitareriha (128), Zamoor (165) through Rue (180); `Tｾﾞｽ` | `F_Zeth_War = 1` | `:507-593` |
 | 18 | Kayblis: `Ev_PhaseNation := 8`, string 10 := "Kayblis Unit", `Tｹｲﾌﾞﾘｽ` (no refresh here) | `StoryStage = 3` & `F_Kayblis_War ∈ {0, 2}` | `:594-630` |
-| 19 | Camilla Unit: **inline AI** — cmdrs Lei (92) / Sieg (93) / La Seizel (90) / Lei (92) / Camilla (91) each pick province rnd(16), attack via `FIGT_B` if player-owned and a roll passes; Sieg/Seizel/Satella/Rei/Camilla scenes | `N_Camilla_Stage > 1` & `≠ 100` | `:631-815` |
+| 19 | Camilla Unit: **inline AI** — cmdrs Lei (92) / Sieg (93) / La Seizel (90) / Lei (92) / Camilla (91) each pick province rnd(16), attack via `FIGT_B` if player-owned and a roll passes; Sieg/Seizel/Satella/Rei/Camilla scenes | `N_DemonInvasion_Stage > 1` & `≠ 100` | `:631-815` |
 | 20 | Creator: `Ev_PhaseNation := 11`, string 10 := "Creator", `Tﾙﾄﾞﾗ` | `StoryStage = 4` | `:816-847` |
 | 21 | La Vaswald: pan to `LaVaswald_Prov`, `Gｻｲｾﾞﾙ` 12 | La Vaswald (commander 98) alive | `:848-883` |
-| 22 | `Iﾏｼﾞﾝ` 1 (BGM 16) / `N_Camilla_Stage 0 → 1` | `StoryStage = 2` & Camilla 1 / 0 | `:887-895` |
+| 22 | `Iﾏｼﾞﾝ` 1 (BGM 16) / `N_DemonInvasion_Stage 0 → 1` | `StoryStage = 2` & Camilla 1 / 0 | `:887-895` |
 | 23 | Sill kidnapping chain `Gｼｨﾙ` 21-27 at weeks >10/20/30/35/40/45/50 | `F_Helman_War ≠ 2`, `F_SillKidnap_Stage = 0..6` | `:896-925` |
 | 24 | `Gﾏｼﾞｯｸ` 5 | `F_Magic_State ∈ {2,3}` & `N_Xacalite_KillsLeft ≠ 0` | `:926-931` |
 | 25 | `N_Majin_EventTimer −= 1` (floors at 0); forced 0 when both wars won and `F_DemonWar_Stage < 10` | — | `:932-935` |
@@ -98,7 +98,7 @@ Main procedures:
 
 Every nation banner calls `L_01881` (date) and pans the camera (`M` ops 1, 10) to the nation's
 capital [C]. Gating flags are only written by story scenes and `T*` files, never here, except
-`StoryStage 99 → 1` (`:70-71`) and `N_Camilla_Stage` (`:808-810`, `:893-895`) [C].
+`StoryStage 99 → 1` (`:70-71`) and `N_DemonInvasion_Stage` (`:808-810`, `:893-895`) [C].
 
 ### 2.2 Player phase (`COMMAND.ADV`)
 
@@ -135,7 +135,7 @@ script count]. Callers set `Ev_Entry` and page-call the file; there is no centra
 | Section | Lines | Behaviour |
 |---|---|---|
 | Early exits | `:1-10` | `Week = 9` → `Iｼﾚｲﾌﾞ` 10, return; `StoryStage = 0` → `Gｿｳﾙ` 4 (weekly thieves message), return — **upkeep below is skipped** |
-| Upkeep | `:11-84` | ninja-used flags := 99 then 0 per available ninja; clear garrison battle vars; Goliath 2→1; counters (`N_Melfeis_Stage`, `N_Isoroku_Stage 5→6`, `N_Aviator_StudyWeeks −1`, `N_Miki_Timer −1` until 5, `N_Aaya_Stage`, `N_Saizel_Weeks`, `N_ALChurch_Stage <3`, `N_Soul_Stage`); Lady Caravan walk (rnd 2 = ±1 province, or +1 after capture); `TangeDog_UsedThisWeek := 0`; kaiju attack growth (items 26/27, cap 2000) |
+| Upkeep | `:11-84` | ninja-used flags := 99 then 0 per available ninja; clear garrison battle vars; Goliath 2→1; counters (`N_Melfeis_Stage`, `N_Isoroku_Stage 5→6`, `N_Aviator_StudyWeeks −1`, `N_Miki_Timer −1` until 5, `N_Aaya_Stage`, `N_Seizel_Weeks`, `N_ALChurch_Stage <3`, `N_Soul_Stage`); Lady Caravan walk (rnd 2 = ±1 province, or +1 after capture); `TangeDog_UsedThisWeek := 0`; kaiju attack growth (items 26/27, cap 2000) |
 | Tier 1 "all that apply" | `:85-300` | 38 calls; each sets `Ev_WeeklyEventDone := 1` and execution **continues**, so several scenes may play in one week; `:301-303` return if any fired |
 | Tier 2 "first match" | `:304-946` | 111 calls; each followed by `%0`, except 5 that fall through (`Gﾕｳﾚｲ` 6 `:400`, `Gﾌﾘｰｸ` 2 `:406`, `Gｱﾋﾞｧﾄｰﾙ` 3 `:662`, `Gｱｰﾔ` 3 `:666`, `Gｵｳｼﾞ` 1 `:940`); 11 random rolls interleaved (§5); `N_Miki_Stage 4 → 5` returns without a scene (`:557-560`) |
 
@@ -216,7 +216,7 @@ Cursor leftovers that later code may see: `Unit_Cur = 51` after the Leazas statu
 | `COM.ADV:59` | 2 | Lady Caravan walk, `F_Cafe_State < 10` (upkeep, every normal week) |
 | `COM.ADV:459, 465, 471` | 4, 2, 5 | Tier 2, unconditional once reached: Kapala, Menad, Suzume |
 | `COM.ADV:612, 618, 633` | 15, 3, 10 | Pastel, Merim, Barres |
-| `COM.ADV:694` | 10 | Seizel (`N_Saizel_Weeks > 40`) |
+| `COM.ADV:694` | 10 | Seizel (`N_Seizel_Weeks > 40`) |
 | `COM.ADV:742` | 5 | only if Mars the Great (unit 26) alive (Mars scene) |
 | `COM.ADV:800` | 2 | Elena 4 (roll 1) / 5 (roll 2) |
 | `COM.ADV:878` | 10 | one roll shared by Leila (1), Brittany (2), Julia (3), Horaga (4), Magic (5) |
