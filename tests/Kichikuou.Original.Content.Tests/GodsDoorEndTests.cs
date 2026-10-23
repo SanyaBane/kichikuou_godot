@@ -20,12 +20,10 @@ namespace Kichikuou.Original.Content.Tests;
 /// </summary>
 public class GodsDoorEndTests(ITestOutputHelper output)
 {
-    [Fact]
+    [ScenarioFact]
     public async Task With_Kou_at_8_Ho_Raga_s_Bonsai_Statue_opens_God_s_Door_into_Iｶﾐ()
     {
         var game = await WithTheBonsaiStatueAsync();
-        if (game is null)
-            return;
         var s = game.State;
         await CreatorPhaseAsync(game, 3);                               // S4+1's phase 2: the ruins still spared
         await NewWeekAsync(game);                                       // S4+2
@@ -69,14 +67,12 @@ public class GodsDoorEndTests(ITestOutputHelper output)
     /// and at the door no hint comes (<c>Cﾒｲｷｭｳ:3874-3876</c> needs Kou past 9): three statues placed,
     /// the door stays shut and Enter is never offered.
     /// </summary>
-    [Theory]
+    [ScenarioTheory]
     [InlineData(7, 2)]
     [InlineData(0, 0)]
     public async Task With_Kou_below_8_Ho_Raga_keeps_the_statue_and_God_s_Door_stays_shut(int kou, int dead)
     {
         var game = await StageFourAsync(kou);
-        if (game is null)
-            return;
         var s = game.State;
         Assert.Equal(0, s.F_Kou_State.Value);                           // Gﾙﾄﾞﾗ.ADV:468-470, or never set
         Assert.Equal(dead, s.F_Kouhime_Dead.Value);
@@ -122,12 +118,10 @@ public class GodsDoorEndTests(ITestOutputHelper output)
     /// (<c>Gﾎﾗｶﾞ:276-291, 358-359</c>): the quest falls from 6 back to 5, and Enter
     /// (<c>Cﾒｲｷｭｳ:3921-3925</c>) hides until the statue is placed again.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Ho_Raga_gives_the_Bonsai_Statue_again_after_it_is_placed()
     {
         var game = await WithTheBonsaiStatueAsync();
-        if (game is null)
-            return;
         var s = game.State;
         await CreatorPhaseAsync(game, 3);
         await NewWeekAsync(game);                                       // S4+2: the door opened, then left
@@ -175,12 +169,10 @@ public class GodsDoorEndTests(ITestOutputHelper output)
     /// 9; the sweep's quest table): with Ho Raga's refusal behind him (quest 3), Rance goes to the
     /// door first, hears Kouhime name the Bonsai Statue still missing, and Ho Raga then hands it over.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Kou_s_hint_at_the_door_sets_quest_4_and_Ho_Raga_then_gives_the_statue()
     {
         var game = await StageFourAsync(kou: 8, quest: 3);
-        if (game is null)
-            return;
         var s = game.State;
         await NewWeekAsync(game);                                       // S4+1
         Assert.Equal(11, s.F_Kou_State.Value);
@@ -205,12 +197,10 @@ public class GodsDoorEndTests(ITestOutputHelper output)
     /// "Get Gold Statue" is offered only with Rance (unit 1) leading (<c>Gﾎﾗｶﾞ:276-282</c>): Bound
     /// (unit 3) opens the gate (<c>:4-6</c>) but meets Ask Question and Leave only.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Ho_Raga_offers_the_statue_only_to_Rance()
     {
         var game = await StageFourAsync(kou: 8);
-        if (game is null)
-            return;
         await NewWeekAsync(game);
         HoRagasTower(game, searcher: 3);
         game.Input.Menu.Enqueue("Gﾎﾗｶﾞ.ADV", 284);
@@ -226,11 +216,9 @@ public class GodsDoorEndTests(ITestOutputHelper output)
     /// S4 with Kou at 8, then S4+1: <c>COM</c> (<c>Gｺｳﾋﾒ</c> 6), Ho Raga's Tower with Rance — Get
     /// Gold Statue, Leave. Asserts the way there.
     /// </summary>
-    private static async Task<EndGame?> WithTheBonsaiStatueAsync()
+    private static async Task<EndGame> WithTheBonsaiStatueAsync()
     {
         var game = await StageFourAsync(kou: 8);
-        if (game is null)
-            return null;
         var s = game.State;
         Assert.Equal(10, s.F_Kou_State.Value);                          // Gﾙﾄﾞﾗ.ADV:548
         await NewWeekAsync(game);                                       // S4+1
@@ -257,11 +245,9 @@ public class GodsDoorEndTests(ITestOutputHelper output)
     /// Warg at stage 2, the debug commands on (Repel) and the Gold for the pickers; then S4 —
     /// <c>死亡捕獲</c> (stage 4) and the first Creator phase (<c>Gﾙﾄﾞﾗ</c> 1).
     /// </summary>
-    private static async Task<EndGame?> StageFourAsync(int kou, int quest = 2)
+    private static async Task<EndGame> StageFourAsync(int kou, int quest = 2)
     {
         var game = await EndGame.BootAsync();
-        if (game is null)
-            return null;
         var s = game.State;
         s.StoryStage = 3;
         for (int p = 1; p <= 91; p++)

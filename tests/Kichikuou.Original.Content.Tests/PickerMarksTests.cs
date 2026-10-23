@@ -94,12 +94,10 @@ public class PickerMarksTests(ITestOutputHelper output)
     /// while the talk is left and none once it is spent (nothing is run then); the game's state is untouched; a switch of
     /// "New scenes first" reads the kept trees as a fresh run with it would; the read-ahead goes through every talk and visit.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_pickers_openings_mark_what_they_offer_and_leave_the_state_alone()
     {
         var game = await EndGame.BootAsync();
-        if (game is null)
-            return;
         var s = game.State;
         s.StoryStage = 1;
         foreach (int unit in new[] { 1, 2, 12, 16 })

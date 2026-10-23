@@ -27,11 +27,9 @@ public class GalleryTests
 
     private static readonly (int X, int Y) Exit = (595, 12);
 
-    private static async Task<EndGame?> AtTheTitleAsync(params int[] seen)
+    private static async Task<EndGame> AtTheTitleAsync(params int[] seen)
     {
         var game = await EndGame.BootAsync(newGame: false);
-        if (game is null)
-            return null;
         foreach (int cg in seen)
             game.State.CgSeen[cg].CgSeen = 1;
         return game;
@@ -63,12 +61,10 @@ public class GalleryTests
     /// locked entry is not lit and ignores a click; Exit waits for the release and returns with
     /// <c>Ev_Entry</c> 0.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Entries_never_loaded_keep_the_lock_and_ignore_a_click()
     {
         var game = await AtTheTitleAsync(101, 162, 862);
-        if (game is null)
-            return;
         game.State.Ev_Entry = 5;
         Choose(game, Entry(2));                                         // CG 102, never loaded
         Choose(game, Exit);
@@ -96,12 +92,10 @@ public class GalleryTests
     /// 131 and the prompt); a left click goes back to the page without closing the window (G1:
     /// <c>Ui_WinType</c> stays 31), the page drawn again (<c>G 841</c>, <c>SS 0</c>, the sheet).
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task A_left_click_at_the_prompt_goes_back_without_closing_the_window()
     {
         var game = await AtTheTitleAsync(101);
-        if (game is null)
-            return;
         Choose(game, Entry(1));
         game.Input.Pointer.Click(300, 200);
         Choose(game, Exit);
@@ -127,12 +121,10 @@ public class GalleryTests
     /// drawn again, and nothing of the world changed (§2.4: EVT-07 does not hold) — no map, no other
     /// file. The CG shown counts again (STR-43).
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task A_right_click_replays_the_scene_from_its_entry_and_comes_back()
     {
         var game = await AtTheTitleAsync(101);
-        if (game is null)
-            return;
         var before = World(game.State);
         Choose(game, Entry(1));
         game.Input.Pointer.RightClick(300, 200);
@@ -160,12 +152,10 @@ public class GalleryTests
     /// CG 131. Entry 3, CG 133, replays text kept in <c>CG.ADV</c> itself (<c>L_03453</c>, G7) and
     /// calls no scene.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task A_tab_shows_its_page_and_an_entry_there_may_replay_text_kept_in_the_gallery()
     {
         var game = await AtTheTitleAsync(131, 133);
-        if (game is null)
-            return;
         Choose(game, Tab(2));
         Choose(game, Entry(1));
         game.Input.Pointer.Click(300, 200);

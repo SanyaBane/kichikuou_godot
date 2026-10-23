@@ -31,12 +31,11 @@ public class NewGameStateTests(ITestOutputHelper output)
     private static readonly HashSet<string> Unknowable =
         ["SpecBaseline", "SpecGraphics", "SpecCpu", "Tmp0003", "Tmp0020", "Tmp0039"];
 
-    [Fact]
+    [CaptureGroupFact("scenes")]
     public async Task A_new_game_enters_the_prologue_in_the_original_state()
     {
         var captures = Captures();
-        if (captures.Count == 0)
-            return;
+        Assert.NotEmpty(captures);
 
         Compare(captures, await NewGameAsync(), Unknowable);
     }
@@ -83,13 +82,12 @@ public class NewGameStateTests(ITestOutputHelper output)
     /// and <c>Tmp0039</c> (that capture's owner watched a map scroll on the title first, see
     /// <see cref="Unknowable"/>).
     /// </summary>
-    [Fact]
+    [CaptureGroupFact("scenes")]
     public async Task Start_on_the_title_enters_the_prologue_in_the_original_state()
     {
         var captures = Captures();
-        if (captures.Count == 0)
-            return;
-        var game = (await EndGame.BootAsync(newGame: false))!;
+        Assert.NotEmpty(captures);
+        var game = await EndGame.BootAsync(newGame: false);
         GameState? atPrologue = null;
         game.OnCall = file =>
         {
@@ -106,8 +104,6 @@ public class NewGameStateTests(ITestOutputHelper output)
     private static List<GoldenCapture> Captures()
     {
         string dir = Path.Combine(LocalData.GoldenDirectory, "scenes");
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")) || !Directory.Exists(dir))
-            return [];
         return Directory.GetFiles(dir, "*-Iﾌﾟﾛﾛｰｸﾞ.golden")
             .Select(path => GoldenCapture.Parse(new StringReader(File.ReadAllText(path)), path))
             .Where(c => c.RootCall.ToString().Contains("ｽﾀMENU.ADV@69d", StringComparison.Ordinal))

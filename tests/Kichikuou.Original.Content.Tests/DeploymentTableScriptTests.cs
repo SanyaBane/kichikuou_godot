@@ -14,12 +14,10 @@ namespace Kichikuou.Original.Content.Tests;
 /// </summary>
 public class DeploymentTableScriptTests(ITestOutputHelper output)
 {
-    [Fact]
+    [ScenarioFact]
     public async Task The_rows_of_the_booted_game_carry_the_units_names_and_troop_types()
     {
         var game = await EndGame.BootAsync();
-        if (game is null)
-            return;
 
         var s = game.State;
         var rows = DeploymentTable.Rows(s);
@@ -37,12 +35,10 @@ public class DeploymentTableScriptTests(ITestOutputHelper output)
     /// (unit 4) build the party; a press on Bound, a member, takes him out (his cell, then left of
     /// the list); Attack sends Sill and Soul.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_tables_presses_build_a_party_take_a_member_out_and_send_it()
     {
         var game = await EndGame.BootAsync();
-        if (game is null)
-            return;
         var s = game.State;
         for (int u = 1; u <= 4; u++)
             s.Units[u].Status = 1;
@@ -98,12 +94,10 @@ public class DeploymentTableScriptTests(ITestOutputHelper output)
     /// to the end — each time <c>Sﾌﾞﾀｲ</c>, clicked as <see cref="DeploymentTable.Drop"/> says, gives
     /// the order the drop asked for; Stop ends the picker.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task A_drops_clicks_give_the_order_it_asked_for()
     {
         var game = await EndGame.BootAsync();
-        if (game is null)
-            return;
         var s = game.State;
         for (int u = 1; u <= 4; u++)
             s.Units[u].Status = 1;

@@ -121,10 +121,9 @@ public class TreasureRosterTests(ITestOutputHelper output)
     /// The booted game with Rance (unit 1) and the next unit at status 1, two items with an effect: the first in stock,
     /// the second on the other unit; the picker's view <paramref name="view"/>.
     /// </summary>
-    private static async Task<(EndGame Game, int Other, int Stock, int Held)?> GameAsync(int view)
+    private static async Task<(EndGame Game, int Other, int Stock, int Held)> GameAsync(int view)
     {
-        if (await EndGame.BootAsync() is not { } game)
-            return null;
+        var game = await EndGame.BootAsync();
         var s = game.State;
         s.StoryStage = 1;
         s.Week = 18;
@@ -163,11 +162,10 @@ public class TreasureRosterTests(ITestOutputHelper output)
         Assert.True(ended);
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task A_unit_then_an_item_equips_it_and_the_unit_s_own_goes_back_to_stock()
     {
-        if (await GameAsync(0) is not ({ } game, var other, var stock, var held))
-            return;
+        var (game, other, stock, held) = await GameAsync(0);
         var s = game.State;
         var pointer = game.Input.Pointer;
         TreasurePrompt? prompt = null;
@@ -188,11 +186,10 @@ public class TreasureRosterTests(ITestOutputHelper output)
         Assert.Empty(game.Input.Menus);
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task Turning_the_view_and_an_item_then_a_unit_equips_it_too()
     {
-        if (await GameAsync(0) is not ({ } game, _, var stock, _))
-            return;
+        var (game, _, stock, _) = await GameAsync(0);
         var s = game.State;
         var pointer = game.Input.Pointer;
 
@@ -213,11 +210,10 @@ public class TreasureRosterTests(ITestOutputHelper output)
         Assert.Equal(1, s.Items[stock].Holder.Value);
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task A_held_item_without_a_pick_asks_and_Yes_takes_it_off()
     {
-        if (await GameAsync(1) is not ({ } game, var other, _, var held))
-            return;
+        var (game, other, _, held) = await GameAsync(1);
         var s = game.State;
         game.Input.Menu.Enqueue("Sｱｲﾃﾑ.ADV", 399);                        // Yes
 
@@ -228,11 +224,10 @@ public class TreasureRosterTests(ITestOutputHelper output)
         Assert.Single(game.Input.Menus);
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task Back_drops_a_half_made_pick_and_turns_the_view_back()
     {
-        if (await GameAsync(0) is not ({ } game, var other, _, var held))
-            return;
+        var (game, other, _, held) = await GameAsync(0);
         var s = game.State;
         var pointer = game.Input.Pointer;
 

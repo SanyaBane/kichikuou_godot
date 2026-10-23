@@ -37,12 +37,10 @@ public class TitleTests
     /// launch has: Alice's Mansion, Load, New game, 8 drawn, 9 and 10 clickable but not drawn; the
     /// gallery's CG 240 counted as seen; no roll without clears. The title then waits for the mouse.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task A_first_launch_shows_the_logo_and_the_buttons_it_has()
     {
         var game = await EndGame.BootAsync(newGame: false);
-        if (game is null)
-            return;
         Assert.False(game.Script.PauseCancelable);                      // ｽﾀｰﾄ.ADV:858 Y 3, 10000 at the boot
 
         await Assert.ThrowsAsync<PointerIdleException>(() => game.Script.CallFileAsync(Title));
@@ -73,7 +71,7 @@ public class TitleTests
     /// script's <c>{RetVal - 9:</c> and <c>{RetVal - 19:</c> are 0 for every lower draw only because the
     /// engine's <c>-</c> stops at 0 (ENG-01, STR-34).
     /// </summary>
-    [Theory]
+    [ScenarioTheory]
     [InlineData(10, 20, 1, 1)]
     [InlineData(9, 19, 0, 0)]
     [InlineData(1, 8, 0, 0)]
@@ -81,8 +79,6 @@ public class TitleTests
     public async Task Clears_unlock_buttons_and_the_rolls_pass_only_at_their_top(int roll3, int roll4, int requests, int saitou)
     {
         var game = await EndGame.BootAsync(newGame: false, random: new QueuedRandom(roll3, roll4));
-        if (game is null)
-            return;
         game.State.Fates[Clears].Fate = 1;
 
         await Assert.ThrowsAsync<PointerIdleException>(() => game.Script.CallFileAsync(Title));
@@ -97,12 +93,10 @@ public class TitleTests
     /// <c>L_00670</c>: the camera, the map, week 8 with 50 gold, the prologue scene, then the jump
     /// to <c>MAIN</c> (<c>:291</c>).
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task New_game_plays_the_prologue_scene_and_jumps_to_MAIN()
     {
         var game = await EndGame.BootAsync(newGame: false);
-        if (game is null)
-            return;
         Click(game, NewGame);
         var s = game.State;
         (int, int, int, int, int)? atPrologue = null;
@@ -125,16 +119,14 @@ public class TitleTests
     /// puts the pointer back where it was (<c>IZ</c>, <c>:242</c>) and the title waits again; a slot
     /// chosen loads (<c>LD</c>) and leaves the title for the loaded game.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Load_backs_out_to_the_title_or_loads_the_slot()
     {
         var saved = await EndGame.BootAsync();
-        if (saved is null)
-            return;
         int week = saved.State.Week.Value;
         saved.Script.SaveResume = new ScriptRef("MAIN.ADV", 20);
         saved.Script.SaveAll(1);
-        var game = (await EndGame.BootAsync(newGame: false, saves: saved.Script.Saves))!;
+        var game = await EndGame.BootAsync(newGame: false, saves: saved.Script.Saves);
         Click(game, Load);
         game.Input.Menu.Enqueue(0);                                     // backs out of the list
 
@@ -153,12 +145,10 @@ public class TitleTests
     }
 
     /// <summary>Alice's Mansion (button 2, always there): <c>Iｱﾘｽ</c> runs from the files; "Return to Game" leads back to the title, drawn again.</summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Alice_s_Mansion_runs_and_returns_to_the_title()
     {
         var game = await EndGame.BootAsync(newGame: false);
-        if (game is null)
-            return;
         Click(game, AliceMansion);
         game.Input.Menu.Enqueue("Iｱﾘｽ.ADV", 60);                        // Return to Game
 
@@ -174,12 +164,10 @@ public class TitleTests
     /// <c>Gｻｲﾄｳ</c> 1 (button 4, unlocked by its roll of 20): Saitou's scene runs from the files and
     /// leaves <c>F_Saitou_State</c> 1 for the next game (STR-36); the title is drawn again and rolls again.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Saitou_runs_from_the_title_and_leaves_her_state_for_the_game()
     {
         var game = await EndGame.BootAsync(newGame: false, random: new QueuedRandom(1, 20) { DefaultToOne = true });
-        if (game is null)
-            return;
         game.State.Fates[Clears].Fate = 1;
         Click(game, Saitou);
         game.Input.Menu.Enqueue("Gｻｲﾄｳ.ADV", 87);                       // No More
@@ -197,14 +185,12 @@ public class TitleTests
     /// many "／／"-separated entries of the strings <c>#L_00fb3, 2</c> names (<c>F1</c>, <c>MC</c>), and its
     /// lines print 30 dots apart from (48, 240); a pick equal to the last one is drawn again.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_requests_slip_prints_one_request_and_never_the_same_twice_in_a_row()
     {
         // The rolls (10: the slip, 1: no Saitou); the first slip 64 → of 5: 2; the second 64 → of 5:
         // 2 again, drawn again, 65 → of 15: 3.
         var game = await EndGame.BootAsync(newGame: false, random: new QueuedRandom(10, 1, 64, 2, 64, 2, 65, 3));
-        if (game is null)
-            return;
         game.State.Fates[Clears].Fate = 1;
         var lines = new List<(int Y, string Text)>();
         int y = 0;
@@ -229,12 +215,10 @@ public class TitleTests
     }
 
     /// <summary>A right click on a button shows its description in window 113 until a key after the release (<c>L_00c80</c>); nothing starts.</summary>
-    [Fact]
+    [ScenarioFact]
     public async Task A_right_click_shows_the_button_s_description()
     {
         var game = await EndGame.BootAsync(newGame: false);
-        if (game is null)
-            return;
         var (x, y, w, h) = Boxes[NewGame];
         game.Input.Pointer.RightClick(x + w / 2, y + h / 2);
 
@@ -255,12 +239,10 @@ public class TitleTests
     /// HQ (77) Leazas's, seven Kayblis's, Nikkou (item 2) held by Kentarou (unit 31) — and jumps to
     /// <c>MAIN</c> without a scene.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_debug_menu_cancels_or_starts_from_4()
     {
         var game = await EndGame.BootAsync(newGame: false);
-        if (game is null)
-            return;
         var s = game.State;
         s.DebugMode = 1;
         Click(game, NewGame);
@@ -291,14 +273,12 @@ public class TitleTests
     /// (<c>:304-359</c>): week 16 at stage 2 with 30000 gold, Rance's unit as "Leazas Knights" with the
     /// L. Holy Sword (item 6), then <c>Iｼﾚｲﾌﾞ</c> 2.
     /// </summary>
-    [Theory]
+    [ScenarioTheory]
     [InlineData(255, "Iﾊﾝﾗﾝ.ADV")]
     [InlineData(259, "Iｼﾚｲﾌﾞ.ADV")]
     public async Task From_2_and_3_play_their_scene_and_jump_to_MAIN(int line, string scene)
     {
         var game = await EndGame.BootAsync(newGame: false);
-        if (game is null)
-            return;
         var s = game.State;
         s.DebugMode = 1;
         (int Week, int Stage, int Gold, int Item)? atScene = null;
@@ -333,12 +313,10 @@ public class TitleTests
     /// returns to a title that plays its music again (<c>ｽﾀMENU.ADV:577-581</c>); left by End, the
     /// music room returns to a silent one (STR-37, <c>:272-274</c>). The title is drawn again each time.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_gallery_and_the_music_room_run_and_only_the_gallery_brings_the_music_back()
     {
         var game = await EndGame.BootAsync(newGame: false);
-        if (game is null)
-            return;
         game.State.Fates[Clears].Fate = 1;
         Click(game, Gallery);
         game.Input.Pointer.Hover(595, 12);                              // the gallery's Exit (CG.ADV:202-205)

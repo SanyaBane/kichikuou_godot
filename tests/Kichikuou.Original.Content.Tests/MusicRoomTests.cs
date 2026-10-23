@@ -33,12 +33,10 @@ public class MusicRoomTests
     /// 108 (<c>:248-252</c>); the time
     /// display read <c>SC</c>; <c>RetVal</c>, <c>CallArg</c> and <c>Tmp0001-0040</c> come back as they were.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task A_title_plays_its_track_Stop_silences_it_and_End_leaves_the_scratch_as_it_was()
     {
         var game = await EndGame.BootAsync(newGame: false);
-        if (game is null)
-            return;
         int musicBefore = Music(game).Count;
         var s = game.State;
         (s.RetVal, s.CallArg, s.Tmp0001, s.Tmp0020, s.Tmp0021, s.Tmp0040) =
@@ -61,12 +59,10 @@ public class MusicRoomTests
     /// Stop with nothing playing — a right click first — draws "track 999": <c>F1</c> reads past the
     /// end of the 224 names, an empty string in the port (STR-44), and the room goes on.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Stop_with_nothing_playing_reads_past_the_names_and_goes_on()
     {
         var game = await EndGame.BootAsync(newGame: false);
-        if (game is null)
-            return;
         int musicBefore = Music(game).Count;
         game.Input.Pointer.RightClick(500, 200);
         Click(game, 25);

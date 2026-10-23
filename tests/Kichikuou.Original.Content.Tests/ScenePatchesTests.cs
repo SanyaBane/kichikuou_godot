@@ -49,11 +49,10 @@ public class ScenePatchesTests(ITestOutputHelper output)
     }
 
     /// <summary>Two flags, the rule on, "Go with Code": the test's block — <c>F_Code_State</c> 5, Code kills Rance, ending 3.</summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Go_with_code_plays_ending_3()
     {
-        if (await BootAsync() is not { } rig)
-            return;
+        var rig = await BootAsync();
         var play = CodeEvent(rig, 2, on: true);
         play.Input.Menu.Enqueue(items =>
         {
@@ -73,11 +72,10 @@ public class ScenePatchesTests(ITestOutputHelper output)
     /// Two flags, the rule on, "Stop Code" after a cancel (the menu comes again): the fewer-than-two branch — she stops
     /// him, <c>F_Code_State</c> stays 4, the event returns.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Stop_code_plays_the_loyal_branch_and_a_cancel_asks_again()
     {
-        if (await BootAsync() is not { } rig)
-            return;
+        var rig = await BootAsync();
         var play = CodeEvent(rig, 2, on: true);
         play.Input.Menu.Enqueue(0);
         play.Input.Menu.Enqueue(1);
@@ -92,11 +90,10 @@ public class ScenePatchesTests(ITestOutputHelper output)
     }
 
     /// <summary>One flag, the rule on: no menu, the original's branch (she stops him).</summary>
-    [Fact]
+    [ScenarioFact]
     public async Task With_one_flag_nothing_is_asked()
     {
-        if (await BootAsync() is not { } rig)
-            return;
+        var rig = await BootAsync();
         var play = CodeEvent(rig, 1, on: true);
         await play.Script.CallFileAsync(Code);
         Assert.Empty(play.Input.Menus);
@@ -104,13 +101,12 @@ public class ScenePatchesTests(ITestOutputHelper output)
     }
 
     /// <summary>Two flags (and four), the rule off: no menu, ending 3 as the original.</summary>
-    [Theory]
+    [ScenarioTheory]
     [InlineData(2)]
     [InlineData(4)]
     public async Task Off_two_flags_play_ending_3_unasked(int flags)
     {
-        if (await BootAsync() is not { } rig)
-            return;
+        var rig = await BootAsync();
         var play = CodeEvent(rig, flags, on: false);
         var jump = await Assert.ThrowsAsync<ScenarioJumpException>(() => play.Script.CallFileAsync(Code));
         Assert.Equal("OVER.ADV", jump.File);
@@ -124,11 +120,10 @@ public class ScenePatchesTests(ITestOutputHelper output)
     /// move." (6 → 7) — each in window 113 after the scene's last line and its closed window, with a key wait, before
     /// <c>M 0</c> —, the third plays Rance Attack (7 → 8) with none. Off, the same draws step him and nothing is shown.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Kentarous_training_steps_end_with_our_hint()
     {
-        if (await BootAsync() is not { } rig)
-            return;
+        var rig = await BootAsync();
         var start = rig.Start();
         start.Units[31].Status = 1;
         start.F_Kentarou_State = 5;

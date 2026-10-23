@@ -45,12 +45,10 @@ public class FortuneCheckTests
     /// release (<c>:84-89</c>, <c>%0</c>), and the title is drawn again (<c>ｽﾀMENU.ADV:236</c>).
     /// No random draw but the title's two rolls on each of its passes, and page 4 is not written.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Fortune_Check_stamps_each_fate_seen_on_its_page_and_goes_back_to_the_title()
     {
         var game = await EndGame.BootAsync(newGame: false);
-        if (game is null)
-            return;
         var s = game.State;
         s.Fates[Clears].Fate = 1;
         s.Fates[0].Fate = 100;                                          // Sill: both
@@ -85,7 +83,7 @@ public class FortuneCheckTests
     /// (the two halves of fate 0 spaced unlike the single ones', <c>:310-342</c>), then the whole
     /// shown at once, a key, and the page shown again.
     /// </summary>
-    [Theory]
+    [ScenarioTheory]
     [InlineData(100, true, true)]
     [InlineData(1, true, false)]
     [InlineData(10, false, true)]
@@ -93,8 +91,6 @@ public class FortuneCheckTests
     public async Task A_cell_shows_the_fortune_and_misfortune_seen_and_Undiscovered_for_the_rest(int fate, bool fortune, bool misfortune)
     {
         var game = await EndGame.BootAsync(newGame: false);
-        if (game is null)
-            return;
         var s = game.State;
         s.Fates[Clears].Fate = 1;
         s.Fates[Menad].Fate = (Sys3Int)fate;
@@ -148,12 +144,10 @@ public class FortuneCheckTests
     /// fate 33 on (<c>:303-305</c>: Nagi (fate 34), CG 45); 98 again goes back to page 1, and 99 back to
     /// the title (<c>:73-89</c>), each after its release.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_page_flips_both_ways_and_the_back_button_leaves()
     {
         var game = await EndGame.BootAsync(newGame: false);
-        if (game is null)
-            return;
         var s = game.State;
         s.Fates[Clears].Fate = 1;
         s.Fates[34].Fate = 100;
@@ -194,12 +188,10 @@ public class FortuneCheckTests
     /// Somita (54) 46, OVER's 47 (48 her misfortune's; 46 OVER never draws); Pastel (55) 41, OVER's
     /// 493 (41 her misfortune's).
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Every_cell_opens_its_own_fate_with_its_portrait()
     {
         var game = await EndGame.BootAsync(newGame: false);
-        if (game is null)
-            return;
         var s = game.State;
         var opened = new List<(int Fate, int Portrait)>();
         int portrait = 0;
@@ -238,12 +230,10 @@ public class FortuneCheckTests
     /// waited for its release, <c>ｽﾀMENU.ADV:131-134</c>) opens fate 0 — or 33 after a flip — wherever
     /// the pointer is: here over the page flip, then over a cell of page 2 (fate 38).
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task A_press_at_the_first_read_opens_fate_0_or_33_wherever_the_pointer_is()
     {
         var game = await EndGame.BootAsync(newGame: false);
-        if (game is null)
-            return;
         var s = game.State;
         var opened = new List<int>();
         game.View.OnShow = e =>

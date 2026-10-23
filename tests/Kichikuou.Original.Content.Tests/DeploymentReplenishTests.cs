@@ -14,11 +14,9 @@ namespace Kichikuou.Original.Content.Tests;
 public class DeploymentReplenishTests(ITestOutputHelper output)
 {
     /// <summary>The booted game at stage 1, week 18, Sill (unit 2) short of troops, the week's orders left, as SubordinatesScriptTests.</summary>
-    private static async Task<EndGame?> GameAsync()
+    private static async Task<EndGame> GameAsync()
     {
         var game = await EndGame.BootAsync();
-        if (game is null)
-            return null;
         var s = game.State;
         s.StoryStage = 1;
         s.Week = 18;
@@ -37,11 +35,11 @@ public class DeploymentReplenishTests(ITestOutputHelper output)
         + $"orders {s.CmdAvail_SubTroops.Value}{s.CmdAvail_SubTalk.Value}{s.Ui_CmdSubordAvail.Value}, "
         + $"military {s.History[s.Hist_Cur].MilitaryExp.Value}, status {s.Units[2].Status.Value}";
 
-    [Fact]
+    [ScenarioFact]
     public async Task The_shortcut_does_what_subordinates_replenish_does()
     {
-        if (await GameAsync() is not { } viaCommand || await GameAsync() is not { } viaShortcut)
-            return;
+        var viaCommand = await GameAsync();
+        var viaShortcut = await GameAsync();
 
         SubordinateOrder? order = null;
         viaCommand.Input.Idle = () => order ??= SubordinateOrder.Start(viaCommand.State, SubordinateOrderKind.Replenish, 2, 0, viaCommand.Input.Pointer);
@@ -56,11 +54,10 @@ public class DeploymentReplenishTests(ITestOutputHelper output)
         Assert.Equal(Outcome(viaCommand.State), Outcome(viaShortcut.State));
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task The_deployment_screen_replenishes_at_our_request_and_sends_the_party_at_its_new_expenses()
     {
-        if (await GameAsync() is not { } game)
-            return;
+        var game = await GameAsync();
         var s = game.State;
         s.Tmp0021 = 4;                                                  // up to four units
         s.Tmp0022 = 1;                                                  // an attack
@@ -100,11 +97,10 @@ public class DeploymentReplenishTests(ITestOutputHelper output)
         Assert.Equal((100, 1000, 18 + expenses), (result.TroopsBefore, result.Troops, result.Cost));
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task No_request_starts_once_the_troop_order_is_spent()
     {
-        if (await GameAsync() is not { } game)
-            return;
+        var game = await GameAsync();
         game.State.CmdAvail_SubTroops = 0;
 
         Assert.Null(DeploymentReplenish.Start(game.Script, 2, game.Input.Pointer));

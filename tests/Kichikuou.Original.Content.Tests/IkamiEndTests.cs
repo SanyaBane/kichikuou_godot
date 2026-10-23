@@ -20,12 +20,10 @@ public class IkamiEndTests(ITestOutputHelper output)
     /// <summary>The garrisons of 2F, 3F, 4F and 5F, in the order they are picked.</summary>
     private static readonly int[] Garrisons = EndGame.Garrisons;
 
-    [Fact]
+    [ScenarioFact]
     public async Task Charge_ends_the_game_with_ending_9()
     {
         var game = await AtGodsDoorAsync();
-        if (game is null)
-            return;
         game.Input.Menu.Enqueue(1);                                     // Charge
 
         await RunToTheEndAsync(game);
@@ -36,12 +34,10 @@ public class IkamiEndTests(ITestOutputHelper output)
             game.State.Ev_GodRear4F_Unit1, game.State.Ev_GodRear5F_Unit1 }.Select(u => (int)u.Value));
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task Create_Chaos_with_Sill_at_Rance_s_side_ends_the_game_with_ending_10()
     {
         var game = await AtGodsDoorAsync();
-        if (game is null)
-            return;
         game.Input.Menu.Enqueue(2);                                     // Think: "Create Chaos" shows
         game.Input.Menu.Enqueue(3);                                     // Create Chaos
 
@@ -51,12 +47,10 @@ public class IkamiEndTests(ITestOutputHelper output)
         Assert.Equal(3, game.Input.MenuSizes[1]);
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task Create_Chaos_without_Sill_ends_the_game_with_ending_9()
     {
         var game = await AtGodsDoorAsync();
-        if (game is null)
-            return;
         game.State.Units[2].Status = 0;                                 // Sill (unit 2) gone
         game.Input.Menu.Enqueue(2);
         game.Input.Menu.Enqueue(3);
@@ -66,12 +60,10 @@ public class IkamiEndTests(ITestOutputHelper output)
         Assert.Equal(9, game.State.EndingId.Value);
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task Without_Warg_a_second_Think_finds_nothing_and_Leave_it_to_Warg_never_shows()
     {
         var game = await AtGodsDoorAsync();
-        if (game is null)
-            return;
         game.State.N_Warg_Stage = 1;
         game.Input.Menu.Enqueue(2);
         game.Input.Menu.Enqueue(2);                                     // "Can't think of anything"
@@ -83,12 +75,10 @@ public class IkamiEndTests(ITestOutputHelper output)
         Assert.Equal(9, game.State.EndingId.Value);
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task Leave_it_to_Warg_with_every_garrison_held_and_Sill_alive_ends_with_ending_11()
     {
         var game = await AtGodsDoorAsync();
-        if (game is null)
-            return;
         LeaveItToWarg(game);
 
         await RunToTheEndAsync(game);
@@ -100,12 +90,10 @@ public class IkamiEndTests(ITestOutputHelper output)
         Assert.DoesNotContain("FIGT表示.ADV", game.Calls.Select(c => c.Split(' ')[0]));
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task Leave_it_to_Warg_with_Sill_dead_ends_with_ending_13()
     {
         var game = await AtGodsDoorAsync();
-        if (game is null)
-            return;
         game.State.Units[2].Status = 0;
         LeaveItToWarg(game);
 
@@ -115,12 +103,10 @@ public class IkamiEndTests(ITestOutputHelper output)
         Assert.Equal(1, game.State.F_Ending_LiaRoute.Value);
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task A_garrison_wiped_on_the_way_down_is_found_lost_on_the_way_back_ending_9()
     {
         var game = await AtGodsDoorAsync();
-        if (game is null)
-            return;
         LeaveItToWarg(game);
         WipeIn(game, 7, 7);                                             // Rick (unit 7), 5F's first fight
 
@@ -133,12 +119,10 @@ public class IkamiEndTests(ITestOutputHelper output)
         Assert.Equal(1, game.State.Tmp0229.Value);
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task A_garrison_wiped_in_its_last_fight_is_never_found_lost()
     {
         var game = await AtGodsDoorAsync();
-        if (game is null)
-            return;
         LeaveItToWarg(game);
         WipeIn(game, 20, 3);                                            // Bound (unit 3), 2F's last fight (:2362)
 
@@ -153,12 +137,10 @@ public class IkamiEndTests(ITestOutputHelper output)
         Assert.Equal(20, game.Fights);
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task With_nobody_but_Rance_free_the_garrison_picker_never_ends()
     {
         var game = await AtGodsDoorAsync(picks: false);
-        if (game is null)
-            return;
         int[] gone = [2, .. Garrisons];
         foreach (int unit in gone)
             game.State.Units[unit].Status = 0;
@@ -174,12 +156,10 @@ public class IkamiEndTests(ITestOutputHelper output)
         Assert.Equal(0, game.Fights);
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task Picking_Rance_for_a_garrison_is_refused_but_the_war_expenses_stay_paid()
     {
         var baseline = await AtGodsDoorAsync();
-        if (baseline is null)
-            return;
         baseline.Input.Menu.Enqueue(1);
         await RunToTheEndAsync(baseline);
 
@@ -254,11 +234,9 @@ public class IkamiEndTests(ITestOutputHelper output)
     /// Gold to send them; Warg at stage 2 and the debug commands on (Repel); unless
     /// <paramref name="picks"/> is false, the four garrisons' picks queued.
     /// </summary>
-    private static async Task<EndGame?> AtGodsDoorAsync(bool picks = true)
+    private static async Task<EndGame> AtGodsDoorAsync(bool picks = true)
     {
         var game = await EndGame.BootAsync();
-        if (game is null)
-            return null;
         var state = game.State;
         state.StoryStage = 4;
         state.Prov_Cur = 35;

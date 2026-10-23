@@ -18,11 +18,10 @@ public class SceneMarksTests(ITestOutputHelper output)
     /// Sill's (unit 2) silent step (§4): at her state 2 her talk plays her repeated line and sets 3 without a word
     /// (<c>Gｼｨﾙ:1025</c>); with that line read the talk is still not "read" — the next talk plays a new scene.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Sills_silent_step_is_new_though_its_lines_are_read()
     {
-        if (await BootAsync() is not var (state, marks))
-            return;
+        var (state, marks) = await BootAsync();
         state.Units[2].Status = 1;
         state.Units[2].Troops = 100;                                    // not Gｼｨﾙ2's scene for few troops
         state.F_Sill_State = 2;
@@ -49,11 +48,10 @@ public class SceneMarksTests(ITestOutputHelper output)
     /// <c>N_RanceSelfTalk</c>, which does not count; talk 10 shows the next lines. The command's own "Maybe I'll meet
     /// with X." (<c>Cﾌﾞｶ:1104</c>) is never news.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Rances_talks_1_and_10_are_new_and_talk_2_is_read()
     {
-        if (await BootAsync() is not var (state, marks))
-            return;
+        var (state, marks) = await BootAsync();
         state.N_RanceSelfTalk = 0;
         var first = Talk(marks, state, 1);
         output.WriteLine(first.ToString());
@@ -75,11 +73,10 @@ public class SceneMarksTests(ITestOutputHelper output)
     /// Maria's (unit 16) talk ends with one of five harmless answers (<c>Gﾏﾘｱ:679</c>, §3 kind 1): with one answer
     /// unread, "New scenes first" makes it come (New); off, a draw decides (???); all read, nothing is new.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Marias_unread_variant_is_new_with_the_option_and_maybe_without()
     {
-        if (await BootAsync() is not var (state, marks))
-            return;
+        var (state, marks) = await BootAsync();
         state.Units[16].Status = 1;
         state.F_Maria_State = 0;
         state.F_Maria_Tulip = 1;                                        // the default talk, L_00a91
@@ -106,11 +103,10 @@ public class SceneMarksTests(ITestOutputHelper output)
     /// with it read and her conditions met (her S&amp;M Tower night, Barres (unit 6) in the army), she may leave: ???,
     /// the leaving chosen with the option on; without her conditions, read.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Haureins_leaving_is_maybe_once_her_kiss_is_read()
     {
-        if (await BootAsync() is not var (state, marks))
-            return;
+        var (state, marks) = await BootAsync();
         state.StoryStage = 2;
         state.Units[12].Status = 1;
         state.Units[6].Status = 1;
@@ -139,11 +135,10 @@ public class SceneMarksTests(ITestOutputHelper output)
     /// Kentarou's (unit 31) training at his state 5 (<c>Gｹﾝﾀﾛｳ:608</c>, §3.5): unread, New; read, the draw may move his
     /// state on silently: ???, the step chosen with the option on.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Kentarous_training_is_maybe_once_read()
     {
-        if (await BootAsync() is not var (state, marks))
-            return;
+        var (state, marks) = await BootAsync();
         state.Units[31].Status = 1;
         state.F_Kentarou_State = 5;
         var fresh = Talk(marks, state, 31);
@@ -162,11 +157,10 @@ public class SceneMarksTests(ITestOutputHelper output)
     /// Isoroku's (unit 27) stage-2 visit with the Hospital built (<c>Gｲｿﾛｸ:4599</c>, §3.6): read, her pregnancy may come
     /// silently: ???; without the Hospital, read. Rance's experience and the harem's counts are no news.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Isorokus_pregnancy_is_maybe_once_her_visit_is_read()
     {
-        if (await BootAsync() is not var (state, marks))
-            return;
+        var (state, marks) = await BootAsync();
         state.StoryStage = 2;
         state.Units[27].Status = 1;
         state.N_Isoroku_Stage = 2;
@@ -190,11 +184,10 @@ public class SceneMarksTests(ITestOutputHelper output)
     /// Kanami's visit after her first (<c>Gｶﾅﾐ:182</c>, §3.4): her usual visit read, scene 2 or the tower scene may come —
     /// with the option on they come for certain, New (Code's event 4 asks the player); off, ???.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Kanamis_scenes_are_new_with_the_option_once_her_usual_visit_is_read()
     {
-        if (await BootAsync() is not var (state, marks))
-            return;
+        var (state, marks) = await BootAsync();
         state.N_Kanami_State = 2;
         state.F_Kanami_Scene1 = 0;
         state.F_Kanami_Scene2 = 0;
@@ -216,11 +209,10 @@ public class SceneMarksTests(ITestOutputHelper output)
     /// Leila's (unit 5) talk with "who do I like" (§3 kind 5): a menu is the player's, so an item leading to an unread
     /// line makes the talk New with the option on or off; its cancel, which shows the menu again, is no outcome.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Leilas_menu_item_to_an_unread_line_is_new()
     {
-        if (await BootAsync() is not var (state, marks))
-            return;
+        var (state, marks) = await BootAsync();
         foreach (int unit in new[] { 5, 6, 7, 8 })
             state.Units[(Sys3Int)unit].Status = 1;
         state.F_LeilaRick_State = 0;
@@ -243,11 +235,10 @@ public class SceneMarksTests(ITestOutputHelper output)
     /// Katyusha's visit with Saulnia in the game and Sill (unit 2) absent: "Have Threesome" ends the game (ending 12,
     /// <c>Gｶﾁｭｰｼｬ:2293</c>), which the marks leave out — its lines unread, the visit is still read.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Katyushas_path_to_ending_12_is_left_out()
     {
-        if (await BootAsync() is not var (state, marks))
-            return;
+        var (state, marks) = await BootAsync();
         state.Units[2].Status = 0;
         state.F_Katyusha_State = 2;
         state.F_Saulnia_State = 2;
@@ -266,11 +257,10 @@ public class SceneMarksTests(ITestOutputHelper output)
     /// Every talk and every visit runs in the dry run (no file met that it cannot run, no loop cut by the steps' cap, no
     /// tree past the paths' cap), and the game's state is not touched: its memory and its read lines are as before.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Every_talk_and_visit_runs_and_leaves_the_state_alone()
     {
-        if (await BootAsync() is not var (state, marks))
-            return;
+        var (state, marks) = await BootAsync();
         for (int unit = 1; unit <= 50; unit++)
             state.Units[(Sys3Int)unit].Status = 1;
         for (int girl = 1; girl <= 50; girl++)
@@ -298,12 +288,10 @@ public class SceneMarksTests(ITestOutputHelper output)
 
     private static bool IsBattle(string? file) => file is "FIGT_A.ADV" or "FIGT_B.ADV" or "FIGT.ADV" or "死亡捕獲.ADV" or "Sﾌﾞﾀｲ.ADV";
 
-    /// <summary>The booted new game at story stage 1 and the marks over the player's scenes; null without the decompile.</summary>
-    private static async Task<(GameState State, SceneMarks Marks)?> BootAsync()
+    /// <summary>The booted new game at story stage 1 and the marks over the player's scenes.</summary>
+    private static async Task<(GameState State, SceneMarks Marks)> BootAsync()
     {
         var game = await EndGame.BootAsync();
-        if (game is null)
-            return null;
         game.State.StoryStage = 1;
         return (game.State, new SceneMarks(new ScenarioScripts(LocalData.ScenarioDirectory)));
     }

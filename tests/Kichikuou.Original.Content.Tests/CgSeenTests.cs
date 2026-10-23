@@ -29,12 +29,10 @@ public class CgSeenTests
     /// <c>G</c>s, run by <c>SceneRunner</c> — the logo, the title's sheets — count once each, and CG 240
     /// is the one the title marks itself (<c>ｽﾀMENU.ADV:84-85</c>).
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_boot_binds_the_counter_and_each_G_of_the_title_counts_once()
     {
         var game = await EndGame.BootAsync(newGame: false);
-        if (game is null)
-            return;
         Assert.Equal((4, 80), game.Script.CgLoadCounter);
         Assert.All(Enumerable.Range(0, 2000), cg => Assert.Equal(0, Seen(game, cg)));
 
@@ -53,12 +51,10 @@ public class CgSeenTests
     /// scenes load by <c>G</c>, every portrait and centre picture its windows show (<c>WAO_SUB</c> 311,
     /// 321, 331, 333 with the CG in <c>CallArg</c>) and the frames of the windows it opens.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_prologue_counts_its_scenes_G_and_its_window_pictures()
     {
         var game = await EndGame.BootAsync();
-        if (game is null)
-            return;
 
         var windows = game.View.Events.OfType<WindowEvent>().ToList();
         var pictures = windows.Where(w => w.Op.Value is 311 or 321 or 331 or 333 && w.CallArg != 0)
@@ -77,12 +73,10 @@ public class CgSeenTests
     /// <c>ﾛｰﾄﾞｾｰﾌﾞ</c> 11 writes page 4, the counts with it, into every slot that holds a save (1 and
     /// 3, not the empty 2); <c>ﾛｰﾄﾞｾｰﾌﾞ</c> 10 reads them back (<c>ﾛｰﾄﾞｾｰﾌﾞ.ADV:16-23</c>).
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_counts_reach_every_slot_that_holds_a_save_and_come_back_from_them()
     {
         var game = await EndGame.BootAsync();
-        if (game is null)
-            return;
         game.Script.SaveResume = new ScriptRef("MAIN.ADV", 20);
         game.Script.SaveAll(1);
         game.Script.SaveAll(3);

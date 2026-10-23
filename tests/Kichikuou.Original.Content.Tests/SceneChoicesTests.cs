@@ -28,11 +28,10 @@ public class SceneChoicesTests(ITestOutputHelper output)
     /// Cafe (unit 45) with Satella (unit 29) in the army and the children scene read (§3.2): the Satella scene
     /// (<c>Gｶﾌｪ:396</c>, 1 of 3) comes on the next talk whatever the generator draws — the mark's New and its choice.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Cafes_satella_scene_comes_on_the_next_talk()
     {
-        if (await BootAsync() is not { } rig)
-            return;
+        var rig = await BootAsync();
         var start = CafeState(rig);
         var report = rig.Marks.Talk(start, 45, newScenesFirst: true);
         output.WriteLine(report.ToString());
@@ -61,11 +60,10 @@ public class SceneChoicesTests(ITestOutputHelper output)
     /// on or off (a logging generator, several seeds); off, the script gets the generator's value (2: the children, not
     /// Satella), on the Satella scene's 1 from the same draw.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_generator_draws_the_same_with_the_rule_on_or_off()
     {
-        if (await BootAsync() is not { } rig)
-            return;
+        var rig = await BootAsync();
         var start = CafeState(rig);
         for (int seed = 1; seed <= 8; seed++)
         {
@@ -97,11 +95,10 @@ public class SceneChoicesTests(ITestOutputHelper output)
     /// unread, the prank comes for certain; on the talk after it she leaves (<c>F_Haurein_Fate</c> 2, her unit gone).
     /// Off, with the same draws, she stays.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Haurein_leaves_on_the_talk_after_her_kiss()
     {
-        if (await BootAsync() is not { } rig)
-            return;
+        var rig = await BootAsync();
         var start = rig.Start();
         start.StoryStage = 2;
         start.Units[12].Status = 1;
@@ -143,11 +140,10 @@ public class SceneChoicesTests(ITestOutputHelper output)
     /// draw keeps its odds — here 2, no step); each talk after it steps the state, 5 → 6 → 7, and the fourth plays
     /// Rance Attack (state 8, no draw): four training talks, not about seven. Off, with the same draws, he stays at 5.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Kentarou_learns_rance_attack_in_four_training_talks()
     {
-        if (await BootAsync() is not { } rig)
-            return;
+        var rig = await BootAsync();
         var start = rig.Start();
         start.Units[31].Status = 1;
         start.F_Kentarou_State = 5;
@@ -174,11 +170,10 @@ public class SceneChoicesTests(ITestOutputHelper output)
     /// draw, so an unread harmless value comes: no pregnancy); the second makes her stage 3. Off, with the same draws
     /// (2), she stays at 2.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Isoroku_is_pregnant_on_her_second_stage_2_visit()
     {
-        if (await BootAsync() is not { } rig)
-            return;
+        var rig = await BootAsync();
         var start = rig.Start();
         start.StoryStage = 2;
         start.Units[27].Status = 1;
@@ -206,11 +201,10 @@ public class SceneChoicesTests(ITestOutputHelper output)
     /// Kanami's visit with her usual visit read (§3.4): scene 2 (her <c>F_Kanami_Scene2</c> 0) or the tower scene comes
     /// for certain, whatever the generator draws — the mark's New and its choice.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Kanamis_scene_2_or_tower_scene_comes_once_her_usual_visit_is_read()
     {
-        if (await BootAsync() is not { } rig)
-            return;
+        var rig = await BootAsync();
         var start = rig.Start();
         start.N_Kanami_State = 2;
         start.F_Kanami_Scene1 = 0;
@@ -245,11 +239,10 @@ public class SceneChoicesTests(ITestOutputHelper output)
     /// Suzume's and Wendy's draw (<c>Cﾊｰﾚﾑ:6</c>) comes before the visit and keeps the original's 1 in 4: with the rule
     /// on and the generator giving 3, Suzume's unread first meeting does not come, and the draw is not the rule's.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Suzumes_and_wendys_draw_keeps_its_odds()
     {
-        if (await BootAsync() is not { } rig)
-            return;
+        var rig = await BootAsync();
         var start = rig.Start();
         start.F_Suzume_Met = 0;
         start.F_Wendy_Met = 0;
@@ -264,11 +257,10 @@ public class SceneChoicesTests(ITestOutputHelper output)
     }
 
     /// <summary>With the rule off nothing is noted and nothing is replaced: the choices stay inactive through a talk.</summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Off_the_rule_never_acts()
     {
-        if (await BootAsync() is not { } rig)
-            return;
+        var rig = await BootAsync();
         var start = CafeState(rig);
         var play = rig.Play(start, new ConstantRandom(2), on: false);
         await play.TalkAsync(45);
@@ -282,11 +274,10 @@ public class SceneChoicesTests(ITestOutputHelper output)
     /// Where the dry run fails (here its scenes cannot be read), the talk goes on with the values drawn — nothing is
     /// thrown into the game — and the fallback is kept with its reason; the rule does not act again in that talk.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task A_dry_run_that_fails_leaves_the_draws_as_drawn()
     {
-        if (await BootAsync() is not { } rig)
-            return;
+        var rig = await BootAsync();
         var start = CafeState(rig);
         var play = rig.Play(start, new ConstantRandom(2), on: true);
         play.Script.Marks = new SceneMarks(new MissingScenes());
@@ -344,12 +335,10 @@ public class SceneChoicesTests(ITestOutputHelper output)
                     state.MarkLineRead(line);
     }
 
-    /// <summary>The booted new game at story stage 1 and the player's scenes; null without the decompile.</summary>
-    internal static async Task<Rig?> BootAsync()
+    /// <summary>The booted new game at story stage 1 and the player's scenes.</summary>
+    internal static async Task<Rig> BootAsync()
     {
         var game = await EndGame.BootAsync();
-        if (game is null)
-            return null;
         var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
         var scenes = new CachedSceneSource(scripts);
         return new Rig(game.State, scripts, scenes, new SceneMarks(scenes));

@@ -20,12 +20,10 @@ public class OverTests
     /// (unit 2) at Rance's side) and Maria's are recorded, and page 4 is written into the slots that
     /// hold a save (1 and 3), not into an empty one. The report, "THE END", "Closing", then the quit.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task A_clear_is_counted_and_its_fates_are_recorded_on_page_4_and_kept_in_every_slot()
     {
         var game = await AtTheEndAsync(5);
-        if (game is null)
-            return;
         game.State.F_Sill_Fate = 1;
         game.State.Units[2].Status = 1;
         game.Script.SaveResume = new ScriptRef("MAIN.ADV", 20);
@@ -57,12 +55,10 @@ public class OverTests
     /// misfortune over a fortune, make 100; a fortune seen again stays 1; 100 stays 100. A second
     /// clear counts 2.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Fates_merge_with_those_of_earlier_plays()
     {
         var game = await AtTheEndAsync(5);
-        if (game is null)
-            return;
         var s = game.State;
         s.Fates[Clears].Fate = 1;
         s.F_Sill_Fate = 1;                                              // Sill's fortune over her misfortune
@@ -88,12 +84,10 @@ public class OverTests
     /// neither shown nor recorded — while the misfortunes are: Wendy's (her state below 2, any ending
     /// but 14) is.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Ending_9_counts_as_a_clear_but_records_no_fortune()
     {
         var game = await AtTheEndAsync(9);
-        if (game is null)
-            return;
         game.State.F_Sill_Fate = 1;
         game.State.Units[2].Status = 1;
 
@@ -112,12 +106,10 @@ public class OverTests
     /// <c>Tmp0020</c> left above 1 by earlier code (it counts the clears only in a clear), the staff
     /// roll is made skippable (<c>Y 3, 10001</c>, <c>:73-75</c>) on a first viewing.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Ending_7_is_no_clear_has_the_staff_roll_and_shows_Satella_s_unguarded_fortune()
     {
         var game = await AtTheEndAsync(7);
-        if (game is null)
-            return;
         game.State.F_Satella_State = 10;
         game.State.F_Sill_Fate = 1;
         game.State.Units[2].Status = 1;
@@ -135,12 +127,10 @@ public class OverTests
     }
 
     /// <summary>A first clear with the staff roll (ending 13) leaves its waits uncancelable (<c>Y 3, 10000</c>, <c>:72</c>).</summary>
-    [Fact]
+    [ScenarioFact]
     public async Task A_first_clear_cannot_skip_the_staff_roll()
     {
         var game = await AtTheEndAsync(13);
-        if (game is null)
-            return;
 
         await RunOverAsync(game);
 
@@ -154,12 +144,10 @@ public class OverTests
     /// no <c>Tmp0002</c> guard either: with the Kayblis war at 2, which turns the fortunes off, hers is
     /// still recorded and Sill's is not.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Kouhime_s_fortune_shows_when_the_fortunes_are_off()
     {
         var game = await AtTheEndAsync(8);
-        if (game is null)
-            return;
         var s = game.State;
         s.F_Kayblis_War = 2;
         s.F_Kou_State = 3;
@@ -179,12 +167,10 @@ public class OverTests
     /// STR-28: an entry whose two conditions read different variables can show both texts — Wendy's
     /// fortune (her bedroom seen) and her misfortune (her state below 2) — and records the misfortune.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Both_texts_of_an_entry_can_show_and_the_misfortune_is_recorded()
     {
         var game = await AtTheEndAsync(5);
-        if (game is null)
-            return;
         game.State.F_Wendy_BedroomSeen = 1;
 
         await RunOverAsync(game);
@@ -195,12 +181,10 @@ public class OverTests
     }
 
     /// <summary>STR-27: Cell's fortune prints "（Misfortune）" (<c>:1707</c>) and records a fortune.</summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Cell_s_fortune_reads_misfortune_but_records_a_fortune()
     {
         var game = await AtTheEndAsync(5);
-        if (game is null)
-            return;
         game.State.F_Cell_Arc = 5;
         game.State.F_Cell_ChurchArc = 1;
 
@@ -211,15 +195,13 @@ public class OverTests
     }
 
     /// <summary>Sanakia's fate is Toushin City (27)'s owner: the city-states (3) a fortune, Leazas (1) a misfortune.</summary>
-    [Theory]
+    [ScenarioTheory]
     [InlineData(3, 1)]
     [InlineData(1, 10)]
     [InlineData(8, 0)]
     public async Task Sanakia_s_fate_follows_Toushin_City_s_owner(int owner, int fate)
     {
         var game = await AtTheEndAsync(5);
-        if (game is null)
-            return;
         game.State.Provs[27].Owner = (Sys3Int)owner;
 
         await RunOverAsync(game);
@@ -228,12 +210,10 @@ public class OverTests
         Assert.Equal(27, game.State.Prov_Cur.Value);                    // the cursor is left there (:1671)
     }
 
-    /// <summary>The booted new game with <c>EndingId</c> set; null without the decompile.</summary>
-    private static async Task<EndGame?> AtTheEndAsync(int ending)
+    /// <summary>The booted new game with <c>EndingId</c> set.</summary>
+    private static async Task<EndGame> AtTheEndAsync(int ending)
     {
         var game = await EndGame.BootAsync();
-        if (game is null)
-            return null;
         game.State.EndingId = (Sys3Int)ending;
         return game;
     }

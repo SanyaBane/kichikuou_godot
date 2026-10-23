@@ -14,11 +14,9 @@ public class OpeningSkipTests(ITestOutputHelper output)
 {
     private sealed record Run(EndGame Game, int Frames);
 
-    private static async Task<Run?> RunOpeningAsync(bool skipping)
+    private static async Task<Run> RunOpeningAsync(bool skipping)
     {
         var game = await EndGame.BootAsync();
-        if (game is null)
-            return null;
         game.Input.Timer = new EngineTimer();
         game.Input.Skipping = skipping;
         await game.Script.CallFileAsync("ｵｰﾌﾟﾆﾝｸﾞ.ADV");
@@ -32,12 +30,10 @@ public class OpeningSkipTests(ITestOutputHelper output)
             .GroupBy(e => (int)e.Args[0].Value)
             .ToDictionary(g => g.Key, g => g.Count());
 
-    [Fact]
+    [ScenarioFact]
     public async Task The_skipped_opening_loads_what_a_watched_one_does()
     {
         var watched = await RunOpeningAsync(skipping: false);
-        if (watched is null)
-            return;
         var skipped = await RunOpeningAsync(skipping: true);
         Assert.NotNull(skipped);
         output.WriteLine($"frames: watched {watched.Frames}, skipped {skipped.Frames}");

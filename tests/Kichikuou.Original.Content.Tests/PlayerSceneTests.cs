@@ -21,11 +21,9 @@ public class PlayerSceneTests(ITestOutputHelper output)
     /// <summary>The variable groups a scene may change without it being a world change.</summary>
     private static readonly HashSet<string> Presentation = new(StringComparer.Ordinal) { "ui", "scratch", "system" };
 
-    /// <summary>A rig after the boot and the new game (prologue included), or null without the decompile.</summary>
-    private static async Task<SceneRig?> NewGameAsync(QueuedRandom? random = null)
+    /// <summary>A rig after the boot and the new game (prologue included).</summary>
+    private static async Task<SceneRig> NewGameAsync(QueuedRandom? random = null)
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return null;
         var rig = new SceneRig(LocalData.ScenarioDirectory, random ?? new QueuedRandom { DefaultToOne = true });
         var setup = new GameSetup(rig.Script, new ScenarioScripts(LocalData.ScenarioDirectory));
         await setup.BootAsync();
@@ -60,7 +58,7 @@ public class PlayerSceneTests(ITestOutputHelper output)
     /// visits set the EXP reward <c>Cﾊｰﾚﾑ</c> pays (and Sill's and Soul's open the thieves step),
     /// the week-9 scene leaves the province cursor on 34.
     /// </summary>
-    [Theory]
+    [ScenarioTheory]
     [InlineData("Gｿｳﾙ.ADV", 4)]
     [InlineData("Gｿｳﾙ.ADV", 20)]
     [InlineData("Gﾊﾞｳﾝﾄﾞ.ADV", 20)]
@@ -71,8 +69,6 @@ public class PlayerSceneTests(ITestOutputHelper output)
     public async Task Prologue_scenes_change_only_what_they_should(string file, int entry, params string[] expected)
     {
         var rig = await NewGameAsync();
-        if (rig is null)
-            return;
         rig.State.Ev_Entry = (Sys3Int)entry;
         var before = Snapshot.Of(rig.State);
 
@@ -82,12 +78,10 @@ public class PlayerSceneTests(ITestOutputHelper output)
         output.WriteLine($"draws: {string.Join(", ", rig.Random.Draws)}; events: {rig.View.Events.Count}; inputs: {rig.Input.Answers}");
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task Anasels_first_harem_visit_advances_the_thieves_arc()
     {
         var rig = await NewGameAsync();
-        if (rig is null)
-            return;
         rig.State.F_Thieves_State = 2;
         rig.State.Ev_Entry = 10;
         var before = Snapshot.Of(rig.State);
@@ -104,12 +98,10 @@ public class PlayerSceneTests(ITestOutputHelper output)
     /// party picker and the battle are rule files, a won battle draws the banter (<c>Y 4, 4</c>,
     /// <c>:342</c>) and, away from Anasel's province, pays one gold.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_first_pillage_runs_the_picker_and_the_battle_and_pays_a_gold()
     {
         var rig = await NewGameAsync();
-        if (rig is null)
-            return;
         var random = new QueuedRandom(4);
         rig = await NewGameAsync(random);
         rig!.State.Prov_Cur = 33;
@@ -132,12 +124,10 @@ public class PlayerSceneTests(ITestOutputHelper output)
         Assert.Equal(51, rig.State.Gold.Value);
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task The_opening_runs_to_its_end()
     {
         var rig = await NewGameAsync();
-        if (rig is null)
-            return;
 
         await rig.Script.CallFileAsync("ｵｰﾌﾟﾆﾝｸﾞ.ADV");
 
@@ -162,7 +152,7 @@ public class PlayerSceneTests(ITestOutputHelper output)
                 entries.Add(0);
             foreach (int entry in entries)
             {
-                var rig = (await NewGameAsync())!;
+                var rig = await NewGameAsync();
                 string outcome;
                 try
                 {

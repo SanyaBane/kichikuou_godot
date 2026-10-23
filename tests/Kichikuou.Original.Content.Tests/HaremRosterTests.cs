@@ -66,11 +66,9 @@ public class HaremRosterTests(ITestOutputHelper output)
     }
 
     /// <summary>The booted game at stage 1, week 18, with the week's visit left; nobody met yet (no first meeting plays).</summary>
-    private static async Task<EndGame?> GameAsync()
+    private static async Task<EndGame> GameAsync()
     {
         var game = await EndGame.BootAsync();
-        if (game is null)
-            return null;
         var s = game.State;
         s.StoryStage = 1;
         s.Week = 18;
@@ -78,11 +76,10 @@ public class HaremRosterTests(ITestOutputHelper output)
         return game;
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task Summon_picks_her_cell_and_her_visit_is_recorded()
     {
-        if (await GameAsync() is not { } game)
-            return;
+        var game = await GameAsync();
         var s = game.State;
         bool clicked = false;
         game.Input.Idle = () =>
@@ -105,11 +102,10 @@ public class HaremRosterTests(ITestOutputHelper output)
         Assert.Equal(0, s.Ui_CmdHaremAvail.Value);
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task End_leaves_the_picker_and_gives_the_visit_back()
     {
-        if (await GameAsync() is not { } game)
-            return;
+        var game = await GameAsync();
         var s = game.State;
         bool clicked = false;
         game.Input.Idle = () =>

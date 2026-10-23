@@ -50,12 +50,10 @@ public class UnitFacesTests
     }
 
     /// <summary>The booted game's units: names and faces from <c>SET_CHR</c>; unit 48 is empty until a scene fills it.</summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_booted_games_units_have_their_faces_but_unit_48()
     {
         var game = await EndGame.BootAsync();
-        if (game is null)
-            return;
 
         var faces = UnitFaces.Units(game.State);
 
@@ -71,12 +69,10 @@ public class UnitFacesTests
     /// and not listed; nine of the rest have no face (Aladdin, commander 21, among them) and stand in
     /// with their battle sprites (Sergeant Hanny, commander 83: CG 1302; Kaiju Gaga, commander 187: CG 1501).
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task The_booted_games_commanders_have_their_faces_or_their_sprites()
     {
         var game = await EndGame.BootAsync();
-        if (game is null)
-            return;
 
         var faces = UnitFaces.Commanders(game.State);
 

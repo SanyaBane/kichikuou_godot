@@ -172,12 +172,10 @@ public class MagicSpellsTests
     /// Every unit and commander of a magic class in the booted game (<c>SET_CHR</c>) has an element in the tables, is a
     /// Demon Magic caster (dark), or is one of those without an element (the Fire Blast).
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task Every_magic_caster_is_accounted_for()
     {
         var game = await EndGame.BootAsync();
-        if (game is null)
-            return;
         var s = game.State;
         int[] unitsWithout = [20, 45];                                      // Freak, Cafe
         int[] commandersWithout =

@@ -21,12 +21,10 @@ namespace Kichikuou.Original.Content.Tests;
 /// </summary>
 public class StageThreeEndTests(ITestOutputHelper output)
 {
-    [Fact]
+    [ScenarioFact]
     public async Task Kayblis_s_death_with_the_whole_map_Leazas_s_moves_the_story_to_stage_4()
     {
         var game = await KayblisDeadAsync();
-        if (game is null)
-            return;
 
         await game.Script.CallFileAsync("死亡捕獲.ADV");
 
@@ -52,7 +50,7 @@ public class StageThreeEndTests(ITestOutputHelper output)
     /// Rudrasaum (10), and the next week's <c>COM</c> plays <c>Gｺｳﾋﾒ</c> 6 (11), Rance turning to God's
     /// Door; any other state but 0 — she kills herself (0, <c>F_Kouhime_Dead</c> 2); 0 — nothing.
     /// </summary>
-    [Theory]
+    [ScenarioTheory]
     [InlineData(8, 10, 0)]                                              // Gﾙﾄﾞﾗ.ADV:421, :548
     [InlineData(5, 0, 2)]                                               // :468-470
     [InlineData(11, 0, 2)]
@@ -60,8 +58,6 @@ public class StageThreeEndTests(ITestOutputHelper output)
     public async Task The_first_Creator_phase_decides_Kou_s_fate(int kou, int after, int dead)
     {
         var game = await KayblisDeadAsync();
-        if (game is null)
-            return;
         game.State.F_Kou_State = (Sys3Int)kou;
         await game.Script.CallFileAsync("死亡捕獲.ADV");
 
@@ -75,15 +71,13 @@ public class StageThreeEndTests(ITestOutputHelper output)
         Assert.Equal(11, game.State.F_Kou_State.Value);                 // Gｺｳﾋﾒ.ADV:29
     }
 
-    [Theory]
+    [ScenarioTheory]
     [InlineData(84, 8)]                                                 // Kayblis's Castle still Kayblis's
     [InlineData(48, 4)]                                                 // Laurengrad Helman's
     [InlineData(23, 3)]                                                 // Red an independent city
     public async Task Kayblis_s_death_with_a_province_not_Leazas_s_ends_the_game_with_ending_8(int province, int owner)
     {
         var game = await KayblisDeadAsync();
-        if (game is null)
-            return;
         game.State.Provs[province].Owner = (Sys3Int)owner;
 
         var jump = await Assert.ThrowsAsync<ScenarioJumpException>(() => game.Script.CallFileAsync("死亡捕獲.ADV"));
@@ -111,10 +105,8 @@ public class StageThreeEndTests(ITestOutputHelper output)
     /// Shangri-La (29) and Nothing (75), and Kayblis (135) dead in the enemy party of the last
     /// battle; every scene and rule call recorded as "file entry".
     /// </summary>
-    private static async Task<Game?> KayblisDeadAsync()
+    private static async Task<Game> KayblisDeadAsync()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return null;
         var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
         var state = new GameState();
         var unported = new RecordingRules { State = state };

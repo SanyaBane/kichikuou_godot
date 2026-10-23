@@ -20,10 +20,8 @@ public class LoadSaveScreenTests
 
     private sealed record Rig(GameState State, OriginalScriptContext Script, RecordingView View, ScriptedSceneInput Input, MemorySaveStore Saves, LoadSaveScreen Screen);
 
-    private static Rig? NewRig()
+    private static Rig NewRig()
     {
-        if (!System.IO.File.Exists(Path.Combine(LocalData.ScenarioDirectory, File)))
-            return null;
         var state = new GameState();
         var view = new RecordingView();
         var input = new ScriptedSceneInput();
@@ -44,11 +42,10 @@ public class LoadSaveScreenTests
         await rig.Screen.RunAsync();
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task The_autosave_fills_slot_1_and_says_so()
     {
-        if (NewRig() is not { } rig)
-            return;
+        var rig = NewRig();
 
         await AutosaveAsync(rig, 13);
 
@@ -65,11 +62,10 @@ public class LoadSaveScreenTests
         Assert.Equal(45, rig.State.Tmp0006.Value);                      // the slot file's second (STR-22)
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task A_manual_save_copies_the_autosave_and_a_load_comes_back_through_Load_Complete()
     {
-        if (NewRig() is not { } rig)
-            return;
+        var rig = NewRig();
         await AutosaveAsync(rig, 13);
         rig.State.Week = 15;                                            // later in the game
         rig.State.Gold = 999;
@@ -117,11 +113,10 @@ public class LoadSaveScreenTests
     /// Ours (owner's decision 26): a save from <c>COMMAND</c> (<see cref="ScriptContext.SaveHere"/>) is the game
     /// as it is now, its window says so in our words, and loading it leaves the autosave alone.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task A_save_from_COMMAND_is_the_moment_and_loading_it_keeps_the_autosave()
     {
-        if (NewRig() is not { } rig)
-            return;
+        var rig = NewRig();
         await AutosaveAsync(rig, 13);
         var here = new ScriptRef("MAIN.ADV", 213);
         rig.Script.SaveHere = here;
@@ -155,10 +150,9 @@ public class LoadSaveScreenTests
         Assert.Equal(1, rig.Saves.Read(1)!.Variables[22].Value);
     }
 
-    private static Rig? LibraryRig(MemorySaveLibrary library)
+    private static Rig LibraryRig(MemorySaveLibrary library)
     {
-        if (NewRig() is not { } rig)
-            return null;
+        var rig = NewRig();
         rig.Script.Library = library;
         return rig;
     }
@@ -167,12 +161,11 @@ public class LoadSaveScreenTests
     /// Ours (owner's decision 29): with the library the autosave is a new auto-save each week (ten kept), page 4 goes
     /// to the library's persistent page once, and the notice names the save in our words.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task With_the_library_each_autosave_is_a_new_auto_save_and_page_4_is_kept_once()
     {
         var library = new MemorySaveLibrary(() => new DateTime(2026, 10, 21, 12, 0, 45));
-        if (LibraryRig(library) is not { } rig)
-            return;
+        var rig = LibraryRig(library);
         rig.State.Fates[2].Fate = 100;
 
         for (int week = 13; week <= 24; week++)
@@ -190,12 +183,11 @@ public class LoadSaveScreenTests
     /// Ours (decision 29): the save list offers a new manual save first, then the manual saves; the load list every
     /// auto-save and manual save; a load leaves the auto-saves as they are and reads page 4 from the library.
     /// </summary>
-    [Fact]
+    [ScenarioFact]
     public async Task With_the_library_a_save_is_a_new_manual_save_and_a_load_leaves_the_auto_saves()
     {
         var library = new MemorySaveLibrary();
-        if (LibraryRig(library) is not { } rig)
-            return;
+        var rig = LibraryRig(library);
         await AutosaveAsync(rig, 13);
         await AutosaveAsync(rig, 14);
         var here = new ScriptRef("MAIN.ADV", 213);

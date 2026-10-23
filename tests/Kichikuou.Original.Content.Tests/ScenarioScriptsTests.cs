@@ -90,22 +90,18 @@ public sealed class ScenarioScriptsTests : IDisposable
 /// <summary>The boot built from the player's decompile (skipped without it).</summary>
 public class PlayerBootTests(ITestOutputHelper output)
 {
-    private static async Task<GameState?> BootAsync()
+    private static async Task<GameState> BootAsync()
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return null;
         var state = new GameState();
         var script = new OriginalScriptContext(state, new NoRandom(), new NullView(), new NoInput(), new NoHooks());
         await new GameSetup(script, new ScenarioScripts(LocalData.ScenarioDirectory)).BootAsync();
         return state;
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task The_boot_builds_the_initial_world()
     {
         var s = await BootAsync();
-        if (s is null)
-            return;
 
         Is(50, s.Unit_Cur);
         Is(199, s.Cmdr_Cur);
@@ -124,13 +120,12 @@ public class PlayerBootTests(ITestOutputHelper output)
     /// The first prologue battle's entry dump holds the boot world as changed by one week of play:
     /// the troops and status of units 1/3/4 and the troops of commander 58 (survey-data §8.1).
     /// </summary>
-    [Fact]
+    [CaptureFact]
     public async Task The_boot_world_matches_the_original_up_to_the_first_week_of_play()
     {
         string capture = Path.Combine(LocalData.GoldenDirectory, "20261008-095048-01-FIGT_A.golden");
+        Assert.True(File.Exists(capture), $"No capture {capture}.");
         var s = await BootAsync();
-        if (s is null || !File.Exists(capture))
-            return;
         var enter = GoldenCapture.Load(capture).Enter;
 
         var differ = new List<string>();

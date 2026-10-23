@@ -49,9 +49,8 @@ The owner aims at a public release (decision 28, 2026-10-20).
 - **CI** — *owner* (a remote first), then *agent*: build, core tests, export. Without the game data
   the content tests no longer fail (2026-10-23): a test that reads the scenario, the CGs or a capture group
   is `[ScenarioFact]`/`[ScenarioTheory]`, `[LocalFolderFact]` or `[CaptureGroupFact]`/`[CaptureGroupTheory]`
-  (`ScenarioTextGoldenTests.cs`), skipped with its reason. Still passing silently without the data: ~100 tests
-  in ~25 files whose helper returns null without the scenario (`EndGameRig.BootAsync`, `GameAsync`, `NewRig`, …)
-  and return on it — they would want the same attributes and non-null helpers.
+  (`ScenarioTextGoldenTests.cs`), skipped with its reason; the helpers that boot a game (`EndGameRig.BootAsync`
+  and those on it) no longer return null without the scenario. Without the data 304 pass, 336 are skipped.
 - **Rights** — *owner*: the license covers only our own work; the rule code ports AliceSoft's
   scenario logic, the risk the brief accepts for personal use. Any public release is the owner's call.
 

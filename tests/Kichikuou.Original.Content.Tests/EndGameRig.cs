@@ -60,13 +60,11 @@ internal sealed class EndGame
 
     /// <summary>
     /// The booted new game (or only the boot, <paramref name="newGame"/> false: the title is next),
-    /// its calls cleared; null without the decompile. <paramref name="saves"/> are the slots (empty
-    /// by default); <paramref name="random"/> the draws (1 for each by default).
+    /// its calls cleared; it needs the decompile (its tests are <see cref="ScenarioFactAttribute"/>s). <paramref name="saves"/>
+    /// are the slots (empty by default); <paramref name="random"/> the draws (1 for each by default).
     /// </summary>
-    public static async Task<EndGame?> BootAsync(bool newGame = true, ISaveStore? saves = null, QueuedRandom? random = null)
+    public static async Task<EndGame> BootAsync(bool newGame = true, ISaveStore? saves = null, QueuedRandom? random = null)
     {
-        if (!File.Exists(Path.Combine(LocalData.ScenarioDirectory, "SET.ADV")))
-            return null;
         var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
         var state = new GameState();
         var unported = new RecordingRules { State = state };

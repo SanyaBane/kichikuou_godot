@@ -15,11 +15,9 @@ namespace Kichikuou.Original.Content.Tests;
 public class SubordinatesScriptTests(ITestOutputHelper output)
 {
     /// <summary>The booted game at stage 1, week 18, with Sill (unit 2) short of troops and both orders left.</summary>
-    private static async Task<EndGame?> GameAsync()
+    private static async Task<EndGame> GameAsync()
     {
         var game = await EndGame.BootAsync();
-        if (game is null)
-            return null;
         var s = game.State;
         s.StoryStage = 1;
         s.Week = 18;
@@ -46,11 +44,10 @@ public class SubordinatesScriptTests(ITestOutputHelper output)
         return (order!, keys);
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task Replenish_fills_the_unit_and_spends_the_troop_order_without_a_wait_the_order_does_not_answer()
     {
-        if (await GameAsync() is not { } game)
-            return;
+        var game = await GameAsync();
         var s = game.State;
 
         var (order, keys) = await RunAsync(game, SubordinateOrderKind.Replenish);
@@ -69,11 +66,10 @@ public class SubordinatesScriptTests(ITestOutputHelper output)
         Assert.Equal(DeploymentTable.UnitName(s, 2), result.Name);
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task Add_troops_at_its_second_step_buys_four_times_the_men_for_nine_times_the_price()
     {
-        if (await GameAsync() is not { } game)
-            return;
+        var game = await GameAsync();
         var s = game.State;
         var (price, men) = SubordinatesCommand.Offer(s, 2);
         (price, men) = SubordinatesCommand.AddMore(price, men);
@@ -90,11 +86,10 @@ public class SubordinatesScriptTests(ITestOutputHelper output)
         Assert.Equal(0, s.CmdAvail_SubTroops.Value);
     }
 
-    [Fact]
+    [ScenarioFact]
     public async Task Talk_answers_rances_thought_and_plays_the_units_talk_scene()
     {
-        if (await GameAsync() is not { } game)
-            return;
+        var game = await GameAsync();
         var s = game.State;
         game.OnCall = file =>
         {
