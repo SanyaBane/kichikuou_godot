@@ -52,7 +52,9 @@ The owner aims at a public release (decision 28, 2026-10-20).
   libraries and the Godot project build for `net9.0` when Godot exports for Android (`GodotTargetPlatform`),
   since Godot 4.7's Android templates take .NET 9 only; everything else stays on `net10.0`. First run on a
   Galaxy Tab S7 FE (2026-10-24): the import takes ~5 s, the opening plays full screen (Vulkan, Adreno 619).
-  Still to measure: the speed in play, and touch beyond a tap (no right click, no hover).
+  Android's Back (button or gesture) is a right click at the last touch (`GameScreen.Touch.cs`,
+  `quit_on_go_back=false`; the owner checked it on the tablet, 2026-10-24). Still to measure: the speed in
+  play, and the hover a touch screen does not have.
 - **CI** — *owner* (a remote first), then *agent*: build, core tests, export. Without the game data
   the content tests no longer fail (2026-10-23): a test that reads the scenario, the CGs or a capture group
   is `[ScenarioFact]`/`[ScenarioTheory]`, `[LocalFolderFact]` or `[CaptureGroupFact]`/`[CaptureGroupTheory]`

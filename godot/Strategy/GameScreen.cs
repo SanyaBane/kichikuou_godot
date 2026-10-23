@@ -449,6 +449,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         if (what == NotificationWMWindowFocusOut)
             _input.Clear();
+        else if (what == NotificationWMGoBackRequest)
+            BackAsRightClick();
     }
 
     /// <summary>
