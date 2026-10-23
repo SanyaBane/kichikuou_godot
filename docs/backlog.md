@@ -53,7 +53,9 @@ The owner aims at a public release (decision 28, 2026-10-20).
   since Godot 4.7's Android templates take .NET 9 only; everything else stays on `net10.0`. First run on a
   Galaxy Tab S7 FE (2026-10-24): the import takes ~5 s, the opening plays full screen (Vulkan, Adreno 619).
   Android's Back (button or gesture) is a right click at the last touch (`GameScreen.Touch.cs`,
-  `quit_on_go_back=false`; the owner checked it on the tablet, 2026-10-24). Still to measure: the speed in
+  `quit_on_go_back=false`; the owner checked it on the tablet, 2026-10-24). The build starts full screen (bars
+  hidden); Screen → Window shows the navigation bar with its Back, and the choice is kept for later launches
+  (`ScreenModeChoice`). Still to measure: the speed in
   play, and the hover a touch screen does not have.
 - **CI** — *owner* (a remote first), then *agent*: build, core tests, export. Without the game data
   the content tests no longer fail (2026-10-23): a test that reads the scenario, the CGs or a capture group

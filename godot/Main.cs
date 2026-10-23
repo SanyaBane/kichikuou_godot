@@ -20,6 +20,7 @@ public partial class Main : Control
     public override void _Ready()
     {
         ThousandsChoice.Apply();
+        ScreenModeChoice.Apply();
         var background = new ColorRect { Color = Colors.Black };
         background.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         AddChild(background);

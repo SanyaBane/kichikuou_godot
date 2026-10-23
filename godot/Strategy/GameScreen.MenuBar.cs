@@ -149,8 +149,8 @@ public partial class GameScreen
         return false;
     }
 
-    private static void SetFullscreen(bool on) =>
-        DisplayServer.WindowSetMode(on ? DisplayServer.WindowMode.Fullscreen : DisplayServer.WindowMode.Windowed);
+    /// <summary>Saved for later launches (<see cref="ScreenModeChoice"/>).</summary>
+    private static void SetFullscreen(bool on) => ScreenModeChoice.Set(on);
 
     /// <summary>Save Screenshot: the screen as it is shown (event CGs not masked), 1280×800, in <c>user://screenshots</c>.</summary>
     private void SaveScreenshot()
