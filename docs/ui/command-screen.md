@@ -288,7 +288,7 @@ Search, Battle, Ninja), and Return. The mock-ups hold the player's CGs and stay 
 - **Attack goes straight to the deployment screen (owner, 2026-10-21).** `Cﾃｷﾄｼ`'s briefing before `Sﾌﾞﾀｲ` —
   Rance's "Let's begin the battle, then. Make preparations, Maris." (`:135-143`) and Maris's "Yes, King Rance." /
   "Please select the units…" (`:158-171`) — is the same on every attack, so our interface plays it unseen
-  (`GamePresenter.CoverAttackBriefing`, `AttackBriefing`): the lead-out's cover goes on through Rance's portrait
+  (`GamePresenter.CoverBriefings`, `Briefing`): the lead-out's cover goes on through Rance's portrait
   (311) and window (111), his text starts the briefing, and while it lasts the pictures, the window and the log
   pages are left out and `GameScreen.WaitForKeyAsync` answers its key waits at once, as by a click (`WAO_SUB` 1 keeps
   `RetVal`). The script runs as ever. Anything else ends it and is shown: Maris's line that only one unit can attack
@@ -296,6 +296,15 @@ Search, Battle, Ninja), and Return. The mock-ups hold the player's CGs and stay 
   Rance's line, the units that refuse to go after the picker; the refusals before the briefing (stage 4, the week's
   conquest made, stage 1 off the rebels) and the warnings (Land of Death (82), Patton) never start it
   (`An_attacks_briefing_is_played_unseen`).
+- **Start Search goes straight to the searcher's picker (owner, 2026-10-24).** `Cﾒｲｷｭｳ`'s briefing before `Sﾌﾞﾀｲ`
+  (`L_008d1`) — Rance's "Alright, time to search. / Let's find some treasure!" (`:310-314`) and Maris's "Yes, King
+  Rance... / Then please select the unit…" (`:322-330`) — is the same on every search, so it is played unseen the same
+  way: Rance's text starts it (the dungeon's menu is the original's, so no lead-out cover is needed: no frame passes
+  between the menu's answer and his text). Maris's advice on the snow at the Snow Dungeon (dungeon 4), Ho Raga's Tower (dungeon 5) and the Giant Battleship
+  (dungeon 16) (`L_06fe4`, by where the
+  Snow Charm (item 11) is) ends it and is shown whole; her line about the unit after it starts it again. The refusals
+  after the picker, the pre-scenes before the menu, the arrival and the resume question are shown as ever
+  (`A_searchs_briefing_is_played_unseen`).
 
 ## The command panel (owner, 2026-10-16)
 

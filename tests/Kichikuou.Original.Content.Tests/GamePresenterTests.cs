@@ -963,7 +963,7 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     }
 
     /// <summary>
-    /// With <see cref="GamePresenter.CoverAttackBriefing"/> <c>Cﾃｷﾄｼ</c>'s briefing after our province menu's Attack is played
+    /// With <see cref="GamePresenter.CoverBriefings"/> <c>Cﾃｷﾄｼ</c>'s briefing after our province menu's Attack is played
     /// unseen: the lead-out stays covered through Rance's portrait and window, his text starts the briefing, which goes on
     /// through its key waits, Maris's portrait and her two lines and ends at what else the file shows — the window, the
     /// pictures and the log as ever then. A refusal after Rance's line ends it at its own text; no cover asked, no briefing.
@@ -977,7 +977,7 @@ public partial class GamePresenterTests(ITestOutputHelper output)
         state.Provs[6].BgCg = 340;
         presenter.Bind(state);
         presenter.CoverCityLeadIn = true;
-        presenter.CoverAttackBriefing = true;
+        presenter.CoverBriefings = true;
         presenter.CoverMessages = true;
 
         void Attack()
@@ -991,13 +991,13 @@ public partial class GamePresenterTests(ITestOutputHelper output)
             presenter.Show(new WindowEvent(311, 1));                            // Rance
             presenter.Show(new WindowEvent(111, 1));
             Assert.True(presenter.MenuCovered);
-            Assert.False(presenter.AttackBriefing);
+            Assert.False(presenter.Briefing);
             presenter.Show(new MessageEvent(new ScriptRef("Cﾃｷﾄｼ.ADV", 139)));
-            Assert.True(presenter.AttackBriefing);
+            Assert.True(presenter.Briefing);
             presenter.Show(new WindowEvent(1, 1));                              // the key wait, answered by the UI
             presenter.EndCityLeadIn();
             Assert.False(presenter.MenuCovered);
-            Assert.True(presenter.AttackBriefing);
+            Assert.True(presenter.Briefing);
             Assert.Null(presenter.MessageWindow);
             presenter.AfterKey();
             presenter.Show(new WindowEvent(0, 1));
@@ -1013,21 +1013,81 @@ public partial class GamePresenterTests(ITestOutputHelper output)
         presenter.Show(new WindowEvent(1, 6));
         presenter.AfterKey();
         presenter.Show(new WindowEvent(0, 6));
-        Assert.True(presenter.AttackBriefing);
+        Assert.True(presenter.Briefing);
         Assert.Empty(presenter.Log.Pages);
         presenter.Show(new WindowEvent(322, 6));                                // on to the picker
-        Assert.False(presenter.AttackBriefing);
+        Assert.False(presenter.Briefing);
 
         Attack();
         presenter.Show(new MessageEvent(new ScriptRef("Cﾃｷﾄｼ.ADV", 3833)));      // the rebels' first week: Maris refuses
-        Assert.False(presenter.AttackBriefing);
+        Assert.False(presenter.Briefing);
         Assert.NotNull(presenter.MessageWindow);
 
         presenter.Show(new WindowEvent(0, 6));
-        presenter.CoverAttackBriefing = false;
+        presenter.CoverBriefings = false;
         presenter.Show(new WindowEvent(111, 1));
         presenter.Show(new MessageEvent(new ScriptRef("Cﾃｷﾄｼ.ADV", 139)));
-        Assert.False(presenter.AttackBriefing);
+        Assert.False(presenter.Briefing);
+    }
+
+    /// <summary>
+    /// With <see cref="GamePresenter.CoverBriefings"/> <c>Cﾒｲｷｭｳ</c>'s briefing after a dungeon's Start Search is played unseen:
+    /// Rance's text starts it, which goes on through its key waits, Maris's portrait and her line about the unit and ends at
+    /// the picker. Maris's advice on the snow ends it and is shown; her line about the unit after it starts it again.
+    /// </summary>
+    [Fact]
+    public void A_searchs_briefing_is_played_unseen()
+    {
+        var missing = Path.Combine(Path.GetTempPath(), "kichikuou-no-data");
+        var presenter = new GamePresenter(new ScenarioText(missing), new CgLibrary(missing), new BoxGlyphs());
+        presenter.Bind(new GameState { Dgn_Cur = 4, Ui_WinType = 21, Ui_WinFrameCg = 810 });
+        presenter.CoverBriefings = true;
+        presenter.CoverMessages = true;
+
+        void Search()
+        {
+            presenter.OpenMenu([]);
+            presenter.CloseMenu();                                              // Start Search
+            presenter.Show(new WindowEvent(0, 1));
+            presenter.Show(new WindowEvent(311, 1));                            // Rance
+            presenter.Show(new WindowEvent(111, 1));
+            Assert.False(presenter.Briefing);
+            presenter.Show(new MessageEvent(new ScriptRef("Cﾒｲｷｭｳ.ADV", 312)));
+            Assert.True(presenter.Briefing);
+            Assert.Null(presenter.MessageWindow);
+            presenter.Show(new WindowEvent(1, 1));                              // the key wait, answered by the UI
+            presenter.AfterKey();
+            presenter.Show(new WindowEvent(0, 1));
+            presenter.Show(new WindowEvent(321, 6));                            // Maris
+        }
+
+        void UnitLine()
+        {
+            presenter.Show(new WindowEvent(121, 6));
+            presenter.Show(new MessageEvent(new ScriptRef("Cﾒｲｷｭｳ.ADV", 324)));
+            Assert.True(presenter.Briefing);
+            Assert.Null(presenter.MessageWindow);
+            presenter.Show(new WindowEvent(1, 6));
+            presenter.AfterKey();
+            presenter.Show(new WindowEvent(0, 6));
+            Assert.True(presenter.Briefing);
+            presenter.Show(new EngineEvent("B3", [8, 8, 274, 296, 120, 0]));    // Sﾌﾞﾀｲ
+            Assert.False(presenter.Briefing);
+        }
+
+        Search();
+        UnitLine();
+        Assert.Empty(presenter.Log.Pages);
+
+        Search();
+        presenter.Show(new WindowEvent(121, 6));
+        presenter.Show(new MessageEvent(new ScriptRef("Cﾒｲｷｭｳ.ADV", 5377)));     // no Snow Charm: "are you sure about this?"
+        Assert.False(presenter.Briefing);
+        Assert.NotNull(presenter.MessageWindow);
+        presenter.Show(new WindowEvent(1, 6));
+        presenter.AfterKey();
+        presenter.Show(new WindowEvent(0, 6));
+        UnitLine();
     }
 
     /// <summary>

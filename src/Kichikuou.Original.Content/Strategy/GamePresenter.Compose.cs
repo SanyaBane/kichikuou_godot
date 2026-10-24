@@ -376,7 +376,7 @@ public sealed partial class GamePresenter
             && s.Ev_CommandMode.Value is not (1 or 2) && Picker is null && Data == DataView.Closed)
             SetLeadIn(true);                                            // Cｼﾊｲﾄｼ/Cﾃｷﾄｼ/Cﾃｷﾄｼ2: the city's picture
         else if (_cityLeadIn && !LeadInGoesOn(scriptEvent)
-            && !(CoverAttackBriefing && scriptEvent is WindowEvent { Op.Value: 311 or 111 }))
+            && !(CoverBriefings && scriptEvent is WindowEvent { Op.Value: 311 or 111 }))
             SetLeadIn(false);                                           // the briefing's portrait and window wait for its text
         ObserveBriefing(scriptEvent);
     }
@@ -400,19 +400,22 @@ public sealed partial class GamePresenter
     }
 
     /// <summary>
-    /// Whether a UI leaves out <c>Cﾃｷﾄｼ</c>'s briefing before the deployment picker (owner, 2026-10-21; docs/ui/command-screen.md,
-    /// "The province menu"): Rance's "Let's begin the battle" (<c>:135-143</c>) and Maris's two lines (<c>:158-171</c>), the same
-    /// on every attack. Then <see cref="AttackBriefing"/> is up from Rance's text: the pictures and the window are not drawn, the
-    /// pages not logged, and the UI answers the key waits at once.
+    /// Whether a UI leaves out the briefings before a picker that are the same every time (docs/ui/command-screen.md, "The
+    /// province menu"): <c>Cﾃｷﾄｼ</c>'s before the deployment picker (owner, 2026-10-21) — Rance's "Let's begin the battle"
+    /// (<c>:135-143</c>) and Maris's two lines (<c>:158-171</c>) — and <c>Cﾒｲｷｭｳ</c>'s before the searcher's (owner,
+    /// 2026-10-24) — Rance's "Alright, time to search." (<c>:310-314</c>) and Maris's "…select the unit" (<c>:322-330</c>).
+    /// Then <see cref="Briefing"/> is up from Rance's text: the pictures and the window are not drawn, the pages not logged,
+    /// and the UI answers the key waits at once.
     /// </summary>
-    public bool CoverAttackBriefing { get; set; }
+    public bool CoverBriefings { get; set; }
 
     /// <summary>
-    /// The briefing is being played unseen (<see cref="CoverAttackBriefing"/>). Anything else the file shows ends it and is
-    /// shown as ever: Maris's line about the one unit (<c>:202-214</c>), a refusal after Rance's line (<c>L_04786</c>), the
-    /// scenes of <c>Iｼﾚｲﾌﾞ</c>, the picker.
+    /// A briefing is being played unseen (<see cref="CoverBriefings"/>). Anything else the file shows ends it and is shown as
+    /// ever: in <c>Cﾃｷﾄｼ</c> Maris's line about the one unit (<c>:202-214</c>), a refusal after Rance's line (<c>L_04786</c>),
+    /// the scenes of <c>Iｼﾚｲﾌﾞ</c>; in <c>Cﾒｲｷｭｳ</c> Maris's advice on the snow (<c>L_06fe4</c>), after which her line about
+    /// the unit starts it again; the picker.
     /// </summary>
-    public bool AttackBriefing
+    public bool Briefing
     {
         get;
         private set
@@ -423,13 +426,14 @@ public sealed partial class GamePresenter
         }
     }
 
-    /// <summary>Rance's text starts the briefing; its windows, Maris's portrait and her two lines go on with it.</summary>
+    /// <summary>Rance's text starts a briefing (in <c>Cﾒｲｷｭｳ</c> Maris's too); its windows, Maris's portrait and her lines go on with it.</summary>
     private void ObserveBriefing(ScriptEvent scriptEvent)
     {
-        if (scriptEvent is MessageEvent { Text: { File: "Cﾃｷﾄｼ.ADV", Line: 139 } } && CoverAttackBriefing && !BattleShows)
-            AttackBriefing = true;
-        else if (AttackBriefing && !BriefingGoesOn(scriptEvent))
-            AttackBriefing = false;
+        if (scriptEvent is MessageEvent { Text: { File: "Cﾃｷﾄｼ.ADV", Line: 139 } or { File: "Cﾒｲｷｭｳ.ADV", Line: 312 or 324 } }
+            && CoverBriefings && !BattleShows)
+            Briefing = true;
+        else if (Briefing && !BriefingGoesOn(scriptEvent))
+            Briefing = false;
     }
 
     private static bool BriefingGoesOn(ScriptEvent scriptEvent) => scriptEvent is WindowEvent { Op.Value: 0 or 1 or 111 or 121 or 321 }
@@ -453,7 +457,7 @@ public sealed partial class GamePresenter
 
     /// <summary>
     /// The message window our UI draws now (<see cref="CoverMessages"/>), or null: in a battle the battle's own
-    /// (<see cref="Battles.BattlePresenter.MessageWindow"/>); outside it, not under the screens that cover the window already (All Data, our province menu, the week report, the attack's briefing), while <c>WAO_SUB</c>'s frame is up and not
+    /// (<see cref="Battles.BattlePresenter.MessageWindow"/>); outside it, not under the screens that cover the window already (All Data, our province menu, the week report, a briefing), while <c>WAO_SUB</c>'s frame is up and not
     /// drawn over (<see cref="Cover"/>), and only for the windows the model knows — 131 not under a picker, which draws
     /// its own text there (<c>FIGT_B.ADV:77-80</c> opens it for <c>Sﾌﾞﾀｲ</c>). After <c>WAO_SUB</c> 0 the full-screen
     /// window stays on the screen until something draws over it (<see cref="LeaveWindowOnStage"/>): ours too.
@@ -464,7 +468,7 @@ public sealed partial class GamePresenter
         {
             if (CoverMessages && BattleShows)
                 return Battle.MessageWindow;                    // the battle's own windows (BattlePresenter.MessageWindow)
-            if (!CoverMessages || _uncovered || BattleShows || Data != DataView.Closed || MenuCovered || SaveScreenCovered || AttackBriefing
+            if (!CoverMessages || _uncovered || BattleShows || Data != DataView.Closed || MenuCovered || SaveScreenCovered || Briefing
                 || WeekReport is not null || State is not { } s)
                 return null;
             if (s.Ui_WinType == 0)
@@ -570,7 +574,7 @@ public sealed partial class GamePresenter
             {
                 if (MaskEventCgs && (s.Ui_WinType == 31 || _fullWindowLeft || _endingCg != 0 || _gallery))
                     MaskStage();
-                if (!MenuCovered && !SaveScreenCovered && WeekReport is null && !AttackBriefing)
+                if (!MenuCovered && !SaveScreenCovered && WeekReport is null && !Briefing)
                 {
                     DrawPictures(s);
                     Picker?.Draw(Screen, s);

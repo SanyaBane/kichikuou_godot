@@ -188,8 +188,9 @@ part 2 done: `godot/ImportScreen`, the owner's mock-up B, at the start when ther
 the release's other items
 docs/backlog.md, "Release".
 Then (owner, 2026-10-21) our interface goes from the province menu's Attack straight to the deployment screen: `Cﾃｷﾄｼ`'s
-briefing (Rance's and Maris's lines, the same on every attack) is played unseen (`GamePresenter.CoverAttackBriefing`;
-docs/ui/command-screen.md, "The province menu").
+briefing (Rance's and Maris's lines, the same on every attack) is played unseen (`GamePresenter.CoverBriefings`;
+docs/ui/command-screen.md, "The province menu"); so is (owner, 2026-10-24) `Cﾒｲｷｭｳ`'s before the searcher's picker
+(Rance's "Alright, time to search." and Maris's line about the unit; the snow advice stays seen).
 **Owner's decision 29** (2026-10-21): the ten slots give way to two lists — the last ten auto-saves (one each turn's
 start, newest first) and as many manual saves as the player keeps, any of them deletable, a manual save with a comment;
 a load never makes a save the auto-save; page 4 in a file of its own (STR-31). The plan and mock-up round 4 (G, H) are

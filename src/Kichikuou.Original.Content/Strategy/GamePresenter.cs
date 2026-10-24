@@ -601,11 +601,11 @@ public sealed partial class GamePresenter : IStageObserver
     /// <summary>
     /// A key wait of the open window: its page into the log, in either interface — a speech or a thought from any file,
     /// narration and a place's title only from an event scene (<see cref="MessageLog.Keeps"/>); none the player does not see
-    /// (<see cref="AttackBriefing"/>, <see cref="AnswersUnseen"/>).
+    /// (<see cref="Briefing"/>, <see cref="AnswersUnseen"/>).
     /// </summary>
     private void LogPage()
     {
-        if (BattleShows || AttackBriefing || AnswersUnseen() || State is not { } s
+        if (BattleShows || Briefing || AnswersUnseen() || State is not { } s
             || Strategy.MessageWindow.Of(s.Ui_WinFrameCg.Value, _window, Stage.Color, _speech) is not { } window
             || MessageLog.PageOf(window, s.Ui_PortraitL.Value, s.Ui_PortraitR.Value, PortraitName) is not { } page
             || !MessageLog.Keeps(page, _windowFile))

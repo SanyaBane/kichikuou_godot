@@ -37,7 +37,7 @@ the selection boxes (`BattleMenuKind.EnemyAttackResponse`, `BattleMenuKind.Ninja
 
 What else is played unseen is the owner's to decide with the variant (§4). The mock-ups assume the announcement
 (`:5-45`) is the screen itself; candidates for the rest: Rance's lines at Intercept, Plains and City (the same every
-time, as `Cﾃｷﾄｼ`'s briefing, which our interface already plays unseen: `GamePresenter.CoverAttackBriefing`); the
+time, as `Cﾃｷﾄｼ`'s briefing, which our interface already plays unseen: `GamePresenter.CoverBriefings`); the
 ninja menu's lead-in and the "no ninja" lines (the ninjas on our screen instead); the six lines of Abandon City (the
 result "<province> was occupied..." stays seen).
 
