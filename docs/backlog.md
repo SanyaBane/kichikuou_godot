@@ -51,7 +51,7 @@ The owner aims at a public release (decision 28, 2026-10-20).
   (`GameData.AndroidGameFolder`, no permission, no folder dialog) and imports it at its first start. Its saves
   live next to it (owner, 2026-10-25): `GameData.AndroidSaveFolder`, `…/files/saves`, where a PC reaches them over
   USB (an earlier build's, in the app's internal `user://saves`, move there at the first start; checked on the
-  tablet); the save files are one format on both, and `tools/copy-saves.ps1` (`copy-saves-to-tablet.cmd`,
+  tablet); the save files are one format on both (the PC's loaded on the tablet, owner, 2026-10-25), and `tools/copy-saves.ps1` (`copy-saves-to-tablet.cmd`,
   `copy-saves-from-tablet.cmd`) copies them over adb, the source's replacing the destination's, which always move
   first into a backup on the destination itself (owner, 2026-10-25): `save-backups/<time>` next to its saves folder,
   never pruned. Uninstalling the app deletes the saves and their backups with the game folder. The
