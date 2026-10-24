@@ -11,10 +11,16 @@ namespace Kichikuou.Game.Strategy;
 /// the status window and the week's uses are on our status strip (<see cref="StatusStripView"/>). A row's click answers the script's menu with its choice; a right click or Esc anywhere cancels
 /// (0, back to the map), as the original's menu. Load/Save is two rows, Load and Save, the list each opens answered
 /// with the choice (<see cref="LoadSaveShortcut"/>). Laid out in the 1280×800 screen's pixels, scaled with the picture.
+/// In the touch mode (owner's choice C2, docs/ui/touch.md, "The command panel and the province menu") the rows are a
+/// finger's height and the two lists stand side by side, the commands left, the other items right with Turn END under them.
 /// </summary>
 internal sealed partial class CommandMenuView : Control
 {
     private const float Width = 320, Pad = 18, RowPitch = 37, RowH = 30, LinkPitch = 28, LinkH = 26, EndH = 48;
+    // The touch mode's layout: two columns of rows 46 high (9.3 mm on the tablet), Turn END under the right one.
+    private const float TouchColumn = 300, TouchMid = 24, TouchRowH = 46, TouchPitch = 54, TouchEndGap = 14, TouchEndH = 64;
+
+    private readonly bool _touch = TouchMode.On;
 
     private readonly FontFile _brush = Lacquer.Brush();
     private FontFile _gothic;
@@ -80,14 +86,21 @@ internal sealed partial class CommandMenuView : Control
 
     private const float CommandsTop = Pad;
 
-    private float LinksTop => CommandsTop + Commands * RowPitch + 14;
+    private float LinksTop => _touch ? Pad : CommandsTop + Commands * RowPitch + 14;
 
-    private float EndTop => LinksTop + Links * LinkPitch + 10;
+    private float EndTop => _touch ? Pad + TouchColumnHeight(Links) + TouchEndGap : LinksTop + Links * LinkPitch + 10;
 
-    private float Height => EndTop + EndH + 16;
+    /// <summary>The height of <paramref name="rows"/> touch rows one under another.</summary>
+    private static float TouchColumnHeight(int rows) => rows == 0 ? 0 : (rows - 1) * TouchPitch + TouchRowH;
+
+    private float PanelWidth => _touch ? Pad + TouchColumn + TouchMid + TouchColumn + Pad : Width;
+
+    private float Height => _touch
+        ? Math.Max(Pad + TouchColumnHeight(Commands), EndTop + TouchEndH) + Pad
+        : EndTop + EndH + 16;
 
     /// <summary>The panel's corner: centred on the screen, as the original's menu (owner, 2026-10-16).</summary>
-    private float PanelX => MathF.Round((1280 - Width) / 2);
+    private float PanelX => MathF.Round((1280 - PanelWidth) / 2);
 
     private float PanelY => MathF.Round((800 - Height) / 2);
 
@@ -96,6 +109,15 @@ internal sealed partial class CommandMenuView : Control
     private Rect2 RowRect(int row)
     {
         float x = PanelX, y = PanelY;
+        if (_touch)
+        {
+            float right = x + Pad + TouchColumn + TouchMid;
+            if (row < Commands)
+                return new Rect2(x + Pad, y + Pad + row * TouchPitch, TouchColumn, TouchRowH);
+            if (row < Commands + Links)
+                return new Rect2(right, y + Pad + (row - Commands) * TouchPitch, TouchColumn, TouchRowH);
+            return new Rect2(right, y + EndTop, TouchColumn, TouchEndH);
+        }
         if (row < Commands)
             return new Rect2(x + 14, y + CommandsTop + row * RowPitch, Width - 28, RowH);
         if (row < Commands + Links)
@@ -172,10 +194,13 @@ internal sealed partial class CommandMenuView : Control
             return;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         float x = PanelX, y = PanelY;
-        Lacquer.DrawPanel(this, new Rect2(x, y, Width, Height), _k);
+        Lacquer.DrawPanel(this, new Rect2(x, y, PanelWidth, Height), _k);
         for (int r = 0; r < Commands; r++)
             DrawCommand(r);
-        Lacquer.DrawDivider(this, x + 16, x + Width - 16, y + LinksTop - 7, _k);
+        if (_touch)
+            Lacquer.DrawVerticalDivider(this, x + Pad + TouchColumn + TouchMid / 2, y + Pad + 4, y + Height - Pad - 4, _k);
+        else
+            Lacquer.DrawDivider(this, x + 16, x + Width - 16, y + LinksTop - 7, _k);
         for (int r = Commands; r < Commands + Links; r++)
             DrawLink(r);
         DrawTurnEnd();
@@ -188,8 +213,12 @@ internal sealed partial class CommandMenuView : Control
         bool on = item.Enabled, hover = r == _hovered && on;
         Lacquer.DrawRowBox(this, rect, hover, _k);
         var (tag, colour) = TagOf(item.Action);
-        Lacquer.DrawTag(this, _gothic, new Rect2(rect.Position.X + 5, rect.Position.Y + 5, 60, rect.Size.Y - 10), tag, colour, on, _k);
-        DrawString(_gothic, new Vector2(rect.Position.X + 78, Lacquer.Baseline(rect, _gothic, 16)), item.Text, fontSize: 16,
+        int size = _touch ? 19 : 16;
+        var tagRect = _touch
+            ? new Rect2(rect.Position.X + 7, rect.Position.Y + 8, 72, rect.Size.Y - 16)
+            : new Rect2(rect.Position.X + 5, rect.Position.Y + 5, 60, rect.Size.Y - 10);
+        Lacquer.DrawTag(this, _gothic, tagRect, tag, colour, on, _k);
+        DrawString(_gothic, new Vector2(rect.Position.X + (_touch ? 94 : 78), Lacquer.Baseline(rect, _gothic, size)), item.Text, fontSize: size,
             modulate: on ? Lacquer.Text : Lacquer.OffText);
         if (!on)
         {
@@ -203,10 +232,12 @@ internal sealed partial class CommandMenuView : Control
     {
         var rect = RowRect(r);
         bool hover = r == _hovered;
-        if (hover)
-            Lacquer.DrawRowBox(this, rect, true, _k);
-        DrawString(_gothic, new Vector2(rect.Position.X + 10, Lacquer.Baseline(rect, _gothic, 15)), _menu!.Links[r - Commands].Text, fontSize: 15,
-            modulate: hover ? Lacquer.Text : Lacquer.Quiet);
+        // On touch every row has its box: no hover shows that it can be tapped.
+        if (hover || _touch)
+            Lacquer.DrawRowBox(this, rect, hover, _k);
+        int size = _touch ? 18 : 15;
+        DrawString(_gothic, new Vector2(rect.Position.X + (_touch ? 14 : 10), Lacquer.Baseline(rect, _gothic, size)), _menu!.Links[r - Commands].Text,
+            fontSize: size, modulate: hover ? Lacquer.Text : Lacquer.Quiet);
     }
 
     private void DrawTurnEnd()
@@ -218,8 +249,9 @@ internal sealed partial class CommandMenuView : Control
         DrawRect(rect, hover ? Lacquer.HoverLine : Lacquer.Gold, false, Line(2));
         DrawRect(rect.Grow(-4), Color.Color8(214, 150, 90), false, Line(1));
         string text = _menu!.TurnEndText;
-        float tw = _brush.GetStringSize(text, fontSize: 21).X;
-        DrawString(_brush, new Vector2(rect.GetCenter().X - tw / 2, Lacquer.Baseline(rect, _brush, 21)), text, fontSize: 21,
+        int size = _touch ? 24 : 21;
+        float tw = _brush.GetStringSize(text, fontSize: size).X;
+        DrawString(_brush, new Vector2(rect.GetCenter().X - tw / 2, Lacquer.Baseline(rect, _brush, size)), text, fontSize: size,
             modulate: Color.Color8(250, 226, 160));
     }
 

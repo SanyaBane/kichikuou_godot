@@ -230,6 +230,42 @@ menu bar included; the player's turn from the touch look, `00074-touch-rails`); 
   `--load --auto --fast --quit --seed 2 --saves user://saves-look-131 --slots-from user://saves-week18 --harem 6 --until deployment --touch --shots <dir>`.
   The battle's Skip shows in the touch look's `touch-rails`. Looked at by the agent (2026-10-24); not yet on the tablet.
 
+## The command panel and the province menu (owner, 2026-10-24)
+
+The owner's request: on Android the command panel's and the province menu's rows are too low for a finger (30 and 29
+layout pixels, 6.1 and 5.9 mm on the tablet), and the command panel's two lists — the commands and the other items
+(→ Leazas Castle, Load, Save, All Data, Think) — could stand side by side, left and right; the same for the province
+menu. Touch mode only: PC keeps today's panels.
+
+The mock-ups are `tools/ui/mock_touch_menus.py`, over window dumps of the week-18 save on the tablet's frame (the
+command in its docstring); the images stay outside the repository. Every row is 46 layout pixels (9.3 mm), 8 apart;
+the other items get a row box too, since no hover shows that they can be tapped.
+
+- **C1 — the command panel, two lists and Turn END across the foot**: the commands left, the other items right, a
+  gold rule between them, Turn END (60 px, 12.2 mm) under both. 660×376 (now 320×430).
+- **C2 — Turn END under the other items**: the same two lists, Turn END (64 px) at the foot of the right column, at the
+  right thumb; the left column ends higher. The same size.
+- **P1 — the province left, its commands right**: the picture larger (270×180, now 225×150), the name, the army and
+  the figures under it; the commands down the right column, Return at its foot. 630×400 with five items (P1b: an own
+  province's five — Leazas Castle's items and figures, Oaks's picture standing in).
+- **P2 — the header as now, the commands in two columns under it**: down the left column, then the right; Return in
+  the free cell (an odd count) or a row of its own. 576×314 with two items, 576×368 with five (P2b).
+
+**Recommendation: C1 and P1** — Turn END apart from every other button (one tap ends the week, nothing asks first),
+and in P1 the commands always one column at the right thumb, in the script's order, wherever the picture leaves room.
+
+**The owner's choice (2026-10-24): C2 and P1.** Built, in the touch mode only (PC's panels as before):
+
+- **The command panel** (`godot/Strategy/CommandMenuView`): two columns of 300 with a gold rule between them
+  (`Lacquer.DrawVerticalDivider`), rows 46 high and 54 apart — the commands left (tag 72 wide, text 19), the other items
+  right in row boxes (text 18), Turn END 64 high, 14 under them; the panel as high as the longer column, centred.
+- **The province menu** (`godot/Strategy/ProvinceMenuView`): the left column the picture (270×180), the name, the army
+  and the figures under it; the right column the commands as 46-high rows, Return (150×46) at the panel's foot. The
+  dungeon's caption (its place) stands over the right column's rows.
+- Looked at by the agent (2026-10-24) in a window, the look's command with `--until deployment --interface new --touch`
+  (dumps `command-menu`, `province-menu`); not yet on the tablet. The dungeon's menu and an own province's five items
+  were not reached by the look.
+
 ## Phones (put off)
 
 Put off by the owner (2026-10-24). What is ready for them: the measurements above, mock-ups B1, B3 (the battle),

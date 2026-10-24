@@ -293,4 +293,13 @@ internal static class Lacquer
         c.DrawLine(new Vector2(m + 10, y), new Vector2(x1, y), DimGold, Line(1, k));
         c.DrawColoredPolygon([new(m, y - 4), new(m + 4, y), new(m, y + 4), new(m - 4, y)], Gold);
     }
+
+    /// <summary>The same divider standing up, between two columns (the touch mode's panels).</summary>
+    public static void DrawVerticalDivider(CanvasItem c, float x, float y0, float y1, float k)
+    {
+        float m = (y0 + y1) / 2;
+        c.DrawLine(new Vector2(x, y0), new Vector2(x, m - 10), DimGold, Line(1, k));
+        c.DrawLine(new Vector2(x, m + 10), new Vector2(x, y1), DimGold, Line(1, k));
+        c.DrawColoredPolygon([new(x, m - 4), new(x + 4, m), new(x, m + 4), new(x - 4, m)], Gold);
+    }
 }

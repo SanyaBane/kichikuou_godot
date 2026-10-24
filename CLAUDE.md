@@ -222,7 +222,8 @@ Then (owner, 2026-10-24) a touch mode for the Android build: survey and mock-ups
 sides, the target preselected per unit) and M3 (a round Commands button on the map): built (docs/ui/touch.md, "The tablet":
 `godot/Strategy/TouchMode` — Android or `--touch` —, `godot/Battles/BattleCommandLayer.Touch.cs`,
 `Original.Content/Battles/TouchTargets`, `godot/Strategy/CommandsButton`); the target frame breathes on Android only
-(the owner's A).
+(the owner's A); the command panel and the province menu stand in two columns with rows a finger high (the owner's C2
+and P1, docs/ui/touch.md, "The command panel and the province menu").
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
