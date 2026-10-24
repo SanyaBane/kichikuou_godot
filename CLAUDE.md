@@ -453,7 +453,8 @@ commit `local.env`.
   `powershell -ExecutionPolicy Bypass -File tools
 un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   `godot/Kichikuou.csproj` and starts `KICHIKUOU_GODOT_EXE` (the exe without `_console` unless `-Console`) on `godot`,
-  passing the rest after `--`.
+  passing the rest after `--`. `run-game-touch.cmd` does the same with `--touch`: the Android interface on PC, the mouse
+  playing a finger (no hover; docs/ui/touch.md).
 - Export the Windows release build (the export templates 4.7.2 mono installed):
   `powershell -ExecutionPolicy Bypass -File tools/export-release.ps1 -Out <folder outside the repository>` — the
   preset `godot/export_presets.cfg`, the licenses copied next to the exe. The build keeps its data in
