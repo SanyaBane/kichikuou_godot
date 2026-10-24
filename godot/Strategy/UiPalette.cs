@@ -75,6 +75,12 @@ internal sealed partial record UiPalette
     public required Color InkGreen { get; init; }
     public required Color ReadOutline { get; init; }
 
+    // The battle board's backdrop (owner, 2026-10-24, mock-ups S3 and S4; docs/ui/battle-screen.md, "The board's
+    // backdrop"): Sengoku Rance's broken stones, their gaps, and the line where an empty place's card would stand.
+    public required Color Stone { get; init; }
+    public required Color StoneGap { get; init; }
+    public required Color PlaceLine { get; init; }
+
     /// <summary>The name in the options: "Steel" for steel.</summary>
     public string Title => char.ToUpperInvariant(Key[0]) + Key[1..];
 
@@ -137,6 +143,9 @@ internal sealed partial record UiPalette
         PillInk = Color.Color8(24, 18, 12),
         InkGreen = Color.Color8(52, 104, 40),
         ReadOutline = Color.Color8(150, 132, 104, 160),
+        Stone = Color.Color8(72, 65, 54),
+        StoneGap = Color.Color8(30, 24, 19),
+        PlaceLine = Color.Color8(110, 86, 46),
     };
 
     /// <summary>
@@ -189,6 +198,9 @@ internal sealed partial record UiPalette
         PartyRow = Color.Color8(201, 168, 90, 70),
         PillInk = Color.Color8(24, 25, 28),
         ReadOutline = Color.Color8(138, 146, 156, 160),
+        Stone = Color.Color8(68, 71, 75),
+        StoneGap = Color.Color8(32, 34, 38),
+        PlaceLine = Color.Color8(80, 175, 75),      // Sengoku Rance's own green
     };
 
     public static IReadOnlyList<UiPalette> All { get; } = [Lacquer, Steel];

@@ -382,6 +382,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   dialogue question's answer, `MenuAnswered` (an event scene's menu or one after a speech, never the play's; the play's narration left out, `MessageLog.Keeps`) — the speakers by the portraits' plates, `PortraitNames`; kept for the launch,
   `EngineState.Log`; docs/ui/messages.md, §5 step 6); our screens draw with `Strategy/UiPalette` (the style's colours by role and its parts, the ledger's, the click's triangle; `UiPalette.Drawing.cs`), each through its part's palette, `UiPalettes.For(UiPart.…)`, and `Strategy/Lacquer` (fonts, lines, baselines);
   `Battles/BattleBoardView` (our own battle screen, our interface, docs/ui/battle-screen.md:
+  the cards on stones drawn by code in the palette's colours, `Battles/BoardStones` ("The board's backdrop"),
   `Original.Content/Battles/BattleScene` on top, the stage's windows over it through `WindowMask`, the
   cards and the round's order from `BattleBoard`/`RoundOrder`, the order strip `OrderStrip` moving on its own;
   the exchange's troops and HP counters at the scene's foot after Sengoku Rance's, `Battles/ExchangeCountersView` from

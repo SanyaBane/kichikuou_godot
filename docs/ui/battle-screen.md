@@ -113,8 +113,30 @@ portrait (mock-up B):
   (a word in the state line; the face is not dimmed, owner's request 2026-10-13); the acting unit's card as Sengoku Rance's
   (owner, 2026-10-13; docs/sengoku/04-screen.md §6.2, §6.5): its fill the card's colour 30 % toward the
   accent, its edge black / accent / accent / black, and every 500 ms a frame shown or hidden over it one
-  unit further out, accent / white / white / accent (a unit is a quarter of the card's padding); an empty place "n empty".
+  unit further out, accent / white / white / accent (a unit is a quarter of the card's padding); an empty place open,
+  the stones in a line of the palette's `PlaceLine` ("The board's backdrop" below; "n empty" until 2026-10-24).
   "Rance Army" / the enemy army's name above the two sides.
+- **The board's backdrop** (owner, 2026-10-24; built): under the cards a flat fill (`BattleBoardView._back`, the palette's
+  panel) until then, where Sengoku Rance's card area is a stone texture with the free grid cells outlined. Mock-up round 1
+  (`tools/ui/mock_board_backdrop.py`, over the week-18 save's battle on Oaks (6), round 1): A the screens' wave pattern
+  (`UiPalette.DrawWaveBackdrop`; A1 as faint as on the screens, A2 stronger), B the battle's picture continued
+  (its lower half mirrored down, blurred, dimmed; B1 as the scene's sides, B2 darker and warmer), C a texture drawn
+  by code (C1 paving stones, C2 a lacquered wooden floor), D the sides' tones (the player's blue left, the enemy's red
+  right), E an empty place as a dashed outline with gold corners instead of "n empty"; D and E with A, B and C. Over
+  a texture the armies' names and "TURNS LEFT" need more contrast than on the flat fill. The owner found them all
+  poor and asked for Sengoku Rance's background, roughly (round 2): its CG 10200 is broken stones packed edge to edge
+  in green-grey (stones about 90,114,88, gaps 42,51,52) with a bright green line (80,175,75) round each place. S1 is
+  that drawn by code (angular stones, big ones first and small ones in the gaps, lit from the top left, grained), its
+  line a little outside every card's frame and round the empty place, which is open (no frame, no "n empty"); S1′ the
+  line round the empty place only; S2 at 60 %; S3 in a warm grey with the frames' dim gold; S4 in steel grey. The
+  armies' names and the gauge's words get a dark halo, darker stones under the top edge. **The owner chose S3 for
+  the Lacquer palette and S4 for Steel, without the line round the cards** (it doubled their frames): built as
+  `Battles/BoardStones` (S1's stones drawn by code at twice the layout's pixels, once a palette, a fixed seed; darker
+  along the top and round the gauge's caption) in the palette's `Stone` and `StoneGap` (`UiPalette`), under the board
+  from the separator to the screen's foot (`BoardStones.Area`); an empty place is open, only a line of the palette's
+  `PlaceLine` where its frame was (the frames' dim gold in Lacquer, Sengoku Rance's green in Steel); the armies'
+  names, their advantages and "TURNS LEFT" have a dark rim (`LabelRim`). The exchange's spotlight darkens the stones
+  with the rest of the panel.
 - The windows that wait for a click ("vs", results, info) stay as they are, over the scene, for now;
   the round header became the battle's opening ("The opening" below).
 

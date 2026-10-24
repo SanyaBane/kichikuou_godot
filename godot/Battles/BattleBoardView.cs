@@ -74,6 +74,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     private FaceCrops _crops = new();
     private readonly Theme _theme = new();
     private readonly ColorRect _back;
+    private readonly TextureRect _stones;                   // the board's backdrop, BoardStones
     private readonly Control _sidesClip;
     private readonly TextureRect _sides;
     private readonly Control _sceneClip;                    // the scene's layers, clipped to its area
@@ -141,6 +142,8 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         Theme = _theme;
         _back = new ColorRect { MouseFilter = MouseFilterEnum.Ignore };
         AddChild(_back);
+        _stones = Picture();                                                // under the cards (owner, 2026-10-24)
+        AddChild(_stones);
         _sidesClip = new Control { ClipContents = true, MouseFilter = MouseFilterEnum.Ignore };
         AddChild(_sidesClip);
         _sides = new TextureRect
@@ -326,6 +329,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     {
         _theme.SetColor("font_color", "Label", Ui.Text);
         _back.Color = Back;
+        _stones.Texture = BoardStones.For(Ui, GaugeCaptionArea);
         _strip.ApplyPalette();
         _playerAdvantage.SetColour(Ui.HoverLine);
         _enemyAdvantage.SetColour(Ui.HoverLine);
@@ -335,8 +339,14 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         _separator.QueueRedraw();
     }
 
-    /// <summary>The screen's backdrop and an empty place's card: the panels' lacquer, opaque.</summary>
+    /// <summary>The screen's backdrop where the stones are not: the panels' lacquer, opaque.</summary>
     private static Color Back => Ui.Panel with { A = 1 };
+
+    /// <summary>The rim round the words on the stones: the armies' names, their advantages, the gauge's caption.</summary>
+    private static readonly Color LabelRim = new(0.03f, 0.025f, 0.02f, 0.8f);
+
+    /// <summary>Where the gauge's "n TURNS LEFT" stands, in layout pixels: the stones are darker round it.</summary>
+    private static readonly Rect2 GaugeCaptionArea = new(GaugeArea.Position.X, GaugeArea.Position.Y + TubeHeight + 10, GaugeArea.Size.X, 76);
 
     /// <summary>Option → Display: the screen's text in the chosen font.</summary>
     public void SetFont(GameFont font)
@@ -372,6 +382,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
             c.Size = area.Size * scale;
         }
         At(_back, new Rect2(0, 0, 1280, 800));
+        At(_stones, BoardStones.Area);
         At(_sidesClip, SidesArea);
         At(_sceneClip, SceneArea);
         foreach (var layer in new[] { _field, _front })
@@ -390,7 +401,14 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         At(_playerArmyLine, PlayerNameArea);
         At(_enemyArmyLine, EnemyNameArea);
         foreach (var line in new[] { _playerArmyLine, _enemyArmyLine })
+        {
             line.AddThemeConstantOverride("separation", (int)Math.Round(16 * scale));
+            foreach (var label in line.GetChildren().OfType<Label>())                  // a dark rim: they stand on the stones
+            {
+                label.AddThemeConstantOverride("outline_size", Math.Max(2, (int)Math.Round(5 * scale)));
+                label.AddThemeColorOverride("font_outline_color", LabelRim);
+            }
+        }
         _opening.Position = origin + SidesArea.Position * scale;
         _opening.Layout(scale);
         At(_gauge, GaugeArea);
@@ -853,7 +871,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
             bool acting = order.Acting == place && card is not null && card.Record == order.ActingRecord;
             if (acting)
                 actingPlace = place;
-            box.BgColor = card is null ? Back : acting ? Ui.Row.Lerp(Ui.HoverLine, ActingTint) : Ui.Row;
+            box.BgColor = card is null ? Colors.Transparent : acting ? Ui.Row.Lerp(Ui.HoverLine, ActingTint) : Ui.Row;   // an empty place: the stones in a line
             box.BorderColor = Border(place, card, acting);
             int pad = Pad;
             box.ContentMarginLeft = box.ContentMarginRight = box.ContentMarginTop = box.ContentMarginBottom = pad;
@@ -862,7 +880,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
                 panel.RemoveChild(child);
                 child.QueueFree();
             }
-            panel.AddChild(card is null ? Empty(place) : Contents(card, acting, pad));
+            panel.AddChild(card is null ? new Control { MouseFilter = MouseFilterEnum.Ignore } : Contents(card, acting, pad));
         }
         if (actingPlace != _actingPlace)
         {
@@ -881,9 +899,9 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
 
     private BattlePlace? _cardsHovered;
 
-    /// <summary>A card's frame: the accent while it acts, lit under the pointer (<see cref="_cardsHovered"/>), else plain.</summary>
+    /// <summary>A card's frame: the accent while it acts, lit under the pointer (<see cref="_cardsHovered"/>), else plain; an empty place's line.</summary>
     private Color Border(BattlePlace place, BattleCard? card, bool acting) =>
-        acting ? Ui.HoverLine : _cardsHovered == place && card is not null ? Ui.Gold : Ui.Gold;
+        card is null ? Ui.PlaceLine : acting ? Ui.HoverLine : _cardsHovered == place ? Ui.Gold : Ui.Gold;
 
     /// <summary>The cards' padding inside their frame, in window pixels: four units of the acting frame.</summary>
     private int Pad => Math.Max(1, (int)Math.Round(4 * _scale));
@@ -1120,8 +1138,6 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         return Color.FromHsv(h, 0.85f, dark ? 1f : Math.Min(v, 0.55f));
     }
 
-    private Label Empty(BattlePlace place) => Line($"{place.Slot}  empty", Ui.Quiet, center: true);
-
     /// <summary>
     /// A card: the portrait with the unit's stats (<see cref="CardPortrait"/>; the enemy's on the right), place and name,
     /// troop type, troops and HP with bars, the player's standing order, "Acting" / "Acted".
@@ -1355,8 +1371,12 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         _gauge.DrawString(font, new Vector2(0, baseline), digits, HorizontalAlignment.Center, _gauge.Size.X, number, colour);
         string[] words = last ? ["LAST", "TURN"] : ["TURNS", "LEFT"];
         for (int i = 0; i < words.Length; i++)
-            _gauge.DrawString(font, new Vector2(0, (TubeHeight + 58 + 14 * i) * s), words[i], HorizontalAlignment.Center,
-                _gauge.Size.X, caption, last ? Ui.Minus : Ui.Quiet);
+        {
+            var at = new Vector2(0, (TubeHeight + 58 + 14 * i) * s);
+            _gauge.DrawStringOutline(font, at, words[i], HorizontalAlignment.Center, _gauge.Size.X, caption,
+                Math.Max(2, (int)Math.Round(4 * s)), LabelRim);
+            _gauge.DrawString(font, at, words[i], HorizontalAlignment.Center, _gauge.Size.X, caption, last ? Ui.Minus : Ui.Quiet);
+        }
     }
 
     /// <summary>A spent round: a dark slot.</summary>
