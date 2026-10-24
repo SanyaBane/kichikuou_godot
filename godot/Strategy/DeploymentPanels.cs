@@ -476,7 +476,9 @@ internal sealed partial class DeploymentPanels : Control
         float width = Line(2.5f);
         c.DrawPolyline([new(ends, y0), new(x, y0), new(x, cy - 16), new(x + 10, cy - 6)], Lacquer.Gold, width, true);
         c.DrawPolyline([new(ends, y1), new(x, y1), new(x, cy + 16), new(x + 10, cy + 6)], Lacquer.Gold, width, true);
-        c.DrawColoredPolygon([new(x + 6, cy - 14), new(tip, cy), new(x + 6, cy + 14)], Lacquer.Name);
+        Vector2[] head = [new(x + 6, cy - 14), new(tip, cy), new(x + 6, cy + 14)];
+        c.DrawColoredPolygon(head, Lacquer.Name);
+        c.DrawPolyline([.. head, head[0]], Lacquer.Name, Line(1), true);   // the fill has no antialiasing: its edges smoothed
     }
 
     /// <summary>A label in Cinzel and its figure in the game's font after it, centred in <paramref name="band"/>.</summary>
