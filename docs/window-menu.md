@@ -77,7 +77,8 @@ xsystem35's; both skip modes, as the owner's desktop xsystem35 (everything) by d
 web build (seen only) by an option.
 
 - A light bar above the game screen: **File** (Save Screenshot, Restart, Exit), **Screen**
-  (Window, Fullscreen), **Option** (ours: no drop-down, the options window below), **MsgSkip[off]** (toggles, `[on]` while
+  (Window, Fullscreen), **Options** (ours: no drop-down, the options window below; **Option** until 2026-10-24, the
+  name the entries below keep), **Sound[on]** (ours, below), **MsgSkip[off]** (toggles, `[on]` while
   on, greyed out while not allowed), and ours for development at the end, **Debug** (Battle
   Captures...: asks first, then the battle-capture viewer, which our own title had until `ｽﾀMENU`
   replaced it, 2026-10-11; Portraits..., Effects..., Hide Dimmed Map Names). Not done: Integer Scaling, Auto Copy Text to Clipboard
@@ -91,6 +92,10 @@ web build (seen only) by an option.
   the Option drop-down's items, with Text Speed… and Battle Screen… as dialogs of their own; the entries below keep
   their history. `--options [--shots DIR] [--quit]` opens it over the title and, in a window, dumps each tab
   (development).
+- **Sound[on] / Sound[off]** (ours, owner's request 2026-10-24): a toggle after Options, the game's music and sound
+  effects heard or not, saved in `user://settings.cfg`, `[audio] sound` (on by default; `SoundChoice`, applied at the
+  launch by `Main`). Off mutes the Master bus: the players go on unheard, so the music's position `SC` reads and every
+  wait are as with the sound on.
 - **Option → Messages → Mouse movement** (checked at start, for the launch; 2026-10-10): the script's
   `IZ x, y` (`COMMAND.ADV:618` and the command files put the pointer back where it was before a
   menu) glides the system pointer there as `ags_setCursorLocation` does — seven points on its

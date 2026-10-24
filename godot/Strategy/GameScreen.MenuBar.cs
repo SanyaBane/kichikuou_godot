@@ -11,8 +11,8 @@ using Kichikuou.Game.Battles.Effects;
 namespace Kichikuou.Game.Strategy;
 
 // xsystem35's window menu bar over the game (docs/window-menu.md): File (Save Screenshot, Restart,
-// Exit), Screen (Window, Fullscreen), Option (ours: the options window, OptionsView, with xsystem35's Mouse
-// Movement among its settings), MsgSkip[off|on]; hot keys F1 and F4 as xsystem35's, Alt+R; and ours for development, Debug
+// Exit), Screen (Window, Fullscreen), Options (ours: the options window, OptionsView, with xsystem35's Mouse
+// Movement among its settings), Sound[on|off] (ours, SoundChoice), MsgSkip[off|on]; hot keys F1 and F4 as xsystem35's, Alt+R; and ours for development, Debug
 // (Battle Captures: the capture viewer, which our own title had until ｽﾀMENU replaced it; Portraits,
 // Effects, Hide Dimmed Map Names).
 public partial class GameScreen
@@ -42,10 +42,20 @@ public partial class GameScreen
         row.AddChild(Menu("Screen",
             ("Window", () => SetFullscreen(false)),
             ("Fullscreen", () => SetFullscreen(true))));
-        var option = new Button { Text = "Option" };
-        BarItem(option);
-        option.Pressed += () => OpenOptions();
-        row.AddChild(option);
+        var options = new Button { Text = "Options" };
+        BarItem(options);
+        options.Pressed += () => OpenOptions();
+        row.AddChild(options);
+        var sound = new Button();
+        BarItem(sound);
+        sound.Pressed += () =>
+        {
+            SoundChoice.On = !SoundChoice.On;
+            UpdateSoundItem();
+        };
+        row.AddChild(sound);
+        UpdateSoundItem();
+        void UpdateSoundItem() => sound.Text = SoundChoice.On ? "Sound[on]" : "Sound[off]";
         _skipItem = new Button();
         BarItem(_skipItem);
         _skipItem.Pressed += _skip.Toggle;
@@ -227,7 +237,7 @@ public partial class GameScreen
     private OptionsView? _optionsView;
 
     /// <summary>
-    /// Option (ours, docs/ui/options.md; the owner's mock-up D): the options window over the game, which waits while it is
+    /// Options (ours, docs/ui/options.md; the owner's mock-up D): the options window over the game, which waits while it is
     /// open. Its changes are kept at once; the screens follow them here, and the game's context follows "New scenes first"
     /// (decision 30). The game folder's change leaves the game for the import screen (and a fresh title after it); the
     /// developer's extract, which wins over any import (<see cref="GameData.UsesExtract"/>), locks it.
