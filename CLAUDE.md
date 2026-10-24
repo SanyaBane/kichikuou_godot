@@ -209,6 +209,10 @@ Then (owner, 2026-10-23) the already-read text's colour after Rance X's: a messa
 read before (the message skip's seen record, `msgskip.txt` in the save folder) shows its text in a colour chosen in
 Option → Messages, Salmon by default — docs/ui/read-text.md (mock-up round R, 2: whole windows), built
 (`TextBox.ReadBefore`, `GamePresenter.ReadBefore`, `MessageWindow.Read`, `godot/Strategy/ReadTextChoice`).
+Then (owner, 2026-10-24) our own screen for an enemy attack (`FIGT_B`'s announcement and its Intercept / Ninja Scout /
+Abandon City menus), the refusals and Ex's scenes kept seen: the survey and mock-up round 1 (A a card over the map, B a
+screen of its own, C the original's scene with our menu) are docs/ui/enemy-attack.md (`tools/ui/mock_enemy_attack.py`),
+awaiting the owner's choice.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
