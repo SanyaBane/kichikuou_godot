@@ -9,7 +9,8 @@ namespace Kichikuou.Game.Strategy;
 /// picture dimmed, the pages of the message windows as ruled lines — the lines close, the speaker's name in vermilion at a
 /// run's first line, narration in a quieter ink, a place's title as a heading, a menu's answer under "CHOICE" — in the game's
 /// font (Option → Display) at the script's own breaks. It opens at the newest line; the wheel scrolls, a right click, Escape or
-/// the wheel down at the newest line closes it. Laid out in the 1280×800 screen's pixels, scaled with the picture.
+/// the wheel down at the newest line closes it; in the touch mode a finger's drag scrolls and a tap off the frame closes it.
+/// Laid out in the 1280×800 screen's pixels, scaled with the picture.
 /// </summary>
 internal sealed partial class MessageLogView : Control
 {
@@ -68,6 +69,11 @@ internal sealed partial class MessageLogView : Control
 
     public override void _GuiInput(InputEvent @event)
     {
+        if (TouchMode.On && Touch(@event))
+        {
+            AcceptEvent();
+            return;
+        }
         if (@event is InputEventMouseButton { Pressed: true } button)
         {
             switch (button.ButtonIndex)
@@ -85,6 +91,38 @@ internal sealed partial class MessageLogView : Control
             }
         }
         AcceptEvent();
+    }
+
+    private Vector2? _finger;           // the touch mode: where the finger came down, its drag's start
+    private int _fingerTop;             // the first line shown then
+    private bool _dragged;              // it moved further than a tap
+
+    /// <summary>
+    /// The touch mode (docs/ui/touch.md, "The Skip and Log buttons"): a finger dragged over the page scrolls it, a tap off
+    /// the frame closes it; the wheel and the right click (Android's Back) as before. Returns whether the event was taken.
+    /// </summary>
+    private bool Touch(InputEvent e)
+    {
+        switch (e)
+        {
+            case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } press:
+                _finger = press.Position;
+                _fingerTop = _top;
+                _dragged = false;
+                return true;
+            case InputEventMouseMotion motion when _finger is { } start:
+                float dy = (start.Y - motion.Position.Y) / _k;
+                _dragged |= Math.Abs(dy) > 12;
+                if (_dragged)
+                    Scroll(_fingerTop + (int)Math.Round(dy / Pitch) - _top);
+                return true;
+            case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false } release when _finger is not null:
+                _finger = null;
+                if (!_dragged && !Frame.HasPoint(release.Position / _k))
+                    Close();
+                return true;
+        }
+        return false;
     }
 
     private void Scroll(int lines)
@@ -106,7 +144,7 @@ internal sealed partial class MessageLogView : Control
         DrawRect(paper, Lacquer.Paper);
         DrawRect(new Rect2(paper.Position, paper.Size.X, HeadHeight), Lacquer.PaperHead);
         Text(_head, "CHRONICLE", 26, paper.Position.X + 24, paper.Position.Y + 39, Lacquer.HeadInk);
-        string hint = "WHEEL SCROLLS   ·   RIGHT CLICK CLOSES";
+        string hint = TouchMode.On ? "DRAG SCROLLS   ·   TAP OUTSIDE CLOSES" : "WHEEL SCROLLS   ·   RIGHT CLICK CLOSES";
         Text(_hint, hint, 14, paper.End.X - 24 - Width(_hint, hint, 14), paper.Position.Y + 34, Lacquer.InkQuiet);
 
         float margin = paper.Position.X + MarginX;

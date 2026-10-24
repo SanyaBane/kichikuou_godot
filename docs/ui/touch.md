@@ -176,6 +176,60 @@ hover and the right button. So the tablet keeps our layout and gets only what to
   (`BattleCommandLayer.DrawTouchTarget`). On PC, `--touch` included, the frame stands still as before; so the pulse is
   seen on the tablet only.
 
+## The Skip and Log buttons (owner, 2026-10-24)
+
+The owner's request: the menu bar's MsgSkip is awkward to reach on the tablet; a large skip button at the bottom left
+for the dialogues and scenes, as the map's Commands button is at the bottom right. Round 1 drew a hold (K1, the same as
+Ctrl held, `MessageSkip.Held`), a tap or hold (K2) and the hold with a Log button (K3). **The owner's choice: no hold —
+a tap turns the skip on and off, and a Log button beside it**; and the battle needs another place than round 1's
+(the left blurred side), since the rails stand there in the player's turn.
+
+What the buttons do (touch mode only; PC keeps F1, Ctrl and the wheel):
+
+- **Skip** is the menu bar's MsgSkip (`MessageSkip.Toggle`, as F1): a tap turns it on — the pill lit gold, "Skip: ON" —
+  and stops as xsystem35's switch stops: a tap on it again, a tap on the screen during a skipped wait, a menu, an unseen
+  text when Option → Messages does not skip unseen ones. Greyed while the skip is not allowed (`MessageSkip.Enabled`).
+  A tap on the button is the button's, never a click that answers the wait (nor one that stops the skip it started).
+- **Log** opens the message log (`MessageLogView`, now the wheel up at a key wait); greyed where the log does not open.
+
+The mock-ups are `tools/ui/mock_skip.py`, over window dumps of the week-18 save on the tablet's frame (1280×824, the
+menu bar included; the player's turn from the touch look, `00074-touch-rails`); the images stay outside the repository:
+
+- **S1 — the scenes**: steel pills as Commands, Skip 190×84 (39 × 17 mm) and Log 150×84 (30 × 17 mm), 16 in from the
+  picture's bottom left, at every key wait of a scene.
+- **S2** — the skip on: Skip lit gold. Where a window leaves no room beside it (the narration window starts at x 250),
+  Log stands above Skip.
+- **S3** — window 131 spans the bottom: the pair rides above it and its speaker's plate.
+- **B1 — the battle, under the cards**: the strip under the cards (y 782-824 of the dump, 42 px) is free on every
+  battle screen, the player's turn included; the pair at its left, Skip 150×34 and Log 110×34 (6.9 mm high) — the same
+  corner as in the scenes. Shown through the whole battle, the turn included (the skip can be turned on before the
+  exchange), Log greyed but at a key wait.
+- **B2 — the battle, in the armies' heading**: the pair between "Rance Army" and the right side's label, over the turn
+  counter's column (140×34 and 130×34).
+
+**Recommendation: B1** — the same corner as the scenes, nothing else ever drawn there.
+
+**The owner's choice (2026-10-24): S1-S3 in the scenes, B1 in the battle without Log** (the battle needs none). Built:
+
+- **The places** (`Original.Content/Strategy/SkipButtons`, `SkipButtonsTests`): side by side at the bottom left; Log above
+  Skip beside the narration window; above the window, side by side, where it covers the corner — 131 and the right
+  speech (121/122, whose pair then stands over the left portrait's foot); in the battle Skip alone, 150×34, at
+  (12, 762) of the screen.
+- **The buttons** (`godot/Strategy/TouchPill`, the Commands button's look, lit gold while on, greyed and deaf while
+  disabled; `godot/Strategy/GameScreen.Skip.cs`): shown in the touch mode at a key wait or while our message window is
+  up — Skip also while MsgSkip is on, anywhere, to turn it off again —, never under a menu, a modal view or our own
+  screens (the deployment table, Subordinates, Harem, Treasure, the command panel, the province menu, Save/Load, the
+  enemy attack); on our battle screen Skip the whole battle. Skip is `MessageSkip.Toggle` (greyed while not
+  `Enabled`); Log opens the message log at a key wait with something logged, else greyed.
+- **The message log on touch** (`MessageLogView`): a finger's drag scrolls it, a tap off its frame closes it (Back, a
+  right click, as before); its hint says so.
+- **Unattended play** with `--touch` in a window, once a launch, at the first key wait of a scene with our window and
+  something logged (`GameScreen.AutoSkipTouchAsync`): dump `touch-skip`, a tap on Log (`touch-log`), a tap off the
+  log's frame closes it, a tap on Skip (`touch-skip-on`), another turns it off; the taps must not reach the script's
+  input. The week-18 battle look reaches no logged page; the harem look does —
+  `--load --auto --fast --quit --seed 2 --saves user://saves-look-131 --slots-from user://saves-week18 --harem 6 --until deployment --touch --shots <dir>`.
+  The battle's Skip shows in the touch look's `touch-rails`. Looked at by the agent (2026-10-24); not yet on the tablet.
+
 ## Phones (put off)
 
 Put off by the owner (2026-10-24). What is ready for them: the measurements above, mock-ups B1, B3 (the battle),

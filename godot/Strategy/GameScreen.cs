@@ -347,6 +347,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         ReadySubordinates(faces);
         ReadyHarem(faces);
         ReadyTreasure(faces);
+        ReadySkipButtons();
         _overlay =OutlinedLabel(VerticalAlignment.Center, 32);
         _notice = OutlinedLabel(VerticalAlignment.Top, 18);
 
@@ -431,6 +432,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _presenter.CoverMessages = InterfaceChoice.New;                  // also when the interface changed with a window open
         UpdateBattleScreen(Present());
         UpdateMessageWindow();
+        UpdateSkipButtons();
         UpdateScoutReport();
         UpdateEnemyAttack();
         UpdateStrategyCutIn();
@@ -1243,6 +1245,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _keyWaiting = true;
             UpdateMessageWindow();
             UpdateInfoBox();
+            if (TouchMode.On && Windowed && !_autoSkipTouched && _messageView.Window is not null && !BattleScreenShown
+                && _presenter.Log.Pages.Count > 0)
+                await AutoSkipTouchAsync();                                    // the touch mode's Skip and Log, once a launch
             if (Windowed && _presenter.Log.Pages.Count >= 20 && _messageDumps.Add("message-log"))
                 await LogDumpAsync();                                           // the message log once a launch
             if (_treasureCallout.Visible && Windowed && _messageDumps.Add("treasure-refusal"))

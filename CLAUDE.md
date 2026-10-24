@@ -392,7 +392,10 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   (`Battles/BattleCommandLayer.Touch.cs`: the acting unit's commands left, the target's attacks right, the banners not
   shown; the target preselected by `Original.Content/Battles/TouchTargets` through `GameScreen.Touch.cs`, which also
   holds the long press on a card and Back as a right click), the map's `Strategy/CommandsButton` (a tap is the right
-  click that opens the command panel);
+  click that opens the command panel), the scenes' Skip and Log buttons at the bottom left and the battle's Skip under
+  its cards (`Strategy/TouchPill`, `GameScreen.Skip.cs`, their places `Original.Content/Strategy/SkipButtons`; Skip is
+  MsgSkip's switch; the message log scrolled by a drag, closed by a tap off its frame; docs/ui/touch.md, "The Skip and
+  Log buttons");
   `Strategy/OptionsView` (Option: the options window over the game, the owner's mock-up D, docs/ui/options.md — a paper sheet with the tabs Messages, Display, Battle, Game; `--options` dumps them); Option → Display's palette (`DeploymentPalette`, steel by default) colours our battle screen and the map's plates;
   `Battles/AdvantageTip` (the instant tooltips of the advantages next to the armies' names, `BattleAdvantage.Parts`); `GodotGlyphRenderer` (TextServer; MS Gothic or the bundled BIZ UDGothic in `godot/fonts`, Option →
   Display, `--font ms-gothic|biz-ud-gothic` for one launch), `BattleAudio`; `Screens` switches screens. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).

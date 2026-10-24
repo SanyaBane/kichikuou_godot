@@ -305,6 +305,8 @@ public partial class GameScreen
     {
         _markers.SetPalette(palette);
         _commandsButton.SetPalette(palette);
+        _skipButton.SetPalette(palette);
+        _logButton.SetPalette(palette);
         _battleView.SetPalette(palette);
         _scoutView.SetPalette(palette);
         _strategyView.SetPalette(palette);
