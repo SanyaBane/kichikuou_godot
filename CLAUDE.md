@@ -379,8 +379,9 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   second line and a gold star on the seal, "+ New save" heading them in Save, "Delete all without ★ (n)" in their heading
   asking in a callout beside it (`SaveSlots.DeleteUncommented`; Sengoku Rance's notes, §10, the owner's N1) — and the
   ten auto-saves, newest first; the chosen save's page with its
-  map as All Data draws it, its figures, a manual save's comment (Edit, written in place), Delete (a callout at the
-  button) and a red button that answers the script's menu with the save's item; Load | Save tabs from `COMMAND`,
+  map as All Data draws it, its figures, a manual save's comment (Edit, written in place), Delete at the save's
+  title (a danger button, its callout under it; the owner's B5, §11), Back at the foot's left and a red button that
+  answers the script's menu with the save's item; Load | Save tabs from `COMMAND`,
   `LoadSaveShortcut.Switch`; the model `Original.Content/Strategy/SaveSlots` (`ReadLibrary`, `SaveShelf`) — each save's
   summary read from the `ISaveLibrary`, the menu's saves from `GamePresenter.SaveLibraryList` —, the window 113 under it
   not drawn, `GamePresenter.SaveScreenCovered`);
@@ -568,7 +569,7 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   Our Save/Load screen (2026-10-20): `--saveload` on the week-18 save makes the first map wait open the command panel's
   Save row; in a window it saves a new manual save by the red button, asks the sweep of the saves without a comment and
   keeps them, writes its comment through Edit, asks Delete and
-  keeps it, shows the auto-saves, opens the Load tab, chooses the newest auto-save and leaves by a right click, then plays on — dumps `save-load-title` (the
+  keeps it, shows the auto-saves, opens the Load tab, chooses the newest auto-save and leaves by Back, then plays on — dumps `save-load-title` (the
   title's load list at the `--load`), `save-load-save`, `save-load-button`, `save-load-saved`, `save-load-sweep`, `save-load-comment`,
   `save-load-delete`, `save-load-autos-save`, `save-load`, `save-load-auto` —
   `--load --auto --fast --quit --seed 2 --saves user://saves-look-saves --slots-from user://saves-week18 --saveload --until deployment --interface new --shots <dir>`.

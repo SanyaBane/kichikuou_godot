@@ -1719,8 +1719,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         var library = _library ?? new MemorySaveLibrary();
         var now = list == SaveList.Save && _presenter.State is { } s ? SaveSlots.Now(s) : null;
-        string back = _presenter.SaveScreenMode == 0 ? "back to the title" : _saveShortcut.Running ? "back to the map" : "back to the menu";
-        _saveView.Open(list, _presenter.SaveLibraryList?.Items ?? [], library, now, _script?.LastSave, _saveShortcut.Running, back);
+        _saveView.Open(list, _presenter.SaveLibraryList?.Items ?? [], library, now, _script?.LastSave, _saveShortcut.Running);
         _saveView.Place(PictureArea());
     }
 

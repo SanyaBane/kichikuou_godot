@@ -12,12 +12,13 @@ namespace Kichikuou.Game.Strategy;
 /// newest first (no order to choose, the owner's 2026-10-21; the number stays on the seal), scrolling, a row's second
 /// line its comment, "+ New save" heading them in Save; and the ten auto-saves, newest first — and the chosen save's page on the right: its map large (All Data's
 /// miniature), its figures, a manual save's comment (Edit writes it in place: Enter keeps it, Esc leaves the old one),
-/// Delete (asking in a callout at the button) and a red button that answers the script's menu with the save's item
+/// Delete at the save's title (a danger button asking in a callout under it, the owner's B5 of 2026-10-25,
+/// docs/ui/save-load.md, §11), Back at the foot's left and a red button that answers the script's menu with the save's item
 /// ("Load", "Save over No. n", "Save") — the second click, so no question. An auto-save takes no Save; Delete works in
 /// either list and either tab. After Sengoku Rance's notes (docs/ui/save-load.md, §10, the owner's N1, 2026-10-22): a
 /// manual save with a comment has a gold star on its seal's top left corner, and the manual saves' heading has a button
 /// deleting every one without a comment, asking first in a callout beside it while the rows to go are struck through. From <c>COMMAND</c> the Load | Save tabs switch lists (<see cref="LoadSaveShortcut.Switch"/>).
-/// A right click or Esc answers 0. Laid out in the 1280×800 screen's pixels, scaled with the picture. After its answer the
+/// Back, a right click or Esc answers 0. Laid out in the 1280×800 screen's pixels, scaled with the picture. After its answer the
 /// screen stays drawn, taking no clicks, until the script shows the next list or the save screen closes.
 /// </summary>
 internal sealed partial class SaveLoadView : Control, IUiPaletteUser
@@ -25,18 +26,19 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
     private static UiPalette Ui => UiPalettes.For(UiPart.Screens);
 
     // hits: the button, the tabs, the lists' switch, Delete and its answers, Edit, New save, the sweep and its answers,
-    // and from RowHit the rows shown, top to bottom
+    // Back, and from RowHit the rows shown, top to bottom
     private const int ButtonHit = 200, TabHit = 100, SideHit = 400, DeleteHit = 500, DeleteYesHit = 501,
-        DeleteNoHit = 502, EditHit = 600, NewHit = 700, SweepHit = 800, SweepYesHit = 801, SweepNoHit = 802, RowHit = 1000;
+        DeleteNoHit = 502, EditHit = 600, NewHit = 700, SweepHit = 800, SweepYesHit = 801, SweepNoHit = 802, BackHit = 900,
+        RowHit = 1000;
 
     private static readonly Rect2 PanelRect = new(30, 24, 1220, 752);
     private static readonly Rect2 MapRect = new(426, 118, 800, 333);
     private static readonly Rect2 ButtonRect = new(896, 694, 330, 58);
-    private static readonly Rect2 DeleteRect = new(764, 708, 122, 30);
+    private static readonly Rect2 DeleteRect = new(1090, 84, 136, 30), BackRect = new(426, 694, 140, 58);
     private static readonly Rect2 CommentRect = new(426, 585, 696, 34);
     private static readonly Rect2 EditRect = new(1132, 585, 94, 34);
-    private static readonly Rect2 CalloutRect = new(614, 562, 420, 132);
-    private static readonly Rect2 YesRect = new(812, 640, 100, 30), NoRect = new(922, 640, 90, 30);
+    private static readonly Rect2 CalloutRect = new(806, 126, 420, 110);
+    private static readonly Rect2 YesRect = new(1004, 196, 110, 30), NoRect = new(1124, 196, 80, 30);
     private static readonly Rect2 SweepRect = new(206, 128, 176, 26);
     private static readonly Rect2 SweepCalloutRect = new(400, 75, 440, 132);
     private static readonly Rect2 SweepYesRect = new(608, 153, 120, 30), SweepNoRect = new(738, 153, 80, 30);
@@ -63,7 +65,6 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
     private IReadOnlyList<SaveSlot> _manuals = [];
     private SaveSlot? _now;
     private bool _tabs, _autoSide, _chosenNew, _confirm, _sweep, _editing;
-    private string _back = "";
     private SaveId? _chosen;
     private int _scroll;
     private float _k = 1;
@@ -130,7 +131,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
     /// before is kept when the same list opens again, the one just written chosen after a save (<paramref name="last"/>);
     /// a list opened anew chooses the save written last to load, the new save to save. <see cref="ChooseAsync"/> waits.
     /// </summary>
-    public void Open(SaveList list, IReadOnlyList<SaveId?> items, ISaveLibrary library, SaveSlot? now, SaveId? last, bool tabs, string back)
+    public void Open(SaveList list, IReadOnlyList<SaveId?> items, ISaveLibrary library, SaveSlot? now, SaveId? last, bool tabs)
     {
         bool again = Visible && _list == list;
         _list = list;
@@ -138,7 +139,6 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         _library = library;
         _now = now;
         _tabs = tabs;
-        _back = back;
         Reload();
         if (list == SaveList.Save && last is { Kind: SaveKind.Manual } written && again)
             Choose(written);
@@ -215,6 +215,9 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
     public Vector2 DeleteCentre => Global(DeleteRect.GetCenter());
 
     public Vector2 DeleteAnswerCentre(bool yes) => Global((yes ? YesRect : NoRect).GetCenter());
+
+    /// <summary>Back's centre in global coordinates.</summary>
+    public Vector2 BackCentre => Global(BackRect.GetCenter());
 
     /// <summary>The sweep's centre, and its question's answers.</summary>
     public Vector2 SweepCentre => Global(SweepRect.GetCenter());
@@ -341,6 +344,8 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
             return SweepHit;
         if (ButtonShown && ButtonRect.HasPoint(at))
             return ButtonHit;
+        if (BackRect.HasPoint(at))
+            return BackHit;
         if (ChosenSave is not null && DeleteRect.HasPoint(at))
             return DeleteHit;
         if (ChosenSave is { Id.Kind: SaveKind.Manual } && !_editing && EditRect.HasPoint(at))
@@ -438,6 +443,9 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         {
             case ButtonHit:
                 Answer((ItemOfChosen, null));
+                break;
+            case BackHit:
+                Answer((0, null));
                 break;
             case DeleteHit:
                 _confirm = true;
@@ -830,11 +838,11 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
     {
         var held = ChosenSave;
         var shown = _chosenNew ? _now : held;
+        DrawBack();
         if (shown is null)
         {
             string none = _autoSide ? "No auto-save chosen." : save ? "Choose New save or a save to save over." : "No saved games.";
             TextCentred(_cinzelLight, 18, MapRect.GetCenter().X, MapRect.GetCenter().Y, none, Ui.Quiet);
-            Text(_gothic, 13, PageX, ButtonRect.Position.Y + 40, $"Right click: {_back}", Ui.Quiet);
             return;
         }
         string title = _chosenNew ? $"New save · {shown.DateText}" : held!.Id?.Kind == SaveKind.Auto ? shown.DateText : $"{held.Label} · {shown.DateText}";
@@ -872,23 +880,54 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         }
         else
             DrawComment(held, cy);
-        float by = ButtonRect.Position.Y;
-        if (save)
+        float by = ButtonRect.Position.Y, lx = BackRect.End.X + 20, lw = ButtonRect.Position.X - 16 - lx;
+        if (save && _now is { } now)
         {
-            if (_now is { } now)
-            {
-                Text(_gothic, 15, PageX, by + 16, $"Saving: {now.DateText}", Ui.Text);
-                Text(_gothic, 14, PageX, by + 40, $"{now.BudgetText} · {now.RealmText} · {Figures.Number(now.Troops)} troops", Ui.Quiet);
-            }
+            Text(_gothic, 15, lx, by + 16, Fit($"Saving: {now.DateText}", 15, lw), Ui.Text);
+            Text(_gothic, 13, lx, by + 40, Fit($"{now.BudgetText} · {now.RealmText} · {Figures.Number(now.Troops)} troops", 13, lw), Ui.Quiet);
         }
-        else
-            Text(_gothic, 13, PageX, by + 40, $"Right click: {_back}", Ui.Quiet);
         if (ButtonShown)
             DrawButton(_chosenNew || !save ? (save ? "Save" : "Load") : $"Save over {held!.Label}");
         else if (save)
             DrawOffButton("Save");
         if (held is not null)
-            DrawSmallButton(DeleteRect, "Delete", DeleteHit);
+            DrawDelete();
+    }
+
+    /// <summary>Back at the foot's left, as a right click: a row box with a gold arrow.</summary>
+    private void DrawBack()
+    {
+        bool hover = _hovered == BackHit;
+        Ui.DrawRowBox(this, BackRect, hover, _k);
+        const string label = "Back";
+        float w = _cinzel.GetStringSize(label, fontSize: 16).X + 18, x = BackRect.GetCenter().X - w / 2, y = BackRect.GetCenter().Y;
+        DrawColoredPolygon([new(x + 8, y - 6), new(x + 8, y + 6), new(x, y)], Ui.Gold);
+        Text(_cinzel, 16, x + 18, y, label, hover ? Ui.Name : Ui.Text);
+    }
+
+    /// <summary>Delete as a danger button: dark red lacquer in a vermilion frame, a bin before its label.</summary>
+    private void DrawDelete()
+    {
+        bool hover = _hovered == DeleteHit || _confirm;
+        DrawRect(DeleteRect, hover ? Ui.DangerHover : Ui.DangerFill);
+        DrawRect(DeleteRect, Ui.Vermilion, false, Line(2));
+        DrawRect(DeleteRect.Grow(-4), Ui.DangerLine, false, Line(1));
+        var colour = hover ? Ui.Name : Ui.DangerText;
+        const string label = "Delete";
+        float w = _cinzel.GetStringSize(label, fontSize: 15).X + 22, x = DeleteRect.GetCenter().X - w / 2, y = DeleteRect.GetCenter().Y;
+        DrawBin(x, y - 8, colour);
+        Text(_cinzel, 15, x + 22, y + 1, label, colour);
+    }
+
+    /// <summary>A small waste bin, 14 wide and 16 high, its top left at (<paramref name="x"/>, <paramref name="y"/>).</summary>
+    private void DrawBin(float x, float y, Color colour)
+    {
+        float w = Line(1.5f), thin = Line(1);
+        DrawLine(new(x, y + 3), new(x + 14, y + 3), colour, w);
+        DrawLine(new(x + 5, y), new(x + 9, y), colour, w);
+        DrawPolyline([new(x + 2, y + 5), new(x + 3, y + 16), new(x + 11, y + 16), new(x + 12, y + 5)], colour, w);
+        DrawLine(new(x + 5.5f, y + 7.5f), new(x + 5.5f, y + 13.5f), colour, thin);
+        DrawLine(new(x + 8.5f, y + 7.5f), new(x + 8.5f, y + 13.5f), colour, thin);
     }
 
     /// <summary>The manual save's comment on its slip, with Edit; while it is written, the field over the slip (paper).</summary>
@@ -934,14 +973,14 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         TextCentred(_gothic, 12, ButtonRect.GetCenter().X, ButtonRect.GetCenter().Y + 16, "auto-saves are the game's own", Ui.OffText);
     }
 
-    /// <summary>Delete's question in a callout at the button (as the Treasure screen's): Delete | Keep.</summary>
+    /// <summary>Delete's question in a callout hanging under the button (as the Treasure screen's): Delete | Keep.</summary>
     private void DrawCallout()
     {
         if (ChosenSave is not { } held)
             return;
         Ui.DrawPanel(this, CalloutRect, _k);
-        float tip = DeleteRect.GetCenter().X, bottom = CalloutRect.End.Y;
-        DrawColoredPolygon([new(tip - 10, bottom - 2), new(tip + 10, bottom - 2), new(tip, bottom + 12)], Ui.Gold);
+        float tip = DeleteRect.GetCenter().X, top = CalloutRect.Position.Y;
+        DrawColoredPolygon([new(tip - 10, top + 2), new(tip + 10, top + 2), new(tip, top - 12)], Ui.Gold);
         string what = held.Id?.Kind == SaveKind.Auto ? $"the auto-save of {held.DateText}" : $"{held.Label}, {held.DateText}";
         Text(_gothic, 16, CalloutRect.Position.X + 22, CalloutRect.Position.Y + 32, Fit($"Delete {what}?", 16, CalloutRect.Size.X - 44), Ui.Text);
         Text(_gothic, 16, CalloutRect.Position.X + 22, CalloutRect.Position.Y + 56, "It cannot be undone.", Ui.Text);

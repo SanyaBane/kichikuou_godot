@@ -58,6 +58,10 @@ internal sealed partial record UiPalette
     public required Color VermilionInk { get; init; }
     public required Color HeadInk { get; init; }
     public required Color Vermilion { get; init; }
+    public required Color DangerFill { get; init; }       // a button that deletes: dark red lacquer in a vermilion frame
+    public required Color DangerHover { get; init; }
+    public required Color DangerLine { get; init; }       // its inner frame
+    public required Color DangerText { get; init; }
     public required Color ChosenRow { get; init; }
     public required Color PartyRow { get; init; }
     public required Color SealText { get; init; }
@@ -130,6 +134,10 @@ internal sealed partial record UiPalette
         VermilionInk = Color.Color8(150, 52, 30),
         HeadInk = Color.Color8(120, 40, 26),
         Vermilion = Color.Color8(170, 40, 28),
+        DangerFill = Color.Color8(52, 20, 14),
+        DangerHover = Color.Color8(80, 28, 18),
+        DangerLine = Color.Color8(110, 40, 28),
+        DangerText = Color.Color8(236, 132, 104),
         ChosenRow = Color.Color8(190, 60, 40, 60),
         PartyRow = Color.Color8(200, 160, 80, 70),
         SealText = Color.Color8(246, 230, 206),

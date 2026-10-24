@@ -25,8 +25,8 @@ public partial class GameScreen
     /// comment asked and answered Keep (<c>save-load-sweep</c>), its comment written through Edit
     /// (<c>save-load-comment</c>, then kept by Enter), Delete asked and answered Keep (<c>save-load-delete</c>), the
     /// auto-saves' side (<c>save-load-autos-save</c>, no Save there), the Load tab; the load list (<c>save-load</c>, the save
-    /// just written chosen), the newest auto-save chosen (<c>save-load-auto</c>), a right click
-    /// back to the map. Any other list (the title's at <c>--load</c>) is answered as before (<see cref="AutoChoice"/>: the
+    /// just written chosen), the newest auto-save chosen (<c>save-load-auto</c>), Back to
+    /// the map. Any other list (the title's at <c>--load</c>) is answered as before (<see cref="AutoChoice"/>: the
     /// first item, the newest auto-save), the title's dumped once in a window (<c>save-load-title</c>).
     /// </summary>
     private async Task<int> AutoSaveLoadAsync(SaveList list, IReadOnlyList<SceneMenuItem> items)
@@ -91,7 +91,7 @@ public partial class GameScreen
                     Expect(_saveView.Chosen == _saveView.AutoSaves[0], "the newest auto-save chosen");
                 }
                 await AutoDumpAsync("save-load-auto");
-                await AutoViewClickAsync(_saveView.ButtonCentre, MouseButton.Right);
+                await AutoViewClickAsync(_saveView.BackCentre, MouseButton.Left);
                 GD.Print("Kichikuou: --auto saved a new manual save through our Save/Load screen, wrote its comment and left it.");
                 break;
         }

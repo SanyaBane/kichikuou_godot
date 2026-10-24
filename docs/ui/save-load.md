@@ -418,4 +418,9 @@ still goes back:
 - **B5-B7** — Delete at the right of the save's title, over the map (it belongs to the save shown, far from the red
   button), its question hanging under it; the foot is Back and the red button, in Save "Saving: …" between them.
 
-Awaiting the owner's choice.
+### The owner's choice (2026-10-25): B5, built
+
+B5 with the button's label just "Back" (140×58 in Load and Save alike): `SaveLoadView.DrawBack` answers 0 as a right
+click or Esc does; Delete (136×30) at the right of the page's title in the palette's danger colours (`UiPalette.Danger*`),
+its question hanging under it over the map; in Save "Saving: …" between Back and the red button, cut to fit. The hint
+"Right click: back to …" is gone. `--saveload` now leaves the load list by Back.
