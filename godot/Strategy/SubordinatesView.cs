@@ -88,6 +88,9 @@ internal sealed partial class SubordinatesView : Control
     /// <summary>The unit chosen in the table.</summary>
     public int Chosen => _table.Chosen;
 
+    /// <summary>The table (unattended play's touch exercise).</summary>
+    public DeploymentTableView Table => _table;
+
     /// <summary>Whether the panel's buttons take presses (not while an order runs).</summary>
     public bool Busy { get; set; }
 

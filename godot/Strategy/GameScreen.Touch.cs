@@ -3,6 +3,7 @@ using Kichikuou.Engine.Sys3;
 using Kichikuou.Game.Battles;
 using Kichikuou.Original.Combat;
 using Kichikuou.Original.Content.Battles;
+using Kichikuou.Original.Content.Strategy;
 using MouseButton = Godot.MouseButton;
 
 namespace Kichikuou.Game.Strategy;
@@ -116,8 +117,7 @@ public partial class GameScreen
                 return;
             }
             _cardTouch = null;
-            _longPressed = true;
-            Input.VibrateHandheld(30);
+            _longPressed = true;                                        // no vibration (owner, 2026-10-24)
             PointerButton(at, KeySpace, true);
             PointerButton(at, KeySpace, false);
         };
@@ -208,6 +208,51 @@ public partial class GameScreen
             _presenter.Invalidate();
             _input.ReadMouse();
         }
+    }
+
+    /// <summary>
+    /// Unattended play in the touch mode, once a launch (in a window): on the Subordinates screen's table a long press on
+    /// T.Atk's header shows its tip (dump "touch-header-tip") and sorts nothing, a tap on it sorts by it
+    /// ("touch-header-sorted"), a tap on №'s sorts back — through Godot's input. Anything else is an error.
+    /// </summary>
+    private async Task AutoHeaderTouchAsync(DeploymentTableView table)
+    {
+        var atk = table.HeaderCentre(DeploymentColumn.TroopAtk)
+            ?? throw new InvalidOperationException("--auto found T.Atk's header out of sight.");
+        var number = table.HeaderCentre(DeploymentColumn.Number)
+            ?? throw new InvalidOperationException("--auto found №'s header out of sight.");
+        var sort = table.SortColumn;
+        SendPointerMotion(atk);
+        await NextFrameAsync();
+        SendPointerButton(atk, MouseButton.Left, true);
+        ulong until = Time.GetTicksMsec() + 3000;
+        while (table.HeaderTipShown is null && Time.GetTicksMsec() < until)
+            await NextFrameAsync();
+        if (table.HeaderTipShown != "Troop attack")
+            throw new InvalidOperationException($"--auto's long press on T.Atk's header showed {table.HeaderTipShown ?? "no tip"}.");
+        await AutoDumpAsync("touch-header-tip");
+        SendPointerButton(atk, MouseButton.Left, false);
+        await NextFrameAsync();
+        if (table.SortColumn != sort || table.HeaderTipShown is null)
+            throw new InvalidOperationException("--auto's long press on T.Atk's header sorted, or its release hid the tip.");
+        async Task TapAsync(Vector2 at)
+        {
+            SendPointerMotion(at);
+            await NextFrameAsync();
+            foreach (bool pressed in (bool[])[true, false])
+            {
+                SendPointerButton(at, MouseButton.Left, pressed);
+                await NextFrameAsync();
+            }
+        }
+        await TapAsync(atk);
+        if (table.SortColumn != DeploymentColumn.TroopAtk || table.HeaderTipShown is not null)
+            throw new InvalidOperationException($"--auto's tap on T.Atk's header sorted by {table.SortColumn}, its tip {table.HeaderTipShown ?? "hidden"}.");
+        await AutoDumpAsync("touch-header-sorted");
+        await TapAsync(number);
+        if (table.SortColumn != DeploymentColumn.Number)
+            throw new InvalidOperationException($"--auto's tap on №'s header sorted by {table.SortColumn}.");
+        GD.Print("Kichikuou: --auto long-presses and taps the Subordinates table's headers.");
     }
 
     /// <summary>The press held back by <see cref="CardTouch"/>, if any, goes on now.</summary>

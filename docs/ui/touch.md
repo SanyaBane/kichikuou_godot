@@ -161,6 +161,14 @@ hover and the right button. So the tablet keeps our layout and gets only what to
   Looked at by the agent (2026-10-24): rails, target change and the button as the mock-ups. A look:
   `--load --auto --fast --quit --seed 2 --saves user://saves-look-touch --slots-from user://saves-week18 --until round-2 --touch --shots <dir>`
   (it moves the system pointer).
+- **The tables' header tips** (owner, 2026-10-24; `godot/Strategy/DeploymentTableView.Touch.cs`, `HeaderTip`): on the
+  Subordinates and deployment tables a long press (0.5 s, as a battle card's) on a column's header shows its full name
+  on a lacquer plate above the header, centred on the finger; the next press anywhere hides it. A tap sorts as a click
+  does, a finger that wanders more than 12 pixels does neither; Godot's hover tooltips of the headers are off in the
+  touch mode. Unattended play with `--touch` in a window, once a launch, on the Subordinates screen
+  (`GameScreen.AutoHeaderTouchAsync`): a long press on T.Atk's header (dump `touch-header-tip`), a tap on it
+  (`touch-header-sorted`), a tap on №'s. Looked at by the agent (2026-10-24) on the Subordinates screen, the
+  look's command with `--until deployment --interface new` (the deployment table shares the code, not run).
 
 - **The target frame breathes on Android** (owner's choice A of three — A a slow breathing, B a lock-on once at each
   change, C a spark running round the brackets; 2026-10-24): the brackets 2-5 layout pixels out of the card and their

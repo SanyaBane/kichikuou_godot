@@ -10,7 +10,7 @@ namespace Kichikuou.Game.Strategy;
 /// <summary>
 /// The deployment table (owner's decision 25, docs/ui/deployment-table.md): our own screen over
 /// <c>Sﾌﾞﾀｲ</c>'s unit grid — a row per listed unit (<see cref="DeploymentTable.Rows"/>), the
-/// columns' compact headers with their full names as tooltips, sorted by a header click (the values
+/// columns' compact headers with their full names as tooltips (the touch mode's on a long press, a <see cref="HeaderTip"/>), sorted by a header click (the values
 /// where more is better descending first, the rest ascending; again the other way; a small mark on the
 /// header with its room kept; by number at first), scrolling both ways, the units deployed this week grey, the party's members marked with their
 /// place in a first column. It decides nothing: the presses go to <see cref="GameScreen"/>, which
@@ -147,12 +147,13 @@ internal sealed partial class DeploymentTableView : Tree
         Visible = false;
         SetColumnTitle(0, chooser ? "" : PartyMark);
         SetColumnTitleAlignment(0, HorizontalAlignment.Center);
-        SetColumnTitleTooltipText(0, chooser ? "" : "Place in the party");
+        bool hover = !TouchMode.On;                                     // the touch mode's tips come by a long press
+        SetColumnTitleTooltipText(0, chooser || !hover ? "" : "Place in the party");
         for (int c = 0; c < _columns.Count; c++)
         {
             var info = _columns[c];
             SetColumnTitle(c + 1, info.Header);
-            SetColumnTitleTooltipText(c + 1, info.FullName);
+            SetColumnTitleTooltipText(c + 1, hover ? info.FullName : "");
             SetColumnTitleAlignment(c + 1, Alignment(info));
         }
         for (int c = 0; c < Columns; c++)
@@ -171,6 +172,7 @@ internal sealed partial class DeploymentTableView : Tree
                 SortBy(_columns[(int)column - 1]);
         };
         SetFont(font);
+        AddChild(_tip);
     }
 
     /// <summary>The ledger's look: the paper, its header in vermilion ink over a rule, the rows' rules, a faint hover.</summary>
@@ -308,10 +310,16 @@ internal sealed partial class DeploymentTableView : Tree
 
     /// <summary>
     /// Left presses on rows and right presses anywhere are the game's — a left press on a Refill button its own; the rest
-    /// (the header, the wheel, the scroll bars) the tree's own. The pointer over a Refill button lights it.
+    /// (the header, the wheel, the scroll bars) the tree's own, but the touch mode's header (<see cref="HeaderTouch"/>).
+    /// The pointer over a Refill button lights it.
     /// </summary>
     public override void _GuiInput(InputEvent @event)
     {
+        if (TouchMode.On && HeaderTouch(@event))
+        {
+            AcceptEvent();
+            return;
+        }
         if (@event is InputEventMouseMotion motion)
         {
             int over = RefillAt(motion.Position);
@@ -344,6 +352,8 @@ internal sealed partial class DeploymentTableView : Tree
 
     public override void _Notification(int what)
     {
+        if (what == NotificationVisibilityChanged && !IsVisibleInTree())
+            _tip.Visible = false;
         if (what == NotificationMouseExit && _refillHovered != 0)
         {
             _refillHovered = 0;
