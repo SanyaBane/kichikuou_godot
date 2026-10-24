@@ -107,7 +107,8 @@ portrait (mock-up B):
   round under way pulses slowly (2 s, owner), a round that goes out flashes white and fades (0.4 s; not while
   skipping); the number left below in Cinzel Bold and "TURNS LEFT", on the last round the warning colour and "LAST
   TURN" — `BattleBoardView.DrawGauge`). A card: the face (`UnitFaces` square,
-  118 px — since 2026-10-15 112 at the top with the unit's stats under it, "The cards' stats"; the enemy's on the card's right), place and name, troop type, troops now/max with a bar,
+  118 px — since 2026-10-15 112 at the top with the unit's stats under it, "The cards' stats"; the enemy's on the card's right), place and name, troop type, troops now/max with a bar
+  (labelled "Tr.": "Troops" with the thousands' separator overran the card, owner 2026-10-24),
   HP now/max with a bar, the standing order (Manual / Auto-Atk / Auto-Def; the player's), "acted"
   (a word in the state line; the face is not dimmed, owner's request 2026-10-13); the acting unit's card as Sengoku Rance's
   (owner, 2026-10-13; docs/sengoku/04-screen.md §6.2, §6.5): its fill the card's colour 30 % toward the

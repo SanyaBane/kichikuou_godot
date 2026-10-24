@@ -86,7 +86,7 @@ internal sealed partial class BattleBoardView
             meter.TrailFrom = meter.Trail = value < meter.Shown ? Math.Max(meter.Trail, meter.Shown) : meter.Shown;
         }
         (meter.Max, meter.Prefix, meter.Label, meter.TrailBar, meter.Fill) =
-            (max, gauge == Gauge.Troops ? "Troops" : "HP", label, trail, fill);
+            (max, gauge == Gauge.Troops ? "Tr." : "HP", label, trail, fill);   // "Troops" overran the card with separators
         meter.Apply();
     }
 
