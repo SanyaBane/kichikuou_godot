@@ -20,7 +20,8 @@ internal sealed partial class CommandMenuView : Control
 {
     private static UiPalette Ui => UiPalettes.For(UiPart.Map);
 
-    private const float Width = 320, Pad = 18, RowPitch = 37, RowH = 30, LinkPitch = 28, LinkH = 26, EndH = 48;
+    // The PC's layout: the owner's M1 (2026-10-25, docs/ui/command-screen.md, "Taller rows"), every row 38 high.
+    private const float Width = 360, Pad = 18, RowPitch = 45, RowH = 38, LinkPitch = 42, LinkH = 38, EndH = 56;
     // The touch mode's layout: two columns of rows 46 high (9.3 mm on the tablet), Turn END under the right one.
     private const float TouchColumn = 300, TouchMid = 24, TouchRowH = 46, TouchPitch = 54, TouchEndGap = 14, TouchEndH = 64;
 
@@ -231,18 +232,20 @@ internal sealed partial class CommandMenuView : Control
         bool on = item.Enabled, hover = r == _hovered && on;
         Ui.DrawRowBox(this, rect, hover, _k);
         var (tag, colour) = TagOf(item.Action);
-        int size = _touch ? 19 : 16;
+        int size = 19;
         var tagRect = _touch
             ? new Rect2(rect.Position.X + 7, rect.Position.Y + 8, 72, rect.Size.Y - 16)
-            : new Rect2(rect.Position.X + 5, rect.Position.Y + 5, 60, rect.Size.Y - 10);
-        Ui.DrawTag(this, _gothic, tagRect, tag, colour, on, _k);
-        DrawString(_gothic, new Vector2(rect.Position.X + (_touch ? 94 : 78), Lacquer.Baseline(rect, _gothic, size)), item.Text, fontSize: size,
+            : new Rect2(rect.Position.X + 6, rect.Position.Y + 6, 74, rect.Size.Y - 12);
+        Ui.DrawTag(this, _gothic, tagRect, tag, colour, on, _k, _touch ? 13 : 15);
+        DrawString(_gothic, new Vector2(rect.Position.X + (_touch ? 94 : 93), Lacquer.Baseline(rect, _gothic, size)), item.Text, fontSize: size,
             modulate: on ? Ui.Text : Ui.OffText);
         if (!on)
         {
             const string spent = "used this week";
-            float sw = _gothic.GetStringSize(spent, fontSize: 12).X;
-            DrawString(_gothic, new Vector2(rect.End.X - 10 - sw, Lacquer.Baseline(rect, _gothic, 12)), spent, fontSize: 12, modulate: Ui.OffText);
+            int spentSize = _touch ? 12 : 13;
+            float sw = _gothic.GetStringSize(spent, fontSize: spentSize).X;
+            DrawString(_gothic, new Vector2(rect.End.X - 10 - sw, Lacquer.Baseline(rect, _gothic, spentSize)), spent, fontSize: spentSize,
+                modulate: Ui.OffText);
         }
     }
 
@@ -253,7 +256,7 @@ internal sealed partial class CommandMenuView : Control
         // On touch every row has its box: no hover shows that it can be tapped.
         if (hover || _touch)
             Ui.DrawRowBox(this, rect, hover, _k);
-        int size = _touch ? 18 : 15;
+        int size = 18;
         DrawString(_gothic, new Vector2(rect.Position.X + (_touch ? 14 : 10), Lacquer.Baseline(rect, _gothic, size)), _menu!.Links[r - Commands].Text,
             fontSize: size, modulate: hover ? Ui.Text : Ui.Quiet);
     }
@@ -267,7 +270,7 @@ internal sealed partial class CommandMenuView : Control
         DrawRect(rect, hover ? Ui.HoverLine : Ui.Gold, false, Line(2));
         DrawRect(rect.Grow(-4), Color.Color8(214, 150, 90), false, Line(1));
         string text = _menu!.TurnEndText;
-        int size = _touch ? 24 : 21;
+        int size = 24;
         float tw = _brush.GetStringSize(text, fontSize: size).X;
         DrawString(_brush, new Vector2(rect.GetCenter().X - tw / 2, Lacquer.Baseline(rect, _brush, size)), text, fontSize: size,
             modulate: Color.Color8(250, 226, 160));

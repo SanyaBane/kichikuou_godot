@@ -314,8 +314,10 @@ Search, Battle, Ninja), and Return. The mock-ups hold the player's CGs and stay 
   header with the commands as tiles, three to a row (86 px). The owner chose **A1**, built (`ProvinceMenuView`: the
   panel 500 wide, the picture 234×156, rows 38 px at a 45 px pitch, text 19, the tag 74×26 with its word at 15,
   Return 120×36 at 17, the figures 14/17; `UiPalette.DrawTag` takes the word's size); the touch mode's layout stays
-  as it is. The command panel's rows are to be as high (owner, 2026-10-25; "The command panel", below), and maybe the
-  dialogues' after both menus (docs/backlog.md).
+  as it is. The command panel's rows are as high (owner, 2026-10-25): mock-ups M0 (today), M1 (every row 38 px) and
+  M2 (the commands 38, the other items 32); the owner chose **M1**, built (`CommandMenuView`: the panel 360 wide, the
+  commands 38 px at a 45 px pitch with A1's tags and text 19, the other items 38 px at a 42 px pitch with text 18,
+  Turn END 56 px at 24). The dialogues' rows maybe next (docs/backlog.md).
 
 ## The command panel (owner, 2026-10-16)
 
