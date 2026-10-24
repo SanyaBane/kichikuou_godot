@@ -24,7 +24,7 @@ internal sealed partial class TouchPill : Control
     private const float Border = 2;
 
     private readonly Icon _icon;
-    private DeploymentPalette _colours = DeploymentPalette.Chosen;
+    private DeploymentPalette _colours = DeploymentPalette.BattleChosen;
     private float _scale = 1, _text = 24;
     private bool _down, _inside, _on, _disabled;
     private string _label;

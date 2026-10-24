@@ -16,7 +16,7 @@ namespace Kichikuou.Game.Strategy;
 internal sealed partial class MapMarkersView : Control
 {
     private readonly List<Plate> _plates = [];
-    private DeploymentPalette _colours = DeploymentPalette.Chosen;
+    private DeploymentPalette _colours = DeploymentPalette.OtherChosen;
     private FontFile _font;
     private readonly FontVariation _badgeFont = new() { BaseFont = new FontFile { Data = Godot.FileAccess.GetFileAsBytes("res://fonts/Cinzel-VariableFont_wght.ttf") } };
     private float _pixels = 2;

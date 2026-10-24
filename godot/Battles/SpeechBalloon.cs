@@ -23,7 +23,7 @@ internal sealed partial class SpeechBalloon : Control
     private const TextServer.LineBreakFlag Breaks =
         TextServer.LineBreakFlag.Mandatory | TextServer.LineBreakFlag.WordBound | TextServer.LineBreakFlag.Adaptive;
 
-    private DeploymentPalette _colours = DeploymentPalette.Chosen;
+    private DeploymentPalette _colours = DeploymentPalette.BattleChosen;
     private readonly FontVariation _bold = new() { VariationEmbolden = 0.8f };
     private Font? _font;
     private float _scale = 1;

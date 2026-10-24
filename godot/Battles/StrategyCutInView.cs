@@ -46,7 +46,7 @@ internal sealed partial class StrategyCutInView : Control
     private readonly FontFile _title = Load(TitleFont);
     private readonly FontVariation _caption = new() { BaseFont = Load(CaptionFont) };
     private readonly FontVariation _bold = new() { VariationEmbolden = 0.8f };
-    private DeploymentPalette _colours = DeploymentPalette.Chosen;
+    private DeploymentPalette _colours = DeploymentPalette.BattleChosen;
     private readonly Control _sheet;
     private readonly TextureRect _backdrop;
     private byte[]? _backdropPixels;

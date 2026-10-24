@@ -242,7 +242,8 @@ public partial class GameScreen
         view.TextSpeedChanged += step => _messageView.LettersPerSecond = TextSpeedChoice.LettersPerSecond(step);
         view.FontChosen += ApplyFont;
         view.ReadColourChosen += () => _messageView.QueueRedraw();
-        view.PaletteChosen += ApplyPalette;
+        view.BattlePaletteChosen += ApplyBattlePalette;
+        view.OtherPaletteChosen += _markers.SetPalette;
         view.ThousandsChosen += () => RedrawAll(this);   // the figures drawn already, in the new way
         view.NewScenesFirstChanged += on =>
         {
@@ -301,9 +302,8 @@ public partial class GameScreen
             RedrawAll(child);
     }
 
-    private void ApplyPalette(DeploymentPalette palette)
+    private void ApplyBattlePalette(DeploymentPalette palette)
     {
-        _markers.SetPalette(palette);
         _skipButton.SetPalette(palette);
         _battleView.SetPalette(palette);
         _scoutView.SetPalette(palette);

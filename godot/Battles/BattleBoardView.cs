@@ -68,7 +68,7 @@ internal sealed partial class BattleBoardView : Control
     /// <summary>How dark the spotlight makes the panel (Option → Battle, 0.5 by default).</summary>
     private static float SpotDarkness => (float)BattleScreenSettings.Get(BattleScreenSettings.SpotDarkness);
 
-    private DeploymentPalette _colours = DeploymentPalette.Chosen;
+    private DeploymentPalette _colours = DeploymentPalette.BattleChosen;
     private readonly FacePictures _faces;
     private FaceCrops _crops = new();
     private readonly Theme _theme = new();

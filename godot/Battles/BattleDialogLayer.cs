@@ -20,7 +20,7 @@ internal sealed partial class BattleDialogLayer : Control
     private const float QuestionText = 18, ItemText = 17;
     private static readonly Color Dim = new(0, 0, 0, 0.35f);
 
-    private DeploymentPalette _colours = DeploymentPalette.Chosen;
+    private DeploymentPalette _colours = DeploymentPalette.BattleChosen;
     private float _scale = 1;
     private BattleDialog? _dialog;
     private IReadOnlyList<string> _labels = [];

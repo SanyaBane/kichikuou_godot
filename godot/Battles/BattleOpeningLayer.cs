@@ -30,7 +30,7 @@ internal sealed partial class BattleOpeningLayer : Control
 
     private readonly FontFile _names = Load(NameFont);
     private readonly FontVariation _plate = new() { BaseFont = Load(PlateFont) };
-    private DeploymentPalette _colours = DeploymentPalette.Chosen;
+    private DeploymentPalette _colours = DeploymentPalette.BattleChosen;
     private readonly Half _player, _enemy;
     private readonly Control _top;
     private BattleOpening? _opening;

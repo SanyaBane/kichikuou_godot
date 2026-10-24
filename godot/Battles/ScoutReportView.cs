@@ -48,7 +48,7 @@ internal sealed partial class ScoutReportView : Control
 
     private readonly FacePictures _faces;
     private FaceCrops _crops = new();
-    private DeploymentPalette _colours = DeploymentPalette.Chosen;
+    private DeploymentPalette _colours = DeploymentPalette.BattleChosen;
     private Font? _font;
     private readonly FontVariation _bold = new() { VariationEmbolden = 0.8f };
     private readonly ColorRect _backdrop;

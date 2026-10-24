@@ -25,7 +25,7 @@ internal sealed partial class OrderStrip : Control
     private static double DownEnd => BattleScreenSettings.Get(BattleScreenSettings.StripDropShare);
     private static double AcrossEnd => 1 - DownEnd;
 
-    private DeploymentPalette _colours = DeploymentPalette.Chosen;
+    private DeploymentPalette _colours = DeploymentPalette.BattleChosen;
     private readonly Dictionary<(BattleSide, int), Chip> _chips = [];
     private IReadOnlyList<OrderChip> _target = [];              // the order the chips go to (or stand at)
     private IReadOnlyList<OrderChip>? _next;                    // the order that came while they move

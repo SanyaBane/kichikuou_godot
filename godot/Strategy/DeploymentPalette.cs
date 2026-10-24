@@ -6,7 +6,8 @@ namespace Kichikuou.Game.Strategy;
 /// The colours first made for our deployment screen: the first, dark blue, sat badly with the portrait's gold
 /// frame, so the owner looked at four more (2026-10-12), kept them all for the player to choose (Option → Display)
 /// and made steel the default. The deployment screen has been lacquer since the owner's E1/E2 (2026-10-19,
-/// docs/ui/deployment-table.md); the palette still colours our battle screen and the map's name plates.
+/// docs/ui/deployment-table.md); the palettes still colour our battle screen and the map's name plates, each
+/// chosen apart since the owner split them (2026-10-24): <see cref="BattleChosen"/> and <see cref="OtherChosen"/>.
 /// </summary>
 internal sealed record DeploymentPalette(
     string Name,
@@ -72,37 +73,51 @@ internal sealed record DeploymentPalette(
 
     public static IReadOnlyList<DeploymentPalette> All { get; } = [Navy, Gold, Steel, Parchment, Crimson];
 
-    private static DeploymentPalette? _chosen;
+    private static DeploymentPalette? _battle, _other;
 
     /// <summary>The name in the menu: "Steel" for steel.</summary>
     public string Title => char.ToUpperInvariant(Name[0]) + Name[1..];
 
     /// <summary>
-    /// The palette used: <c>--palette &lt;name&gt;</c> for the launch (development), else
-    /// <c>[display] palette</c> in <c>user://settings.cfg</c>, else steel. Setting it saves it for later launches.
+    /// The battle screen's palette, with what comes before its field (the scout report, a strategy's cut-in) and the touch
+    /// mode's Skip under its cards: <c>[display] palette_battle</c> in <c>user://settings.cfg</c> (see <see cref="Load"/>).
+    /// Setting it saves it for later launches.
     /// </summary>
-    public static DeploymentPalette Chosen
+    public static DeploymentPalette BattleChosen
     {
-        get
-        {
-            if (_chosen is not null)
-                return _chosen;
-            var args = OS.GetCmdlineUserArgs();
-            int at = Array.IndexOf(args, "--palette");
-            if (at >= 0 && at + 1 < args.Length && Named(args[at + 1]) is { } given)
-                return _chosen = given;
-            var config = new ConfigFile();
-            string saved = config.Load(GameData.SettingsPath) == Error.Ok ? (string)config.GetValue("display", "palette", "") : "";
-            return _chosen = Named(saved) ?? Steel;
-        }
-        set
-        {
-            _chosen = value;
-            var config = new ConfigFile();
-            config.Load(GameData.SettingsPath);
-            config.SetValue("display", "palette", value.Name);
-            config.Save(GameData.SettingsPath);
-        }
+        get => _battle ??= Load("palette_battle");
+        set => Save(_battle = value, "palette_battle");
+    }
+
+    /// <summary>The other screens' palette: the map's name plates and their cards, <c>[display] palette_other</c>.</summary>
+    public static DeploymentPalette OtherChosen
+    {
+        get => _other ??= Load("palette_other");
+        set => Save(_other = value, "palette_other");
+    }
+
+    /// <summary>
+    /// <c>--palette &lt;name&gt;</c> for the launch, both palettes (development), else the saved <paramref name="key"/>, else
+    /// the one palette saved before the split (<c>[display] palette</c>), else steel.
+    /// </summary>
+    private static DeploymentPalette Load(string key)
+    {
+        var args = OS.GetCmdlineUserArgs();
+        int at = Array.IndexOf(args, "--palette");
+        if (at >= 0 && at + 1 < args.Length && Named(args[at + 1]) is { } given)
+            return given;
+        var config = new ConfigFile();
+        if (config.Load(GameData.SettingsPath) != Error.Ok)
+            return Steel;
+        return Named((string)config.GetValue("display", key, "")) ?? Named((string)config.GetValue("display", "palette", "")) ?? Steel;
+    }
+
+    private static void Save(DeploymentPalette palette, string key)
+    {
+        var config = new ConfigFile();
+        config.Load(GameData.SettingsPath);
+        config.SetValue("display", key, palette.Name);
+        config.Save(GameData.SettingsPath);
     }
 
     private static DeploymentPalette? Named(string name) => All.FirstOrDefault(p => p.Name == name);

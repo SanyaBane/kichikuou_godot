@@ -230,7 +230,8 @@ script's answers stay as above; only the drawing changes. No rule moves.
   framed in the palette's accent.
 - **The palette** (Option → Palette: navy, gold, steel — the default —, parchment, crimson) colours all of it,
   `[display] palette` in `user://settings.cfg`, `--palette` for a launch. It also colours our battle screen and the
-  map's name plates (`DeploymentPalette`); the Subordinates screen's ledger ignores it.
+  map's name plates (`DeploymentPalette`); the Subordinates screen's ledger ignores it. (Since 2026-10-24 the battle
+  screen and the map's plates have a palette each, docs/ui/options.md, "Two palettes".)
 
 **What changes:** the backdrop as the Subordinates screen's (dark lacquer, a faint gold seigaiha, a vignette);
 the table in a lacquer panel with a title band ("Deployment", the mode and the places offered, the date) over

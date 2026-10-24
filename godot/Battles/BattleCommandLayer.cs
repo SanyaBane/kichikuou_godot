@@ -38,7 +38,7 @@ internal sealed partial class BattleCommandLayer : Control
     // The context menu: rows of the cards' text size, a column for the current order's mark.
     private const float RowHeight = 30, MenuPad = 8, MarkWidth = 18, MenuMinWidth = 130, MenuText = 17;
 
-    private DeploymentPalette _colours = DeploymentPalette.Chosen;
+    private DeploymentPalette _colours = DeploymentPalette.BattleChosen;
     private Func<BattlePlace, Rect2> _cardArea = _ => default;
     private float _scale = 1;
     private BattleCommands? _commands;

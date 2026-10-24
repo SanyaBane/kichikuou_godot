@@ -82,3 +82,14 @@ too; the exchange's rolling counters (`ExchangeCountersView`, one digit a cell a
 The screens of the original engine (`--interface original`, the merchant, construction) keep the original's numbers.
 The scenario's own sums in our message windows and menus take the separator too, only at the places verified to be
 money (docs/ui/gold-figures.md, 2026-10-24: the survey, the owner's answers, `ScenarioFigures`).
+
+## Two palettes (2026-10-24)
+
+Owner's request: the palette split into the battle screen's and the other screens'. The Display tab holds two rows of
+swatches, **Palette of the battle screen** and, under it, **Palette of the other screens (the map's plates)** —
+`DeploymentPalette.BattleChosen` (`[display] palette_battle` in `settings.cfg`: the battle screen, the scout report and a
+strategy's cut-in before its field, the touch mode's Skip under its cards, the Battle tab's order-strip preview) and
+`DeploymentPalette.OtherChosen` (`[display] palette_other`: the map's name plates and province cards). Either unsaved
+takes the one palette saved before the split (`[display] palette`), else steel; `--palette` sets both for a launch;
+Defaults turns both back to steel. The window's `BattlePaletteChosen` and `OtherPaletteChosen` recolour the open screens
+(`GameScreen.ApplyBattlePalette`, `MapMarkersView.SetPalette`).

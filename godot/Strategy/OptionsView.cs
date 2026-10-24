@@ -88,8 +88,11 @@ internal sealed partial class OptionsView : Control
     /// <summary>The already-read text's colour was chosen (it is kept already, <see cref="ReadTextChoice"/>).</summary>
     public event Action? ReadColourChosen;
 
-    /// <summary>A palette was chosen (it is kept already).</summary>
-    public event Action<DeploymentPalette>? PaletteChosen;
+    /// <summary>The battle screen's palette was chosen (it is kept already).</summary>
+    public event Action<DeploymentPalette>? BattlePaletteChosen;
+
+    /// <summary>The other screens' palette was chosen (it is kept already).</summary>
+    public event Action<DeploymentPalette>? OtherPaletteChosen;
 
     /// <summary>The thousands' separator was chosen (it is kept already, <see cref="ThousandsChoice"/>).</summary>
     public event Action? ThousandsChosen;
@@ -181,11 +184,17 @@ internal sealed partial class OptionsView : Control
         FontChosen?.Invoke(font);
     }
 
-    private void SetPalette(DeploymentPalette palette)
+    private void SetBattlePalette(DeploymentPalette palette)
     {
-        DeploymentPalette.Chosen = palette;
+        DeploymentPalette.BattleChosen = palette;
         _strip.SetPalette(palette);
-        PaletteChosen?.Invoke(palette);
+        BattlePaletteChosen?.Invoke(palette);
+    }
+
+    private void SetOtherPalette(DeploymentPalette palette)
+    {
+        DeploymentPalette.OtherChosen = palette;
+        OtherPaletteChosen?.Invoke(palette);
     }
 
     private void SetThousands(ThousandsSeparator separator)
@@ -230,7 +239,8 @@ internal sealed partial class OptionsView : Control
                 break;
             case Tab.Display:
                 SetFont(GameFont.BizUdGothic);
-                SetPalette(DeploymentPalette.Steel);
+                SetBattlePalette(DeploymentPalette.Steel);
+                SetOtherPalette(DeploymentPalette.Steel);
                 SetThousands(ThousandsSeparator.Comma);
                 break;
             case Tab.Battle:
@@ -487,9 +497,13 @@ internal sealed partial class OptionsView : Control
         Radio("font-biz", x, y + 74, GodotGlyphRenderer.Chosen == GameFont.BizUdGothic, "BIZ UDGothic — 鬼畜王ランス, Rance",
             _bizSample, () => SetFont(GameFont.BizUdGothic));
         y += 132;
-        SectionHead(x, y, "Palette of the battle screen and the map's plates", w);
+        SectionHead(x, y, "Palette of the battle screen", w);
         for (int i = 0; i < DeploymentPalette.All.Count; i++)
-            Swatch(x + i * 90, y + 40, DeploymentPalette.All[i]);
+            Swatch("battle", x + i * 90, y + 40, DeploymentPalette.All[i], DeploymentPalette.BattleChosen, SetBattlePalette);
+        y += 120;
+        SectionHead(x, y, "Palette of the other screens (the map's plates)", w);
+        for (int i = 0; i < DeploymentPalette.All.Count; i++)
+            Swatch("other", x + i * 90, y + 40, DeploymentPalette.All[i], DeploymentPalette.OtherChosen, SetOtherPalette);
         y += 132;
         SectionHead(x, y, "Thousands in gold, troops and damage", w);
         for (int i = 0; i < ThousandsChoice.All.Length; i++)
@@ -524,7 +538,7 @@ internal sealed partial class OptionsView : Control
             i++;
         }
         var strip = StripRect;
-        DrawRect(strip, DeploymentPalette.Chosen.Back with { A = 1 });
+        DrawRect(strip, DeploymentPalette.BattleChosen.Back with { A = 1 });
         DrawRect(strip, Lacquer.InkGrey, false, Line(1));
         var preview = new Rect2(x + w - 110, strip.Position.Y + 6, 110, 34);
         Button("preview", preview, "Preview", () =>
@@ -642,18 +656,18 @@ internal sealed partial class OptionsView : Control
         _spots.Add(new Spot(id, rect, click));
     }
 
-    /// <summary>A palette's swatch: its back with its accent as a bar, framed in vermilion when chosen.</summary>
-    private void Swatch(float x, float y, DeploymentPalette palette)
+    /// <summary>A palette's swatch in the row <paramref name="row"/>: its back with its accent as a bar, framed in vermilion when chosen.</summary>
+    private void Swatch(string row, float x, float y, DeploymentPalette palette, DeploymentPalette chosen, Action<DeploymentPalette> choose)
     {
-        string id = "palette-" + palette.Name;
-        bool on = palette == DeploymentPalette.Chosen, lit = _hover == id;
+        string id = $"palette-{row}-{palette.Name}";
+        bool on = palette == chosen, lit = _hover == id;
         var rect = new Rect2(x, y, 64, 40);
         DrawRect(rect, palette.Back with { A = 1 });
         DrawRect(new Rect2(x + 8, y + 26, 48, 5), palette.Accent);
         DrawRect(rect, on ? Lacquer.Vermilion : lit ? Lacquer.VermilionInk : Lacquer.InkGrey, false, Line(on ? 3 : lit ? 2 : 1));
         DrawString(_gothic, new Vector2(x - 13, y + 60), palette.Title, HorizontalAlignment.Center, 90, 13,
             on ? Lacquer.Ink : Lacquer.InkQuiet);
-        _spots.Add(new Spot(id, new Rect2(x - 4, y - 4, 72, 70), () => { SetPalette(palette); QueueRedraw(); }));
+        _spots.Add(new Spot(id, new Rect2(x - 4, y - 4, 72, 70), () => { choose(palette); QueueRedraw(); }));
     }
 
     /// <summary>The question over the sheet: its title, its text, the confirmation as the red button and Cancel; the rest waits.</summary>

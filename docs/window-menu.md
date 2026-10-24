@@ -118,10 +118,11 @@ web build (seen only) by an option.
   in `user://settings.cfg` is no longer read (`InterfaceChoice`). `--interface original` shows the
   original's screens for one launch (development checks).
 - **Option → Display → Palette: Navy / Gold / Steel / Parchment / Crimson** (ours, owner's choice 2026-10-12;
-  swatches; saved in `user://settings.cfg`, `[display] palette`, Steel by default): the
-  colours of our battle screen and the map's name plates (`DeploymentPalette`; the deployment screen is lacquer
-  since 2026-10-19, docs/ui/deployment-table.md). A change recolours an open screen at once.
-  `--palette <name>` picks one for the launch without saving it (development).
+  swatches, Steel by default): the colours of our battle screen and the map's name plates (`DeploymentPalette`; the
+  deployment screen is lacquer since 2026-10-19, docs/ui/deployment-table.md). Since 2026-10-24 two rows, the battle
+  screen's (`[display] palette_battle` in `user://settings.cfg`) and the other screens' (`[display] palette_other`),
+  each taking the old `[display] palette` until chosen (docs/ui/options.md, "Two palettes"). A change recolours an
+  open screen at once. `--palette <name>` picks both for the launch without saving them (development).
 - **Option → Game → Change…** (ours, owner's request 2026-10-21): after the window's question ("Any unsaved progress
   will be lost"), the import screen (docs/import.md, step 8) with the saved folder in its field and "← Back to the
   title" (or Esc) under it; an import of another folder keeps it (`game_dir`) and opens a fresh title, the way back

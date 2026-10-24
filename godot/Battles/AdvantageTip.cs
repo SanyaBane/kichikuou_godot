@@ -12,7 +12,7 @@ internal sealed partial class AdvantageTip : Control
 {
     private const float Width = 360, Pad = 10, TextSize = 17, Below = 20, Right = 14;
 
-    private DeploymentPalette _colours = DeploymentPalette.Chosen;
+    private DeploymentPalette _colours = DeploymentPalette.BattleChosen;
     private float _scale = 1;
     private string _text = "";
     private Vector2 _pointer;                                       // in this control's coordinates
