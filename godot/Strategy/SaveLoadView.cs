@@ -666,10 +666,11 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
                 DrawRow(rect, slot, auto: false);
         if (_manuals.Count == 0)
             TextCentred(_cinzelLight, 15, ListX + ListW / 2, ManualTop + 40, "No manual saves yet.", Ui.OffText);
+        // The groove stays when every save fits, so the rows keep their width under the buttons above them.
+        float top = ManualTop, span = ListBottom - top, x = ListX + ListW - 6;
+        DrawRect(new Rect2(x, top, 5, span), Ui.Groove);
         if (_manuals.Count > ManualRowsShown)
         {
-            float top = ManualTop, span = ListBottom - top, x = ListX + ListW - 6;
-            DrawRect(new Rect2(x, top, 5, span), Ui.Groove);
             float a = top + span * _scroll / _manuals.Count, b = top + span * Math.Min(_manuals.Count, _scroll + ManualRowsShown) / _manuals.Count;
             DrawRect(new Rect2(x, a, 5, b - a), Ui.Gold);
         }
