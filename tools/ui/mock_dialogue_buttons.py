@@ -7,8 +7,8 @@ The dumps (a window, without --touch so today's pills are not in them; the run m
   <Godot console exe> --path godot -- --load --auto --fast --quit --seed 2 --saves user://saves-look-131
       --slots-from user://saves-week18 --harem 6 --until deployment --shots <dump dir>
 (00010-message-place-title.png, 00011-message-speech-left.png, 00012-message-speech-right.png,
-00034-message-cg-bar-speech.png: window 131 under the masked event CG). Then, from the repository's root (Pillow;
-godot/fonts):
+00034-message-cg-bar-speech.png and 00036-message-cg-bar-narration.png: window 131 under the masked event CG). Then,
+from the repository's root (Pillow; godot/fonts):
   python -I tools/ui/mock_dialogue_buttons.py <dump dir> <out dir> < /dev/null
 The images hold the units' portraits: keep <out dir> outside the repository.
 
@@ -34,6 +34,7 @@ NOTE = (255, 92, 160)                   # the mock-ups' own notes (not part of a
 
 SPEECH_RIGHT, SPEECH_LEFT = '00012-message-speech-right.png', '00011-message-speech-left.png'
 PLACE, BAR_131 = '00010-message-place-title.png', '00034-message-cg-bar-speech.png'
+BAR_131_NARRATION = '00036-message-cg-bar-narration.png'
 
 # The windows' frames in those dumps (x0, y0, x1, y1; measured).
 WIN = {SPEECH_RIGHT: (58, 536, 892, 790), SPEECH_LEFT: (436, 28, 1270, 282), PLACE: (248, 560, 1032, 818),
@@ -231,13 +232,13 @@ def variant_a():
 # ------------------------------------------------------------------------------------------------- B: the left edge
 EDGE_W, CELL_H = 52, 84
 EDGE_Y = BAR + 590                          # the drawer's top in the screen's 800 (dump y 614)
-EDGE_Y_131 = BAR + 380                      # over 131: above its window and clear of its speaker plate
 
 
-def drawer(f, top, lit=False, log_off=False):
-    """B: a lacquer drawer glued to the screen's left edge, Skip over Log, icons over small labels."""
-    r = (-14, top, EDGE_W, top + 2 * CELL_H + 4)
-    lacquer(f, r, radius=10, corners=False)
+def drawer(f, top, lit=False, log_off=False, inset=False):
+    """B: a lacquer drawer glued to the screen's left edge, Skip over Log, icons over small labels; inset, its cells
+    alone, standing on lacquer already there (131's)."""
+    if not inset:
+        lacquer(f, (-14, top, EDGE_W, top + 2 * CELL_H + 4), radius=10, corners=False)
     skip = (0, top + 2, EDGE_W - 2, top + 2 + CELL_H)
     log = (0, skip[3], EDGE_W - 2, skip[3] + CELL_H)
     if lit:
@@ -253,6 +254,85 @@ def drawer(f, top, lit=False, log_off=False):
     lines(f, cx, log[1] + 32, 24, OFF if log_off else GOLD)
     text(f, cx, log[1] + 64, 'Log', GOTHIC(13), OFF if log_off else QUIET)
     return skip, log
+
+
+# 131 with the drawer at its usual place (owner, 2026-10-24): the window's frame (0, 612)-(1280, 824), its interior
+# (12, 624)-(1268, 812) inside its corners, the speaker's plate (32, 586)-(206, 632) straddling the top edge
+# (MessageWindowView.NameTab).
+BAR_FRAME, BAR_INNER, BAR_PLATE = (0, 612, 1280, 824), (12, 624, 1268, 812), (32, 586, 206, 632)
+RULE_X = 60                                 # the gold rule between the drawer and 131's text
+K_INSIDE = (BAR_INNER[2] - RULE_X - 6) / (BAR_INNER[2] - BAR_INNER[0])
+K_WHOLE = (W - RULE_X) / W
+
+
+def region(img, r):
+    return img.crop(tuple(round(v * S) for v in r))
+
+
+def put(f, picture, r):
+    x0, y0, x1, y1 = [round(v) for v in r]
+    f.img.paste(picture.resize(((x1 - x0) * S, (y1 - y0) * S), Image.LANCZOS), (x0 * S, y0 * S))
+
+
+def fill(f, r, colour):
+    lay, d = f.draw()
+    d.rectangle(sc(*r), fill=colour + (255,))
+    f.add(lay)
+
+
+def lift_plate(f, plate):
+    """The plate cut out of the dump (a copy) and its place given back: the CG above the frame's top, the lacquer
+    under it, the frame's top line."""
+    picture = region(f.img, BAR_PLATE) if plate else None
+    cg = f.img.getpixel((10 * S, 560 * S))[:3]
+    fill(f, (BAR_PLATE[0] - 8, BAR_PLATE[1] - 4, BAR_PLATE[2] + 8, BAR_FRAME[1]), cg)
+    return picture
+
+
+def bar_inside(f, plate=True):
+    """B3a: 131's frame as now; its text (and plate) scaled by K_INSIDE right of the rule, the drawer left of it."""
+    back = f.img.getpixel((1100 * S, 800 * S))[:3]
+    inner = region(f.img, BAR_INNER)
+    picture = lift_plate(f, plate)
+    fill(f, BAR_INNER, back)
+    fill(f, (BAR_PLATE[0] - 8, BAR_FRAME[1] + 2, BAR_PLATE[2] + 8, BAR_PLATE[3] + 4), back)
+    lay, d = f.draw()
+    d.line(sc(BAR_PLATE[0] - 4, BAR_FRAME[1] + 0.5, BAR_PLATE[2] + 4, BAR_FRAME[1] + 0.5), fill=GOLD, width=2 * S)
+    f.add(lay)
+    x0 = BAR_INNER[2] - (BAR_INNER[2] - BAR_INNER[0]) * K_INSIDE
+    put(f, inner, (x0, BAR_INNER[1], BAR_INNER[2], BAR_INNER[1] + (BAR_INNER[3] - BAR_INNER[1]) * K_INSIDE))
+    if picture is not None:
+        pw, ph = (BAR_PLATE[2] - BAR_PLATE[0]) * K_INSIDE, (BAR_PLATE[3] - BAR_PLATE[1]) * K_INSIDE
+        px = x0 + (BAR_PLATE[0] - BAR_INNER[0]) * K_INSIDE
+        cy = (BAR_PLATE[1] + BAR_PLATE[3]) / 2
+        put(f, picture, (px, cy - ph / 2, px + pw, cy + ph / 2))
+    vertical_rule(f, RULE_X, BAR_FRAME[1] + 10, BAR_FRAME[3] - 10)
+
+
+def bar_whole(f):
+    """B3b: the whole of 131 scaled by K_WHOLE right of the drawer; the freed strips under a lacquer dock."""
+    window = region(f.img, BAR_FRAME)
+    picture = lift_plate(f, True)
+    h = (BAR_FRAME[3] - BAR_FRAME[1]) * K_WHOLE
+    fill(f, (0, BAR_FRAME[1], RULE_X, H), (10, 8, 6))           # the dock hides the original's window whole
+    lacquer(f, (-14, BAR_FRAME[1], RULE_X - 2, H + 14), radius=0, corners=False)
+    fill(f, (RULE_X - 2, BAR_FRAME[1] + h, W, H), (10, 8, 6))
+    put(f, window, (RULE_X, BAR_FRAME[1], W, BAR_FRAME[1] + h))
+    pw, ph = (BAR_PLATE[2] - BAR_PLATE[0]) * K_WHOLE, (BAR_PLATE[3] - BAR_PLATE[1]) * K_WHOLE
+    px = RULE_X + BAR_PLATE[0] * K_WHOLE
+    cy = BAR_FRAME[1] + ((BAR_PLATE[1] + BAR_PLATE[3]) / 2 - BAR_FRAME[1]) * K_WHOLE
+    put(f, picture, (px, cy - ph / 2, px + pw, cy + ph / 2))
+    drawer(f, EDGE_Y, inset=True)
+
+
+def vertical_rule(f, x, y0, y1):
+    """Lacquer.DrawVerticalDivider: a dim gold rule, a gold diamond at its middle."""
+    lay, d = f.draw()
+    m = (y0 + y1) / 2
+    d.line(sc(x, y0, x, m - 10), fill=DIM_GOLD, width=S)
+    d.line(sc(x, m + 10, x, y1), fill=DIM_GOLD, width=S)
+    d.polygon(sc(x, m - 4, x + 4, m, x, m + 4, x - 4, m), fill=GOLD)
+    f.add(lay)
 
 
 def variant_b():
@@ -271,10 +351,25 @@ def variant_b():
     f.save('B2-edge-skipping.png')
 
     f = Frame(BAR_131)
-    drawer(f, EDGE_Y_131)
-    caption(f, ['B3 — window 131 spans the foot: the drawer rises above it on the same edge (the one other place),',
-                'clear of the speaker\'s plate; it covers 52 px of the CG\'s left edge'])
-    f.save('B3-edge-131.png')
+    bar_inside(f)
+    drawer(f, EDGE_Y, inset=True)
+    caption(f, ['B3a — window 131: the drawer at its usual place, inside the frame left of a gold rule;',
+                f'the text and the speaker\'s plate {K_INSIDE:.1%} as large, right of the rule, the line breaks as now;',
+                'the frame as now, so it still covers the original\'s window under ours'])
+    f.save('B3a-edge-131-inside.png')
+
+    f = Frame(BAR_131_NARRATION)
+    bar_inside(f, plate=False)
+    drawer(f, EDGE_Y, lit=True, log_off=True, inset=True)
+    caption(f, ['B3a — 131\'s narration, the skip on'])
+    f.save('B3a-edge-131-narration.png')
+
+    f = Frame(BAR_131)
+    bar_whole(f)
+    caption(f, [f'B3b — the whole window 131 {K_WHOLE:.1%} as large, right of the drawer (frame, plate and text);',
+                'the strips it frees (60 px at the left, 10 at the foot) must be covered: the original\'s window',
+                'is still drawn under ours, so the drawer stands on a lacquer dock of its own'])
+    f.save('B3b-edge-131-whole.png')
 
     f = Frame(SPEECH_LEFT)
     drawer(f, EDGE_Y)

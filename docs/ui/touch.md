@@ -315,6 +315,19 @@ command in its docstring); the images stay outside the repository. Every variant
 **Recommendation: B** — one place for every window (the thumb learns it), never over a portrait, a name plate or a
 window's text, and the skip's stop always under the same finger.
 
+**The owner (2026-10-24): B1 and B2, and over 131 the drawer at its usual place too**, 131 made a little smaller for
+it. Our 131 covers the original's window, which the engine still draws under it (`GamePresenter.LeaveWindowOnStage`),
+so whatever ours leaves free shows the original's frame and text. Two ways, drawn by the same script:
+
+- **B3a — the drawer inside 131's frame**: the frame as now (so it still covers the original's whole), a gold rule at
+  x 60, the drawer's cells left of it at their usual place (y 590-762, inside 131's 588-800); the text and the
+  speaker's plate 95.7% as large right of the rule. The engine places the letters, so the line breaks stay; the
+  narration's full lines still fit (B3a with the skip on, `B3a-edge-131-narration`).
+- **B3b — the whole window 95.3% as large** right of the drawer (frame, plate, text); the strips it frees (60 px at
+  the left, 10 at the foot) under an opaque lacquer dock of their own, the drawer on it.
+
+**Recommendation: B3a** — nothing of the original's window to hide, one frame instead of a dock beside a frame.
+
 ## Phones (put off)
 
 Put off by the owner (2026-10-24). What is ready for them: the measurements above, mock-ups B1, B3 (the battle),
