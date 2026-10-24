@@ -21,7 +21,7 @@ internal sealed partial class SceneMenuView : Control
 
     // The rows: the mock-up's for a short menu (36 high, 8 apart, text 30); from six items the original's pitch (36: 30
     // high, 6 apart, text 26), so a long one (the save slots) takes about the box's room and leaves the window under it
-    // free. Debug → Menu Row Height's second slider (MenuRowsChoice.DialogueHeight, 36 by default) scales them all.
+    // free. Debug → Menu Row Height's second slider (MenuRowsChoice.DialogueHeight, 40 by default, owner 2026-10-25) scales them all.
     private static float RowScale => MenuRowsChoice.DialogueHeight / 36f;
 
     private float RowH => MathF.Round((Rows >= 6 ? 30 : 36) * RowScale);

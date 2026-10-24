@@ -6,12 +6,12 @@ namespace Kichikuou.Game.Strategy;
 /// Debug → Menu Row Height (owner, 2026-10-25, for trying sizes out, not for the release): the height of the province
 /// menu's and the command panel's rows on the PC, 18 to 60 window pixels, 38 by default (the owner's A1 and M1,
 /// docs/ui/command-screen.md, "Taller rows"), their text and tags following it (<see cref="MenuRows"/>); the touch mode
-/// keeps its own rows. A second slider sets the scenes' <c>]</c> menus' rows (<see cref="SceneMenuView"/>), 36 by default as
-/// they were, in every mode.
+/// keeps its own rows. A second slider sets the scenes' <c>]</c> menus' rows (<see cref="SceneMenuView"/>), 40 by default
+/// (owner, 2026-10-25; 36 before), in every mode.
 /// </summary>
 internal static class MenuRowsChoice
 {
-    public const int Min = 18, Max = 60, Default = 38, DialogueDefault = 36;
+    public const int Min = 18, Max = 60, Default = 38, DialogueDefault = 40;
 
     private static int? _height, _dialogueHeight;
 
