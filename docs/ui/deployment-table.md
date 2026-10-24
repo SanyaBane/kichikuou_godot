@@ -332,6 +332,12 @@ needs one (U2's cards are narrow enough to drop the "Cost" label and put the pla
 at the two rows' middle; the cards give up a strip of 30 screen pixels and a gap of 6 for it
 (`DeploymentPanels.DrawFacing`). Built the same day and looked at in a window (the defence of Ys (5) from `saves-week18`).
 
+**Redrawn (owner, 2026-10-24):** the triangle did not say what it belonged to. Mock-up rounds F (F0-F7), B/T (more of the
+bracket and the tab), X (more of the crossed swords) and D (those on dark lacquer) are `tools/ui/mock_facing.py`; **the
+owner chose F5**, its ends kept off the cards: a gold bracket holding the front row's two cards from the right, its ends
+in the gap 2 pixels short of the cards' edges, its middle drawn out into a light gold head pointing at the enemy.
+The Attack button lost its line ("Go to war · cost", the war expenses being right above it) the same day.
+
 ## Replenish on the deployment screen (owner's request, 2026-10-20)
 
 The owner asked for Replenish (`Cﾌﾞｶ`'s troop menu; not Add New Troops) on the deployment screen. What the rules say:

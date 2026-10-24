@@ -463,15 +463,20 @@ internal sealed partial class DeploymentPanels : Control
     }
 
     /// <summary>
-    /// The way the whole party faces (the owner's U5): one gold triangle right of the cards at the two rows' middle,
-    /// pointing at the enemy's side, a dark one inside it.
+    /// The way the whole party faces (the owner's F5, 2026-10-24, tools/ui/mock_facing.py; in place of U5's triangle): a
+    /// gold bracket holding the front row's two cards from the right — its ends short of the cards' edges, in the gap —,
+    /// its middle drawn out into a head pointing at the enemy's side.
     /// </summary>
     private void DrawFacing(Control c)
     {
-        float x0 = PartyPanel.End.X - 14 - FacingStrip, x1 = PartyPanel.End.X - 14;
-        float cy = CardsTop + CardHeight + CardGap / 2;
-        c.DrawColoredPolygon([new(x0 + 2, cy - 18), new(x1, cy), new(x0 + 2, cy + 18)], Lacquer.Gold);
-        c.DrawColoredPolygon([new(x0 + 6, cy - 10), new(x1 - 7, cy), new(x0 + 6, cy + 10)], Color.Color8(90, 66, 34));
+        var top = CardRect(1);
+        var bottom = CardRect(2);
+        float x = PartyPanel.End.X - 14 - FacingStrip + 1, ends = top.End.X + 2, tip = PartyPanel.End.X - 10;
+        float y0 = top.Position.Y + 1, y1 = bottom.End.Y - 1, cy = (top.End.Y + bottom.Position.Y) / 2;
+        float width = Line(2.5f);
+        c.DrawPolyline([new(ends, y0), new(x, y0), new(x, cy - 16), new(x + 10, cy - 6)], Lacquer.Gold, width, true);
+        c.DrawPolyline([new(ends, y1), new(x, y1), new(x, cy + 16), new(x + 10, cy + 6)], Lacquer.Gold, width, true);
+        c.DrawColoredPolygon([new(x + 6, cy - 14), new(tip, cy), new(x + 6, cy + 14)], Lacquer.Name);
     }
 
     /// <summary>A label in Cinzel and its figure in the game's font after it, centred in <paramref name="band"/>.</summary>
