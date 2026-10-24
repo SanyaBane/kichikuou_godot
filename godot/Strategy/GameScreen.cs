@@ -313,6 +313,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _scoutView = new ScoutReportView(GodotGlyphRenderer.Chosen, faces);
         _scoutView.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _content.AddChild(_scoutView);
+        ReadyEnemyAttack(faces);
         _strategyView = new StrategyCutInView(GodotGlyphRenderer.Chosen, faces);
         _strategyView.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _content.AddChild(_strategyView);
@@ -423,6 +424,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         UpdateBattleScreen(Present());
         UpdateMessageWindow();
         UpdateScoutReport();
+        UpdateEnemyAttack();
         UpdateStrategyCutIn();
         if (_options.Portraits && !_portraitsOpened && _presenter.State is not null && !_modal)
         {
@@ -666,6 +668,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _presenter.CoverCityLeadIn = InterfaceChoice.New;                // our province menu: the city's lead-in hidden too
         _presenter.CoverWeekReport = InterfaceChoice.New;                // our week report over the week start's windows
         _presenter.CoverAttackBriefing = InterfaceChoice.New;            // an attack goes straight to the deployment screen
+        _presenter.Battle.CoverEnemyAttack = InterfaceChoice.New;        // our screen for an enemy attack (FIGT_B)
         _presenter.CoverMessages = InterfaceChoice.New;                  // our message windows (docs/ui/messages.md)
         _presenter.Show(scriptEvent);
         MarkPicker(scriptEvent);                                         // the state as the picker opens (decision 30)
@@ -809,7 +812,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.ScreenshotDirectory is not { } dir)
             return;
         System.IO.Directory.CreateDirectory(dir);
-        if ((_optionsView is not null || _table.Visible || _subordinates.Visible || _harem.Visible || _treasure.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _sceneMenuView.Visible || _saveView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown) && DisplayServer.GetName() != "headless")
+        if ((_optionsView is not null || _table.Visible || _subordinates.Visible || _harem.Visible || _treasure.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _sceneMenuView.Visible || _saveView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown || _attackView.Visible) && DisplayServer.GetName() != "headless")
         {
             // Our deployment and battle screens are drawn by Godot over the screen: the window's next frame (headless
             // draws none). No Compose here: the frame's Present must find the change to upload it.
@@ -1165,6 +1168,14 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             // Our battle screen shows the round header once, as the battle's opening (owner, 2026-10-14): a later round's
             // differs only in the rounds left, which the gauge shows, so its key wait is answered at once, as by a click —
             // the key lands in RetVal (FIGT.ADV:214), which a flavour line reads (BTX-03).
+            key = KeyReturn;
+            await ReleaseWaitAsync(_input.PeekInput());
+            _ikKey = key;
+        }
+        else if (EnemyAttackAnswersKey)
+        {
+            // Our enemy attack's screen (docs/ui/enemy-attack.md, §6): the announcement, the ninjas' lead-in, the report
+            // and Rance's repeated lines are answered at once, as by a click (RetVal is kept).
             key = KeyReturn;
             await ReleaseWaitAsync(_input.PeekInput());
             _ikKey = key;
@@ -2085,7 +2096,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// Our scout report (docs/ui/battle-screen.md, "The scout report") over the original's screen while Option →
     /// Interface is on New and a ninja's report lists the approaching army (<see cref="BattlePresenter.Scout"/>).
     /// </summary>
-    private bool ScoutReportShown => InterfaceChoice.New && _presenter.Battle.Scout is not null && !SkippingScene && _presenter.State is not null;
+    private bool ScoutReportShown => InterfaceChoice.New && _presenter.Battle.Scout is not null && _presenter.Battle.Attack is null
+        && !SkippingScene && _presenter.State is not null;
 
     private void UpdateScoutReport()
     {
@@ -2515,6 +2527,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         InterruptPointers();
         _presenter.Flush();
+        if (EnemyAttackAnswers(menu))
+            return await EnemyAttackChooseAsync(menu);
         Task? clicking = null;
         if (_options.Auto)
         {

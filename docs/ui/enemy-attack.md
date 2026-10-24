@@ -120,3 +120,10 @@ seen. Our interface only; the rules run as before.
   menu `EnemyAttackResponse` answered by the screen (1, 2, 3), the ninja menu that follows a scouting answered with the
   ninja the list chose; `--auto` in a window dumps `enemy-attack`, with `--scout` `enemy-attack-ninjas`,
   `enemy-attack-scouted` and `enemy-attack-abandon` (the question answered Keep) before it intercepts.
+- **Built (2026-10-24):** `Original.Content/Battles/EnemyAttack` (`EnemyAttackTests`), `BattlePresenter.Attack.cs`
+  (the ninjas taken again with the report, which spent one), `godot/Strategy/EnemyAttackView` (the report's cards
+  drawn by `ScoutReportView.DrawCard`), `godot/Strategy/GameScreen.EnemyAttack.cs`. The `--scout` look on the week-18
+  save (CLAUDE.md, "Commands") goes through all of it in a window: the screen, Kanami's list, the places filled
+  (Kanami spent: "0 of 1 free"), Abandon City's question answered Keep, Intercept and the deployment table, with no
+  key wait of the hidden lines left for the player. Not yet looked at in a run: a refusal (Gandhi, Satella, Meglass),
+  Abandon City answered Abandon, Maris's comment past 5000 troops, several ninjas.

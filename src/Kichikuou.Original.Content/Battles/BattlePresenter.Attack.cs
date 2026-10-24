@@ -56,8 +56,9 @@ public sealed partial class BattlePresenter
             return;
         }
         _advisorSpeaks = text.Line is >= AdvisorFirst and <= AdvisorLast;
-        if (Scout is { } report)
-            Attack = Attack with { Report = report };
+        // The report, and the ninja it spent (FIGT_B.ADV:394 sets her flag first): the menu comes back without an announcement.
+        if (Scout is { } report && State is { } scouted)
+            Attack = Attack with { Report = report, Ninjas = EnemyAttack.Of(scouted, line => Read(line, [])).Ninjas };
     }
 
     /// <summary>A page of Maris's line is complete at its key wait: the screen shows it as her window prints it.</summary>

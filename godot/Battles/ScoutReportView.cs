@@ -218,40 +218,49 @@ internal sealed partial class ScoutReportView : Control
     }
 
     /// <summary>A card as our battle cards look (the face on the right, as the enemy's): place and name, troop type, "Troops" and the number large; an empty place "n  empty".</summary>
-    private void DrawCard(Rect2 card, int slot, ScoutedCommander? commander, float s)
+    private void DrawCard(Rect2 card, int slot, ScoutedCommander? commander, float s) =>
+        DrawCard(_sheet, card, slot, commander, s, _font!, _bold, _colours, _faces, _crops, Px(TextSize), Px(NumberSize));
+
+    /// <summary>
+    /// A scouted place's card drawn on <paramref name="canvas"/> in window pixels, <paramref name="s"/> to a layout pixel:
+    /// the report's and our enemy attack's screen (docs/ui/enemy-attack.md, §6) share it.
+    /// </summary>
+    internal static void DrawCard(CanvasItem canvas, Rect2 card, int slot, ScoutedCommander? commander, float s, Font font,
+        Font bold, DeploymentPalette colours, FacePictures faces, FaceCrops crops, int text, int number)
     {
-        DrawShadow(card, s);
-        var box = new StyleBoxFlat { BgColor = commander is null ? _colours.Back : _colours.Card, BorderColor = _colours.Border };
+        DrawShadow(canvas, card, s);
+        var box = new StyleBoxFlat { BgColor = commander is null ? colours.Back : colours.Card, BorderColor = colours.Border };
         box.SetBorderWidthAll(Math.Max(1, (int)Math.Round(2 * s)));
-        _sheet.DrawStyleBox(box, card);
-        int text = Px(TextSize);
+        canvas.DrawStyleBox(box, card);
         if (commander is null)
         {
             string empty = $"{slot}  empty";
-            var emptyWidth = _font!.GetStringSize(empty, HorizontalAlignment.Left, -1, text).X;
-            _sheet.DrawString(_font, card.GetCenter() + new Vector2(-emptyWidth / 2, _font.GetAscent(text) - text / 2f), empty,
-                HorizontalAlignment.Left, -1, text, _colours.Muted);
+            var emptyWidth = font.GetStringSize(empty, HorizontalAlignment.Left, -1, text).X;
+            canvas.DrawString(font, card.GetCenter() + new Vector2(-emptyWidth / 2, font.GetAscent(text) - text / 2f), empty,
+                HorizontalAlignment.Left, -1, text, colours.Muted);
             return;
         }
         float pad = 4 * s;
         int face = (int)Math.Round(FaceSize * s);
         var faceAt = new Vector2(card.End.X - pad * 2 - face, card.Position.Y + (card.Size.Y - face) / 2);
-        if (commander.Picture != 0 && _faces.SquareTexture(commander.Picture, _faces.CropOf(commander.Picture, _crops), face) is { } square)
-            _sheet.DrawTextureRect(square, new Rect2(faceAt, new Vector2(face, face)), false);
+        if (commander.Picture != 0 && faces.SquareTexture(commander.Picture, faces.CropOf(commander.Picture, crops), face) is { } square)
+            canvas.DrawTextureRect(square, new Rect2(faceAt, new Vector2(face, face)), false);
 
         float left = card.Position.X + 3 * pad, width = faceAt.X - left - 2 * pad;
         float top = card.Position.Y + 2 * pad;
-        void Text(string value, float y, Color colour, Font font, int fontSize, float x = 0) =>
-            _sheet.DrawString(font, new Vector2(left + x, top + y * s + font.GetAscent(fontSize)), value,
+        void Text(string value, float y, Color colour, Font f, int fontSize, float x = 0) =>
+            canvas.DrawString(f, new Vector2(left + x, top + y * s + f.GetAscent(fontSize)), value,
                 HorizontalAlignment.Left, width - x, fontSize, colour, TextServer.JustificationFlag.None);
-        Text(slot.ToString(CultureInfo.InvariantCulture), 0, _colours.Muted, _font!, text);
-        Text(commander.Name, 0, _colours.Text, _font!, text, 22 * s);
-        Text(commander.TroopType == "" ? "—" : commander.TroopType, 22, _colours.Muted, _font!, text);
-        Text("Troops", 52, _colours.Muted, _font!, text);
-        Text(commander.Troops == 0 ? "none" : Number(commander.Troops), 72, _colours.Text, _bold, Px(NumberSize));
+        Text(slot.ToString(CultureInfo.InvariantCulture), 0, colours.Muted, font, text);
+        Text(commander.Name, 0, colours.Text, font, text, 22 * s);
+        Text(commander.TroopType == "" ? "—" : commander.TroopType, 22, colours.Muted, font, text);
+        Text("Troops", 52, colours.Muted, font, text);
+        Text(commander.Troops == 0 ? "none" : Number(commander.Troops), 72, colours.Text, bold, number);
     }
 
-    private void DrawShadow(Rect2 area, float s)
+    private void DrawShadow(Rect2 area, float s) => DrawShadow(_sheet, area, s);
+
+    private static void DrawShadow(CanvasItem canvas, Rect2 area, float s)
     {
         var shadow = new StyleBoxFlat
         {
@@ -260,7 +269,7 @@ internal sealed partial class ScoutReportView : Control
             ShadowSize = (int)Math.Round(8 * s),
             ShadowOffset = new Vector2(0, 4 * s),
         };
-        _sheet.DrawStyleBox(shadow, area);
+        canvas.DrawStyleBox(shadow, area);
     }
 
     private int Px(float size) => Math.Max(8, (int)Math.Round(size * _scale));

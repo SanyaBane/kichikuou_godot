@@ -212,7 +212,10 @@ Option → Messages, Salmon by default — docs/ui/read-text.md (mock-up round R
 Then (owner, 2026-10-24) our own screen for an enemy attack (`FIGT_B`'s announcement and its Intercept / Ninja Scout /
 Abandon City menus), the refusals and Ex's scenes kept seen: the survey and mock-up round 1 (A a card over the map, B a
 screen of its own, C the original's scene with our menu) are docs/ui/enemy-attack.md (`tools/ui/mock_enemy_attack.py`);
-the owner likes B, and round 2 (its §5) gives it room for up to five ninjas (B3 faces at the foot, B4 a list).
+the owner chose B with the Ninja Scout list (B4), the places filled in place after a scouting, Abandon City asked first,
+Rance's repeated lines, the ninjas' lead-in and Abandon City's six lines unseen — built (its §6:
+`Original.Content/Battles/EnemyAttack`, `BattlePresenter.Attack.cs`, `godot/Strategy/EnemyAttackView`,
+`GameScreen.EnemyAttack.cs`).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -511,7 +514,10 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   left, else the run fails (the bug of 2026-10-16, `Engine/Script/InputLatch`) — then it intercepts as usual —
   `--load --auto --fast --quit --seed 2 --saves user://saves-scout --slots-from user://saves-week18 --turn-end --scout --until deployment [--interface new] --shots <dir>`
   (Ex (commander 1), Sakanaku (commander 6), Dodge (commander 5), Jibul (commander 7); our overlay needs a window,
-  and `--until deployment` stops before the battle, so nothing moves the system pointer).
+  and `--until deployment` stops before the battle, so nothing moves the system pointer). In our interface the attack
+  is our own screen (docs/ui/enemy-attack.md, §6), answered without the pointer: in a window it dumps `enemy-attack`,
+  `enemy-attack-ninjas` (the list open), `enemy-attack-scouted` (the places filled) and `enemy-attack-abandon` (the
+  question, answered Keep), then intercepts.
   A harem scene (window 131 under an event CG, 2026-10-18): `--harem <cell>` on the week-18 save makes the first
   map wait open the menu, choose Harem and pick the girl in that cell of its picker (left to right, top to bottom:
   Lia 2, Maris 3, Kanami 6, Haurein 9), before the replenish and the attack —

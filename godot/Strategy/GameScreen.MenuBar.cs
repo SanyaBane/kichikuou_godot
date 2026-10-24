@@ -281,6 +281,7 @@ public partial class GameScreen
         _treasureCallout.SetFont(font);
         _battleView.SetFont(font);
         _scoutView.SetFont(font);
+        _attackView.SetFont(font);
         _strategyView.SetFont(font);
         _messageView.SetFont(font);
         _sceneMenuView.SetFont(font);
@@ -304,6 +305,7 @@ public partial class GameScreen
         _markers.SetPalette(palette);
         _battleView.SetPalette(palette);
         _scoutView.SetPalette(palette);
+        _attackView.SetPalette(palette);
         _strategyView.SetPalette(palette);
     }
 

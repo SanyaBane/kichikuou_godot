@@ -980,7 +980,7 @@ picture, the slot panels) is not shown. How it is built:
    ✓ 2026-10-13 the script menus (owner, mock-up B): only the retreat confirmation (`FIGT.ADV:571-580`)
    opens over our screen — `FIGT_B`'s Intercept / Ninja Scout / Abandon City and the ninja come before the
    field is drawn, on the original's screen, and stay the original's (the strategic map's interface,
-   later). On our screen it is our dialog (`Original.Content/Battles/BattleDialog`, `godot/Battles/BattleDialogLayer`):
+   later; since 2026-10-24 our enemy attack's screen in our interface, docs/ui/enemy-attack.md). On our screen it is our dialog (`Original.Content/Battles/BattleDialog`, `godot/Battles/BattleDialogLayer`):
    the screen dimmed, a box centred over the scene in the context menus' style, our question "Retreat the
    whole army?" and "The battle is lost." (muted) over the script's items, Retreat in the palette's warning
    colour. A left release on an item chooses it; Esc, a right press or a left press off the box cancels

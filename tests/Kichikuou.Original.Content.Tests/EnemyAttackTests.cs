@@ -98,10 +98,12 @@ public class EnemyAttackTests
         Assert.Null(presenter.MessageWindow);
 
         presenter.EnemyAttackAnswered(2);                                                    // Ninja Scout: still up
+        s.F_Kanami_NinjaUsed = 1;                                                             // FIGT_B.ADV:394
         presenter.Show(new WindowEvent((Sys3Int)113, Sys3Int.Zero));
         presenter.Show(new MessageEvent(new ScriptRef("FIGT_B.ADV", 587)));                  // "The Approaching Enemy"
         Assert.NotNull(presenter.Attack.Report);
         Assert.Equal("Sakanaku", presenter.Attack.Report!.Places[0]!.Name);
+        Assert.False(presenter.Attack.CanScout);                                              // Kanami spent
         presenter.Show(new WindowEvent(Sys3Int.Zero, Sys3Int.Zero));
         Assert.NotNull(presenter.Attack.Report);                                              // kept after the window
 
