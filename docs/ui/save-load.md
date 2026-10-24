@@ -403,3 +403,19 @@ the button. Built:
   written last (Load).
 - **Unattended play**: `--saveload` asks the sweep while the new save has no comment (`save-load-sweep`), answers Keep,
   and checks the count falls by one once the comment is written.
+
+## 11. Back and a Delete that stands out (owner, 2026-10-25)
+
+The owner: the hint "Right click: back to …" goes, a Back button takes its place, and Delete (122×30, as quiet as
+Edit) should stand out. Mock-up round B (`tools/ui/mock_save_buttons.py`, drawn over the `--saveload` dumps); in every
+variant Delete is a danger button — dark red lacquer in a vermilion frame, a bin before its label — and a right click
+still goes back:
+
+- **B1, B2, B2s** — Back in the title band: left of the Load | Save tabs from `COMMAND`, alone at the band's right
+  from the title. Delete where it is, as tall as the red button (156×58). Save keeps "Saving: …" at the foot's left.
+- **B3, B4** — the foot as a row of three buttons as tall: "Back to the map" at its left, Delete beside the red button;
+  in Save what is saved moves onto the red button's second line.
+- **B5-B7** — Delete at the right of the save's title, over the map (it belongs to the save shown, far from the red
+  button), its question hanging under it; the foot is Back and the red button, in Save "Saving: …" between them.
+
+Awaiting the owner's choice.
