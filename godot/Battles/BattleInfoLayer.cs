@@ -8,9 +8,9 @@ namespace Kichikuou.Game.Battles;
 /// <summary>
 /// The battle's info boxes (<c>WAO_SUB</c> 143/153) on our battle screen (docs/ui/messages.md, §5 step 5; the owner's
 /// mock-ups K3 and K1, 2026-10-18/19), drawn from <see cref="BattleInfoBox"/>: a defence flashing as a "DEFEND · ENEMY HIT −n%" ribbon
-/// across the unit's card and its sentence as a caption at the scene's foot (mock-ups D2 and D5, 2026-10-21); a fall's stamp flashing across the dimmed card (owner, 2026-10-21); the end as one results plate — the
+/// across the unit's card and its sentence as a caption at the scene's foot (mock-ups D2 and D5, 2026-10-21); the end as one results plate — the
 /// reason as its title, each army's damages, the EXP, a row for each level-up —; every other box as our narration panel in
-/// the scene's middle. The click's triangle while the player's key is awaited. It takes no input: the screen's click answers
+/// the scene's middle, a fall's too (owner, 2026-10-24: the original's box and click, no stamp). The click's triangle while the player's key is awaited. It takes no input: the screen's click answers
 /// the script's wait (<see cref="GameScreen"/>). Laid out in the 1280×800 layout's pixels, scaled with the screen.
 /// </summary>
 internal sealed partial class BattleInfoLayer : Control
@@ -19,26 +19,14 @@ internal sealed partial class BattleInfoLayer : Control
     private const int PanelSize = 30;
     private const float PlateWidth = 620;
 
-    // A defence's ribbon and caption and a fall's stamp: they rise, hold, then fade (owner, 2026-10-19 and 2026-10-21: answered at
-    // once, as the order's label flashes). The stamp is shorter: the battle waits for the whole of it (FallSeconds).
+    // A defence's ribbon and caption: they rise, hold, then fade (owner, 2026-10-19: answered at once, as the order's label flashes).
     private const double BadgeRise = 0.15, BadgeHold = 1.2, BadgeFade = 0.45;
-    private const double FallRise = 0.15, FallHold = 0.65, FallFade = 0.3;
-
-    /// <summary>
-    /// A fall's stamp from its rise to its fade's end, which the battle waits for (<see cref="GameScreen"/>): the board moves
-    /// its cards up once it goes on, so a stamp still fading would lie on another card.
-    /// </summary>
-    public const double FallSeconds = FallRise + FallHold + FallFade;
-
-    /// <summary>When a fall's stamp is at its height, from its start (unattended play's dump).</summary>
-    public const double FallPeak = FallRise + 0.2;
 
     private static readonly Color Accent = Color.Color8(242, 199, 92);
     private static readonly Color SteelTop = Color.Color8(78, 132, 204), SteelFoot = Color.Color8(30, 58, 108);
     private static readonly Color RibbonTail = Color.Color8(24, 44, 84);
     private static readonly Color DefendGlow = Color.Color8(110, 170, 240);    // blue: never read as the acting card's gold
     private static readonly Color Ink = Color.Color8(10, 20, 40);
-    private static readonly Color StampInk = Color.Color8(206, 44, 32, 235);
 
     private readonly FontFile _brush = Lacquer.Brush();
     private readonly FontVariation _cinzel = Lacquer.Cinzel(500);
@@ -83,10 +71,7 @@ internal sealed partial class BattleInfoLayer : Control
         QueueRedraw();
     }
 
-    /// <summary>
-    /// A box answered at once flashes on its card: a defence's ribbon, the caption with <paramref name="name"/> at the scene's
-    /// foot; a fall's stamp.
-    /// </summary>
+    /// <summary>A defence's box, answered at once, flashes: the ribbon on its card, the caption with <paramref name="name"/> at the scene's foot.</summary>
     public void Flash(BattleInfoBox box, string name)
     {
         _flashes.RemoveAll(f => f.Box.Place == box.Place);              // one mark a card
@@ -94,14 +79,7 @@ internal sealed partial class BattleInfoLayer : Control
         QueueRedraw();
     }
 
-    /// <summary>A flash taken off before its end: a fall's stamp once the battle goes on (<see cref="FallSeconds"/>).</summary>
-    public void EndFlash(BattleInfoBox box)
-    {
-        if (_flashes.RemoveAll(f => f.Box == box) > 0)
-            QueueRedraw();
-    }
-
-    /// <summary>Whether a ribbon or a stamp is still flashing.</summary>
+    /// <summary>Whether a ribbon is still flashing.</summary>
     public bool Flashing => _flashes.Count > 0;
 
     /// <summary>
@@ -124,7 +102,7 @@ internal sealed partial class BattleInfoLayer : Control
 
     public override void _Process(double delta)
     {
-        _flashes.RemoveAll(f => (Time.GetTicksMsec() - f.From) / 1000.0 >= (f.Box.Kind == InfoBoxKind.Fall ? FallSeconds : BadgeRise + BadgeHold + BadgeFade));
+        _flashes.RemoveAll(f => (Time.GetTicksMsec() - f.From) / 1000.0 >= BadgeRise + BadgeHold + BadgeFade);
         if (_flashes.Count > 0 || (_box is not null && _waiting))
             QueueRedraw();                                              // the badge fades, the triangle moves
         else if (_drawnFlash)
@@ -139,11 +117,7 @@ internal sealed partial class BattleInfoLayer : Control
         _drawnFlash = _flashes.Count > 0;
         foreach (var (box, name, from) in _flashes)
         {
-            if (box.Place is not { } at)
-                continue;
-            if (box.Kind == InfoBoxKind.Fall)
-                DrawFall(box, BattleBoardView.CardArea(at), Alpha(from, FallRise, FallHold, FallFade));
-            else
+            if (box.Place is { } at)
                 DrawDefence(box, name, BattleBoardView.CardArea(at), Alpha(from, BadgeRise, BadgeHold, BadgeFade));
         }
         switch (_box)
@@ -283,25 +257,6 @@ internal sealed partial class BattleInfoLayer : Control
     {
         DrawStringOutline(font, at, text, fontSize: size, size: 3, modulate: Ink * tint);
         DrawString(font, at, text, fontSize: size, modulate: colour);
-    }
-
-    /// <summary>K3b: the card dimmed, a red stamp across it tilted a little; it flashes, as the defence's ribbon (owner, 2026-10-21).</summary>
-    private void DrawFall(BattleInfoBox box, Rect2 card, float alpha)
-    {
-        var tint = new Color(1, 1, 1, alpha);
-        DrawRect(card, new Color(0, 0, 0, 0.47f * alpha));
-        var centre = card.GetCenter();
-        DrawSetTransform(centre * _k, Mathf.DegToRad(-8), new Vector2(_k, _k));
-        float w = Math.Max(250, _bold.GetStringSize(box.Mark, fontSize: 30).X + 50);
-        var stamp = new Rect2(-w / 2, -31, w, 62);
-        DrawStyleBox(new StyleBoxFlat
-        {
-            BgColor = Colors.Transparent, BorderColor = StampInk * tint, CornerDetail = 6,
-            CornerRadiusTopLeft = 8, CornerRadiusTopRight = 8, CornerRadiusBottomLeft = 8, CornerRadiusBottomRight = 8,
-            BorderWidthLeft = 4, BorderWidthTop = 4, BorderWidthRight = 4, BorderWidthBottom = 4, DrawCenter = false,
-        }, stamp);
-        Centred(_bold, stamp, box.Mark, 30, StampInk * tint);
-        DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
     }
 
     // ---------------------------------------------------------------- K3c/K3d: the results plate

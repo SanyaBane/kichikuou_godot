@@ -10,26 +10,6 @@ public sealed partial class BattlePresenter
     /// <summary>The defence's box (<c>L_02078</c>, <c>FIGT.ADV:1399</c>): the unit's name, "prepared for the enemy's attack", the increase.</summary>
     private static readonly ScriptRef DefenceText = new(Figt, 1399);
 
-    /// <summary>The files of the falls' boxes: the player's units' (<c>FIGTﾐｶDE</c>) and the enemy commanders' (<c>FIGTﾃｷDE</c>).</summary>
-    private const string PlayerDownFile = "FIGTﾐｶDE.ADV", EnemyDownFile = "FIGTﾃｷDE.ADV";
-
-    /// <summary>The stamp of each fall's box, by its text's line (the 12 boxes of <c>Battle.Resolution.DefeatScenes</c>).</summary>
-    private static readonly Dictionary<ScriptRef, string> Stamps = new()
-    {
-        [new(PlayerDownFile, 13)] = "FAINTED",          // Rance, leader of the thieves
-        [new(PlayerDownFile, 35)] = "COLLAPSED",        // Rance
-        [new(PlayerDownFile, 62)] = "DEFEATED",         // Sill
-        [new(PlayerDownFile, 80)] = "RETREATED",        // Sill
-        [new(PlayerDownFile, 98)] = "DIED",             // Sill
-        [new(PlayerDownFile, 724)] = "FELL IN BATTLE",
-        [new(PlayerDownFile, 733)] = "WOUNDED",
-        [new(EnemyDownFile, 13)] = "RETREATED",         // Ex
-        [new(EnemyDownFile, 1807)] = "FELL IN BATTLE",
-        [new(EnemyDownFile, 1816)] = "CAN'T MOVE",
-        [new(EnemyDownFile, 1827)] = "DIED",
-        [new(EnemyDownFile, 1836)] = "RAN AWAY",
-    };
-
     /// <summary>
     /// The end's reasons, by the line of their text, with the results plate's title: the time limit (<c>FIGT.ADV:453</c>, then
     /// <c>:458</c> "it became night" or <c>:465</c> "time ran out"), the annihilations and the retreats (<c>:496-591</c>).
@@ -67,7 +47,7 @@ public sealed partial class BattlePresenter
 
     /// <summary>
     /// The open info box at its key wait as our battle screen shows it (docs/ui/messages.md, §5 step 5), else null: a
-    /// defence's badge, a fall's stamp, the results plate, our panel for the rest, or a box shown elsewhere.
+    /// defence's badge, the results plate, our panel for the rest (a fall's box among them), or a box shown elsewhere.
     /// </summary>
     public BattleInfoBox? InfoBox => InfoBoxOpen && WaitsForKey && State is not null ? InfoBoxNow() : null;
 
@@ -85,15 +65,6 @@ public sealed partial class BattlePresenter
                     return panel;
                 return new BattleInfoBox(InfoBoxKind.Defence, [DefenceSentence(page)], new BattlePlace(BattleSide.Player, slot),
                     DefenceMark(values[0].Value));
-            }
-            if (text.File is PlayerDownFile or EnemyDownFile)
-            {
-                var side = text.File == PlayerDownFile ? BattleSide.Player : BattleSide.Enemy;
-                int record = side == BattleSide.Player ? s.Unit_Cur.Value : s.Cmdr_Cur.Value;
-                var place = SlotSnapshot.Places.FirstOrDefault(p => p.Side == side && BattleBoard.Record(s, p) == record);
-                return Stamps.TryGetValue(text, out var stamp) && record != 0 && place.Slot != 0
-                    ? new BattleInfoBox(InfoBoxKind.Fall, page, place, stamp)
-                    : panel;
             }
             if (text.File != Figt)
                 continue;

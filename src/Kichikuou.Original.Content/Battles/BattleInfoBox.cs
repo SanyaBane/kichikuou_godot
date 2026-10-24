@@ -3,14 +3,15 @@ namespace Kichikuou.Original.Content.Battles;
 /// <summary>What our battle screen makes of one of the battle's info boxes (<see cref="BattleInfoBox"/>).</summary>
 public enum InfoBoxKind
 {
-    /// <summary>Our narration panel in the scene's middle, the box's sentences in it (mock-up K1): every box not below.</summary>
+    /// <summary>
+    /// Our narration panel in the scene's middle, the box's sentences in it (mock-up K1): every box not below — a unit's or a
+    /// commander's fall (<c>FIGTﾐｶDE.ADV</c>, <c>FIGTﾃｷDE.ADV</c>) too, which waits for the player's click as the original's
+    /// does (owner, 2026-10-24).
+    /// </summary>
     Panel,
 
     /// <summary>A unit's defence (<c>FIGT.ADV:1399</c>): an "ENEMY HIT −n%" ribbon flashing on its card, the wait answered at once.</summary>
     Defence,
-
-    /// <summary>A unit or a commander down (<c>FIGTﾐｶDE.ADV</c>, <c>FIGTﾃｷDE.ADV</c>): a stamp flashing across its dimmed card, the wait answered at once (owner, 2026-10-21).</summary>
-    Fall,
 
     /// <summary>A box our screen shows elsewhere: the battle's end reason (on the results plate) and a level-up's first page.</summary>
     Passed,
@@ -21,20 +22,19 @@ public enum InfoBoxKind
 
 /// <summary>
 /// One of the battle's own info boxes (<c>WAO_SUB</c> 143/153, frame 894) at its key wait as our battle screen shows it
-/// (docs/ui/messages.md, §5 step 5; the owner's choice K3 with K1, 2026-10-18/19): the events on the cards — a defence as
-/// a badge, a fall as a stamp —, the end as one results plate, every other box as our narration panel. Its kind comes from
+/// (docs/ui/messages.md, §5 step 5; the owner's choice K3 with K1, 2026-10-18/19): a defence as a badge on its card, the end as one results plate, every other box as our narration panel. Its kind comes from
 /// the script locations of the text printed into it; the waits stay the script's.
 /// </summary>
 /// <param name="Kind">How the box shows.</param>
 /// <param name="Sentences">The page's text: the box's narrow line breaks flowed into sentences, one per paragraph (an empty line parts them).</param>
-/// <param name="Place">The card a <see cref="InfoBoxKind.Defence"/> or a <see cref="InfoBoxKind.Fall"/> lands on.</param>
-/// <param name="Mark">A defence's ribbon's text ("ENEMY HIT −7%", <see cref="BattlePresenter.DefenceMark"/>) or the stamp's ("FELL IN BATTLE").</param>
+/// <param name="Place">The card a <see cref="InfoBoxKind.Defence"/> lands on.</param>
+/// <param name="Mark">A defence's ribbon's text ("ENEMY HIT −7%", <see cref="BattlePresenter.DefenceMark"/>).</param>
 /// <param name="Results">The results plate as it stands now.</param>
 public sealed record BattleInfoBox(InfoBoxKind Kind, IReadOnlyList<string> Sentences, BattlePlace? Place = null, string Mark = "",
     BattleResults? Results = null)
 {
-    /// <summary>Whether its key wait is answered at once, as by a click: a defence (its ribbon flashes), a fall (its stamp flashes) and a passed box.</summary>
-    public bool AnsweredAtOnce => Kind is InfoBoxKind.Defence or InfoBoxKind.Fall or InfoBoxKind.Passed;
+    /// <summary>Whether its key wait is answered at once, as by a click: a defence (its ribbon flashes) and a passed box.</summary>
+    public bool AnsweredAtOnce => Kind is InfoBoxKind.Defence or InfoBoxKind.Passed;
 
     /// <summary>
     /// A page's lines as sentences: the lines trimmed and flowed into one paragraph (<see cref="BattleSpeech.Flow"/>) up to an

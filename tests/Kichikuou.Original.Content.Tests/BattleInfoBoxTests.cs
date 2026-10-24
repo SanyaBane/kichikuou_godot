@@ -14,7 +14,7 @@ namespace Kichikuou.Original.Content.Tests;
 
 /// <summary>
 /// The battle's info boxes (<c>WAO_SUB</c> 143/153, frame 894) as our battle screen shows them (docs/ui/messages.md, §5
-/// step 5): a defence's badge, a fall's stamp, the results plate, our panel for the rest.
+/// step 5): a defence's badge, the results plate, our panel for the rest (a fall's box among them).
 /// </summary>
 public class BattleInfoBoxTests
 {
@@ -59,9 +59,12 @@ public class BattleInfoBoxTests
         Assert.Null(presenter.InfoBox);
     }
 
-    /// <summary>A unit down (<c>FIGTﾐｶDE.ADV:724</c>): a stamp on Barres's (unit 6) card, answered at once; Ex's (commander 1) retreat.</summary>
-    [Fact]
-    public void A_fall_is_a_stamp_on_the_fallen_card()
+    /// <summary>
+    /// A unit down (<c>FIGTﾐｶDE.ADV:724</c>) and Ex's (commander 1) retreat (<c>FIGTﾃｷDE.ADV:13</c>): our panel with the box's
+    /// sentence, waiting for the player's click as the original's box does (owner, 2026-10-24: no stamp on the card).
+    /// </summary>
+    [ScenarioFact]
+    public void A_fall_is_our_panel_waiting_for_the_click()
     {
         var (presenter, s) = Presenter();
         s.Bt_PlayerSlot3 = 6;
@@ -72,8 +75,8 @@ public class BattleInfoBoxTests
         presenter.Show(new MessageEvent(new ScriptRef("FIGTﾐｶDE.ADV", 724)));
         Wait(presenter);
         var box = presenter.InfoBox!;
-        Assert.Equal((InfoBoxKind.Fall, new BattlePlace(BattleSide.Player, 3), "FELL IN BATTLE", true),
-            (box.Kind, box.Place, box.Mark, box.AnsweredAtOnce));
+        Assert.Equal((InfoBoxKind.Panel, null, "", false), (box.Kind, box.Place, box.Mark, box.AnsweredAtOnce));
+        Assert.Equal(["Barres fell in battle."], box.Sentences);
         Close(presenter);
 
         s.Bt_EnemySlot1 = 1;
@@ -81,15 +84,8 @@ public class BattleInfoBoxTests
         Open(presenter, 153);
         presenter.Show(new MessageEvent(new ScriptRef("FIGTﾃｷDE.ADV", 13)));
         Wait(presenter);
-        Assert.Equal((InfoBoxKind.Fall, new BattlePlace(BattleSide.Enemy, 1), "RETREATED"),
-            (presenter.InfoBox!.Kind, presenter.InfoBox.Place, presenter.InfoBox.Mark));
-        Close(presenter);
-
-        s.Cmdr_Cur = 2;                                                         // not on the board: our panel
-        Open(presenter, 153);
-        presenter.Show(new MessageEvent(new ScriptRef("FIGTﾃｷDE.ADV", 13)));
-        Wait(presenter);
-        Assert.Equal(InfoBoxKind.Panel, presenter.InfoBox!.Kind);
+        Assert.Equal((InfoBoxKind.Panel, false), (presenter.InfoBox!.Kind, presenter.InfoBox.AnsweredAtOnce));
+        Assert.Equal(["In spite of his injuries, Ex just barely managed to retreat."], presenter.InfoBox.Sentences);
     }
 
     /// <summary>Any other box is our panel with its sentences: the Land of Death's damage (<c>FIGT.ADV:272</c>).</summary>
@@ -181,7 +177,7 @@ public class BattleInfoBoxTests
 
         /// <summary>
         /// In every captured battle, each info box at its key wait is what the script shows: a defence's badge holds the acting
-        /// slot's new state, a fall's stamp lands on a card whose record is down (HP 0), the results plate holds the battle's
+        /// slot's new state, a fall's box is a panel the player answers, the results plate holds the battle's
         /// losses and EXP (<c>Bt_PlayerLosses</c>, <c>Bt_EnemyLosses</c>, <c>Tmp0001</c>) and one row more at each level-up's
         /// second page, a panel's sentences are resolved; every tally is a plate.
         /// </summary>
@@ -193,11 +189,14 @@ public class BattleInfoBoxTests
             var presenter = new BattlePresenter(Texts.Value, Cgs.Value, new BoxGlyphs());
             GameState? state = null;
             var counts = new Dictionary<InfoBoxKind, int>();
-            int tallies = 0, levelUps = 0, rows = 0;
+            int tallies = 0, levelUps = 0, rows = 0, falls = 0;
+            bool fallText = false;                                              // the last text printed is a fall scene's
             var wrong = new List<string>();
             var view = new ObservingView(e =>
             {
                 presenter.Show(e);
+                if (e is MessageEvent or ValueMessageEvent)
+                    fallText = e is MessageEvent { Text.File: "FIGTﾐｶDE.ADV" or "FIGTﾃｷDE.ADV" };
                 if (e is MessageEvent { Text: { File: Figt, Line: 2994 or 2999 } })
                     tallies++;
                 if (e is MessageEvent { Text: { File: Figt, Line: 3071 } })
@@ -209,17 +208,17 @@ public class BattleInfoBoxTests
                 if (presenter.InfoBox is { } box && state is { } s)
                 {
                     counts[box.Kind] = counts.GetValueOrDefault(box.Kind) + 1;
+                    if (fallText)
+                    {
+                        falls++;
+                        if (box is not { Kind: InfoBoxKind.Panel, AnsweredAtOnce: false, Sentences.Count: > 0 })
+                            wrong.Add($"fall {box.Kind}: {string.Join(" ", box.Sentences)}");
+                    }
                     switch (box)
                     {
                         case { Kind: InfoBoxKind.Defence, Place: { } place }:
                             if (box.Mark != BattlePresenter.DefenceMark(BattleBoard.StateOf(s, place)))
                                 wrong.Add($"defence {box.Mark} at {place}, state {BattleBoard.StateOf(s, place)}");
-                            break;
-                        case { Kind: InfoBoxKind.Fall, Place: { } place }:
-                            int record = BattleBoard.Record(s, place);
-                            var hp = place.Side == BattleSide.Player ? s.Units[(Sys3Int)record].HP : s.Cmdrs[(Sys3Int)record].HP;
-                            if (hp != 0)
-                                wrong.Add($"fall {box.Mark} at {place}: record {record} has HP {hp}");
                             break;
                         case { Kind: InfoBoxKind.Results, Results: { } r }:
                             if ((r.PlayerDamages, r.EnemyDamages, r.Exp) != (s.Bt_PlayerLosses.Value, s.Bt_EnemyLosses.Value, s.Tmp0001.Value)
@@ -244,7 +243,7 @@ public class BattleInfoBoxTests
                 state = s;
                 presenter.Start(s);
             }, answers: new ReplayAnswers(Key: Key));
-            output.WriteLine($"{file}: {string.Join(", ", counts.Select(c => $"{c.Key} {c.Value}"))}; {tallies} tallies, {levelUps} level-ups");
+            output.WriteLine($"{file}: {string.Join(", ", counts.Select(c => $"{c.Key} {c.Value}"))}; {tallies} tallies, {levelUps} level-ups, {falls} falls");
             Assert.Empty(wrong);
             Assert.Equal(tallies + levelUps, counts.GetValueOrDefault(InfoBoxKind.Results));
             Assert.Equal(levelUps, rows);

@@ -250,7 +250,8 @@ as it is. Where to start:
    frame 894 out but on the strategy's screen. `godot/Battles/BattleInfoLayer` (on `BattleBoardView`, over the cards)
    draws them; `GameScreen.WaitForKeyAsync` answers a defence (its badge flashing 1.8 s), a fall (since 2026-10-21, below)
    and a passed box at once.
-   `--auto` in a window dumps `info-defence`, `info-fall`, `info-results`, `info-level-up`, `info-panel` once a launch.
+   `--auto` in a window dumps `info-defence`, `info-fall`, `info-results`, `info-level-up`, `info-panel` once a launch
+   (`info-fall` gone since 2026-10-24, below: a fall is `info-panel`).
    Tests: `BattleInfoBoxTests` (the kinds, and over every capture: the badge is the slot's new state, the stamp's card is
    down, the plate holds the losses and the EXP and one row more per level-up, every tally a plate). Seen in a window from
    the week-18 save (the stamp, the badge, the plate); not seen yet in the game: our panel and a level-up's row.
@@ -273,6 +274,16 @@ as it is. Where to start:
    wait is answered at once, as the defence's: the stamp flashes on the fallen card (`BattleInfoLayer.Flash`: it rises,
    holds and fades as the ribbon, the card dimmed under it, in 1.1 s, `BattleInfoLayer.FallSeconds`), the battle held for
    the whole of it — a stamp still fading when it went on lay on the card that moved up into the fallen one's place.
+   **The fall as the original's (owner, 2026-10-24):** the stamp and its 1.1 s hold are gone, and the kind `Fall` with
+   them. The original has no mark on a fallen panel: after the box `L_03058` redraws the field with the fallen one's
+   panel as any other (its slot is compacted only after `Y 3, 10`, 160 ms) and the panels move up at the next redraw
+   (docs/battle/screen-layout.md, §5). The fall's box is our panel with its sentence ("Barres fell in battle.") and
+   waits for the player's click, as the original's 143/153 does: a defeat is three clicks again — UNABLE TO FIGHT, the
+   line (when the unit has one), the box. Showing the stamp at UNABLE TO FIGHT was weighed and put aside: its word comes
+   from the defeat scene's branches (the record and story flags), known before the scene only by a dry run of it.
+   Some units have no box at all (Bound (unit 3) and Soul (unit 4) in the prologue, Rafalia (unit 34), Arlcoate (unit
+   35), Aviator (unit 36), Gandhi (unit 37), Chizuko (unit 38), Nagi (unit 40), unit 45, Magic (unit 39) on one branch):
+   their fall is the line alone, as in the original.
 6. **The message log** — its design discussed first (backlog).
    **Survey (2026-10-19).** The original has none (xsystem35 neither); Sengoku Rance has no battle text log either
    (docs/sengoku/04-screen.md:636). What a log can hold, and where our presenters already have it:
