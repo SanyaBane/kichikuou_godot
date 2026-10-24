@@ -15,6 +15,8 @@ namespace Kichikuou.Game.Battles;
 /// </summary>
 internal sealed partial class CardPortrait : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Battle);
+
     public const float Width = 118, Height = 140, Face = 112;
     private const float FaceTop = 2, StatsText = 17, LevelText = 14, BadgeRadius = 10;
     private static readonly Color Up = new(120 / 255f, 210 / 255f, 120 / 255f), Down = new(235 / 255f, 110 / 255f, 100 / 255f);
@@ -26,12 +28,11 @@ internal sealed partial class CardPortrait : Control
     private readonly Texture2D? _face;
     private readonly BattleCardStats? _stats;
     private readonly int _focus;
-    private readonly DeploymentPalette _colours;
     private readonly float _scale;
 
-    public CardPortrait(Texture2D? face, BattleCardStats? stats, int focus, DeploymentPalette colours, float scale)
+    public CardPortrait(Texture2D? face, BattleCardStats? stats, int focus, float scale)
     {
-        (_face, _stats, _focus, _colours, _scale) = (face, stats, focus, colours, scale);
+        (_face, _stats, _focus, _scale) = (face, stats, focus, scale);
         CustomMinimumSize = new Vector2(Width, Height) * scale;
         SizeFlagsVertical = SizeFlags.ShrinkCenter;
         MouseFilter = MouseFilterEnum.Ignore;
@@ -56,7 +57,7 @@ internal sealed partial class CardPortrait : Control
             box.SetCornerRadiusAll((int)Math.Round(3 * s));
             DrawStyleBox(box, plate);
             DrawString(font, new Vector2(plate.Position.X + 3 * s, plate.Position.Y + 2 * s + font.GetAscent(px)), text,
-                HorizontalAlignment.Left, -1, px, _colours.Text);
+                HorizontalAlignment.Left, -1, px, Ui.Text);
         }
 
         if (_focus > 0)
@@ -73,9 +74,9 @@ internal sealed partial class CardPortrait : Control
             DrawStyleBox(box, plate);
             var centre = new Vector2(plate.Position.X + 5 * s + diamond / 2, plate.Position.Y + plate.Size.Y / 2);
             DrawColoredPolygon([centre + new Vector2(0, -diamond / 2), centre + new Vector2(diamond / 2, 0),
-                centre + new Vector2(0, diamond / 2), centre + new Vector2(-diamond / 2, 0)], _colours.Accent);
+                centre + new Vector2(0, diamond / 2), centre + new Vector2(-diamond / 2, 0)], Ui.HoverLine);
             DrawString(font, new Vector2(centre.X + diamond / 2 + gap, plate.Position.Y + 2 * s + font.GetAscent(px)), text,
-                HorizontalAlignment.Left, -1, px, _colours.Accent);
+                HorizontalAlignment.Left, -1, px, Ui.HoverLine);
         }
 
         if (stats.Surging)
@@ -84,7 +85,7 @@ internal sealed partial class CardPortrait : Control
             var centre = new Vector2(face.End.X - 12 * s, face.Position.Y + 12 * s);
             float r = BadgeRadius * s;
             DrawCircle(centre, r + Math.Max(1, s), Colors.Black);
-            DrawCircle(centre, r, on ? _colours.Accent : BadgeOff);
+            DrawCircle(centre, r, on ? Ui.HoverLine : BadgeOff);
             var ink = on ? BadgeInk : BadgeOffInk;
             DrawColoredPolygon([centre + new Vector2(0, -6) * s, centre + new Vector2(-6, 2) * s, centre + new Vector2(6, 2) * s], ink);
             DrawRect(new Rect2(centre + new Vector2(-2, 2) * s, new Vector2(4, 4) * s), ink);
@@ -103,7 +104,7 @@ internal sealed partial class CardPortrait : Control
         for (int i = 0; i < values.Length; i++)
         {
             var (value, modifier, own) = values[i];
-            var colour = own ? Own : modifier > 0 ? Up : modifier < 0 ? Down : _colours.Text;
+            var colour = own ? Own : modifier > 0 ? Up : modifier < 0 ? Down : Ui.Text;
             string text = value.ToString();
             float width = font.GetStringSize(text, HorizontalAlignment.Left, -1, statsPx).X;
             var at = new Vector2(face.Position.X + cell * (i + 0.5f) - width / 2, baseline);

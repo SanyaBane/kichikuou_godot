@@ -17,6 +17,8 @@ namespace Kichikuou.Game.Battles;
 /// </summary>
 internal sealed partial class BattleCommandLayer : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Battle);
+
     // The banners (as Sengoku Rance's): 200×40, 5 apart, one column 22 out of the card's left edge; their places are
     // fixed from the top whatever their number (owner, 2026-10-13), three of them centred on the card's height.
     private static readonly Vector2 BannerSize = new(200, 40);
@@ -38,7 +40,6 @@ internal sealed partial class BattleCommandLayer : Control
     // The context menu: rows of the cards' text size, a column for the current order's mark.
     private const float RowHeight = 30, MenuPad = 8, MarkWidth = 18, MenuMinWidth = 130, MenuText = 17;
 
-    private DeploymentPalette _colours = DeploymentPalette.BattleChosen;
     private Func<BattlePlace, Rect2> _cardArea = _ => default;
     private float _scale = 1;
     private BattleCommands? _commands;
@@ -123,12 +124,6 @@ internal sealed partial class BattleCommandLayer : Control
     {
         _cardArea = cardArea;
         _scale = scale;
-        QueueRedraw();
-    }
-
-    public void SetPalette(DeploymentPalette palette)
-    {
-        _colours = palette;
         QueueRedraw();
     }
 
@@ -430,22 +425,22 @@ internal sealed partial class BattleCommandLayer : Control
         float s = _scale;
         var box = new Rect2(menu.Box.Position * s, menu.Box.Size * s);
         DrawRect(new Rect2(box.Position + new Vector2(4, 5) * s, box.Size), new Color(0, 0, 0, 0.3f));
-        DrawRect(box, _colours.Card);
-        DrawRect(box, _colours.ButtonBorder, filled: false, width: Math.Max(1, 2 * s));
+        DrawRect(box, Ui.Row);
+        DrawRect(box, Ui.Gold, filled: false, width: Math.Max(1, 2 * s));
         int size = (int)Math.Round(MenuText * s);
         for (int i = 0; i < menu.Items.Count; i++)
         {
             var row = new Rect2(box.Position + new Vector2(MenuPad - 4, MenuPad + i * RowHeight) * s, new Vector2(menu.Box.Size.X - (MenuPad - 4) * 2, RowHeight) * s);
             if (i == _hotItem)
-                DrawRect(row, _colours.ButtonHover);
+                DrawRect(row, Ui.RowHover);
             var (text, _, current) = menu.Items[i];
             if (current)
-                DrawCircle(row.Position + new Vector2((4 + MarkWidth / 2) * s, row.Size.Y / 2), 4 * s, _colours.Accent);
+                DrawCircle(row.Position + new Vector2((4 + MarkWidth / 2) * s, row.Size.Y / 2), 4 * s, Ui.HoverLine);
             if (font is null)
                 continue;
             float baseline = row.Position.Y + (row.Size.Y + font.GetAscent(size) - font.GetDescent(size)) / 2;
             DrawString(font, new Vector2(row.Position.X + (4 + MarkWidth) * s, baseline), text, HorizontalAlignment.Left, -1, size,
-                current ? _colours.Accent : _colours.Text);
+                current ? Ui.HoverLine : Ui.Text);
         }
     }
 }

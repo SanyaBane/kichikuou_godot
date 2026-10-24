@@ -14,9 +14,11 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal sealed partial class OrderResultPlate : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Screens);
+
     private static readonly Rect2 PlateArea = new(250, 315, 780, 150);
 
-    private static readonly Color PlateFill = Color.Color8(22, 16, 12, 248);
+    private static Color PlateFill => Ui.Panel with { A = 248 / 255f };
     private static readonly Color PlateDim = new(0, 0, 0, 0.27f);
 
     private readonly FacePictures _faces;
@@ -98,30 +100,30 @@ internal sealed partial class OrderResultPlate : Control
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         DrawRect(new Rect2(0, 0, 1280, 800), PlateDim);
         var box = PlateArea;
-        Lacquer.DrawPanel(this, box, _k, PlateFill);
+        Ui.DrawPanel(this, box, _k, PlateFill);
         float size = box.Size.Y - 52;
         var faceRect = new Rect2(box.Position + new Vector2(26, 26), new Vector2(size, size));
         if (Face(r.FaceCg, size * _k) is { } face)
             DrawTextureRect(face, faceRect, false);
-        DrawRect(faceRect, Lacquer.Gold, false, Line(1));
+        DrawRect(faceRect, Ui.Gold, false, Line(1));
 
         float x = faceRect.End.X + 24, y = box.Position.Y;
         Rect2 Band(float middle, float height = 30) => new(x, middle - height / 2, 400, height);
-        DrawString(_brush, new Vector2(x, Lacquer.Baseline(Band(y + 42, 40), _brush, 28)), r.Title, fontSize: 28, modulate: Lacquer.Name);
-        DrawString(_cinzel, new Vector2(x + 2, Lacquer.Baseline(Band(y + 76), _cinzel, 15)), r.Who, fontSize: 15, modulate: Lacquer.Subtitle);
-        float w = DrawFigures(x + 2, Band(y + 112), r.TroopsLine, 22, Lacquer.Value);
+        DrawString(_brush, new Vector2(x, Lacquer.Baseline(Band(y + 42, 40), _brush, 28)), r.Title, fontSize: 28, modulate: Ui.Name);
+        DrawString(_cinzel, new Vector2(x + 2, Lacquer.Baseline(Band(y + 76), _cinzel, 15)), r.Who, fontSize: 15, modulate: Ui.Subtitle);
+        float w = DrawFigures(x + 2, Band(y + 112), r.TroopsLine, 22, Ui.Value);
         DrawString(_cinzel, new Vector2(x + 2 + w + 14, Lacquer.Baseline(Band(y + 113), _cinzel, 18)), r.Gain, fontSize: 18,
-            modulate: r.Gain.StartsWith('−') ? Lacquer.Minus : Lacquer.Plus);
+            modulate: r.Gain.StartsWith('−') ? Ui.Minus : Ui.Plus);
 
         float rx = box.End.X - 232, my = box.GetCenter().Y, right = box.End.X - 28;
-        DrawLine(new Vector2(rx, my - 40), new Vector2(rx, my + 40), Lacquer.DimGold, Line(1));
+        DrawLine(new Vector2(rx, my - 40), new Vector2(rx, my + 40), Ui.DimGold, Line(1));
         var cost = new Rect2(rx + 20, my - 33, right - rx - 20, 30);
         var budget = new Rect2(rx + 20, my + 3, right - rx - 20, 30);
-        DrawString(_cinzel, new Vector2(cost.Position.X, Lacquer.Baseline(cost, _cinzel, 13)), "Cost", fontSize: 13, modulate: Lacquer.Label);
-        RightString(r.CostLine, 18, Lacquer.Minus, right, cost);
-        DrawString(_cinzel, new Vector2(budget.Position.X, Lacquer.Baseline(budget, _cinzel, 13)), "Budget", fontSize: 13, modulate: Lacquer.Label);
-        RightString(r.BudgetLine, 18, Lacquer.Name, right, budget);
-        Lacquer.DrawTriangle(this, new Vector2(box.End.X - 24, box.End.Y - 20), _k);
+        DrawString(_cinzel, new Vector2(cost.Position.X, Lacquer.Baseline(cost, _cinzel, 13)), "Cost", fontSize: 13, modulate: Ui.Label);
+        RightString(r.CostLine, 18, Ui.Minus, right, cost);
+        DrawString(_cinzel, new Vector2(budget.Position.X, Lacquer.Baseline(budget, _cinzel, 13)), "Budget", fontSize: 13, modulate: Ui.Label);
+        RightString(r.BudgetLine, 18, Ui.Name, right, budget);
+        Ui.DrawTriangle(this, new Vector2(box.End.X - 24, box.End.Y - 20), _k);
     }
 
     private void RightString(string text, int size, Color colour, float right, Rect2 band)
@@ -141,7 +143,7 @@ internal sealed partial class OrderResultPlate : Control
             if (i > 0)
             {
                 x += ArrowGap;
-                DrawString(_gothic, new Vector2(x, Lacquer.Baseline(band, _gothic, size - 2)), "→", fontSize: size - 2, modulate: Lacquer.Gold);
+                DrawString(_gothic, new Vector2(x, Lacquer.Baseline(band, _gothic, size - 2)), "→", fontSize: size - 2, modulate: Ui.Gold);
                 x += _gothic.GetStringSize("→", fontSize: size - 2).X + ArrowGap;
             }
             DrawString(_cinzel, new Vector2(x, Lacquer.Baseline(band, _cinzel, size)), parts[i], fontSize: size, modulate: colour);

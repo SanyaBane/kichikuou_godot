@@ -14,6 +14,8 @@ namespace Kichikuou.Game.Battles;
 /// </summary>
 internal sealed partial class SpeechBalloon : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Battle);
+
     private const float Width = 580, Bottom = 436, Side = 330, Pad = 22, MinHeight = 100;
     private const float TailDepth = 18, TailHalf = 13, TailFromTop = 44, Radius = 16;
     private const float TextSize = 30, LineGap = 8, MarkerSize = 9, BobPixels = 3, BobSeconds = 0.9f;
@@ -23,7 +25,6 @@ internal sealed partial class SpeechBalloon : Control
     private const TextServer.LineBreakFlag Breaks =
         TextServer.LineBreakFlag.Mandatory | TextServer.LineBreakFlag.WordBound | TextServer.LineBreakFlag.Adaptive;
 
-    private DeploymentPalette _colours = DeploymentPalette.BattleChosen;
     private readonly FontVariation _bold = new() { VariationEmbolden = 0.8f };
     private Font? _font;
     private float _scale = 1;
@@ -47,12 +48,6 @@ internal sealed partial class SpeechBalloon : Control
     public void Layout(float scale)
     {
         _scale = scale;
-        QueueRedraw();
-    }
-
-    public void SetPalette(DeploymentPalette palette)
-    {
-        _colours = palette;
         QueueRedraw();
     }
 
@@ -95,7 +90,7 @@ internal sealed partial class SpeechBalloon : Control
             tip + new Vector2(-MarkerSize, -MarkerSize * 1.1f) * s,
             tip + new Vector2(MarkerSize, -MarkerSize * 1.1f) * s,
             tip,
-        ], _colours.Accent);
+        ], Ui.HoverLine);
     }
 
     /// <summary>

@@ -16,7 +16,7 @@ The Option menu as it is (`godot/Strategy/GameScreen.MenuBar.cs`, docs/window-me
 | Text Speed… | a slider of ten steps, the game's 121 typing as the preview; OK / Cancel | `TextSpeedChoice`, saved |
 | Game Folder… | the import screen after a confirmation; greyed out while the extract is the data | `game_dir`, saved |
 | Fonts | MS Gothic / BIZ UDGothic | `GodotGlyphRenderer.Chosen`, saved |
-| Palette | Navy / Gold / Steel / Parchment / Crimson | `DeploymentPalette.Chosen`, saved |
+| Palette | Lacquer / Steel (since 2026-10-24; Navy / Gold / Steel / Parchment / Crimson before, the battle screen's) | `UiPalettes.Chosen`, saved |
 
 ## Mock-ups, round 1
 
@@ -83,17 +83,29 @@ The screens of the original engine (`--interface original`, the merchant, constr
 The scenario's own sums in our message windows and menus take the separator too, only at the places verified to be
 money (docs/ui/gold-figures.md, 2026-10-24: the survey, the owner's answers, `ScenarioFigures`).
 
-## The battle screen's palette (2026-10-24)
+## The palette (2026-10-24)
 
-Owner's request: the palette split into the battle screen's and the other screens'; later the same day (owner) the
-other screens' was dropped. The Display tab holds one row of swatches, **Palette of the battle screen** —
-`DeploymentPalette.BattleChosen` (`[display] palette_battle` in `settings.cfg`: the battle screen, the scout report and a
-strategy's cut-in before its field, the touch mode's Skip under its cards, the Battle tab's order-strip preview). Unsaved
-it takes the one palette saved before the split (`[display] palette`), else steel; `--palette` sets it for a launch;
-Defaults turns it back to steel. The window's `BattlePaletteChosen` recolours the open screens
-(`GameScreen.ApplyBattlePalette`). The map's name plates and province cards keep steel's colours as constants of their
-own (`MapMarkersView`), not the palette; a saved `[display] palette_other` is no longer read.
+Owner's requests of the day: the battle screen's palette split from the other screens' (the map's plates), the other one
+dropped (the plates keep steel's colours as constants of their own, `MapMarkersView`), a Lacquer swatch for the battle
+screen to try — and, the owner liking it, one palette for every screen of ours: the lacquer, with Steel to see a change.
 
-A sixth swatch, **Lacquer** (owner, 2026-10-24: `DeploymentPalette.LacquerGold`, `lacquer`), is our other screens' lacquer
-and gold (`Lacquer`'s colours) for the battle screen to try: if the owner keeps it, it becomes the battle screen's own and
-the palettes go, before the lacquer itself becomes a choice for every screen (docs/backlog.md).
+- **The palette** is `godot/Strategy/UiPalette`, a record of colours by their role — the lacquer's (`Panel`, `Gold`,
+  `Row`, `Text`, …), the ledger's paper and inks (`Paper`, `Ink`, …), the marks' — with the lacquer style's parts drawn in
+  them (`UiPalette.Drawing.cs`: the panel, a row's box, the dividers, the backdrop, the seal, …). Two presets:
+  **Lacquer**, the default, the colours our screens had as `Lacquer`'s constants, and **Steel**, the battle screen's
+  steel of 2026-10-12 carried over every screen (cool greys, a cool paper with slate inks; the red, the bars and the marks
+  unchanged). `godot/Strategy/Lacquer` keeps only what takes no colour (fonts, line widths, baselines, a diamond).
+- **The parts.** Each screen draws with its part's palette, `UiPalettes.For(UiPart.…)`: `Battle` (the battle screen, the
+  scout report, a strategy's cut-in, its info boxes, the touch rails and Skip), `Map` (the command panel, the status
+  strip, the province menu, the Commands button), `Messages` (the message windows, the scenes' menus, the message log,
+  the Skip and Log drawer), `Screens` (deployment, Subordinates, Harem, Treasure, Save/Load, an enemy attack, the week
+  report), `Settings` (the options window, the import screen). Option → Display → **Palette** (a row of swatches) sets
+  every part, `[display] ui_palette` in `settings.cfg`; a part's own palette, `[ui_palette] <part>`, is read but no option
+  sets it yet — a mixed palette later is a choice per part (a part split by a new member of `UiPart`) or a palette
+  `with` some roles of another. `--palette lacquer|steel` sets every part for a launch. Defaults turns it back to Lacquer.
+  The old keys (`palette`, `palette_battle`, `palette_other`) are no longer read.
+- **A change** recolours every open screen at once: `OptionsView.PaletteChosen` → `UiPalettes.Repaint` (every canvas
+  item redrawn; what keeps colours outside its `_Draw` is an `IUiPaletteUser` and sets them again — the battle screen's
+  theme and cards, the order strip's chips, the ledger's theme and rows, the comment field of Save/Load).
+- **Left in their own colours** (on purpose): the command and province tags, the red buttons and their text, the
+  battle's banners, the defence ribbon's blues, the read-text colours, the map's plates.

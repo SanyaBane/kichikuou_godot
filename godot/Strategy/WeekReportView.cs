@@ -13,6 +13,8 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal sealed partial class WeekReportView : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Screens);
+
     private const float CardWidth = 600, Pad = 34, Top = 26, LinePitch = 42, TotalHeight = 52, RowHeight = 46;
     private const int TitleSize = 32, DateSize = 17, CaptionSize = 13, LabelSize = 16, SubSize = 12, ValueSize = 20, UnitSize = 13,
         TotalSize = 30;
@@ -88,7 +90,7 @@ internal sealed partial class WeekReportView : Control
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         float height = CardHeight(r);
         var card = new Rect2((1280 - CardWidth) / 2, (800 - height) / 2, CardWidth, height);
-        Lacquer.DrawPanel(this, card, _k);
+        Ui.DrawPanel(this, card, _k);
         float x0 = card.Position.X + Pad, x1 = card.End.X - Pad, y = card.Position.Y + Top;
 
         // The banner: Leazas's flag (none for the thieves), the title, the date.
@@ -99,10 +101,10 @@ internal sealed partial class WeekReportView : Control
             tx += 66;
         }
         DrawString(_brush, new Vector2(tx + 1, y + 34 + 2), r.Title, fontSize: TitleSize, modulate: Colors.Black);
-        DrawString(_brush, new Vector2(tx, y + 34), r.Title, fontSize: TitleSize, modulate: Lacquer.Name);
-        DrawString(_bold, new Vector2(tx, y + 60), r.Date, fontSize: DateSize, modulate: Lacquer.Name);
+        DrawString(_brush, new Vector2(tx, y + 34), r.Title, fontSize: TitleSize, modulate: Ui.Name);
+        DrawString(_bold, new Vector2(tx, y + 60), r.Date, fontSize: DateSize, modulate: Ui.Name);
         y += 88;
-        Lacquer.DrawDivider(this, x0, x1, y, _k);
+        Ui.DrawDivider(this, x0, x1, y, _k);
         y += 4;
 
         if (r.Revenue is { } revenue)
@@ -110,16 +112,16 @@ internal sealed partial class WeekReportView : Control
             // The treasury as an account (ours): last week's budget, the revenue, each expense, the new budget.
             y += 26;
             Caption("TREASURY", x0, y);
-            LedgerLine(x0, x1, ref y, "", "Budget", "last week", Gold(r.BudgetBefore), Lacquer.Value);
+            LedgerLine(x0, x1, ref y, "", "Budget", "last week", Gold(r.BudgetBefore), Ui.Value);
             LedgerLine(x0, x1, ref y, "+", revenue.Label, "provinces", "+" + Gold(revenue.Amount), Gain);
             foreach (var expense in r.Expenses)
                 LedgerLine(x0, x1, ref y, Figures.Minus, expense.Label, "special expense", Figures.Minus + Gold(-expense.Amount), Loss);
             y += 10;
             var total = new Rect2(x0, y, x1 - x0, TotalHeight);
-            DrawRect(total, Lacquer.Row);
-            DrawRect(total, Lacquer.Gold, false, Lacquer.Line(1, _k));
-            DrawString(_bold, new Vector2(x0 + 16, Lacquer.Baseline(total, _bold, 18)), "Budget", fontSize: 18, modulate: Lacquer.Name);
-            Amount(x1 - 16, Lacquer.Baseline(total, _heavy, TotalSize), Gold(r.BudgetAfter ?? r.BudgetBefore), _heavy, TotalSize, Lacquer.Name, "K GOLD");
+            DrawRect(total, Ui.Row);
+            DrawRect(total, Ui.Gold, false, Lacquer.Line(1, _k));
+            DrawString(_bold, new Vector2(x0 + 16, Lacquer.Baseline(total, _bold, 18)), "Budget", fontSize: 18, modulate: Ui.Name);
+            Amount(x1 - 16, Lacquer.Baseline(total, _heavy, TotalSize), Gold(r.BudgetAfter ?? r.BudgetBefore), _heavy, TotalSize, Ui.Name, "K GOLD");
             y += TotalHeight;
         }
         if (r.Troops is { } troops)
@@ -127,28 +129,28 @@ internal sealed partial class WeekReportView : Control
             y += 22 + 18;
             Caption("TROOPS", x0, y);
             var row = new Rect2(x0, y + 10, x1 - x0, RowHeight);
-            Lacquer.DrawRowBox(this, row, false, _k);
-            DrawString(_cinzel, new Vector2(x0 + 16, Lacquer.Baseline(row, _cinzel, LabelSize)), troops.Label, fontSize: LabelSize, modulate: Lacquer.Text);
+            Ui.DrawRowBox(this, row, false, _k);
+            DrawString(_cinzel, new Vector2(x0 + 16, Lacquer.Baseline(row, _cinzel, LabelSize)), troops.Label, fontSize: LabelSize, modulate: Ui.Text);
             Amount(x1 - 16, Lacquer.Baseline(row, _bold, 22), "+" + Figures.Number(troops.Amount), _bold, 22, Gain, null);
         }
-        Lacquer.DrawTriangle(this, new Vector2(card.End.X - Pad - 2, card.End.Y - 26), _k);
+        Ui.DrawTriangle(this, new Vector2(card.End.X - Pad - 2, card.End.Y - 26), _k);
     }
 
     private void Caption(string text, float x, float y) =>
-        DrawString(_bold, new Vector2(x, y), text, fontSize: CaptionSize, modulate: Lacquer.Subtitle);
+        DrawString(_bold, new Vector2(x, y), text, fontSize: CaptionSize, modulate: Ui.Subtitle);
 
     /// <summary>One line of the account: its sign, label and small sub-label at the left, its amount at the right, a dotted rule under it.</summary>
     private void LedgerLine(float x0, float x1, ref float y, string sign, string label, string sub, string amount, Color colour)
     {
         var line = new Rect2(x0, y + 6, x1 - x0, LinePitch);
         float baseline = Lacquer.Baseline(line, _bold, ValueSize);
-        DrawString(_bold, new Vector2(x0 + 4, baseline), sign, fontSize: LabelSize, modulate: Lacquer.Subtitle);
-        DrawString(_cinzel, new Vector2(x0 + 24, baseline), label, fontSize: LabelSize, modulate: Lacquer.Text);
+        DrawString(_bold, new Vector2(x0 + 4, baseline), sign, fontSize: LabelSize, modulate: Ui.Subtitle);
+        DrawString(_cinzel, new Vector2(x0 + 24, baseline), label, fontSize: LabelSize, modulate: Ui.Text);
         float lw = _cinzel.GetStringSize(label, fontSize: LabelSize).X;
-        DrawString(_cinzel, new Vector2(x0 + 24 + lw + 8, baseline), sub, fontSize: SubSize, modulate: Lacquer.Label);
+        DrawString(_cinzel, new Vector2(x0 + 24 + lw + 8, baseline), sub, fontSize: SubSize, modulate: Ui.Label);
         Amount(x1 - 4, baseline, amount, _bold, ValueSize, colour, "K GOLD");
         for (float x = x0; x < x1; x += 5)
-            DrawLine(new Vector2(x, line.End.Y), new Vector2(Math.Min(x + 2, x1), line.End.Y), Lacquer.DimGold, Lacquer.Line(1, _k));
+            DrawLine(new Vector2(x, line.End.Y), new Vector2(Math.Min(x + 2, x1), line.End.Y), Ui.DimGold, Lacquer.Line(1, _k));
         y += LinePitch;
     }
 
@@ -157,7 +159,7 @@ internal sealed partial class WeekReportView : Control
     {
         float uw = unit is null ? 0 : _cinzel.GetStringSize(unit, fontSize: UnitSize).X;
         if (unit is not null)
-            DrawString(_cinzel, new Vector2(right - uw, baseline), unit, fontSize: UnitSize, modulate: Lacquer.Quiet);
+            DrawString(_cinzel, new Vector2(right - uw, baseline), unit, fontSize: UnitSize, modulate: Ui.Quiet);
         float aw = font.GetStringSize(amount, fontSize: size).X;
         DrawString(font, new Vector2(right - uw - (unit is null ? 0 : 6) - aw, baseline), amount, fontSize: size, modulate: colour);
     }

@@ -18,6 +18,8 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal sealed partial class ProvinceMenuView : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Map);
+
     private const float Width = 470, Pad = 18, PictureW = 225, PictureH = 150, RowPitch = 36, RowH = 29, Caption = 30;
     // The touch mode's layout: the province in a left column, the rows 46 high (9.3 mm on the tablet) in a right one.
     private const float TouchPictureW = 270, TouchPictureH = 180, TouchMid = 24, TouchColumn = 300, TouchRowH = 46,
@@ -193,42 +195,42 @@ internal sealed partial class ProvinceMenuView : Control
             return;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         float x = PanelX, y = PanelY, h = Height;
-        Lacquer.DrawPanel(this, new Rect2(x, y, PanelWidth, h), _k);
+        Ui.DrawPanel(this, new Rect2(x, y, PanelWidth, h), _k);
         // The city's picture.
         var picture = _touch ? new Rect2(x + Pad, y + Pad, TouchPictureW, TouchPictureH) : new Rect2(x + Pad, y + Pad, PictureW, PictureH);
         if (_picture is not null)
             DrawTextureRect(_picture, picture, false);
-        DrawRect(picture.Grow(1), Lacquer.DimGold, false, Line(1));
+        DrawRect(picture.Grow(1), Ui.DimGold, false, Line(1));
         // The name (made smaller to fit), the army, the figures: right of the picture, in the touch mode under it.
         float tx = _touch ? picture.Position.X : picture.End.X + Pad, ty = _touch ? picture.End.Y + 14 : y + 16;
         float room = _touch ? TouchPictureW : x + Width - 16 - tx;
         int nameSize = _touch ? 22 : 19, armySize = _touch ? 14 : 13, labelSize = _touch ? 14 : 13, valueSize = _touch ? 16 : 15;
         while (nameSize > 11 && _brush.GetStringSize(m.Name, fontSize: nameSize).X > room)
             nameSize--;
-        DrawString(_brush, new Vector2(tx, ty + _brush.GetAscent(nameSize)), m.Name, fontSize: nameSize, modulate: Lacquer.Name);
+        DrawString(_brush, new Vector2(tx, ty + _brush.GetAscent(nameSize)), m.Name, fontSize: nameSize, modulate: Ui.Name);
         DrawString(_cinzel, new Vector2(tx + 1, ty + (_touch ? 32 : 30) + _cinzel.GetAscent(armySize)), m.Army, fontSize: armySize,
-            modulate: Lacquer.Subtitle);
+            modulate: Ui.Subtitle);
         float sy2 = ty + (_touch ? 62 : 54);
         foreach (string line in m.Card)
         {
             int colon = line.IndexOf(": ", StringComparison.Ordinal);
             string label = colon < 0 ? "" : line[..colon], value = colon < 0 ? line : line[(colon + 2)..];
-            DrawString(_gothic, new Vector2(tx, sy2 + _gothic.GetAscent(labelSize)), label, fontSize: labelSize, modulate: Lacquer.Label);
+            DrawString(_gothic, new Vector2(tx, sy2 + _gothic.GetAscent(labelSize)), label, fontSize: labelSize, modulate: Ui.Label);
             DrawString(_gothic, new Vector2(tx, sy2 + labelSize + 2 + _gothic.GetAscent(valueSize)), value, fontSize: valueSize,
-                modulate: value == "??" ? Lacquer.Label : Lacquer.Value);
+                modulate: value == "??" ? Ui.Label : Ui.Value);
             sy2 += _touch ? TouchFigure : 34;
         }
         if (_touch)
-            Lacquer.DrawVerticalDivider(this, picture.End.X + TouchMid / 2, y + Pad + 4, y + h - Pad - 4, _k);
+            Ui.DrawVerticalDivider(this, picture.End.X + TouchMid / 2, y + Pad + 4, y + h - Pad - 4, _k);
         // The place a later menu belongs to (the dungeon), between gold rules over the rows.
         if (m.Place is { } place)
         {
             float cx0 = _touch ? TouchRight : x + 16, cx1 = _touch ? TouchRight + TouchColumn : x + Width - 16, mid = (cx0 + cx1) / 2;
             float cy = y + Top - Caption / 2 - 4, pw = _cinzel.GetStringSize(place, fontSize: 15).X;
             DrawString(_cinzel, new Vector2(mid - pw / 2, cy + (_cinzel.GetAscent(15) - _cinzel.GetDescent(15)) / 2), place,
-                fontSize: 15, modulate: Lacquer.Name);
-            DrawLine(new Vector2(cx0, cy), new Vector2(mid - pw / 2 - 12, cy), Lacquer.DimGold, Line(1));
-            DrawLine(new Vector2(mid + pw / 2 + 12, cy), new Vector2(cx1, cy), Lacquer.DimGold, Line(1));
+                fontSize: 15, modulate: Ui.Name);
+            DrawLine(new Vector2(cx0, cy), new Vector2(mid - pw / 2 - 12, cy), Ui.DimGold, Line(1));
+            DrawLine(new Vector2(mid + pw / 2 + 12, cy), new Vector2(cx1, cy), Ui.DimGold, Line(1));
         }
         // The commands, then Return.
         for (int r = 0; r < RowCount; r++)
@@ -240,14 +242,14 @@ internal sealed partial class ProvinceMenuView : Control
         var m = _menu!;
         var rect = RowRect(r);
         bool on = Enabled(r), hover = r == _hovered && on;
-        Lacquer.DrawRowBox(this, rect, hover, _k);
+        Ui.DrawRowBox(this, rect, hover, _k);
         float baseline(int size, Font font) => rect.Position.Y + rect.Size.Y / 2 + (font.GetAscent(size) - font.GetDescent(size)) / 2;
         if (r == RowCount - 1)
         {
             int returnSize = _touch ? 18 : 15;
             float w = _gothic.GetStringSize("Return", fontSize: returnSize).X;
             DrawString(_gothic, new Vector2(rect.GetCenter().X - w / 2, baseline(returnSize, _gothic)), "Return", fontSize: returnSize,
-                modulate: hover ? Lacquer.Text : Lacquer.Quiet);
+                modulate: hover ? Ui.Text : Ui.Quiet);
             return;
         }
         var item = m.Items[r];
@@ -255,15 +257,15 @@ internal sealed partial class ProvinceMenuView : Control
         var tagRect = _touch
             ? new Rect2(rect.Position.X + 7, rect.Position.Y + 8, 72, rect.Size.Y - 16)
             : new Rect2(rect.Position.X + 5, rect.Position.Y + 5, 62, rect.Size.Y - 10);
-        Lacquer.DrawTag(this, _gothic, tagRect, tag, colour, on, _k);
+        Ui.DrawTag(this, _gothic, tagRect, tag, colour, on, _k);
         int size = _touch ? 19 : 16;
         DrawString(_gothic, new Vector2(rect.Position.X + (_touch ? 94 : 80), baseline(size, _gothic)), item.Text, fontSize: size,
-            modulate: on ? Lacquer.Text : Lacquer.OffText);
+            modulate: on ? Ui.Text : Ui.OffText);
         if (!on)
         {
             const string spent = "used this week";
             float sw = _gothic.GetStringSize(spent, fontSize: 12).X;
-            DrawString(_gothic, new Vector2(rect.End.X - 10 - sw, baseline(12, _gothic)), spent, fontSize: 12, modulate: Lacquer.OffText);
+            DrawString(_gothic, new Vector2(rect.End.X - 10 - sw, baseline(12, _gothic)), spent, fontSize: 12, modulate: Ui.OffText);
         }
     }
 

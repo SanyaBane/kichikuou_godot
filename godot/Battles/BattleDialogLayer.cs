@@ -15,12 +15,13 @@ namespace Kichikuou.Game.Battles;
 /// </summary>
 internal sealed partial class BattleDialogLayer : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Battle);
+
     private static readonly Rect2 SceneArea = new(0, 0, 1280, 410);
     private const float Width = 300, RowHeight = 30, Pad = 8, MarkWidth = 18, QuestionLine = 24, Rule = 10;
     private const float QuestionText = 18, ItemText = 17;
     private static readonly Color Dim = new(0, 0, 0, 0.35f);
 
-    private DeploymentPalette _colours = DeploymentPalette.BattleChosen;
     private float _scale = 1;
     private BattleDialog? _dialog;
     private IReadOnlyList<string> _labels = [];
@@ -60,12 +61,6 @@ internal sealed partial class BattleDialogLayer : Control
     public void Layout(float scale)
     {
         _scale = scale;
-        QueueRedraw();
-    }
-
-    public void SetPalette(DeploymentPalette palette)
-    {
-        _colours = palette;
         QueueRedraw();
     }
 
@@ -154,27 +149,27 @@ internal sealed partial class BattleDialogLayer : Control
         DrawRect(new Rect2(Vector2.Zero, new Vector2(1280, 800) * s), Dim);
         var box = new Rect2(Box.Position * s, Box.Size * s);
         DrawRect(new Rect2(box.Position + new Vector2(4, 5) * s, box.Size), new Color(0, 0, 0, 0.3f));
-        DrawRect(box, _colours.Card);
-        DrawRect(box, _colours.ButtonBorder, filled: false, width: Math.Max(1, 2 * s));
+        DrawRect(box, Ui.Row);
+        DrawRect(box, Ui.Gold, filled: false, width: Math.Max(1, 2 * s));
         if (GetThemeDefaultFont() is not { } font)
             return;
         int question = (int)Math.Round(QuestionText * s), item = (int)Math.Round(ItemText * s);
         float left = box.Position.X + (Pad + 4) * s, y = box.Position.Y + Pad * s;
         DrawString(font, new Vector2(left, y + (QuestionLine * s + font.GetAscent(question) - font.GetDescent(question)) / 2), _dialog.Question,
-            HorizontalAlignment.Left, -1, question, _colours.Text);
+            HorizontalAlignment.Left, -1, question, Ui.Text);
         y += QuestionLine * s;
         DrawString(font, new Vector2(left, y + (QuestionLine * s + font.GetAscent(question) - font.GetDescent(question)) / 2), _dialog.Note,
-            HorizontalAlignment.Left, -1, question, _colours.Muted);
+            HorizontalAlignment.Left, -1, question, Ui.Quiet);
         y += QuestionLine * s + Rule / 2 * s;
-        DrawLine(new Vector2(box.Position.X + Pad * s, y), new Vector2(box.End.X - Pad * s, y), _colours.ButtonBorder, Math.Max(1, s));
+        DrawLine(new Vector2(box.Position.X + Pad * s, y), new Vector2(box.End.X - Pad * s, y), Ui.Gold, Math.Max(1, s));
         for (int i = 0; i < _dialog.Items.Count; i++)
         {
             var row = new Rect2(box.Position.X + (Pad - 4) * s, ItemsTop * s + i * RowHeight * s, box.Size.X - (Pad - 4) * 2 * s, RowHeight * s);
             if (i == _hot)
-                DrawRect(row, _colours.ButtonHover);
+                DrawRect(row, Ui.RowHover);
             float baseline = row.Position.Y + (row.Size.Y + font.GetAscent(item) - font.GetDescent(item)) / 2;
             DrawString(font, new Vector2(row.Position.X + (4 + MarkWidth) * s, baseline), _labels[i], HorizontalAlignment.Left, -1, item,
-                _dialog.Items[i].Warning ? _colours.Warning : _colours.Text);
+                _dialog.Items[i].Warning ? Ui.Minus : Ui.Text);
         }
     }
 }

@@ -20,8 +20,10 @@ namespace Kichikuou.Game.Strategy;
 /// first column also holds each unit's talk mark (owner's decision 30, docs/ui/talk-marks.md §6, S): a speech bubble left
 /// of No., filled green with "!" (new), vermilion with "?" (a draw decides), an empty outline (read).
 /// </summary>
-internal sealed partial class DeploymentTableView : Tree
+internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Screens);
+
     /// <summary>The text size in script pixels (the grid's names are 12); scaled with the screen.</summary>
     private readonly float _textSize;
 
@@ -175,37 +177,44 @@ internal sealed partial class DeploymentTableView : Tree
         AddChild(_tip);
     }
 
+    /// <summary>Option → Display: the ledger's look and its rows in the palette's colours again.</summary>
+    public void ApplyPalette()
+    {
+        ApplyLedger();
+        Fill();
+    }
+
     /// <summary>The ledger's look: the paper, its header in vermilion ink over a rule, the rows' rules, a faint hover.</summary>
     private void ApplyLedger()
     {
         AddThemeStyleboxOverride("panel", new StyleBoxFlat
         {
-            BgColor = Lacquer.Paper, BorderColor = Lacquer.DimGold,
+            BgColor = Ui.Paper, BorderColor = Ui.DimGold,
             BorderWidthLeft = 1, BorderWidthTop = 1, BorderWidthRight = 1, BorderWidthBottom = 1,
         });
         StyleBoxFlat Head(Color colour) => new()
         {
-            BgColor = colour, BorderColor = Lacquer.HeadInk, BorderWidthBottom = 1,
+            BgColor = colour, BorderColor = Ui.HeadInk, BorderWidthBottom = 1,
             ContentMarginLeft = 4, ContentMarginRight = 4, ContentMarginTop = 3, ContentMarginBottom = 3,
         };
-        AddThemeStyleboxOverride("title_button_normal", Head(Lacquer.PaperHead));
-        AddThemeStyleboxOverride("title_button_hover", Head(Lacquer.PaperHead.Lightened(0.12f)));
-        AddThemeStyleboxOverride("title_button_pressed", Head(Lacquer.PaperHead));
-        AddThemeColorOverride("font_color", Lacquer.Ink);
-        AddThemeColorOverride("title_button_color", Lacquer.HeadInk);
-        AddThemeColorOverride("guide_color", Lacquer.PaperRule);
+        AddThemeStyleboxOverride("title_button_normal", Head(Ui.PaperHead));
+        AddThemeStyleboxOverride("title_button_hover", Head(Ui.PaperHead.Lightened(0.12f)));
+        AddThemeStyleboxOverride("title_button_pressed", Head(Ui.PaperHead));
+        AddThemeColorOverride("font_color", Ui.Ink);
+        AddThemeColorOverride("title_button_color", Ui.HeadInk);
+        AddThemeColorOverride("guide_color", Ui.PaperRule);
         foreach (var state in new[] { "font_hovered_color", "font_selected_color", "font_hovered_selected_color" })
-            AddThemeColorOverride(state, Lacquer.Ink);
-        AddThemeStyleboxOverride("hovered", new StyleBoxFlat { BgColor = Lacquer.Vermilion with { A = 0.08f } });
+            AddThemeColorOverride(state, Ui.Ink);
+        AddThemeStyleboxOverride("hovered", new StyleBoxFlat { BgColor = Ui.Vermilion with { A = 0.08f } });
         foreach (var state in new[] { "selected", "selected_focus", "hovered_selected", "hovered_selected_focus" })
             AddThemeStyleboxOverride(state, new StyleBoxEmpty());          // the chosen row is marked by Fill
         var bars = new Theme();
         foreach (string bar in new[] { "HScrollBar", "VScrollBar" })
         {
-            bars.SetStylebox("scroll", bar, BarBox(Lacquer.PaperHead));
-            bars.SetStylebox("grabber", bar, BarBox(Lacquer.InkQuiet));
-            bars.SetStylebox("grabber_highlight", bar, BarBox(Lacquer.VermilionInk));
-            bars.SetStylebox("grabber_pressed", bar, BarBox(Lacquer.VermilionInk));
+            bars.SetStylebox("scroll", bar, BarBox(Ui.PaperHead));
+            bars.SetStylebox("grabber", bar, BarBox(Ui.InkQuiet));
+            bars.SetStylebox("grabber_highlight", bar, BarBox(Ui.VermilionInk));
+            bars.SetStylebox("grabber_pressed", bar, BarBox(Ui.VermilionInk));
         }
         Theme = bars;
     }
@@ -462,13 +471,13 @@ internal sealed partial class DeploymentTableView : Tree
             item.SetText(c + 1, row.Text(info.Column));
             item.SetTextAlignment(c + 1, Alignment(info));
             if (row.Grey)
-                item.SetCustomColor(c + 1, Lacquer.InkGrey);
+                item.SetCustomColor(c + 1, Ui.InkGrey);
             else if (info.Column == DeploymentColumn.Refill && row.Refill > 0 && _refillButtons && !row.CanRefill)
-                item.SetCustomColor(c + 1, Lacquer.InkQuiet);           // a price that is no button: greyed, its reason the tooltip
+                item.SetCustomColor(c + 1, Ui.InkQuiet);           // a price that is no button: greyed, its reason the tooltip
             else if (info.Column == DeploymentColumn.Refill && row.Refill > 0)
-                item.SetCustomColor(c + 1, Lacquer.VermilionInk);
+                item.SetCustomColor(c + 1, Ui.VermilionInk);
             else if (info.IsModifier && row.Text(info.Column) is "0" or "—")
-                item.SetCustomColor(c + 1, Lacquer.InkFaint);           // no modifier: faint, so +n and −n stand out (the owner, 2026-10-23)
+                item.SetCustomColor(c + 1, Ui.InkFaint);           // no modifier: faint, so +n and −n stand out (the owner, 2026-10-23)
             if (info.Column == DeploymentColumn.Refill && _refillButtons && row.RefillNote != "")
                 item.SetTooltipText(c + 1, row.RefillNote);
             if (info.Column == DeploymentColumn.Refill && _refillButtons && row.CanRefill)
@@ -479,7 +488,7 @@ internal sealed partial class DeploymentTableView : Tree
                 item.SetTooltipText(c + 1, $"Replenish: {Figures.Signed(row.MaxTroops - row.Troops)} troops");
             }
             else if (info.IsText && info.Column != DeploymentColumn.Name)
-                item.SetCustomColor(c + 1, Lacquer.InkQuiet);
+                item.SetCustomColor(c + 1, Ui.InkQuiet);
             if (info.Column == DeploymentColumn.Troops && row.MaxTroops > 0)
             {
                 item.SetCellMode(c + 1, TreeItem.TreeCellMode.Custom);
@@ -490,12 +499,12 @@ internal sealed partial class DeploymentTableView : Tree
         if (place > 0)
         {
             for (int c = 0; c < Columns; c++)
-                item.SetCustomBgColor(c, Lacquer.PartyRow);
+                item.SetCustomBgColor(c, Ui.PartyRow);
             item.SetCellMode(0, TreeItem.TreeCellMode.Custom);
             item.SetCustomDrawCallback(0, Callable.From<TreeItem, Rect2>((_, rect) =>
             {
                 float size = Math.Min(rect.Size.Y - 2, _fontSize * 1.15f);
-                Lacquer.DrawSeal(this, _sealFont, new Rect2(rect.GetCenter() - new Vector2(size, size) / 2, new Vector2(size, size)), place);
+                Ui.DrawSeal(this, _sealFont, new Rect2(rect.GetCenter() - new Vector2(size, size) / 2, new Vector2(size, size)), place);
             }));
         }
         SceneMark? talk = _chooser && _talkMarks.TryGetValue(row.Unit, out var m) ? m : null;
@@ -505,17 +514,17 @@ internal sealed partial class DeploymentTableView : Tree
             return;
         if (chosen)
             for (int c = talk is null ? 0 : 1; c < Columns; c++)
-                item.SetCustomBgColor(c, Lacquer.ChosenRow);    // the tree tints over a custom cell: the bubble's cell tinted below
+                item.SetCustomBgColor(c, Ui.ChosenRow);    // the tree tints over a custom cell: the bubble's cell tinted below
         item.SetCellMode(0, TreeItem.TreeCellMode.Custom);
         item.SetCustomDrawCallback(0, Callable.From<TreeItem, Rect2>((_, rect) =>
         {
             var mark = rect with { Size = new Vector2(rect.Size.X - BubbleRoom, rect.Size.Y) };
             if (chosen && talk is not null)
-                DrawRect(rect, Lacquer.ChosenRow);
+                DrawRect(rect, Ui.ChosenRow);
             if (chosen)
             {
-                DrawRect(new Rect2(rect.Position.X, rect.Position.Y, Math.Max(2, rect.Size.Y * 0.14f), rect.Size.Y), Lacquer.Vermilion);
-                Lacquer.DrawDiamond(this, mark.GetCenter() + new Vector2(rect.Size.Y * 0.1f, 0), rect.Size.Y * 0.2f, Lacquer.Vermilion);
+                DrawRect(new Rect2(rect.Position.X, rect.Position.Y, Math.Max(2, rect.Size.Y * 0.14f), rect.Size.Y), Ui.Vermilion);
+                Lacquer.DrawDiamond(this, mark.GetCenter() + new Vector2(rect.Size.Y * 0.1f, 0), rect.Size.Y * 0.2f, Ui.Vermilion);
             }
             if (talk is { } shown)
                 DrawBubble(new Vector2(mark.End.X + BubbleRoom / 2, rect.GetCenter().Y), rect.Size.Y, shown);
@@ -531,14 +540,14 @@ internal sealed partial class DeploymentTableView : Tree
         var box = new Rect2(at.X - h * 0.46f, at.Y - h * 0.3f, h * 0.92f, h * 0.54f);
         int r = Math.Max(2, (int)Math.Round(h * 0.21f));
         bool read = mark == SceneMark.Read;
-        var colour = mark switch { SceneMark.New => Lacquer.InkGreen, SceneMark.Maybe => Lacquer.VermilionInk, _ => Lacquer.ReadOutline };
+        var colour = mark switch { SceneMark.New => Ui.InkGreen, SceneMark.Maybe => Ui.VermilionInk, _ => Ui.ReadOutline };
         Vector2[] tail = [new(at.X - h * 0.25f, box.End.Y - 1), new(at.X - h * 0.04f, box.End.Y - 1), new(at.X - h * 0.33f, at.Y + h * 0.42f)];
         if (read)
         {
             DrawPolyline([tail[0], tail[2], tail[1]], colour, 1, true);
             DrawStyleBox(new StyleBoxFlat
             {
-                BgColor = Lacquer.Paper, BorderColor = colour,
+                BgColor = Ui.Paper, BorderColor = colour,
                 BorderWidthLeft = 1, BorderWidthTop = 1, BorderWidthRight = 1, BorderWidthBottom = 1,
                 CornerRadiusTopLeft = r, CornerRadiusTopRight = r, CornerRadiusBottomLeft = r, CornerRadiusBottomRight = r,
                 AntiAliasing = true,
@@ -555,7 +564,7 @@ internal sealed partial class DeploymentTableView : Tree
         string label = mark == SceneMark.New ? "!" : "?";
         int size = Math.Max(6, (int)Math.Round(h * 0.42f));
         float baseline = box.GetCenter().Y + (_bubbleFont.GetAscent(size) - _bubbleFont.GetDescent(size)) / 2;
-        DrawString(_bubbleFont, new Vector2(box.Position.X, baseline), label, HorizontalAlignment.Center, box.Size.X, size, Lacquer.Paper);
+        DrawString(_bubbleFont, new Vector2(box.Position.X, baseline), label, HorizontalAlignment.Center, box.Size.X, size, Ui.Paper);
     }
 
     /// <summary>
@@ -569,8 +578,8 @@ internal sealed partial class DeploymentTableView : Tree
         float corner = Math.Max(2, chip.Size.Y * 0.18f);
         var box = new StyleBoxFlat
         {
-            BgColor = lit ? Lacquer.Vermilion : new Color(0, 0, 0, 0),
-            BorderColor = Lacquer.VermilionInk with { A = lit ? 1 : 0.6f },
+            BgColor = lit ? Ui.Vermilion : new Color(0, 0, 0, 0),
+            BorderColor = Ui.VermilionInk with { A = lit ? 1 : 0.6f },
             BorderWidthLeft = 1, BorderWidthTop = 1, BorderWidthRight = 1, BorderWidthBottom = 1,
             CornerRadiusTopLeft = (int)corner, CornerRadiusTopRight = (int)corner,
             CornerRadiusBottomLeft = (int)corner, CornerRadiusBottomRight = (int)corner,
@@ -578,7 +587,7 @@ internal sealed partial class DeploymentTableView : Tree
         DrawStyleBox(box, chip);
         float baseline = cell.GetCenter().Y + (_font.GetAscent(_fontSize) - _font.GetDescent(_fontSize)) / 2;
         DrawString(_font, new Vector2(chip.Position.X, baseline), text, HorizontalAlignment.Right, chip.Size.X - 5, _fontSize,
-            lit ? Lacquer.Paper : Lacquer.VermilionInk);
+            lit ? Ui.Paper : Ui.VermilionInk);
     }
 
     /// <summary>
@@ -590,13 +599,13 @@ internal sealed partial class DeploymentTableView : Tree
         float h = Math.Max(2, cell.Size.Y * 0.11f);
         float baseline = cell.GetCenter().Y + (_font.GetAscent(_fontSize) - _font.GetDescent(_fontSize)) / 2 - h / 2;
         DrawString(_font, new Vector2(cell.Position.X + 2, baseline), text, HorizontalAlignment.Left, cell.Size.X - 2, _fontSize,
-            grey ? Lacquer.InkGrey : Lacquer.Ink);
+            grey ? Ui.InkGrey : Ui.Ink);
         float f = Math.Clamp(troops / (float)max, 0, 1);
-        var colour = f >= 0.75f ? Lacquer.BarGood : f >= 0.35f ? Lacquer.BarLow : Lacquer.BarBad;
+        var colour = f >= 0.75f ? Ui.BarGood : f >= 0.35f ? Ui.BarLow : Ui.BarBad;
         if (grey)
             colour = colour with { A = 0.45f };
         var bar = new Rect2(cell.Position.X + 2, cell.End.Y - h - 1, cell.Size.X - 4, h);
-        DrawRect(bar, Lacquer.PaperRule);
+        DrawRect(bar, Ui.PaperRule);
         DrawRect(bar with { Size = new Vector2(Math.Max(1, bar.Size.X * f), h) }, colour);
     }
 }

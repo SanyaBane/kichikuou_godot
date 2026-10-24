@@ -14,9 +14,11 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal sealed partial class TreasureCallout : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Screens);
+
     private const float Pad = 26, LineStep = 28, TextSize = 20, Gap = 14, TailX = 60, TailH = 13;
     private const float ButtonW = 136, ButtonH = 38, ButtonGap = 14, MinWidth = 300;
-    private static readonly Color Fill = Color.Color8(30, 22, 16, 250);
+    private static Color Fill => Ui.CalloutFill;
 
     private readonly FontVariation _cinzel = Lacquer.Cinzel(700);
     private FontFile _gothic;
@@ -198,7 +200,7 @@ internal sealed partial class TreasureCallout : Control
             return;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         var box = Box;
-        Lacquer.DrawPanel(this, box, _k, Fill);
+        Ui.DrawPanel(this, box, _k, Fill);
         DrawTail(box);
         float x = box.Position.X + Pad, y = box.Position.Y + Pad;
         for (int i = 0; i < _lines.Count; i++)
@@ -212,16 +214,16 @@ internal sealed partial class TreasureCallout : Control
             var r = ButtonRect(i);
             bool hover = i == _hovered, down = hover && i == _pressed;
             if (i == 0)
-                Lacquer.DrawRedButton(this, r, hover, down, _k);
+                Ui.DrawRedButton(this, r, hover, down, _k);
             else
-                Lacquer.DrawRowBox(this, r, hover, _k);
+                Ui.DrawRowBox(this, r, hover, _k);
             string label = _answers![i];
             float w = _cinzel.GetStringSize(label, fontSize: 17).X;
             DrawString(_cinzel, new Vector2(r.GetCenter().X - w / 2, Lacquer.Baseline(r, _cinzel, 17)), label, fontSize: 17,
-                modulate: hover ? Lacquer.Name : Lacquer.Text);
+                modulate: hover ? Ui.Name : Ui.Text);
         }
         if (_waiting && Answers == 0)
-            Lacquer.DrawTriangle(this, new Vector2(box.End.X - 26, box.End.Y - 22), _k);
+            Ui.DrawTriangle(this, new Vector2(box.End.X - 26, box.End.Y - 22), _k);
     }
 
     /// <summary>The tail: a gold wedge from the box's edge to the cell, the box's lacquer inside it.</summary>
@@ -230,7 +232,7 @@ internal sealed partial class TreasureCallout : Control
         float tx = Math.Clamp(_cell.Position.X + TailX, box.Position.X + 24, box.End.X - 24);
         float edge = Above ? box.End.Y : box.Position.Y;
         float s = Above ? 1 : -1;                       // the tail's direction: down to a cell below, up to one above
-        DrawColoredPolygon([new(tx - 13, edge - 2 * s), new(tx, edge + TailH * s), new(tx + 13, edge - 2 * s)], Lacquer.Gold);
+        DrawColoredPolygon([new(tx - 13, edge - 2 * s), new(tx, edge + TailH * s), new(tx + 13, edge - 2 * s)], Ui.Gold);
         DrawColoredPolygon([new(tx - 10, edge - 3 * s), new(tx, edge + (TailH - 5) * s), new(tx + 10, edge - 3 * s)], Fill with { A = 1 });
     }
 }

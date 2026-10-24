@@ -18,11 +18,13 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal sealed partial class MessageWindowView : Control
 {
-    private static readonly Color SpeechFill = Lacquer.Panel with { A = 1 };
-    private static readonly Color ThoughtFill = Color.Color8(30, 26, 30);
-    internal static readonly Color NarrationFill = Color.Color8(52, 38, 24);
-    internal static readonly Color NarrationText = Color.Color8(226, 204, 150);
-    private static readonly Color DockBand = Color.Color8(10, 8, 6);
+    private static UiPalette Ui => UiPalettes.For(UiPart.Messages);
+
+    private static Color SpeechFill => Ui.Panel with { A = 1 };
+    private static Color ThoughtFill => Ui.ThoughtFill;
+    internal static Color NarrationFill => Ui.NarrationFill;
+    internal static Color NarrationText => Ui.NarrationText;
+    private static Color DockBand => Ui.DockBand;
 
     /// <summary>Synthetic bold, as <see cref="GodotGlyphRenderer"/> makes the surface's text.</summary>
     private const float Embolden = 0.6f;
@@ -177,26 +179,26 @@ internal sealed partial class MessageWindowView : Control
             var corner = new Vector2(box.End.X, box.Position.Y);
             DrawSetTransform(corner * (1 - shrink) * _k, 0, new Vector2(_k * shrink, _k * shrink));
         }
-        Color text = Lacquer.Text;
+        Color text = Ui.Text;
         switch (w.Kind)
         {
             case MessageKind.SpeechLeft or MessageKind.SpeechRight:
-                Lacquer.DrawPanel(this, box, _k, SpeechFill);
+                Ui.DrawPanel(this, box, _k, SpeechFill);
                 if (Tail)
                     SpeechTail(box, w.AtLeft);
                 break;
             case MessageKind.ThoughtLeft or MessageKind.ThoughtRight:
                 ThoughtPanel(box, w.AtLeft);
-                text = Lacquer.Quiet;
+                text = Ui.Quiet;
                 break;
             case MessageKind.CgBar:
-                Lacquer.DrawPanel(this, box, _k, SpeechFill);
+                Ui.DrawPanel(this, box, _k, SpeechFill);
                 if (w.Speaker.Length > 0)
                     NameTab(new Vector2(x + 32, y - 26), w.Speaker, w.Thinks);
-                text = w.Speaker.Length == 0 ? NarrationText : w.Thinks ? Lacquer.Quiet : Lacquer.Text;
+                text = w.Speaker.Length == 0 ? NarrationText : w.Thinks ? Ui.Quiet : Ui.Text;
                 break;
             default:
-                Lacquer.DrawPanel(this, box, _k, NarrationFill);
+                Ui.DrawPanel(this, box, _k, NarrationFill);
                 text = NarrationText;
                 break;
         }
@@ -209,7 +211,7 @@ internal sealed partial class MessageWindowView : Control
                 DrawString(_gothic, new Vector2(g.X, g.Y + _gothic.GetAscent(g.Size)), g.C.ToString(), fontSize: g.Size,
                     modulate: g.Colour is { } c ? Color.Color8(c.R, c.G, c.B) : text);
         if (_waiting && !Typing)
-            Lacquer.DrawTriangle(this, new Vector2(box.End.X - 30, box.End.Y - 28), _k);
+            Ui.DrawTriangle(this, new Vector2(box.End.X - 30, box.End.Y - 28), _k);
         if (_menu is { } m && _screen is not null)
         {
             DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));     // the menu at its own place, not the window's
@@ -231,8 +233,8 @@ internal sealed partial class MessageWindowView : Control
             : (y + 150, y + 196, new Vector2(edge + 30, y + 188));
         DrawColoredPolygon([new(edge + inward, y0 + 2), new(edge + inward, y1 - 2), tip], SpeechFill);
         DrawColoredPolygon([new(edge, y0), new(edge, y1), tip], SpeechFill);
-        DrawLine(new Vector2(edge, y0), tip, Lacquer.Gold, Lacquer.Line(2, _k), true);
-        DrawLine(new Vector2(edge, y1), tip, Lacquer.Gold, Lacquer.Line(2, _k), true);
+        DrawLine(new Vector2(edge, y0), tip, Ui.Gold, Lacquer.Line(2, _k), true);
+        DrawLine(new Vector2(edge, y1), tip, Ui.Gold, Lacquer.Line(2, _k), true);
     }
 
     /// <summary>
@@ -258,14 +260,14 @@ internal sealed partial class MessageWindowView : Control
         Dashes(new(x + 1, y + r), new(x + 1, y + h - r), line);
         Dashes(new(x + w - 1, y + r), new(x + w - 1, y + h - r), line);
         foreach (var (cx, cy, from) in new[] { (x + r, y + r, Math.PI), (x + w - r, y + r, Math.PI * 1.5), (x + w - r, y + h - r, 0.0), (x + r, y + h - r, Math.PI * 0.5) })
-            DrawArc(new Vector2(cx, cy), r - 1, (float)from, (float)(from + Math.PI / 2), 12, Lacquer.Gold, line, true);
+            DrawArc(new Vector2(cx, cy), r - 1, (float)from, (float)(from + Math.PI / 2), 12, Ui.Gold, line, true);
         var bubbles = left
             ? new[] { (x - 12, y + 128, 12f), (x - 34, y + 150, 8f), (x - 50, y + 166, 5f) }
             : new[] { (x + w + 12, y + 150, 12f), (x + w + 34, y + 128, 8f), (x + w + 50, y + 112, 5f) };
         foreach (var (bx, by, br) in bubbles)
         {
             DrawCircle(new Vector2(bx, by), br, ThoughtFill with { A = 240 / 255f });
-            DrawArc(new Vector2(bx, by), br, 0, Mathf.Tau, 24, Lacquer.Gold, line, true);
+            DrawArc(new Vector2(bx, by), br, 0, Mathf.Tau, 24, Ui.Gold, line, true);
         }
     }
 
@@ -289,13 +291,13 @@ internal sealed partial class MessageWindowView : Control
             Dashes(new(x + r, y + 1), new(x + w - r, y + 1), line, 10, 6);
             Dashes(new(x + r, y + h - 1), new(x + w - r, y + h - 1), line, 10, 6);
             foreach (var (cx, cy, from) in new[] { (x + r, y + r, Math.PI), (x + w - r, y + r, Math.PI * 1.5), (x + w - r, y + h - r, 0.0), (x + r, y + h - r, Math.PI * 0.5) })
-                DrawArc(new Vector2(cx, cy), r - 1, (float)from, (float)(from + Math.PI / 2), 8, Lacquer.Gold, line, true);
+                DrawArc(new Vector2(cx, cy), r - 1, (float)from, (float)(from + Math.PI / 2), 8, Ui.Gold, line, true);
         }
         else
         {
-            Lacquer.DrawPanel(this, tab, _k, SpeechFill);
+            Ui.DrawPanel(this, tab, _k, SpeechFill);
         }
-        Centred(_title, shown, size, tab.GetCenter().X, Lacquer.Baseline(tab, _title, size), thought ? Lacquer.Quiet : Lacquer.Name);
+        Centred(_title, shown, size, tab.GetCenter().X, Lacquer.Baseline(tab, _title, size), thought ? Ui.Quiet : Ui.Name);
     }
 
     private void Dashes(Vector2 a, Vector2 b, float width, float dash = 14, float gap = 8)
@@ -303,7 +305,7 @@ internal sealed partial class MessageWindowView : Control
         float length = a.DistanceTo(b);
         var step = (b - a) / length;
         for (float t = 0; t < length; t += dash + gap)
-            DrawLine(a + step * t, a + step * Math.Min(t + dash, length), Lacquer.Gold, width);
+            DrawLine(a + step * t, a + step * Math.Min(t + dash, length), Ui.Gold, width);
     }
 
     /// <summary>A place's title (113 at <c>ZM 32</c>): the place in Cinzel 600 at 50, a divider and the room in Cinzel 500 at 34 under it.</summary>
@@ -311,11 +313,11 @@ internal sealed partial class MessageWindowView : Control
     {
         float cx = box.GetCenter().X, y = box.Position.Y;
         float titleBaseline = room.Length > 0 ? y + 92 : y + box.Size.Y / 2 + 18;
-        Centred(_title, title.ToUpperInvariant(), 50, cx, titleBaseline, Lacquer.Name);
+        Centred(_title, title.ToUpperInvariant(), 50, cx, titleBaseline, Ui.Name);
         if (room.Length == 0)
             return;
-        Lacquer.DrawDivider(this, box.Position.X + 160, box.End.X - 160, y + 128, _k);
-        Centred(_room, room, 34, cx, y + 186, Lacquer.Subtitle);
+        Ui.DrawDivider(this, box.Position.X + 160, box.End.X - 160, y + 128, _k);
+        Centred(_room, room, 34, cx, y + 186, Ui.Subtitle);
     }
 
     private void Centred(Font font, string text, int size, float cx, float baseline, Color colour)

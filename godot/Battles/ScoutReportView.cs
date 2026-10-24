@@ -20,6 +20,8 @@ namespace Kichikuou.Game.Battles;
 /// </summary>
 internal sealed partial class ScoutReportView : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Battle);
+
     private static readonly Rect2 PortraitArea = new(40, 40, 300, 400);       // its top with the balloon's: the tail points at it
     private static readonly Rect2 BalloonArea = new(370, 40, 870, 110);
     private static readonly Rect2 RanceArea = new(40, 572, 154, 205);         // the portraits at the foot, 192×256 at 0.8: Rance left,
@@ -48,7 +50,6 @@ internal sealed partial class ScoutReportView : Control
 
     private readonly FacePictures _faces;
     private FaceCrops _crops = new();
-    private DeploymentPalette _colours = DeploymentPalette.BattleChosen;
     private Font? _font;
     private readonly FontVariation _bold = new() { VariationEmbolden = 0.8f };
     private readonly ColorRect _backdrop;
@@ -81,13 +82,6 @@ internal sealed partial class ScoutReportView : Control
         _sheet.Draw += DrawSheet;
         AddChild(_sheet);
         SetFont(font);
-    }
-
-    /// <summary>Option → Display: the cards in <paramref name="palette"/>'s colours.</summary>
-    public void SetPalette(DeploymentPalette palette)
-    {
-        _colours = palette;
-        _sheet.QueueRedraw();
     }
 
     /// <summary>Option → Display: the overlay's text in the chosen font.</summary>
@@ -161,9 +155,9 @@ internal sealed partial class ScoutReportView : Control
             DrawCard(At(CardArea(slot)), slot, report.Places[slot - 1], s);
         int caption = Px(CaptionText);
         _sheet.DrawString(_font, new Vector2(Columns[0], CaptionY) * s + new Vector2(0, _font.GetAscent(caption)), "front row",
-            HorizontalAlignment.Left, -1, caption, _colours.Muted);
+            HorizontalAlignment.Left, -1, caption, Ui.Quiet);
         _sheet.DrawString(_font, new Vector2(Columns[1], CaptionY) * s + new Vector2(0, _font.GetAscent(caption)), "back row",
-            HorizontalAlignment.Left, -1, caption, _colours.Muted);
+            HorizontalAlignment.Left, -1, caption, Ui.Quiet);
 
         DrawReplies(report, size, s);
     }
@@ -219,16 +213,16 @@ internal sealed partial class ScoutReportView : Control
 
     /// <summary>A card as our battle cards look (the face on the right, as the enemy's): place and name, troop type, "Troops" and the number large; an empty place "n  empty".</summary>
     private void DrawCard(Rect2 card, int slot, ScoutedCommander? commander, float s) =>
-        DrawCard(_sheet, card, slot, commander, s, _font!, _bold, _colours, _faces, _crops, Px(TextSize), Px(NumberSize));
+        DrawCard(_sheet, card, slot, commander, s, _font!, _bold, Ui, _faces, _crops, Px(TextSize), Px(NumberSize));
 
     /// <summary>
     /// A scouted place's card drawn on <paramref name="canvas"/> in window pixels, <paramref name="s"/> to a layout pixel.
     /// </summary>
     private static void DrawCard(CanvasItem canvas, Rect2 card, int slot, ScoutedCommander? commander, float s, Font font,
-        Font bold, DeploymentPalette colours, FacePictures faces, FaceCrops crops, int text, int number)
+        Font bold, UiPalette colours, FacePictures faces, FaceCrops crops, int text, int number)
     {
         DrawShadow(canvas, card, s);
-        var box = new StyleBoxFlat { BgColor = commander is null ? colours.Back : colours.Card, BorderColor = colours.Border };
+        var box = new StyleBoxFlat { BgColor = commander is null ? colours.Panel with { A = 1 } : colours.Row, BorderColor = colours.Gold };
         box.SetBorderWidthAll(Math.Max(1, (int)Math.Round(2 * s)));
         canvas.DrawStyleBox(box, card);
         if (commander is null)
@@ -236,7 +230,7 @@ internal sealed partial class ScoutReportView : Control
             string empty = $"{slot}  empty";
             var emptyWidth = font.GetStringSize(empty, HorizontalAlignment.Left, -1, text).X;
             canvas.DrawString(font, card.GetCenter() + new Vector2(-emptyWidth / 2, font.GetAscent(text) - text / 2f), empty,
-                HorizontalAlignment.Left, -1, text, colours.Muted);
+                HorizontalAlignment.Left, -1, text, colours.Quiet);
             return;
         }
         float pad = 4 * s;
@@ -250,10 +244,10 @@ internal sealed partial class ScoutReportView : Control
         void Text(string value, float y, Color colour, Font f, int fontSize, float x = 0) =>
             canvas.DrawString(f, new Vector2(left + x, top + y * s + f.GetAscent(fontSize)), value,
                 HorizontalAlignment.Left, width - x, fontSize, colour, TextServer.JustificationFlag.None);
-        Text(slot.ToString(CultureInfo.InvariantCulture), 0, colours.Muted, font, text);
+        Text(slot.ToString(CultureInfo.InvariantCulture), 0, colours.Quiet, font, text);
         Text(commander.Name, 0, colours.Text, font, text, 22 * s);
-        Text(commander.TroopType == "" ? "—" : commander.TroopType, 22, colours.Muted, font, text);
-        Text("Troops", 52, colours.Muted, font, text);
+        Text(commander.TroopType == "" ? "—" : commander.TroopType, 22, colours.Quiet, font, text);
+        Text("Troops", 52, colours.Quiet, font, text);
         Text(commander.Troops == 0 ? "none" : Number(commander.Troops), 72, colours.Text, bold, number);
     }
 

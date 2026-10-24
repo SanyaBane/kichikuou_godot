@@ -8,6 +8,8 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal static class ReadTextChoice
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Messages);
+
     /// <summary>The nine colours, after Rance X's row, left to right.</summary>
     public static readonly (string Name, Color Colour)[] Colours =
     [
@@ -22,7 +24,7 @@ internal static class ReadTextChoice
     /// <summary>"Don't change": no colour.</summary>
     public const int None = -1;
 
-    /// <summary>A thought's read text: the colour as dim as <see cref="Lacquer.Quiet"/> is against <see cref="Lacquer.Text"/>.</summary>
+    /// <summary>A thought's read text: the colour as dim as <see cref="UiPalette.Quiet"/> is against <see cref="UiPalette.Text"/>.</summary>
     private const float ThoughtDim = 0.72f;
 
     private static int? _index;
@@ -57,7 +59,7 @@ internal static class ReadTextChoice
 
     /// <summary>The colour a read window's text takes in place of <paramref name="plain"/>, its own; a thought's dimmed.</summary>
     public static Color Of(Color colour, Color plain) =>
-        plain == Lacquer.Quiet ? new Color(colour.R * ThoughtDim, colour.G * ThoughtDim, colour.B * ThoughtDim) : colour;
+        plain == Ui.Quiet ? new Color(colour.R * ThoughtDim, colour.G * ThoughtDim, colour.B * ThoughtDim) : colour;
 
     private static int Valid(int index) => index >= None && index < Colours.Length ? index : DefaultIndex;
 }

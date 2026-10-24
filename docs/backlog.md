@@ -190,10 +190,9 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   Code's event 4); the look chosen from mock-up round 1 (§6). Built (2026-10-22, §8-§9); left: the owner's review of
   the decisions in §9 and a look at the ??? and read marks in a window (the kept saves predate the read-line record,
   so every talk and visit shows New there).
-- **The lacquer as a choice for every screen** — *owner* (2026-10-24, put off), then *agent*: `Lacquer`'s colours are
-  constants; first the battle screen tries the Lacquer palette ([ui/options.md](ui/options.md), "The battle screen's
-  palette") and, if the owner keeps it, takes it for good and the battle palette goes; then the lacquer itself becomes
-  a set the player chooses, every lacquer screen redrawn on a change.
+- **A mixed palette** — *owner* (2026-10-24, put off), then *agent*: one palette (Lacquer or Steel) colours all our
+  screens since 2026-10-24 ([ui/options.md](ui/options.md), "The palette"); a palette per part (`UiPart`) is kept and
+  read but no option offers it, nor colours chosen role by role.
 - **Optional fixes** — *owner* (which), then *agent*: the quirks register ([quirks.md](quirks.md),
   decision 5) lists every reproduced bug; some can become options.
 

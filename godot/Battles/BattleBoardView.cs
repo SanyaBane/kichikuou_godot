@@ -18,8 +18,10 @@ namespace Kichikuou.Game.Battles;
 /// nothing: <see cref="GameScreen"/> turns a pointer over a card into the script's pointer on that card's
 /// panel (<see cref="ToScript"/>), and elsewhere into the point of the windows' layer under it.
 /// </summary>
-internal sealed partial class BattleBoardView : Control
+internal sealed partial class BattleBoardView : Control, IUiPaletteUser
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Battle);
+
     // The layout in the pixels of a 1280×800 window (two to a script pixel).
     private static readonly Rect2 SidesArea = new(0, 0, 1280, 410);
     private static readonly Rect2 SceneArea = new(128, 0, 1024, 410);
@@ -68,7 +70,6 @@ internal sealed partial class BattleBoardView : Control
     /// <summary>How dark the spotlight makes the panel (Option → Battle, 0.5 by default).</summary>
     private static float SpotDarkness => (float)BattleScreenSettings.Get(BattleScreenSettings.SpotDarkness);
 
-    private DeploymentPalette _colours = DeploymentPalette.BattleChosen;
     private readonly FacePictures _faces;
     private FaceCrops _crops = new();
     private readonly Theme _theme = new();
@@ -229,7 +230,7 @@ internal sealed partial class BattleBoardView : Control
         AddChild(_dialog);
         _advantageTip = new AdvantageTip();                                 // shown only while no dialog is
         AddChild(_advantageTip);
-        SetPalette(_colours);
+        ApplyPalette();
         SetFont(font);
     }
 
@@ -320,25 +321,22 @@ internal sealed partial class BattleBoardView : Control
         return layer;
     }
 
-    /// <summary>Option → Display: the screen in <paramref name="palette"/>'s colours at once.</summary>
-    public void SetPalette(DeploymentPalette palette)
+    /// <summary>Option → Display: what the screen keeps in its palette's colours set again, the cards built again.</summary>
+    public void ApplyPalette()
     {
-        _colours = palette;
-        _theme.SetColor("font_color", "Label", palette.Text);
-        _back.Color = palette.Back;
-        _strip.SetPalette(palette);
-        _commands.SetPalette(palette);
-        _dialog.SetPalette(palette);
-        _balloon.SetPalette(palette);
-        _opening.SetPalette(palette);
-        _playerAdvantage.SetColour(palette.Accent);
-        _enemyAdvantage.SetColour(palette.Accent);
-        _advantageTip.SetPalette(palette);
+        _theme.SetColor("font_color", "Label", Ui.Text);
+        _back.Color = Back;
+        _strip.ApplyPalette();
+        _playerAdvantage.SetColour(Ui.HoverLine);
+        _enemyAdvantage.SetColour(Ui.HoverLine);
         _cardsKey = _stripKey = "?";
         _gauge.QueueRedraw();
         _limit.QueueRedraw();
         _separator.QueueRedraw();
     }
+
+    /// <summary>The screen's backdrop and an empty place's card: the panels' lacquer, opaque.</summary>
+    private static Color Back => Ui.Panel with { A = 1 };
 
     /// <summary>Option → Display: the screen's text in the chosen font.</summary>
     public void SetFont(GameFont font)
@@ -756,7 +754,7 @@ internal sealed partial class BattleBoardView : Control
         float h = PillHeight * s, icon = PillIcon * s, gap = 6 * s, side = 9 * s;
         var rect = new Rect2((fighter.Card.Position.X + column) * s, (fighter.Card.End.Y - PillBottom - PillHeight) * s,
             side + icon + gap + textWidth + side, h);
-        var box = new StyleBoxFlat { BgColor = _colours.Accent with { A = _spotShown } };
+        var box = new StyleBoxFlat { BgColor = Ui.HoverLine with { A = _spotShown } };
         box.SetCornerRadiusAll((int)(h / 2));
         _spotlight.DrawStyleBox(box, rect);
         var ink = PillInk with { A = _spotShown };
@@ -855,7 +853,7 @@ internal sealed partial class BattleBoardView : Control
             bool acting = order.Acting == place && card is not null && card.Record == order.ActingRecord;
             if (acting)
                 actingPlace = place;
-            box.BgColor = card is null ? _colours.Back : acting ? _colours.Card.Lerp(_colours.Accent, ActingTint) : _colours.Card;
+            box.BgColor = card is null ? Back : acting ? Ui.Row.Lerp(Ui.HoverLine, ActingTint) : Ui.Row;
             box.BorderColor = Border(place, card, acting);
             int pad = Pad;
             box.ContentMarginLeft = box.ContentMarginRight = box.ContentMarginTop = box.ContentMarginBottom = pad;
@@ -885,7 +883,7 @@ internal sealed partial class BattleBoardView : Control
 
     /// <summary>A card's frame: the accent while it acts, lit under the pointer (<see cref="_cardsHovered"/>), else plain.</summary>
     private Color Border(BattlePlace place, BattleCard? card, bool acting) =>
-        acting ? _colours.Accent : _cardsHovered == place && card is not null ? _colours.ButtonBorder : _colours.Border;
+        acting ? Ui.HoverLine : _cardsHovered == place && card is not null ? Ui.Gold : Ui.Gold;
 
     /// <summary>The cards' padding inside their frame, in window pixels: four units of the acting frame.</summary>
     private int Pad => Math.Max(1, (int)Math.Round(4 * _scale));
@@ -1058,12 +1056,12 @@ internal sealed partial class BattleBoardView : Control
             _actingFrame.DrawRect(new Rect2(r.Position.X, r.Position.Y + u, u, r.Size.Y - 2 * u), colour);
             _actingFrame.DrawRect(new Rect2(r.End.X - u, r.Position.Y + u, u, r.Size.Y - 2 * u), colour);
         }
-        Color[] edge = [Colors.Black, _colours.Accent, _colours.Accent, Colors.Black];
+        Color[] edge = [Colors.Black, Ui.HoverLine, Ui.HoverLine, Colors.Black];
         for (int i = 0; i < edge.Length; i++)
             Ring(i, edge[i]);
         if (!_blinkOn)
             return;
-        Color[] blink = [_colours.Accent, Colors.White, Colors.White, _colours.Accent];
+        Color[] blink = [Ui.HoverLine, Colors.White, Colors.White, Ui.HoverLine];
         for (int i = 0; i < blink.Length; i++)
             Ring(i - 1, blink[i]);
     }
@@ -1095,7 +1093,7 @@ internal sealed partial class BattleBoardView : Control
     private void RestoreOrderLabel()
     {
         if (_flashUnit is { } unit && _orderLabels.TryGetValue(unit, out var label) && IsInstanceValid(label))
-            label.AddThemeColorOverride("font_color", _colours.Muted);
+            label.AddThemeColorOverride("font_color", Ui.Quiet);
         _flashUnit = null;
     }
 
@@ -1106,7 +1104,7 @@ internal sealed partial class BattleBoardView : Control
         float k = t < FlashRise ? (float)(t / FlashRise)
             : t < FlashRise + FlashHold ? 1
             : (float)Math.Max(0, 1 - (t - FlashRise - FlashHold) / FlashFade);
-        return _colours.Muted.Lerp(Saturated(_colours.Muted, _colours.Text), k * k * (3 - 2 * k));
+        return Ui.Quiet.Lerp(Saturated(Ui.Quiet, Ui.Text), k * k * (3 - 2 * k));
     }
 
     /// <summary>
@@ -1117,12 +1115,12 @@ internal sealed partial class BattleBoardView : Control
     {
         muted.ToHsv(out float h, out float s, out float v);
         if (s < 0.02f)
-            _colours.Accent.ToHsv(out h, out _, out _);
+            Ui.HoverLine.ToHsv(out h, out _, out _);
         bool dark = text.Luminance > muted.Luminance;
         return Color.FromHsv(h, 0.85f, dark ? 1f : Math.Min(v, 0.55f));
     }
 
-    private Label Empty(BattlePlace place) => Line($"{place.Slot}  empty", _colours.Muted, center: true);
+    private Label Empty(BattlePlace place) => Line($"{place.Slot}  empty", Ui.Quiet, center: true);
 
     /// <summary>
     /// A card: the portrait with the unit's stats (<see cref="CardPortrait"/>; the enemy's on the right), place and name,
@@ -1134,16 +1132,16 @@ internal sealed partial class BattleBoardView : Control
         line.AddThemeConstantOverride("separation", pad * 2);
         int size = (int)Math.Round(CardPortrait.Face * _scale);
         var face = new CardPortrait(card.Picture != 0 ? _faces.SquareTexture(card.Picture, _faces.CropOf(card.Picture, _crops), size) : null,
-            card.Stats, card.Focus, _colours, _scale);
+            card.Stats, card.Focus, _scale);
 
         var text = new VBoxContainer { MouseFilter = MouseFilterEnum.Ignore, SizeFlagsHorizontal = SizeFlags.ExpandFill };
         text.AddThemeConstantOverride("separation", 0);
         var name = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
         name.AddThemeConstantOverride("separation", pad * 2);
-        name.AddChild(Line(card.Place.Slot.ToString(), _colours.Muted, expand: false));
+        name.AddChild(Line(card.Place.Slot.ToString(), Ui.Quiet, expand: false));
         name.AddChild(Line(card.Name));
         text.AddChild(name);
-        text.AddChild(Line(card.TroopType == "" ? "—" : card.TroopType, _colours.Muted));
+        text.AddChild(Line(card.TroopType == "" ? "—" : card.TroopType, Ui.Quiet));
         var side = card.Place.Side == BattleSide.Player ? PlayerColour : EnemyColour;
         foreach (var (gauge, colour) in new[] { (Gauge.Troops, side), (Gauge.Hp, HpColour) })
         {
@@ -1171,7 +1169,7 @@ internal sealed partial class BattleBoardView : Control
         stateLine.AddThemeConstantOverride("separation", 0);
         if (order != "")
         {
-            var orderLabel = Line(order, _colours.Muted, expand: false);   // its own label: it flashes (FlashOrder)
+            var orderLabel = Line(order, Ui.Quiet, expand: false);   // its own label: it flashes (FlashOrder)
             stateLine.AddChild(orderLabel);
             if (card.Place.Side == BattleSide.Player)
             {
@@ -1182,7 +1180,7 @@ internal sealed partial class BattleBoardView : Control
             if (state != "")
                 state = " · " + state;
         }
-        stateLine.AddChild(Line(state, _colours.Muted));
+        stateLine.AddChild(Line(state, Ui.Quiet));
         text.AddChild(stateLine);
 
         if (card.Place.Side == BattleSide.Player)
@@ -1203,7 +1201,7 @@ internal sealed partial class BattleBoardView : Control
     {
         var back = new ColorRect
         {
-            Color = _colours.Back,
+            Color = Back,
             CustomMinimumSize = new Vector2(0, Math.Max(2, (float)Math.Round(5 * _scale))),
             MouseFilter = MouseFilterEnum.Ignore,
         };
@@ -1311,9 +1309,9 @@ internal sealed partial class BattleBoardView : Control
         float s = _scale;
         float cx = _gauge.Size.X / 2;
         bool last = left == 1;
-        var lit = last ? _colours.Warning : _colours.Accent;
+        var lit = last ? Ui.Minus : Ui.HoverLine;
         var tube = new Rect2(cx - TubeWidth / 2 * s, 0, TubeWidth * s, TubeHeight * s);
-        var box = new StyleBoxFlat { BgColor = TubeFill, BorderColor = _colours.Border, AntiAliasing = true };
+        var box = new StyleBoxFlat { BgColor = TubeFill, BorderColor = Ui.Gold, AntiAliasing = true };
         box.SetCornerRadiusAll((int)Math.Round(TubeRadius * s));
         box.SetBorderWidthAll(Math.Max(1, (int)Math.Round(2 * s)));
         _gauge.DrawStyleBox(box, tube);
@@ -1347,7 +1345,7 @@ internal sealed partial class BattleBoardView : Control
             }
         }
         var font = _opening.CinzelBold;
-        var colour = last ? _colours.Warning : _colours.Accent;
+        var colour = last ? Ui.Minus : Ui.HoverLine;
         int number = (int)Math.Round(34 * s), caption = Math.Max(8, (int)Math.Round(11 * s));
         float y = (TubeHeight + 24) * s;
         string digits = left.ToString();
@@ -1358,7 +1356,7 @@ internal sealed partial class BattleBoardView : Control
         string[] words = last ? ["LAST", "TURN"] : ["TURNS", "LEFT"];
         for (int i = 0; i < words.Length; i++)
             _gauge.DrawString(font, new Vector2(0, (TubeHeight + 58 + 14 * i) * s), words[i], HorizontalAlignment.Center,
-                _gauge.Size.X, caption, last ? _colours.Warning : _colours.Muted);
+                _gauge.Size.X, caption, last ? Ui.Minus : Ui.Quiet);
     }
 
     /// <summary>A spent round: a dark slot.</summary>
@@ -1428,15 +1426,15 @@ internal sealed partial class BattleBoardView : Control
         var plate = new Rect2((_limit.Size.X - width) / 2, (LimitCentreY - LimitHeight / 2 - Eased(_away) * LimitAway) * s, width, LimitHeight * s);
         var box = new StyleBoxFlat
         {
-            BgColor = new Color(_colours.Back, 0.8f),
-            BorderColor = _colours.Border,
+            BgColor = new Color(Ui.Panel, 0.8f),
+            BorderColor = Ui.Gold,
             BorderWidthLeft = 1, BorderWidthTop = 1, BorderWidthRight = 1, BorderWidthBottom = 1,
         };
         box.SetCornerRadiusAll((int)Math.Round(6 * s));
         _limit.DrawStyleBox(box, plate);
         float baseline = plate.Position.Y + (plate.Size.Y + font.GetAscent(fontSize) - font.GetDescent(fontSize)) / 2;
         _limit.DrawString(font, new Vector2(plate.Position.X, baseline), _limitText, HorizontalAlignment.Center, plate.Size.X,
-            fontSize, _colours.Text);
+            fontSize, Ui.Text);
     }
 
     // The separator between the scene and the panel (owner, 2026-10-16): a bar across the screen at the scene's foot in the
@@ -1452,11 +1450,11 @@ internal sealed partial class BattleBoardView : Control
         _separator.DrawRect(new Rect2(0, top - Math.Max(1, s), w, Math.Max(1, s)), shadow);           // its edge on the scene
         _separator.DrawPolygon([new(0, bottom), new(w, bottom), new(w, bottom + SeparatorShadow * s), new(0, bottom + SeparatorShadow * s)],
             [shadow, shadow, shadow with { A = 0 }, shadow with { A = 0 }]);
-        var (light, dark) = (_colours.Border.Lightened(0.3f), _colours.Border.Darkened(0.45f));
+        var (light, dark) = (Ui.Gold.Lightened(0.3f), Ui.Gold.Darkened(0.45f));
         _separator.DrawPolygon([new(0, top), new(w, top), new(w, bottom), new(0, bottom)], [light, light, dark, dark]);
         float line = Math.Max(1, 1.5f * s);
-        var faint = _colours.Accent with { A = 0.15f };
-        var bright = _colours.Accent with { A = 0.85f };
+        var faint = Ui.HoverLine with { A = 0.15f };
+        var bright = Ui.HoverLine with { A = 0.85f };
         _separator.DrawPolygon([new(0, top), new(w / 2, top), new(w / 2, top + line), new(0, top + line)], [faint, bright, bright, faint]);
         _separator.DrawPolygon([new(w / 2, top), new(w, top), new(w, top + line), new(w / 2, top + line)], [bright, faint, faint, bright]);
         _separator.DrawRect(new Rect2(0, bottom - Math.Max(1, s), w, Math.Max(1, s)), new Color(0, 0, 0, 0.5f));

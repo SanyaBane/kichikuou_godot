@@ -19,6 +19,8 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal sealed partial class EnemyAttackView : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Screens);
+
     /// <summary>The player's answer: <c>FIGT_B</c>'s menu code (1 Intercept, 2 Ninja Scout, 3 Abandon City) and, for 2, the ninja's.</summary>
     public readonly record struct Answer(int Code, int Ninja);
 
@@ -324,7 +326,7 @@ internal sealed partial class EnemyAttackView : Control
         DrawTitle(attack);
         DrawProvince(attack);
         _sheet.DrawString(_brush, new Vector2(552 - _brush.GetStringSize("VS", fontSize: 34).X / 2, PanelsTop + PanelsHeight / 2 + 12), "VS",
-            fontSize: 34, modulate: Lacquer.Gold);
+            fontSize: 34, modulate: Ui.Gold);
         DrawArmy(attack);
         DrawFoot(attack);
         if (_listOpen)
@@ -334,32 +336,32 @@ internal sealed partial class EnemyAttackView : Control
 
     private void DrawTitle(EnemyAttack attack)
     {
-        Lacquer.DrawPanel(_sheet, TitleBand, _k);
+        Ui.DrawPanel(_sheet, TitleBand, _k);
         if (Picture(attack.FlagCg) is { } flag)
             _sheet.DrawTextureRect(flag, new Rect2(54, TitleTop + 17, 48, 38), false);
-        _sheet.DrawString(_brush, new Vector2(116, TitleTop + 46), "Enemy Attack", fontSize: 28, modulate: Lacquer.Name);
+        _sheet.DrawString(_brush, new Vector2(116, TitleTop + 46), "Enemy Attack", fontSize: 28, modulate: Ui.Name);
         float x = 116 + _brush.GetStringSize("Enemy Attack", fontSize: 28).X + 24;
         _sheet.DrawString(_font!, new Vector2(x, TitleTop + 44), $"The {attack.Army} appeared around {attack.Province}.",
-            fontSize: 19, modulate: Lacquer.Text);
+            fontSize: 19, modulate: Ui.Text);
         string date = attack.Date.Replace(", ", " · ");
         float dw = _cinzel.GetStringSize(date, fontSize: 13).X;
-        _sheet.DrawString(_cinzel, new Vector2(1226 - dw, TitleTop + 42), date, fontSize: 13, modulate: Lacquer.Subtitle);
+        _sheet.DrawString(_cinzel, new Vector2(1226 - dw, TitleTop + 42), date, fontSize: 13, modulate: Ui.Subtitle);
     }
 
     private void Heading(float x, float y, string text, float right)
     {
-        _sheet.DrawString(_cinzel, new Vector2(x, y + 12), text, fontSize: 13, modulate: Lacquer.Subtitle);
+        _sheet.DrawString(_cinzel, new Vector2(x, y + 12), text, fontSize: 13, modulate: Ui.Subtitle);
         float end = x + _cinzel.GetStringSize(text, fontSize: 13).X + 10;
-        _sheet.DrawLine(new Vector2(end, y + 8), new Vector2(right, y + 8), Lacquer.DimGold, Lacquer.Line(1, _k));
+        _sheet.DrawLine(new Vector2(end, y + 8), new Vector2(right, y + 8), Ui.DimGold, Lacquer.Line(1, _k));
     }
 
     private void DrawProvince(EnemyAttack attack)
     {
-        Lacquer.DrawPanel(_sheet, ProvincePanel, _k);
+        Ui.DrawPanel(_sheet, ProvincePanel, _k);
         Heading(54, PanelsTop + 16, "DEFENDING · " + attack.Province.ToUpperInvariant(), 482);
         if (Picture(attack.PictureCg) is { } picture)
             _sheet.DrawTextureRect(picture, PictureArea, false);
-        _sheet.DrawRect(PictureArea, Lacquer.Gold, false, Lacquer.Line(1, _k));
+        _sheet.DrawRect(PictureArea, Ui.Gold, false, Lacquer.Line(1, _k));
         (string Label, string Value)[] rows =
         [
             ("Walls in a city battle", attack.Walls == 0 ? "none" : $"+{attack.Walls}%"),
@@ -370,11 +372,11 @@ internal sealed partial class EnemyAttackView : Control
         for (int i = 0; i < rows.Length; i++)
         {
             float y = PictureArea.End.Y + 12 + i * 36;
-            _sheet.DrawString(_font!, new Vector2(54, y + 15), rows[i].Label, fontSize: 15, modulate: Lacquer.Label);
+            _sheet.DrawString(_font!, new Vector2(54, y + 15), rows[i].Label, fontSize: 15, modulate: Ui.Label);
             float w = _cinzel.GetStringSize(rows[i].Value, fontSize: 17).X;
-            _sheet.DrawString(_cinzel, new Vector2(482 - w, y + 16), rows[i].Value, fontSize: 17, modulate: Lacquer.Value);
+            _sheet.DrawString(_cinzel, new Vector2(482 - w, y + 16), rows[i].Value, fontSize: 17, modulate: Ui.Value);
             if (i < rows.Length - 1)
-                _sheet.DrawLine(new Vector2(54, y + 31), new Vector2(482, y + 31), Color.Color8(60, 46, 30), Lacquer.Line(1, _k));
+                _sheet.DrawLine(new Vector2(54, y + 31), new Vector2(482, y + 31), Ui.Seam, Lacquer.Line(1, _k));
         }
     }
 
@@ -385,7 +387,7 @@ internal sealed partial class EnemyAttackView : Control
     /// </summary>
     private void DrawArmy(EnemyAttack attack)
     {
-        Lacquer.DrawPanel(_sheet, ArmyPanel, _k);
+        Ui.DrawPanel(_sheet, ArmyPanel, _k);
         Heading(622, PanelsTop + 16, "ATTACKING · " + attack.Army.ToUpperInvariant(), 1226);
         var report = attack.Report;
 
@@ -393,9 +395,9 @@ internal sealed partial class EnemyAttackView : Control
         float labelsY = front.Position.Y - 12;
         const string frontLabel = "Front row";
         float fw = _cinzel.GetStringSize(frontLabel, fontSize: 13).X;
-        CentredAt(_cinzel, frontLabel, 13, front.GetCenter().X + 8, labelsY, Lacquer.Label);
-        _sheet.DrawString(_font!, new Vector2(front.GetCenter().X + 8 - fw / 2 - 17, labelsY), "◀", fontSize: 11, modulate: Lacquer.Label);
-        CentredAt(_cinzel, "Back row", 13, ArmyCard(3).GetCenter().X, labelsY, Lacquer.Label);
+        CentredAt(_cinzel, frontLabel, 13, front.GetCenter().X + 8, labelsY, Ui.Label);
+        _sheet.DrawString(_font!, new Vector2(front.GetCenter().X + 8 - fw / 2 - 17, labelsY), "◀", fontSize: 11, modulate: Ui.Label);
+        CentredAt(_cinzel, "Back row", 13, ArmyCard(3).GetCenter().X, labelsY, Ui.Label);
 
         for (int slot = 1; slot <= 4; slot++)
         {
@@ -409,21 +411,21 @@ internal sealed partial class EnemyAttackView : Control
         DrawArmyBracket();
 
         float y = ArmyCard(2).End.Y + 40, left = front.Position.X, right = ArmyCard(4).End.X;
-        _sheet.DrawString(_cinzel, new Vector2(left, y), "Commanders", fontSize: 12, modulate: Lacquer.Label);
+        _sheet.DrawString(_cinzel, new Vector2(left, y), "Commanders", fontSize: 12, modulate: Ui.Label);
         float cw = _cinzel.GetStringSize("Commanders", fontSize: 12).X;
         _sheet.DrawString(_font!, new Vector2(left + cw + 10, y),
             report is null ? "??" : report.Commanders.ToString(CultureInfo.InvariantCulture), fontSize: 17,
-            modulate: report is null ? Lacquer.OffText : Lacquer.Value);
+            modulate: report is null ? Ui.OffText : Ui.Value);
         string troops = report is null ? "??" : Figures.Number(report.Troops);
         float tx = right - _font!.GetStringSize(troops, fontSize: 17).X;
-        _sheet.DrawString(_font, new Vector2(tx, y), troops, fontSize: 17, modulate: report is null ? Lacquer.OffText : Lacquer.Value);
+        _sheet.DrawString(_font, new Vector2(tx, y), troops, fontSize: 17, modulate: report is null ? Ui.OffText : Ui.Value);
         _sheet.DrawString(_cinzel, new Vector2(tx - 10 - _cinzel.GetStringSize("Total troops", fontSize: 12).X, y), "Total troops",
-            fontSize: 12, modulate: Lacquer.Label);
-        _sheet.DrawLine(new Vector2(left, y + 14), new Vector2(right, y + 14), Lacquer.DimGold, Lacquer.Line(1, _k));
+            fontSize: 12, modulate: Ui.Label);
+        _sheet.DrawLine(new Vector2(left, y + 14), new Vector2(right, y + 14), Ui.DimGold, Lacquer.Line(1, _k));
         string note = report is null
             ? attack.CanScout ? "Send a ninja to learn them." : "No ninja can be sent this week."
             : $"{NinjaName(attack, report.NinjaCg)}'s report";
-        _sheet.DrawString(_font, new Vector2(left, y + 36), note, fontSize: 13, modulate: Lacquer.Quiet);
+        _sheet.DrawString(_font, new Vector2(left, y + 36), note, fontSize: 13, modulate: Ui.Quiet);
     }
 
     /// <summary>Place <paramref name="slot"/>'s card: the front row (1, 2) left next to the bracket, the back row (3, 4) right; the block centred in the panel.</summary>
@@ -438,61 +440,61 @@ internal sealed partial class EnemyAttackView : Control
     private void DrawEnemyCard(int slot, ScoutedCommander commander)
     {
         var rect = ArmyCard(slot);
-        _sheet.DrawRect(rect, Lacquer.Row);
-        _sheet.DrawRect(rect, Lacquer.DimGold, false, Lacquer.Line(1, _k));
+        _sheet.DrawRect(rect, Ui.Row);
+        _sheet.DrawRect(rect, Ui.DimGold, false, Lacquer.Line(1, _k));
         float size = rect.Size.Y - 16;
         var face = new Rect2(rect.End.X - 8 - size, rect.Position.Y + 8, size, size);
-        _sheet.DrawRect(face, Color.Color8(52, 40, 28));
+        _sheet.DrawRect(face, Ui.FaceBack);
         if (commander.Picture != 0
             && _faces.SquareTexture(commander.Picture, _faces.CropOf(commander.Picture, _crops), Math.Max(16, (int)Math.Round(size * _k))) is { } texture)
             _sheet.DrawTextureRect(texture, face, false);
-        _sheet.DrawRect(face, Lacquer.Gold, false, Lacquer.Line(1, _k));
+        _sheet.DrawRect(face, Ui.Gold, false, Lacquer.Line(1, _k));
 
         float tx = rect.Position.X + 12, right = face.Position.X - 12;
-        Lacquer.DrawBadge(_sheet, _cinzel, new Vector2(tx + 10, rect.Position.Y + 19), 11, slot);
+        Ui.DrawBadge(_sheet, _cinzel, new Vector2(tx + 10, rect.Position.Y + 19), 11, slot);
         _sheet.DrawString(_font!, new Vector2(tx + 28, rect.Position.Y + 25), commander.Name, HorizontalAlignment.Left,
-            right - tx - 28, 18, Lacquer.Name);
+            right - tx - 28, 18, Ui.Name);
         _sheet.DrawString(_font!, new Vector2(tx, rect.Position.Y + 47), commander.TroopType == "" ? "—" : commander.TroopType,
-            HorizontalAlignment.Left, right - tx, 14, Lacquer.Quiet);
+            HorizontalAlignment.Left, right - tx, 14, Ui.Quiet);
         float baseline = rect.End.Y - 14;
-        _sheet.DrawString(_cinzel, new Vector2(tx, baseline), "Troops", fontSize: 11, modulate: Lacquer.Label);
+        _sheet.DrawString(_cinzel, new Vector2(tx, baseline), "Troops", fontSize: 11, modulate: Ui.Label);
         string troops = commander.Troops == 0 ? "none" : Figures.Number(commander.Troops);
         _sheet.DrawString(_font!, new Vector2(right - _font!.GetStringSize(troops, fontSize: 17).X, baseline), troops,
-            fontSize: 17, modulate: Lacquer.Value);
-        _sheet.DrawLine(new Vector2(tx, baseline + 5), new Vector2(right, baseline + 5), Lacquer.DimGold, Lacquer.Line(1, _k));
+            fontSize: 17, modulate: Ui.Value);
+        _sheet.DrawLine(new Vector2(tx, baseline + 5), new Vector2(right, baseline + 5), Ui.DimGold, Lacquer.Line(1, _k));
     }
 
     /// <summary>A place not scouted yet: dashed, a "?" where the face goes, "Unknown".</summary>
     private void DrawUnknownCard(int slot)
     {
         var rect = ArmyCard(slot);
-        _sheet.DrawRect(rect, Lacquer.Row with { A = 0.6f });
-        Lacquer.DrawDashed(_sheet, rect, Lacquer.DimGold, _k);
+        _sheet.DrawRect(rect, Ui.Row with { A = 0.6f });
+        Lacquer.DrawDashed(_sheet, rect, Ui.DimGold, _k);
         float size = rect.Size.Y - 16;
         var face = new Rect2(rect.End.X - 8 - size, rect.Position.Y + 8, size, size);
-        Lacquer.DrawDashed(_sheet, face, Lacquer.OffLine, _k, 4, 8);
-        CentredAt(_brush, "?", 30, face.GetCenter().X, face.GetCenter().Y + 12, Lacquer.DimGold);
+        Lacquer.DrawDashed(_sheet, face, Ui.OffLine, _k, 4, 8);
+        CentredAt(_brush, "?", 30, face.GetCenter().X, face.GetCenter().Y + 12, Ui.DimGold);
 
         float tx = rect.Position.X + 12, right = face.Position.X - 12;
         var at = new Vector2(tx + 10, rect.Position.Y + 19);
-        Lacquer.DrawDiamond(_sheet, at, 11, Lacquer.DimGold);
-        Lacquer.DrawDiamond(_sheet, at, 9, Lacquer.Row);
-        CentredAt(_cinzel, slot.ToString(CultureInfo.InvariantCulture), 12, at.X, at.Y + 5, Lacquer.DimGold);
-        _sheet.DrawString(_cinzel, new Vector2(tx + 28, rect.Position.Y + 25), "Unknown", fontSize: 13, modulate: Lacquer.OffText);
+        Lacquer.DrawDiamond(_sheet, at, 11, Ui.DimGold);
+        Lacquer.DrawDiamond(_sheet, at, 9, Ui.Row);
+        CentredAt(_cinzel, slot.ToString(CultureInfo.InvariantCulture), 12, at.X, at.Y + 5, Ui.DimGold);
+        _sheet.DrawString(_cinzel, new Vector2(tx + 28, rect.Position.Y + 25), "Unknown", fontSize: 13, modulate: Ui.OffText);
         float baseline = rect.End.Y - 14;
-        _sheet.DrawString(_cinzel, new Vector2(tx, baseline), "Troops", fontSize: 11, modulate: Lacquer.OffText);
+        _sheet.DrawString(_cinzel, new Vector2(tx, baseline), "Troops", fontSize: 11, modulate: Ui.OffText);
         _sheet.DrawString(_font!, new Vector2(right - _font!.GetStringSize("??", fontSize: 17).X, baseline), "??",
-            fontSize: 17, modulate: Lacquer.OffText);
+            fontSize: 17, modulate: Ui.OffText);
     }
 
     /// <summary>A place the army leaves empty: our party's empty place.</summary>
     private void DrawEmptyCard(int slot)
     {
         var rect = ArmyCard(slot);
-        _sheet.DrawRect(rect, Lacquer.Row with { A = 0.6f });
-        Lacquer.DrawDashed(_sheet, rect, Lacquer.DimGold, _k);
-        CentredAt(_cinzel, slot.ToString(CultureInfo.InvariantCulture), 22, rect.GetCenter().X, rect.GetCenter().Y + 2, Lacquer.DimGold);
-        CentredAt(_cinzel, "empty", 12, rect.GetCenter().X, rect.GetCenter().Y + 24, Lacquer.DimGold);
+        _sheet.DrawRect(rect, Ui.Row with { A = 0.6f });
+        Lacquer.DrawDashed(_sheet, rect, Ui.DimGold, _k);
+        CentredAt(_cinzel, slot.ToString(CultureInfo.InvariantCulture), 22, rect.GetCenter().X, rect.GetCenter().Y + 2, Ui.DimGold);
+        CentredAt(_cinzel, "empty", 12, rect.GetCenter().X, rect.GetCenter().Y + 24, Ui.DimGold);
     }
 
     /// <summary>The deployment screen's bracket mirrored: the front row's two cards held from the left, its head pointing at us.</summary>
@@ -503,9 +505,9 @@ internal sealed partial class EnemyAttackView : Control
         float x = ArmyFrontX - ArmyStripGap - 1, ends = top.Position.X - 2, tip = ArmyFrontX - ArmyStripGap - ArmyStrip - 4;
         float y0 = top.Position.Y + 1, y1 = bottom.End.Y - 1, cy = (top.End.Y + bottom.Position.Y) / 2;
         float width = Lacquer.Line(2.5f, _k);
-        _sheet.DrawPolyline([new(ends, y0), new(x, y0), new(x, cy - 16), new(x - 10, cy - 6)], Lacquer.Gold, width, true);
-        _sheet.DrawPolyline([new(ends, y1), new(x, y1), new(x, cy + 16), new(x - 10, cy + 6)], Lacquer.Gold, width, true);
-        Lacquer.DrawSmoothPolygon(_sheet, [new(x - 6, cy - 14), new(tip, cy), new(x - 6, cy + 14)], Lacquer.Name, _k);
+        _sheet.DrawPolyline([new(ends, y0), new(x, y0), new(x, cy - 16), new(x - 10, cy - 6)], Ui.Gold, width, true);
+        _sheet.DrawPolyline([new(ends, y1), new(x, y1), new(x, cy + 16), new(x - 10, cy + 6)], Ui.Gold, width, true);
+        Lacquer.DrawSmoothPolygon(_sheet, [new(x - 6, cy - 14), new(tip, cy), new(x - 6, cy + 14)], Ui.Name, _k);
     }
 
     /// <summary><paramref name="text"/> centred on <paramref name="centre"/> at <paramref name="baseline"/>.</summary>
@@ -518,70 +520,70 @@ internal sealed partial class EnemyAttackView : Control
 
     private void DrawFoot(EnemyAttack attack)
     {
-        Lacquer.DrawPanel(_sheet, Foot, _k);
+        Ui.DrawPanel(_sheet, Foot, _k);
         if (Picture(EnemyAttack.AdvisorCg) is { } maris)
             _sheet.DrawTextureRectRegion(maris, AdvisorArea, new Rect2(0, 0, 192, 190));
-        _sheet.DrawRect(AdvisorArea, Lacquer.DimGold, false, Lacquer.Line(1, _k));
-        _sheet.DrawString(_cinzel, new Vector2(188, FootTop + 30), "MARIS", fontSize: 13, modulate: Lacquer.Subtitle);
+        _sheet.DrawRect(AdvisorArea, Ui.DimGold, false, Lacquer.Line(1, _k));
+        _sheet.DrawString(_cinzel, new Vector2(188, FootTop + 30), "MARIS", fontSize: 13, modulate: Ui.Subtitle);
         var lines = attack.AdvisorSays;
         for (int i = 0; i < lines.Count && i < 4; i++)
             _sheet.DrawString(_font!, new Vector2(188, FootTop + 58 + i * 24), lines[i], HorizontalAlignment.Left, 340, 18,
-                Lacquer.Text);
+                Ui.Text);
 
         bool Hovered(Spot spot) => _hover.Spot == spot && !_callout.MenuOpen;
         bool Down(Spot spot) => _pressed.Spot == spot && _hover.Spot == spot;
-        Lacquer.DrawRedButton(_sheet, InterceptButton, Hovered(Spot.Intercept), Down(Spot.Intercept), _k);
-        Centred(_brush, "Intercept", 22, InterceptButton, 0.40f, Lacquer.Name);
+        Ui.DrawRedButton(_sheet, InterceptButton, Hovered(Spot.Intercept), Down(Spot.Intercept), _k);
+        Centred(_brush, "Intercept", 22, InterceptButton, 0.40f, Ui.Name);
         Centred(_font!, "choose the units", 13, InterceptButton, 0.76f, Color.Color8(236, 206, 160));
 
         int free = attack.Ninjas.Count(n => n.Free);
         bool canScout = attack.CanScout;
         if (canScout)
-            Lacquer.DrawRowBox(_sheet, ScoutButton, Hovered(Spot.Scout) || _listOpen, _k);
+            Ui.DrawRowBox(_sheet, ScoutButton, Hovered(Spot.Scout) || _listOpen, _k);
         else
         {
-            _sheet.DrawRect(ScoutButton, Lacquer.OffButton);
-            _sheet.DrawRect(ScoutButton, Lacquer.OffLine, false, Lacquer.Line(1, _k));
+            _sheet.DrawRect(ScoutButton, Ui.OffButton);
+            _sheet.DrawRect(ScoutButton, Ui.OffLine, false, Lacquer.Line(1, _k));
         }
         Centred(_cinzel, "Ninja Scout", 17, ScoutButton, 0.40f,
-            !canScout ? Lacquer.OffText : Hovered(Spot.Scout) || _listOpen ? Lacquer.Name : Lacquer.Text);
+            !canScout ? Ui.OffText : Hovered(Spot.Scout) || _listOpen ? Ui.Name : Ui.Text);
         string sub = attack.Ninjas.Count == 0 ? "no ninja in service" : $"{free} of {attack.Ninjas.Count} free";
-        Centred(_font!, sub, 13, ScoutButton, 0.76f, canScout ? Lacquer.Quiet : Lacquer.OffText);
+        Centred(_font!, sub, 13, ScoutButton, 0.76f, canScout ? Ui.Quiet : Ui.OffText);
 
-        Lacquer.DrawRowBox(_sheet, AbandonButton, Hovered(Spot.Abandon) || _callout.MenuOpen, _k);
+        Ui.DrawRowBox(_sheet, AbandonButton, Hovered(Spot.Abandon) || _callout.MenuOpen, _k);
         Centred(_cinzel, "Abandon City", 17, AbandonButton, 0.5f,
-            Hovered(Spot.Abandon) || _callout.MenuOpen ? Lacquer.Name : Lacquer.Text);
+            Hovered(Spot.Abandon) || _callout.MenuOpen ? Ui.Name : Ui.Text);
     }
 
     private void DrawList(EnemyAttack attack)
     {
         var list = ListRect(attack);
-        Lacquer.DrawPanel(_sheet, list, _k);
+        Ui.DrawPanel(_sheet, list, _k);
         float tip = ScoutButton.GetCenter().X;
         _sheet.DrawColoredPolygon([new(tip - 10, list.End.Y - 2), new(tip + 10, list.End.Y - 2), new(tip, list.End.Y + 12)],
-            Lacquer.Gold);
+            Ui.Gold);
         _sheet.DrawString(_cinzel, new Vector2(list.Position.X + ListPad + 4, list.Position.Y + ListPad + 14), "SEND TO SCOUT",
-            fontSize: 13, modulate: Lacquer.Subtitle);
+            fontSize: 13, modulate: Ui.Subtitle);
         for (int i = 0; i < attack.Ninjas.Count; i++)
         {
             var ninja = attack.Ninjas[i];
             var row = ListRowRect(attack, i);
             bool hover = ninja.Free && _hover == (Spot.Ninja, ninja.Code);
             if (ninja.Free)
-                Lacquer.DrawRowBox(_sheet, row, hover, _k);
+                Ui.DrawRowBox(_sheet, row, hover, _k);
             else
             {
-                _sheet.DrawRect(row, Lacquer.OffButton);
-                _sheet.DrawRect(row, Lacquer.OffLine, false, Lacquer.Line(1, _k));
+                _sheet.DrawRect(row, Ui.OffButton);
+                _sheet.DrawRect(row, Ui.OffLine, false, Lacquer.Line(1, _k));
             }
             var face = new Rect2(row.Position + new Vector2(5, 5), new Vector2(40, 40));
             if (_faces.SquareTexture(ninja.Portrait, _faces.CropOf(ninja.Portrait, _crops), (int)Math.Round(40 * _k)) is { } square)
                 _sheet.DrawTextureRect(square, face, false, ninja.Free ? Colors.White : new Color(0.45f, 0.42f, 0.4f));
-            _sheet.DrawRect(face, Lacquer.DimGold, false, Lacquer.Line(1, _k));
+            _sheet.DrawRect(face, Ui.DimGold, false, Lacquer.Line(1, _k));
             _sheet.DrawString(_cinzel, row.Position + new Vector2(56, 22), ninja.Name, fontSize: 16,
-                modulate: !ninja.Free ? Lacquer.OffText : hover ? Lacquer.Name : Lacquer.Text);
+                modulate: !ninja.Free ? Ui.OffText : hover ? Ui.Name : Ui.Text);
             _sheet.DrawString(_font!, row.Position + new Vector2(56, 42), ninja.Free ? "free this week" : "used this week",
-                fontSize: 13, modulate: ninja.Free ? Lacquer.Quiet : Lacquer.OffText);
+                fontSize: 13, modulate: ninja.Free ? Ui.Quiet : Ui.OffText);
         }
     }
 

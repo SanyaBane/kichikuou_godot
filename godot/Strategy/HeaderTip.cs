@@ -9,6 +9,8 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal sealed partial class HeaderTip : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Screens);
+
     private string _text = "";
     private Font? _font;
     private int _size;
@@ -55,9 +57,9 @@ internal sealed partial class HeaderTip : Control
             return;
         var box = new Rect2(Vector2.Zero, Size);
         DrawRect(new Rect2(box.Position + new Vector2(3, 4), box.Size), new Color(0, 0, 0, 0.3f));
-        DrawRect(box, Lacquer.Panel);
-        DrawRect(box.Grow(-1), Lacquer.Gold, filled: false, width: 2);
+        DrawRect(box, Ui.Panel);
+        DrawRect(box.Grow(-1), Ui.Gold, filled: false, width: 2);
         DrawString(_font, new Vector2(_size * 0.6f, Lacquer.Baseline(box, _font, _size)), _text, HorizontalAlignment.Left, -1, _size,
-            Lacquer.Text);
+            Ui.Text);
     }
 }

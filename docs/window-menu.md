@@ -117,12 +117,11 @@ web build (seen only) by an option.
   Since 2026-10-21 (owner) the player always has ours: the submenu is gone and `[display] interface`
   in `user://settings.cfg` is no longer read (`InterfaceChoice`). `--interface original` shows the
   original's screens for one launch (development checks).
-- **Option → Display → Palette: Navy / Gold / Steel / Parchment / Crimson / Lacquer** (ours, owner's choice 2026-10-12,
-  Lacquer to try since 2026-10-24; swatches, Steel by default): the colours of our battle screen (`DeploymentPalette`; the deployment screen is lacquer
-  since 2026-10-19, docs/ui/deployment-table.md; the map's name plates keep steel's colours since 2026-10-24). Saved as
-  `[display] palette_battle` in `user://settings.cfg`, taking the old `[display] palette` until chosen
-  (docs/ui/options.md, "The battle screen's palette"). A change recolours an open screen at once. `--palette <name>`
-  picks it for the launch without saving it (development).
+- **Option → Display → Palette: Lacquer / Steel** (ours, owner, 2026-10-24; swatches, Lacquer by default): the colours of
+  all our screens (`UiPalette`, by the screens' parts, `UiPalettes`; docs/ui/options.md, "The palette"). Saved as
+  `[display] ui_palette` in `user://settings.cfg`. A change recolours an open screen at once. `--palette <key>` picks it
+  for the launch without saving it (development). Before 2026-10-24 the palettes (Navy / Gold / Steel / Parchment /
+  Crimson, 2026-10-12) coloured the battle screen and the map's name plates only.
 - **Option → Game → Change…** (ours, owner's request 2026-10-21): after the window's question ("Any unsaved progress
   will be lost"), the import screen (docs/import.md, step 8) with the saved folder in its field and "← Back to the
   title" (or Esc) under it; an import of another folder keeps it (`game_dir`) and opens a fresh title, the way back

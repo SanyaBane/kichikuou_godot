@@ -380,7 +380,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `Strategy/MessageLogView` (the message log, a paper chronicle, mock-up L3a, in either interface: the wheel up at a key wait
   opens it, the game waits; `Original.Content/Strategy/MessageLog` from `GamePresenter.Log` — each key wait's page, a
   dialogue question's answer, `MenuAnswered` (an event scene's menu or one after a speech, never the play's; the play's narration left out, `MessageLog.Keeps`) — the speakers by the portraits' plates, `PortraitNames`; kept for the launch,
-  `EngineState.Log`; docs/ui/messages.md, §5 step 6); the six and the Subordinates screen draw with `Strategy/Lacquer` (the style's colours and parts, the ledger's, the click's triangle);
+  `EngineState.Log`; docs/ui/messages.md, §5 step 6); our screens draw with `Strategy/UiPalette` (the style's colours by role and its parts, the ledger's, the click's triangle; `UiPalette.Drawing.cs`), each through its part's palette, `UiPalettes.For(UiPart.…)`, and `Strategy/Lacquer` (fonts, lines, baselines);
   `Battles/BattleBoardView` (our own battle screen, our interface, docs/ui/battle-screen.md:
   `Original.Content/Battles/BattleScene` on top, the stage's windows over it through `WindowMask`, the
   cards and the round's order from `BattleBoard`/`RoundOrder`, the order strip `OrderStrip` moving on its own;
@@ -399,7 +399,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   under its cards (`Strategy/TouchPill`), both in `GameScreen.Skip.cs`, their places `Original.Content/Strategy/SkipButtons`
   (Skip is MsgSkip's switch; the message log scrolled by a drag, closed by a tap off its frame; docs/ui/touch.md, "The Skip
   and Log buttons" and "The dialogue buttons, round 2");
-  `Strategy/OptionsView` (Option: the options window over the game, the owner's mock-up D, docs/ui/options.md — a paper sheet with the tabs Messages, Display, Battle, Game; `--options` dumps them); Option → Display's palette (`DeploymentPalette.BattleChosen`, steel by default) colours our battle screen; the map's plates keep steel's colours as their own (`MapMarkersView`);
+  `Strategy/OptionsView` (Option: the options window over the game, the owner's mock-up D, docs/ui/options.md — a paper sheet with the tabs Messages, Display, Battle, Game; `--options` dumps them); Option → Display's palette (Lacquer, the default, or Steel; `UiPalettes.Chosen`, a part's own read but not offered yet; docs/ui/options.md, "The palette") colours all our screens, a change repainting them at once (`UiPalettes.Repaint`, `IUiPaletteUser`); the map's plates keep steel's colours as their own (`MapMarkersView`);
   `Battles/AdvantageTip` (the instant tooltips of the advantages next to the armies' names, `BattleAdvantage.Parts`); `GodotGlyphRenderer` (TextServer; MS Gothic or the bundled BIZ UDGothic in `godot/fonts`, Option →
   Display, `--font ms-gothic|biz-ud-gothic` for one launch), `BattleAudio`; `Screens` switches screens. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
 - `tools/analysis/` — Python scripts for reading the decompiled scenario; `tools/codegen/` —

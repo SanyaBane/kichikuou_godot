@@ -14,9 +14,11 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal sealed partial class MessageLogView : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Messages);
+
     private static readonly Rect2 Frame = new(190, 28, 900, 744);
     private static readonly Color Dim = new(0, 0, 0, 0.55f);
-    private static readonly Color Rule = Color.Color8(150, 120, 80, 45);   // paler than the ledger's (owner, 2026-10-19)
+    private static Color Rule => Ui.PaperRule with { A = 45 / 255f };   // paler than the ledger's (owner, 2026-10-19)
     private const float Pitch = 34, TextSize = 28, MarginX = 200, HeadHeight = 58, Inset = 18;
     private const int Step = 3;                                             // lines a wheel notch scrolls
 
@@ -140,16 +142,16 @@ internal sealed partial class MessageLogView : Control
         float k = _k;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(k, k));
         DrawRect(new Rect2(Vector2.Zero, Size / k), Dim);
-        Lacquer.DrawPanel(this, Frame, k);
+        Ui.DrawPanel(this, Frame, k);
         var paper = Paper;
-        DrawRect(paper, Lacquer.Paper);
-        DrawRect(new Rect2(paper.Position, paper.Size.X, HeadHeight), Lacquer.PaperHead);
-        Text(_head, "CHRONICLE", 26, paper.Position.X + 24, paper.Position.Y + 39, Lacquer.HeadInk);
+        DrawRect(paper, Ui.Paper);
+        DrawRect(new Rect2(paper.Position, paper.Size.X, HeadHeight), Ui.PaperHead);
+        Text(_head, "CHRONICLE", 26, paper.Position.X + 24, paper.Position.Y + 39, Ui.HeadInk);
         string hint = TouchMode.On ? "DRAG SCROLLS   ·   TAP OUTSIDE CLOSES" : "WHEEL SCROLLS   ·   RIGHT CLICK CLOSES";
-        Text(_hint, hint, 14, paper.End.X - 24 - Width(_hint, hint, 14), paper.Position.Y + 34, Lacquer.InkQuiet);
+        Text(_hint, hint, 14, paper.End.X - 24 - Width(_hint, hint, 14), paper.Position.Y + 34, Ui.InkQuiet);
 
         float margin = paper.Position.X + MarginX;
-        DrawLine(new Vector2(margin, paper.Position.Y + HeadHeight), new Vector2(margin, paper.End.Y), Lacquer.VermilionInk with { A = 110 / 255f },
+        DrawLine(new Vector2(margin, paper.Position.Y + HeadHeight), new Vector2(margin, paper.End.Y), Ui.VermilionInk with { A = 110 / 255f },
             Lacquer.Line(1, k));
         for (float y = BodyTop + Pitch - 4; y < paper.End.Y; y += Pitch)
             DrawLine(new Vector2(paper.Position.X + 8, y), new Vector2(paper.End.X - 8, y), Rule, Lacquer.Line(1, k));
@@ -163,7 +165,7 @@ internal sealed partial class MessageLogView : Control
             {
                 string place = line.Text.ToUpperInvariant();
                 float size = Fit(_head, place, 18, right - column);
-                Text(_head, place, size, (column + right - Width(_head, place, size)) / 2, top + 24, Lacquer.HeadInk);
+                Text(_head, place, size, (column + right - Width(_head, place, size)) / 2, top + 24, Ui.HeadInk);
                 continue;
             }
             if (line.Label.Length > 0)
@@ -171,17 +173,17 @@ internal sealed partial class MessageLogView : Control
                 bool choice = line.Kind == LogKind.Choice;
                 string label = line.Label.ToUpperInvariant();
                 float size = Fit(_label, label, choice ? 15 : 18, MarginX - 32);
-                var colour = choice ? Lacquer.InkQuiet
-                    : line.Kind == LogKind.Thought ? Lacquer.VermilionInk with { A = 0.6f } : Lacquer.VermilionInk;
+                var colour = choice ? Ui.InkQuiet
+                    : line.Kind == LogKind.Thought ? Ui.VermilionInk with { A = 0.6f } : Ui.VermilionInk;
                 Text(_label, label, size, margin - 16 - Width(_label, label, size), top + 26, colour);
             }
             var (font, text, ink) = line.Kind switch
             {
-                LogKind.Choice when line.Chosen => (_gothic, "◆ " + line.Text, Lacquer.VermilionInk),
-                LogKind.Choice => (_plain, "◇ " + line.Text, Lacquer.InkGrey),
-                LogKind.Narration => (_plain, line.Text, Lacquer.InkQuiet),
-                LogKind.Thought => (_gothic, line.Text, Lacquer.InkQuiet),
-                _ => (_gothic, line.Text, Lacquer.Ink),
+                LogKind.Choice when line.Chosen => (_gothic, "◆ " + line.Text, Ui.VermilionInk),
+                LogKind.Choice => (_plain, "◇ " + line.Text, Ui.InkGrey),
+                LogKind.Narration => (_plain, line.Text, Ui.InkQuiet),
+                LogKind.Thought => (_gothic, line.Text, Ui.InkQuiet),
+                _ => (_gothic, line.Text, Ui.Ink),
             };
             float textSize = Fit(font, text, TextSize, right - column);            // 131's lines run up to 52 cells
             Text(font, text, textSize, column, top + 2 + font.GetAscent((int)textSize), ink);
@@ -189,12 +191,12 @@ internal sealed partial class MessageLogView : Control
 
         // the scroll bar: the track at the paper's right edge, the thumb the part shown
         var track = new Rect2(paper.End.X - 10, BodyTop, 4, paper.End.Y - 8 - BodyTop);
-        DrawRect(track, Lacquer.PaperHead);
+        DrawRect(track, Ui.PaperHead);
         if (_lines.Count > Rows)
         {
             float h = Math.Max(24, track.Size.Y * Rows / _lines.Count);
             float y = track.Position.Y + (track.Size.Y - h) * _top / Last;
-            DrawRect(new Rect2(track.Position.X - 1, y, 6, h), Lacquer.VermilionInk with { A = 0.7f });
+            DrawRect(new Rect2(track.Position.X - 1, y, 6, h), Ui.VermilionInk with { A = 0.7f });
         }
     }
 

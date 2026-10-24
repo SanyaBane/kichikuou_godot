@@ -19,6 +19,8 @@ namespace Kichikuou.Game;
 /// </summary>
 public partial class ImportScreen : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Settings);
+
     private enum Phase { Choose, Importing, Done, Refused }
 
     private static readonly Rect2 Frame = new(250, 110, 780, 580);
@@ -27,8 +29,8 @@ public partial class ImportScreen : Control
     private static readonly Rect2 BackLink = new(StepX, 600, 170, 24);
     private const float StepX = 316, TextX = 364, TextRight = 964;
 
-    private static readonly Color FieldFill = Color.Color8(236, 224, 194);
-    private static readonly Color Good = Color.Color8(70, 110, 50);
+    private static Color FieldFill => Ui.Field;
+    private static Color Good => Ui.BarGood;
 
     private readonly FontFile _brush = Lacquer.Brush();
     private readonly FontVariation _cinzel = Lacquer.Cinzel(600);
@@ -328,10 +330,10 @@ public partial class ImportScreen : Control
     {
         DrawRect(new Rect2(Vector2.Zero, Size), Colors.Black);
         DrawSetTransform(_origin, 0, new Vector2(_k, _k));
-        Lacquer.DrawWaveBackdrop(this, _k);
-        Lacquer.DrawPanel(this, Frame, _k);
-        DrawRect(Paper, Lacquer.Paper);
-        DrawRect(Paper, Lacquer.PaperHead, false, Lacquer.Line(1, _k));
+        Ui.DrawWaveBackdrop(this, _k);
+        Ui.DrawPanel(this, Frame, _k);
+        DrawRect(Paper, Ui.Paper);
+        DrawRect(Paper, Ui.PaperHead, false, Lacquer.Line(1, _k));
 
         string heading = _phase switch
         {
@@ -339,9 +341,9 @@ public partial class ImportScreen : Control
             Phase.Importing or Phase.Done => "Importing your game",
             _ => "Import your game",
         };
-        Centred(_brush, heading, 34, 182, Lacquer.HeadInk);
-        Centred(_cinzel, GameFiles.EnglishTranslation10.Name, 15, 222, Lacquer.InkQuiet);
-        DrawLine(new Vector2(Paper.Position.X + 24, 240), new Vector2(Paper.End.X - 24, 240), Lacquer.PaperRule, Lacquer.Line(2, _k));
+        Centred(_brush, heading, 34, 182, Ui.HeadInk);
+        Centred(_cinzel, GameFiles.EnglishTranslation10.Name, 15, 222, Ui.InkQuiet);
+        DrawLine(new Vector2(Paper.Position.X + 24, 240), new Vector2(Paper.End.X - 24, 240), Ui.PaperRule, Lacquer.Line(2, _k));
 
         switch (_phase)
         {
@@ -358,7 +360,7 @@ public partial class ImportScreen : Control
         }
         if (BackLive)
             DrawString(_cinzel, new Vector2(BackLink.Position.X, Lacquer.Baseline(BackLink, _cinzel, 15)), "← Back to the title",
-                fontSize: 15, modulate: _hoverBack ? Lacquer.Vermilion : Lacquer.InkQuiet);
+                fontSize: 15, modulate: _hoverBack ? Ui.Vermilion : Ui.InkQuiet);
     }
 
     private void DrawChoose()
@@ -382,11 +384,11 @@ public partial class ImportScreen : Control
         float barY = y + 6;
         var bar = new Rect2(TextX, barY, TextRight - TextX, 22);
         DrawRect(bar, FieldFill);
-        DrawRect(bar, Lacquer.InkGrey, false, Lacquer.Line(1, _k));
+        DrawRect(bar, Ui.InkGrey, false, Lacquer.Line(1, _k));
         float fraction = done ? 1 : (float)Math.Clamp(progress.Fraction, 0, 1);
-        DrawRect(new Rect2(bar.Position + new Vector2(3, 3), new Vector2((bar.Size.X - 6) * fraction, bar.Size.Y - 6)), Lacquer.VermilionInk);
+        DrawRect(new Rect2(bar.Position + new Vector2(3, 3), new Vector2((bar.Size.X - 6) * fraction, bar.Size.Y - 6)), Ui.VermilionInk);
         DrawString(_gothic, new Vector2(TextX, barY + 46), $"{Math.Round(fraction * 100)}%", HorizontalAlignment.Right,
-            TextRight - TextX, 16, Lacquer.Ink);
+            TextRight - TextX, 16, Ui.Ink);
         Step(barY + 64, 2, "Play", null, done ? StepState.Now : StepState.Next);
         if (_unattended is not null && !_progressShot && !done && progress.Fraction >= 0.3)
         {
@@ -399,12 +401,12 @@ public partial class ImportScreen : Control
     {
         float y = Step(262, 0, "Game folder", _refusal, StepState.Failed);
         if (_hashes.Length > 0)
-            DrawString(_gothic, new Vector2(TextX, y + 12), _hashes, fontSize: 12, modulate: Lacquer.InkGrey);
+            DrawString(_gothic, new Vector2(TextX, y + 12), _hashes, fontSize: 12, modulate: Ui.InkGrey);
         // the stamp
         var centre = new Vector2(880, 520);
-        DrawArc(centre, 62, 0, Mathf.Tau, 72, Lacquer.Vermilion, Lacquer.Line(4, _k), true);
-        DrawString(_cinzelBold, new Vector2(centre.X - 80, centre.Y), "NOT", HorizontalAlignment.Center, 160, 22, Lacquer.Vermilion);
-        DrawString(_cinzelBold, new Vector2(centre.X - 80, centre.Y + 28), "v1.0", HorizontalAlignment.Center, 160, 18, Lacquer.Vermilion);
+        DrawArc(centre, 62, 0, Mathf.Tau, 72, Ui.Vermilion, Lacquer.Line(4, _k), true);
+        DrawString(_cinzelBold, new Vector2(centre.X - 80, centre.Y), "NOT", HorizontalAlignment.Center, 160, 22, Ui.Vermilion);
+        DrawString(_cinzelBold, new Vector2(centre.X - 80, centre.Y + 28), "v1.0", HorizontalAlignment.Center, 160, 18, Ui.Vermilion);
         DrawField(y + 30, compact: true);
         DrawButton("Choose another folder", 18);
     }
@@ -416,18 +418,18 @@ public partial class ImportScreen : Control
     {
         var colour = state switch
         {
-            StepState.Done => Lacquer.InkQuiet,
-            StepState.Now => Lacquer.Ink,
-            StepState.Next => Lacquer.InkGrey,
-            _ => Lacquer.VermilionInk,
+            StepState.Done => Ui.InkQuiet,
+            StepState.Now => Ui.Ink,
+            StepState.Next => Ui.InkGrey,
+            _ => Ui.VermilionInk,
         };
         var seal = new Vector2(StepX + 15, y + 13);
         bool sealed_ = state is StepState.Now or StepState.Failed;
         if (sealed_)
-            DrawCircle(seal, 15, Lacquer.Vermilion);
-        DrawArc(seal, 14, 0, Mathf.Tau, 48, state == StepState.Next ? Lacquer.InkGrey : Lacquer.VermilionInk, Lacquer.Line(2, _k), true);
+            DrawCircle(seal, 15, Ui.Vermilion);
+        DrawArc(seal, 14, 0, Mathf.Tau, 48, state == StepState.Next ? Ui.InkGrey : Ui.VermilionInk, Lacquer.Line(2, _k), true);
         DrawString(_gothic, new Vector2(seal.X - 15, seal.Y + 6), "一二三"[index].ToString(), HorizontalAlignment.Center, 30, 16,
-            sealed_ ? Lacquer.SealText : colour);
+            sealed_ ? Ui.SealText : colour);
         DrawString(_gothic, new Vector2(TextX, y + 20), title, fontSize: 19, modulate: colour);
         if (state == StepState.Done)
         {
@@ -435,7 +437,7 @@ public partial class ImportScreen : Control
             DrawPolyline([tick + new Vector2(-6, 0), tick + new Vector2(-2, 5), tick + new Vector2(7, -6)], Good, Lacquer.Line(3, _k), true);
         }
         return body is null ? y + 40 : Wrap(body, TextX, y + 50, TextRight - TextX, 15,
-            state == StepState.Failed ? Lacquer.VermilionInk : Lacquer.InkQuiet);
+            state == StepState.Failed ? Ui.VermilionInk : Ui.InkQuiet);
     }
 
     /// <summary>The folder field: its icon, the path (or "not chosen yet") and "Choose…"; it opens the folder dialog.</summary>
@@ -444,34 +446,34 @@ public partial class ImportScreen : Control
         _field = new Rect2(TextX, y, TextRight - TextX, compact ? 34 : 40);
         bool live = FieldLive;
         DrawRect(_field, FieldFill);
-        DrawRect(_field, _hoverField ? Lacquer.Vermilion : Lacquer.InkGrey, false, Lacquer.Line(_hoverField ? 2 : 1, _k));
+        DrawRect(_field, _hoverField ? Ui.Vermilion : Ui.InkGrey, false, Lacquer.Line(_hoverField ? 2 : 1, _k));
         float mid = _field.Position.Y + _field.Size.Y / 2;
         var icon = new Vector2(TextX + 12, mid - 8);
         DrawPolyline([icon + new Vector2(0, 2), icon + new Vector2(7, 2), icon + new Vector2(9, 5), icon + new Vector2(20, 5),
-            icon + new Vector2(20, 16), icon + new Vector2(0, 16), icon + new Vector2(0, 2)], Lacquer.InkQuiet, Lacquer.Line(2, _k));
+            icon + new Vector2(20, 16), icon + new Vector2(0, 16), icon + new Vector2(0, 2)], Ui.InkQuiet, Lacquer.Line(2, _k));
         string path = _folder.Length > 0 ? _folder : "not chosen yet";
         float maxWidth = TextRight - TextX - 150;
         DrawString(_gothic, new Vector2(TextX + 44, mid + 6), Ellipsis(path, maxWidth, 17), fontSize: 17,
-            modulate: _folder.Length > 0 ? Lacquer.Ink : Lacquer.InkGrey);
+            modulate: _folder.Length > 0 ? Ui.Ink : Ui.InkGrey);
         if (live)
             DrawString(_gothic, new Vector2(TextX, mid + 5), "Choose…", HorizontalAlignment.Right, TextRight - TextX - 12, 15,
-                _hoverField ? Lacquer.Vermilion : Lacquer.VermilionInk);
+                _hoverField ? Ui.Vermilion : Ui.VermilionInk);
     }
 
     private void DrawButton(string label, int size)
     {
         if (ButtonLive)
         {
-            Lacquer.DrawRedButton(this, Button, _hoverButton, _pressedButton && _hoverButton, _k);
+            Ui.DrawRedButton(this, Button, _hoverButton, _pressedButton && _hoverButton, _k);
             DrawString(_cinzelBold, new Vector2(Button.Position.X, Lacquer.Baseline(Button, _cinzelBold, size)), label,
-                HorizontalAlignment.Center, Button.Size.X, size, Lacquer.SealText);
+                HorizontalAlignment.Center, Button.Size.X, size, Ui.SealText);
         }
         else
         {
-            DrawRect(Button, Lacquer.OffButton);
-            DrawRect(Button, Lacquer.OffLine, false, Lacquer.Line(2, _k));
+            DrawRect(Button, Ui.OffButton);
+            DrawRect(Button, Ui.OffLine, false, Lacquer.Line(2, _k));
             DrawString(_cinzelBold, new Vector2(Button.Position.X, Lacquer.Baseline(Button, _cinzelBold, size)), label,
-                HorizontalAlignment.Center, Button.Size.X, size, Lacquer.OffText);
+                HorizontalAlignment.Center, Button.Size.X, size, Ui.OffText);
         }
     }
 

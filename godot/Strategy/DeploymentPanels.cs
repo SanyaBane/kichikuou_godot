@@ -23,6 +23,8 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal sealed partial class DeploymentPanels : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Screens);
+
     // In the 1280×800 screen's pixels (the script's 640×400 at 2×), after the mock-ups (tools/ui/mock_deployment.py, round e).
     private static readonly Rect2 TablePanel = new(16, 16, 1248, 344);
 
@@ -347,7 +349,7 @@ internal sealed partial class DeploymentPanels : Control
     private void DrawBackdrop(Control c)
     {
         c.DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
-        Lacquer.DrawWaveBackdrop(c, _k);
+        Ui.DrawWaveBackdrop(c, _k);
     }
 
     private void DrawScreen(Control c)
@@ -363,19 +365,19 @@ internal sealed partial class DeploymentPanels : Control
     /// <summary>The table's panel: the title band (the screen's name, the mode and the places offered, the date) over the ledger.</summary>
     private void DrawTablePanel(Control c)
     {
-        Lacquer.DrawPanel(c, TablePanel, _k);
+        Ui.DrawPanel(c, TablePanel, _k);
         var band = new Rect2(TablePanel.Position.X + 22, TablePanel.Position.Y + 8, TablePanel.Size.X - 44, 34);
         const string title = "Deployment";
-        c.DrawString(_brush, new Vector2(band.Position.X, Lacquer.Baseline(band, _brush, 24)), title, fontSize: 24, modulate: Lacquer.Name);
+        c.DrawString(_brush, new Vector2(band.Position.X, Lacquer.Baseline(band, _brush, 24)), title, fontSize: 24, modulate: Ui.Name);
         float tw = _brush.GetStringSize(title, fontSize: 24).X;
         int places = _party?.Places.Count ?? 0;
         string mode = _mode switch { 1 => "Attack", 2 => "Defence", 3 => "Dungeon search", _ => "" };
         string subtitle = (mode == "" ? "" : mode + " · ") + (places == 1 ? "1 unit" : $"up to {places} units");
         c.DrawString(_cinzelLight, new Vector2(band.Position.X + tw + 16, Lacquer.Baseline(band, _cinzelLight, 13) + 1),
-            subtitle, fontSize: 13, modulate: Lacquer.Subtitle);
+            subtitle, fontSize: 13, modulate: Ui.Subtitle);
         float dw = _cinzel.GetStringSize(_date, fontSize: 15).X;
-        c.DrawString(_cinzel, new Vector2(band.End.X - dw, Lacquer.Baseline(band, _cinzel, 15) + 1), _date, fontSize: 15, modulate: Lacquer.Name);
-        Lacquer.DrawDivider(c, TablePanel.Position.X + 16, TablePanel.End.X - 16, TablePanel.Position.Y + 44, _k);
+        c.DrawString(_cinzel, new Vector2(band.End.X - dw, Lacquer.Baseline(band, _cinzel, 15) + 1), _date, fontSize: 15, modulate: Ui.Name);
+        Ui.DrawDivider(c, TablePanel.Position.X + 16, TablePanel.End.X - 16, TablePanel.Position.Y + 44, _k);
     }
 
     /// <summary>The picture panel with a shadow under it (its gold frame is the original's).</summary>
@@ -393,24 +395,24 @@ internal sealed partial class DeploymentPanels : Control
     /// <summary>The party's panel: its header with the budget, the rows' labels, the cards, the totals and the bar.</summary>
     private void DrawParty(Control c)
     {
-        Lacquer.DrawPanel(c, PartyPanel, _k);
+        Ui.DrawPanel(c, PartyPanel, _k);
         if (_party is not { } party)
             return;
         var head = new Rect2(PartyPanel.Position.X + 18, PartyPanel.Position.Y + 10, PartyPanel.Size.X - 36, 30);
-        c.DrawString(_brush, new Vector2(head.Position.X, Lacquer.Baseline(head, _brush, 20)), "Party", fontSize: 20, modulate: Lacquer.Name);
+        c.DrawString(_brush, new Vector2(head.Position.X, Lacquer.Baseline(head, _brush, 20)), "Party", fontSize: 20, modulate: Ui.Name);
         float x = head.End.X;
-        x = RightString(c, _cinzelLight, "K GOLD", 11, Lacquer.Subtitle, x, head) - 6;
-        x = RightString(c, _cinzel, Figures.Number(party.Gold * 100), 20, Lacquer.Name, x, head) - 10;
-        RightString(c, _cinzelLight, "Budget", 12, Lacquer.Label, x, head);
-        Lacquer.DrawDivider(c, PartyPanel.Position.X + 14, PartyPanel.End.X - 14, PartyPanel.Position.Y + 44, _k);
+        x = RightString(c, _cinzelLight, "K GOLD", 11, Ui.Subtitle, x, head) - 6;
+        x = RightString(c, _cinzel, Figures.Number(party.Gold * 100), 20, Ui.Name, x, head) - 10;
+        RightString(c, _cinzelLight, "Budget", 12, Ui.Label, x, head);
+        Ui.DrawDivider(c, PartyPanel.Position.X + 14, PartyPanel.End.X - 14, PartyPanel.Position.Y + 44, _k);
 
         var back = CardRect(3);
         var front = CardRect(1);
-        CentredString(c, _cinzel, "Back row", 13, Lacquer.Label, back.GetCenter().X, RowLabelsY + 5);
+        CentredString(c, _cinzel, "Back row", 13, Ui.Label, back.GetCenter().X, RowLabelsY + 5);
         const string frontLabel = "Front row";
         float fw = _cinzel.GetStringSize(frontLabel, fontSize: 13).X;
-        CentredString(c, _cinzel, frontLabel, 13, Lacquer.Label, front.GetCenter().X - 8, RowLabelsY + 5);
-        c.DrawString(_gothic, new Vector2(front.GetCenter().X - 8 + fw / 2 + 6, RowLabelsY + 5), "▶", fontSize: 11, modulate: Lacquer.Label);
+        CentredString(c, _cinzel, frontLabel, 13, Ui.Label, front.GetCenter().X - 8, RowLabelsY + 5);
+        c.DrawString(_gothic, new Vector2(front.GetCenter().X - 8 + fw / 2 + 6, RowLabelsY + 5), "▶", fontSize: 11, modulate: Ui.Label);
 
         for (int place = 1; place <= party.Places.Count; place++)
             DrawCard(c, place, party.Places[place - 1]);
@@ -420,10 +422,10 @@ internal sealed partial class DeploymentPanels : Control
 
         float left = PartyPanel.Position.X + 20;
         var totals = new Rect2(left, TotalsY - 14, PartyPanel.Size.X - 40, 28);
-        DrawFigure(c, totals.Position.X, totals, "Troops", Figures.Number(party.Troops), Lacquer.Value);
+        DrawFigure(c, totals.Position.X, totals, "Troops", Figures.Number(party.Troops), Ui.Value);
         DrawFigure(c, totals.Position.X + 180, totals, "War expenses", Figures.GoldShort(party.Cost * 100),
-            party.Affordable ? Lacquer.Value : Lacquer.Minus);
-        c.DrawLine(new Vector2(PartyPanel.Position.X + 16, TotalsY + 18), new Vector2(PartyPanel.End.X - 16, TotalsY + 18), Lacquer.DimGold, Line(1));
+            party.Affordable ? Ui.Value : Ui.Minus);
+        c.DrawLine(new Vector2(PartyPanel.Position.X + 16, TotalsY + 18), new Vector2(PartyPanel.End.X - 16, TotalsY + 18), Ui.DimGold, Line(1));
 
         int sends = BarButtons().Count(b => b.Button != 3);
         string cost = Figures.GoldShort(party.Cost * 100);
@@ -435,12 +437,12 @@ internal sealed partial class DeploymentPanels : Control
             {
                 if (_mode == 2)
                     label = "Back";                             // a defence's Stop goes back to our attack screen (owner, 2026-10-24)
-                c.DrawRect(rect, down ? Lacquer.Row : hover ? Lacquer.RowHover : Lacquer.Row);
-                c.DrawRect(rect, hover ? Lacquer.HoverLine : Lacquer.DimGold, false, Line(hover ? 2 : 1));
-                CentredString(c, _cinzel, label, 18, hover ? Lacquer.Name : Lacquer.Text, rect.GetCenter().X, Lacquer.Baseline(rect, _cinzel, 18));
+                c.DrawRect(rect, down ? Ui.Row : hover ? Ui.RowHover : Ui.Row);
+                c.DrawRect(rect, hover ? Ui.HoverLine : Ui.DimGold, false, Line(hover ? 2 : 1));
+                CentredString(c, _cinzel, label, 18, hover ? Ui.Name : Ui.Text, rect.GetCenter().X, Lacquer.Baseline(rect, _cinzel, 18));
                 continue;
             }
-            Lacquer.DrawRedButton(c, rect, hover, down, _k);
+            Ui.DrawRedButton(c, rect, hover, down, _k);
             string? note = (_mode, button) switch
             {
                 (2, 1) => "Fight on the plains",
@@ -476,15 +478,15 @@ internal sealed partial class DeploymentPanels : Control
         float x = PartyPanel.End.X - 14 - FacingStrip + 1, ends = top.End.X + 2, tip = PartyPanel.End.X - 10;
         float y0 = top.Position.Y + 1, y1 = bottom.End.Y - 1, cy = (top.End.Y + bottom.Position.Y) / 2;
         float width = Line(2.5f);
-        c.DrawPolyline([new(ends, y0), new(x, y0), new(x, cy - 16), new(x + 10, cy - 6)], Lacquer.Gold, width, true);
-        c.DrawPolyline([new(ends, y1), new(x, y1), new(x, cy + 16), new(x + 10, cy + 6)], Lacquer.Gold, width, true);
-        Lacquer.DrawSmoothPolygon(c, [new(x + 6, cy - 14), new(tip, cy), new(x + 6, cy + 14)], Lacquer.Name, _k);
+        c.DrawPolyline([new(ends, y0), new(x, y0), new(x, cy - 16), new(x + 10, cy - 6)], Ui.Gold, width, true);
+        c.DrawPolyline([new(ends, y1), new(x, y1), new(x, cy + 16), new(x + 10, cy + 6)], Ui.Gold, width, true);
+        Lacquer.DrawSmoothPolygon(c, [new(x + 6, cy - 14), new(tip, cy), new(x + 6, cy + 14)], Ui.Name, _k);
     }
 
     /// <summary>A label in Cinzel and its figure in the game's font after it, centred in <paramref name="band"/>.</summary>
     private void DrawFigure(Control c, float x, Rect2 band, string label, string figure, Color colour)
     {
-        c.DrawString(_cinzel, new Vector2(x, Lacquer.Baseline(band, _cinzel, 12)), label, fontSize: 12, modulate: Lacquer.Label);
+        c.DrawString(_cinzel, new Vector2(x, Lacquer.Baseline(band, _cinzel, 12)), label, fontSize: 12, modulate: Ui.Label);
         float lw = _cinzel.GetStringSize(label, fontSize: 12).X;
         c.DrawString(_gothic, new Vector2(x + lw + 10, Lacquer.Baseline(band, _gothic, 17)), figure, fontSize: 17, modulate: colour);
     }
@@ -499,56 +501,56 @@ internal sealed partial class DeploymentPanels : Control
         var rect = CardRect(place);
         if (member is null)
         {
-            c.DrawRect(rect, Lacquer.Row with { A = 0.6f });
-            DrawDashed(c, rect, Lacquer.DimGold);
-            CentredString(c, _cinzel, place.ToString(CultureInfo.InvariantCulture), 22, Lacquer.DimGold, rect.GetCenter().X, rect.GetCenter().Y + 2);
-            CentredString(c, _cinzelLight, "empty", 12, Lacquer.DimGold, rect.GetCenter().X, rect.GetCenter().Y + 24);
+            c.DrawRect(rect, Ui.Row with { A = 0.6f });
+            DrawDashed(c, rect, Ui.DimGold);
+            CentredString(c, _cinzel, place.ToString(CultureInfo.InvariantCulture), 22, Ui.DimGold, rect.GetCenter().X, rect.GetCenter().Y + 2);
+            CentredString(c, _cinzelLight, "empty", 12, Ui.DimGold, rect.GetCenter().X, rect.GetCenter().Y + 24);
             return;
         }
         bool dragged = _dragging && place == _dragFrom;
         float a = dragged ? 0.35f : 1;
         bool hover = !_dragging && place == _hoveredPlace;
-        c.DrawRect(rect, (hover ? Lacquer.RowHover : Lacquer.Row) with { A = a });
-        c.DrawRect(rect, (hover ? Lacquer.HoverLine : Lacquer.DimGold) with { A = a }, false, Line(hover ? 2 : 1));
+        c.DrawRect(rect, (hover ? Ui.RowHover : Ui.Row) with { A = a });
+        c.DrawRect(rect, (hover ? Ui.HoverLine : Ui.DimGold) with { A = a }, false, Line(hover ? 2 : 1));
 
         float size = rect.Size.Y - 16;
         var face = new Rect2(rect.Position + new Vector2(8, 8), new Vector2(size, size));
-        c.DrawRect(face, Color.Color8(52, 40, 28) with { A = a });
+        c.DrawRect(face, Ui.FaceBack with { A = a });
         if (FaceTexture(member.FaceCg, size) is { } texture)
             c.DrawTextureRect(texture, face, false, new Color(1, 1, 1, a));
-        c.DrawRect(face, Lacquer.Gold with { A = a }, false, Line(1));
+        c.DrawRect(face, Ui.Gold with { A = a }, false, Line(1));
 
         float tx = face.End.X + 12;
-        Lacquer.DrawBadge(c, _cinzel, new Vector2(tx + 10, rect.Position.Y + 19), 11, place);
+        Ui.DrawBadge(c, _cinzel, new Vector2(tx + 10, rect.Position.Y + 19), 11, place);
         if (dragged)
-            Lacquer.DrawDiamond(c, new Vector2(tx + 10, rect.Position.Y + 19), 12, Lacquer.Row with { A = 0.65f });
+            Lacquer.DrawDiamond(c, new Vector2(tx + 10, rect.Position.Y + 19), 12, Ui.Row with { A = 0.65f });
         var nameBand = new Rect2(tx + 28, rect.Position.Y + 8, rect.End.X - 30 - tx - 28, 22);
         c.DrawString(_gothic, new Vector2(nameBand.Position.X, Lacquer.Baseline(nameBand, _gothic, 18)), member.Name,
-            HorizontalAlignment.Left, nameBand.Size.X, 18, Lacquer.Name with { A = a });
+            HorizontalAlignment.Left, nameBand.Size.X, 18, Ui.Name with { A = a });
         var typeBand = new Rect2(tx, rect.Position.Y + 32, rect.End.X - 12 - tx, 20);
         c.DrawString(_gothic, new Vector2(tx, Lacquer.Baseline(typeBand, _gothic, 14)), member.TroopType,
-            HorizontalAlignment.Left, typeBand.Size.X, 14, Lacquer.Quiet with { A = a });
+            HorizontalAlignment.Left, typeBand.Size.X, 14, Ui.Quiet with { A = a });
 
         // The troops as current/maximum under the type, the maximum quieter, the strength bar under them; Cost at the foot
         // (owner's mock-up C, 2026-10-24).
         var troopsLine = new Rect2(tx, rect.Position.Y + 52, rect.End.X - 12 - tx, 20);
         float troopsBase = troopsLine.Position.Y + 16;
         string now = Figures.Number(member.Troops);
-        c.DrawString(_gothic, new Vector2(tx, troopsBase), now, fontSize: 15, modulate: Lacquer.Text with { A = a });
+        c.DrawString(_gothic, new Vector2(tx, troopsBase), now, fontSize: 15, modulate: Ui.Text with { A = a });
         float nowWidth = _gothic.GetStringSize(now, fontSize: 15).X;
         c.DrawString(_gothic, new Vector2(tx + nowWidth, troopsBase), "/" + Figures.Number(member.MaxTroops), fontSize: 15,
-            modulate: Lacquer.Quiet with { A = a });
+            modulate: Ui.Quiet with { A = a });
         DrawStrength(c, new Rect2(tx, troopsBase + 4, troopsLine.Size.X, 3), member.Troops, member.MaxTroops, a);
         var line = new Rect2(tx, rect.End.Y - 24, rect.End.X - 12 - tx, 20);
         string cost = Figures.GoldShort(member.Cost * 100);
-        float cx = RightString(c, _gothic, cost, 15, Lacquer.Text with { A = a }, line.End.X, line) - 6;
-        RightString(c, _cinzel, "Cost", 11, Lacquer.Quiet with { A = a }, cx, line);
+        float cx = RightString(c, _gothic, cost, 15, Ui.Text with { A = a }, line.End.X, line) - 6;
+        RightString(c, _cinzel, "Cost", 11, Ui.Quiet with { A = a }, cx, line);
 
         var remove = RemoveRect(place);
         bool lit = !_dragging && _hovered == RemoveButton + place;
         c.DrawRect(remove, (lit ? Color.Color8(80, 30, 20) : Color.Color8(40, 22, 16)) with { A = a });
-        c.DrawRect(remove, (lit ? Lacquer.Minus : Color.Color8(150, 70, 52)) with { A = a }, false, Line(1));
-        CentredString(c, _gothic, "×", 16, (lit ? Lacquer.Text : Lacquer.Minus) with { A = a }, remove.GetCenter().X,
+        c.DrawRect(remove, (lit ? Ui.Minus : Color.Color8(150, 70, 52)) with { A = a }, false, Line(1));
+        CentredString(c, _gothic, "×", 16, (lit ? Ui.Text : Ui.Minus) with { A = a }, remove.GetCenter().X,
             Lacquer.Baseline(remove, _gothic, 16));
     }
 
@@ -559,7 +561,7 @@ internal sealed partial class DeploymentPanels : Control
         if (max <= 0)
             return;
         float f = Math.Clamp(troops / (float)max, 0, 1);
-        var colour = f >= 0.75f ? Lacquer.Plus : f >= 0.35f ? Color.Color8(214, 170, 80) : Lacquer.Minus;
+        var colour = f >= 0.75f ? Ui.Plus : f >= 0.35f ? Color.Color8(214, 170, 80) : Ui.Minus;
         c.DrawRect(bar with { Size = new Vector2(Math.Max(1, bar.Size.X * f), bar.Size.Y) }, colour with { A = a });
     }
 
@@ -574,15 +576,15 @@ internal sealed partial class DeploymentPanels : Control
     {
         var rect = CardRect(place);
         for (int i = 8; i >= 1; i--)
-            c.DrawRect(rect.Grow(i), Lacquer.Name with { A = 0.035f });
-        c.DrawRect(rect, Lacquer.Name with { A = 0.12f });
-        c.DrawRect(rect, Lacquer.HoverLine, false, Line(3));
-        c.DrawRect(rect.Grow(-5), Lacquer.Gold, false, Line(1));
+            c.DrawRect(rect.Grow(i), Ui.Name with { A = 0.035f });
+        c.DrawRect(rect, Ui.Name with { A = 0.12f });
+        c.DrawRect(rect, Ui.HoverLine, false, Line(3));
+        c.DrawRect(rect.Grow(-5), Ui.Gold, false, Line(1));
         string tag = MemberAt(place) is null ? "Move" : "Swap";
         var box = new Rect2(rect.GetCenter().X - 34, rect.Position.Y - 12, 68, 24);
-        c.DrawRect(box, Color.Color8(60, 44, 24));
-        c.DrawRect(box, Lacquer.Gold, false, Line(1));
-        CentredString(c, _cinzel, tag, 13, Lacquer.Name, box.GetCenter().X, Lacquer.Baseline(box, _cinzel, 13));
+        c.DrawRect(box, Ui.BadgeFill);
+        c.DrawRect(box, Ui.Gold, false, Line(1));
+        CentredString(c, _cinzel, tag, 13, Ui.Name, box.GetCenter().X, Lacquer.Baseline(box, _cinzel, 13));
     }
 
     /// <summary>The dragged member's face under the pointer, framed and a little see-through.</summary>
@@ -592,10 +594,10 @@ internal sealed partial class DeploymentPanels : Control
         var rect = new Rect2(at - new Vector2(GhostSize, GhostSize) / 2, new Vector2(GhostSize, GhostSize));
         for (int i = 8; i >= 1; i--)
             c.DrawRect(new Rect2(rect.Position.X - i + 3, rect.Position.Y - i + 6, rect.Size.X + 2 * i, rect.Size.Y + 2 * i), new Color(0, 0, 0, 0.07f));
-        c.DrawRect(rect, Color.Color8(52, 40, 28) with { A = 0.9f });
+        c.DrawRect(rect, Ui.FaceBack with { A = 0.9f });
         if (FaceTexture(member.FaceCg, GhostSize) is { } texture)
             c.DrawTextureRect(texture, rect, false, new Color(1, 1, 1, 0.9f));
-        c.DrawRect(rect, Lacquer.HoverLine, false, Line(2));
+        c.DrawRect(rect, Ui.HoverLine, false, Line(2));
     }
 
     /// <summary>A face cut to its square at <paramref name="size"/> screen pixels, as many window pixels as it covers.</summary>

@@ -15,6 +15,8 @@ namespace Kichikuou.Game.Battles;
 /// </summary>
 internal sealed partial class OrderStrip : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Battle);
+
     /// <summary>How long a change of the order moves (Option → Battle); 0 places the chips at once.</summary>
     private static double Seconds => BattleScreenSettings.Get(BattleScreenSettings.StripSeconds);
 
@@ -25,7 +27,6 @@ internal sealed partial class OrderStrip : Control
     private static double DownEnd => BattleScreenSettings.Get(BattleScreenSettings.StripDropShare);
     private static double AcrossEnd => 1 - DownEnd;
 
-    private DeploymentPalette _colours = DeploymentPalette.BattleChosen;
     private readonly Dictionary<(BattleSide, int), Chip> _chips = [];
     private IReadOnlyList<OrderChip> _target = [];              // the order the chips go to (or stand at)
     private IReadOnlyList<OrderChip>? _next;                    // the order that came while they move
@@ -63,10 +64,9 @@ internal sealed partial class OrderStrip : Control
         ZIndex = 1;                                             // a jumping chip passes over the names and the cards
     }
 
-    /// <summary>Option → Display.</summary>
-    public void SetPalette(DeploymentPalette palette)
+    /// <summary>Option → Display: the chips styled again in the palette's colours.</summary>
+    public void ApplyPalette()
     {
-        _colours = palette;
         foreach (var chip in _target)
             Restyle(chip);
     }
@@ -270,15 +270,15 @@ internal sealed partial class OrderStrip : Control
         var side = chip.Side == BattleSide.Player ? PlayerColour : EnemyColour;
         int pad = (int)Math.Round(6 * _scale);
         c.Box.ContentMarginLeft = c.Box.ContentMarginRight = pad;
-        c.Box.BgColor = chip.State == ChipState.Acted ? _colours.ButtonDisabled : side.Darkened(0.35f);
+        c.Box.BgColor = chip.State == ChipState.Acted ? Ui.OffButton : side.Darkened(0.35f);
         c.Box.BorderColor = chip.State switch
         {
-            ChipState.Acting => _colours.Accent,
-            ChipState.Acted => _colours.ButtonDisabled,
+            ChipState.Acting => Ui.HoverLine,
+            ChipState.Acted => Ui.OffButton,
             _ => side,
         };
         c.Label.Text = chip.Name;
-        c.Label.AddThemeColorOverride("font_color", chip.State == ChipState.Acted ? _colours.GreyText : _colours.Text);
+        c.Label.AddThemeColorOverride("font_color", chip.State == ChipState.Acted ? Ui.OffText : Ui.Text);
     }
 
     /// <summary>The chips' places: in a row, centred, 4 layout pixels apart.</summary>

@@ -13,6 +13,8 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal sealed partial class SceneMenuView : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Messages);
+
     private const float Pad = 14, MarkRoom = 34;
 
     // The rows: the mock-up's for a short menu; from six items the original's pitch (36), so a long one (the save slots)
@@ -164,7 +166,7 @@ internal sealed partial class SceneMenuView : Control
         if (_menu is null)
             return;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
-        Lacquer.DrawPanel(this, Panel, _k);
+        Ui.DrawPanel(this, Panel, _k);
         for (int r = 0; r < Rows; r++)
             DrawRow(r, _menu.Items[r]);
     }
@@ -173,7 +175,7 @@ internal sealed partial class SceneMenuView : Control
     {
         var rect = RowRect(r);
         bool hover = r == _hovered;
-        Lacquer.DrawRowBox(this, rect, hover, _k);
+        Ui.DrawRowBox(this, rect, hover, _k);
         float x = rect.Position.X + 14;
         if (item.Mark is { } mark)
         {
@@ -181,20 +183,20 @@ internal sealed partial class SceneMenuView : Control
             switch (mark)
             {
                 case '○':
-                    DrawArc(at, 7, 0, Mathf.Tau, 24, Lacquer.Gold, Line(2), true);
+                    DrawArc(at, 7, 0, Mathf.Tau, 24, Ui.Gold, Line(2), true);
                     break;
                 case '×':
-                    DrawLine(at + new Vector2(-6, -6), at + new Vector2(6, 6), Lacquer.OffText, Line(2), true);
-                    DrawLine(at + new Vector2(-6, 6), at + new Vector2(6, -6), Lacquer.OffText, Line(2), true);
+                    DrawLine(at + new Vector2(-6, -6), at + new Vector2(6, 6), Ui.OffText, Line(2), true);
+                    DrawLine(at + new Vector2(-6, 6), at + new Vector2(6, -6), Ui.OffText, Line(2), true);
                     break;
                 default:
                     DrawPolyline([at + new Vector2(0, -7), at + new Vector2(7, 6), at + new Vector2(-7, 6), at + new Vector2(0, -7)],
-                        Lacquer.Gold, Line(2), true);
+                        Ui.Gold, Line(2), true);
                     break;
             }
             x = rect.Position.X + MarkRoom + 4;
         }
         DrawString(_gothic, new Vector2(x, Lacquer.Baseline(rect, _gothic, (int)TextSize)), item.Text, fontSize: TextSize,
-            modulate: hover ? Lacquer.Name : Lacquer.Text);
+            modulate: hover ? Ui.Name : Ui.Text);
     }
 }

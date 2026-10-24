@@ -17,6 +17,8 @@ namespace Kichikuou.Game.Battles;
 /// </summary>
 internal sealed partial class BattleOpeningLayer : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Battle);
+
     private static readonly Rect2 SidesArea = new(0, 0, 1280, 410);
     private const float SeamTop = 680, SeamBottom = 600, Height = 410;
     private const float NameEdge = 50, NameGap = 90, NameBase = 330, NameSize = 64, NameMin = 24, AdvantageSize = 28;
@@ -30,7 +32,6 @@ internal sealed partial class BattleOpeningLayer : Control
 
     private readonly FontFile _names = Load(NameFont);
     private readonly FontVariation _plate = new() { BaseFont = Load(PlateFont) };
-    private DeploymentPalette _colours = DeploymentPalette.BattleChosen;
     private readonly Half _player, _enemy;
     private readonly Control _top;
     private BattleOpening? _opening;
@@ -63,12 +64,6 @@ internal sealed partial class BattleOpeningLayer : Control
 
     /// <summary>Whether the opening shows, standing or leaving.</summary>
     public bool Active => Visible;
-
-    public void SetPalette(DeploymentPalette palette)
-    {
-        _colours = palette;
-        _top.QueueRedraw();
-    }
 
     /// <summary>Lays the layer over the scene's area, <paramref name="scale"/> window pixels to a layout pixel (its position is set by the screen).</summary>
     public void Layout(float scale)
@@ -180,14 +175,14 @@ internal sealed partial class BattleOpeningLayer : Control
         float width = Math.Max(2, 4 * s);
         float shown = 1 - _left;
         _top.DrawLine(new Vector2(SeamTop, 0) * s, new Vector2(SeamBottom, Height) * s, new Color(Colors.White, shown), width, true);
-        Outlined(_top, _names, new Vector2(640, VsY) * s, "VS", Px(VsSize), new Color(_colours.Accent, shown), new Color(VsInk, shown), Px(8),
+        Outlined(_top, _names, new Vector2(640, VsY) * s, "VS", Px(VsSize), new Color(Ui.HoverLine, shown), new Color(VsInk, shown), Px(8),
             HorizontalAlignment.Center, centreY: true);
 
         var plate = new Rect2((Plate.Position - new Vector2(0, _rise)) * s, Plate.Size * s);
         var box = new StyleBoxFlat
         {
-            BgColor = new Color(_colours.Card, 0.94f),
-            BorderColor = _colours.Accent,
+            BgColor = new Color(Ui.Row, 0.94f),
+            BorderColor = Ui.HoverLine,
             ShadowColor = new Color(0, 0, 0, 0.55f),
             ShadowSize = Px(8),
             ShadowOffset = new Vector2(0, 5 * s),
@@ -196,16 +191,16 @@ internal sealed partial class BattleOpeningLayer : Control
         box.SetCornerRadiusAll(Px(10));
         box.SetBorderWidthAll(Math.Max(1, Px(3)));
         _top.DrawStyleBox(box, plate);
-        var bar = new StyleBoxFlat { BgColor = _colours.Card.Darkened(0.2f) };
+        var bar = new StyleBoxFlat { BgColor = Ui.Row.Darkened(0.2f) };
         bar.SetCornerRadiusAll(Px(6));
         _top.DrawStyleBox(bar, new Rect2(plate.Position + new Vector2(8, 8) * s, new Vector2(Plate.Size.X - 16, 50) * s));
         void Line(string text, float y, int size, Color colour) =>
             _top.DrawString(_plate, new Vector2(plate.Position.X, plate.Position.Y + y * s + Centred(_plate, size)), text,
                 HorizontalAlignment.Center, plate.Size.X, size, colour);
-        Line(o.Title, 33, Px(30), _colours.Text);
-        Line(o.Limit, 84, Px(22), _colours.Text);
+        Line(o.Title, 33, Px(30), Ui.Text);
+        Line(o.Limit, 84, Px(22), Ui.Text);
         if (o.Turns is { } turns)
-            Line(turns == 1 ? "1 turn" : $"{turns} turns", 115, Px(20), _colours.Muted);
+            Line(turns == 1 ? "1 turn" : $"{turns} turns", 115, Px(20), Ui.Quiet);
     }
 
     /// <summary>The baseline offset that centres a line of <paramref name="size"/> on a point.</summary>

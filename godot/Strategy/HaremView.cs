@@ -19,6 +19,8 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal sealed partial class HaremView : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Screens);
+
     // In the 1280×800 screen's pixels, after the mock-up.
     private static readonly Rect2 TitlePanel = new(16, 16, 1248, 56);
     private static readonly Rect2 PictureArea = new(16, 88, 666, 416);
@@ -60,7 +62,7 @@ internal sealed partial class HaremView : Control
         _backdrop = new Layer(c =>
         {
             c.DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
-            Lacquer.DrawWaveBackdrop(c, _k);
+            Ui.DrawWaveBackdrop(c, _k);
         }) { ClipContents = true };
         AddChild(_backdrop);
         _face = new Layer(DrawScreen);
@@ -218,12 +220,12 @@ internal sealed partial class HaremView : Control
 
     private void DrawTitle(Control c)
     {
-        Lacquer.DrawPanel(c, TitlePanel, _k);
+        Ui.DrawPanel(c, TitlePanel, _k);
         var band = new Rect2(TitlePanel.Position.X + 22, TitlePanel.Position.Y + 11, TitlePanel.Size.X - 44, 34);
         const string title = "Harem";
-        c.DrawString(_brush, new Vector2(band.Position.X, Lacquer.Baseline(band, _brush, 24)), title, fontSize: 24, modulate: Lacquer.Name);
+        c.DrawString(_brush, new Vector2(band.Position.X, Lacquer.Baseline(band, _brush, 24)), title, fontSize: 24, modulate: Ui.Name);
         float dw = _cinzel.GetStringSize(_date, fontSize: 15).X;
-        c.DrawString(_cinzel, new Vector2(band.End.X - dw, Lacquer.Baseline(band, _cinzel, 15) + 1), _date, fontSize: 15, modulate: Lacquer.Name);
+        c.DrawString(_cinzel, new Vector2(band.End.X - dw, Lacquer.Baseline(band, _cinzel, 15) + 1), _date, fontSize: 15, modulate: Ui.Name);
     }
 
     /// <summary>Her picture as the picker's panel shows it (the gold frame is the original's), with a shadow.</summary>
@@ -241,30 +243,30 @@ internal sealed partial class HaremView : Control
     /// <summary>Her name, visits, the last date and what this visit may bring (decision 30); Summon with her mark's pill.</summary>
     private void DrawInfo(Control c)
     {
-        Lacquer.DrawPanel(c, InfoPanel, _k);
+        Ui.DrawPanel(c, InfoPanel, _k);
         if (_girls.FirstOrDefault(g => g.Number == _chosen) is not { } girl)
             return;
         float x = InfoPanel.Position.X + 26, y = InfoPanel.Position.Y + 40;
         DrawHeart(c, new Vector2(x + 2, y), 11, Plum);
-        c.DrawString(_brush, new Vector2(x + 22, y + 12), girl.Name, fontSize: 32, modulate: Lacquer.Name);
+        c.DrawString(_brush, new Vector2(x + 22, y + 12), girl.Name, fontSize: 32, modulate: Ui.Name);
         // The columns one after another at their widest values, so they never overlap and stay put from girl to girl.
         float last = x + StatWidth("Visits", "None yet") + StatGap, visitX = last + StatWidth("Last summoned", "LP 9 · Month 12 · Week 4") + StatGap;
         DrawStat(c, x, InfoPanel.Position.Y + 88, "Visits", girl.Visits == 0 ? "None yet" : girl.Visits.ToString());
         DrawStat(c, last, InfoPanel.Position.Y + 88, "Last summoned", HaremRoster.DateText(girl.LastWeek) ?? "Never");
         if (HaremRoster.VisitText(girl.Mark) is { } visit)
-            DrawStat(c, visitX, InfoPanel.Position.Y + 88, "This visit", visit, MarkColour(girl.Mark) ?? Lacquer.Quiet);
+            DrawStat(c, visitX, InfoPanel.Position.Y + 88, "This visit", visit, MarkColour(girl.Mark) ?? Ui.Quiet);
         bool on = Enabled(SummonButton), hover = on && _hovered == SummonButton;
-        Lacquer.DrawRedButton(c, SummonArea, hover, hover && _pressed == SummonButton, _k);
+        Ui.DrawRedButton(c, SummonArea, hover, hover && _pressed == SummonButton, _k);
         CentredString(c, _brush, $"Summon {girl.Name}", 28, Color.Color8(250, 226, 160), SummonArea.GetCenter().X, Lacquer.Baseline(SummonArea, _brush, 28));
         if (PickerMarks.Label(girl.Mark) is { } pill)
-            Lacquer.DrawPill(c, _cinzel, SummonArea.End.X - 12, SummonArea.Position.Y + 23, pill, MarkColour(girl.Mark)!.Value, 14, 22);
+            Ui.DrawPill(c, _cinzel, SummonArea.End.X - 12, SummonArea.Position.Y + 23, pill, MarkColour(girl.Mark)!.Value, 14, 22);
     }
 
     /// <summary>A mark's colour: NEW green, ??? amber; null when read or unknown.</summary>
     private static Color? MarkColour(SceneMark? mark) => mark switch
     {
-        SceneMark.New => Lacquer.MarkNew,
-        SceneMark.Maybe => Lacquer.MarkMaybe,
+        SceneMark.New => Ui.MarkNew,
+        SceneMark.Maybe => Ui.MarkMaybe,
         _ => null,
     };
 
@@ -276,8 +278,8 @@ internal sealed partial class HaremView : Control
 
     private void DrawStat(Control c, float x, float y, string label, string value, Color? colour = null)
     {
-        c.DrawString(_cinzel, new Vector2(x, y), label, fontSize: 11, modulate: Lacquer.Label);
-        c.DrawString(_gothic, new Vector2(x, y + 26), value, fontSize: 20, modulate: colour ?? Lacquer.Value);
+        c.DrawString(_cinzel, new Vector2(x, y), label, fontSize: 11, modulate: Ui.Label);
+        c.DrawString(_gothic, new Vector2(x, y + 26), value, fontSize: 20, modulate: colour ?? Ui.Value);
     }
 
     /// <summary>
@@ -287,24 +289,24 @@ internal sealed partial class HaremView : Control
     /// </summary>
     private void DrawGrid(Control c)
     {
-        Lacquer.DrawPanel(c, GridPanel, _k);
+        Ui.DrawPanel(c, GridPanel, _k);
         var offered = _girls.ToDictionary(g => g.Number);
         for (int n = 1; n <= Cells; n++)
         {
             var r = TabletRect(n);
             if (!offered.TryGetValue(n, out var girl))
             {
-                c.DrawRect(r, new Color(Lacquer.OffButton, 0.55f));
-                c.DrawRect(r, new Color(Lacquer.OffLine, 0.6f), false, Line(1));
+                c.DrawRect(r, new Color(Ui.OffButton, 0.55f));
+                c.DrawRect(r, new Color(Ui.OffLine, 0.6f), false, Line(1));
                 continue;
             }
             bool chosen = n == _chosen, hover = n == _hovered;
-            c.DrawRect(r, chosen || hover ? Lacquer.RowHover : Lacquer.Row);
-            c.DrawRect(r, chosen ? Lacquer.HoverLine : hover ? Lacquer.Gold : Lacquer.DimGold, false, Line(chosen ? 2 : 1));
+            c.DrawRect(r, chosen || hover ? Ui.RowHover : Ui.Row);
+            c.DrawRect(r, chosen ? Ui.HoverLine : hover ? Ui.Gold : Ui.DimGold, false, Line(chosen ? 2 : 1));
             float mid = r.Position.Y + r.Size.Y / 2;
             DrawHeart(c, new Vector2(r.Position.X + 14, mid - 1), 6, girl.Visits > 0 ? Plum : PlumDim);
             c.DrawString(_brush, new Vector2(r.Position.X + 26, mid + 6), girl.Name, fontSize: 15,
-                modulate: chosen || hover ? Lacquer.Name : Lacquer.Text);
+                modulate: chosen || hover ? Ui.Name : Ui.Text);
             if (PickerMarks.Label(girl.Mark) is { } mark)
             {
                 float mw = _cinzel.GetStringSize(mark, fontSize: 12).X;
@@ -312,9 +314,9 @@ internal sealed partial class HaremView : Control
             }
         }
         bool hoverEnd = !Busy && _hovered == EndButton;
-        c.DrawRect(EndArea, hoverEnd ? Lacquer.RowHover : Lacquer.Row);
-        c.DrawRect(EndArea, hoverEnd ? Lacquer.HoverLine : Lacquer.DimGold, false, Line(hoverEnd ? 2 : 1));
-        CentredString(c, _cinzel, "End", 17, hoverEnd ? Lacquer.Name : Lacquer.Text, EndArea.GetCenter().X, Lacquer.Baseline(EndArea, _cinzel, 17));
+        c.DrawRect(EndArea, hoverEnd ? Ui.RowHover : Ui.Row);
+        c.DrawRect(EndArea, hoverEnd ? Ui.HoverLine : Ui.DimGold, false, Line(hoverEnd ? 2 : 1));
+        CentredString(c, _cinzel, "End", 17, hoverEnd ? Ui.Name : Ui.Text, EndArea.GetCenter().X, Lacquer.Baseline(EndArea, _cinzel, 17));
     }
 
     /// <summary>A small heart, drawn: two circles over a point.</summary>

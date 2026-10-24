@@ -15,6 +15,8 @@ namespace Kichikuou.Game.Battles;
 /// </summary>
 internal sealed partial class BattleInfoLayer : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Battle);
+
     private const float SceneCentreX = 640, PanelMaxText = 860, PanelPitch = 40;
 
     /// <summary>
@@ -177,12 +179,12 @@ internal sealed partial class BattleInfoLayer : Control
             lines.Add("");
         float w = lines.Max(l => _gothic.GetStringSize(l, fontSize: PanelSize).X) + 80, h = 40 + lines.Count * PanelPitch + 20;
         var box = new Rect2(SceneCentreX - w / 2, PanelFoot - h, w, h);
-        Lacquer.DrawPanel(this, box, _k, MessageWindowView.NarrationFill);
+        Ui.DrawPanel(this, box, _k, MessageWindowView.NarrationFill);
         for (int i = 0; i < lines.Count; i++)
             DrawString(_gothic, new Vector2(box.Position.X + 40, box.Position.Y + 26 + i * PanelPitch + PanelSize * 0.85f), lines[i],
                 fontSize: PanelSize, modulate: MessageWindowView.NarrationText);
         if (_waiting)
-            Lacquer.DrawTriangle(this, new Vector2(box.End.X - 24, box.End.Y - 20), _k);
+            Ui.DrawTriangle(this, new Vector2(box.End.X - 24, box.End.Y - 20), _k);
     }
 
     /// <summary>A sentence broken at spaces into lines no wider than <paramref name="width"/>.</summary>
@@ -243,7 +245,7 @@ internal sealed partial class BattleInfoLayer : Control
         float nameWidth = name == "" ? 0 : _bold.GetStringSize(name, fontSize: CaptionNameSize).X + 12;
         float w = 50 + nameWidth + _gothic.GetStringSize(sentence, fontSize: CaptionSize).X + 24;
         var caption = new Rect2(box.Place?.Side == BattleSide.Enemy ? CaptionRight - w : CaptionLeft, CaptionTop, w, CaptionHeight);
-        Lacquer.DrawPanel(this, caption, _k, CaptionFill * tint);
+        Ui.DrawPanel(this, caption, _k, CaptionFill * tint);
         DrawShield(caption.Position.X + 26, caption.Position.Y + 9, 28, 33, 2, alpha);
         float x = caption.Position.X + 50;
         if (name != "")
@@ -255,7 +257,8 @@ internal sealed partial class BattleInfoLayer : Control
     // The defence's caption (D5): at the scene's foot, above the order strip, from the scene's edge on the defender's side.
     private const float CaptionLeft = 150, CaptionRight = 1130, CaptionTop = 334, CaptionHeight = 50;
     private const int CaptionNameSize = 19, CaptionSize = 18;
-    private static readonly Color CaptionFill = Color.Color8(22, 16, 12, 245), CaptionName = Color.Color8(232, 199, 122);
+    private static Color CaptionFill => Ui.Panel with { A = 245 / 255f };
+    private static Color CaptionName => Ui.Name;
 
     /// <summary>A heater shield, its top centre at (<paramref name="cx"/>, <paramref name="y"/>): a gold rim, steel lit from the top, a shadow.</summary>
     private void DrawShield(float cx, float y, float w, float h, float rim, float alpha)
@@ -301,39 +304,39 @@ internal sealed partial class BattleInfoLayer : Control
         DrawRect(new Rect2(128, 0, 1024, 410), new Color(0, 0, 0, 0.43f));
         float h = 250 + (r.LevelUps.Count == 0 ? 0 : 30 + 44 * r.LevelUps.Count);
         var plate = new Rect2(SceneCentreX - PlateWidth / 2, Math.Max(8, 200 - h / 2), PlateWidth, h);
-        Lacquer.DrawPanel(this, plate, _k);
+        Ui.DrawPanel(this, plate, _k);
         float x = plate.Position.X, y = plate.Position.Y, cx = SceneCentreX;
         Middle(_brush, cx + 1, y + 52, r.Title, 32, Colors.Black);
-        Middle(_brush, cx, y + 50, r.Title, 32, Lacquer.Name);
+        Middle(_brush, cx, y + 50, r.Title, 32, Ui.Name);
         if (r.Reason.Length > 0)
-            Middle(_cinzel, cx, y + 80, Fit(_cinzel, r.Reason, 18, PlateWidth - 60), 18, Lacquer.Subtitle);
-        Lacquer.DrawDivider(this, x + 60, plate.End.X - 60, y + 100, _k);
+            Middle(_cinzel, cx, y + 80, Fit(_cinzel, r.Reason, 18, PlateWidth - 60), 18, Ui.Subtitle);
+        Ui.DrawDivider(this, x + 60, plate.End.X - 60, y + 100, _k);
         foreach (var (army, damages, ax) in new[] { (r.PlayerArmy, r.PlayerDamages, cx - 150), (r.EnemyArmy, r.EnemyDamages, cx + 150) })
         {
-            Middle(_semi, ax, y + 138, Fit(_semi, army.ToUpperInvariant(), 20, 260), 20, Lacquer.Label);
-            Middle(_bold, ax, y + 180, Figures.Number(damages), 38, Lacquer.Minus);
-            Middle(_cinzel, ax, y + 200, "damages", 16, Lacquer.Quiet);
+            Middle(_semi, ax, y + 138, Fit(_semi, army.ToUpperInvariant(), 20, 260), 20, Ui.Label);
+            Middle(_bold, ax, y + 180, Figures.Number(damages), 38, Ui.Minus);
+            Middle(_cinzel, ax, y + 200, "damages", 16, Ui.Quiet);
         }
-        DrawLine(new Vector2(cx, y + 118), new Vector2(cx, y + 200), Lacquer.DimGold, Lacquer.Line(1, _k));
-        Middle(_semi, cx, y + 234, r.Exp + " EXP obtained", 22, Lacquer.Name);
+        DrawLine(new Vector2(cx, y + 118), new Vector2(cx, y + 200), Ui.DimGold, Lacquer.Line(1, _k));
+        Middle(_semi, cx, y + 234, r.Exp + " EXP obtained", 22, Ui.Name);
         if (r.LevelUps.Count > 0)
         {
-            Lacquer.DrawDivider(this, x + 60, plate.End.X - 60, y + 254, _k);
+            Ui.DrawDivider(this, x + 60, plate.End.X - 60, y + 254, _k);
             for (int i = 0; i < r.LevelUps.Count; i++)
             {
                 var up = r.LevelUps[i];
                 var row = new Rect2(x + 40, y + 268 + i * 44, PlateWidth - 80, 36);
-                Lacquer.DrawRowBox(this, row, false, _k);
+                Ui.DrawRowBox(this, row, false, _k);
                 float baseline = Lacquer.Baseline(row, _semi, 18);
                 DrawString(_bold, new Vector2(row.Position.X + 20, baseline), "LEVEL UP", fontSize: 15, modulate: Accent);
-                DrawString(_semi, new Vector2(row.Position.X + 120, baseline), up.Unit, fontSize: 19, modulate: Lacquer.Name);
+                DrawString(_semi, new Vector2(row.Position.X + 120, baseline), up.Unit, fontSize: 19, modulate: Ui.Name);
                 float gx = Math.Max(row.Position.X + 240, row.Position.X + 120 + _semi.GetStringSize(up.Unit, fontSize: 19).X + 20);
                 string gains = string.Join("  ·  ", up.Gains);
-                DrawString(_cinzel, new Vector2(gx, baseline), Fit(_cinzel, gains, 16, row.End.X - 14 - gx), fontSize: 16, modulate: Lacquer.Value);
+                DrawString(_cinzel, new Vector2(gx, baseline), Fit(_cinzel, gains, 16, row.End.X - 14 - gx), fontSize: 16, modulate: Ui.Value);
             }
         }
         if (_waiting)
-            Lacquer.DrawTriangle(this, new Vector2(plate.End.X - 26, plate.End.Y - 22), _k);
+            Ui.DrawTriangle(this, new Vector2(plate.End.X - 26, plate.End.Y - 22), _k);
     }
 
     /// <summary>A text cut with "…" to fit <paramref name="width"/>.</summary>

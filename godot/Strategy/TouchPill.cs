@@ -11,6 +11,8 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal sealed partial class TouchPill : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Battle);
+
     /// <summary>The icon left of the label.</summary>
     public enum Icon
     {
@@ -24,7 +26,6 @@ internal sealed partial class TouchPill : Control
     private const float Border = 2;
 
     private readonly Icon _icon;
-    private DeploymentPalette _colours = DeploymentPalette.BattleChosen;
     private float _scale = 1, _text = 24;
     private bool _down, _inside, _on, _disabled;
     private string _label;
@@ -90,12 +91,6 @@ internal sealed partial class TouchPill : Control
         QueueRedraw();
     }
 
-    public void SetPalette(DeploymentPalette palette)
-    {
-        _colours = palette;
-        QueueRedraw();
-    }
-
     public override void _GuiInput(InputEvent e)
     {
         if (e is not InputEventMouseButton { ButtonIndex: MouseButton.Left } button)
@@ -138,8 +133,8 @@ internal sealed partial class TouchPill : Control
         var box = new StyleBoxFlat
         {
             BgColor = _on ? (pressed ? LitFill.Darkened(0.15f) : LitFill)
-                : _disabled ? _colours.ButtonDisabled : pressed ? _colours.ButtonPressed : _colours.Button,
-            BorderColor = _on ? LitBorder : _colours.ButtonBorder,
+                : _disabled ? Ui.OffButton : pressed ? Ui.RowPressed : Ui.Row,
+            BorderColor = _on ? LitBorder : Ui.Gold,
             AntiAliasing = true,
             ShadowColor = _on ? LitGlow : new Color(0, 0, 0, 0.35f),
             ShadowSize = (int)Math.Round((_on ? 12 : 6) * s),
@@ -148,7 +143,7 @@ internal sealed partial class TouchPill : Control
         box.SetBorderWidthAll((int)Math.Max(1, Math.Round(Border * s)));
         box.SetCornerRadiusAll((int)Math.Round(Size.Y / 2));
         DrawStyleBox(box, new Rect2(Vector2.Zero, Size));
-        var ink = _on ? LitText : _disabled ? _colours.ButtonText with { A = 0.4f } : _colours.ButtonText;
+        var ink = _on ? LitText : _disabled ? Ui.Name with { A = 0.4f } : Ui.Name;
         // The icon as large as the label's letters, a low button's kept clear of the rounded end.
         float h = Size.Y, iconSize = _text * s * 0.9f, iconX = Math.Max(h * 0.5f, iconSize * 1.4f);
         var centre = new Vector2(iconX, h / 2);

@@ -17,6 +17,8 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal sealed partial class TreasureView : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Screens);
+
     // In the 1280×800 screen's pixels, after the mock-up.
     private static readonly Rect2 TitlePanel = new(16, 16, 1248, 56);
     private static readonly Rect2 PictureArea = new(16, 88, 666, 416);
@@ -72,7 +74,7 @@ internal sealed partial class TreasureView : Control
         _backdrop = new Layer(c =>
         {
             c.DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
-            Lacquer.DrawWaveBackdrop(c, _k);
+            Ui.DrawWaveBackdrop(c, _k);
         }) { ClipContents = true };
         AddChild(_backdrop);
         _face = new Layer(DrawScreen);
@@ -275,11 +277,11 @@ internal sealed partial class TreasureView : Control
 
     private void DrawTitle(Control c)
     {
-        Lacquer.DrawPanel(c, TitlePanel, _k);
+        Ui.DrawPanel(c, TitlePanel, _k);
         var band = new Rect2(TitlePanel.Position.X + 22, TitlePanel.Position.Y + 11, TitlePanel.Size.X - 44, 34);
-        c.DrawString(_brush, new Vector2(band.Position.X, Lacquer.Baseline(band, _brush, 24)), "Treasure", fontSize: 24, modulate: Lacquer.Name);
+        c.DrawString(_brush, new Vector2(band.Position.X, Lacquer.Baseline(band, _brush, 24)), "Treasure", fontSize: 24, modulate: Ui.Name);
         float dw = _cinzel.GetStringSize(_date, fontSize: 15).X;
-        c.DrawString(_cinzel, new Vector2(band.End.X - dw, Lacquer.Baseline(band, _cinzel, 15) + 1), _date, fontSize: 15, modulate: Lacquer.Name);
+        c.DrawString(_cinzel, new Vector2(band.End.X - dw, Lacquer.Baseline(band, _cinzel, 15) + 1), _date, fontSize: 15, modulate: Ui.Name);
     }
 
     /// <summary>The picture panel as the picker shows it (the gold frame is the original's), with a shadow.</summary>
@@ -295,28 +297,28 @@ internal sealed partial class TreasureView : Control
     /// <summary>The original's line as a name, a subtitle and figures; under it the first pick's prompt, or how to pick.</summary>
     private void DrawInfo(Control c)
     {
-        Lacquer.DrawPanel(c, InfoPanel, _k);
+        Ui.DrawPanel(c, InfoPanel, _k);
         float x = InfoPanel.Position.X + 24, y = InfoPanel.Position.Y;
         if (_details is { } d)
         {
             var band = new Rect2(x, y + 14, 600, 36);
-            c.DrawString(_brush, new Vector2(x, Lacquer.Baseline(band, _brush, 24)), d.Name, fontSize: 24, modulate: Lacquer.Name);
+            c.DrawString(_brush, new Vector2(x, Lacquer.Baseline(band, _brush, 24)), d.Name, fontSize: 24, modulate: Ui.Name);
             float nw = _brush.GetStringSize(d.Name, fontSize: 24).X;
             c.DrawString(_cinzel, new Vector2(x + nw + 14, Lacquer.Baseline(band, _cinzel, 13) + 3), d.Subtitle, fontSize: 13,
-                modulate: d.SubtitleOff ? Lacquer.Minus : Lacquer.Subtitle);
+                modulate: d.SubtitleOff ? Ui.Minus : Ui.Subtitle);
             float fx = x;
             foreach (var figure in d.Figures)
             {
-                c.DrawString(_cinzel, new Vector2(fx, y + 74), figure.Label, fontSize: 11, modulate: Lacquer.Label);
-                c.DrawString(_gothic, new Vector2(fx, y + 98), figure.Value, fontSize: 18, modulate: Lacquer.Value);
+                c.DrawString(_cinzel, new Vector2(fx, y + 74), figure.Label, fontSize: 11, modulate: Ui.Label);
+                c.DrawString(_gothic, new Vector2(fx, y + 98), figure.Value, fontSize: 18, modulate: Ui.Value);
                 fx += Math.Max(110, _gothic.GetStringSize(figure.Value, fontSize: 18).X + 26);
             }
         }
-        Lacquer.DrawDivider(c, InfoPanel.Position.X + 16, InfoPanel.End.X - 16, y + 116, _k);
+        Ui.DrawDivider(c, InfoPanel.Position.X + 16, InfoPanel.End.X - 16, y + 116, _k);
         if (_prompt is not { } p)
         {
-            c.DrawString(_gothic, new Vector2(x, y + 152), "Pick a character, then the item to equip —", fontSize: 14, modulate: Lacquer.Quiet);
-            c.DrawString(_gothic, new Vector2(x, y + 174), "or an item, then the character to equip it.", fontSize: 14, modulate: Lacquer.Quiet);
+            c.DrawString(_gothic, new Vector2(x, y + 152), "Pick a character, then the item to equip —", fontSize: 14, modulate: Ui.Quiet);
+            c.DrawString(_gothic, new Vector2(x, y + 174), "or an item, then the character to equip it.", fontSize: 14, modulate: Ui.Quiet);
             return;
         }
         // A unit's face as the deployment screen cuts it; an item by its name alone (the original's shrunk picture with its
@@ -326,20 +328,20 @@ internal sealed partial class TreasureView : Control
         {
             Shadowed(c, PromptFace);
             c.DrawTextureRect(face, PromptFace, false);
-            c.DrawRect(PromptFace, Lacquer.Gold, false, Line(1));
+            c.DrawRect(PromptFace, Ui.Gold, false, Line(1));
             tx = PromptFace.End.X + 24;
         }
         if (p.UnitFirst)
         {
-            c.DrawString(_brush, new Vector2(tx, y + 168), p.Name, fontSize: 22, modulate: Lacquer.Name);
-            c.DrawString(_gothic, new Vector2(tx, y + 196), "is equipping —", fontSize: 16, modulate: Lacquer.Text);
-            c.DrawString(_gothic, new Vector2(tx, y + 222), "Which item?", fontSize: 16, modulate: Lacquer.Text);
+            c.DrawString(_brush, new Vector2(tx, y + 168), p.Name, fontSize: 22, modulate: Ui.Name);
+            c.DrawString(_gothic, new Vector2(tx, y + 196), "is equipping —", fontSize: 16, modulate: Ui.Text);
+            c.DrawString(_gothic, new Vector2(tx, y + 222), "Which item?", fontSize: 16, modulate: Ui.Text);
         }
         else
         {
-            c.DrawString(_gothic, new Vector2(tx, y + 166), "Equipping", fontSize: 16, modulate: Lacquer.Text);
-            c.DrawString(_brush, new Vector2(tx, y + 196), p.Name, fontSize: 22, modulate: Lacquer.Name);
-            c.DrawString(_gothic, new Vector2(tx, y + 222), "Which character?", fontSize: 16, modulate: Lacquer.Text);
+            c.DrawString(_gothic, new Vector2(tx, y + 166), "Equipping", fontSize: 16, modulate: Ui.Text);
+            c.DrawString(_brush, new Vector2(tx, y + 196), p.Name, fontSize: 22, modulate: Ui.Name);
+            c.DrawString(_gothic, new Vector2(tx, y + 222), "Which character?", fontSize: 16, modulate: Ui.Text);
         }
         DrawButton(c, BackArea, "Back", BackButton, 15);
     }
@@ -351,50 +353,50 @@ internal sealed partial class TreasureView : Control
     /// </summary>
     private void DrawGrid(Control c)
     {
-        Lacquer.DrawPanel(c, GridPanel, _k);
+        Ui.DrawPanel(c, GridPanel, _k);
         var listed = _entries.ToDictionary(e => e.Number);
         for (int n = 1; n <= TreasureRoster.Cells; n++)
         {
             var r = CellRect(n);
             if (!listed.TryGetValue(n, out var entry))
             {
-                c.DrawRect(r, new Color(Lacquer.OffButton, 0.55f));
-                c.DrawRect(r, new Color(Lacquer.OffLine, 0.6f), false, Line(1));
+                c.DrawRect(r, new Color(Ui.OffButton, 0.55f));
+                c.DrawRect(r, new Color(Ui.OffLine, 0.6f), false, Line(1));
                 continue;
             }
             bool hover = n == _hovered && !Busy;
             if (n == _asked)
             {
-                c.DrawRect(r, Color.Color8(60, 30, 22));            // the cell the callout asks about
-                c.DrawRect(r, Lacquer.Vermilion, false, Line(2));
+                c.DrawRect(r, Ui.ChosenFill);            // the cell the callout asks about
+                c.DrawRect(r, Ui.Vermilion, false, Line(2));
             }
             else
             {
-                c.DrawRect(r, hover ? Lacquer.RowHover : Lacquer.Row);
-                c.DrawRect(r, hover ? Lacquer.HoverLine : Lacquer.DimGold, false, Line(hover ? 2 : 1));
+                c.DrawRect(r, hover ? Ui.RowHover : Ui.Row);
+                c.DrawRect(r, hover ? Ui.HoverLine : Ui.DimGold, false, Line(hover ? 2 : 1));
             }
             float mid = r.Position.Y + r.Size.Y / 2;
             Color ink = entry.Ink switch
             {
-                TreasureInk.Off => Lacquer.OffText,
-                TreasureInk.Held => Lacquer.Name,
-                _ => hover ? Lacquer.Name : Lacquer.Text,
+                TreasureInk.Off => Ui.OffText,
+                TreasureInk.Held => Ui.Name,
+                _ => hover ? Ui.Name : Ui.Text,
             };
             float right = r.End.X - 8;
             if (entry.Holder != "")
             {
                 float hw = _gothic.GetStringSize(entry.Holder, fontSize: 10).X;
-                c.DrawString(_gothic, new Vector2(right - hw, mid + 4), entry.Holder, fontSize: 10, modulate: Lacquer.Quiet);
+                c.DrawString(_gothic, new Vector2(right - hw, mid + 4), entry.Holder, fontSize: 10, modulate: Ui.Quiet);
                 right -= hw + 6;
             }
             if (entry.Fixed && _view == 1)
             {
-                DrawLock(c, new Vector2(right - 6, mid + 1), Lacquer.Quiet);
+                DrawLock(c, new Vector2(right - 6, mid + 1), Ui.Quiet);
                 right -= 16;
             }
             if (entry.HoldsItem)
             {
-                Lacquer.DrawDiamond(c, new Vector2(right - 4, mid), 4, entry.Fixed ? Lacquer.OffLine : Lacquer.Gold);
+                Lacquer.DrawDiamond(c, new Vector2(right - 4, mid), 4, entry.Fixed ? Ui.OffLine : Ui.Gold);
                 right -= 12;
             }
             c.DrawString(_gothic, new Vector2(r.Position.X + 10, mid + 5), entry.Name, HorizontalAlignment.Left,
@@ -404,10 +406,10 @@ internal sealed partial class TreasureView : Control
         {
             var r = TabRect(view);
             bool on = view == _view, hover = !on && !Busy && _hovered == (view == 0 ? TabCharacters : TabItems);
-            c.DrawRect(r, on ? Color.Color8(60, 30, 22) : hover ? Lacquer.RowHover : Lacquer.Row);
-            c.DrawRect(r, on ? Lacquer.Gold : hover ? Lacquer.HoverLine : Lacquer.DimGold, false, Line(on || hover ? 2 : 1));
+            c.DrawRect(r, on ? Ui.ChosenFill : hover ? Ui.RowHover : Ui.Row);
+            c.DrawRect(r, on ? Ui.Gold : hover ? Ui.HoverLine : Ui.DimGold, false, Line(on || hover ? 2 : 1));
             string label = view == 0 ? "Characters" : "Items";
-            Centred(c, _cinzel, label, 15, on || hover ? Lacquer.Name : Lacquer.Quiet, r.GetCenter().X, Lacquer.Baseline(r, _cinzel, 15));
+            Centred(c, _cinzel, label, 15, on || hover ? Ui.Name : Ui.Quiet, r.GetCenter().X, Lacquer.Baseline(r, _cinzel, 15));
         }
         DrawButton(c, EndArea, "End", EndButton, 17);
     }
@@ -415,9 +417,9 @@ internal sealed partial class TreasureView : Control
     private void DrawButton(Control c, Rect2 r, string label, int button, int size)
     {
         bool hover = !Busy && _hovered == button;
-        c.DrawRect(r, hover ? Lacquer.RowHover : Lacquer.Row);
-        c.DrawRect(r, hover ? Lacquer.HoverLine : Lacquer.DimGold, false, Line(hover ? 2 : 1));
-        Centred(c, _cinzel, label, size, hover ? Lacquer.Name : Lacquer.Text, r.GetCenter().X, Lacquer.Baseline(r, _cinzel, size));
+        c.DrawRect(r, hover ? Ui.RowHover : Ui.Row);
+        c.DrawRect(r, hover ? Ui.HoverLine : Ui.DimGold, false, Line(hover ? 2 : 1));
+        Centred(c, _cinzel, label, size, hover ? Ui.Name : Ui.Text, r.GetCenter().X, Lacquer.Baseline(r, _cinzel, size));
     }
 
     /// <summary>The unit's face cut to its square, made again only when the face or the window's size changes.</summary>

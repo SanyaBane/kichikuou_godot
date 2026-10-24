@@ -10,9 +10,10 @@ namespace Kichikuou.Game.Battles;
 /// </summary>
 internal sealed partial class AdvantageTip : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Battle);
+
     private const float Width = 360, Pad = 10, TextSize = 17, Below = 20, Right = 14;
 
-    private DeploymentPalette _colours = DeploymentPalette.BattleChosen;
     private float _scale = 1;
     private string _text = "";
     private Vector2 _pointer;                                       // in this control's coordinates
@@ -22,12 +23,6 @@ internal sealed partial class AdvantageTip : Control
         MouseFilter = MouseFilterEnum.Ignore;
         ZIndex = 20;                                                // over the cards and the command layer
         Visible = false;
-    }
-
-    public void SetPalette(DeploymentPalette palette)
-    {
-        _colours = palette;
-        QueueRedraw();
     }
 
     public void Layout(float scale)
@@ -68,9 +63,9 @@ internal sealed partial class AdvantageTip : Control
         at.Y = Math.Clamp(at.Y, 0, Math.Max(0, Size.Y - box.Y));
         var r = new Rect2(at, box);
         DrawRect(new Rect2(r.Position + new Vector2(4, 5) * s, r.Size), new Color(0, 0, 0, 0.3f));
-        DrawRect(r, _colours.Card);
-        DrawRect(r, _colours.ButtonBorder, filled: false, width: Math.Max(1, 2 * s));
+        DrawRect(r, Ui.Row);
+        DrawRect(r, Ui.Gold, filled: false, width: Math.Max(1, 2 * s));
         DrawMultilineString(font, at + new Vector2(pad, pad + font.GetAscent(size)), _text, HorizontalAlignment.Left, width, size,
-            modulate: _colours.Text);
+            modulate: Ui.Text);
     }
 }

@@ -19,6 +19,8 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal sealed partial class OptionsView : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Settings);
+
     public enum Tab { Messages, Display, Battle, Game }
 
     private static readonly Tab[] Tabs = [Tab.Messages, Tab.Display, Tab.Battle, Tab.Game];
@@ -27,7 +29,7 @@ internal sealed partial class OptionsView : Control
     private static readonly Rect2 CloseButton = new(1004, 686, 130, 40);
     private const float TabTop = 82, TabFoot = 127;
     private const float ContentX = 166, ContentY = 156, ContentW = 948;
-    private static readonly Color Field = Color.Color8(236, 224, 194);
+    private static Color Field => Ui.Field;
 
     private static readonly string[] PreviewLines =
         ["I believe that we should first", "prepare our cities for their", "attacks, then defend them with", "urban warfare."];
@@ -88,8 +90,8 @@ internal sealed partial class OptionsView : Control
     /// <summary>The already-read text's colour was chosen (it is kept already, <see cref="ReadTextChoice"/>).</summary>
     public event Action? ReadColourChosen;
 
-    /// <summary>The battle screen's palette was chosen (it is kept already).</summary>
-    public event Action<DeploymentPalette>? BattlePaletteChosen;
+    /// <summary>The palette was chosen (it is kept already, <see cref="UiPalettes"/>).</summary>
+    public event Action? PaletteChosen;
 
     /// <summary>The thousands' separator was chosen (it is kept already, <see cref="ThousandsChoice"/>).</summary>
     public event Action? ThousandsChosen;
@@ -181,11 +183,11 @@ internal sealed partial class OptionsView : Control
         FontChosen?.Invoke(font);
     }
 
-    private void SetBattlePalette(DeploymentPalette palette)
+    private void SetPalette(UiPalette palette)
     {
-        DeploymentPalette.BattleChosen = palette;
-        _strip.SetPalette(palette);
-        BattlePaletteChosen?.Invoke(palette);
+        UiPalettes.Chosen = palette;
+        UiPalettes.Repaint(this);
+        PaletteChosen?.Invoke();
     }
 
     private void SetThousands(ThousandsSeparator separator)
@@ -230,7 +232,7 @@ internal sealed partial class OptionsView : Control
                 break;
             case Tab.Display:
                 SetFont(GameFont.BizUdGothic);
-                SetBattlePalette(DeploymentPalette.Steel);
+                SetPalette(UiPalette.Lacquer);
                 SetThousands(ThousandsSeparator.Comma);
                 break;
             case Tab.Battle:
@@ -358,10 +360,10 @@ internal sealed partial class OptionsView : Control
         _spots.Clear();
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         DrawRect(new Rect2(0, 0, 1280, 800), new Color(0, 0, 0, 0.55f));
-        Lacquer.DrawPanel(this, Frame, _k);
+        Ui.DrawPanel(this, Frame, _k);
         DrawTabs();
         DrawString(_brush, new Vector2(1150 - _brush.GetStringSize("Options", fontSize: 28).X, 116), "Options", fontSize: 28,
-            modulate: Lacquer.Name);
+            modulate: Ui.Name);
         switch (_tab)
         {
             case Tab.Messages:
@@ -379,9 +381,9 @@ internal sealed partial class OptionsView : Control
         }
         DrawLink("defaults", "Defaults", new Vector2(150, 706), Defaults);
         bool closeLit = _hover == "close";
-        Lacquer.DrawRedButton(this, CloseButton, closeLit, closeLit && _pressed == "close", _k);
+        Ui.DrawRedButton(this, CloseButton, closeLit, closeLit && _pressed == "close", _k);
         DrawString(_cinzelBold, new Vector2(CloseButton.Position.X, Lacquer.Baseline(CloseButton, _cinzelBold, 17)), "Close",
-            HorizontalAlignment.Center, CloseButton.Size.X, 17, Lacquer.SealText);
+            HorizontalAlignment.Center, CloseButton.Size.X, 17, Ui.SealText);
         _spots.Add(new Spot("close", CloseButton, Close));
         if (_question is not null)
             DrawQuestion(_question);
@@ -398,19 +400,19 @@ internal sealed partial class OptionsView : Control
             float w = _cinzelBold.GetStringSize(name, fontSize: 18).X + 52;
             bool on = tab == _tab;
             var rect = new Rect2(x, on ? TabTop : TabTop + 6, w, TabFoot - (on ? TabTop : TabTop + 6));
-            DrawRect(rect, on ? Lacquer.Paper : _hover == "tab-" + name ? Field : Lacquer.PaperHead);
-            DrawRect(rect, on ? Lacquer.PaperHead : Lacquer.InkGrey, false, Line(1));
+            DrawRect(rect, on ? Ui.Paper : _hover == "tab-" + name ? Field : Ui.PaperHead);
+            DrawRect(rect, on ? Ui.PaperHead : Ui.InkGrey, false, Line(1));
             if (on)
                 current = rect;
             DrawString(on ? _cinzelBold : _cinzel, new Vector2(x, Lacquer.Baseline(rect, _cinzelBold, 18)), name,
-                HorizontalAlignment.Center, w, 18, on ? Lacquer.HeadInk : Lacquer.InkQuiet);
+                HorizontalAlignment.Center, w, 18, on ? Ui.HeadInk : Ui.InkQuiet);
             _spots.Add(new Spot("tab-" + name, rect, () => ShowTab(tab)));
             x += w + 6;
         }
-        DrawRect(Sheet, Lacquer.Paper);
-        DrawRect(Sheet, Lacquer.PaperHead, false, Line(1));
-        DrawRect(new Rect2(current.Position.X + 1, TabFoot - 4, current.Size.X - 2, 8), Lacquer.Paper);
-        DrawRect(new Rect2(current.Position.X, TabTop, current.Size.X, 4), Lacquer.Vermilion);
+        DrawRect(Sheet, Ui.Paper);
+        DrawRect(Sheet, Ui.PaperHead, false, Line(1));
+        DrawRect(new Rect2(current.Position.X + 1, TabFoot - 4, current.Size.X - 2, 8), Ui.Paper);
+        DrawRect(new Rect2(current.Position.X, TabTop, current.Size.X, 4), Ui.Vermilion);
     }
 
     private void DrawMessages()
@@ -421,8 +423,8 @@ internal sealed partial class OptionsView : Control
         DrawSlider(x + 60, x + lw - 70, y + 66, (step - 1) / (float)(TextSpeedChoice.Steps - 1), step.ToString(),
             new Slider("speed", x + 60, x + lw - 70, 1, TextSpeedChoice.Steps, 1,
                 v => { if ((int)v != TextSpeedChoice.Step) SetTextSpeed((int)v); }));
-        DrawString(_gothic, new Vector2(x, y + 71), "Slow", fontSize: 14, modulate: Lacquer.InkQuiet);
-        DrawString(_gothic, new Vector2(x, y + 71), "Instant", HorizontalAlignment.Right, lw, 14, Lacquer.InkQuiet);
+        DrawString(_gothic, new Vector2(x, y + 71), "Slow", fontSize: 14, modulate: Ui.InkQuiet);
+        DrawString(_gothic, new Vector2(x, y + 71), "Instant", HorizontalAlignment.Right, lw, 14, Ui.InkQuiet);
 
         float rx = x + lw + 50, rw = ContentW - lw - 50;
         SectionHead(rx, y, "Message skip", rw);
@@ -430,7 +432,7 @@ internal sealed partial class OptionsView : Control
             () => _skip.SkipUnseen = !_skip.SkipUnseen);
         CheckBox("fast-fades", rx, y + 92, _skip.FastFades, "MsgSkip speeds up fades", "Fades and waits run fast.",
             () => _skip.FastFades = !_skip.FastFades);
-        DrawString(_gothic, new Vector2(rx, y + 165), $"{_skip.SeenCount} messages seen.", fontSize: 14, modulate: Lacquer.InkQuiet);
+        DrawString(_gothic, new Vector2(rx, y + 165), $"{_skip.SeenCount} messages seen.", fontSize: 14, modulate: Ui.InkQuiet);
         DrawLink("forget", "Forget them…", new Vector2(rx + rw, y + 160),
             () => Ask("Forget seen messages?", $"All {_skip.SeenCount} messages seen so far will count as unseen again.", "Forget",
                 () => _skip.ForgetSeen()), right: true, enabled: _skip.SeenCount > 0);
@@ -440,7 +442,7 @@ internal sealed partial class OptionsView : Control
 
         int chosen = ReadTextChoice.Index;
         DrawString(_gothic, new Vector2(x + 14, y + 281), chosen == ReadTextChoice.None ? "Read text keeps the window's colour."
-            : "The preview counts as read.", fontSize: 13, modulate: Lacquer.InkQuiet);
+            : "The preview counts as read.", fontSize: 13, modulate: Ui.InkQuiet);
         y += 330;
         SectionHead(x, y, "Already-read text", ContentW);
         float tx = x;
@@ -449,11 +451,11 @@ internal sealed partial class OptionsView : Control
         for (int i = 0; i < ReadTextChoice.Colours.Length; i++, tx += 54)
             ReadTile("read-" + i, new Rect2(tx, y + 40, 44, 44), chosen == i, ReadTextChoice.Colours[i].Colour, i);
         DrawString(_gothic, new Vector2(x, y + 128), chosen == ReadTextChoice.None ? "Don't change" : ReadTextChoice.Colours[chosen].Name,
-            fontSize: 17, modulate: Lacquer.Ink);
+            fontSize: 17, modulate: Ui.Ink);
         DrawString(_gothic, new Vector2(x, y + 150), "A message window you have read before, in any game, shows its text in this colour.",
-            fontSize: 13, modulate: Lacquer.InkQuiet);
+            fontSize: 13, modulate: Ui.InkQuiet);
         DrawString(_gothic, new Vector2(x, y + 170), "Speech balloons, menus and our screens keep their own. Forget them… counts them unread.",
-            fontSize: 13, modulate: Lacquer.InkQuiet);
+            fontSize: 13, modulate: Ui.InkQuiet);
     }
 
     /// <summary>
@@ -463,17 +465,17 @@ internal sealed partial class OptionsView : Control
     private void ReadTile(string id, Rect2 rect, bool on, Color? colour, int index)
     {
         bool lit = _hover == id;
-        DrawRect(rect, Lacquer.Panel with { A = 1 });
-        DrawRect(rect, Lacquer.DimGold, false, Line(1));
+        DrawRect(rect, Ui.Panel with { A = 1 });
+        DrawRect(rect, Ui.DimGold, false, Line(1));
         if (colour is { } c)
             DrawRect(rect.Grow(-8), c);
         else
             DrawString(_gothic, new Vector2(rect.Position.X, Lacquer.Baseline(rect, _gothic, 16)), "Don't change",
-                HorizontalAlignment.Center, rect.Size.X, 16, Lacquer.Text);
+                HorizontalAlignment.Center, rect.Size.X, 16, Ui.Text);
         if (on)
-            DrawRect(rect.Grow(3), Lacquer.Vermilion, false, Line(3));
+            DrawRect(rect.Grow(3), Ui.Vermilion, false, Line(3));
         else if (lit)
-            DrawRect(rect.Grow(2), Lacquer.HeadInk, false, Line(2));
+            DrawRect(rect.Grow(2), Ui.HeadInk, false, Line(2));
         _spots.Add(new Spot(id, rect.Grow(4), () => { SetReadColour(index); QueueRedraw(); }));
     }
 
@@ -487,9 +489,9 @@ internal sealed partial class OptionsView : Control
         Radio("font-biz", x, y + 74, GodotGlyphRenderer.Chosen == GameFont.BizUdGothic, "BIZ UDGothic — 鬼畜王ランス, Rance",
             _bizSample, () => SetFont(GameFont.BizUdGothic));
         y += 132;
-        SectionHead(x, y, "Palette of the battle screen", w);
-        for (int i = 0; i < DeploymentPalette.All.Count; i++)
-            Swatch("battle", x + i * 90, y + 40, DeploymentPalette.All[i], DeploymentPalette.BattleChosen, SetBattlePalette);
+        SectionHead(x, y, "Palette", w);
+        for (int i = 0; i < UiPalette.All.Count; i++)
+            Swatch(x + i * 90, y + 40, UiPalette.All[i], UiPalettes.Chosen, SetPalette);
         y += 132;
         SectionHead(x, y, "Thousands in gold, troops and damage", w);
         for (int i = 0; i < ThousandsChoice.All.Length; i++)
@@ -516,16 +518,16 @@ internal sealed partial class OptionsView : Control
         {
             float cx = x + i % 2 * (colW + 40), cy = y + i / 2 * 46;
             double value = BattleScreenSettings.Get(setting);
-            DrawString(_gothic, new Vector2(cx, cy + 13), setting.Label, fontSize: 14, modulate: Lacquer.Ink);
+            DrawString(_gothic, new Vector2(cx, cy + 13), setting.Label, fontSize: 14, modulate: Ui.Ink);
             DrawSlider(cx, cx + colW - 80, cy + 29, (float)((value - setting.Min) / (setting.Max - setting.Min)), null,
                 new Slider("battle-" + setting.Key, cx, cx + colW - 80, setting.Min, setting.Max, setting.Step,
                     v => BattleScreenSettings.Set(setting, v)));
-            DrawString(_gothic, new Vector2(cx, cy + 34), Format(setting, value), HorizontalAlignment.Right, colW, 14, Lacquer.Ink);
+            DrawString(_gothic, new Vector2(cx, cy + 34), Format(setting, value), HorizontalAlignment.Right, colW, 14, Ui.Ink);
             i++;
         }
         var strip = StripRect;
-        DrawRect(strip, DeploymentPalette.BattleChosen.Back with { A = 1 });
-        DrawRect(strip, Lacquer.InkGrey, false, Line(1));
+        DrawRect(strip, UiPalettes.For(UiPart.Battle).Panel with { A = 1 });
+        DrawRect(strip, Ui.InkGrey, false, Line(1));
         var preview = new Rect2(x + w - 110, strip.Position.Y + 6, 110, 34);
         Button("preview", preview, "Preview", () =>
         {
@@ -541,21 +543,21 @@ internal sealed partial class OptionsView : Control
         var field = new Rect2(x, y + 36, w, 40);
         bool lit = !_folderLocked && _hover == "folder";
         DrawRect(field, Field);
-        DrawRect(field, lit ? Lacquer.Vermilion : Lacquer.InkGrey, false, Line(lit ? 2 : 1));
+        DrawRect(field, lit ? Ui.Vermilion : Ui.InkGrey, false, Line(lit ? 2 : 1));
         var icon = new Vector2(x + 12, y + 48);
         DrawPolyline([icon + new Vector2(0, 2), icon + new Vector2(7, 2), icon + new Vector2(9, 5), icon + new Vector2(20, 5),
-            icon + new Vector2(20, 16), icon + new Vector2(0, 16), icon + new Vector2(0, 2)], Lacquer.InkQuiet, Line(2));
+            icon + new Vector2(20, 16), icon + new Vector2(0, 16), icon + new Vector2(0, 2)], Ui.InkQuiet, Line(2));
         string folder = GameData.GameDirectory is { Length: > 0 } dir ? dir : "not chosen";
-        DrawString(_gothic, new Vector2(x + 44, y + 62), Ellipsis(folder, w - 190, 17), fontSize: 17, modulate: Lacquer.Ink);
+        DrawString(_gothic, new Vector2(x + 44, y + 62), Ellipsis(folder, w - 190, 17), fontSize: 17, modulate: Ui.Ink);
         DrawString(_gothic, new Vector2(x, y + 61), "Change…", HorizontalAlignment.Right, w - 14, 15,
-            _folderLocked ? Lacquer.InkGrey : lit ? Lacquer.Vermilion : Lacquer.VermilionInk);
+            _folderLocked ? Ui.InkGrey : lit ? Ui.Vermilion : Ui.VermilionInk);
         if (!_folderLocked)
             _spots.Add(new Spot("folder", field, () => Ask("Change the game folder?",
                 "Any unsaved progress will be lost: the import screen opens, then the title.", "Change", () => GameFolderChosen?.Invoke())));
         string note = _folderLocked
             ? "The developer's extract is the data (local.env or settings.cfg): a game folder would change nothing. --import turns this on."
             : "Another copy of the game: the import screen checks it and reads its scenario, then the title opens.";
-        Wrap(note, x, y + 104, w, 14, Lacquer.InkQuiet);
+        Wrap(note, x, y + 104, w, 14, Ui.InkQuiet);
 
         y += 170;
         SectionHead(x, y, "Scenes", w);
@@ -568,8 +570,8 @@ internal sealed partial class OptionsView : Control
 
     private void SectionHead(float x, float y, string title, float width)
     {
-        DrawString(_cinzelBold, new Vector2(x, y + 14), title.ToUpperInvariant(), fontSize: 13, modulate: Lacquer.HeadInk);
-        DrawLine(new Vector2(x, y + 22), new Vector2(x + width, y + 22), Lacquer.PaperRule, Line(1));
+        DrawString(_cinzelBold, new Vector2(x, y + 14), title.ToUpperInvariant(), fontSize: 13, modulate: Ui.HeadInk);
+        DrawLine(new Vector2(x, y + 22), new Vector2(x + width, y + 22), Ui.PaperRule, Line(1));
     }
 
     private void CheckBox(string id, float x, float y, bool on, string label, string? hint, Action toggle)
@@ -577,14 +579,14 @@ internal sealed partial class OptionsView : Control
         bool lit = _hover == id;
         var box = new Rect2(x, y, 20, 20);
         DrawRect(box, Field);
-        DrawRect(box, lit ? Lacquer.Vermilion : Lacquer.InkGrey, false, Line(lit ? 2 : 1.5f));
+        DrawRect(box, lit ? Ui.Vermilion : Ui.InkGrey, false, Line(lit ? 2 : 1.5f));
         if (on)
-            DrawPolyline([new Vector2(x + 4, y + 10), new Vector2(x + 8.5f, y + 15), new Vector2(x + 16, y + 5)], Lacquer.VermilionInk, Line(3), true);
-        DrawString(_gothic, new Vector2(x + 32, y + 16), label, fontSize: 17, modulate: Lacquer.Ink);
+            DrawPolyline([new Vector2(x + 4, y + 10), new Vector2(x + 8.5f, y + 15), new Vector2(x + 16, y + 5)], Ui.VermilionInk, Line(3), true);
+        DrawString(_gothic, new Vector2(x + 32, y + 16), label, fontSize: 17, modulate: Ui.Ink);
         float w = _gothic.GetStringSize(label, fontSize: 17).X + 32;
         if (hint is not null)
         {
-            DrawString(_gothic, new Vector2(x + 32, y + 35), hint, fontSize: 13, modulate: Lacquer.InkQuiet);
+            DrawString(_gothic, new Vector2(x + 32, y + 35), hint, fontSize: 13, modulate: Ui.InkQuiet);
             w = Math.Max(w, _gothic.GetStringSize(hint, fontSize: 13).X + 32);
         }
         _spots.Add(new Spot(id, new Rect2(x - 4, y - 4, w + 8, hint is null ? 28 : 46), () => { toggle(); QueueRedraw(); }));
@@ -595,10 +597,10 @@ internal sealed partial class OptionsView : Control
         bool lit = enabled && _hover == id;
         var centre = new Vector2(x + 10, y + 10);
         DrawCircle(centre, 10, Field);
-        DrawArc(centre, 10, 0, Mathf.Tau, 32, lit ? Lacquer.Vermilion : Lacquer.InkGrey, Line(lit ? 2 : 1.5f), true);
+        DrawArc(centre, 10, 0, Mathf.Tau, 32, lit ? Ui.Vermilion : Ui.InkGrey, Line(lit ? 2 : 1.5f), true);
         if (on)
-            DrawCircle(centre, 5, Lacquer.VermilionInk);
-        DrawString(font, new Vector2(x + 30, y + 17), label, fontSize: 18, modulate: enabled ? Lacquer.Ink : Lacquer.InkGrey);
+            DrawCircle(centre, 5, Ui.VermilionInk);
+        DrawString(font, new Vector2(x + 30, y + 17), label, fontSize: 18, modulate: enabled ? Ui.Ink : Ui.InkGrey);
         if (enabled)
             _spots.Add(new Spot(id, new Rect2(x - 4, y - 6, font.GetStringSize(label, fontSize: 18).X + 40, 32), () => { choose(); QueueRedraw(); }));
     }
@@ -609,13 +611,13 @@ internal sealed partial class OptionsView : Control
         string id = slider.Id;
         bool lit = _hover == id || _dragging?.Id == id;
         DrawRect(new Rect2(x0, y - 3, x1 - x0, 6), Field);
-        DrawRect(new Rect2(x0, y - 3, x1 - x0, 6), Lacquer.InkGrey, false, Line(1));
+        DrawRect(new Rect2(x0, y - 3, x1 - x0, 6), Ui.InkGrey, false, Line(1));
         float kx = x0 + (x1 - x0) * Math.Clamp(fraction, 0, 1);
-        DrawRect(new Rect2(x0 + 1, y - 2, kx - x0, 4), Lacquer.VermilionInk);
-        DrawCircle(new Vector2(kx, y), lit ? 10 : 9, Lacquer.Vermilion);
-        DrawArc(new Vector2(kx, y), lit ? 10 : 9, 0, Mathf.Tau, 32, Lacquer.Ink, Line(1.5f), true);
+        DrawRect(new Rect2(x0 + 1, y - 2, kx - x0, 4), Ui.VermilionInk);
+        DrawCircle(new Vector2(kx, y), lit ? 10 : 9, Ui.Vermilion);
+        DrawArc(new Vector2(kx, y), lit ? 10 : 9, 0, Mathf.Tau, 32, Ui.Ink, Line(1.5f), true);
         if (label is not null)
-            DrawString(_gothic, new Vector2(kx - 30, y - 16), label, HorizontalAlignment.Center, 60, 13, Lacquer.Ink);
+            DrawString(_gothic, new Vector2(kx - 30, y - 16), label, HorizontalAlignment.Center, 60, 13, Ui.Ink);
         _spots.Add(new Spot(id, new Rect2(x0 - 12, y - 14, x1 - x0 + 24, 28), () => { }, slider));
     }
 
@@ -624,7 +626,7 @@ internal sealed partial class OptionsView : Control
         bool lit = enabled && _hover == id;
         float w = _gothic.GetStringSize(text, fontSize: 15).X;
         float x = right ? at.X - w : at.X;
-        var colour = !enabled ? Lacquer.InkGrey : lit ? Lacquer.Vermilion : Lacquer.VermilionInk;
+        var colour = !enabled ? Ui.InkGrey : lit ? Ui.Vermilion : Ui.VermilionInk;
         DrawString(_gothic, new Vector2(x, at.Y + 5), text, fontSize: 15, modulate: colour);
         if (lit)
             DrawLine(new Vector2(x, at.Y + 8), new Vector2(x + w, at.Y + 8), colour, Line(1));
@@ -635,24 +637,24 @@ internal sealed partial class OptionsView : Control
     private void Button(string id, Rect2 rect, string text, Action click)
     {
         bool lit = _hover == id;
-        DrawRect(rect, lit ? Lacquer.Paper : Field);
-        DrawRect(rect, lit ? Lacquer.Vermilion : Lacquer.InkGrey, false, Line(lit ? 2 : 1));
+        DrawRect(rect, lit ? Ui.Paper : Field);
+        DrawRect(rect, lit ? Ui.Vermilion : Ui.InkGrey, false, Line(lit ? 2 : 1));
         DrawString(_gothic, new Vector2(rect.Position.X, Lacquer.Baseline(rect, _gothic, 15)), text, HorizontalAlignment.Center,
-            rect.Size.X, 15, lit ? Lacquer.Vermilion : Lacquer.VermilionInk);
+            rect.Size.X, 15, lit ? Ui.Vermilion : Ui.VermilionInk);
         _spots.Add(new Spot(id, rect, click));
     }
 
-    /// <summary>A palette's swatch in the row <paramref name="row"/>: its back with its accent as a bar, framed in vermilion when chosen.</summary>
-    private void Swatch(string row, float x, float y, DeploymentPalette palette, DeploymentPalette chosen, Action<DeploymentPalette> choose)
+    /// <summary>A palette's swatch: its panel with its gold as a bar, framed in vermilion when chosen.</summary>
+    private void Swatch(float x, float y, UiPalette palette, UiPalette chosen, Action<UiPalette> choose)
     {
-        string id = $"palette-{row}-{palette.Name}";
+        string id = $"palette-{palette.Key}";
         bool on = palette == chosen, lit = _hover == id;
         var rect = new Rect2(x, y, 64, 40);
-        DrawRect(rect, palette.Back with { A = 1 });
-        DrawRect(new Rect2(x + 8, y + 26, 48, 5), palette.Accent);
-        DrawRect(rect, on ? Lacquer.Vermilion : lit ? Lacquer.VermilionInk : Lacquer.InkGrey, false, Line(on ? 3 : lit ? 2 : 1));
+        DrawRect(rect, palette.Panel with { A = 1 });
+        DrawRect(new Rect2(x + 8, y + 26, 48, 5), palette.Gold);
+        DrawRect(rect, on ? Ui.Vermilion : lit ? Ui.VermilionInk : Ui.InkGrey, false, Line(on ? 3 : lit ? 2 : 1));
         DrawString(_gothic, new Vector2(x - 13, y + 60), palette.Title, HorizontalAlignment.Center, 90, 13,
-            on ? Lacquer.Ink : Lacquer.InkQuiet);
+            on ? Ui.Ink : Ui.InkQuiet);
         _spots.Add(new Spot(id, new Rect2(x - 4, y - 4, 72, 70), () => { choose(palette); QueueRedraw(); }));
     }
 
@@ -662,20 +664,20 @@ internal sealed partial class OptionsView : Control
         _spots.Clear();
         DrawRect(Frame, new Color(0, 0, 0, 0.35f));
         var box = new Rect2(390, 300, 500, 200);
-        Lacquer.DrawPanel(this, box, _k);
+        Ui.DrawPanel(this, box, _k);
         DrawString(_cinzelBold, new Vector2(box.Position.X, box.Position.Y + 48), question.Title, HorizontalAlignment.Center,
-            box.Size.X, 20, Lacquer.Name);
-        Lacquer.DrawDivider(this, box.Position.X + 40, box.End.X - 40, box.Position.Y + 66, _k);
-        Wrap(question.Text, box.Position.X + 40, box.Position.Y + 96, box.Size.X - 80, 15, Lacquer.Value);
+            box.Size.X, 20, Ui.Name);
+        Ui.DrawDivider(this, box.Position.X + 40, box.End.X - 40, box.Position.Y + 66, _k);
+        Wrap(question.Text, box.Position.X + 40, box.Position.Y + 96, box.Size.X - 80, 15, Ui.Value);
         var confirm = new Rect2(box.End.X - 290, box.End.Y - 58, 130, 38);
         var cancel = new Rect2(box.End.X - 150, box.End.Y - 58, 110, 38);
         bool confirmLit = _hover == "confirm";
-        Lacquer.DrawRedButton(this, confirm, confirmLit, confirmLit && _pressed == "confirm", _k);
+        Ui.DrawRedButton(this, confirm, confirmLit, confirmLit && _pressed == "confirm", _k);
         DrawString(_cinzelBold, new Vector2(confirm.Position.X, Lacquer.Baseline(confirm, _cinzelBold, 16)), question.Confirm,
-            HorizontalAlignment.Center, confirm.Size.X, 16, Lacquer.SealText);
-        Lacquer.DrawRowBox(this, cancel, _hover == "cancel", _k);
+            HorizontalAlignment.Center, confirm.Size.X, 16, Ui.SealText);
+        Ui.DrawRowBox(this, cancel, _hover == "cancel", _k);
         DrawString(_gothic, new Vector2(cancel.Position.X, Lacquer.Baseline(cancel, _gothic, 16)), "Cancel", HorizontalAlignment.Center,
-            cancel.Size.X, 16, _hover == "cancel" ? Lacquer.Name : Lacquer.Text);
+            cancel.Size.X, 16, _hover == "cancel" ? Ui.Name : Ui.Text);
         _spots.Add(new Spot("confirm", confirm, () =>
         {
             _question = null;

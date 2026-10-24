@@ -176,19 +176,19 @@ internal sealed partial class BattleCommandLayer
         float s = _scale;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(s, s));               // in layout pixels below
         foreach (var rail in (Rect2[])[LeftRail, RightRail])
-            Lacquer.DrawPanel(this, rail.Grow(-RailInset), s);
+            Ui.DrawPanel(this, rail.Grow(-RailInset), s);
         if (font is not null && _state is { } state)
         {
-            RailLabel(_brush, LeftRail, 30, BattleBoard.Card(state, _commands!.Acting)?.Name ?? "", NameText, Lacquer.Name);
+            RailLabel(_brush, LeftRail, 30, BattleBoard.Card(state, _commands!.Acting)?.Name ?? "", NameText, Ui.Name);
             RailRule(LeftRail, 52);
-            RailLabel(_cinzel, RightRail, 24, "TARGET", TitleText, Lacquer.Subtitle);
+            RailLabel(_cinzel, RightRail, 24, "TARGET", TitleText, Ui.Subtitle);
             if (_target is { } t)
             {
                 RailLabel(_brush, RightRail, 48, BattleBoard.Card(state, t)?.Name ?? "", TargetText, TargetName);
                 if (_banners.Count == 0)
                 {
-                    RailLabel(font, RightRail, RightTop + 20, "No attack", RailText - 2, Lacquer.Quiet);
-                    RailLabel(font, RightRail, RightTop + 42, "reaches it", RailText - 2, Lacquer.Quiet);
+                    RailLabel(font, RightRail, RightTop + 20, "No attack", RailText - 2, Ui.Quiet);
+                    RailLabel(font, RightRail, RightTop + 42, "reaches it", RailText - 2, Ui.Quiet);
                 }
             }
             RailRule(RightRail, 68);
@@ -199,13 +199,13 @@ internal sealed partial class BattleCommandLayer
                     AttackButton(rect, text, hot);
                 else if (choice.Command == FigtSelCommand.Retreat)
                 {
-                    Lacquer.DrawRedButton(this, rect, hot, false, s);
+                    Ui.DrawRedButton(this, rect, hot, false, s);
                     Centred(_brush, text, RetreatText, rect, Color8(250, 226, 160));
                 }
                 else
                 {
-                    Lacquer.DrawRowBox(this, rect, hot, s);
-                    Centred(font, text, RailText, rect, Lacquer.Text);
+                    Ui.DrawRowBox(this, rect, hot, s);
+                    Centred(font, text, RailText, rect, Ui.Text);
                 }
             }
         }
@@ -218,7 +218,7 @@ internal sealed partial class BattleCommandLayer
 
     /// <summary>A dim gold rule across the rail's panel at <paramref name="y"/>.</summary>
     private void RailRule(Rect2 rail, float y) =>
-        DrawLine(new Vector2(rail.Position.X + 20, y), new Vector2(rail.End.X - 20, y), Lacquer.DimGold, Lacquer.Line(1, _scale));
+        DrawLine(new Vector2(rail.Position.X + 20, y), new Vector2(rail.End.X - 20, y), Ui.DimGold, Lacquer.Line(1, _scale));
 
     /// <summary>An attack on the right rail: lit gold, its name in the brush face; brighter with a glow while held.</summary>
     private void AttackButton(Rect2 r, string text, bool hot)

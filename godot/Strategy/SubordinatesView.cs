@@ -24,6 +24,8 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal sealed partial class SubordinatesView : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Screens);
+
     // In the 1280×800 screen's pixels (the script's 640×400 at 2×), after the mock-ups.
     private static readonly Rect2 TablePanel = new(16, 16, 1248, 344);
     private static readonly Rect2 TableArea = new(30, 66, 1220, 282);     // the ledger
@@ -355,7 +357,7 @@ internal sealed partial class SubordinatesView : Control
     private void DrawBackdrop(Control c)
     {
         c.DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
-        Lacquer.DrawWaveBackdrop(c, _k);
+        Ui.DrawWaveBackdrop(c, _k);
     }
 
     private void DrawScreen(Control c)
@@ -369,16 +371,16 @@ internal sealed partial class SubordinatesView : Control
     /// <summary>The table's panel: the title band (the screen's name, the units ready, the date) over the ledger.</summary>
     private void DrawTablePanel(Control c)
     {
-        Lacquer.DrawPanel(c, TablePanel, _k);
+        Ui.DrawPanel(c, TablePanel, _k);
         var band = new Rect2(TablePanel.Position.X + 22, TablePanel.Position.Y + 8, TablePanel.Size.X - 44, 34);
         const string title = "Subordinates";
-        c.DrawString(_brush, new Vector2(band.Position.X, Lacquer.Baseline(band, _brush, 24)), title, fontSize: 24, modulate: Lacquer.Name);
+        c.DrawString(_brush, new Vector2(band.Position.X, Lacquer.Baseline(band, _brush, 24)), title, fontSize: 24, modulate: Ui.Name);
         float tw = _brush.GetStringSize(title, fontSize: 24).X;
         c.DrawString(_cinzelLight, new Vector2(band.Position.X + tw + 16, Lacquer.Baseline(band, _cinzelLight, 13) + 1),
-            _ready == 1 ? "1 unit ready" : $"{_ready} units ready", fontSize: 13, modulate: Lacquer.Subtitle);
+            _ready == 1 ? "1 unit ready" : $"{_ready} units ready", fontSize: 13, modulate: Ui.Subtitle);
         float dw = _cinzel.GetStringSize(_date, fontSize: 15).X;
-        c.DrawString(_cinzel, new Vector2(band.End.X - dw, Lacquer.Baseline(band, _cinzel, 15) + 1), _date, fontSize: 15, modulate: Lacquer.Name);
-        Lacquer.DrawDivider(c, TablePanel.Position.X + 16, TablePanel.End.X - 16, TablePanel.Position.Y + 44, _k);
+        c.DrawString(_cinzel, new Vector2(band.End.X - dw, Lacquer.Baseline(band, _cinzel, 15) + 1), _date, fontSize: 15, modulate: Ui.Name);
+        Ui.DrawDivider(c, TablePanel.Position.X + 16, TablePanel.End.X - 16, TablePanel.Position.Y + 44, _k);
     }
 
     /// <summary>The picture panel with a shadow under it (its gold frame is the original's).</summary>
@@ -396,16 +398,16 @@ internal sealed partial class SubordinatesView : Control
     /// <summary>The orders' panel: its header with the budget, Replenish, Add New Troops' steps, Talk, the plate, End.</summary>
     private void DrawOrders(Control c)
     {
-        Lacquer.DrawPanel(c, OrdersPanel, _k);
+        Ui.DrawPanel(c, OrdersPanel, _k);
         if (_panel is not { } panel)
             return;
         var head = new Rect2(OrdersPanel.Position.X + 18, OrdersPanel.Position.Y + 10, OrdersPanel.Size.X - 36, 30);
-        c.DrawString(_brush, new Vector2(head.Position.X, Lacquer.Baseline(head, _brush, 18)), "Orders", fontSize: 18, modulate: Lacquer.Name);
+        c.DrawString(_brush, new Vector2(head.Position.X, Lacquer.Baseline(head, _brush, 18)), "Orders", fontSize: 18, modulate: Ui.Name);
         float x = head.End.X;
-        x = RightString(c, _cinzelLight, "K GOLD", 11, Lacquer.Subtitle, x, head) - 6;
-        x = RightString(c, _cinzel, Figures.Number(panel.Gold * 100), 20, Lacquer.Name, x, head) - 10;
-        RightString(c, _cinzelLight, "Budget", 12, Lacquer.Label, x, head);
-        Lacquer.DrawDivider(c, OrdersPanel.Position.X + 14, OrdersPanel.End.X - 14, OrdersPanel.Position.Y + 46, _k);
+        x = RightString(c, _cinzelLight, "K GOLD", 11, Ui.Subtitle, x, head) - 6;
+        x = RightString(c, _cinzel, Figures.Number(panel.Gold * 100), 20, Ui.Name, x, head) - 10;
+        RightString(c, _cinzelLight, "Budget", 12, Ui.Label, x, head);
+        Ui.DrawDivider(c, OrdersPanel.Position.X + 14, OrdersPanel.End.X - 14, OrdersPanel.Position.Y + 46, _k);
 
         var r = panel.Replenish;
         if (Enabled(ReplenishButton))
@@ -418,16 +420,16 @@ internal sealed partial class SubordinatesView : Control
             bool any = panel.Steps.Any(s => s.Enabled) && !Busy;
             const string label = "Add New Troops";
             float lx = ReplenishArea.Position.X + 2;
-            c.DrawString(_cinzel, new Vector2(lx, AddLabelY + 5), label, fontSize: 14, modulate: any ? Lacquer.Label : Lacquer.OffText);
+            c.DrawString(_cinzel, new Vector2(lx, AddLabelY + 5), label, fontSize: 14, modulate: any ? Ui.Label : Ui.OffText);
             float lw = _cinzel.GetStringSize(label, fontSize: 14).X;
-            c.DrawLine(new Vector2(lx + lw + 10, AddLabelY), new Vector2(ReplenishArea.End.X - 2, AddLabelY), Lacquer.DimGold, Line(1));
+            c.DrawLine(new Vector2(lx + lw + 10, AddLabelY), new Vector2(ReplenishArea.End.X - 2, AddLabelY), Ui.DimGold, Line(1));
             for (int i = 0; i < panel.Steps.Count; i++)
             {
                 var s = panel.Steps[i];
                 DrawPlain(c, StepRect(i), Figures.Signed(s.Men), Figures.GoldShort(s.Price * 100), StepButton + i, _brush, 17, 12);
             }
         }
-        c.DrawLine(new Vector2(ReplenishArea.Position.X + 2, RuleY), new Vector2(ReplenishArea.End.X - 2, RuleY), Lacquer.DimGold, Line(1));
+        c.DrawLine(new Vector2(ReplenishArea.Position.X + 2, RuleY), new Vector2(ReplenishArea.End.X - 2, RuleY), Ui.DimGold, Line(1));
 
         DrawTalk(c, panel);
         DrawPlain(c, EndArea, "End", null, EndButton, _cinzel, 17, 0);
@@ -467,7 +469,7 @@ internal sealed partial class SubordinatesView : Control
     private void DrawPrimary(Control c, Rect2 rect, string title, string note, int button)
     {
         bool hover = button == _hovered || button == _asked, down = button == _hovered && button == _pressed;
-        Lacquer.DrawRedButton(c, rect, hover, down, _k);
+        Ui.DrawRedButton(c, rect, hover, down, _k);
         DrawLabels(c, rect, title, _brush, 22, Color.Color8(250, 226, 160), note, _gothic, 15, Color.Color8(236, 206, 160));
     }
 
@@ -477,16 +479,16 @@ internal sealed partial class SubordinatesView : Control
         bool on = Enabled(button), hover = on && button == _hovered, down = hover && button == _pressed;
         if (!on)
         {
-            c.DrawRect(rect, Lacquer.OffButton);
-            c.DrawRect(rect, Lacquer.OffLine, false, Line(1));
+            c.DrawRect(rect, Ui.OffButton);
+            c.DrawRect(rect, Ui.OffLine, false, Line(1));
         }
         else
         {
-            c.DrawRect(rect, down ? Lacquer.Row : hover ? Lacquer.RowHover : Lacquer.Row);
-            c.DrawRect(rect, hover ? Lacquer.HoverLine : Lacquer.DimGold, false, Line(hover ? 2 : 1));
+            c.DrawRect(rect, down ? Ui.Row : hover ? Ui.RowHover : Ui.Row);
+            c.DrawRect(rect, hover ? Ui.HoverLine : Ui.DimGold, false, Line(hover ? 2 : 1));
         }
-        DrawLabels(c, rect, title, titleFont, titleSize, !on ? Lacquer.OffText : hover ? Lacquer.Name : Lacquer.Text,
-            note, _gothic, noteSize, on ? Lacquer.Quiet : Lacquer.OffText);
+        DrawLabels(c, rect, title, titleFont, titleSize, !on ? Ui.OffText : hover ? Ui.Name : Ui.Text,
+            note, _gothic, noteSize, on ? Ui.Quiet : Ui.OffText);
         if (button == _asked)
             c.DrawRect(rect, AskedLine, false, Line(2));
     }
@@ -498,26 +500,26 @@ internal sealed partial class SubordinatesView : Control
         bool on = Enabled(TalkButton), hover = on && _hovered == TalkButton;
         if (!on)
         {
-            c.DrawRect(rect, Lacquer.OffButton);
-            c.DrawRect(rect, Lacquer.OffLine, false, Line(1));
+            c.DrawRect(rect, Ui.OffButton);
+            c.DrawRect(rect, Ui.OffLine, false, Line(1));
         }
         else
         {
-            c.DrawRect(rect, hover ? Lacquer.RowHover : Lacquer.Row);
-            c.DrawRect(rect, hover ? Lacquer.HoverLine : Lacquer.DimGold, false, Line(hover ? 2 : 1));
+            c.DrawRect(rect, hover ? Ui.RowHover : Ui.Row);
+            c.DrawRect(rect, hover ? Ui.HoverLine : Ui.DimGold, false, Line(hover ? 2 : 1));
         }
         float size = rect.Size.Y - 12;
         var faceRect = new Rect2(rect.Position + new Vector2(6, 6), new Vector2(size, size));
         if (_talkFace.Get(_faces, _crops, panel.FaceCg, size * _k) is { } face)
             c.DrawTextureRect(face, faceRect, false, on ? Colors.White : new Color(0.45f, 0.42f, 0.4f));
-        c.DrawRect(faceRect, on ? Lacquer.Gold : Lacquer.OffLine, false, Line(1));
+        c.DrawRect(faceRect, on ? Ui.Gold : Ui.OffLine, false, Line(1));
         var text = new Rect2(faceRect.End.X + 6, rect.Position.Y, rect.End.X - faceRect.End.X - 12, rect.Size.Y);
         string note = on || string.IsNullOrEmpty(panel.Talk.Note) ? $"with {panel.Name}" : panel.Talk.Note;
-        DrawLabels(c, text, "Talk", _brush, 20, !on ? Lacquer.OffText : hover ? Lacquer.Name : Lacquer.Text,
-            note, _cinzelLight, 11, on ? Lacquer.Subtitle : Lacquer.OffText);
+        DrawLabels(c, text, "Talk", _brush, 20, !on ? Ui.OffText : hover ? Ui.Name : Ui.Text,
+            note, _cinzelLight, 11, on ? Ui.Subtitle : Ui.OffText);
         if (on && PickerMarks.Label(panel.TalkMark) is { } pill)
-            Lacquer.DrawPill(c, _cinzel, rect.End.X - 6, rect.Position.Y + 12, pill,
-                panel.TalkMark == SceneMark.New ? Lacquer.MarkNew : Lacquer.MarkMaybe, 10, 14);
+            Ui.DrawPill(c, _cinzel, rect.End.X - 6, rect.Position.Y + 12, pill,
+                panel.TalkMark == SceneMark.New ? Ui.MarkNew : Ui.MarkMaybe, 10, 14);
     }
 
     /// <summary>A unit's face cut to its square, made again only when the face or its size in window pixels changes.</summary>

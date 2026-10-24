@@ -13,6 +13,8 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal sealed partial class SkipDrawer : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Messages);
+
     private static readonly Color LitTop = Color.Color8(255, 214, 110), LitFoot = Color.Color8(214, 140, 40),
         LitInk = Color.Color8(40, 24, 8), LitGlow = new(1f, 0.74f, 0.35f, 0.75f), Held = new(1, 1, 1, 0.08f);
 
@@ -136,17 +138,17 @@ internal sealed partial class SkipDrawer : Control
             LitCell(skip.Grow(-3));
         // The divider between the cells.
         float y = log.Position.Y, mid = skip.GetCenter().X;
-        DrawLine(new Vector2(8, y), new Vector2(skip.End.X - 8, y), Lacquer.DimGold, Lacquer.Line(1, _k));
-        Lacquer.DrawDiamond(this, new Vector2(mid, y), 3, Lacquer.Gold);
+        DrawLine(new Vector2(8, y), new Vector2(skip.End.X - 8, y), Ui.DimGold, Lacquer.Line(1, _k));
+        Lacquer.DrawDiamond(this, new Vector2(mid, y), 3, Ui.Gold);
         var font = GetThemeDefaultFont();
-        Color Ink(bool disabled, Color on) => disabled ? Lacquer.OffText : on;
-        var skipInk = _skipOn ? LitInk : Ink(_skipDisabled, Lacquer.Gold);
+        Color Ink(bool disabled, Color on) => disabled ? Ui.OffText : on;
+        var skipInk = _skipOn ? LitInk : Ink(_skipDisabled, Ui.Gold);
         Arrows(new Vector2(mid + 2, skip.Position.Y + 32), skipInk);
-        Lines(new Vector2(mid, log.Position.Y + 32), Ink(_logDisabled, Lacquer.Gold));
+        Lines(new Vector2(mid, log.Position.Y + 32), Ink(_logDisabled, Ui.Gold));
         if (font is null)
             return;
-        CellLabel(font, skip, _skipOn ? "ON" : "Skip", _skipOn ? LitInk : Ink(_skipDisabled, Lacquer.Quiet));
-        CellLabel(font, log, "Log", Ink(_logDisabled, Lacquer.Quiet));
+        CellLabel(font, skip, _skipOn ? "ON" : "Skip", _skipOn ? LitInk : Ink(_skipDisabled, Ui.Quiet));
+        CellLabel(font, log, "Log", Ink(_logDisabled, Ui.Quiet));
     }
 
     /// <summary>
@@ -157,8 +159,8 @@ internal sealed partial class SkipDrawer : Control
     {
         var plate = new StyleBoxFlat
         {
-            BgColor = Lacquer.Panel,
-            BorderColor = Lacquer.Gold,
+            BgColor = Ui.Panel,
+            BorderColor = Ui.Gold,
             AntiAliasing = true,
             ShadowColor = new Color(0, 0, 0, 0.35f),
             ShadowSize = 6,
@@ -168,7 +170,7 @@ internal sealed partial class SkipDrawer : Control
         plate.BorderWidthLeft = 0;
         plate.CornerRadiusTopRight = plate.CornerRadiusBottomRight = 10;
         c.DrawStyleBox(plate, box);
-        var inner = new StyleBoxFlat { DrawCenter = false, BorderColor = Lacquer.DimGold, AntiAliasing = true };
+        var inner = new StyleBoxFlat { DrawCenter = false, BorderColor = Ui.DimGold, AntiAliasing = true };
         inner.SetBorderWidthAll((int)Math.Ceiling(Lacquer.Line(1, k)));
         inner.BorderWidthLeft = 0;
         inner.CornerRadiusTopRight = inner.CornerRadiusBottomRight = 6;

@@ -14,6 +14,8 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal sealed partial class StatusStripView : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Map);
+
     private const float Width = 1280;
 
     /// <summary>The strip's height in the screen's pixels (1280 wide).</summary>
@@ -94,7 +96,7 @@ internal sealed partial class StatusStripView : Control
         if (_strip is not { } s)
             return;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
-        Lacquer.DrawPanel(this, new Rect2(0, 0, Width, Height), _k);
+        Ui.DrawPanel(this, new Rect2(0, 0, Width, Height), _k);
         // One row (owner, 2026-10-16): the flag, the status window's figures, the week's commands, the date.
         var row = new Rect2(0, 10, Width, 22);
         float cx = 18;
@@ -105,9 +107,9 @@ internal sealed partial class StatusStripView : Control
         }
         foreach (var (label, value) in s.Status)
         {
-            DrawString(_gothic, new Vector2(cx, Lacquer.Baseline(row, _gothic, LabelSize)), label, fontSize: LabelSize, modulate: Lacquer.Label);
+            DrawString(_gothic, new Vector2(cx, Lacquer.Baseline(row, _gothic, LabelSize)), label, fontSize: LabelSize, modulate: Ui.Label);
             cx += _gothic.GetStringSize(label, fontSize: LabelSize).X + 8;
-            DrawString(_gothic, new Vector2(cx, Lacquer.Baseline(row, _gothic, ValueSize)), value, fontSize: ValueSize, modulate: Lacquer.Value);
+            DrawString(_gothic, new Vector2(cx, Lacquer.Baseline(row, _gothic, ValueSize)), value, fontSize: ValueSize, modulate: Ui.Value);
             cx += _gothic.GetStringSize(value, fontSize: ValueSize).X + 20;
         }
         // The week's commands as tags, grouped under brackets with their captions.
@@ -118,15 +120,15 @@ internal sealed partial class StatusStripView : Control
             foreach (var use in group.Uses)
             {
                 float cw = _gothic.GetStringSize(use.Text, fontSize: 13).X + 16;
-                Lacquer.DrawTag(this, _gothic, new Rect2(cx, row.Position.Y, cw, row.Size.Y), use.Text, ColourOf(use.Action), use.Free, _k);
+                Ui.DrawTag(this, _gothic, new Rect2(cx, row.Position.Y, cw, row.Size.Y), use.Text, ColourOf(use.Action), use.Free, _k);
                 cx += cw + 4;
             }
             float end = cx - 4, by = row.End.Y + 6, mid = (start + end) / 2;
-            DrawPolyline([new(start, by - 3), new(start, by), new(end, by), new(end, by - 3)], Lacquer.DimGold, Lacquer.Line(1, _k));
+            DrawPolyline([new(start, by - 3), new(start, by), new(end, by), new(end, by - 3)], Ui.DimGold, Lacquer.Line(1, _k));
             float tw = _cinzel.GetStringSize(group.Caption, fontSize: CaptionSize).X;
-            DrawRect(new Rect2(mid - tw / 2 - 5, by - 2, tw + 10, 4), Lacquer.Panel with { A = 1 });
+            DrawRect(new Rect2(mid - tw / 2 - 5, by - 2, tw + 10, 4), Ui.Panel with { A = 1 });
             DrawString(_cinzel, new Vector2(mid - tw / 2, by + (_cinzel.GetAscent(CaptionSize) - _cinzel.GetDescent(CaptionSize)) / 2),
-                group.Caption, fontSize: CaptionSize, modulate: Lacquer.Subtitle);
+                group.Caption, fontSize: CaptionSize, modulate: Ui.Subtitle);
             cx += 22;
         }
         // The date at the right, large and bright (owner, 2026-10-16: the small dim one was lost on the lacquer);
@@ -136,7 +138,7 @@ internal sealed partial class StatusStripView : Control
         while (size > 12 && Width - 20 - dw < cx)
             dw = _date.GetStringSize(s.Date, fontSize: --size).X;
         DrawString(_date, new Vector2(Width - 20 - dw, Lacquer.Baseline(new Rect2(0, 0, Width, Height), _date, size)), s.Date,
-            fontSize: size, modulate: Lacquer.Name);
+            fontSize: size, modulate: Ui.Name);
     }
 
     /// <summary>A command's tag colour (ours; the same as the command panel's and the province menu's tags).</summary>

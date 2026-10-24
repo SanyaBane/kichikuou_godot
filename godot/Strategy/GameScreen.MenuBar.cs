@@ -242,7 +242,7 @@ public partial class GameScreen
         view.TextSpeedChanged += step => _messageView.LettersPerSecond = TextSpeedChoice.LettersPerSecond(step);
         view.FontChosen += ApplyFont;
         view.ReadColourChosen += () => _messageView.QueueRedraw();
-        view.BattlePaletteChosen += ApplyBattlePalette;
+        view.PaletteChosen += () => UiPalettes.Repaint(this);    // every screen open recoloured at once
         view.ThousandsChosen += () => RedrawAll(this);   // the figures drawn already, in the new way
         view.NewScenesFirstChanged += on =>
         {
@@ -289,24 +289,13 @@ public partial class GameScreen
         _presenter.Invalidate();
     }
 
-    /// <summary>
-    /// A palette chosen in the options (saved already): our battle screen's and the map plates' colours (the deployment
-    /// screen is lacquer since the owner's E1/E2), an open screen recoloured at once.
-    /// </summary>
+    /// <summary>Every canvas item of the screen drawn again (the thousands' separator chosen).</summary>
     private static void RedrawAll(Node node)
     {
         if (node is CanvasItem item)
             item.QueueRedraw();
         foreach (var child in node.GetChildren())
             RedrawAll(child);
-    }
-
-    private void ApplyBattlePalette(DeploymentPalette palette)
-    {
-        _skipButton.SetPalette(palette);
-        _battleView.SetPalette(palette);
-        _scoutView.SetPalette(palette);
-        _strategyView.SetPalette(palette);
     }
 
     /// <summary><c>confirm_lose_progress</c>: a modal box; the game waits while it is open.</summary>

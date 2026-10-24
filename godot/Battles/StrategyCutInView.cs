@@ -17,6 +17,8 @@ namespace Kichikuou.Game.Battles;
 /// </summary>
 internal sealed partial class StrategyCutInView : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Battle);
+
     // The block: the portrait (400 high) from Top, centred on the screen; the text column beside it, its first line's
     // capitals from Top too.
     private const float Top = 200;
@@ -46,7 +48,6 @@ internal sealed partial class StrategyCutInView : Control
     private readonly FontFile _title = Load(TitleFont);
     private readonly FontVariation _caption = new() { BaseFont = Load(CaptionFont) };
     private readonly FontVariation _bold = new() { VariationEmbolden = 0.8f };
-    private DeploymentPalette _colours = DeploymentPalette.BattleChosen;
     private readonly Control _sheet;
     private readonly TextureRect _backdrop;
     private byte[]? _backdropPixels;
@@ -85,13 +86,6 @@ internal sealed partial class StrategyCutInView : Control
     }
 
     private static FontFile Load(string path) => new() { Data = Godot.FileAccess.GetFileAsBytes(path) };
-
-    /// <summary>Option → Display: the accent in <paramref name="palette"/>'s colour.</summary>
-    public void SetPalette(DeploymentPalette palette)
-    {
-        _colours = palette;
-        _sheet.QueueRedraw();
-    }
 
     /// <summary>Option → Display: the strategist's line in the chosen font, bold.</summary>
     public void SetFont(GameFont font)
@@ -164,7 +158,7 @@ internal sealed partial class StrategyCutInView : Control
         Vector2[] band = [P(0, BandTop + BandSlant), P(1280, BandTop - BandSlant), P(1280, BandBottom - BandSlant), P(0, BandBottom + BandSlant)];
         Color strong = side with { A = BandAlpha * a }, faint = side with { A = 0 };
         _sheet.DrawPolygon(band, player ? [strong, faint, faint, strong] : [faint, strong, strong, faint]);
-        var edge = _colours.Accent with { A = a };
+        var edge = Ui.HoverLine with { A = a };
         _sheet.DrawLine(band[0], band[1], edge, Math.Max(1, EdgeWidth * s), true);
         _sheet.DrawLine(band[3], band[2], edge, Math.Max(1, EdgeWidth * s), true);
 
@@ -183,10 +177,10 @@ internal sealed partial class StrategyCutInView : Control
         float textX = (player ? TextEdge : 1280 - TextEdge) + outward * TitleSlide * (1 - a);
         if (strategy.Announcement != "")
             Outlined(_caption, P(textX, CaptionBase), strategy.Announcement.ToUpperInvariant(), Px(CaptionSize),
-                _colours.Accent with { A = a }, Ink with { A = a }, Px(5), align);
+                Ui.HoverLine with { A = a }, Ink with { A = a }, Px(5), align);
         if (strategy.Result != 0)
             Outlined(_title, P(textX, TitleBase), strategy.Title, Px(TitleSize),
-                (strategy.Great ? _colours.Accent : Colors.White) with { A = a }, Ink with { A = a }, Px(10), align);
+                (strategy.Great ? Ui.HoverLine : Colors.White) with { A = a }, Ink with { A = a }, Px(10), align);
 
         if (strategy.Line is not { } line)
             return;
@@ -204,12 +198,12 @@ internal sealed partial class StrategyCutInView : Control
         float bob = BobPixels * s * Mathf.Sin((float)(Time.GetTicksMsec() / 1000.0 * Mathf.Tau / BobSeconds));
         var tip = new Vector2(box.End.X - 26 * s, box.End.Y - 17 * s + bob);
         _sheet.DrawColoredPolygon([tip + new Vector2(-MarkerSize, -MarkerSize * 1.1f) * s, tip + new Vector2(MarkerSize, -MarkerSize * 1.1f) * s, tip],
-            _colours.Accent);
+            Ui.HoverLine);
 
         // The advantage it gives, as the opening and the armies' labels go on to show it.
         if (strategy.Label != "")
             Outlined(_title, new Vector2(player ? box.Position.X + 4 * s : box.End.X - 4 * s, box.End.Y + LabelBelow * s), strategy.Label,
-                Px(strategy.Great ? GreatLabelSize : LabelSize), _colours.Accent, Ink, Px(7), align);
+                Px(strategy.Great ? GreatLabelSize : LabelSize), Ui.HoverLine, Ink, Px(7), align);
     }
 
     /// <summary>Text with a dark outline at a baseline (the outline first, the text over it).</summary>

@@ -1,0 +1,161 @@
+using Godot;
+using Parts = Kichikuou.Game.Strategy.Lacquer;    // UiPalette.Lacquer is the palette
+
+namespace Kichikuou.Game.Strategy;
+
+/// <summary>
+/// The lacquer style's parts in a palette's colours: the panel with its double gold frame and corners, a row's box, a tag,
+/// a divider, the screens' backdrop, the main button, the seal and the badge. Sizes are in the 1280×800 screen's pixels;
+/// <c>k</c> is the window pixels to a screen pixel. The parts without colours of their own are <see cref="Parts"/>'s.
+/// </summary>
+internal sealed partial record UiPalette
+{
+    /// <summary>The panel: its shadow, the lacquer (<see cref="Panel"/> unless <paramref name="fill"/>), the double gold frame and its corners.</summary>
+    public void DrawPanel(CanvasItem c, Rect2 box, float k, Color? fill = null)
+    {
+        float x = box.Position.X, y = box.Position.Y, w = box.Size.X, h = box.Size.Y;
+        for (int i = 6; i >= 1; i--)
+            c.DrawRect(new Rect2(x - i + 2, y - i + 6, w + 2 * i, h + 2 * i), new Color(0, 0, 0, 0.06f));
+        c.DrawRect(box, fill ?? Panel);
+        c.DrawRect(new Rect2(x + 1, y + 1, w - 2, h - 2), Gold, false, Parts.Line(2, k));
+        c.DrawRect(new Rect2(x + 5.5f, y + 5.5f, w - 11, h - 11), DimGold, false, Parts.Line(1, k));
+        foreach (var (cx, cy, sx, sy) in new[] { (x, y, 1, 1), (x + w, y, -1, 1), (x, y + h, 1, -1), (x + w, y + h, -1, -1) })
+        {
+            c.DrawPolyline([new(cx + sx * 9, cy + sy * 2), new(cx + sx * 9, cy + sy * 9), new(cx + sx * 2, cy + sy * 9)], Gold, Parts.Line(2, k));
+            c.DrawColoredPolygon([new(cx + sx * 9, cy + sy * 14), new(cx + sx * 14, cy + sy * 9), new(cx + sx * 9, cy + sy * 4), new(cx + sx * 4, cy + sy * 9)], Gold);
+        }
+    }
+
+    /// <summary>
+    /// A whole screen's backdrop (our Subordinates and deployment screens): dark lacquer under a faint gold wave pattern
+    /// (seigaiha), darkened towards the edges; drawn in the 1280×800 screen's pixels.
+    /// </summary>
+    public void DrawWaveBackdrop(CanvasItem c, float k)
+    {
+        var lacquer = Backdrop;
+        c.DrawRect(new Rect2(0, 0, 1280, 800), lacquer);
+        const float R = 34;
+        var wave = Gold with { A = 0.05f };
+        for (int row = -1; row * R / 2 < 800 + R; row++)
+        {
+            float y = row * R / 2, off = row % 2 == 0 ? 0 : R;
+            for (float x = -2 * R + off; x < 1280 + 2 * R; x += 2 * R)
+            {
+                var at = new Vector2(x, y);
+                c.DrawCircle(at, R, lacquer);
+                foreach (float r in (float[])[R, R * 0.72f, R * 0.44f])
+                    c.DrawArc(at, r, 0, Mathf.Tau, 40, wave, Parts.Line(1, k), true);
+            }
+        }
+        const float Inset = 220;
+        var edge = new Color(0, 0, 0, 0.7f);
+        var clear = new Color(0, 0, 0, 0);
+        Vector2[] outer = [new(0, 0), new(1280, 0), new(1280, 800), new(0, 800)];
+        Vector2[] inner = [new(Inset, Inset * 0.62f), new(1280 - Inset, Inset * 0.62f), new(1280 - Inset, 800 - Inset * 0.62f), new(Inset, 800 - Inset * 0.62f)];
+        for (int i = 0; i < 4; i++)
+        {
+            int j = (i + 1) % 4;
+            c.DrawPolygon([outer[i], outer[j], inner[j], inner[i]], [edge, edge, clear, clear]);
+        }
+    }
+
+    /// <summary>A main button's face: red lacquer framed in gold, as Turn END on the command panel; lit when hovered, sunk when pressed.</summary>
+    public void DrawRedButton(CanvasItem c, Rect2 rect, bool hover, bool down, float k)
+    {
+        Color top = down ? Color.Color8(96, 22, 16) : hover ? Color.Color8(150, 40, 30) : Color.Color8(128, 32, 24);
+        Color bottom = down ? Color.Color8(70, 14, 10) : hover ? Color.Color8(96, 20, 14) : Color.Color8(80, 16, 12);
+        c.DrawPolygon([rect.Position, new(rect.End.X, rect.Position.Y), rect.End, new(rect.Position.X, rect.End.Y)], [top, top, bottom, bottom]);
+        c.DrawRect(rect, hover ? HoverLine : Gold, false, Parts.Line(2, k));
+        c.DrawRect(rect.Grow(-4), Color.Color8(150, 96, 52), false, Parts.Line(1, k));
+    }
+
+    /// <summary>A row's box: dark with a dim frame, or lit with a bright one when hovered.</summary>
+    public void DrawRowBox(CanvasItem c, Rect2 rect, bool hover, float k)
+    {
+        c.DrawRect(rect, hover ? RowHover : Row);
+        c.DrawRect(rect, hover ? HoverLine : DimGold, false, Parts.Line(hover ? 2 : 1, k));
+    }
+
+    /// <summary>A command's tag: its colour framed in gold, or grey when the command is off.</summary>
+    public void DrawTag(CanvasItem c, Font font, Rect2 rect, string tag, Color colour, bool on, float k)
+    {
+        c.DrawRect(rect, on ? colour : OffTag);
+        if (on)
+            c.DrawRect(rect, Gold, false, Parts.Line(1, k));
+        float tw = font.GetStringSize(tag, fontSize: 13).X;
+        c.DrawString(font, new Vector2(rect.GetCenter().X - tw / 2, Parts.Baseline(rect, font, 13)), tag, fontSize: 13, modulate: on ? Text : OffText);
+    }
+
+    /// <summary>
+    /// The click's triangle centred at <paramref name="at"/>, pointing down, bobbing and breathing (owner, 2026-10-18: instead
+    /// of "Click to continue"); its caller draws again every frame while it shows.
+    /// </summary>
+    public void DrawTriangle(CanvasItem c, Vector2 at, float k)
+    {
+        double t = Time.GetTicksMsec() / 1000.0;
+        float bob = (float)(Math.Sin(t * Math.PI * 2 * 0.9) * 3);
+        float alpha = (float)(0.65 + 0.35 * Math.Sin(t * Math.PI * 2 * 0.9 + 1));
+        var p = at + new Vector2(0, bob);
+        c.DrawColoredPolygon([p + new Vector2(-8, -6), p + new Vector2(8, -6), p + new Vector2(0, 7)], Gold with { A = alpha });
+        c.DrawPolyline([p + new Vector2(-8, -6), p + new Vector2(8, -6), p + new Vector2(0, 7), p + new Vector2(-8, -6)],
+            Name with { A = alpha }, Parts.Line(1, k));
+    }
+
+    /// <summary>A party's place as a vermilion seal (hanko): a red square, a paler rule inside, the numeral in paper colour.</summary>
+    public void DrawSeal(CanvasItem c, Font font, Rect2 rect, int place)
+    {
+        c.DrawRect(rect, Vermilion);
+        c.DrawRect(rect.Grow(-Math.Max(1, rect.Size.X * 0.1f)), SealText with { A = 0.45f }, false, 1);
+        int size = Math.Max(6, (int)Math.Round(rect.Size.Y * 0.7f));
+        string text = place.ToString();
+        float w = font.GetStringSize(text, fontSize: size).X;
+        c.DrawString(font, new Vector2(rect.GetCenter().X - w / 2, Parts.Baseline(rect, font, size)), text, fontSize: size, modulate: SealText);
+    }
+
+    /// <summary>A place's number on a gold diamond of radius <paramref name="r"/> (our deployment screen's cards).</summary>
+    public void DrawBadge(CanvasItem c, Font font, Vector2 at, float r, int place)
+    {
+        Parts.DrawDiamond(c, at, r, Gold);
+        Parts.DrawDiamond(c, at, r - 2, BadgeFill);
+        int size = Math.Max(6, (int)Math.Round(r * 1.1f));
+        string text = place.ToString();
+        float w = font.GetStringSize(text, fontSize: size).X;
+        c.DrawString(font, new Vector2(at.X - w / 2, at.Y + (font.GetAscent(size) - font.GetDescent(size)) / 2), text, fontSize: size, modulate: Name);
+    }
+
+    /// <summary>
+    /// A mark's pill (decision 30, mock-ups H and S): a filled capsule <paramref name="height"/> tall ending at
+    /// <paramref name="right"/>, centred on <paramref name="mid"/>, its <paramref name="label"/> in the pill's ink — Talk's
+    /// (10 in 14) and Summon's (14 in 22).
+    /// </summary>
+    public void DrawPill(CanvasItem c, Font font, float right, float mid, string label, Color fill, int size, float height)
+    {
+        float w = font.GetStringSize(label, fontSize: size).X + height * 0.75f;
+        var rect = new Rect2(right - w, mid - height / 2, w, height);
+        int r = (int)Math.Round(height / 2);
+        c.DrawStyleBox(new StyleBoxFlat
+        {
+            BgColor = fill, CornerRadiusTopLeft = r, CornerRadiusTopRight = r, CornerRadiusBottomLeft = r, CornerRadiusBottomRight = r,
+            AntiAliasing = true,
+        }, rect);
+        c.DrawString(font, new Vector2(rect.Position.X, Parts.Baseline(rect, font, size) + 0.5f), label, HorizontalAlignment.Center, w, size, PillInk);
+    }
+
+    /// <summary>A divider: two dim rules with a gold diamond between them.</summary>
+    public void DrawDivider(CanvasItem c, float x0, float x1, float y, float k)
+    {
+        float m = (x0 + x1) / 2;
+        c.DrawLine(new Vector2(x0, y), new Vector2(m - 10, y), DimGold, Parts.Line(1, k));
+        c.DrawLine(new Vector2(m + 10, y), new Vector2(x1, y), DimGold, Parts.Line(1, k));
+        c.DrawColoredPolygon([new(m, y - 4), new(m + 4, y), new(m, y + 4), new(m - 4, y)], Gold);
+    }
+
+    /// <summary>The same divider standing up, between two columns (the touch mode's panels).</summary>
+    public void DrawVerticalDivider(CanvasItem c, float x, float y0, float y1, float k)
+    {
+        float m = (y0 + y1) / 2;
+        c.DrawLine(new Vector2(x, y0), new Vector2(x, m - 10), DimGold, Parts.Line(1, k));
+        c.DrawLine(new Vector2(x, m + 10), new Vector2(x, y1), DimGold, Parts.Line(1, k));
+        c.DrawColoredPolygon([new(x, m - 4), new(x + 4, m), new(x, m + 4), new(x - 4, m)], Gold);
+    }
+}

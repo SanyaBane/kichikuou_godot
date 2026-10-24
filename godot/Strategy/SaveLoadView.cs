@@ -20,8 +20,10 @@ namespace Kichikuou.Game.Strategy;
 /// A right click or Esc answers 0. Laid out in the 1280×800 screen's pixels, scaled with the picture. After its answer the
 /// screen stays drawn, taking no clicks, until the script shows the next list or the save screen closes.
 /// </summary>
-internal sealed partial class SaveLoadView : Control
+internal sealed partial class SaveLoadView : Control, IUiPaletteUser
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Screens);
+
     // hits: the button, the tabs, the lists' switch, Delete and its answers, Edit, New save, the sweep and its answers,
     // and from RowHit the rows shown, top to bottom
     private const int ButtonHit = 200, TabHit = 100, SideHit = 400, DeleteHit = 500, DeleteYesHit = 501,
@@ -42,11 +44,11 @@ internal sealed partial class SaveLoadView : Control
     private const float ManualW = 318, ManualH = 52, ManualPitch = 57, NewH = 44, AutoH = 55, AutoPitch = 60, PageX = 426, PageY = 84;
     private const int CommentLength = 60;
 
-    private static readonly Color ChosenFill = Color.Color8(60, 30, 22);
+    private static Color ChosenFill => Ui.ChosenFill;
     private static readonly Color AutoGold = Color.Color8(138, 104, 34);
     private static readonly Color TagText = Color.Color8(246, 232, 206);
-    private static readonly Color StarRim = Color.Color8(26, 18, 12);
-    private static readonly Color GoneVeil = Color.Color8(14, 10, 8, 150);
+    private static Color StarRim => Ui.Rim;
+    private static Color GoneVeil => Ui.Backdrop with { A = 150 / 255f };
 
     private readonly FacePictures _pictures;
     private readonly FontFile _brush = Lacquer.Brush();
@@ -75,8 +77,7 @@ internal sealed partial class SaveLoadView : Control
         MouseFilter = MouseFilterEnum.Stop;
         Visible = false;
         _edit = new LineEdit { Visible = false, MaxLength = CommentLength, Flat = true, ContextMenuEnabled = false };
-        _edit.AddThemeColorOverride("font_color", Lacquer.Ink);
-        _edit.AddThemeColorOverride("caret_color", Lacquer.Ink);
+        ApplyPalette();
         _edit.AddThemeStyleboxOverride("normal", new StyleBoxEmpty());
         _edit.AddThemeStyleboxOverride("focus", new StyleBoxEmpty());
         _edit.TextSubmitted += _ => EndEdit(keep: true);
@@ -90,6 +91,13 @@ internal sealed partial class SaveLoadView : Control
         };
         _edit.FocusExited += () => EndEdit(keep: true);
         AddChild(_edit);
+    }
+
+    /// <summary>Option → Display: the comment's field in the palette's ink.</summary>
+    public void ApplyPalette()
+    {
+        _edit.AddThemeColorOverride("font_color", Ui.Ink);
+        _edit.AddThemeColorOverride("caret_color", Ui.Ink);
     }
 
     public void SetFont(GameFont font)
@@ -600,10 +608,10 @@ internal sealed partial class SaveLoadView : Control
             return;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         DrawRect(new Rect2(0, 0, 1280, 800), new Color(0, 0, 0, 120 / 255f));
-        Lacquer.DrawPanel(this, PanelRect, _k);
+        Ui.DrawPanel(this, PanelRect, _k);
         bool save = list == SaveList.Save;
-        Text(_brush, 24, PanelRect.Position.X + 22, PanelRect.Position.Y + 25, save ? "Save" : "Load", Lacquer.Name);
-        Lacquer.DrawDivider(this, PanelRect.Position.X + 16, PanelRect.End.X - 16, PanelRect.Position.Y + 44, _k);
+        Text(_brush, 24, PanelRect.Position.X + 22, PanelRect.Position.Y + 25, save ? "Save" : "Load", Ui.Name);
+        Ui.DrawDivider(this, PanelRect.Position.X + 16, PanelRect.End.X - 16, PanelRect.Position.Y + 44, _k);
         if (_tabs)
         {
             DrawTab(SaveList.Load);
@@ -629,27 +637,27 @@ internal sealed partial class SaveLoadView : Control
         if (on)
         {
             DrawRect(rect, ChosenFill);
-            DrawRect(rect, Lacquer.Vermilion, false, Line(2));
+            DrawRect(rect, Ui.Vermilion, false, Line(2));
         }
         else
-            Lacquer.DrawRowBox(this, rect, hover, _k);
-        TextCentred(_cinzel, 14, rect.GetCenter().X, rect.GetCenter().Y, text, on ? Lacquer.Name : hover ? Lacquer.Text : Lacquer.Quiet);
+            Ui.DrawRowBox(this, rect, hover, _k);
+        TextCentred(_cinzel, 14, rect.GetCenter().X, rect.GetCenter().Y, text, on ? Ui.Name : hover ? Ui.Text : Ui.Quiet);
     }
 
     private void DrawAutos()
     {
-        Text(_cinzel, 11, ListX, HeadY, "NEWEST FIRST", Lacquer.Subtitle);
-        TextRight(_gothic, 11, ListX + ListW, HeadY, "the game keeps the last ten", Lacquer.Label);
+        Text(_cinzel, 11, ListX, HeadY, "NEWEST FIRST", Ui.Subtitle);
+        TextRight(_gothic, 11, ListX + ListW, HeadY, "the game keeps the last ten", Ui.Label);
         foreach (var (id, rect) in Rows())
             if (id is { } save && Find(save) is { } held)
                 DrawRow(rect, held, auto: true);
         if (_shelf.Autos.Count == 0)
-            TextCentred(_cinzelLight, 15, ListX + ListW / 2, ListTop + 40, "No auto-saves yet.", Lacquer.OffText);
+            TextCentred(_cinzelLight, 15, ListX + ListW / 2, ListTop + 40, "No auto-saves yet.", Ui.OffText);
     }
 
     private void DrawManuals(bool save)
     {
-        Text(_cinzel, 11, ListX, HeadY, "NEWEST FIRST", Lacquer.Subtitle);
+        Text(_cinzel, 11, ListX, HeadY, "NEWEST FIRST", Ui.Subtitle);
         DrawSweepButton();
         if (save)
             DrawNewRow();
@@ -657,13 +665,13 @@ internal sealed partial class SaveLoadView : Control
             if (id is { } held && Find(held) is { } slot)
                 DrawRow(rect, slot, auto: false);
         if (_manuals.Count == 0)
-            TextCentred(_cinzelLight, 15, ListX + ListW / 2, ManualTop + 40, "No manual saves yet.", Lacquer.OffText);
+            TextCentred(_cinzelLight, 15, ListX + ListW / 2, ManualTop + 40, "No manual saves yet.", Ui.OffText);
         if (_manuals.Count > ManualRowsShown)
         {
             float top = ManualTop, span = ListBottom - top, x = ListX + ListW - 6;
-            DrawRect(new Rect2(x, top, 5, span), Color.Color8(40, 32, 24));
+            DrawRect(new Rect2(x, top, 5, span), Ui.Groove);
             float a = top + span * _scroll / _manuals.Count, b = top + span * Math.Min(_manuals.Count, _scroll + ManualRowsShown) / _manuals.Count;
-            DrawRect(new Rect2(x, a, 5, b - a), Lacquer.Gold);
+            DrawRect(new Rect2(x, a, 5, b - a), Ui.Gold);
         }
     }
 
@@ -673,17 +681,17 @@ internal sealed partial class SaveLoadView : Control
         if (_chosenNew)
         {
             DrawRect(rect, ChosenFill);
-            DrawRect(rect, Lacquer.Vermilion, false, Line(2));
+            DrawRect(rect, Ui.Vermilion, false, Line(2));
         }
         else
         {
             bool hover = _hovered == NewHit;
-            DrawRect(rect, hover ? Lacquer.RowHover : Color.Color8(26, 20, 16, 230));
-            DrawDashed(rect, hover ? Lacquer.HoverLine : Lacquer.DimGold);
+            DrawRect(rect, hover ? Ui.RowHover : Ui.RowShade);
+            DrawDashed(rect, hover ? Ui.HoverLine : Ui.DimGold);
         }
         float cy = rect.GetCenter().Y;
-        Text(_cinzel, 22, rect.Position.X + 18, cy, "+", Lacquer.Name);
-        Text(_cinzel, 15, rect.Position.X + 44, cy, "New save", _chosenNew || _hovered == NewHit ? Lacquer.Name : Lacquer.Quiet);
+        Text(_cinzel, 22, rect.Position.X + 18, cy, "+", Ui.Name);
+        Text(_cinzel, 15, rect.Position.X + 44, cy, "New save", _chosenNew || _hovered == NewHit ? Ui.Name : Ui.Quiet);
     }
 
     private void DrawDashed(Rect2 rect, Color colour)
@@ -710,11 +718,11 @@ internal sealed partial class SaveLoadView : Control
         if (active)
         {
             DrawRect(rect, ChosenFill);
-            DrawRect(rect, Lacquer.Vermilion, false, Line(2));
+            DrawRect(rect, Ui.Vermilion, false, Line(2));
         }
         else
-            Lacquer.DrawRowBox(this, rect, hover, _k);
-        TextCentred(_cinzel, 15, rect.GetCenter().X, rect.GetCenter().Y, tab.ToString(), active ? Lacquer.Name : hover ? Lacquer.Text : Lacquer.Quiet);
+            Ui.DrawRowBox(this, rect, hover, _k);
+        TextCentred(_cinzel, 15, rect.GetCenter().X, rect.GetCenter().Y, tab.ToString(), active ? Ui.Name : hover ? Ui.Text : Ui.Quiet);
     }
 
     /// <summary>A save's row: the seal, the short date, the time written right; under them the comment (an auto-save: its kind).</summary>
@@ -725,32 +733,32 @@ internal sealed partial class SaveLoadView : Control
         if (chosen)
         {
             DrawRect(rect, ChosenFill);
-            DrawRect(rect, Lacquer.Vermilion, false, Line(2));
+            DrawRect(rect, Ui.Vermilion, false, Line(2));
         }
         else
         {
-            Lacquer.DrawRowBox(this, rect, _hovered == RowHit + place, _k);
+            Ui.DrawRowBox(this, rect, _hovered == RowHit + place, _k);
             if (auto)
                 DrawRect(rect, AutoGold, false, Line(1));
         }
         float x0 = rect.Position.X, y0 = rect.Position.Y;
-        DrawSeal(new Rect2(x0 + 8, rect.GetCenter().Y - 12, 24, 24), held.Seal, auto ? AutoGold : Lacquer.Vermilion);
+        DrawSeal(new Rect2(x0 + 8, rect.GetCenter().Y - 12, 24, 24), held.Seal, auto ? AutoGold : Ui.Vermilion);
         float tx = x0 + 42;
-        Text(_cinzel, 15, tx, y0 + 16, held.ShortDate, Lacquer.Name);
-        TextRight(_gothic, 14, rect.End.X - 10, y0 + 16, held.WrittenShort, Lacquer.Value);   // the lists' order: the bright line
+        Text(_cinzel, 15, tx, y0 + 16, held.ShortDate, Ui.Name);
+        TextRight(_gothic, 14, rect.End.X - 10, y0 + 16, held.WrittenShort, Ui.Value);   // the lists' order: the bright line
         if (auto)
-            Text(_gothic, 12, tx, y0 + 38, "start of the week", Lacquer.Label);
+            Text(_gothic, 12, tx, y0 + 38, "start of the week", Ui.Label);
         else if (held.Commented)
         {
-            Text(_gothic, 12, tx, y0 + 37, "“" + Fit(held.Comment, 12, rect.End.X - tx - 22) + "”", Lacquer.Quiet);
+            Text(_gothic, 12, tx, y0 + 37, "“" + Fit(held.Comment, 12, rect.End.X - tx - 22) + "”", Ui.Quiet);
             var corner = new Vector2(x0 + 9, rect.GetCenter().Y - 11);         // the seal's top left (the right is near the date)
             DrawStar(corner, 9, StarRim);
-            DrawStar(corner, 7, Lacquer.Gold);
+            DrawStar(corner, 7, Ui.Gold);
         }
         else if (_sweep)
         {
             DrawRect(rect, GoneVeil);                                   // the sweep asking: this row would go
-            DrawLine(new Vector2(x0 + 6, rect.GetCenter().Y), new Vector2(rect.End.X - 6, rect.GetCenter().Y), Lacquer.Vermilion, Line(1.5f));
+            DrawLine(new Vector2(x0 + 6, rect.GetCenter().Y), new Vector2(rect.End.X - 6, rect.GetCenter().Y), Ui.Vermilion, Line(1.5f));
         }
     }
 
@@ -776,18 +784,18 @@ internal sealed partial class SaveLoadView : Control
         bool off = count == 0, hover = _hovered == SweepHit || _sweep;
         if (off)
         {
-            DrawRect(SweepRect, Lacquer.OffButton);
-            DrawRect(SweepRect, Lacquer.OffLine, false, Line(1));
+            DrawRect(SweepRect, Ui.OffButton);
+            DrawRect(SweepRect, Ui.OffLine, false, Line(1));
         }
         else
-            Lacquer.DrawRowBox(this, SweepRect, hover, _k);
+            Ui.DrawRowBox(this, SweepRect, hover, _k);
         const string label = "Delete all without";
         string tail = $"({count})";
         float lw = _gothic.GetStringSize(label, fontSize: 12).X, tw = _gothic.GetStringSize(tail, fontSize: 12).X;
         float x = SweepRect.GetCenter().X - (lw + 22 + tw) / 2, y = SweepRect.GetCenter().Y;
-        var colour = off ? Lacquer.OffText : hover ? Lacquer.Name : Lacquer.Text;
+        var colour = off ? Ui.OffText : hover ? Ui.Name : Ui.Text;
         Text(_gothic, 12, x, y, label, colour);
-        DrawStar(new Vector2(x + lw + 11, y), 6, off ? Lacquer.OffText : Lacquer.Gold);
+        DrawStar(new Vector2(x + lw + 11, y), 6, off ? Ui.OffText : Ui.Gold);
         Text(_gothic, 12, x + lw + 22, y, tail, colour);
     }
 
@@ -796,25 +804,25 @@ internal sealed partial class SaveLoadView : Control
     {
         var shelf = _shelf.Manuals;
         int gone = SaveSlots.Uncommented(shelf).Count;
-        Lacquer.DrawPanel(this, SweepCalloutRect, _k);
+        Ui.DrawPanel(this, SweepCalloutRect, _k);
         float left = SweepCalloutRect.Position.X, tip = SweepRect.GetCenter().Y;
-        DrawColoredPolygon([new(left + 2, tip - 10), new(left + 2, tip + 10), new(left - 12, tip)], Lacquer.Gold);
+        DrawColoredPolygon([new(left + 2, tip - 10), new(left + 2, tip + 10), new(left - 12, tip)], Ui.Gold);
         Text(_gothic, 16, left + 22, SweepCalloutRect.Position.Y + 32,
-            gone == 1 ? "Delete the manual save without a comment?" : $"Delete the {gone} manual saves without a comment?", Lacquer.Text);
+            gone == 1 ? "Delete the manual save without a comment?" : $"Delete the {gone} manual saves without a comment?", Ui.Text);
         int kept = shelf.Count - gone;
         string stay = kept == 0 ? "That is every manual save." : kept == 1 ? "The one with a comment (★) stays." : $"The {kept} with one (★) stay.";
-        Text(_gothic, 16, left + 22, SweepCalloutRect.Position.Y + 56, stay + " It cannot be undone.", Lacquer.Text);
+        Text(_gothic, 16, left + 22, SweepCalloutRect.Position.Y + 56, stay + " It cannot be undone.", Ui.Text);
         bool yes = _hovered == SweepYesHit;
-        Lacquer.DrawRedButton(this, SweepYesRect, yes, yes && _pressed == SweepYesHit, _k);
-        TextCentred(_brush, 16, SweepYesRect.GetCenter().X, SweepYesRect.GetCenter().Y, $"Delete {gone}", Lacquer.Name);
+        Ui.DrawRedButton(this, SweepYesRect, yes, yes && _pressed == SweepYesHit, _k);
+        TextCentred(_brush, 16, SweepYesRect.GetCenter().X, SweepYesRect.GetCenter().Y, $"Delete {gone}", Ui.Name);
         DrawSmallButton(SweepNoRect, "Keep", SweepNoHit);
     }
 
     private void DrawSeal(Rect2 rect, string text, Color fill)
     {
         DrawRect(rect, fill);
-        DrawRect(rect.Grow(-2), Lacquer.SealText with { A = 0.45f }, false, Line(1));
-        TextCentred(_cinzel, text.Length > 2 ? 11 : 14, rect.GetCenter().X, rect.GetCenter().Y + 1, text, Lacquer.SealText);
+        DrawRect(rect.Grow(-2), Ui.SealText with { A = 0.45f }, false, Line(1));
+        TextCentred(_cinzel, text.Length > 2 ? 11 : 14, rect.GetCenter().X, rect.GetCenter().Y + 1, text, Ui.SealText);
     }
 
     private void DrawPage(bool save)
@@ -824,12 +832,12 @@ internal sealed partial class SaveLoadView : Control
         if (shown is null)
         {
             string none = _autoSide ? "No auto-save chosen." : save ? "Choose New save or a save to save over." : "No saved games.";
-            TextCentred(_cinzelLight, 18, MapRect.GetCenter().X, MapRect.GetCenter().Y, none, Lacquer.Quiet);
-            Text(_gothic, 13, PageX, ButtonRect.Position.Y + 40, $"Right click: {_back}", Lacquer.Quiet);
+            TextCentred(_cinzelLight, 18, MapRect.GetCenter().X, MapRect.GetCenter().Y, none, Ui.Quiet);
+            Text(_gothic, 13, PageX, ButtonRect.Position.Y + 40, $"Right click: {_back}", Ui.Quiet);
             return;
         }
         string title = _chosenNew ? $"New save · {shown.DateText}" : held!.Id?.Kind == SaveKind.Auto ? shown.DateText : $"{held.Label} · {shown.DateText}";
-        Text(_cinzel, 22, PageX, PageY + 14, title, Lacquer.Name);
+        Text(_cinzel, 22, PageX, PageY + 14, title, Ui.Name);
         if (held?.Id?.Kind == SaveKind.Auto)
         {
             float w = _cinzel.GetStringSize(title, fontSize: 22).X;
@@ -840,7 +848,7 @@ internal sealed partial class SaveLoadView : Control
             DrawTextureRect(map, MapRect, false);
         else
             DrawRect(MapRect, Colors.Black);
-        DrawRect(MapRect, Lacquer.DimGold, false, Line(1));
+        DrawRect(MapRect, Ui.DimGold, false, Line(1));
         float gy = MapRect.End.Y + 14;
         (string, string)[] stats =
         [
@@ -850,16 +858,16 @@ internal sealed partial class SaveLoadView : Control
         for (int i = 0; i < stats.Length; i++)
         {
             float sx = PageX + i % 3 * 280, sy = gy + i / 3 * 46;
-            DrawString(_gothic, new Vector2(sx, sy + _gothic.GetAscent(13)), stats[i].Item1, fontSize: 13, modulate: Lacquer.Label);
-            DrawString(_gothic, new Vector2(sx, sy + 18 + _gothic.GetAscent(17)), stats[i].Item2, fontSize: 17, modulate: Lacquer.Value);
+            DrawString(_gothic, new Vector2(sx, sy + _gothic.GetAscent(13)), stats[i].Item1, fontSize: 13, modulate: Ui.Label);
+            DrawString(_gothic, new Vector2(sx, sy + 18 + _gothic.GetAscent(17)), stats[i].Item2, fontSize: 17, modulate: Ui.Value);
         }
         float cy = MapRect.End.Y + 114;
         if (_chosenNew)
-            Text(_gothic, 15, PageX, cy + 10, "A new manual save. Its comment can be written once it is saved.", Lacquer.Text);
+            Text(_gothic, 15, PageX, cy + 10, "A new manual save. Its comment can be written once it is saved.", Ui.Text);
         else if (held!.Id?.Kind == SaveKind.Auto)
         {
-            Text(_gothic, 15, PageX, cy + 10, "The game writes one at the start of every week and keeps the last ten;", Lacquer.Text);
-            Text(_gothic, 15, PageX, cy + 32, "the eleventh pushes the oldest out. Loading one leaves the list as it is.", Lacquer.Text);
+            Text(_gothic, 15, PageX, cy + 10, "The game writes one at the start of every week and keeps the last ten;", Ui.Text);
+            Text(_gothic, 15, PageX, cy + 32, "the eleventh pushes the oldest out. Loading one leaves the list as it is.", Ui.Text);
         }
         else
             DrawComment(held, cy);
@@ -868,12 +876,12 @@ internal sealed partial class SaveLoadView : Control
         {
             if (_now is { } now)
             {
-                Text(_gothic, 15, PageX, by + 16, $"Saving: {now.DateText}", Lacquer.Text);
-                Text(_gothic, 14, PageX, by + 40, $"{now.BudgetText} · {now.RealmText} · {Figures.Number(now.Troops)} troops", Lacquer.Quiet);
+                Text(_gothic, 15, PageX, by + 16, $"Saving: {now.DateText}", Ui.Text);
+                Text(_gothic, 14, PageX, by + 40, $"{now.BudgetText} · {now.RealmText} · {Figures.Number(now.Troops)} troops", Ui.Quiet);
             }
         }
         else
-            Text(_gothic, 13, PageX, by + 40, $"Right click: {_back}", Lacquer.Quiet);
+            Text(_gothic, 13, PageX, by + 40, $"Right click: {_back}", Ui.Quiet);
         if (ButtonShown)
             DrawButton(_chosenNew || !save ? (save ? "Save" : "Load") : $"Save over {held!.Label}");
         else if (save)
@@ -885,44 +893,44 @@ internal sealed partial class SaveLoadView : Control
     /// <summary>The manual save's comment on its slip, with Edit; while it is written, the field over the slip (paper).</summary>
     private void DrawComment(SaveSlot held, float y)
     {
-        DrawString(_gothic, new Vector2(PageX, y + _gothic.GetAscent(13)), "Comment", fontSize: 13, modulate: Lacquer.Label);
+        DrawString(_gothic, new Vector2(PageX, y + _gothic.GetAscent(13)), "Comment", fontSize: 13, modulate: Ui.Label);
         if (_editing)
         {
             var box = new Rect2(CommentRect.Position, new Vector2(EditRect.End.X - CommentRect.Position.X, CommentRect.Size.Y));
-            DrawRect(box, Lacquer.Paper);
-            DrawRect(box, Lacquer.Vermilion, false, Line(2));
-            TextRight(_gothic, 12, box.End.X, box.End.Y + 14, $"Enter: keep it  ·  Esc: leave it as it was  ·  {CommentLength} letters at most", Lacquer.Quiet);
+            DrawRect(box, Ui.Paper);
+            DrawRect(box, Ui.Vermilion, false, Line(2));
+            TextRight(_gothic, 12, box.End.X, box.End.Y + 14, $"Enter: keep it  ·  Esc: leave it as it was  ·  {CommentLength} letters at most", Ui.Quiet);
             return;
         }
-        DrawRect(CommentRect, Lacquer.Row);
-        DrawRect(CommentRect, Lacquer.DimGold, false, Line(1));
+        DrawRect(CommentRect, Ui.Row);
+        DrawRect(CommentRect, Ui.DimGold, false, Line(1));
         bool any = held.Comment.Length > 0;
         Text(_gothic, 16, CommentRect.Position.X + 10, CommentRect.GetCenter().Y,
-            any ? Fit(held.Comment, 16, CommentRect.Size.X - 20) : "none — Edit writes one", any ? Lacquer.Value : Lacquer.Label);
+            any ? Fit(held.Comment, 16, CommentRect.Size.X - 20) : "none — Edit writes one", any ? Ui.Value : Ui.Label);
         DrawSmallButton(EditRect, "Edit", EditHit);
     }
 
     private void DrawSmallButton(Rect2 rect, string text, int hit)
     {
         bool hover = _hovered == hit || (hit == DeleteHit && _confirm);
-        Lacquer.DrawRowBox(this, rect, hover, _k);
-        TextCentred(_cinzel, 14, rect.GetCenter().X, rect.GetCenter().Y, text, hover ? Lacquer.Name : Lacquer.Text);
+        Ui.DrawRowBox(this, rect, hover, _k);
+        TextCentred(_cinzel, 14, rect.GetCenter().X, rect.GetCenter().Y, text, hover ? Ui.Name : Ui.Text);
     }
 
     private void DrawButton(string title)
     {
         bool hover = _hovered == ButtonHit;
-        Lacquer.DrawRedButton(this, ButtonRect, hover, hover && _pressed == ButtonHit, _k);
-        TextCentred(_brush, 22, ButtonRect.GetCenter().X, ButtonRect.GetCenter().Y, title, Lacquer.Name);
+        Ui.DrawRedButton(this, ButtonRect, hover, hover && _pressed == ButtonHit, _k);
+        TextCentred(_brush, 22, ButtonRect.GetCenter().X, ButtonRect.GetCenter().Y, title, Ui.Name);
     }
 
     /// <summary>The red button off: an auto-save is the game's own, not saved over.</summary>
     private void DrawOffButton(string title)
     {
-        DrawRect(ButtonRect, Lacquer.OffButton);
-        DrawRect(ButtonRect, Lacquer.OffLine, false, Line(2));
-        TextCentred(_brush, 22, ButtonRect.GetCenter().X, ButtonRect.GetCenter().Y - 6, title, Lacquer.OffText);
-        TextCentred(_gothic, 12, ButtonRect.GetCenter().X, ButtonRect.GetCenter().Y + 16, "auto-saves are the game's own", Lacquer.OffText);
+        DrawRect(ButtonRect, Ui.OffButton);
+        DrawRect(ButtonRect, Ui.OffLine, false, Line(2));
+        TextCentred(_brush, 22, ButtonRect.GetCenter().X, ButtonRect.GetCenter().Y - 6, title, Ui.OffText);
+        TextCentred(_gothic, 12, ButtonRect.GetCenter().X, ButtonRect.GetCenter().Y + 16, "auto-saves are the game's own", Ui.OffText);
     }
 
     /// <summary>Delete's question in a callout at the button (as the Treasure screen's): Delete | Keep.</summary>
@@ -930,15 +938,15 @@ internal sealed partial class SaveLoadView : Control
     {
         if (ChosenSave is not { } held)
             return;
-        Lacquer.DrawPanel(this, CalloutRect, _k);
+        Ui.DrawPanel(this, CalloutRect, _k);
         float tip = DeleteRect.GetCenter().X, bottom = CalloutRect.End.Y;
-        DrawColoredPolygon([new(tip - 10, bottom - 2), new(tip + 10, bottom - 2), new(tip, bottom + 12)], Lacquer.Gold);
+        DrawColoredPolygon([new(tip - 10, bottom - 2), new(tip + 10, bottom - 2), new(tip, bottom + 12)], Ui.Gold);
         string what = held.Id?.Kind == SaveKind.Auto ? $"the auto-save of {held.DateText}" : $"{held.Label}, {held.DateText}";
-        Text(_gothic, 16, CalloutRect.Position.X + 22, CalloutRect.Position.Y + 32, Fit($"Delete {what}?", 16, CalloutRect.Size.X - 44), Lacquer.Text);
-        Text(_gothic, 16, CalloutRect.Position.X + 22, CalloutRect.Position.Y + 56, "It cannot be undone.", Lacquer.Text);
+        Text(_gothic, 16, CalloutRect.Position.X + 22, CalloutRect.Position.Y + 32, Fit($"Delete {what}?", 16, CalloutRect.Size.X - 44), Ui.Text);
+        Text(_gothic, 16, CalloutRect.Position.X + 22, CalloutRect.Position.Y + 56, "It cannot be undone.", Ui.Text);
         bool yes = _hovered == DeleteYesHit;
-        Lacquer.DrawRedButton(this, YesRect, yes, yes && _pressed == DeleteYesHit, _k);
-        TextCentred(_brush, 16, YesRect.GetCenter().X, YesRect.GetCenter().Y, "Delete", Lacquer.Name);
+        Ui.DrawRedButton(this, YesRect, yes, yes && _pressed == DeleteYesHit, _k);
+        TextCentred(_brush, 16, YesRect.GetCenter().X, YesRect.GetCenter().Y, "Delete", Ui.Name);
         DrawSmallButton(NoRect, "Keep", DeleteNoHit);
     }
 

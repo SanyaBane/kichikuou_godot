@@ -13,6 +13,8 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal sealed partial class CommandsButton : Control
 {
+    private static UiPalette Ui => UiPalettes.For(UiPart.Map);
+
     // In the map's layout pixels (1280 across the picture): 220×72, 16 in from the picture's right and bottom edges.
     private static readonly Vector2 ButtonSize = new(220, 72);
     private const float Margin = 16, Text = 19, Icon = 24;
@@ -94,24 +96,24 @@ internal sealed partial class CommandsButton : Control
         DrawSetTransform(Vector2.Zero, 0, new Vector2(k, k));               // in layout pixels below
         var box = new Rect2(Vector2.Zero, ButtonSize);
         bool pressed = _down && _inside;
-        Lacquer.DrawPanel(this, box, k, pressed ? Lacquer.RowHover : null);
+        Ui.DrawPanel(this, box, k, pressed ? Ui.RowHover : null);
         float cy = box.Size.Y / 2;
         var icon = new Vector2(36, cy);
         if (_closes)
         {
             float h = Icon * 0.35f, w = Lacquer.Line(3.5f, k);
-            DrawLine(icon - new Vector2(h, h), icon + new Vector2(h, h), Lacquer.Gold, w, true);
-            DrawLine(icon + new Vector2(-h, h), icon + new Vector2(h, -h), Lacquer.Gold, w, true);
+            DrawLine(icon - new Vector2(h, h), icon + new Vector2(h, h), Ui.Gold, w, true);
+            DrawLine(icon + new Vector2(-h, h), icon + new Vector2(h, -h), Ui.Gold, w, true);
         }
         else
         {
             float bar = Icon * 0.13f;
             for (int i = -1; i <= 1; i++)
-                DrawRect(new Rect2(icon.X - Icon / 2, icon.Y + i * Icon * 0.35f - bar / 2, Icon, bar), Lacquer.Gold);
+                DrawRect(new Rect2(icon.X - Icon / 2, icon.Y + i * Icon * 0.35f - bar / 2, Icon, bar), Ui.Gold);
         }
         var label = new Rect2(60, 0, box.Size.X - 70, box.Size.Y);
         string text = _closes ? "Close" : "Commands";
         DrawString(_brush, new Vector2(label.Position.X, Lacquer.Baseline(label, _brush, (int)Text)), text,
-            HorizontalAlignment.Center, label.Size.X, (int)Text, Lacquer.Name);
+            HorizontalAlignment.Center, label.Size.X, (int)Text, Ui.Name);
     }
 }
