@@ -338,6 +338,14 @@ owner chose F5**, its ends kept off the cards: a gold bracket holding the front 
 in the gap 2 pixels short of the cards' edges, its middle drawn out into a light gold head pointing at the enemy.
 The Attack button lost its line ("Go to war · cost", the war expenses being right above it) the same day.
 
+### The cards' troops (owner, 2026-10-24)
+
+The owner asked for the troops a line higher, as current/maximum, Cost staying at the card's foot on the right.
+`tools/ui/mock_cards.py` draws four over the defence of Ys (5) from `saves-week18`: **A** the bar under the troops,
+**B** the bar at the foot under Cost, **C** as A with the maximum quieter, **D** the bar beside the troops. **The owner
+chose C**, built the same day (`DeploymentPanels.DrawCard`): "980/1,000" under the type, "/1,000" in `Lacquer.Quiet`, the
+strength bar under it, Cost alone at the foot.
+
 ## Replenish on the deployment screen (owner's request, 2026-10-20)
 
 The owner asked for Replenish (`Cﾌﾞｶ`'s troop menu; not Add New Troops) on the deployment screen. What the rules say:

@@ -529,13 +529,20 @@ internal sealed partial class DeploymentPanels : Control
         c.DrawString(_gothic, new Vector2(tx, Lacquer.Baseline(typeBand, _gothic, 14)), member.TroopType,
             HorizontalAlignment.Left, typeBand.Size.X, 14, Lacquer.Quiet with { A = a });
 
-        var line = new Rect2(tx, rect.End.Y - 34, rect.End.X - 12 - tx, 20);
-        string troops = rect.Size.X > 280 ? $"{Figures.Number(member.Troops)} troops" : Figures.Number(member.Troops);
-        c.DrawString(_gothic, new Vector2(tx, Lacquer.Baseline(line, _gothic, 15)), troops, fontSize: 15, modulate: Lacquer.Text with { A = a });
+        // The troops as current/maximum under the type, the maximum quieter, the strength bar under them; Cost at the foot
+        // (owner's mock-up C, 2026-10-24).
+        var troopsLine = new Rect2(tx, rect.Position.Y + 52, rect.End.X - 12 - tx, 20);
+        float troopsBase = troopsLine.Position.Y + 16;
+        string now = Figures.Number(member.Troops);
+        c.DrawString(_gothic, new Vector2(tx, troopsBase), now, fontSize: 15, modulate: Lacquer.Text with { A = a });
+        float nowWidth = _gothic.GetStringSize(now, fontSize: 15).X;
+        c.DrawString(_gothic, new Vector2(tx + nowWidth, troopsBase), "/" + Figures.Number(member.MaxTroops), fontSize: 15,
+            modulate: Lacquer.Quiet with { A = a });
+        DrawStrength(c, new Rect2(tx, troopsBase + 4, troopsLine.Size.X, 3), member.Troops, member.MaxTroops, a);
+        var line = new Rect2(tx, rect.End.Y - 24, rect.End.X - 12 - tx, 20);
         string cost = Figures.GoldShort(member.Cost * 100);
         float cx = RightString(c, _gothic, cost, 15, Lacquer.Text with { A = a }, line.End.X, line) - 6;
         RightString(c, _cinzel, "Cost", 11, Lacquer.Quiet with { A = a }, cx, line);
-        DrawStrength(c, new Rect2(tx, line.End.Y + 1, line.Size.X, 3), member.Troops, member.MaxTroops, a);
 
         var remove = RemoveRect(place);
         bool lit = !_dragging && _hovered == RemoveButton + place;
