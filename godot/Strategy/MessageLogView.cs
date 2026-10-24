@@ -35,6 +35,7 @@ internal sealed partial class MessageLogView : Control
     public MessageLogView(GameFont font, MessageLog log)
     {
         MouseFilter = MouseFilterEnum.Stop;
+        ZIndex = 1000;                                      // over everything, the battle screen's layers (up to 20) included; Godot's limit is 4096
         var file = DeploymentTableView.LoadFont(font);
         _gothic = new FontVariation { BaseFont = file, VariationEmbolden = 0.6f };
         _plain = new FontVariation { BaseFont = file };

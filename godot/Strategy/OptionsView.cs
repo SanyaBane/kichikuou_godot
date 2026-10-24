@@ -110,6 +110,7 @@ internal sealed partial class OptionsView : Control
         _folderLocked = folderLocked;
         _gothic = DeploymentTableView.LoadFont(GodotGlyphRenderer.Chosen);
         MouseFilter = MouseFilterEnum.Stop;
+        ZIndex = 1000;                                      // over everything, the battle screen's layers (up to 20) included; Godot's limit is 4096
         _preview = new MessageWindowView(GodotGlyphRenderer.Chosen) { Tail = false, MouseFilter = MouseFilterEnum.Ignore };
         AddChild(_preview);
         _preview.Show(_sample, true, null, null);
