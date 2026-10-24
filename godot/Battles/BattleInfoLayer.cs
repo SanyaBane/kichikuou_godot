@@ -10,12 +10,18 @@ namespace Kichikuou.Game.Battles;
 /// mock-ups K3 and K1, 2026-10-18/19), drawn from <see cref="BattleInfoBox"/>: a defence flashing as a "DEFEND · ENEMY HIT −n%" ribbon
 /// across the unit's card and its sentence as a caption at the scene's foot (mock-ups D2 and D5, 2026-10-21); the end as one results plate — the
 /// reason as its title, each army's damages, the EXP, a row for each level-up —; every other box as our narration panel in
-/// the scene's middle, a fall's too (owner, 2026-10-24: the original's box and click, no stamp). The click's triangle while the player's key is awaited. It takes no input: the screen's click answers
+/// the scene's foot (owner, 2026-10-24), a fall's too (owner, 2026-10-24: the original's box and click, no stamp). The click's triangle while the player's key is awaited. It takes no input: the screen's click answers
 /// the script's wait (<see cref="GameScreen"/>). Laid out in the 1280×800 layout's pixels, scaled with the screen.
 /// </summary>
 internal sealed partial class BattleInfoLayer : Control
 {
-    private const float SceneCentreX = 640, SceneMiddleY = 190, PanelMaxText = 860, PanelPitch = 40;
+    private const float SceneCentreX = 640, PanelMaxText = 860, PanelPitch = 40;
+
+    /// <summary>
+    /// Our panel's foot: near the scene's (410), level with the defence's caption's (owner, 2026-10-24: in the scene's middle
+    /// it stood too high over the field); a longer panel grows up from it.
+    /// </summary>
+    private const float PanelFoot = CaptionTop + CaptionHeight;
     private const int PanelSize = 30;
     private const float PlateWidth = 620;
 
@@ -140,14 +146,14 @@ internal sealed partial class BattleInfoLayer : Control
 
     // ---------------------------------------------------------------- K1: the narration panel
 
-    /// <summary>Our narration panel in the scene's middle (K1): the sentences wrapped to the panel's width, the triangle.</summary>
+    /// <summary>Our narration panel at the scene's foot (K1): the sentences wrapped to the panel's width, the triangle.</summary>
     private void DrawPanel(IReadOnlyList<string> sentences)
     {
         var lines = sentences.SelectMany(s => Wrap(s, PanelMaxText)).ToList();
         if (lines.Count == 0)
             lines.Add("");
         float w = lines.Max(l => _gothic.GetStringSize(l, fontSize: PanelSize).X) + 80, h = 40 + lines.Count * PanelPitch + 20;
-        var box = new Rect2(SceneCentreX - w / 2, SceneMiddleY - h / 2, w, h);
+        var box = new Rect2(SceneCentreX - w / 2, PanelFoot - h, w, h);
         Lacquer.DrawPanel(this, box, _k, MessageWindowView.NarrationFill);
         for (int i = 0; i < lines.Count; i++)
             DrawString(_gothic, new Vector2(box.Position.X + 40, box.Position.Y + 26 + i * PanelPitch + PanelSize * 0.85f), lines[i],

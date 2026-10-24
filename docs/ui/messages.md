@@ -284,6 +284,9 @@ as it is. Where to start:
    Some units have no box at all (Bound (unit 3) and Soul (unit 4) in the prologue, Rafalia (unit 34), Arlcoate (unit
    35), Aviator (unit 36), Gandhi (unit 37), Chizuko (unit 38), Nagi (unit 40), unit 45, Magic (unit 39) on one branch):
    their fall is the line alone, as in the original.
+   **The panel lower (owner, 2026-10-24):** in the scene's middle it stood too high over the field; its foot is now at
+   y 384, 26 px over the scene's edge and level with the defence's caption's (`BattleInfoLayer.PanelFoot`), a longer
+   panel growing up from it.
 6. **The message log** — its design discussed first (backlog).
    **Survey (2026-10-19).** The original has none (xsystem35 neither); Sengoku Rance has no battle text log either
    (docs/sengoku/04-screen.md:636). What a log can hold, and where our presenters already have it:

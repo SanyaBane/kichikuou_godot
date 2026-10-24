@@ -4,7 +4,7 @@ namespace Kichikuou.Original.Content.Battles;
 public enum InfoBoxKind
 {
     /// <summary>
-    /// Our narration panel in the scene's middle, the box's sentences in it (mock-up K1): every box not below — a unit's or a
+    /// Our narration panel at the scene's foot, the box's sentences in it (mock-up K1): every box not below — a unit's or a
     /// commander's fall (<c>FIGTﾐｶDE.ADV</c>, <c>FIGTﾃｷDE.ADV</c>) too, which waits for the player's click as the original's
     /// does (owner, 2026-10-24).
     /// </summary>
