@@ -12,7 +12,9 @@ namespace Kichikuou.Game.Strategy;
 /// (0, back to the map), as the original's menu. Load/Save is two rows, Load and Save, the list each opens answered
 /// with the choice (<see cref="LoadSaveShortcut"/>). Laid out in the 1280×800 screen's pixels, scaled with the picture.
 /// In the touch mode (owner's choice C2, docs/ui/touch.md, "The command panel and the province menu") the rows are a
-/// finger's height and the two lists stand side by side, the commands left, the other items right with Turn END under them.
+/// finger's height and the two lists stand side by side, the commands left, the other items right with Turn END under them;
+/// a tap outside the panel cancels, as the map's button does while it reads Close (owner, 2026-10-24: a touch screen has
+/// no right button).
 /// </summary>
 internal sealed partial class CommandMenuView : Control
 {
@@ -27,6 +29,7 @@ internal sealed partial class CommandMenuView : Control
     private CommandMenu? _menu;
     private float _k = 1;                           // window pixels to a screen pixel
     private int _hovered = -1, _pressed = -1;       // the row: 0-based, the commands, the links, then Turn END
+    private bool _outside;                          // the touch mode: the press came down outside the panel
     private TaskCompletionSource<(int Choice, SaveList? Opens)>? _answer;
 
     public CommandMenuView(GameFont font)
@@ -57,6 +60,16 @@ internal sealed partial class CommandMenuView : Control
         _answer = new TaskCompletionSource<(int, SaveList?)>();
         return _answer.Task;
     }
+
+    /// <summary>Cancels the open panel (0, back to the map), as a right click does: the touch mode's Close.</summary>
+    public void Cancel()
+    {
+        if (_answer is not null)
+            Answer((0, null));
+    }
+
+    /// <summary>A point of the picture outside the panel, global: where unattended play taps to close it.</summary>
+    public Vector2 OutsidePoint => GetGlobalRect().Position + new Vector2(40, 700) * _k;
 
     public void Close()
     {
@@ -161,10 +174,13 @@ internal sealed partial class CommandMenuView : Control
                 break;
             case InputEventMouseButton { ButtonIndex: MouseButton.Left } button:
                 int at = RowAt(button.Position);
+                bool outside = _touch && !new Rect2(PanelX, PanelY, PanelWidth, Height).HasPoint(button.Position / _k);
                 if (button.Pressed)
-                    _pressed = at;
+                    (_pressed, _outside) = (at, outside);
                 else if (at >= 0 && at == _pressed && Enabled(at))
                     Answer(Choice(at));
+                else if (outside && _outside)
+                    Answer((0, null));                      // a tap outside the panel: back to the map
                 else
                     _pressed = -1;
                 break;

@@ -13,7 +13,8 @@ namespace Kichikuou.Game.Strategy;
 /// Laid out in the 1280×800 screen's pixels, scaled with the picture. In the touch mode (owner's choice P1,
 /// docs/ui/touch.md, "The command panel and the province menu") the province stands on the left — a larger picture,
 /// the name, the army and the figures under it — and its commands on the right as rows of a finger's height, Return
-/// at their foot.
+/// at their foot; a tap outside the panel cancels as a right click does, so not in the dungeon's menu (owner,
+/// 2026-10-24).
 /// </summary>
 internal sealed partial class ProvinceMenuView : Control
 {
@@ -32,6 +33,7 @@ internal sealed partial class ProvinceMenuView : Control
     private ImageTexture? _picture;
     private float _k = 1;                           // window pixels to a screen pixel
     private int _hovered = -1, _pressed = -1;       // the row: 0-based, the commands then Return
+    private bool _outside;                          // the touch mode: the press came down outside the panel
     private TaskCompletionSource<int>? _answer;
 
     public ProvinceMenuView(GameFont font, FacePictures pictures)
@@ -64,6 +66,9 @@ internal sealed partial class ProvinceMenuView : Control
         _answer = new TaskCompletionSource<int>();
         return _answer.Task;
     }
+
+    /// <summary>A point of the picture outside the panel, global: where unattended play taps to close it.</summary>
+    public Vector2 OutsidePoint => GetGlobalRect().Position + new Vector2(40, 700) * _k;
 
     public void Close()
     {
@@ -151,10 +156,14 @@ internal sealed partial class ProvinceMenuView : Control
                 break;
             case InputEventMouseButton { ButtonIndex: MouseButton.Left } button:
                 int at = RowAt(button.Position);
+                bool outside = _touch && _menu is { CancelReopens: false }
+                    && !new Rect2(PanelX, PanelY, PanelWidth, Height).HasPoint(button.Position / _k);
                 if (button.Pressed)
-                    _pressed = at;
+                    (_pressed, _outside) = (at, outside);
                 else if (at >= 0 && at == _pressed && Enabled(at))
                     Answer(Choice(at));
+                else if (outside && _outside)
+                    Answer(0);                              // a tap outside the panel: back to the map
                 else
                     _pressed = -1;
                 break;

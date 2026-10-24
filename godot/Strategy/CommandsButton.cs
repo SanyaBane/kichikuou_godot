@@ -6,7 +6,8 @@ namespace Kichikuou.Game.Strategy;
 /// The touch mode's round <b>Commands</b> button at the map's bottom right (owner's M3, 2026-10-24; docs/ui/touch.md,
 /// "The tablet"): shown with our name plates in <c>COMMAND</c>'s map wait, a tap on it is <see cref="Tapped"/> — the
 /// screen answers it with the right click that opens the command panel, which a touch screen has no button for. Its
-/// other events (the right click it causes, Back's) go on to the screen through <see cref="Forwarded"/>.
+/// other events (the right click it causes, Back's) go on to the screen through <see cref="Forwarded"/>. While our
+/// command panel is open it reads <b>Close</b> (<see cref="Closes"/>; owner, 2026-10-24), and its tap closes the panel.
 /// </summary>
 internal sealed partial class CommandsButton : Control
 {
@@ -16,7 +17,7 @@ internal sealed partial class CommandsButton : Control
 
     private DeploymentPalette _colours = DeploymentPalette.Chosen;
     private float _scale = 1;
-    private bool _down, _inside;
+    private bool _down, _inside, _closes;
 
     public CommandsButton()
     {
@@ -31,6 +32,20 @@ internal sealed partial class CommandsButton : Control
 
     /// <summary>An event but a left button's: the screen's own.</summary>
     public event Action<InputEvent>? Forwarded;
+
+    /// <summary>Whether the button reads Close: our command panel is open, and the tap closes it.</summary>
+    public bool Closes
+    {
+        get => _closes;
+        set
+        {
+            if (value == _closes)
+                return;
+            _closes = value;
+            _down = false;
+            QueueRedraw();
+        }
+    }
 
     /// <summary>The button's centre (its parent's coordinates).</summary>
     public Vector2 Centre => Position + Size / 2;
@@ -96,6 +111,6 @@ internal sealed partial class CommandsButton : Control
             return;
         int size = (int)Math.Round(Text * s);
         float baseline = (Size.Y + font.GetAscent(size) - font.GetDescent(size)) / 2;
-        DrawString(font, new Vector2(0, baseline), "Commands", HorizontalAlignment.Center, Size.X, size, _colours.ButtonText);
+        DrawString(font, new Vector2(0, baseline), _closes ? "Close" : "Commands", HorizontalAlignment.Center, Size.X, size, _colours.ButtonText);
     }
 }

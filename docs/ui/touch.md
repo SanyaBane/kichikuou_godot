@@ -274,6 +274,14 @@ and in P1 the commands always one column at the right thumb, in the script's ord
 - Looked at by the agent (2026-10-24) in a window, the look's command with `--until deployment --interface new --touch`
   (dumps `command-menu`, `province-menu`); not yet on the tablet. The dungeon's menu and an own province's five items
   were not reached by the look.
+- **Leaving them without Back** (owner, 2026-10-24: Android's Back is a gesture the player may not find): a tap outside
+  the panel cancels it, as a right click does — the command panel back to the map, the province menu too, but not the
+  dungeon's menu, whose cancel only opens it again; and while the command panel is open the map's Commands button reads
+  **Close** (drawn over the panel, `CommandsButton.Closes`), its tap the same cancel (`CommandMenuView.Cancel`). A tap
+  is a press and a release both outside the panel. Unattended play with `--touch` in a window, at the first command
+  panel and the first province menu (`GameScreen.AutoTouchDismissAsync`): a tap on Close (dump `touch-close`), one
+  outside the panel (`touch-outside`), one outside the province menu (`touch-province-outside`), each of which our view
+  must answer with the cancel; the script then gets the bot's own choice, so the play goes on as before.
 
 ## Phones (put off)
 

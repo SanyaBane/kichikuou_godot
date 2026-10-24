@@ -304,12 +304,12 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _commandsButton = new CommandsButton();
         _commandsButton.Tapped += CommandsTapped;
         _commandsButton.Forwarded += StripInput;
-        _content.AddChild(_commandsButton);
         var faces = new FacePictures(GameData.Cgs());
         _provinceView = new ProvinceMenuView(GodotGlyphRenderer.Chosen, faces);
         _content.AddChild(_provinceView);
         _commandView = new CommandMenuView(GodotGlyphRenderer.Chosen);
         _content.AddChild(_commandView);
+        _content.AddChild(_commandsButton);                 // over the command panel: its Close while the panel is open
         _strip = new StatusStripView(GodotGlyphRenderer.Chosen, faces) { Forward = StripInput };
         _content.AddChild(_strip);
         _weekView = new WeekReportView(faces);
@@ -1661,6 +1661,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 }
                 if (saveList is { } autoList)
                     return Answered(await AutoSaveLoadAsync(autoList, items));
+                if (TouchMode.On && Windowed
+                    && (command is not null && !_autoCommandCloses || province is { CancelReopens: false } && !_autoProvinceOutside))
+                    await AutoTouchDismissAsync(command is not null);
                 return Answered(AutoChoice(items));
             }
             return Answered(saveList is not null ? await SaveAnswerAsync()
@@ -1948,13 +1951,15 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             if (show)
                 _markers.Load(_presenter.MapMarkers());
         }
-        _commandsButton.Visible = show && TouchMode.On;
-        if (!show)
-            return false;
+        // The touch mode's button: Commands on the map, Close while our command panel is open (owner, 2026-10-24).
+        _commandsButton.Visible = TouchMode.On && (show || _commandView.Visible);
+        _commandsButton.Closes = _commandView.Visible;
         var area = PictureArea();
-        _markers.Place(area, area.Size.X / Surface.ScreenWidth, _presenter.MapViewShown!.Value);
         if (_commandsButton.Visible)
             _commandsButton.Place(area);
+        if (!show)
+            return false;
+        _markers.Place(area, area.Size.X / Surface.ScreenWidth, _presenter.MapViewShown!.Value);
         return true;
     }
 

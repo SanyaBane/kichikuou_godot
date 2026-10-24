@@ -42,11 +42,58 @@ public partial class GameScreen
     /// </summary>
     private void CommandsTapped()
     {
+        if (_commandView.Visible)
+        {
+            _commandView.Cancel();                                      // the button reads Close over the open panel
+            return;
+        }
         if ((!_options.Auto || _autoCommandsTapping) && _markerPointer.Pending == 0 && _markers.Visible)
         {
             var at = ToScript(_content.Position + _commandsButton.Centre);
             _markerPointer.RightClick(at.X, at.Y);
         }
+    }
+
+    private bool _autoCommandCloses;        // unattended play's taps closing the command panel (Close, outside), once
+    private bool _autoProvinceOutside;      // and the province menu (outside), once
+
+    /// <summary>
+    /// Unattended play in the touch mode, in a window, at the first command panel: a tap on the map's button reading
+    /// Close (dump "touch-close"), then one outside the panel ("touch-outside"); at the first province menu one outside it
+    /// ("touch-province-outside") — each press and release through Godot's input, which our view must answer with the
+    /// cancel, 0, as a player's tap. The script is then answered with the bot's own choice, so its play goes on as before.
+    /// </summary>
+    private async Task AutoTouchDismissAsync(bool command)
+    {
+        if (command)
+        {
+            _autoCommandCloses = true;
+            UpdateMapMarkers();
+            if (!_commandsButton.Visible || !_commandsButton.Closes)
+                throw new InvalidOperationException("--auto finds the map's button not reading Close over the command panel.");
+            await TapAsync(CommandChoice(_commandView.ChooseAsync()), _commandsButton.GetGlobalRect().GetCenter(), "touch-close");
+            await TapAsync(CommandChoice(_commandView.ChooseAsync()), _commandView.OutsidePoint, "touch-outside");
+        }
+        else
+        {
+            _autoProvinceOutside = true;
+            await TapAsync(_provinceView.ChooseAsync(), _provinceView.OutsidePoint, "touch-province-outside");
+        }
+
+        async Task TapAsync(Task<int> answer, Vector2 at, string dump)
+        {
+            await AutoDumpAsync(dump);
+            foreach (bool pressed in (bool[])[true, false])
+            {
+                SendPointerButton(at, MouseButton.Left, pressed);
+                await NextFrameAsync();
+            }
+            if (!answer.IsCompleted || await answer != 0)
+                throw new InvalidOperationException($"--auto's tap ({dump}) did not cancel the {(command ? "command panel" : "province menu")}.");
+            GD.Print($"Kichikuou: --auto's tap cancels the {(command ? "command panel" : "province menu")} ({dump}).");
+        }
+
+        static async Task<int> CommandChoice(Task<(int Choice, SaveList? Opens)> answer) => (await answer).Choice;
     }
 
     /// <summary>
