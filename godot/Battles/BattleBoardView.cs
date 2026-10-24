@@ -906,7 +906,7 @@ internal sealed partial class BattleBoardView : Control
         string? tip = null;
         if (IsVisibleInTree() && _opening.Shown <= 0 && !_dialog.Active)
         {
-            var pointer = GetGlobalMousePosition();
+            var pointer = TouchMode.GlobalPointer(this);
             tip = _playerAdvantage.TipAt(pointer) ?? _enemyAdvantage.TipAt(pointer);
         }
         _advantageTip.ShowAt(tip);

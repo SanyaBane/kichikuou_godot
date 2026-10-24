@@ -34,7 +34,7 @@ public partial class GameScreen
     /// through Godot's input, so the script's reads and our own screens see it as a mouse's.
     /// </summary>
     private void BackAsRightClick() =>
-        _ = AutoViewClickAsync(GetViewport().GetMousePosition(), MouseButton.Right);
+        _ = AutoViewClickAsync(TouchMode.Pointer(GetViewport()), MouseButton.Right);
 
     /// <summary>
     /// The map's Commands button tapped (the touch mode, owner's M3): the right click that opens the command panel, at

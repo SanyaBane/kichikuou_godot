@@ -1009,7 +1009,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_battleView.Commands.Active)
             _presenter.Scene.Hover(_battleView.Commands.Hovered);
         else
-            _presenter.Scene.Hover(_battleView.Visible ? _battleView.PlaceAt(GetLocalMousePosition() - _content.Position, s) : null);
+            _presenter.Scene.Hover(_battleView.Visible ? _battleView.PlaceAt(TouchMode.LocalPointer(this) - _content.Position, s) : null);
     }
 
     /// <summary>
@@ -1991,9 +1991,18 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         SendPointerMotion(at);                                                                  // the warp alone moves no hover
         await NextFrameAsync();
         await NextFrameAsync();
-        if (_markers.Hovered != marker)
-            throw new InvalidOperationException($"--auto's pointer on the plate of {marker.Name} does not hover it.");
-        await AutoDumpAsync("map-marker-hover");
+        if (TouchMode.NoHover)
+        {
+            // --touch on PC: a finger hovers nothing (NoHoverFilter), the tap alone reaches the plate.
+            if (_markers.Hovered is not null)
+                throw new InvalidOperationException($"--touch's pointer, moved with no button down, hovers the plate of {_markers.Hovered.Name}.");
+        }
+        else
+        {
+            if (_markers.Hovered != marker)
+                throw new InvalidOperationException($"--auto's pointer on the plate of {marker.Name} does not hover it.");
+            await AutoDumpAsync("map-marker-hover");
+        }
         _autoPlateClicking = true;
         try
         {
@@ -2117,7 +2126,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _battleView.Place(_view.Position + (size - drawn) / 2, scale);
         IEnumerable<WindowShape> input = _sel?.Windows ?? _battleMenu?.Windows ?? [];
         var hovered = _battleView.Commands.Active ? _battleView.Commands.Lit   // a card lights up only while the player chooses
-            : _sel is null ? null : _battleView.PlaceAt(GetLocalMousePosition() - _content.Position, _presenter.State!);
+            : _sel is null ? null : _battleView.PlaceAt(TouchMode.LocalPointer(this) - _content.Position, _presenter.State!);
         _battleView.Refresh(_presenter, input, screenChanged, hovered,
             instant: _skip.IsSkipping,                                         // MsgSkip: the order strip's chips jump to their places
             slidesInstant: _skip.IsSkipping || _options.Fast);                 // and the armies and the counters (--fast: no runs)

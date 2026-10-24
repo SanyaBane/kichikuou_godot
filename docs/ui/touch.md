@@ -139,6 +139,15 @@ hover and the right button. So the tablet keeps our layout and gets only what to
 
 - **The touch mode** (`godot/Strategy/TouchMode`): on on Android, and for a launch with `--touch` (a look in a
   window, the mouse standing in for the finger). Without it PC is as before.
+- **No hover with `--touch` on PC** (owner, 2026-10-24: to play the Android interface on PC as a finger plays it):
+  `NoHoverFilter` takes the main window's input callback and drops the mouse's moves with no button down, so nothing
+  lights up, opens or shows a tooltip under a pointer no finger touches; a press or a drag moves the pointer, which
+  stays where it was left, as Android's mouse from touch does. A node's `_Input` was too late for it: the viewport
+  updates the controls' hover (`mouse_entered`) first. Where our code reads the pointer's place itself (the battle's
+  hovered card and advantage tips, the deployment table and party panels, Back as a right click) it asks
+  `TouchMode.Pointer`/`GlobalPointer`/`LocalPointer`, the last touch's place under `--touch` on PC. On Android nothing
+  changes. Unattended play with `--touch` checks it: its pointer moved onto the week's target plate must hover nothing
+  before its tap (`AutoPlateClickAsync`). Still different from the tablet: the frame's pulse, full screen, a real finger.
 - **The battle's rails** (`godot/Battles/BattleCommandLayer.Touch.cs`): in the scene's blurred sides (layout x 0-128
   and 1152-1280, y 0-410). Left: the acting unit's name and `BattleCommands.ContextMenu(acting)` as buttons (Defend,
   Wait, the items, Auto-Atk, Auto-Def, Retreat in red), 112×56, smaller when more do not fit. Right: TARGET, the

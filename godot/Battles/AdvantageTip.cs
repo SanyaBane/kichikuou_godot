@@ -44,7 +44,7 @@ internal sealed partial class AdvantageTip : Control
             Visible = false;
             return;
         }
-        var pointer = GetLocalMousePosition();
+        var pointer = TouchMode.LocalPointer(this);
         if (Visible && text == _text && pointer == _pointer)
             return;
         (_text, _pointer) = (text, pointer);

@@ -296,10 +296,10 @@ internal sealed partial class DeploymentTableView : Tree
     }
 
     /// <summary>Whether the pointer is over the table.</summary>
-    public bool HasPointer => Visible && GetGlobalRect().HasPoint(GetGlobalMousePosition());
+    public bool HasPointer => Visible && GetGlobalRect().HasPoint(TouchMode.GlobalPointer(this));
 
     /// <summary>The unit whose row is under the pointer, or 0 (the header, the space below the rows, a scroll bar).</summary>
-    public int HoveredUnit => HasPointer ? UnitAt(GetLocalMousePosition()) : 0;
+    public int HoveredUnit => HasPointer ? UnitAt(TouchMode.LocalPointer(this)) : 0;
 
     private int UnitAt(Vector2 local)
     {

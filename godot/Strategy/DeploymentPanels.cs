@@ -101,10 +101,10 @@ internal sealed partial class DeploymentPanels : Control
     }
 
     /// <summary>Whether the pointer is over the screen.</summary>
-    public bool HasPointer => Visible && GetGlobalRect().HasPoint(GetGlobalMousePosition());
+    public bool HasPointer => Visible && GetGlobalRect().HasPoint(TouchMode.GlobalPointer(this));
 
     /// <summary>The unit whose card is under the pointer, or 0.</summary>
-    public int HoveredUnit => Visible && MemberAt(PlaceAt(ScreenPoint(GetLocalMousePosition()))) is { } member ? member.Unit : 0;
+    public int HoveredUnit => Visible && MemberAt(PlaceAt(ScreenPoint(TouchMode.LocalPointer(this)))) is { } member ? member.Unit : 0;
 
     /// <summary>
     /// Covers the screen whose script pixel (0, 0) is at <paramref name="origin"/> (in its parent's
@@ -588,7 +588,7 @@ internal sealed partial class DeploymentPanels : Control
     /// <summary>The dragged member's face under the pointer, framed and a little see-through.</summary>
     private void DrawGhost(Control c, DeploymentMember member)
     {
-        var at = ScreenPoint(GetLocalMousePosition());
+        var at = ScreenPoint(TouchMode.LocalPointer(this));
         var rect = new Rect2(at - new Vector2(GhostSize, GhostSize) / 2, new Vector2(GhostSize, GhostSize));
         for (int i = 8; i >= 1; i--)
             c.DrawRect(new Rect2(rect.Position.X - i + 3, rect.Position.Y - i + 6, rect.Size.X + 2 * i, rect.Size.Y + 2 * i), new Color(0, 0, 0, 0.07f));

@@ -29,6 +29,8 @@ public partial class Main : Control
         if (!_commandLineRead)
         {
             _commandLineRead = true;
+            if (TouchMode.NoHover)
+                NoHoverFilter.Install(GetTree().Root);
             ImportFromCommandLine();
             if (ImportScreenFromCommandLine() is { } look)
             {
