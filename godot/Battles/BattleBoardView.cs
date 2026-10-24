@@ -27,7 +27,7 @@ internal sealed partial class BattleBoardView : Control
     private static readonly Rect2 StripArea = new(10, 374, 1260, 32);         // over the scene's foot (owner, 2026-10-16)
     private static readonly Rect2 PlayerNameArea = new(10, 424, 574, 24);   // up under the separator (owner, 2026-10-16)
     private static readonly Rect2 EnemyNameArea = new(696, 424, 574, 24);
-    private static readonly Rect2 GaugeArea = new(594, 450, 92, 308);
+    private static readonly Rect2 GaugeArea = new(608, 450, 64, 324);      // the caption a word a line (owner, 2026-10-24)
     private static readonly Rect2 SpeakerLeft = new(8, 6, 300, 398);
     private static readonly Rect2 SpeakerRight = new(972, 6, 300, 398);
     private static readonly Vector2 CardSize = new(282, 150);
@@ -1296,7 +1296,8 @@ internal sealed partial class BattleBoardView : Control
     // The rounds gauge (owner, 2026-10-15, mock-up A of three, after Sengoku Rance's time gauge, docs/sengoku/04-screen.md §7):
     // a recessed tube in the frame's colour, a glowing segment per round left, lit from the bottom, the spent ones dark
     // slots from the top; the round under way pulses slowly, a round that goes out flashes white and fades; the number
-    // left below in Cinzel and "TURNS LEFT", on the last round both in the warning colour ("LAST TURN"). Layout pixels.
+    // left below in Cinzel and "TURNS LEFT" a word a line, on the last round both in the warning colour ("LAST TURN").
+    // Layout pixels.
     private const float TubeWidth = 48, TubeHeight = 238, TubeRadius = 12, SegmentWidth = 32, SegmentPad = 8, SegmentGap = 6;
     private const float PulseSeconds = 2, SpentFlashSeconds = 0.4f;
     private static readonly Color TubeFill = Color.Color8(24, 25, 28), SlotFill = Color.Color8(36, 37, 41), SlotEdge = Color.Color8(70, 72, 78);
@@ -1354,8 +1355,10 @@ internal sealed partial class BattleBoardView : Control
         _gauge.DrawStringOutline(font, new Vector2(0, baseline), digits, HorizontalAlignment.Center, _gauge.Size.X, number,
             Math.Max(2, (int)Math.Round(4 * s)), Color.Color8(20, 20, 24));
         _gauge.DrawString(font, new Vector2(0, baseline), digits, HorizontalAlignment.Center, _gauge.Size.X, number, colour);
-        _gauge.DrawString(font, new Vector2(0, (TubeHeight + 58) * s), last ? "LAST TURN" : "TURNS LEFT", HorizontalAlignment.Center,
-            _gauge.Size.X, caption, last ? _colours.Warning : _colours.Muted);
+        string[] words = last ? ["LAST", "TURN"] : ["TURNS", "LEFT"];
+        for (int i = 0; i < words.Length; i++)
+            _gauge.DrawString(font, new Vector2(0, (TubeHeight + 58 + 14 * i) * s), words[i], HorizontalAlignment.Center,
+                _gauge.Size.X, caption, last ? _colours.Warning : _colours.Muted);
     }
 
     /// <summary>A spent round: a dark slot.</summary>
