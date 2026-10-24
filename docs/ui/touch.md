@@ -347,6 +347,34 @@ screen's bottom). Built, in the touch mode only (PC has no drawer, and 131 stays
   `touch-skip-on`, `message-cg-bar-speech`, `message-cg-bar-narration`) and the battle look (`touch-rails`: the battle's
   Skip as before); every unattended `--touch` check passes. Not yet on the tablet.
 
+### The map's and the battle's buttons, round 1
+
+The owner's request (2026-10-24), after the dialogue's drawer: the map's Commands/Close button and the battle's rails
+and target frame next. Today: the Commands button a steel pill 190×84, the rails steel columns with steel and gold
+buttons, the target cyan brackets (breathing on Android).
+
+The mock-ups are `tools/ui/mock_touch_buttons.py`, over window dumps of the week-18 save (the commands in its
+docstring; Rance's turn pieced together from three dumps, so nothing lies over the cards); the images stay outside
+the repository. Three looks, each drawn on the map (1 Commands, 2 Close over the command panel) and in Rance's turn
+(3: the rails, the target Sakanaku (commander 6)); the battle's Skip as it is in all of them:
+
+- **A — lacquer and gold**, our menus' and the dialogue drawer's style: the map's button a lacquer plate 220×72
+  (44.7 × 14.6 mm) with the double gold frame, its studs, an icon and the brush font of Turn END; the rails lacquer
+  columns in the same frame, the acting unit's name in the brush font, the rows as the command panel's (104×56,
+  21 × 11 mm), Retreat vermilion as Turn END, the attacks lit gold with the brush font (108×66); the target framed by
+  gold brackets with a gold diamond on top.
+- **B — the battle screen's steel, crisper**: the map's button a rounded steel plate 220×72 with a sheen and an icon;
+  the rails steel flush with the scene, the buttons as the cards' colours with an icon each (112×62), Retreat red; the
+  attacks as the banners' gold chevrons pointing into the scene (116×66); the cyan brackets with a TARGET tab.
+- **C — round seals, icons first**: the map's button a lacquer seal 92 across (18.7 mm), the icon over a small label;
+  the commands seals 54 across (11 mm) two to a row with labels under them, Retreat a larger red seal; the attacks large
+  gold seals 96 across; a round reticle over the target's portrait, the card outlined in gold.
+
+**Recommendation: A** — one look for every touch control (the command panel, the province menu, the dialogue's drawer
+are lacquer already), and the target in gold reads against the steel cards as well as the cyan did. B keeps the
+battle in its own steel; C is the most "mobile", but its labels are small and the rails hold fewer seals when a unit
+has items.
+
 ## Phones (put off)
 
 Put off by the owner (2026-10-24). What is ready for them: the measurements above, mock-ups B1, B3 (the battle),
