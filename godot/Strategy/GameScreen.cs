@@ -338,6 +338,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _messageView = new MessageWindowView(GodotGlyphRenderer.Chosen)
         {
             LettersPerSecond = TextSpeedChoice.LettersPerSecond(TextSpeedChoice.Step),
+            Docks = TouchMode.On,
         };
         _content.AddChild(_messageView);
         _sceneMenuView = new SceneMenuView(GodotGlyphRenderer.Chosen);

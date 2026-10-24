@@ -3,8 +3,9 @@ using Godot;
 namespace Kichikuou.Game.Strategy;
 
 /// <summary>
-/// A round button of the touch mode in the Commands button's look (<see cref="CommandsButton"/>): the touch mode's Skip
-/// and Log (owner, 2026-10-24; docs/ui/touch.md, "The Skip and Log buttons"), an icon left of the label. Lit in gold
+/// A round button of the touch mode in the Commands button's look (<see cref="CommandsButton"/>): our battle screen's
+/// Skip (owner, 2026-10-24; docs/ui/touch.md, "The Skip and Log buttons"; the scenes' are <see cref="SkipDrawer"/>), an
+/// icon left of the label. Lit in gold
 /// while what it switches is on (<see cref="On"/>); greyed and deaf while <see cref="Disabled"/>. A tap on it (its
 /// release over it) is <see cref="Tapped"/>; its other events go on to the screen through <see cref="Forwarded"/>.
 /// </summary>
@@ -15,9 +16,6 @@ internal sealed partial class TouchPill : Control
     {
         /// <summary>Two triangles pointing right.</summary>
         Skip,
-
-        /// <summary>Three lines of text.</summary>
-        Log,
     }
 
     private static readonly Color LitFill = Color.Color8(240, 182, 72), LitBorder = Colors.White,
@@ -154,10 +152,7 @@ internal sealed partial class TouchPill : Control
         // The icon as large as the label's letters, a low button's kept clear of the rounded end.
         float h = Size.Y, iconSize = _text * s * 0.9f, iconX = Math.Max(h * 0.5f, iconSize * 1.4f);
         var centre = new Vector2(iconX, h / 2);
-        if (_icon == Icon.Skip)
-            DrawSkip(centre, iconSize, ink);
-        else
-            DrawLines(centre, iconSize, ink);
+        DrawSkip(centre, iconSize, ink);
         if (GetThemeDefaultFont() is not { } font)
             return;
         int size = (int)Math.Round(_text * s);
@@ -172,18 +167,5 @@ internal sealed partial class TouchPill : Control
         float h = size / 2;
         foreach (float dx in (float[])[-size * 0.55f, size * 0.05f])
             DrawColoredPolygon([new(c.X + dx, c.Y - h), new(c.X + dx + size * 0.6f, c.Y), new(c.X + dx, c.Y + h)], colour);
-    }
-
-    /// <summary>The log's icon: three lines of text, the last shorter.</summary>
-    private void DrawLines(Vector2 c, float size, Color colour)
-    {
-        float thick = size * 0.16f;
-        for (int i = 0; i < 3; i++)
-        {
-            float y = c.Y - size * 0.4f + i * size * 0.4f, w = i == 2 ? size * 0.6f : size;
-            var line = new StyleBoxFlat { BgColor = colour, AntiAliasing = true };
-            line.SetCornerRadiusAll((int)Math.Ceiling(thick / 2));
-            DrawStyleBox(line, new Rect2(c.X - size / 2, y - thick / 2, w, thick));
-        }
     }
 }

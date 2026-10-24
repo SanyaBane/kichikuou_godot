@@ -328,6 +328,25 @@ so whatever ours leaves free shows the original's frame and text. Two ways, draw
 
 **Recommendation: B3a** — nothing of the original's window to hide, one frame instead of a dock beside a frame.
 
+**The owner's choice (2026-10-24): B1, B2 and B3b**, the dock's foot on the screen (the first B3b ran it off the
+screen's bottom). Built, in the touch mode only (PC has no drawer, and 131 stays whole there):
+
+- **The places** (`Original.Content/Strategy/SkipButtons`, `SkipButtonsTests`): the drawer (0, 590)-(52, 762) of the
+  screen, its cells Skip (0, 592, 50×84) over Log (0, 676, 50×84). A window whose panel covers the drawer — 131 alone —
+  is drawn at `WindowScale` (1220/1280) about its top right corner, so it starts at x 60, and the cells stand on its
+  dock (0, 588, 56×202), as high as the window drawn smaller.
+- **The drawer** (`godot/Strategy/SkipDrawer`): the plate glued to the left edge (`DrawPlate`: lacquer, gold on three
+  sides, the right corners rounded), an icon over a small label in each cell, a gold divider between them; Skip lit
+  gold, "ON", while MsgSkip is on; a greyed cell deaf; a cell chooses at its release over it, a tap elsewhere on the
+  drawer does nothing. Shown and greyed as the pair before it (`GameScreen.Skip.cs`); the battle's Skip stays
+  `TouchPill`.
+- **131** (`MessageWindowView.Docks`): a dark band over the original's window, which the engine still draws under ours,
+  the dock on it, the window — frame, speaker's plate, text, triangle — drawn smaller over the rest; a menu over it at
+  its own place. The line breaks are the engine's, so they stay.
+- Looked at by the agent (2026-10-24) in a window: the harem look with `--touch` (`touch-skip`, `touch-log`,
+  `touch-skip-on`, `message-cg-bar-speech`, `message-cg-bar-narration`) and the battle look (`touch-rails`: the battle's
+  Skip as before); every unattended `--touch` check passes. Not yet on the tablet.
+
 ## Phones (put off)
 
 Put off by the owner (2026-10-24). What is ready for them: the measurements above, mock-ups B1, B3 (the battle),

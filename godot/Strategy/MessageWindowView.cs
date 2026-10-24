@@ -22,6 +22,7 @@ internal sealed partial class MessageWindowView : Control
     private static readonly Color ThoughtFill = Color.Color8(30, 26, 30);
     internal static readonly Color NarrationFill = Color.Color8(52, 38, 24);
     internal static readonly Color NarrationText = Color.Color8(226, 204, 150);
+    private static readonly Color DockBand = Color.Color8(10, 8, 6);
 
     /// <summary>Synthetic bold, as <see cref="GodotGlyphRenderer"/> makes the surface's text.</summary>
     private const float Embolden = 0.6f;
@@ -55,6 +56,12 @@ internal sealed partial class MessageWindowView : Control
 
     /// <summary>Whether a speech's tail is drawn (not in Option → Messages's preview, which has no portrait).</summary>
     public bool Tail { get; init; } = true;
+
+    /// <summary>
+    /// The touch mode's drawer at the screen's left edge (<see cref="SkipDrawer"/>): a window that would cover it (131) is
+    /// drawn smaller right of it, beside the dock its cells stand on (the owner's B3b, docs/ui/touch.md).
+    /// </summary>
+    public bool Docks { get; init; }
 
     /// <summary>How fast the text types (Option → Messages); infinity shows it whole at once.</summary>
     public double LettersPerSecond { get; set; } = double.PositiveInfinity;
@@ -159,6 +166,17 @@ internal sealed partial class MessageWindowView : Control
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         var (x, y, width, height) = w.Panel;
         var box = new Rect2(x, y, width, height);
+        float shrink = Docks ? SkipButtons.WindowScale(w.Panel) : 1;
+        if (shrink < 1)
+        {
+            // The original's window stays drawn under ours (GamePresenter.LeaveWindowOnStage): a dark band hides it where
+            // ours no longer is, the dock stands on it, and the window is drawn about its top right corner, smaller.
+            DrawRect(box, DockBand);
+            var dock = SkipButtons.Dock(w.Panel);
+            SkipDrawer.DrawPlate(this, new Rect2(dock.X, dock.Y, dock.W, dock.H), _k);
+            var corner = new Vector2(box.End.X, box.Position.Y);
+            DrawSetTransform(corner * (1 - shrink) * _k, 0, new Vector2(_k * shrink, _k * shrink));
+        }
         Color text = Lacquer.Text;
         switch (w.Kind)
         {
@@ -194,6 +212,7 @@ internal sealed partial class MessageWindowView : Control
             Lacquer.DrawTriangle(this, new Vector2(box.End.X - 30, box.End.Y - 28), _k);
         if (_menu is { } m && _screen is not null)
         {
+            DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));     // the menu at its own place, not the window's
             var area = new Rect2(m.X, m.Y, m.W, m.H);
             DrawTextureRectRegion(_screen, area, area);
         }
