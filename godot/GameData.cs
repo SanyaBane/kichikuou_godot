@@ -58,6 +58,45 @@ public static class GameData
     /// <summary>Where the Android build looks for the game folder (<see cref="AndroidGameDirectory"/>).</summary>
     public const string AndroidGameFolder = "/storage/emulated/0/Android/data/" + AndroidPackage + "/files/game";
 
+    /// <summary>
+    /// The save folder when no switch names one (<c>--saves</c>): <c>user://saves</c>, but on Android the app's own
+    /// external folder next to the game's (<see cref="AndroidSaveFolder"/>), which a PC reaches over USB, so the saves
+    /// go between a PC and the tablet as files (<c>tools/copy-saves.ps1</c>). The first time, the saves an earlier
+    /// build kept in <c>user://saves</c> (the app's internal folder) move there.
+    /// </summary>
+    public static string DefaultSaveDirectory => DefaultSaves.Value;
+
+    private static readonly Lazy<string> DefaultSaves = new(() =>
+    {
+        string internalSaves = ProjectSettings.GlobalizePath("user://saves");
+        if (OS.GetName() != "Android")
+            return internalSaves;
+        MoveSaves(internalSaves, AndroidSaveFolder);
+        return AndroidSaveFolder;
+    });
+
+    /// <summary>Where the Android build keeps its saves (<see cref="DefaultSaveDirectory"/>).</summary>
+    public const string AndroidSaveFolder = "/storage/emulated/0/Android/data/" + AndroidPackage + "/files/saves";
+
+    /// <summary>The files of <paramref name="from"/> into <paramref name="to"/> when that has none yet; <paramref name="from"/> is removed once empty.</summary>
+    private static void MoveSaves(string from, string to)
+    {
+        if (!System.IO.Directory.Exists(from))
+            return;
+        if (System.IO.Directory.Exists(to) && System.IO.Directory.EnumerateFileSystemEntries(to).Any())
+        {
+            GD.PushWarning($"Kichikuou: the saves in {from} are left there, {to} has saves of its own.");
+            return;
+        }
+        System.IO.Directory.CreateDirectory(to);
+        string[] files = System.IO.Directory.GetFiles(from);
+        foreach (string file in files)
+            System.IO.File.Move(file, System.IO.Path.Combine(to, System.IO.Path.GetFileName(file)));
+        if (!System.IO.Directory.EnumerateFileSystemEntries(from).Any())
+            System.IO.Directory.Delete(from);
+        GD.Print($"Kichikuou: {files.Length} save file(s) moved from {from} to {to}.");
+    }
+
     /// <summary>The game folder the settings keep (the import screen's last), whatever is open now.</summary>
     public static string SavedGameDirectory => Setting("game_dir", DefaultGame);
 

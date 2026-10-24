@@ -37,7 +37,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-$package = 'org.kichikuou.port'     # GameData.AndroidPackage, the preset's package/unique_name
+. (Join-Path $PSScriptRoot 'android-adb.ps1')
 
 # The local paths, as Kichikuou.Engine.LocalPaths reads them: the environment, else local.env.
 function Get-LocalPath([string]$Key) {
@@ -58,37 +58,6 @@ function Get-LocalPath([string]$Key) {
     return ''
 }
 
-# adb: the SDK's platform-tools (ANDROID_HOME, else the SDK's default folder), else the PATH.
-function Get-Adb {
-    $sdk = $env:ANDROID_HOME
-    if (-not $sdk) { $sdk = Join-Path $env:LOCALAPPDATA 'Android\Sdk' }
-    $adb = Join-Path $sdk 'platform-tools\adb.exe'
-    if (Test-Path $adb) { return $adb }
-    $found = Get-Command adb -ErrorAction SilentlyContinue
-    if ($found) { return $found.Source }
-    throw "adb not found: install the Android SDK's platform-tools ($sdk) or set ANDROID_HOME."
-}
-
-function Invoke-Adb([string[]]$Arguments) {
-    & $script:adb @Arguments
-    if ($LASTEXITCODE -ne 0) { throw "adb $($Arguments -join ' ') failed (exit code $LASTEXITCODE)." }
-}
-
-# The one device adb can use (ANDROID_SERIAL's, when set), before the export's minutes are spent.
-function Assert-Device {
-    $lines = & $script:adb devices | Select-Object -Skip 1 | Where-Object { $_.Trim() }
-    $ready = @($lines | Where-Object { $_ -match "`tdevice$" } | ForEach-Object { ($_ -split "`t")[0] })
-    $unauthorized = @($lines | Where-Object { $_ -match "`tunauthorized$" })
-    if ($env:ANDROID_SERIAL) {
-        if ($ready -notcontains $env:ANDROID_SERIAL) { throw "The device $env:ANDROID_SERIAL (ANDROID_SERIAL) is not connected." }
-        return
-    }
-    if ($ready.Count -eq 1) { return }
-    if ($ready.Count -gt 1) { throw "Several devices are connected ($($ready -join ', ')): set ANDROID_SERIAL to one." }
-    if ($unauthorized.Count -gt 0) { throw 'The device does not allow this computer yet: accept the USB debugging prompt on it.' }
-    throw 'No device: connect it by USB with USB debugging on (Settings > Developer options).'
-}
-
 # Whether the app's game folder on the device holds anything.
 function Test-RemoteGame([string]$Remote) {
     $listing = & $script:adb shell "ls '$Remote' 2>/dev/null"
@@ -99,7 +68,7 @@ $Out = [IO.Path]::GetFullPath($Out)
 if (($Out + '\').StartsWith($root + '\', [StringComparison]::OrdinalIgnoreCase)) {
     throw "The APK must go outside the repository ($root)."
 }
-$remote = "/storage/emulated/0/Android/data/$package/files/game"
+$remote = "$remoteFiles/game"
 
 if ($Install -or $PushGame -or $Launch) {
     $script:adb = Get-Adb

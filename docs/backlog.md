@@ -48,7 +48,12 @@ The owner aims at a public release (decision 28, 2026-10-20).
   the current build on a device, a tap as a left click. Its setup is made (2026-10-24): the preset
   "Android" (arm64, debug-signed, package `org.kichikuou.port`) and `tools/export-android.ps1` (`-Install`,
   `-PushGame`, `-Launch`; `run-android.cmd` exports, installs and starts it in one double-click, 2026-10-24); the build finds the game folder copied into the app's own external folder
-  (`GameData.AndroidGameFolder`, no permission, no folder dialog) and imports it at its first start. The
+  (`GameData.AndroidGameFolder`, no permission, no folder dialog) and imports it at its first start. Its saves
+  live next to it (owner, 2026-10-25): `GameData.AndroidSaveFolder`, `…/files/saves`, where a PC reaches them over
+  USB (an earlier build's, in the app's internal `user://saves`, move there at the first start; checked on the
+  tablet); the save files are one format on both, and `tools/copy-saves.ps1` (`copy-saves-to-tablet.cmd`,
+  `copy-saves-from-tablet.cmd`) copies them over adb, the source's replacing the destination's after a backup in
+  `%LOCALAPPDATA%\KichikuouGodot\save-backups`. Uninstalling the app deletes them with the game folder. The
   libraries and the Godot project build for `net9.0` when Godot exports for Android (`GodotTargetPlatform`),
   since Godot 4.7's Android templates take .NET 9 only; everything else stays on `net10.0`. First run on a
   Galaxy Tab S7 FE (2026-10-24): the import takes ~5 s, the opening plays full screen (Vulkan, Adreno 619).

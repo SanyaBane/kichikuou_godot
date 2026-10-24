@@ -154,7 +154,7 @@ public sealed record GameOptions
     /// <summary>Development: MsgSkip is on from the start.</summary>
     public bool MsgSkip { get; init; }
 
-    /// <summary>Where the save slots are (default <c>user://saves</c>); a Godot path or a folder.</summary>
+    /// <summary>Where the save slots are (default <see cref="GameData.DefaultSaveDirectory"/>); a Godot path or a folder.</summary>
     public string? SaveDirectory { get; init; }
 
     /// <summary>
@@ -648,7 +648,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     }
 
     /// <summary>The save slots' folder (also of the seen messages, <see cref="MessageSkip"/>).</summary>
-    private string SaveDirectory => ProjectSettings.GlobalizePath(_options.SaveDirectory ?? "user://saves");
+    private string SaveDirectory =>
+        _options.SaveDirectory is { } saves ? ProjectSettings.GlobalizePath(saves) : GameData.DefaultSaveDirectory;
 
     /// <summary>Waits for the next frame, and while a confirmation box is open; the game stops here once the screen is closed.</summary>
     private async Task NextFrameAsync()
