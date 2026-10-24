@@ -127,3 +127,21 @@ seen. Our interface only; the rules run as before.
   (Kanami spent: "0 of 1 free"), Abandon City's question answered Keep, Intercept and the deployment table, with no
   key wait of the hidden lines left for the player. Not yet looked at in a run: a refusal (Gandhi, Satella, Meglass),
   Abandon City answered Abandon, Maris's comment past 5000 troops, several ninjas.
+
+## 7. Back from the deployment screen (owner, 2026-10-24)
+
+The deployment picker's Stop (503) already goes back to the announcement (`:118-119`, `@L_0003d`), not to a defeat; but
+the script announces again — the map, its scroll to the province and four blinks with a sound (`:7-14`) — before our
+screen comes back, which looked like leaving the defence. The owner's request: in a defence the button reads **Back** and
+the player is on our attack screen at once; giving the city up stays Abandon City's.
+
+- **Back**: `godot/Strategy/DeploymentPanels` labels the bar's third button Back in a defence (picker mode 2).
+- **At once**: the presenter keeps the attack it closed at Intercept; at the map redrawn after the picker (`:44`) with
+  `Tmp0621 = 503` our screen is up again (`BattlePresenter.ReturnsToAttack`) until the announcement's `:20`: meanwhile
+  `GameScreen.PauseAsync` takes no time and the blink's sound is not played. The rules run as before.
+- **The report kept**: the screen rebuilt at `:20` keeps the army a ninja reported (before, the places went back to
+  "?" although the ninja was spent), after Back and after a refusal too. A refusal still shows its lines and the
+  announcement's map as before.
+- **Checked**: `EnemyAttackTests.Back_from_the_deployment_screen_shows_the_attack_again_at_once_with_its_report`; the
+  `--scout` look leaves the first deployment screen by Back and dumps `enemy-attack-back` (the report kept, Kanami
+  spent), back ~0.4 s after the press, the click's own frames included.

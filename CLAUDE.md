@@ -529,7 +529,8 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   and `--until deployment` stops before the battle, so nothing moves the system pointer). In our interface the attack
   is our own screen (docs/ui/enemy-attack.md, §6), answered without the pointer: in a window it dumps `enemy-attack`,
   `enemy-attack-ninjas` (the list open), `enemy-attack-scouted` (the places filled) and `enemy-attack-abandon` (the
-  question, answered Keep), then intercepts.
+  question, answered Keep), then intercepts, leaves the first deployment screen by Back (§7: the log says how soon
+  the screen was back) and dumps `enemy-attack-back`, then intercepts again.
   A harem scene (window 131 under an event CG, 2026-10-18): `--harem <cell>` on the week-18 save makes the first
   map wait open the menu, choose Harem and pick the girl in that cell of its picker (left to right, top to bottom:
   Lia 2, Maris 3, Kanami 6, Haurein 9), before the replenish and the attack —

@@ -249,13 +249,16 @@ public sealed partial class BattlePresenter
             case ExchangeResultsEvent: ExchangeResults(); break;
             case WipedOutMarksEvent e: WipedOutMarks(e); break;
             case KeyWaitEvent: ExchangeKeyWait(); break;
-            case MapEvent e: Map(e.Mode.Value); break;
+            case MapEvent e:
+                ObserveAttackMap(e.Mode.Value);
+                Map(e.Mode.Value);
+                break;
             case ClearScreenEvent:
                 Surface.Fill(0, 0, 640, 400, 0);
                 PicturesCovered();
                 break;
             case PauseEvent: MapPause(); break;
-            case SoundEvent e: IBattleAudio.PcmPlay(_audio, e); break;
+            case SoundEvent e when !ReturnsToAttack: IBattleAudio.PcmPlay(_audio, e); break;   // not the blink's after Back
             case MusicEvent e: _audio?.PlayMusic(e.Track.Value); break;
         }
         FollowStrategy();

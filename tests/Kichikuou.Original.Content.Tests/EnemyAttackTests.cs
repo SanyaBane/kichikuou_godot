@@ -140,6 +140,53 @@ public class EnemyAttackTests
         }
     }
 
+    /// <summary>
+    /// Back on the deployment screen (Stop, 503): the map redrawn after the picker (<c>:44</c>) brings our screen back at
+    /// once, the scouted army with it, and the announcement under it takes no time until <c>:20</c>; after a refusal the
+    /// script announces as before, the report kept; once the party is sent nothing comes back.
+    /// </summary>
+    [ScenarioFact]
+    public void Back_from_the_deployment_screen_shows_the_attack_again_at_once_with_its_report()
+    {
+        var s = YsAttacked();
+        var presenter = new BattlePresenter(Texts.Value, Cgs.Value, new BoxGlyphs()) { CoverEnemyAttack = true };
+        presenter.Attach(s);
+        Announce(presenter);
+        presenter.EnemyAttackAnswered(2);
+        s.F_Kanami_NinjaUsed = 1;
+        presenter.Show(new WindowEvent((Sys3Int)113, Sys3Int.Zero));
+        presenter.Show(new MessageEvent(new ScriptRef("FIGT_B.ADV", 587)));
+        presenter.Show(new WindowEvent(Sys3Int.Zero, Sys3Int.Zero));
+        var scouted = presenter.Attack!.Report;
+        Assert.NotNull(scouted);
+
+        presenter.EnemyAttackAnswered(1);                                                    // Intercept, then Back
+        s.Tmp0621 = 503;
+        presenter.Show(new MapEvent(Sys3Int.Zero));
+        Assert.Equal(scouted, presenter.Attack?.Report);
+        Assert.True(presenter.ReturnsToAttack);
+        Announce(presenter);
+        Assert.False(presenter.ReturnsToAttack);
+        Assert.Equal(scouted, presenter.Attack?.Report);
+
+        presenter.EnemyAttackAnswered(1);                                                    // Intercept, Gandhi refuses
+        s.Tmp0621 = 501;
+        presenter.Show(new MapEvent(Sys3Int.Zero));
+        Assert.Null(presenter.Attack);
+        Assert.False(presenter.ReturnsToAttack);
+        Announce(presenter);
+        Assert.Equal(scouted, presenter.Attack?.Report);
+
+        presenter.EnemyAttackAnswered(1);                                                    // Intercept, Plains
+        presenter.Show(new MapEvent(Sys3Int.Zero));
+        presenter.Show(new WindowEvent((Sys3Int)111, Sys3Int.Zero));
+        presenter.Show(new MessageEvent(new ScriptRef("FIGT_B.ADV", 171)));
+        presenter.Show(new WindowEvent(Sys3Int.Zero, Sys3Int.Zero));
+        s.Tmp0621 = 503;
+        presenter.Show(new MapEvent(Sys3Int.Zero));
+        Assert.Null(presenter.Attack);
+    }
+
     /// <summary><c>FIGT_B.ADV:5-45</c> as the port shows it (<c>DefenceAnnounceAsync</c>), without the map's steps.</summary>
     private static void Announce(BattlePresenter presenter)
     {

@@ -433,6 +433,8 @@ internal sealed partial class DeploymentPanels : Control
             string label = _labels[button - 1].Trim();
             if (button == 3)
             {
+                if (_mode == 2)
+                    label = "Back";                             // a defence's Stop goes back to our attack screen (owner, 2026-10-24)
                 c.DrawRect(rect, down ? Lacquer.Row : hover ? Lacquer.RowHover : Lacquer.Row);
                 c.DrawRect(rect, hover ? Lacquer.HoverLine : Lacquer.DimGold, false, Line(hover ? 2 : 1));
                 CentredString(c, _cinzel, label, 18, hover ? Lacquer.Name : Lacquer.Text, rect.GetCenter().X, Lacquer.Baseline(rect, _cinzel, 18));

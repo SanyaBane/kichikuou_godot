@@ -14,7 +14,10 @@ public partial class GameScreen
     /// <summary>The ninja our screen's list chose: the answer to the ninja menu that follows Ninja Scout (0: none).</summary>
     private int _attackNinja;
 
-    private bool _attackDumped, _attackExercised;
+    private bool _attackDumped, _attackExercised, _attackBackDumped;
+
+    /// <summary>When unattended play with <c>--scout</c> left the deployment screen by Back (<c>Time.GetTicksMsec</c>), once a launch.</summary>
+    private ulong? _autoBackAt;
 
     private void ReadyEnemyAttack(FacePictures faces)
     {
@@ -66,6 +69,8 @@ public partial class GameScreen
             return ninja;
         }
         UpdateEnemyAttack();
+        if (_autoBackAt is { } backAt && !_attackBackDumped)
+            GD.Print($"Kichikuou: --auto is back on the attack screen {Time.GetTicksMsec() - backAt} ms after Back.");
         var choosing = _attackView.ChooseAsync();
         if (_options.Auto)
             _ = AutoEnemyAttackAsync();
@@ -103,6 +108,12 @@ public partial class GameScreen
         {
             _attackDumped = true;
             await AutoDumpAsync("enemy-attack");
+        }
+        if (_autoBackAt is not null && !_attackBackDumped)
+        {
+            _attackBackDumped = true;                                   // back from the deployment screen, the report kept
+            if (dumps)
+                await AutoDumpAsync("enemy-attack-back");
         }
         if (_autoAbandon)
         {

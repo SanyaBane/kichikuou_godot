@@ -1511,6 +1511,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             await SkipYieldAsync();
             return Sys3Int.Zero;
         }
+        if (InterfaceChoice.New && _presenter.Battle.ReturnsToAttack)
+            return Sys3Int.Zero;                                        // the map's scroll and blink under our attack screen after Back
         double seconds = _options.Fast ? 0 : ticks.Value * 0.016;
         if (_options.Auto)
         {
@@ -3056,7 +3058,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             case (AutoUntil.Round, RoundHeaderEvent) when _autoRound >= _options.AutoUntilRound:
                 throw new AutoStopException($"--auto stopped at the start of round {_autoRound} of a battle (week {week}).");
-            case (AutoUntil.Deployment, PickerScreenEvent { Kind: PickerKind.Deployment, Open: false }):
+            case (AutoUntil.Deployment, PickerScreenEvent { Kind: PickerKind.Deployment, Open: false })
+                when _autoBackAt is null || _attackBackDumped:                  // not the picker --scout leaves by Back
                 throw new AutoStopException($"--auto stopped after the first deployment picker (week {week}).");
             case (AutoUntil.Battle or AutoUntil.BattleEnd or AutoUntil.Round, BattleScreenEvent { File: "FIGT_A.ADV" or "FIGT_B.ADV" or "FIGT.ADV", Open: false } battle):
                 throw new AutoStopException($"--auto stopped after the first battle, {battle.File} (week {week}).");
@@ -3166,6 +3169,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// </summary>
     private (AutoDeployStep Step, int Value) AutoDeploy(PickerView picker, GameState s)
     {
+        if (picker.Mode == 2 && _options.AutoScout && InterfaceChoice.New && _panels.Visible && _autoBackAt is null)
+        {
+            _autoBackAt = Time.GetTicksMsec();                          // Back once, to our attack screen (GameScreen.EnemyAttack.cs)
+            return (AutoDeployStep.Button, 3);
+        }
         if (_autoPartyFrom != picker)
         {
             _autoPartyFrom = picker;
