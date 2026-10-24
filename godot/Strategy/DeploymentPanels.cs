@@ -439,16 +439,21 @@ internal sealed partial class DeploymentPanels : Control
                 continue;
             }
             Lacquer.DrawRedButton(c, rect, hover, down, _k);
-            string note = (_mode, button) switch
+            string? note = (_mode, button) switch
             {
                 (2, 1) => "Fight on the plains",
                 (2, 2) => "Fight in the city",
                 (3, _) => $"Into the dungeon  ·  {cost}",
-                _ => $"Go to war  ·  {cost}",
+                _ => null,                                      // Attack alone (owner, 2026-10-24): the war expenses are above it
             };
+            int size = sends == 1 ? 21 : 19;
+            if (note is null)
+            {
+                CentredString(c, _brush, label, size + 3, Color.Color8(250, 226, 160), rect.GetCenter().X, Lacquer.Baseline(rect, _brush, size + 3));
+                continue;
+            }
             var top = new Rect2(rect.Position, new Vector2(rect.Size.X, rect.Size.Y * 0.62f));
             var bottom = new Rect2(rect.Position.X, rect.Position.Y + rect.Size.Y * 0.56f, rect.Size.X, rect.Size.Y * 0.38f);
-            int size = sends == 1 ? 21 : 19;
             CentredString(c, _brush, label, size, Color.Color8(250, 226, 160), rect.GetCenter().X, Lacquer.Baseline(top, _brush, size));
             if (sends == 1)
                 CentredString(c, _gothic, note, 13, Color.Color8(236, 206, 160), rect.GetCenter().X, Lacquer.Baseline(bottom, _gothic, 13));
