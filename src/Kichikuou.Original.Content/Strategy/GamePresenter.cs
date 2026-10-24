@@ -413,12 +413,18 @@ public sealed partial class GamePresenter : IStageObserver
 
     // ------------------------------------------------------------------ text
 
-    /// <summary>The text of a script location, with numbers and string variables filled in.</summary>
+    /// <summary>
+    /// The text of a script location, with numbers and string variables filled in; under our message windows
+    /// (<see cref="CoverMessages"/>) its sums of gold grouped as our screens write them (<see cref="ScenarioFigures"/>).
+    /// </summary>
     private string Read(ScriptRef source, IReadOnlyList<Sys3Int> numbers, IReadOnlyList<Sys3Int>? stringVariables)
     {
         try
         {
-            return _text.Read(source).Format(numbers, StringVar, stringVariables);
+            var run = _text.Read(source);
+            if (CoverMessages)
+                (run, numbers) = ScenarioFigures.Group(run, numbers);
+            return run.Format(numbers, StringVar, stringVariables);
         }
         catch (Exception e) when (e is ScenarioTextException or ArgumentException or IOException)
         {
@@ -437,7 +443,11 @@ public sealed partial class GamePresenter : IStageObserver
             return Hankaku.ToHalfWidth(port);
         try
         {
-            return _text.Read(captured.Text).FormatCaptured(captured.Numbers, captured.Strings);
+            var run = _text.Read(captured.Text);
+            IReadOnlyList<Sys3Int> numbers = captured.Numbers;
+            if (CoverMessages)
+                (run, numbers) = ScenarioFigures.Group(run, numbers);
+            return run.FormatCaptured(numbers, captured.Strings);
         }
         catch (Exception e) when (e is ScenarioTextException or ArgumentException or IOException)
         {

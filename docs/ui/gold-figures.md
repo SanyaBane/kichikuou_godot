@@ -188,7 +188,26 @@ weeks 86 (`MAIN`, `ﾛｰﾄﾞｾｰﾌﾞ`, `Iｼｬﾝｸﾞﾘﾗ`, `Gｱﾋ
 (`TEST`, `PCMPLAY`, `WAO_SUB`, `WAO_MAP`, `ｽﾀMENU`, CG numbers in `Gﾜｵ`), the All Data graphs 8. Lines that mix both
 kinds: `Cｼｮｳﾆﾝ.ADV:252`, `:254`, `:589`, `:591` ("1000 Troops: 8000KG") and the pickers' `n00K GOLD, t Troops`.
 
-## 6. Open questions for the owner
+## 6. The owner's answers (2026-10-24)
+
+1. **Zero.** A printed figure of 0 shows `0K GOLD` (as `Figures` writes it), not the original's `000K GOLD`.
+2. **Fixed widths.** The `H 5` / `H 3` places are left as the original prints them: in our interface our own screens
+   cover all of them, and `--interface original` keeps the original's numbers.
+3. **Menus.** The menu items get the separator too (`4,000K Contract`, `10,000K`).
+4. **Troops.** The troop counts on the merchant's lines get it as well (`1,000 Troops:　8,000KG`), as our screens write
+   troops.
+
+**Built** (2026-10-24): `Original.Content/Strategy/ScenarioFigures` holds the places by file and line and rewrites a
+text run (`TextRun.SegmentLines` gives each piece its line); `GamePresenter` applies it to every text and menu item it
+reads while our message windows are on (`CoverMessages`), so `--interface original` keeps the original's numbers.
+Besides the `H 3` / `H 5` places, `COMMAND`'s status window (`:446`, `:475`) and `MAIN`'s week windows (`:177`,
+`:194`, `:201`, `:208`) are left out: our status strip and week report read their figures from that text and write
+them themselves. A no-break space (the Space separator) becomes a plain blank in the windows, whose cells count every
+character outside ASCII as full width. Tests: `ScenarioFiguresTests` (content).
+
+The questions as they were put follow.
+
+## 7. Open questions for the owner
 
 1. **A printed figure and its `00` are one number.** In all 34 printed places the screen's sum is the figure and the
    literal `00K…` of the next line together: grouping must format n×100 and then drop the `00` from the suffix

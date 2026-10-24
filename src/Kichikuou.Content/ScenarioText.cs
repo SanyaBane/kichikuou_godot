@@ -41,6 +41,9 @@ public sealed record TextRun(ScriptRef Source, IReadOnlyList<TextSegment> Segmen
     /// <summary>The number of string slots whose variable the event must supply.</summary>
     public int ComputedStringCount => Segments.Count(s => s is StringSlot { Variable: null });
 
+    /// <summary>The file line of each of <see cref="Segments"/> (empty for a run not read from a file).</summary>
+    public IReadOnlyList<int> SegmentLines { get; init; } = [];
+
     /// <summary>
     /// The text as the engine prints it: numbers from <paramref name="numbers"/> in order
     /// (formatted like xsystem35 <c>format_number</c>/<c>format_number_zenkaku</c>), string
@@ -182,14 +185,17 @@ public sealed class ScenarioText(string directory)
                 break;
         }
         var segments = new List<TextSegment>();
+        var segmentLines = new List<int>();
         for (int i = source.Line - 1; i < lines.Length; i++)
         {
             if (!TryParse(lines[i].Trim(), segments))
                 break;
+            while (segmentLines.Count < segments.Count)
+                segmentLines.Add(i + 1);
         }
         if (!segments.Any(s => s is not LineBreak))
             throw new ScenarioTextException($"{source}: no text at this line ('{lines[source.Line - 1].Trim()}').");
-        return new TextRun(source, segments);
+        return new TextRun(source, segments) { SegmentLines = segmentLines };
     }
 
     private string[] Lines(string file) => _files.GetOrAdd(file, f =>
