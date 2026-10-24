@@ -268,6 +268,9 @@ as it is. Where to start:
    §8.3, 02-resolution.md §6.10). Label rounds L1-L7, M1-M6 and N1-N6 (`tools/ui/mock_defend.py`, each N drawn at −2 %
    and −21 %, the increase's range); **the owner chose N5**, built: "DEFEND" at 19 px, "ENEMY HIT −n%" in gold at 16 px
    right-aligned (`BattlePresenter.DefenceMark`), the shield moved onto the ribbon's left tail to make room.
+   **The ribbon lowered (owner, 2026-10-24):** across the card's middle it hid the troops and the commander's HP; it now
+   lies across the card's foot (40 px high, over the portrait's stats, under the order line). While MsgSkip skips it
+   holds 0.35 s instead of 1.8 s, and one still up when the skip begins fades out at once (`BattleInfoLayer.Hurry`).
    **The fall without its click (owner, 2026-10-21):** a defeat played two clicks — the fallen one's line in its bubble
    (`WAO_SUB` 151 or 141, then 11's wait), then the box 153 or 143 with its sentence ("… was injured and couldn't move.",
    `FIGTﾃｷDE.ADV:1811-1830`; "… fell in battle.", `FIGTﾐｶDE.ADV:721-727`) and its own wait, our stamp. Now the stamp's

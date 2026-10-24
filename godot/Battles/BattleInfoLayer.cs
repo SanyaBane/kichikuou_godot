@@ -28,6 +28,11 @@ internal sealed partial class BattleInfoLayer : Control
     // A defence's ribbon and caption: they rise, hold, then fade (owner, 2026-10-19: answered at once, as the order's label flashes).
     private const double BadgeRise = 0.15, BadgeHold = 1.2, BadgeFade = 0.45;
 
+    // While MsgSkip skips (owner, 2026-10-24): gone at once, not left over the turns that follow.
+    private const double QuickRise = 0.05, QuickHold = 0.2, QuickFade = 0.1;
+
+    private const float RibbonHeight = 40;
+
     private static readonly Color Accent = Color.Color8(242, 199, 92);
     private static readonly Color SteelTop = Color.Color8(78, 132, 204), SteelFoot = Color.Color8(30, 58, 108);
     private static readonly Color RibbonTail = Color.Color8(24, 44, 84);
@@ -42,7 +47,7 @@ internal sealed partial class BattleInfoLayer : Control
     private FontVariation _gothic = null!;
     private BattleInfoBox? _box;
     private bool _waiting;
-    private readonly List<(BattleInfoBox Box, string Name, ulong From)> _flashes = [];
+    private readonly List<(BattleInfoBox Box, string Name, ulong From, bool Quick)> _flashes = [];
     private float _k = 1;
 
     public BattleInfoLayer()
@@ -77,13 +82,30 @@ internal sealed partial class BattleInfoLayer : Control
         QueueRedraw();
     }
 
-    /// <summary>A defence's box, answered at once, flashes: the ribbon on its card, the caption with <paramref name="name"/> at the scene's foot.</summary>
-    public void Flash(BattleInfoBox box, string name)
+    /// <summary>
+    /// A defence's box, answered at once, flashes: the ribbon on its card, the caption with <paramref name="name"/> at the
+    /// scene's foot — briefly when <paramref name="quick"/> (MsgSkip skipping).
+    /// </summary>
+    public void Flash(BattleInfoBox box, string name, bool quick = false)
     {
         _flashes.RemoveAll(f => f.Box.Place == box.Place);              // one mark a card
-        _flashes.Add((box, name, Time.GetTicksMsec()));
+        _flashes.Add((box, name, Time.GetTicksMsec(), quick));
         QueueRedraw();
     }
+
+    /// <summary>MsgSkip began to skip: the ribbons still up fade out at once.</summary>
+    public void Hurry()
+    {
+        ulong fading = Time.GetTicksMsec() - (ulong)((QuickRise + QuickHold) * 1000);
+        for (int i = 0; i < _flashes.Count; i++)
+        {
+            if (!_flashes[i].Quick)
+                _flashes[i] = _flashes[i] with { From = fading, Quick = true };
+        }
+    }
+
+    private static (double Rise, double Hold, double Fade) Timing(bool quick) =>
+        quick ? (QuickRise, QuickHold, QuickFade) : (BadgeRise, BadgeHold, BadgeFade);
 
     /// <summary>Whether a ribbon is still flashing.</summary>
     public bool Flashing => _flashes.Count > 0;
@@ -108,7 +130,7 @@ internal sealed partial class BattleInfoLayer : Control
 
     public override void _Process(double delta)
     {
-        _flashes.RemoveAll(f => (Time.GetTicksMsec() - f.From) / 1000.0 >= BadgeRise + BadgeHold + BadgeFade);
+        _flashes.RemoveAll(f => Timing(f.Quick) is var (rise, hold, fade) && (Time.GetTicksMsec() - f.From) / 1000.0 >= rise + hold + fade);
         if (_flashes.Count > 0 || (_box is not null && _waiting))
             QueueRedraw();                                              // the badge fades, the triangle moves
         else if (_drawnFlash)
@@ -121,10 +143,11 @@ internal sealed partial class BattleInfoLayer : Control
     {
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         _drawnFlash = _flashes.Count > 0;
-        foreach (var (box, name, from) in _flashes)
+        foreach (var (box, name, from, quick) in _flashes)
         {
+            var (rise, hold, fade) = Timing(quick);
             if (box.Place is { } at)
-                DrawDefence(box, name, BattleBoardView.CardArea(at), Alpha(from, BadgeRise, BadgeHold, BadgeFade));
+                DrawDefence(box, name, BattleBoardView.CardArea(at), Alpha(from, rise, hold, fade));
         }
         switch (_box)
         {
@@ -184,7 +207,7 @@ internal sealed partial class BattleInfoLayer : Control
 
     /// <summary>
     /// A defence (mock-ups D2 and D5, 2026-10-21, in place of K3a's badge and plate): the card glows blue, a steel ribbon
-    /// across its middle — tails past the card's edges, a shield on the left one, "DEFEND", what the defence does in gold
+    /// across its foot — tails past the card's edges, a shield on the left one, "DEFEND", what the defence does in gold
     /// ("ENEMY HIT −n%", mock-up N5: n points off the enemy's hit chance, not the Defense stat) — and the sentence
     /// with the unit's name as a caption at the scene's foot on its side, above the order strip, unless a speech is up.
     /// </summary>
@@ -195,7 +218,9 @@ internal sealed partial class BattleInfoLayer : Control
             DrawRect(card.Grow(i), new Color(DefendGlow, (30 + 22 * (7 - i)) / 255f * alpha), false, Lacquer.Line(1, _k));
         DrawRect(card, new Color(DefendGlow, alpha), false, Lacquer.Line(2, _k));
 
-        float x0 = card.Position.X, x1 = card.End.X, y0 = card.Position.Y + 48, y1 = y0 + 46, mid = (y0 + y1) / 2;
+        // At the card's foot, over the portrait's stats and under the state line (owner, 2026-10-24: across the middle it hid
+        // the troops and the commander's HP).
+        float x0 = card.Position.X, x1 = card.End.X, y1 = card.End.Y - 2, y0 = y1 - RibbonHeight, mid = (y0 + y1) / 2;
         foreach (int side in new[] { -1, 1 })
         {
             float inner = side < 0 ? x0 + 6 : x1 - 6, outer = side < 0 ? x0 - 16 : x1 + 16;
@@ -207,7 +232,7 @@ internal sealed partial class BattleInfoLayer : Control
             [SteelTop * tint, SteelTop * tint, SteelFoot * tint, SteelFoot * tint]);
         DrawLine(new Vector2(x0 - 6, y0 + 2), new Vector2(x1 + 6, y0 + 2), Accent * tint, Lacquer.Line(2, _k));
         DrawLine(new Vector2(x0 - 6, y1 - 2), new Vector2(x1 + 6, y1 - 2), Accent * tint, Lacquer.Line(2, _k));
-        DrawShield(x0 + 4, y0 + 7, 26, 32, 2, alpha);                      // on the tail: room for the mark at −21% (N5)
+        DrawShield(x0 + 4, y0 + 6, 24, 28, 2, alpha);                      // on the tail: room for the mark at −21% (N5)
         var ribbon = new Rect2(x0, y0, x1 - x0, y1 - y0);
         Outlined(_heavy, new Vector2(x0 + 26, Lacquer.Baseline(ribbon, _heavy, 19)), "DEFEND", 19, Colors.White * tint, tint);
         float markWidth = _heavy.GetStringSize(box.Mark, fontSize: 16).X;

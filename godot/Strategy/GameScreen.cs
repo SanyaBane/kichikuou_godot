@@ -399,6 +399,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         // Ctrl held skips as MsgSkip does (ours); polled, so a release no control passes on is still seen.
         if (_skip is not null)
             _skip.Held = Input.IsKeyPressed(Godot.Key.Ctrl) && GetWindow().HasFocus();
+        if (_skip?.IsSkipping == true && _battleView?.Info.Flashing == true)
+            _battleView.Info.Hurry();                                   // a defence's ribbon goes at once while skipping
         if (_noticeLeft > 0 && (_noticeLeft -= delta) <= 0)
             _notice.Text = "";
         UpdateDeploymentScreen();
@@ -1141,7 +1143,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             // row. The wait is answered at once, as by a click (the key lands in RetVal), after the release of a button still held.
             if (passed.Kind == InfoBoxKind.Defence)
             {
-                _battleView.Info.Flash(passed, passed.Place is { } at && BattleBoard.Card(_presenter.State!, at) is { } card ? card.Name : "");
+                _battleView.Info.Flash(passed, passed.Place is { } at && BattleBoard.Card(_presenter.State!, at) is { } card ? card.Name : "",
+                    quick: _skip.IsSkipping);
                 await GuardAsync(BattleSide.Player);
                 if (_options.Auto && Windowed && _messageDumps.Add("info-defence"))
                 {
