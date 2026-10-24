@@ -314,9 +314,10 @@ def bar_whole(f):
     window = region(f.img, BAR_FRAME)
     picture = lift_plate(f, True)
     h = (BAR_FRAME[3] - BAR_FRAME[1]) * K_WHOLE
-    fill(f, (0, BAR_FRAME[1], RULE_X, H), (10, 8, 6))           # the dock hides the original's window whole
-    lacquer(f, (-14, BAR_FRAME[1], RULE_X - 2, H + 14), radius=0, corners=False)
-    fill(f, (RULE_X - 2, BAR_FRAME[1] + h, W, H), (10, 8, 6))
+    # A dark band hides the original's window where ours no longer is; the dock stands on it as high as the window,
+    # its foot on the screen (owner, 2026-10-24).
+    fill(f, (0, BAR_FRAME[1], W, H), (10, 8, 6))
+    lacquer(f, (-14, BAR_FRAME[1], RULE_X - 4, BAR_FRAME[1] + h), radius=10, corners=False)
     put(f, window, (RULE_X, BAR_FRAME[1], W, BAR_FRAME[1] + h))
     pw, ph = (BAR_PLATE[2] - BAR_PLATE[0]) * K_WHOLE, (BAR_PLATE[3] - BAR_PLATE[1]) * K_WHOLE
     px = RULE_X + BAR_PLATE[0] * K_WHOLE
