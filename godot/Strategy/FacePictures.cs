@@ -71,7 +71,10 @@ internal sealed class FacePictures(CgLibrary cgs)
     /// <summary>
     /// The picture panel of a picker whose screen is <paramref name="screenCg"/> and whose empty picture is
     /// <paramref name="emptyCg"/>, with <paramref name="pictureCg"/> (0: none) drawn into it at its own place — the
-    /// harem's 818/700 and a girl's 700 + n (<c>Sﾊｰﾚﾑ.ADV:5-8</c>, <c>:112-148</c>), cut as above.
+    /// harem's 818/700 and a girl's 700 + n (<c>Sﾊｰﾚﾑ.ADV:5-8</c>, <c>:112-148</c>), cut as above. Only the cut is drawn: a
+    /// surface of its size, each CG at its place less the cut's corner, clipped — the same pixels as the whole screen's
+    /// (the palette is the surface's, loaded in the same order; all the unit and harem panels compared byte for byte),
+    /// ~8 ms instead of ~15 (2026-10-24).
     /// </summary>
     public ImageTexture? PicturePanel(int pictureCg, int screenCg, int emptyCg)
     {
@@ -79,22 +82,34 @@ internal sealed class FacePictures(CgLibrary cgs)
         if (_panels.TryGetValue(key, out var kept))
             return kept;
         ImageTexture? texture = null;
-        var picture = pictureCg == 0 ? null : Cgs.Get(pictureCg);
-        if (pictureCg == 0 || picture is not null)
+        if (PanelPixels(pictureCg, screenCg, emptyCg) is { } pixels)
         {
-            var screen = new Surface(Surface.ScreenWidth, Surface.ScreenHeight);
-            if (Cgs.Get(screenCg) is { } frame)
-                screen.DrawCg(frame, frame.X, frame.Y, Surface.SpriteKey);
-            if (Cgs.Get(emptyCg) is { } empty)
-                screen.DrawCg(empty, empty.X, empty.Y);
-            if (picture is not null)
-                screen.DrawCg(picture, picture.X, picture.Y);
-            var (x, y, w, h) = PictureCut;
+            var (_, _, w, h) = PictureCut;
             texture = ImageTexture.CreateFromImage(Image.CreateFromData(w * Surface.Scale, h * Surface.Scale, false,
-                Image.Format.Rgba8, screen.ReadArea(x, y, w, h)));
+                Image.Format.Rgba8, pixels));
         }
         _panels[key] = texture;
         return texture;
+    }
+
+    /// <summary>Whether the unit pickers' panel with <paramref name="portraitCg"/> is made (<see cref="PicturePanel(int)"/>).</summary>
+    public bool HasPanel(int portraitCg) => _panels.ContainsKey((portraitCg, 870, 600));
+
+    /// <summary>The panel's RGBA rows (<see cref="PictureCut"/> at 2×), or null when the picture is not in the player's files.</summary>
+    private byte[]? PanelPixels(int pictureCg, int screenCg, int emptyCg)
+    {
+        var picture = pictureCg == 0 ? null : Cgs.Get(pictureCg);
+        if (pictureCg != 0 && picture is null)
+            return null;
+        var (x, y, w, h) = PictureCut;
+        var cut = new Surface(w, h);
+        if (Cgs.Get(screenCg) is { } frame)
+            cut.DrawCg(frame, frame.X - x, frame.Y - y, Surface.SpriteKey);
+        if (Cgs.Get(emptyCg) is { } empty)
+            cut.DrawCg(empty, empty.X - x, empty.Y - y);
+        if (picture is not null)
+            cut.DrawCg(picture, picture.X - x, picture.Y - y);
+        return cut.ReadArea(0, 0, w, h);
     }
 
     /// <summary>The picture panel on the original's screen (script pixels), <c>Sｱｲﾃﾑ.ADV:101-110</c>'s cut.</summary>

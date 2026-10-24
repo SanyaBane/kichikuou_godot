@@ -278,6 +278,9 @@ internal sealed partial class DeploymentTableView : Tree
         Fill();
     }
 
+    /// <summary>The units with a row, in the rows' order.</summary>
+    public IEnumerable<int> Units => _rows.Select(r => r.Unit);
+
     /// <summary>Whether <paramref name="unit"/> has a row.</summary>
     public bool Lists(int unit) => _rows.Any(r => r.Unit == unit);
 

@@ -163,6 +163,16 @@ internal sealed partial class DeploymentPanels : Control
         _screen.QueueRedraw();
     }
 
+    /// <summary>
+    /// Makes the first picture panel of <paramref name="portraits"/> not made yet, one a call (one a frame, ~8 ms): a row's
+    /// first hover finds its picture ready.
+    /// </summary>
+    public void WarmPictures(IEnumerable<int> portraits)
+    {
+        if (portraits.FirstOrDefault(p => !_faces.HasPanel(p), -1) is var portrait and >= 0)
+            _faces.PicturePanel(portrait);
+    }
+
     /// <summary>A bar button as the mouse presses it (unattended play goes through here).</summary>
     public void PressButton(int button)
     {

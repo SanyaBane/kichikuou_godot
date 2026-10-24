@@ -2060,6 +2060,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         float k = pixels / 2;                                   // window pixels to a pixel of the 1280×800 screen
         _table.Place(new Rect2(origin + DeploymentPanels.TableArea.Position * k, DeploymentPanels.TableArea.Size * k), pixels);
         _table.Refresh(_presenter.State!, _wantedOrder);
+        var units = _presenter.State!.Units;
+        _panels.WarmPictures(_table.Units.Select(u => (int)units[u].PortraitCg.Value));   // the rows' pictures, one a frame
         return true;
     }
 
