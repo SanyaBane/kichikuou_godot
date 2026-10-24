@@ -350,7 +350,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   else "??");
   `Strategy/ProvinceMenuView` (our province menu over a city file's first menu, our interface, the owner's
   mock-up 4a in lacquer and gold: `Original.Content/Strategy/ProvinceMenu`, `GamePresenter.MenuCovered`,
-  docs/ui/command-screen.md, "The province menu"; also the dungeon's menu after it);
+  docs/ui/command-screen.md, "The province menu"; also the dungeon's menu after it; its and the command panel's rows 38 px on the PC unless Debug → Menu Row Height… says otherwise, `Strategy/MenuRowsChoice`, `--menu-rows n` for a launch);
   `Strategy/CommandMenuView` (our command panel over `COMMAND`'s right-click menu and its status window, Option →
   Interface → New, centred as the original's menu: `Original.Content/Strategy/CommandMenu`, Load/Save as two rows
   answered through `LoadSaveShortcut`, docs/ui/command-screen.md, "The command panel"); `Strategy/StatusStripView` (our status strip over the map's top while the command

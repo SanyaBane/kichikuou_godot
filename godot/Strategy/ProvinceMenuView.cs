@@ -20,14 +20,21 @@ internal sealed partial class ProvinceMenuView : Control
 {
     private static UiPalette Ui => UiPalettes.For(UiPart.Map);
 
-    // The PC's layout: the owner's A1 (2026-10-25, docs/ui/command-screen.md, "Taller rows"), the rows 38 high.
-    private const float Width = 500, Pad = 18, PictureW = 234, PictureH = 156, RowPitch = 45, RowH = 38, Caption = 32,
-        ReturnW = 120, ReturnH = 36;
+    // The PC's layout: the owner's A1 (2026-10-25, docs/ui/command-screen.md, "Taller rows"); the rows 38 high unless
+    // Debug → Menu Row Height says otherwise (MenuRowsChoice), the header as it is.
+    private const float Pad = 18, PictureW = 234, PictureH = 156, Caption = 32;
     // The touch mode's layout: the province in a left column, the rows 46 high (9.3 mm on the tablet) in a right one.
     private const float TouchPictureW = 270, TouchPictureH = 180, TouchMid = 24, TouchColumn = 300, TouchRowH = 46,
         TouchPitch = 54, TouchReturnW = 150, TouchFigure = 36;
 
     private readonly bool _touch = TouchMode.On;
+
+    private static MenuRows Rows => MenuRowsChoice.Rows;
+    private static float Width => MathF.Max(500, MathF.Round(500 * Rows.Scale * 0.9f));
+    private static float RowPitch => Rows.Pitch;
+    private static float RowH => Rows.Height;
+    private static float ReturnW => MathF.Round(120 * Rows.Scale);
+    private static float ReturnH => Rows.Height - 2;
 
     private readonly FacePictures _pictures;
     private readonly FontFile _brush = Lacquer.Brush();
@@ -47,6 +54,11 @@ internal sealed partial class ProvinceMenuView : Control
         MouseFilter = MouseFilterEnum.Stop;
         Visible = false;
     }
+
+    // An open menu follows Debug → Menu Row Height at once.
+    public override void _EnterTree() => MenuRowsChoice.Changed += QueueRedraw;
+
+    public override void _ExitTree() => MenuRowsChoice.Changed -= QueueRedraw;
 
     public void SetFont(GameFont font)
     {
@@ -248,7 +260,7 @@ internal sealed partial class ProvinceMenuView : Control
         float baseline(int size, Font font) => rect.Position.Y + rect.Size.Y / 2 + (font.GetAscent(size) - font.GetDescent(size)) / 2;
         if (r == RowCount - 1)
         {
-            int returnSize = _touch ? 18 : 17;
+            int returnSize = _touch ? 18 : Rows.Text - 2;
             float w = _gothic.GetStringSize("Return", fontSize: returnSize).X;
             DrawString(_gothic, new Vector2(rect.GetCenter().X - w / 2, baseline(returnSize, _gothic)), "Return", fontSize: returnSize,
                 modulate: hover ? Ui.Text : Ui.Quiet);
@@ -258,15 +270,15 @@ internal sealed partial class ProvinceMenuView : Control
         var (tag, colour) = TagOf(item.Action);
         var tagRect = _touch
             ? new Rect2(rect.Position.X + 7, rect.Position.Y + 8, 72, rect.Size.Y - 16)
-            : new Rect2(rect.Position.X + 6, rect.Position.Y + 6, 74, rect.Size.Y - 12);
-        Ui.DrawTag(this, _gothic, tagRect, tag, colour, on, _k, _touch ? 13 : 15);
-        int size = 19;
-        DrawString(_gothic, new Vector2(rect.Position.X + (_touch ? 94 : 93), baseline(size, _gothic)), item.Text, fontSize: size,
+            : new Rect2(rect.Position.X + Rows.TagInset, rect.Position.Y + Rows.TagInset, Rows.TagWidth, rect.Size.Y - 2 * Rows.TagInset);
+        Ui.DrawTag(this, _gothic, tagRect, tag, colour, on, _k, _touch ? 13 : Rows.TagText);
+        int size = _touch ? 19 : Rows.Text;
+        DrawString(_gothic, new Vector2(rect.Position.X + (_touch ? 94 : Rows.TextLeft), baseline(size, _gothic)), item.Text, fontSize: size,
             modulate: on ? Ui.Text : Ui.OffText);
         if (!on)
         {
             const string spent = "used this week";
-            int spentSize = _touch ? 12 : 13;
+            int spentSize = _touch ? 12 : Rows.Small;
             float sw = _gothic.GetStringSize(spent, fontSize: spentSize).X;
             DrawString(_gothic, new Vector2(rect.End.X - 10 - sw, baseline(spentSize, _gothic)), spent, fontSize: spentSize,
                 modulate: Ui.OffText);

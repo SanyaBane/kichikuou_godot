@@ -318,6 +318,15 @@ Search, Battle, Ninja), and Return. The mock-ups hold the player's CGs and stay 
   M2 (the commands 38, the other items 32); the owner chose **M1**, built (`CommandMenuView`: the panel 360 wide, the
   commands 38 px at a 45 px pitch with A1's tags and text 19, the other items 38 px at a 42 px pitch with text 18,
   Turn END 56 px at 24). The dialogues' rows maybe next (docs/backlog.md).
+- **The rows' height on a slider (owner, 2026-10-25, for trying sizes out, not for the release).** Debug → Menu Row
+  Height… opens a small window with a slider, 18 to 60 px (Reset to 38); both menus follow it at once while open, and
+  it is kept for later launches (`[debug] menu_row_height`; `--menu-rows n` for one launch). `godot/Strategy/MenuRowsChoice`
+  holds it and `MenuRows` draws the sizes from it: the text 8 + 0.29 × the height (13 at 18, 19 at 38, 25 at 60), the
+  tag's word 4 smaller, the other items' text 1 smaller, Return's 2, Turn END's 5 larger; the tag's inset, the gap
+  between rows (3-7) and the widths (the tag, Return, the panels: 500 and 360 at least) grow with them; at 38 everything
+  is A1's and M1's. The province menu's header stays as it is, and so does the touch mode. Above about 52 px the
+  command panel, centred, reaches under the status strip, and at 60 it is taller than the screen (791 px with five other
+  items).
 
 ## The command panel (owner, 2026-10-16)
 

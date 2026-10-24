@@ -67,7 +67,8 @@ public partial class GameScreen
             ("Battle Captures...", ConfirmCaptures),
             ("Portraits...", OpenPortraits),
             ("Effects...", OpenEffects),
-            ("Hide Dimmed Map Names", ToggleDimmedNames));
+            ("Hide Dimmed Map Names", ToggleDimmedNames),
+            ("Menu Row Height...", OpenMenuRows));
         debug = debugMenu.GetPopup();
         debug.SetItemAsCheckable(3, true);
         debug.SetItemChecked(3, MapNamesChoice.HideDimmed);
@@ -184,6 +185,21 @@ public partial class GameScreen
 
     /// <summary>Exit (<c>menu_quitmenu_open</c>): after the confirmation, the program ends.</summary>
     private void ConfirmExit() => Confirm("Quit game?", "Quit", () => _tree.Quit());
+
+    private MenuRowsWindow? _menuRows;
+
+    /// <summary>Debug → Menu Row Height (ours, development): the slider's window, over the game, which goes on under it.</summary>
+    private void OpenMenuRows()
+    {
+        if (IsInstanceValid(_menuRows))
+        {
+            _menuRows!.GrabFocus();
+            return;
+        }
+        _menuRows = new MenuRowsWindow();
+        AddChild(_menuRows);
+        _menuRows.PopupCentered();
+    }
 
     /// <summary>Debug → Battle Captures (ours, development): after the confirmation, the capture viewer, which comes back to the title.</summary>
     private void ConfirmCaptures() => Confirm("Open the battle captures?", "Open", () => Screens.Open(this, new CaptureList()));
