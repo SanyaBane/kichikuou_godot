@@ -122,7 +122,7 @@ seen. Our interface only; the rules run as before.
   `enemy-attack-scouted` and `enemy-attack-abandon` (the question answered Keep) before it intercepts.
 - **Built (2026-10-24):** `Original.Content/Battles/EnemyAttack` (`EnemyAttackTests`), `BattlePresenter.Attack.cs`
   (the ninjas taken again with the report, which spent one), `godot/Strategy/EnemyAttackView` (the report's cards
-  drawn by `ScoutReportView.DrawCard`), `godot/Strategy/GameScreen.EnemyAttack.cs`. The `--scout` look on the week-18
+  drawn by `ScoutReportView.DrawCard`; since §8 our party's cards), `godot/Strategy/GameScreen.EnemyAttack.cs`. The `--scout` look on the week-18
   save (CLAUDE.md, "Commands") goes through all of it in a window: the screen, Kanami's list, the places filled
   (Kanami spent: "0 of 1 free"), Abandon City's question answered Keep, Intercept and the deployment table, with no
   key wait of the hidden lines left for the player. Not yet looked at in a run: a refusal (Gandhi, Satella, Meglass),
@@ -145,3 +145,17 @@ the player is on our attack screen at once; giving the city up stays Abandon Cit
 - **Checked**: `EnemyAttackTests.Back_from_the_deployment_screen_shows_the_attack_again_at_once_with_its_report`; the
   `--scout` look leaves the first deployment screen by Back and dumps `enemy-attack-back` (the report kept, Kanami
   spent), back ~0.4 s after the press, the click's own frames included.
+
+## 8. The army's cards (owner, 2026-10-24)
+
+The owner: the army's cards — the scout report's, grey and 282×150 — sat badly on the lacquer and were too large; they
+should look like our party's cards on the deployment screen, with a bracket and its arrowhead left of them. Mock-up
+round E is `tools/ui/mock_enemy_cards.py` (over the `enemy-attack-back` dump): **E1** our cards as they are, the bracket
+in gold; **E2** E1 in vermilion; **E3** E1 mirrored, the faces on the cards' right; **E4** E1 taller (130); and E1
+before a scouting and with a place empty. **The owner chose E3**, built the same day (`EnemyAttackView.DrawArmy`):
+cards of the deployment screen's size (252×104) in `Lacquer.Row`, the face on the right in gold, the place's badge,
+name, troop type, "Troops" and the figure; the front row (1, 2) on the left, held by the deployment screen's bracket
+mirrored, its head pointing at the "VS"; a place not scouted dashed with a "?" where the face goes and "Unknown"; an
+empty place as our empty place; Commanders and Total troops under them, then whose report it is. The block is centred
+in the panel. The palette of Option → Display no longer colours this screen. Looked at in a window (`--scout`: the
+places unknown, then Kanami's report); an empty place not yet (the week-18 save's rebels come four).

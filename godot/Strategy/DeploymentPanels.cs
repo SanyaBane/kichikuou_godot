@@ -564,22 +564,7 @@ internal sealed partial class DeploymentPanels : Control
     }
 
     /// <summary>A frame of short dashes around <paramref name="rect"/>.</summary>
-    private void DrawDashed(Control c, Rect2 rect, Color colour)
-    {
-        const float Dash = 8, Step = 14;
-        for (float x = rect.Position.X; x < rect.End.X; x += Step)
-        {
-            float x1 = Math.Min(x + Dash, rect.End.X);
-            c.DrawLine(new Vector2(x, rect.Position.Y), new Vector2(x1, rect.Position.Y), colour, Line(1));
-            c.DrawLine(new Vector2(x, rect.End.Y), new Vector2(x1, rect.End.Y), colour, Line(1));
-        }
-        for (float y = rect.Position.Y; y < rect.End.Y; y += Step)
-        {
-            float y1 = Math.Min(y + Dash, rect.End.Y);
-            c.DrawLine(new Vector2(rect.Position.X, y), new Vector2(rect.Position.X, y1), colour, Line(1));
-            c.DrawLine(new Vector2(rect.End.X, y), new Vector2(rect.End.X, y1), colour, Line(1));
-        }
-    }
+    private void DrawDashed(Control c, Rect2 rect, Color colour) => Lacquer.DrawDashed(c, rect, colour, _k);
 
     /// <summary>
     /// The place a drag would drop on (the owner's gold highlight, mock-up D3): a gold glow, a bright double frame and a

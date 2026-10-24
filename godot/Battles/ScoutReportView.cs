@@ -222,10 +222,9 @@ internal sealed partial class ScoutReportView : Control
         DrawCard(_sheet, card, slot, commander, s, _font!, _bold, _colours, _faces, _crops, Px(TextSize), Px(NumberSize));
 
     /// <summary>
-    /// A scouted place's card drawn on <paramref name="canvas"/> in window pixels, <paramref name="s"/> to a layout pixel:
-    /// the report's and our enemy attack's screen (docs/ui/enemy-attack.md, §6) share it.
+    /// A scouted place's card drawn on <paramref name="canvas"/> in window pixels, <paramref name="s"/> to a layout pixel.
     /// </summary>
-    internal static void DrawCard(CanvasItem canvas, Rect2 card, int slot, ScoutedCommander? commander, float s, Font font,
+    private static void DrawCard(CanvasItem canvas, Rect2 card, int slot, ScoutedCommander? commander, float s, Font font,
         Font bold, DeploymentPalette colours, FacePictures faces, FaceCrops crops, int text, int number)
     {
         DrawShadow(canvas, card, s);

@@ -263,6 +263,24 @@ internal static class Lacquer
         c.DrawString(font, new Vector2(rect.Position.X, Baseline(rect, font, size) + 0.5f), label, HorizontalAlignment.Center, w, size, PillInk);
     }
 
+    /// <summary>A frame of short dashes around <paramref name="rect"/>: an empty place, or one not known yet.</summary>
+    public static void DrawDashed(CanvasItem c, Rect2 rect, Color colour, float k, float dash = 8, float step = 14)
+    {
+        float width = Line(1, k);
+        for (float x = rect.Position.X; x < rect.End.X; x += step)
+        {
+            float x1 = Math.Min(x + dash, rect.End.X);
+            c.DrawLine(new Vector2(x, rect.Position.Y), new Vector2(x1, rect.Position.Y), colour, width);
+            c.DrawLine(new Vector2(x, rect.End.Y), new Vector2(x1, rect.End.Y), colour, width);
+        }
+        for (float y = rect.Position.Y; y < rect.End.Y; y += step)
+        {
+            float y1 = Math.Min(y + dash, rect.End.Y);
+            c.DrawLine(new Vector2(rect.Position.X, y), new Vector2(rect.Position.X, y1), colour, width);
+            c.DrawLine(new Vector2(rect.End.X, y), new Vector2(rect.End.X, y1), colour, width);
+        }
+    }
+
     /// <summary>A small diamond centred at <paramref name="at"/>.</summary>
     public static void DrawDiamond(CanvasItem c, Vector2 at, float r, Color colour) =>
         c.DrawColoredPolygon([at + new Vector2(0, -r), at + new Vector2(r, 0), at + new Vector2(0, r), at + new Vector2(-r, 0)], colour);
