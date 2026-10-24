@@ -11,7 +11,9 @@ The map panned to Ys is put together from the run's dumps (the Rebel Army's bann
 at the intercept, the first map wait), the scout report's cards and faces are cut from its dump. The figures are the
 save's: Ys has Defense 2 (Walls +4%), Battle Area 330 and Economy 8 (800K GOLD of the week's revenue); only Kanami is
 a ninja in service and free. Round 1: A (a card over the map), B (a screen of its own: Ys against the army), C (the
-original's scene with our menu); each before the scouting and after it, A with the Abandon question.
+original's scene with our menu); each before the scouting and after it, A with the Abandon question. Round 2 (the
+owner chose B): more ninjas than Kanami, made up — four in service, Freya spent this week (B3-B3c: their faces at the
+foot; B4: one button and a list) and the most there can be, five (B5).
 The images hold the player's CGs: keep <out dir> outside the repository. Everything is in the 1280x800 screen's pixels
 (plus a caption band below); drawn at 2x and scaled down.
 """
@@ -206,6 +208,17 @@ def portrait_face(cg_n, box):
 
 RANCE_FACE, MARIS_FACE, KANAMI_FACE = (portrait_face(1, (44, 14, 144, 114)), portrait_face(6, (48, 14, 140, 106)),
                                        portrait_face(9, (50, 22, 140, 112)))
+# The ninjas of FIGT_B's menu (codes 1-5) and their portraits' faces (the menu's own order, FIGT_B.ADV:345-380).
+NINJAS = [('Kanami', KANAMI_FACE), ('Freya', portrait_face(449, (40, 14, 130, 104))),
+          ('Kaoru', portrait_face(72, (36, 30, 126, 120))), ('Wichita', portrait_face(71, (44, 26, 134, 116))),
+          ('Saitou', portrait_face(94, (48, 30, 138, 120)))]
+# Round 2's case, made up (the week-18 save has Kanami alone): four ninjas in service, Freya spent this week on a
+# mission from COMMAND (Cﾆﾝｼﾞｬ), the other three free.
+FOUR = [(0, 'free'), (1, 'used'), (2, 'free'), (3, 'free')]
+
+
+def greyed(img):
+    return Image.blend(img.convert('RGBA'), Image.new('RGBA', img.size, (40, 35, 30, 255)), 0.62)
 
 
 def shadow(c, r, strength=14):
@@ -451,7 +464,65 @@ def mock_a(state):
 
 # ---------------------------------------------------------------- B: a screen of its own
 
-def mock_b(state):
+def ninja_tiles(c, x, y, ninjas, hover=None, scouted=None):
+    """Every ninja in service as a face with its name under it: a free one sends at a click (FIGT_B's ninja menu answered
+    with its code), a spent one is greyed; the one just sent shows as spent too."""
+    tw, gap = 62, 10
+    for i, (n, st) in enumerate(ninjas):
+        name, img = NINJAS[n]
+        used = st == 'used' or n == scouted
+        tx = x + i * (tw + gap)
+        r = (tx, y, tx + tw, y + tw)
+        if used:
+            framed(c, greyed(img), r, OFF_LINE)
+            c.line((tx + 8, y + tw - 8), (tx + tw - 8, y + 8), fill=(160, 140, 110, 230), width=3)
+        else:
+            framed(c, img, r, HOVER_LINE if n == hover else DIM)
+            if n == hover:
+                c.rect((tx - 3, y - 3, tx + tw + 3, y + tw + 3), outline=HOVER_LINE, width=2)
+        c.text((tx + tw / 2, y + tw + 12), name, font(13), fill=OFF_TEXT if used else (NAME if n == hover else TEXT),
+               anchor='mm')
+    return [(x + i * (tw + gap), y, x + i * (tw + gap) + tw, y + tw) for i in range(len(ninjas))]
+
+
+def tip(c, target, lines):
+    """An instant tooltip above a tile, as the battle's advantage tips."""
+    x0, y0, x1, _ = target
+    f = font(14)
+    w = max(c.width(s, f) for s in lines) + 24
+    h = 12 + 20 * len(lines)
+    tx = min((x0 + x1) / 2 - w / 2, W - 40 - w)
+    r = (tx, y0 - 28 - h, tx + w, y0 - 28)          # clear of the heading over the tiles
+    c.rect(r, fill=(30, 22, 16, 250), outline=GOLD, width=1, radius=4)
+    c.poly([((x0 + x1) / 2 - 7, r[3]), ((x0 + x1) / 2 + 7, r[3]), ((x0 + x1) / 2, r[3] + 8)], fill=GOLD)
+    for i, s in enumerate(lines):
+        c.text((tx + 12, r[1] + 7 + 20 * i), s, f, fill=TEXT if i == 0 else QUIET)
+
+
+def ninja_list(c, button_r, ninjas, hover=None):
+    """B4's list: opened by the Ninja Scout button, above it; a row per ninja in service."""
+    x0, _, x1, y0 = button_r[0], None, button_r[2], button_r[1]
+    rh, pad = 50, 12
+    w = 260
+    lx = min((x0 + x1) / 2 - w / 2, W - 24 - w)
+    h = 2 * pad + 26 + len(ninjas) * (rh + 6) - 6
+    r = (lx, y0 - 16 - h, lx + w, y0 - 16)
+    lq_panel(c, r)
+    c.poly([((x0 + x1) / 2 - 10, r[3] - 2), ((x0 + x1) / 2 + 10, r[3] - 2), ((x0 + x1) / 2, r[3] + 12)], fill=GOLD)
+    c.text((lx + pad + 4, r[1] + pad + 2), 'SEND TO SCOUT', cinzel(13, 700), fill=SUB)
+    for i, (n, st) in enumerate(ninjas):
+        name, img = NINJAS[n]
+        ry = r[1] + pad + 26 + i * (rh + 6)
+        row = (lx + pad, ry, lx + w - pad, ry + rh)
+        used = st == 'used'
+        row_box(c, row, 'off' if used else ('hover' if n == hover else 'normal'))
+        framed(c, greyed(img) if used else img, (row[0] + 5, ry + 5, row[0] + 45, ry + 45), DIM)
+        c.text((row[0] + 56, ry + 8), name, cinzel(16, 700), fill=OFF_TEXT if used else (NAME if n == hover else TEXT))
+        c.text((row[0] + 56, ry + 29), 'used this week' if used else 'free this week', font(13),
+               fill=OFF_TEXT if used else QUIET)
+
+
+def mock_b(state, ninjas=None, layout='chip'):
     c = Canvas(MAP)
     c.blur((0, 0, W, H), 5)
     c.overlay((0, 0, W, H), (8, 6, 4, 170))
@@ -501,13 +572,37 @@ def mock_b(state):
     c.text((188, 650), 'MARIS', cinzel(13, 700), fill=SUB)
     for i, line in enumerate(MARIS_LINE):
         c.text((188, 672 + 24 * i), line, font(18), fill=TEXT)
-    intercept = (548, 660, 800, 752)
-    red_button(c, intercept, 'Intercept', 'choose the units', hover=state == 'hover')
-    c.text((822, 652), 'NINJA SCOUT', cinzel(13, 700), fill=SUB)
-    ninja_chip(c, 822, 676, used=state == 'scouted')
+    if layout == 'chip':
+        intercept = (548, 660, 800, 752)
+        red_button(c, intercept, 'Intercept', 'choose the units', hover=state == 'hover')
+        c.text((822, 652), 'NINJA SCOUT', cinzel(13, 700), fill=SUB)
+        ninja_chip(c, 822, 676, used=state == 'scouted')
+    elif layout == 'tiles':
+        # Up to five tiles between Intercept and Abandon City: 5 x 62 + 4 x 10 = 350 px from x 668.
+        intercept = (462, 660, 644, 752)
+        red_button(c, intercept, 'Intercept', 'choose the units', hover=state == 'hover')
+        c.text((668, 650), 'NINJA SCOUT', cinzel(13, 700), fill=SUB)
+        free = sum(1 for n, st in ninjas if st == 'free' and not (state == 'scouted' and n == 0))
+        c.text((1012, 650), f'{free} of {len(ninjas)} free', font(13), fill=QUIET, anchor='ra')
+        tiles = ninja_tiles(c, 668, 672, ninjas, hover=2 if state == 'tip' else None,
+                            scouted=0 if state == 'scouted' else None)
+        if state == 'tip':
+            tip(c, tiles[2], ['Kaoru: scout the Leazas Rebel Army', 'free this week'])
+            pointer(c, tiles[2][0] + 34, tiles[2][1] + 30)
+        if state == 'tip-used':
+            tip(c, tiles[1], ['Freya: used this week', 'free again next week'])
+            pointer(c, tiles[1][0] + 34, tiles[1][1] + 30)
+    else:
+        intercept = (548, 660, 800, 752)
+        red_button(c, intercept, 'Intercept', 'choose the units')
+        free = sum(1 for _, st in ninjas if st == 'free')
+        scout = (822, 676, 1012, 728)
+        button(c, scout, 'Ninja Scout', f'{free} of {len(ninjas)} free', state='hover')
+        ninja_list(c, scout, ninjas, hover=2)
+        pointer(c, 930, 560)
     button(c, (1030, 676, 1226, 728), 'Abandon City')
     if state == 'hover':
-        pointer(c, 760, 676)
+        pointer(c, intercept[2] - 40, 676)
     return c
 
 
@@ -556,6 +651,17 @@ mock_b('hover').save('B1-screen.png', 'B1 — a screen of its own: Ys against th
                      'The map blurred; Ys left, the army\'s four places right (unknown), Maris and the answers at the foot.')
 mock_b('scouted').save('B2-screen-scouted.png', 'B2 — after Kanami\'s report',
                        'The places show the scout report\'s cards; the overlay could be left out, the cards filled in place.')
+mock_b('tip', FOUR, 'tiles').save('B3-four-ninjas.png', 'B3 — four ninjas: their faces at the foot',
+                                  'Every ninja in service, the menu\'s order; a click on a free one sends her; Freya, spent this week, greyed.')
+mock_b('tip-used', FOUR, 'tiles').save('B3b-four-ninjas-used.png', 'B3b — a spent ninja says why',
+                                       'Pointing at a greyed face: used this week (the original leaves her out of its menu).')
+mock_b('scouted', FOUR, 'tiles').save('B3c-four-ninjas-scouted.png', 'B3c — back from Kanami\'s report',
+                                      'Back from the report: the places filled, the ninja sent greyed with the spent ones; two still free.')
+mock_b('list', FOUR, 'list').save('B4-ninja-list.png', 'B4 — one Ninja Scout button and a list',
+                                  'The button says how many are free; the list above it: a row per ninja, the spent ones dimmed.')
+mock_b('normal', [(0, 'free'), (1, 'used'), (2, 'free'), (3, 'free'), (4, 'free')], 'tiles').save(
+    'B5-five-ninjas.png', 'B5 — the most there can be: five',
+    'Saitou too: five faces still fit between Intercept and Abandon City.')
 mock_c('menu').save('C1-scene-menu.png', 'C1 — the original\'s scene with our menu',
                     'The portraits and Ys\'s picture as now, Maris\'s lines in our windows as now; the menu is our SceneMenuView.')
 mock_c('ninja').save('C2-scene-ninja.png', 'C2 — the ninja menu, the same way',

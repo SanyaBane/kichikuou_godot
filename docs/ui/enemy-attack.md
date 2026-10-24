@@ -69,7 +69,27 @@ script's menus with their codes (1-3; then the ninja's code), and a right click 
 
 ## 4. For the owner
 
-1. A, B or C (or a mix).
+1. A, B or C (or a mix). **B** (owner, 2026-10-24), with room for more ninjas than one (§5).
 2. Which lines besides the refusals and the story scenes are played unseen (§2).
 3. A and B: whether Abandon City asks first (A3), and whether the scouting shows the report's overlay and then comes
    back to the screen (A2) or fills the screen's places at once (B2).
+
+## 5. Mock-ups, round 2: more ninjas (2026-10-24)
+
+The owner likes B and asks for the case of four ninjas. `FIGT_B`'s ninja menu lists only the free ones of the five
+(Kanami, Freya, Kaoru, Wichita, Saitou: codes 1-5, `:345-380`; a flag of 1 is spent this week, 99 not in service,
+reset weekly by `COM`). The week-18 save has Kanami alone, so the case is made up: four in service, Freya spent this
+week, the other three free.
+
+- **B3 — their faces at the foot.** Every ninja in service as her portrait's face with her name under it, in the
+  menu's order, between Intercept and Abandon City, "3 of 4 free" over them; a click on a free face sends her (our
+  screen answers the menu with Ninja Scout, then the ninja menu with her code); a tooltip names what the click does.
+  **B3b**: a spent one is greyed and struck through, her tooltip "used this week / free again next week" (the original
+  leaves her out). **B3c**: back from Kanami's report, the places filled and Kanami greyed too, two still free.
+- **B4 — one button and a list.** "Ninja Scout · 3 of 4 free" as B1's button; a click opens a list above it, a row
+  per ninja in service (face, name, free or used this week), the spent ones dimmed; a click on a free row sends her.
+  One click more than B3, the foot as in B1.
+- **B5 — the most there can be.** Five faces (Saitou in service too) still fit B3's row.
+
+Either way, with none free (all spent) nothing on the screen sends one, so the original's "no ninjas" lines
+(`:322`, `:331`) are never reached; with none in service the section says so and is quiet.
