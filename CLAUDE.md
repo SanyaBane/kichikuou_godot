@@ -459,9 +459,11 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   preset `godot/export_presets.cfg`, the licenses copied next to the exe. The build keeps its data in
   `%APPDATA%\KichikuouGodot`, not the development runs' `app_userdata\Kichikuou`; deleting that folder makes the next
   launch a first one (the import screen with no folder chosen).
-- Export the Android test build (JDK 17 and the Android SDK set in Godot's editor settings) and put it and the
-  game folder on a USB device:
-  `powershell -ExecutionPolicy Bypass -File tools/export-android.ps1 -Out <apk outside the repository> -Install -PushGame`
+- Export the Android test build (JDK 17 and the Android SDK set in Godot's editor settings), install it on the USB
+  device and start it: `run-android.cmd` at the root (a double-click), or
+  `powershell -ExecutionPolicy Bypass -File tools/export-android.ps1 -Install -Launch [-Out <apk outside the repository>] [-PushGame] [-NoExport]`
+  — the APK by default in `%LOCALAPPDATA%\KichikuouGodot\android`, the device checked before the export (several:
+  `ANDROID_SERIAL`), the app's data kept, the game folder copied when the device has none (`-PushGame` always)
   (docs/backlog.md, "Android").
 - Run the game headless (smoke test): `<Godot console exe> --headless --path godot --quit-after 30`;
   `<Godot console exe>` is `KICHIKUOU_GODOT_EXE` in `local.env` (the editor's exe is next to it).
