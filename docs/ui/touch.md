@@ -283,6 +283,38 @@ and in P1 the commands always one column at the right thumb, in the script's ord
   outside the panel (`touch-outside`), one outside the province menu (`touch-province-outside`), each of which our view
   must answer with the cancel; the script then gets the bot's own choice, so the play goes on as before.
 
+## The touch buttons' redesign (owner, 2026-10-24)
+
+The owner's request: a new look (and, where it helps, a new place) for the touch mode's own buttons — the map's
+Commands/Close button, the battle's rails and target frame, the scenes' Skip and Log. **The battle's Skip stays as it
+is**; the rest changes. The rules and what each button does stay. **The dialogue buttons first**, their place and look.
+
+### The dialogue buttons, round 2
+
+What today's pair does wrong (the owner's dumps, and `touch-skip` of the harem look): the steel pills (190×84 and
+150×84) are out of our message windows' lacquer, and their place jumps with the window — over the left portrait and
+its name plate above the right speech, over the map beside the narration and the place's title, above 131.
+
+The mock-ups are `tools/ui/mock_dialogue_buttons.py`, over window dumps of the harem look without `--touch` (the
+command in its docstring); the images stay outside the repository. Every variant is drawn in our windows' lacquer
+(`Lacquer`: the lacquer, the gold frame, the dim inner line), the skip on as gold:
+
+- **A — on the window**: the pair rides on the window's edge at its right end, as 131's speaker plate does at its left
+  (A1 the right speech: the top edge, Skip 140×46 and Log 112×46, 9.3 mm high); a window at the screen's top gets them
+  hanging from its bottom edge (A2, the skip on); 131 on its top edge at the right (A3). Never over a portrait or the
+  map, but the pair moves with every window, so while the skip runs Skip is a moving target.
+- **B — the left edge**: a lacquer drawer glued to the screen's left edge, Skip over Log, icons over small labels, two
+  cells 52×84 (10.6 × 17.1 mm) under the left thumb at y 590-762 of the screen — between the edge and every window
+  (the right speech starts at x 58), under the left portrait (B1, B4). The skip on: the Skip cell lit gold, "ON", in the
+  same place, so one tap stops it whatever flashes by; Log greyed where no key wait is (B2). Over 131 the drawer rises
+  above the window on the same edge, clear of the speaker's plate (B3), its one other place.
+- **C — one seal**: a round lacquer seal on the left edge (54×60, 11 × 12 mm), the quick menu: a tap opens its rows
+  (Skip, Log, 46 high; room for more later) above it, a tap off them closes it (C1, C2); the skip on, the seal itself
+  gold with the skip's arrows, one tap stops it (C3). The smallest footprint, but Skip and Log take two taps.
+
+**Recommendation: B** — one place for every window (the thumb learns it), never over a portrait, a name plate or a
+window's text, and the skip's stop always under the same finger.
+
 ## Phones (put off)
 
 Put off by the owner (2026-10-24). What is ready for them: the measurements above, mock-ups B1, B3 (the battle),
