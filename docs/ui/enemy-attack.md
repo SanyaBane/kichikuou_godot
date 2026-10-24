@@ -93,3 +93,30 @@ week, the other three free.
 
 Either way, with none free (all spent) nothing on the screen sends one, so the original's "no ninjas" lines
 (`:322`, `:331`) are never reached; with none in service the section says so and is quiet.
+
+## 6. The build (owner, 2026-10-24)
+
+**The owner's choice:** B with the Ninja Scout button and its list (B4); after a scouting the army's places fill in
+place (B2: no report overlay on this screen); Abandon City asks first (A3's callout); Rance's repeated lines, the
+ninjas' lead-in and the six lines of Abandon City are played unseen. The refusals, the story scenes and the results stay
+seen. Our interface only; the rules run as before.
+
+- **What is unseen.** The announcement (`:20`, `:35`, `:43`) is the screen itself. Rance at Intercept (`:68`, `:73`),
+  Plains (`:171`, `:174`) and City (`:196`, `:203`; Maris's "Understood.", `:214`), the ninjas' lead-in (`:314`), the
+  ninja menu's None (`:384`, `:389`; our list never answers it), the way to the report and the report itself
+  (`:393-648`; the places fill instead, Maris's comment past 5000 troops, `:637`, becomes her line at the foot) and the
+  six lines of Abandon City (`:737-766`) are answered at once and drawn by none of our windows. The "no ninjas" lines
+  (`:322`, `:331`) are never reached: with none free the button is off.
+- **The model** is `Original.Content/Battles/EnemyAttack`, taken from GameState when the announcement prints (`:20`):
+  the army (string 10), the province (`Prov_Cur`, its name, `Prov_BgCg`, `Prov_Defense`, `Prov_BattleArea`,
+  `Prov_Economy`), the attacker's flag (`Ev_PhaseNation + 819`, as `:773` marks the map), the date (`Week`, 48 weeks a
+  year from LP 3, four a month, `MAIN.ADV`'s `L_01881`), the ninjas in service (a weekly flag other than 99) and free
+  (0), Maris's line as her window prints it, and the scout report once one is made (`ScoutReport`).
+- **The presenter** (`BattlePresenter`, which draws all of `FIGT_B` before the field) holds it while `CoverEnemyAttack`
+  (set by `GameScreen` from the interface): `EnemyAttack` from `:20` to the menu's answer Intercept or Abandon City
+  (`EnemyAttackAnswered`); while it is up every key wait is answered at once and no message window of ours shows;
+  `HidesLine` marks the unseen lines after it.
+- **Godot**: `godot/Strategy/EnemyAttackView` (the screen, its list and its callout) and `GameScreen.EnemyAttack.cs`: the
+  menu `EnemyAttackResponse` answered by the screen (1, 2, 3), the ninja menu that follows a scouting answered with the
+  ninja the list chose; `--auto` in a window dumps `enemy-attack`, with `--scout` `enemy-attack-ninjas`,
+  `enemy-attack-scouted` and `enemy-attack-abandon` (the question answered Keep) before it intercepts.

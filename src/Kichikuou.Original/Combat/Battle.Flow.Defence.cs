@@ -47,6 +47,10 @@ public sealed partial class Battle
         (5, 372, 494, 94, 0, 0, 502, 581),
     ];
 
+    /// <summary>The scout menu's ninjas as a screen of ours lists them: the menu code, the line of the name it prints, the portrait.</summary>
+    public static IEnumerable<(int Code, int MenuLine, int Portrait)> ScoutNinjas =>
+        Ninjas.Select(n => (n.Code, n.MenuLine, n.Portrait));
+
     /// <summary>
     /// <c>%#FIGT_B.ADV</c> (<c>FIGT_B.ADV:1-883</c>, 01 §2.3): an enemy army attacks the
     /// player's province <c>Prov_Cur</c>. The player intercepts (party picker <c>Sﾌﾞﾀｲ.ADV</c>,

@@ -113,6 +113,7 @@ public sealed partial class BattlePresenter
         _strategyEffect = false;
         _scoutReplies.Clear();
         _shoutedSpell = null;
+        Attack = null;
         RoundStarts();
         DrawMapTiles();
         BlitMapView();
@@ -130,6 +131,7 @@ public sealed partial class BattlePresenter
         _strategyEffect = false;
         _scoutReplies.Clear();
         _shoutedSpell = null;
+        Attack = null;
         RoundStarts();
         DrawMapTiles();
     }
@@ -212,6 +214,7 @@ public sealed partial class BattlePresenter
                 if (_scoutReplies.Remove(e.Text))
                     ScoutReplied = true;
                 ScoutCalling = e.Text.File == ScoutArmyLine.File && e.Text.Line >= ScoutCallFirst && e.Text.Line < ScoutArmyLine.Line;
+                ObserveEnemyAttack(e.Text);
                 if (MagicSpells.OfLine(e.Text) is { } spell)
                     _shoutedSpell = spell;
                 string printed = Read(e.Text, [], e.StringVariables);
@@ -557,6 +560,7 @@ public sealed partial class BattlePresenter
                 if (_winType == 0)
                     break;
                 WaitsForKey = true;
+                NoteAdvisorPage();
                 _afterKey = op == 1 ? ClearPage : EraseText;
                 break;
             case 2:
@@ -621,7 +625,8 @@ public sealed partial class BattlePresenter
     /// </summary>
     public WindowModel? MessageWindow =>
         _winType == 0 ? _leftBar
-        : ActionLabelsOpen || SpeechOpen || OrderedUnit is not null || Scout is not null || ScoutCalling || ScoutReplied ? null
+        : ActionLabelsOpen || SpeechOpen || OrderedUnit is not null || Scout is not null || ScoutCalling || ScoutReplied
+            || Attack is not null || HidesLine ? null
         : WindowModel.Of(_winFrame, _windowText, Surface.Color);
 
     private void OpenWindow((int X, int Y, int W, int H, int DX, int DY) save, (int X, int Y, int W, int H) text,
@@ -708,6 +713,8 @@ public sealed partial class BattlePresenter
         ScoutReported = false;
         ScoutReplied = false;
         ScoutCalling = false;
+        HidesLine = false;
+        _advisorSpeaks = false;
         if (_infoBox)
         {
             // FIGT.ADV:1013-1014 / 1112-1113 after the info box closes.
