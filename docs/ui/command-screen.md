@@ -326,7 +326,14 @@ Search, Battle, Ninja), and Return. The mock-ups hold the player's CGs and stay 
   between rows (3-7) and the widths (the tag, Return, the panels: 500 and 360 at least) grow with them; at 38 everything
   is A1's and M1's. The province menu's header stays as it is, and so does the touch mode. Above about 52 px the
   command panel, centred, reaches under the status strip, and at 60 it is taller than the screen (791 px with five other
-  items).
+  items; the owner: leave it, it is a debug slider).
+  **The dialogues (owner, 2026-10-25):** a second slider in the same window, Dialogues, sets the scenes' `]` menus'
+  rows (`SceneMenuView`, docs/ui/messages.md, §5 step 3), 18 to 60, 36 by default as they were (Reset sets both;
+  `[debug] dialogue_row_height`, `--dialogue-rows n`); their text grows in step with the row, as the game's font
+  sits in it (30 at 36, 50 at 60, 15 at 18), and a menu of six items or more keeps its tighter rows (30 high at 36,
+  text 26) scaled the same way, the marks ○ × △ too; in every mode. Checked on the Monsters' Cave (dungeon 2)'s
+  Start Search / Return and Descend / Retreat at 18 and 60 (`--dungeon` on the week-18 save). Our other questions
+  (the callouts, the battle's dialog) do not follow it.
 
 ## The command panel (owner, 2026-10-16)
 

@@ -15,15 +15,20 @@ internal sealed partial class SceneMenuView : Control
 {
     private static UiPalette Ui => UiPalettes.For(UiPart.Messages);
 
-    private const float Pad = 14, MarkRoom = 34;
+    private const float Pad = 14;
 
-    // The rows: the mock-up's for a short menu; from six items the original's pitch (36), so a long one (the save slots)
-    // takes about the box's room and leaves the window under it free.
-    private float RowPitch => Rows >= 6 ? 36 : 44;
+    private static float MarkRoom => MathF.Round(34 * RowScale);
 
-    private float RowH => Rows >= 6 ? 30 : 36;
+    // The rows: the mock-up's for a short menu (36 high, 8 apart, text 30); from six items the original's pitch (36: 30
+    // high, 6 apart, text 26), so a long one (the save slots) takes about the box's room and leaves the window under it
+    // free. Debug → Menu Row Height's second slider (MenuRowsChoice.DialogueHeight, 36 by default) scales them all.
+    private static float RowScale => MenuRowsChoice.DialogueHeight / 36f;
 
-    private int TextSize => Rows >= 6 ? 26 : 30;
+    private float RowH => MathF.Round((Rows >= 6 ? 30 : 36) * RowScale);
+
+    private float RowPitch => RowH + MathF.Round((Rows >= 6 ? 6 : 8) * RowScale);
+
+    private int TextSize => (int)MathF.Round((Rows >= 6 ? 26 : 30) * RowScale);
 
     private FontFile _gothic;
     private MenuView? _menu;
@@ -40,9 +45,19 @@ internal sealed partial class SceneMenuView : Control
         Visible = false;
     }
 
+    // An open menu follows Debug → Menu Row Height at once.
+    public override void _EnterTree() => MenuRowsChoice.Changed += Relayout;
+
+    public override void _ExitTree() => MenuRowsChoice.Changed -= Relayout;
+
     public void SetFont(GameFont font)
     {
         _gothic = DeploymentTableView.LoadFont(font);
+        Relayout();
+    }
+
+    private void Relayout()
+    {
         if (_menu is not null)
             _width = PanelWidth(_menu);
         QueueRedraw();
@@ -179,18 +194,19 @@ internal sealed partial class SceneMenuView : Control
         float x = rect.Position.X + 14;
         if (item.Mark is { } mark)
         {
-            var at = new Vector2(rect.Position.X + 20, rect.GetCenter().Y);
+            float s = RowScale;
+            var at = new Vector2(rect.Position.X + 20 * s, rect.GetCenter().Y);
             switch (mark)
             {
                 case '○':
-                    DrawArc(at, 7, 0, Mathf.Tau, 24, Ui.Gold, Line(2), true);
+                    DrawArc(at, 7 * s, 0, Mathf.Tau, 24, Ui.Gold, Line(2), true);
                     break;
                 case '×':
-                    DrawLine(at + new Vector2(-6, -6), at + new Vector2(6, 6), Ui.OffText, Line(2), true);
-                    DrawLine(at + new Vector2(-6, 6), at + new Vector2(6, -6), Ui.OffText, Line(2), true);
+                    DrawLine(at + new Vector2(-6, -6) * s, at + new Vector2(6, 6) * s, Ui.OffText, Line(2), true);
+                    DrawLine(at + new Vector2(-6, 6) * s, at + new Vector2(6, -6) * s, Ui.OffText, Line(2), true);
                     break;
                 default:
-                    DrawPolyline([at + new Vector2(0, -7), at + new Vector2(7, 6), at + new Vector2(-7, 6), at + new Vector2(0, -7)],
+                    DrawPolyline([at + new Vector2(0, -7) * s, at + new Vector2(7, 6) * s, at + new Vector2(-7, 6) * s, at + new Vector2(0, -7) * s],
                         Ui.Gold, Line(2), true);
                     break;
             }

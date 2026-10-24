@@ -193,9 +193,11 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
 - **A mixed palette** — *owner* (2026-10-24, put off), then *agent*: one palette (Lacquer or Steel) colours all our
   screens since 2026-10-24 ([ui/options.md](ui/options.md), "The palette"); a palette per part (`UiPart`) is kept and
   read but no option offers it, nor colours chosen role by role.
-- **Taller rows in the dialogues** — *owner* (2026-10-25, after the province menu and the command panel): perhaps
-  the scenes' `]` menus (`SceneMenuView`) and our other questions get the rows of the province menu's A1 (38 px,
-  text 19) too ([ui/command-screen.md](ui/command-screen.md), "The province menu", "Taller rows").
+- **The menus' and the dialogues' row heights** — *owner* (2026-10-25): Debug → Menu Row Height… has a slider for the
+  province menu's and the command panel's rows and one for the scenes' `]` menus (`SceneMenuView`), for trying sizes
+  out; once the owner settles on heights they become the defaults and the sliders may go. Our other questions (the
+  callouts, the battle's dialog) do not follow them ([ui/command-screen.md](ui/command-screen.md), "The province
+  menu", "The rows' height on a slider").
 - **Optional fixes** — *owner* (which), then *agent*: the quirks register ([quirks.md](quirks.md),
   decision 5) lists every reproduced bug; some can become options.
 

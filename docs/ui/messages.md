@@ -173,7 +173,7 @@ as it is. Where to start:
    answers its item, a right click 0. `GamePresenter.SceneMenuCovered` leaves out the selection box alone (not
    `MenuCovered`, which hides the pictures and the windows too), `MenuArea` is then null, so `MessageWindowView` no
    longer pastes the box over itself. Not over our battle screen (step 5). `--auto` in a window dumps it once a launch
-   (`scene-menu`: with `--load`, the load list). Not seen in the game yet: a short scene menu over a window (none that
+   (`scene-menu`: with `--load`, the load list). Their rows scale with Debug → Menu Row Height…'s Dialogues slider (2026-10-25, docs/ui/command-screen.md, "The rows' height on a slider"). Not seen in the game yet: a short scene menu over a window (none that
    the kept saves reach with `--interface new`; `Cﾌﾞｶ`'s are our Subordinates screen's now).
 4. **Letter by letter** and Option → Text Speed… (the slider, the preview; kept in `settings.cfg`): a click
    while it types shows the whole text and is not passed to the script's wait.

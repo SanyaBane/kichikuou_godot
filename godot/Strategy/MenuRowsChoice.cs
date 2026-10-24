@@ -5,56 +5,66 @@ namespace Kichikuou.Game.Strategy;
 /// <summary>
 /// Debug → Menu Row Height (owner, 2026-10-25, for trying sizes out, not for the release): the height of the province
 /// menu's and the command panel's rows on the PC, 18 to 60 window pixels, 38 by default (the owner's A1 and M1,
-/// docs/ui/command-screen.md, "Taller rows"); their text and tags follow it (<see cref="MenuRows"/>). The touch mode
-/// keeps its own rows.
+/// docs/ui/command-screen.md, "Taller rows"), their text and tags following it (<see cref="MenuRows"/>); the touch mode
+/// keeps its own rows. A second slider sets the scenes' <c>]</c> menus' rows (<see cref="SceneMenuView"/>), 36 by default as
+/// they were, in every mode.
 /// </summary>
 internal static class MenuRowsChoice
 {
-    public const int Min = 18, Max = 60, Default = 38;
+    public const int Min = 18, Max = 60, Default = 38, DialogueDefault = 36;
 
-    private static int? _height;
+    private static int? _height, _dialogueHeight;
 
-    /// <summary>Raised when <see cref="Height"/> changes, so open menus lay themselves out again.</summary>
+    /// <summary>Raised when either height changes, so open menus lay themselves out again.</summary>
     public static event Action? Changed;
 
     /// <summary>
-    /// The rows' height: <c>--menu-rows n</c> for the launch (development), else <c>[debug] menu_row_height</c> in
+    /// The menus' rows: <c>--menu-rows n</c> for the launch (development), else <c>[debug] menu_row_height</c> in
     /// <c>user://settings.cfg</c>, else <see cref="Default"/>. Setting it saves it for later launches.
     /// </summary>
     public static int Height
     {
-        get
-        {
-            if (_height is { } chosen)
-                return chosen;
-            var args = OS.GetCmdlineUserArgs();
-            int at = Array.IndexOf(args, "--menu-rows");
-            int height = Default;
-            if (at >= 0 && at + 1 < args.Length && int.TryParse(args[at + 1], out int given))
-                height = given;
-            else
-            {
-                var config = new ConfigFile();
-                if (config.Load(GameData.SettingsPath) == Error.Ok)
-                    height = (int)config.GetValue("debug", "menu_row_height", Default);
-            }
-            return (_height = Math.Clamp(height, Min, Max)).Value;
-        }
-        set
-        {
-            value = Math.Clamp(value, Min, Max);
-            if (value == Height)
-                return;
-            _height = value;
-            var config = new ConfigFile();
-            config.Load(GameData.SettingsPath);
-            config.SetValue("debug", "menu_row_height", value);
-            config.Save(GameData.SettingsPath);
-            Changed?.Invoke();
-        }
+        get => _height ??= Load("--menu-rows", "menu_row_height", Default);
+        set => Set(ref _height, value, "menu_row_height");
+    }
+
+    /// <summary>The <c>]</c> menus' rows: <c>--dialogue-rows n</c>, else <c>[debug] dialogue_row_height</c>, else <see cref="DialogueDefault"/>.</summary>
+    public static int DialogueHeight
+    {
+        get => _dialogueHeight ??= Load("--dialogue-rows", "dialogue_row_height", DialogueDefault);
+        set => Set(ref _dialogueHeight, value, "dialogue_row_height");
     }
 
     public static MenuRows Rows => new(Height);
+
+    private static int Load(string switchName, string key, int fallback)
+    {
+        var args = OS.GetCmdlineUserArgs();
+        int at = Array.IndexOf(args, switchName);
+        int height = fallback;
+        if (at >= 0 && at + 1 < args.Length && int.TryParse(args[at + 1], out int given))
+            height = given;
+        else
+        {
+            var config = new ConfigFile();
+            if (config.Load(GameData.SettingsPath) == Error.Ok)
+                height = (int)config.GetValue("debug", key, fallback);
+        }
+        return Math.Clamp(height, Min, Max);
+    }
+
+    private static void Set(ref int? cache, int value, string key)
+    {
+        value = Math.Clamp(value, Min, Max);
+        if (cache == value)
+            return;
+        cache = value;
+        var config = new ConfigFile();
+        config.Load(GameData.SettingsPath);
+        config.SetValue("debug", key, value);
+        config.Save(GameData.SettingsPath);
+        Changed?.Invoke();
+    }
 }
 
 /// <summary>
