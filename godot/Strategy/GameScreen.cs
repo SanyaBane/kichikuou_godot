@@ -251,6 +251,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private ProvinceMenuView _provinceView = null!;     // our province menu over a city file's first menu (New)
     private CommandMenuView _commandView = null!;       // our command panel over COMMAND's command menu (New)
     private readonly LoadSaveShortcut _saveShortcut = new(); // its Load and Save rows: ﾛｰﾄﾞｾｰﾌﾞ's menu answered unseen
+    private readonly ConstructionShortcut _buildShortcut = new(); // its Construction: Cﾃｲﾄ's Build / Don't answered unseen
     private StatusStripView _strip = null!;             // our status strip over the map's top with the command panel (New)
     private WeekReportView _weekView = null!;           // our week report over the week start's windows (New)
     private MessageWindowView _messageView = null!;     // our message windows over WAO_SUB's (New)
@@ -1594,6 +1595,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             return ordered;                                     // an order of our Subordinates screen answers it, unseen
         if (_saveShortcut.Choose(items) is { } list)
             return list;                                        // our panel's Load or Save row answers Load / Save / Don't, unseen
+        if (_buildShortcut.Choose(items) is { } build)
+            return build;                                       // our panel's Construction answers Build / Don't, unseen
         _skip.OnMenu();
         _messageView.Complete();                                // the question is whole under its menu
         _presenter.OpenMenu(items);
@@ -1684,7 +1687,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             }
             return Answered(saveList is not null ? await SaveAnswerAsync()
                 : province is not null ? await _provinceView.ChooseAsync()
-                : command is not null ? await CommandAnswerAsync()
+                : command is not null ? await CommandAnswerAsync(command)
                 : ladder is not null ? await _ladderView.ChooseAsync()
                 : callout ? await _treasureCallout.ChooseAsync()
                 : scene ? await _sceneMenuView.ChooseAsync()
@@ -1702,11 +1705,15 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
     }
 
-    /// <summary>Our command panel's answer; a Load or Save row starts its list (<see cref="LoadSaveShortcut"/>).</summary>
-    private async Task<int> CommandAnswerAsync()
+    /// <summary>
+    /// Our command panel's answer; a Load or Save row starts its list (<see cref="LoadSaveShortcut"/>), Construction its
+    /// Build (<see cref="ConstructionShortcut"/>).
+    /// </summary>
+    private async Task<int> CommandAnswerAsync(CommandMenu command)
     {
         var (choice, opens) = await _commandView.ChooseAsync();
         _saveShortcut.Start(opens);
+        _buildShortcut.Start(command.Commands.Any(c => c.Choice == choice && c is { Action: CommandAction.Build, Enabled: true }));
         return choice;
     }
 

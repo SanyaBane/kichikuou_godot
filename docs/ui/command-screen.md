@@ -366,6 +366,12 @@ brackets with captions under; the owner chose **the brackets**).
   closing (`SaveScreenEvent`, a load's "Load Complete" included) ends it. The script runs as it is; the original
   interface keeps the menu. Tried once from the week-18 save (2026-10-19, a temporary unattended run): Save, a
   save into slot 1, the list left, back on the map.
+- **Construction (owner, 2026-10-25):** `Cﾃｲﾄ`'s first menu, Build / Don't (`L_00155`, `:60-71`), is the same every
+  time (its "all built" opening is dead, CMD-20) and only asks again what the row said, so the panel's Construction
+  goes straight on as Build: `ConstructionShortcut` (`ConstructionShortcutTests`) answers the menu unseen — Build
+  first (Maris's refusal while a building is under way, else the buildings' list), Don't when it comes back (the
+  list's Don't Build), so the player is back on the map. A × Construction answers nothing. The script runs as it is;
+  the original interface keeps the menu. Not tried in a window yet.
 
 ## The status strip (owner, 2026-10-16)
 
