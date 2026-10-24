@@ -84,19 +84,19 @@ the details panel (2026-10-12, after the look at step 8):
 | Troops | Troops | `Troops / MaxTroops` |
 | T.Atk | Troop attack | `TroopAtk` |
 | T.Def | Troop defense | `TroopDef` |
-| Off.A, Off.D, Dfn.A, Dfn.D, Dgn.A, Dgn.D | Troop attack / defense on offense, on defense, in dungeons | the situational modifiers `OffAtkMod`, `OffDefMod`, `DefAtkMod`, `DefDefMod`, `DgnAtkMod`, `DgnDefMod` as the battle adds them (`DeploymentTable.Modifier`, `FIGT.ADV:2450-2483`: below 10 +n, above 10 −(n−10), 10 none; "0" for both 0 and 10, which the status page prints as "+0" and nothing); "—" for a unit without troops, whose status page shows none (`Cﾌﾞｶ.ADV:1168`); "0" and "—" in a faint ink (`Lacquer.InkFaint`), so +n and −n stand out. Added by the owner, 2026-10-23, here and on the Subordinates screen |
-| Str% | Strategy | `Strategy` (success chance) |
+| Off.A, Off.D, Def.A, Def.D, Dng.A, Dng.D | Troop attack / defense on offense, on defense, in dungeons | the situational modifiers `OffAtkMod`, `OffDefMod`, `DefAtkMod`, `DefDefMod`, `DgnAtkMod`, `DgnDefMod` as the battle adds them (`DeploymentTable.Modifier`, `FIGT.ADV:2450-2483`: below 10 +n, above 10 −(n−10), 10 none; "0" for both 0 and 10, which the status page prints as "+0" and nothing); "—" for a unit without troops, whose status page shows none (`Cﾌﾞｶ.ADV:1168`); "0" and "—" in a faint ink (`Lacquer.InkFaint`), so +n and −n stand out. Added by the owner, 2026-10-23, here and on the Subordinates screen |
+| Strat% | Strategy | `Strategy` (success chance) |
 | Cost | War expense | `DeployCost + Troops / 300` (×100K GOLD), as the script sums it |
 | HP | Commander HP | `HP / MaxHP` |
-| Lv | Level | `Level` |
+| Lvl | Level | `Level` |
 | EXP | Experience | `Exp / (100 + Level·30)` (the next level) |
-| Atk | Commander attack | `Atk` |
-| Def | Commander defense | `Def` |
-| Act | Attacks | `Attacks` |
+| C.Atk | Commander attack | `Atk` |
+| C.Def | Commander defense | `Def` |
+| Strikes | # of Attacks (the commander's own strikes per exchange) | `Attacks` |
 | Mag | Magic | `Magic` |
 
 - Sorting by any column (a header click: the values where more is better — Troops, T.Atk, T.Def, the six
-  modifiers ("—" below every value), Str%, HP, Lv, EXP, Atk, Def, Act, Mag — descending, № and the text columns and the prices Cost and Refill ascending
+  modifiers ("—" below every value), Strat%, HP, Lvl, EXP, C.Atk, C.Def, Strikes, Mag — descending, № and the text columns and the prices Cost and Refill ascending
   (the owner's choice, 2026-10-20); Rows by rank, descending first: Front, then "Front, Back", then Back (the
   owner's choice, 2026-10-20); again the other way); by № at first. The Subordinates screen's table
   sorts the same way. A sort key of
@@ -285,8 +285,8 @@ which it colours too (the survey above missed them).
 
 ### Built (2026-10-19)
 
-- **The model:** `DeploymentTable.Columns` are E's (№, Name, Type, Troops, Cost, Rows, T.Atk, T.Def, Str%, HP, Lv, EXP,
-  Atk, Def, Act, Mag, Item; since 2026-10-23 the six modifiers after T.Def, `DeploymentTable.ModifierColumns`): the details the original shows for the hovered unit are columns, so there is no details
+- **The model:** `DeploymentTable.Columns` are E's (№, Name, Type, Troops, Cost, Rows, T.Atk, T.Def, Strat%, HP, Lvl, EXP,
+  C.Atk, C.Def, Strikes, Mag, Item; since 2026-10-23 the six modifiers after T.Def, `DeploymentTable.ModifierColumns`): the details the original shows for the hovered unit are columns, so there is no details
   panel; `DeploymentColumn.Rows` (`DeploymentTable.RowsOf`, the class's rows as `Details` names them);
   `DeploymentMember.MaxTroops` for the card's strength bar.
 - **The table** (`DeploymentTableView`) is always a ledger now (the palette's look and its `ledger` switch are gone): the

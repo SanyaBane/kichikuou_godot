@@ -225,12 +225,12 @@ public static class DeploymentTable
     /// </summary>
     public static IReadOnlyList<DeploymentColumnInfo> ModifierColumns { get; } =
     [
-        new(DeploymentColumn.OffAtkMod, "Off.A", "Troop attack on offense"),
-        new(DeploymentColumn.OffDefMod, "Off.D", "Troop defense on offense"),
-        new(DeploymentColumn.DefAtkMod, "Dfn.A", "Troop attack on defense"),
-        new(DeploymentColumn.DefDefMod, "Dfn.D", "Troop defense on defense"),
-        new(DeploymentColumn.DgnAtkMod, "Dgn.A", "Troop attack in dungeons"),
-        new(DeploymentColumn.DgnDefMod, "Dgn.D", "Troop defense in dungeons"),
+        new(DeploymentColumn.OffAtkMod, "Off.A", "Troop attack bonus on offense"),
+        new(DeploymentColumn.OffDefMod, "Off.D", "Troop defense bonus on offense"),
+        new(DeploymentColumn.DefAtkMod, "Def.A", "Troop attack bonus on defense"),
+        new(DeploymentColumn.DefDefMod, "Def.D", "Troop defense bonus on defense"),
+        new(DeploymentColumn.DgnAtkMod, "Dng.A", "Troop attack bonus in dungeons"),
+        new(DeploymentColumn.DgnDefMod, "Dng.D", "Troop defense bonus in dungeons"),
     ];
 
     /// <summary>
@@ -250,13 +250,13 @@ public static class DeploymentTable
         new(DeploymentColumn.TroopAtk, "T.Atk", "Troop attack"),
         new(DeploymentColumn.TroopDef, "T.Def", "Troop defense"),
         .. ModifierColumns,
-        new(DeploymentColumn.Strategy, "Str%", "Strategy success chance"),
+        new(DeploymentColumn.Strategy, "Strat%", "Strategy success chance"),
         new(DeploymentColumn.Hp, "HP", "Commander HP / maximum"),
-        new(DeploymentColumn.Level, "Lv", "Level"),
+        new(DeploymentColumn.Level, "Lvl", "Level"),
         new(DeploymentColumn.Exp, "EXP", "Experience / next level"),
-        new(DeploymentColumn.Atk, "Atk", "Commander attack"),
-        new(DeploymentColumn.Def, "Def", "Commander defense"),
-        new(DeploymentColumn.Attacks, "Act", "Attacks"),
+        new(DeploymentColumn.Atk, "C.Atk", "Commander attack"),
+        new(DeploymentColumn.Def, "C.Def", "Commander defense"),
+        new(DeploymentColumn.Attacks, "Strikes", "# of Attacks"),
         new(DeploymentColumn.Magic, "Mag", "Magic"),
         new(DeploymentColumn.Item, "Item", "Item", IsText: true),
     ];
