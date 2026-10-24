@@ -245,6 +245,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private StrategyCutInView _strategyView = null!;    // our own cut-in of a successful strategy over the original's screen (New)
     private DeploymentPanels _panels = null!;           // and the rest of it, over the whole of Sﾌﾞﾀｲ's screen
     private PointerScript _tablePointer = new();        // the script's pointer while the player's is over the table
+    private bool _tableActive;                          // our deployment screen takes the pointer: no message window over it
     private MapMarkersView _markers = null!;            // our name plates over the map in COMMAND's map wait (New)
     private CommandsButton _commandsButton = null!;     // the touch mode's Commands button with them
     private ProvinceMenuView _provinceView = null!;     // our province menu over a city file's first menu (New)
@@ -2026,22 +2027,29 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// <summary>
     /// Shows our deployment screen — the panels over the whole of <c>Sﾌﾞﾀｲ</c>'s screen and the table across their
     /// top (<see cref="DeploymentPanels.TableArea"/>; the owner's E1/E2) — while the deployment picker is open with
-    /// our interface on, but not while a message window is up over the screen; places it over the picture
-    /// as the window is sized and fills it from GameState. Returns whether it shows. A screen shown or hidden starts
-    /// with no gestures queued.
+    /// our interface on; places it over the picture as the window is sized and fills it from GameState. While a message
+    /// window is up over it (a refusal's key wait) it stays in sight under our window, but its clicks pass through it to
+    /// the window. Returns whether it takes the pointer: it shows and no message window is up. A screen shown, hidden,
+    /// or taking the pointer again starts with no gestures queued.
     /// </summary>
     private bool UpdateDeploymentScreen()
     {
         bool ours = InterfaceChoice.New && _presenter.Picker is { Kind: PickerKind.Deployment };
         _presenter.DeploymentCovered = ours;
-        bool show = ours && !_presenter.MessageWindowShown && !SkippingScene && _presenter.State is not null;
+        bool show = ours && !SkippingScene && _presenter.State is not null;
+        bool active = show && !_presenter.MessageWindowShown;
         if (show != _table.Visible)
         {
             _table.Visible = _panels.Visible = show;
-            _tablePointer = new PointerScript();
-            _wantedOrder = null;
             if (show)
                 _panels.LoadCrops();                            // the owner's squares from Debug → Portraits
+        }
+        if (active != _tableActive)
+        {
+            _tableActive = active;
+            _tablePointer = new PointerScript();
+            _wantedOrder = null;
+            _table.MouseFilter = _panels.MouseFilter = active ? MouseFilterEnum.Stop : MouseFilterEnum.Ignore;
         }
         if (!show)
         {
@@ -2053,8 +2061,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
         float pixels = scale * Surface.Scale;
         var origin = _view.Position + (size - drawn) / 2;
-        UpdateDeploymentReplenish(true, new Rect2(origin, new Vector2(1280, 800) * (pixels / 2)));
-        _panels.Busy = (_options.Auto ? _pointer : _tablePointer).Pending > 0 || _wantedOrder is not null || RefillBusy;
+        if (active)
+            UpdateDeploymentReplenish(true, new Rect2(origin, new Vector2(1280, 800) * (pixels / 2)));
+        else
+            UpdateDeploymentReplenish(false, default);
+        _panels.Busy = !active || (_options.Auto ? _pointer : _tablePointer).Pending > 0 || _wantedOrder is not null || RefillBusy;
         _panels.Place(origin, pixels);
         _panels.Refresh(_presenter.State!, _presenter.Picker!, _wantedOrder);
         float k = pixels / 2;                                   // window pixels to a pixel of the 1280×800 screen
@@ -2062,7 +2073,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _table.Refresh(_presenter.State!, _wantedOrder);
         var units = _presenter.State!.Units;
         _panels.WarmPictures(_table.Units.Select(u => (int)units[u].PortraitCg.Value));   // the rows' pictures, one a frame
-        return true;
+        return active;
     }
 
     // ---------------------------------------------------------------- our battle screen (docs/ui/battle-screen.md)
