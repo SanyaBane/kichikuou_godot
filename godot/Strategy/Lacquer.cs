@@ -78,6 +78,56 @@ internal static class Lacquer
     /// </summary>
     public static float Line(float width, float k) => Math.Max(width, 1 / k);
 
+    /// <summary>
+    /// A filled polygon with smooth edges. Godot fills a coloured polygon without antialiasing, and a slanted edge shows
+    /// its steps even under an antialiased outline (the deployment screen's facing head, owner, 2026-10-24): the shape is
+    /// rasterized here at the window's own pixels, each pixel's cover sampled 4×4, and drawn as a texture, kept for the
+    /// next frame that draws the same shape at the same size. <paramref name="k"/> is the draw transform's scale
+    /// (<c>DrawSetTransform</c>), which the canvas item's own transform does not include.
+    /// </summary>
+    public static void DrawSmoothPolygon(CanvasItem c, Vector2[] points, Color colour, float k)
+    {
+        var toWindow = c.GetViewport().GetFinalTransform() * c.GetGlobalTransformWithCanvas();
+        float scale = toWindow.X.Length() * k;                      // the window's own pixels to a unit of the points
+        var min = points.Aggregate(points[0], (a, p) => a.Min(p)).Floor() - Vector2.One;
+        var max = points.Aggregate(points[0], (a, p) => a.Max(p)).Ceil() + Vector2.One;
+        int w = Math.Max(1, (int)Math.Ceiling((max.X - min.X) * scale)), h = Math.Max(1, (int)Math.Ceiling((max.Y - min.Y) * scale));
+        var shape = points.Select(p => (p - min) * scale).ToArray();
+        string key = $"{string.Join(";", shape.Select(p => $"{p.X:F2},{p.Y:F2}"))}|{colour.ToRgba32()}|{w}x{h}";
+        if (!SmoothFills.TryGetValue(key, out var texture))
+        {
+            const int Samples = 4;
+            var image = Image.CreateEmpty(w, h, false, Image.Format.Rgba8);
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                {
+                    int cover = 0;
+                    for (int sy = 0; sy < Samples; sy++)
+                        for (int sx = 0; sx < Samples; sx++)
+                            if (Inside(shape, new Vector2(x + (sx + 0.5f) / Samples, y + (sy + 0.5f) / Samples)))
+                                cover++;
+                    image.SetPixel(x, y, colour with { A = colour.A * cover / (Samples * Samples) });
+                }
+            SmoothFills[key] = texture = ImageTexture.CreateFromImage(image);
+        }
+        c.DrawTextureRect(texture, new Rect2(min, new Vector2(w, h) / scale), false);
+    }
+
+    private static readonly Dictionary<string, ImageTexture> SmoothFills = [];
+
+    /// <summary>Whether <paramref name="p"/> is inside <paramref name="polygon"/> (the crossings of a ray to the right).</summary>
+    private static bool Inside(Vector2[] polygon, Vector2 p)
+    {
+        bool inside = false;
+        for (int i = 0, j = polygon.Length - 1; i < polygon.Length; j = i++)
+        {
+            Vector2 a = polygon[i], b = polygon[j];
+            if ((a.Y > p.Y) != (b.Y > p.Y) && p.X < (b.X - a.X) * (p.Y - a.Y) / (b.Y - a.Y) + a.X)
+                inside = !inside;
+        }
+        return inside;
+    }
+
     /// <summary>The baseline that centres text of <paramref name="size"/> in <paramref name="rect"/>.</summary>
     public static float Baseline(Rect2 rect, Font font, int size) =>
         rect.Position.Y + rect.Size.Y / 2 + (font.GetAscent(size) - font.GetDescent(size)) / 2;
