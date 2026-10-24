@@ -12,11 +12,17 @@ namespace Kichikuou.Game.Strategy;
 /// town); a left click on a plate is <see cref="Pressed"/>, a right click goes on to the screen (the
 /// script's menu), a press anywhere else on the map stays the script's (its clicks and drags). A
 /// hovered province's card (<see cref="MapMarker.Card"/>) shows right of its plate, over the plates.
+/// Their colours are the steel palette's, kept here since the plates' own choice was dropped (owner, 2026-10-24).
 /// </summary>
 internal sealed partial class MapMarkersView : Control
 {
+    private static readonly Color Back = new("2b2d31");         // the plate, the card
+    private static readonly Color Border = new("a88a4a");       // the card's frame
+    private static readonly Color Text = new("f0f0ee");
+    private static readonly Color Muted = new("a5a7ab");        // the card's labels, "??"
+    private static readonly Color Accent = new("f2c75c");       // a hovered plate's frame and glow
+    private static readonly Color HoverBack = new("575b63");    // a hovered plate
     private readonly List<Plate> _plates = [];
-    private DeploymentPalette _colours = DeploymentPalette.OtherChosen;
     private FontFile _font;
     private readonly FontVariation _badgeFont = new() { BaseFont = new FontFile { Data = Godot.FileAccess.GetFileAsBytes("res://fonts/Cinzel-VariableFont_wght.ttf") } };
     private float _pixels = 2;
@@ -44,15 +50,6 @@ internal sealed partial class MapMarkersView : Control
 
     /// <summary>The marker the pointer is over, or null.</summary>
     public MapMarker? Hovered => _plates.FirstOrDefault(p => p.Hover)?.Marker;
-
-    public void SetPalette(DeploymentPalette palette)
-    {
-        _colours = palette;
-        foreach (var plate in _plates)
-            plate.QueueRedraw();
-        _card.QueueRedraw();
-        QueueRedraw();
-    }
 
     public void SetFont(GameFont font)
     {
@@ -224,9 +221,8 @@ internal sealed partial class MapMarkersView : Control
 
         public override void _Draw()
         {
-            var c = _layer._colours;
             float px = Px;
-            var box = new StyleBoxFlat { BgColor = new Color(c.Back, 0.94f), BorderColor = c.Border };
+            var box = new StyleBoxFlat { BgColor = new Color(Back, 0.94f), BorderColor = Border };
             box.SetBorderWidthAll(Math.Max(1, (int)Math.Round(px / 2)));
             box.SetCornerRadiusAll((int)Math.Round(2 * px));
             DrawStyleBox(box, new Rect2(Vector2.Zero, Size));
@@ -238,9 +234,9 @@ internal sealed partial class MapMarkersView : Control
                 var (label, value) = Split(_lines[i]);
                 float middle = 3.5f * px + (i + 0.5f) * 11.5f * px;
                 float baseline = middle + (ascent - descent) / 2;
-                DrawString(font, new Vector2(6 * px, baseline), label, fontSize: FontSize, modulate: c.Muted);
+                DrawString(font, new Vector2(6 * px, baseline), label, fontSize: FontSize, modulate: Muted);
                 float x = 6 * px + font.GetStringSize(label, fontSize: FontSize).X + space;
-                DrawString(font, new Vector2(x, baseline), value, fontSize: FontSize, modulate: value == "??" ? c.Muted : c.Text);
+                DrawString(font, new Vector2(x, baseline), value, fontSize: FontSize, modulate: value == "??" ? Muted : Text);
             }
         }
     }
@@ -313,13 +309,12 @@ internal sealed partial class MapMarkersView : Control
 
         public override void _Draw()
         {
-            var c = _layer._colours;
             bool hover = _layer.ShowsHover(this);
             bool closed = IsDungeon && !Marker.Open;
             float px = Px;
             var box = new StyleBoxFlat
             {
-                BgColor = IsDungeon ? CaveBack : new Color(c.Back, 0.82f),
+                BgColor = IsDungeon ? CaveBack : new Color(Back, 0.82f),
                 BorderColor = new Color(1, 1, 1, 0.12f),
                 ShadowSize = 0,
             };
@@ -327,9 +322,9 @@ internal sealed partial class MapMarkersView : Control
             box.SetCornerRadiusAll((int)Math.Round((IsDungeon ? 8 : 3) * px));
             if (hover && !closed)
             {
-                box.BgColor = c.ButtonHover;
-                box.BorderColor = c.Accent;
-                box.ShadowColor = new Color(c.Accent, 0.85f);
+                box.BgColor = HoverBack;
+                box.BorderColor = Accent;
+                box.ShadowColor = new Color(Accent, 0.85f);
                 box.ShadowSize = (int)Math.Round(5 * px);
             }
             else if (hover)
@@ -340,7 +335,7 @@ internal sealed partial class MapMarkersView : Control
             Modulate = new Color(1, 1, 1, closed ? (hover ? 0.85f : 0.6f) : !hover && Dimmed ? 0.7f : 1);
             DrawStyleBox(box, new Rect2(Vector2.Zero, Size));
 
-            var text = closed ? new Color(0.79f, 0.79f, 0.8f) : hover ? Colors.White : c.Text;
+            var text = closed ? new Color(0.79f, 0.79f, 0.8f) : hover ? Colors.White : Text;
             var font = _layer._font;
             float baseline = Size.Y / 2 + (font.GetAscent(FontSize) - font.GetDescent(FontSize)) / 2;
             float x = 6 * px;

@@ -83,13 +83,13 @@ The screens of the original engine (`--interface original`, the merchant, constr
 The scenario's own sums in our message windows and menus take the separator too, only at the places verified to be
 money (docs/ui/gold-figures.md, 2026-10-24: the survey, the owner's answers, `ScenarioFigures`).
 
-## Two palettes (2026-10-24)
+## The battle screen's palette (2026-10-24)
 
-Owner's request: the palette split into the battle screen's and the other screens'. The Display tab holds two rows of
-swatches, **Palette of the battle screen** and, under it, **Palette of the other screens (the map's plates)** —
+Owner's request: the palette split into the battle screen's and the other screens'; later the same day (owner) the
+other screens' was dropped. The Display tab holds one row of swatches, **Palette of the battle screen** —
 `DeploymentPalette.BattleChosen` (`[display] palette_battle` in `settings.cfg`: the battle screen, the scout report and a
-strategy's cut-in before its field, the touch mode's Skip under its cards, the Battle tab's order-strip preview) and
-`DeploymentPalette.OtherChosen` (`[display] palette_other`: the map's name plates and province cards). Either unsaved
-takes the one palette saved before the split (`[display] palette`), else steel; `--palette` sets both for a launch;
-Defaults turns both back to steel. The window's `BattlePaletteChosen` and `OtherPaletteChosen` recolour the open screens
-(`GameScreen.ApplyBattlePalette`, `MapMarkersView.SetPalette`).
+strategy's cut-in before its field, the touch mode's Skip under its cards, the Battle tab's order-strip preview). Unsaved
+it takes the one palette saved before the split (`[display] palette`), else steel; `--palette` sets it for a launch;
+Defaults turns it back to steel. The window's `BattlePaletteChosen` recolours the open screens
+(`GameScreen.ApplyBattlePalette`). The map's name plates and province cards keep steel's colours as constants of their
+own (`MapMarkersView`), not the palette; a saved `[display] palette_other` is no longer read.

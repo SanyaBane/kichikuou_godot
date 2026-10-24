@@ -243,7 +243,6 @@ public partial class GameScreen
         view.FontChosen += ApplyFont;
         view.ReadColourChosen += () => _messageView.QueueRedraw();
         view.BattlePaletteChosen += ApplyBattlePalette;
-        view.OtherPaletteChosen += _markers.SetPalette;
         view.ThousandsChosen += () => RedrawAll(this);   // the figures drawn already, in the new way
         view.NewScenesFirstChanged += on =>
         {

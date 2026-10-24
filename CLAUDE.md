@@ -399,7 +399,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   under its cards (`Strategy/TouchPill`), both in `GameScreen.Skip.cs`, their places `Original.Content/Strategy/SkipButtons`
   (Skip is MsgSkip's switch; the message log scrolled by a drag, closed by a tap off its frame; docs/ui/touch.md, "The Skip
   and Log buttons" and "The dialogue buttons, round 2");
-  `Strategy/OptionsView` (Option: the options window over the game, the owner's mock-up D, docs/ui/options.md — a paper sheet with the tabs Messages, Display, Battle, Game; `--options` dumps them); Option → Display's two palettes (`DeploymentPalette.BattleChosen` and `OtherChosen`, steel by default) colour our battle screen and the map's plates;
+  `Strategy/OptionsView` (Option: the options window over the game, the owner's mock-up D, docs/ui/options.md — a paper sheet with the tabs Messages, Display, Battle, Game; `--options` dumps them); Option → Display's palette (`DeploymentPalette.BattleChosen`, steel by default) colours our battle screen; the map's plates keep steel's colours as their own (`MapMarkersView`);
   `Battles/AdvantageTip` (the instant tooltips of the advantages next to the armies' names, `BattleAdvantage.Parts`); `GodotGlyphRenderer` (TextServer; MS Gothic or the bundled BIZ UDGothic in `godot/fonts`, Option →
   Display, `--font ms-gothic|biz-ud-gothic` for one launch), `BattleAudio`; `Screens` switches screens. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
 - `tools/analysis/` — Python scripts for reading the decompiled scenario; `tools/codegen/` —

@@ -91,9 +91,6 @@ internal sealed partial class OptionsView : Control
     /// <summary>The battle screen's palette was chosen (it is kept already).</summary>
     public event Action<DeploymentPalette>? BattlePaletteChosen;
 
-    /// <summary>The other screens' palette was chosen (it is kept already).</summary>
-    public event Action<DeploymentPalette>? OtherPaletteChosen;
-
     /// <summary>The thousands' separator was chosen (it is kept already, <see cref="ThousandsChoice"/>).</summary>
     public event Action? ThousandsChosen;
 
@@ -191,12 +188,6 @@ internal sealed partial class OptionsView : Control
         BattlePaletteChosen?.Invoke(palette);
     }
 
-    private void SetOtherPalette(DeploymentPalette palette)
-    {
-        DeploymentPalette.OtherChosen = palette;
-        OtherPaletteChosen?.Invoke(palette);
-    }
-
     private void SetThousands(ThousandsSeparator separator)
     {
         ThousandsChoice.Chosen = separator;
@@ -240,7 +231,6 @@ internal sealed partial class OptionsView : Control
             case Tab.Display:
                 SetFont(GameFont.BizUdGothic);
                 SetBattlePalette(DeploymentPalette.Steel);
-                SetOtherPalette(DeploymentPalette.Steel);
                 SetThousands(ThousandsSeparator.Comma);
                 break;
             case Tab.Battle:
@@ -500,10 +490,6 @@ internal sealed partial class OptionsView : Control
         SectionHead(x, y, "Palette of the battle screen", w);
         for (int i = 0; i < DeploymentPalette.All.Count; i++)
             Swatch("battle", x + i * 90, y + 40, DeploymentPalette.All[i], DeploymentPalette.BattleChosen, SetBattlePalette);
-        y += 120;
-        SectionHead(x, y, "Palette of the other screens (the map's plates)", w);
-        for (int i = 0; i < DeploymentPalette.All.Count; i++)
-            Swatch("other", x + i * 90, y + 40, DeploymentPalette.All[i], DeploymentPalette.OtherChosen, SetOtherPalette);
         y += 132;
         SectionHead(x, y, "Thousands in gold, troops and damage", w);
         for (int i = 0; i < ThousandsChoice.All.Length; i++)

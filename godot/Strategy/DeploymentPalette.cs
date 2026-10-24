@@ -6,8 +6,8 @@ namespace Kichikuou.Game.Strategy;
 /// The colours first made for our deployment screen: the first, dark blue, sat badly with the portrait's gold
 /// frame, so the owner looked at four more (2026-10-12), kept them all for the player to choose (Option → Display)
 /// and made steel the default. The deployment screen has been lacquer since the owner's E1/E2 (2026-10-19,
-/// docs/ui/deployment-table.md); the palettes still colour our battle screen and the map's name plates, each
-/// chosen apart since the owner split them (2026-10-24): <see cref="BattleChosen"/> and <see cref="OtherChosen"/>.
+/// docs/ui/deployment-table.md); the palettes still colour our battle screen, <see cref="BattleChosen"/>. The map's name
+/// plates had a palette of their own for a day (2026-10-24) and keep steel's colours as their own since (MapMarkersView).
 /// </summary>
 internal sealed record DeploymentPalette(
     string Name,
@@ -73,7 +73,7 @@ internal sealed record DeploymentPalette(
 
     public static IReadOnlyList<DeploymentPalette> All { get; } = [Navy, Gold, Steel, Parchment, Crimson];
 
-    private static DeploymentPalette? _battle, _other;
+    private static DeploymentPalette? _battle;
 
     /// <summary>The name in the menu: "Steel" for steel.</summary>
     public string Title => char.ToUpperInvariant(Name[0]) + Name[1..];
@@ -89,16 +89,9 @@ internal sealed record DeploymentPalette(
         set => Save(_battle = value, "palette_battle");
     }
 
-    /// <summary>The other screens' palette: the map's name plates and their cards, <c>[display] palette_other</c>.</summary>
-    public static DeploymentPalette OtherChosen
-    {
-        get => _other ??= Load("palette_other");
-        set => Save(_other = value, "palette_other");
-    }
-
     /// <summary>
-    /// <c>--palette &lt;name&gt;</c> for the launch, both palettes (development), else the saved <paramref name="key"/>, else
-    /// the one palette saved before the split (<c>[display] palette</c>), else steel.
+    /// <c>--palette &lt;name&gt;</c> for the launch (development), else the saved <paramref name="key"/>, else the one
+    /// palette saved before the split of 2026-10-24 (<c>[display] palette</c>), else steel.
     /// </summary>
     private static DeploymentPalette Load(string key)
     {
