@@ -95,12 +95,17 @@ internal sealed partial class BattleCommandLayer : Control
         ? new Vector2(m.Box.GetCenter().X, m.Box.Position.Y + MenuPad + (item + 0.5f) * RowHeight)
         : null;
 
-    /// <summary>Starts a choice from the core's menu; <paramref name="text"/> reads a label.</summary>
-    public void Begin(BattleCommands commands, GameState state, Func<ScriptRef, string> text)
+    /// <summary>
+    /// Starts a choice from the core's menu; <paramref name="text"/> reads a label. In the touch mode
+    /// <paramref name="target"/> is the enemy preselected as the target.
+    /// </summary>
+    public void Begin(BattleCommands commands, GameState state, Func<ScriptRef, string> text, BattlePlace? target = null)
     {
         (_commands, _state, _text) = (commands, state, text);
         Result = null;
         (_hovered, _banners, _hotBanner, _menu, _hotItem) = (null, [], -1, null, -1);
+        if (_touch)
+            BeginTouch(target);
         QueueRedraw();
     }
 
@@ -138,6 +143,11 @@ internal sealed partial class BattleCommandLayer : Control
         {
             SetHotItem(ItemAt(menu, p));
             return;
+        }
+        if (_touch)
+        {
+            SetHotRail(_pressedRail.Index >= 0 && RailAt(p) == _pressedRail ? _pressedRail : (false, -1));
+            return;                                                 // no hover: the target is a tap's
         }
         var place = _hovered is { Side: BattleSide.Enemy } target && BannerAt(target, p) >= 0 ? target : CardAt(p);
         if (place != _hovered)
@@ -184,6 +194,11 @@ internal sealed partial class BattleCommandLayer : Control
                 return;
             }
         }
+        if (!right && _touch)
+        {
+            TouchPress(p);
+            return;
+        }
         if (!right)
         {
             if (_hovered is { } target && BannerAt(target, p) is var b and >= 0)
@@ -201,6 +216,11 @@ internal sealed partial class BattleCommandLayer : Control
     {
         if (_commands is null || right)
             return;
+        if (_touch && _menu is null)
+        {
+            TouchRelease(p);
+            return;
+        }
         if (_menu is { } menu && _pressedItem >= 0 && ItemAt(menu, p) == _pressedItem)
             Result = menu.Items[_pressedItem].Choice;
         _pressedItem = -1;
@@ -239,6 +259,8 @@ internal sealed partial class BattleCommandLayer : Control
     {
         _menu = null;
         _hotItem = _pressedItem = -1;
+        if (_touch && _commands is not null)
+            SetTarget(_target);                                     // the touch mode's target again
         QueueRedraw();
     }
 
@@ -276,8 +298,9 @@ internal sealed partial class BattleCommandLayer : Control
     /// <summary>The banner of <paramref name="target"/> under <paramref name="p"/> (its pennant shape), or -1.</summary>
     private int BannerAt(BattlePlace target, Vector2 p)
     {
-        if (target != _hovered)
-            return -1;
+        if (target != _hovered || _touch)
+            return -1;                                              // the touch mode shows no banners: its rail does
+
         for (int i = 0; i < _banners.Count; i++)
         {
             if (Geometry2D.IsPointInPolygon(p, Pennant(BannerRect(target, i), 1)))
@@ -312,7 +335,13 @@ internal sealed partial class BattleCommandLayer : Control
         if (_commands is null)
             return;
         var font = GetThemeDefaultFont();
-        if (_hovered is { } target && _menu is null)
+        if (_touch)
+        {
+            DrawRails(font);
+            if (_target is { } t && _menu is null)
+                DrawTouchTarget(_cardArea(t));
+        }
+        else if (_hovered is { } target && _menu is null)
         {
             if (target.Side == BattleSide.Enemy && _banners.Count > 0)
                 DrawTargetFrame(_cardArea(target));
@@ -325,21 +354,21 @@ internal sealed partial class BattleCommandLayer : Control
 
     /// <summary>
     /// The frame on the target's card <paramref name="card"/> (layout pixels): a bracket on each corner — its glow, the
-    /// cyan line, the white line inside it.
+    /// cyan line, the white line inside it; <paramref name="alpha"/> fades it (the touch mode's target no attack reaches).
     /// </summary>
-    private void DrawTargetFrame(Rect2 card)
+    private void DrawTargetFrame(Rect2 card, float alpha = 1, float outset = TargetOut, float glow = 1)
     {
         float s = _scale;
-        var outer = new Rect2(card.Position * s, card.Size * s).Grow(TargetOut * s);
+        var outer = new Rect2(card.Position * s, card.Size * s).Grow(outset * s);
         float width = Math.Max(2, TargetWidth * s);
         foreach (var (hx, vy) in new[] { (1, 1), (-1, 1), (1, -1), (-1, -1) })
         {
             var corner = new Vector2(hx > 0 ? outer.Position.X : outer.End.X, vy > 0 ? outer.Position.Y : outer.End.Y);
             var middle = Bracket(corner, hx, vy, width / 2);
-            DrawPolyline(middle, TargetColour with { A = 0.15f }, width + 2 * TargetGlow * s, antialiased: true);
-            DrawPolyline(middle, TargetColour with { A = 0.3f }, width + TargetGlow * s, antialiased: true);
-            DrawPolyline(middle, TargetColour, width, antialiased: true);
-            DrawPolyline(Bracket(corner, hx, vy, width), TargetInner, Math.Max(1, s), antialiased: true);
+            DrawPolyline(middle, TargetColour with { A = 0.15f * alpha * glow }, width + 2 * TargetGlow * s, antialiased: true);
+            DrawPolyline(middle, TargetColour with { A = 0.3f * alpha * glow }, width + TargetGlow * s, antialiased: true);
+            DrawPolyline(middle, TargetColour with { A = alpha }, width, antialiased: true);
+            DrawPolyline(Bracket(corner, hx, vy, width), TargetInner with { A = TargetInner.A * alpha }, Math.Max(1, s), antialiased: true);
         }
     }
 

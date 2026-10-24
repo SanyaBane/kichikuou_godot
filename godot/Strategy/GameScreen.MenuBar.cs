@@ -303,6 +303,7 @@ public partial class GameScreen
     private void ApplyPalette(DeploymentPalette palette)
     {
         _markers.SetPalette(palette);
+        _commandsButton.SetPalette(palette);
         _battleView.SetPalette(palette);
         _scoutView.SetPalette(palette);
         _attackView.SetPalette(palette);

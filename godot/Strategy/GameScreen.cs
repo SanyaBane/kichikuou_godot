@@ -246,6 +246,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private DeploymentPanels _panels = null!;           // and the rest of it, over the whole of Sﾌﾞﾀｲ's screen
     private PointerScript _tablePointer = new();        // the script's pointer while the player's is over the table
     private MapMarkersView _markers = null!;            // our name plates over the map in COMMAND's map wait (New)
+    private CommandsButton _commandsButton = null!;     // the touch mode's Commands button with them
     private ProvinceMenuView _provinceView = null!;     // our province menu over a city file's first menu (New)
     private CommandMenuView _commandView = null!;       // our command panel over COMMAND's command menu (New)
     private readonly LoadSaveShortcut _saveShortcut = new(); // its Load and Save rows: ﾛｰﾄﾞｾｰﾌﾞ's menu answered unseen
@@ -299,6 +300,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _markers = new MapMarkersView(GodotGlyphRenderer.Chosen);
         _markers.Pressed += MarkerPressed;
         _content.AddChild(_markers);
+        _commandsButton = new CommandsButton();
+        _commandsButton.Tapped += CommandsTapped;
+        _commandsButton.Forwarded += StripInput;
+        _content.AddChild(_commandsButton);
         var faces = new FacePictures(GameData.Cgs());
         _provinceView = new ProvinceMenuView(GodotGlyphRenderer.Chosen, faces);
         _content.AddChild(_provinceView);
@@ -1823,6 +1828,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 await DumpMarkersAsync();
             if (_autoPlateTarget != 0 && UpdateMapMarkers() && _mapCamera.Corner)
                 await AutoPlateClickAsync();
+            if (_autoCommandsTap && UpdateMapMarkers() && _commandsButton.Visible)
+                await AutoCommandsTapAsync();
             if (_markerPointer.Pending > 0)
             {
                 var click = _markerPointer.Next(out bool clickRead);
@@ -1931,10 +1938,13 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             if (show)
                 _markers.Load(_presenter.MapMarkers());
         }
+        _commandsButton.Visible = show && TouchMode.On;
         if (!show)
             return false;
         var area = PictureArea();
         _markers.Place(area, area.Size.X / Surface.ScreenWidth, _presenter.MapViewShown!.Value);
+        if (_commandsButton.Visible)
+            _commandsButton.Place(area);
         return true;
     }
 
@@ -2230,7 +2240,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             await DelayAsync(_options.Fast ? 0 : 0.5);
             var direct = menu.Find(FigtSelCommand.Direct);
-            if (_autoCommandsPhase < 4 && BattleScreenShown && DisplayServer.GetName() != "headless" && direct is { Arguments.Count: > 0 })
+            if (TouchMode.On && !_autoTouched && BattleScreenShown && DisplayServer.GetName() != "headless" && direct is { Arguments.Count: > 0 })
+                return await AutoTouchCommandsAsync(menu, direct.Arguments);
+            if (!TouchMode.On && _autoCommandsPhase < 4 && BattleScreenShown && DisplayServer.GetName() != "headless" && direct is { Arguments.Count: > 0 })
                 return await AutoCommandsAsync(menu, direct.Arguments[0]);
             return direct is { Arguments.Count: > 0 }
                 ? new FigtSelChoice(FigtSelCommand.Direct, direct.Arguments[0])
@@ -2244,11 +2256,16 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             if (BattleScreenShown)
             {
                 _answered = new TaskCompletionSource();
-                commands.Begin(new BattleCommands(menu), _presenter.State!, _presenter.Battle.Text);
+                var model = new BattleCommands(menu);
+                commands.Begin(model, _presenter.State!, _presenter.Battle.Text, TouchMode.On ? TouchTarget(model) : null);
                 PointerMoved();
                 await _answered.Task;
                 if (commands.Result is { } choice)
+                {
+                    if (TouchMode.On)
+                        TouchAttacked(model, choice);
                     return choice;
+                }
                 commands.End();
             }
             _answered = new TaskCompletionSource();
@@ -2934,7 +2951,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 _autoReplenish = AutoReplenish.Wanted;
                 _autoReplenishUnit = unit;
                 _autoReplenishWeek = s.Week.Value;
-                _pointer.RightClick(5, 6);                              // the menu: Subordinates
+                if (TouchMode.On && Windowed && !_autoCommandsTapped)
+                    _autoCommandsTap = _autoCommandsTapped = true;      // the menu by the Commands button (AutoCommandsTapAsync)
+                else
+                    _pointer.RightClick(5, 6);                          // the menu: Subordinates
                 return;
             }
             if (!_options.AutoDungeon && AutoAttackTarget(s) is { } target)

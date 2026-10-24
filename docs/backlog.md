@@ -56,7 +56,11 @@ The owner aims at a public release (decision 28, 2026-10-20).
   `quit_on_go_back=false`; the owner checked it on the tablet, 2026-10-24). The build starts full screen (bars
   hidden); Screen → Window shows the navigation bar with its Back, and the choice is kept for later launches
   (`ScreenModeChoice`). Still to measure: the speed in
-  play, and the hover a touch screen does not have.
+  play, and the hover a touch screen does not have. A long press on a battle card opens its menu (2026-10-24).
+  The touch mode for phones and the tablet (owner, 2026-10-24): survey and mock-ups in
+  [ui/touch.md](ui/touch.md) (the battle's rails, the map); the tablet's B2 and M3 are built (2026-10-24), the target
+  frame breathing on Android; still to try on the tablet. **Phones put off** (owner, 2026-10-24): the tablet first,
+  phones later — their mock-ups B1, B3, M1, M2 and the open questions are in ui/touch.md, "Phones (put off)".
 - **CI** — *owner* (a remote first), then *agent*: build, core tests, export. Without the game data
   the content tests no longer fail (2026-10-23): a test that reads the scenario, the CGs or a capture group
   is `[ScenarioFact]`/`[ScenarioTheory]`, `[LocalFolderFact]` or `[CaptureGroupFact]`/`[CaptureGroupTheory]`

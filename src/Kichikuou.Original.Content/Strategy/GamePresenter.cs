@@ -108,6 +108,9 @@ public sealed partial class GamePresenter : IStageObserver
     /// <summary>Our battle screen's round order and rounds (<see cref="RoundOrder"/>), following the same events.</summary>
     public RoundOrder Order { get; } = new();
 
+    /// <summary>How many battles have opened since this presenter began (our screens forget a battle's choices at the next).</summary>
+    public int Battles { get; private set; }
+
     /// <summary>Whether our battle screen can stand now: the battle draws and its field or an exchange is on (<see cref="BattleScene.Active"/>).</summary>
     public bool BattleSceneShows => BattleShows && Scene.Active;
 
@@ -395,6 +398,7 @@ public sealed partial class GamePresenter : IStageObserver
                 Battle.Attach(s);
                 Scene.Start(s);
                 Order.Reset();
+                Battles++;
                 _tiles = Tiles.Valid;
                 _window.Clear();
                 _afterKey = null;

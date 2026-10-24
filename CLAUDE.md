@@ -216,6 +216,12 @@ the owner chose B with the Ninja Scout list (B4), the places filled in place aft
 Rance's repeated lines, the ninjas' lead-in and Abandon City's six lines unseen — built (its §6:
 `Original.Content/Battles/EnemyAttack`, `BattlePresenter.Attack.cs`, `godot/Strategy/EnemyAttackView`,
 `GameScreen.EnemyAttack.cs`).
+Then (owner, 2026-10-24) a touch mode for the Android build: survey and mock-ups in docs/ui/touch.md
+(`tools/ui/mock_touch.py`), phones put off, the tablet first. The owner chose B2 (the battle's rails in the scene's blurred
+sides, the target preselected per unit) and M3 (a round Commands button on the map): built (docs/ui/touch.md, "The tablet":
+`godot/Strategy/TouchMode` — Android or `--touch` —, `godot/Battles/BattleCommandLayer.Touch.cs`,
+`Original.Content/Battles/TouchTargets`, `godot/Strategy/CommandsButton`); the target frame breathes on Android only
+(the owner's A).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -381,6 +387,11 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `FIGT_SEL` answered by our own input, `BattleCommandLayer`: banners and context menus from
   `Original.Content/Battles/BattleCommands`; the retreat confirmation our dialog, `BattleDialogLayer`
   from `BattleDialog`; the speech bubbles' lines our balloon, `SpeechBalloon` from `BattlePresenter.Speech`; the info boxes 143/153 (a defence's ribbon on the card and its caption at the scene's foot, mock-ups D2 and D5, a fall's stamp, the results plate, our panel) `Battles/BattleInfoLayer` from `BattlePresenter.InfoBox` (docs/ui/messages.md, §5 step 5); the ninja's scout report, before the field, our overlay `Battles/ScoutReportView` from `BattlePresenter.Scout` (`Original.Content/Battles/ScoutReport`); a successful strategy, before the field, our cut-in `Battles/StrategyCutInView` from `BattlePresenter.Strategy` (`Original.Content/Battles/BattleStrategy`; one click, the strategist's line); the first round header our opening `Battles/BattleOpeningLayer` from `GamePresenter.Opening` (`Original.Content/Battles/BattleOpening`; the later headers answered at once; its fonts Shojumaru and Cinzel bundled in `godot/fonts`); the exchange's result held ("Results: hold") and answered by `GameScreen` unless a wiped-out mark is up; the order messages not shown, the card's order label flashing (`BattleBoardView.FlashOrder`, `BattlePresenter.OrderedUnit`); every card's stats always under its portrait, `Battles/CardPortrait` from `Original.Content/Battles/BattleCardStats` (no menu offers Info), the focus "◆ n" on it; the advantages as what they do ("Walls +8%", "Strategy +10%") and the battle's limit on a plate at the scene's top (`BattleOpening.Effects`, `LimitText`); its settings Option → Battle, `BattleScreenSettings`);
+  the touch mode (`Strategy/TouchMode`: Android or `--touch`; docs/ui/touch.md, "The tablet"): our battle screen's rails
+  (`Battles/BattleCommandLayer.Touch.cs`: the acting unit's commands left, the target's attacks right, the banners not
+  shown; the target preselected by `Original.Content/Battles/TouchTargets` through `GameScreen.Touch.cs`, which also
+  holds the long press on a card and Back as a right click), the map's `Strategy/CommandsButton` (a tap is the right
+  click that opens the command panel);
   `Strategy/OptionsView` (Option: the options window over the game, the owner's mock-up D, docs/ui/options.md — a paper sheet with the tabs Messages, Display, Battle, Game; `--options` dumps them); Option → Display's palette (`DeploymentPalette`, steel by default) colours our battle screen and the map's plates;
   `Battles/AdvantageTip` (the instant tooltips of the advantages next to the armies' names, `BattleAdvantage.Parts`); `GodotGlyphRenderer` (TextServer; MS Gothic or the bundled BIZ UDGothic in `godot/fonts`, Option →
   Display, `--font ms-gothic|biz-ud-gothic` for one launch), `BattleAudio`; `Screens` switches screens. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
