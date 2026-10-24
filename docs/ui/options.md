@@ -93,3 +93,7 @@ it takes the one palette saved before the split (`[display] palette`), else stee
 Defaults turns it back to steel. The window's `BattlePaletteChosen` recolours the open screens
 (`GameScreen.ApplyBattlePalette`). The map's name plates and province cards keep steel's colours as constants of their
 own (`MapMarkersView`), not the palette; a saved `[display] palette_other` is no longer read.
+
+A sixth swatch, **Lacquer** (owner, 2026-10-24: `DeploymentPalette.LacquerGold`, `lacquer`), is our other screens' lacquer
+and gold (`Lacquer`'s colours) for the battle screen to try: if the owner keeps it, it becomes the battle screen's own and
+the palettes go, before the lacquer itself becomes a choice for every screen (docs/backlog.md).

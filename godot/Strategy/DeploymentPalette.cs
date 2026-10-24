@@ -71,7 +71,18 @@ internal sealed record DeploymentPalette(
         ButtonDisabled: Hex("2a1216"), ButtonBorder: Hex("d4a94e"), ButtonText: Hex("f6e3b0"),
         TableBack: Hex("1e0d10f0"), TableTitle: Hex("3d1a20"), MemberRow: Hex("7a5a24a0"), GreyText: Hex("7a6466"));
 
-    public static IReadOnlyList<DeploymentPalette> All { get; } = [Navy, Gold, Steel, Parchment, Crimson];
+    /// <summary>
+    /// Our other screens' lacquer and gold (<see cref="Lacquer"/>), offered for the battle screen to look at (owner,
+    /// 2026-10-24): if it holds, the battle screen takes it for good and the palettes go.
+    /// </summary>
+    public static readonly DeploymentPalette LacquerGold = new("lacquer",
+        Back: Lacquer.Panel with { A = 1 }, Card: Lacquer.Row, Border: Lacquer.Gold,
+        Text: Lacquer.Text, Muted: Lacquer.Quiet, Warning: Lacquer.Minus, Accent: Lacquer.HoverLine,
+        Button: Lacquer.Row, ButtonHover: Lacquer.RowHover, ButtonPressed: Color.Color8(24, 18, 13),
+        ButtonDisabled: Lacquer.OffButton, ButtonBorder: Lacquer.Gold, ButtonText: Lacquer.Name,
+        TableBack: Lacquer.Panel, TableTitle: Color.Color8(46, 34, 22), MemberRow: Lacquer.PartyRow, GreyText: Lacquer.OffText);
+
+    public static IReadOnlyList<DeploymentPalette> All { get; } = [Navy, Gold, Steel, Parchment, Crimson, LacquerGold];
 
     private static DeploymentPalette? _battle;
 

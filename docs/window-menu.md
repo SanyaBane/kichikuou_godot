@@ -117,8 +117,8 @@ web build (seen only) by an option.
   Since 2026-10-21 (owner) the player always has ours: the submenu is gone and `[display] interface`
   in `user://settings.cfg` is no longer read (`InterfaceChoice`). `--interface original` shows the
   original's screens for one launch (development checks).
-- **Option → Display → Palette: Navy / Gold / Steel / Parchment / Crimson** (ours, owner's choice 2026-10-12;
-  swatches, Steel by default): the colours of our battle screen (`DeploymentPalette`; the deployment screen is lacquer
+- **Option → Display → Palette: Navy / Gold / Steel / Parchment / Crimson / Lacquer** (ours, owner's choice 2026-10-12,
+  Lacquer to try since 2026-10-24; swatches, Steel by default): the colours of our battle screen (`DeploymentPalette`; the deployment screen is lacquer
   since 2026-10-19, docs/ui/deployment-table.md; the map's name plates keep steel's colours since 2026-10-24). Saved as
   `[display] palette_battle` in `user://settings.cfg`, taking the old `[display] palette` until chosen
   (docs/ui/options.md, "The battle screen's palette"). A change recolours an open screen at once. `--palette <name>`
