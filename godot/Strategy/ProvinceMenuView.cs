@@ -20,7 +20,9 @@ internal sealed partial class ProvinceMenuView : Control
 {
     private static UiPalette Ui => UiPalettes.For(UiPart.Map);
 
-    private const float Width = 470, Pad = 18, PictureW = 225, PictureH = 150, RowPitch = 36, RowH = 29, Caption = 30;
+    // The PC's layout: the owner's A1 (2026-10-25, docs/ui/command-screen.md, "Taller rows"), the rows 38 high.
+    private const float Width = 500, Pad = 18, PictureW = 234, PictureH = 156, RowPitch = 45, RowH = 38, Caption = 32,
+        ReturnW = 120, ReturnH = 36;
     // The touch mode's layout: the province in a left column, the rows 46 high (9.3 mm on the tablet) in a right one.
     private const float TouchPictureW = 270, TouchPictureH = 180, TouchMid = 24, TouchColumn = 300, TouchRowH = 46,
         TouchPitch = 54, TouchReturnW = 150, TouchFigure = 36;
@@ -97,7 +99,7 @@ internal sealed partial class ProvinceMenuView : Control
 
     private float Height => _touch
         ? Math.Max(Pad + TouchLeftHeight, Top + (RowCount - 1) * TouchPitch + 6 + TouchRowH) + Pad
-        : Top + (RowCount - 1) * RowPitch + 50;
+        : Top + (RowCount - 1) * RowPitch + 1 + ReturnH + 14;
 
     /// <summary>Where the rows start, under the header (in the touch mode at the right column's top) and the place's caption, if any.</summary>
     private float Top => (_touch ? Pad : Pad + PictureH + Pad) + (_menu?.Place is null ? 0 : Caption);
@@ -123,7 +125,7 @@ internal sealed partial class ProvinceMenuView : Control
             : new Rect2(TouchRight + TouchColumn - TouchReturnW, PanelY + Height - Pad - TouchRowH, TouchReturnW, TouchRowH)
         : row < RowCount - 1
             ? new Rect2(PanelX + 16, PanelY + Top + row * RowPitch, Width - 32, RowH)
-            : new Rect2(PanelX + Width - 118, PanelY + Top + (RowCount - 1) * RowPitch + 4, 102, 28);
+            : new Rect2(PanelX + Width - 16 - ReturnW, PanelY + Top + (RowCount - 1) * RowPitch + 1, ReturnW, ReturnH);
 
     private bool Enabled(int row) => _menu is { } m && (row == RowCount - 1 || m.Items[row].Enabled);
 
@@ -204,13 +206,13 @@ internal sealed partial class ProvinceMenuView : Control
         // The name (made smaller to fit), the army, the figures: right of the picture, in the touch mode under it.
         float tx = _touch ? picture.Position.X : picture.End.X + Pad, ty = _touch ? picture.End.Y + 14 : y + 16;
         float room = _touch ? TouchPictureW : x + Width - 16 - tx;
-        int nameSize = _touch ? 22 : 19, armySize = _touch ? 14 : 13, labelSize = _touch ? 14 : 13, valueSize = _touch ? 16 : 15;
+        int nameSize = _touch ? 22 : 21, armySize = 14, labelSize = 14, valueSize = _touch ? 16 : 17;
         while (nameSize > 11 && _brush.GetStringSize(m.Name, fontSize: nameSize).X > room)
             nameSize--;
         DrawString(_brush, new Vector2(tx, ty + _brush.GetAscent(nameSize)), m.Name, fontSize: nameSize, modulate: Ui.Name);
-        DrawString(_cinzel, new Vector2(tx + 1, ty + (_touch ? 32 : 30) + _cinzel.GetAscent(armySize)), m.Army, fontSize: armySize,
+        DrawString(_cinzel, new Vector2(tx + 1, ty + 32 + _cinzel.GetAscent(armySize)), m.Army, fontSize: armySize,
             modulate: Ui.Subtitle);
-        float sy2 = ty + (_touch ? 62 : 54);
+        float sy2 = ty + (_touch ? 62 : 58);
         foreach (string line in m.Card)
         {
             int colon = line.IndexOf(": ", StringComparison.Ordinal);
@@ -218,7 +220,7 @@ internal sealed partial class ProvinceMenuView : Control
             DrawString(_gothic, new Vector2(tx, sy2 + _gothic.GetAscent(labelSize)), label, fontSize: labelSize, modulate: Ui.Label);
             DrawString(_gothic, new Vector2(tx, sy2 + labelSize + 2 + _gothic.GetAscent(valueSize)), value, fontSize: valueSize,
                 modulate: value == "??" ? Ui.Label : Ui.Value);
-            sy2 += _touch ? TouchFigure : 34;
+            sy2 += _touch ? TouchFigure : 36;
         }
         if (_touch)
             Ui.DrawVerticalDivider(this, picture.End.X + TouchMid / 2, y + Pad + 4, y + h - Pad - 4, _k);
@@ -226,9 +228,9 @@ internal sealed partial class ProvinceMenuView : Control
         if (m.Place is { } place)
         {
             float cx0 = _touch ? TouchRight : x + 16, cx1 = _touch ? TouchRight + TouchColumn : x + Width - 16, mid = (cx0 + cx1) / 2;
-            float cy = y + Top - Caption / 2 - 4, pw = _cinzel.GetStringSize(place, fontSize: 15).X;
-            DrawString(_cinzel, new Vector2(mid - pw / 2, cy + (_cinzel.GetAscent(15) - _cinzel.GetDescent(15)) / 2), place,
-                fontSize: 15, modulate: Ui.Name);
+            float cy = y + Top - Caption / 2 - 4, pw = _cinzel.GetStringSize(place, fontSize: 16).X;
+            DrawString(_cinzel, new Vector2(mid - pw / 2, cy + (_cinzel.GetAscent(16) - _cinzel.GetDescent(16)) / 2), place,
+                fontSize: 16, modulate: Ui.Name);
             DrawLine(new Vector2(cx0, cy), new Vector2(mid - pw / 2 - 12, cy), Ui.DimGold, Line(1));
             DrawLine(new Vector2(mid + pw / 2 + 12, cy), new Vector2(cx1, cy), Ui.DimGold, Line(1));
         }
@@ -246,7 +248,7 @@ internal sealed partial class ProvinceMenuView : Control
         float baseline(int size, Font font) => rect.Position.Y + rect.Size.Y / 2 + (font.GetAscent(size) - font.GetDescent(size)) / 2;
         if (r == RowCount - 1)
         {
-            int returnSize = _touch ? 18 : 15;
+            int returnSize = _touch ? 18 : 17;
             float w = _gothic.GetStringSize("Return", fontSize: returnSize).X;
             DrawString(_gothic, new Vector2(rect.GetCenter().X - w / 2, baseline(returnSize, _gothic)), "Return", fontSize: returnSize,
                 modulate: hover ? Ui.Text : Ui.Quiet);
@@ -256,16 +258,18 @@ internal sealed partial class ProvinceMenuView : Control
         var (tag, colour) = TagOf(item.Action);
         var tagRect = _touch
             ? new Rect2(rect.Position.X + 7, rect.Position.Y + 8, 72, rect.Size.Y - 16)
-            : new Rect2(rect.Position.X + 5, rect.Position.Y + 5, 62, rect.Size.Y - 10);
-        Ui.DrawTag(this, _gothic, tagRect, tag, colour, on, _k);
-        int size = _touch ? 19 : 16;
-        DrawString(_gothic, new Vector2(rect.Position.X + (_touch ? 94 : 80), baseline(size, _gothic)), item.Text, fontSize: size,
+            : new Rect2(rect.Position.X + 6, rect.Position.Y + 6, 74, rect.Size.Y - 12);
+        Ui.DrawTag(this, _gothic, tagRect, tag, colour, on, _k, _touch ? 13 : 15);
+        int size = 19;
+        DrawString(_gothic, new Vector2(rect.Position.X + (_touch ? 94 : 93), baseline(size, _gothic)), item.Text, fontSize: size,
             modulate: on ? Ui.Text : Ui.OffText);
         if (!on)
         {
             const string spent = "used this week";
-            float sw = _gothic.GetStringSize(spent, fontSize: 12).X;
-            DrawString(_gothic, new Vector2(rect.End.X - 10 - sw, baseline(12, _gothic)), spent, fontSize: 12, modulate: Ui.OffText);
+            int spentSize = _touch ? 12 : 13;
+            float sw = _gothic.GetStringSize(spent, fontSize: spentSize).X;
+            DrawString(_gothic, new Vector2(rect.End.X - 10 - sw, baseline(spentSize, _gothic)), spent, fontSize: spentSize,
+                modulate: Ui.OffText);
         }
     }
 

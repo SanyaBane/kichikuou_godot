@@ -77,13 +77,13 @@ internal sealed partial record UiPalette
     }
 
     /// <summary>A command's tag: its colour framed in gold, or grey when the command is off.</summary>
-    public void DrawTag(CanvasItem c, Font font, Rect2 rect, string tag, Color colour, bool on, float k)
+    public void DrawTag(CanvasItem c, Font font, Rect2 rect, string tag, Color colour, bool on, float k, int size = 13)
     {
         c.DrawRect(rect, on ? colour : OffTag);
         if (on)
             c.DrawRect(rect, Gold, false, Parts.Line(1, k));
-        float tw = font.GetStringSize(tag, fontSize: 13).X;
-        c.DrawString(font, new Vector2(rect.GetCenter().X - tw / 2, Parts.Baseline(rect, font, 13)), tag, fontSize: 13, modulate: on ? Text : OffText);
+        float tw = font.GetStringSize(tag, fontSize: size).X;
+        c.DrawString(font, new Vector2(rect.GetCenter().X - tw / 2, Parts.Baseline(rect, font, size)), tag, fontSize: size, modulate: on ? Text : OffText);
     }
 
     /// <summary>

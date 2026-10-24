@@ -305,6 +305,17 @@ Search, Battle, Ninja), and Return. The mock-ups hold the player's CGs and stay 
   Snow Charm (item 11) is) ends it and is shown whole; her line about the unit after it starts it again. The refusals
   after the picker, the pre-scenes before the menu, the arrival and the resume question are shown as ever
   (`A_searchs_briefing_is_played_unseen`).
+- **Taller rows (owner, 2026-10-25).** On the PC the rows (29 px, text 16) are a little low; their text should grow
+  with them, and other looks are welcome. Mock-up round 1 (`tools/ui/mock_province_menu.py`, over the week-18 save's
+  dump, Leazas Castle (1)'s three commands and a sample of five with one spent): A0 today; A1 today's layout with
+  rows 38 px, text 19 (the panel 500 wide); A2 rows 44 px, text 21, the picture 252×168 (540 wide); B the province
+  left and its commands right (the touch mode's P1 at the PC's sizes, rows 40); C the picture as a banner with the
+  name on it, the figures in three cells, rows 42 px with a colour bar and the tag's word at the right; D today's
+  header with the commands as tiles, three to a row (86 px). The owner chose **A1**, built (`ProvinceMenuView`: the
+  panel 500 wide, the picture 234×156, rows 38 px at a 45 px pitch, text 19, the tag 74×26 with its word at 15,
+  Return 120×36 at 17, the figures 14/17; `UiPalette.DrawTag` takes the word's size); the touch mode's layout stays
+  as it is. The command panel's rows are to be as high (owner, 2026-10-25; "The command panel", below), and maybe the
+  dialogues' after both menus (docs/backlog.md).
 
 ## The command panel (owner, 2026-10-16)
 
