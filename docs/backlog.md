@@ -55,7 +55,9 @@ The owner aims at a public release (decision 28, 2026-10-20).
   Android's Back (button or gesture) is a right click at the last touch (`GameScreen.Touch.cs`,
   `quit_on_go_back=false`; the owner checked it on the tablet, 2026-10-24). The build starts full screen (bars
   hidden); Screen → Window shows the navigation bar with its Back, and the choice is kept for later launches
-  (`ScreenModeChoice`). Still to measure: the speed in
+  (`ScreenModeChoice`). The screen turns with the device in both landscapes (owner, 2026-10-24:
+  `display/window/handheld/orientation` sensor landscape, Android's `sensorLandscape`; not yet seen on the tablet).
+  Still to measure: the speed in
   play, and the hover a touch screen does not have. A long press on a battle card opens its menu (2026-10-24).
   The touch mode for phones and the tablet (owner, 2026-10-24): survey and mock-ups in
   [ui/touch.md](ui/touch.md) (the battle's rails, the map); the tablet's B2 and M3 are built (2026-10-24), the target
