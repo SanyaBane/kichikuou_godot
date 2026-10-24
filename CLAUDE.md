@@ -471,9 +471,11 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   (docs/backlog.md, "Android").
 - Run the game headless (smoke test): `<Godot console exe> --headless --path godot --quit-after 30`;
   `<Godot console exe>` is `KICHIKUOU_GODOT_EXE` in `local.env` (the editor's exe is next to it).
-  Commit the `*.uid` files Godot creates: a new script's `.uid` appears only at the next Godot run (any run: headless,
-  a window, `--options`), after its `.cs` was committed — so after every Godot run check `git status` for new `*.uid`
-  and commit them (with their script's change when it is still open, else in a commit of their own).
+  Commit the `*.uid` files Godot creates: a new script's `.uid` is not made by the smoke run above nor by unattended
+  play (2026-10-24: none appeared for `BoardStones.cs`); the import pass makes it at once —
+  `<Godot console exe> --headless --path godot --import` (run after its `.cs` was committed). So after adding a script
+  run the import pass, and after every Godot run check `git status` for new `*.uid`; commit them (with their script's
+  change when it is still open, else in a commit of their own).
 - Watch a capture headless and save the screen at every key wait and long pause:
   `<Godot console exe> --headless --path godot -- --watch <capture> --fast --quit --shots <dir>`.
 - **Our interface is the default** (owner, 2026-10-21: Option → Interface is gone, the player always has ours):
