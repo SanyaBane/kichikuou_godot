@@ -481,7 +481,8 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   `…/files/saves`, `GameData.AndroidSaveFolder`): `copy-saves-to-tablet.cmd` / `copy-saves-from-tablet.cmd` at the
   root, or `powershell -ExecutionPolicy Bypass -File tools/copy-saves.ps1 -ToDevice|-FromDevice [-Release] [-PcSaves <dir>]`
   — the PC's side the development runs' `user://saves` unless `-Release` or `-PcSaves`; the source's saves replace
-  the destination's, which go first into `%LOCALAPPDATA%\KichikuouGodot\save-backups`; adb in any USB mode.
+  the destination's, which move first into a backup on the destination, `save-backups/<time>` next to its saves
+  folder (never pruned); adb in any USB mode.
 - Run the game headless (smoke test): `<Godot console exe> --headless --path godot --quit-after 30`;
   `<Godot console exe>` is `KICHIKUOU_GODOT_EXE` in `local.env` (the editor's exe is next to it).
   Commit the `*.uid` files Godot creates: a new script's `.uid` is not made by the smoke run above nor by unattended
