@@ -142,6 +142,8 @@ public partial class GameScreen
             _subordinates.ShowResult(result);
             if (dumps)
                 await AutoDumpAsync("subordinates-done");
+            if (_options.Auto)
+                _subordinates.ShowResult(null);                 // the plate waits for a click: unattended play's
         }
         else if (scriptEvent is PickerScreenEvent { Kind: PickerKind.Subordinates, Open: true } && !OrderRunning && dumps && !_subordinatesDumped)
         {

@@ -212,7 +212,9 @@ the price.
   Do / Do It as before), No or a right click leaves it, and a question left open when the screen closes is a No. The
   plate (780×150 in the middle) lies on a layer over the ledger that takes the mouse while it shows: any click closes
   it, else it goes after 2.5 seconds. Since 2026-10-20 the plate is its own control, `OrderResultPlate`, which the
-  deployment screen's Replenish shows too (decision 27, docs/ui/deployment-table.md).
+  deployment screen's Replenish shows too (decision 27, docs/ui/deployment-table.md). Since 2026-10-24 (owner: gone by
+  itself, it could be missed) it waits for the click, with the click's triangle at its lower right corner, on both
+  screens; unattended play closes it after its dump.
 - Unattended play answers the question Yes (`GameScreen.AutoReplenishThroughScreen`) and in a window dumps it as
   `subordinates-question`, between `subordinates` and `subordinates-done` (the §4 command). Looked at from
   `saves-week18`: Haurein (unit 12)'s replenish, +1191 → 1400 for 2,300K. Add New Troops' question and plate R5 are

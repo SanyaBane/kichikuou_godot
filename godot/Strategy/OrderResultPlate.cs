@@ -7,16 +7,14 @@ namespace Kichikuou.Game.Strategy;
 /// <summary>
 /// The plate after a troop order (the owner's R4/R5, docs/ui/subordinates.md, §6), in the middle of the screen with the
 /// screen dimmed a little under it: the unit's face, the order's title, the unit and its troop type, the troops before
-/// and after with the men gained; right of a rule the cost and the budget left. Gone after a few seconds or at a click,
-/// which it takes. Our Subordinates screen and our deployment screen's Replenish (owner's decision 27) show it. Laid out
-/// in the 1280×800 screen's pixels, scaled with the picture.
+/// and after with the men gained; right of a rule the cost and the budget left, the click's triangle. It waits for a click,
+/// which closes it and which it takes (owner, 2026-10-24: gone by itself after a few seconds, it could be missed). Our
+/// Subordinates screen and our deployment screen's Replenish (owner's decision 27) show it. Laid out in the 1280×800
+/// screen's pixels, scaled with the picture.
 /// </summary>
 internal sealed partial class OrderResultPlate : Control
 {
     private static readonly Rect2 PlateArea = new(250, 315, 780, 150);
-
-    /// <summary>How long the plate stays (seconds), unless a click closes it first.</summary>
-    private const double Seconds = 2.5;
 
     private static readonly Color PlateFill = Color.Color8(22, 16, 12, 248);
     private static readonly Color PlateDim = new(0, 0, 0, 0.27f);
@@ -27,7 +25,6 @@ internal sealed partial class OrderResultPlate : Control
     private FontFile _gothic;
     private FaceCrops _crops = new();
     private SubordinateResult? _result;
-    private double _left;
     private float _k = 1;                               // window pixels to a screen pixel
     private int _faceCg = -1, _facePixels;
     private ImageTexture? _face;
@@ -69,11 +66,10 @@ internal sealed partial class OrderResultPlate : Control
         QueueRedraw();
     }
 
-    /// <summary>What an order did, on the plate for a few seconds (null takes it away).</summary>
+    /// <summary>What an order did, on the plate till a click (null takes it away).</summary>
     public void Show(SubordinateResult? result)
     {
         _result = result;
-        _left = result is null ? 0 : Seconds;
         Visible = result is not null;
         MouseFilter = result is null ? MouseFilterEnum.Ignore : MouseFilterEnum.Stop;
         QueueRedraw();
@@ -81,8 +77,8 @@ internal sealed partial class OrderResultPlate : Control
 
     public override void _Process(double delta)
     {
-        if (_result is not null && (_left -= delta) <= 0)
-            Show(null);
+        if (_result is not null)
+            QueueRedraw();                                  // the triangle moves
     }
 
     /// <summary>Any press closes it.</summary>
@@ -125,6 +121,7 @@ internal sealed partial class OrderResultPlate : Control
         RightString(r.CostLine, 18, Lacquer.Minus, right, cost);
         DrawString(_cinzel, new Vector2(budget.Position.X, Lacquer.Baseline(budget, _cinzel, 13)), "Budget", fontSize: 13, modulate: Lacquer.Label);
         RightString(r.BudgetLine, 18, Lacquer.Name, right, budget);
+        Lacquer.DrawTriangle(this, new Vector2(box.End.X - 24, box.End.Y - 20), _k);
     }
 
     private void RightString(string text, int size, Color colour, float right, Rect2 band)

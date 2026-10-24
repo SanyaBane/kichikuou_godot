@@ -56,8 +56,16 @@ public partial class GameScreen
             ? $"Kichikuou: the deployment screen's Replenish of unit {done.Unit} was not done."
             : $"Kichikuou: the deployment screen replenished {result.Name}: {result.TroopsLine} ({result.Gain}), cost {result.CostLine}, budget {result.BudgetLine}.");
         _refillPlate.Show(result);
-        if (result is not null && _options.Auto && DisplayServer.GetName() != "headless" && _options.ScreenshotDirectory is not null)
-            _ = AutoDumpAsync("deployment-refill-done");
+        if (_options.Auto)
+            AutoCloseRefillPlateAsync(result is not null);
+    }
+
+    /// <summary>Unattended play: the plate dumped in a window with screen dumps on (<c>deployment-refill-done</c>), then closed as by a click.</summary>
+    private async void AutoCloseRefillPlateAsync(bool done)
+    {
+        if (done && DisplayServer.GetName() != "headless" && _options.ScreenshotDirectory is not null)
+            await AutoDumpAsync("deployment-refill-done");
+        _refillPlate.Show(null);
     }
 
     /// <summary>

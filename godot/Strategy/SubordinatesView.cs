@@ -169,8 +169,8 @@ internal sealed partial class SubordinatesView : Control
     }
 
     /// <summary>
-    /// What an order did, on the plate in the middle for a few seconds (null takes it away); a click anywhere closes it
-    /// first, and the screen takes no other click while it shows.
+    /// What an order did, on the plate in the middle till a click anywhere closes it (null takes it away); the screen
+    /// takes no other click while it shows.
     /// </summary>
     public void ShowResult(SubordinateResult? result)
     {
