@@ -22,22 +22,27 @@ internal sealed partial class EnemyAttackView : Control
     /// <summary>The player's answer: <c>FIGT_B</c>'s menu code (1 Intercept, 2 Ninja Scout, 3 Abandon City) and, for 2, the ninja's.</summary>
     public readonly record struct Answer(int Code, int Ninja);
 
-    private static readonly Rect2 TitleBand = new(32, 24, 1216, 72);
-    private static readonly Rect2 ProvincePanel = new(32, 116, 472, 496);
-    private static readonly Rect2 ArmyPanel = new(600, 116, 648, 496);
+    // The owner's layout A (2026-10-24, tools/ui/mock_attack_layout.py): the title band, the two panels and the foot one
+    // block 20 apart, centred on the screen.
+    private const float PanelsHeight = 404, BlockGap = 20;
+    private const float TitleTop = (800 - (72 + BlockGap + PanelsHeight + BlockGap + 148)) / 2;
+    private const float PanelsTop = TitleTop + 72 + BlockGap, FootTop = PanelsTop + PanelsHeight + BlockGap;
+    private static readonly Rect2 TitleBand = new(32, TitleTop, 1216, 72);
+    private static readonly Rect2 ProvincePanel = new(32, PanelsTop, 472, PanelsHeight);
+    private static readonly Rect2 ArmyPanel = new(600, PanelsTop, 648, PanelsHeight);
 
     // The army's cards (mock-up E3): the deployment screen's size, a strip for the bracket left of them, the headers, the
     // cards and the totals (328 tall) centred in the panel under its heading.
     private static readonly Vector2 ArmyCardSize = new(252, 104);
     private const float ArmyStrip = 30, ArmyStripGap = 6, ArmyColumnGap = 6, ArmyRowGap = 8;
     private const float ArmyFrontX = 600 + (648 - (ArmyStrip + ArmyStripGap + 252 * 2 + ArmyColumnGap)) / 2 + ArmyStrip + ArmyStripGap;
-    private const float ArmyCardsTop = 150 + (446 - 328) / 2f + 24;
-    private static readonly Rect2 Foot = new(32, 632, 1216, 148);
-    private static readonly Rect2 PictureArea = new(54, 158, 428, 285);
-    private static readonly Rect2 AdvisorArea = new(50, 646, 122, 120);
-    private static readonly Rect2 InterceptButton = new(548, 660, 252, 92);
-    private static readonly Rect2 ScoutButton = new(822, 676, 190, 52);
-    private static readonly Rect2 AbandonButton = new(1030, 676, 196, 52);
+    private const float ArmyCardsTop = PanelsTop + 34 + (PanelsHeight - 50 - 328) / 2 + 24;
+    private static readonly Rect2 Foot = new(32, FootTop, 1216, 148);
+    private static readonly Rect2 PictureArea = new(32 + (472 - 300) / 2, PanelsTop + 42, 300, 200);
+    private static readonly Rect2 AdvisorArea = new(50, FootTop + 14, 122, 120);
+    private static readonly Rect2 InterceptButton = new(548, FootTop + 28, 252, 92);
+    private static readonly Rect2 ScoutButton = new(822, FootTop + 44, 190, 52);
+    private static readonly Rect2 AbandonButton = new(1030, FootTop + 44, 196, 52);
     private const float ListWidth = 260, ListRow = 50, ListGap = 6, ListPad = 12, ListHead = 26;
     private const float Dim = 0.66f;
 
@@ -318,7 +323,7 @@ internal sealed partial class EnemyAttackView : Control
         _sheet.DrawSetTransform(_origin, 0, new Vector2(_k, _k));
         DrawTitle(attack);
         DrawProvince(attack);
-        _sheet.DrawString(_brush, new Vector2(552 - _brush.GetStringSize("VS", fontSize: 34).X / 2, 376), "VS",
+        _sheet.DrawString(_brush, new Vector2(552 - _brush.GetStringSize("VS", fontSize: 34).X / 2, PanelsTop + PanelsHeight / 2 + 12), "VS",
             fontSize: 34, modulate: Lacquer.Gold);
         DrawArmy(attack);
         DrawFoot(attack);
@@ -331,14 +336,14 @@ internal sealed partial class EnemyAttackView : Control
     {
         Lacquer.DrawPanel(_sheet, TitleBand, _k);
         if (Picture(attack.FlagCg) is { } flag)
-            _sheet.DrawTextureRect(flag, new Rect2(54, 41, 48, 38), false);
-        _sheet.DrawString(_brush, new Vector2(116, 70), "Enemy Attack", fontSize: 28, modulate: Lacquer.Name);
+            _sheet.DrawTextureRect(flag, new Rect2(54, TitleTop + 17, 48, 38), false);
+        _sheet.DrawString(_brush, new Vector2(116, TitleTop + 46), "Enemy Attack", fontSize: 28, modulate: Lacquer.Name);
         float x = 116 + _brush.GetStringSize("Enemy Attack", fontSize: 28).X + 24;
-        _sheet.DrawString(_font!, new Vector2(x, 68), $"The {attack.Army} appeared around {attack.Province}.",
+        _sheet.DrawString(_font!, new Vector2(x, TitleTop + 44), $"The {attack.Army} appeared around {attack.Province}.",
             fontSize: 19, modulate: Lacquer.Text);
         string date = attack.Date.Replace(", ", " · ");
         float dw = _cinzel.GetStringSize(date, fontSize: 13).X;
-        _sheet.DrawString(_cinzel, new Vector2(1226 - dw, 66), date, fontSize: 13, modulate: Lacquer.Subtitle);
+        _sheet.DrawString(_cinzel, new Vector2(1226 - dw, TitleTop + 42), date, fontSize: 13, modulate: Lacquer.Subtitle);
     }
 
     private void Heading(float x, float y, string text, float right)
@@ -351,7 +356,7 @@ internal sealed partial class EnemyAttackView : Control
     private void DrawProvince(EnemyAttack attack)
     {
         Lacquer.DrawPanel(_sheet, ProvincePanel, _k);
-        Heading(54, 132, "DEFENDING · " + attack.Province.ToUpperInvariant(), 482);
+        Heading(54, PanelsTop + 16, "DEFENDING · " + attack.Province.ToUpperInvariant(), 482);
         if (Picture(attack.PictureCg) is { } picture)
             _sheet.DrawTextureRect(picture, PictureArea, false);
         _sheet.DrawRect(PictureArea, Lacquer.Gold, false, Lacquer.Line(1, _k));
@@ -364,7 +369,7 @@ internal sealed partial class EnemyAttackView : Control
         ];
         for (int i = 0; i < rows.Length; i++)
         {
-            float y = 456 + i * 36;
+            float y = PictureArea.End.Y + 12 + i * 36;
             _sheet.DrawString(_font!, new Vector2(54, y + 15), rows[i].Label, fontSize: 15, modulate: Lacquer.Label);
             float w = _cinzel.GetStringSize(rows[i].Value, fontSize: 17).X;
             _sheet.DrawString(_cinzel, new Vector2(482 - w, y + 16), rows[i].Value, fontSize: 17, modulate: Lacquer.Value);
@@ -381,7 +386,7 @@ internal sealed partial class EnemyAttackView : Control
     private void DrawArmy(EnemyAttack attack)
     {
         Lacquer.DrawPanel(_sheet, ArmyPanel, _k);
-        Heading(622, 132, "ATTACKING · " + attack.Army.ToUpperInvariant(), 1226);
+        Heading(622, PanelsTop + 16, "ATTACKING · " + attack.Army.ToUpperInvariant(), 1226);
         var report = attack.Report;
 
         var front = ArmyCard(1);
@@ -517,10 +522,10 @@ internal sealed partial class EnemyAttackView : Control
         if (Picture(EnemyAttack.AdvisorCg) is { } maris)
             _sheet.DrawTextureRectRegion(maris, AdvisorArea, new Rect2(0, 0, 192, 190));
         _sheet.DrawRect(AdvisorArea, Lacquer.DimGold, false, Lacquer.Line(1, _k));
-        _sheet.DrawString(_cinzel, new Vector2(188, 662), "MARIS", fontSize: 13, modulate: Lacquer.Subtitle);
+        _sheet.DrawString(_cinzel, new Vector2(188, FootTop + 30), "MARIS", fontSize: 13, modulate: Lacquer.Subtitle);
         var lines = attack.AdvisorSays;
         for (int i = 0; i < lines.Count && i < 4; i++)
-            _sheet.DrawString(_font!, new Vector2(188, 690 + i * 24), lines[i], HorizontalAlignment.Left, 340, 18,
+            _sheet.DrawString(_font!, new Vector2(188, FootTop + 58 + i * 24), lines[i], HorizontalAlignment.Left, 340, 18,
                 Lacquer.Text);
 
         bool Hovered(Spot spot) => _hover.Spot == spot && !_callout.MenuOpen;

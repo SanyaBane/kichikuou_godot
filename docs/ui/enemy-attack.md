@@ -159,3 +159,14 @@ mirrored, its head pointing at the "VS"; a place not scouted dashed with a "?" w
 empty place as our empty place; Commanders and Total troops under them, then whose report it is. The block is centred
 in the panel. The palette of Option → Display no longer colours this screen. Looked at in a window (`--scout`: the
 places unknown, then Kanami's report); an empty place not yet (the week-18 save's rebels come four).
+
+## 9. A more compact screen (owner, 2026-10-24)
+
+With the army as our cards (§8) its panel was mostly empty. The owner asked for smaller panels, the cards as they are,
+the army's panel and the province's (its picture) above all. Mock-up round L is `tools/ui/mock_attack_layout.py` (whole
+screens from the map dump and the scouted attack dump): **A** both panels 404 tall instead of 496, the province's
+picture 300×200 instead of 428×285, the title band, the panels and the foot one block 20 apart centred on the screen;
+**B** as A, the army's panel narrowed to its cards (600) and the province's widened (520), 380 tall; **C** the title
+band and the foot where they were, the shorter panels centred between them. **The owner chose A**, built the same day:
+`EnemyAttackView`'s rectangles hang off `TitleTop`, `PanelsTop` and `FootTop`; the ninjas' list and Abandon City's
+callout follow their buttons. Looked at in a window (`--scout`: the screen, the list, the report, the question).
