@@ -465,8 +465,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// <summary>
     /// Composes the screen and uploads it when it changed; nothing while a scene is skipped whole
     /// (<see cref="SkippingScene"/>); neither while our battle screen covers the view
-    /// (<see cref="BattleScreenShown"/>: it composes the screen for its windows' layer itself), the
-    /// change uploaded when the view shows again. Returns whether the screen changed.
+    /// (<see cref="BattleScreenShown"/>: it composes the screen for its windows' layer itself) or another of our
+    /// screens hides it (<see cref="ViewHidden"/>), the change uploaded when the view shows again. Returns whether
+    /// the screen changed.
     /// </summary>
     private bool Present()
     {
@@ -483,6 +484,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             bool covered = _presenter.TakeChange();                            // our battle screen covers the view: it composes for its windows,
             _viewStale |= covered;                                             // the view is uploaded when it shows again
             return covered;
+        }
+        if (ViewHidden)
+        {
+            _viewStale |= _presenter.TakeChange();                             // composed and uploaded when the view shows again
+            return false;
         }
         bool changed = _presenter.Compose();
         if (!changed && !_viewStale)
@@ -502,6 +508,13 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         return true;
     }
+
+    /// <summary>
+    /// Whether one of our screens that lie over the whole picture on an opaque backdrop shows (the deployment,
+    /// Subordinates, Harem and Treasure screens): the view under it is not seen, so the script's every redraw
+    /// under it (a hovered row's details: ~35 ms composed, ~5 ms uploaded) is not composed (owner, 2026-10-24).
+    /// </summary>
+    private bool ViewHidden => _table.Visible || _subordinates.Visible || _harem.Visible || _treasure.Visible;
 
     /// <summary>A line at the top of the screen for a few seconds (files the port skips).</summary>
     private void Notice(string text)

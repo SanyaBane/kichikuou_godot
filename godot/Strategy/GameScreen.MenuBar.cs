@@ -158,6 +158,7 @@ public partial class GameScreen
         string dir = ProjectSettings.GlobalizePath("user://screenshots");
         System.IO.Directory.CreateDirectory(dir);
         string path = System.IO.Path.Combine(dir, $"kichikuou-{DateTime.Now:yyyyMMdd-HHmmss}.png");
+        _viewStale |= _presenter.Compose();                                    // a change left for later under our screens
         var image = Image.CreateFromData(Surface.ScreenWidth * Surface.Scale, Surface.ScreenHeight * Surface.Scale,
             false, Image.Format.Rgba8, _presenter.Screen.ReadScreen());
         image.SavePng(path);
