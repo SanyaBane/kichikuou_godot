@@ -3,19 +3,21 @@ using Godot;
 namespace Kichikuou.Game.Strategy;
 
 /// <summary>
-/// The touch mode's round <b>Commands</b> button at the map's bottom right (owner's M3, 2026-10-24; docs/ui/touch.md,
-/// "The tablet"): shown with our name plates in <c>COMMAND</c>'s map wait, a tap on it is <see cref="Tapped"/> — the
+/// The touch mode's <b>Commands</b> button at the map's bottom right (owner's M3, 2026-10-24; docs/ui/touch.md, "The
+/// tablet"): shown with our name plates in <c>COMMAND</c>'s map wait, a tap on it is <see cref="Tapped"/> — the
 /// screen answers it with the right click that opens the command panel, which a touch screen has no button for. Its
 /// other events (the right click it causes, Back's) go on to the screen through <see cref="Forwarded"/>. While our
 /// command panel is open it reads <b>Close</b> (<see cref="Closes"/>; owner, 2026-10-24), and its tap closes the panel.
+/// Drawn in lacquer and gold as our panels (owner's A, 2026-10-24; "The map's and the battle's buttons, round 1"): the
+/// double gold frame and its studs, an icon, the brush face of Turn END.
 /// </summary>
 internal sealed partial class CommandsButton : Control
 {
-    // In the map's layout pixels (1280 across the picture): 190×84, 16 in from the picture's right and bottom edges.
-    private static readonly Vector2 ButtonSize = new(190, 84);
-    private const float Margin = 16, Text = 26, Border = 2;
+    // In the map's layout pixels (1280 across the picture): 220×72, 16 in from the picture's right and bottom edges.
+    private static readonly Vector2 ButtonSize = new(220, 72);
+    private const float Margin = 16, Text = 19, Icon = 24;
 
-    private DeploymentPalette _colours = DeploymentPalette.Chosen;
+    private readonly FontFile _brush = Lacquer.Brush();
     private float _scale = 1;
     private bool _down, _inside, _closes;
 
@@ -59,12 +61,6 @@ internal sealed partial class CommandsButton : Control
         QueueRedraw();
     }
 
-    public void SetPalette(DeploymentPalette palette)
-    {
-        _colours = palette;
-        QueueRedraw();
-    }
-
     public override void _GuiInput(InputEvent e)
     {
         if (e is not InputEventMouseButton { ButtonIndex: MouseButton.Left } button)
@@ -94,23 +90,28 @@ internal sealed partial class CommandsButton : Control
 
     public override void _Draw()
     {
-        float s = _scale;
-        var box = new StyleBoxFlat
+        float k = _scale;
+        DrawSetTransform(Vector2.Zero, 0, new Vector2(k, k));               // in layout pixels below
+        var box = new Rect2(Vector2.Zero, ButtonSize);
+        bool pressed = _down && _inside;
+        Lacquer.DrawPanel(this, box, k, pressed ? Lacquer.RowHover : null);
+        float cy = box.Size.Y / 2;
+        var icon = new Vector2(36, cy);
+        if (_closes)
         {
-            BgColor = _down && _inside ? _colours.ButtonPressed : _colours.Button,
-            BorderColor = _colours.ButtonBorder,
-            AntiAliasing = true,
-            ShadowColor = new Color(0, 0, 0, 0.35f),
-            ShadowSize = (int)Math.Round(6 * s),
-            ShadowOffset = new Vector2(2, 3) * s,
-        };
-        box.SetBorderWidthAll((int)Math.Max(1, Math.Round(Border * s)));
-        box.SetCornerRadiusAll((int)Math.Round(Size.Y / 2));
-        DrawStyleBox(box, new Rect2(Vector2.Zero, Size));
-        if (GetThemeDefaultFont() is not { } font)
-            return;
-        int size = (int)Math.Round(Text * s);
-        float baseline = (Size.Y + font.GetAscent(size) - font.GetDescent(size)) / 2;
-        DrawString(font, new Vector2(0, baseline), _closes ? "Close" : "Commands", HorizontalAlignment.Center, Size.X, size, _colours.ButtonText);
+            float h = Icon * 0.35f, w = Lacquer.Line(3.5f, k);
+            DrawLine(icon - new Vector2(h, h), icon + new Vector2(h, h), Lacquer.Gold, w, true);
+            DrawLine(icon + new Vector2(-h, h), icon + new Vector2(h, -h), Lacquer.Gold, w, true);
+        }
+        else
+        {
+            float bar = Icon * 0.13f;
+            for (int i = -1; i <= 1; i++)
+                DrawRect(new Rect2(icon.X - Icon / 2, icon.Y + i * Icon * 0.35f - bar / 2, Icon, bar), Lacquer.Gold);
+        }
+        var label = new Rect2(60, 0, box.Size.X - 70, box.Size.Y);
+        string text = _closes ? "Close" : "Commands";
+        DrawString(_brush, new Vector2(label.Position.X, Lacquer.Baseline(label, _brush, (int)Text)), text,
+            HorizontalAlignment.Center, label.Size.X, (int)Text, Lacquer.Name);
     }
 }

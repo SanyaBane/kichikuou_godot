@@ -354,20 +354,23 @@ internal sealed partial class BattleCommandLayer : Control
 
     /// <summary>
     /// The frame on the target's card <paramref name="card"/> (layout pixels): a bracket on each corner — its glow, the
-    /// cyan line, the white line inside it; <paramref name="alpha"/> fades it (the touch mode's target no attack reaches).
+    /// cyan line, the white line inside it; <paramref name="alpha"/> fades it (the touch mode's target no attack reaches),
+    /// <paramref name="line"/> and <paramref name="halo"/> recolour the line and its glow (the touch mode's gold).
     /// </summary>
-    private void DrawTargetFrame(Rect2 card, float alpha = 1, float outset = TargetOut, float glow = 1)
+    private void DrawTargetFrame(Rect2 card, float alpha = 1, float outset = TargetOut, float glow = 1, Color? line = null, Color? halo = null)
     {
         float s = _scale;
+        var colour = line ?? TargetColour;
+        var shine = halo ?? TargetColour;
         var outer = new Rect2(card.Position * s, card.Size * s).Grow(outset * s);
         float width = Math.Max(2, TargetWidth * s);
         foreach (var (hx, vy) in new[] { (1, 1), (-1, 1), (1, -1), (-1, -1) })
         {
             var corner = new Vector2(hx > 0 ? outer.Position.X : outer.End.X, vy > 0 ? outer.Position.Y : outer.End.Y);
             var middle = Bracket(corner, hx, vy, width / 2);
-            DrawPolyline(middle, TargetColour with { A = 0.15f * alpha * glow }, width + 2 * TargetGlow * s, antialiased: true);
-            DrawPolyline(middle, TargetColour with { A = 0.3f * alpha * glow }, width + TargetGlow * s, antialiased: true);
-            DrawPolyline(middle, TargetColour with { A = alpha }, width, antialiased: true);
+            DrawPolyline(middle, shine with { A = 0.15f * alpha * glow }, width + 2 * TargetGlow * s, antialiased: true);
+            DrawPolyline(middle, shine with { A = 0.3f * alpha * glow }, width + TargetGlow * s, antialiased: true);
+            DrawPolyline(middle, colour with { A = alpha }, width, antialiased: true);
             DrawPolyline(Bracket(corner, hx, vy, width), TargetInner with { A = TargetInner.A * alpha }, Math.Max(1, s), antialiased: true);
         }
     }

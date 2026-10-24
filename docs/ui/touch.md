@@ -375,6 +375,22 @@ are lacquer already), and the target in gold reads against the steel cards as we
 battle in its own steel; C is the most "mobile", but its labels are small and the rails hold fewer seals when a unit
 has items.
 
+**The owner's choice (2026-10-24): A, on the map and in the battle.** Built, in the touch mode only (PC's banners and
+cyan frame as before); the rules, the places and what each button does as before:
+
+- **The map's button** (`godot/Strategy/CommandsButton`): 220×72, 16 in from the picture's bottom right, a lacquer
+  panel (`Lacquer.DrawPanel`), three gold bars (Commands) or a gold cross (Close), the label in Shojumaru 19; pressed,
+  its lacquer lighter. No palette any more (Option → Display's palette was its steel).
+- **The rails** (`godot/Battles/BattleCommandLayer.Touch.cs`): each side a lacquer panel 4 in from the blurred side.
+  Left: the acting unit's name in Shojumaru 19, a dim rule, the commands as the command panel's row boxes 104×56 from
+  y 64 (`Lacquer.DrawRowBox`, held: lit), Retreat as Turn END (`Lacquer.DrawRedButton`, its name in the brush face).
+  Right: TARGET in Cinzel, the target's name in Shojumaru 17, a rule, the attacks lit gold 108×66 from y 80 with their
+  name in the brush face (held: brighter, a glow). Names shrink to fit their row; more rows than fit get lower as before.
+- **The target frame** (`DrawTouchTarget`): the brackets in gold with a warm glow and a gold diamond on the card's top
+  edge, faded where no attack reaches; it breathes on Android as before.
+- Looked at by the agent (2026-10-24) in a window with the battle look (`touch-commands`, `touch-close`, `touch-rails`,
+  `touch-target`); every unattended `--touch` check passes. Not yet on the tablet.
+
 ## Phones (put off)
 
 Put off by the owner (2026-10-24). What is ready for them: the measurements above, mock-ups B1, B3 (the battle),
