@@ -255,6 +255,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private WeekReportView _weekView = null!;           // our week report over the week start's windows (New)
     private MessageWindowView _messageView = null!;     // our message windows over WAO_SUB's (New)
     private SceneMenuView _sceneMenuView = null!;       // our ] menus over the selection box (New)
+    private FloorLadderView _ladderView = null!;        // our ladder over the dungeon's floor menu (New)
     private SaveLoadView _saveView = null!;             // our Save/Load screen over ﾛｰﾄﾞｾｰﾌﾞ's slot lists (New)
     private ISaveLibrary? _library;                     // the session's saves (decision 29), which our Save/Load screen reads
     private bool _keyWaiting;                           // the script waits for the player's key: our windows show the triangle
@@ -343,6 +344,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _content.AddChild(_messageView);
         _sceneMenuView = new SceneMenuView(GodotGlyphRenderer.Chosen);
         _content.AddChild(_sceneMenuView);                      // over the message windows: the menu asks below them
+        _ladderView = new FloorLadderView(GodotGlyphRenderer.Chosen);
+        _content.AddChild(_ladderView);
         _saveView = new SaveLoadView(GodotGlyphRenderer.Chosen, faces);
         _content.AddChild(_saveView);                           // over the message windows: they are not drawn under it
         ReadySubordinates(faces);
@@ -417,6 +420,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _commandView.Place(PictureArea());
         if (_sceneMenuView.Visible)
             _sceneMenuView.Place(PictureArea());
+        if (_ladderView.Visible)
+            _ladderView.Place(PictureArea());
         if (_provinceView.Visible)
             _provinceView.Place(PictureArea());
         if (_weekView.Visible)
@@ -836,7 +841,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.ScreenshotDirectory is not { } dir)
             return;
         System.IO.Directory.CreateDirectory(dir);
-        if ((_optionsView is not null || _table.Visible || _subordinates.Visible || _harem.Visible || _treasure.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _sceneMenuView.Visible || _saveView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown || _attackView.Visible) && DisplayServer.GetName() != "headless")
+        if ((_optionsView is not null || _table.Visible || _subordinates.Visible || _harem.Visible || _treasure.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _sceneMenuView.Visible || _ladderView.Visible || _saveView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown || _attackView.Visible) && DisplayServer.GetName() != "headless")
         {
             // Our deployment and battle screens are drawn by Godot over the screen: the window's next frame (headless
             // draws none). No Compose here: the frame's Present must find the change to upload it.
@@ -1597,6 +1602,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         var saveList = _presenter.SaveScreenOpen && _presenter.SaveLibraryList is { } shelf ? shelf.Save ? SaveList.Save : SaveList.Load : (SaveList?)null;
         var province = InterfaceChoice.New && saveList is null ? _presenter.ProvinceMenu : null;
         var command = InterfaceChoice.New && province is null && saveList is null ? _presenter.CommandMenu : null;
+        var ladder = InterfaceChoice.New && province is null && command is null && saveList is null ? _presenter.FloorLadder : null;
         if (saveList is { } shownList)
         {
             _presenter.SaveScreenCovered = true;                // our Save/Load screen (docs/ui/save-load.md, §5)
@@ -1615,9 +1621,16 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _commandView.Place(PictureArea());
             UpdateStatusStrip();
         }
+        else if (ladder is not null)
+        {
+            _presenter.SceneMenuCovered = true;                 // our ladder right of the picture (docs/ui/dungeon-menu.md)
+            _presenter.Invalidate();
+            _ladderView.Open(ladder);
+            _ladderView.Place(PictureArea());
+        }
         // Our ] menu at the selection box's place (docs/ui/messages.md, §5 step 3); a battle's menus stay the original's
         // with the battle's windows (step 5).
-        bool scene = province is null && command is null && saveList is null && InterfaceChoice.New && !BattleScreenShown
+        bool scene = province is null && command is null && ladder is null && saveList is null && InterfaceChoice.New && !BattleScreenShown
             && _presenter.Menu is not null && _presenter.MenuBoxArea is not null;
         // Over our Treasure screen the question's window is a callout at the clicked cell, its Yes/No inside it
         // (docs/ui/pickers.md, round W): opened with its buttons at once.
@@ -1653,6 +1666,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                     _commandDumped = true;
                     await AutoDumpAsync("command-menu");
                 }
+                if (ladder is not null && Windowed && _messageDumps.Add("floor-ladder"))
+                    await AutoDumpAsync("floor-ladder");
                 if (callout && Windowed && _messageDumps.Add("treasure-question"))
                     await AutoDumpAsync("treasure-question");
                 else if (scene && !callout && !_sceneMenuDumped && DisplayServer.GetName() != "headless" && _options.ScreenshotDirectory is not null)
@@ -1670,6 +1685,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             return Answered(saveList is not null ? await SaveAnswerAsync()
                 : province is not null ? await _provinceView.ChooseAsync()
                 : command is not null ? await CommandAnswerAsync()
+                : ladder is not null ? await _ladderView.ChooseAsync()
                 : callout ? await _treasureCallout.ChooseAsync()
                 : scene ? await _sceneMenuView.ChooseAsync()
                 : await MenuAsync());
@@ -1680,6 +1696,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _commandView.Close();
             _saveView.Release();                                // drawn on until the next list or the screen's end
             _sceneMenuView.Close();
+            _ladderView.Close();
             _treasureCallout.CloseMenu();
             _presenter.CloseMenu();
         }

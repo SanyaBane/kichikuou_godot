@@ -312,6 +312,7 @@ public partial class GameScreen
         _strategyView.SetFont(font);
         _messageView.SetFont(font);
         _sceneMenuView.SetFont(font);
+        _ladderView.SetFont(font);
         _presenter.Invalidate();
     }
 

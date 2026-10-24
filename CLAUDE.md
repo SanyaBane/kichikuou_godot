@@ -224,6 +224,11 @@ sides, the target preselected per unit) and M3 (a round Commands button on the m
 `Original.Content/Battles/TouchTargets`, `godot/Strategy/CommandsButton`); the target frame breathes on Android only
 (the owner's A); the command panel and the province menu stand in two columns with rows a finger high (the owner's C2
 and P1, docs/ui/touch.md, "The command panel and the province menu").
+Then (owner, 2026-10-25) the dungeon's floor menu, whose rows move between floors (Ascend / Descend / Retreat as offered):
+the survey and mock-up rounds 1-2 (1 three fixed rows, the missing one dimmed; 3 a ladder right of the picture, in round 2
+with the missing way hidden) are
+docs/ui/dungeon-menu.md (`tools/ui/mock_dungeon_menu.py`); the owner chose round 2's ladder, built
+(`Original.Content/Strategy/FloorLadder`, `godot/Strategy/FloorLadderView`; its §4).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -365,7 +370,9 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   the triangle while the player's key is awaited, a menu over it shown on top; our interface, docs/ui/messages.md:
   `Original.Content/Strategy/MessageWindow` from `GamePresenter.MessageWindow` while `CoverMessages`, in a battle `BattlePresenter.MessageWindow`);
   `Strategy/SceneMenuView` (our `]` menus: lacquer rows at the selection box's place, `GamePresenter.MenuBoxArea`, while
-  `SceneMenuCovered`; not over our battle screen; docs/ui/messages.md, §5 step 3);
+  `SceneMenuCovered`; not over our battle screen; docs/ui/messages.md, §5 step 3); `Strategy/FloorLadderView` (the dungeon's
+  floor menu as a ladder right of its picture, a way not offered left out: `Original.Content/Strategy/FloorLadder`,
+  docs/ui/dungeon-menu.md);
   `Strategy/SaveLoadView` (our Save/Load screen over `ﾛｰﾄﾞｾｰﾌﾞ`'s lists on the save library, in either interface, the
   owner's layout G, docs/ui/save-load.md, §9 (decision 29): a switch between the manual saves — newest first, no order to
   choose (the owner, 2026-10-21; `SaveSlots.NewestFirst`), the number on the seal, scrolling, the comment a row's

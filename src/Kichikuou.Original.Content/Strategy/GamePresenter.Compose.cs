@@ -282,6 +282,12 @@ public sealed partial class GamePresenter
             ? Strategy.ProvinceMenu.For(s, items, texts, ReadFixedText)
             : null;
 
+    /// <summary>The open menu as the dungeon's floor menu (<see cref="Strategy.FloorLadder"/>), or null.</summary>
+    public FloorLadder? FloorLadder =>
+        _menuItems is { } items && MenuItems is { } texts && State is { } s && !BattleShows
+            ? Strategy.FloorLadder.For(s, items, texts)
+            : null;
+
     /// <summary>The open menu as <c>COMMAND.ADV</c>'s command menu (<see cref="Strategy.CommandMenu"/>), or null.</summary>
     public CommandMenu? CommandMenu =>
         _menuItems is { } items && MenuItems is { } texts && State is not null && !BattleShows

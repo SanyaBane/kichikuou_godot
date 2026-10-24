@@ -55,7 +55,7 @@ public partial class GameScreen
         bool scene = !battle && _presenter.Menu is null
             && (_keyWaiting || _messageView.Window is not null || _presenter.MessageWindowShown || _skip.Activated);
         bool show = TouchMode.On && _presenter.State is not null && !_modal && !ViewHidden && !EnemyAttackShown
-            && !_commandView.Visible && !_provinceView.Visible && !_saveView.Visible && !_sceneMenuView.Visible
+            && !_commandView.Visible && !_provinceView.Visible && !_saveView.Visible && !_sceneMenuView.Visible && !_ladderView.Visible
             && (battle || scene);
         _skipButton.Visible = show && battle;
         _drawer.Visible = show && !battle;
