@@ -1128,6 +1128,40 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// The scenes <c>死亡捕獲</c> calls (<c>Battle.Flow.DeathCapture.cs</c>) — <c>Gｸﾘｰﾑ</c> 1's death, all narration, and
+    /// <c>Gﾒﾙﾌｪｲｽ</c> 1's, speeches and a question — log the same pages inside the battle's screen as they do as scenes of
+    /// their own: their dialogue is a scene's, off the field. Skipped without the player's files.
+    /// </summary>
+    [ScenarioTheory]
+    [InlineData("Gｸﾘｰﾑ.ADV")]
+    [InlineData("Gﾒﾙﾌｪｲｽ.ADV")]
+    public async Task A_scene_the_battle_called_is_logged_as_any_scene(string file)
+    {
+        async Task<IReadOnlyList<LogPage>> LoggedAsync(bool inBattle)
+        {
+            var run = await RunAsync(stopAtWeek: 0);
+            int waits = 0;
+            run.Player.OnShow = e => waits += e is WindowEvent { Op.Value: 1 or 5 or 11 } && run.Session.State.Ui_WinType != 0 ? 1 : 0;
+            int before = run.Presenter.Log.Pages.Count;
+            if (inBattle)
+                await run.Session.Script.ShowAsync(new BattleScreenEvent("死亡捕獲.ADV", true));
+            await run.Session.Script.EventAsync(file, 1);
+            var pages = run.Presenter.Log.Pages.Skip(before).ToList();
+            output.WriteLine($"{(inBattle ? "inside 死亡捕獲" : "as a scene")}: {waits} key waits of a window, {pages.Count} pages logged");
+            foreach (var page in pages.Where(p => p.Kind != LogKind.Narration).Take(3))
+                output.WriteLine($"  {page.Kind} {page.Speaker}: {page.Lines[0]}");
+            return pages;
+        }
+
+        var scene = await LoggedAsync(inBattle: false);
+        var battle = await LoggedAsync(inBattle: true);
+
+        Assert.NotEmpty(scene);
+        Assert.Equal(scene.Select(p => (p.Kind, p.Speaker, string.Join("\n", p.Lines))),
+            battle.Select(p => (p.Kind, p.Speaker, string.Join("\n", p.Lines))));
+    }
+
+    /// <summary>
     /// <c>Gﾒﾙﾌｪｲｽ</c> 1, which <c>死亡捕獲</c> calls when Melfeis (commander 4) falls, asks its question
     /// (<c>Gﾒﾙﾌｪｲｽ.ADV:2430-2440</c>) inside the battle's screen: the menu is drawn over it (it was
     /// left out in a battle, an invisible menu the player could still click) and is a window of our

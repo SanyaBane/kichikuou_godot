@@ -343,7 +343,7 @@ as it is. Where to start:
    without the blank lines).
    **Built (2026-10-19):** `Original.Content/Strategy/MessageLog` (the pages `LogPage`: speech, thought, narration, a place,
    a choice; `PageOf` a window at its key wait; `Lines` the ruled lines of L3a; the last 500 pages) filled by
-   `GamePresenter.Log` at every key wait of a window outside a battle (ops 1/5/11, either interface, the message skip's
+   `GamePresenter.Log` at every key wait of a window (ops 1/5/11, either interface, the message skip's
    included) and by `MenuAnswered` for a dialogue's question. The speaker of 111/112 is the left portrait's, of 121/122
    the right one's, named by `PortraitNames` — the plate's text of the 244 portraits that have one (read from the plates,
    2026-10-19; a two-line plate by its first line, `LIA`, but where the lines are one title: `CITY AUTHORITY`, `FREE CITY
@@ -372,6 +372,17 @@ as it is. Where to start:
    its way (Rance's "Replenish the troops.", Maris's "Understood.", Rance's thought before a talk), which `GameScreen`
    answers unseen (`GamePresenter.AnswersUnseen` while the `SubordinateOrder` runs; the talk scene itself is logged).
    The menus answered unseen never reach `MenuAnswered`.
+   **The owner (2026-10-25, a bug found on the tablet):** the windows a battle file opens off the field are logged by the
+   same rules. The log had missed every page while `FIGT_A`/`FIGT_B`/`FIGT`/`死亡捕獲` ran — their events go to the
+   battle's presenter, so the captures and deaths and the scenes `死亡捕獲` calls (`Gｸﾘｰﾑ`, `Gﾒﾙﾌｪｲｽ`, Kayblis's
+   `Gｹｲﾌﾞﾘｽ` → `Iｼﾚｲﾌﾞ`) and Rance's lines before `FIGT_B`'s battle never reached it. Now `GamePresenter.LogBattleWindow`
+   logs `BattlePresenter.MessageWindow` at its key waits (not the bubbles, the info boxes 141-153, the order messages, the
+   scout's and the strategy's windows, which it never gives); the window's file is noted as outside a battle, so `FIGT*`'s
+   narration ("[ Defeat ]", "Ys was successfully defended.") stays out; in a battle a menu is logged only when it is an
+   event scene's (`FIGT_B`'s Intercept / Ninja Scout / Abandon City after Rance's lines is the play's). The battle's
+   writer now takes a scene's `ZM` (a place's title at 32 there too; the battle's own sizes are its port's). Test:
+   `GamePresenterTests.A_scene_the_battle_called_is_logged_as_any_scene` (`Gｸﾘｰﾑ` 1 and `Gﾒﾙﾌｪｲｽ` 1 log the same pages
+   inside `死亡捕獲`'s screen as on their own).
 
 ## 6. Open questions
 

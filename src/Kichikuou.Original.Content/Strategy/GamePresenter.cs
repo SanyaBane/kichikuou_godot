@@ -305,7 +305,10 @@ public sealed partial class GamePresenter : IStageObserver
             if (scriptEvent is PickerScreenEvent { Open: true } picker)
                 PickerScreen(picker);
             else if (scriptEvent is not ScreenEvent)
+            {
                 Battle.Show(scriptEvent);
+                LogBattleWindow(scriptEvent);
+            }
             // The scenes a battle file calls (死亡捕獲's deaths, Gｼｨﾙ 28 …) draw on the same surface:
             // their G, fades and copies run on the stage after the battle's drawing they follow.
             if (scriptEvent is EngineEvent engine)
@@ -403,6 +406,7 @@ public sealed partial class GamePresenter : IStageObserver
                 _window.Clear();
                 _afterKey = null;
                 MapWaiting = false;
+                _windowFile = null;                                     // the message log's: the battle's windows are its own
             }
             return;
         }
@@ -412,6 +416,7 @@ public sealed partial class GamePresenter : IStageObserver
             Scene.Stop();
             _tiles = Tiles.Dirty;
             _target = TextTarget.Window;
+            _windowFile = null;
         }
     }
 
@@ -563,7 +568,7 @@ public sealed partial class GamePresenter : IStageObserver
     // ------------------------------------------------------------------ the message log
 
     /// <summary>
-    /// The message log (docs/ui/messages.md, §5 step 6): the pages of the windows' key waits (not a battle's; the play's
+    /// The message log (docs/ui/messages.md, §5 step 6): the pages of the windows' key waits (a battle's off the field only; the play's
     /// narration left out, <see cref="MessageLog.Keeps"/>) and the answers of the dialogues' questions. The UI may hand in one kept for the launch.
     /// </summary>
     public MessageLog Log { get; set; } = new();
@@ -605,13 +610,46 @@ public sealed partial class GamePresenter : IStageObserver
     /// </summary>
     private void LogPage()
     {
-        if (BattleShows || Briefing || AnswersUnseen() || State is not { } s
+        if (BattleShows || State is not { } s
             || Strategy.MessageWindow.Of(s.Ui_WinFrameCg.Value, _window, Stage.Color, _speech) is not { } window
+            || LogWindow(window) is not { } page)
+            return;
+        _speechOpen = page.Kind is LogKind.Speech or LogKind.Thought;
+    }
+
+    /// <summary><paramref name="window"/>'s page into the log at its key wait, when it belongs there; the page logged, else null.</summary>
+    private LogPage? LogWindow(MessageWindow window)
+    {
+        if (Briefing || AnswersUnseen() || State is not { } s
             || MessageLog.PageOf(window, s.Ui_PortraitL.Value, s.Ui_PortraitR.Value, PortraitName) is not { } page
             || !MessageLog.Keeps(page, _windowFile))
-            return;
+            return null;
         Log.Add(page);
-        _speechOpen = page.Kind is LogKind.Speech or LogKind.Thought;
+        return page;
+    }
+
+    /// <summary>
+    /// A battle's event for the log: the windows a battle file opens off the field — the captures and deaths of
+    /// <c>死亡捕獲</c> and the scenes it calls, Rance's lines before <c>FIGT_B</c>'s battle, the results over the map —
+    /// logged at their key waits by the same rules as any window (<see cref="Battles.BattlePresenter.MessageWindow"/>:
+    /// not the bubbles, the info boxes, the order messages, the scout's and the strategy's windows). A speech logged here
+    /// leaves <see cref="_speechOpen"/> alone: the battle's own menus after one are the play's.
+    /// </summary>
+    private void LogBattleWindow(ScriptEvent scriptEvent)
+    {
+        switch (scriptEvent)
+        {
+            case WindowEvent { Op.Value: (>= 111 and <= 153) or 0 or 10 }:
+                _windowFile = null;                                     // a new window, or none
+                break;
+            case WindowEvent { Op.Value: 1 or 5 or 11 }:
+                if (State?.Ui_WinType != 0 && Battle.MessageWindow is { } window)
+                    LogWindow(window);
+                break;
+            case MessageEvent e: _windowFile ??= e.Text.File; break;
+            case ValueMessageEvent e: _windowFile ??= e.Text.File; break;
+            case PortTextEvent { At: { } at }: _windowFile ??= at.File; break;
+        }
     }
 
     /// <summary>The open menu answered with item <paramref name="answer"/> (from 1; 0 cancelled): logged when it is a dialogue's question.</summary>

@@ -218,7 +218,8 @@ public sealed partial class GamePresenter
         SetLeadIn(false);                                               // the UI covers a city's first menu again
         Menu = MenuView.FromTexts(items.Select(item => string.Concat(item.Texts.Select(Read)).Replace("\n", "")),
             _engine.SelectionWindow);
-        _menuAsks = !BattleShows && items.Count > 0 && (_speechOpen || MessageLog.IsEventScene(items[0].At.File));
+        // in a battle an event scene's question only (Gﾒﾙﾌｪｲｽ's); FIGT_B's menu after Rance's lines is the play's
+        _menuAsks = items.Count > 0 && (MessageLog.IsEventScene(items[0].At.File) || !BattleShows && _speechOpen);
         Invalidate();
     }
 

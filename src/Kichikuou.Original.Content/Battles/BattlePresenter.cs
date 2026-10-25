@@ -258,6 +258,8 @@ public sealed partial class BattlePresenter
                 PicturesCovered();
                 break;
             case PauseEvent: MapPause(); break;
+            // a scene's text size (a place's title at ZM 32, Gﾒﾙﾌｪｲｽ.ADV); the battle's own sizes are its port's
+            case EngineEvent { Command: "ZM", Args: [var size, ..] }: Writer.Size = size.Value; break;
             case SoundEvent e when !ReturnsToAttack: IBattleAudio.PcmPlay(_audio, e); break;   // not the blink's after Back
             case MusicEvent e: _audio?.PlayMusic(e.Track.Value); break;
         }
