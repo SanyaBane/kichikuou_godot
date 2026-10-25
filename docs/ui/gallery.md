@@ -204,8 +204,10 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
    unscouted), `province-menu-own` (Leazas Castle (1): Levy, Bolster, Dungeon — the save's castle has no building yet, so
    not the five items touch.md asks about), `floor-ladder`, `-middle`, `-last` (the Monsters' Cave (dungeon 2) on
    floors 1, 7 and 14, its picture 1032 in `WAO_SUB` 331 on black, `EC 0`, and window 113 under it with the gallery's
-   own header lines, as the game shows the floor menu (2026-10-26); `GalleryStates.DungeonFloor`). Not yet looked at by
-   the owner.
+   own header lines, as the game shows the floor menu (2026-10-26); `GalleryStates.DungeonFloor`), and `dungeon-entry`
+   (owner, 2026-10-26: the dungeon's menu before a search, `Cﾒｲｷｭｳ.ADV:238-305` — the picture over the map, window 113
+   with "[Monsters' Cave]" and "(Unsearched)", our `]` menu with Start Search and Return at the boot's selection box).
+   Not yet looked at by the owner.
    **Then the scenes' screens** (`GalleryEntries.Scenes.cs`): `week-report` — the presenter gathers it from a Leazas
    week's start fed as `MAIN.ADV:96-212` prints it (`GalleryStates.LeazasWeekStart`: the banner, the save's date, the
    revenue and troops, a donation, the window closed, `Gold` moved as the file moves it); the figures are made up (the

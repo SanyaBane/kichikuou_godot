@@ -69,6 +69,9 @@ internal static partial class GalleryEntries
         yield return new("floor-ladder-last", Map, "Floor ladder: the last floor", Week18,
             "The Monsters' Cave (dungeon 2) on floor 14, its last: no Descend.",
             g => Ladder(g, 14));
+        yield return new("dungeon-entry", Map, "Dungeon: the search's menu", Week18,
+            "The Monsters' Cave (dungeon 2), unsearched: Start Search and Return (Cﾒｲｷｭｳ.ADV:238-305) over its picture.",
+            DungeonEntry);
     }
 
     /// <summary>Our plates over the map, as <c>COMMAND</c>'s map wait shows them, <paramref name="hover"/>'s province hovered.</summary>
@@ -191,6 +194,48 @@ internal static partial class GalleryEntries
             GalleryStage.Fill(backdrop, area);
             view.Place(area);
         };
+    }
+
+    /// <summary>
+    /// The dungeon's own menu before a search (<c>Cﾒｲｷｭｳ.ADV:238-305</c>, <c>L_0076a</c>): the picture (<c>WAO_SUB</c> 331)
+    /// over the map, window 113 with the dungeon's name and state, our <c>]</c> menu at the boot's selection box — Start
+    /// Search and Return, as an unsearched dungeon without Merim offers them.
+    /// </summary>
+    private static Action<Rect2>? DungeonEntry(GalleryStage g)
+    {
+        if (g.State(Week18) is not { } s)
+            return null;
+        GalleryStates.DungeonFloor(s, GalleryStates.Cave, 1);
+        var backdrop = g.Backdrop(s, new WindowEvent(331, s.CallArg));
+        var p = g.Bound(s);
+        p.Show(GalleryStates.SelectionWindow);
+        p.OpenMenu([Item(267), Item(295)]);
+        MenuView menu;
+        (int X, int Y, int W, int H) box;
+        try
+        {
+            menu = p.Menu ?? throw new InvalidOperationException("No menu.");
+            box = p.MenuBoxArea ?? throw new InvalidOperationException("No selection box.");
+        }
+        finally
+        {
+            p.CloseMenu();
+        }
+        var window = g.Add(new MessageWindowView(g.Font) { Docks = TouchMode.On });
+        window.Show(MessageWindow.SampleOf(MessageKind.Narration, ["[Monsters' Cave]", "", "(Unsearched)"]), false, null, null);
+        window.Complete();
+        var view = g.Add(new SceneMenuView(g.Font));
+        view.Open(menu, box);
+        return area =>
+        {
+            GalleryStage.Fill(backdrop, area);
+            window.Place(area);
+            view.Place(area);
+        };
+
+        // A menu item of the dungeon's file registered at `line`, its text on the next line (CommandFile.MenuItemOf).
+        static SceneMenuItem Item(int line) =>
+            new(new ScriptRef("Cﾒｲｷｭｳ.ADV", line), [new CapturedText(new ScriptRef("Cﾒｲｷｭｳ.ADV", line + 1), [], [])]);
     }
 
     /// <summary>
