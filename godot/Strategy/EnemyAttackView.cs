@@ -63,7 +63,7 @@ internal sealed partial class EnemyAttackView : Control
     private readonly TreasureCallout _callout;
     private readonly Control _sheet;
     private readonly FontFile _brush = Lacquer.Brush();
-    private readonly FontVariation _cinzel = Lacquer.Cinzel(600);
+    private readonly FontVariation _cinzel = Lacquer.Cinzel(600), _cinzelBold = Lacquer.Cinzel(700);
     private Font? _font;
     private FaceCrops _crops = new();
     private EnemyAttack? _attack;
@@ -344,8 +344,8 @@ internal sealed partial class EnemyAttackView : Control
         _sheet.DrawString(_font!, new Vector2(x, TitleTop + 44), $"The {attack.Army} appeared around {attack.Province}.",
             fontSize: 19, modulate: Ui.Text);
         string date = attack.Date.Replace(", ", " · ");
-        float dw = _cinzel.GetStringSize(date, fontSize: 13).X;
-        _sheet.DrawString(_cinzel, new Vector2(1226 - dw, TitleTop + 42), date, fontSize: 13, modulate: Ui.Subtitle);
+        float dw = _cinzelBold.GetStringSize(date, fontSize: 15).X;           // as the other screens' title bands have it
+        _sheet.DrawString(_cinzelBold, new Vector2(1226 - dw, TitleTop + 42), date, fontSize: 15, modulate: Ui.Name);
     }
 
     private void Heading(float x, float y, string text, float right)
