@@ -444,7 +444,9 @@ unchanged):
   Turn END and last, so Cease Retreat is nearer the rail.
 - **The battle's Skip** (`SkipButtons.Battle`) right of the left rail, (146, 762).
 - Looked at by the agent (2026-10-25) in the screen gallery's touch pass (`battle-turn`, `retreat`, `menu`,
-  `exchange-counters`, the info boxes). Not yet on the tablet.
+  `exchange-counters`, the info boxes), and in the unattended `--touch` battle look ("The tablet (now)"): its taps on
+  the rails, another target and Melee pass to round 2, a party of four fits (`touch-rails`, `touch-target`). The retreat
+  question is not answered by that run (the gallery's `retreat` only). Not yet on the tablet.
 
 ## Phones (put off)
 
