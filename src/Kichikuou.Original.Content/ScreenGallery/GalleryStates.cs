@@ -36,23 +36,6 @@ public static class GalleryStates
         new("message-cg-bar-narration", MessageKind.CgBar, ["The night passed quietly in the castle."]),
     ];
 
-    /// <summary>
-    /// The week's commands open, as <c>COMMAND.ADV:38-46</c> opens them before the map (<c>CommandPhase</c>): a kept save is
-    /// the turn's start, before COMMAND, so it still holds last week's uses.
-    /// </summary>
-    public static void WeekCommandsOpen(GameState s)
-    {
-        s.Ui_CmdHaremAvail = 1;
-        s.Ui_CmdSubordAvail = 1;
-        s.Ui_CmdOwnCityAvail = 1;
-        s.Ui_CmdBuildAvail = 1;
-        s.Ui_CmdAttackAvail = 1;
-        s.Ui_CmdMerchantAvail = 1;
-        s.Ui_CmdDungeonAvail = 1;
-        s.CmdAvail_SubTroops = 1;
-        s.CmdAvail_SubTalk = 1;
-    }
-
     /// <summary>The Treasure screen's view (<c>Ui_ItemViewMode</c>): 0 the characters, 1 the items, nothing picked.</summary>
     public static void TreasureView(GameState s, int view)
     {

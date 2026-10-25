@@ -130,6 +130,13 @@ public sealed record GameOptions
     /// </summary>
     public bool AutoDungeon { get; init; }
 
+    /// <summary>
+    /// Development (docs/ui/gallery.md, §2): at the first map wait in <c>COMMAND</c> the game is saved into this folder's
+    /// <c>slot01.ksav</c> as a manual save there saves it (owner's decision 26: the game as it is now, resuming in
+    /// <c>COMMAND</c>), then the launch ends — the screen gallery's kept save of a week's commands.
+    /// </summary>
+    public string? SaveCommandTo { get; init; }
+
     /// <summary>Development: unattended play stops after the first deployment picker or the first battle (a look at one screen).</summary>
     public AutoUntil AutoUntil { get; init; }
 
@@ -722,6 +729,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _skip.OnMessage(values.Text);
         if (scriptEvent is MapScreenEvent map)
             _mapCamera.OnMapWait(map.Waiting);
+        if (scriptEvent is MapScreenEvent { Waiting: true } && _options.SaveCommandTo is { } saveTo && SaveCommand(saveTo))
+            return;
         if (scriptEvent is MapScreenEvent { Waiting: true })
         {
             _autoMapWait = true;
@@ -1381,6 +1390,26 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _messageView.Complete();                    // the message skip and unattended play do not wait for the typing
         _messageView.Place(PictureArea());
         _messageView.Fade(_presenter.FadeAmount);
+    }
+
+    /// <summary>
+    /// <see cref="GameOptions.SaveCommandTo"/>: in <c>COMMAND</c> (<see cref="ScriptContext.SaveHere"/> set), the game saved as
+    /// <c>LoadSaveScreen</c>'s manual save there saves it — the week in <c>Tmp0021</c>, resuming at <c>SaveHere</c> — into
+    /// the folder's slot 1, then the launch ends. False outside <c>COMMAND</c>.
+    /// </summary>
+    private bool SaveCommand(string folder)
+    {
+        if (_script?.SaveHere is not { } here || _presenter.State is not { } s)
+            return false;
+        s.Tmp0021 = s.Week;
+        var data = SaveData.Capture(s, here).Commented("COMMAND (--save-command)");
+        string path = ProjectSettings.GlobalizePath(folder);
+        System.IO.Directory.CreateDirectory(path);
+        bool written = new DirectorySaveStore(path).Write(1, data);
+        GD.Print($"Kichikuou: --save-command {(written ? "saved" : "could not save")} week {s.Week.Value} "
+            + $"(gold {s.Gold.Value}) in COMMAND into {path}.");
+        _tree.Quit(written ? 0 : 1);
+        return true;
     }
 
     /// <summary>Whether unattended play can dump our screens: in a window, with a folder for the shots.</summary>

@@ -271,7 +271,7 @@ Other:
 - **The gallery of our screens** — *owner* (2026-10-25): a development mode showing each screen of ours on its own
   from the kept saves, dumped in seconds into a folder outside the repository with an index marking what changed;
   surveyed and planned in [ui/gallery.md](ui/gallery.md); step 1 built (2026-10-25: the frame, the dump and diff,
-  Treasure, Harem, Subordinates, the message windows), steps 2-5 open, three questions for the owner in §8.
+  Treasure, Harem, Subordinates, the message windows), steps 2-5 open, two questions for the owner in §8 (built with a default meanwhile).
 - **Old absolute paths in the git history** — *owner*: rewriting the history is destructive, only on
   the owner's explicit request (decision 22).
 - **README** — *owner*: About and Credits only so far (2026-10-11); installing, building and playing

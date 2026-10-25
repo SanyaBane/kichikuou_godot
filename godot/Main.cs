@@ -181,6 +181,7 @@ public partial class Main : Control
                 AutoSaveLoad = args.Contains("--saveload"),
                 AutoRefill = args.Contains("--refill"),
                 AutoDungeon = args.Contains("--dungeon"),
+                SaveCommandTo = Value("--save-command"),
             });
         }
         if (args.Contains("--screen-gallery"))

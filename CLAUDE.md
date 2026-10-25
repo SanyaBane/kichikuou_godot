@@ -604,7 +604,10 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   entry into `KICHIKUOU_UI_GALLERY_DIR` (outside the repository) in a window, ~10 s a pass, nothing moves the pointer,
   and writes its `index.html` with what changed since the last dump first; the game alone:
   `<Godot console exe> --path godot -- --screen-gallery [id,…] --shots <dir> [--previous <dir>] --quit`. After a change
-  to a screen in it, run it and look at what changed; a screen's look starts there before a kept save's run.
+  to a screen in it, run it and look at what changed; a screen's look starts there before a kept save's run. Its
+  state comes from `user://saves-week18-command`, the week-18 save saved in `COMMAND` by `--save-command DIR` (any
+  `--load --auto` run: at the first map wait in `COMMAND` it saves as a manual save there and quits; the command is in
+  docs/ui/gallery.md, §2) — made again with the kept save it comes from.
 
 ## Rules
 

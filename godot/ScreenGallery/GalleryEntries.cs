@@ -18,8 +18,11 @@ internal sealed record GalleryEntry(string Id, string Section, string Title, str
 /// <summary>The screen gallery's entries (docs/ui/gallery.md, step 1: Treasure, Harem, Subordinates, the message windows).</summary>
 internal static class GalleryEntries
 {
-    /// <summary>The owner's game at week 18, the kept save the looks start from (CLAUDE.md, "Commands").</summary>
-    public const string Week18 = "saves-week18";
+    /// <summary>
+    /// The owner's game at week 18 in <c>COMMAND</c>: the kept save <c>saves-week18</c> played through the week's start and
+    /// saved on the map (<c>--save-command</c>, docs/ui/gallery.md, §2), so the screens show the week's figures and uses.
+    /// </summary>
+    public const string Week18 = "saves-week18-command";
 
     public static IReadOnlyList<GalleryEntry> All() =>
     [
@@ -139,7 +142,12 @@ internal static class GalleryEntries
             g => SubordinatesScreen(g, (s, view) => view.Press(SubordinateOrderKind.Replenish, Neediest(s))));
         yield return new("subordinates-result", "Screens", "Subordinates: Replenish's plate", Week18,
             "The plate's figures are Replenish's for the unit as it is now; the order is not run (SubordinateResult.ReplenishPreview).",
-            g => SubordinatesScreen(g, (s, view) => view.ShowResult(SubordinateResult.ReplenishPreview(s, Neediest(s)))));
+            g => SubordinatesScreen(g, (s, view) =>
+            {
+                int unit = Neediest(s);
+                view.Table.Chosen = unit;                       // the order's unit, chosen as its click chose it
+                view.ShowResult(SubordinateResult.ReplenishPreview(s, unit));
+            }));
     }
 
     private static int Neediest(GameState s) =>
@@ -147,14 +155,13 @@ internal static class GalleryEntries
             : throw new InvalidOperationException("The save has no unit at status 1 short of troops.");
 
     /// <summary>
-    /// Our Subordinates screen on the save's state with the week's commands open (as COMMAND opens them), then
-    /// <paramref name="then"/> once it is placed and filled, and filled again after it.
+    /// Our Subordinates screen on the save's state, then <paramref name="then"/> once it is placed and filled, and filled
+    /// again after it.
     /// </summary>
     private static Action<Rect2>? SubordinatesScreen(GalleryStage g, Action<GameState, SubordinatesView> then)
     {
         if (g.State(Week18) is not { } s)
             return null;
-        GalleryStates.WeekCommandsOpen(s);
         var view = g.Add(new SubordinatesView(g.Font, g.Faces) { Visible = true });
         view.LoadCrops();
         bool done = false;

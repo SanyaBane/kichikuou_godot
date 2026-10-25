@@ -152,7 +152,7 @@ public partial class GalleryScreen : Control
         {
             _place = entry.Build(_stage);
             if (_place is null)
-                note = $"The kept save user://{string.Join(", ", _stage.Missing)} is missing.";
+                note = $"The kept save user://{string.Join(", ", _stage.Missing)} is missing (docs/ui/gallery.md, §2, makes it).";
         }
         catch (Exception e)
         {

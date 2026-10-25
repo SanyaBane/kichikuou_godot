@@ -63,12 +63,17 @@ pull out first (named); **heavy** — needs a battle replayed (§6).
 - **A kept save, read only.** `new DirectorySaveStore(dir).Read(1)` → `data.Restore(new GameState())`, as
   `SaveSlots.Read` does (`SaveSlots.cs:150-157`). Never `DirectorySaveLibrary` on a kept folder: its constructor moves
   `slotNN.ksav` into `legacy/` (`SaveLibrary.cs:146-150`). The records' names are string variables, in the save.
-  The saves: `user://saves-week18` (the default) and `user://saves-week26`.
-- **A kept save is the turn's start** (found in step 1): an auto-save, made before the week's banner, upkeep and
-  `COMMAND` — so it still holds last week's uses (Replenish showed "used this week") and the budget before the week's
-  income. The gallery opens the week's commands as `COMMAND.ADV:38-46` does (`GalleryStates.WeekCommandsOpen`); the
-  figures stay the turn start's. A kept save taken in `COMMAND` (a manual save from it, decision 26) would hold the
-  state the screens really show — a question for the owner (§8).
+  The saves: `user://saves-week18-command` (below; the default) and, when an entry needs another phase, a kept save
+  made the same way from `user://saves-week26`.
+- **The gallery's save is taken in `COMMAND`** (found in step 1, the owner's choice the same day): a kept save is the
+  turn's start, an auto-save made before the week's banner, upkeep and `COMMAND`, so it still holds last week's uses
+  (Replenish showed "used this week"), the budget before the week's income and the troops before the week's
+  recovery. `user://saves-week18-command` is the week-18 save played through the week's start and saved on the
+  map as a manual save there saves it (decision 26: the game as it is now, resuming in `COMMAND`; it loads and plays
+  on) — made, and made again whenever the save format or the boot changes, by
+  `<Godot console exe> --headless --path godot -- --load --auto --fast --quit --seed 2 --saves user://saves-look-command --slots-from user://saves-week18 --save-command user://saves-week18-command`
+  (seconds; `GameScreen.SaveCommandTo`). Its figures are the game's own: Haurein (unit 12) at 209/1,400, the budget
+  116,400K.
 - **A spare presenter** for what reads the scenario's text (harem names, dungeon names, the status strip's lines,
   the battle's text): `new GamePresenter(new ScenarioText(GameData.ScenarioDirectory), GameData.Cgs(), glyphs,
   scripts, audio)` and `Bind(state)`, as `GameScreen.cs:361-369` builds it. No script runs.
@@ -175,4 +180,4 @@ capture's inputs. This is the last step: the board's looks from the week-18 save
 - Dump both palettes and the touch mode by default, or Lacquer alone with the others on request? (Built: Lacquer
   alone, `-Steel` and `-Touch` on request.)
 - The gallery in the release build's Debug menu too, or development runs only? (Built: wherever the Debug menu is.)
-- A kept save taken in `COMMAND` for the gallery (§2), made from the week-18 save by a manual save there?
+- ~~A kept save taken in `COMMAND` for the gallery (§2)?~~ Yes (owner, 2026-10-25): `saves-week18-command`.
