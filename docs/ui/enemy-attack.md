@@ -157,7 +157,8 @@ cards of the deployment screen's size (252×104) in `Lacquer.Row`, the face on t
 name, troop type, "Troops" and the figure; the front row (1, 2) on the left, held by the deployment screen's bracket
 mirrored, its head pointing at the "VS"; a place not scouted dashed with a "?" where the face goes and "Unknown"; an
 empty place as our empty place; Commanders and Total troops under them, then whose report it is. The block is centred
-in the panel. The palette of Option → Display no longer colours this screen. Looked at in a window (`--scout`: the
+in the panel. Option → Display's palette colours it with the other screens (`UiPart.Screens`, docs/ui/options.md,
+"The palette", the same day). Looked at in a window (`--scout`: the
 places unknown, then Kanami's report); an empty place not yet (the week-18 save's rebels come four).
 
 ## 9. A more compact screen (owner, 2026-10-24)
