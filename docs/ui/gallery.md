@@ -270,4 +270,10 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
   `-Steel` and `-Touch` on request (owner, 2026-10-25; as built).
 - ~~The gallery in the release build's Debug menu too, or development runs only?~~ Wherever the Debug menu is, the
   release included (owner, 2026-10-25; as built).
+- The scene menu over a 111 speech covering its question (`scene-menu-top`)? **Never reached** (checked 2026-10-25,
+  a walk of every `]` menu of the decompile, 188): no menu follows text in 111 or 112. A menu comes over text only
+  in 113 (narration, at the screen's foot: the merchant, the own city, construction, `Cﾃｷﾄｼ`, the dungeon, three
+  scenes, `ﾛｰﾄﾞｾｰﾌﾞ`; 26), 123 (3), 121 (`Cﾌﾞｶ`, 2) and the battle's 143 (1); in the scenes a question is
+  mostly asked, its key awaited and its window closed before the menu (152). So the entry shows a state the game
+  never shows.
 - ~~A kept save taken in `COMMAND` for the gallery (§2)?~~ Yes (owner, 2026-10-25): `saves-week18-command`.
