@@ -227,6 +227,9 @@ public partial class GalleryScreen : Control
             return;
         }
         _side.Visible = false;
+        // The real pointer over the window would move or drop a hover an entry set (2026-10-25: treasure-hover lost
+        // its cell); the entries' clicks go to the views' _GuiInput directly, so the window takes no input while dumping.
+        GetViewport().GuiDisableInput = true;
         DisplayServer.WindowSetSize(new Vector2I(1280, 800));
         System.IO.Directory.CreateDirectory(directory);
         for (int i = 0; i < 4; i++)

@@ -127,7 +127,9 @@ state, or is tagged "made up". The first ones are the states the docs record as 
   them. While it dumps, our views animate by a clock of frames (`Strategy/UiClock`: it stands at the same time as each
   entry is shown and goes a sixtieth of a second a frame), so the bobbing triangles, the battle's pulsing gauge and
   blinks are caught at the same point: two dumps of the same build differ by 0 pixels (step 4). An entry whose view
-  rises into place waits `Settle` seconds of frames first (the exchange's counters).
+  rises into place waits `Settle` seconds of frames first (the exchange's counters). While it dumps, the window takes
+  no input (`GuiDisableInput`; the entries' clicks go to the views directly): the real pointer over it dropped the
+  hover of `treasure-hover` and `treasure-items` once (2026-10-25).
 - `tools/ui/gallery.ps1 [-Steel] [-Touch] [-Only id,…] [-Out dir] [-NoBuild]` builds the game; for each pass
   (Lacquer; `-Steel`, `-Touch` add theirs) it moves `<dir>\<pass>\current` to `previous`, dumps into `current`
   compared with it, and writes `<dir>\index.html`: every pass dumped so far (one not dumped this time says so), the
