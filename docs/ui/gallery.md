@@ -285,6 +285,8 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
      on every message window's entry at its key wait, docked beside 131, as `GameScreen.UpdateSkipButtons` shows it
      (`GalleryEntries.MessageWindowOf`), and `touch-skip-on`, the drawer with MsgSkip on, a Messages entry of the touch
      pass alone. `touch-skip`, `touch-skip-docked`, `touch-commands` and `-close` were dropped as repeats.
+   - Skip and Log in the Touch tab sat too close together: the owner chose G3 of the mock-ups, two plates 16 px apart
+     (docs/ui/touch.md, "Round G"); every message window's entry and `touch-skip-on` show them, 131's without its dock.
 
 ## 8. Questions for the owner
 

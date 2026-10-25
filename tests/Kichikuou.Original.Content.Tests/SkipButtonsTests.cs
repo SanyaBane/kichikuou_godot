@@ -10,12 +10,18 @@ public class SkipButtonsTests
         NarrationPanel = (248, 536, 784, 258), CgBarPanel = (0, 588, 1280, 212);
 
     [Fact]
-    public void TheCellsStandInTheDrawerSkipOverLog()
+    public void TheCellsStandOnTwoPlatesSkipOverLog()
     {
-        var (drawer, skip, log) = (SkipButtons.Drawer, SkipButtons.SkipCell, SkipButtons.LogCell);
+        var (skip, log) = (SkipButtons.SkipCell, SkipButtons.LogCell);
+        var (skipPlate, logPlate, drawer) = (SkipButtons.SkipPlate, SkipButtons.LogPlate, SkipButtons.Drawer);
         Assert.Equal((0, 0), (skip.X, log.X));
-        Assert.Equal(skip.Y + skip.H, log.Y);
-        Assert.True(drawer.Y < skip.Y && log.Y + log.H < drawer.Y + drawer.H && skip.W < drawer.W);
+        Assert.Equal(new SkipButtons.Box(0, 592, 50, 84), skip);        // Skip where it was before the plates parted
+        Assert.True(Inside(skip, skipPlate) && Inside(log, logPlate));
+        Assert.Equal(16, logPlate.Y - (skipPlate.Y + skipPlate.H));     // the owner's G3
+        Assert.True(Inside(skipPlate, drawer) && Inside(logPlate, drawer));
+
+        static bool Inside(SkipButtons.Box a, SkipButtons.Box b) =>
+            a.X >= b.X && a.Y >= b.Y && a.X + a.W <= b.X + b.W && a.Y + a.H <= b.Y + b.H;
     }
 
     [Theory]
@@ -31,17 +37,15 @@ public class SkipButtonsTests
     }
 
     [Fact]
-    public void The131IsDrawnSmallerRightOfItsDock()
+    public void The131IsDrawnSmallerRightOfThePlates()
     {
         float k = SkipButtons.WindowScale(CgBarPanel);
         Assert.Equal(1220 / 1280f, k);
-        var dock = SkipButtons.Dock(CgBarPanel);
-        Assert.Equal(new SkipButtons.Box(0, 588, 56, 202), dock);
         float left = 1280 - 1280 * k;                       // the scaled window's left edge
-        Assert.Equal(dock.X + dock.W + 4, left);
-        // The cells stand on the dock, its foot on the screen.
-        Assert.True(SkipButtons.SkipCell.Y > dock.Y && SkipButtons.LogCell.Y + SkipButtons.LogCell.H < dock.Y + dock.H);
-        Assert.True(dock.Y + dock.H <= 800);
+        var drawer = SkipButtons.Drawer;
+        Assert.True(drawer.X + drawer.W < left);
+        // The plates stand on the band left of the window drawn smaller, on the screen.
+        Assert.True(drawer.Y >= CgBarPanel.Item2 && drawer.Y + drawer.H <= 800);
     }
 
     [Fact]

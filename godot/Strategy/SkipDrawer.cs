@@ -5,11 +5,12 @@ namespace Kichikuou.Game.Strategy;
 
 /// <summary>
 /// The touch mode's Skip and Log in the scenes (owner's B1-B3b, 2026-10-24; docs/ui/touch.md, "The dialogue buttons,
-/// round 2"): a lacquer drawer glued to the screen's left edge, Skip over Log, an icon over a small label in each cell
-/// (<see cref="SkipButtons"/>). Over 131 its cells stand on the dock our message window draws beside the bar
-/// (<see cref="Inset"/>). Skip is lit gold, "ON", while the skip runs; a greyed cell is deaf. A tap on a cell (its
-/// release over the cell pressed) is <see cref="SkipTapped"/> or <see cref="LogTapped"/>; a tap elsewhere on the drawer
-/// is its own and does nothing; its other events go on to the screen through <see cref="Forwarded"/>.
+/// round 2"): two lacquer plates glued to the screen's left edge, Skip over Log with 16 pixels between them (the owner's
+/// G3, 2026-10-25), an icon over a small label in each (<see cref="SkipButtons"/>); over 131 the same, the window drawn
+/// smaller beside them. Skip is lit gold, "ON", while the skip runs; a greyed cell is deaf. A tap on a cell (its release
+/// over the cell pressed) is <see cref="SkipTapped"/> or <see cref="LogTapped"/>; a tap elsewhere on the drawer, the room
+/// between the plates included, is its own and does nothing (a near miss never advances the text); its other events go on
+/// to the screen through <see cref="Forwarded"/>.
 /// </summary>
 internal sealed partial class SkipDrawer : Control
 {
@@ -20,9 +21,10 @@ internal sealed partial class SkipDrawer : Control
 
     private const float Icon = 24, Label = 13;
 
-    private SkipButtons.Box _plate = SkipButtons.Drawer;
+    private static readonly SkipButtons.Box Box = SkipButtons.Drawer;
+
     private float _k = 1;
-    private bool _skipOn, _skipDisabled, _logDisabled, _inset;
+    private bool _skipOn, _skipDisabled, _logDisabled;
     private int _held = -1;                              // the cell pressed (0 Skip, 1 Log), -1 none
 
     public SkipDrawer()
@@ -56,19 +58,16 @@ internal sealed partial class SkipDrawer : Control
     /// <summary>The Log cell's centre (global coordinates).</summary>
     public Vector2 LogCentre => CellCentre(SkipButtons.LogCell);
 
-    /// <summary>
-    /// Places the drawer on the picture <paramref name="area"/> (its parent's coordinates) over <paramref name="plate"/>
-    /// (screen pixels): its own plate, or the dock it stands on when <paramref name="inset"/>.
-    /// </summary>
-    public void Place(Rect2 area, SkipButtons.Box plate, bool inset)
+    /// <summary>Places the plates on the picture <paramref name="area"/> (its parent's coordinates).</summary>
+    public void Place(Rect2 area)
     {
         float k = area.Size.X / 1280;
-        var position = area.Position + new Vector2(plate.X, plate.Y) * k;
-        if (plate == _plate && inset == _inset && Math.Abs(k - _k) < 0.001f && Position == position)
+        var position = area.Position + new Vector2(Box.X, Box.Y) * k;
+        if (Math.Abs(k - _k) < 0.001f && Position == position)
             return;
-        (_plate, _inset, _k) = (plate, inset, k);
+        _k = k;
         Position = position;
-        Size = new Vector2(plate.W, plate.H) * k;
+        Size = new Vector2(Box.W, Box.H) * k;
         QueueRedraw();
     }
 
@@ -99,14 +98,14 @@ internal sealed partial class SkipDrawer : Control
     /// <summary>The cell at <paramref name="local"/> (the control's coordinates): 0 Skip, 1 Log, -1 neither.</summary>
     private int CellAt(Vector2 local)
     {
-        var p = local / _k + new Vector2(_plate.X, _plate.Y);
+        var p = local / _k + new Vector2(Box.X, Box.Y);
         return Contains(SkipButtons.SkipCell, p) ? 0 : Contains(SkipButtons.LogCell, p) ? 1 : -1;
 
         static bool Contains(SkipButtons.Box b, Vector2 p) => p.X >= b.X && p.X < b.X + b.W && p.Y >= b.Y && p.Y < b.Y + b.H;
     }
 
     private Vector2 CellCentre(SkipButtons.Box cell) =>
-        GlobalPosition + (new Vector2(cell.X + cell.W / 2f, cell.Y + cell.H / 2f) - new Vector2(_plate.X, _plate.Y)) * _k;
+        GlobalPosition + (new Vector2(cell.X + cell.W / 2f, cell.Y + cell.H / 2f) - new Vector2(Box.X, Box.Y)) * _k;
 
     private void SetHeld(int cell)
     {
@@ -126,20 +125,17 @@ internal sealed partial class SkipDrawer : Control
 
     public override void _Draw()
     {
-        // In the screen's pixels, the plate's corner at the control's origin.
-        DrawSetTransform(-new Vector2(_plate.X, _plate.Y) * _k, 0, new Vector2(_k, _k));
-        if (!_inset)
-            DrawPlate(this, new Rect2(_plate.X, _plate.Y, _plate.W, _plate.H), _k);
+        // In the screen's pixels, the drawer's corner at the control's origin.
+        DrawSetTransform(-new Vector2(Box.X, Box.Y) * _k, 0, new Vector2(_k, _k));
+        DrawPlate(Rect(SkipButtons.SkipPlate));
+        DrawPlate(Rect(SkipButtons.LogPlate));
         var skip = Rect(SkipButtons.SkipCell);
         var log = Rect(SkipButtons.LogCell);
         if (_held >= 0 && !(_held == 0 ? _skipDisabled : _logDisabled))
             DrawRect(_held == 0 ? skip : log, Held);
         if (_skipOn)
             LitCell(skip.Grow(-3));
-        // The divider between the cells.
-        float y = log.Position.Y, mid = skip.GetCenter().X;
-        DrawLine(new Vector2(8, y), new Vector2(skip.End.X - 8, y), Ui.DimGold, Lacquer.Line(1, _k));
-        Lacquer.DrawDiamond(this, new Vector2(mid, y), 3, Ui.Gold);
+        float mid = skip.GetCenter().X;
         var font = GetThemeDefaultFont();
         Color Ink(bool disabled, Color on) => disabled ? Ui.OffText : on;
         var skipInk = _skipOn ? LitInk : Ink(_skipDisabled, Ui.Gold);
@@ -152,11 +148,12 @@ internal sealed partial class SkipDrawer : Control
     }
 
     /// <summary>
-    /// The drawer's plate (and the dock over 131, <see cref="MessageWindowView"/>): lacquer glued to the screen's left edge,
-    /// gold along its other three sides, the right corners rounded, a dim inner line (screen pixels).
+    /// A cell's plate: lacquer glued to the screen's left edge, gold along its other three sides, the right corners
+    /// rounded, a dim inner line (screen pixels).
     /// </summary>
-    public static void DrawPlate(CanvasItem c, Rect2 box, float k)
+    private void DrawPlate(Rect2 box)
     {
+        float k = _k;
         var plate = new StyleBoxFlat
         {
             BgColor = Ui.Panel,
@@ -169,12 +166,12 @@ internal sealed partial class SkipDrawer : Control
         plate.SetBorderWidthAll((int)Math.Ceiling(Lacquer.Line(2, k)));
         plate.BorderWidthLeft = 0;
         plate.CornerRadiusTopRight = plate.CornerRadiusBottomRight = 10;
-        c.DrawStyleBox(plate, box);
+        DrawStyleBox(plate, box);
         var inner = new StyleBoxFlat { DrawCenter = false, BorderColor = Ui.DimGold, AntiAliasing = true };
         inner.SetBorderWidthAll((int)Math.Ceiling(Lacquer.Line(1, k)));
         inner.BorderWidthLeft = 0;
         inner.CornerRadiusTopRight = inner.CornerRadiusBottomRight = 6;
-        c.DrawStyleBox(inner, new Rect2(box.Position.X, box.Position.Y + 4.5f, box.Size.X - 4.5f, box.Size.Y - 9));
+        DrawStyleBox(inner, new Rect2(box.Position.X, box.Position.Y + 4.5f, box.Size.X - 4.5f, box.Size.Y - 9));
     }
 
     private static Rect2 Rect(SkipButtons.Box b) => new(b.X, b.Y, b.W, b.H);

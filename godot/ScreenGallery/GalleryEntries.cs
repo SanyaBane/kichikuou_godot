@@ -209,8 +209,8 @@ internal static partial class GalleryEntries
     }
 
     /// <summary>
-    /// <paramref name="sample"/>'s window at a key wait and, in the touch mode, the drawer at the screen's left edge, or on
-    /// its dock beside a window drawn smaller (131), as <c>GameScreen.UpdateSkipButtons</c> shows it.
+    /// <paramref name="sample"/>'s window at a key wait and, in the touch mode, Skip and Log at the screen's left edge, a
+    /// window that would cover them drawn smaller (131), as <c>GameScreen.UpdateSkipButtons</c> shows them.
     /// </summary>
     private static Action<Rect2>? MessageWindowOf(GalleryStage g, MessageSample sample, bool skipOn)
     {
@@ -221,11 +221,10 @@ internal static partial class GalleryEntries
         if (!TouchMode.On)
             return view.Place;
         var drawer = g.Add(new SkipDrawer { Visible = true, SkipOn = skipOn });
-        bool docked = SkipButtons.WindowScale(window.Panel) < 1;
         return area =>
         {
             view.Place(area);
-            drawer.Place(area, docked ? SkipButtons.Dock(window.Panel) : SkipButtons.Drawer, docked);
+            drawer.Place(area);
         };
     }
 }

@@ -406,8 +406,8 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   shown; the target preselected by `Original.Content/Battles/TouchTargets` through `GameScreen.Touch.cs`, which also
   holds the long press on a card and Back as a right click; in lacquer and gold, the target's frame gold, the owner's A,
   docs/ui/touch.md, "The map's and the battle's buttons, round 1"), the map's `Strategy/CommandsButton` (a lacquer plate;
-  a tap is the right click that opens the command panel, Close while it is open), the scenes' Skip and Log as a drawer at the screen's left edge (`Strategy/SkipDrawer`,
-  the owner's B1-B3b; over 131 the window drawn smaller beside its dock, `MessageWindowView.Docks`) and the battle's Skip
+  a tap is the right click that opens the command panel, Close while it is open), the scenes' Skip and Log as two plates at the screen's left edge (`Strategy/SkipDrawer`,
+  the owner's B1-B3b and G3; over 131 the window drawn smaller beside them, `MessageWindowView.Docks`) and the battle's Skip
   under its cards (`Strategy/TouchPill`), both in `GameScreen.Skip.cs`, their places `Original.Content/Strategy/SkipButtons`
   (Skip is MsgSkip's switch; the message log scrolled by a drag, closed by a tap off its frame; docs/ui/touch.md, "The Skip
   and Log buttons" and "The dialogue buttons, round 2");

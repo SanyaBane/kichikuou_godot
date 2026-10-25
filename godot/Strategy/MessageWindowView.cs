@@ -60,8 +60,8 @@ internal sealed partial class MessageWindowView : Control
     public bool Tail { get; init; } = true;
 
     /// <summary>
-    /// The touch mode's drawer at the screen's left edge (<see cref="SkipDrawer"/>): a window that would cover it (131) is
-    /// drawn smaller right of it, beside the dock its cells stand on (the owner's B3b, docs/ui/touch.md).
+    /// The touch mode's Skip and Log at the screen's left edge (<see cref="SkipDrawer"/>): a window that would cover them
+    /// (131) is drawn smaller right of them (the owner's B3b, docs/ui/touch.md).
     /// </summary>
     public bool Docks { get; init; }
 
@@ -172,10 +172,8 @@ internal sealed partial class MessageWindowView : Control
         if (shrink < 1)
         {
             // The original's window stays drawn under ours (GamePresenter.LeaveWindowOnStage): a dark band hides it where
-            // ours no longer is, the dock stands on it, and the window is drawn about its top right corner, smaller.
+            // ours no longer is, Skip and Log stand on it, and the window is drawn about its top right corner, smaller.
             DrawRect(box, DockBand);
-            var dock = SkipButtons.Dock(w.Panel);
-            SkipDrawer.DrawPlate(this, new Rect2(dock.X, dock.Y, dock.W, dock.H), _k);
             var corner = new Vector2(box.End.X, box.Position.Y);
             DrawSetTransform(corner * (1 - shrink) * _k, 0, new Vector2(_k * shrink, _k * shrink));
         }

@@ -46,8 +46,8 @@ public partial class GameScreen
     /// <summary>
     /// Shows the buttons in the touch mode: in the scenes the drawer while a message window or a key wait is up — and
     /// while MsgSkip is on, to turn it off again —, never under a menu or over our own screens; on our battle screen
-    /// Skip alone, the whole battle. Over a window that would cover the drawer (131) its cells stand on the dock the
-    /// window is drawn beside (<see cref="SkipButtons"/>).
+    /// Skip alone, the whole battle. A window that would cover the drawer (131) is drawn smaller beside it
+    /// (<see cref="SkipButtons"/>).
     /// </summary>
     private void UpdateSkipButtons()
     {
@@ -75,8 +75,7 @@ public partial class GameScreen
         _drawer.SkipOn = _skip.Activated;
         _drawer.SkipDisabled = !_skip.Enabled;
         _drawer.LogDisabled = !LogReachable;
-        bool docked = _messageView.Window is { } window && SkipButtons.WindowScale(window.Panel) < 1;
-        _drawer.Place(area, docked ? SkipButtons.Dock(_messageView.Window!.Panel) : SkipButtons.Drawer, docked);
+        _drawer.Place(area);
     }
 
     /// <summary>

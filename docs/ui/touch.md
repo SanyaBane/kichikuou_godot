@@ -348,6 +348,16 @@ screen's bottom). Built, in the touch mode only (PC has no drawer, and 131 stays
   `touch-skip-on`, `message-cg-bar-speech`, `message-cg-bar-narration`) and the battle look (`touch-rails`: the battle's
   Skip as before); every unattended `--touch` check passes. Not yet on the tablet.
 
+**Round G (owner, 2026-10-25): more room between Skip and Log**, which sat too close together in the gallery's Touch
+tab. Mock-ups `tools/ui/mock_drawer_gap.py` over the gallery's dumps, Skip kept where it was and the drawer grown
+downwards in each: G1 one drawer with 16 px between the cells, G2 one drawer with 28 px and cells 80 high, G3 two plates
+16 px apart. **The owner chose G3**, built: Skip's plate (0, 590, 52×88) round its cell as before, Log's (0, 694, 52×88)
+16 px under it (3.2 mm on the tablet), the cell Log (0, 696, 50×84); `SkipButtons.Drawer` is both plates and the room
+between them, (0, 590)-(52, 782), what the windows keep free. Over 131 the plates stand the same on the dark band, the
+window drawn smaller right of them as before; the dock is gone (`SkipButtons.Dock`, `MessageWindowView`'s plate). A tap
+between the plates is the drawer's own and does nothing, so a near miss never advances the text. Looked at in the
+gallery's Touch tab (every message window, `touch-skip-on`); the unattended `--touch` harem look not run again.
+
 ### The map's and the battle's buttons, round 1
 
 The owner's request (2026-10-24), after the dialogue's drawer: the map's Commands/Close button and the battle's rails
