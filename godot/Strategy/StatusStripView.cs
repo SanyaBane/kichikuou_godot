@@ -34,6 +34,18 @@ internal sealed partial class StatusStripView : Control
     private StatusStrip? _strip;
     private ImageTexture? _flag;
     private float _k = 1;                           // window pixels to a screen pixel
+    private (Rect2 Tag, BuildingUnderWay Building)? _site;  // Construction's tag while a building is under way, as last drawn
+    private bool _tip;                              // its tooltip is shown
+    private bool _tipDown;                          // the touch mode: a press on the tag, not released or moved away yet
+    private Vector2 _tipPress;                      // where it came down
+    private int _tipPresses;                        // the presses counted: a timer acts only for its own
+
+    private const int TipNameSize = 15, TipWeeksSize = 13;
+
+    /// <summary>The touch mode's long press (the battle cards' and the table headers').</summary>
+    private const double LongPressSeconds = 0.5;
+
+    private const float LongPressSlop = 12;
 
     public StatusStripView(GameFont font, FacePictures pictures)
     {
@@ -64,6 +76,8 @@ internal sealed partial class StatusStripView : Control
     {
         Visible = false;
         _strip = null;
+        _site = null;
+        (_tip, _tipDown) = (false, false);
     }
 
     /// <summary>Where the events on the strip go but a left click's: the screen's input (a right click opens the menu as anywhere).</summary>
@@ -74,6 +88,7 @@ internal sealed partial class StatusStripView : Control
     /// <summary>A left click on the strip reaches no province or plate under it; the rest is the screen's.</summary>
     public override void _GuiInput(InputEvent e)
     {
+        TipInput(e);
         if (e is not InputEventMouseButton { ButtonIndex: MouseButton.Left })
             Forward?.Invoke(e);
         AcceptEvent();
@@ -114,13 +129,24 @@ internal sealed partial class StatusStripView : Control
         }
         // The week's commands as tags, grouped under brackets with their captions.
         cx += 6;
+        _site = null;
         foreach (var group in s.Groups)
         {
             float start = cx;
             foreach (var use in group.Uses)
             {
                 float cw = _gothic.GetStringSize(use.Text, fontSize: 13).X + 16;
-                Ui.DrawTag(this, _gothic, new Rect2(cx, row.Position.Y, cw, row.Size.Y), use.Text, ColourOf(use.Action), use.Free, _k);
+                if (use.UnderWay is { } site)
+                {
+                    // A building under way (the owner's A, 2026-10-25): half-lit, the weeks left on a chip.
+                    cw += UiPalette.ChipWidth(_gothic, site.WeeksLeft);
+                    _site = (new Rect2(cx, row.Position.Y, cw, row.Size.Y), site);
+                    Ui.DrawBusyTag(this, _gothic, _site.Value.Tag, use.Text, ColourOf(use.Action), _k, weeks: site.WeeksLeft);
+                }
+                else
+                {
+                    Ui.DrawTag(this, _gothic, new Rect2(cx, row.Position.Y, cw, row.Size.Y), use.Text, ColourOf(use.Action), use.Free, _k);
+                }
                 cx += cw + 4;
             }
             float end = cx - 4, by = row.End.Y + 6, mid = (start + end) / 2;
@@ -139,6 +165,100 @@ internal sealed partial class StatusStripView : Control
             dw = _date.GetStringSize(s.Date, fontSize: --size).X;
         DrawString(_date, new Vector2(Width - 20 - dw, Lacquer.Baseline(new Rect2(0, 0, Width, Height), _date, size)), s.Date,
             fontSize: size, modulate: Ui.Name);
+        if (_tip && _site is var (tag, building))
+            DrawBuildingTip(tag, building);
+    }
+
+    /// <summary>
+    /// The building under way's tooltip under its tag (the owner's A, 2026-10-25): its name and the weeks left on a lacquer
+    /// plate in a gold frame with a dim gold one inside; no "n of m built" (owner). Drawn below the strip, over the map.
+    /// </summary>
+    private void DrawBuildingTip(Rect2 tag, BuildingUnderWay building)
+    {
+        string? name = building.Name;
+        string weeks = building.WeeksText;
+        float w = Math.Max(name is null ? 0 : _gothic.GetStringSize(name, fontSize: TipNameSize).X,
+            _gothic.GetStringSize(weeks, fontSize: TipWeeksSize).X) + 24;
+        float h = name is null ? 32 : 52;
+        float x = Math.Min(tag.Position.X, Width - 8 - w), y = tag.End.Y + 22;
+        var box = new Rect2(x, y, w, h);
+        DrawRect(new Rect2(box.Position + new Vector2(3, 4), box.Size), new Color(0, 0, 0, 0.3f));
+        DrawRect(box, Ui.CalloutFill);
+        DrawRect(box, Ui.Gold, false, Lacquer.Line(1, _k));
+        DrawRect(box.Grow(-3), Ui.DimGold, false, Lacquer.Line(1, _k));
+        float top = y;
+        if (name is not null)
+        {
+            DrawString(_gothic, new Vector2(x + 12, Lacquer.Baseline(new Rect2(x, y + 7, w, 20), _gothic, TipNameSize)), name,
+                fontSize: TipNameSize, modulate: Ui.Name);
+            top += 20;
+        }
+        DrawString(_gothic, new Vector2(x + 12, Lacquer.Baseline(new Rect2(x, top + 8, w, 16), _gothic, TipWeeksSize)), weeks,
+            fontSize: TipWeeksSize, modulate: Ui.Quiet);
+    }
+
+    /// <summary>Shows or hides the building's tooltip (drawn only while a building is under way).</summary>
+    private void SetTip(bool on)
+    {
+        if (on == _tip)
+            return;
+        _tip = on;
+        QueueRedraw();
+    }
+
+    /// <summary>The building's tooltip while it is shown, else null (the screen gallery, unattended play).</summary>
+    public string? BuildingTipShown => _tip && _site is var (_, building) ? $"{building.Name}|{building.WeeksText}" : null;
+
+    /// <summary>Shows the building's tooltip as a hover would (the screen gallery: nothing moves the pointer).</summary>
+    public void ShowBuildingTip() => SetTip(true);
+
+    /// <summary>
+    /// The pointer over Construction's tag while a building is under way shows its tooltip, at once, and leaving the tag
+    /// hides it. The touch mode has no hover: a long press on the tag shows it, the next press anywhere hides it, as a
+    /// table header's tip (<see cref="HeaderTip"/>).
+    /// </summary>
+    private void TipInput(InputEvent e)
+    {
+        switch (e)
+        {
+            case InputEventMouseMotion motion when TouchMode.On:
+                if (_tipDown && motion.Position.DistanceTo(_tipPress) > LongPressSlop)
+                    _tipDown = false;
+                break;
+            case InputEventMouseMotion motion:
+                SetTip(OnTag(motion.Position));
+                break;
+            case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } button when TouchMode.On && OnTag(button.Position):
+                (_tipDown, _tipPress) = (true, button.Position);
+                int press = ++_tipPresses;
+                GetTree().CreateTimer(LongPressSeconds).Timeout += () =>
+                {
+                    if (press == _tipPresses && _tipDown && IsVisibleInTree())
+                        SetTip(true);                                   // no vibration (owner, 2026-10-24)
+                };
+                break;
+            case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false }:
+                _tipDown = false;
+                break;
+        }
+    }
+
+    private bool OnTag(Vector2 window) => _site is var (tag, _) && tag.HasPoint(window / _k);
+
+    // The touch mode's tip goes at the next press anywhere (HeaderTip's).
+    public override void _Input(InputEvent e)
+    {
+        if (_tip && TouchMode.On && e is InputEventMouseButton { Pressed: true })
+        {
+            _tipPresses++;
+            SetTip(false);
+        }
+    }
+
+    public override void _Notification(int what)
+    {
+        if (what == NotificationMouseExit && !TouchMode.On)
+            SetTip(false);
     }
 
     /// <summary>A command's tag colour (ours; the same as the command panel's and the province menu's tags).</summary>

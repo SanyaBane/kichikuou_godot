@@ -250,16 +250,22 @@ internal sealed partial class CommandMenuView : Control
         var tagRect = _touch
             ? new Rect2(rect.Position.X + 7, rect.Position.Y + 8, 72, rect.Size.Y - 16)
             : new Rect2(rect.Position.X + Rows.TagInset, rect.Position.Y + Rows.TagInset, Rows.TagWidth, rect.Size.Y - 2 * Rows.TagInset);
-        Ui.DrawTag(this, _gothic, tagRect, tag, colour, on, _k, _touch ? 13 : Rows.TagText);
+        // A building under way (the owner's A, 2026-10-25): the tag half-lit, the weeks left where a spent row says so; the
+        // row answers as ever (○ opens Cﾃｲﾄ for Maris's refusal, × does nothing).
+        bool busy = item.WeeksText is not null;
+        if (busy)
+            Ui.DrawBusyTag(this, _gothic, tagRect, tag, colour, _k, _touch ? 13 : Rows.TagText);
+        else
+            Ui.DrawTag(this, _gothic, tagRect, tag, colour, on, _k, _touch ? 13 : Rows.TagText);
         DrawString(_gothic, new Vector2(rect.Position.X + (_touch ? 94 : Rows.TextLeft), Lacquer.Baseline(rect, _gothic, size)), item.Text, fontSize: size,
-            modulate: on ? Ui.Text : Ui.OffText);
-        if (!on)
+            modulate: busy ? Ui.Quiet : on ? Ui.Text : Ui.OffText);
+        if (busy || !on)
         {
-            const string spent = "used this week";
-            int spentSize = _touch ? 12 : Rows.Small;
-            float sw = _gothic.GetStringSize(spent, fontSize: spentSize).X;
-            DrawString(_gothic, new Vector2(rect.End.X - 10 - sw, Lacquer.Baseline(rect, _gothic, spentSize)), spent, fontSize: spentSize,
-                modulate: Ui.OffText);
+            string note = item.WeeksText ?? "used this week";
+            int noteSize = _touch ? 12 : Rows.Small;
+            float sw = _gothic.GetStringSize(note, fontSize: noteSize).X;
+            DrawString(_gothic, new Vector2(rect.End.X - 10 - sw, Lacquer.Baseline(rect, _gothic, noteSize)), note, fontSize: noteSize,
+                modulate: busy ? Ui.Quiet : Ui.OffText);
         }
     }
 

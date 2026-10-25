@@ -87,6 +87,32 @@ internal sealed partial record UiPalette
     }
 
     /// <summary>
+    /// A command's tag while its work is under way (Construction's building, the owner's A, 2026-10-25): its colour halfway
+    /// to the spent grey in a dim gold frame, the word quiet; with <paramref name="weeks"/> a chip at its right end, the
+    /// weeks left in a gold frame (<see cref="ChipWidth"/> wider than the plain tag; its word centred in the rest).
+    /// </summary>
+    public void DrawBusyTag(CanvasItem c, Font font, Rect2 rect, string tag, Color colour, float k, int size = 13, int? weeks = null)
+    {
+        c.DrawRect(rect, colour.Lerp(OffTag, 0.55f));
+        c.DrawRect(rect, DimGold, false, Parts.Line(1, k));
+        float chip = weeks is { } w ? ChipWidth(font, w, size) : 0;
+        float tw = font.GetStringSize(tag, fontSize: size).X;
+        c.DrawString(font, new Vector2(rect.Position.X + (rect.Size.X - chip - tw) / 2, Parts.Baseline(rect, font, size)), tag, fontSize: size,
+            modulate: Quiet);
+        if (weeks is not { } left)
+            return;
+        string n = left.ToString();
+        float nw = font.GetStringSize(n, fontSize: size - 1).X;
+        var box = new Rect2(rect.End.X - (nw + 8) - 3, rect.Position.Y + 3, nw + 8, rect.Size.Y - 6);
+        c.DrawRect(box, BadgeFill);
+        c.DrawRect(box, Gold, false, Parts.Line(1, k));
+        c.DrawString(font, new Vector2(box.GetCenter().X - nw / 2, Parts.Baseline(box, font, size - 1)), n, fontSize: size - 1, modulate: Name);
+    }
+
+    /// <summary>How much wider <see cref="DrawBusyTag"/>'s chip of <paramref name="weeks"/> makes a tag of <paramref name="size"/>.</summary>
+    public static float ChipWidth(Font font, int weeks, int size = 13) => font.GetStringSize(weeks.ToString(), fontSize: size - 1).X + 8 + 2;
+
+    /// <summary>
     /// The click's triangle centred at <paramref name="at"/>, pointing down, bobbing and breathing (owner, 2026-10-18: instead
     /// of "Click to continue"); its caller draws again every frame while it shows.
     /// </summary>
