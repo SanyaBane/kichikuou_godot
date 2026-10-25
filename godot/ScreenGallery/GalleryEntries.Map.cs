@@ -74,14 +74,23 @@ internal static partial class GalleryEntries
         var view = g.Add(new MapMarkersView(g.Font) { Visible = true });
         view.SetHideDimmed(hideDimmed);
         view.Load(markers);
+        var button = TouchCommandsButton(g, closes: false);
         return area =>
         {
             GalleryStage.Fill(backdrop, area);
             view.Place(area, area.Size.X / Surface.ScreenWidth, corner);
+            button?.Place(area);
             if (hover is { } province)
                 view.ShowHover(markers.FirstOrDefault(m => m is { Kind: MapHitKind.Province } && m.Id == province));
         };
     }
+
+    /// <summary>
+    /// The touch mode's Commands button, which GameScreen shows with the plates and as Close over our command panel; none
+    /// outside the touch mode (the Touch section's entries show it in every pass).
+    /// </summary>
+    private static CommandsButton? TouchCommandsButton(GalleryStage g, bool closes) =>
+        TouchMode.On ? g.Add(new CommandsButton { Visible = true, Closes = closes }) : null;
 
     /// <summary>
     /// The menu <paramref name="items"/> make, opened in the presenter and read as our menu by <paramref name="read"/>, then
@@ -113,12 +122,14 @@ internal static partial class GalleryEntries
         var strip = p.StatusStrip ?? throw new InvalidOperationException("No status strip.");
         var panel = g.Add(new CommandMenuView(g.Font));
         panel.Open(menu);
+        var button = TouchCommandsButton(g, closes: true);
         var bar = g.Add(new StatusStripView(g.Font, g.Faces));
         bar.Show(strip);
         return area =>
         {
             GalleryStage.Fill(backdrop, area);
             panel.Place(area);
+            button?.Place(area);
             bar.Place(new Rect2(area.Position, new Vector2(area.Size.X, StatusStripView.Height * area.Size.X / Surface.ScreenWidth)));
         };
     }

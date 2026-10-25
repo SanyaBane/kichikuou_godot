@@ -274,6 +274,9 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
      results and our panel, while the game flashes a defence (`Flash`). Now the board flashes it as `GameScreen` does and
      the entry settles 0.35 s, the ribbon at its height. Found by the owner's remark on the touch mode's ribbon, whose text
      ran together on the narrower card (docs/ui/touch.md, "The battle within the thumbs' reach").
+   - The Touch tab's `map-markers` (and `-hover`, `-active`), `command-menu` and `-spent` lacked the Commands button the
+     touch mode shows on the map and, as Close, over the command panel: only the Touch section's own entries drew it. Now
+     the map's entries draw it in the touch pass as `GameScreen.UpdateMapMarkers` does (`GalleryEntries.TouchCommandsButton`).
 
 ## 8. Questions for the owner
 
