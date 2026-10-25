@@ -87,7 +87,11 @@ internal sealed partial class ExchangeCountersView : Control
         _port.AddChild(_digits);
         AddChild(_port);
         _material = new ShaderMaterial { Shader = new Shader { Code = ShaderCode } };
-        _picture = new TextureRect { MouseFilter = MouseFilterEnum.Ignore, Texture = _port.GetTexture(), Material = _material };
+        _picture = new TextureRect
+        {
+            MouseFilter = MouseFilterEnum.Ignore, Texture = _port.GetTexture(), Material = _material,
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,                 // its size is the scene's, not the port's texture's
+        };
         AddChild(_picture);
     }
 
@@ -110,8 +114,8 @@ internal sealed partial class ExchangeCountersView : Control
         _scale = scale;
         Size = size;
         _labels.Size = size;
-        _picture.Size = size;
         _port.Size = new Vector2I(Math.Max(1, (int)Math.Ceiling(size.X)), Math.Max(1, (int)Math.Ceiling(size.Y)));
+        _picture.Size = size;
         _digits.Size = _port.Size;
         Redraw();
     }
