@@ -187,13 +187,45 @@ internal static partial class GalleryEntries
 
     // ---------------------------------------------------------------- the message windows (docs/ui/messages.md)
 
-    private static IEnumerable<GalleryEntry> Messages() =>
-        GalleryStates.Messages.Select(sample => new GalleryEntry(sample.Id, "Messages", $"Message window: {sample.Kind}{(sample.Read ? ", read before" : "")}",
-            null, "The lines are the gallery's own; the portraits and the scene under the window are not drawn.", g =>
-            {
-                var view = g.Add(new MessageWindowView(g.Font) { Docks = TouchMode.On });
-                view.Show(sample.Window(), true, null, null);
-                view.Complete();
-                return view.Place;
-            }));
+    private const string WindowNote = "The lines are the gallery's own; the portraits and the scene under the window are not drawn.";
+
+    /// <summary>
+    /// Each message window at a key wait; in the touch pass with the Skip and Log drawer the touch mode shows there, and
+    /// once more with MsgSkip on (the drawer's other look; no entry in the other passes, which have no drawer).
+    /// </summary>
+    private static IEnumerable<GalleryEntry> Messages()
+    {
+        foreach (var sample in GalleryStates.Messages)
+        {
+            yield return new(sample.Id, "Messages", $"Message window: {sample.Kind}{(sample.Read ? ", read before" : "")}",
+                null, WindowNote, g => MessageWindowOf(g, sample, skipOn: false));
+        }
+        if (TouchMode.On)
+        {
+            var speech = GalleryStates.Messages.First(m => m is { Kind: MessageKind.SpeechRight, Read: false });
+            yield return new("touch-skip-on", "Messages", "Message window: the drawer with MsgSkip on", null, WindowNote,
+                g => MessageWindowOf(g, speech, skipOn: true));
+        }
+    }
+
+    /// <summary>
+    /// <paramref name="sample"/>'s window at a key wait and, in the touch mode, the drawer at the screen's left edge, or on
+    /// its dock beside a window drawn smaller (131), as <c>GameScreen.UpdateSkipButtons</c> shows it.
+    /// </summary>
+    private static Action<Rect2>? MessageWindowOf(GalleryStage g, MessageSample sample, bool skipOn)
+    {
+        var window = sample.Window();
+        var view = g.Add(new MessageWindowView(g.Font) { Docks = TouchMode.On });
+        view.Show(window, true, null, null);
+        view.Complete();
+        if (!TouchMode.On)
+            return view.Place;
+        var drawer = g.Add(new SkipDrawer { Visible = true, SkipOn = skipOn });
+        bool docked = SkipButtons.WindowScale(window.Panel) < 1;
+        return area =>
+        {
+            view.Place(area);
+            drawer.Place(area, docked ? SkipButtons.Dock(window.Panel) : SkipButtons.Drawer, docked);
+        };
+    }
 }

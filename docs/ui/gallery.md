@@ -88,7 +88,7 @@ pull out first (named); **heavy** — needs a battle replayed (§6).
 
 ## 3. Entries
 
-An entry is one screen in one state: an id, a section (Map, Messages, Screens, Battle, Touch, Settings), the save, the
+An entry is one screen in one state: an id, a section (Map, Messages, Screens, Battle, Settings), the save, the
 state variation (§4) and how its view is fed. Ids follow the looks' dump names where they exist (`treasure-question`,
 `message-thought-right`, `week-report`), so the gallery's picture and the look's compare by name.
 
@@ -205,7 +205,8 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
    `ｽﾀｰﾄ.ADV:860`, which the gallery's presenter is given since it never booted; `scene-menu-top`, the same over a 111
    speech covering its question, was removed: the game never shows it, §8); `message-log` (`GalleryStates.LogSample`: every kind of page, a choice,
    more lines than the paper's 18 rows).
-   **Then the touch controls and the options** (`GalleryEntries.Controls.cs`): `touch-skip`, `touch-skip-on` (the drawer
+   **Then the touch controls and the options** (`GalleryEntries.Controls.cs`; the touch controls later moved onto
+   their screens' entries in the touch pass, step 6): `touch-skip`, `touch-skip-on` (the drawer
    at a 121 key wait), `touch-skip-docked` (beside a 131 bar, the window drawn smaller), `touch-commands` and
    `touch-commands-close` (the map's button, and its Close over the command panel), `options-messages`, `-display`,
    `-battle`, `-game` (with a `MessageSkip` of its own that records nothing; the window writes `settings.cfg` only when
@@ -277,6 +278,13 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
    - The Touch tab's `map-markers` (and `-hover`, `-active`), `command-menu` and `-spent` lacked the Commands button the
      touch mode shows on the map and, as Close, over the command panel: only the Touch section's own entries drew it. Now
      the map's entries draw it in the touch pass as `GameScreen.UpdateMapMarkers` does (`GalleryEntries.TouchCommandsButton`).
+   - The Touch section is gone (the owner: a Touch section in the Touch tab has no logic). It came from step 2, before the
+     passes were tabs, to show the touch controls in a Lacquer dump; with the tabs it showed the PC controls it never has
+     and, in the Touch tab, what belongs on the screens. Now each pass is what its device shows: the Lacquer tab the PC
+     (72 entries), the Touch tab the tablet (73) — the Commands button on the map's entries (above), the Skip and Log drawer
+     on every message window's entry at its key wait, docked beside 131, as `GameScreen.UpdateSkipButtons` shows it
+     (`GalleryEntries.MessageWindowOf`), and `touch-skip-on`, the drawer with MsgSkip on, a Messages entry of the touch
+     pass alone. `touch-skip`, `touch-skip-docked`, `touch-commands` and `-close` were dropped as repeats.
 
 ## 8. Questions for the owner
 

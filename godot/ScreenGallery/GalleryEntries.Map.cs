@@ -87,7 +87,7 @@ internal static partial class GalleryEntries
 
     /// <summary>
     /// The touch mode's Commands button, which GameScreen shows with the plates and as Close over our command panel; none
-    /// outside the touch mode (the Touch section's entries show it in every pass).
+    /// outside the touch mode.
     /// </summary>
     private static CommandsButton? TouchCommandsButton(GalleryStage g, bool closes) =>
         TouchMode.On ? g.Add(new CommandsButton { Visible = true, Closes = closes }) : null;
