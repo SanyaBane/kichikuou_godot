@@ -70,3 +70,39 @@ The owner chose round 2's ladder (2026-10-25). It is built in our interface:
   (CLAUDE.md, "A dungeon battle"; `--until round-1` is enough).
 
 Tests: `FloorLadderTests` (content tests).
+
+## 5. Touch: the ladder within the thumb's reach (owner, 2026-10-26)
+
+The owner's request, from the screen gallery's touch pass (`floor-ladder`): the ladder's ways at the screen's lower
+right corner, in the right thumb's reach, as the map's rails (docs/ui/touch.md, "The command panel within the thumbs'
+reach"). Built, the ladder stands right of the dungeon's picture at the screen's middle height (y 196-536), the same on
+PC and in the touch mode; its Ascend and Retreat lie at the reach's edge.
+
+On the real screen (a dungeon look with `--touch`, the dump `floor-ladder`) the picture stands over black, not over the
+map, and the place's window 113 (the dungeon, the floor, the unit, its troops) lies under it from x 248 to 1032, y 536 to
+the foot. The gallery's entry shows the map and no window 113, so it is not what the game shows here. The corners right
+of the window (x 1040-1276) and left of it (x 4-240) are free down to the foot.
+
+The mock-ups are `tools/ui/mock_touch_floor.py` (its parts `mock_touch_panel.py`'s), over that dump: the Monsters' Cave
+(dungeon 2) on 7F (both ways; window 113's floor rewritten) and on 1F (no Ascend, its place empty as round 2's); the
+command is in its docstring, the images stay outside the repository. Round T1:
+
+- **A — the ladder as built, moved into the corner**: the rail at x 1040-1276, y 424-796; Ascend, the floor, Descend,
+  Retreat in the PC's order, the ways 212×78 (43 × 16 mm). Descend, the usual way in a cave, at the grip's height
+  (y 594-672, the thumb's resting place); Ascend, a floor back with an encounter roll, the furthest; Retreat at the foot,
+  where the map's Close and the province menu's Return stand.
+- **B — Retreat at the rail's top, the ways at the thumb**: Retreat furthest from the resting thumb, as Turn END on the
+  command panel's rail; Ascend over the floor, Descend 212×104 in the corner. In a tower the way deeper (Ascend) is the
+  rail's middle.
+- **C — the ways at the right thumb, Retreat at the left**: the ways 212×100 with the floor between them in the right
+  corner (y 470-796), Retreat alone in the lower left corner, left of window 113: leaving takes the other hand, so a
+  thumb stepping down floor after floor never lands on it.
+
+In all three a way not offered leaves its place empty, the gold arrow marks the way deeper, and the script is answered
+with the menu's item as now; the PC keeps today's place.
+
+**Recommendation: A** — the same ladder as the PC's, only lower, the rails' language (the exit at the foot, as Close
+and Return), and the cave's usual way exactly where the thumb rests. A wrong Retreat only opens its question
+(`Cﾒｲｷｭｳ.ADV:934-938`), so it needs no distance; the costly mistake is Ascend, which A puts furthest. B gives Descend the
+largest button but moves Retreat away from where the other rails have their exit; C is the safest against a stray
+Retreat but splits the screen between the hands for one menu.

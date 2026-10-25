@@ -272,6 +272,10 @@ Other:
   from the kept saves, dumped in seconds into a folder outside the repository with an index marking what changed;
   surveyed and planned in [ui/gallery.md](ui/gallery.md); step 1 built (2026-10-25: the frame, the dump and diff,
   Treasure, Harem, Subordinates, the message windows), steps 2-5 open, two questions for the owner in §8 (built with a default meanwhile).
+- **The gallery's `floor-ladder` is not the game's screen** — *agent* (2026-10-26): it draws the dungeon's picture over
+  the map and leaves out window 113 (the dungeon, the floor, the unit), while the game shows black round the picture and
+  that window under it ([ui/dungeon-menu.md](ui/dungeon-menu.md), §5). Fix the entry's backdrop
+  (`GalleryEntries.Map.cs`, `Ladder`) with the ladder's touch layout.
 - **Old absolute paths in the git history** — *owner*: rewriting the history is destructive, only on
   the owner's explicit request (decision 22).
 - **README** — *owner*: About and Credits only so far (2026-10-11); installing, building and playing
