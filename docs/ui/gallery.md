@@ -268,5 +268,6 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
 
 - ~~Dump both palettes and the touch mode by default, or Lacquer alone with the others on request?~~ Lacquer alone,
   `-Steel` and `-Touch` on request (owner, 2026-10-25; as built).
-- The gallery in the release build's Debug menu too, or development runs only? (Built: wherever the Debug menu is.)
+- ~~The gallery in the release build's Debug menu too, or development runs only?~~ Wherever the Debug menu is, the
+  release included (owner, 2026-10-25; as built).
 - ~~A kept save taken in `COMMAND` for the gallery (§2)?~~ Yes (owner, 2026-10-25): `saves-week18-command`.
