@@ -92,7 +92,7 @@ internal sealed partial record UiPalette
     /// </summary>
     public void DrawTriangle(CanvasItem c, Vector2 at, float k)
     {
-        double t = Time.GetTicksMsec() / 1000.0;
+        double t = UiClock.Msec / 1000.0;
         float bob = (float)(Math.Sin(t * Math.PI * 2 * 0.9) * 3);
         float alpha = (float)(0.65 + 0.35 * Math.Sin(t * Math.PI * 2 * 0.9 + 1));
         var p = at + new Vector2(0, bob);

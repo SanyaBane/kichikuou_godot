@@ -83,7 +83,7 @@ internal sealed partial class SpeechBalloon : Control
         var origin = box.Position + new Vector2(Pad * s, Pad * s - 4 * s + _bold.GetAscent(size));
         DrawMultilineString(_bold, origin, speech.Text, HorizontalAlignment.Left, textWidth, size, -1, ink, Breaks);
 
-        float bob = BobPixels * s * Mathf.Sin((float)(Time.GetTicksMsec() / 1000.0 * Mathf.Tau / BobSeconds));
+        float bob = BobPixels * s * Mathf.Sin((float)(UiClock.Msec / 1000.0 * Mathf.Tau / BobSeconds));
         var tip = new Vector2(box.End.X - 26 * s, box.End.Y - 17 * s + bob);
         DrawColoredPolygon(
         [

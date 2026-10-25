@@ -195,7 +195,7 @@ internal sealed partial class StrategyCutInView : Control
         var ink = SpeechBalloon.DrawBalloon(_sheet, box, tailLeft: player, s, line.Thought);
         var origin = box.Position + new Vector2(BalloonPad * s, BalloonPad * s - 4 * s + _bold.GetAscent(size));
         _sheet.DrawMultilineString(_bold, origin, line.Text, HorizontalAlignment.Left, textWidth, size, -1, ink, Breaks);
-        float bob = BobPixels * s * Mathf.Sin((float)(Time.GetTicksMsec() / 1000.0 * Mathf.Tau / BobSeconds));
+        float bob = BobPixels * s * Mathf.Sin((float)(UiClock.Msec / 1000.0 * Mathf.Tau / BobSeconds));
         var tip = new Vector2(box.End.X - 26 * s, box.End.Y - 17 * s + bob);
         _sheet.DrawColoredPolygon([tip + new Vector2(-MarkerSize, -MarkerSize * 1.1f) * s, tip + new Vector2(MarkerSize, -MarkerSize * 1.1f) * s, tip],
             Ui.HoverLine);

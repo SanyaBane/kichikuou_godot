@@ -91,14 +91,14 @@ internal sealed partial class BattleInfoLayer : Control
     public void Flash(BattleInfoBox box, string name, bool quick = false)
     {
         _flashes.RemoveAll(f => f.Box.Place == box.Place);              // one mark a card
-        _flashes.Add((box, name, Time.GetTicksMsec(), quick));
+        _flashes.Add((box, name, UiClock.Msec, quick));
         QueueRedraw();
     }
 
     /// <summary>MsgSkip began to skip: the ribbons still up fade out at once.</summary>
     public void Hurry()
     {
-        ulong fading = Time.GetTicksMsec() - (ulong)((QuickRise + QuickHold) * 1000);
+        ulong fading = UiClock.Msec - (ulong)((QuickRise + QuickHold) * 1000);
         for (int i = 0; i < _flashes.Count; i++)
         {
             if (!_flashes[i].Quick)
@@ -132,7 +132,7 @@ internal sealed partial class BattleInfoLayer : Control
 
     public override void _Process(double delta)
     {
-        _flashes.RemoveAll(f => Timing(f.Quick) is var (rise, hold, fade) && (Time.GetTicksMsec() - f.From) / 1000.0 >= rise + hold + fade);
+        _flashes.RemoveAll(f => Timing(f.Quick) is var (rise, hold, fade) && (UiClock.Msec - f.From) / 1000.0 >= rise + hold + fade);
         if (_flashes.Count > 0 || (_box is not null && _waiting))
             QueueRedraw();                                              // the badge fades, the triangle moves
         else if (_drawnFlash)
@@ -164,7 +164,7 @@ internal sealed partial class BattleInfoLayer : Control
 
     private static float Alpha(ulong from, double rise, double hold, double fade)
     {
-        double t = (Time.GetTicksMsec() - from) / 1000.0;
+        double t = (UiClock.Msec - from) / 1000.0;
         double a = t < rise ? t / rise : t < rise + hold ? 1 : 1 - (t - rise - hold) / fade;
         return (float)Math.Clamp(a, 0, 1);
     }

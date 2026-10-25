@@ -39,6 +39,9 @@ public partial class GalleryScreen : Control
 
     private const int Tolerance = 8;
 
+    /// <summary>Where the views' clock stands as each entry is dumped (<see cref="UiClock.Frames"/>): an hour in.</summary>
+    private const ulong ClockStart = 3_600_000;
+
     private readonly IReadOnlyList<GalleryEntry> _entries = GalleryEntries.All();
     private Control _side = null!;
     private ItemList _list = null!;
@@ -146,7 +149,8 @@ public partial class GalleryScreen : Control
         _area.AddChild(_host);
         _shown = index;
         var entry = _entries[index];
-        _stage = new GalleryStage(_host, _font, _faces, _presenter);
+        _stage = new GalleryStage(_host, _font, _faces, _presenter, () => new GamePresenter(
+            new ScenarioText(GameData.ScenarioDirectory), GameData.Cgs(), _glyphs, new ScenarioScripts(GameData.ScenarioDirectory)));
         string note = entry.Note;
         try
         {
@@ -182,32 +186,36 @@ public partial class GalleryScreen : Control
     // ---------------------------------------------------------------- the dump (docs/ui/gallery.md, §5)
 
     private sealed record DumpedEntry(string Id, string Section, string Title, string? Save, string Note, string? File, string? Sha256,
-        string? Error, string? Since = null, int Differing = 0);
+        string? Error, string? Since = null, int Differing = 0, int[]? Box = null);
 
     /// <summary>
     /// The picture against the former dump's of the same name: "new" without one, else "changed" or "same" by
-    /// <see cref="ChangedPixels"/>, and how many pixels differ.
+    /// <see cref="ChangedPixels"/>, how many pixels differ and the box round them (left, top, right, bottom; null: none).
     /// </summary>
-    private (string? Since, int Differing) Compare(Image picture, string file)
+    private (string? Since, int Differing, int[]? Box) Compare(Image picture, string file)
     {
         if (PreviousDirectory is null)
-            return (null, 0);
+            return (null, 0, null);
         string path = System.IO.Path.Combine(PreviousDirectory, file);
         if (!System.IO.File.Exists(path) || Image.LoadFromFile(path) is not { } before)
-            return ("new", 0);
+            return ("new", 0, null);
         if (before.GetSize() != picture.GetSize())
-            return ("changed", picture.GetWidth() * picture.GetHeight());
+            return ("changed", picture.GetWidth() * picture.GetHeight(), null);
         before.Convert(Image.Format.Rgba8);
         var now = (Image)picture.Duplicate();
         now.Convert(Image.Format.Rgba8);
         byte[] a = before.GetData(), b = now.GetData();
-        int differing = 0;
+        int differing = 0, width = picture.GetWidth();
+        int left = int.MaxValue, top = int.MaxValue, right = -1, bottom = -1;
         for (int i = 0; i < a.Length; i += 4)
         {
-            if (Math.Abs(a[i] - b[i]) > Tolerance || Math.Abs(a[i + 1] - b[i + 1]) > Tolerance || Math.Abs(a[i + 2] - b[i + 2]) > Tolerance)
-                differing++;
+            if (Math.Abs(a[i] - b[i]) <= Tolerance && Math.Abs(a[i + 1] - b[i + 1]) <= Tolerance && Math.Abs(a[i + 2] - b[i + 2]) <= Tolerance)
+                continue;
+            differing++;
+            int x = i / 4 % width, y = i / 4 / width;
+            (left, top, right, bottom) = (Math.Min(left, x), Math.Min(top, y), Math.Max(right, x), Math.Max(bottom, y));
         }
-        return (differing > ChangedPixels ? "changed" : "same", differing);
+        return (differing > ChangedPixels ? "changed" : "same", differing, right < 0 ? null : [left, top, right, bottom]);
     }
 
     private async Task DumpAsync(string directory)
@@ -224,17 +232,23 @@ public partial class GalleryScreen : Control
         for (int i = 0; i < 4; i++)
             await ToSignal(RenderingServer.Singleton, RenderingServerInstance.SignalName.FramePostDraw);
         var dumped = new List<DumpedEntry>();
+        var tree = GetTree();
+        Action step = UiClock.Step;
+        tree.ProcessFrame += step;                              // the views' clock goes a frame at a time while dumping
         for (int i = 0; i < _entries.Count; i++)
         {
             var entry = _entries[i];
             if (Only is not null && !Only.Contains(entry.Id))
                 continue;
+            UiClock.Frames(ClockStart);
             Show(i);
             if (_place is null)
             {
                 dumped.Add(new(entry.Id, entry.Section, entry.Title, entry.Save, entry.Note, null, null, _note.Text));
                 continue;
             }
+            for (int frame = 0; frame < entry.Settle * 60; frame++)
+                await ToSignal(tree, SceneTree.SignalName.ProcessFrame);
             for (int frame = 0; frame < 4; frame++)
                 await ToSignal(RenderingServer.Singleton, RenderingServerInstance.SignalName.FramePostDraw);
             var image = GetViewport().GetTexture().GetImage();
@@ -248,9 +262,11 @@ public partial class GalleryScreen : Control
             string path = System.IO.Path.Combine(directory, file);
             picture.SavePng(path);
             string hash = Convert.ToHexString(SHA256.HashData(System.IO.File.ReadAllBytes(path))).ToLowerInvariant();
-            var (since, differing) = Compare(picture, file);
-            dumped.Add(new(entry.Id, entry.Section, entry.Title, entry.Save, entry.Note, file, hash, null, since, differing));
+            var (since, differing, box) = Compare(picture, file);
+            dumped.Add(new(entry.Id, entry.Section, entry.Title, entry.Save, entry.Note, file, hash, null, since, differing, box));
         }
+        tree.ProcessFrame -= step;
+        UiClock.Real();
         var manifest = new
         {
             Written = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),

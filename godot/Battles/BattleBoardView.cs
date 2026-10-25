@@ -478,7 +478,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         if (gauge != _gaugeValues)
         {
             if (!instant && gauge.Item1 == _gaugeValues.Rounds && gauge.Item2 < _gaugeValues.Left)
-                (_spentSegment, _spentAt) = (_gaugeValues.Rounds - _gaugeValues.Left, Time.GetTicksMsec());   // the round that went out flashes
+                (_spentSegment, _spentAt) = (_gaugeValues.Rounds - _gaugeValues.Left, UiClock.Msec);   // the round that went out flashes
             else
                 _spentSegment = -1;
             _gaugeValues = gauge;
@@ -885,7 +885,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         if (actingPlace != _actingPlace)
         {
             _actingPlace = actingPlace;
-            (_blinkFrom, _blinkOn) = (Time.GetTicksMsec(), true);        // a new actor: the frame shown first
+            (_blinkFrom, _blinkOn) = (UiClock.Msec, true);        // a new actor: the frame shown first
         }
         _actingFrame.Visible = actingPlace is not null;
         if (actingPlace is { } a)
@@ -1050,7 +1050,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         StepAdvantageTip();
         if (_actingPlace is null)
             return;
-        bool on = (Time.GetTicksMsec() - _blinkFrom) / BlinkMs % 2 == 0;
+        bool on = (UiClock.Msec - _blinkFrom) / BlinkMs % 2 == 0;
         if (on == _blinkOn)
             return;
         _blinkOn = on;
@@ -1091,7 +1091,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     public void FlashOrder(int unit)
     {
         RestoreOrderLabel();
-        (_flashUnit, _flashFrom) = (unit, Time.GetTicksMsec());
+        (_flashUnit, _flashFrom) = (unit, UiClock.Msec);
         StepOrderFlash();
     }
 
@@ -1099,7 +1099,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     {
         if (_flashUnit is not { } unit)
             return;
-        if ((Time.GetTicksMsec() - _flashFrom) / 1000.0 >= FlashRise + FlashHold + FlashFade)
+        if ((UiClock.Msec - _flashFrom) / 1000.0 >= FlashRise + FlashHold + FlashFade)
         {
             RestoreOrderLabel();
             return;
@@ -1118,7 +1118,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     /// <summary>The flashing label's colour now: the muted colour toward its saturated self and back.</summary>
     private Color FlashColour()
     {
-        double t = (Time.GetTicksMsec() - _flashFrom) / 1000.0;
+        double t = (UiClock.Msec - _flashFrom) / 1000.0;
         float k = t < FlashRise ? (float)(t / FlashRise)
             : t < FlashRise + FlashHold ? 1
             : (float)Math.Max(0, 1 - (t - FlashRise - FlashHold) / FlashFade);
@@ -1335,8 +1335,8 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         if (rounds > 0)
         {
             float height = (TubeHeight - 2 * SegmentPad - SegmentGap * (rounds - 1)) / rounds;
-            double pulse = 0.5 - 0.5 * Math.Cos(Time.GetTicksMsec() / 1000.0 * 2 * Math.PI / PulseSeconds);
-            double flash = _spentSegment >= 0 ? (Time.GetTicksMsec() - _spentAt) / 1000.0 / SpentFlashSeconds : 1;
+            double pulse = 0.5 - 0.5 * Math.Cos(UiClock.Msec / 1000.0 * 2 * Math.PI / PulseSeconds);
+            double flash = _spentSegment >= 0 ? (UiClock.Msec - _spentAt) / 1000.0 / SpentFlashSeconds : 1;
             if (flash >= 1)
                 _spentSegment = -1;
             for (int i = 0; i < rounds; i++)

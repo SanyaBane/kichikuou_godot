@@ -1,4 +1,5 @@
 using Godot;
+using Kichikuou.Game.Strategy;
 using Kichikuou.Original.Content;
 using Kichikuou.Original.Content.Battles;
 
@@ -78,7 +79,7 @@ internal sealed partial class BattleBoardView
         }
         else if (value != meter.To)
         {
-            (meter.From, meter.To, meter.Start) = (meter.Shown, value, Time.GetTicksMsec());
+            (meter.From, meter.To, meter.Start) = (meter.Shown, value, UiClock.Msec);
             bool blow = _strike is { } k && card.Record == (card.Place.Side == BattleSide.Player ? k.Unit : k.Cmdr);
             (meter.Delay, meter.Seconds, meter.Even) = blow
                 ? (ExchangeCountersView.Delay, ExchangeCountersView.RunSeconds, true)    // with the scene's counters
@@ -93,7 +94,7 @@ internal sealed partial class BattleBoardView
     /// <summary>The counters that run go on; while skipping they reach their values at once.</summary>
     private void StepMeters()
     {
-        ulong now = Time.GetTicksMsec();
+        ulong now = UiClock.Msec;
         foreach (var meter in _meters.Values)
         {
             if (!meter.Running)
