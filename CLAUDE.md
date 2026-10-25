@@ -145,8 +145,8 @@ Next (owner's requests 2026-10-11/12): an interface of our own next to the origi
 by the player, and an Android build later (docs/backlog.md). The game logic stays the original's.
 The UI survey's parts 1-4 are docs/ui/survey.md. **The house style every screen of ours follows is
 [docs/ui/style.md](docs/ui/style.md)** — read it before a new screen's survey and mock-ups, and keep it current; the screen gallery
-(each screen of ours shown from the kept saves without playing to it; Debug → Screen Gallery…, `godot/ScreenGallery`) is
-docs/ui/gallery.md, its step 1 built. Decision 25 (2026-10-12): our own screens come one by
+(each screen of ours shown from the kept saves without playing to it, the battle board from a replayed capture; Debug →
+Screen Gallery…, `godot/ScreenGallery`) is docs/ui/gallery.md, built (steps 1-5, 2026-10-25). Decision 25 (2026-10-12): our own screens come one by
 one over the original layout, chosen by Option → Interface (since 2026-10-21 always ours, the original's
 screens left to `--interface original`; BIZ UDGothic is the default font); the first, the deployment table over
 `Sﾌﾞﾀｲ`'s grid, is built with the rest of its screen and its third part (the party as a formation with
@@ -599,10 +599,12 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
 - Render our exchange effects' frames (Debug → Effects; docs/ui/battle-screen.md, "The exchange's effects"), in a
   window — the pointer is not moved: `<Godot console exe> --path godot -- --effects --shots <dir> --quit`. Sengoku
   Rance's reference frames come from `tools/sengoku/effect_frames.py`, into a folder outside the repository.
-- **The screen gallery** (docs/ui/gallery.md): our screens in their states from the kept saves, no playing to them —
+- **The screen gallery** (docs/ui/gallery.md): our screens in their states from the kept saves, no playing to them, the
+  battle board from a golden capture replayed into a presenter and held at a moment (`ScreenGallery/GalleryBattle`) —
   `powershell -ExecutionPolicy Bypass -File tools/ui/gallery.ps1 [-Steel] [-Touch] [-Only id,…]` builds, dumps every
-  entry into `screen-gallery/` at the root (git ignores it; `KICHIKUOU_UI_GALLERY_DIR` elsewhere) in a window, ~10 s a pass, nothing moves the pointer,
-  and writes its `index.html` with what changed since the last dump first; the game alone:
+  entry into `screen-gallery/` at the root (git ignores it; `KICHIKUOU_UI_GALLERY_DIR` elsewhere) in a window, ~33 s a
+  pass, nothing moves the pointer, and writes its `index.html` with what changed since the last dump first (two dumps of
+  the same build are identical: our views animate by `Strategy/UiClock`, which the dump steps a frame at a time); the game alone:
   `<Godot console exe> --path godot -- --screen-gallery [id,…] --shots <dir> [--previous <dir>] --quit`. After a change
   to a screen in it, run it and look at what changed; a screen's look starts there before a kept save's run. Its
   state comes from `user://saves-week18-command`, the week-18 save saved in `COMMAND` by `--save-command DIR` (any

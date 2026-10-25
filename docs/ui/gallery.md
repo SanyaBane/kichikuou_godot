@@ -1,4 +1,4 @@
-# The screen gallery — our screens without playing to them (plan, 2026-10-25; step 1 built)
+# The screen gallery — our screens without playing to them (plan and build, 2026-10-25; steps 1-5 built)
 
 Our Storybook: a development mode that shows each of our screens on its own, in its states, fed from the kept saves,
 and dumps them all as pictures in seconds. In code and commands it is the *screen* gallery (`ScreenGallery`,
@@ -259,6 +259,8 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
    dump repeatable. A full Lacquer pass, 78 entries, takes ~33 s. Not yet looked at by the owner.
 5. **The house style:** docs/ui/style.md, §7 gains "a changed screen updates its entries and the gallery is rebuilt";
    CLAUDE.md's commands list the gallery.
+   **Built (2026-10-25):** style.md §7's step 4 makes a screen's entries part of its build and says that a changed
+   screen updates its entries and the gallery is dumped again; CLAUDE.md's commands list the gallery with the board.
 
 ## 8. Questions for the owner
 

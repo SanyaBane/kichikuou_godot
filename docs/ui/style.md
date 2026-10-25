@@ -182,15 +182,19 @@ interface does not change.
    The images hold the player's CGs and stay outside the repository. Mock-ups come before code even after a choice in
    words.
 3. **The owner chooses** — often a mix ("D2 and D5 together") or a new round.
-4. **Build**: the model in `Original.Content` with tests first, then the Godot view, then unattended play that dumps
-   it (`--auto --shots`, with the screen's switch: `--treasure`, `--saveload`, `--refill`, `--scout`, `--touch`…).
+4. **Build**: the model in `Original.Content` with tests first, then the Godot view, then its entries in the screen
+   gallery (below) — the screen in its states, a state edit in `GalleryStates` with a test — and unattended play that
+   dumps it in its flow (`--auto --shots`, with the screen's switch: `--treasure`, `--saveload`, `--refill`,
+   `--scout`, `--touch`…).
 5. **The owner's look** in a window; the document says where it stands ("awaiting the owner's look", "accepted",
    "not yet on the tablet") and lists the agent's own choices for the owner to confirm.
 
-The screen gallery (docs/ui/gallery.md; step 1 built: Treasure, Harem, Subordinates, the message windows) shows our
-screens in their states without playing to them: Debug → Screen Gallery…, and `tools/ui/gallery.ps1` dumps them
-outside the repository with an index marking what changed since the last dump. A screen that is in it gets its new
-states as entries when it changes.
+The screen gallery (docs/ui/gallery.md) shows every screen of ours in its states without playing to them — the
+strategic screens from the kept save `saves-week18-command`, the battle board from a golden capture replayed and held:
+Debug → Screen Gallery…, and `tools/ui/gallery.ps1` dumps them outside the repository (~33 s a pass) with an index
+marking what changed since the last dump; two dumps of the same build are identical. **A changed screen updates its
+entries and the gallery is dumped again**: look at what changed, what was meant and what was not, before a kept
+save's run; a new screen comes with its entries.
 
 Debug sliders (Menu Row Height…) are for trying sizes, not for the release. Never dump a list of every face.
 
