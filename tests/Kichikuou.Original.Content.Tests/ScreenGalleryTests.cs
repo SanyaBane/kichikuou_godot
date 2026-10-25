@@ -115,6 +115,19 @@ public class ScreenGalleryTests
     }
 
     [Fact]
+    public void The_academy_under_way_marks_construction_in_the_menu_and_the_strip()
+    {
+        var s = new GameState { StoryStage = 1, Ui_CmdHaremAvail = 1, Ui_CmdMerchantAvail = 1, Ui_CmdSubordAvail = 1 };
+        GalleryStates.AcademyUnderWay(s);
+        var items = CommandPhase.MenuItems(s);
+        Assert.Equal(229, items[0].At.Line);                                       // ○Construction: it still opens Cﾃｲﾄ
+        var menu = CommandMenu.For(items, [.. items.Select(_ => "○Item")], s.BuildWeeksLeft.Value)!;
+        Assert.Equal((true, "5 weeks left"), (menu.Commands[0].Enabled, menu.Commands[0].WeeksText));
+        var strip = StatusStrip.For(s, (at, _) => at.File == "Cﾃｲﾄ.ADV" ? $"[Line {at.Line}]" : "Leazas\nBudget: 1\nTroops: 2\nMonth 1, Week 1")!;
+        Assert.Equal(new BuildingUnderWay("Line 339", 5), strip.Groups[0].Uses[0].UnderWay);
+    }
+
+    [Fact]
     public void A_province_menu_is_its_city_files_by_the_owner()
     {
         var s = new GameState { StoryStage = 1, Prov_Count = 10, Ui_CmdOwnCityAvail = 1 };

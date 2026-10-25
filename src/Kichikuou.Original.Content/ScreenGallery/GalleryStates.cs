@@ -86,6 +86,18 @@ public static class GalleryStates
     }
 
     /// <summary>
+    /// The Military Academy under way with 5 of its 16 weeks left, as Construction (<c>Cﾃｲﾄ.ADV:372-373</c>) and the weeks
+    /// since leave it: the building at 2, the timer counting down (<c>COMMAND.ADV:18-23</c>); the week's construction free
+    /// again, as in any week after the order.
+    /// </summary>
+    public static void AcademyUnderWay(GameState s)
+    {
+        s.Bld_GirlsAcademy = 2;
+        s.BuildWeeksLeft = 5;
+        s.Ui_CmdBuildAvail = 1;
+    }
+
+    /// <summary>
     /// The first menu of <paramref name="province"/>'s city file as <c>COMMAND</c> calls it on a click there, with
     /// <c>Prov_Cur</c> set to it: an own city's (<c>Cｼﾊｲﾄｼ</c>), else a city's next to ours (<c>Cﾃｷﾄｼ</c>).
     /// </summary>

@@ -38,6 +38,12 @@ internal static partial class GalleryEntries
         yield return new("command-menu-spent", Map, "Command panel: the week's commands spent", Week18,
             "Made up: Construction, Harem, Merchant and Subordinates spent at once (GalleryStates.CommandsSpent).",
             g => CommandPanel(g, GalleryStates.CommandsSpent));
+        yield return new("command-menu-building", Map, "Command panel: a building under way", Week18,
+            "Made up: the Military Academy under way, 5 weeks left (GalleryStates.AcademyUnderWay).",
+            g => CommandPanel(g, GalleryStates.AcademyUnderWay));
+        yield return new("command-menu-building-tip", Map, "Status strip: the building's tooltip", Week18,
+            "Made up: the Military Academy under way, 5 weeks left; the tooltip as the pointer over Construction's tag shows it.",
+            g => CommandPanel(g, GalleryStates.AcademyUnderWay, tip: true));
         yield return new("province-menu", Map, "Province menu: an enemy's, Oaks (6)", Week18, "",
             g => Province(g, Oaks));
         yield return new("province-menu-own", Map, "Province menu: our own, Leazas Castle (1)", Week18, "",
@@ -110,8 +116,11 @@ internal static partial class GalleryEntries
         }
     }
 
-    /// <summary>Our command panel over the map with the status strip over its top, as a right click on the map opens it.</summary>
-    private static Action<Rect2>? CommandPanel(GalleryStage g, Action<GameState> edit)
+    /// <summary>
+    /// Our command panel over the map with the status strip over its top, as a right click on the map opens it; with
+    /// <paramref name="tip"/> the strip's building tooltip shown.
+    /// </summary>
+    private static Action<Rect2>? CommandPanel(GalleryStage g, Action<GameState> edit, bool tip = false)
     {
         if (g.State(Week18) is not { } s)
             return null;
@@ -125,6 +134,8 @@ internal static partial class GalleryEntries
         var button = TouchCommandsButton(g, closes: true);
         var bar = g.Add(new StatusStripView(g.Font, g.Faces));
         bar.Show(strip);
+        if (tip)
+            bar.ShowBuildingTip();
         return area =>
         {
             GalleryStage.Fill(backdrop, area);
