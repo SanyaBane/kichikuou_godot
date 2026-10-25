@@ -49,5 +49,6 @@ public class SkipButtonsTests
     {
         var skip = SkipButtons.Battle;
         Assert.True(skip.Y >= 758 && skip.Y + skip.H <= 800);
+        Assert.True(skip.X >= SkipButtons.BattleLeftRailRight);         // clear of the left rail beside the cards
     }
 }

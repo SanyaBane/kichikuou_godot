@@ -49,7 +49,10 @@ public static class SkipButtons
 
     /// <summary>
     /// Our battle screen's Skip: in the strip under the cards (y 758-800, free on every battle screen, the player's turn
-    /// included), at its left — the scenes' corner.
+    /// included), at its left, right of the left rail that stands beside the cards (x 0-140; owner's A, 2026-10-25).
     /// </summary>
-    public static Box Battle { get; } = new(12, ScreenHeight - 38, 150, 34);
+    public static Box Battle { get; } = new(146, ScreenHeight - 38, 150, 34);
+
+    /// <summary>The right edge of the touch battle screen's left rail, which <see cref="Battle"/> keeps clear of.</summary>
+    public const int BattleLeftRailRight = 140;
 }

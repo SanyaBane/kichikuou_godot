@@ -17,8 +17,11 @@ internal sealed partial class CardPortrait : Control
 {
     private static UiPalette Ui => UiPalettes.For(UiPart.Battle);
 
-    public const float Width = 118, Height = 140, Face = 112;
-    private const float FaceTop = 2, StatsText = 17, LevelText = 14, BadgeRadius = 10;
+    // The touch mode's cards are narrower (BattleBoardView: the board between the rails low, owner's A, 2026-10-25): the
+    // face gives way so that the card's text keeps its size.
+    public static readonly float Width = TouchMode.On ? 70 : 118, Face = TouchMode.On ? 66 : 112, Height = Face + 28;
+    private static readonly float StatsText = TouchMode.On ? 14 : 17, StatsSpan = TouchMode.On ? Width : Face;   // the touch mode's numbers across the whole width
+    private const float FaceTop = 2, LevelText = 14, BadgeRadius = 10;
     private static readonly Color Up = new(120 / 255f, 210 / 255f, 120 / 255f), Down = new(235 / 255f, 110 / 255f, 100 / 255f);
     private static readonly Color Own = new(170 / 255f, 200 / 255f, 1f);                    // the commander's own values
     private static readonly Color Plate = new(0, 0, 0, 0.55f), Shadow = new(0, 0, 0, 0.85f);
@@ -92,7 +95,7 @@ internal sealed partial class CardPortrait : Control
         }
 
         int statsPx = Math.Max(6, (int)Math.Round(StatsText * s));
-        float cell = Face * s / 4, rowTop = face.End.Y + 2 * s, rowHeight = (Height - FaceTop - Face - 2) * s;
+        float cell = StatsSpan * s / 4, left = (Width - StatsSpan) / 2 * s, rowTop = face.End.Y + 2 * s, rowHeight = (Height - FaceTop - Face - 2) * s;
         float baseline = rowTop + (rowHeight + font.GetAscent(statsPx) - font.GetDescent(statsPx)) / 2;
         var values = new (int Value, int Modifier, bool Own)[]
         {
@@ -107,7 +110,7 @@ internal sealed partial class CardPortrait : Control
             var colour = own ? Own : modifier > 0 ? Up : modifier < 0 ? Down : Ui.Text;
             string text = value.ToString();
             float width = font.GetStringSize(text, HorizontalAlignment.Left, -1, statsPx).X;
-            var at = new Vector2(face.Position.X + cell * (i + 0.5f) - width / 2, baseline);
+            var at = new Vector2(left + cell * (i + 0.5f) - width / 2, baseline);
             DrawString(font, at + new Vector2(1, 1) * Math.Max(1, s), text, HorizontalAlignment.Left, -1, statsPx, Shadow);
             DrawString(font, at, text, HorizontalAlignment.Left, -1, statsPx, colour);
         }

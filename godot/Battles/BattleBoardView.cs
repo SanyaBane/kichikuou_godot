@@ -22,28 +22,31 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
 {
     private static UiPalette Ui => UiPalettes.For(UiPart.Battle);
 
+    // The touch mode's board stands between the rails, which come down beside it into the thumbs' reach (owner's A,
+    // 2026-10-25; docs/ui/touch.md, "The battle within the thumbs' reach"): the cards narrower, their text as large.
+    private static readonly bool Narrow = TouchMode.On;
+
     // The layout in the pixels of a 1280×800 window (two to a script pixel).
     private static readonly Rect2 SidesArea = new(0, 0, 1280, 410);
     private static readonly Rect2 SceneArea = new(128, 0, 1024, 410);
     private static readonly Rect2 WindowsArea = new(312, 0, 656, 410);       // 640×400 script pixels ×1.025
     private static readonly Rect2 StripArea = new(10, 374, 1260, 32);         // over the scene's foot (owner, 2026-10-16)
-    private static readonly Rect2 PlayerNameArea = new(10, 424, 574, 24);   // up under the separator (owner, 2026-10-16)
-    private static readonly Rect2 EnemyNameArea = new(696, 424, 574, 24);
-    private static readonly Rect2 GaugeArea = new(608, 450, 64, 324);      // the caption a word a line (owner, 2026-10-24)
+    private static readonly Rect2 PlayerNameArea = Narrow ? new(146, 424, 454, 24) : new(10, 424, 574, 24);   // up under the separator (owner, 2026-10-16)
+    private static readonly Rect2 EnemyNameArea = Narrow ? new(680, 424, 454, 24) : new(696, 424, 574, 24);
+    private static readonly Rect2 GaugeArea = Narrow ? new(612, 450, 56, 324) : new(608, 450, 64, 324);      // the caption a word a line (owner, 2026-10-24)
     private static readonly Rect2 SpeakerLeft = new(8, 6, 300, 398);
     private static readonly Rect2 SpeakerRight = new(972, 6, 300, 398);
-    private static readonly Vector2 CardSize = new(282, 150);
+    private static readonly Vector2 CardSize = Narrow ? new(223, 150) : new(282, 150);
     private static readonly float[] CardRows = [450, 608];
-    private const float FaceSize = 118;
     private const float TextSize = 17;
 
     /// <summary>The cards' columns: the player's back row far left, its front row, the enemy's front row, its back row far right.</summary>
     private static float Column(BattlePlace place) => (place.Side, place.Slot) switch
     {
-        (BattleSide.Player, 3 or 4) => 10,
-        (BattleSide.Player, _) => 302,
-        (BattleSide.Enemy, 1 or 2) => 696,
-        _ => 988,
+        (BattleSide.Player, 3 or 4) => Narrow ? 146 : 10,
+        (BattleSide.Player, _) => Narrow ? 377 : 302,
+        (BattleSide.Enemy, 1 or 2) => Narrow ? 680 : 696,
+        _ => Narrow ? 911 : 988,
     };
 
     internal static Rect2 CardArea(BattlePlace place) =>
@@ -768,7 +771,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         int size = Math.Max(8, (int)Math.Round(PillText * s));
         string text = BattleCommands.ActionName(fighter.Action);
         float textWidth = font.GetStringSize(text, HorizontalAlignment.Left, -1, size).X;
-        float column = fighter.Side == BattleSide.Player ? 4 + FaceSize + 8 : 4;   // the text column: padding, face, separation
+        float column = fighter.Side == BattleSide.Player ? 4 + CardPortrait.Width + 8 : 4;   // the text column: padding, face, separation
         float h = PillHeight * s, icon = PillIcon * s, gap = 6 * s, side = 9 * s;
         var rect = new Rect2((fighter.Card.Position.X + column) * s, (fighter.Card.End.Y - PillBottom - PillHeight) * s,
             side + icon + gap + textWidth + side, h);

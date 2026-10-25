@@ -2,6 +2,7 @@ using Godot;
 using Kichikuou.Game.Strategy;
 using Kichikuou.Original.Combat;
 using Kichikuou.Original.Content.Battles;
+using Kichikuou.Original.Content.Strategy;
 
 namespace Kichikuou.Game.Battles;
 
@@ -13,11 +14,13 @@ namespace Kichikuou.Game.Battles;
 // our panels, the rows as the command panel's, Retreat as Turn END, the attacks lit gold, the target framed in gold.
 internal sealed partial class BattleCommandLayer
 {
-    // The rails stand in the scene's blurred sides (the scene's own picture is 1024 wide between them).
-    private static readonly Rect2 LeftRail = new(0, 0, 128, 410), RightRail = new(1152, 0, 128, 410);
+    // The rails stand beside the cards, in the screen's lower half where the thumbs are (owner's A, 2026-10-25; docs/ui/touch.md,
+    // "The battle within the thumbs' reach"; the board narrower between them, BattleBoardView.Narrow). Both fill from the
+    // foot up (owner, 2026-10-25): Defend, Wait, … Retreat on the left, the target's first attack under the right thumb.
+    private static readonly Rect2 LeftRail = new(0, 414, SkipButtons.BattleLeftRailRight, 386), RightRail = new(1140, 414, 140, 386);
     private const float RailInset = 4, RailPad = 10, RailText = 18;     // the panel 4 in from the rail, the rows 10 off its foot
-    private const float LeftTop = 64, LeftButton = 56, LeftGap = 10, LeftWidth = 104;      // under the acting unit's name
-    private const float RightTop = 80, RightButton = 66, RightGap = 10, RightWidth = 108;  // under TARGET and the target's name
+    private const float LeftTop = 60, LeftButton = 54, LeftGap = 8, LeftWidth = 116;       // under the acting unit's name
+    private const float RightTop = 78, RightButton = 76, RightGap = 10, RightWidth = 116;  // under TARGET and the target's name
     private const float NameText = 19, TargetText = 17, TitleText = 13, AttackText = 19, RetreatText = 15;
     private static readonly Color TargetName = Color8(150, 225, 255);
     private static readonly Color AttackTop = Color8(255, 214, 110), AttackBottom = Color8(214, 140, 40);
@@ -118,15 +121,16 @@ internal sealed partial class BattleCommandLayer
     }
 
     /// <summary>
-    /// <paramref name="count"/> buttons <paramref name="width"/> wide down <paramref name="rail"/> from <paramref name="top"/>:
-    /// <paramref name="height"/> high, <paramref name="gap"/> apart, smaller when that many do not fit.
+    /// <paramref name="count"/> buttons <paramref name="width"/> wide up <paramref name="rail"/> from its foot, the first
+    /// lowest, no higher than <paramref name="top"/>: <paramref name="height"/> high, <paramref name="gap"/> apart, smaller
+    /// when that many do not fit.
     /// </summary>
     private static Rect2[] Column(Rect2 rail, float top, float height, float gap, float width, int count)
     {
         float room = rail.Size.Y - top - RailInset - RailPad;
         float h = count == 0 ? height : Math.Min(height, (room - gap * (count - 1)) / count);
-        float x = rail.Position.X + (rail.Size.X - width) / 2;
-        return [.. Enumerable.Range(0, count).Select(i => new Rect2(x, rail.Position.Y + top + i * (h + gap), width, h))];
+        float x = rail.Position.X + (rail.Size.X - width) / 2, foot = rail.End.Y - RailInset - RailPad;
+        return [.. Enumerable.Range(0, count).Select(i => new Rect2(x, foot - h - i * (h + gap), width, h))];
     }
 
     private (bool Right, int Index) RailAt(Vector2 p)
@@ -179,19 +183,19 @@ internal sealed partial class BattleCommandLayer
             Ui.DrawPanel(this, rail.Grow(-RailInset), s);
         if (font is not null && _state is { } state)
         {
-            RailLabel(_brush, LeftRail, 30, BattleBoard.Card(state, _commands!.Acting)?.Name ?? "", NameText, Ui.Name);
-            RailRule(LeftRail, 52);
-            RailLabel(_cinzel, RightRail, 24, "TARGET", TitleText, Ui.Subtitle);
+            RailLabel(_brush, LeftRail, 26, BattleBoard.Card(state, _commands!.Acting)?.Name ?? "", NameText, Ui.Name);
+            RailRule(LeftRail, 48);
+            RailLabel(_cinzel, RightRail, 22, "TARGET", TitleText, Ui.Subtitle);
             if (_target is { } t)
             {
-                RailLabel(_brush, RightRail, 48, BattleBoard.Card(state, t)?.Name ?? "", TargetText, TargetName);
+                RailLabel(_brush, RightRail, 46, BattleBoard.Card(state, t)?.Name ?? "", TargetText, TargetName);
                 if (_banners.Count == 0)
                 {
                     RailLabel(font, RightRail, RightTop + 20, "No attack", RailText - 2, Ui.Quiet);
                     RailLabel(font, RightRail, RightTop + 42, "reaches it", RailText - 2, Ui.Quiet);
                 }
             }
-            RailRule(RightRail, 68);
+            RailRule(RightRail, 66);
             foreach (var (rect, text, choice, place) in RailButtons())
             {
                 bool hot = place == _hotRail;
@@ -212,13 +216,14 @@ internal sealed partial class BattleCommandLayer
         DrawSetTransform(Vector2.Zero, 0, Vector2.One);
     }
 
-    /// <summary>One line centred on <paramref name="rail"/>, its middle at <paramref name="y"/>, smaller if it would not fit.</summary>
+    /// <summary>One line centred on <paramref name="rail"/>, its middle <paramref name="y"/> below the rail's top, smaller if it would not fit.</summary>
     private void RailLabel(Font font, Rect2 rail, float y, string text, float size, Color colour) =>
-        Centred(font, text, size, new Rect2(rail.Position.X + RailInset + 3, y - 20, rail.Size.X - 2 * RailInset - 6, 40), colour);
+        Centred(font, text, size, new Rect2(rail.Position.X + RailInset + 3, rail.Position.Y + y - 20, rail.Size.X - 2 * RailInset - 6, 40), colour);
 
-    /// <summary>A dim gold rule across the rail's panel at <paramref name="y"/>.</summary>
+    /// <summary>A dim gold rule across the rail's panel <paramref name="y"/> below the rail's top.</summary>
     private void RailRule(Rect2 rail, float y) =>
-        DrawLine(new Vector2(rail.Position.X + 20, y), new Vector2(rail.End.X - 20, y), Ui.DimGold, Lacquer.Line(1, _scale));
+        DrawLine(new Vector2(rail.Position.X + 20, rail.Position.Y + y), new Vector2(rail.End.X - 20, rail.Position.Y + y), Ui.DimGold,
+            Lacquer.Line(1, _scale));
 
     /// <summary>An attack on the right rail: lit gold, its name in the brush face; brighter with a glow while held.</summary>
     private void AttackButton(Rect2 r, string text, bool hot)

@@ -148,7 +148,8 @@ hover and the right button. So the tablet keeps our layout and gets only what to
   `TouchMode.Pointer`/`GlobalPointer`/`LocalPointer`, the last touch's place under `--touch` on PC. On Android nothing
   changes. Unattended play with `--touch` checks it: its pointer moved onto the week's target plate must hover nothing
   before its tap (`AutoPlateClickAsync`). Still different from the tablet: the frame's pulse, full screen, a real finger.
-- **The battle's rails** (`godot/Battles/BattleCommandLayer.Touch.cs`): in the scene's blurred sides (layout x 0-128
+- **The battle's rails** (`godot/Battles/BattleCommandLayer.Touch.cs`; since 2026-10-25 beside the cards, "The battle
+  within the thumbs' reach" below): in the scene's blurred sides (layout x 0-128
   and 1152-1280, y 0-410). Left: the acting unit's name and `BattleCommands.ContextMenu(acting)` as buttons (Defend,
   Wait, the items, Auto-Atk, Auto-Def, Retreat in red), 112×56, smaller when more do not fit. Right: TARGET, the
   target's name and `BattleCommands.Banners(target)` as the banners' gold buttons, 112×64. A rail button chooses at
@@ -426,6 +427,24 @@ the exchanges, when the rails are not up, so it can take the rail's foot then.
 **Recommendation: A** — every button inside the arcs, the scene whole, the cards where they are (a target's tap stays
 low); its cost is the board's width (the cards' portraits narrower). B keeps the cards whole but shrinks the scene and
 pushes buttons to the reach's edge; C is the cheapest but sends the card taps up.
+
+**The owner's choice (2026-10-25): A and A2, the left rail filled from the foot up as well** (Defend lowest, Retreat at
+its top). Built, in the touch mode only (PC's board, its cards and its dialog as before; the gallery's Lacquer pass
+unchanged):
+
+- **The rails** (`godot/Battles/BattleCommandLayer.Touch.cs`): x 0-140 and 1140-1280, y 414-800, the panels 4 in. Left:
+  the acting unit's name, a rule, its commands 116×54 from the rail's foot up (Defend, Wait, the items, Auto-Atk,
+  Auto-Def, Retreat); right: TARGET, the target's name, a rule, its attacks 116×76 from the foot up. The scene's blurred
+  sides are bare again.
+- **The board between them** (`BattleBoardView.Narrow`): the cards 223×150 in the columns 146, 377, 680, 911, the round's
+  gauge 56 wide between, the armies' names over their columns; the card's text keeps its size and the portrait gives way
+  (`CardPortrait`: 70 wide, the face 66, its four numbers at 14 across the whole width).
+- **The retreat question** (`BattleDialogLayer`, A2): a lacquer box at (146, 470) 330 wide, beside the left rail's top
+  where Retreat stands; the question, a rule, the items side by side as buttons 80 high, a warning item (Retreat) as
+  Turn END and last, so Cease Retreat is nearer the rail.
+- **The battle's Skip** (`SkipButtons.Battle`) right of the left rail, (146, 762).
+- Looked at by the agent (2026-10-25) in the screen gallery's touch pass (`battle-turn`, `retreat`, `menu`,
+  `exchange-counters`, the info boxes). Not yet on the tablet.
 
 ## Phones (put off)
 

@@ -22,6 +22,14 @@ internal sealed partial class BattleDialogLayer : Control
     private const float QuestionText = 18, ItemText = 17;
     private static readonly Color Dim = new(0, 0, 0, 0.35f);
 
+    // The touch mode's dialog (owner's A2, 2026-10-25; docs/ui/touch.md, "The battle within the thumbs' reach"): beside the
+    // left rail's top, where its Retreat stands, the items side by side as buttons a thumb's size; a warning item
+    // (Retreat) farthest from the rail, so a second tap on the rail's button does not confirm it.
+    private static readonly Vector2 TouchCorner = new(146, 470);
+    private const float TouchWidth = 330, TouchButton = 80, TouchGap = 12, TouchPad = 14, TouchItemText = 19;
+    private readonly bool _touch = TouchMode.On;
+    private readonly FontFile _brush = Lacquer.Brush();
+
     private float _scale = 1;
     private BattleDialog? _dialog;
     private IReadOnlyList<string> _labels = [];
@@ -64,30 +72,54 @@ internal sealed partial class BattleDialogLayer : Control
         QueueRedraw();
     }
 
-    /// <summary>The box: centred over the scene.</summary>
+    /// <summary>The box: centred over the scene; in the touch mode beside the left rail's top.</summary>
     private Rect2 Box
     {
         get
         {
+            if (_touch)
+                return new Rect2(TouchCorner, new Vector2(TouchWidth, TouchPad * 2 + QuestionLine * 2 + Rule + TouchGap + TouchButton));
             float height = Pad * 2 + QuestionLine * 2 + Rule + (_dialog?.Items.Count ?? 0) * RowHeight;
             return new Rect2(SceneArea.GetCenter() - new Vector2(Width, height) / 2, new Vector2(Width, height));
         }
     }
 
     /// <summary>The top of the first item's row.</summary>
-    private float ItemsTop => Box.Position.Y + Pad + QuestionLine * 2 + Rule;
+    private float ItemsTop => Box.Position.Y + (_touch ? TouchPad + TouchGap : Pad) + QuestionLine * 2 + Rule;
+
+    /// <summary>Item <paramref name="item"/>'s place: a row, or in the touch mode a button in the row of them.</summary>
+    private Rect2 ItemRect(int item)
+    {
+        var box = Box;
+        if (!_touch)
+            return new Rect2(box.Position.X + Pad - 4, ItemsTop + item * RowHeight, box.Size.X - (Pad - 4) * 2, RowHeight);
+        int count = _dialog?.Items.Count ?? 0;
+        float w = (box.Size.X - TouchPad * 2 - TouchGap * (count - 1)) / Math.Max(1, count);
+        return new Rect2(box.Position.X + TouchPad + TouchColumn(item) * (w + TouchGap), ItemsTop, w, TouchButton);
+    }
+
+    /// <summary>Item <paramref name="item"/>'s column in the touch mode's row: the warning items last, farthest from the rail.</summary>
+    private int TouchColumn(int item)
+    {
+        var order = _dialog!.Items.Select((it, i) => (it.Warning, i)).OrderBy(x => x.Warning).Select(x => x.i).ToList();
+        return order.IndexOf(item);
+    }
 
     /// <summary>The item under <paramref name="p"/>, or -1.</summary>
     private int ItemAt(Vector2 p)
     {
         if (_dialog is null || !Box.HasPoint(p))
             return -1;
-        int row = (int)Math.Floor((p.Y - ItemsTop) / RowHeight);
-        return p.Y >= ItemsTop && row < _dialog.Items.Count ? row : -1;
+        for (int i = 0; i < _dialog.Items.Count; i++)
+        {
+            if (ItemRect(i).HasPoint(p))
+                return i;
+        }
+        return -1;
     }
 
     /// <summary>The centre of item <paramref name="item"/> (layout pixels; unattended play).</summary>
-    public Vector2 ItemCentre(int item) => new(Box.GetCenter().X, ItemsTop + (item + 0.5f) * RowHeight);
+    public Vector2 ItemCentre(int item) => ItemRect(item).GetCenter();
 
     // ------------------------------------------------------------------ input
 
@@ -147,6 +179,11 @@ internal sealed partial class BattleDialogLayer : Control
             return;
         float s = _scale;
         DrawRect(new Rect2(Vector2.Zero, new Vector2(1280, 800) * s), Dim);
+        if (_touch)
+        {
+            DrawTouch();
+            return;
+        }
         var box = new Rect2(Box.Position * s, Box.Size * s);
         DrawRect(new Rect2(box.Position + new Vector2(4, 5) * s, box.Size), new Color(0, 0, 0, 0.3f));
         DrawRect(box, Ui.Row);
@@ -171,5 +208,43 @@ internal sealed partial class BattleDialogLayer : Control
             DrawString(font, new Vector2(row.Position.X + (4 + MarkWidth) * s, baseline), _labels[i], HorizontalAlignment.Left, -1, item,
                 _dialog.Items[i].Warning ? Ui.Minus : Ui.Text);
         }
+    }
+
+    /// <summary>The touch mode's box in the rails' lacquer: the question, a rule, the items as buttons (a warning one as Turn END).</summary>
+    private void DrawTouch()
+    {
+        float s = _scale;
+        DrawSetTransform(Vector2.Zero, 0, new Vector2(s, s));               // in layout pixels below
+        var box = Box;
+        DrawRect(new Rect2(box.Position + new Vector2(4, 5), box.Size), new Color(0, 0, 0, 0.3f));
+        Ui.DrawPanel(this, box, s);
+        if (GetThemeDefaultFont() is { } font)
+        {
+            float left = box.Position.X + TouchPad + 4, y = box.Position.Y + TouchPad;
+            foreach (var (line, colour) in new[] { (_dialog!.Question, Ui.Text), (_dialog.Note, Ui.Quiet) })
+            {
+                DrawString(font, new Vector2(left, Lacquer.Baseline(new Rect2(left, y, 0, QuestionLine), font, (int)QuestionText)), line,
+                    HorizontalAlignment.Left, -1, (int)QuestionText, colour);
+                y += QuestionLine;
+            }
+            y += Rule / 2;
+            DrawLine(new Vector2(box.Position.X + TouchPad, y), new Vector2(box.End.X - TouchPad, y), Ui.DimGold, Lacquer.Line(1, s));
+            for (int i = 0; i < _dialog.Items.Count; i++)
+            {
+                var r = ItemRect(i);
+                bool hot = i == _hot || i == _pressed;
+                if (_dialog.Items[i].Warning)
+                    Ui.DrawRedButton(this, r, hot, false, s);
+                else
+                    Ui.DrawRowBox(this, r, hot, s);
+                var (face, size, colour) = _dialog.Items[i].Warning ? ((Font)_brush, TouchItemText, Color.Color8(250, 226, 160)) : (font, TouchItemText - 2, Ui.Text);
+                int px = (int)size;
+                while (px > 11 && face.GetStringSize(_labels[i], fontSize: px).X > r.Size.X - 12)
+                    px--;
+                DrawString(face, new Vector2(r.Position.X, Lacquer.Baseline(r, face, px)), _labels[i], HorizontalAlignment.Center, r.Size.X, px,
+                    colour);
+            }
+        }
+        DrawSetTransform(Vector2.Zero, 0, Vector2.One);
     }
 }
