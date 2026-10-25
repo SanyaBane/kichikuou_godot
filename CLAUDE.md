@@ -602,7 +602,7 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
 - **The screen gallery** (docs/ui/gallery.md): our screens in their states from the kept saves, no playing to them, the
   battle board from a golden capture replayed into a presenter and held at a moment (`ScreenGallery/GalleryBattle`) —
   `powershell -ExecutionPolicy Bypass -File tools/ui/gallery.ps1 [-Steel] [-Touch] [-Only id,…]` builds, dumps every
-  entry into `screen-gallery/` at the root (git ignores it; `KICHIKUOU_UI_GALLERY_DIR` elsewhere) in a window, ~33 s a
+  entry (`-Only`: those, into the passes as they are) into `screen-gallery/` at the root (git ignores it; `KICHIKUOU_UI_GALLERY_DIR` elsewhere) in a window, ~33 s a
   pass, nothing moves the pointer, and writes its `index.html` with what changed since the last dump first (two dumps of
   the same build are identical: our views animate by `Strategy/UiClock`, which the dump steps a frame at a time); the game alone:
   `<Godot console exe> --path godot -- --screen-gallery [id,…] --shots <dir> [--previous <dir>] --quit`. After a change

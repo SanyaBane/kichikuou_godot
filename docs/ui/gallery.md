@@ -120,7 +120,7 @@ state, or is tagged "made up". The first ones are the states the docs record as 
 ## 5. Dump and diff
 
 - `<Godot exe> --path godot -- --screen-gallery [id,…] --shots <dir> [--previous <dir>] --quit` dumps every entry (or
-  the listed ones) as `<id>.png` at 1280×800, plus `manifest.json` (each entry's id, section, title, save, note, hash,
+  the listed ones, written into the manifest already in `<dir>`) as `<id>.png` at 1280×800, plus `manifest.json` (each entry's id, section, title, save, note, hash,
   error; the palette, the font, touch). A window is needed (views draw nothing headless); nothing moves the system
   pointer. With `--previous` each picture is compared with the former one of its name: `since` is new, changed or
   same, `differing` the pixels that differ by more than 8 in a channel — changed above 600 —, `box` the rectangle round
@@ -137,8 +137,12 @@ state, or is tagged "made up". The first ones are the states the docs record as 
   tab and above its pictures; in a pass the changed and new entries first with the former picture beside them, then
   the sections, each once. `<dir>` is
   `-Out`, else `KICHIKUOU_UI_GALLERY_DIR` (`local.env`), else `screen-gallery/` at the root; a folder inside the
-  repository that git does not ignore is refused (`git check-ignore`). `-Only` replaces the pass's `current` with
-  those entries alone (a quick check; the next full run marks the rest new).
+  repository that git does not ignore is refused (`git check-ignore`). `-Only` keeps each pass whole (the owner,
+  2026-10-25): only the chosen entries' former pictures are copied to `previous`, their new ones replace them in
+  `current`, and the game writes them into the pass's manifest (`GalleryScreen.Merged`), the other entries kept as
+  they were, marked same — so a narrow change dumps its own entries alone and the tab stays complete. A change in a
+  shared place (a palette, the message windows, the drawing every screen uses) still takes a full run: only it shows
+  what changed where it was not meant to.
 - After a change to a screen: update its entries, run the script, look at what changed — what was meant and what was
   not.
 

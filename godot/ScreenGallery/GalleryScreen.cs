@@ -19,7 +19,7 @@ namespace Kichikuou.Game.ScreenGallery;
 /// </summary>
 public partial class GalleryScreen : Control
 {
-    /// <summary>The entries to dump, by id; null: all.</summary>
+    /// <summary>The entries to dump, by id, written into the former dump in the directory (<see cref="Merged"/>); null: all.</summary>
     public IReadOnlyList<string>? Only { get; init; }
 
     /// <summary>Where to dump the entries; null: the gallery is looked at.</summary>
@@ -188,6 +188,32 @@ public partial class GalleryScreen : Control
     private sealed record DumpedEntry(string Id, string Section, string Title, string? Save, string Note, string? File, string? Sha256,
         string? Error, string? Since = null, int Differing = 0, int[]? Box = null);
 
+    private sealed record Manifest(List<DumpedEntry> Entries);
+
+    private static readonly JsonSerializerOptions ManifestJson =
+        new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+    /// <summary>
+    /// A dump of <see cref="Only"/> some entries written into the pass's former dump (<paramref name="manifestPath"/>, its
+    /// pictures left in place): the entries in the gallery's order, the dumped ones new, the others as the former dump
+    /// has them but "same" (this dump compared none of them); an entry the gallery no longer has is left out.
+    /// </summary>
+    private List<DumpedEntry> Merged(string manifestPath, List<DumpedEntry> dumped)
+    {
+        if (!System.IO.File.Exists(manifestPath))
+            return dumped;
+        var former = JsonSerializer.Deserialize<Manifest>(System.IO.File.ReadAllText(manifestPath), ManifestJson)?.Entries ?? [];
+        var merged = new List<DumpedEntry>();
+        foreach (var entry in _entries)
+        {
+            if (dumped.Find(d => d.Id == entry.Id) is { } now)
+                merged.Add(now);
+            else if (former.Find(d => d.Id == entry.Id) is { } kept)
+                merged.Add(kept with { Since = kept.Since is null ? null : "same", Differing = 0, Box = null });
+        }
+        return merged;
+    }
+
     /// <summary>
     /// The picture against the former dump's of the same name: "new" without one, else "changed" or "same" by
     /// <see cref="ChangedPixels"/>, how many pixels differ and the box round them (left, top, right, bottom; null: none).
@@ -270,17 +296,19 @@ public partial class GalleryScreen : Control
         }
         tree.ProcessFrame -= step;
         UiClock.Real();
+        string manifestPath = System.IO.Path.Combine(directory, "manifest.json");
+        var entries = Only is null ? dumped : Merged(manifestPath, dumped);
         var manifest = new
         {
             Written = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
             Palette = UiPalettes.Chosen.Key,
             Font = _font.ToString(),
             Touch = TouchMode.On,
-            Entries = dumped,
+            Entries = entries,
         };
-        System.IO.File.WriteAllText(System.IO.Path.Combine(directory, "manifest.json"),
-            JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
-        GD.Print($"Kichikuou: the screen gallery dumped {dumped.Count(d => d.File is not null)} of {dumped.Count} entries into {directory}.");
+        System.IO.File.WriteAllText(manifestPath, JsonSerializer.Serialize(manifest, ManifestJson));
+        GD.Print($"Kichikuou: the screen gallery dumped {dumped.Count(d => d.File is not null)} of {dumped.Count} entries into {directory}"
+            + (entries == dumped ? "." : $", {entries.Count} in its manifest."));
         if (QuitWhenDone)
             GetTree().Quit(dumped.Any(d => d.Error is not null) ? 1 : 0);
     }
