@@ -270,6 +270,10 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
      Harem, Treasure and deployment have it (`EnemyAttackView.DrawTitle`). The other dates differ on purpose and stay
      as they are (the owner): the status strip's (18, the map's top), the week report's (17, under its banner's title) and the
      Save/Load screen's (the chosen save's title; "Saving:" in the foot's Gothic).
+   - `info-defence` showed no defence at all: the gallery gave the box to the info layer's `Show`, which draws only the
+     results and our panel, while the game flashes a defence (`Flash`). Now the board flashes it as `GameScreen` does and
+     the entry settles 0.35 s, the ribbon at its height. Found by the owner's remark on the touch mode's ribbon, whose text
+     ran together on the narrower card (docs/ui/touch.md, "The battle within the thumbs' reach").
 
 ## 8. Questions for the owner
 

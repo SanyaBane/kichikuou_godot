@@ -236,9 +236,10 @@ internal sealed partial class BattleInfoLayer : Control
         DrawLine(new Vector2(x0 - 6, y1 - 2), new Vector2(x1 + 6, y1 - 2), Accent * tint, Lacquer.Line(2, _k));
         DrawShield(x0 + 4, y0 + 6, 24, 28, 2, alpha);                      // on the tail: room for the mark at −21% (N5)
         var ribbon = new Rect2(x0, y0, x1 - x0, y1 - y0);
-        Outlined(_heavy, new Vector2(x0 + 26, Lacquer.Baseline(ribbon, _heavy, 19)), "DEFEND", 19, Colors.White * tint, tint);
-        float markWidth = _heavy.GetStringSize(box.Mark, fontSize: 16).X;
-        Outlined(_heavy, new Vector2(x1 - 10 - markWidth, Lacquer.Baseline(ribbon, _heavy, 16) + 1), box.Mark, 16, Accent * tint, tint);
+        var (mark, word, markSize) = RibbonText(box.Mark, x1 - x0 - 26 - 10);
+        Outlined(_heavy, new Vector2(x0 + 26, Lacquer.Baseline(ribbon, _heavy, word)), "DEFEND", word, Colors.White * tint, tint);
+        float markWidth = _heavy.GetStringSize(mark, fontSize: markSize).X;
+        Outlined(_heavy, new Vector2(x1 - 10 - markWidth, Lacquer.Baseline(ribbon, _heavy, markSize) + 1), mark, markSize, Accent * tint, tint);
 
         if (_speaking || box.Sentences is not [var sentence, ..])
             return;
@@ -252,6 +253,24 @@ internal sealed partial class BattleInfoLayer : Control
             DrawString(_bold, new Vector2(x, Lacquer.Baseline(caption, _bold, CaptionNameSize)), name, fontSize: CaptionNameSize, modulate: CaptionName * tint);
         DrawString(_gothic, new Vector2(x + nameWidth, Lacquer.Baseline(caption, _gothic, CaptionSize)), sentence, fontSize: CaptionSize,
             modulate: MessageWindowView.NarrationText * tint);
+    }
+
+    /// <summary>
+    /// The ribbon's "DEFEND" and <paramref name="mark"/> in <paramref name="room"/> pixels: as large as on PC's cards when they
+    /// fit; on the touch mode's narrower cards (owner, 2026-10-25) the mark's first word dropped ("ENEMY HIT −10%" to "HIT
+    /// −10%": the caption says the rest), then both smaller, down to four fifths.
+    /// </summary>
+    private (string Mark, int Word, int MarkSize) RibbonText(string mark, float room)
+    {
+        const int word = 19, markSize = 16, gap = 10;
+        float Need(string m, float k) =>
+            _heavy.GetStringSize("DEFEND", fontSize: (int)(word * k)).X + gap + _heavy.GetStringSize(m, fontSize: (int)(markSize * k)).X;
+        if (Need(mark, 1) > room && mark.IndexOf(' ') is > 0 and var space)
+            mark = mark[(space + 1)..];
+        float scale = 1;
+        while (scale > 0.8f && Need(mark, scale) > room)
+            scale -= 0.05f;
+        return (mark, (int)(word * scale), (int)(markSize * scale));
     }
 
     // The defence's caption (D5): at the scene's foot, above the order strip, from the scene's edge on the defender's side.

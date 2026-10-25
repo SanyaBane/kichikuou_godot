@@ -62,7 +62,8 @@ internal static partial class GalleryEntries
             g => Board(g, (p, m) => m.Kind == MomentKind.Key && p.Battle.InfoBox is { Kind: InfoBoxKind.Panel }));
         yield return new("info-defence", Battle, "Battle: a defence's ribbon", null,
             $"The battle of {DefenceCapture}, replayed and held at its first defence (the other battle has none).",
-            g => Board(g, (p, m) => m.Kind == MomentKind.Key && p.Battle.InfoBox is { Kind: InfoBoxKind.Defence }, file: DefenceCapture));
+            g => Board(g, (p, m) => m.Kind == MomentKind.Key && p.Battle.InfoBox is { Kind: InfoBoxKind.Defence }, file: DefenceCapture),
+            Settle: 0.35);                                                      // the ribbon at its height, as the look dumps it
         yield return new("info-results", Battle, "Battle: the results plate", null, CaptureNote + " The battle's tally.",
             g => Board(g, Results));
         yield return new("info-level-up", Battle, "Battle: a level-up on the results plate", null, CaptureNote + " The level-up's page after the tally.",
@@ -117,6 +118,8 @@ internal static partial class GalleryEntries
         }
         if (dialog)
             board.Dialog.Begin(BattleDialog.For(Original.Combat.Battle.RetreatMenu)!, p.Battle.Text);
+        if (p.Battle.InfoBox is { Kind: InfoBoxKind.Defence } defence)        // a defence flashes on its card, as GameScreen flashes it
+            board.Info.Flash(defence, defence.Place is { } at && BattleBoard.Card(s, at) is { } card ? card.Name : "");
         bool first = true, played = false;
         void Follow()
         {

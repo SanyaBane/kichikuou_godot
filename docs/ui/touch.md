@@ -443,6 +443,9 @@ unchanged):
   where Retreat stands; the question, a rule, the items side by side as buttons 80 high, a warning item (Retreat) as
   Turn END and last, so Cease Retreat is nearer the rail.
 - **The battle's Skip** (`SkipButtons.Battle`) right of the left rail, (146, 762).
+- **A defence's ribbon** on the narrower card (owner, 2026-10-25: its text ran together): "DEFEND" and the mark at their
+  size when they fit, else the mark's first word dropped ("HIT −10%"; the caption over the field says the rest), then
+  both smaller, down to four fifths (`BattleInfoLayer.RibbonText`); PC's ribbon as before.
 - Looked at by the agent (2026-10-25) in the screen gallery's touch pass (`battle-turn`, `retreat`, `menu`,
   `exchange-counters`, the info boxes), and in the unattended `--touch` battle look ("The tablet (now)"): its taps on
   the rails, another target and Melee pass to round 2, a party of four fits (`touch-rails`, `touch-target`). The retreat
