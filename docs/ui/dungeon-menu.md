@@ -117,3 +117,30 @@ Retreat but splits the screen between the hands for one menu.
   picture, window 113 with the header (the gallery's own lines; `GalleryEntries.Map.cs`, `Ladder`).
 - Looked at by the agent (2026-10-26) in the gallery's both passes and in the dungeon look with `--touch` (the week-18
   save, `--dungeon --until round-1`). Not yet on the tablet.
+
+## 6. Touch: the menu before a search (owner, 2026-10-26)
+
+The owner's request, after the gallery's `dungeon-entry`: the dungeon's own menu before a search within the thumb's
+reach. `L_0076a` (`Cﾒｲｷｭｳ.ADV:238-305`, `DungeonCommand.MainMenuAsync`) opens it over the dungeon's picture, window 113
+under it with the dungeon's name and state; its items are Start Search (`:267`), Bring Merim (`:272`) or Leave Merim
+(`:278`), Bring Pink Cow (`:284`, the Uncurse Dungeon (dungeon 10) only), God's Door (`:290`, the Ancient Ruins
+(dungeon 30) only) and Return (`:295`), last — two to four items. A cancel is Return. Today it is our plain `]` menu
+(`SceneMenuView`) at the boot's selection box, at the screen's top. Its items tell it from every other menu, as the
+ladder's do, so a view of its own changes this menu alone.
+
+The mock-ups are `tools/ui/mock_touch_dungeon_entry.py` (its parts `mock_touch_panel.py`'s), over the gallery's touch
+dump `dungeon-entry` with the menu taken away: the Monsters' Cave (dungeon 2) unsearched (two items) and the Ancient
+Ruins (dungeon 30) in progress with Merim and God's Door (four; the cave's picture standing in); the command is in its
+docstring, the images stay outside the repository. All three use the ladder's rail, right of window 113. Round E1:
+
+- **A — the province menu's rail**: rows 212×46 from the foot up, Start Search lowest with a small gold arrow, Return
+  212×60 at the foot, as the map's Close and the province menu's Return.
+- **B — the floor ladder's rail**: Start Search 212×104 in the corner, exactly where Descend stands once the search
+  begins, a gold arrow down; Return on top, as the ladder's Retreat; Merim, the cow and God's Door between them, the rail
+  growing upwards.
+- **C — Start Search at the right thumb, Return at the left**: Start Search in Descend's place, the other items above it;
+  Return alone in the lower left corner.
+
+**Recommendation: B** — the ladder's language the owner chose (the way out on top, the way down in the corner), and one
+place for the thumb from entering to the deepest floor: Start Search, then Descend, at the same spot. A puts Return
+where the thumb rests, the menu's least wanted item; C splits the hands for a menu that is mostly entered.
