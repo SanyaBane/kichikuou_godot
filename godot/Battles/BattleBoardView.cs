@@ -759,8 +759,9 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         }
     }
 
-    // The action's pill (owner, 2026-10-13, mock-up D): under the card's state line, at the text column's left.
-    private const float PillHeight = 24, PillBottom = 8, PillText = 16, PillIcon = 16;
+    // The action's pill (owner, 2026-10-13, mock-up D): under the card's state line, on the side away from the face —
+    // an enemy's at the card's left, a player's at its right (owner, 2026-10-25).
+    private const float PillHeight = 24, PillBottom = 8, PillText = 16, PillIcon = 16, PillInset = 4;
     private static readonly Color PillInk = new(0.12f, 0.09f, 0.05f);
 
     /// <summary>A pill in the accent colour on the fighter's card: the action's icon and our name for it (<see cref="BattleCommands.ActionName"/>).</summary>
@@ -771,10 +772,12 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         int size = Math.Max(8, (int)Math.Round(PillText * s));
         string text = BattleCommands.ActionName(fighter.Action);
         float textWidth = font.GetStringSize(text, HorizontalAlignment.Left, -1, size).X;
-        float column = fighter.Side == BattleSide.Player ? 4 + CardPortrait.Width + 8 : 4;   // the text column: padding, face, separation
         float h = PillHeight * s, icon = PillIcon * s, gap = 6 * s, side = 9 * s;
-        var rect = new Rect2((fighter.Card.Position.X + column) * s, (fighter.Card.End.Y - PillBottom - PillHeight) * s,
-            side + icon + gap + textWidth + side, h);
+        float width = side + icon + gap + textWidth + side;
+        float left = fighter.Side == BattleSide.Player
+            ? (fighter.Card.End.X - PillInset) * s - width
+            : (fighter.Card.Position.X + PillInset) * s;
+        var rect = new Rect2(left, (fighter.Card.End.Y - PillBottom - PillHeight) * s, width, h);
         var box = new StyleBoxFlat { BgColor = Ui.HoverLine with { A = _spotShown } };
         box.SetCornerRadiusAll((int)(h / 2));
         _spotlight.DrawStyleBox(box, rect);

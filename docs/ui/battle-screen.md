@@ -198,7 +198,8 @@ picture, the slot panels) is not shown. How it is built:
   follows took the held button and closed at once (fixed 2026-10-13, `GameScreen.WaitForKeyAsync`). Instead each fighter's card shows a pill in the accent colour under its state line for the
   whole exchange: an icon and our name (`BattleCommands.ActionName`: Melee, Bow, Magic, Special — a
   special's own name is not known after the choice —, Defense; `BattleScene.Actions`, from the labels'
-  event to the field's redraw). A player's special leaves the enemy's line blank: no pill there.
+  event to the field's redraw). A player's special leaves the enemy's line blank: no pill there. The pill sits on the
+  side away from the face: an enemy's at the card's left, a player's at its right (owner, 2026-10-25).
 - **The dialogue panel** (owner, 2026-10-13, mock-up A of three, from the owner's Sengoku Rance example;
   docs/sengoku/04-screen.md §10): the speech bubbles (`WAO_SUB` 141/142, the player unit's, and 151/152, the
   enemy commander's — the flavour lines of `FIGT_M.ADV` and `FIGT.ADV:772`'s error line) are not shown;
