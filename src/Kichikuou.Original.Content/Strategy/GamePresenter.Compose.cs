@@ -290,8 +290,8 @@ public sealed partial class GamePresenter
 
     /// <summary>The open menu as <c>COMMAND.ADV</c>'s command menu (<see cref="Strategy.CommandMenu"/>), or null.</summary>
     public CommandMenu? CommandMenu =>
-        _menuItems is { } items && MenuItems is { } texts && State is not null && !BattleShows
-            ? Strategy.CommandMenu.For(items, texts)
+        _menuItems is { } items && MenuItems is { } texts && State is { } s && !BattleShows
+            ? Strategy.CommandMenu.For(items, texts, s.BuildWeeksLeft.Value)
             : null;
 
     /// <summary>The status strip for the state now (<see cref="Strategy.StatusStrip"/>), or null.</summary>

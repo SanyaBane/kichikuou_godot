@@ -36,8 +36,11 @@ public enum WeekAction
     Dungeon,
 }
 
-/// <summary>One command in the strip: its name, and whether it is still free this week.</summary>
-public sealed record WeekUse(string Text, WeekAction Action, bool Free);
+/// <summary>
+/// One command in the strip: its name, and whether it is still free this week; Construction's
+/// <paramref name="UnderWay"/>, the building under way, is a third state over free and spent (owner, 2026-10-25).
+/// </summary>
+public sealed record WeekUse(string Text, WeekAction Action, bool Free, BuildingUnderWay? UnderWay = null);
 
 /// <summary>A group of the week's commands under its caption (Castle, Subordinates, Map).</summary>
 public sealed record WeekGroup(string Caption, IReadOnlyList<WeekUse> Uses);
@@ -57,7 +60,7 @@ public sealed record StatusStrip(string Nation, bool Thieves, string Date, IRead
 
     /// <summary>What the strip shows, as one string: a view draws again when it changes.</summary>
     public string Key => string.Join("|", [Nation, Date, .. Status.Select(s => $"{s.Label}={s.Value}"),
-        .. Groups.SelectMany(g => g.Uses.Select(u => $"{u.Text}:{u.Free}"))]);
+        .. Groups.SelectMany(g => g.Uses.Select(u => $"{u.Text}:{u.Free}:{u.UnderWay?.Name}:{u.UnderWay?.WeeksLeft}"))]);
 
     /// <summary>
     /// The strip for <paramref name="state"/>; <paramref name="text"/> formats a text run with its numbers — the
@@ -95,7 +98,8 @@ public sealed record StatusStrip(string Nation, bool Thieves, string Date, IRead
                 status[1] = (label, status[1].Value);
         }
         string date = $"LP {year} · {lines[3].Replace(", ", " · ").Replace(",", " ·")}";
-        return new StatusStrip(lines[0].Replace('’', '\''), thieves, date, status, GroupsOf(state, thieves));
+        return new StatusStrip(lines[0].Replace('’', '\''), thieves, date, status,
+            GroupsOf(state, thieves, BuildingUnderWay.For(state, text)));
     }
 
     /// <summary>A printed status line as its label and its value ("Troops: 6251" → "Troops", "6,251").</summary>
@@ -123,9 +127,9 @@ public sealed record StatusStrip(string Nation, bool Thieves, string Date, IRead
     /// menu's ◎/○/△ is their sum while <c>Ui_CmdSubordAvail</c> is set, △ when it is not), the map's (an own
     /// city, an attack, a dungeon). The thieves' week has Harem and Subordinates in its menu, and the map's attack
     /// as Pillage, the item <c>Cﾃｷﾄｼ</c> offers then (<c>Iﾄｳｿﾞｸ.ADV:111, 311</c> read and spend its flag), without a dungeon: the hideout costs nothing and the other dungeons give no search before stage 1
-    /// (<c>Cﾒｲｷｭｳ.ADV:168-173</c>, DGN-20).
+    /// (<c>Cﾒｲｷｭｳ.ADV:168-173</c>, DGN-20). Construction carries the building under way, <paramref name="building"/>.
     /// </summary>
-    private static IReadOnlyList<WeekGroup> GroupsOf(GameState s, bool thieves)
+    private static IReadOnlyList<WeekGroup> GroupsOf(GameState s, bool thieves, BuildingUnderWay? building)
     {
         bool subordinates = s.Ui_CmdSubordAvail != 0;
         if (thieves)
@@ -136,7 +140,7 @@ public sealed record StatusStrip(string Nation, bool Thieves, string Date, IRead
             ];
         return [
             new WeekGroup("Castle", [
-                new WeekUse("Construction", WeekAction.Build, s.Ui_CmdBuildAvail != 0),
+                new WeekUse("Construction", WeekAction.Build, s.Ui_CmdBuildAvail != 0, building),
                 new WeekUse("Harem", WeekAction.Harem, s.Ui_CmdHaremAvail != 0),
                 new WeekUse("Merchant", WeekAction.Trade, s.Ui_CmdMerchantAvail != 0)]),
             new WeekGroup("Subordinates", [

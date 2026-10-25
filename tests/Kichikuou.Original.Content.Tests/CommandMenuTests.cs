@@ -40,6 +40,24 @@ public class CommandMenuTests
     }
 
     [Fact]
+    public void Construction_shows_the_weeks_left_while_a_building_is_under_way()
+    {
+        string[] texts = ["○Construction", "○Harem", "Turn END"];
+        var plain = CommandMenu.For(Items(229, 241, 310), texts)!;
+        Assert.Equal([0, 0], plain.Commands.Select(c => c.WeeksLeft));
+        Assert.Null(plain.Commands[0].WeeksText);
+
+        var later = CommandMenu.For(Items(229, 241, 310), texts, 5)!;               // a later week: ○, still opens Cﾃｲﾄ
+        Assert.Equal(new CommandMenuItem(1, "Construction", CommandAction.Build, true, 5), later.Commands[0]);
+        Assert.Equal("5 weeks left", later.Commands[0].WeeksText);
+        Assert.Equal(0, later.Commands[1].WeeksLeft);
+
+        var ordered = CommandMenu.For(Items(235, 241, 310), ["×Construction", "○Harem", "Turn END"], 16)!;   // the week it is ordered
+        Assert.Equal(new CommandMenuItem(1, "Construction", CommandAction.Build, false, 16), ordered.Commands[0]);
+        Assert.Equal("1 week left", CommandMenu.For(Items(229, 241, 310), texts, 1)!.Commands[0].WeeksText);
+    }
+
+    [Fact]
     public void Other_menus_are_not_the_command_menu()
     {
         Assert.Null(CommandMenu.For(Items(229, 300), ["○Construction", "Think"]));                  // Turn END not last

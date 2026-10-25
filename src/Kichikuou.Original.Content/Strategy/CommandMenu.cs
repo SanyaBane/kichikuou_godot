@@ -25,9 +25,15 @@ public enum CommandAction
 /// One command of the command menu: <paramref name="Choice"/> answers the menu (its 1-based place),
 /// <paramref name="Text"/> is the item's text without its mark. A × item and Merchant's △ only open the menu
 /// again in the original (<paramref name="Enabled"/> false); Subordinates' △ still opens <c>Cﾌﾞｶ</c>. The
-/// week's uses are on the status strip (<see cref="StatusStrip"/>).
+/// week's uses are on the status strip (<see cref="StatusStrip"/>). Construction's <paramref name="WeeksLeft"/>,
+/// above 0 while a building is under way, is a third look over lit and spent (owner, 2026-10-25); it changes no
+/// answer: ○ still opens <c>Cﾃｲﾄ</c> (Maris's refusal), × still does nothing.
 /// </summary>
-public sealed record CommandMenuItem(int Choice, string Text, CommandAction Action, bool Enabled);
+public sealed record CommandMenuItem(int Choice, string Text, CommandAction Action, bool Enabled, int WeeksLeft = 0)
+{
+    /// <summary>"5 weeks left", "1 week left" while a building is under way.</summary>
+    public string? WeeksText => WeeksLeft > 0 ? new BuildingUnderWay(null, WeeksLeft).WeeksText : null;
+}
 
 /// <summary>
 /// One of the menu's other items (→ Leazas Castle, All Data, Think, TADA), or one half of Load/Save: our panel
@@ -54,9 +60,9 @@ public sealed record CommandMenu(
     /// <summary>
     /// The command menu <paramref name="items"/> make, their <paramref name="texts"/> as shown (mark and
     /// text); or null when they are not <c>COMMAND.ADV</c>'s command menu (Turn END last: <c>:310</c>, the
-    /// thieves' <c>:218</c>).
+    /// thieves' <c>:218</c>). <paramref name="buildWeeksLeft"/> is <c>BuildWeeksLeft</c>, for Construction's row.
     /// </summary>
-    public static CommandMenu? For(IReadOnlyList<SceneMenuItem> items, IReadOnlyList<string> texts)
+    public static CommandMenu? For(IReadOnlyList<SceneMenuItem> items, IReadOnlyList<string> texts, int buildWeeksLeft = 0)
     {
         if (items.Count == 0 || items.Count != texts.Count || items.Any(i => i.At.File != File))
             return null;
@@ -69,7 +75,8 @@ public sealed record CommandMenu(
             string text = Unmarked(texts[i]);
             int line = items[i].At.Line;
             if (CommandOf(line) is var (action, enabled))
-                commands.Add(new CommandMenuItem(i + 1, text, action, enabled));
+                commands.Add(new CommandMenuItem(i + 1, text, action, enabled,
+                    action == CommandAction.Build ? Math.Max(0, buildWeeksLeft) : 0));
             else if (line is 292 or 214)
             {
                 // Load/Save as two rows (owner, 2026-10-19): the words the item joins, else ours.
