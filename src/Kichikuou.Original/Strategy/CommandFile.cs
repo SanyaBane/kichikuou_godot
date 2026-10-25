@@ -131,8 +131,11 @@ public abstract class CommandFile(OriginalScriptContext script, string file, ISc
         Script.ShowAsync(new EngineEvent("IZ", [State.Tmp0019, State.Tmp0020]));
 
     /// <summary>A menu item <c>$label$ 'text' $</c> registered at <paramref name="line"/>, its text on the next line.</summary>
-    protected SceneMenuItem MenuItem(int line) =>
-        new(Ref(line), [new CapturedText(Ref(line + 1), [], [])]);
+    protected SceneMenuItem MenuItem(int line) => MenuItemOf(File, line);
+
+    /// <summary>A menu item of <paramref name="file"/> registered at <paramref name="line"/>, its text on the next line.</summary>
+    protected static SceneMenuItem MenuItemOf(string file, int line) =>
+        new(new ScriptRef(file, line), [new CapturedText(new ScriptRef(file, line + 1), [], [])]);
 
     /// <summary>
     /// <c>]</c>: the player picks one of <paramref name="items"/> (1-based) or cancels (0); the

@@ -444,64 +444,21 @@ public sealed class CommandPhase(OriginalScriptContext script)
         if (State.Ev_CommandMode == 2)                                  // :180-182 the map only
             return Next.Map;
 
-        var menu = new List<(SceneMenuItem Item, Command Command)>();
-        void Add(int itemLine, Command command) =>
-            menu.Add((new SceneMenuItem(Ref(itemLine), [new CapturedText(Ref(itemLine + 1), [], [])]), command));
-
+        IReadOnlyList<(SceneMenuItem Item, Command Command)> menu;
         if (State.StoryStage == 0)                                      // :183-221
         {
             await ThievesStatusAsync();
-            if (State.Ui_CmdHaremAvail != 0)
-                Add(187, Command.Harem);                                // ○Harem
-            if (State.Ui_CmdHaremAvail == 0)
-                Add(193, Command.Unavailable);                          // ×Harem
-            if (State.Ui_CmdSubordAvail != 0)
-                Add(199, Command.Subordinates);                         // ○Subordinates
-            if (State.Ui_CmdSubordAvail == 0)
-                Add(205, Command.Subordinates);                         // △Subordinates
-            Add(210, Command.ToHideout);
+            menu = Menu(State);
+            await LineBreakAsync();                                     // :213, :217: the R after → Hideout and Load/Save
             await LineBreakAsync();
-            Add(214, Command.LoadSave);
-            await LineBreakAsync();
-            Add(218, Command.TurnEnd);
         }
         else                                                            // :226-313
         {
             await LeazasStatusAsync();
-            if (State.Ui_CmdBuildAvail != 0)
-                Add(229, Command.Construction);                         // ○Construction
-            if (State.Ui_CmdBuildAvail == 0)
-                Add(235, Command.Unavailable);                          // ×Construction
-            if (State.Ui_CmdHaremAvail != 0)
-                Add(241, Command.Harem);
-            if (State.Ui_CmdHaremAvail == 0)
-                Add(247, Command.Unavailable);
-            Add(252, Command.Treasure);
-            if (State.Ui_CmdMerchantAvail != 0)
-                Add(257, Command.Merchant);                             // ○Merchant
-            if (State.Ui_CmdMerchantAvail == 0)
-                Add(263, Command.Unavailable);                          // △Merchant blocks
-            if (State.Ui_CmdSubordAvail != 0)
-            {
-                // QUIRK: STR-20 — with the flag set but neither sub-flag, no Subordinates item at all.
-                var left = State.CmdAvail_SubTroops + State.CmdAvail_SubTalk;
-                if (left == 2)
-                    Add(270, Command.Subordinates);                     // ◎Subordinates
-                if (left == 1)
-                    Add(276, Command.Subordinates);                     // ○Subordinates
-            }
-            if (State.Ui_CmdSubordAvail == 0)
-                Add(283, Command.Subordinates);                         // △Subordinates still opens Cﾌﾞｶ
-            Add(288, Command.ToCastle);
+            menu = Menu(State);
+            await LineBreakAsync();                                     // :291, :295, :299: the R after → Castle, Load/Save, All Data
             await LineBreakAsync();
-            Add(292, Command.LoadSave);
             await LineBreakAsync();
-            Add(296, Command.AllData);
-            await LineBreakAsync();
-            Add(300, Command.Think);
-            if (State.DebugMode == 1)
-                Add(305, Command.Debug);
-            Add(310, Command.TurnEnd);
         }
 
         int choice = await Script.SelectAsync(menu.Select(i => i.Item).ToArray());  // ]
@@ -515,6 +472,70 @@ public sealed class CommandPhase(OriginalScriptContext script)
             return Next.Map;
         }
         return await RunCommandAsync(menu[choice - 1].Command);
+    }
+
+    /// <summary>
+    /// The command menu's items as <paramref name="state"/> offers them, after the status window (<c>:183-221</c> the
+    /// thieves', <c>:226-313</c> Leazas'), each with what it runs; their line breaks are printed by the caller. Also
+    /// what our screen gallery opens the menu with (docs/ui/gallery.md).
+    /// </summary>
+    public static IReadOnlyList<SceneMenuItem> MenuItems(GameState state) => [.. Menu(state).Select(i => i.Item)];
+
+    private static List<(SceneMenuItem Item, Command Command)> Menu(GameState state)
+    {
+        var menu = new List<(SceneMenuItem Item, Command Command)>();
+        void Add(int itemLine, Command command) =>
+            menu.Add((new SceneMenuItem(Ref(itemLine), [new CapturedText(Ref(itemLine + 1), [], [])]), command));
+
+        if (state.StoryStage == 0)                                      // :183-221
+        {
+            if (state.Ui_CmdHaremAvail != 0)
+                Add(187, Command.Harem);                                // ○Harem
+            if (state.Ui_CmdHaremAvail == 0)
+                Add(193, Command.Unavailable);                          // ×Harem
+            if (state.Ui_CmdSubordAvail != 0)
+                Add(199, Command.Subordinates);                         // ○Subordinates
+            if (state.Ui_CmdSubordAvail == 0)
+                Add(205, Command.Subordinates);                         // △Subordinates
+            Add(210, Command.ToHideout);
+            Add(214, Command.LoadSave);
+            Add(218, Command.TurnEnd);
+        }
+        else                                                            // :226-313
+        {
+            if (state.Ui_CmdBuildAvail != 0)
+                Add(229, Command.Construction);                         // ○Construction
+            if (state.Ui_CmdBuildAvail == 0)
+                Add(235, Command.Unavailable);                          // ×Construction
+            if (state.Ui_CmdHaremAvail != 0)
+                Add(241, Command.Harem);
+            if (state.Ui_CmdHaremAvail == 0)
+                Add(247, Command.Unavailable);
+            Add(252, Command.Treasure);
+            if (state.Ui_CmdMerchantAvail != 0)
+                Add(257, Command.Merchant);                             // ○Merchant
+            if (state.Ui_CmdMerchantAvail == 0)
+                Add(263, Command.Unavailable);                          // △Merchant blocks
+            if (state.Ui_CmdSubordAvail != 0)
+            {
+                // QUIRK: STR-20 — with the flag set but neither sub-flag, no Subordinates item at all.
+                var left = state.CmdAvail_SubTroops + state.CmdAvail_SubTalk;
+                if (left == 2)
+                    Add(270, Command.Subordinates);                     // ◎Subordinates
+                if (left == 1)
+                    Add(276, Command.Subordinates);                     // ○Subordinates
+            }
+            if (state.Ui_CmdSubordAvail == 0)
+                Add(283, Command.Subordinates);                         // △Subordinates still opens Cﾌﾞｶ
+            Add(288, Command.ToCastle);
+            Add(292, Command.LoadSave);
+            Add(296, Command.AllData);
+            Add(300, Command.Think);
+            if (state.DebugMode == 1)
+                Add(305, Command.Debug);
+            Add(310, Command.TurnEnd);
+        }
+        return menu;
     }
 
     /// <summary>The menu items' code (<c>COMMAND.ADV:317-513</c>).</summary>

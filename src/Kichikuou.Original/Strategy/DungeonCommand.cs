@@ -17,8 +17,10 @@ namespace Kichikuou.Original.Strategy;
 /// setters are read from the player's files), Merim's inscriptions and the end of the search.
 /// God's Door (<c>L_04ddc</c>, <c>L_05437</c>, then <c>Iｶﾐ</c>) is in <c>DungeonCommand.GodsDoor.cs</c>.
 /// </summary>
-public sealed partial class DungeonCommand(OriginalScriptContext script, IScenarioSource scenario) : CommandFile(script, "Cﾒｲｷｭｳ.ADV", scenario)
+public sealed partial class DungeonCommand(OriginalScriptContext script, IScenarioSource scenario) : CommandFile(script, FileName, scenario)
 {
+    private const string FileName = "Cﾒｲｷｭｳ.ADV";
+
     /// <summary>
     /// <c>:29-150</c>: each dungeon's <c>MS 8, "name"</c> line (<c>MS 9</c> for 9, never printed —
     /// DGN-15) and its background if it has its own (0: the default 1032 of <c>:28</c>).
@@ -43,6 +45,13 @@ public sealed partial class DungeonCommand(OriginalScriptContext script, IScenar
         (21, 50, 1, 1000, 85, 1000), (22, 50, 1, 1000, 83, 1000), (23, 76, 1, 500, 85, 350), (24, 50, 1, 750, 84, 380),
         (25, 66, 1, 600, 100, 1000), (26, 201, 2, 600, 83, 100), (30, 1000, 1, 600, 83, 250),
     ];
+
+    /// <summary>
+    /// For a screen: the last floor and the floor mode (1 a pit, 2 a tower) a search of <paramref name="dungeon"/> sets
+    /// (<c>:477-612</c>), or null for a dungeon without a search.
+    /// </summary>
+    public static (int MaxFloor, int Mode)? FloorsOf(int dungeon) =>
+        Parameters.Where(p => p.Dungeon == dungeon).Select(p => ((int, int)?)(p.MaxFloor, p.Mode)).FirstOrDefault();
 
     /// <summary>
     /// For a screen: the line of <c>Cﾒｲｷｭｳ.ADV</c> whose <c>MS 8</c> names the dungeon as a search of it
@@ -700,33 +709,41 @@ public sealed partial class DungeonCommand(OriginalScriptContext script, IScenar
         {
             await WaitForReleaseAsync();
             Dgn.SavedFloor = State.DgnRun_Floor;
-            var items = new List<SceneMenuItem>();
-            var moves = new List<int>();
-            if (State.DgnRun_FloorMode == 1 && State.DgnRun_Floor != 1)
-                Offer(866, -1);                                         // Ascend
-            if (State.DgnRun_FloorMode == 2 && State.DgnRun_Floor < State.DgnRun_MaxFloor)
-                Offer(872, +1);                                         // Ascend
-            if (State.DgnRun_FloorMode == 2 && State.DgnRun_Floor != 1)
-                Offer(878, -1);                                         // Descend
-            if (State.DgnRun_FloorMode == 1 && State.DgnRun_Floor < State.DgnRun_MaxFloor)
-                Offer(884, +1);                                         // Descend
-            Offer(889, 0);                                              // Retreat
-            int choice = await SelectAsync(items);
+            var menu = FloorMenu(State);
+            int choice = await SelectAsync([.. menu.Select(i => i.Item)]);
             if (choice == 0)
                 continue;
-            return moves[choice - 1] switch
+            return menu[choice - 1].Move switch
             {
                 +1 => await DeeperAsync(),
                 -1 => await BackAsync(),
                 _ => await RetreatAsync(),
             };
-
-            void Offer(int line, int move)
-            {
-                items.Add(MenuItem(line));
-                moves.Add(move);
-            }
         }
+    }
+
+    /// <summary>
+    /// The floor menu's items as <paramref name="state"/> offers them (<c>:858-893</c>). Also what our screen gallery opens
+    /// the ladder with (docs/ui/gallery.md).
+    /// </summary>
+    public static IReadOnlyList<SceneMenuItem> FloorMenuItems(GameState state) => [.. FloorMenu(state).Select(i => i.Item)];
+
+    /// <summary>The floor menu's items, each with its move: +1 deeper, −1 back, 0 Retreat.</summary>
+    private static List<(SceneMenuItem Item, int Move)> FloorMenu(GameState state)
+    {
+        var items = new List<(SceneMenuItem Item, int Move)>();
+        if (state.DgnRun_FloorMode == 1 && state.DgnRun_Floor != 1)
+            Offer(866, -1);                                             // Ascend
+        if (state.DgnRun_FloorMode == 2 && state.DgnRun_Floor < state.DgnRun_MaxFloor)
+            Offer(872, +1);                                             // Ascend
+        if (state.DgnRun_FloorMode == 2 && state.DgnRun_Floor != 1)
+            Offer(878, -1);                                             // Descend
+        if (state.DgnRun_FloorMode == 1 && state.DgnRun_Floor < state.DgnRun_MaxFloor)
+            Offer(884, +1);                                             // Descend
+        Offer(889, 0);                                                  // Retreat
+        return items;
+
+        void Offer(int line, int move) => items.Add((MenuItemOf(FileName, line), move));
     }
 
     /// <summary>

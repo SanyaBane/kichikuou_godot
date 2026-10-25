@@ -15,8 +15,8 @@ namespace Kichikuou.Game.ScreenGallery;
 internal sealed record GalleryEntry(string Id, string Section, string Title, string? Save, string Note,
     Func<GalleryStage, Action<Rect2>?> Build);
 
-/// <summary>The screen gallery's entries (docs/ui/gallery.md, step 1: Treasure, Harem, Subordinates, the message windows).</summary>
-internal static class GalleryEntries
+/// <summary>The screen gallery's entries (docs/ui/gallery.md, §7: step 1 Treasure, Harem, Subordinates, the message windows; step 2 the map, GalleryEntries.Map.cs).</summary>
+internal static partial class GalleryEntries
 {
     /// <summary>
     /// The owner's game at week 18 in <c>COMMAND</c>: the kept save <c>saves-week18</c> played through the week's start and
@@ -30,6 +30,7 @@ internal static class GalleryEntries
         .. Harem(),
         .. Subordinates(),
         .. Messages(),
+        .. MapScreens(),
     ];
 
     /// <summary>Script pixels a screen pixel of the picture's area: the 640×400 script screen fitted into it.</summary>

@@ -1,8 +1,10 @@
 using Godot;
+using Kichikuou.Content.Screen;
 using Kichikuou.Engine.Script;
 using Kichikuou.Game.Battles;
 using Kichikuou.Game.Strategy;
 using Kichikuou.Original.Content.Strategy;
+using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
 
 namespace Kichikuou.Game.ScreenGallery;
@@ -49,6 +51,41 @@ internal sealed class GalleryStage(Control host, GameFont font, FacePictures fac
     {
         presenter.Bind(state);
         return presenter;
+    }
+
+    /// <summary>
+    /// The map as <c>COMMAND</c> shows it for <paramref name="state"/>, then <paramref name="over"/> drawn on it (a city's
+    /// or a dungeon's picture, <c>WAO_SUB</c> 331), composed by the presenter and laid at the stage's bottom (docs/ui/
+    /// gallery.md, §2): <c>M</c> 3 marks the markers changed, so <c>M</c> 0 draws the tiles and shows the view at the
+    /// camera. Placed with the picture by <see cref="Fill"/>.
+    /// </summary>
+    public TextureRect Backdrop(GameState state, params ScriptEvent[] over)
+    {
+        var p = Bound(state);
+        p.Show(new MapEvent(3));
+        p.Show(new MapEvent(0));
+        foreach (var e in over)
+            p.Show(e);
+        p.Compose();
+        var image = Image.CreateFromData(Surface.ScreenWidth * Surface.Scale, Surface.ScreenHeight * Surface.Scale,
+            false, Image.Format.Rgba8, p.Screen.ReadScreen());
+        var backdrop = new TextureRect
+        {
+            Texture = ImageTexture.CreateFromImage(image),
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.Scale,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+        host.AddChild(backdrop);
+        host.MoveChild(backdrop, 0);
+        return backdrop;
+    }
+
+    /// <summary>Lays <paramref name="control"/> over the picture's <paramref name="area"/>.</summary>
+    public static void Fill(Control control, Rect2 area)
+    {
+        control.Position = area.Position;
+        control.Size = area.Size;
     }
 
     /// <summary>Adds <paramref name="view"/> to the stage, over what is there.</summary>

@@ -1,6 +1,7 @@
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Script;
+using Kichikuou.Original.State;
 
 namespace Kichikuou.Original.Strategy;
 
@@ -12,8 +13,10 @@ namespace Kichikuou.Original.Strategy;
 /// Ruins Search). One action a week across all own cities (<c>Ui_CmdOwnCityAvail</c>; spent items
 /// show "×" and lead back to the menu); the Ruins Search is gated by the dungeon flag alone.
 /// </summary>
-public sealed class OwnCityCommand(OriginalScriptContext script) : CommandFile(script, "Cｼﾊｲﾄｼ.ADV")
+public sealed class OwnCityCommand(OriginalScriptContext script) : CommandFile(script, FileName)
 {
+    private const string FileName = "Cｼﾊｲﾄｼ.ADV";
+
     private enum Next
     {
         /// <summary><c>L_000cb</c>: the menu again.</summary>
@@ -66,16 +69,7 @@ public sealed class OwnCityCommand(OriginalScriptContext script) : CommandFile(s
         await WaitForReleaseAsync();
         await SavePointerAsync();                                       // \L_0239b
         State.Tmp0021 = 0;
-        bool free = State.Ui_CmdOwnCityAvail != 0;
-        var items = new List<SceneMenuItem>();
-        foreach (var (line, offered) in Commands())
-            if (offered)
-                items.Add(MenuItem(free ? line : line + 24));
-        State.Unit_Cur = 16;                                            // :88, :295
-        foreach (var (line, offered) in Places())
-            if (offered)
-                items.Add(MenuItem(free ? line : line + 207));
-        items.Add(MenuItem(502));                                       // Return
+        var items = MenuItems(State);
         int choice = await SelectAsync(items);
         if (choice == 0)
         {
@@ -154,56 +148,75 @@ public sealed class OwnCityCommand(OriginalScriptContext script) : CommandFile(s
         return Next.Done;
     }
 
+    /// <summary>
+    /// The menu's items as <paramref name="state"/> offers them (<c>:39-502</c>), <c>Unit_Cur</c> set to 16 on the way as
+    /// the file sets it (<c>:88</c>, <c>:295</c>). Also what our screen gallery opens the menu with (docs/ui/gallery.md).
+    /// </summary>
+    public static IReadOnlyList<SceneMenuItem> MenuItems(GameState state)
+    {
+        bool free = state.Ui_CmdOwnCityAvail != 0;
+        var items = new List<SceneMenuItem>();
+        foreach (var (line, offered) in Commands(state))
+            if (offered)
+                items.Add(MenuItemOf(FileName, free ? line : line + 24));
+        state.Unit_Cur = 16;                                            // :88, :295
+        foreach (var (line, offered) in Places(state))
+            if (offered)
+                items.Add(MenuItemOf(FileName, free ? line : line + 207));
+        items.Add(MenuItemOf(FileName, 502));                           // Return
+        return items;
+    }
+
     /// <summary>The four commands (<c>:39-62</c>; their × items 24 lines below, <c>:63-86</c>).</summary>
-    private (int Line, bool Offered)[] Commands() =>
+    private static (int Line, bool Offered)[] Commands(GameState state) =>
     [
-        (41, Prov.Economy != 0),                                        // Temporary Levy
+        (41, state.Provs[state.Prov_Cur].Economy != 0),                 // Temporary Levy
         (47, true),                                                     // Bolster Defense
-        (53, State.F_Babolat_State == 2),                               // Dig Giant Hole
-        (59, State.F_Galtia_State == 3 || State.F_Galtia_State == 4),   // Set Poison Food
+        (53, state.F_Babolat_State == 2),                               // Dig Giant Hole
+        (59, state.F_Galtia_State == 3 || state.F_Galtia_State == 4),   // Set Poison Food
     ];
 
     /// <summary>The city's places (<c>:87-292</c>, <c>:294-499</c>), with <c>Unit_Cur</c> at 16.</summary>
-    private (int Line, bool Offered)[] Places()
+    private static (int Line, bool Offered)[] Places(GameState state)
     {
-        int p = State.Prov_Cur.Value;
+        int p = state.Prov_Cur.Value;
         return
         [
-            (91, p == 1 && Unit.Status != 0 && State.Bld_MariaLab == 1 && State.F_Maria_Tulip != 15),  // Tulip Research
-            (97, p == 1 && State.Bld_GirlsAcademy == 1),                // Military Academy
-            (103, p == 1 && State.Bld_Hospital == 1),                   // Genius Hospital
-            (109, p == 1 && State.Bld_MagicLab == 1),                   // Magic Research
-            (115, p == 1 && State.Bld_Library == 1),                    // Giant Library
-            (121, p == 1 && State.Bld_SMTower == 1),                    // S&M Tower
-            (127, p == 1 && State.F_Aoi_State > 9 && State.F_Aoi_State != 100),   // Aoi Rehab
+            (91, p == 1 && state.Units[state.Unit_Cur].Status != 0 && state.Bld_MariaLab == 1 && state.F_Maria_Tulip != 15),  // Tulip Research
+            (97, p == 1 && state.Bld_GirlsAcademy == 1),                // Military Academy
+            (103, p == 1 && state.Bld_Hospital == 1),                   // Genius Hospital
+            (109, p == 1 && state.Bld_MagicLab == 1),                   // Magic Research
+            (115, p == 1 && state.Bld_Library == 1),                    // Giant Library
+            (121, p == 1 && state.Bld_SMTower == 1),                    // S&M Tower
+            (127, p == 1 && state.F_Aoi_State > 9 && state.F_Aoi_State != 100),   // Aoi Rehab
             (133, p == 1),                                              // Dungeon (the cells)
-            (139, p == 1 && State.F_Miki_InCastle != 0),                // Demon Lord's Room
-            (145, p == 1 && State.N_SpecialRoom_Girls != 0),            // Special Room
-            (151, p == 2 && State.Goliath_State != 0),                  // T2 Goliath
-            (157, p == 10 && State.N_Kapala_Rank != 0 && State.F_Kapala_State != 3),   // Nadate TV
-            (163, p == 15 && State.N_Rei_Stage > 1),                    // Mary's House
-            (169, p == 22 && State.N_Mars_Score == 1),                  // Mars's Palace
-            (175, p == 23 && State.F_Cell_ChurchArc < 12),              // Cell's Church
-            (181, p == 26 && State.F_Shinoda_State != 0 && State.F_Sayori_Fate != 2),  // Shinoda's Estate
-            (187, p == 25 && State.F_MLand_Funded == 1),                // Amusement Park
+            (139, p == 1 && state.F_Miki_InCastle != 0),                // Demon Lord's Room
+            (145, p == 1 && state.N_SpecialRoom_Girls != 0),            // Special Room
+            (151, p == 2 && state.Goliath_State != 0),                  // T2 Goliath
+            (157, p == 10 && state.N_Kapala_Rank != 0 && state.F_Kapala_State != 3),   // Nadate TV
+            (163, p == 15 && state.N_Rei_Stage > 1),                    // Mary's House
+            (169, p == 22 && state.N_Mars_Score == 1),                  // Mars's Palace
+            (175, p == 23 && state.F_Cell_ChurchArc < 12),              // Cell's Church
+            (181, p == 26 && state.F_Shinoda_State != 0 && state.F_Sayori_Fate != 2),  // Shinoda's Estate
+            (187, p == 25 && state.F_MLand_Funded == 1),                // Amusement Park
             (193, p == 24),                                             // Hanny Building
             (199, p == 18),                                             // Rance's House
-            (205, p == 17 && State.F_DX_State != 0 && State.F_DX_State != 100),   // DX Association
-            (211, p == 29 && State.F_ShangriLa_State == 5),             // Secret Room
-            (217, p == 29 && State.F_ShangriLa_State == 6),             // Housesnurse
-            (223, p == 40 && State.F_Elena_State == 6),                 // Elena's House
+            (205, p == 17 && state.F_DX_State != 0 && state.F_DX_State != 100),   // DX Association
+            (211, p == 29 && state.F_ShangriLa_State == 5),             // Secret Room
+            (217, p == 29 && state.F_ShangriLa_State == 6),             // Housesnurse
+            (223, p == 40 && state.F_Elena_State == 6),                 // Elena's House
             // QUIRK: CMD-09 — the Ruins Search follows the dungeon flag, ○ also when the week's action is spent.
-            (229, p == 35 && State.Ui_CmdDungeonAvail != 0),            // Ruins Search
-            (235, p == 35 && State.Ui_CmdDungeonAvail == 0),            // ×Ruins Search
-            (241, p == 69 && State.F_Papaya_State == 8),                // Zeth Palace
-            (247, p == 66 && (State.F_Magic_State == 2 || State.F_Magic_State == 3)),  // Magic's Tower
-            (253, p == 55 && State.F_Fuuka_State != 0 && State.F_Fuuka_State != 19),   // Shrine
-            (259, p == 59 && State.F_Martina_State != 100),             // Sakura & Pasta
+            (229, p == 35 && state.Ui_CmdDungeonAvail != 0),            // Ruins Search
+            (235, p == 35 && state.Ui_CmdDungeonAvail == 0),            // ×Ruins Search
+            (241, p == 69 && state.F_Papaya_State == 8),                // Zeth Palace
+            (247, p == 66 && (state.F_Magic_State == 2 || state.F_Magic_State == 3)),  // Magic's Tower
+            (253, p == 55 && state.F_Fuuka_State != 0 && state.F_Fuuka_State != 19),   // Shrine
+            (259, p == 59 && state.F_Martina_State != 100),             // Sakura & Pasta
             (265, p == 84),                                             // Dungeon (84)
-            (271, p == 86 && State.F_Kaybwan_State != 0 && State.F_Kaybwan_State < 5),   // Blue House
-            (277, p == 85 && State.F_Kaybnyan_State != 0 && State.F_Kaybnyan_State < 5), // Red House
-            (283, p == 77 && State.N_ALChurch_Stage != 100),            // AL Church HQ
-            (289, State.Prov_Cur == State.LadyCaravan_Prov && State.F_Cafe_State < 10),  // Lady Caravan
+            (271, p == 86 && state.F_Kaybwan_State != 0 && state.F_Kaybwan_State < 5),   // Blue House
+            (277, p == 85 && state.F_Kaybnyan_State != 0 && state.F_Kaybnyan_State < 5), // Red House
+            (283, p == 77 && state.N_ALChurch_Stage != 100),            // AL Church HQ
+            (289, state.Prov_Cur == state.LadyCaravan_Prov && state.F_Cafe_State < 10),  // Lady Caravan
         ];
     }
 

@@ -1,6 +1,7 @@
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Script;
+using Kichikuou.Original.State;
 
 namespace Kichikuou.Original.Strategy;
 
@@ -17,8 +18,9 @@ namespace Kichikuou.Original.Strategy;
 /// player's files through <paramref name="scenario"/>.
 /// </summary>
 public sealed partial class EnemyCityCommand(OriginalScriptContext script, IScenarioSource? scenario = null)
-    : CommandFile(script, "Cﾃｷﾄｼ.ADV", scenario)
+    : CommandFile(script, FileName, scenario)
 {
+    private const string FileName = "Cﾃｷﾄｼ.ADV";
     private const int VarTmp0021 = 21;
 
     private enum Choice
@@ -119,19 +121,7 @@ public sealed partial class EnemyCityCommand(OriginalScriptContext script, IScen
         {
             await WaitForReleaseAsync();
             await SavePointerAsync();                                   // \L_05289
-            var items = new List<(SceneMenuItem Item, Choice Choice)>();
-            bool church = State.N_ALChurch_Stage > 3 && State.N_ALChurch_Stage < 20 && State.Prov_Cur == 77;
-            if (church && State.Ui_CmdOwnCityAvail != 0)
-                items.Add((MenuItem(52), Choice.ALChurch));             // ○Go to AL Church
-            if (church && State.Ui_CmdOwnCityAvail == 0)
-                items.Add((MenuItem(58), Choice.Unavailable));          // ×Go to AL Church
-            if (State.StoryStage != 0)
-                items.Add((MenuItem(64), Choice.Attack));               // Attack
-            if (State.StoryStage == 0)
-                items.Add((MenuItem(70), Choice.Attack));               // Pillage
-            if (State.StoryStage != 0)
-                items.Add((MenuItem(76), Choice.Ninja));                // Ninja Maneuver
-            items.Add((MenuItem(81), Choice.Return));
+            var items = Menu(State);
 
             int choice = await SelectAsync(items.Select(i => i.Item).ToArray());
             if (choice == 0)
@@ -142,6 +132,32 @@ public sealed partial class EnemyCityCommand(OriginalScriptContext script, IScen
             if (items[choice - 1].Choice != Choice.Unavailable)
                 return items[choice - 1].Choice;
         }
+    }
+
+    /// <summary>
+    /// The first menu's items as <paramref name="state"/> offers them (<c>:52-82</c>). Also what our screen gallery opens
+    /// the menu with (docs/ui/gallery.md).
+    /// </summary>
+    public static IReadOnlyList<SceneMenuItem> MenuItems(GameState state) => [.. Menu(state).Select(i => i.Item)];
+
+    private static List<(SceneMenuItem Item, Choice Choice)> Menu(GameState state)
+    {
+        var items = new List<(SceneMenuItem Item, Choice Choice)>();
+        bool church = state.N_ALChurch_Stage > 3 && state.N_ALChurch_Stage < 20 && state.Prov_Cur == 77;
+        if (church && state.Ui_CmdOwnCityAvail != 0)
+            items.Add((Item(52), Choice.ALChurch));                     // ○Go to AL Church
+        if (church && state.Ui_CmdOwnCityAvail == 0)
+            items.Add((Item(58), Choice.Unavailable));                  // ×Go to AL Church
+        if (state.StoryStage != 0)
+            items.Add((Item(64), Choice.Attack));                       // Attack
+        if (state.StoryStage == 0)
+            items.Add((Item(70), Choice.Attack));                       // Pillage
+        if (state.StoryStage != 0)
+            items.Add((Item(76), Choice.Ninja));                        // Ninja Maneuver
+        items.Add((Item(81), Choice.Return));
+        return items;
+
+        static SceneMenuItem Item(int line) => MenuItemOf(FileName, line);
     }
 
     /// <summary><c>L_00205</c> (<c>:87-93</c>): no target, the window and the picture closed, the map redrawn.</summary>

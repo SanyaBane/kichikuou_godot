@@ -2,6 +2,7 @@ using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Content.ScreenGallery;
 using Kichikuou.Original.Content.Strategy;
 using Kichikuou.Original.State;
+using Kichikuou.Original.Strategy;
 
 namespace Kichikuou.Original.Content.Tests;
 
@@ -97,5 +98,47 @@ public class ScreenGalleryTests
         var result = SubordinateResult.ReplenishPreview(World(), 12);
         Assert.Equal((200, 1000, 16, 484), (result.TroopsBefore, result.Troops, result.Cost, result.Gold));
         Assert.Equal("Troops Replenished", result.Title);
+    }
+
+    private static int[] Lines(IReadOnlyList<Engine.Script.SceneMenuItem> items) => [.. items.Select(i => i.At.Line)];
+
+    [Fact]
+    public void Spent_commands_make_the_command_menu_offer_its_crossed_items()
+    {
+        var s = new GameState { StoryStage = 1, Ui_CmdBuildAvail = 1, Ui_CmdHaremAvail = 1, Ui_CmdMerchantAvail = 1, Ui_CmdSubordAvail = 1,
+            CmdAvail_SubTroops = 1, CmdAvail_SubTalk = 1 };
+        Assert.Equal([229, 241, 252, 257, 270, 288, 292, 296, 300, 310], Lines(CommandPhase.MenuItems(s)));
+        GalleryStates.CommandsSpent(s);
+        Assert.Equal([235, 247, 252, 263, 283, 288, 292, 296, 300, 310], Lines(CommandPhase.MenuItems(s)));
+        Assert.NotNull(CommandMenu.For(CommandPhase.MenuItems(s), [.. CommandPhase.MenuItems(s).Select(_ => "○Item")]));
+    }
+
+    [Fact]
+    public void A_province_menu_is_its_city_files_by_the_owner()
+    {
+        var s = new GameState { StoryStage = 1, Prov_Count = 10, Ui_CmdOwnCityAvail = 1 };
+        s.Provs[1].Owner = 1;
+        s.Provs[1].Economy = 1;
+        s.Provs[6].Owner = 3;
+        Assert.Equal([64, 76, 81], Lines(GalleryStates.ProvinceMenuItems(s, 6)));
+        Assert.Equal(6, s.Prov_Cur.Value);
+        Assert.Equal([41, 47, 133, 502], Lines(GalleryStates.ProvinceMenuItems(s, 1)));
+        Assert.Equal((1, 16), (s.Prov_Cur.Value, s.Unit_Cur.Value));
+    }
+
+    [Theory]
+    [InlineData(1, new[] { 884, 889 })]
+    [InlineData(7, new[] { 866, 884, 889 })]
+    [InlineData(14, new[] { 866, 889 })]
+    public void The_caves_floors_offer_their_ways(int floor, int[] lines)
+    {
+        var s = new GameState();
+        GalleryStates.DungeonFloor(s, GalleryStates.Cave, floor);
+        var items = DungeonCommand.FloorMenuItems(s);
+        Assert.Equal(lines, Lines(items));
+        var ladder = FloorLadder.For(s, items, [.. items.Select(_ => "Way")]);
+        Assert.NotNull(ladder);
+        Assert.Equal((floor, floor > 1, floor < 14), (ladder.Floor, ladder.Up is not null, ladder.Down is not null));
+        Assert.Equal(1032, s.CallArg.Value);
     }
 }

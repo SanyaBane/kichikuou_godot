@@ -40,11 +40,11 @@ pull out first (named); **heavy** — needs a battle replayed (§6).
 | `SceneMenuView` | `Open(MenuView, box)` | `MenuView.FromTexts(strings)` | ready |
 | `MessageLogView` | the constructor's `MessageLog` | `new MessageLog()` + `Add(LogPage…)` (the log is not saved) | ready |
 | `WeekReportView` | `Open(WeekReport)` | built by `WeekReport.Start`/`Observe` from `MAIN.ADV`'s events | small: a feeder of the week's events (or `WeekReport.Sample`) |
-| `CommandMenuView` | `Open(CommandMenu)` | the record, or `CommandMenu.For` on `COMMAND.ADV`'s lines | ready |
+| `CommandMenuView` | `Open(CommandMenu)` | `CommandPhase.MenuItems(state)` opened in the bound presenter, `presenter.CommandMenu` | ready (built in step 2) |
 | `StatusStripView` | `Show(StatusStrip)` | `presenter.StatusStrip` (a bound presenter) | ready |
-| `ProvinceMenuView` | `Open(ProvinceMenu)` | the state and the menu's items; the army line is the presenter's private text | small: `ProvinceMenu.Of(state, province, items)` |
+| `ProvinceMenuView` | `Open(ProvinceMenu)` | the city file's items for the state (`OwnCityCommand.MenuItems`, `EnemyCityCommand.MenuItems`) opened in the bound presenter, `presenter.ProvinceMenu` | ready (built in step 2) |
 | `MapMarkersView` | `Load(markers)`, `Place(…, corner)` | `presenter.MapMarkers()`; needs the map under it | small: the map backdrop (§2) |
-| `FloorLadderView` | `Open(FloorLadder)` | the record (`DgnRun_Floor`) | ready |
+| `FloorLadderView` | `Open(FloorLadder)` | `DungeonCommand.FloorMenuItems(state)` opened in the bound presenter, `presenter.FloorLadder` | ready (built in step 2) |
 | `SkipDrawer`, `CommandsButton`, `TouchPill` | properties, `Place` | none (`SkipButtons`) | ready |
 | `OptionsView` | `ShowTab` | none — but it writes the real `settings.cfg` | ready, its writes kept off |
 | `DeploymentTableView` | `Refresh(state, order)` | `DeploymentTable.Rows(state)` | ready |
@@ -80,8 +80,9 @@ pull out first (named); **heavy** — needs a battle replayed (§6).
   scripts, audio)` and `Bind(state)`, as `GameScreen.cs:361-369` builds it. No script runs.
 - **The map backdrop** (for the plates, the province menu, the status strip, the week report): `presenter.Show(new
   MapEvent(3))` then `MapEvent(0)` — `Bind` marks the tiles valid, so the first forces them to be drawn — then
-  `Compose()` and `Screen.ReadScreen()` into a texture (`Compose.cs:76-95`). Not run yet: step 1 checks it, else a
-  `ShowMapNow()` on the presenter.
+  `Compose()` and `Screen.ReadScreen()` into a texture (`Compose.cs:76-95`) — works as it is (step 2,
+  `GalleryStage.Backdrop`). A picture of `WAO_SUB` 331 over it (the dungeon's) needs the helper's state, `Ui_CenterCg`,
+  as well as its `WindowEvent`: the port's `WAO_SUB` only records the picture, the presenter draws it from the state.
 - **No event CG in any entry.** Picture panels and portraits are what the looks already show; a 131 window stands on
   a plain backdrop, never over its scene's CG.
 
@@ -170,6 +171,19 @@ capture's inputs. This is the last step: the board's looks from the week-18 save
 2. **Map and messages:** the map backdrop, the plates, the command panel, the status strip, the province menu
    (`ProvinceMenu.Of`), the week report (its feeder), the floor ladder, the scene menu, the log, the touch controls,
    the options (writes kept off).
+   **Built so far (2026-10-25): the map backdrop and the owner's three screens.** The menus are the ones the files
+   register for the save's state: the item lists were pulled out of the rule files as static methods —
+   `CommandPhase.MenuItems`, `OwnCityCommand.MenuItems`, `EnemyCityCommand.MenuItems`, `DungeonCommand.FloorMenuItems`
+   (and `DungeonCommand.FloorsOf`) — which their files now call (the full differential runs of `COMMAND`, the command
+   slices and the dungeon replays pass); the gallery opens them in the bound presenter, which makes our menu of them
+   (`presenter.CommandMenu`, `ProvinceMenu`, `FloorLadder`) as in a game, so no `ProvinceMenu.Of` was needed.
+   `GalleryEntries.Map.cs`, 10 entries over the map (`GalleryStage.Backdrop`): `map-markers` (the dimmed plates shown),
+   `map-markers-hover` (Leazas Castle (1) hovered with its card), `map-markers-active` (the dimmed hidden),
+   `command-menu` with the status strip, `command-menu-spent` (made up: the four commands spent at once,
+   `GalleryStates.CommandsSpent`), `province-menu` (Oaks (6), the rebels': Attack, Ninja Maneuver; its figures "??",
+   unscouted), `province-menu-own` (Leazas Castle (1): Levy, Bolster, Dungeon — the save's castle has no building yet, so
+   not the five items touch.md asks about), `floor-ladder`, `-middle`, `-last` (the Monsters' Cave (dungeon 2) on
+   floors 1, 7 and 14, its picture 1032 in `WAO_SUB` 331; `GalleryStates.DungeonFloor`). Not yet looked at by the owner.
 3. **Screens and the battle's overlays:** deployment (the panels' overload), Save/Load (`LoadSaveScreen.Items`, a
    read-only library), the enemy attack, the scout report, the cut-in, the counters, the info boxes, the dialog and
    the commands (input forwarded).
