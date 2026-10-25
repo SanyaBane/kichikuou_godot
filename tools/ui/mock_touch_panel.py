@@ -321,6 +321,7 @@ def layout_c():
     f.save('C-fans.png')
 
 
-layout_a()
-layout_b()
-layout_c()
+if __name__ == '__main__':                   # mock_touch_province.py borrows the parts above
+    layout_a()
+    layout_b()
+    layout_c()

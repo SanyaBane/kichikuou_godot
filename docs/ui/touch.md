@@ -509,6 +509,32 @@ stays P1 for now):
   `-building-tip`) and in the unattended `--touch` look from the week-18 save (`--until deployment`): its taps on Close
   and off the rails cancel the panel. Not yet on the tablet.
 
+## The province menu within the thumbs' reach (owner, 2026-10-25)
+
+After the command panel's rails, the owner asked for the province menu's mock-ups too, doubting it: the tap on a province
+already takes the hand out of the thumb's comfort. Today (P1, "The command panel and the province menu") it stands in the
+screen's middle, the province's card left and its commands right.
+
+The mock-ups are `tools/ui/mock_touch_province.py` (its parts `mock_touch_panel.py`'s), over the screen gallery's touch
+dumps (`map`, `province-menu` and `province-menu-own-five` for the pictures; the command in its docstring); the images
+stay outside the repository. Each shows the tap and the tapped province ringed in gold (ours: today nothing marks it).
+Round 1:
+
+- **A — the command panel's rails**: the province's card on the left rail (the picture 220×144, the name, the army, the
+  figures), its commands on the right from the foot up, Return at the foot where the command panel's Close stands.
+  Leazas Castle (1) with two buildings, five commands.
+- **B — the card at the province, the commands on the right rail**: the card beside the tapped province on the side with
+  room, a triangle pointing at it, where the eyes are; the commands and Return as A's.
+- **C — one callout at the province**: the card (compact: the picture 190×124, the figures in one line each) and the
+  commands together, beside the finger, on the side with room, kept on the screen. Leazas Castle (1): the first command
+  81 mm from the tap, A's and B's on the rail 103 mm; Oaks (6), the rebels' (two commands, "??"): 55 mm.
+
+**Recommendation: C** — the owner's doubt holds: after the tap the finger is at the province, not at a thumb, so the
+next tap is shortest beside it (the house style's "ask at the click", docs/ui/style.md §5), and a province near a side
+puts the callout in that thumb's reach anyway. The command panel keeps its rails: it belongs to no place. A is the most
+consistent with the panel but sends the finger across the screen and back; B splits the eyes (the card) from the finger
+(the rail).
+
 ## Phones (put off)
 
 Put off by the owner (2026-10-24). What is ready for them: the measurements above, mock-ups B1, B3 (the battle),
