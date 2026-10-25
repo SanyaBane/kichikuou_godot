@@ -265,8 +265,8 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
 6. **The owner's look** (2026-10-25), entry by entry:
    - `enemy-attack` (and its `-ninjas`, `-scouted`, `-abandon`): the date in the title band was too small — Cinzel 600
      at 13 in the subtitle's colour; now Cinzel 700 at 15 in the name's colour, as the title bands of Subordinates,
-     Harem, Treasure and deployment have it (`EnemyAttackView.DrawTitle`). The other dates differ on purpose and were
-     left: the status strip's (18, the map's top), the week report's (17, under its banner's title) and the
+     Harem, Treasure and deployment have it (`EnemyAttackView.DrawTitle`). The other dates differ on purpose and stay
+     as they are (the owner): the status strip's (18, the map's top), the week report's (17, under its banner's title) and the
      Save/Load screen's (the chosen save's title; "Saving:" in the foot's Gothic).
 
 ## 8. Questions for the owner
