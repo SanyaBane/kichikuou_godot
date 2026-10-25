@@ -535,6 +535,23 @@ puts the callout in that thumb's reach anyway. The command panel keeps its rails
 consistent with the panel but sends the finger across the screen and back; B splits the eyes (the card) from the finger
 (the rail).
 
+**The owner's choice (2026-10-25): B.** Built, in the touch mode only (PC's centred menu as before):
+
+- **The card** (`godot/Strategy/ProvinceMenuView`): 300 wide, the picture 272×180, the name, the army, the figures as
+  P1's; 60 left of the tapped province when there is room, else right of it short of the rail, centred on it and kept on
+  the screen; a gold triangle from its edge to the province, the province ringed in gold. Its point is the province's
+  map point on the view the screen shows (`MapMarkers.PointOnView`, `ProvinceMenuView.PointOf`, `GamePresenter.MapViewShown`).
+- **The rail**: the command panel's right one — 244 wide at x 1032 down to the foot, the commands 220×46 from the foot up
+  (the lowest's top at 664), Return 220×60 at the foot where the map's button stands. The rows' text one size for all,
+  19 or smaller as the longest name needs ("Military Academy": 16); the tag 62 wide.
+- **The dungeon's menu** (the castle's cells, its place as a caption at the rail's top) stands over the city's picture,
+  so its card points at nothing and sits in the map's middle left of the rail; its cancel only opens it again, as before.
+- **The agent's choices:** a × row is only dimmed (no room for "used this week"), as the command panel's rail; a tap off
+  the card and the rail cancels.
+- Looked at by the agent (2026-10-25) in the screen gallery's touch pass (`province-menu`, `-own`, `-own-five`, `-cells`,
+  `-cells-full`) and in the unattended `--touch` look from the week-18 save: Oaks (6)'s card left of it, its tap off the
+  menu cancels. Not yet on the tablet.
+
 ## Phones (put off)
 
 Put off by the owner (2026-10-24). What is ready for them: the measurements above, mock-ups B1, B3 (the battle),

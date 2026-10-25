@@ -62,6 +62,18 @@ public class MapMarkersTests
     };
 
     [Fact]
+    public void A_province_point_on_the_view_is_its_map_point_less_the_corner()
+    {
+        var s = World();
+        Assert.Equal((100, 100), MapMarkers.PointOnView(s, 1, (0, 0)));
+        Assert.Equal((150, 60), MapMarkers.PointOnView(s, 2, (50, 40)));
+        Assert.Null(MapMarkers.PointOnView(s, 4, (0, 0)));                      // Out (4) at x 700: out of view
+        Assert.Equal((60, 100), MapMarkers.PointOnView(s, 4, (640, 0)));
+        Assert.Null(MapMarkers.PointOnView(s, 1, (200, 0)));                    // left of the view
+        Assert.Null(MapMarkers.PointOnView(s, 9, (0, 0)));                      // no such province
+    }
+
+    [Fact]
     public void Provinces_carry_their_relation_and_dungeons_their_kind_and_search()
     {
         var markers = MapMarkers.All(World(), Literal).ToDictionary(m => (m.Kind, m.Id));

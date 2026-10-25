@@ -165,9 +165,10 @@ internal static partial class GalleryEntries
         edit?.Invoke(s);
         var backdrop = g.Backdrop(s);
         var items = GalleryStates.ProvinceMenuItems(s, province);
-        var menu = Opened(g.Bound(s), items, q => q.ProvinceMenu, "a city's first menu");
+        var p = g.Bound(s);
+        var menu = Opened(p, items, q => q.ProvinceMenu, "a city's first menu");
         var view = g.Add(new ProvinceMenuView(g.Font, g.Faces));
-        view.Open(menu);
+        view.Open(menu, ProvinceMenuView.PointOf(s, province, p.MapViewShown));
         return area =>
         {
             GalleryStage.Fill(backdrop, area);

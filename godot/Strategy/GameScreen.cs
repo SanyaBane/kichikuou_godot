@@ -1644,7 +1644,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         else if (province is not null)
         {
             _presenter.MenuCovered = true;                      // our panel instead (docs/ui/command-screen.md)
-            _provinceView.Open(province);
+            _provinceView.Open(province, _presenter.State is { } state
+                ? ProvinceMenuView.PointOf(state, province.Province, _presenter.MapViewShown) : null);
             _provinceView.Place(PictureArea());
         }
         else if (command is not null)

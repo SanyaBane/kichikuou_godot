@@ -170,6 +170,22 @@ public static class MapMarkers
         return right ? point : null;
     }
 
+    /// <summary>
+    /// Where <paramref name="province"/>'s map point is on the 640×400 screen whose view has its top-left corner at
+    /// <paramref name="corner"/> on the map (the touch mode's province menu points at it); null when it has no map point
+    /// or lies out of view.
+    /// </summary>
+    public static (int X, int Y)? PointOnView(GameState state, int province, (int X, int Y) corner)
+    {
+        if (province < 1 || province > state.Prov_Count.Value)
+            return null;
+        var prov = state.Provs[province];
+        if (prov.MapX == 0 && prov.MapY == 0)
+            return null;
+        int x = prov.MapX.Value - corner.X, y = prov.MapY.Value - corner.Y;
+        return x is >= 0 and < 640 && y is >= 0 and < 400 ? (x, y) : null;
+    }
+
     /// <summary>A left click on the marker's plate: the still click at its point (<see cref="ClickPoint"/>); false when there is none.</summary>
     public static bool Press(GameState state, MapMarker marker, PointerScript pointer)
     {

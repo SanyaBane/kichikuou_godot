@@ -1,6 +1,8 @@
 using Godot;
 using Kichikuou.Game.Battles;
 using Kichikuou.Original.Content.Strategy;
+using Kichikuou.Original.Script;
+using Kichikuou.Original.State;
 
 namespace Kichikuou.Game.Strategy;
 
@@ -10,11 +12,12 @@ namespace Kichikuou.Game.Strategy;
 /// name and army, the card's figures, the commands as rows with a tag each, Return. A row's click answers
 /// the script's menu with its choice; a right click or Esc anywhere cancels (0), as the original's menu —
 /// but not in the dungeon's menu (its place as a caption over the rows), where a cancel only opens it again.
-/// Laid out in the 1280×800 screen's pixels, scaled with the picture. In the touch mode (owner's choice P1,
-/// docs/ui/touch.md, "The command panel and the province menu") the province stands on the left — a larger picture,
-/// the name, the army and the figures under it — and its commands on the right as rows of a finger's height, Return
-/// at their foot; a tap outside the panel cancels as a right click does, so not in the dungeon's menu (owner,
-/// 2026-10-24).
+/// Laid out in the 1280×800 screen's pixels, scaled with the picture. In the touch mode (the owner's B, 2026-10-25,
+/// docs/ui/touch.md, "The province menu within the thumbs' reach") the province's card — the picture, the name, the army,
+/// the figures — stands beside the tapped province, a triangle pointing at it and the province ringed in gold, and the
+/// commands stand on the right rail as the command panel's, from the foot up, Return at the foot; a tap off the card and
+/// the rail cancels as a right click does, so not in the dungeon's menu (owner, 2026-10-24), which stands over the
+/// city's picture and points at nothing.
 /// </summary>
 internal sealed partial class ProvinceMenuView : Control
 {
@@ -23,9 +26,13 @@ internal sealed partial class ProvinceMenuView : Control
     // The PC's layout: the owner's A1 (2026-10-25, docs/ui/command-screen.md, "Taller rows"); the rows 38 high unless
     // Debug → Menu Row Height says otherwise (MenuRowsChoice), the header as it is.
     private const float Pad = 18, PictureW = 234, PictureH = 156, Caption = 32;
-    // The touch mode's layout: the province in a left column, the rows 46 high (9.3 mm on the tablet) in a right one.
-    private const float TouchPictureW = 270, TouchPictureH = 180, TouchMid = 24, TouchColumn = 300, TouchRowH = 46,
-        TouchPitch = 54, TouchReturnW = 150, TouchFigure = 36;
+    // The touch mode's layout: the card 300 wide, 60 beside the province (left of it when there is room); the rail as the
+    // command panel's right one (CommandMenuView): 244 wide at x 1032 down to the foot, rows 220×46 54 apart, the lowest
+    // item's top at 664, Return 220×60 at 726, where the map's button stands.
+    private const float CardW = 300, CardPad = 14, CardGap = 60, TouchPictureW = 272, TouchPictureH = 180, TouchFigure = 36;
+    private const float RailW = 244, RightRail = 1032, RailFoot = 796, RailInset = 12;
+    private const float TouchRowW = 220, TouchRowH = 46, TouchPitch = 54, ItemFoot = 664, TouchReturnTop = 726, TouchReturnH = 60;
+    private const float RingRadius = 30;
 
     private readonly bool _touch = TouchMode.On;
 
@@ -42,6 +49,7 @@ internal sealed partial class ProvinceMenuView : Control
     private FontFile _gothic;
     private ProvinceMenu? _menu;
     private ImageTexture? _picture;
+    private Vector2? _at;                           // the touch mode: the tapped province's point, where the card points
     private float _k = 1;                           // window pixels to a screen pixel
     private int _hovered = -1, _pressed = -1;       // the row: 0-based, the commands then Return
     private bool _outside;                          // the touch mode: the press came down outside the panel
@@ -66,15 +74,28 @@ internal sealed partial class ProvinceMenuView : Control
         QueueRedraw();
     }
 
-    /// <summary>Shows <paramref name="menu"/>; <see cref="ChooseAsync"/> waits for its answer.</summary>
-    public void Open(ProvinceMenu menu)
+    /// <summary>
+    /// Shows <paramref name="menu"/>; <see cref="ChooseAsync"/> waits for its answer. <paramref name="at"/> is the province's
+    /// point on the screen (1280×800), where the touch mode's card points; null for none (out of view, the dungeon's menu).
+    /// </summary>
+    public void Open(ProvinceMenu menu, Vector2? at = null)
     {
         _menu = menu;
+        _at = menu.Place is null ? at : null;
         _picture = _pictures.Picture(menu.Picture) is { } image ? ImageTexture.CreateFromImage(image) : null;
         _hovered = _pressed = -1;
         Visible = true;
         QueueRedraw();
     }
+
+    /// <summary>
+    /// <paramref name="province"/>'s point on the screen (1280×800) for the touch mode's card: its map point on the view the
+    /// screen shows (<paramref name="shown"/>, <see cref="GamePresenter.MapViewShown"/>; else the camera as the map loop's
+    /// corner); null out of view.
+    /// </summary>
+    public static Vector2? PointOf(GameState state, int province, (int X, int Y)? shown) =>
+        MapMarkers.PointOnView(state, province, shown ?? GesturePoints.ViewCorner(state, centred: false)) is { } p
+            ? new Vector2(p.X, p.Y) * 2 : null;
 
     /// <summary>The script's answer: a row's choice, or 0 for a cancel.</summary>
     public Task<int> ChooseAsync()
@@ -83,8 +104,18 @@ internal sealed partial class ProvinceMenuView : Control
         return _answer.Task;
     }
 
-    /// <summary>A point of the picture outside the panel, global: where unattended play taps to close it.</summary>
-    public Vector2 OutsidePoint => GetGlobalRect().Position + new Vector2(40, 700) * _k;
+    /// <summary>A point of the picture outside the panel (the touch mode's card and rail), global: where unattended play taps to close it.</summary>
+    public Vector2 OutsidePoint
+    {
+        get
+        {
+            var point = new Vector2(40, 700);
+            if (_touch)
+                point = ((Vector2[])[new(40, 700), new(40, 100), new(980, 100), new(640, 780)])
+                    .First(p => !CardRect.HasPoint(p) && !RailRect.HasPoint(p) && (_at is not { } at || p.DistanceTo(at) > 2 * RingRadius));
+            return GetGlobalRect().Position + point * _k;
+        }
+    }
 
     public void Close()
     {
@@ -92,6 +123,7 @@ internal sealed partial class ProvinceMenuView : Control
         _answer = null;
         _menu = null;
         _picture = null;
+        _at = null;
         Visible = false;
     }
 
@@ -109,20 +141,12 @@ internal sealed partial class ProvinceMenuView : Control
 
     private int RowCount => _menu is null ? 0 : _menu.Items.Count + 1;
 
-    private float Height => _touch
-        ? Math.Max(Pad + TouchLeftHeight, Top + (RowCount - 1) * TouchPitch + 6 + TouchRowH) + Pad
-        : Top + (RowCount - 1) * RowPitch + 1 + ReturnH + 14;
+    private float Height => Top + (RowCount - 1) * RowPitch + 1 + ReturnH + 14;
 
-    /// <summary>Where the rows start, under the header (in the touch mode at the right column's top) and the place's caption, if any.</summary>
-    private float Top => (_touch ? Pad : Pad + PictureH + Pad) + (_menu?.Place is null ? 0 : Caption);
+    /// <summary>Where the PC's rows start, under the header and the place's caption, if any.</summary>
+    private float Top => Pad + PictureH + Pad + (_menu?.Place is null ? 0 : Caption);
 
-    /// <summary>The touch mode's left column: the picture, the name, the army, the figures.</summary>
-    private float TouchLeftHeight => TouchPictureH + 14 + 62 + (_menu?.Card.Count ?? 0) * TouchFigure;
-
-    private float PanelWidth => _touch ? Pad + TouchPictureW + TouchMid + TouchColumn + Pad : Width;
-
-    /// <summary>The touch mode's right column, where the commands stand.</summary>
-    private float TouchRight => PanelX + Pad + TouchPictureW + TouchMid;
+    private float PanelWidth => Width;
 
     /// <summary>The panel's corner: centred on the screen, as the original's menu (owner, 2026-10-16).</summary>
     private float PanelX => MathF.Round((1280 - PanelWidth) / 2);
@@ -131,10 +155,58 @@ internal sealed partial class ProvinceMenuView : Control
 
     private float Line(float width) => Lacquer.Line(width, _k);
 
+    /// <summary>
+    /// The touch mode's card: beside the tapped province, left of it when there is room, else right of it short of the
+    /// rail, centred on it and kept on the screen; without a point, in the middle of the map left of the rail.
+    /// </summary>
+    private Rect2 CardRect
+    {
+        get
+        {
+            float h = CardPad + TouchPictureH + 14 + 62 + (_menu?.Card.Count ?? 0) * TouchFigure + CardPad - 8;
+            if (_at is not { } at)
+                return new Rect2(MathF.Round((RightRail - CardW) / 2), MathF.Round((800 - h) / 2), CardW, h);
+            float x = at.X - CardGap - CardW;
+            if (x < 8)
+                x = Math.Min(at.X + CardGap, RightRail - 8 - CardW);
+            return new Rect2(x, MathF.Round(Math.Clamp(at.Y - h / 2, 8, 792 - h)), CardW, h);
+        }
+    }
+
+    private const float TouchTagW = 62, TouchTextLeft = 78;
+
+    /// <summary>
+    /// The touch mode's rows' text size: 19, or as much smaller as the longest name needs to fit the rail's row
+    /// ("Military Academy"), the same for every row so they read as one list.
+    /// </summary>
+    private int TouchTextSize
+    {
+        get
+        {
+            int size = 19;
+            float room = TouchRowW - TouchTextLeft - 8;
+            while (size > 14 && _menu is { } m && m.Items.Any(i => _gothic.GetStringSize(i.Text, fontSize: size).X > room))
+                size--;
+            return size;
+        }
+    }
+
+    /// <summary>The touch mode's rail: the place's caption (the dungeon's menu), the commands, Return at the foot.</summary>
+    private Rect2 RailRect
+    {
+        get
+        {
+            int items = Math.Max(0, RowCount - 1);
+            float top = (items == 0 ? TouchReturnTop : ItemFoot - (items - 1) * TouchPitch) - RailInset
+                - (_menu?.Place is null ? 0 : Caption);
+            return new Rect2(RightRail, top, RailW, RailFoot - top);
+        }
+    }
+
     private Rect2 RowRect(int row) => _touch
         ? row < RowCount - 1
-            ? new Rect2(TouchRight, PanelY + Top + row * TouchPitch, TouchColumn, TouchRowH)
-            : new Rect2(TouchRight + TouchColumn - TouchReturnW, PanelY + Height - Pad - TouchRowH, TouchReturnW, TouchRowH)
+            ? new Rect2(RightRail + RailInset, ItemFoot - row * TouchPitch, TouchRowW, TouchRowH)  // from the foot up
+            : new Rect2(RightRail + RailInset, TouchReturnTop, TouchRowW, TouchReturnH)
         : row < RowCount - 1
             ? new Rect2(PanelX + 16, PanelY + Top + row * RowPitch, Width - 32, RowH)
             : new Rect2(PanelX + Width - 16 - ReturnW, PanelY + Top + (RowCount - 1) * RowPitch + 1, ReturnW, ReturnH);
@@ -172,8 +244,8 @@ internal sealed partial class ProvinceMenuView : Control
                 break;
             case InputEventMouseButton { ButtonIndex: MouseButton.Left } button:
                 int at = RowAt(button.Position);
-                bool outside = _touch && _menu is { CancelReopens: false }
-                    && !new Rect2(PanelX, PanelY, PanelWidth, Height).HasPoint(button.Position / _k);
+                var point = button.Position / _k;
+                bool outside = _touch && _menu is { CancelReopens: false } && !CardRect.HasPoint(point) && !RailRect.HasPoint(point);
                 if (button.Pressed)
                     (_pressed, _outside) = (at, outside);
                 else if (at >= 0 && at == _pressed && Enabled(at))
@@ -208,10 +280,15 @@ internal sealed partial class ProvinceMenuView : Control
         if (_menu is not { } m)
             return;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
-        float x = PanelX, y = PanelY, h = Height;
-        Ui.DrawPanel(this, new Rect2(x, y, PanelWidth, h), _k);
+        float x = PanelX, y = PanelY;
+        var card = CardRect;
+        if (_touch)
+            DrawTouchFrame(card);
+        else
+            Ui.DrawPanel(this, new Rect2(x, y, PanelWidth, Height), _k);
         // The city's picture.
-        var picture = _touch ? new Rect2(x + Pad, y + Pad, TouchPictureW, TouchPictureH) : new Rect2(x + Pad, y + Pad, PictureW, PictureH);
+        var picture = _touch ? new Rect2(card.Position.X + CardPad, card.Position.Y + CardPad, TouchPictureW, TouchPictureH)
+            : new Rect2(x + Pad, y + Pad, PictureW, PictureH);
         if (_picture is not null)
             DrawTextureRect(_picture, picture, false);
         DrawRect(picture.Grow(1), Ui.DimGold, false, Line(1));
@@ -234,13 +311,13 @@ internal sealed partial class ProvinceMenuView : Control
                 modulate: value == "??" ? Ui.Label : Ui.Value);
             sy2 += _touch ? TouchFigure : 36;
         }
-        if (_touch)
-            Ui.DrawVerticalDivider(this, picture.End.X + TouchMid / 2, y + Pad + 4, y + h - Pad - 4, _k);
-        // The place a later menu belongs to (the dungeon), between gold rules over the rows.
+        // The place a later menu belongs to (the dungeon), between gold rules over the rows (in the touch mode at the rail's top).
         if (m.Place is { } place)
         {
-            float cx0 = _touch ? TouchRight : x + 16, cx1 = _touch ? TouchRight + TouchColumn : x + Width - 16, mid = (cx0 + cx1) / 2;
-            float cy = y + Top - Caption / 2 - 4, pw = _cinzel.GetStringSize(place, fontSize: 16).X;
+            var rail = RailRect;
+            float cx0 = _touch ? rail.Position.X + 16 : x + 16, cx1 = _touch ? rail.End.X - 16 : x + Width - 16, mid = (cx0 + cx1) / 2;
+            float cy = _touch ? rail.Position.Y + RailInset + Caption / 2 : y + Top - Caption / 2 - 4;
+            float pw = _cinzel.GetStringSize(place, fontSize: 16).X;
             DrawString(_cinzel, new Vector2(mid - pw / 2, cy + (_cinzel.GetAscent(16) - _cinzel.GetDescent(16)) / 2), place,
                 fontSize: 16, modulate: Ui.Name);
             DrawLine(new Vector2(cx0, cy), new Vector2(mid - pw / 2 - 12, cy), Ui.DimGold, Line(1));
@@ -249,6 +326,31 @@ internal sealed partial class ProvinceMenuView : Control
         // The commands, then Return.
         for (int r = 0; r < RowCount; r++)
             DrawRow(r);
+    }
+
+    /// <summary>
+    /// The touch mode's frame (the owner's B): the tapped province ringed in gold, the card's panel with its triangle at the
+    /// province, the rail's panel.
+    /// </summary>
+    private void DrawTouchFrame(Rect2 card)
+    {
+        if (_at is { } at)
+        {
+            DrawArc(at, RingRadius + 5, 0, MathF.Tau, 48, Ui.DimGold, Line(1));
+            DrawArc(at, RingRadius, 0, MathF.Tau, 48, Ui.Gold, Line(3));
+        }
+        Ui.DrawPanel(this, card, _k);
+        if (_at is { } p)
+        {
+            bool left = card.End.X <= p.X;
+            float edge = left ? card.End.X - 1 : card.Position.X + 1;
+            float tip = left ? p.X - RingRadius - 6 : p.X + RingRadius + 6;
+            float cy = Math.Clamp(p.Y, card.Position.Y + 24, card.End.Y - 24);
+            Vector2[] triangle = [new(edge, cy - 16), new(tip, p.Y), new(edge, cy + 16)];
+            DrawColoredPolygon(triangle, Ui.Panel with { A = 1 });
+            DrawPolyline(triangle, Ui.Gold, Line(2));
+        }
+        Ui.DrawPanel(this, RailRect, _k);
     }
 
     private void DrawRow(int r)
@@ -269,16 +371,16 @@ internal sealed partial class ProvinceMenuView : Control
         var item = m.Items[r];
         var (tag, colour) = TagOf(item.Action);
         var tagRect = _touch
-            ? new Rect2(rect.Position.X + 7, rect.Position.Y + 8, 72, rect.Size.Y - 16)
+            ? new Rect2(rect.Position.X + 7, rect.Position.Y + 8, TouchTagW, rect.Size.Y - 16)
             : new Rect2(rect.Position.X + Rows.TagInset, rect.Position.Y + Rows.TagInset, Rows.TagWidth, rect.Size.Y - 2 * Rows.TagInset);
-        Ui.DrawTag(this, _gothic, tagRect, tag, colour, on, _k, _touch ? 13 : Rows.TagText);
-        int size = _touch ? 19 : Rows.Text;
-        DrawString(_gothic, new Vector2(rect.Position.X + (_touch ? 94 : Rows.TextLeft), baseline(size, _gothic)), item.Text, fontSize: size,
+        Ui.DrawTag(this, _gothic, tagRect, tag, colour, on, _k, _touch ? 12 : Rows.TagText);
+        int size = _touch ? TouchTextSize : Rows.Text;
+        DrawString(_gothic, new Vector2(rect.Position.X + (_touch ? TouchTextLeft : Rows.TextLeft), baseline(size, _gothic)), item.Text, fontSize: size,
             modulate: on ? Ui.Text : Ui.OffText);
-        if (!on)
+        if (!on && !_touch)                                             // the rail has no room for the note: only dimmed
         {
             const string spent = "used this week";
-            int spentSize = _touch ? 12 : Rows.Small;
+            int spentSize = Rows.Small;
             float sw = _gothic.GetStringSize(spent, fontSize: spentSize).X;
             DrawString(_gothic, new Vector2(rect.End.X - 10 - sw, baseline(spentSize, _gothic)), spent, fontSize: spentSize,
                 modulate: Ui.OffText);
