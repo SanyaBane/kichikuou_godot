@@ -622,14 +622,16 @@ public sealed partial class Battle
             await FigtBoxAsync(562);
             return FigtLabel.PlayerTurn;
         }
-        var menu = new BattleMenu(BattleMenuKind.RetreatConfirm,
-        [
-            new BattleMenuOption(1, new ScriptRef(FigtFile, 573)),
-            new BattleMenuOption(2, new ScriptRef(FigtFile, 577)),
-        ]);
-        var choice = await ChooseAsync(menu);
+        var choice = await ChooseAsync(RetreatMenu);
         return choice == 1 ? FigtLabel.RetreatConfirmed : FigtLabel.PlayerTurn;
     }
+
+    /// <summary>The retreat's confirmation (<c>FIGT.ADV:571-580</c>): 1 Retreat, 2 Cease Retreat.</summary>
+    public static BattleMenu RetreatMenu { get; } = new(BattleMenuKind.RetreatConfirm,
+    [
+        new BattleMenuOption(1, new ScriptRef(FigtFile, 573)),
+        new BattleMenuOption(2, new ScriptRef(FigtFile, 577)),
+    ]);
 
     /// <summary><c>L_00dd3</c>, <c>FIGT.ADV:581-590</c>: the player's army retreats.</summary>
     internal async Task<FigtLabel> RetreatConfirmedAsync()

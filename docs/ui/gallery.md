@@ -123,8 +123,11 @@ state, or is tagged "made up". The first ones are the states the docs record as 
   the listed ones) as `<id>.png` at 1280×800, plus `manifest.json` (each entry's id, section, title, save, note, hash,
   error; the palette, the font, touch). A window is needed (views draw nothing headless); nothing moves the system
   pointer. With `--previous` each picture is compared with the former one of its name: `since` is new, changed or
-  same, `differing` the pixels that differ by more than 8 in a channel — changed above 600, since the click's
-  triangle bobs (up to ~200 pixels between two dumps of the same screen).
+  same, `differing` the pixels that differ by more than 8 in a channel — changed above 600 —, `box` the rectangle round
+  them. While it dumps, our views animate by a clock of frames (`Strategy/UiClock`: it stands at the same time as each
+  entry is shown and goes a sixtieth of a second a frame), so the bobbing triangles, the battle's pulsing gauge and
+  blinks are caught at the same point: two dumps of the same build differ by 0 pixels (step 4). An entry whose view
+  rises into place waits `Settle` seconds of frames first (the exchange's counters).
 - `tools/ui/gallery.ps1 [-Steel] [-Touch] [-Only id,…] [-Out dir] [-NoBuild]` builds the game; for each pass
   (Lacquer; `-Steel`, `-Touch` add theirs) it moves `<dir>\<pass>\current` to `previous`, dumps into `current`
   compared with it, and writes `<dir>\index.html`: every pass dumped so far (one not dumped this time says so), the
@@ -141,6 +144,12 @@ The battle board is drawn from a presenter fed by the battle's events; a state a
 golden capture (`KICHIKUOU_GOLDEN_DIR`) replayed by `GoldenReplay.RunAsync` into the spare presenter, held at the
 chosen round header or exchange, as `BattleSceneTests` does — deterministic, the original script run headless on the
 capture's inputs. This is the last step: the board's looks from the week-18 save (`--until round-N`) do until then.
+
+Built (step 4, `GalleryBattle`): the replay is synchronous (the capture's inputs are answered at once), so one replay
+looks at the presenter at each moment — after an event, at a key wait (`ReplayAnswers.Key`), at `FIGT_SEL` (the
+`commands` callback) — and at the one an entry picks never shows nor answers the next event: the presenter stays as
+it was then. Each entry replays into a presenter of its own (`GalleryStage.Fresh`): the board's pointer moves the
+scene's focus, so a shared one would show what the entry before did. A replay takes about a second.
 
 ## 7. Steps
 
@@ -236,6 +245,18 @@ capture's inputs. This is the last step: the board's looks from the week-18 save
    and the battle's commands are layers of `BattleBoardView` (`Info`, `Dialog`, `Commands`, the counters inside it) fed by
    the presenter: alone over a black stage they would show nothing of their place, so they come as states of the board.
 4. **The battle board** from a replayed capture (§6).
+   **Built (2026-10-25).** `GalleryEntries.Board.cs` on `20261010-213758-114-FIGT_A` (an attack on Oaks (6) of story
+   stage 1, four rounds, Rance (unit 1) and Rick (unit 7) against Ex (commander 1), Sakanaku (commander 6), Melfeis (commander 4)
+   and Dodge (commander 5)): `opening` (the first header's key wait), `battle-turn` (round 1's first `FIGT_SEL`, our
+   commands begun on its menu as `GameScreen` begins them), `menu` and `menu-orders` (a right click on the acting card
+   and on the other, given to the commands as the pointer's), `banners-E1` (the pointer on the first enemy card),
+   `retreat` (made up: the dialog over that turn, its menu `Battle.RetreatMenu`, pulled out of `PlayerRetreatAsync`),
+   `exchange-counters` (the first exchange's result held), `info-panel` (a fall), `info-results` and `info-level-up`
+   (the tally and Rance's level-up page); `info-defence` on `20261010-213435-25-FIGT_B`, a defence with ten (the attack
+   has none). The board is followed every frame as `GameScreen.UpdateBattleScreen` follows it, slides instant. Found on
+   the way: `ExchangeCountersView.Layout` sized its digits' picture before their port, so a single layout left the
+   digits 102 pixels too tall (the game lays the board out every frame and hid it); fixed. The `UiClock` (§5) made every
+   dump repeatable. A full Lacquer pass, 78 entries, takes ~33 s. Not yet looked at by the owner.
 5. **The house style:** docs/ui/style.md, §7 gains "a changed screen updates its entries and the gallery is rebuilt";
    CLAUDE.md's commands list the gallery.
 

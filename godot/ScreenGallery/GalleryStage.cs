@@ -14,10 +14,22 @@ namespace Kichikuou.Game.ScreenGallery;
 /// <summary>
 /// What an entry of the screen gallery builds its screen from (docs/ui/gallery.md, §2): a fresh state from a kept save,
 /// read only, a presenter bound to it for what reads the scenario's text (no script runs), the game's font and the
-/// pictures, and the stage its views go on.
+/// pictures, and the stage its views go on; a fresh presenter for a battle replayed into it (<see cref="GalleryBattle"/>).
 /// </summary>
-internal sealed class GalleryStage(Control host, GameFont font, FacePictures faces, GamePresenter presenter)
+internal sealed class GalleryStage(Control host, GameFont font, FacePictures faces, GamePresenter presenter, Func<GamePresenter> fresh)
 {
+    /// <summary>A presenter of the entry's own, not bound yet: a battle replayed into it stays its.</summary>
+    public GamePresenter Fresh() => fresh();
+
+    /// <summary>Runs <paramref name="tick"/> every frame while the entry is shown (views that follow a presenter each frame).</summary>
+    public void EachFrame(Action tick)
+    {
+        var tree = host.GetTree();
+        Action run = () => tick();
+        tree.ProcessFrame += run;
+        host.TreeExiting += () => tree.ProcessFrame -= run;
+    }
+
     private static readonly Dictionary<string, SaveData?> Saves = [];
 
     /// <summary>The game's font the views are built with (the gallery's switch).</summary>

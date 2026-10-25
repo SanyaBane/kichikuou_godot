@@ -10,10 +10,11 @@ namespace Kichikuou.Game.ScreenGallery;
 /// One screen of ours in one state (docs/ui/gallery.md, §3): <see cref="Id"/> names its dump (the name unattended play
 /// dumps it by, where it does), <see cref="Save"/> the kept save its state starts from, <see cref="Note"/> what is made up
 /// or missing. <see cref="Build"/> adds its views to the stage and returns how to place them over the picture's area
-/// (the 1280×800 screen fitted), or null when it cannot be shown (its save is missing).
+/// (the 1280×800 screen fitted), or null when it cannot be shown (its save is missing). <see cref="Settle"/>: seconds the
+/// dump waits for a view that rises into place (a few frames otherwise).
 /// </summary>
 internal sealed record GalleryEntry(string Id, string Section, string Title, string? Save, string Note,
-    Func<GalleryStage, Action<Rect2>?> Build);
+    Func<GalleryStage, Action<Rect2>?> Build, double Settle = 0);
 
 /// <summary>The screen gallery's entries (docs/ui/gallery.md, §7: step 1 Treasure, Harem, Subordinates, the message windows; step 2 the map, GalleryEntries.Map.cs).</summary>
 internal static partial class GalleryEntries
@@ -36,6 +37,7 @@ internal static partial class GalleryEntries
         .. SceneScreens(),
         .. Controls(),
         .. BattleScreens(),
+        .. BoardScreens(),
     ];
 
     /// <summary>Script pixels a screen pixel of the picture's area: the 640×400 script screen fitted into it.</summary>
