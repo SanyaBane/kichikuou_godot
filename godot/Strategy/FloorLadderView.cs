@@ -10,7 +10,10 @@ namespace Kichikuou.Game.Strategy;
 /// red button at its foot. The way deeper has the gold arrow and its caption in gold, the way back is quiet; a way the
 /// script does not offer is left out and its place stays empty, so nothing moves between floors. A button's click
 /// answers the script's menu with its item; a right click cancels (0), which only opens the menu again, as the
-/// original's. Laid out in the 1280×800 screen's pixels, scaled with the picture.
+/// original's. Laid out in the 1280×800 screen's pixels, scaled with the picture. In the touch mode (the owner's B,
+/// 2026-10-26; docs/ui/dungeon-menu.md, §5) it is a rail in the lower right corner, right of window 113, within the
+/// right thumb's reach: Retreat at its top, furthest from the resting thumb, then Ascend, the floor and a larger Descend
+/// in the corner.
 /// </summary>
 internal sealed partial class FloorLadderView : Control
 {
@@ -19,10 +22,14 @@ internal sealed partial class FloorLadderView : Control
     // Right of the dungeon's picture (WAO_SUB 331: its frame spans x 355-925, y 193-536 on the screen), level with it.
     private const float X = 948, Y = 196, W = 248, H = 340, Inset = 16, WayH = 72, RetreatH = 40;
 
+    // The touch rail: right of window 113 (x 248-1032 under the picture) to the screen's edge, down to its foot.
+    private const float TouchX = 1040, TouchY = 424, TouchW = 236, TouchH = 372, TouchInset = 12;
+
     private enum Part { None, Up, Down, Retreat }
 
     private readonly FontFile _brush = Lacquer.Brush();
     private readonly FontVariation _cinzel = Lacquer.Cinzel(600);
+    private readonly bool _touch = TouchMode.On;
     private FontFile _gothic;
     private FloorLadder? _ladder;
     private float _k = 1;                           // window pixels to a screen pixel
@@ -78,12 +85,27 @@ internal sealed partial class FloorLadderView : Control
         QueueRedraw();
     }
 
-    private static Rect2 RectOf(Part part) => part switch
+    private Rect2 PanelRect => _touch ? new Rect2(TouchX, TouchY, TouchW, TouchH) : new Rect2(X, Y, W, H);
+
+    private Rect2 RectOf(Part part)
     {
-        Part.Up => new Rect2(X + Inset, Y + 18, W - 2 * Inset, WayH),
-        Part.Down => new Rect2(X + Inset, Y + 174, W - 2 * Inset, WayH),
-        _ => new Rect2(X + Inset, Y + H - 16 - RetreatH, W - 2 * Inset, RetreatH),
-    };
+        if (_touch)
+        {
+            float x = TouchX + TouchInset, w = TouchW - 2 * TouchInset;
+            return part switch
+            {
+                Part.Retreat => new Rect2(x, TouchY + 14, w, 60),
+                Part.Up => new Rect2(x, TouchY + 104, w, 78),
+                _ => new Rect2(x, TouchY + 256, w, 104),
+            };
+        }
+        return part switch
+        {
+            Part.Up => new Rect2(X + Inset, Y + 18, W - 2 * Inset, WayH),
+            Part.Down => new Rect2(X + Inset, Y + 174, W - 2 * Inset, WayH),
+            _ => new Rect2(X + Inset, Y + H - 16 - RetreatH, W - 2 * Inset, RetreatH),
+        };
+    }
 
     /// <summary>A part's answer to the menu, or null when the script does not offer it here.</summary>
     private int? Choice(Part part) => _ladder is not { } l ? null : part switch
@@ -147,43 +169,48 @@ internal sealed partial class FloorLadderView : Control
         if (_ladder is not { } l)
             return;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
-        Ui.DrawPanel(this, new Rect2(X, Y, W, H), _k);
+        var panel = PanelRect;
+        Ui.DrawPanel(this, panel, _k);
         if (l.Up is { } up)
-            DrawWay(Part.Up, up, true);
+            DrawWay(Part.Up, up, true, false);
         // The floor between the arrows.
-        float mid = X + W / 2;
+        float mid = panel.GetCenter().X, floorY = _touch ? TouchY + 200 : Y + 112;
         const string label = "FLOOR";
         float lw = _cinzel.GetStringSize(label, fontSize: 12).X;
-        DrawString(_cinzel, new Vector2(mid - lw / 2, Y + 112 + (_cinzel.GetAscent(12) - _cinzel.GetDescent(12)) / 2), label,
+        DrawString(_cinzel, new Vector2(mid - lw / 2, floorY + (_cinzel.GetAscent(12) - _cinzel.GetDescent(12)) / 2), label,
             fontSize: 12, modulate: Ui.Subtitle);
         string floor = $"{l.Floor}F";
         float fw = _brush.GetStringSize(floor, fontSize: 34).X;
-        DrawString(_brush, new Vector2(mid - fw / 2, Y + 142 + (_brush.GetAscent(34) - _brush.GetDescent(34)) / 2), floor,
+        DrawString(_brush, new Vector2(mid - fw / 2, floorY + 30 + (_brush.GetAscent(34) - _brush.GetDescent(34)) / 2), floor,
             fontSize: 34, modulate: Ui.Name);
+        // The touch rail's Descend is larger: it sits in the corner, under the thumb.
         if (l.Down is { } down)
-            DrawWay(Part.Down, down, false);
-        Ui.DrawDivider(this, X + Inset + 8, X + W - Inset - 8, Y + 266, _k);
+            DrawWay(Part.Down, down, false, _touch);
+        float inset = _touch ? TouchInset : Inset;
+        Ui.DrawDivider(this, panel.Position.X + inset + 8, panel.End.X - inset - 8, _touch ? TouchY + 90 : Y + 266, _k);
         var retreat = RectOf(Part.Retreat);
+        int retreatSize = _touch ? 22 : 20;
         Ui.DrawRedButton(this, retreat, _hovered == Part.Retreat, _pressed == Part.Retreat && _hovered == Part.Retreat, _k);
-        float rw = _brush.GetStringSize(l.RetreatText, fontSize: 20).X;
-        DrawString(_brush, new Vector2(retreat.GetCenter().X - rw / 2, Lacquer.Baseline(retreat, _brush, 20)), l.RetreatText,
-            fontSize: 20, modulate: Color.Color8(250, 226, 160));
+        float rw = _brush.GetStringSize(l.RetreatText, fontSize: retreatSize).X;
+        DrawString(_brush, new Vector2(retreat.GetCenter().X - rw / 2, Lacquer.Baseline(retreat, _brush, retreatSize)),
+            l.RetreatText, fontSize: retreatSize, modulate: Color.Color8(250, 226, 160));
     }
 
-    private void DrawWay(Part part, FloorWay way, bool up)
+    private void DrawWay(Part part, FloorWay way, bool up, bool large)
     {
         var rect = RectOf(part);
         Ui.DrawRowBox(this, rect, _hovered == part, _k);
-        float cy = rect.GetCenter().Y, cx = rect.Position.X + 34, half = 15, h = 13;
+        float cy = rect.GetCenter().Y, cx = rect.Position.X + 34, half = large ? 18 : 15, h = large ? 15 : 13;
         Vector2[] arrow = up
             ? [new(cx - half, cy + h), new(cx + half, cy + h), new(cx, cy - h)]
             : [new(cx - half, cy - h), new(cx + half, cy - h), new(cx, cy + h)];
         Lacquer.DrawSmoothPolygon(this, arrow, way.Deeper ? Ui.Gold : Ui.Quiet, _k);
-        float tx = rect.Position.X + 62;
-        DrawString(_gothic, new Vector2(tx, cy - 11 + (_gothic.GetAscent(24) - _gothic.GetDescent(24)) / 2), way.Text, fontSize: 24,
-            modulate: Ui.Text);
+        float tx = rect.Position.X + (large ? 66 : 62);
+        int size = large ? 26 : 24;
+        DrawString(_gothic, new Vector2(tx, cy - (large ? 12 : 11) + (_gothic.GetAscent(size) - _gothic.GetDescent(size)) / 2),
+            way.Text, fontSize: size, modulate: Ui.Text);
         string caption = $"{(way.Deeper ? "deeper" : "back")} · to {way.To}F";
-        DrawString(_gothic, new Vector2(tx + 1, cy + 17 + (_gothic.GetAscent(14) - _gothic.GetDescent(14)) / 2), caption, fontSize: 14,
-            modulate: way.Deeper ? Ui.Name : Ui.Quiet);
+        DrawString(_gothic, new Vector2(tx + 1, cy + (large ? 19 : 17) + (_gothic.GetAscent(14) - _gothic.GetDescent(14)) / 2),
+            caption, fontSize: 14, modulate: way.Deeper ? Ui.Name : Ui.Quiet);
     }
 }

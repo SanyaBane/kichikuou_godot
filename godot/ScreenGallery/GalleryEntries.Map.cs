@@ -193,19 +193,29 @@ internal static partial class GalleryEntries
         };
     }
 
-    /// <summary>Our floor ladder right of the dungeon's picture (<c>WAO_SUB</c> 331 over the map), on <paramref name="floor"/>.</summary>
+    /// <summary>
+    /// Our floor ladder on <paramref name="floor"/> as the floor's header leaves the screen (<c>Cﾒｲｷｭｳ.ADV:669-699</c>): the
+    /// screen cleared to black (<c>EC 0</c>), the dungeon's picture (<c>WAO_SUB</c> 331) and window 113 under it with the
+    /// dungeon, the floor and the searcher's unit (the gallery's own lines).
+    /// </summary>
     private static Action<Rect2>? Ladder(GalleryStage g, int floor)
     {
         if (g.State(Week18) is not { } s)
             return null;
         GalleryStates.DungeonFloor(s, GalleryStates.Cave, floor);
-        var backdrop = g.Backdrop(s, new WindowEvent(331, s.CallArg));
+        var backdrop = g.Backdrop(s, new EngineEvent("EC", [0]), new WindowEvent(331, s.CallArg));
+        var header = g.Add(new MessageWindowView(g.Font) { Docks = TouchMode.On });
+        header.Show(MessageWindow.SampleOf(MessageKind.Narration,
+            ["Monsters' Cave", $"  {(int)s.DgnRun_Floor}F", "Rance Unit", $" ({(int)s.Units[1].Troops})"]),
+            false, null, null);
+        header.Complete();
         var ladder = Opened(g.Bound(s), DungeonCommand.FloorMenuItems(s), q => q.FloorLadder, "the floor menu");
         var view = g.Add(new FloorLadderView(g.Font));
         view.Open(ladder);
         return area =>
         {
             GalleryStage.Fill(backdrop, area);
+            header.Place(area);
             view.Place(area);
         };
     }

@@ -591,6 +591,12 @@ floated). Built, in the touch mode only:
   `order-toggles` (made up: Auto-Def lit, Auto-Atk held; the tap's choice checked), `exchange-counters` (Rance's card
   with the pill, no toggles). Not yet on the tablet, nor in unattended play.
 
+## The dungeon's floor ladder within the thumb's reach (owner, 2026-10-26)
+
+The ladder (docs/ui/dungeon-menu.md) stood right of the dungeon's picture at the screen's middle height. Mock-up round
+T1 and the owner's choice are docs/ui/dungeon-menu.md, §5: B, built — in the touch mode a rail in the lower right
+corner, right of window 113, Retreat at its top, then Ascend, the floor and a larger Descend in the corner.
+
 ## Phones (put off)
 
 Put off by the owner (2026-10-24). What is ready for them: the measurements above, mock-ups B1, B3 (the battle),

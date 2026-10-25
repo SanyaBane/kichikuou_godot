@@ -67,7 +67,8 @@ The owner chose round 2's ladder (2026-10-25). It is built in our interface:
 - A click answers the script with the way's item. A right click answers 0, and the script opens the menu again, as
   in the original.
 - Unattended play in a window dumps it once as `floor-ladder`, for example from the week-18 save with `--dungeon`
-  (CLAUDE.md, "A dungeon battle"; `--until round-1` is enough).
+  (CLAUDE.md, "A dungeon battle"; `--until round-1` is enough). In the touch mode it stands in the lower right corner
+  (§5).
 
 Tests: `FloorLadderTests` (content tests).
 
@@ -106,3 +107,13 @@ and Return), and the cave's usual way exactly where the thumb rests. A wrong Ret
 (`Cﾒｲｷｭｳ.ADV:934-938`), so it needs no distance; the costly mistake is Ascend, which A puts furthest. B gives Descend the
 largest button but moves Retreat away from where the other rails have their exit; C is the safest against a stray
 Retreat but splits the screen between the hands for one menu.
+
+**The owner's choice (2026-10-26): B.** Built, in the touch mode only (the PC's ladder as before):
+- `godot/Strategy/FloorLadderView` lays its rail at x 1040-1276, y 424 to the foot when `TouchMode.On`: Retreat 212×60
+  at the top (Shojumaru 22), a divider, Ascend 212×78, the floor, Descend 212×104 in the corner (its arrow and name a
+  size larger). A way not offered leaves its place empty, as on the PC; the taps and the right click (Back) answer the
+  script as before.
+- The screen gallery's `floor-ladder` entries now show the screen the game shows: cleared to black (`EC 0`), the
+  picture, window 113 with the header (the gallery's own lines; `GalleryEntries.Map.cs`, `Ladder`).
+- Looked at by the agent (2026-10-26) in the gallery's both passes and in the dungeon look with `--touch` (the week-18
+  save, `--dungeon --until round-1`). Not yet on the tablet.
