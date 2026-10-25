@@ -184,4 +184,19 @@ public class ScreenGalleryTests
         Assert.True(log.Lines().Count > 18);                         // the rows MessageLogView's paper holds
         Assert.Contains(log.Lines(), line => line.Chosen);
     }
+
+    [Fact]
+    public void An_enemy_attack_names_its_army_and_province_and_the_scouts_report_its_places()
+    {
+        var s = new GameState { Prov_StrBase = 200, Week = 18, F_Kanami_NinjaUsed = 0, F_Freya_NinjaUsed = 99, F_Kaoru_NinjaUsed = 99,
+            F_Wichita_NinjaUsed = 99, F_Saitou_NinjaUsed = 99 };
+        s.Strings[204] = "Ys";
+        GalleryStates.EnemyAttack(s, 5, 2, "Leazas Rebel Army");
+        var attack = Battles.EnemyAttack.Of(s, _ => "Kanami");
+        Assert.Equal(("Leazas Rebel Army", "Ys", 5, 821), (attack.Army, attack.Province, attack.Record, attack.FlagCg));
+        Assert.Equal("Ys", s.Strings[8]);
+        Assert.Single(attack.Ninjas);
+        GalleryStates.EnemyParty(s, 1, 6);
+        Assert.Equal([1, 6, 0, 0], new[] { s.Bt_EnemyParty1, s.Bt_EnemyParty2, s.Bt_EnemyParty3, s.Bt_EnemyParty4 }.Select(v => v.Value));
+    }
 }

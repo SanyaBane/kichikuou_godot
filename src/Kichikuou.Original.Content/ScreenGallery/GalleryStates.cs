@@ -105,6 +105,30 @@ public static class GalleryStates
         s.Bld_Hospital = 1;
     }
 
+    /// <summary>
+    /// An attack of <paramref name="nation"/> on our <paramref name="province"/> as <c>FIGT_B</c> announces it: the nation
+    /// file's <c>Ev_PhaseNation</c> and its army's name in string 10 (<c>TCﾘｰｻﾞｽ.ADV:1-3</c> for the rebels, nation 2,
+    /// <paramref name="army"/> read by the caller), the attacked province in <c>Prov_Cur</c> and its name in string 8
+    /// (<c>FIGT_B.ADV:15</c>, <c>MM 8</c>).
+    /// </summary>
+    public static void EnemyAttack(GameState s, int province, int nation, string army)
+    {
+        s.Prov_Cur = (Sys3Int)province;
+        s.Strings[8] = s.Strings[(s.Prov_StrBase + s.Prov_Cur - 1).Value];
+        s.Ev_PhaseNation = (Sys3Int)nation;
+        s.Strings[10] = army;
+    }
+
+    /// <summary>The approaching army's places, <c>Bt_EnemyParty1-4</c>, as the nation file's picker fills them (0: empty).</summary>
+    public static void EnemyParty(GameState s, params int[] commanders)
+    {
+        int At(int i) => i < commanders.Length ? commanders[i] : 0;
+        s.Bt_EnemyParty1 = (Sys3Int)At(0);
+        s.Bt_EnemyParty2 = (Sys3Int)At(1);
+        s.Bt_EnemyParty3 = (Sys3Int)At(2);
+        s.Bt_EnemyParty4 = (Sys3Int)At(3);
+    }
+
     /// <summary>The Monsters' Cave (dungeon 2), the floor ladder's dungeon: a pit of 14 floors.</summary>
     public const int Cave = 2;
 

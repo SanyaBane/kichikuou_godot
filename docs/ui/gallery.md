@@ -205,6 +205,14 @@ capture's inputs. This is the last step: the board's looks from the week-18 save
 3. **Screens and the battle's overlays:** deployment (the panels' overload), Save/Load (`LoadSaveScreen.Items`, a
    read-only library), the enemy attack, the scout report, the cut-in, the counters, the info boxes, the dialog and
    the commands (input forwarded).
+   **Built so far (2026-10-25): the enemy attack and the scout report** (`GalleryEntries.Battle.cs`) on the attack the
+   `--scout` run meets: the rebels (nation 2) on Ys (5) with Ex (commander 1), Sakanaku (commander 6), Dodge (commander 5)
+   and Jibul (commander 7) — `GalleryStates.EnemyAttack` (`Prov_Cur`, string 8, `Ev_PhaseNation`, string 10 read from
+   `TCﾘｰｻﾞｽ.ADV:3`) and `EnemyParty`; Maris's lines, Rance's reply and her comment read from `FIGT_B.ADV` as the presenter
+   reads them (`GalleryStage.Text`, `Literal`). Entries `enemy-attack`, `-ninjas` (the list open), `-scouted` (the report
+   filled in), `scout-report`. The troops are the COMMAND save's, before the rebels' turn: Ex has none. Left for step 3:
+   the Abandon City question (asked by the view's own button, no way in from outside yet), deployment, Save/Load, the
+   cut-in, the counters, the info boxes, the dialog and the commands.
 4. **The battle board** from a replayed capture (§6).
 5. **The house style:** docs/ui/style.md, §7 gains "a changed screen updates its entries and the gallery is rebuilt";
    CLAUDE.md's commands list the gallery.

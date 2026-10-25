@@ -1,5 +1,7 @@
 using Godot;
+using Kichikuou.Content;
 using Kichikuou.Content.Screen;
+using Kichikuou.Content.Scripts;
 using Kichikuou.Engine.Script;
 using Kichikuou.Game.Battles;
 using Kichikuou.Game.Strategy;
@@ -80,6 +82,18 @@ internal sealed class GalleryStage(Control host, GameFont font, FacePictures fac
         host.MoveChild(backdrop, 0);
         return backdrop;
     }
+
+    private static ScenarioText? _texts;
+    private static ScenarioScripts? _scripts;
+
+    /// <summary>The text run at <paramref name="at"/> as printed now: its numbers as zeros, its string variables <paramref name="state"/>'s.</summary>
+    public static string Text(ScriptRef at, GameState state) =>
+        (_texts ??= new ScenarioText(GameData.ScenarioDirectory)).Read(at).Format(strings: i => state.Strings[i]);
+
+    /// <summary>The text of <c>MS n, "text"</c> at <paramref name="at"/> in the player's files, as the script stores it.</summary>
+    public static string Literal(ScriptRef at) =>
+        ((_scripts ??= new ScenarioScripts(GameData.ScenarioDirectory)).ReadStatement(at) as SetStringStatement)?.Text
+        ?? throw new InvalidOperationException($"{at}: expected MS n, \"text\".");
 
     /// <summary>Lays <paramref name="control"/> over the picture's <paramref name="area"/>.</summary>
     public static void Fill(Control control, Rect2 area)

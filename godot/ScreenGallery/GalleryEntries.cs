@@ -33,6 +33,7 @@ internal static partial class GalleryEntries
         .. MapScreens(),
         .. SceneScreens(),
         .. Controls(),
+        .. BattleScreens(),
     ];
 
     /// <summary>Script pixels a screen pixel of the picture's area: the 640×400 script screen fitted into it.</summary>
