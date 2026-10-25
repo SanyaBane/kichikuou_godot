@@ -6,8 +6,8 @@ Dumps the screen gallery (our screens from the kept saves) and writes an index m
 Builds godot/Kichikuou.csproj, then runs the game's screen gallery (docs/ui/gallery.md) in a window for each pass
 asked for: Lacquer always, -Steel and -Touch add theirs. A pass's former pictures move from <pass>\current to
 <pass>\previous first, and the gallery compares every new picture with them (manifest.json says new, changed or same).
-Last it writes index.html in the gallery's folder: the passes, their sections, each entry's picture, the changed ones
-first with the former picture beside it. The folder is -Out, else KICHIKUOU_UI_GALLERY_DIR (its environment variable,
+Last it writes index.html in the gallery's folder: a tab for each pass dumped so far (one shown at a time; one not dumped
+this time marked old), its sections, each entry's picture, the changed ones first with the former picture beside it. The folder is -Out, else KICHIKUOU_UI_GALLERY_DIR (its environment variable,
 else its line in local.env), else screen-gallery at the repository's root, which git ignores; one inside the repository
 must be ignored by git (the pictures hold the player's CGs). Nothing moves the system pointer; a window opens for each
 pass.
@@ -107,6 +107,8 @@ foreach ($pass in $passes) {
 
 function Html([string]$text) { return [System.Net.WebUtility]::HtmlEncode($text) }
 
+# One tab a pass, one pass shown at a time; a pass not dumped this time says so on its tab and above its pictures.
+$tabs = New-Object System.Text.StringBuilder
 $body = New-Object System.Text.StringBuilder
 foreach ($pass in $allPasses) {
     $manifestPath = Join-Path $Out "$($pass.Name)\current\manifest.json"
@@ -114,36 +116,46 @@ foreach ($pass in $allPasses) {
     $manifest = Get-Content -Raw -Encoding UTF8 $manifestPath | ConvertFrom-Json
     $entries = @($manifest.entries)
     $changed = @($entries | Where-Object { $_.since -eq 'changed' -or $_.since -eq 'new' })
-    $stale = if ($passes.Name -contains $pass.Name) { '' } else { ' &middot; not dumped this time' }
-    [void]$body.Append("<h2>$(Html $pass.Title) <small>$(Html $manifest.written) &middot; font $(Html $manifest.font) &middot; " +
-        "$($entries.Count) entries, $($changed.Count) changed or new$stale</small></h2>")
-    $ordered = @($changed) + @($entries | Where-Object { $changed -notcontains $_ })
-    $section = $null
-    foreach ($entry in $ordered) {
-        $isChanged = $changed -contains $entry
-        $group = if ($isChanged) { 'Changed since the former dump' } else { $entry.section }
-        if ($group -ne $section) {
-            if ($section) { [void]$body.Append('</div>') }
-            $section = $group
-            [void]$body.Append("<h3>$(Html $section)</h3><div class=grid>")
-        }
-        $badge = switch ($entry.since) { 'changed' { "<b class=changed>changed &middot; $($entry.differing) px</b>" } 'new' { '<b class=new>new</b>' } default { '' } }
-        [void]$body.Append("<figure id=`"$($pass.Name)-$(Html $entry.id)`"><figcaption>$(Html $entry.title) $badge<br><code>$(Html $entry.id)</code>")
-        if ($entry.note) { [void]$body.Append(" &mdash; $(Html $entry.note)") }
-        if ($entry.error) { [void]$body.Append("<br><b class=error>$(Html $entry.error)</b>") }
-        [void]$body.Append('</figcaption>')
-        if ($entry.file) {
-            $now = "$($pass.Name)/current/$($entry.file)"
-            if ($entry.since -eq 'changed') {
-                $before = "$($pass.Name)/previous/$($entry.file)"
-                [void]$body.Append("<div class=pair><a href=`"$before`"><img src=`"$before`" alt=before></a><a href=`"$now`"><img src=`"$now`" alt=after></a></div>")
-            } else {
-                [void]$body.Append("<a href=`"$now`"><img src=`"$now`" alt=`"$(Html $entry.id)`"></a>")
-            }
-        }
-        [void]$body.Append('</figure>')
+    $isStale = $passes.Name -notcontains $pass.Name
+    $mark = if ($isStale) { ' <b class=stale>old</b>' } elseif ($changed.Count) { " <b class=changed>$($changed.Count)</b>" } else { '' }
+    [void]$tabs.Append("<a class=tab href=`"#$($pass.Name)`" data-pass=`"$($pass.Name)`">$(Html $pass.Title)$mark</a>")
+    [void]$body.Append("<section class=pass id=`"$($pass.Name)`"><h2>$(Html $pass.Title) <small>$(Html $manifest.written) &middot; " +
+        "font $(Html $manifest.font) &middot; $($entries.Count) entries, $($changed.Count) changed or new</small></h2>")
+    if ($isStale) {
+        [void]$body.Append("<p class=stale>Not dumped by the last run: these pictures are from $(Html $manifest.written) and may be " +
+            "out of date (<code>gallery.ps1 -$($pass.Name.Substring(0, 1).ToUpper() + $pass.Name.Substring(1))</code> dumps them again).</p>")
     }
-    if ($section) { [void]$body.Append('</div>') }
+    # The changed ones first, then the sections in the order they first come, each once.
+    $sections = New-Object System.Collections.Generic.List[string]
+    foreach ($entry in $entries) { if (-not $sections.Contains($entry.section)) { $sections.Add($entry.section) } }
+    $groups = @()
+    if ($changed.Count) { $groups += , @('Changed since the former dump', $changed) }
+    foreach ($name in $sections) {
+        $groups += , @($name, @($entries | Where-Object { $_.section -eq $name -and $changed -notcontains $_ }))
+    }
+    foreach ($group in $groups) {
+        if ($group[1].Count -eq 0) { continue }
+        [void]$body.Append("<h3>$(Html $group[0])</h3><div class=grid>")
+        foreach ($entry in $group[1]) {
+            $badge = switch ($entry.since) { 'changed' { "<b class=changed>changed &middot; $($entry.differing) px</b>" } 'new' { '<b class=new>new</b>' } default { '' } }
+            [void]$body.Append("<figure id=`"$($pass.Name)-$(Html $entry.id)`"><figcaption>$(Html $entry.title) $badge<br><code>$(Html $entry.id)</code>")
+            if ($entry.note) { [void]$body.Append(" &mdash; $(Html $entry.note)") }
+            if ($entry.error) { [void]$body.Append("<br><b class=error>$(Html $entry.error)</b>") }
+            [void]$body.Append('</figcaption>')
+            if ($entry.file) {
+                $now = "$($pass.Name)/current/$($entry.file)"
+                if ($entry.since -eq 'changed') {
+                    $before = "$($pass.Name)/previous/$($entry.file)"
+                    [void]$body.Append("<div class=pair><a href=`"$before`"><img src=`"$before`" alt=before></a><a href=`"$now`"><img src=`"$now`" alt=after></a></div>")
+                } else {
+                    [void]$body.Append("<a href=`"$now`"><img src=`"$now`" alt=`"$(Html $entry.id)`"></a>")
+                }
+            }
+            [void]$body.Append('</figure>')
+        }
+        [void]$body.Append('</div>')
+    }
+    [void]$body.Append('</section>')
 }
 
 $html = @"
@@ -160,10 +172,33 @@ $html = @"
   figure img { width: 100%; display: block; }
   .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
   code { color: #c8b080; } .changed { color: #ff9a6a; } .new { color: #8fd18f; } .error { color: #ff6a6a; }
+  nav { position: sticky; top: 0; background: #141110; padding: 8px 0; display: flex; gap: 8px; z-index: 1; }
+  .tab { color: #e8dcc0; text-decoration: none; border: 1px solid #5a4a30; padding: 6px 14px; background: #1e1a17; }
+  .tab.on { border-color: #d8b060; background: #3a2c1c; color: #f0d890; }
+  .stale { color: #e0b050; } p.stale { border: 1px solid #806020; background: #2a2010; padding: 8px; }
 </style>
 <h1>Screen gallery</h1>
 <p>Our screens from the kept saves (docs/ui/gallery.md). Changed and new pictures first; a changed one shows the former picture at its left.</p>
+<nav>$($tabs.ToString())</nav>
 $($body.ToString())
+<script>
+  // One pass at a time: the one the address names (#steel, or an entry's #steel-treasure), else the first.
+  const tabs = [...document.querySelectorAll('.tab')], panes = [...document.querySelectorAll('.pass')];
+  function show(id) {
+    const pane = panes.find(p => p.id === id) || panes.find(p => id.startsWith(p.id + '-')) || panes[0];
+    panes.forEach(p => p.hidden = p !== pane);
+    tabs.forEach(t => t.classList.toggle('on', t.dataset.pass === pane.id));
+    if (id && id !== pane.id) document.getElementById(id)?.scrollIntoView();
+  }
+  // A tab switches by itself, the address following where it can (a page shown as a data: URL has no hash to set).
+  tabs.forEach(t => t.addEventListener('click', e => {
+    e.preventDefault();
+    show(t.dataset.pass);
+    try { history.replaceState(null, '', '#' + t.dataset.pass); } catch { }
+  }));
+  addEventListener('hashchange', () => show(location.hash.slice(1)));
+  show(location.hash.slice(1));
+</script>
 </html>
 "@
 Set-Content -Encoding UTF8 -Path (Join-Path $Out 'index.html') -Value $html

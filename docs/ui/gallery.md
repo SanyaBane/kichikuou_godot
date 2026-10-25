@@ -132,8 +132,10 @@ state, or is tagged "made up". The first ones are the states the docs record as 
   hover of `treasure-hover` and `treasure-items` once (2026-10-25).
 - `tools/ui/gallery.ps1 [-Steel] [-Touch] [-Only id,…] [-Out dir] [-NoBuild]` builds the game; for each pass
   (Lacquer; `-Steel`, `-Touch` add theirs) it moves `<dir>\<pass>\current` to `previous`, dumps into `current`
-  compared with it, and writes `<dir>\index.html`: every pass dumped so far (one not dumped this time says so), the
-  changed and new entries first with the former picture beside them, then the sections. `<dir>` is
+  compared with it, and writes `<dir>\index.html`: a tab for each pass dumped so far, one shown at a time (the owner,
+  2026-10-25; `#steel` or an entry's `#steel-treasure` opens its pass), a pass not dumped this time marked old on its
+  tab and above its pictures; in a pass the changed and new entries first with the former picture beside them, then
+  the sections, each once. `<dir>` is
   `-Out`, else `KICHIKUOU_UI_GALLERY_DIR` (`local.env`), else `screen-gallery/` at the root; a folder inside the
   repository that git does not ignore is refused (`git check-ignore`). `-Only` replaces the pass's `current` with
   those entries alone (a quick check; the next full run marks the rest new).
