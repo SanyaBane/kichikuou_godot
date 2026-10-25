@@ -289,6 +289,10 @@ public sealed partial class GamePresenter
             ? Strategy.FloorLadder.For(s, items, texts)
             : null;
 
+    /// <summary>The open menu as the dungeon's menu before a search (<see cref="Strategy.DungeonEntryMenu"/>), or null.</summary>
+    public DungeonEntryMenu? DungeonEntry =>
+        _menuItems is { } items && MenuItems is { } texts && !BattleShows ? Strategy.DungeonEntryMenu.For(items, texts) : null;
+
     /// <summary>The open menu as <c>COMMAND.ADV</c>'s command menu (<see cref="Strategy.CommandMenu"/>), or null.</summary>
     public CommandMenu? CommandMenu =>
         _menuItems is { } items && MenuItems is { } texts && State is { } s && !BattleShows

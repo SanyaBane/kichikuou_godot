@@ -595,7 +595,8 @@ floated). Built, in the touch mode only:
 
 The ladder (docs/ui/dungeon-menu.md) stood right of the dungeon's picture at the screen's middle height. Mock-up round
 T1 and the owner's choice are docs/ui/dungeon-menu.md, §5: B, built — in the touch mode a rail in the lower right
-corner, right of window 113, Retreat at its top, then Ascend, the floor and a larger Descend in the corner.
+corner, right of window 113, Retreat at its top, then Ascend, the floor and a larger Descend in the corner. The menu
+before a search went the same way (§6 there, the owner's B): Start Search in Descend's place, Return on top.
 
 ## Phones (put off)
 

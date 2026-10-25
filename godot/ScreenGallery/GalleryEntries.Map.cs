@@ -71,7 +71,11 @@ internal static partial class GalleryEntries
             g => Ladder(g, 14));
         yield return new("dungeon-entry", Map, "Dungeon: the search's menu", Week18,
             "The Monsters' Cave (dungeon 2), unsearched: Start Search and Return (Cﾒｲｷｭｳ.ADV:238-305) over its picture.",
-            DungeonEntry);
+            g => DungeonEntry(g, "Monsters' Cave", "(Unsearched)", 267, 295));
+        yield return new("dungeon-entry-more", Map, "Dungeon: the search's menu, four items", Week18,
+            "Made up: the Ancient Ruins (dungeon 30) in progress, Merim to bring and God's Door found (the picture is "
+            + "the ruins' own, 1032).",
+            g => DungeonEntry(g, "Ancient Ruins", "(Search in Progress)", 267, 272, 290, 295));
     }
 
     /// <summary>Our plates over the map, as <c>COMMAND</c>'s map wait shows them, <paramref name="hover"/>'s province hovered.</summary>
@@ -198,18 +202,35 @@ internal static partial class GalleryEntries
 
     /// <summary>
     /// The dungeon's own menu before a search (<c>Cﾒｲｷｭｳ.ADV:238-305</c>, <c>L_0076a</c>): the picture (<c>WAO_SUB</c> 331)
-    /// over the map, window 113 with the dungeon's name and state, our <c>]</c> menu at the boot's selection box — Start
-    /// Search and Return, as an unsearched dungeon without Merim offers them.
+    /// over the map, window 113 with the dungeon's <paramref name="name"/> and <paramref name="state"/>, the items registered
+    /// at <paramref name="lines"/> — our <c>]</c> menu at the boot's selection box, in the touch mode the rail in the lower
+    /// right corner (docs/ui/dungeon-menu.md, §6).
     /// </summary>
-    private static Action<Rect2>? DungeonEntry(GalleryStage g)
+    private static Action<Rect2>? DungeonEntry(GalleryStage g, string name, string state, params int[] lines)
     {
         if (g.State(Week18) is not { } s)
             return null;
         GalleryStates.DungeonFloor(s, GalleryStates.Cave, 1);
         var backdrop = g.Backdrop(s, new WindowEvent(331, s.CallArg));
+        var window = g.Add(new MessageWindowView(g.Font) { Docks = TouchMode.On });
+        window.Show(MessageWindow.SampleOf(MessageKind.Narration, [$"[{name}]", "", state]), false, null, null);
+        window.Complete();
         var p = g.Bound(s);
+        var items = lines.Select(Item).ToList();
+        if (TouchMode.On)
+        {
+            var entry = Opened(p, items, q => q.DungeonEntry, "the menu before a search");
+            var rail = g.Add(new FloorLadderView(g.Font));
+            rail.OpenEntry(entry);
+            return area =>
+            {
+                GalleryStage.Fill(backdrop, area);
+                window.Place(area);
+                rail.Place(area);
+            };
+        }
         p.Show(GalleryStates.SelectionWindow);
-        p.OpenMenu([Item(267), Item(295)]);
+        p.OpenMenu(items);
         MenuView menu;
         (int X, int Y, int W, int H) box;
         try
@@ -221,9 +242,6 @@ internal static partial class GalleryEntries
         {
             p.CloseMenu();
         }
-        var window = g.Add(new MessageWindowView(g.Font) { Docks = TouchMode.On });
-        window.Show(MessageWindow.SampleOf(MessageKind.Narration, ["[Monsters' Cave]", "", "(Unsearched)"]), false, null, null);
-        window.Complete();
         var view = g.Add(new SceneMenuView(g.Font));
         view.Open(menu, box);
         return area =>

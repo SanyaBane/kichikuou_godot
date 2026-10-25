@@ -144,3 +144,17 @@ docstring, the images stay outside the repository. All three use the ladder's ra
 **Recommendation: B** — the ladder's language the owner chose (the way out on top, the way down in the corner), and one
 place for the thumb from entering to the deepest floor: Start Search, then Descend, at the same spot. A puts Return
 where the thumb rests, the menu's least wanted item; C splits the hands for a menu that is mostly entered.
+
+**The owner's choice (2026-10-26): B.** Built, in the touch mode only (the PC keeps our `]` menu):
+- `Original.Content/Strategy/DungeonEntryMenu` recognises the menu by its items (Start Search at `:267` first, Return at
+  `:295` last, the others among `:272`/`:278`/`:284`/`:290`, each once); `GamePresenter.DungeonEntry` gives it while the
+  menu is open. Tests: `DungeonEntryMenuTests` (content tests).
+- `godot/Strategy/FloorLadderView.OpenEntry` draws it on the ladder's rail: Start Search 212×104 in Descend's place
+  (a gold frame, the gold arrow down, "a unit goes down"), Return 212×60 on top, the other items 212×46 between them,
+  the rail's top `578 − 54·n` for n other items. `GameScreen.SelectAsync` opens it instead of our `]` menu when
+  `TouchMode.On`; a tap answers the item, Back (a right click) 0, which the script takes as Return.
+- The screen gallery: `dungeon-entry` (the Monsters' Cave, two items) and `dungeon-entry-more` (made up: the Ancient
+  Ruins (dungeon 30) with Bring Merim and God's Door; its picture is 1032 too). Unattended play with `--touch` in a
+  window dumps it once as `dungeon-entry` (the dungeon look, CLAUDE.md, "A dungeon battle").
+- Looked at by the agent (2026-10-26) in the gallery's both passes and in the dungeon look with `--touch`. Not yet on the
+  tablet.

@@ -1636,6 +1636,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         var province = InterfaceChoice.New && saveList is null ? _presenter.ProvinceMenu : null;
         var command = InterfaceChoice.New && province is null && saveList is null ? _presenter.CommandMenu : null;
         var ladder = InterfaceChoice.New && province is null && command is null && saveList is null ? _presenter.FloorLadder : null;
+        // The dungeon's menu before a search on the touch rail (docs/ui/dungeon-menu.md, §6); the PC keeps our ] menu.
+        var entry = InterfaceChoice.New && TouchMode.On && province is null && command is null && saveList is null && ladder is null
+            ? _presenter.DungeonEntry : null;
         if (saveList is { } shownList)
         {
             _presenter.SaveScreenCovered = true;                // our Save/Load screen (docs/ui/save-load.md, §5)
@@ -1662,9 +1665,16 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _ladderView.Open(ladder);
             _ladderView.Place(PictureArea());
         }
+        else if (entry is not null)
+        {
+            _presenter.SceneMenuCovered = true;                 // the touch rail in the lower right corner
+            _presenter.Invalidate();
+            _ladderView.OpenEntry(entry);
+            _ladderView.Place(PictureArea());
+        }
         // Our ] menu at the selection box's place (docs/ui/messages.md, §5 step 3); a battle's menus stay the original's
         // with the battle's windows (step 5).
-        bool scene = province is null && command is null && ladder is null && saveList is null && InterfaceChoice.New && !BattleScreenShown
+        bool scene = province is null && command is null && ladder is null && entry is null && saveList is null && InterfaceChoice.New && !BattleScreenShown
             && _presenter.Menu is not null && _presenter.MenuBoxArea is not null;
         // Over our Treasure screen the question's window is a callout at the clicked cell, its Yes/No inside it
         // (docs/ui/pickers.md, round W): opened with its buttons at once.
@@ -1702,6 +1712,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 }
                 if (ladder is not null && Windowed && _messageDumps.Add("floor-ladder"))
                     await AutoDumpAsync("floor-ladder");
+                if (entry is not null && Windowed && _messageDumps.Add("dungeon-entry"))
+                    await AutoDumpAsync("dungeon-entry");
                 if (callout && Windowed && _messageDumps.Add("treasure-question"))
                     await AutoDumpAsync("treasure-question");
                 else if (scene && !callout && !_sceneMenuDumped && DisplayServer.GetName() != "headless" && _options.ScreenshotDirectory is not null)
@@ -1719,7 +1731,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             return Answered(saveList is not null ? await SaveAnswerAsync()
                 : province is not null ? await _provinceView.ChooseAsync()
                 : command is not null ? await CommandAnswerAsync(command)
-                : ladder is not null ? await _ladderView.ChooseAsync()
+                : ladder is not null || entry is not null ? await _ladderView.ChooseAsync()
                 : callout ? await _treasureCallout.ChooseAsync()
                 : scene ? await _sceneMenuView.ChooseAsync()
                 : await MenuAsync());

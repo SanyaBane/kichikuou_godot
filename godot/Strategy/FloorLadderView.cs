@@ -13,7 +13,9 @@ namespace Kichikuou.Game.Strategy;
 /// original's. Laid out in the 1280×800 screen's pixels, scaled with the picture. In the touch mode (the owner's B,
 /// 2026-10-26; docs/ui/dungeon-menu.md, §5) it is a rail in the lower right corner, right of window 113, within the
 /// right thumb's reach: Retreat at its top, furthest from the resting thumb, then Ascend, the floor and a larger Descend
-/// in the corner.
+/// in the corner. The touch mode's rail also holds the dungeon's menu before a search (<see cref="OpenEntry"/>; §6, the
+/// owner's B): Start Search where Descend stands once the search begins, Return on top as Retreat, the other items
+/// between them, the rail growing upwards.
 /// </summary>
 internal sealed partial class FloorLadderView : Control
 {
@@ -25,13 +27,17 @@ internal sealed partial class FloorLadderView : Control
     // The touch rail: right of window 113 (x 248-1032 under the picture) to the screen's edge, down to its foot.
     private const float TouchX = 1040, TouchY = 424, TouchW = 236, TouchH = 372, TouchInset = 12;
 
-    private enum Part { None, Up, Down, Retreat }
+    // The menu before a search on the touch rail: Start Search in Descend's place, a row's pitch, Return's height.
+    private const float EntryPitch = 54, EntryRowH = 46, EntryReturnH = 60;
+
+    private enum Part { None, Up, Down, Retreat, Start, Return, Other0 }
 
     private readonly FontFile _brush = Lacquer.Brush();
     private readonly FontVariation _cinzel = Lacquer.Cinzel(600);
     private readonly bool _touch = TouchMode.On;
     private FontFile _gothic;
     private FloorLadder? _ladder;
+    private DungeonEntryMenu? _entry;
     private float _k = 1;                           // window pixels to a screen pixel
     private Part _hovered, _pressed;
     private TaskCompletionSource<int>? _answer;
@@ -53,6 +59,17 @@ internal sealed partial class FloorLadderView : Control
     public void Open(FloorLadder ladder)
     {
         _ladder = ladder;
+        _entry = null;
+        _hovered = _pressed = Part.None;
+        Visible = true;
+        QueueRedraw();
+    }
+
+    /// <summary>Shows the dungeon's menu before a search on the touch rail; <see cref="ChooseAsync"/> waits for its answer.</summary>
+    public void OpenEntry(DungeonEntryMenu entry)
+    {
+        _entry = entry;
+        _ladder = null;
         _hovered = _pressed = Part.None;
         Visible = true;
         QueueRedraw();
@@ -70,6 +87,7 @@ internal sealed partial class FloorLadderView : Control
         _answer?.TrySetCanceled();
         _answer = null;
         _ladder = null;
+        _entry = null;
         Visible = false;
     }
 
@@ -85,10 +103,27 @@ internal sealed partial class FloorLadderView : Control
         QueueRedraw();
     }
 
-    private Rect2 PanelRect => _touch ? new Rect2(TouchX, TouchY, TouchW, TouchH) : new Rect2(X, Y, W, H);
+    private Rect2 PanelRect => _entry is not null ? new Rect2(TouchX, EntryTop, TouchW, TouchY + TouchH - EntryTop)
+        : _touch ? new Rect2(TouchX, TouchY, TouchW, TouchH) : new Rect2(X, Y, W, H);
+
+    /// <summary>The entry rail's top: over Start Search the other items, then Return.</summary>
+    private float EntryTop => StartRect.Position.Y - 14 - (_entry?.Others.Count ?? 0) * EntryPitch - EntryReturnH - 28;
+
+    /// <summary>Start Search: the touch ladder's Descend.</summary>
+    private static Rect2 StartRect => new(TouchX + TouchInset, TouchY + 256, TouchW - 2 * TouchInset, 104);
 
     private Rect2 RectOf(Part part)
     {
+        if (_entry is not null)
+        {
+            float x = TouchX + TouchInset, w = TouchW - 2 * TouchInset, top = EntryTop;
+            return part switch
+            {
+                Part.Start => StartRect,
+                Part.Return => new Rect2(x, top + 14, w, EntryReturnH),
+                _ => new Rect2(x, top + 28 + EntryReturnH + (part - Part.Other0) * EntryPitch, w, EntryRowH),
+            };
+        }
         if (_touch)
         {
             float x = TouchX + TouchInset, w = TouchW - 2 * TouchInset;
@@ -108,18 +143,33 @@ internal sealed partial class FloorLadderView : Control
     }
 
     /// <summary>A part's answer to the menu, or null when the script does not offer it here.</summary>
-    private int? Choice(Part part) => _ladder is not { } l ? null : part switch
+    private int? Choice(Part part)
     {
-        Part.Up => l.Up?.Choice,
-        Part.Down => l.Down?.Choice,
-        Part.Retreat => l.Retreat,
-        _ => null,
-    };
+        if (_entry is { } e)
+            return part switch
+            {
+                Part.Start => e.Start,
+                Part.Return => e.Return,
+                >= Part.Other0 when part - Part.Other0 < e.Others.Count => e.Others[part - Part.Other0].Choice,
+                _ => null,
+            };
+        return _ladder is not { } l ? null : part switch
+        {
+            Part.Up => l.Up?.Choice,
+            Part.Down => l.Down?.Choice,
+            Part.Retreat => l.Retreat,
+            _ => null,
+        };
+    }
+
+    private IEnumerable<Part> Parts => _entry is { } e
+        ? [Part.Start, Part.Return, .. Enumerable.Range(0, e.Others.Count).Select(i => Part.Other0 + i)]
+        : [Part.Up, Part.Down, Part.Retreat];
 
     private Part PartAt(Vector2 window)
     {
         var at = window / _k;
-        foreach (var part in (Part[])[Part.Up, Part.Down, Part.Retreat])
+        foreach (var part in Parts)
             if (Choice(part) is not null && RectOf(part).HasPoint(at))
                 return part;
         return Part.None;
@@ -166,9 +216,14 @@ internal sealed partial class FloorLadderView : Control
 
     public override void _Draw()
     {
+        DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
+        if (_entry is { } entry)
+        {
+            DrawEntry(entry);
+            return;
+        }
         if (_ladder is not { } l)
             return;
-        DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         var panel = PanelRect;
         Ui.DrawPanel(this, panel, _k);
         if (l.Up is { } up)
@@ -194,6 +249,39 @@ internal sealed partial class FloorLadderView : Control
         float rw = _brush.GetStringSize(l.RetreatText, fontSize: retreatSize).X;
         DrawString(_brush, new Vector2(retreat.GetCenter().X - rw / 2, Lacquer.Baseline(retreat, _brush, retreatSize)),
             l.RetreatText, fontSize: retreatSize, modulate: Color.Color8(250, 226, 160));
+    }
+
+    private void DrawEntry(DungeonEntryMenu entry)
+    {
+        Ui.DrawPanel(this, PanelRect, _k);
+        var back = RectOf(Part.Return);
+        bool hover = _hovered == Part.Return;
+        Ui.DrawRowBox(this, back, hover, _k);
+        float bw = _gothic.GetStringSize(entry.ReturnText, fontSize: 19).X;
+        DrawString(_gothic, new Vector2(back.GetCenter().X - bw / 2, Lacquer.Baseline(back, _gothic, 19)), entry.ReturnText,
+            fontSize: 19, modulate: hover ? Ui.Text : Ui.Quiet);
+        for (int i = 0; i < entry.Others.Count; i++)
+        {
+            var part = Part.Other0 + i;
+            var rect = RectOf(part);
+            Ui.DrawRowBox(this, rect, _hovered == part, _k);
+            DrawString(_gothic, new Vector2(rect.Position.X + 16, Lacquer.Baseline(rect, _gothic, 19)), entry.Others[i].Text,
+                HorizontalAlignment.Left, rect.Size.X - 24, 19, Ui.Text);
+        }
+        var start = RectOf(Part.Start);
+        Ui.DrawRowBox(this, start, _hovered == Part.Start, _k);
+        if (_hovered != Part.Start)
+            DrawRect(start, Ui.Gold, false, Lacquer.Line(2, _k));
+        float cy = start.GetCenter().Y, cx = start.Position.X + 34;
+        Lacquer.DrawSmoothPolygon(this, [new(cx - 18, cy - 15), new(cx + 18, cy - 15), new(cx, cy + 15)], Ui.Gold, _k);
+        float tx = start.Position.X + 66, room = start.End.X - 8 - tx;
+        int size = 22;
+        while (size > 14 && _gothic.GetStringSize(entry.StartText, fontSize: size).X > room)
+            size--;
+        DrawString(_gothic, new Vector2(tx, cy - 12 + (_gothic.GetAscent(size) - _gothic.GetDescent(size)) / 2), entry.StartText,
+            fontSize: size, modulate: Ui.Text);
+        DrawString(_gothic, new Vector2(tx + 1, cy + 19 + (_gothic.GetAscent(14) - _gothic.GetDescent(14)) / 2), "a unit goes down",
+            fontSize: 14, modulate: Ui.Name);
     }
 
     private void DrawWay(Part part, FloorWay way, bool up, bool large)

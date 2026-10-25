@@ -234,7 +234,8 @@ the survey and mock-up rounds 1-2 (1 three fixed rows, the missing one dimmed; 3
 with the missing way hidden) are
 docs/ui/dungeon-menu.md (`tools/ui/mock_dungeon_menu.py`); the owner chose round 2's ladder, built
 (`Original.Content/Strategy/FloorLadder`, `godot/Strategy/FloorLadderView`; its §4); in the touch mode the ladder is a
-rail in the lower right corner, Retreat on top and Descend in the corner (the owner's B, 2026-10-26; its §5).
+rail in the lower right corner, Retreat on top and Descend in the corner (the owner's B, 2026-10-26; its §5), and so is
+the menu before a search, Start Search in Descend's place (`Original.Content/Strategy/DungeonEntryMenu`; its §6).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
