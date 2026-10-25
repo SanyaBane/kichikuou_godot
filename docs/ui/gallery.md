@@ -3,8 +3,9 @@
 Our Storybook: a development mode that shows each of our screens on its own, in its states, fed from the kept saves,
 and dumps them all as pictures in seconds. In code and commands it is the *screen* gallery (`ScreenGallery`,
 `--screen-gallery`, Debug → Screen Gallery…), apart from the game's own CG gallery `CG` (`GalleryTests`). The owner pages through it in a window (switching palette, font, touch
-mode, row heights live); the agent dumps it after a change and sees which screens changed. The pictures stay outside
-the repository (they hold the player's CGs): `KICHIKUOU_UI_GALLERY_DIR` in `local.env`.
+mode, row heights live); the agent dumps it after a change and sees which screens changed. The pictures are never committed
+(they hold the player's CGs): they go to `screen-gallery/` at the root, which git ignores (the owner, 2026-10-25: the
+app's file pane opens its `index.html`), or to `KICHIKUOU_UI_GALLERY_DIR` in `local.env`.
 
 **Why.** A look at a screen today plays to it: a kept save copied and loaded, the boot, the load list, the week's
 banner, the menus, one launch for each family of screens (`--treasure`, `--saveload`, `--scout`, …), some moving the
@@ -127,7 +128,8 @@ state, or is tagged "made up". The first ones are the states the docs record as 
   (Lacquer; `-Steel`, `-Touch` add theirs) it moves `<dir>\<pass>\current` to `previous`, dumps into `current`
   compared with it, and writes `<dir>\index.html`: every pass dumped so far (one not dumped this time says so), the
   changed and new entries first with the former picture beside them, then the sections. `<dir>` is
-  `KICHIKUOU_UI_GALLERY_DIR` (`local.env`), refused inside the repository. `-Only` replaces the pass's `current` with
+  `-Out`, else `KICHIKUOU_UI_GALLERY_DIR` (`local.env`), else `screen-gallery/` at the root; a folder inside the
+  repository that git does not ignore is refused (`git check-ignore`). `-Only` replaces the pass's `current` with
   those entries alone (a quick check; the next full run marks the rest new).
 - After a change to a screen: update its entries, run the script, look at what changed — what was meant and what was
   not.

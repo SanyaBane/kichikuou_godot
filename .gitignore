@@ -1,6 +1,9 @@
 # The local paths of this machine (template: local.env.example)
 /local.env
 
+# The screen gallery's pictures (tools/ui/gallery.ps1): they hold the player's CGs
+/screen-gallery/
+
 # Godot
 .godot/
 *.translation

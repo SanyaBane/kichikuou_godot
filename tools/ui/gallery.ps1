@@ -7,9 +7,10 @@ Builds godot/Kichikuou.csproj, then runs the game's screen gallery (docs/ui/gall
 asked for: Lacquer always, -Steel and -Touch add theirs. A pass's former pictures move from <pass>\current to
 <pass>\previous first, and the gallery compares every new picture with them (manifest.json says new, changed or same).
 Last it writes index.html in the gallery's folder: the passes, their sections, each entry's picture, the changed ones
-first with the former picture beside it. The folder is KICHIKUOU_UI_GALLERY_DIR (its environment variable, else its
-line in local.env), or -Out; it must lie outside the repository (the pictures hold the player's CGs). Nothing moves the
-system pointer; a window opens for each pass.
+first with the former picture beside it. The folder is -Out, else KICHIKUOU_UI_GALLERY_DIR (its environment variable,
+else its line in local.env), else screen-gallery at the repository's root, which git ignores; one inside the repository
+must be ignored by git (the pictures hold the player's CGs). Nothing moves the system pointer; a window opens for each
+pass.
 
 .EXAMPLE
 powershell -ExecutionPolicy Bypass -File tools\ui\gallery.ps1
@@ -18,7 +19,7 @@ powershell -ExecutionPolicy Bypass -File tools\ui\gallery.ps1
 powershell -ExecutionPolicy Bypass -File tools\ui\gallery.ps1 -Steel -Only treasure,treasure-replace
 #>
 param(
-    # The gallery's folder; default KICHIKUOU_UI_GALLERY_DIR.
+    # The gallery's folder; default KICHIKUOU_UI_GALLERY_DIR, else screen-gallery at the repository's root.
     [string]$Out = '',
     # Also dump every entry in the Steel palette.
     [switch]$Steel,
@@ -57,14 +58,16 @@ if (-not $exe -or -not (Test-Path $exe)) {
     throw "Godot not found: set KICHIKUOU_GODOT_EXE in local.env (see local.env.example)."
 }
 if (-not $Out) { $Out = Get-LocalPath 'KICHIKUOU_UI_GALLERY_DIR' }
-if (-not $Out) {
-    throw "No gallery folder: set KICHIKUOU_UI_GALLERY_DIR in local.env (see local.env.example) or pass -Out."
+if (-not $Out) { $Out = Join-Path $root 'screen-gallery' }
+if (-not [System.IO.Path]::IsPathRooted($Out)) { $Out = Join-Path (Get-Location) $Out }
+$Out = [System.IO.Path]::GetFullPath($Out)
+if ($Out.StartsWith($root, [StringComparison]::OrdinalIgnoreCase)) {
+    & git -C $root check-ignore -q (Join-Path $Out 'index.html')
+    if ($LASTEXITCODE -ne 0) {
+        throw "The gallery's folder $Out lies in the repository and git does not ignore it: its pictures hold the player's CGs."
+    }
 }
 New-Item -ItemType Directory -Force $Out | Out-Null
-$Out = (Resolve-Path $Out).Path
-if ($Out.StartsWith($root, [StringComparison]::OrdinalIgnoreCase)) {
-    throw "The gallery's folder $Out lies in the repository: its pictures hold the player's CGs."
-}
 
 if (-not $NoBuild) {
     Write-Host 'Building godot/Kichikuou.csproj ...'
