@@ -224,8 +224,8 @@ internal sealed partial class HaremView : Control
         var band = new Rect2(TitlePanel.Position.X + 22, TitlePanel.Position.Y + 11, TitlePanel.Size.X - 44, 34);
         const string title = "Harem";
         c.DrawString(_brush, new Vector2(band.Position.X, Lacquer.Baseline(band, _brush, 24)), title, fontSize: 24, modulate: Ui.Name);
-        float dw = _cinzel.GetStringSize(_date, fontSize: 15).X;
-        c.DrawString(_cinzel, new Vector2(band.End.X - dw, Lacquer.Baseline(band, _cinzel, 15) + 1), _date, fontSize: 15, modulate: Ui.Name);
+        float dw = _cinzel.GetStringSize(_date, fontSize: 16).X;
+        c.DrawString(_cinzel, new Vector2(band.End.X - dw, Lacquer.Baseline(band, _cinzel, 16) + 1), _date, fontSize: 16, modulate: Ui.Name);
     }
 
     /// <summary>Her picture as the picker's panel shows it (the gold frame is the original's), with a shadow.</summary>

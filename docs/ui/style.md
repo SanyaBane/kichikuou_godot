@@ -88,7 +88,9 @@ Read this before a new screen's survey and mock-ups: the first round should not 
   "K GOLD" alone or in a sentence, "K" in tables, buttons and cards, the minus U+2212; the scenario's sums in our windows
   get it only where they are verified money (`ScenarioFigures`; docs/ui/gold-figures.md).
 - A label that overruns is shortened ("Trp.") or a name shrunk to fit its row, never wrapped into the next.
-- The date reads "LP 3 · Month 5 · Week 2".
+- The date reads "LP 3 · Month 5 · Week 2"; at a title band's right, Cinzel 700 at 16 in the name's colour (owner,
+  2026-10-26: Subordinates, Harem, Treasure, deployment, the enemy attack). The status strip's (18), the week report's
+  (17) and the Save/Load screen's differ on purpose (docs/ui/gallery.md, §6).
 
 ## 4. Parts
 

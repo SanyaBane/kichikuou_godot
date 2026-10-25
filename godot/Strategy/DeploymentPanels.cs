@@ -375,8 +375,8 @@ internal sealed partial class DeploymentPanels : Control
         string subtitle = (mode == "" ? "" : mode + " · ") + (places == 1 ? "1 unit" : $"up to {places} units");
         c.DrawString(_cinzelLight, new Vector2(band.Position.X + tw + 16, Lacquer.Baseline(band, _cinzelLight, 13) + 1),
             subtitle, fontSize: 13, modulate: Ui.Subtitle);
-        float dw = _cinzel.GetStringSize(_date, fontSize: 15).X;
-        c.DrawString(_cinzel, new Vector2(band.End.X - dw, Lacquer.Baseline(band, _cinzel, 15) + 1), _date, fontSize: 15, modulate: Ui.Name);
+        float dw = _cinzel.GetStringSize(_date, fontSize: 16).X;
+        c.DrawString(_cinzel, new Vector2(band.End.X - dw, Lacquer.Baseline(band, _cinzel, 16) + 1), _date, fontSize: 16, modulate: Ui.Name);
         Ui.DrawDivider(c, TablePanel.Position.X + 16, TablePanel.End.X - 16, TablePanel.Position.Y + 44, _k);
     }
 

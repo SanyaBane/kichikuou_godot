@@ -344,8 +344,8 @@ internal sealed partial class EnemyAttackView : Control
         _sheet.DrawString(_font!, new Vector2(x, TitleTop + 44), $"The {attack.Army} appeared around {attack.Province}.",
             fontSize: 19, modulate: Ui.Text);
         string date = attack.Date.Replace(", ", " · ");
-        float dw = _cinzelBold.GetStringSize(date, fontSize: 15).X;           // as the other screens' title bands have it
-        _sheet.DrawString(_cinzelBold, new Vector2(1226 - dw, TitleTop + 42), date, fontSize: 15, modulate: Ui.Name);
+        float dw = _cinzelBold.GetStringSize(date, fontSize: 16).X;           // as the other screens' title bands have it
+        _sheet.DrawString(_cinzelBold, new Vector2(1226 - dw, TitleTop + 42), date, fontSize: 16, modulate: Ui.Name);
     }
 
     private void Heading(float x, float y, string text, float right)
