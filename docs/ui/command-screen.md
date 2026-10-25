@@ -416,7 +416,18 @@ counts it down before the strip is drawn, so the week it is done the tag is plai
   site's tape, with the chip. The panel's row in each: the tag as the strip's without the chip, "Construction" quiet,
   "5 weeks left" where a spent row says "used this week".
 - **The owner chose A** (2026-10-25), the tooltip with the building's name and its weeks left only (no "11 of 16
-  built"; the mock-up script draws it so). To be built.
+  built"; the mock-up script draws it so).
+- **Built (2026-10-25):** `Original.Content/Strategy/BuildingUnderWay` (the weeks, and the name from the heading of the
+  building's terms in `Cﾃｲﾄ.ADV` — `:339, 426, 528, 709, 814, 904`, "［Library］" without its brackets: the list items have
+  "NEW Library", Maris's names "the library"), carried by the strip's Construction `WeekUse.UnderWay` and the command
+  menu's `CommandMenuItem.WeeksLeft` (`StatusStripTests`, `CommandMenuTests`, one test on the player's files);
+  `UiPalette.DrawBusyTag` (the half-lit tag and its chip, so Steel has it too), `StatusStripView` (the tag, its tooltip),
+  `CommandMenuView` (the row). The row answers as ever: ○ opens `Cﾃｲﾄ` and Maris refuses; the week the building is
+  ordered the item is × and does nothing, its row half-lit too but not clickable, as any × row. **The touch mode** has
+  no hover: a long press (0.5 s) on the tag shows the tooltip and the next press anywhere hides it, as a table
+  header's tip (`HeaderTip`) — the existing long press for details, no new gesture; the weeks are on the chip and the
+  panel's row anyway. The screen gallery's `command-menu-building` and `command-menu-building-tip`. Awaiting the
+  owner's look in a window.
 
 ## Questions for the owner
 

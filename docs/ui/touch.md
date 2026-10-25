@@ -179,6 +179,9 @@ hover and the right button. So the tablet keeps our layout and gets only what to
   (`GameScreen.AutoHeaderTouchAsync`): a long press on T.Atk's header (dump `touch-header-tip`), a tap on it
   (`touch-header-sorted`), a tap on №'s. Looked at by the agent (2026-10-24) on the Subordinates screen, the
   look's command with `--until deployment --interface new` (the deployment table shares the code, not run).
+- **The building's tip on the status strip** (2026-10-25; docs/ui/command-screen.md, "A building under way"): the same
+  long press on Construction's tag while a building is under way shows the tooltip a hover shows on the PC (the
+  building, its weeks left); the next press anywhere hides it. Not tried on the tablet, nor by unattended play.
 
 - **The target frame breathes on Android** (owner's choice A of three — A a slow breathing, B a lock-on once at each
   change, C a spark running round the brackets; 2026-10-24): the brackets 2-5 layout pixels out of the card and their

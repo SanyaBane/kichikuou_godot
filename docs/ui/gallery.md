@@ -221,7 +221,9 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
    so Leazas Castle (1) has the five commands touch.md asks about). **Step 2 is done** (2026-10-25): 45 entries, the
    Lacquer and Touch passes dump them all, two dumps of the same build all "same". Left out: the dungeon's own menu of
    the castle's cells (`Cｼﾊｲﾄｼ.ADV:732-763`, its items built in `CellsAsync`), for a later round. Not yet looked at by the
-   owner.
+   owner. Later (2026-10-25): `command-menu-building` (made up: the Military Academy under way, 5 weeks left,
+   `GalleryStates.AcademyUnderWay`; docs/ui/command-screen.md, "A building under way") and `command-menu-building-tip`
+   (the same with the building's tooltip shown, `StatusStripView.ShowBuildingTip`).
 3. **Screens and the battle's overlays:** deployment (the panels' overload), Save/Load (`LoadSaveScreen.Items`, a
    read-only library), the enemy attack, the scout report, the cut-in, the counters, the info boxes, the dialog and
    the commands (input forwarded).

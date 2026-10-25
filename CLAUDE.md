@@ -363,7 +363,9 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   Interface → New, centred as the original's menu: `Original.Content/Strategy/CommandMenu`, Load/Save as two rows
   answered through `LoadSaveShortcut`, docs/ui/command-screen.md, "The command panel"); `Strategy/StatusStripView` (our status strip over the map's top while the command
   panel is open, in one row: the status window's lines and the week's uses in bracketed groups,
-  `Original.Content/Strategy/StatusStrip`, "The status strip"); `Strategy/WeekReportView` (our week report over the
+  `Original.Content/Strategy/StatusStrip`, "The status strip"; while a building is under way Construction's tag, there
+  and in the panel, is half-lit with its weeks left, the strip's with a tooltip naming the building,
+  `Original.Content/Strategy/BuildingUnderWay`, `UiPalette.DrawBusyTag`, "A building under way"); `Strategy/WeekReportView` (our week report over the
   week start's windows — the banner, the budget as an account, the troops replenished, a triangle asking for the click;
   our interface, docs/ui/turn-start.md: `Original.Content/Strategy/WeekReport` gathered by
   `GamePresenter.CoverWeekReport`, the windows' waits answered at once, the player's click at their close,

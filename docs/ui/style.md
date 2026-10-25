@@ -99,6 +99,7 @@ Shared parts, with their users; a new screen takes these before drawing its own.
 | Title band | Shojumaru title, Cinzel subtitle, the date right, a divider | per view, `DrawDivider` |
 | Row box | a menu row, a secondary button; lit frame on hover, grey when off | `DrawRowBox` |
 | Tag | a command's coloured word | `DrawTag` |
+| Tag under way | a command whose work goes on (a building): half-lit, the weeks on a gold-rimmed chip | `DrawBusyTag` |
 | Red button | the primary action | `DrawRedButton` |
 | Danger button | a deletion | `SaveLoadView.DrawDelete` (not shared yet) |
 | Click's triangle | "a click goes on", bobbing, shown once the text is whole | `DrawTriangle` |
