@@ -263,7 +263,9 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
    stage 1, four rounds, Rance (unit 1) and Rick (unit 7) against Ex (commander 1), Sakanaku (commander 6), Melfeis (commander 4)
    and Dodge (commander 5)): `opening` (the first header's key wait), `battle-turn` (round 1's first `FIGT_SEL`, our
    commands begun on its menu as `GameScreen` begins them), `menu` and `menu-orders` (a right click on the acting card
-   and on the other, given to the commands as the pointer's), `banners-E1` (the pointer on the first enemy card),
+   and on the other, given to the commands as the pointer's), `order-toggles` (made up: the other unit set to Auto-Def;
+   in the touch pass its Auto-Atk toggle tapped, the choice checked, and held — docs/ui/touch.md, "The standing orders on
+   the cards"; in the PC pass the turn as `battle-turn` with that order), `banners-E1` (the pointer on the first enemy card),
    `retreat` (made up: the dialog over that turn, its menu `Battle.RetreatMenu`, pulled out of `PlayerRetreatAsync`),
    `exchange-counters` (the first exchange's result held), `info-panel` (a fall), `info-results` and `info-level-up`
    (the tally and Rance's level-up page); `info-defence` on `20261010-213435-25-FIGT_B`, a defence with ten (the attack

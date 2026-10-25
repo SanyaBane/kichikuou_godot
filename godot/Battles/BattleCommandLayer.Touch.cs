@@ -43,10 +43,16 @@ internal sealed partial class BattleCommandLayer
     private IReadOnlyList<(string Text, FigtSelChoice Choice)> _railCommands = [];
     private (bool Right, int Index) _hotRail = (false, -1), _pressedRail = (false, -1);
 
+    // The order toggles on the own cards but the acting one (BattleBoardView.OrderToggleArea, which draws them; owner's B,
+    // 2026-10-25): each gives its order, the lit one Manual back — the choices the card's long press offers (FIGT_SEL
+    // 50-52), chosen at the release over the toggle as a rail button.
+    private IReadOnlyList<(Rect2 Rect, FigtSelChoice Choice)> _toggles = [];
+    private int _hotToggle = -1, _pressedToggle = -1;
+
     /// <summary>The touch mode's target (the enemy the right rail's attacks go to), or null.</summary>
     public BattlePlace? Target => _touch ? _target : null;
 
-    /// <summary>The centre of the rail button that gives <paramref name="choice"/> (layout pixels), or null.</summary>
+    /// <summary>The centre of the rail button or the order toggle that gives <paramref name="choice"/> (layout pixels), or null.</summary>
     public Vector2? RailCentre(FigtSelChoice choice)
     {
         foreach (var (rect, _, c, _) in RailButtons())
@@ -54,15 +60,63 @@ internal sealed partial class BattleCommandLayer
             if (c == choice)
                 return rect.GetCenter();
         }
+        foreach (var (rect, c) in _toggles)
+        {
+            if (c == choice)
+                return rect.GetCenter();
+        }
         return null;
     }
 
-    /// <summary>The touch mode's start of a choice: the acting unit's commands on the left, <paramref name="target"/>'s attacks on the right.</summary>
+    /// <summary>
+    /// The touch mode's start of a choice: the acting unit's commands on the left, <paramref name="target"/>'s attacks on
+    /// the right, the other own units' order toggles.
+    /// </summary>
     private void BeginTouch(BattlePlace? target)
     {
         _railCommands = [.. _commands!.ContextMenu(_commands.Acting).Select(c => (c.Name ?? _text(c.Label).Trim(), c.Choice))];
         (_hotRail, _pressedRail) = ((false, -1), (false, -1));
+        _toggles = [.. OrderToggleChoices()];
+        (_hotToggle, _pressedToggle) = (-1, -1);
         SetTarget(target);
+    }
+
+    /// <summary>Each order toggle the board shows and the choice it gives: its order, or Manual when that is the unit's.</summary>
+    private IEnumerable<(Rect2 Rect, FigtSelChoice Choice)> OrderToggleChoices()
+    {
+        foreach (var place in SlotSnapshot.Places)
+        {
+            if (place.Side != BattleSide.Player || place == _commands!.Acting || BattleBoard.Card(_state!, place) is not { } card
+                || !BattleBoardView.ShowsOrders(place, card, acting: false))
+                continue;
+            var items = _commands.ContextMenu(place, card.Order);
+            for (int i = 0; i < BattleBoardView.OrderToggles.Length; i++)
+            {
+                var order = BattleBoardView.OrderToggles[i].Order;
+                var gives = card.Order == order ? FigtSelCommand.OrderManual
+                    : order == StandingOrder.AutoAttack ? FigtSelCommand.OrderAttack : FigtSelCommand.OrderDefend;
+                if (items.FirstOrDefault(c => c.Choice.Command == gives) is { } item)
+                    yield return (BattleBoardView.OrderToggleArea(place, i), item.Choice);
+            }
+        }
+    }
+
+    private int ToggleAt(Vector2 p)
+    {
+        for (int i = 0; i < _toggles.Count; i++)
+        {
+            if (_toggles[i].Rect.HasPoint(p))
+                return i;
+        }
+        return -1;
+    }
+
+    private void SetHotToggle(int toggle)
+    {
+        if (toggle == _hotToggle)
+            return;
+        _hotToggle = toggle;
+        QueueRedraw();
     }
 
     /// <summary>Makes <paramref name="target"/> the target: its card framed, the scene showing it, its attacks on the right rail.</summary>
@@ -85,11 +139,17 @@ internal sealed partial class BattleCommandLayer
             SetHotRail(_pressedRail);
             return;
         }
+        _pressedToggle = ToggleAt(p);
+        if (_pressedToggle >= 0)
+        {
+            SetHotToggle(_pressedToggle);
+            return;
+        }
         if (CardAt(p) is { Side: BattleSide.Enemy } enemy && enemy != _target)
             SetTarget(enemy);
     }
 
-    /// <summary>The touch mode's left release: the rail button pressed is chosen if the finger is still on it.</summary>
+    /// <summary>The touch mode's left release: the rail button or the order toggle pressed is chosen if the finger is still on it.</summary>
     private void TouchRelease(Vector2 p)
     {
         var pressed = _pressedRail;
@@ -97,6 +157,11 @@ internal sealed partial class BattleCommandLayer
         if (pressed.Index >= 0 && RailAt(p) == pressed)
             Result = RailButtons().First(b => b.Place == pressed).Choice;
         SetHotRail((false, -1));
+        int toggle = _pressedToggle;
+        _pressedToggle = -1;
+        if (toggle >= 0 && ToggleAt(p) == toggle)
+            Result = _toggles[toggle].Choice;
+        SetHotToggle(-1);
     }
 
     private void SetHotRail((bool, int) rail)
@@ -224,6 +289,18 @@ internal sealed partial class BattleCommandLayer
     private void RailRule(Rect2 rail, float y) =>
         DrawLine(new Vector2(rail.Position.X + 20, rail.Position.Y + y), new Vector2(rail.End.X - 20, rail.Position.Y + y), Ui.DimGold,
             Lacquer.Line(1, _scale));
+
+    /// <summary>An order toggle held (the board draws the toggle): a glow round it and a bright frame, as a held rail button.</summary>
+    private void DrawHeldToggle(Rect2 r)
+    {
+        float s = _scale;
+        DrawSetTransform(Vector2.Zero, 0, new Vector2(s, s));
+        DrawRect(r.Grow(5), Glow with { A = 0.18f });
+        DrawRect(r.Grow(2.5f), Glow with { A = 0.35f });
+        DrawRect(r, Ui.RowHover with { A = 0.5f });
+        DrawRect(r, Ui.HoverLine, false, Lacquer.Line(2, s));
+        DrawSetTransform(Vector2.Zero, 0, Vector2.One);
+    }
 
     /// <summary>An attack on the right rail: lit gold, its name in the brush face; brighter with a glow while held.</summary>
     private void AttackButton(Rect2 r, string text, bool hot)

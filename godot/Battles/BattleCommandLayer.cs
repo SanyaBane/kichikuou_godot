@@ -142,6 +142,7 @@ internal sealed partial class BattleCommandLayer : Control
         if (_touch)
         {
             SetHotRail(_pressedRail.Index >= 0 && RailAt(p) == _pressedRail ? _pressedRail : (false, -1));
+            SetHotToggle(_pressedToggle >= 0 && ToggleAt(p) == _pressedToggle ? _pressedToggle : -1);
             return;                                                 // no hover: the target is a tap's
         }
         var place = _hovered is { Side: BattleSide.Enemy } target && BannerAt(target, p) >= 0 ? target : CardAt(p);
@@ -246,6 +247,7 @@ internal sealed partial class BattleCommandLayer : Control
         var box = new Rect2(new Vector2(Math.Clamp(at.X, 0, 1280 - size.X), Math.Clamp(at.Y, 0, 800 - size.Y)), size);
         _menu = (place, box, items);
         _hotItem = ItemAt(_menu.Value, at);
+        _hotToggle = _pressedToggle = -1;                           // a long press on an order toggle opens the menu instead
         (_hovered, _banners, _hotBanner) = (null, [], -1);
         QueueRedraw();
     }
@@ -335,6 +337,8 @@ internal sealed partial class BattleCommandLayer : Control
             DrawRails(font);
             if (_target is { } t && _menu is null)
                 DrawTouchTarget(_cardArea(t));
+            if (_hotToggle >= 0 && _menu is null)
+                DrawHeldToggle(_toggles[_hotToggle].Rect);
         }
         else if (_hovered is { } target && _menu is null)
         {

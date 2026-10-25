@@ -552,6 +552,45 @@ consistent with the panel but sends the finger across the screen and back; B spl
   `-cells-full`) and in the unattended `--touch` look from the week-18 save: Oaks (6)'s card left of it, its tap off the
   menu cancels. Not yet on the tablet.
 
+## The standing orders on the cards (owner, 2026-10-25)
+
+The owner's request: during the player's turn every card of the player's army offers Auto-Atk or Auto-Def in the room at
+its foot. In the touch layout (cards 223×150, the face 66 with its stats under it, `CardPortrait`) the text column ends
+with the state line, ~40 px above the card's foot; only the exchange's action pill and a defence's ribbon ever show there,
+and neither during `FIGT_SEL`. Today the orders are a long press away (`BattleCommands.ContextMenu(own)`: Manual,
+Auto-Atk, Auto-Def, `FIGT_SEL` 50-52); the strip sends the same choices, so no rule changes.
+
+Mock-ups (`tools/ui/mock_card_orders.py`, over the gallery's touch `battle-turn`), each with Rick (unit 7)'s card in its
+three states enlarged:
+
+- **A — three segments** `Manual | Atk | Def` under the state line, 137×32 across the text column (Manual 55, Atk and Def
+  41 wide: 11 / 8 × 6 mm), the order lit in gold; one tap gives the order.
+- **B — two toggles** `Auto-Atk | Auto-Def`, 66×32 each (13 × 6 mm), the order's lit, Manual when neither is; a tap on the
+  lit one gives Manual back.
+
+Both drop the order's word from the state line (the strip shows it; `FlashOrder`'s flash would go to the strip) and show no
+strip on the acting card: the left rail's Auto-Atk and Auto-Def hand its turn to the automaton, a different thing. The
+long press stays.
+
+**The owner's choice (2026-10-25): B**, and the touch mode's portrait at the card's top, level with the name (centred it
+floated). Built, in the touch mode only:
+
+- **The toggles** (`BattleBoardView.OrderToggles`, `OrderToggleArea`, drawn by `OrderStrip` on the card's panel, so they
+  slide and fade with it): 66×32 side by side across the text column, 8 above the card's foot; a row's box, the order's
+  lit in the accent as the action's pill, the text 14 or smaller. On every own card but the acting one, always — deaf
+  outside `FIGT_SEL`, so the order stays readable on the enemy's turns (an agent's choice: the mock-up's strips only while
+  choosing would have left the order nowhere then). Hidden on a fighter's card while the exchange's spotlight shows: the
+  action's pill stands there.
+- **The input** (`BattleCommandLayer.Touch.cs`, `OrderToggleChoices`): each toggle's choice from the card's context menu
+  (`ContextMenu(own)`): its order, or Manual when that is the unit's; chosen at the release over it, as a rail button, a
+  glow round it while held. A long press on it opens the card's menu instead.
+- **The state line** of the touch mode's own cards has no order word; an order given flashes round its lit toggle (both for
+  Manual) instead of the word (`FlashOrder`).
+- **The portrait** (`CardPortrait`): `ShrinkBegin` in the touch mode, `ShrinkCenter` on the PC as before.
+- Looked at by the agent (2026-10-25) in the gallery's touch pass: `battle-turn` (Rick (unit 7)'s toggles, Manual),
+  `order-toggles` (made up: Auto-Def lit, Auto-Atk held; the tap's choice checked), `exchange-counters` (Rance's card
+  with the pill, no toggles). Not yet on the tablet, nor in unattended play.
+
 ## Phones (put off)
 
 Put off by the owner (2026-10-24). What is ready for them: the measurements above, mock-ups B1, B3 (the battle),

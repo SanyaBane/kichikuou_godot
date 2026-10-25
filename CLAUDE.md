@@ -408,7 +408,8 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   the touch mode (`Strategy/TouchMode`: Android or `--touch`; docs/ui/touch.md, "The tablet"): our battle screen's rails
   (`Battles/BattleCommandLayer.Touch.cs`: the acting unit's commands left, the target's attacks right, the banners not
   shown; the target preselected by `Original.Content/Battles/TouchTargets` through `GameScreen.Touch.cs`, which also
-  holds the long press on a card and Back as a right click; in lacquer and gold, the target's frame gold, the owner's A,
+  holds the long press on a card and Back as a right click; the other own cards' Auto-Atk / Auto-Def toggles at their foot,
+  `BattleBoardView.OrderToggles`, the faces at the cards' top — docs/ui/touch.md, "The standing orders on the cards"; in lacquer and gold, the target's frame gold, the owner's A,
   docs/ui/touch.md, "The map's and the battle's buttons, round 1"), the map's `Strategy/CommandsButton` (a lacquer plate;
   a tap is the right click that opens the command panel, Close while it is open), the scenes' Skip and Log as two plates at the screen's left edge (`Strategy/SkipDrawer`,
   the owner's B1-B3b and G3; over 131 the window drawn smaller beside them, `MessageWindowView.Docks`) and the battle's Skip

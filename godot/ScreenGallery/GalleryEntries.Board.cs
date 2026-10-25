@@ -49,6 +49,29 @@ internal static partial class GalleryEntries
                 if (board.Commands.ItemCentre(1) is { } second)
                     board.Commands.Move(second);
             }));
+        yield return new("order-toggles", Battle, "Battle: the touch mode's order toggles", null,
+            CaptureNote + " Made up: a unit not acting set to Auto-Def; in the touch mode its Auto-Atk toggle tapped (its choice checked) and held.",
+            g => Board(g, Turn, then: (p, m, board) =>
+            {
+                var s = p.State!;
+                var model = new BattleCommands(m.Menu!);
+                var other = Enumerable.Range(1, m.Menu!.PlayerSlotsUsed.Value).Select(n => new BattlePlace(BattleSide.Player, n))
+                    .FirstOrDefault(place => place != model.Acting);
+                if (other.Slot == 0)
+                    throw new InvalidOperationException("The turn's party has one unit.");
+                SetOrder(s, other.Slot, StandingOrder.AutoDefend);
+                board.Commands.Begin(model, s, p.Battle.Text, TouchMode.On ? TouchTarget(s, model) : null);
+                if (!TouchMode.On)
+                    return;
+                var attack = model.ContextMenu(other, StandingOrder.AutoDefend).First(c => c.Choice.Command == FigtSelCommand.OrderAttack).Choice;
+                var at = board.Commands.RailCentre(attack) ?? throw new InvalidOperationException($"No Auto-Atk toggle on {other}'s card.");
+                Click(board.Commands, at, right: false);
+                if (board.Commands.Result != attack)
+                    throw new InvalidOperationException($"The Auto-Atk toggle answered {board.Commands.Result}, not {attack}.");
+                board.Commands.Begin(model, s, p.Battle.Text, TouchTarget(s, model));
+                board.Commands.Move(at);
+                board.Commands.Press(false, at);
+            }));
         yield return new("banners-E1", Battle, "Battle: a target's banners", null, CaptureNote + " The pointer on the first enemy card.",
             g => Board(g, Turn, then: (_, _, board) =>
                 board.Commands.Move(BattleBoardView.CardArea(new BattlePlace(BattleSide.Enemy, 1)).Position + new Vector2(220, 75))));
@@ -87,6 +110,19 @@ internal static partial class GalleryEntries
             n => model.Banners(new BattlePlace(BattleSide.Enemy, n)).Count > 0) is { } slot
             ? new BattlePlace(BattleSide.Enemy, slot)
             : null;
+    }
+
+    /// <summary>Player slot <paramref name="slot"/>'s standing order (<c>Bt_PlayerOrder1-4</c>), made up on the replay's own state.</summary>
+    private static void SetOrder(GameState s, int slot, StandingOrder order)
+    {
+        var value = (Engine.Sys3.Sys3Int)(int)order;
+        switch (slot)
+        {
+            case 1: s.Bt_PlayerOrder1 = value; break;
+            case 2: s.Bt_PlayerOrder2 = value; break;
+            case 3: s.Bt_PlayerOrder3 = value; break;
+            default: s.Bt_PlayerOrder4 = value; break;
+        }
     }
 
     /// <summary>A press and a release at <paramref name="at"/> (layout pixels) given to the commands as the pointer's.</summary>

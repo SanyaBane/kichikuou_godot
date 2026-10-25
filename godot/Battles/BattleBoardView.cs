@@ -52,6 +52,25 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     internal static Rect2 CardArea(BattlePlace place) =>
         new(Column(place), CardRows[(place.Slot - 1) % 2], CardSize.X, CardSize.Y);
 
+    // The touch mode's standing orders at an own card's foot (owner's B, 2026-10-25; docs/ui/touch.md, "The standing orders
+    // on the cards"): Auto-Atk and Auto-Def side by side across the text column, under the state line; the order's lit,
+    // Manual when neither is. Not on the acting card, whose rail's Auto-Atk and Auto-Def hand its turn over instead.
+    internal static readonly (StandingOrder Order, string Text)[] OrderToggles = [(StandingOrder.AutoAttack, "Auto-Atk"), (StandingOrder.AutoDefend, "Auto-Def")];
+    private const float OrderHeight = 32, OrderBottom = 8, OrderGap = 5, OrderText = 14;
+
+    /// <summary>Whether <paramref name="card"/> at <paramref name="place"/> shows the order toggles (the touch mode's own cards but the acting one).</summary>
+    internal static bool ShowsOrders(BattlePlace place, BattleCard card, bool acting) =>
+        Narrow && place.Side == BattleSide.Player && !acting && card.Order is StandingOrder.Manual or StandingOrder.AutoAttack or StandingOrder.AutoDefend;
+
+    /// <summary>Order toggle <paramref name="toggle"/> (<see cref="OrderToggles"/>) on <paramref name="place"/>'s card, in layout pixels.</summary>
+    internal static Rect2 OrderToggleArea(BattlePlace place, int toggle)
+    {
+        var card = CardArea(place);
+        float left = card.Position.X + 4 + CardPortrait.Width + 8, right = card.End.X - 4;   // the text column: padding, face, separation
+        float width = (right - left - OrderGap) / 2;
+        return new Rect2(left + toggle * (width + OrderGap), card.End.Y - OrderBottom - OrderHeight, width, OrderHeight);
+    }
+
     private static readonly Color PlayerColour = new(0.27f, 0.46f, 0.86f);
     private static readonly Color EnemyColour = new(0.82f, 0.3f, 0.3f);
     private static readonly Color HpColour = new(0.42f, 0.76f, 0.42f);
@@ -123,6 +142,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     private ulong _blinkFrom;
     private bool _blinkOn;
     private readonly Dictionary<int, Label> _orderLabels = [];        // the player's cards' order labels by unit record
+    private readonly Dictionary<int, Control> _orderStrips = [];      // the touch mode's order toggles by unit record
     private int? _flashUnit;
     private ulong _flashFrom;
     private readonly Dictionary<int, ImageTexture?> _portraits = [];
@@ -725,6 +745,16 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
             _fighters.AddRange(fighters);                                // when it goes off, they stay while it fades
         }
         _spotlight.QueueRedraw();
+        RedrawOrderStrips();
+    }
+
+    private void RedrawOrderStrips()
+    {
+        foreach (var strip in _orderStrips.Values)
+        {
+            if (IsInstanceValid(strip))
+                strip.QueueRedraw();
+        }
     }
 
     /// <summary>The spotlight fades in and out (<see cref="SpotFadeSeconds"/>; at once while skipping and with <c>--fast</c>).</summary>
@@ -738,6 +768,8 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         float step = _armiesInstant ? 1 : (float)(delta / SpotFadeSeconds);
         _spotShown = target > _spotShown ? Math.Min(target, _spotShown + step) : Math.Max(target, _spotShown - step);
         _spotlight.QueueRedraw();
+        if (_spotShown == 0)
+            RedrawOrderStrips();                                         // the fighters' toggles back once it has faded
     }
 
     /// <summary>Black at <see cref="SpotDarkness"/> over the panel below the scene, but over the fighters' cards.</summary>
@@ -868,6 +900,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         _cardsKey = key;
         _cardsHovered = hovered;
         _orderLabels.Clear();
+        _orderStrips.Clear();
         BattlePlace? actingPlace = null;
         for (int i = 0; i < cards.Count; i++)
         {
@@ -887,6 +920,8 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
                 child.QueueFree();
             }
             panel.AddChild(card is null ? new Control { MouseFilter = MouseFilterEnum.Ignore } : Contents(card, acting, pad));
+            if (card is not null && ShowsOrders(place, card, acting))
+                panel.AddChild(OrderStrip(place, card));                    // over the contents, the panel's size
         }
         if (actingPlace != _actingPlace)
         {
@@ -1112,23 +1147,88 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         }
         if (_orderLabels.TryGetValue(unit, out var label) && IsInstanceValid(label))
             label.AddThemeColorOverride("font_color", FlashColour());
+        RedrawOrderStrip(unit);
     }
 
     private void RestoreOrderLabel()
     {
         if (_flashUnit is { } unit && _orderLabels.TryGetValue(unit, out var label) && IsInstanceValid(label))
             label.AddThemeColorOverride("font_color", Ui.Quiet);
+        int? flashed = _flashUnit;
         _flashUnit = null;
+        if (flashed is { } u)
+            RedrawOrderStrip(u);
+    }
+
+    private void RedrawOrderStrip(int unit)
+    {
+        if (_orderStrips.TryGetValue(unit, out var strip) && IsInstanceValid(strip))
+            strip.QueueRedraw();
     }
 
     /// <summary>The flashing label's colour now: the muted colour toward its saturated self and back.</summary>
-    private Color FlashColour()
+    private Color FlashColour() => Ui.Quiet.Lerp(Saturated(Ui.Quiet, Ui.Text), FlashLevel());
+
+    /// <summary>How far the flash is now: 0 to 1 as it rises, 1 while it holds, back to 0 as it fades.</summary>
+    private float FlashLevel()
     {
         double t = (UiClock.Msec - _flashFrom) / 1000.0;
         float k = t < FlashRise ? (float)(t / FlashRise)
             : t < FlashRise + FlashHold ? 1
             : (float)Math.Max(0, 1 - (t - FlashRise - FlashHold) / FlashFade);
-        return Ui.Quiet.Lerp(Saturated(Ui.Quiet, Ui.Text), k * k * (3 - 2 * k));
+        return k * k * (3 - 2 * k);
+    }
+
+    /// <summary>The touch mode's order toggles on <paramref name="card"/>'s panel (<see cref="OrderToggleArea"/>), redrawn by the flash.</summary>
+    private Control OrderStrip(BattlePlace place, BattleCard card)
+    {
+        var strip = new Control { MouseFilter = MouseFilterEnum.Ignore };
+        strip.Draw += () => DrawOrderStrip(strip, place, card);
+        _orderStrips[card.Record] = strip;
+        return strip;
+    }
+
+    /// <summary>
+    /// The order toggles: a row's box each, the card's order lit in the accent as the action's pill; an order given (the
+    /// script's message, <see cref="FlashOrder"/>) glows round the lit one, or round both for Manual. Not on a fighter's
+    /// card while the exchange's spotlight shows: its pill stands there.
+    /// </summary>
+    private void DrawOrderStrip(Control strip, BattlePlace place, BattleCard card)
+    {
+        var area = CardArea(place);
+        if ((_spotOn || _spotShown > 0) && _fighters.Any(f => f.Card == area))
+            return;
+        if (GetThemeDefaultFont() is not { } font)
+            return;
+        float s = _scale;
+        strip.DrawSetTransform(-new Vector2(Pad, Pad), 0, new Vector2(s, s));     // in layout pixels from the card's corner
+        float flash = card.Record == _flashUnit ? FlashLevel() : 0;
+        for (int i = 0; i < OrderToggles.Length; i++)
+        {
+            var (order, text) = OrderToggles[i];
+            var toggle = OrderToggleArea(place, i);
+            var r = new Rect2(toggle.Position - area.Position, toggle.Size);
+            bool lit = card.Order == order;
+            if (flash > 0 && (lit || card.Order == StandingOrder.Manual))
+            {
+                strip.DrawRect(r.Grow(5), Ui.HoverLine with { A = 0.18f * flash });
+                strip.DrawRect(r.Grow(2.5f), Ui.HoverLine with { A = 0.4f * flash });
+            }
+            if (lit)
+            {
+                Color top = Ui.HoverLine.Lightened(0.25f), bottom = Ui.HoverLine.Darkened(0.2f);
+                strip.DrawPolygon([r.Position, new(r.End.X, r.Position.Y), r.End, new(r.Position.X, r.End.Y)], [top, top, bottom, bottom]);
+                strip.DrawRect(r, Ui.Gold, false, Lacquer.Line(1, s));
+            }
+            else
+                Ui.DrawRowBox(strip, r, false, s);
+            int px = (int)OrderText;
+            while (px > 10 && font.GetStringSize(text, fontSize: px).X > r.Size.X - 6)
+                px--;
+            strip.DrawString(font, new Vector2(r.Position.X, Lacquer.Baseline(r, font, px)), text, HorizontalAlignment.Center, r.Size.X, px,
+                lit ? PillInk : Ui.Quiet);
+        }
+        strip.DrawSetTransform(Vector2.Zero, 0, Vector2.One);
     }
 
     /// <summary>
@@ -1173,7 +1273,8 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
             text.AddChild(bar);
             Track(card, gauge, label, trail, fill);                         // the number and the bar, running to a new value
         }
-        string order = card.Order switch
+        // The touch mode's own cards show their order on the toggles (OrderStrip), the acting one none: it is choosing.
+        string order = Narrow && card.Place.Side == BattleSide.Player ? "" : card.Order switch
         {
             StandingOrder.AutoAttack => "Auto-Atk",
             StandingOrder.AutoDefend => "Auto-Def",

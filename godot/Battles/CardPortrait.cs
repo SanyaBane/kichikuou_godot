@@ -37,7 +37,8 @@ internal sealed partial class CardPortrait : Control
     {
         (_face, _stats, _focus, _scale) = (face, stats, focus, scale);
         CustomMinimumSize = new Vector2(Width, Height) * scale;
-        SizeFlagsVertical = SizeFlags.ShrinkCenter;
+        // The touch mode's smaller face at the card's top, level with its name (owner, 2026-10-25: centred it floated).
+        SizeFlagsVertical = TouchMode.On ? SizeFlags.ShrinkBegin : SizeFlags.ShrinkCenter;
         MouseFilter = MouseFilterEnum.Ignore;
     }
 
