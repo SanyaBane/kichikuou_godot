@@ -23,9 +23,6 @@ internal static partial class GalleryEntries
         yield return new("scene-menu", "Messages", "Scene menu under a speech (121)", Week18,
             "The question and its answers are the gallery's own; the menu at the boot's selection window (ｽﾀｰﾄ.ADV:860).",
             g => SceneMenu(g, MessageKind.SpeechRight));
-        yield return new("scene-menu-top", "Messages", "Scene menu over a speech (111)", Week18,
-            "The boot's selection window (ｽﾀｰﾄ.ADV:860) lies over window 111, so the menu covers its question: where a scene asks there, the original's box does the same.",
-            g => SceneMenu(g, MessageKind.SpeechLeft));
         yield return new("message-log", "Messages", "Message log", Week18, "The pages are the gallery's own.", g =>
         {
             if (g.State(Week18) is not { } s)

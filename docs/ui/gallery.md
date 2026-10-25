@@ -200,9 +200,8 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
    revenue and troops, a donation, the window closed, `Gold` moved as the file moves it); the figures are made up (the
    COMMAND save is past its week's start, and `Tmp0022` is the pointer's by then) — and `week-report-thieves` (the banner
    alone, `ThievesWeekStart`); `scene-menu` (a 121 speech and our menu at the boot's selection window, `B1` of
-   `ｽﾀｰﾄ.ADV:860`, which the gallery's presenter is given since it never booted) and `scene-menu-top` (the same over a
-   111 speech: the selection window lies over 111, so the menu covers the question — what a scene asking in 111 would
-   show; the original's box does the same); `message-log` (`GalleryStates.LogSample`: every kind of page, a choice,
+   `ｽﾀｰﾄ.ADV:860`, which the gallery's presenter is given since it never booted; `scene-menu-top`, the same over a 111
+   speech covering its question, was removed: the game never shows it, §8); `message-log` (`GalleryStates.LogSample`: every kind of page, a choice,
    more lines than the paper's 18 rows).
    **Then the touch controls and the options** (`GalleryEntries.Controls.cs`): `touch-skip`, `touch-skip-on` (the drawer
    at a 121 key wait), `touch-skip-docked` (beside a 131 bar, the window drawn smaller), `touch-commands` and
@@ -270,7 +269,8 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
   `-Steel` and `-Touch` on request (owner, 2026-10-25; as built).
 - ~~The gallery in the release build's Debug menu too, or development runs only?~~ Wherever the Debug menu is, the
   release included (owner, 2026-10-25; as built).
-- The scene menu over a 111 speech covering its question (`scene-menu-top`)? **Never reached** (checked 2026-10-25,
+- ~~The scene menu over a 111 speech covering its question (`scene-menu-top`)?~~ The entry removed (owner,
+  2026-10-25). **Never reached** (checked 2026-10-25,
   a walk of every `]` menu of the decompile, 188): no menu follows text in 111 or 112. A menu comes over text only
   in 113 (narration, at the screen's foot: the merchant, the own city, construction, `Cﾃｷﾄｼ`, the dungeon, three
   scenes, `ﾛｰﾄﾞｾｰﾌﾞ`; 26), 123 (3), 121 (`Cﾌﾞｶ`, 2) and the battle's 143 (1); in the scenes a question is
