@@ -391,6 +391,42 @@ cyan frame as before); the rules, the places and what each button does as before
 - Looked at by the agent (2026-10-24) in a window with the battle look (`touch-commands`, `touch-close`, `touch-rails`,
   `touch-target`); every unattended `--touch` check passes. Not yet on the tablet.
 
+## The battle within the thumbs' reach (owner, 2026-10-25)
+
+The owner's request: the tablet is held in landscape with both hands, so every control of the battle screen should be in
+the screen's lower half, where the thumbs are. What is up there today (the screen gallery's touch pass, `battle-turn`,
+`retreat`): the two rails (layout y 0-410, in the scene's blurred sides) and the retreat question (rows of 30 in the
+scene's middle). Already low: the cards (a tap picks the target, a long press opens an own unit's orders, its menu at the
+card), the advantages' tips at the board's top right, the battle's Skip (`SkipButtons.Battle`, the bottom left).
+
+The lower half alone is not quite the measure: on the 12.4" tablet a thumb reaches about **70 mm (345 layout pixels)**
+round the point its hand holds the side at (about y 640), so the reachable places are the two lower corners and the
+sides; the middle of the screen's foot (x ~400-880) needs a hand let go. The mock-ups draw that reach as pink arcs.
+
+The mock-ups are `tools/ui/mock_battle_low.py`, over the screen gallery's dumps (`gallery.ps1 -Touch`; the command in
+its docstring); the images stay outside the repository. Round 1:
+
+- **A — the rails moved down beside the cards.** The scene as now, full width, nothing over it. The rails stand at the
+  screen's sides in the lower half (x 4-136 and 1144-1276, y 418-796), in round 1's lacquer: left the acting unit's
+  name and its commands 116×54 (24 × 11 mm), right TARGET, its name and the attacks 116×76 stacked from the rail's
+  foot up, so Melee is under the thumb. The board between them is 1000 wide instead of 1280 — drawn scaled in the
+  mock-up; built, the cards would keep their text and give up portrait width. **A2**: the retreat question beside the
+  rail's Retreat, its answers 144×80 (29 × 16 mm), Cease Retreat nearer the rail so that a double tap does not confirm.
+- **B — a bar along the foot.** The scene 80% as large, the cards as now raised under it, a lacquer bar at y 692-796:
+  the commands at the left thumb in 2 rows of 3 (118×42), the attacks at the right thumb (Melee 204×84, more lining up
+  leftward), the bar's middle only telling ("Rance → Ex"; no thumb reaches it). The third column of commands and a
+  second special already lie at the reach's edge.
+- **C — the halves swapped.** The cards on top, the scene with today's rails at the thumbs below; nothing new to draw.
+  But a tap on an enemy card (another target) or a long press on an own card now reaches up — rarely, since the target
+  is preselected.
+
+Everywhere: the battle's Skip (bottom left) would stand on the left rail's (A, C) or the bar's (B) place; it shows during
+the exchanges, when the rails are not up, so it can take the rail's foot then.
+
+**Recommendation: A** — every button inside the arcs, the scene whole, the cards where they are (a target's tap stays
+low); its cost is the board's width (the cards' portraits narrower). B keeps the cards whole but shrinks the scene and
+pushes buttons to the reach's edge; C is the cheapest but sends the card taps up.
+
 ## Phones (put off)
 
 Put off by the owner (2026-10-24). What is ready for them: the measurements above, mock-ups B1, B3 (the battle),
