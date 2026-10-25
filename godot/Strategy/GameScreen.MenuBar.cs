@@ -67,17 +67,18 @@ public partial class GameScreen
             ("Battle Captures...", ConfirmCaptures),
             ("Portraits...", OpenPortraits),
             ("Effects...", OpenEffects),
+            ("Screen Gallery...", ConfirmScreenGallery),
             ("Hide Dimmed Map Names", ToggleDimmedNames),
             ("Menu Row Height...", OpenMenuRows));
         debug = debugMenu.GetPopup();
-        debug.SetItemAsCheckable(3, true);
-        debug.SetItemChecked(3, MapNamesChoice.HideDimmed);
+        debug.SetItemAsCheckable(DimmedNamesItem, true);
+        debug.SetItemChecked(DimmedNamesItem, MapNamesChoice.HideDimmed);
         row.AddChild(debugMenu);
         // Saved for later launches; the map's plates follow at once.
         void ToggleDimmedNames()
         {
             MapNamesChoice.HideDimmed = !MapNamesChoice.HideDimmed;
-            debug.SetItemChecked(3, MapNamesChoice.HideDimmed);
+            debug.SetItemChecked(DimmedNamesItem, MapNamesChoice.HideDimmed);
             _markers.SetHideDimmed(MapNamesChoice.HideDimmed);
         }
     }
@@ -203,6 +204,16 @@ public partial class GameScreen
 
     /// <summary>Debug → Battle Captures (ours, development): after the confirmation, the capture viewer, which comes back to the title.</summary>
     private void ConfirmCaptures() => Confirm("Open the battle captures?", "Open", () => Screens.Open(this, new CaptureList()));
+
+    /// <summary>The Debug menu's checkable Hide Dimmed Map Names.</summary>
+    private const int DimmedNamesItem = 4;
+
+    /// <summary>
+    /// Debug → Screen Gallery (ours, development; docs/ui/gallery.md): after the confirmation, our screens from the kept saves,
+    /// which comes back to the title.
+    /// </summary>
+    private void ConfirmScreenGallery() =>
+        Confirm("Open the screen gallery?", "Open", () => Screens.Open(this, new ScreenGallery.GalleryScreen()));
 
     /// <summary>Debug → Portraits (ours, development): the faces our screens cut, over the game, which waits while it is open.</summary>
     private void OpenPortraits()

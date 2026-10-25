@@ -55,6 +55,18 @@ internal static class UiPalettes
         }
     }
 
+    /// <summary>
+    /// Every part in <paramref name="palette"/> for this launch, the player's choice in <c>settings.cfg</c> left alone: the
+    /// screen gallery's switch (docs/ui/gallery.md), as <c>--palette</c>.
+    /// </summary>
+    public static void Use(UiPalette palette)
+    {
+        if (_all is null)
+            Load();
+        _all = palette;
+        _parts!.Clear();
+    }
+
     /// <summary><paramref name="part"/>'s palette: its own, else <see cref="Chosen"/>.</summary>
     public static UiPalette For(UiPart part)
     {

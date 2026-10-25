@@ -192,18 +192,37 @@ public sealed class MessageWindow
     /// Text Speed…'s preview (docs/ui/messages.md, §5 step 4), <paramref name="read"/> when it counts as read before (the
     /// already-read text's colour, docs/ui/read-text.md).
     /// </summary>
-    public static MessageWindow Sample(IReadOnlyList<string> lines, bool read = false)
+    public static MessageWindow Sample(IReadOnlyList<string> lines, bool read = false) => SampleOf(MessageKind.SpeechRight, lines, read);
+
+    /// <summary>
+    /// A window of <paramref name="kind"/> holding <paramref name="lines"/>, printed where <c>WAO_SUB</c> prints that window
+    /// (<c>WAO_SUB.ADV:170-250</c>: <c>ZM 24</c> in the text box its <c>B3</c> opens) in the window's own colour: the screen
+    /// gallery's samples (docs/ui/gallery.md). A place's title prints its first line at <c>ZM 32</c>; 131's lines carry the
+    /// speaker as the script prints it (<c>Name「…」</c>).
+    /// </summary>
+    public static MessageWindow SampleOf(MessageKind kind, IReadOnlyList<string> lines, bool read = false)
     {
-        const int size = 24;
-        var box = new TextBox((43, 265, 378, 141));
+        var (frame, rect) = kind switch
+        {
+            MessageKind.SpeechLeft => (SpeechLeftCg, (235, 8, 378, 141)),
+            MessageKind.ThoughtLeft => (ThoughtLeftCg, (235, 8, 378, 141)),
+            MessageKind.SpeechRight => (SpeechRightCg, (43, 265, 378, 141)),
+            MessageKind.ThoughtRight => (ThoughtRightCg, (43, 265, 378, 141)),
+            MessageKind.Narration or MessageKind.PlaceTitle => (NarrationCg, (140, 278, 376, 140)),
+            MessageKind.CgBar => (CgBarCg, (8, 305, 626, 140)),
+            _ => throw new ArgumentOutOfRangeException(nameof(kind)),
+        };
+        int colour = kind == MessageKind.CgBar ? CgBarColor : PlainColor;
+        var box = new TextBox(rect);
         for (int i = 0; i < lines.Count; i++)
         {
+            int size = kind == MessageKind.PlaceTitle && i == 0 ? TitleSize : 24;
             if (i > 0)
                 box.NewLine(size);
-            box.Print(lines[i], size, PlainColor, read);
+            box.Print(lines[i], size, colour, read);
         }
-        return Of(SpeechRightCg, box, _ => (0, 0, 0))
-            ?? throw new ArgumentException("The lines do not fit 121's text box.", nameof(lines));
+        return Of(frame, box, _ => (0, 0, 0))
+            ?? throw new ArgumentException($"The lines do not fit the {kind} window's text box.", nameof(lines));
     }
 
     /// <summary>

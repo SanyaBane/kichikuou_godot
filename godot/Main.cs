@@ -136,7 +136,9 @@ public partial class Main : Control
     /// units' list there; <c>--quit</c> then ends). <c>--effects</c> opens Debug → Effects the same way (with
     /// <c>--shots DIR</c> it saves the effects' frames there; needs a window; <c>--effects white-beam-magic,black-beam-nagi</c> saves
     /// only the effects with those prefixes). <c>--options</c> opens the options window over the title (with <c>--shots DIR</c>
-    /// in a window it saves each tab there; <c>--quit</c> then ends). Null without a switch: the title.
+    /// in a window it saves each tab there; <c>--quit</c> then ends). <c>--screen-gallery [id,…]</c> opens the screen gallery
+    /// (docs/ui/gallery.md; with <c>--shots DIR</c> in a window it dumps the entries there, compared with <c>--previous DIR</c>'s).
+    /// Null without a switch: the title.
     /// </summary>
     private static Node? FromCommandLine()
     {
@@ -180,6 +182,14 @@ public partial class Main : Control
                 AutoRefill = args.Contains("--refill"),
                 AutoDungeon = args.Contains("--dungeon"),
             });
+        }
+        if (args.Contains("--screen-gallery"))
+        {
+            string[]? only = Value("--screen-gallery") is { } ids && !ids.StartsWith("--") ? ids.Split(',') : null;
+            return new ScreenGallery.GalleryScreen
+            {
+                Only = only, ScreenshotDirectory = shots, PreviousDirectory = Value("--previous"), QuitWhenDone = quit,
+            };
         }
         if (args.Contains("--portraits"))
             return new GameScreen(new GameOptions { Start = GameStart.Title, Portraits = true, ScreenshotDirectory = shots, QuitWhenDone = quit });

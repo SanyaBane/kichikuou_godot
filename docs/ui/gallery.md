@@ -1,13 +1,18 @@
-# The gallery — our screens without playing to them (plan, 2026-10-25)
+# The screen gallery — our screens without playing to them (plan, 2026-10-25; step 1 built)
 
 Our Storybook: a development mode that shows each of our screens on its own, in its states, fed from the kept saves,
-and dumps them all as pictures in seconds. The owner pages through it in a window (switching palette, font, touch
+and dumps them all as pictures in seconds. In code and commands it is the *screen* gallery (`ScreenGallery`,
+`--screen-gallery`, Debug → Screen Gallery…), apart from the game's own CG gallery `CG` (`GalleryTests`). The owner pages through it in a window (switching palette, font, touch
 mode, row heights live); the agent dumps it after a change and sees which screens changed. The pictures stay outside
 the repository (they hold the player's CGs): `KICHIKUOU_UI_GALLERY_DIR` in `local.env`.
 
-**Why.** A look at a screen today plays to it: a kept save loaded, the boot, the load list, the week's banner, the
-menus — tens of seconds to minutes a screen, moving the system pointer — and some states no kept save reaches (§4).
-The gallery skips the way there, not the build: it is the same Godot project, so it builds as fast as the game.
+**Why.** A look at a screen today plays to it: a kept save copied and loaded, the boot, the load list, the week's
+banner, the menus, one launch for each family of screens (`--treasure`, `--saveload`, `--scout`, …), some moving the
+system pointer — and some states no kept save reaches (§4). The gallery shows every screen in one launch, in states
+of its choosing, without the pointer, the same pictures every time, so a change shows as a difference. Measured
+(step 1): the whole gallery, 20 entries, dumps in 7-9 s with the launch; the `--treasure` look alone runs 6 s headless
+(more in a window with its dumps). The gain is the one launch, the states and the diff, not one screen's speed; the
+battle's looks (45-100 s) gain more. It is the same Godot project, so it builds as fast as the game.
 
 **What it does not check.** The flow around a screen — when it opens, what is played unseen, what answer reaches the
 script — stays with the tests and the looks from the kept saves (CLAUDE.md, "Commands"). The gallery checks the
@@ -59,6 +64,11 @@ pull out first (named); **heavy** — needs a battle replayed (§6).
   `SaveSlots.Read` does (`SaveSlots.cs:150-157`). Never `DirectorySaveLibrary` on a kept folder: its constructor moves
   `slotNN.ksav` into `legacy/` (`SaveLibrary.cs:146-150`). The records' names are string variables, in the save.
   The saves: `user://saves-week18` (the default) and `user://saves-week26`.
+- **A kept save is the turn's start** (found in step 1): an auto-save, made before the week's banner, upkeep and
+  `COMMAND` — so it still holds last week's uses (Replenish showed "used this week") and the budget before the week's
+  income. The gallery opens the week's commands as `COMMAND.ADV:38-46` does (`GalleryStates.WeekCommandsOpen`); the
+  figures stay the turn start's. A kept save taken in `COMMAND` (a manual save from it, decision 26) would hold the
+  state the screens really show — a question for the owner (§8).
 - **A spare presenter** for what reads the scenario's text (harem names, dungeon names, the status strip's lines,
   the battle's text): `new GamePresenter(new ScenarioText(GameData.ScenarioDirectory), GameData.Cgs(), glyphs,
   scripts, audio)` and `Bind(state)`, as `GameScreen.cs:361-369` builds it. No script runs.
@@ -76,13 +86,14 @@ state variation (§4) and how its view is fed. Ids follow the looks' dump names 
 `message-thought-right`, `week-report`), so the gallery's picture and the look's compare by name.
 
 - **The part outside Godot** — the variations and the models built from them — goes into
-  `src/Kichikuou.Original.Content/Gallery/` (`GalleryStates`, one method a variation), with content tests that each
+  `src/Kichikuou.Original.Content/ScreenGallery/` (`GalleryStates`, one method a variation), with content tests that each
   variation's state builds its model (the save from `LocalPaths`, skipped when there is none, as the golden tests).
-- **The Godot part** — `godot/Gallery/GalleryScreen` (a full-screen Control opened by `Screens.Open`, as
-  `CaptureList`) and `GalleryEntries*.cs` (one file a section): the entries' list on the left, the screen on the
+- **The Godot part** — `godot/ScreenGallery/GalleryScreen` (a full-screen Control opened by `Screens.Open`, as
+  `CaptureList`) and `GalleryEntries` (a file a section once it grows): the entries' list on the left, the screen on the
   right at 1280×800 fitted, a bar with the palette, the font, touch mode and row heights (the options' own
   choices, applied live), a "made up" tag on an entry whose state the game may not reach as shown.
-- **Opening it:** Debug → Gallery, and `--gallery [id,…]` (`Main.FromCommandLine`, beside `--effects`).
+- **Opening it:** Debug → Screen Gallery…, and `--screen-gallery [id,…]` (`Main.FromCommandLine`, beside `--effects`);
+  "← Title" goes back.
 
 ## 4. State variations
 
@@ -101,13 +112,18 @@ state, or is tagged "made up". The first ones are the states the docs record as 
 
 ## 5. Dump and diff
 
-- `<Godot exe> --path godot -- --gallery --shots <dir> --quit` dumps every entry (or the listed ones) as
-  `<id>.png`, plus `manifest.json` (id, section, save, variation, made up, palette, font, touch, hash). A window is
-  needed (views draw nothing headless); nothing moves the system pointer.
-- `tools/ui/gallery.ps1` builds the game, moves `KICHIKUOU_UI_GALLERY_DIR\current` to `previous`, dumps into
-  `current` (Lacquer; `-Steel`, `-Touch` add their passes) and writes `index.html`: the sections, each entry's
-  picture with its caption, and the entries changed since `previous` marked (by hash, then a pixel count), with
-  before / after side by side.
+- `<Godot exe> --path godot -- --screen-gallery [id,…] --shots <dir> [--previous <dir>] --quit` dumps every entry (or
+  the listed ones) as `<id>.png` at 1280×800, plus `manifest.json` (each entry's id, section, title, save, note, hash,
+  error; the palette, the font, touch). A window is needed (views draw nothing headless); nothing moves the system
+  pointer. With `--previous` each picture is compared with the former one of its name: `since` is new, changed or
+  same, `differing` the pixels that differ by more than 8 in a channel — changed above 600, since the click's
+  triangle bobs (up to ~200 pixels between two dumps of the same screen).
+- `tools/ui/gallery.ps1 [-Steel] [-Touch] [-Only id,…] [-Out dir] [-NoBuild]` builds the game; for each pass
+  (Lacquer; `-Steel`, `-Touch` add theirs) it moves `<dir>\<pass>\current` to `previous`, dumps into `current`
+  compared with it, and writes `<dir>\index.html`: every pass dumped so far (one not dumped this time says so), the
+  changed and new entries first with the former picture beside them, then the sections. `<dir>` is
+  `KICHIKUOU_UI_GALLERY_DIR` (`local.env`), refused inside the repository. `-Only` replaces the pass's `current` with
+  those entries alone (a quick check; the next full run marks the rest new).
 - After a change to a screen: update its entries, run the script, look at what changed — what was meant and what was
   not.
 
@@ -121,7 +137,7 @@ capture's inputs. This is the last step: the board's looks from the week-18 save
 ## 7. Steps
 
 1. **The frame and four screens.** The data (§2: the kept save, the spare presenter), `GalleryScreen` with its list
-   and bar, `--gallery`, the dump with its manifest, `tools/ui/gallery.ps1` with the index and the diff, `PictureFit`.
+   and bar, `--screen-gallery`, the dump with its manifest, `tools/ui/gallery.ps1` with the index and the diff, `PictureFit`.
    The screens, chosen to try each kind of feed:
    - **Treasure** — the state alone plus a variation (`Ui_ItemViewMode`), the callout's question (`ReplaceQuestion`)
      and a refusal (the script's lines);
@@ -130,6 +146,20 @@ capture's inputs. This is the last step: the board's looks from the week-18 save
    - **the message windows**, every kind, `message-thought-right` among them — `MessageWindow.SampleOf` pulled out.
    Done when the gallery opens from Debug, `gallery.ps1` dumps the four screens' entries and marks a changed one, and
    the time is measured against the `--treasure` look.
+
+   **Built (2026-10-25).** `godot/ScreenGallery/` — `GalleryScreen` (the list, the Palette and Font switches for the
+   gallery alone, `UiPalettes.Use`; the dump and the comparison), `GalleryStage` (the kept save read only, the bound
+   presenter), `GalleryEntries` (20 entries); `Original.Content/ScreenGallery/GalleryStates` (the variations and the
+   message samples, `ScreenGalleryTests`); pulled out: `MessageWindow.SampleOf(kind, lines)` (every kind where
+   `WAO_SUB` prints it, `WAO_SUB.ADV:170-250`) and `SubordinateResult.ReplenishPreview`; `tools/ui/gallery.ps1`. The
+   entries: Treasure ×6 (`treasure`, `-hover`, `-items`, `-which-item`, `-replace` with our question, `-refusal` with
+   `Sｱｲﾃﾑ.ADV:311`'s line), `harem`, Subordinates ×3 (`subordinates`, `-question`, `-result`), the message windows ×10
+   (every kind, `message-thought-right` and a read window among them). Two dumps of the same build: all same (198
+   pixels at most); Steel against Lacquer: all changed. Not yet looked at by the owner. Not as planned: the bar
+   switches the palette and the font only (touch mode is the launch's `--touch`; row heights come with the menus in
+   step 2), no "made up" tag yet (no entry needs one: the notes say what is the gallery's own), the tests build their
+   states by hand rather than from the kept save, and `PictureFit` stays in `GameScreen` (the gallery fits the picture
+   itself).
 2. **Map and messages:** the map backdrop, the plates, the command panel, the status strip, the province menu
    (`ProvinceMenu.Of`), the week report (its feeder), the floor ladder, the scene menu, the log, the touch controls,
    the options (writes kept off).
@@ -142,5 +172,7 @@ capture's inputs. This is the last step: the board's looks from the week-18 save
 
 ## 8. Questions for the owner
 
-- Dump both palettes and the touch mode by default, or Lacquer alone with the others on request?
-- The gallery in the release build's Debug menu too, or development runs only?
+- Dump both palettes and the touch mode by default, or Lacquer alone with the others on request? (Built: Lacquer
+  alone, `-Steel` and `-Touch` on request.)
+- The gallery in the release build's Debug menu too, or development runs only? (Built: wherever the Debug menu is.)
+- A kept save taken in `COMMAND` for the gallery (§2), made from the week-18 save by a manual save there?

@@ -65,6 +65,20 @@ public sealed record SubordinateResult(
 
     /// <summary>"114,100K".</summary>
     public string BudgetLine => Figures.GoldShort(Gold * 100);
+
+    /// <summary>
+    /// The plate Replenish would show for <paramref name="unit"/> now — the troops set to their maximum (above it too,
+    /// CMD-20) at Replenish's price (<see cref="SubordinatesCommand.Refill"/>) — without the order run: the screen
+    /// gallery's sample (docs/ui/gallery.md).
+    /// </summary>
+    public static SubordinateResult ReplenishPreview(GameState state, int unit)
+    {
+        var u = state.Units[unit];
+        var (_, price) = SubordinatesCommand.Refill(u);
+        return new SubordinateResult(SubordinateOrderKind.Replenish, DeploymentTable.UnitName(state, unit),
+            DeploymentTable.TroopType(state, unit), u.FaceCg.Value, u.Troops.Value, u.MaxTroops.Value,
+            u.MaxTroops.Value, u.MaxTroops.Value, price.Value, state.Gold.Value - price.Value);
+    }
 }
 
 /// <summary>

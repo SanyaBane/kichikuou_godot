@@ -187,8 +187,10 @@ interface does not change.
 5. **The owner's look** in a window; the document says where it stands ("awaiting the owner's look", "accepted",
    "not yet on the tablet") and lists the agent's own choices for the owner to confirm.
 
-The gallery (docs/ui/gallery.md, planned) will show every screen in its states without playing to it, its pictures
-outside the repository.
+The screen gallery (docs/ui/gallery.md; step 1 built: Treasure, Harem, Subordinates, the message windows) shows our
+screens in their states without playing to them: Debug → Screen Gallery…, and `tools/ui/gallery.ps1` dumps them
+outside the repository with an index marking what changed since the last dump. A screen that is in it gets its new
+states as entries when it changes.
 
 Debug sliders (Menu Row Height…) are for trying sizes, not for the release. Never dump a list of every face.
 
