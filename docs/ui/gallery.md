@@ -140,7 +140,10 @@ state, or is tagged "made up". The first ones are the states the docs record as 
   repository that git does not ignore is refused (`git check-ignore`). `-Only` keeps each pass whole (the owner,
   2026-10-25): only the chosen entries' former pictures are copied to `previous`, their new ones replace them in
   `current`, and the game writes them into the pass's manifest (`GalleryScreen.Merged`), the other entries kept as
-  they were, marked same — so a narrow change dumps its own entries alone and the tab stays complete. A change in a
+  they were — so a narrow change dumps its own entries alone and the tab stays complete. The marks add up until a full
+  run: an entry an earlier partial run found changed or new keeps its mark and is compared with the picture before
+  that change (the script copies no newer one over it), so five fixes dumped one by one show all five, each beside its
+  former picture. A change in a
   shared place (a palette, the message windows, the drawing every screen uses) still takes a full run: only it shows
   what changed where it was not meant to.
 - After a change to a screen: update its entries, run the script, look at what changed — what was meant and what was

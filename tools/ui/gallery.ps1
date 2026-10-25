@@ -7,7 +7,8 @@ Builds godot/Kichikuou.csproj, then runs the game's screen gallery (docs/ui/gall
 asked for: Lacquer always, -Steel and -Touch add theirs. A pass's former pictures move from <pass>\current to
 <pass>\previous first, and the gallery compares every new picture with them (manifest.json says new, changed or same).
 With -Only the pass stays whole: only the chosen entries' former pictures are copied to previous, their new ones replace
-them in current, and the manifest keeps the other entries as they were, marked same.
+them in current, and the manifest keeps the other entries as they were; the changes of several partial runs stay
+marked until a full run (each compared with its picture before the first of them).
 Last it writes index.html in the gallery's folder: a tab for each pass dumped so far (one shown at a time; one not dumped
 this time marked old), its sections, each entry's picture, the changed ones first with the former picture beside it. The folder is -Out, else KICHIKUOU_UI_GALLERY_DIR (its environment variable,
 else its line in local.env), else screen-gallery at the repository's root, which git ignores; one inside the repository
@@ -90,11 +91,19 @@ foreach ($pass in $passes) {
     $previous = Join-Path $folder 'previous'
     New-Item -ItemType Directory -Force $folder | Out-Null
     if ($Only.Count -gt 0) {
-        # Only some entries: the pass stays whole, the chosen entries' former pictures go to previous to be compared.
+        # Only some entries: the pass stays whole, the chosen entries' former pictures go to previous to be compared —
+        # but not one an earlier partial run found changed or new: it is compared with the picture before that change
+        # (or none), so the changes of several partial runs stay marked until a full run.
         New-Item -ItemType Directory -Force $previous | Out-Null
+        $marked = @()
+        $manifestPath = Join-Path $current 'manifest.json'
+        if (Test-Path $manifestPath) {
+            $marked = @((Get-Content -Raw -Encoding UTF8 $manifestPath | ConvertFrom-Json).entries |
+                Where-Object { $_.since -eq 'changed' -or $_.since -eq 'new' } | ForEach-Object { $_.id })
+        }
         foreach ($id in (($Only -join ',') -split ',')) {
             $picture = Join-Path $current "$id.png"
-            if (Test-Path $picture) { Copy-Item -LiteralPath $picture -Destination $previous -Force }
+            if ((Test-Path $picture) -and $marked -notcontains $id) { Copy-Item -LiteralPath $picture -Destination $previous -Force }
         }
     } elseif (Test-Path (Join-Path $current 'manifest.json')) {
         if (Test-Path $previous) { Remove-Item -LiteralPath $previous -Recurse -Force }

@@ -196,7 +196,9 @@ public partial class GalleryScreen : Control
     /// <summary>
     /// A dump of <see cref="Only"/> some entries written into the pass's former dump (<paramref name="manifestPath"/>, its
     /// pictures left in place): the entries in the gallery's order, the dumped ones new, the others as the former dump
-    /// has them but "same" (this dump compared none of them); an entry the gallery no longer has is left out.
+    /// has them, a change found by an earlier partial dump still marked (its former picture stays in the previous
+    /// folder, <c>gallery.ps1</c>), so several partial dumps show every change until a full one; an entry the gallery no
+    /// longer has is left out.
     /// </summary>
     private List<DumpedEntry> Merged(string manifestPath, List<DumpedEntry> dumped)
     {
@@ -209,7 +211,7 @@ public partial class GalleryScreen : Control
             if (dumped.Find(d => d.Id == entry.Id) is { } now)
                 merged.Add(now);
             else if (former.Find(d => d.Id == entry.Id) is { } kept)
-                merged.Add(kept with { Since = kept.Since is null ? null : "same", Differing = 0, Box = null });
+                merged.Add(kept);
         }
         return merged;
     }
