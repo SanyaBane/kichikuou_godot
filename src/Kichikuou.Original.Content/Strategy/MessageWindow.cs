@@ -52,7 +52,10 @@ public sealed class MessageWindow
     public const int TitleSize = 32;
 
     // The frames WAO_SUB opens (OriginalScriptContext.Wao.cs): 111, 112, 113/123, 121, 122.
-    private const int SpeechLeftCg = 807, ThoughtLeftCg = 808, NarrationCg = 809, SpeechRightCg = 810, ThoughtRightCg = 811;
+    private const int SpeechLeftCg = 807, ThoughtLeftCg = 808, SpeechRightCg = 810, ThoughtRightCg = 811;
+
+    /// <summary>The frame of the narration, 113 and 123 (<c>WAO_SUB.ADV:239-247</c>).</summary>
+    public const int NarrationCg = 809;
 
     /// <summary>The frame of 131 (<c>WAO_SUB.ADV:216-233</c>).</summary>
     public const int CgBarCg = 815;

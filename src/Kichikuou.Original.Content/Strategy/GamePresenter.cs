@@ -235,7 +235,8 @@ public sealed partial class GamePresenter : IStageObserver
     /// <summary>
     /// Whether the player read a message before, asked as it is printed (the UI's record, which notes the message after
     /// it): the window's text keeps it (<see cref="TextBox.ReadBefore"/>) for the already-read text's colour
-    /// (docs/ui/read-text.md). None: no message counts as read. The battle's presenter asks the same.
+    /// (docs/ui/read-text.md), system text never (<see cref="SystemText"/>). None: no message counts as read. The battle's
+    /// presenter asks the same.
     /// </summary>
     public Func<ScriptRef, bool>? ReadBefore
     {
@@ -351,7 +352,8 @@ public sealed partial class GamePresenter : IStageObserver
             case WindowEvent e: Window(e.Op.Value); break;
             case MessageEvent e:
                 NoteWindowFile(e.Text);
-                Print(Read(e.Text, [], e.StringVariables), ReadBefore?.Invoke(e.Text) ?? false);
+                Print(Read(e.Text, [], e.StringVariables), ReadBefore?.Invoke(e.Text) == true
+                    && !SystemText.Is(e.Text, State?.Ui_WinFrameCg == Strategy.MessageWindow.NarrationCg));
                 break;
             case ValueMessageEvent e:
                 NoteWindowFile(e.Text);

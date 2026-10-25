@@ -6,6 +6,7 @@ using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Combat;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
+using SystemText = Kichikuou.Original.Content.Strategy.SystemText;
 using WindowModel = Kichikuou.Original.Content.Strategy.MessageWindow;
 
 namespace Kichikuou.Original.Content.Battles;
@@ -220,7 +221,8 @@ public sealed partial class BattlePresenter
                 string printed = Read(e.Text, [], e.StringVariables);
                 StrategyText(e.Text, printed);
                 BoxText(e.Text, []);
-                Print(printed, ReadBefore?.Invoke(e.Text) ?? false);
+                Print(printed, ReadBefore?.Invoke(e.Text) == true
+                    && !SystemText.Is(e.Text, _winFrame == WindowModel.NarrationCg));
                 break;
             case ValueMessageEvent e:
                 if (e.Text == ScoutTotalsLine && Scout is not null)

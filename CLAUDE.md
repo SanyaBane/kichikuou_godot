@@ -212,7 +212,9 @@ the marks on our Harem and Subordinates screens (`Original.Content/Strategy/Pick
 Then (owner, 2026-10-23) the already-read text's colour after Rance X's: a message window whose every message the player
 read before (the message skip's seen record, `msgskip.txt` in the save folder) shows its text in a colour chosen in
 Option → Messages, Salmon by default — docs/ui/read-text.md (mock-up round R, 2: whole windows), built
-(`TextBox.ReadBefore`, `GamePresenter.ReadBefore`, `MessageWindow.Read`, `godot/Strategy/ReadTextChoice`).
+(`TextBox.ReadBefore`, `GamePresenter.ReadBefore`, `MessageWindow.Read`, `godot/Strategy/ReadTextChoice`); system text —
+the narration outside the event scenes but the story told there — never takes it (owner, 2026-10-26; its §6,
+`Original.Content/Strategy/SystemText`).
 Then (owner, 2026-10-24) our own screen for an enemy attack (`FIGT_B`'s announcement and its Intercept / Ninja Scout /
 Abandon City menus), the refusals and Ex's scenes kept seen: the survey and mock-up round 1 (A a card over the map, B a
 screen of its own, C the original's scene with our menu) are docs/ui/enemy-attack.md (`tools/ui/mock_enemy_attack.py`);

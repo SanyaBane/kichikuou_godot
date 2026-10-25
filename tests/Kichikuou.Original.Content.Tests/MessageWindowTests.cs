@@ -189,21 +189,55 @@ public class MessageWindowTests
         Assert.False(presenter.MessageWindow!.Read);                            // nobody keeps a record: nothing is read
     }
 
-    /// <summary>The battle's windows know it too: the presenter asks the battle's the same.</summary>
+    /// <summary>
+    /// The battle's windows know it too: the presenter asks the battle's the same, and its own narration (<c>FIGT_A</c>'s
+    /// results) is system text.
+    /// </summary>
     [Fact]
     public void A_battles_window_is_read_too()
     {
         var (presenter, _) = Presenter();
         presenter.CoverMessages = true;
-        ScriptRef read = new("FIGT.ADV", 1), unread = new("FIGT.ADV", 2);      // no data: printed as "[FIGT.ADV:1]"
-        presenter.ReadBefore = at => at == read;
+        ScriptRef read = new("Gｼｨﾙ.ADV", 1), unread = new("Gｼｨﾙ.ADV", 2);      // no data: printed as "[Gｼｨﾙ.ADV:1]"
+        ScriptRef result = new("FIGT_A.ADV", 128);                              // "［　Success　］"
+        presenter.ReadBefore = at => at == read || at == result;
         presenter.Show(new BattleScreenEvent("FIGT_A.ADV", true));
         presenter.Show(new WindowEvent(113, 0));
         presenter.Show(new MessageEvent(read));
         Assert.True(presenter.MessageWindow!.Read);
 
-        presenter.Show(new MessageEvent(unread));                               // "[FIGT.ADV:1][FIGT.ADV:2]": one row
+        presenter.Show(new MessageEvent(unread));                               // "[Gｼｨﾙ.ADV:1][Gｼｨﾙ.ADV:2]": one row
         Assert.False(presenter.MessageWindow!.Read);
+
+        presenter.Show(new WindowEvent(113, 0));
+        presenter.Show(new MessageEvent(result));
+        Assert.False(presenter.MessageWindow!.Read);
+    }
+
+    /// <summary>
+    /// System text keeps the window's own colour (owner, 2026-10-26; docs/ui/read-text.md, §6): the narration of a file that
+    /// is not an event scene — the dungeon's name and state — though read before; the story told there, an event scene's
+    /// narration and a speech from any file take the colour.
+    /// </summary>
+    [Fact]
+    public void System_text_is_never_read()
+    {
+        var (presenter, state) = Presenter();
+        presenter.CoverMessages = true;
+        presenter.ReadBefore = _ => true;
+
+        void Shows(bool read, int op, int type, int frame, string file, int line)
+        {
+            Open(presenter, state, op, type, frame);
+            presenter.Show(new MessageEvent(new ScriptRef(file, line)));
+            Assert.Equal(read, presenter.MessageWindow!.Read);
+        }
+
+        Shows(false, 113, 43, 809, "Cﾒｲｷｭｳ.ADV", 250);                         // "（Unsearched）"
+        Shows(true, 123, 43, 809, "Cﾒｲｷｭｳ.ADV", 2162);                         // "KD started rummaging through a"
+        Shows(true, 113, 43, 809, "Gｼｨﾙ.ADV", 1);
+        Shows(true, 111, 11, 807, "Cﾒｲｷｭｳ.ADV", 312);                          // Rance: "Alright, time to search."
+        Shows(false, 131, 31, 815, "CG.ADV", 2332);                             // the gallery's hint
     }
 
     /// <summary>Option → Messages's preview counts as read when asked; a window read and one not are not the same window.</summary>

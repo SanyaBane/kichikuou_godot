@@ -48,7 +48,8 @@ window holding one keeps its own colour; a string variable printed on a window (
 
 Never: the battle's speech balloons and info boxes, the week report, the status strip, the `]` menus (`SceneMenuView`),
 the message log, our screens and the port's own text (`PortTextEvent`) — they are drawn by their own views, which the
-colour does not reach. Options' preview (121) counts as read and shows the choice.
+colour does not reach. Options' preview (121) counts as read and shows the choice. Nor the system text in our windows
+(§6): a message of it never counts as read, as one with numbers.
 
 ## 4. Mock-ups (round R)
 
@@ -88,3 +89,28 @@ The owner chose round 2 (2026-10-23: whole windows, Salmon by default). Built:
 
 The seen record is kept per save folder (`EngineState.Skip`), as the message skip's always was: the player's own folder
 holds one, the agent's look folders (`user://saves-look-*`) their own.
+
+## 6. System text
+
+The owner (2026-10-26): system windows were still taking the colour — the dungeon's window "[Monsters' Cave]
+(Unsearched)" before a search, read on every visit — and must not. The agent surveyed the decompile for the narration
+(113/123) printed outside the event scenes (`G*`, `I*`) and put four groups to the owner, who chose:
+
+| Group | Examples | Colour |
+|---|---|---|
+| 1. Status windows, questions, notices, results | the dungeon's name and state, "Are you finished searching?", "Slowly progressing down."; the title's button hints; "＜ Auto-Save ＞", "＜ Load Complete ＞"; "Already equipped.", "You can't deploy without selecting units."; "City battle.", "Ys was successfully defended.", "The Rebel Army appeared around Ys."; the Completion Report; "Max HP increased by 10." | never |
+| 2. A command's repeated lines | the ninjas' "Kanami Kentou swooped down from the ceiling.", "Kanami came back with information.", "Freya was captured."; "Gandhi refused to fight."; "Maris left the room."; "Then some time passed."; the blizzards on the way to a dungeon | never (system) |
+| 3. Story told in those files | the talks with the independent cities' mayors, KD, Merim's inscriptions, God's Door, Gekkou's and Shinobu's attempts, Pluepet's first summons | read before: the colour |
+| 4. Speech and thought (111/112/121/122) in any file | Rance's "Alright, time to search." | read before: the colour |
+
+Windows with numbers (troops, gold, LP and week) were left out of the survey: they never count as read already (§3).
+
+The rule (`Original.Content/Strategy/SystemText`): a message printed into the narration's frame (809, the windows
+113/123) from a file that is not an event scene (`MessageLog.IsEventScene`, the message log's own test) is system text
+unless its line lies in one of the story blocks the class lists (group 3, by their lines in the decompile); so is a line
+of its short list in any window (the gallery's "Right click (cancel key) to replay the scene." in 131). Both presenters
+ask it as a message is printed (`GamePresenter.Show`, `BattlePresenter`), before the text box keeps the message's flag:
+system text counts as unread, so one line of it keeps its whole window in the window's own colour. A narration outside
+the event scenes the list does not name is system text by default — the original's look, never a wrong colour.
+
+Tested by `MessageWindowTests.System_text_is_never_read` and `A_battles_window_is_read_too` (`FIGT_A`'s result).
