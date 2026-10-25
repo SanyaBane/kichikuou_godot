@@ -398,6 +398,26 @@ brackets with captions under; the owner chose **the brackets**).
 - **Built (2026-10-16):** `Original.Content/Strategy/StatusStrip` (`StatusStripTests`, one test on the
   player's files), `GamePresenter.StatusStrip`, `godot/Strategy/StatusStripView`.
 
+### A building under way (owner, 2026-10-25)
+
+Construction's tag is lit by `Ui_CmdBuildAvail`, which only the week a building is ordered spends: from the next
+week on it is lit again, though `Cﾃｲﾄ.ADV` refuses while `BuildWeeksLeft` is not 0 (Maris's dialogue, `:74-219`).
+The owner asked for a third state while a building is under way. It is ours to show (no rule changes): the state is
+`BuildWeeksLeft > 0`, the building the one whose `Bld_*` is 2, its whole time the one `Cﾃｲﾄ` sets (the Military
+Academy 16 weeks, the Library and Maria Research 8, the Hospital, the S&M Tower and Magic Research 12); `COMMAND.ADV:18-23`
+counts it down before the strip is drawn, so the week it is done the tag is plain again.
+
+- **The owner's decisions:** (1) the third state from the week the building is ordered on, over "spent"; (2) the
+  command panel's Construction row marks it too, its click still playing Maris's refusal.
+- **Mock-ups, round 1** (`tools/ui/mock_construction.py`, over the gallery's `command-menu`; the Military Academy, 5
+  weeks left; the hover's tooltip under the tag names the building and its weeks): **A** the tag half-lit (its colour
+  halfway to the spent grey, a dim gold rim) with the weeks left on a gold-rimmed chip; **B** the tag spent grey with a
+  gold bar along its foot (the weeks built of the whole) and the chip; **C** the tag hatched in its colour like a
+  site's tape, with the chip. The panel's row in each: the tag as the strip's without the chip, "Construction" quiet,
+  "5 weeks left" where a spent row says "used this week".
+- **The owner chose A** (2026-10-25), the tooltip with the building's name and its weeks left only (no "11 of 16
+  built"; the mock-up script draws it so). To be built.
+
 ## Questions for the owner
 
 1. **Layout**: A, B or C (or a mix: e.g. A's map with C's zoom-out).
