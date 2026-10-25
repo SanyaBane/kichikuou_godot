@@ -61,7 +61,8 @@ Read this before a new screen's survey and mock-ups: the first round should not 
   defence ribbon's blues, the read-text colours, the map's plates (steel).
 - **What the colours mean:**
   - red lacquer in gold — the primary, committing action (Turn END, Replenish, Load this game, Yes, Retreat);
-  - dark red in vermilion with a bin — destroying something (Delete; docs/ui/save-load.md, the owner's B5);
+  - dark red in vermilion with an icon — losing something: Delete with a bin (docs/ui/save-load.md, the owner's B5),
+    Abandon City with a white flag (docs/ui/enemy-attack.md, §10, the owner's P1);
   - vermilion — the asked or chosen item, seals, prices; gold — a highlight or a drop target; the accent — the active
     thing (the acting card, the speaker); fixed cyan — the target bracket, never the accent;
   - player blue, enemy red; up green, down red; quiet ink for "0", "—" and the maximum in "980/1,000";
@@ -101,7 +102,7 @@ Shared parts, with their users; a new screen takes these before drawing its own.
 | Tag | a command's coloured word | `DrawTag` |
 | Tag under way | a command whose work goes on (a building): half-lit, the weeks on a gold-rimmed chip | `DrawBusyTag` |
 | Red button | the primary action | `DrawRedButton` |
-| Danger button | a deletion | `SaveLoadView.DrawDelete` (not shared yet) |
+| Danger button | a loss: a deletion (a bin), giving a city up (a white flag) | `DrawDangerButton`; the icons per view |
 | Click's triangle | "a click goes on", bobbing, shown once the text is whole | `DrawTriangle` |
 | Callout | a question or the script's refusal at the clicked place, Yes (red) / No inside | `TreasureCallout` |
 | Result plate | an order's outcome in the middle, waits for a click | `OrderResultPlate` |
@@ -207,6 +208,3 @@ Debug sliders (Menu Row Height…) are for trying sizes, not for the release. Ne
 ## 8. Open questions
 
 None for the owner: the refusals, dimmed or hidden and Turn END on a phone were answered on 2026-10-25 (§5, §6).
-
-- **The danger button** is drawn privately by `SaveLoadView`; it becomes a `UiPalette` part when a second screen needs
-  one.

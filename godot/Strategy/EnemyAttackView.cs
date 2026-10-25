@@ -43,7 +43,7 @@ internal sealed partial class EnemyAttackView : Control
     private static readonly Rect2 PictureArea = new(32 + (472 - 300) / 2, PanelsTop + 42, 300, 200);
     private static readonly Rect2 AdvisorArea = new(50, FootTop + 14, 122, 120);
     private static readonly Rect2 InterceptButton = new(548, FootTop + 28, 252, 92);
-    private static readonly Rect2 ScoutButton = new(822, FootTop + 44, 190, 52);
+    private static readonly Rect2 ScoutButton = new(822, FootTop + 28, 190, 92);
     private static readonly Rect2 AbandonButton = new(1030, FootTop + 44, 196, 52);
     private const float ListWidth = 260, ListRow = 50, ListGap = 6, ListPad = 12, ListHead = 26;
     private const float Dim = 0.66f;
@@ -550,9 +550,24 @@ internal sealed partial class EnemyAttackView : Control
         string sub = attack.Ninjas.Count == 0 ? "no ninja in service" : $"{free} of {attack.Ninjas.Count} free";
         Centred(_font!, sub, 13, ScoutButton, 0.76f, canScout ? Ui.Quiet : Ui.OffText);
 
-        Ui.DrawRowBox(_sheet, AbandonButton, Hovered(Spot.Abandon) || _callout.MenuOpen, _k);
-        Centred(_cinzel, "Abandon City", 17, AbandonButton, 0.5f,
-            Hovered(Spot.Abandon) || _callout.MenuOpen ? Ui.Name : Ui.Text);
+        // The owner's P1 (2026-10-26): giving the city up is a loss, so the danger button, a white flag for Delete's bin.
+        bool abandonLit = Hovered(Spot.Abandon) || _callout.MenuOpen;
+        Ui.DrawDangerButton(_sheet, AbandonButton, abandonLit, _k);
+        const string abandon = "Abandon City";
+        var size = _cinzel.GetStringSize(abandon, fontSize: 17);
+        float x = AbandonButton.GetCenter().X - (size.X + 24) / 2, middle = AbandonButton.GetCenter().Y;
+        DrawWhiteFlag(x, middle - 10);
+        _sheet.DrawString(_cinzel, new Vector2(x + 24, middle + _cinzel.GetAscent(17) - size.Y / 2), abandon, fontSize: 17,
+            modulate: abandonLit ? Ui.Name : Ui.DangerText);
+    }
+
+    /// <summary>A white flag on its pole, 16 wide and 18 high, its top left at (<paramref name="x"/>, <paramref name="y"/>).</summary>
+    private void DrawWhiteFlag(float x, float y)
+    {
+        _sheet.DrawLine(new(x + 2, y), new(x + 2, y + 18), Ui.Text, Lacquer.Line(1.6f, _k), true);
+        Lacquer.DrawSmoothPolygon(_sheet,
+            [new(x + 3, y + 1), new(x + 9, y + 3), new(x + 16, y + 1), new(x + 16, y + 10), new(x + 9, y + 12), new(x + 3, y + 10)],
+            Ui.Text, _k);
     }
 
     private void DrawList(EnemyAttack attack)

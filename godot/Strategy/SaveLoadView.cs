@@ -909,9 +909,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
     private void DrawDelete()
     {
         bool hover = _hovered == DeleteHit || _confirm;
-        DrawRect(DeleteRect, hover ? Ui.DangerHover : Ui.DangerFill);
-        DrawRect(DeleteRect, Ui.Vermilion, false, Line(2));
-        DrawRect(DeleteRect.Grow(-4), Ui.DangerLine, false, Line(1));
+        Ui.DrawDangerButton(this, DeleteRect, hover, _k);
         var colour = hover ? Ui.Name : Ui.DangerText;
         const string label = "Delete";
         float w = _cinzel.GetStringSize(label, fontSize: 15).X + 22, x = DeleteRect.GetCenter().X - w / 2, y = DeleteRect.GetCenter().Y;

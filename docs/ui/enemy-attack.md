@@ -171,3 +171,20 @@ picture 300×200 instead of 428×285, the title band, the panels and the foot on
 band and the foot where they were, the shorter panels centred between them. **The owner chose A**, built the same day:
 `EnemyAttackView`'s rectangles hang off `TitleTop`, `PanelsTop` and `FootTop`; the ninjas' list and Abandon City's
 callout follow their buttons. Looked at in a window (`--scout`: the screen, the list, the report, the question).
+
+## 10. The buttons' sizes and colours (owner, 2026-10-26)
+
+The owner asked for Ninja Scout as tall as Intercept, built the same day (`EnemyAttackView.ScoutButton`: 190×92 at
+the foot's `FootTop + 28`, its list's tip following), and found Abandon City's neutral row box wrong for giving a city
+up: red, but then Intercept wants another colour. Mock-up round P is `tools/ui/mock_attack_buttons.py`, over the
+screen gallery's `enemy-attack` dump with the taller Ninja Scout, each full screen and a sheet of the foot as it is and
+with Abandon City hovered: **P1** Abandon City as the danger button (Delete's look on the Save/Load screen: dark red
+lacquer in vermilion, a white flag before its label instead of the bin), Intercept red as it is — the style's two reds,
+the committing action and the loss; **P2** P1 with Abandon City as tall as the others, "no battle, the city is lost"
+under its name; **P3** Abandon City red, Intercept gold leaf with dark ink; **P4** Abandon City red, Intercept in the
+player's blue (style §2: player blue, enemy red). The agent recommends P1: the style's meanings stay as they are
+(red lacquer is the likely, committing choice everywhere; P3 and P4 would make the city's loss the brightest red on
+the screen), and the small button keeps Abandon City the unlikely answer. **The owner chose P1**, built the same day:
+the danger button is now a shared part (`UiPalette.DrawDangerButton`, Delete on the Save/Load screen drawn with it
+unchanged), `EnemyAttackView` draws Abandon City with it at its former size, a white flag before the label, lit while
+hovered or while its question is open. Looked at in the screen gallery (Lacquer, Steel, touch).

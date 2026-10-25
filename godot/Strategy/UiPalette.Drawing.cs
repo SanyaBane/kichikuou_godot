@@ -69,6 +69,17 @@ internal sealed partial record UiPalette
         c.DrawRect(rect.Grow(-4), Color.Color8(150, 96, 52), false, Parts.Line(1, k));
     }
 
+    /// <summary>
+    /// A button that loses something (Delete, Abandon City): dark red lacquer in a vermilion frame, lit when hovered; its
+    /// label <see cref="DangerText"/>, <see cref="Name"/> when hovered, after an icon of its own.
+    /// </summary>
+    public void DrawDangerButton(CanvasItem c, Rect2 rect, bool hover, float k)
+    {
+        c.DrawRect(rect, hover ? DangerHover : DangerFill);
+        c.DrawRect(rect, Vermilion, false, Parts.Line(2, k));
+        c.DrawRect(rect.Grow(-4), DangerLine, false, Parts.Line(1, k));
+    }
+
     /// <summary>A row's box: dark with a dim frame, or lit with a bright one when hovered.</summary>
     public void DrawRowBox(CanvasItem c, Rect2 rect, bool hover, float k)
     {
