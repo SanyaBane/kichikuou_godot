@@ -144,7 +144,8 @@ the project is GPL-2.0-or-later (`LICENSE`; README, "License").
 Next (owner's requests 2026-10-11/12): an interface of our own next to the original layout, chosen
 by the player, and an Android build later (docs/backlog.md). The game logic stays the original's.
 The UI survey's parts 1-4 are docs/ui/survey.md. **The house style every screen of ours follows is
-[docs/ui/style.md](docs/ui/style.md)** — read it before a new screen's survey and mock-ups, and keep it current. Decision 25 (2026-10-12): our own screens come one by
+[docs/ui/style.md](docs/ui/style.md)** — read it before a new screen's survey and mock-ups, and keep it current; the gallery of our screens
+(each shown from the kept saves without playing to it) is planned in docs/ui/gallery.md. Decision 25 (2026-10-12): our own screens come one by
 one over the original layout, chosen by Option → Interface (since 2026-10-21 always ours, the original's
 screens left to `--interface original`; BIZ UDGothic is the default font); the first, the deployment table over
 `Sﾌﾞﾀｲ`'s grid, is built with the rest of its screen and its third part (the party as a formation with

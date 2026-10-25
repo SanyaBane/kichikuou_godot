@@ -268,6 +268,9 @@ Other:
   frame numbers in docs/sengoku/04-screen.md §2.4.1 may be shifted too. The owner took our effects as they are; fix
   the script and check §2.4.1.
 
+- **The gallery of our screens** — *owner* (2026-10-25): a development mode showing each screen of ours on its own
+  from the kept saves, dumped in seconds into a folder outside the repository with an index marking what changed;
+  surveyed and planned in [ui/gallery.md](ui/gallery.md) (steps 1-5, two questions for the owner in §8), not built.
 - **Old absolute paths in the git history** — *owner*: rewriting the history is destructive, only on
   the owner's explicit request (decision 22).
 - **README** — *owner*: About and Credits only so far (2026-10-11); installing, building and playing
