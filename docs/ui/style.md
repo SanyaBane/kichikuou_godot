@@ -171,6 +171,9 @@ interface does not change.
 - A tap off a panel is the right click's cancel; Commands becomes Close while the panel is open.
 - Turn END is only in the command panel (Commands, then Turn END), on a phone too, and asks nothing; no button on the
   map ends the week (owner, 2026-10-25; the phone's mock-up M1 put it on the map's rail, asking first).
+- **Choices within the thumbs' reach** (~70 mm round where each hand holds its side): the battle's commands and the map's
+  command panel on rails in the sides' lower halves, filled from the foot up, the risky button (Retreat, Turn END) at a
+  rail's top, furthest from the resting thumb (docs/ui/touch.md, 2026-10-25).
 - Controls sit where the thumb learns them (the drawer at the left edge, Commands bottom right), never over a face, a
   name plate or text; they hide under menus, dialogs and our screens, and their taps never reach the script.
 

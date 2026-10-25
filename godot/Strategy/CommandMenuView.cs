@@ -11,10 +11,10 @@ namespace Kichikuou.Game.Strategy;
 /// the status window and the week's uses are on our status strip (<see cref="StatusStripView"/>). A row's click answers the script's menu with its choice; a right click or Esc anywhere cancels
 /// (0, back to the map), as the original's menu. Load/Save is two rows, Load and Save, the list each opens answered
 /// with the choice (<see cref="LoadSaveShortcut"/>). Laid out in the 1280×800 screen's pixels, scaled with the picture.
-/// In the touch mode (owner's choice C2, docs/ui/touch.md, "The command panel and the province menu") the rows are a
-/// finger's height and the two lists stand side by side, the commands left, the other items right with Turn END under them;
-/// a tap outside the panel cancels, as the map's button does while it reads Close (owner, 2026-10-24: a touch screen has
-/// no right button).
+/// In the touch mode (the owner's A, 2026-10-25, docs/ui/touch.md, "The command panel within the thumbs' reach") the rows
+/// are a finger's height on two rails in the sides' lower halves, as the battle's: the week's commands left, the other items
+/// right, each from the foot up, Turn END on the right rail's top; the map's button, reading Close, stands at the right
+/// rail's foot. A tap off the rails cancels, as the button does (owner, 2026-10-24: a touch screen has no right button).
 /// </summary>
 internal sealed partial class CommandMenuView : Control
 {
@@ -23,8 +23,12 @@ internal sealed partial class CommandMenuView : Control
     // The PC's layout: the owner's M1 (2026-10-25, docs/ui/command-screen.md, "Taller rows"), every row 38 high unless
     // Debug → Menu Row Height says otherwise (MenuRowsChoice).
     private const float Pad = 18;
-    // The touch mode's layout: two columns of rows 46 high (9.3 mm on the tablet), Turn END under the right one.
-    private const float TouchColumn = 300, TouchMid = 24, TouchRowH = 46, TouchPitch = 54, TouchEndGap = 14, TouchEndH = 64;
+    // The touch mode's layout: rails 244 wide at the picture's sides down to its foot, rows 220×46 (45 × 9.3 mm on the
+    // tablet) 54 apart; the lowest command's top at 732, the lowest item's at 656 over the Close button (CommandsButton:
+    // 220×72 at 1044, 712); Turn END 62 high, 26 over the items with a divider between.
+    private const float RailW = 244, LeftRail = 4, RightRail = 1032, RailFoot = 796, RailInset = 12;
+    private const float TouchRowW = 220, TouchRowH = 46, TouchPitch = 54, TouchEndH = 62, TouchEndGap = 26;
+    private const float CommandFoot = 732, LinkFoot = 656, RailHead = 50;
 
     private readonly bool _touch = TouchMode.On;
 
@@ -37,6 +41,8 @@ internal sealed partial class CommandMenuView : Control
     private static float EndH => Rows.Height + 18;
 
     private readonly FontFile _brush = Lacquer.Brush();
+    private readonly FontVariation _cinzel = Lacquer.Cinzel();
+    private const int CaptionSize = 13;
     private FontFile _gothic;
     private CommandMenu? _menu;
     private float _k = 1;                           // window pixels to a screen pixel
@@ -86,7 +92,7 @@ internal sealed partial class CommandMenuView : Control
     }
 
     /// <summary>A point of the picture outside the panel, global: where unattended play taps to close it.</summary>
-    public Vector2 OutsidePoint => GetGlobalRect().Position + new Vector2(40, 700) * _k;
+    public Vector2 OutsidePoint => GetGlobalRect().Position + (_touch ? new Vector2(640, 600) : new Vector2(40, 700)) * _k;
 
     public void Close()
     {
@@ -116,18 +122,13 @@ internal sealed partial class CommandMenuView : Control
 
     private const float CommandsTop = Pad;
 
-    private float LinksTop => _touch ? Pad : CommandsTop + Commands * RowPitch + 14;
+    private float LinksTop => CommandsTop + Commands * RowPitch + 14;
 
-    private float EndTop => _touch ? Pad + TouchColumnHeight(Links) + TouchEndGap : LinksTop + Links * LinkPitch + 10;
+    private float EndTop => LinksTop + Links * LinkPitch + 10;
 
-    /// <summary>The height of <paramref name="rows"/> touch rows one under another.</summary>
-    private static float TouchColumnHeight(int rows) => rows == 0 ? 0 : (rows - 1) * TouchPitch + TouchRowH;
+    private float PanelWidth => Width;
 
-    private float PanelWidth => _touch ? Pad + TouchColumn + TouchMid + TouchColumn + Pad : Width;
-
-    private float Height => _touch
-        ? Math.Max(Pad + TouchColumnHeight(Commands), EndTop + TouchEndH) + Pad
-        : EndTop + EndH + 16;
+    private float Height => EndTop + EndH + 16;
 
     /// <summary>The panel's corner: centred on the screen, as the original's menu (owner, 2026-10-16).</summary>
     private float PanelX => MathF.Round((1280 - PanelWidth) / 2);
@@ -136,17 +137,40 @@ internal sealed partial class CommandMenuView : Control
 
     private float Line(float width) => Lacquer.Line(width, _k);
 
+    /// <summary>The touch mode's top item on the right rail (the highest of the items, from the foot up).</summary>
+    private float TopLink => LinkFoot - Math.Max(0, Links - 1) * TouchPitch;
+
+    /// <summary>The touch mode's left rail: the week's commands under their caption.</summary>
+    private Rect2 LeftRailRect
+    {
+        get
+        {
+            float top = CommandFoot - Math.Max(0, Commands - 1) * TouchPitch - RailHead;
+            return new Rect2(LeftRail, top, RailW, RailFoot - top);
+        }
+    }
+
+    /// <summary>The touch mode's right rail: Turn END, the other items, the map's button at its foot.</summary>
+    private Rect2 RightRailRect
+    {
+        get
+        {
+            float top = TopLink - TouchEndGap - TouchEndH - RailInset;
+            return new Rect2(RightRail, top, RailW, RailFoot - top);
+        }
+    }
+
     private Rect2 RowRect(int row)
     {
         float x = PanelX, y = PanelY;
         if (_touch)
         {
-            float right = x + Pad + TouchColumn + TouchMid;
+            // From the foot up, as the battle's rails: the first command lowest on the left, the first item lowest on the right.
             if (row < Commands)
-                return new Rect2(x + Pad, y + Pad + row * TouchPitch, TouchColumn, TouchRowH);
+                return new Rect2(LeftRail + RailInset, CommandFoot - row * TouchPitch, TouchRowW, TouchRowH);
             if (row < Commands + Links)
-                return new Rect2(right, y + Pad + (row - Commands) * TouchPitch, TouchColumn, TouchRowH);
-            return new Rect2(right, y + EndTop, TouchColumn, TouchEndH);
+                return new Rect2(RightRail + RailInset, LinkFoot - (row - Commands) * TouchPitch, TouchRowW, TouchRowH);
+            return new Rect2(RightRail + RailInset, TopLink - TouchEndGap - TouchEndH, TouchRowW, TouchEndH);
         }
         if (row < Commands)
             return new Rect2(x + 14, y + CommandsTop + row * RowPitch, Width - 28, RowH);
@@ -191,13 +215,14 @@ internal sealed partial class CommandMenuView : Control
                 break;
             case InputEventMouseButton { ButtonIndex: MouseButton.Left } button:
                 int at = RowAt(button.Position);
-                bool outside = _touch && !new Rect2(PanelX, PanelY, PanelWidth, Height).HasPoint(button.Position / _k);
+                var point = button.Position / _k;
+                bool outside = _touch && !LeftRailRect.HasPoint(point) && !RightRailRect.HasPoint(point);
                 if (button.Pressed)
                     (_pressed, _outside) = (at, outside);
                 else if (at >= 0 && at == _pressed && Enabled(at))
                     Answer(Choice(at));
                 else if (outside && _outside)
-                    Answer((0, null));                      // a tap outside the panel: back to the map
+                    Answer((0, null));                      // a tap off the panel (the rails): back to the map
                 else
                     _pressed = -1;
                 break;
@@ -227,16 +252,35 @@ internal sealed partial class CommandMenuView : Control
             return;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         float x = PanelX, y = PanelY;
-        Ui.DrawPanel(this, new Rect2(x, y, PanelWidth, Height), _k);
+        if (_touch)
+            DrawRails();
+        else
+            Ui.DrawPanel(this, new Rect2(x, y, PanelWidth, Height), _k);
         for (int r = 0; r < Commands; r++)
             DrawCommand(r);
-        if (_touch)
-            Ui.DrawVerticalDivider(this, x + Pad + TouchColumn + TouchMid / 2, y + Pad + 4, y + Height - Pad - 4, _k);
-        else
+        if (!_touch)
             Ui.DrawDivider(this, x + 16, x + Width - 16, y + LinksTop - 7, _k);
         for (int r = Commands; r < Commands + Links; r++)
             DrawLink(r);
         DrawTurnEnd();
+    }
+
+    /// <summary>
+    /// The touch mode's two rails (the owner's A): the left one's caption over the week's commands, a divider between the
+    /// right one's Turn END and the other items; the map's button draws itself, as Close, at the right rail's foot.
+    /// </summary>
+    private void DrawRails()
+    {
+        var left = LeftRailRect;
+        var right = RightRailRect;
+        Ui.DrawPanel(this, left, _k);
+        Ui.DrawPanel(this, right, _k);
+        const string caption = "THIS WEEK";
+        float cw = _cinzel.GetStringSize(caption, fontSize: CaptionSize).X;
+        DrawString(_cinzel, new Vector2(left.GetCenter().X - cw / 2, Lacquer.Baseline(new Rect2(left.Position.X, left.Position.Y + 12, RailW, 20), _cinzel, CaptionSize)),
+            caption, fontSize: CaptionSize, modulate: Ui.Subtitle);
+        Ui.DrawDivider(this, left.Position.X + 16, left.End.X - 16, left.Position.Y + 38, _k);
+        Ui.DrawDivider(this, right.Position.X + 16, right.End.X - 16, TopLink - TouchEndGap / 2, _k);
     }
 
     private void DrawCommand(int r)
@@ -252,17 +296,22 @@ internal sealed partial class CommandMenuView : Control
             : new Rect2(rect.Position.X + Rows.TagInset, rect.Position.Y + Rows.TagInset, Rows.TagWidth, rect.Size.Y - 2 * Rows.TagInset);
         // A building under way (the owner's A, 2026-10-25): the tag half-lit, the weeks left where a spent row says so; the
         // row answers as ever (○ opens Cﾃｲﾄ for Maris's refusal, × does nothing).
+        // The touch mode's rail has no room for the note: the weeks go on the tag's chip, as the strip's, and a spent row is
+        // only dimmed.
         bool busy = item.WeeksText is not null;
         if (busy)
-            Ui.DrawBusyTag(this, _gothic, tagRect, tag, colour, _k, _touch ? 13 : Rows.TagText);
+            Ui.DrawBusyTag(this, _gothic, tagRect, tag, colour, _k, _touch ? 13 : Rows.TagText, _touch ? item.WeeksLeft : null);
         else
             Ui.DrawTag(this, _gothic, tagRect, tag, colour, on, _k, _touch ? 13 : Rows.TagText);
-        DrawString(_gothic, new Vector2(rect.Position.X + (_touch ? 94 : Rows.TextLeft), Lacquer.Baseline(rect, _gothic, size)), item.Text, fontSize: size,
+        float textX = rect.Position.X + (_touch ? 94 : Rows.TextLeft);
+        while (_touch && size > 14 && textX + _gothic.GetStringSize(item.Text, fontSize: size).X > rect.End.X - 8)
+            size--;                                                     // a long name shrinks to fit the rail's row
+        DrawString(_gothic, new Vector2(textX, Lacquer.Baseline(rect, _gothic, size)), item.Text, fontSize: size,
             modulate: busy ? Ui.Quiet : on ? Ui.Text : Ui.OffText);
-        if (busy || !on)
+        if (!_touch && (busy || !on))
         {
             string note = item.WeeksText ?? "used this week";
-            int noteSize = _touch ? 12 : Rows.Small;
+            int noteSize = Rows.Small;
             float sw = _gothic.GetStringSize(note, fontSize: noteSize).X;
             DrawString(_gothic, new Vector2(rect.End.X - 10 - sw, Lacquer.Baseline(rect, _gothic, noteSize)), note, fontSize: noteSize,
                 modulate: busy ? Ui.Quiet : Ui.OffText);

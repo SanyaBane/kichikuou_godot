@@ -225,8 +225,10 @@ Then (owner, 2026-10-24) a touch mode for the Android build: survey and mock-ups
 sides, the target preselected per unit) and M3 (a round Commands button on the map): built (docs/ui/touch.md, "The tablet":
 `godot/Strategy/TouchMode` — Android or `--touch` —, `godot/Battles/BattleCommandLayer.Touch.cs`,
 `Original.Content/Battles/TouchTargets`, `godot/Strategy/CommandsButton`); the target frame breathes on Android only
-(the owner's A); the command panel and the province menu stand in two columns with rows a finger high (the owner's C2
-and P1, docs/ui/touch.md, "The command panel and the province menu").
+(the owner's A); the province menu stands in two columns with rows a finger high (the owner's P1, docs/ui/touch.md,
+"The command panel and the province menu"), the command panel on two rails at the thumbs, the week's commands left and
+the other items right, from the foot up, Turn END on top, Close at the foot (the owner's A, 2026-10-25; docs/ui/touch.md,
+"The command panel within the thumbs' reach").
 Then (owner, 2026-10-25) the dungeon's floor menu, whose rows move between floors (Ascend / Descend / Retreat as offered):
 the survey and mock-up rounds 1-2 (1 three fixed rows, the missing one dimmed; 3 a ladder right of the picture, in round 2
 with the missing way hidden) are

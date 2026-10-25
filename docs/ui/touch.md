@@ -267,7 +267,8 @@ the other items get a row box too, since no hover shows that they can be tapped.
 **Recommendation: C1 and P1** — Turn END apart from every other button (one tap ends the week, nothing asks first),
 and in P1 the commands always one column at the right thumb, in the script's order, wherever the picture leaves room.
 
-**The owner's choice (2026-10-24): C2 and P1.** Built, in the touch mode only (PC's panels as before):
+**The owner's choice (2026-10-24): C2 and P1.** Built, in the touch mode only (PC's panels as before; the command panel
+since 2026-10-25 on two rails, "The command panel within the thumbs' reach"):
 
 - **The command panel** (`godot/Strategy/CommandMenuView`): two columns of 300 with a gold rule between them
   (`Lacquer.DrawVerticalDivider`), rows 46 high and 54 apart — the commands left (tag 72 wide, text 19), the other items
@@ -492,6 +493,21 @@ docstring); the images stay outside the repository. Round 1:
 the arcs, the map's middle open; B puts its outer columns past the reach, C is the most playful but its rows' lengths
 depend on their height. The province menu (P1, its commands in the middle too) could follow the same way, the province's
 card left and its commands on the right rail: a question for the owner.
+
+**The owner's choice (2026-10-25): A.** Built, in the touch mode only (PC's centred panel as before; the province menu
+stays P1 for now):
+
+- **The rails** (`godot/Strategy/CommandMenuView`): 244 wide at x 4 and 1032, down to the picture's foot, rows 220×46
+  54 apart. Left: THIS WEEK (Cinzel 13), a divider, the commands from the foot up (the lowest's top at 732), the rail as
+  high as they need. Right: Turn END 220×62 at the top, a divider, the other items from the foot up (the lowest's top at
+  656), and at the foot the map's button reading Close (`CommandsButton`, 220×72 at 1044, 712, unmoved). The thieves'
+  week has shorter rails (two commands, three items).
+- **The agent's choices:** a spent command's row in the rail is only dimmed — the rail has no room for "used this week",
+  and the strip's dim tag says it too; a building's weeks go on the tag's chip (the mock-up). A tap off both rails
+  cancels (the map's middle included); `OutsidePoint`, where unattended play taps it, is the map's middle.
+- Looked at by the agent (2026-10-25) in the screen gallery's touch pass (`command-menu`, `-spent`, `-building`,
+  `-building-tip`) and in the unattended `--touch` look from the week-18 save (`--until deployment`): its taps on Close
+  and off the rails cancel the panel. Not yet on the tablet.
 
 ## Phones (put off)
 
