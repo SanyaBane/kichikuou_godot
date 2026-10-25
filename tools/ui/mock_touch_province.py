@@ -14,6 +14,7 @@ commands together, beside the finger. A and B for Leazas Castle (1) with two bui
 Oaks (6), the rebels' (two commands, its figures unscouted).
 """
 import sys, os
+sys.dont_write_bytecode = True                  # no __pycache__ in the repository for the borrowed module
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from mock_touch_panel import (W, H, S, GOLD, DIM_GOLD, NAME, SUBTITLE, TEXT, QUIET, ROW, NOTE, GOTHIC, BRUSH, CINZEL, Frame,
                               load, sc, text, width, note, caption, rect, shadow, panel, rule, command, link, reach, mm)
