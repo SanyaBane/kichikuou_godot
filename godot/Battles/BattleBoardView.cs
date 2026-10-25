@@ -1186,6 +1186,17 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
             state += (state == "" ? "" : " · ") + "Acted";
         var stateLine = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
         stateLine.AddThemeConstantOverride("separation", 0);
+        // The line fits rather than end in "…" (owner, 2026-10-25: "Auto-Def · Defend · Acting" read "Auto-Def · Def…"): too
+        // long, it drops "Acting" (the card's fill and blinking frame say it), then shrinks, down to seven eighths. The text
+        // column is the card less its padding, the face and the separation.
+        int full = (int)Math.Round(TextSize * _scale), fitted = full;
+        float room = (CardSize.X - pad * 2 / _scale - CardPortrait.Width - pad * 2 / _scale - 2) * _scale;
+        string Whole() => order + (order != "" && state != "" ? " · " : "") + state;
+        bool Fits(int size) => _theme.DefaultFont.GetStringSize(Whole(), fontSize: size).X <= room;
+        if (!Fits(full) && acting && state.EndsWith("Acting"))
+            state = state[..^"Acting".Length].TrimEnd(' ', '·');
+        while (fitted > full * 7 / 8 && !Fits(fitted))
+            fitted--;
         if (order != "")
         {
             var orderLabel = Line(order, Ui.Quiet, expand: false);   // its own label: it flashes (FlashOrder)
@@ -1200,6 +1211,11 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
                 state = " · " + state;
         }
         stateLine.AddChild(Line(state, Ui.Quiet));
+        if (fitted < full)
+        {
+            foreach (var label in stateLine.GetChildren().OfType<Label>())         // an override is the node's own, not its children's
+                label.AddThemeFontSizeOverride("font_size", fitted);
+        }
         text.AddChild(stateLine);
 
         if (card.Place.Side == BattleSide.Player)

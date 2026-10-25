@@ -110,7 +110,9 @@ portrait (mock-up B):
   118 px — since 2026-10-15 112 at the top with the unit's stats under it, "The cards' stats"; the enemy's on the card's right), place and name, troop type, troops now/max with a bar
   (labelled "Trp.": "Troops" with the thousands' separator overran the card, owner 2026-10-24),
   HP now/max with a bar, the standing order (Manual / Auto-Atk / Auto-Def; the player's), "acted"
-  (a word in the state line; the face is not dimmed, owner's request 2026-10-13); the acting unit's card as Sengoku Rance's
+  (a word in the state line; the face is not dimmed, owner's request 2026-10-13; a line too long for the card drops
+  "Acting", which the card's fill and frame say, then shrinks to seven eighths rather than end in "…" — owner, 2026-10-25:
+  "Auto-Def · Defend · Acting" read "Auto-Def · Def…"); the acting unit's card as Sengoku Rance's
   (owner, 2026-10-13; docs/sengoku/04-screen.md §6.2, §6.5): its fill the card's colour 30 % toward the
   accent, its edge black / accent / accent / black, and every 500 ms a frame shown or hidden over it one
   unit further out, accent / white / white / accent (a unit is a quarter of the card's padding); an empty place open,
