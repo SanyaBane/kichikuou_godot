@@ -184,6 +184,15 @@ capture's inputs. This is the last step: the board's looks from the week-18 save
    unscouted), `province-menu-own` (Leazas Castle (1): Levy, Bolster, Dungeon — the save's castle has no building yet, so
    not the five items touch.md asks about), `floor-ladder`, `-middle`, `-last` (the Monsters' Cave (dungeon 2) on
    floors 1, 7 and 14, its picture 1032 in `WAO_SUB` 331; `GalleryStates.DungeonFloor`). Not yet looked at by the owner.
+   **Then the scenes' screens** (`GalleryEntries.Scenes.cs`): `week-report` — the presenter gathers it from a Leazas
+   week's start fed as `MAIN.ADV:96-212` prints it (`GalleryStates.LeazasWeekStart`: the banner, the save's date, the
+   revenue and troops, a donation, the window closed, `Gold` moved as the file moves it); the figures are made up (the
+   COMMAND save is past its week's start, and `Tmp0022` is the pointer's by then) — and `week-report-thieves` (the banner
+   alone, `ThievesWeekStart`); `scene-menu` (a 121 speech and our menu at the boot's selection window, `B1` of
+   `ｽﾀｰﾄ.ADV:860`, which the gallery's presenter is given since it never booted) and `scene-menu-top` (the same over a
+   111 speech: the selection window lies over 111, so the menu covers the question — what a scene asking in 111 would
+   show; the original's box does the same); `message-log` (`GalleryStates.LogSample`: every kind of page, a choice,
+   more lines than the paper's 18 rows).
 3. **Screens and the battle's overlays:** deployment (the panels' overload), Save/Load (`LoadSaveScreen.Items`, a
    read-only library), the enemy attack, the scout report, the cut-in, the counters, the info boxes, the dialog and
    the commands (input forwarded).

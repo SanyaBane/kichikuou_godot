@@ -1,3 +1,4 @@
+using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Content.ScreenGallery;
 using Kichikuou.Original.Content.Strategy;
@@ -100,7 +101,7 @@ public class ScreenGalleryTests
         Assert.Equal("Troops Replenished", result.Title);
     }
 
-    private static int[] Lines(IReadOnlyList<Engine.Script.SceneMenuItem> items) => [.. items.Select(i => i.At.Line)];
+    private static int[] Lines(IReadOnlyList<SceneMenuItem> items) => [.. items.Select(i => i.At.Line)];
 
     [Fact]
     public void Spent_commands_make_the_command_menu_offer_its_crossed_items()
@@ -140,5 +141,45 @@ public class ScreenGalleryTests
         Assert.NotNull(ladder);
         Assert.Equal((floor, floor > 1, floor < 14), (ladder.Floor, ladder.Up is not null, ladder.Down is not null));
         Assert.Equal(1032, s.CallArg.Value);
+    }
+
+    [Fact]
+    public void A_week_starts_report_reads_its_figures_and_the_budget_around_them()
+    {
+        var s = new GameState { Gold = 1000, DateYear = 3, DateMonth = 5, DateWeek = 2 };
+        WeekReport? report = null;
+        static string Text(ScriptRef at, IReadOnlyList<Sys3Int> numbers) => at.Line switch
+        {
+            98 => "Leazas Army Phase",
+            103 => $"LP {numbers[0].Value}, Month {numbers[1].Value}, Week {numbers[2].Value}",
+            173 => $"Revenue & Troop Replenishment\nRevenue: {numbers[0].Value}00K GOLD\nReplenished Troops: {numbers[1].Value}",
+            188 => "Special Expenses (Donations)",
+            201 => "AL Church: -6500K GOLD",
+            _ => "",
+        };
+        foreach (var e in GalleryStates.LeazasWeekStart(s, 202, 1385, 201))
+        {
+            if (report is null)
+                report = WeekReport.Start(e, s, Text);
+            else
+                report.Observe(e, s, Text);
+        }
+        Assert.NotNull(report);
+        Assert.True(report.Complete);
+        Assert.Equal(("LP 3 · Month 5 · Week 2", 86300, 100000), (report.Date, report.BudgetBefore, report.BudgetAfter));
+        Assert.Equal((20200, 1385), (report.Revenue!.Amount, report.Troops!.Amount));
+        Assert.Equal([new ReportLine("AL Church", -6500)], report.Expenses);
+        Assert.Equal(1000, s.Gold.Value);
+    }
+
+    [Fact]
+    public void The_log_sample_has_every_kind_of_page_and_more_than_a_paper()
+    {
+        var log = new MessageLog();
+        foreach (var page in GalleryStates.LogSample)
+            log.Add(page);
+        Assert.Equal(Enum.GetValues<LogKind>().ToHashSet(), GalleryStates.LogSample.Select(p => p.Kind).ToHashSet());
+        Assert.True(log.Lines().Count > 18);                         // the rows MessageLogView's paper holds
+        Assert.Contains(log.Lines(), line => line.Chosen);
     }
 }

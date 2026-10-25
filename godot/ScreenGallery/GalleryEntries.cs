@@ -31,6 +31,7 @@ internal static partial class GalleryEntries
         .. Subordinates(),
         .. Messages(),
         .. MapScreens(),
+        .. SceneScreens(),
     ];
 
     /// <summary>Script pixels a screen pixel of the picture's area: the 640×400 script screen fitted into it.</summary>

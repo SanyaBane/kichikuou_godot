@@ -1,6 +1,7 @@
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Content.Strategy;
+using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
 using Kichikuou.Original.Strategy;
 
@@ -119,4 +120,74 @@ public static class GalleryStates
         s.Ui_CenterOverlay3 = 0;
         s.Ui_CenterOverlay4 = 0;
     }
+
+    /// <summary>The donations <c>MAIN.ADV</c> prints at a week's start, by their lines, in units of 100K GOLD (<c>:185-211</c>).</summary>
+    public static IReadOnlyDictionary<int, int> Donations { get; } = new Dictionary<int, int> { [194] = 20, [201] = 65, [208] = 45 };
+
+    private static ScriptRef Main(int line) => new("MAIN.ADV", line);
+
+    /// <summary>
+    /// What our week report reads of a Leazas week's start, as <c>MAIN.ADV:96-212</c> prints it (<c>WeekLoop</c>): the
+    /// banner, its date (the state's), the revenue and the troops replenished, the donations at
+    /// <paramref name="donationLines"/> (<see cref="Donations"/>), the window closed. The figures are the caller's (the
+    /// gallery's save is past them); <c>Gold</c> is moved as the file moves it, from before the revenue to where it is.
+    /// Iterate it while the events are shown: the report reads <c>Gold</c> at the banner and at the close.
+    /// </summary>
+    public static IEnumerable<ScriptEvent> LeazasWeekStart(GameState s, int revenue, int troops, params int[] donationLines)
+    {
+        int after = s.Gold.Value;
+        s.Gold = (Sys3Int)(after - revenue + donationLines.Sum(line => Donations[line]));
+        yield return new WindowEvent(113, s.CallArg);
+        yield return new MessageEvent(Main(98));
+        yield return new ValueMessageEvent(Main(103), [s.DateYear, s.DateMonth, s.DateWeek]);
+        s.Gold = (Sys3Int)(s.Gold.Value + revenue);
+        yield return new ValueMessageEvent(Main(173), [(Sys3Int)revenue, (Sys3Int)troops]);
+        if (donationLines.Length > 0)
+            yield return new MessageEvent(Main(188));
+        foreach (int line in donationLines)
+        {
+            s.Gold = (Sys3Int)(s.Gold.Value - Donations[line]);
+            yield return new MessageEvent(Main(line));
+        }
+        yield return new WindowEvent(0, s.CallArg);
+    }
+
+    /// <summary>What our week report reads of the thieves' week's start (<c>MAIN.ADV:33-49</c>): the banner and its date alone.</summary>
+    public static IEnumerable<ScriptEvent> ThievesWeekStart(GameState s)
+    {
+        yield return new WindowEvent(113, s.CallArg);
+        yield return new MessageEvent(Main(35));
+        yield return new ValueMessageEvent(Main(40), [s.DateYear, s.DateMonth, s.DateWeek]);
+        yield return new WindowEvent(0, s.CallArg);
+    }
+
+    /// <summary>The boot's selection window (<c>ｽﾀｰﾄ.ADV:860</c>, <c>B1 1, 250, 50, 150, 100, 1</c>), where the scenes' menus open.</summary>
+    public static ScriptEvent SelectionWindow { get; } =
+        new EngineEvent("B1", [(Sys3Int)1, (Sys3Int)250, (Sys3Int)50, (Sys3Int)150, (Sys3Int)100, (Sys3Int)1]);
+
+    /// <summary>A short question's answers for the scene menu's entry (the gallery's own).</summary>
+    public static IReadOnlyList<string> MenuSample { get; } = ["Attack at dawn", "Wait for the scouts", "Ask Maris"];
+
+    /// <summary>
+    /// A message log's pages for its entry: every kind of page, a question answered among them, more than the paper
+    /// holds so it opens scrolled to the end. The lines are the gallery's own, not the game's.
+    /// </summary>
+    public static IReadOnlyList<LogPage> LogSample { get; } =
+    [
+        new(LogKind.Place, "", ["Leazas Castle", "The Throne Room"]),
+        new(LogKind.Narration, "", ["The morning sun rose over the castle walls."]),
+        new(LogKind.Speech, "Maris", ["Good morning, King Rance.", "The ministers are waiting for you."]),
+        new(LogKind.Speech, "Rance", ["Let them wait. Gahahaha!"]),
+        new(LogKind.Thought, "Maris", ["(As always...)"]),
+        new(LogKind.Speech, "Maris", ["There is news from the south.", "The rebels are gathering near Oaks."]),
+        new(LogKind.Speech, "Rance", ["Then we strike before they are ready."]),
+        new(LogKind.Choice, "", MenuSample, Chosen: 2),
+        new(LogKind.Speech, "Rance", ["...No. We wait for the scouts first."]),
+        new(LogKind.Speech, "Kanami", ["I will go at once."]),
+        new(LogKind.Narration, "", ["Kanami vanished from the room without a sound."]),
+        new(LogKind.Thought, "Rance", ["(Hmm... something is not right", "about this...)"]),
+        new(LogKind.Narration, "", ["Three days later, the army", "reached the border."]),
+        new(LogKind.Speech, "Haurein", ["The troops are in position.", "We await your order, King Rance."]),
+        new(LogKind.Speech, "Rance", ["Good. Gather everyone!"]),
+    ];
 }
