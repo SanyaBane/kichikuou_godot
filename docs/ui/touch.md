@@ -394,5 +394,5 @@ cyan frame as before); the rules, the places and what each button does as before
 ## Phones (put off)
 
 Put off by the owner (2026-10-24). What is ready for them: the measurements above, mock-ups B1, B3 (the battle),
-M1, M2 (the map). Open questions: B1 or B3; M1 or M2; Turn END on the map's rail (asking first) or only in the
-command panel; the text size on a phone (a phone layout with larger text, or a zoom).
+M1, M2 (the map). Open questions: B1 or B3; M1 or M2; the text size on a phone (a phone layout with larger text, or a zoom). Turn END stays in the command panel on a phone
+too, asking nothing — no button on the map ends the week (owner, 2026-10-25; M1's button on the rail goes).

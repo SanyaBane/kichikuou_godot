@@ -137,9 +137,14 @@ narration, place title, 131) in docs/ui/messages.md.
   cell, so the script shows its details. Only what can be done lights up.
 - **Drag and drop:** starts after 6 window pixels; the card dims and its face follows; the target glows gold with
   "Swap" or "Move"; the wanted order shows at once while the script's clicks run.
-- **Off, not reachable:** an action the script would refuse is greyed with its reason ("used this week", "not enough
-  gold") rather than offered, so the original's refusal is never reached (Subordinates). Where the screen is the
-  script's own picker, its refusals show in the callout (Treasure V). See §8.
+- **Refusals by their kind** (owner, 2026-10-25): a refusal that is a plain condition the state shows — spent this
+  week, not enough gold, already full — is greyed beforehand with its reason as the tooltip ("used this week", "not
+  enough gold"), so the script's refusal is never reached (Subordinates). A refusal that is a character's line, or part
+  of the original's flow a screen keeps (a picker played through, Treasure V), is the script's own, in the callout at
+  the click with the click's triangle.
+- **Dimmed or hidden by meaning** (owner, 2026-10-25): an action that exists but cannot be taken now and will be
+  again (spent, too dear) is dimmed — the player should know it is there. One that does not exist here at all (up from
+  the top floor) is hidden, keeping its room (the dungeon's ladder).
 - **A stable layout:** a mark that goes, a way not offered or a sort arrow leaves its room, so nothing else moves
   (the dungeon's ladder, the ledger's columns).
 - **Marks for new content** (decision 30): NEW green, ??? amber, nothing once read; a pill on the action, tooltips in
@@ -163,6 +168,8 @@ interface does not change.
 - Select, then act: nothing irreversible on one tap. A long press (0.5 s) gives details; a finger that moves more than
   12 px is neither tap nor press.
 - A tap off a panel is the right click's cancel; Commands becomes Close while the panel is open.
+- Turn END is only in the command panel (Commands, then Turn END), on a phone too, and asks nothing; no button on the
+  map ends the week (owner, 2026-10-25; the phone's mock-up M1 put it on the map's rail, asking first).
 - Controls sit where the thumb learns them (the drawer at the left edge, Commands bottom right), never over a face, a
   name plate or text; they hide under menus, dialogs and our screens, and their taps never reach the script.
 
@@ -184,11 +191,7 @@ Debug sliders (Menu Row Height…) are for trying sizes, not for the release. Ne
 
 ## 8. Open questions
 
-- **Refusals: greyed before, or the script's own?** Subordinates greys an order the script would refuse; the Treasure
-  screen (V) lets the script refuse in the callout. Both are the owner's choices for their screen; a new screen needs
-  one of them, or a rule for when each holds.
-- **Dimmed or hidden?** Spent commands are dimmed rows ("used this week"); the dungeon's ladder hides a way not
-  offered (keeping its room). Not yet a general rule.
-- **Turn END on a phone:** asks first in M1, not in C1 (docs/ui/touch.md, phones' open questions).
+None for the owner: the refusals, dimmed or hidden and Turn END on a phone were answered on 2026-10-25 (§5, §6).
+
 - **The danger button** is drawn privately by `SaveLoadView`; it becomes a `UiPalette` part when a second screen needs
   one.
