@@ -213,6 +213,20 @@ capture's inputs. This is the last step: the board's looks from the week-18 save
    filled in), `scout-report`. The troops are the COMMAND save's, before the rebels' turn: Ex has none. Left for step 3:
    the Abandon City question (asked by the view's own button, no way in from outside yet), deployment, Save/Load, the
    cut-in, the counters, the info boxes, the dialog and the commands.
+   **Then deployment and Save/Load** (`GalleryEntries.Screens.cs`). The deployment picker is opened in the bound presenter
+   (`PickerScreenEvent`) for its bar's labels and mode, as `Sﾌﾞﾀｲ` opens it, so `DeploymentPanels` needed no overload;
+   `GalleryStates.Deployment` sets the places limit, the party and the details' unit. Entries `deployment` (the week-18
+   look's party against Oaks (6), Rance's details), `-picking` (two picked, no details), `-defence` (mode 2, Plains /
+   City), `-search` (mode 3, one unit), `-refill-question` (the callout at Haurein's (unit 12) Refill cell, laid after the
+   table's layout, `GalleryStage.AfterLayout`) and `-refill-done` (the plate, `ReplenishPreview`; the table under it not
+   replenished). The Save/Load screen reads a `MemorySaveLibrary` made of the kept save
+   (`GalleryStates.SampleLibrary`: ten auto-saves and four manual saves, the older a week earlier each — `Week` and
+   `Tmp0021`, the date the lists read —, two with comments, the manual saves an hour after their week's auto-save), so
+   its deletes and comments reach no disk and no read-only library was needed; its items are `LoadSaveScreen.Items(library,
+   save)`, pulled out of the file (the full load/save differential runs pass). Its clicks are given to it as input
+   (`GalleryStage.Click`: the view's `_GuiInput`, the system pointer not moved). Entries `save-load-save`, `save-load`
+   (the save written last), `-title` (no tabs), `-auto`, `-delete`, `-sweep`, `-comment` (Edit on the uncommented No. 3,
+   its caret not blinking).
 4. **The battle board** from a replayed capture (§6).
 5. **The house style:** docs/ui/style.md, §7 gains "a changed screen updates its entries and the gallery is rebuilt";
    CLAUDE.md's commands list the gallery.

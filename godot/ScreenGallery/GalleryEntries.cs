@@ -29,6 +29,8 @@ internal static partial class GalleryEntries
         .. Treasure(),
         .. Harem(),
         .. Subordinates(),
+        .. DeploymentScreens(),
+        .. SaveLoadScreens(),
         .. Messages(),
         .. MapScreens(),
         .. SceneScreens(),

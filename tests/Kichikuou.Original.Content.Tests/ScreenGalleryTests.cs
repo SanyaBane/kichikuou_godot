@@ -199,4 +199,42 @@ public class ScreenGalleryTests
         GalleryStates.EnemyParty(s, 1, 6);
         Assert.Equal([1, 6, 0, 0], new[] { s.Bt_EnemyParty1, s.Bt_EnemyParty2, s.Bt_EnemyParty3, s.Bt_EnemyParty4 }.Select(v => v.Value));
     }
+
+    [Fact]
+    public void A_deployment_shows_its_party_its_totals_and_the_details()
+    {
+        var s = World();
+        GalleryStates.Deployment(s, 4, [1, 12], 12);
+        var party = DeploymentTable.Party(s);
+        Assert.Equal([1, 12], party.Places.Where(m => m is not null).Select(m => m!.Unit));
+        Assert.Equal(4, party.Places.Count);
+        Assert.Equal(1100, party.Troops);
+        Assert.Equal(12, DeploymentTable.Details(s)?.Unit);
+        Assert.Equal(2, DeploymentTable.PartyPlace(s, 12));
+        GalleryStates.Deployment(s, 1, [1], 0);
+        Assert.Single(DeploymentTable.Party(s).Places);
+        Assert.Null(DeploymentTable.Details(s));
+    }
+
+    [Fact]
+    public void The_sample_library_holds_ten_autos_and_four_commented_manuals_newest_first()
+    {
+        var s = World();
+        s.Week = 70;
+        s.Tmp0021 = 70;
+        var data = SaveData.Capture(s, new ScriptRef("COMMAND.ADV", 1));
+        var newest = new DateTime(2026, 10, 20, 21, 30, 0);
+        var library = GalleryStates.SampleLibrary(data, newest);
+        Assert.Equal(ISaveLibrary.AutoCount, library.Autos.Count);
+        Assert.Equal(GalleryStates.SampleComments.Count, library.Manuals.Count);
+        var shelf = SaveSlots.ReadLibrary(library);
+        Assert.Equal(newest, library.Read(library.Autos[0])?.Written);
+        Assert.Equal(70, shelf.Autos[0].Week);
+        var manuals = SaveSlots.NewestFirst(shelf.Manuals);
+        Assert.Equal(GalleryStates.SampleComments, manuals.Select(m => m.Comment));
+        Assert.Equal([70, 68, 66, 64], manuals.Select(m => m.Week));
+        Assert.Equal([null, .. library.Manuals.Select(id => (SaveId?)id)], LoadSaveScreen.Items(library, save: true));
+        Assert.Equal(ISaveLibrary.AutoCount + 4, LoadSaveScreen.Items(library, save: false).Count);
+        Assert.Equal(library.Autos[0], LoadSaveScreen.Items(library, save: false)[0]);
+    }
 }

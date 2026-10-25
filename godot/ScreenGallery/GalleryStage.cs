@@ -48,6 +48,34 @@ internal sealed class GalleryStage(Control host, GameFont font, FacePictures fac
         return state;
     }
 
+    /// <summary>The kept save <paramref name="save"/> as read, or null when there is none (<see cref="State"/>).</summary>
+    public SaveData? Data(string save) => State(save) is null ? null : Saves[save];
+
+    /// <summary>
+    /// Runs <paramref name="then"/> two frames from now, once the views are laid out (a tree's cells have their places
+    /// only after a draw), unless the entry was left meanwhile.
+    /// </summary>
+    public async void AfterLayout(Action then)
+    {
+        var tree = host.GetTree();
+        for (int i = 0; i < 2; i++)
+            await host.ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+        if (GodotObject.IsInstanceValid(host) && !host.IsQueuedForDeletion())
+            then();
+    }
+
+    /// <summary>
+    /// A left click (press and release) at <paramref name="global"/> given to <paramref name="view"/> as its input, the
+    /// mouse moved there first: the view answers it as the player's, and the system pointer stays where it is.
+    /// </summary>
+    public static void Click(Control view, Vector2 global, MouseButton button = MouseButton.Left)
+    {
+        var at = view.GetGlobalTransformWithCanvas().AffineInverse() * global;
+        view._GuiInput(new InputEventMouseMotion { Position = at, GlobalPosition = global });
+        foreach (bool pressed in new[] { true, false })
+            view._GuiInput(new InputEventMouseButton { ButtonIndex = button, Pressed = pressed, Position = at, GlobalPosition = global });
+    }
+
     /// <summary>The gallery's presenter bound to <paramref name="state"/>: the scenario's tables and texts for it.</summary>
     public GamePresenter Bound(GameState state)
     {

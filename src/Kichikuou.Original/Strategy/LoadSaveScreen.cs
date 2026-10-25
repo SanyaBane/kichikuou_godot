@@ -277,13 +277,21 @@ public sealed class LoadSaveScreen(OriginalScriptContext script, IScenarioSource
     }
 
     /// <summary>
+    /// Ours (decision 29): the saves a list of the library offers, an item each — to load, the auto-saves newest first,
+    /// then the manual saves by number; to save, a new manual save (null) first, then the manual saves to save over.
+    /// </summary>
+    public static IReadOnlyList<SaveId?> Items(ISaveLibrary library, bool save) => save
+        ? [null, .. library.Manuals.Select(id => (SaveId?)id)]
+        : [.. library.Autos.Concat(library.Manuals).Select(id => (SaveId?)id)];
+
+    /// <summary>
     /// Ours (decision 29): the load list over the library — the auto-saves newest first, then the manual saves by number;
     /// a chosen save is loaded after page 4 is read (<c>L_00a7b</c>), never made the auto-save; one that is gone lists
     /// them again.
     /// </summary>
     private async Task<Next> LibraryLoadAsync(ISaveLibrary library)
     {
-        List<SaveId?> ids = [.. library.Autos.Concat(library.Manuals).Select(id => (SaveId?)id)];
+        var ids = Items(library, save: false);
         await Script.ShowAsync(new SaveLibraryListEvent(false, ids));
         int choice = await SelectAsync([.. ids.Select(LibraryItem)]);
         await WaoAsync(0);                                              // \L_00d25
@@ -308,7 +316,7 @@ public sealed class LoadSaveScreen(OriginalScriptContext script, IScenarioSource
     /// <summary>Ours (decision 29): the save list over the library — a new manual save first, then the manual saves to save over.</summary>
     private async Task<Next> LibrarySaveAsync(ISaveLibrary library)
     {
-        List<SaveId?> ids = [null, .. library.Manuals.Select(id => (SaveId?)id)];
+        var ids = Items(library, save: true);
         await Script.ShowAsync(new SaveLibraryListEvent(true, ids));
         int choice = await SelectAsync([.. ids.Select(LibraryItem)]);
         if (choice == 0)

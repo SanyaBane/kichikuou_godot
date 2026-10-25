@@ -129,6 +129,51 @@ public static class GalleryStates
         s.Bt_EnemyParty4 = (Sys3Int)At(3);
     }
 
+    /// <summary>
+    /// <c>Sﾌﾞﾀｲ</c> building a party: its places limit (<c>Tmp0040</c>, the caller's <c>Tmp0021</c>, <c>Sﾌﾞﾀｲ.ADV:5</c>: 4 for
+    /// an attack or a defence, 1 for a search), the party picked so far (<c>Bt_PlayerParty1-4</c>, without gaps as the
+    /// file keeps them) and the unit whose details the picker shows (<c>Tmp0026</c> set, <c>Tmp0033</c>; 0: none).
+    /// </summary>
+    public static void Deployment(GameState s, int limit, IReadOnlyList<int> party, int details)
+    {
+        int At(int i) => i < party.Count ? party[i] : 0;
+        s.Tmp0040 = (Sys3Int)limit;
+        s.Bt_PlayerParty1 = (Sys3Int)At(0);
+        s.Bt_PlayerParty2 = (Sys3Int)At(1);
+        s.Bt_PlayerParty3 = (Sys3Int)At(2);
+        s.Bt_PlayerParty4 = (Sys3Int)At(3);
+        s.Tmp0026 = (Sys3Int)(details == 0 ? 0 : 1);
+        s.Tmp0033 = (Sys3Int)details;
+    }
+
+    /// <summary>The comments of <see cref="SampleLibrary"/>'s manual saves, newest first ("" none).</summary>
+    public static IReadOnlyList<string> SampleComments { get; } = ["before the attack on Oaks", "", "", "Lia's scene next week"];
+
+    /// <summary>
+    /// A library for the Save/Load screen, in memory (nothing is written to disk): <paramref name="data"/>'s game as the
+    /// newest of ten auto-saves and of four manual saves, the older ones the same game a week earlier each (made up: only
+    /// the week and the date the lists read, <c>Tmp0021</c>, differ). The auto-saves are written <paramref name="newest"/>
+    /// less a day each, the manual saves an hour after their week's auto-save (the newest is the save written last), every
+    /// other week, with <see cref="SampleComments"/>.
+    /// </summary>
+    public static MemorySaveLibrary SampleLibrary(SaveData data, DateTime newest)
+    {
+        var library = new MemorySaveLibrary();
+        SaveData WeeksBefore(int weeks, int hours)
+        {
+            var s = new GameState();
+            data.Restore(s);
+            s.Week = (Sys3Int)(s.Week.Value - weeks);
+            s.Tmp0021 = (Sys3Int)(s.Tmp0021.Value - weeks);         // the week the lists date a save by (SaveSlots.Of)
+            return SaveData.Capture(s, data.Resume).Stamped(newest.AddDays(-weeks).AddHours(hours));
+        }
+        for (int weeks = ISaveLibrary.AutoCount - 1; weeks >= 0; weeks--)
+            library.WriteAuto(WeeksBefore(weeks, 0));
+        for (int i = SampleComments.Count - 1; i >= 0; i--)
+            library.WriteManual(WeeksBefore(2 * i, 1).Commented(SampleComments[i]));
+        return library;
+    }
+
     /// <summary>The Monsters' Cave (dungeon 2), the floor ladder's dungeon: a pit of 14 floors.</summary>
     public const int Cave = 2;
 
