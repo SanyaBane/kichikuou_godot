@@ -227,6 +227,14 @@ capture's inputs. This is the last step: the board's looks from the week-18 save
    (`GalleryStage.Click`: the view's `_GuiInput`, the system pointer not moved). Entries `save-load-save`, `save-load`
    (the save written last), `-title` (no tabs), `-auto`, `-delete`, `-sweep`, `-comment` (Edit on the uncommented No. 3,
    its caret not blinking).
+   **Then the cut-in, Abandon City and the cells.** `strategy` (Barres (unit 6), `FIGT作.ADV:37`'s announcement and his
+   line `:80`) and `strategy-enemy` (Ex (commander 1), a great success, `:378` and `:392`), the record built as the
+   presenter builds it, no field under it; `enemy-attack-abandon` (the view's own `Choose(3)` asks it, so no way in was
+   needed); `province-menu-cells` and `-cells-full` (made up: the four prisoners held at once, `GalleryStates.PrisonersHeld`),
+   the items `OwnCityCommand.CellItems` and `CellsReturn`, pulled out of `CellsAsync` (the full command-slice and
+   command-phase differential runs pass). **Moved to step 4:** the exchange's counters, the info boxes, the retreat dialog
+   and the battle's commands are layers of `BattleBoardView` (`Info`, `Dialog`, `Commands`, the counters inside it) fed by
+   the presenter: alone over a black stage they would show nothing of their place, so they come as states of the board.
 4. **The battle board** from a replayed capture (§6).
 5. **The house style:** docs/ui/style.md, §7 gains "a changed screen updates its entries and the gallery is rebuilt";
    CLAUDE.md's commands list the gallery.

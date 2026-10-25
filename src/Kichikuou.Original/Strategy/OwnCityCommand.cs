@@ -167,6 +167,28 @@ public sealed class OwnCityCommand(OriginalScriptContext script) : CommandFile(s
         return items;
     }
 
+    /// <summary>
+    /// The cells' menu before its line break (<c>:732-760</c>): the prisoners held, then Look Around; Return
+    /// (<see cref="CellsReturn"/>) follows the break.
+    /// </summary>
+    public static IReadOnlyList<SceneMenuItem> CellItems(GameState state)
+    {
+        var items = new List<SceneMenuItem>();
+        if (state.F_Lelyukov_State == 3)
+            items.Add(MenuItemOf(FileName, 735));                       // Lelyukov's Cell
+        if (state.F_Ruberan_State != 0 && state.F_Ruberan_State < 4)
+            items.Add(MenuItemOf(FileName, 741));                       // Ruberan's Cell
+        if (state.F_Papaya_State == 6 || state.F_Papaya_State == 7 || state.F_Papaya_State == 8 || state.F_Papaya_State == 11)
+            items.Add(MenuItemOf(FileName, 747));                       // Papaya's Cell
+        if (state.F_Cafe_State == 10 || state.F_Cafe_State == 11)
+            items.Add(MenuItemOf(FileName, 753));                       // Lady's Cell
+        items.Add(MenuItemOf(FileName, 758));                           // Look Around
+        return items;
+    }
+
+    /// <summary>The cells' Return (<c>:762</c>), after the menu's line break.</summary>
+    public static SceneMenuItem CellsReturn { get; } = MenuItemOf(FileName, 762);
+
     /// <summary>The four commands (<c>:39-62</c>; their × items 24 lines below, <c>:63-86</c>).</summary>
     private static (int Line, bool Offered)[] Commands(GameState state) =>
     [
@@ -314,18 +336,9 @@ public sealed class OwnCityCommand(OriginalScriptContext script) : CommandFile(s
         while (true)
         {
             await WaitForReleaseAsync();
-            var items = new List<SceneMenuItem>();
-            if (State.F_Lelyukov_State == 3)
-                items.Add(MenuItem(735));                               // Lelyukov's Cell
-            if (State.F_Ruberan_State != 0 && State.F_Ruberan_State < 4)
-                items.Add(MenuItem(741));                               // Ruberan's Cell
-            if (State.F_Papaya_State == 6 || State.F_Papaya_State == 7 || State.F_Papaya_State == 8 || State.F_Papaya_State == 11)
-                items.Add(MenuItem(747));                               // Papaya's Cell
-            if (State.F_Cafe_State == 10 || State.F_Cafe_State == 11)
-                items.Add(MenuItem(753));                               // Lady's Cell
-            items.Add(MenuItem(758));                                   // Look Around
+            var items = new List<SceneMenuItem>(CellItems(State));
             await LineBreakAsync();
-            items.Add(MenuItem(762));                                   // Return
+            items.Add(CellsReturn);
             int choice = await SelectAsync(items);
             if (choice != 0)
             {

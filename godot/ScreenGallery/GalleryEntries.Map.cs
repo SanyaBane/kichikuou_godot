@@ -45,6 +45,12 @@ internal static partial class GalleryEntries
         yield return new("province-menu-own-five", Map, "Province menu: Leazas Castle (1) with two buildings", Week18,
             "Made up: the Military Academy and the Genius Hospital built (GalleryStates.CastleBuildings), so the castle has five commands.",
             g => Province(g, LeazasCastle, GalleryStates.CastleBuildings));
+        yield return new("province-menu-cells", Map, "The castle's cells", Week18,
+            "Dungeon from Leazas Castle (1): the prisoners the save holds, Look Around, Return.",
+            g => Cells(g, _ => { }));
+        yield return new("province-menu-cells-full", Map, "The castle's cells: four prisoners", Week18,
+            "Made up: Lelyukov, Ruberan, Papaya and the Lady held at once (GalleryStates.PrisonersHeld).",
+            g => Cells(g, GalleryStates.PrisonersHeld));
         yield return new("floor-ladder", Map, "Floor ladder: the first floor", Week18,
             "The Monsters' Cave (dungeon 2) on floor 1: no Ascend, its place kept empty.",
             g => Ladder(g, 1));
@@ -126,6 +132,23 @@ internal static partial class GalleryEntries
         var backdrop = g.Backdrop(s);
         var items = GalleryStates.ProvinceMenuItems(s, province);
         var menu = Opened(g.Bound(s), items, q => q.ProvinceMenu, "a city's first menu");
+        var view = g.Add(new ProvinceMenuView(g.Font, g.Faces));
+        view.Open(menu);
+        return area =>
+        {
+            GalleryStage.Fill(backdrop, area);
+            view.Place(area);
+        };
+    }
+
+    /// <summary>The castle's cells' menu over the map, as our province menu shows it after Dungeon.</summary>
+    private static Action<Rect2>? Cells(GalleryStage g, Action<GameState> edit)
+    {
+        if (g.State(Week18) is not { } s)
+            return null;
+        edit(s);
+        var backdrop = g.Backdrop(s);
+        var menu = Opened(g.Bound(s), GalleryStates.CellsMenuItems(s), q => q.ProvinceMenu, "the cells' menu");
         var view = g.Add(new ProvinceMenuView(g.Font, g.Faces));
         view.Open(menu);
         return area =>

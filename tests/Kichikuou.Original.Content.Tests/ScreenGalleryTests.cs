@@ -129,6 +129,19 @@ public class ScreenGalleryTests
         Assert.Equal([41, 47, 97, 103, 133, 502], Lines(GalleryStates.ProvinceMenuItems(s, 1)));
     }
 
+    [Fact]
+    public void The_cells_offer_the_prisoners_held_and_name_their_menu()
+    {
+        var s = new GameState { StoryStage = 1, Prov_Count = 10 };
+        s.Provs[1].Owner = 1;
+        Assert.Equal([758, 762], Lines(GalleryStates.CellsMenuItems(s)));
+        Assert.Equal(1, s.Prov_Cur.Value);
+        GalleryStates.PrisonersHeld(s);
+        var items = GalleryStates.CellsMenuItems(s);
+        Assert.Equal([735, 741, 747, 753, 758, 762], Lines(items));
+        Assert.NotNull(ProvinceMenu.For(s, items, [.. items.Select(_ => "Cell")], _ => "Dungeon"));
+    }
+
     [Theory]
     [InlineData(1, new[] { 884, 889 })]
     [InlineData(7, new[] { 866, 884, 889 })]

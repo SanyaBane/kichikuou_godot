@@ -96,6 +96,28 @@ public static class GalleryStates
     }
 
     /// <summary>
+    /// The castle's cells' menu as Dungeon opens it from Leazas Castle (1) (<c>Cｼﾊｲﾄｼ.ADV:732-762</c>, <c>Prov_Cur</c> 1): the
+    /// prisoners held, Look Around, Return.
+    /// </summary>
+    public static IReadOnlyList<SceneMenuItem> CellsMenuItems(GameState s)
+    {
+        s.Prov_Cur = 1;
+        return [.. OwnCityCommand.CellItems(s), OwnCityCommand.CellsReturn];
+    }
+
+    /// <summary>
+    /// The four prisoners in the castle's cells at once, each at a state its cell is offered in (<c>Cｼﾊｲﾄｼ.ADV:733-753</c>):
+    /// Lelyukov 3, Ruberan 1, Papaya 6, the Lady (<c>F_Cafe_State</c>) 10. Made up: the story does not hold all four together.
+    /// </summary>
+    public static void PrisonersHeld(GameState s)
+    {
+        s.F_Lelyukov_State = 3;
+        s.F_Ruberan_State = 1;
+        s.F_Papaya_State = 6;
+        s.F_Cafe_State = 10;
+    }
+
+    /// <summary>
     /// Two of the castle's buildings standing, as Construction (<c>Cﾃｲﾄ</c>) leaves them: the Military Academy and the
     /// Genius Hospital, which Leazas Castle's menu then offers as places (<c>Cｼﾊｲﾄｼ.ADV:97</c>, <c>:103</c>).
     /// </summary>

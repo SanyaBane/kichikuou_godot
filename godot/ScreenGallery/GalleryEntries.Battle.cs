@@ -26,6 +26,8 @@ internal static partial class GalleryEntries
     {
         yield return new("enemy-attack", Battle, "Enemy attack", Week18, TroopsNote,
             g => Attack(g, ninjas: false, scouted: false));
+        yield return new("enemy-attack-abandon", Battle, "Enemy attack: Abandon City asks first", Week18, TroopsNote,
+            g => Attack(g, ninjas: false, scouted: false, abandon: true));
         yield return new("enemy-attack-ninjas", Battle, "Enemy attack: the ninjas' list", Week18, TroopsNote,
             g => Attack(g, ninjas: true, scouted: false));
         yield return new("enemy-attack-scouted", Battle, "Enemy attack: the places scouted", Week18,
@@ -39,6 +41,29 @@ internal static partial class GalleryEntries
             view.Show(Report(s, attack));
             return area => view.Place(area.Position, area.Size.X / 1280f);
         });
+        yield return new("strategy", Battle, "Strategy cut-in: ours", Week18,
+            "Barres (unit 6) succeeds, his line FIGT作.ADV:80's; no field under it (the battle's is drawn by the strategy screen).",
+            g => CutIn(g, BattleSide.Player, 6, result: 1, line: 80));
+        yield return new("strategy-enemy", Battle, "Strategy cut-in: the enemy's, a great success", Week18,
+            "Ex (commander 1) succeeds greatly, his line FIGT作.ADV:392's; no field under it.",
+            g => CutIn(g, BattleSide.Enemy, 1, result: 12, line: 392));
+    }
+
+    /// <summary>
+    /// Our cut-in of a successful strategy as the presenter has it once the strategist's bubble printed: the side's
+    /// announcement (<c>FIGT作.ADV:37</c>, <c>:378</c>), the strategist's face, the result, the line at <paramref name="line"/>.
+    /// </summary>
+    private static Action<Rect2>? CutIn(GalleryStage g, BattleSide side, int record, int result, int line)
+    {
+        if (g.State(Week18) is not { } s)
+            return null;
+        bool player = side == BattleSide.Player;
+        string Flowed(int at) => BattleSpeech.Flow(GalleryStage.Text(new ScriptRef("FIGT作.ADV", at), s));
+        var strategy = new BattleStrategy(side, record, (player ? s.Units[record].FaceCg : s.Cmdrs[record].FaceCg).Value,
+            Flowed(player ? 37 : 378), result, new BattleSpeech(side, false, Flowed(line)));
+        var view = g.Add(new StrategyCutInView(g.Font, g.Faces) { Visible = true });
+        view.Show(strategy, null, 0, 0, instant: true);
+        return area => view.Place(area.Position, area.Size.X / 1280f);
     }
 
     /// <summary>The save's state with the rebels' attack on Ys (5) announced, and the attack as our screen takes it.</summary>
@@ -66,8 +91,8 @@ internal static partial class GalleryEntries
         };
     }
 
-    /// <summary>Our enemy attack screen over the map, its ninjas' list open or the scout report filled in.</summary>
-    private static Action<Rect2>? Attack(GalleryStage g, bool ninjas, bool scouted)
+    /// <summary>Our enemy attack screen over the map, its ninjas' list open, the scout report filled in or Abandon City asked.</summary>
+    private static Action<Rect2>? Attack(GalleryStage g, bool ninjas, bool scouted, bool abandon = false)
     {
         if (AttackState(g) is not var (s, attack))
             return null;
@@ -77,6 +102,11 @@ internal static partial class GalleryEntries
         var view = g.Add(new EnemyAttackView(g.Font, g.Faces));
         view.Show(attack);
         view.SetList(ninjas);
+        if (abandon)
+        {
+            _ = view.ChooseAsync();
+            view.Choose(3);                                     // the button's question, as its click asks it
+        }
         return area =>
         {
             GalleryStage.Fill(backdrop, area);
