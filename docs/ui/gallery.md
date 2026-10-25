@@ -223,7 +223,8 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
    the castle's cells (`Cｼﾊｲﾄｼ.ADV:732-763`, its items built in `CellsAsync`), for a later round. Not yet looked at by the
    owner. Later (2026-10-25): `command-menu-building` (made up: the Military Academy under way, 5 weeks left,
    `GalleryStates.AcademyUnderWay`; docs/ui/command-screen.md, "A building under way") and `command-menu-building-tip`
-   (the same with the building's tooltip shown, `StatusStripView.ShowBuildingTip`).
+   (the same with the building's tooltip shown, `StatusStripView.ShowBuildingTip`). And `map`, the map's backdrop alone
+   (no plates, nothing of ours), for mock-ups that draw a screen over the map (`tools/ui/mock_touch_panel.py`).
 3. **Screens and the battle's overlays:** deployment (the panels' overload), Save/Load (`LoadSaveScreen.Items`, a
    read-only library), the enemy attack, the scout report, the cut-in, the counters, the info boxes, the dialog and
    the commands (input forwarded).

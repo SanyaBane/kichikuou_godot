@@ -464,6 +464,35 @@ unchanged):
   the rails, another target and Melee pass to round 2, a party of four fits (`touch-rails`, `touch-target`). The retreat
   question is not answered by that run (the gallery's `retreat` only). Not yet on the tablet.
 
+## The command panel within the thumbs' reach (owner, 2026-10-25)
+
+The owner's request, after the battle's: the map's command panel easier to choose from at the screen's lower left and
+right, as the battle's rails. Today (C2, "The command panel and the province menu") it stands in the screen's middle,
+which no thumb reaches; only the Commands/Close button is at the right thumb. The reach is the battle's: about 345
+layout pixels (70 mm) round the point each hand holds its side at (y ~640).
+
+The mock-ups are `tools/ui/mock_touch_panel.py`, over the screen gallery's touch dumps (`map`, the backdrop alone, added
+for them, and `command-menu-building`'s status strip: the Military Academy under way, 5 weeks left; the command in its
+docstring); the images stay outside the repository. Round 1:
+
+- **A — two rails in the sides' lower halves, as the battle's.** Left (x 4-238, y 466-796): THIS WEEK, the week's
+  commands as rows 214×46 (43 × 9 mm) from the foot up, Construction lowest. Right (x 1042-1276, y 352-796): Turn END at
+  the top (214×62), furthest from the resting thumb as the battle's Retreat; the other items from the foot up
+  (→ Leazas Castle lowest); Close at the foot, where the Commands button stands. The map's middle stays open; a tap on it
+  closes as now. A building's weeks go on the tag's chip (the rail has no room for "5 weeks left"). The thieves' week:
+  two and three rows.
+- **B — a bar along the foot** (y 680-796): the week's commands and → Leazas Castle at the left thumb, the other items
+  and Close at the right, cells 164×46 in two rows of three; Turn END in the middle, where no thumb reaches — a hand let
+  go to end the week, on purpose. The third columns lie at the reach's edge or past it, and the bar covers the map's foot.
+- **C — a fan at each lower corner**: the rows' inner ends along the thumb's arc (rows 44 high, 39-67 mm long), on a
+  see-through lacquer quarter; Turn END the right fan's top, Close its hub in the corner. The rows shorten as they rise,
+  so the longest names have the least room.
+
+**Recommendation: A** — the battle's language (rails, from the foot up, the risky button furthest), every row inside
+the arcs, the map's middle open; B puts its outer columns past the reach, C is the most playful but its rows' lengths
+depend on their height. The province menu (P1, its commands in the middle too) could follow the same way, the province's
+card left and its commands on the right rail: a question for the owner.
+
 ## Phones (put off)
 
 Put off by the owner (2026-10-24). What is ready for them: the measurements above, mock-ups B1, B3 (the battle),

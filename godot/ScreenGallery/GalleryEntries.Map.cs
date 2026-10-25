@@ -27,6 +27,9 @@ internal static partial class GalleryEntries
 
     private static IEnumerable<GalleryEntry> MapScreens()
     {
+        yield return new("map", Map, "Map: the backdrop alone", Week18,
+            "The map wait's picture the map's entries stand on, nothing of ours over it: for mock-ups (tools/ui/mock_*.py).",
+            Backdrop);
         yield return new("map-markers", Map, "Map: the plates", Week18, "The dimmed plates shown (Debug → Hide Dimmed Map Names off).",
             g => Markers(g, hideDimmed: false, hover: null));
         yield return new("map-markers-hover", Map, "Map: a province hovered", Week18, "Leazas Castle (1) hovered, its card beside its plate.",
@@ -114,6 +117,15 @@ internal static partial class GalleryEntries
         {
             p.CloseMenu();
         }
+    }
+
+    /// <summary>The map alone, as under the map's other entries.</summary>
+    private static Action<Rect2>? Backdrop(GalleryStage g)
+    {
+        if (g.State(Week18) is not { } s)
+            return null;
+        var backdrop = g.Backdrop(s);
+        return area => GalleryStage.Fill(backdrop, area);
     }
 
     /// <summary>
