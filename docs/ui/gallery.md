@@ -193,6 +193,15 @@ capture's inputs. This is the last step: the board's looks from the week-18 save
    111 speech: the selection window lies over 111, so the menu covers the question — what a scene asking in 111 would
    show; the original's box does the same); `message-log` (`GalleryStates.LogSample`: every kind of page, a choice,
    more lines than the paper's 18 rows).
+   **Then the touch controls and the options** (`GalleryEntries.Controls.cs`): `touch-skip`, `touch-skip-on` (the drawer
+   at a 121 key wait), `touch-skip-docked` (beside a 131 bar, the window drawn smaller), `touch-commands` and
+   `touch-commands-close` (the map's button, and its Close over the command panel), `options-messages`, `-display`,
+   `-battle`, `-game` (with a `MessageSkip` of its own that records nothing; the window writes `settings.cfg` only when
+   a control is used). And `province-menu-own-five` (made up: two buildings standing, `GalleryStates.CastleBuildings`,
+   so Leazas Castle (1) has the five commands touch.md asks about). **Step 2 is done** (2026-10-25): 45 entries, the
+   Lacquer and Touch passes dump them all, two dumps of the same build all "same". Left out: the dungeon's own menu of
+   the castle's cells (`Cｼﾊｲﾄｼ.ADV:732-763`, its items built in `CellsAsync`), for a later round. Not yet looked at by the
+   owner.
 3. **Screens and the battle's overlays:** deployment (the panels' overload), Save/Load (`LoadSaveScreen.Items`, a
    read-only library), the enemy attack, the scout report, the cut-in, the counters, the info boxes, the dialog and
    the commands (input forwarded).

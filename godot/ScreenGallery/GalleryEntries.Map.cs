@@ -42,6 +42,9 @@ internal static partial class GalleryEntries
             g => Province(g, Oaks));
         yield return new("province-menu-own", Map, "Province menu: our own, Leazas Castle (1)", Week18, "",
             g => Province(g, LeazasCastle));
+        yield return new("province-menu-own-five", Map, "Province menu: Leazas Castle (1) with two buildings", Week18,
+            "Made up: the Military Academy and the Genius Hospital built (GalleryStates.CastleBuildings), so the castle has five commands.",
+            g => Province(g, LeazasCastle, GalleryStates.CastleBuildings));
         yield return new("floor-ladder", Map, "Floor ladder: the first floor", Week18,
             "The Monsters' Cave (dungeon 2) on floor 1: no Ascend, its place kept empty.",
             g => Ladder(g, 1));
@@ -115,10 +118,11 @@ internal static partial class GalleryEntries
     }
 
     /// <summary>Our province menu for <paramref name="province"/> over the map, as a click on it opens it.</summary>
-    private static Action<Rect2>? Province(GalleryStage g, int province)
+    private static Action<Rect2>? Province(GalleryStage g, int province, Action<GameState>? edit = null)
     {
         if (g.State(Week18) is not { } s)
             return null;
+        edit?.Invoke(s);
         var backdrop = g.Backdrop(s);
         var items = GalleryStates.ProvinceMenuItems(s, province);
         var menu = Opened(g.Bound(s), items, q => q.ProvinceMenu, "a city's first menu");

@@ -125,6 +125,8 @@ public class ScreenGalleryTests
         Assert.Equal(6, s.Prov_Cur.Value);
         Assert.Equal([41, 47, 133, 502], Lines(GalleryStates.ProvinceMenuItems(s, 1)));
         Assert.Equal((1, 16), (s.Prov_Cur.Value, s.Unit_Cur.Value));
+        GalleryStates.CastleBuildings(s);
+        Assert.Equal([41, 47, 97, 103, 133, 502], Lines(GalleryStates.ProvinceMenuItems(s, 1)));
     }
 
     [Theory]

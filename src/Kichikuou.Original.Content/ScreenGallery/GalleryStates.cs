@@ -95,6 +95,16 @@ public static class GalleryStates
         return s.Provs[province].Owner.Value == 1 ? OwnCityCommand.MenuItems(s) : EnemyCityCommand.MenuItems(s);
     }
 
+    /// <summary>
+    /// Two of the castle's buildings standing, as Construction (<c>Cﾃｲﾄ</c>) leaves them: the Military Academy and the
+    /// Genius Hospital, which Leazas Castle's menu then offers as places (<c>Cｼﾊｲﾄｼ.ADV:97</c>, <c>:103</c>).
+    /// </summary>
+    public static void CastleBuildings(GameState s)
+    {
+        s.Bld_GirlsAcademy = 1;
+        s.Bld_Hospital = 1;
+    }
+
     /// <summary>The Monsters' Cave (dungeon 2), the floor ladder's dungeon: a pit of 14 floors.</summary>
     public const int Cave = 2;
 
