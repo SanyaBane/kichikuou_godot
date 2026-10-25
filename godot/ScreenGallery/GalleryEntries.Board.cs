@@ -1,9 +1,11 @@
 using Godot;
 using Kichikuou.Game.Battles;
+using Kichikuou.Game.Strategy;
 using Kichikuou.Original.Combat;
 using Kichikuou.Original.Content.Battles;
 using Kichikuou.Original.Content.Strategy;
 using Kichikuou.Original.Script;
+using Kichikuou.Original.State;
 
 namespace Kichikuou.Game.ScreenGallery;
 
@@ -73,6 +75,19 @@ internal static partial class GalleryEntries
     /// <summary>A player's turn: <c>FIGT_SEL</c> with our battle screen up.</summary>
     private static bool Turn(GamePresenter p, BattleMoment m) => m.Kind == MomentKind.Commands && p.BattleSceneShows;
 
+    /// <summary>
+    /// The target the touch mode preselects on a turn, as <c>GameScreen.TouchTarget</c> does at a battle's first turn (no
+    /// target remembered yet).
+    /// </summary>
+    private static BattlePlace? TouchTarget(GameState s, BattleCommands model)
+    {
+        var enemies = Enumerable.Range(1, 4).Select(n => BattleBoard.Record(s, new BattlePlace(BattleSide.Enemy, n))).ToList();
+        return new TouchTargets().Preselect(BattleBoard.Record(s, model.Acting), enemies,
+            n => model.Banners(new BattlePlace(BattleSide.Enemy, n)).Count > 0) is { } slot
+            ? new BattlePlace(BattleSide.Enemy, slot)
+            : null;
+    }
+
     /// <summary>A press and a release at <paramref name="at"/> (layout pixels) given to the commands as the pointer's.</summary>
     private static void Click(BattleCommandLayer commands, Vector2 at, bool right)
     {
@@ -97,7 +112,8 @@ internal static partial class GalleryEntries
         if (then is not null && moment.Menu is { } menu)
         {
             p.Scene.Choosing = true;
-            board.Commands.Begin(new BattleCommands(menu), s, p.Battle.Text);
+            var model = new BattleCommands(menu);
+            board.Commands.Begin(model, s, p.Battle.Text, TouchMode.On ? TouchTarget(s, model) : null);
         }
         if (dialog)
             board.Dialog.Begin(BattleDialog.For(Original.Combat.Battle.RetreatMenu)!, p.Battle.Text);
