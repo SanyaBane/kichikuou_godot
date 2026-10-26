@@ -3,8 +3,8 @@
 Copies the game's saves from the PC to the Android device (-ToDevice) or back (-FromDevice), over adb.
 
 .DESCRIPTION
-The saves are files of one format on both (docs/backlog.md, "Android"): the auto-saves auto-NNNN.ksav, the manual
-saves save-NNNN.ksav, the persistent page persistent.ksav (the gallery) and the seen messages msgskip.txt. The
+The saves are files of one format on both (docs/backlog.md, "Android"): the auto-saves auto-NNNN.ksav (a turn's start)
+and end-NNNN.ksav (its Turn END), the manual saves save-NNNN.ksav, the persistent page persistent.ksav (the gallery) and the seen messages msgskip.txt. The
 Android build keeps them in the app's own external folder (GameData.AndroidSaveFolder); the PC's are the development
 runs' (%APPDATA%\Godot\app_userdata\Kichikuou\saves), -Release the release build's (%APPDATA%\KichikuouGodot\saves),
 or -PcSaves names a folder.

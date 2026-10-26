@@ -632,8 +632,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             Screens.ToTitle(this);
     }
 
-    /// <summary>The files of a save folder: the engine's slots (a kept folder) and the save library's (decision 29).</summary>
-    private static readonly string[] SaveFilePatterns = ["slot*.ksav", "auto-*.ksav", "save-*.ksav", "persistent.ksav"];
+    /// <summary>
+    /// The files of a save folder: the engine's slots (a kept folder) and the save library's (decision 29), the Turn END
+    /// auto-saves included (decision 31: left behind, the newest of them was what <c>--load</c> loaded).
+    /// </summary>
+    private static readonly string[] SaveFilePatterns = ["slot*.ksav", "auto-*.ksav", "end-*.ksav", "save-*.ksav", "persistent.ksav"];
 
     /// <summary>
     /// <see cref="GameOptions.SlotsFrom"/>: the saves of <paramref name="from"/> — a kept folder's slots, which the library
