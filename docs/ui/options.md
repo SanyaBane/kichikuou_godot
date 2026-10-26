@@ -109,3 +109,14 @@ screen to try — and, the owner liking it, one palette for every screen of ours
   theme and cards, the order strip's chips, the ledger's theme and rows, the comment field of Save/Load).
 - **Left in their own colours** (on purpose): the command and province tags, the red buttons and their text, the
   battle's banners, the defence ribbon's blues, the read-text colours, the map's plates.
+
+## The unit tables' row height (2026-10-26)
+
+Owner's request: the height of the Subordinates and deployment ledgers' rows in Options, on the PC and on Android alike
+(docs/ui/unit-ledger.md §7-8, mock-up O2). The Display tab holds, under Thousands, a section **Unit tables: row height**
+with five tiles, 24, 30, 36, 42 and 48 pixels, each two ledger rows at its height as the tables draw them (Rance's gilt
+row with his seal, Leila's plain), the chosen one framed in vermilion, the mode's default marked "— default" —
+`LedgerRowsChoice`. The PC and the touch mode keep their own, `[display] ledger_row_height` (24 by default, the text's
+own row) and `ledger_row_height_touch` (36) in `settings.cfg`; Defaults sets the mode's own. The tables read it each
+frame, so a change shows at once on a table open under the window. A tile's target is its whole column, the tallest
+tile's height, a finger's on the tablet.

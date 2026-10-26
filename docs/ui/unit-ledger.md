@@ -182,7 +182,7 @@ ten ledgers side by side.
 in view, scrolled by the finger's drag; E2 if fourteen rows feel too few.
 
 **The owner chose E2** (2026-10-26), built: in the touch mode both ledgers' rows are 36 pixels
-(`DeploymentTableView.TouchRowHeight`, each item's minimum height; the tree adds its separation twice a row), the text,
+(each item's minimum height in `DeploymentTableView`; the tree adds its separation twice a row; since §8 Option's), the text,
 the header and the PC's 24-pixel rows as before (the screen gallery's Lacquer pass identical to the build before).
 The seals, the chosen row's diamond, the talk bubbles and the troops' figures with their bar keep the text's size,
 centred in the row (`Content`); the chosen row's bar runs along the whole row and Refill's chip grows with it (a
@@ -208,3 +208,13 @@ passes), each on the PC (24 chosen) and on the tablet (36):
 **The agent's recommendation:** O2 — each height is seen before it is chosen, and a tile (176 pixels wide) is a
 finger's target on the tablet where a slider's knob is 18 pixels (3.7 mm); five heights are enough, the slider's
 steps of 2 pixels too fine to tell apart.
+
+**The owner chose O2** (2026-10-26), built: Option → Display → **Unit tables: row height**, five tiles
+(`OptionsView.RowTile`), the choice `godot/Strategy/LedgerRowsChoice` — the PC's `[display] ledger_row_height` (24 by
+default) and the touch mode's `ledger_row_height_touch` (36), Defaults the mode's own; docs/ui/options.md, "The unit
+tables' row height". `DeploymentTableView.Place` reads it each frame, so a table open under the window takes a change
+at once; above the text's own 24 its rows are taller as in §7, at 24 they are the text's own (the PC's look unchanged).
+Checked: the screen gallery's `options-display` in the Lacquer and touch passes (24 and 36 chosen, as O2 drew them), the
+ledgers at the defaults (the PC's dumps identical to the build before), and with 42 saved for the PC (written into
+`settings.cfg` for the run and put back): the PC's rows 42, the touch pass's still 36. Not tried by hand in a window
+(a tile's click, the change under the window), nor on the tablet.

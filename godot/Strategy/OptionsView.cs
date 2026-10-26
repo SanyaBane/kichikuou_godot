@@ -12,8 +12,8 @@ namespace Kichikuou.Game.Strategy;
 /// the game, which waits while it is open. A paper sheet in a lacquer frame with paper tabs across its top — Messages
 /// (the text speed with the game's 121 typing as its preview, the message skip's switches, Forget, the mouse, the
 /// already-read text's colour, <see cref="ReadTextChoice"/>, docs/ui/read-text.md), Display
-/// (the font, the palette), Battle (our battle screen's effects and timings, <see cref="BattleScreenSettings"/>, the order
-/// strip as their preview), Game (the game folder, "New scenes first", <see cref="NewScenesChoice"/>). Every change applies
+/// (the font, the palette, the thousands, the unit tables' row height, <see cref="LedgerRowsChoice"/>), Battle (our
+/// battle screen's effects and timings, <see cref="BattleScreenSettings"/>, the order strip as their preview), Game (the game folder, "New scenes first", <see cref="NewScenesChoice"/>). Every change applies
 /// and is kept at once; Defaults resets the tab shown (not the game folder); Close, Esc or a right click shut it. Forget and the game folder ask first, in a box over the sheet. Laid out
 /// in the 1280×800 screen's pixels, scaled with the picture.
 /// </summary>
@@ -48,6 +48,7 @@ internal sealed partial class OptionsView : Control
     private readonly FontVariation _cinzel = Lacquer.Cinzel(600);
     private readonly FontVariation _cinzelBold = Lacquer.Cinzel(800);
     private FontFile _gothic;
+    private readonly FontVariation _sealFont = Lacquer.Cinzel(700);    // the row tiles' party seal, as the tables'
     private readonly FontFile _bizSample = DeploymentTableView.LoadFont(GameFont.BizUdGothic);
     private readonly FontFile? _msSample = GodotGlyphRenderer.MsGothicInstalled ? DeploymentTableView.LoadFont(GameFont.MsGothic) : null;
     private readonly MessageSkip _skip;
@@ -196,6 +197,9 @@ internal sealed partial class OptionsView : Control
         ThousandsChosen?.Invoke();
     }
 
+    /// <summary>The ledgers' row height: kept at once, the tables open take it at their next frame.</summary>
+    private static void SetLedgerRows(int height) => LedgerRowsChoice.Chosen = height;
+
     private void SetTextSpeed(int step)
     {
         TextSpeedChoice.Step = step;
@@ -234,6 +238,7 @@ internal sealed partial class OptionsView : Control
                 SetFont(GameFont.BizUdGothic);
                 SetPalette(UiPalette.Lacquer);
                 SetThousands(ThousandsSeparator.Comma);
+                SetLedgerRows(LedgerRowsChoice.Default);     // the PC's or the touch mode's own
                 break;
             case Tab.Battle:
                 foreach (var setting in BattleScreenSettings.All)
@@ -500,6 +505,55 @@ internal sealed partial class OptionsView : Control
             Radio("thousands-" + separator, x + i * (w / ThousandsChoice.All.Length), y + 38, ThousandsChoice.Chosen == separator,
                 ThousandsChoice.Sample(separator), _gothic, () => SetThousands(separator));
         }
+        y += 104;
+        SectionHead(x, y, "Unit tables: row height", w);
+        DrawString(_gothic, new Vector2(x, y + 14), "Subordinates and deployment. Each device keeps its own.",
+            HorizontalAlignment.Right, w, 13, Ui.InkQuiet);
+        int count = LedgerRowsChoice.Heights.Length;
+        float tile = (w - (count - 1) * RowTileGap) / count;
+        for (int i = 0; i < count; i++)
+            RowTile(x + i * (tile + RowTileGap), y + 58, tile, LedgerRowsChoice.Heights[i]);
+    }
+
+    private const float RowTileGap = 17;
+
+    /// <summary>
+    /// A row height's tile (the owner's O2, docs/ui/unit-ledger.md §8): two ledger rows <paramref name="height"/> tall as the
+    /// tables draw them in their palette — Rance's gilt with his party's seal, Leila's plain —, framed in vermilion when
+    /// chosen, its height over it with the mode's default marked. The whole column is its target, the tallest tile's height.
+    /// </summary>
+    private void RowTile(float x, float y, float w, int height)
+    {
+        string id = $"rows-{height}";
+        var table = UiPalettes.For(UiPart.Screens);
+        bool on = LedgerRowsChoice.Chosen == height, lit = _hover == id;
+        var rect = new Rect2(x, y, w, 2 * height + 2);
+        DrawRect(rect, table.Paper);
+        (string Number, string Name, string Cost, int Place)[] rows = [("1", "Rance", "300K", 1), ("5", "Leila", "1,200K", 0)];
+        for (int i = 0; i < rows.Length; i++)
+        {
+            var row = new Rect2(x + 1, y + 1 + i * height, w - 2, height);
+            float mid = row.GetCenter().Y;
+            if (rows[i].Place > 0)
+            {
+                DrawRect(row, table.PartyRow);
+                table.DrawSeal(this, _sealFont, new Rect2(x + 7, mid - 9.5f, 19, 19), rows[i].Place);
+            }
+            DrawLine(new Vector2(row.Position.X, row.End.Y - 0.5f), new Vector2(row.End.X, row.End.Y - 0.5f), table.PaperRule, Line(1));
+            float baseline = mid + (_gothic.GetAscent(17) - _gothic.GetDescent(17)) / 2;
+            DrawString(_gothic, new Vector2(x, baseline), rows[i].Number, HorizontalAlignment.Right, 58, 17, table.Ink);
+            DrawString(_gothic, new Vector2(x + 64, baseline), rows[i].Name, fontSize: 17, modulate: table.Ink);
+            DrawString(_gothic, new Vector2(x, baseline), rows[i].Cost, HorizontalAlignment.Right, w - 9, 17, table.Ink);
+        }
+        DrawRect(rect, Ui.InkGrey, false, Line(1));
+        if (on)
+            DrawRect(rect.Grow(3), Ui.Vermilion, false, Line(3));
+        else if (lit)
+            DrawRect(rect.Grow(2), Ui.HeadInk, false, Line(2));
+        string label = height == LedgerRowsChoice.Default ? $"{height} px — default" : $"{height} px";
+        DrawString(_gothic, new Vector2(x, y - 10), label, HorizontalAlignment.Center, w, 14, on ? Ui.Ink : Ui.InkQuiet);
+        int tallest = LedgerRowsChoice.Heights.Max();
+        _spots.Add(new Spot(id, new Rect2(x - 4, y - 28, w + 8, 2 * tallest + 34), () => { SetLedgerRows(height); QueueRedraw(); }));
     }
 
     private void DrawBattle()

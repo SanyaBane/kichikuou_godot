@@ -410,8 +410,9 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         _overlay.Size = new Vector2(rect.Size.X, OverlayHeight);
         int size = Math.Max(8, (int)Math.Round(_textSize * pixelsPerScript));
         int separation = (int)Math.Round(1.5f * pixelsPerScript);              // the ledger's rows breathe
-        int minimum = TouchMode.On                                             // the tree adds the separation twice a row
-            ? Math.Max(0, (int)Math.Round(TouchRowHeight * pixelsPerScript / 2) - 2 * separation) : 0;
+        int row = LedgerRowsChoice.Chosen;                                     // read each frame: Option's change shows at once
+        int minimum = row > LedgerRowsChoice.TextRow                           // the tree adds the separation twice a row
+            ? Math.Max(0, (int)Math.Round(row * pixelsPerScript / 2) - 2 * separation) : 0;
         if (size == _fontSize && minimum == _rowMinimum)
             return;
         (_fontSize, _rowMinimum) = (size, minimum);
@@ -423,17 +424,14 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     }
 
     /// <summary>
-    /// The rows' height in the touch mode, in the 1280×800 screen's pixels: 7.3 mm on the owner's tablet, where the
-    /// text's own 24 were 4.9 (docs/ui/unit-ledger.md §7, the owner's E2). The text keeps its size.
+    /// A row's minimum height in window pixels without the separations: Option's height (<see cref="LedgerRowsChoice"/>,
+    /// docs/ui/unit-ledger.md §7-8), 0 at the text's own. The text keeps its size.
     /// </summary>
-    public const int TouchRowHeight = 36;
-
-    /// <summary>A row's minimum height in window pixels without the separations (the touch mode's; 0 on the PC).</summary>
     private int _rowMinimum;
 
     /// <summary>
     /// The part of <paramref name="cell"/> a row of the text's own height would have: the seals, the marks and the
-    /// troops' figures stay at the text's size, centred in a touch mode's taller row.
+    /// troops' figures stay at the text's size, centred in a taller row.
     /// </summary>
     private Rect2 Content(Rect2 cell)
     {
@@ -762,7 +760,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     private void DrawRefill(Rect2 cell, string text, int unit)
     {
         bool lit = unit == _refillHovered || unit == AskedRefill;
-        float inset = _rowMinimum > 0 ? cell.Size.Y / 12 : 2;             // a touch row's chip grows with it: a finger's button
+        float inset = _rowMinimum > 0 ? cell.Size.Y / 12 : 2;             // a taller row's chip grows with it: a finger's button
         var chip = new Rect2(cell.Position.X + 3, cell.Position.Y + inset, cell.Size.X - 6, cell.Size.Y - 2 * inset);
         float corner = Math.Max(2, chip.Size.Y * 0.18f);
         var box = new StyleBoxFlat
@@ -785,7 +783,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     /// </summary>
     private void DrawTroops(Rect2 row, string text, int troops, int max, bool grey)
     {
-        var cell = Content(row);                                    // the bar right under the figures in a touch row too
+        var cell = Content(row);                                    // the bar right under the figures in a taller row too
         float h = Math.Max(2, cell.Size.Y * 0.11f);
         float baseline = cell.GetCenter().Y + (_font.GetAscent(_fontSize) - _font.GetDescent(_fontSize)) / 2 - h / 2;
         DrawString(_font, new Vector2(cell.Position.X + 2, baseline), text, HorizontalAlignment.Left, cell.Size.X - 2, _fontSize,
