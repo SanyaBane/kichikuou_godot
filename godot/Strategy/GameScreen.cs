@@ -2739,7 +2739,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         InterruptPointers();
         _presenter.Flush();
         if (EnemyAttackAnswers(menu))
+        {
+            _skip.OnMenu();                                             // our screen is FIGT_B's menu: it stops the skip as the menu does
             return await EnemyAttackChooseAsync(menu);
+        }
         Task? clicking = null;
         if (_options.Auto)
         {

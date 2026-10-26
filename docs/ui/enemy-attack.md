@@ -127,6 +127,9 @@ seen. Our interface only; the rules run as before.
   (Kanami spent: "0 of 1 free"), Abandon City's question answered Keep, Intercept and the deployment table, with no
   key wait of the hidden lines left for the player. Not yet looked at in a run: a refusal (Gandhi, Satella, Meglass),
   Abandon City answered Abandon, Maris's comment past 5000 troops, several ninjas.
+- **MsgSkip** (owner, 2026-10-26): the screen stops the message skip as `FIGT_B`'s menu does (`STOP_ON_MENU`;
+  `GameScreen.ChooseAsync` calls `MessageSkip.OnMenu` before the screen answers). Built first it let the skip run on
+  through the choice into the deployment and the battle, where the original interface stops it.
 
 ## 7. Back from the deployment screen (owner, 2026-10-24)
 

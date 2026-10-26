@@ -230,7 +230,7 @@ internal sealed partial class OptionsView : Control
             case Tab.Messages:
                 SetTextSpeed(TextSpeedChoice.DefaultStep);
                 SetReadColour(ReadTextChoice.DefaultIndex);
-                _skip.SkipUnseen = false;
+                _skip.SkipUnseen = true;
                 _skip.FastFades = true;
                 EngineState.MouseMovement = true;
                 break;

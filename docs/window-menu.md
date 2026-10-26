@@ -146,9 +146,12 @@ web build (seen only) by an option.
 - **MsgSkip**: `Engine/Script/MessageSkip` (the state and the seen set) and `GameScreen`'s waits.
   The skippable waits — `IK 0` / `A` and `Y 3` — return 0 after one frame while it is on; input
   held then turns it off and is returned (`STOP_ON_CLICK`); a `]` menu (`SelectAsync`, the
-  battle's `ChooseAsync`) turns it off (`STOP_ON_MENU`); every `MessageEvent` /
+  battle's `ChooseAsync`, our enemy-attack screen over `FIGT_B`'s menu included) turns it off (`STOP_ON_MENU`); the
+  menus our interface answers unseen (our panel's Load/Save and Construction rows, a Subordinates order) do not, and
+  neither do the map's, the pickers' and `FIGT_SEL`'s pointer loops; every `MessageEvent` /
   `ValueMessageEvent` marks its `ScriptRef` seen. **Option → Messages → Skip unseen text** (checked by
-  default, `MSGSKIP_SKIP_UNSEEN`; for the launch, not saved): unseen messages are skipped too, as
+  default, `MSGSKIP_SKIP_UNSEEN`, and by the tab's Defaults — which had unchecked it until 2026-10-26; for the launch,
+  not saved): unseen messages are skipped too, as
   the owner's xsystem35 does; unchecked, an unseen message turns the skip off and greys it out
   (`STOP_ON_UNSEEN`) until a seen one, as the web build does. **Option → Messages → MsgSkip speeds up
   fades** (ours, owner's request 2026-10-10; checked by default, for the launch, not saved):
