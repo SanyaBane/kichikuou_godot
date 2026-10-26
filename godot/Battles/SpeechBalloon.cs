@@ -81,7 +81,7 @@ internal sealed partial class SpeechBalloon : Control
         var ink = DrawBalloon(this, box, left, s, speech.Thought);
 
         var origin = box.Position + new Vector2(Pad * s, Pad * s - 4 * s + _bold.GetAscent(size));
-        DrawMultilineString(_bold, origin, speech.Text, HorizontalAlignment.Left, textWidth, size, -1, ink, Breaks);
+        DrawMultilineString(_bold, origin, speech.Text, HorizontalAlignment.Left, textWidth, size, -1, InkOf(speech, ink), Breaks);
 
         float bob = BobPixels * s * Mathf.Sin((float)(UiClock.Msec / 1000.0 * Mathf.Tau / BobSeconds));
         var tip = new Vector2(box.End.X - 26 * s, box.End.Y - 17 * s + bob);
@@ -92,6 +92,19 @@ internal sealed partial class SpeechBalloon : Control
             tip,
         ], Ui.HoverLine);
     }
+
+    /// <summary>
+    /// The ink of <paramref name="speech"/>'s line on its balloon, <paramref name="plain"/> the balloon's own: when the player read
+    /// it before, the already-read text's colour (Option → Messages; docs/ui/read-text.md, §7, the owner's B2) — on the white
+    /// balloon darkened until it reads, on a thought's dark one as it is.
+    /// </summary>
+    internal static Color InkOf(BattleSpeech speech, Color plain) =>
+        !speech.Read || ReadTextChoice.Colour is not { } colour ? plain
+        : speech.Thought ? colour
+        : ReadTextChoice.OnPaper(colour, Paper);
+
+    /// <summary>The talk balloon's paper as it shows: <see cref="TalkFill"/> over the scene.</summary>
+    private static readonly Color Paper = Color.Color8(245, 245, 245);
 
     /// <summary>
     /// The balloon's shape on <paramref name="canvas"/> at <paramref name="box"/> (window pixels, <paramref name="s"/> to a

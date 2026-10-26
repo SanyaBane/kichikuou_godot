@@ -191,6 +191,37 @@ public class BattleWindowsTests
         Assert.Empty(presenter.Windows);
     }
 
+    /// <summary>
+    /// A bubble's line is read when every message printed into it was read before, as a message window's text (owner,
+    /// 2026-10-26; docs/ui/read-text.md, §7): one new message keeps the whole line unread, a message with numbers is never
+    /// read, and the key wait's erase starts the next line afresh.
+    /// </summary>
+    [ScenarioFact]
+    public void A_bubbles_line_is_read_when_its_every_message_was()
+    {
+        var presenter = new BattlePresenter(Texts.Value, Cgs.Value, new BoxGlyphs());
+        presenter.Start(new GameState());
+        ScriptRef read = new("FIGT_M.ADV", 63), unread = new("FIGT_M.ADV", 197);
+        presenter.ReadBefore = at => at == read;
+        presenter.Show(new WindowEvent(151, 0));
+        presenter.Show(new MessageEvent(read));
+        Assert.True(presenter.Speech!.Read);
+        presenter.Show(new MessageEvent(unread));
+        Assert.False(presenter.Speech!.Read);
+
+        presenter.Show(new WindowEvent(11, 0));
+        presenter.AfterKey();                                               // op 11 erased the text
+        presenter.Show(new MessageEvent(read));
+        Assert.True(presenter.Speech!.Read);
+        presenter.Show(new ValueMessageEvent(read, [(Sys3Int)3]));
+        Assert.False(presenter.Speech!.Read);
+        presenter.Show(new WindowEvent(10, 0));
+
+        presenter.Show(new WindowEvent(142, 0));                            // a thought the same
+        presenter.Show(new MessageEvent(read));
+        Assert.Equal(new BattleSpeech(BattleSide.Player, true, "Sir Ex... Please forgive me...", Read: true), presenter.Speech);
+    }
+
     [Theory]
     [InlineData("Sir Ex...\nPlease forgive\nme...", "Sir Ex... Please forgive me...")]
     [InlineData(" Surrender! \n\n", "Surrender!")]

@@ -278,7 +278,8 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
    the cards"; in the PC pass the turn as `battle-turn` with that order), `banners-E1` (the pointer on the first enemy card),
    `retreat` (made up: the dialog over that turn, its menu `Battle.RetreatMenu`, pulled out of `PlayerRetreatAsync`),
    `exchange-counters` (the first exchange's result held), `battle-speech` and `battle-speech-enemy` (the first line in
-   our speech balloon of a player unit, of an enemy commander; 2026-10-26 — the capture has no thought), `info-panel` (a fall), `info-results` and `info-level-up`
+   our speech balloon of a player unit, of an enemy commander; 2026-10-26 — the capture has no thought) and their
+   `-read` (made up: every message read before, docs/ui/read-text.md §7), `info-panel` (a fall), `info-results` and `info-level-up`
    (the tally and Rance's level-up page); `info-defence` on `20261010-213435-25-FIGT_B`, a defence with ten (the attack
    has none). The board is followed every frame as `GameScreen.UpdateBattleScreen` follows it, slides instant. Found on
    the way: `ExchangeCountersView.Layout` sized its digits' picture before their port, so a single layout left the

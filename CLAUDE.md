@@ -214,7 +214,8 @@ read before (the message skip's seen record, `msgskip.txt` in the save folder) s
 Option → Messages, Salmon by default — docs/ui/read-text.md (mock-up round R, 2: whole windows), built
 (`TextBox.ReadBefore`, `GamePresenter.ReadBefore`, `MessageWindow.Read`, `godot/Strategy/ReadTextChoice`); system text —
 the narration outside the event scenes but the story told there — never takes it (owner, 2026-10-26; its §6,
-`Original.Content/Strategy/SystemText`).
+`Original.Content/Strategy/SystemText`); the battle's speech balloons take it too, darkened on the white balloon (owner,
+2026-10-26, mock-up B2; its §7: `BattleSpeech.Read`, `SpeechBalloon.InkOf`, `ReadTextChoice.OnPaper`).
 Then (owner, 2026-10-24) our own screen for an enemy attack (`FIGT_B`'s announcement and its Intercept / Ninja Scout /
 Abandon City menus), the refusals and Ex's scenes kept seen: the survey and mock-up round 1 (A a card over the map, B a
 screen of its own, C the original's scene with our menu) are docs/ui/enemy-attack.md (`tools/ui/mock_enemy_attack.py`);

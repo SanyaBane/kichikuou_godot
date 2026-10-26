@@ -663,11 +663,12 @@ public sealed partial class BattlePresenter
 
     /// <summary>
     /// The line the open speech bubble holds (null when none is open or it holds nothing yet): what was printed
-    /// into it since it opened or its last key wait. Our screen shows it in its own dialogue panel and leaves the
-    /// bubble out of the windows' layer (<see cref="Windows"/>); the stage still draws the original's.
+    /// into it since it opened or its last key wait, read before when the bubble's text box says so (the box and the line
+    /// are cleared together). Our screen shows it in its own dialogue panel and leaves the bubble out of the windows'
+    /// layer (<see cref="Windows"/>); the stage still draws the original's.
     /// </summary>
     public BattleSpeech? Speech => SpeechOpen && BattleSpeech.Flow(_speech.ToString()) is { Length: > 0 } text
-        ? new BattleSpeech(_winType < 50 ? BattleSide.Player : BattleSide.Enemy, _winType is 42 or 52, text)
+        ? new BattleSpeech(_winType < 50 ? BattleSide.Player : BattleSide.Enemy, _winType is 42 or 52, text, _windowText.ReadBefore)
         : null;
 
     /// <summary>

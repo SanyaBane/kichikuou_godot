@@ -85,6 +85,12 @@ internal static partial class GalleryEntries
             g => Board(g, (p, m) => m.Kind == MomentKind.Key && p.Battle.Speech is { Side: BattleSide.Player, Thought: false }));
         yield return new("battle-speech-enemy", Battle, "Battle: an enemy's line", null, CaptureNote + " The first line an enemy commander says.",
             g => Board(g, (p, m) => m.Kind == MomentKind.Key && p.Battle.Speech is { Side: BattleSide.Enemy, Thought: false }));
+        yield return new("battle-speech-read", Battle, "Battle: a fighter's line read before", null,
+            CaptureNote + " Made up: every message read before; the line in the already-read colour, darkened on the white balloon.",
+            g => Board(g, (p, m) => m.Kind == MomentKind.Key && p.Battle.Speech is { Side: BattleSide.Player, Thought: false }, read: true));
+        yield return new("battle-speech-enemy-read", Battle, "Battle: an enemy's line read before", null,
+            CaptureNote + " Made up: every message read before.",
+            g => Board(g, (p, m) => m.Kind == MomentKind.Key && p.Battle.Speech is { Side: BattleSide.Enemy, Thought: false }, read: true));
         yield return new("info-panel", Battle, "Battle: our narration panel", null, CaptureNote + " The first info box shown as our panel.",
             g => Board(g, (p, m) => m.Kind == MomentKind.Key && p.Battle.InfoBox is { Kind: InfoBoxKind.Panel }));
         yield return new("info-defence", Battle, "Battle: a defence's ribbon", null,
@@ -141,12 +147,20 @@ internal static partial class GalleryEntries
     /// Our battle board on the capture held at the <paramref name="nth"/> moment <paramref name="chosen"/> picks, followed
     /// each frame as the game follows it; at a <c>FIGT_SEL</c> moment with <paramref name="then"/> our commands are begun
     /// on its menu and <paramref name="then"/> plays the pointer once the board is laid out; with <paramref name="dialog"/>
-    /// the retreat's confirmation is asked over it.
+    /// the retreat's confirmation is asked over it; with <paramref name="read"/> every message counts as read before.
     /// </summary>
     private static Action<Rect2>? Board(GalleryStage g, Func<GamePresenter, BattleMoment, bool> chosen, int nth = 1,
-        Action<GamePresenter, BattleMoment, BattleBoardView>? then = null, bool dialog = false, string file = GalleryBattle.Capture)
+        Action<GamePresenter, BattleMoment, BattleBoardView>? then = null, bool dialog = false, string file = GalleryBattle.Capture,
+        bool read = false)
     {
-        var (p, moment) = GalleryBattle.HeldAt(g.Fresh, chosen, nth, file);
+        GamePresenter Fresh()
+        {
+            var presenter = g.Fresh();
+            if (read)
+                presenter.ReadBefore = _ => true;
+            return presenter;
+        }
+        var (p, moment) = GalleryBattle.HeldAt(Fresh, chosen, nth, file);
         var s = p.State ?? throw new InvalidOperationException("The replay bound no state.");
         var board = g.Add(new BattleBoardView(g.Font, g.Faces) { Visible = true });
         board.LoadCrops();

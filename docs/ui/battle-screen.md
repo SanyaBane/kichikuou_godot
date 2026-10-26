@@ -211,7 +211,8 @@ picture, the slot panels) is not shown. How it is built:
   cards —, as tall as its text; rounded, a soft shadow, a tail towards the portrait 44 below its top; the
   text bold, 30, in the screen's font. Talk (141/151) is white with dark text, a thought (142/152, the
   original's dark bubbles) dark with white text. A marker in the accent colour bobs in the corner while the
-  line waits for the click. The text is what the script printed into the bubble since it opened or its last
+  line waits for the click. A line read before takes the already-read colour, darkened on the white balloon
+  (owner, 2026-10-26; docs/ui/read-text.md, §7). The text is what the script printed into the bubble since it opened or its last
   key wait (`BattlePresenter.Speech`, `BattleSpeech`), its line breaks — made for the original's 240-pixel
   bubble — flowed into one paragraph (a space between Latin letters, none next to Japanese); the key waits
   and the erase stay the script's. `BattlePresenter.Windows` leaves the bubble's frame out of the windows'

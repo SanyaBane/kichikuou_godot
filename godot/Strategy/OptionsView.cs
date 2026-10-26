@@ -459,7 +459,7 @@ internal sealed partial class OptionsView : Control
             fontSize: 17, modulate: Ui.Ink);
         DrawString(_gothic, new Vector2(x, y + 150), "A message window you have read before, in any game, shows its text in this colour.",
             fontSize: 13, modulate: Ui.InkQuiet);
-        DrawString(_gothic, new Vector2(x, y + 170), "Speech balloons, menus and our screens keep their own. Forget them… counts them unread.",
+        DrawString(_gothic, new Vector2(x, y + 170), "The battle's balloons too, darker on white; menus and our screens keep theirs. Forget them… counts them unread.",
             fontSize: 13, modulate: Ui.InkQuiet);
     }
 

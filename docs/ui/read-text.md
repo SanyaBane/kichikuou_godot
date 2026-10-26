@@ -11,7 +11,8 @@ The owner, 2026-10-23:
 - **Only another colour**, chosen from a row of swatches as in Rance X (no dimming, no mark on the window, no change in
   the message log).
 - **Not done:** read text shown at once without typing; already-chosen items of a `]` menu marked.
-- **System text keeps its colour** (the battle's lines, the menus, the week's report and the like).
+- **System text keeps its colour** (the battle's lines, the menus, the week's report and the like). The battle's lines
+  take it since 2026-10-26 (the owner; §7).
 - **Our interface only**: `--interface original` shows the original's windows as they are.
 
 ## 2. What is read
@@ -46,7 +47,10 @@ A character the script prints in a colour of its own (not the window's) keeps it
 A message with numbers (`ValueMessageEvent`: troops, gold, damages) never counts as read, since its numbers change, so a
 window holding one keeps its own colour; a string variable printed on a window (a name) counts neither way.
 
-Never: the battle's speech balloons and info boxes, the week report, the status strip, the `]` menus (`SceneMenuView`),
+The battle's speech balloons (`SpeechBalloon`, the strategist's in `StrategyCutInView`) since 2026-10-26, darkened on the
+white balloon (§7).
+
+Never: the battle's info boxes, the scout report's balloons, the week report, the status strip, the `]` menus (`SceneMenuView`),
 the message log, our screens and the port's own text (`PortTextEvent`) — they are drawn by their own views, which the
 colour does not reach. Options' preview (121) counts as read and shows the choice. Nor the system text in our windows
 (§6): a message of it never counts as read, as one with numbers.
@@ -135,4 +139,15 @@ gallery replays having one):
 - **B3** — the ink as it is; the balloon's paper tinted with the colour (22 %, a thought's 28 %) and its rim in it.
 - **B-colours** — the nine colours on a line read before, B1 | B2 | B3.
 
-Awaiting the owner's choice.
+The owner chose **B2** (2026-10-26). Built:
+
+1. `Original.Content/Battles/BattleSpeech.Read`: `BattlePresenter.Speech` takes it from the bubble's text box
+   (`_windowText.ReadBefore`), so the balloon is read when every message on it was, a message with numbers never, a
+   string variable neither way; the strategist's line (`BattleStrategy.Line`, the bubble's while it holds it) carries it.
+2. `godot/Battles/SpeechBalloon.InkOf`: a line read before in the chosen colour — on the white balloon
+   `ReadTextChoice.OnPaper` scales it towards black, its hue kept, until it stands 4.5:1 against the paper (245, 245,
+   245: white at 0.93 over the scene); on a thought as it is. "Don't change" leaves the ink. `StrategyCutInView`'s
+   balloon the same.
+3. Option → Messages' note under the colours says so.
+4. Tests: `BattleWindowsTests.A_bubbles_line_is_read_when_its_every_message_was`. The gallery's `battle-speech-read` and
+   `battle-speech-enemy-read` show it (every message counted read); no capture the gallery replays has a thought.

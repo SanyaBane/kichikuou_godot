@@ -61,5 +61,37 @@ internal static class ReadTextChoice
     public static Color Of(Color colour, Color plain) =>
         plain == Ui.Quiet ? new Color(colour.R * ThoughtDim, colour.G * ThoughtDim, colour.B * ThoughtDim) : colour;
 
+    /// <summary>The least contrast a read line keeps against a light paper (the contrast asked of text, 4.5:1).</summary>
+    private const float PaperContrast = 4.5f;
+
+    /// <summary>
+    /// <paramref name="colour"/> on a light <paramref name="paper"/> — the battle's white balloon (docs/ui/read-text.md, §7, the
+    /// owner's B2): scaled towards black, its hue kept, until it stands out from the paper by <see cref="PaperContrast"/>.
+    /// The nine colours are made for the lacquer; Cyan, Mint and Green would hardly show on white.
+    /// </summary>
+    public static Color OnPaper(Color colour, Color paper)
+    {
+        for (float k = 1; k > 0; k -= 0.01f)
+        {
+            var dark = new Color(colour.R * k, colour.G * k, colour.B * k);
+            if (Contrast(dark, paper) >= PaperContrast)
+                return dark;
+        }
+        return Colors.Black;
+    }
+
+    /// <summary>The contrast of two colours as the text's contrast is measured: their relative luminances, each plus 0.05, divided.</summary>
+    private static float Contrast(Color a, Color b)
+    {
+        float la = Luminance(a), lb = Luminance(b);
+        return (Math.Max(la, lb) + 0.05f) / (Math.Min(la, lb) + 0.05f);
+    }
+
+    private static float Luminance(Color c)
+    {
+        var linear = c.SrgbToLinear();
+        return 0.2126f * linear.R + 0.7152f * linear.G + 0.0722f * linear.B;
+    }
+
     private static int Valid(int index) => index >= None && index < Colours.Length ? index : DefaultIndex;
 }
