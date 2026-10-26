@@ -169,6 +169,8 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         };
         SetFont(font);
         AddChild(_tip);
+        foreach (var bar in GetChildren(includeInternal: true).OfType<HScrollBar>())
+            bar.ValueChanged += _ => _overlay.QueueRedraw();       // a tab's titles and groups scroll with the columns
     }
 
     /// <summary>The tree's columns for <see cref="_columns"/>: the first, then each shown one with its header, tip and alignment.</summary>
@@ -265,14 +267,19 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         public override void _Draw() => paint(this);
     }
 
+    /// <summary>The overlay's height: the whole header once a tab is given (its titles are drawn there), else the open top.</summary>
+    private float OverlayHeight => Tab is null ? 4 : HeaderBottom + 1;
+
     /// <summary>
-    /// Over the tree's own drawing: the open top under the chosen tab, and each group's name over its columns in the
-    /// header's top strip with a rule under it.
+    /// Over the tree's own drawing: the open top under the chosen tab, a tab's titles (<see cref="DrawTitles"/>), and each
+    /// group's name over its columns in the header's top strip with a rule under it.
     /// </summary>
     private void DrawOverlay(Control c)
     {
         if (OpenTop is { } open)
             c.DrawRect(new Rect2(open.From, 0, open.To - open.From, 2), Ui.PaperHead);
+        if (Tab is not null)
+            DrawTitles(c);
         if (_groups.Count == 0 || GetRoot()?.GetFirstChild() is not { } first)
             return;
         int size = Math.Max(7, (int)Math.Round(TitleSize * 0.82f));
@@ -286,6 +293,25 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
             c.DrawString(_groupFont, new Vector2(x0, baseline), group.Name.ToUpperInvariant(), HorizontalAlignment.Center, x1 - x0,
                 size, Ui.InkQuiet);
             c.DrawLine(new Vector2(x0, GroupStrip + 2), new Vector2(x1, GroupStrip + 2), Ui.PaperRule, 1);
+        }
+    }
+
+    /// <summary>
+    /// A tab's titles, centred between the groups' rule and the header's foot (the owner, 2026-10-26): the tree centres its
+    /// own over the whole header, the groups' strip included, where the rule crossed them, so it draws them clear
+    /// (<see cref="ApplyLedger"/>) and they are drawn here, aligned as the tree aligns them.
+    /// </summary>
+    private void DrawTitles(Control c)
+    {
+        var below = new Rect2(0, GroupStrip + 2, 0, HeaderBottom - GroupStrip - 2);
+        float baseline = Lacquer.Baseline(below, _sealFont, TitleSize);            // Cinzel's metrics, not its fallback's
+        float x = 1 - (float)(HScroll?.Value ?? 0);
+        for (int column = 0; column < Columns; column++)
+        {
+            float w = GetColumnWidth(column);
+            c.DrawString(_titleFont, new Vector2(x + 4, baseline), GetColumnTitle(column), GetColumnTitleAlignment(column), w - 8,
+                TitleSize, Ui.HeadInk);
+            x += w;
         }
     }
 
@@ -313,7 +339,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         AddThemeStyleboxOverride("title_button_hover", Head(Ui.PaperHead.Lightened(0.12f)));
         AddThemeStyleboxOverride("title_button_pressed", Head(Ui.PaperHead));
         AddThemeColorOverride("font_color", Ui.Ink);
-        AddThemeColorOverride("title_button_color", Ui.HeadInk);
+        AddThemeColorOverride("title_button_color", Tab is null ? Ui.HeadInk : Colors.Transparent);   // a tab's: DrawTitles
         AddThemeColorOverride("guide_color", Ui.PaperRule);
         foreach (var state in new[] { "font_hovered_color", "font_selected_color", "font_hovered_selected_color" })
             AddThemeColorOverride(state, Ui.Ink);
@@ -375,7 +401,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     {
         Position = rect.Position;
         Size = rect.Size;
-        _overlay.Size = new Vector2(rect.Size.X, Math.Max(4, GroupStrip + 4));
+        _overlay.Size = new Vector2(rect.Size.X, OverlayHeight);
         int size = Math.Max(8, (int)Math.Round(_textSize * pixelsPerScript));
         if (size == _fontSize)
             return;
@@ -481,8 +507,8 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
 
     public override void _Notification(int what)
     {
-        if (what == NotificationResized || what == NotificationThemeChanged)
-            SpreadColumns();                                        // the tree's least widths read in the tree only
+        if (what == NotificationResized)
+            _overlay.QueueRedraw();                                 // the headers follow the last column's width
         if (what == NotificationVisibilityChanged && !IsVisibleInTree())
         {
             _tip.Visible = false;
@@ -582,38 +608,10 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         widths[0] = Math.Max(widths[0], _fontSize * 1.3f) + BubbleRoom;     // the chosen row's bar and diamond, a place's seal; the talk's bubble
         if (RefillColumn > 0)
             widths[RefillColumn] += _fontSize * 0.8f;                       // the buttons' rule and padding
-        _widths = widths.Select(w => (int)Math.Ceiling(w) + separation + (Tab is null ? 6 : 3)).ToArray();
-        SpreadColumns();
-        _overlay.Size = new Vector2(Size.X, Math.Max(4, GroupStrip + 4));
-        _overlay.QueueRedraw();
-    }
-
-    /// <summary>The columns' widths as their texts ask (<see cref="Fill"/>), before a tab's spare room is spread.</summary>
-    private int[] _widths = [];
-
-    /// <summary>
-    /// The columns' widths: a tab's spare room spread over its columns after the first (round B's mock-ups), the vertical
-    /// scroll bar's room kept back; the last column's expand takes what is left. Without a tab the columns as their texts ask.
-    /// </summary>
-    private void SpreadColumns()
-    {
-        if (_widths.Length != Columns)
-            return;
         for (int c = 0; c < Columns; c++)
-            SetColumnCustomMinimumWidth(c, _widths[c]);
-        if (Tab is null || Columns < 2 || !IsInsideTree())
-            return;
-        // The tree's own least widths: it may give a header more than its texts ask (it measures it in the rows' font).
-        SetColumnExpand(Columns - 1, false);
-        var least = Enumerable.Range(0, Columns).Select(GetColumnWidth).ToArray();
-        SetColumnExpand(Columns - 1, true);
-        var bar = GetChildren(includeInternal: true).OfType<VScrollBar>().FirstOrDefault();
-        float room = Size.X - 2 - (bar?.GetCombinedMinimumSize().X ?? 0);       // the paper's border, the scroll bar
-        int spare = (int)room - least.Sum();
-        if (spare <= 0)
-            return;
-        for (int c = 1; c < Columns; c++)
-            SetColumnCustomMinimumWidth(c, least[c] + spare / (Columns - 1));
+            SetColumnCustomMinimumWidth(c, (int)Math.Ceiling(widths[c]) + separation + (Tab is null ? 6 : 3));
+        _overlay.Size = new Vector2(Size.X, OverlayHeight);
+        _overlay.QueueRedraw();
     }
 
     /// <summary>
