@@ -10,7 +10,8 @@ With -Only the pass stays whole: only the chosen entries' former pictures are co
 them in current, and the manifest keeps the other entries as they were; the changes of several partial runs stay
 marked until a full run (each compared with its picture before the first of them).
 Last it writes index.html in the gallery's folder: a tab for each pass dumped so far (one shown at a time; one not dumped
-this time marked old), its sections, each entry's picture, the changed ones first with the former picture beside it. The folder is -Out, else KICHIKUOU_UI_GALLERY_DIR (its environment variable,
+this time marked old), its sections, each entry's picture in its own place at full size; a changed one carries a small
+badge that opens the former picture, a new one a badge alone. The folder is -Out, else KICHIKUOU_UI_GALLERY_DIR (its environment variable,
 else its line in local.env), else screen-gallery at the repository's root, which git ignores; one inside the repository
 must be ignored by git (the pictures hold the player's CGs). Nothing moves the system pointer; a window opens for each
 pass.
@@ -143,31 +144,26 @@ foreach ($pass in $allPasses) {
         [void]$body.Append("<p class=stale>Not dumped by the last run: these pictures are from $(Html $manifest.written) and may be " +
             "out of date (<code>gallery.ps1 -$($pass.Name.Substring(0, 1).ToUpper() + $pass.Name.Substring(1))</code> dumps them again).</p>")
     }
-    # The changed ones first, then the sections in the order they first come, each once.
+    # The sections in the order they first come, each entry in its own place at full size whatever changed (the owner,
+    # 2026-10-26): a changed one's badge opens the former picture, a new one's is a badge alone.
     $sections = New-Object System.Collections.Generic.List[string]
     foreach ($entry in $entries) { if (-not $sections.Contains($entry.section)) { $sections.Add($entry.section) } }
-    $groups = @()
-    if ($changed.Count) { $groups += , @('Changed since the former dump', $changed) }
     foreach ($name in $sections) {
-        $groups += , @($name, @($entries | Where-Object { $_.section -eq $name -and $changed -notcontains $_ }))
-    }
-    foreach ($group in $groups) {
-        if ($group[1].Count -eq 0) { continue }
-        [void]$body.Append("<h3>$(Html $group[0])</h3><div class=grid>")
-        foreach ($entry in $group[1]) {
-            $badge = switch ($entry.since) { 'changed' { "<b class=changed>changed &middot; $($entry.differing) px</b>" } 'new' { '<b class=new>new</b>' } default { '' } }
+        [void]$body.Append("<h3>$(Html $name)</h3><div class=grid>")
+        foreach ($entry in @($entries | Where-Object { $_.section -eq $name })) {
+            $before = "$($pass.Name)/previous/$($entry.file)"
+            $badge = switch ($entry.since) {
+                'changed' { "<a class=changed href=`"$before`" title=`"The former picture`">changed &middot; $($entry.differing) px</a>" }
+                'new' { '<b class=new>new</b>' }
+                default { '' }
+            }
             [void]$body.Append("<figure id=`"$($pass.Name)-$(Html $entry.id)`"><figcaption>$(Html $entry.title) $badge<br><code>$(Html $entry.id)</code>")
             if ($entry.note) { [void]$body.Append(" &mdash; $(Html $entry.note)") }
             if ($entry.error) { [void]$body.Append("<br><b class=error>$(Html $entry.error)</b>") }
             [void]$body.Append('</figcaption>')
             if ($entry.file) {
                 $now = "$($pass.Name)/current/$($entry.file)"
-                if ($entry.since -eq 'changed') {
-                    $before = "$($pass.Name)/previous/$($entry.file)"
-                    [void]$body.Append("<div class=pair><a href=`"$before`"><img src=`"$before`" alt=before></a><a href=`"$now`"><img src=`"$now`" alt=after></a></div>")
-                } else {
-                    [void]$body.Append("<a href=`"$now`"><img src=`"$now`" alt=`"$(Html $entry.id)`"></a>")
-                }
+                [void]$body.Append("<a href=`"$now`"><img src=`"$now`" alt=`"$(Html $entry.id)`"></a>")
             }
             [void]$body.Append('</figure>')
         }
@@ -188,15 +184,16 @@ $html = @"
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 16px; }
   figure { margin: 0; background: #1e1a17; border: 1px solid #3a3128; padding: 8px; }
   figure img { width: 100%; display: block; }
-  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
   code { color: #c8b080; } .changed { color: #ff9a6a; } .new { color: #8fd18f; } .error { color: #ff6a6a; }
+  figcaption .changed, figcaption .new { font-size: 11px; font-weight: 600; margin-left: 4px; }
+  a.changed { text-decoration: underline dotted; }
   nav { position: sticky; top: 0; background: #141110; padding: 8px 0; display: flex; gap: 8px; z-index: 1; }
   .tab { color: #e8dcc0; text-decoration: none; border: 1px solid #5a4a30; padding: 6px 14px; background: #1e1a17; }
   .tab.on { border-color: #d8b060; background: #3a2c1c; color: #f0d890; }
   .stale { color: #e0b050; } p.stale { border: 1px solid #806020; background: #2a2010; padding: 8px; }
 </style>
 <h1>Screen gallery</h1>
-<p>Our screens from the kept saves (docs/ui/gallery.md). Changed and new pictures first; a changed one shows the former picture at its left.</p>
+<p>Our screens from the kept saves (docs/ui/gallery.md). Each in its place; a changed one's badge opens the former picture.</p>
 <nav>$($tabs.ToString())</nav>
 $($body.ToString())
 <script>

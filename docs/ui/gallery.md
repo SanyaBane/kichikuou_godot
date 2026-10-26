@@ -134,8 +134,10 @@ state, or is tagged "made up". The first ones are the states the docs record as 
   (Lacquer; `-Steel`, `-Touch` add theirs) it moves `<dir>\<pass>\current` to `previous`, dumps into `current`
   compared with it, and writes `<dir>\index.html`: a tab for each pass dumped so far, one shown at a time (the owner,
   2026-10-25; `#steel` or an entry's `#steel-treasure` opens its pass), a pass not dumped this time marked old on its
-  tab and above its pictures; in a pass the changed and new entries first with the former picture beside them, then
-  the sections, each once. `<dir>` is
+  tab and above its pictures; in a pass the sections, each entry in its own place at full size whatever changed (the
+  owner, 2026-10-26: a screen should be where it always is, not jump to the top after a commit) — a changed one carries
+  a small badge with the pixels that differ, which opens the former picture, a new one a badge alone (until then the
+  changed and new entries came first, each beside its former picture at half size). `<dir>` is
   `-Out`, else `KICHIKUOU_UI_GALLERY_DIR` (`local.env`), else `screen-gallery/` at the root; a folder inside the
   repository that git does not ignore is refused (`git check-ignore`). `-Only` keeps each pass whole (the owner,
   2026-10-25): only the chosen entries' former pictures are copied to `previous`, their new ones replace them in
