@@ -235,5 +235,5 @@ lines).
 ## 8. The ledger down the left (owner's request, 2026-10-26)
 
 The deployment screen's request applies here too: the ledger down the screen's left, a part of its columns at a time
-in tabs, the picture and the orders panel stacked on the right — docs/ui/unit-ledger.md; the owner took A1-A4 (its §5),
-round B awaiting the owner's look.
+in tabs, the picture and the orders panel stacked on the right — docs/ui/unit-ledger.md; the owner took A1-A4 and round
+D's D2 for the order's seal (its §5), built (its §6).

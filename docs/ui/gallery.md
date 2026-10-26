@@ -248,7 +248,8 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
    look's party against Oaks (6), Rance's details), `-picking` (two picked, no details), `-defence` (mode 2, Plains /
    City), `-search` (mode 3, one unit), `-refill-question` (the callout at Haurein's (unit 12) Refill cell, laid after the
    table's layout, `GalleryStage.AfterLayout`) and `-refill-done` (the plate, `ReplenishPreview`; the table under it not
-   replenished). The Save/Load screen reads a `MemorySaveLibrary` made of the kept save
+   replenished). Since the ledger's tabs (docs/ui/unit-ledger.md, §6) these and the Subordinates entries pin Overview,
+   and `deployment-troops`, `deployment-commander` and `subordinates-commander` show the other tabs. The Save/Load screen reads a `MemorySaveLibrary` made of the kept save
    (`GalleryStates.SampleLibrary`: ten Turn Start and ten Turn End auto-saves (decision 31, the newest Turn End with a
    comment) and four manual saves, the older a week earlier each — `Week` and
    `Tmp0021`, the date the lists read —, two with comments, the manual saves an hour after their week's auto-save), so

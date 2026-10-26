@@ -109,7 +109,8 @@ Shared parts, with their users; a new screen takes these before drawing its own.
 | Click's triangle | "a click goes on", bobbing, shown once the text is whole | `DrawTriangle` |
 | Callout | a question or the script's refusal at the clicked place, Yes (red) / No inside | `TreasureCallout` |
 | Result plate | an order's outcome in the middle, waits for a click | `OrderResultPlate` |
-| Ledger | a sortable table on paper | `DeploymentTableView` |
+| Ledger | a sortable table on paper; columns that do not fit go in tabs (groups' names over their columns) | `DeploymentTableView`, `LedgerTabs` |
+| Paper tabs | a paper sheet's parts: the chosen tab paper with a vermilion top, joined to the sheet; the others darker | `OptionsView`, `LedgerTabsBar` |
 | Seal, badge | a number on vermilion; a place on a gold diamond | `DrawSeal`, `DrawBadge` |
 | Pill | NEW / ??? on an action button | `DrawPill` |
 | Picture panel | the original's unit / girl picture with its own frame | `FacePictures.PicturePanel` |
@@ -155,7 +156,9 @@ narration, place title, 131) in docs/ui/messages.md.
 - **Marks for new content** (decision 30): NEW green, ??? amber, nothing once read; a pill on the action, tooltips in
   words; shown only where they can be acted on; "nothing new" stays a quiet figure.
 - **Sorting a ledger:** the first click sorts more-is-better columns descending, №, names and prices ascending; stable,
-  ties by number, "—" last; a second click reverses. Lists of saves are newest first with no switch.
+  ties by number, "—" last; a second click reverses. Lists of saves are newest first with no switch. A ledger's tab
+  keeps the order; when its column is not in the tab shown, a gold seal beside the tabs says it ("Sorted by T.Atk ↓").
+  A screen opens on the tab the player left there.
 - **The first choice when a list opens** is the likely one: the newest save to load, New save to save, the girl chosen
   before.
 - **Text types in** letter by letter (Option → Messages → Text Speed, default 9 of 10); a click while it types shows it

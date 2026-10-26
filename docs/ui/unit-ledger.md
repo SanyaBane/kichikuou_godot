@@ -115,3 +115,35 @@ for a fourth tab as C1's paper may be. C3's × (a click sorts by No. again) coul
 **The owner (2026-10-26): C2 in C3's colours**, no ×. Read two ways, round D (round `d`, `D-sheet` beside C2):
 **D1** C2's seal on C3's lit lacquer, a gold frame and gold letters, a dim inner rule; **D2** C2's seal filled gold,
 the letters lacquer-dark. **The owner chose D2** (2026-10-26), the gold seal (`LedgerTabsBar.DrawOrder`).
+
+## 6. Built (2026-10-26)
+
+- **The model:** `Original.Content/Strategy/LedgerTabs` — `LedgerTab` (Overview, Troops, Commander) and
+  `LedgerTabs.Of(columns, tab)`: a tab's columns picked from the screen's (No. and Name in each, the deployment's Overview
+  with Rows), and the Troops tab's groups (Offense, Defense, Dungeon over their ATK and DEF); `LedgerTabsTests`.
+- **The ledger:** `godot/Strategy/DeploymentTableView` takes a `Tab`: the tree's columns rebuilt, the rows and the order
+  kept (`SortShown`, `SortHeader`, `SortMark` say the order when its column is not in the tab); the groups' names in a
+  strip at the header's top, drawn by a child `Overlay` (a `Tree`'s own `_Draw` lands under its header); the chosen tab
+  joined to the paper (`OpenTop`). A tab's spare width is spread over its columns as round B drew it (`SpreadColumns`,
+  from the tree's own least widths: it measures a header in the rows' font).
+- **The tabs:** `godot/Strategy/LedgerTabsBar` — paper tabs as the options window's, lit while hovered, a tab shown at
+  the release; the order's gold seal right of them (D2, `DrawOrder`); 34 pixels tall, 46 in the touch mode (the paper
+  shorter by the difference). Each screen's tab is remembered: `LedgerTabChoice` (`[display] ledger_tab_deployment`,
+  `ledger_tab_subordinates` in `settings.cfg`).
+- **The layout:** `DeploymentPanels` and `SubordinatesView` — the ledger's panel (16,16) 692×768, the tabs from y 66,
+  the paper (`TableArea`) at x 30, 664 wide, under the tabs; the picture (716,16) 548×342; the party or orders panel
+  (716,368) 548×416.
+- **The screen gallery:** `deployment-troops` (sorted by T.Atk), `deployment-commander` (that order kept, the seal) and
+  `subordinates-commander` (sorted by Lvl); the other entries pin Overview (`ShowTab(…, remember: false)`).
+- **Unattended play:** the touch mode's Subordinates exercise taps the Troops tab first (T.Atk is its) and the tab
+  shown before at the end; `--refill` shows Overview, not remembered, when the tab shown has no Refill buttons.
+- **The agent's choices**, for the owner to confirm: the headers 0.72 of the text in every tab (round B's Cinzel 11 to
+  16; the Troops tab's twelve columns fit with it) and the columns' padding 3 pixels instead of 6 while tabbed; the
+  Subordinates ledger's text 8.3 script pixels, the deployment's (was 9); the groups' names Cinzel 10 as in B2; in the
+  touch mode the tabs 46 pixels tall, the rows as on the PC; a header's long-press tip shows over the tabs.
+- **Not as §2 says:** the order does not start by No. on every opening — each screen's table lives for the launch and
+  keeps its order between openings, as it did before the tabs ("as now" in §2 was wrong). Left so, for the owner to say.
+- **Checked:** the screen gallery's Lacquer, Steel and touch passes of the twelve deployment and Subordinates entries;
+  the week-18 look in a window with our interface (Subordinates' Replenish, the deployment table's presses and drops),
+  with `--refill`, and in the touch mode (the tab taps, a header's tip and sort, the finger's scroll). Awaiting the
+  owner's look in a window.

@@ -246,8 +246,9 @@ Turn END writes an auto-save of the moment (`CommandPhase`, `ScriptContext.SaveT
 auto-saves take a comment and scroll as the manual saves do.
 Then (owner, 2026-10-26) the deployment and Subordinates screens' ledger down the screen's left, a part of its columns
 at a time in tabs (Overview, Troops, Commander), the picture and the party / orders stacked on the right: the proposal
-and mock-up round A are docs/ui/unit-ledger.md (`tools/ui/mock_unit_ledger.py`); the owner took A1-A4 (its §5), round B
-draws them as chosen, awaiting the owner's look before the build.
+and mock-up round A are docs/ui/unit-ledger.md (`tools/ui/mock_unit_ledger.py`); the owner took A1-A4 and round D's D2
+(the order's gold seal; its §5), built (its §6: `Original.Content/Strategy/LedgerTabs`, `godot/Strategy/LedgerTabsBar`,
+`LedgerTabChoice`), awaiting the owner's look in a window.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -352,14 +353,15 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   as `MeleeEffect`, `BowEffect`, `MagicEffect`, `IceEffect` (the ice magic, by the shouted spell or the caster's element: `Original.Content/Battles/MagicSpells`, docs/ui/mage-lines.md), `LightningEffect`, `DarkEffect`, `LightEffect` and `PoisonEffect` (the lightning, the dark, the light and the poison magic, the same way; the dark laid over dark, `EffectPlayer.Dark`), `RanceAttackEffect`, `KentarouSlashEffect` (Kentarou's Rance Attack), `WhiteBeamEffect` (the Black D. Beam: the same laid over dark, `EffectPlayer.Dark`; the beams each placed for its user: `ShizukaBeamEffect`, `MagicBeamEffect`, `EpoLightEffect`, `ChizukoBeamEffect`, `NagiBeamEffect`), `WhirlwindShotEffect`, `HighSpeedEffect` (By la Way: Rance Attack's in red, `RanceAttackEffect.BuildRed`), `KanamiEffect`, `FreyaEffect`, `KaoruEffect`, `WichitaEffect` (the ninjas' follow-ups, each her own and weak: a throw, the forked whip, the fists, the flaming sword; `NinjaEffect`, the Ninja troop's, unused), `VanishBombEffect`, `WarDanceEffect`, `ChuhaiEffect`, `GoliathEffect` (T2 Goliath's, 15 frames), `SoaringWaveEffect` (Rolex's T2 Soaring Wave, our own), `GuardEffect` (a defence's, after Sengoku Rance's guard effect 45080: the player's with the defence's badge, the enemy's at its redraw, `BattlePresenter.EnemyDefence`; `BattleBoardView.PlayGuard`, waited for by `GameScreen.GuardAsync`), drawn by `EffectCanvas` and laid over the scene by `EffectPlayer`; Debug → Effects, `EffectViewer` (a special over the sprite its user shows),
   `--effects` (`--effects white-beam-magic,black-beam-nagi --shots DIR` saves only those); played in the exchange from its shots by `BattleBoardView`, the choice `Original.Content/Battles/ExchangeEffect`, Option → Battle → "Exchange effects" — docs/ui/battle-screen.md, "The exchange's effects");
   `Strategy/DeploymentTableView` and `Strategy/DeploymentPanels` (our own deployment screen, our interface, `InterfaceChoice`;
-  the owner's E1/E2 in lacquer, the Subordinates screen's layout: the ledger across the top, the hovered unit's picture
-  panel (`FacePictures.PicturePanel`) below left, the party's 2×2 cards with one gold triangle right of them (the way the
-  party faces), totals and bar below right — docs/ui/deployment-table.md,
+  the owner's E1/E2 in lacquer, laid out again (2026-10-26, docs/ui/unit-ledger.md): the ledger down the left, its
+  columns a tab's at a time (Overview, Troops, Commander; `Strategy/LedgerTabsBar`, the tab kept per screen by
+  `LedgerTabChoice`), the hovered unit's picture panel (`FacePictures.PicturePanel`) top right, the party's 2×2 cards
+  with one gold triangle right of them (the way the party faces), totals and bar below it — docs/ui/deployment-table.md,
   "The lacquer look"; `GameScreen` feeds the script its gestures, `Original.Content/Strategy/DeploymentTable` the rows);
   `Strategy/SubordinatesView` (our Subordinates screen over `Sﾌﾞｶ` and `Cﾌﾞｶ`'s troop menu, our interface,
-  docs/ui/subordinates.md: drawn by hand in lacquer (mock-up G3) over a wave-patterned backdrop — the table across the
-  top, `DeploymentTableView` as a chooser and a paper ledger (`ledger: true`, not the palette's colours) with
-  `Original.Content/Strategy/SubordinatesScreen.Columns` —, the status CG, the orders' panel; a troop order asks first in
+  docs/ui/subordinates.md: drawn by hand in lacquer (mock-up G3) over a wave-patterned backdrop — the table down the
+  left in the ledger's tabs, `DeploymentTableView` as a chooser and a paper ledger (`ledger: true`, not the palette's colours) with
+  `Original.Content/Strategy/SubordinatesScreen.Columns` —, the status CG and the orders' panel on the right; a troop order asks first in
   a `TreasureCallout` at its button (`SubordinatesScreen.Question`, the owner's C3) and reports on a plate in the middle
   (`SubordinateResult`, R4/R5; docs/ui/subordinates.md, §6); an order is
   `Original.Content/Strategy/SubordinateOrder`, fed by `GameScreen.Subordinates.cs`: the cell's click, the menus and key
