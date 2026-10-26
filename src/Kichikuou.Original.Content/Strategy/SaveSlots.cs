@@ -9,8 +9,11 @@ namespace Kichikuou.Original.Content.Strategy;
 /// <summary>What a slot holds (ours: the original's lists show the date only).</summary>
 public enum SlotKind
 {
-    /// <summary>Slot 1, the game's own save at each turn's start (<c>ﾛｰﾄﾞｾｰﾌﾞ.ADV:30-33</c>).</summary>
+    /// <summary>Slot 1, the game's own save at each turn's start (<c>ﾛｰﾄﾞｾｰﾌﾞ.ADV:30-33</c>); an auto-save of the library's turn starts.</summary>
     Auto,
+
+    /// <summary>An auto-save written as Turn END was chosen (ours, owner's decision 31: <see cref="AutoRing.TurnEnd"/>).</summary>
+    TurnEnd,
 
     /// <summary>A copy of the autosave: a turn's start (<c>MAIN.ADV:20</c> / <c>:83</c>).</summary>
     TurnStart,
@@ -53,6 +56,12 @@ public sealed record SaveSlot(
 
     /// <summary>Whether the player wrote a comment: the star on the seal, kept by the sweep (docs/ui/save-load.md, §10).</summary>
     public bool Commented => !string.IsNullOrWhiteSpace(Comment);
+
+    /// <summary>Whether it is an auto-save, of either ring.</summary>
+    public bool IsAuto => Kind is SlotKind.Auto or SlotKind.TurnEnd;
+
+    /// <summary>An auto-save's tag (docs/ui/save-load.md, §12): "Turn Start" or "Turn End"; empty for any other save.</summary>
+    public string RingText => Kind switch { SlotKind.Auto => "Turn Start", SlotKind.TurnEnd => "Turn End", _ => "" };
 
     /// <summary>The seal's text: "A", or the list's number; a manual save's number.</summary>
     public string Seal => Id is { Kind: SaveKind.Manual } manual ? manual.Number.ToString(CultureInfo.InvariantCulture)
@@ -155,8 +164,11 @@ public static class SaveSlots
         if (data.Variables.Length != state.Memory.VariableCount)
             return null;
         data.Restore(state);
-        var kind = id.Kind == SaveKind.Auto ? SlotKind.Auto : WeekLoop.IsMomentSave(data.Resume) ? SlotKind.MidTurn : SlotKind.TurnStart;
-        return Of(state, 0, kind, state.Tmp0021.Value, data.Written) with { Id = id, Comment = data.Comment };
+        var kind = id.Kind == SaveKind.Auto ? (library.RingOf(id) == AutoRing.TurnEnd ? SlotKind.TurnEnd : SlotKind.Auto)
+            : WeekLoop.IsMomentSave(data.Resume) ? SlotKind.MidTurn : SlotKind.TurnStart;
+        // A Turn END save is taken outside ﾛｰﾄﾞｾｰﾌﾞ, which alone sets Tmp0021 to the week: it is dated by Week itself.
+        int week = kind == SlotKind.TurnEnd ? state.Week.Value : state.Tmp0021.Value;
+        return Of(state, 0, kind, week, data.Written) with { Id = id, Comment = data.Comment };
     }
 
     /// <summary>
@@ -172,7 +184,7 @@ public static class SaveSlots
     /// <summary>
     /// The sweep (owner, 2026-10-22, after Sengoku Rance's <c>deleteNoMark</c>): every manual save of
     /// <paramref name="library"/> without a comment deleted, the comment read from the save itself (one that cannot be read
-    /// is left); auto-saves take no comment and are left. The number deleted.
+    /// is left); auto-saves are left, with a comment or without (they leave their rings by age). The number deleted.
     /// </summary>
     public static int DeleteUncommented(ISaveLibrary library)
     {

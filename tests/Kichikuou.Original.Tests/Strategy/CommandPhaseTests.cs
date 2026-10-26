@@ -417,6 +417,50 @@ public class CommandPhaseTests
         Is(0, rig.State.Ui_PortraitL);                 // the portrait shown with the first line is removed
     }
 
+    /// <summary>
+    /// Ours (owner's decision 31): with the library, Turn END is an auto-save of its own ring before its sound and its
+    /// scenes, resuming at the <c>COMMAND</c> call as a save of the moment does; the Tange Dog's weekly flag is unset in
+    /// it, so a load plays the Dog again. Without the library (the differential tests) nothing is written.
+    /// </summary>
+    [Fact]
+    public async Task Turn_END_is_an_auto_save_of_its_own_before_its_scenes()
+    {
+        var rig = new PhaseRig(stage: 2);
+        var library = new MemorySaveLibrary();
+        rig.Script.Library = library;
+        var here = new ScriptRef("MAIN.ADV", 213);
+        rig.Script.SaveHere = here;
+        rig.State.F_Sill_Died = 1;
+        rig.State.Items[34].Holder = 3;
+        rig.State.Units[3].Status = 2;
+        int autosAtScene = -1;
+        rig.Story.OnCall = (file, _) =>
+        {
+            if (file == "Gｼｨﾙ2.ADV")
+                autosAtScene = library.Autos.Count;
+        };
+        rig.Menu(10);
+
+        await rig.RunAsync();
+
+        Assert.Equal(1, autosAtScene);                 // written before Sill's grave scene
+        var end = Assert.Single(library.Autos);
+        Assert.Equal(AutoRing.TurnEnd, library.RingOf(end));
+        Assert.Equal(end, rig.Script.LastSave);
+        var saved = library.Read(end)!;
+        Assert.Equal(here, saved.Resume);
+        var copy = new GameState();
+        saved.Restore(copy);
+        Is(0, copy.TangeDog_UsedThisWeek);
+        Is(2, copy.Units[3].Status);
+        Is(1, rig.State.TangeDog_UsedThisWeek);
+
+        var plain = new PhaseRig(stage: 2);
+        plain.Script.SaveHere = here;
+        plain.Menu(10);
+        await plain.RunAsync();                        // no library: the original's Turn END
+    }
+
     [Fact]
     public async Task The_Leazas_menu_offers_what_the_week_left()
     {

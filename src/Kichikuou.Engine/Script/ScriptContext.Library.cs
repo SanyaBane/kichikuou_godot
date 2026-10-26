@@ -39,6 +39,19 @@ public partial class ScriptContext
     }
 
     /// <summary>
+    /// Ours (owner's decision 31): the auto-save as the player ends the turn, the memory resuming at
+    /// <paramref name="resume"/>. No script command writes it, so <c>RetVal</c> is left alone; false when it could not
+    /// be written.
+    /// </summary>
+    public bool SaveTurnEnd(ScriptRef resume)
+    {
+        var id = RequireLibrary().WriteAuto(SaveData.Capture(State, resume), AutoRing.TurnEnd);
+        if (id is not null)
+            LastSave = id;
+        return id is not null;
+    }
+
+    /// <summary>
     /// A manual save over number <paramref name="over"/> or a new one: the memory resuming at <paramref name="resume"/>,
     /// or with none a copy of the newest auto-save (the original's <c>QC n, 1</c>).
     /// </summary>

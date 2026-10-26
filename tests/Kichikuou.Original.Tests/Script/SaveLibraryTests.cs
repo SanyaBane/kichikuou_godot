@@ -30,6 +30,57 @@ public class SaveLibraryTests
     }
 
     [Fact]
+    public void Each_ring_keeps_its_ten_and_both_are_numbered_together()
+    {
+        var library = new MemorySaveLibrary();
+        library.WriteAuto(Game(1));
+        for (int i = 0; i < 12; i++)                                    // Turn END chosen again and again after loads
+            library.WriteAuto(Game(1), AutoRing.TurnEnd);
+        library.WriteAuto(Game(2));
+
+        Assert.Equal(12, library.Autos.Count);
+        Assert.Equal(new SaveId(SaveKind.Auto, 14), library.Autos[0]);
+        Assert.Equal(AutoRing.TurnStart, library.RingOf(library.Autos[0]));
+        Assert.Equal(AutoRing.TurnStart, library.RingOf(library.Autos[^1]));   // the first start outlives the ends pushed out
+        Assert.Equal(1, library.Autos[^1].Number);
+        Assert.Equal(10, library.Autos.Count(id => library.RingOf(id) == AutoRing.TurnEnd));
+        Assert.Null(library.Read(new SaveId(SaveKind.Auto, 3)));
+        Assert.True(library.Delete(library.Autos[1]));
+        Assert.Equal(9, library.Autos.Count(id => library.RingOf(id) == AutoRing.TurnEnd));
+    }
+
+    [Fact]
+    public void The_directory_library_keeps_a_turn_end_in_a_file_of_its_ring()
+    {
+        string directory = TempDirectory();
+        try
+        {
+            var library = new DirectorySaveLibrary(directory);
+            for (int week = 1; week <= 11; week++)
+            {
+                library.WriteAuto(Game(week));
+                library.WriteAuto(Game(week), AutoRing.TurnEnd);
+            }
+            Assert.True(library.SetComment(new SaveId(SaveKind.Auto, 22), "before the rebels' turn"));
+
+            var again = new DirectorySaveLibrary(directory);
+            Assert.Equal(Enumerable.Range(3, 20).Reverse().Select(n => new SaveId(SaveKind.Auto, n)), again.Autos);
+            Assert.Equal(AutoRing.TurnEnd, again.RingOf(again.Autos[0]));
+            Assert.Equal(AutoRing.TurnStart, again.RingOf(again.Autos[1]));
+            Assert.True(File.Exists(Path.Combine(directory, "end-0022.ksav")));
+            Assert.False(File.Exists(Path.Combine(directory, "auto-0022.ksav")));
+            Assert.Equal("before the rebels' turn", again.Read(again.Autos[0])!.Comment);
+            Assert.True(again.Delete(again.Autos[0]));
+            Assert.False(File.Exists(Path.Combine(directory, "end-0022.ksav")));
+            Assert.Equal(new SaveId(SaveKind.Auto, 22), again.WriteAuto(Game(12)));   // after the highest left
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
     public void A_manual_save_is_numbered_after_the_highest_and_keeps_its_comment_when_saved_over()
     {
         var clock = new DateTime(2026, 10, 21, 20, 0, 0);
@@ -137,6 +188,15 @@ public class SaveLibraryTests
 
         rig.Script.LoadSave(new SaveId(SaveKind.Manual, 9));
         Assert.Equal(255, rig.State.RetVal.Value);
+
+        rig.State.Week = 15;
+        rig.State.RetVal = 7;
+        Assert.True(rig.Script.SaveTurnEnd(Here));
+        var end = rig.Script.LastSave!.Value;
+        Assert.Equal((new SaveId(SaveKind.Auto, 3), AutoRing.TurnEnd), (end, library.RingOf(end)));
+        Assert.Equal(7, rig.State.RetVal.Value);                          // no script command: RetVal stays
+        Assert.Equal(15, Week(rig.Script.Saves.Read(1)));                 // the newest auto-save of either ring
+        Assert.Equal(Here, Assert.Throws<GameLoadedException>(() => rig.Script.LoadSave(end)).Resume);
     }
 
     [Fact]

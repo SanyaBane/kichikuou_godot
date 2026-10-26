@@ -588,6 +588,8 @@ public sealed class CommandPhase(OriginalScriptContext script)
                 SetDate();
                 return Next.Map;
             case Command.TurnEnd:
+                if (Script.Library is not null && Script.SaveHere is { } here)
+                    Script.SaveTurnEnd(here);                           // ours (decision 31): the auto-save at Turn END
                 await MenuSoundAsync();
                 await TurnEndAsync();
                 return Next.End;

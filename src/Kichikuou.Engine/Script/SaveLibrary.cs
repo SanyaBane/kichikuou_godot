@@ -3,11 +3,21 @@ namespace Kichikuou.Engine.Script;
 /// <summary>Which of the library's two lists a save is in (owner's decision 29).</summary>
 public enum SaveKind
 {
-    /// <summary>The game's own, written at each turn's start; the newest <see cref="ISaveLibrary.AutoCount"/> are kept.</summary>
+    /// <summary>The game's own, written at each turn's start and its end; the newest <see cref="ISaveLibrary.AutoCount"/> of each <see cref="AutoRing"/> are kept.</summary>
     Auto,
 
     /// <summary>The player's, as many as the player keeps.</summary>
     Manual,
+}
+
+/// <summary>When an auto-save was written (owner's decision 31): the library keeps the newest <see cref="ISaveLibrary.AutoCount"/> of each.</summary>
+public enum AutoRing
+{
+    /// <summary>At a turn's start, the original's autosave.</summary>
+    TurnStart,
+
+    /// <summary>As the player ended the turn (ours).</summary>
+    TurnEnd,
 }
 
 /// <summary>A save of the library: its list and its number there (auto-saves numbered as written, manual saves as made).</summary>
@@ -19,16 +29,16 @@ public readonly record struct SaveId(SaveKind Kind, int Number)
 
 /// <summary>
 /// Ours (owner's decision 29): the saves as two lists in place of the engine's numbered slots — the last
-/// <see cref="AutoCount"/> auto-saves and any number of manual saves, each deletable, a save with the player's comment
-/// (<see cref="SaveData.Comment"/>) — plus the persistent page, which the original copies into every slot
-/// (<c>ﾛｰﾄﾞｾｰﾌﾞ.ADV</c>'s <c>L_00ad6</c>, STR-31) and the library keeps once.
+/// <see cref="AutoCount"/> auto-saves of each <see cref="AutoRing"/> (decision 31) and any number of manual saves, each
+/// deletable, a save with the player's comment (<see cref="SaveData.Comment"/>) — plus the persistent page, which the
+/// original copies into every slot (<c>ﾛｰﾄﾞｾｰﾌﾞ.ADV</c>'s <c>L_00ad6</c>, STR-31) and the library keeps once.
 /// </summary>
 public interface ISaveLibrary
 {
-    /// <summary>The auto-saves kept: an eleventh pushes the oldest out.</summary>
+    /// <summary>The auto-saves kept of each ring: an eleventh pushes that ring's oldest out.</summary>
     const int AutoCount = 10;
 
-    /// <summary>The auto-saves, newest first.</summary>
+    /// <summary>The auto-saves of both rings, numbered together as written, newest first.</summary>
     IReadOnlyList<SaveId> Autos { get; }
 
     /// <summary>The manual saves by number, the first made first.</summary>
@@ -37,8 +47,14 @@ public interface ISaveLibrary
     /// <summary>A save's contents with its stamp, or null when there is none or it cannot be read.</summary>
     SaveData? Read(SaveId id);
 
-    /// <summary>A new auto-save (stamped with the time now when the data brings none), the oldest past <see cref="AutoCount"/> deleted; null when it cannot be written.</summary>
-    SaveId? WriteAuto(SaveData data);
+    /// <summary>The ring of auto-save <paramref name="id"/>; <see cref="AutoRing.TurnStart"/> for any other save.</summary>
+    AutoRing RingOf(SaveId id);
+
+    /// <summary>
+    /// A new auto-save in <paramref name="ring"/> (stamped with the time now when the data brings none), numbered after
+    /// every auto-save, that ring's oldest past <see cref="AutoCount"/> deleted; null when it cannot be written.
+    /// </summary>
+    SaveId? WriteAuto(SaveData data, AutoRing ring = AutoRing.TurnStart);
 
     /// <summary>
     /// A manual save: over number <paramref name="over"/>, or a new one numbered after the highest; stamped with the
@@ -63,6 +79,7 @@ public interface ISaveLibrary
 public sealed class MemorySaveLibrary(Func<DateTime>? clock = null) : ISaveLibrary
 {
     private readonly Dictionary<SaveId, byte[]> _saves = [];
+    private readonly HashSet<SaveId> _turnEnds = [];
     private readonly Func<DateTime> _clock = clock ?? (() => DateTime.Now);
     private byte[]? _persistent;
     private int _lastAuto;
@@ -77,12 +94,17 @@ public sealed class MemorySaveLibrary(Func<DateTime>? clock = null) : ISaveLibra
     public SaveData? Read(SaveId id) => _saves.TryGetValue(id, out var bytes) ? FromBytes(bytes) : null;
 
     /// <inheritdoc />
-    public SaveId? WriteAuto(SaveData data)
+    public AutoRing RingOf(SaveId id) => _turnEnds.Contains(id) ? AutoRing.TurnEnd : AutoRing.TurnStart;
+
+    /// <inheritdoc />
+    public SaveId? WriteAuto(SaveData data, AutoRing ring = AutoRing.TurnStart)
     {
         var id = new SaveId(SaveKind.Auto, ++_lastAuto);
         _saves[id] = ToBytes(data.Stamped(data.Written ?? _clock()));
-        foreach (var old in Autos.Skip(ISaveLibrary.AutoCount))
-            _saves.Remove(old);
+        if (ring == AutoRing.TurnEnd)
+            _turnEnds.Add(id);
+        foreach (var old in Autos.Where(a => RingOf(a) == ring).Skip(ISaveLibrary.AutoCount))
+            Delete(old);
         return id;
     }
 
@@ -96,7 +118,11 @@ public sealed class MemorySaveLibrary(Func<DateTime>? clock = null) : ISaveLibra
     }
 
     /// <inheritdoc />
-    public bool Delete(SaveId id) => _saves.Remove(id);
+    public bool Delete(SaveId id)
+    {
+        _turnEnds.Remove(id);
+        return _saves.Remove(id);
+    }
 
     /// <inheritdoc />
     public bool SetComment(SaveId id, string comment)
@@ -128,8 +154,8 @@ public sealed class MemorySaveLibrary(Func<DateTime>? clock = null) : ISaveLibra
 }
 
 /// <summary>
-/// The library as files in a directory (created on the first write): <c>auto-NNNN.ksav</c>, <c>save-NNNN.ksav</c> and
-/// <c>persistent.ksav</c>. A directory of the engine's slots (<c>slotNN.ksav</c>, <see cref="DirectorySaveStore"/>) and
+/// The library as files in a directory (created on the first write): <c>auto-NNNN.ksav</c> (a turn's start),
+/// <c>end-NNNN.ksav</c> (its end, numbered with the starts), <c>save-NNNN.ksav</c> and <c>persistent.ksav</c>. A directory of the engine's slots (<c>slotNN.ksav</c>, <see cref="DirectorySaveStore"/>) and
 /// no save of the library is migrated as the library opens it: slot 1 becomes the newest auto-save, slots 2-10 manual
 /// saves 1-9 (their numbers in the original's lists), their times kept; the slots are moved into <c>legacy</c>, not
 /// deleted. The persistent page is not made from them here: the game reads it from its saves the first time
@@ -138,6 +164,7 @@ public sealed class MemorySaveLibrary(Func<DateTime>? clock = null) : ISaveLibra
 public sealed class DirectorySaveLibrary : ISaveLibrary
 {
     private const string AutoPrefix = "auto-";
+    private const string TurnEndPrefix = "end-";
     private const string ManualPrefix = "save-";
     private const string Extension = ".ksav";
     private const string PersistentName = "persistent.ksav";
@@ -153,7 +180,8 @@ public sealed class DirectorySaveLibrary : ISaveLibrary
     public string Directory { get; }
 
     /// <inheritdoc />
-    public IReadOnlyList<SaveId> Autos => [.. Numbers(AutoPrefix).OrderDescending().Select(n => new SaveId(SaveKind.Auto, n))];
+    public IReadOnlyList<SaveId> Autos =>
+        [.. Numbers(AutoPrefix).Concat(Numbers(TurnEndPrefix)).Distinct().OrderDescending().Select(n => new SaveId(SaveKind.Auto, n))];
 
     /// <inheritdoc />
     public IReadOnlyList<SaveId> Manuals => [.. Numbers(ManualPrefix).Order().Select(n => new SaveId(SaveKind.Manual, n))];
@@ -162,14 +190,18 @@ public sealed class DirectorySaveLibrary : ISaveLibrary
     public SaveData? Read(SaveId id) => ReadFile(PathOf(id));
 
     /// <inheritdoc />
-    public SaveId? WriteAuto(SaveData data)
+    public AutoRing RingOf(SaveId id) =>
+        id.Kind == SaveKind.Auto && File.Exists(PathOf(id, AutoRing.TurnEnd)) ? AutoRing.TurnEnd : AutoRing.TurnStart;
+
+    /// <inheritdoc />
+    public SaveId? WriteAuto(SaveData data, AutoRing ring = AutoRing.TurnStart)
     {
         var autos = Autos;
         var id = new SaveId(SaveKind.Auto, autos.Count == 0 ? 1 : autos[0].Number + 1);
-        if (!WriteFile(PathOf(id), data.Stamped(data.Written ?? DateTime.Now)))
+        if (!WriteFile(PathOf(id, ring), data.Stamped(data.Written ?? DateTime.Now)))
             return null;
-        foreach (var old in Autos.Skip(ISaveLibrary.AutoCount))
-            Delete(old);
+        foreach (var old in Numbers(ring == AutoRing.TurnEnd ? TurnEndPrefix : AutoPrefix).OrderDescending().Skip(ISaveLibrary.AutoCount))
+            Delete(new SaveId(SaveKind.Auto, old));
         return id;
     }
 
@@ -208,8 +240,14 @@ public sealed class DirectorySaveLibrary : ISaveLibrary
     /// <inheritdoc />
     public bool WritePersistent(SaveData data) => WriteFile(Path.Combine(Directory, PersistentName), data.Stamped(data.Written ?? DateTime.Now));
 
-    private string PathOf(SaveId id) =>
-        Path.Combine(Directory, $"{(id.Kind == SaveKind.Auto ? AutoPrefix : ManualPrefix)}{id.Number:D4}{Extension}");
+    /// <summary>The save's file: an auto-save's in its ring's name, a turn's start when there is none yet.</summary>
+    private string PathOf(SaveId id) => PathOf(id, RingOf(id));
+
+    private string PathOf(SaveId id, AutoRing ring)
+    {
+        string prefix = id.Kind == SaveKind.Manual ? ManualPrefix : ring == AutoRing.TurnEnd ? TurnEndPrefix : AutoPrefix;
+        return Path.Combine(Directory, $"{prefix}{id.Number:D4}{Extension}");
+    }
 
     /// <summary>The numbers of the saves whose files start with <paramref name="prefix"/>.</summary>
     private IEnumerable<int> Numbers(string prefix)

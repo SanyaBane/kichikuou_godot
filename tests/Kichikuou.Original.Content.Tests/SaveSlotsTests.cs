@@ -200,6 +200,34 @@ public class SaveSlotsTests
         Assert.Equal([first, second], SaveSlots.NewestFirst(shelf.Manuals).Select(s => s.Id!.Value));   // No. 1 written over last
     }
 
+    /// <summary>
+    /// Ours (owner's decision 31, docs/ui/save-load.md, §12): a Turn END auto-save is listed with the turn starts by when
+    /// it was written, tagged "Turn End", dated by its Week (its Tmp0021 is whatever the week left there), and takes a
+    /// comment as a manual save does.
+    /// </summary>
+    [Fact]
+    public void A_turn_end_auto_save_is_tagged_dated_by_its_week_and_takes_a_comment()
+    {
+        var clock = new DateTime(2026, 10, 26, 20, 0, 0);
+        var library = new MemorySaveLibrary(() => clock = clock.AddMinutes(1));
+        library.WriteAuto(SaveData.Capture(Game(18), Autosave));
+        var ended = Game(18);
+        ended.Tmp0021 = 3;                                                  // a temporary of the week's commands
+        var end = library.WriteAuto(SaveData.Capture(ended, Moment), AutoRing.TurnEnd)!.Value;
+        library.WriteAuto(SaveData.Capture(Game(19), Autosave));
+        Assert.True(library.SetComment(end, "before the rebels' turn"));
+
+        var shelf = SaveSlots.ReadLibrary(library);
+
+        Assert.Equal([SlotKind.Auto, SlotKind.TurnEnd, SlotKind.Auto], shelf.Autos.Select(s => s.Kind));
+        Assert.Equal(["Turn Start", "Turn End", "Turn Start"], shelf.Autos.Select(s => s.RingText));
+        Assert.Equal([19, 18, 18], shelf.Autos.Select(s => s.Week));
+        Assert.All(shelf.Autos, s => Assert.True(s.IsAuto));
+        Assert.Equal(("A", "Auto-save", true), (shelf.Autos[1].Seal, shelf.Autos[1].Label, shelf.Autos[1].Commented));
+        Assert.Equal("before the rebels' turn", shelf.Autos[1].Comment);
+        Assert.Equal("", SaveSlots.Now(Game(18)).RingText);
+    }
+
     /// <summary>Ours (owner, 2026-10-22, docs/ui/save-load.md, §10): the sweep deletes the manual saves without a comment, nothing else.</summary>
     [Fact]
     public void The_sweep_deletes_the_manual_saves_without_a_comment()
@@ -218,7 +246,7 @@ public class SaveSlotsTests
 
         Assert.Equal(2, SaveSlots.DeleteUncommented(library));
         Assert.Equal([kept], library.Manuals);
-        Assert.Single(library.Autos);                                       // auto-saves take no comment: left
+        Assert.Single(library.Autos);                                       // auto-saves are left, with a comment or without
         Assert.Equal(0, SaveSlots.DeleteUncommented(library));
     }
 }
