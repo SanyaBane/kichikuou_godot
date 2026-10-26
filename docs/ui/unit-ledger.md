@@ -189,3 +189,22 @@ centred in the row (`Content`); the chosen row's bar runs along the whole row an
 finger's button). Checked: the screen gallery's touch pass of the twelve deployment and Subordinates entries (36-pixel
 rules), and the week-18 look with `--touch --interface new --until deployment` (the header's tip and sort, the drag, a
 row's tap choosing Rick (unit 7), the party built in the deployment table). Not yet on the tablet.
+
+## 8. The row height as an option (round O, 2026-10-26)
+
+The owner (2026-10-26): the ledgers' row height in Options, on the PC and on Android alike. The proposal: a section
+**Unit tables: row height** on Option → Display, under Thousands, for both ledgers (Subordinates and deployment), kept
+in `settings.cfg` as the other options — so each device keeps its own: 24 pixels by default on the PC, 36 in the touch
+mode (E2, §7); Defaults sets the device's own; the tables change at once. The text stays 17 in every height (§7).
+
+Mock-ups (`tools/ui/mock_row_height_option.py`, over the screen gallery's `options-display` of the Lacquer and touch
+passes), each on the PC (24 chosen) and on the tablet (36):
+
+- **O1 — a slider** from 24 to 48 pixels in steps of 2, as Text speed's, with a preview of two ledger rows at the
+  height chosen;
+- **O2 — five tiles** of 24, 30, 36, 42 and 48 pixels, each two ledger rows at its height, the chosen one framed in
+  vermilion as the palette's swatches, the device's default marked.
+
+**The agent's recommendation:** O2 — each height is seen before it is chosen, and a tile (176 pixels wide) is a
+finger's target on the tablet where a slider's knob is 18 pixels (3.7 mm); five heights are enough, the slider's
+steps of 2 pixels too fine to tell apart.
