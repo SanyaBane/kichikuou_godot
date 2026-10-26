@@ -10,10 +10,10 @@ namespace Kichikuou.Game.Strategy;
 /// <summary>
 /// Our own deployment screen around the <see cref="DeploymentTableView"/> (owner's decision 25,
 /// docs/ui/deployment-table.md), in the lacquer look and the layout of our Subordinates screen (the owner's E1/E2):
-/// over the whole screen — a dark lacquer backdrop with a faint gold wave pattern; the table's panel across the top
-/// (a title band over the ledger, which <see cref="GameScreen"/> places in <see cref="TableArea"/>); the hovered
-/// unit's picture panel at the bottom left, as the script would show it; the party at the bottom right as the
-/// battle sets it up — the back row on the left, the front row on the right, a card per place with the member's
+/// over the whole screen — a dark lacquer backdrop with a faint gold wave pattern; the table's panel down the left
+/// (a title band and the ledger's tabs over the ledger, which <see cref="GameScreen"/> places in <see cref="TableArea"/>;
+/// docs/ui/unit-ledger.md, the owner's B1-B3); the hovered unit's picture panel at the top right, as the script would
+/// show it; the party under it as the battle sets it up — the back row on the left, the front row on the right, a card per place with the member's
 /// face, its place on a gold diamond and a remove button — with its totals against the budget and the bar's buttons:
 /// those that send the party in red lacquer (Attack or Search; Plains and City in a defence), Stop small. Drawn by
 /// hand in the 1280×800 screen's pixels, as our map panels (<see cref="Lacquer"/>). It decides nothing: the presses
@@ -25,16 +25,20 @@ internal sealed partial class DeploymentPanels : Control
 {
     private static UiPalette Ui => UiPalettes.For(UiPart.Screens);
 
-    // In the 1280×800 screen's pixels (the script's 640×400 at 2×), after the mock-ups (tools/ui/mock_deployment.py, round e).
-    private static readonly Rect2 TablePanel = new(16, 16, 1248, 344);
+    // In the 1280×800 screen's pixels (the script's 640×400 at 2×), after the mock-ups (tools/ui/mock_deployment.py, round e;
+    // tools/ui/mock_unit_ledger.py, round b: the ledger down the left).
+    private static readonly Rect2 TablePanel = new(16, 16, 692, 768);
 
     /// <summary>Where the ledger goes, in the 1280×800 screen's pixels.</summary>
-    public static readonly Rect2 TableArea = new(30, 66, 1220, 282);
+    public static Rect2 TableArea => new(30, TabsTop + LedgerTabsBar.RowHeight, 664, 770 - TabsTop - LedgerTabsBar.RowHeight);
 
-    private static readonly Rect2 PictureArea = new(16, 368, 666, 416);
-    private static readonly Rect2 PartyPanel = new(690, 368, 574, 416);
+    /// <summary>The tabs' top over the ledger's paper (docs/ui/unit-ledger.md).</summary>
+    private const float TabsTop = 66;
+
+    private static readonly Rect2 PictureArea = new(716, 16, 548, 342);
+    private static readonly Rect2 PartyPanel = new(716, 368, 548, 416);
     private const float RowLabelsY = 428, CardsTop = 440, CardHeight = 104, CardGap = 8, TotalsY = 678;
-    private static readonly Rect2 BarArea = new(704, 712, 546, 58);
+    private static readonly Rect2 BarArea = new(730, 712, 520, 58);
     private const float StopWidth = 130, ButtonGap = 8;
 
     /// <summary>The strip right of the cards where the facing mark stands (the owner's U5), with the gap before it.</summary>
@@ -82,6 +86,28 @@ internal sealed partial class DeploymentPanels : Control
 
     /// <summary>Whether a drop's clicks are under way: no drag starts until they are done.</summary>
     public bool Busy { get; set; }
+
+    /// <summary>The ledger's tabs over its paper (docs/ui/unit-ledger.md).</summary>
+    private readonly LedgerTabsBar _tabs = new("deployment", new Rect2(30, TabsTop, 664, LedgerTabsBar.RowHeight));
+
+    /// <summary>The ledger under the tabs (its own control, the screen's sibling): shown at the tab chosen.</summary>
+    public DeploymentTableView? Table
+    {
+        get;
+        set
+        {
+            field = value;
+            value?.Tab = _tabs.Tab;
+        }
+    }
+
+    /// <summary>Shows the ledger's <paramref name="tab"/>; <paramref name="remember"/> keeps it for later openings.</summary>
+    public void ShowTab(LedgerTab tab, bool remember = true)
+    {
+        _tabs.Show(tab, remember);
+        Table?.Tab = tab;
+        _key = "";
+    }
 
     public DeploymentPanels(GameFont font, FacePictures faces)
     {
@@ -151,7 +177,9 @@ internal sealed partial class DeploymentPanels : Control
         string date = $"LP {year} · Month {month} · Week {week}";
         int portrait = details is null ? 0 : state.Units[details.Unit].PortraitCg.Value;
         string key = $"{string.Join(";", party.Places)}|{party.Troops}|{party.Cost}|{party.Gold}|{string.Join("|", labels)}"
-            + $"|{picker.Mode.Value}|{date}|{portrait}|{Busy}|{Figures.Separator}";
+            + $"|{picker.Mode.Value}|{date}|{portrait}|{Busy}|{Figures.Separator}"
+            + $"|{Table?.Tab}|{Table?.SortShown}|{Table?.SortHeader}|{Table?.SortMark}";
+        Table?.OpenTop = _tabs.OpenSpan(_k);
         if (key == _key)
             return;
         _key = key;
@@ -256,6 +284,8 @@ internal sealed partial class DeploymentPanels : Control
                 break;
             case InputEventMouseButton { ButtonIndex: MouseButton.Left } click:
                 var at = ScreenPoint(click.Position);
+                if (_tabs.Press(at, click.Pressed) is { } tab)
+                    ShowTab(tab);
                 int part = PartAt(at);
                 if (click.Pressed)
                 {
@@ -292,6 +322,8 @@ internal sealed partial class DeploymentPanels : Control
 
     private void Hover(Vector2 at)
     {
+        if (_tabs.Hover(at))
+            _screen.QueueRedraw();
         int part = PartAt(at), place = PlaceAt(at);
         if (part == _hovered && place == _hoveredPlace)
             return;
@@ -362,7 +394,7 @@ internal sealed partial class DeploymentPanels : Control
             DrawGhost(c, dragged);
     }
 
-    /// <summary>The table's panel: the title band (the screen's name, the mode and the places offered, the date) over the ledger.</summary>
+    /// <summary>The table's panel: the title band (the screen's name, the mode and the places offered, the date), the tabs over the ledger.</summary>
     private void DrawTablePanel(Control c)
     {
         Ui.DrawPanel(c, TablePanel, _k);
@@ -378,6 +410,8 @@ internal sealed partial class DeploymentPanels : Control
         float dw = _cinzel.GetStringSize(_date, fontSize: 16).X;
         c.DrawString(_cinzel, new Vector2(band.End.X - dw, Lacquer.Baseline(band, _cinzel, 16) + 1), _date, fontSize: 16, modulate: Ui.Name);
         Ui.DrawDivider(c, TablePanel.Position.X + 16, TablePanel.End.X - 16, TablePanel.Position.Y + 44, _k);
+        if (Table is not null)
+            _tabs.Draw(c, _k, Table);
     }
 
     /// <summary>The picture panel with a shadow under it (its gold frame is the original's).</summary>

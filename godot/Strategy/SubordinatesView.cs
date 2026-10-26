@@ -10,9 +10,10 @@ namespace Kichikuou.Game.Strategy;
 /// <summary>
 /// Our own Subordinates screen (docs/ui/subordinates.md, the owner's layout F1 in the look of mock-up G3): over the
 /// whole screen while <c>Sﾌﾞｶ</c> is open and while one of its orders runs — a dark lacquer backdrop with a faint
-/// gold wave pattern; the table of the units across the top as a paper ledger in a lacquer panel
-/// (<see cref="SubordinatesScreen.Columns"/>, <see cref="DeploymentTableView"/> as a ledger); the chosen unit's
-/// status CG at the bottom left, in the original screen's gold frame; the orders' panel at the bottom right (the
+/// gold wave pattern; the table of the units down the left as a paper ledger in a lacquer panel, its columns a tab's at a
+/// time (<see cref="SubordinatesScreen.Columns"/>, <see cref="DeploymentTableView"/> as a ledger, <see cref="LedgerTabsBar"/>;
+/// docs/ui/unit-ledger.md, the owner's B4-B5); the chosen unit's status CG at the top right, in the original screen's
+/// gold frame; the orders' panel under it (the
 /// budget, Replenish in red lacquer, Add New Troops' steps, Talk with the unit's face, End). A troop order asks first
 /// in a callout at its button (the owner's C3, docs/ui/subordinates.md, §6: the Treasure screen's
 /// <see cref="TreasureCallout"/>, Yes / No); after it a plate in the middle of the screen says what it did (R4/R5).
@@ -26,14 +27,16 @@ internal sealed partial class SubordinatesView : Control
 {
     private static UiPalette Ui => UiPalettes.For(UiPart.Screens);
 
-    // In the 1280×800 screen's pixels (the script's 640×400 at 2×), after the mock-ups.
-    private static readonly Rect2 TablePanel = new(16, 16, 1248, 344);
-    private static readonly Rect2 TableArea = new(30, 66, 1220, 282);     // the ledger
-    private static readonly Rect2 PictureArea = new(16, 368, 666, 416);   // the picture panel's 314×196 as tall as the orders'
-    private static readonly Rect2 OrdersPanel = new(690, 368, 574, 416);
-    private static readonly Rect2 ReplenishArea = new(702, 424, 550, 60);
+    // In the 1280×800 screen's pixels (the script's 640×400 at 2×), after the mock-ups (tools/ui/mock_subordinates.py;
+    // tools/ui/mock_unit_ledger.py, round b: the ledger down the left, the picture and the orders on the right).
+    private static readonly Rect2 TablePanel = new(16, 16, 692, 768);
+    private const float TabsTop = 66;                                     // the ledger's tabs (docs/ui/unit-ledger.md)
+    private static Rect2 TableArea => new(30, TabsTop + LedgerTabsBar.RowHeight, 664, 770 - TabsTop - LedgerTabsBar.RowHeight);
+    private static readonly Rect2 PictureArea = new(716, 16, 548, 342);   // the picture panel's 314×196 as wide as the orders'
+    private static readonly Rect2 OrdersPanel = new(716, 368, 548, 416);
+    private static readonly Rect2 ReplenishArea = new(728, 424, 524, 60);
     private const float AddLabelY = 500, StepsTop = 514, StepsHeight = 56, StepGap = 6, RuleY = 586;
-    private static readonly Rect2 TalkArea = new(702, 598, 220, 84);
+    private static readonly Rect2 TalkArea = new(728, 598, 220, 84);
     private static readonly Rect2 EndArea = new(1112, 718, 140, 52);
     private static readonly Color AskedLine = Color.Color8(190, 60, 40);   // the button the callout asks about
 
@@ -61,6 +64,10 @@ internal sealed partial class SubordinatesView : Control
     private IReadOnlyDictionary<int, SceneMark> _talkMarks = new Dictionary<int, SceneMark>();
     private int _hovered = NoButton, _pressed = NoButton, _asked = NoButton;
 
+    /// <summary>The ledger's tabs over its paper (docs/ui/unit-ledger.md).</summary>
+    private readonly LedgerTabsBar _tabs = new("subordinates", new Rect2(30, TabsTop, 664, LedgerTabsBar.RowHeight));
+    private string _tabsKey = "";
+
     /// <summary>An order's button pressed: the order, the unit and Add More's step.</summary>
     public event Action<SubordinateOrderKind, int, int>? OrderPressed;
 
@@ -77,7 +84,8 @@ internal sealed partial class SubordinatesView : Control
         AddChild(_backdrop);
         _face = new Layer(DrawScreen);
         AddChild(_face);
-        _table = new DeploymentTableView(font, SubordinatesScreen.Columns, chooser: true, textSize: 9) { Visible = true };
+        _table = new DeploymentTableView(font, SubordinatesScreen.Columns, chooser: true, textSize: 8.3f) { Visible = true };
+        _table.Tab = _tabs.Tab;
         _table.RowPressed += unit => _table.Chosen = unit;
         _table.RightPressed += () => EndPressed?.Invoke();
         AddChild(_table);
@@ -95,6 +103,14 @@ internal sealed partial class SubordinatesView : Control
 
     /// <summary>Whether the panel's buttons take presses (not while an order runs).</summary>
     public bool Busy { get; set; }
+
+    /// <summary>Shows the ledger's <paramref name="tab"/>; <paramref name="remember"/> keeps it for later openings.</summary>
+    public void ShowTab(LedgerTab tab, bool remember = true)
+    {
+        _tabs.Show(tab, remember);
+        _table.Tab = tab;
+        _face.QueueRedraw();
+    }
 
     /// <summary>Option → Display: the screen's text in the chosen font, as the deployment table's.</summary>
     public void SetFont(GameFont font)
@@ -151,6 +167,13 @@ internal sealed partial class SubordinatesView : Control
         _talkMarks = SubordinatesScreen.TalkMarks(state, talks);
         _table.Refresh(state);
         _table.TalkMarks = _talkMarks;
+        _table.OpenTop = _tabs.OpenSpan(_k);
+        string tabsKey = $"{_table.Tab}|{_table.SortShown}|{_table.SortHeader}|{_table.SortMark}";
+        if (tabsKey != _tabsKey)
+        {
+            _tabsKey = tabsKey;
+            _face.QueueRedraw();
+        }
         if (_table.Chosen == 0 || !_table.Lists(_table.Chosen))
             _table.Chosen = SubordinatesScreen.FirstChoice(state);
         var (year, month, week) = StatusStrip.DateOf(state.Week.Value);
@@ -279,6 +302,8 @@ internal sealed partial class SubordinatesView : Control
         {
             case InputEventMouseMotion motion:
                 Hover(ButtonAt(motion.Position));
+                if (_tabs.Hover((motion.Position - _origin) / _k))
+                    _face.QueueRedraw();
                 break;
             case InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true }:
                 if (!Busy)
@@ -286,6 +311,8 @@ internal sealed partial class SubordinatesView : Control
                 AcceptEvent();
                 break;
             case InputEventMouseButton { ButtonIndex: MouseButton.Left } click:
+                if (_tabs.Press((click.Position - _origin) / _k, click.Pressed) is { } tab)
+                    ShowTab(tab);
                 int button = ButtonAt(click.Position);
                 if (click.Pressed)
                     _pressed = Enabled(button) ? button : NoButton;
@@ -381,6 +408,7 @@ internal sealed partial class SubordinatesView : Control
         float dw = _cinzel.GetStringSize(_date, fontSize: 16).X;
         c.DrawString(_cinzel, new Vector2(band.End.X - dw, Lacquer.Baseline(band, _cinzel, 16) + 1), _date, fontSize: 16, modulate: Ui.Name);
         Ui.DrawDivider(c, TablePanel.Position.X + 16, TablePanel.End.X - 16, TablePanel.Position.Y + 44, _k);
+        _tabs.Draw(c, _k, _table);
     }
 
     /// <summary>The picture panel with a shadow under it (its gold frame is the original's).</summary>

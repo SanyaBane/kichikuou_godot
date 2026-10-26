@@ -343,6 +343,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _table.RowPressed += TableRowPressed;
         _table.RightPressed += TableRightPressed;
         _content.AddChild(_table);
+        _panels.Table = _table;                                 // the ledger under the panels' tabs
         ReadyDeploymentReplenish(faces);                        // over the table: its question and its plate
         _messageView = new MessageWindowView(GodotGlyphRenderer.Chosen)
         {

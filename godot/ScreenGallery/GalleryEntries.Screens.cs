@@ -43,6 +43,12 @@ internal static partial class GalleryEntries
         yield return new("deployment-refill-done", "Screens", "Deployment: Replenish's plate", Week18,
             "The plate's figures are Replenish's for the unit as it is now (SubordinateResult.ReplenishPreview); the table under it is not replenished.",
             g => Deployment(g, 1, 4, OaksParty, 0, refill: Refill.Plate));
+        yield return new("deployment-troops", "Screens", "Deployment: the Troops tab", Week18,
+            "The ledger's Troops tab sorted by T.Atk (docs/ui/unit-ledger.md, B2).",
+            g => Deployment(g, 1, 4, OaksParty, Rance, tab: LedgerTab.Troops, sort: (DeploymentColumn.TroopAtk, true)));
+        yield return new("deployment-commander", "Screens", "Deployment: the Commander tab, the order kept", Week18,
+            "The Commander tab with the rows still in the Troops tab's T.Atk order: the order's seal right of the tabs (B3, round D).",
+            g => Deployment(g, 1, 4, OaksParty, Rance, tab: LedgerTab.Commander, sort: (DeploymentColumn.TroopAtk, true)));
     }
 
     private enum Refill { None, Question, Plate }
@@ -52,7 +58,8 @@ internal static partial class GalleryEntries
     /// <c>GameScreen.UpdateDeploymentScreen</c> lays it, the picker opened in <paramref name="mode"/> with
     /// <paramref name="party"/> picked; with <paramref name="refill"/> the Replenish question at a Refill cell or its plate.
     /// </summary>
-    private static Action<Rect2>? Deployment(GalleryStage g, int mode, int limit, int[] party, int details, Refill refill = Refill.None)
+    private static Action<Rect2>? Deployment(GalleryStage g, int mode, int limit, int[] party, int details, Refill refill = Refill.None,
+        LedgerTab tab = LedgerTab.Overview, (DeploymentColumn Column, bool Descending)? sort = null)
     {
         if (g.State(Week18) is not { } s)
             return null;
@@ -64,6 +71,10 @@ internal static partial class GalleryEntries
         var panels = g.Add(new DeploymentPanels(g.Font, g.Faces) { Visible = true });
         panels.LoadCrops();
         var table = g.Add(new DeploymentTableView(g.Font) { Visible = true });
+        panels.Table = table;
+        panels.ShowTab(tab, remember: false);                   // the entry's tab, not the player's
+        if (sort is { } order)
+            table.Sort(order.Column, order.Descending);
         int unit = refill == Refill.None ? 0
             : DeploymentTable.Rows(s).Where(r => r.CanRefill).OrderBy(r => r.Troops / (double)Math.Max(1, r.MaxTroops))
                 .ThenBy(r => r.Unit).Select(r => r.Unit).FirstOrDefault();

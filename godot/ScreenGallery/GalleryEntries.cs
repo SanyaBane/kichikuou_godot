@@ -148,6 +148,9 @@ internal static partial class GalleryEntries
             g => SubordinatesScreen(g, (_, _) => { }));
         yield return new("subordinates-question", "Screens", "Subordinates: Replenish asks first", Week18, "",
             g => SubordinatesScreen(g, (s, view) => view.Press(SubordinateOrderKind.Replenish, Neediest(s))));
+        yield return new("subordinates-commander", "Screens", "Subordinates: the Commander tab", Week18,
+            "The ledger's Commander tab sorted by Lvl (docs/ui/unit-ledger.md, B5).",
+            g => SubordinatesScreen(g, (_, view) => view.Table.Sort(DeploymentColumn.Level, true), LedgerTab.Commander));
         yield return new("subordinates-result", "Screens", "Subordinates: Replenish's plate", Week18,
             "The plate's figures are Replenish's for the unit as it is now; the order is not run (SubordinateResult.ReplenishPreview).",
             g => SubordinatesScreen(g, (s, view) =>
@@ -166,12 +169,14 @@ internal static partial class GalleryEntries
     /// Our Subordinates screen on the save's state, then <paramref name="then"/> once it is placed and filled, and filled
     /// again after it.
     /// </summary>
-    private static Action<Rect2>? SubordinatesScreen(GalleryStage g, Action<GameState, SubordinatesView> then)
+    private static Action<Rect2>? SubordinatesScreen(GalleryStage g, Action<GameState, SubordinatesView> then,
+        LedgerTab tab = LedgerTab.Overview)
     {
         if (g.State(Week18) is not { } s)
             return null;
         var view = g.Add(new SubordinatesView(g.Font, g.Faces) { Visible = true });
         view.LoadCrops();
+        view.ShowTab(tab, remember: false);                     // the entry's tab, not the player's
         bool done = false;
         return area =>
         {

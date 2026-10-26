@@ -18,7 +18,9 @@ namespace Kichikuou.Game.Strategy;
 /// mock-up G3, docs/ui/subordinates.md, and E1/E2, docs/ui/deployment-table.md): paper and ink, the headers in
 /// Cinzel, the troops' bars; the party's places vermilion seals on gilt rows, a chooser's row a vermilion mark. A chooser's
 /// first column also holds each unit's talk mark (owner's decision 30, docs/ui/talk-marks.md §6, S): a speech bubble left
-/// of No., filled green with "!" (new), vermilion with "?" (a draw decides), an empty outline (read).
+/// of No., filled green with "!" (new), vermilion with "?" (a draw decides), an empty outline (read). Given a <see cref="Tab"/>
+/// it shows only that tab's columns (docs/ui/unit-ledger.md, the owner's B1-B5), the sort kept across tabs, with a strip
+/// at its header's top for the groups' names over their columns (the Troops tab's Offense, Defense, Dungeon).
 /// </summary>
 internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
 {
@@ -70,8 +72,14 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         }
     }
 
-    /// <summary>The columns shown after the first (the deployment table's, or another screen's).</summary>
-    private readonly IReadOnlyList<DeploymentColumnInfo> _columns;
+    /// <summary>The screen's columns (the deployment table's, or another screen's): all of them, or a tab's pick.</summary>
+    private readonly IReadOnlyList<DeploymentColumnInfo> _all;
+
+    /// <summary>The columns shown after the first: the screen's, or the <see cref="Tab"/>'s.</summary>
+    private IReadOnlyList<DeploymentColumnInfo> _columns;
+
+    /// <summary>The groups over the shown columns (indices into <see cref="_columns"/>).</summary>
+    private IReadOnlyList<LedgerGroup> _groups = [];
 
     /// <summary>Whether the first column marks the chosen row (<see cref="Chosen"/>) instead of the party's places.</summary>
     private readonly bool _chooser;
@@ -109,7 +117,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     private float BubbleRoom => _chooser ? _fontSize * 1.45f : 0;
 
     /// <summary>The headers' size: smaller than the text's (Cinzel's capitals are wide).</summary>
-    private int TitleSize => Math.Max(8, (int)Math.Round(_fontSize * 0.82f));
+    private int TitleSize => Math.Max(8, (int)Math.Round(_fontSize * (Tab is null ? 0.82f : 0.72f)));
 
     /// <summary>The chosen unit's row, marked and highlighted when the table is a chooser (our Subordinates screen).</summary>
     public int Chosen
@@ -137,32 +145,18 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     public DeploymentTableView(GameFont font, IReadOnlyList<DeploymentColumnInfo> columns, bool chooser, float textSize,
         bool refillButtons = false)
     {
-        _columns = columns;
+        _overlay = new Overlay(DrawOverlay) { MouseFilter = MouseFilterEnum.Ignore };   // first: Fill sizes it
+        AddChild(_overlay);
+        _all = _columns = columns;
         _chooser = chooser;
         _textSize = textSize;
         _refillButtons = refillButtons;
-        Columns = _columns.Count + 1;
         HideRoot = true;
         ColumnTitlesVisible = true;
         FocusMode = FocusModeEnum.None;
         SelectMode = SelectModeEnum.Row;
         Visible = false;
-        SetColumnTitle(0, chooser ? "" : PartyMark);
-        SetColumnTitleAlignment(0, HorizontalAlignment.Center);
-        bool hover = !TouchMode.On;                                     // the touch mode's tips come by a long press
-        SetColumnTitleTooltipText(0, chooser || !hover ? "" : "Place in the party");
-        for (int c = 0; c < _columns.Count; c++)
-        {
-            var info = _columns[c];
-            SetColumnTitle(c + 1, info.Header);
-            SetColumnTitleTooltipText(c + 1, hover ? info.FullName : "");
-            SetColumnTitleAlignment(c + 1, Alignment(info));
-        }
-        for (int c = 0; c < Columns; c++)
-        {
-            SetColumnExpand(c, c == Columns - 1);                  // the last column to the paper's edge
-            SetColumnClipContent(c, true);
-        }
+        SetUpColumns();
         AddThemeStyleboxOverride("focus", new StyleBoxEmpty());
         ApplyLedger();
         AddThemeConstantOverride("h_separation", 6);
@@ -175,6 +169,122 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         };
         SetFont(font);
         AddChild(_tip);
+    }
+
+    /// <summary>The tree's columns for <see cref="_columns"/>: the first, then each shown one with its header, tip and alignment.</summary>
+    private void SetUpColumns()
+    {
+        Columns = _columns.Count + 1;
+        SetColumnTitle(0, _chooser ? "" : PartyMark);
+        SetColumnTitleAlignment(0, HorizontalAlignment.Center);
+        bool hover = !TouchMode.On;                                     // the touch mode's tips come by a long press
+        SetColumnTitleTooltipText(0, _chooser || !hover ? "" : "Place in the party");
+        for (int c = 0; c < _columns.Count; c++)
+        {
+            var info = _columns[c];
+            SetColumnTitle(c + 1, info.Header);
+            SetColumnTitleTooltipText(c + 1, hover ? info.FullName : "");
+            SetColumnTitleAlignment(c + 1, Alignment(info));
+        }
+        for (int c = 0; c < Columns; c++)
+        {
+            SetColumnExpand(c, c == Columns - 1);                  // the last column to the paper's edge
+            SetColumnClipContent(c, true);
+        }
+    }
+
+    /// <summary>
+    /// The tab shown (docs/ui/unit-ledger.md), or null for every column (the default): its columns picked from the
+    /// screen's (<see cref="LedgerTabs.Of"/>), the rows and the sort as they were — the order kept even when its column is
+    /// not in the tab (<see cref="SortShown"/>). Given once, the header keeps the groups' strip in every tab, so the rows
+    /// stay where they are when the tab changes.
+    /// </summary>
+    public LedgerTab? Tab
+    {
+        get;
+        set
+        {
+            if (field == value && value is not null)
+                return;
+            field = value;
+            var shown = value is { } tab ? LedgerTabs.Of(_all, tab) : new LedgerTabColumns(_all, []);
+            (_columns, _groups) = (shown.Columns, shown.Groups);
+            _refillHovered = 0;
+            SetUpColumns();
+            ApplyLedger();
+            Fill();
+        }
+    }
+
+    /// <summary>The header of the column the rows are sorted by (the screen's own, Off.A rather than a group's Atk).</summary>
+    public string SortHeader => _all.FirstOrDefault(c => c.Column == _sort)?.Header ?? "";
+
+    /// <summary>The sort's mark in the text's font: the narrowest arrow pair it has (<see cref="SetFont"/>).</summary>
+    public string SortMark => _descending ? _down : _up;
+
+    /// <summary>Whether the sorted column is shown: else the screen says the order beside the tabs.</summary>
+    public bool SortShown => _columns.Any(c => c.Column == _sort);
+
+    /// <summary>The text's font (the tabs' note writes the sort's mark with it).</summary>
+    public Font TextFont => _font;
+
+    /// <summary>
+    /// The span of the header's top edge (local x) under the chosen tab, drawn over in the header's colour so the tab and
+    /// the paper join (as the options window's sheet); null for none.
+    /// </summary>
+    public (float From, float To)? OpenTop
+    {
+        get;
+        set
+        {
+            if (field == value)
+                return;
+            field = value;
+            _overlay.QueueRedraw();
+        }
+    }
+
+    /// <summary>The groups' strip at the header's top: as tall as the text, once a tab is given.</summary>
+    private float GroupStrip => Tab is null ? 0 : _fontSize;
+
+    /// <summary>The groups' names: Cinzel at 600.</summary>
+    private readonly FontVariation _groupFont = Lacquer.Cinzel(600);
+
+    /// <summary>Over the tree's header (a child, drawn after the tree, which its own <c>_Draw</c> is not): <see cref="DrawOverlay"/>.</summary>
+    private readonly Overlay _overlay;
+
+    /// <summary>A control that draws with its owner's painter, taking no input.</summary>
+    private sealed partial class Overlay(Action<Control> paint) : Control
+    {
+        public Overlay() : this(_ => { })
+        {
+        }
+
+        public override void _Draw() => paint(this);
+    }
+
+    /// <summary>
+    /// Over the tree's own drawing: the open top under the chosen tab, and each group's name over its columns in the
+    /// header's top strip with a rule under it.
+    /// </summary>
+    private void DrawOverlay(Control c)
+    {
+        if (OpenTop is { } open)
+            c.DrawRect(new Rect2(open.From, 0, open.To - open.From, 2), Ui.PaperHead);
+        if (_groups.Count == 0 || GetRoot()?.GetFirstChild() is not { } first)
+            return;
+        int size = Math.Max(7, (int)Math.Round(TitleSize * 0.82f));
+        float mid = 1 + GroupStrip * 0.6f;
+        float baseline = mid + (_groupFont.GetAscent(size) - _groupFont.GetDescent(size)) / 2;
+        foreach (var group in _groups)
+        {
+            var a = GetItemAreaRect(first, group.First + 1);
+            var b = GetItemAreaRect(first, group.Last + 1);
+            float x0 = a.Position.X + 4, x1 = b.End.X - 4;
+            c.DrawString(_groupFont, new Vector2(x0, baseline), group.Name.ToUpperInvariant(), HorizontalAlignment.Center, x1 - x0,
+                size, Ui.InkQuiet);
+            c.DrawLine(new Vector2(x0, GroupStrip + 2), new Vector2(x1, GroupStrip + 2), Ui.PaperRule, 1);
+        }
     }
 
     /// <summary>Option → Display: the ledger's look and its rows in the palette's colours again.</summary>
@@ -195,7 +305,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         StyleBoxFlat Head(Color colour) => new()
         {
             BgColor = colour, BorderColor = Ui.HeadInk, BorderWidthBottom = 1,
-            ContentMarginLeft = 4, ContentMarginRight = 4, ContentMarginTop = 3, ContentMarginBottom = 3,
+            ContentMarginLeft = 4, ContentMarginRight = 4, ContentMarginTop = 3 + GroupStrip, ContentMarginBottom = 3,
         };
         AddThemeStyleboxOverride("title_button_normal", Head(Ui.PaperHead));
         AddThemeStyleboxOverride("title_button_hover", Head(Ui.PaperHead.Lightened(0.12f)));
@@ -263,6 +373,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     {
         Position = rect.Position;
         Size = rect.Size;
+        _overlay.Size = new Vector2(rect.Size.X, Math.Max(4, GroupStrip + 4));
         int size = Math.Max(8, (int)Math.Round(_textSize * pixelsPerScript));
         if (size == _fontSize)
             return;
@@ -270,6 +381,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         AddThemeFontSizeOverride("font_size", size);
         AddThemeFontSizeOverride("title_button_font_size", TitleSize);
         AddThemeConstantOverride("v_separation", (int)Math.Round(1.5f * pixelsPerScript));   // the ledger's rows breathe
+        ApplyLedger();                                                  // the groups' strip grows with the text
         Fill();
     }
 
@@ -421,6 +533,13 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     private static HorizontalAlignment Alignment(DeploymentColumnInfo info) =>
         info.IsText || info.Column == DeploymentColumn.Troops ? HorizontalAlignment.Left : HorizontalAlignment.Right;
 
+    /// <summary>The rows in <paramref name="column"/>'s order as its header's clicks would leave them (the screen gallery).</summary>
+    public void Sort(DeploymentColumn column, bool descending)
+    {
+        (_sort, _descending) = (column, descending);
+        Fill();
+    }
+
     /// <summary>A header click: by that column, best first for a value where more is better (<see cref="DeploymentColumnInfo.HighFirst"/>), else ascending; again the other way.</summary>
     private void SortBy(DeploymentColumnInfo column)
     {
@@ -460,7 +579,9 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         if (RefillColumn > 0)
             widths[RefillColumn] += _fontSize * 0.8f;                       // the buttons' rule and padding
         for (int c = 0; c < Columns; c++)
-            SetColumnCustomMinimumWidth(c, (int)Math.Ceiling(widths[c]) + separation + 6);
+            SetColumnCustomMinimumWidth(c, (int)Math.Ceiling(widths[c]) + separation + (Tab is null ? 6 : 3));
+        _overlay.Size = new Vector2(Size.X, Math.Max(4, GroupStrip + 4));
+        _overlay.QueueRedraw();
     }
 
     /// <summary>
