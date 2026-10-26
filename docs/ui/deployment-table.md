@@ -403,3 +403,9 @@ docs/strategy/README.md.
   the order is spent); `--refill` (unattended play replenishes through the table instead of Subordinates; in a window
   the dumps `deployment-refill-question` and `deployment-refill-done`). The table no longer fits a 1280×800 window: it
   scrolls, as the Subordinates screen's since its Cost column. The owner looked at it and accepted it (2026-10-20).
+
+## The ledger down the left (owner's request, 2026-10-26)
+
+With many units the ledger across the top shows about ten at once. The owner asked for it down the screen's left,
+showing a part of its columns at a time in tabs; the Subordinates screen's the same. The proposal and mock-up round A
+are docs/ui/unit-ledger.md, awaiting the owner's choice.

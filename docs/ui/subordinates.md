@@ -231,3 +231,8 @@ is spent (`CmdAvail_SubTalk` 0) nor in the view-only picker (the owner, 2026-10-
 column, widened for them, after the chosen row's bar and diamond (`DeploymentTableView.TalkMarks`, a chooser only); the
 pill is `Lacquer.DrawPill`. Our interface only. Looked at from `saves-week18`: every unit NEW (the save predates the read
 lines).
+
+## 8. The ledger down the left (owner's request, 2026-10-26)
+
+The deployment screen's request applies here too: the ledger down the screen's left, a part of its columns at a time
+in tabs, the picture and the orders panel stacked on the right — docs/ui/unit-ledger.md, awaiting the owner's choice.
