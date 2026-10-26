@@ -13,7 +13,7 @@ namespace Kichikuou.Game.Strategy;
 /// (the text speed with the game's 121 typing as its preview, the message skip's switches, Forget, the mouse, the
 /// already-read text's colour, <see cref="ReadTextChoice"/>, docs/ui/read-text.md), Display
 /// (the font, the palette, the thousands, the unit tables' row height, <see cref="LedgerRowsChoice"/>), Battle (our
-/// battle screen's effects and timings, <see cref="BattleScreenSettings"/>, the order strip as their preview), Game (the game folder, "New scenes first", <see cref="NewScenesChoice"/>). Every change applies
+/// battle screen's effects, the damage forecast and the timings, <see cref="BattleScreenSettings"/>, the order strip as their preview), Game (the game folder, "New scenes first", <see cref="NewScenesChoice"/>). Every change applies
 /// and is kept at once; Defaults resets the tab shown (not the game folder); Close, Esc or a right click shut it. Forget and the game folder ask first, in a box over the sheet. Laid out
 /// in the 1280×800 screen's pixels, scaled with the picture.
 /// </summary>
@@ -77,8 +77,11 @@ internal sealed partial class OptionsView : Control
 
     private static readonly int TimingRows = (BattleScreenSettings.All.Count(s => s.Unit != BattleScreenSettings.Toggle) + 1) / 2;
 
+    /// <summary>The Battle tab's second check box (the damage forecast) under the first.</summary>
+    private const float ForecastRow = 52;
+
     /// <summary>Where the order strip's preview sits on the Battle tab: under the timings, Preview right of it.</summary>
-    private static Rect2 StripRect => new(ContentX, ContentY + 96 + 36 + TimingRows * 46 + 6, ContentW - 130, 46);
+    private static Rect2 StripRect => new(ContentX, ContentY + 96 + ForecastRow + 36 + TimingRows * 46 + 6, ContentW - 130, 46);
 
     private sealed record Question(string Title, string Text, string Confirm, Action Confirmed);
 
@@ -559,11 +562,14 @@ internal sealed partial class OptionsView : Control
     private void DrawBattle()
     {
         float x = ContentX, y = ContentY, w = ContentW;
-        SectionHead(x, y, "Effects", w);
+        SectionHead(x, y, "Effects and forecast", w);
         var effects = BattleScreenSettings.Effects;
         CheckBox("effects", x, y + 36, BattleScreenSettings.Get(effects) >= 0.5, "Exchange effects", effects.Hint,
             () => BattleScreenSettings.Set(effects, BattleScreenSettings.Get(effects) >= 0.5 ? 0 : 1));
-        y += 96;
+        var forecast = BattleScreenSettings.Forecast;
+        CheckBox("forecast", x, y + 36 + ForecastRow, BattleScreenSettings.Get(forecast) >= 0.5, "Damage forecast", forecast.Hint,
+            () => BattleScreenSettings.Set(forecast, BattleScreenSettings.Get(forecast) >= 0.5 ? 0 : 1));
+        y += 96 + ForecastRow;
         SectionHead(x, y, "Timings", w);
         y += 36;                                    // StripRect follows the rows
         float colW = (w - 40) / 2;

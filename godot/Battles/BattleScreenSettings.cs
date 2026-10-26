@@ -6,7 +6,7 @@ namespace Kichikuou.Game.Battles;
 /// The settings of our own battle screen (Option → Battle, <see cref="Strategy.OptionsView"/>),
 /// kept in <c>[battle_screen]</c> of <c>user://settings.cfg</c>; a change applies at once. So far the order
 /// strip's moves (<see cref="OrderStrip"/>), the armies' slides, the spotlight's darkness, the cards' counters (<see cref="BattleBoardView"/>),
-/// the exchange's counters (<see cref="ExchangeCountersView"/>), the exchange's result hold (<c>GameScreen</c>), the opening's leave (<see cref="BattleOpeningLayer"/>), the cards' slide and the strip's fly-in at a battle's start and the exchange's effects.
+/// the exchange's counters (<see cref="ExchangeCountersView"/>), the exchange's result hold (<c>GameScreen</c>), the opening's leave (<see cref="BattleOpeningLayer"/>), the cards' slide and the strip's fly-in at a battle's start, the exchange's effects and the damage forecast (<see cref="BattleCommandLayer"/>).
 /// </summary>
 internal static class BattleScreenSettings
 {
@@ -73,24 +73,32 @@ internal static class BattleScreenSettings
     public static readonly Setting Effects = new("effects", "Effects", 0, 1, 1, 1, Toggle,
         "Our attack effects over the scene from an exchange's shots, after Sengoku Rance's (melee, bow, magic). None while skipping.");
 
+    /// <summary>
+    /// Whether the attack banners (the touch mode's attack buttons) show the damage each attack is likely to deal (owner,
+    /// 2026-10-26/27; docs/ui/damage-forecast.md, §7): 1 on, 0 off, off by default; our interface only.
+    /// </summary>
+    public static readonly Setting Forecast = new("damage_forecast", "Damage forecast", 0, 1, 1, 0, Toggle,
+        "Each attack banner shows the damage it is likely to deal: the target's troops and its commander's HP, 9 times in 10.");
+
     /// <summary>The unit of an on/off setting (a check box in the dialog).</summary>
     public const string Toggle = "toggle";
 
     public static IReadOnlyList<Setting> All { get; } =
         [StripSeconds, StripHurrySeconds, StripDropShare, ArmySeconds, SpotDarkness, MeterSeconds, CountSeconds, ResultSeconds, OpeningAppearSeconds, OpeningSeconds,
-         CardsSlideSeconds, StripFlySeconds, Effects];
+         CardsSlideSeconds, StripFlySeconds, Effects, Forecast];
 
     /// <summary>The development switches that set a setting for the launch.</summary>
     private static readonly (string Switch, Setting Setting)[] Switches =
         [("--strip-seconds", StripSeconds), ("--army-seconds", ArmySeconds), ("--meter-seconds", MeterSeconds), ("--count-seconds", CountSeconds), ("--opening-seconds", OpeningSeconds), ("--opening-appear-seconds", OpeningAppearSeconds),
-         ("--result-seconds", ResultSeconds), ("--cards-slide-seconds", CardsSlideSeconds), ("--strip-fly-seconds", StripFlySeconds)];
+         ("--result-seconds", ResultSeconds), ("--cards-slide-seconds", CardsSlideSeconds), ("--strip-fly-seconds", StripFlySeconds),
+         ("--damage-forecast", Forecast)];
 
     private static Dictionary<string, double>? _values;
 
     /// <summary>
     /// A setting's value: <c>--strip-seconds x</c> / <c>--army-seconds x</c> / <c>--meter-seconds x</c> / <c>--count-seconds x</c> / <c>--opening-seconds x</c> / <c>--opening-appear-seconds x</c>
-    /// / <c>--result-seconds x</c> for the launch (development) for <see cref="StripSeconds"/> / <see cref="ArmySeconds"/> /
-    /// <see cref="MeterSeconds"/> / <see cref="CountSeconds"/> / <see cref="OpeningSeconds"/> / <see cref="OpeningAppearSeconds"/> / <see cref="ResultSeconds"/>,
+    /// / <c>--result-seconds x</c> / <c>--damage-forecast 0|1</c> for the launch (development) for <see cref="StripSeconds"/> / <see cref="ArmySeconds"/> /
+    /// <see cref="MeterSeconds"/> / <see cref="CountSeconds"/> / <see cref="OpeningSeconds"/> / <see cref="OpeningAppearSeconds"/> / <see cref="ResultSeconds"/> / <see cref="Forecast"/>,
     /// else the file's, else the default.
     /// </summary>
     public static double Get(Setting setting)
