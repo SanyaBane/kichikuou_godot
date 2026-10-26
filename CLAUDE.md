@@ -261,8 +261,9 @@ the touch rail's attack buttons to match, the owner's D2 (gold, the damage on a 
 option off by default, every question answered — built for both at once (its §8, 2026-10-27: the rule
 `Combat/ExchangeForecast`, the attack setters, the target binding and the battle kind's modifiers split out of the battle;
 the model `Original.Content/Battles/DamageForecast`, the forecasts of a `FIGT_SEL` run off the game's thread; Option →
-Battle → "Damage forecast", `BattleScreenSettings.Forecast`; `BattleCommandLayer` and its touch part), awaiting the
-owner's look in a window and on the tablet.
+Battle → "Damage forecast", `BattleScreenSettings.Forecast`; `BattleCommandLayer` and its touch part); the PC's banners,
+their type too small, laid out again after mock-up rounds E and F as the owner's F2 and accepted by the owner in a window
+(2026-10-27); the touch rail awaiting the owner's look on the tablet.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

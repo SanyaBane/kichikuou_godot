@@ -5,7 +5,8 @@ The owner's request (2026-10-26): an optional setting that shows, beside a targe
 is the survey and mock-up rounds A-D. The owner chose A1 for the PC, the damage dealt alone (§10), laid out as B2, its
 figures in the cards' bars' colours on blue banners, C1 (§11); on the tablet D2, the rail's gold buttons with the damage
 on a dark strip (§12); the option off by default (§7). **Status: built (2026-10-27, §8), for the PC and the touch mode at
-once; awaiting the owner's look in a window and on the tablet.**
+once; the PC's banners laid out again as round F's F2 (§13-§14) and accepted by the owner in a window (2026-10-27); the
+touch rail awaiting the owner's look on the tablet.**
 
 ## 1. What an attack does
 
@@ -143,7 +144,8 @@ minus, the HP no more than he has; no counter, no fall's chance, no hit chance; 
    checks it) —, a figure too wide for its place shrunk to fit; the option; docs/ui/style.md, §2 (the banners' colours);
    the gallery's entries (`banners-E1` with the forecast, the touch pass's turn) and the `--auto --interface new`
    exercise's dumps.
-4. The owner's look in a window and on the tablet.
+4. The owner's look in a window and on the tablet — in a window done: the banners laid out again as F2 and accepted
+   (2026-10-27, §14).
 
 **Built (2026-10-27):**
 
@@ -343,4 +345,9 @@ dump's dark pixels a tenth of round C's 1 px mock-up's) — so 6 for round F's 1
 `banners-E1` against `F2-label-19.png`, Ex's (commander 1) first banner: the damage's ink on the same rows (476-488),
 the outline's dark pixels 2.90 times the ink's against the mock-up's 2.89; the label 1 px higher and further left than
 the mock-up's (the fonts' rounding). With the forecast off the banners stay 40 px, the label 20; the touch rail is
-unchanged. **Awaiting the owner's look in a window.**
+unchanged.
+
+**The owner (2026-10-27), in a window: accepted.** "Padding" in the owner's request is the gap between the banner's white
+frame and its text (the frame itself unchanged). Measured on the Melee banner to the letters: above the label 6.5 px in E1,
+5 in F2's mock-up, 3-4 as built (Godot draws the label 1 px higher and its 2 px frame centred on the edge); below the
+damage 5.5, 6 and 5.5 — round F cut the top and the gap between the rows, not the foot. The owner found it good as built.
