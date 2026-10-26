@@ -207,7 +207,7 @@ surveyed in docs/ui/talk-marks.md, the marks' look chosen from its mock-ups (§6
 the agent's decisions in §9): the read lines kept per save (`ScriptState.ReadLines.cs`), the engine's dry run
 (`Script/ScenePreview`), the marks (`Strategy/SceneMarks`, `MarkTree`, `SceneMarkState`), the rule change on
 `OriginalScriptContext.NewScenesFirst` (`Strategy/SceneChoices`; Kanami's menu and Kentarou's lines as scene hooks,
-`Engine/Script/SceneHooks`, `Strategy/ScenePatches`), Option → Game → "New scenes first" (`godot/Strategy/NewScenesChoice`),
+`Engine/Script/SceneHooks`, `Strategy/ScenePatches`), Option → Tweaks → "New scenes first" (`godot/Strategy/NewScenesChoice`),
 the marks on our Harem and Subordinates screens (`Original.Content/Strategy/PickerMarks`).
 Then (owner, 2026-10-23) the already-read text's colour after Rance X's: a message window whose every message the player
 read before (the message skip's seen record, `msgskip.txt` in the save folder) shows its text in a colour chosen in
@@ -261,7 +261,7 @@ the touch rail's attack buttons to match, the owner's D2 (gold, the damage on a 
 option off by default, every question answered — built for both at once (its §8, 2026-10-27: the rule
 `Combat/ExchangeForecast`, the attack setters, the target binding and the battle kind's modifiers split out of the battle;
 the model `Original.Content/Battles/DamageForecast`, the forecasts of a `FIGT_SEL` run off the game's thread; Option →
-Battle → "Damage forecast", `BattleScreenSettings.Forecast`; `BattleCommandLayer` and its touch part); the PC's banners,
+Tweaks → "Damage forecast" (since 2026-10-27; Battle before), `BattleScreenSettings.Forecast`; `BattleCommandLayer` and its touch part); the PC's banners,
 their type too small, laid out again after mock-up rounds E and F as the owner's F2 and accepted by the owner in a window
 (2026-10-27); the touch rail awaiting the owner's look on the tablet.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
@@ -451,7 +451,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   finger's drag with a flick, a row's press a tap at the release (`Strategy/DeploymentTableView.Touch.cs`), and so the
   Save/Load screen's manual saves, a row at a time (`Strategy/SaveLoadView.Touch.cs`), the finger's part
   `Strategy/FingerScroll` (docs/ui/touch.md, "The lists scrolled by a finger");
-  `Strategy/OptionsView` (Option: the options window over the game, the owner's mock-up D, docs/ui/options.md — a paper sheet with the tabs Messages, Display, Battle, Game; `--options` dumps them); Option → Display's palette (Lacquer, the default, or Steel; `UiPalettes.Chosen`, a part's own read but not offered yet; docs/ui/options.md, "The palette") colours all our screens, a change repainting them at once (`UiPalettes.Repaint`, `IUiPaletteUser`); the map's plates keep steel's colours as their own (`MapMarkersView`);
+  `Strategy/OptionsView` (Option: the options window over the game, the owner's mock-up D, docs/ui/options.md — a paper sheet with the tabs Messages, Display, Battle, Game and Tweaks — what changes the original's play, the damage forecast and "New scenes first" (owner, 2026-10-27); `--options` dumps them); Option → Display's palette (Lacquer, the default, or Steel; `UiPalettes.Chosen`, a part's own read but not offered yet; docs/ui/options.md, "The palette") colours all our screens, a change repainting them at once (`UiPalettes.Repaint`, `IUiPaletteUser`); the map's plates keep steel's colours as their own (`MapMarkersView`);
   `Battles/AdvantageTip` (the instant tooltips of the advantages next to the armies' names, `BattleAdvantage.Parts`); `GodotGlyphRenderer` (TextServer; MS Gothic or the bundled BIZ UDGothic in `godot/fonts`, Option →
   Display, `--font ms-gothic|biz-ud-gothic` for one launch), `BattleAudio`; `Screens` switches screens. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).
 - `tools/analysis/` — Python scripts for reading the decompiled scenario; `tools/codegen/` —

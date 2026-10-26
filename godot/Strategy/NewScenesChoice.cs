@@ -3,7 +3,7 @@ using Godot;
 namespace Kichikuou.Game.Strategy;
 
 /// <summary>
-/// Option → Game → "New scenes first" (owner's decision 30, docs/ui/talk-marks.md §5, on by default): the player's
+/// Option → Tweaks → "New scenes first" (owner's decision 30, docs/ui/talk-marks.md §5, on by default): the player's
 /// switch for the rule change, which <c>GameScreen</c> copies onto the game's context
 /// (<see cref="Kichikuou.Original.Script.OriginalScriptContext.NewScenesFirst"/>) when the session starts and whenever
 /// it is changed. The rule is the rule set's; this only keeps the player's choice.

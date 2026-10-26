@@ -64,6 +64,8 @@ copies it onto the game's context (`OriginalScriptContext.NewScenesFirst`) when 
 `NewScenesFirstChanged` keeps that context current when the player switches it during a game. The Game tab now has
 Defaults too: it turns New scenes first back on (the game folder has no default and stays as it is).
 
+Since 2026-10-27 the check box is on the Tweaks tab ("Tweaks" below).
+
 ## Thousands (2026-10-23)
 
 Owner's request: one standard for the figures of our own screens, the separator of their thousands a choice. The Display
@@ -120,3 +122,22 @@ row with his seal, Leila's plain), the chosen one framed in vermilion, the mode'
 own row) and `ledger_row_height_touch` (36) in `settings.cfg`; Defaults sets the mode's own. The tables read it each
 frame, so a change shows at once on a table open under the window. A tile's target is its whole column, the tallest
 tile's height, a finger's on the tablet.
+
+## Tweaks (2026-10-27)
+
+Owner's request: the damage forecast is a convenience, but it changes how the game plays, so its setting leaves the
+Battle tab for a tab of its own, named for what it holds — the settings that change the original's play. The owner
+chose the name **Tweaks** (of House Rules, Gameplay, Tweaks, Assists & Fixes, Modern) and "New scenes first" with it.
+The next to come is an optional fix of a quirk: Rance's or Kentarou's troops doing no damage to a demon commander while
+their commander is off the field (his troops over the battle's limit).
+
+- **The tab** is the last, after Game (the existing ones keep their places). A line of ours heads it: "Each setting here
+  changes how the original game plays. Everything else keeps the original's rules." Its sections: **Battle** with
+  **Damage forecast** (as it was on the Battle tab, its hint unchanged) and **Scenes** with **New scenes first** (as it
+  was on the Game tab).
+- **Kept where they were**: `[battle] damage_forecast` (`BattleScreenSettings.Forecast`, `--damage-forecast 0|1`) and
+  `[game] new_scenes_first` (`NewScenesChoice`) in `settings.cfg`, so the player's choices carry over.
+- **Defaults**: on Tweaks it turns the forecast off and New scenes first on; on Battle it no longer touches the forecast;
+  on Game, which holds only the game folder now, it is greyed out.
+- The Battle tab's first section is "Effects" again; `--options` and the screen gallery dump the new tab as
+  `options-tweaks`.

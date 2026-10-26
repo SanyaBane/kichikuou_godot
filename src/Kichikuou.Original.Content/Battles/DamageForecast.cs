@@ -36,7 +36,7 @@ public sealed record BannerDamage(string? Troops, string? Hp)
 /// card, each an <see cref="ExchangeForecast"/>. A forecast takes tens of milliseconds, so they run off the game's thread,
 /// side by side, on a snapshot of the state taken at the start (the game goes on after the answer, the snapshot does
 /// not): <see cref="For"/> is null until a banner's is done. The first target's banners come first (the touch mode's
-/// preselected one). Option → Battle → "Damage forecast" (<c>BattleScreenSettings</c>), our interface only.
+/// preselected one). Option → Tweaks → "Damage forecast" (<c>BattleScreenSettings</c>), our interface only.
 /// </summary>
 public sealed class DamageForecasts
 {

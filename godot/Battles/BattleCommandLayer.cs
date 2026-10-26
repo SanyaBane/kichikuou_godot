@@ -14,7 +14,7 @@ namespace Kichikuou.Game.Battles;
 /// The attacks are banners on the enemy card under the pointer (<see cref="BattleCommands.Banners"/>), the
 /// only way to attack; a right click on a card opens its context menu at the pointer
 /// (<see cref="BattleCommands.ContextMenu"/>). Every choice is one the core's menu offers — the rules stay
-/// the core's. With Option → Battle → "Damage forecast" each banner carries the damage its attack is likely to deal
+/// the core's. With Option → Tweaks → "Damage forecast" each banner carries the damage its attack is likely to deal
 /// (<see cref="DamageForecasts"/>; docs/ui/damage-forecast.md). Points are layout pixels of the 1280×800 screen
 /// (<see cref="BattleBoardView"/>).
 /// </summary>
@@ -87,7 +87,7 @@ internal sealed partial class BattleCommandLayer : Control
     public FigtSelChoice? Result { get; private set; }
 
     /// <summary>
-    /// Whether the banners show the damage forecast: null (the default) follows Option → Battle → "Damage forecast"
+    /// Whether the banners show the damage forecast: null (the default) follows Option → Tweaks → "Damage forecast"
     /// (<see cref="BattleScreenSettings.Forecast"/>); the screen gallery and unattended play's dumps set it. A change
     /// applies at once.
     /// </summary>

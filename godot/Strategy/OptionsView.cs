@@ -13,17 +13,19 @@ namespace Kichikuou.Game.Strategy;
 /// (the text speed with the game's 121 typing as its preview, the message skip's switches, Forget, the mouse, the
 /// already-read text's colour, <see cref="ReadTextChoice"/>, docs/ui/read-text.md), Display
 /// (the font, the palette, the thousands, the unit tables' row height, <see cref="LedgerRowsChoice"/>), Battle (our
-/// battle screen's effects, the damage forecast and the timings, <see cref="BattleScreenSettings"/>, the order strip as their preview), Game (the game folder, "New scenes first", <see cref="NewScenesChoice"/>). Every change applies
-/// and is kept at once; Defaults resets the tab shown (not the game folder); Close, Esc or a right click shut it. Forget and the game folder ask first, in a box over the sheet. Laid out
+/// battle screen's effects and timings, <see cref="BattleScreenSettings"/>, the order strip as their preview), Game (the
+/// game folder), Tweaks (what changes the original's play: the damage forecast, "New scenes first", <see cref="NewScenesChoice"/>;
+/// owner, 2026-10-27). Every change applies
+/// and is kept at once; Defaults resets the tab shown (Game has none: the game folder has no default); Close, Esc or a right click shut it. Forget and the game folder ask first, in a box over the sheet. Laid out
 /// in the 1280×800 screen's pixels, scaled with the picture.
 /// </summary>
 internal sealed partial class OptionsView : Control
 {
     private static UiPalette Ui => UiPalettes.For(UiPart.Settings);
 
-    public enum Tab { Messages, Display, Battle, Game }
+    public enum Tab { Messages, Display, Battle, Game, Tweaks }
 
-    private static readonly Tab[] Tabs = [Tab.Messages, Tab.Display, Tab.Battle, Tab.Game];
+    private static readonly Tab[] Tabs = [Tab.Messages, Tab.Display, Tab.Battle, Tab.Game, Tab.Tweaks];
     private static readonly Rect2 Frame = new(100, 56, 1080, 704);
     private static readonly Rect2 Sheet = new(126, 126, 1028, 608);
     private static readonly Rect2 CloseButton = new(1004, 686, 130, 40);
@@ -77,11 +79,8 @@ internal sealed partial class OptionsView : Control
 
     private static readonly int TimingRows = (BattleScreenSettings.All.Count(s => s.Unit != BattleScreenSettings.Toggle) + 1) / 2;
 
-    /// <summary>The Battle tab's second check box (the damage forecast) under the first.</summary>
-    private const float ForecastRow = 52;
-
     /// <summary>Where the order strip's preview sits on the Battle tab: under the timings, Preview right of it.</summary>
-    private static Rect2 StripRect => new(ContentX, ContentY + 96 + ForecastRow + 36 + TimingRows * 46 + 6, ContentW - 130, 46);
+    private static Rect2 StripRect => new(ContentX, ContentY + 96 + 36 + TimingRows * 46 + 6, ContentW - 130, 46);
 
     private sealed record Question(string Title, string Text, string Confirm, Action Confirmed);
 
@@ -244,11 +243,12 @@ internal sealed partial class OptionsView : Control
                 SetLedgerRows(LedgerRowsChoice.Default);     // the PC's or the touch mode's own
                 break;
             case Tab.Battle:
-                foreach (var setting in BattleScreenSettings.All)
+                foreach (var setting in BattleScreenSettings.All.Where(s => s != BattleScreenSettings.Forecast))
                     BattleScreenSettings.Set(setting, setting.Default);
                 break;
-            case Tab.Game:
-                SetNewScenesFirst(true);                // the game folder is not a setting with a default
+            case Tab.Tweaks:
+                BattleScreenSettings.Set(BattleScreenSettings.Forecast, BattleScreenSettings.Forecast.Default);
+                SetNewScenesFirst(true);
                 break;
         }
         QueueRedraw();
@@ -386,8 +386,11 @@ internal sealed partial class OptionsView : Control
             case Tab.Game:
                 DrawGame();
                 break;
+            case Tab.Tweaks:
+                DrawTweaks();
+                break;
         }
-        DrawLink("defaults", "Defaults", new Vector2(150, 706), Defaults);
+        DrawLink("defaults", "Defaults", new Vector2(150, 706), Defaults, enabled: _tab != Tab.Game);   // the game folder has no default
         bool closeLit = _hover == "close";
         Ui.DrawRedButton(this, CloseButton, closeLit, closeLit && _pressed == "close", _k);
         DrawString(_cinzelBold, new Vector2(CloseButton.Position.X, Lacquer.Baseline(CloseButton, _cinzelBold, 17)), "Close",
@@ -562,14 +565,11 @@ internal sealed partial class OptionsView : Control
     private void DrawBattle()
     {
         float x = ContentX, y = ContentY, w = ContentW;
-        SectionHead(x, y, "Effects and forecast", w);
+        SectionHead(x, y, "Effects", w);
         var effects = BattleScreenSettings.Effects;
         CheckBox("effects", x, y + 36, BattleScreenSettings.Get(effects) >= 0.5, "Exchange effects", effects.Hint,
             () => BattleScreenSettings.Set(effects, BattleScreenSettings.Get(effects) >= 0.5 ? 0 : 1));
-        var forecast = BattleScreenSettings.Forecast;
-        CheckBox("forecast", x, y + 36 + ForecastRow, BattleScreenSettings.Get(forecast) >= 0.5, "Damage forecast", forecast.Hint,
-            () => BattleScreenSettings.Set(forecast, BattleScreenSettings.Get(forecast) >= 0.5 ? 0 : 1));
-        y += 96 + ForecastRow;
+        y += 96;
         SectionHead(x, y, "Timings", w);
         y += 36;                                    // StripRect follows the rows
         float colW = (w - 40) / 2;
@@ -618,8 +618,20 @@ internal sealed partial class OptionsView : Control
             ? "The developer's extract is the data (local.env or settings.cfg): a game folder would change nothing. --import turns this on."
             : "Another copy of the game: the import screen checks it and reads its scenario, then the title opens.";
         Wrap(note, x, y + 104, w, 14, Ui.InkQuiet);
+    }
 
-        y += 170;
+    /// <summary>What changes the original's play (owner, 2026-10-27): the battle's damage forecast, the scenes' order.</summary>
+    private void DrawTweaks()
+    {
+        float x = ContentX, y = ContentY, w = ContentW;
+        Wrap("Each setting here changes how the original game plays. Everything else keeps the original's rules.", x, y + 14, w,
+            14, Ui.InkQuiet);
+        y += 44;
+        SectionHead(x, y, "Battle", w);
+        var forecast = BattleScreenSettings.Forecast;
+        CheckBox("forecast", x, y + 38, BattleScreenSettings.Get(forecast) >= 0.5, "Damage forecast", forecast.Hint,
+            () => BattleScreenSettings.Set(forecast, BattleScreenSettings.Get(forecast) >= 0.5 ? 0 : 1));
+        y += 104;
         SectionHead(x, y, "Scenes", w);
         CheckBox("new-scenes", x, y + 38, NewScenesChoice.On, "New scenes first",
             "Talks and harem visits play unread scenes first, with a few hints and a choice of ours.",

@@ -124,7 +124,7 @@ A3's hit-chance line as its tooltip if the owner wants the why; T1 on the tablet
 
 ## 7. The setting
 
-Option → Battle → "Damage forecast" (`BattleScreenSettings`), our interface only; applied at once. **Off by default**
+Option → Tweaks → "Damage forecast" (`BattleScreenSettings`; on the Battle tab until 2026-10-27, docs/ui/options.md, "Tweaks"), our interface only; applied at once. **Off by default**
 (the owner, 2026-10-27).
 
 ## 8. The build
