@@ -449,21 +449,27 @@ def rail_attack(f, r, label, troops, hp, held, blue, size=15):
     name = BRUSH(17)
     while width(label.upper(), name) > RAIL_BUTTON_W - 14:              # Centred: smaller if it would not fit
         name = BRUSH(name.size / S - 1)
+    # D2's strip (the owner, 2026-10-27: no figure may leave it); D1's lines keep inside the button's inner line
+    room = (r[1] + 32, r[3] - 6) if not blue else (r[1] + 32, r[3] - 5)
     if blue:
         outlined(f, cx, r[1] + 19, label.upper(), name, (255, 255, 255), outline=NIGHT)
     else:
         text(f, cx, r[1] + 19, label.upper(), name, ATTACK_INK)
         lay, d = f.draw()                                                # D2: the figures on a dark strip
-        d.rounded_rectangle(sc(r[0] + 7, r[1] + 33, r[2] - 7, r[3] - 7), radius=3 * S, fill=(14, 10, 8, 225))
+        d.rounded_rectangle(sc(r[0] + 7, room[0], r[2] - 7, room[1]), radius=3 * S, fill=(14, 10, 8, 225))
         f.add(lay)
     tag, fig = GOTHIC(size - 2), GOTHIC(size)
-    for y, word, value, ink in ((r[1] + 45, 'Trp.', troops, TINT_INKS[0]), (r[1] + 63, 'HP', hp, TINT_INKS[1])):
+    probe = ImageDraw.Draw(Image.new('L', (1, 1)))
+    for y, word, value, ink in ((r[1] + 43, 'Trp.', troops, TINT_INKS[0]), (r[1] + 59, 'HP', hp, TINT_INKS[1])):
         if value is None:
             continue                                                     # its line stays empty: the other never moves
         w = width(word + ' ', tag) + width(value, fig)
         x = cx - w / 2
-        outlined(f, x, y, word, tag, ink, outline=NIGHT, anchor='lm')
-        outlined(f, x + width(word + ' ', tag), y, value, fig, ink, outline=NIGHT, anchor='lm')
+        for t, fnt, at in ((word, tag, x), (value, fig, x + width(word + ' ', tag))):
+            top, foot = [v / S for v in probe.textbbox((at * S, y * S), t, font=fnt, anchor='lm', stroke_width=S)[1::2]]
+            if top < room[0] + 2 or foot > room[1] - 2:
+                raise SystemExit(f'{label}: "{t}" spans {top:.1f}-{foot:.1f}, outside {room[0] + 2}-{room[1] - 2}')
+            outlined(f, at, y, t, fnt, ink, outline=NIGHT, anchor='lm')
 
 
 def round_d(touch, name, lines, blue):

@@ -2,9 +2,10 @@
 
 The owner's request (2026-10-26): an optional setting that shows, beside a target's attack banners (the gallery's
 `banners-E1`), what the attack is likely to do, as some turn-based games do (Heroes of Might and Magic V). This document
-is the survey and mock-up rounds A-C; nothing is built. The owner chose A1 for the PC, the damage dealt alone (§10), laid
-out as B2, its figures in the cards' bars' colours on blue banners, C1 (§11); the touch mode's rail drawn to match (§12).
-**Status: round D drawn, awaiting the owner's choice for the tablet** (§12).
+is the survey and mock-up rounds A-D. The owner chose A1 for the PC, the damage dealt alone (§10), laid out as B2, its
+figures in the cards' bars' colours on blue banners, C1 (§11); on the tablet D2, the rail's gold buttons with the damage
+on a dark strip (§12); the option off by default (§7). **Status: designed, every question answered (§9); not built — the
+build is §8.**
 
 ## 1. What an attack does
 
@@ -122,30 +123,45 @@ A3's hit-chance line as its tooltip if the owner wants the why; T1 on the tablet
 
 ## 7. The setting
 
-Option → Battle → "Damage forecast" (`BattleScreenSettings`), our interface only; applied at once. Off or on by default:
-the owner's choice (§9).
+Option → Battle → "Damage forecast" (`BattleScreenSettings`), our interface only; applied at once. **Off by default**
+(the owner, 2026-10-27).
 
-## 8. The build, after the choice
+## 8. The build
 
-1. The rules: `ExchangeForecast` (the setters split out of `PlayerAttackAsync`), with the tests of §3.
-2. The model in `Original.Content/Battles` (the figures, the chances' wording), with tests.
-3. Godot: the chosen view, the option, the gallery's entries (`banners-E1` with the forecast, the touch pass's turn) and
-   the `--auto --interface new` exercise's dumps.
-4. The owner's look in a window.
+What was chosen (§9-§12): on the PC each banner shows the damage its attack deals as B2 (two rows within the card) in
+C1's colours; the banners are C1's blue always, the forecast on or off. On the tablet each attack button of the right
+rail stays gold and, while the forecast is on, carries the damage on a dark strip (D2). The figures: the target's
+troops lost (`Trp.`) and its commander's HP lost (`HP`) where the attack can reach him, the 5th-95th percentile, no
+minus, the HP no more than he has; no counter, no fall's chance, no hit chance; what §4 lists left out.
+
+1. The rules: `ExchangeForecast` (the setters split out of `PlayerAttackAsync`), with the tests of §3; "can reach" from
+   the exchange's shots and shields (§10).
+2. The model in `Original.Content/Battles` (the two figures of a banner, through `Figures`), with tests.
+3. Godot: `BattleCommandLayer`'s banners in C1's blue with the two rows (`BannerSize` 46 high while the forecast shows;
+   the label 17), the touch rail's buttons with D2's strip — every line's ink, its outline included, at least 2 px inside
+   the strip (the owner, 2026-10-27: the mock-up's first `HP` line overran it; `tools/ui/mock_damage_forecast.py` now
+   checks it) —, a figure too wide for its place shrunk to fit; the option; docs/ui/style.md, §2 (the banners' colours);
+   the gallery's entries (`banners-E1` with the forecast, the touch pass's turn) and the `--auto --interface new`
+   exercise's dumps.
+4. The owner's look in a window and on the tablet.
 
 ## 9. Questions for the owner
 
-1. ~~Which: A1, A2, A3, a mix (A2 with A3 as its tooltip?) — and T1 for the tablet?~~ The PC first: A1, the damage
-   dealt alone (the owner, 2026-10-26; §10). The tablet later.
-2. The range: the usual 90 % (agent's pick) or the whole?
+All answered (the owner, 2026-10-26/27).
+
+1. ~~Which: A1, A2, A3, a mix (A2 with A3 as its tooltip?) — and T1 for the tablet?~~ A1, the damage dealt alone, laid
+   out as B2 in C1's colours (§10, §11); D2 on the tablet (§12).
+2. ~~The range: the usual 90 % (agent's pick) or the whole?~~ The usual 90 %.
 3. ~~The hit chances: shown (A3's line) or not?~~ Not shown: the damage alone (§10).
-4. The option on or off by default?
-5. Leave out what §4 lists (agent's pick), or mark Miki's banner ("10% Vanish Bomb")?
-6. docs/ui/style.md, §1: "no prediction of draws" to read "no prediction of a draw's outcome" (§2)?
-7. Melee and Bow now read the same on a banner (their streams differ only by the counter, §1): leave it, or mark the
-   banners the target answers (a mark, no figure)?
-8. The banners (and with D1 the rail's attack buttons) blue only while the forecast shows, or always (one look whatever
-   the option; agent's pick: always)?
+4. ~~The option on or off by default?~~ Off.
+5. ~~Leave out what §4 lists (agent's pick), or mark Miki's banner ("10% Vanish Bomb")?~~ Left out.
+6. ~~docs/ui/style.md, §1: "no prediction of draws" to read "no prediction of a draw's outcome" (§2)?~~ Reworded so.
+7. ~~Melee and Bow now read the same on a banner (their streams differ only by the counter, §1): leave it, or mark the
+   banners the target answers (a mark, no figure)?~~ Left as it is.
+8. ~~The banners (and with D1 the rail's attack buttons) blue only while the forecast shows, or always?~~ The banners
+   blue always; the rail's buttons stay gold (D2).
+9. ~~The agent's choices of §10 (no minus, one value one figure, the HP no more than the commander has, the cards'
+   words)?~~ Confirmed.
 
 ## 10. The owner's choice and round B (2026-10-26)
 
@@ -153,7 +169,7 @@ the owner's choice (§9).
 of a fall: only the damage the attack deals, to the target's troops, and separately to its commander where the attack
 can reach him.
 
-**The agent's choices** (for the owner to confirm):
+**The agent's choices** (confirmed by the owner, 2026-10-27):
 
 - The figures are the usual 90 % of the runs (the 5th-95th percentile, §5), no minus: the banner is the attack, its
   figures the damage it deals. A range of one value is one figure ("60", "1").
@@ -229,6 +245,10 @@ reach (Whirlwind Shot: `HP 1` alone, on its own line).
 **Agent's recommendation:** D1 — the attack has one colour on the PC and the tablet, and red and green on gold is what
 the owner set aside on the PC. For the build: on D1's held button (pale sky) the figures read on their outline alone; the
 held blue can stay a step darker than the PC's hovered banner.
+
+**The owner (2026-10-27): D2**, so long as no figure leaves its dark strip — the mock-up's `HP` line overran it by 1-2 px.
+Redrawn with the lines at 43 and 59 below the button's top and the strip from 32 to 6 above its foot; the script checks
+every line's ink, its outline included, against the strip with 2 px to spare, and stops if one overruns.
 
 **Notes for the build, both versions:** the specials on a large army give four-digit ranges (C. War Dance takes
 `T / 2 + RND(T / 2)` of the target's whole troops: "1,250–2,400" for 2,500): a banner's troops' place (88 px at 14) and a

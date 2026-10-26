@@ -33,8 +33,10 @@ Read this before a new screen's survey and mock-ups: the first round should not 
   boxes (the stats are always on the cards), the later round headers (the gauge), several windows into one screen with
   one click (the week report, the scout report, the results plate).
 - **Show more only by the owner's word, and only what the state already knows** — the province card on hover, the
-  budget before and after, the dungeon floor's hints. No hint of what the original hides, no prediction of draws, no
-  spoilers (docs/ui/talk-marks.md). The port's own data that no rule reads goes into `Extras` (`KnownProvinces`).
+  budget before and after, the dungeon floor's hints. No hint of what the original hides, no prediction of a draw's
+  outcome — the spread of the possible results is another thing, on its own generator, never the game's (the damage
+  forecast, docs/ui/damage-forecast.md, 2026-10-27) —, no spoilers (docs/ui/talk-marks.md). The port's own data that no
+  rule reads goes into `Extras` (`KnownProvinces`).
 - **Keep the original's words**; our own lines are few, in the port's English, worded with the owner. Label things by
   what they do, not by a sum: "Walls +8%", "ENEMY HIT −8%", not "Advantage +n" or "DEF +n".
 - **Sengoku Rance is a reference, not a template.** Its art never enters the repository; our effects are drawn by code
