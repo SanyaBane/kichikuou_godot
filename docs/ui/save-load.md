@@ -424,3 +424,82 @@ B5 with the button's label just "Back" (140×58 in Load and Save alike): `SaveLo
 click or Esc does; Delete (136×30) at the right of the page's title in the palette's danger colours (`UiPalette.Danger*`),
 its question hanging under it over the map; in Save "Saving: …" between Back and the red button, cut to fit. The hint
 "Right click: back to …" is gone. `--saveload` now leaves the load list by Back.
+
+## 12. An auto-save at Turn END (owner, 2026-10-26)
+
+The owner asked (2026-10-26) for an auto-save at the end of the turn too — when the player chooses Turn END — and for
+the auto-saves' list to tell a turn's start from its end; mock-ups first. A change to the saves alone, no rule of play,
+as decision 29; it is numbered once the owner has chosen.
+
+### What happens now
+
+- The only auto-save is `MAIN.ADV`'s at the week's top (`:20` the thieves', `:83` the Leazas week;
+  `WeekLoop.AutosaveAsync` → `ﾛｰﾄﾞｾｰﾌﾞ` with `RetVal 3` → `ScriptContext.SaveAuto`), resuming there: a load plays the
+  week's start again — the "Auto-Save" notice's return, the budget, the expenses, then `COMMAND`.
+- Turn END is `COMMAND`'s last command (`L_007cf`, `COMMAND.ADV:377-425`, `CommandPhase.TurnEndAsync`): Sill's grave
+  scene, the Tange Dog, at the prologue's end the thieves' last fight and the opening; then `COMMAND` ends and `MAIN`
+  goes on to the scenes after it and the nations' turns. The original saves nothing there.
+- Decision 26's save of the moment is already what a save at Turn END needs: the memory as it is in `COMMAND`,
+  resuming at its call (`MAIN.ADV:69`, `:213`; `ScriptContext.SaveHere`) and going on at the map
+  (`CommandPhase.ResumeAfterSaveAsync`).
+
+### The proposal
+
+1. **When**: as Turn END is chosen in the command menu, before its sound and its scenes (`CommandPhase`,
+   `Command.TurnEnd`). The memory then is the one the Load/Save item would save in the same menu, so the save resumes
+   as a manual save made there does. Only while the library is in use (`ScriptContext.Library`): the differential
+   tests keep running `COMMAND` as the original.
+2. **What its load does**: back on the map in `COMMAND`, the week's commands spent as they were; Turn END again goes
+   on to the nations' turns (Sill's scene and the Tange Dog play again: the Dog's weekly flag is set after the save).
+   The random generator is not saved (decision 11), so the nations' turns are drawn anew, as after any save of the
+   moment. Rejected: resuming after `COMMAND`, straight into the nations' turns — a new resume point in `WeekLoop` and a
+   save taken after Turn END's scenes, for one click less.
+3. **How many**: the last ten of each kind, ten weeks' starts and ten Turn ENDs (twenty files, about 1.2 MB). One ring
+   of twenty would let Turn END chosen again and again in one week (a load, Turn END, a load …) push the weeks'
+   starts out. Which kind an auto-save is can be read from its resume point (one resuming at `COMMAND`'s call is a
+   Turn END save, `WeekLoop.IsMomentSave`); how the library keeps the two rings apart is settled at the build.
+4. **No notice** at Turn END: the original has none there, and the list shows the save. The start's "Auto-Save"
+   notice stays as it is.
+5. **Elsewhere**: `Iｱﾘｽ.ADV:19`'s slot 1 (`LibrarySlots`, the newest auto-save) may now be a Turn END save, which
+   holds the same `F_OpeningSeen`. `--load --auto` loads the load list's first item, the newest auto-save, so after a
+   run that reached a Turn END it starts in that `COMMAND`; the kept saves (one `slot01.ksav` each) are unchanged.
+
+### Round J: mock-ups (2026-10-26)
+
+`tools/ui/mock_autosaves.py`, over the screen gallery's `save-load-auto` dump; the saves are made up (one evening's
+play, LP 3 · Month 3 · Week 1 to Month 5 · Week 2). In every variant the page's tag after the title names the kind —
+"Auto · week start" gold with a rising sun, "Auto · Turn END" dark in a gold frame with a moon — and its two lines
+say what a load does ("Written when Turn END was chosen. Loading it brings back the map with the week's commands as
+they were then; Turn END goes on to the nations' turns." / "Written at the start of the week. Loading it plays the
+week's start again: the budget, then the commands.").
+
+- **J1, J1s — one list of twenty**, newest first, so a week's Turn END sits above its start. The seal tells the kind
+  (a rising sun on gold, a moon on dark in a gold frame), the second line says it ("start of the week" / "at Turn
+  END"); ten rows in view, the list scrolls as the manual saves do; "the game keeps the last ten weeks". J1 has a Turn
+  END chosen, J1s the newest week's start.
+- **J2 — a row a week**: the week's date on top, its two saves as halves under it, "Start 21:12" | "Turn END 21:27",
+  one half chosen; the week under way has a dashed "Turn END —". Ten weeks in view. A week can have one save alone (its
+  other one pushed out of its ring, or a second Turn END after a load — a row of its own, its start dashed). The halves
+  are 23 px high: too small for a finger in the touch mode.
+- **J3 — two lists of ten behind a three-way switch**: "Manual · 4 | Week start · 10 | Turn END · 10", each list as
+  today's auto-saves, its seal by its kind. A week's start and end are never side by side.
+
+### Questions for the owner
+
+1. The layout: J1, J2 or J3 (the agent's choice: J1 — today's rows, one list in the order things happened, rows a
+   finger can hit).
+2. Ten of each kind (proposed), or ten in all (five weeks)?
+3. A Turn END save's load: the map before Turn END (proposed), or straight on to the nations' turns?
+4. No notice at Turn END (proposed), or a short one?
+
+### The build (after the owner's choice)
+
+1. **The library** (`Engine/Script/SaveLibrary`): two rings of ten in the auto-saves, by kind; `ScriptContext.SaveAuto`
+   told the kind; tests (each ring keeps its ten, a delete, the newest of either for `LibrarySlots`).
+2. **The port**: `CommandPhase` writes the Turn END auto-save while the library and `SaveHere` are set
+   (`CommandPhaseTests`, `LoadSaveScreenTests`: a load of it resumes in `COMMAND`).
+3. **The model** `Original.Content/Strategy/SaveSlots`: a slot's kind (`SaveSlot`), the auto-saves' rows of the chosen
+   layout; tests.
+4. **The screen** `godot/Strategy/SaveLoadView` (and `.Touch.cs` for a scrolling auto list), the page's tag and lines;
+   the gallery's sample library gets both kinds (`GalleryStates.SampleLibrary`), its entries looked at.
+5. **Docs**: the decision in docs/strategy/README.md, this section, CLAUDE.md; `--saveload` if it should exercise it.
