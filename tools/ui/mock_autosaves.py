@@ -4,6 +4,8 @@ Load list from COMMAND on its auto-saves side, 1280x800). From the repository's 
   python -I tools/ui/mock_autosaves.py <save-load-auto dump> <out dir>
 Round J: J1/J1s one list of twenty, a seal per kind (a rising sun, a moon); J2 a row a week, its start and its end side
 by side; J3 the two kinds as two lists of ten behind a three-way switch. The saves are made up (one evening's play).
+Round K (the owner's J1, 2026-10-26): the "A" seal as built, "Turn Start" / "Turn End" in two colours at the row's
+bottom right under the time written, the player's comment at its bottom left; K1/K1s filled tags, K2 coloured words.
 The images hold the player's CGs: keep <out dir> outside the repository. Everything is in the 1280x800 screen's pixels
 (plus a caption band below); drawn at 2x and scaled down.
 """
@@ -322,7 +324,126 @@ def j3(name, caption, note):
     c.save(name, caption, note)
 
 
+# ---- Round K: J1 with the "A" seal as built; the kind a tag at the row's bottom right, the comment at its bottom left
+
+STAR_RIM = RIM
+START_FILL, END_FILL = (70, 110, 50, 255), (118, 30, 24, 255)          # BarGood; COMMAND's Turn END row
+START_WORD, END_WORD = (150, 196, 110, 255), (232, 112, 88, 255)        # Plus; a light Turn END red
+COMMENTS = {((5, 1), True): "before the rebels' turn", ((4, 3), False): "Lia's scene this week"}
+
+
+def a_seal(c, x, y):
+    """The auto-save's seal as built (DrawSeal): gold, a pale inner line, "A"."""
+    c.rect((x, y, x + 24, y + 24), fill=AUTO_GOLD)
+    c.rect((x + 2, y + 2, x + 22, y + 22), outline=(187, 161, 111, 255), width=1)
+    c.text((x + 12, y + 13), 'A', cinzel(14), fill=SEAL_TEXT, anchor='mm')
+
+
+def star(c, cx, cy, r, colour):
+    pts = []
+    for i in range(10):
+        a = -math.pi / 2 + i * math.pi / 5
+        rr = r if i % 2 == 0 else r * 0.45
+        pts.append(((cx + math.cos(a) * rr) * S, (cy + math.sin(a) * rr) * S))
+    c.d.polygon(pts, fill=colour)
+
+
+def kind_tag(c, right, my, end, style, size=12):
+    """The kind at (right, my), right-aligned; its left edge returned. 'fill': a tag in its colour framed in gold, as the
+    command panel's; 'word': the word alone in its colour."""
+    label = 'Turn End' if end else 'Turn Start'
+    if style == 'word':
+        f = cinzel(size + 1, 800)
+        c.text((right, my), label, f, fill=END_WORD if end else START_WORD, anchor='rm')
+        return right - c.width(label, f)
+    f = font(size)
+    w = c.width(label, f) + 14
+    h = size + 7
+    r = (right - w, my - h / 2, right, my + h / 2)
+    c.rect(r, fill=END_FILL if end else START_FILL, outline=GOLD, width=1)
+    c.text((right - w / 2, my + 0.5), label, f, fill=TEXT, anchor='mm')
+    return right - w
+
+
+def fit(c, s, f, width):
+    if c.width(s, f) <= width:
+        return s
+    while s and c.width(s + '…', f) > width:
+        s = s[:-1]
+    return s + '…'
+
+
+def k_row(c, r, mw, end, time, chosen, style):
+    x0, y0, x1, y1 = r
+    if chosen:
+        c.rect(r, fill=CHOSEN, outline=VERMILION, width=2)
+    else:
+        c.rect(r, fill=ROW, outline=AUTO_GOLD, width=1)
+    a_seal(c, x0 + 8, (y0 + y1) / 2 - 12)
+    tx = x0 + 42
+    c.text((tx, y0 + 16), short(mw), cinzel(15), fill=NAME)
+    c.text((x1 - 10, y0 + 16), f'20 Oct, {time}', font(14), fill=VALUE, anchor='rm')
+    left = kind_tag(c, x1 - 10, y0 + 38, end, style)
+    comment = COMMENTS.get((mw, end))
+    if comment:
+        f = font(12)
+        c.text((tx, y0 + 37), '“' + fit(c, comment, f, left - tx - 22) + '”', f, fill=QUIET)
+        star(c, x0 + 9, (y0 + y1) / 2 - 11, 9, STAR_RIM)
+        star(c, x0 + 9, (y0 + y1) / 2 - 11, 7, GOLD)
+
+
+K_END = ("Written when Turn END was chosen. Loading it brings back the map with the week's commands",
+         "as they were then; Turn END goes on to the nations' turns.")
+K_START = ("Written at the start of the week. Loading it plays the week's start again: the budget, then",
+           "the commands.")
+
+
+def k_page(c, mw, end, time, budget, style):
+    erase(c, (PAGE_X - 2, PAGE_Y, 1080, PAGE_Y + 30))
+    title = long(mw)
+    c.text((PAGE_X, PAGE_Y + 14), title, cinzel(22), fill=NAME)
+    x = PAGE_X + c.width(title, cinzel(22)) + 16
+    c.rect((x, PAGE_Y + 4, x + 52, PAGE_Y + 24), fill=AUTO_GOLD)              # "Auto" as built
+    c.text((x + 26, PAGE_Y + 14), 'Auto', font(12), fill=SEAL_TEXT, anchor='mm')
+    left = x + 60
+    width = (c.width('Turn End' if end else 'Turn Start', cinzel(15, 800)) if style == 'word'
+             else c.width('Turn End' if end else 'Turn Start', font(13)) + 14)
+    kind_tag(c, left + width, PAGE_Y + 14, end, style, 14 if style == 'word' else 13)
+    stat(c, 1, budget)
+    stat(c, 5, f'20 Oct 2026, {time}')
+    erase(c, (PAGE_X - 2, 560, 1228, 690))
+    # the comment as a manual save's (DrawComment): its label, the slip, Edit
+    c.text((PAGE_X, 571), 'Comment', font(13), fill=LABEL)
+    c.rect((426, 585, 1122, 619), fill=ROW, outline=DIM, width=1)
+    comment = COMMENTS.get((mw, end))
+    c.text((436, 602), comment or 'none — Edit writes one', font(16), fill=VALUE if comment else LABEL)
+    c.rect((1132, 585, 1226, 619), fill=ROW, outline=DIM, width=1)
+    c.text((1179, 602), 'Edit', cinzel(14), fill=TEXT, anchor='mm')
+    for k, line in enumerate(K_END if end else K_START):
+        c.text((PAGE_X, 642 + 20 * k), line, font(14), fill=QUIET)
+
+
+def k1(name, chosen, style, caption, note):
+    c = Canvas()
+    side_switch(c, ('Manual saves · 4', f'Auto-saves · {len(ALL)}'), 1)
+    heading(c, 'the game keeps the last ten weeks')
+    clear_list(c)
+    for i, (mw, end, time) in enumerate(ALL[:10]):
+        y = LIST_TOP + i * AUTO_PITCH
+        k_row(c, (LIST_X, y, LIST_X + 318, y + AUTO_H), mw, end, time, i == chosen, style)
+    groove(c, 10, len(ALL))
+    mw, end, time = ALL[chosen]
+    k_page(c, mw, end, time, '98,150K GOLD' if end else '116,400K GOLD', style)
+    c.save(name, caption, note)
+
+
 os.makedirs(OUT, exist_ok=True)
+k1('K1.png', 1, 'fill', 'K1 — the "A" seal as built; the kind a tag under the time, in its own colour',
+   'Turn Start green, Turn End in the Turn END row\'s red, both framed in gold. The comment at the bottom left, ★ on the seal.')
+k1('K1s.png', 0, 'fill', 'K1s — the same, the newest week\'s start chosen (no comment)',
+   'The page: "Auto" and the kind\'s tag after the title, the comment\'s slip with Edit, then what a load does.')
+k1('K2.png', 1, 'word', 'K2 — the kind as a coloured word, no tag',
+   'Turn Start in green, Turn End in red, Cinzel; quieter than K1\'s tags, the row stays as today\'s.')
 j1('J1.png', 1, 'J1 — one list of twenty, newest first; the seal tells the kind',
    'A rising sun on gold: the week\'s start. A moon on dark in gold: its Turn END. The list scrolls (ten in view). Chosen: a Turn END.')
 j1('J1s.png', 0, 'J1s — the same list, the newest week\'s start chosen',

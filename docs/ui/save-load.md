@@ -492,6 +492,24 @@ week's start again: the budget, then the commands.").
 3. A Turn END save's load: the map before Turn END (proposed), or straight on to the nations' turns?
 4. No notice at Turn END (proposed), or a short one?
 
+### The owner's choice (2026-10-26): J1, changed — round K
+
+The owner chose **J1** without its moon: the seal stays today's gold "A"; the kind is the words **"Turn Start"** and
+**"Turn End"** in two colours, so they catch the eye, at the row's bottom right under the time written; the row's bottom
+left is the player's optional comment, as on a manual save's row. Round K (`tools/ui/mock_autosaves.py`, the same dump
+and saves; two auto-saves made up with a comment):
+
+- **K1, K1s — tags**: each word in a tag of its colour framed in gold, as the command panel's tags — Turn Start green
+  (`BarGood`), Turn End the red of `COMMAND`'s Turn END row. A comment in quotes at the bottom left, cut before the tag,
+  and the ★ on the seal as a manual save's. The page: the "Auto" tag and the kind's after the title, the comment's slip
+  with Edit as a manual save's, then what a load does in two quiet lines. K1 has a Turn End with a comment chosen, K1s
+  the newest Turn Start, without one.
+- **K2 — words**: the same, the words alone in Cinzel, green (`Plus`) and a light red; quieter than K1's tags.
+
+Today an auto-save takes no comment (§10: "The auto-save takes none"); round K draws the comment on auto-saves as the
+owner's note asks. Then Edit works on an auto-save's page too, the sweep ("Delete all without ★") stays on the manual
+saves, and a commented auto-save still leaves its ring after ten weeks unless the owner wants it kept.
+
 ### The build (after the owner's choice)
 
 1. **The library** (`Engine/Script/SaveLibrary`): two rings of ten in the auto-saves, by kind; `ScriptContext.SaveAuto`

@@ -240,7 +240,9 @@ rail in the lower right corner, Retreat on top and Descend in the corner (the ow
 the menu before a search, Start Search in Descend's place (`Original.Content/Strategy/DungeonEntryMenu`; its §6).
 Then (owner, 2026-10-26) an auto-save at Turn END too, the auto-saves telling a week's start from its Turn END: the
 proposal and mock-up round J (J1 one list with a seal per kind, J2 a row a week, J3 two lists) are
-docs/ui/save-load.md, §12 (`tools/ui/mock_autosaves.py`), awaiting the owner's choice.
+docs/ui/save-load.md, §12 (`tools/ui/mock_autosaves.py`); the owner chose J1 with the "A" seal and "Turn Start" / "Turn
+End" in two colours under the time, the comment at the row's bottom left — round K (K1 tags, K2 words), awaiting the
+owner's choice.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
