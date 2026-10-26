@@ -84,6 +84,8 @@ public partial class GameScreen
                 Expect(list == SaveList.Load && _saveView.Chosen is { Kind: SaveKind.Manual }, "the load list with the new manual save chosen");
                 Expect(_saveView.ManualSaves[0] == _saveView.Chosen, "the save just written at the top");
                 await AutoDumpAsync("save-load");
+                if (TouchMode.On)
+                    await AutoSaveListDragAsync();
                 await AutoViewClickAsync(_saveView.SideCentre(auto: true), MouseButton.Left);
                 if (_saveView.AutoSaves.Count > 0)
                 {
@@ -101,6 +103,54 @@ public partial class GameScreen
         if (other is { } next)
             _saveShortcut.Switch(next);
         return choice;
+    }
+
+    /// <summary>
+    /// The touch mode's manual saves (docs/ui/touch.md, "The lists scrolled by a finger"), in the load list of
+    /// <c>--saveload</c>: a finger dragged up over the rows and held still before it rises scrolls them a row per row's
+    /// height (dump <c>touch-saves-dragged</c>), flicks nothing and chooses nothing; dragged up and risen at speed it
+    /// flicks them on (<c>touch-saves-flicked</c>, once the flick stopped); a tap on another row chooses its save — through
+    /// Godot's input. With every manual save in view it only says so: a folder with more of them makes the list scroll
+    /// (docs/ui/touch.md gives one).
+    /// </summary>
+    private async Task AutoSaveListDragAsync()
+    {
+        int end = _saveView.ManualScrollEnd;
+        if (end == 0)
+        {
+            GD.Print($"Kichikuou: --saveload finds all {_saveView.ManualSaves.Count} manual saves in view: no drag.");
+            return;
+        }
+        var chosen = _saveView.Chosen;
+        var area = _saveView.ManualRowsArea;
+        Vector2 At(float y) => area.Position + area.Size * new Vector2(0.5f, y);
+        await AutoDragAsync(At(0.75f), At(0.45f), 6, 0.25);
+        int dragged = _saveView.ManualScroll;
+        Expect(dragged > 0 && !_saveView.Flinging && _saveView.Chosen == chosen,
+            $"a drag up held still before it rose to scroll the rows ({dragged} of {end}), flick nothing and choose nothing");
+        await AutoDumpAsync("touch-saves-dragged");
+        await AutoDragAsync(At(0.6f), At(0.45f), 2, 0);                // a row's drag, so the flick takes them on
+        bool flicked = _saveView.Flinging;
+        int released = _saveView.ManualScroll;
+        ulong stop = Time.GetTicksMsec() + 4000;
+        while (_saveView.Flinging && Time.GetTicksMsec() < stop)
+            await NextFrameAsync();
+        int flung = _saveView.ManualScroll;
+        Expect(!_saveView.Flinging && _saveView.Chosen == chosen && flung >= released,
+            $"a quick drag up's flick to stop, scroll on ({released} to {flung} of {end}) and choose nothing");
+        Expect(released == end || (flicked && flung > released), $"a quick drag up to flick the rows on ({released} to {flung} of {end})");
+        await AutoDumpAsync("touch-saves-flicked");
+        var other = _saveView.ManualSaves.Skip(flung).Select(id => (Id: id, At: _saveView.RowCentre(id)))
+            .FirstOrDefault(r => r.Id != chosen && r.At is not null);
+        Expect(other.At is not null, "a row in view to tap besides the chosen save");
+        foreach (bool pressed in (bool[])[true, false])
+        {
+            SendPointerButton(other.At!.Value, MouseButton.Left, pressed);
+            await NextFrameAsync();
+        }
+        Expect(_saveView.Chosen == other.Id, $"the tap on manual save {other.Id.Number} to choose it");
+        GD.Print($"Kichikuou: --saveload drags the manual saves: rows down {dragged}, then {released - dragged} by the drag and "
+            + $"{flung - released} by the flick, of {end}; a tap chose save {other.Id.Number}.");
     }
 
     private static void Expect(bool holds, string what)

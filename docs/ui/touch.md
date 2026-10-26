@@ -179,11 +179,13 @@ hover and the right button. So the tablet keeps our layout and gets only what to
   (`GameScreen.AutoHeaderTouchAsync`): a long press on T.Atk's header (dump `touch-header-tip`), a tap on it
   (`touch-header-sorted`), a tap on №'s. Looked at by the agent (2026-10-24) on the Subordinates screen, the
   look's command with `--until deployment --interface new` (the deployment table shares the code, not run).
-- **The tables scrolled by a finger** (owner, 2026-10-26: the scroll bars are too thin to hit on the tablet;
-  `godot/Strategy/DeploymentTableView.Touch.cs`): on the Subordinates and deployment tables a finger dragged more than
-  12 pixels anywhere over the table (the header too) scrolls it both ways, the rows following the finger; risen at
-  150 pixels a second or more (measured over its last 0.1 s) the scroll goes on and slows (e^-4 of its speed kept after
-  a second), each axis stopping at its bar's end; a press while it goes on stops it and taps nothing. So a row's and a
+- **The lists scrolled by a finger** (owner, 2026-10-26: the tables' scroll bars are too thin to hit on the tablet, the
+  manual saves scroll by the wheel alone; the finger's part shared, `godot/Strategy/FingerScroll.cs`): a finger dragged
+  more than 12 pixels scrolls, the list following it from where it passed them; risen at 150 pixels a second or more
+  (measured over its last 0.1 s) the scroll goes on and slows (e^-4 of its speed kept after a second), stopping at the
+  list's end; a press while it goes on stops it and taps nothing.
+  - **The Subordinates and deployment tables** (`godot/Strategy/DeploymentTableView.Touch.cs`): a drag anywhere over
+  the table (the header too) scrolls it both ways, the rows under the finger, each axis stopping at its bar's end. So a row's and a
   Refill button's press come at the release, when the finger did not wander (the Refill button lit while the finger is
   down on it); the header's tap and long press as before. After a scroll the hovered unit (the deployment screen's
   picture panel, the script's pointer) stays the row the finger came down on, not what scrolled under the place it rose
@@ -193,6 +195,21 @@ hover and the right button. So the tablet keeps our layout and gets only what to
   (`touch-table-flicked`, once its flick stopped: the columns right, the flick on to the bar's end), a tap on another
   row choosing it; a bar the table does not show is left out — the kept saves list 9-10 units, which fit, so only the
   columns scroll there (the rows were checked once with the table made shorter for the run). Not yet on the tablet.
+  - **The Save/Load screen's manual saves** (`godot/Strategy/SaveLoadView.Touch.cs`): a drag starting over the list's
+  column (New save and the rows) scrolls the rows a row for each row's height (57 layout pixels) the finger moves — the
+  list scrolls by whole rows, as the wheel does, so the rows step rather than glide; the flick goes on the same way.
+  Not while the auto-saves are shown or a question is open. A row's press stays a tap at the release, as before; a
+  drag lights no row. Unattended play with `--touch` and `--saveload`, in the load list after its dump `save-load`
+  (`GameScreen.AutoSaveListDragAsync`): a drag up held still before it rises (dump `touch-saves-dragged`: the rows
+  down, no flick, the chosen save kept), a row's quick drag up (`touch-saves-flicked`, once the flick stopped: the
+  flick on to the list's end), a tap on another row choosing it; with every manual save in view it says so and drags
+  nothing. The kept saves have no manual save, so it needs a folder with more of them than the list shows (ten in
+  Load): `user://saves-manuals15`, made from the week-18 save — its `slot01.ksav` copied in as `auto-0001.ksav` and as
+  `save-0001.ksav` to `save-0014.ksav` (`--slots-from` copies a library's saves too) —
+  `--load --auto --fast --quit --seed 2 --saves user://saves-look-touch-saves --slots-from user://saves-manuals15 --saveload --until deployment --interface new --touch --shots <dir>`.
+  Its synthetic drags move a frame and at least 1/60 s apart (`GameScreen.AutoDragAsync`): a window drawing hundreds of
+  frames a second made a flick of three moves too short to measure. Looked at by the agent (2026-10-26); not yet on the
+  tablet.
 - **The building's tip on the status strip** (2026-10-25; docs/ui/command-screen.md, "A building under way"): the same
   long press on Construction's tag while a building is under way shows the tooltip a hover shows on the PC (the
   building, its weeks left); the next press anywhere hides it. Not tried on the tablet, nor by unattended play.

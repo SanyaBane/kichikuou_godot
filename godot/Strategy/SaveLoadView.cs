@@ -9,7 +9,7 @@ namespace Kichikuou.Game.Strategy;
 /// <summary>
 /// Our Save/Load screen over <c>ﾛｰﾄﾞｾｰﾌﾞ</c>'s lists on the save library (owner's decision 29; docs/ui/save-load.md, §9,
 /// the owner's layout G, 2026-10-21): one lacquer panel; on the left a switch between the two lists — the manual saves,
-/// newest first (no order to choose, the owner's 2026-10-21; the number stays on the seal), scrolling, a row's second
+/// newest first (no order to choose, the owner's 2026-10-21; the number stays on the seal), scrolling (the touch mode's by a finger's drag too), a row's second
 /// line its comment, "+ New save" heading them in Save; and the ten auto-saves, newest first — and the chosen save's page on the right: its map large (All Data's
 /// miniature), its figures, a manual save's comment (Edit writes it in place: Enter keeps it, Esc leaves the old one),
 /// Delete at the save's title (a danger button asking in a callout under it, the owner's B5 of 2026-10-25,
@@ -165,6 +165,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         _answer = null;
         _confirm = _sweep = false;
         _hovered = _pressed = 0;
+        _finger.Cancel();
         MouseDefaultCursorShape = CursorShape.Arrow;
         QueueRedraw();
     }
@@ -293,8 +294,20 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
             _scroll = place - ManualRowsShown + 1;
     }
 
-    private void ScrollBy(int rows) =>
-        _scroll = Math.Clamp(_scroll + rows, 0, Math.Max(0, _manuals.Count - ManualRowsShown));
+    private void ScrollBy(int rows) => SetScroll(_scroll + rows);
+
+    /// <summary>The manual saves from the <paramref name="row"/>th on in view, as far as they go.</summary>
+    private void SetScroll(int row)
+    {
+        row = Math.Clamp(row, 0, MaxScroll);
+        if (row == _scroll)
+            return;
+        _scroll = row;
+        QueueRedraw();
+    }
+
+    /// <summary>The farthest the manual saves scroll: the first row in view when the last one is at the foot.</summary>
+    private int MaxScroll => Math.Max(0, _manuals.Count - ManualRowsShown);
 
     /// <summary>The rows in view, top to bottom, with their places.</summary>
     private IEnumerable<(SaveId? Id, Rect2 Rect)> Rows()
@@ -374,6 +387,11 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         if (_answer is null)
         {
             AcceptEvent();                                              // drawn between two lists: nothing passes through
+            return;
+        }
+        if (TouchMode.On && ListTouch(e))
+        {
+            AcceptEvent();
             return;
         }
         switch (e)

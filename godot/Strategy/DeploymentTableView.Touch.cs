@@ -6,37 +6,22 @@ namespace Kichikuou.Game.Strategy;
 // The touch mode's table (docs/ui/touch.md, "The tablet"): a touch screen has no hover for the headers' tooltips, so a
 // long press on a header shows its full name (HeaderTip) and a tap sorts as a click does (owner, 2026-10-24); its scroll
 // bars are too thin for a finger, so a finger dragged over the table scrolls it both ways, a flick going on after the
-// release (owner, 2026-10-26). A row's or a Refill button's press is therefore a tap: it acts at the release.
+// release (owner, 2026-10-26; FingerScroll). A row's or a Refill button's press is therefore a tap: it acts at the release.
 internal sealed partial class DeploymentTableView
 {
     /// <summary>How long a finger stays on a header to show its tip (the battle cards' long press).</summary>
     private const double LongPressSeconds = 0.5;
 
-    /// <summary>How far the finger may wander meanwhile (this control's pixels): further, it scrolls the table, neither a tap nor a long press.</summary>
-    private const float TouchSlop = 12;
-
-    /// <summary>The moves a flick's speed is measured over: those of the last this many seconds before the release.</summary>
-    private const double FlingWindow = 0.1;
-
-    /// <summary>The slowest flick that goes on after the release, and the speed it stops at (this control's pixels a second).</summary>
-    private const float FlingStart = 150, FlingStop = 20;
-
-    /// <summary>How fast a flick slows: the share of its speed it keeps after a second is e^-FlingDecay.</summary>
-    private const float FlingDecay = 4;
-
     private readonly HeaderTip _tip = new();
-    private bool _touchDown;            // a left press is down and not released yet
-    private Vector2 _touchFrom;         // where it came down (once it scrolls: where the scroll started)
-    private Vector2 _scrollFrom;        // the scroll bars' values then
-    private bool _dragging;             // it wandered past the slop: it scrolls the table, no tap
+    private readonly FingerScroll _finger = new();
+    private Vector2 _touchFrom;         // where the press came down
+    private Vector2 _scrollFrom;        // the scroll bars' values when its scroll started
     private int _headerColumn = -1;     // the header's column it came down on, -1 on the rows or once it scrolls
     private int _touchUnit;             // the row's unit it came down on (0: none)
     private int _touchRefill;           // the Refill button's unit it came down on (0: none)
     private int _touchPresses;          // the presses counted: a timer acts only for its own
     private bool _headerLong;           // its long press showed the tip
-    private readonly Queue<(ulong Usec, Vector2 At)> _moves = new();   // its last moves, for a flick's speed
-    private Vector2 _fling;             // a flick going on: the finger's speed at its release (zero: none)
-    private Vector2 _flingAt;           // the scroll bars' values it has reached
+    private Vector2 _flingAt;           // the scroll bars' values a flick has reached
     private bool _scrolled;             // the last press scrolled the table: the hovered unit is the one it came down on
     private int _scrolledUnit;          // that unit (0: none)
 
@@ -53,7 +38,7 @@ internal sealed partial class DeploymentTableView
     public Vector2 ScrollEnds => new(HScroll is { } h ? End(h) : 0, VScroll is { } v ? End(v) : 0);
 
     /// <summary>Whether a flick still scrolls the table (unattended play).</summary>
-    public bool Flinging => _fling != Vector2.Zero;
+    public bool Flinging => _finger.Flinging;
 
     /// <summary>The rows' area in global coordinates: below the header, inside the scroll bars (unattended play).</summary>
     public Rect2 RowsArea
@@ -71,7 +56,7 @@ internal sealed partial class DeploymentTableView
     /// <summary>
     /// The touch mode's left presses, from the mouse Godot makes of a touch or (with <c>--touch</c>) the mouse itself: on
     /// a header held <see cref="LongPressSeconds"/> the column's tip, released sooner a sort; on a row released a press of
-    /// it (or of its Refill button); moved past <see cref="TouchSlop"/> anywhere a scroll that follows the finger, a
+    /// it (or of its Refill button); moved past <see cref="FingerScroll.Slop"/> anywhere a scroll that follows the finger, a
     /// flick at its release going on. A press while a flick goes on stops it and scrolls, never taps. Returns whether
     /// <paramref name="event"/> was taken (the tree's own handling then never sees it).
     /// </summary>
@@ -79,30 +64,24 @@ internal sealed partial class DeploymentTableView
     {
         if (@event is InputEventMouseMotion motion)
         {
-            if (!_touchDown)
+            if (!_finger.Down)
                 return false;
-            Moved(motion.Position);
-            if (!_dragging && motion.Position.DistanceTo(_touchFrom) > TouchSlop)
-                StartScroll(motion.Position);
-            if (_dragging)
-                ScrollTo(_scrollFrom - (motion.Position - _touchFrom));
+            if (_finger.Move(motion.Position))
+                StartScroll();
+            if (_finger.Dragging)
+                ScrollTo(_scrollFrom - (motion.Position - _finger.Origin));
             return true;
         }
         if (@event is not InputEventMouseButton { ButtonIndex: MouseButton.Left } button)
             return false;
         if (button.Pressed)
         {
-            bool stopsFling = Flinging;
-            _fling = Vector2.Zero;
-            (_touchDown, _touchFrom, _scrollFrom, _dragging, _headerLong, _scrolled) =
-                (true, button.Position, ScrollValues, false, false, false);
+            (_touchFrom, _headerLong, _scrolled) = (button.Position, false, false);
             _headerColumn = HeaderColumnAt(button.Position);
             (_touchUnit, _touchRefill) = _headerColumn >= 0 ? (0, 0) : (UnitAt(button.Position), RefillAt(button.Position));
-            _moves.Clear();
-            Moved(button.Position);
             int press = ++_touchPresses;
-            if (stopsFling)
-                StartScroll(button.Position);
+            if (_finger.Press(button.Position))
+                StartScroll();
             else
                 LightRefill(_touchRefill);
             if (_headerColumn >= 0)
@@ -110,7 +89,7 @@ internal sealed partial class DeploymentTableView
                 int column = _headerColumn;
                 GetTree().CreateTimer(LongPressSeconds).Timeout += () =>
                 {
-                    if (press != _touchPresses || !_touchDown || _headerColumn != column || !IsVisibleInTree())
+                    if (press != _touchPresses || !_finger.Down || _headerColumn != column || !IsVisibleInTree())
                         return;
                     _headerLong = true;
                     ShowHeaderTip(column, _touchFrom.X);            // no vibration (owner, 2026-10-24)
@@ -118,13 +97,12 @@ internal sealed partial class DeploymentTableView
             }
             return true;
         }
-        if (!_touchDown)
+        if (!_finger.Down)
             return false;
-        _touchDown = false;
         _touchPresses++;
         LightRefill(0);
-        if (_dragging)
-            Fling(button.Position);
+        if (_finger.Release(button.Position))
+            _flingAt = ScrollValues;
         else if (_headerColumn >= 0)
         {
             if (!_headerLong && _headerColumn > 0)
@@ -137,53 +115,26 @@ internal sealed partial class DeploymentTableView
         return true;
     }
 
-    /// <summary>The press scrolls from <paramref name="at"/> on: no tap, no long press, the hovered unit the one it came down on.</summary>
-    private void StartScroll(Vector2 at)
+    /// <summary>The press scrolls from here on: no tap, no long press, the hovered unit the one it came down on.</summary>
+    private void StartScroll()
     {
-        (_dragging, _headerColumn, _touchFrom, _scrollFrom) = (true, -1, at, ScrollValues);
+        (_headerColumn, _scrollFrom) = (-1, ScrollValues);
         (_scrolled, _scrolledUnit) = (true, _touchUnit);
         LightRefill(0);
-    }
-
-    /// <summary>A move of the finger to <paramref name="at"/>, kept while it is younger than <see cref="FlingWindow"/>.</summary>
-    private void Moved(Vector2 at)
-    {
-        ulong now = Time.GetTicksUsec();
-        _moves.Enqueue((now, at));
-        while (_moves.Count > 1 && now - _moves.Peek().Usec > FlingWindow * 1e6)
-            _moves.Dequeue();
-    }
-
-    /// <summary>
-    /// The release of a scroll at <paramref name="at"/>: the finger's speed over its last moves, a flick when it is
-    /// <see cref="FlingStart"/> or more. A finger that stood still before it rose flicks nothing.
-    /// </summary>
-    private void Fling(Vector2 at)
-    {
-        Moved(at);
-        var (usec, from) = _moves.Peek();
-        double seconds = (Time.GetTicksUsec() - usec) / 1e6;
-        var speed = seconds > 0.02 ? (at - from) / (float)seconds : Vector2.Zero;
-        _fling = speed.Length() >= FlingStart ? speed : Vector2.Zero;
-        _flingAt = ScrollValues;
     }
 
     /// <summary>A flick going on: the table scrolls on at its speed as it slows, an axis stopping at the bar's end.</summary>
     public override void _Process(double delta)
     {
-        if (!Flinging)
+        if (!_finger.Flinging)
             return;
-        float seconds = (float)delta;
-        var at = _flingAt - _fling * seconds;
+        var at = _flingAt - _finger.Step(delta);
         if (HScroll is not { } h || Clamp(h, ref at.X))
-            _fling.X = 0;
+            _finger.StopX();
         if (VScroll is not { } v || Clamp(v, ref at.Y))
-            _fling.Y = 0;
+            _finger.StopY();
         _flingAt = at;
         ScrollTo(at);
-        _fling *= Mathf.Exp(-FlingDecay * seconds);
-        if (_fling.Length() < FlingStop)
-            _fling = Vector2.Zero;
     }
 
     /// <summary>Keeps <paramref name="value"/> within <paramref name="bar"/>'s range; returns whether it was past an end.</summary>
@@ -220,9 +171,9 @@ internal sealed partial class DeploymentTableView
     /// <summary>The press, a flick and the scrolled row's hover end as the table hides.</summary>
     private void EndTouch()
     {
-        (_touchDown, _scrolled) = (false, false);
+        _finger.Cancel();
+        _scrolled = false;
         _touchPresses++;
-        _fling = Vector2.Zero;
     }
 
     /// <summary><paramref name="column"/>'s full name over its header, centred on <paramref name="x"/> (this control's pixels).</summary>

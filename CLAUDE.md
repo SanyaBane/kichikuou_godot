@@ -420,8 +420,9 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   under its cards (`Strategy/TouchPill`), both in `GameScreen.Skip.cs`, their places `Original.Content/Strategy/SkipButtons`
   (Skip is MsgSkip's switch; the message log scrolled by a drag, closed by a tap off its frame; docs/ui/touch.md, "The Skip
   and Log buttons" and "The dialogue buttons, round 2"); the Subordinates and deployment tables scrolled both ways by a
-  finger's drag with a flick, a row's press a tap at the release (`Strategy/DeploymentTableView.Touch.cs`; docs/ui/touch.md,
-  "The tables scrolled by a finger");
+  finger's drag with a flick, a row's press a tap at the release (`Strategy/DeploymentTableView.Touch.cs`), and so the
+  Save/Load screen's manual saves, a row at a time (`Strategy/SaveLoadView.Touch.cs`), the finger's part
+  `Strategy/FingerScroll` (docs/ui/touch.md, "The lists scrolled by a finger");
   `Strategy/OptionsView` (Option: the options window over the game, the owner's mock-up D, docs/ui/options.md — a paper sheet with the tabs Messages, Display, Battle, Game; `--options` dumps them); Option → Display's palette (Lacquer, the default, or Steel; `UiPalettes.Chosen`, a part's own read but not offered yet; docs/ui/options.md, "The palette") colours all our screens, a change repainting them at once (`UiPalettes.Repaint`, `IUiPaletteUser`); the map's plates keep steel's colours as their own (`MapMarkersView`);
   `Battles/AdvantageTip` (the instant tooltips of the advantages next to the armies' names, `BattleAdvantage.Parts`); `GodotGlyphRenderer` (TextServer; MS Gothic or the bundled BIZ UDGothic in `godot/fonts`, Option →
   Display, `--font ms-gothic|biz-ud-gothic` for one launch), `BattleAudio`; `Screens` switches screens. Solution `Kichikuou.sln` at the root (`dotnet/project/solution_directory`).

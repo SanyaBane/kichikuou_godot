@@ -315,24 +315,9 @@ public partial class GameScreen
         var rows = table.RowsArea;
         int chosen = table.Chosen;
         Vector2 At(float x, float y) => rows.Position + rows.Size * new Vector2(x, y);
-        async Task DragAsync(Vector2 from, Vector2 to, int steps, double holdSeconds)
-        {
-            SendPointerButton(from, MouseButton.Left, true);
-            await NextFrameAsync();
-            for (int i = 1; i <= steps; i++)
-            {
-                SendPointerDrag(from.Lerp(to, i / (float)steps));
-                await NextFrameAsync();
-            }
-            ulong until = Time.GetTicksMsec() + (ulong)(holdSeconds * 1000);
-            while (Time.GetTicksMsec() < until)
-                await NextFrameAsync();
-            SendPointerButton(to, MouseButton.Left, false);
-            await NextFrameAsync();
-        }
         var ends = table.ScrollEnds;
         var before = table.ScrollValues;
-        await DragAsync(At(0.5f, 0.9f), At(0.5f, 0.1f), 8, 0.25);
+        await AutoDragAsync(At(0.5f, 0.9f), At(0.5f, 0.1f), 8, 0.25);
         var dragged = table.ScrollValues;
         if (table.Flinging || table.Chosen != chosen || dragged.X != before.X)
             throw new InvalidOperationException($"--auto's drag up, held still before it rose, flicked ({table.Flinging}), chose unit {table.Chosen} (not {chosen}) or scrolled from {before} to {dragged}.");
@@ -340,7 +325,7 @@ public partial class GameScreen
             throw new InvalidOperationException($"--auto's drag up did not scroll the rows down ({before.Y} of {ends.Y}).");
         string vertical = ends.Y > 0 ? $"rows down {dragged.Y - before.Y:0} of {ends.Y:0} px" : "no vertical scroll bar";
         await AutoDumpAsync("touch-table-dragged");
-        await DragAsync(At(0.8f, 0.5f), At(0.3f, 0.5f), 4, 0);
+        await AutoDragAsync(At(0.8f, 0.5f), At(0.3f, 0.5f), 4, 0);
         var released = table.ScrollValues;
         bool flicked = table.Flinging;
         ulong stop = Time.GetTicksMsec() + 4000;
@@ -369,6 +354,35 @@ public partial class GameScreen
             throw new InvalidOperationException($"--auto's tap on unit {unit}'s row chose unit {table.Chosen}.");
         table.Chosen = chosen;
         GD.Print($"Kichikuou: --auto drags the Subordinates table: {vertical}; {horizontal}; a tap chose unit {unit}.");
+    }
+
+    /// <summary>
+    /// A finger's drag through Godot's input (unattended play): down at <paramref name="from"/>, moved to
+    /// <paramref name="to"/> in <paramref name="steps"/> moves, a frame and at least 1/60 s apart (as a touch screen
+    /// reports them: a window drawing hundreds of frames a second would make a flick too short to measure), held still
+    /// <paramref name="holdSeconds"/> (0: risen at once, a flick), up — global coordinates.
+    /// </summary>
+    private async Task AutoDragAsync(Vector2 from, Vector2 to, int steps, double holdSeconds)
+    {
+        async Task TouchFrameAsync()
+        {
+            ulong next = Time.GetTicksMsec() + 17;
+            do
+                await NextFrameAsync();
+            while (Time.GetTicksMsec() < next);
+        }
+        SendPointerButton(from, MouseButton.Left, true);
+        await TouchFrameAsync();
+        for (int i = 1; i <= steps; i++)
+        {
+            SendPointerDrag(from.Lerp(to, i / (float)steps));
+            await TouchFrameAsync();
+        }
+        ulong until = Time.GetTicksMsec() + (ulong)(holdSeconds * 1000);
+        while (Time.GetTicksMsec() < until)
+            await NextFrameAsync();
+        SendPointerButton(to, MouseButton.Left, false);
+        await NextFrameAsync();
     }
 
     /// <summary>The press held back by <see cref="CardTouch"/>, if any, goes on now.</summary>
