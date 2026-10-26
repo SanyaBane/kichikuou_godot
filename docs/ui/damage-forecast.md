@@ -297,3 +297,24 @@ every line's ink, its outline included, against the strip with 2 px to spare, an
 **Notes for the build, both versions:** the specials on a large army give four-digit ranges (C. War Dance takes
 `T / 2 + RND(T / 2)` of the target's whole troops: "1,250–2,400" for 2,500): a banner's troops' place (88 px at 14) and a
 button's line (108 px at 15) shrink their figure to fit, never wrap (style.md, §3).
+
+## 13. Round E: larger figures on the banners (2026-10-27)
+
+**The owner, on the build** (Option → Battle → "Damage forecast" in a window): the damage's row reads poorly — not its
+colour, its type is too small (B2 as built: the figures 14, their words 12, an outline of 1).
+
+**Round E** (`tools/ui/mock_damage_forecast.py`, `layout_e`, on the build's dumps; Ex with the bowman's three banners as in
+round B, Melee hovered; all with an outline of 1.5; `E-compare.png` sets the built stack and the three side by side at twice
+their size):
+
+- **E1 — the figures 17, their words 14**, on the same two rows; banners 50 px, three stand 160, 14 over the card's 146.
+- **E2 — no words, the figures 19**: the troops left in red, the HP right in green, in the order and the hues of the card's
+  bars under them; banners 50 px. A lone figure (Whirlwind Shot's "1") says less without its word.
+- **E3 — the label back at 20** as before the forecast, the figures 17 and their words 14; banners 56 px, three stand 178,
+  32 over the card.
+
+**Agent's recommendation:** E1 — the figures a fifth larger and as tall as the label, the words kept, the stack still
+close to the card. On the hovered banner (pale sky) the light figures stay the weakest in every variant; the thicker
+outline helps, and the hovered blue could stay a step darker if it still reads poorly.
+
+The touch rail's lines (15 on a dark strip, §12) are not part of this round. **Awaiting the owner's choice.**

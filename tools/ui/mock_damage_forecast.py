@@ -501,7 +501,69 @@ def layout_d(touch):
     sheet.save(os.path.join(OUT, 'D-compare.png'))
 
 
+# --- Round E (the owner, 2026-10-27, on the build: the damage's row reads poorly — the type too small, not its colour) --
+# As built (B2, C1): the label 17, the figures 14 and their words 12, an outline of 1. Three ways to larger figures, an
+# outline of 1.5 in all, on the build's state (Ex: Melee 29-37 troops, 0-1 HP; made up: Bow and Whirlwind Shot as before):
+#   E1  the figures 17 and their words 14 on the same two rows; banners 50 px, three stand 160, 14 over the card's 146;
+#   E2  no words, the figures 19 in the bars' own order and hues — troops left in red, HP right in green, as the card's
+#       bars under them; banners 50 px;
+#   E3  the label back at 20, the figures 17 and their words 14; banners 56 px, three stand 178, 32 over the card.
+
+def damage_e(f, y, x_troops, x_hp, troops, hp, figure, word, stroke, words=True):
+    """Round E's damage row: the figure at figure, its word at word (none without words), the outline stroke / 2 px."""
+    for x, tag, value, ink in ((x_troops, 'Trp.', troops, TINT_INKS[0]), (x_hp, 'HP', hp, TINT_INKS[1])):
+        if value is None:
+            continue
+        if words:
+            outlined(f, x, y, tag, GOTHIC(word), ink, outline=NIGHT, anchor='lm', stroke=stroke)
+            x += width(tag + ' ', GOTHIC(word))
+        outlined(f, x, y, value, GOTHIC(figure), ink, outline=NIGHT, anchor='lm', stroke=stroke)
+
+
+def stack_e(f, card, items, hot, h, label_size, label_dy, figure_dy, x_troops, x_hp, figure, word, words=True):
+    top = (card[1] + card[3]) / 2 - (len(items) * h + (len(items) - 1) * GAP) / 2
+    x0 = card[0] - OUT_
+    for i, (label, troops, hp) in enumerate(items):
+        y0 = top + i * (h + GAP)
+        at = ((x0 + x0 + BANNER_W - POINT + SLANT) / 2, y0 + label_dy, 'mm')
+        banner(f, (x0, y0, x0 + BANNER_W, y0 + h), label, i == hot,
+               lambda f, x0, y0, x1, y1, t=troops, p=hp: damage_e(f, y0 + figure_dy, x0 + x_troops, x0 + x_hp, t, p, figure,
+                                                                  word, 3, words),
+               label_size=label_size, label_at=at, colours=PLAYER_BLUE)
+
+
+def layout_e(dump, turn):
+    variants = [
+        ('E1-larger-figures.png', ['E1  The figures 17 and their words 14 (as built: 14 and 12), the label 17',
+                                   'banners 50 px; three stand 160, 14 over the card\'s 146'],
+         dict(h=50, label_size=17, label_dy=15, figure_dy=36, x_troops=18, x_hp=110, figure=17, word=14)),
+        ('E2-no-words.png', ['E2  No words: the figures 19, troops left in red, HP right in green, as the card\'s bars',
+                             'banners 50 px; the label 17'],
+         dict(h=50, label_size=17, label_dy=15, figure_dy=36, x_troops=24, x_hp=118, figure=19, word=0, words=False)),
+        ('E3-label-as-before.png', ['E3  The label 20 as before the forecast, the figures 17 and their words 14',
+                                    'banners 56 px; three stand 178, 32 over the card'],
+         dict(h=56, label_size=20, label_dy=17, figure_dy=41, x_troops=18, x_hp=110, figure=17, word=14)),
+    ]
+    for name, lines, v in variants:
+        f = Frame(dump)
+        patch(f, turn, (668, 440, 884, 610))
+        target_frame(f, CARD_E1)
+        stack_e(f, CARD_E1, EX_THREE, 1, **v)
+        caption(f, lines + ['All: an outline of 1.5 (as built: 1). ' + MADE_UP_THREE], y=62)
+        f.save(name)
+    # the as-built stack and the three, side by side at twice their size
+    names = ['C1-player-blue.png'] + [n for n, _, _ in variants]
+    crops = [Image.open(os.path.join(OUT, n)).crop((660, 420, 990, 630)).resize((660, 420), Image.LANCZOS) for n in names]
+    sheet = Image.new('RGB', (660 * 2 + 10, 420 * 2 + 10), (0, 0, 0))
+    for i, c in enumerate(crops):
+        sheet.paste(c, (i % 2 * 670, i // 2 * 430))
+    sheet.save(os.path.join(OUT, 'E-compare.png'))
+
+
 GALLERY = sys.argv[1]
+if sys.argv[3:] == ['E']:                       # round E alone (it needs round C's C1 in the out dir for its sheet)
+    layout_e(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
+    sys.exit()
 layout_d(load('touch', 'current', 'battle-turn.png'))
 layout_c(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
 layout_b1(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
@@ -512,3 +574,4 @@ layout_a1(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current
 layout_a2(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
 layout_a3(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
 layout_t1(load('touch', 'current', 'battle-turn.png'))
+layout_e(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
