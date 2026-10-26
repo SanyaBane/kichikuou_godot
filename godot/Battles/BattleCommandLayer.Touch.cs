@@ -11,7 +11,9 @@ namespace Kichikuou.Game.Battles;
 // acting unit's commands without a target (its context menu's), right the attacks on the target (its banners'). The
 // banners on the card are not shown. A rail button chooses at its release over it, as the context menu's items. Drawn in
 // lacquer and gold (owner's A, 2026-10-24; docs/ui/touch.md, "The map's and the battle's buttons, round 1"): the rails as
-// our panels, the rows as the command panel's, Retreat as Turn END, the attacks lit gold, the target framed in gold.
+// our panels, the rows as the command panel's, Retreat as Turn END, the attacks lit gold, the target framed in gold. With
+// the damage forecast each attack button carries its damage on a dark strip (the owner's D2, 2026-10-27;
+// docs/ui/damage-forecast.md, §12).
 internal sealed partial class BattleCommandLayer
 {
     // The rails stand beside the cards, in the screen's lower half where the thumbs are (owner's A, 2026-10-25; docs/ui/touch.md,
@@ -25,6 +27,16 @@ internal sealed partial class BattleCommandLayer
     private static readonly Color TargetName = Color8(150, 225, 255);
     private static readonly Color AttackTop = Color8(255, 214, 110), AttackBottom = Color8(214, 140, 40);
     private static readonly Color AttackEdge = Color8(255, 244, 210), AttackLine = Color8(150, 100, 30), AttackInk = Color8(40, 24, 8);
+    private static readonly Color HeldGlow = new(1f, 0.72f, 0.42f);  // a rail button or an order toggle held
+
+    // The damage forecast on an attack button of 76 (the owner's D2): the name in the brush face at 17, its middle 19 below
+    // the top; a dark strip from 32 below the top to 6 above the foot, 7 in from the sides; on it "Trp." and its figure, their
+    // middle at 43, and "HP" and its figure at 59, each line centred, in the game's font at 15 (the word 13), the banners'
+    // inks and outline. Every line's ink, its outline included, stays 2 inside the strip (the owner, 2026-10-27); a line too
+    // wide shrinks to fit. A button the rail makes lower is laid out smaller in proportion.
+    private const float ForecastName = 17, ForecastNameMiddle = 19, StripTop = 32, StripFoot = 6, StripSide = 7, StripRadius = 3;
+    private const float TroopsLine = 43, HpLine = 59, LineFigure = 15, LineOutline = 2, StripMargin = 2;
+    private static readonly Color StripColour = Color8(14, 10, 8) with { A = 225 / 255f };
 
     // The target's frame in the touch mode: gold brackets with a warm glow and a gold diamond on top of the card.
     private static readonly Color TouchTargetColour = Color8(222, 182, 96), TouchTargetGlow = Color8(255, 200, 100);
@@ -210,7 +222,8 @@ internal sealed partial class BattleCommandLayer
 
     // ------------------------------------------------------------------ drawing
 
-    public override void _Process(double delta)
+    /// <summary>The target frame's breathing, once a frame (<see cref="_Process"/>).</summary>
+    private void ProcessPulse(double delta)
     {
         if (!Pulses || _commands is null || _target is null || _menu is not null)
             return;
@@ -265,7 +278,7 @@ internal sealed partial class BattleCommandLayer
             {
                 bool hot = place == _hotRail;
                 if (place.Right)
-                    AttackButton(rect, text, hot);
+                    AttackButton(rect, text, hot, font, DamageOf(choice));
                 else if (choice.Command == FigtSelCommand.Retreat)
                 {
                     Ui.DrawRedButton(this, rect, hot, false, s);
@@ -295,27 +308,73 @@ internal sealed partial class BattleCommandLayer
     {
         float s = _scale;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(s, s));
-        DrawRect(r.Grow(5), Glow with { A = 0.18f });
-        DrawRect(r.Grow(2.5f), Glow with { A = 0.35f });
+        DrawRect(r.Grow(5), HeldGlow with { A = 0.18f });
+        DrawRect(r.Grow(2.5f), HeldGlow with { A = 0.35f });
         DrawRect(r, Ui.RowHover with { A = 0.5f });
         DrawRect(r, Ui.HoverLine, false, Lacquer.Line(2, s));
         DrawSetTransform(Vector2.Zero, 0, Vector2.One);
     }
 
-    /// <summary>An attack on the right rail: lit gold, its name in the brush face; brighter with a glow while held.</summary>
-    private void AttackButton(Rect2 r, string text, bool hot)
+    /// <summary>
+    /// An attack on the right rail: lit gold, its name in the brush face; brighter with a glow while held. While the
+    /// forecast shows the name stands at the top and the strip under it carries <paramref name="damage"/> (empty while
+    /// its forecast runs).
+    /// </summary>
+    private void AttackButton(Rect2 r, string text, bool hot, Font font, BannerDamage? damage)
     {
         float k = _scale;
         if (hot)
         {
-            DrawRect(r.Grow(6), Glow with { A = 0.18f });
-            DrawRect(r.Grow(3), Glow with { A = 0.35f });
+            DrawRect(r.Grow(6), HeldGlow with { A = 0.18f });
+            DrawRect(r.Grow(3), HeldGlow with { A = 0.35f });
         }
         var (top, bottom) = hot ? (AttackTop.Lightened(0.2f), AttackBottom.Lightened(0.15f)) : (AttackTop, AttackBottom);
         DrawPolygon([r.Position, new(r.End.X, r.Position.Y), r.End, new(r.Position.X, r.End.Y)], [top, top, bottom, bottom]);
         DrawRect(r, AttackEdge, false, Lacquer.Line(2, k));
         DrawRect(r.Grow(-4), AttackLine, false, Lacquer.Line(1, k));
-        Centred(_brush, text, AttackText, r, AttackInk);
+        if (!_forecastShown)
+        {
+            Centred(_brush, text, AttackText, r, AttackInk);
+            return;
+        }
+        float q = r.Size.Y / RightButton;                               // a lower button, its forecast as much smaller
+        Centred(_brush, text, ForecastName * q, new Rect2(r.Position.X, r.Position.Y, r.Size.X, 2 * ForecastNameMiddle * q), AttackInk);
+        var strip = new Rect2(r.Position.X + StripSide, r.Position.Y + StripTop * q,
+            r.Size.X - 2 * StripSide, r.Size.Y - (StripTop + StripFoot) * q);
+        int radius = (int)Math.Round(StripRadius * q);
+        DrawStyleBox(new StyleBoxFlat
+        {
+            BgColor = StripColour, AntiAliasing = true,
+            CornerRadiusTopLeft = radius, CornerRadiusTopRight = radius, CornerRadiusBottomLeft = radius, CornerRadiusBottomRight = radius,
+        }, strip);
+        if (damage is null)
+            return;
+        float room = strip.Size.X - 2 * StripMargin - LineOutline;
+        DamageLine(font, BannerDamage.TroopsWord, damage.Troops, strip.GetCenter().X, r.Position.Y + TroopsLine * q, LineFigure * q, room, TroopsInk);
+        DamageLine(font, BannerDamage.HpWord, damage.Hp, strip.GetCenter().X, r.Position.Y + HpLine * q, LineFigure * q, room, HpInk);
+    }
+
+    /// <summary>
+    /// One line of an attack button's forecast (layout pixels, under the rails' transform): <paramref name="word"/> and
+    /// <paramref name="figure"/> centred on <paramref name="centre"/>, their middle at <paramref name="middle"/>, the figure
+    /// at <paramref name="size"/> and the word 2 smaller, shrunk to fit <paramref name="room"/>; nothing for no figure.
+    /// </summary>
+    private void DamageLine(Font font, string word, string? figure, float centre, float middle, float size, float room, Color ink)
+    {
+        if (figure is null)
+            return;                                                     // its line stays empty: the other never moves
+        int px = (int)Math.Round(size), tag = px - 2;
+        float Width(int f, int t) => font.GetStringSize(word + " ", fontSize: t).X + font.GetStringSize(figure, fontSize: f).X;
+        while (px > 9 && Width(px, tag) > room)
+            (px, tag) = (px - 1, tag - 1);
+        float left = centre - Width(px, tag) / 2;
+        foreach (var (text, fs) in new[] { (word, tag), (figure, px) })
+        {
+            var at = new Vector2(left, middle + (font.GetAscent(fs) - font.GetDescent(fs)) / 2);
+            DrawStringOutline(font, at, text, HorizontalAlignment.Left, -1, fs, (int)LineOutline, TextOutline);
+            DrawString(font, at, text, HorizontalAlignment.Left, -1, fs, ink);
+            left += font.GetStringSize(text + " ", fontSize: fs).X;
+        }
     }
 
     /// <summary><paramref name="text"/> centred in <paramref name="r"/> at <paramref name="size"/>, smaller if it would not fit.</summary>

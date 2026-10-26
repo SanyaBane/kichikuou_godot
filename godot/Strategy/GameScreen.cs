@@ -2508,7 +2508,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// "order-flash" without <c>--fast</c>). Back at the same turn again: the pointer on each advantage next to the armies'
     /// names shows its tooltip (dumps "advantage-tip-1"…), on each enemy card its banners (dumps "banners-E1"…); two sample menus, never
     /// answered, show two and three banners on the target ("sample-2-banners", "sample-3-banners": Rance
-    /// Attack added; Bow and Whirlwind Shot added); then the pointer on the target's Melee banner
+    /// Attack added; Bow and Whirlwind Shot added); the same with the damage forecast, whatever the option
+    /// ("forecast-E1"…, "forecast-sample-3-banners"); then the pointer on the target's Melee banner
     /// ("banner-hover"), and a click there attacks. Anything else is an error.
     /// </summary>
     private async Task<FigtSelChoice> AutoCommandsAsync(FigtSelMenu menu, Sys3Int button)
@@ -2595,15 +2596,36 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             }
             // Samples for the banners' look, never answered: the menus a unit with a special and focus would get.
             var button4 = new List<Sys3Int> { button };
+            var sample3 = menu with { AttackType = 1, Options = [.. menu.Options, new FigtSelOption(FigtSelCommand.Bow, button4), new FigtSelOption(FigtSelCommand.WhirlwindShot, button4)] };
             foreach (var (name, sample) in new[]
             {
                 ("sample-2", menu with { Options = [.. menu.Options, new FigtSelOption(FigtSelCommand.RanceAttack, button4)] }),
-                ("sample-3", menu with { AttackType = 1, Options = [.. menu.Options, new FigtSelOption(FigtSelCommand.Bow, button4), new FigtSelOption(FigtSelCommand.WhirlwindShot, button4)] }),
+                ("sample-3", sample3),
             })
             {
                 commands.Begin(new BattleCommands(sample), s, _presenter.Battle.Text);
                 await AutoMoveAsync(Face(target));
                 await AutoDumpAsync($"{name}-banners");
+            }
+            // The same with the damage forecast (docs/ui/damage-forecast.md), the option's or not; its figures waited for.
+            commands.Forecast = true;
+            try
+            {
+                commands.Begin(model, s, _presenter.Battle.Text);
+                await commands.ForecastsDone!;
+                for (int slot = 1; slot <= menu.EnemySlotsUsed.Value; slot++)
+                {
+                    await AutoMoveAsync(Face(new BattlePlace(BattleSide.Enemy, slot)));
+                    await AutoDumpAsync($"forecast-E{slot}");
+                }
+                commands.Begin(new BattleCommands(sample3), s, _presenter.Battle.Text);
+                await commands.ForecastsDone!;
+                await AutoMoveAsync(Face(target));
+                await AutoDumpAsync("forecast-sample-3-banners");
+            }
+            finally
+            {
+                commands.Forecast = null;
             }
             commands.Begin(model, s, _presenter.Battle.Text);
             await AutoMoveAsync(Face(target));

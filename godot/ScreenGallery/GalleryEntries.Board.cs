@@ -27,8 +27,9 @@ internal static partial class GalleryEntries
     {
         yield return new("opening", Battle, "Battle: the opening", null, CaptureNote + " At the first round's header.",
             g => Board(g, (p, m) => m.Kind == MomentKind.Key && p.Opening is not null));
-        yield return new("battle-turn", Battle, "Battle: a player's turn", null, CaptureNote + " Round 1's first FIGT_SEL, our commands begun.",
-            g => Board(g, Turn, then: (_, _, _) => { }));
+        yield return new("battle-turn", Battle, "Battle: a player's turn", null,
+            CaptureNote + " Round 1's first FIGT_SEL, our commands begun, the damage forecast on (the touch mode's rail shows it).",
+            g => Board(g, Turn, then: (_, _, _) => { }, forecast: true));
         yield return new("menu", Battle, "Battle: the acting unit's menu", null, CaptureNote + " Its first item hovered.",
             g => Board(g, Turn, then: (p, m, board) =>
             {
@@ -72,9 +73,10 @@ internal static partial class GalleryEntries
                 board.Commands.Move(at);
                 board.Commands.Press(false, at);
             }));
-        yield return new("banners-E1", Battle, "Battle: a target's banners", null, CaptureNote + " The pointer on the first enemy card.",
+        yield return new("banners-E1", Battle, "Battle: a target's banners", null,
+            CaptureNote + " The pointer on the first enemy card, the damage forecast on.",
             g => Board(g, Turn, then: (_, _, board) =>
-                board.Commands.Move(BattleBoardView.CardArea(new BattlePlace(BattleSide.Enemy, 1)).Position + new Vector2(220, 75))));
+                board.Commands.Move(BattleBoardView.CardArea(new BattlePlace(BattleSide.Enemy, 1)).Position + new Vector2(220, 75)), forecast: true));
         yield return new("retreat", Battle, "Battle: the retreat dialog", null,
             CaptureNote + " Made up: the capture's player did not retreat; the dialog over round 1's first turn.",
             g => Board(g, Turn, dialog: true));
@@ -146,12 +148,13 @@ internal static partial class GalleryEntries
     /// <summary>
     /// Our battle board on the capture held at the <paramref name="nth"/> moment <paramref name="chosen"/> picks, followed
     /// each frame as the game follows it; at a <c>FIGT_SEL</c> moment with <paramref name="then"/> our commands are begun
-    /// on its menu and <paramref name="then"/> plays the pointer once the board is laid out; with <paramref name="dialog"/>
+    /// on its menu and <paramref name="then"/> plays the pointer once the board is laid out — with <paramref name="forecast"/>
+    /// the damage forecast on (else off, whatever the option), its figures waited for; with <paramref name="dialog"/>
     /// the retreat's confirmation is asked over it; with <paramref name="read"/> every message counts as read before.
     /// </summary>
     private static Action<Rect2>? Board(GalleryStage g, Func<GamePresenter, BattleMoment, bool> chosen, int nth = 1,
         Action<GamePresenter, BattleMoment, BattleBoardView>? then = null, bool dialog = false, string file = GalleryBattle.Capture,
-        bool read = false)
+        bool read = false, bool forecast = false)
     {
         GamePresenter Fresh()
         {
@@ -164,11 +167,13 @@ internal static partial class GalleryEntries
         var s = p.State ?? throw new InvalidOperationException("The replay bound no state.");
         var board = g.Add(new BattleBoardView(g.Font, g.Faces) { Visible = true });
         board.LoadCrops();
+        board.Commands.Forecast = forecast;
         if (then is not null && moment.Menu is { } menu)
         {
             p.Scene.Choosing = true;
             var model = new BattleCommands(menu);
             board.Commands.Begin(model, s, p.Battle.Text, TouchMode.On ? TouchTarget(s, model) : null);
+            board.Commands.ForecastsDone?.Wait();                          // the dump the same every time
         }
         if (dialog)
             board.Dialog.Begin(BattleDialog.For(Original.Combat.Battle.RetreatMenu)!, p.Battle.Text);

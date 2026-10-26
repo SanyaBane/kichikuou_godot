@@ -2,6 +2,7 @@ using Godot;
 using Kichikuou.Engine.Script;
 using Kichikuou.Game.Strategy;
 using Kichikuou.Original.Combat;
+using Kichikuou.Original.Content;
 using Kichikuou.Original.Content.Battles;
 using Kichikuou.Original.State;
 
@@ -13,22 +14,34 @@ namespace Kichikuou.Game.Battles;
 /// The attacks are banners on the enemy card under the pointer (<see cref="BattleCommands.Banners"/>), the
 /// only way to attack; a right click on a card opens its context menu at the pointer
 /// (<see cref="BattleCommands.ContextMenu"/>). Every choice is one the core's menu offers — the rules stay
-/// the core's. Points are layout pixels of the 1280×800 screen (<see cref="BattleBoardView"/>).
+/// the core's. With Option → Battle → "Damage forecast" each banner carries the damage its attack is likely to deal
+/// (<see cref="DamageForecasts"/>; docs/ui/damage-forecast.md). Points are layout pixels of the 1280×800 screen
+/// (<see cref="BattleBoardView"/>).
 /// </summary>
 internal sealed partial class BattleCommandLayer : Control
 {
     private static UiPalette Ui => UiPalettes.For(UiPart.Battle);
 
     // The banners (as Sengoku Rance's): 200×40, 5 apart, one column 22 out of the card's left edge; their places are
-    // fixed from the top whatever their number (owner, 2026-10-13), three of them centred on the card's height.
+    // fixed from the top whatever their number (owner, 2026-10-13), three of them centred on the card's height. In the
+    // player's blue, the hovered one a pale sky blue glowing (the owner's C1, 2026-10-26; docs/ui/damage-forecast.md, §11).
     private static readonly Vector2 BannerSize = new(200, 40);
     private const float BannerGap = 5, BannerOut = 22, BannerSlant = 12, BannerPoint = 18, BannerText = 20;
     private const int BannerPlaces = 3;
     private const float BannerAlpha = 0.8f;
-    private static readonly Color BannerTop = Color8(255, 228, 90), BannerBottom = Color8(226, 128, 20);
-    private static readonly Color HotTop = Color8(255, 170, 90), HotBottom = Color8(196, 70, 30);
-    private static readonly Color Glow = new(1f, 0.72f, 0.42f);
-    private static readonly Color TextOutline = new(0.22f, 0.1f, 0.02f, 0.95f);
+    private static readonly Color BannerTop = Color8(122, 166, 245), BannerBottom = Color8(50, 90, 198);
+    private static readonly Color HotTop = Color8(192, 226, 255), HotBottom = Color8(92, 152, 246);
+    private static readonly Color BannerGlow = Color8(170, 212, 255);
+    private static readonly Color TextOutline = Color8(6, 10, 30) with { A = 0.95f };
+
+    // The damage forecast on a banner (the owner's B2, 2026-10-26; docs/ui/damage-forecast.md, §10): 46 high, so three
+    // stand the card's height; the label 17, its middle 15 below the banner's top; the damage under it, its middle at 33:
+    // "Trp." and its figure from 20, "HP" and its figure from 108, each in the bars' hue lightened (the owner's C1), the
+    // word 2 smaller than its figure (14); a figure too wide for its place shrinks to fit.
+    private static readonly Vector2 ForecastBannerSize = new(200, 46);
+    private const float ForecastLabel = 17, ForecastLabelMiddle = 15, ForecastFigure = 14, ForecastMiddle = 33;
+    private const float ForecastTroopsAt = 20, ForecastHpAt = 108, ForecastGap = 8;
+    private static readonly Color TroopsInk = Color8(232, 146, 140), HpInk = Color8(156, 216, 156);
 
     // The target's frame (as Sengoku Rance's): cyan brackets on the corners of the enemy card whose banners show — each
     // an L bent round a corner of 7, its arms 60 along the card and 46 down it — 3 out of the card's edge, 4 wide, a white
@@ -51,6 +64,9 @@ internal sealed partial class BattleCommandLayer : Control
     private (BattlePlace Place, Rect2 Box, IReadOnlyList<(string Text, FigtSelChoice Choice, bool Current)> Items)? _menu;
     private int _hotItem = -1;
     private int _pressedItem = -1;                                  // the item a left press began on (chosen at its release)
+    private DamageForecasts? _forecasts;                            // this choice's, while the forecast shows
+    private int _forecastsDrawn = -1;                               // how many of them the last drawing had
+    private bool _forecastShown;
 
     public BattleCommandLayer()
     {
@@ -65,6 +81,32 @@ internal sealed partial class BattleCommandLayer : Control
 
     /// <summary>The answer once the player has chosen.</summary>
     public FigtSelChoice? Result { get; private set; }
+
+    /// <summary>
+    /// Whether the banners show the damage forecast: null (the default) follows Option → Battle → "Damage forecast"
+    /// (<see cref="BattleScreenSettings.Forecast"/>); the screen gallery and unattended play's dumps set it. A change
+    /// applies at once.
+    /// </summary>
+    public bool? Forecast
+    {
+        get => _forecast;
+        set
+        {
+            _forecast = value;
+            if (_commands is null)
+                return;
+            StartForecasts();
+            QueueRedraw();
+        }
+    }
+
+    private bool? _forecast;
+
+    /// <summary>Whether the damage forecast shows now.</summary>
+    private bool ForecastOn => _forecast ?? BattleScreenSettings.Get(BattleScreenSettings.Forecast) >= 0.5;
+
+    /// <summary>The forecasts of this choice running or done (null: none started), for a dump that waits for them.</summary>
+    public Task? ForecastsDone => _forecasts?.Done;
 
     /// <summary>The card under the pointer, or whose banners it is on (the scene shows that enemy).</summary>
     public BattlePlace? Hovered => _hovered;
@@ -105,10 +147,45 @@ internal sealed partial class BattleCommandLayer : Control
         (_commands, _state, _text) = (commands, state, text);
         Result = null;
         (_hovered, _banners, _hotBanner, _menu, _hotItem) = (null, [], -1, null, -1);
+        (_forecasts, _forecastsDrawn) = (null, -1);
         if (_touch)
             BeginTouch(target);
+        StartForecasts();
         QueueRedraw();
     }
+
+    /// <summary>
+    /// Starts this choice's forecasts once the forecast shows (at the start, or when the option is switched on under it),
+    /// on the state as <c>FIGT_SEL</c> asks: the touch mode's target's banners first.
+    /// </summary>
+    private void StartForecasts()
+    {
+        _forecastShown = ForecastOn;
+        if (_forecastShown && _forecasts is null && _commands is { } commands && _state is { } state)
+            _forecasts = DamageForecasts.Start(state, commands, _touch ? _target : null);
+    }
+
+    public override void _Process(double delta)
+    {
+        if (_commands is null)
+            return;
+        if (ForecastOn != _forecastShown)
+        {
+            StartForecasts();
+            QueueRedraw();
+        }
+        if (_forecasts is { } forecasts && forecasts.Count != _forecastsDrawn)
+        {
+            _forecastsDrawn = forecasts.Count;
+            if (forecasts.Done.IsFaulted)
+                GD.PushError($"Kichikuou: the damage forecast failed: {forecasts.Done.Exception?.GetBaseException()}");
+            QueueRedraw();
+        }
+        ProcessPulse(delta);
+    }
+
+    /// <summary>The damage of <paramref name="choice"/>'s banner while the forecast shows and its forecast is done, else null.</summary>
+    private BannerDamage? DamageOf(FigtSelChoice choice) => _forecastShown ? _forecasts?.For(choice) : null;
 
     /// <summary>Ends the choice (answered, or the interface changed): nothing is shown.</summary>
     public void End()
@@ -116,6 +193,7 @@ internal sealed partial class BattleCommandLayer : Control
         _commands = null;
         _state = null;
         (_hovered, _banners, _hotBanner, _menu, _hotItem) = (null, [], -1, null, -1);
+        (_forecasts, _forecastsDrawn) = (null, -1);                 // a forecast still running is left to finish unread
         QueueRedraw();
     }
 
@@ -284,12 +362,16 @@ internal sealed partial class BattleCommandLayer : Control
         return null;
     }
 
-    /// <summary>Banner <paramref name="i"/> on <paramref name="target"/>'s card: its fixed place, the first at the top.</summary>
+    /// <summary>
+    /// Banner <paramref name="i"/> on <paramref name="target"/>'s card: its fixed place, the first at the top; taller while
+    /// the forecast shows.
+    /// </summary>
     private Rect2 BannerRect(BattlePlace target, int i)
     {
         var card = _cardArea(target);
-        float column = BannerPlaces * BannerSize.Y + (BannerPlaces - 1) * BannerGap;
-        return new Rect2(card.Position.X - BannerOut, card.Position.Y + (card.Size.Y - column) / 2 + i * (BannerSize.Y + BannerGap), BannerSize);
+        var size = _forecastShown ? ForecastBannerSize : BannerSize;
+        float column = BannerPlaces * size.Y + (BannerPlaces - 1) * BannerGap;
+        return new Rect2(card.Position.X - BannerOut, card.Position.Y + (card.Size.Y - column) / 2 + i * (size.Y + BannerGap), size);
     }
 
     /// <summary>The banner of <paramref name="target"/> under <paramref name="p"/> (its pennant shape), or -1.</summary>
@@ -345,7 +427,7 @@ internal sealed partial class BattleCommandLayer : Control
             if (target.Side == BattleSide.Enemy && _banners.Count > 0)
                 DrawTargetFrame(_cardArea(target));
             for (int i = 0; i < _banners.Count; i++)
-                DrawBanner(BannerRect(target, i), _banners[i].Text, i == _hotBanner, font);
+                DrawBanner(BannerRect(target, i), _banners[i].Text, i == _hotBanner, font, DamageOf(_banners[i].Choice));
         }
         if (_menu is { } menu)
             DrawMenu(menu, font);
@@ -395,7 +477,11 @@ internal sealed partial class BattleCommandLayer : Control
         return [.. points];
     }
 
-    private void DrawBanner(Rect2 r, string text, bool hot, Font? font)
+    /// <summary>
+    /// A banner in <paramref name="r"/>: the pennant, its label; while the forecast shows the label higher and
+    /// <paramref name="damage"/> under it (nothing there while its forecast runs).
+    /// </summary>
+    private void DrawBanner(Rect2 r, string text, bool hot, Font? font, BannerDamage? damage)
     {
         float s = _scale;
         var shape = Pennant(r, s);
@@ -406,8 +492,8 @@ internal sealed partial class BattleCommandLayer : Control
         DrawColoredPolygon([.. shape.Select(v => v + new Vector2(2, 3) * s)], new Color(0, 0, 0, 0.25f));
         if (hot)
         {
-            DrawPolyline(outline, Glow with { A = 0.18f }, 14 * s, antialiased: true);
-            DrawPolyline(outline, Glow with { A = 0.35f }, 7 * s, antialiased: true);
+            DrawPolyline(outline, BannerGlow with { A = 0.18f }, 14 * s, antialiased: true);
+            DrawPolyline(outline, BannerGlow with { A = 0.35f }, 7 * s, antialiased: true);
         }
         // a vertical gradient: each corner coloured by its height
         float y0 = r.Position.Y * s, h = r.Size.Y * s;
@@ -416,12 +502,44 @@ internal sealed partial class BattleCommandLayer : Control
         DrawPolyline(outline, Colors.White, Math.Max(1, 2 * s), antialiased: true);
         if (font is null)
             return;
-        int size = (int)Math.Round(BannerText * s);
+        int size = (int)Math.Round((_forecastShown ? ForecastLabel : BannerText) * s);
         float left = (r.Position.X + BannerSlant) * s, width = (r.Size.X - BannerSlant - BannerPoint) * s;
-        float baseline = y0 + (h + font.GetAscent(size) - font.GetDescent(size)) / 2;
+        float middle = _forecastShown ? y0 + ForecastLabelMiddle * s : y0 + h / 2;
+        float baseline = middle + (font.GetAscent(size) - font.GetDescent(size)) / 2;
         var at = new Vector2(left, baseline);
         DrawStringOutline(font, at, text, HorizontalAlignment.Center, width, size, Math.Max(2, (int)Math.Round(5 * s)), TextOutline);
         DrawString(font, at, text, HorizontalAlignment.Center, width, size, Colors.White);
+        if (damage is null)
+            return;
+        float y = r.Position.Y + ForecastMiddle, x = r.Position.X;
+        DrawDamage(font, BannerDamage.TroopsWord, damage.Troops, x + ForecastTroopsAt, ForecastHpAt - ForecastTroopsAt - ForecastGap, y,
+            ForecastFigure, TroopsInk);
+        DrawDamage(font, BannerDamage.HpWord, damage.Hp, x + ForecastHpAt, r.Size.X - BannerPoint - ForecastHpAt, y, ForecastFigure, HpInk);
+    }
+
+    /// <summary>
+    /// One loss of the forecast (layout pixels): <paramref name="word"/> and <paramref name="figure"/> from
+    /// <paramref name="x"/>, their middle at <paramref name="middle"/>, in <paramref name="room"/>; the figure at
+    /// <paramref name="size"/>, the word 2 smaller, both shrunk to fit; nothing for no figure (out of reach).
+    /// </summary>
+    private void DrawDamage(Font font, string word, string? figure, float x, float room, float middle, float size, Color ink)
+    {
+        if (figure is null)
+            return;
+        float s = _scale;
+        int px = (int)Math.Round(size * s), tag = px - (int)Math.Round(2 * s);
+        float Width(int f, int t) => font.GetStringSize(word + " ", fontSize: t).X + font.GetStringSize(figure, fontSize: f).X;
+        while (px > Math.Round(8 * s) && Width(px, tag) > room * s)
+            (px, tag) = (px - 1, tag - 1);
+        int outline = Math.Max(2, (int)Math.Round(3 * s));
+        float left = x * s;
+        foreach (var (text, fs) in new[] { (word, tag), (figure, px) })
+        {
+            var at = new Vector2(left, middle * s + (font.GetAscent(fs) - font.GetDescent(fs)) / 2);
+            DrawStringOutline(font, at, text, HorizontalAlignment.Left, -1, fs, outline, TextOutline);
+            DrawString(font, at, text, HorizontalAlignment.Left, -1, fs, ink);
+            left += font.GetStringSize(text + " ", fontSize: fs).X;
+        }
     }
 
     private void DrawMenu((BattlePlace Place, Rect2 Box, IReadOnlyList<(string Text, FigtSelChoice Choice, bool Current)> Items) menu, Font? font)

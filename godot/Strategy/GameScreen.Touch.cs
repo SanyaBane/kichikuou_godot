@@ -212,8 +212,8 @@ public partial class GameScreen
 
     /// <summary>
     /// Unattended play in the touch mode, once a launch (in a window): the rails with the preselected target (dump
-    /// "touch-rails"), a tap on another enemy card that an attack reaches ("touch-target"), then a tap on its Melee rail
-    /// button attacks. Anything else is an error.
+    /// "touch-rails"; with the damage forecast, whatever the option, "touch-rails-forecast"), a tap on another enemy card
+    /// that an attack reaches ("touch-target"), then a tap on its Melee rail button attacks. Anything else is an error.
     /// </summary>
     private async Task<FigtSelChoice> AutoTouchCommandsAsync(FigtSelMenu menu, IReadOnlyList<Sys3Int> direct)
     {
@@ -230,6 +230,11 @@ public partial class GameScreen
             HoverScene();
             _presenter.Invalidate();
             await AutoDumpAsync("touch-rails");
+            commands.Forecast = true;                                   // the damage forecast on the rail, its figures waited for
+            await commands.ForecastsDone!;
+            await NextFrameAsync();
+            await AutoDumpAsync("touch-rails-forecast");
+            commands.Forecast = null;
             var other = direct.Select(b => new BattlePlace(BattleSide.Enemy, b.Value - 3)).FirstOrDefault(p => p != commands.Target);
             if (other.Slot != 0)
             {
