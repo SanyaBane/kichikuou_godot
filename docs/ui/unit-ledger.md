@@ -99,4 +99,17 @@ headers, the order kept across tabs (A3); the first tab named **Overview**; the 
 - **B4 — Subordinates, Overview**, Rance chosen;
 - **B5 — Subordinates, Commander**, sorted by Lvl: the screen's own tab, the sorted column in it carrying the arrow.
 
-Awaiting the owner's look at round B before the build.
+**The owner's look at round B (2026-10-26):** all of it as drawn, but "Sorted by T.Atk ↓" beside the tabs (B3) is not
+noticed; it needs to stand out.
+
+**Round C** (round `c`): three looks for it on B3, full screens, and `C-sheet` with the ledger's top of each beside B3's.
+
+- **C1 — a paper tag** right of the tabs, framed in vermilion, "SORTED BY T.ATK ↓" in Cinzel in the headers' ink.
+- **C2 — a vermilion seal**: the tag filled vermilion with a fine inner rule, its words in paper colour — the colour of
+  the party's seals and of what is chosen (docs/ui/style.md, §2).
+- **C3 — a lit row box** on the lacquer (gold frame, gold words) with a × after a rule: a click on it sorts by No. again.
+
+**The agent's recommendation:** C2 — the strongest of the three without being a button's red lacquer, and not taken
+for a fourth tab as C1's paper may be. C3's × (a click sorts by No. again) could go on any of them.
+
+Awaiting the owner's choice of the note's look; then the build.

@@ -8,7 +8,8 @@ deployment.png and subordinates.png, whose picture panel (16,368)-(682,784) and 
 long: the week-18 save's nine units with the figures the dumps show, and twenty more from SET_CHR.ADV's records (their
 boot figures, the troops made up); SET_CHR.ADV and SET_ITEM.ADV are read from the extract's scenario_named.
     python -I tools/ui/mock_unit_ledger.py <extract dir> <gallery dump dir> <out dir> [round] < /dev/null
-Round a (the default): A1-A5; round b: B1-B5, the owner's A1-A4 with the first tab named Overview. The images hold the player's CGs: keep <out dir> outside the repository.
+Round a (the default): A1-A5; round b: B1-B5, the owner's A1-A4 with the first tab named Overview; round c: C1-C3
+and C-sheet, the kept order's note made seen. The images hold the player's CGs: keep <out dir> outside the repository.
 Everything is in the 1280x800 screen's pixels (plus a caption band below); drawn at 2x and scaled down.
 """
 import sys, os, re
@@ -235,6 +236,10 @@ class Canvas:
         x0, y0, x1, y1 = r
         self.im.alpha_composite(img.resize(((x1 - x0) * S, (y1 - y0) * S), Image.LANCZOS), (x0 * S, y0 * S))
         self.d = ImageDraw.Draw(self.im)
+
+    def screen(self):
+        """The 1280x800 screen without the caption band, at 1x."""
+        return self.im.crop((0, 0, W * S, H * S)).resize((W, H), Image.LANCZOS)
 
     def save(self, name, caption, note):
         self.rect((0, H, W, H + CAPTION), fill=(23, 24, 27, 255))
@@ -484,7 +489,7 @@ def sort_rows(column, high):
     return sorted(rows, key=column['key'], reverse=high) if column is not NUMBER else rows
 
 
-def screen(kind, tab, switch='tabs', sort=None, hover=None, chosen=None, groups=False, first_row=0):
+def screen(kind, tab, switch='tabs', sort=None, hover=None, chosen=None, groups=False, first_row=0, note='plain'):
     c = Canvas()
     backdrop(c)
     deploy = kind == 'deployment'
@@ -503,8 +508,7 @@ def screen(kind, tab, switch='tabs', sort=None, hover=None, chosen=None, groups=
     else:
         end = lacquer_switch(c, paper[0], 64, 28, tab)
     if sort[0] not in columns:                      # the order kept from another tab: said beside the tabs
-        arrow = '↓' if sort[1] else '↑'
-        c.text((paper[2] - 4, 84), f'Sorted by {sort[0]["header"]} {arrow}', font(13), fill=SUB, anchor='rm')
+        sort_note(c, paper[2], sort, note)
     grouped = [('Offense', 6, 7), ('Defense', 8, 9), ('Dungeon', 10, 11)] if groups or tab == 'Troops' else None
     ledger(c, paper, columns, rows, sort=sort if sort[0] in columns else None, hover=hover, chosen=chosen,
            members=deploy, groups=grouped, first_row=first_row)
@@ -540,6 +544,37 @@ def round_a():
         'Three row boxes under the title band, the chosen one framed in vermilion; the ledger as A1.')
 
 
+def sort_note(c, right, sort, style):
+    """The order kept from another tab, right of the tabs: 'plain' quiet words on the lacquer (B3); 'paper' a paper tag
+    framed in vermilion; 'seal' a vermilion seal with paper-coloured letters; 'gold' a lit row box with a x that sorts
+    by No. again."""
+    arrow = '↓' if sort[1] else '↑'
+    if style == 'plain':
+        c.text((right - 4, 84), f'Sorted by {sort[0]["header"]} {arrow}', font(13), fill=SUB, anchor='rm')
+        return
+    words = f'SORTED BY {sort[0]["header"].upper()}'
+    f = cinzel(14, 700)
+    inner = c.width(words, f) + 6 + c.width(arrow, font(15))
+    close = 26 if style == 'gold' else 0
+    x1, y0, y1 = right - 2, 69, 97
+    x0 = x1 - inner - 28 - close
+    if style == 'paper':
+        c.rect((x0, y0, x1, y1), fill=PAPER, outline=VERMILION, width=2, radius=3)
+        ink = HEAD_INK
+    elif style == 'seal':
+        c.rect((x0, y0, x1, y1), fill=VERMILION, radius=3)
+        c.rect((x0 + 2, y0 + 2, x1 - 2, y1 - 2), outline=(236, 196, 170, 140), radius=2)
+        ink = (246, 230, 206, 255)
+    else:
+        c.rect((x0, y0, x1, y1), fill=(64, 48, 28, 255), outline=HOVER_LINE, width=2)
+        ink = NAME
+        c.line((x1 - close, y0 + 6), (x1 - close, y1 - 6), fill=DIM)
+        c.text((x1 - close / 2, (y0 + y1) / 2), '×', font(17), fill=QUIET, anchor='mm')
+    mid = (y0 + y1) / 2 + 1
+    c.text((x0 + 14, mid), words, f, fill=ink, anchor='lm')
+    c.text((x0 + 14 + c.width(words, f) + 6, mid - 1), arrow, font(15), fill=ink, anchor='lm')
+
+
 # ---------------------------------------------------------------- round B: A1-A4 as the owner took them (2026-10-26)
 # The owner took A1-A4 (paper tabs, Rows in the deployment's first tab, the modifiers grouped), the first tab named
 # Overview (General read as the rank beside Commander), the order kept across tabs (A3), each screen its own tab.
@@ -565,7 +600,40 @@ def round_b():
         "The screen's own tab, remembered apart from the deployment's; the sorted column in the tab carries the arrow.")
 
 
+# ---------------------------------------------------------------- round C: the kept order made seen (2026-10-26)
+# The owner looked at B3: "Sorted by T.Atk" beside the tabs is not noticed. Three looks for it on B3, full screens, and
+# a sheet of the ledger's top with B3's for comparison.
+#   python -I tools/ui/mock_unit_ledger.py <extract dir> <gallery dump dir> <out dir> c < /dev/null
+
+def round_c():
+    TABS[0] = 'Overview'
+    looks = [('B3 — now: quiet words', 'plain'), ('C1 — a paper tag framed in vermilion', 'paper'),
+             ('C2 — a vermilion seal', 'seal'), ('C3 — a lit box with ×: a click sorts by No. again', 'gold')]
+    notes = {'paper': "A paper tag as the tabs are, framed in vermilion, its words in the headers' ink.",
+             'seal': "A vermilion seal, as the party's places, the words in paper colour.",
+             'gold': 'A lit row box on the lacquer; its × (or a click on it) sorts by No. again.'}
+    crops = []
+    for i, (title, style) in enumerate(looks):
+        c = screen('deployment', 'Commander', sort=(TATK, True), hover=1, note=style)
+        crops.append((title, c.screen().crop((16, 16, 708, 236))))
+        if i:
+            c.save(f'C{i}.png', title, notes[style])
+    scale, gap, head = 1.5, 24, 40
+    cw, ch = round(692 * scale), round(220 * scale)
+    sheet = Image.new('RGBA', (cw + 2 * gap, len(crops) * (ch + head + gap) + gap), (24, 19, 15, 255))
+    d = ImageDraw.Draw(sheet)
+    title_font = ImageFont.truetype(CINZEL, 22)
+    title_font.set_variation_by_axes([700])
+    for i, (title, crop) in enumerate(crops):
+        y = gap + i * (ch + head + gap)
+        d.text((gap, y + 28), title, font=title_font, fill=NAME, anchor='ls')
+        sheet.paste(crop.resize((cw, ch), Image.LANCZOS), (gap, y + head))
+    sheet.convert('RGB').save(os.path.join(OUT, 'C-sheet.png'))
+
+
 if ROUND == 'a':
     round_a()
 elif ROUND == 'b':
     round_b()
+elif ROUND == 'c':
+    round_c()
