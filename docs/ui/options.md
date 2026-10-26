@@ -141,3 +141,5 @@ their commander is off the field (his troops over the battle's limit).
   on Game, which holds only the game folder now, it is greyed out.
 - The Battle tab's first section is "Effects" again; `--options` and the screen gallery dump the new tab as
   `options-tweaks`.
+- The tweaks, each with its doc, and the survey of the next one (BRS-24, a demon's commander out of reach) are listed in
+  docs/tweaks.md.
