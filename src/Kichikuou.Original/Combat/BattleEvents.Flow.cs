@@ -39,3 +39,10 @@ public sealed record FlowErrorEvent(ScriptRef Text) : BattleEvent;
 
 /// <summary><c>FIGT_B.ADV:649-672</c>: one line of the ninja scout report (an enemy commander).</summary>
 public sealed record ScoutReportEvent(Sys3Int Cmdr, Sys3Int Troops) : BattleEvent;
+
+/// <summary>
+/// Ours: <c>FIGT.ADV</c> returns (<c>L_00dfd</c>, <c>:591-594</c>, which draws nothing), the fight on the field over and
+/// <c>Bt_Result</c> set; what follows — the wrappers' results, <c>死亡捕獲</c>'s captures and deaths, the caller's
+/// scenes — comes after the battle. The screen's cue for it (the message skip stops there, owner 2026-10-26).
+/// </summary>
+public sealed record FightEndEvent : BattleEvent;

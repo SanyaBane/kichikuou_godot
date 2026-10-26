@@ -152,6 +152,24 @@ public class EndToEndBattleTests
     }
 
     /// <summary>
+    /// The fight's end (<see cref="FightEndEvent"/>, FIGT.ADV:591) comes once, after the field's last exchange and before
+    /// FIGT_A's result messages (FIGT_A.ADV:113 on), which the screen must not skip.
+    /// </summary>
+    [Fact]
+    public async Task The_fight_ends_once_after_its_last_exchange_and_before_the_results()
+    {
+        var rig = PlainsOneOnOneRig();
+
+        await rig.Battle.AttackProvinceAsync();
+
+        var events = rig.View.Events;
+        int end = events.FindIndex(e => e is FightEndEvent);
+        Assert.Equal(1, Count<FightEndEvent>(rig));
+        Assert.True(end > events.FindLastIndex(e => e is ExchangeResultsEvent));
+        Assert.Contains(events.Skip(end), e => e is MessageEvent or ValueMessageEvent);
+    }
+
+    /// <summary>
     /// The same battle with the CG load counter bound (STR-43): every CG the battle files load counts,
     /// though the battle draws them through its own events — the round header 887 (:115), the
     /// battlefield (:2008), a panel 836 per panel drawn (:2083), FIGT_SEL's backdrop 861 at its entry

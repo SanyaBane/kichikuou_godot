@@ -731,6 +731,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _skip.OnMessage(message.Text);
         else if (scriptEvent is ValueMessageEvent values)
             _skip.OnMessage(values.Text);
+        if (scriptEvent is FightEndEvent && _skip.Activated)
+        {
+            _skip.Activate(false);                                       // ours: the fight is over, what follows is not skipped (owner, 2026-10-26)
+            GD.Print("Kichikuou: MsgSkip turned off at the fight's end.");
+        }
         if (scriptEvent is MapScreenEvent map)
             _mapCamera.OnMapWait(map.Waiting);
         if (scriptEvent is MapScreenEvent { Waiting: true } && _options.SaveCommandTo is { } saveTo && SaveCommand(saveTo))

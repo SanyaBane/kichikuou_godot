@@ -148,7 +148,11 @@ web build (seen only) by an option.
   held then turns it off and is returned (`STOP_ON_CLICK`); a `]` menu (`SelectAsync`, the
   battle's `ChooseAsync`, our enemy-attack screen over `FIGT_B`'s menu included) turns it off (`STOP_ON_MENU`); the
   menus our interface answers unseen (our panel's Load/Save and Construction rows, a Subordinates order) do not, and
-  neither do the map's, the pickers' and `FIGT_SEL`'s pointer loops; every `MessageEvent` /
+  neither do the map's, the pickers' and `FIGT_SEL`'s pointer loops. **It stops at a battle's end** (ours, owner's
+  request 2026-10-26): when the fight on the field is over — `FIGT.ADV` returns (`L_00dfd`, `:591`), the battle's
+  `FightEndEvent`, in every battle: an attack, a defence, the dungeon, `Iｶﾐ`'s garrisons — the switch turns off, so the
+  results, `死亡捕獲`'s captures and deaths and the scenes after a battle are never skipped (Ctrl held still skips them);
+  every `MessageEvent` /
   `ValueMessageEvent` marks its `ScriptRef` seen. **Option → Messages → Skip unseen text** (checked by
   default, `MSGSKIP_SKIP_UNSEEN`, and by the tab's Defaults — which had unchecked it until 2026-10-26; for the launch,
   not saved): unseen messages are skipped too, as

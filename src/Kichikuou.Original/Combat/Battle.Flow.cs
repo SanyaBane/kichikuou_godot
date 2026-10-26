@@ -104,6 +104,7 @@ public sealed partial class Battle
         while (label != FigtLabel.End)
             label = await RunLabelAsync(label);
         // FIGT.ADV:591-594 — ZC 6/1 (presentation), %0.
+        await View.ShowAsync(new FightEndEvent());
     }
 
     /// <summary>Runs one label of the FIGT goto machine and returns the next one.</summary>
