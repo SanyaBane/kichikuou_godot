@@ -34,13 +34,17 @@ internal sealed partial class BattleCommandLayer : Control
     private static readonly Color BannerGlow = Color8(170, 212, 255);
     private static readonly Color TextOutline = Color8(6, 10, 30) with { A = 0.95f };
 
-    // The damage forecast on a banner (the owner's B2, 2026-10-26; docs/ui/damage-forecast.md, §10): 46 high, so three
-    // stand the card's height; the label 17, its middle 15 below the banner's top; the damage under it, its middle at 33:
-    // "Trp." and its figure from 20, "HP" and its figure from 108, each in the bars' hue lightened (the owner's C1), the
-    // word 2 smaller than its figure (14); a figure too wide for its place shrinks to fit.
-    private static readonly Vector2 ForecastBannerSize = new(200, 46);
-    private const float ForecastLabel = 17, ForecastLabelMiddle = 15, ForecastFigure = 14, ForecastMiddle = 33;
-    private const float ForecastTroopsAt = 20, ForecastHpAt = 108, ForecastGap = 8;
+    // The damage forecast on a banner (the owner's B2, 2026-10-26, laid out as round F's F2, 2026-10-27;
+    // docs/ui/damage-forecast.md, §10 and §14): 48 high, so three stand 8 over the card's height; the label 19, its middle
+    // 14 below the banner's top; the damage under it, its middle at 34: "Trp." and its figure from 18, "HP" and its figure
+    // from 110, each in the bars' hue lightened (the owner's C1), the figure 16 and its word 13, outlined 1.5 px; a figure
+    // too wide for its place shrinks to fit.
+    private static readonly Vector2 ForecastBannerSize = new(200, 48);
+    private const float ForecastLabel = 19, ForecastLabelMiddle = 14, ForecastFigure = 16, ForecastWord = 13, ForecastMiddle = 34;
+    private const float ForecastTroopsAt = 18, ForecastHpAt = 110, ForecastGap = 8;
+    // Godot's outline size for the damage's 1.5 px ring: the size is about four times the ring's width (3, as first built,
+    // drew one under 1 px; measured on the screen gallery's dump against the mock-up, docs/ui/damage-forecast.md, §14)
+    private const float ForecastOutline = 6;
     private static readonly Color TroopsInk = Color8(232, 146, 140), HpInk = Color8(156, 216, 156);
 
     // The target's frame (as Sengoku Rance's): cyan brackets on the corners of the enemy card whose banners show — each
@@ -513,25 +517,26 @@ internal sealed partial class BattleCommandLayer : Control
             return;
         float y = r.Position.Y + ForecastMiddle, x = r.Position.X;
         DrawDamage(font, BannerDamage.TroopsWord, damage.Troops, x + ForecastTroopsAt, ForecastHpAt - ForecastTroopsAt - ForecastGap, y,
-            ForecastFigure, TroopsInk);
-        DrawDamage(font, BannerDamage.HpWord, damage.Hp, x + ForecastHpAt, r.Size.X - BannerPoint - ForecastHpAt, y, ForecastFigure, HpInk);
+            TroopsInk);
+        DrawDamage(font, BannerDamage.HpWord, damage.Hp, x + ForecastHpAt, r.Size.X - BannerPoint - ForecastHpAt, y, HpInk);
     }
 
     /// <summary>
     /// One loss of the forecast (layout pixels): <paramref name="word"/> and <paramref name="figure"/> from
     /// <paramref name="x"/>, their middle at <paramref name="middle"/>, in <paramref name="room"/>; the figure at
-    /// <paramref name="size"/>, the word 2 smaller, both shrunk to fit; nothing for no figure (out of reach).
+    /// <see cref="ForecastFigure"/>, the word at <see cref="ForecastWord"/>, both shrunk to fit; nothing for no figure
+    /// (out of reach).
     /// </summary>
-    private void DrawDamage(Font font, string word, string? figure, float x, float room, float middle, float size, Color ink)
+    private void DrawDamage(Font font, string word, string? figure, float x, float room, float middle, Color ink)
     {
         if (figure is null)
             return;
         float s = _scale;
-        int px = (int)Math.Round(size * s), tag = px - (int)Math.Round(2 * s);
+        int px = (int)Math.Round(ForecastFigure * s), tag = (int)Math.Round(ForecastWord * s);
         float Width(int f, int t) => font.GetStringSize(word + " ", fontSize: t).X + font.GetStringSize(figure, fontSize: f).X;
         while (px > Math.Round(8 * s) && Width(px, tag) > room * s)
             (px, tag) = (px - 1, tag - 1);
-        int outline = Math.Max(2, (int)Math.Round(3 * s));
+        int outline = Math.Max(2, (int)Math.Round(ForecastOutline * s));
         float left = x * s;
         foreach (var (text, fs) in new[] { (word, tag), (figure, px) })
         {

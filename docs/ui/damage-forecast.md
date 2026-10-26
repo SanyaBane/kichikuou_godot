@@ -138,7 +138,7 @@ minus, the HP no more than he has; no counter, no fall's chance, no hit chance; 
    the exchange's shots and shields (§10).
 2. The model in `Original.Content/Battles` (the two figures of a banner, through `Figures`), with tests.
 3. Godot: `BattleCommandLayer`'s banners in C1's blue with the two rows (`BannerSize` 46 high while the forecast shows;
-   the label 17), the touch rail's buttons with D2's strip — every line's ink, its outline included, at least 2 px inside
+   the label 17 — 48 and 19 since round F, §14), the touch rail's buttons with D2's strip — every line's ink, its outline included, at least 2 px inside
    the strip (the owner, 2026-10-27: the mock-up's first `HP` line overran it; `tools/ui/mock_damage_forecast.py` now
    checks it) —, a figure too wide for its place shrunk to fit; the option; docs/ui/style.md, §2 (the banners' colours);
    the gallery's entries (`banners-E1` with the forecast, the touch pass's turn) and the `--auto --interface new`
@@ -170,9 +170,11 @@ minus, the HP no more than he has; no counter, no fall's chance, no hit chance; 
    preselected target's first. A banner shows its figures when its forecast is done (its row's room is there from the start, so
    nothing moves). Tests: `DamageForecastTests`.
 4. **Godot:** `BattleCommandLayer` — the banners in C1's blue always; while the forecast shows (Option → Battle →
-   "Damage forecast", `BattleScreenSettings.Forecast`, off by default; `--damage-forecast 0|1` for a launch) 46 high,
-   the label 17 (its middle 15 below the top), the damage's row at 33: "Trp." and its figure from 20, "HP" and its
-   figure from 108, the word 12, the figure 14, each shrunk to fit its place. `BattleCommandLayer.Touch`: the gold
+   "Damage forecast", `BattleScreenSettings.Forecast`, off by default; `--damage-forecast 0|1` for a launch) 48 high,
+   the label 19 (its middle 14 below the top), the damage's row at 34: "Trp." and its figure from 18, "HP" and its
+   figure from 110, the word 13 (`ForecastWord`), the figure 16, outlined 1.5 px (Godot's outline size 6,
+   `ForecastOutline`), each shrunk to fit its place — round F's F2 (§14); as first built 46 high, the label 17 at 15,
+   the row at 33 from 20 and 108, the word 12, the figure 14, an outline under 1 px. `BattleCommandLayer.Touch`: the gold
    buttons keep their look; while the forecast shows the name stands at the top (17, its middle at 19) over a dark strip
    (32 below the top to 6 above the foot, 7 in), the two lines at 43 and 59 (15, the word 13), centred, each shrunk to
    fit; a button the rail makes lower (four attacks) is laid out smaller in proportion. Measured on the gallery's dump:
@@ -185,7 +187,7 @@ minus, the HP no more than he has; no counter, no fall's chance, no hit chance; 
 
 - The label's outline on the blue banners is the figures' night blue (6, 10, 30), not the yellow banners' brown, which
   C1's mock-up kept.
-- The banner's troops' place is 80 px, not 88: 8 px kept free before "HP".
+- The banner's troops' place is 84 px since round F (80 as first built), not 88: 8 px kept free before "HP".
 - 2,000 runs a forecast; on the tablet the forecasts may take longer to come — to be seen there.
 
 ## 9. Questions for the owner
@@ -331,5 +333,14 @@ below may shrink a little.
 - **F3 — the label 19, the figures 15 and their words 13**; banners 46 px.
 
 **Agent's recommendation:** F2 — the label as near the old 20 as the row allows, the figures still larger than built
-(16 against 14), the padding cut from E1's 50 px to 48. F1 if the stack must keep to the card. **Awaiting the owner's
-choice.**
+(16 against 14), the padding cut from E1's 50 px to 48. F1 if the stack must keep to the card.
+
+**The owner (2026-10-27): F2.** **Built** (`BattleCommandLayer`, §8): the mock-up's numbers as they are — banners 48 px,
+the label 19 with its middle 14 below the banner's top, the damage's middle at 34, "Trp." from 18 and "HP" from 110 (the
+troops' place 84 px), the figures 16 and their words 13 (a constant of its own, `ForecastWord`, no longer the figure
+minus 2). The outline: Godot's outline size is about four times the ring it draws — the 3 built drew under 1 px (the
+dump's dark pixels a tenth of round C's 1 px mock-up's) — so 6 for round F's 1.5 px. Measured on the screen gallery's
+`banners-E1` against `F2-label-19.png`, Ex's (commander 1) first banner: the damage's ink on the same rows (476-488),
+the outline's dark pixels 2.90 times the ink's against the mock-up's 2.89; the label 1 px higher and further left than
+the mock-up's (the fonts' rounding). With the forecast off the banners stay 40 px, the label 20; the touch rail is
+unchanged. **Awaiting the owner's look in a window.**
