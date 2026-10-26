@@ -152,8 +152,11 @@ public partial class GameScreen
             await AutoDumpAsync("subordinates");
             if (TouchMode.On)
             {
+                var shown = _subordinates.Tab;                  // T.Atk is the Troops tab's; the tab shown again after
+                await AutoTabTouchAsync(LedgerTab.Troops);
                 await AutoHeaderTouchAsync(_subordinates.Table);
                 await AutoTableDragAsync(_subordinates.Table);
+                await AutoTabTouchAsync(shown);
             }
         }
     }

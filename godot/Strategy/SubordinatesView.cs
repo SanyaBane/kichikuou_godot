@@ -104,6 +104,13 @@ internal sealed partial class SubordinatesView : Control
     /// <summary>Whether the panel's buttons take presses (not while an order runs).</summary>
     public bool Busy { get; set; }
 
+    /// <summary>The ledger's tab shown.</summary>
+    public LedgerTab Tab => _tabs.Tab;
+
+    /// <summary><paramref name="tab"/>'s centre in global coordinates (unattended play's touch exercise).</summary>
+    public Vector2 TabCentre(LedgerTab tab) =>
+        GetGlobalTransform() * (_origin + _tabs.Tabs().First(t => t.Tab == tab).Rect.GetCenter() * _k);
+
     /// <summary>Shows the ledger's <paramref name="tab"/>; <paramref name="remember"/> keeps it for later openings.</summary>
     public void ShowTab(LedgerTab tab, bool remember = true)
     {
@@ -284,7 +291,8 @@ internal sealed partial class SubordinatesView : Control
         ReplenishButton => p.Replenish.Enabled,
         TalkButton => p.Talk.Enabled,
         EndButton => true,
-        _ => button - StepButton < p.Steps.Count && p.Steps[button - StepButton].Enabled,
+        >= StepButton => button - StepButton < p.Steps.Count && p.Steps[button - StepButton].Enabled,
+        _ => false,                                                     // no button (a tab, the title band)
     };
 
     private int ButtonAt(Vector2 local)

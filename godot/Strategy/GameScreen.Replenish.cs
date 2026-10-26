@@ -131,6 +131,8 @@ public partial class GameScreen
 
     private async void AutoRefillAsync(int unit)
     {
+        if (!_table.CanRefill(unit))
+            _panels.ShowTab(LedgerTab.Overview, remember: false);   // the Refill buttons are the Overview's
         _table.PressRefill(unit);
         if (!_refillCallout.MenuOpen)
         {
