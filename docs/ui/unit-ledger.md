@@ -48,7 +48,8 @@ Only the drawing changes: the rows, the columns' figures, the sort and the gestu
   the sorted column is not in the tab shown, "Sorted by T.Atk ↓" stands beside the tabs (A3), until a header of the
   tab sorts again.
 - **The tab is remembered**, each screen its own (the owner, 2026-10-26), kept in `settings.cfg` as the options are,
-  so a screen opens on the tab the player left there. The order starts by No. on every opening, as now.
+  so a screen opens on the tab the player left there. The order is kept for the launch, as now: each screen's table
+  keeps the order the player left between openings, by No. at the launch (the owner, 2026-10-26).
 - **Touch** (not drawn): the tabs as tall as a touch row (46 pixels), the paper shorter by the difference.
 
 ## 3. Mock-ups (round A)
@@ -141,8 +142,8 @@ the letters lacquer-dark. **The owner chose D2** (2026-10-26), the gold seal (`L
   16; the Troops tab's twelve columns fit with it) and the columns' padding 3 pixels instead of 6 while tabbed; the
   Subordinates ledger's text 8.3 script pixels, the deployment's (was 9); the groups' names Cinzel 10 as in B2; in the
   touch mode the tabs 46 pixels tall, the rows as on the PC; a header's long-press tip shows over the tabs.
-- **Not as §2 says:** the order does not start by No. on every opening — each screen's table lives for the launch and
-  keeps its order between openings, as it did before the tabs ("as now" in §2 was wrong). Left so, for the owner to say.
+- **The order between openings:** each screen's table lives for the launch and keeps its order, as it did before the
+  tabs. §2 said at first that it starts by No. on every opening; the owner kept the launch's order (2026-10-26).
 - **Checked:** the screen gallery's Lacquer, Steel and touch passes of the twelve deployment and Subordinates entries;
   the week-18 look in a window with our interface (Subordinates' Replenish, the deployment table's presses and drops),
   with `--refill`, and in the touch mode (the tab taps, a header's tip and sort, the finger's scroll). Awaiting the
