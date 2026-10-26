@@ -13,11 +13,22 @@ public sealed partial class Battle
 
     /// <summary>
     /// The attack results of the command dispatch (<c>FIGT.ADV:645-707</c>): <c>RetVal</c> holds
-    /// the FIGT_SEL command (1-3, 10-21); jumps to its setter (<c>FIGT.ADV:1492-1585</c>), which
+    /// the FIGT_SEL command (1-3, 10-21); jumps to its setter (<see cref="SetAttackCommand"/>), which
     /// continues into <see cref="ManualAttackPreludeAsync"/> and <c>Resolve</c> /
     /// <c>ResolveMagic</c>. Spec 02 §2.1.
     /// </summary>
     internal async Task PlayerAttackAsync()
+    {
+        SetAttackCommand();
+        await ManualAttackPreludeAsync();
+    }
+
+    /// <summary>
+    /// The setter of the attack command in <c>RetVal</c> (1-3, 10-21; <c>FIGT.ADV:1492-1585</c>): the exchange's
+    /// actions and special, the Focus it spends. Shared by <see cref="PlayerAttackAsync"/> and the damage forecast
+    /// (<see cref="ExchangeForecast"/>). Spec 02 §2.1.
+    /// </summary>
+    internal void SetAttackCommand()
     {
         switch ((int)State.RetVal)
         {
@@ -36,8 +47,6 @@ public sealed partial class Battle
             default:
                 throw new InvalidOperationException($"RetVal {State.RetVal} is not an attack command.");
         }
-
-        await ManualAttackPreludeAsync();
     }
 
     /// <summary><c>L_02339</c> (<c>FIGT.ADV:1492-1496</c>) — Direct attack; the enemy counters. 02 §2.1.</summary>
@@ -321,24 +330,7 @@ public sealed partial class Battle
 
         // 1726: MM 4, Cmdr_StrBase + (Cmdr_Cur - 1) * 3
         CopyString(4, CmdrString(0));
-        if (State.Bt_Kind == 1)
-        {
-            Unit.CurAtkMod = Unit.OffAtkMod;
-            Unit.CurDefMod = Unit.OffDefMod;
-        }
-
-        if (State.Bt_Kind == 2)
-        {
-            Unit.CurAtkMod = Unit.DefAtkMod;
-            Unit.CurDefMod = Unit.DefDefMod;
-        }
-
-        if (State.Bt_Kind == 3)
-        {
-            Unit.CurAtkMod = Unit.DgnAtkMod;
-            Unit.CurDefMod = Unit.DgnDefMod;
-        }
-
+        CopyBattleKindMods(); // 1727-1738
         await WaoAsync(143); // L_0509c, 1739
         await View.ShowAsync(new ActionLabelsEvent(PlayerActionLabel(), EnemyActionLabel()));
         // QUIRK: BSC-07 — IK 0 takes a button still held: after a target clicked (FIGT_SEL acts on
@@ -365,6 +357,31 @@ public sealed partial class Battle
         await SlideEngagementAsync(56); // 1819-1821
         await SlideEngagementAsync(28); // 1822-1824
         await SlideEngagementAsync(0); // 1825-1827
+    }
+
+    /// <summary>
+    /// <c>FIGT.ADV:1727-1738</c> (and <c>2103-2114</c> in the slot panel) — the situational troop modifiers of the battle's
+    /// kind (<c>Bt_Kind</c>: attack, defence, dungeon) copied into <c>Unit_CurAtkMod</c>/<c>Unit_CurDefMod</c>. 02 §4, 01 §9.4.
+    /// </summary>
+    internal void CopyBattleKindMods()
+    {
+        if (State.Bt_Kind == 1)
+        {
+            Unit.CurAtkMod = Unit.OffAtkMod;
+            Unit.CurDefMod = Unit.OffDefMod;
+        }
+
+        if (State.Bt_Kind == 2)
+        {
+            Unit.CurAtkMod = Unit.DefAtkMod;
+            Unit.CurDefMod = Unit.DefDefMod;
+        }
+
+        if (State.Bt_Kind == 3)
+        {
+            Unit.CurAtkMod = Unit.DgnAtkMod;
+            Unit.CurDefMod = Unit.DgnDefMod;
+        }
     }
 
     /// <summary>

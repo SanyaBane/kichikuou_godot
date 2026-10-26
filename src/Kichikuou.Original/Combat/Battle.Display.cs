@@ -151,23 +151,7 @@ public sealed partial class Battle
             CopyString(2, UnitString(1));
             await View.ShowAsync(new SlotPanelEvent(State.CallArg, State.Unit_Cur));
             // QUIRK: 01 Q-20 — drawing a player panel rewrites the unit's active modifiers.
-            if (State.Bt_Kind == 1)
-            {
-                Unit.CurAtkMod = Unit.OffAtkMod;
-                Unit.CurDefMod = Unit.OffDefMod;
-            }
-
-            if (State.Bt_Kind == 2)
-            {
-                Unit.CurAtkMod = Unit.DefAtkMod;
-                Unit.CurDefMod = Unit.DefDefMod;
-            }
-
-            if (State.Bt_Kind == 3)
-            {
-                Unit.CurAtkMod = Unit.DgnAtkMod;
-                Unit.CurDefMod = Unit.DgnDefMod;
-            }
+            CopyBattleKindMods();
         }
 
         if (State.CallArg > 4)

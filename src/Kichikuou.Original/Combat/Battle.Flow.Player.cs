@@ -74,12 +74,22 @@ public sealed partial class Battle
     {
         State.VAR0617 = State.Bt_PlayerActSlot;
         await FigtSelAsync();
+        BindTarget();
+        FlowCopyString(4, CmdrNameString(State.Cmdr_Cur));
+        return FigtLabel.Dispatch;
+    }
+
+    /// <summary>
+    /// <c>FIGT.ADV:627-639</c>: the target of <c>FIGT_SEL</c>'s answer bound — <c>Bt_EnemyActSlot := Tmp0001 - 3</c>
+    /// and that slot's commander in <c>Cmdr_Cur</c>. Shared by <see cref="SelectAsync"/> and the damage forecast
+    /// (<see cref="ExchangeForecast"/>).
+    /// </summary>
+    internal void BindTarget()
+    {
         // QUIRK: Q-18 — computed for every command, garbage (saturated) for non-attacks.
         State.Bt_EnemyActSlot = State.Tmp0001 - 3;
         if (IsSlot(State.Bt_EnemyActSlot, out int slot))
             State.Cmdr_Cur = ESlot(slot);
-        FlowCopyString(4, CmdrNameString(State.Cmdr_Cur));
-        return FigtLabel.Dispatch;
     }
 
     /// <summary>
@@ -286,7 +296,7 @@ public sealed partial class Battle
     /// The state <c>FIGT_SEL.ADV</c> leaves at its return for a chosen pair (<c>L_00af4</c>):
     /// <c>RetVal</c>, <c>Tmp0001</c>, and the hover / mode variables they determine.
     /// </summary>
-    private void ApplyFigtSelChoice(FigtSelChoice choice)
+    internal void ApplyFigtSelChoice(FigtSelChoice choice)
     {
         var command = choice.Command;
         State.RetVal = command;
