@@ -386,11 +386,12 @@ as it is. Where to start:
    **The owner (2026-10-26):** the log opens on the map too, not only from a dialogue. The wheel up opens it while
    `COMMAND`'s map loop waits for the player (`GamePresenter.MapWaiting`) with nothing over the map — no menu or window, no
    plate's click or Subordinates order under way, no button held (a drag's release under the log would be a click on
-   the map; `GameScreen.MapLogWait`), in either interface; the map waits while it is open, as the scenes do. The touch
-   mode's Log button stays the scenes' (on the map only while MsgSkip is on, when its drawer shows). `--auto` in a
-   window checks it once a launch at the first map wait with something logged (`GameScreen.AutoMapLogAsync`: the wheel
-   up over the map's middle through Godot's input, dump `message-log-map`, a right click closes it, nothing reaches the
-   script; the week-26 save reaches it after Lia's scene). An agent's dump of the log is now the window's in either
+   the map; `GameScreen.MapLogWait`, `LogOpens`), in either interface; the map waits while it is open, as the scenes do.
+   In the touch mode the scenes' Skip and Log drawer shows on the waiting map too (the owner's L1; docs/ui/touch.md,
+   "The message log from the map, round L"). `--auto` in a window checks it once a launch at the first map wait with
+   something logged (`GameScreen.AutoMapLogAsync`: the wheel up over the map's middle through Godot's input — in the
+   touch mode a tap on the drawer's Log —, dump `message-log-map`, a right click or a tap off the frame closes it,
+   nothing reaches the script; the week-26 save reaches it after Lia's scene). An agent's dump of the log is now the window's in either
    interface (`GameScreen.Shot`: over the original's map it had saved the engine's surface, the log left out).
 
 ## 6. Open questions

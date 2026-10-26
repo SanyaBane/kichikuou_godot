@@ -856,7 +856,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.ScreenshotDirectory is not { } dir)
             return;
         System.IO.Directory.CreateDirectory(dir);
-        if ((_optionsView is not null || _logView is not null || _table.Visible || _subordinates.Visible || _harem.Visible || _treasure.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _sceneMenuView.Visible || _ladderView.Visible || _saveView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown || _attackView.Visible) && DisplayServer.GetName() != "headless")
+        if ((_optionsView is not null || _logView is not null || _drawer.Visible || _table.Visible || _subordinates.Visible || _harem.Visible || _treasure.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _sceneMenuView.Visible || _ladderView.Visible || _saveView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown || _attackView.Visible) && DisplayServer.GetName() != "headless")
         {
             // Our deployment and battle screens are drawn by Godot over the screen: the window's next frame (headless
             // draws none). No Compose here: the frame's Present must find the change to upload it.
@@ -1802,17 +1802,23 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// key and on <c>COMMAND</c>'s map while it waits (owner, 2026-10-26), in either interface; not in unattended play (but its
     /// own wheel over the map, <see cref="AutoMapLogAsync"/>), nor over a dialog or the log itself.
     /// </summary>
-    private bool CanOpenLog => (!_options.Auto || _autoMapWheel) && LogReachable;
-
-    /// <summary>Whether the message log opens now: the player's key is awaited or the map waits (<see cref="MapLogWait"/>), something logged.</summary>
-    private bool LogReachable => (_keyWaiting || MapLogWait) && !_modal && _logView is null && _presenter.Log.Pages.Count > 0;
+    private bool CanOpenLog => (!_options.Auto || _autoMapWheel) && LogOpens;
 
     /// <summary>
-    /// <c>COMMAND</c>'s map loop waits for the player with nothing over the map — no menu, window, plate's click or troop
-    /// order under way — and nothing held: a drag's release under the log would be a click on the map.
+    /// Whether the message log opens now: <see cref="LogReachable"/>, and on the map nothing held — a drag's release under
+    /// the log would be a click on the map.
     /// </summary>
+    private bool LogOpens => LogReachable && (_keyWaiting || _input.PeekInput() == 0);
+
+    /// <summary>
+    /// Whether the message log is there to open (the touch mode's Log lit): the player's key is awaited or the map waits
+    /// (<see cref="MapLogWait"/>), something logged.
+    /// </summary>
+    private bool LogReachable => (_keyWaiting || MapLogWait) && !_modal && _logView is null && _presenter.Log.Pages.Count > 0;
+
+    /// <summary><c>COMMAND</c>'s map loop waits for the player with nothing over the map: no menu, window, plate's click or troop order under way.</summary>
     private bool MapLogWait => _presenter.MapWaiting && _presenter.Menu is null && !_presenter.MessageWindowShown
-        && _markerPointer.Pending == 0 && !OrderRunning && _input.PeekInput() == 0;
+        && _markerPointer.Pending == 0 && !OrderRunning;
 
     /// <summary>The message log over the game, which waits while it is open (as under Option → Messages).</summary>
     private void OpenLog()
@@ -1874,43 +1880,62 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     /// <summary>
     /// Unattended play in a window, once a launch, at the first map wait with something logged (the week-26 save's, after
-    /// Lia's scene): the wheel up over the map's middle, through Godot's input, opens the message log (dump
-    /// "message-log-map"), a right click closes it; the map still waits and neither reached the script's input. Anything
-    /// else is an error.
+    /// Lia's scene), through Godot's input: the wheel up over the map's middle opens the message log, a right click closes
+    /// it — in the touch mode the drawer at the map's left edge (dump "touch-map-drawer"), a tap on its Log, a tap off the
+    /// log's frame; the log dumped ("message-log-map"), the map still waiting and nothing reached the script's input.
+    /// Anything else is an error.
     /// </summary>
     private async Task AutoMapLogAsync()
     {
         _autoMapLogDone = true;
-        var at = _content.GlobalPosition + PictureArea().GetCenter();
-        SendPointerMotion(at);
-        await FrameAsync();
-        _autoMapWheel = true;
-        try
+        var area = PictureArea();
+        var middle = _content.GlobalPosition + area.GetCenter();
+        string way = TouchMode.On ? "tap on the drawer's Log" : "wheel up";
+        if (TouchMode.On)
         {
-            await ClickAsync(Godot.MouseButton.WheelUp);
+            UpdateSkipButtons();
+            await FrameAsync();
+            if (!_drawer.Visible || _drawer.LogDisabled)
+                throw new InvalidOperationException("--auto found the touch mode's Skip and Log drawer hidden or Log greyed on the waiting map.");
+            Shot("touch-map-drawer");
+            await FrameAsync();
+            await ClickAsync(_drawer.LogCentre, Godot.MouseButton.Left);
         }
-        finally
+        else
         {
-            _autoMapWheel = false;
+            _autoMapWheel = true;
+            try
+            {
+                await ClickAsync(middle, Godot.MouseButton.WheelUp);
+            }
+            finally
+            {
+                _autoMapWheel = false;
+            }
         }
         if (_logView is null)
-            throw new InvalidOperationException("--auto's wheel up over the waiting map opened no message log.");
+            throw new InvalidOperationException($"--auto's {way} over the waiting map opened no message log.");
         for (int i = 0; i < 20; i++)
             await FrameAsync();                                         // the log in place
         Shot("message-log-map");
         await FrameAsync();
-        await ClickAsync(Godot.MouseButton.Right);
+        if (TouchMode.On)
+            await ClickAsync(_content.GlobalPosition + area.Position + new Vector2(100, 400) * (area.Size.X / 1280), Godot.MouseButton.Left);
+        else
+            await ClickAsync(middle, Godot.MouseButton.Right);
         if (_logView is not null || _modal)
-            throw new InvalidOperationException("--auto's right click on the message log over the map did not close it.");
+            throw new InvalidOperationException("--auto did not close the message log over the map.");
         if (!_presenter.MapWaiting || _input.PeekInput() != 0)
-            throw new InvalidOperationException("--auto's wheel and right click on the message log over the map reached the script's input.");
-        GD.Print("Kichikuou: --auto opens the message log on the map by the wheel.");
+            throw new InvalidOperationException($"--auto's {way} and the log's close over the map reached the script's input.");
+        GD.Print($"Kichikuou: --auto opens the message log on the map by the {way}.");
 
         // Frames that pass while the log, a modal view, is open (NextFrameAsync waits for its close).
         async Task FrameAsync() => await ToSignal(_tree, SceneTree.SignalName.ProcessFrame);
 
-        async Task ClickAsync(Godot.MouseButton button)
+        async Task ClickAsync(Vector2 at, Godot.MouseButton button)
         {
+            SendPointerMotion(at);
+            await FrameAsync();
             foreach (bool pressed in (bool[])[true, false])
             {
                 SendPointerButton(at, button, pressed);
@@ -1970,7 +1995,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             UpdateDeploymentScreen();
             if (UpdateMapMarkers() && !_markersDumped && DisplayServer.GetName() != "headless" && _options.ScreenshotDirectory is not null)
                 await DumpMarkersAsync();
-            if (!_autoMapLogDone && Windowed && _pointer.Pending == 0 && MapLogWait && LogReachable)
+            if (!_autoMapLogDone && Windowed && _pointer.Pending == 0 && MapLogWait && LogOpens)
                 await AutoMapLogAsync();                // the message log on the map, once a launch
             if (_autoPlateTarget != 0 && UpdateMapMarkers() && _mapCamera.Corner)
                 await AutoPlateClickAsync();

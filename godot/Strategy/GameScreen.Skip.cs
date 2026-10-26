@@ -5,8 +5,9 @@ using MouseButton = Godot.MouseButton;
 namespace Kichikuou.Game.Strategy;
 
 // The touch mode's Skip and Log buttons (owner, 2026-10-24; docs/ui/touch.md, "The Skip and Log buttons" and "The dialogue
-// buttons, round 2"): the menu bar's MsgSkip and the wheel's message log, which a finger cannot reach — in the scenes a
-// drawer at the screen's left edge, in our battle screen Skip alone under the cards.
+// buttons, round 2"): the menu bar's MsgSkip and the wheel's message log, which a finger cannot reach — in the scenes and on
+// the waiting map (the owner's L1, 2026-10-26; "The message log from the map, round L") a drawer at the screen's left edge,
+// in our battle screen Skip alone under the cards.
 public partial class GameScreen
 {
     private TouchPill _skipButton = null!;              // the battle's
@@ -33,24 +34,24 @@ public partial class GameScreen
             _skip.Toggle();
     }
 
-    /// <summary>Log tapped: the message log, as the wheel up opens it (<see cref="LogReachable"/>, unattended play's taps included).</summary>
+    /// <summary>Log tapped: the message log, as the wheel up opens it (<see cref="LogOpens"/>, unattended play's taps included).</summary>
     private void LogTapped()
     {
-        if (LogReachable)
+        if (LogOpens)
             OpenLog();
     }
 
     /// <summary>
     /// Shows the buttons in the touch mode: in the scenes the drawer while a message window or a key wait is up — and
-    /// while MsgSkip is on, to turn it off again —, never under a menu or over our own screens; on our battle screen
-    /// Skip alone, the whole battle. A window that would cover the drawer (131) is drawn smaller beside it
-    /// (<see cref="SkipButtons"/>).
+    /// while MsgSkip is on, to turn it off again —, and on <c>COMMAND</c>'s waiting map (<see cref="MapLogWait"/>; the
+    /// owner's L1), never under a menu or over our own screens; on our battle screen Skip alone, the whole battle. A window
+    /// that would cover the drawer (131) is drawn smaller beside it (<see cref="SkipButtons"/>).
     /// </summary>
     private void UpdateSkipButtons()
     {
         bool battle = BattleScreenShown;
         bool scene = !battle && _presenter.Menu is null
-            && (_keyWaiting || _messageView.Window is not null || _presenter.MessageWindowShown || _skip.Activated);
+            && (_keyWaiting || _messageView.Window is not null || _presenter.MessageWindowShown || _skip.Activated || MapLogWait);
         bool show = TouchMode.On && _presenter.State is not null && !_modal && !ViewHidden && !EnemyAttackShown
             && !_commandView.Visible && !_provinceView.Visible && !_saveView.Visible && !_sceneMenuView.Visible && !_ladderView.Visible
             && (battle || scene);

@@ -309,6 +309,9 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
      pass alone. `touch-skip`, `touch-skip-docked`, `touch-commands` and `-close` were dropped as repeats.
    - Skip and Log in the Touch tab sat too close together: the owner chose G3 of the mock-ups, two plates 16 px apart
      (docs/ui/touch.md, "Round G"); every message window's entry and `touch-skip-on` show them, 131's without its dock.
+   - The drawer shows on the waiting map too (2026-10-26, the owner's L1; docs/ui/touch.md, round L): the Touch tab's
+     `map-markers`, `-hover` and `-active` draw it beside the Commands button, Log lit as with something logged
+     (`GalleryEntries.Markers`).
 
 ## 8. Questions for the owner
 

@@ -5,8 +5,9 @@ namespace Kichikuou.Game.Strategy;
 
 /// <summary>
 /// The touch mode's Skip and Log in the scenes (owner's B1-B3b, 2026-10-24; docs/ui/touch.md, "The dialogue buttons,
-/// round 2"): two lacquer plates glued to the screen's left edge, Skip over Log with 16 pixels between them (the owner's
-/// G3, 2026-10-25), an icon over a small label in each (<see cref="SkipButtons"/>); over 131 the same, the window drawn
+/// round 2") and on <c>COMMAND</c>'s waiting map (the owner's L1, 2026-10-26; "The message log from the map, round L"):
+/// two lacquer plates glued to the screen's left edge, Skip over Log with 16 pixels between them (the owner's G3,
+/// 2026-10-25), an icon over a small label in each (<see cref="SkipButtons"/>); over 131 the same, the window drawn
 /// smaller beside them. Skip is lit gold, "ON", while the skip runs; a greyed cell is deaf. A tap on a cell (its release
 /// over the cell pressed) is <see cref="SkipTapped"/> or <see cref="LogTapped"/>; a tap elsewhere on the drawer, the room
 /// between the plates included, is its own and does nothing (a near miss never advances the text); its other events go on

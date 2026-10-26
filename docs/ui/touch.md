@@ -649,6 +649,20 @@ Mock-ups (`tools/ui/mock_map_log.py`, over the gallery's touch `map-markers` and
 - **L4 — no button on the map**: a Log row in the command panel's right rail after All Data (the rail one row taller
   upwards, as each link makes it). Two taps (Commands, Log); the log over the panel, the panel again when it closes.
 
+**The owner's choice (2026-10-26): L1**, built:
+
+- **The drawer** (`SkipDrawer`, unchanged) shows on `COMMAND`'s waiting map while nothing is over it
+  (`GameScreen.MapLogWait`: no menu or window, no plate's click or Subordinates order under way; `UpdateSkipButtons`),
+  hidden under the command panel and the province menu as before. Log is lit when something is logged
+  (`LogReachable`); a tap opens the log only while no button is held (`LogOpens`, the wheel's rule), so Log does not grey
+  while a finger drags the map. Skip turns MsgSkip on and off there as in the scenes.
+- **Unattended play** in the touch mode (`--touch`, a window) checks it once a launch at the first map wait with something
+  logged (`GameScreen.AutoMapLogAsync`): the drawer shown and Log lit (dump `touch-map-drawer`), a tap on Log opens the
+  log (`message-log-map`), a tap off its frame closes it, nothing reaches the script. The week-26 save reaches it after
+  Lia's scene; `--turn-end --weeks 26 --until deployment` keeps the pointer still.
+- **The gallery**: the Touch tab's map entries draw the drawer (docs/ui/gallery.md, §7).
+- Looked at by the agent (2026-10-26) in a window and in the gallery. Not yet on the tablet.
+
 ## Phones (put off)
 
 Put off by the owner (2026-10-24). What is ready for them: the measurements above, mock-ups B1, B3 (the battle),

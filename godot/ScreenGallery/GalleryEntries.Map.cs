@@ -78,7 +78,10 @@ internal static partial class GalleryEntries
             g => DungeonEntry(g, "Ancient Ruins", "(Search in Progress)", 267, 272, 290, 295));
     }
 
-    /// <summary>Our plates over the map, as <c>COMMAND</c>'s map wait shows them, <paramref name="hover"/>'s province hovered.</summary>
+    /// <summary>
+    /// Our plates over the map, as <c>COMMAND</c>'s map wait shows them, <paramref name="hover"/>'s province hovered; in the
+    /// touch mode the Commands button and the Skip and Log drawer with them, Log lit as with something logged.
+    /// </summary>
     private static Action<Rect2>? Markers(GalleryStage g, bool hideDimmed, int? hover)
     {
         if (g.State(Week18) is not { } s)
@@ -91,11 +94,13 @@ internal static partial class GalleryEntries
         view.SetHideDimmed(hideDimmed);
         view.Load(markers);
         var button = TouchCommandsButton(g, closes: false);
+        var drawer = TouchMode.On ? g.Add(new SkipDrawer { Visible = true }) : null;  // Skip and Log on the waiting map (the owner's L1)
         return area =>
         {
             GalleryStage.Fill(backdrop, area);
             view.Place(area, area.Size.X / Surface.ScreenWidth, corner);
             button?.Place(area);
+            drawer?.Place(area);
             if (hover is { } province)
                 view.ShowHover(markers.FirstOrDefault(m => m is { Kind: MapHitKind.Province } && m.Id == province));
         };
