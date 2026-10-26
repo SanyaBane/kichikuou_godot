@@ -250,6 +250,11 @@ at a time in tabs (Overview, Troops, Commander), the picture and the party / ord
 and mock-up round A are docs/ui/unit-ledger.md (`tools/ui/mock_unit_ledger.py`); the owner took A1-A4 and round D's D2
 (the order's gold seal; its §5), built (its §6: `Original.Content/Strategy/LedgerTabs`, `godot/Strategy/LedgerTabsBar`,
 `LedgerTabChoice`), awaiting the owner's look in a window.
+Then (owner, 2026-10-26) a damage forecast beside the battle's attack banners, an option: what the attack is likely to do
+to both sides (troops lost, a fall's chance, the counter), computed on the real exchange run many times on a copy of the
+state with a generator of its own; the survey and mock-up round A (A1 on each banner, A2 at the scene's foot where the
+counters roll, A3 a tooltip, T1 the touch rail) are docs/ui/damage-forecast.md (`tools/ui/mock_damage_forecast.py`),
+awaiting the owner's choice.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
