@@ -30,7 +30,7 @@ import sys, os
 sys.dont_write_bytecode = True                  # no __pycache__ in the repository for the borrowed module
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from mock_touch_panel import (S, GOLD, DIM_GOLD, TEXT, QUIET, NAME, PANEL, GOTHIC, BRUSH, CINZEL, Frame, load, sc, text,
-                              width, note, caption, rect, panel, rule, font)
+                              width, note, caption, rect, panel, rule, font, OUT)
 from PIL import Image, ImageDraw, ImageFilter
 
 # BattleCommandLayer: the banners and the target's frame (layout pixels of the 1280x800 screen).
@@ -59,18 +59,19 @@ def pennant(r):
     return [(x0 + SLANT, y0), (x1 - POINT, y0), (x1, (y0 + y1) / 2), (x1 - POINT, y1), (x0, y1)]
 
 
-def banner(f, r, label, hot, rows=None, label_size=BANNER_TEXT, label_at=None):
+def banner(f, r, label, hot, rows=None, label_size=BANNER_TEXT, label_at=None, colours=None):
     """A banner as BattleCommandLayer.DrawBanner draws it; rows = the forecast's second row (A1), label_at = (x, y,
-    anchor) of the label where the forecast moves it (round B)."""
+    anchor) of the label where the forecast moves it (round B), colours = the gradients and glow of round C."""
     x0, y0, x1, y1 = r
+    c = colours or dict(top=BANNER_TOP, foot=BANNER_FOOT, hot_top=HOT_TOP, hot_foot=HOT_FOOT, glow=(255, 184, 107))
     lay, d = f.draw()
     d.polygon(sc(*[v for p in pennant((x0 + 2, y0 + 3, x1 + 2, y1 + 3)) for v in p]), fill=(0, 0, 0, 120))
     f.add(lay, blur=3)
     if hot:
         lay, d = f.draw()
-        d.polygon(sc(*[v for p in pennant(r) for v in p]), fill=(255, 184, 107, 150))
+        d.polygon(sc(*[v for p in pennant(r) for v in p]), fill=c['glow'] + (150,))
         f.add(lay, blur=6)
-    top, foot = (HOT_TOP, HOT_FOOT) if hot else (BANNER_TOP, BANNER_FOOT)
+    top, foot = (c['hot_top'], c['hot_foot']) if hot else (c['top'], c['foot'])
     grad = Image.new('RGBA', f.img.size, (0, 0, 0, 0))
     gd = ImageDraw.Draw(grad)
     for y in range(round(y0 * S), round(y1 * S)):
@@ -277,19 +278,36 @@ def target_frame(f, card):
         rect(f, (a[0] + 1.5, a[1] + 1.5, a[2] - 1.5, a[3] - 1.5), (255, 255, 255), alpha=215)
 
 
-def damage(f, y, x_troops, x_hp, troops, hp, size):
-    """The damage's figures: Trp. and HP in their own places, each left out where the attack cannot reach it."""
+def damage(f, y, x_troops, x_hp, troops, hp, size, inks=None):
+    """The damage's figures: Trp. and HP in their own places, each left out where the attack cannot reach it; inks =
+    (the troops' colour, the HP's colour, the outline) of round C."""
     tag = GOTHIC(size - 2)
-    for x, word, value in ((x_troops, 'Trp.', troops), (x_hp, 'HP', hp)):
+    troop_ink, hp_ink, outline = inks or (None, None, TEXT_OUTLINE)
+    for x, word, value, ink in ((x_troops, 'Trp.', troops, troop_ink), (x_hp, 'HP', hp, hp_ink)):
         if value is None:
             continue
-        outlined(f, x, y, word, tag, FIGURE_TAG, anchor='lm')
-        outlined(f, x + width(word + ' ', tag), y, value, GOTHIC(size), FIGURE, anchor='lm')
+        outlined(f, x, y, word, tag, ink or FIGURE_TAG, outline=outline, anchor='lm')
+        outlined(f, x + width(word + ' ', tag), y, value, GOTHIC(size), ink or FIGURE, outline=outline, anchor='lm')
 
 
-def stack(f, card, items, hot, h, label_size, label_dy, figure_size, figure_dy, x_troops, x_hp, one_row=False):
+def strip(f, x0, y0, x1, y1, figure_dy):
+    """Round C3: a dark strip inside the banner under the figures' row."""
+    lay, d = f.draw()
+    d.rounded_rectangle(sc(x0 + SLANT, y0 + figure_dy - 9, x1 - POINT - 2, y0 + figure_dy + 9), radius=3 * S,
+                        fill=(8, 12, 28, 175))
+    f.add(lay)
+
+
+def stack(f, card, items, hot, h, label_size, label_dy, figure_size, figure_dy, x_troops, x_hp, one_row=False,
+          colours=None, inks=None, dark_strip=False):
     top = (card[1] + card[3]) / 2 - (len(items) * h + (len(items) - 1) * GAP) / 2
     x0 = card[0] - OUT_
+
+    def rows(f, x0, y0, x1, y1, t, p):
+        if dark_strip:
+            strip(f, x0, y0, x1, y1, figure_dy)
+        damage(f, y0 + figure_dy, x0 + x_troops, x0 + x_hp, t, p, figure_size, inks)
+
     for i, (label, troops, hp) in enumerate(items):
         y0 = top + i * (h + GAP)
         r = (x0, y0, x0 + BANNER_W, y0 + h)
@@ -297,10 +315,8 @@ def stack(f, card, items, hot, h, label_size, label_dy, figure_size, figure_dy, 
             at = (x0 + SLANT + 6, y0 + h / 2, 'lm')
         else:
             at = ((x0 + x0 + BANNER_W - POINT + SLANT) / 2, y0 + label_dy, 'mm')
-        banner(f, r, label, i == hot,
-               lambda f, x0, y0, x1, y1, t=troops, p=hp: damage(f, y0 + figure_dy, x0 + x_troops, x0 + x_hp, t, p,
-                                                               figure_size),
-               label_size=label_size, label_at=at)
+        banner(f, r, label, i == hot, lambda f, x0, y0, x1, y1, t=troops, p=hp: rows(f, x0, y0, x1, y1, t, p),
+               label_size=label_size, label_at=at, colours=colours)
 
 
 def board_e1(dump, turn):
@@ -350,7 +366,48 @@ def layout_b2_sakanaku(turn):
     f.save('B2-sakanaku.png')
 
 
+# --- Round C (the owner, 2026-10-26: B2, the troops' figures in the troops bar's red and the HP's in the HP bar's green;
+# the banners blue, the player's move, since red and green read oddly on yellow and orange) ----------------------------------
+
+TROOP_BAR, HP_BAR = (209, 77, 77), (107, 194, 107)          # BattleBoardView's EnemyColour (an enemy's troops) and HpColour
+NIGHT = (6, 10, 30)                                         # the figures' outline on blue
+BAR_INKS = (TROOP_BAR, HP_BAR, NIGHT)
+TINT_INKS = ((232, 146, 140), (156, 216, 156), NIGHT)      # the bars' hues lightened to read on the player's blue
+PLAYER_BLUE = dict(top=(122, 166, 245), foot=(50, 90, 198),          # round PlayerColour (69, 117, 219), the troops bar's
+                   hot_top=(192, 226, 255), hot_foot=(92, 152, 246), glow=(170, 212, 255))
+DEEP_BLUE = dict(top=(58, 94, 182), foot=(20, 38, 100),
+                 hot_top=(96, 144, 238), hot_foot=(34, 68, 166), glow=(128, 178, 255))
+
+
+def round_c(dump, turn, name, lines, colours, inks, dark_strip=False):
+    f = board_e1(dump, turn)
+    stack(f, CARD_E1, EX_THREE, 1, 46, 17, 15, 14, 33, 20, 108, colours=colours, inks=inks, dark_strip=dark_strip)
+    caption(f, lines + [MADE_UP_THREE], y=62)
+    f.save(name)
+
+
+def layout_c(dump, turn):
+    round_c(dump, turn, 'C1-player-blue.png',
+            ['C1  The player\'s blue (round the troops bar\'s), the figures in the bars\' red and green lightened',
+             'the bars\' own colours do not read on this blue; the hovered banner a pale sky blue, glowing'],
+            PLAYER_BLUE, TINT_INKS)
+    round_c(dump, turn, 'C2-deep-blue.png',
+            ['C2  A deep blue, the figures in the bars\' own red and green',
+             'the hovered banner a brighter blue with a pale glow'], DEEP_BLUE, BAR_INKS)
+    round_c(dump, turn, 'C3-blue-dark-strip.png',
+            ['C3  C1\'s blue, the figures in the bars\' own colours on a dark strip inside the banner',
+             'the dark as under the cards\' bars'], PLAYER_BLUE, BAR_INKS, dark_strip=True)
+    # the three stacks side by side, twice their size
+    names = ['C1-player-blue.png', 'C2-deep-blue.png', 'C3-blue-dark-strip.png']
+    crops = [Image.open(os.path.join(OUT, n)).crop((660, 440, 990, 610)).resize((660, 340), Image.LANCZOS) for n in names]
+    sheet = Image.new('RGB', (660 * 3 + 20, 340), (0, 0, 0))
+    for i, c in enumerate(crops):
+        sheet.paste(c, (i * 670, 0))
+    sheet.save(os.path.join(OUT, 'C-compare.png'))
+
+
 GALLERY = sys.argv[1]
+layout_c(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
 layout_b1(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
 layout_b2(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
 layout_b3(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))

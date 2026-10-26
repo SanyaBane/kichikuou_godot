@@ -2,8 +2,9 @@
 
 The owner's request (2026-10-26): an optional setting that shows, beside a target's attack banners (the gallery's
 `banners-E1`), what the attack is likely to do, as some turn-based games do (Heroes of Might and Magic V). This document
-is the survey and mock-up rounds A and B; nothing is built. The owner chose A1 for the PC, the damage dealt alone (§10).
-**Status: round B drawn, awaiting the owner's choice of its layout** (§10).
+is the survey and mock-up rounds A-C; nothing is built. The owner chose A1 for the PC, the damage dealt alone (§10), laid
+out as B2, its figures in the cards' bars' colours on blue banners (§11). **Status: round C drawn, awaiting the owner's
+choice of its blue** (§11).
 
 ## 1. What an attack does
 
@@ -143,6 +144,7 @@ the owner's choice (§9).
 6. docs/ui/style.md, §1: "no prediction of draws" to read "no prediction of a draw's outcome" (§2)?
 7. Melee and Bow now read the same on a banner (their streams differ only by the counter, §1): leave it, or mark the
    banners the target answers (a mark, no figure)?
+8. The banners blue only while the forecast shows, or always (one look whatever the option; agent's pick: always)?
 
 ## 10. The owner's choice and round B (2026-10-26)
 
@@ -178,3 +180,29 @@ but Melee, their figures the real exchange's on Rance's state — and Sakanaku w
 glance under its attack, and the label is only 3 px smaller. B1 if the label must stay as it is.
 
 What §4 lists is still not forecast (Miki's Vanish Bomb, a ninja's follow-up, Sieg's event).
+
+## 11. Round C: the bars' colours on blue banners (2026-10-26)
+
+**The owner:** B2. The troops' figures in the red of the troops bar, the HP's in the green of the HP bar — and so the
+banners blue, the player's move, since red and green read oddly on yellow and orange.
+
+The colours are `BattleBoardView`'s: `EnemyColour` (209, 77, 77), an enemy card's troops bar; `HpColour` (107, 194, 107);
+`PlayerColour` (69, 117, 219), a player card's troops bar. The bars' own red does not read on a blue as light as the
+player's bar (C1's first drawing had it: dark red on mid blue, carried by its outline alone), hence three ways:
+
+- **C1 — the player's blue**, a gradient round `PlayerColour`; the figures in the bars' hues lightened to read on it
+  ((232, 146, 140), (156, 216, 156)); the hovered banner a pale sky blue, glowing, as today's turns orange-red.
+- **C2 — a deep blue**; the figures in the bars' own colours; the hovered banner a brighter blue. The hover reads least
+  here, and the card's text under the banner (80 % opaque, as today) shows through most.
+- **C3 — C1's blue with a dark strip** inside each banner under the figures, the bars' own colours on it as on the
+  cards.
+
+`C-compare.png` sets the three stacks side by side at twice their size.
+
+**Agent's recommendation:** C1 — the player's own blue, the hovered banner plainly lit, the figures read without a strip.
+C3 if the bars' exact colours matter more than a plain banner.
+
+Notes for the build: the cyan target frame (70, 205, 255) is now next to blue banners — it stays as it is (style.md, §2:
+fixed cyan, never the accent); the banners are among the colours left on purpose outside the palette (style.md, §2), so
+the chosen blue goes there in place of the yellow when accepted. Whether the banners are blue only while the forecast
+shows is §9, question 8.

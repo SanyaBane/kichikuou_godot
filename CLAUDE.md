@@ -255,8 +255,9 @@ to both sides (troops lost, a fall's chance, the counter), computed on the real 
 state with a generator of its own; the survey and mock-up round A (A1 on each banner, A2 at the scene's foot where the
 counters roll, A3 a tooltip, T1 the touch rail) are docs/ui/damage-forecast.md (`tools/ui/mock_damage_forecast.py`);
 the owner chose A1 for the PC first, the damage dealt alone (the target's troops, its commander's HP where the attack
-can reach him; no counter, no fall's chance); round B (B1 two rows, B2 two rows within the card, B3 one row) awaits the
-owner's choice (its §10).
+can reach him; no counter, no fall's chance), laid out as round B's B2 (two rows within the card); round C, the figures
+in the cards' bars' red and green on blue banners (C1 the player's blue, C2 a deep blue, C3 a dark strip), awaits the
+owner's choice (its §11).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
