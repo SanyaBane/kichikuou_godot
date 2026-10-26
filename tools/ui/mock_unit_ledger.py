@@ -9,7 +9,8 @@ long: the week-18 save's nine units with the figures the dumps show, and twenty 
 boot figures, the troops made up); SET_CHR.ADV and SET_ITEM.ADV are read from the extract's scenario_named.
     python -I tools/ui/mock_unit_ledger.py <extract dir> <gallery dump dir> <out dir> [round] < /dev/null
 Round a (the default): A1-A5; round b: B1-B5, the owner's A1-A4 with the first tab named Overview; round c: C1-C3
-and C-sheet, the kept order's note made seen; round d: D1, D2 and D-sheet, C2 in C3's colours.
+and C-sheet, the kept order's note made seen; round d: D1, D2 and D-sheet, C2 in C3's colours; round e: E0-E4 and
+E-sheet, the rows made taller for a finger, over the touch pass's dumps (<gallery dump dir> its folder).
 The images hold the player's CGs: keep <out dir> outside the repository.
 Everything is in the 1280x800 screen's pixels (plus a caption band below); drawn at 2x and scaled down.
 """
@@ -120,10 +121,10 @@ PARTY = [1, 12, 8, 6]                               # places 1-4 as the deployme
 ITEMS_HELD = {1: 6}                                 # the L. Holy Sword (item 6) on Rance (unit 1); By Lord on Rick from SET_CHR
 
 
-def roster():
+def roster(more=MORE):
     units, items = read_records()
     rows = []
-    for i, n in enumerate(sorted(list(SHOWN) + MORE)):
+    for i, n in enumerate(sorted(list(SHOWN) + more)):
         u = units[n]
         if n in SHOWN:
             kind, troops, most, tatk, tdef, mods = SHOWN[n]
@@ -663,6 +664,149 @@ def sheet(crops, name):
     out.convert('RGB').save(os.path.join(OUT, name))
 
 
+# ---------------------------------------------------------------- round E: taller rows for a finger (2026-10-26)
+# The owner (2026-10-26): on the tablet the ledger's rows are too small to choose with a finger. Over the touch pass's
+# dumps of the built screens (tools/ui/gallery.ps1 -Touch: deployment.png, subordinates.png) the ledger's paper is
+# drawn again as built (DeploymentTableView: the game's font at 17, Cinzel headers, the rules, the seals, Refill's
+# chips, the 8-pixel scroll bar) with a roster of 33 units, so that the rows reach the paper's foot; the rows 24 pixels
+# (as built), 32, 36, 42 and 48, the text as built. A grey disc 9 mm across stands for a fingertip.
+#   python -I tools/ui/mock_unit_ledger.py <extract dir> <touch dump dir> <out dir> e < /dev/null
+
+MM = 0.203                                          # the owner's tablet: millimetres per layout pixel (docs/ui/touch.md)
+E_PAPER = (31, 113, 693, 769)                       # inside the paper's frame, which the dump keeps with the tab's join
+E_HEAD, E_TEXT, E_PAD, E_FIRST, E_BAR = 40, 17, 5, 30, 8
+E_HEIGHTS = [(24, 'as built'), (32, '+33 %'), (36, '+50 %'), (42, '+75 %'), (48, '+100 %')]
+E_MORE = [n for n in MORE if n not in (26, 42)] + [20, 22, 33, 34, 35, 36]   # no Mars the Great, Seizel Sisters: their names would crowd the columns
+
+
+def ledger_e(c, columns, rows, row_h, members, chosen=None):
+    """The ledger's paper as DeploymentTableView draws it in a tab, at rows of row_h; the last row cut by the paper's
+    foot as the tree cuts it. Returns the whole rows in view."""
+    x0, y0, x1, y1 = E_PAPER
+    t = Canvas()
+    t.im = t.im.convert('RGB')                      # drawn opaque, the colours with alpha blended into the paper
+    t.d = ImageDraw.Draw(t.im, 'RGBA')
+    t.overlay = lambda r, fill: t.rect(r, fill=fill)
+    t.rect(E_PAPER, fill=PAPER)
+    t.rect((x0, y0, x1, y0 + E_HEAD - 1), fill=PAPER_HEAD)
+    t.line((x0, y0 + E_HEAD - 1), (x1, y0 + E_HEAD - 1), fill=HEAD_INK)
+    f, head_f = font(E_TEXT), cinzel(13)
+    ws = []
+    for column in columns:
+        cells = max(t.width(column['text'](r), f) for r in rows)
+        head = t.width(column['header'], head_f) + (12 if column is NUMBER else 0)
+        ws.append(round(max(cells + (8 if column['kind'] == 'refill' else 0), head)) + 2 * E_PAD)
+    room = x1 - x0 - E_BAR - E_FIRST
+    if sum(ws) > room:
+        print(f'  {len(columns)} columns run {sum(ws) - room} px past the paper')
+    xs, x = [], x0 + E_FIRST
+    for w in ws:
+        xs.append(x)
+        x += w
+    hy = y0 + 27                                    # the titles sit low: the groups' strip is kept in every tab
+    if members:
+        t.d.ellipse([(x0 + E_FIRST / 2 - 4) * S, (hy - 4) * S, (x0 + E_FIRST / 2 + 5) * S, (hy + 5) * S], fill=HEAD_INK)
+    for column, w, cx in zip(columns, ws, xs):
+        if column['kind'] in ('text', 'quiet'):
+            t.text((cx + E_PAD, hy), column['header'], head_f, fill=HEAD_INK, anchor='lm')
+        elif column is NUMBER:                      # sorted by No.: its arrow
+            t.text((cx + w - E_PAD - 12, hy), column['header'], head_f, fill=HEAD_INK, anchor='rm')
+            t.text((cx + w - E_PAD, hy), '↑', font(12), fill=HEAD_INK, anchor='rm')
+        else:
+            t.text((cx + w - E_PAD, hy), column['header'], head_f, fill=HEAD_INK, anchor='rm')
+    right = x1 - E_BAR
+    y, whole = y0 + E_HEAD, 0
+    for row in rows:
+        if y >= y1:
+            break
+        whole += y + row_h <= y1
+        mid = y + row_h / 2
+        base = mid - 1.5                            # the text a little above the middle, the troops' bar under it
+        if members and row['place']:
+            t.overlay((x0, y, right, y + row_h), PARTY_ROW)
+        if row['n'] == chosen:
+            t.overlay((x0, y, right, y + row_h), CHOSEN_ROW)
+            t.rect((x0, y, x0 + 3, y + row_h), fill=VERMILION)
+            diamond(t, x0 + E_FIRST / 2, mid, 4, VERMILION)
+        t.line((x0, y + row_h - 1), (right, y + row_h - 1), fill=PAPER_RULE)
+        if members and row['place']:
+            size = 18 if row_h < 36 else 22
+            seal(t, x0 + (E_FIRST - size) / 2, mid - size / 2, row['place'], size)
+        for column, w, cx in zip(columns, ws, xs):
+            text, kind = column['text'](row), column['kind']
+            ink = INK_GREY if row['grey'] else INK
+            if kind == 'text':
+                t.text((cx + E_PAD, base), text, f, fill=ink, anchor='lm')
+            elif kind == 'quiet':
+                t.text((cx + E_PAD, base), text, f, fill=INK_GREY if row['grey'] or text == '—' else INK_QUIET, anchor='lm')
+            elif kind == 'troops':
+                t.text((cx + E_PAD, base), text, f, fill=ink, anchor='lm')
+                troop_bar(t, cx + E_PAD, mid + 7, w - 2 * E_PAD, row['troops'], row['most'])
+            elif kind == 'refill':
+                if row['refill'] and not row['grey'] and members:      # the deployment's Refill buttons
+                    inset = max(2, row_h // 10)
+                    t.rect((cx + 3, y + inset, cx + w - 3, y + row_h - inset), outline=(150, 52, 30, 150), radius=3)
+                t.text((cx + w - E_PAD - 3, base), text, f,
+                       fill=INK_FAINT if text == '—' else INK_GREY if row['grey'] else VERMILION_INK, anchor='rm')
+            else:
+                faint = text in ('0', '—')
+                t.text((cx + w - E_PAD, base), text, f, fill=INK_GREY if row['grey'] else INK_FAINT if faint else ink,
+                       anchor='rm')
+        y += row_h
+    top, span = y0 + E_HEAD, y1 - y0 - E_HEAD       # the scroll bar: the theme's 8 pixels, paper and ink
+    t.rect((right, top, x1, y1), fill=PAPER_HEAD)
+    t.rect((right, top, x1, top + span * min(1, span / row_h / len(rows))), fill=INK_QUIET)
+    region = t.im.crop((x0 * S, y0 * S, x1 * S, y1 * S)).convert('RGBA')
+    c.im.alpha_composite(region, (x0 * S, y0 * S))
+    c.d = ImageDraw.Draw(c.im)
+    return whole
+
+
+def screen_e(kind, row_h, rows):
+    deploy = kind == 'deployment'
+    c = Canvas()
+    c.paste(dump('deployment.png' if deploy else 'subordinates.png'), (0, 0, W, H))
+    if not deploy:                                  # the dump's "9 units ready"
+        c.rect((262, 32, 430, 56), fill=(21, 16, 12, 255))
+        c.text((269, 44), f'{sum(not r["grey"] for r in rows)} units ready', cinzel(13, 600), fill=SUB, anchor='lm')
+    whole = ledger_e(c, GENERAL_DEPLOY if deploy else GENERAL_SUB, rows, row_h, deploy, chosen=None if deploy else 1)
+    finger = 9 / MM                                 # a fingertip on the sixth row, over the Type column
+    fx, fy = 262, E_PAPER[1] + E_HEAD + row_h * 5.5
+    layer = Image.new('RGBA', c.im.size, (0, 0, 0, 0))
+    ImageDraw.Draw(layer).ellipse([(fx - finger / 2) * S, (fy - finger / 2) * S, (fx + finger / 2) * S,
+                                   (fy + finger / 2) * S], fill=(70, 70, 76, 80), outline=(40, 40, 46, 170), width=S)
+    c.im = Image.alpha_composite(c.im, layer)
+    c.d = ImageDraw.Draw(c.im)
+    return c, whole
+
+
+def round_e():
+    TABS[0] = 'Overview'
+    rows = sorted(roster(E_MORE), key=lambda r: r['n'])
+    crops = []
+    for i, (row_h, grown) in enumerate(E_HEIGHTS):
+        for kind in ('deployment', 'subordinates'):
+            c, whole = screen_e(kind, row_h, rows)
+            title = f'E{i} — rows {row_h} px ({grown}): {row_h * MM:.1f} mm on the tablet, {whole} of {len(rows)} in view'
+            crops.append((kind, f'E{i} — {row_h} px, {grown}', c.screen().crop((16, 16, 708, 784))))
+            c.save(f'E{i}-{kind}.png', title,
+                   f'{kind.capitalize()}, Overview; a made-up roster of {len(rows)} units, the text as built. '
+                   'The grey disc: a fingertip, 9 mm across.')
+    scale, gap, head = 0.5, 18, 34
+    cw, ch = round(692 * scale), round(768 * scale)
+    cols = len(E_HEIGHTS)
+    out = Image.new('RGBA', (cols * (cw + gap) + gap, 2 * (ch + head + gap) + gap), (24, 19, 15, 255))
+    d = ImageDraw.Draw(out)
+    title_font = ImageFont.truetype(CINZEL, 18)
+    title_font.set_variation_by_axes([700])
+    for k, (kind, title, crop) in enumerate(crops):
+        col_i, row_i = k // 2, 0 if kind == 'deployment' else 1
+        x, y = gap + col_i * (cw + gap), gap + row_i * (ch + head + gap)
+        d.text((x, y + 24), title, font=title_font, fill=NAME, anchor='ls')
+        out.paste(crop.resize((cw, ch), Image.LANCZOS), (x, y + head))
+    out.convert('RGB').save(os.path.join(OUT, 'E-sheet.png'))
+
+
 if ROUND == 'a':
     round_a()
 elif ROUND == 'b':
@@ -671,3 +815,5 @@ elif ROUND == 'c':
     round_c()
 elif ROUND == 'd':
     round_d()
+elif ROUND == 'e':
+    round_e()

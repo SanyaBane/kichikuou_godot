@@ -172,7 +172,8 @@ docs/ui/touch.md. The tablet first, phones put off (2026-10-24). Touch mode is A
 interface does not change.
 
 - A finger needs 7-9 mm: rows 46 px with 8 between; secondary items get a row box too, since no hover shows they can
-  be tapped.
+  be tapped. A ledger's rows, which touch each other, are 36 px (7.3 mm on the tablet; the owner's E2,
+  docs/ui/unit-ledger.md §7), the text as on the PC.
 - Select, then act: nothing irreversible on one tap. A long press (0.5 s) gives details; a finger that moves more than
   12 px is neither tap nor press.
 - A tap off a panel is the right click's cancel; Commands becomes Close while the panel is open.

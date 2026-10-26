@@ -409,14 +409,36 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         Size = rect.Size;
         _overlay.Size = new Vector2(rect.Size.X, OverlayHeight);
         int size = Math.Max(8, (int)Math.Round(_textSize * pixelsPerScript));
-        if (size == _fontSize)
+        int separation = (int)Math.Round(1.5f * pixelsPerScript);              // the ledger's rows breathe
+        int minimum = TouchMode.On                                             // the tree adds the separation twice a row
+            ? Math.Max(0, (int)Math.Round(TouchRowHeight * pixelsPerScript / 2) - 2 * separation) : 0;
+        if (size == _fontSize && minimum == _rowMinimum)
             return;
-        _fontSize = size;
+        (_fontSize, _rowMinimum) = (size, minimum);
         AddThemeFontSizeOverride("font_size", size);
         AddThemeFontSizeOverride("title_button_font_size", TitleSize);
-        AddThemeConstantOverride("v_separation", (int)Math.Round(1.5f * pixelsPerScript));   // the ledger's rows breathe
+        AddThemeConstantOverride("v_separation", separation);
         ApplyLedger();                                                  // the groups' strip grows with the text
         Fill();
+    }
+
+    /// <summary>
+    /// The rows' height in the touch mode, in the 1280×800 screen's pixels: 7.3 mm on the owner's tablet, where the
+    /// text's own 24 were 4.9 (docs/ui/unit-ledger.md §7, the owner's E2). The text keeps its size.
+    /// </summary>
+    public const int TouchRowHeight = 36;
+
+    /// <summary>A row's minimum height in window pixels without the separations (the touch mode's; 0 on the PC).</summary>
+    private int _rowMinimum;
+
+    /// <summary>
+    /// The part of <paramref name="cell"/> a row of the text's own height would have: the seals, the marks and the
+    /// troops' figures stay at the text's size, centred in a touch mode's taller row.
+    /// </summary>
+    private Rect2 Content(Rect2 cell)
+    {
+        float extra = Math.Max(0, _rowMinimum - _font.GetHeight(_fontSize));
+        return cell.GrowIndividual(0, -extra / 2, 0, -extra / 2);
     }
 
     /// <summary>
@@ -606,6 +628,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         {
             var item = CreateItem(root);
             item.SetMetadata(0, row.Unit);
+            item.CustomMinimumHeight = _rowMinimum;
             LedgerRow(item, row, chosen: _chooser && row.Unit == Chosen, place: _chooser ? 0 : row.PartyPlace);
             for (int c = 0; c < _columns.Count; c++)
                 Fit(c + 1, row.Text(_columns[c].Column));
@@ -664,8 +687,9 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
             for (int c = 0; c < Columns; c++)
                 item.SetCustomBgColor(c, Ui.PartyRow);
             item.SetCellMode(0, TreeItem.TreeCellMode.Custom);
-            item.SetCustomDrawCallback(0, Callable.From<TreeItem, Rect2>((_, rect) =>
+            item.SetCustomDrawCallback(0, Callable.From<TreeItem, Rect2>((_, cell) =>
             {
+                var rect = Content(cell);
                 float size = Math.Min(rect.Size.Y - 2, _fontSize * 1.15f);
                 Ui.DrawSeal(this, _sealFont, new Rect2(rect.GetCenter() - new Vector2(size, size) / 2, new Vector2(size, size)), place);
             }));
@@ -679,14 +703,15 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
             for (int c = talk is null ? 0 : 1; c < Columns; c++)
                 item.SetCustomBgColor(c, Ui.ChosenRow);    // the tree tints over a custom cell: the bubble's cell tinted below
         item.SetCellMode(0, TreeItem.TreeCellMode.Custom);
-        item.SetCustomDrawCallback(0, Callable.From<TreeItem, Rect2>((_, rect) =>
+        item.SetCustomDrawCallback(0, Callable.From<TreeItem, Rect2>((_, cell) =>
         {
+            var rect = Content(cell);                               // the bar along the whole row, the marks at the text's size
             var mark = rect with { Size = new Vector2(rect.Size.X - BubbleRoom, rect.Size.Y) };
             if (chosen && talk is not null)
-                DrawRect(rect, Ui.ChosenRow);
+                DrawRect(cell, Ui.ChosenRow);
             if (chosen)
             {
-                DrawRect(new Rect2(rect.Position.X, rect.Position.Y, Math.Max(2, rect.Size.Y * 0.14f), rect.Size.Y), Ui.Vermilion);
+                DrawRect(new Rect2(cell.Position.X, cell.Position.Y, Math.Max(2, rect.Size.Y * 0.14f), cell.Size.Y), Ui.Vermilion);
                 Lacquer.DrawDiamond(this, mark.GetCenter() + new Vector2(rect.Size.Y * 0.1f, 0), rect.Size.Y * 0.2f, Ui.Vermilion);
             }
             if (talk is { } shown)
@@ -737,7 +762,8 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     private void DrawRefill(Rect2 cell, string text, int unit)
     {
         bool lit = unit == _refillHovered || unit == AskedRefill;
-        var chip = new Rect2(cell.Position.X + 3, cell.Position.Y + 2, cell.Size.X - 6, cell.Size.Y - 4);
+        float inset = _rowMinimum > 0 ? cell.Size.Y / 12 : 2;             // a touch row's chip grows with it: a finger's button
+        var chip = new Rect2(cell.Position.X + 3, cell.Position.Y + inset, cell.Size.X - 6, cell.Size.Y - 2 * inset);
         float corner = Math.Max(2, chip.Size.Y * 0.18f);
         var box = new StyleBoxFlat
         {
@@ -757,8 +783,9 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     /// The troops' figures (a custom cell draws no text of its own) a little raised, and their strength under them:
     /// green from three quarters, amber from a third, else red.
     /// </summary>
-    private void DrawTroops(Rect2 cell, string text, int troops, int max, bool grey)
+    private void DrawTroops(Rect2 row, string text, int troops, int max, bool grey)
     {
+        var cell = Content(row);                                    // the bar right under the figures in a touch row too
         float h = Math.Max(2, cell.Size.Y * 0.11f);
         float baseline = cell.GetCenter().Y + (_font.GetAscent(_fontSize) - _font.GetDescent(_fontSize)) / 2 - h / 2;
         DrawString(_font, new Vector2(cell.Position.X + 2, baseline), text, HorizontalAlignment.Left, cell.Size.X - 2, _fontSize,

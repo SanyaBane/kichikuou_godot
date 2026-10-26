@@ -152,3 +152,40 @@ the letters lacquer-dark. **The owner chose D2** (2026-10-26), the gold seal (`L
   the week-18 look in a window with our interface (Subordinates' Replenish, the deployment table's presses and drops),
   with `--refill`, and in the touch mode (the tab taps, a header's tip and sort, the finger's scroll). Awaiting the
   owner's look in a window.
+
+## 7. Taller rows for a finger (round E, 2026-10-26)
+
+The owner (2026-10-26): on the tablet the rows of both ledgers are too small to choose with a finger. Built, a row is
+24 layout pixels, 4.9 mm on the owner's tablet (0.203 mm a pixel, docs/ui/touch.md); a finger needs 7-9 mm.
+
+**Round E** (`tools/ui/mock_unit_ledger.py`, round `e`, over the touch pass's dumps `deployment` and `subordinates`,
+`tools/ui/gallery.ps1 -Touch`): the ledger's paper drawn again as built — the game's font at 17, the headers, the
+seals, Refill's chips, the 8-pixel scroll bar — with a made-up roster of 33 units, so that the rows reach the paper's
+foot and the scroll bar shows; the text as built. A grey disc 9 mm across stands for a fingertip. `E-sheet` sets the
+ten ledgers side by side.
+
+| Variant | Row | On the tablet | Whole rows in view |
+|---|---|---|---|
+| E0 | 24 px (as built) | 4.9 mm | 25 |
+| E1 | 32 px (+33 %) | 6.5 mm | 19 |
+| E2 | 36 px (+50 %) | 7.3 mm | 17 |
+| E3 | 42 px (+75 %) | 8.5 mm | 14 |
+| E4 | 48 px (+100 %) | 9.7 mm | 12 |
+
+- **The touch mode only:** the PC's rows stay 24 pixels (a pointer needs no more).
+- **The text stays 17:** grown with the rows, the deployment's Overview (seven columns) would run past the paper.
+- **The roster** leaves out Mars the Great (unit 26) and Seizel Sisters (unit 42), whose names would crowd the
+  columns; by the mock-up's widths they, with Eleanor's (unit 23) "Front, Back", would push the deployment's Overview
+  some 10-50 pixels past the paper as built (not checked in the game).
+
+**The agent's recommendation:** E3 — 8.5 mm, the middle of a finger's 7-9 mm with no gap between the rows, and 14 rows
+in view, scrolled by the finger's drag; E2 if fourteen rows feel too few.
+
+**The owner chose E2** (2026-10-26), built: in the touch mode both ledgers' rows are 36 pixels
+(`DeploymentTableView.TouchRowHeight`, each item's minimum height; the tree adds its separation twice a row), the text,
+the header and the PC's 24-pixel rows as before (the screen gallery's Lacquer pass identical to the build before).
+The seals, the chosen row's diamond, the talk bubbles and the troops' figures with their bar keep the text's size,
+centred in the row (`Content`); the chosen row's bar runs along the whole row and Refill's chip grows with it (a
+finger's button). Checked: the screen gallery's touch pass of the twelve deployment and Subordinates entries (36-pixel
+rules), and the week-18 look with `--touch --interface new --until deployment` (the header's tip and sort, the drag, a
+row's tap choosing Rick (unit 7), the party built in the deployment table). Not yet on the tablet.
