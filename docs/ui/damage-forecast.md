@@ -4,8 +4,8 @@ The owner's request (2026-10-26): an optional setting that shows, beside a targe
 `banners-E1`), what the attack is likely to do, as some turn-based games do (Heroes of Might and Magic V). This document
 is the survey and mock-up rounds A-D. The owner chose A1 for the PC, the damage dealt alone (§10), laid out as B2, its
 figures in the cards' bars' colours on blue banners, C1 (§11); on the tablet D2, the rail's gold buttons with the damage
-on a dark strip (§12); the option off by default (§7). **Status: designed, every question answered (§9); not built — the
-build is §8.**
+on a dark strip (§12); the option off by default (§7). **Status: built (2026-10-27, §8), for the PC and the touch mode at
+once; awaiting the owner's look in a window and on the tablet.**
 
 ## 1. What an attack does
 
@@ -145,6 +145,49 @@ minus, the HP no more than he has; no counter, no fall's chance, no hit chance; 
    exercise's dumps.
 4. The owner's look in a window and on the tablet.
 
+**Built (2026-10-27):**
+
+1. **The rule:** `Kichikuou.Original/Combat/ExchangeForecast` — `ExchangeForecast.Of(state, choice)` copies the state,
+   applies the answer and binds its target as `FIGT_SEL` and `L_00ee3` do (`Battle.ApplyFigtSelChoice`,
+   `Battle.BindTarget`, split out of `SelectAsync`), runs the command's setter (`Battle.SetAttackCommand`, split out of
+   `PlayerAttackAsync`), copies the battle kind's modifiers as `PresentEngagement` does (`Battle.CopyBattleKindMods`,
+   shared with the slot panel's copy, Q-20), then `ComputeExchange` 2,000 times on its own `XSystem35Random` (seed
+   20261026). Each run's loss is what `ApplyExchange` would take: the damage, no more than the troops or the HP the
+   commander has. `DamageSpread`: the whole range and the 5th-95th percentile (nearest rank). Its view, input and hooks
+   throw if anything calls them (nothing does). Tests: `ExchangeForecastTests` (the state untouched, the same numbers
+   twice, the reach, the clamps) and `Golden/ExchangeForecastGoldenTests`: the gallery's first turn reads as the probe
+   (Ex: Trp. 29–37, HP 0–1; Sakanaku: Trp. 60, HP 1–4), and every attack of every capture, forecast while the replay's
+   `FIGT_SEL` asks, lies inside its forecast's whole range — **161 exchanges, no exception, none of §4's**; the replays
+   still match the original (the game's state and generator untouched).
+2. **"Can reach", corrected by the golden check:** a stream that shoots and that no demon shield zeroes, decided from
+   the exchange — **or a loss some run took**. The check found two exchanges (Rance (unit 1) on commander 58 in
+   `20261008-103037-02-FIGT_A` and `-103131-03-`) that killed 1 soldier with no troop stream shooting: 02 Q3's phantom
+   hit (troops on troops always spread, E = 0 gives 0 or 1). Such an attack reads "Trp. 0–1" or "Trp. 0".
+3. **The model:** `Original.Content/Battles/DamageForecast.cs` — `BannerDamage` (the two figures, `Figures.Number`,
+   an en dash, one value one figure; null out of reach) and `DamageForecasts`: a forecast takes 25-45 ms here (Release
+   and Debug builds; nearly all of it the runs, the copy 0.07 ms), so the forecasts of a `FIGT_SEL` — every banner of
+   every enemy card — run off the game's thread, side by side, on a snapshot taken when it asks; the touch mode's
+   preselected target's first. A banner shows its figures when its forecast is done (its row's room is there from the start, so
+   nothing moves). Tests: `DamageForecastTests`.
+4. **Godot:** `BattleCommandLayer` — the banners in C1's blue always; while the forecast shows (Option → Battle →
+   "Damage forecast", `BattleScreenSettings.Forecast`, off by default; `--damage-forecast 0|1` for a launch) 46 high,
+   the label 17 (its middle 15 below the top), the damage's row at 33: "Trp." and its figure from 20, "HP" and its
+   figure from 108, the word 12, the figure 14, each shrunk to fit its place. `BattleCommandLayer.Touch`: the gold
+   buttons keep their look; while the forecast shows the name stands at the top (17, its middle at 19) over a dark strip
+   (32 below the top to 6 above the foot, 7 in), the two lines at 43 and 59 (15, the word 13), centred, each shrunk to
+   fit; a button the rail makes lower (four attacks) is laid out smaller in proportion. Measured on the gallery's dump:
+   the lines' ink, outline included, 4 px inside the strip at both ends. The option applies at once, also under an
+   open choice. The screen gallery: `banners-E1` and `battle-turn` with the forecast (the touch pass's rail), the other
+   battle entries without it whatever the option, the forecasts waited for. Unattended play (`--auto --interface
+   new`, the week-18 save): `forecast-E1`…, `forecast-sample-3-banners`; with `--touch`, `touch-rails-forecast`.
+
+**The agent's choices, for the owner to confirm:**
+
+- The label's outline on the blue banners is the figures' night blue (6, 10, 30), not the yellow banners' brown, which
+  C1's mock-up kept.
+- The banner's troops' place is 80 px, not 88: 8 px kept free before "HP".
+- 2,000 runs a forecast; on the tablet the forecasts may take longer to come — to be seen there.
+
 ## 9. Questions for the owner
 
 All answered (the owner, 2026-10-26/27).
@@ -177,7 +220,8 @@ can reach him.
 - The HP is never more than the commander has: Ex (commander 1) at HP 1 reads "HP 0–1", though 78 % of the runs take
   that HP (the fall's chance is not shown).
 - "Where the attack can reach him": a stream that hits the commander has shots and no demon shield zeroes its damage
-  (docs/battle/02-resolution.md, §6.2) — decided from the exchange, not from the runs (a rare hit is still a possible one). Else the HP's place stays
+  (docs/battle/02-resolution.md, §6.2) — decided from the exchange, not from the runs (a rare hit is still a possible one;
+  the build adds a loss some run took, 02 Q3's phantom hit, §8). Else the HP's place stays
   empty, so the troops' figure never moves (style.md, §5, "A stable layout"). The troops' place likewise: Whirlwind Shot
   reads "HP 1" alone.
 - Examples from the probe (§3): Rance (unit 1)'s Melee on Ex — "Trp. 29–37 · HP 0–1"; on Sakanaku (commander 6, 60 troops,

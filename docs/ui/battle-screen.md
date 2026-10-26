@@ -954,7 +954,10 @@ picture, the slot panels) is not shown. How it is built:
      gauge); a vertical gradient fill about 80 % opaque (the card shows faintly through), a white
      outline, a soft shadow, white text with a dark outline. All yellow-orange (top (255, 228, 90),
      bottom (226, 128, 20)); the one under the pointer orange-red (top (255, 170, 90), bottom
-     (196, 70, 30)) with a light glow.
+     (196, 70, 30)) with a light glow. Since 2026-10-27 the player's blue (top (122, 166, 245), bottom
+     (50, 90, 198)), the one under the pointer a pale sky blue (top (192, 226, 255), bottom (92, 152, 246))
+     glowing (170, 212, 255), the text's outline (6, 10, 30): the owner's C1 for the damage forecast, which
+     makes them 46 high with the damage under the label while it is on (docs/ui/damage-forecast.md, §8).
    - **The target's frame (owner, 2026-10-16; as Sengoku Rance's):** the enemy card whose banners show has a cyan
      bracket (70, 205, 255) on each of its corners, never a whole ring (owner), under the banners: an L bent round a
      corner of 7, its arms 60 layout pixels along the card and 46 down it, 3 out of the card's edge, 4 wide, a white

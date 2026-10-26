@@ -258,7 +258,11 @@ the owner chose A1 for the PC first, the damage dealt alone (the target's troops
 can reach him; no counter, no fall's chance), laid out as round B's B2 (two rows within the card); round C, the figures
 in the cards' bars' red and green on blue banners, the owner's C1 (the player's blue, the figures lightened); round D,
 the touch rail's attack buttons to match, the owner's D2 (gold, the damage on a dark strip); the banners blue always, the
-option off by default, every question answered — designed, to be built for both at once (its §8).
+option off by default, every question answered — built for both at once (its §8, 2026-10-27: the rule
+`Combat/ExchangeForecast`, the attack setters, the target binding and the battle kind's modifiers split out of the battle;
+the model `Original.Content/Battles/DamageForecast`, the forecasts of a `FIGT_SEL` run off the game's thread; Option →
+Battle → "Damage forecast", `BattleScreenSettings.Forecast`; `BattleCommandLayer` and its touch part), awaiting the
+owner's look in a window and on the tablet.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -553,7 +557,8 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   cancels; back at the turn, another own card given the order it has already, whose label flashes;
   each advantage's tooltip, each enemy card's banners, two sample menus' two and three banners never
   answered, then a click on the target's Melee banner; dumps `menu`, `menu-orders`, `retreat`,
-  `advantage-tip-1`…, `banners-E1`…, `sample-2-banners`, `sample-3-banners`, `banner-hover`, and without `--fast` `order-flash`, `slide`
+  `advantage-tip-1`…, `banners-E1`…, `sample-2-banners`, `sample-3-banners`, with the damage forecast whatever the option
+  `forecast-E1`…, `forecast-sample-3-banners` (with `--touch`: `touch-rails-forecast`), `banner-hover`, and without `--fast` `order-flash`, `slide`
 (halfway through the first wait for the armies' slides; `--army-seconds 1` makes them long enough) and each exchange effect once, at its peak (`effect-melee-player`, …); it moves the system pointer,
   so leave the mouse alone); its dumps need a window (no `--headless`). With `--until battle` the exercise ends
   the run once its attack's exchange is over (owner, 2026-10-15: the rest of the battle only cost time), so the
