@@ -114,4 +114,4 @@ for a fourth tab as C1's paper may be. C3's × (a click sorts by No. again) coul
 
 **The owner (2026-10-26): C2 in C3's colours**, no ×. Read two ways, round D (round `d`, `D-sheet` beside C2):
 **D1** C2's seal on C3's lit lacquer, a gold frame and gold letters, a dim inner rule; **D2** C2's seal filled gold,
-the letters lacquer-dark. Awaiting the owner's pick; the build goes on meanwhile (the note is one drawing).
+the letters lacquer-dark. **The owner chose D2** (2026-10-26), the gold seal (`LedgerTabsBar.DrawOrder`).
