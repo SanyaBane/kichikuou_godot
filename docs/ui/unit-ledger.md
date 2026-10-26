@@ -33,9 +33,9 @@ Only the drawing changes: the rows, the columns' figures, the sort and the gestu
   panel above it (548×342: the status CG at 1.75×, 82 % of the present size) and the party panel or the orders panel
   under it at its present height (416), 26 pixels narrower.
 - **The rows:** 26 at once at 24 pixels (now about ten); a vertical scroll bar of paper and ink past that.
-- **The tabs:** General, Troops, Commander, over the paper. The first column, No. and Name in every tab; the full
-  names stay the headers' tooltips.
-  - **General** — the owner's first preset. The deployment's adds **Rows** after Type (the agent's proposal): the rows
+- **The tabs:** Overview (General in round A), Troops, Commander, over the paper. The first column, No. and Name in
+  every tab; the full names stay the headers' tooltips.
+  - **Overview** — the owner's first preset. The deployment's adds **Rows** after Type (the agent's proposal): the rows
     a unit fights from are what the original shows for a hovered unit on this screen (`Sﾌﾞﾀｲ.ADV:524-569`), and a
     melee unit cannot attack from the back row. Refill is a button here as now (owner's decision 27).
   - **Troops** — the owner's second preset. Its twelve columns do not fit the paper with the headers as they are
@@ -47,8 +47,8 @@ Only the drawing changes: the rows, the columns' figures, the sort and the gestu
 - **The sort** works as now: a header's click sorts by it, again the other way. A tab's change keeps the order; when
   the sorted column is not in the tab shown, "Sorted by T.Atk ↓" stands beside the tabs (A3), until a header of the
   tab sorts again.
-- **The tab is remembered** (the agent's proposal): one choice for both screens, kept in `settings.cfg` as the options
-  are, so the screen opens on the tab the player left.
+- **The tab is remembered**, each screen its own (the owner, 2026-10-26), kept in `settings.cfg` as the options are,
+  so a screen opens on the tab the player left there. The order starts by No. on every opening, as now.
 - **Touch** (not drawn): the tabs as tall as a touch row (46 pixels), the paper shorter by the difference.
 
 ## 3. Mock-ups (round A)
@@ -74,12 +74,29 @@ window's already; A5's buttons sit apart from the sheet they change), with A2-A4
 
 ## 4. Questions for the owner
 
-1. The layout (A1): the ledger down the left, the picture 82 % of its present size above the party / orders panel?
-2. Paper tabs (A1) or the lacquer switch (A5)?
-3. Rows in the deployment's General (A1)?
-4. The modifiers under group headers in Troops (A2), so the twelve columns fit?
-5. The order kept across tabs, with "Sorted by …" beside them (A3)?
-6. The tab remembered once for both screens — or each screen its own, or always General on opening?
-7. The tabs' names: General, Troops, Commander?
+1. ~~The layout (A1): the ledger down the left, the picture 82 % of its present size above the party / orders panel?~~
+   Yes (A1-A4).
+2. ~~Paper tabs (A1) or the lacquer switch (A5)?~~ Paper tabs.
+3. ~~Rows in the deployment's General (A1)?~~ Yes.
+4. ~~The modifiers under group headers in Troops (A2), so the twelve columns fit?~~ Yes.
+5. ~~The order kept across tabs, with "Sorted by …" beside them (A3)?~~ Yes, to be tried (of: kept, reset to No., each
+   tab its own order).
+6. ~~The tab remembered once for both screens — or each screen its own, or always General on opening?~~ Remembered,
+   each screen its own.
+7. ~~The tabs' names: General, Troops, Commander?~~ **Overview**, Troops, Commander: "General" beside "Commander" read
+   as the rank, not as "general figures".
 
-Awaiting the owner's choice.
+## 5. The owner's choice (2026-10-26)
+
+**A1-A4**: the ledger down the left with paper tabs, Rows in the deployment's first tab, the modifiers under group
+headers, the order kept across tabs (A3); the first tab named **Overview**; the tab remembered, each screen its own.
+
+**Round B** (`tools/ui/mock_unit_ledger.py`, round `b`) draws them so, over the same dumps and made-up roster:
+
+- **B1 — deployment, Overview**, Rance hovered;
+- **B2 — deployment, Troops**, sorted by T.Atk;
+- **B3 — deployment, Commander**, the order from B2 kept, "Sorted by T.Atk ↓" beside the tabs;
+- **B4 — Subordinates, Overview**, Rance chosen;
+- **B5 — Subordinates, Commander**, sorted by Lvl: the screen's own tab, the sorted column in it carrying the arrow.
+
+Awaiting the owner's look at round B before the build.

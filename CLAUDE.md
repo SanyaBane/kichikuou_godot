@@ -244,8 +244,9 @@ docs/ui/save-load.md, §12 (`tools/ui/mock_autosaves.py`); the owner chose J1 wi
 End" in two colours under the time, the comment at the row's bottom left — round K (K1 tags, K2 words), awaiting the
 owner's choice.
 Then (owner, 2026-10-26) the deployment and Subordinates screens' ledger down the screen's left, a part of its columns
-at a time in tabs (General, Troops, Commander), the picture and the party / orders stacked on the right: the proposal
-and mock-up round A are docs/ui/unit-ledger.md (`tools/ui/mock_unit_ledger.py`), awaiting the owner's choice.
+at a time in tabs (Overview, Troops, Commander), the picture and the party / orders stacked on the right: the proposal
+and mock-up round A are docs/ui/unit-ledger.md (`tools/ui/mock_unit_ledger.py`); the owner took A1-A4 (its §5), round B
+draws them as chosen, awaiting the owner's look before the build.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

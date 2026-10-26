@@ -8,7 +8,7 @@ deployment.png and subordinates.png, whose picture panel (16,368)-(682,784) and 
 long: the week-18 save's nine units with the figures the dumps show, and twenty more from SET_CHR.ADV's records (their
 boot figures, the troops made up); SET_CHR.ADV and SET_ITEM.ADV are read from the extract's scenario_named.
     python -I tools/ui/mock_unit_ledger.py <extract dir> <gallery dump dir> <out dir> [round] < /dev/null
-Round a (the default): A1-A6. The images hold the player's CGs: keep <out dir> outside the repository.
+Round a (the default): A1-A5; round b: B1-B5, the owner's A1-A4 with the first tab named Overview. The images hold the player's CGs: keep <out dir> outside the repository.
 Everything is in the 1280x800 screen's pixels (plus a caption band below); drawn at 2x and scaled down.
 """
 import sys, os, re
@@ -194,7 +194,7 @@ GENERAL_DEPLOY = [NUMBER, NAME_COL, TYPE, ROWS, TROOPS, REFILL, COST]
 GENERAL_SUB = [NUMBER, NAME_COL, TYPE, TROOPS, REFILL, COST]
 TROOPS_TAB = [NUMBER, NAME_COL, TATK, TDEF, STRIKES, MAG] + MODS
 COMMANDER = [NUMBER, NAME_COL, STRAT, HP, LVL, EXP, CATK, CDEF, ITEM]
-TABS = ['General', 'Troops', 'Commander']
+TABS = ['General', 'Troops', 'Commander']          # round b: the first is Overview (the owner, 2026-10-26)
 
 
 # ---------------------------------------------------------------- drawing
@@ -494,7 +494,7 @@ def screen(kind, tab, switch='tabs', sort=None, hover=None, chosen=None, groups=
     panel(c, r)
     title_band(c, r, 'Deployment' if deploy else 'Subordinates',
                'Attack · up to 4 units' if deploy else f'{sum(not x["grey"] for x in ROSTER)} units ready', DATE)
-    columns = {'General': GENERAL_DEPLOY if deploy else GENERAL_SUB, 'Troops': TROOPS_TAB, 'Commander': COMMANDER}[tab]
+    columns = [GENERAL_DEPLOY if deploy else GENERAL_SUB, TROOPS_TAB, COMMANDER][TABS.index(tab)]
     sort = sort or (NUMBER, False)
     rows = sort_rows(*sort)
     paper = (30, 100, r[2] - 14, r[3] - 14)
@@ -540,5 +540,32 @@ def round_a():
         'Three row boxes under the title band, the chosen one framed in vermilion; the ledger as A1.')
 
 
+# ---------------------------------------------------------------- round B: A1-A4 as the owner took them (2026-10-26)
+# The owner took A1-A4 (paper tabs, Rows in the deployment's first tab, the modifiers grouped), the first tab named
+# Overview (General read as the rank beside Commander), the order kept across tabs (A3), each screen its own tab.
+#   python -I tools/ui/mock_unit_ledger.py <extract dir> <gallery dump dir> <out dir> b < /dev/null
+
+def round_b():
+    TABS[0] = 'Overview'
+    roster_note = f'Made-up roster: the week-18 units and {len(MORE)} more (their boot records, the troops made up).'
+    screen('deployment', 'Overview', hover=1).save(
+        'B1.png', 'B1 — Deployment, Overview',
+        'No., Name, Type, Rows, Troops, Refill, Cost; Rance (unit 1) hovered. ' + roster_note)
+    screen('deployment', 'Troops', sort=(TATK, True), hover=1).save(
+        'B2.png', 'B2 — Deployment, Troops, sorted by T.Atk',
+        'No., Name, T.Atk, T.Def, Strikes, Mag, the six modifiers under Offense / Defense / Dungeon.')
+    screen('deployment', 'Commander', sort=(TATK, True), hover=1).save(
+        'B3.png', 'B3 — Deployment, Commander, the order from B2 kept',
+        'No., Name, Strat%, HP, Lvl, EXP, C.Atk, C.Def, Item; T.Atk is not in the tab: "Sorted by T.Atk" beside the tabs.')
+    screen('subordinates', 'Overview', chosen=1).save(
+        'B4.png', 'B4 — Subordinates, Overview',
+        'No., Name, Type, Troops, Refill, Cost; Rance (unit 1) chosen. The orders panel as built, set on the right.')
+    screen('subordinates', 'Commander', sort=(LVL, True), chosen=1).save(
+        'B5.png', 'B5 — Subordinates, Commander, sorted by Lvl',
+        "The screen's own tab, remembered apart from the deployment's; the sorted column in the tab carries the arrow.")
+
+
 if ROUND == 'a':
     round_a()
+elif ROUND == 'b':
+    round_b()

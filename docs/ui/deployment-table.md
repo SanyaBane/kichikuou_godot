@@ -408,4 +408,4 @@ docs/strategy/README.md.
 
 With many units the ledger across the top shows about ten at once. The owner asked for it down the screen's left,
 showing a part of its columns at a time in tabs; the Subordinates screen's the same. The proposal and mock-up round A
-are docs/ui/unit-ledger.md, awaiting the owner's choice.
+are docs/ui/unit-ledger.md; the owner took A1-A4 (its §5), round B awaiting the owner's look.
