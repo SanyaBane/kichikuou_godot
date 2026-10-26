@@ -630,6 +630,25 @@ T1 and the owner's choice are docs/ui/dungeon-menu.md, §5: B, built — in the 
 corner, right of window 113, Retreat at its top, then Ascend, the floor and a larger Descend in the corner. The menu
 before a search went the same way (§6 there, the owner's B): Start Search in Descend's place, Return on top.
 
+## The message log from the map, round L (owner, 2026-10-26)
+
+On the PC the wheel up now opens the message log on `COMMAND`'s waiting map too (docs/ui/messages.md, §5 step 6). A
+finger has no wheel, and the Log button is the scenes' drawer's, which the map shows only while MsgSkip is on
+(`GameScreen.UpdateSkipButtons`), so on the tablet the log is still reached only from a dialogue. What would open it — the
+same conditions as the wheel's (`GameScreen.MapLogWait`) — is settled; where its button stands is the owner's choice.
+
+Mock-ups (`tools/ui/mock_map_log.py`, over the gallery's touch `map-markers` and `command-menu`):
+
+- **L1 — the scenes' drawer on the map**: Skip over Log at the left edge, in their scene places (cells 50×84, 10.2 ×
+  17.1 mm), so the thumb finds them where it does in the scenes; Skip turns MsgSkip on before Turn END, as the menu bar's
+  MsgSkip does on the PC. The drawer covers the map's left edge there (Rockearth's plate); a drag moves the map from under it.
+- **L2 — Log alone at the left edge**, in its scene place; Skip's place left to the map; the drawer whole again in the scenes.
+- **L3 — a Log button beside Commands**, the same lacquer and gold, 132×72 (26.8 × 14.6 mm), 16 px left of it: both under
+  the right thumb, nothing at the left edge. Its icon a speech balloon — the drawer's three lines would repeat Commands'
+  bars beside them.
+- **L4 — no button on the map**: a Log row in the command panel's right rail after All Data (the rail one row taller
+  upwards, as each link makes it). Two taps (Commands, Log); the log over the panel, the panel again when it closes.
+
 ## Phones (put off)
 
 Put off by the owner (2026-10-24). What is ready for them: the measurements above, mock-ups B1, B3 (the battle),
