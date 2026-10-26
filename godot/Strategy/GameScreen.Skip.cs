@@ -33,15 +33,12 @@ public partial class GameScreen
             _skip.Toggle();
     }
 
-    /// <summary>Log tapped: the message log, as the wheel up opens it.</summary>
+    /// <summary>Log tapped: the message log, as the wheel up opens it (<see cref="LogReachable"/>, unattended play's taps included).</summary>
     private void LogTapped()
     {
         if (LogReachable)
             OpenLog();
     }
-
-    /// <summary>Whether the message log opens now: the player's key is awaited (<see cref="CanOpenLog"/>, unattended play's taps included).</summary>
-    private bool LogReachable => _keyWaiting && !_modal && _logView is null && _presenter.Log.Pages.Count > 0;
 
     /// <summary>
     /// Shows the buttons in the touch mode: in the scenes the drawer while a message window or a key wait is up — and

@@ -383,6 +383,15 @@ as it is. Where to start:
    writer now takes a scene's `ZM` (a place's title at 32 there too; the battle's own sizes are its port's). Test:
    `GamePresenterTests.A_scene_the_battle_called_is_logged_as_any_scene` (`Gｸﾘｰﾑ` 1 and `Gﾒﾙﾌｪｲｽ` 1 log the same pages
    inside `死亡捕獲`'s screen as on their own).
+   **The owner (2026-10-26):** the log opens on the map too, not only from a dialogue. The wheel up opens it while
+   `COMMAND`'s map loop waits for the player (`GamePresenter.MapWaiting`) with nothing over the map — no menu or window, no
+   plate's click or Subordinates order under way, no button held (a drag's release under the log would be a click on
+   the map; `GameScreen.MapLogWait`), in either interface; the map waits while it is open, as the scenes do. The touch
+   mode's Log button stays the scenes' (on the map only while MsgSkip is on, when its drawer shows). `--auto` in a
+   window checks it once a launch at the first map wait with something logged (`GameScreen.AutoMapLogAsync`: the wheel
+   up over the map's middle through Godot's input, dump `message-log-map`, a right click closes it, nothing reaches the
+   script; the week-26 save reaches it after Lia's scene). An agent's dump of the log is now the window's in either
+   interface (`GameScreen.Shot`: over the original's map it had saved the engine's surface, the log left out).
 
 ## 6. Open questions
 

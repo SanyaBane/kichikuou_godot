@@ -24,7 +24,12 @@ public partial class GameScreen
     private void SendPointerButton(Vector2 at, MouseButton button, bool pressed)
     {
         var window = WindowPoint(at);
-        var mask = button == MouseButton.Left ? MouseButtonMask.Left : MouseButtonMask.Right;
+        var mask = button switch
+        {
+            MouseButton.Left => MouseButtonMask.Left,
+            MouseButton.Right => MouseButtonMask.Right,
+            _ => default,                                   // the wheel's notch holds no button
+        };
         Input.ParseInputEvent(new InputEventMouseButton
         {
             ButtonIndex = button, Pressed = pressed, Position = window, GlobalPosition = window, ButtonMask = pressed ? mask : 0,
