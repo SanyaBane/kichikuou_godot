@@ -13,6 +13,13 @@ public partial class GameScreen
         Input.ParseInputEvent(new InputEventMouseMotion { Position = window, GlobalPosition = window });
     }
 
+    /// <summary>The pointer dragged to <paramref name="at"/> with the left button down (the viewport's coordinates): a finger's move.</summary>
+    private void SendPointerDrag(Vector2 at)
+    {
+        var window = WindowPoint(at);
+        Input.ParseInputEvent(new InputEventMouseMotion { Position = window, GlobalPosition = window, ButtonMask = MouseButtonMask.Left });
+    }
+
     /// <summary><paramref name="button"/> went down or up at <paramref name="at"/> (the viewport's coordinates).</summary>
     private void SendPointerButton(Vector2 at, MouseButton button, bool pressed)
     {

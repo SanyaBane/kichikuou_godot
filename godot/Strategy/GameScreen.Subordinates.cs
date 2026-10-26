@@ -151,7 +151,10 @@ public partial class GameScreen
             UpdateSubordinatesScreen();
             await AutoDumpAsync("subordinates");
             if (TouchMode.On)
+            {
                 await AutoHeaderTouchAsync(_subordinates.Table);
+                await AutoTableDragAsync(_subordinates.Table);
+            }
         }
     }
 }

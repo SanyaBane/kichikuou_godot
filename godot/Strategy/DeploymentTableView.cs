@@ -12,7 +12,7 @@ namespace Kichikuou.Game.Strategy;
 /// <c>Sﾌﾞﾀｲ</c>'s unit grid — a row per listed unit (<see cref="DeploymentTable.Rows"/>), the
 /// columns' compact headers with their full names as tooltips (the touch mode's on a long press, a <see cref="HeaderTip"/>), sorted by a header click (the values
 /// where more is better descending first, the rest ascending; again the other way; a small mark on the
-/// header with its room kept; by number at first), scrolling both ways, the units deployed this week grey, the party's members marked with their
+/// header with its room kept; by number at first), scrolling both ways (the touch mode's by a finger's drag too), the units deployed this week grey, the party's members marked with their
 /// place in a first column. It decides nothing: the presses go to <see cref="GameScreen"/>, which
 /// answers the script with the gestures it expects. Drawn as a ledger in our screens' lacquer (the owner's
 /// mock-up G3, docs/ui/subordinates.md, and E1/E2, docs/ui/deployment-table.md): paper and ink, the headers in
@@ -307,8 +307,11 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     /// <summary>Whether the pointer is over the table.</summary>
     public bool HasPointer => Visible && GetGlobalRect().HasPoint(TouchMode.GlobalPointer(this));
 
-    /// <summary>The unit whose row is under the pointer, or 0 (the header, the space below the rows, a scroll bar).</summary>
-    public int HoveredUnit => HasPointer ? UnitAt(TouchMode.LocalPointer(this)) : 0;
+    /// <summary>
+    /// The unit whose row is under the pointer, or 0 (the header, the space below the rows, a scroll bar); after the touch
+    /// mode's scroll the row the finger came down on, whatever has scrolled under the place it rose from since.
+    /// </summary>
+    public int HoveredUnit => !HasPointer ? 0 : _scrolled ? _scrolledUnit : UnitAt(TouchMode.LocalPointer(this));
 
     private int UnitAt(Vector2 local)
     {
@@ -322,12 +325,12 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
 
     /// <summary>
     /// Left presses on rows and right presses anywhere are the game's — a left press on a Refill button its own; the rest
-    /// (the header, the wheel, the scroll bars) the tree's own, but the touch mode's header (<see cref="HeaderTouch"/>).
-    /// The pointer over a Refill button lights it.
+    /// (the header, the wheel, the scroll bars) the tree's own, but the touch mode's left presses (<see cref="Touch"/>: a
+    /// tap on a row, a header's tip and sort, a finger's scroll). The pointer over a Refill button lights it.
     /// </summary>
     public override void _GuiInput(InputEvent @event)
     {
-        if (TouchMode.On && HeaderTouch(@event))
+        if (TouchMode.On && Touch(@event))
         {
             AcceptEvent();
             return;
@@ -365,7 +368,10 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     public override void _Notification(int what)
     {
         if (what == NotificationVisibilityChanged && !IsVisibleInTree())
+        {
             _tip.Visible = false;
+            EndTouch();
+        }
         if (what == NotificationMouseExit && _refillHovered != 0)
         {
             _refillHovered = 0;

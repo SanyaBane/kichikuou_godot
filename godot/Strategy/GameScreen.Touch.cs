@@ -302,6 +302,75 @@ public partial class GameScreen
         GD.Print("Kichikuou: --auto long-presses and taps the Subordinates table's headers.");
     }
 
+    /// <summary>
+    /// Unattended play in the touch mode, once a launch (in a window), after <see cref="AutoHeaderTouchAsync"/>: on the
+    /// Subordinates screen's table a finger dragged up over the rows and held still before it rises scrolls them down
+    /// (dump "touch-table-dragged"), flicks nothing and chooses nothing; dragged left and risen at speed it scrolls the
+    /// columns and flicks on after the release ("touch-table-flicked" once the flick stopped); a tap on a row chooses its
+    /// unit — through Godot's input. A scroll bar the table does not show is left out; the chosen unit is put back.
+    /// Anything else is an error.
+    /// </summary>
+    private async Task AutoTableDragAsync(DeploymentTableView table)
+    {
+        var rows = table.RowsArea;
+        int chosen = table.Chosen;
+        Vector2 At(float x, float y) => rows.Position + rows.Size * new Vector2(x, y);
+        async Task DragAsync(Vector2 from, Vector2 to, int steps, double holdSeconds)
+        {
+            SendPointerButton(from, MouseButton.Left, true);
+            await NextFrameAsync();
+            for (int i = 1; i <= steps; i++)
+            {
+                SendPointerDrag(from.Lerp(to, i / (float)steps));
+                await NextFrameAsync();
+            }
+            ulong until = Time.GetTicksMsec() + (ulong)(holdSeconds * 1000);
+            while (Time.GetTicksMsec() < until)
+                await NextFrameAsync();
+            SendPointerButton(to, MouseButton.Left, false);
+            await NextFrameAsync();
+        }
+        var ends = table.ScrollEnds;
+        var before = table.ScrollValues;
+        await DragAsync(At(0.5f, 0.9f), At(0.5f, 0.1f), 8, 0.25);
+        var dragged = table.ScrollValues;
+        if (table.Flinging || table.Chosen != chosen || dragged.X != before.X)
+            throw new InvalidOperationException($"--auto's drag up, held still before it rose, flicked ({table.Flinging}), chose unit {table.Chosen} (not {chosen}) or scrolled from {before} to {dragged}.");
+        if (ends.Y > before.Y && dragged.Y <= before.Y)
+            throw new InvalidOperationException($"--auto's drag up did not scroll the rows down ({before.Y} of {ends.Y}).");
+        string vertical = ends.Y > 0 ? $"rows down {dragged.Y - before.Y:0} of {ends.Y:0} px" : "no vertical scroll bar";
+        await AutoDumpAsync("touch-table-dragged");
+        await DragAsync(At(0.8f, 0.5f), At(0.3f, 0.5f), 4, 0);
+        var released = table.ScrollValues;
+        bool flicked = table.Flinging;
+        ulong stop = Time.GetTicksMsec() + 4000;
+        while (table.Flinging && Time.GetTicksMsec() < stop)
+            await NextFrameAsync();
+        var flung = table.ScrollValues;
+        if (table.Flinging || table.Chosen != chosen || flung.Y != dragged.Y)
+            throw new InvalidOperationException($"--auto's flick left never stopped ({table.Flinging}), chose unit {table.Chosen} (not {chosen}) or scrolled the rows ({dragged.Y} to {flung.Y}).");
+        if (ends.X > dragged.X && released.X <= dragged.X)
+            throw new InvalidOperationException($"--auto's drag left did not scroll the columns ({dragged.X} of {ends.X}).");
+        if (released.X < ends.X && !(flicked && flung.X > released.X))
+            throw new InvalidOperationException($"--auto's quick drag left flicked nothing ({released.X} to {flung.X} of {ends.X}).");
+        string horizontal = ends.X <= 0 ? "no horizontal scroll bar"
+            : $"columns right {released.X - dragged.X:0} px, the flick {flung.X - released.X:0} more, of {ends.X:0}";
+        await AutoDumpAsync("touch-table-flicked");
+        var tap = new[] { 0.2f, 0.5f, 0.8f }.Select(y => At(0.3f, y)).FirstOrDefault(p => table.UnitAtPoint(p) is var u and > 0 && u != chosen);
+        if (tap == default)
+            throw new InvalidOperationException("--auto found no row to tap but the chosen unit's.");
+        int unit = table.UnitAtPoint(tap);
+        foreach (bool pressed in (bool[])[true, false])
+        {
+            SendPointerButton(tap, MouseButton.Left, pressed);
+            await NextFrameAsync();
+        }
+        if (table.Chosen != unit)
+            throw new InvalidOperationException($"--auto's tap on unit {unit}'s row chose unit {table.Chosen}.");
+        table.Chosen = chosen;
+        GD.Print($"Kichikuou: --auto drags the Subordinates table: {vertical}; {horizontal}; a tap chose unit {unit}.");
+    }
+
     /// <summary>The press held back by <see cref="CardTouch"/>, if any, goes on now.</summary>
     private void ReleaseCardTouch()
     {
