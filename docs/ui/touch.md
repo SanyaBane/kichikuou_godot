@@ -198,7 +198,8 @@ hover and the right button. So the tablet keeps our layout and gets only what to
   - **The Save/Load screen's manual saves** (`godot/Strategy/SaveLoadView.Touch.cs`): a drag starting over the list's
   column (New save and the rows) scrolls the rows a row for each row's height (57 layout pixels) the finger moves — the
   list scrolls by whole rows, as the wheel does, so the rows step rather than glide; the flick goes on the same way.
-  Not while the auto-saves are shown or a question is open. A row's press stays a tap at the release, as before; a
+  The auto-saves the same since they are twenty (decision 31, docs/ui/save-load.md, §12); not while a question is
+  open. A row's press stays a tap at the release, as before; a
   drag lights no row. Unattended play with `--touch` and `--saveload`, in the load list after its dump `save-load`
   (`GameScreen.AutoSaveListDragAsync`): a drag up held still before it rises (dump `touch-saves-dragged`: the rows
   down, no flick, the chosen save kept), a row's quick drag up (`touch-saves-flicked`, once the flick stopped: the

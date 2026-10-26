@@ -2,42 +2,42 @@ using Godot;
 
 namespace Kichikuou.Game.Strategy;
 
-// The touch mode's manual saves (owner, 2026-10-26; docs/ui/touch.md, "The lists scrolled by a finger"): the list scrolls
+// The touch mode's lists of saves (owner, 2026-10-26; docs/ui/touch.md, "The lists scrolled by a finger"): a list scrolls
 // by the wheel alone, which a tablet has not, so a finger dragged over it scrolls it a row for every row's height it
 // moves, a flick going on after the release (FingerScroll). A row's press stays a tap at the release, as a click is.
 internal sealed partial class SaveLoadView
 {
     private readonly FingerScroll _finger = new();
     private int _scrollFrom;            // the first row in view when the finger's scroll started
-    private float _flingAt;             // where a flick has scrolled the rows to, in layout pixels (a row: ManualPitch)
+    private float _flingAt;             // where a flick has scrolled the rows to, in layout pixels (a row: RowPitch)
 
-    /// <summary>The first manual save in view, and the farthest it goes (unattended play).</summary>
-    public int ManualScroll => _scroll;
+    /// <summary>The first save of the list shown in view, and the farthest it goes (unattended play).</summary>
+    public int ListScroll => _scroll;
 
-    public int ManualScrollEnd => MaxScroll;
+    public int ListScrollEnd => MaxScroll;
 
-    /// <summary>Whether a flick still scrolls the manual saves (unattended play).</summary>
+    /// <summary>Whether a flick still scrolls the list (unattended play).</summary>
     public bool Flinging => _finger.Flinging;
 
-    /// <summary>The manual saves' rows in global coordinates, below New save (unattended play).</summary>
-    public Rect2 ManualRowsArea
+    /// <summary>The list's rows in global coordinates, below New save (unattended play).</summary>
+    public Rect2 ListRowsArea
     {
         get
         {
-            var (top, bottom) = (Global(new Vector2(ListX, ManualTop)), Global(new Vector2(ListX + ManualW, ListBottom)));
+            var (top, bottom) = (Global(new Vector2(ListX, RowsTop)), Global(new Vector2(ListX + RowW, ListBottom)));
             return new Rect2(top, bottom - top);
         }
     }
 
-    /// <summary>Whether the manual saves take a finger's scroll now: shown, no question open.</summary>
-    private bool ListScrolls => !_autoSide && !_confirm && !_sweep;
+    /// <summary>Whether the list shown takes a finger's scroll now: no question open.</summary>
+    private bool ListScrolls => !_confirm && !_sweep;
 
-    /// <summary>The list's column in layout pixels: New save and the manual saves' rows.</summary>
+    /// <summary>The list's column in layout pixels: New save and the rows.</summary>
     private static Rect2 ListArea => new(ListX, ListTop, ListW, ListBottom - ListTop);
 
     /// <summary>
-    /// The touch mode's finger over the manual saves: a press there is watched — moved past <see cref="FingerScroll.Slop"/>
-    /// it scrolls the rows (no tap), a row for each <see cref="ManualPitch"/> the finger moves, and its quick release
+    /// The touch mode's finger over the list: a press there is watched — moved past <see cref="FingerScroll.Slop"/>
+    /// it scrolls the rows (no tap), a row for each <see cref="RowPitch"/> the finger moves, and its quick release
     /// flicks them on; a press while a flick goes on stops it. Returns whether <paramref name="e"/> was taken; a press, and
     /// the release of one that did not scroll, go on to the screen's own handling (a tap acts at the release).
     /// </summary>
@@ -49,7 +49,7 @@ internal sealed partial class SaveLoadView
                 if (_finger.Move(motion.Position))
                     StartScroll();
                 if (_finger.Dragging)
-                    SetScroll(_scrollFrom - (int)MathF.Round((motion.Position.Y - _finger.Origin.Y) / (ManualPitch * _k)));
+                    SetScroll(_scrollFrom - (int)MathF.Round((motion.Position.Y - _finger.Origin.Y) / (RowPitch * _k)));
                 return true;
             case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } press:
                 if (ListScrolls && ListArea.HasPoint(press.Position / _k) && _finger.Press(press.Position))
@@ -58,7 +58,7 @@ internal sealed partial class SaveLoadView
             case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false } release when _finger.Down:
                 if (!_finger.Release(release.Position))
                     return false;
-                _flingAt = _scroll * ManualPitch;
+                _flingAt = _scroll * RowPitch;
                 _pressed = 0;
                 QueueRedraw();
                 return true;
@@ -86,12 +86,12 @@ internal sealed partial class SaveLoadView
         }
         _finger.StopX();
         _flingAt -= _finger.Step(delta).Y / _k;
-        float end = MaxScroll * ManualPitch;
+        float end = MaxScroll * RowPitch;
         if (_flingAt <= 0 || _flingAt >= end)
         {
             _flingAt = Math.Clamp(_flingAt, 0, end);
             _finger.StopY();
         }
-        SetScroll((int)MathF.Round(_flingAt / ManualPitch));
+        SetScroll((int)MathF.Round(_flingAt / RowPitch));
     }
 }

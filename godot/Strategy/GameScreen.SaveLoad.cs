@@ -25,7 +25,7 @@ public partial class GameScreen
     /// comment asked and answered Keep (<c>save-load-sweep</c>), its comment written through Edit
     /// (<c>save-load-comment</c>, then kept by Enter), Delete asked and answered Keep (<c>save-load-delete</c>), the
     /// auto-saves' side (<c>save-load-autos-save</c>, no Save there), the Load tab; the load list (<c>save-load</c>, the save
-    /// just written chosen), the newest auto-save chosen (<c>save-load-auto</c>), Back to
+    /// just written chosen), the newest auto-save chosen and a comment written on it (<c>save-load-auto</c>), Back to
     /// the map. Any other list (the title's at <c>--load</c>) is answered as before (<see cref="AutoChoice"/>: the
     /// first item, the newest auto-save), the title's dumped once in a window (<c>save-load-title</c>).
     /// </summary>
@@ -91,6 +91,11 @@ public partial class GameScreen
                 {
                     await AutoViewClickAsync(_saveView.RowCentre(_saveView.AutoSaves[0])!.Value, MouseButton.Left);
                     Expect(_saveView.Chosen == _saveView.AutoSaves[0], "the newest auto-save chosen");
+                    await AutoViewClickAsync(_saveView.EditCentre, MouseButton.Left);       // decision 31: a comment
+                    _saveView.CommentField.Text = "the week of the attack on Oaks";
+                    _saveView.CommentField.EmitSignal(LineEdit.SignalName.TextSubmitted, _saveView.CommentField.Text);
+                    await NextFrameAsync();
+                    Expect(_library?.Read(_saveView.AutoSaves[0])?.Comment == "the week of the attack on Oaks", "the auto-save's comment kept");
                 }
                 await AutoDumpAsync("save-load-auto");
                 await AutoViewClickAsync(_saveView.BackCentre, MouseButton.Left);
@@ -115,27 +120,27 @@ public partial class GameScreen
     /// </summary>
     private async Task AutoSaveListDragAsync()
     {
-        int end = _saveView.ManualScrollEnd;
+        int end = _saveView.ListScrollEnd;
         if (end == 0)
         {
             GD.Print($"Kichikuou: --saveload finds all {_saveView.ManualSaves.Count} manual saves in view: no drag.");
             return;
         }
         var chosen = _saveView.Chosen;
-        var area = _saveView.ManualRowsArea;
+        var area = _saveView.ListRowsArea;
         Vector2 At(float y) => area.Position + area.Size * new Vector2(0.5f, y);
         await AutoDragAsync(At(0.75f), At(0.45f), 6, 0.25);
-        int dragged = _saveView.ManualScroll;
+        int dragged = _saveView.ListScroll;
         Expect(dragged > 0 && !_saveView.Flinging && _saveView.Chosen == chosen,
             $"a drag up held still before it rose to scroll the rows ({dragged} of {end}), flick nothing and choose nothing");
         await AutoDumpAsync("touch-saves-dragged");
         await AutoDragAsync(At(0.6f), At(0.45f), 2, 0);                // a row's drag, so the flick takes them on
         bool flicked = _saveView.Flinging;
-        int released = _saveView.ManualScroll;
+        int released = _saveView.ListScroll;
         ulong stop = Time.GetTicksMsec() + 4000;
         while (_saveView.Flinging && Time.GetTicksMsec() < stop)
             await NextFrameAsync();
-        int flung = _saveView.ManualScroll;
+        int flung = _saveView.ListScroll;
         Expect(!_saveView.Flinging && _saveView.Chosen == chosen && flung >= released,
             $"a quick drag up's flick to stop, scroll on ({released} to {flung} of {end}) and choose nothing");
         Expect(released == end || (flicked && flung > released), $"a quick drag up to flick the rows on ({released} to {flung} of {end})");

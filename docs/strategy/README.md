@@ -308,6 +308,17 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     with our narration, "Kentarou seems to be catching on to the move." (5 → 6) and "Kentarou has nearly caught on
     to the move." (6 → 7). Every draw is still made, only its outcome replaced, so the generator moves as in the
     original. The differential tests run without any of it.
+31. **An auto-save at Turn END too** (2026-10-26, the owner's request, answers and mock-up K1 of
+    [docs/ui/save-load.md](../ui/save-load.md), §12): the fifth change on purpose, to the saves alone. As Turn END is
+    chosen in `COMMAND`'s menu, before its sound and scenes, the game writes an auto-save of the moment (decision 26's
+    kind: the memory as it is, resuming at the `COMMAND` call, `MAIN.ADV:69`, `:213`); its load brings back the map
+    with the week's commands as they were, and Turn END goes on to the nations' turns (Sill's grave scene and the Tange
+    Dog again; the random generator is not saved, decision 11). No notice: the original has none there. The library
+    keeps **ten of each kind** — the turn starts and the Turn ENDs, numbered together, newest first in one list —
+    so Turn END chosen again and again after loads never pushes the weeks' starts out. Each auto-save says its kind,
+    "Turn Start" or "Turn End", in a tag of its colour under the time written, and **auto-saves take a comment** as
+    manual saves do (the sweep still deletes manual saves only; a commented auto-save leaves its ring by age). Only
+    while the library is in use (`ScriptContext.Library`), so the differential tests run `COMMAND` as the original.
 
 ## Milestone 1 — the prologue
 

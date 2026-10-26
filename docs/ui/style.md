@@ -57,8 +57,9 @@ Read this before a new screen's survey and mock-ups: the first round should not 
   Steel, one choice in Option → Display for every part (`Battle`, `Map`, `Messages`, `Screens`, `Settings`); a part's
   own palette is read but not offered. A change repaints open screens at once (`UiPalettes.Repaint`; a view that
   keeps colours outside `_Draw` is an `IUiPaletteUser`). docs/ui/options.md, "The palette".
-- **Left in their own colours on purpose:** the command and province tags, the red buttons, the battle's banners, the
-  defence ribbon's blues, the read-text colours, the map's plates (steel).
+- **Left in their own colours on purpose:** the command and province tags, the auto-saves' Turn Start (green) and Turn
+  End (Turn END's red) tags, the red buttons, the battle's banners, the defence ribbon's blues, the read-text colours,
+  the map's plates (steel).
 - **What the colours mean:**
   - red lacquer in gold — the primary, committing action (Turn END, Replenish, Load this game, Yes, Retreat);
   - dark red in vermilion with an icon — losing something: Delete with a bin (docs/ui/save-load.md, the owner's B5),

@@ -243,7 +243,7 @@ public class ScreenGalleryTests
     }
 
     [Fact]
-    public void The_sample_library_holds_ten_autos_and_four_commented_manuals_newest_first()
+    public void The_sample_library_holds_both_rings_full_and_four_commented_manuals_newest_first()
     {
         var s = World();
         s.Week = 70;
@@ -251,16 +251,19 @@ public class ScreenGalleryTests
         var data = SaveData.Capture(s, new ScriptRef("COMMAND.ADV", 1));
         var newest = new DateTime(2026, 10, 20, 21, 30, 0);
         var library = GalleryStates.SampleLibrary(data, newest);
-        Assert.Equal(ISaveLibrary.AutoCount, library.Autos.Count);
+        Assert.Equal(2 * ISaveLibrary.AutoCount, library.Autos.Count);
         Assert.Equal(GalleryStates.SampleComments.Count, library.Manuals.Count);
         var shelf = SaveSlots.ReadLibrary(library);
         Assert.Equal(newest, library.Read(library.Autos[0])?.Written);
-        Assert.Equal(70, shelf.Autos[0].Week);
+        Assert.Equal([70, 69, 69, 68], shelf.Autos.Take(4).Select(a => a.Week));
+        Assert.Equal([SlotKind.Auto, SlotKind.TurnEnd, SlotKind.Auto, SlotKind.TurnEnd], shelf.Autos.Take(4).Select(a => a.Kind));
+        Assert.Equal((SlotKind.TurnEnd, 60), (shelf.Autos[^1].Kind, shelf.Autos[^1].Week));
+        Assert.Equal(GalleryStates.SampleEndComment, shelf.Autos[1].Comment);
         var manuals = SaveSlots.NewestFirst(shelf.Manuals);
         Assert.Equal(GalleryStates.SampleComments, manuals.Select(m => m.Comment));
         Assert.Equal([70, 68, 66, 64], manuals.Select(m => m.Week));
         Assert.Equal([null, .. library.Manuals.Select(id => (SaveId?)id)], LoadSaveScreen.Items(library, save: true));
-        Assert.Equal(ISaveLibrary.AutoCount + 4, LoadSaveScreen.Items(library, save: false).Count);
+        Assert.Equal(2 * ISaveLibrary.AutoCount + 4, LoadSaveScreen.Items(library, save: false).Count);
         Assert.Equal(library.Autos[0], LoadSaveScreen.Items(library, save: false)[0]);
     }
 }

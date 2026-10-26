@@ -510,14 +510,26 @@ Today an auto-save takes no comment (§10: "The auto-save takes none"); round K 
 owner's note asks. Then Edit works on an auto-save's page too, the sweep ("Delete all without ★") stays on the manual
 saves, and a commented auto-save still leaves its ring after ten weeks unless the owner wants it kept.
 
-### The build (after the owner's choice)
+### The owner's choice (2026-10-26): K1, built
 
-1. **The library** (`Engine/Script/SaveLibrary`): two rings of ten in the auto-saves, by kind; `ScriptContext.SaveAuto`
-   told the kind; tests (each ring keeps its ten, a delete, the newest of either for `LibrarySlots`).
-2. **The port**: `CommandPhase` writes the Turn END auto-save while the library and `SaveHere` are set
-   (`CommandPhaseTests`, `LoadSaveScreenTests`: a load of it resumes in `COMMAND`).
-3. **The model** `Original.Content/Strategy/SaveSlots`: a slot's kind (`SaveSlot`), the auto-saves' rows of the chosen
-   layout; tests.
-4. **The screen** `godot/Strategy/SaveLoadView` (and `.Touch.cs` for a scrolling auto list), the page's tag and lines;
-   the gallery's sample library gets both kinds (`GalleryStates.SampleLibrary`), its entries looked at.
-5. **Docs**: the decision in docs/strategy/README.md, this section, CLAUDE.md; `--saveload` if it should exercise it.
+K1, the tags; **auto-saves take a comment** as manual saves do; ten of each kind; a load of a Turn END save returns to
+the map before Turn END; no notice — owner's decision 31 (docs/strategy/README.md). Built:
+
+- **The library** (`Engine/Script/SaveLibrary`, `SaveLibraryTests`): `AutoRing` (`TurnStart`, `TurnEnd`);
+  `ISaveLibrary.WriteAuto(data, ring)` numbers an auto-save after every one and deletes the oldest past ten of its own
+  ring; `RingOf`. `DirectorySaveLibrary` keeps a Turn END as `end-NNNN.ksav` beside the starts' `auto-NNNN.ksav` (a
+  folder of today's saves reads as it is). `ScriptContext.SaveTurnEnd(resume)` writes one without touching `RetVal`.
+- **The port** (`CommandPhase`, `CommandPhaseTests`): Turn END writes it while the library and `SaveHere` are set,
+  before its sound and scenes. Its load is decision 26's (`WeekLoop.ResumeAsync` at the `COMMAND` call).
+- **The model** (`Original.Content/Strategy/SaveSlots`, `SaveSlotsTests`): `SlotKind.TurnEnd`, `SaveSlot.IsAuto`,
+  `RingText`; a Turn END save is dated by its `Week` (its `Tmp0021` is what the week left there: only `ﾛｰﾄﾞｾｰﾌﾞ` sets it).
+- **The screen** (`godot/Strategy/SaveLoadView`): every row is the manual saves' size (52 px at 57), so ten rows of
+  either list are in view and the auto-saves scroll as the manual saves do (the wheel, the groove, the touch mode's
+  finger); an auto row keeps the "A" seal, its tag at the bottom right under the time — "Turn Start" green, "Turn End"
+  in `COMMAND`'s Turn END red, framed in gold —, a comment in quotes at the bottom left with the ★ on the seal. The page:
+  "Auto" and the kind's tag after the title, the comment's slip with Edit, then what the load does in two quiet lines;
+  Delete asks "Delete this Turn End auto-save?". The heading says "the game keeps the last ten weeks".
+- **The gallery**: the sample library holds both rings full (`GalleryStates.SampleLibrary`, the newest Turn END with a
+  comment); a new entry `save-load-auto-end` chooses it. `--saveload` writes a comment on the newest auto-save.
+- Checked headless on the week-18 save: `--turn-end` writes `end-0002.ksav`; `--load --auto` from that folder loads it,
+  resumes in `COMMAND` of week 18 and writes `end-0003.ksav` at the next Turn END.

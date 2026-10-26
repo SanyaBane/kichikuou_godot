@@ -249,12 +249,13 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
    City), `-search` (mode 3, one unit), `-refill-question` (the callout at Haurein's (unit 12) Refill cell, laid after the
    table's layout, `GalleryStage.AfterLayout`) and `-refill-done` (the plate, `ReplenishPreview`; the table under it not
    replenished). The Save/Load screen reads a `MemorySaveLibrary` made of the kept save
-   (`GalleryStates.SampleLibrary`: ten auto-saves and four manual saves, the older a week earlier each — `Week` and
+   (`GalleryStates.SampleLibrary`: ten Turn Start and ten Turn End auto-saves (decision 31, the newest Turn End with a
+   comment) and four manual saves, the older a week earlier each — `Week` and
    `Tmp0021`, the date the lists read —, two with comments, the manual saves an hour after their week's auto-save), so
    its deletes and comments reach no disk and no read-only library was needed; its items are `LoadSaveScreen.Items(library,
    save)`, pulled out of the file (the full load/save differential runs pass). Its clicks are given to it as input
    (`GalleryStage.Click`: the view's `_GuiInput`, the system pointer not moved). Entries `save-load-save`, `save-load`
-   (the save written last), `-title` (no tabs), `-auto`, `-delete`, `-sweep`, `-comment` (Edit on the uncommented No. 3,
+   (the save written last), `-title` (no tabs), `-auto`, `-auto-end` (the newest Turn End), `-delete`, `-sweep`, `-comment` (Edit on the uncommented No. 3,
    its caret not blinking).
    **Then the cut-in, Abandon City and the cells.** `strategy` (Barres (unit 6), `FIGT作.ADV:37`'s announcement and his
    line `:80`) and `strategy-enemy` (Ex (commander 1), a great success, `:378` and `:392`), the record built as the

@@ -183,12 +183,16 @@ public static class GalleryStates
     /// <summary>The comments of <see cref="SampleLibrary"/>'s manual saves, newest first ("" none).</summary>
     public static IReadOnlyList<string> SampleComments { get; } = ["before the attack on Oaks", "", "", "Lia's scene next week"];
 
+    /// <summary>The comment of <see cref="SampleLibrary"/>'s newest Turn END auto-save.</summary>
+    public const string SampleEndComment = "before the rebels' turn";
+
     /// <summary>
     /// A library for the Save/Load screen, in memory (nothing is written to disk): <paramref name="data"/>'s game as the
-    /// newest of ten auto-saves and of four manual saves, the older ones the same game a week earlier each (made up: only
-    /// the week and the date the lists read, <c>Tmp0021</c>, differ). The auto-saves are written <paramref name="newest"/>
-    /// less a day each, the manual saves an hour after their week's auto-save (the newest is the save written last), every
-    /// other week, with <see cref="SampleComments"/>.
+    /// newest of the auto-saves and of four manual saves, the older ones the same game a week earlier each (made up: only
+    /// the week and the date the lists read, <c>Tmp0021</c>, differ). The auto-saves are both rings full (owner's decision
+    /// 31): the turn starts of ten weeks written <paramref name="newest"/> less a day each, the Turn ENDs of the ten weeks
+    /// before the newest two hours after their start (the newest with <see cref="SampleEndComment"/>); the manual saves an
+    /// hour after their week's start (the newest is the save written last), every other week, with <see cref="SampleComments"/>.
     /// </summary>
     public static MemorySaveLibrary SampleLibrary(SaveData data, DateTime newest)
     {
@@ -201,8 +205,13 @@ public static class GalleryStates
             s.Tmp0021 = (Sys3Int)(s.Tmp0021.Value - weeks);         // the week the lists date a save by (SaveSlots.Of)
             return SaveData.Capture(s, data.Resume).Stamped(newest.AddDays(-weeks).AddHours(hours));
         }
-        for (int weeks = ISaveLibrary.AutoCount - 1; weeks >= 0; weeks--)
-            library.WriteAuto(WeeksBefore(weeks, 0));
+        for (int weeks = ISaveLibrary.AutoCount; weeks >= 0; weeks--)
+        {
+            if (weeks < ISaveLibrary.AutoCount)
+                library.WriteAuto(WeeksBefore(weeks, 0));
+            if (weeks > 0)
+                library.WriteAuto(WeeksBefore(weeks, 2).Commented(weeks == 1 ? SampleEndComment : ""), AutoRing.TurnEnd);
+        }
         for (int i = SampleComments.Count - 1; i >= 0; i--)
             library.WriteManual(WeeksBefore(2 * i, 1).Commented(SampleComments[i]));
         return library;

@@ -240,9 +240,10 @@ rail in the lower right corner, Retreat on top and Descend in the corner (the ow
 the menu before a search, Start Search in Descend's place (`Original.Content/Strategy/DungeonEntryMenu`; its §6).
 Then (owner, 2026-10-26) an auto-save at Turn END too, the auto-saves telling a week's start from its Turn END: the
 proposal and mock-up round J (J1 one list with a seal per kind, J2 a row a week, J3 two lists) are
-docs/ui/save-load.md, §12 (`tools/ui/mock_autosaves.py`); the owner chose J1 with the "A" seal and "Turn Start" / "Turn
-End" in two colours under the time, the comment at the row's bottom left — round K (K1 tags, K2 words), awaiting the
-owner's choice.
+docs/ui/save-load.md, §12 (`tools/ui/mock_autosaves.py`); the owner chose round K's K1 — **owner's decision 31**, built:
+Turn END writes an auto-save of the moment (`CommandPhase`, `ScriptContext.SaveTurnEnd`), the library keeps ten of each
+`AutoRing` (`end-NNNN.ksav` beside `auto-NNNN.ksav`), each auto row tagged "Turn Start" / "Turn End" under the time,
+auto-saves take a comment and scroll as the manual saves do.
 Then (owner, 2026-10-26) the deployment and Subordinates screens' ledger down the screen's left, a part of its columns
 at a time in tabs (Overview, Troops, Commander), the picture and the party / orders stacked on the right: the proposal
 and mock-up round A are docs/ui/unit-ledger.md (`tools/ui/mock_unit_ledger.py`); the owner took A1-A4 (its §5), round B
@@ -271,7 +272,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   bindings, and `Extras`, the port's own data kept with the saves — no rule reads it), `VariantProfile` (the facts the runtime takes from a variant — variable count, scene
   rule, saved pages), `ScriptContext` (the engine's side: state, draws, pauses, scene calls, saves;
   helper calls go through the virtual `CallHelperAsync`), the shared events (`ScriptEvent`) and the
-  view/input/hook interfaces, `SaveData` (the slot format, 4 since the player's `Comment`, 3 the slot's own time `Written`, ENG-07; formats 1-3 still load), `SaveLibrary` (ours, decision 29: `ISaveLibrary`, the ten auto-saves, the manual saves, the persistent page; `LibrarySlots` gives the scenario's slot 1 the newest auto-save), `MessageSkip`, `PointerScript` (the
+  view/input/hook interfaces, `SaveData` (the slot format, 4 since the player's `Comment`, 3 the slot's own time `Written`, ENG-07; formats 1-3 still load), `SaveLibrary` (ours, decision 29: `ISaveLibrary`, the auto-saves — ten of each `AutoRing`, a turn's start and its Turn END, decision 31 —, the manual saves, the persistent page; `LibrarySlots` gives the scenario's slot 1 the newest auto-save), `MessageSkip`, `PointerScript` (the
   gesture queue), `IScenarioSource`, plus
   `ScriptStatements` — scenario code read at run time: a goto program that mirrors the
   decompile line for line (`ScriptProgram`, one statement per engine command, jumps resolved,
@@ -398,8 +399,9 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   choose (the owner, 2026-10-21; `SaveSlots.NewestFirst`), the number on the seal, scrolling, the comment a row's
   second line and a gold star on the seal, "+ New save" heading them in Save, "Delete all without ★ (n)" in their heading
   asking in a callout beside it (`SaveSlots.DeleteUncommented`; Sengoku Rance's notes, §10, the owner's N1) — and the
-  ten auto-saves, newest first; the chosen save's page with its
-  map as All Data draws it, its figures, a manual save's comment (Edit, written in place), Delete at the save's
+  auto-saves, newest first, scrolling, each tagged "Turn Start" or "Turn End" under the time (decision 31, §12, the
+  owner's K1); the chosen save's page with its
+  map as All Data draws it, its figures, the save's comment (Edit, written in place), Delete at the save's
   title (a danger button, its callout under it; the owner's B5, §11), Back at the foot's left and a red button that
   answers the script's menu with the save's item; Load | Save tabs from `COMMAND`,
   `LoadSaveShortcut.Switch`; the model `Original.Content/Strategy/SaveSlots` (`ReadLibrary`, `SaveShelf`) — each save's
@@ -599,7 +601,7 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   Our Save/Load screen (2026-10-20): `--saveload` on the week-18 save makes the first map wait open the command panel's
   Save row; in a window it saves a new manual save by the red button, asks the sweep of the saves without a comment and
   keeps them, writes its comment through Edit, asks Delete and
-  keeps it, shows the auto-saves, opens the Load tab, chooses the newest auto-save and leaves by Back, then plays on — dumps `save-load-title` (the
+  keeps it, shows the auto-saves, opens the Load tab, chooses the newest auto-save, writes its comment and leaves by Back, then plays on — dumps `save-load-title` (the
   title's load list at the `--load`), `save-load-save`, `save-load-button`, `save-load-saved`, `save-load-sweep`, `save-load-comment`,
   `save-load-delete`, `save-load-autos-save`, `save-load`, `save-load-auto` —
   `--load --auto --fast --quit --seed 2 --saves user://saves-look-saves --slots-from user://saves-week18 --saveload --until deployment --interface new --shots <dir>`.

@@ -104,8 +104,8 @@ internal static partial class GalleryEntries
     /// <summary>When the newest sample save was written: a fixed time, so the pictures stay the same.</summary>
     private static readonly DateTime SavedAt = new(2026, 10, 20, 21, 30, 0);
 
-    private const string SamplesNote = "Made up: ten auto-saves and four manual saves, all the week-18 game, the older ones a week "
-        + "earlier each (only the date differs), kept in memory.";
+    private const string SamplesNote = "Made up: ten Turn Start and ten Turn End auto-saves and four manual saves, all the week-18 "
+        + "game, the older ones a week earlier each (only the date differs), kept in memory.";
 
     private static IEnumerable<GalleryEntry> SaveLoadScreens()
     {
@@ -120,6 +120,14 @@ internal static partial class GalleryEntries
             {
                 GalleryStage.Click(view, view.SideCentre(auto: true));
                 if (view.RowCentre(view.AutoSaves[0]) is { } row)
+                    GalleryStage.Click(view, row);
+            }));
+        yield return new("save-load-auto-end", "Screens", "Load: a Turn End auto-save with a comment", Week18,
+            "Owner's decision 31 (docs/ui/save-load.md, §12). " + SamplesNote,
+            g => SaveScreen(g, SaveList.Load, tabs: true, view =>
+            {
+                GalleryStage.Click(view, view.SideCentre(auto: true));
+                if (view.RowCentre(view.AutoSaves[1]) is { } row)
                     GalleryStage.Click(view, row);
             }));
         yield return new("save-load-delete", "Screens", "Load: Delete asks first", Week18, SamplesNote,

@@ -10,13 +10,16 @@ namespace Kichikuou.Game.Strategy;
 /// Our Save/Load screen over <c>ﾛｰﾄﾞｾｰﾌﾞ</c>'s lists on the save library (owner's decision 29; docs/ui/save-load.md, §9,
 /// the owner's layout G, 2026-10-21): one lacquer panel; on the left a switch between the two lists — the manual saves,
 /// newest first (no order to choose, the owner's 2026-10-21; the number stays on the seal), scrolling (the touch mode's by a finger's drag too), a row's second
-/// line its comment, "+ New save" heading them in Save; and the ten auto-saves, newest first — and the chosen save's page on the right: its map large (All Data's
-/// miniature), its figures, a manual save's comment (Edit writes it in place: Enter keeps it, Esc leaves the old one),
+/// line its comment, "+ New save" heading them in Save; and the auto-saves, newest first, ten weeks' Turn Starts and Turn
+/// Ends (owner's decision 31), each tagged at its row's bottom right under the time and scrolling as the manual saves do
+/// (docs/ui/save-load.md, §12, the owner's K1) — and the chosen save's page on the right: its map large (All Data's
+/// miniature), its figures, the save's comment (Edit writes it in place: Enter keeps it, Esc leaves the old one), an
+/// auto-save's kind after the title and what its load does under the comment,
 /// Delete at the save's title (a danger button asking in a callout under it, the owner's B5 of 2026-10-25,
 /// docs/ui/save-load.md, §11), Back at the foot's left and a red button that answers the script's menu with the save's item
 /// ("Load", "Save over No. n", "Save") — the second click, so no question. An auto-save takes no Save; Delete works in
 /// either list and either tab. After Sengoku Rance's notes (docs/ui/save-load.md, §10, the owner's N1, 2026-10-22): a
-/// manual save with a comment has a gold star on its seal's top left corner, and the manual saves' heading has a button
+/// save with a comment has a gold star on its seal's top left corner, and the manual saves' heading has a button
 /// deleting every one without a comment, asking first in a callout beside it while the rows to go are struck through. From <c>COMMAND</c> the Load | Save tabs switch lists (<see cref="LoadSaveShortcut.Switch"/>).
 /// Back, a right click or Esc answers 0. Laid out in the 1280×800 screen's pixels, scaled with the picture. After its answer the
 /// screen stays drawn, taking no clicks, until the script shows the next list or the save screen closes.
@@ -43,12 +46,13 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
     private static readonly Rect2 SweepCalloutRect = new(400, 75, 440, 132);
     private static readonly Rect2 SweepYesRect = new(608, 153, 120, 30), SweepNoRect = new(738, 153, 80, 30);
     private const float ListX = 52, ListW = 330, SideY = 84, SideH = 30, HeadY = 141, ListTop = 162, ListBottom = 756;
-    private const float ManualW = 318, ManualH = 52, ManualPitch = 57, NewH = 44, AutoH = 55, AutoPitch = 60, PageX = 426, PageY = 84;
+    private const float RowW = 318, RowH = 52, RowPitch = 57, NewH = 44, PageX = 426, PageY = 84;
     private const int CommentLength = 60;
 
     private static Color ChosenFill => Ui.ChosenFill;
     private static readonly Color AutoGold = Color.Color8(138, 104, 34);
     private static readonly Color TagText = Color.Color8(246, 232, 206);
+    private static readonly Color TurnStartFill = Color.Color8(70, 110, 50), TurnEndFill = Color.Color8(118, 30, 24);
     private static Color StarRim => Ui.Rim;
     private static Color GoneVeil => Ui.Backdrop with { A = 150 / 255f };
 
@@ -267,36 +271,47 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         if (latest?.Id is { } id)
             Choose(id);
         else
-            _autoSide = false;
+            ShowSide(false);
     }
 
     private void Choose(SaveId id)
     {
         _chosen = id;
         _chosenNew = false;
-        _autoSide = id.Kind == SaveKind.Auto;
-        if (!_autoSide)
-            ScrollTo(id);
+        ShowSide(id.Kind == SaveKind.Auto);
+        ScrollTo(id);
     }
 
-    private int ManualRowsShown => (int)((ListBottom - ManualTop) / ManualPitch);
+    /// <summary>The auto-saves or the manual saves shown, from their top when the side changes.</summary>
+    private void ShowSide(bool auto)
+    {
+        if (auto != _autoSide)
+            _scroll = 0;
+        _autoSide = auto;
+    }
 
-    private float ManualTop => ListTop + (_list == SaveList.Save ? NewH + 6 : 0);
+    /// <summary>The list shown, top to bottom: the auto-saves or the manual saves, newest first.</summary>
+    private IReadOnlyList<SaveSlot> Shown => _autoSide ? _shelf.Autos : _manuals;
+
+    private int RowsShown => (int)((ListBottom - RowsTop) / RowPitch);
+
+    /// <summary>The first row's top: under New save in the save list's manual saves.</summary>
+    private float RowsTop => ListTop + (!_autoSide && _list == SaveList.Save ? NewH + 6 : 0);
 
     private void ScrollTo(SaveId id)
     {
-        int place = _manuals.ToList().FindIndex(s => s.Id == id);
+        int place = Shown.ToList().FindIndex(s => s.Id == id);
         if (place < 0)
             return;
         if (place < _scroll)
             _scroll = place;
-        else if (place >= _scroll + ManualRowsShown)
-            _scroll = place - ManualRowsShown + 1;
+        else if (place >= _scroll + RowsShown)
+            _scroll = place - RowsShown + 1;
     }
 
     private void ScrollBy(int rows) => SetScroll(_scroll + rows);
 
-    /// <summary>The manual saves from the <paramref name="row"/>th on in view, as far as they go.</summary>
+    /// <summary>The list shown from the <paramref name="row"/>th save on in view, as far as it goes.</summary>
     private void SetScroll(int row)
     {
         row = Math.Clamp(row, 0, MaxScroll);
@@ -306,23 +321,18 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         QueueRedraw();
     }
 
-    /// <summary>The farthest the manual saves scroll: the first row in view when the last one is at the foot.</summary>
-    private int MaxScroll => Math.Max(0, _manuals.Count - ManualRowsShown);
+    /// <summary>The farthest the list shown scrolls: the first row in view when the last one is at the foot.</summary>
+    private int MaxScroll => Math.Max(0, Shown.Count - RowsShown);
 
     /// <summary>The rows in view, top to bottom, with their places.</summary>
     private IEnumerable<(SaveId? Id, Rect2 Rect)> Rows()
     {
-        if (_autoSide)
-        {
-            for (int i = 0; i < _shelf.Autos.Count; i++)
-                yield return (_shelf.Autos[i].Id, new Rect2(ListX, ListTop + i * AutoPitch, ListW, AutoH));
-            yield break;
-        }
-        for (int i = _scroll, place = 0; i < _manuals.Count && place < ManualRowsShown; i++, place++)
-            yield return (_manuals[i].Id, new Rect2(ListX, ManualTop + place * ManualPitch, ManualW, ManualH));
+        var shown = Shown;
+        for (int i = _scroll, place = 0; i < shown.Count && place < RowsShown; i++, place++)
+            yield return (shown[i].Id, new Rect2(ListX, RowsTop + place * RowPitch, RowW, RowH));
     }
 
-    private static Rect2 NewRect => new(ListX, ListTop, ManualW, NewH);
+    private static Rect2 NewRect => new(ListX, ListTop, RowW, NewH);
 
     private static Rect2 TabRect(SaveList list) => new(PanelRect.End.X - 220 + (list == SaveList.Save ? 96 : 0), PanelRect.Position.Y + 11, 90, 30);
 
@@ -361,7 +371,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
             return BackHit;
         if (ChosenSave is not null && DeleteRect.HasPoint(at))
             return DeleteHit;
-        if (ChosenSave is { Id.Kind: SaveKind.Manual } && !_editing && EditRect.HasPoint(at))
+        if (ChosenSave is { Id: not null } && !_editing && EditRect.HasPoint(at))
             return EditHit;
         if (_tabs)
             foreach (var list in (SaveList[])[SaveList.Load, SaveList.Save])
@@ -406,7 +416,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
                 }
                 break;
             case InputEventMouseButton { ButtonIndex: MouseButton.WheelUp or MouseButton.WheelDown, Pressed: true } wheel:
-                if (!_autoSide && !_confirm && !_sweep)
+                if (!_confirm && !_sweep)
                 {
                     ScrollBy(wheel.ButtonIndex == MouseButton.WheelUp ? -1 : 1);
                     _hovered = HitAt(wheel.Position);
@@ -497,7 +507,9 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
             case >= NewHit:
                 break;
             case >= SideHit:
-                _autoSide = hit == SideHit + 1;
+                ShowSide(hit == SideHit + 1);
+                if (_chosen is { } chosen && (chosen.Kind == SaveKind.Auto) == _autoSide)
+                    ScrollTo(chosen);
                 break;
             case > TabHit:
                 Answer((0, (SaveList)(hit - TabHit)));
@@ -566,7 +578,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
 
     private void StartEdit()
     {
-        if (ChosenSave is not { Id.Kind: SaveKind.Manual } save)
+        if (ChosenSave is not { Id: not null } save)
             return;
         _editing = true;
         _edit.Text = save.Comment;
@@ -582,7 +594,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         if (!_editing)
             return;
         _editing = false;
-        if (keep && _chosen is { Kind: SaveKind.Manual } id && _library is { } library && ChosenSave?.Comment != _edit.Text.Trim())
+        if (keep && _chosen is { } id && _library is { } library && ChosenSave?.Comment != _edit.Text.Trim())
         {
             library.SetComment(id, _edit.Text.Trim());
             Reload();
@@ -673,12 +685,13 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
     private void DrawAutos()
     {
         Text(_cinzel, 11, ListX, HeadY, "NEWEST FIRST", Ui.Subtitle);
-        TextRight(_gothic, 11, ListX + ListW, HeadY, "the game keeps the last ten", Ui.Label);
+        TextRight(_gothic, 11, ListX + ListW, HeadY, "the game keeps the last ten weeks", Ui.Label);
         foreach (var (id, rect) in Rows())
             if (id is { } save && Find(save) is { } held)
                 DrawRow(rect, held, auto: true);
         if (_shelf.Autos.Count == 0)
             TextCentred(_cinzelLight, 15, ListX + ListW / 2, ListTop + 40, "No auto-saves yet.", Ui.OffText);
+        DrawGroove();
     }
 
     private void DrawManuals(bool save)
@@ -691,13 +704,19 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
             if (id is { } held && Find(held) is { } slot)
                 DrawRow(rect, slot, auto: false);
         if (_manuals.Count == 0)
-            TextCentred(_cinzelLight, 15, ListX + ListW / 2, ManualTop + 40, "No manual saves yet.", Ui.OffText);
-        // The groove stays when every save fits, so the rows keep their width under the buttons above them.
-        float top = ManualTop, span = ListBottom - top, x = ListX + ListW - 6;
+            TextCentred(_cinzelLight, 15, ListX + ListW / 2, RowsTop + 40, "No manual saves yet.", Ui.OffText);
+        DrawGroove();
+    }
+
+    /// <summary>The scroll bar right of the rows. The groove stays when every save fits, so the rows keep their width.</summary>
+    private void DrawGroove()
+    {
+        int count = Shown.Count;
+        float top = RowsTop, span = ListBottom - top, x = ListX + ListW - 6;
         DrawRect(new Rect2(x, top, 5, span), Ui.Groove);
-        if (_manuals.Count > ManualRowsShown)
+        if (count > RowsShown)
         {
-            float a = top + span * _scroll / _manuals.Count, b = top + span * Math.Min(_manuals.Count, _scroll + ManualRowsShown) / _manuals.Count;
+            float a = top + span * _scroll / count, b = top + span * Math.Min(count, _scroll + RowsShown) / count;
             DrawRect(new Rect2(x, a, 5, b - a), Ui.Gold);
         }
     }
@@ -752,7 +771,10 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         TextCentred(_cinzel, 15, rect.GetCenter().X, rect.GetCenter().Y, tab.ToString(), active ? Ui.Name : hover ? Ui.Text : Ui.Quiet);
     }
 
-    /// <summary>A save's row: the seal, the short date, the time written right; under them the comment (an auto-save: its kind).</summary>
+    /// <summary>
+    /// A save's row: the seal, the short date, the time written right; under them the comment at the left, a star on the
+    /// seal when there is one, and an auto-save's kind at the right (docs/ui/save-load.md, §12, the owner's K1).
+    /// </summary>
     private void DrawRow(Rect2 rect, SaveSlot held, bool auto)
     {
         int place = Rows().ToList().FindIndex(r => r.Id == held.Id);
@@ -773,16 +795,15 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         float tx = x0 + 42;
         Text(_cinzel, 15, tx, y0 + 16, held.ShortDate, Ui.Name);
         TextRight(_gothic, 14, rect.End.X - 10, y0 + 16, held.WrittenShort, Ui.Value);   // the lists' order: the bright line
-        if (auto)
-            Text(_gothic, 12, tx, y0 + 38, "start of the week", Ui.Label);
-        else if (held.Commented)
+        float end = auto ? DrawRingTag(rect.End.X - 10, y0 + 37, held, 12) - 14 : rect.End.X - 22;
+        if (held.Commented)
         {
-            Text(_gothic, 12, tx, y0 + 37, "“" + Fit(held.Comment, 12, rect.End.X - tx - 22) + "”", Ui.Quiet);
+            Text(_gothic, 12, tx, y0 + 37, "“" + Fit(held.Comment, 12, end - tx) + "”", Ui.Quiet);
             var corner = new Vector2(x0 + 9, rect.GetCenter().Y - 11);         // the seal's top left (the right is near the date)
             DrawStar(corner, 9, StarRim);
             DrawStar(corner, 7, Ui.Gold);
         }
-        else if (_sweep)
+        else if (_sweep && !auto)
         {
             DrawRect(rect, GoneVeil);                                   // the sweep asking: this row would go
             DrawLine(new Vector2(x0 + 6, rect.GetCenter().Y), new Vector2(rect.End.X - 6, rect.GetCenter().Y), Ui.Vermilion, Line(1.5f));
@@ -852,6 +873,21 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         TextCentred(_cinzel, text.Length > 2 ? 11 : 14, rect.GetCenter().X, rect.GetCenter().Y + 1, text, Ui.SealText);
     }
 
+    /// <summary>
+    /// An auto-save's kind right-aligned at <paramref name="right"/>: "Turn Start" green, "Turn End" in <c>COMMAND</c>'s
+    /// Turn END red, each framed in gold as the command panel's tags (the owner's K1); its left edge.
+    /// </summary>
+    private float DrawRingTag(float right, float middle, SaveSlot held, int size)
+    {
+        string text = held.RingText;
+        float w = _gothic.GetStringSize(text, fontSize: size).X + 14, h = size + 7;
+        var rect = new Rect2(right - w, middle - h / 2, w, h);
+        DrawRect(rect, held.Kind == SlotKind.TurnEnd ? TurnEndFill : TurnStartFill);
+        DrawRect(rect, Ui.Gold, false, Line(1));
+        TextCentred(_gothic, size, rect.GetCenter().X, middle, text, TagText);
+        return rect.Position.X;
+    }
+
     private void DrawPage(bool save)
     {
         var held = ChosenSave;
@@ -870,6 +906,8 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
             float w = _cinzel.GetStringSize(title, fontSize: 22).X;
             DrawRect(new Rect2(PageX + w + 16, PageY + 4, 52, 20), AutoGold);
             TextCentred(_gothic, 12, PageX + w + 42, PageY + 14, "Auto", TagText);
+            float x = PageX + w + 76;
+            DrawRingTag(x + _gothic.GetStringSize(held.RingText, fontSize: 13).X + 14, PageY + 14, held, 13);
         }
         if (MapOf(shown) is { } map)
             DrawTextureRect(map, MapRect, false);
@@ -891,13 +929,20 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         float cy = MapRect.End.Y + 114;
         if (_chosenNew)
             Text(_gothic, 15, PageX, cy + 10, "A new manual save. Its comment can be written once it is saved.", Ui.Text);
-        else if (held!.Id?.Kind == SaveKind.Auto)
-        {
-            Text(_gothic, 15, PageX, cy + 10, "The game writes one at the start of every week and keeps the last ten;", Ui.Text);
-            Text(_gothic, 15, PageX, cy + 32, "the eleventh pushes the oldest out. Loading one leaves the list as it is.", Ui.Text);
-        }
         else
-            DrawComment(held, cy);
+        {
+            DrawComment(held!, cy);
+            if (held!.IsAuto && !_editing)                              // what its load does, under the comment
+            {
+                (string, string) lines = held.Kind == SlotKind.TurnEnd
+                    ? ("Written when Turn END was chosen. Loading it brings back the map with the week's commands",
+                        "as they were then; Turn END goes on to the nations' turns.")
+                    : ("Written at the start of the week. Loading it plays the week's start again:",
+                        "the budget, then the commands.");
+                Text(_gothic, 14, PageX, cy + 77, lines.Item1, Ui.Quiet);
+                Text(_gothic, 14, PageX, cy + 97, lines.Item2, Ui.Quiet);
+            }
+        }
         float by = ButtonRect.Position.Y, lx = BackRect.End.X + 20, lw = ButtonRect.Position.X - 16 - lx;
         if (save && _now is { } now)
         {
@@ -997,7 +1042,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         Ui.DrawPanel(this, CalloutRect, _k);
         float tip = DeleteRect.GetCenter().X, top = CalloutRect.Position.Y;
         DrawColoredPolygon([new(tip - 10, top + 2), new(tip + 10, top + 2), new(tip, top - 12)], Ui.Gold);
-        string what = held.Id?.Kind == SaveKind.Auto ? $"the auto-save of {held.DateText}" : $"{held.Label}, {held.DateText}";
+        string what = held.IsAuto ? $"this {held.RingText} auto-save" : $"{held.Label}, {held.DateText}";   // its date is the title's
         Text(_gothic, 16, CalloutRect.Position.X + 22, CalloutRect.Position.Y + 32, Fit($"Delete {what}?", 16, CalloutRect.Size.X - 44), Ui.Text);
         Text(_gothic, 16, CalloutRect.Position.X + 22, CalloutRect.Position.Y + 56, "It cannot be undone.", Ui.Text);
         bool yes = _hovered == DeleteYesHit;
