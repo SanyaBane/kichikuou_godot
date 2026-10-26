@@ -37,7 +37,7 @@ public sealed partial class OriginalScriptContext(
 
     /// <summary>
     /// Ours (owner's decision 30, the third rule change on purpose; docs/ui/talk-marks.md §5): "New scenes first", the
-    /// player's option (Option → Game, on by default in the game; copied here by the UI). Off by default on a context, so
+    /// player's option (Option → Tweaks, on by default in the game; copied here by the UI). Off by default on a context, so
     /// a context built by hand (the differential tests) runs the files as the original. On, it is one switch for all of
     /// it: during a talk or a visit an unread harmless variant comes, and a listed draw that changes the state gives that
     /// change once its usual scene is read (<see cref="SceneChoices"/>, with <see cref="Marks"/>); Kanami's choice in
