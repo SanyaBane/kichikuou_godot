@@ -9,7 +9,8 @@ long: the week-18 save's nine units with the figures the dumps show, and twenty 
 boot figures, the troops made up); SET_CHR.ADV and SET_ITEM.ADV are read from the extract's scenario_named.
     python -I tools/ui/mock_unit_ledger.py <extract dir> <gallery dump dir> <out dir> [round] < /dev/null
 Round a (the default): A1-A5; round b: B1-B5, the owner's A1-A4 with the first tab named Overview; round c: C1-C3
-and C-sheet, the kept order's note made seen. The images hold the player's CGs: keep <out dir> outside the repository.
+and C-sheet, the kept order's note made seen; round d: D1, D2 and D-sheet, C2 in C3's colours.
+The images hold the player's CGs: keep <out dir> outside the repository.
 Everything is in the 1280x800 screen's pixels (plus a caption band below); drawn at 2x and scaled down.
 """
 import sys, os, re
@@ -547,7 +548,8 @@ def round_a():
 def sort_note(c, right, sort, style):
     """The order kept from another tab, right of the tabs: 'plain' quiet words on the lacquer (B3); 'paper' a paper tag
     framed in vermilion; 'seal' a vermilion seal with paper-coloured letters; 'gold' a lit row box with a x that sorts
-    by No. again."""
+    by No. again; round D: 'lit' C2's seal in C3's colours (lit lacquer, a gold frame, gold letters), 'gilt' C2's seal
+    filled gold with lacquer-dark letters."""
     arrow = '↓' if sort[1] else '↑'
     if style == 'plain':
         c.text((right - 4, 84), f'Sorted by {sort[0]["header"]} {arrow}', font(13), fill=SUB, anchor='rm')
@@ -565,6 +567,14 @@ def sort_note(c, right, sort, style):
         c.rect((x0, y0, x1, y1), fill=VERMILION, radius=3)
         c.rect((x0 + 2, y0 + 2, x1 - 2, y1 - 2), outline=(236, 196, 170, 140), radius=2)
         ink = (246, 230, 206, 255)
+    elif style == 'lit':
+        c.rect((x0, y0, x1, y1), fill=(64, 48, 28, 255), outline=HOVER_LINE, width=2, radius=3)
+        c.rect((x0 + 4, y0 + 4, x1 - 4, y1 - 4), outline=DIM, radius=2)
+        ink = NAME
+    elif style == 'gilt':
+        c.rect((x0, y0, x1, y1), fill=GOLD, radius=3)
+        c.rect((x0 + 2, y0 + 2, x1 - 2, y1 - 2), outline=(110, 86, 46, 200), radius=2)
+        ink = ROW
     else:
         c.rect((x0, y0, x1, y1), fill=(64, 48, 28, 255), outline=HOVER_LINE, width=2)
         ink = NAME
@@ -618,17 +628,39 @@ def round_c():
         crops.append((title, c.screen().crop((16, 16, 708, 236))))
         if i:
             c.save(f'C{i}.png', title, notes[style])
+    sheet(crops, 'C-sheet.png')
+
+
+# ---------------------------------------------------------------- round D: C2 in C3's colours (2026-10-26)
+# The owner chose "C2 in C3's colour", read two ways: D1 C2's seal on C3's lit lacquer with its gold frame and letters,
+# D2 C2's seal filled with C3's gold. Full screens and a sheet of the ledger's top beside C2's.
+#   python -I tools/ui/mock_unit_ledger.py <extract dir> <gallery dump dir> <out dir> d < /dev/null
+
+def round_d():
+    TABS[0] = 'Overview'
+    looks = [('C2 — the vermilion seal', 'seal'), ('D1 — C2 on lit lacquer, gold frame and letters', 'lit'),
+             ('D2 — C2 filled gold, dark letters', 'gilt')]
+    crops = []
+    for i, (title, style) in enumerate(looks):
+        c = screen('deployment', 'Commander', sort=(TATK, True), hover=1, note=style)
+        crops.append((title, c.screen().crop((16, 16, 708, 236))))
+        if i:
+            c.save(f'D{i}.png', title, 'The order kept from the Troops tab, said right of the tabs; no ×.')
+    sheet(crops, 'D-sheet.png')
+
+
+def sheet(crops, name):
     scale, gap, head = 1.5, 24, 40
     cw, ch = round(692 * scale), round(220 * scale)
-    sheet = Image.new('RGBA', (cw + 2 * gap, len(crops) * (ch + head + gap) + gap), (24, 19, 15, 255))
-    d = ImageDraw.Draw(sheet)
+    out = Image.new('RGBA', (cw + 2 * gap, len(crops) * (ch + head + gap) + gap), (24, 19, 15, 255))
+    d = ImageDraw.Draw(out)
     title_font = ImageFont.truetype(CINZEL, 22)
     title_font.set_variation_by_axes([700])
     for i, (title, crop) in enumerate(crops):
         y = gap + i * (ch + head + gap)
         d.text((gap, y + 28), title, font=title_font, fill=NAME, anchor='ls')
-        sheet.paste(crop.resize((cw, ch), Image.LANCZOS), (gap, y + head))
-    sheet.convert('RGB').save(os.path.join(OUT, 'C-sheet.png'))
+        out.paste(crop.resize((cw, ch), Image.LANCZOS), (gap, y + head))
+    out.convert('RGB').save(os.path.join(OUT, name))
 
 
 if ROUND == 'a':
@@ -637,3 +669,5 @@ elif ROUND == 'b':
     round_b()
 elif ROUND == 'c':
     round_c()
+elif ROUND == 'd':
+    round_d()

@@ -112,4 +112,6 @@ noticed; it needs to stand out.
 **The agent's recommendation:** C2 — the strongest of the three without being a button's red lacquer, and not taken
 for a fourth tab as C1's paper may be. C3's × (a click sorts by No. again) could go on any of them.
 
-Awaiting the owner's choice of the note's look; then the build.
+**The owner (2026-10-26): C2 in C3's colours**, no ×. Read two ways, round D (round `d`, `D-sheet` beside C2):
+**D1** C2's seal on C3's lit lacquer, a gold frame and gold letters, a dim inner rule; **D2** C2's seal filled gold,
+the letters lacquer-dark. Awaiting the owner's pick; the build goes on meanwhile (the note is one drawing).
