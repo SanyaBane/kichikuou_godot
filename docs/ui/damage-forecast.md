@@ -3,8 +3,8 @@
 The owner's request (2026-10-26): an optional setting that shows, beside a target's attack banners (the gallery's
 `banners-E1`), what the attack is likely to do, as some turn-based games do (Heroes of Might and Magic V). This document
 is the survey and mock-up rounds A-C; nothing is built. The owner chose A1 for the PC, the damage dealt alone (§10), laid
-out as B2, its figures in the cards' bars' colours on blue banners (§11). **Status: round C drawn, awaiting the owner's
-choice of its blue** (§11).
+out as B2, its figures in the cards' bars' colours on blue banners, C1 (§11); the touch mode's rail drawn to match (§12).
+**Status: round D drawn, awaiting the owner's choice for the tablet** (§12).
 
 ## 1. What an attack does
 
@@ -144,7 +144,8 @@ the owner's choice (§9).
 6. docs/ui/style.md, §1: "no prediction of draws" to read "no prediction of a draw's outcome" (§2)?
 7. Melee and Bow now read the same on a banner (their streams differ only by the counter, §1): leave it, or mark the
    banners the target answers (a mark, no figure)?
-8. The banners blue only while the forecast shows, or always (one look whatever the option; agent's pick: always)?
+8. The banners (and with D1 the rail's attack buttons) blue only while the forecast shows, or always (one look whatever
+   the option; agent's pick: always)?
 
 ## 10. The owner's choice and round B (2026-10-26)
 
@@ -206,3 +207,29 @@ Notes for the build: the cyan target frame (70, 205, 255) is now next to blue ba
 fixed cyan, never the accent); the banners are among the colours left on purpose outside the palette (style.md, §2), so
 the chosen blue goes there in place of the yellow when accepted. Whether the banners are blue only while the forecast
 shows is §9, question 8.
+
+## 12. Round D: the touch mode (2026-10-27)
+
+**The owner:** C1 — the player's blue, the figures in the bars' hues lightened. And the touch mode now too, so both are
+built at once.
+
+The touch mode has no banners: the target is chosen first (`TouchTargets`) and its attacks are the right rail's buttons
+(`BattleCommandLayer.Touch`: 116 × 76, 10 apart, from the rail's foot up; gold, the name in the brush face, lighter and
+glowing while held), one tap attacking. So each button carries its attack's damage, as a banner does on the PC: the name,
+then `Trp.` and `HP` on two lines of their own (15 px, 3 mm on the tablet), each line left empty where the attack cannot
+reach (Whirlwind Shot: `HP 1` alone, on its own line).
+
+- **D1 — the buttons in C1's blue**, as the PC's banners: one colour for "the player's attack" on both; held: C1's pale
+  sky blue, glowing.
+- **D2 — the buttons gold as today**, the damage on a dark strip inside: the rail keeps its look, and C1's figures read
+  on the dark.
+
+`D-compare.png` sets the two rails side by side at twice their size.
+
+**Agent's recommendation:** D1 — the attack has one colour on the PC and the tablet, and red and green on gold is what
+the owner set aside on the PC. For the build: on D1's held button (pale sky) the figures read on their outline alone; the
+held blue can stay a step darker than the PC's hovered banner.
+
+**Notes for the build, both versions:** the specials on a large army give four-digit ranges (C. War Dance takes
+`T / 2 + RND(T / 2)` of the target's whole troops: "1,250–2,400" for 2,500): a banner's troops' place (88 px at 14) and a
+button's line (108 px at 15) shrink their figure to fit, never wrap (style.md, §3).

@@ -406,7 +406,97 @@ def layout_c(dump, turn):
     sheet.save(os.path.join(OUT, 'C-compare.png'))
 
 
+# --- Round D (the owner, 2026-10-27: C1, and the touch mode too, to build both at once) ----------------------------------
+# No banners there: the target is chosen first (TouchTargets) and its attacks are the right rail's buttons
+# (BattleCommandLayer.Touch: 116 x 76, 10 apart, from the rail's foot up; gold, the name in the brush face, lighter and
+# glowing while held). Each button carries its attack's damage under the name, on two lines of their own: Trp., then HP.
+
+RAIL_BUTTON_W, RAIL_BUTTON_H, RAIL_GAP, RAIL_FOOT = 116, 76, 10, 790
+ATTACK_TOP, ATTACK_FOOT = (255, 214, 110), (214, 140, 40)
+ATTACK_EDGE, ATTACK_LINE, ATTACK_INK = (255, 244, 210), (150, 100, 30), (40, 24, 8)
+HELD_GLOW = (255, 184, 107)
+
+
+def lighten(c, t):
+    return tuple(round(v + (255 - v) * t) for v in c)
+
+
+def gradient_rect(f, r, top, foot):
+    grad = Image.new('RGBA', f.img.size, (0, 0, 0, 0))
+    gd = ImageDraw.Draw(grad)
+    for y in range(round(r[1] * S), round(r[3] * S)):
+        t = (y / S - r[1]) / (r[3] - r[1])
+        gd.line((r[0] * S, y, r[2] * S, y), fill=tuple(round(a + (b - a) * t) for a, b in zip(top, foot)) + (255,))
+    f.img = Image.alpha_composite(f.img, grad)
+
+
+def rail_attack(f, r, label, troops, hp, held, blue, size=15):
+    if held:
+        glow = PLAYER_BLUE['glow'] if blue else HELD_GLOW
+        lay, d = f.draw()
+        d.rectangle(sc(r[0] - 6, r[1] - 6, r[2] + 6, r[3] + 6), fill=glow + (90,))
+        f.add(lay, blur=4)
+    if blue:
+        top, foot = (PLAYER_BLUE['hot_top'], PLAYER_BLUE['hot_foot']) if held else (PLAYER_BLUE['top'], PLAYER_BLUE['foot'])
+        edge, line = (255, 255, 255), (28, 52, 126)
+    else:
+        top, foot = (lighten(ATTACK_TOP, 0.2), lighten(ATTACK_FOOT, 0.15)) if held else (ATTACK_TOP, ATTACK_FOOT)
+        edge, line = ATTACK_EDGE, ATTACK_LINE
+    gradient_rect(f, r, top, foot)
+    rect(f, r, outline=edge, w=2)
+    rect(f, (r[0] + 4, r[1] + 4, r[2] - 4, r[3] - 4), outline=line)
+    cx = (r[0] + r[2]) / 2
+    name = BRUSH(17)
+    while width(label.upper(), name) > RAIL_BUTTON_W - 14:              # Centred: smaller if it would not fit
+        name = BRUSH(name.size / S - 1)
+    if blue:
+        outlined(f, cx, r[1] + 19, label.upper(), name, (255, 255, 255), outline=NIGHT)
+    else:
+        text(f, cx, r[1] + 19, label.upper(), name, ATTACK_INK)
+        lay, d = f.draw()                                                # D2: the figures on a dark strip
+        d.rounded_rectangle(sc(r[0] + 7, r[1] + 33, r[2] - 7, r[3] - 7), radius=3 * S, fill=(14, 10, 8, 225))
+        f.add(lay)
+    tag, fig = GOTHIC(size - 2), GOTHIC(size)
+    for y, word, value, ink in ((r[1] + 45, 'Trp.', troops, TINT_INKS[0]), (r[1] + 63, 'HP', hp, TINT_INKS[1])):
+        if value is None:
+            continue                                                     # its line stays empty: the other never moves
+        w = width(word + ' ', tag) + width(value, fig)
+        x = cx - w / 2
+        outlined(f, x, y, word, tag, ink, outline=NIGHT, anchor='lm')
+        outlined(f, x + width(word + ' ', tag), y, value, fig, ink, outline=NIGHT, anchor='lm')
+
+
+def round_d(touch, name, lines, blue):
+    f = Frame(touch)
+    rect(f, (1151, 488, 1269, 789), (20, 15, 11))                        # the rail's panel without its buttons
+    for i, (label, troops, hp) in enumerate(reversed(EX_THREE)):          # from the rail's foot up
+        y1 = RAIL_FOOT - i * (RAIL_BUTTON_H + RAIL_GAP)
+        r = (1152, y1 - RAIL_BUTTON_H, 1152 + RAIL_BUTTON_W, y1)
+        rail_attack(f, r, label, troops, hp, held=label == 'Melee', blue=blue)
+    caption(f, lines + ['Made up: Bow and Whirlwind Shot, a bowman\'s three attacks (the figures the real exchange\'s '
+                        'on Rance\'s state); Melee held'], y=62, x=150)
+    f.save(name)
+
+
+def layout_d(touch):
+    round_d(touch, 'D1-touch-blue.png',
+            ['D1  The touch mode: the rail\'s attack buttons in C1\'s blue, as the PC\'s banners',
+             'the name, then Trp. and HP on lines of their own (15 px, 3 mm on the tablet); held: pale sky blue, glowing'],
+            True)
+    round_d(touch, 'D2-touch-gold.png',
+            ['D2  The touch mode: the attack buttons gold as today, the damage on a dark strip inside',
+             'the same figures and colours as C1\'s; held: lighter gold, glowing'], False)
+    # the two rails side by side, twice their size
+    crops = [Image.open(os.path.join(OUT, n)).crop((1140, 530, 1280, 800)).resize((280, 540), Image.LANCZOS)
+             for n in ('D1-touch-blue.png', 'D2-touch-gold.png')]
+    sheet = Image.new('RGB', (280 * 2 + 20, 540), (0, 0, 0))
+    for i, c in enumerate(crops):
+        sheet.paste(c, (i * 300, 0))
+    sheet.save(os.path.join(OUT, 'D-compare.png'))
+
+
 GALLERY = sys.argv[1]
+layout_d(load('touch', 'current', 'battle-turn.png'))
 layout_c(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
 layout_b1(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
 layout_b2(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
