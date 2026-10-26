@@ -210,6 +210,8 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
             var shown = value is { } tab ? LedgerTabs.Of(_all, tab) : new LedgerTabColumns(_all, []);
             (_columns, _groups) = (shown.Columns, shown.Groups);
             _refillHovered = 0;
+            if (_fontSize > 0)
+                AddThemeFontSizeOverride("title_button_font_size", TitleSize);  // a tab's headers are smaller
             SetUpColumns();
             ApplyLedger();
             Fill();
@@ -479,6 +481,8 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
 
     public override void _Notification(int what)
     {
+        if (what == NotificationResized || what == NotificationThemeChanged)
+            SpreadColumns();                                        // the tree's least widths read in the tree only
         if (what == NotificationVisibilityChanged && !IsVisibleInTree())
         {
             _tip.Visible = false;
@@ -578,10 +582,38 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         widths[0] = Math.Max(widths[0], _fontSize * 1.3f) + BubbleRoom;     // the chosen row's bar and diamond, a place's seal; the talk's bubble
         if (RefillColumn > 0)
             widths[RefillColumn] += _fontSize * 0.8f;                       // the buttons' rule and padding
-        for (int c = 0; c < Columns; c++)
-            SetColumnCustomMinimumWidth(c, (int)Math.Ceiling(widths[c]) + separation + (Tab is null ? 6 : 3));
+        _widths = widths.Select(w => (int)Math.Ceiling(w) + separation + (Tab is null ? 6 : 3)).ToArray();
+        SpreadColumns();
         _overlay.Size = new Vector2(Size.X, Math.Max(4, GroupStrip + 4));
         _overlay.QueueRedraw();
+    }
+
+    /// <summary>The columns' widths as their texts ask (<see cref="Fill"/>), before a tab's spare room is spread.</summary>
+    private int[] _widths = [];
+
+    /// <summary>
+    /// The columns' widths: a tab's spare room spread over its columns after the first (round B's mock-ups), the vertical
+    /// scroll bar's room kept back; the last column's expand takes what is left. Without a tab the columns as their texts ask.
+    /// </summary>
+    private void SpreadColumns()
+    {
+        if (_widths.Length != Columns)
+            return;
+        for (int c = 0; c < Columns; c++)
+            SetColumnCustomMinimumWidth(c, _widths[c]);
+        if (Tab is null || Columns < 2 || !IsInsideTree())
+            return;
+        // The tree's own least widths: it may give a header more than its texts ask (it measures it in the rows' font).
+        SetColumnExpand(Columns - 1, false);
+        var least = Enumerable.Range(0, Columns).Select(GetColumnWidth).ToArray();
+        SetColumnExpand(Columns - 1, true);
+        var bar = GetChildren(includeInternal: true).OfType<VScrollBar>().FirstOrDefault();
+        float room = Size.X - 2 - (bar?.GetCombinedMinimumSize().X ?? 0);       // the paper's border, the scroll bar
+        int spare = (int)room - least.Sum();
+        if (spare <= 0)
+            return;
+        for (int c = 1; c < Columns; c++)
+            SetColumnCustomMinimumWidth(c, least[c] + spare / (Columns - 1));
     }
 
     /// <summary>

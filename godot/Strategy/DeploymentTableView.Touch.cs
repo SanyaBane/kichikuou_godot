@@ -188,9 +188,9 @@ internal sealed partial class DeploymentTableView
 
     /// <summary>
     /// The header's bottom edge in this control's pixels: the panel's top border, then the title buttons as tall as Godot
-    /// makes them (their text's height and the margins of <see cref="ApplyLedger"/>'s style boxes).
+    /// makes them (their text's height and the margins of <see cref="ApplyLedger"/>'s style boxes, the groups' strip among them).
     /// </summary>
-    private float HeaderBottom => 1 + _titleFont.GetHeight(TitleSize) + 6;
+    private float HeaderBottom => 1 + _titleFont.GetHeight(TitleSize) + 6 + GroupStrip;
 
     /// <summary>The visible horizontal scroll bar, if any.</summary>
     private HScrollBar? HScroll => GetChildren(includeInternal: true).OfType<HScrollBar>().FirstOrDefault(b => b.Visible);
