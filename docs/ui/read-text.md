@@ -114,3 +114,25 @@ system text counts as unread, so one line of it keeps its whole window in the wi
 the event scenes the list does not name is system text by default — the original's look, never a wrong colour.
 
 Tested by `MessageWindowTests.System_text_is_never_read` and `A_battles_window_is_read_too` (`FIGT_A`'s result).
+
+## 7. The battle's speech balloons (round B)
+
+The owner (2026-10-26): the battle's lines read before take the colour too, as the scenes' windows do — a change of §1,
+which kept "the battle's lines" in their colour. What is read is already there: a battle line is a `MessageEvent` like
+any other, so the message skip's record notes it and `BattlePresenter.ReadBefore` is asked as it prints; the balloon's
+text box (`_windowText`, opened with the bubble 141/142/151/152) keeps the flags, so the balloon, like a window, is read
+when every message on it was. Only the drawing is missing: `godot/Battles/SpeechBalloon` draws its own ink.
+
+The balloon is white with dark ink (a thought dark with white ink), and the nine colours were made for the lacquer: on
+white, Salmon reads weakly and Cyan, Mint and Green hardly at all. Mock-up round B (`tools/ui/mock_battle_read.py`, over
+the gallery's `battle-speech` and `battle-speech-enemy`; a thought is the player's balloon redrawn dark, no capture the
+gallery replays having one):
+
+- **B0** — a line, a thought not read before: as today, in every variant.
+- **B1** — the chosen colour as it is, as on the windows.
+- **B2** — on the white balloon the colour darkened, its hue kept, until it reads (4.5:1 against the paper); on a
+  thought as it is.
+- **B3** — the ink as it is; the balloon's paper tinted with the colour (22 %, a thought's 28 %) and its rim in it.
+- **B-colours** — the nine colours on a line read before, B1 | B2 | B3.
+
+Awaiting the owner's choice.

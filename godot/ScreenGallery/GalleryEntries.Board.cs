@@ -81,6 +81,10 @@ internal static partial class GalleryEntries
         yield return new("exchange-counters", Battle, "Battle: an exchange's result", null, CaptureNote + " The first exchange's result held, its counters standing.",
             g => Board(g, (p, m) => m.Kind == MomentKind.Key && p.Battle.ExchangeCounters is not null && p.BattleSceneShows),
             Settle: 0.5);
+        yield return new("battle-speech", Battle, "Battle: a fighter's line", null, CaptureNote + " The first line a player unit says.",
+            g => Board(g, (p, m) => m.Kind == MomentKind.Key && p.Battle.Speech is { Side: BattleSide.Player, Thought: false }));
+        yield return new("battle-speech-enemy", Battle, "Battle: an enemy's line", null, CaptureNote + " The first line an enemy commander says.",
+            g => Board(g, (p, m) => m.Kind == MomentKind.Key && p.Battle.Speech is { Side: BattleSide.Enemy, Thought: false }));
         yield return new("info-panel", Battle, "Battle: our narration panel", null, CaptureNote + " The first info box shown as our panel.",
             g => Board(g, (p, m) => m.Kind == MomentKind.Key && p.Battle.InfoBox is { Kind: InfoBoxKind.Panel }));
         yield return new("info-defence", Battle, "Battle: a defence's ribbon", null,
