@@ -125,8 +125,10 @@ the letters lacquer-dark. **The owner chose D2** (2026-10-26), the gold seal (`L
 - **The ledger:** `godot/Strategy/DeploymentTableView` takes a `Tab`: the tree's columns rebuilt, the rows and the order
   kept (`SortShown`, `SortHeader`, `SortMark` say the order when its column is not in the tab); the groups' names in a
   strip at the header's top, drawn by a child `Overlay` (a `Tree`'s own `_Draw` lands under its header); the chosen tab
-  joined to the paper (`OpenTop`). The last column takes the spare width in every tab; spread over the columns as
-  round B drew it, it set No. far from the first column (the owner, 2026-10-26). A tab's titles are drawn by the overlay
+  joined to the paper (`OpenTop`). An empty filler column after the last takes the spare width, the last keeping its
+  width and alignment (the owner, 2026-10-26): spread over the columns as round B drew it, the spare width set No. far
+  from the first column; taken by the last column, it left Cost alone at the paper's far edge; the last column
+  left-aligned (the owner's first word) glued the Troops tab's Dungeon DEF to its ATK ("−2−2"). A tab's titles are drawn by the overlay
   too (`DrawTitles`), centred between the groups' rule and the header's foot: the tree centres its own over the whole
   header, the groups' strip included, where the rule crossed them (the owner, 2026-10-26).
 - **The tabs:** `godot/Strategy/LedgerTabsBar` — paper tabs as the options window's, lit while hovered, a tab shown at

@@ -105,7 +105,7 @@ internal sealed partial class DeploymentTableView
             _flingAt = ScrollValues;
         else if (_headerColumn >= 0)
         {
-            if (!_headerLong && _headerColumn > 0)
+            if (!_headerLong && _headerColumn > 0 && _headerColumn <= _columns.Count)     // not the filler's
                 SortBy(_columns[_headerColumn - 1]);
         }
         else if (_touchRefill > 0)
@@ -179,7 +179,7 @@ internal sealed partial class DeploymentTableView
     /// <summary><paramref name="column"/>'s full name over its header, centred on <paramref name="x"/> (this control's pixels).</summary>
     private void ShowHeaderTip(int column, float x)
     {
-        string text = column == 0 ? _chooser ? "" : "Place in the party" : _columns[column - 1].FullName;
+        string text = column == 0 ? _chooser ? "" : "Place in the party" : column <= _columns.Count ? _columns[column - 1].FullName : "";
         if (text.Length == 0)
             return;
         var header = new Rect2(GlobalPosition, new Vector2(Size.X, HeaderBottom));

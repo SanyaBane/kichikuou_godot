@@ -164,7 +164,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         AddThemeConstantOverride("item_margin", 0);
         ColumnTitleClicked += (column, button) =>
         {
-            if (button == (long)MouseButton.Left && column > 0)
+            if (button == (long)MouseButton.Left && column > 0 && column <= _columns.Count)    // not the filler's
                 SortBy(_columns[(int)column - 1]);
         };
         SetFont(font);
@@ -173,10 +173,14 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
             bar.ValueChanged += _ => _overlay.QueueRedraw();       // a tab's titles and groups scroll with the columns
     }
 
-    /// <summary>The tree's columns for <see cref="_columns"/>: the first, then each shown one with its header, tip and alignment.</summary>
+    /// <summary>
+    /// The tree's columns for <see cref="_columns"/>: the first, then each shown one with its header, tip and alignment,
+    /// then an empty filler to the paper's edge — the last shown column keeps its width and alignment, next to the others
+    /// (the owner, 2026-10-26: Cost at the paper's far edge looked lost).
+    /// </summary>
     private void SetUpColumns()
     {
-        Columns = _columns.Count + 1;
+        Columns = _columns.Count + 2;
         SetColumnTitle(0, _chooser ? "" : PartyMark);
         SetColumnTitleAlignment(0, HorizontalAlignment.Center);
         bool hover = !TouchMode.On;                                     // the touch mode's tips come by a long press
@@ -188,9 +192,11 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
             SetColumnTitleTooltipText(c + 1, hover ? info.FullName : "");
             SetColumnTitleAlignment(c + 1, Alignment(info));
         }
+        SetColumnTitle(Columns - 1, "");
+        SetColumnTitleTooltipText(Columns - 1, "");
         for (int c = 0; c < Columns; c++)
         {
-            SetColumnExpand(c, c == Columns - 1);                  // the last column to the paper's edge
+            SetColumnExpand(c, c == Columns - 1);                  // the filler to the paper's edge
             SetColumnClipContent(c, true);
         }
     }
