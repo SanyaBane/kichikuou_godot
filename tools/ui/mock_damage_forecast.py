@@ -560,9 +560,45 @@ def layout_e(dump, turn):
     sheet.save(os.path.join(OUT, 'E-compare.png'))
 
 
+# --- Round F (the owner, 2026-10-27: E1, but the label a little larger and the damage a little smaller, the banner's
+# padding above and below a little less) ---------------------------------------------------------------------------------
+#   F1  the label 18, the figures 16 and their words 13; banners 46 px (three stand 148, the card's height);
+#   F2  the label 19, the figures 16 and their words 13; banners 48 px (three stand 154, 8 over the card);
+#   F3  the label 19, the figures 15 and their words 13; banners 46 px.
+
+def layout_f(dump, turn):
+    variants = [
+        ('F1-label-18.png', ['F1  The label 18, the figures 16 and their words 13 (E1: 17; 17 and 14)',
+                             'banners 46 px (E1: 50); three stand 148, the card\'s height'],
+         dict(h=46, label_size=18, label_dy=13, figure_dy=32, x_troops=18, x_hp=110, figure=16, word=13)),
+        ('F2-label-19.png', ['F2  The label 19, the figures 16 and their words 13',
+                             'banners 48 px; three stand 154, 8 over the card'],
+         dict(h=48, label_size=19, label_dy=14, figure_dy=34, x_troops=18, x_hp=110, figure=16, word=13)),
+        ('F3-label-19-figures-15.png', ['F3  The label 19, the figures 15 and their words 13',
+                                        'banners 46 px; three stand 148, the card\'s height'],
+         dict(h=46, label_size=19, label_dy=13, figure_dy=32, x_troops=18, x_hp=108, figure=15, word=13)),
+    ]
+    for name, lines, v in variants:
+        f = Frame(dump)
+        patch(f, turn, (668, 440, 884, 610))
+        target_frame(f, CARD_E1)
+        stack_e(f, CARD_E1, EX_THREE, 1, **v)
+        caption(f, lines + ['All: an outline of 1.5. ' + MADE_UP_THREE], y=62)
+        f.save(name)
+    names = ['E1-larger-figures.png'] + [n for n, _, _ in variants]
+    crops = [Image.open(os.path.join(OUT, n)).crop((660, 420, 990, 630)).resize((660, 420), Image.LANCZOS) for n in names]
+    sheet = Image.new('RGB', (660 * 2 + 10, 420 * 2 + 10), (0, 0, 0))
+    for i, c in enumerate(crops):
+        sheet.paste(c, (i % 2 * 670, i // 2 * 430))
+    sheet.save(os.path.join(OUT, 'F-compare.png'))
+
+
 GALLERY = sys.argv[1]
 if sys.argv[3:] == ['E']:                       # round E alone (it needs round C's C1 in the out dir for its sheet)
     layout_e(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
+    sys.exit()
+if sys.argv[3:] == ['F']:                       # round F alone (it needs round E's E1 in the out dir for its sheet)
+    layout_f(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
     sys.exit()
 layout_d(load('touch', 'current', 'battle-turn.png'))
 layout_c(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
@@ -575,3 +611,4 @@ layout_a2(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current
 layout_a3(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
 layout_t1(load('touch', 'current', 'battle-turn.png'))
 layout_e(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
+layout_f(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))

@@ -317,4 +317,19 @@ their size):
 close to the card. On the hovered banner (pale sky) the light figures stay the weakest in every variant; the thicker
 outline helps, and the hovered blue could stay a step darker if it still reads poorly.
 
-The touch rail's lines (15 on a dark strip, §12) are not part of this round. **Awaiting the owner's choice.**
+The touch rail's lines (15 on a dark strip, §12) are not part of this round.
+
+## 14. Round F: E1 with the label larger and less padding (2026-10-27)
+
+**The owner:** E1, but the label a little larger and the damage's row a little smaller; the banner's padding above and
+below may shrink a little.
+
+**Round F** (`layout_f`; `F-compare.png` sets E1 and the three side by side at twice their size; an outline of 1.5):
+
+- **F1 — the label 18, the figures 16 and their words 13**; banners 46 px (three stand 148, the card's height).
+- **F2 — the label 19, the figures 16 and their words 13**; banners 48 px (three stand 154, 8 over the card).
+- **F3 — the label 19, the figures 15 and their words 13**; banners 46 px.
+
+**Agent's recommendation:** F2 — the label as near the old 20 as the row allows, the figures still larger than built
+(16 against 14), the padding cut from E1's 50 px to 48. F1 if the stack must keep to the card. **Awaiting the owner's
+choice.**
