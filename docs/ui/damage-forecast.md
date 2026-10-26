@@ -2,7 +2,8 @@
 
 The owner's request (2026-10-26): an optional setting that shows, beside a target's attack banners (the gallery's
 `banners-E1`), what the attack is likely to do, as some turn-based games do (Heroes of Might and Magic V). This document
-is the survey and mock-up round A; nothing is built. **Status: awaiting the owner's choice** (§9).
+is the survey and mock-up rounds A and B; nothing is built. The owner chose A1 for the PC, the damage dealt alone (§10).
+**Status: round B drawn, awaiting the owner's choice of its layout** (§10).
 
 ## 1. What an attack does
 
@@ -133,9 +134,47 @@ the owner's choice (§9).
 
 ## 9. Questions for the owner
 
-1. Which: A1, A2, A3, a mix (A2 with A3 as its tooltip?) — and T1 for the tablet?
+1. ~~Which: A1, A2, A3, a mix (A2 with A3 as its tooltip?) — and T1 for the tablet?~~ The PC first: A1, the damage
+   dealt alone (the owner, 2026-10-26; §10). The tablet later.
 2. The range: the usual 90 % (agent's pick) or the whole?
-3. The hit chances: shown (A3's line) or not?
+3. ~~The hit chances: shown (A3's line) or not?~~ Not shown: the damage alone (§10).
 4. The option on or off by default?
 5. Leave out what §4 lists (agent's pick), or mark Miki's banner ("10% Vanish Bomb")?
 6. docs/ui/style.md, §1: "no prediction of draws" to read "no prediction of a draw's outcome" (§2)?
+7. Melee and Bow now read the same on a banner (their streams differ only by the counter, §1): leave it, or mark the
+   banners the target answers (a mark, no figure)?
+
+## 10. The owner's choice and round B (2026-10-26)
+
+**The owner:** the PC first. A1 — the forecast on each banner — but without the enemy's counter and without the chance
+of a fall: only the damage the attack deals, to the target's troops, and separately to its commander where the attack
+can reach him.
+
+**The agent's choices** (for the owner to confirm):
+
+- The figures are the usual 90 % of the runs (the 5th-95th percentile, §5), no minus: the banner is the attack, its
+  figures the damage it deals. A range of one value is one figure ("60", "1").
+- The words are the cards' own: "Trp." the troops lost, "HP" the commander's.
+- The HP is never more than the commander has: Ex (commander 1) at HP 1 reads "HP 0–1", though 78 % of the runs take
+  that HP (the fall's chance is not shown).
+- "Where the attack can reach him": a stream that hits the commander has shots and no demon shield zeroes its damage
+  (docs/battle/02-resolution.md, §6.2) — decided from the exchange, not from the runs (a rare hit is still a possible one). Else the HP's place stays
+  empty, so the troops' figure never moves (style.md, §5, "A stable layout"). The troops' place likewise: Whirlwind Shot
+  reads "HP 1" alone.
+- Examples from the probe (§3): Rance (unit 1)'s Melee on Ex — "Trp. 29–37 · HP 0–1"; on Sakanaku (commander 6, 60 troops,
+  HP 4) — "Trp. 60 · HP 1–4"; his next turn's Melee on Melfeis (commander 4), whose 300 troops are more than the battle's
+  limit of 232, so no troop shoots at her — "Trp. 91–118" alone.
+
+**Round B** (`tools/ui/mock_damage_forecast.py`; Ex with a bowman's three banners, Bow, Melee and Whirlwind Shot — made up
+but Melee, their figures the real exchange's on Rance's state — and Sakanaku with his one Melee banner):
+
+- **B1 — two rows**: the label as today (20), the damage under it (15); banners 52 px, three stand 166 px, 20 over the
+  card's 146.
+- **B2 — two rows within the card**: the label 17, the damage 14; banners 46 px, three stand 148 px, the card's height.
+- **B3 — one row**: the label left (16), the damage right (13); banners 40 px as today. The longest names are tight:
+  "T2 Soaring Wave" with both figures does not fit.
+
+**Agent's recommendation:** B2 — the stack keeps to the card whatever the number of banners, the damage reads at a
+glance under its attack, and the label is only 3 px smaller. B1 if the label must stay as it is.
+
+What §4 lists is still not forecast (Miki's Vanish Bomb, a ninja's follow-up, Sieg's event).

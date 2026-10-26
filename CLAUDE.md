@@ -253,8 +253,10 @@ and mock-up round A are docs/ui/unit-ledger.md (`tools/ui/mock_unit_ledger.py`);
 Then (owner, 2026-10-26) a damage forecast beside the battle's attack banners, an option: what the attack is likely to do
 to both sides (troops lost, a fall's chance, the counter), computed on the real exchange run many times on a copy of the
 state with a generator of its own; the survey and mock-up round A (A1 on each banner, A2 at the scene's foot where the
-counters roll, A3 a tooltip, T1 the touch rail) are docs/ui/damage-forecast.md (`tools/ui/mock_damage_forecast.py`),
-awaiting the owner's choice.
+counters roll, A3 a tooltip, T1 the touch rail) are docs/ui/damage-forecast.md (`tools/ui/mock_damage_forecast.py`);
+the owner chose A1 for the PC first, the damage dealt alone (the target's troops, its commander's HP where the attack
+can reach him; no counter, no fall's chance); round B (B1 two rows, B2 two rows within the card, B3 one row) awaits the
+owner's choice (its §10).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

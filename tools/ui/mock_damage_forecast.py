@@ -17,6 +17,14 @@ Made up: Rance Attack, as if Rance had focus (Ex falls in 99.7 % of the runs; no
   A2  at the scene's foot, where the exchange's counters roll its result: the counters' preview for the hovered banner;
   A3  a tooltip under the hovered banner, in words, with the hit chances;
   T1  the touch mode: on the right rail's attack buttons (no hover there).
+
+Round B (the owner, 2026-10-26: the PC first, A1 without the counter and without a fall's chance — the damage dealt alone,
+the troops' and, where the attack can reach him, the commander's), on Ex with a bowman's three banners (made up but Melee)
+and on Sakanaku (commander 6) with Melee alone (all his 60 troops, 1-4 of his 4 HP):
+
+  B1  two rows, the label as today and the damage under it (banners 52 px; three stand 20 px over the card);
+  B2  two rows within the card (banners 46 px, the label 17);
+  B3  one row, the label left and the damage right (banners 40 px as today, the label 16).
 """
 import sys, os
 sys.dont_write_bytecode = True                  # no __pycache__ in the repository for the borrowed module
@@ -51,8 +59,9 @@ def pennant(r):
     return [(x0 + SLANT, y0), (x1 - POINT, y0), (x1, (y0 + y1) / 2), (x1 - POINT, y1), (x0, y1)]
 
 
-def banner(f, r, label, hot, rows=None):
-    """A banner as BattleCommandLayer.DrawBanner draws it; rows = the forecast's second row (A1)."""
+def banner(f, r, label, hot, rows=None, label_size=BANNER_TEXT, label_at=None):
+    """A banner as BattleCommandLayer.DrawBanner draws it; rows = the forecast's second row (A1), label_at = (x, y,
+    anchor) of the label where the forecast moves it (round B)."""
     x0, y0, x1, y1 = r
     lay, d = f.draw()
     d.polygon(sc(*[v for p in pennant((x0 + 2, y0 + 3, x1 + 2, y1 + 3)) for v in p]), fill=(0, 0, 0, 120))
@@ -74,7 +83,8 @@ def banner(f, r, label, hot, rows=None):
     d.polygon(sc(*[v for p in pennant(r) for v in p]), outline=(255, 255, 255, 255), width=S)
     f.add(lay)
     label_y = (y0 + y1) / 2 if rows is None else y0 + 19
-    outlined(f, (x0 + x1 - POINT + SLANT) / 2, label_y, label, GOTHIC(BANNER_TEXT), (255, 255, 255))
+    lx, ly, anchor = label_at or ((x0 + x1 - POINT + SLANT) / 2, label_y, 'mm')
+    outlined(f, lx, ly, label, GOTHIC(label_size), (255, 255, 255), anchor=anchor)
     if rows:
         rows(f, x0, y0, x1, y1)
 
@@ -237,7 +247,114 @@ def layout_t1(touch):
     f.save('T1-touch-rail.png')
 
 
+# --- Round B (the owner, 2026-10-26: A1 on the PC, the damage dealt alone) -----------------------------------------------
+# No counter, no fall's chance: the target's troops lost and, where the attack can reach him, its commander's HP lost, each
+# in a place of its own on the banner (left empty when the attack cannot reach it). The 5th-95th percentiles, the HP no more
+# than the commander has.
+
+CARD_E2 = (697, 610, 977, 756)
+FIGURE, FIGURE_TAG = (255, 248, 236), (255, 222, 170)
+# A bowman's three banners on Ex (his own attack first, then Melee, then his special); made up but Melee, their figures
+# the real exchange's on Rance's state: Bow's streams are Melee's but the counter, Whirlwind Shot takes 1 HP and nothing else.
+EX_THREE = [('Bow', '29–37', '0–1'), ('Melee', '29–37', '0–1'), ('Whirlwind Shot', None, '1')]
+
+
+def target_frame(f, card):
+    """BattleCommandLayer.DrawTargetFrame: a cyan L on each corner of the target's card."""
+    cyan = (70, 205, 255)
+    out, w, ax, ay = 3, 4, 60, 46
+    x0, y0, x1, y1 = card[0] - out, card[1] - out, card[2] + out, card[3] + out
+    arms = []
+    for cx, cy, sx, sy in ((x0, y0, 1, 1), (x1, y0, -1, 1), (x0, y1, 1, -1), (x1, y1, -1, -1)):
+        arms.append((min(cx, cx + sx * ax), min(cy, cy + sy * w), max(cx, cx + sx * ax), max(cy, cy + sy * w)))
+        arms.append((min(cx, cx + sx * w), min(cy, cy + sy * ay), max(cx, cx + sx * w), max(cy, cy + sy * ay)))
+    lay, d = f.draw()
+    for a in arms:
+        d.rectangle(sc(a[0] - 4, a[1] - 4, a[2] + 4, a[3] + 4), fill=cyan + (150,))
+    f.add(lay, blur=5)
+    for a in arms:
+        rect(f, a, cyan)
+        rect(f, (a[0] + 1.5, a[1] + 1.5, a[2] - 1.5, a[3] - 1.5), (255, 255, 255), alpha=215)
+
+
+def damage(f, y, x_troops, x_hp, troops, hp, size):
+    """The damage's figures: Trp. and HP in their own places, each left out where the attack cannot reach it."""
+    tag = GOTHIC(size - 2)
+    for x, word, value in ((x_troops, 'Trp.', troops), (x_hp, 'HP', hp)):
+        if value is None:
+            continue
+        outlined(f, x, y, word, tag, FIGURE_TAG, anchor='lm')
+        outlined(f, x + width(word + ' ', tag), y, value, GOTHIC(size), FIGURE, anchor='lm')
+
+
+def stack(f, card, items, hot, h, label_size, label_dy, figure_size, figure_dy, x_troops, x_hp, one_row=False):
+    top = (card[1] + card[3]) / 2 - (len(items) * h + (len(items) - 1) * GAP) / 2
+    x0 = card[0] - OUT_
+    for i, (label, troops, hp) in enumerate(items):
+        y0 = top + i * (h + GAP)
+        r = (x0, y0, x0 + BANNER_W, y0 + h)
+        if one_row:
+            at = (x0 + SLANT + 6, y0 + h / 2, 'lm')
+        else:
+            at = ((x0 + x0 + BANNER_W - POINT + SLANT) / 2, y0 + label_dy, 'mm')
+        banner(f, r, label, i == hot,
+               lambda f, x0, y0, x1, y1, t=troops, p=hp: damage(f, y0 + figure_dy, x0 + x_troops, x0 + x_hp, t, p,
+                                                               figure_size),
+               label_size=label_size, label_at=at)
+
+
+def board_e1(dump, turn):
+    f = Frame(dump)
+    patch(f, turn, (668, 452, 884, 598))
+    target_frame(f, CARD_E1)
+    return f
+
+
+MADE_UP_THREE = 'Made up: Bow and Whirlwind Shot, a bowman\'s three banners (the figures the real exchange\'s on Rance\'s state)'
+
+
+def layout_b1(dump, turn):
+    f = board_e1(dump, turn)
+    stack(f, CARD_E1, EX_THREE, 1, 52, 20, 17, 15, 38, 20, 112)
+    caption(f, ['B1  Two rows: the label as today, the damage under it (banners 52 px)',
+                'Trp. the troops lost · HP the commander\'s, only where the attack can reach him',
+                'three banners stand 166 px, 20 over the card\'s 146', MADE_UP_THREE], y=62)
+    f.save('B1-two-rows.png')
+
+
+def layout_b2(dump, turn):
+    f = board_e1(dump, turn)
+    stack(f, CARD_E1, EX_THREE, 1, 46, 17, 15, 14, 33, 20, 108)
+    caption(f, ['B2  Two rows within the card: the label 17 instead of 20 (banners 46 px)',
+                'Trp. the troops lost · HP the commander\'s, only where the attack can reach him',
+                'three banners stand 148 px, the card\'s height', MADE_UP_THREE], y=62)
+    f.save('B2-two-rows-fitted.png')
+
+
+def layout_b3(dump, turn):
+    f = board_e1(dump, turn)
+    stack(f, CARD_E1, EX_THREE, 1, BANNER_H, 16, 0, 13, BANNER_H / 2, 70, 134, one_row=True)
+    caption(f, ['B3  One row: the label left, the damage right (banners 40 px as today, the label 16)',
+                'Trp. the troops lost · HP the commander\'s, only where the attack can reach him',
+                'the longest names are tight: "T2 Soaring Wave" with both figures does not fit', MADE_UP_THREE], y=62)
+    f.save('B3-one-row.png')
+
+
+def layout_b2_sakanaku(turn):
+    f = Frame(turn)
+    target_frame(f, CARD_E2)
+    stack(f, CARD_E2, [('Melee', '60', '1–4')], 0, 46, 17, 15, 14, 33, 20, 108)
+    caption(f, ['B2 on Sakanaku (commander 6): Melee takes all his 60 troops and 1-4 of his 4 HP',
+                'the figures the real exchange\'s (5th-95th percentile); the HP no more than he has',
+                'the scene would show Sakanaku; the dump of the turn shows no enemy'], y=62)
+    f.save('B2-sakanaku.png')
+
+
 GALLERY = sys.argv[1]
+layout_b1(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
+layout_b2(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
+layout_b3(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
+layout_b2_sakanaku(load('lacquer', 'current', 'battle-turn.png'))
 layout_a1(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
 layout_a2(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
 layout_a3(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
