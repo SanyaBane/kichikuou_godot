@@ -30,7 +30,8 @@ PB4b a fighter's line (opening, scout-report, strategy, battle-speech).
 Round P8, the phone held landscape (2712×1220, the layout fitted to the height with black sides): L0b, L0m today's
 tablet layout at that size; LM1-LM2 the map (map-markers, province-menu), LB1-LB2 the battle (battle-turn).
 Round P9: LD1-LD2 the deployment table, LU1-LU2 the Subordinates screen, landscape. Round P10: LA1-LA2 the enemy
-attack (enemy-attack-scouted), LW1-LW2 the week report (week-report and the map's pictures), landscape.
+attack (enemy-attack-scouted), LW1-LW2 the week report (week-report and the map's pictures), landscape. Round P11:
+LH1-LH2 Harem, LT1-LT2 Treasure, LL1-LL2 Save/Load, landscape (harem, treasure-items, save-load).
 `--round P3` before the arguments draws only that round's variants (the look dir then unread, '-' will do).
 The pink lines and text are the mock-ups' notes, not part of a screen.
 
@@ -2173,8 +2174,12 @@ def harem_cell(chosen):
             return
         on = name == chosen
         d.rectangle(cb, fill=(70, 54, 30) if on else ROW, outline=GOLD if on else DIM_GOLD, width=3 if on else 2)
-        heart(d, cb[0] + 34, (cb[1] + cb[3]) / 2 - 2, 12)
-        d.text((cb[0] + 62, (cb[1] + cb[3]) / 2), name, font=CINZEL(36, 700), fill=NAME if on else TEXT, anchor='lm')
+        narrow = cb[2] - cb[0] < 300                # the folded grid's cells (LH2): the heart and the name closer
+        hx, nx = (24, 44) if narrow else (34, 62)
+        heart(d, cb[0] + hx, (cb[1] + cb[3]) / 2 - 2, 12)
+        d.text((cb[0] + nx, (cb[1] + cb[3]) / 2), name,
+               font=fit(d, name, lambda s: CINZEL(s, 700), 36, cb[2] - cb[0] - nx - 12), fill=NAME if on else TEXT,
+               anchor='lm')
     return draw
 
 
@@ -4170,10 +4175,348 @@ def p10():
     lw1(); lw2()
 
 
+# --- round P11: Harem, Treasure and Save/Load, landscape (2026-10-28) -----------------------------------------------
+
+LX0, LX1 = SIDE + 6, LW - SIDE - 6         # the whole width between the hole's strips
+FOLD = 9                                   # the folded grid: the picker's rows 1-9 left, 10-17 right
+PIC_W1, PIC_W2 = 1240, 1104                # the picture's width: beside the scrolled grid, beside the folded one
+
+
+def words_mm(width):
+    """The picture's own words (its description column) at a picture `width` wide: 2.4 mm at upright's 1188 (PH2)."""
+    return f'{2.4 * width / 1188:.1f} mm'
+
+
+def gilt(img, pic, xy):
+    img.paste(pic, xy)
+    d = ImageDraw.Draw(img)
+    d.rectangle((xy[0], xy[1], xy[0] + pic.width, xy[1] + pic.height), outline=GOLD, width=3)
+    return d
+
+
+def column_title(d, title, x0, x1, y=14):
+    """A title band over one column: the Shojumaru title, the date right, a divider."""
+    d.text((x0 + 4, y), title, font=BRUSH(56), fill=NAME)
+    d.text((x1, y + 22), DATE, font=CINZEL(28, 700), fill=NAME, anchor='ra')
+    divider(d, y + 96, x0, x1)
+    return y + 110
+
+
+def scroll_bar(d, x, y0, y1, shown, total):
+    d.rounded_rectangle((x, y0, x + 12, y1), radius=6, fill=(40, 32, 24))
+    d.rounded_rectangle((x, y0, x + 12, y0 + (y1 - y0) * shown // total), radius=6, fill=DIM_GOLD)
+
+
+def scrolled_grid(d, box, draw_cell, row_h=118):
+    """The picker's grid in finger-sized cells, the rows that do not fit a drag away (its scroll bar at the right)."""
+    x0, y0, x1, y1 = box
+    picker_grid(d, (x0, y0, x1 - 30, y1), GRID_ROWS, draw_cell, row_h)
+    shown = (y1 - y0 + 6) // (row_h + 6)
+    scroll_bar(d, x1 - 14, y0, y0 + shown * (row_h + 6) - 6, shown, GRID_ROWS)
+    return shown
+
+
+def folded_grid(d, box, draw_cell, cells=3 * GRID_ROWS, gap=40):
+    """The picker's 3 × 17 grid cut in two after its ninth row: rows 1-9 left, 10-17 right, every cell at its
+    number's place and in view. `cells`: the harem's grid has 50 (the 51st is the script's resting place)."""
+    x0, y0, x1, y1 = box
+    bw = (x1 - x0 - gap) / 2
+    w = (bw - 2 * 8) / 3
+    row_h = (y1 - y0 + 6) // FOLD - 6
+    for r in range(GRID_ROWS):
+        bx, rr = (x0, r) if r < FOLD else (x0 + bw + gap, r - FOLD)
+        y = y0 + rr * (row_h + 6)
+        for c in range(3):
+            if r * 3 + c >= cells:
+                continue
+            cb = (round(bx + c * (w + 8)), y, round(bx + c * (w + 8) + w), y + row_h)
+            d.rectangle(cb, fill=(28, 22, 18), outline=(44, 36, 28), width=2)
+            draw_cell(d, cb, r, c)
+    mx = x0 + bw + gap / 2
+    d.line([(mx, y0 + 12), (mx, y1 - 12)], fill=DIM_GOLD, width=2)
+    return row_h, round(w)
+
+
+def treasure_cell_two(chosen):
+    """A narrow cell (the folded grid): the item's name over its holder, no room for both in one line."""
+    def draw(d, cb, r, c):
+        entry = ITEM_CELLS.get((r, c))
+        if not entry:
+            return
+        name, holder = entry
+        on = name == chosen
+        d.rectangle(cb, fill=(70, 54, 30) if on else ROW, outline=GOLD if on else DIM_GOLD, width=3 if on else 2)
+        h = cb[3] - cb[1]
+        d.text((cb[0] + 14, cb[1] + h * 0.36), name, font=fit(d, name, GOTHIC, 34, cb[2] - cb[0] - 26), fill=TEXT,
+               anchor='lm')
+        d.text((cb[2] - 14, cb[1] + h * 0.74), holder, font=GOTHIC(26), fill=QUIET, anchor='rm')
+    return draw
+
+
+def lh1():
+    img, d = land()
+    backdrop(img, (0, 0, LW, LH))
+    pic = harem_picture(PIC_W1)
+    d = gilt(img, pic, (LX0, 16))
+    top = 16 + pic.height + 14
+    panel(d, (LX0, top, LX0 + PIC_W1, FOOT - 10))
+    girl_details(d, LX0 + 34, top + 18, LX0 + PIC_W1 - 34)
+    red_button(d, (LX0 + 26, FOOT - 10 - 26 - 136, LX0 + PIC_W1 - 26, FOOT - 10 - 26), 'Summon Anasel', 56)
+    rx0 = LX0 + PIC_W1 + 30
+    y = column_title(d, 'Harem', rx0, LX1)
+    end = (LX1 - 360, FOOT - 10 - 140, LX1, FOOT - 10)
+    shown = scrolled_grid(d, (rx0, y + 6, LX1, end[1] - 16), harem_cell('Anasel'))
+    side_button(d, end, 'End')
+    reach_land(img)
+    save_land(img, 'LH1', 'the PC\'s split, the grid scrolled', 'land-harem', notes=[
+        'The PC\'s screen across the whole\nwidth: the girl\'s picture at the\nleft, her details and Summon under\n'
+        'it; the title, the date and the\ngrid at the right, End at its foot.',
+        f'The picture {mm(PIC_W1)} wide (its words\n{words_mm(PIC_W1)}, as upright\'s PH2); Summon\nAnasel {mm(136)} high '
+        'under her\ndetails, at the left thumb.',
+        f'The grid in cells of {mm(118)}: {shown} of its\n17 rows in view, the rest a drag\naway (its scroll bar at '
+        'the right);\nEnd at the right thumb.',
+        'A tap chooses a girl (her picture\nand details at the left); the red\nbutton summons — the choice\n'
+        'then the red button is the\nconfirmation.'])
+
+
+def lh2():
+    img, d = land()
+    backdrop(img, (0, 0, LW, LH))
+    y = column_title(d, 'Harem', LX0, LX0 + PIC_W2)
+    pic = harem_picture(PIC_W2)
+    d = gilt(img, pic, (LX0, y + 4))
+    girl_details(d, LX0 + 14, y + 4 + pic.height + 12, LX0 + PIC_W2)
+    foot = (FOOT - 10 - 140, FOOT - 10)
+    side_button(d, (LX0, foot[0], LX0 + 320, foot[1]), 'End')
+    red_button(d, (LX0 + 336, foot[0], LX0 + PIC_W2, foot[1]), 'Summon Anasel', 56)
+    row_h, w = folded_grid(d, (LX0 + PIC_W2 + 40, 16, LX1, FOOT - 10), harem_cell('Anasel'), cells=50)
+    reach_land(img)
+    save_land(img, 'LH2', 'the grid folded in two, every girl in view', 'land-harem', notes=[
+        'The picker\'s grid cut in two after\nits ninth row: rows 1-9 at the\nleft, 10-17 at the right — '
+        'each\ngirl still at her number\'s cell,\nthe order read down the left\nhalf, then the right.',
+        f'All 50 cells in view, no drag:\n{mm(row_h)} × {mm(w)} each, the names\nshrunk to fit where long; the grid\n'
+        'at the right thumb over the\nwhole height.',
+        f'The title, the picture ({mm(PIC_W2)} wide,\nits words {words_mm(PIC_W2)}) and her details\nat the left; End | '
+        f'Summon Anasel\nunder them at the left thumb\n({mm(140)} high).'])
+
+
+def lt1():
+    img, d = land()
+    backdrop(img, (0, 0, LW, LH))
+    pic = treasure_picture(PIC_W1)
+    d = gilt(img, pic, (LX0, 16))
+    top = 16 + pic.height + 14
+    panel(d, (LX0, top, LX0 + PIC_W1, FOOT - 10))
+    item_details(d, LX0 + 34, top + 20, LX0 + PIC_W1 - 500, None)
+    red_button(d, (LX0 + PIC_W1 - 26 - 440, FOOT - 10 - 26 - 150, LX0 + PIC_W1 - 26, FOOT - 10 - 26), 'Take Off', 54)
+    d.text((LX0 + 34, top + 232), 'Tap a character, then the item —', font=GOTHIC(30), fill=QUIET)
+    d.text((LX0 + 34, top + 274), 'or an item, then the character.', font=GOTHIC(30), fill=QUIET)
+    rx0 = LX0 + PIC_W1 + 30
+    y = column_title(d, 'Treasure', rx0, LX1)
+    foot = (FOOT - 10 - 130, FOOT - 10)
+    shown = scrolled_grid(d, (rx0, y + 6, LX1, foot[0] - 16), treasure_cell('L. Holy Sword'))
+    lacquer_tabs(d, foot[0], ['Characters', 'Items'], 1, rx0, LX1 - 380, h=foot[1] - foot[0])
+    side_button(d, (LX1 - 360, foot[0], LX1, foot[1]), 'End')
+    reach_land(img)
+    save_land(img, 'LT1', 'the PC\'s split, the grid scrolled', 'land-treasure', notes=[
+        'The PC\'s screen across the whole\nwidth: the item\'s picture at the\nleft, its name, its holder and the\n'
+        'red button under it; the grid at\nthe right, Characters | Items and\nEnd at its foot (as on the PC).',
+        f'The picture {mm(PIC_W1)} wide: its words\n(what the item does) {words_mm(PIC_W1)}, as\nupright\'s PT2. The '
+        'red button\nat the panel\'s right as the\ntablet\'s (round X), Take Off here.',
+        f'The grid in cells of {mm(118)}: {shown} of its\n17 rows in view, the rest a drag\naway; the tabs and End '
+        f'{mm(130)}\nhigh at the right thumb.'])
+
+
+def lt2():
+    img, d = land()
+    backdrop(img, (0, 0, LW, LH))
+    y = column_title(d, 'Treasure', LX0, LX0 + PIC_W2)
+    pic = treasure_picture(PIC_W2)
+    d = gilt(img, pic, (LX0, y + 4))
+    y += 4 + pic.height + 12
+    item_details(d, LX0 + 14, y, LX0 + PIC_W2 - 470, None)
+    red_button(d, (LX0 + PIC_W2 - 440, y + 10, LX0 + PIC_W2, y + 160), 'Take Off', 54)
+    foot = (FOOT - 10 - 130, FOOT - 10)
+    lacquer_tabs(d, foot[0], ['Characters', 'Items'], 1, LX0, LX0 + PIC_W2 - 336, h=foot[1] - foot[0])
+    side_button(d, (LX0 + PIC_W2 - 320, foot[0], LX0 + PIC_W2, foot[1]), 'End')
+    row_h, w = folded_grid(d, (LX0 + PIC_W2 + 40, 16, LX1, FOOT - 10), treasure_cell_two('L. Holy Sword'))
+    long_name = fit(d, 'L. Holy Sword', GOTHIC, 34, w - 26).size
+    reach_land(img)
+    save_land(img, 'LT2', 'the grid folded in two, every item in view', 'land-treasure', notes=[
+        'The grid folded as LH2\'s: rows\n1-9 at the left, 10-17 at the\nright, all 51 cells in view at\n'
+        f'the right thumb ({mm(row_h)} × {mm(w)}).',
+        'The cells being narrow, an\nitem\'s name stands over its\nholder (Rance, Rick); a long\n'
+        f'name shrinks (L. Holy Sword\n{mm(long_name)}, the others {mm(34)}).',
+        f'The picture {mm(PIC_W2)} wide (its words\n{words_mm(PIC_W2)}); Take Off beside the\nitem\'s details; '
+        'Characters | Items\nand End at the left thumb.'])
+
+
+def land_back(d, box):
+    x0, y0, x1, y1 = box
+    panel(d, box)
+    cy = (y0 + y1) / 2
+    ax = 40 if x1 - x0 < 300 else 52           # a black side's Back (LL2): the triangle nearer the edge
+    d.polygon([(x0 + ax + 32, cy - 18), (x0 + ax, cy), (x0 + ax + 32, cy + 18)], fill=GOLD)
+    d.text(((x0 + ax + 44 + x1) / 2, cy), 'Back', font=fit(d, 'Back', BRUSH, 50, x1 - x0 - ax - 70), fill=TEXT,
+           anchor='mm')
+
+
+def bin_button(d, box, stacked=False):
+    """Delete: the danger button with its bin (the owner's B5); `stacked`: the bin over the word, for a black side."""
+    x0, y0, x1, y1 = box
+    d.rectangle(box, fill=(54, 18, 14), outline=(196, 70, 50), width=3)
+    ink = (236, 150, 110)
+    bx, by = ((x0 + x1) / 2 - 14, y0 + 34) if stacked else (x0 + 30, (y0 + y1) / 2 - 12)
+    s = 1.6 if stacked else 1
+    d.rectangle((bx, by + 2 * s, bx + 22 * s, by + 32 * s), outline=ink, width=3)
+    d.line([(bx - 6 * s, by), (bx + 28 * s, by)], fill=ink, width=3)
+    if stacked:
+        d.text(((x0 + x1) / 2, y1 - 44), 'Delete', font=CINZEL(34, 700), fill=ink, anchor='mm')
+    else:
+        d.text(((x0 + 70 + x1) / 2, (y0 + y1) / 2), 'Delete', font=CINZEL(30, 700), fill=ink, anchor='mm')
+
+
+def land_save_list(d, box, rows_h=104, chosen=12, saves=PL2_SAVES, tabs=True):
+    """PL2's list in its room: the two lists' tabs, the heading with the sweep, one-line rows newest first, the rows
+    that do not fit a drag away (the scroll bar)."""
+    x0, y0, x1, y1 = box
+    y = y0
+    if tabs:
+        y = lacquer_tabs(d, y, [f'Manual saves · {len(saves)}', 'Auto-saves · 20'], 0, x0, x1, h=96) + 16
+    d.text((x0 + 8, y + 32), 'NEWEST FIRST', font=CINZEL(26, 600), fill=SUBTITLE, anchor='lm')
+    b = (x1 - 440, y, x1, y + 64)
+    d.rectangle(b, fill=ROW, outline=DIM_GOLD, width=2)
+    d.text(((b[0] + b[2]) / 2 + 6, y + 32), 'Delete all without', font=GOTHIC(28), fill=TEXT, anchor='rm')
+    star(d, (b[0] + b[2]) / 2 + 28, y + 32, 12)
+    d.text(((b[0] + b[2]) / 2 + 48, y + 32), f'({sum(1 for s in saves if not s[3])})', font=GOTHIC(28), fill=TEXT,
+           anchor='lm')
+    y += 84
+    shown = min(len(saves), (y1 - y + 10) // (rows_h + 10))
+    rx1 = x1 if shown == len(saves) else x1 - 30
+    if shown < len(saves):
+        scroll_bar(d, x1 - 14, y, y + shown * (rows_h + 10) - 10, shown, len(saves))
+    for s in saves[:shown]:
+        save_row(d, (x0, y, rx1, y + rows_h), s, chosen=s[0] == chosen, two_lines=False)
+        y += rows_h + 10
+    return shown
+
+
+def land_save_page(img, box, cols=3, number=12, delete=True, foot=0):
+    """The chosen save's page in `box`: its title (and Delete beside it unless a black side holds it), its map at
+    the box's width — cut lower to leave the figures, the comment and `foot` px under it —, the figures in `cols`
+    columns, the comment and Edit."""
+    x0, y0, x1, y1 = box
+    d = ImageDraw.Draw(img)
+    y = y0
+    d.text((x0 + 4, y + 40), f'No. {number} · LP 3 · Month 5 · Week 2', font=CINZEL(36, 700), fill=NAME, anchor='lm')
+    if delete:
+        bin_button(d, (x1 - 240, y, x1, y + 84))
+    y += 100
+    rows = -(-len(SAVE_FIGURES) // cols)
+    under = 18 + rows * 92 + 10 + 136 + foot
+    pic = dump(TOUCH, 'save-load.png').crop((424, 117, 1227, 450))
+    pic = pic.resize((x1 - x0, round((x1 - x0) * pic.height / pic.width)), Image.LANCZOS)
+    cut = min(pic.height, y1 - y - under)
+    pic = pic.crop((0, 0, pic.width, cut))
+    d = gilt(img, pic, (x0, y))
+    y += pic.height + 18
+    cw = (x1 - x0) / cols
+    for i, (label, value) in enumerate(SAVE_FIGURES):
+        x, ry = x0 + 8 + (i % cols) * cw, y + (i // cols) * 92
+        d.text((x, ry), label, font=CINZEL(24, 600), fill=SUBTITLE)
+        d.text((x, ry + 32), value, font=fit(d, value, GOTHIC, 38, cw - 48), fill=TEXT)
+    y += rows * 92 + 10
+    d.text((x0 + 8, y), 'COMMENT', font=CINZEL(24, 600), fill=SUBTITLE)
+    b = (x0, y + 36, x1 - 220, y + 136)
+    d.rectangle(b, fill=(30, 22, 16), outline=DIM_GOLD, width=2)
+    d.text((x0 + 24, y + 86), 'before the attack on Oaks', font=GOTHIC(38), fill=TEXT, anchor='lm')
+    row_box(d, (x1 - 204, y + 36, x1, y + 136), 'Edit', size=40, face=BRUSH, centred=True)
+    return cut, y + 136
+
+
+def load_save_chips(d, x0, y, w=200, h=80, stacked=False):
+    """Load | Save (from COMMAND): the chosen one red."""
+    for i, name in enumerate(('Load', 'Save')):
+        b = (x0, y + i * (h + 12), x0 + w, y + i * (h + 12) + h) if stacked else \
+            (x0 + i * (w + 12), y, x0 + i * (w + 12) + w, y + h)
+        on = name == 'Load'
+        d.rectangle(b, fill=(112, 26, 20) if on else ROW, outline=GOLD if on else DIM_GOLD, width=3 if on else 2)
+        d.text(((b[0] + b[2]) / 2, (b[1] + b[3]) / 2), name, font=CINZEL(32, 700), fill=NAME if on else QUIET,
+               anchor='mm')
+
+
+LL1_SPLIT = 1000                        # LL1: the list left of it, the save's page right of it
+
+
+def ll1():
+    img, d = land()
+    backdrop(img, (0, 0, LW, LH))
+    d.text((LX0 + 4, 14), 'Load', font=BRUSH(56), fill=NAME)
+    load_save_chips(d, LL1_SPLIT - 412, 18)
+    divider(d, 110, LX0, LL1_SPLIT)
+    rows = land_save_list(d, (LX0, 124, LL1_SPLIT, FOOT - 10))
+    px0 = LL1_SPLIT + 40
+    foot = (FOOT - 10 - 150, FOOT - 10)
+    cut, _ = land_save_page(img, (px0, 14, LX1, foot[0] - 16), foot=0)
+    d = ImageDraw.Draw(img)
+    land_back(d, (px0, foot[0], px0 + 360, foot[1]))
+    red_button(d, (px0 + 376, foot[0], LX1, foot[1]), 'Load', 64)
+    reach_land(img)
+    save_land(img, 'LL1', 'the PC\'s split: the list left, the save\'s page right', 'land-saves', notes=[
+        'The PC\'s screen across the whole\nwidth: the title, Load | Save and\nthe two lists at the left; the\n'
+        'chosen save\'s page at the right,\nBack | Load at its foot (as on the\nPC), Load at the right thumb.',
+        f'The list as upright\'s PL2: one-line\nrows ({mm(104)}), the comment only on\nthe page; {rows} of the twelve '
+        'in\nview, the rest a drag away (the\nscroll bar).',
+        f'The map at the page\'s width\n({mm(LX1 - px0)}), cut lower to {mm(cut)} for\nthe figures in three columns '
+        'and\nthe comment; Delete at the save\'s\ntitle (the owner\'s B5).',
+        'Twelve manual saves, as PL2:\nthe gallery\'s four (here 12-9)\nand eight older ones made up.'])
+
+
+def ll2():
+    img, d = land()
+    backdrop(img, (0, 0, LW, LH))
+    sx0, sx1 = RAIL_L
+    d.text((sx0 + 4, 14), 'Load', font=BRUSH(56), fill=NAME)
+    load_save_chips(d, sx0, 104, w=sx1 - sx0, h=84, stacked=True)
+    d.line([(sx0 + 4, 316), (sx1 - 4, 316)], fill=DIM_GOLD, width=2)
+    d.text((sx0 + 4, 336), 'SAVES', font=CINZEL(24, 600), fill=SUBTITLE)
+    for i, (title, sub) in enumerate((('Manual', '12 saves'), ('Auto', '20 saves'))):
+        b = (sx0, 380 + i * 142, sx1, 380 + i * 142 + 130)
+        on = i == 0
+        d.rectangle(b, fill=(70, 54, 30) if on else ROW, outline=GOLD if on else DIM_GOLD, width=3 if on else 2)
+        d.text(((b[0] + b[2]) / 2, b[1] + 46), title, font=CINZEL(36, 700), fill=NAME if on else QUIET, anchor='mm')
+        d.text(((b[0] + b[2]) / 2, b[3] - 36), sub, font=GOTHIC(28), fill=TEXT if on else QUIET, anchor='mm')
+    land_back(d, (sx0, FOOT - 10 - 150, sx1, FOOT - 10))
+    lx1 = FX0 + 12 + 720
+    rows = land_save_list(d, (FX0 + 12, 16, lx1, FOOT - 10), tabs=False)
+    cut, _ = land_save_page(img, (lx1 + 32, 14, FX1 - 12, FOOT - 10), cols=2, delete=False)
+    d = ImageDraw.Draw(img)
+    sx0, sx1 = RAIL_R
+    bin_button(d, (sx0, 16, sx1, 216), stacked=True)
+    red_button(d, (sx0, FOOT - 10 - 260, sx1, FOOT - 10), 'Load', 56)
+    reach_land(img)
+    save_land(img, 'LL2', 'the frame holds the list and the page, the sides the rest', 'land-saves', notes=[
+        'LM1\'s principle: the frame holds\nthe list and the chosen save\'s\npage; the black sides the title,\n'
+        'the switches and the buttons.',
+        'Left side: the title, Load | Save\n(from COMMAND) stacked, the two\nlists as two cells (Manual 12,\n'
+        'Auto 20), Back at the left thumb.',
+        f'The list in one-line rows ({mm(104)}):\n{rows} of the twelve in view, the rest\na drag away. The page: the map at\n'
+        f'its whole height ({mm(cut)}), the\nfigures in two columns, the\ncomment and Edit.',
+        'Right side: Delete (the danger\nbutton, its bin) at the top,\nbeside the save\'s title and out\n'
+        f'of the thumbs\' way; Load at the\nright thumb ({mm(260)} high).',
+        'Twelve manual saves, as LL1.'])
+
+
+def p11():
+    lh1(); lh2()
+    lt1(); lt2()
+    ll1(); ll2()
+
+
 def main():
     global MAP, PROV_NAMES, PROV_POINTS
-    if ROUND in ('P3', 'P5', 'P7', 'P9'):
-        {'P3': p3, 'P5': p5, 'P7': p7, 'P9': p9}[ROUND]()
+    if ROUND in ('P3', 'P5', 'P7', 'P9', 'P11'):
+        {'P3': p3, 'P5': p5, 'P7': p7, 'P9': p9, 'P11': p11}[ROUND]()
         overviews()
         return
     MAP, PROV_NAMES, PROV_POINTS = build_map()

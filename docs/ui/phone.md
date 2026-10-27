@@ -156,6 +156,9 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 18. ~~**The landscape Subordinates screen** (round P9, §13): LU1 or LU2.~~ LU1, changed.
 19. ~~**The landscape enemy attack** (round P10, §14): LA1 or LA2.~~ LA2, changed.
 20. ~~**The landscape week report** (round P10, §14): LW1 or LW2.~~ LW1.
+21. **The landscape Harem** (round P11, §15): LH1 or LH2.
+22. **The landscape Treasure** (round P11, §15): LT1 or LT2.
+23. **The landscape Save/Load** (round P11, §15): LL1 or LL2.
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -561,3 +564,51 @@ keeps the map in view, but its account is narrow and its labels small.
   in view, no scroll bar needed.
 
 LA2, LA2n and LW1 are on the gallery's landscape tab.
+
+## 15. Round P11: Harem, Treasure and Save/Load, landscape (2026-10-28)
+
+Drawn by `mock_phone.py --round P11` over the same data as round P5 (§9): the gallery's `harem` (Sill, Soul and
+Anasel on offer, Anasel chosen), `treasure-items` (the L. Holy Sword (item 6) on Rance (unit 1), By Lord (item 7) on
+Rick (unit 7)) and `save-load`, with PL2's twelve manual saves (the gallery's four renumbered 12-9, eight older ones made
+up). The PC's own screens are already laid across, so every variant uses the whole width (as LD2 and LA2), and LL2 also
+LM1's principle.
+
+The pickers' grid is 3 × 17 cells, each girl or item at her number's cell (the owner's grid, docs/ui/pickers.md). On the
+landscape phone the height is what is short: 17 rows of finger-sized cells (6.7 mm) do not fit it. Two answers:
+
+- **LH1 / LT1 — the PC's split, the grid scrolled.** The picture at the left, 70.6 mm wide (its words 2.5 mm, as
+  upright's PH2 and PT2), the details and the red button under it in a panel — Summon Anasel across it (7.7 mm), Take Off
+  at its right as the tablet's (round X), with the PC's hint "Tap a character, then the item —"; the title, the date and
+  the grid at the right, its cells 6.7 mm (the names 2 mm): **seven of its 17 rows in view**, the rest a drag away (its
+  scroll bar). End at the right thumb at the grid's foot, the treasure's Characters | Items beside it (7.4 mm), as on
+  the PC.
+- **LH2 / LT2 — the grid folded in two, every cell in view.** The grid cut after its ninth row — rows 1-9 at the left,
+  10-17 at the right, a gold rule between them — over the whole height at the right thumb: cells 6.9 × 12.0 mm, each
+  girl or item still at her number's cell, the order read down the left half, then the right (the harem's 50 cells, the
+  51st being the script's resting place; the treasure's 51). The picture 62.9 mm wide (its words 2.2 mm), the title
+  over it, the details under it; End | Summon Anasel at the left thumb (8 mm); Take Off beside the item's details,
+  Characters | Items and End under them. The cells being narrow, an item's name stands over its holder, and a long name
+  shrinks: the L. Holy Sword 1.6 mm, the others 1.9 mm — and the game has many such (Hawaiian Sword, Happiness Ring,
+  Ninja Birdlime: 13-14 letters).
+
+**Recommendation: LH2 for the harem, LT1 for Treasure** — the girls' names are short, so the folded grid shows the
+whole harem at the thumb with the picture nearly as large; the items' names are long, and folding would shrink them
+below 2 mm, so the treasure keeps the PC's split and its scroll. (Upright the owner chose the picture over the whole
+grid, PH2 and PT2; LH2 keeps both.)
+
+Save/Load (`LL…`; upright PL2 as the owner changed it: one-line rows 5.9 mm, the comment only on the page):
+
+- **LL1 — the PC's split across the whole width.** At the left the title, Load | Save (from `COMMAND`), the two lists'
+  tabs, the heading with the sweep "Delete all without ★ (9)" and the list: **seven of the twelve in view**, the rest a
+  drag away (the scroll bar). At the right the chosen save's page: its title with Delete (the owner's B5), the map at
+  the page's width (88.6 mm), cut lower to 30.3 mm for the figures in three columns and the comment with Edit; Back |
+  **Load** at its foot as on the PC, Load at the right thumb.
+- **LL2 — the frame holds the list and the page, the sides the rest** (LM1's principle). The left side: the title,
+  Load | Save stacked, the two lists as two cells (Manual · 12 saves, Auto · 20 saves), Back at the left thumb. The
+  frame: the list with **nine of the twelve in view**, the page beside it — the map whole (70 × 27.8 mm), the figures in
+  two columns, the comment and Edit. The right side: Delete (the danger button, its bin over the word) at the top,
+  beside the save's title and out of the thumbs' way; **Load** at the right thumb (14.8 mm high).
+
+**Recommendation: LL1** — the PC's order kept: Back and Load together at the right thumb (as the owner's LD2 put Stop
+and Attack), Delete at the save's title, the map the largest; LL2 shows two rows more, as many as the owner's PL2, at
+the cost of a smaller map and the buttons split between the thumbs.
