@@ -209,3 +209,11 @@ The agent recommended M1: nothing else on the foot moves, and the face is as lar
 with the square raised, its top at the top of the name's capitals; built the same day (`EnemyAttackView.AdvisorFace`,
 88×88 at `FootTop + 21`; the name and the line at x 156, the line up to 20 short of Intercept), the square drawn as the
 army's cards draw theirs (`EnemyAttackView.DrawFace`, shared). Looked at in the screen gallery (Lacquer, Steel, touch).
+
+## 12. The answers mirrored for a finger (owner, 2026-10-27)
+
+The owner: on Android, Intercept and Abandon City change places. Built the same day without a mock-up: in the touch mode
+(`TouchMode.On`) the row of answers (548-1226) is mirrored, each button at its size — Abandon City at 548 (196×52,
+the row's middle height), Ninja Scout at 762, Intercept at 974 by the foot's right edge (`EnemyAttackView.Mirrored`); the
+ninjas' list and Abandon City's callout follow their buttons as before. The PC's row is unchanged. Looked at in the
+screen gallery's touch pass (the screen, the list, the question); not yet on the tablet.

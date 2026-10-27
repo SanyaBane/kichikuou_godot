@@ -45,9 +45,12 @@ internal sealed partial class EnemyAttackView : Control
     // top at her name's capitals (Cinzel 13 on FootTop + 30), the name and her line right of it.
     private static readonly Rect2 AdvisorFace = new(50, FootTop + 21, 88, 88);
     private const float AdvisorTextX = 156;
-    private static readonly Rect2 InterceptButton = new(548, FootTop + 28, 252, 92);
-    private static readonly Rect2 ScoutButton = new(822, FootTop + 28, 190, 92);
-    private static readonly Rect2 AbandonButton = new(1030, FootTop + 44, 196, 52);
+    // The answers' row: Intercept, Ninja Scout, Abandon City; in the touch mode mirrored, Abandon City first and Intercept
+    // last (owner, 2026-10-27).
+    private const float ButtonsLeft = 548, ButtonsRight = 1226;
+    private static readonly Rect2 InterceptButton = Mirrored(new(548, FootTop + 28, 252, 92));
+    private static readonly Rect2 ScoutButton = Mirrored(new(822, FootTop + 28, 190, 92));
+    private static readonly Rect2 AbandonButton = Mirrored(new(1030, FootTop + 44, 196, 52));
     private const float ListWidth = 260, ListRow = 50, ListGap = 6, ListPad = 12, ListHead = 26;
     private const float Dim = 0.66f;
 
@@ -305,6 +308,10 @@ internal sealed partial class EnemyAttackView : Control
         return new Rect2(x, ScoutButton.Position.Y - 16 - h, ListWidth, h);
     }
 
+    /// <summary><paramref name="button"/> as the PC lays it out, in the touch mode mirrored within the answers' row.</summary>
+    private static Rect2 Mirrored(Rect2 button) =>
+        TouchMode.On ? button with { Position = new(ButtonsLeft + ButtonsRight - button.End.X, button.Position.Y) } : button;
+
     private static Rect2 ListRowRect(EnemyAttack attack, int i)
     {
         var list = ListRect(attack);
@@ -534,7 +541,7 @@ internal sealed partial class EnemyAttackView : Control
         var lines = attack.AdvisorSays;
         for (int i = 0; i < lines.Count && i < 4; i++)
             _sheet.DrawString(_font!, new Vector2(AdvisorTextX, FootTop + 58 + i * 24), lines[i], HorizontalAlignment.Left,
-                InterceptButton.Position.X - 20 - AdvisorTextX, 18, Ui.Text);
+                ButtonsLeft - 20 - AdvisorTextX, 18, Ui.Text);
 
         bool Hovered(Spot spot) => _hover.Spot == spot && !_callout.MenuOpen;
         bool Down(Spot spot) => _pressed.Spot == spot && _hover.Spot == spot;

@@ -630,6 +630,11 @@ T1 and the owner's choice are docs/ui/dungeon-menu.md, §5: B, built — in the 
 corner, right of window 113, Retreat at its top, then Ascend, the floor and a larger Descend in the corner. The menu
 before a search went the same way (§6 there, the owner's B): Start Search in Descend's place, Return on top.
 
+## The enemy attack's answers (owner, 2026-10-27)
+
+In the touch mode the enemy attack's row of answers is mirrored: Abandon City first, Ninja Scout, Intercept last at the
+foot's right, each at its size (docs/ui/enemy-attack.md, §12).
+
 ## The message log from the map, round L (owner, 2026-10-26)
 
 On the PC the wheel up now opens the message log on `COMMAND`'s waiting map too (docs/ui/messages.md, §5 step 6). A
