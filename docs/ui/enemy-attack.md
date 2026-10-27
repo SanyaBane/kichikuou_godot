@@ -191,3 +191,21 @@ the screen), and the small button keeps Abandon City the unlikely answer. **The 
 the danger button is now a shared part (`UiPalette.DrawDangerButton`, Delete on the Save/Load screen drawn with it
 unchanged), `EnemyAttackView` draws Abandon City with it at its former size, a white flag before the label, lit while
 hovered or while its question is open. Looked at in the screen gallery (Lacquer, Steel, touch).
+
+## 11. Maris as her face square (owner, 2026-10-27)
+
+The owner: the foot's Maris is the top of her 192×256 portrait (CG 6, script pixels 192×190 squeezed into 122×120,
+its gold frame open at the foot) — she should be her miniature, the face square our cards show (`UnitFaces`,
+Debug → Portraits; hers the built-in square, 144 from y 7), mock-ups first in case the square looks bad filling the
+portrait's place. The portrait's checker also reads purple now: `DrawTextureRectRegion` filters the colour key's
+magenta into it, which the squares avoid (`FacePictures.Shrink`). Mock-up round M is `tools/ui/mock_attack_advisor.py`,
+over the screen gallery's `enemy-attack` dump, each full screen and a sheet of the foot's left part at 1280×800 and at
+2560×1600: **M1** the square in the portrait's place, 120×120 in gold as the army's cards' faces, the name and the line
+as they are; **M2** the square at the cards' face size, 88×88, the line 32 further left; **M3** a 100 square with her
+name on a speaker's plate under it (message window 131's), the line given the foot's height; **M4** M2 speaking, the
+line in a box whose tail points at her and the name on a plate across its top. The square is 144 of the CG's pixels, so
+120 on the layout is a reduction, and enlarged only on windows past ~1.2× the layout (240 at 2560×1600, still clean).
+The agent recommended M1: nothing else on the foot moves, and the face is as large as before. **The owner chose M2**
+with the square raised, its top at the top of the name's capitals; built the same day (`EnemyAttackView.AdvisorFace`,
+88×88 at `FootTop + 21`; the name and the line at x 156, the line up to 20 short of Intercept), the square drawn as the
+army's cards draw theirs (`EnemyAttackView.DrawFace`, shared). Looked at in the screen gallery (Lacquer, Steel, touch).

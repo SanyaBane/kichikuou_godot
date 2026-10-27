@@ -12,7 +12,7 @@ namespace Kichikuou.Game.Strategy;
 /// mock-ups B and B4): the original's screen dimmed and blurred under it; a title band with the attacker's flag and the
 /// announcement; the province left — its picture and what its battles give the defender —, "VS", the army's four places
 /// right as our party's cards (mock-up E3), unknown until a ninja scouts them and then filled in place; at the foot
-/// Maris's line and the answers to <c>FIGT_B</c>'s menu: Intercept, Ninja Scout (a list of the ninjas in service, the
+/// Maris's face square (§11) and line and the answers to <c>FIGT_B</c>'s menu: Intercept, Ninja Scout (a list of the ninjas in service, the
 /// spent ones dimmed) and Abandon City (asked first, at its button). It decides nothing of the rules:
 /// <see cref="ChooseAsync"/> gives the menu's code and, for a scouting, the ninja's. Points are layout pixels of the
 /// 1280×800 screen.
@@ -41,7 +41,10 @@ internal sealed partial class EnemyAttackView : Control
     private const float ArmyCardsTop = PanelsTop + 34 + (PanelsHeight - 50 - 328) / 2 + 24;
     private static readonly Rect2 Foot = new(32, FootTop, 1216, 148);
     private static readonly Rect2 PictureArea = new(32 + (472 - 300) / 2, PanelsTop + 42, 300, 200);
-    private static readonly Rect2 AdvisorArea = new(50, FootTop + 14, 122, 120);
+    // The owner's M2 (2026-10-27, tools/ui/mock_attack_advisor.py): Maris's face square at the army's cards' size, its
+    // top at her name's capitals (Cinzel 13 on FootTop + 30), the name and her line right of it.
+    private static readonly Rect2 AdvisorFace = new(50, FootTop + 21, 88, 88);
+    private const float AdvisorTextX = 156;
     private static readonly Rect2 InterceptButton = new(548, FootTop + 28, 252, 92);
     private static readonly Rect2 ScoutButton = new(822, FootTop + 28, 190, 92);
     private static readonly Rect2 AbandonButton = new(1030, FootTop + 44, 196, 52);
@@ -444,11 +447,7 @@ internal sealed partial class EnemyAttackView : Control
         _sheet.DrawRect(rect, Ui.DimGold, false, Lacquer.Line(1, _k));
         float size = rect.Size.Y - 16;
         var face = new Rect2(rect.End.X - 8 - size, rect.Position.Y + 8, size, size);
-        _sheet.DrawRect(face, Ui.FaceBack);
-        if (commander.Picture != 0
-            && _faces.SquareTexture(commander.Picture, _faces.CropOf(commander.Picture, _crops), Math.Max(16, (int)Math.Round(size * _k))) is { } texture)
-            _sheet.DrawTextureRect(texture, face, false);
-        _sheet.DrawRect(face, Ui.Gold, false, Lacquer.Line(1, _k));
+        DrawFace(face, commander.Picture);
 
         float tx = rect.Position.X + 12, right = face.Position.X - 12;
         Ui.DrawBadge(_sheet, _cinzel, new Vector2(tx + 10, rect.Position.Y + 19), 11, slot);
@@ -462,6 +461,15 @@ internal sealed partial class EnemyAttackView : Control
         _sheet.DrawString(_font!, new Vector2(right - _font!.GetStringSize(troops, fontSize: 17).X, baseline), troops,
             fontSize: 17, modulate: Ui.Value);
         _sheet.DrawLine(new Vector2(tx, baseline + 5), new Vector2(right, baseline + 5), Ui.DimGold, Lacquer.Line(1, _k));
+    }
+
+    /// <summary>CG <paramref name="cg"/>'s face square (0: none) on <see cref="UiPalette.FaceBack"/> in a gold line.</summary>
+    private void DrawFace(Rect2 face, int cg)
+    {
+        _sheet.DrawRect(face, Ui.FaceBack);
+        if (cg != 0 && _faces.SquareTexture(cg, _faces.CropOf(cg, _crops), Math.Max(16, (int)Math.Round(face.Size.X * _k))) is { } texture)
+            _sheet.DrawTextureRect(texture, face, false);
+        _sheet.DrawRect(face, Ui.Gold, false, Lacquer.Line(1, _k));
     }
 
     /// <summary>A place not scouted yet: dashed, a "?" where the face goes, "Unknown".</summary>
@@ -521,14 +529,12 @@ internal sealed partial class EnemyAttackView : Control
     private void DrawFoot(EnemyAttack attack)
     {
         Ui.DrawPanel(_sheet, Foot, _k);
-        if (Picture(EnemyAttack.AdvisorCg) is { } maris)
-            _sheet.DrawTextureRectRegion(maris, AdvisorArea, new Rect2(0, 0, 192, 190));
-        _sheet.DrawRect(AdvisorArea, Ui.DimGold, false, Lacquer.Line(1, _k));
-        _sheet.DrawString(_cinzel, new Vector2(188, FootTop + 30), "MARIS", fontSize: 13, modulate: Ui.Subtitle);
+        DrawFace(AdvisorFace, EnemyAttack.AdvisorCg);
+        _sheet.DrawString(_cinzel, new Vector2(AdvisorTextX, FootTop + 30), "MARIS", fontSize: 13, modulate: Ui.Subtitle);
         var lines = attack.AdvisorSays;
         for (int i = 0; i < lines.Count && i < 4; i++)
-            _sheet.DrawString(_font!, new Vector2(188, FootTop + 58 + i * 24), lines[i], HorizontalAlignment.Left, 340, 18,
-                Ui.Text);
+            _sheet.DrawString(_font!, new Vector2(AdvisorTextX, FootTop + 58 + i * 24), lines[i], HorizontalAlignment.Left,
+                InterceptButton.Position.X - 20 - AdvisorTextX, 18, Ui.Text);
 
         bool Hovered(Spot spot) => _hover.Spot == spot && !_callout.MenuOpen;
         bool Down(Spot spot) => _pressed.Spot == spot && _hover.Spot == spot;
