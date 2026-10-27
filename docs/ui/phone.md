@@ -77,6 +77,10 @@ original's windows.
 
 **The owner (2026-10-27): none of the three.** The scenes stay open; the other screens go on without them.
 
+**The owner (2026-10-28): PS2 as the base, changed** — the picture and its portraits in the screen's middle; the upper
+portrait's speech in a window above the picture, the lower one's under it, with no name plate (the name is on the
+portrait); PS2b and PS2m as drawn, but with the picture (and the window) in the middle too. Redrawn as round P14 (§18).
+
 ## 3. The map (`COMMAND`'s map wait, the command panel, a province)
 
 The map is six pictures, 1920 × 800 map pixels; the PC shows 640 × 400 of it. Upright at the picture's width the
@@ -130,7 +134,8 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 1. **The line breaks upright.** Kept (each window kind's type as large as its longest line: 3.6 mm and 2.6 mm), or
    rewrapped at one size for every window (e.g. 3.2 mm), as the battle's balloons already are? Rewrapping touches
    no rule; it changes how a page looks.
-2. ~~**The scenes:** PS1, PS2 or PS3.~~ None (owner, 2026-10-27); open, put off.
+2. ~~**The scenes:** PS1, PS2 or PS3.~~ None (owner, 2026-10-27); then PS2, changed (owner, 2026-10-28): round P14,
+   §18.
 3. ~~**The map:** PM1 or PM2.~~ PM1.
 4. ~~**The battle:** PB1 or PB2.~~ PB1, changed: round P2 (§6).
 5. **The bar's cells** (Menu, Log, Skip): at the left, as the tablet's drawer, or at the right under the right thumb?
@@ -164,7 +169,9 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 26. ~~**The landscape retreat question** (round P13, §17): LB2r1 or LB2r2.~~ LB2r1.
 27. ~~**The landscape opening** (round P13, §17): LB3o1 or LB3o2.~~ LB3o1 (upright's question 12 is still open).
 28. ~~**The landscape battle's other states** (round P13, §17): LB2x, LB3s, LB3c, LB3r and LB3b as drawn?~~ As drawn.
-29. **What comes next** (the owner, 2026-10-28): the scenes (§2, open since round P1), upright and landscape.
+29. ~~**What comes next** (the owner, 2026-10-28).~~ The scenes (§2), upright first: round P14 (§18).
+30. **The scenes upright** (round P14, §18): PS2, PS2l, PS2b and PS2m as drawn? And the agent's choice for a thought,
+    the narration and a speaker with no portrait.
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -726,3 +733,22 @@ wait for screen gallery entries to draw over, and the scenes (§2, open upright 
 **The owner's choice (2026-10-28): LB2r1 and LB3o1, and LB2x, LB3s, LB3c, LB3r and LB3b as drawn** — the agent's own
 choices above with them (the counters and a speaker's portrait in the scene's blurred sides). They are on the gallery's
 landscape tab with LB2. Next, the owner's word: the scenes (§2), upright and landscape.
+
+## 18. Round P14: the scenes upright, PS2 changed (2026-10-28)
+
+The owner took PS2 as the base (§2) with changes. Redrawn in place by `mock_phone.py --round P14` over the week-18
+look's key waits (Ex's scene before the attack on Oaks (6); the look dir as in round P1), PS2l added:
+
+- **PS2 — the upper speaker's window above the picture.** The picture and its portraits in the screen's middle, between
+  the camera's strip and the bar (from 52.7 mm to 96.1 mm of the screen's 154.5); Ex, the upper portrait, speaks in a
+  window above it, its tail down at him; no name plate — his name is on his portrait. The speech's lines (32 cells) at
+  3.6 mm, the script's breaks kept; the window keeps four lines' height (23.9 mm), so the picture never moves.
+- **PS2l — the lower speaker's window under the picture**: the Leazas White Knight, the lower portrait, in a window under
+  it, its tail up at him; the upper window's room empty meanwhile.
+- **PS2b — window 131 under its CG**, the CG where PS2's picture stands; 131's lines at 2.6 mm, its speaker on a plate
+  (no portrait shows the name there).
+- **PS2m — a dialogue menu**: the picture and the question's window where PS2 has them, the rows at the thumb in the
+  bar's place (7.4 mm).
+
+The agent's own choices, for the owner to confirm: a thought goes by its thinker's portrait the same way (above or
+under); the narration and a speaker with no portrait in the picture go under it; Menu, Log and Skip stay in the bar.

@@ -36,7 +36,10 @@ LO1-LO2 the options window, LF1-LF2 the dungeon's menus, landscape (options-mess
 dungeon-entry, map). Round P13, the battle's other states on LB2: LB2r1-LB2r2 the retreat question, LB2x an exchange,
 LB3o1-LB3o2 the opening, LB3s the scout report, LB3c the strategy's cut-in, LB3r the results plate, LB3b a fighter's
 line (battle-turn, exchange-counters, opening, scout-report, strategy, info-results, battle-speech).
-`--round P3` before the arguments draws only that round's variants (the look dir then unread, '-' will do).
+Round P14, the scenes again: PS2 as the owner changed it — the picture in the screen's middle, the upper speaker's
+window above it (PS2), the lower one's under it (PS2l), and PS2b, PS2m with the picture there too (the look dir).
+`--round P3` before the arguments draws only that round's variants (the look dir then unread, '-' will do; P14 reads
+it).
 The pink lines and text are the mock-ups' notes, not part of a screen.
 
 For the screen gallery's phone tabs (tools/ui/gallery.ps1 -Phone; docs/ui/gallery.md, §9) only the owner's chosen base
@@ -558,14 +561,19 @@ def p0():
 
 # --- the scenes ----------------------------------------------------------------------------------------------------
 
-def speech_window(d, box, lines, speaker=None, size=64, tail=None, kind='speech', read=False, triangle_on=True):
+def speech_window(d, box, lines, speaker=None, size=64, tail=None, kind='speech', read=False, triangle_on=True,
+                  tail_down=False):
     x0, y0, x1, y1 = box
     fill = {'speech': PANEL, 'thought': THOUGHT_FILL, 'narration': NARRATION_FILL}[kind]
     if kind == 'thought':
         d.rounded_rectangle(box, radius=36, fill=fill, outline=DIM_GOLD, width=3)
     else:
         panel(d, box, fill)
-    if tail:                                    # the speech's tail, up to its speaker in the picture
+    if tail and tail_down:                      # down to its speaker in the picture under the window
+        tx = tail
+        d.polygon([(tx - 30, y1 - 2), (tx + 30, y1 - 2), (tx - 10, y1 + 44)], fill=fill)
+        d.line([(tx - 30, y1), (tx - 10, y1 + 44), (tx + 30, y1)], fill=GOLD, width=3)
+    elif tail:                                  # the speech's tail, up to its speaker in the picture
         tx = tail
         d.polygon([(tx - 30, y0 + 2), (tx + 30, y0 + 2), (tx - 10, y0 - 44)], fill=fill)
         d.line([(tx - 30, y0), (tx - 10, y0 - 44), (tx + 30, y0)], fill=GOLD, width=3)
@@ -598,55 +606,87 @@ def d1():
     save(img, 'PS1', 'the picture as on the PC, the bar under it', 'scenes')
 
 
+SCENE_Y = (TOP + BAR[0]) // 2 - 381    # the picture in the screen's middle, between the camera's strip and the bar
+SPEECH_H = 420                          # a speech window keeps four lines' height, so the picture never moves
+GENERAL_EX = ['General Ex!', 'The enemy’s here!!']
+
+
 def d2():
+    """PS2 as the owner changed it (2026-10-28): the picture in the middle, the upper portrait's speech above it."""
     img, d = phone()
     backdrop(img, (0, 0, PW, PH))
-    img.paste(scene_clean(), (0, TOP))
+    img.paste(scene_clean(), (0, SCENE_Y))
     d = ImageDraw.Draw(img)
-    pic_foot = TOP + 762
-    speech_window(d, (16, pic_foot + 64, PW - 16, pic_foot + 64 + 420), INTERCEPT, speaker='EX', tail=230)
+    speech_window(d, (16, SCENE_Y - 64 - SPEECH_H, PW - 16, SCENE_Y - 64), INTERCEPT, tail=230, tail_down=True)
     bottom_bar(d)
-    note(d, (40, pic_foot + 520), 'The window under the picture: the portraits and\nthe CG whole, the speaker on a plate;\n'
-                                 'the speech\'s lines (32 cells) at 3.6 mm,\nthe script\'s breaks kept')
-    note(d, (40, 1900), 'The window keeps four lines\' height,\nso nothing under it moves')
-    note(d, (40, 2240), 'A tap anywhere goes on', 30)
-    save(img, 'PS2', 'the window under the picture', 'scenes')
+    save(img, 'PS2', 'the upper speaker\'s window above the picture', 'scenes', side=[
+        'PS2 with the owner\'s changes:\nthe picture and its portraits in\nthe screen\'s middle (between the\n'
+        'camera\'s strip and the bar).',
+        'The upper portrait\'s speech (Ex)\nin a window above the picture,\nits tail down at him; no name\n'
+        'plate — his name is on his\nportrait.',
+        f'The speech\'s lines (32 cells) at\n{mm(64)}, the script\'s breaks kept;\nthe window keeps four lines\'\n'
+        f'height ({mm(SPEECH_H)}), so the picture\nnever moves.',
+        'A tap anywhere goes on; Menu,\nLog and Skip in the bar.'])
+
+
+def d2l():
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    img.paste(scene_clean(), (0, SCENE_Y))
+    d = ImageDraw.Draw(img)
+    foot = SCENE_Y + 762
+    speech_window(d, (16, foot + 64, PW - 16, foot + 64 + SPEECH_H), GENERAL_EX, tail=990)
+    bottom_bar(d)
+    save(img, 'PS2l', 'the lower speaker\'s window under the picture', 'scenes', side=[
+        'The lower portrait\'s speech (the\nLeazas White Knight) in a window\nunder the picture, its tail up\n'
+        'at him; no name plate.',
+        'The picture stays where it was:\nthe upper window\'s room is\nempty while the lower one\nspeaks.',
+        'The agent\'s choice: a thought\nby its thinker\'s portrait the\nsame way; the narration and a\n'
+        'speaker with no portrait under\nthe picture.'])
 
 
 def d2b():
     img, d = phone()
     backdrop(img, (0, 0, PW, PH))
-    d.rectangle((0, TOP, PW, TOP + 762), fill=(58, 58, 62))
+    d.rectangle((0, SCENE_Y, PW, SCENE_Y + 762), fill=(58, 58, 62))
     for x in range(-762, PW, 40):
-        d.line([(x, TOP + 762), (x + 762, TOP)], fill=(72, 72, 76), width=3)
-    d.text((PW / 2, TOP + 381), 'the scene\'s CG (masked)', font=GOTHIC(44), fill=(200, 200, 200), anchor='mm')
-    pic_foot = TOP + 762
-    speech_window(d, (16, pic_foot + 64, PW - 16, pic_foot + 64 + 330), ['The preparations are complete, King Rance.'],
+        d.line([(x, SCENE_Y + 762), (x + 762, SCENE_Y)], fill=(72, 72, 76), width=3)
+    d.text((PW / 2, SCENE_Y + 381), 'the scene\'s CG (masked)', font=GOTHIC(44), fill=(200, 200, 200), anchor='mm')
+    foot = SCENE_Y + 762
+    speech_window(d, (16, foot + 64, PW - 16, foot + 64 + 330), ['The preparations are complete, King Rance.'],
                   speaker='MARIS', size=46)
     bottom_bar(d)
-    note(d, (40, pic_foot + 430), 'Window 131 under its CG: the CG whole\n(on the PC the window covers its lower quarter);\n'
-                                 '131\'s lines (49 cells) at 2.6 mm, as on the PC')
-    save(img, 'PS2b', 'window 131 under its CG', 'scenes')
+    save(img, 'PS2b', 'window 131 under its CG', 'scenes', side=[
+        'Window 131 under its CG, the CG\nin the screen\'s middle as PS2\'s\npicture: the CG whole (on the PC\n'
+        'the window covers its lower\nquarter).',
+        f'131\'s lines (49 cells) at {mm(46)},\nas on the PC; its speaker on a\nplate (no portrait shows the\nname here).'])
 
 
 def d2m():
     img, d = phone()
     backdrop(img, (0, 0, PW, PH))
-    d.rectangle((0, TOP, PW, TOP + 762), fill=(0, 0, 0))
-    d.text((PW / 2, TOP + 381), 'the gallery\'s plain backdrop', font=GOTHIC(36), fill=(90, 90, 90), anchor='mm')
-    pic_foot = TOP + 762
-    speech_window(d, (16, pic_foot + 64, PW - 16, pic_foot + 64 + 420),
+    d.rectangle((0, SCENE_Y, PW, SCENE_Y + 762), fill=(0, 0, 0))
+    d.text((PW / 2, SCENE_Y + 381), 'the gallery\'s plain backdrop', font=GOTHIC(36), fill=(90, 90, 90), anchor='mm')
+    foot = SCENE_Y + 762
+    speech_window(d, (16, foot + 64, PW - 16, foot + 64 + SPEECH_H),
                   ['The rebels gather near Oaks.', 'What shall we do, King Rance?'], speaker='MARIS', tail=990,
                   triangle_on=False)
     items = ['Attack at dawn', 'Wait for the scouts', 'Ask Maris']
-    h, gap = 136, 16
+    h, gap = 130, 14
     y = BAR[1] - len(items) * h - (len(items) - 1) * gap
     panel(d, (16, y - 30, PW - 16, BAR[1] + 14))
     for i, item in enumerate(items):
         row_box(d, (40, y + i * (h + gap), PW - 40, y + i * (h + gap) + h), item, size=48)
-    note(d, (40, pic_foot + 520), 'A `]` menu: finger rows at the thumb,\nin the script\'s order, in the bar\'s place\n'
-                                 f'(rows {mm(h)} high); the question stays readable\n(made up: the gallery\'s scene menu)')
-    save(img, 'PS2m', 'a dialogue menu', 'scenes')
+    save(img, 'PS2m', 'a dialogue menu', 'scenes', side=[
+        'A `]` menu: finger rows at the\nthumb, in the script\'s order, in\nthe bar\'s place '
+        f'(rows {mm(h)} high).',
+        'The picture and the question\'s\nwindow where PS2 has them (the\npicture in the screen\'s middle);\n'
+        'the question stays readable over\nthe rows.',
+        'Made up: the gallery\'s scene\nmenu.'])
+
+
+def p14():
+    d2(); d2l(); d2b(); d2m()
 
 
 CHRONICLE = [
@@ -5107,8 +5147,8 @@ def p13():
 
 def main():
     global MAP, PROV_NAMES, PROV_POINTS
-    if ROUND in ('P3', 'P5', 'P7', 'P9', 'P11', 'P13'):
-        {'P3': p3, 'P5': p5, 'P7': p7, 'P9': p9, 'P11': p11, 'P13': p13}[ROUND]()
+    if ROUND in ('P3', 'P5', 'P7', 'P9', 'P11', 'P13', 'P14'):
+        {'P3': p3, 'P5': p5, 'P7': p7, 'P9': p9, 'P11': p11, 'P13': p13, 'P14': p14}[ROUND]()
         overviews()
         return
     MAP, PROV_NAMES, PROV_POINTS = build_map()
@@ -5133,7 +5173,7 @@ def main():
                 json.dump(manifest, f, ensure_ascii=False, indent=2)
         return
     p0()
-    d1(); d2(); d2b(); d2m(); d3()
+    d1(); d2(); d2l(); d2b(); d2m(); d3()
     m1(); m2()
     b1(); b2()
     pb3(); pb3r(); pb3x()
