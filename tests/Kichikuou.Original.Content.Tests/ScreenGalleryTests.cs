@@ -82,7 +82,7 @@ public class ScreenGalleryTests
         var s = World();
         GalleryStates.TreasureItemPicked(s, 6);
         Assert.Equal(0, TreasureRoster.View(s));
-        Assert.Equal(["Rick already has By Lord equipped.", "Replace it with L. Holy Sword?"], TreasureRoster.ReplaceQuestion(s, 7));
+        Assert.Equal(["By Lord is equipped to Rick.", "Replace it with L. Holy Sword?"], TreasureRoster.ReplaceQuestion(s, 7));
     }
 
     [Fact]
