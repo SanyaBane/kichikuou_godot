@@ -22,7 +22,8 @@ battle (P for portrait: touch.md's B1, M1… are the landscape phone's). Round P
 our army on top, Skip between the cards and the deck), PB3r the retreat question, PB3x an exchange; the battle's inputs
 also touch/current's exchange-counters. Round P3: PD1-PD3 the deployment table, PU1-PU2 the Subordinates screen; their
 inputs touch/current's deployment and the units' face CGs from <extract dir>/cg_png. Round P4: PA1-PA2 the
-enemy attack (touch/current's enemy-attack-scouted, Maris's and Kanami's face CGs), PW1-PW2 the week report.
+enemy attack (touch/current's enemy-attack-scouted, Maris's and Kanami's face CGs), PW1-PW2 the week report. Round P5: PH1-PH2
+Harem, PT1-PT2 Treasure, PL1-PL2 Save/Load (touch/current's harem, treasure-items, save-load).
 `--round P3` before the arguments draws only that round's variants (the look dir then unread, '-' will do).
 The pink lines and text are the mock-ups' notes, not part of a screen.
 
@@ -2042,10 +2043,375 @@ def p4():
     pw1(); pw2()
 
 
+# --- round P5: Harem, Treasure and Save/Load upright (2026-10-27) ----------------------------------------------------
+
+GRID_ROWS = 17                                  # the pickers' 3 × 17 cells (Sﾊｰﾚﾑ, Sｱｲﾃﾑ)
+HAREM_CELLS = {(0, 0): 'Sill', (3, 1): 'Soul', (3, 2): 'Anasel'}
+ITEM_CELLS = {(1, 2): ('L. Holy Sword', 'Rance'), (2, 0): ('By Lord', 'Rick')}
+CHARACTER_CELLS = {(0, 0): 'Rance', (1, 1): 'Leila', (1, 2): 'Barres', (2, 0): 'Rick', (2, 1): 'Cordoba',
+                   (2, 2): 'Kinkaid', (3, 0): 'Menad', (3, 1): 'Asuka', (3, 2): 'Haurein'}
+
+
+def heart(d, x, y, s=12, fill=(176, 60, 70)):
+    d.ellipse((x - s, y - s, x, y), fill=fill)
+    d.ellipse((x, y - s, x + s, y), fill=fill)
+    d.polygon([(x - s, y - s / 2), (x + s, y - s / 2), (x, y + s)], fill=fill)
+
+
+def picker_grid(d, box, rows, draw_cell, row_h):
+    """The picker's cells, three to a row; `draw_cell(d, cell_box, r, c)` fills one."""
+    x0, y0, x1, y1 = box
+    w = (x1 - x0 - 2 * 8) / 3
+    for r in range(rows):
+        y = y0 + r * (row_h + 6)
+        if y + row_h > y1:
+            break
+        for c in range(3):
+            cb = (round(x0 + c * (w + 8)), y, round(x0 + c * (w + 8) + w), y + row_h)
+            d.rectangle(cb, fill=(28, 22, 18), outline=(44, 36, 28), width=2)
+            draw_cell(d, cb, r, c)
+    return y0 + rows * (row_h + 6)
+
+
+def harem_cell(chosen):
+    def draw(d, cb, r, c):
+        name = HAREM_CELLS.get((r, c))
+        if not name:
+            return
+        on = name == chosen
+        d.rectangle(cb, fill=(70, 54, 30) if on else ROW, outline=GOLD if on else DIM_GOLD, width=3 if on else 2)
+        heart(d, cb[0] + 34, (cb[1] + cb[3]) / 2 - 2, 12)
+        d.text((cb[0] + 62, (cb[1] + cb[3]) / 2), name, font=CINZEL(36, 700), fill=NAME if on else TEXT, anchor='lm')
+    return draw
+
+
+def plain_title(d, title, y=TOP + 4):
+    d.text((30, y), title, font=BRUSH(62), fill=NAME)
+    d.text((PW - 30, y + 22), DATE, font=CINZEL(32, 700), fill=NAME, anchor='ra')
+    divider(d, y + 100)
+    return y + 112
+
+
+def harem_picture(width):
+    pic = dump(TOUCH, 'harem.png').crop((19, 90, 682, 502))
+    return pic.resize((width, round(width * pic.height / pic.width)), Image.LANCZOS)
+
+
+def end_and(d, label, right_w=760):
+    y0, y1 = BAR
+    panel(d, (16, y0, PW - 32 - right_w, y1))
+    d.text(((16 + PW - 32 - right_w) / 2, (y0 + y1) / 2), 'End', font=BRUSH(52), fill=TEXT, anchor='mm')
+    red_button(d, (PW - 16 - right_w, y0, PW - 16, y1), label, 54)
+
+
+def girl_details(d, x, y, x1):
+    heart(d, x + 16, y + 34, 16)
+    d.text((x + 46, y + 34), 'Anasel', font=BRUSH(58), fill=NAME, anchor='lm')
+    d.text((x, y + 92), 'VISITS', font=CINZEL(24, 600), fill=SUBTITLE)
+    d.text((x, y + 128), '2', font=GOTHIC(40), fill=TEXT)
+    d.text((x + 180, y + 92), 'LAST SUMMONED', font=CINZEL(24, 600), fill=SUBTITLE)
+    d.text((x + 180, y + 128), 'LP 3 · Month 3 · Week 3', font=fit(d, 'LP 3 · Month 3 · Week 3', GOTHIC, 38,
+                                                                    x1 - x - 190), fill=TEXT)
+
+
+def ph1():
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    y = plain_title(d, 'Harem')
+    row_h = 94
+    foot = picker_grid(d, (16, y + 6, PW - 16, 2000), GRID_ROWS, harem_cell('Anasel'), row_h)
+    top = foot + 10
+    panel(d, (0, top, PW, BAR[0] - 16))
+    pic = harem_picture(480)
+    img.paste(pic, (24, top + 28))
+    d = ImageDraw.Draw(img)
+    d.rectangle((24, top + 28, 24 + pic.width, top + 28 + pic.height), outline=GOLD, width=3)
+    girl_details(d, 540, top + 40, PW - 30)
+    end_and(d, 'Summon Anasel')
+    reach(img, label=False, shade=False)
+    save(img, 'PH1', 'the grid whole, the girl at the thumb', 'harem', side=[
+        'The picker\'s grid whole, three\nto a row as on the PC (the\nowner kept the original\'s\n'
+        f'numbered grid): cells {mm(row_h)} high,\nthe names {mm(36)}.',
+        'A tap chooses a girl; her\npicture, visits and last summons\nat the thumb (the picture\'s\nwords 1 mm: '
+        'a long press\nshows it whole, as PD2d).',
+        'End | Summon Anasel in the bar,\nSummon at the right thumb —\nthe choice then the red button\n'
+        'is the confirmation.'])
+
+
+def ph2():
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    y = plain_title(d, 'Harem')
+    pic = harem_picture(PW - 32)
+    img.paste(pic, (16, y + 6))
+    d = ImageDraw.Draw(img)
+    d.rectangle((16, y + 6, PW - 16, y + 6 + pic.height), outline=GOLD, width=3)
+    y += pic.height + 20
+    girl_details(d, 30, y, PW - 30)
+    y += 190
+    row_h = 128
+    picker_grid(d, (16, y, PW - 16, BAR[0] - 20), GRID_ROWS, harem_cell('Anasel'), row_h)
+    end_and(d, 'Summon Anasel')
+    reach(img, label=False, shade=False)
+    save(img, 'PH2', 'the picture on top, the grid scrolled', 'harem', side=[
+        'The girl\'s picture at the\nscreen\'s width (2.9 ×, its\nwords 2.4 mm), her visits\nunder it.',
+        f'The grid under it in rows of\n{mm(row_h)}: eight rows in view, the\nrest a drag away.',
+        'End | Summon as PH1.'])
+
+
+# --- Treasure ---
+
+def treasure_cell(chosen, items=True):
+    def draw(d, cb, r, c):
+        if items:
+            entry = ITEM_CELLS.get((r, c))
+            if not entry:
+                return
+            name, holder = entry
+        else:
+            name, holder = CHARACTER_CELLS.get((r, c)), None
+            if not name:
+                return
+        on = name == chosen
+        d.rectangle(cb, fill=(70, 54, 30) if on else ROW, outline=GOLD if on else DIM_GOLD, width=3 if on else 2)
+        d.text((cb[0] + 18, (cb[1] + cb[3]) / 2), name, font=fit(d, name, GOTHIC, 34, cb[2] - cb[0] - 110),
+               fill=TEXT, anchor='lm')
+        if holder:
+            d.text((cb[2] - 14, (cb[1] + cb[3]) / 2 + 4), holder, font=GOTHIC(24), fill=QUIET, anchor='rm')
+        elif name in ('Rance', 'Rick'):              # holds an item
+            d.polygon([(cb[2] - 30, (cb[1] + cb[3]) / 2 - 9), (cb[2] - 21, (cb[1] + cb[3]) / 2),
+                       (cb[2] - 30, (cb[1] + cb[3]) / 2 + 9), (cb[2] - 39, (cb[1] + cb[3]) / 2)], fill=GOLD)
+    return draw
+
+
+def treasure_picture(width):
+    pic = dump(TOUCH, 'treasure-items.png').crop((19, 90, 682, 502))
+    return pic.resize((width, round(width * pic.height / pic.width)), Image.LANCZOS)
+
+
+def lacquer_tabs(d, y, names, active, x0=16, x1=PW - 16, h=110):
+    w = (x1 - x0 - (len(names) - 1) * 12) / len(names)
+    for i, name in enumerate(names):
+        b = (round(x0 + i * (w + 12)), y, round(x0 + i * (w + 12) + w), y + h)
+        on = i == active
+        d.rectangle(b, fill=(70, 54, 30) if on else ROW, outline=GOLD if on else DIM_GOLD, width=3 if on else 2)
+        d.text(((b[0] + b[2]) / 2, (b[1] + b[3]) / 2), name, font=CINZEL(34, 700), fill=NAME if on else QUIET,
+               anchor='mm')
+    return y + h
+
+
+def item_details(d, x, y, x1, box_right):
+    d.text((x, y + 30), 'L. Holy Sword', font=fit(d, 'L. Holy Sword', BRUSH, 52, x1 - x), fill=NAME, anchor='lm')
+    d.text((x, y + 82), 'EQUIPPABLE · HELD BY', font=CINZEL(24, 600), fill=SUBTITLE)
+    d.text((x, y + 118), 'Rance', font=GOTHIC(40), fill=TEXT)
+
+
+def pt1():
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    y = plain_title(d, 'Treasure')
+    y = lacquer_tabs(d, y + 6, ['Characters', 'Items'], 1) + 14
+    row_h = 84
+    foot = picker_grid(d, (16, y, PW - 16, 2000), GRID_ROWS, treasure_cell('L. Holy Sword'), row_h)
+    top = foot + 10
+    panel(d, (0, top, PW, BAR[0] - 16))
+    pic = treasure_picture(480)
+    img.paste(pic, (24, top + 28))
+    d = ImageDraw.Draw(img)
+    d.rectangle((24, top + 28, 24 + pic.width, top + 28 + pic.height), outline=GOLD, width=3)
+    item_details(d, 540, top + 40, PW - 30, None)
+    end_and(d, 'Take Off')
+    reach(img, label=False, shade=False)
+    save(img, 'PT1', 'the grid whole, the item at the thumb', 'treasure', side=[
+        'Characters | Items as two tabs\nunder the title; the grid whole\n'
+        f'(cells {mm(row_h)}, names {mm(34)}), the\nholder\'s name in the cell.',
+        'A tap chooses (the touch mode\'s\nround X); the red button in the\nbar acts — Take Off here, Give\n'
+        'once a character is chosen —,\ngreyed with the refusal\'s reason.',
+        'The item\'s words are in its\npicture: 1 mm here, a long press\nshows it whole.'])
+
+
+def pt2():
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    y = plain_title(d, 'Treasure')
+    pic = treasure_picture(PW - 32)
+    img.paste(pic, (16, y + 6))
+    d = ImageDraw.Draw(img)
+    d.rectangle((16, y + 6, PW - 16, y + 6 + pic.height), outline=GOLD, width=3)
+    y += pic.height + 20
+    item_details(d, 30, y, PW - 30, None)
+    y += 180
+    y = lacquer_tabs(d, y, ['Characters', 'Items'], 1) + 14
+    row_h = 118
+    picker_grid(d, (16, y, PW - 16, BAR[0] - 20), GRID_ROWS, treasure_cell('L. Holy Sword'), row_h)
+    end_and(d, 'Take Off')
+    reach(img, label=False, shade=False)
+    save(img, 'PT2', 'the picture on top, the grid scrolled', 'treasure', side=[
+        'The item\'s picture at the\nscreen\'s width: its words\n(what it does) 2.4 mm.',
+        f'The tabs and the grid under it,\ncells {mm(row_h)}: seven rows in view,\nthe rest a drag away.',
+        'The red button as PT1\'s.'])
+
+
+# --- Save/Load ---
+
+MANUAL_SAVES = [(4, 'LP 3 · M5 · W2', '20 Oct, 22:30', 'before the attack on Oaks'),
+                (3, 'LP 3 · M4 · W4', '18 Oct, 22:30', None), (2, 'LP 3 · M4 · W2', '16 Oct, 22:30', None),
+                (1, 'LP 3 · M3 · W4', '14 Oct, 22:30', "Lia's scene next week")]
+SAVE_FIGURES = [('STAGE', 'Stage 1 · Leazas civil war'), ('BUDGET', '116,400K GOLD'), ('REALM', '15 provinces'),
+                ('UNITS', '9'), ('TROOPS', '6,251'), ('WRITTEN', '20 Oct 2026, 22:30')]
+
+
+def star(d, cx, cy, r=14, fill=GOLD):
+    import math
+    pts = [(cx + (r if k % 2 == 0 else r * 0.45) * math.sin(k * math.pi / 5),
+            cy - (r if k % 2 == 0 else r * 0.45) * math.cos(k * math.pi / 5)) for k in range(10)]
+    d.polygon(pts, fill=fill)
+
+
+def save_title(d, chosen_tab='Load'):
+    y = TOP + 4
+    d.text((30, y), chosen_tab, font=BRUSH(62), fill=NAME)
+    for i, name in enumerate(('Load', 'Save')):
+        b = (PW - 16 - (2 - i) * 210 - (1 - i) * 10, y + 4, PW - 16 - (1 - i) * 220, y + 92)
+        on = name == chosen_tab
+        d.rectangle(b, fill=(112, 26, 20) if on else ROW, outline=GOLD if on else DIM_GOLD, width=3 if on else 2)
+        d.text(((b[0] + b[2]) / 2, (b[1] + b[3]) / 2), name, font=CINZEL(32, 700), fill=NAME if on else QUIET,
+               anchor='mm')
+    divider(d, y + 112)
+    return y + 124
+
+
+def save_row(d, box, save_, chosen=False, two_lines=True):
+    x0, y0, x1, y1 = box
+    no, date, written, comment = save_
+    d.rectangle(box, fill=(70, 54, 30) if chosen else ROW, outline=GOLD if chosen else DIM_GOLD,
+                width=3 if chosen else 2)
+    sy = y0 + 22 if two_lines else (y0 + y1) / 2 - 32
+    seal(d, x0 + 20, sy, no, 64)
+    if comment:
+        star(d, x0 + 20, sy, 16)
+    d.text((x0 + 108, sy + 32), date, font=GOTHIC(42), fill=TEXT, anchor='lm')
+    d.text((x1 - 22, sy + 32), written, font=GOTHIC(32), fill=QUIET, anchor='rm')
+    if comment and two_lines:
+        d.text((x0 + 108, y1 - 34), f'"{comment}"', font=GOTHIC(32), fill=QUIET, anchor='lm')
+
+
+def save_list(d, y, rows_h, chosen=None, two_lines=True, foot=None):
+    y = lacquer_tabs(d, y, ['Manual saves · 4', 'Auto-saves · 20'], 0, h=104) + 18
+    d.text((24, y + 30), 'NEWEST FIRST', font=CINZEL(26, 600), fill=SUBTITLE, anchor='lm')
+    b = (PW - 16 - 470, y, PW - 16, y + 64)
+    d.rectangle(b, fill=ROW, outline=DIM_GOLD, width=2)
+    d.text(((b[0] + b[2]) / 2, y + 32), 'Delete all without', font=GOTHIC(28), fill=TEXT, anchor='rm')
+    star(d, (b[0] + b[2]) / 2 + 22, y + 32, 12)
+    d.text(((b[0] + b[2]) / 2 + 42, y + 32), '(2)', font=GOTHIC(28), fill=TEXT, anchor='lm')
+    y += 84
+    for s in MANUAL_SAVES:
+        save_row(d, (16, y, PW - 16, y + rows_h), s, chosen=s[0] == chosen, two_lines=two_lines)
+        y += rows_h + 10
+    return y
+
+
+def save_page(img, y, compact=False):
+    d = ImageDraw.Draw(img)
+    d.text((24, y + 40), 'No. 4 · LP 3 · Month 5 · Week 2', font=CINZEL(34, 700), fill=NAME, anchor='lm')
+    b = (PW - 16 - 230, y, PW - 16, y + 84)
+    d.rectangle(b, fill=(54, 18, 14), outline=(196, 70, 50), width=3)
+    d.rectangle((b[0] + 30, y + 30, b[0] + 52, y + 60), outline=(236, 150, 110), width=3)
+    d.line([(b[0] + 24, y + 28), (b[0] + 58, y + 28)], fill=(236, 150, 110), width=3)
+    d.text((b[0] + 140, y + 42), 'Delete', font=CINZEL(30, 700), fill=(236, 150, 110), anchor='mm')
+    y += 100
+    pic = dump(TOUCH, 'save-load.png').crop((424, 117, 1227, 450))
+    pic = pic.resize((PW - 32, round((PW - 32) * pic.height / pic.width)), Image.LANCZOS)
+    if compact:
+        pic = pic.crop((0, 0, pic.width, round(pic.height * 0.8)))
+    img.paste(pic, (16, y))
+    d = ImageDraw.Draw(img)
+    d.rectangle((16, y, PW - 16, y + pic.height), outline=GOLD, width=3)
+    y += pic.height + 20
+    for i, (label, value) in enumerate(SAVE_FIGURES):
+        x = 24 + (i % 2) * 600
+        ry = y + (i // 2) * 96
+        d.text((x, ry), label, font=CINZEL(24, 600), fill=SUBTITLE)
+        d.text((x, ry + 34), value, font=fit(d, value, GOTHIC, 38, 570), fill=TEXT)
+    y += 3 * 96 + 10
+    d.text((24, y), 'COMMENT', font=CINZEL(24, 600), fill=SUBTITLE)
+    b = (16, y + 36, PW - 16 - 220, y + 140)
+    d.rectangle(b, fill=(30, 22, 16), outline=DIM_GOLD, width=2)
+    d.text((40, y + 88), 'before the attack on Oaks', font=GOTHIC(38), fill=TEXT, anchor='lm')
+    row_box(d, (PW - 16 - 204, y + 36, PW - 16, y + 140), 'Edit', size=40, face=BRUSH, centred=True)
+    return y + 140
+
+
+def back_and(d, label):
+    y0, y1 = BAR
+    panel(d, (16, y0, 400, y1))
+    d.polygon([(110, (y0 + y1) / 2 - 18), (78, (y0 + y1) / 2), (110, (y0 + y1) / 2 + 18)], fill=GOLD)
+    d.text((240, (y0 + y1) / 2), 'Back', font=BRUSH(50), fill=TEXT, anchor='mm')
+    red_button(d, (416, y0, PW - 16, y1), label, 58)
+
+
+def pl1():
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    y = save_title(d)
+    rows_h = 172
+    save_list(d, y + 6, rows_h)
+    y0, y1 = BAR
+    panel(d, (16, y0, 400, y1))
+    d.polygon([(110, (y0 + y1) / 2 - 18), (78, (y0 + y1) / 2), (110, (y0 + y1) / 2 + 18)], fill=GOLD)
+    d.text((240, (y0 + y1) / 2), 'Back', font=BRUSH(50), fill=TEXT, anchor='mm')
+    reach(img, label=False, shade=False)
+    save(img, 'PL1', 'the list, then the save\'s page — the list', 'saves', side=[
+        'Two pages. The list: Load | Save\nat the title (from COMMAND),\nthe manual saves and the auto-\n'
+        'saves as two tabs, newest first.',
+        f'Rows {mm(rows_h)}: the number on its seal\n(a gold star with a comment), the\ndate, the time written, the\n'
+        'comment as the second line.',
+        'A tap on a row opens its page\n(PL1p); in Save, "+ New save"\nheads the list. The sweep\n'
+        '"Delete all without ★" asks in\na callout beside it.',
+        'Back at the left of the bar.'])
+
+
+def pl1p():
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    y = save_title(d)
+    save_page(img, y + 10)
+    d = ImageDraw.Draw(img)
+    back_and(d, 'Load')
+    reach(img, label=False, shade=False)
+    save(img, 'PL1p', 'the list, then the save\'s page — a save', 'saves', side=[
+        'The save\'s page: its title and\nDelete (the danger button, its\ncallout under it) on top; its map\n'
+        'as All Data draws it, at the\nscreen\'s width; its figures in\ntwo columns; the comment\nand Edit.',
+        'Back to the list at the left,\nLoad (red) at the right thumb —\nthe choice then the red button\n'
+        'is the confirmation.'])
+
+
+def pl2():
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    y = save_title(d)
+    y = save_list(d, y + 6, 104, chosen=4, two_lines=False)
+    divider(d, y + 8)
+    save_page(img, y + 26, compact=True)
+    d = ImageDraw.Draw(img)
+    back_and(d, 'Load')
+    reach(img, label=False, shade=False)
+    save(img, 'PL2', 'one page: the list over the save', 'saves', side=[
+        'One page as the PC\'s: the list\nin one-line rows (5.9 mm,\nthe comment only on the save\'s\n'
+        'page), scrolling in its room;\nthe chosen save\'s page under\nit, its map cut lower.',
+        'One tap fewer than PL1; the list\nholds four rows in view.'])
+
+
+def p5():
+    ph1(); ph2()
+    pt1(); pt2()
+    pl1(); pl1p(); pl2()
+
+
 def main():
     global MAP, PROV_NAMES, PROV_POINTS
-    if ROUND == 'P3':
-        p3()
+    if ROUND in ('P3', 'P5'):
+        p3() if ROUND == 'P3' else p5()
         overviews()
         return
     MAP, PROV_NAMES, PROV_POINTS = build_map()

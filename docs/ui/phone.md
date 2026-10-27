@@ -141,6 +141,7 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
    screen, the dungeon's ladder and entry menu, the battle's other states —, then the landscape phone.
 8. **The deployment table** (round P3): PD1, PD2 or PD3; the Subordinates screen: PU1 or PU2.
 9. **The enemy attack** (round P4): PA1 or PA2; the week report: PW1 or PW2.
+10. **Harem, Treasure, Save/Load** (round P5): PH1 or PH2, PT1 or PT2, PL1 or PL2.
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -258,3 +259,37 @@ The week report (`PW…`; docs/ui/turn-start.md):
 
 **Recommendation: PW2** — the eye stays low from the report to the commands, and the map above it shows the week's
 start.
+
+## 9. Round P5: Harem, Treasure and Save/Load (2026-10-27)
+
+Drawn by `mock_phone.py --round P5` over the gallery's `harem` (Anasel chosen), `treasure-items` (the L. Holy Sword
+(item 6) on Rance (unit 1), By Lord (item 7) on Rick (unit 7)) and `save-load` (four manual saves, the newest chosen).
+All Data is left for a later round: the screen gallery has no entry of it to draw over.
+
+The pickers keep the original's grid of 3 × 17 cells (the owner kept the numbered grid, docs/ui/pickers.md) — three
+cells to a row fit the phone's width. Two ways:
+
+- **PH1 / PT1 — the grid whole, the choice at the thumb.** The whole grid under the title (the harem's cells 5.3 mm,
+  the treasure's 4.8 mm under its Characters | Items tabs), the chosen girl's or item's panel at the thumb — a small
+  picture, the name, the visits and last summons or the holder — and the bar: End | **Summon Anasel** / **Take Off**,
+  the red button at the right thumb (the touch mode's round X: a tap chooses, the red button acts, greyed with the
+  refusal's reason). The picture's own words are 1 mm there: a long press shows it whole (as PD2d).
+- **PH2 / PT2 — the picture on top, the grid scrolled.** The picture at the screen's width (its words 2.4 mm — for an
+  item they say what it does), the details under it, the grid in taller cells (7.3 / 6.7 mm), seven or eight rows in
+  view, the rest a drag away.
+
+**Recommendation: PH1 for the harem, PT2 for Treasure** — the harem's picture is the girl and her line, the grid is
+what is chosen from; an item's picture carries what the item does, which the player reads before equipping it.
+
+Save/Load (`PL…`; docs/ui/save-load.md, the owner's G with decisions 29 and 31):
+
+- **PL1 — the list, then the save's page.** Two pages. **PL1**: Load | Save at the title (from `COMMAND`), the manual
+  saves and the auto-saves as two tabs, newest first, "Delete all without ★ (2)"; rows 9.8 mm — the number on its seal
+  (a gold star with a comment), the date, the time written, the comment as the second line; in Save "+ New save" heads
+  the list. A tap opens **PL1p**: the save's title and Delete (the danger button) on top, its map at the screen's width,
+  its figures in two columns, the comment and Edit; Back | **Load** in the bar.
+- **PL2 — one page.** The list in one-line rows (5.9 mm, the comments only on the page) scrolling in its room, the
+  chosen save's page under it, its map cut lower; one tap fewer.
+
+**Recommendation: PL1** — rows and type a finger can take, and the map at its full width; the second page is the
+phone's usual way down a list.
