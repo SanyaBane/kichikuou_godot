@@ -139,11 +139,17 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 7. **What comes next**: our full screens upright — the deployment table and Subordinates (round P3, §7), the enemy
    attack and the week report, Harem, Treasure, Save/Load, All Data, the options window, the title and the import
    screen, the dungeon's ladder and entry menu, the battle's other states —, then the landscape phone.
-8. **The deployment table** (round P3): PD1, PD2 or PD3; the Subordinates screen: PU1 or PU2.
-9. **The enemy attack** (round P4): PA1 or PA2; the week report: PW1 or PW2.
-10. **Harem, Treasure, Save/Load** (round P5): PH1 or PH2, PT1 or PT2, PL1 or PL2.
-11. **The options window and the dungeon's menus** (round P6): PO1 or PO2; PF1 or PF2.
-12. **The battle's opening** (round P7): PB4o1 or PB4o2; the other states (PB4s, PB4c, PB4r, PB4b) as drawn?
+8. ~~**The deployment table** (round P3): PD1, PD2 or PD3; the Subordinates screen: PU1 or PU2.~~ PD2 and PU1,
+   PU1 changed (§7).
+9. ~~**The enemy attack** (round P4): PA1 or PA2; the week report: PW1 or PW2.~~ PA1, changed, and PW1 (§8).
+10. ~~**Harem, Treasure, Save/Load** (round P5): PH1 or PH2, PT1 or PT2, PL1 or PL2.~~ PH2, PT2 and PL2, PL2 changed
+    (§9).
+11. ~~**The options window and the dungeon's menus** (round P6): PO1 or PO2; PF1 or PF2.~~ PO1 and PF1.
+12. **The battle's opening** (round P7): PB4o1 or PB4o2 — not answered yet (2026-10-27). The other states (PB4s, PB4c,
+    PB4r, PB4b) as drawn.
+13. **The unit ledger's rows upright** (the owner, 2026-10-27, thinking): PD2's layout holds, but the ledger is still
+    to be thought over — most likely it will scroll sideways too.
+14. **Subordinates' End** (the owner, 2026-10-27, thinking): where End goes now that Talk has left the bar.
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -225,6 +231,11 @@ The Subordinates screen (`PU…`):
 layout's order (the ledger, then what acts on it at the thumb) — with PD2 the deployment's ledger is the lower part
 instead, since there the ledger is what is tapped.
 
+**The owner's choice (2026-10-27): PD2 and PU1.** PD2's layout as drawn, its ledger still to be thought over (most
+likely it scrolls sideways too; §5, question 13). PU1 changed: **Replenish and Talk on one row**, Replenish left and
+Talk (with the unit's face) right, where Replenish alone stood (each 33 × 7.7 mm); End alone in the bar for now — where
+it goes is the owner's open question (§5, 14). Redrawn as PU1 and PU1q.
+
 The agent's own choices, for the owner to confirm: our full screens upright have no Menu / Log / Skip bar (their own
 buttons take the foot; the map's bar is back when they close); the picture panel only on a long press.
 
@@ -262,6 +273,10 @@ The week report (`PW…`; docs/ui/turn-start.md):
 **Recommendation: PW2** — the eye stays low from the report to the commands, and the map above it shows the week's
 start.
 
+**The owner's choice (2026-10-27): PA1, changed, and PW1.** PA1's Abandon City is **10% narrower** (30 mm instead of
+33), the room it gives up widening the gap to Ninja Scout (4.3 mm instead of 0.9); Ninja Scout and Intercept as drawn.
+Redrawn as PA1 and PA1n (PA2 shares the row).
+
 ## 9. Round P5: Harem, Treasure and Save/Load (2026-10-27)
 
 Drawn by `mock_phone.py --round P5` over the gallery's `harem` (Anasel chosen), `treasure-items` (the L. Holy Sword
@@ -296,6 +311,11 @@ Save/Load (`PL…`; docs/ui/save-load.md, the owner's G with decisions 29 and 31
 **Recommendation: PL1** — rows and type a finger can take, and the map at its full width; the second page is the
 phone's usual way down a list.
 
+**The owner's choice (2026-10-27): PH2, PT2 and PL2, changed.** PL2 left about 35 mm free under the save's page; now **the
+page stands on the bar and the list takes the room above it**: nine one-line rows in view instead of four, the rest a
+drag away (a scroll bar at the right). Drawn with twelve manual saves: the gallery's four, renumbered 12-9, and eight
+older ones made up.
+
 ## 10. Round P6: the options window and the dungeon's menus (2026-10-27)
 
 Drawn by `mock_phone.py --round P6` over the gallery's `options-messages`, `options-tweaks`, `floor-ladder-middle` (the
@@ -326,6 +346,8 @@ The dungeon's menus (`PF…`; docs/ui/dungeon-menu.md, the touch mode's rail), o
 **Recommendation: PF1** — the tablet's rail as the owner chose it (touch.md's B), the same place for the thumb on both
 devices.
 
+**The owner's choice (2026-10-27): PO1 and PF1.**
+
 ## 11. Round P7: the battle's other states (2026-10-27)
 
 Drawn by `mock_phone.py --round P7` on PB3's board, over the gallery's `opening`, `scout-report`, `strategy`,
@@ -348,3 +370,8 @@ state is one base version, the opening two.
 
 With this round every screen of ours has an upright base version but All Data, the title and the import screen, which
 wait for screen gallery entries to draw over (§9, §10), and the scenes (§2, open).
+
+**The owner (2026-10-27):** PB4s, PB4c, PB4r and PB4b as drawn; the opening (PB4o1 or PB4o2) not answered yet.
+
+The chosen base versions of rounds P3-P7 are on the gallery's phone tab (docs/ui/gallery.md, §9): PD2 (and PD2d), PU1
+(and PU1q), PA1 (and PA1n), PW1, PH2, PT2, PL2, PO1, PF1 (and PF1e), and PB4s, PB4c, PB4r, PB4b with the battle.

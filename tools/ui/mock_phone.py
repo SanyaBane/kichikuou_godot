@@ -255,6 +255,26 @@ GALLERY_ENTRIES = {
                                                                'the deck'),
     'PB3r': ('pb3-retreat', 'Battle — PB3', 'The retreat question', 'at Retreat, over the deck\'s right column'),
     'PB3x': ('pb3-exchange', 'Battle — PB3', 'An exchange', 'Ex (commander 1) on Rance (unit 1); the deck empty'),
+    'PB4s': ('pb4-scout', 'Battle — PB3', 'The scout report', 'Kanami\'s report before the field, one tap'),
+    'PB4c': ('pb4-strategy', 'Battle — PB3', 'A strategy\'s cut-in', 'Barres (unit 6), his line under the band'),
+    'PB4r': ('pb4-results', 'Battle — PB3', 'The results plate', 'over the dimmed board at the screen\'s width'),
+    'PB4b': ('pb4-line', 'Battle — PB3', 'A fighter\'s line', 'our balloon over the scene\'s foot, rewrapped'),
+    # Round P3-P7's choices (owner, 2026-10-27; docs/ui/phone.md, §5).
+    'PD2': ('pd2-deployment', 'Deployment — PD2', 'The deployment table', 'the party on top, the ledger at the thumb '
+                                                                           '(how the ledger scrolls is still open)'),
+    'PD2d': ('pd2-picture', 'Deployment — PD2', 'A unit\'s picture', 'a long press on a row'),
+    'PU1': ('pu1-subordinates', 'Subordinates — PU1', 'The orders', 'Replenish and Talk on one row, End alone (its '
+                                                                    'place still open)'),
+    'PU1q': ('pu1-question', 'Subordinates — PU1', 'Replenish asks first', 'a callout under its button (Haurein)'),
+    'PA1': ('pa1-attack', 'Enemy attack — PA1', 'The attack on Ys', 'a screen of its own; Abandon City narrower'),
+    'PA1n': ('pa1-ninjas', 'Enemy attack — PA1', 'Ninja Scout\'s list', 'above its button'),
+    'PW1': ('pw1-report', 'Week report — PW1', 'The week report', 'the card in the middle over the dimmed map'),
+    'PH2': ('ph2-harem', 'Harem — PH2', 'The harem', 'the picture on top, the grid scrolled'),
+    'PT2': ('pt2-treasure', 'Treasure — PT2', 'The treasure', 'the item\'s picture on top, the grid scrolled'),
+    'PL2': ('pl2-saves', 'Save/Load — PL2', 'Load', 'one page: the list down to the save\'s page on the bar'),
+    'PO1': ('po1-options', 'Options — PO1', 'The options window', 'the paper sheet, its tabs on top'),
+    'PF1': ('pf1-ladder', 'Dungeon — PF1', 'The floor ladder', 'the tablet\'s rail at the right thumb'),
+    'PF1e': ('pf1-entry', 'Dungeon — PF1', 'Before a search', 'Start Search in Descend\'s corner'),
 }
 DUMPED = []
 
@@ -1611,6 +1631,26 @@ def talk_end(img, n, right='End'):
     return d
 
 
+def talk_button(img, box, n):
+    """Talk with the unit, its face at the left: beside Replenish (owner, 2026-10-27), no longer in the bar."""
+    d = ImageDraw.Draw(img)
+    x0, y0, x1, y1 = box
+    panel(d, box)
+    fs = y1 - y0 - 28
+    img.paste(unit_face(n, fs), (x0 + 14, y0 + 14))
+    d = ImageDraw.Draw(img)
+    cx = x0 + 14 + fs + (x1 - x0 - 14 - fs) / 2
+    d.text((cx, y0 + 46), 'Talk', font=BRUSH(52), fill=NAME, anchor='mm')
+    d.text((cx, y1 - 30), f'WITH {UNIT[n][1].upper()}', font=CINZEL(26, 600), fill=SUBTITLE, anchor='mm')
+
+
+def end_alone(d, right='End'):
+    """The bar with End alone at the right thumb; where End goes is the owner's open question (2026-10-27)."""
+    y0, y1 = BAR
+    panel(d, (PW - 16 - 420, y0, PW - 16, y1))
+    d.text((PW - 16 - 210, (y0 + y1) / 2), right, font=BRUSH(52), fill=NAME, anchor='mm')
+
+
 def pu1_base(img, d, n, figures):
     backdrop(img, (0, 0, PW, PH))
     y = title_band(d, 'Subordinates', '9 units ready')
@@ -1623,10 +1663,12 @@ def pu1_base(img, d, n, figures):
     d.text((32 + d.textlength('Orders', font=BRUSH(46)) + 20, orders + 54), '· ' + UNIT[n][1].upper(),
            font=CINZEL(30, 700), fill=TEXT, anchor='lm')
     budget(d, PW - 32, orders + 50)
-    rep = (24, orders + 100, PW - 24, orders + 236)
+    rep = (24, orders + 100, PW // 2 - 10, orders + 236)       # Replenish and Talk on one row (owner, 2026-10-27)
     replenish(d, rep, figures)
+    talk_button(img, (PW // 2 + 10, rep[1], PW - 24, rep[3]), n)
+    d = ImageDraw.Draw(img)
     add_new_grid(d, 24, orders + 258, PW - 24, n)
-    talk_end(img, n)
+    end_alone(d)
     return orders, row_h, rep
 
 
@@ -1638,9 +1680,10 @@ def pu1():
     save(img, 'PU1', 'the ledger on top, the orders at the thumb', 'subordinates', side=[
         'The ledger as the deployment\ntable\'s (PD1): the same rows\nand tabs, the chosen unit\'s\nrow vermilion.',
         'A tap chooses the unit; its\norders below always show it.',
-        f'The orders at the thumb:\nReplenish ({mm(136)}), Add New\nTroops ({mm(128)} buttons; greyed\nabove the '
-        'budget, its reason\non a long press).',
-        'Talk (with the unit\'s face) and\nEnd in the bar, End at the\nright thumb.',
+        f'The orders at the thumb:\nReplenish and Talk (with the\nunit\'s face) on one row, {mm(136)}\n'
+        '(the owner\'s change); Add New\n'
+        f'Troops ({mm(128)} buttons; greyed\nabove the budget, its reason\non a long press).',
+        'End alone in the bar, at the\nright thumb; where End goes is\nstill the owner\'s question.',
         'Rance is full: Replenish greyed,\n"full" as on the PC.'])
 
 
@@ -1782,10 +1825,12 @@ def two_line_button(d, box, title, sub, red=False):
 ROW1 = BAR[0] - 168
 MARIS_TOP = ROW1 - 20 - 330
 ANSWERS = ((16, PW // 2 - 8), (PW // 2 + 8, PW - 16))
+# Abandon City 10% narrower, the room it gives up widening the gap to Ninja Scout (owner, 2026-10-27).
+ABANDON = (16, 16 + round((ANSWERS[0][1] - 16) * 0.9))
 
 
 def attack_answers(d, ninjas='1 of 1 free'):
-    danger_button(d, (ANSWERS[0][0], ROW1 + 10, ANSWERS[0][1], ROW1 + 138), 'Abandon City')
+    danger_button(d, (ABANDON[0], ROW1 + 10, ABANDON[1], ROW1 + 138), 'Abandon City')
     two_line_button(d, (ANSWERS[1][0], ROW1, ANSWERS[1][1], ROW1 + 148), 'Ninja Scout', ninjas)
     two_line_button(d, (16, BAR[0], PW - 16, BAR[1]), 'Intercept', 'choose the units', red=True)
 
@@ -1871,7 +1916,8 @@ def pa1():
         'places filled.',
         'Maris\'s question in her own\nbreaks, 2.4 mm.',
         'The answers in two rows: Abandon\nCity (the danger button, a white\nflag) top left, farthest from the\n'
-        'thumb, Ninja Scout beside it;\nIntercept the bar\'s width at\nthe thumb. 7.3 and 8.4 mm.'])
+        'thumb, Ninja Scout beside it;\nIntercept the bar\'s width at\nthe thumb. 7.3 and 8.4 mm.',
+        f'Abandon City 10% narrower, the\ngap to Ninja Scout {mm(ANSWERS[1][0] - ABANDON[1])} (the\nowner\'s change).'])
 
 
 def pa1n():
@@ -2299,24 +2345,33 @@ def save_row(d, box, save_, chosen=False, two_lines=True):
         d.text((x0 + 108, y1 - 34), f'"{comment}"', font=GOTHIC(32), fill=QUIET, anchor='lm')
 
 
-def save_list(d, y, rows_h, chosen=None, two_lines=True, foot=None):
-    y = lacquer_tabs(d, y, ['Manual saves · 4', 'Auto-saves · 20'], 0, h=104) + 18
+def save_list(d, y, rows_h, chosen=None, two_lines=True, foot=None, saves=MANUAL_SAVES):
+    """`foot`: the list's room ends there; the rows that do not fit are a drag away (a scroll bar shows it)."""
+    y = lacquer_tabs(d, y, [f'Manual saves · {len(saves)}', 'Auto-saves · 20'], 0, h=104) + 18
     d.text((24, y + 30), 'NEWEST FIRST', font=CINZEL(26, 600), fill=SUBTITLE, anchor='lm')
     b = (PW - 16 - 470, y, PW - 16, y + 64)
     d.rectangle(b, fill=ROW, outline=DIM_GOLD, width=2)
     d.text(((b[0] + b[2]) / 2, y + 32), 'Delete all without', font=GOTHIC(28), fill=TEXT, anchor='rm')
     star(d, (b[0] + b[2]) / 2 + 22, y + 32, 12)
-    d.text(((b[0] + b[2]) / 2 + 42, y + 32), '(2)', font=GOTHIC(28), fill=TEXT, anchor='lm')
+    d.text(((b[0] + b[2]) / 2 + 42, y + 32), f'({sum(1 for s in saves if not s[3])})', font=GOTHIC(28), fill=TEXT,
+           anchor='lm')
     y += 84
-    for s in MANUAL_SAVES:
-        save_row(d, (16, y, PW - 16, y + rows_h), s, chosen=s[0] == chosen, two_lines=two_lines)
+    shown = len(saves) if foot is None else min(len(saves), (foot - y + 10) // (rows_h + 10))
+    x1 = PW - 16 if shown == len(saves) else PW - 48
+    if shown < len(saves):
+        track = (PW - 34, y, PW - 22, y + shown * (rows_h + 10) - 10)
+        d.rounded_rectangle(track, radius=6, fill=(40, 32, 24))
+        d.rounded_rectangle((track[0], track[1], track[2], track[1] + (track[3] - track[1]) * shown // len(saves)),
+                            radius=6, fill=DIM_GOLD)
+    for s in saves[:shown]:
+        save_row(d, (16, y, x1, y + rows_h), s, chosen=s[0] == chosen, two_lines=two_lines)
         y += rows_h + 10
     return y
 
 
-def save_page(img, y, compact=False):
+def save_page(img, y, compact=False, number=4):
     d = ImageDraw.Draw(img)
-    d.text((24, y + 40), 'No. 4 · LP 3 · Month 5 · Week 2', font=CINZEL(34, 700), fill=NAME, anchor='lm')
+    d.text((24, y + 40), f'No. {number} · LP 3 · Month 5 · Week 2', font=CINZEL(34, 700), fill=NAME, anchor='lm')
     b = (PW - 16 - 230, y, PW - 16, y + 84)
     d.rectangle(b, fill=(54, 18, 14), outline=(196, 70, 50), width=3)
     d.rectangle((b[0] + 30, y + 30, b[0] + 52, y + 60), outline=(236, 150, 110), width=3)
@@ -2389,20 +2444,35 @@ def pl1p():
         'is the confirmation.'])
 
 
+# PL2's longer list (owner, 2026-10-27: the room under the page goes to the list): the gallery's four saves renumbered
+# 12-9, the eight older ones made up.
+PL2_SAVES = [(12 - i,) + s[1:] for i, s in enumerate(MANUAL_SAVES)] + [
+    (8, 'LP 3 · M3 · W2', '12 Oct, 21:10', None), (7, 'LP 3 · M3 · W1', '11 Oct, 23:05', None),
+    (6, 'LP 3 · M2 · W4', '10 Oct, 20:40', None), (5, 'LP 3 · M2 · W2', '9 Oct, 22:15', None),
+    (4, 'LP 3 · M2 · W1', '9 Oct, 21:50', None), (3, 'LP 3 · M1 · W4', '8 Oct, 22:30', None),
+    (2, 'LP 3 · M1 · W2', '8 Oct, 21:00', None), (1, 'LP 3 · M1 · W1', '7 Oct, 20:30', 'a new game')]
+
+
 def pl2():
     img, d = phone()
     backdrop(img, (0, 0, PW, PH))
     y = save_title(d)
-    y = save_list(d, y + 6, 104, chosen=4, two_lines=False)
-    divider(d, y + 8)
-    save_page(img, y + 26, compact=True)
+    page_h = save_page(Image.new('RGB', (PW, PH)), 0, compact=True)
+    page = BAR[0] - 24 - page_h                 # the page stands on the bar, the list takes the room above it
+    rows_top = y + 6 + 104 + 18 + 84            # under the tabs and the list's heading (save_list)
+    y = save_list(d, y + 6, 104, chosen=12, two_lines=False, foot=page - 36, saves=PL2_SAVES)
+    divider(d, page - 18)
+    save_page(img, page, compact=True, number=12)
     d = ImageDraw.Draw(img)
     back_and(d, 'Load')
     reach(img, label=False, shade=False)
+    rows = (y - rows_top) // 114
     save(img, 'PL2', 'one page: the list over the save', 'saves', side=[
         'One page as the PC\'s: the list\nin one-line rows (5.9 mm,\nthe comment only on the save\'s\n'
         'page), scrolling in its room;\nthe chosen save\'s page under\nit, its map cut lower.',
-        'One tap fewer than PL1; the list\nholds four rows in view.'])
+        f'The page stands on the bar, the\nlist takes the room above it\n(the owner\'s change): {rows} rows\n'
+        'in view, the rest a drag away.',
+        'Twelve manual saves: the\ngallery\'s four (here 12-9) and\neight older ones made up.'])
 
 
 def p5():
@@ -2883,6 +2953,7 @@ def main():
     if GALLERY_MODE:
         m1()
         pb3(); pb3r(); pb3x()
+        p3(); p4(); p5(); p6(); p7()
         manifest = {'written': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'palette': 'lacquer',
                     'font': 'BizUdGothic', 'touch': True, 'mockup': True, 'entries': DUMPED}
         with open(os.path.join(OUT, 'manifest.json'), 'w', encoding='utf-8') as f:
