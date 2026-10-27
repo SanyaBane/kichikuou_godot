@@ -29,6 +29,8 @@ Round P7: PB4o1-PB4o2 the opening, PB4s the scout report, PB4c the strategy's cu
 PB4b a fighter's line (opening, scout-report, strategy, battle-speech).
 Round P8, the phone held landscape (2712×1220, the layout fitted to the height with black sides): L0b, L0m today's
 tablet layout at that size; LM1-LM2 the map (map-markers, province-menu), LB1-LB2 the battle (battle-turn).
+Round P9: LD1-LD2 the deployment table, LU1-LU2 the Subordinates screen, landscape. Round P10: LA1-LA2 the enemy
+attack (enemy-attack-scouted), LW1-LW2 the week report (week-report and the map's pictures), landscape.
 `--round P3` before the arguments draws only that round's variants (the look dir then unread, '-' will do).
 The pink lines and text are the mock-ups' notes, not part of a screen.
 
@@ -456,8 +458,9 @@ DUNGEONS = [("Monsters' Cave", (1461, 461), True), ("Thieves' Cave", (1601, 438)
             ("Summit's Mouth", (1423, 295), False), ('Titi Lake', (1396, 553), False)]
 
 
-def draw_map(img, box, x0, y0, scale, plate_size, ring=None, dim=0):
-    """The map's view from map point (x0, y0) at `scale` phone pixels a map pixel into `box`, our plates over it."""
+def draw_map(img, box, x0, y0, scale, plate_size, ring=None, dim=0, plates=True):
+    """The map's view from map point (x0, y0) at `scale` phone pixels a map pixel into `box`, our plates over it
+    (none before COMMAND's map wait: `plates`)."""
     bx0, by0, bx1, by1 = box
     w, h = (bx1 - bx0) / scale, (by1 - by0) / scale
     part = MAP.crop((x0, y0, round(x0 + w), round(y0 + h)))
@@ -478,10 +481,10 @@ def draw_map(img, box, x0, y0, scale, plate_size, ring=None, dim=0):
                              outline=(126, 130, 138, 255) if lit else (110, 110, 114, 150), width=2)
         od.text((px, py), name, font=f, fill=(240, 240, 240, 255) if lit else (170, 170, 170, 200), anchor='mm')
 
-    for p, (mx, my) in sorted(PROV_POINTS.items(), key=lambda kv: kv[1][1]):
+    for p, (mx, my) in sorted(PROV_POINTS.items(), key=lambda kv: kv[1][1]) if plates else ():
         if PROV_NAMES.get(p):
             plate(PROV_NAMES[p], mx, my, 28, True)
-    for name, (mx, my), lit in DUNGEONS:
+    for name, (mx, my), lit in DUNGEONS if plates else ():
         plate(name, mx, my, 13, lit)
     if dim:
         od.rectangle(box, fill=(0, 0, 0, dim))
@@ -1235,10 +1238,11 @@ def unit_face(n, size):
 
 
 def arrow_mark(d, x, y, way, size=10, fill=INK_HEAD):
-    """▲ ▼ ▶: Cinzel has no arrows."""
+    """▲ ▼ ▶ ◀: Cinzel has no arrows."""
     s = size
     pts = {'up': [(x - s, y + s), (x + s, y + s), (x, y - s)], 'down': [(x - s, y - s), (x + s, y - s), (x, y + s)],
-           'right': [(x - s, y - s), (x - s, y + s), (x + s, y)]}[way]
+           'right': [(x - s, y - s), (x - s, y + s), (x + s, y)],
+           'left': [(x + s, y - s), (x + s, y + s), (x - s, y)]}[way]
     d.polygon(pts, fill=fill)
 
 
@@ -1810,12 +1814,12 @@ def framed(img, pic, xy):
     ImageDraw.Draw(img).rectangle((xy[0], xy[1], xy[0] + pic.width, xy[1] + pic.height), outline=DIM_GOLD, width=2)
 
 
-def attacker_card(img, box, place):
+def attacker_card(img, box, place, face_max=200):
     d = ImageDraw.Draw(img)
     x0, y0, x1, y1 = box
     name, kind, troops, cell = ATTACKERS[place]
     d.rectangle(box, fill=ROW, outline=DIM_GOLD, width=2)
-    fs = min(y1 - y0 - 24, 200)
+    fs = min(y1 - y0 - 24, face_max)
     framed(img, dump_face(cell, fs), (x1 - 12 - fs, y0 + 12))
     d = ImageDraw.Draw(img)
     badge(d, x0 + 40, y0 + 44, place)
@@ -1868,11 +1872,11 @@ def attack_answers(d, ninjas='1 of 1 free'):
     two_line_button(d, (16, BAR[0], PW - 16, BAR[1]), 'Intercept', 'choose the units', red=True)
 
 
-def maris(img, box, size=42):
+def maris(img, box, size=42, face_max=170):
     d = ImageDraw.Draw(img)
     x0, y0, x1, y1 = box
     panel(d, box)
-    fs = min(170, y1 - y0 - 40)
+    fs = min(face_max, y1 - y0 - 40)
     framed(img, cg_face(6, fs), (x0 + 24, y0 + 20))
     d = ImageDraw.Draw(img)
     tx = x0 + 24 + fs + 30
@@ -3151,8 +3155,8 @@ def commands_cell(d, box, label='Commands', kind='menu'):
 LAND_VIEW = (1280, 208)                 # the gallery's map view (the touch dump's camera)
 
 
-def lm1_frame(img, dim=0, ring=None, view=LAND_VIEW):
-    draw_map(img, (FX0, 0, FX1, LH), view[0], view[1], LK * 2, 36, ring=ring, dim=dim)
+def lm1_frame(img, dim=0, ring=None, view=LAND_VIEW, plates=True):
+    draw_map(img, (FX0, 0, FX1, LH), view[0], view[1], LK * 2, 36, ring=ring, dim=dim, plates=plates)
     return ImageDraw.Draw(img)
 
 
@@ -3834,6 +3838,301 @@ def p9():
     lu1(); lu2()
 
 
+# --- round P10: the enemy attack and the week report, landscape (2026-10-27) ----------------------------------------
+
+def side_danger(d, box, label='Abandon City'):
+    """Abandon City in a black side (254 wide): the white flag over the label in two lines (the owner's P1)."""
+    x0, y0, x1, y1 = box
+    d.rectangle(box, fill=(54, 18, 14), outline=(196, 70, 50), width=3)
+    d.rectangle((x0 + 7, y0 + 7, x1 - 7, y1 - 7), outline=(120, 40, 30), width=1)
+    cx = (x0 + x1) / 2
+    d.line([(cx - 18, y0 + 30), (cx - 18, y0 + 92)], fill=(236, 226, 210), width=4)
+    d.polygon([(cx - 16, y0 + 30), (cx + 24, y0 + 40), (cx - 16, y0 + 54)], fill=(236, 226, 210))
+    for i, word in enumerate(label.split()):
+        d.text((cx, y0 + 134 + i * 50), word, font=fit(d, word, BRUSH, 40, x1 - x0 - 30), fill=(236, 150, 110),
+               anchor='mm')
+
+
+def side_two_line(d, box, title, sub, red=False):
+    """A main answer in a black side: its words in two lines, the sub-line under them."""
+    x0, y0, x1, y1 = box
+    if red:
+        red_button(d, box, '')
+    else:
+        panel(d, box)
+    words = title.split()
+    cx = (x0 + x1) / 2
+    top = y0 + (y1 - y0) * 0.38 - 27 * (len(words) - 1)     # in the red button's lighter half
+    for i, word in enumerate(words):
+        d.text((cx, top + i * 54), word, font=fit(d, word, BRUSH, 48, x1 - x0 - 30), fill=NAME, anchor='mm')
+    d.text((cx, y1 - 40), sub, font=fit(d, sub, GOTHIC, 28, x1 - x0 - 24), fill=TEXT if red else QUIET, anchor='mm')
+
+
+def ys_panel(img, d, box, pic_w, row_h=64):
+    """The defended province: Ys's picture and its four figures under it."""
+    x0, y0, x1, y1 = box
+    panel(d, box)
+    d.text((x0 + 28, y0 + 26), 'DEFENDING · YS', font=CINZEL(28, 600), fill=SUBTITLE)
+    pic = dump(TOUCH, ATTACK_DUMP).crop((120, 204, 416, 400))
+    pic = pic.resize((pic_w, round(pic_w * pic.height / pic.width)), Image.LANCZOS)
+    framed(img, pic, (round((x0 + x1 - pic_w) / 2), y0 + 76))
+    d = ImageDraw.Draw(img)
+    y = y0 + 76 + pic.height + 18
+    for label, value in YS_FIGURES:
+        d.text((x0 + 30, y + row_h / 2), label, font=GOTHIC(31), fill=QUIET, anchor='lm')
+        d.text((x1 - 30, y + row_h / 2), value, font=GOTHIC(38), fill=TEXT, anchor='rm')
+        d.line([(x0 + 30, y + row_h), (x1 - 30, y + row_h)], fill=DIM_GOLD, width=1)
+        y += row_h
+    return d
+
+
+def rebels_panel(img, d, box, ch, face_max=200):
+    """The attackers as the PC shows them: the front row left, nearer Ys and facing it, the back row right."""
+    x0, y0, x1, y1 = box
+    panel(d, box)
+    d.text((x0 + 28, y0 + 26), 'ATTACKING · LEAZAS REBEL ARMY', font=CINZEL(28, 600), fill=SUBTITLE)
+    cx0 = x0 + 64                               # room for the triangle pointing at Ys
+    cw = (x1 - 24 - cx0 - 16) // 2
+    y = y0 + 76
+    for c, label in enumerate(('FRONT ROW', 'BACK ROW')):
+        d.text((cx0 + c * (cw + 16) + cw / 2, y + 14), label, font=CINZEL(26, 700), fill=SUBTITLE, anchor='mm')
+    arrow_mark(d, cx0 + cw / 2 - 120, y + 14, 'left', 8, SUBTITLE)
+    y += 40
+    for r in range(2):
+        for c, place in enumerate((1 + r, 3 + r)):
+            x = cx0 + c * (cw + 16)
+            attacker_card(img, (x, y + r * (ch + 14), x + cw, y + r * (ch + 14) + ch), place, face_max)
+    d = ImageDraw.Draw(img)
+    my = y + ch + 7
+    d.polygon([(x0 + 24, my), (x0 + 54, my - 34), (x0 + 54, my + 34)], fill=GOLD)
+    y += 2 * ch + 14 + 20
+    d.text((cx0, y + 28), 'COMMANDERS', font=CINZEL(24, 600), fill=SUBTITLE, anchor='lm')
+    d.text((cx0 + 210, y + 28), '4', font=GOTHIC(38), fill=TEXT, anchor='lm')
+    d.text((x1 - 28, y + 28), '1,556', font=GOTHIC(38), fill=TEXT, anchor='rm')
+    d.text((x1 - 28 - d.textlength('1,556', font=GOTHIC(38)) - 16, y + 28), 'TOTAL TROOPS', font=CINZEL(24, 600),
+           fill=SUBTITLE, anchor='rm')
+    d.line([(cx0, y + 62), (x1 - 28, y + 62)], fill=DIM_GOLD, width=1)
+    d.text((cx0, y + 76), "Kanami's report", font=GOTHIC(30), fill=QUIET)
+    return d
+
+
+def ninja_callout(img, d, box, tip, way):
+    """Ninja Scout's list (the owner's B4): a row per ninja in service; `tip` the point of its triangle at the
+    button, `way` the side the button lies on."""
+    x0, y0, x1, y1 = box
+    panel(d, box, fill=(30, 22, 16))
+    tx, ty = tip
+    if way == 'left':
+        d.polygon([(x0 + 2, ty - 26), (tx, ty), (x0 + 2, ty + 26)], fill=GOLD)
+    else:
+        d.polygon([(tx - 26, y1 - 2), (tx + 26, y1 - 2), (tx, ty)], fill=GOLD)
+    d.text((x0 + 30, y0 + 46), 'SEND TO SCOUT', font=CINZEL(28, 600), fill=SUBTITLE, anchor='lm')
+    rh = 150
+    row = (x0 + 24, y0 + 86, x1 - 24, y0 + 86 + rh)
+    d.rectangle(row, fill=ROW, outline=DIM_GOLD, width=2)
+    framed(img, cg_face(9, rh - 24), (row[0] + 12, row[1] + 12))
+    d = ImageDraw.Draw(img)
+    d.text((row[0] + rh + 20, row[1] + 46), 'KANAMI', font=CINZEL(40, 700), fill=NAME, anchor='lm')
+    d.text((row[0] + rh + 20, row[1] + 102), 'free this week', font=GOTHIC(32), fill=QUIET, anchor='lm')
+    return rh
+
+
+LA1_NINJA = (RAIL_L[0], FOOT - 10 - 300, RAIL_L[1], FOOT - 10)
+LA1_INTERCEPT = (RAIL_R[0], FOOT - 10 - 400, RAIL_R[1], FOOT - 10)
+
+
+def la1_base(img, d):
+    """The PC's screen in the frame at the phone's type; the answers in the sides at the thumbs."""
+    backdrop(img, (0, 0, LW, LH))
+    x0, x1 = FX0 + 16, FX1 - 16
+    flag_icon(img, (x0 + 8, 26), 78)
+    d = ImageDraw.Draw(img)
+    d.text((x0 + 104, 18), 'Enemy Attack', font=BRUSH(60), fill=NAME)
+    tx = x0 + 104 + d.textlength('Enemy Attack', font=BRUSH(60)) + 44
+    d.text((tx, 64), 'The Leazas Rebel Army appeared around Ys.', font=GOTHIC(40), fill=TEXT, anchor='lm')
+    divider(d, 132, x0, x1)
+    top, foot = 150, 862
+    d = ys_panel(img, d, (x0, top, x0 + 650, foot), 500)
+    d.text((x0 + 650 + 50, (top + foot) / 2), 'VS', font=BRUSH(40), fill=GOLD, anchor='mm')
+    d = rebels_panel(img, d, (x0 + 750, top, x1, foot), 210)
+    maris(img, (x0, foot + 14, x1, LH - 14), size=44)
+    d = ImageDraw.Draw(img)
+    # The sides: the date over Abandon City at the left's top, Ninja Scout at the left thumb; Intercept at the right.
+    sx0, sx1 = RAIL_L
+    side_danger(d, (sx0, 16, sx1, 256))
+    side_two_line(d, LA1_NINJA, 'Ninja Scout', '1 of 1 free')
+    sx0, sx1 = RAIL_R
+    d.text((sx0 + 6, 24), 'LP 3', font=CINZEL(34, 700), fill=NAME)
+    d.text((sx0 + 6, 70), 'Month 5 · Week 2', font=fit(d, 'Month 5 · Week 2', lambda s: CINZEL(s, 700), 30,
+                                                       sx1 - sx0 - 12), fill=NAME)
+    side_two_line(d, LA1_INTERCEPT, 'Intercept', 'choose the units', red=True)
+    return d
+
+
+def la1():
+    img, d = land()
+    la1_base(img, d)
+    reach_land(img)
+    save_land(img, 'LA1', 'the PC\'s screen in the frame, the answers in the sides', 'land-attack', notes=[
+        'The frame holds the PC\'s screen\n(B) at the phone\'s type: the news,\nYs (its picture and four figures)\n'
+        'and the rebels\' cards as on the PC\n— the front row left, facing Ys —,\nMaris\'s question across the foot.',
+        f'The rebels\' cards {mm(533)} × {mm(210)},\nnames 2.4 mm; Ys\'s figures\n2.2 mm; Maris\'s lines in her\n'
+        'own breaks, 2.5 mm.',
+        f'The answers in the sides: Intercept\nat the right thumb ({mm(400)} high),\nNinja Scout at the left one, '
+        f'Abandon\nCity (the danger button) at the\nleft\'s top, out of the thumbs\'\nway; {mm(254)} wide.',
+        'The date at the right side\'s top,\nas the status stands in LM1.',
+        'A tap on a rebel\'s card does\nnothing (as on the PC); Abandon\nCity asks first in a callout\n'
+        'right of it, as Ninja Scout\'s list\nopens (LA1n).'])
+
+
+def la1n():
+    img, d = land()
+    d = la1_base(img, d)
+    b = LA1_NINJA
+    box = (b[2] + 40, b[3] - 290, b[2] + 40 + 700, b[3])
+    rh = ninja_callout(img, d, box, (b[2] + 4, (b[1] + b[3]) // 2 + 40), 'left')
+    reach_land(img)
+    save_land(img, 'LA1n', 'the PC\'s screen in the frame — Ninja Scout\'s list', 'land-attack', notes=[
+        'Ninja Scout opens its list right\nof the button (the owner\'s B4),\nover Maris\'s question and Ys\'s\n'
+        f'figures: a row per ninja in\nservice, the spent ones dimmed;\nrows {mm(rh)}.',
+        'A tap on a free one sends her;\nthe places fill in as on the PC\n(here already the gallery\'s).',
+        'Abandon City\'s question the\nsame way, right of its button.'])
+
+
+LA2_COL = 1792                          # LA2: Ys and the rebels left of it, the news, Maris and the answers right
+
+
+def la2_base(img, d):
+    """The screen across the whole width, as LD2's own split: the facts at the left, the news, Maris's question and
+    the answers in a column at the right thumb."""
+    backdrop(img, (0, 0, LW, LH))
+    x0, x1 = SIDE + 6, LW - SIDE - 6
+    top, foot = 16, LH - 16
+    d = ys_panel(img, d, (x0, top, x0 + 580, foot), 540, row_h=88)
+    d.text((x0 + 580 + 50, (top + foot) / 2), 'VS', font=BRUSH(40), fill=GOLD, anchor='mm')
+    d = rebels_panel(img, d, (x0 + 680, top, LA2_COL - 16, foot), 300, face_max=170)
+    cx0 = LA2_COL
+    flag_icon(img, (cx0 + 4, 24), 70)
+    d = ImageDraw.Draw(img)
+    d.text((cx0 + 92, 16), 'Enemy Attack', font=BRUSH(56), fill=NAME)
+    d.text((x1, 108), DATE, font=CINZEL(28, 700), fill=NAME, anchor='ra')
+    d.text((cx0 + 4, 166), 'The Leazas Rebel Army', font=GOTHIC(40), fill=TEXT)
+    d.text((cx0 + 4, 216), 'appeared around Ys.', font=GOTHIC(40), fill=TEXT)
+    divider(d, 286, cx0, x1)
+    ans = FOOT - 10 - 260
+    row1 = ans - 16 - 180
+    maris(img, (cx0, row1 - 16 - 320, x1, row1 - 16), size=40, face_max=140)
+    d = ImageDraw.Draw(img)
+    half = (x1 - cx0 - 16) // 2
+    danger_button(d, (cx0, row1 + 10, cx0 + round(half * 0.9), row1 + 170), 'Abandon City')
+    two_line_button(d, (cx0 + half + 16, row1, x1, row1 + 180), 'Ninja Scout', '1 of 1 free')
+    two_line_button(d, (cx0, ans, x1, FOOT - 10), 'Intercept', 'choose the units', red=True)
+    return d, (cx0 + half + 16, row1, x1, row1 + 180)
+
+
+def la2():
+    img, d = land()
+    la2_base(img, d)
+    reach_land(img)
+    save_land(img, 'LA2', 'across the whole width, the answers in a column at the right thumb', 'land-attack', notes=[
+        'As LD2 re-split its screen: the\nfacts at the left over the whole\nheight — Ys and the rebels as on\n'
+        'the PC, the front row facing Ys —,\nthe news, Maris\'s question and\nthe answers in a column at the right.',
+        f'The rebels\' cards {mm(438)} × {mm(300)}\n(taller than LA1\'s), names\n2.4 mm; Ys\'s picture {mm(540)}\n'
+        'wide.',
+        'The right column as upright\'s\nPA1 foot: Maris\'s question, then\nAbandon City (10% narrower,\n'
+        f'the owner\'s change) | Ninja Scout,\nIntercept at the thumb ({mm(260)}\nhigh, {mm(LW - SIDE - 6 - LA2_COL)} wide).',
+        'One thumb answers; the question\nstands right over its answers, as\non the PC and upright.',
+        f'{mm(SIDE)} kept free at both edges\nfor the camera\'s hole.'])
+
+
+def la2n():
+    img, d = land()
+    d, b = la2_base(img, d)
+    cx = (b[0] + b[2]) // 2
+    box = (LA2_COL - 120, b[1] - 30 - 290, LW - SIDE - 6, b[1] - 30)
+    rh = ninja_callout(img, d, box, (cx, b[1] - 6), 'down')
+    reach_land(img)
+    save_land(img, 'LA2n', 'across the whole width — Ninja Scout\'s list', 'land-attack', notes=[
+        'Ninja Scout\'s list above its\nbutton, over Maris\'s question\n(as upright\'s PA1n): a row per\n'
+        f'ninja, rows {mm(rh)}; the spent\nones dimmed.',
+        'Abandon City\'s question the\nsame way, above its button.'])
+
+
+# The week report: LM1's map under it (the report comes before COMMAND's map wait).
+
+def lw1():
+    img, d = land()
+    d = lm1_frame(img, dim=110, plates=False)
+    x0, x1 = RAIL_L
+    menu_cell(d, (x0, 16, x1, 126))
+    drawer_cells(d, x0, x1, FOOT - 10)
+    w, h = 1320, 940
+    bx0, by0 = (LW - w) // 2, (LH - h) // 2
+    week_card(img, (bx0, by0, bx0 + w, by0 + h))
+    reach_land(img)
+    d = ImageDraw.Draw(img)
+    save_land(img, 'LW1', 'the report in the middle over the dimmed map', 'land-report', notes=[
+        'The PC\'s card (and upright\'s PW1)\nin the middle of the frame over\nthe dimmed map: the banner, the\n'
+        'treasury as an account, the\nbudget, the troops replenished.',
+        f'The card {mm(w)} × {mm(h)}: the banner\n3.5 mm, the account\'s figures\n2.5 mm, the budget 3.5 mm.',
+        'A tap anywhere goes on (the\ntriangle asks for it); the left\nside as in the scenes: Menu on\n'
+        'top, Skip and Log at the thumb.',
+        'The thieves\' week: the banner\nalone on the same card.'])
+
+
+def lw2():
+    img, d = land()
+    d = lm1_frame(img, plates=False)
+    x0, x1 = RAIL_L
+    menu_cell(d, (x0, 16, x1, 126))
+    flag_icon(img, (x0 + 4, 160), 64, 'report')
+    d = ImageDraw.Draw(img)
+    for i, word in enumerate(('Leazas', 'Army Phase')):
+        d.text((x0 + 4, 240 + i * 58), word, font=fit(d, word, BRUSH, 46, x1 - x0 - 8), fill=NAME)
+    d.text((x0 + 6, 366), 'LP 3', font=CINZEL(32, 700), fill=NAME)
+    d.text((x0 + 6, 408), 'Month 5 · Week 2', font=fit(d, 'Month 5 · Week 2', lambda s: CINZEL(s, 700), 30,
+                                                        x1 - x0 - 12), fill=NAME)
+    drawer_cells(d, x0, x1, FOOT - 10)
+    x0, x1 = RAIL_R
+    d.text((x0 + 4, 22), 'TREASURY', font=CINZEL(26, 700), fill=SUBTITLE)
+    y = 64
+    for sign, label, sub, value, colour in REPORT:
+        d.text((x0 + 4, y), f'{sign} {label}'.strip(), font=fit(d, f'{sign} {label}'.strip(),
+                                                                lambda s: CINZEL(s, 600), 28, x1 - x0 - 8), fill=TEXT)
+        d.text((x0 + 4, y + 38), sub.upper(), font=fit(d, sub.upper(), lambda s: CINZEL(s, 600), 24, x1 - x0 - 8),
+               fill=SUBTITLE)
+        d.text((x1 - 4, y + 70), value, font=GOTHIC(44), fill=colour, anchor='ra')
+        for xx in range(x0 + 4, x1 - 4, 14):
+            d.line([(xx, y + 128), (xx + 6, y + 128)], fill=DIM_GOLD, width=1)
+        y += 140
+    b = (x0, y + 4, x1, y + 150)
+    d.rectangle(b, fill=(30, 22, 16), outline=GOLD, width=2)
+    d.text((x0 + 16, y + 20), 'BUDGET', font=CINZEL(28, 700), fill=NAME)
+    d.text((x1 - 14, y + 64), '116,400', font=BRUSH(50), fill=NAME, anchor='ra')
+    d.text((x1 - 14, y + 120), 'K GOLD', font=CINZEL(24, 600), fill=SUBTITLE, anchor='ra')
+    y += 180
+    d.text((x0 + 4, y), 'TROOPS', font=CINZEL(26, 700), fill=SUBTITLE)
+    b = (x0, y + 40, x1, y + 170)
+    d.rectangle(b, fill=(30, 22, 16), outline=DIM_GOLD, width=2)
+    d.text((x0 + 16, y + 58), 'Replenished', font=CINZEL(26, 600), fill=TEXT)
+    d.text((x1 - 14, y + 104), '+1,385', font=BRUSH(48), fill=(150, 196, 110), anchor='ra')
+    triangle(d, (x0 + x1) / 2, FOOT - 60, 30)
+    reach_land(img)
+    d = ImageDraw.Draw(img)
+    save_land(img, 'LW2', 'the report in the sides, the map clear', 'land-report', notes=[
+        'LM1\'s principle as far as it goes:\nthe frame shows the map as the\nweek starts, undimmed (no plates\n'
+        'before the map wait, as on the\nPC); the report stands in the\nblack sides.',
+        'Left: Menu, the banner and the\ndate where LM1\'s status will be,\nSkip and Log at the thumb.',
+        f'Right: the treasury as an account\nstacked down the side (the\nfigures {mm(44)}), the budget {mm(50)},\n'
+        'the troops replenished, the\ntriangle at the right thumb —\nwhere Commands comes next.',
+        'A tap anywhere goes on. The\nthieves\' week: the banner alone,\nthe right side empty.'])
+
+
+def p10():
+    la1(); la1n(); la2(); la2n()
+    lw1(); lw2()
+
+
 def main():
     global MAP, PROV_NAMES, PROV_POINTS
     if ROUND in ('P3', 'P5', 'P7', 'P9'):
@@ -3841,8 +4140,8 @@ def main():
         overviews()
         return
     MAP, PROV_NAMES, PROV_POINTS = build_map()
-    if ROUND in ('P4', 'P6', 'P8'):
-        {'P4': p4, 'P6': p6, 'P8': p8}[ROUND]()
+    if ROUND in ('P4', 'P6', 'P8', 'P10'):
+        {'P4': p4, 'P6': p6, 'P8': p8, 'P10': p10}[ROUND]()
         overviews()
         return
     if GALLERY_MODE:

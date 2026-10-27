@@ -154,6 +154,8 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 16. ~~**The landscape battle** (round P8, §12): LB1 or LB2.~~ LB2.
 17. ~~**The landscape deployment table** (round P9, §13): LD1 or LD2.~~ LD2, changed.
 18. ~~**The landscape Subordinates screen** (round P9, §13): LU1 or LU2.~~ LU1, changed.
+19. **The landscape enemy attack** (round P10, §14): LA1 or LA2.
+20. **The landscape week report** (round P10, §14): LW1 or LW2.
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -506,3 +508,43 @@ LU2 keeps upright's order of things, at the cost of four rows.
   and End**, End at the thumb. LU1q's callout stays left of Replenish.
 
 Both are on the gallery's landscape tab with LM1 and LB2.
+
+## 14. Round P10: the enemy attack and the week report, landscape (2026-10-27)
+
+Drawn by `mock_phone.py --round P10` over the same data as round P4 (§8): the gallery's `enemy-attack-scouted` (the
+rebels on Ys (5) after Kanami's scouting: Ex (commander 1), Sakanaku (commander 6), Dodge (commander 5), Jibul
+(commander 7)), `week-report` and LM1's map, with Maris's and Kanami's own face CGs (6, 9).
+
+The enemy attack (`LA…`; upright PA1 as the owner changed it):
+
+- **LA1 — the PC's screen in the frame, the answers in the sides** (LM1's principle). The frame holds the PC's B at the
+  phone's type: the news across the top, Ys (its picture and four figures, 2.2 mm) left, the rebels' cards right as on
+  the PC — the front row left, nearer Ys and facing it — (30.4 × 12.0 mm, names 2.4 mm), Maris's question across the
+  foot in her own breaks (2.5 mm). The answers in the sides: **Intercept** at the right thumb (22.8 mm high), **Ninja
+  Scout** at the left thumb, **Abandon City** (the danger button, its white flag) at the left side's top, out of the
+  thumbs' way; the date at the right side's top, as the status stands in LM1. **LA1n**: Ninja Scout's list (B4) opens
+  right of its button over Maris's question, a row per ninja (8.5 mm); Abandon City's question the same way.
+- **LA2 — across the whole width, the answers in a column at the right thumb** (the screen's own split, as LD2's). The
+  facts at the left over the whole height — Ys (its picture 30.8 mm wide), the rebels' cards taller (24.9 × 17.1 mm) —;
+  the right column is upright's PA1 foot under the news: the title, the date and the news, Maris's question, Abandon
+  City (10% narrower, the owner's change) | Ninja Scout, Intercept at the thumb (14.8 × 45.8 mm). **LA2n**: the list
+  above Ninja Scout's button, over Maris's question, as upright's PA1n.
+
+**Recommendation: LA2** — the question stands right over its answers, as on the PC and upright, and one thumb answers
+it; the rebels' cards get the height. LA1 keeps the frame whole, but its answers are split between the thumbs and the
+sides' 14.5 mm make their labels smaller.
+
+The week report (`LW…`), before `COMMAND`'s map wait, so the map has no plates (as on the PC):
+
+- **LW1 — the report in the middle over the dimmed map.** The PC's card (and upright's PW1) in the frame, 75.2 × 53.5
+  mm: the banner 3.5 mm, the treasury as an account 2.5 mm, the budget 3.5 mm, the troops replenished, the triangle; a
+  tap anywhere goes on; the left side as in the scenes (Menu on top, Skip and Log at the thumb).
+- **LW2 — the report in the sides, the map clear.** The frame shows the map undimmed as the week starts; the left side
+  holds Menu, the banner and the date where LM1's status will stand, Skip and Log at the thumb; the right side the
+  treasury stacked as an account (the figures 2.5 mm, the budget 2.8 mm), the troops replenished, the triangle at the
+  right thumb, where Commands comes next.
+
+The thieves' week: the banner alone, on LW1's card or in LW2's left side.
+
+**Recommendation: LW1** — the owner's PW1 and the PC's card at the largest type, the account read as one piece; LW2
+keeps the map in view, but its account is narrow and its labels small.
