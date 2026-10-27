@@ -11,7 +11,7 @@ namespace Kichikuou.Game.Strategy;
 /// the first in red lacquer: a button's click answers the script's menu with its item (1-based), a right click cancels
 /// (0), as the original's box. Our own question before an item replaces a unit's (<c>TreasureRoster.ReplaceQuestion</c>)
 /// shows the same way. In the touch mode the last tap is the screen's button, and the callout stands beside it instead,
-/// filling the info panel at its left with its tail on the button (docs/ui/pickers.md, §6, the owner's X4). Laid out in
+/// at the top of the info panel left of it, as tall as its text, its tail on the button (docs/ui/pickers.md, §6, the owner's X4). Laid out in
 /// the 1280×800 screen's pixels, scaled with the picture.
 /// </summary>
 internal sealed partial class TreasureCallout : Control
@@ -153,7 +153,7 @@ internal sealed partial class TreasureCallout : Control
             float w = Math.Max(MinWidth, Math.Max(widest, buttons) + 2 * Pad + (Answers == 0 ? 30 : 0));
             float h = Pad + Shown.Count * LineStep + (Answers > 0 ? ButtonH + 2 * Gap + 4 : 34);
             if (_beside is { } area)
-                return new Rect2(area.Position, new Vector2(area.Size.X, Math.Max(h, area.Size.Y)));   // the whole area: nothing peeks out
+                return new Rect2(area.Position, new Vector2(area.Size.X, h));   // as tall as its text; the screen hides what is under it
             float x = Math.Clamp(_cell.Position.X - 8, 8, 1280 - 8 - w);
             float y = _cell.End.Y + Gap;
             if (y + h > 800 - 8)

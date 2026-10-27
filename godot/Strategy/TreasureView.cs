@@ -379,11 +379,21 @@ internal sealed partial class TreasureView : Control
         if (_button is { } b)
             DrawAction(c, b);
         Ui.DrawDivider(c, InfoPanel.Position.X + 16, InfoPanel.End.X - 16, y + 116, _k);
+        // Touch: a callout beside the button stands over the line, as tall as its text; what it leaves of the hint and the
+        // prompt under it is not drawn (the owner's A, 2026-10-27), Back is.
+        bool covered = TouchMode.On && _asked != 0;
         if (_prompt is not { } p)
         {
+            if (covered)
+                return;
             string verb = TouchMode.On ? "Tap" : "Pick";
             c.DrawString(_gothic, new Vector2(x, y + 152), $"{verb} a character, then the item to equip —", fontSize: 14, modulate: Ui.Quiet);
             c.DrawString(_gothic, new Vector2(x, y + 174), "or an item, then the character to equip it.", fontSize: 14, modulate: Ui.Quiet);
+            return;
+        }
+        if (covered)
+        {
+            DrawButton(c, BackArea, "Back", BackButton, 15);
             return;
         }
         // A unit's face as the deployment screen cuts it; an item by its name alone (the original's shrunk picture with its

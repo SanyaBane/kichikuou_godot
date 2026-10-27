@@ -371,7 +371,7 @@ left as they are: no second tap (a tap on the selected cell does nothing), the b
   view's turn or the entry's going drops it), the button at (432, 541) 232×70 sends the selected cell's click as the
   PC's, greyed with its reason in it; "Tap an item (a character) to see it." while a pick waits for its second; the
   hint's verb "Tap".
-- `godot/Strategy/TreasureCallout` stands beside the button (`Show(…, beside)`): the info panel left of it, opaque, its
+- `godot/Strategy/TreasureCallout` stands beside the button (`Show(…, beside)`): at the top of the info panel left of it, opaque and as tall as its text (the owner's A, 2026-10-27: no gap above Yes/No; the hint and the prompt under it not drawn, Back is), its
   tail on the button (`TreasureView.ActionRect`, `BesideAction`); `GameScreen.ShowTreasureCallout` places the script's
   questions and our own replace question there.
 - The gallery: `treasure-hover`, `-items`, `-replace`, `-refusal` select in the touch pass (`-refusal` the greyed button,
