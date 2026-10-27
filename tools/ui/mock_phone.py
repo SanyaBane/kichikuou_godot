@@ -286,6 +286,10 @@ GALLERY_ENTRIES_LAND = {
     'LM1b': ('lm1-commands', 'Map — LM1', 'The command panel', 'in the sides, two-line rows; Close where Commands was'),
     'LM1c': ('lm1-province', 'Map — LM1', 'A province', 'Oaks (6)\'s card beside it, its commands on the right side'),
     'LB2': ('lb2-turn', 'Battle — LB2', 'The player\'s turn', 'the scene lower, the cards taller; the rails in the sides'),
+    'LD2': ('ld2-deployment', 'Deployment — LD2', 'The deployment table', 'the ledger at the left, the party two a '
+                                                                           'row at the right'),
+    'LU1': ('lu1-subordinates', 'Subordinates — LU1', 'The orders', 'Add New Troops left; Talk, Replenish, End right'),
+    'LU1q': ('lu1-question', 'Subordinates — LU1', 'Replenish asks first', 'a callout left of its button (Haurein)'),
 }
 DUMPED = []
 DUMPED_LAND = []
@@ -3547,16 +3551,18 @@ LAND_COLS = {
 def land_ledger(d, box, tab, order, chosen=None, party=True, refill=True):
     """The PC's ledger in one-line rows at the phone's type (2.2 mm): every column of a tab in one line."""
     x0, y0, x1, y1 = box
+    k = min(1, (x1 - x0) / 1928)                    # a narrower ledger draws its columns closer, the type the same
+    sx = lambda x: x0 + round(x * k)
     d.rectangle(box, fill=PAPER)
     head = 96 if tab == 1 else 64
     if tab == 1:
         for name, i in (('OFFENSE', 4), ('DEFENSE', 6), ('DUNGEON', 8)):
-            cx = x0 + 560 + i * 136 + 68 - 50
+            cx = sx(560 + i * 136 + 68 - 50)
             d.text((cx, y0 + 12), name, font=CINZEL(22, 600), fill=INK_QUIET, anchor='ma')
-            d.line([(cx - 110, y0 + 40), (cx + 110, y0 + 40)], fill=PAPER_LINE, width=2)
+            d.line([(cx - 110 * k, y0 + 40), (cx + 110 * k, y0 + 40)], fill=PAPER_LINE, width=2)
     for name, x, anchor in LAND_COLS[tab]:
-        d.text((x0 + x if x > 0 else x1 + x, y0 + head - 40), name, font=CINZEL(26, 700), fill=INK_HEAD, anchor=anchor)
-    arrow_mark(d, x0 + (164 if tab == 0 else 574), y0 + head - 26, 'up' if tab == 0 else 'down', 7)
+        d.text((sx(x) if x > 0 else x1 + x, y0 + head - 40), name, font=CINZEL(26, 700), fill=INK_HEAD, anchor=anchor)
+    arrow_mark(d, sx(164) if tab == 0 else sx(560) + 14, y0 + head - 26, 'up' if tab == 0 else 'down', 7)
     d.line([(x0, y0 + head), (x1, y0 + head)], fill=INK_HEAD, width=2)
     y = y0 + head + 2
     drawn = 0
@@ -3573,22 +3579,22 @@ def land_ledger(d, box, tab, order, chosen=None, party=True, refill=True):
             seal(d, x0 + 20, y + 28, place)
         d.line([(x0, y + LAND_ROW), (x1, y + LAND_ROW)], fill=PAPER_LINE, width=2)
         cy = y + LAND_ROW / 2
-        d.text((x0 + 150, cy), str(no), font=GOTHIC(40), fill=INK, anchor='rm')
-        d.text((x0 + 170, cy), name, font=GOTHIC(40), fill=INK, anchor='lm')
+        d.text((sx(150), cy), str(no), font=GOTHIC(40), fill=INK, anchor='rm')
+        d.text((sx(170), cy), name, font=GOTHIC(40), fill=INK, anchor='lm')
         if tab == 0:
-            d.text((x0 + 440, cy), kind, font=GOTHIC(36), fill=INK_QUIET, anchor='lm')
-            d.text((x0 + 800, cy), rows, font=GOTHIC(36), fill=INK_QUIET, anchor='lm')
-            d.text((x0 + 930, cy - 10), f'{trp:,}/{mtrp:,}', font=GOTHIC(38), fill=INK, anchor='lm')
-            strength_bar(d, x0 + 930, cy + 22, 260, trp, mtrp)
+            d.text((sx(440), cy), kind, font=GOTHIC(36), fill=INK_QUIET, anchor='lm')
+            d.text((sx(800), cy), rows, font=GOTHIC(36), fill=INK_QUIET, anchor='lm')
+            d.text((sx(930), cy - 10), f'{trp:,}/{mtrp:,}', font=GOTHIC(38), fill=INK, anchor='lm')
+            strength_bar(d, sx(930), cy + 22, round(260 * k), trp, mtrp)
             if price and refill:
-                refill_button(d, (x0 + 1270, cy - 34, x0 + 1470, cy + 34), price)
+                refill_button(d, (sx(1370) - 100, cy - 34, sx(1370) + 100, cy + 34), price)
             else:
-                d.text((x0 + 1370, cy), price or '—', font=GOTHIC(38), fill=INK_HEAD if price else INK_QUIET,
+                d.text((sx(1370), cy), price or '—', font=GOTHIC(38), fill=INK_HEAD if price else INK_QUIET,
                        anchor='mm')
             d.text((x1 - 24, cy), cost, font=GOTHIC(38), fill=INK, anchor='rm')
         else:
             for v, (_, x, _) in zip(TROOPS_TAB[n].split(), LAND_COLS[1][2:]):
-                d.text((x0 + x, cy), v, font=GOTHIC(38), fill=INK_QUIET if v == '0' else INK, anchor='rm')
+                d.text((sx(x), cy), v, font=GOTHIC(38), fill=INK_QUIET if v == '0' else INK, anchor='rm')
         y += LAND_ROW
     if drawn < len(order):                          # more rows below: the scroll bar at the right
         d.rounded_rectangle((x1 - 14, y0 + head + 8, x1 - 4, y1 - 8), radius=5, fill=PAPER_LINE)
@@ -3673,57 +3679,71 @@ def ld1():
         'A tap on a row picks the unit or\nputs it back; a long press shows\nits picture (PD2d).'])
 
 
+LD2_SPLIT = 1700                        # LD2 changed: the ledger left of it, everything else right of it
+
+
 def ld2():
+    """LD2 with the owner's change (2026-10-27): the party two cards a row as on the battle screen, which widens the
+    right part; so the ledger stands wholly at the left and the rest of the screen's information goes right."""
     img, d = land()
     backdrop(img, (0, 0, LW, LH))
-    x0, x1 = RAIL_L
-    y = side_title(d, 'Deployment', 'Attack · up to 4', x0, x1)
-    for i, (label, value) in enumerate((('TROOPS', '3,189'), ('WAR EXPENSES', '3,100K'))):
-        d.text((x0 + 4, y + 10 + i * 96), label, font=CINZEL(24, 600), fill=SUBTITLE)
-        d.text((x0 + 4, y + 42 + i * 96), value, font=GOTHIC(40), fill=TEXT)
-    side_button(d, (x0, FOOT - 10 - 140, x1, FOOT - 10), 'Stop')
-    x0, x1 = RAIL_R
-    y = 14
-    for label, places in (('BACK ROW', (3, 4)), ('FRONT ROW', (1, 2))):
-        d.text((x0 + 4, y + 14), label, font=CINZEL(24, 700), fill=SUBTITLE, anchor='lm')
-        y += 34
-        for place in places:
-            side_party_card(img, (x0, y, x1, y + 196), PARTY[place], place)
-            y += 196 + 10
-        d = ImageDraw.Draw(img)
-    red_button(d, (x0, FOOT - 10 - 140, x1, FOOT - 10), 'Attack', 52)
-    land_tabs(d, FX0 + 12, 16, 0)
-    land_ledger(d, (FX0 + 12, 104, FX1 - 12, LH - 12), 0, NUMBER_ORDER)
+    lx0, rx0, rx1 = SIDE + 6, LD2_SPLIT + 16, LW - SIDE - 6
+    land_tabs(d, lx0, 16, 0)
+    land_ledger(d, (lx0, 104, LD2_SPLIT, LH - 12), 0, NUMBER_ORDER)
+    d.text((rx0, 14), 'Deployment', font=BRUSH(56), fill=NAME)
+    d.text((rx1, 30), DATE, font=CINZEL(28, 700), fill=NAME, anchor='ra')
+    d.text((rx0 + 2, 92), 'ATTACK · UP TO 4 UNITS', font=CINZEL(26, 600), fill=SUBTITLE)
+    budget(d, rx1, 108, 36)
+    divider(d, 146, rx0, rx1)
+    cw, ch = (rx1 - rx0 - 12) // 2, 214
+    y = 166
+    d.text((rx0 + 4, y + 14), 'BACK ROW', font=CINZEL(24, 700), fill=SUBTITLE, anchor='lm')
+    d.text((rx0 + cw + 16, y + 14), 'FRONT ROW', font=CINZEL(24, 700), fill=SUBTITLE, anchor='lm')
+    arrow_mark(d, rx1 - 12, y + 14, 'right', 9, SUBTITLE)
+    y += 34
+    for r, places in enumerate(((3, 1), (4, 2))):   # as our army stands in the battle: the back row left
+        for c, place in enumerate(places):
+            x = rx0 + c * (cw + 12)
+            party_card(img, (x, y, x + cw, y + ch), PARTY[place], place, face_size=150, kind=False)
+        y += ch + 12
+    d = ImageDraw.Draw(img)
+    y += 10
+    d.text((rx0 + 4, y + 24), 'TROOPS', font=CINZEL(26, 600), fill=SUBTITLE, anchor='lm')
+    d.text((rx0 + 140, y + 24), '3,189', font=GOTHIC(40), fill=TEXT, anchor='lm')
+    d.text((rx1, y + 24), '3,100K', font=GOTHIC(40), fill=TEXT, anchor='rm')
+    d.text((rx1 - d.textlength('3,100K', font=GOTHIC(40)) - 16, y + 24), 'WAR EXPENSES', font=CINZEL(26, 600),
+           fill=SUBTITLE, anchor='rm')
+    side_button(d, (rx0, FOOT - 10 - 150, rx0 + 300, FOOT - 10), 'Stop')
+    red_button(d, (rx0 + 316, FOOT - 10 - 150, rx1, FOOT - 10), 'Attack', 60)
     reach_land(img)
     d = ImageDraw.Draw(img)
-    save_land(img, 'LD2', 'the ledger fills the frame, the party in the right side', 'land-deployment', notes=[
-        f'The ledger over the whole frame in\none-line rows ({mm(LAND_ROW)}, text 2.2 mm):\nOverview\'s every column, '
+    save_land(img, 'LD2', 'the ledger at the left, the party two a row at the right', 'land-deployment', notes=[
+        f'The ledger wholly at the left in\none-line rows ({mm(LAND_ROW)}, text 2.2 mm):\nOverview\'s every column, '
         'no\nsideways scroll; nine rows in\nview of the week-18 save\'s nine.',
-        'The party in the right side as\nthe battle\'s rows read, the back\nrow over the front; each card\n'
-        f'{mm(254)} × {mm(196)}: the face, the place,\nthe cost, the name, the troops.',
-        'No ✕ at that width: a unit leaves\nthe party by a tap on its row, as\nit joined; Attack at the right\n'
-        'thumb, Stop at the left.',
-        'The title, the date, the budget,\nthe troops and the war expenses\nin the left side.'])
+        'The owner\'s change: the party two\ncards a row as the battle shows\nour army (the back row left, the\n'
+        f'front row right; cards {mm(cw)} ×\n{mm(ch)}, ✕ {mm(84)}), so the right part\nholds all the rest.',
+        'At the right: the title, the date\nand the budget over the party,\nthe troops and the war\n'
+        'expenses under it, Stop | Attack\nat the right thumb.'])
 
 
 def lu_orders_side(img, d, n, figures):
-    """The orders in the sides (LU1): the unit, Talk and End left; Replenish and Add New Troops right, from the foot
-    up, the dearest on top."""
-    x0, x1 = RAIL_L
-    y = side_title(d, 'Subordinates', '9 units ready', x0, x1)
-    side_talk(img, (x0, FOOT - 10 - 140 - 14 - 140, x1, FOOT - 10 - 140 - 14), n)
-    d = ImageDraw.Draw(img)
-    side_button(d, (x0, FOOT - 10 - 140, x1, FOOT - 10), 'End')
+    """The orders in the sides (LU1 with the owner's change, 2026-10-27: the sides swapped, Replenish kept right):
+    Add New Troops left, from the foot up, the dearest on top; the title, Talk, Replenish and End right."""
     x0, x1 = RAIL_R
+    side_title(d, 'Subordinates', '9 units ready', x0, x1)
+    rep = (x0, FOOT - 10 - 140 - 14 - 150, x1, FOOT - 10 - 140 - 14)
+    side_talk(img, (x0, rep[1] - 14 - 140, x1, rep[1] - 14), n)
+    d = ImageDraw.Draw(img)
+    replenish(d, rep, figures)
+    side_button(d, (x0, FOOT - 10 - 140, x1, FOOT - 10), 'End')
+    x0, x1 = RAIL_L
     d.text((x0 + 4, 26), 'ORDERS', font=BRUSH(40), fill=NAME)
     d.text((x0 + 4, 84), UNIT[n][1].upper(), font=CINZEL(30, 700), fill=TEXT)
-    rep = (x0, FOOT - 10 - 150, x1, FOOT - 10)
-    replenish(d, rep, figures)
     d.text((x0 + 4, 150), 'ADD NEW TROOPS', font=fit(d, 'ADD NEW TROOPS', lambda s: CINZEL(s, 700), 24, x1 - x0 - 8),
            fill=SUBTITLE)
     h, gap = 118, 10
     for i, (step, price) in enumerate(zip(('+25', '+50', '+100', '+200', '+400', '+800'), ADD_NEW[n])):
-        y = rep[1] - 16 - (i + 1) * h - i * gap
+        y = FOOT - 10 - (i + 1) * h - i * gap
         off = int(price[:-1].replace(',', '')) > BUDGET
         d.rectangle((x0, y, x1, y + h), fill=ROW if not off else (30, 26, 22), outline=OFF_TAG if off else DIM_GOLD,
                     width=3)
@@ -3744,10 +3764,10 @@ def lu1():
     save_land(img, 'LU1', 'the ledger fills the frame, the orders in the sides', 'land-subordinates', notes=[
         'The ledger as LD2\'s over the whole\nframe (shown: the Troops tab, its\nten figures in one line under\n'
         'their groups); the chosen unit\'s\nrow vermilion.',
-        'The right side: the chosen unit\'s\norders from the foot up —\nReplenish lowest (greyed and\n'
-        '"full" for Rance), the six Add\nNew Troops over it, the dearest\non top; greyed above the budget.',
-        f'The left side: the title, the date\nand the budget; Talk (with the\nunit\'s face) over End at the left\n'
-        f'thumb, both {mm(140)} high.'])
+        'The owner\'s change: the sides\nswapped. The left: the chosen\nunit\'s six Add New Troops from\n'
+        'the foot up, the dearest on top;\ngreyed above the budget.',
+        f'The right: the title, the date and\nthe budget; Talk (the unit\'s face),\nReplenish (greyed and "full" for\n'
+        f'Rance) and End at the thumb,\n{mm(140)}-{mm(150)} high.'])
 
     img, d = land()
     backdrop(img, (0, 0, LW, LH))
@@ -3830,6 +3850,7 @@ def main():
         pb3(); pb3r(); pb3x()
         p3(); p4(); p5(); p6(); p7()
         lm1(); lb2()
+        ld2(); lu1()
         for tab, entries in (('phone', DUMPED), ('phone-land', DUMPED_LAND)):
             manifest = {'written': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'palette': 'lacquer',
                         'font': 'BizUdGothic', 'touch': True, 'mockup': True, 'entries': entries}

@@ -152,8 +152,8 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 14. **Subordinates' End** (the owner, 2026-10-27, thinking): where End goes now that Talk has left the bar.
 15. ~~**The landscape map** (round P8, §12): LM1 or LM2.~~ LM1.
 16. ~~**The landscape battle** (round P8, §12): LB1 or LB2.~~ LB2.
-17. **The landscape deployment table** (round P9, §13): LD1 or LD2.
-18. **The landscape Subordinates screen** (round P9, §13): LU1 or LU2.
+17. ~~**The landscape deployment table** (round P9, §13): LD1 or LD2.~~ LD2, changed.
+18. ~~**The landscape Subordinates screen** (round P9, §13): LU1 or LU2.~~ LU1, changed.
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -493,3 +493,16 @@ The Subordinates screen (`LU…`), shown with the Troops tab:
 
 **Recommendation: LU1** — all nine units in view while the orders stay at both thumbs, the same arrangement as LD2's;
 LU2 keeps upright's order of things, at the cost of four rows.
+
+**The owner's choice (2026-10-27): LD2 and LU1, both changed**, redrawn in their places:
+
+- **LD2: the party two cards a row, as the battle shows our army** (the back row left, the front row right; cards 24.7
+  × 12.2 mm with their ✕ 4.8 mm). That widens the right part, so **the ledger stands wholly at the left** (from the
+  hole's strip to x 1700, its columns drawn closer, the type the same: all nine rows in view) and **everything else goes
+  right**: the title, the date and the budget over the party, the troops and the war expenses under it, Stop | Attack at
+  the right thumb.
+- **LU1: the sides swapped, Replenish kept right.** The left side holds the chosen unit's six Add New Troops from the
+  foot up (the dearest on top); the right side the title, the date and the budget, then Talk, **Replenish between Talk
+  and End**, End at the thumb. LU1q's callout stays left of Replenish.
+
+Both are on the gallery's landscape tab with LM1 and LB2.
