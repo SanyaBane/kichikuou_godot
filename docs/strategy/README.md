@@ -86,6 +86,10 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
    may need meaning the low-level events lack (who speaks, which province) — derive it in the
    presentation layer from the event and the state, or add semantic events next to the
    low-level ones; never move rules into the UI.
+   **The player's pick is gone** (owner, 2026-10-21): the player always has our interface, Option →
+   Interface is removed, and `--interface original` shows the original's screens for one launch
+   (development checks; docs/window-menu.md). The separation above (the core's events, a UI as one
+   implementation of the inputs) stays.
 5. **Quirks are reproduced and registered** (2026-10-08): every bug or oddity of the original
    is ported as is and recorded in [../quirks.md](../quirks.md), so some can be offered as
    fixes later.
@@ -236,7 +240,8 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     as a tooltip, the columns of the plan, sortable by any column, scrolling both ways; units deployed
     this week are grey but sort like the rest (Rance (unit 1) stays first by number). The left part
     and the bar buttons stay the original's. Rejected for now: a whole second UI behind
-    `InterfaceSwitch` (removed again).
+    `InterfaceSwitch` (removed again). Since 2026-10-21 (owner) no setting chooses: the player always
+    has our screens, the original's only with `--interface original` for one launch (decision 4).
 26. **A manual save is the game as it is now** (2026-10-19, the owner's request; the agent proposed an
     option, the owner chose always, without one): the first rule change the port makes on purpose, a
     quality-of-life feature. The original saves only at a turn's start (`MAIN.ADV:20`, `:83`); a manual
