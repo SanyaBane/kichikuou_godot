@@ -352,3 +352,7 @@ mock-up that changes, or one whose source dumps changed, gets its badge. The tab
 grid is narrower for the phone's tall pictures. The Python is `KICHIKUOU_PYTHON` in local.env (one with Pillow and
 numpy), else `python`. When the owner chooses another base version, its entry goes into the script's `GALLERY_ENTRIES`;
 when a phone screen is built, its mock-up leaves the tab for a pass of its own.
+
+The landscape phone's choices (from round P8, 2026-10-27: the map LM1, the battle LB2) are a second tab,
+**Smartphone, landscape (mock-ups)**, drawn by the same run into `phone-land/current` (`GALLERY_ENTRIES_LAND`), its grid
+wider for the wide pictures; `-Phone` and `-PhoneOnly` draw both tabs.

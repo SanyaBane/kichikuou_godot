@@ -32,8 +32,9 @@ tablet layout at that size; LM1-LM2 the map (map-markers, province-menu), LB1-LB
 `--round P3` before the arguments draws only that round's variants (the look dir then unread, '-' will do).
 The pink lines and text are the mock-ups' notes, not part of a screen.
 
-For the screen gallery's phone tab (tools/ui/gallery.ps1 -Phone; docs/ui/gallery.md, §9) only the owner's chosen base
-versions, without the notes, into <gallery dir>/phone/current with a manifest.json as the game's passes write it:
+For the screen gallery's phone tabs (tools/ui/gallery.ps1 -Phone; docs/ui/gallery.md, §9) only the owner's chosen base
+versions, without the notes, into <gallery dir>/phone/current (upright) and <gallery dir>/phone-land/current
+(landscape), each with a manifest.json as the game's passes write it:
   python -I tools/ui/mock_phone.py --gallery <gallery dir> <extract dir> < /dev/null
 """
 import sys, os, re, json, hashlib, datetime
@@ -279,28 +280,41 @@ GALLERY_ENTRIES = {
     'PF1': ('pf1-ladder', 'Dungeon — PF1', 'The floor ladder', 'the tablet\'s rail at the right thumb'),
     'PF1e': ('pf1-entry', 'Dungeon — PF1', 'Before a search', 'Start Search in Descend\'s corner'),
 }
+# The gallery's landscape phone tab (phone-land): the owner's chosen landscape base versions (round P8 on).
+GALLERY_ENTRIES_LAND = {
+    'LM1a': ('lm1-map', 'Map — LM1', 'The map wait', 'the frame kept, the black sides as rails'),
+    'LM1b': ('lm1-commands', 'Map — LM1', 'The command panel', 'in the sides, two-line rows; Close where Commands was'),
+    'LM1c': ('lm1-province', 'Map — LM1', 'A province', 'Oaks (6)\'s card beside it, its commands on the right side'),
+    'LB2': ('lb2-turn', 'Battle — LB2', 'The player\'s turn', 'the scene lower, the cards taller; the rails in the sides'),
+}
 DUMPED = []
+DUMPED_LAND = []
 
 
 def save_gallery(img, name):
     """The phone's screen in its body, as the gallery's entry; compared with the former picture as the game's passes do
-    (GalleryScreen.Compare: a channel more than 8 apart, changed past 600 pixels)."""
-    if name not in GALLERY_ENTRIES:
+    (GalleryScreen.Compare: a channel more than 8 apart, changed past 600 pixels). A landscape entry goes to its own
+    tab's folder (phone-land)."""
+    landscape = name in GALLERY_ENTRIES_LAND
+    if name not in GALLERY_ENTRIES and not landscape:
         return
-    ident, section, title, note_ = GALLERY_ENTRIES[name]
+    ident, section, title, note_ = (GALLERY_ENTRIES_LAND if landscape else GALLERY_ENTRIES)[name]
+    tab = 'phone-land' if landscape else 'phone'
+    out = os.path.join(GALLERY, tab, 'current')
+    os.makedirs(out, exist_ok=True)
     B = 34
-    W, H = PW + 2 * B, PH + 2 * B
+    W, H = img.width + 2 * B, img.height + 2 * B
     body = Image.new('RGB', (W, H), (20, 17, 16))
     mask = Image.new('L', (W, H), 0)
     ImageDraw.Draw(mask).rounded_rectangle((0, 0, W - 1, H - 1), radius=130, fill=255)
     body.paste(Image.new('RGB', (W, H), (28, 28, 32)), (0, 0), mask)
-    smask = Image.new('L', (PW, PH), 0)
-    ImageDraw.Draw(smask).rounded_rectangle((0, 0, PW - 1, PH - 1), radius=100, fill=255)
+    smask = Image.new('L', img.size, 0)
+    ImageDraw.Draw(smask).rounded_rectangle((0, 0, img.width - 1, img.height - 1), radius=100, fill=255)
     body.paste(img, (B, B), smask)
     file = ident + '.png'
-    body.save(os.path.join(OUT, file))
+    body.save(os.path.join(out, file))
     since, differing = None, 0
-    previous = os.path.join(GALLERY, 'phone', 'previous')
+    previous = os.path.join(GALLERY, tab, 'previous')
     if os.path.isdir(previous):
         before = os.path.join(previous, file)
         if not os.path.exists(before):
@@ -310,10 +324,11 @@ def save_gallery(img, name):
             b = np.asarray(body, dtype=np.int16)
             differing = a.shape[0] * a.shape[1] if a.shape != b.shape else int((np.abs(a - b) > 8).any(axis=2).sum())
             since = 'changed' if differing > 600 else 'same'
-    with open(os.path.join(OUT, file), 'rb') as f:
+    with open(os.path.join(out, file), 'rb') as f:
         digest = hashlib.sha256(f.read()).hexdigest()
-    DUMPED.append({'id': ident, 'section': section, 'title': title, 'save': 'mock-up', 'note': note_, 'file': file,
-                   'sha256': digest, 'error': None, 'since': since, 'differing': differing, 'box': None})
+    (DUMPED_LAND if landscape else DUMPED).append({
+        'id': ident, 'section': section, 'title': title, 'save': 'mock-up', 'note': note_, 'file': file,
+        'sha256': digest, 'error': None, 'since': since, 'differing': differing, 'box': None})
 
 
 def save(img, name, title, group, side=None):
@@ -2988,6 +3003,9 @@ def reach_land(img):
 def save_land(img, name, title, group, notes=()):
     """A landscape sheet: the phone's body, the notes in columns under it."""
     chrome_land(ImageDraw.Draw(img))
+    if GALLERY_MODE:
+        save_gallery(img, name)
+        return
     B, head = 34, 170
     W, H = LW + 2 * B, LH + 2 * B
     cols = [notes[i::3] for i in range(3)] if notes else []
@@ -3500,10 +3518,12 @@ def main():
         m1()
         pb3(); pb3r(); pb3x()
         p3(); p4(); p5(); p6(); p7()
-        manifest = {'written': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'palette': 'lacquer',
-                    'font': 'BizUdGothic', 'touch': True, 'mockup': True, 'entries': DUMPED}
-        with open(os.path.join(OUT, 'manifest.json'), 'w', encoding='utf-8') as f:
-            json.dump(manifest, f, ensure_ascii=False, indent=2)
+        lm1(); lb2()
+        for tab, entries in (('phone', DUMPED), ('phone-land', DUMPED_LAND)):
+            manifest = {'written': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'palette': 'lacquer',
+                        'font': 'BizUdGothic', 'touch': True, 'mockup': True, 'entries': entries}
+            with open(os.path.join(GALLERY, tab, 'current', 'manifest.json'), 'w', encoding='utf-8') as f:
+                json.dump(manifest, f, ensure_ascii=False, indent=2)
         return
     p0()
     d1(); d2(); d2b(); d2m(); d3()

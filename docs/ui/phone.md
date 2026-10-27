@@ -150,8 +150,8 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 13. **The unit ledger's rows upright** (the owner, 2026-10-27, thinking): PD2's layout holds, but the ledger is still
     to be thought over — most likely it will scroll sideways too.
 14. **Subordinates' End** (the owner, 2026-10-27, thinking): where End goes now that Talk has left the bar.
-15. **The landscape map** (round P8, §12): LM1 or LM2.
-16. **The landscape battle** (round P8, §12): LB1 or LB2.
+15. ~~**The landscape map** (round P8, §12): LM1 or LM2.~~ LM1.
+16. ~~**The landscape battle** (round P8, §12): LB1 or LB2.~~ LB2.
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -449,3 +449,6 @@ and the toggles.
 
 The agent's own choices, for the owner to confirm: the hole's 6.3 mm kept free on both sides (either may hold it); Menu
 as a cell on the map (the menu bar is 2 mm high here); the battle's Skip on the left rail's top.
+
+**The owner's choice (2026-10-27): LM1 and LB2.** So in landscape the frame keeps the layout's 16:10 and our controls
+live in the black sides wherever they fit (the map), and the battle trades some of the scene's height for the cards.
