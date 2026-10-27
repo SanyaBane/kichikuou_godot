@@ -154,8 +154,8 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 16. ~~**The landscape battle** (round P8, §12): LB1 or LB2.~~ LB2.
 17. ~~**The landscape deployment table** (round P9, §13): LD1 or LD2.~~ LD2, changed.
 18. ~~**The landscape Subordinates screen** (round P9, §13): LU1 or LU2.~~ LU1, changed.
-19. **The landscape enemy attack** (round P10, §14): LA1 or LA2.
-20. **The landscape week report** (round P10, §14): LW1 or LW2.
+19. ~~**The landscape enemy attack** (round P10, §14): LA1 or LA2.~~ LA2, changed.
+20. ~~**The landscape week report** (round P10, §14): LW1 or LW2.~~ LW1.
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -548,3 +548,16 @@ The thieves' week: the banner alone, on LW1's card or in LW2's left side.
 
 **Recommendation: LW1** — the owner's PW1 and the PC's card at the largest type, the account read as one piece; LW2
 keeps the map in view, but its account is narrow and its labels small.
+
+**The owner's choice (2026-10-27): LA2, changed, and LW1.** LA2 redrawn in its place:
+
+- **The left and the middle panels' content in their middle**: Ys's picture and figures, the rebels' cards and their
+  totals centred in the panels' height; the captions stay at the panels' top.
+- **Intercept half as high** (7.4 mm instead of 14.8; its two lines closer), still at the thumb; **Abandon City 10%
+  lower** (8.2 mm instead of 9.1), Ninja Scout as drawn (10.3 mm).
+- **Five ninjas** — all the game has (Kanami, Freya, Kaoru, Wichita, Saitou; the portraits of `FIGT_B`'s scout menu) —
+  **must fit, or the list scrolls**: LA2n now draws all five (made up: the week-18 save has Kanami alone, two of them
+  spent), in the scout menu's order in two columns of the right column's width under the news, rows 7.3 mm — every one
+  in view, no scroll bar needed.
+
+LA2, LA2n and LW1 are on the gallery's landscape tab.

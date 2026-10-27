@@ -292,6 +292,11 @@ GALLERY_ENTRIES_LAND = {
                                                                            'row at the right'),
     'LU1': ('lu1-subordinates', 'Subordinates — LU1', 'The orders', 'Add New Troops left; Talk, Replenish, End right'),
     'LU1q': ('lu1-question', 'Subordinates — LU1', 'Replenish asks first', 'a callout left of its button (Haurein)'),
+    # Round P10's choices (owner, 2026-10-27; docs/ui/phone.md, §14).
+    'LA2': ('la2-attack', 'Enemy attack — LA2', 'The attack on Ys', 'across the whole width, the answers in a column '
+                                                                      'at the right thumb'),
+    'LA2n': ('la2-ninjas', 'Enemy attack — LA2', 'Ninja Scout\'s list', 'five ninjas in two columns (made up)'),
+    'LW1': ('lw1-report', 'Week report — LW1', 'The week report', 'the card in the middle over the dimmed map'),
 }
 DUMPED = []
 DUMPED_LAND = []
@@ -1854,8 +1859,10 @@ def two_line_button(d, box, title, sub, red=False):
         red_button(d, box, '')
     else:
         panel(d, box)
-    d.text(((x0 + x1) / 2, y0 + 56), title, font=fit(d, title, BRUSH, 44, x1 - x0 - 40), fill=NAME, anchor='mm')
-    d.text(((x0 + x1) / 2, y1 - 38), sub, font=GOTHIC(28), fill=TEXT if red else QUIET, anchor='mm')
+    low = y1 - y0 < 140                     # a low button (LA2's Intercept, 130): the two lines closer
+    ty, sy = (y0 + (y1 - y0) * 0.36, y1 - (y1 - y0) * 0.2) if low else (y0 + 56, y1 - 38)
+    d.text(((x0 + x1) / 2, ty), title, font=fit(d, title, BRUSH, 44, x1 - x0 - 40), fill=NAME, anchor='mm')
+    d.text(((x0 + x1) / 2, sy), sub, font=GOTHIC(26 if low else 28), fill=TEXT if red else QUIET, anchor='mm')
 
 
 # The answers in two rows: Abandon City (top left, farthest from the thumb) and Ninja Scout, then Intercept in the bar.
@@ -3868,16 +3875,20 @@ def side_two_line(d, box, title, sub, red=False):
     d.text((cx, y1 - 40), sub, font=fit(d, sub, GOTHIC, 28, x1 - x0 - 24), fill=TEXT if red else QUIET, anchor='mm')
 
 
-def ys_panel(img, d, box, pic_w, row_h=64):
-    """The defended province: Ys's picture and its four figures under it."""
+def ys_panel(img, d, box, pic_w, row_h=64, centre=False):
+    """The defended province: Ys's picture and its four figures under it; `centre`: the two in the panel's middle
+    (the caption stays at its top)."""
     x0, y0, x1, y1 = box
     panel(d, box)
     d.text((x0 + 28, y0 + 26), 'DEFENDING · YS', font=CINZEL(28, 600), fill=SUBTITLE)
     pic = dump(TOUCH, ATTACK_DUMP).crop((120, 204, 416, 400))
     pic = pic.resize((pic_w, round(pic_w * pic.height / pic.width)), Image.LANCZOS)
-    framed(img, pic, (round((x0 + x1 - pic_w) / 2), y0 + 76))
+    top = y0 + 76
+    if centre:
+        top = max(top, round((y0 + y1) / 2 - (pic.height + 18 + len(YS_FIGURES) * row_h) / 2))
+    framed(img, pic, (round((x0 + x1 - pic_w) / 2), top))
     d = ImageDraw.Draw(img)
-    y = y0 + 76 + pic.height + 18
+    y = top + pic.height + 18
     for label, value in YS_FIGURES:
         d.text((x0 + 30, y + row_h / 2), label, font=GOTHIC(31), fill=QUIET, anchor='lm')
         d.text((x1 - 30, y + row_h / 2), value, font=GOTHIC(38), fill=TEXT, anchor='rm')
@@ -3886,14 +3897,17 @@ def ys_panel(img, d, box, pic_w, row_h=64):
     return d
 
 
-def rebels_panel(img, d, box, ch, face_max=200):
-    """The attackers as the PC shows them: the front row left, nearer Ys and facing it, the back row right."""
+def rebels_panel(img, d, box, ch, face_max=200, centre=False):
+    """The attackers as the PC shows them: the front row left, nearer Ys and facing it, the back row right;
+    `centre`: the cards and the totals in the panel's middle (the caption stays at its top)."""
     x0, y0, x1, y1 = box
     panel(d, box)
     d.text((x0 + 28, y0 + 26), 'ATTACKING · LEAZAS REBEL ARMY', font=CINZEL(28, 600), fill=SUBTITLE)
     cx0 = x0 + 64                               # room for the triangle pointing at Ys
     cw = (x1 - 24 - cx0 - 16) // 2
     y = y0 + 76
+    if centre:                                  # the row labels, the cards, the totals and the report's source
+        y = max(y, round((y0 + y1) / 2 - (40 + 2 * ch + 14 + 20 + 106) / 2))
     for c, label in enumerate(('FRONT ROW', 'BACK ROW')):
         d.text((cx0 + c * (cw + 16) + cw / 2, y + 14), label, font=CINZEL(26, 700), fill=SUBTITLE, anchor='mm')
     arrow_mark(d, cx0 + cw / 2 - 120, y + 14, 'left', 8, SUBTITLE)
@@ -3916,7 +3930,14 @@ def rebels_panel(img, d, box, ch, face_max=200):
     return d
 
 
-def ninja_callout(img, d, box, tip, way):
+KANAMI_ALONE = [('Kanami', 9, True)]           # the week-18 save's one ninja
+# Five ninjas in service (made up: the week-18 save has Kanami alone): the scout menu's order and portraits
+# (Battle.Flow.Defence.cs, FIGT_B.ADV:348-372), two of them spent this week.
+FIVE_NINJAS = [('Kanami', 9, True), ('Freya', 449, False), ('Kaoru', 72, True), ('Wichita', 71, True),
+               ('Saitou', 94, False)]
+
+
+def ninja_callout(img, d, box, tip, way, ninjas=KANAMI_ALONE, rh=150):
     """Ninja Scout's list (the owner's B4): a row per ninja in service; `tip` the point of its triangle at the
     button, `way` the side the button lies on."""
     x0, y0, x1, y1 = box
@@ -3927,13 +3948,24 @@ def ninja_callout(img, d, box, tip, way):
     else:
         d.polygon([(tx - 26, y1 - 2), (tx + 26, y1 - 2), (tx, ty)], fill=GOLD)
     d.text((x0 + 30, y0 + 46), 'SEND TO SCOUT', font=CINZEL(28, 600), fill=SUBTITLE, anchor='lm')
-    rh = 150
-    row = (x0 + 24, y0 + 86, x1 - 24, y0 + 86 + rh)
-    d.rectangle(row, fill=ROW, outline=DIM_GOLD, width=2)
-    framed(img, cg_face(9, rh - 24), (row[0] + 12, row[1] + 12))
-    d = ImageDraw.Draw(img)
-    d.text((row[0] + rh + 20, row[1] + 46), 'KANAMI', font=CINZEL(40, 700), fill=NAME, anchor='lm')
-    d.text((row[0] + rh + 20, row[1] + 102), 'free this week', font=GOTHIC(32), fill=QUIET, anchor='lm')
+    gap = 12
+    cols = 2 if len(ninjas) > 1 else 1          # five ninjas in two columns: every one in view, the rows kept
+    cw = (x1 - x0 - 48 - (cols - 1) * 16) // cols
+    for i, (name, cg, free) in enumerate(ninjas):
+        rx, ry = x0 + 24 + (i % cols) * (cw + 16), y0 + 86 + (i // cols) * (rh + gap)
+        row = (rx, ry, rx + cw, ry + rh)
+        d.rectangle(row, fill=ROW if free else (30, 26, 22), outline=DIM_GOLD if free else OFF_TAG, width=2)
+        pic = cg_face(cg, rh - 24)
+        if not free:
+            pic = Image.blend(pic, Image.new('RGB', pic.size, (30, 26, 22)), 0.6)
+        framed(img, pic, (row[0] + 12, row[1] + 12))
+        d = ImageDraw.Draw(img)
+        tx, tw = row[0] + rh + 12, row[2] - row[0] - rh - 24
+        d.text((tx, row[1] + rh * 0.31), name.upper(), font=fit(d, name.upper(), lambda s: CINZEL(s, 700), 40, tw),
+               fill=NAME if free else OFF_TEXT, anchor='lm')
+        state = 'free this week' if free else 'spent this week'
+        d.text((tx, row[1] + rh * 0.68), state, font=fit(d, state, GOTHIC, 32, tw), fill=QUIET if free else OFF_TEXT,
+               anchor='lm')
     return rh
 
 
@@ -4002,15 +4034,15 @@ def la1n():
 LA2_COL = 1792                          # LA2: Ys and the rebels left of it, the news, Maris and the answers right
 
 
-def la2_base(img, d):
+def la2_base(img, d, ninjas='1 of 1 free'):
     """The screen across the whole width, as LD2's own split: the facts at the left, the news, Maris's question and
     the answers in a column at the right thumb."""
     backdrop(img, (0, 0, LW, LH))
     x0, x1 = SIDE + 6, LW - SIDE - 6
     top, foot = 16, LH - 16
-    d = ys_panel(img, d, (x0, top, x0 + 580, foot), 540, row_h=88)
+    d = ys_panel(img, d, (x0, top, x0 + 580, foot), 540, row_h=88, centre=True)
     d.text((x0 + 580 + 50, (top + foot) / 2), 'VS', font=BRUSH(40), fill=GOLD, anchor='mm')
-    d = rebels_panel(img, d, (x0 + 680, top, LA2_COL - 16, foot), 300, face_max=170)
+    d = rebels_panel(img, d, (x0 + 680, top, LA2_COL - 16, foot), 300, face_max=170, centre=True)
     cx0 = LA2_COL
     flag_icon(img, (cx0 + 4, 24), 70)
     d = ImageDraw.Draw(img)
@@ -4019,13 +4051,13 @@ def la2_base(img, d):
     d.text((cx0 + 4, 166), 'The Leazas Rebel Army', font=GOTHIC(40), fill=TEXT)
     d.text((cx0 + 4, 216), 'appeared around Ys.', font=GOTHIC(40), fill=TEXT)
     divider(d, 286, cx0, x1)
-    ans = FOOT - 10 - 260
+    ans = FOOT - 10 - 130                   # Intercept half as high as first drawn (the owner's change)
     row1 = ans - 16 - 180
     maris(img, (cx0, row1 - 16 - 320, x1, row1 - 16), size=40, face_max=140)
     d = ImageDraw.Draw(img)
     half = (x1 - cx0 - 16) // 2
-    danger_button(d, (cx0, row1 + 10, cx0 + round(half * 0.9), row1 + 170), 'Abandon City')
-    two_line_button(d, (cx0 + half + 16, row1, x1, row1 + 180), 'Ninja Scout', '1 of 1 free')
+    danger_button(d, (cx0, row1 + 18, cx0 + round(half * 0.9), row1 + 162), 'Abandon City')     # 10% lower
+    two_line_button(d, (cx0 + half + 16, row1, x1, row1 + 180), 'Ninja Scout', ninjas)
     two_line_button(d, (cx0, ans, x1, FOOT - 10), 'Intercept', 'choose the units', red=True)
     return d, (cx0 + half + 16, row1, x1, row1 + 180)
 
@@ -4038,23 +4070,28 @@ def la2():
         'As LD2 re-split its screen: the\nfacts at the left over the whole\nheight — Ys and the rebels as on\n'
         'the PC, the front row facing Ys —,\nthe news, Maris\'s question and\nthe answers in a column at the right.',
         f'The rebels\' cards {mm(438)} × {mm(300)}\n(taller than LA1\'s), names\n2.4 mm; Ys\'s picture {mm(540)}\n'
-        'wide.',
-        'The right column as upright\'s\nPA1 foot: Maris\'s question, then\nAbandon City (10% narrower,\n'
-        f'the owner\'s change) | Ninja Scout,\nIntercept at the thumb ({mm(260)}\nhigh, {mm(LW - SIDE - 6 - LA2_COL)} wide).',
+        'wide. The owner\'s change: both\npanels\' content in their middle,\nthe captions at their top.',
+        'The right column as upright\'s\nPA1 foot: Maris\'s question, then\nAbandon City (10% narrower and\n'
+        f'10% lower, {mm(144)}: the owner\'s\nchanges) | Ninja Scout ({mm(180)}),\nIntercept at the thumb, half as\n'
+        f'high as first drawn ({mm(130)} ×\n{mm(LW - SIDE - 6 - LA2_COL)}).',
         'One thumb answers; the question\nstands right over its answers, as\non the PC and upright.',
         f'{mm(SIDE)} kept free at both edges\nfor the camera\'s hole.'])
 
 
 def la2n():
     img, d = land()
-    d, b = la2_base(img, d)
+    d, b = la2_base(img, d, '3 of 5 free')
     cx = (b[0] + b[2]) // 2
-    box = (LA2_COL - 120, b[1] - 30 - 290, LW - SIDE - 6, b[1] - 30)
-    rh = ninja_callout(img, d, box, (cx, b[1] - 6), 'down')
+    rh = 128                                # three rows of two under the news, the column's width: all five in view
+    h = 86 + 3 * rh + 2 * 12 + 24
+    box = (LA2_COL, b[1] - 30 - h, LW - SIDE - 6, b[1] - 30)
+    ninja_callout(img, d, box, (cx, b[1] - 6), 'down', FIVE_NINJAS, rh)
     reach_land(img)
     save_land(img, 'LA2n', 'across the whole width — Ninja Scout\'s list', 'land-attack', notes=[
         'Ninja Scout\'s list above its\nbutton, over Maris\'s question\n(as upright\'s PA1n): a row per\n'
-        f'ninja, rows {mm(rh)}; the spent\nones dimmed.',
+        f'ninja in service, rows {mm(rh)}; the\nspent ones dimmed.',
+        'All five ninjas the game has\n(Kanami, Freya, Kaoru, Wichita,\nSaitou — made up here: the\n'
+        'week-18 save has Kanami alone)\nfit in two columns, in the\nscout menu\'s order: no scrolling.',
         'Abandon City\'s question the\nsame way, above its button.'])
 
 
@@ -4150,6 +4187,7 @@ def main():
         p3(); p4(); p5(); p6(); p7()
         lm1(); lb2()
         ld2(); lu1()
+        la2(); la2n(); lw1()
         for tab, entries in (('phone', DUMPED), ('phone-land', DUMPED_LAND)):
             manifest = {'written': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'palette': 'lacquer',
                         'font': 'BizUdGothic', 'touch': True, 'mockup': True, 'entries': entries}
