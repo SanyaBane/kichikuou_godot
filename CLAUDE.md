@@ -271,6 +271,10 @@ holder of Chaos or Nikkou, his troops over the battle's limit, cannot wound a de
 Nikkou reach demons", off by default, or the owner's A ("On the field": he fights in person, the demon's troops may shoot
 at him) or B ("Out of reach": they never do), built (`Combat/DemonReach` on `OriginalScriptContext.DemonReach`,
 `Battle.ComputeExchange`, the forecast's copy too; `godot/Battles/DemonReachChoice`; docs/tweaks.md).
+Then (owner, 2026-10-27) the status strip always on `COMMAND`'s map, not only with the command panel, and the map's
+room under it: near the map's top edge the picture is drawn lower by up to the strip's height, so the Great Wall of
+Helman A (49) and the Tower of Evil (78) are no longer under it; the script's camera stays the original's (docs/ui/
+command-screen.md, "The map's room under the strip"), built, awaiting the owner's look in a window.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -401,8 +405,10 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   docs/ui/command-screen.md, "The province menu"; also the dungeon's menu after it; its and the command panel's rows 38 px on the PC unless Debug → Menu Row Height… says otherwise, `Strategy/MenuRowsChoice`, `--menu-rows n` for a launch; the `]` menus' rows its second slider, `--dialogue-rows n`);
   `Strategy/CommandMenuView` (our command panel over `COMMAND`'s right-click menu and its status window, Option →
   Interface → New, centred as the original's menu: `Original.Content/Strategy/CommandMenu`, Load/Save as two rows
-  answered through `LoadSaveShortcut`, docs/ui/command-screen.md, "The command panel"); `Strategy/StatusStripView` (our status strip over the map's top while the command
-  panel is open, in one row: the status window's lines and the week's uses in bracketed groups,
+  answered through `LoadSaveShortcut`, docs/ui/command-screen.md, "The command panel"); `Strategy/StatusStripView` (our status strip over the map's top whenever the screen
+  shows `COMMAND`'s map (owner, 2026-10-27), near the map's top edge the picture drawn lower under it so no province
+  stays hidden — `Original.Content/Strategy/MapHeadroom`, `GameScreen.Headroom.cs`, `MapRoomPicture`, the script's
+  pointer turned back to the view's rows; "The map's room under the strip" —, in one row: the status window's lines and the week's uses in bracketed groups,
   `Original.Content/Strategy/StatusStrip`, "The status strip"; while a building is under way Construction's tag, there
   and in the panel, is half-lit with its weeks left, the strip's with a tooltip naming the building,
   `Original.Content/Strategy/BuildingUnderWay`, `UiPalette.DrawBusyTag`, "A building under way"); `Strategy/WeekReportView` (our week report over the
@@ -641,6 +647,12 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   once with Rance (unit 1) — no replenish, no attack that week; on the week-18 save its first floor meets Sergeant
   Hanny, and the cards' fade-in is dumped as `opening-appearing` and `cards-sliding` (a window, without `--fast`) —
   `--load --auto --quit --seed 2 --saves user://saves-look-dungeon --slots-from user://saves-week18 --dungeon --until round-2 --interface new --shots <dir>`.
+  The map's room under the strip (owner, 2026-10-27; docs/ui/command-screen.md, "The map's room under the strip"):
+  `--map-north` in a window makes the first map wait drag the map through Godot's input as a player drags it (the
+  system pointer stays) — strokes west to the Great Wall of Helman A (49), then one north to the map's top — and fails
+  unless the pressed row stayed under the pointer and the Great Wall's plate lies below the strip; dumps `map-north`
+  and ends the launch —
+  `--load --auto --fast --quit --seed 2 --saves user://saves-look-north --slots-from user://saves-week18 --map-north --shots <dir>`.
 - Show an ending's `OVER` (its picture, staff roll, Completion Report) on a booted game:
   `<Godot console exe> --headless --path godot -- --ending <1-14> --auto --fast --quit [--shots <dir>]`
   (without `--auto` the keys wait for the player; slots in `user://saves-ending`).

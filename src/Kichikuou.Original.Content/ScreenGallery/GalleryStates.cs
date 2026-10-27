@@ -74,6 +74,16 @@ public static class GalleryStates
             .FirstOrDefault();
 
     /// <summary>
+    /// The map's camera at its top edge, over the Great Wall of Helman A (49) and the Tower of Evil (78): the view's corner
+    /// (275, 0), as a drag there leaves it (<c>WAO_MAP.ADV:29-43</c>; the camera is the view's centre while the map is shown).
+    /// </summary>
+    public static void MapNorth(GameState s)
+    {
+        s.MapCamX = 595;
+        s.MapCamY = 200;
+    }
+
+    /// <summary>
     /// The week's commands spent: their flags at 0, as the commands leave them once used (<c>COMMAND.ADV:38-46</c> sets
     /// them at the week's start); <c>COMMAND</c>'s menu then offers ×Construction, ×Harem, △Merchant and △Subordinates.
     /// </summary>

@@ -29,6 +29,7 @@ internal sealed partial class MapMarkersView : Control
     private (int X, int Y) _corner;
     private Plate? _shownHover;
     private bool _hideDimmed = MapNamesChoice.HideDimmed;
+    private int _coveredTop;                            // the screen's top rows under our status strip, in script pixels
     private readonly ProvinceCard _card;
 
     public MapMarkersView(GameFont font)
@@ -65,6 +66,15 @@ internal sealed partial class MapMarkersView : Control
             PlacePlate(plate);
         UpdateCard();
         QueueRedraw();
+    }
+
+    /// <summary>The screen's top <paramref name="rows"/> (script pixels) lie under our status strip: a card stays below them.</summary>
+    public void SetCoveredTop(int rows)
+    {
+        if (rows == _coveredTop)
+            return;
+        _coveredTop = rows;
+        UpdateCard();
     }
 
     /// <summary>The markers to show, as the state has them at the map wait's start.</summary>
@@ -147,7 +157,8 @@ internal sealed partial class MapMarkersView : Control
         float x = plate.Position.X + plate.Size.X + gap;
         if (x + _card.Size.X > Size.X - 2)
             x = plate.Position.X - gap - _card.Size.X;
-        float y = Math.Clamp(plate.Position.Y + (plate.Size.Y - _card.Size.Y) / 2, 2, Math.Max(2, Size.Y - _card.Size.Y - 2));
+        float top = _coveredTop * _pixels + 2;
+        float y = Math.Clamp(plate.Position.Y + (plate.Size.Y - _card.Size.Y) / 2, top, Math.Max(top, Size.Y - _card.Size.Y - 2));
         _card.Position = new Vector2(x, y);
         _card.Visible = true;
     }

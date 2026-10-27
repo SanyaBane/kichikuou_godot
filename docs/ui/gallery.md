@@ -233,6 +233,9 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
    `GalleryStates.AcademyUnderWay`; docs/ui/command-screen.md, "A building under way") and `command-menu-building-tip`
    (the same with the building's tooltip shown, `StatusStripView.ShowBuildingTip`). And `map`, the map's backdrop alone
    (no plates, nothing of ours), for mock-ups that draw a screen over the map (`tools/ui/mock_touch_panel.py`).
+   Later (2026-10-27, the strip always on the map; docs/ui/command-screen.md, "The map's room under the strip"): the
+   plates' and the province menus' entries show the status strip too, and `map-north` the room at the map's top — the
+   camera at the Great Wall of Helman A (49) (`GalleryStates.MapNorth`), the backdrop drawn lower by the strip's height.
 3. **Screens and the battle's overlays:** deployment (the panels' overload), Save/Load (`LoadSaveScreen.Items`, a
    read-only library), the enemy attack, the scout report, the cut-in, the counters, the info boxes, the dialog and
    the commands (input forwarded).

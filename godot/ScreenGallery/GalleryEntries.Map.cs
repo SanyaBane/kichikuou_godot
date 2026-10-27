@@ -36,6 +36,10 @@ internal static partial class GalleryEntries
             g => Markers(g, hideDimmed: false, hover: LeazasCastle));
         yield return new("map-markers-active", Map, "Map: the dimmed plates hidden", Week18, "Debug → Hide Dimmed Map Names on (the default).",
             g => Markers(g, hideDimmed: true, hover: null));
+        yield return new("map-north", Map, "Map: the room under the strip at the map's top", Week18,
+            "The view at the map's top edge (GalleryStates.MapNorth): the picture drawn lower by the strip's height, the Great "
+            + "Wall of Helman A (49) and the Tower of Evil (78) under it (docs/ui/command-screen.md, \"The map's room under the strip\").",
+            g => Markers(g, hideDimmed: false, hover: null, GalleryStates.MapNorth));
         yield return new("command-menu", Map, "Command panel and status strip", Week18, "",
             g => CommandPanel(g, _ => { }));
         yield return new("command-menu-spent", Map, "Command panel: the week's commands spent", Week18,
@@ -79,32 +83,63 @@ internal static partial class GalleryEntries
     }
 
     /// <summary>
-    /// Our plates over the map, as <c>COMMAND</c>'s map wait shows them, <paramref name="hover"/>'s province hovered; in the
-    /// touch mode the Commands button and the Skip and Log drawer with them, Log lit as with something logged.
+    /// Our plates over the map and our status strip over its top, as <c>COMMAND</c>'s map wait shows them,
+    /// <paramref name="hover"/>'s province hovered, the picture drawn lower near the map's top (<see cref="MapHeadroom"/>); in
+    /// the touch mode the Commands button and the Skip and Log drawer with them, Log lit as with something logged.
     /// </summary>
-    private static Action<Rect2>? Markers(GalleryStage g, bool hideDimmed, int? hover)
+    private static Action<Rect2>? Markers(GalleryStage g, bool hideDimmed, int? hover, Action<GameState>? edit = null)
     {
         if (g.State(Week18) is not { } s)
             return null;
+        edit?.Invoke(s);
         var backdrop = g.Backdrop(s);
         var p = g.Bound(s);
-        var corner = p.MapViewShown ?? throw new InvalidOperationException("The map was not shown.");
+        var corner = Room(backdrop, p);
         var markers = p.MapMarkers();
         var view = g.Add(new MapMarkersView(g.Font) { Visible = true });
+        view.SetCoveredTop(MapHeadroom.Strip);
         view.SetHideDimmed(hideDimmed);
         view.Load(markers);
+        var bar = Strip(g, p);
         var button = TouchCommandsButton(g, closes: false);
         var drawer = TouchMode.On ? g.Add(new SkipDrawer { Visible = true }) : null;  // Skip and Log on the waiting map (the owner's L1)
         return area =>
         {
             GalleryStage.Fill(backdrop, area);
             view.Place(area, area.Size.X / Surface.ScreenWidth, corner);
+            bar.Place(StripArea(area));
             button?.Place(area);
             drawer?.Place(area);
             if (hover is { } province)
                 view.ShowHover(markers.FirstOrDefault(m => m is { Kind: MapHitKind.Province } && m.Id == province));
         };
     }
+
+    /// <summary>
+    /// The map's room under the strip as <c>GameScreen</c> gives it: the backdrop drawn lower by the view's
+    /// <see cref="MapHeadroom.Shift"/>; returns the corner the picture is drawn at, which our plates and menus are placed from.
+    /// </summary>
+    private static (int X, int Y) Room(TextureRect backdrop, GamePresenter p)
+    {
+        var (x, y) = p.MapViewShown ?? throw new InvalidOperationException("The map was not shown.");
+        int shift = MapHeadroom.Shift(y);
+        var material = MapRoomPicture.Material();
+        MapRoomPicture.SetShift(material, shift);
+        backdrop.Material = material;
+        return (x, y - shift);
+    }
+
+    /// <summary>Our status strip for the presenter's state, as the screen shows it over <c>COMMAND</c>'s map.</summary>
+    private static StatusStripView Strip(GalleryStage g, GamePresenter p)
+    {
+        var bar = g.Add(new StatusStripView(g.Font, g.Faces));
+        bar.Show(p.StatusStrip ?? throw new InvalidOperationException("No status strip."));
+        return bar;
+    }
+
+    /// <summary>The strip's place over the picture's top (<c>GameScreen.UpdateStatusStrip</c>).</summary>
+    private static Rect2 StripArea(Rect2 area) =>
+        new(area.Position, new Vector2(area.Size.X, StatusStripView.Height * area.Size.X / Surface.ScreenWidth));
 
     /// <summary>
     /// The touch mode's Commands button, which GameScreen shows with the plates and as Close over our command panel; none
@@ -151,13 +186,12 @@ internal static partial class GalleryEntries
         edit(s);
         var backdrop = g.Backdrop(s);
         var p = g.Bound(s);
+        Room(backdrop, p);
         var menu = Opened(p, CommandPhase.MenuItems(s), q => q.CommandMenu, "COMMAND's menu");
-        var strip = p.StatusStrip ?? throw new InvalidOperationException("No status strip.");
         var panel = g.Add(new CommandMenuView(g.Font));
         panel.Open(menu);
         var button = TouchCommandsButton(g, closes: true);
-        var bar = g.Add(new StatusStripView(g.Font, g.Faces));
-        bar.Show(strip);
+        var bar = Strip(g, p);
         if (tip)
             bar.ShowBuildingTip();
         return area =>
@@ -165,11 +199,11 @@ internal static partial class GalleryEntries
             GalleryStage.Fill(backdrop, area);
             panel.Place(area);
             button?.Place(area);
-            bar.Place(new Rect2(area.Position, new Vector2(area.Size.X, StatusStripView.Height * area.Size.X / Surface.ScreenWidth)));
+            bar.Place(StripArea(area));
         };
     }
 
-    /// <summary>Our province menu for <paramref name="province"/> over the map, as a click on it opens it.</summary>
+    /// <summary>Our province menu for <paramref name="province"/> over the map, as a click on it opens it, our status strip over the map's top.</summary>
     private static Action<Rect2>? Province(GalleryStage g, int province, Action<GameState>? edit = null)
     {
         if (g.State(Week18) is not { } s)
@@ -178,13 +212,16 @@ internal static partial class GalleryEntries
         var backdrop = g.Backdrop(s);
         var items = GalleryStates.ProvinceMenuItems(s, province);
         var p = g.Bound(s);
+        var corner = Room(backdrop, p);
         var menu = Opened(p, items, q => q.ProvinceMenu, "a city's first menu");
         var view = g.Add(new ProvinceMenuView(g.Font, g.Faces));
-        view.Open(menu, ProvinceMenuView.PointOf(s, province, p.MapViewShown));
+        view.Open(menu, ProvinceMenuView.PointOf(s, province, corner));
+        var bar = Strip(g, p);
         return area =>
         {
             GalleryStage.Fill(backdrop, area);
             view.Place(area);
+            bar.Place(StripArea(area));
         };
     }
 
@@ -195,13 +232,17 @@ internal static partial class GalleryEntries
             return null;
         edit(s);
         var backdrop = g.Backdrop(s);
-        var menu = Opened(g.Bound(s), GalleryStates.CellsMenuItems(s), q => q.ProvinceMenu, "the cells' menu");
+        var p = g.Bound(s);
+        Room(backdrop, p);
+        var menu = Opened(p, GalleryStates.CellsMenuItems(s), q => q.ProvinceMenu, "the cells' menu");
         var view = g.Add(new ProvinceMenuView(g.Font, g.Faces));
         view.Open(menu);
+        var bar = Strip(g, p);
         return area =>
         {
             GalleryStage.Fill(backdrop, area);
             view.Place(area);
+            bar.Place(StripArea(area));
         };
     }
 

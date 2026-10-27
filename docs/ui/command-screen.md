@@ -375,11 +375,13 @@ brackets with captions under; the owner chose **the brackets**).
 
 ## The status strip (owner, 2026-10-16)
 
-- **Where and when.** Over the map's top, as wide as it (50 of the picture's 1280-wide pixels), only while
-  our command panel is open — where and when the original prints its status window, with the command menu
-  (owner, 2026-10-17; `GameScreen.UpdateStatusStrip`). Before: at first over the map's top, 980 wide, from the
-  first map wait on; then (2026-10-16) in a band of its own above the map, which the owner found lived apart
-  from the map. A right click on it cancels the menu as anywhere (`StatusStripView.Forward`).
+- **Where and when.** Over the map's top, as wide as it (50 of the picture's 1280-wide pixels), whenever the screen
+  shows `COMMAND`'s map: its map wait, our command panel and our province menu over it (owner, 2026-10-27;
+  `GameScreen.UpdateHeadroom`, `UpdateStatusStrip`), the map's room under it (below). Before: at first over the map's
+  top, 980 wide, from the first map wait on; then (2026-10-16) in a band of its own above the map, which the owner
+  found lived apart from the map; then (2026-10-17) only while our command panel was open, where and when the original
+  prints its status window. A left click on it reaches no province or plate under it; a right click opens or cancels
+  the menu as anywhere (`StatusStripView.Forward`).
 - **One row** (owner, 2026-10-16: at first two, the status above the week's uses). From the left: the
   nation's flag (CG 820; none for the thieves) without its name (the owner's, for room); the status window
   the right click prints, read now from the state: its two lines as the files print them (`:443` "Budget
@@ -397,6 +399,37 @@ brackets with captions under; the owner chose **the brackets**).
   no room (the widest figures leave it ~70 of the 1280 pixels).
 - **Built (2026-10-16):** `Original.Content/Strategy/StatusStrip` (`StatusStripTests`, one test on the
   player's files), `GamePresenter.StatusStrip`, `godot/Strategy/StatusStripView`.
+
+### The map's room under the strip (owner, 2026-10-27)
+
+The owner wanted the strip on the map always, without hiding the map. Over the map's middle it hides nothing for good
+(what lies under it is scrolled into view), but the script's camera stops at the map's top: the view's top
+(`WAO_MAP.ADV:29-43`, `VAR0044`) is a 16-bit value, never below 0, and the engine's page has no row above the map. So
+the provinces along the top edge would stay under it at every camera — the Great Wall of Helman A (49) at y 28 (its wall
+drawn above that), the Tower of Evil (78) at 37; the next, Ikoma (53), is at 100. Of the owner's options (the room above
+the edge, the strip folding at the edge, the strip at the foot, the wide screen's sides) the owner chose **the room**.
+
+- **The shift.** While the view's top is within 100 rows of the map's top, our picture is drawn lower by
+  `MapHeadroom.Shift`: 25 rows (the strip's height) at the top, so the map's first row lies right under the strip, and
+  a row less every four of the camera, none from 100 on. The rows it pushes off the screen's foot are scrolled into view.
+  The band over the picture's top shows the map's first rows mirrored (the strip's lacquer is a little see-through).
+  Drawn by a shader on the picture (`godot/Strategy/MapRoomPicture`); while the screen shows the map alone
+  (`GameScreen.UpdateHeadroom`: the map wait, `GamePresenter.MenuCovered` — our command panel and province menu, a city's
+  lead-in and lead-out —); anything else on the screen is drawn as it is, so a scene is never drawn lower.
+- **The script sees nothing of it.** The camera and every state stay the original's; the pointer the script reads is
+  turned from the picture's rows to the view's (`MapHeadroom.ScriptY`): a hover or a click reads the view's row under
+  it. A drag keeps the row it pressed under the pointer: the script moves the camera by the pointer's steps, so each Y
+  read is the pressed row less the camera that shows that row at the pointer (in the room's range a camera's step moves
+  the picture by one or two rows; a row off at most); past the map's edge, where the camera stops, the pointer takes the
+  row under it, so a step back scrolls at once, as in the original; the release is read as the drag's last step (the
+  coasting takes it). `IZ` puts the pointer back where the picture shows its row. Our plates, a province's card (kept
+  below the strip) and the province menu are placed from the corner the picture is drawn at (`GameScreen.MapCornerDrawn`).
+- **Built (2026-10-27):** `Original.Content/Strategy/MapHeadroom` (`MapHeadroomTests`: the shift, its inverse, a drag
+  down past the top and back), `godot/Strategy/GameScreen.Headroom.cs`, `MapRoomPicture`, `MapMarkersView.SetCoveredTop`;
+  the gallery's map entries show the strip, `map-north` the room at the map's top (`GalleryStates.MapNorth`). Checked in a
+  window by `--map-north` on the week-18 save (CLAUDE.md, "Commands"): Godot's own input drags the map from Leazas
+  Castle (1) to the Great Wall's corner, the top from 208 to 0, the pressed row 0-1 rows above the pointer throughout,
+  the Great Wall's plate below the strip. Awaiting the owner's look in a window.
 
 ### A building under way (owner, 2026-10-25)
 

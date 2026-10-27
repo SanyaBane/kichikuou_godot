@@ -131,6 +131,13 @@ public sealed record GameOptions
     public bool AutoDungeon { get; init; }
 
     /// <summary>
+    /// Development (owner, 2026-10-27; in a window): at the first map wait the unattended player drags the map to its top
+    /// through Godot's input as a player drags it, checks that the pressed row stays under the pointer in the map's room
+    /// under the strip, dumps <c>map-north</c> and ends the launch (<c>GameScreen.NorthDragAsync</c>).
+    /// </summary>
+    public bool AutoMapNorth { get; init; }
+
+    /// <summary>
     /// Development (docs/ui/gallery.md, §2): at the first map wait in <c>COMMAND</c> the game is saved into this folder's
     /// <c>slot01.ksav</c> as a manual save there saves it (owner's decision 26: the game as it is now, resuming in
     /// <c>COMMAND</c>), then the launch ends — the screen gallery's kept save of a week's commands.
@@ -307,6 +314,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         };
         _view.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _content.AddChild(_view);
+        ReadyHeadroom();
         _markers = new MapMarkersView(GodotGlyphRenderer.Chosen);
         _markers.Pressed += MarkerPressed;
         _content.AddChild(_markers);
@@ -423,6 +431,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         UpdateHaremScreen();
         WarmMarks();
         UpdateTreasureScreen();
+        UpdateHeadroom();
         UpdateStatusStrip();
         UpdateMapMarkers();
         if (_commandView.Visible)
@@ -446,6 +455,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _logView?.Place(PictureArea());
         _presenter.CoverMessages = InterfaceChoice.New;                  // also when the interface changed with a window open
         UpdateBattleScreen(Present());
+        if (UpdateHeadroom())
+        {
+            UpdateStatusStrip();                                        // the map composed now: its room in this frame
+            UpdateMapMarkers();
+        }
         UpdateMessageWindow();
         UpdateSkipButtons();
         UpdateScoutReport();
@@ -923,7 +937,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (x >= 3200 || y >= 800)
             return;
         x = Math.Max(x, 0) - _presenter.Stage.View.X;
-        y = Math.Max(y, 0) - _presenter.Stage.View.Y;
+        y = Math.Max(y, 0) - _presenter.Stage.View.Y + _mapShift;      // on the map, where the picture shows that row
         if (!EngineState.MouseMovement || _options.Auto || OrderRunning)  // an order's way puts back a pointer that was never the player's
         {
             _input.Position = ClampToScreen(x, y);
@@ -1658,7 +1672,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             _presenter.MenuCovered = true;                      // our panel instead (docs/ui/command-screen.md)
             _provinceView.Open(province, _presenter.State is { } state
-                ? ProvinceMenuView.PointOf(state, province.Province, _presenter.MapViewShown) : null);
+                ? ProvinceMenuView.PointOf(state, province.Province, MapCornerDrawn) : null);
             _provinceView.Place(PictureArea());
         }
         else if (command is not null)
@@ -1999,6 +2013,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             if (_pointer.Pending == 0)
                 _wantedOrder = null;                    // the script asks again with nothing queued: a drop's clicks are done
             UpdateDeploymentScreen();
+            if (await NorthDragReadAsync() is { } dragged)
+                return Read(dragged);                   // --map-north: the drag's pointer is Godot's
             if (UpdateMapMarkers() && !_markersDumped && DisplayServer.GetName() != "headless" && _options.ScreenshotDirectory is not null)
                 await DumpMarkersAsync();
             if (!_autoMapLogDone && Windowed && _pointer.Pending == 0 && MapLogWait && LogOpens)
@@ -2042,7 +2058,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         if (UpdateMapMarkers() && _markerPointer.Pending > 0)
             return Read(_markerPointer.Next(out _));    // a plate's still click
-        return Read(new MouseState((Sys3Int)_input.ReadMouse(), (Sys3Int)_input.Position.X, (Sys3Int)_input.Position.Y));
+        return Read(PlayerRead());
     }
 
     /// <summary>A mouse read handed to the script, told to <see cref="MapCameraForm"/>.</summary>
@@ -2076,12 +2092,13 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     /// <summary>
     /// Our status strip (docs/ui/command-screen.md, "The status strip") lies over the picture's top, as wide as
-    /// it, while our command panel is open — where the original prints its status window, with the command menu
-    /// (owner, 2026-10-17: a band of its own above the map, always shown, lived apart from the map).
+    /// it, while the screen shows <c>COMMAND</c>'s map (owner, 2026-10-27; before, only with our command panel, where
+    /// the original prints its status window; 2026-10-17: a band of its own above the map lived apart from the map),
+    /// the map's room under it (<see cref="UpdateHeadroom"/>).
     /// </summary>
     private void UpdateStatusStrip()
     {
-        if (_commandView.Visible && _presenter.State is not null && !_presenter.InBattle && _presenter.StatusStrip is { } strip)
+        if (_mapStrip && _presenter.StatusStrip is { } strip)
         {
             var picture = PictureArea();
             _strip.Show(strip);
@@ -2123,7 +2140,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _commandsButton.Place(area);
         if (!show)
             return false;
-        _markers.Place(area, area.Size.X / Surface.ScreenWidth, _presenter.MapViewShown!.Value);
+        _markers.SetCoveredTop(_strip.Visible ? MapHeadroom.Strip : 0);
+        _markers.Place(area, area.Size.X / Surface.ScreenWidth, MapCornerDrawn!.Value);
         return true;
     }
 
