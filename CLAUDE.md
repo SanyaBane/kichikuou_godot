@@ -653,6 +653,9 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   unless the pressed row stayed under the pointer and the Great Wall's plate lies below the strip; dumps `map-north`
   and ends the launch —
   `--load --auto --fast --quit --seed 2 --saves user://saves-look-north --slots-from user://saves-week18 --map-north --shots <dir>`.
+  **Only when the owner asks for it, never in a general run or as a routine check** (owner, 2026-10-27): the window's
+  real pointer reaches the same input, and the owner works on the machine meanwhile — a mouse moved over the window
+  broke a run (the pressed row strayed −53 to 17 rows). No test, script or other switch runs it.
 - Show an ending's `OVER` (its picture, staff roll, Completion Report) on a booted game:
   `<Godot console exe> --headless --path godot -- --ending <1-14> --auto --fast --quit [--shots <dir>]`
   (without `--auto` the keys wait for the player; slots in `user://saves-ending`).
