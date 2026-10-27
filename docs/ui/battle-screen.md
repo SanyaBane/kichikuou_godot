@@ -805,7 +805,7 @@ picture, the slot panels) is not shown. How it is built:
   the white armour of Ex's army.
   The Guard effect (`GuardEffect`, 2026-10-20, a Defend's; after Sengoku Rance's guard actions' 45080 — 15 frames, of
   which frames 1-14 were seen then; **14 frames as the reference**, the rest of ours empty — the reference's frame 0,
-  its streaks at the left edge, is not in ours; a texture of its own, `Tile`, a
+  its streaks at the left edge, is not in ours, and stays out (owner, 2026-10-27); a texture of its own, `Tile`, a
   flat rectangle with barely softened edges), all on the actor's half: a curtain of 90 rows of horizontal blue-violet
   streaks (`Streak`, 0.36/0.36/0.86, a fifth of them with a lavender-white core), the full height of the frame,
   sweeping in from the left edge (its front at x 150, 240, 330 at frames 0-2) and stopping at the middle, x 400 (from
