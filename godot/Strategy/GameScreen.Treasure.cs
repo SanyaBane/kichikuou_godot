@@ -104,7 +104,11 @@ public partial class GameScreen
             return false;
         }
         if (_keyWaiting || _treasureCallout.MenuOpen)
-            ShowTreasureCallout(window!.Lines, _keyWaiting);
+        {
+            // The picker's question in our words (the owner, 2026-10-27); its refusals keep the script's.
+            var ours = _treasureCallout.MenuOpen && _presenter.State is { } s ? TreasureRoster.Question(s, _treasureAsked) : null;
+            ShowTreasureCallout(ours ?? window!.Lines, _keyWaiting);
+        }
         else
             _treasureCallout.Visible = false;                       // until the key wait or the menu, not its menu closed
         _treasure.Asked = _treasureCallout.Visible ? _treasureAsked : 0;

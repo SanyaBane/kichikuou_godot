@@ -378,3 +378,12 @@ left as they are: no second tap (a tap on the selected cell does nothing), the b
   no callout) and the new `treasure-question` (the script's `:341-350` question; at the cell on the PC). Unattended play
   with `--touch` selects his own item instead of sending it and checks the button greyed (`--treasure`, headless: no
   error). Looked at in the gallery's touch dumps; the taps themselves not yet on the tablet.
+
+**The questions in our words (the owner, 2026-10-27)**, on the PC and the tablet alike (our interface; the original's
+screens keep the script's): the first line "By Lord is equipped to Rick." for all three, the second short —
+`:341`'s replace "Give it to Menad instead?" (a third line "Menad's Crystal Ring goes back to stock." when the unit's
+own item goes to stock on the way, which no window of the original's says), `:322`'s unequip "Take it off?" (the
+button's word), our own replace "Replace it with L. Holy Sword?" (`TreasureRoster.Question`, `ReplaceQuestion`;
+`GameScreen.UpdateTreasureCallout` shows them over the script's menu, its refusals keep the script's lines; the message
+log keeps the script's). Beside the button the callout breaks a line too long for its width between words.
+`TreasureRosterTests` checks the question against `Cﾀｶﾗ`: there exactly where the picker asks.

@@ -109,12 +109,28 @@ public class TreasureRosterTests(ITestOutputHelper output)
         Assert.Null(TreasureRoster.ReplaceQuestion(s, 6));                // nothing picked first
         s.Ui_ItemSel = 7;
 
-        Assert.Equal(["Barres already has Sword equipped.", "Replace it with Ring?"], TreasureRoster.ReplaceQuestion(s, 6));
+        Assert.Equal(["Sword is equipped to Barres.", "Replace it with Ring?"], TreasureRoster.ReplaceQuestion(s, 6));
         Assert.Null(TreasureRoster.ReplaceQuestion(s, 7));                // Rick holds nothing
         Assert.Null(TreasureRoster.ReplaceQuestion(s, 1));                // Chaos: the script refuses
         Assert.Null(TreasureRoster.ReplaceQuestion(s, 9));                // a captive: no pick
         s.Ui_ItemViewMode = 1;
         Assert.Null(TreasureRoster.ReplaceQuestion(s, 6));
+    }
+
+    [Fact]
+    public void The_picker_s_questions_are_put_in_our_words()
+    {
+        var s = State();
+        s.Ui_ItemViewMode = 1;
+        Assert.Equal(["Sword is equipped to Barres.", "Take it off?"], TreasureRoster.Question(s, 6));
+        Assert.Null(TreasureRoster.Question(s, 7));                     // in stock: no question
+        Assert.Null(TreasureRoster.Question(s, 1));                     // Chaos: refused
+        s.Ui_ItemUnitSel = 7;                                           // Rick picked first
+        Assert.Equal(["Sword is equipped to Barres.", "Give it to Rick instead?"], TreasureRoster.Question(s, 6));
+        (s.Units[7].Item, s.Items[7].Holder) = (7, 7);                  // Rick with Ring: it goes back to stock on the way
+        Assert.Equal(["Sword is equipped to Barres.", "Give it to Rick instead?", "Rick's Ring goes back to stock."], TreasureRoster.Question(s, 6));
+        s.Ui_ItemUnitSel = 6;
+        Assert.Null(TreasureRoster.Question(s, 6));                     // his own: "Already equipped."
     }
 
     [Fact]
@@ -182,6 +198,7 @@ public class TreasureRosterTests(ITestOutputHelper output)
         {
             SetUp(view);
             TreasureButton? button = null;
+            IReadOnlyList<string>? question = null;
             string before = "";
             int menus = 0;
             string Picks() => $"{s.Ui_ItemViewMode.Value}/{s.Ui_ItemUnitSel.Value}/{s.Ui_ItemSel.Value}/"
@@ -192,6 +209,7 @@ public class TreasureRosterTests(ITestOutputHelper output)
             steps.Add(st =>
             {
                 button = TreasureRoster.Button(st, number);
+                question = TreasureRoster.Question(st, number);
                 before = Picks();
                 (keys, menus) = (0, game.Input.Menus.Count);
                 game.Input.Menu.Enqueue(_ => 0);                       // a question: No
@@ -214,7 +232,7 @@ public class TreasureRosterTests(ITestOutputHelper output)
                 TreasureAction.Equip => asked == 1 || after != before,
                 _ => false,
             };
-            if (button is null || (button.Refusal is not null) != refused || !refused && !does)
+            if (button is null || (button.Refusal is not null) != refused || !refused && !does || (question is not null) != (asked == 1))
                 failures.Add(seen);
         }
         Assert.Empty(failures);

@@ -77,7 +77,7 @@ internal static partial class GalleryEntries
                 return (lines, holders[1], false);
             }));
         yield return new("treasure-question", "Screens", "Treasure: the script's question before a replace", Week18,
-            "The question's lines are Sｱｲﾃﾑ.ADV:341-350's.",
+            "Sｱｲﾃﾑ.ADV:341-350's question in our words (TreasureRoster.Question).",
             g => TreasureScreen(g, (s, view, callout) =>
             {
                 var holders = GalleryStates.MovableHolders(s);
@@ -87,8 +87,8 @@ internal static partial class GalleryEntries
                 GalleryStates.TreasureUnitPicked(s, holders[0]);
                 view.ShowHover(item);                               // touch: the other's item selected, Equip pressed
                 callout.OpenMenu(["Yes", "No"]);
-                return ([$"{TreasureRoster.ItemName(s, item)} is equipped to", $"{DeploymentTable.UnitName(s, holders[1])}, but would you",
-                    "like to remove it and equip", $"{DeploymentTable.UnitName(s, holders[0])} instead?"], item, false);
+                return (TreasureRoster.Question(s, item) ?? throw new InvalidOperationException("No question for the other's item."),
+                    item, false);
             }));
         yield return new("treasure-refusal", "Screens", "Treasure: the script's refusal", Week18,
             "The refusal's line is Sｱｲﾃﾑ.ADV:311's; in the touch mode the button greyed with it instead (docs/ui/pickers.md, §6).",

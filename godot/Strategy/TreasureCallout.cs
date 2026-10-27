@@ -112,6 +112,34 @@ internal sealed partial class TreasureCallout : Control
 
     private int Answers => _answers?.Count ?? 0;
 
+    /// <summary>The lines drawn: beside an anchor the box's width is the area's, so a longer line breaks between words.</summary>
+    private IReadOnlyList<string> Shown
+    {
+        get
+        {
+            if (_beside is not { } area)
+                return _lines;
+            float room = area.Size.X - 2 * Pad;
+            var shown = new List<string>();
+            foreach (string line in _lines)
+            {
+                string current = "";
+                foreach (string word in line.Split(' '))
+                {
+                    string longer = current == "" ? word : $"{current} {word}";
+                    if (current != "" && _gothic.GetStringSize(longer, fontSize: (int)TextSize).X > room)
+                    {
+                        shown.Add(current);
+                        longer = word;
+                    }
+                    current = longer;
+                }
+                shown.Add(current);
+            }
+            return shown;
+        }
+    }
+
     /// <summary>Whether the script's menu is open in the callout.</summary>
     public bool MenuOpen => _answers is not null;
 
@@ -120,10 +148,10 @@ internal sealed partial class TreasureCallout : Control
     {
         get
         {
-            float widest = _lines.Count == 0 ? 0 : _lines.Max(l => _gothic.GetStringSize(l, fontSize: (int)TextSize).X);
+            float widest = Shown.Count == 0 ? 0 : Shown.Max(l => _gothic.GetStringSize(l, fontSize: (int)TextSize).X);
             float buttons = Answers * ButtonW + Math.Max(0, Answers - 1) * ButtonGap;
             float w = Math.Max(MinWidth, Math.Max(widest, buttons) + 2 * Pad + (Answers == 0 ? 30 : 0));
-            float h = Pad + _lines.Count * LineStep + (Answers > 0 ? ButtonH + 2 * Gap + 4 : 34);
+            float h = Pad + Shown.Count * LineStep + (Answers > 0 ? ButtonH + 2 * Gap + 4 : 34);
             if (_beside is { } area)
                 return new Rect2(area.Position, new Vector2(area.Size.X, Math.Max(h, area.Size.Y)));   // the whole area: nothing peeks out
             float x = Math.Clamp(_cell.Position.X - 8, 8, 1280 - 8 - w);
@@ -209,10 +237,10 @@ internal sealed partial class TreasureCallout : Control
         Ui.DrawPanel(this, box, _k, _beside is null ? Fill : Fill with { A = 1 });     // beside: over the panel's line, opaque
         DrawTail(box);
         float x = box.Position.X + Pad, y = box.Position.Y + Pad;
-        for (int i = 0; i < _lines.Count; i++)
+        for (int i = 0; i < Shown.Count; i++)
         {
             var band = new Rect2(x, y + i * LineStep - 4, box.Size.X - 2 * Pad, LineStep);
-            DrawString(_gothic, new Vector2(x, Lacquer.Baseline(band, _gothic, (int)TextSize)), _lines[i], fontSize: (int)TextSize,
+            DrawString(_gothic, new Vector2(x, Lacquer.Baseline(band, _gothic, (int)TextSize)), Shown[i], fontSize: (int)TextSize,
                 modulate: MessageWindowView.NarrationText);
         }
         for (int i = 0; i < Answers; i++)

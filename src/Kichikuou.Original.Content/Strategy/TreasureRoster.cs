@@ -200,7 +200,27 @@ public static class TreasureRoster
         int held = u.Item.Value;
         if (u.Status.Value is not (1 or 2) || held == 0 || held == item || Fixed(held))
             return null;
-        return [$"{DeploymentTable.UnitName(s, unit)} already has {ItemName(s, held)} equipped.", $"Replace it with {ItemName(s, item)}?"];
+        return [$"{ItemName(s, held)} is equipped to {DeploymentTable.UnitName(s, unit)}.", $"Replace it with {ItemName(s, item)}?"];
+    }
+
+    /// <summary>
+    /// The picker's own question about held item <paramref name="item"/>, in our words (the owner, 2026-10-27: the same
+    /// first line as ours, a short second): with no unit picked <c>:322</c>'s "would you like to unequip it?" ("Take it off?",
+    /// the button's word); with a unit picked <c>:341</c>'s "would you like to remove it and equip X instead?" ("Give it to X
+    /// instead?"), and a third line when the unit's own item goes back to stock on the way (<c>L_0043a</c>, said by no
+    /// window of the original's). Null where the picker does not ask: not a held item, or a click it refuses.
+    /// </summary>
+    public static IReadOnlyList<string>? Question(GameState s, int item)
+    {
+        if (View(s) != 1 || Button(s, item) is not { Refusal: null } || s.Items[item].Holder.Value is var holder && holder is 0 or 100)
+            return null;
+        string first = $"{ItemName(s, item)} is equipped to {DeploymentTable.UnitName(s, holder)}.";
+        int unit = s.Ui_ItemUnitSel.Value;
+        if (unit == 0)
+            return [first, "Take it off?"];
+        string name = DeploymentTable.UnitName(s, unit);
+        int own = s.Units[unit].Item.Value;
+        return own == 0 ? [first, $"Give it to {name} instead?"] : [first, $"Give it to {name} instead?", $"{name}'s {ItemName(s, own)} goes back to stock."];
     }
 
     /// <summary>
