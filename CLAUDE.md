@@ -282,8 +282,9 @@ open). Base versions of every screen's mock-ups first, nothing built meanwhile (
 our full screens upright; the owner chose PD2, PU1, PA1, PW1, PH2, PT2, PL2, PO1, PF1 (some changed) and the battle's
 other states, the opening still open (docs/ui/phone.md, §5). The landscape phone (round P8 on, the L… variants): the
 frame keeps the layout, our controls go to the black sides; the owner chose the map LM1, the battle LB2, the deployment
-table LD2 and Subordinates LU1 (both changed), the enemy attack LA2 (changed) and the week report LW1; Harem, Treasure
-and Save/Load are next (round P11). The gallery shows both orientations'
+table LD2 and Subordinates LU1 (both changed), the enemy attack LA2 (changed), the week report LW1, Harem LH2 and Treasure LT2
+(the pickers' grid folded in two after its ninth row, every cell in view) and Save/Load LL1 (the PC's split); the
+options window and the dungeon's menus are next (round P12). The gallery shows both orientations'
 choices on tabs of their own (`gallery.ps1 -PhoneOnly`).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant

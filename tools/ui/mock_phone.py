@@ -298,6 +298,10 @@ GALLERY_ENTRIES_LAND = {
                                                                       'at the right thumb'),
     'LA2n': ('la2-ninjas', 'Enemy attack — LA2', 'Ninja Scout\'s list', 'five ninjas in two columns (made up)'),
     'LW1': ('lw1-report', 'Week report — LW1', 'The week report', 'the card in the middle over the dimmed map'),
+    # Round P11's choices (owner, 2026-10-28; docs/ui/phone.md, §15).
+    'LH2': ('lh2-harem', 'Harem — LH2', 'The harem', 'the grid folded in two, every girl in view'),
+    'LT2': ('lt2-treasure', 'Treasure — LT2', 'The treasure', 'the grid folded in two, every item in view'),
+    'LL1': ('ll1-saves', 'Save/Load — LL1', 'Load', 'the PC\'s split: the list left, the save\'s page right'),
 }
 DUMPED = []
 DUMPED_LAND = []
@@ -4531,6 +4535,7 @@ def main():
         lm1(); lb2()
         ld2(); lu1()
         la2(); la2n(); lw1()
+        lh2(); lt2(); ll1()
         for tab, entries in (('phone', DUMPED), ('phone-land', DUMPED_LAND)):
             manifest = {'written': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'palette': 'lacquer',
                         'font': 'BizUdGothic', 'touch': True, 'mockup': True, 'entries': entries}

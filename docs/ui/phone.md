@@ -156,9 +156,9 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 18. ~~**The landscape Subordinates screen** (round P9, §13): LU1 or LU2.~~ LU1, changed.
 19. ~~**The landscape enemy attack** (round P10, §14): LA1 or LA2.~~ LA2, changed.
 20. ~~**The landscape week report** (round P10, §14): LW1 or LW2.~~ LW1.
-21. **The landscape Harem** (round P11, §15): LH1 or LH2.
-22. **The landscape Treasure** (round P11, §15): LT1 or LT2.
-23. **The landscape Save/Load** (round P11, §15): LL1 or LL2.
+21. ~~**The landscape Harem** (round P11, §15): LH1 or LH2.~~ LH2.
+22. ~~**The landscape Treasure** (round P11, §15): LT1 or LT2.~~ LT2.
+23. ~~**The landscape Save/Load** (round P11, §15): LL1 or LL2.~~ LL1.
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -612,3 +612,6 @@ Save/Load (`LL…`; upright PL2 as the owner changed it: one-line rows 5.9 mm, t
 **Recommendation: LL1** — the PC's order kept: Back and Load together at the right thumb (as the owner's LD2 put Stop
 and Attack), Delete at the save's title, the map the largest; LL2 shows two rows more, as many as the owner's PL2, at
 the cost of a smaller map and the buttons split between the thumbs.
+
+**The owner's choice (2026-10-28): LH2, LT2 and LL1**, as drawn — the treasure folded as the harem, so the two screens
+keep one layout, its long item names shrunk in their narrow cells. LH2, LT2 and LL1 are on the gallery's landscape tab.
