@@ -170,8 +170,9 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 27. ~~**The landscape opening** (round P13, §17): LB3o1 or LB3o2.~~ LB3o1 (upright's question 12 is still open).
 28. ~~**The landscape battle's other states** (round P13, §17): LB2x, LB3s, LB3c, LB3r and LB3b as drawn?~~ As drawn.
 29. ~~**What comes next** (the owner, 2026-10-28).~~ The scenes (§2), upright first: round P14 (§18).
-30. **The scenes upright** (round P14, §18): PS2, PS2l, PS2b and PS2m as drawn? And the agent's choice for a thought,
-    the narration and a speaker with no portrait.
+30. ~~**The scenes upright** (round P14, §18): PS2, PS2l, PS2b and PS2m as drawn?~~ As drawn, the agent's choices with
+    them.
+31. **The scenes landscape** — not drawn yet: the next round.
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -752,3 +753,7 @@ look's key waits (Ex's scene before the attack on Oaks (6); the look dir as in r
 
 The agent's own choices, for the owner to confirm: a thought goes by its thinker's portrait the same way (above or
 under); the narration and a speaker with no portrait in the picture go under it; Menu, Log and Skip stay in the bar.
+
+**The owner's choice (2026-10-28): PS2, PS2l, PS2b and PS2m as drawn**, with the agent's choices above. They are on the
+gallery's upright tab (its scenes need the look's frames beside the passes: docs/ui/gallery.md, §9). Next: the scenes
+landscape.

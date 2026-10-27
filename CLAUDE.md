@@ -278,7 +278,9 @@ command-screen.md, "The map's room under the strip"), built, awaiting the owner'
 Then (owner, 2026-10-27) the phone in both orientations, the Xiaomi Poco X6 Pro the reference, upright first: the survey
 and mock-up round P1 (the scenes PS1-PS3, the map PM1-PM2, the battle PB1-PB2) are docs/ui/phone.md
 (`tools/ui/mock_phone.py`); the owner chose PM1 and PB1 with our army on top (round P2's PB3), none of the scenes (left
-open). Base versions of every screen's mock-ups first, nothing built meanwhile (owner, 2026-10-27). Rounds P3-P7 drew
+open; then, round P14, PS2 changed — the picture in the screen's middle, the upper speaker's window above it and the
+lower one's under it, no name plate — with PS2l, PS2b, PS2m, 2026-10-28). Base versions of every screen's mock-ups first,
+nothing built meanwhile (owner, 2026-10-27). Rounds P3-P7 drew
 our full screens upright; the owner chose PD2, PU1, PA1, PW1, PH2, PT2, PL2, PO1, PF1 (some changed) and the battle's
 other states, the opening still open (docs/ui/phone.md, §5). The landscape phone (round P8 on, the L… variants): the
 frame keeps the layout, our controls go to the black sides; the owner chose the map LM1, the battle LB2, the deployment
@@ -287,9 +289,10 @@ table LD2 and Subordinates LU1 (both changed), the enemy attack LA2 (changed), t
 window LO1 and the dungeon's menus LF2 (the tablet's rail kept in the frame), and the battle's other states on LB2 (round
 P13: the retreat question LB2r1 beside Retreat, the opening LB3o1 at the scene's place, the rest as drawn — the exchange's
 counters and a speaker's portrait in the scene's blurred sides). Every screen of ours has a base version in both
-orientations but All Data, the title, the import screen (no gallery entries to draw over) and the scenes, which come next
-(the owner, 2026-10-28; docs/ui/phone.md, §2). The gallery shows both orientations'
-choices on tabs of their own (`gallery.ps1 -PhoneOnly`).
+orientations but All Data, the title, the import screen (no gallery entries to draw over) and the landscape scenes, which
+come next (docs/ui/phone.md, §18). The gallery shows both orientations'
+choices on tabs of their own (`gallery.ps1 -PhoneOnly`; the scenes' picture from the week-18 look's frames copied into
+`screen-gallery/phone-look`, docs/ui/gallery.md, §9).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
