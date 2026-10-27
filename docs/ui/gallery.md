@@ -334,3 +334,18 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
   mostly asked, its key awaited and its window closed before the menu (152). So the entry shows a state the game
   never shows.
 - ~~A kept save taken in `COMMAND` for the gallery (§2)?~~ Yes (owner, 2026-10-25): `saves-week18-command`.
+
+## 9. The phone's mock-ups (owner, 2026-10-27)
+
+The owner's request: the phone's mock-ups already chosen (docs/ui/phone.md) in the gallery too, on a tab of their own,
+marked as not built. `gallery.ps1 -Phone` adds the tab **Smartphone, upright (mock-ups)**; `-PhoneOnly` draws it and the
+index alone, with no build and no game pass (the other tabs left as they were, not marked old). They are not dumps:
+`tools/ui/mock_phone.py --gallery <gallery dir> <extract dir>` draws the owner's chosen base versions — the map PM1 (its
+wait, the command panel, a province) and the battle PB3 (the player's turn, the retreat question, an exchange) — from
+the touch and lacquer passes' current pictures and the map's own pictures, without the mock-ups' pink notes, each in a
+phone's body, into `phone/current` with a `manifest.json` as a pass writes it (`"mockup": true`). Each drawing is compared
+with the former one as a dump is (`GalleryScreen.Compare`: a channel more than 8 apart, changed past 600 pixels), so a
+mock-up that changes, or one whose source dumps changed, gets its badge. The tab's heading says **Not built yet**; its
+grid is narrower for the phone's tall pictures. The Python is `KICHIKUOU_PYTHON` in local.env (one with Pillow and
+numpy), else `python`. When the owner chooses another base version, its entry goes into the script's `GALLERY_ENTRIES`;
+when a phone screen is built, its mock-up leaves the tab for a pass of its own.

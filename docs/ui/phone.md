@@ -15,7 +15,8 @@ is built while they are being drawn.
 
 The mock-ups are `tools/ui/mock_phone.py` (the command and its inputs in its docstring), drawn at the phone's own pixels
 over the screen gallery's dumps, the week-18 look's key waits (Ex's scene before the attack on Oaks (6)) and the map's
-own pictures; the images stay outside the repository. Their variants are named **P…** (portrait), apart from
+own pictures; the images stay outside the repository. The chosen base versions are also on the screen gallery's tab
+**Smartphone, upright (mock-ups)**, marked as not built (`tools/ui/gallery.ps1 -PhoneOnly`; docs/ui/gallery.md, §9). Their variants are named **P…** (portrait), apart from
 touch.md's landscape B1, M1 and the rest.
 
 ## 1. The device

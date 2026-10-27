@@ -15,12 +15,18 @@ badge that opens the former picture, a new one a badge alone. The folder is -Out
 else its line in local.env), else screen-gallery at the repository's root, which git ignores; one inside the repository
 must be ignored by git (the pictures hold the player's CGs). Nothing moves the system pointer; a window opens for each
 pass.
+-Phone adds a tab of mock-ups, not dumps: the phone held upright as docs/ui/phone.md's chosen base versions, drawn by
+tools/ui/mock_phone.py from the touch and lacquer passes' pictures, compared with its former drawing the same way;
+-PhoneOnly draws that tab and the index alone, with no build and no game pass.
 
 .EXAMPLE
 powershell -ExecutionPolicy Bypass -File tools\ui\gallery.ps1
 
 .EXAMPLE
 powershell -ExecutionPolicy Bypass -File tools\ui\gallery.ps1 -Steel -Only treasure,treasure-replace
+
+.EXAMPLE
+powershell -ExecutionPolicy Bypass -File tools\ui\gallery.ps1 -PhoneOnly
 #>
 param(
     # The gallery's folder; default KICHIKUOU_UI_GALLERY_DIR, else screen-gallery at the repository's root.
@@ -29,6 +35,11 @@ param(
     [switch]$Steel,
     # Also dump every entry in the touch mode (--touch).
     [switch]$Touch,
+    # Also draw the phone's mock-ups, not built yet (tools/ui/mock_phone.py --gallery: the owner's chosen base versions
+    # of docs/ui/phone.md, from this gallery's touch and lacquer dumps; a Python with Pillow and numpy, KICHIKUOU_PYTHON).
+    [switch]$Phone,
+    # Only the phone's mock-ups and the index: no build, no game pass.
+    [switch]$PhoneOnly,
     # Only these entries (their ids, comma-separated).
     [string[]]$Only = @(),
     # Skip the build.
@@ -57,8 +68,9 @@ function Get-LocalPath([string]$Key) {
     return ''
 }
 
+if ($PhoneOnly) { $Phone = $true; $NoBuild = $true }
 $exe = Get-LocalPath 'KICHIKUOU_GODOT_EXE'
-if (-not $exe -or -not (Test-Path $exe)) {
+if (-not $PhoneOnly -and (-not $exe -or -not (Test-Path $exe))) {
     throw "Godot not found: set KICHIKUOU_GODOT_EXE in local.env (see local.env.example)."
 }
 if (-not $Out) { $Out = Get-LocalPath 'KICHIKUOU_UI_GALLERY_DIR' }
@@ -82,11 +94,14 @@ if (-not $NoBuild) {
 $allPasses = @(
     @{ Name = 'lacquer'; Title = 'Lacquer'; Args = @() },
     @{ Name = 'steel'; Title = 'Steel'; Args = @('--palette', 'steel') },
-    @{ Name = 'touch'; Title = 'Touch (Lacquer)'; Args = @('--touch') })
-$passes = @($allPasses | Where-Object { $_.Name -eq 'lacquer' -or ($_.Name -eq 'steel' -and $Steel) -or ($_.Name -eq 'touch' -and $Touch) })
+    @{ Name = 'touch'; Title = 'Touch (Lacquer)'; Args = @('--touch') },
+    @{ Name = 'phone'; Title = 'Smartphone, upright (mock-ups)'; Mockup = $true })
+$passes = @($allPasses | Where-Object { ($_.Name -eq 'phone' -and $Phone) -or (-not $PhoneOnly -and
+    ($_.Name -eq 'lacquer' -or ($_.Name -eq 'steel' -and $Steel) -or ($_.Name -eq 'touch' -and $Touch))) })
 
 $failed = $false
 foreach ($pass in $passes) {
+    if ($pass.Mockup) { continue }
     $folder = Join-Path $Out $pass.Name
     $current = Join-Path $folder 'current'
     $previous = Join-Path $folder 'previous'
@@ -122,6 +137,28 @@ foreach ($pass in $passes) {
     }
 }
 
+# The phone's mock-ups: drawn, not dumped — whole every time, compared with the former drawing as a pass is.
+if ($Phone) {
+    $python = Get-LocalPath 'KICHIKUOU_PYTHON'
+    if (-not $python) { $python = 'python' }
+    $extract = Get-LocalPath 'KICHIKUOU_EXTRACT_DIR'
+    $folder = Join-Path $Out 'phone'
+    $current = Join-Path $folder 'current'
+    $previous = Join-Path $folder 'previous'
+    New-Item -ItemType Directory -Force $folder | Out-Null
+    if (Test-Path (Join-Path $current 'manifest.json')) {
+        if (Test-Path $previous) { Remove-Item -LiteralPath $previous -Recurse -Force }
+        Move-Item -LiteralPath $current -Destination $previous
+    }
+    New-Item -ItemType Directory -Force $current | Out-Null
+    Write-Host 'The phone mock-ups ...'
+    & $python -I (Join-Path $root 'tools\ui\mock_phone.py') --gallery $Out $extract
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "The phone mock-ups ended with exit code $LASTEXITCODE (the touch and lacquer passes dumped? Pillow and numpy in $python?)."
+        $failed = $true
+    }
+}
+
 # ---------------------------------------------------------------- index.html
 
 function Html([string]$text) { return [System.Net.WebUtility]::HtmlEncode($text) }
@@ -135,11 +172,18 @@ foreach ($pass in $allPasses) {
     $manifest = Get-Content -Raw -Encoding UTF8 $manifestPath | ConvertFrom-Json
     $entries = @($manifest.entries)
     $changed = @($entries | Where-Object { $_.since -eq 'changed' -or $_.since -eq 'new' })
-    $isStale = $passes.Name -notcontains $pass.Name
+    # A run of the mock-ups alone dumps no game pass, so it leaves them unmarked.
+    $isStale = $passes.Name -notcontains $pass.Name -and -not ($PhoneOnly -and -not $pass.Mockup)
     $mark = if ($isStale) { ' <b class=stale>old</b>' } elseif ($changed.Count) { " <b class=changed>$($changed.Count)</b>" } else { '' }
     [void]$tabs.Append("<a class=tab href=`"#$($pass.Name)`" data-pass=`"$($pass.Name)`">$(Html $pass.Title)$mark</a>")
-    [void]$body.Append("<section class=pass id=`"$($pass.Name)`"><h2>$(Html $pass.Title) <small>$(Html $manifest.written) &middot; " +
+    $class = if ($pass.Mockup) { 'pass mockup' } else { 'pass' }
+    [void]$body.Append("<section class=`"$class`" id=`"$($pass.Name)`"><h2>$(Html $pass.Title) <small>$(Html $manifest.written) &middot; " +
         "font $(Html $manifest.font) &middot; $($entries.Count) entries, $($changed.Count) changed or new</small></h2>")
+    if ($pass.Mockup) {
+        [void]$body.Append('<p class=mockup><b>Not built yet.</b> Mock-ups of the phone held upright (Xiaomi Poco X6 Pro, ' +
+            '1220&times;2712): the owner&rsquo;s chosen base versions of <code>docs/ui/phone.md</code>, drawn by ' +
+            '<code>tools/ui/mock_phone.py</code> over this gallery&rsquo;s dumps. The scenes are still open.</p>')
+    }
     if ($isStale) {
         [void]$body.Append("<p class=stale>Not dumped by the last run: these pictures are from $(Html $manifest.written) and may be " +
             "out of date (<code>gallery.ps1 -$($pass.Name.Substring(0, 1).ToUpper() + $pass.Name.Substring(1))</code> dumps them again).</p>")
@@ -191,6 +235,8 @@ $html = @"
   .tab { color: #e8dcc0; text-decoration: none; border: 1px solid #5a4a30; padding: 6px 14px; background: #1e1a17; }
   .tab.on { border-color: #d8b060; background: #3a2c1c; color: #f0d890; }
   .stale { color: #e0b050; } p.stale { border: 1px solid #806020; background: #2a2010; padding: 8px; }
+  .mockup .grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  p.mockup { border: 1px solid #7a5a9a; background: #221a2a; color: #e4d4f0; padding: 8px; }
 </style>
 <h1>Screen gallery</h1>
 <p>Our screens from the kept saves (docs/ui/gallery.md). Each in its place; a changed one's badge opens the former picture.</p>

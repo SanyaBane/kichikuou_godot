@@ -22,12 +22,21 @@ battle (P for portrait: touch.md's B1, M1… are the landscape phone's). Round P
 our army on top, Skip between the cards and the deck), PB3r the retreat question, PB3x an exchange; the battle's inputs
 also touch/current's exchange-counters.
 The pink lines and text are the mock-ups' notes, not part of a screen.
+
+For the screen gallery's phone tab (tools/ui/gallery.ps1 -Phone; docs/ui/gallery.md, §9) only the owner's chosen base
+versions, without the notes, into <gallery dir>/phone/current with a manifest.json as the game's passes write it:
+  python -I tools/ui/mock_phone.py --gallery <gallery dir> <extract dir> < /dev/null
 """
-import sys, os, re
+import sys, os, re, json, hashlib, datetime
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
-GALLERY, LOOK, EXTRACT, OUT = sys.argv[1:5]
+GALLERY_MODE = sys.argv[1] == '--gallery'
+if GALLERY_MODE:
+    GALLERY, EXTRACT = sys.argv[2:4]
+    LOOK, OUT = None, os.path.join(GALLERY, 'phone', 'current')
+else:
+    GALLERY, LOOK, EXTRACT, OUT = sys.argv[1:5]
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 TOUCH, LACQ = os.path.join(GALLERY, 'touch', 'current'), os.path.join(GALLERY, 'lacquer', 'current')
 os.makedirs(OUT, exist_ok=True)
@@ -75,11 +84,15 @@ def fit(d, s, face, size, width):
 
 
 def note(d, xy, s, size=34, anchor='la'):
+    if GALLERY_MODE:
+        return
     d.multiline_text(xy, s, font=GOTHIC(size), fill=NOTE, anchor=anchor, stroke_width=5, stroke_fill=(0, 0, 0),
                      spacing=8)
 
 
 def arrow(d, a, b):
+    if GALLERY_MODE:
+        return
     d.line([a, b], fill=NOTE, width=4)
     d.ellipse((b[0] - 8, b[1] - 8, b[0] + 8, b[1] + 8), fill=NOTE)
 
@@ -202,6 +215,8 @@ def chrome(d):
 
 def reach(img, label=True, shade=True):
     """The right thumb's comfortable reach, one hand (~70 mm round a grip low on the right side)."""
+    if GALLERY_MODE:
+        return
     over = Image.new('RGBA', img.size, (0, 0, 0, 0))
     od = ImageDraw.Draw(over)
     cx, cy, r = PW + 30, PH - 560, round(70 * PX_MM)
@@ -219,10 +234,59 @@ def phone():
 
 
 SHEETS = {}
+# The gallery's phone tab: the owner's chosen base versions (docs/ui/phone.md), by mock-up name.
+GALLERY_ENTRIES = {
+    'PM1a': ('pm1-map', 'Map — PM1', 'The map wait', 'the map\'s whole height, the status on top, Commands at the thumb'),
+    'PM1b': ('pm1-commands', 'Map — PM1', 'The command panel', 'a sheet over the map\'s foot, Close where Commands was'),
+    'PM1c': ('pm1-province', 'Map — PM1', 'A province', 'Oaks (6) ringed, its card and commands as a sheet; the map '
+                                                          'scrolled up'),
+    'PB3': ('pb3-turn', 'Battle — PB3', 'The player\'s turn', 'our army on top, the enemy\'s at the thumb, Skip over '
+                                                               'the deck'),
+    'PB3r': ('pb3-retreat', 'Battle — PB3', 'The retreat question', 'at Retreat, over the deck\'s right column'),
+    'PB3x': ('pb3-exchange', 'Battle — PB3', 'An exchange', 'Ex (commander 1) on Rance (unit 1); the deck empty'),
+}
+DUMPED = []
+
+
+def save_gallery(img, name):
+    """The phone's screen in its body, as the gallery's entry; compared with the former picture as the game's passes do
+    (GalleryScreen.Compare: a channel more than 8 apart, changed past 600 pixels)."""
+    if name not in GALLERY_ENTRIES:
+        return
+    ident, section, title, note_ = GALLERY_ENTRIES[name]
+    B = 34
+    W, H = PW + 2 * B, PH + 2 * B
+    body = Image.new('RGB', (W, H), (20, 17, 16))
+    mask = Image.new('L', (W, H), 0)
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, W - 1, H - 1), radius=130, fill=255)
+    body.paste(Image.new('RGB', (W, H), (28, 28, 32)), (0, 0), mask)
+    smask = Image.new('L', (PW, PH), 0)
+    ImageDraw.Draw(smask).rounded_rectangle((0, 0, PW - 1, PH - 1), radius=100, fill=255)
+    body.paste(img, (B, B), smask)
+    file = ident + '.png'
+    body.save(os.path.join(OUT, file))
+    since, differing = None, 0
+    previous = os.path.join(GALLERY, 'phone', 'previous')
+    if os.path.isdir(previous):
+        before = os.path.join(previous, file)
+        if not os.path.exists(before):
+            since = 'new'
+        else:
+            a = np.asarray(Image.open(before).convert('RGB'), dtype=np.int16)
+            b = np.asarray(body, dtype=np.int16)
+            differing = a.shape[0] * a.shape[1] if a.shape != b.shape else int((np.abs(a - b) > 8).any(axis=2).sum())
+            since = 'changed' if differing > 600 else 'same'
+    with open(os.path.join(OUT, file), 'rb') as f:
+        digest = hashlib.sha256(f.read()).hexdigest()
+    DUMPED.append({'id': ident, 'section': section, 'title': title, 'save': 'mock-up', 'note': note_, 'file': file,
+                   'sha256': digest, 'error': None, 'since': since, 'differing': differing, 'box': None})
 
 
 def save(img, name, title, group):
     chrome(ImageDraw.Draw(img))
+    if GALLERY_MODE:
+        save_gallery(img, name)
+        return
     B, head = 34, 170
     W, H = PW + 2 * B, PH + 2 * B
     sheet = Image.new('RGB', (W + 80, H + head + 50), (232, 228, 220))
@@ -1056,6 +1120,14 @@ def pb3x():
 def main():
     global MAP, PROV_NAMES, PROV_POINTS
     MAP, PROV_NAMES, PROV_POINTS = build_map()
+    if GALLERY_MODE:
+        m1()
+        pb3(); pb3r(); pb3x()
+        manifest = {'written': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'palette': 'lacquer',
+                    'font': 'BizUdGothic', 'touch': True, 'mockup': True, 'entries': DUMPED}
+        with open(os.path.join(OUT, 'manifest.json'), 'w', encoding='utf-8') as f:
+            json.dump(manifest, f, ensure_ascii=False, indent=2)
+        return
     p0()
     d1(); d2(); d2b(); d2m(); d3()
     m1(); m2()

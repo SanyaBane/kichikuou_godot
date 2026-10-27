@@ -670,7 +670,7 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   Rance's reference frames come from `tools/sengoku/effect_frames.py`, into a folder outside the repository.
 - **The screen gallery** (docs/ui/gallery.md): our screens in their states from the kept saves, no playing to them, the
   battle board from a golden capture replayed into a presenter and held at a moment (`ScreenGallery/GalleryBattle`) —
-  `powershell -ExecutionPolicy Bypass -File tools/ui/gallery.ps1 [-Steel] [-Touch] [-Only id,…]` builds, dumps every
+  `powershell -ExecutionPolicy Bypass -File tools/ui/gallery.ps1 [-Steel] [-Touch] [-Phone] [-Only id,…]` builds, dumps every
   entry (`-Only`: those, into the passes as they are) into `screen-gallery/` at the root (git ignores it; `KICHIKUOU_UI_GALLERY_DIR` elsewhere) in a window, ~33 s a
   pass, nothing moves the pointer, and writes its `index.html`, every screen in its place, a changed one badged with a link to its former picture (two dumps of
   the same build are identical: our views animate by `Strategy/UiClock`, which the dump steps a frame at a time); the game alone:
@@ -678,7 +678,9 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   to a screen in it, run it and look at what changed; a screen's look starts there before a kept save's run. Its
   state comes from `user://saves-week18-command`, the week-18 save saved in `COMMAND` by `--save-command DIR` (any
   `--load --auto` run: at the first map wait in `COMMAND` it saves as a manual save there and quits; the command is in
-  docs/ui/gallery.md, §2) — made again with the kept save it comes from.
+  docs/ui/gallery.md, §2) — made again with the kept save it comes from. `-Phone` adds a tab of the phone's chosen
+  mock-ups, not built (docs/ui/gallery.md, §9; `-PhoneOnly` draws that tab and the index alone, no build, no window;
+  its Python `KICHIKUOU_PYTHON` in local.env).
 
 ## Rules
 
