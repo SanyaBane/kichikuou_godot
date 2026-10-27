@@ -433,7 +433,11 @@ picture, the slot panels) is not shown. How it is built:
   rhythm and the length — but **not traced frame by frame** (owner). The references are docs/sengoku/04-screen.md
   §2.4.1 (the table, the 800×314 frames added over the scene, actor left and target right, mirrored for an enemy
   actor, 30 frames of 50 ms) and the frames themselves, extracted into the scratchpad with
-  `tools/sengoku/effect_frames.py` (never committed). Kichikuou's attack types (`Bt_PlayerAtkType`, from the unit's
+  `tools/sengoku/effect_frames.py` (never committed). Until 2026-10-21 that script extracted one CG late
+  (docs/sengoku/04-screen.md §2.4.1, "The extraction was one CG late"), so the effects below made before then were
+  matched to the reference's frames 1 on — a reference's "frame n" there is its frame n + 1, its frame 0 unseen — and
+  the counts read from those sheets are corrected below; ours keep their timing (the owner took them as they are).
+  Kichikuou's attack types (`Bt_PlayerAtkType`, from the unit's
   class: 0 melee, 1 bow, 2 magic; docs/battle/01-flow.md §8.1) take Sengoku Rance's **Samurai (40000)**
   for melee, **Archer (40260)** for the bow and **Mage (40360, Fire Blast)** for magic — every magic class alike at
   first (confirmed by the owner, 2026-10-14). **Since 2026-10-21 a magic attack plays its element's effect** (owner;
@@ -626,8 +630,8 @@ picture, the slot panels) is not shown. How it is built:
   (5-17) and the sparkles round its rim, the rest drawn the same — so that it starts with the needle; moved 150 units
   left and stretched right 1.45× from x 450, as Gandhi's, so that it runs on through the enemy's army (owner,
   2026-10-15).
-  The Whirlwind Shot effect (`WhirlwindShotEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Piercing Tempest, 40660 — 29
-  frames in the archive, the 30th absent; a texture of its own, `Lens`: a tall arc with a bright rim on its outer side and
+  The Whirlwind Shot effect (`WhirlwindShotEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Piercing Tempest, 40660 — 30
+  frames, 29 of them seen then; a texture of its own, `Lens`: a tall arc with a bright rim on its outer side and
   a glassy fill): a whirlwind in the middle (its eye at ~(414, 168)) — six arms of beads placed by the frame, their
   heads winding in from a ring of radius ~210 (frame 0) to the eye (~11) as the arms turn, white glows with a soft haze
   at the heads, teal ones with four-point glints down the tails, which grow out over the first seven frames, and six
@@ -643,8 +647,8 @@ picture, the slot panels) is not shown. How it is built:
   1.75× from x 474 (the eye's 414 + 60) so that it runs on through the enemy's army, the whirlwind keeping its shape,
   and the whole drawn 244 units left and 20 up, onto Isoroku's sprite (owner, 2026-10-15).
   The High Speed effect (`HighSpeedEffect`, 2026-10-15, the owner took its v1 as it is; v2 recoloured to Meglass's blues
-  after the owner's note, which the owner took as it is; after Sengoku Rance's Commander Charge, 41400 — 29 frames in
-  the archive; textures of its own: `Bar`, a band even along its length; `Petal`, a soft filled ellipse; `Moon`, a
+  after the owner's note, which the owner took as it is; after Sengoku Rance's Commander Charge, 41400 — 30 frames,
+  29 of them seen then; textures of its own: `Bar`, a band even along its length; `Petal`, a soft filled ellipse; `Moon`, a
   half-moon): a white burst at (312, 162) on a thick white bar across the whole frame in a royal-blue haze turning sky
   blue (frames 0-3), the bar thinning to a thread in eight overlapping steps (gone by ~19); the reference's petals
   bursting out of the burst are left out (owner, 2026-10-15); a
@@ -711,8 +715,8 @@ picture, the slot panels) is not shown. How it is built:
   a few small coral and crimson fire billows (2-10), embers in amber, coral and crimson rising and drifting (2-14). The
   amber band keeps the cut from reading pink over the sand.
   The Vanish Bomb effect (`VanishBombEffect`, 2026-10-15, the owner took its v1 as it is; v2 larger after the owner's
-  note, which the owner took as it is; after Sengoku Rance's Begone Bomb, 40560 — 29 frames in
-  the archive; a texture of its own, `Rim`: a ring with a sharp inner edge and a frayed outer one): a wall of white
+  note, which the owner took as it is; after Sengoku Rance's Begone Bomb, 40560 — 30 frames,
+  29 of them seen then; a texture of its own, `Rim`: a ring with a sharp inner edge and a frayed outer one): a wall of white
   light — lumps and four-point sparkles, pink past x 430, fewer toward the right edge — lit from the frame's edges
   inward as the hole in it closes on (295, 185) (its half-width 400 at frame 0, 200 at 4, 0 at 8), each lump dimming
   after it lights. Then, larger than Sengoku Rance's (owner, 2026-10-15: v1 looked weaker than Rance Attack, while
@@ -730,7 +734,7 @@ picture, the slot panels) is not shown. How it is built:
   positions here are as laid out; it is drawn 70 units left and 70 up of them, onto her bomb (owner).
   The C. War Dance effect (`WarDanceEffect`, 2026-10-15, the owner took its v1 as it is, then asked for a third fewer
   crescents and wisps — v2, which the owner took as it is; after Sengoku Rance's Ieyasu's
-  Special Move, 47400 — 29 frames of it in the archive, the 30th a stray picture of something else; a texture of its
+  Special Move, 47400 — 30 frames, of which frames 1-29 were seen then, and after them 47430, Guna Beam's first; a texture of its
   own, `Sickle`: a crescent filled evenly with sharp edges, its hollow facing left): rows of flat crescents bulging
   right, each lit for one frame and a new set every frame (as the reference's, none lasting into the next), added one
   over another so two make the next shade and three white — salmon to x ~430, grey by ~540, then grey turning violet
@@ -741,7 +745,7 @@ picture, the slot panels) is not shown. How it is built:
   last fading by ~27. Timed on the reference's mean brightness in four column quarters. The positions here are as laid
   out; it is drawn 150 units right of them (owner, 2026-10-15).
   The Chuhai effect (`ChuhaiEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Shogun Whirlwind,
-  47060 — 29 frames in the archive; textures of its own: `Hook`, a thin arc thickening to a bright head, and `Kite`, a
+  47060 — 30 frames, 29 of them seen then; textures of its own: `Hook`, a thin arc thickening to a bright head, and `Kite`, a
   soft diamond): a whirlwind, a wheel of blue blades turning clockwise — swelling from a dome at the frame's foot in the
   middle (radius 40 at frame 0, 210 at 4, 245 at 8) while its centre climbs and drifts right, (390, 340) at 0, (410,
   120) at 8, (590, 30) at 12, off the top right by the end (radius 300); over the wheel thin hooks with bright heads,
@@ -750,8 +754,8 @@ picture, the slot panels) is not shown. How it is built:
   the right (to 6) down round the bottom (12) to the lower left (from 16), about ±90° wide at frame 8 and ±60° by 16;
   grey-teal haze just outside the rim; the whole dying from frame 20, gone by ~27. Timed on the reference's mean
   brightness in four column quarters. Over the sand battlefield the white sector reads strongly, the blue blades faintly.
-  The T2 Goliath effect (`GoliathEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Gigai Punch, 46820 — 14 frames in the
-  archive, 46834 absent, and 46839 on another effect's; **15 frames as the reference**, the owner's choice, the rest of
+  The T2 Goliath effect (`GoliathEffect`, 2026-10-15, the owner took its v1 as it is; after Sengoku Rance's Gigai Punch, 46820 — 15 frames
+  (46820-46834), 14 of them seen then; **15 frames as the reference**, the owner's choice, the rest of
   ours empty; its size the reference's; a texture of its own, `Claw`, a solid blade from a thin root to a sharp point,
   widest three quarters along, bowed a little): four white claws raking down and right over the enemy's half, from
   roots along the top (x 410-490) to points at the foot (x 570-730), each lit for a frame and longer to frame 3 (35 % of
@@ -765,7 +769,7 @@ picture, the slot panels) is not shown. How it is built:
   bottom left. Timed on the reference's mean brightness in four column quarters. Over the sand battlefield the white
   claws read strongly, the orange strokes faintly.
   The Kentarou-kun Slash effect (`KentarouSlashEffect`, 2026-10-15, the owner took it as it is after four rounds of notes; after Sengoku Rance's own move of Kentarou's,
-  40800 — 29 frames, 40829 on another effect's; in the white and mint of Kentarou's sprite, CG 1222's 210/255/245,
+  40800 — 30 frames, of which frames 1-29 were seen then, and after them 40830, Great Thunderstrike's first; in the white and mint of Kentarou's sprite, CG 1222's 210/255/245,
   160/215/205 and 100/175/165, where the reference is blue): a blast thrown right across the field from a white-hot
   core at (410, 160) — where Kentarou's sprite strikes the ground (CG 1222: his figure at x 229-299 of the scene, the
   eruption at 300-400; owner, 2026-10-15: the reference's core, at 265, stood behind his back), the reference's right
@@ -799,8 +803,9 @@ picture, the slot panels) is not shown. How it is built:
   shock front pushed right, white shards and droplets thrown forward and up; past the ranks they break up into a blue
   mist (from ~10), gone by ~20. Nothing is drawn behind Rolex. Over the sand battlefield the bursts read faintly over
   the white armour of Ex's army.
-  The Guard effect (`GuardEffect`, 2026-10-20, a Defend's; after Sengoku Rance's guard actions' 45080 — 14 frames in
-  the archive, the 15th absent; **14 frames as the reference**, the rest of ours empty; a texture of its own, `Tile`, a
+  The Guard effect (`GuardEffect`, 2026-10-20, a Defend's; after Sengoku Rance's guard actions' 45080 — 15 frames, of
+  which frames 1-14 were seen then; **14 frames as the reference**, the rest of ours empty — the reference's frame 0,
+  its streaks at the left edge, is not in ours; a texture of its own, `Tile`, a
   flat rectangle with barely softened edges), all on the actor's half: a curtain of 90 rows of horizontal blue-violet
   streaks (`Streak`, 0.36/0.36/0.86, a fifth of them with a lavender-white core), the full height of the frame,
   sweeping in from the left edge (its front at x 150, 240, 330 at frames 0-2) and stopping at the middle, x 400 (from

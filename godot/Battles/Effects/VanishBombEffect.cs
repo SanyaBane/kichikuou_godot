@@ -4,7 +4,7 @@ namespace Kichikuou.Game.Battles.Effects;
 
 /// <summary>
 /// The Vanish Bomb effect, ours after Sengoku Rance's Begone Bomb, effect 40560 (docs/sengoku/04-screen.md §2.4.1; not
-/// traced; the owner's choice, 2026-10-14; 29 frames in the archive): Miki's (unit 32) blast. A wall of white light —
+/// traced; the owner's choice, 2026-10-14; 30 frames in the archive): Miki's (unit 32) blast. A wall of white light —
 /// lumps and four-point sparkles, sparser and pink toward the right edge — closes in on a point left of the middle from
 /// the frame's edges (frames 0-8), the hole in it shrinking to nothing; then, larger than Sengoku Rance's — the game's
 /// mightiest blow, as Miki's sprite (CG 1529: a huge bomb, white and a little blue) shows it (owner, 2026-10-15) — a

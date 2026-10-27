@@ -262,12 +262,6 @@ Other:
 
 ## Repository and tooling
 
-- **`tools/sengoku/effect_frames.py` is one frame off** — *agent* (found 2026-10-15): in `Rance7GA.ald` an
-  archive index is the CG number less 1 (`alice ar list`: `40000: cg40001.webp`), but the script passes the CG number
-  to `ar extract -i`, so every reference sheet began at the effect's second frame and may end on a foreign one; the
-  frame numbers in docs/sengoku/04-screen.md §2.4.1 may be shifted too. The owner took our effects as they are; fix
-  the script and check §2.4.1.
-
 - **The gallery of our screens** — *owner* (2026-10-25): a development mode showing each screen of ours on its own
   from the kept saves, dumped in seconds into a folder outside the repository with an index marking what changed;
   surveyed and planned in [ui/gallery.md](ui/gallery.md); step 1 built (2026-10-25: the frame, the dump and diff,

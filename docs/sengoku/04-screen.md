@@ -124,20 +124,21 @@ Surveyed as the reference for our own exchange effects (docs/ui/battle-screen.md
 - **What they show** (looked at, every third frame; `tools/sengoku/effect_frames.py` extracts them and makes the
   sheets — into a folder outside the repository):
   - *Samurai, 40000* (the melee reference): on the actor's half a **dust cloud**, sand-coloured (about
-    200, 190, 140): frame 0 a scatter of small round puffs, by frames 3-6 merged into one bright billowing cloud
-    with a fine speckled grain, then darkening slowly to nothing by frame ~27. On the target's half **crescent
-    slashes** (white cores, pale blue to violet edges, sizes from a few pixels to a third of the height, at every
-    angle), **"urchins"** (dark blue-teal rings with fine radial spikes), **four-point white sparkles** and small
-    rings; brightest at frame 3, new slashes until frame ~21, all gone by frame ~27.
+    200, 190, 140): frame 0 a few faint specks, frame 1 a scatter of small round puffs, by frames 3-7 merged into one
+    bright billowing cloud with a fine speckled grain, then darkening slowly to nothing by frame ~28. On the target's
+    half **crescent slashes** (white cores, pale blue to violet edges, sizes from a few pixels to a third of the height,
+    at every angle), **"urchins"** (dark blue-teal rings with fine radial spikes), **four-point white sparkles** and
+    small rings; dim crescents at frame 0, brightest at frames 2-5, new slashes until frame ~22, all gone by frame ~28.
   - *Ashigaru/Cavalry, 40030*: the same dust; on the target's half **thrust wedges** (long white-blue spiky jets
     pointing at the actor, as from spear points) instead of crescents, the same sparkles and small blue rings.
   - *Archer, 40260*: no dust. White **arrows** with fletching fly from the actor's half up and to the right (frames
-    0-6), then yellow arrows streak in over the target's half and fall down-right (frames 6-27); on the target,
-    **gold bokeh puffs**, small gold splats and teal crescent streaks; a few bright arcs linger on the actor's side.
-  - *Mage, 40360* (Fire Blast): on the target's half a **glowing orb** with rays (frame 0), a white-hot ellipse
-    (frame 3), a **fireball** of yellow, orange and white billows over the whole half (frames 6-15) with a pale
-    **shockwave arc** running off its left edge toward the actor, then embers, gold four-point sparkles and a soft
-    white glow fading by frame ~27.
+    0-8, a second, flatter volley 10-14), yellow arrows streak in over the target's half (3-18) and pale ones fall
+    onto it down-right (9-29); on the target, **gold bokeh puffs** (12-27), small gold splats and teal crescent streaks;
+    a few bright arcs linger on the actor's side (8-24).
+  - *Mage, 40360* (Fire Blast): on the target's half a small red-white orb (frame 0) swelling into a **glowing orb**
+    with rays (1-3), a white-hot ellipse (frame 4), a **fireball** of yellow, orange and white billows over the whole
+    half (frames 7-16) with a pale **shockwave arc** running off its left edge toward the actor, then embers, gold
+    four-point sparkles and a soft white glow fading by frame ~28.
 - **A correction** **[V]**: the third and fourth arguments of `add1`-`add3` (`:1260`: `nCgNo, nCount, nCgNo2,
   nCount2, nActionNo…`) are not a solo battle's effect but a multi-target attack's (`m_nCgNo2`/`m_nCount2`, used only
   with `bAllFlag`, `existAll`, `T_BATEFF:760-790`); a solo battle (`bSoloFlag`) changes only `getDefaultCgNo`'s
@@ -156,11 +157,12 @@ Surveyed as the reference for our own exchange effects (docs/ui/battle-screen.md
   type's, Samurai **40000** (`▲武将データ.jaf.jam:113-157`; **[I]** that slot 3 stays 0 in normal play). No cut-in.
   The owner saw no darkening of the scene in play (2026-10-14): the spotlight in the code may be unused.
   *What 40500 shows* (looked at, every frame): an eruption in the middle — long white-cyan spikes fanning up from a
-  white-hot foot at about (400, 250) with flat glassy rings on the ground (frames 0-5), the spikes turning blue; the
-  white mass then spreads right (its front at ~620 by frame 6, the right edge by 10) behind a pale arc throwing sparks,
-  covers the right half to frame ~13 and draws back to the right edge, gone by ~22, its trailing side burning in rows of
-  translucent blue flame tongues (12-25); sand dust on the left (0-15) and later over the right (18-25); a cluster of
-  pale blue motes in the middle (x 320-480) from ~9 to ~27; the rings spread into a wide dark blue ellipse (to ~18).
+  white-hot foot at about (400, 250) with flat glassy rings on the ground (frames 0-6; at 0 fewer and shorter), the
+  spikes turning blue; the white mass then spreads right (its front at ~620 by frame 7, the right edge by 11) behind a
+  pale arc throwing sparks, covers the right half to frame ~14 and draws back to the right edge, gone by ~23 (the last
+  wisps at its foot to ~27), its trailing side burning in rows of translucent blue flame tongues (13-26); sand dust on
+  the left (0-16) and later over the right (19-26); a cluster of pale blue motes in the middle (x 320-480) from ~10 to
+  ~28; the rings spread into a wide dark blue ellipse (to ~19).
 - **Counterparts for Kichikuou's other specials** **[V]** (surveyed 2026-10-14, proposals for the owner;
   docs/ui/battle-screen.md, "The exchange's effects"). Of Kichikuou's special users Sengoku Rance has Magic (1009),
   Shizuka (1157), Isoroku (1026), Miki ("Archfiend Miki", 1017), Kentarou (1003) and Kanami (1004); Gandhi and
@@ -218,25 +220,34 @@ Surveyed as the reference for our own exchange effects (docs/ui/battle-screen.md
 
   Looked at and set aside: 47130 Black Flame (reads as fire), 41360 Ally Avenger (violet skulls), 47430 Guna Beam
   (mixed palette), 40760 Miko Storm 2 (a violet vortex), 41060 Summon Suzaku (too grand), 46820 Seven Head Claws
-  (claws), the onmyouji's 40160 / 45040. **[I]** `tools/sengoku/effect_frames.py` may extract one CG late (`-i` is an
-  archive index, and the survey's listing put `cgN` at index N−1); not checked — the frames above came from a fixed copy.
+  (claws), the onmyouji's 40160 / 45040. The frames above came from the fixed script (the next item).
+- **The extraction was one CG late** **[V]** (found 2026-10-15, the script fixed 2026-10-21, this section checked
+  2026-10-27): `alice ar extract -i` takes the archive's index, and in `Rance7GA.ald` index n holds CG n + 1 (all 6614
+  entries, `alice ar list`), but `tools/sengoku/effect_frames.py` passed the CG number until 2026-10-21. So every
+  sheet before that began at the effect's frame 1, its frame 0 never seen, and ended on the CG after the effect — the
+  next effect's first frame where one follows (40030 after Samurai, 40530 after Rance Attack, 40830 after Kentarou-kun
+  Slash, 47430 after Ieyasu's Special Move), else nothing, which read as "29 frames in the archive" (or 14 of 15). The
+  frame numbers in this section were checked on the fixed script's frames and are the effects' own; every effect
+  named here has its full count in the archive (30, or 15 where the table says 15). The qualitative descriptions of
+  the specials' candidates (the table above) still hold.
 - **Guard** **[V]** (surveyed 2026-10-20 for Kichikuou's Defend; docs/ui/battle-screen.md, "The exchange's effects"):
   no guard action has an entry of its own; `tagEffectDataManager@get` remaps it through `checkAction`
   (`あべ/T_EFFDAT.JAF.jam:1506-1561`): `行動_防御` (`あべ/C_行動.jaf.jam`, `FUNC 1364`) — actions 3, 21 (Ally Guard),
   22 (Neo Ally Guard), 23 (All Guard) and 143 — gives **993**, whose entry is `add1(45080, 15, 49060, 15, 993, …)`:
-  **CG 45080**, 15 frames (14 in the archive, 45094 absent), and for a multi-target use 49060, 15 frames of 152×78 (a
-  card's size; 14 in the archive). The other remaps: 991 heal (40400 / 49000), 992 auto-heal and a solo battle's heal
+  **CG 45080**, 15 frames (45080-45094, all in the archive), and for a multi-target use 49060, 15 frames of 152×78 (a
+  card's size). The other remaps: 991 heal (40400 / 49000), 992 auto-heal and a solo battle's heal
   (45000), 994 buff (45100 / 49020), 995 debuff (45120 / 49040).
   *What 45080 shows* (looked at, every frame): all on the actor's half — a column of horizontal blue-violet streaks
-  (about 95, 95, 217), the frame's full height and ~140 wide, sweeping in from the left edge (its front at x 150, 240,
-  330, 400 at frames 0-3) and stopping at the middle; its front stands there as a lavender wall, white and pink toward
-  the foot, its tail stretching back to x ~140 (4-9); at 10-11 the wall flares and breaks up into blocks (a pixelated
-  dissolve) spreading back to the left edge, blue at 12, dark navy at 13; nothing past x ~430.
-  *What 41400 shows* (looked at, every frame; 29 frames in the archive): a white burst at about (310, 160) on a thick
-  white bar across the whole frame in an orange-gold glow (frames 0-2), the bar thinning to a thread (gone by ~19);
-  yellow petals bursting out of it and flying out radially, turning tan and slowing (1-15, faint to ~22); a white disc
-  with a bright rim swelling from the burst (3-7) into a grey halo of concentric rings (7-15); then gold, cream and a
-  few grey crescents spinning in from x ~520 and drifting right with gold four-point sparkles (9-25), the sparkles to ~28.
+  (about 95, 95, 217), the frame's full height and ~140 wide, sweeping in from the left edge (its front at x 50, 140,
+  230, 310, 400 at frames 0-4) and stopping at the middle; its front stands there as a lavender wall, white and pink
+  toward the foot, its tail stretching back to x ~140 (5-10); at 11-12 the wall flares and breaks up into blocks (a
+  pixelated dissolve) spreading back to the left edge, blue at 13, dark navy at 14; nothing past x ~405.
+  *What 41400 shows* (looked at, every frame; 30 frames): the whole frame white, brightest in a wide band across the
+  middle (frame 0); a white burst at about (310, 160) on a thick white bar across the whole frame in an orange-gold
+  glow (1-3), the bar thinning to a thread (gone by ~21); yellow petals bursting out of it and flying out radially,
+  turning tan and slowing (2-16, faint to ~23); a white disc with a bright rim swelling from the burst (4-8) into a
+  grey halo of concentric rings (8-16); then gold, cream and a few grey crescents spinning in from x ~520 and drifting
+  right with gold four-point sparkles (10-26), the sparkles to ~29.
 - **Sound**: each effect's sound comes from a CG → sound table (`あべ/T_BATSND.JAF.jam:550-564`), played as it
   starts (`あべ/T_BATEFF.JAF.jam:280`) — not surveyed further.
 

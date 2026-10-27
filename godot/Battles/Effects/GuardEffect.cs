@@ -4,16 +4,16 @@ namespace Kichikuou.Game.Battles.Effects;
 
 /// <summary>
 /// The Guard effect, ours after Sengoku Rance's guard actions' effect, 45080 (docs/sengoku/04-screen.md §2.4.1; not
-/// traced): a unit's Defend (docs/battle/01-flow.md §8.3), 14 frames as the reference (the rest of ours empty), all on
-/// the actor's half. A curtain of horizontal blue-violet streaks sweeps in from the left edge (frames 0-3) and stops at
-/// the middle, where its front stands as a wall of light, lavender turning white and pink toward the foot, its tail
+/// traced): a unit's Defend (docs/battle/01-flow.md §8.3), 14 frames as the reference's frames 1-14 (its frame 0 was
+/// never seen, §2.4.1, "The extraction was one CG late"; the rest of ours empty), all on the actor's half. A curtain
+/// of horizontal blue-violet streaks sweeps in from the left edge (frames 0-3) and stops at the middle, where its front stands as a wall of light, lavender turning white and pink toward the foot, its tail
 /// trailing back to the left (4-9); the wall flares (10-11) and breaks up into a mosaic of tiles spreading back over the
 /// actor's ranks, blue and then dark (11-13), gone by 14. The wall's face is a straight edge at <see cref="Face"/>. The
 /// same seed makes the same effect.
 /// </summary>
 internal static class GuardEffect
 {
-    /// <summary>How long it lasts: the reference's 14 frames.</summary>
+    /// <summary>How long it lasts: 14 frames, the reference's frames 1-14.</summary>
     public const double Seconds = 14 * EffectCanvas.FrameSeconds;
 
     /// <summary>Where the wall stands: its face, the curtain's front from frame 3 on.</summary>
