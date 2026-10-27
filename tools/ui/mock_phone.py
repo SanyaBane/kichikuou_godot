@@ -20,7 +20,9 @@ owners (made up for the mock-up). The plates are ours, drawn larger.
 Variants (docs/ui/phone.md): P0 today's layout turned upright; PS1-PS3 the scenes; PM1-PM2 the map; PB1-PB2 the
 battle (P for portrait: touch.md's B1, M1… are the landscape phone's). Round P2: PB3 (PB1 with the owner's changes —
 our army on top, Skip between the cards and the deck), PB3r the retreat question, PB3x an exchange; the battle's inputs
-also touch/current's exchange-counters.
+also touch/current's exchange-counters. Round P3: PD1-PD3 the deployment table, PU1-PU2 the Subordinates screen; their
+inputs touch/current's deployment and the units' face CGs from <extract dir>/cg_png.
+`--round P3` before the arguments draws only that round's variants (the look dir then unread, '-' will do).
 The pink lines and text are the mock-ups' notes, not part of a screen.
 
 For the screen gallery's phone tab (tools/ui/gallery.ps1 -Phone; docs/ui/gallery.md, §9) only the owner's chosen base
@@ -31,12 +33,16 @@ import sys, os, re, json, hashlib, datetime
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
-GALLERY_MODE = sys.argv[1] == '--gallery'
+ARGS = sys.argv[1:]
+ROUND = None
+if ARGS[0] == '--round':                # one round's variants alone (--round P3); the look dir is not read
+    ROUND, ARGS = ARGS[1].upper(), ARGS[2:]
+GALLERY_MODE = ARGS[0] == '--gallery'
 if GALLERY_MODE:
-    GALLERY, EXTRACT = sys.argv[2:4]
+    GALLERY, EXTRACT = ARGS[1:3]
     LOOK, OUT = None, os.path.join(GALLERY, 'phone', 'current')
 else:
-    GALLERY, LOOK, EXTRACT, OUT = sys.argv[1:5]
+    GALLERY, LOOK, EXTRACT, OUT = ARGS[0:4]
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 TOUCH, LACQ = os.path.join(GALLERY, 'touch', 'current'), os.path.join(GALLERY, 'lacquer', 'current')
 os.makedirs(OUT, exist_ok=True)
@@ -282,14 +288,21 @@ def save_gallery(img, name):
                    'sha256': digest, 'error': None, 'since': since, 'differing': differing, 'box': None})
 
 
-def save(img, name, title, group):
+def save(img, name, title, group, side=None):
+    """`side`: the notes in a column right of the phone, for screens too full to bear them (round P3 on)."""
     chrome(ImageDraw.Draw(img))
     if GALLERY_MODE:
         save_gallery(img, name)
         return
     B, head = 34, 170
     W, H = PW + 2 * B, PH + 2 * B
-    sheet = Image.new('RGB', (W + 80, H + head + 50), (232, 228, 220))
+    sheet = Image.new('RGB', (W + 80 + (640 if side else 0), H + head + 50), (232, 228, 220))
+    if side:
+        sd = ImageDraw.Draw(sheet)
+        y = head + 60
+        for para in side:
+            sd.multiline_text((W + 80, y), para, font=GOTHIC(30), fill=(150, 30, 90), spacing=10)
+            y += sd.multiline_textbbox((W + 80, y), para, font=GOTHIC(30), spacing=10)[3] - y + 44
     mask = Image.new('L', (W, H), 0)
     ImageDraw.Draw(mask).rounded_rectangle((0, 0, W - 1, H - 1), radius=130, fill=255)
     sheet.paste(Image.new('RGB', (W, H), (28, 28, 32)), (40, head), mask)
@@ -1117,8 +1130,582 @@ def pb3x():
     save(img, 'PB3x', 'an exchange', 'battle-p2')
 
 
+# --- round P3: the deployment table and Subordinates upright (2026-10-27) ---------------------------------------------
+
+PAPER, PAPER_DARK, PARTY_ROW, CHOSEN_ROW = (224, 208, 172), (196, 176, 136), (217, 195, 147), (214, 172, 140)
+INK, INK_QUIET, INK_HEAD, PAPER_LINE = (44, 34, 24), (122, 104, 80), (150, 40, 28), (190, 172, 138)
+
+# The week-18 save's units as the gallery's deployment and Subordinates dumps show them: №, name, type, rows, troops,
+# their maximum, Refill's price (None: full), the cost, the place in the party sent against Oaks (6).
+LEDGER = [(1, 'Rance', 'Leazas Knights', 'Front', 1000, 1000, None, '300K', 1),
+          (5, 'Leila', 'Royal Guards', 'Front', 800, 800, None, '1,200K', None),
+          (6, 'Barres', 'Leazas Knights', 'Front', 980, 1000, '100K', '1,100K', 4),
+          (7, 'Rick', 'Leazas Knights', 'Front', 612, 800, '300K', '1,000K', None),
+          (8, 'Cordoba', 'Leazas Knights', 'Front', 1000, 1000, None, '1,100K', 3),
+          (9, 'Kinkaid', 'Leazas Soldiers', 'Front', 901, 1500, '1,100K', '900K', None),
+          (10, 'Menad', 'Leazas Soldiers', 'Front', 649, 1250, '1,200K', '800K', None),
+          (11, 'Asuka', 'Leazas Mages', 'Back', 100, 100, None, '100K', None),
+          (12, 'Haurein', 'Leazas Soldiers', 'Front', 209, 1400, '2,300K', '600K', 2)]
+UNIT = {u[0]: u for u in LEDGER}
+# The Troops tab, sorted by T.Atk as the gallery's deployment-troops: T.Atk, T.Def, Strikes, Mag, then the offense's,
+# the defense's and the dungeon's Atk and Def.
+TROOPS_TAB = {1: '10 6 14 0 0 0 0 +1 +1 0', 6: '10 6 3 0 +2 +1 +2 +1 −1 0', 7: '10 6 20 0 +3 0 0 −2 −2 −2',
+              8: '10 6 7 0 −1 −1 0 +2 −2 −2', 5: '9 5 8 1 +1 +1 +1 +1 +1 +1', 9: '8 4 3 0 0 0 0 0 0 −2',
+              10: '8 4 8 1 0 0 0 0 −2 0', 12: '8 4 6 0 0 0 +1 0 0 0', 11: '3 3 20 6 0 0 0 0 0 0'}
+# The Commander tab as the gallery's subordinates-commander: Strat%, HP, Lvl, EXP, C.Atk, C.Def, the item.
+COMMANDER_TAB = {1: '0% 8/8 1 0/130 22 18 L. Holy Sword', 5: '8% 5/5 0 15/100 20 13 —', 6: '15% 5/5 0 54/100 14 7 —',
+                 7: '0% 8/8 0 47/100 23 18 By Lord', 8: '0% 9/9 0 49/100 17 15 —', 9: '2% 7/7 0 19/100 14 10 —',
+                 10: '8% 4/4 0 6/100 12 9 —', 11: '0% 1/1 0 25/100 1 1 —', 12: '5% 5/5 0 0/100 13 9 —'}
+# Each unit's face CG (SET_CHR.ADV, Unit_FaceCg) and its square (UnitFaces.Exceptions).
+FACE_CG = {1: (1, (33, 7, 128)), 5: (7, (28, 7, 136)), 6: (402, (15, 9, 136)), 7: (403, (44, 7, 136)),
+           8: (404, (28, 7, 128)), 9: (406, (38, 7, 112)), 10: (8, (31, 7, 128)), 11: (430, (26, 45, 144)),
+           12: (10, (32, 7, 128))}
+NUMBER_ORDER = [u[0] for u in LEDGER]
+TROOPS_ORDER = list(TROOPS_TAB)
+TABS = ['Overview', 'Troops', 'Commander']
+# Add New Troops for Rance (the gallery's subordinates) and Haurein (subordinates-question shows +400 and +800; the
+# cheaper ones derived from them, each step three times the one before as Rance's are); greyed above the budget.
+ADD_NEW = {1: ['11,400K', '34,200K', '102,600K', '307,800K', '923,400K', '2,770,200K'],
+           12: ['5,400K', '16,200K', '48,600K', '145,800K', '437,400K', '1,312,200K']}
+BUDGET = 116_400
+
+
+def unit_face(n, size):
+    cg, (x, y, s) = FACE_CG[n]
+    im = np.array(Image.open(os.path.join(EXTRACT, 'cg_png', f'CG{cg:04d}.png')).convert('RGB'))
+    key = (im[..., 0] > 200) & (im[..., 1] < 60) & (im[..., 2] > 200)          # the palette's key, magenta
+    im[key] = (52, 58, 74)
+    return Image.fromarray(im).crop((x, y, x + s, y + s)).resize((size, size), Image.LANCZOS)
+
+
+def arrow_mark(d, x, y, way, size=10, fill=INK_HEAD):
+    """▲ ▼ ▶: Cinzel has no arrows."""
+    s = size
+    pts = {'up': [(x - s, y + s), (x + s, y + s), (x, y - s)], 'down': [(x - s, y - s), (x + s, y - s), (x, y + s)],
+           'right': [(x - s, y - s), (x - s, y + s), (x + s, y)]}[way]
+    d.polygon(pts, fill=fill)
+
+
+def divider(d, y, x0=24, x1=PW - 24):
+    d.line([(x0, y), (x1, y)], fill=DIM_GOLD, width=2)
+    m = (x0 + x1) / 2
+    d.polygon([(m, y - 9), (m + 9, y), (m, y + 9), (m - 9, y)], fill=GOLD)
+
+
+def title_band(d, title, subtitle, y=TOP + 4):
+    """The title band: Shojumaru title, the date right, the Cinzel subtitle under them, a divider."""
+    d.text((30, y), title, font=BRUSH(62), fill=NAME)
+    d.text((PW - 30, y + 22), DATE, font=CINZEL(32, 700), fill=NAME, anchor='ra')
+    d.text((32, y + 92), subtitle, font=CINZEL(30, 600), fill=SUBTITLE)
+    divider(d, y + 144)
+    return y + 156
+
+
+def paper_tabs(d, y, active, h=116, w=340, gap=14):
+    """The ledger's tabs: the chosen one paper with a vermilion top, joined to the sheet; the others darker."""
+    for i, name in enumerate(TABS):
+        x = 24 + i * (w + gap)
+        on = i == active
+        d.rectangle((x, y + (0 if on else 14), x + w, y + h + (2 if on else 0)), fill=PAPER if on else PAPER_DARK,
+                    outline=None if on else PAPER_LINE)
+        if on:
+            d.rectangle((x, y, x + w, y + 9), fill=VERMILION)
+        d.text((x + w / 2, y + h / 2 + (4 if on else 10)), name, font=CINZEL(40, 700),
+               fill=INK_HEAD if on else INK_QUIET, anchor='mm')
+    return y + h
+
+
+def bar_colour(v, m):
+    r = v / m
+    return (96, 140, 64) if r >= 0.75 else (190, 136, 46) if r >= 1 / 3 else (184, 56, 38)
+
+
+def strength_bar(d, x, y, w, v, m, h=8, track=(200, 184, 150)):
+    d.rectangle((x, y, x + w, y + h), fill=track)
+    d.rectangle((x, y, x + round(w * v / m), y + h), fill=bar_colour(v, m))
+
+
+def seal(d, x, y, n, s=60):
+    """A place in the party on the ledger: a vermilion seal."""
+    d.rectangle((x, y, x + s, y + s), fill=(176, 64, 40), outline=(120, 30, 20), width=2)
+    d.rectangle((x + 6, y + 6, x + s - 6, y + s - 6), outline=(236, 170, 130), width=2)
+    d.text((x + s / 2, y + s / 2 + 1), str(n), font=GOTHIC(round(s * 0.62)), fill=(250, 236, 214), anchor='mm')
+
+
+def badge(d, cx, cy, n, r=26):
+    """A place on a party card: the number on a gold diamond."""
+    d.polygon([(cx, cy - r), (cx + r, cy), (cx, cy + r), (cx - r, cy)], fill=(46, 34, 20), outline=GOLD, width=3)
+    d.text((cx, cy + 1), str(n), font=GOTHIC(round(r * 1.15)), fill=NAME, anchor='mm')
+
+
+def close_box(d, x1, y0, s=88):
+    b = (x1 - s - 10, y0 + 10, x1 - 10, y0 + 10 + s)
+    d.rectangle(b, fill=(44, 24, 18), outline=(150, 62, 44), width=2)
+    cx, cy = (b[0] + b[2]) / 2, (b[1] + b[3]) / 2
+    for sx in (-1, 1):
+        d.line([(cx - 17, cy - 17 * sx), (cx + 17, cy + 17 * sx)], fill=(222, 96, 74), width=5)
+
+
+def refill_button(d, box, price):
+    d.rounded_rectangle(box, radius=10, fill=(232, 218, 186), outline=(196, 128, 98), width=2)
+    d.text(((box[0] + box[2]) / 2, (box[1] + box[3]) / 2), price, font=GOTHIC(36), fill=INK_HEAD, anchor='mm')
+
+
+TWO_LINE_HEADS = {
+    0: [('TROOPS', 184, 'la'), ('REFILL', 690, 'ma'), ('COST', PW - 40, 'ra')],
+    1: [('T.ATK', 280, 'ra'), ('T.DEF', 390, 'ra'), ('STRIKES', 525, 'ra'), ('MAG', 600, 'ra'), ('ATK', 700, 'ra'),
+        ('DEF', 790, 'ra'), ('ATK', 900, 'ra'), ('DEF', 990, 'ra'), ('ATK', 1100, 'ra'), ('DEF', PW - 40, 'ra')],
+    2: [('STRAT%', 320, 'ra'), ('HP', 430, 'ra'), ('LVL', 510, 'ra'), ('EXP', 690, 'ra'), ('C.ATK', 810, 'ra'),
+        ('C.DEF', 920, 'ra'), ('ITEM', 950, 'la')],
+}
+TROOP_GROUPS = [('OFFENSE', 715), ('DEFENSE', 915), ('DUNGEON', 1110)]
+
+
+def ledger_head(d, y, tab, chooser=True):
+    """The two-line rows' header: the identity's columns over line 1, the tab's over line 2."""
+    f = CINZEL(27, 700)
+    if chooser:
+        d.ellipse((50, y + 22, 66, y + 38), fill=INK_HEAD)
+    d.text((150, y + 14), 'No.', font=f, fill=INK_HEAD, anchor='ra')
+    if tab != 1:
+        arrow_mark(d, 164, y + 30, 'up', 7)
+    else:
+        arrow_mark(d, 290, y + 70, 'down', 6)
+    d.text((184, y + 14), 'NAME', font=f, fill=INK_HEAD)
+    if tab == 0:
+        d.text((560, y + 14), 'TYPE', font=f, fill=INK_HEAD)
+        d.text((PW - 40, y + 14), 'ROWS', font=f, fill=INK_HEAD, anchor='ra')
+    if tab == 1:
+        for name, cx in TROOP_GROUPS:
+            d.text((cx, y + 16), name, font=CINZEL(22, 600), fill=INK_QUIET, anchor='ma')
+            d.line([(cx - 84, y + 46), (cx + 84, y + 46)], fill=PAPER_LINE, width=2)
+    for name, x, anchor in TWO_LINE_HEADS[tab]:
+        d.text((x, y + 56), name, font=CINZEL(23, 700) if tab == 1 else f, fill=INK_HEAD, anchor=anchor)
+    d.line([(16, y + 98), (PW - 16, y + 98)], fill=INK_HEAD, width=2)
+    return y + 100
+
+
+def ledger_row(d, box, n, tab, chosen=False, party=True, refill=True):
+    """A unit in two lines: its seal, № and name (and type and rows on Overview) over the tab's figures."""
+    x0, y0, x1, y1 = box
+    no, name, kind, rows, trp, mtrp, price, cost, place = UNIT[n]
+    picked = party and place
+    fill = CHOSEN_ROW if chosen else PARTY_ROW if picked else PAPER
+    d.rectangle(box, fill=fill)
+    if chosen:
+        d.rectangle((x0, y0, x0 + 8, y1), fill=VERMILION)
+        d.polygon([(58, y0 + 40), (68, y0 + 50), (58, y0 + 60), (48, y0 + 50)], fill=INK_HEAD)
+    if picked:
+        seal(d, 28, y0 + 18, place)
+    d.line([(x0, y1), (x1, y1)], fill=PAPER_LINE, width=2)
+    l1, l2 = y0 + 18, y0 + (y1 - y0) // 2 + 14
+    d.text((170, l1), str(no), font=GOTHIC(44), fill=INK, anchor='ra')
+    d.text((184, l1), name, font=GOTHIC(44), fill=INK)
+    if tab == 0:
+        d.text((560, l1 + 6), kind, font=GOTHIC(36), fill=INK_QUIET)
+        d.text((PW - 40, l1 + 6), rows, font=GOTHIC(36), fill=INK_QUIET, anchor='ra')
+        d.text((184, l2), f'{trp:,}/{mtrp:,}', font=GOTHIC(38), fill=INK)
+        strength_bar(d, 184, l2 + 46, 260, trp, mtrp)
+        if price and refill:
+            refill_button(d, (590, l2 - 6, 790, l2 + 52), price)
+        elif price:
+            d.text((690, l2), price, font=GOTHIC(38), fill=INK_HEAD, anchor='ma')
+        else:
+            d.text((690, l2), '—', font=GOTHIC(38), fill=INK_QUIET, anchor='ma')
+        d.text((PW - 40, l2), cost, font=GOTHIC(38), fill=INK, anchor='ra')
+    elif tab == 1:
+        for v, (_, x, _) in zip(TROOPS_TAB[n].split(), TWO_LINE_HEADS[1]):
+            d.text((x, l2), v, font=GOTHIC(38), fill=INK_QUIET if v == '0' else INK, anchor='ra')
+    else:
+        parts = COMMANDER_TAB[n].split(' ', 6)
+        for v, (_, x, anchor) in zip(parts, TWO_LINE_HEADS[2]):
+            d.text((x, l2), v, font=GOTHIC(38 if anchor == 'ra' else 34), fill=INK_QUIET if v == '—' else INK,
+                   anchor=anchor)
+
+
+def ledger(d, top, foot, tab, order, row_h, chosen=None, party=True, refill=True):
+    d.rectangle((16, top, PW - 16, foot), fill=PAPER)
+    y = ledger_head(d, top, tab, chooser=party)
+    for n in order:
+        ledger_row(d, (16, y, PW - 16, y + row_h), n, tab, chosen=n == chosen, party=party, refill=refill)
+        y += row_h
+    return y
+
+
+def party_card(img, box, n, place, face_size=None, kind=True):
+    """A party card on lacquer: the face, the place's badge and the name, the troops with their bar, the cost, ✕."""
+    d = ImageDraw.Draw(img)
+    x0, y0, x1, y1 = box
+    _, name, kind_, _, trp, mtrp, _, cost, _ = UNIT[n]
+    d.rectangle(box, fill=ROW, outline=DIM_GOLD, width=2)
+    fs = face_size or y1 - y0 - 24
+    img.paste(unit_face(n, fs), (x0 + 12, y0 + 12))
+    d.rectangle((x0 + 12, y0 + 12, x0 + 12 + fs, y0 + 12 + fs), outline=DIM_GOLD, width=2)
+    tx, tw = x0 + fs + 32, x1 - x0 - fs - 46
+    badge(d, tx + 24, y0 + 44, place)
+    d.text((tx + 60, y0 + 44), name, font=fit(d, name, GOTHIC, 42, tw - 160), fill=TEXT, anchor='lm')
+    close_box(d, x1, y0, 84)
+    y = y0 + 84
+    if kind:
+        d.text((tx, y), kind_, font=GOTHIC(30), fill=QUIET)
+        y += 44
+    d.text((tx, y), f'{trp:,}/{mtrp:,}', font=GOTHIC(34), fill=TEXT)
+    strength_bar(d, tx, y + 44, tw - 6 if kind else tw - 200, trp, mtrp, track=(60, 50, 40))
+    d.text((x1 - 16, y1 - 14), cost, font=GOTHIC(32), fill=TEXT, anchor='rd')
+    d.text((x1 - 16 - d.textlength(cost, font=GOTHIC(32)) - 14, y1 - 18), 'COST', font=CINZEL(22, 600),
+           fill=SUBTITLE, anchor='rd')
+
+
+PARTY = {1: 1, 2: 12, 3: 8, 4: 6}          # place → unit: Rance, Haurein, Cordoba, Barres
+
+
+def party_totals(d, y, budget_line=False):
+    d.text((32, y), 'TROOPS', font=CINZEL(26, 600), fill=SUBTITLE, anchor='lm')
+    d.text((170, y), '3,189', font=GOTHIC(38), fill=TEXT, anchor='lm')
+    d.text((PW - 32, y), '3,100K', font=GOTHIC(38), fill=TEXT, anchor='rm')
+    d.text((PW - 32 - d.textlength('3,100K', font=GOTHIC(38)) - 16, y), 'WAR EXPENSES', font=CINZEL(26, 600),
+           fill=SUBTITLE, anchor='rm')
+
+
+def budget(d, x1, y, size=40):
+    d.text((x1, y), 'K GOLD', font=CINZEL(24, 600), fill=SUBTITLE, anchor='rm')
+    x = x1 - d.textlength('K GOLD', font=CINZEL(24, 600)) - 12
+    d.text((x, y), f'{BUDGET:,}', font=BRUSH(size), fill=NAME, anchor='rm')
+    x -= d.textlength(f'{BUDGET:,}', font=BRUSH(size)) + 14
+    d.text((x, y), 'BUDGET', font=CINZEL(24, 600), fill=SUBTITLE, anchor='rm')
+
+
+def stop_attack(d, left='Stop', right='Attack'):
+    y0, y1 = BAR
+    panel(d, (16, y0, 420, y1))
+    d.text((218, (y0 + y1) / 2), left, font=BRUSH(48), fill=TEXT, anchor='mm')
+    red_button(d, (436, y0, PW - 16, y1), right, 60)
+
+
+def pd1():
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    y = title_band(d, 'Deployment', 'Attack · up to 4 units')
+    y = paper_tabs(d, y + 6, 0)
+    row_h, dock = 140, 1800
+    ledger(d, y, dock - 14, 0, NUMBER_ORDER, row_h)
+    panel(d, (0, dock, PW, BAR[0] - 16))
+    d.text((32, dock + 52), 'Party', font=BRUSH(48), fill=NAME, anchor='lm')
+    budget(d, PW - 32, dock + 52)
+    cw, ch = (PW - 32 - 14 - 44) // 2, 230
+    lx, rx = 16, 16 + cw + 14
+    d.text((lx + cw / 2, dock + 118), 'BACK ROW', font=CINZEL(26, 700), fill=SUBTITLE, anchor='mm')
+    d.text((rx + cw / 2, dock + 118), 'FRONT ROW', font=CINZEL(26, 700), fill=SUBTITLE, anchor='mm')
+    arrow_mark(d, rx + cw / 2 + 100, dock + 118, 'right', 8, SUBTITLE)
+    cy = dock + 146
+    for row in range(2):
+        for x, place in ((lx, 3 + row), (rx, 1 + row)):
+            party_card(img, (x, cy + row * (ch + 12), x + cw, cy + row * (ch + 12) + ch), PARTY[place], place)
+    d = ImageDraw.Draw(img)
+    tx = rx + cw + 10                            # the way the party faces
+    d.line([(tx, cy), (tx + 10, cy), (tx + 10, cy + 2 * ch + 12), (tx, cy + 2 * ch + 12)], fill=GOLD, width=3)
+    d.polygon([(tx + 16, cy + ch - 34), (tx + 40, cy + ch + 6), (tx + 16, cy + ch + 46)], fill=GOLD)
+    party_totals(d, cy + 2 * ch + 12 + 40)
+    stop_attack(d)
+    reach(img, label=False, shade=False)
+    d = ImageDraw.Draw(img)
+    save(img, 'PD1', 'the ledger on top, the party at the thumb', 'deployment', side=[
+        'The ledger as two-line rows:\nthe unit (№, name, type, rows)\nover the tab\'s figures — the tabs\n'
+        'change line 2 only.',
+        f'Rows {mm(row_h)} high; the names\n{mm(44)}, the figures {mm(38)}.',
+        'A tap picks a unit or puts it\nback; a long press shows its\npicture (PD2d). A longer list\nscrolls '
+        'under the finger.',
+        f'The party at the thumb as on\nthe PC: the back row left, the\nfront row right, facing right.\n'
+        f'Cards {mm(cw)} × {mm(ch)}; the cross {mm(84)};\na drag swaps places.',
+        'Stop and Attack in the bar,\nAttack at the right thumb.'])
+
+
+def pd2_base(img, d, tab=1):
+    backdrop(img, (0, 0, PW, PH))
+    y = title_band(d, 'Deployment', 'Attack · up to 4 units')
+    top = y + 4
+    panel(d, (0, top, PW, top + 600))
+    d.text((32, top + 50), 'Party', font=BRUSH(48), fill=NAME, anchor='lm')
+    budget(d, PW - 32, top + 50)
+    cw, ch = (PW - 32 - 14) // 2, 170
+    xs = (16, 16 + cw + 14)
+    y = top + 96
+    for label, places in (('BACK ROW', (3, 4)), ('FRONT ROW', (1, 2))):
+        d.text((PW / 2, y + 20), label, font=CINZEL(26, 700), fill=SUBTITLE, anchor='mm')
+        if places == (1, 2):                    # the way the party faces: down, as our army in PB3
+            arrow_mark(d, PW / 2 + 100, y + 20, 'down', 8, SUBTITLE)
+        y += 42
+        for x, place in zip(xs, places):
+            party_card(img, (x, y, x + cw, y + ch), PARTY[place], place, kind=False)
+        d = ImageDraw.Draw(img)
+        y += ch + 10
+    party_totals(d, y + 30)
+    y = top + 600
+    y = paper_tabs(d, y + 14, tab)
+    row_h = 150
+    ledger(d, y, BAR[0] - 20, tab, TROOPS_ORDER if tab == 1 else NUMBER_ORDER, row_h)
+    stop_attack(d)
+    return d, top, row_h
+
+
+def pd2():
+    img, d = phone()
+    d, top, row_h = pd2_base(img, d)
+    reach(img, label=False, shade=False)
+    d = ImageDraw.Draw(img)
+    save(img, 'PD2', 'the party on top, the ledger at the thumb', 'deployment', side=[
+        'The party on top as the battle\nshows our army (PB3): the back\nrow, then the front row, facing\ndown.',
+        'The ledger under it at the thumb,\nas the enemy\'s cards are in PB3:\nwhat is tapped most is nearest\n'
+        'the thumb.',
+        f'Shown: the Troops tab — line 2\nholds its ten figures; rows\n{mm(row_h)}, figures {mm(38)}.',
+        'Cards 33 × 9.7 mm; the cross and\ndrag as PD1\'s, out of the\nthumb\'s reach.'])
+
+
+def pd2d():
+    img, d = phone()
+    d, top, row_h = pd2_base(img, d)
+    veil = Image.new('RGB', (PW, PH - top), (0, 0, 0))
+    img.paste(Image.blend(img.crop((0, top, PW, PH)), veil, 0.55), (0, top))
+    d = ImageDraw.Draw(img)
+    pic = dump(TOUCH, 'deployment.png').crop((716, 16, 1264, 358))
+    pic = pic.resize((PW - 32, round((PW - 32) * pic.height / pic.width)), Image.LANCZOS)
+    sheet = BAR[1] - pic.height - 150
+    panel(d, (0, sheet, PW, BAR[1] + 20))
+    d.text((32, sheet + 60), 'Rance', font=BRUSH(52), fill=NAME, anchor='lm')
+    d.text((250, sheet + 64), 'LEAZAS KNIGHTS · 1,000/1,000', font=CINZEL(28, 600), fill=SUBTITLE, anchor='lm')
+    img.paste(pic, (16, sheet + 116))
+    d.rectangle((16, sheet + 116, PW - 16, sheet + 116 + pic.height), outline=GOLD, width=3)
+    side = ['A long press on Rance\'s row:\nhis picture and the original\'s\nwords about him rise over the\nledger '
+            '(the PC shows them\nwhile his row is hovered).',
+            'At the screen\'s width, 2.2×:\nthe words 1.9 mm.', 'A tap anywhere puts it away.']
+    save(img, 'PD2d', 'a long press: the unit\'s picture', 'deployment', side=side)
+
+
+def pd3():
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    y = title_band(d, 'Deployment', 'Attack · up to 4 units')
+    y = paper_tabs(d, y + 6, 0)
+    dock, ttop = 1930, y
+    d.rectangle((16, y, PW - 16, dock - 14), fill=PAPER)
+    f, fh, row_h = GOTHIC(40), CINZEL(27, 700), 112
+    frozen = 392
+    cols = [('TYPE', 408, 'la'), ('ROWS', 728, 'la'), ('TROOPS', 850, 'la'), ('REFILL', 1170, 'ma'), ('COST', 1400, 'ra')]
+    d.ellipse((50, y + 22, 66, y + 38), fill=INK_HEAD)
+    d.text((136, y + 14), 'No.', font=fh, fill=INK_HEAD, anchor='ra')
+    arrow_mark(d, 150, y + 30, 'up', 7)
+    d.text((164, y + 14), 'NAME', font=fh, fill=INK_HEAD)
+    for name, x, anchor in cols:
+        d.text((x, y + 14), name, font=fh, fill=INK_HEAD, anchor=anchor)
+    d.line([(16, y + 58), (PW - 16, y + 58)], fill=INK_HEAD, width=2)
+    y += 60
+    for n in NUMBER_ORDER:
+        no, name, kind, rows, trp, mtrp, price, cost, place = UNIT[n]
+        d.rectangle((16, y, PW - 16, y + row_h), fill=PARTY_ROW if place else PAPER)
+        d.line([(16, y + row_h), (PW - 16, y + row_h)], fill=PAPER_LINE, width=2)
+        if place:
+            seal(d, 26, y + 28, place, 56)
+        ty = y + row_h / 2
+        d.text((150, ty), str(no), font=f, fill=INK, anchor='rm')
+        d.text((164, ty), name, font=f, fill=INK, anchor='lm')
+        d.text((408, ty), kind, font=GOTHIC(36), fill=INK_QUIET, anchor='lm')
+        d.text((728, ty), rows, font=GOTHIC(36), fill=INK_QUIET, anchor='lm')
+        d.text((850, ty - 6), f'{trp:,}/{mtrp:,}', font=GOTHIC(38), fill=INK, anchor='lm')
+        strength_bar(d, 850, ty + 24, 220, trp, mtrp)
+        if price:
+            refill_button(d, (1080, ty - 30, 1260, ty + 30), price)
+        else:
+            d.text((1170, ty), '—', font=GOTHIC(38), fill=INK_QUIET, anchor='mm')
+        y += row_h
+    d.rectangle((PW - 16, ttop, PW, dock), fill=BACKDROP)      # the sheet's right edge, the rest scrolled off
+    fade = Image.new('L', (90, dock - 14 - ttop))
+    for k in range(90):
+        ImageDraw.Draw(fade).line([(k, 0), (k, fade.height)], fill=round(230 * k / 90))
+    img.paste(Image.new('RGB', fade.size, PAPER), (PW - 16 - 90, ttop), fade)
+    d = ImageDraw.Draw(img)
+    d.line([(frozen, ttop), (frozen, y)], fill=INK_HEAD, width=2)
+    d.rounded_rectangle((frozen + 20, dock - 34, frozen + 520, dock - 24), radius=5, fill=(150, 130, 96))
+    # The party as a strip of four at the thumb.
+    panel(d, (0, dock, PW, BAR[0] - 16))
+    d.text((32, dock + 50), 'Party', font=BRUSH(48), fill=NAME, anchor='lm')
+    budget(d, PW - 32, dock + 50)
+    sw, sh = (PW - 32 - 3 * 12 - 40) // 4, 300
+    sy = dock + 140
+    d.text((16 + sw + 6, sy - 30), 'BACK ROW', font=CINZEL(26, 700), fill=SUBTITLE, anchor='mm')
+    d.text((16 + 2 * (sw + 12) + 40 + sw + 6, sy - 30), 'FRONT ROW', font=CINZEL(26, 700), fill=SUBTITLE,
+           anchor='mm')
+    arrow_mark(d, 16 + 2 * (sw + 12) + 40 + sw + 106, sy - 30, 'right', 8, SUBTITLE)
+    for i, place in enumerate((3, 4, 1, 2)):
+        x = 16 + i * (sw + 12) + (40 if i >= 2 else 0)
+        n = PARTY[place]
+        _, name, _, _, trp, mtrp, _, cost, _ = UNIT[n]
+        d.rectangle((x, sy, x + sw, sy + sh), fill=ROW, outline=DIM_GOLD, width=2)
+        fs = 150
+        img.paste(unit_face(n, fs), (x + 12, sy + 12))
+        d = ImageDraw.Draw(img)
+        badge(d, x + 12 + fs + 30, sy + 44, place)
+        close_box(d, x + sw, sy + 80, 84)
+        d.text((x + 14, sy + 176), name, font=fit(d, name, GOTHIC, 40, sw - 28), fill=TEXT)
+        d.text((x + 14, sy + 226), f'{trp:,}', font=GOTHIC(34), fill=TEXT)
+        strength_bar(d, x + 14, sy + 270, sw - 28, trp, mtrp, track=(60, 50, 40))
+    mx = 16 + 2 * sw + 12 + 20
+    d.polygon([(mx - 10, sy + sh / 2 - 24), (mx + 12, sy + sh / 2), (mx - 10, sy + sh / 2 + 24)], fill=GOLD)
+    party_totals(d, sy + sh + 50)
+    stop_attack(d)
+    reach(img, label=False, shade=False)
+    d = ImageDraw.Draw(img)
+    save(img, 'PD3', 'the table in one-line rows, scrolled sideways', 'deployment', side=[
+        f'The PC\'s table in one-line rows,\n{mm(row_h)} high, text {mm(40)}: 13\nrows in view.',
+        'The seal, № and name stay; the\nrest scrolls sideways under a\nfinger (the tablet\'s drag) —\n'
+        'Refill and Cost a drag away.',
+        'The party as a strip of four at\nthe thumb: the back row, then\nthe front row, facing right.',
+        'The picture on a long press,\nas PD2d.'])
+
+
+# --- Subordinates ---
+
+def add_new_grid(d, x0, y0, x1, n, h=128, gap=12, cover=None):
+    d.text((x0 + 4, y0 + 22), 'ADD NEW TROOPS', font=CINZEL(28, 700), fill=SUBTITLE, anchor='lm')
+    d.line([(x0 + 330, y0 + 22), (x1, y0 + 22)], fill=DIM_GOLD, width=2)
+    y0 += 52
+    w = (x1 - x0 - 2 * gap) // 3
+    for i, (step, price) in enumerate(zip(('+25', '+50', '+100', '+200', '+400', '+800'), ADD_NEW[n])):
+        x, y = x0 + (i % 3) * (w + gap), y0 + (i // 3) * (h + gap)
+        off = int(price[:-1].replace(',', '')) > BUDGET
+        d.rectangle((x, y, x + w, y + h), fill=ROW if not off else (30, 26, 22), outline=OFF_TAG if off else DIM_GOLD,
+                    width=3)
+        d.text((x + w / 2, y + 46), step, font=BRUSH(48), fill=OFF_TEXT if off else TEXT, anchor='mm')
+        d.text((x + w / 2, y + 100), price, font=GOTHIC(32), fill=OFF_TEXT if off else QUIET, anchor='mm')
+    return y0 + 2 * h + gap
+
+
+def replenish(d, box, figures=None):
+    x0, y0, x1, y1 = box
+    if figures:
+        red_button(d, box, '', 52)
+        d.text(((x0 + x1) / 2, y0 + 46), 'Replenish', font=BRUSH(52), fill=NAME, anchor='mm')
+        d.text(((x0 + x1) / 2, y1 - 30), figures, font=GOTHIC(32), fill=TEXT, anchor='mm')
+    else:
+        d.rectangle(box, fill=(40, 34, 28), outline=OFF_TAG, width=3)
+        d.text(((x0 + x1) / 2, y0 + 46), 'Replenish', font=BRUSH(52), fill=OFF_TEXT, anchor='mm')
+        d.text(((x0 + x1) / 2, y1 - 30), 'full', font=GOTHIC(32), fill=OFF_TEXT, anchor='mm')
+
+
+def talk_end(img, n, right='End'):
+    d = ImageDraw.Draw(img)
+    y0, y1 = BAR
+    panel(d, (16, y0, 620, y1))
+    img.paste(unit_face(n, y1 - y0 - 28), (30, y0 + 14))
+    d = ImageDraw.Draw(img)
+    d.text((30 + (y1 - y0 - 28) + (620 - 30 - (y1 - y0 - 28)) / 2, y0 + 56), 'Talk', font=BRUSH(48), fill=NAME,
+           anchor='mm')
+    d.text((30 + (y1 - y0 - 28) + (620 - 30 - (y1 - y0 - 28)) / 2, y0 + 108), f'WITH {UNIT[n][1].upper()}',
+           font=CINZEL(24, 600), fill=SUBTITLE, anchor='mm')
+    panel(d, (PW - 16 - 420, y0, PW - 16, y1))
+    d.text((PW - 16 - 210, (y0 + y1) / 2), right, font=BRUSH(52), fill=NAME, anchor='mm')
+    return d
+
+
+def pu1_base(img, d, n, figures):
+    backdrop(img, (0, 0, PW, PH))
+    y = title_band(d, 'Subordinates', '9 units ready')
+    y = paper_tabs(d, y + 6, 0)
+    orders = 1868
+    row_h = 140
+    ledger(d, y, orders - 14, 0, NUMBER_ORDER, row_h, chosen=n, party=False, refill=False)
+    panel(d, (0, orders, PW, BAR[0] - 16))
+    d.text((32, orders + 50), 'Orders', font=BRUSH(46), fill=NAME, anchor='lm')
+    d.text((32 + d.textlength('Orders', font=BRUSH(46)) + 20, orders + 54), '· ' + UNIT[n][1].upper(),
+           font=CINZEL(30, 700), fill=TEXT, anchor='lm')
+    budget(d, PW - 32, orders + 50)
+    rep = (24, orders + 100, PW - 24, orders + 236)
+    replenish(d, rep, figures)
+    add_new_grid(d, 24, orders + 258, PW - 24, n)
+    talk_end(img, n)
+    return orders, row_h, rep
+
+
+def pu1():
+    img, d = phone()
+    orders, row_h, _ = pu1_base(img, d, 1, None)
+    reach(img, label=False, shade=False)
+    d = ImageDraw.Draw(img)
+    save(img, 'PU1', 'the ledger on top, the orders at the thumb', 'subordinates', side=[
+        'The ledger as the deployment\ntable\'s (PD1): the same rows\nand tabs, the chosen unit\'s\nrow vermilion.',
+        'A tap chooses the unit; its\norders below always show it.',
+        f'The orders at the thumb:\nReplenish ({mm(136)}), Add New\nTroops ({mm(128)} buttons; greyed\nabove the '
+        'budget, its reason\non a long press).',
+        'Talk (with the unit\'s face) and\nEnd in the bar, End at the\nright thumb.',
+        'Rance is full: Replenish greyed,\n"full" as on the PC.'])
+
+
+def pu1q():
+    img, d = phone()
+    orders, row_h, rep = pu1_base(img, d, 12, '+1,191 troops · 2,300K')
+    cw, chh = 760, 316
+    box = (rep[0] + 40, rep[3] + 26, rep[0] + 40 + cw, rep[3] + 26 + chh)
+    panel(d, box, fill=(30, 22, 16))
+    d.polygon([(box[0] + 120, box[1] + 2), (box[0] + 160, box[1] - 26), (box[0] + 200, box[1] + 2)], fill=GOLD)
+    d.text((box[0] + 44, box[1] + 64), 'Are you sure?', font=GOTHIC(48), fill=TEXT, anchor='lm')
+    bw = (cw - 44 * 2 - 24) // 2
+    red_button(d, (box[0] + 44, box[1] + 140, box[0] + 44 + bw, box[1] + 280), 'Yes', 48)
+    row_box(d, (box[0] + 44 + bw + 24, box[1] + 140, box[2] - 44, box[1] + 280), 'No', size=48, face=BRUSH,
+            centred=True)
+    reach(img, label=False, shade=False)
+    d = ImageDraw.Draw(img)
+    save(img, 'PU1q', 'Replenish asks first (Haurein)', 'subordinates', side=[
+        'Haurein (unit 12) chosen:\nReplenish +1,191 troops for\n2,300K (the gallery\'s figures).',
+        'A troop order asks first in a\ncallout under its button (the\nhouse\'s C3, as on the PC);\n'
+        'Haurein\'s row stays seen.',
+        f'Yes / No {mm(140)} high, within\nthe thumb; No is also Back.',
+        'Her Add New Troops prices:\n+400 and +800 the gallery\'s,\nthe cheaper derived (each step\nthree times '
+        'the one before).'])
+
+
+def pu2():
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    y = title_band(d, 'Subordinates', '9 units ready')
+    y = paper_tabs(d, y + 6, 2)
+    row_h = 150
+    ledger(d, y, BAR[0] - 20, 2, NUMBER_ORDER, row_h, chosen=1, party=False)
+    sheet = 1720
+    panel(d, (0, sheet, PW, BAR[0] - 16))
+    fs = 210
+    img.paste(unit_face(1, fs), (28, sheet + 28))
+    d = ImageDraw.Draw(img)
+    d.rectangle((28, sheet + 28, 28 + fs, sheet + 28 + fs), outline=GOLD, width=3)
+    tx = 28 + fs + 32
+    d.text((tx, sheet + 34), 'Rance', font=BRUSH(62), fill=NAME)
+    d.text((tx, sheet + 116), 'LEAZAS KNIGHTS', font=CINZEL(28, 600), fill=SUBTITLE)
+    d.text((tx, sheet + 160), '1,000/1,000', font=GOTHIC(40), fill=TEXT)
+    strength_bar(d, tx, sheet + 212, 330, 1000, 1000, h=10, track=(60, 50, 40))
+    d.text((PW - 32, sheet + 166), 'COST 300K', font=GOTHIC(36), fill=QUIET, anchor='ra')
+    budget(d, PW - 32, sheet + 60, 36)
+    rep = (24, sheet + 266, PW - 24, sheet + 396)
+    replenish(d, rep)
+    add_new_grid(d, 24, sheet + 418, PW - 24, 1)
+    talk_end(img, 1, right='Return')
+    reach(img, label=False, shade=False)
+    d = ImageDraw.Draw(img)
+    save(img, 'PU2', 'the ledger whole, a unit\'s sheet', 'subordinates', side=[
+        'The ledger fills the screen\n(shown: the Commander tab);\nEnd in the bar while no unit\nis chosen.',
+        'A tap on a row raises the unit\'s\nsheet over the ledger\'s foot,\nas a province\'s on the map\n(PM1c): its '
+        'face, figures and\norders; Return where End was.',
+        'More of the ledger while no\nsheet is up; one tap more\nthan PU1 per unit.'])
+
+
+def p3():
+    pd1(); pd2(); pd2d(); pd3()
+    pu1(); pu1q(); pu2()
+
+
 def main():
     global MAP, PROV_NAMES, PROV_POINTS
+    if ROUND == 'P3':
+        p3()
+        overviews()
+        return
     MAP, PROV_NAMES, PROV_POINTS = build_map()
     if GALLERY_MODE:
         m1()

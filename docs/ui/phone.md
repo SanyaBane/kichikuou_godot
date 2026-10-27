@@ -136,9 +136,10 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 5. **The bar's cells** (Menu, Log, Skip): at the left, as the tablet's drawer, or at the right under the right thumb?
 6. **Turning the phone:** the game turns with the phone at any moment (the sensor), or the player chooses upright,
    landscape or "turns with the phone" in Option → Display?
-7. **What comes next** (round P2, after the choices here): our full screens upright — the deployment table and
-   Subordinates (the ledger as a list), Harem, Treasure, Save/Load, the week report, the enemy attack, All Data, the
-   options window, the title and the import screen —, then the landscape phone.
+7. **What comes next**: our full screens upright — the deployment table and Subordinates (round P3, §7), the enemy
+   attack and the week report, Harem, Treasure, Save/Load, All Data, the options window, the title and the import
+   screen, the dungeon's ladder and entry menu, the battle's other states —, then the landscape phone.
+8. **The deployment table** (round P3): PD1, PD2 or PD3; the Subordinates screen: PU1 or PU2.
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -163,3 +164,62 @@ are PB1's.
 
 The agent's choice, for the owner to confirm: Skip at its strip's left, the tablet's corner (the strip has room for
 more beside it).
+
+## 7. Round P3: the deployment table and Subordinates (2026-10-27)
+
+The base versions of our full screens upright begin with the two that share the unit ledger (docs/ui/unit-ledger.md):
+the deployment table (`Sﾌﾞﾀｲ`) and the Subordinates screen (`Sﾌﾞｶ` and `Cﾌﾞｶ`'s troop menu). Drawn by
+`mock_phone.py --round P3` over the gallery's dumps (the week-18 save's nine units, the party sent against Oaks (6):
+Rance (unit 1), Haurein (unit 12), Cordoba (unit 8), Barres (unit 6)); the faces are the units' own (`Unit_FaceCg`,
+cut as `UnitFaces` cuts them). From this round the notes stand in a column beside the phone, the screens being full.
+
+On the PC the ledger's rows are one line of 17 layout pixels' text: upright that is 0.9 mm. Two answers are drawn:
+
+- **Two-line rows** (PD1, PD2, PU1, PU2): each unit's row holds the unit — its seal, №, name, and on Overview its type
+  and rows — over the chosen tab's figures; **the tabs change only the second line**. Overview's second line is the
+  troops with their bar, Refill (a button on the deployment table, a price on Subordinates, as on the PC) and the cost;
+  Troops' its ten figures under their groups; Commander's Strat%, HP, Lvl, EXP, C.Atk, C.Def and the item. Rows
+  8-8.5 mm, the names 2.5 mm, the figures 2.2 mm; nine units fit with no scrolling, a longer list scrolls under the
+  finger (touch.md, "The lists scrolled by a finger").
+- **One-line rows** (PD3): the PC's table with its rows 6.4 mm and its text 2.3 mm; the seal, № and name stay while the
+  rest scrolls sideways under a finger, as the tablet's table does — 13 rows in view, but Overview's Refill and Cost
+  are a drag away.
+
+The deployment table (`PD…`):
+
+- **PD1 — the ledger on top, the party at the thumb.** The PC's arrangement turned: the ledger, then the party
+  panel — its 2×2 formation as on the PC (the back row left, the front row right, facing right; cards 32 × 13 mm with
+  the face, the place's badge, the troops and the cost, their ✕ 4.8 mm, a drag swaps places), the budget, the troops
+  and the war expenses — and Stop | **Attack** in the bar, Attack at the right thumb. A tap on a row picks the unit or
+  puts it back.
+- **PD2 — the party on top, the ledger at the thumb.** The party laid out as the battle shows our army (PB3): the back
+  row, then the front row, facing down; the ledger under it, nearest the thumb, as PB3 puts the enemy's cards — what is
+  tapped most is lowest. Shown with the Troops tab. **PD2d**: a long press on a row raises the unit's picture panel —
+  the original's picture and its words about the unit, which the PC shows while the row is hovered — at the screen's
+  width (2.2 ×, its words 1.9 mm); a tap anywhere puts it away. PD1 and PD3 take it the same way.
+- **PD3 — the table in one-line rows**, scrolled sideways (above); the party as a strip of four at the thumb (the back
+  row, then the front row, facing right).
+
+**Recommendation: PD2** — picking units is the screen's main work, so the ledger sits within the thumb's reach and
+the party reads as it will in the battle; the party's ✕ and drags (rarer) went up. PD1 keeps the PC's order and
+formation; PD3 shows more rows at the cost of the smaller type and the sideways drag.
+
+The Subordinates screen (`PU…`):
+
+- **PU1 — the ledger on top, the orders at the thumb.** The ledger as the deployment table's, the chosen unit's row
+  vermilion; under it the orders for that unit: Replenish (7.7 mm; greyed and "full" when the unit is, as Rance (unit 1)
+  is), Add New Troops as six buttons in two rows (7.3 mm; greyed above the budget), and in the bar Talk (with the
+  unit's face) and End at the right thumb. **PU1q**: a troop order asks first in a callout under its button (the
+  house's C3, as on the PC), the chosen row still in view; Yes / No 8 mm high. Haurein (unit 12): Replenish +1,191
+  troops for 2,300K, the gallery's; her Add New Troops prices +400 and +800 are the gallery's, the cheaper ones derived
+  (each step three times the one before, as Rance's).
+- **PU2 — the ledger whole, a unit's sheet.** The ledger fills the screen (shown: the Commander tab), End in the bar; a
+  tap on a row raises the unit's sheet over the ledger's foot, as a province's on the map (PM1c) — its face, figures
+  and orders —, Return where End was. More of the ledger while no sheet is up, one tap more per unit.
+
+**Recommendation: PU1** — the orders always show for the chosen unit, one tap fewer, and the two screens share their
+layout's order (the ledger, then what acts on it at the thumb) — with PD2 the deployment's ledger is the lower part
+instead, since there the ledger is what is tapped.
+
+The agent's own choices, for the owner to confirm: our full screens upright have no Menu / Log / Skip bar (their own
+buttons take the foot; the map's bar is back when they close); the picture panel only on a long press.
