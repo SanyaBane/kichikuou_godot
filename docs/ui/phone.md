@@ -143,6 +143,7 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 9. **The enemy attack** (round P4): PA1 or PA2; the week report: PW1 or PW2.
 10. **Harem, Treasure, Save/Load** (round P5): PH1 or PH2, PT1 or PT2, PL1 or PL2.
 11. **The options window and the dungeon's menus** (round P6): PO1 or PO2; PF1 or PF2.
+12. **The battle's opening** (round P7): PB4o1 or PB4o2; the other states (PB4s, PB4c, PB4r, PB4b) as drawn?
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -324,3 +325,26 @@ The dungeon's menus (`PF…`; docs/ui/dungeon-menu.md, the touch mode's rail), o
 
 **Recommendation: PF1** — the tablet's rail as the owner chose it (touch.md's B), the same place for the thumb on both
 devices.
+
+## 11. Round P7: the battle's other states (2026-10-27)
+
+Drawn by `mock_phone.py --round P7` on PB3's board, over the gallery's `opening`, `scout-report`, `strategy`,
+`battle-speech` and the battle's figures (the capture's battle on Oaks (6)). The board's layout is chosen, so each
+state is one base version, the opening two.
+
+- **The opening.** **PB4o1**: as on the PC, at the scene's place (0.95 ×): the armies' names 3.2 mm, but the plate's
+  place and limit 0.9 mm. **PB4o2**: turned upright over the scene and the board as PB3 stands — ours blue on top, the
+  enemy red at the foot, the plate between (the place 2.6 mm, the limit 2 mm), VS at the gauge's place; the cards fly in
+  under it as it fades. **Recommendation: PB4o2** — its type is readable and it shows the armies where the board puts
+  them.
+- **PB4s — the ninja's scout report**, before the field, as a screen of its own: Kanami and her report on top, the
+  rebels' cards as the enemy attack's (PA1), front row first, Rance's answer at the foot; one tap goes on.
+- **PB4c — the strategy's cut-in**: the result and its word on top, the strategist on the band with what it does
+  (4 mm), his line under it (2.6 mm); one tap. Barres (unit 6), his line the gallery's; the enemy's the same in red.
+- **PB4r — the results plate** over the dimmed board at the screen's width (the title 5 mm, the damages 6 mm); a
+  level-up's page, a fall's box and our narration panel the same way.
+- **PB4b — a fighter's line**: the portrait at the scene's left as on the PC, our balloon over the scene's foot at
+  3.5 mm (rewrapped, as the balloons ever are); a defence's caption the same way, at 2.4 mm.
+
+With this round every screen of ours has an upright base version but All Data, the title and the import screen, which
+wait for screen gallery entries to draw over (§9, §10), and the scenes (§2, open).

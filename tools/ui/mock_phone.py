@@ -25,6 +25,8 @@ inputs touch/current's deployment and the units' face CGs from <extract dir>/cg_
 enemy attack (touch/current's enemy-attack-scouted, Maris's and Kanami's face CGs), PW1-PW2 the week report. Round P5: PH1-PH2
 Harem, PT1-PT2 Treasure, PL1-PL2 Save/Load (touch/current's harem, treasure-items, save-load). Round
 P6: PO1-PO2 the options window, PF1-PF2 the dungeon's menus (options-messages, options-tweaks, floor-ladder-middle).
+Round P7: PB4o1-PB4o2 the opening, PB4s the scout report, PB4c the strategy's cut-in, PB4r the results plate,
+PB4b a fighter's line (opening, scout-report, strategy, battle-speech).
 `--round P3` before the arguments draws only that round's variants (the look dir then unread, '-' will do).
 The pink lines and text are the mock-ups' notes, not part of a screen.
 
@@ -2696,10 +2698,181 @@ def p6():
     pf1(); pf1e(); pf2()
 
 
+# --- round P7: the battle's other states on PB3 (2026-10-27) ---------------------------------------------------------
+
+def veil(img, box, alpha=0.6):
+    part = img.crop(box)
+    img.paste(Image.blend(part, Image.new('RGB', part.size), alpha), box[:2])
+
+
+def balloon(d, box, lines, size=50, tail=None, triangle_on=True):
+    """Our speech balloon: white, dark ink; `tail` the x its tail points up from."""
+    x0, y0, x1, y1 = box
+    d.rounded_rectangle(box, radius=34, fill=(246, 244, 238), outline=(150, 140, 120), width=3)
+    if tail:
+        d.polygon([(tail - 26, y0 + 2), (tail + 26, y0 + 2), (tail - 6, y0 - 40)], fill=(246, 244, 238))
+    for i, line in enumerate(lines):
+        d.text((x0 + 40, y0 + 30 + i * size * 1.25), line, font=GOTHIC(size), fill=(30, 26, 22))
+    if triangle_on:
+        triangle(d, x1 - 46, y1 - 34, 16, fill=(196, 160, 86))
+
+
+def board(img, scene='battle-turn.png'):
+    top = pb3_board(img, scene, UNITS)
+    battle_deck(ImageDraw.Draw(img), top, empty=True)
+    return top
+
+
+def pb4o1():
+    img, d = phone()
+    top = board(img, 'opening.png')
+    d = ImageDraw.Draw(img)
+    scene_h = round(410 * PW / 1024)
+    d.rectangle((0, TOP, PW, TOP + scene_h), fill=(0, 0, 0))
+    img.paste(at_width(dump(TOUCH, 'opening.png').crop((0, 0, 1280, 410))), (0, TOP + (scene_h - 391) // 2))
+    reach(img, label=False, shade=False)
+    save(img, 'PB4o1', 'the opening at the scene\'s place', 'battle-states', side=[
+        'The opening as on the PC, at\nthe scene\'s place (0.95 ×): the\narmies\' names 3.2 mm, but the\n'
+        'plate\'s place and limit 0.9 mm.',
+        'The board under it as PB3\'s,\nthe deck empty; a tap goes on.'])
+
+
+def pb4o2():
+    img, d = phone()
+    top = board(img, 'opening.png')
+    d = ImageDraw.Draw(img)
+    mid = (TOP + top) // 2
+    for y in range(TOP, top):                          # ours blue above, the enemy's red below, as the board
+        t = (y - TOP) / (top - TOP)
+        c = (round(40 + 110 * t), round(60 - 30 * t), round(140 - 100 * t)) if t < 0.5 else \
+            (round(150 + 20 * (t - .5)), round(40 - 10 * (t - .5)), round(40 - 10 * (t - .5)))
+        d.line([(0, y), (PW, y)], fill=c)
+    d.text((PW / 2, TOP + 300), 'Rance Army', font=BRUSH(120), fill=(246, 238, 220), anchor='mm',
+           stroke_width=6, stroke_fill=(20, 20, 40))
+    plate = (110, mid - 190, PW - 110, mid + 10)
+    panel(d, plate)
+    d.text((PW / 2, plate[1] + 56), 'Oaks — Offensive Battle', font=CINZEL(46, 700), fill=TEXT, anchor='mm')
+    d.text((PW / 2, plate[1] + 118), 'City · Battle limit: up to 232', font=CINZEL(36, 700), fill=TEXT, anchor='mm')
+    d.text((PW / 2, plate[1] + 166), '4 turns', font=CINZEL(30, 600), fill=QUIET, anchor='mm')
+    d.text((PW / 2, mid + 130), 'VS', font=BRUSH(130), fill=GOLD, anchor='mm', stroke_width=5,
+           stroke_fill=(40, 26, 10))
+    d.text((PW / 2, top - 520), 'Leazas', font=BRUSH(120), fill=(246, 238, 220), anchor='mm', stroke_width=6,
+           stroke_fill=(40, 10, 10))
+    d.text((PW / 2, top - 380), 'Rebel Army', font=BRUSH(120), fill=(246, 238, 220), anchor='mm', stroke_width=6,
+           stroke_fill=(40, 10, 10))
+    d.text((PW / 2, top - 230), 'Walls +8%', font=BRUSH(60), fill=(240, 200, 110), anchor='mm', stroke_width=4,
+           stroke_fill=(40, 10, 10))
+    reach(img, label=False, shade=False)
+    save(img, 'PB4o2', 'the opening turned upright, over the board', 'battle-states', side=[
+        'The opening laid over the scene\nand the board as PB3 stands:\nours blue on top, the enemy red\n'
+        'at the foot, the plate between\n(the place 2.6 mm, the limit\n2 mm), VS at the gauge\'s place.',
+        'The cards fly in under it as\nthe opening fades (as on the\nPC); a tap goes on.'])
+
+
+def pb4s():
+    img, d = phone()
+    d.rectangle((0, 0, PW, PH), fill=(8, 8, 10))
+    sr = dump(TOUCH, 'scout-report.png')
+    kanami = sr.crop((40, 40, 340, 440)).resize((330, 440), Image.LANCZOS)
+    framed(img, kanami, (24, TOP + 20))
+    d = ImageDraw.Draw(img)
+    balloon(d, (380, TOP + 30, PW - 16, TOP + 330), ['The Approaching Enemy', '[ Leazas Rebel Army ]',
+                                                     'Commanders 4   Total troops 1,556'], 40, triangle_on=False)
+    y = TOP + 500
+    cw, ch = (PW - 32 - 14) // 2, 250
+    for label, places in (('FRONT ROW', (1, 2)), ('BACK ROW', (3, 4))):
+        d.text((PW / 2, y + 18), label, font=CINZEL(26, 700), fill=SUBTITLE, anchor='mm')
+        y += 40
+        for x, place in zip((16, 16 + cw + 14), places):
+            attacker_card(img, (x, y, x + cw, y + ch), place)
+        d = ImageDraw.Draw(img)
+        y += ch + 14
+    rance = sr.crop((40, 574, 194, 774)).resize((231, 300), Image.LANCZOS)
+    ry = BAR[1] - 300
+    framed(img, rance, (24, ry))
+    d = ImageDraw.Draw(img)
+    balloon(d, (290, ry + 40, PW - 16, ry + 200), ['Mhm... I see.'], 52)
+    reach(img, label=False, shade=False)
+    save(img, 'PB4s', 'the ninja\'s scout report', 'battle-states', side=[
+        'The scout report before the\nfield as a screen of its own:\nKanami and her report on top,\n'
+        'the rebels\' cards as the enemy\nattack\'s (PA1), front row first;\nRance\'s answer at the foot.',
+        'The balloons\' text 2.3-3 mm;\none tap goes on (the report\'s\nwindows collapsed into one, as\non the PC).'])
+
+
+def pb4c():
+    img, d = phone()
+    d.rectangle((0, 0, PW, PH), fill=(8, 8, 10))
+    st = dump(TOUCH, 'strategy.png')
+    d.text((PW / 2, 760), "ALLY ARMY'S STRATEGY WAS SUCCESSFUL.", font=CINZEL(32, 700), fill=(220, 190, 110),
+           anchor='mm')
+    d.text((PW / 2, 870), 'Success', font=BRUSH(120), fill=(246, 238, 220), anchor='mm')
+    band = (0, 1000, PW, 1520)
+    d.polygon([(0, band[1] + 60), (PW, band[1]), (PW, band[3] - 60), (0, band[3])], fill=(40, 70, 140))
+    barres = st.crop((70, 200, 370, 596)).resize((372, 491), Image.LANCZOS)
+    framed(img, barres, (40, band[1] + 14))
+    d = ImageDraw.Draw(img)
+    d.text((440 + (PW - 440) / 2, (band[1] + band[3]) / 2), 'Strategy +10%', font=BRUSH(72), fill=(240, 200, 110),
+           anchor='mm', stroke_width=4, stroke_fill=(20, 20, 40))
+    balloon(d, (16, 1600, PW - 16, 1890), ['It was a very basic strategy, but', 'it worked. Always know the basics.',
+                                          'Now, begin!'], 46, tail=220)
+    reach(img, label=False, shade=False)
+    save(img, 'PB4c', 'the strategy\'s cut-in', 'battle-states', side=[
+        'The cut-in stacked: the result\nand its word on top, the\nstrategist on the band with\n'
+        'what it does (4 mm), his line\nunder it at 2.6 mm; one tap.',
+        'Barres (unit 6), his line the\ngallery\'s; the enemy\'s cut-in\nthe same in red.'])
+
+
+def pb4r():
+    img, d = phone()
+    top = board(img)
+    veil(img, (0, TOP, PW, top), 0.55)
+    d = ImageDraw.Draw(img)
+    plate = (24, 1000, PW - 24, 1720)
+    panel(d, plate)
+    d.text((PW / 2, plate[1] + 90), 'Night Falls', font=BRUSH(90), fill=NAME, anchor='mm')
+    d.text((PW / 2, plate[1] + 180), 'THE BATTLE DRAGGED ON AND IT BECAME NIGHT.', font=CINZEL(30, 600),
+           fill=SUBTITLE, anchor='mm')
+    divider(d, plate[1] + 236, plate[0] + 40, plate[2] - 40)
+    for cx, army, value in ((PW / 4 + 10, 'LEAZAS', '557'), (3 * PW / 4 - 10, 'LEAZAS REB', '1,229')):
+        d.text((cx, plate[1] + 300), army, font=CINZEL(36, 600), fill=QUIET, anchor='mm')
+        d.text((cx, plate[1] + 400), value, font=BRUSH(110), fill=(222, 110, 90), anchor='mm')
+        d.text((cx, plate[1] + 490), 'DAMAGES', font=CINZEL(28, 600), fill=SUBTITLE, anchor='mm')
+    d.line([(PW / 2, plate[1] + 270), (PW / 2, plate[1] + 520)], fill=DIM_GOLD, width=2)
+    d.text((PW / 2, plate[1] + 610), '2 EXP OBTAINED', font=CINZEL(44, 700), fill=TEXT, anchor='mm')
+    triangle(d, plate[2] - 60, plate[3] - 50, 22)
+    reach(img, label=False, shade=False)
+    save(img, 'PB4r', 'the results plate', 'battle-states', side=[
+        'The results plate over the\ndimmed board, at the screen\'s\nwidth: the title 5 mm, the\n'
+        'damages 6 mm; a tap goes on.',
+        'A level-up\'s page after it on\nthe same plate; a fall\'s box\nand our panel the same way.'])
+
+
+def pb4b():
+    img, d = phone()
+    top = pb3_board(img, 'battle-speech.png', UNITS, acting='Rance')
+    battle_deck(ImageDraw.Draw(img), top, empty=True)
+    d = ImageDraw.Draw(img)
+    img.paste(at_width(dump(TOUCH, 'battle-speech.png').crop((0, 0, 1280, 410))), (0, TOP))
+    d = ImageDraw.Draw(img)
+    scene_foot = TOP + round(410 * PW / 1024)
+    d.rectangle((0, TOP + 391, PW, scene_foot), fill=(8, 8, 10))
+    b = (300, TOP + 250, PW - 16, TOP + 440)
+    balloon(d, b, ["Let's go!"], 62)
+    reach(img, label=False, shade=False)
+    save(img, 'PB4b', 'a fighter\'s line', 'battle-states', side=[
+        'The speaker\'s portrait at the\nscene\'s left as on the PC; our\nballoon over the scene\'s foot,\n'
+        'larger than the PC\'s (3.5 mm),\nrewrapped as ever.',
+        'A defence\'s ribbon and caption\nthe same way: the caption\nover the scene\'s foot at\n2.4 mm.'])
+
+
+def p7():
+    pb4o1(); pb4o2(); pb4s(); pb4c(); pb4r(); pb4b()
+
+
 def main():
     global MAP, PROV_NAMES, PROV_POINTS
-    if ROUND in ('P3', 'P5'):
-        {'P3': p3, 'P5': p5}[ROUND]()
+    if ROUND in ('P3', 'P5', 'P7'):
+        {'P3': p3, 'P5': p5, 'P7': p7}[ROUND]()
         overviews()
         return
     MAP, PROV_NAMES, PROV_POINTS = build_map()
