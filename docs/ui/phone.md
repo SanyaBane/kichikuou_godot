@@ -152,6 +152,8 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 14. **Subordinates' End** (the owner, 2026-10-27, thinking): where End goes now that Talk has left the bar.
 15. ~~**The landscape map** (round P8, §12): LM1 or LM2.~~ LM1.
 16. ~~**The landscape battle** (round P8, §12): LB1 or LB2.~~ LB2.
+17. **The landscape deployment table** (round P9, §13): LD1 or LD2.
+18. **The landscape Subordinates screen** (round P9, §13): LU1 or LU2.
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -452,3 +454,42 @@ as a cell on the map (the menu bar is 2 mm high here); the battle's Skip on the 
 
 **The owner's choice (2026-10-27): LM1 and LB2.** So in landscape the frame keeps the layout's 16:10 and our controls
 live in the black sides wherever they fit (the map), and the battle trades some of the scene's height for the cards.
+
+## 13. Round P9: the deployment table and Subordinates, landscape (2026-10-27)
+
+Drawn by `mock_phone.py --round P9` on LM1's principle — the frame holds the screen, the black sides the title, the
+figures and the buttons at the thumbs — over the same data as round P3 (the week-18 save's nine units, the party sent
+against Oaks (6): Rance (unit 1), Haurein (unit 12), Cordoba (unit 8), Barres (unit 6)).
+
+In landscape the frame is wide enough for the PC's ledger in **one-line rows at the phone's type**: rows 6.4 mm (112
+px), names 2.3 mm, figures 2.2 mm, and every column of a tab in one line — Overview's №, name, type, rows, troops with
+their bar, Refill and cost; Troops' ten figures under their groups — so nothing scrolls sideways (upright's open question
+13 does not arise here). The tabs and sorting as on the PC; a long press on a row shows its picture (PD2d).
+
+The deployment table (`LD…`):
+
+- **LD1 — the party across the top, the ledger under it.** The party as the battle lays our army out, the back row left
+  and the front row right (cards 26 × 11.4 mm with the face, the place's badge, the troops and the cost, ✕ 4.8 mm), the
+  ledger under it with seven rows in view; the title, the date and the budget over Stop in the left side, the troops
+  and the war expenses over Attack in the right.
+- **LD2 — the ledger fills the frame, the party in the right side.** All nine rows in view; the party in the right side
+  as the battle's rows read, the back row over the front, each card 14.5 × 11.2 mm (the face, the place, the cost, the
+  name, the troops) — no ✕ at that width: a unit leaves the party by a tap on its row, as it joined. Attack at the right
+  thumb, Stop at the left; the title, the date, the budget, the troops and the war expenses in the left side.
+
+**Recommendation: LD2** — every unit in view and the party at the thumb that sends it; LD1 shows the party larger, with
+its ✕, but the ledger then scrolls.
+
+The Subordinates screen (`LU…`), shown with the Troops tab:
+
+- **LU1 — the ledger fills the frame, the orders in the sides.** The right side holds the chosen unit's orders from the
+  foot up: Replenish lowest (greyed and "full" for Rance (unit 1)), the six Add New Troops over it, the dearest on top
+  (greyed above the budget); the left side the title, the date and the budget, then Talk (the unit's face) over End at
+  the left thumb, 8 mm each. **LU1q**: Haurein chosen, Replenish +1,191 troops for 2,300K asks first in a callout left
+  of its button (the house's C3), No | Yes 7.4 mm high, Yes nearer the thumb.
+- **LU2 — the ledger over the orders, as PU1.** The owner's upright choice laid across: the ledger on top (five rows in
+  view), under it the orders' deck — Replenish and Talk on one row (the owner's change), Add New Troops in two rows of
+  three; End alone in the right side at the thumb.
+
+**Recommendation: LU1** — all nine units in view while the orders stay at both thumbs, the same arrangement as LD2's;
+LU2 keeps upright's order of things, at the cost of four rows.
