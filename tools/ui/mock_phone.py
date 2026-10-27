@@ -38,8 +38,10 @@ LB3o1-LB3o2 the opening, LB3s the scout report, LB3c the strategy's cut-in, LB3r
 line (battle-turn, exchange-counters, opening, scout-report, strategy, info-results, battle-speech).
 Round P14, the scenes again: PS2 as the owner changed it — the picture in the screen's middle, the upper speaker's
 window above it (PS2), the lower one's under it (PS2l), and PS2b, PS2m with the picture there too (the look dir).
-`--round P3` before the arguments draws only that round's variants (the look dir then unread, '-' will do; P14 reads
-it).
+Round P15, the scenes landscape: LS1 the frame as on the PC (LS1b window 131, LS1m a dialogue menu at the thumb), LS2
+upright's PS2 laid sideways (the look dir; lacquer/current's message-cg-bar-speech and scene-menu).
+`--round P3` before the arguments draws only that round's variants (the look dir then unread, '-' will do; P14 and
+P15 read it).
 The pink lines and text are the mock-ups' notes, not part of a screen.
 
 For the screen gallery's phone tabs (tools/ui/gallery.ps1 -Phone; docs/ui/gallery.md, §9) only the owner's chosen base
@@ -438,11 +440,15 @@ def at_width(im, width=PW):
     return im.resize((width, round(im.height * width / im.width)), Image.LANCZOS)
 
 
-def scene_clean():
+def scene_clean_raw():
     """Ex's scene with no window of ours: the top of 00059 (its narration at the foot) over the foot of 00058."""
     pic = look(LOOK_NARRATION)
     pic.paste(look(LOOK_SPEECH).crop((0, 300, 1280, 800)), (0, 300))
-    return at_width(pic)
+    return pic
+
+
+def scene_clean():
+    return at_width(scene_clean_raw())
 
 
 # --- the map -------------------------------------------------------------------------------------------------------
@@ -5154,10 +5160,109 @@ def p13():
     lb3o1(); lb3o2(); lb3s(); lb3c(); lb3r(); lb3b()
 
 
+# --- round P15: the scenes, landscape (2026-10-28) -------------------------------------------------------------------
+
+def scene_side(d, drawer=True):
+    """The scenes' left side as LW1's: Menu on top, Skip and Log at the left thumb (hidden under a menu)."""
+    x0, x1 = RAIL_L
+    menu_cell(d, (x0, 16, x1, 126))
+    if drawer:
+        drawer_cells(d, x0, x1, FOOT - 10)
+
+
+def ls1():
+    img, d = land()
+    img.paste(look(LOOK_INTERCEPT).resize((1952, LH), Image.LANCZOS), (FX0, 0))
+    d = ImageDraw.Draw(img)
+    scene_side(d)
+    reach_land(img)
+    save_land(img, 'LS1', 'the frame as on the PC, the left side as LW1\'s', 'land-scenes', notes=[
+        'LM1\'s principle: the scene as on\nthe PC and the tablet in the\nframe, our windows over the\n'
+        f'picture at their places — the\nscript\'s text {lm(48)}, larger than\nupright\'s PS2 (3.6 mm).',
+        'The left side as LW1\'s: Menu on\ntop, Skip and Log at the left\nthumb; the right side empty. A\n'
+        'tap anywhere goes on.',
+        'Speech, thought, narration and a\nplace\'s title at their own places\nas on the PC; no name plate but\n'
+        '131\'s.'])
+
+
+def ls1b():
+    img, d = land()
+    cg = Image.new('RGB', (1952, LH), (58, 58, 62))
+    cd = ImageDraw.Draw(cg)
+    for x in range(-LH, 1952, 40):
+        cd.line([(x, LH), (x + LH, 0)], fill=(72, 72, 76), width=3)
+    cd.text((976, 420), 'the scene\'s CG (masked)', font=GOTHIC(56), fill=(200, 200, 200), anchor='mm')
+    img.paste(cg, (FX0, 0))
+    bar = dump(LACQ, 'message-cg-bar-speech.png')
+    win, plate = bar.crop((0, 588, 1280, 800)), bar.crop((30, 560, 196, 588))
+    img.paste(win.resize((1952, round(212 * LK)), Image.LANCZOS), (FX0, LH - round(212 * LK)))
+    img.paste(plate.resize((round(166 * LK), round(28 * LK)), Image.LANCZOS),
+              (FX0 + round(30 * LK), LH - round(240 * LK)))
+    d = ImageDraw.Draw(img)
+    scene_side(d)
+    reach_land(img)
+    save_land(img, 'LS1b', 'window 131 over its CG, as on the PC', 'land-scenes', notes=[
+        'Window 131 over its CG\'s lower\nquarter as on the PC, its speaker\non a plate; its lines (49 cells)\n'
+        f'at {lm(32)}.',
+        'The CG the frame\'s whole height;\nthe left side as LS1\'s.'])
+
+
+def ls1m():
+    img, d = land()
+    pic = dump(LACQ, 'scene-menu.png')
+    pic.paste(Image.new('RGB', (420, 190)), (470, 76))     # the PC's rows taken off: ours are at the thumb
+    img.paste(pic.resize((1952, LH), Image.LANCZOS), (FX0, 0))
+    d = ImageDraw.Draw(img)
+    scene_side(d, drawer=False)
+    items = ['Attack at dawn', 'Wait for the scouts', 'Ask Maris']
+    h, gap = 123, 12
+    x1 = FX1 - 30
+    x0 = x1 - 500
+    y = FOOT - 10 - len(items) * h - (len(items) - 1) * gap
+    panel(d, (x0 - 16, y - 16, x1 + 16, FOOT - 10 + 16))
+    for i, item in enumerate(items):
+        row_box(d, (x0, y + i * (h + gap), x1, y + i * (h + gap) + h), item, size=48)
+    reach_land(img)
+    save_land(img, 'LS1m', 'a dialogue menu at the right thumb', 'land-scenes', notes=[
+        'A `]` menu: the question\'s window\nat its place, our rows at the\nframe\'s right foot, at the thumb\n'
+        f'(as LF2\'s ladder): rows {mm(h)} high,\nthe items {mm(48)}, in the script\'s\norder.',
+        'On the PC the rows stand at the\nselection box\'s place (40 px\nrows: 3.5 mm here, too low for\n'
+        'a finger).',
+        'The drawer hides under the menu\n(the house\'s touch rule); Menu\nstays. Made up: the gallery\'s\n'
+        'scene menu.'])
+
+
+def ls2():
+    img, d = land()
+    pw, ph = round(1952 * 0.66), round(LH * 0.66)
+    px0, py0 = (LW - pw) // 2, (LH - ph) // 2
+    img.paste(scene_clean_raw().resize((pw, ph), Image.LANCZOS), (px0, py0))
+    d = ImageDraw.Draw(img)
+    scene_side(d)
+    x0, x1 = RAIL_L[0], px0 - 44
+    box = (x0, py0, x1, py0 + 290)
+    speech_window(d, box, INTERCEPT, size=36)
+    ty = py0 + 110                                  # the tail right, at Ex's portrait
+    d.polygon([(x1 - 2, ty - 28), (x1 - 2, ty + 28), (x1 + 40, ty)], fill=PANEL)
+    d.line([(x1, ty - 28), (x1 + 40, ty), (x1, ty + 28)], fill=GOLD, width=3)
+    reach_land(img)
+    save_land(img, 'LS2', 'upright\'s PS2 laid sideways: the window beside its speaker', 'land-scenes', notes=[
+        'The owner\'s upright principle\nturned: the picture uncovered in\nthe middle, at 66% '
+        f'({mm(ph)} high);\nthe left portrait\'s speech (Ex)\nin the left column at his height,\nits tail at him.',
+        f'The script\'s breaks kept: in the\ncolumn\'s {mm(x1 - x0)} the speech\'s 32\ncells are {mm(36)} '
+        '— half LS1\'s.',
+        'The right portrait\'s speech in\nthe right column at its height;\nthe narration under Ex\'s window;\n'
+        'Menu, Skip and Log as LS1\'s.'])
+
+
+def p15():
+    ls1(); ls1b(); ls1m(); ls2()
+
+
 def main():
     global MAP, PROV_NAMES, PROV_POINTS
-    if ROUND in ('P3', 'P5', 'P7', 'P9', 'P11', 'P13', 'P14'):
-        {'P3': p3, 'P5': p5, 'P7': p7, 'P9': p9, 'P11': p11, 'P13': p13, 'P14': p14}[ROUND]()
+    if ROUND in ('P3', 'P5', 'P7', 'P9', 'P11', 'P13', 'P14', 'P15'):
+        {'P3': p3, 'P5': p5, 'P7': p7, 'P9': p9, 'P11': p11, 'P13': p13, 'P14': p14, 'P15': p15}[ROUND]()
         overviews()
         return
     MAP, PROV_NAMES, PROV_POINTS = build_map()

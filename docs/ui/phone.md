@@ -172,7 +172,8 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 29. ~~**What comes next** (the owner, 2026-10-28).~~ The scenes (§2), upright first: round P14 (§18).
 30. ~~**The scenes upright** (round P14, §18): PS2, PS2l, PS2b and PS2m as drawn?~~ As drawn, the agent's choices with
     them.
-31. **The scenes landscape** — not drawn yet: the next round.
+31. **The scenes landscape** (round P15, §19): LS1 (the frame as on the PC, with LS1b and LS1m) or LS2 (upright's PS2
+    laid sideways).
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -757,3 +758,24 @@ under); the narration and a speaker with no portrait in the picture go under it;
 **The owner's choice (2026-10-28): PS2, PS2l, PS2b and PS2m as drawn**, with the agent's choices above. They are on the
 gallery's upright tab (its scenes need the look's frames beside the passes: docs/ui/gallery.md, §9). Next: the scenes
 landscape.
+
+## 19. Round P15: the scenes, landscape (2026-10-28)
+
+Drawn by `mock_phone.py --round P15` over the week-18 look's key waits (Ex's scene; in the gallery's `phone-look`) and
+the lacquer pass's `message-cg-bar-speech` and `scene-menu`. In landscape the frame already reads the scenes' own text at
+4.2 mm (§12), so the question is whether the windows stay over the picture or leave it, as upright's PS2 makes them.
+
+- **LS1 — the frame as on the PC, the left side as LW1's** (LM1's principle): the scene and our windows at their places
+  over the picture, the script's text 4.2 mm (upright's PS2: 3.6 mm); Menu on top of the left side, Skip and Log at the
+  left thumb, the right side empty; a tap anywhere goes on. (The look's window is in the read text's colour: it had
+  been read.) **LS1b**: window 131 over its CG's lower quarter as on the PC, its speaker on a plate, its lines at 2.8 mm.
+  **LS1m**: a `]` menu — the question's window at its place, our rows at the frame's right foot, at the thumb (as LF2's
+  ladder): rows 7.0 mm, the items 2.7 mm, in the script's order; on the PC the rows stand at the selection box's place,
+  3.5 mm here, too low for a finger. The drawer hides under the menu; Menu stays.
+- **LS2 — upright's PS2 laid sideways**: the picture uncovered in the middle at 66% (45.8 mm high), the left portrait's
+  speech (Ex) in the left column at his height, its tail at him; the right portrait's in the right column; the
+  narration under the speaker's window. With the script's breaks kept, the speech's 32 cells are 2.1 mm in the column's
+  31.4 mm — half LS1's.
+
+**Recommendation: LS1** — in landscape the picture fills the frame and the text is the largest of any device; LS2 keeps
+upright's rule that a window never covers the picture, at the cost of a third of the picture and half the type.
