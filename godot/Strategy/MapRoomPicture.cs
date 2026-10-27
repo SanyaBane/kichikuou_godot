@@ -25,7 +25,7 @@ internal static class MapRoomPicture
 
     public static ShaderMaterial Material() => new() { Shader = _shader ??= new Shader { Code = Code } };
 
-    /// <summary>Draws the picture <paramref name="shift"/> script pixels lower (0: as it is).</summary>
-    public static void SetShift(ShaderMaterial material, int shift) =>
-        material.SetShaderParameter("shift", shift / (float)Surface.ScreenHeight);
+    /// <summary>Draws the picture <paramref name="shift"/> script pixels lower (0: as it is), to the screen's pixels (two a script pixel).</summary>
+    public static void SetShift(ShaderMaterial material, float shift) =>
+        material.SetShaderParameter("shift", MathF.Round(shift * Surface.Scale) / (Surface.ScreenHeight * Surface.Scale));
 }

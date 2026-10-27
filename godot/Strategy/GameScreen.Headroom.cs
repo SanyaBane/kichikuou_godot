@@ -52,8 +52,9 @@ public partial class GameScreen
     }
 
     /// <summary>
-    /// Takes the map's room as the screen shows it now; returns whether it changed. Off the map it goes in the frame the
-    /// script shows something else, so a picture of something else is never drawn lower.
+    /// Takes the map's room as the screen shows it now; returns whether it changed. Off the map the script's reads and our
+    /// plates take the picture as it is at once; the strip slides out and the room closes over <see cref="RetractSeconds"/>
+    /// (<see cref="AdvanceHeadroom"/>).
     /// </summary>
     private bool UpdateHeadroom()
     {
@@ -63,13 +64,48 @@ public partial class GameScreen
         int shift = strip ? MapHeadroom.Shift(_presenter.MapViewShown!.Value.Y) : 0;
         if (strip == _mapStrip && shift == _mapShift)
             return false;
-        if (shift != _mapShift)
-            MapRoomPicture.SetShift(_roomMaterial, shift);
+        if (strip)
+            _retracting = null;                                             // back on the map: there at once
+        else if (_mapStrip && _strip.Visible)
+            (_retracting, _retractShift) = (0, _mapShift);
         (_mapStrip, _mapShift) = (strip, shift);
         if (!strip)
             _headroom.Release();
+        ShowRoom();
         return true;
     }
+
+    // ---------------------------------------------------------------- the strip going (owner, 2026-10-27)
+
+    /// <summary>
+    /// How long the strip takes to slide out of the picture when the screen leaves the map — a dungeon, a dialogue over the
+    /// map —, the room under it closing with it, so the map no longer jumps up into the strip's place (owner, 2026-10-27).
+    /// </summary>
+    private const double RetractSeconds = 0.3;
+
+    private double? _retracting;                        // seconds since the strip began to slide out, while it does
+    private int _retractShift;                          // the room when it began
+
+    /// <summary>How much of the strip is still out, 1 to 0 as it slides (an ease in and out); 0 off the map, 1 on it.</summary>
+    private float StripOut => _retracting is { } t
+        ? 1 - Smooth((float)(t / RetractSeconds))
+        : _mapStrip ? 1 : 0;
+
+    private static float Smooth(float x) => x * x * (3 - 2 * x);
+
+    /// <summary>Once a frame: the strip slides on and the room closes with it, the room's top row under the strip's foot.</summary>
+    private void AdvanceHeadroom(double delta)
+    {
+        if (_retracting is not { } t)
+            return;
+        t += delta;
+        _retracting = t < RetractSeconds ? t : null;
+        ShowRoom();
+    }
+
+    /// <summary>The picture drawn lower by the room as shown: the map's, or the one closing with the strip.</summary>
+    private void ShowRoom() =>
+        MapRoomPicture.SetShift(_roomMaterial, _retracting is null ? _mapShift : _retractShift * StripOut);
 
     /// <summary>The map's point at the screen's top-left corner as the picture is drawn, the room counted; null before the map.</summary>
     private (int X, int Y)? MapCornerDrawn => _presenter.MapViewShown is { } corner ? (corner.X, corner.Y - _mapShift) : null;

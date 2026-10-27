@@ -77,6 +77,7 @@ internal sealed partial class StatusStripView : Control
     {
         Visible = false;
         _strip = null;
+        _out = 0;
         _site = null;
         (_tip, _tipDown) = (false, false);
     }
@@ -84,7 +85,25 @@ internal sealed partial class StatusStripView : Control
     /// <summary>Where the events on the strip go but a left click's: the screen's input (a right click opens the menu as anywhere).</summary>
     public Action<InputEvent>? Forward { get; set; }
 
-    public override bool _HasPoint(Vector2 point) => Visible && new Rect2(0, 0, Width, Height).HasPoint(point / _k);
+    /// <summary>
+    /// How far the strip has slid up out of the picture as it goes (owner, 2026-10-27), 0 to 1 of its height; its parent
+    /// clips it at the picture's top. While it slides it takes no input.
+    /// </summary>
+    public float Out
+    {
+        get => _out;
+        set
+        {
+            if (Math.Abs(value - _out) < 0.0001f)
+                return;
+            _out = value;
+            QueueRedraw();
+        }
+    }
+
+    private float _out;
+
+    public override bool _HasPoint(Vector2 point) => Visible && _out == 0 && new Rect2(0, 0, Width, Height).HasPoint(point / _k);
 
     /// <summary>A left click on the strip reaches no province or plate under it; the rest is the screen's.</summary>
     public override void _GuiInput(InputEvent e)
@@ -111,7 +130,7 @@ internal sealed partial class StatusStripView : Control
     {
         if (_strip is not { } s)
             return;
-        DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
+        DrawSetTransform(new Vector2(0, -Height * _out * _k), 0, new Vector2(_k, _k));
         Ui.DrawPanel(this, new Rect2(0, 0, Width, Height), _k);
         // One row (owner, 2026-10-16): the flag, the status window's figures, the week's commands, the date.
         var row = new Rect2(0, 10, Width, 22);

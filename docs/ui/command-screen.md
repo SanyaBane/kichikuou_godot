@@ -417,8 +417,15 @@ the edge, the strip folding at the edge, the strip at the foot, the wide screen'
   (`GameScreen.UpdateHeadroom`: the map wait, `GamePresenter.MenuCovered` — our command panel and province menu, a city's
   lead-in and lead-out —, and after the map wait until the script shows anything but pauses and sounds: the command menu
   first reads the pointer, `COMMAND.ADV:615-617`, a frame in which the strip was gone and the map jumped up, owner,
-  2026-10-27; `GameScreen.ObserveMapLeft`); anything else on the screen is drawn as it is, so a scene is never drawn
-  lower.
+  2026-10-27; `GameScreen.ObserveMapLeft`).
+- **The strip going (owner, 2026-10-27).** When the screen leaves the map — a dungeon clicked, a dialogue over the map
+  — the strip does not vanish at once, which made the map jump up into its place: it slides up out of the picture in
+  0.3 s (an ease in and out; clipped at the picture's top, `StatusStripView.Out`), and the room closes with it on the
+  same curve (`GameScreen.AdvanceHeadroom`), so at the map's top the strip's foot and the map's first row move together
+  and the mirrored band never shows. Whatever the script draws in those 0.3 s rises with the map; the script's reads
+  and our plates take the picture as it is at once. Coming back to the map the strip and the room are there at once.
+  Checked in a window on `--map-north`'s picture with a leave forced for the check: the map rose 0, 12, 36, 50 window
+  pixels four frames apart, the strip sliding out over it.
 - **The script sees nothing of it.** The camera and every state stay the original's; the pointer the script reads is
   turned from the picture's rows to the view's (`MapHeadroom.ScriptY`): a hover or a click reads the view's row under
   it. A drag keeps the row it pressed under the pointer: the script moves the camera by the pointer's steps, so each Y

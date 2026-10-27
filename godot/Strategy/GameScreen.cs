@@ -266,7 +266,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private CommandMenuView _commandView = null!;       // our command panel over COMMAND's command menu (New)
     private readonly LoadSaveShortcut _saveShortcut = new(); // its Load and Save rows: ﾛｰﾄﾞｾｰﾌﾞ's menu answered unseen
     private readonly ConstructionShortcut _buildShortcut = new(); // its Construction: Cﾃｲﾄ's Build / Don't answered unseen
-    private StatusStripView _strip = null!;             // our status strip over the map's top with the command panel (New)
+    private StatusStripView _strip = null!;             // our status strip over the map's top on COMMAND's map (New)
+    private Control _stripClip = null!;                 // the picture's area, clipping the strip as it slides out
     private WeekReportView _weekView = null!;           // our week report over the week start's windows (New)
     private MessageWindowView _messageView = null!;     // our message windows over WAO_SUB's (New)
     private SceneMenuView _sceneMenuView = null!;       // our ] menus over the selection box (New)
@@ -328,7 +329,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _content.AddChild(_commandView);
         _content.AddChild(_commandsButton);                 // over the command panel: its Close while the panel is open
         _strip = new StatusStripView(GodotGlyphRenderer.Chosen, faces) { Forward = StripInput };
-        _content.AddChild(_strip);
+        _stripClip = new Control { ClipContents = true, MouseFilter = MouseFilterEnum.Ignore };  // the picture: the strip slides out at its top
+        _content.AddChild(_stripClip);
+        _stripClip.AddChild(_strip);
         _weekView = new WeekReportView(faces);
         _content.AddChild(_weekView);
         _battleView = new BattleBoardView(GodotGlyphRenderer.Chosen, faces);
@@ -431,6 +434,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         UpdateHaremScreen();
         WarmMarks();
         UpdateTreasureScreen();
+        AdvanceHeadroom(delta);
         UpdateHeadroom();
         UpdateStatusStrip();
         UpdateMapMarkers();
@@ -2095,15 +2099,19 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// Our status strip (docs/ui/command-screen.md, "The status strip") lies over the picture's top, as wide as
     /// it, while the screen shows <c>COMMAND</c>'s map (owner, 2026-10-27; before, only with our command panel, where
     /// the original prints its status window; 2026-10-17: a band of its own above the map lived apart from the map),
-    /// the map's room under it (<see cref="UpdateHeadroom"/>).
+    /// the map's room under it (<see cref="UpdateHeadroom"/>); when the screen leaves the map it slides up out of the picture
+    /// (<see cref="StripOut"/>).
     /// </summary>
     private void UpdateStatusStrip()
     {
-        if (_mapStrip && _presenter.StatusStrip is { } strip)
+        if ((_mapStrip || _retracting is not null) && _presenter.StatusStrip is { } strip)
         {
             var picture = PictureArea();
+            _stripClip.Position = picture.Position;
+            _stripClip.Size = picture.Size;
             _strip.Show(strip);
-            _strip.Place(new Rect2(picture.Position, new Vector2(picture.Size.X, StatusStripView.Height * picture.Size.X / Surface.ScreenWidth)));
+            _strip.Out = 1 - StripOut;
+            _strip.Place(new Rect2(Vector2.Zero, new Vector2(picture.Size.X, StatusStripView.Height * picture.Size.X / Surface.ScreenWidth)));
         }
         else
         {
