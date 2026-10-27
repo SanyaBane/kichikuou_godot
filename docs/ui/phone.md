@@ -161,6 +161,11 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 23. ~~**The landscape Save/Load** (round P11, §15): LL1 or LL2.~~ LL1.
 24. ~~**The landscape options window** (round P12, §16): LO1 or LO2.~~ LO1.
 25. ~~**The landscape dungeon's menus** (round P12, §16): LF1 or LF2.~~ LF2.
+26. **The landscape retreat question** (round P13, §17): LB2r1 (in the frame beside Retreat) or LB2r2 (over the left
+    rail).
+27. **The landscape opening** (round P13, §17): LB3o1 (at the scene's place) or LB3o2 (over the scene and the board);
+    upright's PB4o1 / PB4o2 (question 12) is still open.
+28. **The landscape battle's other states** (round P13, §17): LB2x, LB3s, LB3c, LB3r and LB3b as drawn?
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -658,3 +663,63 @@ side); LF2's wider rungs read in one line, but they stand a side's width further
 
 **The owner's choice (2026-10-28): LO1 and LF2**, as drawn — the dungeon keeps the tablet's rail in the frame, its rungs
 wide enough for every word in one line. LO1, LF2 and LF2e are on the gallery's landscape tab.
+
+## 17. Round P13: the battle's other states, landscape (2026-10-28)
+
+Drawn by `mock_phone.py --round P13` on LB2's board (the scene's own picture 70% high, its sides blurred out to the
+frame; the cards 25.5 × 19.0 mm; the rails in the black sides), over the gallery's touch dumps `battle-turn`,
+`exchange-counters`, `opening`, `scout-report`, `strategy`, `info-results` and `battle-speech` (the capture's battle on
+Oaks (6)). Where the rails are gone — the exchanges, the opening, the results, the lines — the battle's Skip stays on the
+left rail's top, as LB2 put it. The board's layout is chosen, so each state is one base version; the retreat question's
+place and the opening are two. The variants of the player's turn keep LB2's name (`LB2r…`, `LB2x`, as upright's PB3r and
+PB3x), the other states are `LB3…` (upright's PB4…).
+
+The retreat question (`LB2r…`; upright's PB3r: the script's question at Retreat, Cease Retreat nearer the button,
+Retreat red and last):
+
+- **LB2r1 — in the frame, beside Retreat.** The house's callout at the click (the tablet's A2), 37.6 mm wide, its tip at
+  the rail's Retreat, which is lit; the question 2.5 mm, Cease Retreat | **Retreat** in one row, 7.9 mm high, as on the
+  PC and upright. It lies over our back row and part of the front row while it asks; the rails' other rows dimmed.
+- **LB2r2 — over the left rail.** The question takes the rail's rows under its heading (RETREAT): its words wrapped in
+  the rail's 14.5 mm (2.1 mm), then Cease Retreat (in two lines) and **Retreat** red at the thumb, 8.5 mm high each; the
+  board stays whole in view, the target's rail dimmed.
+
+**Recommendation: LB2r1** — the question at the button as on every screen of ours (docs/ui/style.md, §5), its answers in
+one row as the PC's, the tablet's and upright's; LB2r2 covers nothing of the board, but its words wrap into short lines
+and its answers stack in the narrow side.
+
+- **LB2x — an exchange** (Ex (commander 1) on Rance (unit 1), both by Melee): the fighters' cards lit with their
+  action's pill, the others dimmed; the rails gone. **The counters leave the picture for its blurred sides**, beside
+  their army (ours left, the enemy's right, the PC's order of TROOPS and HP): the figures 5.9 mm high, where in the
+  picture at its 70% they would be 2.7 mm.
+
+The opening (`LB3o…`; upright's question 12, PB4o1 or PB4o2, is still open):
+
+- **LB3o1 — at the scene's place**, as on the PC and the tablet, laid out again at the frame's width: the scene in the
+  opening's blue and red, the plate on top (the place 2.8 mm, the limit 2.2 mm, the turns 2.1 mm), the armies' names
+  5.9 mm at its sides, VS under it; the board under it as LB2's with the opening's figures, the rails not up yet.
+- **LB3o2 — over the scene and the board** as LB2 stands: ours blue at the left, the enemy red at the right, the names
+  8.5 mm, the plate over the scene, VS at the gauge's place; the cards fly in on the board under it as it fades.
+
+**Recommendation: LB3o1** — in landscape the scene's band is 111 mm wide, so the PC's opening reads at the phone's type
+where it stands on the PC, and the board under it stays in view; LB3o2 is larger, as upright's PB4o2.
+
+- **LB3s — the ninja's scout report**, before the field, across the whole width as on the PC: Kanami and her report on
+  top (3.1 mm), the rebels' cards under it as the enemy attack's (LA2; the front row left), Rance's answer at the foot
+  (3.4 mm); one tap goes on. With no button the sides hold nothing of their own.
+- **LB3c — the strategy's cut-in**: the PC's cut-in fitted to the frame as it is — every line is already 2 mm or more
+  (the caption 2.3 mm, "Success" 5.6 mm, the strategist's line 2.6 mm, what it does 3.3 mm) —, the band running on
+  across the black sides to the screen's edges. Barres (unit 6); the enemy's the same in red.
+- **LB3r — the results plate** in the frame's middle over the dimmed scene and board (the title 5.7 mm, the damages
+  6.8 mm, the line under the title 2.1 mm); a tap goes on. A level-up's page, a fall's box and our narration panel the
+  same way. The board as the gallery's `info-results` has it: night fell with Dodge alone left.
+- **LB3b — a fighter's line**: the speaker's portrait in the scene's blurred left side (on the PC it covers the
+  picture's left edge), so every sprite stays seen — an enemy's in the right side —; our balloon over the scene's foot
+  at 3.5 mm, rewrapped as ever, two lines at most. A defence's ribbon and caption the same way, the caption 2.4 mm.
+
+The agent's own choices, for the owner to confirm: the exchange's counters and a speaker's portrait in the scene's
+blurred sides; the rails' other rows dimmed while the retreat question asks; the scout report and the cut-in across the
+whole width, with nothing in the black sides.
+
+With this round every screen of ours has a landscape base version but All Data, the title and the import screen, which
+wait for screen gallery entries to draw over, and the scenes (§2, open upright too).

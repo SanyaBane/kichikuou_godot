@@ -33,7 +33,9 @@ Round P9: LD1-LD2 the deployment table, LU1-LU2 the Subordinates screen, landsca
 attack (enemy-attack-scouted), LW1-LW2 the week report (week-report and the map's pictures), landscape. Round P11:
 LH1-LH2 Harem, LT1-LT2 Treasure, LL1-LL2 Save/Load, landscape (harem, treasure-items, save-load). Round P12:
 LO1-LO2 the options window, LF1-LF2 the dungeon's menus, landscape (options-messages, floor-ladder-middle,
-dungeon-entry, map).
+dungeon-entry, map). Round P13, the battle's other states on LB2: LB2r1-LB2r2 the retreat question, LB2x an exchange,
+LB3o1-LB3o2 the opening, LB3s the scout report, LB3c the strategy's cut-in, LB3r the results plate, LB3b a fighter's
+line (battle-turn, exchange-counters, opening, scout-report, strategy, info-results, battle-speech).
 `--round P3` before the arguments draws only that round's variants (the look dir then unread, '-' will do).
 The pink lines and text are the mock-ups' notes, not part of a screen.
 
@@ -3397,13 +3399,15 @@ LAND_CARDS = {                          # the touch dump's cards: our back row e
 }
 
 
-def land_card(img, box, name, player, acting=False, target=False, size=34, fs=150, toggles_h=0):
-    """A battle card on the landscape phone: the face top left with its four figures under it, the text right."""
+def land_card(img, box, name, player, acting=False, target=False, size=34, fs=150, toggles_h=0, units=UNITS,
+              dim=False):
+    """A battle card on the landscape phone: the face top left with its four figures under it, the text right;
+    a fighter's card in an exchange has its action's pill at its foot (state 'pill'), the others `dim`."""
     d = ImageDraw.Draw(img)
     x0, y0, x1, y1 = box
-    num, kind, trp, mtrp, (hp, mhp), state, stats = UNITS[name]
-    d.rectangle(box, fill=(88, 72, 50) if acting else (28, 22, 18), outline=(240, 230, 210) if acting else DIM_GOLD,
-                width=4 if acting else 2)
+    num, kind, trp, mtrp, (hp, mhp), state, stats = units[name]
+    d.rectangle(box, fill=(88, 72, 50) if acting else (28, 22, 18),
+                outline=(240, 230, 210) if acting else (GOLD if state == 'pill' else DIM_GOLD), width=4 if acting else 2)
     img.paste(face(name, fs), (x0 + 10, y0 + 10))
     d = ImageDraw.Draw(img)
     d.text((x0 + 10 + fs / 2, y0 + fs + 36), stats, font=GOTHIC(round(size * 0.8)), fill=TEXT, anchor='mm')
@@ -3425,14 +3429,24 @@ def land_card(img, box, name, player, acting=False, target=False, size=34, fs=15
     bar(d, tx, y, tw, hp, mhp, BAR_GOOD)
     if state == 'toggles' and toggles_h:            # across the card's foot
         toggles(d, x0 + 10, y1 - toggles_h - 10, x1 - x0 - 20, round(size * 0.8), h=toggles_h)
+    elif state == 'pill':                           # the exchange's action pill, at the card's foot right
+        p = (x1 - 250, y1 - 74, x1 - 14, y1 - 16)
+        d.rounded_rectangle(p, radius=29, fill=(226, 186, 96))
+        d.line([(p[0] + 26, p[3] - 14), (p[0] + 56, p[1] + 14)], fill=(44, 26, 10), width=6)
+        d.text((p[0] + 142, (p[1] + p[3]) / 2), 'Melee', font=GOTHIC(round(size * 0.95)), fill=(44, 26, 10),
+               anchor='mm')
     elif state and state != 'toggles' and not compact:
         d.text((tx, y + 18), state, font=GOTHIC(round(size * 0.9)), fill=QUIET)
+    if dim:
+        veil(img, box, 0.5)
     if target:
         brackets(ImageDraw.Draw(img), box)
 
 
-def land_board(img, top, card_h, size, fs, toggles_h):
-    """The board under the scene in the frame: our two columns left, the gauge, the enemy's right."""
+def land_board(img, top, card_h, size, fs, toggles_h, units=UNITS, cards=LAND_CARDS, acting='Rance', target='Ex',
+               fighters=(), turns='4'):
+    """The board under the scene in the frame: our two columns left, the gauge, the enemy's right; in an exchange
+    the cards but the `fighters`' dimmed."""
     backdrop(img, (FX0, top, FX1, LH))
     d = ImageDraw.Draw(img)
     d.text((FX0 + 16, top + 24), 'Rance Army', font=CINZEL(30, 700), fill=TEXT, anchor='lm')
@@ -3446,20 +3460,20 @@ def land_board(img, top, card_h, size, fs, toggles_h):
     y0 = top + 50
     for r in range(2):
         y = y0 + r * (card_h + gap)
-        for c, name in enumerate(LAND_CARDS['player'][r] + LAND_CARDS['enemy'][r]):
+        for c, name in enumerate(cards['player'][r] + cards['enemy'][r]):
             box = (round(xs[c]), y, round(xs[c] + cw), y + card_h)
             if name is None:
                 empty_slot(d, box)
             else:
-                land_card(img, box, name, c < 2, acting=name == 'Rance', target=name == 'Ex', size=size, fs=fs,
-                          toggles_h=toggles_h)
+                land_card(img, box, name, c < 2, acting=name == acting, target=name == target, size=size, fs=fs,
+                          toggles_h=toggles_h, units=units, dim=bool(fighters) and name not in fighters)
             d = ImageDraw.Draw(img)
     gh = 2 * card_h + gap
     for i in range(4):
         y = y0 + i * (gh - 60) / 4
         d.rounded_rectangle((gx - gw / 2 + 8, y, gx + gw / 2 - 8, y + (gh - 60) / 4 - 12), radius=10,
-                            fill=(150, 120, 60), outline=GOLD, width=3)
-    d.text((gx, y0 + gh - 30), '4', font=BRUSH(44), fill=NAME, anchor='mm')
+                            fill=(150, 120, 60) if turns != '0' else (40, 34, 28), outline=GOLD, width=3)
+    d.text((gx, y0 + gh - 30), turns, font=BRUSH(44), fill=NAME, anchor='mm')
     return cw
 
 
@@ -3469,10 +3483,7 @@ def land_rails(img, d, skip=True):
     x0, x1 = RAIL_L
     panel(d, (x0 - 6, 0, x1 + 6, LH))
     if skip:
-        b = (x0 + 8, 20, x1 - 8, 120)
-        panel(d, b)
-        icon(d, 'skip', b[0] + 56, 70)
-        d.text((b[0] + 150, 70), 'Skip', font=GOTHIC(36), fill=TEXT, anchor='mm')
+        land_skip(d)
     d.text(((x0 + x1) / 2, 180), 'RANCE', font=BRUSH(46), fill=NAME, anchor='mm')
     d.line([(x0 + 20, 222), (x1 - 20, 222)], fill=DIM_GOLD, width=2)
     h, gap = 123, 12
@@ -3489,10 +3500,19 @@ def land_rails(img, d, skip=True):
     gold_button(d, (x0 + 8, FOOT - 10 - 260, x1 - 8, FOOT - 10), 'Melee', ('29-37', '0-1'))
 
 
-def land_scene(img, height):
+def land_skip(d):
+    """The battle's Skip on the left rail's top, where it stays while the rails are gone."""
+    x0, x1 = RAIL_L
+    b = (x0 + 8, 20, x1 - 8, 120)
+    panel(d, b)
+    icon(d, 'skip', b[0] + 56, 70)
+    d.text((b[0] + 150, 70), 'Skip', font=GOTHIC(36), fill=TEXT, anchor='mm')
+
+
+def land_scene(img, height, scene=None):
     """The scene in the frame: whole (625 px, the tablet's) or lower, its own 1024-wide picture sharp and its sides
-    blurred out to the frame."""
-    scene = dump(TOUCH, 'battle-turn.png').crop((0, 0, 1280, 410))
+    blurred out to the frame; `scene` a 1280×410 band (battle-turn's by default)."""
+    scene = scene or dump(TOUCH, 'battle-turn.png').crop((0, 0, 1280, 410))
     if height >= round(410 * LK):
         img.paste(scene.resize((1952, round(410 * LK)), Image.LANCZOS), (FX0, 0))
         return round(410 * LK)
@@ -4726,10 +4746,359 @@ def p12():
     lf1(); lf1e(); lf2(); lf2e()
 
 
+# --- round P13: the battle's other states on LB2, landscape (2026-10-28) ---------------------------------------------
+
+LB2_SCENE, LB2_CARD = 438, 334                  # LB2: the scene's own picture 70% high, the cards under it
+SHARP_W = round(1024 * LB2_SCENE / 410)         # that picture's width; its sides blurred out to the frame
+SHARP_X0 = (LW - SHARP_W) // 2
+CX = (FX0 + FX1) // 2                           # the frame's middle: the gauge
+OSWALD = lambda size, w=600: font('Oswald-VariableFont_wght.ttf', size, w)
+BALLOON_INK = (150, 140, 120)
+
+# The opening's figures (the gallery's opening): no one acting yet, both our cards with their order toggles.
+OPENING_UNITS = dict(UNITS, Rance=('1', 'Leazas Knights', 606, 1000, (8, 8), 'toggles', '10 6 0 13'),
+                     Rick=('2', 'Leazas Knights', 800, 800, (8, 8), 'toggles', '10 6 0 20'),
+                     Ex=('1', 'Leazas Knights', 122, 1000, (1, 4), '', '10 6 0 1'),
+                     Sakanaku=('2', 'Leazas Soldiers', 177, 1000, (6, 6), '', '8 4 0 2'),
+                     Melfeis=('3', 'Leazas Mages', 300, 300, (4, 4), '', '3 3 7 9'))
+# A fighter's line (the gallery's battle-speech): Rance on Sakanaku, both by Melee.
+SPEECH_UNITS = dict(UNITS, Rance=('1', 'Leazas Knights', 451, 1000, (8, 8), 'pill', '10 6 0 13'),
+                    Sakanaku=('2', 'Leazas Soldiers', 60, 1000, (4, 6), 'pill', '8 4 0 2'))
+# The results (the gallery's info-results): night fell with Dodge alone left, renumbered 1; Rick acting.
+RESULTS_UNITS = dict(UNITS, Rance=('1', 'Leazas Knights', 266, 1000, (8, 8), 'Acted', '10 6 0 13'),
+                     Rick=('2', 'Leazas Knights', 583, 800, (8, 8), 'Acting', '10 6 0 20'),
+                     Dodge=('1', 'Leazas Soldiers', 294, 1000, (6, 6), 'Acted', '8 4 0 2'))
+RESULTS_CARDS = {'player': [[None, 'Rance'], [None, 'Rick']], 'enemy': [['Dodge', None], [None, None]]}
+NO_CARDS = {'player': [[None, None], [None, None]], 'enemy': [[None, None], [None, None]]}
+RETREAT_BOX = (RAIL_L[0] + 8, FOOT - 10 - 5 * 123 - 4 * 12, RAIL_L[1] - 8, FOOT - 10 - 4 * 123 - 4 * 12)
+
+
+def scene_band(name, patches=()):
+    """A dump's 1280×410 scene with `patches` (boxes) taken from battle-turn's, the same field and armies: what lies
+    under the exchange's counters, a portrait or a balloon there."""
+    band = dump(TOUCH, name).crop((0, 0, 1280, 410))
+    turn = dump(TOUCH, 'battle-turn.png')
+    for box in patches:
+        band.paste(turn.crop(box), box[:2])
+    return band
+
+
+CLEAN_EXCHANGE = ((140, 290, 330, 410), (950, 290, 1152, 410))     # the exchange's counters' corners
+
+
+def lb2_base(img, scene=None, units=UNITS, cards=LAND_CARDS, acting='Rance', target='Ex', fighters=(), turns='4',
+             rails=True):
+    """LB2 as chosen: the scene 70% high, the board under it; the rails in the black sides, or only the battle's Skip
+    on the left one's top while they are gone."""
+    top = land_scene(img, LB2_SCENE, scene)
+    land_board(img, top, LB2_CARD, 40, 160, 80, units, cards, acting, target, fighters, turns)
+    d = ImageDraw.Draw(img)
+    if rails:
+        land_rails(img, d)
+    else:
+        land_skip(d)
+    return ImageDraw.Draw(img)
+
+
+def left_balloon(d, box, lines, size, tail_y):
+    """Our balloon with its tail pointing left at the speaker."""
+    balloon(d, box, lines, size, triangle_on=False)
+    x0 = box[0]
+    d.polygon([(x0 + 3, tail_y - 26), (x0 + 3, tail_y + 26), (x0 - 40, tail_y)], fill=(246, 244, 238))
+    d.line([(x0 + 1, tail_y - 26), (x0 - 40, tail_y), (x0 + 1, tail_y + 26)], fill=BALLOON_INK, width=3)
+
+
+def retreat_lit(img):
+    """While the question is up: Retreat lit, the left rail's other rows and the target's rail dimmed."""
+    veil(img, (RAIL_L[0] - 6, RETREAT_BOX[3] + 6, RAIL_L[1] + 6, LH), 0.6)
+    veil(img, (RAIL_R[0] - 6, 0, RAIL_R[1] + 6, LH), 0.6)
+    d = ImageDraw.Draw(img)
+    x0, y0, x1, y1 = RETREAT_BOX
+    d.rectangle((x0 - 5, y0 - 5, x1 + 5, y1 + 5), outline=HOVER_LINE, width=5)
+    return d
+
+
+def lb2r1():
+    img, d = land()
+    lb2_base(img)
+    d = retreat_lit(img)
+    cy = (RETREAT_BOX[1] + RETREAT_BOX[3]) // 2
+    w, h = 660, 350
+    x0, y0, x1, y1 = box = (FX0 + 44, cy - h // 2, FX0 + 44 + w, cy + h // 2)
+    panel(d, box, fill=(30, 22, 16))
+    d.polygon([(x0 + 2, cy - 30), (x0 - 46, cy), (x0 + 2, cy + 30)], fill=GOLD)
+    d.text((x0 + 40, y0 + 34), 'Retreat the whole army?', font=GOTHIC(44), fill=TEXT)
+    d.text((x0 + 40, y0 + 100), 'The battle is lost.', font=GOTHIC(38), fill=QUIET)
+    d.line([(x0 + 30, y0 + 166), (x1 - 30, y0 + 166)], fill=DIM_GOLD, width=2)
+    bw, by = (w - 80 - 16) // 2, y0 + 186
+    row_box(d, (x0 + 40, by, x0 + 40 + bw, by + 138), 'Cease Retreat', size=40, centred=True)
+    red_button(d, (x0 + 56 + bw, by, x1 - 40, by + 138), 'Retreat', 50)
+    reach_land(img)
+    save_land(img, 'LB2r1', 'the retreat question in the frame, beside Retreat', 'land-battle-turn', notes=[
+        'The question at Retreat, in the\nframe beside the button (the\ntablet\'s A2, the house\'s callout\n'
+        f'at the click, {mm(w)} wide): over our\nback row while it asks.',
+        f'The question {mm(44)}, the answers\n{mm(138)} high in one row, as on the\nPC and upright (PB3r): Cease\n'
+        'Retreat nearer the button,\nRetreat red and last.',
+        'The rails\' other rows dimmed\nwhile it asks; a tap off it is\nCease Retreat (No).'])
+
+
+def lb2r2():
+    img, d = land()
+    lb2_base(img)
+    veil(img, (RAIL_R[0] - 6, 0, RAIL_R[1] + 6, LH), 0.6)
+    d = ImageDraw.Draw(img)
+    x0, x1 = RETREAT_BOX[0] - 2, RETREAT_BOX[2] + 2
+    panel(d, (x0, RETREAT_BOX[1] - 20, x1, FOOT - 2), fill=(30, 22, 16))
+    d.text(((x0 + x1) / 2, RETREAT_BOX[1] + 22), 'RETREAT', font=CINZEL(30, 700), fill=VERMILION_LINE, anchor='mm')
+    d.line([(x0 + 24, RETREAT_BOX[1] + 52), (x1 - 24, RETREAT_BOX[1] + 52)], fill=DIM_GOLD, width=2)
+    q = fit(d, 'whole army?', GOTHIC, 44, x1 - x0 - 40)
+    y = RETREAT_BOX[1] + 76
+    for line in ('Retreat the', 'whole army?'):
+        d.text((x0 + 22, y), line, font=q, fill=TEXT)
+        y += q.size + 12
+    for line in ('The battle', 'is lost.'):
+        d.text((x0 + 22, y + 14), line, font=GOTHIC(34), fill=QUIET)
+        y += 44
+    h = 150
+    retreat = (x0 + 10, FOOT - 12 - h, x1 - 10, FOOT - 12)
+    cease = (x0 + 10, retreat[1] - 16 - h, x1 - 10, retreat[1] - 16)
+    d.rectangle(cease, fill=ROW, outline=DIM_GOLD, width=3)
+    for i, word in enumerate(('Cease', 'Retreat')):
+        d.text(((cease[0] + cease[2]) / 2, (cease[1] + cease[3]) / 2 + (i - 0.5) * 50), word, font=GOTHIC(40),
+               fill=TEXT, anchor='mm')
+    red_button(d, retreat, 'Retreat', 46)
+    reach_land(img)
+    save_land(img, 'LB2r2', 'the retreat question over the left rail', 'land-battle-turn', notes=[
+        'The question over the left rail,\nwhere its commands were: the\nboard stays whole in view.',
+        f'Its words wrapped in the rail\'s\n{mm(254)} ({mm(q.size)}); Cease Retreat\nnearer the button, Retreat red\n'
+        f'and last, at the thumb ({mm(h)}\nhigh each, Cease in two lines).',
+        'The target\'s rail dimmed; a tap\noff it is Cease Retreat (No).'])
+
+
+def exchange_counter(d, troops, hp, right=False):
+    """The exchange's counters out of the picture, in the scene's blurred side beside their army: TROOPS over the
+    figure, HP beside it (ours after the figure, the enemy's before it, as on the PC)."""
+    big, small, label = OSWALD(124, 600), OSWALD(70, 600), CINZEL(26, 700)
+    base = LB2_SCENE - 40
+    tw = d.textlength(troops, font=big)
+    hpw = d.textlength('HP', font=label) + 8 + d.textlength(hp, font=small)
+    w = tw + 22 + hpw
+    x0 = SHARP_X0 + SHARP_W + 30 if right else SHARP_X0 - 30 - w
+    fx, hx = (x0 + hpw + 22, x0) if right else (x0, x0 + tw + 22)
+    d.text((fx + tw if right else fx, base - 118), 'TROOPS', font=label, fill=GOLD, anchor='rs' if right else 'ls')
+    d.line([(fx, base - 108), (fx + tw, base - 108)], fill=GOLD, width=3)
+    d.text((fx, base), troops, font=big, fill=(250, 232, 170), anchor='ls', stroke_width=5, stroke_fill=(40, 26, 10))
+    green = (150, 214, 120)
+    d.text((hx, base - 6), 'HP', font=label, fill=green, anchor='ls', stroke_width=3, stroke_fill=(20, 30, 14))
+    d.text((hx + d.textlength('HP', font=label) + 8, base), hp, font=small, fill=green, anchor='ls', stroke_width=4,
+           stroke_fill=(20, 30, 14))
+    box = d.textbbox((fx, base), troops, font=big, anchor='ls')
+    return box[3] - box[1]
+
+
+def lb2x():
+    img, d = land()
+    d = lb2_base(img, scene_band('exchange-counters.png', CLEAN_EXCHANGE), EXCHANGE, acting='Ex', target=None,
+                 fighters=('Rance', 'Ex'), rails=False)
+    fh = exchange_counter(d, '560', '8')
+    exchange_counter(d, '92', '1', right=True)
+    reach_land(img)
+    save_land(img, 'LB2x', 'an exchange', 'land-battle-turn', notes=[
+        'An exchange (the gallery\'s: Ex\n(commander 1) on Rance (unit 1),\nboth by Melee): the fighters\'\n'
+        'cards lit with their action\'s\npill, the others dimmed.',
+        f'The counters out of the picture\ninto its blurred sides, beside\ntheir army: the figures {mm(fh)}\n'
+        f'high (in the picture at its 70%\nthey would be {mm(48)}).',
+        'The rails gone while it plays,\nas the tablet\'s; the battle\'s\nSkip stays on the left rail\'s\ntop.'])
+
+
+def opening_tint(img, box, split, alpha, blur=0):
+    """The opening's colours over `box`: blue left of the slanted split (x at the box's top, x at its foot), red right
+    of it, a white line on the split."""
+    x0, y0, x1, y1 = box
+    part = img.crop(box)
+    if blur:
+        part = part.filter(ImageFilter.GaussianBlur(blur))
+    blue = Image.blend(part, Image.new('RGB', part.size, (44, 84, 206)), alpha)
+    red = Image.blend(part, Image.new('RGB', part.size, (198, 56, 42)), alpha)
+    mask = Image.new('L', part.size, 0)
+    ImageDraw.Draw(mask).polygon([(0, 0), (split[0] - x0, 0), (split[1] - x0, y1 - y0), (0, y1 - y0)], fill=255)
+    img.paste(Image.composite(blue, red, mask), (x0, y0))
+    d = ImageDraw.Draw(img)
+    d.line([(split[0], y0), (split[1], y1)], fill=(246, 244, 238), width=6)
+    return d
+
+
+def opening_plate(d, y0, w=940):
+    box = (CX - w // 2, y0, CX + w // 2, y0 + 196)
+    panel(d, box)
+    d.text((CX, y0 + 58), 'Oaks — Offensive Battle', font=CINZEL(50, 700), fill=TEXT, anchor='mm')
+    d.text((CX, y0 + 122), 'City · Battle limit: up to 232', font=CINZEL(38, 700), fill=TEXT, anchor='mm')
+    d.text((CX, y0 + 166), '4 turns', font=CINZEL(36, 600), fill=QUIET, anchor='mm')
+    return box
+
+
+def army_name(d, lines, cx, y, size, width, gap=0):
+    """An army's name in the opening's brush, white on a dark rim, a line under the other."""
+    f = BRUSH(min(fit(d, s, BRUSH, size, width).size for s in lines))
+    for line in lines:
+        d.text((cx, y), line, font=f, fill=(246, 238, 220), anchor='mm', stroke_width=6, stroke_fill=(24, 18, 30))
+        y += f.size + gap
+    return f.size, y
+
+
+def lb3o1():
+    img, d = land()
+    clean = scene_band('exchange-counters.png', CLEAN_EXCHANGE)
+    lb2_base(img, clean, OPENING_UNITS, acting=None, target=None, rails=False)
+    d = opening_tint(img, (FX0, 0, FX1, LB2_SCENE), (CX + 60, CX - 60), 0.5, blur=2)
+    plate = opening_plate(d, 18)
+    side = plate[0] - FX0 - 60
+    size, _ = army_name(d, ('Rance', 'Army'), (FX0 + plate[0]) // 2, 170, 104, side, 6)
+    army_name(d, ('Leazas', 'Rebel', 'Army'), (plate[2] + FX1) // 2, 82, 92, side, 0)
+    d.text(((plate[2] + FX1) // 2, 384), 'Walls +8%', font=BRUSH(46), fill=(240, 200, 110), anchor='mm',
+           stroke_width=4, stroke_fill=(40, 10, 10))
+    d.text((CX, 324), 'VS', font=BRUSH(120), fill=GOLD, anchor='mm', stroke_width=5, stroke_fill=(40, 26, 10))
+    reach_land(img)
+    save_land(img, 'LB3o1', 'the opening at the scene\'s place', 'land-battle-states', notes=[
+        'The opening at the scene\'s place,\nas on the PC and the tablet, laid\nout again at the frame\'s width:\n'
+        f'the armies\' names {mm(size)}, the place\n{mm(50)}, the limit {mm(38)}, the turns {mm(36)}.',
+        'The board under it as LB2\'s (the\nopening\'s figures), the rails not\nup yet, the battle\'s Skip on the\n'
+        'left rail\'s top; a tap goes on.',
+        'Upright the same choice is still\nopen (PB4o1 or PB4o2).'])
+
+
+def lb3o2():
+    img, d = land()
+    clean = scene_band('exchange-counters.png', CLEAN_EXCHANGE)
+    lb2_base(img, clean, OPENING_UNITS, cards=NO_CARDS, acting=None, target=None, rails=False)
+    d = opening_tint(img, (FX0, 0, FX1, LH), (CX + 110, CX - 110), 0.74, blur=3)
+    opening_plate(d, 40)
+    half = CX - FX0 - 80
+    size, _ = army_name(d, ('Rance', 'Army'), (FX0 + CX) // 2, 600, 150, half, 10)
+    _, y = army_name(d, ('Leazas', 'Rebel', 'Army'), (CX + FX1) // 2, 470, 130, half, 0)
+    d.text(((CX + FX1) // 2, y + 10), 'Walls +8%', font=BRUSH(64), fill=(240, 200, 110), anchor='mm',
+           stroke_width=4, stroke_fill=(40, 10, 10))
+    d.text((CX, 820), 'VS', font=BRUSH(150), fill=GOLD, anchor='mm', stroke_width=6, stroke_fill=(40, 26, 10))
+    reach_land(img)
+    save_land(img, 'LB3o2', 'the opening over the scene and the board', 'land-battle-states', notes=[
+        'The opening laid over the scene\nand the board as LB2 stands:\nours blue at the left, the enemy\n'
+        'red at the right, VS at the\ngauge\'s place.',
+        f'The names {mm(size)}; the plate over\nthe scene (the place {mm(50)}, the\nlimit {mm(38)}); the cards fly in '
+        'on\nthe board under it as it fades.',
+        'Upright the same choice (PB4o2);\nthere it is still open.'])
+
+
+def lb3s():
+    img, d = land()
+    d.rectangle((0, 0, LW, LH), fill=(8, 8, 10))
+    sr = dump(TOUCH, 'scout-report.png')
+    kanami = sr.crop((40, 40, 340, 440)).resize((345, 460), Image.LANCZOS)
+    framed(img, kanami, (LX0 + 14, 30))
+    d = ImageDraw.Draw(img)
+    bx0 = LX0 + 14 + 345 + 60
+    left_balloon(d, (bx0, 40, LX1 - 10, 246), ['The Approaching Enemy   [ Leazas Rebel Army ]',
+                                              'Commanders 4        Total troops 1,556'], 54, 110)
+    cw, ch, gap = 700, 270, 40
+    cx0 = bx0 + (LX1 - 10 - bx0 - 2 * cw - gap) // 2
+    for c, (label, places) in enumerate((('FRONT ROW', (1, 2)), ('BACK ROW', (3, 4)))):
+        x = cx0 + c * (cw + gap)
+        d.text((x + cw / 2, 300), label, font=CINZEL(30, 700), fill=SUBTITLE, anchor='mm')
+        for r, place in enumerate(places):
+            attacker_card(img, (x, 330 + r * (ch + 20), x + cw, 330 + r * (ch + 20) + ch), place)
+        d = ImageDraw.Draw(img)
+    rance = sr.crop((40, 574, 194, 774)).resize((246, 320), Image.LANCZOS)
+    framed(img, rance, (LX0 + 14, FOOT - 10 - 320))
+    d = ImageDraw.Draw(img)
+    left_balloon(d, (LX0 + 14 + 246 + 60, FOOT - 210, 1500, FOOT - 50), ['Mhm... I see.'], 60, FOOT - 150)
+    reach_land(img)
+    save_land(img, 'LB3s', 'the ninja\'s scout report', 'land-battle-states', notes=[
+        'The scout report before the field\nacross the whole width, as on the\nPC: Kanami and her report on top,\n'
+        'the rebels\' cards under it (the\nfront row left), Rance\'s answer\nat the foot.',
+        f'The report {mm(54)}, Rance\'s line\n{mm(60)}; the cards as the enemy\nattack\'s (LA2): the names {mm(42)},\n'
+        f'the faces {mm(200)}.',
+        'One tap goes on (the report\'s\nwindows collapsed into one, as\non the PC); with no button the\n'
+        'sides hold nothing of their own.'])
+
+
+def lb3c():
+    img, d = land()
+    frame_dump(img, 'strategy.png')
+    d = ImageDraw.Draw(img)
+    rule = (222, 186, 104)
+
+    def y_at(px, y_left):                       # the band's slant: up 120 layout px across the PC's screen
+        return (y_left - 120 / 1280 * (px - FX0) / LK) * LK
+
+    top, foot = 435.5, 557.5                    # its gold rules at the PC's left edge
+    d.polygon([(0, y_at(0, top)), (FX0, y_at(FX0, top)), (FX0, y_at(FX0, foot)), (0, y_at(0, foot))],
+              fill=(63, 107, 201))
+    for y in (top, foot):                       # the blue runs on at the left; at the right it has faded to black
+        d.line([(0, y_at(0, y)), (FX0, y_at(FX0, y))], fill=rule, width=3)
+        d.line([(FX1, y_at(FX1, y)), (LW, y_at(LW, y))], fill=rule, width=3)
+    reach_land(img)
+    save_land(img, 'LB3c', 'the strategy\'s cut-in', 'land-battle-states', notes=[
+        'The PC\'s cut-in fitted to the\nframe as it is: every line already\n2 mm or more — the caption '
+        f'{lm(26)},\n"Success" {lm(64)}, the strategist\'s\nline {lm(30)}, what it does {lm(38)}.',
+        'The band runs on across the\nblack sides to the screen\'s edges,\nas on the PC.',
+        'Barres (unit 6), his line the\ngallery\'s; the enemy\'s cut-in the\nsame in red. One tap goes on.'])
+
+
+def lb3r():
+    img, d = land()
+    lb2_base(img, None, RESULTS_UNITS, RESULTS_CARDS, acting='Rick', target=None, turns='0', rails=False)
+    veil(img, (FX0, 0, FX1, LH), 0.55)
+    d = ImageDraw.Draw(img)
+    w, h = 1400, 720
+    x0, y0, x1, y1 = plate = (CX - w // 2, (LH - h) // 2 - 20, CX + w // 2, (LH - h) // 2 - 20 + h)
+    panel(d, plate)
+    d.text((CX, y0 + 100), 'Night Falls', font=BRUSH(100), fill=NAME, anchor='mm')
+    d.text((CX, y0 + 196), 'THE BATTLE DRAGGED ON AND IT BECAME NIGHT.', font=CINZEL(36, 600), fill=SUBTITLE,
+           anchor='mm')
+    divider(d, y0 + 250, x0 + 60, x1 - 60)
+    for cx, army, value in ((CX - w // 4, 'LEAZAS', '557'), (CX + w // 4, 'LEAZAS REB', '1,229')):
+        d.text((cx, y0 + 318), army, font=CINZEL(40, 600), fill=QUIET, anchor='mm')
+        d.text((cx, y0 + 426), value, font=BRUSH(120), fill=(222, 110, 90), anchor='mm')
+        d.text((cx, y0 + 520), 'DAMAGES', font=CINZEL(30, 600), fill=SUBTITLE, anchor='mm')
+    d.line([(CX, y0 + 290), (CX, y0 + 540)], fill=DIM_GOLD, width=2)
+    d.text((CX, y0 + 628), '2 EXP OBTAINED', font=CINZEL(50, 700), fill=TEXT, anchor='mm')
+    triangle(d, x1 - 64, y1 - 54, 24)
+    reach_land(img)
+    save_land(img, 'LB3r', 'the results plate', 'land-battle-states', notes=[
+        'The results plate in the frame\'s\nmiddle over the dimmed scene and\nboard, larger than the PC\'s: the\n'
+        f'title {mm(100)}, the damages {mm(120)},\nthe line under the title {mm(36)}.',
+        'A tap anywhere goes on; a\nlevel-up\'s page after it on the\nsame plate, a fall\'s box and our\n'
+        'narration panel the same way.',
+        'The board as the gallery\'s\ninfo-results has it (night fell\nwith Dodge alone left); the rails\n'
+        'not up, Skip on the left rail\'s\ntop.'])
+
+
+def lb3b():
+    img, d = land()
+    band = scene_band('battle-speech.png', ((128, 0, 330, 410), (330, 330, 920, 410)))  # its portrait, its balloon
+    d = lb2_base(img, band, SPEECH_UNITS, acting='Rance', target=None, fighters=('Rance', 'Sakanaku'), rails=False)
+    portrait = dump(TOUCH, 'battle-speech.png').crop((10, 5, 305, 405)).resize((316, 428), Image.LANCZOS)
+    img.paste(portrait, (SHARP_X0 - 316 - 24, 5))
+    d = ImageDraw.Draw(img)
+    left_balloon(d, (SHARP_X0 + 50, 296, SHARP_X0 + 1050, 486), ["Let's go!"], 62, 380)
+    reach_land(img)
+    save_land(img, 'LB3b', 'a fighter\'s line', 'land-battle-states', notes=[
+        'The speaker\'s portrait in the\nscene\'s blurred left side (on the\nPC it covers the picture\'s left\n'
+        'edge): every sprite stays seen;\nan enemy\'s in the right side.',
+        f'Our balloon over the scene\'s\nfoot, larger than the PC\'s\n({mm(62)}), rewrapped as ever, two\n'
+        'lines at most; one tap goes on.',
+        'A defence\'s ribbon and caption\nthe same way: the caption over\nthe scene\'s foot at 2.4 mm. The\n'
+        'rails gone, Skip on the left\nrail\'s top.'])
+
+
+def p13():
+    lb2r1(); lb2r2(); lb2x()
+    lb3o1(); lb3o2(); lb3s(); lb3c(); lb3r(); lb3b()
+
+
 def main():
     global MAP, PROV_NAMES, PROV_POINTS
-    if ROUND in ('P3', 'P5', 'P7', 'P9', 'P11'):
-        {'P3': p3, 'P5': p5, 'P7': p7, 'P9': p9, 'P11': p11}[ROUND]()
+    if ROUND in ('P3', 'P5', 'P7', 'P9', 'P11', 'P13'):
+        {'P3': p3, 'P5': p5, 'P7': p7, 'P9': p9, 'P11': p11, 'P13': p13}[ROUND]()
         overviews()
         return
     MAP, PROV_NAMES, PROV_POINTS = build_map()
