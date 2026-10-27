@@ -312,3 +312,42 @@ below her picture, which gains a third figure, **This visit** ("Something new", 
 (`Original.Content/Strategy/PickerMarks`, the dry run of `SceneMarks` on the state at that call), carried on
 `HaremGirl.Mark` (`HaremRoster.Girls`, `GamePresenter.HaremGirls`), and drawn by `HaremView` (`Lacquer.DrawPill`). Our
 interface only. Looked at from `saves-week18` (`--harem 9`): every girl NEW (the save predates the read lines).
+
+## 6. The treasure on the tablet (round X, 2026-10-27)
+
+The owner (2026-10-27): the Treasure screen does not work on Android. Its picture panel shows what the pointer is on,
+and a click picks at once; on the tablet a tap is the click, so the view turns and the panel empties before the player
+has seen the item's picture — its description lives only in that CG. The other ways were put to the owner (a second
+tap on the selected cell, the action in a callout at the cell, a long press to look); the owner chose the first, **a
+tap only selects and a button acts**, as the harem's Summon (§3), and its labels never name the selected entry
+("Choose an item", not "Choose an item for Rance").
+
+**Round X** — `tools/ui/mock_touch_treasure.py`, over the screen gallery's touch dumps of the week-18 save (its two
+items: the L. Holy Sword (item 6) on Rance (unit 1), By Lord (item 7) on Rick (unit 7)). The touch mode only; the PC
+keeps its hover and its clicks.
+
+- **The selection**: a tap lights the cell as the PC's hover does and keeps it; the picture and the figures are the
+  selected entry's; nothing reaches the script. Another tap moves the selection.
+- **The button** stands at the info panel's right, beside the name and figures and under the picture's description
+  column, 232×70 (47×14 mm on the tablet), red lacquer as Summon. Its label by the selection (X7): **Choose an item** (a
+  character, nothing picked) and **Choose a character** (an item in stock, nothing picked) — the original's first pick,
+  the view turns —, **Equip** (the second pick), **Take off** (a held item, nothing picked). No button while nothing is
+  selected.
+- **X1** — Rance tapped: "Choose an item". **X2** — after it: the items' view, the prompt with his face and Back as built,
+  "Tap an item to see it." where the figures stand. **X3** — By Lord tapped: its picture, "Held by Rick", Equip.
+- **X4** — Equip on an item another unit holds: the script's question (`Sｱｲﾃﾑ.ADV:339-350`) in round W's callout, beside
+  the button (the last tap) over the panel's figures and prompt instead of at the cell; the item marked in the grid.
+- **X5** — the items' view with no pick, the L. Holy Sword tapped: Take off (the script's "would you like to unequip it?"
+  follows in the same callout).
+- **X6** — a pick the script refuses, greyed in advance: Rance picked, his own sword tapped — Equip greyed with
+  "Already equipped." in it, so no refusal window to tap away (the same for Chaos (item 1) and Nikkou (item 2), and an
+  item without effect).
+
+Open for the owner:
+
+1. The script's questions (replace, unequip): beside the button (X4), or at the cell as on the PC — or answered unseen,
+   since the button and the figures ("Held by Rick") already say it?
+2. The refusals greyed in the button (X6) — the screen then reads what the script would refuse from the state, as S5's
+   model did — or left to the script's callout after the tap?
+3. A second tap on the selected cell doing what the button does (a shortcut; not drawn)?
+4. The button, as the grid, is out of the thumbs' reach on a tablet held in both hands (docs/ui/touch.md's arcs).
