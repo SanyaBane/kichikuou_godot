@@ -23,7 +23,8 @@ public sealed class MapHeadroom
 
     private const int ScreenHeight = 400;
 
-    private int? _grabbed;
+    private int? _grabbed;                              // the map row a press took, while it is held
+    private int? _pressShift;                           // a press taken while the room slid: the shift it is read by
 
     /// <summary>How much lower the picture is shown at the view's top <paramref name="top"/>, in script pixels.</summary>
     public static int Shift(int top) => top <= 0 ? Strip : top >= Range ? 0 : (Strip * (Range - top) + Range / 2) / Range;
@@ -53,14 +54,24 @@ public sealed class MapHeadroom
     /// is the pressed row less the Y read): the Y read is the pressed row less the camera that shows it at the pointer.
     /// Dragged past the map's edge, where the camera stops, the pointer takes the row under it, so a step back scrolls at
     /// once, as in the original. The release is read as the press's last step (the script's coasting takes the last step,
-    /// <c>WAO_MAP.ADV:45-51</c>), then the row is let go. Clamped to the screen.
+    /// <c>WAO_MAP.ADV:45-51</c>), then the row is let go. Clamped to the screen. While the room is still opening or closing
+    /// (the strip sliding), <paramref name="shift"/> is the picture's shift as drawn, which a hover or a press reads by;
+    /// a press taken so is read by it until its release, so a still click stays one point.
     /// </summary>
-    public int ScriptY(int y, int top, bool held)
+    public int ScriptY(int y, int top, bool held, int? shift = null)
     {
+        if (_pressShift is { } pressed)
+        {
+            if (!held)
+                _pressShift = null;
+            return Clamp(y - pressed);
+        }
         if (_grabbed is not { } row)
         {
-            int read = Clamp(y - Shift(top));
-            if (held)
+            int read = Clamp(y - (shift ?? Shift(top)));
+            if (held && shift is { } sliding)
+                _pressShift = sliding;
+            else if (held)
                 _grabbed = read + top;
             return read;
         }
@@ -71,7 +82,7 @@ public sealed class MapHeadroom
     }
 
     /// <summary>The pointer leaves the map: a press held over it is forgotten.</summary>
-    public void Release() => _grabbed = null;
+    public void Release() => (_grabbed, _pressShift) = (null, null);
 
     private static int Clamp(int y) => Math.Clamp(y, 0, ScreenHeight - 1);
 }

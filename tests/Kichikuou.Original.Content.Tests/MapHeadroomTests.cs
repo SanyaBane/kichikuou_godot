@@ -48,6 +48,18 @@ public class MapHeadroomTests
     }
 
     [Fact]
+    public void While_the_room_opens_the_pointer_reads_the_picture_as_drawn()
+    {
+        var room = new MapHeadroom();
+        Assert.Equal(100 - 10, room.ScriptY(100, 0, held: false, shift: 10));
+        int press = room.ScriptY(120, 0, held: true, shift: 10);
+        Assert.Equal(110, press);
+        Assert.Equal(press, room.ScriptY(120, 0, held: true));               // the room open now: the press keeps its shift
+        Assert.Equal(press, room.ScriptY(120, 0, held: false));              // a still click: one point
+        Assert.Equal(120 - MapHeadroom.Shift(0), room.ScriptY(120, 0, held: false));
+    }
+
+    [Fact]
     public void A_still_click_reads_one_point()
     {
         var room = new MapHeadroom();

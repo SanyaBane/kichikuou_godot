@@ -52,9 +52,9 @@ public partial class GameScreen
     }
 
     /// <summary>
-    /// Takes the map's room as the screen shows it now; returns whether it changed. Off the map the script's reads and our
-    /// plates take the picture as it is at once; the strip slides out and the room closes over <see cref="RetractSeconds"/>
-    /// (<see cref="AdvanceHeadroom"/>).
+    /// Takes the map's room as the screen shows it now; returns whether it changed. The strip slides in or out and the room
+    /// opens or closes with it over <see cref="SlideSeconds"/> (<see cref="AdvanceHeadroom"/>); off the map the script's
+    /// reads take the picture as it is at once.
     /// </summary>
     private bool UpdateHeadroom()
     {
@@ -65,9 +65,7 @@ public partial class GameScreen
         if (strip == _mapStrip && shift == _mapShift)
             return false;
         if (strip)
-            _retracting = null;                                             // back on the map: there at once
-        else if (_mapStrip && _strip.Visible)
-            (_retracting, _retractShift) = (0, _mapShift);
+            _roomBase = shift;                                              // off the map it closes from the last one
         (_mapStrip, _mapShift) = (strip, shift);
         if (!strip)
             _headroom.Release();
@@ -75,44 +73,53 @@ public partial class GameScreen
         return true;
     }
 
-    // ---------------------------------------------------------------- the strip going (owner, 2026-10-27)
+    // ---------------------------------------------------------------- the strip coming and going (owner, 2026-10-27)
 
     /// <summary>
-    /// How long the strip takes to slide out of the picture when the screen leaves the map — a dungeon, a dialogue over the
-    /// map —, the room under it closing with it, so the map no longer jumps up into the strip's place (owner, 2026-10-27).
+    /// How long the strip takes to slide into the picture when the screen comes to the map and out of it when it leaves —
+    /// a dungeon, a dialogue over the map —, the room under it opening or closing with it, so the map no longer jumps into
+    /// the strip's place or out of it (owner, 2026-10-27).
     /// </summary>
-    private const double RetractSeconds = 0.3;
+    private const double SlideSeconds = 0.3;
 
-    private double? _retracting;                        // seconds since the strip began to slide out, while it does
-    private int _retractShift;                          // the room when it began
+    private float _slide;                               // how far the strip is in, 0 (gone) to 1 (all in), before the easing
+    private int _roomBase;                              // the room it opens to, or closes from once the screen left the map
 
-    /// <summary>How much of the strip is still out, 1 to 0 as it slides (an ease in and out); 0 off the map, 1 on it.</summary>
-    private float StripOut => _retracting is { } t
-        ? 1 - Smooth((float)(t / RetractSeconds))
-        : _mapStrip ? 1 : 0;
+    /// <summary>The picture's shift as drawn now, in script pixels: <see cref="_mapShift"/> on the map once the strip is in.</summary>
+    private int _shownShift;
+
+    /// <summary>How much of the strip is in the picture, 0 to 1, eased in and out.</summary>
+    private float StripIn => Smooth(_slide);
 
     private static float Smooth(float x) => x * x * (3 - 2 * x);
 
-    /// <summary>Once a frame: the strip slides on and the room closes with it, the room's top row under the strip's foot.</summary>
+    /// <summary>Once a frame: the strip slides on towards the map's state and the room follows it, its top row under the strip's foot.</summary>
     private void AdvanceHeadroom(double delta)
     {
-        if (_retracting is not { } t)
+        float target = _mapStrip ? 1 : 0, step = (float)(delta / SlideSeconds);
+        if (_slide == target)
             return;
-        t += delta;
-        _retracting = t < RetractSeconds ? t : null;
+        _slide = target > _slide ? Math.Min(target, _slide + step) : Math.Max(target, _slide - step);
         ShowRoom();
     }
 
-    /// <summary>The picture drawn lower by the room as shown: the map's, or the one closing with the strip.</summary>
-    private void ShowRoom() =>
-        MapRoomPicture.SetShift(_roomMaterial, _retracting is null ? _mapShift : _retractShift * StripOut);
+    /// <summary>The picture drawn lower by the room as the strip stands, to the script's pixels (our plates are placed by them).</summary>
+    private void ShowRoom()
+    {
+        int shown = (int)MathF.Round(_roomBase * StripIn);
+        if (shown == _shownShift)
+            return;
+        _shownShift = shown;
+        MapRoomPicture.SetShift(_roomMaterial, shown);
+    }
 
     /// <summary>The map's point at the screen's top-left corner as the picture is drawn, the room counted; null before the map.</summary>
-    private (int X, int Y)? MapCornerDrawn => _presenter.MapViewShown is { } corner ? (corner.X, corner.Y - _mapShift) : null;
+    private (int X, int Y)? MapCornerDrawn => _presenter.MapViewShown is { } corner ? (corner.X, corner.Y - _shownShift) : null;
 
     /// <summary>
     /// The Y the script reads for the pointer at <paramref name="y"/> on the picture with <paramref name="buttons"/> held:
-    /// on the map the view's row (<see cref="MapHeadroom.ScriptY"/>, a drag keeping its row under the pointer), else as it is.
+    /// on the map the view's row (<see cref="MapHeadroom.ScriptY"/>, a drag keeping its row under the pointer; while the
+    /// strip slides in, by the picture as drawn), else as it is.
     /// </summary>
     private int ScriptY(int y, ushort buttons)
     {
@@ -121,7 +128,7 @@ public partial class GameScreen
             _headroom.Release();
             return y;
         }
-        return _headroom.ScriptY(y, corner.Y, held: (buttons & KeyReturn) != 0);
+        return _headroom.ScriptY(y, corner.Y, held: (buttons & KeyReturn) != 0, shift: _slide < 1 ? _shownShift : null);
     }
 
     /// <summary>The player's pointer as the script reads it: the buttons held, the place on the picture turned to the view's (<see cref="ScriptY"/>).</summary>
@@ -207,7 +214,7 @@ public partial class GameScreen
             var picture = PictureArea();
             float stripFoot = picture.Position.Y + StatusStripView.Height * picture.Size.X / (Surface.ScreenWidth * Surface.Scale);
             var wall = _markers.PlateOf(MapHitKind.Province, GreatWallA);
-            string report = $"--map-north dragged the view's top from {top0} to {top} (shift {_mapShift}): the pressed row "
+            string report = $"--map-north dragged the view's top from {top0} to {top} (shift {_shownShift}): the pressed row "
                 + $"{(least > most ? "never measured" : $"{least} to {most} rows above the pointer")}; the Great Wall of Helman A "
                 + $"({GreatWallA})'s plate {(wall is { } w ? $"at {w.Centre.Y:0} px, the strip's foot at {stripFoot:0}" : "not shown")}.";
             bool held = least <= most && least >= 0 && most <= 1;

@@ -942,7 +942,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (x >= 3200 || y >= 800)
             return;
         x = Math.Max(x, 0) - _presenter.Stage.View.X;
-        y = Math.Max(y, 0) - _presenter.Stage.View.Y + _mapShift;      // on the map, where the picture shows that row
+        y = Math.Max(y, 0) - _presenter.Stage.View.Y + _shownShift;    // on the map, where the picture shows that row
         if (!EngineState.MouseMovement || _options.Auto || OrderRunning)  // an order's way puts back a pointer that was never the player's
         {
             _input.Position = ClampToScreen(x, y);
@@ -2099,18 +2099,18 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// Our status strip (docs/ui/command-screen.md, "The status strip") lies over the picture's top, as wide as
     /// it, while the screen shows <c>COMMAND</c>'s map (owner, 2026-10-27; before, only with our command panel, where
     /// the original prints its status window; 2026-10-17: a band of its own above the map lived apart from the map),
-    /// the map's room under it (<see cref="UpdateHeadroom"/>); when the screen leaves the map it slides up out of the picture
-    /// (<see cref="StripOut"/>).
+    /// the map's room under it (<see cref="UpdateHeadroom"/>); it slides into the picture as the screen comes to the map and
+    /// out of it as it leaves (<see cref="StripIn"/>).
     /// </summary>
     private void UpdateStatusStrip()
     {
-        if ((_mapStrip || _retracting is not null) && _presenter.StatusStrip is { } strip)
+        if (_slide > 0 && _presenter.StatusStrip is { } strip)
         {
             var picture = PictureArea();
             _stripClip.Position = picture.Position;
             _stripClip.Size = picture.Size;
             _strip.Show(strip);
-            _strip.Out = 1 - StripOut;
+            _strip.Out = 1 - StripIn;
             _strip.Place(new Rect2(Vector2.Zero, new Vector2(picture.Size.X, StatusStripView.Height * picture.Size.X / Surface.ScreenWidth)));
         }
         else

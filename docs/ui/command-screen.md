@@ -423,9 +423,13 @@ the edge, the strip folding at the edge, the strip at the foot, the wide screen'
   0.3 s (an ease in and out; clipped at the picture's top, `StatusStripView.Out`), and the room closes with it on the
   same curve (`GameScreen.AdvanceHeadroom`), so at the map's top the strip's foot and the map's first row move together
   and the mirrored band never shows. Whatever the script draws in those 0.3 s rises with the map; the script's reads
-  and our plates take the picture as it is at once. Coming back to the map the strip and the room are there at once.
-  Checked in a window on `--map-north`'s picture with a leave forced for the check: the map rose 0, 12, 36, 50 window
-  pixels four frames apart, the strip sliding out over it.
+  take the picture as it is at once. Coming back to the map (owner, 2026-10-27) the strip slides in the same way and
+  the room opens with it, one progress for both ways (a slide turned midway goes back from where it is); our plates
+  follow the picture as drawn (`GameScreen.MapCornerDrawn`), and the script reads a hover or a press by it too
+  (`MapHeadroom.ScriptY`'s `shift`: a press taken so keeps that shift until its release, so a still click stays one
+  point). Checked in a window on `--map-north`'s picture with a leave and a return forced for the check, shots four
+  frames apart: going, the map rose 0, 20, 42, 50 window pixels and the strip's foot went 73, 54, 31, out of the
+  picture; coming, the map came down 50, 36, 12, 0 and the strip's foot 38, 61, 73.
 - **The script sees nothing of it.** The camera and every state stay the original's; the pointer the script reads is
   turned from the picture's rows to the view's (`MapHeadroom.ScriptY`): a hover or a click reads the view's row under
   it. A drag keeps the row it pressed under the pointer: the script moves the camera by the pointer's steps, so each Y
