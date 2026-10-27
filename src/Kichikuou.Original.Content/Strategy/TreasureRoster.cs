@@ -42,6 +42,39 @@ public sealed record TreasureDetails(int PictureCg, int EmptyCg, string Name, st
 /// </summary>
 public sealed record TreasurePrompt(bool UnitFirst, int Number, string Name, int FaceCg);
 
+/// <summary>What the touch mode's button does with the selected entry (docs/ui/pickers.md, §6): the picker's click on its cell.</summary>
+public enum TreasureAction
+{
+    /// <summary>A character, nothing picked: the first pick, the view turns to the items.</summary>
+    ChooseItem,
+
+    /// <summary>An item in stock, nothing picked: the first pick, the view turns to the characters.</summary>
+    ChooseCharacter,
+
+    /// <summary>The second pick: the item goes on the character.</summary>
+    Equip,
+
+    /// <summary>A held item, nothing picked: the script asks, Yes takes it off.</summary>
+    TakeOff,
+}
+
+/// <summary>
+/// The touch mode's button for the selected entry: its action and, where the picker would refuse the click or take no
+/// notice of it, why — the button greyed with the reason in it (the owner's X6, 2026-10-27). Its label never names the
+/// selection (the owner, 2026-10-27).
+/// </summary>
+public sealed record TreasureButton(TreasureAction Action, string? Refusal)
+{
+    /// <summary>The button's word (docs/ui/pickers.md, X7).</summary>
+    public string Label => Action switch
+    {
+        TreasureAction.ChooseItem => "Choose an item",
+        TreasureAction.ChooseCharacter => "Choose a character",
+        TreasureAction.Equip => "Equip",
+        _ => "Take off",
+    };
+}
+
 /// <summary>
 /// Our own Treasure screen's model (docs/ui/pickers.md, round V: <c>Sｱｲﾃﾑ</c>'s own screen in lacquer): the view the
 /// picker shows, its grid's entries at their numbers' cells, the picture panel and line of an entry, the first pick's
@@ -168,6 +201,42 @@ public static class TreasureRoster
         if (u.Status.Value is not (1 or 2) || held == 0 || held == item || Fixed(held))
             return null;
         return [$"{DeploymentTable.UnitName(s, unit)} already has {ItemName(s, held)} equipped.", $"Replace it with {ItemName(s, item)}?"];
+    }
+
+    /// <summary>
+    /// The touch mode's button for entry <paramref name="number"/> of the view shown, or null for a number that is no entry.
+    /// The refusal follows <c>Sｱｲﾃﾑ</c>'s checks of a click in their order (<c>L_004ee</c>, <c>:281-353</c>;
+    /// <c>ItemScreen.PickAsync</c>), in our words, the selection never named: a unit not at status 1 or 2 (the picker takes
+    /// no notice), a unit holding Chaos or Nikkou (<c>:254</c>), an item picked first that is one of them (<c>:268</c>, dead:
+    /// CMD-20), the picked unit's own Chaos or Nikkou (<c>:291</c>; without a pick record 0's, CMD-17), Chaos or Nikkou
+    /// themselves (<c>:301</c>), the picked unit's own item (<c>:311</c>), an item in stock without effect (<c>:367</c>). A held
+    /// item is asked about rather than refused.
+    /// </summary>
+    public static TreasureButton? Button(GameState s, int number)
+    {
+        if (number is < 1 or > 50 || Entries(s).All(e => e.Number != number))
+            return null;
+        int unitPicked = s.Ui_ItemUnitSel.Value, itemPicked = s.Ui_ItemSel.Value;
+        if (View(s) == 0)
+        {
+            var u = s.Units[number];
+            var action = itemPicked != 0 ? TreasureAction.Equip : TreasureAction.ChooseItem;
+            string? refusal = u.Status.Value is not (1 or 2) ? "Can't be chosen now."
+                : Fixed(u.Item.Value) ? $"{ItemName(s, u.Item.Value)} can't be unequipped."
+                : Fixed(itemPicked) ? $"{ItemName(s, itemPicked)} can't be unequipped."     // QUIRK: CMD-20
+                : null;
+            return new TreasureButton(action, refusal);
+        }
+        var it = s.Items[number];
+        int holder = it.Holder.Value;
+        var act = unitPicked != 0 ? TreasureAction.Equip : holder != 100 ? TreasureAction.TakeOff : TreasureAction.ChooseCharacter;
+        int held = s.Units[unitPicked].Item.Value;                       // QUIRK: CMD-17 — record 0's without a pick
+        string? no = Fixed(held) ? $"{ItemName(s, held)} can't be unequipped."
+            : Fixed(number) ? "Can't be unequipped."
+            : unitPicked != 0 && holder == unitPicked ? "Already equipped."
+            : holder == 100 && it.Effect == 0 ? "This item can't be equipped."
+            : null;
+        return new TreasureButton(act, no);
     }
 
     /// <summary>Where the script's pointer rests before the first click: the grid's empty 51st cell, so the picker hovers nothing.</summary>
