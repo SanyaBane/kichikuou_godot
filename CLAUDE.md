@@ -280,7 +280,10 @@ and mock-up round P1 (the scenes PS1-PS3, the map PM1-PM2, the battle PB1-PB2) a
 (`tools/ui/mock_phone.py`); the owner chose PM1 and PB1 with our army on top (round P2's PB3), none of the scenes (left
 open). Base versions of every screen's mock-ups first, nothing built meanwhile (owner, 2026-10-27). Rounds P3-P7 drew
 our full screens upright; the owner chose PD2, PU1, PA1, PW1, PH2, PT2, PL2, PO1, PF1 (some changed) and the battle's
-other states, the opening still open (docs/ui/phone.md, §5); the landscape phone (round P8 on) is next.
+other states, the opening still open (docs/ui/phone.md, §5). The landscape phone (round P8 on, the L… variants): the
+frame keeps the layout, our controls go to the black sides; the owner chose the map LM1, the battle LB2, the deployment
+table LD2 and Subordinates LU1 (both changed); the other full screens are next. The gallery shows both orientations'
+choices on tabs of their own (`gallery.ps1 -PhoneOnly`).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
