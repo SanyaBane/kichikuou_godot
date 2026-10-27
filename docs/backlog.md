@@ -38,8 +38,9 @@ The owner aims at a public release (decision 28, 2026-10-20).
 - **Android** — *agent* (the owner wants it, 2026-10-11): our own `.apk`, not Google Play; the tablet first,
   phones put off (owner, 2026-10-24: their mock-ups B1, B3, M1, M2 and the open questions are in
   [ui/touch.md](ui/touch.md), "Phones (put off)") and taken up again (owner, 2026-10-27): both orientations, the
-  Xiaomi Poco X6 Pro the reference, upright first — survey and mock-up round P1 in [ui/phone.md](ui/phone.md),
-  awaiting the owner's choices; round P2 (our full screens upright) and the landscape phone after them. Built and played on a Galaxy Tab S7 FE since 2026-10-24: the
+  Xiaomi Poco X6 Pro the reference, upright first — survey and mock-up rounds in [ui/phone.md](ui/phone.md): the map
+  PM1 and the battle PB3 (PB1, our army on top) chosen, the scenes left open; next the base versions of our full
+  screens upright, then the landscape phone; nothing built until the mock-ups are done (owner, 2026-10-27). Built and played on a Galaxy Tab S7 FE since 2026-10-24: the
   preset "Android" and `tools/export-android.ps1` (`run-android.cmd`); the game folder copied into the app's own
   external folder and imported at the first start (`GameData.AndroidGameFolder`: no permission, where the native
   folder dialog would give a `content://` URI that `System.IO` cannot open); the saves beside it

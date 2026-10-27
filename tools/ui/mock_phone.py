@@ -18,7 +18,9 @@ gallery's touch `map` dump where it shows them (the camera at map x 1280-1920, y
 owners (made up for the mock-up). The plates are ours, drawn larger.
 
 Variants (docs/ui/phone.md): P0 today's layout turned upright; PS1-PS3 the scenes; PM1-PM2 the map; PB1-PB2 the
-battle (P for portrait: touch.md's B1, M1… are the landscape phone's).
+battle (P for portrait: touch.md's B1, M1… are the landscape phone's). Round P2: PB3 (PB1 with the owner's changes —
+our army on top, Skip between the cards and the deck), PB3r the retreat question, PB3x an exchange; the battle's inputs
+also touch/current's exchange-counters.
 The pink lines and text are the mock-ups' notes, not part of a screen.
 """
 import sys, os, re
@@ -751,10 +753,10 @@ def bar(d, x, y, w, v, m, colour):
     d.rectangle((x, y, x + round(w * v / m), y + 10), fill=colour)
 
 
-def toggles(d, x, y, w, size=30):
+def toggles(d, x, y, w, size=30, h=54):
     bw = (w - 10) // 2
     for i, word in enumerate(['Auto-Atk', 'Auto-Def']):
-        row_box(d, (x + i * (bw + 10), y, x + i * (bw + 10) + bw, y + 54), word, size=size, centred=True)
+        row_box(d, (x + i * (bw + 10), y, x + i * (bw + 10) + bw, y + h), word, size=size, centred=True)
 
 
 def wide_card(d, img, box, name, player, acting=False, target=False):
@@ -805,8 +807,10 @@ def battle_scene(img):
     return TOP + round(410 * PW / 1024)
 
 
-def battle_deck(d, top):
+def battle_deck(d, top, skip=True, empty=False):
     panel(d, (0, top, PW, PH - 40))
+    if empty:
+        return None
     colw = (PW - 48) // 2
     lx, rx = 16, 32 + colw
     d.text((lx + 20, top + 46), 'RANCE', font=BRUSH(44), fill=NAME, anchor='lm')
@@ -823,10 +827,11 @@ def battle_deck(d, top):
     y = foot - n * h - (n - 1) * 12
     red_button(d, (lx, y, lx + colw, y + h), 'Retreat', 46)
     gold_button(d, (rx, foot - 250, rx + colw, foot), 'Melee', ('Trp. 29-37', 'HP 0-1'))
-    pill = (rx + colw - 220, top + 112, rx + colw, top + 190)
-    panel(d, pill)
-    icon(d, 'skip', pill[0] + 52, (pill[1] + pill[3]) // 2)
-    d.text((pill[0] + 140, (pill[1] + pill[3]) // 2), 'Skip', font=GOTHIC(32), fill=TEXT, anchor='mm')
+    if skip:
+        pill = (rx + colw - 220, top + 112, rx + colw, top + 190)
+        panel(d, pill)
+        icon(d, 'skip', pill[0] + 52, (pill[1] + pill[3]) // 2)
+        d.text((pill[0] + 140, (pill[1] + pill[3]) // 2), 'Skip', font=GOTHIC(32), fill=TEXT, anchor='mm')
     return h
 
 
@@ -922,6 +927,132 @@ def b2():
     save(img, 'PB2', 'the armies side by side, tall cards', 'battle')
 
 
+# --- round P2: PB1 with the owner's changes (2026-10-27) -------------------------------------------------------------
+
+# The exchange of the gallery's exchange-counters: Ex (commander 1) on Rance (unit 1), both by Melee.
+EXCHANGE = dict(UNITS, Rance=('1', 'Leazas Knights', 560, 1000, (8, 8), 'pill', '10 6 0 13'),
+                Rick=('2', 'Leazas Knights', 800, 800, (8, 8), 'toggles', '10 6 0 20'),
+                Ex=('1', 'Leazas Knights', 92, 1000, (1, 4), 'pill', '10 6 0 1'),
+                Sakanaku=('2', 'Leazas Soldiers', 177, 1000, (6, 6), '', '8 4 0 2'),
+                Melfeis=('3', 'Leazas Mages', 300, 300, (4, 4), '', '3 3 7 9'))
+
+
+def slim_card(img, box, name, player, data, acting=False, target=False, dim=False):
+    """PB1's card at 230 high: the face left with its four figures, the text right."""
+    d = ImageDraw.Draw(img)
+    x0, y0, x1, y1 = box
+    num, kind, trp, mtrp, (hp, mhp), state, stats = data
+    d.rectangle(box, fill=(88, 72, 50) if acting else (28, 22, 18),
+                outline=(240, 230, 210) if acting else (GOLD if state == 'pill' else DIM_GOLD), width=4 if acting else 2)
+    fs = y1 - y0 - 52
+    img.paste(face(name, fs), (x0 + 10, y0 + 10))
+    d.text((x0 + 10 + fs / 2, y1 - 22), stats, font=GOTHIC(28), fill=TEXT, anchor='mm')
+    tx, tw = x0 + fs + 28, x1 - x0 - fs - 44
+    d.text((tx, y0 + 8), f'{num}  {name}', font=GOTHIC(38), fill=TEXT)
+    d.text((tx, y0 + 50), kind, font=GOTHIC(30), fill=QUIET)
+    d.text((tx, y0 + 86), f'Trp. {trp:,}/{mtrp:,}', font=GOTHIC(34), fill=TEXT)
+    bar(d, tx, y0 + 124, tw, trp, mtrp, PLAYER_BLUE if player else ENEMY_RED)
+    d.text((tx, y0 + 138), f'HP {hp}/{mhp}', font=GOTHIC(34), fill=TEXT)
+    bar(d, tx, y0 + 176, tw, hp, mhp, BAR_GOOD)
+    if state == 'toggles':
+        toggles(d, tx, y1 - 46, tw, 24, h=38)
+    elif state == 'pill':                       # the exchange's action pill
+        p = (x1 - 196, y1 - 54, x1 - 14, y1 - 12)
+        d.rounded_rectangle(p, radius=21, fill=(226, 186, 96))
+        d.line([(p[0] + 22, p[3] - 10), (p[0] + 46, p[1] + 10)], fill=(44, 26, 10), width=5)
+        d.text((p[0] + 112, (p[1] + p[3]) / 2), 'Melee', font=GOTHIC(30), fill=(44, 26, 10), anchor='mm')
+    elif state:
+        d.text((tx, y0 + 190), state, font=GOTHIC(30), fill=QUIET)
+    if dim:
+        part = img.crop(box)
+        img.paste(Image.blend(part, Image.new('RGB', part.size), 0.5), box[:2])
+    if target:
+        brackets(ImageDraw.Draw(img), box)
+
+
+def pb3_board(img, scene, data, acting=None, target=None, fighters=()):
+    """Our army on top, the enemy's under it at the thumb, Skip between the cards and the deck; the deck's top."""
+    backdrop(img, (0, 0, PW, PH))
+    img.paste(at_width(dump(TOUCH, scene).crop((128, 0, 1152, 410))), (0, TOP))
+    d = ImageDraw.Draw(img)
+    y = TOP + round(410 * PW / 1024)
+    cw, ch, gap = (PW - 48) // 2, 230, 10
+    xs = (16, 32 + cw)
+    d.text((24, y + 26), 'Rance Army', font=CINZEL(32, 700), fill=TEXT, anchor='lm')
+    y += 52
+    for row in ([None, None], ['Rance', 'Rick'], 'gauge', ['Ex', 'Sakanaku'], ['Melfeis', 'Dodge']):
+        if row == 'gauge':                      # the round's gauge, turned across; the front rows face each other here
+            for i in range(4):
+                x = PW / 2 - 250 + i * 110
+                d.rounded_rectangle((x, y + 14, x + 90, y + 58), radius=10, fill=(150, 120, 60), outline=GOLD, width=3)
+            d.text((PW / 2 + 230, y + 36), '4  TURNS LEFT', font=CINZEL(30, 700), fill=NAME, anchor='lm')
+            y += 82
+            continue
+        for name, x in zip(row, xs):
+            box = (x, y, x + cw, y + ch)
+            if name is None:
+                empty_slot(d, box)
+            else:
+                slim_card(img, box, name, name in ('Rance', 'Rick'), data[name], acting=name == acting,
+                          target=name == target, dim=bool(fighters) and name not in fighters)
+        d = ImageDraw.Draw(img)
+        y += ch + gap
+    d.text((24, y + 18), 'Leazas Rebel Army', font=CINZEL(32, 700), fill=TEXT, anchor='lm')
+    d.text((PW - 24, y + 18), 'Walls +8%', font=GOTHIC(32), fill=(230, 196, 110), anchor='rm')
+    y += 44
+    skip = (16, y, 316, y + 120)
+    panel(d, skip)
+    icon(d, 'skip', skip[0] + 80, y + 60)
+    d.text((skip[0] + 190, y + 60), 'Skip', font=GOTHIC(40), fill=TEXT, anchor='mm')
+    return y + 132
+
+
+def pb3():
+    img, d = phone()
+    top = pb3_board(img, 'battle-turn.png', UNITS, acting='Rance', target='Ex')
+    d = ImageDraw.Draw(img)
+    h = battle_deck(d, top, skip=False)
+    note(d, (640, top + 110), 'PB1 with the owner\'s changes:\nour army on top, the enemy\'s at\nthe thumb '
+                              '(a tap moves the target);\nSkip between the cards and the deck.\n'
+                              f'Cards {mm(PW // 2 - 24)} × {mm(230)}; rows {mm(h)}', 28)
+    note(d, (340, top - 100), 'Skip at the left, as the tablet\'s', 26)
+    save(img, 'PB3', 'the player\'s turn: our army on top', 'battle-p2')
+
+
+def pb3r():
+    img, d = phone()
+    top = pb3_board(img, 'battle-turn.png', UNITS, acting='Rance', target='Ex')
+    d = ImageDraw.Draw(img)
+    h = battle_deck(d, top, skip=False)
+    colw = (PW - 48) // 2
+    rx, foot = 32 + colw, PH - 70
+    ry = foot - 5 * h - 4 * 12                  # Retreat, at the left column's top
+    box = (rx - 6, ry, PW - 16, ry + 330)
+    panel(d, box, fill=(30, 22, 16))
+    d.polygon([(rx - 6, ry + h / 2 - 22), (rx - 30, ry + h / 2), (rx - 6, ry + h / 2 + 22)], fill=GOLD)
+    d.text((rx + 30, ry + 36), 'Retreat the whole army?', font=fit(d, 'Retreat the whole army?', GOTHIC, 38, colw - 60),
+           fill=TEXT)
+    d.text((rx + 30, ry + 90), 'The battle is lost.', font=GOTHIC(32), fill=QUIET)
+    d.line([(rx + 24, ry + 146), (PW - 40, ry + 146)], fill=DIM_GOLD, width=2)
+    bw = (PW - 16 - rx - 30 - 16) // 2
+    row_box(d, (rx + 18, ry + 168, rx + 18 + bw, ry + 306), 'Cease Retreat', size=34, centred=True)
+    red_button(d, (rx + 30 + bw, ry + 168, PW - 34, ry + 306), 'Retreat', 40)
+    note(d, (340, top - 116), 'The question at Retreat (the tablet\'s A2), over\nthe deck\'s right column; '
+                              f'answers {mm(138)} high,\nCease Retreat nearer the button, Retreat last', 25)
+    save(img, 'PB3r', 'the retreat question', 'battle-p2')
+
+
+def pb3x():
+    img, d = phone()
+    top = pb3_board(img, 'exchange-counters.png', EXCHANGE, acting='Ex', fighters=('Rance', 'Ex'))
+    d = ImageDraw.Draw(img)
+    battle_deck(d, top, empty=True)
+    note(d, (40, top + 60), 'An exchange: the counters at the scene\'s foot (4 mm figures),\n'
+                            'the fighters\' cards lit with their action\'s pill, the rest dimmed;\n'
+                            'the deck empty while it plays (as the tablet\'s rails),\nSkip in its place', 28)
+    save(img, 'PB3x', 'an exchange', 'battle-p2')
+
+
 def main():
     global MAP, PROV_NAMES, PROV_POINTS
     MAP, PROV_NAMES, PROV_POINTS = build_map()
@@ -929,6 +1060,7 @@ def main():
     d1(); d2(); d2b(); d2m(); d3()
     m1(); m2()
     b1(); b2()
+    pb3(); pb3r(); pb3x()
     overviews()
 
 

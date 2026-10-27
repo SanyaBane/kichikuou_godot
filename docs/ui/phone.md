@@ -10,6 +10,9 @@ offer, answered through the inputs the script reads (docs/ui/style.md, §1). Onl
 habits (docs/ui/style.md, §6: select then act, a long press for details, the thumbs' reach, Turn END only in the command
 panel) hold upright too.
 
+**Base versions first** (owner, 2026-10-27): the phone's mock-ups are drawn screen by screen as base versions; nothing
+is built while they are being drawn.
+
 The mock-ups are `tools/ui/mock_phone.py` (the command and its inputs in its docstring), drawn at the phone's own pixels
 over the screen gallery's dumps, the week-18 look's key waits (Ex's scene before the attack on Oaks (6)) and the map's
 own pictures; the images stay outside the repository. Their variants are named **P…** (portrait), apart from
@@ -71,6 +74,8 @@ type is the largest, the picture is whole; the room under the window stays free 
 controls. PS3 uses that room for what was just read, at the cost of the smaller type and a look further from the
 original's windows.
 
+**The owner (2026-10-27): none of the three.** The scenes stay open; the other screens go on without them.
+
 ## 3. The map (`COMMAND`'s map wait, the command panel, a province)
 
 The map is six pictures, 1920 × 800 map pixels; the PC shows 640 × 400 of it. Upright at the picture's width the
@@ -97,6 +102,8 @@ the mock-ups; the dungeons are the four the dump shows.
 the thumb and the status gets room to be read; the map is the PC's view, only taller. PM1's map is larger (its flags
 and plates easier to hit), but every sheet hides the south and needs the map to scroll.
 
+**The owner's choice (2026-10-27): PM1.**
+
 ## 4. The battle (the player's turn)
 
 The battle scene (1024 × 410) at the screen's width (1.19 ×) under the camera; the cards and the choices under it.
@@ -114,14 +121,17 @@ The battle scene (1024 × 410) at the screen's width (1.19 ×) under the camera;
 **Recommendation: PB1** — the larger cards and type, today's card layout, our own cards at the thumb. PB2 keeps the
 scene's sides but its cards are half as wide.
 
+**The owner's choice (2026-10-27): PB1 as the base, the armies swapped — ours on top, the enemy's at the foot — and
+the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
+
 ## 5. Open questions
 
 1. **The line breaks upright.** Kept (each window kind's type as large as its longest line: 3.6 mm and 2.6 mm), or
    rewrapped at one size for every window (e.g. 3.2 mm), as the battle's balloons already are? Rewrapping touches
    no rule; it changes how a page looks.
-2. **The scenes:** PS1, PS2 or PS3.
-3. **The map:** PM1 or PM2.
-4. **The battle:** PB1 or PB2.
+2. ~~**The scenes:** PS1, PS2 or PS3.~~ None (owner, 2026-10-27); open, put off.
+3. ~~**The map:** PM1 or PM2.~~ PM1.
+4. ~~**The battle:** PB1 or PB2.~~ PB1, changed: round P2 (§6).
 5. **The bar's cells** (Menu, Log, Skip): at the left, as the tablet's drawer, or at the right under the right thumb?
 6. **Turning the phone:** the game turns with the phone at any moment (the sensor), or the player chooses upright,
    landscape or "turns with the phone" in Option → Display?
@@ -129,6 +139,26 @@ scene's sides but its cards are half as wide.
    Subordinates (the ledger as a list), Harem, Treasure, Save/Load, the week report, the enemy attack, All Data, the
    options window, the title and the import screen —, then the landscape phone.
 
-The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; the
-battle's Skip as a pill in the deck; a `]` menu taking the bar's place; the map's plates drawn larger than the map's
-scale (their text 1.7-2 mm whatever the zoom).
+The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
+menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
+zoom).
+
+## 6. Round P2: the battle on PB1 (owner, 2026-10-27)
+
+PB1 with the owner's changes, drawn by the same script in the battle's three states; the scene, the cards and the deck
+are PB1's.
+
+- **PB3 — the player's turn.** From the top: the scene; "Rance Army" and our two rows (the back row first, then the
+  front row); the round's gauge, turned across, where the two front rows face each other; the enemy's front row, then
+  its back row, "Leazas Rebel Army" and its advantage; **Skip** on a strip of its own; the deck (the acting unit's
+  commands from the foot up, Retreat at the top, the target's attacks at the right thumb). The cards 33.4 × 13.1 mm
+  (230 phone px high, text 2.0-2.2 mm), the deck's rows 7.0 mm. The enemy's cards are now within the thumb's reach, so
+  a tap moves the target there; our own cards (their Auto-Atk / Auto-Def toggles, the long press) went up.
+- **PB3r — the retreat question**: at Retreat, over the deck's right column (the tablet's A2): the script's question,
+  Cease Retreat nearer the button, Retreat red and last, the answers 7.9 mm high.
+- **PB3x — an exchange** (the gallery's: Ex (commander 1) on Rance (unit 1), both by Melee): the counters at the scene's
+  foot as today (their figures 4 mm), the fighters' cards lit with their action's pill, the other cards dimmed; the deck
+  empty while the exchange plays, as the tablet's rails are; Skip in its place.
+
+The agent's choice, for the owner to confirm: Skip at its strip's left, the tablet's corner (the strip has room for
+more beside it).
