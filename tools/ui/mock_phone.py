@@ -31,7 +31,9 @@ Round P8, the phone held landscape (2712×1220, the layout fitted to the height 
 tablet layout at that size; LM1-LM2 the map (map-markers, province-menu), LB1-LB2 the battle (battle-turn).
 Round P9: LD1-LD2 the deployment table, LU1-LU2 the Subordinates screen, landscape. Round P10: LA1-LA2 the enemy
 attack (enemy-attack-scouted), LW1-LW2 the week report (week-report and the map's pictures), landscape. Round P11:
-LH1-LH2 Harem, LT1-LT2 Treasure, LL1-LL2 Save/Load, landscape (harem, treasure-items, save-load).
+LH1-LH2 Harem, LT1-LT2 Treasure, LL1-LL2 Save/Load, landscape (harem, treasure-items, save-load). Round P12:
+LO1-LO2 the options window, LF1-LF2 the dungeon's menus, landscape (options-messages, floor-ladder-middle,
+dungeon-entry, map).
 `--round P3` before the arguments draws only that round's variants (the look dir then unread, '-' will do).
 The pink lines and text are the mock-ups' notes, not part of a screen.
 
@@ -2574,6 +2576,12 @@ def section(d, x, y, x1, name):
 
 
 def messages_tab(d, x, y, x1):
+    y = text_speed(d, x, y, x1)
+    y = message_skip(d, x, y, x1)
+    return read_text(d, x, y, x1)
+
+
+def text_speed(d, x, y, x1):
     y = section(d, x, y, x1, 'TEXT SPEED')
     d.text((x, y + 30), 'Slow', font=GOTHIC(30), fill=INK_QUIET, anchor='lm')
     d.text((x1, y + 30), 'Instant', font=GOTHIC(30), fill=INK_QUIET, anchor='rm')
@@ -2590,13 +2598,19 @@ def messages_tab(d, x, y, x1):
     triangle(d, x1 - 30, box[3] - 24, 12)
     y = box[3] + 14
     d.text((x, y), 'The preview counts as read.', font=GOTHIC(28), fill=INK_QUIET)
-    y += 70
+    return y + 70
+
+
+def message_skip(d, x, y, x1):
     y = section(d, x, y, x1, 'MESSAGE SKIP')
     y = option_row(d, x, y, x1, 'Skip unseen text', ['MsgSkip and Ctrl skip unread ones too.'])
     y = option_row(d, x, y, x1, 'MsgSkip speeds up fades', ['Fades and waits run fast.'])
     d.text((x, y), '0 messages seen.', font=GOTHIC(30), fill=INK_QUIET)
     d.text((x1, y), 'Forget them…', font=GOTHIC(30), fill=INK_QUIET, anchor='ra')
-    y += 80
+    return y + 80
+
+
+def read_text(d, x, y, x1):
     y = section(d, x, y, x1, 'ALREADY-READ TEXT')
     b = (x, y, x + 300, y + 100)
     d.rectangle(b, fill=(22, 16, 12))
@@ -2735,7 +2749,8 @@ def ladder_rung(d, box, word, sub, way, off=False):
     cy = (y0 + y1) / 2
     if way:
         arrow_mark(d, x0 + 50, cy, way, 20, OFF_TEXT if off else GOLD)
-    d.text((x0 + 96, cy - 20), word, font=GOTHIC(46), fill=OFF_TEXT if off else TEXT, anchor='lm')
+    d.text((x0 + 96, cy - 20), word, font=fit(d, word, GOTHIC, 46, x1 - x0 - 110), fill=OFF_TEXT if off else TEXT,
+           anchor='lm')
     d.text((x0 + 98, cy + 30), sub, font=GOTHIC(28), fill=OFF_TEXT if off else QUIET, anchor='lm')
 
 
@@ -4517,6 +4532,196 @@ def p11():
     ll1(); ll2()
 
 
+# --- round P12: the options window and the dungeon's menus, landscape (2026-10-28) ---------------------------------
+
+def messages_columns(d, box):
+    """The Messages tab in two columns: the text speed and the read text's colours left, the message skip right."""
+    x0, y0, x1, y1 = box
+    mid = round((x0 + x1) / 2)
+    y = text_speed(d, x0 + 40, y0 + 36, mid - 30)
+    read_text(d, x0 + 40, y, mid - 30)
+    message_skip(d, mid + 30, y0 + 36, x1 - 40)
+    d.line([(mid, y0 + 40), (mid, y1 - 40)], fill=PAPER_LINE, width=2)
+    return mid
+
+
+def paper_button(d, box, label):
+    d.rectangle(box, fill=PAPER_DARK, outline=INK_QUIET, width=2)
+    d.text(((box[0] + box[2]) / 2, (box[1] + box[3]) / 2), label, font=CINZEL(36, 700), fill=INK_HEAD, anchor='mm')
+
+
+def lo1():
+    img, d = land()
+    backdrop(img, (0, 0, LW, LH))
+    h, w = 110, 330
+    for i, name in enumerate(OPTION_TABS):          # the paper tabs on top, as on the PC and PO1
+        x = LX0 + i * (w + 10)
+        on = i == 0
+        d.rectangle((x, 16 + (0 if on else 12), x + w, 16 + h), fill=PAPER if on else PAPER_DARK)
+        if on:
+            d.rectangle((x, 16, x + w, 25), fill=VERMILION)
+        d.text((x + w / 2, 16 + h / 2 + 6), name, font=fit(d, name.upper(), lambda s: CINZEL(s, 700), 34, w - 20),
+               fill=INK_HEAD if on else INK_QUIET, anchor='mm')
+    d.text((LX1 - 4, 20), 'Options', font=BRUSH(62), fill=NAME, anchor='ra')
+    sheet = (LX0, 16 + h, LX1, FOOT - 10)
+    d.rectangle(sheet, fill=PAPER)
+    mid = messages_columns(d, sheet)
+    foot = (FOOT - 10 - 30 - 130, FOOT - 10 - 30)
+    paper_button(d, (mid + 30, foot[0], mid + 30 + 380, foot[1]), 'Defaults')
+    red_button(d, (mid + 30 + 400, foot[0], LX1 - 40, foot[1]), 'Close', 56)
+    reach_land(img)
+    save_land(img, 'LO1', 'the paper sheet across the width, its tabs on top', 'land-options', notes=[
+        'The owner\'s PO1 laid across: the\npaper sheet over the whole width,\nits five tabs on top as on the PC\n'
+        f'({mm(h)}), the title at their right.',
+        'The tab in two columns: the text\nspeed (its preview the game\'s\nwindow at 2.7 mm) and the read\n'
+        'text\'s colours left, the message\nskip right — the whole tab in\nview, no scrolling.',
+        'The type as PO1\'s: the names\n2.3 mm, the explanations 1.7 mm,\nthe boxes 2.6 mm (the row\'s '
+        f'whole\nheight taps). Defaults | Close at\nthe right thumb ({mm(130)}).',
+        'The other tabs split the same\nway (Tweaks: Battle left, Scenes\nright).'])
+
+
+def lo2():
+    img, d = land()
+    backdrop(img, (0, 0, LW, LH))
+    sx0, sx1 = RAIL_L
+    d.text((sx0 + 4, 14), 'Options', font=fit(d, 'Options', BRUSH, 56, sx1 - sx0 - 8), fill=NAME)
+    h, gap = 128, 12
+    for i, name in enumerate(OPTION_TABS):          # the tabs as a rail of lacquer cells in the left side
+        b = (sx0, 110 + i * (h + gap), sx1, 110 + i * (h + gap) + h)
+        on = i == 0
+        d.rectangle(b, fill=(70, 54, 30) if on else ROW, outline=GOLD if on else DIM_GOLD, width=3 if on else 2)
+        d.text(((b[0] + b[2]) / 2, (b[1] + b[3]) / 2), name,
+               font=fit(d, name.upper(), lambda s: CINZEL(s, 700), 32, sx1 - sx0 - 24), fill=NAME if on else QUIET,
+               anchor='mm')
+    panel(d, (sx0, FOOT - 10 - 130, sx1, FOOT - 10))
+    d.text(((sx0 + sx1) / 2, FOOT - 10 - 65), 'Defaults', font=CINZEL(34, 700), fill=QUIET, anchor='mm')
+    sheet = (FX0 + 12, 16, FX1 - 12, FOOT - 10)
+    d.rectangle(sheet, fill=PAPER)
+    messages_columns(d, sheet)
+    red_button(d, (RAIL_R[0], FOOT - 10 - 200, RAIL_R[1], FOOT - 10), 'Close', 56)
+    reach_land(img)
+    save_land(img, 'LO2', 'the sheet in the frame, the tabs in the left side', 'land-options', notes=[
+        'LM1\'s principle: the paper sheet\nfills the frame, the black sides\nhold the title, the tabs and the\n'
+        'buttons.',
+        f'The five tabs as a rail of lacquer\ncells in the left side ({mm(h)} each),\nthe chosen one lit; Defaults at '
+        'the\nleft thumb, Close at the right one.',
+        'The sheet\'s two columns as LO1\'s,\neach narrower; the tabs nearer\nthe thumb, farther from the PC\'s\n'
+        'and upright\'s place.'])
+
+
+def lf_frame(img, entry):
+    """The floor's picture and the script's window in the frame as the touch dumps have them; the tablet's rail
+    taken out — black under it on a floor, the map wait's map (the same camera) before a search."""
+    frame_dump(img, 'dungeon-entry.png' if entry else 'floor-ladder-middle.png')
+    x0, y0 = 1036, 574 if entry else 420
+    if entry:
+        frame_dump(img, 'map.png', (x0, y0, 1280, 800), (FX0 + round(x0 * LK), round(y0 * LK)))
+    else:
+        ImageDraw.Draw(img).rectangle((FX0 + round(x0 * LK), round(y0 * LK), FX1, LH), fill=(0, 0, 0))
+    d = ImageDraw.Draw(img)
+    x0, x1 = RAIL_L
+    menu_cell(d, (x0, 16, x1, 126))
+    side_status(d, x0, x1, 160)
+    return d
+
+
+def side_rung(d, box, words, sub, way):
+    """A ladder rung in a black side (254 wide): the arrow at the left, the word beside it — a name too long for the
+    side in two lines —, the sub-line under them."""
+    x0, y0, x1, y1 = box
+    d.rectangle(box, fill=ROW, outline=DIM_GOLD, width=3)
+    lines = words.split() if d.textlength(words, font=GOTHIC(42)) > x1 - x0 - 80 else [words]
+    arrow_mark(d, x0 + 34, y0 + 22 + 24 * len(lines), way, 16, GOLD)
+    for i, word in enumerate(lines):
+        d.text((x0 + 64, y0 + 20 + i * 50), word, font=GOTHIC(42), fill=TEXT)
+    d.text((x0 + 64, y1 - 20), sub, font=fit(d, sub, GOTHIC, 26, x1 - x0 - 76), fill=QUIET, anchor='ls')
+
+
+def side_ladder(d, x0, x1, foot, entry=False):
+    """PF1's rail in the right side: Retreat (or Return) on top, Descend (or Start Search) in the corner."""
+    h, gap = 150, 14
+    if entry:
+        side_rung(d, (x0, foot - 200, x1, foot), 'Start Search', 'a unit goes down', 'down')
+        y = foot - 200 - gap - h
+        row_box(d, (x0, y, x1, y + h), 'Return', size=44, centred=True)
+        return y
+    side_rung(d, (x0, foot - h, x1, foot), 'Descend', 'deeper · to 8F', 'down')
+    y = foot - h - gap - 110
+    d.text(((x0 + x1) / 2, y + 26), 'FLOOR', font=CINZEL(24, 600), fill=SUBTITLE, anchor='mm')
+    d.text(((x0 + x1) / 2, y + 74), '7F', font=BRUSH(56), fill=NAME, anchor='mm')
+    y -= h + gap
+    side_rung(d, (x0, y, x1, y + h), 'Ascend', 'back · to 6F', 'up')
+    y -= h + gap
+    red_button(d, (x0, y, x1, y + h), 'Retreat', 44)
+    return y
+
+
+def lf1():
+    img, d = land()
+    d = lf_frame(img, False)
+    side_ladder(d, *RAIL_R, FOOT - 10)
+    reach_land(img)
+    save_land(img, 'LF1', 'the frame kept, the ladder in the right side', 'land-dungeon', notes=[
+        'The frame as on the PC: the\nfloor\'s picture and the script\'s\nwindow at their places (the\n'
+        f'window\'s text {lm(48)}); the tablet\'s\nrail leaves the frame.',
+        'The ladder in the right side at\nthe thumb, from the foot up as\nthe tablet\'s (touch.md\'s B):\n'
+        'Descend in the corner, the\nfloor, Ascend, Retreat on top;\n'
+        f'rungs {mm(150)} × {mm(RAIL_R[1] - RAIL_R[0])}. A way not\noffered keeps its room, hidden.',
+        'Where LM1 has Commands and a\nprovince\'s commands. The left\nside as LM1c\'s while a menu is\n'
+        'up: Menu and the status, the\ndrawer hidden.'])
+
+
+def lf1e():
+    img, d = land()
+    d = lf_frame(img, True)
+    side_ladder(d, *RAIL_R, FOOT - 10, entry=True)
+    reach_land(img)
+    save_land(img, 'LF1e', 'the frame kept — before a search', 'land-dungeon', notes=[
+        'Before a search: Return over\nStart Search in Descend\'s\ncorner (touch.md\'s §6), its\n'
+        f'two words in two lines ({mm(200)}\nhigh).',
+        'With four items (Merim, God\'s\nDoor) the rail grows upwards.',
+        'The map under the picture as the\ngallery\'s dump has it.'])
+
+
+def lf2_rail(d, foot, entry=False):
+    """The tablet's rail where the tablet has it, at the frame's right foot, at the phone's sizes; its panel grows
+    upwards."""
+    x1 = FX1 - 16
+    x0 = x1 - 356
+    top = foot - (314 if entry else 602)
+    panel(d, (x0 - 14, top - 14, x1 + 14, foot + 14))
+    floor_rail(d, x0, x1, foot, entry)
+    return x1 - x0
+
+
+def lf2():
+    img, d = land()
+    d = lf_frame(img, False)
+    w = lf2_rail(d, FOOT - 10)
+    reach_land(img)
+    save_land(img, 'LF2', 'the tablet\'s layout kept, the ladder in the frame', 'land-dungeon', notes=[
+        'The tablet\'s layout kept: the\nladder in the frame where the\ntablet has it, at the phone\'s\n'
+        f'sizes — rungs {mm(150)} × {mm(w)}, the\nwords 2.6 mm in one line, the\nsub-lines 1.6 mm.',
+        'Its panel grows upwards over\nthe black, beside the window.',
+        'The right side stays empty; the\nleft as LF1\'s (Menu and the\nstatus).'])
+
+
+def lf2e():
+    img, d = land()
+    d = lf_frame(img, True)
+    lf2_rail(d, FOOT - 10, entry=True)
+    reach_land(img)
+    save_land(img, 'LF2e', 'the tablet\'s layout kept — before a search', 'land-dungeon', notes=[
+        'Before a search: Return over\nStart Search, both in one line,\nat the frame\'s right foot as on\n'
+        'the tablet.',
+        'The rail\'s panel over the map\'s\ncorner, as the tablet\'s.'])
+
+
+def p12():
+    lo1(); lo2()
+    lf1(); lf1e(); lf2(); lf2e()
+
+
 def main():
     global MAP, PROV_NAMES, PROV_POINTS
     if ROUND in ('P3', 'P5', 'P7', 'P9', 'P11'):
@@ -4524,8 +4729,8 @@ def main():
         overviews()
         return
     MAP, PROV_NAMES, PROV_POINTS = build_map()
-    if ROUND in ('P4', 'P6', 'P8', 'P10'):
-        {'P4': p4, 'P6': p6, 'P8': p8, 'P10': p10}[ROUND]()
+    if ROUND in ('P4', 'P6', 'P8', 'P10', 'P12'):
+        {'P4': p4, 'P6': p6, 'P8': p8, 'P10': p10, 'P12': p12}[ROUND]()
         overviews()
         return
     if GALLERY_MODE:

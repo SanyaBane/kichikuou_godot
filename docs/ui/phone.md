@@ -159,6 +159,8 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 21. ~~**The landscape Harem** (round P11, §15): LH1 or LH2.~~ LH2.
 22. ~~**The landscape Treasure** (round P11, §15): LT1 or LT2.~~ LT2.
 23. ~~**The landscape Save/Load** (round P11, §15): LL1 or LL2.~~ LL1.
+24. **The landscape options window** (round P12, §16): LO1 or LO2.
+25. **The landscape dungeon's menus** (round P12, §16): LF1 or LF2.
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -615,3 +617,41 @@ the cost of a smaller map and the buttons split between the thumbs.
 
 **The owner's choice (2026-10-28): LH2, LT2 and LL1**, as drawn — the treasure folded as the harem, so the two screens
 keep one layout, its long item names shrunk in their narrow cells. LH2, LT2 and LL1 are on the gallery's landscape tab.
+
+## 16. Round P12: the options window and the dungeon's menus, landscape (2026-10-28)
+
+Drawn by `mock_phone.py --round P12` over the same data as round P6 (§10): the gallery's `options-messages`,
+`floor-ladder-middle` (the Monsters' Cave (dungeon 2) on floor 7) and `dungeon-entry`, the latter's map under the
+tablet's rail taken from the gallery's `map` (the same camera).
+
+The options window (`LO…`; upright PO1, the owner's choice: the paper sheet, its tabs on top). Upright the Messages tab
+is one column 1,360 px high; landscape it needs **two columns** — the text speed (its preview the game's window at
+2.7 mm) and the read text's colours at the left, the message skip at the right —, then the whole tab is in view. The
+type as PO1's: the names 2.3 mm, the explanations 1.7 mm, the boxes 2.6 mm (the row's whole height taps).
+
+- **LO1 — the sheet across the whole width, its tabs on top** (PO1 laid across): the five paper tabs on top as on the PC
+  (6.3 mm), the title at their right; Defaults | **Close** at the right column's foot, at the right thumb (7.4 mm). The
+  other tabs split the same way (Tweaks: Battle left, Scenes right).
+- **LO2 — the sheet in the frame, the tabs in the left side** (LM1's principle): the five tabs as a rail of lacquer
+  cells under the title (7.3 mm each), the chosen one lit, Defaults at the left thumb; **Close** in the right side at
+  the right thumb; the sheet's two columns as LO1's, each narrower.
+
+**Recommendation: LO1** — the owner's PO1 as it is, the tabs where the PC and upright have them; LO2 brings them nearer
+the left thumb, which the owner did not want upright (PO2).
+
+The dungeon's menus (`LF…`; upright PF1, the owner's choice: the ladder as the tablet's rail, Retreat on top, Descend in
+the corner, a way not offered hidden in its room):
+
+- **LF1 — the frame kept, the ladder in the right side** (LM1's principle). The floor's picture and the script's window
+  at their places in the frame (the window's text 4.2 mm); the tablet's rail leaves the frame for the right side, from
+  the foot up — Descend in the corner, the floor, Ascend, Retreat on top —, rungs 8.5 × 14.5 mm, where LM1 has Commands
+  and a province's commands. The left side as LM1c's while a menu is up: Menu and the status, the drawer hidden.
+  **LF1e**: before a search, Return over Start Search, its two words in two lines (11.4 mm high); with four items
+  (Merim, God's Door) the rail grows upwards.
+- **LF2 — the tablet's layout kept, the ladder in the frame**: the rail at the frame's right foot as on the tablet, at
+  the phone's sizes — rungs 8.5 × 20.3 mm, the words 2.6 mm in one line, the sub-lines 1.6 mm —, its panel growing
+  upwards beside the window; the right side empty. **LF2e**: before a search, Return over Start Search, both in one
+  line.
+
+**Recommendation: LF1** — the thumb finds the ladder where it finds every menu of the map in landscape (LM1's right
+side); LF2's wider rungs read in one line, but they stand a side's width further in and leave the side empty.
