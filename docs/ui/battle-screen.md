@@ -56,7 +56,7 @@ draws what the core shows and answers what the core asks.
    on the card flashes instead ("The order messages" below); the info boxes are not needed: every card shows the
    values under its portrait ("The cards' stats" below);
    the other script windows a battle opens (111/112/121/122/113/131: narration and dialogue, e.g. in the story
-   battles) stay the original's for now (docs/backlog.md, "Interface").
+   battles) stayed the original's then — ours since 2026-10-18 (docs/ui/messages.md, §5 step 5).
 4. **The 戦果 place**: troops of the two sides, advantages, strategy — or nothing. Owner, 2026-10-15 (mock-ups from the
    week-18 battle): no bar — it would mean nothing in Kichikuou, where nothing judges a battle by a score; instead the
    **battle's limit** gets a plate at the scene's top (its foot until 2026-10-16) and the **advantages** show what they do, in percent ("The
@@ -1039,8 +1039,8 @@ picture, the slot panels) is not shown. How it is built:
    under the portrait ("The cards' stats" above; ✓ 2026-10-15); (2) the **order messages** (`L_0129e`, `FIGT.ADV:776-833`) are not
    shown, the order's label on the card flashes instead ("The order messages" above; ✓ 2026-10-15); (3) the **strategy screen**
    stays the original's for now — later the same day our cut-in ("The strategy's cut-in" above; ✓ 2026-10-15); (4) the
-   **other script windows** during a battle (111/112/121/122/113/131) stay the original's for now — in docs/backlog.md,
-   "Interface".
+   **other script windows** during a battle (111/112/121/122/113/131) stay the original's for now — ours since
+   2026-10-18, with the message windows (docs/ui/messages.md, §5 step 5; ✓).
 7. **Checks**: the model's tests, the golden captures replayed through our input (the same
    choices give the same memory), `--auto --interface new` through the battles, the owner's look
    from a kept save (`--until battle`).
