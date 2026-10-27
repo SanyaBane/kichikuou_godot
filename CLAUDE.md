@@ -275,6 +275,9 @@ Then (owner, 2026-10-27) the status strip always on `COMMAND`'s map, not only wi
 room under it: near the map's top edge the picture is drawn lower by up to the strip's height, so the Great Wall of
 Helman A (49) and the Tower of Evil (78) are no longer under it; the script's camera stays the original's (docs/ui/
 command-screen.md, "The map's room under the strip"), built, awaiting the owner's look in a window.
+Then (owner, 2026-10-27) the phone in both orientations, the Xiaomi Poco X6 Pro the reference, upright first: the survey
+and mock-up round P1 (the scenes PS1-PS3, the map PM1-PM2, the battle PB1-PB2) are docs/ui/phone.md
+(`tools/ui/mock_phone.py`), awaiting the owner's choices.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

@@ -681,3 +681,6 @@ Mock-ups (`tools/ui/mock_map_log.py`, over the gallery's touch `map-markers` and
 Put off by the owner (2026-10-24). What is ready for them: the measurements above, mock-ups B1, B3 (the battle),
 M1, M2 (the map). Open questions: B1 or B3; M1 or M2; the text size on a phone (a phone layout with larger text, or a zoom). Turn END stays in the command panel on a phone
 too, asking nothing — no button on the map ends the week (owner, 2026-10-25; M1's button on the rail goes).
+
+Taken up again (owner, 2026-10-27): the phone in both orientations, the Xiaomi Poco X6 Pro the reference, upright first —
+docs/ui/phone.md (round P1); the landscape phone after it.

@@ -172,7 +172,8 @@ narration, place title, 131) in docs/ui/messages.md.
 
 ## 6. Touch
 
-docs/ui/touch.md. The tablet first, phones put off (2026-10-24). Touch mode is Android or `--touch`; the PC's mouse
+docs/ui/touch.md. The tablet first, phones put off (2026-10-24) and taken up again in both orientations, upright first
+(2026-10-27; docs/ui/phone.md, round P1, nothing chosen yet). Touch mode is Android or `--touch`; the PC's mouse
 interface does not change.
 
 - A finger needs 7-9 mm: rows 46 px with 8 between; secondary items get a row box too, since no hover shows they can
