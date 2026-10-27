@@ -13,12 +13,6 @@ namespace Kichikuou.Game.Strategy;
 internal static class EngineState
 {
     private static IScriptRandom? _random;
-
-    /// <summary>
-    /// Option → Messages → Mouse movement (<c>ags.mouse_warp_enabled</c>, on at start as <c>menu_init</c>): the
-    /// script's <c>IZ</c> moves the system pointer; off, only the position the script reads.
-    /// </summary>
-    public static bool MouseMovement { get; set; } = true;
     private static readonly Dictionary<string, MessageSkip> Skips = [];
 
     /// <summary>The message log, kept for the launch (docs/ui/messages.md, §5 step 6; owner, 2026-10-19): not saved.</summary>

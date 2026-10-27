@@ -146,3 +146,17 @@ their commander is off the field (his troops over the battle's limit).
   `options-tweaks`.
 - The tweaks, each with its doc, and the survey of the next one (BRS-24, a demon's commander out of reach) are listed in
   docs/tweaks.md.
+
+## Mouse movement (2026-10-27)
+
+Owner's request: the Messages tab's **Mouse movement** (the script's `IZ` moving the system pointer, docs/window-menu.md)
+says what it does, is kept between launches, and is gone from the touch mode.
+
+- **Its hint** is "After a menu, the pointer glides back where it was." — every `IZ` of the scenario but the music
+  room's puts the pointer back where `IM` read it before a menu (`COMMAND`, the command files, `ｽﾀMENU`); the old hint
+  ("The pointer moves to the chosen item.") said otherwise.
+- **Kept** in `settings.cfg` as `[input] mouse_movement`, on by default (`MouseMovementChoice`; `EngineState` held it
+  for the launch before).
+- **The touch mode** (Android or `--touch`) leaves the Mouse section out and has the option off whatever the PC's
+  choice: a finger leaves no pointer to put back, and the script's position alone moves, as with the option off.
+  Defaults on Messages leaves the PC's choice alone there.

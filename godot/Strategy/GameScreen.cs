@@ -932,10 +932,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// <summary>
     /// <c>IZ x, y</c> (<c>cmdi.c</c> → <c>ags_setCursorLocation</c>): nothing when the point lies right
     /// of or below the 3200×800 surface, else it is clamped at 0 and taken relative to the <c>WV</c>
-    /// view. With Option → Messages → Mouse movement (on, as <c>menu_init</c>) the pointer glides there in
-    /// seven steps 7 ms apart on the engine's ease-out curve and lands; off, only the position the
-    /// script reads moves and the script waits 50 ms. <c>COMMAND.ADV:618</c> puts the pointer back
-    /// where it was before a menu.
+    /// view. With Option → Messages → Mouse movement (<see cref="MouseMovementChoice"/>: on by default as
+    /// <c>menu_init</c>, off in the touch mode) the pointer glides there in seven steps 7 ms apart on the
+    /// engine's ease-out curve and lands; off, only the position the script reads moves and the script
+    /// waits 50 ms. <c>COMMAND.ADV:618</c> puts the pointer back where it was before a menu.
     /// </summary>
     private async Task WarpPointerAsync(int x, int y)
     {
@@ -943,7 +943,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             return;
         x = Math.Max(x, 0) - _presenter.Stage.View.X;
         y = Math.Max(y, 0) - _presenter.Stage.View.Y + _shownShift;    // on the map, where the picture shows that row
-        if (!EngineState.MouseMovement || _options.Auto || OrderRunning)  // an order's way puts back a pointer that was never the player's
+        if (!MouseMovementChoice.On || _options.Auto || OrderRunning)  // an order's way puts back a pointer that was never the player's
         {
             _input.Position = ClampToScreen(x, y);
             await DelayAsync(_options.Fast ? 0 : 0.05);

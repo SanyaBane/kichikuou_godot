@@ -11,7 +11,8 @@ namespace Kichikuou.Game.Strategy;
 /// <summary>
 /// The options window (docs/ui/options.md; the owner's mock-up D, 2026-10-21): every setting of the menu bar's Option, over
 /// the game, which waits while it is open. A paper sheet in a lacquer frame with paper tabs across its top — Messages
-/// (the text speed with the game's 121 typing as its preview, the message skip's switches, Forget, the mouse, the
+/// (the text speed with the game's 121 typing as its preview, the message skip's switches, Forget, the mouse
+/// (<see cref="MouseMovementChoice"/>, not in the touch mode), the
 /// already-read text's colour, <see cref="ReadTextChoice"/>, docs/ui/read-text.md), Display
 /// (the font, the palette, the thousands, the unit tables' row height, <see cref="LedgerRowsChoice"/>), Battle (our
 /// battle screen's effects and timings, <see cref="BattleScreenSettings"/>, the order strip as their preview), Game (the
@@ -244,7 +245,8 @@ internal sealed partial class OptionsView : Control
                 SetReadColour(ReadTextChoice.DefaultIndex);
                 _skip.SkipUnseen = true;
                 _skip.FastFades = true;
-                EngineState.MouseMovement = true;
+                if (!TouchMode.On)                          // not offered there: the PC's choice stays
+                    MouseMovementChoice.On = true;
                 break;
             case Tab.Display:
                 SetFont(GameFont.BizUdGothic);
@@ -458,9 +460,12 @@ internal sealed partial class OptionsView : Control
         DrawLink("forget", "Forget them…", new Vector2(rx + rw, y + 160),
             () => Ask("Forget seen messages?", $"All {_skip.SeenCount} messages seen so far will count as unseen again.", "Forget",
                 () => _skip.ForgetSeen()), right: true, enabled: _skip.SeenCount > 0);
-        SectionHead(rx, y + 220, "Mouse", rw);
-        CheckBox("mouse", rx, y + 258, EngineState.MouseMovement, "Mouse movement", "The pointer moves to the chosen item.",
-            () => EngineState.MouseMovement = !EngineState.MouseMovement);
+        if (!TouchMode.On)                                  // off there, MouseMovementChoice
+        {
+            SectionHead(rx, y + 220, "Mouse", rw);
+            CheckBox("mouse", rx, y + 258, MouseMovementChoice.On, "Mouse movement", "After a menu, the pointer glides back where it was.",
+                () => MouseMovementChoice.On = !MouseMovementChoice.On);
+        }
 
         int chosen = ReadTextChoice.Index;
         DrawString(_gothic, new Vector2(x + 14, y + 281), chosen == ReadTextChoice.None ? "Read text keeps the window's colour."

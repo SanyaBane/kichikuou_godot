@@ -96,11 +96,14 @@ web build (seen only) by an option.
   effects heard or not, saved in `user://settings.cfg`, `[audio] sound` (on by default; `SoundChoice`, applied at the
   launch by `Main`). Off mutes the Master bus: the players go on unheard, so the music's position `SC` reads and every
   wait are as with the sound on.
-- **Option → Messages → Mouse movement** (checked at start, for the launch; 2026-10-10): the script's
+- **Option → Messages → Mouse movement** (checked by default; 2026-10-10): the script's
   `IZ x, y` (`COMMAND.ADV:618` and the command files put the pointer back where it was before a
   menu) glides the system pointer there as `ags_setCursorLocation` does — seven points on its
   ease-out curve 7 ms apart, then the target (`Content/Screen/PointerGlide`); unchecked, only the
   position the script reads moves and the script waits 50 ms. `--auto` never moves the pointer.
+  Kept for later launches since 2026-10-27 (owner; for the launch before): `[input] mouse_movement`
+  in `settings.cfg`, `MouseMovementChoice`. The touch mode does not offer it and has it off
+  (docs/ui/options.md, "Mouse movement").
 - **Debug → Hide Dimmed Map Names** (ours, owner's request 2026-10-16; in Option until 2026-10-21, when
   the owner moved it to Debug and made it on by default; checkable, saved in `user://settings.cfg`,
   `[display] hide_dimmed_map_names`): our map's plates

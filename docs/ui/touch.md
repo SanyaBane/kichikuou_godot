@@ -221,6 +221,8 @@ hover and the right button. So the tablet keeps our layout and gets only what to
   glow from 0.6 to 1.3 of its usual strength and back, once every 1.2 s, from the near end at each new target
   (`BattleCommandLayer.DrawTouchTarget`). On PC, `--touch` included, the frame stands still as before; so the pulse is
   seen on the tablet only.
+- **No Mouse movement** (owner, 2026-10-27): the options window's Messages tab leaves it out and the script's `IZ` never
+  moves the system pointer, only the position the script reads (docs/ui/options.md, "Mouse movement").
 
 ## The Skip and Log buttons (owner, 2026-10-24)
 
