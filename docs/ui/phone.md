@@ -16,8 +16,8 @@ is built while they are being drawn.
 The mock-ups are `tools/ui/mock_phone.py` (the command and its inputs in its docstring), drawn at the phone's own pixels
 over the screen gallery's dumps, the week-18 look's key waits (Ex's scene before the attack on Oaks (6)) and the map's
 own pictures; the images stay outside the repository. The chosen base versions are also on the screen gallery's tab
-**Smartphone, upright (mock-ups)**, marked as not built (`tools/ui/gallery.ps1 -PhoneOnly`; docs/ui/gallery.md, §9). Their variants are named **P…** (portrait), apart from
-touch.md's landscape B1, M1 and the rest.
+**Smartphone, upright (mock-ups)**, marked as not built (`tools/ui/gallery.ps1 -PhoneOnly`; docs/ui/gallery.md, §9). Their variants are named **P…** (portrait),
+and from round P8 (§12) the landscape phone's **L…**, apart from touch.md's landscape sketches B1, M1 and the rest.
 
 ## 1. The device
 
@@ -150,6 +150,8 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 13. **The unit ledger's rows upright** (the owner, 2026-10-27, thinking): PD2's layout holds, but the ledger is still
     to be thought over — most likely it will scroll sideways too.
 14. **Subordinates' End** (the owner, 2026-10-27, thinking): where End goes now that Talk has left the bar.
+15. **The landscape map** (round P8, §12): LM1 or LM2.
+16. **The landscape battle** (round P8, §12): LB1 or LB2.
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -375,3 +377,75 @@ wait for screen gallery entries to draw over (§9, §10), and the scenes (§2, o
 
 The chosen base versions of rounds P3-P7 are on the gallery's phone tab (docs/ui/gallery.md, §9): PD2 (and PD2d), PU1
 (and PU1q), PA1 (and PA1n), PW1, PH2, PT2, PL2, PO1, PF1 (and PF1e), and PB4s, PB4c, PB4r, PB4b with the battle.
+
+## 12. Round P8: the landscape phone — the frame, the map, the battle (2026-10-27)
+
+The phone held landscape, 2712 × 1220 (154.5 × 69.5 mm). The game's 1280 × 800 layout fitted to the height is 1952 ×
+1220 (111 × 69.5 mm), a layout pixel 1.525 phone pixels (0.087 mm), with black sides of 380 px (21.6 mm) on either hand.
+Drawn by `mock_phone.py --round P8` over the gallery's touch dumps and the map's own pictures; the variants are named
+**L…** (LM the map, LB the battle; touch.md's B1, M1 were this device's first sketches).
+
+The device's edges in landscape: the camera's hole sits at a side's middle — the left or the right, as the phone is
+turned —, so **110 px (6.3 mm) is kept free on both sides** (drawn on the left); the gesture zone is at the foot (50
+px, 3 mm). Held in both hands at the sides, the thumbs (~70 mm round a grip low on each side, as on the tablet) reach
+all but the top's middle: the height is no problem here, the sizes are.
+
+**What of the tablet's touch layout works at this size** (sheets L0b, L0m — today's layout fitted to the height):
+
+| Part | On the landscape phone | |
+|---|---|---|
+| The scenes' own text (48 px em), the map's picture (3.05 phone px a map pixel, a flag 4.2 mm) | 4.2 mm | works |
+| The drawer's cells 50 × 84 | 4.3 × 7.3 mm | high enough, narrow |
+| The map's Commands 220 × 72 | 19 × 6.3 mm | nearly |
+| A battle card 223 × 150, its text (17 px) | 19.4 × 13 mm, 1.5 mm | the text too small |
+| A battle rail button 116 × 54; Melee 116 × 76 | 10.1 × 4.7 mm; 6.6 mm high | too low |
+| The cards' order toggles 66 × 32 | 5.7 × 2.8 mm | too small |
+| A map plate ~30 px, its text; the status strip's text (18 px) | 2.6 mm, 1.4 mm; 1.6 mm | too small |
+| The command panel's and the province menu's rows (46 px) | 4.0 mm | too low |
+
+So the scenes and the map's picture stay as they are, and **every screen of ours needs larger type and targets** (2-3.5
+mm, 7 mm), as upright; but here the height is short, not the width, and the black sides are free room. The rails can
+leave the frame for the sides (14.5 mm wide between the hole's strip and the frame, `RAIL_L`/`RAIL_R`), which gives the
+frame's own width back to the board and the map.
+
+The map (`LM…`): plates with 2 mm text (36 px) over the map at the PC's scale (3.05) in both.
+
+- **LM1 — the frame kept, the black sides as rails.** The map as on the tablet in the frame (the PC's view, 640 × 400
+  map pixels), nothing over it. Left side: Menu (the menu bar's commands) on top, the status stacked (the date, the
+  budget, the troops), the drawer's Skip and Log at the thumb (6.7 mm high). Right side: the week's uses as the strip's
+  tags by group, Commands at the thumb. **LM1b**: the command panel in the sides — the week's commands left, Turn END on
+  the right's top and the other items from the foot up, Close where Commands was; the rows 14.5 × 7.0 mm, the tag over
+  the name in two lines (a side has no room for both in one). **LM1c**: Oaks (6) ringed, its card beside it as on the
+  tablet (the owner's B), its type 2-2.5 mm; its commands on the right side, Return at the foot.
+- **LM2 — the map across the whole screen** (as PM1 upright). The map at the same scale over the whole phone: 889 × 400
+  map pixels in view, two fifths more than the PC's; the status strip over its top in two rows (2-2.2 mm: the status
+  window's lines, then the week's uses by group), Menu at its right; the drawer at the left thumb and Commands at the
+  right one, over the map as on the tablet. **LM2b**: the tablet's rails as lacquer over the map's sides, 29 mm wide,
+  the commands in one line with their tags (Construction's weeks on its chip), the strip still seen. **LM2c**: Oaks's
+  card beside it, its commands on a rail only as wide as the black side (two-line rows as LM1's): Oaks lies near the
+  map's east edge, which the view cannot pass, so a wider rail would cover it. The map left of map x 1280 shows the
+  game's first owners (made up).
+
+**Recommendation: LM2** — the owner's PM1 turned (the map fills the screen, the panels over it), two fifths more of the
+map, and a strip that reads in two rows; LM1 keeps the map uncovered, but its sides are only 14.5 mm wide, so the tags
+stack and the command rows take two lines.
+
+The battle (`LB…`), the player's turn as the tablet's (touch.md, "The battle within the thumbs' reach"), its rails moved
+into the black sides — the acting unit's commands left from the foot up (Retreat on top), the target's attacks right
+(Melee 14.8 mm with the damage forecast at the thumb), rows 14.5 × 7.0 mm; the battle's Skip on the left rail's top, where
+it stays while the exchanges play and the rails are gone:
+
+- **LB1 — the PC's board under the whole scene.** The scene whole, as on every device (111 × 35.6 mm); with the rails
+  out of the frame the board has the PC's width again: cards 25.5 × 13.0 mm, the text 1.9-2.2 mm (34-38 px), a unit's
+  state at its HP line's end. The order toggles do not fit a finger at this height (2.8 mm): the other own cards' orders
+  go back to the long press.
+- **LB2 — the scene lower, the cards taller.** The scene's own picture 24.9 mm high (70%; as large as upright's PB3,
+  27.8 mm), its sides blurred out to the frame; the cards 25.5 × 19.0 mm, the text 2.3-2.5 mm (40-45 px); Rick's order
+  toggles across the card's foot, 4.6 mm high (the tablet's 6.5).
+
+**Recommendation: LB2** — every card's text above the 2 mm floor and the owner's toggles kept on the cards, while the
+scene stays as large as the one the owner chose upright; LB1 keeps the scene whole at the cost of the smallest type
+and the toggles.
+
+The agent's own choices, for the owner to confirm: the hole's 6.3 mm kept free on both sides (either may hold it); Menu
+as a cell on the map (the menu bar is 2 mm high here); the battle's Skip on the left rail's top.

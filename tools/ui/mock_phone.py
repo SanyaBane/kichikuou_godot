@@ -27,6 +27,8 @@ Harem, PT1-PT2 Treasure, PL1-PL2 Save/Load (touch/current's harem, treasure-item
 P6: PO1-PO2 the options window, PF1-PF2 the dungeon's menus (options-messages, options-tweaks, floor-ladder-middle).
 Round P7: PB4o1-PB4o2 the opening, PB4s the scout report, PB4c the strategy's cut-in, PB4r the results plate,
 PB4b a fighter's line (opening, scout-report, strategy, battle-speech).
+Round P8, the phone held landscape (2712×1220, the layout fitted to the height with black sides): L0b, L0m today's
+tablet layout at that size; LM1-LM2 the map (map-markers, province-menu), LB1-LB2 the battle (battle-turn).
 `--round P3` before the arguments draws only that round's variants (the look dir then unread, '-' will do).
 The pink lines and text are the mock-ups' notes, not part of a screen.
 
@@ -153,7 +155,8 @@ def gold_button(d, box, label, forecast=None):
         t = (y - y0) / max(1, y1 - strip - y0)
         d.line([(x0, y), (x1, y)], fill=tuple(round(a + (b - a) * t) for a, b in zip((222, 184, 96), (170, 128, 52))))
     d.rectangle(box, outline=(250, 222, 150), width=3)
-    d.text(((x0 + x1) / 2, (y0 + y1 - strip) / 2), label, font=BRUSH(64), fill=(44, 26, 10), anchor='mm')
+    d.text(((x0 + x1) / 2, (y0 + y1 - strip) / 2), label, font=fit(d, label, BRUSH, 64, x1 - x0 - 30),
+           fill=(44, 26, 10), anchor='mm')
     if forecast:
         d.rectangle((x0 + 3, y1 - strip, x1 - 3, y1 - 3), fill=(30, 22, 16))
         troops, hp = forecast
@@ -345,13 +348,18 @@ def save(img, name, title, group, side=None):
 def overviews():
     for group, sheets in SHEETS.items():
         thumbs = [s.resize((s.width * 2 // 5, s.height * 2 // 5), Image.LANCZOS) for _, _, s in sheets]
-        w = sum(t.width for t in thumbs) + 30 * (len(thumbs) + 1)
-        h = max(t.height for t in thumbs) + 60
+        cols = 2 if thumbs[0].width > thumbs[0].height else len(thumbs)     # the landscape phone's sheets: two a row
+        rows = [thumbs[i:i + cols] for i in range(0, len(thumbs), cols)]
+        w = max(sum(t.width for t in r) for r in rows) + 30 * (cols + 1)
+        h = sum(max(t.height for t in r) for r in rows) + 30 * (len(rows) + 1)
         o = Image.new('RGB', (w, h), (232, 228, 220))
-        x = 30
-        for t in thumbs:
-            o.paste(t, (x, 30))
-            x += t.width + 30
+        y = 30
+        for r in rows:
+            x = 30
+            for t in r:
+                o.paste(t, (x, y))
+                x += t.width + 30
+            y += max(t.height for t in r) + 30
         o.save(os.path.join(OUT, f'overview-{group}.png'))
 
 
@@ -458,6 +466,10 @@ def draw_map(img, box, x0, y0, scale, plate_size, ring=None, dim=0):
         plate(name, mx, my, 13, lit)
     if dim:
         od.rectangle(box, fill=(0, 0, 0, dim))
+    for outside in ((0, 0, img.width, by0), (0, by1, img.width, img.height), (0, 0, bx0, img.height),
+                    (bx1, 0, img.width, img.height)):   # a plate across the box's edge is cut there
+        if outside[2] > outside[0] and outside[3] > outside[1]:
+            over.paste((0, 0, 0, 0), outside)
     img.paste(Image.alpha_composite(img.convert('RGBA'), over).convert('RGB'))
     if ring:
         mx, my = PROV_POINTS[ring]
@@ -2939,6 +2951,540 @@ def p7():
     pb4o1(); pb4o2(); pb4s(); pb4c(); pb4r(); pb4b()
 
 
+# --- round P8: the landscape phone — the frame, the map, the battle (2026-10-27) -------------------------------------
+
+LW, LH = 2712, 1220                     # the Poco X6 Pro held landscape: 154.5 × 69.5 mm
+LK = LH / 800                           # the 1280×800 layout fitted to the height: 1.525 phone px a layout pixel
+FX0, FX1 = (LW - 1952) // 2, (LW + 1952) // 2           # the layout's frame, black sides of 380 px (21.6 mm)
+SIDE = 110                              # either side may hold the camera's hole: nothing to read or tap within it
+FOOT = LH - 50                          # the gesture zone under it
+RAIL_L, RAIL_R = (SIDE + 6, FX0 - 10), (FX1 + 10, LW - SIDE - 6)       # the black sides' rails, 254 px (14.5 mm)
+
+
+def land():
+    img = Image.new('RGB', (LW, LH), (0, 0, 0))
+    return img, ImageDraw.Draw(img)
+
+
+def chrome_land(d):
+    """The camera's hole at the left side's middle (the phone turned anticlockwise; turned the other way it is at the
+    right); the gesture zone's handle at the foot."""
+    d.ellipse((30, LH / 2 - 24, 78, LH / 2 + 24), fill=(0, 0, 0), outline=(70, 70, 76), width=3)
+    d.rounded_rectangle((LW / 2 - 130, LH - 30, LW / 2 + 130, LH - 20), radius=5, fill=(120, 120, 124))
+
+
+def reach_land(img):
+    """Both thumbs, the phone held at its sides (~70 mm round a grip low on each side, as the tablet's)."""
+    if GALLERY_MODE:
+        return
+    over = Image.new('RGBA', img.size, (0, 0, 0, 0))
+    od = ImageDraw.Draw(over)
+    r, cy = round(70 * PX_MM), round(LH * 0.8)
+    for cx, a0, a1 in ((-30, 270, 360), (LW + 30, 180, 270)):
+        od.arc((cx - r, cy - r, cx + r, cy + r), a0, a1, fill=(255, 92, 160, 200), width=5)
+    img.paste(Image.alpha_composite(img.convert('RGBA'), over).convert('RGB'))
+
+
+def save_land(img, name, title, group, notes=()):
+    """A landscape sheet: the phone's body, the notes in columns under it."""
+    chrome_land(ImageDraw.Draw(img))
+    B, head = 34, 170
+    W, H = LW + 2 * B, LH + 2 * B
+    cols = [notes[i::3] for i in range(3)] if notes else []
+    probe = ImageDraw.Draw(Image.new('RGB', (1, 1)))
+    note_h = max([sum(probe.multiline_textbbox((0, 0), p, font=GOTHIC(30), spacing=10)[3] + 40 for p in c)
+                  for c in cols] + [0])
+    sheet = Image.new('RGB', (W + 80, H + head + 60 + note_h), (232, 228, 220))
+    mask = Image.new('L', (W, H), 0)
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, W - 1, H - 1), radius=130, fill=255)
+    sheet.paste(Image.new('RGB', (W, H), (28, 28, 32)), (40, head), mask)
+    smask = Image.new('L', (LW, LH), 0)
+    ImageDraw.Draw(smask).rounded_rectangle((0, 0, LW - 1, LH - 1), radius=100, fill=255)
+    sheet.paste(img, (40 + B, head + B), smask)
+    sd = ImageDraw.Draw(sheet)
+    sd.text((40, 40), f'{name} — {title}', font=GOTHIC(54), fill=(30, 30, 30))
+    sd.text((40, 112), 'Poco X6 Pro landscape, 2712×1220 at 446 ppi (154.5 × 69.5 mm); the pink is the mock-up\'s notes',
+            font=GOTHIC(30), fill=(110, 110, 110))
+    for i, c in enumerate(cols):
+        y = head + H + 40
+        for para in c:
+            sd.multiline_text((40 + i * (W // 3), y), para, font=GOTHIC(30), fill=(150, 30, 90), spacing=10)
+            y = sd.multiline_textbbox((40 + i * (W // 3), y), para, font=GOTHIC(30), spacing=10)[3] + 40
+    sheet.save(os.path.join(OUT, name + '.png'))
+    SHEETS.setdefault(group, []).append((name, title, sheet))
+
+
+def lm(px):
+    """A size in layout pixels on the landscape phone."""
+    return mm(px * LK)
+
+
+def frame_dump(img, name, box=(0, 0, 1280, 800), at=(FX0, 0)):
+    pic = dump(TOUCH, name).crop(box)
+    img.paste(pic.resize((round(pic.width * LK), round(pic.height * LK)), Image.LANCZOS), at)
+
+
+def l0():
+    img, d = land()
+    frame_dump(img, 'battle-turn.png')
+    reach_land(img)
+    d = ImageDraw.Draw(img)
+    note(d, (SIDE + 10, 40), f'black side\n{mm(FX0)}', 30)
+    note(d, (FX1 + 20, 40), f'black side\n{mm(FX0)}', 30)
+    save_land(img, 'L0b', 'today\'s tablet layout, fitted to the height — the battle', 'land-frame', notes=[
+        f'The 1280×800 layout at the phone\'s\nheight: 1952×1220 (111 × 69.5 mm),\none layout pixel {lm(1)}; black sides\n'
+        f'of {mm(FX0)} on either hand.',
+        f'A card 223×150: {lm(223)} × {lm(150)};\nits text (17 px) {lm(17)} — below\nAndroid\'s 12 sp (1.9 mm).',
+        f'A rail button 116×54: {lm(116)} × {lm(54)}\n(a finger needs 7 mm); Melee 116×76:\n{lm(76)} high. '
+        f'The cards\' order toggles\n66×32: {lm(66)} × {lm(32)}.',
+        f'The scene\'s own type stays readable\n(48 px em: {lm(48)}); the battle\'s Skip\n150×34: {lm(34)} high.',
+        'The thumbs (pink, ~70 mm round a\ngrip low on each side) reach all\nbut the top\'s middle: the height\n'
+        'is no problem, the sizes are.',
+        f'The camera\'s hole at a side\'s middle\n(either side, as the phone is\nturned): {mm(SIDE)} kept free on\n'
+        'both sides; the gesture zone at\nthe foot (3 mm).'])
+
+    img, d = land()
+    frame_dump(img, 'map-markers.png')
+    reach_land(img)
+    d = ImageDraw.Draw(img)
+    save_land(img, 'L0m', 'today\'s tablet layout, fitted to the height — the map', 'land-frame', notes=[
+        f'The map at 3.05 phone px a map\npixel (the PC\'s view, 640 × 400):\na flag {mm(24 * 3.05)} wide.',
+        f'A plate ~30 px high: {lm(30)};\nits text {lm(16)}.',
+        f'Commands 220×72: {lm(220)} × {lm(72)};\nthe drawer\'s cells 50×84: {lm(50)} ×\n{lm(84)} — '
+        'narrow, but high enough.',
+        f'The status strip\'s text (18 px):\n{lm(18)}; the command panel\'s rows\n(46 px) {lm(46)} high.',
+        'So: the scenes and the map\'s\npicture work as they are; every\nscreen of ours needs larger type\nand '
+        'targets — as upright, but the\nheight, not the width, is short.'])
+
+
+def rail_cell(d, box, title, sub=None, colour=None, off=False):
+    """A rail's row in the black side (254 wide): the command's tag over its name, as two lines."""
+    x0, y0, x1, y1 = box
+    d.rectangle(box, fill=ROW, outline=OFF_TAG if off else DIM_GOLD, width=3)
+    if colour:
+        tw = d.textlength(sub, font=GOTHIC(26)) + 24
+        d.rectangle((x0 + 14, y0 + 14, x0 + 14 + tw, y0 + 50), fill=OFF_TAG if off else colour)
+        d.text((x0 + 14 + tw / 2, y0 + 32), sub, font=GOTHIC(26), fill=OFF_TEXT if off else TEXT, anchor='mm')
+        d.text((x0 + 16, y1 - 34), title, font=fit(d, title, GOTHIC, 36, x1 - x0 - 30), fill=OFF_TEXT if off else TEXT,
+               anchor='lm')
+    else:
+        d.text(((x0 + x1) / 2, (y0 + y1) / 2), title, font=fit(d, title, GOTHIC, 38, x1 - x0 - 30),
+               fill=OFF_TEXT if off else TEXT, anchor='mm')
+
+
+def drawer_cells(d, x0, x1, foot, skip_on=False):
+    """The scenes' Skip and Log, each a plate of its own (the tablet's G3), at the left thumb."""
+    h = 118
+    for i, kind in enumerate(('log', 'skip')):
+        y1 = foot - i * (h + 16)
+        box = (x0, y1 - h, x1, y1)
+        lit = kind == 'skip' and skip_on
+        panel(d, box, fill=(96, 72, 30) if lit else PANEL)
+        icon(d, kind, x0 + 60, y1 - h / 2, NAME if lit else GOLD)
+        d.text((x0 + 150, y1 - h / 2), {'log': 'Log', 'skip': 'Skip'}[kind], font=GOTHIC(36), fill=TEXT, anchor='mm')
+    return foot - 2 * h - 16
+
+
+def menu_cell(d, box):
+    """The menu bar's commands (File, Screen, Option, MsgSkip) behind one cell, as upright."""
+    panel(d, box)
+    icon(d, 'menu', box[0] + 60, (box[1] + box[3]) / 2)
+    d.text((box[0] + 150, (box[1] + box[3]) / 2), 'Menu', font=GOTHIC(36), fill=TEXT, anchor='mm')
+
+
+def side_status(d, x0, x1, y):
+    """The status window's lines stacked in a black side."""
+    d.text((x0 + 6, y), 'LP 3', font=CINZEL(34, 700), fill=NAME)
+    d.text((x0 + 6, y + 46), 'Month 5 · Week 2', font=fit(d, 'Month 5 · Week 2', lambda s: CINZEL(s, 700), 30,
+                                                         x1 - x0 - 12), fill=NAME)
+    d.text((x0 + 6, y + 104), '116,400K', font=GOTHIC(42), fill=TEXT)
+    d.text((x0 + 6, y + 154), 'GOLD', font=CINZEL(24, 600), fill=SUBTITLE)
+    d.text((x0 + 6, y + 196), 'Troops 6,251', font=GOTHIC(32), fill=QUIET)
+    return y + 246
+
+
+def side_tags(d, x0, x1, y):
+    """The week's uses, the strip's tags, stacked by group in a black side."""
+    for group, items in TAGS:
+        d.text((x0 + 6, y), group, font=CINZEL(22, 700), fill=SUBTITLE)
+        y += 36
+        for word, colour in items:
+            d.rectangle((x0 + 6, y, x1 - 6, y + 46), fill=colour)
+            d.text(((x0 + x1) / 2, y + 23), word, font=GOTHIC(28), fill=TEXT, anchor='mm')
+            y += 54
+        y += 12
+    return y
+
+
+def commands_cell(d, box, label='Commands', kind='menu'):
+    """The map's button in a side: the icon over the label, the side being narrow."""
+    panel(d, box)
+    cx = (box[0] + box[2]) / 2
+    icon(d, kind, cx, box[1] + 48)
+    d.text((cx, box[3] - 40), label, font=fit(d, label, BRUSH, 36, box[2] - box[0] - 30), fill=NAME, anchor='mm')
+
+
+LAND_VIEW = (1280, 208)                 # the gallery's map view (the touch dump's camera)
+
+
+def lm1_frame(img, dim=0, ring=None, view=LAND_VIEW):
+    draw_map(img, (FX0, 0, FX1, LH), view[0], view[1], LK * 2, 36, ring=ring, dim=dim)
+    return ImageDraw.Draw(img)
+
+
+def lm1():
+    img, d = land()
+    d = lm1_frame(img)
+    x0, x1 = RAIL_L
+    menu_cell(d, (x0, 16, x1, 126))
+    side_status(d, x0, x1, 160)
+    drawer_cells(d, x0, x1, FOOT - 10)
+    x0, x1 = RAIL_R
+    side_tags(d, x0, x1, 24)
+    commands_cell(d, (x0, FOOT - 10 - 150, x1, FOOT - 10))
+    reach_land(img)
+    d = ImageDraw.Draw(img)
+    save_land(img, 'LM1a', 'the frame kept, the black sides as rails — the map wait', 'land-map', notes=[
+        'The map as on the tablet, at the\nPC\'s view (640 × 400 map pixels,\n3.05 phone px each); our plates\n'
+        'with 2 mm text (36 px), larger\nthan the layout\'s.',
+        f'Left side: Menu (the menu bar\'s\ncommands) on top, the status\nstacked (date, budget, troops),\n'
+        f'the drawer\'s Skip and Log at the\nthumb ({mm(118)} high).',
+        'Right side: the week\'s uses as the\nstrip\'s tags by group; Commands\nat the right thumb.',
+        f'The sides\' rails are {mm(RAIL_L[1] - RAIL_L[0])} wide:\nwhat is in them never covers\nthe map.',
+        f'{mm(SIDE)} kept free at each edge for\nthe camera\'s hole (drawn left).'])
+
+    img, d = land()
+    d = lm1_frame(img, dim=150)
+    land_panel_rails(img, d, close=True, inner=0)
+    reach_land(img)
+    d = ImageDraw.Draw(img)
+    save_land(img, 'LM1b', 'the frame kept, the black sides as rails — Commands', 'land-map', notes=[
+        'Commands fills both sides as the\ntablet\'s rails: the week\'s\ncommands left, the other items\n'
+        'right, from the foot up; Turn END\non the right\'s top, Close where\nCommands was.',
+        f'The rows {mm(123)} high and {mm(254)}\nwide: the tag over the name, two\nlines (the side has no room\n'
+        'for both in one).',
+        'The date and the budget stay at\nthe left\'s top; the map dimmed,\na tap on it closes.'])
+
+    img, d = land()
+    d = lm1_frame(img, ring=6)
+    province_card(img, d, point_on((FX0, 0, FX1, LH), LAND_VIEW[0], LAND_VIEW[1], LK * 2, 6), (FX0 + 20, FX1 - 20))
+    d = ImageDraw.Draw(img)
+    x0, x1 = RAIL_L
+    menu_cell(d, (x0, 16, x1, 126))
+    side_status(d, x0, x1, 160)
+    x0, x1 = RAIL_R
+    province_rail(d, x0, x1)
+    reach_land(img)
+    d = ImageDraw.Draw(img)
+    save_land(img, 'LM1c', 'the frame kept, the black sides as rails — a province', 'land-map', notes=[
+        'A tap on Oaks rings it; its card\nbeside it as on the tablet (the\nowner\'s B), its type 2-2.5 mm;\n'
+        'the commands on the right side,\nReturn where Commands was.',
+        'The drawer hides under the menu,\nas on the tablet; the status\nstays.'])
+
+
+def land_panel_rails(img, d, close=True, inner=0):
+    """The command panel in the sides: THIS WEEK left (the date and budget over it), Turn END and the other items
+    right, Close at the foot. `inner` widens the rails into the picture (LM2: lacquer over the map)."""
+    lx0, lx1 = RAIL_L[0], RAIL_L[1] + inner
+    rx0, rx1 = RAIL_R[0] - inner, RAIL_R[1]
+    top = 150 if inner else 0           # under LM2's strip
+    if inner:
+        panel(d, (lx0 - 6, top, lx1 + 6, LH + 20))
+        panel(d, (rx0 - 6, top, rx1 + 6, LH + 20))
+    h, gap = 123, 12
+    if not inner:                       # the strip's figures stay over the commands (LM2 keeps its strip)
+        d.text((lx0 + 6, 20), 'LP 3', font=CINZEL(30, 700), fill=NAME)
+        d.text((lx0 + 6, 60), 'Month 5 · Week 2',
+               font=fit(d, 'Month 5 · Week 2', lambda s: CINZEL(s, 700), 28, lx1 - lx0 - 12), fill=NAME)
+        d.text((lx0 + 6, 106), '116,400K GOLD', font=fit(d, '116,400K GOLD', GOTHIC, 34, lx1 - lx0 - 12), fill=TEXT)
+    d.text((lx0 + 6, 176), 'THIS WEEK', font=CINZEL(26, 700), fill=SUBTITLE)
+    for i, (word, colour, name) in enumerate(COMMANDS):
+        y = FOOT - 10 - (i + 1) * h - i * gap
+        if inner:
+            tag_row(d, (lx0, y, lx1, y + h), word, colour, name, chip='5' if name == 'Construction' else None)
+        else:
+            rail_cell(d, (lx0, y, lx1, y + h), name, word, colour)
+    red_button(d, (rx0, top + 16, rx1, top + 156), 'Turn END', 44)
+    skip = 1 if close else 0
+    for i, name in enumerate(LINKS):
+        y = FOOT - 10 - (i + 1 + skip) * h - (i + skip) * gap
+        if inner:
+            row_box(d, (rx0, y, rx1, y + h), name, size=40)
+        else:
+            rail_cell(d, (rx0, y, rx1, y + h), name)
+    if close:
+        commands_cell(d, (rx0, FOOT - 10 - h, rx1, FOOT - 10), 'Close', 'close')
+
+
+def province_card(img, d, at, span, w=560):
+    """The tablet's card beside the tapped province (the owner's B), larger: left of it when there is room."""
+    px, py = round(at[0]), round(at[1])
+    x1 = px - 90
+    x0 = x1 - w
+    if x0 < span[0]:
+        x0 = px + 90
+        x1 = x0 + w
+    y0 = max(20, min(py - 300, FOOT - 620))
+    box = (x0, y0, x1, y0 + 600)
+    panel(d, box)
+    tip = x1 if x1 < px else x0
+    d.polygon([(tip, py - 30), (tip + (40 if x1 < px else -40), py), (tip, py + 30)], fill=GOLD)
+    pic = dump(TOUCH, 'province-menu.png').crop((568, 388, 838, 562))
+    pic = pic.resize((w - 48, round((w - 48) * pic.height / pic.width)), Image.LANCZOS)
+    img.paste(pic, (x0 + 24, y0 + 24))
+    d = ImageDraw.Draw(img)
+    d.rectangle((x0 + 24, y0 + 24, x0 + 24 + pic.width, y0 + 24 + pic.height), outline=GOLD, width=3)
+    y = y0 + 24 + pic.height + 16
+    d.text((x0 + 28, y), 'Oaks', font=BRUSH(52), fill=NAME)
+    d.text((x1 - 28, y + 20), 'REBEL ARMY', font=CINZEL(26, 600), fill=SUBTITLE, anchor='ra')
+    for i, label in enumerate(['Economy', 'Defense', 'Battle Area']):
+        d.text((x0 + 28, y + 80 + i * 44), label, font=GOTHIC(34), fill=LABEL)
+        d.text((x1 - 28, y + 80 + i * 44), '??', font=GOTHIC(34), fill=TEXT, anchor='ra')
+    return box
+
+
+def province_rail(d, x0, x1, inner=False):
+    h, gap = 123, 12
+    rows = [('Ninja', (84, 60, 120), 'Ninja Maneuver'), ('Battle', (128, 34, 30), 'Attack')]
+    for i, (word, colour, name) in enumerate(reversed(rows)):
+        y = FOOT - 10 - (i + 2) * h - (i + 1) * gap
+        if inner:
+            tag_row(d, (x0, y, x1, y + h), word, colour, name)
+        else:
+            rail_cell(d, (x0, y, x1, y + h), name, word, colour)
+    commands_cell(d, (x0, FOOT - 10 - h, x1, FOOT - 10), 'Return', 'close')
+
+
+def land_strip(d, x0, x1):
+    """LM2's status strip over the map's top, in two rows: the status window's lines, then the week's uses."""
+    panel(d, (0, 0, LW, 150))
+    d.text((x0, 20), DATE, font=CINZEL(36, 700), fill=NAME)
+    d.text((x0 + 560, 22), '116,400K GOLD', font=GOTHIC(38), fill=TEXT)
+    d.text((x0 + 900, 26), 'Troops 6,251', font=GOTHIC(34), fill=QUIET)
+    x, y = x0, 84
+    for group, items in TAGS:
+        d.text((x, y + 21), group, font=CINZEL(22, 700), fill=SUBTITLE, anchor='lm')
+        x += d.textlength(group, font=CINZEL(22, 700)) + 14
+        for word, colour in items:
+            w = d.textlength(word, font=GOTHIC(28)) + 26
+            d.rectangle((x, y, x + w, y + 44), fill=colour)
+            d.text((x + w / 2, y + 22), word, font=GOTHIC(28), fill=TEXT, anchor='mm')
+            x += w + 8
+        x += 34
+
+
+def lm2_map(img, dim=0, ring=None, view=None):
+    view = view or (1920 - round(LW / (LK * 2)), 208 - 24)
+    draw_map(img, (0, 0, LW, LH), view[0], view[1], LK * 2, 36, ring=ring, dim=dim)
+    return ImageDraw.Draw(img), view
+
+
+def lm2():
+    img, d = land()
+    d, view = lm2_map(img)
+    land_strip(d, SIDE + 20, LW - SIDE - 20)
+    menu_cell(d, (LW - SIDE - 270, 20, LW - SIDE - 16, 130))
+    drawer_cells(d, SIDE + 6, SIDE + 260, FOOT - 10)
+    commands_cell(d, (RAIL_R[0], FOOT - 10 - 150, RAIL_R[1], FOOT - 10))
+    reach_land(img)
+    d = ImageDraw.Draw(img)
+    save_land(img, 'LM2a', 'the map across the whole screen — the map wait', 'land-map', notes=[
+        f'The map over the whole screen at\nthe same scale (3.05): {LW / (LK * 2):.0f} × 400\nmap pixels '
+        'in view, two fifths\nmore than the PC\'s 640.',
+        'The status strip over the map\'s\ntop in two rows (2-2.2 mm): the\nstatus window\'s lines, then the\n'
+        'week\'s uses by group; Menu at\nits right.',
+        f'The drawer at the left thumb and\nCommands at the right one\n({mm(150)} high), as on the tablet.',
+        'The map left of x 1280 shows the\ngame\'s first owners (made up);\nthe right part is the gallery\'s\n'
+        'week 18.',
+        f'Plates and flags may lie under\nthe camera\'s hole ({mm(SIDE)} at a\nside): a drag moves them out.'])
+
+    img, d = land()
+    d, view = lm2_map(img, dim=150)
+    land_strip(d, SIDE + 20, LW - SIDE - 20)
+    land_panel_rails(img, d, close=True, inner=260)
+    reach_land(img)
+    d = ImageDraw.Draw(img)
+    save_land(img, 'LM2b', 'the map across the whole screen — Commands', 'land-map', notes=[
+        f'The tablet\'s rails as lacquer over\nthe map\'s sides, {mm(514)} wide: the\ncommands in one line with their\n'
+        f'tag, rows {mm(123)} high; Construction\'s\nweeks on its chip.',
+        'Turn END on the right\'s top, Close\nwhere Commands was; the map\ndimmed, a tap on it closes.',
+        'The strip stays: the week\'s uses\nand the commands both seen.'])
+
+    img, d = land()
+    d, view = lm2_map(img, ring=6)
+    land_strip(d, SIDE + 20, LW - SIDE - 20)
+    province_card(img, d, point_on((0, 0, LW, LH), view[0], view[1], LK * 2, 6), (SIDE + 20, LW - 500))
+    d = ImageDraw.Draw(img)
+    panel(d, (RAIL_R[0] - 12, 700, LW + 20, LH + 20))
+    province_rail(d, *RAIL_R)
+    reach_land(img)
+    d = ImageDraw.Draw(img)
+    save_land(img, 'LM2c', 'the map across the whole screen — a province', 'land-map', notes=[
+        'Oaks ringed, its card beside it\n(the owner\'s B on the tablet),\nits commands on a lacquer rail\n'
+        'at the right thumb, Return where\nCommands was.',
+        f'The rail only {mm(254)} wide here\n(two-line rows, as LM1\'s): Oaks\nlies near the map\'s east edge,\n'
+        'which the view cannot pass, so\na wider rail would cover it.'])
+
+
+# The battle: the tablet's layout (touch.md, "The battle within the thumbs' reach") on the landscape phone.
+
+LAND_CARDS = {                          # the touch dump's cards: our back row empty, Rance and Rick in front
+    'player': [[None, 'Rance'], [None, 'Rick']],
+    'enemy': [['Ex', 'Melfeis'], ['Sakanaku', 'Dodge']],
+}
+
+
+def land_card(img, box, name, player, acting=False, target=False, size=34, fs=150, toggles_h=0):
+    """A battle card on the landscape phone: the face top left with its four figures under it, the text right."""
+    d = ImageDraw.Draw(img)
+    x0, y0, x1, y1 = box
+    num, kind, trp, mtrp, (hp, mhp), state, stats = UNITS[name]
+    d.rectangle(box, fill=(88, 72, 50) if acting else (28, 22, 18), outline=(240, 230, 210) if acting else DIM_GOLD,
+                width=4 if acting else 2)
+    img.paste(face(name, fs), (x0 + 10, y0 + 10))
+    d = ImageDraw.Draw(img)
+    d.text((x0 + 10 + fs / 2, y0 + fs + 36), stats, font=GOTHIC(round(size * 0.8)), fill=TEXT, anchor='mm')
+    tx, tw = x0 + fs + 24, x1 - x0 - fs - 38
+    line = size * 1.25
+    d.text((tx, y0 + 8), f'{num}  {name}', font=GOTHIC(round(size * 1.12)), fill=TEXT)
+    y = y0 + 8 + size * 1.3
+    d.text((tx, y), kind, font=fit(d, kind, GOTHIC, round(size * 0.9), tw), fill=QUIET)
+    y += line
+    d.text((tx, y), f'Trp. {trp:,}/{mtrp:,}', font=fit(d, f'Trp. {trp:,}/{mtrp:,}', GOTHIC, size, tw), fill=TEXT)
+    y += line
+    bar(d, tx, y, tw, trp, mtrp, PLAYER_BLUE if player else ENEMY_RED)
+    y += 16
+    d.text((tx, y), f'HP {hp}/{mhp}', font=GOTHIC(size), fill=TEXT)
+    compact = y + line + 18 + size > y1 - 6         # no room for the state's own line: at the HP line's end
+    if state and state != 'toggles' and compact:
+        d.text((tx + tw, y), state, font=GOTHIC(round(size * 0.9)), fill=QUIET, anchor='ra')
+    y += line
+    bar(d, tx, y, tw, hp, mhp, BAR_GOOD)
+    if state == 'toggles' and toggles_h:            # across the card's foot
+        toggles(d, x0 + 10, y1 - toggles_h - 10, x1 - x0 - 20, round(size * 0.8), h=toggles_h)
+    elif state and state != 'toggles' and not compact:
+        d.text((tx, y + 18), state, font=GOTHIC(round(size * 0.9)), fill=QUIET)
+    if target:
+        brackets(ImageDraw.Draw(img), box)
+
+
+def land_board(img, top, card_h, size, fs, toggles_h):
+    """The board under the scene in the frame: our two columns left, the gauge, the enemy's right."""
+    backdrop(img, (FX0, top, FX1, LH))
+    d = ImageDraw.Draw(img)
+    d.text((FX0 + 16, top + 24), 'Rance Army', font=CINZEL(30, 700), fill=TEXT, anchor='lm')
+    d.text((FX1 - 16, top + 24), 'Leazas Rebel Army', font=CINZEL(30, 700), fill=TEXT, anchor='rm')
+    d.text((FX1 - 16 - d.textlength('Leazas Rebel Army', font=CINZEL(30, 700)) - 24, top + 24), 'Walls +8%',
+           font=GOTHIC(30), fill=(230, 196, 110), anchor='rm')
+    gx = (FX0 + FX1) / 2
+    gw, gap = 90, 12
+    cw = (gx - gw / 2 - gap - FX0 - 12 - gap) // 2
+    xs = [FX0 + 12, FX0 + 12 + cw + gap, gx + gw / 2 + gap, gx + gw / 2 + gap + cw + gap]
+    y0 = top + 50
+    for r in range(2):
+        y = y0 + r * (card_h + gap)
+        for c, name in enumerate(LAND_CARDS['player'][r] + LAND_CARDS['enemy'][r]):
+            box = (round(xs[c]), y, round(xs[c] + cw), y + card_h)
+            if name is None:
+                empty_slot(d, box)
+            else:
+                land_card(img, box, name, c < 2, acting=name == 'Rance', target=name == 'Ex', size=size, fs=fs,
+                          toggles_h=toggles_h)
+            d = ImageDraw.Draw(img)
+    gh = 2 * card_h + gap
+    for i in range(4):
+        y = y0 + i * (gh - 60) / 4
+        d.rounded_rectangle((gx - gw / 2 + 8, y, gx + gw / 2 - 8, y + (gh - 60) / 4 - 12), radius=10,
+                            fill=(150, 120, 60), outline=GOLD, width=3)
+    d.text((gx, y0 + gh - 30), '4', font=BRUSH(44), fill=NAME, anchor='mm')
+    return cw
+
+
+def land_rails(img, d, skip=True):
+    """The tablet's rails in the black sides: the acting unit's commands left, the target's attacks right, both from
+    the foot up; the battle's Skip on the left rail's top."""
+    x0, x1 = RAIL_L
+    panel(d, (x0 - 6, 0, x1 + 6, LH))
+    if skip:
+        b = (x0 + 8, 20, x1 - 8, 120)
+        panel(d, b)
+        icon(d, 'skip', b[0] + 56, 70)
+        d.text((b[0] + 150, 70), 'Skip', font=GOTHIC(36), fill=TEXT, anchor='mm')
+    d.text(((x0 + x1) / 2, 180), 'RANCE', font=BRUSH(46), fill=NAME, anchor='mm')
+    d.line([(x0 + 20, 222), (x1 - 20, 222)], fill=DIM_GOLD, width=2)
+    h, gap = 123, 12
+    for i, name in enumerate(['Defend', 'Wait', 'Auto-Atk', 'Auto-Def']):
+        y = FOOT - 10 - (i + 1) * h - i * gap
+        row_box(d, (x0 + 8, y, x1 - 8, y + h), name, size=40, centred=True)
+    y = FOOT - 10 - 5 * h - 4 * gap
+    red_button(d, (x0 + 8, y, x1 - 8, y + h), 'Retreat', 42)
+    x0, x1 = RAIL_R
+    panel(d, (x0 - 6, 0, x1 + 6, LH))
+    d.text(((x0 + x1) / 2, 60), 'TARGET', font=CINZEL(28, 700), fill=SUBTITLE, anchor='mm')
+    d.text(((x0 + x1) / 2, 122), 'Ex', font=BRUSH(56), fill=(250, 222, 150), anchor='mm')
+    d.line([(x0 + 20, 172), (x1 - 20, 172)], fill=DIM_GOLD, width=2)
+    gold_button(d, (x0 + 8, FOOT - 10 - 260, x1 - 8, FOOT - 10), 'Melee', ('29-37', '0-1'))
+
+
+def land_scene(img, height):
+    """The scene in the frame: whole (625 px, the tablet's) or lower, its own 1024-wide picture sharp and its sides
+    blurred out to the frame."""
+    scene = dump(TOUCH, 'battle-turn.png').crop((0, 0, 1280, 410))
+    if height >= round(410 * LK):
+        img.paste(scene.resize((1952, round(410 * LK)), Image.LANCZOS), (FX0, 0))
+        return round(410 * LK)
+    sharp = scene.crop((128, 0, 1152, 410))
+    w = round(1024 * height / 410)
+    blur = sharp.resize((1952, height), Image.LANCZOS).filter(ImageFilter.GaussianBlur(18))
+    blur = Image.blend(blur, Image.new('RGB', blur.size), 0.35)
+    img.paste(blur, (FX0, 0))
+    img.paste(sharp.resize((w, height), Image.LANCZOS), ((LW - w) // 2, 0))
+    return height
+
+
+def lb1():
+    img, d = land()
+    top = land_scene(img, 9999)
+    land_board(img, top, 229, 34, 150, 0)
+    d = ImageDraw.Draw(img)
+    land_rails(img, d)
+    reach_land(img)
+    d = ImageDraw.Draw(img)
+    save_land(img, 'LB1', 'the rails in the black sides, the PC\'s board', 'land-battle', notes=[
+        f'The scene whole, as on every\ndevice (111 × {mm(625)}); the\nboard under it at the PC\'s width\n'
+        'again, since the rails left the\nframe for the black sides.',
+        f'The cards {mm(447)} × {mm(229)}: the face\nleft, the text 1.9-2.2 mm\n(34-38 px), the four figures\n'
+        f'{mm(27)}.',
+        f'The rails {mm(254)} wide, the rows\n{mm(123)} high, from the foot up as\nthe tablet\'s; Retreat on the\n'
+        f'left\'s top, Melee ({mm(260)} with the\nforecast) at the right thumb.',
+        'The battle\'s Skip on the left\nrail\'s top: it stays there while\nthe exchanges play and the\nrails are gone.',
+        f'The order toggles ({lm(32)} high on\nthe phone) do not fit a finger:\nthe other own cards\' orders by\n'
+        'the long press, as before them.'])
+
+
+def lb2():
+    img, d = land()
+    top = land_scene(img, 438)
+    land_board(img, top, 334, 40, 160, 80)
+    d = ImageDraw.Draw(img)
+    land_rails(img, d)
+    reach_land(img)
+    d = ImageDraw.Draw(img)
+    save_land(img, 'LB2', 'the rails in the black sides, the scene lower and the cards taller', 'land-battle', notes=[
+        f'The scene\'s own picture {mm(438)} high\n(70%), its sides blurred out to\nthe frame; the cards get the\n'
+        'height.',
+        f'The cards {mm(447)} × {mm(334)}: the text\n2.3-2.5 mm (40-45 px); Rick\'s\norder toggles {mm(80)} high, '
+        'across\nthe card\'s foot (the tablet\'s\n6.5 mm).',
+        'The rails as LB1\'s.',
+        'The fighters\' sprites smaller\nthan on any other device.'])
+
+
+def p8():
+    l0()
+    lm1(); lm2()
+    lb1(); lb2()
+
+
 def main():
     global MAP, PROV_NAMES, PROV_POINTS
     if ROUND in ('P3', 'P5', 'P7'):
@@ -2946,8 +3492,8 @@ def main():
         overviews()
         return
     MAP, PROV_NAMES, PROV_POINTS = build_map()
-    if ROUND in ('P4', 'P6'):
-        p4() if ROUND == 'P4' else p6()
+    if ROUND in ('P4', 'P6', 'P8'):
+        {'P4': p4, 'P6': p6, 'P8': p8}[ROUND]()
         overviews()
         return
     if GALLERY_MODE:
