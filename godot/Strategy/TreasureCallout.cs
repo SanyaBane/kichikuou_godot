@@ -10,7 +10,9 @@ namespace Kichikuou.Game.Strategy;
 /// the screen's own key wait answers it; a question's menu (<c>L_00a3f</c>'s Yes/No) is drawn as buttons inside the box,
 /// the first in red lacquer: a button's click answers the script's menu with its item (1-based), a right click cancels
 /// (0), as the original's box. Our own question before an item replaces a unit's (<c>TreasureRoster.ReplaceQuestion</c>)
-/// shows the same way. Laid out in the 1280×800 screen's pixels, scaled with the picture.
+/// shows the same way. In the touch mode the last tap is the screen's button, and the callout stands beside it instead,
+/// filling the info panel at its left with its tail on the button (docs/ui/pickers.md, §6, the owner's X4). Laid out in
+/// the 1280×800 screen's pixels, scaled with the picture.
 /// </summary>
 internal sealed partial class TreasureCallout : Control
 {
@@ -24,6 +26,7 @@ internal sealed partial class TreasureCallout : Control
     private FontFile _gothic;
     private IReadOnlyList<string> _lines = [];
     private Rect2 _cell;
+    private Rect2? _beside;                         // the area a callout beside its anchor fills (its right edge by the anchor)
     private bool _waiting;
     private IReadOnlyList<string>? _answers;
     private float _k = 1;                           // window pixels to a screen pixel
@@ -46,14 +49,15 @@ internal sealed partial class TreasureCallout : Control
 
     /// <summary>
     /// Shows the window's <paramref name="lines"/> at <paramref name="cell"/> (screen pixels), the triangle while
-    /// <paramref name="waiting"/>.
+    /// <paramref name="waiting"/>; with <paramref name="beside"/> at the anchor's left, filling that area.
     /// </summary>
-    public void Show(IReadOnlyList<string> lines, Rect2 cell, bool waiting)
+    public void Show(IReadOnlyList<string> lines, Rect2 cell, bool waiting, Rect2? beside = null)
     {
-        if (Visible && lines.SequenceEqual(_lines) && cell == _cell && waiting == _waiting)
+        if (Visible && lines.SequenceEqual(_lines) && cell == _cell && waiting == _waiting && beside == _beside)
             return;
         _lines = lines;
         _cell = cell;
+        _beside = beside;
         _waiting = waiting;
         Visible = true;
         QueueRedraw();
@@ -120,6 +124,8 @@ internal sealed partial class TreasureCallout : Control
             float buttons = Answers * ButtonW + Math.Max(0, Answers - 1) * ButtonGap;
             float w = Math.Max(MinWidth, Math.Max(widest, buttons) + 2 * Pad + (Answers == 0 ? 30 : 0));
             float h = Pad + _lines.Count * LineStep + (Answers > 0 ? ButtonH + 2 * Gap + 4 : 34);
+            if (_beside is { } area)
+                return new Rect2(area.Position, new Vector2(area.Size.X, Math.Max(h, area.Size.Y)));   // the whole area: nothing peeks out
             float x = Math.Clamp(_cell.Position.X - 8, 8, 1280 - 8 - w);
             float y = _cell.End.Y + Gap;
             if (y + h > 800 - 8)
@@ -200,7 +206,7 @@ internal sealed partial class TreasureCallout : Control
             return;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         var box = Box;
-        Ui.DrawPanel(this, box, _k, Fill);
+        Ui.DrawPanel(this, box, _k, _beside is null ? Fill : Fill with { A = 1 });     // beside: over the panel's line, opaque
         DrawTail(box);
         float x = box.Position.X + Pad, y = box.Position.Y + Pad;
         for (int i = 0; i < _lines.Count; i++)
@@ -229,6 +235,14 @@ internal sealed partial class TreasureCallout : Control
     /// <summary>The tail: a gold wedge from the box's edge to the cell, the box's lacquer inside it.</summary>
     private void DrawTail(Rect2 box)
     {
+        if (_beside is not null)
+        {
+            // Beside the anchor: from the box's right edge to the anchor at its left.
+            float ty = Math.Clamp(_cell.GetCenter().Y, box.Position.Y + 24, box.End.Y - 24), ex = box.End.X;
+            DrawColoredPolygon([new(ex - 2, ty - 13), new(ex + TailH, ty), new(ex - 2, ty + 13)], Ui.Gold);
+            DrawColoredPolygon([new(ex - 3, ty - 10), new(ex + TailH - 5, ty), new(ex - 3, ty + 10)], Fill with { A = 1 });
+            return;
+        }
         float tx = Math.Clamp(_cell.Position.X + TailX, box.Position.X + 24, box.End.X - 24);
         float edge = Above ? box.End.Y : box.Position.Y;
         float s = Above ? 1 : -1;                       // the tail's direction: down to a cell below, up to one above

@@ -133,7 +133,8 @@ hover and the right button. So the tablet keeps our layout and gets only what to
   it —, a tap on a plate opening the province menu as now (its figures are the hover card's). Turn END stays in the
   command panel.
 - **The hover's other places**: the advantages' tooltips open on a tap; the pickers' details on a first tap, the
-  pick on a second; the message log by a button at a key wait. One by one, after the battle and the map.
+  pick on a second; the message log by a button at a key wait. One by one, after the battle and the map. (The Treasure
+  screen, 2026-10-27: a tap selects and a button under the picture acts — docs/ui/pickers.md, §6.)
 
 **The owner's choice (2026-10-24): B2 and M3**, with the target preselected per unit. Built:
 

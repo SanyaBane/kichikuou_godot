@@ -14,6 +14,10 @@ namespace Kichikuou.Game.Strategy;
 /// in the 1280×800 screen's pixels (<see cref="Lacquer"/>). It decides nothing: a cell's click, a tab, Back (or a right
 /// press) and End go to <see cref="GameScreen"/>, which gives the picker its player's click (<see cref="TreasureRoster"/>);
 /// the script still refuses, asks and equips, its windows and menus drawn over this screen.
+/// In the touch mode (docs/ui/pickers.md, §6, the owner's round X) there is no hover: a tap on a cell only selects it — lit
+/// as the PC's hover, its picture and line in the panel — and a red button at the info panel's right acts on it
+/// (<see cref="TreasureButton"/>: Choose an item, Choose a character, Equip, Take off), greyed with its reason where the
+/// picker would refuse the click.
 /// </summary>
 internal sealed partial class TreasureView : Control
 {
@@ -27,11 +31,12 @@ internal sealed partial class TreasureView : Control
     private static readonly Rect2 PromptFace = new(40, 650, 112, 112);
     private static readonly Rect2 BackArea = new(548, 730, 110, 34);
     private static readonly Rect2 EndArea = new(1106, 726, 140, 40);
+    private static readonly Rect2 ActionArea = new(432, 541, 232, 70);    // the touch mode's button, under the picture's description
     private const float TabletW = 176, TabletH = 32, TabletStepX = 180, TabletStepY = 36, GridX = 708, GridY = 106;
     private const float TabX = 708, TabY = 726, TabW = 176, TabH = 40, TabStep = 182;
     private const int Columns = 3;
 
-    private const int NoButton = -1, BackButton = -2, EndButton = -3, TabCharacters = -4, TabItems = -5;     // a cell is its number
+    private const int NoButton = -1, BackButton = -2, EndButton = -3, TabCharacters = -4, TabItems = -5, ActionButton = -6;   // a cell is its number
 
     private readonly FacePictures _faces;
     private readonly Layer _backdrop, _face;
@@ -45,7 +50,9 @@ internal sealed partial class TreasureView : Control
     private IReadOnlyList<TreasureEntry> _entries = [];
     private TreasureDetails? _details;
     private TreasurePrompt? _prompt;
-    private int _shown;                                 // the entry whose picture shows: the one hovered last
+    private int _shown;                                 // the entry whose picture shows: the one hovered last (touch: the one selected)
+    private int _selected;                              // touch: the entry a tap selected (0: none)
+    private TreasureButton? _button;                    // touch: what the button does with it
     private string _key = "", _date = "";
     private ImageTexture? _picture, _faceTexture;
     private (int, int) _pictureKey = (-1, -1);
@@ -133,17 +140,32 @@ internal sealed partial class TreasureView : Control
         }
     }
 
-    /// <summary>The view, its entries, the picture of the entry hovered last and the prompt, from <paramref name="state"/>.</summary>
+    /// <summary>
+    /// The view, its entries, the picture of the entry hovered last (touch: selected) and the prompt, from
+    /// <paramref name="state"/>.
+    /// </summary>
     public void Refresh(GameState state)
     {
+        var seen = _state;
         _state = state;
         int view = TreasureRoster.View(state);
         if (view != _view)
-            _shown = 0;                                 // the view turned: the empty panel until an entry is hovered
+        {
+            _shown = 0;                                 // the view turned: the empty panel until an entry is hovered (tapped)
+            if (seen is not null)
+                _selected = 0;                          // not a selection made before the first state (the gallery's)
+        }
         _view = view;
-        if (_hovered > 0)
-            _shown = _hovered;
         var entries = TreasureRoster.Entries(state);
+        if (TouchMode.On)
+        {
+            if (entries.All(e => e.Number != _selected))
+                _selected = 0;
+            _shown = _selected;
+        }
+        else if (_hovered > 0)
+            _shown = _hovered;
+        _button = TouchMode.On ? TreasureRoster.Button(state, _selected) : null;
         var details = TreasureRoster.Details(state, _shown);
         var prompt = TreasureRoster.Prompt(state);
         _date = HaremRoster.DateText(state.Week.Value) ?? "";
@@ -153,7 +175,7 @@ internal sealed partial class TreasureView : Control
             _pictureKey = pictureKey;
             _picture = _faces.PicturePanel(pictureKey.Item1, TreasureRoster.ScreenCg, pictureKey.Item2);
         }
-        string key = $"{view}|{string.Join(",", entries)}|{details?.Name}|{string.Join(",", details?.Figures ?? [])}|{prompt}|{_date}|{Busy}";
+        string key = $"{view}|{string.Join(",", entries)}|{details?.Name}|{string.Join(",", details?.Figures ?? [])}|{prompt}|{_date}|{Busy}|{_selected}|{_button}";
         if (key == _key)
             return;
         _key = key;
@@ -163,14 +185,42 @@ internal sealed partial class TreasureView : Control
         _face.QueueRedraw();
     }
 
-    /// <summary>The pointer put on entry <paramref name="number"/>'s cell (0: off the grid), as a hover puts it (unattended play's dumps).</summary>
-    public void ShowHover(int number) => Hover(number > 0 ? number : NoButton);
+    /// <summary>
+    /// The pointer put on entry <paramref name="number"/>'s cell (0: off the grid), as a hover puts it — in the touch mode the
+    /// entry selected, as a tap selects it (unattended play's dumps, the gallery).
+    /// </summary>
+    public void ShowHover(int number)
+    {
+        if (TouchMode.On)
+            Select(number);
+        else
+            Hover(number > 0 ? number : NoButton);
+    }
+
+    /// <summary>The touch mode's selection: entry <paramref name="number"/> (0: none), its picture and the button for it.</summary>
+    private void Select(int number)
+    {
+        if (number == _selected)
+            return;
+        _selected = number;
+        _key = "";
+        if (_state is not null)
+            Refresh(_state);
+        _face.QueueRedraw();
+    }
 
     // ---------------------------------------------------------------- the buttons
 
     /// <summary>Cell <paramref name="number"/>: the picker's grid, left to right, top to bottom.</summary>
     internal static Rect2 CellRect(int number) =>
         new(GridX + (number - 1) % Columns * TabletStepX, GridY + (number - 1) / Columns * TabletStepY, TabletW, TabletH);
+
+    /// <summary>The touch mode's button: the script's questions and our own stand beside it (the owner's X4).</summary>
+    internal static Rect2 ActionRect => ActionArea;
+
+    /// <summary>Where a callout beside the button stands: the info panel left of it, over the line and the prompt.</summary>
+    internal static Rect2 BesideAction => new(InfoPanel.Position.X + 12, InfoPanel.Position.Y + 12,
+        ActionArea.Position.X - 16 - InfoPanel.Position.X - 12, InfoPanel.Size.Y - 24);
 
     private static Rect2 TabRect(int view) => new(TabX + view * TabStep, TabY, TabW, TabH);
 
@@ -179,6 +229,8 @@ internal sealed partial class TreasureView : Control
         var at = (local - _origin) / _k;
         if (EndArea.HasPoint(at))
             return EndButton;
+        if (_button is not null && ActionArea.HasPoint(at))
+            return ActionButton;
         if (_prompt is not null && BackArea.HasPoint(at))
             return BackButton;
         if (TabRect(0).HasPoint(at))
@@ -195,6 +247,7 @@ internal sealed partial class TreasureView : Control
     {
         TabCharacters => _view != 0,
         TabItems => _view != 1,
+        ActionButton => _button is { Refusal: null },
         _ => true,
     };
 
@@ -256,8 +309,14 @@ internal sealed partial class TreasureView : Control
             case TabCharacters or TabItems:
                 TurnPressed?.Invoke();
                 break;
+            case ActionButton:
+                PickPressed?.Invoke(_selected);                 // the selected cell's click, as the PC's
+                break;
             default:
-                PickPressed?.Invoke(button);
+                if (TouchMode.On)
+                    Select(button);                             // a tap only selects
+                else
+                    PickPressed?.Invoke(button);
                 break;
         }
     }
@@ -314,10 +373,16 @@ internal sealed partial class TreasureView : Control
                 fx += Math.Max(110, _gothic.GetStringSize(figure.Value, fontSize: 18).X + 26);
             }
         }
+        else if (TouchMode.On && _prompt is { } first)
+            c.DrawString(_gothic, new Vector2(x, y + 70), first.UnitFirst ? "Tap an item to see it." : "Tap a character to see it.",
+                fontSize: 15, modulate: Ui.Quiet);
+        if (_button is { } b)
+            DrawAction(c, b);
         Ui.DrawDivider(c, InfoPanel.Position.X + 16, InfoPanel.End.X - 16, y + 116, _k);
         if (_prompt is not { } p)
         {
-            c.DrawString(_gothic, new Vector2(x, y + 152), "Pick a character, then the item to equip —", fontSize: 14, modulate: Ui.Quiet);
+            string verb = TouchMode.On ? "Tap" : "Pick";
+            c.DrawString(_gothic, new Vector2(x, y + 152), $"{verb} a character, then the item to equip —", fontSize: 14, modulate: Ui.Quiet);
             c.DrawString(_gothic, new Vector2(x, y + 174), "or an item, then the character to equip it.", fontSize: 14, modulate: Ui.Quiet);
             return;
         }
@@ -347,6 +412,27 @@ internal sealed partial class TreasureView : Control
     }
 
     /// <summary>
+    /// The touch mode's button (the owner's X3, X6): red lacquer with its word, or greyed with the picker's refusal under the
+    /// word; never the selection's name.
+    /// </summary>
+    private void DrawAction(Control c, TreasureButton b)
+    {
+        var r = ActionArea;
+        float cx = r.GetCenter().X;
+        if (b.Refusal is null)
+        {
+            bool hover = !Busy && _hovered == ActionButton;
+            Ui.DrawRedButton(c, r, hover, hover && _pressed == ActionButton, _k);
+            Centred(c, _cinzel, b.Label, 18, Color.Color8(250, 226, 160), cx, Lacquer.Baseline(r, _cinzel, 18));
+            return;
+        }
+        c.DrawRect(r, Ui.OffButton);
+        c.DrawRect(r, Ui.OffLine, false, Line(1));
+        Centred(c, _cinzel, b.Label, 18, Ui.OffText, cx, Lacquer.Baseline(new Rect2(r.Position.X, r.Position.Y + 6, r.Size.X, 34), _cinzel, 18));
+        Centred(c, _gothic, b.Refusal, 14, Ui.Minus, cx, Lacquer.Baseline(new Rect2(r.Position.X, r.Position.Y + 38, r.Size.X, 24), _gothic, 14));
+    }
+
+    /// <summary>
     /// The picker's grid: every entry at its own number's cell, three to a row (<c>Sｱｲﾃﾑ</c>'s 3×17), the other cells
     /// empty; a unit's name (a diamond when it holds an item, dim on Chaos and Nikkou), an item's in its colour with its
     /// holder (a padlock on Chaos and Nikkou); the view's tabs and End.
@@ -364,7 +450,7 @@ internal sealed partial class TreasureView : Control
                 c.DrawRect(r, new Color(Ui.OffLine, 0.6f), false, Line(1));
                 continue;
             }
-            bool hover = n == _hovered && !Busy;
+            bool hover = TouchMode.On ? n == _selected : n == _hovered && !Busy;     // touch: the selection, lit as a hover
             if (n == _asked)
             {
                 c.DrawRect(r, Ui.ChosenFill);            // the cell the callout asks about

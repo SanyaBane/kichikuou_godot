@@ -93,8 +93,7 @@ public partial class GameScreen
     {
         if (_treasureConfirm is { } own && _treasure.Visible)
         {
-            _treasureCallout.Show(own, TreasureView.CellRect(_treasureAsked), false);   // our own question, its menu open
-            _treasureCallout.Place(PictureArea());
+            ShowTreasureCallout(own, false);                        // our own question, its menu open
             _treasure.Asked = _treasureAsked;
             return false;
         }
@@ -105,14 +104,24 @@ public partial class GameScreen
             return false;
         }
         if (_keyWaiting || _treasureCallout.MenuOpen)
-        {
-            _treasureCallout.Show(window!.Lines, TreasureView.CellRect(_treasureAsked), _keyWaiting);
-            _treasureCallout.Place(PictureArea());
-        }
+            ShowTreasureCallout(window!.Lines, _keyWaiting);
         else
             _treasureCallout.Visible = false;                       // until the key wait or the menu, not its menu closed
         _treasure.Asked = _treasureCallout.Visible ? _treasureAsked : 0;
         return true;
+    }
+
+    /// <summary>
+    /// The callout at the cell clicked last — in the touch mode beside the screen's button, the last tap (docs/ui/pickers.md,
+    /// §6, the owner's X4).
+    /// </summary>
+    private void ShowTreasureCallout(IReadOnlyList<string> lines, bool waiting)
+    {
+        if (TouchMode.On)
+            _treasureCallout.Show(lines, TreasureView.ActionRect, waiting, TreasureView.BesideAction);
+        else
+            _treasureCallout.Show(lines, TreasureView.CellRect(_treasureAsked), waiting);
+        _treasureCallout.Place(PictureArea());
     }
 
     /// <summary>Whether <paramref name="window"/> shows as the callout: over our Treasure screen, after a cell's click.</summary>
@@ -130,7 +139,10 @@ public partial class GameScreen
         {
             _treasure.Visible = show;
             if (show)
+            {
                 _treasure.LoadCrops();                                  // the owner's squares from Debug → Portraits
+                _treasure.ShowHover(0);                                 // touch: no selection left from a visit before
+            }
             _treasureAsked = 0;
             _treasurePointer = new PointerScript();
             var (x, y) = TreasureRoster.Rest;
@@ -270,7 +282,20 @@ public partial class GameScreen
         });
         TurnTo(0);
         Act(() => TreasurePick(unit, _pointer));
-        Act(() => TreasurePick(held, _pointer));                    // refused: "Already equipped." (its key wait dumps)
+        if (TouchMode.On)
+        {
+            // The touch mode greys the button instead (the owner's X6): his own item selected, nothing sent.
+            Act(() => _treasure.ShowHover(held));
+            Dump("treasure-refusal");
+            Act(() =>
+            {
+                if (_presenter.State is { } now && TreasureRoster.Button(now, held) is not { Refusal: not null })
+                    GD.PushError($"Kichikuou: --auto found the button for unit {unit}'s own item {held} not greyed.");
+                _treasure.ShowHover(0);
+            });
+        }
+        else
+            Act(() => TreasurePick(held, _pointer));                // refused: "Already equipped." (its key wait dumps)
         Act(() =>
         {
             if (_presenter.State is { } now && TreasureRoster.Prompt(now) is not null)

@@ -353,4 +353,28 @@ Open for the owner:
 4. The button, as the grid, is out of the thumbs' reach on a tablet held in both hands (docs/ui/touch.md's arcs).
 
 **The owner (2026-10-27), question 1:** the script's questions in the callout beside the button, as X4 — not at the
-cell, not answered unseen. Questions 2-4 still open.
+cell, not answered unseen. **Question 2:** the refusals greyed in the button with their reason, as X6. Questions 3-4
+left as they are: no second tap (a tap on the selected cell does nothing), the button where X drew it.
+
+**Built (2026-10-27)**, the touch mode only (`TouchMode.On`; the PC unchanged):
+
+- `Original.Content/Strategy/TreasureRoster.Button` — the selected entry's `TreasureButton`: its action
+  (`TreasureAction`: Choose an item, Choose a character, Equip, Take off) and, following `Sｱｲﾃﾑ`'s checks of a click in
+  their order (`ItemScreen.PickAsync`), the refusal in our words where the picker would refuse it or take no notice: a
+  unit not at status 1 or 2 ("Can't be chosen now."), a unit holding Chaos or Nikkou ("Chaos can't be unequipped."),
+  Chaos or Nikkou themselves ("Can't be unequipped."), the picked unit's own item ("Already equipped."), an item in stock
+  without effect ("This item can't be equipped."); the dead and record-0 checks (CMD-20, CMD-17) mirrored.
+  `TreasureRosterTests`: the button on the hand-made state, and against `Cﾀｶﾗ` on the booted game — 17 selections over
+  the states of a pick, the picker refusing (or ignoring) exactly where the button is greyed and doing what it says
+  elsewhere.
+- `godot/Strategy/TreasureView`: a tap on a cell selects it (lit as the PC's hover; the picture and line its own; the
+  view's turn or the entry's going drops it), the button at (432, 541) 232×70 sends the selected cell's click as the
+  PC's, greyed with its reason in it; "Tap an item (a character) to see it." while a pick waits for its second; the
+  hint's verb "Tap".
+- `godot/Strategy/TreasureCallout` stands beside the button (`Show(…, beside)`): the info panel left of it, opaque, its
+  tail on the button (`TreasureView.ActionRect`, `BesideAction`); `GameScreen.ShowTreasureCallout` places the script's
+  questions and our own replace question there.
+- The gallery: `treasure-hover`, `-items`, `-replace`, `-refusal` select in the touch pass (`-refusal` the greyed button,
+  no callout) and the new `treasure-question` (the script's `:341-350` question; at the cell on the PC). Unattended play
+  with `--touch` selects his own item instead of sending it and checks the button greyed (`--treasure`, headless: no
+  error). Looked at in the gallery's touch dumps; the taps themselves not yet on the tablet.

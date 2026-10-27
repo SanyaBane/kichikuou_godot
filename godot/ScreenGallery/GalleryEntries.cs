@@ -72,16 +72,34 @@ internal static partial class GalleryEntries
                 GalleryStates.TreasureItemPicked(s, s.Units[holders[0]].Item.Value);
                 var lines = TreasureRoster.ReplaceQuestion(s, holders[1])
                     ?? throw new InvalidOperationException("No question for the second holder.");
+                view.ShowHover(holders[1]);                         // touch: the holder selected, Equip pressed
                 callout.OpenMenu(["Yes", "No"]);
                 return (lines, holders[1], false);
             }));
+        yield return new("treasure-question", "Screens", "Treasure: the script's question before a replace", Week18,
+            "The question's lines are Sｱｲﾃﾑ.ADV:341-350's.",
+            g => TreasureScreen(g, (s, view, callout) =>
+            {
+                var holders = GalleryStates.MovableHolders(s);
+                if (holders.Count < 2)
+                    throw new InvalidOperationException("The save has fewer than two holders of an item that moves.");
+                int item = s.Units[holders[1]].Item.Value;
+                GalleryStates.TreasureUnitPicked(s, holders[0]);
+                view.ShowHover(item);                               // touch: the other's item selected, Equip pressed
+                callout.OpenMenu(["Yes", "No"]);
+                return ([$"{TreasureRoster.ItemName(s, item)} is equipped to", $"{DeploymentTable.UnitName(s, holders[1])}, but would you",
+                    "like to remove it and equip", $"{DeploymentTable.UnitName(s, holders[0])} instead?"], item, false);
+            }));
         yield return new("treasure-refusal", "Screens", "Treasure: the script's refusal", Week18,
-            "The refusal's line is Sｱｲﾃﾑ.ADV:311's.",
+            "The refusal's line is Sｱｲﾃﾑ.ADV:311's; in the touch mode the button greyed with it instead (docs/ui/pickers.md, §6).",
             g => TreasureScreen(g, (s, view, callout) =>
             {
                 int unit = FirstHolder(s);
                 GalleryStates.TreasureUnitPicked(s, unit);
-                return (["Already equipped."], s.Units[unit].Item.Value, true);
+                if (!TouchMode.On)
+                    return (["Already equipped."], s.Units[unit].Item.Value, true);
+                view.ShowHover(s.Units[unit].Item.Value);           // his own item selected: Equip greyed
+                return null;
             }));
     }
 
@@ -116,7 +134,10 @@ internal static partial class GalleryEntries
             view.Refresh(s);
             if (asked is not var (lines, cell, waiting))
                 return;
-            callout.Show(lines, TreasureView.CellRect(cell), waiting);
+            if (TouchMode.On)
+                callout.Show(lines, TreasureView.ActionRect, waiting, TreasureView.BesideAction);
+            else
+                callout.Show(lines, TreasureView.CellRect(cell), waiting);
             callout.Place(area);
             view.Asked = cell;
         };
