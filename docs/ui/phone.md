@@ -142,6 +142,7 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 8. **The deployment table** (round P3): PD1, PD2 or PD3; the Subordinates screen: PU1 or PU2.
 9. **The enemy attack** (round P4): PA1 or PA2; the week report: PW1 or PW2.
 10. **Harem, Treasure, Save/Load** (round P5): PH1 or PH2, PT1 or PT2, PL1 or PL2.
+11. **The options window and the dungeon's menus** (round P6): PO1 or PO2; PF1 or PF2.
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -293,3 +294,33 @@ Save/Load (`PL…`; docs/ui/save-load.md, the owner's G with decisions 29 and 31
 
 **Recommendation: PL1** — rows and type a finger can take, and the map at its full width; the second page is the
 phone's usual way down a list.
+
+## 10. Round P6: the options window and the dungeon's menus (2026-10-27)
+
+Drawn by `mock_phone.py --round P6` over the gallery's `options-messages`, `options-tweaks`, `floor-ladder-middle` (the
+Monsters' Cave (dungeon 2) on floor 7) and `dungeon-entry`. The title (`ｽﾀMENU`, the original's own screen) and the
+import screen have no entry in the screen gallery to draw over; they wait for one.
+
+The options window (`PO…`; docs/ui/options.md, mock-up D):
+
+- **PO1 — the paper sheet, its tabs on top.** The window as a full paper sheet, its five tabs on top as on the PC
+  (6.3 mm); one column of settings, each a row with its control at the left (the row's whole height taps), its name
+  2.3 mm, its explanation 1.7 mm; the text speed's preview the game's window at 2.7 mm; the read-text colours in two
+  rows. Defaults | **Close** in the bar.
+- **PO2 — the tabs at the thumb.** The same sheet, the tabs as a bar of lacquer cells over Defaults | Close (7.4 mm),
+  the chosen tab's name at the title's right. Shown: Tweaks, its radio choices as finger rows (7 mm).
+
+**Recommendation: PO2** — the tabs are what is tapped most here, and a phone's tab bar is at its foot; the sheet
+above is read, not tapped.
+
+The dungeon's menus (`PF…`; docs/ui/dungeon-menu.md, the touch mode's rail), over the map as on the PC:
+
+- **PF1 — the ladder as the tablet's rail.** The floor's picture at the screen's width (2.1 ×) above its menu; the
+  script's window at its own breaks (3.3 mm) at the left; the ladder at the right thumb — Retreat on top, Ascend, the
+  floor, Descend in the corner, rungs 8.5 mm, a way not offered hidden in its room. **PF1e**: before a search, Return on
+  top and Start Search in Descend's corner (with four items the rail grows upwards).
+- **PF2 — the ladder laid across the foot.** The script's window under the picture at the screen's width (3.5 mm);
+  Retreat across the screen, Ascend | the floor | Descend under it — wider rungs, but Ascend on the left thumb's side.
+
+**Recommendation: PF1** — the tablet's rail as the owner chose it (touch.md's B), the same place for the thumb on both
+devices.

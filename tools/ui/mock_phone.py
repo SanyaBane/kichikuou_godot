@@ -23,7 +23,8 @@ our army on top, Skip between the cards and the deck), PB3r the retreat question
 also touch/current's exchange-counters. Round P3: PD1-PD3 the deployment table, PU1-PU2 the Subordinates screen; their
 inputs touch/current's deployment and the units' face CGs from <extract dir>/cg_png. Round P4: PA1-PA2 the
 enemy attack (touch/current's enemy-attack-scouted, Maris's and Kanami's face CGs), PW1-PW2 the week report. Round P5: PH1-PH2
-Harem, PT1-PT2 Treasure, PL1-PL2 Save/Load (touch/current's harem, treasure-items, save-load).
+Harem, PT1-PT2 Treasure, PL1-PL2 Save/Load (touch/current's harem, treasure-items, save-load). Round
+P6: PO1-PO2 the options window, PF1-PF2 the dungeon's menus (options-messages, options-tweaks, floor-ladder-middle).
 `--round P3` before the arguments draws only that round's variants (the look dir then unread, '-' will do).
 The pink lines and text are the mock-ups' notes, not part of a screen.
 
@@ -2408,15 +2409,302 @@ def p5():
     pl1(); pl1p(); pl2()
 
 
+# --- round P6: the options window and the dungeon's menus upright (2026-10-27) ---------------------------------------
+
+OPTION_TABS = ['Messages', 'Display', 'Battle', 'Game', 'Tweaks']
+SWATCHES = [(236, 132, 118), (236, 120, 170), (226, 110, 226), (176, 120, 236), (110, 120, 236), (110, 170, 236),
+            (90, 220, 236), (120, 236, 170), (110, 220, 110)]
+PREVIEW = ['I believe that we should first', 'prepare our cities for their', 'attacks, then defend them with',
+           'urban warfare.']
+
+
+def checkbox(d, x, y, on=True, s=46):
+    d.rectangle((x, y, x + s, y + s), fill=(246, 238, 220), outline=INK_QUIET, width=3)
+    if on:
+        d.line([(x + 9, y + s / 2), (x + s / 2 - 3, y + s - 10), (x + s - 7, y + 8)], fill=INK_HEAD, width=6)
+
+
+def radio(d, x, y, on, s=44):
+    d.ellipse((x, y, x + s, y + s), fill=(246, 238, 220), outline=INK_QUIET, width=3)
+    if on:
+        d.ellipse((x + 11, y + 11, x + s - 11, y + s - 11), fill=INK_HEAD)
+
+
+def option_row(d, x, y, x1, title, lines, kind='check', on=True):
+    """A setting as a finger row: its control, its name, its explanation under it."""
+    if kind == 'check':
+        checkbox(d, x, y + 4, on)
+    d.text((x + 70 if kind == 'check' else x, y), title, font=GOTHIC(40), fill=INK)
+    y += 58
+    for line in lines:
+        d.text((x + 70 if kind == 'check' else x, y), line, font=GOTHIC(30), fill=INK_QUIET)
+        y += 40
+    return y + 30
+
+
+def section(d, x, y, x1, name):
+    d.text((x, y), name, font=CINZEL(28, 700), fill=INK_HEAD)
+    d.line([(x, y + 42), (x1, y + 42)], fill=PAPER_LINE, width=2)
+    return y + 64
+
+
+def messages_tab(d, x, y, x1):
+    y = section(d, x, y, x1, 'TEXT SPEED')
+    d.text((x, y + 30), 'Slow', font=GOTHIC(30), fill=INK_QUIET, anchor='lm')
+    d.text((x1, y + 30), 'Instant', font=GOTHIC(30), fill=INK_QUIET, anchor='rm')
+    sx0, sx1 = x + 100, x1 - 130
+    d.rectangle((sx0, y + 26, sx1, y + 34), fill=(190, 172, 138))
+    d.rectangle((sx0, y + 26, sx1 - 40, y + 34), fill=INK_HEAD)
+    d.ellipse((sx1 - 66, y + 4, sx1 - 14, y + 56), fill=INK_HEAD, outline=(246, 238, 220), width=4)
+    d.text((sx1 - 40, y - 18), '10', font=GOTHIC(26), fill=INK, anchor='mm')
+    y += 84
+    box = (x, y, x1, y + 4 * 58 + 50)
+    d.rectangle(box, fill=(22, 16, 12), outline=INK_QUIET, width=3)
+    for i, line in enumerate(PREVIEW):
+        d.text((x + 24, y + 24 + i * 58), line, font=GOTHIC(48), fill=(236, 132, 118))
+    triangle(d, x1 - 30, box[3] - 24, 12)
+    y = box[3] + 14
+    d.text((x, y), 'The preview counts as read.', font=GOTHIC(28), fill=INK_QUIET)
+    y += 70
+    y = section(d, x, y, x1, 'MESSAGE SKIP')
+    y = option_row(d, x, y, x1, 'Skip unseen text', ['MsgSkip and Ctrl skip unread ones too.'])
+    y = option_row(d, x, y, x1, 'MsgSkip speeds up fades', ['Fades and waits run fast.'])
+    d.text((x, y), '0 messages seen.', font=GOTHIC(30), fill=INK_QUIET)
+    d.text((x1, y), 'Forget them…', font=GOTHIC(30), fill=INK_QUIET, anchor='ra')
+    y += 80
+    y = section(d, x, y, x1, 'ALREADY-READ TEXT')
+    b = (x, y, x + 300, y + 100)
+    d.rectangle(b, fill=(22, 16, 12))
+    d.text(((b[0] + b[2]) / 2, y + 50), "Don't change", font=GOTHIC(32), fill=TEXT, anchor='mm')
+    sw = (x1 - x - 320 - 4 * 14) // 5
+    for i, c in enumerate(SWATCHES):
+        sx = x + 320 + (i % 5) * (sw + 14) if i < 4 else x + (i - 4) * (sw + 14)
+        sy = y if i < 4 else y + 116
+        d.rectangle((sx, sy, sx + sw, sy + 100), fill=(22, 16, 12), outline=INK_HEAD if i == 0 else INK_QUIET,
+                    width=6 if i == 0 else 2)
+        d.rectangle((sx + 18, sy + 18, sx + sw - 18, sy + 82), fill=c)
+    y += 240
+    d.text((x, y), 'Salmon', font=GOTHIC(38), fill=INK)
+    for i, line in enumerate(['A message window you have read before, in any', 'game, shows its text in this colour.']):
+        d.text((x, y + 54 + i * 40), line, font=GOTHIC(30), fill=INK_QUIET)
+    return y + 140
+
+
+def tweaks_tab(d, x, y, x1):
+    for line in ['Each setting here changes how the original game', 'plays. Everything else keeps the original\'s rules.']:
+        d.text((x, y), line, font=GOTHIC(30), fill=INK_QUIET)
+        y += 42
+    y += 30
+    y = section(d, x, y, x1, 'BATTLE')
+    y = option_row(d, x, y, x1, 'Damage forecast', ['Each attack banner shows the damage it is', 'likely to deal: '
+                   'the target\'s troops and its', 'commander\'s HP, 9 times in 10.'])
+    d.text((x, y), 'Chaos and Nikkou reach demons', font=GOTHIC(40), fill=INK)
+    y += 58
+    for line in ['Against a demon commander, Chaos\'s or Nikkou\'s', 'holder fights in person even when his troops',
+                 'exceed the battle\'s limit.']:
+        d.text((x, y), line, font=GOTHIC(30), fill=INK_QUIET)
+        y += 40
+    y += 16
+    for i, label in enumerate(['Off — as the original', 'On the field', 'Out of reach']):
+        r = (x, y, x1, y + 124)
+        d.rectangle(r, fill=(232, 220, 190) if i == 0 else PAPER, outline=PAPER_LINE, width=2)
+        radio(d, x + 24, y + 40, i == 0)
+        d.text((x + 96, y + 62), label, font=GOTHIC(38), fill=INK, anchor='lm')
+        y += 134
+    for line in ['On the field: the demon\'s troops may shoot at', 'him, as at any commander in the fight.',
+                 'Out of reach: they never do.']:
+        d.text((x, y), line, font=GOTHIC(30), fill=INK_QUIET)
+        y += 40
+    y += 40
+    y = section(d, x, y, x1, 'SCENES')
+    return option_row(d, x, y, x1, 'New scenes first', ['Talks and harem visits play unread scenes', 'first, '
+                      'with a few hints and a choice of ours.'])
+
+
+def options_sheet(d, top, foot, active):
+    panel(d, (0, top, PW, foot))
+    d.rectangle((24, top + 24, PW - 24, foot - 24), fill=PAPER)
+    return 24, top + 24, PW - 24, foot - 24
+
+
+def defaults_close(d):
+    y0, y1 = BAR
+    panel(d, (16, y0, 420, y1))
+    d.text((218, (y0 + y1) / 2), 'Defaults', font=CINZEL(36, 700), fill=QUIET, anchor='mm')
+    red_button(d, (436, y0, PW - 16, y1), 'Close', 56)
+
+
+def po1():
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    d.text((30, TOP + 4), 'Options', font=BRUSH(62), fill=NAME)
+    y = TOP + 112
+    w, gap = (PW - 48 - 4 * 8) / 5, 8
+    for i, name in enumerate(OPTION_TABS):
+        x = 24 + i * (w + gap)
+        on = i == 0
+        d.rectangle((x, y + (0 if on else 12), x + w, y + 110), fill=PAPER if on else PAPER_DARK)
+        if on:
+            d.rectangle((x, y, x + w, y + 9), fill=VERMILION)
+        d.text((x + w / 2, y + 60), name, font=fit(d, name.upper(), lambda s: CINZEL(s, 700), 30, w - 16),
+               fill=INK_HEAD if on else INK_QUIET, anchor='mm')
+    sx0, sy0, sx1, sy1 = 24, y + 110, PW - 24, BAR[0] - 20
+    d.rectangle((sx0, sy0, sx1, sy1), fill=PAPER)
+    messages_tab(d, sx0 + 30, sy0 + 40, sx1 - 30)
+    defaults_close(d)
+    reach(img, label=False, shade=False)
+    save(img, 'PO1', 'the paper sheet, its tabs on top', 'options', side=[
+        'The options window as a full\npaper sheet; its five tabs on\ntop as on the PC (6.3 mm).',
+        'One column: each setting a row\nwith its control at the left\n(the boxes 2.6 mm, the row\'s whole '
+        'height\ntaps), its name 2.3 mm, its\nexplanation 1.7 mm under it.',
+        'The text speed\'s preview the\ngame\'s window at 2.7 mm; the\nread-text colours in two rows.',
+        'Defaults | Close in the bar;\nsettings apply at once.'])
+
+
+def po2():
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    d.text((30, TOP + 4), 'Options', font=BRUSH(62), fill=NAME)
+    d.text((PW - 30, TOP + 26), 'TWEAKS', font=CINZEL(34, 700), fill=NAME, anchor='ra')
+    sx0, sy0, sx1, sy1 = 24, TOP + 112, PW - 24, BAR[0] - 160
+    d.rectangle((sx0, sy0, sx1, sy1), fill=PAPER)
+    tweaks_tab(d, sx0 + 30, sy0 + 40, sx1 - 30)
+    ty = BAR[0] - 150
+    w = (PW - 32 - 4 * 8) / 5
+    for i, name in enumerate(OPTION_TABS):
+        x = 16 + i * (w + 8)
+        on = i == 4
+        d.rectangle((x, ty, x + w, ty + 130), fill=(70, 54, 30) if on else ROW, outline=GOLD if on else DIM_GOLD,
+                    width=3 if on else 2)
+        d.text((x + w / 2, ty + 65), name, font=fit(d, name.upper(), lambda s: CINZEL(s, 700), 28, w - 16),
+               fill=NAME if on else QUIET, anchor='mm')
+    defaults_close(d)
+    reach(img, label=False, shade=False)
+    save(img, 'PO2', 'the tabs at the thumb (Tweaks)', 'options', side=[
+        'The tabs as a bar at the thumb\n(7.4 mm), over Defaults | Close;\nthe chosen tab\'s name at the\n'
+        'title\'s right.',
+        'Shown: Tweaks — its radio\nchoices as finger rows (7 mm),\nthe chosen one lit.',
+        'The phone\'s usual tab bar; the\nPC\'s paper tabs left for a bar\nof lacquer cells.'])
+
+
+# --- the dungeon's floor ladder and entry menu ---
+
+FLOOR_LINES = ["Monsters' Cave", '  7F', 'Rance Unit', '  (1000)']
+ENTRY_LINES = ["[Monsters' Cave]", '', '(Unsearched)']
+
+
+def dungeon_picture(width):
+    pic = dump(TOUCH, 'floor-ladder-middle.png').crop((364, 204, 916, 532))
+    return pic.resize((width, round(width * pic.height / pic.width)), Image.LANCZOS)
+
+
+def info_window(d, box, lines, size=60):
+    panel(d, box, fill=(44, 34, 22))
+    for i, line in enumerate(lines):
+        d.text((box[0] + 34, box[1] + 30 + i * size * 1.2), line, font=GOTHIC(size), fill=(226, 204, 150))
+
+
+def ladder_rung(d, box, word, sub, way, off=False):
+    x0, y0, x1, y1 = box
+    d.rectangle(box, fill=ROW, outline=OFF_TAG if off else DIM_GOLD, width=3)
+    cy = (y0 + y1) / 2
+    if way:
+        arrow_mark(d, x0 + 50, cy, way, 20, OFF_TEXT if off else GOLD)
+    d.text((x0 + 96, cy - 20), word, font=GOTHIC(46), fill=OFF_TEXT if off else TEXT, anchor='lm')
+    d.text((x0 + 98, cy + 30), sub, font=GOTHIC(28), fill=OFF_TEXT if off else QUIET, anchor='lm')
+
+
+def floor_rail(d, x0, x1, foot, entry=False):
+    """The touch mode's rail: Retreat (or Return) on top, Descend (or Start Search) in the corner."""
+    h, gap = 150, 14
+    if entry:
+        ladder_rung(d, (x0, foot - h, x1, foot), 'Start Search', 'a unit goes down', 'down')
+        y = foot - 2 * h - gap
+        row_box(d, (x0, y, x1, y + h), 'Return', size=46, centred=True)
+        return y
+    ladder_rung(d, (x0, foot - h, x1, foot), 'Descend', 'deeper · to 8F', 'down')
+    y = foot - h - gap - 110
+    d.text(((x0 + x1) / 2, y + 26), 'FLOOR', font=CINZEL(24, 600), fill=SUBTITLE, anchor='mm')
+    d.text(((x0 + x1) / 2, y + 74), '7F', font=BRUSH(56), fill=NAME, anchor='mm')
+    y -= h + gap
+    ladder_rung(d, (x0, y, x1, y + h), 'Ascend', 'back · to 6F', 'up')
+    y -= h + gap
+    red_button(d, (x0, y, x1, y + h), 'Retreat', 52)
+    return y
+
+
+def pf_frame(img, foot):
+    """The map wait's map under the dungeon's picture (as on the PC), the picture's foot at `foot`."""
+    draw_map(img, (0, 0, PW, BAR[0] - 12), 1290, 0, (BAR[0] - 12) / 800, 36, dim=120)
+    d = ImageDraw.Draw(img)
+    d.rectangle((0, BAR[0] - 12, PW, PH), fill=BACKDROP)
+    pic = dungeon_picture(PW - 32)
+    top = foot - pic.height
+    img.paste(pic, (16, top))
+    d = ImageDraw.Draw(img)
+    d.rectangle((16, top, PW - 16, foot), outline=GOLD, width=3)
+    return d, foot
+
+
+def pf1():
+    img, d = phone()
+    d, pic_foot = pf_frame(img, BAR[1] - 640)
+    rail_x0 = PW - 16 - 440
+    top = floor_rail(d, rail_x0, PW - 16, BAR[1])
+    info_window(d, (16, top, rail_x0 - 16, BAR[1]), FLOOR_LINES, 58)
+    reach(img, label=False, shade=False)
+    save(img, 'PF1', 'the ladder as the tablet\'s rail', 'dungeon', side=[
+        'The floor\'s picture at the\nscreen\'s width (2.1 ×); the\nscript\'s window under it at its\n'
+        'own breaks (3.3 mm).',
+        'The ladder as the tablet\'s rail\n(touch.md\'s B) at the right\nthumb: Retreat on top, Ascend,\n'
+        'the floor, Descend in the\ncorner; rungs 8.5 mm. A way\nnot offered keeps its room,\nhidden.'])
+
+
+def pf1e():
+    img, d = phone()
+    d, pic_foot = pf_frame(img, BAR[1] - 360)
+    rail_x0 = PW - 16 - 440
+    top = floor_rail(d, rail_x0, PW - 16, BAR[1], entry=True)
+    info_window(d, (16, top, rail_x0 - 16, BAR[1]), ENTRY_LINES, 52)
+    reach(img, label=False, shade=False)
+    save(img, 'PF1e', 'the search\'s menu on the rail', 'dungeon', side=[
+        'Before a search: Return on top,\nStart Search in Descend\'s\ncorner (touch.md\'s §6); with\n'
+        'four items (Merim, God\'s Door)\nthe rail grows upwards.'])
+
+
+def pf2():
+    img, d = phone()
+    d, pic_foot = pf_frame(img, BAR[1] - 770)
+    info_window(d, (16, pic_foot + 30, PW - 16, pic_foot + 30 + 340), FLOOR_LINES, 62)
+    y0 = BAR[1] - 170
+    w = (PW - 32 - 2 * 12) / 3
+    red_button(d, (16, y0 - 180, PW - 16, y0 - 30), 'Retreat', 52)
+    ladder_rung(d, (16, y0, 16 + w, BAR[1]), 'Ascend', 'back · to 6F', 'up')
+    d.rectangle((16 + w + 12, y0, 16 + 2 * w + 12, BAR[1]), fill=PANEL, outline=DIM_GOLD, width=2)
+    d.text((16 + 1.5 * w + 12, y0 + 46), 'FLOOR', font=CINZEL(24, 600), fill=SUBTITLE, anchor='mm')
+    d.text((16 + 1.5 * w + 12, y0 + 112), '7F', font=BRUSH(64), fill=NAME, anchor='mm')
+    ladder_rung(d, (16 + 2 * w + 24, y0, PW - 16, BAR[1]), 'Descend', 'deeper · to 8F', 'down')
+    reach(img, label=False, shade=False)
+    save(img, 'PF2', 'the ladder laid across the foot', 'dungeon', side=[
+        'The script\'s window under the\npicture at the screen\'s width\n(3.5 mm); the ladder laid\n'
+        'across the foot: Ascend, the\nfloor, Descend; Retreat over\nthem the screen\'s width.',
+        'Wider rungs, but Ascend at the\nleft thumb\'s side.'])
+
+
+def p6():
+    po1(); po2()
+    pf1(); pf1e(); pf2()
+
+
 def main():
     global MAP, PROV_NAMES, PROV_POINTS
     if ROUND in ('P3', 'P5'):
-        p3() if ROUND == 'P3' else p5()
+        {'P3': p3, 'P5': p5}[ROUND]()
         overviews()
         return
     MAP, PROV_NAMES, PROV_POINTS = build_map()
-    if ROUND == 'P4':
-        p4()
+    if ROUND in ('P4', 'P6'):
+        p4() if ROUND == 'P4' else p6()
         overviews()
         return
     if GALLERY_MODE:
