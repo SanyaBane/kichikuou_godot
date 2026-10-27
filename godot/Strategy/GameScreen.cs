@@ -709,6 +709,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     public async Task ShowAsync(ScriptEvent scriptEvent)
     {
+        ObserveMapLeft(scriptEvent);
         if (SkippingScene)
         {
             // A scene skipped whole is not drawn: its stage commands (seconds of work for the opening) are dropped.

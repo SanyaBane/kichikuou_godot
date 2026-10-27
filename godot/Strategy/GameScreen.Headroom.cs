@@ -20,12 +20,21 @@ public partial class GameScreen
     /// <summary>
     /// The screen shows <c>COMMAND</c>'s map alone, our interface on: its map wait, or our command panel or province menu
     /// over it (<c>GamePresenter.MenuCovered</c>, which holds through a city's lead-in and lead-out too, where only the
-    /// map is seen). Our status strip lies over its top then.
+    /// map is seen), or the map still after its wait until the script shows anything else (<see cref="_mapLeft"/>). Our
+    /// status strip lies over its top then.
     /// </summary>
     private bool _mapStrip;
 
     /// <summary>How much lower the picture is drawn (<see cref="MapHeadroom.Shift"/>), in script pixels; 0 off the map.</summary>
     private int _mapShift;
+
+    /// <summary>
+    /// The map wait is over and the script has shown nothing since but pauses and sounds: the map is still all the screen
+    /// shows. The command menu first reads the pointer (<c>COMMAND.ADV:615-617</c>, a frame passing) and prints its status
+    /// window in the frame its menu opens; without this the strip and the room were gone for that frame and the map jumped
+    /// up (owner, 2026-10-27).
+    /// </summary>
+    private bool _mapLeft;
 
     private void ReadyHeadroom()
     {
@@ -33,12 +42,24 @@ public partial class GameScreen
         _view.Material = _roomMaterial;
     }
 
-    /// <summary>Takes the map's room as the screen shows it now; returns whether it changed.</summary>
+    /// <summary>A script event on its way to the presenter: the map wait's end, or anything shown after it (<see cref="_mapLeft"/>).</summary>
+    private void ObserveMapLeft(ScriptEvent scriptEvent)
+    {
+        if (scriptEvent is MapScreenEvent { Waiting: false })
+            _mapLeft = _mapStrip;
+        else if (scriptEvent is not (PauseEvent or SoundEvent or SoundPairEvent or MusicEvent))
+            _mapLeft = false;
+    }
+
+    /// <summary>
+    /// Takes the map's room as the screen shows it now; returns whether it changed. Off the map it goes in the frame the
+    /// script shows something else, so a picture of something else is never drawn lower.
+    /// </summary>
     private bool UpdateHeadroom()
     {
         bool strip = InterfaceChoice.New && _presenter.State is not null && !_presenter.InBattle && !SkippingScene
             && _presenter.MapViewShown is not null
-            && (_presenter.MapWaiting && _mapCamera.Waiting || _presenter.MenuCovered || _commandView.Visible);
+            && (_presenter.MapWaiting && _mapCamera.Waiting || _mapLeft || _presenter.MenuCovered || _commandView.Visible);
         int shift = strip ? MapHeadroom.Shift(_presenter.MapViewShown!.Value.Y) : 0;
         if (strip == _mapStrip && shift == _mapShift)
             return false;

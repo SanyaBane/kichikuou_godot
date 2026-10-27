@@ -415,7 +415,10 @@ the edge, the strip folding at the edge, the strip at the foot, the wide screen'
   The band over the picture's top shows the map's first rows mirrored (the strip's lacquer is a little see-through).
   Drawn by a shader on the picture (`godot/Strategy/MapRoomPicture`); while the screen shows the map alone
   (`GameScreen.UpdateHeadroom`: the map wait, `GamePresenter.MenuCovered` — our command panel and province menu, a city's
-  lead-in and lead-out —); anything else on the screen is drawn as it is, so a scene is never drawn lower.
+  lead-in and lead-out —, and after the map wait until the script shows anything but pauses and sounds: the command menu
+  first reads the pointer, `COMMAND.ADV:615-617`, a frame in which the strip was gone and the map jumped up, owner,
+  2026-10-27; `GameScreen.ObserveMapLeft`); anything else on the screen is drawn as it is, so a scene is never drawn
+  lower.
 - **The script sees nothing of it.** The camera and every state stay the original's; the pointer the script reads is
   turned from the picture's rows to the view's (`MapHeadroom.ScriptY`): a hover or a click reads the view's row under
   it. A drag keeps the row it pressed under the pointer: the script moves the camera by the pointer's steps, so each Y
