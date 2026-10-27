@@ -402,9 +402,11 @@ public sealed partial class Battle
         var player = new List<Sys3Int>();
         if (State.Bt_SpecialAtk == 0)
         {
-            if (Unit.Troops > State.Bt_TroopLimit || Unit.Troops == State.Bt_TroopLimit)
+            // Ours (decision 32): the holder our fix sends in person is shown with his troops (BRS-24).
+            bool slayer = DemonSlayerInPerson;
+            if ((Unit.Troops > State.Bt_TroopLimit || Unit.Troops == State.Bt_TroopLimit) && !slayer)
                 player.Add(Unit.CgFull);
-            if (Unit.Troops < State.Bt_TroopLimit && Unit.Troops != 0)
+            if ((Unit.Troops < State.Bt_TroopLimit || slayer) && Unit.Troops != 0)
                 player.Add(Unit.CgPartial);
             if (Unit.Troops == 0)
                 player.Add(Unit.CgAlone);
@@ -680,6 +682,13 @@ public sealed partial class Battle
             State.Bt_EnemyAllEngaged = 0;
         }
 
+        // QUIRK: BRS-24 — the holder of Chaos or Nikkou over the limit cannot wound a demon (the shields below), unless
+        // the player chose our fix (decision 32, DemonReach): then he fights in person (b), and on the field the demon's
+        // troops may shoot at him (d). The flag itself keeps the original's value.
+        bool slayer = State.Bt_PlayerAllEngaged == 0 && DemonSlayerInPerson;
+        bool playerInPerson = State.Bt_PlayerAllEngaged == 1 || slayer;
+        bool playerShotAt = State.Bt_PlayerAllEngaged == 1 || (slayer && Script.DemonReach == DemonReach.OnField);
+
         // ---- player side (2254-2273) ----
         // QUIRK: 02 Q24 — troops shoot a commander and a commander fights in person only when
         // the relevant army fits the battle limit.
@@ -692,7 +701,7 @@ public sealed partial class Battle
                 PlayerTroopsVsCmdr();
         }
 
-        if (State.Bt_PlayerAllEngaged == 1)
+        if (playerInPerson)
         {
             if (State.Bt_EnemyEngaged > 9)
                 PlayerCmdrVsTroops();
@@ -704,7 +713,7 @@ public sealed partial class Battle
             PlayerTroopsVsTroops();
 
         // ---- enemy side (2274-2293) ----
-        if (State.Bt_PlayerAllEngaged == 1)
+        if (playerShotAt)
         {
             State.Bt_ETroopVsCmdrShots = State.Bt_EnemyEngaged / State.Bt_PlayerEngaged * 2;
             if (State.Bt_PlayerEngaged == 0)
@@ -882,6 +891,15 @@ public sealed partial class Battle
             State.Bt_PCmdrVsCmdrDmg = 10000;
         }
     }
+
+    /// <summary>
+    /// Ours (owner's decision 32, docs/tweaks.md): whether BRS-24's fix sends the player's commander in person against this
+    /// enemy whatever his troops — the player chose it (<see cref="Script.OriginalScriptContext.DemonReach"/>), the enemy
+    /// commander is a demon and the unit holds Chaos (item 1) or Nikkou (item 2), tested as the shields test them
+    /// (<see cref="ApplyDemonShields"/>).
+    /// </summary>
+    private bool DemonSlayerInPerson =>
+        Script.DemonReach != DemonReach.Original && Cmdr.Class > 9 && (Unit.Item == 1 || Unit.Item == 2);
 
     /// <summary>
     /// <c>FIGT.ADV:2414-2448</c> — demon shields: a demon commander (class &gt; 9) takes no HP

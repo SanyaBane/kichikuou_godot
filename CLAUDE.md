@@ -264,6 +264,13 @@ the model `Original.Content/Battles/DamageForecast`, the forecasts of a `FIGT_SE
 Tweaks → "Damage forecast" (since 2026-10-27; Battle before), `BattleScreenSettings.Forecast`; `BattleCommandLayer` and its touch part); the PC's banners,
 their type too small, laid out again after mock-up rounds E and F as the owner's F2 and accepted by the owner in a window
 (2026-10-27); the touch rail awaiting the owner's look on the tablet.
+Then (owner, 2026-10-27) the settings that change the original's play moved to a tab of their own, **Option → Tweaks**
+(the owner's name; docs/ui/options.md, "Tweaks"): the damage forecast and "New scenes first", listed with their docs in
+docs/tweaks.md. **Owner's decision 32**, the fourth rule change and the first fix of a registered quirk: BRS-24 (the
+holder of Chaos or Nikkou, his troops over the battle's limit, cannot wound a demon commander) — Tweaks → "Chaos and
+Nikkou reach demons", off by default, or the owner's A ("On the field": he fights in person, the demon's troops may shoot
+at him) or B ("Out of reach": they never do), built (`Combat/DemonReach` on `OriginalScriptContext.DemonReach`,
+`Battle.ComputeExchange`, the forecast's copy too; `godot/Battles/DemonReachChoice`; docs/tweaks.md).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

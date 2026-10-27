@@ -42,19 +42,21 @@ public sealed class DamageForecasts
 {
     private readonly ConcurrentDictionary<FigtSelChoice, BannerDamage> _done = new();
 
-    private DamageForecasts(GameState snapshot, IReadOnlyList<FigtSelChoice> attacks)
+    private DamageForecasts(GameState snapshot, IReadOnlyList<FigtSelChoice> attacks, DemonReach reach)
     {
         Attacks = attacks;
         Done = Task.Run(() => Parallel.ForEach(
             Partitioner.Create(attacks, EnumerablePartitionerOptions.NoBuffering),
-            choice => _done[choice] = BannerDamage.Of(ExchangeForecast.Of(snapshot, choice))));
+            choice => _done[choice] = BannerDamage.Of(ExchangeForecast.Of(snapshot, choice, reach))));
     }
 
     /// <summary>
     /// Starts the forecasts of <paramref name="commands"/>' banners in <paramref name="state"/>, the state while
-    /// <c>FIGT_SEL</c> asks (copied here, on the caller's thread); <paramref name="first"/>'s banners first.
+    /// <c>FIGT_SEL</c> asks (copied here, on the caller's thread); <paramref name="first"/>'s banners first;
+    /// <paramref name="reach"/> is the game's choice of BRS-24's fix (decision 32).
     /// </summary>
-    public static DamageForecasts Start(GameState state, BattleCommands commands, BattlePlace? first = null)
+    public static DamageForecasts Start(GameState state, BattleCommands commands, BattlePlace? first = null,
+        DemonReach reach = DemonReach.Original)
     {
         ArgumentNullException.ThrowIfNull(state);
         ArgumentNullException.ThrowIfNull(commands);
@@ -62,7 +64,7 @@ public sealed class DamageForecasts
             .OrderBy(place => place == first ? 0 : 1);
         var attacks = targets.SelectMany(commands.Banners).Select(b => b.Choice)
             .Where(c => ExchangeForecast.IsAttack(c.Command)).Distinct().ToList();
-        return new DamageForecasts(ScriptState.Copy(state), attacks);
+        return new DamageForecasts(ScriptState.Copy(state), attacks, reach);
     }
 
     /// <summary>The attacks forecast, in the order they are taken.</summary>

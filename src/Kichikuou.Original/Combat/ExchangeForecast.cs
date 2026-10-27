@@ -57,10 +57,11 @@ public sealed record ExchangeForecast(DamageSpread? Troops, DamageSpread? Hp)
     /// (<see cref="Battle.ApplyFigtSelChoice"/>, <see cref="Battle.BindTarget"/>), the command's setter run
     /// (<see cref="Battle.SetAttackCommand"/>; the Focus it spends is the copy's), the battle kind's modifiers copied as
     /// <c>PresentEngagement</c> copies them (<see cref="Battle.CopyBattleKindMods"/>), then <see cref="Runs"/> exchanges.
-    /// The exchange modifies no record (02 §6.2), so the runs are independent draws on the one copy.
+    /// The exchange modifies no record (02 §6.2), so the runs are independent draws on the one copy. The copy's battle runs
+    /// with the player's <paramref name="reach"/> (decision 32, BRS-24's fix), as the game's does.
     /// </summary>
     /// <exception cref="ArgumentException"><paramref name="choice"/> is not an attack on an enemy slot.</exception>
-    public static ExchangeForecast Of(GameState state, FigtSelChoice choice, int runs = Runs)
+    public static ExchangeForecast Of(GameState state, FigtSelChoice choice, DemonReach reach = DemonReach.Original, int runs = Runs)
     {
         ArgumentNullException.ThrowIfNull(state);
         if (!IsAttack(choice.Command) || choice.Argument.Value is < 4 or > 7)
@@ -69,6 +70,7 @@ public sealed record ExchangeForecast(DamageSpread? Troops, DamageSpread? Hp)
 
         var copy = ScriptState.Copy(state);
         var battle = new Battle(copy, new XSystem35Random(Seed), Unseen.Instance, Unseen.Instance, Unseen.Instance);
+        battle.Script.DemonReach = reach;
         battle.ApplyFigtSelChoice(choice);
         battle.BindTarget();
         battle.SetAttackCommand();

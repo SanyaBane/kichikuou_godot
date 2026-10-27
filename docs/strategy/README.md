@@ -297,7 +297,7 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     past an ending do not. Otherwise it has a mark: New when something new is certain, "???" when it hangs on a draw
     that changes the state. The port finds it by a dry run of the scene on a copy of the state, every draw forked; it
     never predicts the real draw. The read lines are kept per save. Only the characters' cells are marked. **The
-    rule change**, an option on by default (Option → Game; off, everything as the original): (1) an unread harmless
+    rule change**, an option on by default (Option → Game, Option → Tweaks since 2026-10-27; off, everything as the original): (1) an unread harmless
     variant (no variable that counts changed) comes for certain, at random among the unread ones (e.g. `Gｶﾌｪ:396`);
     (2) the draws that change the state give their outcome for certain once the usual scene is read — Haurein's
     leaving (`Gﾊｳﾚｰﾝ:2299`), Kentarou's training steps (`Gｹﾝﾀﾛｳ:608`), Isoroku's pregnancy (`Gｲｿﾛｸ:4599`),
@@ -319,6 +319,17 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     "Turn Start" or "Turn End", in a tag of its colour under the time written, and **auto-saves take a comment** as
     manual saves do (the sweep still deletes manual saves only; a commented auto-save leaves its ring by age). Only
     while the library is in use (`ScriptContext.Library`), so the differential tests run `COMMAND` as the original.
+32. **Chaos and Nikkou reach demons** (2026-10-27, the owner's request and answers; survey in
+    [docs/tweaks.md](../tweaks.md)): the sixth change on purpose, the fourth to the rules of play, and the first fix
+    of a registered quirk, BRS-24. A demon commander takes no HP damage from troops, and the holder of Chaos (item 1)
+    or Nikkou (item 2) — Rance (unit 1), Kentarou (unit 31) — stays behind his troops while they exceed the battle's
+    limit (BRS-19), so he cannot wound a demon who is alone or under 10 troops but by specials. An option in
+    Option → Tweaks, **off by default** (the original), or one of the owner's two fixes, the player's choice: **On the
+    field** (A) — against a demon commander the holder fights in person whatever his troops, and the demon's troops
+    may shoot at him as at any commander in the fight; **Out of reach** (B) — he fights in person, and they never
+    do. Only the holders of the two swords (not the player's own demons); the enemy's side unchanged. The scene shows
+    him with his troops (`CgPartial`). The flag `Bt_PlayerAllEngaged` keeps the original's value; the damage forecast
+    runs with the same choice. Off on a context built by hand, so the differential and golden tests run the original.
 
 ## Milestone 1 — the prologue
 

@@ -166,7 +166,7 @@ internal sealed partial class BattleCommandLayer : Control
     {
         _forecastShown = ForecastOn;
         if (_forecastShown && _forecasts is null && _commands is { } commands && _state is { } state)
-            _forecasts = DamageForecasts.Start(state, commands, _touch ? _target : null);
+            _forecasts = DamageForecasts.Start(state, commands, _touch ? _target : null, DemonReachChoice.Chosen);
     }
 
     public override void _Process(double delta)

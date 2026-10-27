@@ -139,6 +139,9 @@ their commander is off the field (his troops over the battle's limit).
   `[game] new_scenes_first` (`NewScenesChoice`) in `settings.cfg`, so the player's choices carry over.
 - **Defaults**: on Tweaks it turns the forecast off and New scenes first on; on Battle it no longer touches the forecast;
   on Game, which holds only the game folder now, it is greyed out.
+- **Chaos and Nikkou reach demons** (decision 32, docs/tweaks.md): under the forecast in Tweaks' Battle section, its
+  name and hint in the check boxes' column, three radios — Off — as the original (the default), On the field, Out of
+  reach — and a line telling the two apart; `[tweaks] demon_reach`, Defaults turns it off.
 - The Battle tab's first section is "Effects" again; `--options` and the screen gallery dump the new tab as
   `options-tweaks`.
 - The tweaks, each with its doc, and the survey of the next one (BRS-24, a demon's commander out of reach) are listed in

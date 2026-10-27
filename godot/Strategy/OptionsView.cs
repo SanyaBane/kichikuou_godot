@@ -1,6 +1,7 @@
 using Godot;
 using Kichikuou.Engine.Script;
 using Kichikuou.Game.Battles;
+using Kichikuou.Original.Combat;
 using Kichikuou.Original.Content;
 using Kichikuou.Original.Content.Battles;
 using Kichikuou.Original.Content.Strategy;
@@ -14,8 +15,8 @@ namespace Kichikuou.Game.Strategy;
 /// already-read text's colour, <see cref="ReadTextChoice"/>, docs/ui/read-text.md), Display
 /// (the font, the palette, the thousands, the unit tables' row height, <see cref="LedgerRowsChoice"/>), Battle (our
 /// battle screen's effects and timings, <see cref="BattleScreenSettings"/>, the order strip as their preview), Game (the
-/// game folder), Tweaks (what changes the original's play: the damage forecast, "New scenes first", <see cref="NewScenesChoice"/>;
-/// owner, 2026-10-27). Every change applies
+/// game folder), Tweaks (what changes the original's play: the damage forecast, "Chaos and Nikkou reach demons",
+/// <see cref="DemonReachChoice"/>, "New scenes first", <see cref="NewScenesChoice"/>; owner, 2026-10-27). Every change applies
 /// and is kept at once; Defaults resets the tab shown (Game has none: the game folder has no default); Close, Esc or a right click shut it. Forget and the game folder ask first, in a box over the sheet. Laid out
 /// in the 1280×800 screen's pixels, scaled with the picture.
 /// </summary>
@@ -101,6 +102,9 @@ internal sealed partial class OptionsView : Control
 
     /// <summary>"New scenes first" was switched (it is kept already).</summary>
     public event Action<bool>? NewScenesFirstChanged;
+
+    /// <summary>"Chaos and Nikkou reach demons" was chosen (it is kept already, <see cref="DemonReachChoice"/>).</summary>
+    public event Action<DemonReach>? DemonReachChosen;
 
     /// <summary>The player asked for another game folder and confirmed it: the import screen follows.</summary>
     public event Action? GameFolderChosen;
@@ -224,6 +228,12 @@ internal sealed partial class OptionsView : Control
         NewScenesFirstChanged?.Invoke(on);
     }
 
+    private void SetDemonReach(DemonReach reach)
+    {
+        DemonReachChoice.Chosen = reach;
+        DemonReachChosen?.Invoke(reach);
+    }
+
     /// <summary>Defaults: the tab shown back to its settings' defaults.</summary>
     private void Defaults()
     {
@@ -248,6 +258,7 @@ internal sealed partial class OptionsView : Control
                 break;
             case Tab.Tweaks:
                 BattleScreenSettings.Set(BattleScreenSettings.Forecast, BattleScreenSettings.Forecast.Default);
+                SetDemonReach(DemonReach.Original);
                 SetNewScenesFirst(true);
                 break;
         }
@@ -620,7 +631,10 @@ internal sealed partial class OptionsView : Control
         Wrap(note, x, y + 104, w, 14, Ui.InkQuiet);
     }
 
-    /// <summary>What changes the original's play (owner, 2026-10-27): the battle's damage forecast, the scenes' order.</summary>
+    /// <summary>
+    /// What changes the original's play (owner, 2026-10-27; docs/tweaks.md): the battle's damage forecast and BRS-24's fix
+    /// (decision 32: off, the owner's A or B, as radios), the scenes' order.
+    /// </summary>
     private void DrawTweaks()
     {
         float x = ContentX, y = ContentY, w = ContentW;
@@ -631,7 +645,23 @@ internal sealed partial class OptionsView : Control
         var forecast = BattleScreenSettings.Forecast;
         CheckBox("forecast", x, y + 38, BattleScreenSettings.Get(forecast) >= 0.5, "Damage forecast", forecast.Hint,
             () => BattleScreenSettings.Set(forecast, BattleScreenSettings.Get(forecast) >= 0.5 ? 0 : 1));
-        y += 104;
+        float tx = x + 32, tw = w - 32;
+        DrawString(_gothic, new Vector2(tx, y + 120), "Chaos and Nikkou reach demons", fontSize: 17, modulate: Ui.Ink);
+        DrawString(_gothic, new Vector2(tx, y + 139),
+            "Against a demon commander, Chaos's or Nikkou's holder fights in person even when his troops exceed the battle's limit.",
+            fontSize: 13, modulate: Ui.InkQuiet);
+        (DemonReach Reach, string Label)[] reaches =
+            [(DemonReach.Original, "Off — as the original"), (DemonReach.OnField, "On the field"), (DemonReach.OutOfReach, "Out of reach")];
+        for (int i = 0; i < reaches.Length; i++)
+        {
+            var reach = reaches[i].Reach;
+            Radio("reach-" + reach, tx + i * (tw / reaches.Length), y + 154, DemonReachChoice.Chosen == reach, reaches[i].Label, _gothic,
+                () => SetDemonReach(reach));
+        }
+        DrawString(_gothic, new Vector2(tx, y + 200),
+            "On the field: the demon's troops may shoot at him, as at any commander in the fight. Out of reach: they never do.",
+            fontSize: 13, modulate: Ui.InkQuiet);
+        y += 240;
         SectionHead(x, y, "Scenes", w);
         CheckBox("new-scenes", x, y + 38, NewScenesChoice.On, "New scenes first",
             "Talks and harem visits play unread scenes first, with a few hints and a choice of ours.",

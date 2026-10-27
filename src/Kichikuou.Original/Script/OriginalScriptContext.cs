@@ -46,6 +46,13 @@ public sealed partial class OriginalScriptContext(
     public bool NewScenesFirst { get; set; }
 
     /// <summary>
+    /// Ours (owner's decision 32, the fourth rule change on purpose; docs/tweaks.md): BRS-24's fix, the player's option
+    /// (Option → Tweaks, "Chaos and Nikkou reach demons", off by default; copied here by the UI). The original's rule on a
+    /// context built by hand (the differential tests).
+    /// </summary>
+    public Combat.DemonReach DemonReach { get; set; }
+
+    /// <summary>
     /// Ours (owner's decision 30): the marks over the game's scenes, whose dry run "New scenes first" runs at a draw of a
     /// talk or a visit (<c>GameSession.Marks</c>); without them the rule does not act.
     /// </summary>

@@ -5,7 +5,8 @@ oddity — a slip in the scenario script, an odd design decision, or an artefact
 xsystem35 engine — and that the port **reproduces on purpose**. The port follows the original in
 every one of them; this register exists so that some can later be offered as optional fixes
 (default off). Nothing here is fixed today, except STR-10's interface (owner's decision 19), STR-11
-(decision 26), ENG-07 (the slots' times, 2026-10-20) and STR-31 (page 4 kept once, decision 29).
+(decision 26), ENG-07 (the slots' times, 2026-10-20) and STR-31 (page 4 kept once, decision 29); BRS-24 has an
+optional fix, off by default (Option → Tweaks, decision 32, docs/tweaks.md).
 
 Rules:
 
@@ -102,7 +103,7 @@ One exchange: setters, specials, `ComputeExchange`, `ApplyExchange` ([02](battle
 | BRS-21 (01 Q-27) | When the player commander dies, the `Redraw()` in that branch moves both cursors to the last occupied slots before the enemy-death test and the ninja test. | An enemy commander killed in the same exchange (not in the last slot) lingers with HP 0, keeps acting and is processed later; a ninja may follow up for another unit against another enemy. | bug | `FIGT.ADV:1873-1971`; 01 §9.3; 02 §7.1; port `Battle.Resolution.cs` (marker `01 Q-27`) | yes |
 | BRS-22 | A side whose action is 99 still runs its whole computation and consumes its draws, with stale `Tmp0001/Tmp0002` as hit-chance operands; results are zeroed afterwards. A special likewise overrides values after the normal exchange made all its draws. | RNG only. | odd design | `FIGT.ADV:2200-2449`; 02 §1.4 #2, §2.4, §3.3 | no |
 | BRS-23 | When an enemy attacks in melee (or front-row archers, BFL-10), the player always counters with action 0 regardless of class. | Mages and archers counter physically with their troop attack. | odd design | `FIGT.ADV:1411-1488`; 02 §2.3-2.4; port `Battle.Flow.Enemy.cs` | no |
-| BRS-24 | BRS-19 and the demon shield together: a unit that can wound a demon commander (it holds Chaos (item 1) or Nikkou (item 2), or is a demon itself) does not fight in person while its troops exceed the battle limit, and its troops never wound him. | Against a demon who is alone or under 10 troops (Kayblis at the Demon Lord's Castle (79), limit 500, against Rance's 1000 troops) the unit's exchanges do no HP damage; only specials reach him (Rance Attack, Vanish Bomb, High Speed) until its losses bring its troops down to the limit. | odd design | `FIGT.ADV:2246-2293, 2414-2448`; 02 §6.2; docs/tweaks.md; port `Battle.Resolution.cs` | yes — Option → Tweaks (docs/tweaks.md) |
+| BRS-24 | BRS-19 and the demon shield together: a unit that can wound a demon commander (it holds Chaos (item 1) or Nikkou (item 2), or is a demon itself) does not fight in person while its troops exceed the battle limit, and its troops never wound him. | Against a demon who is alone or under 10 troops (Kayblis at the Demon Lord's Castle (79), limit 500, against Rance's 1000 troops) the unit's exchanges do no HP damage; only specials reach him (Rance Attack, Vanish Bomb, High Speed) until its losses bring its troops down to the limit. | odd design | `FIGT.ADV:2246-2293, 2414-2448`; 02 §6.2; docs/tweaks.md; port `Battle.Resolution.cs` (marker `BRS-24`) | yes — built, off by default: Option → Tweaks → "Chaos and Nikkou reach demons" (decision 32, docs/tweaks.md) |
 
 ## Battle — flavour and text (BTX)
 

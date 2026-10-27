@@ -8,9 +8,9 @@ than the original. Everything else keeps the original's rules. A tweak that fixe
 |---|---|---|---|
 | Damage forecast | Battle | off | [ui/damage-forecast.md](ui/damage-forecast.md) |
 | New scenes first | Scenes | on | [ui/talk-marks.md](ui/talk-marks.md) (owner's decision 30) |
-| Demon slayers in person (proposed) | Battle | off | below (BRS-24) |
+| Chaos and Nikkou reach demons | Battle | off | below (BRS-24, owner's decision 32) |
 
-## Demon slayers in person (BRS-24) — the survey, 2026-10-27
+## Chaos and Nikkou reach demons (BRS-24) — the survey, 2026-10-27
 
 Owner's request: Rance's or Kentarou's troops do no damage to a demon ("Fiend") commander while their commander is off
 the field, his troops over the battle's limit; an optional fix in Tweaks.
@@ -65,3 +65,25 @@ the field, his troops over the battle's limit; an optional fix in Tweaks.
 - **Not proposed**: the mirror for the enemy (an enemy demon over the limit fighting in person against the player's
   demons): it would make the game harder, and no one asked.
 - The damage forecast runs the real exchange on a copy of the state (`ExchangeForecast`): the switch goes on the copy too.
+
+### The owner's answers and the build (2026-10-27, decision 32)
+
+The owner took **both A and B as the player's choice**, with the original's rule kept as a third: Option → Tweaks,
+section Battle, **"Chaos and Nikkou reach demons"** — radios **Off — as the original** (the default), **On the field**
+(A) and **Out of reach** (B). **Only Chaos's and Nikkou's holders** (not the player's demons). Built:
+
+- **The rule**: `Combat/DemonReach` (`Original`, `OnField`, `OutOfReach`) on the game's context,
+  `OriginalScriptContext.DemonReach`, the original's on a context built by hand. `Battle.ComputeExchange`
+  (`Battle.Resolution.cs`, marker `BRS-24`): while the unit's troops exceed the limit and `Battle.DemonSlayerInPerson`
+  holds (the choice is not `Original`, `Cmdr_Class` > 9, `Unit_Item` 1 or 2, tested as the shields test them), step b
+  runs (the commander in person: on the demon's troops while 10 or more are engaged, else on the demon), and with
+  `OnField` step d too (the demon's troops on him). `Bt_PlayerAllEngaged` keeps the original's 0; the shields are
+  unchanged, so the holder's troops still never wound the demon. The scene (`ShowEngagementSceneAsync`) shows him with
+  his troops, `Unit_CgPartial`, not `CgFull`.
+- **The forecast**: `ExchangeForecast.Of(…, reach)` and `DamageForecasts.Start(…, reach)` run the copy's battle with
+  the game's choice.
+- **The option**: `godot/Battles/DemonReachChoice` — `[tweaks] demon_reach` in `settings.cfg` (`original`,
+  `on_field`, `out_of_reach`), `--demon-reach original|on-field|out-of-reach` for a launch; `GameScreen` copies it onto
+  the context at the session's start, `OptionsView.DemonReachChosen` at once; Defaults on Tweaks turns it off.
+- **Tests**: `Kichikuou.Original.Tests/Combat/DemonReachTests` (the streams each choice runs, only the two swords
+  against a demon, Medusa's troops shooting only on the field, the scene's sprite, the forecast).
