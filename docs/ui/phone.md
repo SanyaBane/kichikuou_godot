@@ -140,6 +140,7 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
    attack and the week report, Harem, Treasure, Save/Load, All Data, the options window, the title and the import
    screen, the dungeon's ladder and entry menu, the battle's other states —, then the landscape phone.
 8. **The deployment table** (round P3): PD1, PD2 or PD3; the Subordinates screen: PU1 or PU2.
+9. **The enemy attack** (round P4): PA1 or PA2; the week report: PW1 or PW2.
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -223,3 +224,37 @@ instead, since there the ledger is what is tapped.
 
 The agent's own choices, for the owner to confirm: our full screens upright have no Menu / Log / Skip bar (their own
 buttons take the foot; the map's bar is back when they close); the picture panel only on a long press.
+
+## 8. Round P4: the enemy attack and the week report (2026-10-27)
+
+Drawn by `mock_phone.py --round P4` over the gallery's `enemy-attack-scouted` (the rebels on Ys (5) after Kanami's
+scouting: Ex (commander 1), Sakanaku (commander 6), Dodge (commander 5), Jibul (commander 7)) and `week-report`, with
+Maris's and Kanami's own face CGs (6, 9).
+
+The enemy attack (`PA…`; docs/ui/enemy-attack.md, the owner's B with B4's list, P1's Abandon City, the touch mode's
+mirrored answers):
+
+- **PA1 — a screen of its own, Ys over the rebels.** The PC's screen stacked: the news ("The Leazas Rebel Army appeared
+  around Ys.") and the date; Ys's picture with its four figures; VS; the rebels' cards (35 × 15 mm, names 2.4 mm), their
+  front row first and facing up at Ys — as PB3's enemy faces our army —, the commanders and troops, the report's
+  source; Maris's question in her own breaks (2.4 mm). The answers in two rows: **Abandon City** (the danger button,
+  its white flag) top left, farthest from the thumb, **Ninja Scout** beside it (7.3 mm); **Intercept** the bar's width
+  at the thumb (8.4 mm). **PA1n**: Ninja Scout's list above its button (B4): a row per ninja in service (8.5 mm), the
+  spent dimmed, a tap on a free one sends her; Abandon City's question is a callout above its button the same way.
+- **PA2 — over the map.** The map at PM1's scale with Ys ringed, under the news; the attack rises as a sheet as a
+  province's does (PM1c): Ys's figures in two columns, the rebels as rows (face, place, name, type, row, troops; 6.7 mm),
+  Maris's question, the answers as PA1's. The map says where at a glance; the type is smaller (the figures 1.8 mm).
+
+**Recommendation: PA1** — the screen the owner chose on the PC, with nothing smaller than 2 mm; where the attack falls
+is in the news and Ys's picture, and the map is back right after.
+
+The week report (`PW…`; docs/ui/turn-start.md):
+
+- **PW1 — over the map, in the middle.** The PC's card at the screen's width over the dimmed map: the banner (3.5 mm),
+  the treasury as an account (2.5 mm), the budget (3.5 mm), the troops replenished, the triangle; a tap anywhere goes
+  on; the scenes' bar (Menu, Log, Skip) at the foot. The thieves' week: the banner alone on the same card.
+- **PW2 — a sheet at the thumb.** The same card over the map's foot, where the command panel rises next (PM1b); the
+  triangle at the right thumb.
+
+**Recommendation: PW2** — the eye stays low from the report to the commands, and the map above it shows the week's
+start.

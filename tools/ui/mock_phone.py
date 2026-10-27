@@ -21,7 +21,8 @@ Variants (docs/ui/phone.md): P0 today's layout turned upright; PS1-PS3 the scene
 battle (P for portrait: touch.md's B1, M1… are the landscape phone's). Round P2: PB3 (PB1 with the owner's changes —
 our army on top, Skip between the cards and the deck), PB3r the retreat question, PB3x an exchange; the battle's inputs
 also touch/current's exchange-counters. Round P3: PD1-PD3 the deployment table, PU1-PU2 the Subordinates screen; their
-inputs touch/current's deployment and the units' face CGs from <extract dir>/cg_png.
+inputs touch/current's deployment and the units' face CGs from <extract dir>/cg_png. Round P4: PA1-PA2 the
+enemy attack (touch/current's enemy-attack-scouted, Maris's and Kanami's face CGs), PW1-PW2 the week report.
 `--round P3` before the arguments draws only that round's variants (the look dir then unread, '-' will do).
 The pink lines and text are the mock-ups' notes, not part of a screen.
 
@@ -1700,6 +1701,347 @@ def p3():
     pu1(); pu1q(); pu2()
 
 
+# --- round P4: the enemy attack and the week report upright (2026-10-27) ---------------------------------------------
+
+ATTACK_DUMP = 'enemy-attack-scouted.png'
+# The rebels on Ys (5) as the gallery's enemy-attack-scouted shows them: name, place, type, troops, the face's cell.
+ATTACKERS = {1: ('Ex', '—', 'none', (842, 238)), 2: ('Sakanaku', 'Leazas Soldiers', '820', (842, 350)),
+             3: ('Dodge', 'Leazas Soldiers', '336', (1100, 238)), 4: ('Jibul', 'Leazas Soldiers', '400', (1100, 350))}
+MARIS_LINES = ["King Rance, if we don't act,", 'Ys will be', 'occupied.', 'What should we do?']
+YS_FIGURES = [('Walls in a city battle', '+4%'), ('City battle limit', '330'), ('Plains battle limit', '5,000'),
+              ('Revenue', '800K GOLD')]
+
+
+def cg_face(cg, size, crop=(24, 7, 144)):
+    """A face CG's usual square (UnitFaces.Default): Maris 6, Kanami 9."""
+    x, y, s = crop
+    im = np.array(Image.open(os.path.join(EXTRACT, 'cg_png', f'CG{cg:04d}.png')).convert('RGB'))
+    im[(im[..., 0] > 200) & (im[..., 1] < 60) & (im[..., 2] > 200)] = (52, 58, 74)
+    return Image.fromarray(im).crop((x, y, x + s, y + s)).resize((size, size), Image.LANCZOS)
+
+
+def dump_face(xy, size):
+    x, y = xy
+    return dump(TOUCH, ATTACK_DUMP).crop((x + 1, y + 1, x + 87, y + 87)).resize((size, size), Image.LANCZOS)
+
+
+def framed(img, pic, xy):
+    img.paste(pic, xy)
+    ImageDraw.Draw(img).rectangle((xy[0], xy[1], xy[0] + pic.width, xy[1] + pic.height), outline=DIM_GOLD, width=2)
+
+
+def attacker_card(img, box, place):
+    d = ImageDraw.Draw(img)
+    x0, y0, x1, y1 = box
+    name, kind, troops, cell = ATTACKERS[place]
+    d.rectangle(box, fill=ROW, outline=DIM_GOLD, width=2)
+    fs = min(y1 - y0 - 24, 200)
+    framed(img, dump_face(cell, fs), (x1 - 12 - fs, y0 + 12))
+    d = ImageDraw.Draw(img)
+    badge(d, x0 + 40, y0 + 44, place)
+    d.text((x0 + 80, y0 + 44), name, font=GOTHIC(42), fill=TEXT, anchor='lm')
+    d.text((x0 + 22, y0 + 92), kind, font=fit(d, kind, GOTHIC, 30, x1 - x0 - fs - 50), fill=QUIET)
+    d.line([(x0 + 20, y1 - 22), (x1 - fs - 30, y1 - 22)], fill=DIM_GOLD, width=1)
+    d.text((x0 + 22, y1 - 30), 'TROOPS', font=CINZEL(22, 600), fill=SUBTITLE, anchor='ld')
+    d.text((x1 - fs - 30, y1 - 28), troops, font=GOTHIC(38), fill=TEXT, anchor='rd')
+
+
+def flag_icon(img, xy, size, source='enemy'):
+    box = (54, 86, 90, 122) if source == 'enemy' else (374, 197, 412, 235)
+    pic = dump(TOUCH, ATTACK_DUMP if source == 'enemy' else 'week-report.png').crop(box)
+    img.paste(pic.resize((size, size), Image.LANCZOS), xy)
+
+
+def danger_button(d, box, label, sub=None):
+    """Abandon City: dark red with a vermilion frame and a white flag (the owner's P1)."""
+    x0, y0, x1, y1 = box
+    d.rectangle(box, fill=(54, 18, 14), outline=(196, 70, 50), width=3)
+    d.rectangle((x0 + 7, y0 + 7, x1 - 7, y1 - 7), outline=(120, 40, 30), width=1)
+    cy = (y0 + y1) / 2
+    d.line([(x0 + 36, cy - 26), (x0 + 36, cy + 26)], fill=(236, 226, 210), width=4)
+    d.polygon([(x0 + 38, cy - 26), (x0 + 72, cy - 18), (x0 + 38, cy - 6)], fill=(236, 226, 210))
+    d.text((x0 + 92 + (x1 - x0 - 100) / 2, cy), label, font=fit(d, label, BRUSH, 38, x1 - x0 - 110),
+           fill=(236, 150, 110), anchor='mm')
+
+
+def two_line_button(d, box, title, sub, red=False):
+    x0, y0, x1, y1 = box
+    if red:
+        red_button(d, box, '')
+    else:
+        panel(d, box)
+    d.text(((x0 + x1) / 2, y0 + 56), title, font=fit(d, title, BRUSH, 44, x1 - x0 - 40), fill=NAME, anchor='mm')
+    d.text(((x0 + x1) / 2, y1 - 38), sub, font=GOTHIC(28), fill=TEXT if red else QUIET, anchor='mm')
+
+
+# The answers in two rows: Abandon City (top left, farthest from the thumb) and Ninja Scout, then Intercept in the bar.
+ROW1 = BAR[0] - 168
+MARIS_TOP = ROW1 - 20 - 330
+ANSWERS = ((16, PW // 2 - 8), (PW // 2 + 8, PW - 16))
+
+
+def attack_answers(d, ninjas='1 of 1 free'):
+    danger_button(d, (ANSWERS[0][0], ROW1 + 10, ANSWERS[0][1], ROW1 + 138), 'Abandon City')
+    two_line_button(d, (ANSWERS[1][0], ROW1, ANSWERS[1][1], ROW1 + 148), 'Ninja Scout', ninjas)
+    two_line_button(d, (16, BAR[0], PW - 16, BAR[1]), 'Intercept', 'choose the units', red=True)
+
+
+def maris(img, box, size=42):
+    d = ImageDraw.Draw(img)
+    x0, y0, x1, y1 = box
+    panel(d, box)
+    fs = min(170, y1 - y0 - 40)
+    framed(img, cg_face(6, fs), (x0 + 24, y0 + 20))
+    d = ImageDraw.Draw(img)
+    tx = x0 + 24 + fs + 30
+    d.text((tx, y0 + 26), 'MARIS', font=CINZEL(28, 600), fill=SUBTITLE)
+    for i, line in enumerate(MARIS_LINES):
+        d.text((tx, y0 + 66 + i * size * 1.22), line, font=GOTHIC(size), fill=TEXT)
+
+
+def attack_head(img, d, y=TOP + 6):
+    flag_icon(img, (24, y + 6), 78)
+    d = ImageDraw.Draw(img)
+    d.text((120, y), 'Enemy Attack', font=BRUSH(60), fill=NAME)
+    d.text((PW - 30, y + 22), DATE, font=CINZEL(30, 700), fill=NAME, anchor='ra')
+    d.text((30, y + 104), 'The Leazas Rebel Army appeared around Ys.', font=GOTHIC(40), fill=TEXT)
+    divider(d, y + 172)
+    return y + 186
+
+
+def pa1_base(img, d):
+    backdrop(img, (0, 0, PW, PH))
+    y = attack_head(img, d)
+    d = ImageDraw.Draw(img)
+    panel(d, (16, y, PW - 16, y + 540))
+    d.text((44, y + 30), 'DEFENDING · YS', font=CINZEL(28, 600), fill=SUBTITLE)
+    pic = dump(TOUCH, ATTACK_DUMP).crop((120, 204, 416, 400)).resize((600, 397), Image.LANCZOS)
+    framed(img, pic, (40, y + 84))
+    d = ImageDraw.Draw(img)
+    fx = 670
+    for i, (label, value) in enumerate(YS_FIGURES):
+        ry = y + 100 + i * 88
+        d.text((fx, ry), label, font=GOTHIC(31), fill=QUIET)
+        d.text((PW - 44, ry + 36), value, font=GOTHIC(38), fill=TEXT, anchor='ra')
+        d.line([(fx, ry + 82), (PW - 44, ry + 82)], fill=DIM_GOLD, width=1)
+    y += 540
+    d.text((PW / 2, y + 40), 'VS', font=BRUSH(56), fill=GOLD, anchor='mm')
+    y += 80
+    top = y
+    panel(d, (16, y, PW - 16, MARIS_TOP - 20))
+    d.text((44, y + 30), 'ATTACKING · LEAZAS REBEL ARMY', font=CINZEL(28, 600), fill=SUBTITLE)
+    cw, ch = (PW - 64 - 14) // 2, 270
+    xs = (32, 32 + cw + 14)
+    y += 84
+    for label, places, way in (('FRONT ROW', (1, 2), 'up'), ('BACK ROW', (3, 4), None)):
+        d.text((PW / 2, y + 16), label, font=CINZEL(26, 700), fill=SUBTITLE, anchor='mm')
+        if way:                                 # the rebels face Ys, above them
+            arrow_mark(d, PW / 2 + 100, y + 16, way, 8, SUBTITLE)
+        y += 40
+        for x, place in zip(xs, places):
+            attacker_card(img, (x, y, x + cw, y + ch), place)
+        d = ImageDraw.Draw(img)
+        y += ch + 14
+    d.text((44, y + 30), 'COMMANDERS', font=CINZEL(24, 600), fill=SUBTITLE, anchor='lm')
+    d.text((250, y + 30), '4', font=GOTHIC(38), fill=TEXT, anchor='lm')
+    d.text((PW - 44, y + 30), '1,556', font=GOTHIC(38), fill=TEXT, anchor='rm')
+    d.text((PW - 44 - d.textlength('1,556', font=GOTHIC(38)) - 16, y + 30), 'TOTAL TROOPS', font=CINZEL(24, 600),
+           fill=SUBTITLE, anchor='rm')
+    d.line([(44, y + 64), (PW - 44, y + 64)], fill=DIM_GOLD, width=1)
+    d.text((44, y + 76), "Kanami's report", font=GOTHIC(30), fill=QUIET)
+    y = MARIS_TOP
+    maris(img, (16, y, PW - 16, ROW1 - 20))
+    d = ImageDraw.Draw(img)
+    attack_answers(d)
+    return d
+
+
+def pa1():
+    img, d = phone()
+    pa1_base(img, d)
+    reach(img, label=False, shade=False)
+    save(img, 'PA1', 'a screen of its own, Ys over the rebels', 'attack', side=[
+        'The PC\'s screen (B) stacked:\nthe news and the date; Ys, its\npicture and figures; the rebels\n'
+        'under it, their front row facing\nup at Ys, as the battle\'s (PB3)\nenemy faces our army.',
+        'The rebels\' cards 35 × 15.3 mm,\nnames 2.4 mm; after Kanami\'s\nscouting (the gallery\'s), the\n'
+        'places filled.',
+        'Maris\'s question in her own\nbreaks, 2.4 mm.',
+        'The answers in two rows: Abandon\nCity (the danger button, a white\nflag) top left, farthest from the\n'
+        'thumb, Ninja Scout beside it;\nIntercept the bar\'s width at\nthe thumb. 7.3 and 8.4 mm.'])
+
+
+def pa1n():
+    img, d = phone()
+    d = pa1_base(img, d)
+    x0, x1 = 440, PW - 16
+    rh = 150
+    y1 = ROW1 - 30
+    y0 = y1 - rh - 110
+    panel(d, (x0, y0, x1, y1), fill=(30, 22, 16))
+    cx = (ANSWERS[1][0] + ANSWERS[1][1]) / 2
+    d.polygon([(cx - 24, y1 - 2), (cx + 24, y1 - 2), (cx, y1 + 22)], fill=GOLD)
+    d.text((x0 + 30, y0 + 46), 'SEND TO SCOUT', font=CINZEL(28, 600), fill=SUBTITLE, anchor='lm')
+    row = (x0 + 24, y0 + 86, x1 - 24, y0 + 86 + rh)
+    d.rectangle(row, fill=ROW, outline=DIM_GOLD, width=2)
+    framed(img, cg_face(9, rh - 24), (row[0] + 12, row[1] + 12))
+    d = ImageDraw.Draw(img)
+    d.text((row[0] + rh + 20, row[1] + 46), 'KANAMI', font=CINZEL(40, 700), fill=NAME, anchor='lm')
+    d.text((row[0] + rh + 20, row[1] + 102), 'free this week', font=GOTHIC(32), fill=QUIET, anchor='lm')
+    reach(img, label=False, shade=False)
+    save(img, 'PA1n', 'Ninja Scout\'s list', 'attack', side=[
+        'Ninja Scout opens its list above\nthe button (the owner\'s B4): a\nrow per ninja in service, the\n'
+        f'spent ones dimmed; rows {mm(rh)},\na tap on a free one sends her.',
+        'Shown before the scouting (the\nplaces would still be "??" —\nhere the gallery\'s filled ones).',
+        'Abandon City asks first the\nsame way, its callout above it.'])
+
+
+def pa2():
+    img, d = phone()
+    box = (0, 300, PW, 1250)
+    scale = 2.64
+    mx, my = PROV_POINTS[5]
+    w, h = (box[2] - box[0]) / scale, (box[3] - box[1]) / scale
+    x0 = max(0, min(1920 - w, mx - w / 2))
+    y0 = max(0, min(800 - h, my - h * 0.45))
+    draw_map(img, box, x0, y0, scale, 36, ring=5)
+    d = ImageDraw.Draw(img)
+    panel(d, (0, TOP - 20, PW, 300))
+    flag_icon(img, (24, TOP + 10), 70)
+    d = ImageDraw.Draw(img)
+    d.text((112, TOP + 4), 'Enemy Attack', font=BRUSH(56), fill=NAME)
+    d.text((PW - 30, TOP + 22), DATE, font=CINZEL(30, 700), fill=NAME, anchor='ra')
+    d.text((30, TOP + 100), 'The Leazas Rebel Army appeared around Ys.', font=GOTHIC(38), fill=TEXT)
+    sheet = 1250
+    panel(d, (0, sheet, PW, BAR[0] - 16))
+    y = sheet + 24
+    d.text((32, y + 20), 'YS', font=BRUSH(44), fill=NAME, anchor='lm')
+    for i, (label, value) in enumerate(YS_FIGURES):
+        x = 130 + (i % 2) * 540
+        ry = y + (i // 2) * 52
+        d.text((x, ry + 20), label, font=GOTHIC(28), fill=QUIET, anchor='lm')
+        d.text((x + 500, ry + 20), value, font=GOTHIC(32), fill=TEXT, anchor='rm')
+    y += 120
+    divider(d, y)
+    y += 20
+    d.text((32, y + 24), 'LEAZAS REBEL ARMY', font=CINZEL(28, 700), fill=SUBTITLE, anchor='lm')
+    d.text((PW - 32, y + 24), '4 commanders · 1,556 troops', font=GOTHIC(30), fill=TEXT, anchor='rm')
+    y += 56
+    rh = 118
+    for place in (1, 2, 3, 4):
+        name, kind, troops, cell = ATTACKERS[place]
+        r = (24, y, PW - 24, y + rh)
+        d.rectangle(r, fill=ROW, outline=DIM_GOLD, width=2)
+        framed(img, dump_face(cell, rh - 16), (r[0] + 8, y + 8))
+        d = ImageDraw.Draw(img)
+        badge(d, r[0] + rh + 40, y + rh / 2, place)
+        d.text((r[0] + rh + 84, y + rh / 2), name, font=GOTHIC(40), fill=TEXT, anchor='lm')
+        d.text((560, y + rh / 2), kind, font=GOTHIC(30), fill=QUIET, anchor='lm')
+        d.text((PW - 44, y + rh / 2), troops, font=GOTHIC(38), fill=TEXT, anchor='rm')
+        d.text((PW - 150, y + rh / 2), 'FRONT' if place <= 2 else 'BACK', font=CINZEL(22, 600), fill=SUBTITLE,
+               anchor='rm')
+        y += rh + 8
+    maris(img, (16, y + 10, PW - 16, ROW1 - 20), size=38)
+    d = ImageDraw.Draw(img)
+    attack_answers(d)
+    reach(img, label=False, shade=False)
+    save(img, 'PA2', 'over the map: Ys ringed, the attack as a sheet', 'attack', side=[
+        'The map (PM1\'s scale) with Ys\nringed, under the news; the\nattack rises as a sheet, as a\n'
+        'province\'s does (PM1c).',
+        'Ys\'s figures in two columns; the\nrebels as rows (face, place,\nname, type, row, troops), 6.7 mm.',
+        'Maris\'s question and the\nanswers as PA1\'s.',
+        'Smaller type than PA1 (the\nfigures 1.8 mm); the map says\nwhere at a glance.'])
+
+
+# --- the week report ---
+
+REPORT = [('', 'BUDGET', 'last week', '102,700', TEXT), ('+', 'REVENUE', 'provinces', '+20,200', (150, 196, 110)),
+          ('−', 'AL CHURCH', 'special expense', '−6,500', (222, 110, 90))]
+
+
+def week_card(img, box, triangle_at=None):
+    d = ImageDraw.Draw(img)
+    x0, y0, x1, y1 = box
+    panel(d, box)
+    flag_icon(img, (x0 + 34, y0 + 36), 74, 'report')
+    d = ImageDraw.Draw(img)
+    d.text((x0 + 130, y0 + 28), 'Leazas Army Phase', font=fit(d, 'Leazas Army Phase', BRUSH, 62, x1 - x0 - 160),
+           fill=NAME)
+    d.text((x0 + 132, y0 + 110), DATE, font=CINZEL(32, 700), fill=NAME)
+    divider(d, y0 + 176, x0 + 30, x1 - 30)
+    y = y0 + 200
+    d.text((x0 + 34, y), 'TREASURY', font=CINZEL(28, 600), fill=SUBTITLE)
+    y += 50
+    for sign, label, sub, value, colour in REPORT:
+        d.text((x0 + 40, y + 40), sign, font=GOTHIC(34), fill=QUIET, anchor='lm')
+        d.text((x0 + 80, y + 40), label, font=CINZEL(34, 600), fill=TEXT, anchor='lm')
+        d.text((x0 + 92 + d.textlength(label, font=CINZEL(34, 600)), y + 44), sub, font=CINZEL(24, 600),
+               fill=SUBTITLE, anchor='lm')
+        d.text((x1 - 40, y + 44), 'K GOLD', font=CINZEL(24, 600), fill=SUBTITLE, anchor='rm')
+        d.text((x1 - 150, y + 40), value, font=GOTHIC(44), fill=colour, anchor='rm')
+        for xx in range(x0 + 30, x1 - 30, 14):
+            d.line([(xx, y + 82), (xx + 6, y + 82)], fill=DIM_GOLD, width=1)
+        y += 86
+    y += 12
+    b = (x0 + 30, y, x1 - 30, y + 116)
+    d.rectangle(b, fill=(30, 22, 16), outline=GOLD, width=2)
+    d.text((b[0] + 30, y + 58), 'BUDGET', font=CINZEL(34, 700), fill=NAME, anchor='lm')
+    d.text((b[2] - 30, y + 64), 'K GOLD', font=CINZEL(24, 600), fill=SUBTITLE, anchor='rm')
+    d.text((b[2] - 140, y + 58), '116,400', font=BRUSH(62), fill=NAME, anchor='rm')
+    y += 150
+    d.text((x0 + 34, y), 'TROOPS', font=CINZEL(28, 600), fill=SUBTITLE)
+    y += 50
+    b = (x0 + 30, y, x1 - 30, y + 100)
+    d.rectangle(b, fill=(30, 22, 16), outline=DIM_GOLD, width=2)
+    d.text((b[0] + 30, y + 50), 'Replenished Troops', font=CINZEL(34, 600), fill=TEXT, anchor='lm')
+    d.text((b[2] - 30, y + 50), '+1,385', font=BRUSH(48), fill=(150, 196, 110), anchor='rm')
+    tx, ty = triangle_at or (x1 - 60, y1 - 50)
+    triangle(d, tx, ty, 24)
+    return y + 100
+
+
+def report_map(img):
+    scale = (BAR[0] - 12) / 800
+    draw_map(img, (0, 0, PW, BAR[0] - 12), 1290, 0, scale, 36, dim=110)
+    d = ImageDraw.Draw(img)
+    d.rectangle((0, BAR[0] - 12, PW, PH), fill=BACKDROP)
+    bottom_bar(d)
+    return d
+
+
+def pw1():
+    img, d = phone()
+    report_map(img)
+    h = 930
+    y0 = (TOP + BAR[0]) // 2 - h // 2
+    week_card(img, (16, y0, PW - 16, y0 + h))
+    reach(img, label=False, shade=False)
+    save(img, 'PW1', 'the report over the map, in the middle', 'report', side=[
+        'The week report as on the PC,\nat the screen\'s width over the\nmap: the banner, the treasury\n'
+        'as an account, the budget, the\ntroops replenished.',
+        'The banner 3.5 mm, the account\'s\nfigures 2.5 mm, the budget\n3.5 mm.',
+        'A tap anywhere goes on (the\ntriangle asks for it); the bar\'s\nMenu, Log and Skip as in the\nscenes.',
+        'The thieves\' week: the banner\nalone, the same card.'])
+
+
+def pw2():
+    img, d = phone()
+    report_map(img)
+    h = 930
+    y1 = BAR[0] - 24
+    week_card(img, (0, y1 - h, PW, y1), triangle_at=(PW - 70, y1 - 46))
+    reach(img, label=False, shade=False)
+    save(img, 'PW2', 'the report as a sheet at the thumb', 'report', side=[
+        'The same card as a sheet over\nthe map\'s foot, as the command\npanel rises in PM1b; the map\nabove '
+        'stays to be seen.',
+        'The triangle at the right thumb;\na tap anywhere goes on.',
+        'Where the command panel will\nrise next, so the eye stays\nlow from the report to the\ncommands.'])
+
+
+def p4():
+    pa1(); pa1n(); pa2()
+    pw1(); pw2()
+
+
 def main():
     global MAP, PROV_NAMES, PROV_POINTS
     if ROUND == 'P3':
@@ -1707,6 +2049,10 @@ def main():
         overviews()
         return
     MAP, PROV_NAMES, PROV_POINTS = build_map()
+    if ROUND == 'P4':
+        p4()
+        overviews()
+        return
     if GALLERY_MODE:
         m1()
         pb3(); pb3r(); pb3x()
