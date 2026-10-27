@@ -159,8 +159,8 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 21. ~~**The landscape Harem** (round P11, §15): LH1 or LH2.~~ LH2.
 22. ~~**The landscape Treasure** (round P11, §15): LT1 or LT2.~~ LT2.
 23. ~~**The landscape Save/Load** (round P11, §15): LL1 or LL2.~~ LL1.
-24. **The landscape options window** (round P12, §16): LO1 or LO2.
-25. **The landscape dungeon's menus** (round P12, §16): LF1 or LF2.
+24. ~~**The landscape options window** (round P12, §16): LO1 or LO2.~~ LO1.
+25. ~~**The landscape dungeon's menus** (round P12, §16): LF1 or LF2.~~ LF2.
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -655,3 +655,6 @@ the corner, a way not offered hidden in its room):
 
 **Recommendation: LF1** — the thumb finds the ladder where it finds every menu of the map in landscape (LM1's right
 side); LF2's wider rungs read in one line, but they stand a side's width further in and leave the side empty.
+
+**The owner's choice (2026-10-28): LO1 and LF2**, as drawn — the dungeon keeps the tablet's rail in the frame, its rungs
+wide enough for every word in one line. LO1, LF2 and LF2e are on the gallery's landscape tab.

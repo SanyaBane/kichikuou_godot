@@ -304,6 +304,10 @@ GALLERY_ENTRIES_LAND = {
     'LH2': ('lh2-harem', 'Harem — LH2', 'The harem', 'the grid folded in two, every girl in view'),
     'LT2': ('lt2-treasure', 'Treasure — LT2', 'The treasure', 'the grid folded in two, every item in view'),
     'LL1': ('ll1-saves', 'Save/Load — LL1', 'Load', 'the PC\'s split: the list left, the save\'s page right'),
+    # Round P12's choices (owner, 2026-10-28; docs/ui/phone.md, §16).
+    'LO1': ('lo1-options', 'Options — LO1', 'The options window', 'the paper sheet across the width, its tabs on top'),
+    'LF2': ('lf2-ladder', 'Dungeon — LF2', 'The floor ladder', 'the tablet\'s rail kept in the frame'),
+    'LF2e': ('lf2-entry', 'Dungeon — LF2', 'Before a search', 'Return over Start Search, both in one line'),
 }
 DUMPED = []
 DUMPED_LAND = []
@@ -4741,6 +4745,7 @@ def main():
         ld2(); lu1()
         la2(); la2n(); lw1()
         lh2(); lt2(); ll1()
+        lo1(); lf2(); lf2e()
         for tab, entries in (('phone', DUMPED), ('phone-land', DUMPED_LAND)):
             manifest = {'written': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'palette': 'lacquer',
                         'font': 'BizUdGothic', 'touch': True, 'mockup': True, 'entries': entries}
