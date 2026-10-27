@@ -161,11 +161,10 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 23. ~~**The landscape Save/Load** (round P11, §15): LL1 or LL2.~~ LL1.
 24. ~~**The landscape options window** (round P12, §16): LO1 or LO2.~~ LO1.
 25. ~~**The landscape dungeon's menus** (round P12, §16): LF1 or LF2.~~ LF2.
-26. **The landscape retreat question** (round P13, §17): LB2r1 (in the frame beside Retreat) or LB2r2 (over the left
-    rail).
-27. **The landscape opening** (round P13, §17): LB3o1 (at the scene's place) or LB3o2 (over the scene and the board);
-    upright's PB4o1 / PB4o2 (question 12) is still open.
-28. **The landscape battle's other states** (round P13, §17): LB2x, LB3s, LB3c, LB3r and LB3b as drawn?
+26. ~~**The landscape retreat question** (round P13, §17): LB2r1 or LB2r2.~~ LB2r1.
+27. ~~**The landscape opening** (round P13, §17): LB3o1 or LB3o2.~~ LB3o1 (upright's question 12 is still open).
+28. ~~**The landscape battle's other states** (round P13, §17): LB2x, LB3s, LB3c, LB3r and LB3b as drawn?~~ As drawn.
+29. **What comes next** (the owner, 2026-10-28): the scenes (§2, open since round P1), upright and landscape.
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -723,3 +722,7 @@ whole width, with nothing in the black sides.
 
 With this round every screen of ours has a landscape base version but All Data, the title and the import screen, which
 wait for screen gallery entries to draw over, and the scenes (§2, open upright too).
+
+**The owner's choice (2026-10-28): LB2r1 and LB3o1, and LB2x, LB3s, LB3c, LB3r and LB3b as drawn** — the agent's own
+choices above with them (the counters and a speaker's portrait in the scene's blurred sides). They are on the gallery's
+landscape tab with LB2. Next, the owner's word: the scenes (§2), upright and landscape.

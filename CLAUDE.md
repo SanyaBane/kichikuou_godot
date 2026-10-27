@@ -284,8 +284,11 @@ other states, the opening still open (docs/ui/phone.md, §5). The landscape phon
 frame keeps the layout, our controls go to the black sides; the owner chose the map LM1, the battle LB2, the deployment
 table LD2 and Subordinates LU1 (both changed), the enemy attack LA2 (changed), the week report LW1, Harem LH2 and Treasure LT2
 (the pickers' grid folded in two after its ninth row, every cell in view), Save/Load LL1 (the PC's split), the options
-window LO1 and the dungeon's menus LF2 (the tablet's rail kept in the frame); the battle's other states on LB2 are next
-(round P13). The gallery shows both orientations'
+window LO1 and the dungeon's menus LF2 (the tablet's rail kept in the frame), and the battle's other states on LB2 (round
+P13: the retreat question LB2r1 beside Retreat, the opening LB3o1 at the scene's place, the rest as drawn — the exchange's
+counters and a speaker's portrait in the scene's blurred sides). Every screen of ours has a base version in both
+orientations but All Data, the title, the import screen (no gallery entries to draw over) and the scenes, which come next
+(the owner, 2026-10-28; docs/ui/phone.md, §2). The gallery shows both orientations'
 choices on tabs of their own (`gallery.ps1 -PhoneOnly`).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant

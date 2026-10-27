@@ -310,6 +310,16 @@ GALLERY_ENTRIES_LAND = {
     'LO1': ('lo1-options', 'Options — LO1', 'The options window', 'the paper sheet across the width, its tabs on top'),
     'LF2': ('lf2-ladder', 'Dungeon — LF2', 'The floor ladder', 'the tablet\'s rail kept in the frame'),
     'LF2e': ('lf2-entry', 'Dungeon — LF2', 'Before a search', 'Return over Start Search, both in one line'),
+    # Round P13's choices (owner, 2026-10-28; docs/ui/phone.md, §17).
+    'LB2r1': ('lb2-retreat', 'Battle — LB2', 'The retreat question', 'a callout beside Retreat, in the frame'),
+    'LB2x': ('lb2-exchange', 'Battle — LB2', 'An exchange', 'Ex (commander 1) on Rance (unit 1); the counters in the '
+                                                           'scene\'s blurred sides'),
+    'LB3o1': ('lb3-opening', 'Battle — LB2', 'The opening', 'at the scene\'s place, laid out at the frame\'s width'),
+    'LB3s': ('lb3-scout', 'Battle — LB2', 'The scout report', 'Kanami\'s report across the whole width, one tap'),
+    'LB3c': ('lb3-strategy', 'Battle — LB2', 'A strategy\'s cut-in', 'the PC\'s fitted to the frame, the band to the '
+                                                                     'edges'),
+    'LB3r': ('lb3-results', 'Battle — LB2', 'The results plate', 'in the frame\'s middle over the dimmed board'),
+    'LB3b': ('lb3-line', 'Battle — LB2', 'A fighter\'s line', 'the portrait in the scene\'s blurred side, our balloon'),
 }
 DUMPED = []
 DUMPED_LAND = []
@@ -5111,6 +5121,7 @@ def main():
         pb3(); pb3r(); pb3x()
         p3(); p4(); p5(); p6(); p7()
         lm1(); lb2()
+        lb2r1(); lb2x(); lb3o1(); lb3s(); lb3c(); lb3r(); lb3b()
         ld2(); lu1()
         la2(); la2n(); lw1()
         lh2(); lt2(); ll1()
