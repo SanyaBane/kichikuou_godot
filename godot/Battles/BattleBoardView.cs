@@ -461,7 +461,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     /// Fills the screen from the presenter: the scene's picture when it changed, the windows' layer when
     /// <paramref name="screenChanged"/> (with the input screen's own windows, <paramref name="inputWindows"/>),
     /// the cards (<paramref name="hovered"/> lit), the strip, the gauge and the speaker when what they show changed.
-    /// <paramref name="instant"/>: the strip's chips jump to their places; <paramref name="slidesInstant"/>: the armies and the cards' counters too.
+    /// <paramref name="instant"/>: the gauge's spent round does not flash; <paramref name="slidesInstant"/>: the armies and the cards' counters stand at once.
     /// </summary>
     public void Refresh(GamePresenter presenter, IEnumerable<WindowShape> inputWindows, bool screenChanged, BattlePlace? hovered,
         bool instant, bool slidesInstant)
@@ -496,7 +496,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         _info.Speaking = _speaker.Visible || presenter.Battle.Speech is not null;     // the defence's caption gives way
         RefreshCards(s, presenter.Order, presenter.Battle.Strike, hovered);
         RefreshSpotlight(s, presenter.Scene);
-        RefreshStrip(s, presenter.Order, instant);
+        RefreshStrip(s, presenter.Order);
         var gauge = (Math.Max(presenter.Order.Rounds, s.Bt_RoundsLeft.Value), s.Bt_RoundsLeft.Value);
         if (gauge != _gaugeValues)
         {
@@ -1378,21 +1378,18 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     // ------------------------------------------------------------------ the strip and the gauge
 
     /// <summary>
-    /// The round's order (<see cref="OrderStrip"/>): the chips move on their own; at once while
-    /// <paramref name="instant"/> (the message skip), when a new round begins (owner, 2026-10-12: the
-    /// units that acted go back into the order, no jumps) and while the strip is out of the exchange's way
-    /// (owner, 2026-10-21: it comes back with the new order; a move after its return came while the next turn had begun).
+    /// The round's order (<see cref="OrderStrip"/>), at once: it changes while the strip is out of the exchange's way
+    /// (owner, 2026-10-21: it comes back with the new order).
     /// </summary>
-    private void RefreshStrip(GameState s, RoundOrder order, bool instant)
+    private void RefreshStrip(GameState s, RoundOrder order)
     {
         var chips = order.Chips(s);
         string key = string.Join(";", chips);
         if (key == _stripKey && (order.Battle, order.Round) == _stripRound)
             return;
         _stripKey = key;
-        bool newRound = (order.Battle, order.Round) != _stripRound;     // a new round, or a new battle's first
         _stripRound = (order.Battle, order.Round);
-        _strip.Show(chips, instant || newRound || _spotOn || _away > 0);
+        _strip.Show(chips);
     }
 
     // ------------------------------------------------------------------ out of the exchange's way

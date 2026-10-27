@@ -2324,8 +2324,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         var hovered = _battleView.Commands.Active ? _battleView.Commands.Lit   // a card lights up only while the player chooses
             : _sel is null ? null : _battleView.PlaceAt(TouchMode.LocalPointer(this) - _content.Position, _presenter.State!);
         _battleView.Refresh(_presenter, input, screenChanged, hovered,
-            instant: _skip.IsSkipping,                                         // MsgSkip: the order strip's chips jump to their places
-            slidesInstant: _skip.IsSkipping || _options.Fast);                 // and the armies and the counters (--fast: no runs)
+            instant: _skip.IsSkipping,                                         // MsgSkip: no flash on the rounds gauge
+            slidesInstant: _skip.IsSkipping || _options.Fast);                 // the armies and the counters at once (--fast: no runs)
         UpdateInfoBox();
     }
 

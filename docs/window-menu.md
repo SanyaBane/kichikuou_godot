@@ -86,8 +86,8 @@ web build (seen only) by an option.
 - **Option** (ours, owner's request 2026-10-21; docs/ui/options.md, mock-up D): the options window, `OptionsView`, over
   the game, which waits while it is open — a paper sheet in a lacquer frame with the tabs **Messages** (text speed with
   the game's 121 typing as its preview, Skip unseen text, MsgSkip speeds up fades, Forget them…, Mouse movement),
-  **Display** (Font, Palette), **Battle** (our battle screen's Exchange effects and twelve timings, the order strip as
-  their preview), **Game** (the game folder). Each change is kept at once; Defaults resets the tab shown; Close, Esc or
+  **Display** (Font, Palette), **Battle** (our battle screen's Exchange effects and nine timings; twelve and the order
+  strip as their preview until 2026-10-27, docs/ui/options.md), **Game** (the game folder). Each change is kept at once; Defaults resets the tab shown; Close, Esc or
   a right click shut it; Forget and the folder's Change… ask first in a box over the sheet. Until 2026-10-21 these were
   the Option drop-down's items, with Text Speed… and Battle Screen… as dialogs of their own; the entries below keep
   their history. `--options [--shots DIR] [--quit]` opens it over the title and, in a window, dumps each tab

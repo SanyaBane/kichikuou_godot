@@ -3,7 +3,6 @@ using Kichikuou.Engine.Script;
 using Kichikuou.Game.Battles;
 using Kichikuou.Original.Combat;
 using Kichikuou.Original.Content;
-using Kichikuou.Original.Content.Battles;
 using Kichikuou.Original.Content.Strategy;
 
 namespace Kichikuou.Game.Strategy;
@@ -15,7 +14,7 @@ namespace Kichikuou.Game.Strategy;
 /// (<see cref="MouseMovementChoice"/>, not in the touch mode), the
 /// already-read text's colour, <see cref="ReadTextChoice"/>, docs/ui/read-text.md), Display
 /// (the font, the palette, the thousands, the unit tables' row height, <see cref="LedgerRowsChoice"/>), Battle (our
-/// battle screen's effects and timings, <see cref="BattleScreenSettings"/>, the order strip as their preview), Game (the
+/// battle screen's effects and timings, <see cref="BattleScreenSettings"/>), Game (the
 /// game folder), Tweaks (what changes the original's play: the damage forecast, "Chaos and Nikkou reach demons",
 /// <see cref="DemonReachChoice"/>, "New scenes first", <see cref="NewScenesChoice"/>; owner, 2026-10-27). Every change applies
 /// and is kept at once; Defaults resets the tab shown (Game has none: the game folder has no default); Close, Esc or a right click shut it. Forget and the game folder ask first, in a box over the sheet. Laid out
@@ -39,15 +38,6 @@ internal sealed partial class OptionsView : Control
         ["I believe that we should first", "prepare our cities for their", "attacks, then defend them with", "urban warfare."];
     private const float PreviewHold = 1.2f;         // seconds the whole preview stays before it types again
 
-    // The week-26 battle's first round: Barres, hit hard, jumps ahead of Leila (as the old Battle Screen dialog had it).
-    private static readonly OrderChip[] Before =
-    [
-        new(BattleSide.Enemy, 4, 2, "Melfeis", ChipState.Acting), new(BattleSide.Player, 5, 4, "Leila", ChipState.Waiting),
-        new(BattleSide.Player, 10, 3, "Menad", ChipState.Waiting), new(BattleSide.Player, 1, 1, "Rance", ChipState.Waiting),
-        new(BattleSide.Player, 6, 2, "Barres", ChipState.Waiting), new(BattleSide.Enemy, 5, 1, "Dodge", ChipState.Waiting),
-    ];
-    private static readonly OrderChip[] After = [Before[0], Before[4], Before[1], Before[2], Before[3], Before[5]];
-
     private readonly FontFile _brush = Lacquer.Brush();
     private readonly FontVariation _cinzel = Lacquer.Cinzel(600);
     private readonly FontVariation _cinzelBold = Lacquer.Cinzel(800);
@@ -59,7 +49,6 @@ internal sealed partial class OptionsView : Control
     private readonly bool _folderLocked;
     private readonly MessageWindowView _preview;
     private readonly MessageWindow _sample = MessageWindow.Sample(PreviewLines, read: true);
-    private readonly OrderStrip _strip = new();
 
     private Tab _tab;
     private float _k = 1;                           // window pixels to a screen pixel
@@ -67,7 +56,6 @@ internal sealed partial class OptionsView : Control
     private string? _hover, _pressed;
     private Slider? _dragging;
     private double _held;
-    private bool _jumped;
     private Question? _question;
 
     private sealed record Spot(string Id, Rect2 Rect, Action Click, Slider? Slider = null);
@@ -78,11 +66,6 @@ internal sealed partial class OptionsView : Control
 
     /// <summary>Where the preview's 121 sits on the Messages tab: under the speed's slider, as wide as its column.</summary>
     private Rect2 PreviewRect => new(ContentX, ContentY + 96, SpeedColumn, SpeedColumn * _sample.Panel.H / _sample.Panel.W);
-
-    private static readonly int TimingRows = (BattleScreenSettings.All.Count(s => s.Unit != BattleScreenSettings.Toggle) + 1) / 2;
-
-    /// <summary>Where the order strip's preview sits on the Battle tab: under the timings, Preview right of it.</summary>
-    private static Rect2 StripRect => new(ContentX, ContentY + 96 + 36 + TimingRows * 46 + 6, ContentW - 130, 46);
 
     private sealed record Question(string Title, string Text, string Confirm, Action Confirmed);
 
@@ -125,8 +108,6 @@ internal sealed partial class OptionsView : Control
         AddChild(_preview);
         _preview.Show(_sample, true, null, null);
         _preview.LettersPerSecond = TextSpeedChoice.LettersPerSecond(TextSpeedChoice.Step);
-        AddChild(_strip);
-        _strip.Show(Before, instant: true);
         ShowTab(tab);
     }
 
@@ -151,14 +132,13 @@ internal sealed partial class OptionsView : Control
         _question = null;
         _dragging = null;
         _preview.Visible = tab == Tab.Messages;
-        _strip.Visible = tab == Tab.Battle;
         if (tab == Tab.Messages)
             _preview.Restart();
         PlaceChildren();
         QueueRedraw();
     }
 
-    /// <summary>The preview's 121 scaled into its place on the Messages tab, the order strip into its own on Battle.</summary>
+    /// <summary>The preview's 121 scaled into its place on the Messages tab.</summary>
     private void PlaceChildren()
     {
         var panel = _sample.Panel;
@@ -166,9 +146,6 @@ internal sealed partial class OptionsView : Control
         float kp = preview.Size.X / panel.W;
         var origin = (preview.Position - new Vector2(panel.X, panel.Y) * kp) * _k;
         _preview.Place(new Rect2(origin, new Vector2(1280, 800) * kp * _k));
-        _strip.Position = StripRect.Position * _k;
-        _strip.Size = StripRect.Size * _k;
-        _strip.SetScale(_k);
     }
 
     public override void _Process(double delta)
@@ -587,7 +564,7 @@ internal sealed partial class OptionsView : Control
             () => BattleScreenSettings.Set(effects, BattleScreenSettings.Get(effects) >= 0.5 ? 0 : 1));
         y += 96;
         SectionHead(x, y, "Timings", w);
-        y += 36;                                    // StripRect follows the rows
+        y += 36;
         float colW = (w - 40) / 2;
         int i = 0;
         foreach (var setting in BattleScreenSettings.All.Where(s => s.Unit != BattleScreenSettings.Toggle))
@@ -601,15 +578,6 @@ internal sealed partial class OptionsView : Control
             DrawString(_gothic, new Vector2(cx, cy + 34), Format(setting, value), HorizontalAlignment.Right, colW, 14, Ui.Ink);
             i++;
         }
-        var strip = StripRect;
-        DrawRect(strip, UiPalettes.For(UiPart.Battle).Panel with { A = 1 });
-        DrawRect(strip, Ui.InkGrey, false, Line(1));
-        var preview = new Rect2(x + w - 110, strip.Position.Y + 6, 110, 34);
-        Button("preview", preview, "Preview", () =>
-        {
-            _jumped = !_jumped;
-            _strip.Show(_jumped ? After : Before, instant: false);
-        });
     }
 
     private void DrawGame()
@@ -739,16 +707,6 @@ internal sealed partial class OptionsView : Control
             DrawLine(new Vector2(x, at.Y + 8), new Vector2(x + w, at.Y + 8), colour, Line(1));
         if (enabled)
             _spots.Add(new Spot(id, new Rect2(x - 4, at.Y - 12, w + 8, 24), click));
-    }
-
-    private void Button(string id, Rect2 rect, string text, Action click)
-    {
-        bool lit = _hover == id;
-        DrawRect(rect, lit ? Ui.Paper : Field);
-        DrawRect(rect, lit ? Ui.Vermilion : Ui.InkGrey, false, Line(lit ? 2 : 1));
-        DrawString(_gothic, new Vector2(rect.Position.X, Lacquer.Baseline(rect, _gothic, 15)), text, HorizontalAlignment.Center,
-            rect.Size.X, 15, lit ? Ui.Vermilion : Ui.VermilionInk);
-        _spots.Add(new Spot(id, rect, click));
     }
 
     /// <summary>A palette's swatch: its panel with its gold as a bar, framed in vermilion when chosen.</summary>

@@ -4,8 +4,7 @@ namespace Kichikuou.Game.Battles;
 
 /// <summary>
 /// The settings of our own battle screen (Option → Battle, <see cref="Strategy.OptionsView"/>),
-/// kept in <c>[battle_screen]</c> of <c>user://settings.cfg</c>; a change applies at once. So far the order
-/// strip's moves (<see cref="OrderStrip"/>), the armies' slides, the spotlight's darkness, the cards' counters (<see cref="BattleBoardView"/>),
+/// kept in <c>[battle_screen]</c> of <c>user://settings.cfg</c>; a change applies at once. So far the armies' slides, the spotlight's darkness, the cards' counters (<see cref="BattleBoardView"/>),
 /// the exchange's counters (<see cref="ExchangeCountersView"/>), the exchange's result hold (<c>GameScreen</c>), the opening's leave (<see cref="BattleOpeningLayer"/>), the cards' slide and the strip's fly-in at a battle's start, the exchange's effects and the damage forecast (<see cref="BattleCommandLayer"/>).
 /// </summary>
 internal static class BattleScreenSettings
@@ -14,18 +13,6 @@ internal static class BattleScreenSettings
 
     /// <summary>A setting: its key in the file, its label, its range and step, its default and its unit.</summary>
     public sealed record Setting(string Key, string Label, double Min, double Max, double Step, double Default, string Unit, string Hint);
-
-    /// <summary>How long a change of the order moves; 0 places the chips at once.</summary>
-    public static readonly Setting StripSeconds = new("strip_seconds", "Order strip: move", 0, 3, 0.05, 1.0, "s",
-        "How long a chip takes to reach its new place when the order changes (0: at once).");
-
-    /// <summary>How fast a move under way finishes when the next change comes.</summary>
-    public static readonly Setting StripHurrySeconds = new("strip_hurry_seconds", "Order strip: hurry", 0, 1, 0.01, 0.15, "s",
-        "When the order changes again (or the next unit acts) while chips still move, they finish within this.");
-
-    /// <summary>The share of a move the jumping chip spends going down a row, and as much coming up.</summary>
-    public static readonly Setting StripDropShare = new("strip_drop_share", "Order strip: drop and rise", 0.05, 0.45, 0.01, 0.2, "%",
-        "The part of the move the jumping chip spends going down a row, and again coming up into its place.");
 
     /// <summary>How long an army takes to slide into the scene or out of it (Sengoku Rance's slides).</summary>
     public static readonly Setting ArmySeconds = new("army_seconds", "Armies: slide", 0, 3, 0.05, 0.2, "s",
@@ -84,20 +71,20 @@ internal static class BattleScreenSettings
     public const string Toggle = "toggle";
 
     public static IReadOnlyList<Setting> All { get; } =
-        [StripSeconds, StripHurrySeconds, StripDropShare, ArmySeconds, SpotDarkness, MeterSeconds, CountSeconds, ResultSeconds, OpeningAppearSeconds, OpeningSeconds,
+        [ArmySeconds, SpotDarkness, MeterSeconds, CountSeconds, ResultSeconds, OpeningAppearSeconds, OpeningSeconds,
          CardsSlideSeconds, StripFlySeconds, Effects, Forecast];
 
     /// <summary>The development switches that set a setting for the launch.</summary>
     private static readonly (string Switch, Setting Setting)[] Switches =
-        [("--strip-seconds", StripSeconds), ("--army-seconds", ArmySeconds), ("--meter-seconds", MeterSeconds), ("--count-seconds", CountSeconds), ("--opening-seconds", OpeningSeconds), ("--opening-appear-seconds", OpeningAppearSeconds),
+        [("--army-seconds", ArmySeconds), ("--meter-seconds", MeterSeconds), ("--count-seconds", CountSeconds), ("--opening-seconds", OpeningSeconds), ("--opening-appear-seconds", OpeningAppearSeconds),
          ("--result-seconds", ResultSeconds), ("--cards-slide-seconds", CardsSlideSeconds), ("--strip-fly-seconds", StripFlySeconds),
          ("--damage-forecast", Forecast)];
 
     private static Dictionary<string, double>? _values;
 
     /// <summary>
-    /// A setting's value: <c>--strip-seconds x</c> / <c>--army-seconds x</c> / <c>--meter-seconds x</c> / <c>--count-seconds x</c> / <c>--opening-seconds x</c> / <c>--opening-appear-seconds x</c>
-    /// / <c>--result-seconds x</c> / <c>--damage-forecast 0|1</c> for the launch (development) for <see cref="StripSeconds"/> / <see cref="ArmySeconds"/> /
+    /// A setting's value: <c>--army-seconds x</c> / <c>--meter-seconds x</c> / <c>--count-seconds x</c> / <c>--opening-seconds x</c> / <c>--opening-appear-seconds x</c>
+    /// / <c>--result-seconds x</c> / <c>--damage-forecast 0|1</c> for the launch (development) for <see cref="ArmySeconds"/> /
     /// <see cref="MeterSeconds"/> / <see cref="CountSeconds"/> / <see cref="OpeningSeconds"/> / <see cref="OpeningAppearSeconds"/> / <see cref="ResultSeconds"/> / <see cref="Forecast"/>,
     /// else the file's, else the default.
     /// </summary>

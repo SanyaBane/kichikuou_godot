@@ -189,7 +189,9 @@ picture, the slot panels) is not shown. How it is built:
   slides up out over the screen's top and the order strip down behind the separator (clipped at its top, so it
   never shows over the panel); when the exchange is over both come back (`BattleBoardView.StepAway`, eased, 0.3 s;
   at once while skipping and with `--fast`), the strip with the order's change that came meanwhile already in place:
-  no move (owner, 2026-10-21 — played once the strip was back, it came while the next turn had begun).
+  no move (owner, 2026-10-21 — played once the strip was back, it came while the next turn had begun). Since the order
+  changes only then, the strip's move was never seen again and is gone (owner, 2026-10-27; docs/ui/options.md, "The
+  Battle tab without the order strip").
 - **The actions on the fighters' cards** (owner, 2026-10-13, mock-up D): the "vs" window (window 143 with
   the two sides' action labels, `FIGT.ADV:1739-1802`) is not shown — `BattlePresenter.ActionLabelsOpen`
   leaves it out of the windows' layer and `GameScreen` answers its click wait at once, as a click
@@ -911,7 +913,8 @@ picture, the slot panels) is not shown. How it is built:
    the strip's move (0-3 s, 0 at once), its hurry (0-1 s) and the share of the drop and the rise
    (5-45 %), applied and saved (`[battle_screen]` in `user://settings.cfg`, `BattleScreenSettings`) as a
    slider moves, with a preview of the strip; the game goes on behind it. `--strip-seconds x` for a
-   launch.
+   launch. The move, its three settings, `--strip-seconds` and the preview are gone since 2026-10-27 (owner): the
+   order changes while the strip is out of the exchange's way, so a new order stands at once.
    ✓ 2026-10-13 the frame time (owner: the exchange's flying numbers, 10 frames each followed by
    `Y 3, 1`, ran several times slower in New than in Original). A frame whose screen changed cost
    ~53 ms in New against ~16.5 in Original (the week-18 look, window, `--fast`); now ~11 ms (median;

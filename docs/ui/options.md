@@ -160,3 +160,14 @@ says what it does, is kept between launches, and is gone from the touch mode.
 - **The touch mode** (Android or `--touch`) leaves the Mouse section out and has the option off whatever the PC's
   choice: a finger leaves no pointer to put back, and the script's position alone moves, as with the option off.
   Defaults on Messages leaves the PC's choice alone there.
+
+## The Battle tab without the order strip (2026-10-27)
+
+Owner's request: the order strip under the Battle tab's timings, whose Preview made Barres jump ahead of Leila, showed a
+move the game never plays — the order changes during an exchange, while the strip is out of the exchange's way, and it
+comes back with the new order in place (docs/ui/battle-screen.md, "Out of the exchange's way"). Unattended play on the
+week-18 save (Oaks's battle, eight weeks of attacks and defences, a battle in the Monsters' Cave (dungeon 2)) changed
+the order 21 times, every time during an exchange. So the preview is gone, and with it the move itself (`OrderStrip`
+places a new order at once) and its three timings, "Order strip: move", "hurry" and "drop and rise" (`strip_seconds`,
+`strip_hurry_seconds`, `strip_drop_share`, `--strip-seconds`); the tab keeps Effects and nine timings, the strip's fly-in
+among them. Their lines left in a player's `settings.cfg` are not read any more.

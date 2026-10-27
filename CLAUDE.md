@@ -444,7 +444,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `Battles/BattleBoardView` (our own battle screen, our interface, docs/ui/battle-screen.md:
   the cards on stones drawn by code in the palette's colours, `Battles/BoardStones` ("The board's backdrop"),
   `Original.Content/Battles/BattleScene` on top, the stage's windows over it through `WindowMask`, the
-  cards and the round's order from `BattleBoard`/`RoundOrder`, the order strip `OrderStrip` moving on its own;
+  cards and the round's order from `BattleBoard`/`RoundOrder`, the order strip `OrderStrip` (a new order at once; its chips fly in after the opening);
   the exchange's troops and HP counters at the scene's foot after Sengoku Rance's, `Battles/ExchangeCountersView` from
   `BattlePresenter.ExchangeCounters` (the cards run in their steps; Option → Battle → "Counters: run");
   `FIGT_SEL` answered by our own input, `BattleCommandLayer`: banners and context menus from
