@@ -25,6 +25,11 @@ internal sealed partial class BattleCommandLayer
     private const float RightTop = 78, RightButton = 76, RightGap = 10, RightWidth = 116;  // under TARGET and the target's name
     private const float NameText = 19, TargetText = 17, TitleText = 13, AttackText = 19, RetreatText = 15;
     private static readonly Color TargetName = Color8(150, 225, 255);
+
+    // The target's name under TARGET (the owner, 2026-10-27): one line at 17, its middle 46 below the rail's top, down to 14
+    // when it must; a name wider still breaks at the space that balances its lines best, both at up to 15, their middles 38
+    // and 55 — "2nd Assault / Leader", the widest enemy name, at 14. A name of one word only shrinks.
+    private const float TargetMiddle = 46, TargetOneLine = 14, TargetTwoLines = 15, TargetFirstLine = 38, TargetSecondLine = 55;
     private static readonly Color AttackTop = Color8(255, 214, 110), AttackBottom = Color8(214, 140, 40);
     private static readonly Color AttackEdge = Color8(255, 244, 210), AttackLine = Color8(150, 100, 30), AttackInk = Color8(40, 24, 8);
     private static readonly Color HeldGlow = new(1f, 0.72f, 0.42f);  // a rail button or an order toggle held
@@ -266,7 +271,7 @@ internal sealed partial class BattleCommandLayer
             RailLabel(_cinzel, RightRail, 22, "TARGET", TitleText, Ui.Subtitle);
             if (_target is { } t)
             {
-                RailLabel(_brush, RightRail, 46, BattleBoard.Card(state, t)?.Name ?? "", TargetText, TargetName);
+                TargetLabel(BattleBoard.Card(state, t)?.Name ?? "");
                 if (_banners.Count == 0)
                 {
                     RailLabel(font, RightRail, RightTop + 20, "No attack", RailText - 2, Ui.Quiet);
@@ -297,6 +302,45 @@ internal sealed partial class BattleCommandLayer
     /// <summary>One line centred on <paramref name="rail"/>, its middle <paramref name="y"/> below the rail's top, smaller if it would not fit.</summary>
     private void RailLabel(Font font, Rect2 rail, float y, string text, float size, Color colour) =>
         Centred(font, text, size, new Rect2(rail.Position.X + RailInset + 3, rail.Position.Y + y - 20, rail.Size.X - 2 * RailInset - 6, 40), colour);
+
+    /// <summary>The target's name under TARGET: one line, or two when one would have to be smaller than 14.</summary>
+    private void TargetLabel(string name)
+    {
+        if (LabelFit(_brush, RightRail, TargetText, TargetOneLine, name) == 0 && Split(name) is { } lines)
+        {
+            int px = Math.Max(LabelFit(_brush, RightRail, TargetTwoLines, 11, lines.First, lines.Second), 11);
+            RailLabel(_brush, RightRail, TargetFirstLine, lines.First, px, TargetName);
+            RailLabel(_brush, RightRail, TargetSecondLine, lines.Second, px, TargetName);
+        }
+        else
+            RailLabel(_brush, RightRail, TargetMiddle, name, TargetText, TargetName);
+    }
+
+    /// <summary>
+    /// The largest size from <paramref name="size"/> down to <paramref name="least"/> at which each of
+    /// <paramref name="lines"/> fits a label on <paramref name="rail"/> (<see cref="RailLabel"/>'s width less
+    /// <see cref="Centred"/>'s margin), else 0.
+    /// </summary>
+    private static int LabelFit(Font font, Rect2 rail, float size, float least, params string[] lines)
+    {
+        float room = rail.Size.X - 2 * RailInset - 6 - 10;
+        for (int px = (int)size; px >= least; px--)
+        {
+            if (lines.All(line => font.GetStringSize(line, fontSize: px).X <= room))
+                return px;
+        }
+        return 0;
+    }
+
+    /// <summary><paramref name="name"/> broken at the space that makes its wider line narrowest, or null for one word.</summary>
+    private (string First, string Second)? Split(string name)
+    {
+        var words = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        float Wider((string First, string Second) l) =>
+            Math.Max(_brush.GetStringSize(l.First, fontSize: (int)TargetTwoLines).X, _brush.GetStringSize(l.Second, fontSize: (int)TargetTwoLines).X);
+        return words.Length < 2 ? null
+            : Enumerable.Range(1, words.Length - 1).Select(i => (string.Join(' ', words[..i]), string.Join(' ', words[i..]))).MinBy(Wider);
+    }
 
     /// <summary>A dim gold rule across the rail's panel <paramref name="y"/> below the rail's top.</summary>
     private void RailRule(Rect2 rail, float y) =>

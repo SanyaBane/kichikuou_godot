@@ -492,6 +492,11 @@ unchanged):
 - **A defence's ribbon** on the narrower card (owner, 2026-10-25: its text ran together): "DEFEND" and the mark at their
   size when they fit, else the mark's first word dropped ("HIT −10%"; the caption over the field says the rest), then
   both smaller, down to four fifths (`BattleInfoLayer.RibbonText`); PC's ribbon as before.
+- **The target's name** under TARGET (owner, 2026-10-27: the widest enemy name, "2nd Assault Leader" (commander 192),
+  ran past the rail even at 11): one line at 17, down to 14 when it must; a name wider still is broken at the space
+  that balances its two lines best, both at up to 15 ("2nd Assault / Leader" at 14), between TARGET and the rule
+  (`BattleCommandLayer.TargetLabel`). Of the 202 names the scenario gives commanders, 39 take two lines; a name of one
+  word only shrinks, as before.
 - Looked at by the agent (2026-10-25) in the screen gallery's touch pass (`battle-turn`, `retreat`, `menu`,
   `exchange-counters`, the info boxes), and in the unattended `--touch` battle look ("The tablet (now)"): its taps on
   the rails, another target and Melee pass to round 2, a party of four fits (`touch-rails`, `touch-target`). The retreat
