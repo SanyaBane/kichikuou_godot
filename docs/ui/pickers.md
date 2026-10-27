@@ -351,3 +351,6 @@ Open for the owner:
    model did — or left to the script's callout after the tap?
 3. A second tap on the selected cell doing what the button does (a shortcut; not drawn)?
 4. The button, as the grid, is out of the thumbs' reach on a tablet held in both hands (docs/ui/touch.md's arcs).
+
+**The owner (2026-10-27), question 1:** the script's questions in the callout beside the button, as X4 — not at the
+cell, not answered unseen. Questions 2-4 still open.
