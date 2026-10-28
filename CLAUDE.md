@@ -334,6 +334,11 @@ Subordinates), the party two cards a row and Stop | Attack at the right, Add New
 and End in the right, the questions in callouts at the phone's sizes, a unit's picture on a long press
 (`Original.Content/Devices/PhoneLedger`; `DeploymentPanels.Phone.cs`, `SubordinatesView.Phone.cs`, `UnitPictureView`,
 `DeploymentTableView.PlacePhone`, `LedgerTabsBar.Phone`, `TreasureCallout.PlacePhone`).
+Step L6 is built, awaiting the owner's look on the phone (phone-build.md, "Step L6, where it stands"): the enemy attack
+across the whole width — the province and the army at the left, the news, Maris's question and the answers in a column at
+the right thumb, Ninja Scout's list above its button two ninjas a row, Abandon City's question above its
+(`Original.Content/Devices/PhoneAttack`; `EnemyAttackView.Phone.cs`, `Battles/PhoneCommanderCard`, shared with the scout
+report).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

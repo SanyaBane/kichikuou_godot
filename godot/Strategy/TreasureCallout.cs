@@ -32,6 +32,7 @@ internal sealed partial class TreasureCallout : Control
 
     private bool _phone;
     private Vector2 _room = new(1280, 800);         // the layout's room: the picture's, or the phone's whole screen
+    private (float Left, float Right) _across = (0, 1280);      // what a callout may span: the room, on the phone between the hole's strips
 
     private Metrics M => _phone ? Metrics.Phone : Metrics.Pc;
 
@@ -147,8 +148,20 @@ internal sealed partial class TreasureCallout : Control
             Place(area);
     }
 
-    /// <summary>Lays the layer over the phone's whole screen (its parent's area), in the reference phone's pixels.</summary>
-    public void PlacePhone(PhoneFrame phone) => Lay(new Rect2(Vector2.Zero, GetParentAreaSize()), phone.Unit, phone: true);
+    /// <summary>
+    /// Lays the layer over the phone's whole screen (the screen <paramref name="phone"/> was laid out for), in the reference
+    /// phone's pixels; a callout keeps out of the hole's strips.
+    /// </summary>
+    public void PlacePhone(PhoneFrame phone)
+    {
+        Lay(new Rect2(0, 0, phone.Screen.W, phone.Screen.H), phone.Unit, phone: true);
+        var across = (phone.Safe.Left / phone.Unit, (phone.Screen.W - phone.Safe.Right) / phone.Unit);
+        if (across != _across)
+        {
+            _across = across;
+            QueueRedraw();
+        }
+    }
 
     private void Lay(Rect2 area, float k, bool phone)
     {
@@ -159,6 +172,8 @@ internal sealed partial class TreasureCallout : Control
         _k = k;
         _phone = phone;
         _room = phone ? area.Size / k : new Vector2(1280, 800);
+        if (!phone)
+            _across = (0, 1280);
         QueueRedraw();
     }
 
@@ -209,7 +224,7 @@ internal sealed partial class TreasureCallout : Control
             float h = Pad + Shown.Count * LineStep + (Answers > 0 ? ButtonH + 2 * Gap + 4 : 34);
             if (_beside is { } area)                                            // as tall as its text; the screen hides what is under it
                 return _phone ? new Rect2(area.Position.X, area.End.Y - h, area.Size.X, h) : new Rect2(area.Position, new Vector2(area.Size.X, h));
-            float x = Math.Clamp(_cell.Position.X - M.Edge, M.Edge, _room.X - M.Edge - w);
+            float x = Math.Clamp(_cell.Position.X - M.Edge, _across.Left + M.Edge, Math.Max(_across.Left + M.Edge, _across.Right - M.Edge - w));
             float y = _cell.End.Y + Gap;
             if (y + h > _room.Y - M.Edge)
                 y = _cell.Position.Y - Gap - h;

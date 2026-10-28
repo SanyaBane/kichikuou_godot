@@ -457,6 +457,35 @@ on Oaks (6), the debug build):
 - **Unattended play**: `--phone landscape` headless from the week-18 save to its deployment picker runs as before (the
   replenish through Subordinates, the party built in the ledger, the attack on Oaks (6)).
 
+**Step L6, where it stands (2026-10-28):** built, **awaiting the owner's look on the phone**.
+
+- **The model** (`Original.Content/Devices/PhoneAttack`, tested in `PhoneAttackTests`): the places at the mock-ups' figures
+  (`la2_base`, `la2n`, `ys_panel`, `rebels_panel`, `attacker_card`, `maris`, `ninja_callout`) in the canvas's units — the
+  province's panel (580 wide from the hole's strip + 6, from 16 down to 16 over the screen's foot), "VS" in the 100 after
+  it, the army's panel to 16 short of the column, the column 804 wide ending 6 short of the right strip (a longer screen
+  widens the army's panel); the province's picture (540 wide, the PC's 3:2) and its four figures' rows (88) centred in
+  the panel, the army's cards (300 high, two a row, 16 and 14 apart, the front row left) with their captions, the pointer
+  and the totals centred in theirs; the column's head (the flag, the title, the date, the news in two lines, the divider
+  at 286); Intercept 130 high 10 over the gesture zone, Abandon City (90% of its half, 18 in from the row's top and foot) |
+  Ninja Scout (180) 16 over it, Maris's panel (320) 16 over them; Ninja Scout's list 30 over its button, the column's
+  width, its rows 128 high 12 apart, two a row when more than one ninja serves.
+- **The views**, keyed by the live device: `EnemyAttackView.Phone.cs` draws the screen over the whole screen on the wave
+  backdrop (the PC's blur under it hidden), the hit tests and the list's rows at `PhoneAttack`'s places; Abandon City's
+  question in the callout above its button, at the phone's sizes (laid out again with the screen, so a question open when
+  the layout changes follows its button). `PhoneCommanderCard` is the scouted commander's card the scout report (L4)
+  drew, now shared by both (its name and troop type shrunk to the card's room, as the mock-up's narrower cards need).
+  `TreasureCallout.PlacePhone` lays the callout over the screen the frame was laid out for and keeps a callout out of
+  the hole's strips.
+- **The agent's choices**, for the owner to confirm: the province's figures in the game's font as LA2 drew them (the PC's
+  values are Cinzel), the rules between them the PC's seams; a place not scouted yet and an empty one drawn as the PC's
+  (dashed, "?" / the number and "empty") at the phone's sizes, which LA2 did not draw; the list's spent ninjas "used this
+  week" as on the PC (the mock-up's "spent"); Abandon City's question the PC's words in the callout above its button,
+  as wide as its lines (it reaches over the army's panel), Abandon at the right.
+- **The gallery**: the PC and touch passes same (110 and 111 entries); the phone pass's `enemy-attack…` entries match LA2
+  and LA2n (docs/ui/gallery.md, §9), which left `GALLERY_ENTRIES_LAND`; `scout-report` and the L5 callouts same.
+- **Unattended play**: `--phone landscape --turn-end --scout` headless from the week-18 save to its deployment picker runs
+  as before (Ninja Scout on Ys (5), Back from the deployment screen, the interception).
+
 ### Upright (steps P0-P9)
 
 | Step | What | Base versions (phone.md) |

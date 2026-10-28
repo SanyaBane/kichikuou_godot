@@ -90,39 +90,17 @@ internal sealed partial class ScoutReportView
     /// <summary>A scouted place's card as the enemy attack's (LA2): the place on a gold diamond, name, type, TROOPS and the figure, the face at the right.</summary>
     private void PhoneCard(PhoneUnits u, Rect2 card, int slot, ScoutedCommander? commander)
     {
-        _sheet.DrawRect(card, commander is null ? Ui.Panel with { A = 1 } : Ui.Row);
-        _sheet.DrawRect(card, Ui.DimGold, false, Lacquer.Line(1, 1));
-        if (commander is null)
+        if (commander is not null)
         {
-            int text = u.Size(PhoneBattleStates.CardName);
-            string empty = $"{slot}  empty";
-            float w = _font!.GetStringSize(empty, fontSize: text).X;
-            _sheet.DrawString(_font, card.GetCenter() + new Vector2(-w / 2, (_font.GetAscent(text) - _font.GetDescent(text)) / 2), empty,
-                fontSize: text, modulate: Ui.Quiet);
+            PhoneCommanderCard.Draw(_sheet, u, Ui, card, slot, commander, _font!, _cinzel, _faces, _crops, PhoneBattleStates.CardFace);
             return;
         }
-        float face = Math.Min(card.Size.Y - 2 * u.Px(PhoneBattleStates.FaceIn), u.Px(PhoneBattleStates.CardFace));
-        var faceArea = new Rect2(card.End.X - u.Px(PhoneBattleStates.FaceIn) - face, card.Position.Y + u.Px(PhoneBattleStates.FaceIn), face, face);
-        _sheet.DrawRect(faceArea, Ui.FaceBack);
-        if (commander.Picture != 0
-            && _faces.SquareTexture(commander.Picture, _faces.CropOf(commander.Picture, _crops), (int)Math.Round(face * u.K)) is { } square)
-            _sheet.DrawTextureRect(square, faceArea, false);
-        _sheet.DrawRect(faceArea, Ui.DimGold, false, Lacquer.Line(1, 1));
-
-        float x0 = card.Position.X, y0 = card.Position.Y, right = faceArea.Position.X - u.Px(30);
-        Ui.DrawBadge(_sheet, _cinzel, new Vector2(x0 + u.Px(40), y0 + u.Px(44)), u.Px(PhoneBattleStates.Badge), slot);
-        int name = u.Size(PhoneBattleStates.CardName), kind = u.Size(PhoneBattleStates.CardKind);
-        _sheet.DrawString(_font!, new Vector2(x0 + u.Px(80), y0 + u.Px(44) + (_font!.GetAscent(name) - _font.GetDescent(name)) / 2),
-            commander.Name, HorizontalAlignment.Left, right - x0 - u.Px(80), name, Ui.Name);
-        _sheet.DrawString(_font, new Vector2(x0 + u.Px(22), y0 + u.Px(92) + _font.GetAscent(kind)),
-            commander.TroopType == "" ? "—" : commander.TroopType, HorizontalAlignment.Left, right - x0 - u.Px(22), kind, Ui.Quiet);
-        float rule = card.End.Y - u.Px(22);
-        _sheet.DrawLine(new Vector2(x0 + u.Px(20), rule), new Vector2(right, rule), Ui.DimGold, Lacquer.Line(1, 1));
-        int label = u.Size(PhoneBattleStates.CardLabel), troops = u.Size(PhoneBattleStates.CardTroops);
-        _sheet.DrawString(_cinzel, new Vector2(x0 + u.Px(22), card.End.Y - u.Px(30) - _cinzel.GetDescent(label)), "TROOPS",
-            fontSize: label, modulate: Ui.Subtitle);
-        string count = commander.Troops == 0 ? "none" : Number(commander.Troops);
-        _sheet.DrawString(_font, new Vector2(right - _font.GetStringSize(count, fontSize: troops).X, card.End.Y - u.Px(28) - _font.GetDescent(troops)),
-            count, fontSize: troops, modulate: Ui.Value);
+        _sheet.DrawRect(card, Ui.Panel with { A = 1 });
+        _sheet.DrawRect(card, Ui.DimGold, false, Lacquer.Line(1, 1));
+        int text = u.Size(PhoneBattleStates.CardName);
+        string empty = $"{slot}  empty";
+        float w = _font!.GetStringSize(empty, fontSize: text).X;
+        _sheet.DrawString(_font, card.GetCenter() + new Vector2(-w / 2, (_font.GetAscent(text) - _font.GetDescent(text)) / 2), empty,
+            fontSize: text, modulate: Ui.Quiet);
     }
 }

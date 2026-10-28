@@ -437,4 +437,7 @@ scene's foot (`battle-speech…`) and the cards' menu at a finger's size (`menu`
 and LB3b left the mock-up tab. Step L5 (2026-10-28) built the deployment table and Subordinates: the ledger in one-line
 rows at the phone's type, wholly at the left with the party two cards a row at the right (`deployment…`, the Refill
 question `deployment-refill-question` at the phone's sizes), the orders in the sides with Replenish's question left of its
-button (`subordinates…`, `subordinates-question`); LD2, LU1 and LU1q left the mock-up tab.
+button (`subordinates…`, `subordinates-question`); LD2, LU1 and LU1q left the mock-up tab. Step L6 (2026-10-28) built
+the enemy attack: across the whole width, the province and the army at the left, the column with the news, Maris's
+question and the answers at the right thumb (`enemy-attack`, `enemy-attack-scouted`), Ninja Scout's list above its button
+(`enemy-attack-ninjas`), Abandon City's question above its (`enemy-attack-abandon`); LA2 and LA2n left the mock-up tab.

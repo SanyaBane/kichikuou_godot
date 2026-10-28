@@ -3,6 +3,7 @@ using Godot;
 using Kichikuou.Game.Battles;
 using Kichikuou.Original.Content;
 using Kichikuou.Original.Content.Battles;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.Content.Strategy;
 
 namespace Kichikuou.Game.Strategy;
@@ -15,7 +16,8 @@ namespace Kichikuou.Game.Strategy;
 /// Maris's face square (§11) and line and the answers to <c>FIGT_B</c>'s menu: Intercept, Ninja Scout (a list of the ninjas in service, the
 /// spent ones dimmed) and Abandon City (asked first, at its button). It decides nothing of the rules:
 /// <see cref="ChooseAsync"/> gives the menu's code and, for a scouting, the ninja's. Points are layout pixels of the
-/// 1280×800 screen.
+/// 1280×800 screen; on the phone held landscape the screen spans the whole width in its own layout
+/// (<c>EnemyAttackView.Phone.cs</c>).
 /// </summary>
 internal sealed partial class EnemyAttackView : Control
 {
@@ -67,6 +69,7 @@ internal sealed partial class EnemyAttackView : Control
 
     private readonly FacePictures _faces;
     private readonly TreasureCallout _callout;
+    private readonly ColorRect _blur;
     private readonly Control _sheet;
     private readonly FontFile _brush = Lacquer.Brush();
     private readonly FontVariation _cinzel = Lacquer.Cinzel(600), _cinzelBold = Lacquer.Cinzel(700);
@@ -85,14 +88,14 @@ internal sealed partial class EnemyAttackView : Control
         _faces = faces;
         Visible = false;
         MouseFilter = MouseFilterEnum.Stop;
-        var backdrop = new ColorRect
+        _blur = new ColorRect
         {
             MouseFilter = MouseFilterEnum.Ignore,
             Material = new ShaderMaterial { Shader = new Shader { Code = BlurShader } },
         };
-        ((ShaderMaterial)backdrop.Material).SetShaderParameter("dim", Dim);
-        backdrop.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        AddChild(backdrop);
+        ((ShaderMaterial)_blur.Material).SetShaderParameter("dim", Dim);
+        _blur.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        AddChild(_blur);
         _sheet = new Control { MouseFilter = MouseFilterEnum.Ignore };
         _sheet.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _sheet.Draw += DrawSheet;
@@ -150,13 +153,26 @@ internal sealed partial class EnemyAttackView : Control
         _answer = null;
     }
 
-    /// <summary>Lays the screen out over the area whose layout pixel (0, 0) is at <paramref name="origin"/>, <paramref name="scale"/> window pixels to a layout pixel.</summary>
+    /// <summary>
+    /// Lays the screen out over the area whose layout pixel (0, 0) is at <paramref name="origin"/>, <paramref name="scale"/>
+    /// window pixels to a layout pixel; on the phone held landscape over the whole screen in its frame's layout pixels (LA2).
+    /// </summary>
     public void Place(Vector2 origin, float scale)
     {
-        _callout.Place(new Rect2(origin, new Vector2(1280, 800) * scale));
-        if (origin == _origin && scale == _k)
+        var phone = Device.Landscape(this);
+        if (phone is not null)
+        {
+            (origin, scale) = (Vector2.Zero, phone.Scale);
+            _callout.PlacePhone(phone);
+        }
+        else
+            _callout.Place(new Rect2(origin, new Vector2(1280, 800) * scale));
+        if (origin == _origin && scale == _k && phone == _phone)
             return;
-        (_origin, _k) = (origin, scale);
+        (_origin, _k, _phone) = (origin, scale, phone);
+        _blur.Visible = phone is null;                                  // the phone's screen covers it with the wave backdrop
+        if (_callout.MenuOpen)
+            ShowQuestion();
         _sheet.QueueRedraw();
     }
 
@@ -197,11 +213,10 @@ internal sealed partial class EnemyAttackView : Control
 
     private async Task AskAbandonAsync()
     {
-        if (_attack is not { } attack || _callout.MenuOpen)
+        if (_attack is null || _callout.MenuOpen)
             return;
         _listOpen = false;
-        _callout.Show([$"Abandon {attack.Province} to the {attack.Army}?", "No battle: the city goes to the enemy."],
-            AbandonButton, waiting: false);
+        ShowQuestion();
         _callout.OpenMenu(["Abandon", "Keep"]);
         int answer;
         try
@@ -220,6 +235,14 @@ internal sealed partial class EnemyAttackView : Control
         if (answer == 1)
             Give(new Answer(3, 0));
         _sheet.QueueRedraw();
+    }
+
+    /// <summary>Abandon City's question at its button, in the callout's layout (laid out again when the screen is).</summary>
+    private void ShowQuestion()
+    {
+        if (_attack is { } attack)
+            _callout.Show([$"Abandon {attack.Province} to the {attack.Army}?", "No battle: the city goes to the enemy."],
+                AbandonCell, waiting: false);
     }
 
     // ------------------------------------------------------------------ input
@@ -292,17 +315,40 @@ internal sealed partial class EnemyAttackView : Control
             if (ListRect(attack).HasPoint(p))
                 return (Spot.None, 0);
         }
-        if (InterceptButton.HasPoint(p))
+        if (InterceptRect.HasPoint(p))
             return (Spot.Intercept, 0);
-        if (ScoutButton.HasPoint(p) && attack.CanScout)
+        if (ScoutRect.HasPoint(p) && attack.CanScout)
             return (Spot.Scout, 0);
-        if (AbandonButton.HasPoint(p))
+        if (AbandonRect.HasPoint(p))
             return (Spot.Abandon, 0);
         return (Spot.None, 0);
     }
 
-    private static Rect2 ListRect(EnemyAttack attack)
+    /// <summary>Intercept in the screen's layout pixels (the phone's own, LA2).</summary>
+    private Rect2 InterceptRect => _phone is { } f ? new PhoneUnits(f).Rect(PhoneAttack.Intercept(f)) : InterceptButton;
+
+    /// <summary>Ninja Scout in the screen's layout pixels.</summary>
+    private Rect2 ScoutRect => _phone is { } f ? new PhoneUnits(f).Rect(PhoneAttack.NinjaScout(f)) : ScoutButton;
+
+    /// <summary>Abandon City in the screen's layout pixels.</summary>
+    private Rect2 AbandonRect => _phone is { } f ? new PhoneUnits(f).Rect(PhoneAttack.Abandon(f)) : AbandonButton;
+
+    /// <summary>Abandon City in the callout's layout: the PC's layout pixels, or the phone's reference pixels over its whole screen.</summary>
+    private Rect2 AbandonCell
     {
+        get
+        {
+            if (_phone is not { } f)
+                return AbandonButton;
+            var box = PhoneAttack.Abandon(f);
+            return new Rect2(box.X / f.Unit, box.Y / f.Unit, box.W / f.Unit, box.H / f.Unit);
+        }
+    }
+
+    private Rect2 ListRect(EnemyAttack attack)
+    {
+        if (_phone is { } f)
+            return new PhoneUnits(f).Rect(PhoneAttack.List(f, attack.Ninjas.Count));
         float h = 2 * ListPad + ListHead + attack.Ninjas.Count * (ListRow + ListGap) - ListGap;
         float x = Math.Min(ScoutButton.GetCenter().X - ListWidth / 2, 1280 - 24 - ListWidth);
         return new Rect2(x, ScoutButton.Position.Y - 16 - h, ListWidth, h);
@@ -312,8 +358,10 @@ internal sealed partial class EnemyAttackView : Control
     private static Rect2 Mirrored(Rect2 button) =>
         TouchMode.On ? button with { Position = new(ButtonsLeft + ButtonsRight - button.End.X, button.Position.Y) } : button;
 
-    private static Rect2 ListRowRect(EnemyAttack attack, int i)
+    private Rect2 ListRowRect(EnemyAttack attack, int i)
     {
+        if (_phone is { } f)
+            return new PhoneUnits(f).Rect(PhoneAttack.ListRowBox(f, i, attack.Ninjas.Count));
         var list = ListRect(attack);
         return new Rect2(list.Position.X + ListPad, list.Position.Y + ListPad + ListHead + i * (ListRow + ListGap),
             ListWidth - 2 * ListPad, ListRow);
@@ -332,6 +380,11 @@ internal sealed partial class EnemyAttackView : Control
     {
         if (_attack is not { } attack || _font is null)
             return;
+        if (_phone is { } phone)
+        {
+            DrawPhone(attack, phone);
+            return;
+        }
         _sheet.DrawSetTransform(_origin, 0, new Vector2(_k, _k));
         DrawTitle(attack);
         DrawProvince(attack);
@@ -372,13 +425,7 @@ internal sealed partial class EnemyAttackView : Control
         if (Picture(attack.PictureCg) is { } picture)
             _sheet.DrawTextureRect(picture, PictureArea, false);
         _sheet.DrawRect(PictureArea, Ui.Gold, false, Lacquer.Line(1, _k));
-        (string Label, string Value)[] rows =
-        [
-            ("Walls in a city battle", attack.Walls == 0 ? "none" : $"+{attack.Walls}%"),
-            ("City battle limit", Figures.Number(attack.CityLimit)),
-            ("Plains battle limit", Figures.Number(EnemyAttack.PlainsLimit)),
-            ("Revenue", Figures.Number(attack.Revenue) + "K GOLD"),
-        ];
+        var rows = FigureRows(attack);
         for (int i = 0; i < rows.Length; i++)
         {
             float y = PictureArea.End.Y + 12 + i * 36;
@@ -389,6 +436,15 @@ internal sealed partial class EnemyAttackView : Control
                 _sheet.DrawLine(new Vector2(54, y + 31), new Vector2(482, y + 31), Ui.Seam, Lacquer.Line(1, _k));
         }
     }
+
+    /// <summary>What the province's battles give the defender, under its picture.</summary>
+    private static (string Label, string Value)[] FigureRows(EnemyAttack attack) =>
+    [
+        ("Walls in a city battle", attack.Walls == 0 ? "none" : $"+{attack.Walls}%"),
+        ("City battle limit", Figures.Number(attack.CityLimit)),
+        ("Plains battle limit", Figures.Number(EnemyAttack.PlainsLimit)),
+        ("Revenue", Figures.Number(attack.Revenue) + "K GOLD"),
+    ];
 
     /// <summary>
     /// The army (owner's mock-up E3, 2026-10-24): our party's cards from the deployment screen, the faces on their right
@@ -574,12 +630,13 @@ internal sealed partial class EnemyAttackView : Control
             modulate: abandonLit ? Ui.Name : Ui.DangerText);
     }
 
-    /// <summary>A white flag on its pole, 16 wide and 18 high, its top left at (<paramref name="x"/>, <paramref name="y"/>).</summary>
-    private void DrawWhiteFlag(float x, float y)
+    /// <summary>A white flag on its pole, 16 wide and 18 high times <paramref name="s"/>, its top left at (<paramref name="x"/>, <paramref name="y"/>).</summary>
+    private void DrawWhiteFlag(float x, float y, float s = 1)
     {
-        _sheet.DrawLine(new(x + 2, y), new(x + 2, y + 18), Ui.Text, Lacquer.Line(1.6f, _k), true);
+        _sheet.DrawLine(new(x + 2 * s, y), new(x + 2 * s, y + 18 * s), Ui.Text, Lacquer.Line(1.6f * s, _k), true);
         Lacquer.DrawSmoothPolygon(_sheet,
-            [new(x + 3, y + 1), new(x + 9, y + 3), new(x + 16, y + 1), new(x + 16, y + 10), new(x + 9, y + 12), new(x + 3, y + 10)],
+            [new(x + 3 * s, y + s), new(x + 9 * s, y + 3 * s), new(x + 16 * s, y + s), new(x + 16 * s, y + 10 * s), new(x + 9 * s, y + 12 * s),
+                new(x + 3 * s, y + 10 * s)],
             Ui.Text, _k);
     }
 
