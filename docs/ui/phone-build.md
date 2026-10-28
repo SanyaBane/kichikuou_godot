@@ -286,7 +286,8 @@ on Oaks (6), the debug build):
   - an effect's first play in a launch (its textures made per pixel in C#, `EffectTextures`: ~130 ms the first time,
     ~30 ms the second) — since 2026-10-28 their masks are drawn ahead, on a worker at the launch
     (`EffectTextures.Prepare`, from `Main`; its time in the log, ~850 ms on the PC for all 43), the textures still made
-    from them at first use; the frames are the same (180 of three effects compared), the Poco not measured again yet.
+    from them at first use; the frames are the same (180 of three effects compared); on the Poco the masks take 1060 ms,
+    done a second after the launch. The first play's frame times in a battle are the owner's play to tell.
 
   Both are in docs/backlog.md, "Android". Note on the figures: a frame's interval is Godot's `delta`, so the script's
   work at a frame's start (`process_frame`) is counted in the next frame's interval; a period's figures are the same.
@@ -703,7 +704,7 @@ Poco** (every step's look above, the agent's choices with them), and the tablet'
   (§6, the phone held landscape), the backlog ("Android").
 - **Left open**: the Poco's keyboard height (step L7b; no Kichikuou keyboard line in its log at L9b's install); the
   battle's long frame or two at an exchange's start (backlog, "Android"); an effect's first play in a launch no longer
-  draws its masks (step F, "The battle's speed"), to be measured on the Poco.
+  draws its masks (step F, "The battle's speed"; 1060 ms on a worker at the Poco's launch).
 
 ### Upright (steps P0-P9)
 

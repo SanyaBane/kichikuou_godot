@@ -60,8 +60,8 @@ The owner aims at a public release (decision 28, 2026-10-20).
   Still open: a long frame or two (40-140 ms) at an exchange's start on the phone — the engine's own drawing of its
   start, copies of 640×400 stored at 2× (a surface that stores at 1× what is not drawn at 2× would quarter them) —
   *agent*, put off 2026-10-28 (an effect's first play in a launch no longer draws its textures' masks: since 2026-10-28
-  `EffectTextures.Prepare` draws all 43 on a worker at the launch, ~850 ms on the PC, its time in the log; not measured
-  on the Poco yet);
+  `EffectTextures.Prepare` draws all 43 on a worker at the launch, ~850 ms on the PC, 1060 ms on the Poco, a second after the
+  launch, its time in the log);
   the hover a touch screen lacks, where the touch mode has not replaced it yet (ui/touch.md, "One by one, after the
   battle and the map"); the screen turning with the device (sensor landscape, 2026-10-24), not yet seen on the
   tablet; the touch mode's later parts, each marked "Not yet on the tablet" in ui/touch.md, and the damage
