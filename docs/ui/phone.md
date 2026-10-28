@@ -1033,6 +1033,9 @@ sheet, the message log and the comment's editing on Save/Load — drawn before a
 (landscape), with the original's own screens (Fortune Check, the CG gallery, the music room, an ending's report) shown
 as they are for the owner to confirm.
 
+The landscape phone is built (2026-10-28, phone-build.md, steps F and L1-L10): every landscape base version above, each
+step awaiting the owner's look on the Poco; upright next (steps P0-P9).
+
 ## 25. Round P20: the Menu sheet, the message log and the comment's editing upright (2026-10-28)
 
 The build's step 0 (docs/ui/phone-build.md, §5). Drawn by `mock_phone.py --round P20` over PS2 (the week-18 look's

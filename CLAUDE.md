@@ -362,6 +362,11 @@ the tablet too (`Engine/Script/TouchPress`, `PlayerInput.Press`). L9b is built, 
 the import screen as LI, LIp, LIr — the paper sheet in the frame at the phone's type, the steps in two columns, the red
 button at the right thumb, a folder its name over its place with Android's storage named
 (`Original.Content/Devices/PhoneImport`; `godot/ImportScreen.Phone.cs`).
+Step L10 is done but the owner's play (phone-build.md, "Step L10, where it stands"): unattended play headless with
+`--phone landscape` from the week-18 save through every exercise (the deployment and the battle, `--treasure`,
+`--saveload`, `--scout`, `--refill`, `--harem`, `--dungeon` to the cave's way out, weeks 18-21), all as before; the docs
+(phone.md, touch.md, style.md §6, backlog). **The landscape phone is built, awaiting the owner's play on the Poco**;
+upright (P0-P9) is next.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

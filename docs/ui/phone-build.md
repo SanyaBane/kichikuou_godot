@@ -675,6 +675,33 @@ L9b, the import screen:
   `GALLERY_ENTRIES_LAND` (LXr stays). `--phone landscape --import-screen DIR --quit` headless imports as before (its dumps
   need a window).
 
+**Step L10, where it stands (2026-10-28):** the agent's part done; **the landscape phone awaits the owner's play on the
+Poco** (every step's look above, the agent's choices with them), and the tablet's, unchanged (§7).
+
+- **Unattended play** headless as the phone held landscape (`--phone landscape`, the 1778 × 800 canvas) from the week-18
+  save, each exercise in a working folder of its own (`--saves user://saves-look-phone-…`; CLAUDE.md, "A look at one
+  screen"): every run ended as asked, exit 0, nothing unported met.
+
+  | Switches | What it went through | Time |
+  |---|---|---|
+  | `--until battle-end` | Replenish of Haurein (unit 12) on our Subordinates screen; the attack on Oaks (6), the party built in our deployment table by drops, its first two places swapped and back; the battle to its end (lost, as with `--seed 2`) | 10 s |
+  | `--treasure --until deployment` | our Treasure screen on Rance (unit 1) and the L. Holy Sword (item 6), then the attack's deployment | 5 s |
+  | `--saveload --until deployment` | our Save/Load screen: a new manual save by the red button, its comment written, left by Back | 6 s |
+  | `--turn-end --scout --until deployment` | the rebels' attack on Ys (5) on our enemy attack screen, Ninja Scout, the deployment left by Back and the attack screen back in 237 ms | 6 s |
+  | `--refill --until deployment` | Replenish on the deployment table: Haurein (unit 12) asked and replenished | 5 s |
+  | `--harem 6 --until deployment` | the harem's cell 6, Kanami's visit | 7 s |
+  | `--dungeon --weeks 18` | the Monsters' Cave (dungeon 2) searched with Rance (unit 1) to floor 4, a battle fought, the floor menus answered to the way out; then the week's Replenish and the rebels' attack on Ys (5), won | 12 s |
+  | `--weeks 21` | weeks 18-21 whole: Oaks (6) lost in week 18 and taken in week 19 (stage 2), the attacks on Ys (5) and, twice in week 20, on Leazas Castle (1), all won | 52 s |
+
+  Unattended play answers the screens through their models and Godot's input, not the phone's places alone, so these
+  runs check the flows on the phone's layouts; the places are the gallery's phone pass's (114 entries) and the owner's
+  look. The windowed exercises (the battle's touch rails and their dumps, `--map-north`) wait for the owner's ask, as
+  always.
+- **The docs**: phone.md (§24), touch.md ("Phones (put off)": the Poco the reference, the landscape phone built), style.md
+  (§6, the phone held landscape), the backlog ("Android").
+- **Left open**: the Poco's keyboard height (step L7b; no Kichikuou keyboard line in its log at L9b's install); the
+  battle's long frame or two at an exchange's start and an effect's first play in a launch (backlog, "Android").
+
 ### Upright (steps P0-P9)
 
 | Step | What | Base versions (phone.md) |

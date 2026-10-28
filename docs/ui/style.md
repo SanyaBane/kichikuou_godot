@@ -193,6 +193,14 @@ or `--touch`; the PC's mouse interface does not change.
   rail (the owner's B).
 - Controls sit where the thumb learns them (the drawer at the left edge, Commands bottom right), never over a face, a
   name plate or text; they hide under menus, dialogs and our screens, and their taps never reach the script.
+- **The phone held landscape** (docs/ui/phone-build.md, steps F and L1-L10, built 2026-10-28): the frame keeps the
+  1280×800 layout, its picture fitted to the height; our controls go to the black sides, on rails (14.5 mm) between the
+  camera's strip (6.3 mm, kept free on both sides) and the frame, the act at the right thumb, Menu and the way back at
+  the left; nothing in the gesture zone at the foot (3 mm). A screen of our own that is a sheet (the options, Save/Load,
+  the import, the pickers, the enemy attack) takes the whole width at the phone's type. The figures are the reference
+  phone's pixels (the Poco X6 Pro, 17.6 a millimetre; `PhoneFrame`): text 2.3-2.7 mm, small lines 1.7 mm at least, a
+  target 6.4 mm high at least (chips; cells 7.5 mm, red buttons 7.4 mm). On the original's own screens a long press is the
+  right click; Android's Back is the way back.
 
 ## 7. How a screen is made
 

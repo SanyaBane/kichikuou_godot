@@ -683,4 +683,9 @@ M1, M2 (the map). Open questions: B1 or B3; M1 or M2; the text size on a phone (
 too, asking nothing — no button on the map ends the week (owner, 2026-10-25; M1's button on the rail goes).
 
 Taken up again (owner, 2026-10-27): the phone in both orientations, the Xiaomi Poco X6 Pro the reference, upright first —
-docs/ui/phone.md (round P1); the landscape phone after it.
+docs/ui/phone.md (round P1); the landscape phone after it. The figures above are the first survey's (a 6.5" phone);
+the reference since is the Poco (154.5 × 69.5 mm held landscape, black sides of 21.6 mm; docs/ui/phone.md, §12).
+
+The landscape phone is built (2026-10-28; docs/ui/phone-build.md, steps F and L1-L10): every screen of ours as its
+landscape base version (docs/ui/phone.md), the touch mode's input with a long press as the right click on the original's
+screens, awaiting the owner's look on the Poco; upright next (steps P0-P9).
