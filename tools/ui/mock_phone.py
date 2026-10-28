@@ -40,8 +40,12 @@ Round P14, the scenes again: PS2 as the owner changed it — the picture in the 
 window above it (PS2), the lower one's under it (PS2l), and PS2b, PS2m with the picture there too (the look dir).
 Round P15, the scenes landscape: LS1 the frame as on the PC (LS1b window 131, LS1m a dialogue menu at the thumb), LS2
 upright's PS2 laid sideways (the look dir; lacquer/current's message-cg-bar-speech and scene-menu).
-`--round P3` before the arguments draws only that round's variants (the look dir then unread, '-' will do; P14 and
-P15 read it).
+Round P16, the open questions upright: PB4o3 the opening at the scene's place laid out again (with PB4o1-PB4o2);
+PD2s1, PD2s1x, PD2s2, PU1s1, PU1s2 the ledger scrolled sideways (one-line and two-line rows; PD2s1x a late game's
+roster, made up); PU1e1-PU1e3 Subordinates' End. Round P17, the frame upright: PK1s, PK1m, PK2s, PK2m the bar's cells
+at the left or the right (on PS2 and PM1; the look dir), PO1o the orientation in Option → Display (a sketch).
+`--round P3` before the arguments draws only that round's variants (the look dir then unread, '-' will do; P14, P15
+and P17 read it).
 The pink lines and text are the mock-ups' notes, not part of a screen.
 
 For the screen gallery's phone tabs (tools/ui/gallery.ps1 -Phone; docs/ui/gallery.md, §9) only the owner's chosen base
@@ -216,10 +220,13 @@ def icon(d, kind, cx, cy, colour=GOLD):
         d.line([(cx - 20, cy + 20), (cx + 20, cy - 20)], fill=colour, width=8)
 
 
-def bottom_bar(d, right=None, cells=('menu', 'log', 'skip'), skip_on=False, log_on=True):
-    """The bottom bar: Menu (the menu bar's commands), Log, Skip at the left, the screen's main button at the right."""
+def bottom_bar(d, right=None, cells=('menu', 'log', 'skip'), skip_on=False, log_on=True, side='left'):
+    """The bottom bar: Menu (the menu bar's commands), Log, Skip at the left, the screen's main button at the right.
+    `side='right'`: the cells beside the main button, Skip nearest the corner (round P17's PK2)."""
     y0, y1 = BAR
     x = 16
+    if side == 'right':
+        x = PW - 16 - len(cells) * (170 + 14) + 14 - (440 + 14 if right else 0)
     for kind in cells:
         w = 170
         lit = kind == 'skip' and skip_on
@@ -1339,9 +1346,18 @@ def divider(d, y, x0=24, x1=PW - 24):
     d.polygon([(m, y - 9), (m + 9, y), (m, y + 9), (m - 9, y)], fill=GOLD)
 
 
-def title_band(d, title, subtitle, y=TOP + 4):
-    """The title band: Shojumaru title, the date right, the Cinzel subtitle under them, a divider."""
+def title_band(d, title, subtitle, y=TOP + 4, end=False):
+    """The title band: Shojumaru title, the date right, the Cinzel subtitle under them, a divider. With `end` the
+    screen's End at the title's right instead of the date, which follows the subtitle (round P16, PU1e1)."""
     d.text((30, y), title, font=BRUSH(62), fill=NAME)
+    if end:
+        box = (PW - 16 - 300, y - 2, PW - 16, y + 122)
+        panel(d, box)
+        icon(d, 'close', box[0] + 66, (box[1] + box[3]) // 2)
+        d.text((box[0] + 186, (box[1] + box[3]) / 2), 'End', font=BRUSH(52), fill=NAME, anchor='mm')
+        d.text((32, y + 92), f'{subtitle}  ·  {DATE}', font=CINZEL(30, 600), fill=SUBTITLE)
+        divider(d, y + 144)
+        return y + 156
     d.text((PW - 30, y + 22), DATE, font=CINZEL(32, 700), fill=NAME, anchor='ra')
     d.text((32, y + 92), subtitle, font=CINZEL(30, 600), fill=SUBTITLE)
     divider(d, y + 144)
@@ -1567,7 +1583,9 @@ def pd1():
         'Stop and Attack in the bar,\nAttack at the right thumb.'])
 
 
-def pd2_base(img, d, tab=1):
+def pd2_base(img, d, tab=1, sideways=None):
+    """`sideways`: the ledger scrolled sideways instead (round P16; `sideways_ledger`'s arguments, its row height
+    `row_h`)."""
     backdrop(img, (0, 0, PW, PH))
     y = title_band(d, 'Deployment', 'Attack · up to 4 units')
     top = y + 4
@@ -1589,8 +1607,13 @@ def pd2_base(img, d, tab=1):
     party_totals(d, y + 30)
     y = top + 600
     y = paper_tabs(d, y + 14, tab)
-    row_h = 150
-    ledger(d, y, BAR[0] - 20, tab, TROOPS_ORDER if tab == 1 else NUMBER_ORDER, row_h)
+    if sideways:
+        row_h = sideways['row_h']
+        sideways_ledger(img, (16, y, PW - 16, BAR[0] - 20), tab, **sideways)
+        d = ImageDraw.Draw(img)
+    else:
+        row_h = 150
+        ledger(d, y, BAR[0] - 20, tab, TROOPS_ORDER if tab == 1 else NUMBER_ORDER, row_h)
     stop_attack(d)
     return d, top, row_h
 
@@ -1775,24 +1798,32 @@ def end_alone(d, right='End'):
     d.text((PW - 16 - 210, (y0 + y1) / 2), right, font=BRUSH(52), fill=NAME, anchor='mm')
 
 
-def pu1_base(img, d, n, figures):
+def pu1_base(img, d, n, figures, sideways=None, end='bar', orders=1868, foot=BAR[0] - 16, heading_budget=True):
+    """`sideways`: the ledger scrolled sideways (round P16, as `pd2_base`'s); `end` where End stands — 'bar' alone in
+    the bar, 'title' at the title's right, None drawn by the caller (round P16's PU1e…)."""
     backdrop(img, (0, 0, PW, PH))
-    y = title_band(d, 'Subordinates', '9 units ready')
+    y = title_band(d, 'Subordinates', '9 units ready', end=end == 'title')
     y = paper_tabs(d, y + 6, 0)
-    orders = 1868
-    row_h = 140
-    ledger(d, y, orders - 14, 0, NUMBER_ORDER, row_h, chosen=n, party=False, refill=False)
-    panel(d, (0, orders, PW, BAR[0] - 16))
+    if sideways:
+        row_h = sideways['row_h']
+        sideways_ledger(img, (16, y, PW - 16, orders - 14), 0, chosen=n, party=False, refill=False, **sideways)
+        d = ImageDraw.Draw(img)
+    else:
+        row_h = 140
+        ledger(d, y, orders - 14, 0, NUMBER_ORDER, row_h, chosen=n, party=False, refill=False)
+    panel(d, (0, orders, PW, foot))
     d.text((32, orders + 50), 'Orders', font=BRUSH(46), fill=NAME, anchor='lm')
     d.text((32 + d.textlength('Orders', font=BRUSH(46)) + 20, orders + 54), '· ' + UNIT[n][1].upper(),
            font=CINZEL(30, 700), fill=TEXT, anchor='lm')
-    budget(d, PW - 32, orders + 50)
+    if heading_budget:
+        budget(d, PW - 32, orders + 50)
     rep = (24, orders + 100, PW // 2 - 10, orders + 236)       # Replenish and Talk on one row (owner, 2026-10-27)
     replenish(d, rep, figures)
     talk_button(img, (PW // 2 + 10, rep[1], PW - 24, rep[3]), n)
     d = ImageDraw.Draw(img)
     add_new_grid(d, 24, orders + 258, PW - 24, n)
-    end_alone(d)
+    if end == 'bar':
+        end_alone(d)
     return orders, row_h, rep
 
 
@@ -5263,15 +5294,443 @@ def p15():
     ls1(); ls1b(); ls1m(); ls2()
 
 
+# --- round P16: the open questions upright — the opening, the ledger's rows, Subordinates' End (2026-10-28) --------
+
+def pb4o3():
+    """The opening at the scene's place, laid out again at the phone's type, as landscape's LB3o1."""
+    img, d = phone()
+    top = board(img)
+    scene_h = round(410 * PW / 1024)
+    d = opening_tint(img, (0, TOP, PW, TOP + scene_h), (PW // 2 + 50, PW // 2 - 50), 0.5, blur=2)
+    plate = (PW // 2 - 420, TOP + 16, PW // 2 + 420, TOP + 192)
+    panel(d, plate)
+    d.text((PW / 2, plate[1] + 52), 'Oaks — Offensive Battle', font=CINZEL(46, 700), fill=TEXT, anchor='mm')
+    d.text((PW / 2, plate[1] + 108), 'City · Battle limit: up to 232', font=CINZEL(36, 700), fill=TEXT, anchor='mm')
+    d.text((PW / 2, plate[1] + 150), '4 turns', font=CINZEL(34, 600), fill=QUIET, anchor='mm')
+    size, _ = army_name(d, ('Rance', 'Army'), 230, TOP + 268, 72, 420)
+    army_name(d, ('Leazas', 'Rebel', 'Army'), PW - 230, TOP + 232, 72, 420)
+    d.text((PW - 230, TOP + 448), 'Walls +8%', font=BRUSH(40), fill=(240, 200, 110), anchor='mm', stroke_width=4,
+           stroke_fill=(40, 10, 10))
+    d.text((PW / 2, TOP + 360), 'VS', font=BRUSH(110), fill=GOLD, anchor='mm', stroke_width=5,
+           stroke_fill=(40, 26, 10))
+    reach(img, label=False, shade=False)
+    save(img, 'PB4o3', 'the opening at the scene\'s place, laid out again', 'battle-states', side=[
+        'PB4o1\'s place, laid out again\nat the phone\'s type, as the\nowner\'s landscape LB3o1: the\n'
+        'scene in the opening\'s blue and\nred, the plate on top, the\narmies\' names at its sides, VS\nbetween them.',
+        f'The place {mm(46)}, the limit {mm(36)},\nthe turns {mm(34)}, the names {mm(size)}\n'
+        f'(PB4o1: {mm(17 * 0.953)} and 3.2 mm).',
+        'The board under it as PB3\'s,\nthe deck empty; a tap goes on.'])
+
+
+SIDE_FIX = 420                          # the sideways ledger's fixed part (x 16-420): the seal, № and name
+
+
+def ledger_unit(n):
+    """A week-18 unit as the sideways ledger reads it."""
+    no, name, kind, rows, trp, mtrp, price, cost, place = UNIT[n]
+    return dict(no=no, name=name, kind=kind, rows=rows, trp=trp, mtrp=mtrp, price=price, cost=cost, place=place,
+                troops=TROOPS_TAB[n].split(), cmdr=COMMANDER_TAB[n].split(' ', 6))
+
+
+WEEK18 = [ledger_unit(n) for n in NUMBER_ORDER]
+# A late game's roster, made up as docs/ui/unit-ledger.md's: the week-18 units and twenty more with their boot records'
+# names, types, rows, maxima and deployment costs (SET_CHR.ADV), their troops made up; the Overview tab only.
+LONG_MORE = [(13, 'Melfeis', 'Leazas Mages', 'Back', 300, 6), (15, 'Gengorou', 'Leazas Soldiers', 'Front', 400, 8),
+             (16, 'Maria', 'Maria’s Pupils', 'Back', 220, 5), (17, 'Shizuka', 'Leazas Mages', 'Back', 320, 5),
+             (18, 'Patton', 'Brawlers', 'Front', 500, 5), (19, 'Hanty', 'Freak Robots', 'Back', 300, 5),
+             (21, 'Hubert', 'Helman Knights', 'Front', 650, 5), (23, 'Eleanor', 'Magic Warriors', 'Front, Back', 500, 5),
+             (24, 'Milli', 'Leazas Soldiers', 'Front', 1000, 5), (26, 'Mars the Great', 'Leazas Soldiers', 'Front', 1000, 5),
+             (27, 'Isoroku', 'JAPAN Archers', 'Back', 1200, 5), (28, 'Cream', 'Leazas Soldiers', 'Front', 1000, 5),
+             (29, 'Satella', 'Guardians', 'Back', 200, 0), (30, 'Meglass', 'Horuses', 'Front', 600, 0),
+             (31, 'Kentarou', 'Leazas Soldiers', 'Front', 450, 5), (33, 'Julia', 'Royal Guards', 'Front', 200, 10),
+             (38, 'Chizuko', 'Leazas Mages', 'Back', 300, 5), (40, 'Nagi', 'Leazas Mages', 'Back', 400, 5),
+             (42, 'Seizel Sisters', 'False Angels', 'Back', 500, 5), (47, 'Rolex', 'Helman Knights', 'Front', 500, 5)]
+
+
+def long_roster():
+    rows = list(WEEK18)
+    for i, (no, name, kind, rows_, most, deploy) in enumerate(LONG_MORE):
+        trp = most if i % 3 == 0 else round(most * (0.45 + 0.17 * (i % 4)))
+        price = None if trp == most else f'{max(1, (most - trp) // 50) * 100:,}K'
+        rows.append(dict(no=no, name=name, kind=kind, rows=rows_, trp=trp, mtrp=most, price=price,
+                         cost=f'{(deploy + trp // 300) * 100:,}K', place=None))
+    return sorted(rows, key=lambda u: u['no'])
+
+
+# The scrolled columns of each tab: (key, heading, width, group); one-line rows, then two-line rows' Overview.
+SIDE_COLS = {
+    0: [('kind', 'TYPE', 330, None), ('rows', 'ROWS', 230, None), ('trp', 'TROOPS', 290, None),
+        ('refill', 'REFILL', 230, None), ('cost', 'COST', 170, None)],
+    1: [('t0', 'T.ATK', 120, None), ('t1', 'T.DEF', 120, None), ('t2', 'STRIKES', 160, None), ('t3', 'MAG', 110, None),
+        ('t4', 'ATK', 110, 'OFFENSE'), ('t5', 'DEF', 110, 'OFFENSE'), ('t6', 'ATK', 110, 'DEFENSE'),
+        ('t7', 'DEF', 110, 'DEFENSE'), ('t8', 'ATK', 110, 'DUNGEON'), ('t9', 'DEF', 110, 'DUNGEON')],
+    2: [('c0', 'STRAT%', 150, None), ('c1', 'HP', 110, None), ('c2', 'LVL', 100, None), ('c3', 'EXP', 180, None),
+        ('c4', 'C.ATK', 140, None), ('c5', 'C.DEF', 140, None), ('c6', 'ITEM', 330, None)],
+}
+SIDE_COLS_TWO = {0: [('rows', 'ROWS', 260, None), ('trp', 'TROOPS', 320, None), ('refill', 'REFILL', 240, None),
+                     ('cost', 'COST', 180, None)]}
+
+
+def side_cell(d, key, x, w, cy, u, size, refill):
+    if key in ('kind', 'rows'):
+        d.text((x + 12, cy), u[key], font=GOTHIC(size - 4), fill=INK_QUIET, anchor='lm')
+    elif key == 'trp':
+        d.text((x + 12, cy - 12), f'{u["trp"]:,}/{u["mtrp"]:,}', font=GOTHIC(size), fill=INK, anchor='lm')
+        strength_bar(d, x + 12, cy + 24, w - 50, u['trp'], u['mtrp'])
+    elif key == 'refill':
+        if u['price'] and refill:
+            refill_button(d, (x + 10, cy - 32, x + w - 20, cy + 32), u['price'])
+        else:
+            d.text((x + w / 2 - 5, cy), u['price'] or '—', font=GOTHIC(size), fill=INK_HEAD if u['price'] else INK_QUIET,
+                   anchor='mm')
+    elif key == 'cost':
+        d.text((x + w - 24, cy), u['cost'], font=GOTHIC(size), fill=INK, anchor='rm')
+    elif key == 'c6':
+        v = u['cmdr'][6]
+        d.text((x + 12, cy), v, font=GOTHIC(size - 4), fill=INK_QUIET if v == '—' else INK, anchor='lm')
+    else:
+        v = (u['troops'] if key[0] == 't' else u['cmdr'])[int(key[1])]
+        d.text((x + w - 24, cy), v, font=GOTHIC(size), fill=INK_QUIET if v == '0' else INK, anchor='rm')
+
+
+def row_fill(u, chosen, party):
+    return CHOSEN_ROW if u['no'] == chosen else PARTY_ROW if party and u['place'] else PAPER
+
+
+def sideways_ledger(img, box, tab, units=WEEK18, row_h=140, offset=0, down=0, chosen=None, party=True, refill=True,
+                    two=False):
+    """The ledger with its seal, № and name fixed at the left and the tab's other columns scrolled sideways under a
+    finger (`offset` px; past the end means the end), its rows scrolled down by `down` px; a scroll bar for each way
+    a part is out of view. `two`: two-line rows — № and name over the unit's type in the fixed part, the figures
+    larger. Returns the rows in view."""
+    x0, y0, x1, y1 = box
+    d = ImageDraw.Draw(img)
+    d.rectangle(box, fill=PAPER)
+    cols = (SIDE_COLS_TWO if two else SIDE_COLS).get(tab, SIDE_COLS[tab])
+    size = 46 if two else 40
+    head = 104 if tab == 1 else 74
+    content_w = 24 + sum(c[2] for c in cols)
+    total_h = len(units) * row_h
+    room = y1 - y0 - head - 34                  # the rows' room over the sideways bar's strip
+    vbar = total_h > room
+    vx1 = x1 - (24 if vbar else 0)
+    view_w = vx1 - SIDE_FIX
+    offset = max(0, min(offset, content_w - view_w))
+    down = max(0, min(down, total_h - room)) if vbar else 0
+    shown = min(room, total_h - down)
+    # The scrolled part: its headings and every row.
+    strip = Image.new('RGB', (max(content_w, view_w), head + total_h), PAPER)
+    sd = ImageDraw.Draw(strip)
+    x = 24
+    groups = {}
+    for key, name, w, group in cols:
+        if group:
+            groups.setdefault(group, [x, x + w])[1] = x + w
+        numeric = key not in ('kind', 'rows', 'trp', 'refill', 'c6')
+        hx = x + w - 24 if numeric else (x + w / 2 - 5 if key == 'refill' else x + 12)
+        sd.text((hx, head - 34), name, font=CINZEL(28, 700), fill=INK_HEAD,
+                anchor='rm' if numeric else 'mm' if key == 'refill' else 'lm')
+        if key == 't0':
+            arrow_mark(sd, x + w - 24 - sd.textlength(name, font=CINZEL(28, 700)) - 18, head - 34, 'down', 7)
+        x += w
+    for group, (gx0, gx1) in groups.items():
+        sd.text(((gx0 + gx1) / 2, 24), group, font=CINZEL(24, 600), fill=INK_QUIET, anchor='mm')
+        sd.line([(gx0 + 16, 46), (gx1 - 16, 46)], fill=PAPER_LINE, width=2)
+    for i, u in enumerate(units):
+        ry = head + i * row_h
+        sd.rectangle((0, ry, strip.width, ry + row_h), fill=row_fill(u, chosen, party))
+        sd.line([(0, ry + row_h), (strip.width, ry + row_h)], fill=PAPER_LINE, width=2)
+        x = 24
+        for key, name, w, group in cols:
+            side_cell(sd, key, x, w, ry + row_h / 2, u, size, refill)
+            x += w
+    # The fixed part: the seal (or the chosen row's diamond), №, the name — and the type under it in two-line rows.
+    fw = SIDE_FIX - x0
+    fixed = Image.new('RGB', (fw, head + total_h), PAPER)
+    fd = ImageDraw.Draw(fixed)
+    f = CINZEL(28, 700)
+    if party:
+        fd.ellipse((34, head - 42, 50, head - 26), fill=INK_HEAD)
+    fd.text((138, head - 34), 'No.', font=f, fill=INK_HEAD, anchor='rm')
+    if tab != 1:
+        arrow_mark(fd, 150, head - 34, 'up', 7)
+    fd.text((166, head - 34), 'NAME · TYPE' if two else 'NAME', font=f, fill=INK_HEAD, anchor='lm')
+    for i, u in enumerate(units):
+        ry = head + i * row_h
+        fd.rectangle((0, ry, fw, ry + row_h), fill=row_fill(u, chosen, party))
+        fd.line([(0, ry + row_h), (fw, ry + row_h)], fill=PAPER_LINE, width=2)
+        if u['no'] == chosen:
+            fd.rectangle((0, ry, 8, ry + row_h), fill=VERMILION)
+            cy = ry + row_h / 2
+            fd.polygon([(42, cy - 10), (52, cy), (42, cy + 10), (32, cy)], fill=INK_HEAD)
+        if party and u['place']:
+            seal(fd, 12, ry + (row_h - 60) // 2, u['place'])
+        if two:
+            fd.text((142, ry + 50), str(u['no']), font=GOTHIC(46), fill=INK, anchor='rm')
+            fd.text((166, ry + 50), u['name'], font=fit(fd, u['name'], GOTHIC, 50, fw - 166 - 12), fill=INK,
+                    anchor='lm')
+            fd.text((168, ry + 108), u['kind'], font=fit(fd, u['kind'], GOTHIC, 34, fw - 168 - 12), fill=INK_QUIET,
+                    anchor='lm')
+        else:
+            fd.text((142, ry + row_h / 2), str(u['no']), font=GOTHIC(44), fill=INK, anchor='rm')
+            fd.text((166, ry + row_h / 2), u['name'], font=fit(fd, u['name'], GOTHIC, 46, fw - 166 - 12), fill=INK,
+                    anchor='lm')
+    img.paste(strip.crop((offset, 0, offset + view_w, head)), (SIDE_FIX, y0))
+    img.paste(strip.crop((offset, head + down, offset + view_w, head + down + shown)), (SIDE_FIX, y0 + head))
+    img.paste(fixed.crop((0, 0, fw, head)), (x0, y0))
+    img.paste(fixed.crop((0, head + down, fw, head + down + shown)), (x0, y0 + head))
+    # The columns pass under the fixed part (its shadow while scrolled) and on past the view's edge (a shadow there).
+    over = Image.new('RGBA', img.size, (0, 0, 0, 0))
+    od = ImageDraw.Draw(over)
+    for k in range(26):
+        a = round(70 * (1 - k / 26))
+        if offset > 0:
+            od.line([(SIDE_FIX + k, y0), (SIDE_FIX + k, y0 + head + shown)], fill=(40, 26, 10, a))
+        if offset < content_w - view_w:
+            od.line([(vx1 - 1 - k, y0), (vx1 - 1 - k, y0 + head + shown)], fill=(40, 26, 10, a))
+    img.paste(Image.alpha_composite(img.convert('RGBA'), over).convert('RGB'))
+    d = ImageDraw.Draw(img)
+    if offset < content_w - view_w:
+        d.rectangle((vx1 - 40, y0 + 6, vx1 - 1, y0 + head - 6), fill=PAPER)
+        arrow_mark(d, vx1 - 20, y0 + head - 34, 'right', 9)
+    d.line([(SIDE_FIX, y0), (SIDE_FIX, y0 + head + shown)], fill=INK_QUIET, width=2)
+    d.line([(x0, y0 + head - 2), (vx1, y0 + head - 2)], fill=INK_HEAD, width=2)
+    # The sideways bar under the rows' room; the rows' bar at the right.
+    if content_w > view_w:
+        tx0, tx1, ty = SIDE_FIX + 16, vx1 - 16, y1 - 22
+        d.rounded_rectangle((tx0, ty, tx1, ty + 10), radius=5, fill=(200, 184, 150))
+        tw = round((tx1 - tx0) * view_w / content_w)
+        tx = tx0 + round((tx1 - tx0 - tw) * offset / (content_w - view_w))
+        d.rounded_rectangle((tx, ty, tx + tw, ty + 10), radius=5, fill=INK_QUIET)
+    if vbar:
+        ty0, ty1 = y0 + head + 8, y0 + head + room - 8
+        d.rounded_rectangle((vx1 + 8, ty0, x1 - 6, ty1), radius=5, fill=(200, 184, 150))
+        th = round((ty1 - ty0) * room / total_h)
+        ty = ty0 + round((ty1 - ty0 - th) * down / (total_h - room))
+        d.rounded_rectangle((vx1 + 8, ty, x1 - 6, ty + th), radius=5, fill=INK_QUIET)
+    return shown / row_h
+
+
+def drag_note(d, y, x0=SIDE_FIX + 60, x1=PW - 80):
+    """The finger's drag sideways, as a note."""
+    arrow(d, (x1, y), (x0, y))
+    note(d, ((x0 + x1) / 2, y - 50), 'a finger\'s drag', 28, 'ma')
+
+
+def pd2s1():
+    img, d = phone()
+    d, top, row_h = pd2_base(img, d, 0, sideways=dict(row_h=140))
+    drag_note(d, 1004 + 74 + 9 * row_h + 72)
+    reach(img, label=False, shade=False)
+    save(img, 'PD2s1', 'the ledger scrolled sideways, one-line rows', 'ledger', side=[
+        'One-line rows, the PC\'s: the\nseal, № and name fixed at the\nleft; the tab\'s other columns\n'
+        'scroll sideways under a finger\n(the tablet\'s drag, both ways).',
+        f'Rows {mm(row_h)}; names {mm(46)}, figures\n{mm(40)}, headings {mm(28)}.',
+        'Shown at rest, Overview: Type,\nRows and Troops in view;\nRefill and Cost a drag away —\nthe shadow '
+        'and ▶ at the right,\nthe bar under the rows.',
+        'All nine units in view (the\nweek-18 save); a longer list\nscrolls down too (PD2s1x).',
+        'The tabs as on the PC; each\nkeeps its own sideways scroll.'])
+
+
+def pd2s1x():
+    img, d = phone()
+    rows = long_roster()
+    sideways = dict(row_h=140, units=rows, offset=10 ** 6, down=7 * 140 + 50)
+    d, top, row_h = pd2_base(img, d, 0, sideways=sideways)
+    room = BAR[0] - 20 - (top + 600 + 14 + 116) - 74 - 34
+    reach(img, label=False, shade=False)
+    save(img, 'PD2s1x', 'a late game\'s roster, scrolled both ways', 'ledger', side=[
+        f'A late game\'s roster, made up\n(the week-18 units and twenty\nmore, their boot records): {len(rows)}\n'
+        'units — "some thirty", as the\nunit ledger\'s survey says.',
+        'Overview scrolled to its end\nand down: Refill and Cost in\nview; the seal, № and name\nstay, the '
+        'columns pass under\nthem (the shadow at the fixed\npart\'s edge).',
+        f'{room / row_h:.1f} of {len(rows)} rows in view; the\nrows\' bar at the right, the\nsideways one under '
+        'the rows.',
+        'The party\'s seals stay with\ntheir rows (Haurein\'s 2).'])
+
+
+def pd2s2():
+    img, d = phone()
+    d, top, row_h = pd2_base(img, d, 0, sideways=dict(row_h=150, two=True))
+    reach(img, label=False, shade=False)
+    save(img, 'PD2s2', 'the ledger scrolled sideways, two-line rows', 'ledger', side=[
+        'Two-line rows: the fixed part a\nname tag — № and name over\nthe unit\'s type —, the tab\'s\nother '
+        'columns beside it in one\nline, larger.',
+        f'Rows {mm(row_h)}; names {mm(50)}, the\ntype {mm(34)}, figures {mm(46)}.',
+        'Overview: Rows, Troops, Refill\nand Cost — the type left the\nscrolled part, so less of it is\na drag '
+        'away (Cost here).',
+        'All nine units in view; a\nlonger list scrolls down as\nPD2s1x.'])
+
+
+def pu1s(two):
+    img, d = phone()
+    sideways = dict(row_h=150, two=True) if two else dict(row_h=140)
+    orders, row_h, _ = pu1_base(img, d, 1, None, sideways=sideways)
+    d = ImageDraw.Draw(img)
+    if not two:                                 # under the rows; two-line rows leave no room there
+        drag_note(d, 392 + 74 + 9 * row_h + 64)
+    reach(img, label=False, shade=False)
+    name = 'PU1s2' if two else 'PU1s1'
+    save(img, name, f'Subordinates, the ledger in {"two-line" if two else "one-line"} rows', 'ledger', side=[
+        f'PU1 with {"PD2s2" if two else "PD2s1"}\'s ledger: the\nchosen unit\'s diamond, №\nand name fixed, the '
+        'columns\nscrolled sideways.',
+        'Refill is a price here, not a\nbutton (Replenish is in the\norders), as on the PC.',
+        'All nine units in view over\nthe orders; a longer list\nscrolls down.'])
+
+
+def pu1e(kind):
+    img, d = phone()
+    if kind == 'title':                         # End at the title's right; the bar's room goes to the orders
+        orders, row_h, _ = pu1_base(img, d, 1, None, end='title', orders=1868 + 164, foot=BAR[1])
+    else:
+        orders, row_h, _ = pu1_base(img, d, 1, None, end=None, heading_budget=kind != 'budget')
+    d = ImageDraw.Draw(img)
+    y0, y1 = BAR
+    if kind == 'wide':
+        panel(d, (16, y0, PW - 16, y1))
+        icon(d, 'close', PW // 2 - 110, (y0 + y1) // 2)
+        d.text((PW / 2 + 30, (y0 + y1) / 2), 'End', font=BRUSH(56), fill=NAME, anchor='mm')
+    elif kind == 'budget':                      # the budget leaves the orders' heading for the bar's left
+        d.text((40, y0 + 42), 'BUDGET', font=CINZEL(26, 600), fill=SUBTITLE, anchor='lm')
+        d.text((40, y0 + 102), f'{BUDGET:,}', font=BRUSH(56), fill=NAME, anchor='lm')
+        d.text((40 + d.textlength(f'{BUDGET:,}', font=BRUSH(56)) + 14, y0 + 108), 'K GOLD', font=CINZEL(26, 600),
+               fill=SUBTITLE, anchor='lm')
+        end_alone(d)
+    reach(img, label=False, shade=False)
+    d = ImageDraw.Draw(img)
+    name, title, side = {
+        'title': ('PU1e1', 'End at the title\'s right', [
+            'End at the title\'s right, where\nthe phone\'s own screens put\nclose; the date after the\nsubtitle.',
+            'The bar gone: its room goes\nto the orders, down to the\ngesture zone — Add New\nTroops nearer the thumb.',
+            'Out of the thumb\'s reach: the\nphone\'s Back gesture ends\nthe screen too (as a right\nclick does).']),
+        'wide': ('PU1e2', 'End across the bar', [
+            'End across the bar\'s whole\nwidth: the thumb finds it\nanywhere along the foot,\nwhere every screen of ours\n'
+            'has its exit.',
+            'Nothing else moves.']),
+        'budget': ('PU1e3', 'End at the thumb, the budget beside it', [
+            'End where it is, at the right\nthumb; the budget leaves the\norders\' heading for the bar\'s\nleft, '
+            'as text (no frame: not\na button).',
+            'The orders\' heading keeps the\nunit\'s name alone.']),
+    }[kind]
+    save(img, name, title, 'end', side=side + ['The ledger as PU1 has it (its\nrows are question 13).'])
+
+
+def p16():
+    pb4o1(); pb4o2(); pb4o3()
+    pd2s1(); pd2s1x(); pd2s2(); pu1s(False); pu1s(True)
+    pu1e('title'); pu1e('wide'); pu1e('budget')
+
+
+# --- round P17: the frame upright — the bar's cells, turning the phone (2026-10-28) --------------------------------
+
+def pk_scene(side):
+    """PS2 with the bar's cells at the left (PK1, as drawn) or at the right (PK2)."""
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    img.paste(scene_clean(), (0, SCENE_Y))
+    d = ImageDraw.Draw(img)
+    speech_window(d, (16, SCENE_Y - 64 - SPEECH_H, PW - 16, SCENE_Y - 64), INTERCEPT, tail=230, tail_down=True)
+    bottom_bar(d, side=side)
+    reach(img, label=False, shade=False)
+    left = side == 'left'
+    save(img, 'PK1s' if left else 'PK2s', f'the bar\'s cells at the {side} — a scene', 'bar', side=[
+        'PS2 as the owner chose it.',
+        'Menu, Log and Skip at the bar\'s\nleft, as the tablet\'s drawer\n(the screen\'s left edge): the\nsame place '
+        'on every device.' if left else
+        'Menu, Log and Skip at the bar\'s\nright, under the right thumb;\nSkip nearest the corner (held\nthrough '
+        'read text), Menu the\nfarthest.',
+        'Menu at the left edge lies on\nthe thumb\'s arc, beyond its\ncomfortable reach (one hand).' if left else
+        'All three within the thumb\'s\nreach, one hand; a left hand\nreaches them the way the\nother one reaches PK1.'])
+
+
+def pk_map(side):
+    """PM1's map wait with the bar's cells at the left (PK1, as drawn) or beside Commands (PK2)."""
+    img, d = phone()
+    status_top(d, TOP - 10, 390)
+    box, scale = (0, 390, PW, BAR[0] - 12), (BAR[0] - 12 - 390) / 800
+    draw_map(img, box, 1290, 0, scale, 36)
+    d = ImageDraw.Draw(img)
+    d.rectangle((0, BAR[0] - 12, PW, PH), fill=BACKDROP)
+    bottom_bar(d, right=('Commands', 'menu'), side=side)
+    reach(img, shade=False)
+    left = side == 'left'
+    save(img, 'PK1m' if left else 'PK2m', f'the bar\'s cells at the {side} — the map', 'bar', side=[
+        'PM1 as the owner chose it,\nthe map wait.',
+        'The cells at the bar\'s left,\nCommands alone at the right\nthumb: a mistap between them\nis unlikely.' if left
+        else 'The cells beside Commands,\nthe four in a row from the\ncorner: Commands, Skip, Log,\nMenu — the thumb\'s '
+        'corner\nfuller, Commands where it is.',
+        'Log on the map opens the\nmessage log, as on the tablet.'])
+
+
+def po1o():
+    """Option → Display with the phone's orientation on top (a sketch for question 6)."""
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    d.text((30, TOP + 4), 'Options', font=BRUSH(62), fill=NAME)
+    y = TOP + 112
+    w, gap = (PW - 48 - 4 * 8) / 5, 8
+    for i, name in enumerate(OPTION_TABS):
+        x = 24 + i * (w + gap)
+        on = i == 1
+        d.rectangle((x, y + (0 if on else 12), x + w, y + 110), fill=PAPER if on else PAPER_DARK)
+        if on:
+            d.rectangle((x, y, x + w, y + 9), fill=VERMILION)
+        d.text((x + w / 2, y + 60), name, font=fit(d, name.upper(), lambda s: CINZEL(s, 700), 30, w - 16),
+               fill=INK_HEAD if on else INK_QUIET, anchor='mm')
+    sx0, sy0, sx1, sy1 = 24, y + 110, PW - 24, BAR[0] - 20
+    d.rectangle((sx0, sy0, sx1, sy1), fill=PAPER)
+    x, y, x1 = sx0 + 30, sy0 + 40, sx1 - 30
+    y = section(d, x, y, x1, 'SCREEN ORIENTATION')
+    for i, (label, sub) in enumerate([('Turns with the phone', 'As the phone is held; its rotation lock holds it.'),
+                                      ('Upright', 'Always, however the phone is held.'),
+                                      ('Landscape', 'Always, either side up.')]):
+        r = (x, y, x1, y + 140)
+        d.rectangle(r, fill=(232, 220, 190) if i == 0 else PAPER, outline=PAPER_LINE, width=2)
+        radio(d, x + 24, y + 30, i == 0)
+        d.text((x + 96, y + 52), label, font=GOTHIC(40), fill=INK, anchor='lm')
+        d.text((x + 96, y + 104), sub, font=GOTHIC(30), fill=INK_QUIET, anchor='lm')
+        y += 150
+    y += 40
+    y = section(d, x, y, x1, 'PALETTE')
+    for i, (name, colours) in enumerate([('Lacquer', (DIM_GOLD, GOLD, VERMILION)),
+                                         ('Steel', ((70, 80, 94), (150, 170, 190), (60, 110, 200)))]):
+        bx = x + i * 360
+        d.rectangle((bx, y, bx + 330, y + 120), fill=(22, 16, 12), outline=INK_HEAD if i == 0 else INK_QUIET,
+                    width=6 if i == 0 else 2)
+        for k, c in enumerate(colours):
+            d.rectangle((bx + 20 + k * 100, y + 20, bx + 100 + k * 100, y + 80), fill=c)
+        d.text((bx + 165, y + 150), name, font=GOTHIC(36), fill=INK, anchor='mm')
+    y += 220
+    y = section(d, x, y, x1, 'THOUSANDS IN GOLD, TROOPS AND DAMAGE')
+    for i, sample in enumerate(['129,300K GOLD', '129.300K GOLD', '129 300K GOLD']):
+        radio(d, x, y + 4, i == 0)
+        d.text((x + 70, y + 26), sample, font=GOTHIC(38), fill=INK, anchor='lm')
+        y += 80
+    d.text((x, y + 6), '…', font=GOTHIC(38), fill=INK_QUIET)
+    defaults_close(d)
+    reach(img, label=False, shade=False)
+    save(img, 'PO1o', 'Option → Display: the orientation (a sketch)', 'turning', side=[
+        'A sketch for the question how\nthe phone turns: the choice on\ntop of Option → Display, PO1\'s\nsheet.',
+        '"Turns with the phone" (the\ndefault): the game takes the\nphone\'s orientation at any\nmoment — '
+        'PS2 ↔ LS1, PB3 ↔\nLB2 — unless the phone\'s own\nrotation lock is on.',
+        '"Upright" or "Landscape": the\ngame stays so however the\nphone is held (reading lying\ndown).',
+        'The tab\'s other settings as on\nthe PC (the palette, the\nthousands, …).'])
+
+
+def p17():
+    pk_scene('left'); pk_scene('right'); pk_map('left'); pk_map('right')
+    po1o()
+
+
 def main():
     global MAP, PROV_NAMES, PROV_POINTS
-    if ROUND in ('P3', 'P5', 'P7', 'P9', 'P11', 'P13', 'P14', 'P15'):
-        {'P3': p3, 'P5': p5, 'P7': p7, 'P9': p9, 'P11': p11, 'P13': p13, 'P14': p14, 'P15': p15}[ROUND]()
+    if ROUND in ('P3', 'P5', 'P7', 'P9', 'P11', 'P13', 'P14', 'P15', 'P16'):
+        {'P3': p3, 'P5': p5, 'P7': p7, 'P9': p9, 'P11': p11, 'P13': p13, 'P14': p14, 'P15': p15, 'P16': p16}[ROUND]()
         overviews()
         return
     MAP, PROV_NAMES, PROV_POINTS = build_map()
-    if ROUND in ('P4', 'P6', 'P8', 'P10', 'P12'):
-        {'P4': p4, 'P6': p6, 'P8': p8, 'P10': p10, 'P12': p12}[ROUND]()
+    if ROUND in ('P4', 'P6', 'P8', 'P10', 'P12', 'P17'):
+        {'P4': p4, 'P6': p6, 'P8': p8, 'P10': p10, 'P12': p12, 'P17': p17}[ROUND]()
         overviews()
         return
     if GALLERY_MODE:
