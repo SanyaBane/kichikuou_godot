@@ -2104,6 +2104,26 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// </summary>
     private void UpdateStatusStrip()
     {
+        if (PhoneLandscape)
+        {
+            // The phone (docs/ui/phone-build.md, step L2): the status in the black sides with the map, no slide; what the
+            // sides hold follows what is open over the map (PhoneMap).
+            if (_mapStrip && _presenter.StatusStrip is { } shown)
+            {
+                _stripClip.Position = Vector2.Zero;
+                _stripClip.Size = _content.Size;
+                _strip.Show(shown);
+                _strip.Out = 0;
+                _strip.Mode = _commandView.Visible ? StatusStripView.SideMode.Commands
+                    : _provinceView.Visible ? StatusStripView.SideMode.Province : StatusStripView.SideMode.Map;
+                _strip.Place(new Rect2(Vector2.Zero, _content.Size));          // its parent's whole area
+            }
+            else
+            {
+                _strip.Close();
+            }
+            return;
+        }
         if (_slide > 0 && _presenter.StatusStrip is { } strip)
         {
             var picture = PictureArea();
@@ -2149,7 +2169,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _commandsButton.Place(area);
         if (!show)
             return false;
-        _markers.SetCoveredTop(_strip.Visible ? MapHeadroom.Strip : 0);
+        _markers.SetCoveredTop(_strip.Visible && !PhoneLandscape ? MapHeadroom.Strip : 0);  // the phone's status is in the sides
         _markers.Place(area, area.Size.X / Surface.ScreenWidth, MapCornerDrawn!.Value);
         return true;
     }

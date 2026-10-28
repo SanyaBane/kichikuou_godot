@@ -44,6 +44,75 @@ internal static class SideCells
     /// <summary>The words' face: the bundled BIZ UDGothic, whatever the game's font (the mock-ups').</summary>
     public static FontFile Font => _font ??= Lacquer.LoadFont(GodotGlyphRenderer.BizUdGothicPath);
 
+    /// <summary><paramref name="size"/>, or as much smaller as <paramref name="text"/> needs to fit <paramref name="width"/> (the mock-ups' <c>fit</c>).</summary>
+    public static int Fit(Font font, string text, int size, float width)
+    {
+        while (size > 8 && font.GetStringSize(text, fontSize: size).X > width)
+            size--;
+        return size;
+    }
+
+    /// <summary>
+    /// The map's button in a side (docs/ui/phone.md, §12, LM1): the side being narrow, its icon over its word in the brush
+    /// face — Commands at the right thumb, Close and Return where it stands.
+    /// </summary>
+    public static void DrawButton(CanvasItem c, PhoneUnits u, Rect2 box, Icon icon, string word, bool held = false,
+        UiPalette? palette = null)
+    {
+        var ui = palette ?? Ui;
+        ui.DrawPanel(c, box, u.K, held ? ui.RowHover : null);
+        float cx = box.GetCenter().X;
+        DrawIcon(c, u, icon, new Vector2(cx, box.Position.Y + Math.Min(u.Px(48), box.Size.Y * 0.36f)), ui.Gold);
+        var brush = Brush;
+        int size = Fit(brush, word, u.Size(36), box.Size.X - u.Px(30));
+        float width = brush.GetStringSize(word, fontSize: size).X;
+        float middle = box.End.Y - Math.Min(u.Px(40), box.Size.Y * 0.3f);
+        c.DrawString(brush, new Vector2(cx - width / 2, middle + (brush.GetAscent(size) - brush.GetDescent(size)) / 2), word,
+            fontSize: size, modulate: ui.Name);
+    }
+
+    /// <summary>
+    /// A rail's row in a side (docs/ui/phone.md, §12, LM1b, LM1c): with a tag, the tag over the name in two lines (a side has
+    /// no room for both in one), a building under way's weeks on its chip; without one, the name centred. Dimmed when off,
+    /// lit while held. <paramref name="font"/> is the game's.
+    /// </summary>
+    public static void DrawRow(CanvasItem c, PhoneUnits u, Rect2 box, Font font, string name, bool on = true, bool held = false,
+        (string Word, Color Colour)? tag = null, int? weeks = null, UiPalette? palette = null)
+    {
+        var ui = palette ?? Ui;
+        ui.DrawRowBox(c, box, held && on, u.K);
+        var ink = on ? ui.Text : ui.OffText;
+        if (tag is not var (word, colour))
+        {
+            int centred = Fit(font, name, u.Size(38), box.Size.X - u.Px(30));
+            float w = font.GetStringSize(name, fontSize: centred).X;
+            c.DrawString(font, new Vector2(box.GetCenter().X - w / 2, Lacquer.Baseline(box, font, centred)), name,
+                fontSize: centred, modulate: ink);
+            return;
+        }
+        // The tag's band: 36 high, 14 in; the name's line centred 34 over the row's foot (the mock-ups' rail_cell). A low row
+        // (a rail with many) keeps the proportions.
+        float s = Math.Min(1, box.Size.Y / u.Px(123));
+        int tagSize = u.Size(26 * s);
+        float tagWidth = font.GetStringSize(word, fontSize: tagSize).X + u.Px(24 * s);
+        if (weeks is { } left)
+            tagWidth += UiPalette.ChipWidth(font, left, tagSize);
+        var band = new Rect2(box.Position.X + u.Px(14 * s), box.Position.Y + u.Px(14 * s), tagWidth, u.Px(36 * s));
+        if (weeks is not null)
+            ui.DrawBusyTag(c, font, band, word, colour, u.K, tagSize, weeks);
+        else
+            ui.DrawTag(c, font, band, word, colour, on, u.K, tagSize);
+        int size = Fit(font, name, u.Size(36 * s), box.Size.X - u.Px(30));
+        var line = new Rect2(box.Position.X, box.End.Y - u.Px(34 * s) - u.Px(20 * s), box.Size.X, u.Px(40 * s));
+        c.DrawString(font, new Vector2(box.Position.X + u.Px(16), Lacquer.Baseline(line, font, size)), name, fontSize: size,
+            modulate: weeks is not null ? ui.Quiet : ink);
+    }
+
+    private static FontFile? _brush;
+
+    /// <summary>The brush face of the map's button and Turn END.</summary>
+    public static FontFile Brush => _brush ??= Lacquer.Brush();
+
     /// <summary>Draws the cell in <paramref name="box"/> (layout pixels).</summary>
     public static void Draw(CanvasItem c, PhoneUnits u, Rect2 box, Icon icon, string word, bool lit = false,
         bool disabled = false, bool held = false)

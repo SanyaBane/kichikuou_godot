@@ -421,4 +421,8 @@ the scenes' layouts: the entries of the message windows, the scene menu, the wee
 wait, All Data and the title show the left side's Menu cell (`GalleryEntries.MenuCell`) and the drawer in it, and the
 pass alone has three Messages entries of its own, the Menu sheet open (`menu-sheet`), Restart's question
 (`menu-sheet-restart`) and Debug's page (`menu-sheet-debug`; `GalleryEntries.Phone.cs`); LS1, LS1b, LS1m, LW1, LEd,
-LN3 and LR2 left the mock-up tab.
+LN3 and LR2 left the mock-up tab. Step L2 (2026-10-28) built the map's: on the phone pass the map's entries show the
+status in the sides (`StatusStripView` in the mode of what is open: the map's wait, a province, the command panel) and no
+room under a strip (`map-north` shows the map's top edge as it is), the province and cells entries the Menu cell, and
+`command-menu-building-tip` shows the tooltip on the map's wait, where the right side holds the week's tags; LM1a, LM1b
+and LM1c left the mock-up tab.

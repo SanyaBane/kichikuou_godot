@@ -49,8 +49,10 @@ internal static partial class GalleryEntries
             "Made up: the Military Academy under way, 5 weeks left (GalleryStates.AcademyUnderWay).",
             g => CommandPanel(g, GalleryStates.AcademyUnderWay));
         yield return new("command-menu-building-tip", Map, "Status strip: the building's tooltip", Week18,
-            "Made up: the Military Academy under way, 5 weeks left; the tooltip as the pointer over Construction's tag shows it.",
-            g => CommandPanel(g, GalleryStates.AcademyUnderWay, tip: true));
+            "Made up: the Military Academy under way, 5 weeks left; the tooltip as the pointer over Construction's tag shows it "
+            + "(on the phone held landscape on the map's wait, where the right side shows the tags).",
+            g => PhoneLandscape ? Markers(g, hideDimmed: true, hover: null, GalleryStates.AcademyUnderWay, tip: true)
+                : CommandPanel(g, GalleryStates.AcademyUnderWay, tip: true));
         yield return new("province-menu", Map, "Province menu: an enemy's, Oaks (6)", Week18, "",
             g => Province(g, Oaks));
         yield return new("province-menu-own", Map, "Province menu: our own, Leazas Castle (1)", Week18, "",
@@ -85,9 +87,10 @@ internal static partial class GalleryEntries
     /// <summary>
     /// Our plates over the map and our status strip over its top, as <c>COMMAND</c>'s map wait shows them,
     /// <paramref name="hover"/>'s province hovered, the picture drawn lower near the map's top (<see cref="MapHeadroom"/>); in
-    /// the touch mode the Commands button and the Skip and Log drawer with them, Log lit as with something logged.
+    /// the touch mode the Commands button and the Skip and Log drawer with them, Log lit as with something logged; with
+    /// <paramref name="tip"/> the strip's building tooltip shown.
     /// </summary>
-    private static Action<Rect2>? Markers(GalleryStage g, bool hideDimmed, int? hover, Action<GameState>? edit = null)
+    private static Action<Rect2>? Markers(GalleryStage g, bool hideDimmed, int? hover, Action<GameState>? edit = null, bool tip = false)
     {
         if (g.State(Week18) is not { } s)
             return null;
@@ -97,10 +100,12 @@ internal static partial class GalleryEntries
         var corner = Room(backdrop, p);
         var markers = p.MapMarkers();
         var view = g.Add(new MapMarkersView(g.Font) { Visible = true });
-        view.SetCoveredTop(MapHeadroom.Strip);
+        view.SetCoveredTop(PhoneLandscape ? 0 : MapHeadroom.Strip);         // the phone's status is in the sides
         view.SetHideDimmed(hideDimmed);
         view.Load(markers);
         var bar = Strip(g, p);
+        if (tip)
+            bar.ShowBuildingTip();
         var button = TouchCommandsButton(g, closes: false);
         var drawer = TouchMode.On ? g.Add(new SkipDrawer { Visible = true }) : null;  // Skip and Log on the waiting map (the owner's L1)
         var menu = MenuCell(g);                                 // the phone held landscape: Menu in the left side (LM1)
@@ -119,22 +124,26 @@ internal static partial class GalleryEntries
 
     /// <summary>
     /// The map's room under the strip as <c>GameScreen</c> gives it: the backdrop drawn lower by the view's
-    /// <see cref="MapHeadroom.Shift"/>; returns the corner the picture is drawn at, which our plates and menus are placed from.
+    /// <see cref="MapHeadroom.Shift"/> (none on the phone held landscape, its status in the sides); returns the corner the
+    /// picture is drawn at, which our plates and menus are placed from.
     /// </summary>
     private static (int X, int Y) Room(TextureRect backdrop, GamePresenter p)
     {
         var (x, y) = p.MapViewShown ?? throw new InvalidOperationException("The map was not shown.");
-        int shift = MapHeadroom.Shift(y);
+        int shift = PhoneLandscape ? 0 : MapHeadroom.Shift(y);
         var material = MapRoomPicture.Material();
         MapRoomPicture.SetShift(material, shift);
         backdrop.Material = material;
         return (x, y - shift);
     }
 
-    /// <summary>Our status strip for the presenter's state, as the screen shows it over <c>COMMAND</c>'s map.</summary>
-    private static StatusStripView Strip(GalleryStage g, GamePresenter p)
+    /// <summary>
+    /// Our status strip for the presenter's state, as the screen shows it over <c>COMMAND</c>'s map; on the phone held
+    /// landscape in the sides, holding what <paramref name="mode"/> leaves them.
+    /// </summary>
+    private static StatusStripView Strip(GalleryStage g, GamePresenter p, StatusStripView.SideMode mode = StatusStripView.SideMode.Map)
     {
-        var bar = g.Add(new StatusStripView(g.Font, g.Faces));
+        var bar = g.Add(new StatusStripView(g.Font, g.Faces) { Mode = mode });
         bar.Show(p.StatusStrip ?? throw new InvalidOperationException("No status strip."));
         return bar;
     }
@@ -193,7 +202,7 @@ internal static partial class GalleryEntries
         var panel = g.Add(new CommandMenuView(g.Font));
         panel.Open(menu);
         var button = TouchCommandsButton(g, closes: true);
-        var bar = Strip(g, p);
+        var bar = Strip(g, p, StatusStripView.SideMode.Commands);
         if (tip)
             bar.ShowBuildingTip();
         return area =>
@@ -218,12 +227,14 @@ internal static partial class GalleryEntries
         var menu = Opened(p, items, q => q.ProvinceMenu, "a city's first menu");
         var view = g.Add(new ProvinceMenuView(g.Font, g.Faces));
         view.Open(menu, ProvinceMenuView.PointOf(s, province, corner));
-        var bar = Strip(g, p);
+        var bar = Strip(g, p, StatusStripView.SideMode.Province);
+        var cell = MenuCell(g);                                 // the phone held landscape: Menu in the left side (LM1c)
         return area =>
         {
             GalleryStage.Fill(backdrop, area);
             view.Place(area);
             bar.Place(StripArea(area));
+            cell?.Place();
         };
     }
 
@@ -239,12 +250,14 @@ internal static partial class GalleryEntries
         var menu = Opened(p, GalleryStates.CellsMenuItems(s), q => q.ProvinceMenu, "the cells' menu");
         var view = g.Add(new ProvinceMenuView(g.Font, g.Faces));
         view.Open(menu);
-        var bar = Strip(g, p);
+        var bar = Strip(g, p, StatusStripView.SideMode.Province);
+        var cell = MenuCell(g);                                 // the phone held landscape: Menu in the left side (LM1c)
         return area =>
         {
             GalleryStage.Fill(backdrop, area);
             view.Place(area);
             bar.Place(StripArea(area));
+            cell?.Place();
         };
     }
 

@@ -28,6 +28,9 @@ public partial class GameScreen
         _content.AddChild(_menuSheet);
     }
 
+    /// <summary>The phone held landscape: our screens with layouts of their own lay themselves out in its frame and sides.</summary>
+    private static bool PhoneLandscape => Device.Layout == DeviceLayout.PhoneLandscape;
+
     private PhoneMenu.Settings PhoneMenuSettings() =>
         new(_skip.Activated, _skip.Enabled, SoundChoice.On, OS.IsDebugBuild(), MapNamesChoice.HideDimmed);
 
@@ -38,7 +41,7 @@ public partial class GameScreen
     /// </summary>
     private void UpdatePhone()
     {
-        _menuSheet.Visible = Device.Layout == DeviceLayout.PhoneLandscape && (_menuSheet.IsOpen || MenuCellShown);
+        _menuSheet.Visible = PhoneLandscape && (_menuSheet.IsOpen || MenuCellShown);
         if (_menuSheet.Visible)
             _menuSheet.Place();
     }
@@ -47,7 +50,7 @@ public partial class GameScreen
         && !ScoutReportShown && !StrategyCutInShown && !_saveView.Visible && !_commandView.Visible;
 
     /// <summary>The week report on the phone held landscape: the left side as in the scenes (LW1), Skip and Log with it.</summary>
-    private bool PhoneWeekReport => _weekView.Visible && Device.Layout == DeviceLayout.PhoneLandscape;
+    private bool PhoneWeekReport => _weekView.Visible && PhoneLandscape;
 
     /// <summary>A tile of the Menu sheet acted (Restart's and Exit's questions answered already), as the menu bar's item.</summary>
     private void PhoneMenuChosen(PhoneMenu.Command command)

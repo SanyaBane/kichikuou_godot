@@ -1,5 +1,6 @@
 using Godot;
 using Kichikuou.Game.Battles;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.Content.Strategy;
 using Kichikuou.Original.Script;
 
@@ -13,6 +14,8 @@ namespace Kichikuou.Game.Strategy;
 /// script's menu), a press anywhere else on the map stays the script's (its clicks and drags). A
 /// hovered province's card (<see cref="MapMarker.Card"/>) shows right of its plate, over the plates.
 /// Their colours are the steel palette's, kept here since the plates' own choice was dropped (owner, 2026-10-24).
+/// On the phone held landscape the plates' type is 2 mm (docs/ui/phone.md, §12, LM1; <see cref="PhoneMap.PlateText"/>),
+/// the plates as tight round it as the mock-up's.
 /// </summary>
 internal sealed partial class MapMarkersView : Control
 {
@@ -26,6 +29,8 @@ internal sealed partial class MapMarkersView : Control
     private FontFile _font;
     private readonly FontVariation _badgeFont = new() { BaseFont = new FontFile { Data = Godot.FileAccess.GetFileAsBytes("res://fonts/Cinzel-VariableFont_wght.ttf") } };
     private float _pixels = 2;
+    private float _plateScale = 1;                      // the plates' size against the map's: larger on the phone
+    private bool _phonePlates;                          // the phone's tighter plates
     private (int X, int Y) _corner;
     private Plate? _shownHover;
     private bool _hideDimmed = MapNamesChoice.HideDimmed;
@@ -103,8 +108,13 @@ internal sealed partial class MapMarkersView : Control
     {
         Position = area.Position;
         Size = area.Size;
-        bool rescaled = Math.Abs(pixels - _pixels) > 0.001f;
+        var phone = Device.Landscape(this);
+        float plateScale = phone is { } f ? f.Px(PhoneMap.PlateText) / (7.5f * pixels) : 1;
+        bool rescaled = Math.Abs(pixels - _pixels) > 0.001f || Math.Abs(plateScale - _plateScale) > 0.001f
+            || (phone is not null) != _phonePlates;
         _pixels = pixels;
+        _plateScale = plateScale;
+        _phonePlates = phone is not null;
         if (rescaled)
             Relayout();
         if (corner == _corner && !rescaled)
@@ -208,7 +218,7 @@ internal sealed partial class MapMarkersView : Control
             Visible = false;
         }
 
-        private float Px => _layer._pixels;
+        private float Px => _layer._pixels * _layer._plateScale;
 
         private int FontSize => (int)Math.Round(7.5f * Px);
 
@@ -281,11 +291,18 @@ internal sealed partial class MapMarkersView : Control
         /// <summary>Drawn dimmed: a dungeon not ours (grey), a province neither ours nor next to ours (70 %).</summary>
         public bool Dimmed => IsDungeon ? !Marker.Open : Marker.Relation == MapRelation.Other;
 
-        private float Px => _layer._pixels;
+        private float Px => _layer._pixels * _layer._plateScale;
 
         private int FontSize => (int)Math.Round(7.5f * Px);
 
         private int BadgeSize => (int)Math.Round(6 * Px);
+
+        // The plate's height, its text's room at the sides, a dungeon's disc's radius, in its units: the phone's tighter (LM1).
+        private float PlateHeight => _layer._phonePlates ? 11 : 16;
+
+        private float Pad => _layer._phonePlates ? 3.5f : 6;
+
+        private float Disc => _layer._phonePlates ? 5 : 6;
 
         private void Redraw()
         {
@@ -293,15 +310,15 @@ internal sealed partial class MapMarkersView : Control
             _layer.QueueRedraw();
         }
 
-        /// <summary>The plate's size from its text: 16 script pixels high.</summary>
+        /// <summary>The plate's size from its text: 16 script pixels high (on the phone 11 of its units).</summary>
         public void Measure()
         {
             _textWidth = _layer._font.GetStringSize(Marker.Name, fontSize: FontSize).X;
             _badgeWidth = Marker.Progress is { } badge ? _layer._badgeFont.GetStringSize(badge, fontSize: BadgeSize).X + 6 * Px : 0;
             float width = IsDungeon
-                ? 2 * Px + 12 * Px + 3.5f * Px + _textWidth + (_badgeWidth > 0 ? 3.5f * Px + _badgeWidth : 0) + 6 * Px
-                : 6 * Px + _textWidth + 6 * Px;
-            Size = new Vector2(MathF.Ceiling(width), MathF.Ceiling(16 * Px));
+                ? 2 * Px + 2 * Disc * Px + 3.5f * Px + _textWidth + (_badgeWidth > 0 ? 3.5f * Px + _badgeWidth : 0) + Pad * Px
+                : Pad * Px + _textWidth + Pad * Px;
+            Size = new Vector2(MathF.Ceiling(width), MathF.Ceiling(PlateHeight * Px));
         }
 
         public override void _GuiInput(InputEvent e)
@@ -349,14 +366,14 @@ internal sealed partial class MapMarkersView : Control
             var text = closed ? new Color(0.79f, 0.79f, 0.8f) : hover ? Colors.White : Text;
             var font = _layer._font;
             float baseline = Size.Y / 2 + (font.GetAscent(FontSize) - font.GetDescent(FontSize)) / 2;
-            float x = 6 * px;
+            float x = Pad * px;
             if (IsDungeon)
             {
                 var tint = closed ? Locked : Cave;
-                var disc = new Vector2(2 * px + 6 * px, Size.Y / 2);
-                DrawCircle(disc, 6 * px, new Color(tint, 0.3f));
-                DrawIcon(Marker.Dungeon, disc, 4 * px, tint);
-                x = 2 * px + 12 * px + 3.5f * px;
+                var disc = new Vector2(2 * px + Disc * px, Size.Y / 2);
+                DrawCircle(disc, Disc * px, new Color(tint, 0.3f));
+                DrawIcon(Marker.Dungeon, disc, (Disc - 2) * px, tint);
+                x = 2 * px + 2 * Disc * px + 3.5f * px;
             }
             DrawString(font, new Vector2(x, baseline), Marker.Name, fontSize: FontSize, modulate: text);
             if (Marker.Progress is { } badge)

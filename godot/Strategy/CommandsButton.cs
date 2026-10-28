@@ -1,4 +1,5 @@
 using Godot;
+using Kichikuou.Original.Content.Devices;
 
 namespace Kichikuou.Game.Strategy;
 
@@ -9,7 +10,9 @@ namespace Kichikuou.Game.Strategy;
 /// other events (the right click it causes, Back's) go on to the screen through <see cref="Forwarded"/>. While our
 /// command panel is open it reads <b>Close</b> (<see cref="Closes"/>; owner, 2026-10-24), and its tap closes the panel.
 /// Drawn in lacquer and gold as our panels (owner's A, 2026-10-24; "The map's and the battle's buttons, round 1"): the
-/// double gold frame and its studs, an icon, the brush face of Turn END.
+/// double gold frame and its studs, an icon, the brush face of Turn END. On the phone held landscape it stands in the
+/// right side at the thumb, its icon over its word (docs/ui/phone.md, §12, LM1; <see cref="PhoneMap.CommandsCell"/>), and
+/// as Close a row's height where it stood (<see cref="PhoneMap.FootCell"/>).
 /// </summary>
 internal sealed partial class CommandsButton : Control
 {
@@ -22,6 +25,7 @@ internal sealed partial class CommandsButton : Control
     private readonly FontFile _brush = Lacquer.Brush();
     private float _scale = 1;
     private bool _down, _inside, _closes;
+    private PhoneFrame? _phone;                     // the phone held landscape: in the right side
 
     public CommandsButton()
     {
@@ -57,6 +61,14 @@ internal sealed partial class CommandsButton : Control
     /// <summary>Places the button on the picture <paramref name="area"/> (its parent's coordinates).</summary>
     public void Place(Rect2 area)
     {
+        if (Device.Landscape(this) is { } f)
+        {
+            var cell = _closes ? PhoneMap.FootCell(f) : PhoneMap.CommandsCell(f);
+            (_phone, Position, Size) = (f, new Vector2(cell.X, cell.Y), new Vector2(cell.W, cell.H));
+            QueueRedraw();
+            return;
+        }
+        _phone = null;
         _scale = area.Size.X / 1280;
         Size = ButtonSize * _scale;
         Position = area.End - (ButtonSize + new Vector2(Margin, Margin)) * _scale;
@@ -92,6 +104,14 @@ internal sealed partial class CommandsButton : Control
 
     public override void _Draw()
     {
+        if (_phone is { } phone)
+        {
+            var u = new PhoneUnits(phone);
+            DrawSetTransform(-Position, 0, new Vector2(u.K, u.K));
+            SideCells.DrawButton(this, u, new Rect2(Position / u.K, Size / u.K), _closes ? SideCells.Icon.Close : SideCells.Icon.Menu,
+                _closes ? "Close" : "Commands", _down && _inside, Ui);
+            return;
+        }
         float k = _scale;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(k, k));               // in layout pixels below
         var box = new Rect2(Vector2.Zero, ButtonSize);

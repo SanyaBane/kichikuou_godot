@@ -103,7 +103,8 @@ internal sealed partial class StatusStripView : Control
 
     private float _out;
 
-    public override bool _HasPoint(Vector2 point) => Visible && _out == 0 && new Rect2(0, 0, Width, Height).HasPoint(point / _k);
+    public override bool _HasPoint(Vector2 point) => _phone is { } f ? Visible && SideHasPoint(f, point)
+        : Visible && _out == 0 && new Rect2(0, 0, Width, Height).HasPoint(point / _k);
 
     /// <summary>A left click on the strip reaches no province or plate under it; the rest is the screen's.</summary>
     public override void _GuiInput(InputEvent e)
@@ -114,9 +115,14 @@ internal sealed partial class StatusStripView : Control
         AcceptEvent();
     }
 
-    /// <summary>Lays the strip in its band above the picture (<paramref name="area"/>, in its parent's coordinates).</summary>
+    /// <summary>
+    /// Lays the strip in its band above the picture (<paramref name="area"/>, in its parent's coordinates); on the phone
+    /// held landscape over its parent's whole area, drawn in the sides.
+    /// </summary>
     public void Place(Rect2 area)
     {
+        if (PlacePhone())
+            return;
         float k = area.Size.X / Width;
         if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f)
             return;
@@ -130,6 +136,11 @@ internal sealed partial class StatusStripView : Control
     {
         if (_strip is not { } s)
             return;
+        if (_phone is { } phone)
+        {
+            DrawSide(phone, s);
+            return;
+        }
         DrawSetTransform(new Vector2(0, -Height * _out * _k), 0, new Vector2(_k, _k));
         Ui.DrawPanel(this, new Rect2(0, 0, Width, Height), _k);
         // One row (owner, 2026-10-16): the flag, the status window's figures, the week's commands, the date.
@@ -263,7 +274,7 @@ internal sealed partial class StatusStripView : Control
         }
     }
 
-    private bool OnTag(Vector2 window) => _site is var (tag, _) && tag.HasPoint(window / _k);
+    private bool OnTag(Vector2 window) => _site is var (tag, _) && tag.HasPoint(window / (_phone?.Scale ?? _k));
 
     // The touch mode's tip goes at the next press anywhere (HeaderTip's).
     public override void _Input(InputEvent e)

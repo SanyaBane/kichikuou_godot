@@ -347,11 +347,8 @@ GALLERY_ENTRIES = {
 }
 # The gallery's landscape phone tab (phone-land): the owner's chosen landscape base versions (round P8 on), those not
 # built yet; a built one leaves for the real pass "Smartphone, landscape" (docs/ui/phone-build.md: L1 took LS1, LS1b,
-# LS1m, LW1, LEd, LN3 and LR2).
+# LS1m, LW1, LEd, LN3 and LR2; L2 LM1a, LM1b and LM1c).
 GALLERY_ENTRIES_LAND = {
-    'LM1a': ('lm1-map', 'Map — LM1', 'The map wait', 'the frame kept, the black sides as rails'),
-    'LM1b': ('lm1-commands', 'Map — LM1', 'The command panel', 'in the sides, two-line rows; Close where Commands was'),
-    'LM1c': ('lm1-province', 'Map — LM1', 'A province', 'Oaks (6)\'s card beside it, its commands on the right side'),
     'LB2': ('lb2-turn', 'Battle — LB2', 'The player\'s turn', 'the scene lower, the cards taller; the rails in the sides'),
     'LD2': ('ld2-deployment', 'Deployment — LD2', 'The deployment table', 'the ledger at the left, the party two a '
                                                                            'row at the right'),

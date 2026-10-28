@@ -15,6 +15,7 @@ namespace Kichikuou.Game.Strategy;
 /// are a finger's height on two rails in the sides' lower halves, as the battle's: the week's commands left, the other items
 /// right, each from the foot up, Turn END on the right rail's top; the map's button, reading Close, stands at the right
 /// rail's foot. A tap off the rails cancels, as the button does (owner, 2026-10-24: a touch screen has no right button).
+/// On the phone held landscape the rails are the black sides (docs/ui/phone.md, §12, LM1b; <c>CommandMenuView.Phone.cs</c>).
 /// </summary>
 internal sealed partial class CommandMenuView : Control
 {
@@ -92,7 +93,8 @@ internal sealed partial class CommandMenuView : Control
     }
 
     /// <summary>A point of the picture outside the panel, global: where unattended play taps to close it.</summary>
-    public Vector2 OutsidePoint => GetGlobalRect().Position + (Touch ? new Vector2(640, 600) : new Vector2(40, 700)) * _k;
+    public Vector2 OutsidePoint => _phone is { } f ? PhoneOutsidePoint(f)
+        : GetGlobalRect().Position + (Touch ? new Vector2(640, 600) : new Vector2(40, 700)) * _k;
 
     public void Close()
     {
@@ -105,6 +107,8 @@ internal sealed partial class CommandMenuView : Control
     /// <summary>Lays the layer over the screen's picture (<paramref name="area"/>, in its parent's coordinates).</summary>
     public void Place(Rect2 area)
     {
+        if (PlacePhone())
+            return;
         float k = area.Size.X / 1280f;
         if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f)
             return;
@@ -188,6 +192,8 @@ internal sealed partial class CommandMenuView : Control
 
     private int RowAt(Vector2 window)
     {
+        if (_phone is { } f)
+            return PhoneRowAt(f, window);
         var at = window / _k;
         for (int r = 0; r < RowCount; r++)
             if (RowRect(r).HasPoint(at))
@@ -216,7 +222,7 @@ internal sealed partial class CommandMenuView : Control
             case InputEventMouseButton { ButtonIndex: MouseButton.Left } button:
                 int at = RowAt(button.Position);
                 var point = button.Position / _k;
-                bool outside = Touch && !LeftRailRect.HasPoint(point) && !RightRailRect.HasPoint(point);
+                bool outside = _phone is not null ? at < 0 : Touch && !LeftRailRect.HasPoint(point) && !RightRailRect.HasPoint(point);
                 if (button.Pressed)
                     (_pressed, _outside) = (at, outside);
                 else if (at >= 0 && at == _pressed && Enabled(at))
@@ -250,6 +256,11 @@ internal sealed partial class CommandMenuView : Control
     {
         if (_menu is null)
             return;
+        if (_phone is { } phone)
+        {
+            DrawPhone(phone);
+            return;
+        }
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         float x = PanelX, y = PanelY;
         if (Touch)

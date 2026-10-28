@@ -315,7 +315,10 @@ optimized, `Directory.Build.props`). Step L1 is built, awaiting the owner's look
 where it stands"): the left side's Menu cell and the Menu sheet LN3 (`godot/Strategy/MenuSheetView`,
 `GameScreen.Phone.cs`, on `Original.Content/Devices/PhoneMenu`), Skip and Log in the side, a `]` menu's rows at the
 frame's right foot, the log LR2 and the week report LW1 (on `Original.Content/Devices/PhoneScenes`), each view's phone
-branch keyed by `Device.Landscape(view)`.
+branch keyed by `Device.Landscape(view)`. Step L2 is built, awaiting the owner's look on the phone (phone-build.md,
+"Step L2, where it stands"): the map's status and week's tags in the sides, Commands at the right thumb, the command panel
+and a province's commands as the sides' rails, its card beside it, 2 mm plates, no room under a strip
+(`Original.Content/Devices/PhoneMap`; `StatusStripView.Phone.cs`, `CommandMenuView.Phone.cs`, `ProvinceMenuView.Phone.cs`).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

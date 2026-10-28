@@ -322,6 +322,38 @@ on Oaks (6), the debug build):
   touch exercise in a window (`--harem` from the week-18 save) now also taps the Menu cell, Sound twice, Restart and its
   Cancel, then Close (`AutoPhoneMenuAsync`); not run — it needs a window, where a hand on the mouse can break it.
 
+**Step L2, where it stands (2026-10-28):** built, **awaiting the owner's look on the phone**.
+
+- **The model** (`Original.Content/Devices/PhoneMap`, tested in `PhoneMapTests`): the map's places in the sides at the
+  mock-ups' figures — the status under the Menu cell (from 34 under it, 246 high), the week's uses by group in the right
+  side (a caption 36, tags 46 high 54 apart, 12 after a group), Commands at the right thumb (150 high over the gesture
+  zone), Close and Return a row's height there; the command panel's header on the left's top, its caption ("This week")
+  at 176, its commands from the foot up, Turn END on the right's top (140 high) and the items from the foot up over Close;
+  a province's commands over Return, the dungeon's place's caption over them; the rows 123 high 12 apart, lower when a
+  rail has too many for its height; a province's card (560 wide, 90 beside the province, left of it when the frame has
+  room, its middle level with it, kept 20 inside the frame over the gesture zone; the army under a long name), the ring
+  (74), the plates' type (36).
+- **The views**, each keyed by `Device.Landscape(view)`: `StatusStripView` (`StatusStripView.Phone.cs`) over the whole
+  screen on the phone, in a `SideMode` — the map's wait (the status under Menu, the tags in the right side), a province
+  (the status alone), the command panel (the date and the budget on the left's top) — its building tooltip left of
+  Construction's tag in the frame; `CommandsButton` in the right side, its icon over its word (`SideCells.DrawButton`),
+  as Close a row's height; `CommandMenuView` (`CommandMenuView.Phone.cs`) dims the frame, its rows two lines, the tag
+  over the name (`SideCells.DrawRow`), a tap anywhere but a row closes it; `ProvinceMenuView`
+  (`ProvinceMenuView.Phone.cs`) rings the province, its card beside it at the phone's type (the figure right of its
+  label), its rows in the right side, Return at the foot (`SideCells.DrawButton`); `MapMarkersView`'s plates at 2 mm
+  with the mock-up's tighter plate (11 of its units high, 3.5 at the sides). `GameScreen` keeps the map's room under the
+  strip off on the phone (`UpdateHeadroom`, `ScriptY`) and places the strip over the content (`UpdateStatusStrip`).
+- **The agent's choices**, for the owner to confirm: while the command panel is open the Menu cell and the drawer are
+  hidden (LM1b's left side holds the week's commands; L1 already hid them there), and over a province's menu Menu shows
+  and the drawer does not (LM1c); the map under the panel dimmed (LM1b), not on the tablet; Commands 150 high but Close
+  and Return a row's 123 (the mock-ups'); a long province name ("Leazas Castle", "Great Wall of Helman A") has its army
+  on a line under it rather than its type below 2.3 mm; on the phone the building's tooltip comes by a long press on the
+  right side's Construction tag, left of it.
+- **The gallery**: the PC and touch passes same (110 and 111 entries); the phone pass's map entries match LM1a, LM1b and
+  LM1c (docs/ui/gallery.md, §9), which left `GALLERY_ENTRIES_LAND`.
+- **Unattended play**: `--phone landscape` headless from the week-18 save to its deployment picker runs as before (its
+  map waits, the replenish through Subordinates, the attack on Oaks (6)); the touch exercise in a window not run.
+
 ### Upright (steps P0-P9)
 
 | Step | What | Base versions (phone.md) |

@@ -17,7 +17,8 @@ namespace Kichikuou.Game.Strategy;
 /// the figures — stands beside the tapped province, a triangle pointing at it and the province ringed in gold, and the
 /// commands stand on the right rail as the command panel's, from the foot up, Return at the foot; a tap off the card and
 /// the rail cancels as a right click does, so not in the dungeon's menu (owner, 2026-10-24), which stands over the
-/// city's picture and points at nothing.
+/// city's picture and points at nothing. On the phone held landscape the card stands beside the province at the phone's
+/// type and the rail is the right side (docs/ui/phone.md, §12, LM1c; <c>ProvinceMenuView.Phone.cs</c>).
 /// </summary>
 internal sealed partial class ProvinceMenuView : Control
 {
@@ -109,6 +110,8 @@ internal sealed partial class ProvinceMenuView : Control
     {
         get
         {
+            if (_phone is { } f)
+                return PhoneOutsidePoint(f);
             var point = new Vector2(40, 700);
             if (Touch)
                 point = ((Vector2[])[new(40, 700), new(40, 100), new(980, 100), new(640, 780)])
@@ -130,6 +133,8 @@ internal sealed partial class ProvinceMenuView : Control
     /// <summary>Lays the layer over the screen's picture (<paramref name="area"/>, in its parent's coordinates).</summary>
     public void Place(Rect2 area)
     {
+        if (PlacePhone())
+            return;
         float k = area.Size.X / 1280f;
         if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f)
             return;
@@ -217,6 +222,8 @@ internal sealed partial class ProvinceMenuView : Control
 
     private int RowAt(Vector2 window)
     {
+        if (_phone is { } f)
+            return PhoneRowAt(f, window);
         var at = window / _k;
         for (int r = 0; r < RowCount; r++)
             if (RowRect(r).HasPoint(at))
@@ -245,7 +252,8 @@ internal sealed partial class ProvinceMenuView : Control
             case InputEventMouseButton { ButtonIndex: MouseButton.Left } button:
                 int at = RowAt(button.Position);
                 var point = button.Position / _k;
-                bool outside = Touch && _menu is { CancelReopens: false } && !CardRect.HasPoint(point) && !RailRect.HasPoint(point);
+                bool outside = _menu is { CancelReopens: false } && (_phone is { } phone ? PhoneOutside(phone, button.Position)
+                    : Touch && !CardRect.HasPoint(point) && !RailRect.HasPoint(point));
                 if (button.Pressed)
                     (_pressed, _outside) = (at, outside);
                 else if (at >= 0 && at == _pressed && Enabled(at))
@@ -279,6 +287,11 @@ internal sealed partial class ProvinceMenuView : Control
     {
         if (_menu is not { } m)
             return;
+        if (_phone is { } phone)
+        {
+            DrawPhone(phone, m);
+            return;
+        }
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         float x = PanelX, y = PanelY;
         var card = CardRect;
