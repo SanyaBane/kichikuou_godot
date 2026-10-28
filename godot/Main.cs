@@ -19,6 +19,12 @@ public partial class Main : Control
 
     public override void _Ready()
     {
+        Device.Follow(GetTree().Root);
+        if (!_commandLineRead && !Device.OpenPhoneWindow())
+        {
+            GetTree().Quit(1);
+            return;
+        }
         ThousandsChoice.Apply();
         ScreenModeChoice.Apply(this);
         SoundChoice.Apply();
@@ -137,7 +143,9 @@ public partial class Main : Control
     /// <c>--shots DIR</c> it saves the effects' frames there; needs a window; <c>--effects white-beam-magic,black-beam-nagi</c> saves
     /// only the effects with those prefixes). <c>--options</c> opens the options window over the title (with <c>--shots DIR</c>
     /// in a window it saves each tab there; <c>--quit</c> then ends). <c>--screen-gallery [id,…]</c> opens the screen gallery
-    /// (docs/ui/gallery.md; with <c>--shots DIR</c> in a window it dumps the entries there, compared with <c>--previous DIR</c>'s).
+    /// (docs/ui/gallery.md; with <c>--shots DIR</c> in a window it dumps the entries there, compared with <c>--previous DIR</c>'s,
+    /// the window at <c>--window WxH</c>, else 1280×800). With any of them <c>--phone landscape</c> plays a phone held
+    /// landscape (docs/ui/phone-build.md, §3: the touch mode, the window at the reference phone's shape, <see cref="Device"/>).
     /// Null without a switch: the title.
     /// </summary>
     private static Node? FromCommandLine()
@@ -191,6 +199,7 @@ public partial class Main : Control
             return new ScreenGallery.GalleryScreen
             {
                 Only = only, ScreenshotDirectory = shots, PreviousDirectory = Value("--previous"), QuitWhenDone = quit,
+                WindowSize = Value("--window")?.Split('x') is [var w, var h] ? new Vector2I(int.Parse(w), int.Parse(h)) : new Vector2I(1280, 800),
             };
         }
         if (args.Contains("--portraits"))

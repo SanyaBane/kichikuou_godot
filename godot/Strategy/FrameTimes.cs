@@ -1,0 +1,45 @@
+using Godot;
+
+namespace Kichikuou.Game.Strategy;
+
+/// <summary>
+/// The game's speed as the phone sees it (docs/ui/phone-build.md, §3, "The speed"; the engine surface is drawn per pixel
+/// in C#): every <see cref="Period"/> seconds the console — Android's logcat, tag <c>godot</c> — gets the frames of each
+/// kind of screen shown meanwhile (a scene, the map, a battle): how many, the mean, the 95th percentile and the longest
+/// frame interval, and the mean time the frame's processing took (Godot's <c>TimeProcess</c>: our code and the scripts'
+/// drawing, without the GPU). On on Android and with <c>--frame-times</c>; nothing is recorded else.
+/// </summary>
+internal static class FrameTimes
+{
+    private const double Period = 10;
+
+    private static bool? _on;
+    private static readonly Dictionary<string, (List<double> Frames, double Process)> Kinds = [];
+    private static double _since;
+
+    /// <summary>Whether frame times are recorded.</summary>
+    public static bool On => _on ??= OS.GetName() == "Android" || OS.GetCmdlineUserArgs().Contains("--frame-times");
+
+    /// <summary>A frame of <paramref name="delta"/> seconds while the screen showed <paramref name="kind"/>.</summary>
+    public static void Record(string kind, double delta)
+    {
+        if (!On)
+            return;
+        if (!Kinds.TryGetValue(kind, out var times))
+            times = ([], 0);
+        times.Frames.Add(delta);
+        Kinds[kind] = (times.Frames, times.Process + Performance.GetMonitor(Performance.Monitor.TimeProcess));
+        if ((_since += delta) < Period)
+            return;
+        var lines = Kinds.Where(k => k.Value.Frames.Count > 0).Select(k =>
+        {
+            var frames = k.Value.Frames.Order().ToList();
+            double Ms(double seconds) => Math.Round(seconds * 1000, 1);
+            return $"{k.Key} {frames.Count} frames, mean {Ms(frames.Average())} ms, p95 {Ms(frames[(int)(frames.Count * 0.95)])} ms, "
+                + $"max {Ms(frames[^1])} ms, process {Ms(k.Value.Process / frames.Count)} ms";
+        });
+        GD.Print($"Kichikuou: frame times over {_since:0.0} s: {string.Join("; ", lines)}.");
+        Kinds.Clear();
+        _since = 0;
+    }
+}

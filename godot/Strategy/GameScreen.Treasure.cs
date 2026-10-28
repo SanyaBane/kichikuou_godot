@@ -154,12 +154,10 @@ public partial class GameScreen
         }
         if (!show)
             return false;
-        var size = _view.Size;
-        float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
-        var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
+        var frame = Frame();
         _treasure.MouseFilter = _presenter.MessageWindowShown ? MouseFilterEnum.Ignore : MouseFilterEnum.Stop;
         _treasure.Busy = TreasurePointer.Pending > 0;
-        _treasure.Place(_view.Position + (size - drawn) / 2, scale * Surface.Scale);
+        _treasure.Place(frame.Origin, frame.Pixels);
         _treasure.Refresh(_presenter.State!);
         return true;
     }

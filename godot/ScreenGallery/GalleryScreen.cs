@@ -12,10 +12,12 @@ namespace Kichikuou.Game.ScreenGallery;
 /// <summary>
 /// The screen gallery (docs/ui/gallery.md; Debug → Screen Gallery…, <c>--screen-gallery [id,…]</c>): our screens on their
 /// own, each entry a screen in one state built from a kept save without playing to it. The list at the left, the screen
-/// at the right fitted at 1280×800, a bar switching the palette and the game's font for the gallery alone (the player's
-/// choices stay). With <see cref="ScreenshotDirectory"/> it dumps every entry (or <see cref="Only"/>) as <c>&lt;id&gt;.png</c>
-/// at 1280×800 with <c>manifest.json</c>, the list hidden, each picture compared with <see cref="PreviousDirectory"/>'s; a
-/// window is needed, nothing moves the system pointer. <c>tools/ui/gallery.ps1</c> runs it and writes the index.
+/// at the right fitted at 1280×800 (on a phone in its frame, <see cref="ScreenFrame.In"/>), a bar switching the palette
+/// and the game's font for the gallery alone (the player's choices stay). With <see cref="ScreenshotDirectory"/> it dumps
+/// every entry (or <see cref="Only"/>) as <c>&lt;id&gt;.png</c> at 1280×800 with <c>manifest.json</c>, the list hidden, each
+/// picture compared with <see cref="PreviousDirectory"/>'s; on a phone (<c>--phone landscape</c>) the whole window at
+/// <see cref="WindowSize"/>, its black sides with it. A window is needed, nothing moves the system pointer.
+/// <c>tools/ui/gallery.ps1</c> runs it and writes the index.
 /// </summary>
 public partial class GalleryScreen : Control
 {
@@ -30,6 +32,9 @@ public partial class GalleryScreen : Control
 
     /// <summary>A former dump each picture is compared with (<c>--previous DIR</c>): the manifest says which changed.</summary>
     public string? PreviousDirectory { get; init; }
+
+    /// <summary>The window's size while dumping (<c>--window WxH</c>; docs/ui/phone-build.md, §3).</summary>
+    public Vector2I WindowSize { get; init; } = new(1280, 800);
 
     /// <summary>
     /// A picture counts as changed when more pixels than this differ from the former one by more than
@@ -168,14 +173,8 @@ public partial class GalleryScreen : Control
         Place();
     }
 
-    /// <summary>The picture's area: the 1280×800 screen fitted into the stage, centred.</summary>
-    private Rect2 PictureArea()
-    {
-        var size = _area.Size;
-        float scale = Math.Min(size.X / 1280f, size.Y / 800f);
-        var drawn = new Vector2(1280, 800) * scale;
-        return new Rect2((size - drawn) / 2, drawn);
-    }
+    /// <summary>The picture's area: the 1280×800 screen fitted into the stage and centred, or the phone's frame.</summary>
+    private Rect2 PictureArea() => ScreenFrame.In(new Rect2(Vector2.Zero, _area.Size)).Area;
 
     private void Place()
     {
@@ -258,7 +257,7 @@ public partial class GalleryScreen : Control
         // The real pointer over the window would move or drop a hover an entry set (2026-10-25: treasure-hover lost
         // its cell); the entries' clicks go to the views' _GuiInput directly, so the window takes no input while dumping.
         GetViewport().GuiDisableInput = true;
-        DisplayServer.WindowSetSize(new Vector2I(1280, 800));
+        DisplayServer.WindowSetSize(WindowSize);
         System.IO.Directory.CreateDirectory(directory);
         for (int i = 0; i < 4; i++)
             await ToSignal(RenderingServer.Singleton, RenderingServerInstance.SignalName.FramePostDraw);
@@ -282,13 +281,16 @@ public partial class GalleryScreen : Control
                 await ToSignal(tree, SceneTree.SignalName.ProcessFrame);
             for (int frame = 0; frame < 4; frame++)
                 await ToSignal(RenderingServer.Singleton, RenderingServerInstance.SignalName.FramePostDraw);
-            var image = GetViewport().GetTexture().GetImage();
-            float k = image.GetWidth() / GetViewportRect().Size.X;          // the window's pixels a layout pixel
-            var area = PictureArea();
-            var at = _area.GlobalPosition + area.Position;
-            var picture = image.GetRegion(new Rect2I((int)(at.X * k), (int)(at.Y * k), (int)(area.Size.X * k), (int)(area.Size.Y * k)));
-            if (picture.GetWidth() != 1280 || picture.GetHeight() != 800)
-                picture.Resize(1280, 800, Image.Interpolation.Lanczos);
+            var picture = GetViewport().GetTexture().GetImage();
+            if (!Device.Phone)
+            {
+                float k = picture.GetWidth() / GetViewportRect().Size.X;        // the window's pixels a layout pixel
+                var area = PictureArea();
+                var at = _area.GlobalPosition + area.Position;
+                picture = picture.GetRegion(new Rect2I((int)(at.X * k), (int)(at.Y * k), (int)(area.Size.X * k), (int)(area.Size.Y * k)));
+                if (picture.GetWidth() != 1280 || picture.GetHeight() != 800)
+                    picture.Resize(1280, 800, Image.Interpolation.Lanczos);
+            }
             string file = $"{entry.Id}.png";
             string path = System.IO.Path.Combine(directory, file);
             picture.SavePng(path);
@@ -306,6 +308,7 @@ public partial class GalleryScreen : Control
             Palette = UiPalettes.Chosen.Key,
             Font = _font.ToString(),
             Touch = TouchMode.On,
+            Device = Device.Layout.ToString(),
             Entries = entries,
         };
         System.IO.File.WriteAllText(manifestPath, JsonSerializer.Serialize(manifest, ManifestJson));

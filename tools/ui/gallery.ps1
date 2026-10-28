@@ -4,8 +4,10 @@ Dumps the screen gallery (our screens from the kept saves) and writes an index m
 
 .DESCRIPTION
 Builds godot/Kichikuou.csproj, then runs the game's screen gallery (docs/ui/gallery.md) in a window for each pass
-asked for: Lacquer always, -Steel and -Touch add theirs. A pass's former pictures move from <pass>\current to
-<pass>\previous first, and the gallery compares every new picture with them (manifest.json says new, changed or same).
+asked for: Lacquer always, -Steel and -Touch add theirs, -PhoneLand the phone held landscape (--phone landscape: the
+whole window dumped at two thirds of the reference phone's 2712×1220, 1808×813, its black sides with it;
+docs/ui/phone-build.md). A pass's former pictures move from <pass>\current to <pass>\previous first, and the gallery
+compares every new picture with them (manifest.json says new, changed or same).
 With -Only the pass stays whole: only the chosen entries' former pictures are copied to previous, their new ones replace
 them in current, and the manifest keeps the other entries as they were; the changes of several partial runs stay
 marked until a full run (each compared with its picture before the first of them).
@@ -35,6 +37,8 @@ param(
     [switch]$Steel,
     # Also dump every entry in the touch mode (--touch).
     [switch]$Touch,
+    # Also dump every entry on the phone held landscape (--phone landscape, the window 1808×813).
+    [switch]$PhoneLand,
     # Also draw the phone's mock-ups, not built yet (tools/ui/mock_phone.py --gallery: the owner's chosen base versions
     # of docs/ui/phone.md, from this gallery's touch and lacquer dumps; a Python with Pillow and numpy, KICHIKUOU_PYTHON).
     [switch]$Phone,
@@ -95,11 +99,14 @@ $allPasses = @(
     @{ Name = 'lacquer'; Title = 'Lacquer'; Args = @() },
     @{ Name = 'steel'; Title = 'Steel'; Args = @('--palette', 'steel') },
     @{ Name = 'touch'; Title = 'Touch (Lacquer)'; Args = @('--touch') },
+    @{ Name = 'phone-landscape'; Title = 'Smartphone, landscape'; Args = @('--phone', 'landscape', '--window', '1808x813');
+       Held = 'landscape'; Switch = 'PhoneLand' },
     @{ Name = 'phone'; Title = 'Smartphone, upright (mock-ups)'; Mockup = $true; Held = 'upright'; Size = '1220&times;2712' },
     @{ Name = 'phone-land'; Title = 'Smartphone, landscape (mock-ups)'; Mockup = $true; Held = 'landscape';
        Size = '2712&times;1220' })
 $passes = @($allPasses | Where-Object { ($_.Mockup -and $Phone) -or (-not $PhoneOnly -and
-    ($_.Name -eq 'lacquer' -or ($_.Name -eq 'steel' -and $Steel) -or ($_.Name -eq 'touch' -and $Touch))) })
+    ($_.Name -eq 'lacquer' -or ($_.Name -eq 'steel' -and $Steel) -or ($_.Name -eq 'touch' -and $Touch) -or
+     ($_.Name -eq 'phone-landscape' -and $PhoneLand))) })
 
 $failed = $false
 foreach ($pass in $passes) {
@@ -180,7 +187,7 @@ foreach ($pass in $allPasses) {
     $isStale = $passes.Name -notcontains $pass.Name -and -not ($PhoneOnly -and -not $pass.Mockup)
     $mark = if ($isStale) { ' <b class=stale>old</b>' } elseif ($changed.Count) { " <b class=changed>$($changed.Count)</b>" } else { '' }
     [void]$tabs.Append("<a class=tab href=`"#$($pass.Name)`" data-pass=`"$($pass.Name)`">$(Html $pass.Title)$mark</a>")
-    $class = if ($pass.Mockup) { "pass mockup $($pass.Held)" } else { 'pass' }
+    $class = if ($pass.Mockup) { "pass mockup $($pass.Held)" } else { "pass $($pass.Held)" }
     [void]$body.Append("<section class=`"$class`" id=`"$($pass.Name)`"><h2>$(Html $pass.Title) <small>$(Html $manifest.written) &middot; " +
         "font $(Html $manifest.font) &middot; $($entries.Count) entries, $($changed.Count) changed or new</small></h2>")
     if ($pass.Mockup) {
@@ -190,7 +197,7 @@ foreach ($pass in $allPasses) {
     }
     if ($isStale) {
         [void]$body.Append("<p class=stale>Not dumped by the last run: these pictures are from $(Html $manifest.written) and may be " +
-            "out of date (<code>gallery.ps1 -$(if ($pass.Mockup) { 'Phone' } else { $pass.Name.Substring(0, 1).ToUpper() + $pass.Name.Substring(1) })</code> dumps them again).</p>")
+            "out of date (<code>gallery.ps1 -$(if ($pass.Mockup) { 'Phone' } elseif ($pass.Switch) { $pass.Switch } else { $pass.Name.Substring(0, 1).ToUpper() + $pass.Name.Substring(1) })</code> dumps them again).</p>")
     }
     # The sections in the order they first come, each entry in its own place at full size whatever changed (the owner,
     # 2026-10-26): a changed one's badge opens the former picture, a new one's is a badge alone.
@@ -240,7 +247,7 @@ $html = @"
   .tab.on { border-color: #d8b060; background: #3a2c1c; color: #f0d890; }
   .stale { color: #e0b050; } p.stale { border: 1px solid #806020; background: #2a2010; padding: 8px; }
   .mockup .grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
-  .mockup.landscape .grid { grid-template-columns: repeat(auto-fill, minmax(640px, 1fr)); }
+  .landscape .grid { grid-template-columns: repeat(auto-fill, minmax(640px, 1fr)); }
   p.mockup { border: 1px solid #7a5a9a; background: #221a2a; color: #e4d4f0; padding: 8px; }
 </style>
 <h1>Screen gallery</h1>

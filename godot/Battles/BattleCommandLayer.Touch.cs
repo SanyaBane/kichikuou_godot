@@ -52,7 +52,7 @@ internal sealed partial class BattleCommandLayer
     private const float PulseSeconds = 1.2f, PulseNear = 2, PulseFar = 5, PulseDim = 0.6f, PulseBright = 1.3f;
     private static readonly bool Pulses = OS.GetName() == "Android";
 
-    private readonly bool _touch = TouchMode.On;
+    private static bool Touch => Device.TouchLayout;                // the tablet's layout, read live (docs/ui/phone-build.md, §3)
     private readonly FontFile _brush = Lacquer.Brush();
     private readonly FontVariation _cinzel = Lacquer.Cinzel(600);
     private double _pulse;                                          // seconds since the target was set
@@ -67,7 +67,7 @@ internal sealed partial class BattleCommandLayer
     private int _hotToggle = -1, _pressedToggle = -1;
 
     /// <summary>The touch mode's target (the enemy the right rail's attacks go to), or null.</summary>
-    public BattlePlace? Target => _touch ? _target : null;
+    public BattlePlace? Target => Touch ? _target : null;
 
     /// <summary>The centre of the rail button or the order toggle that gives <paramref name="choice"/> (layout pixels), or null.</summary>
     public Vector2? RailCentre(FigtSelChoice choice)

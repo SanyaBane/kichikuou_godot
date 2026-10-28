@@ -411,3 +411,9 @@ Subordinates LU1; round P19's All Data LG2, the title LE1 and the import screen 
 LN3, the log LR2, the comment's editing LY1 and the original's own screens LXf, LXc, LXm, LXr) are a second tab,
 **Smartphone, landscape (mock-ups)**, drawn by the same run into `phone-land/current` (`GALLERY_ENTRIES_LAND`), its grid
 wider for the wide pictures; `-Phone` and `-PhoneOnly` draw both tabs.
+
+The phone's real pass (step F, 2026-10-28; docs/ui/phone-build.md, "Step F, where it stands"): `gallery.ps1 -PhoneLand`
+dumps every entry as the phone held landscape (`--phone landscape --window 1808x813`) into `phone-landscape/current`,
+the tab **Smartphone, landscape** — the whole window at two thirds of the reference phone's pixels, its black sides
+with it, not cut to the picture. Until a screen's phone layout is built its entry shows the tablet's layout in the
+phone's frame; the mock-up tabs stay as they are, and a built screen's mock-up leaves them.

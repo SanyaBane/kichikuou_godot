@@ -41,11 +41,9 @@ public partial class GameScreen
         }
         if (!show)
             return false;
-        var size = _view.Size;
-        float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
-        var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
+        var frame = Frame();
         _harem.Busy = _haremPointer.Pending > 0;
-        _harem.Place(_view.Position + (size - drawn) / 2, scale * Surface.Scale);
+        _harem.Place(frame.Origin, frame.Pixels);
         _harem.Refresh(_presenter.State!, _presenter.HaremGirls(_pickerMarks?.Visits));
         return true;
     }

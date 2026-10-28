@@ -16,7 +16,7 @@ internal sealed class LedgerTabsBar
     private static UiPalette Ui => UiPalettes.For(UiPart.Screens);
 
     /// <summary>The tabs' row height in screen pixels: a touch row's in the touch mode.</summary>
-    public static float RowHeight => TouchMode.On ? 46 : 34;
+    public static float RowHeight => Device.TouchLayout ? 46 : 34;
 
     private const int TabSize = 16, OrderSize = 14;
     private readonly string _screen;

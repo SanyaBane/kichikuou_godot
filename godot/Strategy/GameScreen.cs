@@ -422,6 +422,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     public override void _Process(double delta)
     {
+        UpdateDevice();
+        if (FrameTimes.On)
+            FrameTimes.Record(BattleScreenShown || _presenter.BattleSceneShows ? "battle" : _presenter.MapWaiting ? "map" : "scene", delta);
         // Ctrl held skips as MsgSkip does (ours); polled, so a release no control passes on is still seen.
         if (_skip is not null)
             _skip.Held = Input.IsKeyPressed(Godot.Key.Ctrl) && GetWindow().HasFocus();
@@ -910,10 +913,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         if (_battleView.Visible && _presenter.State is { } s)
             return _battleView.ToScript(local - _content.Position, s);  // a card's panel, or the windows' layer
-        var size = _view.Size;
-        float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
-        var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
-        var p = (local - (_view.GlobalPosition - GlobalPosition) - (size - drawn) / 2) / (scale * Surface.Scale);
+        var p = Frame().ToScript(local - _content.Position);
         return new Vector2I(Math.Clamp((int)Math.Floor(p.X), 0, Surface.ScreenWidth - 1),
             Math.Clamp((int)Math.Floor(p.Y), 0, Surface.ScreenHeight - 1));
     }
@@ -923,10 +923,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         if (_battleView.Visible)
             return _content.Position + _battleView.FromScript(script);
-        var size = _view.Size;
-        float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
-        var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
-        return (_view.GlobalPosition - GlobalPosition) + (size - drawn) / 2 + (new Vector2(script.X, script.Y) + new Vector2(0.5f, 0.5f)) * scale * Surface.Scale;
+        return _content.Position + Frame().FromScript(script);
     }
 
     /// <summary>
@@ -2084,14 +2081,14 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// read from the state when they appear (owners change only off the map). Returns whether they show.
     /// Shown or hidden, no plate's click stays queued.
     /// </summary>
-    /// <summary>The screen's picture in <c>_content</c>'s coordinates: the 1280×800 screen scaled to fit the view, centred.</summary>
-    private Rect2 PictureArea()
-    {
-        var size = _view.Size;
-        float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
-        var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
-        return new Rect2(_view.Position + (size - drawn) / 2, drawn);
-    }
+    /// <summary>
+    /// The screen's picture in <c>_content</c>'s coordinates: where <c>_view</c> shows it, the 1280×800 screen scaled to
+    /// fit the view and centred (on a phone held landscape the view is the phone's frame, <see cref="UpdateDevice"/>).
+    /// </summary>
+    private ScreenFrame Frame() => ScreenFrame.Fit(new Rect2(_view.Position, _view.Size));
+
+    /// <summary>The screen's picture in <c>_content</c>'s coordinates (<see cref="Frame"/>).</summary>
+    private Rect2 PictureArea() => Frame().Area;
 
     private bool _provinceDumped, _commandDumped, _sceneMenuDumped;
 
@@ -2268,11 +2265,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             UpdateDeploymentReplenish(false, default);
             return false;
         }
-        var size = _view.Size;
-        float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
-        var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
-        float pixels = scale * Surface.Scale;
-        var origin = _view.Position + (size - drawn) / 2;
+        var frame = Frame();
+        float pixels = frame.Pixels;
+        var origin = frame.Origin;
         if (active)
             UpdateDeploymentReplenish(true, new Rect2(origin, new Vector2(1280, 800) * (pixels / 2)));
         else
@@ -2316,10 +2311,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 _answered?.TrySetResult();                                  // the interface changed: the original's FIGT_SEL or menu takes over
             return;
         }
-        var size = _view.Size;
-        float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
-        var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
-        _battleView.Place(_view.Position + (size - drawn) / 2, scale);
+        var frame = Frame();
+        _battleView.Place(frame.Origin, frame.Scale);
         IEnumerable<WindowShape> input = _sel?.Windows ?? _battleMenu?.Windows ?? [];
         var hovered = _battleView.Commands.Active ? _battleView.Commands.Lit   // a card lights up only while the player chooses
             : _sel is null ? null : _battleView.PlaceAt(TouchMode.LocalPointer(this) - _content.Position, _presenter.State!);
@@ -2347,10 +2340,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         if (!show)
             return;
-        var size = _view.Size;
-        float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
-        var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
-        _scoutView.Place(_view.Position + (size - drawn) / 2, scale);
+        var frame = Frame();
+        _scoutView.Place(frame.Origin, frame.Scale);
         _scoutView.Show(_presenter.Battle.Scout!);
     }
 
@@ -2369,10 +2360,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _strategyView.Clear();
             return;
         }
-        var size = _view.Size;
-        float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
-        var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
-        _strategyView.Place(_view.Position + (size - drawn) / 2, scale);
+        var frame = Frame();
+        _strategyView.Place(frame.Origin, frame.Scale);
         _strategyView.Show(_presenter.Battle.Strategy!, _presenter.Battle.StrategyBackdrop,
             Surface.ScreenWidth * Surface.Scale, Surface.ScreenHeight * Surface.Scale, instant: _skip.IsSkipping || _options.Fast);
     }

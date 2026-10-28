@@ -17,9 +17,9 @@ internal static class LedgerRowsChoice
     public const int TextRow = 24;
 
     /// <summary>This mode's default: the PC's 24, the touch mode's 36.</summary>
-    public static int Default => TouchMode.On ? 36 : TextRow;
+    public static int Default => Device.TouchLayout ? 36 : TextRow;
 
-    private static string Key => TouchMode.On ? "ledger_row_height_touch" : "ledger_row_height";
+    private static string Key => Device.TouchLayout ? "ledger_row_height_touch" : "ledger_row_height";
 
     private static int? _chosen;
 

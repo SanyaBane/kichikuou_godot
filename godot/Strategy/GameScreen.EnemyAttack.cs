@@ -37,11 +37,9 @@ public partial class GameScreen
                 _attackView.Close();
             return;
         }
-        var size = _view.Size;
-        float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
-        var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
+        var frame = Frame();
         _attackView.Show(_presenter.Battle.Attack!);
-        _attackView.Place(_view.Position + (size - drawn) / 2, scale);
+        _attackView.Place(frame.Origin, frame.Scale);
     }
 
     /// <summary>

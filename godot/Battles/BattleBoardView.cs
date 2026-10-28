@@ -23,20 +23,21 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     private static UiPalette Ui => UiPalettes.For(UiPart.Battle);
 
     // The touch mode's board stands between the rails, which come down beside it into the thumbs' reach (owner's A,
-    // 2026-10-25; docs/ui/touch.md, "The battle within the thumbs' reach"): the cards narrower, their text as large.
-    private static readonly bool Narrow = TouchMode.On;
+    // 2026-10-25; docs/ui/touch.md, "The battle within the thumbs' reach"): the cards narrower, their text as large. Read
+    // live (docs/ui/phone-build.md, §3).
+    private static bool Narrow => Device.TouchLayout;
 
     // The layout in the pixels of a 1280×800 window (two to a script pixel).
     private static readonly Rect2 SidesArea = new(0, 0, 1280, 410);
     private static readonly Rect2 SceneArea = new(128, 0, 1024, 410);
     private static readonly Rect2 WindowsArea = new(312, 0, 656, 410);       // 640×400 script pixels ×1.025
     private static readonly Rect2 StripArea = new(10, 374, 1260, 32);         // over the scene's foot (owner, 2026-10-16)
-    private static readonly Rect2 PlayerNameArea = Narrow ? new(146, 424, 454, 24) : new(10, 424, 574, 24);   // up under the separator (owner, 2026-10-16)
-    private static readonly Rect2 EnemyNameArea = Narrow ? new(680, 424, 454, 24) : new(696, 424, 574, 24);
-    private static readonly Rect2 GaugeArea = Narrow ? new(612, 450, 56, 324) : new(608, 450, 64, 324);      // the caption a word a line (owner, 2026-10-24)
+    private static Rect2 PlayerNameArea => Narrow ? new(146, 424, 454, 24) : new(10, 424, 574, 24);   // up under the separator (owner, 2026-10-16)
+    private static Rect2 EnemyNameArea => Narrow ? new(680, 424, 454, 24) : new(696, 424, 574, 24);
+    private static Rect2 GaugeArea => Narrow ? new(612, 450, 56, 324) : new(608, 450, 64, 324);      // the caption a word a line (owner, 2026-10-24)
     private static readonly Rect2 SpeakerLeft = new(8, 6, 300, 398);
     private static readonly Rect2 SpeakerRight = new(972, 6, 300, 398);
-    private static readonly Vector2 CardSize = Narrow ? new(223, 150) : new(282, 150);
+    private static Vector2 CardSize => Narrow ? new(223, 150) : new(282, 150);
     private static readonly float[] CardRows = [450, 608];
     private const float TextSize = 17;
 
@@ -369,7 +370,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     private static readonly Color LabelRim = new(0.03f, 0.025f, 0.02f, 0.8f);
 
     /// <summary>Where the gauge's "n TURNS LEFT" stands, in layout pixels: the stones are darker round it.</summary>
-    private static readonly Rect2 GaugeCaptionArea = new(GaugeArea.Position.X, GaugeArea.Position.Y + TubeHeight + 10, GaugeArea.Size.X, 76);
+    private static Rect2 GaugeCaptionArea => new(GaugeArea.Position.X, GaugeArea.Position.Y + TubeHeight + 10, GaugeArea.Size.X, 76);
 
     /// <summary>Option → Display: the screen's text in the chosen font.</summary>
     public void SetFont(GameFont font)

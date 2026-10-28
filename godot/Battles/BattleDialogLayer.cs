@@ -27,7 +27,7 @@ internal sealed partial class BattleDialogLayer : Control
     // (Retreat) farthest from the rail, so a second tap on the rail's button does not confirm it.
     private static readonly Vector2 TouchCorner = new(146, 470);
     private const float TouchWidth = 330, TouchButton = 80, TouchGap = 12, TouchPad = 14, TouchItemText = 19;
-    private readonly bool _touch = TouchMode.On;
+    private static bool Touch => Device.TouchLayout;                // the tablet's layout, read live (docs/ui/phone-build.md, §3)
     private readonly FontFile _brush = Lacquer.Brush();
 
     private float _scale = 1;
@@ -77,7 +77,7 @@ internal sealed partial class BattleDialogLayer : Control
     {
         get
         {
-            if (_touch)
+            if (Touch)
                 return new Rect2(TouchCorner, new Vector2(TouchWidth, TouchPad * 2 + QuestionLine * 2 + Rule + TouchGap + TouchButton));
             float height = Pad * 2 + QuestionLine * 2 + Rule + (_dialog?.Items.Count ?? 0) * RowHeight;
             return new Rect2(SceneArea.GetCenter() - new Vector2(Width, height) / 2, new Vector2(Width, height));
@@ -85,13 +85,13 @@ internal sealed partial class BattleDialogLayer : Control
     }
 
     /// <summary>The top of the first item's row.</summary>
-    private float ItemsTop => Box.Position.Y + (_touch ? TouchPad + TouchGap : Pad) + QuestionLine * 2 + Rule;
+    private float ItemsTop => Box.Position.Y + (Touch ? TouchPad + TouchGap : Pad) + QuestionLine * 2 + Rule;
 
     /// <summary>Item <paramref name="item"/>'s place: a row, or in the touch mode a button in the row of them.</summary>
     private Rect2 ItemRect(int item)
     {
         var box = Box;
-        if (!_touch)
+        if (!Touch)
             return new Rect2(box.Position.X + Pad - 4, ItemsTop + item * RowHeight, box.Size.X - (Pad - 4) * 2, RowHeight);
         int count = _dialog?.Items.Count ?? 0;
         float w = (box.Size.X - TouchPad * 2 - TouchGap * (count - 1)) / Math.Max(1, count);
@@ -179,7 +179,7 @@ internal sealed partial class BattleDialogLayer : Control
             return;
         float s = _scale;
         DrawRect(new Rect2(Vector2.Zero, new Vector2(1280, 800) * s), Dim);
-        if (_touch)
+        if (Touch)
         {
             DrawTouch();
             return;

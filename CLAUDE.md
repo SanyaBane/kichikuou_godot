@@ -305,7 +305,11 @@ original's screens as they are — step 0 done), then the landscape phone
 (steps F, L1-L10), then upright (P0-P9); the reference
 phone and longer screens; the tablet stays landscape. The gallery shows both orientations'
 choices on tabs of their own (`gallery.ps1 -PhoneOnly`; the scenes' picture from the week-18 look's frames copied into
-`screen-gallery/phone-look`, docs/ui/gallery.md, §9).
+`screen-gallery/phone-look`, docs/ui/gallery.md, §9). Step F (the foundation) is built but the speed on the Poco
+(phone-build.md, "Step F, where it stands"): `Original.Content/Devices` (`DeviceLayout`, `PhoneFrame`), read live by
+`godot/Strategy/Device`; `godot/Strategy/ScreenFrame` is the one picture fit; on a phone the menu bar goes and the
+picture stands in the phone's frame (`GameScreen.UpdateDevice`); `--phone landscape` plays one on the PC; the gallery's
+real pass `-PhoneLand`; `FrameTimes` logs the frame times on Android.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -374,7 +378,8 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   drawn), its drawing commands (`EngineStage`: `G`/`CC`/`CS`/`CF`/`CM`, `WV`, the fades, the text
   state; its owner is told of the drawing through `IStageObserver`), message text (`TextBox`) and selection windows.
 - `src/Kichikuou.Original.Content` — the original's presenters (references Original and Content):
-  `Audio/SoundTable` maps the original's sound numbers to files;
+  `Audio/SoundTable` maps the original's sound numbers to files; `Devices/` the device's layout (`DeviceLayout`) and
+  the phone's frame (`PhoneFrame`, docs/ui/phone-build.md, §3);
   `Battles/BattlePresenter` draws every core event the way the original does
   ([docs/battle/screen-layout.md](docs/battle/screen-layout.md)), `FigtSelScreen` /
   `BattleMenuScreen` are the mouse-driven input screens. `Strategy/GamePresenter` draws a whole
@@ -554,7 +559,9 @@ commit `local.env`.
 un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   `godot/Kichikuou.csproj` and starts `KICHIKUOU_GODOT_EXE` (the exe without `_console` unless `-Console`) on `godot`,
   passing the rest after `--`. `run-game-touch.cmd` does the same with `--touch`: the Android interface on PC, the mouse
-  playing a finger (no hover; docs/ui/touch.md).
+  playing a finger (no hover; docs/ui/touch.md). `--phone landscape` (any launch; implies `--touch`) plays a phone held
+  landscape: the window at the reference phone's shape fitted to the monitor, no menu bar, the picture in the phone's
+  frame (docs/ui/phone-build.md, §3). `--frame-times` logs the frame times every 10 s, as the Android build always does.
 - Export the Windows release build (the export templates 4.7.2 mono installed):
   `powershell -ExecutionPolicy Bypass -File tools/export-release.ps1 -Out <folder outside the repository>` — the
   preset `godot/export_presets.cfg`, the licenses copied next to the exe. The build keeps its data in
@@ -698,7 +705,7 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
 - **The screen gallery** (docs/ui/gallery.md): our screens in their states from the kept saves, no playing to them, the
   battle board from a golden capture replayed into a presenter and held at a moment (`ScreenGallery/GalleryBattle`), the
   title run from the player's files after a fresh boot and held the same way (`GalleryTitle`), the import screen held in each phase —
-  `powershell -ExecutionPolicy Bypass -File tools/ui/gallery.ps1 [-Steel] [-Touch] [-Phone] [-Only id,…]` builds, dumps every
+  `powershell -ExecutionPolicy Bypass -File tools/ui/gallery.ps1 [-Steel] [-Touch] [-PhoneLand] [-Phone] [-Only id,…]` builds, dumps every
   entry (`-Only`: those, into the passes as they are) into `screen-gallery/` at the root (git ignores it; `KICHIKUOU_UI_GALLERY_DIR` elsewhere) in a window, ~33 s a
   pass, nothing moves the pointer, and writes its `index.html`, every screen in its place, a changed one badged with a link to its former picture (two dumps of
   the same build are identical: our views animate by `Strategy/UiClock`, which the dump steps a frame at a time); the game alone:
@@ -708,7 +715,9 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   `--load --auto` run: at the first map wait in `COMMAND` it saves as a manual save there and quits; the command is in
   docs/ui/gallery.md, §2) — made again with the kept save it comes from. `-Phone` adds a tab of the phone's chosen
   mock-ups, not built (docs/ui/gallery.md, §9; `-PhoneOnly` draws that tab and the index alone, no build, no window;
-  its Python `KICHIKUOU_PYTHON` in local.env).
+  its Python `KICHIKUOU_PYTHON` in local.env). `-PhoneLand` is the real pass of the phone held landscape (`--phone
+  landscape --window 1808x813`, the whole window dumped at two thirds of the reference's pixels; the dump's window is
+  `--window WxH`, else 1280×800).
 
 ## Rules
 

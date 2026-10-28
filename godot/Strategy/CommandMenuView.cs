@@ -30,7 +30,7 @@ internal sealed partial class CommandMenuView : Control
     private const float TouchRowW = 220, TouchRowH = 46, TouchPitch = 54, TouchEndH = 62, TouchEndGap = 26;
     private const float CommandFoot = 732, LinkFoot = 656, RailHead = 50;
 
-    private readonly bool _touch = TouchMode.On;
+    private static bool Touch => Device.TouchLayout;                // the tablet's layout, read live (docs/ui/phone-build.md, §3)
 
     private static MenuRows Rows => MenuRowsChoice.Rows;
     private static float Width => MathF.Max(360, MathF.Round(360 * Rows.Scale * 0.95f));
@@ -92,7 +92,7 @@ internal sealed partial class CommandMenuView : Control
     }
 
     /// <summary>A point of the picture outside the panel, global: where unattended play taps to close it.</summary>
-    public Vector2 OutsidePoint => GetGlobalRect().Position + (_touch ? new Vector2(640, 600) : new Vector2(40, 700)) * _k;
+    public Vector2 OutsidePoint => GetGlobalRect().Position + (Touch ? new Vector2(640, 600) : new Vector2(40, 700)) * _k;
 
     public void Close()
     {
@@ -163,7 +163,7 @@ internal sealed partial class CommandMenuView : Control
     private Rect2 RowRect(int row)
     {
         float x = PanelX, y = PanelY;
-        if (_touch)
+        if (Touch)
         {
             // From the foot up, as the battle's rails: the first command lowest on the left, the first item lowest on the right.
             if (row < Commands)
@@ -216,7 +216,7 @@ internal sealed partial class CommandMenuView : Control
             case InputEventMouseButton { ButtonIndex: MouseButton.Left } button:
                 int at = RowAt(button.Position);
                 var point = button.Position / _k;
-                bool outside = _touch && !LeftRailRect.HasPoint(point) && !RightRailRect.HasPoint(point);
+                bool outside = Touch && !LeftRailRect.HasPoint(point) && !RightRailRect.HasPoint(point);
                 if (button.Pressed)
                     (_pressed, _outside) = (at, outside);
                 else if (at >= 0 && at == _pressed && Enabled(at))
@@ -252,13 +252,13 @@ internal sealed partial class CommandMenuView : Control
             return;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         float x = PanelX, y = PanelY;
-        if (_touch)
+        if (Touch)
             DrawRails();
         else
             Ui.DrawPanel(this, new Rect2(x, y, PanelWidth, Height), _k);
         for (int r = 0; r < Commands; r++)
             DrawCommand(r);
-        if (!_touch)
+        if (!Touch)
             Ui.DrawDivider(this, x + 16, x + Width - 16, y + LinksTop - 7, _k);
         for (int r = Commands; r < Commands + Links; r++)
             DrawLink(r);
@@ -290,8 +290,8 @@ internal sealed partial class CommandMenuView : Control
         bool on = item.Enabled, hover = r == _hovered && on;
         Ui.DrawRowBox(this, rect, hover, _k);
         var (tag, colour) = TagOf(item.Action);
-        int size = _touch ? 19 : Rows.Text;
-        var tagRect = _touch
+        int size = Touch ? 19 : Rows.Text;
+        var tagRect = Touch
             ? new Rect2(rect.Position.X + 7, rect.Position.Y + 8, 72, rect.Size.Y - 16)
             : new Rect2(rect.Position.X + Rows.TagInset, rect.Position.Y + Rows.TagInset, Rows.TagWidth, rect.Size.Y - 2 * Rows.TagInset);
         // A building under way (the owner's A, 2026-10-25): the tag half-lit, the weeks left where a spent row says so; the
@@ -300,15 +300,15 @@ internal sealed partial class CommandMenuView : Control
         // only dimmed.
         bool busy = item.WeeksText is not null;
         if (busy)
-            Ui.DrawBusyTag(this, _gothic, tagRect, tag, colour, _k, _touch ? 13 : Rows.TagText, _touch ? item.WeeksLeft : null);
+            Ui.DrawBusyTag(this, _gothic, tagRect, tag, colour, _k, Touch ? 13 : Rows.TagText, Touch ? item.WeeksLeft : null);
         else
-            Ui.DrawTag(this, _gothic, tagRect, tag, colour, on, _k, _touch ? 13 : Rows.TagText);
-        float textX = rect.Position.X + (_touch ? 94 : Rows.TextLeft);
-        while (_touch && size > 14 && textX + _gothic.GetStringSize(item.Text, fontSize: size).X > rect.End.X - 8)
+            Ui.DrawTag(this, _gothic, tagRect, tag, colour, on, _k, Touch ? 13 : Rows.TagText);
+        float textX = rect.Position.X + (Touch ? 94 : Rows.TextLeft);
+        while (Touch && size > 14 && textX + _gothic.GetStringSize(item.Text, fontSize: size).X > rect.End.X - 8)
             size--;                                                     // a long name shrinks to fit the rail's row
         DrawString(_gothic, new Vector2(textX, Lacquer.Baseline(rect, _gothic, size)), item.Text, fontSize: size,
             modulate: busy ? Ui.Quiet : on ? Ui.Text : Ui.OffText);
-        if (!_touch && (busy || !on))
+        if (!Touch && (busy || !on))
         {
             string note = item.WeeksText ?? "used this week";
             int noteSize = Rows.Small;
@@ -323,10 +323,10 @@ internal sealed partial class CommandMenuView : Control
         var rect = RowRect(r);
         bool hover = r == _hovered;
         // On touch every row has its box: no hover shows that it can be tapped.
-        if (hover || _touch)
+        if (hover || Touch)
             Ui.DrawRowBox(this, rect, hover, _k);
-        int size = _touch ? 18 : Rows.Text - 1;
-        DrawString(_gothic, new Vector2(rect.Position.X + (_touch ? 14 : 10), Lacquer.Baseline(rect, _gothic, size)), _menu!.Links[r - Commands].Text,
+        int size = Touch ? 18 : Rows.Text - 1;
+        DrawString(_gothic, new Vector2(rect.Position.X + (Touch ? 14 : 10), Lacquer.Baseline(rect, _gothic, size)), _menu!.Links[r - Commands].Text,
             fontSize: size, modulate: hover ? Ui.Text : Ui.Quiet);
     }
 
@@ -339,7 +339,7 @@ internal sealed partial class CommandMenuView : Control
         DrawRect(rect, hover ? Ui.HoverLine : Ui.Gold, false, Line(2));
         DrawRect(rect.Grow(-4), Color.Color8(214, 150, 90), false, Line(1));
         string text = _menu!.TurnEndText;
-        int size = _touch ? 24 : Rows.Text + 5;
+        int size = Touch ? 24 : Rows.Text + 5;
         float tw = _brush.GetStringSize(text, fontSize: size).X;
         DrawString(_brush, new Vector2(rect.GetCenter().X - tw / 2, Lacquer.Baseline(rect, _brush, size)), text, fontSize: size,
             modulate: Color.Color8(250, 226, 160));

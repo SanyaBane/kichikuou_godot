@@ -34,7 +34,7 @@ internal sealed partial class FloorLadderView : Control
 
     private readonly FontFile _brush = Lacquer.Brush();
     private readonly FontVariation _cinzel = Lacquer.Cinzel(600);
-    private readonly bool _touch = TouchMode.On;
+    private static bool Touch => Device.TouchLayout;                // the tablet's layout, read live (docs/ui/phone-build.md, §3)
     private FontFile _gothic;
     private FloorLadder? _ladder;
     private DungeonEntryMenu? _entry;
@@ -104,7 +104,7 @@ internal sealed partial class FloorLadderView : Control
     }
 
     private Rect2 PanelRect => _entry is not null ? new Rect2(TouchX, EntryTop, TouchW, TouchY + TouchH - EntryTop)
-        : _touch ? new Rect2(TouchX, TouchY, TouchW, TouchH) : new Rect2(X, Y, W, H);
+        : Touch ? new Rect2(TouchX, TouchY, TouchW, TouchH) : new Rect2(X, Y, W, H);
 
     /// <summary>The entry rail's top: over Start Search the other items, then Return.</summary>
     private float EntryTop => StartRect.Position.Y - 14 - (_entry?.Others.Count ?? 0) * EntryPitch - EntryReturnH - 28;
@@ -124,7 +124,7 @@ internal sealed partial class FloorLadderView : Control
                 _ => new Rect2(x, top + 28 + EntryReturnH + (part - Part.Other0) * EntryPitch, w, EntryRowH),
             };
         }
-        if (_touch)
+        if (Touch)
         {
             float x = TouchX + TouchInset, w = TouchW - 2 * TouchInset;
             return part switch
@@ -229,7 +229,7 @@ internal sealed partial class FloorLadderView : Control
         if (l.Up is { } up)
             DrawWay(Part.Up, up, true, false);
         // The floor between the arrows.
-        float mid = panel.GetCenter().X, floorY = _touch ? TouchY + 200 : Y + 112;
+        float mid = panel.GetCenter().X, floorY = Touch ? TouchY + 200 : Y + 112;
         const string label = "FLOOR";
         float lw = _cinzel.GetStringSize(label, fontSize: 12).X;
         DrawString(_cinzel, new Vector2(mid - lw / 2, floorY + (_cinzel.GetAscent(12) - _cinzel.GetDescent(12)) / 2), label,
@@ -240,11 +240,11 @@ internal sealed partial class FloorLadderView : Control
             fontSize: 34, modulate: Ui.Name);
         // The touch rail's Descend is larger: it sits in the corner, under the thumb.
         if (l.Down is { } down)
-            DrawWay(Part.Down, down, false, _touch);
-        float inset = _touch ? TouchInset : Inset;
-        Ui.DrawDivider(this, panel.Position.X + inset + 8, panel.End.X - inset - 8, _touch ? TouchY + 90 : Y + 266, _k);
+            DrawWay(Part.Down, down, false, Touch);
+        float inset = Touch ? TouchInset : Inset;
+        Ui.DrawDivider(this, panel.Position.X + inset + 8, panel.End.X - inset - 8, Touch ? TouchY + 90 : Y + 266, _k);
         var retreat = RectOf(Part.Retreat);
-        int retreatSize = _touch ? 22 : 20;
+        int retreatSize = Touch ? 22 : 20;
         Ui.DrawRedButton(this, retreat, _hovered == Part.Retreat, _pressed == Part.Retreat && _hovered == Part.Retreat, _k);
         float rw = _brush.GetStringSize(l.RetreatText, fontSize: retreatSize).X;
         DrawString(_brush, new Vector2(retreat.GetCenter().X - rw / 2, Lacquer.Baseline(retreat, _brush, retreatSize)),

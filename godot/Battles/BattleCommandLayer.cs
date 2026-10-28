@@ -152,7 +152,7 @@ internal sealed partial class BattleCommandLayer : Control
         Result = null;
         (_hovered, _banners, _hotBanner, _menu, _hotItem) = (null, [], -1, null, -1);
         (_forecasts, _forecastsDrawn) = (null, -1);
-        if (_touch)
+        if (Touch)
             BeginTouch(target);
         StartForecasts();
         QueueRedraw();
@@ -166,7 +166,7 @@ internal sealed partial class BattleCommandLayer : Control
     {
         _forecastShown = ForecastOn;
         if (_forecastShown && _forecasts is null && _commands is { } commands && _state is { } state)
-            _forecasts = DamageForecasts.Start(state, commands, _touch ? _target : null, DemonReachChoice.Chosen);
+            _forecasts = DamageForecasts.Start(state, commands, Touch ? _target : null, DemonReachChoice.Chosen);
     }
 
     public override void _Process(double delta)
@@ -221,7 +221,7 @@ internal sealed partial class BattleCommandLayer : Control
             SetHotItem(ItemAt(menu, p));
             return;
         }
-        if (_touch)
+        if (Touch)
         {
             SetHotRail(_pressedRail.Index >= 0 && RailAt(p) == _pressedRail ? _pressedRail : (false, -1));
             SetHotToggle(_pressedToggle >= 0 && ToggleAt(p) == _pressedToggle ? _pressedToggle : -1);
@@ -272,7 +272,7 @@ internal sealed partial class BattleCommandLayer : Control
                 return;
             }
         }
-        if (!right && _touch)
+        if (!right && Touch)
         {
             TouchPress(p);
             return;
@@ -294,7 +294,7 @@ internal sealed partial class BattleCommandLayer : Control
     {
         if (_commands is null || right)
             return;
-        if (_touch && _menu is null)
+        if (Touch && _menu is null)
         {
             TouchRelease(p);
             return;
@@ -338,7 +338,7 @@ internal sealed partial class BattleCommandLayer : Control
     {
         _menu = null;
         _hotItem = _pressedItem = -1;
-        if (_touch && _commands is not null)
+        if (Touch && _commands is not null)
             SetTarget(_target);                                     // the touch mode's target again
         QueueRedraw();
     }
@@ -381,7 +381,7 @@ internal sealed partial class BattleCommandLayer : Control
     /// <summary>The banner of <paramref name="target"/> under <paramref name="p"/> (its pennant shape), or -1.</summary>
     private int BannerAt(BattlePlace target, Vector2 p)
     {
-        if (target != _hovered || _touch)
+        if (target != _hovered || Touch)
             return -1;                                              // the touch mode shows no banners: its rail does
 
         for (int i = 0; i < _banners.Count; i++)
@@ -418,7 +418,7 @@ internal sealed partial class BattleCommandLayer : Control
         if (_commands is null)
             return;
         var font = GetThemeDefaultFont();
-        if (_touch)
+        if (Touch)
         {
             DrawRails(font);
             if (_target is { } t && _menu is null)

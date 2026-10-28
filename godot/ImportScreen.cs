@@ -129,9 +129,9 @@ public partial class ImportScreen : Control
 
     private void Layout()
     {
-        float k = Math.Min(Size.X / 1280f, Size.Y / 800f);
-        _k = k <= 0 ? 1 : k;
-        _origin = (Size - new Vector2(1280, 800) * _k) / 2;
+        var frame = ScreenFrame.In(new Rect2(Vector2.Zero, Size));
+        _k = frame.Scale <= 0 ? 1 : frame.Scale;
+        _origin = frame.Scale <= 0 ? (Size - new Vector2(1280, 800)) / 2 : frame.Origin;
         QueueRedraw();
     }
 

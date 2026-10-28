@@ -168,6 +168,46 @@ layout: on a phone they show as on the tablet, in the frame (the agent's choice,
 | **L9** | All Data (the graphs as cells in the left side, the scales as chips in the right, the bars' figures drawn again at 2.3 mm); the title as the PC's (Menu in the left side); the import screen on its paper sheet; the original's own screens as round P21 chose. | LG2m, LG2, LE1, LI, LIp, LIr (§23) |
 | **L10** | The landscape phone whole: unattended play with `--phone landscape` from the kept saves through every exercise it has (the deployment, the battle, `--treasure`, `--saveload`, `--scout`, `--dungeon`, `--harem`), the owner's play on the Poco, the docs (phone.md, touch.md, style.md §6, backlog). | — |
 
+**Step F, where it stands (2026-10-28):** built but the speed on the Poco, which waits for the owner's phone by USB.
+
+- **The device**: `Original.Content/Devices/DeviceLayout` (the enum and `DeviceLayouts.IsPhone` / `Decide`, tested) and
+  `godot/Strategy/Device`, which reads it live — the main window followed from `Main` (`Device.Follow`: the layout and
+  the safe area read again on every resize or turn), `Device.Phone` from Android's screen size and dpi or `--phone`,
+  `Device.TouchLayout` for the views that take the tablet's layout. `TouchMode.On` stays the input's switch and is on
+  with `--phone` too. The frozen reads of §2 are live reads of `Device.TouchLayout` now: `BattleBoardView.Narrow` and
+  the board's places that hang on it, `CardPortrait`'s widths, the `Touch` of `CommandMenuView`, `ProvinceMenuView`,
+  `FloorLadderView`, `BattleDialogLayer` and `BattleCommandLayer`, `LedgerTabsBar.RowHeight`, `LedgerRowsChoice`.
+- **The frame**: `Original.Content/Devices/PhoneFrame` (tested, `PhoneFrameTests`): for a screen held landscape and its
+  safe insets, the frame (fitted to the height, centred; between the hole's strips on a screen too short for it), the
+  black sides whole, the room in them our controls may take, `Unit` (the canvas's units a reference pixel) and `Px`.
+  The insets are the system's when it reports them — the larger side's on both sides, so nothing moves when the phone
+  is turned round, and at least the gesture zone at the foot, which Android's safe area does not count — else the
+  reference's 110 / 50 px.
+- **One frame helper**: `godot/Strategy/ScreenFrame` (`In` for the device, `Fit`, `Scale`, `Pixels`, `ToScript`,
+  `FromScript`) in place of the eleven copies: `GameScreen.Frame()` (`PictureArea()` is its area) and its partial
+  files, `BattleScreen.ToScript`, `GalleryScreen.PictureArea`, `ImportScreen.Layout`.
+- **The phone's screen**: `GameScreen.UpdateDevice` (each frame): on a phone the menu bar is hidden and `_content`
+  takes the whole screen; held landscape `_view` stands at the phone's frame, its black sides ours. Nothing is drawn in
+  them yet (L1 on); the Menu sheet comes with L1, so until then the phone has no File/Option menu (Save and Load are
+  in the command panel).
+- **`--phone landscape`** (implies the touch mode): the window at the reference phone's shape, as large as the
+  monitor's usable area allows, at most 2712 × 1220 (`Device.OpenPhoneWindow`; 2544 × 1144 on the owner's 2560 × 1440
+  monitor). `--phone upright` is refused until P0.
+- **The gallery's pass** (the agent's choice): a pass of its own, `phone-landscape` ("Smartphone, landscape";
+  `gallery.ps1 -PhoneLand`), beside the mock-up tab `phone-land`, which stays as it is — the mock-up tab's folder keeps
+  its name, and each screen's mock-up leaves `GALLERY_ENTRIES_LAND` as its phone layout is built. The pass dumps every
+  entry with `--phone landscape --window 1808x813`: the whole window, its black sides with it, at **two thirds of the
+  reference's pixels** (a window of 2712 × 1220 does not fit a common monitor; at two thirds the frame is 1301 × 813,
+  about the PC's own size, and the dumps are the same on every machine). `GalleryScreen.WindowSize` (`--window WxH`)
+  replaced the fixed 1280 × 800, which stays the default. At F the pass shows today's touch layout in the frame: the
+  baseline the L steps change entry by entry. The Lacquer and Touch passes were "same" (110 and 111 entries).
+- **The speed**: `godot/Strategy/FrameTimes`, on on Android and with `--frame-times`: every 10 s the console (logcat,
+  tag `godot`) gets the frames of each kind shown — a scene, the map, a battle — their count, mean, 95th percentile and
+  longest interval, and the mean processing time; `Device` logs the screen's size and dpi, the window and the safe area
+  the Poco reports (§7). **To measure:** the Poco by USB (`ANDROID_SERIAL` when the tablet is connected too),
+  `run-android.cmd`, play a scene, the map and a battle for half a minute each, `adb logcat -s godot`; the figures go
+  here.
+
 ### Upright (steps P0-P9)
 
 | Step | What | Base versions (phone.md) |

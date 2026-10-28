@@ -5,6 +5,7 @@ using Kichikuou.Content.Screen;
 using Kichikuou.Engine.Golden;
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
+using Kichikuou.Game.Strategy;
 using Kichikuou.Original.Combat;
 using Kichikuou.Original.Content.Battles;
 using Kichikuou.Original.Golden;
@@ -264,10 +265,7 @@ public partial class BattleScreen : Control, IScriptView, IBattleInput
     /// <summary>The mouse position in script coordinates (640×400).</summary>
     private Vector2I ToScript(Vector2 local)
     {
-        var size = _view.Size;
-        float scale = Math.Min(size.X / (Surface.ScreenWidth * Surface.Scale), size.Y / (Surface.ScreenHeight * Surface.Scale));
-        var drawn = new Vector2(Surface.ScreenWidth, Surface.ScreenHeight) * Surface.Scale * scale;
-        var p = (local - _view.Position - (size - drawn) / 2) / (scale * Surface.Scale);
+        var p = ScreenFrame.Fit(new Rect2(_view.Position, _view.Size)).ToScript(local);
         return new Vector2I((int)Math.Floor(p.X), (int)Math.Floor(p.Y));
     }
 
