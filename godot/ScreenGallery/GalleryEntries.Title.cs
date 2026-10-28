@@ -1,7 +1,9 @@
 using Godot;
 using Kichikuou.Content;
+using Kichikuou.Engine.Script;
 using Kichikuou.Game.Strategy;
 using Kichikuou.Original.Content.ScreenGallery;
+using Kichikuou.Original.State;
 
 namespace Kichikuou.Game.ScreenGallery;
 
@@ -74,7 +76,31 @@ internal static partial class GalleryEntries
                 var (x, y) = GalleryTitle.Centre(s, GalleryTitle.Requests);
                 pointer.Click(x, y);
             }, AtKey: true)));
+
+        yield return new("fortune-check", TitleSection, "Fortune Check", null,
+            "Made up: a clear and three fates seen (GalleryStates.FatesSeen). A click on the title's Fortune Check (button 0) "
+            + "runs HAPPY_C from the player's files, held at its mouse poll on its first page with the stamps, the pointer off its cells.",
+            g => Title(g, new TitleMoment(GalleryStates.FatesSeen, Gesture: ClickOn(GalleryTitle.FortuneCheck, (610, 200)))));
+        yield return new("cg-gallery", TitleSection, "The CG gallery", null,
+            "After a clear: a click on the title's C.G (button 7) runs CG from the player's files, held at its mouse poll on "
+            + "page 1. Its sheets are masked as every agent's dump masks them (GamePresenter.MaskEventCgs).",
+            g => Title(g, new TitleMoment(GalleryStates.Cleared, Gesture: ClickOn(GalleryTitle.CgGallery, (600, 395)))));
+        yield return new("music-room", TitleSection, "The music room", null,
+            "After a clear: a click on the title's B.G.M (button 1) runs MMODE from the player's files, held at its mouse "
+            + "poll with no track playing, the pointer off its grid.",
+            g => Title(g, new TitleMoment(GalleryStates.Cleared, Gesture: ClickOn(GalleryTitle.MusicRoom, (160, 100)))));
     }
+
+    /// <summary>
+    /// A click in the middle of the title's <paramref name="button"/>, as the title loaded its box, then the pointer moved
+    /// to <paramref name="rest"/>, a point the screen it opens does not light.
+    /// </summary>
+    private static Action<PointerScript, GameState> ClickOn(int button, (int X, int Y) rest) => (pointer, s) =>
+    {
+        var (x, y) = GalleryTitle.Centre(s, button);
+        pointer.Click(x, y);
+        pointer.Hover(rest.X, rest.Y);
+    };
 
     /// <summary>The refusal of a KICHIKUSA.ALD of no known version: the SHA-256 of an empty file against the one expected.</summary>
     private static string OtherVersion()

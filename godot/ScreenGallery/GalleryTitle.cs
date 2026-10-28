@@ -28,8 +28,11 @@ internal sealed record TitleMoment(
 /// </summary>
 internal static class GalleryTitle
 {
-    /// <summary>The title's buttons (<c>ｽﾀMENU.ADV:805</c>; docs/strategy/survey-w4.md, §3.2): the requests slip, Start.</summary>
-    public const int Requests = 3, NewGame = 6;
+    /// <summary>
+    /// The title's buttons (<c>ｽﾀMENU.ADV:805</c>; docs/strategy/survey-w4.md, §3.2): Fortune Check, the music room, the
+    /// requests slip, Start, the CG gallery.
+    /// </summary>
+    public const int FortuneCheck = 0, MusicRoom = 1, Requests = 3, NewGame = 6, CgGallery = 7;
 
     private static readonly Lazy<ScenarioScripts> Scripts = new(() => new ScenarioScripts(GameData.ScenarioDirectory));
 

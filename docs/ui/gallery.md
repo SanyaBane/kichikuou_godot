@@ -355,10 +355,15 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
      hovered), `title-clears` (made up: a clear and both rolls at their top at once, every button drawn),
      `title-description` (a right click on Start: its description in our window 113) and `title-requests` (the
      requests slip after a clear, its second request of the first five, at its `IK 0`). The title's load list is
-     `save-load-title` (step 3). Left out: the screens the title's buttons run from the player's files — Fortune Check
-     (`HAPPY_C`), the music room (`MMODE`), the CG gallery (`CG`, its sheets masked), Alice's Mansion (`Iｱﾘｽ`), Saitou
-     (`Gｻｲﾄｳ`) — and the debug starts' menu (Alice's secret only); the first three come with the phone's step 0
-     (docs/ui/phone-build.md, §5).
+     `save-load-title` (step 3). Left out: Alice's Mansion (`Iｱﾘｽ`) and Saitou (`Gｻｲﾄｳ`), which are scenes, and the debug
+     starts' menu (Alice's secret only).
+   - **The title's own screens** (2026-10-28, the phone's step 0, docs/ui/phone-build.md §5; section Title, no save): the
+     screens three of the title's buttons run from the player's files, each reached by a click on its button after a
+     clear (`GalleryTitle.FortuneCheck`, `MusicRoom`, `CgGallery`) and held at its mouse poll, the pointer then moved
+     off what the screen lights (a hover queued after the click: a `Move` would be overwritten by the click's reads).
+     Entries `fortune-check` (made up: three fates seen, `GalleryStates.FatesSeen`; the first page with their stamps),
+     `cg-gallery` (page 1; its sheets masked as every agent's dump masks them, so only the grey placeholder shows) and
+     `music-room` (no track playing). The other entries stayed the same in both passes (now 110 and 111).
 
 ## 8. Questions for the owner
 

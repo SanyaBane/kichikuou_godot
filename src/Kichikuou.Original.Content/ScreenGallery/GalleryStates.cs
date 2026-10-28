@@ -330,6 +330,19 @@ public static class GalleryStates
     /// </summary>
     public static void Cleared(GameState s) => s.Fates[79].Fate = 1;
 
+    /// <summary>
+    /// Made up: a game cleared once (<see cref="Cleared"/>) and three fates seen, so Fortune Check stamps its first page
+    /// (<c>HAPPY_C.ADV:258-296</c>): Sill (fate 0) both her fortune and her misfortune, Menad (fate 7) her fortune,
+    /// Chizuko (fate 32, the page's last cell) her misfortune.
+    /// </summary>
+    public static void FatesSeen(GameState s)
+    {
+        Cleared(s);
+        s.Fates[0].Fate = 100;
+        s.Fates[7].Fate = 1;
+        s.Fates[32].Fate = 10;
+    }
+
     /// <summary>The boot's selection window (<c>ｽﾀｰﾄ.ADV:860</c>, <c>B1 1, 250, 50, 150, 100, 1</c>), where the scenes' menus open.</summary>
     public static ScriptEvent SelectionWindow { get; } =
         new EngineEvent("B1", [(Sys3Int)1, (Sys3Int)250, (Sys3Int)50, (Sys3Int)150, (Sys3Int)100, (Sys3Int)1]);

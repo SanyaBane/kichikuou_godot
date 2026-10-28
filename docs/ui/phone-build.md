@@ -142,6 +142,9 @@ phone tabs:
   backlog's "The title's other screens in the screen gallery", taken into this step, 2026-10-28; Alice's Mansion and
   Saitou are scenes, laid out as PS2 and LS1, and the debug starts' menu is a development screen).
 
+**Where it stands (2026-10-28):** the gallery entries are built — `fortune-check`, `cg-gallery`, `music-room`
+(docs/ui/gallery.md, §7 step 7); the ending's Completion Report is taken from a `--ending 11` run.
+
 The development screens (the capture viewer, Portraits, Effects, the screen gallery, Debug's sliders) get no phone
 layout: on a phone they show as on the tablet, in the frame (the agent's choice, below).
 
