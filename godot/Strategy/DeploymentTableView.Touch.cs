@@ -1,4 +1,5 @@
 using Godot;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.Content.Strategy;
 
 namespace Kichikuou.Game.Strategy;
@@ -7,8 +8,13 @@ namespace Kichikuou.Game.Strategy;
 // long press on a header shows its full name (HeaderTip) and a tap sorts as a click does (owner, 2026-10-24); its scroll
 // bars are too thin for a finger, so a finger dragged over the table scrolls it both ways, a flick going on after the
 // release (owner, 2026-10-26; FingerScroll). A row's or a Refill button's press is therefore a tap: it acts at the release.
+// On the phone held landscape a row held as long raises the unit's picture (RowHeld; docs/ui/phone.md, PD2d), the PC's
+// hover, and is no tap.
 internal sealed partial class DeploymentTableView
 {
+    /// <summary>A row held as a long press on the phone (the unit's number): the screen raises its picture (PD2d).</summary>
+    public event Action<int>? RowHeld;
+
     /// <summary>How long a finger stays on a header to show its tip (the battle cards' long press).</summary>
     private const double LongPressSeconds = 0.5;
 
@@ -21,6 +27,7 @@ internal sealed partial class DeploymentTableView
     private int _touchRefill;           // the Refill button's unit it came down on (0: none)
     private int _touchPresses;          // the presses counted: a timer acts only for its own
     private bool _headerLong;           // its long press showed the tip
+    private bool _rowLong;              // its long press on a row raised the unit's picture
     private Vector2 _flingAt;           // the scroll bars' values a flick has reached
     private bool _scrolled;             // the last press scrolled the table: the hovered unit is the one it came down on
     private int _scrolledUnit;          // that unit (0: none)
@@ -76,7 +83,7 @@ internal sealed partial class DeploymentTableView
             return false;
         if (button.Pressed)
         {
-            (_touchFrom, _headerLong, _scrolled) = (button.Position, false, false);
+            (_touchFrom, _headerLong, _scrolled, _rowLong) = (button.Position, false, false, false);
             _headerColumn = HeaderColumnAt(button.Position);
             (_touchUnit, _touchRefill) = _headerColumn >= 0 ? (0, 0) : (UnitAt(button.Position), RefillAt(button.Position));
             int press = ++_touchPresses;
@@ -95,6 +102,17 @@ internal sealed partial class DeploymentTableView
                     ShowHeaderTip(column, _touchFrom.X);            // no vibration (owner, 2026-10-24)
                 };
             }
+            else if (_touchUnit > 0 && _touchRefill == 0 && Device.Layout == DeviceLayout.PhoneLandscape)
+            {
+                int unit = _touchUnit;
+                GetTree().CreateTimer(LongPressSeconds).Timeout += () =>
+                {
+                    if (press != _touchPresses || !_finger.Down || _scrolled || !IsVisibleInTree())
+                        return;
+                    _rowLong = true;
+                    RowHeld?.Invoke(unit);
+                };
+            }
             return true;
         }
         if (!_finger.Down)
@@ -110,7 +128,7 @@ internal sealed partial class DeploymentTableView
         }
         else if (_touchRefill > 0)
             RefillPressed?.Invoke(_touchRefill);
-        else if (_touchUnit > 0)
+        else if (_touchUnit > 0 && !_rowLong)
             RowPressed?.Invoke(_touchUnit);
         return true;
     }

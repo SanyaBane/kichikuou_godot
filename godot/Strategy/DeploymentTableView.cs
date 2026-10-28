@@ -1,6 +1,7 @@
 using Godot;
 using Kichikuou.Game.Battles;
 using Kichikuou.Original.Content;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.Content.Strategy;
 using Kichikuou.Original.State;
 using Kichikuou.Original.Strategy;
@@ -405,23 +406,44 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     /// </summary>
     public void Place(Rect2 rect, float pixelsPerScript)
     {
-        Position = rect.Position;
-        Size = rect.Size;
-        _overlay.Size = new Vector2(rect.Size.X, OverlayHeight);
         int size = Math.Max(8, (int)Math.Round(_textSize * pixelsPerScript));
         int separation = (int)Math.Round(1.5f * pixelsPerScript);              // the ledger's rows breathe
         int row = LedgerRowsChoice.Chosen;                                     // read each frame: Option's change shows at once
         int minimum = row > LedgerRowsChoice.TextRow                           // the tree adds the separation twice a row
             ? Math.Max(0, (int)Math.Round(row * pixelsPerScript / 2) - 2 * separation) : 0;
-        if (size == _fontSize && minimum == _rowMinimum)
+        Lay(rect, size, separation, minimum, 6);
+    }
+
+    /// <summary>
+    /// Covers <paramref name="rect"/> on the phone held landscape (docs/ui/phone-build.md, step L5; LD2, LU1): one-line rows
+    /// at the phone's type, <see cref="PhoneLedger.Row"/> high, the text <see cref="PhoneLedger.Text"/>, the columns
+    /// <see cref="PhoneLedger.ColumnGap"/> apart (reference pixels of <paramref name="phone"/>).
+    /// </summary>
+    public void PlacePhone(Rect2 rect, PhoneFrame phone)
+    {
+        int separation = (int)Math.Round(phone.Px(6));
+        int size = (int)Math.Round(phone.Px(PhoneLedger.Text));
+        Lay(rect, size, separation, (int)Math.Round(phone.Px(PhoneLedger.Row)) - 2 * separation, (int)Math.Round(phone.Px(PhoneLedger.ColumnGap)));
+    }
+
+    /// <summary>The table at <paramref name="rect"/>: its text's size, the rows' separation and least height, the columns' room.</summary>
+    private void Lay(Rect2 rect, int size, int separation, int minimum, int columns)
+    {
+        Position = rect.Position;
+        Size = rect.Size;
+        _overlay.Size = new Vector2(rect.Size.X, OverlayHeight);
+        if (size == _fontSize && minimum == _rowMinimum && separation == _separation && columns == _columnGap)
             return;
-        (_fontSize, _rowMinimum) = (size, minimum);
+        (_fontSize, _rowMinimum, _separation, _columnGap) = (size, minimum, separation, columns);
         AddThemeFontSizeOverride("font_size", size);
         AddThemeFontSizeOverride("title_button_font_size", TitleSize);
         AddThemeConstantOverride("v_separation", separation);
+        AddThemeConstantOverride("h_separation", columns);
         ApplyLedger();                                                  // the groups' strip grows with the text
         Fill();
     }
+
+    private int _separation, _columnGap = 6;
 
     /// <summary>
     /// A row's minimum height in window pixels without the separations: Option's height (<see cref="LedgerRowsChoice"/>,

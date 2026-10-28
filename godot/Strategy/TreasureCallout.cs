@@ -1,5 +1,6 @@
 using Godot;
 using Kichikuou.Game.Battles;
+using Kichikuou.Original.Content.Devices;
 
 namespace Kichikuou.Game.Strategy;
 
@@ -12,14 +13,47 @@ namespace Kichikuou.Game.Strategy;
 /// (0), as the original's box. Our own question before an item replaces a unit's (<c>TreasureRoster.ReplaceQuestion</c>)
 /// shows the same way. In the touch mode the last tap is the screen's button, and the callout stands beside it instead,
 /// at the top of the info panel left of it, as tall as its text, its tail on the button (docs/ui/pickers.md, §6, the owner's X4). Laid out in
-/// the 1280×800 screen's pixels, scaled with the picture.
+/// the 1280×800 screen's pixels, scaled with the picture. On the phone held landscape (<see cref="PlacePhone"/>; docs/ui/phone-build.md,
+/// step L5, LU1q) it is laid out over the whole screen in the reference phone's pixels at the phone's sizes, a callout beside its
+/// anchor standing on the room's foot (its tail to the anchor on either hand), the answers filling its width with the first, in
+/// red lacquer, at the right: nearer the thumb.
 /// </summary>
 internal sealed partial class TreasureCallout : Control
 {
     private static UiPalette Ui => UiPalettes.For(UiPart.Screens);
 
-    private const float Pad = 26, LineStep = 28, TextSize = 20, Gap = 14, TailX = 60, TailH = 13;
-    private const float ButtonW = 136, ButtonH = 38, ButtonGap = 14, MinWidth = 300;
+    /// <summary>The callout's figures: the PC's in the 1280×800 screen's pixels, the phone's in the reference phone's (LU1q).</summary>
+    private sealed record Metrics(float Pad, float LineStep, float TextSize, float Gap, float TailX, float TailH, float ButtonW,
+        float ButtonH, float ButtonGap, float MinWidth, int LabelSize, float TailHalf, float Edge)
+    {
+        public static readonly Metrics Pc = new(26, 28, 20, 14, 60, 13, 136, 38, 14, 300, 17, 13, 8);
+        public static readonly Metrics Phone = new(40, 60, 46, 33, 120, 30, 258, 130, 24, 620, 44, 30, 18);
+    }
+
+    private bool _phone;
+    private Vector2 _room = new(1280, 800);         // the layout's room: the picture's, or the phone's whole screen
+
+    private Metrics M => _phone ? Metrics.Phone : Metrics.Pc;
+
+    private float Pad => M.Pad;
+
+    private float LineStep => M.LineStep;
+
+    private float TextSize => M.TextSize;
+
+    private float Gap => M.Gap;
+
+    private float TailX => M.TailX;
+
+    private float TailH => M.TailH;
+
+    private float ButtonW => M.ButtonW;
+
+    private float ButtonH => M.ButtonH;
+
+    private float ButtonGap => M.ButtonGap;
+
+    private float MinWidth => M.MinWidth;
     private static Color Fill => Ui.CalloutFill;
 
     private readonly FontVariation _cinzel = Lacquer.Cinzel(700);
@@ -101,14 +135,35 @@ internal sealed partial class TreasureCallout : Control
     /// <summary>Lays the layer over the screen's picture (<paramref name="area"/>, in its parent's coordinates).</summary>
     public void Place(Rect2 area)
     {
-        float k = area.Size.X / 1280f;
-        if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f)
+        Lay(area, area.Size.X / 1280f, phone: false);
+    }
+
+    /// <summary>Lays the layer over <paramref name="area"/> (the picture), or on the phone held landscape over its whole screen.</summary>
+    public void PlaceOnDevice(Rect2 area)
+    {
+        if (Device.Landscape(this) is { } phone)
+            PlacePhone(phone);
+        else
+            Place(area);
+    }
+
+    /// <summary>Lays the layer over the phone's whole screen (its parent's area), in the reference phone's pixels.</summary>
+    public void PlacePhone(PhoneFrame phone) => Lay(new Rect2(Vector2.Zero, GetParentAreaSize()), phone.Unit, phone: true);
+
+    private void Lay(Rect2 area, float k, bool phone)
+    {
+        if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f && phone == _phone)
             return;
         Position = area.Position;
         Size = area.Size;
         _k = k;
+        _phone = phone;
+        _room = phone ? area.Size / k : new Vector2(1280, 800);
         QueueRedraw();
     }
+
+    /// <summary>A rectangle in global coordinates in the callout's layout pixels (a cell to show it at).</summary>
+    public Rect2 FromGlobal(Rect2 global) => new((global.Position - GlobalPosition) / _k, global.Size / _k);
 
     private int Answers => _answers?.Count ?? 0;
 
@@ -152,11 +207,11 @@ internal sealed partial class TreasureCallout : Control
             float buttons = Answers * ButtonW + Math.Max(0, Answers - 1) * ButtonGap;
             float w = Math.Max(MinWidth, Math.Max(widest, buttons) + 2 * Pad + (Answers == 0 ? 30 : 0));
             float h = Pad + Shown.Count * LineStep + (Answers > 0 ? ButtonH + 2 * Gap + 4 : 34);
-            if (_beside is { } area)
-                return new Rect2(area.Position, new Vector2(area.Size.X, h));   // as tall as its text; the screen hides what is under it
-            float x = Math.Clamp(_cell.Position.X - 8, 8, 1280 - 8 - w);
+            if (_beside is { } area)                                            // as tall as its text; the screen hides what is under it
+                return _phone ? new Rect2(area.Position.X, area.End.Y - h, area.Size.X, h) : new Rect2(area.Position, new Vector2(area.Size.X, h));
+            float x = Math.Clamp(_cell.Position.X - M.Edge, M.Edge, _room.X - M.Edge - w);
             float y = _cell.End.Y + Gap;
-            if (y + h > 800 - 8)
+            if (y + h > _room.Y - M.Edge)
                 y = _cell.Position.Y - Gap - h;
             return new Rect2(x, y, w, h);
         }
@@ -167,7 +222,10 @@ internal sealed partial class TreasureCallout : Control
     private Rect2 ButtonRect(int i)
     {
         var box = Box;
-        return new Rect2(box.Position.X + Pad + i * (ButtonW + ButtonGap), box.End.Y - Gap - 4 - ButtonH, ButtonW, ButtonH);
+        if (!_phone)
+            return new Rect2(box.Position.X + Pad + i * (ButtonW + ButtonGap), box.End.Y - Gap - 4 - ButtonH, ButtonW, ButtonH);
+        float w = (box.Size.X - 2 * Pad - (Answers - 1) * ButtonGap) / Math.Max(1, Answers);     // the first at the right
+        return new Rect2(box.Position.X + Pad + (Answers - 1 - i) * (w + ButtonGap), box.End.Y - Gap - 4 - ButtonH, w, ButtonH);
     }
 
     private int ButtonAt(Vector2 window)
@@ -252,29 +310,34 @@ internal sealed partial class TreasureCallout : Control
             else
                 Ui.DrawRowBox(this, r, hover, _k);
             string label = _answers![i];
-            float w = _cinzel.GetStringSize(label, fontSize: 17).X;
-            DrawString(_cinzel, new Vector2(r.GetCenter().X - w / 2, Lacquer.Baseline(r, _cinzel, 17)), label, fontSize: 17,
+            float w = _cinzel.GetStringSize(label, fontSize: M.LabelSize).X;
+            DrawString(_cinzel, new Vector2(r.GetCenter().X - w / 2, Lacquer.Baseline(r, _cinzel, M.LabelSize)), label, fontSize: M.LabelSize,
                 modulate: hover ? Ui.Name : Ui.Text);
         }
         if (_waiting && Answers == 0)
-            Ui.DrawTriangle(this, new Vector2(box.End.X - 26, box.End.Y - 22), _k);
+            Ui.DrawTriangle(this, new Vector2(box.End.X - Pad, box.End.Y - Pad * 0.85f), _k);
     }
 
     /// <summary>The tail: a gold wedge from the box's edge to the cell, the box's lacquer inside it.</summary>
     private void DrawTail(Rect2 box)
     {
+        float m = M.TailHalf / Metrics.Pc.TailHalf;    // the PC's wedge at the device's size
+        float half = M.TailHalf, inner = 10 * m;
         if (_beside is not null)
         {
-            // Beside the anchor: from the box's right edge to the anchor at its left.
-            float ty = Math.Clamp(_cell.GetCenter().Y, box.Position.Y + 24, box.End.Y - 24), ex = box.End.X;
-            DrawColoredPolygon([new(ex - 2, ty - 13), new(ex + TailH, ty), new(ex - 2, ty + 13)], Ui.Gold);
-            DrawColoredPolygon([new(ex - 3, ty - 10), new(ex + TailH - 5, ty), new(ex - 3, ty + 10)], Fill with { A = 1 });
+            // Beside the anchor: from the box's edge facing it (its right, or on the phone its left for an anchor at its left).
+            float ty = Math.Clamp(_cell.GetCenter().Y, box.Position.Y + 24 * m, box.End.Y - 24 * m);
+            float d = _cell.GetCenter().X < box.Position.X ? -1 : 1, ex = d > 0 ? box.End.X : box.Position.X;
+            DrawColoredPolygon([new(ex - 2 * m * d, ty - half), new(ex + TailH * d, ty), new(ex - 2 * m * d, ty + half)], Ui.Gold);
+            DrawColoredPolygon([new(ex - 3 * m * d, ty - inner), new(ex + (TailH - 5 * m) * d, ty), new(ex - 3 * m * d, ty + inner)],
+                Fill with { A = 1 });
             return;
         }
-        float tx = Math.Clamp(_cell.Position.X + TailX, box.Position.X + 24, box.End.X - 24);
+        float tx = Math.Clamp(_cell.Position.X + TailX, box.Position.X + 24 * m, box.End.X - 24 * m);
         float edge = Above ? box.End.Y : box.Position.Y;
         float s = Above ? 1 : -1;                       // the tail's direction: down to a cell below, up to one above
-        DrawColoredPolygon([new(tx - 13, edge - 2 * s), new(tx, edge + TailH * s), new(tx + 13, edge - 2 * s)], Ui.Gold);
-        DrawColoredPolygon([new(tx - 10, edge - 3 * s), new(tx, edge + (TailH - 5) * s), new(tx + 10, edge - 3 * s)], Fill with { A = 1 });
+        DrawColoredPolygon([new(tx - half, edge - 2 * m * s), new(tx, edge + TailH * s), new(tx + half, edge - 2 * m * s)], Ui.Gold);
+        DrawColoredPolygon([new(tx - inner, edge - 3 * m * s), new(tx, edge + (TailH - 5 * m) * s), new(tx + inner, edge - 3 * m * s)],
+            Fill with { A = 1 });
     }
 }

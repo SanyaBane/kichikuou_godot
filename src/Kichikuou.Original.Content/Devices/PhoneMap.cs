@@ -192,14 +192,14 @@ public static class PhoneMap
     }
 
     /// <summary>The left side's rail at <paramref name="y"/>, <paramref name="height"/> reference pixels high (PhoneScenes's cells).</summary>
-    private static PhoneFrame.Box Left(PhoneFrame f, float y, float height)
+    internal static PhoneFrame.Box Left(PhoneFrame f, float y, float height)
     {
         var room = f.LeftRoom;
         return new PhoneFrame.Box(room.X + f.Px(RailInner), y, room.W - f.Px(RailInner + RailOuter), f.Px(height));
     }
 
     /// <summary>The right side's rail, the left's mirrored: from the frame plus <see cref="RailOuter"/> to the hole's strip less <see cref="RailInner"/>.</summary>
-    private static PhoneFrame.Box Right(PhoneFrame f, float y, float height)
+    internal static PhoneFrame.Box Right(PhoneFrame f, float y, float height)
     {
         var room = f.RightRoom;
         return new PhoneFrame.Box(room.X + f.Px(RailOuter), y, room.W - f.Px(RailInner + RailOuter), f.Px(height));

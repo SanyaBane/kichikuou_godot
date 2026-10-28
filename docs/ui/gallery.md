@@ -434,4 +434,7 @@ the scout report across the whole width (`scout-report`), the cut-in's band on a
 `strategy-enemy`), the results plate and our panel in the frame's middle over the dimmed board (`info-results`,
 `info-level-up`, `info-panel`), the ribbon and the caption at the phone's type (`info-defence`), the balloon over the
 scene's foot (`battle-speech…`) and the cards' menu at a finger's size (`menu`, `menu-orders`); LB3o1, LB3s, LB3c, LB3r
-and LB3b left the mock-up tab.
+and LB3b left the mock-up tab. Step L5 (2026-10-28) built the deployment table and Subordinates: the ledger in one-line
+rows at the phone's type, wholly at the left with the party two cards a row at the right (`deployment…`, the Refill
+question `deployment-refill-question` at the phone's sizes), the orders in the sides with Replenish's question left of its
+button (`subordinates…`, `subordinates-question`); LD2, LU1 and LU1q left the mock-up tab.

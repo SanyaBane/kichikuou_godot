@@ -28,18 +28,20 @@ internal sealed partial record UiPalette
 
     /// <summary>
     /// A whole screen's backdrop (our Subordinates and deployment screens): dark lacquer under a faint gold wave pattern
-    /// (seigaiha), darkened towards the edges; drawn in the 1280×800 screen's pixels.
+    /// (seigaiha), darkened towards the edges; drawn in the 1280×800 screen's pixels, or over <paramref name="size"/> of
+    /// them (the phone's whole screen, docs/ui/phone-build.md, step L5).
     /// </summary>
-    public void DrawWaveBackdrop(CanvasItem c, float k)
+    public void DrawWaveBackdrop(CanvasItem c, float k, Vector2? size = null)
     {
         var lacquer = Backdrop;
-        c.DrawRect(new Rect2(0, 0, 1280, 800), lacquer);
+        float width = size?.X ?? 1280, height = size?.Y ?? 800;
+        c.DrawRect(new Rect2(0, 0, width, height), lacquer);
         const float R = 34;
         var wave = Gold with { A = 0.05f };
-        for (int row = -1; row * R / 2 < 800 + R; row++)
+        for (int row = -1; row * R / 2 < height + R; row++)
         {
             float y = row * R / 2, off = row % 2 == 0 ? 0 : R;
-            for (float x = -2 * R + off; x < 1280 + 2 * R; x += 2 * R)
+            for (float x = -2 * R + off; x < width + 2 * R; x += 2 * R)
             {
                 var at = new Vector2(x, y);
                 c.DrawCircle(at, R, lacquer);
@@ -50,8 +52,8 @@ internal sealed partial record UiPalette
         const float Inset = 220;
         var edge = new Color(0, 0, 0, 0.7f);
         var clear = new Color(0, 0, 0, 0);
-        Vector2[] outer = [new(0, 0), new(1280, 0), new(1280, 800), new(0, 800)];
-        Vector2[] inner = [new(Inset, Inset * 0.62f), new(1280 - Inset, Inset * 0.62f), new(1280 - Inset, 800 - Inset * 0.62f), new(Inset, 800 - Inset * 0.62f)];
+        Vector2[] outer = [new(0, 0), new(width, 0), new(width, height), new(0, height)];
+        Vector2[] inner = [new(Inset, Inset * 0.62f), new(width - Inset, Inset * 0.62f), new(width - Inset, height - Inset * 0.62f), new(Inset, height - Inset * 0.62f)];
         for (int i = 0; i < 4; i++)
         {
             int j = (i + 1) % 4;

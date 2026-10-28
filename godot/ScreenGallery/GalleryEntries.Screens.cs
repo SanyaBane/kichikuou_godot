@@ -89,20 +89,18 @@ internal static partial class GalleryEntries
             float pixels = area.Size.X / 640f;
             panels.Place(area.Position, pixels);
             panels.Refresh(s, picker);
-            float k = pixels / 2;
-            table.Place(new Rect2(area.Position + DeploymentPanels.TableArea.Position * k, DeploymentPanels.TableArea.Size * k), pixels);
+            DeploymentPanels.PlaceTable(table, area.Position, pixels);
             table.Refresh(s);
             plate?.Place(area);
             if (callout is null)
                 return;
-            callout.Place(area);
+            callout.PlaceOnDevice(area);
             g.AfterLayout(() =>
             {
                 if (table.RefillCellRect(unit) is not { } cell)
                     return;
                 var row = DeploymentTable.Rows(s).First(r => r.Unit == unit);
-                float scale = callout.Size.X / 1280f;
-                var screenCell = new Rect2((cell.Position - callout.GlobalPosition) / scale, cell.Size / scale);
+                var screenCell = callout.FromGlobal(cell);
                 table.AskedRefill = unit;
                 callout.Show(DeploymentTable.ReplenishQuestion(row), screenCell, waiting: false);
                 callout.OpenMenu(["Yes", "No"]);

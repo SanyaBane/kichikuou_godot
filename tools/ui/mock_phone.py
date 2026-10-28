@@ -347,12 +347,9 @@ GALLERY_ENTRIES = {
 }
 # The gallery's landscape phone tab (phone-land): the owner's chosen landscape base versions (round P8 on), those not
 # built yet; a built one leaves for the real pass "Smartphone, landscape" (docs/ui/phone-build.md: L1 took LS1, LS1b,
-# LS1m, LW1, LEd, LN3 and LR2; L2 LM1a, LM1b and LM1c; L3 LB2, LB2r1 and LB2x; L4 LB3o1, LB3s, LB3c, LB3r and LB3b).
+# LS1m, LW1, LEd, LN3 and LR2; L2 LM1a, LM1b and LM1c; L3 LB2, LB2r1 and LB2x; L4 LB3o1, LB3s, LB3c, LB3r and LB3b;
+# L5 LD2, LU1 and LU1q).
 GALLERY_ENTRIES_LAND = {
-    'LD2': ('ld2-deployment', 'Deployment — LD2', 'The deployment table', 'the ledger at the left, the party two a '
-                                                                           'row at the right'),
-    'LU1': ('lu1-subordinates', 'Subordinates — LU1', 'The orders', 'Add New Troops left; Talk, Replenish, End right'),
-    'LU1q': ('lu1-question', 'Subordinates — LU1', 'Replenish asks first', 'a callout left of its button (Haurein)'),
     # Round P10's choices (owner, 2026-10-27; docs/ui/phone.md, §14).
     'LA2': ('la2-attack', 'Enemy attack — LA2', 'The attack on Ys', 'across the whole width, the answers in a column '
                                                                       'at the right thumb'),

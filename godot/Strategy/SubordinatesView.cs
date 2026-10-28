@@ -1,6 +1,7 @@
 using Godot;
 using Kichikuou.Game.Battles;
 using Kichikuou.Original.Content;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.Content.Strategy;
 using Kichikuou.Original.State;
 using Kichikuou.Original.Strategy;
@@ -21,7 +22,8 @@ namespace Kichikuou.Game.Strategy;
 /// that can talk, and Talk's NEW or ??? pill at its top right (none when read); none of them while the week's talk is
 /// spent (<see cref="SubordinatesScreen.TalkMarks"/>).
 /// Drawn by hand in the 1280×800 screen's pixels, as our map panels (<see cref="Lacquer"/>). It decides nothing: the
-/// presses go to <see cref="GameScreen"/>, which answers the script through a <see cref="SubordinateOrder"/>.
+/// presses go to <see cref="GameScreen"/>, which answers the script through a <see cref="SubordinateOrder"/>. On the phone held
+/// landscape it is laid out over the whole screen (<c>SubordinatesView.Phone.cs</c>, LU1).
 /// </summary>
 internal sealed partial class SubordinatesView : Control
 {
@@ -48,6 +50,7 @@ internal sealed partial class SubordinatesView : Control
     private readonly OrderResultPlate _plate;
     private readonly DeploymentTableView _table;
     private readonly TreasureCallout _callout;
+    private readonly UnitPictureView _picture;
     private readonly FontFile _brush = Lacquer.Brush();
     private readonly FontVariation _cinzel = Lacquer.Cinzel(700), _cinzelLight = Lacquer.Cinzel(600);
     private FontFile _gothic;
@@ -89,6 +92,13 @@ internal sealed partial class SubordinatesView : Control
         _table.RowPressed += unit => _table.Chosen = unit;
         _table.RightPressed += () => EndPressed?.Invoke();
         AddChild(_table);
+        _picture = new UnitPictureView();                       // the phone's long press on a row: over the ledger
+        _table.RowHeld += unit =>
+        {
+            if (_state is { } state)
+                _picture.Show(_faces.PicturePanel(state.Units[unit].PortraitCg.Value));
+        };
+        AddChild(_picture);
         _plate = new OrderResultPlate(font, faces);              // the plate, over the ledger too
         AddChild(_plate);
         _callout = new TreasureCallout(font);
@@ -147,14 +157,28 @@ internal sealed partial class SubordinatesView : Control
         Position = Vector2.Zero;
         Size = GetParentAreaSize();
         float k = pixelsPerScript / 2;
-        var area = new Vector2(1280, 800) * k;
-        _table.Place(new Rect2(origin + TableArea.Position * k, TableArea.Size * k), pixelsPerScript);
-        _callout.Place(new Rect2(origin, area));
-        _plate.Place(new Rect2(origin, area));
-        if (origin == _origin && Math.Abs(k - _k) < 0.0001f && _backdrop.Size == area)
+        var frame = new Rect2(origin, new Vector2(1280, 800) * k);
+        _plate.Place(frame);                                    // the plate in the frame's middle on every device
+        var phone = Device.Landscape(this);
+        if (phone is not null)
+        {
+            var ledger = PhoneLedger.Ledger(phone, deployment: false);     // LU1: the ledger fills the frame
+            _table.PlacePhone(new Rect2(ledger.X, ledger.Y, ledger.W, ledger.H), phone);
+            _callout.PlacePhone(phone);
+            (origin, k) = (Vector2.Zero, phone.Scale);           // drawn in the frame's layout pixels over the whole screen
+        }
+        else
+        {
+            _table.Place(new Rect2(origin + TableArea.Position * k, TableArea.Size * k), pixelsPerScript);
+            _callout.Place(frame);
+        }
+        var area = phone is null ? frame.Size : Size;
+        if (origin == _origin && Math.Abs(k - _k) < 0.0001f && _backdrop.Size == area && phone == _phone)
             return;
         _origin = origin;
         _k = k;
+        _phone = phone;
+        _tabs.Phone = phone is null ? null : DeploymentPanels.PhoneTabs(phone, deployment: false);
         foreach (var layer in new[] { _backdrop, _face })
         {
             layer.Position = origin;
@@ -239,7 +263,10 @@ internal sealed partial class SubordinatesView : Control
         if (_panel is null || _callout.MenuOpen || RectOf(button) is not { } rect)
             return;
         _asked = button;
-        _callout.Show(SubordinatesScreen.Question, rect, waiting: false);
+        if (_phone is { } phone)
+            ShowPhoneQuestion(phone, rect, button == ReplenishButton);
+        else
+            _callout.Show(SubordinatesScreen.Question, rect, waiting: false);
         _callout.OpenMenu(["Yes", "No"]);
         _face.QueueRedraw();
         int answer;
@@ -262,6 +289,8 @@ internal sealed partial class SubordinatesView : Control
 
     private Rect2 StepRect(int step)
     {
+        if (_phone is { } phone)
+            return Box(PhoneLedger.Steps(phone, _panel?.Steps.Count ?? 0)[step]);
         int across = Math.Max(4, _panel?.Steps.Count ?? 0);    // a step as wide as a quarter of the row; more than four share it
         float w = (ReplenishArea.Size.X - StepGap * (across - 1)) / across;
         return new Rect2(ReplenishArea.Position.X + step * (w + StepGap), StepsTop, w, StepsHeight);
@@ -269,9 +298,9 @@ internal sealed partial class SubordinatesView : Control
 
     private Rect2? RectOf(int button) => button switch
     {
-        ReplenishButton => ReplenishArea,
-        TalkButton => TalkArea,
-        EndButton => EndArea,
+        ReplenishButton => _phone is { } f ? Box(PhoneLedger.Replenish(f)) : ReplenishArea,
+        TalkButton => _phone is { } f ? Box(PhoneLedger.Talk(f)) : TalkArea,
+        EndButton => _phone is { } f ? Box(PhoneLedger.End(f)) : EndArea,
         >= StepButton when _panel is { AddOffered: true } p && button - StepButton < p.Steps.Count => StepRect(button - StepButton),
         _ => null,
     };
@@ -344,6 +373,7 @@ internal sealed partial class SubordinatesView : Control
         {
             _callout.Hide();                                    // a question left open is a No
             ShowResult(null);
+            _picture.Hide();
         }
     }
 
@@ -392,12 +422,17 @@ internal sealed partial class SubordinatesView : Control
     private void DrawBackdrop(Control c)
     {
         c.DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
-        Ui.DrawWaveBackdrop(c, _k);
+        Ui.DrawWaveBackdrop(c, _k, _phone is null ? null : c.Size / _k);
     }
 
     private void DrawScreen(Control c)
     {
         c.DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
+        if (_phone is { } phone)
+        {
+            DrawPhone(c, phone);
+            return;
+        }
         DrawTablePanel(c);
         DrawPicture(c);
         DrawOrders(c);
@@ -502,11 +537,11 @@ internal sealed partial class SubordinatesView : Control
     }
 
     /// <summary>The main order: red lacquer framed in gold, as Turn END on the command panel.</summary>
-    private void DrawPrimary(Control c, Rect2 rect, string title, string note, int button)
+    private void DrawPrimary(Control c, Rect2 rect, string title, string note, int button, int titleSize = 22, int noteSize = 15)
     {
         bool hover = button == _hovered || button == _asked, down = button == _hovered && button == _pressed;
         Ui.DrawRedButton(c, rect, hover, down, _k);
-        DrawLabels(c, rect, title, _brush, 22, Color.Color8(250, 226, 160), note, _gothic, 15, Color.Color8(236, 206, 160));
+        DrawLabels(c, rect, title, _brush, titleSize, Color.Color8(250, 226, 160), note, _gothic, noteSize, Color.Color8(236, 206, 160));
     }
 
     /// <summary>A plain order: a dark row box, lit when hovered, sunk when pressed, grey when it cannot be clicked.</summary>

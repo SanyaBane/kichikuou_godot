@@ -2,6 +2,7 @@ using System.Globalization;
 using Godot;
 using Kichikuou.Game.Battles;
 using Kichikuou.Original.Content;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.Content.Strategy;
 using Kichikuou.Original.State;
 
@@ -19,7 +20,8 @@ namespace Kichikuou.Game.Strategy;
 /// hand in the 1280×800 screen's pixels, as our map panels (<see cref="Lacquer"/>). It decides nothing: the presses
 /// go to <see cref="GameScreen"/>, which answers the script with the gestures it expects; a left click elsewhere
 /// does nothing, a right click is the script's own (the last member out). A member's card under the pointer is
-/// hovered as its row is (<see cref="HoveredUnit"/>): the script shows its details, the picture with them.
+/// hovered as its row is (<see cref="HoveredUnit"/>): the script shows its details, the picture with them. On the phone held
+/// landscape the screen is laid out over the whole screen (<c>DeploymentPanels.Phone.cs</c>, LD2).
 /// </summary>
 internal sealed partial class DeploymentPanels : Control
 {
@@ -142,12 +144,18 @@ internal sealed partial class DeploymentPanels : Control
     {
         Position = Vector2.Zero;
         Size = GetParentAreaSize();
-        float k = pixelsPerScript / 2;
-        var area = new Vector2(1280, 800) * k;
-        if (origin == _origin && Math.Abs(k - _k) < 0.0001f && _backdrop.Size == area)
+        var phone = Device.Landscape(this);
+        float k = phone?.Scale ?? pixelsPerScript / 2;          // the phone's: its frame's layout pixels over the whole screen
+        if (phone is not null)
+            origin = Vector2.Zero;
+        var area = phone is null ? new Vector2(1280, 800) * k : Size;
+        if (origin == _origin && Math.Abs(k - _k) < 0.0001f && _backdrop.Size == area && phone == _phone)
             return;
         _origin = origin;
         _k = k;
+        _phone = phone;
+        _tabs.Phone = phone is null ? null : PhoneTabs(phone);
+        _key = "";
         foreach (var layer in new[] { _backdrop, _screen })
         {
             layer.Position = origin;
@@ -203,6 +211,9 @@ internal sealed partial class DeploymentPanels : Control
             _faces.PicturePanel(portrait);
     }
 
+    /// <summary>A unit's picture panel (the phone raises it on a long press on the unit's row, PD2d).</summary>
+    public ImageTexture? Picture(int portraitCg) => _faces.PicturePanel(portraitCg);
+
     /// <summary>A bar button as the mouse presses it (unattended play goes through here).</summary>
     public void PressButton(int button)
     {
@@ -220,6 +231,15 @@ internal sealed partial class DeploymentPanels : Control
     private IEnumerable<(int Button, Rect2 Rect)> BarButtons()
     {
         int[] sends = [.. new[] { 1, 2 }.Where(HasButton)];
+        if (_phone is { } phone)
+        {
+            var boxes = PhoneLedger.Bar(phone, sends.Length);       // Stop first, at the left; the sends right of it
+            for (int i = 0; i < sends.Length; i++)
+                yield return (sends[i], Box(boxes[i + 1]));
+            if (HasButton(3))
+                yield return (3, Box(boxes[0]));
+            yield break;
+        }
         float x = BarArea.Position.X;
         float w = sends.Length == 0 ? 0 : (BarArea.Size.X - StopWidth - ButtonGap * sends.Length) / sends.Length;
         foreach (int button in sends)
@@ -232,8 +252,10 @@ internal sealed partial class DeploymentPanels : Control
     }
 
     /// <summary>Place <paramref name="place"/>'s card: the back row (3, 4) on the left, the front row (1, 2) on the right.</summary>
-    private static Rect2 CardRect(int place)
+    private Rect2 CardRect(int place)
     {
+        if (_phone is { } phone)
+            return Box(PhoneLedger.Card(phone, place));
         float x0 = PartyPanel.Position.X + 14, x1 = PartyPanel.End.X - 14 - FacingStrip - FacingGap, mid = (x0 + x1) / 2;
         float w = mid - 3 - x0;
         float x = place is 3 or 4 ? x0 : mid + 3;
@@ -241,8 +263,10 @@ internal sealed partial class DeploymentPanels : Control
         return new Rect2(x, y, w, CardHeight);
     }
 
-    private static Rect2 RemoveRect(int place)
+    private Rect2 RemoveRect(int place)
     {
+        if (_phone is { } phone)
+            return Box(PhoneLedger.RemoveBox(phone, PhoneLedger.Card(phone, place)));
         var card = CardRect(place);
         return new Rect2(card.End.X - 26, card.Position.Y + 6, 20, 20);
     }
@@ -381,12 +405,19 @@ internal sealed partial class DeploymentPanels : Control
     private void DrawBackdrop(Control c)
     {
         c.DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
-        Ui.DrawWaveBackdrop(c, _k);
+        Ui.DrawWaveBackdrop(c, _k, _phone is null ? null : c.Size / _k);
     }
 
     private void DrawScreen(Control c)
     {
         c.DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
+        if (_phone is { } phone)
+        {
+            DrawPhone(c, phone);
+            if (_dragging && MemberAt(_dragFrom) is { } held)
+                DrawGhost(c, held);
+            return;
+        }
         DrawTablePanel(c);
         DrawPicture(c);
         DrawParty(c);
@@ -625,11 +656,12 @@ internal sealed partial class DeploymentPanels : Control
     private void DrawGhost(Control c, DeploymentMember member)
     {
         var at = ScreenPoint(TouchMode.LocalPointer(this));
-        var rect = new Rect2(at - new Vector2(GhostSize, GhostSize) / 2, new Vector2(GhostSize, GhostSize));
+        float size = _phone is { } phone ? phone.Px(PhoneLedger.CardFace) / _k : GhostSize;
+        var rect = new Rect2(at - new Vector2(size, size) / 2, new Vector2(size, size));
         for (int i = 8; i >= 1; i--)
             c.DrawRect(new Rect2(rect.Position.X - i + 3, rect.Position.Y - i + 6, rect.Size.X + 2 * i, rect.Size.Y + 2 * i), new Color(0, 0, 0, 0.07f));
         c.DrawRect(rect, Ui.FaceBack with { A = 0.9f });
-        if (FaceTexture(member.FaceCg, GhostSize) is { } texture)
+        if (FaceTexture(member.FaceCg, size) is { } texture)
             c.DrawTextureRect(texture, rect, false, new Color(1, 1, 1, 0.9f));
         c.DrawRect(rect, Ui.HoverLine, false, Line(2));
     }

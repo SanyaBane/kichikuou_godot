@@ -46,7 +46,7 @@ public partial class GameScreen
             _replenish = null;
             return;
         }
-        _refillCallout.Place(picture);
+        _refillCallout.PlaceOnDevice(picture);                  // on the phone at its sizes over the whole screen
         _refillPlate.Place(picture);
         if (_replenish is not { Done: true } done || _presenter.State is not { } s)
             return;
@@ -79,9 +79,7 @@ public partial class GameScreen
             || DeploymentTable.Rows(s).FirstOrDefault(r => r.Unit == unit) is not { CanRefill: true } row
             || _table.RefillCellRect(unit) is not { } cell)
             return;
-        var picture = new Rect2(_refillCallout.GlobalPosition, _refillCallout.Size);
-        float k = picture.Size.X / 1280f;
-        var screenCell = new Rect2((cell.Position - picture.Position) / k, cell.Size / k);
+        var screenCell = _refillCallout.FromGlobal(cell);
         _table.AskedRefill = unit;
         _refillCallout.Show(DeploymentTable.ReplenishQuestion(row), screenCell, waiting: false);
         _refillCallout.OpenMenu(["Yes", "No"]);

@@ -9,7 +9,8 @@ namespace Kichikuou.Game.Strategy;
 /// (<see cref="DeploymentTableView.OpenTop"/>), the others darker paper, lit while hovered — and right of them, while the
 /// rows are in the order of a column the tab does not show, that order as a gold seal (the owner's C2 in C3's colours,
 /// round D). Drawn by the screen that holds it, in the 1280×800 screen's pixels; its tab is remembered for that screen
-/// (<see cref="LedgerTabChoice"/>). In the touch mode the tabs are as tall as a touch row.
+/// (<see cref="LedgerTabChoice"/>). In the touch mode the tabs are as tall as a touch row; on the phone held landscape they
+/// take the row and the sizes the screen gives (<see cref="Phone"/>; docs/ui/phone-build.md, step L5).
 /// </summary>
 internal sealed class LedgerTabsBar
 {
@@ -20,7 +21,7 @@ internal sealed class LedgerTabsBar
 
     private const int TabSize = 16, OrderSize = 14;
     private readonly string _screen;
-    private readonly Rect2 _row;
+    private readonly Rect2 _pcRow;
     private readonly FontVariation _cinzel = Lacquer.Cinzel(600), _cinzelBold = Lacquer.Cinzel(800);
     private LedgerTab? _pressed;
 
@@ -31,9 +32,25 @@ internal sealed class LedgerTabsBar
     public LedgerTabsBar(string screen, Rect2 row)
     {
         _screen = screen;
-        _row = row;
+        _pcRow = row;
         Tab = LedgerTabChoice.Get(screen);
     }
+
+    /// <summary>
+    /// The phone's tabs (LD2, LU1), in the screen's drawing units: their row, each tab's width, the room between them, how
+    /// much lower an unchosen one starts, the tabs' type and the order seal's; the first tab at the row's left. Null: the
+    /// PC's and the tablet's.
+    /// </summary>
+    public readonly record struct PhoneTabs(Rect2 Row, float Width, float Gap, float Drop, int Text, int OrderText);
+
+    /// <summary>The phone's layout while the screen lays itself out for one, else null.</summary>
+    public PhoneTabs? Phone { get; set; }
+
+    private Rect2 Row => Phone?.Row ?? _pcRow;
+
+    private int TabText => Phone?.Text ?? TabSize;
+
+    private int OrderText => Phone?.OrderText ?? OrderSize;
 
     /// <summary>The tab shown.</summary>
     public LedgerTab Tab { get; private set; }
@@ -52,13 +69,13 @@ internal sealed class LedgerTabsBar
     /// <summary>The tabs with their places: the chosen one a little taller, reaching the row's top.</summary>
     public IEnumerable<(LedgerTab Tab, Rect2 Rect)> Tabs()
     {
-        float x = _row.Position.X + 8;
+        float x = Row.Position.X + (Phone is null ? 8 : 0);
         foreach (var tab in LedgerTabs.All)
         {
-            float w = _cinzelBold.GetStringSize(LedgerTabs.Title(tab), fontSize: TabSize).X + 40;
-            float top = _row.Position.Y + (tab == Tab ? 0 : 5);
-            yield return (tab, new Rect2(x, top, w, _row.End.Y - top));
-            x += w + 5;
+            float w = Phone?.Width ?? _cinzelBold.GetStringSize(LedgerTabs.Title(tab), fontSize: TabSize).X + 40;
+            float top = Row.Position.Y + (tab == Tab ? 0 : Phone?.Drop ?? 5);
+            yield return (tab, new Rect2(x, top, w, Row.End.Y - top));
+            x += w + (Phone?.Gap ?? 5);
         }
     }
 
@@ -66,7 +83,7 @@ internal sealed class LedgerTabsBar
     public LedgerTab? TabAt(Vector2 at)
     {
         foreach (var (tab, rect) in Tabs())
-            if (at.X >= rect.Position.X && at.X < rect.End.X && at.Y >= _row.Position.Y && at.Y < _row.End.Y)
+            if (at.X >= rect.Position.X && at.X < rect.End.X && at.Y >= Row.Position.Y && at.Y < Row.End.Y)
                 return tab;
         return null;
     }
@@ -105,7 +122,7 @@ internal sealed class LedgerTabsBar
     public (float From, float To) OpenSpan(float k)
     {
         var rect = Tabs().First(t => t.Tab == Tab).Rect;
-        return ((rect.Position.X - _row.Position.X) * k + 1, (rect.End.X - _row.Position.X) * k - 1);
+        return ((rect.Position.X - Row.Position.X) * k + 1, (rect.End.X - Row.Position.X) * k - 1);
     }
 
     /// <summary>
@@ -120,10 +137,10 @@ internal sealed class LedgerTabsBar
             c.DrawRect(rect, on ? Ui.Paper : Hovered == tab ? Ui.Field : Ui.PaperHead);
             c.DrawRect(rect, on ? Ui.PaperHead : Ui.InkGrey, false, Lacquer.Line(1, k));
             var font = on ? _cinzelBold : _cinzel;
-            c.DrawString(font, new Vector2(rect.Position.X, Lacquer.Baseline(rect, font, TabSize) + (on ? 1 : 0)), LedgerTabs.Title(tab),
-                HorizontalAlignment.Center, rect.Size.X, TabSize, on ? Ui.HeadInk : Ui.InkQuiet);
+            c.DrawString(font, new Vector2(rect.Position.X, Lacquer.Baseline(rect, font, TabText) + (on ? 1 : 0)), LedgerTabs.Title(tab),
+                HorizontalAlignment.Center, rect.Size.X, TabText, on ? Ui.HeadInk : Ui.InkQuiet);
             if (on)
-                c.DrawRect(new Rect2(rect.Position.X, rect.Position.Y, rect.Size.X, 4), Ui.Vermilion);
+                c.DrawRect(new Rect2(rect.Position.X, rect.Position.Y, rect.Size.X, 4 * TabText / (float)TabSize), Ui.Vermilion);
         }
         if (!table.SortShown)
             DrawOrder(c, k, table);
@@ -136,10 +153,11 @@ internal sealed class LedgerTabsBar
     private void DrawOrder(CanvasItem c, float k, DeploymentTableView table)
     {
         string words = $"Sorted by {table.SortHeader}", mark = table.SortMark;
-        float ww = _cinzelBold.GetStringSize(words, fontSize: OrderSize).X;
-        float mw = table.TextFont.GetStringSize(mark, fontSize: OrderSize + 1).X;
-        float w = ww + 6 + mw + 28, h = Math.Min(28, _row.Size.Y - 6);
-        var rect = new Rect2(_row.End.X - 2 - w, _row.Position.Y + (_row.Size.Y - 6 - h) / 2 + 1, w, h);
+        float m = OrderText / (float)OrderSize;
+        float ww = _cinzelBold.GetStringSize(words, fontSize: OrderText).X;
+        float mw = table.TextFont.GetStringSize(mark, fontSize: OrderText + 1).X;
+        float w = ww + 6 * m + mw + 28 * m, h = Math.Min(28 * m, Row.Size.Y - 6 * m);
+        var rect = new Rect2(Row.End.X - 2 - w, Row.Position.Y + (Row.Size.Y - 6 - h) / 2 + 1, w, h);
         c.DrawStyleBox(new StyleBoxFlat
         {
             BgColor = Ui.Gold,
@@ -147,8 +165,9 @@ internal sealed class LedgerTabsBar
             AntiAliasing = true,
         }, rect);
         c.DrawRect(rect.Grow(-2), Ui.DimGold, false, Lacquer.Line(1, k));
-        float baseline = Lacquer.Baseline(rect, _cinzelBold, OrderSize) + 1;
-        c.DrawString(_cinzelBold, new Vector2(rect.Position.X + 14, baseline), words, fontSize: OrderSize, modulate: Ui.Row);
-        c.DrawString(table.TextFont, new Vector2(rect.Position.X + 14 + ww + 6, baseline), mark, fontSize: OrderSize + 1, modulate: Ui.Row);
+        float baseline = Lacquer.Baseline(rect, _cinzelBold, OrderText) + 1;
+        c.DrawString(_cinzelBold, new Vector2(rect.Position.X + 14 * m, baseline), words, fontSize: OrderText, modulate: Ui.Row);
+        c.DrawString(table.TextFont, new Vector2(rect.Position.X + 14 * m + ww + 6 * m, baseline), mark, fontSize: OrderText + 1,
+            modulate: Ui.Row);
     }
 }

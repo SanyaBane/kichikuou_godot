@@ -15,6 +15,7 @@ using Kichikuou.Game.Battles;
 using Kichikuou.Game.Battles.Effects;
 using Kichikuou.Original.Combat;
 using Kichikuou.Original.Content.Battles;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.Content.Strategy;
 using Kichikuou.Original.Script;
 using Kichikuou.Original.State;
@@ -258,6 +259,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private ScoutReportView _scoutView = null!;         // our own scout report over the original's screen (our interface)
     private StrategyCutInView _strategyView = null!;    // our own cut-in of a successful strategy over the original's screen (New)
     private DeploymentPanels _panels = null!;           // and the rest of it, over the whole of Sﾌﾞﾀｲ's screen
+    private UnitPictureView _tablePicture = null!;      // a unit's picture raised by the phone's long press on its row
     private PointerScript _tablePointer = new();        // the script's pointer while the player's is over the table
     private bool _tableActive;                          // our deployment screen takes the pointer: no message window over it
     private MapMarkersView _markers = null!;            // our name plates over the map in COMMAND's map wait (New)
@@ -355,6 +357,13 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _table.RightPressed += TableRightPressed;
         _content.AddChild(_table);
         _panels.Table = _table;                                 // the ledger under the panels' tabs
+        _tablePicture = new UnitPictureView();                  // the phone's long press on a row: over the ledger
+        _table.RowHeld += unit =>
+        {
+            if (_presenter.State is { } state)
+                _tablePicture.Show(_panels.Picture(state.Units[unit].PortraitCg.Value));
+        };
+        _content.AddChild(_tablePicture);
         ReadyDeploymentReplenish(faces);                        // over the table: its question and its plate
         _messageView = new MessageWindowView(GodotGlyphRenderer.Chosen)
         {
@@ -2286,6 +2295,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (!show)
         {
             UpdateDeploymentReplenish(false, default);
+            _tablePicture.Hide();
             return false;
         }
         var frame = Frame();
@@ -2298,8 +2308,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _panels.Busy = !active || (_options.Auto ? _pointer : _tablePointer).Pending > 0 || _wantedOrder is not null || RefillBusy;
         _panels.Place(origin, pixels);
         _panels.Refresh(_presenter.State!, _presenter.Picker!, _wantedOrder);
-        float k = pixels / 2;                                   // window pixels to a pixel of the 1280×800 screen
-        _table.Place(new Rect2(origin + DeploymentPanels.TableArea.Position * k, DeploymentPanels.TableArea.Size * k), pixels);
+        DeploymentPanels.PlaceTable(_table, origin, pixels);
         _table.Refresh(_presenter.State!, _wantedOrder);
         var units = _presenter.State!.Units;
         _panels.WarmPictures(_table.Units.Select(u => (int)units[u].PortraitCg.Value));   // the rows' pictures, one a frame

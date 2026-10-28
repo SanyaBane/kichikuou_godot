@@ -420,6 +420,43 @@ on Oaks (6), the debug build):
 - **Unattended play**: `--phone landscape` headless from the week-18 save to round 2 of the battle on Oaks (6) runs as
   before.
 
+**Step L5, where it stands (2026-10-28):** built, **awaiting the owner's look on the phone**.
+
+- **The model** (`Original.Content/Devices/PhoneLedger`, tested in `PhoneLedgerTests`): the places at the mock-ups'
+  figures (`ld2`, `lu1`, `land_ledger`, `party_card`, `lu_orders_side`) in the canvas's units — the ledger's paper (the
+  deployment's from the hole's strip + 6 to 16 short of the right part, Subordinates' the frame less 12 a side, both from
+  104 down to 12 over the screen's foot), the tabs over it (300 wide, 12 apart, 88 high, an unchosen one 10 lower); the
+  deployment's right part (880 wide, ending 6 short of the hole's strip: a longer screen widens the ledger), its lines,
+  the party's cards (434 × 214, 12 apart, the back row left), a card's insides and its ✕ (84), the totals under the
+  cards, Stop (300) and the sends sharing the rest at the right thumb (150 high); Subordinates' left side (ORDERS, the
+  unit, ADD NEW TROOPS, the steps 118 high from the foot up, lower when they would not fit), its right side (the title
+  block, Talk 140, Replenish 150 between Talk and End, End 140 at the thumb), Replenish's question's room (620 wide, 40
+  left of the button, on its foot); the picture a long press raises (in the frame's middle, the frame's height less 60
+  over and under it). `PhoneMap.Left`/`Right` are shared with it.
+- **The views**, each keyed by the live device: `DeploymentTableView.PlacePhone` lays the ledger out in one-line rows at
+  the phone's type (rows 112, the text 40, the columns 18 apart; every column of a tab in one line, as the PC's columns
+  fit their text) and, on the phone, raises `RowHeld` for a row held half a second (no tap then); `LedgerTabsBar.Phone`
+  the tabs' row and sizes; `DeploymentPanels.Phone.cs` the screen over the whole screen (the backdrop too,
+  `UiPalette.DrawWaveBackdrop`'s size), its cards with their ✕, a drag between them as on the PC, the bar with a
+  defence's Plains and City and a search's note; `DeploymentPanels.PlaceTable` places the ledger for `GameScreen` and the
+  screen gallery alike; `SubordinatesView.Phone.cs` the orders in the sides; `TreasureCallout.PlacePhone` lays the
+  callout over the whole screen at the phone's sizes (its figures a `Metrics` record whose PC values are the former
+  constants; `PlaceOnDevice`, `FromGlobal`): beside its anchor it stands on the room's foot, its tail to the anchor on
+  either hand, the answers filling its width with Yes, red, at the right; `UnitPictureView` the picture over the screen
+  dimmed, put away by a tap.
+- **The agent's choices**, for the owner to confirm: the deployment's Refill question as on the PC, under or over its
+  cell, at the phone's sizes (LD2 drew none); a step's question in a callout right of the step, on its foot (LU1q drew
+  Replenish's only); Yes at the right in every phone callout (nearer the right thumb), the PC's order unchanged; the
+  picture by a long press raised over the frame at the frame's height (PD2d's "2.2 ×" was upright's width); the party
+  cards' names shrunk to the room between the badge and ✕ as LD2 drew them, the troops' bar across the card's text
+  column (LD2's was short); the result plate after an order (R4/R5) stays the PC's in the frame's middle; on the phone
+  the picture panel of the PC's top right is not drawn (the long press shows it).
+- **The gallery**: the PC and touch passes same (110 and 111 entries); the phone pass's `deployment…` and
+  `subordinates…` entries match LD2, LU1 and LU1q (docs/ui/gallery.md, §9), which left `GALLERY_ENTRIES_LAND`. A touch
+  pass hung once in a window waiting for a frame (no CPU used) and ran through when started again.
+- **Unattended play**: `--phone landscape` headless from the week-18 save to its deployment picker runs as before (the
+  replenish through Subordinates, the party built in the ledger, the attack on Oaks (6)).
+
 ### Upright (steps P0-P9)
 
 | Step | What | Base versions (phone.md) |

@@ -328,6 +328,12 @@ states — the opening at the lower scene band, the scout report across the widt
 the results plate and our panel in the frame's middle, the ribbon and caption, the balloon over the scene's foot, the
 cards' menu at a finger's size (`Original.Content/Devices/PhoneBattleStates`; `ScoutReportView.Phone.cs`,
 `BattleInfoLayer.Phone.cs`, the phone branches of `BattleOpeningLayer`, `StrategyCutInView`, `SpeechBalloon`).
+Step L5 is built, awaiting the owner's look on the phone (phone-build.md, "Step L5, where it stands"): the deployment table
+and Subordinates — the ledger in one-line rows at the phone's type (wholly at the left on the deployment table, the frame on
+Subordinates), the party two cards a row and Stop | Attack at the right, Add New Troops in the left side, Talk, Replenish
+and End in the right, the questions in callouts at the phone's sizes, a unit's picture on a long press
+(`Original.Content/Devices/PhoneLedger`; `DeploymentPanels.Phone.cs`, `SubordinatesView.Phone.cs`, `UnitPictureView`,
+`DeploymentTableView.PlacePhone`, `LedgerTabsBar.Phone`, `TreasureCallout.PlacePhone`).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
