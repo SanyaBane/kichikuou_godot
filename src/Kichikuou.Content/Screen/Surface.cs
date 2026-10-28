@@ -2,6 +2,7 @@
 // (ags_check_param, as CheckParam): Copyright (C) 1997-1998 Masaki Chikama (Wren). GNU General Public
 // License, version 2 or later, as KichikuouGodot (LICENSE).
 
+using System.Runtime.InteropServices;
 using Kichikuou.Content.Graphics;
 
 namespace Kichikuou.Content.Screen;
@@ -110,16 +111,18 @@ public sealed class Surface
     {
         if (!Clip(ref sx, ref sy, ref w, ref h, ref dx, ref dy, cg.Width, cg.Height))
             return;
+        int skipped = key ?? -1;
         for (int row = 0; row < h; row++)
         {
             if (_index is not null)
             {
                 // Indexed (the engine's surfaces): each script pixel's entry into its block of stored pixels.
+                var line = cg.Indices.AsSpan((sy + row) * cg.Width + sx, w);
                 int p = Pixel(dx, dy + row, 0);
                 for (int col = 0; col < w; col++, p += Scale)
                 {
-                    byte index = cg.IndexAt(sx + col, sy + row);
-                    if (index == key)
+                    byte index = line[col];
+                    if (index == skipped)
                         continue;
                     for (int r = 0, q = p; r < Scale; r++, q += _rowPixels)
                         for (int c = 0; c < Scale; c++)
@@ -175,17 +178,18 @@ public sealed class Surface
             return;
         bool same = ReferenceEquals(source, this);
         int sourceRow = sw * Scale;
-        var colours = new byte[sourceRow * sh * Scale * 4];
-        var indices = same && _index is not null ? new short[sourceRow * sh * Scale] : null;
+        var (colours, entries) = Scratch(sourceRow * sh * Scale);
+        var indices = same ? entries : null;
+        var words = Words;
         for (int row = 0; row < sh * Scale; row++)
         {
             int from = source.Pixel(sx, sy, row);
             if (!same)
             {
-                source.ResolveRow(from, sourceRow, colours, row * sourceRow * 4, opaque: false);
+                source.ResolveRow(from, colours.AsSpan(row * sourceRow, sourceRow), Alpha.Stored);
                 continue;
             }
-            Buffer.BlockCopy(_pixels, from * 4, colours, row * sourceRow * 4, sourceRow * 4);
+            words.Slice(from, sourceRow).CopyTo(colours.AsSpan(row * sourceRow));
             if (indices is not null)
                 Array.Copy(_index!, from, indices, row * sourceRow, sourceRow);
         }
@@ -207,7 +211,7 @@ public sealed class Surface
                     {
                         int at = (fromRow + line) * sourceRow + fromCol + ((mirror & 2) != 0 ? Scale - 1 - p : p);
                         int to = toLine * _rowPixels + toCol * Scale + p;
-                        Buffer.BlockCopy(colours, at * 4, _pixels, to * 4, 4);
+                        words[to] = colours[at];
                         if (_index is not null)
                             _index[to] = indices?[at] ?? Direct;
                     }
@@ -242,7 +246,7 @@ public sealed class Surface
         for (int row = 0; row < h * Scale; row++)
         {
             int to = Pixel(dx, dy, row);
-            source.ResolveRow(source.Pixel(sx, sy, row), count, _pixels, to * 4, opaque: false);
+            source.ResolveRow(source.Pixel(sx, sy, row), count, _pixels, to * 4, Alpha.Stored);
             if (_index is not null)
                 Array.Fill(_index, Direct, to, count);
         }
@@ -263,7 +267,7 @@ public sealed class Surface
         for (int row = 0; row < ScreenHeight * Scale && row < Height * Scale; row++)
         {
             int p = Pixel(View.X, View.Y, row);
-            ResolveRow(p, count, line, 0, opaque: false);
+            ResolveRow(p, count, line, 0, Alpha.Stored);
             for (int i = 0; i < line.Length; i += 4)
                 for (int c = 0; c < 3; c++)
                     line[i + c] = (byte)((line[i + c] * (255 - amount) + target * amount + 127) / 255);
@@ -280,25 +284,24 @@ public sealed class Surface
         if (!Clip(ref sx, ref sy, ref w, ref h, ref dx, ref dy, Width, Height))
             return;
         // Source and destination never overlap in the battle; copy through a buffer anyway.
-        int count = w * Scale;
-        var colours = new byte[count * h * Scale * 4];
-        var indices = _index is null ? null : new short[count * h * Scale];
-        for (int row = 0; row < h * Scale; row++)
+        int count = w * Scale, rows = h * Scale;
+        var (colours, indices) = Scratch(count * rows);
+        var words = Words;
+        for (int row = 0; row < rows; row++)
         {
             int from = Pixel(sx, sy, row);
-            Buffer.BlockCopy(_pixels, from * 4, colours, row * count * 4, count * 4);
+            words.Slice(from, count).CopyTo(colours.AsSpan(row * count));
             if (indices is not null)
                 Array.Copy(_index!, from, indices, row * count, count);
         }
-        for (int row = 0; row < h * Scale; row++)
+        for (int row = 0; row < rows; row++)
         {
             int to = Pixel(dx, dy, row);
-            for (int i = 0; i < count; i++)
+            for (int i = 0, at = row * count; i < count; i++, at++)
             {
-                int at = row * count + i;
-                if (indices is not null ? indices[at] == SpriteKey : colours[at * 4 + 3] == KeyAlpha)
+                if (indices is not null ? indices[at] == SpriteKey : (colours[at] & AlphaBits) == KeyAlphaBits)
                     continue;
-                Buffer.BlockCopy(colours, at * 4, _pixels, (to + i) * 4, 4);
+                words[to + i] = colours[at];
                 if (indices is not null)
                     _index![to + i] = indices[at];
             }
@@ -502,7 +505,7 @@ public sealed class Surface
         int count = width * Scale;
         target ??= new byte[at + count * 4 * height * Scale];
         for (int row = 0; row < height * Scale; row++)
-            ResolveRow(Pixel(x, y, row), count, target, at + row * count * 4, opaque: true);
+            ResolveRow(Pixel(x, y, row), count, target, at + row * count * 4, Alpha.Opaque);
         return target;
     }
 
@@ -515,9 +518,7 @@ public sealed class Surface
         int count = width * Scale;
         target ??= new byte[count * 4 * height * Scale];
         for (int row = 0; row < height * Scale; row++)
-            ResolveRow(Pixel(x, y, row), count, target, row * count * 4, opaque: false);
-        for (int i = 3; i < target.Length; i += 4)
-            target[i] = target[i] == KeyAlpha ? (byte)0 : (byte)255;
+            ResolveRow(Pixel(x, y, row), count, target, row * count * 4, Alpha.Layer);
         return target;
     }
 
@@ -536,29 +537,106 @@ public sealed class Surface
         return (_pixels[o], _pixels[o + 1], _pixels[o + 2], _pixels[o + 3]);
     }
 
-    /// <summary>Writes <paramref name="count"/> stored pixels from <paramref name="p"/> as RGBA into <paramref name="target"/>.</summary>
-    private void ResolveRow(int p, int count, byte[] target, int at, bool opaque)
+    /// <summary>What a read makes of the alpha (<see cref="ResolveRow(int, Span{uint}, Alpha)"/>).</summary>
+    private enum Alpha
     {
-        Buffer.BlockCopy(_pixels, p * 4, target, at, count * 4);
-        if (_index is not null)
-        {
-            var rgb = _palette.Rgb;
-            for (int i = 0; i < count; i++)
-            {
-                int index = _index[p + i];
-                if (index < 0)
-                    continue;
-                int o = at + i * 4;
-                target[o] = rgb[index * 3];
-                target[o + 1] = rgb[index * 3 + 1];
-                target[o + 2] = rgb[index * 3 + 2];
-                target[o + 3] = index == SpriteKey ? KeyAlpha : (byte)255;
-            }
-        }
-        if (opaque)
-            for (int i = 3; i < count * 4; i += 4)
-                target[at + i] = 255;
+        /// <summary>As stored: 255, <see cref="KeyAlpha"/> for the key.</summary>
+        Stored,
+
+        /// <summary>255 everywhere.</summary>
+        Opaque,
+
+        /// <summary>A layer on the key: 0 for the key (and a colour stored with its marker), 255 for the rest.</summary>
+        Layer,
     }
+
+    /// <summary>Writes <paramref name="count"/> stored pixels from <paramref name="p"/> as RGBA into <paramref name="target"/>.</summary>
+    private void ResolveRow(int p, int count, byte[] target, int at, Alpha alpha) =>
+        ResolveRow(p, MemoryMarshal.Cast<byte, uint>(target.AsSpan(at, count * 4)), alpha);
+
+    /// <summary>
+    /// Writes stored pixels from <paramref name="p"/> on as RGBA pixels into <paramref name="target"/> (one per element, its
+    /// bytes R, G, B, A): an entry as its colour now (<see cref="Colours"/>), a stored colour as it is, the alpha as
+    /// <paramref name="alpha"/> says. One pass, a pixel a word: the phone reads the battle's layers every few frames
+    /// (docs/ui/phone-build.md, "The battle's speed").
+    /// </summary>
+    private void ResolveRow(int p, Span<uint> target, Alpha alpha)
+    {
+        var stored = Words.Slice(p, target.Length);
+        if (_index is null)
+        {
+            stored.CopyTo(target);
+            if (alpha != Alpha.Stored)
+                for (int i = 0; i < target.Length; i++)
+                    target[i] = WithAlpha(target[i], alpha);
+            return;
+        }
+        var colours = Colours(alpha);
+        var entries = _index.AsSpan(p, target.Length);
+        for (int i = 0; i < target.Length; i++)
+        {
+            int entry = entries[i];
+            target[i] = entry >= 0 ? colours[entry] : WithAlpha(stored[i], alpha);
+        }
+    }
+
+    /// <summary>A stored colour's pixel word with its alpha as <paramref name="alpha"/> says.</summary>
+    private static uint WithAlpha(uint pixel, Alpha alpha) => alpha switch
+    {
+        Alpha.Opaque => pixel | AlphaBits,
+        Alpha.Layer => (pixel & AlphaBits) == KeyAlphaBits ? pixel & ~AlphaBits : pixel | AlphaBits,
+        _ => pixel,
+    };
+
+    /// <summary>The stored colours as RGBA pixels, a word each.</summary>
+    private Span<uint> Words => MemoryMarshal.Cast<byte, uint>(_pixels.AsSpan());
+
+    /// <summary>The bits of a pixel word that hold its alpha (all set), and those of <see cref="KeyAlpha"/>.</summary>
+    private static readonly uint AlphaBits = Word(0, 0, 0, 255), KeyAlphaBits = Word(0, 0, 0, KeyAlpha);
+
+    /// <summary>The pixel word of the bytes R, G, B, A.</summary>
+    private static uint Word(byte r, byte g, byte b, byte a) => MemoryMarshal.Read<uint>([r, g, b, a]);
+
+    /// <summary>
+    /// Each palette entry's colour now as a pixel word, its alpha as <paramref name="alpha"/> says for an entry
+    /// (<see cref="SpriteKey"/>'s <see cref="KeyAlpha"/>, 255 or 0); made again when the palette is another one (a palette
+    /// is never changed in place).
+    /// </summary>
+    private uint[] Colours(Alpha alpha)
+    {
+        if (!ReferenceEquals(_coloursOf, _palette))
+        {
+            for (int i = 0; i < 256; i++)
+            {
+                var (r, g, b) = _palette[i];
+                bool key = i == SpriteKey;
+                _colours[(int)Alpha.Stored][i] = Word(r, g, b, key ? KeyAlpha : (byte)255);
+                _colours[(int)Alpha.Opaque][i] = Word(r, g, b, 255);
+                _colours[(int)Alpha.Layer][i] = Word(r, g, b, key ? (byte)0 : (byte)255);
+            }
+            _coloursOf = _palette;
+        }
+        return _colours[(int)alpha];
+    }
+
+    private readonly uint[][] _colours = [new uint[256], new uint[256], new uint[256]];
+    private Palette? _coloursOf;
+
+    /// <summary>
+    /// A buffer of at least <paramref name="words"/> pixel words (and as many entries of an indexed surface), for copies
+    /// read whole before they are written; kept for the next one.
+    /// </summary>
+    private (uint[] Words, short[]? Entries) Scratch(int words)
+    {
+        if (_scratch.Length < words)
+            _scratch = new uint[words];
+        if (_index is not null && (_scratchEntries?.Length ?? 0) < words)
+            _scratchEntries = new short[words];
+        return (_scratch, _index is null ? null : _scratchEntries);
+    }
+
+    private uint[] _scratch = [];
+    private short[]? _scratchEntries;
 
     /// <summary>Moves <paramref name="count"/> stored pixels (colours and entries) within the surface.</summary>
     private void CopyStored(int from, int to, int count)

@@ -25,9 +25,6 @@ public sealed class Palette
     /// <summary>The colour of entry <paramref name="index"/>.</summary>
     public (byte R, byte G, byte B) this[int index] => (_rgb[index * 3], _rgb[index * 3 + 1], _rgb[index * 3 + 2]);
 
-    /// <summary>The 768 bytes R, G, B per entry (read only; for the surfaces' bulk reads).</summary>
-    internal byte[] Rgb => _rgb;
-
     /// <summary>Whether entry <paramref name="index"/> is reserved (0-9, 246-255): CGs never load it.</summary>
     public static bool IsReserved(int index) => index is < 10 or > 245;
 

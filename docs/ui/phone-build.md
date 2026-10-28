@@ -225,16 +225,69 @@ layout: on a phone they show as on the tablet, in the frame (the agent's choice,
 
   The scenes and the map run at the screen's rate, a long frame now and then (entering a screen, the read-ahead). **The
   battle's exchanges run at about 21 frames a second**, a frame of 140-150 ms every few: playable, but the animation
-  stutters. The likely cause, not measured yet: while the engine's surface changes every frame (the exchange's sprites),
-  each frame composes the whole 1280×800 picture per pixel in C# (`GamePresenter.Compose`, the battle's
-  `WindowMask.Compose`) and uploads it as a 4 MB texture (`GameScreen`, `BattleBoardView`). So the battle's speed on the
-  phone is a task of its own (§7: before the screens it touches, L3-L4): profile a battle's frames on the Poco, then
-  move the work that costs (a dirty rectangle, or the palette applied on the GPU).
+  stutters. The cause guessed here (the whole 1280×800 picture composed and uploaded each frame) was wrong; the cause
+  measured and its fix are "The battle's speed" below: the exchanges now run at about 100 frames a second.
 - **Found on the way**: on Android 16 a folder `adb push` creates in the app's external folder is the shell user's with
   no access for others, so the game could not read the pushed game folder (an older Android let it); the Android
   scripts now open what adb put there to the app (`Grant-AppAccess` in `tools/android-adb.ps1`, run by
   `export-android.ps1` and `copy-saves.ps1`). Xiaomi's phones also need Developer options → "Install via USB" before
   adb may install.
+
+**The battle's speed** (2026-10-28, a task of its own before L3; the owner's play on the Poco, the week-18 save's attack
+on Oaks (6), the debug build):
+
+- **The cause**, measured with a probe of each frame's parts written to logcat (temporary, not committed). Not the whole
+  picture: while our battle screen covers the view, `GameScreen` only takes the change, and the windows' layer was
+  composed once in ten seconds. The time went to:
+  - the scene's **front layer**, drawn again by `BattleScene` at every shots frame and counter of an exchange though
+    without the numbers (our screen's) only its marks can change, then read and uploaded again by `BattleBoardView`:
+    13.5 ms, 147 times in 7.6 s;
+  - the **surface's reads and keyed copies** (`Surface`): the palette applied a byte at a time with a second pass for a
+    layer's alpha, a `Buffer.BlockCopy` call per pixel in the keyed copies. These slowed the layers' reads (~13 ms
+    each) and the engine's own drawing of an exchange (`BattlePresenter`: a shots frame 11.6 ms, the counters ~40 ms,
+    up to 80);
+  - **`BattleBoardView.Place` every frame**: 1.2 ms, its theme overrides set again (a theme change: the armies' names
+    shaped and their lines sorted again) and every layer drawn again;
+  - **all eight cards built again** when one changed: ~10 ms, then their layout;
+  - and **our libraries compiled unoptimized** in Godot's export configurations: the .NET SDK optimizes only `Release`,
+    so in `ExportDebug` (this build) and `ExportRelease` (the Windows release too) Mono and CoreCLR ran all our C# —
+    the rules, the presenter, the surfaces — without the JIT's optimizations, which on the PC makes the same code
+    5-10 times slower.
+- **The fix** — nothing drawn differently: the PC and touch gallery passes same (110 and 111 entries):
+  - `BattleScene` draws the front again only when what it shows changes: in an exchange with the numbers every time,
+    without them only with its overlay or the marks;
+  - `Surface` reads a row in one pass, a pixel a word, through a table of the palette for each alpha (stored, opaque,
+    a layer's), copies keyed a word at a time into a buffer it keeps, and draws a CG's row from its span;
+  - `BattleBoardView` lays the screen out only when its origin, scale or layout changed, and builds again only the
+    cards whose contents changed;
+  - `Directory.Build.props` sets `Optimize` for `ExportDebug` and `ExportRelease`; the editor's `Debug` stays as it is.
+
+  The surface alone, a 640×256 layer on the PC (stored 1280×512):
+
+  | | Unoptimized: before / after | Optimized: before / after |
+  |---|---|---|
+  | `ReadLayer` | 11.0 / 4.8 ms | 2.5 / 0.5 ms |
+  | `ReadArea` | 10.6 / 5.3 ms | 2.0 / 0.6 ms |
+  | `CopyKeyed` | 10.6 / 5.2 ms | 7.7 / 3.5 ms |
+  | `DrawCg` | 4.2 / 2.2 ms | 0.4 / 0.5 ms |
+
+- **On the Poco** — the screen at 120 Hz, a frame 8.3 ms:
+
+  | The battle's exchanges | Frame interval: mean / p95 / longest | Slowest processing a second: median / longest |
+  |---|---|---|
+  | Before, MsgSkip on (without it not measured before) | 28.6-47.1 / 128-133 / 146-149 ms | 43-144 / 161-168 ms |
+  | After, MsgSkip off | **9.4-10.2 / 11.9-15.0 / 91-142 ms** | 20-64 / 93-226 ms |
+  | After, MsgSkip on | 15.8 / 64 / 111 ms | 20 / 106 ms |
+
+  The exchanges run at about 100 frames a second, near the screen's rate; with MsgSkip, whose pauses take one frame
+  each, every frame draws a step of the exchange. Still a long frame (40-140 ms) or two at an exchange's start:
+  - the engine's own drawing of its start (`BattlePresenter`: the engagement picture, the slide and the counters,
+    copies of 640×400 stored at 2×, ~13-45 ms on the phone, kept as the original draws them);
+  - an effect's first play in a launch (its textures made per pixel in C#, `EffectTextures`: ~130 ms the first time,
+    ~30 ms the second).
+
+  Both are in docs/backlog.md, "Android". Note on the figures: a frame's interval is Godot's `delta`, so the script's
+  work at a frame's start (`process_frame`) is counted in the next frame's interval; a period's figures are the same.
 
 ### Upright (steps P0-P9)
 
@@ -263,7 +316,8 @@ layout: on a phone they show as on the tablet, in the frame (the agent's choice,
 ## 7. Risks and checks
 
 - **Speed** on the phone (the per-pixel engine surface; §3): measured in step F — the scenes and the map at the
-  screen's rate, the battle's exchanges at ~21 frames a second (step F, "The Poco"): a task of its own before L3.
+  screen's rate, the battle's exchanges at ~21 frames a second (step F, "The Poco"), now ~100 (step F, "The battle's
+  speed"); a long frame or two at an exchange's start left.
 - **The safe area's values**: the Poco reports a hole of 120 px (not the reference's 110) and nothing at the foot; the
   frame reads Android's, the gesture zone's 50 px kept, and the fallback serves only the PC (step F, "The Poco").
 - **The keyboard**: Android shows it for the comment's `LineEdit` (`SaveLoadView`); how much it covers and whether Godot

@@ -3,5 +3,9 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Godot's exports build every project in ExportDebug (the Android test build) or ExportRelease, which the .NET SDK
+         does not optimize: the libraries ran unoptimized in both (and the game's project in the debug one), the phone's
+         battle at a fraction of its speed (docs/ui/phone-build.md, "The battle's speed"). The editor's Debug stays as it is. -->
+    <Optimize Condition="'$(Configuration)' == 'ExportDebug' or '$(Configuration)' == 'ExportRelease'">true</Optimize>
   </PropertyGroup>
 </Project>

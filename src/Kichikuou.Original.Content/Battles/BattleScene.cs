@@ -152,7 +152,7 @@ public sealed class BattleScene
             if (value == _numbers)
                 return;
             _numbers = value;
-            _frontNumbers = true;                               // the front drawn again without (or with) them
+            _frontKey = null;                                   // the front drawn again without (or with) them
             Render();
         }
     }
@@ -388,7 +388,10 @@ public sealed class BattleScene
     /// Draws again what changed of the picture (owner, 2026-10-13: a pointer moving over the enemies' cards
     /// must not cost frames): the palette as the original's drawing loads it, then only the layers whose CGs
     /// changed (<see cref="FieldY"/>; a hovered enemy redraws the enemy's army alone), and the front when
-    /// it shows numbers or its overlay changed.
+    /// what it shows changed: in an exchange with <see cref="Numbers"/> every time (they follow the state), else
+    /// only with its overlay or the marks — a shots frame or a counter changes nothing there, and drawing and
+    /// reading it again cost the phone a frame (docs/ui/phone-build.md, "The battle's speed") — or when the palette
+    /// was loaded again under marks (theirs is loaded after it).
     /// </summary>
     private void Render()
     {
@@ -411,7 +414,8 @@ public sealed class BattleScene
         string enemy = $"{string.Join(",", _enemySprites)} {cmdr} {_enemyArrival}";
         string player = $"{string.Join(",", _playerSprites)} {unit} {_playerArrival}";
         bool fieldChanged = field != _fieldKey;
-        if (fieldChanged || enemy != _enemyKey || player != _playerKey)
+        bool pictureChanged = fieldChanged || enemy != _enemyKey || player != _playerKey;
+        if (pictureChanged)
         {
             // The palette as FIGT leaves it: the battlefield, the sprites, the overlay, then the digit sheets.
             var palette = Surface.Palette;
@@ -446,14 +450,17 @@ public sealed class BattleScene
             }
             PictureVersion++;
         }
-        if (fieldChanged || _mode == Mode.Engagement || _frontNumbers)
+        bool numbers = _numbers && _mode == Mode.Engagement;
+        var marks = _mode == Mode.Engagement ? _marks : null;
+        (string, WipedOutMarksEvent?)? front = numbers ? null : (field, marks);   // null: the numbers, drawn every time
+        if (numbers || front != _frontKey || (marks is not null && pictureChanged))
         {
             Surface.Copy(OverlayX, FieldY, Width, Height, 0, FrontY);
-            _frontNumbers = _mode == Mode.Engagement;
-            if (_frontNumbers)
+            if (_mode == Mode.Engagement)
                 DrawNumbers(s, FrontY);
             FrontVersion++;
         }
+        _frontKey = front;
         if (!Surface.Palette.SameAs(_shownPalette))
         {
             _shownPalette = Surface.Palette;
@@ -463,7 +470,10 @@ public sealed class BattleScene
     }
 
     private string? _fieldKey, _enemyKey, _playerKey;
-    private bool _sheetsDrawn, _frontNumbers;
+    private bool _sheetsDrawn;
+
+    /// <summary>What the front shows without numbers — its overlay's field and the marks —, or null when it shows numbers (or must be drawn).</summary>
+    private (string Field, WipedOutMarksEvent? Marks)? _frontKey;
     private Palette? _shownPalette;
 
     /// <summary>Counts the redraws of the battlefield's layer (and the overlay kept beside it).</summary>

@@ -157,6 +157,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     private Rect2 _speakerArea = SpeakerLeft;
     private Vector2 _origin;
     private float _scale = 1;                       // window pixels to a layout pixel
+    private (Vector2 Origin, float Scale, bool Narrow)? _placed;     // what Place laid the screen out for
 
     public BattleBoardView(GameFont font, FacePictures faces)
     {
@@ -193,6 +194,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         {
             _jumpArmies = true;                                             // shown again: the armies stand where they are
             _meters.Clear();                                                // and the counters show what they hold (another battle, perhaps)
+            _placed = null;                                                 // laid out again
         };
 
         _speaker = Picture();                                               // the portrait has its own frame and name
@@ -358,6 +360,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         _playerAdvantage.SetColour(Ui.HoverLine);
         _enemyAdvantage.SetColour(Ui.HoverLine);
         _cardsKey = _stripKey = "?";
+        _placed = null;                                                 // every layer drawn again in the new colours
         _gauge.QueueRedraw();
         _limit.QueueRedraw();
         _separator.QueueRedraw();
@@ -378,6 +381,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         _theme.DefaultFont = DeploymentTableView.LoadFont(font);
         _balloon.SetFont(_theme.DefaultFont);
         _info.SetFont(_theme.DefaultFont);
+        _placed = null;
     }
 
     /// <summary>The battle's info boxes as ours (docs/ui/messages.md, §5 step 5).</summary>
@@ -396,6 +400,12 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     /// </summary>
     public void Place(Vector2 origin, float scale)
     {
+        // Nothing moved: the layers redraw themselves. Laid out again every frame, the armies' names were shaped and their
+        // lines sorted again each time (a theme override set is a theme change) and every layer drawn again
+        // (docs/ui/phone-build.md, "The battle's speed").
+        if (_placed == (origin, scale, Narrow))
+            return;
+        _placed = (origin, scale, Narrow);
         if (scale != _scale)
             _cardsKey = _stripKey = "?";                                // the faces and the text at the new size
         _origin = origin;
@@ -888,6 +898,8 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
             .Select(c => c is not null && strike is not null ? strike.Apply(c) : c)   // the blow on the fighters, from the moment it lands
             .ToList();
         string key = string.Join(";", cards) + $"|{order.Acting}";
+        if (_cardsKey == "?")
+            _cardKeys.Clear();                                           // every card built again (the scale, the faces, the palette)
         if (key == _cardsKey)
         {
             if (hovered != _cardsHovered)
@@ -900,8 +912,6 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         }
         _cardsKey = key;
         _cardsHovered = hovered;
-        _orderLabels.Clear();
-        _orderStrips.Clear();
         BattlePlace? actingPlace = null;
         for (int i = 0; i < cards.Count; i++)
         {
@@ -915,6 +925,16 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
             box.BorderColor = Border(place, card, acting);
             int pad = Pad;
             box.ContentMarginLeft = box.ContentMarginRight = box.ContentMarginTop = box.ContentMarginBottom = pad;
+            // Only a card whose contents changed is built again: an exchange's blow changes the two fighters' alone (all
+            // eight built again cost the phone ~10 ms and their layout more; docs/ui/phone-build.md, "The battle's speed").
+            string cardKey = $"{card}|{acting}";
+            if (_cardKeys.GetValueOrDefault(place) == cardKey)
+                continue;
+            _cardKeys[place] = cardKey;
+            foreach (var record in _orderLabels.Where(o => panel.IsAncestorOf(o.Value)).Select(o => o.Key).ToList())
+                _orderLabels.Remove(record);
+            foreach (var record in _orderStrips.Where(o => panel.IsAncestorOf(o.Value)).Select(o => o.Key).ToList())
+                _orderStrips.Remove(record);
             foreach (var child in panel.GetChildren())
             {
                 panel.RemoveChild(child);
@@ -940,6 +960,9 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     }
 
     private BattlePlace? _cardsHovered;
+
+    /// <summary>What each place's card was built showing (its card and whether it acts).</summary>
+    private readonly Dictionary<BattlePlace, string> _cardKeys = [];
 
     /// <summary>A card's frame: the accent while it acts, lit under the pointer (<see cref="_cardsHovered"/>), else plain; an empty place's line.</summary>
     private Color Border(BattlePlace place, BattleCard? card, bool acting) =>
