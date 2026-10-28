@@ -299,7 +299,9 @@ screen, the last three, were drawn over their screen gallery entries (`all-data�
 alone), the import screen PI and LI as drawn — so every screen of ours has a base version in both orientations, and
 the owner confirmed every choice of the agent's in the rounds (its §5, questions 33 and 37). The build's plan is
 docs/ui/phone-build.md (owner, 2026-10-28): the three missing base versions first (rounds P20-P21: the Menu sheet, the
-message log, the comment's editing), then the landscape phone (steps F, L1-L10), then upright (P0-P9); the reference
+message log, the comment's editing; drawn as docs/ui/phone.md §25-§26 with the original's own screens, over the new
+gallery entries `fortune-check`, `cg-gallery`, `music-room`, awaiting the owner's choices), then the landscape phone
+(steps F, L1-L10), then upright (P0-P9); the reference
 phone and longer screens; the tablet stays landscape. The gallery shows both orientations'
 choices on tabs of their own (`gallery.ps1 -PhoneOnly`; the scenes' picture from the week-18 look's frames copied into
 `screen-gallery/phone-look`, docs/ui/gallery.md, §9).

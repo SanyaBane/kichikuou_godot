@@ -48,8 +48,13 @@ Round P18, the three screens left upright: PG1-PG2 All Data (PG1g, PG1s, PG2m; a
 pictures under the PC's menu box), PE1-PE2 the title (PEd its description, PEr the requests slip; lacquer/current's
 title-clears, title-hover, title-description, title-requests), PI, PIp, PIr the import screen (drawn: the gallery's
 import entries' words). Round P19 the same landscape: LG1-LG2 (LG1g, LG2m), LE1-LE2 (LEd), LI, LIp, LIr.
-`--round P3` before the arguments draws only that round's variants (the look dir then unread, '-' will do; P14, P15
-and P17 read it).
+Round P20, the last screens upright: PN1-PN3 the Menu sheet (PN1q Restart's question; on PS2, the look dir), PR1-PR3
+the message log (the gallery's message-log pages), PY1-PY3 the comment's editing with Android's keyboard (on PL2), and
+the original's own screens as they are, PXf, PXc, PXm, PXr (lacquer/current's fortune-check, cg-gallery, music-room;
+<look dir>/ending-report.png, frame 00002 of `--ending 11 --auto --fast --quit --shots <dir>`). Round P21 the same
+landscape: LN1-LN3, LR1-LR2 (touch/current's message-log), LY1-LY2 (on LL1), LXf, LXc, LXm, LXr.
+`--round P3` before the arguments draws only that round's variants (the look dir then unread, '-' will do; P14, P15,
+P17, P20 and P21 read it).
 The pink lines and text are the mock-ups' notes, not part of a screen.
 
 For the screen gallery's phone tabs (tools/ui/gallery.ps1 -Phone; docs/ui/gallery.md, §9) only the owner's chosen base
@@ -6532,11 +6537,749 @@ def p19():
     li(); lip(); lir()
 
 
+# --- round P20: the Menu sheet, the message log, the comment's editing and the original's screens upright -----------
+
+# The menu bar's commands as finger rows, top down (GameScreen.MenuBar.cs): Screen's Window | Fullscreen left out, a
+# phone being always full screen; Restart and Exit ask first (their dialogs' words), Debug opens its own rows.
+MENU_ROWS = [('Debug', 'sub'), ('Exit…', 'ask'), ('Restart…', 'ask'), ('Save Screenshot', None), None,
+             ('Sound', True), ('Message skip', False), ('Options…', None)]
+LOG = [('place', '', ['Leazas Castle · The Throne Room']),       # the gallery's message-log, GalleryStates.LogSample
+       ('narration', '', ['The morning sun rose over the castle walls.']),
+       ('speech', 'Maris', ['Good morning, King Rance.', 'The ministers are waiting for you.']),
+       ('speech', 'Rance', ['Let them wait. Gahahaha!']),
+       ('thought', 'Maris', ['(As always...)']),
+       ('speech', 'Maris', ['There is news from the south.', 'The rebels are gathering near Oaks.']),
+       ('speech', 'Rance', ['Then we strike before they are ready.']),
+       ('choice', '', ['Wait for the scouts']),
+       ('speech', 'Rance', ['...No. We wait for the scouts first.']),
+       ('speech', 'Kanami', ['I will go at once.']),
+       ('narration', '', ['Kanami vanished from the room without a sound.']),
+       ('thought', 'Rance', ['(Hmm... something is not right', 'about this...)']),
+       ('narration', '', ['Three days later, the army', 'reached the border.']),
+       ('speech', 'Haurein', ['The troops are in position.', 'We await your order, King Rance.']),
+       ('speech', 'Rance', ['Good. Gather everyone!'])]
+THOUGHT_INK = (176, 112, 92)
+COMMENT = 'before the attack on Oaks'
+KB_TOP = PH - 1000                      # Android's keyboard upright: Gboard with its suggestions, the gesture bar under it
+LOOK_ENDING = 'ending-report.png'       # the Completion Report: `--ending 11 --auto --fast --quit --shots`, frame 00002
+
+
+def ps2_screen(bar=True):
+    """PS2 (Ex's speech above the picture, round P14): the scene the sheets open over."""
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    img.paste(scene_clean(), (0, SCENE_Y))
+    d = ImageDraw.Draw(img)
+    speech_window(d, (16, SCENE_Y - 64 - SPEECH_H, PW - 16, SCENE_Y - 64), INTERCEPT, tail=230, tail_down=True)
+    if bar:
+        bottom_bar(d)
+    return img
+
+
+def bar_close(d, cell=0):
+    """A bar cell turned Close while what it opened is up (as Commands turns Close over the command panel)."""
+    y0, y1 = BAR
+    x = 16 + cell * 184
+    panel(d, (x, y0, x + 170, y1), fill=(96, 72, 30))
+    icon(d, 'close', x + 85, y0 + 58, NAME)
+    d.text((x + 85, y0 + 116), 'Close', font=GOTHIC(28), fill=TEXT, anchor='mm')
+
+
+def switch(d, x1, cy, on, w=150, h=72, words=34):
+    x0 = x1 - w
+    d.rounded_rectangle((x0, cy - h / 2, x1, cy + h / 2), radius=h // 2, fill=(150, 116, 52) if on else (40, 32, 26),
+                        outline=GOLD if on else DIM_GOLD, width=3)
+    kx = x1 - h / 2 if on else x0 + h / 2
+    d.ellipse((kx - h / 2 + 9, cy - h / 2 + 9, kx + h / 2 - 9, cy + h / 2 - 9), fill=NAME if on else QUIET)
+    d.text((x0 - 18, cy), 'On' if on else 'Off', font=GOTHIC(words), fill=TEXT if on else QUIET, anchor='rm')
+
+
+def menu_row(d, box, row, size=46):
+    x0, y0, x1, y1 = box
+    label, kind = row
+    cy = (y0 + y1) / 2
+    d.rectangle(box, fill=ROW, outline=DIM_GOLD, width=3)
+    d.text((x0 + 36, cy), label, font=fit(d, label, GOTHIC, size, x1 - x0 - 300), fill=TEXT, anchor='lm')
+    if kind in (True, False):
+        switch(d, x1 - 28, cy, kind)
+    elif kind == 'sub':
+        d.text((x1 - 40, cy), '›', font=GOTHIC(72), fill=GOLD, anchor='rm')
+
+
+def stack_height(rows, h, gap):
+    return sum(40 if r is None else h + gap for r in rows) - gap
+
+
+def menu_stack(d, x0, x1, top, rows=MENU_ROWS, h=130, gap=12, size=46):
+    """The rows top down from `top`, a rule for each None; their boxes by label."""
+    boxes, y = {}, top
+    for r in rows:
+        if r is None:
+            d.line([(x0 + 20, y + 14), (x1 - 20, y + 14)], fill=DIM_GOLD, width=2)
+            y += 40
+            continue
+        boxes[r[0]] = (x0, y, x1, y + h)
+        menu_row(d, boxes[r[0]], r, size)
+        y += h + gap
+    return boxes
+
+
+def question(d, box, tip, title, line, yes, size=40):
+    """A question in a callout pointing down at what asked it (the house's: TreasureCallout), No | Yes inside."""
+    x0, y0, x1, y1 = box
+    tx, ty = tip
+    panel(d, box)
+    d.polygon([(tx - 30, y1 - 3), (tx + 30, y1 - 3), (tx, ty)], fill=PANEL)
+    d.line([(tx - 30, y1), (tx, ty), (tx + 30, y1)], fill=GOLD, width=3)
+    d.text((x0 + 40, y0 + 64), title, font=BRUSH(52), fill=NAME, anchor='lm')
+    d.text((x0 + 40, y0 + 142), line, font=GOTHIC(size), fill=TEXT, anchor='lm')
+    bx = (x0 + 40, y1 - 40 - 130, (x0 + x1) // 2 - 8, y1 - 40)
+    row_box(d, bx, 'Cancel', size=46, face=BRUSH, centred=True)
+    red_button(d, ((x0 + x1) // 2 + 8, bx[1], x1 - 40, bx[3]), yes, 52)
+
+
+def pn1_screen():
+    img = ps2_screen()
+    veil(img, (0, 0, PW, PH))
+    d = ImageDraw.Draw(img)
+    top = BAR[0] - 40 - stack_height(MENU_ROWS, 130, 12)
+    panel(d, (16, top - 130, PW - 16, BAR[0] - 14))
+    d.text((48, top - 64), 'Menu', font=BRUSH(58), fill=NAME, anchor='lm')
+    boxes = menu_stack(d, 40, PW - 40, top)
+    bar_close(d)
+    return img, boxes
+
+
+def pn1():
+    img, boxes = pn1_screen()
+    reach(img, label=False, shade=False)
+    save(img, 'PN1', 'the Menu sheet from the foot', 'menu', side=paras(
+        'PN1 — the Menu cell (the bar\'s left) raises a sheet over the screen\'s foot, the screen dimmed above it; the '
+        f'cell turns Close. The menu bar\'s commands as finger rows ({mm(130)}, the words {mm(46)}).',
+        'From the thumb up: Options… (the options window), Message skip and Sound as switches, Save Screenshot; over a '
+        'rule Restart… and Exit…, which ask first (PN1q), and Debug, which opens its own rows (Battle Captures, '
+        'Portraits, Effects, Screen Gallery, Hide Dimmed Map Names, Menu Row Height) with a ‹ Menu row on top.',
+        'Screen (Window | Fullscreen) is left out: the phone is always full screen.',
+        'A row acts and the sheet closes (a switch stays open); a tap above the sheet or Close shuts it. Drawn over '
+        'PS2; over the map the same, Commands staying at the right thumb.'))
+
+
+def pn1q():
+    img, boxes = pn1_screen()
+    d = ImageDraw.Draw(img)
+    r = boxes['Restart…']
+    question(d, (60, r[1] - 44 - 420, PW - 60, r[1] - 44), (PW // 2, r[1] + 10), 'Restart game?',
+             'Any unsaved progress will be lost.', 'Restart')
+    reach(img, label=False, shade=False)
+    save(img, 'PN1q', 'Restart asks first', 'menu', side=paras(
+        'Restart… and Exit… ask first, as the PC\'s dialogs do, in their words ("Restart game?", "Quit game?", "Any '
+        'unsaved progress will be lost."): a callout pointing at the row (the house\'s, as Treasure\'s and '
+        'Subordinates\' questions), Cancel | Restart inside, the red button at the right thumb.',
+        'Restart goes to the title; Exit closes the app.'))
+
+
+def pn2():
+    img = ps2_screen()
+    veil(img, (0, 0, PW, PH))
+    d = ImageDraw.Draw(img)
+    x1 = 900
+    panel(d, (0, TOP, x1, BAR[1]))
+    d.text((44, TOP + 70), 'Menu', font=BRUSH(58), fill=NAME, anchor='lm')
+    d.text((44, TOP + 150), DATE, font=CINZEL(28, 700), fill=SUBTITLE, anchor='lm')
+    icon(d, 'close', x1 - 80, TOP + 80)
+    rows = [('Options…', None), ('Message skip', False), ('Sound', True), None, ('Save Screenshot', None),
+            ('Restart…', 'ask'), ('Exit…', 'ask'), None, ('Debug', 'sub')]
+    menu_stack(d, 36, x1 - 36, TOP + 230, rows)
+    reach(img, label=False)
+    save(img, 'PN2', 'a drawer from the left', 'menu', side=paras(
+        'PN2 — Android\'s navigation drawer: the Menu cell slides a panel in from the screen\'s left edge over the whole '
+        'height, the screen dimmed beside it; a tap on the dimmed part, ✕ or a swipe left closes it.',
+        'The rows top down as a drawer has them: Options…, the switches, then Save Screenshot, Restart…, Exit…, Debug '
+        f'last; rows {mm(130)}.',
+        'The phone\'s usual way to a menu, but the top rows lie beyond one thumb\'s reach.'))
+
+
+TILES = [('Options', None), ('Message skip', False), ('Sound', True), ('Screenshot', None), ('Restart', 'ask'),
+         ('Exit', 'ask'), ('Debug', 'sub')]
+
+
+def tile(d, box, label, kind, size=44):
+    x0, y0, x1, y1 = box
+    lit = kind is True
+    d.rectangle(box, fill=(96, 72, 30) if lit else ROW, outline=GOLD if lit else DIM_GOLD, width=3)
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    d.text((cx, cy - 26), label, font=fit(d, label, GOTHIC, size, x1 - x0 - 30), fill=TEXT, anchor='mm')
+    sub = {True: 'On', False: 'Off', 'ask': 'asks first', 'sub': '›'}.get(kind, '')
+    d.text((cx, cy + 40), sub, font=GOTHIC(32), fill=NAME if lit else QUIET, anchor='mm')
+
+
+def tile_grid(d, box, cols, rows_n, h, gap=16, size=44):
+    x0, y0, x1, y1 = box
+    w = (x1 - x0 - (cols - 1) * gap) / cols
+    for i, (label, kind) in enumerate(TILES):
+        cx0 = round(x0 + (i % cols) * (w + gap))
+        cy0 = y0 + (i // cols) * (h + gap)
+        tile(d, (cx0, cy0, round(cx0 + w), cy0 + h), label, kind, size)
+    return w
+
+
+def pn3():
+    img = ps2_screen()
+    veil(img, (0, 0, PW, PH))
+    d = ImageDraw.Draw(img)
+    h, gap = 220, 16
+    top = BAR[0] - 40 - 3 * h - 2 * gap
+    panel(d, (16, top - 130, PW - 16, BAR[0] - 14))
+    d.text((48, top - 64), 'Menu', font=BRUSH(58), fill=NAME, anchor='lm')
+    w = tile_grid(d, (40, top, PW - 40, BAR[0] - 40), 3, 3, h, gap)
+    bar_close(d)
+    reach(img, label=False, shade=False)
+    save(img, 'PN3', 'tiles at the foot', 'menu', side=paras(
+        f'PN3 — the commands as tiles at the foot, three a row ({mm(w)} × {mm(h)}), as the phone\'s quick settings: '
+        'a switch\'s tile lit while on, its state under the word.',
+        'Seven tiles in three rows: the sheet is lower than PN1\'s and every tile within the thumb\'s reach; the '
+        'words shorter (Screenshot), the order less plain than a list.'))
+
+
+def log_rows():
+    """The log's pages as rows: (kind, the speaker on a page's first row, the line) — the gallery's pages twice over,
+    a log longer than the paper as a game's is."""
+    return [(kind, who if i == 0 else '', line) for kind, who, lines in LOG + LOG for i, line in enumerate(lines)]
+
+
+def chronicle_head(d, box, hint='drag scrolls · Close shuts it', h=120):
+    x0, y0, x1, y1 = box
+    d.rectangle(box, fill=PAPER)
+    d.rectangle((x0, y0, x1, y0 + h), fill=PAPER_DARK)
+    d.text((x0 + 40, y0 + h / 2), 'CHRONICLE', font=CINZEL(46, 700), fill=INK_HEAD, anchor='lm')
+    d.text((x1 - 40, y0 + h / 2), hint.upper(), font=CINZEL(24, 600), fill=INK_QUIET, anchor='rm')
+    d.rectangle(box, outline=GOLD, width=4)
+    return y0 + h
+
+
+def ink_of(kind):
+    return {'narration': INK_QUIET, 'thought': THOUGHT_INK, 'choice': INK_HEAD, 'place': INK_HEAD}.get(kind, INK)
+
+
+def pr1():
+    """The PC's chronicle (mock-up L3a) at the screen's width: the speakers' column, the lines at their breaks."""
+    img = ps2_screen()
+    d = ImageDraw.Draw(img)
+    box = (16, TOP + 10, PW - 16, BAR[0] - 20)
+    y = chronicle_head(d, box) + 16
+    col = 300
+    probe = max((r[2] for r in log_rows()), key=lambda s: d.textlength(s, font=GOTHIC(40)))
+    size = 40
+    while d.textlength(probe, font=GOTHIC(size)) > PW - 16 - 60 - col - 24:
+        size -= 1
+    pitch = round(size * 1.55)
+    rows = log_rows()
+    shown = (box[3] - 20 - y) // pitch
+    d.line([(col, y), (col, box[3] - 10)], fill=PAPER_LINE, width=2)
+    for i, (kind, who, line) in enumerate(rows[-shown:]):
+        ry = y + i * pitch
+        d.line([(30, ry + pitch), (PW - 60, ry + pitch)], fill=PAPER_LINE, width=1)
+        if who or kind == 'choice':
+            d.text((col - 22, ry + pitch / 2), (who or 'choice').upper(), font=CINZEL(30, 700),
+                   fill=INK_QUIET if kind == 'choice' else ink_of(kind if kind == 'thought' else 'choice'), anchor='rm')
+        text = ('◆ ' + line) if kind == 'choice' else line
+        d.text((col + 24, ry + pitch / 2), text, font=GOTHIC(size), fill=ink_of(kind), anchor='lm')
+    scroll_bar(d, PW - 46, y, box[3] - 20, shown, len(rows))
+    bar_close(d, 1)
+    save(img, 'PR1', 'the PC\'s chronicle at the screen\'s width', 'log', side=paras(
+        'PR1 — the message log as on the PC (mock-up L3a), the paper sheet over the whole screen: the speakers in their '
+        f'column ({mm(30)}), each line of a page at its break, all at one size — {mm(size)}, as large as the longest '
+        f'line allows in the column. Rows {mm(pitch)}: {shown} in view.',
+        'The Log cell opens it at a key wait and on the map, turning Close; a drag scrolls (the tablet\'s finger), '
+        'the newest at the foot.',
+        'Made up: the gallery\'s pages twice over (GalleryStates.LogSample).'))
+
+
+def log_pages(d, box, sizes=(58, 44), name=32, gap=30):
+    """The pages from the newest up, each speaker named over his lines (a chat's way), the lines at their breaks
+    across the width: a speech or thought at `sizes[0]`, the narration at `sizes[1]`; returns the pages shown."""
+    x0, y0, x1, y1 = box
+    y = y1
+    shown = 0
+    for kind, who, lines in reversed(LOG):
+        size = sizes[1] if kind in ('narration', 'place') else sizes[0]
+        h = (name * 1.5 if who or kind == 'choice' else 0) + len(lines) * size * 1.3 + gap
+        if y - h < y0:
+            break
+        y -= h
+        ty = y
+        if who or kind == 'choice':
+            d.text((x0, ty), (who or 'your choice').upper(), font=CINZEL(name, 700),
+                   fill=INK_QUIET if kind == 'choice' else (THOUGHT_INK if kind == 'thought' else INK_HEAD))
+            ty += name * 1.5
+        for line in lines:
+            text = ('◆ ' + line) if kind == 'choice' else line
+            face = CINZEL(size, 700) if kind == 'place' else GOTHIC(size)
+            d.text((x0, ty), text, font=fit(d, text, lambda s: face if s == size else GOTHIC(s), size, x1 - x0),
+                   fill=ink_of(kind))
+            ty += size * 1.3
+        d.line([(x0, y + h - gap / 2), (x1, y + h - gap / 2)], fill=PAPER_LINE, width=1)
+        shown += 1
+    return shown
+
+
+def pr2():
+    img = ps2_screen()
+    d = ImageDraw.Draw(img)
+    box = (16, TOP + 10, PW - 16, BAR[0] - 20)
+    y = chronicle_head(d, box) + 24
+    shown = log_pages(d, (56, y, PW - 80, box[3] - 24))
+    scroll_bar(d, PW - 46, y, box[3] - 20, shown, len(LOG) + 4)
+    bar_close(d, 1)
+    save(img, 'PR2', 'the speaker over his lines, at the scenes\' type', 'log', side=paras(
+        'PR2 — the paper sheet over the whole screen, each page as a chat\'s: its speaker\'s name over its lines '
+        f'({mm(32)}, vermilion; a thought\'s paler, a choice "your choice" with ◆), the lines across the width at '
+        f'the scenes\' type — a speech or thought {mm(58)}, the narration {mm(44)} — at their breaks.',
+        f'{shown} pages in view; a drag scrolls, the newest at the foot. The Log cell turns Close.',
+        'The type is upright\'s PS2\'s, so the log reads as the scene did; a page takes more height than PR1\'s row.'))
+
+
+def pr3():
+    img = ps2_screen()
+    d = ImageDraw.Draw(img)
+    top = SCENE_Y + 420
+    box = (16, top, PW - 16, BAR[0] - 20)
+    d.rectangle(box, fill=PAPER)
+    d.rounded_rectangle((PW / 2 - 90, top + 20, PW / 2 + 90, top + 34), radius=7, fill=PAPER_LINE)
+    d.text((40, top + 64), 'CHRONICLE', font=CINZEL(38, 700), fill=INK_HEAD, anchor='lm')
+    d.text((PW - 40, top + 64), 'DRAG UP FOR MORE', font=CINZEL(24, 600), fill=INK_QUIET, anchor='rm')
+    d.rectangle(box, outline=GOLD, width=4)
+    shown = log_pages(d, (56, top + 110, PW - 56, box[3] - 24))
+    bar_close(d, 1)
+    save(img, 'PR3', 'a half sheet over the scene', 'log', side=paras(
+        'PR3 — the log as a sheet over the screen\'s lower half: the scene and its window stay in view above it, the '
+        f'newest pages at the thumb ({shown} in view, PR2\'s type); a drag up on its handle raises it to the whole '
+        'height, a drag down or Close puts it away.',
+        'Reading back while the scene still shows, at the cost of half the rows.'))
+
+
+def editing_field(d, box, lines=(COMMENT,), size=40):
+    """The comment's field while it is edited: paper, a vermilion frame, the caret after the text."""
+    x0, y0, x1, y1 = box
+    d.rectangle(box, fill=PAPER_FIELD, outline=VERMILION, width=4)
+    ty = (y0 + y1) / 2 - len(lines) * size * 1.3 / 2
+    for line in lines:
+        d.text((x0 + 26, ty), line, font=GOTHIC(size), fill=INK)
+        ty += size * 1.3
+    cx = x0 + 26 + d.textlength(lines[-1], font=GOTHIC(size)) + 6
+    d.rectangle((cx, ty - size * 1.25, cx + 4, ty - size * 0.1), fill=INK)
+
+
+def keyboard(img, box):
+    """Android's keyboard (a Gboard of the dark theme) over `box`: the suggestions, four rows of keys, Done (✓)."""
+    x0, y0, x1, y1 = box
+    d = ImageDraw.Draw(img)
+    d.rectangle(box, fill=(32, 33, 36))
+    strip = 120
+    w = (x1 - x0) / 3
+    for i, s in enumerate(('the', 'Oaks', 'attack')):
+        d.text((x0 + w * i + w / 2, y0 + strip / 2), s, font=GOTHIC(40), fill=(220, 220, 224), anchor='mm')
+        if i:
+            d.line([(x0 + w * i, y0 + 34), (x0 + w * i, y0 + strip - 34)], fill=(80, 80, 86), width=2)
+    rows = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm']
+    gap = 18
+    ky0, ky1 = y0 + strip, y1 - 50 - gap
+    kh = (ky1 - ky0 - 4 * gap) / 4
+    kw = (x1 - x0 - 11 * gap) / 10
+    key = lambda b, s, fill=(64, 65, 70), ink=(236, 236, 240), size=None: (
+        d.rounded_rectangle(b, radius=14, fill=fill),
+        d.text(((b[0] + b[2]) / 2, (b[1] + b[3]) / 2), s, font=GOTHIC(size or round(min(kh, kw) * 0.5)), fill=ink,
+               anchor='mm'))
+    for r, letters in enumerate(rows):
+        ry = ky0 + gap + r * (kh + gap)
+        indent = (x1 - x0 - len(letters) * kw - (len(letters) - 1) * gap) / 2
+        for i, ch in enumerate(letters):
+            kx = x0 + indent + i * (kw + gap)
+            key((kx, ry, kx + kw, ry + kh), ch)
+        if r == 2:
+            key((x0 + gap, ry, x0 + indent - gap, ry + kh), '⇧', (48, 49, 54))
+            key((x1 - indent + gap, ry, x1 - gap, ry + kh), '←', (48, 49, 54))
+    ry = ky0 + gap + 3 * (kh + gap)
+    sw = 1.5 * kw + gap
+    key((x0 + gap, ry, x0 + gap + sw, ry + kh), '?123', (48, 49, 54), size=round(min(kh, kw) * 0.36))
+    key((x0 + 2 * gap + sw, ry, x0 + 2 * gap + sw + kw, ry + kh), ',', (48, 49, 54))
+    key((x1 - 2 * gap - sw - kw, ry, x1 - 2 * gap - sw, ry + kh), '.', (48, 49, 54))
+    key((x1 - gap - sw, ry, x1 - gap, ry + kh), '✓', (138, 180, 248), (20, 30, 50))
+    key((x0 + 3 * gap + sw + kw, ry, x1 - 3 * gap - sw - kw, ry + kh), '', (64, 65, 70))
+
+
+def pl2_screen():
+    """PL2 (round P5, the owner's change): the list over the save's page on the bar; the comment field's foot."""
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    y = save_title(d)
+    page_h = save_page(Image.new('RGB', (PW, PH)), 0, compact=True)
+    page = BAR[0] - 24 - page_h
+    save_list(d, y + 6, 104, chosen=12, two_lines=False, foot=page - 36, saves=PL2_SAVES)
+    divider(d, page - 18)
+    foot = save_page(img, page, compact=True, number=12)
+    back_and(ImageDraw.Draw(img), 'Load')
+    return img, foot
+
+
+def py1():
+    img, foot = pl2_screen()
+    d = ImageDraw.Draw(img)
+    d.rectangle((0, foot - 110, PW, foot + 120), fill=BACKDROP)
+    editing_field(d, (16, foot - 104, PW - 16, foot))
+    d.text((PW - 16, foot + 40), 'the keyboard\'s ✓ keeps it  ·  Back leaves it as it was  ·  60 letters at most',
+           font=GOTHIC(28), fill=QUIET, anchor='rm')
+    shift = foot + 80 - (KB_TOP - 16)
+    out, _ = phone()
+    out.paste(img.crop((0, shift, PW, shift + KB_TOP)), (0, 0))
+    keyboard(out, (0, KB_TOP, PW, PH))
+    save(out, 'PY1', 'Android\'s pan: the screen slides up over the keyboard', 'comment', side=paras(
+        'PY1 — Edit as on the PC: the field across the page, paper with a vermilion frame, the caret at the text\'s '
+        'end; Android pans the whole screen up until the field clears its keyboard (its default for a window that '
+        f'does not resize): the title and the list\'s top slide away, {mm(shift)}.',
+        'The keyboard\'s ✓ keeps the comment (the PC\'s Enter), the phone\'s Back leaves it as it was (Esc); the '
+        'hint under the field says so. Nothing of ours to lay out, but the field sits at the keyboard\'s edge, its '
+        'room unchosen.',
+        f'The keyboard drawn as Gboard\'s ({mm(PH - KB_TOP)} with its suggestions and the gesture bar); its real '
+        'height on the Poco, and whether Godot reports it, are checked when the editing is built (phone-build.md, §7).'))
+
+
+def comment_card(d, box, size=46, two_lines=True):
+    """The comment's own card over the keyboard: whose comment, the field, the count, Cancel | Keep."""
+    x0, y0, x1, y1 = box
+    panel(d, box)
+    d.text((x0 + 32, y0 + 56), 'COMMENT', font=CINZEL(28, 600), fill=SUBTITLE, anchor='lm')
+    d.text((x1 - 32, y0 + 56), 'No. 12 · LP 3 · Month 5 · Week 2', font=CINZEL(30, 700), fill=NAME, anchor='rm')
+    fh = 200 if two_lines else 130
+    editing_field(d, (x0 + 24, y0 + 100, x1 - 24, y0 + 100 + fh), size=size)
+    d.text((x1 - 32, y0 + 100 + fh + 36), f'{len(COMMENT)} / 60', font=GOTHIC(32), fill=QUIET, anchor='rm')
+    by = (y1 - 36 - 130, y1 - 36)
+    row_box(d, (x0 + 24, by[0], (x0 + x1) // 2 - 8, by[1]), 'Cancel', size=48, face=BRUSH, centred=True)
+    red_button(d, ((x0 + x1) // 2 + 8, by[0], x1 - 24, by[1]), 'Keep', 56)
+
+
+def py2():
+    img, foot = pl2_screen()
+    veil(img, (0, 0, PW, PH))
+    d = ImageDraw.Draw(img)
+    card = (16, KB_TOP - 24 - 560, PW - 16, KB_TOP - 24)
+    comment_card(d, card)
+    keyboard(img, (0, KB_TOP, PW, PH))
+    save(img, 'PY2', 'the comment\'s own card over the keyboard', 'comment', side=paras(
+        'PY2 — Edit raises a card of its own just over the keyboard, the screen dimmed above: whose comment (the '
+        f'save\'s title), the field two lines high ({mm(200)}: the 60 letters at {mm(46)} wrap in view), the count, '
+        f'Cancel | Keep ({mm(130)}), Keep red at the right thumb.',
+        'The keyboard\'s ✓ keeps it too, the phone\'s Back cancels. The card stands wherever the keyboard ends, so '
+        'one layout serves every screen, either orientation (LY1) and any keyboard\'s height.',
+        'The save\'s page under it unchanged; Keep writes the comment in place, as the PC\'s Enter.'))
+
+
+def py3():
+    img, foot = pl2_screen()
+    d = ImageDraw.Draw(img)
+    y0, y1 = TOP + 8, TOP + 116
+    d.rectangle((0, TOP, PW, TOP + 124), fill=BACKDROP)
+    panel(d, (16, y0, 136, y1))
+    icon(d, 'close', 76, (y0 + y1) / 2)
+    panel(d, (PW - 136, y0, PW - 16, y1), fill=(112, 26, 20))
+    d.line([(PW - 104, (y0 + y1) / 2), (PW - 82, y1 - 30), (PW - 46, y0 + 30)], fill=NAME, width=8)
+    editing_field(d, (152, y0, PW - 152, y1))
+    keyboard(img, (0, KB_TOP, PW, PH))
+    reach(img, label=False, shade=False)
+    save(img, 'PY3', 'the field in the title\'s place', 'comment', side=paras(
+        'PY3 — while the comment is edited the title band becomes its field, as a search bar: ✕ at the left leaves '
+        'it as it was, ✓ (red) keeps it; the list and the page stay as they were, the keyboard over the lower half.',
+        'Nothing moves, but the field and its buttons are at the top, beyond the thumb, and a comment longer than the '
+        'field (60 letters) scrolls sideways in it.'))
+
+
+def original_upright(name, title, pic, cells, notes):
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    img.paste(at_width(pic), (0, SCENE_Y))
+    d = ImageDraw.Draw(img)
+    bottom_bar(d, cells=cells)
+    reach(img, label=False)
+    save(img, name, title, 'originals', side=paras(*notes))
+
+
+def ending_report():
+    return Image.open(os.path.join(LOOK, LOOK_ENDING)).convert('RGB').resize((1280, 800), Image.LANCZOS)
+
+
+def sizes_of(boxes, scale):
+    return '; '.join(f'{what} {mm(w * scale)} × {mm(h * scale)}' for what, w, h in boxes)
+
+
+FORTUNE_BOXES = [('a name', 150, 32), ('Next and End', 89, 25)]                   # HAPPY_C.ADV:57-71, at 640×400
+GALLERY_BOXES = [('a thumbnail', 106, 58), ('a page\'s tab', 45, 18), ('Exit', 85, 23)]   # CG.ADV (survey §2.5)
+MUSIC_BOXES = [('a track', 108, 32), ('Stop and End', 93, 44)]                    # MMODE.ADV:208-259; Stop, End read off
+#                                                                                   the dump
+
+
+def p20_originals():
+    up = PW / 640
+    original_upright('PXf', 'Fortune Check as it is', dump(LACQ, 'fortune-check.png'), ('menu',), [
+        'The original\'s own screens are shown as they are (no layout of ours): at the screen\'s width in the middle '
+        'as a scene\'s picture, the bar with Menu alone (no key wait: no Log or Skip). A tap is the click, a long '
+        'press the right click.',
+        'Fortune Check (made up: three fates seen): ' + sizes_of(FORTUNE_BOXES, up) + '.',
+        'Upright its rows are below a finger\'s 7 mm: a tap lights a row first, as the pointer would. Landscape gives '
+        f'{mm(32 * LK * 2)} (LXf).'])
+    original_upright('PXc', 'the CG gallery as it is', dump(LACQ, 'cg-gallery.png'), ('menu',), [
+        'The CG gallery (CG): page 1, masked in every agent\'s dump (the grey placeholder stands for its sheets).',
+        sizes_of(GALLERY_BOXES, up) + ': the tabs and Exit are low for a finger.',
+        'A thumbnail\'s picture opens with window 131 under it; a long press (the right click) replays its scene, '
+        'as on the PC.'])
+    original_upright('PXm', 'the music room as it is', dump(LACQ, 'music-room.png'), ('menu',), [
+        'The music room (MMODE), no track playing: ' + sizes_of(MUSIC_BOXES, up) + '.',
+        'A long press (the right click) is Stop, as on the PC.'])
+    original_upright('PXr', 'an ending\'s Completion Report as it is', ending_report(), ('menu', 'log', 'skip'), [
+        'An ending\'s Completion Report (OVER; ending 11 from `--ending 11`): each character\'s fate, a tap goes on; '
+        'its key waits give the bar Log and Skip.',
+        'The ending\'s picture before it is an event CG (masked in the agents\' dumps), shown as PS2b\'s.'])
+
+
+def p20():
+    pn1(); pn1q(); pn2(); pn3()
+    pr1(); pr2(); pr3()
+    py1(); py2(); py3()
+    p20_originals()
+
+
+# --- round P21: the same, landscape (2026-10-28) ---------------------------------------------------------------------
+
+LKB_TOP = LH - 650                      # Android's keyboard landscape: Gboard with its suggestions, the gesture bar
+
+
+def ls1_screen(drawer=True):
+    img, d = land()
+    img.paste(look(LOOK_INTERCEPT).resize((1952, LH), Image.LANCZOS), (FX0, 0))
+    scene_side(ImageDraw.Draw(img), drawer=drawer)
+    return img
+
+
+def side_close(d):
+    """The left side's Menu cell turned Close while the Menu is up."""
+    box = (RAIL_L[0], 16, RAIL_L[1], 126)
+    panel(d, box, fill=(96, 72, 30))
+    icon(d, 'close', box[0] + 60, 71, NAME)
+    d.text((box[0] + 150, 71), 'Close', font=GOTHIC(36), fill=TEXT, anchor='mm')
+
+
+def side_menu_row(d, box, row):
+    x0, y0, x1, y1 = box
+    label, kind = row
+    d.rectangle(box, fill=ROW, outline=DIM_GOLD, width=3)
+    if kind in (True, False):
+        d.text((x0 + 18, y0 + 36), label, font=fit(d, label, GOTHIC, 34, x1 - x0 - 30), fill=TEXT, anchor='lm')
+        switch(d, x1 - 16, y1 - 38, kind, w=110, h=52, words=30)
+        return
+    words = label.split(' ') if d.textlength(label, font=GOTHIC(36)) > x1 - x0 - 50 else [label]
+    for i, w in enumerate(words):
+        d.text(((x0 + x1) / 2 - (12 if kind == 'sub' else 0), (y0 + y1) / 2 + (i - (len(words) - 1) / 2) * 44), w,
+               font=GOTHIC(36), fill=TEXT, anchor='mm')
+    if kind == 'sub':
+        d.text((x1 - 22, (y0 + y1) / 2), '›', font=GOTHIC(60), fill=GOLD, anchor='rm')
+
+
+def ln1():
+    img = ls1_screen(drawer=False)
+    d = ImageDraw.Draw(img)
+    side_close(d)
+    rows = [r for r in MENU_ROWS if r]
+    gap = 12
+    h = (FOOT - 10 - 142 - (len(rows) - 1) * gap) // len(rows)
+    for i, r in enumerate(rows):
+        y = 142 + i * (h + gap)
+        side_menu_row(d, (RAIL_L[0], y, RAIL_L[1], y + h), r)
+    reach_land(img)
+    save_land(img, 'LN1', 'the rows in the left side', 'land-menu', notes=[
+        'LN1 — LM1\'s principle: the Menu cell\nturns Close and the left side below\nit becomes the menu, the drawer\'s\n'
+        f'Skip and Log hidden meanwhile: seven\nrows {mm(RAIL_L[1] - RAIL_L[0])} × {mm(h)}, Options… at the\nleft thumb.',
+        'The side is narrow: a switch\'s word\nover its switch, a long command in\ntwo lines (Save Screenshot).',
+        'The scene stays uncovered; a row acts\nand the side goes back (a switch\nstays). Restart… and Exit… ask in a\n'
+        'callout beside their row.'])
+
+
+def ln_panel():
+    img = ls1_screen()
+    veil(img, (0, 0, LW, LH))
+    d = ImageDraw.Draw(img)
+    side_close(d)
+    return img, d
+
+
+def ln2():
+    img, d = ln_panel()
+    x0, x1 = FX0 + 10, FX0 + 860
+    h, gap = 123, 10
+    top = FOOT - 40 - stack_height(MENU_ROWS, h, gap)
+    panel(d, (x0, 16, x1, FOOT - 10))
+    d.text((x0 + 32, 16 + (top - 16) / 2), 'Menu', font=BRUSH(56), fill=NAME, anchor='lm')
+    menu_stack(d, x0 + 26, x1 - 26, top, h=h, gap=gap, size=42)
+    reach_land(img)
+    save_land(img, 'LN2', 'a panel from the Menu cell over the frame\'s left', 'land-menu', notes=[
+        'LN2 — the Menu cell (turned Close)\nopens a panel beside it over the\nframe\'s left, the screen dimmed: '
+        f'the\nrows as upright\'s PN1, one line each\n({mm(h)}, the words {mm(42)}), Options… at\nthe foot.',
+        'The left thumb reaches every row\n(the side\'s top included); a tap on\nthe dimmed part or Close shuts it.',
+        'Restart… and Exit… ask in a callout\nbeside their row (PN1q\'s words).'])
+
+
+def ln3():
+    img, d = ln_panel()
+    box = (FX0 + 160, 150, FX1 - 160, FOOT - 60)
+    panel(d, box)
+    d.text((box[0] + 40, box[1] + 70), 'Menu', font=BRUSH(56), fill=NAME, anchor='lm')
+    h = (box[3] - box[1] - 170 - 16) // 2
+    w = tile_grid(d, (box[0] + 30, box[1] + 140, box[2] - 30, box[3] - 30), 4, 2, h)
+    reach_land(img)
+    save_land(img, 'LN3', 'tiles in the frame\'s middle', 'land-menu', notes=[
+        f'LN3 — upright\'s PN3 laid across: the\nseven tiles four a row ({mm(w)} ×\n{mm(h)}) in a panel over the '
+        'frame\'s\nmiddle, the screen dimmed.',
+        'Large and plain, but the middle is\nwhere neither thumb rests.'])
+
+
+def lr1():
+    img, d = land()
+    frame_dump(img, 'message-log.png')
+    d = ImageDraw.Draw(img)
+    menu_cell(d, (RAIL_L[0], 16, RAIL_L[1], 126))
+    reach_land(img)
+    save_land(img, 'LR1', 'the PC\'s chronicle in the frame, as it is', 'land-log', notes=[
+        'LR1 — the message log as on the PC\nand the tablet, in the frame: the\npaper over the map (or the scene), '
+        f'its\nlines {lm(28)} (28 layout px), rows\n{lm(34)}, eighteen in view.',
+        'The Log cell (the left side) opens it\nat a key wait and on the map; a drag\nscrolls, a tap outside the paper — '
+        'the\nframe\'s margin or a black side —\ncloses it, as on the tablet.',
+        'Nothing to lay out: the PC\'s screen\nalready reads above the 2 mm floor\nhere.'])
+
+
+def lr2():
+    img = ls1_screen()
+    d = ImageDraw.Draw(img)
+    d.rectangle((RAIL_L[0], 140, RAIL_L[1], FOOT), fill=(0, 0, 0))
+    side_close(d)
+    box = (RAIL_L[1] + 12, 14, LX1, FOOT - 6)
+    y = chronicle_head(d, box, 'drag scrolls · Close shuts it', h=100) + 12
+    col = box[0] + 420
+    size, pitch = 58, 84
+    rows = log_rows()
+    shown = (box[3] - 16 - y) // pitch
+    d.line([(col, y), (col, box[3] - 10)], fill=PAPER_LINE, width=2)
+    for i, (kind, who, line) in enumerate(rows[-shown:]):
+        ry = y + i * pitch
+        d.line([(box[0] + 20, ry + pitch), (box[2] - 50, ry + pitch)], fill=PAPER_LINE, width=1)
+        if who or kind == 'choice':
+            d.text((col - 26, ry + pitch / 2), (who or 'choice').upper(), font=CINZEL(36, 700),
+                   fill=INK_QUIET if kind == 'choice' else (THOUGHT_INK if kind == 'thought' else INK_HEAD),
+                   anchor='rm')
+        d.text((col + 30, ry + pitch / 2), ('◆ ' + line) if kind == 'choice' else line, font=GOTHIC(size),
+               fill=ink_of(kind), anchor='lm')
+    scroll_bar(d, box[2] - 36, y, box[3] - 16, shown, len(rows))
+    reach_land(img)
+    save_land(img, 'LR2', 'the chronicle across the width at the scenes\' type', 'land-log', notes=[
+        'LR2 — the paper from the left side\nto the right edge, the speakers\'\n'
+        f'column wider, the lines at {mm(size)}\n(near the scenes\' 4.2 mm), rows\n{mm(pitch)}: {shown} in view.',
+        'The left side keeps Close at its top\n(the Log cell\'s place is under the\npaper\'s column): a drag scrolls.',
+        'Larger type, two fifths fewer rows\nthan LR1.'])
+
+
+def ll1_screen():
+    """LL1 (round P11): the list left, the save's page right; the page's left edge and its comment field's foot."""
+    img, d = land()
+    backdrop(img, (0, 0, LW, LH))
+    d.text((LX0 + 4, 14), 'Load', font=BRUSH(56), fill=NAME)
+    load_save_chips(d, LL1_SPLIT - 412, 18)
+    divider(d, 110, LX0, LL1_SPLIT)
+    land_save_list(d, (LX0, 124, LL1_SPLIT, FOOT - 10))
+    px0 = LL1_SPLIT + 40
+    foot = (FOOT - 10 - 150, FOOT - 10)
+    _, field = land_save_page(img, (px0, 14, LX1, foot[0] - 16), foot=0)
+    d = ImageDraw.Draw(img)
+    land_back(d, (px0, foot[0], px0 + 360, foot[1]))
+    red_button(d, (px0 + 376, foot[0], LX1, foot[1]), 'Load', 64)
+    return img, px0, field
+
+
+def ly1():
+    img, px0, field = ll1_screen()
+    veil(img, (0, 0, LW, LH))
+    d = ImageDraw.Draw(img)
+    x0, y0, x1, y1 = LX0, LKB_TOP - 24 - 360, LX1, LKB_TOP - 24
+    panel(d, (x0, y0, x1, y1))
+    d.text((x0 + 32, y0 + 54), 'COMMENT', font=CINZEL(28, 600), fill=SUBTITLE, anchor='lm')
+    d.text((x0 + 220, y0 + 54), 'No. 12 · LP 3 · Month 5 · Week 2', font=CINZEL(30, 700), fill=NAME, anchor='lm')
+    bw = 330
+    fx1 = x1 - 32 - 2 * bw - 32
+    editing_field(d, (x0 + 24, y0 + 100, fx1, y0 + 230), size=46)
+    d.text((fx1, y0 + 270), f'{len(COMMENT)} / 60', font=GOTHIC(32), fill=QUIET, anchor='ra')
+    row_box(d, (fx1 + 32, y0 + 100, fx1 + 32 + bw, y0 + 230), 'Cancel', size=48, face=BRUSH, centred=True)
+    red_button(d, (x1 - 24 - bw, y0 + 100, x1 - 24, y0 + 230), 'Keep', 56)
+    keyboard(img, (0, LKB_TOP, LW, LH))
+    save_land(img, 'LY1', 'the comment\'s own card over the keyboard', 'land-comment', notes=[
+        'LY1 — upright\'s PY2 laid across: Edit\nraises a card just over the keyboard,\nthe screen dimmed: '
+        f'whose comment,\nthe field in one line ({mm(130)}: the 60\nletters at {mm(46)} fit its width), the\ncount, '
+        'Cancel | Keep at the right\nthumb.',
+        f'The keyboard drawn as Gboard\'s\nlandscape ({mm(LH - LKB_TOP)} of the 69.5 mm):\n'
+        f'{mm(LKB_TOP)} stay above it.',
+        'The keyboard\'s ✓ keeps it, Back\ncancels, as upright.'])
+
+
+def ly2():
+    img, d = land()
+    d.rectangle((0, 0, LW, LKB_TOP), fill=(246, 246, 248))
+    cy = LKB_TOP // 2
+    d.text((SIDE + 60, cy), COMMENT, font=GOTHIC(64), fill=(30, 30, 34), anchor='lm')
+    cx = SIDE + 60 + d.textlength(COMMENT, font=GOTHIC(64)) + 8
+    d.rectangle((cx, cy - 40, cx + 5, cy + 40), fill=(26, 115, 232))
+    d.line([(SIDE + 60, cy + 60), (LW - SIDE - 460, cy + 60)], fill=(26, 115, 232), width=4)
+    d.rounded_rectangle((LW - SIDE - 380, cy - 70, LW - SIDE - 60, cy + 70), radius=70, fill=(26, 115, 232))
+    d.text((LW - SIDE - 220, cy), 'Done', font=GOTHIC(48), fill=(255, 255, 255), anchor='mm')
+    keyboard(img, (0, LKB_TOP, LW, LH))
+    save_land(img, 'LY2', 'Android\'s own full-screen editor', 'land-comment', notes=[
+        'LY2 — on a phone held landscape\nAndroid may edit a field in its own\nfull-screen editor (the "extract"\n'
+        'mode): its field and Done over the\nkeyboard, our screen hidden; its look\nis the keyboard\'s, not ours.',
+        'Nothing to build, but whether Godot\'s\nfield gets it or asks for none (as an\napp may) is checked on the '
+        'Poco\nwhen the editing is built.',
+        'Done keeps the comment, Back\ncancels.'])
+
+
+def original_land(name, title, pic, drawer, notes):
+    img, d = land()
+    img.paste(pic.resize((1952, LH), Image.LANCZOS), (FX0, 0))
+    scene_side(ImageDraw.Draw(img), drawer=drawer)
+    reach_land(img)
+    save_land(img, name, title, 'land-originals', notes=notes)
+
+
+def p21_originals():
+    k = LK * 2
+    original_land('LXf', 'Fortune Check as it is', dump(LACQ, 'fortune-check.png'), False, [
+        'The original\'s own screens as they\nare, in the frame as LS1: Menu on top\nof the left side (Skip and Log at a\n'
+        'key wait). A tap is the click, a long\npress the right click.',
+        'Fortune Check: ' + sizes_of(FORTUNE_BOXES, k).replace('; ', ';\n') + '.'])
+    original_land('LXc', 'the CG gallery as it is', dump(LACQ, 'cg-gallery.png'), False, [
+        'The CG gallery, page 1 (masked in\nthe agents\' dumps).',
+        sizes_of(GALLERY_BOXES, k).replace('; ', ';\n') + '.'])
+    original_land('LXm', 'the music room as it is', dump(LACQ, 'music-room.png'), False, [
+        'The music room, no track playing.',
+        sizes_of(MUSIC_BOXES, k).replace('; ', ';\n') + '.'])
+    original_land('LXr', 'an ending\'s Completion Report as it is', ending_report(), True, [
+        'An ending\'s Completion Report (ending\n11): a tap goes on; Skip and Log at\nthe left thumb (its key waits).'])
+
+
+def p21():
+    ln1(); ln2(); ln3()
+    lr1(); lr2()
+    ly1(); ly2()
+    p21_originals()
+
+
 def main():
     global MAP, PROV_NAMES, PROV_POINTS
-    if ROUND in ('P3', 'P5', 'P7', 'P9', 'P11', 'P13', 'P14', 'P15', 'P16', 'P18', 'P19'):
+    if ROUND in ('P3', 'P5', 'P7', 'P9', 'P11', 'P13', 'P14', 'P15', 'P16', 'P18', 'P19', 'P20', 'P21'):
         {'P3': p3, 'P5': p5, 'P7': p7, 'P9': p9, 'P11': p11, 'P13': p13, 'P14': p14, 'P15': p15, 'P16': p16,
-         'P18': p18, 'P19': p19}[ROUND]()
+         'P18': p18, 'P19': p19, 'P20': p20, 'P21': p21}[ROUND]()
         overviews()
         return
     MAP, PROV_NAMES, PROV_POINTS = build_map()

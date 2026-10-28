@@ -1032,3 +1032,116 @@ landscape, the orientation choice is a phone's only; and three screens of ours w
 sheet, the message log and the comment's editing on Save/Load — drawn before any build, as rounds P20 (upright) and P21
 (landscape), with the original's own screens (Fortune Check, the CG gallery, the music room, an ending's report) shown
 as they are for the owner to confirm.
+
+## 25. Round P20: the Menu sheet, the message log and the comment's editing upright (2026-10-28)
+
+The build's step 0 (docs/ui/phone-build.md, §5). Drawn by `mock_phone.py --round P20` over PS2 (the week-18 look's
+frames, as round P14), the gallery's `message-log` pages, PL2 (round P5) and the new gallery entries `fortune-check`,
+`cg-gallery`, `music-room` (docs/ui/gallery.md, §7 step 7), with an ending's Completion Report from a `--ending 11` run.
+The variants are named **PN** (the Menu sheet), **PR** (the log, the record), **PY** (typing the comment) and **PX** (the
+original's own screens).
+
+The Menu sheet (`PN…`): the menu bar's commands (`GameScreen.MenuBar.cs`) — Options…, Sound and MsgSkip as switches,
+Save Screenshot, Restart… and Exit… (which ask first: "Restart game?", "Quit game?", "Any unsaved progress will be
+lost."), and Debug, which opens its own rows (Battle Captures, Portraits, Effects, Screen Gallery, Hide Dimmed Map Names,
+Menu Row Height) with a ‹ Menu row on top. **Screen (Window | Fullscreen) is left out**: a phone is always full screen.
+
+- **PN1 — a sheet from the foot.** The Menu cell (the bar's left, PK1) raises a sheet over the screen's foot, the
+  screen dimmed above, the cell turning Close; the rows 7.4 mm (the words 2.6 mm) from the thumb up: Options…, Message
+  skip, Sound, Save Screenshot, over a rule Restart…, Exit…, Debug on top. A row acts and the sheet closes (a switch
+  stays open). **PN1q**: Restart asks in a callout pointing at its row (the house's, as Treasure's), Cancel | Restart
+  inside, the red button at the right thumb; Exit the same way.
+- **PN2 — a drawer from the left**, Android's navigation drawer over the whole height, the rows top down (Options…
+  first, Debug last); the top rows lie beyond one thumb's reach.
+- **PN3 — tiles at the foot**, three a row (21.0 × 12.5 mm), a switch's tile lit while on, as the phone's quick
+  settings: lower than PN1, the order less plain than a list.
+
+**Recommendation: PN1** — the house's sheet at the thumb (as PM1b's command panel), every row a finger row in a plain
+order, the dangerous rows farthest from the thumb and asking first.
+
+The message log (`PR…`; mock-up L3a, docs/ui/messages.md §5 step 6; the Log cell opens it at a key wait and on the map,
+turning Close; a drag scrolls, the newest at the foot):
+
+- **PR1 — the PC's chronicle at the width**: the speakers in their column (1.7 mm), every line at its break, all at one
+  size — which the longest line in the column holds to **1.9 mm**, under the 2 mm floor; rows 3.0 mm, the whole sample
+  (40 rows) in view.
+- **PR2 — the speaker over his lines**: each page as a chat's, the name over its lines (1.8 mm, vermilion; a thought's
+  paler, a choice "your choice" with ◆), the lines across the width at the scenes' type — a speech or thought 3.3 mm,
+  the narration 2.5 mm — at their breaks; twelve pages in view.
+- **PR3 — a half sheet over the scene**: PR2's pages in a sheet over the screen's lower half, the scene and its window
+  in view above it (six pages); a drag up raises it to the whole height.
+
+**Recommendation: PR2** — the log reads at the type the scene was read at, every line at its break, the paper of the
+PC's chronicle kept; PR1's single column costs the type, PR3 half the rows.
+
+The comment's editing (`PY…`, on PL2's page; Android's keyboard drawn as Gboard's, 57 mm upright with its suggestions):
+
+- **PY1 — Android's pan**: Edit as on the PC (the field across the page, paper with a vermilion frame, the caret), and
+  Android slides the whole screen up until the field clears the keyboard (49 mm here); the keyboard's ✓ keeps it, Back
+  leaves it as it was. Nothing of ours, but the field ends up at the keyboard's edge wherever the page puts it.
+- **PY2 — the comment's own card over the keyboard**: the screen dimmed, a card just over the keyboard — whose comment
+  (the save's title), the field two lines high (11.4 mm: the 60 letters at 2.6 mm wrap in view), the count (25 / 60),
+  Cancel | **Keep** (7.4 mm, Keep red at the right thumb); ✓ keeps it too, Back cancels.
+- **PY3 — the field in the title's place**, as a search bar: ✕ and ✓ beside it at the top; nothing moves, but the
+  buttons are beyond the thumb and a long comment scrolls sideways in the field.
+
+**Recommendation: PY2** — the card stands wherever the keyboard ends, so one layout serves every keyboard's height and
+both orientations (LY1); the whole comment in view, the buttons at the thumb.
+
+The original's own screens, shown as they are for the owner to confirm (**PXf** Fortune Check, made up: three fates
+seen; **PXc** the CG gallery, masked in the agents' dumps; **PXm** the music room; **PXr** an ending's Completion Report):
+at the screen's width in the middle as a scene's picture, the bar with Menu alone at a mouse poll (Menu, Log and Skip at
+the report's key waits); a tap is the click, a long press the right click. Their targets at this size: Fortune Check's
+names 16.3 × 3.5 mm, Next and End 9.7 × 2.7 mm; the gallery's thumbnails 11.5 × 6.3 mm, its tabs 4.9 × 2.0 mm, Exit
+9.2 × 2.5 mm; the music room's tracks 11.7 × 3.5 mm, Stop and End 10.1 × 4.8 mm — **upright the rows are half a
+finger's height**; landscape gives 5.6 mm (§26).
+
+Found on the way, to be checked when these screens are built (step L9): Fortune Check and the gallery act on a click on
+what the read before it lit (STR-39's kind; `FortuneCheckTests`, `GalleryTests`). A tap whose move and press reach the
+script in one poll would act on the cell lit before it, so a tap must move the pointer at least one poll before its
+press.
+
+## 26. Round P21: the same, landscape (2026-10-28)
+
+Drawn by `mock_phone.py --round P21` over LS1 (round P15), the touch pass's `message-log`, LL1 (round P11) and the same
+dumps as round P20, on LM1's principle (the frame keeps the layout, our controls in the black sides).
+
+The Menu sheet (`LN…`; the left side's Menu cell turns Close while it is up):
+
+- **LN1 — the rows in the left side**: the side under the cell becomes the menu, the drawer's Skip and Log hidden
+  meanwhile; seven rows 14.5 × 7.7 mm, a switch's word over its switch, Save Screenshot in two lines; the scene stays
+  uncovered.
+- **LN2 — a panel from the Menu cell over the frame's left**, the screen dimmed: PN1's rows one line each (7.0 mm, the
+  words 2.4 mm), Options… at the foot, every row within the left thumb's reach.
+- **LN3 — tiles in the frame's middle**, PN3's four a row (21.7 × 22.0 mm), where neither thumb rests.
+
+**Recommendation: LN2** — upright's PN1 in landscape's way, the rows readable in one line beside the cell that opened
+them; LN1's side is too narrow for its words.
+
+The message log (`LR…`):
+
+- **LR1 — the PC's chronicle in the frame, as it is**: the lines 2.4 mm (28 layout px), rows 3.0 mm, eighteen in view;
+  the Log cell opens it, a tap outside the paper closes it, as on the tablet.
+- **LR2 — the chronicle across the width at the scenes' type**: the paper from the left side to the right edge, the
+  lines 3.3 mm, rows 4.8 mm, twelve in view; Close at the left side's top.
+
+**Recommendation: LR1** — the PC's and the tablet's screen already reads above the 2 mm floor here: nothing to lay out.
+
+The comment's editing (`LY…`; Gboard landscape 37 mm of the 69.5, 32.5 mm left above it):
+
+- **LY1 — the comment's own card over the keyboard**, upright's PY2 laid across: the field in one line (7.4 mm, the 60
+  letters at 2.6 mm fit its width), the count, Cancel | **Keep** at the right thumb.
+- **LY2 — Android's own full-screen editor** (its "extract" mode, which a phone held landscape may use): its field and
+  Done over the keyboard, our screen hidden, its look the keyboard's. Whether Godot's field gets it or asks for none is
+  checked on the Poco when the editing is built.
+
+**Recommendation: LY1** — one card in both orientations, ours, the buttons at the thumb.
+
+The original's own screens as they are (**LXf**, **LXc**, **LXm**, **LXr**): in the frame as LS1, Menu on top of the
+left side (Skip and Log at the report's key waits). Fortune Check's names 26.1 × 5.6 mm, Next and End 15.5 × 4.3 mm; the
+gallery's thumbnails 18.4 × 10.1 mm, its tabs 7.8 × 3.1 mm, Exit 14.8 × 4.0 mm; the music room's tracks 18.8 × 5.6 mm,
+Stop and End 16.2 × 7.6 mm.
+
+The agent's own choices, for the owner to confirm: Screen (Window | Fullscreen) left out of the phone's Menu; Restart and
+Exit asking in a callout in the PC's dialogs' words; Debug as a row that opens its own rows; the original's own screens
+with no layout of ours in either orientation, their small targets upright accepted (the player may turn the phone).

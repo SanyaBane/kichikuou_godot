@@ -143,7 +143,9 @@ phone tabs:
   Saitou are scenes, laid out as PS2 and LS1, and the debug starts' menu is a development screen).
 
 **Where it stands (2026-10-28):** the gallery entries are built — `fortune-check`, `cg-gallery`, `music-room`
-(docs/ui/gallery.md, §7 step 7); the ending's Completion Report is taken from a `--ending 11` run.
+(docs/ui/gallery.md, §7 step 7); the ending's Completion Report is taken from a `--ending 11` run. Rounds P20 and P21
+are drawn (docs/ui/phone.md, §25-§26: the Menu sheet PN/LN, the log PR/LR, the comment's editing PY/LY, the original's
+screens PX/LX), awaiting the owner's choices.
 
 The development screens (the capture viewer, Portraits, Effects, the screen gallery, Debug's sliders) get no phone
 layout: on a phone they show as on the tablet, in the frame (the agent's choice, below).
@@ -196,5 +198,8 @@ layout: on a phone they show as on the tablet, in the frame (the agent's choice,
 - **The keyboard**: Android shows it for the comment's `LineEdit` (`SaveLoadView`); how much it covers and whether Godot
   reports it (`DisplayServer.VirtualKeyboardGetHeight`) is checked in the step that builds the editing.
 - **System's rotation lock** (§3): checked on the Poco in P0.
+- **A tap's move before its press** (found in round P20, phone.md §25): Fortune Check and the CG gallery act on a click
+  on what the read before it lit, so a tap whose move and press reach the script in one poll would act on the cell lit
+  before; checked when the original's screens are built (L9), on the tablet too.
 - **The tablet unchanged**: the PC and touch gallery passes same after every step, and the tablet's play by the owner
   after F and after L10.
