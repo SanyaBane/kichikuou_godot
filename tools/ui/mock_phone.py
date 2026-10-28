@@ -44,6 +44,10 @@ Round P16, the open questions upright: PB4o3 the opening at the scene's place la
 PD2s1, PD2s1x, PD2s2, PU1s1, PU1s2 the ledger scrolled sideways (one-line and two-line rows; PD2s1x a late game's
 roster, made up); PU1e1-PU1e3 Subordinates' End. Round P17, the frame upright: PK1s, PK1m, PK2s, PK2m the bar's cells
 at the left or the right (on PS2 and PM1; the look dir), PO1o the orientation in Option → Display (a sketch).
+Round P18, the three screens left upright: PG1-PG2 All Data (PG1g, PG1s, PG2m; all-data, all-data-funds and the map's
+pictures under the PC's menu box), PE1-PE2 the title (PEd its description, PEr the requests slip; lacquer/current's
+title-clears, title-hover, title-description, title-requests), PI, PIp, PIr the import screen (drawn: the gallery's
+import entries' words). Round P19 the same landscape: LG1-LG2 (LG1g, LG2m), LE1-LE2 (LEd), LI, LIp, LIr.
 `--round P3` before the arguments draws only that round's variants (the look dir then unread, '-' will do; P14, P15
 and P17 read it).
 The pink lines and text are the mock-ups' notes, not part of a screen.
@@ -5743,10 +5747,778 @@ def p17():
     po1o()
 
 
+# --- round P18: All Data, the title and the import screen upright (2026-10-28) --------------------------------------
+
+def paras(*texts, width=36):
+    """Side notes, each paragraph wrapped for the sheet's note column."""
+    import textwrap
+    return [textwrap.fill(t, width) for t in texts]
+
+
+def wrap(d, text, face, width):
+    lines, cur = [], ''
+    for word in text.split(' '):
+        t = (cur + ' ' + word).strip()
+        if cur and d.textlength(t, font=face) > width:
+            lines.append(cur)
+            cur = word
+        else:
+            cur = t
+    return lines + ([cur] if cur else [])
+
+
+def dashed(d, box, step=18):
+    """A hit box's outline: the mock-up's note, not part of the screen."""
+    if GALLERY_MODE:
+        return
+    x0, y0, x1, y1 = box
+    for a, b, horizontal in (((x0, y0), x1, True), ((x0, y1), x1, True), ((x0, y0), y1, False), ((x1, y0), y1, False)):
+        start = a[0] if horizontal else a[1]
+        for s in range(round(start), round(b), 2 * step):
+            e = min(s + step, b)
+            d.line([(s, a[1]), (e, a[1])] if horizontal else [(a[0], s), (a[0], e)], fill=NOTE, width=4)
+
+
+DATA_MENU = ['All Funds', 'Sundry Expenses', 'Military Spending', 'All Casualties', 'Return']   # 各種DATA's `]` menu
+GRAPH_TABS = [('All', 'Funds'), ('Sundry', 'Expenses'), ('Military', 'Spending'), ('All', 'Casualties')]
+DATA_BOX = (466, 68, 852, 372)          # the PC's menu box over the miniature (all-data): taken off, ours are at the thumb
+MINI = (0, 134, 1280, 666)              # the map in miniature (各種DATA.ADV:1-11: CM … 0, 67, 640, 266), doubled
+SCALES = ['1x', '2x', '4x', '8x', '16x', '32x', '64x', '128x']
+PLOT_GRAY, FUNDS_YELLOW, SUNDRY_BLUE = (78, 78, 78), (236, 248, 168), (40, 48, 236)
+# The week-18 save's All Funds at 16x (the gallery's all-data-funds): this week's bar and the fifteen before it, level
+# (STR-01); each bar's height a share of the plot (cut at its top: "OV"), its label the funds in tens of millions.
+FUNDS = [('12', 0.31)] + [('11', 0.283)] * 15
+FUNDS_TITLE = '【All Funds】 (In Units of 10,000,000 GOLD)16x'
+
+
+DATA_SCREEN = []
+
+
+def data_screen():
+    """all-data without the PC's menu box: the miniature under it drawn again as the presenter draws it — the map's
+    tiles at a third, each province's flag at a third of its point, doubled (GamePresenter.DrawData); a flag the box
+    hides whole takes the game's first owner (made up), one it hides in part the owner the dump shows."""
+    if DATA_SCREEN:
+        return DATA_SCREEN[0].copy()
+    pic = dump(TOUCH, 'all-data.png')
+    full = Image.new('RGB', (1920, 800))
+    for r, row in enumerate([[812, 802, 804], [801, 803, 805]]):
+        for c, n in enumerate(row):
+            full.paste(Image.open(os.path.join(EXTRACT, 'cg_png', f'CG{n:04d}.png')).convert('RGB'), (c * 640, r * 400))
+    tiles = np.asarray(full.resize((640, 266), Image.NEAREST).resize((1280, 532), Image.NEAREST), dtype=np.int64)
+    seen = np.asarray(pic, dtype=np.int16)
+    bx0, by0, bx1, by1 = DATA_BOX
+    inside = np.zeros(seen.shape[:2], bool)
+    inside[by0:by1, bx0:bx1] = True
+    # The stage's palette shades the tiles a little: each tile colour becomes the colour the dump shows most for it
+    # outside the box.
+    raw = (tiles[..., 0] << 16) | (tiles[..., 1] << 8) | tiles[..., 2]
+    shown = seen[134:666].astype(np.int64)
+    shown = (shown[..., 0] << 16) | (shown[..., 1] << 8) | shown[..., 2]
+    out = ~inside[134:666]
+    pairs, counts = np.unique(raw[out] * (1 << 24) + shown[out], return_counts=True)
+    best = {}
+    for pair, n in zip(pairs.tolist(), counts.tolist()):
+        k = pair >> 24
+        if n > best.get(k, (0, 0))[0]:
+            best[k] = (n, pair & 0xFFFFFF)
+    keys = np.vectorize(lambda k: best.get(k, (0, k))[1], otypes=[np.int64])(raw)
+    tiles = np.stack([(keys >> 16) & 255, (keys >> 8) & 255, keys & 255], axis=-1).astype(np.uint8)
+    patch = Image.new('RGB', (1280, 800))
+    patch.paste(Image.fromarray(tiles), (0, 134))
+    _, owners, points = read_map()
+    flags = {}
+    for o in range(1, 12):
+        fl, m = flag(o)
+        flags[o] = (fl.resize((fl.width * 2, fl.height * 2), Image.NEAREST),
+                    m.resize((m.width * 2, m.height * 2), Image.NEAREST))
+    for p, (x, y) in sorted(points.items(), key=lambda kv: kv[1][1]):
+        if not owners.get(p):
+            continue
+        fx, fy = (x // 3 - 8) * 2, (y // 3 + 67 - 8) * 2
+        fl, m = flags[owners[p]]
+        if fx + fl.width <= bx0 or fx >= bx1 or fy + fl.height <= by0 or fy >= by1 or fx < 0 or fy < 0:
+            continue
+        for o, (f2, m2) in flags.items():
+            k = (np.asarray(m2) > 0) & ~inside[fy:fy + m2.height, fx:fx + m2.width]
+            if k.sum() >= 30 and np.abs(seen[fy:fy + m2.height, fx:fx + m2.width][k]
+                                        - np.asarray(f2, dtype=np.int16)[k]).max() == 0:
+                fl, m = f2, m2
+                break
+        patch.paste(fl, (fx, fy), m)
+    pic.paste(patch.crop(DATA_BOX), DATA_BOX[:2])
+    DATA_SCREEN.append(pic)
+    return pic.copy()
+
+
+def rows_top(n, h=130, gap=14, cols=1, foot=BAR[1]):
+    rows = -(-n // cols)
+    return foot - rows * h - (rows - 1) * gap - 30
+
+
+def data_rows(d, items, h=130, gap=14, cols=1, foot=BAR[1]):
+    """A `]` menu's items as finger rows at the thumb, in the script's order (PS2m's)."""
+    top = rows_top(len(items), h, gap, cols, foot)
+    panel(d, (16, top, PW - 16, foot + 14))
+    w = (PW - 80 - (cols - 1) * 16) / cols
+    for i, item in enumerate(items):
+        r, c = divmod(i, cols)
+        x0, y0 = 40 + c * (w + 16), top + 30 + r * (h + gap)
+        row_box(d, (round(x0), y0, round(x0 + w), y0 + h), item, size=48, centred=cols > 1)
+    return top
+
+
+def pg1():
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    top = rows_top(len(DATA_MENU))
+    fy = (TOP + top) // 2 - 381
+    img.paste(at_width(data_screen()), (0, fy))
+    d = ImageDraw.Draw(img)
+    data_rows(d, DATA_MENU)
+    reach(img, label=False)
+    save(img, 'PG1', 'the original\'s screen at the width, its menu at the thumb', 'data', side=paras(
+        'PG1 — the original\'s screen as it is: the PC\'s frame at the screen\'s width (the map in miniature, the '
+        f'markers {mm(48 * K)} wide).',
+        f'The `]` menu as finger rows at the thumb, as PS2m\'s: rows {mm(130)}, the script\'s order, Return last.',
+        'Under the PC\'s menu box the miniature is drawn again; the markers it hid whole are the game\'s first owners '
+        '(made up).'))
+
+
+def pg1g():
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    top = rows_top(len(DATA_MENU))
+    fy = (TOP + top) // 2 - 381
+    img.paste(at_width(dump(TOUCH, 'all-data-funds.png')), (0, fy))
+    d = ImageDraw.Draw(img)
+    y0, y1 = BAR
+    panel(d, (16, y0, 560, y1))
+    d.text((150, (y0 + y1) / 2), 'Scale', font=BRUSH(50), fill=TEXT, anchor='mm')
+    d.text((390, (y0 + y1) / 2), '16x', font=GOTHIC(48), fill=QUIET, anchor='mm')
+    end_alone(d, 'Back')
+    note(d, (40, fy + 800), f'the figures over the bars {mm(12 * K)}', 32)
+    reach(img, label=False)
+    save(img, 'PG1g', 'a graph as the original draws it', 'data', side=paras(
+        f'A graph as the original draws it at the width: the title {mm(38 * K)}, New → Old {mm(32 * K)}, the figures '
+        f'over the bars {mm(12 * K)} — unreadable; the bars\' heights read.',
+        'The bar: Scale (the right click: the scale menu, PG1s) and Back (the left click: back to the menu) at the '
+        'thumb.',
+        'The gallery\'s week-18 save: every week before this one holds last week\'s figures (STR-01), so the bars are '
+        'level.'))
+
+
+def pg1s():
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    top = rows_top(len(DATA_MENU))
+    fy = (TOP + top) // 2 - 381
+    img.paste(at_width(dump(TOUCH, 'all-data-funds.png')), (0, fy))
+    d = ImageDraw.Draw(img)
+    data_rows(d, SCALES, cols=2)
+    reach(img, label=False)
+    save(img, 'PG1s', 'the scale menu at the thumb', 'data', side=paras(
+        'The scale menu — the right click\'s `]` menu, 1x to 128x — as finger rows in two columns at the thumb '
+        f'({mm(130)}), in the script\'s order; the graph stays in view.',
+        'On the PC the menu stands over the graph\'s top.'))
+
+
+def graph_tabs(d, y, active, x0=40, x1=PW - 40, h=124):
+    w = (x1 - x0 - 3 * 12) / 4
+    for i, (a, b) in enumerate(GRAPH_TABS):
+        box = (round(x0 + i * (w + 12)), y, round(x0 + i * (w + 12) + w), y + h)
+        on = i == active
+        d.rectangle(box, fill=(70, 54, 30) if on else ROW, outline=GOLD if on else DIM_GOLD, width=3 if on else 2)
+        cx = (box[0] + box[2]) / 2
+        d.text((cx, y + h / 2 - 22), a, font=GOTHIC(36), fill=NAME if on else QUIET, anchor='mm')
+        d.text((cx, y + h / 2 + 22), b, font=GOTHIC(36), fill=NAME if on else QUIET, anchor='mm')
+    return y + h
+
+
+def scale_chips(d, box, cols, lit='16x', size=40):
+    x0, y0, x1, y1 = box
+    rows = len(SCALES) // cols
+    w, h = (x1 - x0 - (cols - 1) * 12) / cols, (y1 - y0 - (rows - 1) * 12) / rows
+    for i, s in enumerate(SCALES):
+        r, c = divmod(i, cols)
+        b = (round(x0 + c * (w + 12)), round(y0 + r * (h + 12)), round(x0 + c * (w + 12) + w), round(y0 + r * (h + 12) + h))
+        on = s == lit
+        d.rectangle(b, fill=VERMILION if on else ROW, outline=GOLD if on else DIM_GOLD, width=3 if on else 2)
+        d.text(((b[0] + b[2]) / 2, (b[1] + b[3]) / 2), s, font=GOTHIC(size), fill=NAME if on else TEXT, anchor='mm')
+    return w, h
+
+
+def funds_plot(d, box, label_size=40):
+    """The funds graph laid out again: sixteen bars, New → Old left to right, the funds pale with the sundry and the
+    military spending stacked from the bottom (all 0 this week: the sundry's thin line), the figure over each."""
+    x0, y0, x1, y1 = box
+    d.rectangle(box, fill=PLOT_GRAY, outline=(236, 236, 236), width=2)
+    slot = (x1 - x0) / 16
+    bw = slot * 0.62
+    for i, (label, share) in enumerate(FUNDS):
+        cx = x0 + slot * (i + 0.5)
+        top = y1 - 4 - share * (y1 - y0 - 8)
+        d.rectangle((cx - bw / 2, top, cx + bw / 2, y1 - 4), fill=FUNDS_YELLOW)
+        d.rectangle((cx - bw / 2, y1 - 12, cx + bw / 2, y1 - 4), fill=SUNDRY_BLUE)
+        d.text((cx, top - 10), label, font=GOTHIC(label_size), fill=(236, 236, 236), anchor='ms')
+    return slot, bw
+
+
+def pg2_top(img, d):
+    y = plain_title(d, 'All Data')
+    mini = data_screen().crop(MINI)
+    mini = mini.resize((PW - 32, round(mini.height * (PW - 32) / mini.width)), Image.LANCZOS)
+    img.paste(mini, (16, y + 12))
+    d.rectangle((16, y + 12, PW - 17, y + 12 + mini.height), outline=DIM_GOLD, width=2)
+    return y + 12 + mini.height + 20
+
+
+def pg2m():
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    y = pg2_top(img, d)
+    panel(d, (16, y, PW - 16, BAR[0] - 24))
+    h, gap = 150, 18
+    ry = (y + BAR[0] - 24) // 2 - (4 * h + 3 * gap) // 2
+    for i, item in enumerate(DATA_MENU[:4]):
+        row_box(d, (48, ry + i * (h + gap), PW - 48, ry + i * (h + gap) + h), item, size=52)
+    end_alone(d, 'Back')
+    reach(img, label=False)
+    save(img, 'PG2m', 'our page: the menu of graphs', 'data', side=paras(
+        'PG2 — our page: All Data\'s title and the date, the map in miniature at the screen\'s width (its markers '
+        f'{mm(48 * (PW - 32) / 1280)}), the graph under it.',
+        'All Data opens on the script\'s menu: its four graphs as finger rows where a graph will stand '
+        f'({mm(h)}), Return as Back at the thumb.'))
+
+
+def pg2():
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    y = pg2_top(img, d)
+    panel(d, (16, y, PW - 16, BAR[0] - 24))
+    y = graph_tabs(d, y + 26, 0)
+    d.text((PW / 2, y + 52), FUNDS_TITLE, font=fit(d, FUNDS_TITLE, GOTHIC, 48, PW - 100), fill=TEXT, anchor='mm')
+    chips = (40, BAR[0] - 64 - 120, PW - 40, BAR[0] - 64)
+    plot = (40, y + 150, PW - 40, chips[1] - 130)
+    funds_plot(d, plot)
+    d.text((44, plot[3] + 44), 'New → Old (Per 1 Week)', font=GOTHIC(40), fill=QUIET, anchor='lm')
+    d.text((44, chips[1] - 30), 'SCALE', font=CINZEL(28, 700), fill=SUBTITLE, anchor='lm')
+    cw, ch = scale_chips(d, chips, 8)
+    end_alone(d, 'Back')
+    reach(img, label=False)
+    save(img, 'PG2', 'our page: a graph at the phone\'s type', 'data', side=paras(
+        'A graph: the four as tabs — a tab is Back, then the menu\'s item, both clicks the player gives (the agent\'s '
+        'choice) —, the shown one lit.',
+        f'The script\'s title in the game\'s font, {mm(46)}; the bars as the original\'s (New → Old left to right, the '
+        'funds pale with the spending stacked from the bottom), laid out at the phone\'s type: the figures '
+        f'{mm(40)}, the plot {mm(plot[3] - plot[1])} high.',
+        f'The scale — the right click\'s menu — as eight chips at the thumb, the shown one lit ({mm(cw)} × {mm(ch)}); '
+        'a chip is the right click and its item.',
+        'Back (the left click, then Return) at the right thumb.'))
+
+
+TITLE_BOXES = {0: (0, 0, 240, 154), 1: (248, 0, 187, 127), 2: (434, 2, 202, 100), 3: (545, 105, 92, 122),
+               4: (0, 272, 96, 117), 5: (95, 270, 151, 130), 6: (261, 263, 173, 137), 7: (463, 238, 177, 162)}
+#                                       ｽﾀMENU.ADV:805, the hit boxes at 640×400 (8-10 do nothing; 11 is never loaded)
+TITLE_WORDS = {0: 'Destiny', 1: 'B.G.M', 2: 'Alice', 3: 'Please', 4: 'Spy', 5: 'Load', 6: 'Start', 7: 'C.G'}
+TITLE_LINES = {0: ['Fortune Check'], 1: ['Lets you listen to music that', 'you heard in the game.'],
+               2: ['Goes to Alice’s Mansion.', 'Read to learn how to play the', 'game among other things.'],
+               3: ['Listen to my requests.'],
+               4: ['It’s Saitou the Spy.', 'She was dispatched by a', 'certain someone to spy on', 'Alicesoft.'],
+               5: ['Start the game from previously', 'saved data.'], 6: ['Start the game from the', 'beginning.'],
+               7: ['Appreciate CGs that you’ve', 'already seen.']}              # ｽﾀMENU.ADV:585-678 (window 113)
+TITLE_ORDER = [4, 3, 0, 1, 7, 2, 5, 6]  # PE2's rows top down: the jokes, the extras, Alice, Load, Start at the thumb
+
+
+def title_boxes(d, x, y, scale):
+    for n, (bx, by, bw, bh) in TITLE_BOXES.items():
+        dashed(d, (x + bx * 2 * scale, y + by * 2 * scale, x + (bx + bw) * 2 * scale, y + (by + bh) * 2 * scale))
+
+
+def box_sizes(scale):
+    return ', '.join(f'{TITLE_WORDS[n]} {mm(TITLE_BOXES[n][2] * 2 * scale)} × {mm(TITLE_BOXES[n][3] * 2 * scale)}'
+                     for n in (6, 5, 2, 3))
+
+
+def pe1():
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    img.paste(at_width(dump(LACQ, 'title-clears.png')), (0, SCENE_Y))
+    d = ImageDraw.Draw(img)
+    title_boxes(d, 0, SCENE_Y, K)
+    bottom_bar(d, cells=('menu',))
+    reach(img, label=False)
+    save(img, 'PE1', 'the picture as it is: a tap on a character', 'title', side=paras(
+        'PE1 — the title as the original\'s, at the screen\'s width in the middle; drawn after a clear, every button '
+        'there (a first launch has Alice, Load and Start).',
+        'Its buttons are the characters\' hit boxes (pink, dashed): ' + box_sizes(K) + ' — larger than a finger needs. '
+        'The picture\'s own words over them, 1.2 mm.',
+        'A tap is the click (the hover lit, then the button); a long press is the right click, the button\'s '
+        'description (PEd).',
+        'The bar: Menu alone (no key wait at the title, so no Log or Skip).'))
+
+
+def title_row(d, box, n, red=False):
+    x0, y0, x1, y1 = box
+    if red:
+        red_button(d, box, '')
+    else:
+        d.rectangle(box, fill=ROW, outline=DIM_GOLD, width=3)
+    d.text((x0 + 34, (y0 + y1) / 2), TITLE_WORDS[n], font=fit(d, TITLE_WORDS[n], BRUSH, 48, 270), fill=NAME, anchor='lm')
+    lines = wrap(d, ' '.join(TITLE_LINES[n]), GOTHIC(34), x1 - x0 - 360)
+    ty = (y0 + y1) / 2 - (len(lines) - 1) * 22
+    for i, line in enumerate(lines):
+        d.text((x0 + 330, ty + i * 44), line, font=GOTHIC(34), fill=TEXT if red else QUIET, anchor='lm')
+
+
+def pe2():
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    h, gap = 146, 12
+    top = BAR[0] - 20 - len(TITLE_ORDER) * h - (len(TITLE_ORDER) - 1) * gap
+    py = (TOP + top - 30) // 2 - 381
+    img.paste(at_width(dump(LACQ, 'title-clears.png')), (0, py))
+    d = ImageDraw.Draw(img)
+    panel(d, (16, top - 28, PW - 16, BAR[0] - 6))
+    for i, n in enumerate(TITLE_ORDER):
+        title_row(d, (40, top + i * (h + gap), PW - 40, top + i * (h + gap) + h), n, red=n == 6)
+    bottom_bar(d, cells=('menu',))
+    reach(img, label=False)
+    save(img, 'PE2', 'our rows under the picture', 'title', side=paras(
+        'PE2 — the picture at the screen\'s width on top; under it a row for each button the title has unlocked, '
+        'the button\'s own word and its description (the right click\'s text, the script\'s words) as the row\'s '
+        f'lines: rows {mm(h)}, the words {mm(48)}, the descriptions {mm(34)}.',
+        'A row is the click on its button; Start red at the right thumb, Load over it, the extras above, Saitou\'s '
+        'joke on top. A first launch has three rows: Alice, Load, Start.',
+        'The picture keeps its own targets (a tap, a long press) as PE1\'s.'))
+
+
+def ped():
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    img.paste(at_width(dump(LACQ, 'title-hover.png')), (0, SCENE_Y))
+    d = ImageDraw.Draw(img)
+    foot = SCENE_Y + 762
+    speech_window(d, (16, foot + 64, PW - 16, foot + 64 + SPEECH_H), TITLE_LINES[6], kind='narration')
+    bottom_bar(d, log_on=False)
+    save(img, 'PEd', 'a button\'s description', 'title', side=paras(
+        'A long press on Start (the right click): the script\'s window 113 under the picture, as PS2\'s narration, '
+        f'its lines at their breaks, {mm(64)}; Start lit, the pointer being on it.',
+        'A tap goes on. The bar as at a key wait: Menu, Log (dimmed: nothing is logged at the title) and Skip.'))
+
+
+def per():
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    img.paste(at_width(dump(LACQ, 'title-requests.png')), (0, SCENE_Y))
+    d = ImageDraw.Draw(img)
+    bottom_bar(d, log_on=False)
+    save(img, 'PEr', 'the requests slip', 'title', side=paras(
+        'Please (the requests slip, after a clear): the slip at the screen\'s width in the middle, as a scene\'s '
+        f'picture; its request at the script\'s cells, {mm(46 * K)}.',
+        'A tap goes on (its key wait); the bar as PEd\'s.'))
+
+
+FOLDER_NAME, FOLDER_PLACE = 'Kichikuou Rance', 'Internal storage › Games'
+FOLDER_PATH = 'Internal storage › Games › Kichikuou Rance'
+IMPORT_SUB = 'KICHIKUOU RANCE ENGLISH TRANSLATION V1.0'
+EMPTY_SHA = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+SA_SHA = '699d0d5bf2f80629a356ea73ce27a622573a11296cbf018349cfb26928c031ba'
+IMPORT_TITLES = {'choose': 'Import your game', 'progress': 'Importing your game', 'refused': 'This folder cannot be read'}
+PAPER_FIELD, TICK_GREEN = (238, 228, 204), (80, 130, 60)
+REFUSAL = (f'KICHIKUSA.ALD in {FOLDER_PATH} is not the file of Kichikuou Rance English Translation v1.0, the version '
+           'this game reads.')
+
+
+def step_mark(d, cx, cy, n, state, r=34):
+    if state in ('now', 'refused'):
+        d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=VERMILION)
+    else:
+        d.ellipse((cx - r, cy - r, cx + r, cy + r), outline=INK_QUIET, width=3)
+    d.text((cx, cy), '一二三'[n], font=GOTHIC(round(r * 1.05)), fill=PAPER if state in ('now', 'refused') else INK_QUIET,
+           anchor='mm')
+
+
+def tick(d, x, y):
+    d.line([(x - 26, y), (x - 8, y + 18), (x + 24, y - 20)], fill=TICK_GREEN, width=7)
+
+
+def folder_field(d, box, chosen=True, size=44):
+    x0, y0, x1, y1 = box
+    d.rectangle(box, fill=PAPER_FIELD, outline=PAPER_LINE, width=2)
+    fx, fy = x0 + 30, (y0 + y1) / 2
+    d.rectangle((fx, fy - 16, fx + 52, fy + 22), outline=INK, width=3)
+    d.rectangle((fx, fy - 26, fx + 22, fy - 16), outline=INK, width=3)
+    cx = d.textlength('Choose…', font=GOTHIC(size - 4))
+    if chosen:
+        d.text((fx + 80, fy - 22), FOLDER_NAME, font=GOTHIC(size), fill=INK, anchor='lm')
+        d.text((fx + 80, fy + 30), FOLDER_PLACE, font=GOTHIC(size - 14), fill=INK_QUIET, anchor='lm')
+    else:
+        d.text((fx + 80, fy), 'not chosen yet', font=GOTHIC(size - 4), fill=INK_QUIET, anchor='lm')
+    d.text((x1 - 28, fy), 'Choose…', font=GOTHIC(size - 4), fill=INK_HEAD, anchor='rm')
+    return cx
+
+
+def stamp(d, cx, cy, r=110):
+    d.ellipse((cx - r, cy - r, cx + r, cy + r), outline=VERMILION, width=7)
+    d.text((cx, cy - 18), 'NOT', font=CINZEL(r * 0.46, 800), fill=VERMILION, anchor='mm')
+    d.text((cx, cy + 40), 'V1.0', font=CINZEL(r * 0.3, 800), fill=VERMILION, anchor='mm')
+
+
+def sheet_head(d, box, phase):
+    x0, y0, x1, y1 = box
+    panel(d, box)
+    p = (x0 + 26, y0 + 26, x1 - 26, y1 - 26)
+    d.rectangle(p, fill=PAPER)
+    cx = (x0 + x1) / 2
+    t = IMPORT_TITLES[phase]
+    d.text((cx, p[1] + 90), t, font=fit(d, t, BRUSH, 66, p[2] - p[0] - 80), fill=INK_HEAD, anchor='mm')
+    d.text((cx, p[1] + 166), IMPORT_SUB, font=CINZEL(28, 700), fill=INK_QUIET, anchor='mm')
+    d.line([(p[0] + 40, p[1] + 206), (p[2] - 40, p[1] + 206)], fill=PAPER_LINE, width=3)
+    return p, p[1] + 262
+
+
+def step_text(d, x, y, x1, title, lines=(), ink=INK, size=48, small=38, small_ink=INK_QUIET):
+    for t in wrap(d, title, GOTHIC(size), x1 - x):
+        d.text((x, y), t, font=GOTHIC(size), fill=ink, anchor='lm')
+        y += size + 14
+    for line in lines:
+        for t in wrap(d, line, GOTHIC(small), x1 - x):
+            d.text((x, y), t, font=GOTHIC(small), fill=small_ink, anchor='lm')
+            y += small + 12
+    return y + 14
+
+
+def hash_lines(d, x, y, x1, size, lines=('its SHA-256 is', EMPTY_SHA + ',', SA_SHA, 'is expected.')):
+    """The refusal's hashes, each on a line of its own (the PC's one small line runs past the paper)."""
+    for t in lines:
+        d.text((x, y), t, font=fit(d, t, GOTHIC, size, x1 - x), fill=INK_QUIET, anchor='lm')
+        y += size + 10
+    return y + 10
+
+
+def import_upright(phase):
+    img, d = phone()
+    backdrop(img, (0, 0, PW, PH))
+    cy = (TOP + BAR[0]) // 2           # a card of the PC's kind, in the middle; its buttons in the bar at the thumb
+    p, y = sheet_head(d, (16, cy - 780, PW - 16, cy + 780), phase)
+    mx, tx, x1 = p[0] + 76, p[0] + 140, p[2] - 40
+    if phase == 'choose':
+        step_mark(d, mx, y, 0, 'now')
+        y = step_text(d, tx, y, x1, 'Choose the game folder', ['The folder of your copy, with system39.exe, '
+                                                                'KICHIKUSA.ALD and System39.ain in it.'])
+        folder_field(d, (tx, y, x1, y + 150))
+        y += 220
+        step_mark(d, mx, y, 1, 'later')
+        y = step_text(d, tx, y, x1, 'The files are checked and the scenario read', ['Once for this folder, a second or so.'],
+                      ink=INK_QUIET)
+        y += 30
+        step_mark(d, mx, y, 2, 'later')
+        step_text(d, tx, y, x1, 'Play', ink=INK_QUIET)
+        back_and(d, 'Import')
+    elif phase == 'progress':
+        step_mark(d, mx, y, 0, 'done')
+        tick(d, x1 - 20, y)
+        y = step_text(d, tx, y, x1 - 60, 'Game folder', [FOLDER_PATH])
+        y += 30
+        step_mark(d, mx, y, 1, 'now')
+        y = step_text(d, tx, y, x1, 'Decompiling the scenario')
+        d.rectangle((tx, y, x1, y + 44), fill=PAPER_FIELD, outline=PAPER_LINE, width=2)
+        d.rectangle((tx + 3, y + 3, tx + 3 + (x1 - tx - 6) * 0.45, y + 41), fill=VERMILION)
+        d.text((x1, y + 92), '45%', font=GOTHIC(38), fill=INK_QUIET, anchor='rm')
+        y += 180
+        step_mark(d, mx, y, 2, 'later')
+        step_text(d, tx, y, x1, 'Play', ink=INK_QUIET)
+    else:
+        step_mark(d, mx, y, 0, 'refused')
+        y = step_text(d, tx, y, x1, 'Game folder', [REFUSAL], ink=INK_HEAD, small_ink=INK_HEAD)
+        y = hash_lines(d, tx, y, x1, 30)
+        folder_field(d, (tx, y, x1, y + 150))
+        stamp(d, x1 - 140, y + 360)
+        back_and(d, 'Choose another folder')
+    return img, d
+
+
+def pi():
+    img, d = import_upright('choose')
+    save(img, 'PI', 'the import screen, a folder chosen', 'import', side=paras(
+        'PI — our paper sheet (the owner\'s B) at the phone\'s type over the whole screen: the title '
+        f'{mm(66)}, the steps 一 二 三 {mm(48)}, their lines {mm(38)}.',
+        'Choose… — the field\'s whole height taps — opens the system\'s folder picker on Android; the field names the '
+        'folder by its place (made up: Internal storage › Games).',
+        'Import red at the right thumb; Back to the title at its left when the screen comes from Option → Game. A '
+        'first launch: no Back, Import greyed until a folder is chosen, the field "not chosen yet".'))
+
+
+def pip():
+    img, d = import_upright('progress')
+    save(img, 'PIp', 'importing', 'import', side=paras(
+        'Importing: the folder ticked, the decompile\'s stage and its vermilion bar (made up: 45%, as the '
+        'gallery\'s); nothing to tap, the bar empty.',
+        'Done: the bar full, the second step ticked, Play lit — then the title opens.'))
+
+
+def pir():
+    img, d = import_upright('refused')
+    save(img, 'PIr', 'the folder refused: another version\'s file', 'import', side=paras(
+        'Refused (made up: an empty KICHIKUSA.ALD, as the gallery\'s): the title and the first step in vermilion, '
+        f'GameFiles\' message at {mm(38)}, the hashes each on a line of its own ({mm(30)}) — on the PC they run past '
+        'the paper in one small line (docs/backlog.md, "Interface").',
+        'The stamp under the field; Choose another folder red at the thumb, Back at its left.',
+        'A missing file\'s refusal the same way, without the hashes.'))
+
+
+def p18():
+    pg1(); pg1g(); pg1s(); pg2m(); pg2()
+    pe1(); pe2(); ped(); per()
+    pi(); pip(); pir()
+
+
+# --- round P19: All Data, the title and the import screen landscape (2026-10-28) -------------------------------------
+
+def funds_relabelled():
+    """all-data-funds in the frame with its figures drawn again at the phone's type over the bars (the PC's 12 px
+    taken off): the bars stand where the dump has them (x 142 + 64 n, 34 wide)."""
+    pic = dump(TOUCH, 'all-data-funds.png')
+    a = np.asarray(pic)
+    gray = tuple(int(v) for v in a[300, 600])
+    d = ImageDraw.Draw(pic)
+    tops = []
+    for i in range(16):
+        cx, y = 159 + 64 * i, 680
+        while y > 120 and tuple(int(v) for v in a[y, cx]) != gray:
+            y -= 1
+        tops.append(y)
+        d.rectangle((cx - 48, y - 26, cx + 30, y - 1), fill=gray)
+    big = pic.resize((1952, LH), Image.LANCZOS)
+    bd = ImageDraw.Draw(big)
+    for i, top in enumerate(tops):
+        bd.text(((159 + 64 * i) * LK, (top - 5) * LK), FUNDS[i][0], font=GOTHIC(40), fill=(236, 236, 236), anchor='ms')
+    return big
+
+
+def graph_cell(d, box, words, lit=False):
+    x0, y0, x1, y1 = box
+    d.rectangle(box, fill=(70, 54, 30) if lit else ROW, outline=GOLD if lit else DIM_GOLD, width=3 if lit else 2)
+    cy = (y0 + y1) / 2
+    for i, w in enumerate(words):
+        d.text(((x0 + x1) / 2, cy + (i - (len(words) - 1) / 2) * 46), w, font=GOTHIC(38), fill=NAME if lit else TEXT,
+               anchor='mm')
+
+
+def side_graphs(d, active=None):
+    x0, x1 = RAIL_L
+    menu_cell(d, (x0, 16, x1, 126))
+    h, gap = 132, 14
+    y = FOOT - 10 - 4 * h - 3 * gap
+    d.text((x0 + 4, y - 32), 'GRAPHS', font=CINZEL(26, 700), fill=SUBTITLE, anchor='lm')
+    for i, words in enumerate(GRAPH_TABS):
+        graph_cell(d, (x0, y + i * (h + gap), x1, y + i * (h + gap) + h), words, i == active)
+
+
+def lg1():
+    img, d = land()
+    img.paste(data_screen().resize((1952, LH), Image.LANCZOS), (FX0, 0))
+    d = ImageDraw.Draw(img)
+    menu_cell(d, (RAIL_L[0], 16, RAIL_L[1], 126))
+    h, gap = 123, 12
+    x1 = FX1 - 30
+    x0 = x1 - 560
+    y = FOOT - 10 - len(DATA_MENU) * h - (len(DATA_MENU) - 1) * gap
+    panel(d, (x0 - 16, y - 16, x1 + 16, FOOT - 10 + 16))
+    for i, item in enumerate(DATA_MENU):
+        row_box(d, (x0, y + i * (h + gap), x1, y + i * (h + gap) + h), item, size=48)
+    reach_land(img)
+    save_land(img, 'LG1', 'the original\'s screen in the frame, its menu at the right foot', 'land-data', notes=[
+        'LG1 — the original\'s screen in the frame\nas on the PC: the map in miniature, its\n'
+        f'markers {lm(48)} wide.',
+        'The `]` menu as LS1m\'s: our rows at the\nframe\'s right foot, at the thumb\n'
+        f'({mm(h)}), the script\'s order, Return last.',
+        'Under the PC\'s menu box the miniature is\ndrawn again (its hidden markers the\ngame\'s first owners, made up).'])
+
+
+def lg1g():
+    img, d = land()
+    frame_dump(img, 'all-data-funds.png')
+    d = ImageDraw.Draw(img)
+    menu_cell(d, (RAIL_L[0], 16, RAIL_L[1], 126))
+    x0, x1 = RAIL_R
+    panel(d, (x0, FOOT - 10 - 2 * 150 - 16, x1, FOOT - 10 - 150 - 16))
+    cy = FOOT - 10 - 1.5 * 150 - 16
+    d.text(((x0 + x1) / 2, cy - 24), 'Scale', font=BRUSH(42), fill=TEXT, anchor='mm')
+    d.text(((x0 + x1) / 2, cy + 30), '16x', font=GOTHIC(38), fill=QUIET, anchor='mm')
+    side_button(d, (x0, FOOT - 10 - 150, x1, FOOT - 10), 'Back')
+    reach_land(img)
+    save_land(img, 'LG1g', 'a graph as the original draws it', 'land-data', notes=[
+        f'A graph as the original draws it in the\nframe: the title {lm(38)}, New → Old\n{lm(32)}, '
+        f'the figures over the bars\n{lm(12)} — too small; the bars read.',
+        'The right side: Scale (the right click:\nthe scale menu, its rows at the frame\'s\n'
+        'right foot as LS1m\'s, in two columns)\nover Back (the left click) at the thumb.',
+        'The left side: Menu.'])
+
+
+def lg2m():
+    img, d = land()
+    img.paste(data_screen().resize((1952, LH), Image.LANCZOS), (FX0, 0))
+    d = ImageDraw.Draw(img)
+    side_graphs(d)
+    side_button(d, (RAIL_R[0], FOOT - 10 - 150, RAIL_R[1], FOOT - 10), 'Back')
+    reach_land(img)
+    save_land(img, 'LG2m', 'the frame kept, the graphs in the left side', 'land-data', notes=[
+        'LG2 — LM1\'s principle: the screen in the\nframe, the PC\'s menu box taken off; the\n'
+        f'four graphs as cells in the left side\nunder Menu, at the left thumb ({mm(132)}\nhigh, two lines).',
+        'Return as Back in the right side, at\nthe thumb.',
+        'The miniature uncovered: nothing of\nours over the frame.'])
+
+
+def lg2():
+    img, d = land()
+    img.paste(funds_relabelled(), (FX0, 0))
+    d = ImageDraw.Draw(img)
+    side_graphs(d, 0)
+    x0, x1 = RAIL_R
+    back = (x0, FOOT - 10 - 150, x1, FOOT - 10)
+    chips = (x0, back[1] - 30 - 4 * 112 - 3 * 12, x1, back[1] - 30)
+    d.text((x0 + 4, chips[1] - 36), 'SCALE', font=CINZEL(26, 700), fill=SUBTITLE, anchor='lm')
+    cw, ch = scale_chips(d, chips, 2, size=38)
+    side_button(d, back, 'Back')
+    reach_land(img)
+    save_land(img, 'LG2', 'a graph, its figures at the phone\'s type', 'land-data', notes=[
+        'A graph in the frame as the original\'s,\nits figures drawn again over the bars\n'
+        f'at {mm(40)} (the PC\'s {lm(12)}); the title\nand New → Old as they are ({lm(38)}).',
+        'The left side: the graphs as tabs, the\nshown one lit (a cell is Back, then the\n'
+        'menu\'s item: the agent\'s choice).',
+        f'The right side: the scale as eight\nchips in two columns ({mm(cw)} × {mm(ch)}),\n'
+        'the shown one lit, over Back at the\nthumb.'])
+
+
+def le1():
+    img, d = land()
+    img.paste(dump(LACQ, 'title-clears.png').resize((1952, LH), Image.LANCZOS), (FX0, 0))
+    d = ImageDraw.Draw(img)
+    title_boxes(d, FX0, 0, LK)
+    menu_cell(d, (RAIL_L[0], 16, RAIL_L[1], 126))
+    reach_land(img)
+    save_land(img, 'LE1', 'the frame as on the PC: a tap on a character', 'land-title', notes=[
+        'LE1 — LM1\'s principle: the title in the\nframe as on the PC, after a clear (every\nbutton there).',
+        'Its buttons are the characters\' hit\nboxes (pink, dashed): ' + '\n'.join(
+            f'{TITLE_WORDS[n]} {mm(TITLE_BOXES[n][2] * 2 * LK)} × {mm(TITLE_BOXES[n][3] * 2 * LK)}'
+            for n in (6, 5, 3)) + ';\nthe words over them 1.9 mm.',
+        'A tap is the click, a long press the\nright click (the description, LEd).\nThe left side: Menu.'])
+
+
+def le2():
+    img, d = land()
+    img.paste(dump(LACQ, 'title-clears.png').resize((1952, LH), Image.LANCZOS), (FX0, 0))
+    d = ImageDraw.Draw(img)
+    menu_cell(d, (RAIL_L[0], 16, RAIL_L[1], 126))
+    h, gap = 150, 14
+    for side, order in ((RAIL_L, [1, 0, 3, 4]), (RAIL_R, [6, 5, 2, 7])):
+        for i, n in enumerate(order):
+            y1 = FOOT - 10 - i * (h + gap)
+            side_button(d, (side[0], y1 - h, side[1], y1), TITLE_WORDS[n], red=n == 6, size=46)
+    reach_land(img)
+    save_land(img, 'LE2', 'the buttons in the black sides', 'land-title', notes=[
+        'LE2 — the frame as LE1\'s; a cell in a\nside for each unlocked button, its own\n'
+        f'word ({mm(h)} high): Start red at the right\nthumb, Load, Alice, C.G over it; B.G.M,\n'
+        'Destiny, Please, Spy at the left.',
+        'A cell is the click on its button, a long\npress the description; the picture keeps\nits own targets.',
+        'A first launch: Start, Load, Alice alone,\nall at the right.'])
+
+
+def led():
+    img, d = land()
+    img.paste(dump(LACQ, 'title-description.png').resize((1952, LH), Image.LANCZOS), (FX0, 0))
+    d = ImageDraw.Draw(img)
+    scene_side(d)
+    reach_land(img)
+    save_land(img, 'LEd', 'a button\'s description, as on the PC', 'land-title', notes=[
+        'A long press on Start (the right click):\nthe script\'s window 113 at its place, its\n'
+        f'text {lm(48)}.',
+        'A tap goes on. The left side as LS1\'s at\na key wait: Menu, Skip and Log.',
+        'The requests slip (Please) the same way:\nthe slip in the frame, LS1\'s side.'])
+
+
+def import_land(phase):
+    img, d = land()
+    p, y = sheet_head(d, (FX0 + 10, 16, FX1 - 10, FOOT - 4), phase)
+    cx = (FX0 + FX1) // 2
+    lx0, lx1, rx0, rx1 = p[0] + 50, cx - 40, cx + 40, p[2] - 50
+    foot = p[3] - 30
+    if phase == 'choose':
+        step_mark(d, lx0 + 34, y, 0, 'now')
+        ly = step_text(d, lx0 + 100, y, lx1, 'Choose the game folder', ['The folder of your copy, with system39.exe, '
+                                                                        'KICHIKUSA.ALD and System39.ain in it.'])
+        folder_field(d, (lx0 + 100, ly, lx1, ly + 150))
+        step_mark(d, rx0 + 34, y, 1, 'later')
+        ry = step_text(d, rx0 + 100, y, rx1, 'The files are checked and the scenario read',
+                       ['Once for this folder, a second or so.'], ink=INK_QUIET)
+        step_mark(d, rx0 + 34, ry + 30, 2, 'later')
+        step_text(d, rx0 + 100, ry + 30, rx1, 'Play', ink=INK_QUIET)
+        red_button(d, (rx1 - 520, foot - 130, rx1, foot), 'Import', 54)
+        d.polygon([(lx0 + 24, foot - 65 - 16), (lx0, foot - 65), (lx0 + 24, foot - 65 + 16)], fill=INK_HEAD)
+        d.text((lx0 + 44, foot - 65), 'BACK TO THE TITLE', font=CINZEL(34, 700), fill=INK_HEAD, anchor='lm')
+    elif phase == 'progress':
+        step_mark(d, lx0 + 34, y, 0, 'done')
+        tick(d, lx1 - 20, y)
+        step_text(d, lx0 + 100, y, lx1 - 60, 'Game folder', [FOLDER_PATH])
+        step_mark(d, rx0 + 34, y, 1, 'now')
+        ry = step_text(d, rx0 + 100, y, rx1, 'Decompiling the scenario')
+        d.rectangle((rx0 + 100, ry, rx1, ry + 44), fill=PAPER_FIELD, outline=PAPER_LINE, width=2)
+        d.rectangle((rx0 + 103, ry + 3, rx0 + 103 + (rx1 - rx0 - 106) * 0.45, ry + 41), fill=VERMILION)
+        d.text((rx1, ry + 92), '45%', font=GOTHIC(38), fill=INK_QUIET, anchor='rm')
+        step_mark(d, rx0 + 34, ry + 200, 2, 'later')
+        step_text(d, rx0 + 100, ry + 200, rx1, 'Play', ink=INK_QUIET)
+    else:
+        step_mark(d, lx0 + 34, y, 0, 'refused')
+        y = step_text(d, lx0 + 100, y, rx1, 'Game folder', [REFUSAL], ink=INK_HEAD, small_ink=INK_HEAD)
+        hy = hash_lines(d, lx0 + 100, y, rx1, 30, ('its SHA-256 is ' + EMPTY_SHA + ',', SA_SHA + ' is expected.'))
+        folder_field(d, (lx0 + 100, hy, lx1, hy + 150))
+        stamp(d, rx0 + 260, hy + 75)
+        red_button(d, (rx1 - 640, foot - 130, rx1, foot), 'Choose another folder', 50)
+        d.polygon([(rx0 + 24 - 0, foot - 65 - 16), (rx0, foot - 65), (rx0 + 24, foot - 65 + 16)], fill=INK_HEAD)
+        d.text((rx0 + 44, foot - 65), 'BACK', font=CINZEL(34, 700), fill=INK_HEAD, anchor='lm')
+    reach_land(img)
+    return img, d
+
+
+def li():
+    img, d = import_land('choose')
+    save_land(img, 'LI', 'the import screen, a folder chosen', 'land-import', notes=[
+        'LI — our paper sheet in the frame at the\nphone\'s type, the steps in two columns:\n'
+        f'the first with the folder at the left,\nthe others at the right ({mm(48)}, their\nlines {mm(38)}).',
+        'Import red at the sheet\'s right foot (the\nright thumb), Back to the title at its\n'
+        'left foot when it comes from Option →\nGame; the sides empty.',
+        'Choose… opens the system\'s folder picker\n(Android). A first launch: no Back,\nImport greyed.'])
+
+
+def lip():
+    img, d = import_land('progress')
+    save_land(img, 'LIp', 'importing', 'land-import', notes=[
+        'Importing: the folder ticked at the left,\nthe decompile\'s stage and its bar at\nthe right (made up: 45%).',
+        'Done: the bar full, Play lit, then the\ntitle.'])
+
+
+def lir():
+    img, d = import_land('refused')
+    save_land(img, 'LIr', 'the folder refused: another version\'s file', 'land-import', notes=[
+        'Refused: GameFiles\' message across the\nsheet, the hashes each on a line of\n'
+        f'their own ({mm(30)}) over the field at\nthe left, the stamp at the right.',
+        'Choose another folder red at the right\nthumb, Back at its left.',
+        'A missing file\'s refusal the same way,\nwithout the hashes.'])
+
+
+def p19():
+    lg1(); lg1g(); lg2m(); lg2()
+    le1(); le2(); led()
+    li(); lip(); lir()
+
+
 def main():
     global MAP, PROV_NAMES, PROV_POINTS
-    if ROUND in ('P3', 'P5', 'P7', 'P9', 'P11', 'P13', 'P14', 'P15', 'P16'):
-        {'P3': p3, 'P5': p5, 'P7': p7, 'P9': p9, 'P11': p11, 'P13': p13, 'P14': p14, 'P15': p15, 'P16': p16}[ROUND]()
+    if ROUND in ('P3', 'P5', 'P7', 'P9', 'P11', 'P13', 'P14', 'P15', 'P16', 'P18', 'P19'):
+        {'P3': p3, 'P5': p5, 'P7': p7, 'P9': p9, 'P11': p11, 'P13': p13, 'P14': p14, 'P15': p15, 'P16': p16,
+         'P18': p18, 'P19': p19}[ROUND]()
         overviews()
         return
     MAP, PROV_NAMES, PROV_POINTS = build_map()

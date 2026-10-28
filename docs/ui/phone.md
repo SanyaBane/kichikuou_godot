@@ -183,6 +183,12 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
     (§21: 5, 6, 1).
 33. **The agent's own choices in rounds P16-P17**, for the owner to confirm: each ledger tab keeps its own sideways
     scroll, which glides (the columns are not stepped); the phone's Back gesture ends Subordinates wherever End stands.
+34. **All Data** (rounds P18-P19, §22-§23): PG1 or PG2 upright, LG1 or LG2 landscape.
+35. **The title** (rounds P18-P19): PE1 or PE2 upright, LE1 or LE2 landscape; the description (PEd, LEd) and the
+    requests slip (PEr) as drawn?
+36. **The import screen** (rounds P18-P19): PI, PIp, PIr and LI, LIp, LIr as drawn?
+37. **The agent's own choices in rounds P18-P19**: the graphs as tabs and the scales as chips, the descriptions on the
+    title's rows, the folder named by its place on Android.
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -315,7 +321,7 @@ Redrawn as PA1 and PA1n (PA2 shares the row).
 
 Drawn by `mock_phone.py --round P5` over the gallery's `harem` (Anasel chosen), `treasure-items` (the L. Holy Sword
 (item 6) on Rance (unit 1), By Lord (item 7) on Rick (unit 7)) and `save-load` (four manual saves, the newest chosen).
-All Data is left for a later round: the screen gallery has no entry of it to draw over.
+All Data was left for a later round (the screen gallery had no entry of it to draw over): round P18, §22.
 
 The pickers keep the original's grid of 3 × 17 cells (the owner kept the numbered grid, docs/ui/pickers.md) — three
 cells to a row fit the phone's width. Two ways:
@@ -354,7 +360,7 @@ older ones made up.
 
 Drawn by `mock_phone.py --round P6` over the gallery's `options-messages`, `options-tweaks`, `floor-ladder-middle` (the
 Monsters' Cave (dungeon 2) on floor 7) and `dungeon-entry`. The title (`ｽﾀMENU`, the original's own screen) and the
-import screen have no entry in the screen gallery to draw over; they wait for one.
+import screen had no entry in the screen gallery to draw over: rounds P18-P19, §22-§23.
 
 The options window (`PO…`; docs/ui/options.md, mock-up D):
 
@@ -793,7 +799,7 @@ upright's rule that a window never covers the picture, at the cost of a third of
 
 **The owner's choice (2026-10-28): LS1**, with LS1b and LS1m — on the gallery's landscape tab. So every screen of ours
 has a base version in both orientations but All Data, the title and the import screen, which wait for screen gallery
-entries to draw over.
+entries to draw over — drawn as rounds P18-P19 (§22-§23).
 
 ## 20. Round P16: the opening, the ledger's rows and Subordinates' End upright (2026-10-28)
 
@@ -896,3 +902,111 @@ alternative.
   held, unless its own rotation lock holds it), **Upright**, **Landscape 1** (the phone's top at the left) and
   **Landscape 2** (at the right). PO1o is redrawn in place with them and is on the gallery's upright tab with PO1.
 - **The line breaks: the script's, kept**, as PS2 draws them.
+
+## 22. Round P18: All Data, the title and the import screen upright (2026-10-28)
+
+The three screens left without a base version (§10, §19), drawn by `mock_phone.py --round P18` over their new screen
+gallery entries (docs/ui/gallery.md, §7 step 7): `all-data`, `all-data-funds` (the week-18 save in `COMMAND`; every week
+before this one holds last week's figures, STR-01, so the bars are level), `title-clears`, `title-hover`,
+`title-requests` (the title after a clear, every button drawn) and the import screen's words. Under the PC's `]` menu
+box the miniature is drawn again as the presenter draws it (the map's tiles at a third, each flag at a third of its
+point); the flags the box hides whole are the game's first owners, made up.
+
+All Data (`PG…`; `各種DATA`: the map in miniature and a menu of four graphs; a graph waits for a click — the left button
+back to the menu, the right one the scale menu, 1x-128x):
+
+- **PG1 — the original's screen at the width, its menus at the thumb.** The PC's frame as it is in the screen's middle
+  (the markers 2.6 mm); the `]` menu as finger rows at the thumb as PS2m's (7.4 mm), Return last. **PG1g**: a graph as
+  the original draws it — the title 2.1 mm, but the figures over the bars 0.65 mm, unreadable; the bar holds Scale (the
+  right click) and Back (the left click). **PG1s**: the scale menu as finger rows in two columns at the thumb, the graph
+  in view.
+- **PG2 — our page.** All Data's title and the date; the map in miniature at the screen's width (the markers 2.5 mm);
+  under it a sheet. **PG2m**: All Data opens on the script's menu — its four graphs as finger rows where a graph will
+  stand (8.5 mm), Return as Back at the thumb. **PG2**: a graph — the four as tabs (a tab is Back, then the menu's item,
+  both clicks the player gives), the script's title in the game's font (2.6 mm), the bars as the original's (New → Old
+  left to right, the funds pale with the spending stacked from the bottom) laid out at the phone's type: the figures
+  2.3 mm, the plot 64.6 mm high; the scale as eight chips at the thumb (7.5 × 6.8 mm), the shown one lit (a chip is the
+  right click and its item); Back at the right thumb.
+
+**Recommendation: PG2** — every figure readable and the map in view with the graph; the graphs and the scales a tap
+apart at the thumb instead of a menu each time. PG1 is the original as it is, its figures out of reach of the eye.
+
+The title (`PE…`; `ｽﾀMENU`: its buttons are the characters' hit boxes, `ｽﾀMENU.ADV:805`; a right click shows a
+button's description in window 113, `:585-678`):
+
+- **PE1 — the picture as it is.** The title at the screen's width in the middle; a tap is the click (the hover lit,
+  then the button), a long press the right click. The hit boxes are larger than a finger needs — Start 18.8 × 14.9 mm,
+  Load 16.4 × 14.1 mm, Alice 21.9 × 10.9 mm, Please 10.0 × 13.2 mm — but nothing marks them but the picture's own words,
+  1.2 mm, and Destiny's at the top left lies beyond one thumb's reach. The bar: Menu alone (no key wait at the title).
+- **PE2 — our rows under the picture.** The picture on top; a row for each unlocked button at the thumb — the button's
+  own word (2.7 mm) and its description, the right click's text, as the row's lines (1.9 mm); rows 8.3 mm, Start red at
+  the right thumb, Load over it, the extras above, Saitou's joke on top. A first launch has three rows (Alice, Load,
+  Start). The picture keeps its own targets.
+
+**Recommendation: PE2** — every button named and within the thumb's reach, the first launch's three rows the plainest
+way into the game; the descriptions are the script's own words, shown without the long press.
+
+- **PEd — a button's description** (a long press on Start): window 113 under the picture as PS2's narration, its lines
+  at their breaks, 3.6 mm; the bar as at a key wait (Log dimmed: nothing is logged at the title).
+- **PEr — the requests slip** (Please): the slip at the screen's width in the middle as a scene's picture, its request
+  at the script's cells (2.5 mm); a tap goes on.
+
+The import screen (`PI…`; ours, the owner's mock-up B — a paper sheet, the steps 一 二 三): one base version, a card of
+the PC's kind in the screen's middle at the phone's type (the title 3.8 mm, the steps 2.7 mm, their lines 2.2 mm), its
+buttons in the bar at the thumb.
+
+- **PI — a folder chosen** (from Option → Game): Choose… — the field's whole height taps — opens the system's folder
+  picker on Android, and the field names the folder by its place (made up: Internal storage › Games); Back | **Import**
+  in the bar. A first launch: no Back, Import greyed until a folder is chosen.
+- **PIp — importing**: the folder ticked, the decompile's stage and its vermilion bar (made up: 45%); nothing to tap.
+  Done: the bar full, Play lit, then the title.
+- **PIr — refused** (made up: an empty KICHIKUSA.ALD): GameFiles' message in vermilion (2.2 mm), **the hashes each on a
+  line of their own** (1.7 mm) — on the PC they run past the paper in one small line (docs/backlog.md, "Interface") —,
+  the field, the stamp; Back | **Choose another folder**. A missing file's refusal the same way, without the hashes.
+
+The agent's own choices, for the owner to confirm: the graphs as tabs and the scales as chips (PG2), the descriptions
+on the title's rows (PE2), the folder named by its place on Android.
+
+## 23. Round P19: All Data, the title and the import screen landscape (2026-10-28)
+
+Drawn by `mock_phone.py --round P19` over the same dumps, on LM1's principle (the frame keeps the layout, our controls in
+the black sides).
+
+All Data (`LG…`):
+
+- **LG1 — the original's screen in the frame.** The miniature as on the PC (the markers 4.2 mm); the `]` menu as LS1m's,
+  our rows at the frame's right foot (7.0 mm), Menu in the left side. **LG1g**: a graph as the original draws it — the
+  title 3.3 mm, New → Old 2.8 mm, the figures over the bars 1.0 mm, too small; the right side holds Scale (its rows at
+  the frame's right foot as LS1m's, in two columns) over Back at the thumb.
+- **LG2 — the graphs and the scales in the sides.** **LG2m**: the miniature uncovered in the frame; the four graphs as
+  cells in the left side under Menu, at the left thumb (7.5 mm, two lines); Return as Back in the right side.
+  **LG2**: a graph in the frame as the original's, its figures drawn again over the bars at 2.3 mm; the graphs as tabs
+  in the left side, the shown one lit; the scale as eight chips in two columns in the right side (6.9 × 6.4 mm) over
+  Back at the thumb.
+
+**Recommendation: LG2** — upright's PG2 in landscape's way: the PC's graph kept in the frame, its figures readable, the
+graphs and the scales at the thumbs.
+
+The title (`LE…`):
+
+- **LE1 — the frame as on the PC.** A tap on a character, a long press for its description; the hit boxes are large
+  here — Start 30.1 × 23.8 mm, Load 26.2 × 22.6 mm, Please 16.0 × 21.2 mm —, the words over them 1.9 mm; Menu in the
+  left side.
+- **LE2 — the buttons in the black sides.** The frame as LE1's; a cell in a side for each unlocked button, its own word
+  (8.5 mm high): Start red at the right thumb, Load, Alice, C.G over it; B.G.M, Destiny, Please, Spy at the left. A first
+  launch has Start, Load and Alice alone, all at the right. The picture keeps its own targets.
+
+**Recommendation: LE2** — upright's PE2 in landscape's way: every button named at a thumb, the PC's picture whole in the
+frame; LE1 is the original alone, its targets large but unmarked, the top's middle out of the thumbs' reach.
+
+- **LEd — a button's description** as on the PC: window 113 at its place (4.2 mm), the left side as LS1's at a key
+  wait. The requests slip the same way: the slip in the frame, LS1's side.
+
+The import screen (`LI…`), one base version: the paper sheet in the frame at the phone's type, the steps in two columns
+— the first with the folder at the left, the others at the right —, **Import** red at the sheet's right foot (the right
+thumb) and Back to the title at its left foot, as the PC's; the sides empty (as LO1 and LL1 keep their buttons in the
+sheet). **LIp**: the folder ticked at the left, the decompile's bar at the right. **LIr**: GameFiles' message across the
+sheet, the hashes in two lines across it (1.7 mm), the field at the left, the stamp at the right, **Choose another
+folder** at the right thumb.
+
+With these two rounds every screen of ours has a base version in both orientations.
