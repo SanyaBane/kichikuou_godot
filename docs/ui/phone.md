@@ -172,8 +172,7 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 29. ~~**What comes next** (the owner, 2026-10-28).~~ The scenes (§2), upright first: round P14 (§18).
 30. ~~**The scenes upright** (round P14, §18): PS2, PS2l, PS2b and PS2m as drawn?~~ As drawn, the agent's choices with
     them.
-31. **The scenes landscape** (round P15, §19): LS1 (the frame as on the PC, with LS1b and LS1m) or LS2 (upright's PS2
-    laid sideways).
+31. ~~**The scenes landscape** (round P15, §19): LS1 or LS2.~~ LS1, with LS1b and LS1m.
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -779,3 +778,7 @@ the lacquer pass's `message-cg-bar-speech` and `scene-menu`. In landscape the fr
 
 **Recommendation: LS1** — in landscape the picture fills the frame and the text is the largest of any device; LS2 keeps
 upright's rule that a window never covers the picture, at the cost of a third of the picture and half the type.
+
+**The owner's choice (2026-10-28): LS1**, with LS1b and LS1m — on the gallery's landscape tab. So every screen of ours
+has a base version in both orientations but All Data, the title and the import screen, which wait for screen gallery
+entries to draw over.

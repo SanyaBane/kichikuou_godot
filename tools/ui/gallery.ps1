@@ -186,8 +186,7 @@ foreach ($pass in $allPasses) {
     if ($pass.Mockup) {
         [void]$body.Append("<p class=mockup><b>Not built yet.</b> Mock-ups of the phone held $($pass.Held) (Xiaomi Poco X6 Pro, " +
             "$($pass.Size)): the owner&rsquo;s chosen base versions of <code>docs/ui/phone.md</code>, drawn by " +
-            '<code>tools/ui/mock_phone.py</code> over this gallery&rsquo;s dumps.' +
-            $(if ($pass.Held -eq 'landscape') { ' The scenes are still open.' } else { '' }) + '</p>')
+            '<code>tools/ui/mock_phone.py</code> over this gallery&rsquo;s dumps.</p>')
     }
     if ($isStale) {
         [void]$body.Append("<p class=stale>Not dumped by the last run: these pictures are from $(Html $manifest.written) and may be " +

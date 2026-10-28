@@ -350,10 +350,11 @@ phone's body, into `phone/current` with a `manifest.json` as a pass writes it (`
 with the former one as a dump is (`GalleryScreen.Compare`: a channel more than 8 apart, changed past 600 pixels), so a
 mock-up that changes, or one whose source dumps changed, gets its badge. The tab's heading says **Not built yet**; its
 grid is narrower for the phone's tall pictures. The Python is `KICHIKUOU_PYTHON` in local.env (one with Pillow and
-numpy), else `python`. The scenes (PS2, round P14, 2026-10-28) stand on the week-18 look's picture of Ex's scene, which no
-pass dumps: its key waits `00058-message-speech-left.png`, `00059-key.png` and `00060-key.png` (the look in a window,
-our interface, without `--touch`, `--until battle`; CLAUDE.md, "A look at one screen") are copied into
-`phone-look` beside the passes, and without them the run leaves PS2 and PS2l out and says so. When the owner chooses another base version, its entry goes into the script's `GALLERY_ENTRIES`;
+numpy), else `python`. The scenes (upright PS2, landscape LS1; rounds P14-P15, 2026-10-28) stand on the week-18 look's
+picture of Ex's scene, which no pass dumps: its key waits `00058-message-speech-left.png`, `00059-key.png` and
+`00060-key.png` (the look in a window, our interface, without `--touch`, `--until battle`; CLAUDE.md, "A look at one
+screen") are copied into `phone-look` beside the passes, and without them the run leaves PS2, PS2l and LS1 out and says
+so. When the owner chooses another base version, its entry goes into the script's `GALLERY_ENTRIES`;
 when a phone screen is built, its mock-up leaves the tab for a pass of its own.
 
 The landscape phone's choices (from round P8, 2026-10-27: the map LM1, the battle LB2, the deployment table LD2,

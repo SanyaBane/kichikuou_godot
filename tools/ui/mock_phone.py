@@ -46,8 +46,8 @@ The pink lines and text are the mock-ups' notes, not part of a screen.
 
 For the screen gallery's phone tabs (tools/ui/gallery.ps1 -Phone; docs/ui/gallery.md, §9) only the owner's chosen base
 versions, without the notes, into <gallery dir>/phone/current (upright) and <gallery dir>/phone-land/current
-(landscape), each with a manifest.json as the game's passes write it; the scenes' PS2 and PS2l only when the look's
-frames LOOK_SPEECH and LOOK_NARRATION are copied into <gallery dir>/phone-look:
+(landscape), each with a manifest.json as the game's passes write it; the scenes' PS2, PS2l and LS1 only when the
+look's frames (LOOK_SPEECH, LOOK_NARRATION, LOOK_INTERCEPT) are copied into <gallery dir>/phone-look:
   python -I tools/ui/mock_phone.py --gallery <gallery dir> <extract dir> < /dev/null
 """
 import sys, os, re, json, hashlib, datetime
@@ -63,7 +63,7 @@ LOOK_SPEECH, LOOK_NARRATION, LOOK_INTERCEPT = '00058-message-speech-left.png', '
 if GALLERY_MODE:                        # the scenes' look frames, if copied beside the passes (<gallery dir>/phone-look)
     GALLERY, EXTRACT = ARGS[1:3]
     LOOK, OUT = os.path.join(GALLERY, 'phone-look'), os.path.join(GALLERY, 'phone', 'current')
-    if not all(os.path.exists(os.path.join(LOOK, f)) for f in (LOOK_SPEECH, LOOK_NARRATION)):
+    if not all(os.path.exists(os.path.join(LOOK, f)) for f in (LOOK_SPEECH, LOOK_NARRATION, LOOK_INTERCEPT)):
         LOOK = None
 else:
     GALLERY, LOOK, EXTRACT, OUT = ARGS[0:4]
@@ -334,6 +334,10 @@ GALLERY_ENTRIES_LAND = {
                                                                      'edges'),
     'LB3r': ('lb3-results', 'Battle — LB2', 'The results plate', 'in the frame\'s middle over the dimmed board'),
     'LB3b': ('lb3-line', 'Battle — LB2', 'A fighter\'s line', 'the portrait in the scene\'s blurred side, our balloon'),
+    # Round P15's choice (owner, 2026-10-28; docs/ui/phone.md, §19).
+    'LS1': ('ls1-speech', 'Scenes — LS1', 'A speech', 'the frame as on the PC, Menu, Skip and Log in the left side'),
+    'LS1b': ('ls1-cg', 'Scenes — LS1', 'Window 131 over its CG', 'the CG (masked) the frame\'s height'),
+    'LS1m': ('ls1-menu', 'Scenes — LS1', 'A dialogue menu', 'the rows at the frame\'s right foot (made up)'),
 }
 DUMPED = []
 DUMPED_LAND = []
@@ -5271,11 +5275,12 @@ def main():
         overviews()
         return
     if GALLERY_MODE:
-        if LOOK:                                # PS2's picture is the week-18 look's (Ex's scene)
-            d2(); d2l()
+        if LOOK:                                # PS2's and LS1's picture is the week-18 look's (Ex's scene)
+            d2(); d2l(); ls1()
         else:
-            print('No phone-look folder beside the passes: PS2 and PS2l left out (docs/ui/gallery.md, §9).')
+            print('No phone-look folder beside the passes: PS2, PS2l and LS1 left out (docs/ui/gallery.md, §9).')
         d2b(); d2m()
+        ls1b(); ls1m()
         m1()
         pb3(); pb3r(); pb3x()
         p3(); p4(); p5(); p6(); p7()
