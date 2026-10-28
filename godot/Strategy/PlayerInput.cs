@@ -25,12 +25,33 @@ internal sealed class PlayerInput
 
     private readonly InputLatch _buttons = new();
     private readonly InputLatch _keys = new();
+    private readonly TouchPress _touch = new();
 
     /// <summary>The pointer in script coordinates (640×400).</summary>
     public Vector2I Position { get; set; }
 
-    /// <summary>A mouse button (16 or 32) went down or up.</summary>
-    public void Button(ushort code, bool pressed) => _buttons.Set(code, pressed);
+    /// <summary>A mouse button (16 or 32) went down or up; a release whose finger's press is held back goes with it (<see cref="Press"/>).</summary>
+    public void Button(ushort code, bool pressed)
+    {
+        if (pressed || !_touch.Release(code))
+            _buttons.Set(code, pressed);
+    }
+
+    /// <summary>
+    /// A finger came down at <paramref name="at"/> (script coordinates) with button <paramref name="code"/>: the pointer moves
+    /// there at once, and when that is a move the press waits for a read to take it (<see cref="TouchPress"/>; docs/ui/
+    /// phone-build.md, §7) — a finger has no move before its press, and some of the original's screens act on what the read
+    /// before the click lit.
+    /// </summary>
+    public void Press(ushort code, Vector2I at)
+    {
+        bool moved = at != Position;
+        Position = at;
+        if (moved)
+            _touch.Hold(code, _buttons);
+        else
+            _buttons.Set(code, true);
+    }
 
     /// <summary>A key went down or up; keys the engine does not read are ignored.</summary>
     public void Key(Godot.Key key, bool pressed)
@@ -43,6 +64,7 @@ internal sealed class PlayerInput
     /// <summary>Everything released (the window lost the focus).</summary>
     public void Clear()
     {
+        _touch.Clear();
         _buttons.Clear();
         _keys.Clear();
     }
@@ -50,15 +72,26 @@ internal sealed class PlayerInput
     /// <summary>A frame is over: the taps no read took in it or the frame before are dropped.</summary>
     public void EndFrame()
     {
+        _touch.EndFrame(_buttons);
         _buttons.EndFrame();
         _keys.EndFrame();
     }
 
     /// <summary><c>event_get_mouse</c> (<c>IM</c>): the buttons held, 16 | 32.</summary>
-    public ushort ReadMouse() => _buttons.Read();
+    public ushort ReadMouse()
+    {
+        ushort code = _buttons.Read();
+        _touch.Read(_buttons);
+        return code;
+    }
 
     /// <summary><c>sys_getInputInfo</c> (<c>Y 3</c>, <c>IK 0</c>, the menus): the buttons and keys held.</summary>
-    public ushort ReadInput() => (ushort)(_buttons.Read() | _keys.Read());
+    public ushort ReadInput()
+    {
+        ushort code = (ushort)(_buttons.Read() | _keys.Read());
+        _touch.Read(_buttons);
+        return code;
+    }
 
     /// <summary>What <see cref="ReadInput"/> would return, without reading.</summary>
     public ushort PeekInput() => (ushort)(_buttons.Peek() | _keys.Peek());

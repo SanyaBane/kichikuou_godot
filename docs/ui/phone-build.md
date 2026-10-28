@@ -602,6 +602,47 @@ L7b:
   search, the battle on the Monsters' Cave's (dungeon 2) first floor); unattended play answers the dungeon's menus
   without the rail's places, so step L10's runs are its check.
 
+**Step L9, where it stands (2026-10-28):** split in two, as L7 was. **L9a (All Data, the title, the original's own
+screens and a finger's press) is built, awaiting the owner's look on the phone**; L9b (the import screen: LI, LIp, LIr)
+is next.
+
+- **The model** (`Original.Content/Devices/PhoneData`, tested in `PhoneDataTests`): the places at the mock-ups' figures
+  (`side_graphs`, `graph_cell`, `lg2`, `scale_chips`, `funds_relabelled`) in the canvas's units — the four graphs' cells
+  (132 high, 14 apart, the last 10 over the gesture zone) on the left side's rail under GRAPHS, Back (150 high) on the right
+  side's rail at the thumb, the eight chips two a row (112 high, 12 apart) 30 over it under SCALE; a bar's figure centred on
+  its bar, its baseline 6 layout pixels over the bar's frame line, at 2.3 mm (40). The presenter keeps each bar's figure
+  (`GamePresenter.DataFigures`, the bar's left and top and its number) and leaves them off the screen while
+  `DataFiguresCovered`; it names the graphs, Return and the scales as the menus print them and gives the shown graph's
+  scale (`DataGraphNames`, `DataReturnName`, `DataScaleNames`, `DataScale`; tested in
+  `GamePresenterTests.All_data_keeps_the_figures_and_names_for_the_phone`).
+- **The view** (`godot/Strategy/AllDataView`, wired in `GameScreen.Data.cs`), only on the phone held landscape: over the
+  map's view the menu of graphs is ours — the PC's box not drawn, a cell answers it with its graph, Back with Return
+  (LG2m); over a graph the cells (the shown one lit), the chips (the shown scale lit, vermilion) and Back, and the figures
+  drawn again over the bars (LG2). While a graph waits for the click a tap of the sides is queued as the original's clicks
+  (`_dataPointer`): Back the left click that leaves it, a chip the right click and the scale menu answered with it, another
+  graph's cell the left click and the menu of graphs answered with it, unseen; a tap on the frame stays the original's
+  (the view takes presses only on its parts then). The screen gallery shares the view (`GalleryEntries.Data.cs`).
+- **The title and the original's own screens** (LE1, LXf, LXc, LXm, LXr): already in the frame as on the PC with the Menu
+  cell on top of the left side (LEd, the title's description with Skip and Log, came with L1). On the phone a long press
+  on them is the right click (`GameScreen.OriginalScreens.cs`, as a battle card's: the press held back, lifted sooner a
+  tap) — the title's descriptions without Back.
+- **A tap's move before its press** (§7), on the tablet too: a finger's press that lands elsewhere moves the pointer at
+  once and reaches the script's reads only after a read has taken the move (`Engine/Script/TouchPress`, tested in
+  `TouchPressTests`; `PlayerInput.Press`, used by `GameScreen.PointerButton` in the touch mode) — so Fortune Check and the
+  CG gallery act on what the finger touched, not on what the read before lit. A press no read takes goes in after the
+  frame after its own and ages there as any tap.
+- **The agent's choices**, for the owner to confirm: the graphs' names in the game's font, split at the first space; the
+  scale menu (a long press on a graph) shows as the graph with its chips, which answer it — Back cancels it (the graph
+  left, as the menu's own cancel), the shown graph's cell keeps the graph at its scale, another graph's cell cancels it and
+  opens that graph; a long press or Back over the menu of graphs is Return; a tap on the shown graph's cell or the lit chip
+  does nothing; the figures in the mock-up's light grey; the long press on the original's screens on the phone alone (the
+  tablet keeps Back as its right click there).
+- **The gallery**: the PC and touch passes same; the phone pass's `all-data…` entries match LG2m and LG2, which left
+  `GALLERY_ENTRIES_LAND` with LE1, LXf, LXc and LXm (LXr stays: the ending's report has no entry of the game's gallery).
+- **Unattended play**: `--phone landscape` headless from the week-18 save to its deployment picker, with `--saveload` and
+  `--treasure` (their taps through Godot's input, now through `TouchPress`), runs as before. The bot visits All Data only
+  from the prologue (stage 1), through the script's own menus.
+
 ### Upright (steps P0-P9)
 
 | Step | What | Base versions (phone.md) |
@@ -639,6 +680,7 @@ L7b:
 - **System's rotation lock** (§3): checked on the Poco in P0.
 - **A tap's move before its press** (found in round P20, phone.md §25): Fortune Check and the CG gallery act on a click
   on what the read before it lit, so a tap whose move and press reach the script in one poll would act on the cell lit
-  before; checked when the original's screens are built (L9), on the tablet too.
+  before; the touch mode now holds such a press back until a read has taken its move (`TouchPress`; step L9a), on the
+  tablet too.
 - **The tablet unchanged**: the PC and touch gallery passes same after every step, and the tablet's play by the owner
   after F and after L10.

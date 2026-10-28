@@ -311,6 +311,53 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// All Data for the phone held landscape (docs/ui/phone-build.md, step L9): the graphs' and the scales' names as the
+    /// menus print them, the shown graph's scale, and each bar's figure kept for the phone to draw again — left off the
+    /// screen while it does (LG2).
+    /// </summary>
+    [ScenarioFact]
+    public async Task All_data_keeps_the_figures_and_names_for_the_phone()
+    {
+        var run = await RunAsync(stopAtWeek: 0);
+        var s = run.Session.State;
+        for (int k = 0; k < 16; k++)
+            s.History[(Sys3Int)k].Funds = (Sys3Int)(k == 0 ? 5000 : 100 * k);
+        var player = run.Player;
+        player.Answers["各種DATA.ADV"] = new([1, 5]);                      // Funds, Return
+        player.DataPresses.Enqueue(16);
+        var p = run.Presenter;
+        var seen = new List<(int Scale, int Count, DataFigure First, DataFigure Last, bool Ink)>();
+        bool covered = false;
+        player.OnRead = () =>
+        {
+            if (p.Data != DataView.Funds)
+                return;
+            bool Ink()
+            {
+                // Record 0's figure at (72 − 24, 350 − 300 − 11): the black over the plot's frame, or the number's ink.
+                for (int y = 39; y < 48; y++)
+                    for (int x = 48; x < 64; x++)
+                        if (p.Screen.PixelAt(x, y) is var (r, g, b, _) && (r, g, b) != p.Screen.Color(0))
+                            return true;
+                return false;
+            }
+            p.DataFiguresCovered = covered;
+            p.Compose();
+            seen.Add((p.DataScale, p.DataFigures.Count, p.DataFigures[0], p.DataFigures[^1], Ink()));
+            covered = !covered;
+        };
+
+        await run.Session.Script.CallFileAsync("各種DATA.ADV");
+
+        Assert.Equal(["All Funds", "Sundry Expenses", "Military Spending", "All Casualties"], p.DataGraphNames);
+        Assert.Equal("Return", p.DataReturnName);
+        Assert.Equal(["1x", "2x", "4x", "8x", "16x", "32x", "64x", "128x"], p.DataScaleNames);
+        Assert.Contains((16, 16, new DataFigure(72, 50, "50"), new DataFigure(552, 350 - 1500 / 13, "15"), true), seen);
+        Assert.Contains((16, 16, new DataFigure(72, 50, "50"), new DataFigure(552, 350 - 1500 / 13, "15"), false), seen);
+        Assert.Equal(0, p.DataScale);
+    }
+
+    /// <summary>
     /// A search of the Monsters' Cave (<c>Cﾒｲｷｭｳ</c>, dungeon 2) at stage 1 on the booted world,
     /// through the router: Start Search, Bound picked in the deployment picker drawn by hand, the
     /// arrival over the cave's picture, a floor down with a battle (every draw is 1: monsters on

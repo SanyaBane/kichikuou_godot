@@ -52,8 +52,10 @@ internal static partial class GalleryEntries
         p.Show(new MapEvent(0));
         p.Show(GalleryStates.SelectionWindow);
         p.Show(new DataScreenEvent(view));
+        // The phone held landscape: our sides answer the menus and draw a graph's figures again (LG2m, LG2).
+        p.DataFiguresCovered = PhoneLandscape && view != DataView.Map;
         SceneMenuView? menuView = null;
-        if (items is not null)
+        if (items is not null && !PhoneLandscape)
         {
             p.OpenMenu(items);
             MenuView menu;
@@ -71,11 +73,21 @@ internal static partial class GalleryEntries
             menuView.Open(menu, box);
         }
         var picture = g.Picture(p);
+        AllDataView? sides = null;
+        if (PhoneLandscape)
+        {
+            sides = g.Add(new AllDataView(g.Font));
+            if (items is null)
+                sides.ShowGraph(AllDataView.Sides.Of(p));
+            else
+                sides.OpenMenu(view == DataView.Map ? AllDataView.Mode.Menu : AllDataView.Mode.Scale, AllDataView.Sides.Of(p));
+        }
         var cell = MenuCell(g);                                 // the phone held landscape: Menu in the left side (LG2m)
         return area =>
         {
             GalleryStage.Fill(picture, area);
             menuView?.Place(area);
+            sides?.Place();
             cell?.Place();
         };
     }

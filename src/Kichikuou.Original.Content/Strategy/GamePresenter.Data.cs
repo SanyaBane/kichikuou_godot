@@ -25,6 +25,47 @@ public sealed partial class GamePresenter
     /// </summary>
     public DataView Data { get; private set; }
 
+    private readonly List<DataFigure> _dataFigures = [];
+    private bool _dataFiguresCovered;
+
+    /// <summary>The shown graph's figures over its bars as last drawn, newest left; empty over the map's view.</summary>
+    public IReadOnlyList<DataFigure> DataFigures => _dataFigures;
+
+    /// <summary>
+    /// The phone held landscape draws a graph's figures again at its own type over the picture (docs/ui/phone.md, §23,
+    /// LG2): while set they are left off the screen ("OV" stays).
+    /// </summary>
+    public bool DataFiguresCovered
+    {
+        get => _dataFiguresCovered;
+        set
+        {
+            if (value == _dataFiguresCovered)
+                return;
+            _dataFiguresCovered = value;
+            Invalidate();
+        }
+    }
+
+    /// <summary>The menu's four graphs' names (<c>各種DATA.ADV:29-41</c>), as its items print them.</summary>
+    public IReadOnlyList<string> DataGraphNames => [.. ((int[])[29, 33, 37, 41]).Select(DataItem)];
+
+    /// <summary>The menu's Return (<c>:45</c>).</summary>
+    public string DataReturnName => DataItem(45);
+
+    /// <summary>The scale menu's items, 1x to 128x (<c>:317-345</c>), their padding taken off.</summary>
+    public IReadOnlyList<string> DataScaleNames => [.. Enumerable.Range(0, 8).Select(i => DataItem(317 + 4 * i))];
+
+    /// <summary>The shown graph's scale (1x to 128x: <c>Ui_MoneyGraphScale</c>, the casualties' <c>Ui_DamageGraphScale</c>); 0 over the map.</summary>
+    public int DataScale => State is not { } s ? 0 : Data switch
+    {
+        DataView.Funds or DataView.SundryExpenses or DataView.MilitarySpending => s.Ui_MoneyGraphScale.Value,
+        DataView.Casualties => s.Ui_DamageGraphScale.Value,
+        _ => 0,
+    };
+
+    private string DataItem(int line) => ReadText(new ScriptRef(DataFile, line)).Trim(' ', '　');
+
     private void DataScreen(DataView view)
     {
         Data = view;
@@ -39,6 +80,7 @@ public sealed partial class GamePresenter
     /// </summary>
     private void DrawData(GameState s)
     {
+        _dataFigures.Clear();
         Screen.Fill(0, 0, Surface.ScreenWidth, Surface.ScreenHeight, 0);
         EnsureTiles();
         Screen.ScaledCopyFrom(Stage, TileArea, 0, 1920, 800, 0, 67, 640, 266, 0);
@@ -146,11 +188,16 @@ public sealed partial class GamePresenter
             Screen.DrawBox(x - 1, 350 - h - 1, 16 + 2, h + 2, 255);
     }
 
-    /// <summary>The number at (x − dx, 350 − h − 11) and "OV" at (x, 350 − h + 1), size 8 (the file sets bold, <c>ZB 1</c>).</summary>
+    /// <summary>
+    /// The number at (x − dx, 350 − h − 11) and "OV" at (x, 350 − h + 1), size 8 (the file sets bold, <c>ZB 1</c>); the
+    /// number kept in <see cref="DataFigures"/>, left off the screen while <see cref="DataFiguresCovered"/>.
+    /// </summary>
     private void Label(int x, int dx, Sys3Int height, string number, int? over)
     {
         int h = height.Value;
-        DataText(number, x - dx, 350 - h - 11, 8);
+        _dataFigures.Add(new DataFigure(x, 350 - h, number.Replace("\n", "").Trim()));
+        if (!_dataFiguresCovered)
+            DataText(number, x - dx, 350 - h - 11, 8);
         if (over is int line)
             DataText(ReadText(new ScriptRef(DataFile, line)), x, 350 - h + 1, 8);
     }
@@ -158,3 +205,6 @@ public sealed partial class GamePresenter
     private void DataText(string text, int x, int y, int size) =>
         MessageWriter.DrawString(Screen, _glyphs, text.Replace("\n", ""), x, y, size, _engine.TextColor);
 }
+
+/// <summary>A bar's figure over a graph of All Data: the bar's left and top on the screen (script pixels) and its number, unpadded.</summary>
+public sealed record DataFigure(int X, int Top, string Text);

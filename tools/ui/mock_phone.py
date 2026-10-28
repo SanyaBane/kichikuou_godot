@@ -352,19 +352,14 @@ GALLERY_ENTRIES = {
 GALLERY_ENTRIES_LAND = {
     # Round P11's choices (owner, 2026-10-28; docs/ui/phone.md, §15): LH2 and LT2 built (step L7a), LL1 (step L7b).
     # Round P12's choices (owner, 2026-10-28; docs/ui/phone.md, §16): LO1, LF2 and LF2e built (step L8).
-    # Round P19's choices (owner, 2026-10-28; docs/ui/phone.md, §23): All Data, the title, the import.
-    'LG2m': ('lg2-data', 'All Data — LG2', 'The menu of graphs', 'the frame kept, the graphs in the left side'),
-    'LG2': ('lg2-funds', 'All Data — LG2', 'A graph', 'its figures at the phone\'s type; the scales in the right side'),
-    'LE1': ('le1-title', 'Title — LE1', 'The title', 'the frame as on the PC, after a clear; a tap on a character'),
+    # Round P19's choices (owner, 2026-10-28; docs/ui/phone.md, §23): All Data, the title, the import; LG2m, LG2 and LE1
+    # built (step L9a).
     'LI': ('li-import', 'Import — LI', 'A folder chosen', 'the paper sheet in the frame, the steps in two columns'),
     'LIp': ('li-progress', 'Import — LI', 'Importing', 'the decompile\'s bar (made up: 45%)'),
     'LIr': ('li-refused', 'Import — LI', 'Another version\'s file', 'the hashes in two lines across the sheet (made '
                                                                     'up)'),
-    # Round P21's choices (owner, 2026-10-28; docs/ui/phone.md, §26); LY1 built (step L7b).
-    'LXf': ('lx-fortune', 'The original\'s screens', 'Fortune Check', 'as it is in the frame (made up: three fates '
-                                                                     'seen)'),
-    'LXc': ('lx-gallery', 'The original\'s screens', 'The CG gallery', 'as it is (masked in the agents\' dumps)'),
-    'LXm': ('lx-music', 'The original\'s screens', 'The music room', 'as it is, no track playing'),
+    # Round P21's choices (owner, 2026-10-28; docs/ui/phone.md, §26); LY1 built (step L7b), LXf, LXc and LXm (step L9a;
+    # LXr stays: the ending's report has no entry in the game's gallery).
     'LXr': ('lx-report', 'The original\'s screens', 'An ending\'s Completion Report', 'as it is (ending 11); Skip and '
                                                                                  'Log at its key waits'),
 }

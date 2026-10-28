@@ -375,6 +375,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _content.AddChild(_sceneMenuView);                      // over the message windows: the menu asks below them
         _ladderView = new FloorLadderView(GodotGlyphRenderer.Chosen);
         _content.AddChild(_ladderView);
+        ReadyData();
         _saveView = new SaveLoadView(GodotGlyphRenderer.Chosen, faces);
         _content.AddChild(_saveView);                           // over the message windows: they are not drawn under it
         ReadySubordinates(faces);
@@ -457,6 +458,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _sceneMenuView.Place(PictureArea());
         if (_ladderView.Visible)
             _ladderView.Place(PictureArea());
+        UpdateDataView();
         _optionsView?.Place(PictureArea());                         // a phone turned lays it out again
         if (_provinceView.Visible)
             _provinceView.Place(PictureArea());
@@ -896,7 +898,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.ScreenshotDirectory is not { } dir)
             return;
         System.IO.Directory.CreateDirectory(dir);
-        if ((_optionsView is not null || _logView is not null || _drawer.Visible || _table.Visible || _subordinates.Visible || _harem.Visible || _treasure.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _sceneMenuView.Visible || _ladderView.Visible || _saveView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown || _attackView.Visible) && DisplayServer.GetName() != "headless")
+        if ((_optionsView is not null || _logView is not null || _drawer.Visible || _table.Visible || _subordinates.Visible || _harem.Visible || _treasure.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _sceneMenuView.Visible || _ladderView.Visible || _dataView.Visible || _saveView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown || _attackView.Visible) && DisplayServer.GetName() != "headless")
         {
             // Our deployment and battle screens are drawn by Godot over the screen: the window's next frame (headless
             // draws none). No Compose here: the frame's Present must find the change to upload it.
@@ -985,12 +987,13 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             case InputEventMouseMotion motion:
                 TouchMoved(motion);
+                ScreenTouchMoved(motion);
                 _battlePointer = motion.Position;
                 _input.Position = ToScript(motion.Position);
                 PointerMoved();
                 break;
             case InputEventMouseButton { ButtonIndex: Godot.MouseButton.Left or Godot.MouseButton.Right } button:
-                if (!CardTouch(button))
+                if (!CardTouch(button) && !ScreenTouch(button))
                     PointerButton(button.Position, button.ButtonIndex == Godot.MouseButton.Left ? KeyReturn : KeySpace, button.Pressed);
                 break;
             case InputEventMouseButton { ButtonIndex: Godot.MouseButton.WheelUp, Pressed: true } when CanOpenLog:
@@ -1031,8 +1034,13 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private void PointerButton(Vector2 at, ushort code, bool pressed)
     {
         _battlePointer = at;
-        _input.Position = ToScript(at);
-        _input.Button(code, pressed);
+        if (pressed && TouchMode.On)
+            _input.Press(code, ToScript(at));                   // a finger's: its move read before its press (TouchPress)
+        else
+        {
+            _input.Position = ToScript(at);
+            _input.Button(code, pressed);
+        }
         BattleButton(code, pressed);
     }
 
@@ -1665,6 +1673,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             return list;                                        // our panel's Load or Save row answers Load / Save / Don't, unseen
         if (_buildShortcut.Choose(items) is { } build)
             return build;                                       // our panel's Construction answers Build / Don't, unseen
+        if (DataMenuAnswer(items) is { } given)
+            return given;                                       // a tap of All Data's sides on the phone answers it, unseen
         _skip.OnMenu();
         _messageView.Complete();                                // the question is whole under its menu
         _presenter.OpenMenu(items);
@@ -1677,6 +1687,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         // The dungeon's menu before a search on the touch rail (docs/ui/dungeon-menu.md, §6); the PC keeps our ] menu.
         var entry = InterfaceChoice.New && TouchMode.On && province is null && command is null && saveList is null && ladder is null
             ? _presenter.DungeonEntry : null;
+        // All Data's menus on the phone held landscape: our sides answer them (docs/ui/phone.md, §23, LG2m and LG2).
+        var data = saveList is null && province is null && command is null && ladder is null && entry is null ? DataMenuMode() : null;
         if (saveList is { } shownList)
         {
             _presenter.SaveScreenCovered = true;                // our Save/Load screen (docs/ui/save-load.md, §5)
@@ -1710,9 +1722,12 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _ladderView.OpenEntry(entry);
             _ladderView.Place(PictureArea());
         }
+        else if (data is { } dataMode)
+            OpenDataMenu(dataMode);
         // Our ] menu at the selection box's place (docs/ui/messages.md, §5 step 3); a battle's menus stay the original's
         // with the battle's windows (step 5).
-        bool scene = province is null && command is null && ladder is null && entry is null && saveList is null && InterfaceChoice.New && !BattleScreenShown
+        bool scene = province is null && command is null && ladder is null && entry is null && saveList is null && data is null
+            && InterfaceChoice.New && !BattleScreenShown
             && _presenter.Menu is not null && _presenter.MenuBoxArea is not null;
         // Over our Treasure screen the question's window is a callout at the clicked cell, its Yes/No inside it
         // (docs/ui/pickers.md, round W): opened with its buttons at once.
@@ -1770,6 +1785,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 : province is not null ? await _provinceView.ChooseAsync()
                 : command is not null ? await CommandAnswerAsync(command)
                 : ladder is not null || entry is not null ? await _ladderView.ChooseAsync()
+                : data is not null ? await DataAnswerAsync()
                 : callout ? await _treasureCallout.ChooseAsync()
                 : scene ? await _sceneMenuView.ChooseAsync()
                 : await MenuAsync());
@@ -1781,6 +1797,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _saveView.Release();                                // drawn on until the next list or the screen's end
             _sceneMenuView.Close();
             _ladderView.Close();
+            _dataView.CloseMenu();
             _treasureCallout.CloseMenu();
             _presenter.CloseMenu();
         }
@@ -2018,6 +2035,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _pointer.Interrupt();
         _subPointer.Interrupt();
         _treasurePointer.Interrupt();
+        _dataPointer.Interrupt();
     }
 
     public async Task<MouseState> GetMouseAsync()
@@ -2073,6 +2091,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         if (UpdateMapMarkers() && _markerPointer.Pending > 0)
             return Read(_markerPointer.Next(out _));    // a plate's still click
+        if (_dataPointer.Pending > 0)
+            return Read(_dataPointer.Next(out _));      // a tap of All Data's sides on the phone
         return Read(PlayerRead());
     }
 

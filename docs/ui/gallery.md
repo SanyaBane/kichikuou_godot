@@ -450,4 +450,9 @@ built Save/Load: the list at the left in one-line rows, the chosen save's page a
 `save-load-sweep`), the comment's own card where LY1 has it over the keyboard (`save-load-comment`); LL1 and LY1 left the
 mock-up tab. Step L8 (2026-10-28) built the options window and the dungeon's menus: the paper sheet across the whole width,
 its tabs on top, each tab in two columns, Defaults | Close at the right column's foot (`options-…`); the tablet's rail
-kept in the frame at the phone's sizes (`floor-ladder…`, `dungeon-entry…`); LO1, LF2 and LF2e left the mock-up tab.
+kept in the frame at the phone's sizes (`floor-ladder…`, `dungeon-entry…`); LO1, LF2 and LF2e left the mock-up tab. Step
+L9a (2026-10-28) built All Data: the miniature uncovered, the four graphs as cells under Menu in the left side, Back in
+the right (`all-data`); over a graph its figures drawn again at the phone's type and the scale as eight chips over Back,
+the shown graph and scale lit (`all-data-funds`, …, the scale menu `all-data-scale` the same); the title (`title…`) and
+the original's own screens (`fortune-check`, `cg-gallery`, `music-room`) were already as LE1 and LXf-LXm have them;
+LG2m, LG2, LE1, LXf, LXc and LXm left the mock-up tab (LXr stays: the ending's report has no entry here).

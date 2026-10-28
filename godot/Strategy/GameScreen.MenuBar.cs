@@ -370,6 +370,7 @@ public partial class GameScreen
         _messageView.SetFont(font);
         _sceneMenuView.SetFont(font);
         _ladderView.SetFont(font);
+        _dataView.SetFont(font);
         _presenter.Invalidate();
     }
 

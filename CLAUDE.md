@@ -353,6 +353,12 @@ across the whole width as LO1 — its tabs on top, each tab in two columns, Defa
 parts drawn at PO1's type, their text at the canvas's size — and the dungeon's ladder and entry menu as the tablet's rail
 in the frame at the phone's sizes (LF2, LF2e) (`Original.Content/Devices/PhoneOptions`, `PhoneLadder`;
 `OptionsView.Phone.cs`, `FloorLadderView.Phone.cs`).
+Step L9 is split: L9a is built, awaiting the owner's look on the phone (phone-build.md, "Step L9, where it stands"): All
+Data with the graphs as cells in the left side, Back and the scale's chips in the right, a graph's figures drawn again
+at the phone's type (`Original.Content/Devices/PhoneData`, `GamePresenter.DataFigures`; `godot/Strategy/AllDataView`,
+`GameScreen.Data.cs`); the title and the original's own screens as on the PC, a long press their right click
+(`GameScreen.OriginalScreens.cs`); a finger's press that lands elsewhere reaches the script after a read of its move, on
+the tablet too (`Engine/Script/TouchPress`, `PlayerInput.Press`). L9b, the import screen, is next.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
