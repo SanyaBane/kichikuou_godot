@@ -1145,3 +1145,16 @@ Stop and End 16.2 × 7.6 mm.
 The agent's own choices, for the owner to confirm: Screen (Window | Fullscreen) left out of the phone's Menu; Restart and
 Exit asking in a callout in the PC's dialogs' words; Debug as a row that opens its own rows; the original's own screens
 with no layout of ours in either orientation, their small targets upright accepted (the player may turn the phone).
+
+**The owner's choices (2026-10-28):**
+
+- **The Menu sheet: PN1 (with PN1q) upright, LN3 landscape** — the sheet from the foot upright, the tiles in the frame's
+  middle landscape (not the recommended LN2).
+- **The message log: PR2 upright, LR2 landscape** — the speaker over his lines upright, the chronicle across the width at
+  the scenes' type landscape (not the PC's as it is, LR1).
+- **The comment's editing: PY2 and LY1**, the comment's own card over the keyboard, as recommended.
+- **The original's own screens as they are**, PXf, PXc, PXm, PXr and LXf, LXc, LXm, LXr.
+
+The agent's choices above stand as drawn. The other variants (PN2, PN3, PR1, PR3, PY1, PY3, LN1, LN2, LR1, LY2) stay in
+the rounds' sheets only. With these every screen of ours has a chosen base version in both orientations; the chosen
+ones are on the gallery's phone tabs.

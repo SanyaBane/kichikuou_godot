@@ -144,8 +144,10 @@ phone tabs:
 
 **Where it stands (2026-10-28):** the gallery entries are built — `fortune-check`, `cg-gallery`, `music-room`
 (docs/ui/gallery.md, §7 step 7); the ending's Completion Report is taken from a `--ending 11` run. Rounds P20 and P21
-are drawn (docs/ui/phone.md, §25-§26: the Menu sheet PN/LN, the log PR/LR, the comment's editing PY/LY, the original's
-screens PX/LX), awaiting the owner's choices.
+are drawn (docs/ui/phone.md, §25-§26) and chosen by the owner: the Menu sheet PN1 (PN1q) and LN3, the log PR2 and LR2,
+the comment's editing PY2 and LY1, the original's own screens as they are (PX…, LX…) — all on the gallery's phone tabs.
+**Step 0 is done**; every screen of ours has a chosen base version in both orientations. L1 builds the Menu sheet as
+LN3 and the log as LR2; L7 the editing as LY1.
 
 The development screens (the capture viewer, Portraits, Effects, the screen gallery, Debug's sliders) get no phone
 layout: on a phone they show as on the tablet, in the frame (the agent's choice, below).

@@ -60,7 +60,8 @@ The pink lines and text are the mock-ups' notes, not part of a screen.
 For the screen gallery's phone tabs (tools/ui/gallery.ps1 -Phone; docs/ui/gallery.md, §9) only the owner's chosen base
 versions, without the notes, into <gallery dir>/phone/current (upright) and <gallery dir>/phone-land/current
 (landscape), each with a manifest.json as the game's passes write it; the scenes' PS2, PS2l and LS1 only when the
-look's frames (LOOK_SPEECH, LOOK_NARRATION, LOOK_INTERCEPT) are copied into <gallery dir>/phone-look:
+look's frames (LOOK_SPEECH, LOOK_NARRATION, LOOK_INTERCEPT) are copied into <gallery dir>/phone-look (with them PN1,
+PN1q, PR2, LN3 and LR2; PXr and LXr when LOOK_ENDING is there too):
   python -I tools/ui/mock_phone.py --gallery <gallery dir> <extract dir> < /dev/null
 """
 import sys, os, re, json, hashlib, datetime
@@ -332,6 +333,17 @@ GALLERY_ENTRIES = {
     'PI': ('pi-import', 'Import — PI', 'A folder chosen', 'the paper card in the middle, Back | Import in the bar'),
     'PIp': ('pi-progress', 'Import — PI', 'Importing', 'the decompile\'s bar (made up: 45%)'),
     'PIr': ('pi-refused', 'Import — PI', 'Another version\'s file', 'the hashes each on a line of their own (made up)'),
+    # Round P20's choices (owner, 2026-10-28; docs/ui/phone.md, §25): the Menu sheet, the log, the comment's editing,
+    # the original's own screens as they are.
+    'PN1': ('pn1-menu', 'Menu — PN1', 'The Menu sheet', 'a sheet from the foot: the menu bar\'s commands as finger rows'),
+    'PN1q': ('pn1-restart', 'Menu — PN1', 'Restart asks first', 'a callout at its row, in the PC\'s dialog\'s words'),
+    'PR2': ('pr2-log', 'Log — PR2', 'The message log', 'the speaker over his lines, at the scenes\' type'),
+    'PY2': ('py2-comment', 'Save/Load — PL2', 'Editing a comment', 'the comment\'s own card over Android\'s keyboard'),
+    'PXf': ('px-fortune', 'The original\'s screens', 'Fortune Check', 'as it is (made up: three fates seen)'),
+    'PXc': ('px-gallery', 'The original\'s screens', 'The CG gallery', 'as it is (masked in the agents\' dumps)'),
+    'PXm': ('px-music', 'The original\'s screens', 'The music room', 'as it is, no track playing'),
+    'PXr': ('px-report', 'The original\'s screens', 'An ending\'s Completion Report', 'as it is (ending 11); Log and '
+                                                                                 'Skip at its key waits'),
 }
 # The gallery's landscape phone tab (phone-land): the owner's chosen landscape base versions (round P8 on).
 GALLERY_ENTRIES_LAND = {
@@ -379,6 +391,16 @@ GALLERY_ENTRIES_LAND = {
     'LIp': ('li-progress', 'Import — LI', 'Importing', 'the decompile\'s bar (made up: 45%)'),
     'LIr': ('li-refused', 'Import — LI', 'Another version\'s file', 'the hashes in two lines across the sheet (made '
                                                                     'up)'),
+    # Round P21's choices (owner, 2026-10-28; docs/ui/phone.md, §26).
+    'LN3': ('ln3-menu', 'Menu — LN3', 'The Menu sheet', 'tiles in the frame\'s middle, Close in the left side'),
+    'LR2': ('lr2-log', 'Log — LR2', 'The message log', 'the chronicle across the width at the scenes\' type'),
+    'LY1': ('ly1-comment', 'Save/Load — LL1', 'Editing a comment', 'the comment\'s own card over Android\'s keyboard'),
+    'LXf': ('lx-fortune', 'The original\'s screens', 'Fortune Check', 'as it is in the frame (made up: three fates '
+                                                                     'seen)'),
+    'LXc': ('lx-gallery', 'The original\'s screens', 'The CG gallery', 'as it is (masked in the agents\' dumps)'),
+    'LXm': ('lx-music', 'The original\'s screens', 'The music room', 'as it is, no track playing'),
+    'LXr': ('lx-report', 'The original\'s screens', 'An ending\'s Completion Report', 'as it is (ending 11); Skip and '
+                                                                                 'Log at its key waits'),
 }
 DUMPED = []
 DUMPED_LAND = []
@@ -7003,6 +7025,14 @@ def original_upright(name, title, pic, cells, notes):
     save(img, name, title, 'originals', side=paras(*notes))
 
 
+def has_report():
+    """The Completion Report's frame beside the look's (the gallery's phone-look), else PXr and LXr are left out."""
+    if LOOK and os.path.exists(os.path.join(LOOK, LOOK_ENDING)):
+        return True
+    print(f'No {LOOK_ENDING} in the look dir: PXr and LXr left out (docs/ui/gallery.md, §9).')
+    return False
+
+
 def ending_report():
     return Image.open(os.path.join(LOOK, LOOK_ENDING)).convert('RGB').resize((1280, 800), Image.LANCZOS)
 
@@ -7034,6 +7064,8 @@ def p20_originals():
     original_upright('PXm', 'the music room as it is', dump(LACQ, 'music-room.png'), ('menu',), [
         'The music room (MMODE), no track playing: ' + sizes_of(MUSIC_BOXES, up) + '.',
         'A long press (the right click) is Stop, as on the PC.'])
+    if not has_report():
+        return
     original_upright('PXr', 'an ending\'s Completion Report as it is', ending_report(), ('menu', 'log', 'skip'), [
         'An ending\'s Completion Report (OVER; ending 11 from `--ending 11`): each character\'s fate, a tap goes on; '
         'its key waits give the bar Log and Skip.',
@@ -7264,6 +7296,8 @@ def p21_originals():
     original_land('LXm', 'the music room as it is', dump(LACQ, 'music-room.png'), False, [
         'The music room, no track playing.',
         sizes_of(MUSIC_BOXES, k).replace('; ', ';\n') + '.'])
+    if not has_report():
+        return
     original_land('LXr', 'an ending\'s Completion Report as it is', ending_report(), True, [
         'An ending\'s Completion Report (ending\n11): a tap goes on; Skip and Log at\nthe left thumb (its key waits).'])
 
@@ -7290,8 +7324,10 @@ def main():
     if GALLERY_MODE:
         if LOOK:                                # PS2's and LS1's picture is the week-18 look's (Ex's scene)
             d2(); d2l(); ls1()
+            pn1(); pn1q(); pr2(); ln3(); lr2()  # over PS2 and LS1
         else:
-            print('No phone-look folder beside the passes: PS2, PS2l and LS1 left out (docs/ui/gallery.md, §9).')
+            print('No phone-look folder beside the passes: PS2, PS2l, LS1, PN1, PN1q, PR2, LN3 and LR2 left out '
+                  '(docs/ui/gallery.md, §9).')
         d2b(); d2m()
         ls1b(); ls1m()
         m1()
@@ -7305,6 +7341,7 @@ def main():
         lo1(); lf2(); lf2e()
         pg2m(); pg2(); pe2(); ped(); per(); pi(); pip(); pir()
         lg2m(); lg2(); le1(); led(); li(); lip(); lir()
+        py2(); ly1(); p20_originals(); p21_originals()
         for tab, entries in (('phone', DUMPED), ('phone-land', DUMPED_LAND)):
             manifest = {'written': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'palette': 'lacquer',
                         'font': 'BizUdGothic', 'touch': True, 'mockup': True, 'entries': entries}
