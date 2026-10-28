@@ -168,7 +168,7 @@ layout: on a phone they show as on the tablet, in the frame (the agent's choice,
 | **L9** | All Data (the graphs as cells in the left side, the scales as chips in the right, the bars' figures drawn again at 2.3 mm); the title as the PC's (Menu in the left side); the import screen on its paper sheet; the original's own screens as round P21 chose. | LG2m, LG2, LE1, LI, LIp, LIr (§23) |
 | **L10** | The landscape phone whole: unattended play with `--phone landscape` from the kept saves through every exercise it has (the deployment, the battle, `--treasure`, `--saveload`, `--scout`, `--dungeon`, `--harem`), the owner's play on the Poco, the docs (phone.md, touch.md, style.md §6, backlog). | — |
 
-**Step F, where it stands (2026-10-28):** built but the speed on the Poco, which waits for the owner's phone by USB.
+**Step F, where it stands (2026-10-28):** done — built, run on the Poco and measured there (below, "The Poco").
 
 - **The device**: `Original.Content/Devices/DeviceLayout` (the enum and `DeviceLayouts.IsPhone` / `Decide`, tested) and
   `godot/Strategy/Device`, which reads it live — the main window followed from `Main` (`Device.Follow`: the layout and
@@ -203,10 +203,38 @@ layout: on a phone they show as on the tablet, in the frame (the agent's choice,
   baseline the L steps change entry by entry. The Lacquer and Touch passes were "same" (110 and 111 entries).
 - **The speed**: `godot/Strategy/FrameTimes`, on on Android and with `--frame-times`: every 10 s the console (logcat,
   tag `godot`) gets the frames of each kind shown — a scene, the map, a battle — their count, mean, 95th percentile and
-  longest interval, and the mean processing time; `Device` logs the screen's size and dpi, the window and the safe area
-  the Poco reports (§7). **To measure:** the Poco by USB (`ANDROID_SERIAL` when the tablet is connected too),
-  `run-android.cmd`, play a scene, the map and a battle for half a minute each, `adb logcat -s godot`; the figures go
-  here.
+  longest interval, and the slowest frame's processing in each second (Godot's `TimeProcess` is that, updated once a
+  second), its median and longest; `Device` logs the screen's size and dpi, the window and the safe area (§7).
+
+**The Poco** (the owner's play, 2026-10-28: the debug build, the week-18 save copied to it; Android 16, HyperOS):
+
+- **The device**: the window 2712 × 1220, the screen at 480 dpi (Android's bucket; the short side reads 64.6 mm, a
+  phone), `PhoneLandscape`. The game is drawn under the cutout: the safe area is (120, 0)-(2592, 1220), the camera's
+  hole **120 px** on the left (the reference's 110 was the mock-ups' guess), 0 on the right and at the foot (Android's
+  safe area does not count the gesture zone), so `PhoneFrame` keeps 120 px on both sides and the reference's 50 at the
+  foot. The process held 1.1-1.7 GB (HyperOS's log).
+- **The speed** — the screen runs at 120 Hz, a frame 8.3 ms:
+
+  | Screen | Frame interval: mean / p95 / longest | Slowest processing a second: median / longest |
+  |---|---|---|
+  | Scenes (the title, the week's start, after the battle) | 8.4-9.8 / 8.3-11.1 / 16-150 ms | 16-45 / 51-313 ms |
+  | The map, held and dragged | 8.8-9.8 / 10-19.4 / 58-108 ms | 9-36 / 52-118 ms |
+  | The map's first seconds (the talks read ahead, 190 ms) | 11.8-18.2 / 23-110 / 133 ms | 158 ms |
+  | The battle, the player's turn | 14.6 / 37.7 / 150 ms | 43 / 459 ms |
+  | The battle, the exchanges | **47.4 / 138-143 / 150 ms** | **146-151 / 178 ms** |
+
+  The scenes and the map run at the screen's rate, a long frame now and then (entering a screen, the read-ahead). **The
+  battle's exchanges run at about 21 frames a second**, a frame of 140-150 ms every few: playable, but the animation
+  stutters. The likely cause, not measured yet: while the engine's surface changes every frame (the exchange's sprites),
+  each frame composes the whole 1280×800 picture per pixel in C# (`GamePresenter.Compose`, the battle's
+  `WindowMask.Compose`) and uploads it as a 4 MB texture (`GameScreen`, `BattleBoardView`). So the battle's speed on the
+  phone is a task of its own (§7: before the screens it touches, L3-L4): profile a battle's frames on the Poco, then
+  move the work that costs (a dirty rectangle, or the palette applied on the GPU).
+- **Found on the way**: on Android 16 a folder `adb push` creates in the app's external folder is the shell user's with
+  no access for others, so the game could not read the pushed game folder (an older Android let it); the Android
+  scripts now open what adb put there to the app (`Grant-AppAccess` in `tools/android-adb.ps1`, run by
+  `export-android.ps1` and `copy-saves.ps1`). Xiaomi's phones also need Developer options → "Install via USB" before
+  adb may install.
 
 ### Upright (steps P0-P9)
 
@@ -234,9 +262,10 @@ layout: on a phone they show as on the tablet, in the frame (the agent's choice,
 
 ## 7. Risks and checks
 
-- **Speed** on the phone (the per-pixel engine surface; §3): measured first, in step F.
-- **The safe area's values** on the Poco may differ from the reference's 110 / 50 px; the frame reads Android's and
-  the fallback serves only the PC.
+- **Speed** on the phone (the per-pixel engine surface; §3): measured in step F — the scenes and the map at the
+  screen's rate, the battle's exchanges at ~21 frames a second (step F, "The Poco"): a task of its own before L3.
+- **The safe area's values**: the Poco reports a hole of 120 px (not the reference's 110) and nothing at the foot; the
+  frame reads Android's, the gesture zone's 50 px kept, and the fallback serves only the PC (step F, "The Poco").
 - **The keyboard**: Android shows it for the comment's `LineEdit` (`SaveLoadView`); how much it covers and whether Godot
   reports it (`DisplayServer.VirtualKeyboardGetHeight`) is checked in the step that builds the editing.
 - **System's rotation lock** (§3): checked on the Poco in P0.

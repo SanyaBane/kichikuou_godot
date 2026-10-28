@@ -109,6 +109,7 @@ if ($PushGame) {
     Invoke-Adb @('shell', 'mkdir', '-p', $remote)
     # The folder's contents, not the folder itself, into the remote one.
     Invoke-Adb @('push', (Join-Path $game '.'), $remote)
+    Grant-AppAccess $remote
 }
 if ($Launch) {
     Write-Host "Starting $package ..."

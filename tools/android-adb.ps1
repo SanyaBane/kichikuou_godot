@@ -38,6 +38,13 @@ function Assert-Device {
     throw 'No device: connect it by USB with USB debugging on (Settings > Developer options).'
 }
 
+# What adb put in the app's external folder opened to the app: a folder adb creates there is adb's (the shell user's)
+# with no access for others, so on Android 16 (the Poco X6 Pro, 2026-10-28) the app could not read the pushed game folder;
+# an older Android let it. adb's folders and files under $Remote become everyone's; the app's own stay as they are.
+function Grant-AppAccess([string]$Remote) {
+    Invoke-Adb @('shell', "find '$Remote' -user shell -type d -exec chmod 777 {} + ; find '$Remote' -user shell -type f -exec chmod 666 {} +")
+}
+
 # The names of the files in a folder on the device (none when it is missing).
 function Get-RemoteFiles([string]$Remote) {
     $listing = & $script:adb shell "ls -1p '$Remote' 2>/dev/null"

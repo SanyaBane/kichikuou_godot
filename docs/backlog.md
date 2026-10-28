@@ -51,7 +51,9 @@ The owner aims at a public release (decision 28, 2026-10-20).
   gesture) a right click at the last touch (`GameScreen.Touch.cs`, `quit_on_go_back=false`; checked on the tablet,
   2026-10-24); the libraries and the Godot project built for `net9.0` for the export (`GodotTargetPlatform`: Godot
   4.7's Android templates take .NET 9 only); the touch mode ([ui/touch.md](ui/touch.md)), played by the owner on the
-  tablet since 2026-10-25. Still open: the speed in play, not measured (the engine surface's per-pixel C# drawing);
+  tablet since 2026-10-25. Still open: the speed in play — measured on the Poco (2026-10-28, ui/phone-build.md, step F,
+  "The Poco"): the scenes and the map at the screen's 120 Hz, the battle's exchanges at ~21 frames a second (likely the
+  engine picture's per-pixel C# composition and its whole upload each frame), a task of its own;
   the hover a touch screen lacks, where the touch mode has not replaced it yet (ui/touch.md, "One by one, after the
   battle and the map"); the screen turning with the device (sensor landscape, 2026-10-24), not yet seen on the
   tablet; the touch mode's later parts, each marked "Not yet on the tablet" in ui/touch.md, and the damage

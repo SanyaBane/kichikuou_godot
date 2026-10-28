@@ -81,6 +81,7 @@ if ($ToDevice) {
     Write-Host "Copying $($pcSaveFiles.Count) save file(s) from $PcSaves to $remote ..."
     Invoke-Adb @('shell', 'mkdir', '-p', $remote)
     Invoke-Adb (@('push') + @($pcSaveFiles | ForEach-Object { $_.FullName }) + @("$remote/"))
+    Grant-AppAccess $remoteFiles
 }
 else {
     if ($remoteSaves.Count -eq 0) { throw "No saves to copy on the device ($remote)." }
