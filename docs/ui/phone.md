@@ -183,12 +183,12 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
     (§21: 5, 6, 1).
 33. **The agent's own choices in rounds P16-P17**, for the owner to confirm: each ledger tab keeps its own sideways
     scroll, which glides (the columns are not stepped); the phone's Back gesture ends Subordinates wherever End stands.
-34. **All Data** (rounds P18-P19, §22-§23): PG1 or PG2 upright, LG1 or LG2 landscape.
-35. **The title** (rounds P18-P19): PE1 or PE2 upright, LE1 or LE2 landscape; the description (PEd, LEd) and the
-    requests slip (PEr) as drawn?
-36. **The import screen** (rounds P18-P19): PI, PIp, PIr and LI, LIp, LIr as drawn?
-37. **The agent's own choices in rounds P18-P19**: the graphs as tabs and the scales as chips, the descriptions on the
-    title's rows, the folder named by its place on Android.
+34. ~~**All Data** (rounds P18-P19, §22-§23): PG1 or PG2 upright, LG1 or LG2 landscape.~~ PG2 and LG2.
+35. ~~**The title** (rounds P18-P19): PE1 or PE2 upright, LE1 or LE2 landscape; the description (PEd, LEd) and the
+    requests slip (PEr) as drawn?~~ PE2 with the buttons' words alone, LE1; PEd, PEr and LEd as drawn.
+36. ~~**The import screen** (rounds P18-P19): PI, PIp, PIr and LI, LIp, LIr as drawn?~~ As drawn.
+37. **The agent's own choices in rounds P18-P19**: the graphs as tabs and the scales as chips (PG2, LG2), the folder
+    named by its place on Android. The owner asked for a list of all the agent's own choices (2026-10-28), with 33.
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
@@ -967,6 +967,11 @@ buttons in the bar at the thumb.
 The agent's own choices, for the owner to confirm: the graphs as tabs and the scales as chips (PG2), the descriptions
 on the title's rows (PE2), the folder named by its place on Android.
 
+**The owner's choices (2026-10-28): PG2, PE2 changed, and PEd, PEr, PI, PIp, PIr as drawn.** PE2 is redrawn in place:
+**no descriptions — each row carries its button's own word alone, in the row's middle** (3.0 mm; rows 7.4 mm, as
+every finger row's); a button's description stays the long press on the picture (PEd). PG1 and PE1 stay in the round's
+sheets only. The chosen ones are on the gallery's upright tab (`pg2-…`, `pe2-…`, `pi-…`).
+
 ## 23. Round P19: All Data, the title and the import screen landscape (2026-10-28)
 
 Drawn by `mock_phone.py --round P19` over the same dumps, on LM1's principle (the frame keeps the layout, our controls in
@@ -1010,3 +1015,7 @@ sheet, the hashes in two lines across it (1.7 mm), the field at the left, the st
 folder** at the right thumb.
 
 With these two rounds every screen of ours has a base version in both orientations.
+
+**The owner's choices (2026-10-28): LG2 and LE1, and LEd, LI, LIp, LIr as drawn** — in landscape the title is the
+PC's alone, its characters the targets (a tap, a long press for the description), Menu in the left side. LG1 and LE2
+stay in the round's sheets only. The chosen ones are on the gallery's landscape tab (`lg2-…`, `le1-…`, `li-…`).

@@ -384,7 +384,7 @@ wait, the command panel, a province), the battle PB3 (the player's turn, the ret
 P7's scout report, strategy, results plate and fighter's line, round P16's opening PB4o3) and rounds P3-P6's choices
 (2026-10-27: the deployment table PD2, Subordinates PU1 — both since round P16 with its ledger and End —, the enemy
 attack PA1, the week report PW1, Harem PH2, Treasure PT2, Save/Load PL2, the options PO1 with round P17's Display tab
-PO1o, the dungeon's ladder PF1) — from
+PO1o, the dungeon's ladder PF1; round P18's All Data PG2, the title PE2 and the import screen PI, 2026-10-28) — from
 the touch and lacquer passes' current pictures and the map's own pictures, without the mock-ups' pink notes, each in a
 phone's body, into `phone/current` with a `manifest.json` as a pass writes it (`"mockup": true`). Each drawing is compared
 with the former one as a dump is (`GalleryScreen.Compare`: a channel more than 8 apart, changed past 600 pixels), so a
@@ -398,6 +398,6 @@ so. When the owner chooses another base version, its entry goes into the script'
 when a phone screen is built, its mock-up leaves the tab for a pass of its own.
 
 The landscape phone's choices (from round P8, 2026-10-27: the map LM1, the battle LB2, the deployment table LD2,
-Subordinates LU1) are a second tab,
+Subordinates LU1; round P19's All Data LG2, the title LE1 and the import screen LI, 2026-10-28) are a second tab,
 **Smartphone, landscape (mock-ups)**, drawn by the same run into `phone-land/current` (`GALLERY_ENTRIES_LAND`), its grid
 wider for the wide pictures; `-Phone` and `-PhoneOnly` draw both tabs.

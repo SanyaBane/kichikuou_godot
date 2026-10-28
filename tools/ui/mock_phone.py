@@ -315,6 +315,18 @@ GALLERY_ENTRIES = {
                                                                'Landscape 1, Landscape 2 (round P17)'),
     'PF1': ('pf1-ladder', 'Dungeon — PF1', 'The floor ladder', 'the tablet\'s rail at the right thumb'),
     'PF1e': ('pf1-entry', 'Dungeon — PF1', 'Before a search', 'Start Search in Descend\'s corner'),
+    # Round P18's choices (owner, 2026-10-28; docs/ui/phone.md, §22): All Data, the title (PE2 changed), the import.
+    'PG2m': ('pg2-data', 'All Data — PG2', 'The menu of graphs', 'the map in miniature on top, the graphs as finger '
+                                                                 'rows'),
+    'PG2': ('pg2-funds', 'All Data — PG2', 'A graph', 'All Funds at the phone\'s type; the graphs as tabs, the scales '
+                                                      'as chips'),
+    'PE2': ('pe2-title', 'Title — PE2', 'The title', 'after a clear: a row for each button, its word alone'),
+    'PEd': ('pe2-description', 'Title — PE2', 'A button\'s description', 'a long press on Start: window 113 under the '
+                                                                         'picture'),
+    'PEr': ('pe2-requests', 'Title — PE2', 'The requests slip', 'the slip in the middle; a tap goes on'),
+    'PI': ('pi-import', 'Import — PI', 'A folder chosen', 'the paper card in the middle, Back | Import in the bar'),
+    'PIp': ('pi-progress', 'Import — PI', 'Importing', 'the decompile\'s bar (made up: 45%)'),
+    'PIr': ('pi-refused', 'Import — PI', 'Another version\'s file', 'the hashes each on a line of their own (made up)'),
 }
 # The gallery's landscape phone tab (phone-land): the owner's chosen landscape base versions (round P8 on).
 GALLERY_ENTRIES_LAND = {
@@ -353,6 +365,15 @@ GALLERY_ENTRIES_LAND = {
     'LS1': ('ls1-speech', 'Scenes — LS1', 'A speech', 'the frame as on the PC, Menu, Skip and Log in the left side'),
     'LS1b': ('ls1-cg', 'Scenes — LS1', 'Window 131 over its CG', 'the CG (masked) the frame\'s height'),
     'LS1m': ('ls1-menu', 'Scenes — LS1', 'A dialogue menu', 'the rows at the frame\'s right foot (made up)'),
+    # Round P19's choices (owner, 2026-10-28; docs/ui/phone.md, §23): All Data, the title, the import.
+    'LG2m': ('lg2-data', 'All Data — LG2', 'The menu of graphs', 'the frame kept, the graphs in the left side'),
+    'LG2': ('lg2-funds', 'All Data — LG2', 'A graph', 'its figures at the phone\'s type; the scales in the right side'),
+    'LE1': ('le1-title', 'Title — LE1', 'The title', 'the frame as on the PC, after a clear; a tap on a character'),
+    'LEd': ('le1-description', 'Title — LE1', 'A button\'s description', 'window 113 at its place, LS1\'s side'),
+    'LI': ('li-import', 'Import — LI', 'A folder chosen', 'the paper sheet in the frame, the steps in two columns'),
+    'LIp': ('li-progress', 'Import — LI', 'Importing', 'the decompile\'s bar (made up: 45%)'),
+    'LIr': ('li-refused', 'Import — LI', 'Another version\'s file', 'the hashes in two lines across the sheet (made '
+                                                                    'up)'),
 }
 DUMPED = []
 DUMPED_LAND = []
@@ -6059,22 +6080,20 @@ def pe1():
 
 
 def title_row(d, box, n, red=False):
+    """A title button's row: its own word in the row's middle (the owner's PE2, 2026-10-28: no description)."""
     x0, y0, x1, y1 = box
     if red:
         red_button(d, box, '')
     else:
         d.rectangle(box, fill=ROW, outline=DIM_GOLD, width=3)
-    d.text((x0 + 34, (y0 + y1) / 2), TITLE_WORDS[n], font=fit(d, TITLE_WORDS[n], BRUSH, 48, 270), fill=NAME, anchor='lm')
-    lines = wrap(d, ' '.join(TITLE_LINES[n]), GOTHIC(34), x1 - x0 - 360)
-    ty = (y0 + y1) / 2 - (len(lines) - 1) * 22
-    for i, line in enumerate(lines):
-        d.text((x0 + 330, ty + i * 44), line, font=GOTHIC(34), fill=TEXT if red else QUIET, anchor='lm')
+    d.text(((x0 + x1) / 2, (y0 + y1) / 2), TITLE_WORDS[n], font=BRUSH(52), fill=NAME, anchor='mm')
 
 
 def pe2():
+    """PE2 as the owner chose it (2026-10-28): the rows carry the buttons' words alone, in their middle."""
     img, d = phone()
     backdrop(img, (0, 0, PW, PH))
-    h, gap = 146, 12
+    h, gap = 130, 12
     top = BAR[0] - 20 - len(TITLE_ORDER) * h - (len(TITLE_ORDER) - 1) * gap
     py = (TOP + top - 30) // 2 - 381
     img.paste(at_width(dump(LACQ, 'title-clears.png')), (0, py))
@@ -6085,12 +6104,11 @@ def pe2():
     bottom_bar(d, cells=('menu',))
     reach(img, label=False)
     save(img, 'PE2', 'our rows under the picture', 'title', side=paras(
-        'PE2 — the picture at the screen\'s width on top; under it a row for each button the title has unlocked, '
-        'the button\'s own word and its description (the right click\'s text, the script\'s words) as the row\'s '
-        f'lines: rows {mm(h)}, the words {mm(48)}, the descriptions {mm(34)}.',
+        'PE2 as the owner chose it: the picture at the screen\'s width on top; under it a row for each button the '
+        f'title has unlocked, the button\'s own word in the row\'s middle ({mm(52)}); rows {mm(h)}.',
         'A row is the click on its button; Start red at the right thumb, Load over it, the extras above, Saitou\'s '
         'joke on top. A first launch has three rows: Alice, Load, Start.',
-        'The picture keeps its own targets (a tap, a long press) as PE1\'s.'))
+        'The picture keeps its own targets: a tap, and a long press for the description (PEd).'))
 
 
 def ped():
@@ -6542,6 +6560,8 @@ def main():
         la2(); la2n(); lw1()
         lh2(); lt2(); ll1()
         lo1(); lf2(); lf2e()
+        pg2m(); pg2(); pe2(); ped(); per(); pi(); pip(); pir()
+        lg2m(); lg2(); le1(); led(); li(); lip(); lir()
         for tab, entries in (('phone', DUMPED), ('phone-land', DUMPED_LAND)):
             manifest = {'written': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'palette': 'lacquer',
                         'font': 'BizUdGothic', 'touch': True, 'mockup': True, 'entries': entries}
