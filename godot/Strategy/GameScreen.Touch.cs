@@ -31,10 +31,18 @@ public partial class GameScreen
     /// <summary>
     /// Android's Back (the button or the gesture; project.godot keeps it from quitting) is a right click where the
     /// last touch left the pointer: the original cancels with the right button, and a touch screen has none. It goes
-    /// through Godot's input, so the script's reads and our own screens see it as a mouse's.
+    /// through Godot's input, so the script's reads and our own screens see it as a mouse's. While a save's comment is
+    /// written it leaves the comment as it was (the PC's Esc), not the save screen.
     /// </summary>
-    private void BackAsRightClick() =>
+    private void BackAsRightClick()
+    {
+        if (_saveView.Visible && _saveView.Editing)
+        {
+            _saveView.CancelEdit();
+            return;
+        }
         _ = AutoViewClickAsync(TouchMode.Pointer(GetViewport()), MouseButton.Right);
+    }
 
     /// <summary>
     /// The map's Commands button tapped (the touch mode, owner's M3): the right click that opens the command panel, at

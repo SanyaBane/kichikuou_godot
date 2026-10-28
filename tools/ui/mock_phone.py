@@ -348,10 +348,9 @@ GALLERY_ENTRIES = {
 # The gallery's landscape phone tab (phone-land): the owner's chosen landscape base versions (round P8 on), those not
 # built yet; a built one leaves for the real pass "Smartphone, landscape" (docs/ui/phone-build.md: L1 took LS1, LS1b,
 # LS1m, LW1, LEd, LN3 and LR2; L2 LM1a, LM1b and LM1c; L3 LB2, LB2r1 and LB2x; L4 LB3o1, LB3s, LB3c, LB3r and LB3b;
-# L5 LD2, LU1 and LU1q; L6 LA2 and LA2n; L7a LH2 and LT2).
+# L5 LD2, LU1 and LU1q; L6 LA2 and LA2n; L7a LH2 and LT2; L7b LL1 and LY1).
 GALLERY_ENTRIES_LAND = {
-    # Round P11's choices (owner, 2026-10-28; docs/ui/phone.md, §15); LH2 and LT2 built (step L7a).
-    'LL1': ('ll1-saves', 'Save/Load — LL1', 'Load', 'the PC\'s split: the list left, the save\'s page right'),
+    # Round P11's choices (owner, 2026-10-28; docs/ui/phone.md, §15): LH2 and LT2 built (step L7a), LL1 (step L7b).
     # Round P12's choices (owner, 2026-10-28; docs/ui/phone.md, §16).
     'LO1': ('lo1-options', 'Options — LO1', 'The options window', 'the paper sheet across the width, its tabs on top'),
     'LF2': ('lf2-ladder', 'Dungeon — LF2', 'The floor ladder', 'the tablet\'s rail kept in the frame'),
@@ -364,8 +363,7 @@ GALLERY_ENTRIES_LAND = {
     'LIp': ('li-progress', 'Import — LI', 'Importing', 'the decompile\'s bar (made up: 45%)'),
     'LIr': ('li-refused', 'Import — LI', 'Another version\'s file', 'the hashes in two lines across the sheet (made '
                                                                     'up)'),
-    # Round P21's choices (owner, 2026-10-28; docs/ui/phone.md, §26).
-    'LY1': ('ly1-comment', 'Save/Load — LL1', 'Editing a comment', 'the comment\'s own card over Android\'s keyboard'),
+    # Round P21's choices (owner, 2026-10-28; docs/ui/phone.md, §26); LY1 built (step L7b).
     'LXf': ('lx-fortune', 'The original\'s screens', 'Fortune Check', 'as it is in the frame (made up: three fates '
                                                                      'seen)'),
     'LXc': ('lx-gallery', 'The original\'s screens', 'The CG gallery', 'as it is (masked in the agents\' dumps)'),

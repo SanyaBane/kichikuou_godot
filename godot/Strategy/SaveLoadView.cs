@@ -2,6 +2,7 @@ using Godot;
 using Kichikuou.Engine.Script;
 using Kichikuou.Game.Battles;
 using Kichikuou.Original.Content;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.Content.Strategy;
 
 namespace Kichikuou.Game.Strategy;
@@ -28,11 +29,11 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
 {
     private static UiPalette Ui => UiPalettes.For(UiPart.Screens);
 
-    // hits: the button, the tabs, the lists' switch, Delete and its answers, Edit, New save, the sweep and its answers,
-    // Back, and from RowHit the rows shown, top to bottom
+    // hits: the button, the tabs, the lists' switch, Delete and its answers, Edit (the phone's card: Cancel, Keep), New
+    // save, the sweep and its answers, Back, and from RowHit the rows shown, top to bottom
     private const int ButtonHit = 200, TabHit = 100, SideHit = 400, DeleteHit = 500, DeleteYesHit = 501,
-        DeleteNoHit = 502, EditHit = 600, NewHit = 700, SweepHit = 800, SweepYesHit = 801, SweepNoHit = 802, BackHit = 900,
-        RowHit = 1000;
+        DeleteNoHit = 502, EditHit = 600, CancelHit = 601, KeepHit = 602, NewHit = 700, SweepHit = 800, SweepYesHit = 801,
+        SweepNoHit = 802, BackHit = 900, RowHit = 1000;
 
     private static readonly Rect2 PanelRect = new(30, 24, 1220, 752);
     private static readonly Rect2 MapRect = new(426, 118, 800, 333);
@@ -61,6 +62,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
     private readonly FontVariation _cinzel = Lacquer.Cinzel(700), _cinzelLight = Lacquer.Cinzel(600);
     private readonly Dictionary<string, ImageTexture?> _maps = [];
     private readonly LineEdit _edit;
+    private readonly Layer _backdrop;                   // the phone's wave backdrop over the whole screen, behind the view
     private FontFile _gothic;
     private SaveList? _list;
     private IReadOnlyList<SaveId?> _items = [];
@@ -94,8 +96,23 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
                 _edit.AcceptEvent();
             }
         };
-        _edit.FocusExited += () => EndEdit(keep: true);
+        _edit.FocusExited += () =>
+        {
+            if (_phone is null)                                         // the phone's card is answered by its buttons
+                EndEdit(keep: true);
+        };
+        _edit.TextChanged += _ =>
+        {
+            if (_phone is not null)
+                QueueRedraw();                                          // the card's count
+        };
         AddChild(_edit);
+        _backdrop = new Layer(c =>
+        {
+            c.DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
+            Ui.DrawWaveBackdrop(c, _k, c.Size / _k);
+        }) { ShowBehindParent = true, Visible = false };
+        AddChild(_backdrop);
     }
 
     /// <summary>Option → Display: the comment's field in the palette's ink.</summary>
@@ -185,15 +202,29 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         Visible = false;
     }
 
-    /// <summary>Lays the layer over the screen's picture (<paramref name="area"/>, in its parent's coordinates).</summary>
+    /// <summary>
+    /// Lays the layer over the screen's picture (<paramref name="area"/>, in its parent's coordinates); on the phone held
+    /// landscape over the whole screen in its frame's layout pixels (LL1).
+    /// </summary>
     public void Place(Rect2 area)
     {
-        float k = area.Size.X / 1280f;
-        if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f)
+        var phone = Device.Landscape(this);
+        if (phone is not null)
+            area = new Rect2(Vector2.Zero, GetParentAreaSize());
+        float k = phone?.Scale ?? area.Size.X / 1280f;
+        if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f && phone == _phone)
             return;
         Position = area.Position;
         Size = area.Size;
         _k = k;
+        bool turned = phone != _phone;
+        _phone = phone;
+        _backdrop.Visible = phone is not null;
+        _backdrop.Size = area.Size;
+        _backdrop.QueueRedraw();
+        if (turned && _chosen is { } chosen)
+            ScrollTo(chosen);                                           // the layout's rows in view differ
+        ScrollBy(0);
         PlaceEdit();
         QueueRedraw();
     }
@@ -205,29 +236,29 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         Rows().FirstOrDefault(r => r.Id == id) is { Id: not null } row ? Global(row.Rect.GetCenter()) : null;
 
     /// <summary>The New save row's centre in global coordinates.</summary>
-    public Vector2 NewCentre => Global(NewRect.GetCenter());
+    public Vector2 NewCentre => Global(NewBox.GetCenter());
 
     /// <summary>A tab's centre in global coordinates.</summary>
-    public Vector2 TabCentre(SaveList list) => Global(TabRect(list).GetCenter());
+    public Vector2 TabCentre(SaveList list) => Global(TabBox(list).GetCenter());
 
     /// <summary>The lists' switch: the manual saves' half or the auto-saves'.</summary>
-    public Vector2 SideCentre(bool auto) => Global(SideRect(auto).GetCenter());
+    public Vector2 SideCentre(bool auto) => Global(SideBox(auto).GetCenter());
 
     /// <summary>The red button's centre in global coordinates.</summary>
-    public Vector2 ButtonCentre => Global(ButtonRect.GetCenter());
+    public Vector2 ButtonCentre => Global(ButtonBox.GetCenter());
 
     /// <summary>Delete's centre, and its question's answers.</summary>
-    public Vector2 DeleteCentre => Global(DeleteRect.GetCenter());
+    public Vector2 DeleteCentre => Global(DeleteBox.GetCenter());
 
-    public Vector2 DeleteAnswerCentre(bool yes) => Global((yes ? YesRect : NoRect).GetCenter());
+    public Vector2 DeleteAnswerCentre(bool yes) => Global((yes ? YesBox : NoBox).GetCenter());
 
     /// <summary>Back's centre in global coordinates.</summary>
-    public Vector2 BackCentre => Global(BackRect.GetCenter());
+    public Vector2 BackCentre => Global(BackBox.GetCenter());
 
     /// <summary>The sweep's centre, and its question's answers.</summary>
-    public Vector2 SweepCentre => Global(SweepRect.GetCenter());
+    public Vector2 SweepCentre => Global(SweepBox.GetCenter());
 
-    public Vector2 SweepAnswerCentre(bool yes) => Global((yes ? SweepYesRect : SweepNoRect).GetCenter());
+    public Vector2 SweepAnswerCentre(bool yes) => Global((yes ? SweepYesBox : SweepNoBox).GetCenter());
 
     /// <summary>Whether the sweep's question is open.</summary>
     public bool SweepAsked => _sweep;
@@ -236,10 +267,16 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
     public int UncommentedCount => SaveSlots.Uncommented(_shelf.Manuals).Count;
 
     /// <summary>Edit's centre in global coordinates.</summary>
-    public Vector2 EditCentre => Global(EditRect.GetCenter());
+    public Vector2 EditCentre => Global(EditBox.GetCenter());
 
     /// <summary>The comment's field while it is written (unattended play types into it).</summary>
     public LineEdit CommentField => _edit;
+
+    /// <summary>Whether the comment is being written.</summary>
+    public bool Editing => _editing;
+
+    /// <summary>The comment being written left as it was (Android's Back).</summary>
+    public void CancelEdit() => EndEdit(keep: false);
 
     private Vector2 Global(Vector2 layout) => GetGlobalTransformWithCanvas() * (layout * _k);
 
@@ -293,7 +330,10 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
     /// <summary>The list shown, top to bottom: the auto-saves or the manual saves, newest first.</summary>
     private IReadOnlyList<SaveSlot> Shown => _autoSide ? _shelf.Autos : _manuals;
 
-    private int RowsShown => (int)((ListBottom - RowsTop) / RowPitch);
+    private int RowsShown => _phone is { } f ? PhoneSaves.RowsShown(f, NewRowShown) : (int)((ListBottom - RowsTop) / RowPitch);
+
+    /// <summary>Whether New save heads the rows: the save list's manual saves.</summary>
+    private bool NewRowShown => !_autoSide && _list == SaveList.Save;
 
     /// <summary>The first row's top: under New save in the save list's manual saves.</summary>
     private float RowsTop => ListTop + (!_autoSide && _list == SaveList.Save ? NewH + 6 : 0);
@@ -329,7 +369,8 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
     {
         var shown = Shown;
         for (int i = _scroll, place = 0; i < shown.Count && place < RowsShown; i++, place++)
-            yield return (shown[i].Id, new Rect2(ListX, RowsTop + place * RowPitch, RowW, RowH));
+            yield return (shown[i].Id, _phone is { } f ? Phone.Rect(PhoneSaves.Row(f, place, NewRowShown))
+                : new Rect2(ListX, RowsTop + place * RowPitch, RowW, RowH));
     }
 
     private static Rect2 NewRect => new(ListX, ListTop, RowW, NewH);
@@ -337,6 +378,34 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
     private static Rect2 TabRect(SaveList list) => new(PanelRect.End.X - 220 + (list == SaveList.Save ? 96 : 0), PanelRect.Position.Y + 11, 90, 30);
 
     private static Rect2 SideRect(bool auto) => new(ListX + (auto ? ListW / 2 + 2 : 0), SideY, ListW / 2 - 2, SideH);
+
+    // The places a press and unattended play's points look at, in layout pixels: the PC's, or on the phone PhoneSaves'.
+
+    private PhoneUnits Phone => new(_phone!);
+
+    private Rect2 NewBox => _phone is { } f ? Phone.Rect(PhoneSaves.New(f)) : NewRect;
+
+    private Rect2 TabBox(SaveList list) => _phone is { } f ? Phone.Rect(PhoneSaves.Chip(f, list == SaveList.Save)) : TabRect(list);
+
+    private Rect2 SideBox(bool auto) => _phone is { } f ? Phone.Rect(PhoneSaves.Tab(f, auto)) : SideRect(auto);
+
+    private Rect2 ButtonBox => _phone is { } f ? Phone.Rect(PhoneSaves.Button(f)) : ButtonRect;
+
+    private Rect2 BackBox => _phone is { } f ? Phone.Rect(PhoneSaves.Back(f)) : BackRect;
+
+    private Rect2 DeleteBox => _phone is { } f ? Phone.Rect(PhoneSaves.Delete(f)) : DeleteRect;
+
+    private Rect2 EditBox => _phone is { } f ? Phone.Rect(PhoneSaves.Edit(f, PageLines)) : EditRect;
+
+    private Rect2 SweepBox => _phone is { } f ? Phone.Rect(PhoneSaves.Sweep(f)) : SweepRect;
+
+    private Rect2 YesBox => _phone is { } f ? Phone.Rect(PhoneSaves.Answer(f, PhoneSaves.DeleteQuestion(f), yes: true)) : YesRect;
+
+    private Rect2 NoBox => _phone is { } f ? Phone.Rect(PhoneSaves.Answer(f, PhoneSaves.DeleteQuestion(f), yes: false)) : NoRect;
+
+    private Rect2 SweepYesBox => _phone is { } f ? Phone.Rect(PhoneSaves.Answer(f, PhoneSaves.SweepQuestion(f), yes: true)) : SweepYesRect;
+
+    private Rect2 SweepNoBox => _phone is { } f ? Phone.Rect(PhoneSaves.Answer(f, PhoneSaves.SweepQuestion(f), yes: false)) : SweepNoRect;
 
     /// <summary>The chosen save's item in the script's menu, or 0 when the menu has none for it (an auto-save in Save).</summary>
     private int ItemOfChosen
@@ -359,28 +428,30 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
     private int HitAt(Vector2 window)
     {
         var at = window / _k;
+        if (_phone is not null && _editing)
+            return CardHitAt(at);
         if (_confirm)
-            return YesRect.HasPoint(at) ? DeleteYesHit : NoRect.HasPoint(at) ? DeleteNoHit : 0;
+            return YesBox.HasPoint(at) ? DeleteYesHit : NoBox.HasPoint(at) ? DeleteNoHit : 0;
         if (_sweep)
-            return SweepYesRect.HasPoint(at) ? SweepYesHit : SweepNoRect.HasPoint(at) ? SweepNoHit : 0;
-        if (!_autoSide && UncommentedCount > 0 && SweepRect.HasPoint(at))
+            return SweepYesBox.HasPoint(at) ? SweepYesHit : SweepNoBox.HasPoint(at) ? SweepNoHit : 0;
+        if (!_autoSide && UncommentedCount > 0 && SweepBox.HasPoint(at))
             return SweepHit;
-        if (ButtonShown && ButtonRect.HasPoint(at))
+        if (ButtonShown && ButtonBox.HasPoint(at))
             return ButtonHit;
-        if (BackRect.HasPoint(at))
+        if (BackBox.HasPoint(at))
             return BackHit;
-        if (ChosenSave is not null && DeleteRect.HasPoint(at))
+        if (ChosenSave is not null && DeleteBox.HasPoint(at))
             return DeleteHit;
-        if (ChosenSave is { Id: not null } && !_editing && EditRect.HasPoint(at))
+        if (ChosenSave is { Id: not null } && !_editing && EditBox.HasPoint(at))
             return EditHit;
         if (_tabs)
             foreach (var list in (SaveList[])[SaveList.Load, SaveList.Save])
-                if (list != _list && TabRect(list).HasPoint(at))
+                if (list != _list && TabBox(list).HasPoint(at))
                     return TabHit + (int)list;
         foreach (bool auto in (bool[])[false, true])
-            if (auto != _autoSide && SideRect(auto).HasPoint(at))
+            if (auto != _autoSide && SideBox(auto).HasPoint(at))
                 return SideHit + (auto ? 1 : 0);
-        if (!_autoSide && _list == SaveList.Save && NewRect.HasPoint(at))
+        if (NewRowShown && NewBox.HasPoint(at))
             return NewHit;
         int place = 0;
         foreach (var (_, rect) in Rows())
@@ -424,7 +495,9 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
                 }
                 break;
             case InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: false }:
-                if (_confirm || _sweep)
+                if (_editing && _phone is not null)
+                    EndEdit(keep: false);                               // Back over the comment's card: Cancel
+                else if (_confirm || _sweep)
                 {
                     _confirm = _sweep = false;
                     QueueRedraw();
@@ -437,7 +510,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
                 if (button.Pressed)
                 {
                     _pressed = at;
-                    if (_editing)
+                    if (_editing && _phone is null)
                         EndEdit(keep: true);                            // a click off the field keeps what is written
                 }
                 else if (at != 0 && at == _pressed)
@@ -495,6 +568,12 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
                 break;
             case EditHit:
                 StartEdit();
+                break;
+            case CancelHit:
+                EndEdit(keep: false);
+                break;
+            case KeepHit:
+                EndEdit(keep: true);
                 break;
             case NewHit:
                 _chosen = null;
@@ -583,6 +662,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         _editing = true;
         _edit.Text = save.Comment;
         _edit.Visible = true;
+        WatchKeyboard();
         PlaceEdit();
         _edit.GrabFocus();
         _edit.CaretColumn = _edit.Text.Length;
@@ -607,6 +687,11 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
 
     private void PlaceEdit()
     {
+        if (_phone is { } phone)
+        {
+            PlacePhoneEdit(phone);
+            return;
+        }
         var box = CommentRect.Grow(-4);
         _edit.Position = new Vector2(box.Position.X + 6, box.Position.Y) * _k;
         _edit.Size = new Vector2(box.Size.X - 12, box.Size.Y) * _k;
@@ -645,6 +730,11 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         if (_list is not { } list)
             return;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
+        if (_phone is { } phone)
+        {
+            DrawPhone(new PhoneUnits(phone), list);
+            return;
+        }
         DrawRect(new Rect2(0, 0, 1280, 800), new Color(0, 0, 0, 120 / 255f));
         Ui.DrawPanel(this, PanelRect, _k);
         bool save = list == SaveList.Save;
@@ -934,11 +1024,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
             DrawComment(held!, cy);
             if (held!.IsAuto && !_editing)                              // what its load does, under the comment
             {
-                (string, string) lines = held.Kind == SlotKind.TurnEnd
-                    ? ("Written when Turn END was chosen. Loading it brings back the map with the week's commands",
-                        "as they were then; Turn END goes on to the nations' turns.")
-                    : ("Written at the start of the week. Loading it plays the week's start again:",
-                        "the budget, then the commands.");
+                var lines = LoadLines(held);
                 Text(_gothic, 14, PageX, cy + 77, lines.Item1, Ui.Quiet);
                 Text(_gothic, 14, PageX, cy + 97, lines.Item2, Ui.Quiet);
             }
@@ -956,6 +1042,13 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         if (held is not null)
             DrawDelete();
     }
+
+    /// <summary>An auto-save's two lines on what its load does.</summary>
+    private static (string, string) LoadLines(SaveSlot held) => held.Kind == SlotKind.TurnEnd
+        ? ("Written when Turn END was chosen. Loading it brings back the map with the week's commands",
+            "as they were then; Turn END goes on to the nations' turns.")
+        : ("Written at the start of the week. Loading it plays the week's start again:",
+            "the budget, then the commands.");
 
     /// <summary>Back at the foot's left, as a right click: a row box with a gold arrow.</summary>
     private void DrawBack()
@@ -980,15 +1073,16 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         Text(_cinzel, 15, x + 22, y + 1, label, colour);
     }
 
-    /// <summary>A small waste bin, 14 wide and 16 high, its top left at (<paramref name="x"/>, <paramref name="y"/>).</summary>
-    private void DrawBin(float x, float y, Color colour)
+    /// <summary>A small waste bin, 14 wide and 16 high (times <paramref name="s"/>), its top left at (<paramref name="x"/>, <paramref name="y"/>).</summary>
+    private void DrawBin(float x, float y, Color colour, float s = 1)
     {
-        float w = Line(1.5f), thin = Line(1);
-        DrawLine(new(x, y + 3), new(x + 14, y + 3), colour, w);
-        DrawLine(new(x + 5, y), new(x + 9, y), colour, w);
-        DrawPolyline([new(x + 2, y + 5), new(x + 3, y + 16), new(x + 11, y + 16), new(x + 12, y + 5)], colour, w);
-        DrawLine(new(x + 5.5f, y + 7.5f), new(x + 5.5f, y + 13.5f), colour, thin);
-        DrawLine(new(x + 8.5f, y + 7.5f), new(x + 8.5f, y + 13.5f), colour, thin);
+        float w = Line(1.5f * s), thin = Line(s);
+        Vector2 At(float dx, float dy) => new(x + dx * s, y + dy * s);
+        DrawLine(At(0, 3), At(14, 3), colour, w);
+        DrawLine(At(5, 0), At(9, 0), colour, w);
+        DrawPolyline([At(2, 5), At(3, 16), At(11, 16), At(12, 5)], colour, w);
+        DrawLine(At(5.5f, 7.5f), At(5.5f, 13.5f), colour, thin);
+        DrawLine(At(8.5f, 7.5f), At(8.5f, 13.5f), colour, thin);
     }
 
     /// <summary>The manual save's comment on its slip, with Edit; while it is written, the field over the slip (paper).</summary>

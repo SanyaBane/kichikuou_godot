@@ -486,8 +486,8 @@ on Oaks (6), the debug build):
 - **Unattended play**: `--phone landscape --turn-end --scout` headless from the week-18 save to its deployment picker runs
   as before (Ninja Scout on Ys (5), Back from the deployment screen, the interception).
 
-**Step L7, where it stands (2026-10-28):** split in two. **L7a (Harem and Treasure) is built, awaiting the owner's look on
-the phone**; L7b (Save/Load as LL1 and the comment's editing as LY1) is next.
+**Step L7, where it stands (2026-10-28):** split in two, both built. **L7a (Harem and Treasure) and L7b (Save/Load as LL1,
+the comment's editing as LY1) are awaiting the owner's look on the phone.** L7a:
 
 - **The model** (`Original.Content/Devices/PhonePickers`, tested in `PhonePickersTests`): the places at the mock-ups'
   figures (`lh2`, `lt2`, `folded_grid`, `column_title`, `girl_details`, `item_details`, `harem_cell`, `treasure_cell_two`)
@@ -516,6 +516,50 @@ the phone**; L7b (Save/Load as LL1 and the comment's editing as LY1) is next.
   match LH2 and LT2 (docs/ui/gallery.md, §9), which left `GALLERY_ENTRIES_LAND`.
 - **Unattended play**: `--phone landscape` headless from the week-18 save to its deployment picker with `--treasure` (our
   Treasure screen clicked through) and with `--harem 6` runs as before.
+
+L7b:
+
+- **The model** (`Original.Content/Devices/PhoneSaves`, tested in `PhoneSavesTests`): the places at the mock-ups' figures
+  (`ll1`, `land_save_list`, `save_row`, `land_save_page`, `load_save_chips`, `land_back`, `bin_button`, `ly1`) in the canvas's
+  units — the list at the left (884 wide from the hole's strip + 6) with the title band (the divider at 110), Load | Save
+  (200 × 80) at its right, the lists' tabs (96 high from 124), the heading with the sweep (440 × 64) and the rows (104 high,
+  10 apart, from 320 to 10 over the gesture zone: seven in view, six under New save, 88 high, in Save), the scroll bar's
+  groove 14 in from the list's right; the page from 40 right of the list to the hole's strip — its title band (100, Delete
+  240 × 84 at its right), the map at its width cut at its foot for the figures (two rows of three, 92 apart) and the comment
+  (its box 100 high, Edit 204 wide; an auto-save's two lines 40 apart under it, the map cut 94 lower for them), Back (360)
+  | the red button 150 high 10 over the gesture zone; Delete's question (900 × 250) hanging under it, the sweep's (1000 ×
+  250) right of it; the comment's card (360 high) 24 over the keyboard Android reports, else over the mock-up's 650 of the
+  1220 — the field in one line (130 high), the count under its right, Cancel | Keep (330 × 130). A longer screen widens
+  the page.
+- **The views**, keyed by the live device: `SaveLoadView.Phone.cs` draws the screen over the whole screen on the wave
+  backdrop (a layer behind the view, drawn once), the places a press and unattended play's points look at are
+  `PhoneSaves`' there (`SaveLoadView`'s `…Box` members), a finger scrolls the rows at the phone's pitch
+  (`SaveLoadView.Touch.cs`). Edit raises the card over the dimmed screen with the comment's field in it; Cancel, Keep, the
+  keyboard's ✓ (Enter) and Back answer it, a tap elsewhere does nothing.
+- **The keyboard** (§7): Godot's Android field asks for `IME_FLAG_NO_EXTRACT_UI | IME_ACTION_DONE` (its `GodotEditText`,
+  read from the 4.7.2 export template's `godot-lib`), so Android shows no full-screen editor held landscape (LY2 does not
+  happen) and the keyboard's ✓ is Done, which Godot sends as Enter. The card follows the height
+  `DisplayServer.VirtualKeyboardGetHeight` reports (a PC playing a phone has none: the mock-up's place); the first height
+  a launch sees is logged ("Android's keyboard is … px high of the window's …") — the Poco's figure is to be read from
+  its log at the owner's look. Back with the keyboard up closes it (Android's own): the card takes a keyboard reported up
+  and then down for 0.4 s, nothing pressed, for Back and leaves the comment as it was; Back over the card (the keyboard
+  down) does the same (`GameScreen.BackAsRightClick`, on the tablet too, where Back left the save screen before).
+- **The agent's choices**, for the owner to confirm: the rows' date and time in the game's font as LL1 drew them (the PC's
+  date is Cinzel), the time quiet; the chosen row, list tab and chip in the PC's vermilion frame (LL1 drew the chosen row
+  and tab gold, the chosen chip red); the groove stays when every save fits, as the PC's; New save over the rows in Save
+  (LL1 drew Load only); an auto-save's kind on its tag left of the time, Auto and its kind after the page's title, its two
+  lines on its load under the comment, the map cut lower by them (LL1 drew no auto-save); in Save what a save writes
+  ("Saving: …") as a line under the red button's word (the PC has it beside the button), an auto-save's button greyed as
+  on the PC; Delete's and the sweep's questions in the PC's words at the phone's sizes (LL1 drew neither); the card's
+  title "No. 3 · LP 3 · Month 4 · Week 4" (an auto-save's "Turn Start auto-save · …"), a tap off the card doing nothing
+  (the PC's click off the field keeps).
+- **The gallery**: the PC and touch passes same (110 and 111 entries); the phone pass's `save-load…` entries match LL1 and
+  LY1 (`save-load-comment`: the card where LY1 has it, no keyboard drawn), which left `GALLERY_ENTRIES_LAND`.
+- **Unattended play**: `--phone landscape --saveload` headless from the week-18 save to its deployment picker clicks
+  through the whole visit at the phone's places (the red button, the sweep, Edit, Delete, the auto-saves, the Load tab,
+  Back) and plays on. Headless, `--phone landscape` now gives the root window half the reference's shape (1356 × 610, the
+  canvas 1778 × 800 as the gallery's phone pass): before, the headless window was square and a phone layout's places fell
+  off the canvas, which only clicks at a view's places (as `--saveload`'s) notice.
 
 ### Upright (steps P0-P9)
 
@@ -548,8 +592,9 @@ the phone**; L7b (Save/Load as LL1 and the comment's editing as LY1) is next.
   speed"); a long frame or two at an exchange's start left.
 - **The safe area's values**: the Poco reports a hole of 120 px (not the reference's 110) and nothing at the foot; the
   frame reads Android's, the gesture zone's 50 px kept, and the fallback serves only the PC (step F, "The Poco").
-- **The keyboard**: Android shows it for the comment's `LineEdit` (`SaveLoadView`); how much it covers and whether Godot
-  reports it (`DisplayServer.VirtualKeyboardGetHeight`) is checked in the step that builds the editing.
+- **The keyboard**: Android shows it for the comment's `LineEdit` (`SaveLoadView`); no full-screen editor (Godot's field
+  asks for none), the card over the height Godot reports (step L7, "Where it stands", L7b); the Poco's height is read
+  from the log line at the owner's look.
 - **System's rotation lock** (§3): checked on the Poco in P0.
 - **A tap's move before its press** (found in round P20, phone.md §25): Fortune Check and the CG gallery act on a click
   on what the read before it lit, so a tap whose move and press reach the script in one poll would act on the cell lit

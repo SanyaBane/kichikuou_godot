@@ -75,8 +75,14 @@ internal static class Device
     /// </summary>
     public static bool OpenPhoneWindow()
     {
-        if (OS.GetName() == "Android" || PhoneSwitch is not { } held || DisplayServer.GetName() == "headless")
+        if (OS.GetName() == "Android" || PhoneSwitch is not { } held)
             return true;
+        if (DisplayServer.GetName() == "headless")
+        {
+            if (held == "landscape" && _root is not null)      // no monitor: the canvas at half the reference's shape
+                _root.Size = new Vector2I(PhoneFrame.ReferenceLong / 2, PhoneFrame.ReferenceShort / 2);
+            return true;
+        }
         if (held != "landscape")
         {
             GD.PushError($"Kichikuou: --phone takes landscape (upright comes with step P0), not \"{held}\".");

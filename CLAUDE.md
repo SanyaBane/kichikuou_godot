@@ -343,7 +343,11 @@ Step L7 is split: L7a is built, awaiting the owner's look on the phone (phone-bu
 and Treasure across the whole width — the title, the picture and the details at the left, the buttons at the left thumb,
 the pickers' grid folded after its ninth row at the right thumb, every cell at its number's place, an item's name over its
 holder (`Original.Content/Devices/PhonePickers`; `HaremView.Phone.cs`, `TreasureView.Phone.cs`, `PhonePickerParts`; the
-callout's placement `TreasureView.ShowCallout`, the game's and the gallery's); L7b (Save/Load, the comment's editing) next.
+callout's placement `TreasureView.ShowCallout`, the game's and the gallery's); L7b is built, awaiting the owner's look on
+the phone: Save/Load as the PC's split across the whole width — the list at the left in one-line rows, the chosen save's
+page at the right with the map cut lower, Back | the red button at its foot — and the comment's own card over Android's
+keyboard (LY1; Godot's field asks for no full-screen editor, the card follows the height Godot reports, Back cancels)
+(`Original.Content/Devices/PhoneSaves`; `SaveLoadView.Phone.cs`; headless `--phone landscape` now on a phone-shaped canvas).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

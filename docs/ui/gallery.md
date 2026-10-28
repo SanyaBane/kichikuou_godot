@@ -444,4 +444,8 @@ question and the answers at the right thumb (`enemy-attack`, `enemy-attack-scout
 Step L7a (2026-10-28) built Harem and Treasure: across the whole width, the title, the picture and the details at the left
 with the buttons at the left thumb, the grid folded after its ninth row at the right thumb (`harem`, `treasure…`), the
 treasure's questions and refusals in the callout left of its button (`treasure-question`, `treasure-replace`), a first
-pick's prompt and Back in the tabs' place (`treasure-which-item`); LH2 and LT2 left the mock-up tab.
+pick's prompt and Back in the tabs' place (`treasure-which-item`); LH2 and LT2 left the mock-up tab. Step L7b (2026-10-28)
+built Save/Load: the list at the left in one-line rows, the chosen save's page at the right with the map cut lower, Back
+| the red button at its foot (`save-load…`), Delete's and the sweep's questions at them (`save-load-delete`,
+`save-load-sweep`), the comment's own card where LY1 has it over the keyboard (`save-load-comment`); LL1 and LY1 left the
+mock-up tab.
