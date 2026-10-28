@@ -16,8 +16,13 @@ internal static partial class GalleryEntries
 {
     private const string TitleSection = "Title";
 
-    /// <summary>The game folder the import screen's entries show: the gallery's own, not the player's.</summary>
-    private const string SampleFolder = @"C:\Games\Kichikuou Rance";
+    /// <summary>
+    /// The game folder the import screen's entries show: the gallery's own, not the player's — on the phone one in Android's
+    /// storage, as LI's.
+    /// </summary>
+    private static string SampleFolder => PhoneLandscape
+        ? "/storage/emulated/0/Games/Kichikuou Rance"
+        : @"C:\Games\Kichikuou Rance";
 
     private const string FolderNote = "The folder's path is the gallery's own; nothing is checked or imported.";
 

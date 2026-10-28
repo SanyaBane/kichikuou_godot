@@ -353,11 +353,7 @@ GALLERY_ENTRIES_LAND = {
     # Round P11's choices (owner, 2026-10-28; docs/ui/phone.md, §15): LH2 and LT2 built (step L7a), LL1 (step L7b).
     # Round P12's choices (owner, 2026-10-28; docs/ui/phone.md, §16): LO1, LF2 and LF2e built (step L8).
     # Round P19's choices (owner, 2026-10-28; docs/ui/phone.md, §23): All Data, the title, the import; LG2m, LG2 and LE1
-    # built (step L9a).
-    'LI': ('li-import', 'Import — LI', 'A folder chosen', 'the paper sheet in the frame, the steps in two columns'),
-    'LIp': ('li-progress', 'Import — LI', 'Importing', 'the decompile\'s bar (made up: 45%)'),
-    'LIr': ('li-refused', 'Import — LI', 'Another version\'s file', 'the hashes in two lines across the sheet (made '
-                                                                    'up)'),
+    # built (step L9a), LI, LIp and LIr (step L9b).
     # Round P21's choices (owner, 2026-10-28; docs/ui/phone.md, §26); LY1 built (step L7b), LXf, LXc and LXm (step L9a;
     # LXr stays: the ending's report has no entry in the game's gallery).
     'LXr': ('lx-report', 'The original\'s screens', 'An ending\'s Completion Report', 'as it is (ending 11); Skip and '

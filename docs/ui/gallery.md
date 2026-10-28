@@ -455,4 +455,7 @@ L9a (2026-10-28) built All Data: the miniature uncovered, the four graphs as cel
 the right (`all-data`); over a graph its figures drawn again at the phone's type and the scale as eight chips over Back,
 the shown graph and scale lit (`all-data-funds`, …, the scale menu `all-data-scale` the same); the title (`title…`) and
 the original's own screens (`fortune-check`, `cg-gallery`, `music-room`) were already as LE1 and LXf-LXm have them;
-LG2m, LG2, LE1, LXf, LXc and LXm left the mock-up tab (LXr stays: the ending's report has no entry here).
+LG2m, LG2, LE1, LXf, LXc and LXm left the mock-up tab (LXr stays: the ending's report has no entry here). Step L9b
+(2026-10-28) built the import screen: the paper sheet in the frame at the phone's type, the steps in two columns, the red
+button at the right thumb, Back at the sheet's left foot or, refused, left of the red button, on a folder in Android's
+storage (`import-…`); LI, LIp and LIr left the mock-up tab.

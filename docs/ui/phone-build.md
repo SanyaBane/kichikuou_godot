@@ -602,9 +602,9 @@ L7b:
   search, the battle on the Monsters' Cave's (dungeon 2) first floor); unattended play answers the dungeon's menus
   without the rail's places, so step L10's runs are its check.
 
-**Step L9, where it stands (2026-10-28):** split in two, as L7 was. **L9a (All Data, the title, the original's own
-screens and a finger's press) is built, awaiting the owner's look on the phone**; L9b (the import screen: LI, LIp, LIr)
-is next.
+**Step L9, where it stands (2026-10-28):** split in two, as L7 was, both built. **L9a (All Data, the title, the original's
+own screens and a finger's press) and L9b (the import screen as LI, LIp, LIr) are awaiting the owner's look on the
+phone.**
 
 - **The model** (`Original.Content/Devices/PhoneData`, tested in `PhoneDataTests`): the places at the mock-ups' figures
   (`side_graphs`, `graph_cell`, `lg2`, `scale_chips`, `funds_relabelled`) in the canvas's units — the four graphs' cells
@@ -642,6 +642,38 @@ is next.
 - **Unattended play**: `--phone landscape` headless from the week-18 save to its deployment picker, with `--saveload` and
   `--treasure` (their taps through Godot's input, now through `TouchPress`), runs as before. The bot visits All Data only
   from the prologue (stage 1), through the script's own menus.
+
+L9b, the import screen:
+
+- **The model** (`Original.Content/Devices/PhoneImport`, tested in `PhoneImportTests`): the places at the mock-ups' figures
+  (`import_land`, `sheet_head`, `step_mark`, `step_text`, `folder_field`, `hash_lines`, `stamp`) in the canvas's units — the
+  lacquer panel 10 in from the frame's sides, from 16 under the screen's top to 4 over the gesture zone, the paper 26 in;
+  the heading's middle 90 under the paper's top (66, the brush face), the version's 166 (28, Cinzel), the rule 206, the
+  steps' first line 262; the columns 50 in from the paper's sides and 40 either side of the frame's middle, a step's seal 34
+  in (34 round), its words 100 in (the title 48 with 62 between lines, its lines 38 with 50), 14 under a step; the field 150
+  high; the bar 44, its share 92 under it, Play 200 under it; the hashes 30 with 40 between them; the stamp 260 in from the
+  right column's left, 110 round; the red button 130 high 30 over the paper's foot at the right column's end (Import 520
+  wide, Choose another folder 640), Back level with it — at the left column's foot ("Back to the title"), once refused from
+  the right column's left to the red button ("Back"). A longer screen keeps the sheet in the frame. The words: a folder as
+  its name over its place (`FolderLines`), a path as its folders joined by " › " with Android's own storage
+  (`/storage/emulated/0`, `/sdcard`) named "Internal storage" (`Readable`, also in a refusal's message), the hashes in two
+  lines (`HashLines`).
+- **The view** (`godot/ImportScreen.Phone.cs`), keyed by the live device in the screen's own `Layout`: on the phone it lays
+  itself over its parent's whole area (the gallery gives it the frame's picture) and draws in the frame's layout pixels
+  (`PhoneUnits`); the hit tests read the same boxes (`Button`, `BackBox`, the field as drawn). Android's Back is the way back,
+  as Esc is (on the tablet too). The screen gallery's folder on the phone pass is one in Android's storage
+  (`GalleryEntries.SampleFolder`), as LI's.
+- **The agent's choices**, for the owner to confirm: the steps' colours by the PC's roles (a step done quiet, one to come
+  grey, a seal's ring vermilion, a step to come's grey), where LI drew the folder's title dark and every ring quiet; a step
+  done in the right column (the scenario read) ticked at its column's right as the PC ticks it; the app's own folder
+  (`…/Android/data/org.kichikuou.port/files/game`, where `-PushGame` copies it) shows as "game" over "Internal storage ›
+  Android › data › org.kichikuou.port › files", cut at its start where it does not fit; on the PC playing a phone a path as
+  "C: › Games"; the hashes in the PC's small grey, each line shrunk to the sheet's width; the red button's word in the brush
+  face (LI; the PC's stays Cinzel), greyed with no folder chosen (a first launch, with no Back); refused at a first launch no
+  Back either (LIr drew the way from Option → Game).
+- **The gallery**: the PC and touch passes same; the phone pass's `import-…` entries match LI, LIp and LIr, which left
+  `GALLERY_ENTRIES_LAND` (LXr stays). `--phone landscape --import-screen DIR --quit` headless imports as before (its dumps
+  need a window).
 
 ### Upright (steps P0-P9)
 

@@ -3,6 +3,7 @@ using Kichikuou.Content;
 using Kichikuou.Content.Decompiler;
 using Kichikuou.Game.Battles;
 using Kichikuou.Game.Strategy;
+using Kichikuou.Original.Content.Devices;
 
 namespace Kichikuou.Game;
 
@@ -14,8 +15,8 @@ namespace Kichikuou.Game;
 /// worker thread under a vermilion bar; a refusal (<see cref="GameFolderException"/>'s message) is written in
 /// vermilion ink with a stamp beside it and "Choose another folder". Once imported, the folder is kept
 /// (<see cref="GameData.GameDirectory"/>) and <see cref="_next"/> opens. Opened from Option → Game it has a
-/// way back (<see cref="_back"/>: "Back to the title" or Esc) that leaves the open import as it is. Laid out in the
-/// 1280×800 screen's pixels, letterboxed into the window.
+/// way back (<see cref="_back"/>: "Back to the title", Esc or Android's Back) that leaves the open import as it is. Laid
+/// out in the 1280×800 screen's pixels, letterboxed into the window; on the phone held landscape as LI (ImportScreen.Phone.cs).
 /// </summary>
 public partial class ImportScreen : Control
 {
@@ -129,6 +130,8 @@ public partial class ImportScreen : Control
 
     private void Layout()
     {
+        if (PlacePhone())
+            return;
         var frame = ScreenFrame.In(new Rect2(Vector2.Zero, Size));
         _k = frame.Scale <= 0 ? 1 : frame.Scale;
         _origin = frame.Scale <= 0 ? (Size - new Vector2(1280, 800)) / 2 : frame.Origin;
@@ -276,8 +279,12 @@ public partial class ImportScreen : Control
 
     // ---------------------------------------------------------------- input
 
-    /// <summary>The red button: Import (narrow) or Choose another folder (wide).</summary>
-    private Rect2 Button => _phase == Phase.Refused ? WideButton : NarrowButton;
+    /// <summary>The red button: Import (narrow) or Choose another folder (wide); on the phone at the right thumb.</summary>
+    private Rect2 Button => _phone is { } f ? Phone.Rect(PhoneImport.Button(f, _phase == Phase.Refused))
+        : _phase == Phase.Refused ? WideButton : NarrowButton;
+
+    /// <summary>The way back's link; on the phone level with the red button.</summary>
+    private Rect2 BackBox => _phone is { } f ? Phone.Rect(PhoneImport.Back(f, _phase == Phase.Refused)) : BackLink;
 
     private bool ButtonLive => !_dialogOpen && _phase switch
     {
@@ -307,6 +314,13 @@ public partial class ImportScreen : Control
         }
     }
 
+    /// <summary>Android's Back is the way back, as Esc is.</summary>
+    public override void _Notification(int what)
+    {
+        if (what == NotificationWMGoBackRequest && !_held)
+            GoBack();
+    }
+
     private void Press()
     {
         if (!ButtonLive)
@@ -327,7 +341,7 @@ public partial class ImportScreen : Control
             {
                 var at = (motion.Position - _origin) / _k;
                 bool field = FieldLive && _field.HasPoint(at), button = ButtonLive && Button.HasPoint(at),
-                    back = BackLive && BackLink.HasPoint(at);
+                    back = BackLive && BackBox.HasPoint(at);
                 if (field != _hoverField || button != _hoverButton || back != _hoverBack)
                 {
                     _hoverField = field;
@@ -353,7 +367,7 @@ public partial class ImportScreen : Control
                         ChooseFolder();
                     else if (wasPressed && Button.HasPoint(at))
                         Press();
-                    else if (BackLive && BackLink.HasPoint(at))
+                    else if (BackLive && BackBox.HasPoint(at))
                         GoBack();
                     QueueRedraw();
                 }
@@ -369,22 +383,28 @@ public partial class ImportScreen : Control
 
     // ---------------------------------------------------------------- drawing (mock-up B)
 
+    private string Heading => _phase switch
+    {
+        Phase.Refused => "This folder cannot be read",
+        Phase.Importing or Phase.Done => "Importing your game",
+        _ => "Import your game",
+    };
+
     public override void _Draw()
     {
         DrawRect(new Rect2(Vector2.Zero, Size), Colors.Black);
+        if (_phone is { } phone)
+        {
+            DrawPhone(new PhoneUnits(phone));
+            return;
+        }
         DrawSetTransform(_origin, 0, new Vector2(_k, _k));
         Ui.DrawWaveBackdrop(this, _k);
         Ui.DrawPanel(this, Frame, _k);
         DrawRect(Paper, Ui.Paper);
         DrawRect(Paper, Ui.PaperHead, false, Lacquer.Line(1, _k));
 
-        string heading = _phase switch
-        {
-            Phase.Refused => "This folder cannot be read",
-            Phase.Importing or Phase.Done => "Importing your game",
-            _ => "Import your game",
-        };
-        Centred(_brush, heading, 34, 182, Ui.HeadInk);
+        Centred(_brush, Heading, 34, 182, Ui.HeadInk);
         Centred(_cinzel, GameFiles.EnglishTranslation10.Name, 15, 222, Ui.InkQuiet);
         DrawLine(new Vector2(Paper.Position.X + 24, 240), new Vector2(Paper.End.X - 24, 240), Ui.PaperRule, Lacquer.Line(2, _k));
 
@@ -433,6 +453,12 @@ public partial class ImportScreen : Control
         DrawString(_gothic, new Vector2(TextX, barY + 46), $"{Math.Round(fraction * 100)}%", HorizontalAlignment.Right,
             TextRight - TextX, 16, Ui.Ink);
         Step(barY + 64, 2, "Play", null, done ? StepState.Now : StepState.Next);
+        ProgressShot(progress, done);
+    }
+
+    /// <summary>The unattended look's dump of the bar, once, when the decompile is a third through.</summary>
+    private void ProgressShot(ImportProgress progress, bool done)
+    {
         if (_unattended is not null && !_progressShot && !done && progress.Fraction >= 0.3)
         {
             _progressShot = true;
@@ -456,16 +482,18 @@ public partial class ImportScreen : Control
 
     private enum StepState { Now, Next, Done, Failed }
 
+    private static Color StepColour(StepState state) => state switch
+    {
+        StepState.Done => Ui.InkQuiet,
+        StepState.Now => Ui.Ink,
+        StepState.Next => Ui.InkGrey,
+        _ => Ui.VermilionInk,
+    };
+
     /// <summary>A numbered step (一 二 三) with its title and its text wrapped under it; returns the y below it.</summary>
     private float Step(float y, int index, string title, string? body, StepState state)
     {
-        var colour = state switch
-        {
-            StepState.Done => Ui.InkQuiet,
-            StepState.Now => Ui.Ink,
-            StepState.Next => Ui.InkGrey,
-            _ => Ui.VermilionInk,
-        };
+        var colour = StepColour(state);
         var seal = new Vector2(StepX + 15, y + 13);
         bool sealed_ = state is StepState.Now or StepState.Failed;
         if (sealed_)

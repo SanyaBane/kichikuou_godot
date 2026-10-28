@@ -358,7 +358,10 @@ Data with the graphs as cells in the left side, Back and the scale's chips in th
 at the phone's type (`Original.Content/Devices/PhoneData`, `GamePresenter.DataFigures`; `godot/Strategy/AllDataView`,
 `GameScreen.Data.cs`); the title and the original's own screens as on the PC, a long press their right click
 (`GameScreen.OriginalScreens.cs`); a finger's press that lands elsewhere reaches the script after a read of its move, on
-the tablet too (`Engine/Script/TouchPress`, `PlayerInput.Press`). L9b, the import screen, is next.
+the tablet too (`Engine/Script/TouchPress`, `PlayerInput.Press`). L9b is built, awaiting the owner's look on the phone:
+the import screen as LI, LIp, LIr — the paper sheet in the frame at the phone's type, the steps in two columns, the red
+button at the right thumb, a folder its name over its place with Android's storage named
+(`Original.Content/Devices/PhoneImport`; `godot/ImportScreen.Phone.cs`).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
