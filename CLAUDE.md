@@ -323,6 +323,11 @@ Step L3 is built, awaiting the owner's look on the phone (phone-build.md, "Step 
 — the scene at 70%, the taller cards, the rails in the sides, the battle's Skip on the left rail's top, the retreat
 question beside Retreat, the exchange's counters in the scene's blurred sides (`Original.Content/Devices/PhoneBattle`;
 `BattleBoardView`'s phone places, `BattleCommandLayer.Phone.cs`, `BattleDialogLayer.Phone.cs`, `TouchPill.Phone`).
+Step L4 is built, awaiting the owner's look on the phone (phone-build.md, "Step L4, where it stands"): the battle's other
+states — the opening at the lower scene band, the scout report across the width, the cut-in's band on across the sides,
+the results plate and our panel in the frame's middle, the ribbon and caption, the balloon over the scene's foot, the
+cards' menu at a finger's size (`Original.Content/Devices/PhoneBattleStates`; `ScoutReportView.Phone.cs`,
+`BattleInfoLayer.Phone.cs`, the phone branches of `BattleOpeningLayer`, `StrategyCutInView`, `SpeechBalloon`).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

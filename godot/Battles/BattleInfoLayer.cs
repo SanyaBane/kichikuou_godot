@@ -2,6 +2,7 @@ using Godot;
 using Kichikuou.Game.Strategy;
 using Kichikuou.Original.Content;
 using Kichikuou.Original.Content.Battles;
+using Kichikuou.Original.Content.Devices;
 
 namespace Kichikuou.Game.Battles;
 
@@ -174,7 +175,12 @@ internal sealed partial class BattleInfoLayer : Control
     /// <summary>Our narration panel at the scene's foot (K1): the sentences wrapped to the panel's width, the triangle.</summary>
     private void DrawPanel(IReadOnlyList<string> sentences)
     {
-        var lines = sentences.SelectMany(s => Wrap(s, PanelMaxText)).ToList();
+        if (Phone)
+        {
+            DrawPhonePanel(sentences);
+            return;
+        }
+        var lines = sentences.SelectMany(s => Wrap(s, PanelMaxText, PanelSize)).ToList();
         if (lines.Count == 0)
             lines.Add("");
         float w = lines.Max(l => _gothic.GetStringSize(l, fontSize: PanelSize).X) + 80, h = 40 + lines.Count * PanelPitch + 20;
@@ -187,14 +193,14 @@ internal sealed partial class BattleInfoLayer : Control
             Ui.DrawTriangle(this, new Vector2(box.End.X - 24, box.End.Y - 20), _k);
     }
 
-    /// <summary>A sentence broken at spaces into lines no wider than <paramref name="width"/>.</summary>
-    private IEnumerable<string> Wrap(string sentence, float width)
+    /// <summary>A sentence broken at spaces into lines no wider than <paramref name="width"/> at <paramref name="size"/>.</summary>
+    private IEnumerable<string> Wrap(string sentence, float width, int size)
     {
         var line = "";
         foreach (var word in sentence.Split(' '))
         {
             string next = line.Length == 0 ? word : line + " " + word;
-            if (line.Length > 0 && _gothic.GetStringSize(next, fontSize: PanelSize).X > width)
+            if (line.Length > 0 && _gothic.GetStringSize(next, fontSize: size).X > width)
             {
                 yield return line;
                 next = word;
@@ -221,37 +227,46 @@ internal sealed partial class BattleInfoLayer : Control
         DrawRect(card, new Color(DefendGlow, alpha), false, Lacquer.Line(2, _k));
 
         // At the card's foot, over the portrait's stats and under the state line (owner, 2026-10-24: across the middle it hid
-        // the troops and the commander's HP).
-        float x0 = card.Position.X, x1 = card.End.X, y1 = card.End.Y - 2, y0 = y1 - RibbonHeight, mid = (y0 + y1) / 2;
+        // the troops and the commander's HP). On the phone larger with the cards (step L4).
+        float m = Phone ? PhoneBattleStates.RibbonScale : 1;
+        float x0 = card.Position.X, x1 = card.End.X, y1 = card.End.Y - 2, y0 = y1 - RibbonHeight * m, mid = (y0 + y1) / 2;
         foreach (int side in new[] { -1, 1 })
         {
-            float inner = side < 0 ? x0 + 6 : x1 - 6, outer = side < 0 ? x0 - 16 : x1 + 16;
-            DrawColoredPolygon([new(inner, y0 + 6), new(outer, y0 + 6), new(outer - 8 * side, mid + 3), new(outer, y1 + 6), new(inner, y1 + 6)],
-                RibbonTail * tint);
+            float inner = side < 0 ? x0 + 6 * m : x1 - 6 * m, outer = side < 0 ? x0 - 16 * m : x1 + 16 * m;
+            DrawColoredPolygon([new(inner, y0 + 6 * m), new(outer, y0 + 6 * m), new(outer - 8 * m * side, mid + 3 * m), new(outer, y1 + 6 * m),
+                new(inner, y1 + 6 * m)], RibbonTail * tint);
         }
-        DrawRect(new Rect2(x0 - 3, y0 + 4, x1 - x0 + 12, y1 - y0), new Color(0, 0, 0, 0.43f * alpha));
-        DrawPolygon([new(x0 - 6, y0), new(x1 + 6, y0), new(x1 + 6, y1), new(x0 - 6, y1)],
+        DrawRect(new Rect2(x0 - 3, y0 + 4 * m, x1 - x0 + 12, y1 - y0), new Color(0, 0, 0, 0.43f * alpha));
+        DrawPolygon([new(x0 - 6 * m, y0), new(x1 + 6 * m, y0), new(x1 + 6 * m, y1), new(x0 - 6 * m, y1)],
             [SteelTop * tint, SteelTop * tint, SteelFoot * tint, SteelFoot * tint]);
-        DrawLine(new Vector2(x0 - 6, y0 + 2), new Vector2(x1 + 6, y0 + 2), Accent * tint, Lacquer.Line(2, _k));
-        DrawLine(new Vector2(x0 - 6, y1 - 2), new Vector2(x1 + 6, y1 - 2), Accent * tint, Lacquer.Line(2, _k));
-        DrawShield(x0 + 4, y0 + 6, 24, 28, 2, alpha);                      // on the tail: room for the mark at −21% (N5)
+        DrawLine(new Vector2(x0 - 6 * m, y0 + 2 * m), new Vector2(x1 + 6 * m, y0 + 2 * m), Accent * tint, Lacquer.Line(2 * m, _k));
+        DrawLine(new Vector2(x0 - 6 * m, y1 - 2 * m), new Vector2(x1 + 6 * m, y1 - 2 * m), Accent * tint, Lacquer.Line(2 * m, _k));
+        DrawShield(x0 + 4 * m, y0 + 6 * m, 24 * m, 28 * m, 2 * m, alpha);  // on the tail: room for the mark at −21% (N5)
         var ribbon = new Rect2(x0, y0, x1 - x0, y1 - y0);
-        var (mark, word, markSize) = RibbonText(box.Mark, x1 - x0 - 26 - 10);
-        Outlined(_heavy, new Vector2(x0 + 26, Lacquer.Baseline(ribbon, _heavy, word)), "DEFEND", word, Colors.White * tint, tint);
+        var (mark, word, markSize) = RibbonText(box.Mark, x1 - x0 - (26 + 10) * m, m);
+        Outlined(_heavy, new Vector2(x0 + 26 * m, Lacquer.Baseline(ribbon, _heavy, word)), "DEFEND", word, Colors.White * tint, tint);
         float markWidth = _heavy.GetStringSize(mark, fontSize: markSize).X;
-        Outlined(_heavy, new Vector2(x1 - 10 - markWidth, Lacquer.Baseline(ribbon, _heavy, markSize) + 1), mark, markSize, Accent * tint, tint);
+        Outlined(_heavy, new Vector2(x1 - 10 * m - markWidth, Lacquer.Baseline(ribbon, _heavy, markSize) + 1), mark, markSize, Accent * tint, tint);
 
         if (_speaking || box.Sentences is not [var sentence, ..])
             return;
-        float nameWidth = name == "" ? 0 : _bold.GetStringSize(name, fontSize: CaptionNameSize).X + 12;
-        float w = 50 + nameWidth + _gothic.GetStringSize(sentence, fontSize: CaptionSize).X + 24;
-        var caption = new Rect2(box.Place?.Side == BattleSide.Enemy ? CaptionRight - w : CaptionLeft, CaptionTop, w, CaptionHeight);
+        // The phone's caption at 2.4 mm over the scene's foot, from the picture's edge on the defender's side (LB3b).
+        float c = Phone ? P(PhoneBattleStates.CaptionText) / CaptionSize : 1;
+        int nameSize = Phone ? (int)Math.Round(P(PhoneBattleStates.CaptionName)) : CaptionNameSize;
+        int textSize = (int)Math.Round(CaptionSize * c);
+        float nameWidth = name == "" ? 0 : _bold.GetStringSize(name, fontSize: nameSize).X + 12 * c;
+        float w = (50 + 24) * c + nameWidth + _gothic.GetStringSize(sentence, fontSize: textSize).X;
+        bool enemy = box.Place?.Side == BattleSide.Enemy;
+        var caption = Phone ? R(PhoneBattleStates.Caption(!enemy, w))
+            : new Rect2(enemy ? CaptionRight - w : CaptionLeft, CaptionTop, w, CaptionHeight);
         Ui.DrawPanel(this, caption, _k, CaptionFill * tint);
-        DrawShield(caption.Position.X + 26, caption.Position.Y + 9, 28, 33, 2, alpha);
-        float x = caption.Position.X + 50;
+        float shield = Phone ? PhoneBattleStates.CaptionShield : 1;
+        DrawShield(caption.Position.X + 26 * c, caption.Position.Y + (Phone ? (caption.Size.Y - 33 * shield) / 2 : 9), 28 * shield, 33 * shield,
+            2 * shield, alpha);
+        float x = caption.Position.X + 50 * c;
         if (name != "")
-            DrawString(_bold, new Vector2(x, Lacquer.Baseline(caption, _bold, CaptionNameSize)), name, fontSize: CaptionNameSize, modulate: CaptionName * tint);
-        DrawString(_gothic, new Vector2(x + nameWidth, Lacquer.Baseline(caption, _gothic, CaptionSize)), sentence, fontSize: CaptionSize,
+            DrawString(_bold, new Vector2(x, Lacquer.Baseline(caption, _bold, nameSize)), name, fontSize: nameSize, modulate: CaptionName * tint);
+        DrawString(_gothic, new Vector2(x + nameWidth, Lacquer.Baseline(caption, _gothic, textSize)), sentence, fontSize: textSize,
             modulate: MessageWindowView.NarrationText * tint);
     }
 
@@ -260,9 +275,9 @@ internal sealed partial class BattleInfoLayer : Control
     /// fit; on the touch mode's narrower cards (owner, 2026-10-25) the mark's first word dropped ("ENEMY HIT −10%" to "HIT
     /// −10%": the caption says the rest), then both smaller, down to four fifths.
     /// </summary>
-    private (string Mark, int Word, int MarkSize) RibbonText(string mark, float room)
+    private (string Mark, int Word, int MarkSize) RibbonText(string mark, float room, float grow)
     {
-        const int word = 19, markSize = 16, gap = 10;
+        float word = 19 * grow, markSize = 16 * grow, gap = 10 * grow;
         float Need(string m, float k) =>
             _heavy.GetStringSize("DEFEND", fontSize: (int)(word * k)).X + gap + _heavy.GetStringSize(m, fontSize: (int)(markSize * k)).X;
         if (Need(mark, 1) > room && mark.IndexOf(' ') is > 0 and var space)
@@ -320,6 +335,11 @@ internal sealed partial class BattleInfoLayer : Control
     /// </summary>
     private void DrawResults(BattleResults r)
     {
+        if (Phone)
+        {
+            DrawPhoneResults(r);
+            return;
+        }
         DrawRect(new Rect2(128, 0, 1024, 410), new Color(0, 0, 0, 0.43f));
         float h = 250 + (r.LevelUps.Count == 0 ? 0 : 30 + 44 * r.LevelUps.Count);
         var plate = new Rect2(SceneCentreX - PlateWidth / 2, Math.Max(8, 200 - h / 2), PlateWidth, h);

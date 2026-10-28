@@ -4,6 +4,7 @@ using Kichikuou.Game.Strategy;
 using Kichikuou.Original.Combat;
 using Kichikuou.Original.Content;
 using Kichikuou.Original.Content.Battles;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.State;
 
 namespace Kichikuou.Game.Battles;
@@ -55,7 +56,15 @@ internal sealed partial class BattleCommandLayer : Control
     private static readonly Color TargetColour = Color8(70, 205, 255), TargetInner = new(1, 1, 1, 0.85f);
 
     // The context menu: rows of the cards' text size, a column for the current order's mark.
-    private const float RowHeight = 30, MenuPad = 8, MarkWidth = 18, MenuMinWidth = 130, MenuText = 17;
+    private const float PcRowHeight = 30, PcMenuPad = 8, PcMarkWidth = 18, PcMenuMinWidth = 130, PcMenuText = 17;
+
+    // The cards' menu: the PC's, or on the phone at a finger's size (docs/ui/phone-build.md, step L4).
+    private int _menuCount = 1;
+    private float RowHeight => _phone is null ? PcRowHeight : PhoneBattleStates.MenuRowHeight(_menuCount);
+    private float MenuPad => _phone is null ? PcMenuPad : P(PhoneBattleStates.MenuPad);
+    private float MarkWidth => _phone is null ? PcMarkWidth : P(PhoneBattleStates.MenuMark);
+    private float MenuMinWidth => _phone is null ? PcMenuMinWidth : P(PhoneBattleStates.MenuMinWidth);
+    private float MenuText => _phone is null ? PcMenuText : P(PhoneBattleStates.MenuText);
 
     private Func<BattlePlace, Rect2> _cardArea = _ => default;
     private float _scale = 1;
@@ -323,6 +332,7 @@ internal sealed partial class BattleCommandLayer : Control
         var items = _commands!.ContextMenu(place, order).Select(c => (c.Name ?? _text(c.Label).Trim(), c.Choice, c.Current)).ToList();
         if (items.Count == 0)
             return;
+        _menuCount = items.Count;
         float width = MenuMinWidth;
         if (GetThemeDefaultFont() is { } font)
         {
@@ -396,7 +406,7 @@ internal sealed partial class BattleCommandLayer : Control
         return -1;
     }
 
-    private static int ItemAt((BattlePlace Place, Rect2 Box, IReadOnlyList<(string, FigtSelChoice, bool)> Items) menu, Vector2 p)
+    private int ItemAt((BattlePlace Place, Rect2 Box, IReadOnlyList<(string, FigtSelChoice, bool)> Items) menu, Vector2 p)
     {
         var box = menu.Box;
         if (!box.HasPoint(p))
@@ -566,7 +576,7 @@ internal sealed partial class BattleCommandLayer : Control
                 DrawRect(row, Ui.RowHover);
             var (text, _, current) = menu.Items[i];
             if (current)
-                DrawCircle(row.Position + new Vector2((4 + MarkWidth / 2) * s, row.Size.Y / 2), 4 * s, Ui.HoverLine);
+                DrawCircle(row.Position + new Vector2((4 + MarkWidth / 2) * s, row.Size.Y / 2), MarkWidth / 4.5f * s, Ui.HoverLine);
             if (font is null)
                 continue;
             float baseline = row.Position.Y + (row.Size.Y + font.GetAscent(size) - font.GetDescent(size)) / 2;

@@ -381,10 +381,42 @@ on Oaks (6), the debug build):
   button's size, where the mock-up had both figures on one line; the order strip and the limit's plate keep the PC's size
   at the scene's foot and top (the mock-up showed them at the scene's 70%); while the retreat question asks, the left
   rail shows Retreat alone, lit (the other commands are gone once Retreat is chosen), the screen dimmed under the callout.
-- **Left for L4**: the cards' long-press menu keeps the tablet's rows (2.6 mm on the phone; a finger's size with L4), the
-  balloon and the info boxes at their PC places in the frame (L4's LB3b, LB3r), the opening (LB3o1).
+- **Left for L4** (done there): the cards' long-press menu at a finger's size, the balloon and the info boxes (LB3b,
+  LB3r), the opening (LB3o1).
 - **The gallery**: the PC and touch passes same (110 and 111 entries); the phone pass's battle entries match LB2, LB2r1
   and LB2x (docs/ui/gallery.md, §9), which left `GALLERY_ENTRIES_LAND`.
+- **Unattended play**: `--phone landscape` headless from the week-18 save to round 2 of the battle on Oaks (6) runs as
+  before.
+
+**Step L4, where it stands (2026-10-28):** built, **awaiting the owner's look on the phone**.
+
+- **The model** (`Original.Content/Devices/PhoneBattleStates`, tested in `PhoneBattleStatesTests`): the frame's places in
+  its layout pixels at the mock-ups' figures — the opening's plate (940 × 196 from 18), the names' room beside it (30 in
+  from the frame's edge and the plate, down to the advantage's line when the army has one), the advantage's and VS's
+  middles; the results plate (1400 × 720, centred 20 over the frame's middle), a level-up's rows on it (76 high, 92 apart,
+  closer when four would pass the gesture zone) with room under them for the click's triangle; our panel in the frame's
+  middle at the plate's type (50); the balloon (1000 wide from 50 right of the scene's picture, its foot 486 down, growing
+  up) and the tail's place; a defence's caption over the scene's foot above the order strip (2.4 mm); the cards' menu rows
+  (104, lower when nine items would not fit) — and the scout report's places in the canvas's units across the room between
+  the hole's strips (the ninja, her balloon, the cards 700 × 270, the rows' captions, Rance and his answer, Maris and her
+  comment at the foot right).
+- **The views**, each keyed by the live device: `BattleOpeningLayer` covers the lower scene band, its plate and type
+  LB3o1's, the names centred beside the plate (`DrawPhoneText`); `ScoutReportView.Phone.cs` draws the report over the
+  whole screen, the cards as the enemy attack's; `StrategyCutInView` lets the band run on across the black sides (strong
+  on the strategist's side, its gold edges alone on the other); `BattleInfoLayer.Phone.cs` the results plate and the
+  panel over the frame dimmed, the ribbon 1.3 times the PC's, the caption at the phone's type over the scene's foot;
+  `SpeechBalloon` the balloon at 62 (smaller down to 46 to keep two lines), its tail at the portrait in the blurred side
+  (`DrawBalloon` takes the tail's place); `BattleCommandLayer`'s card menu at the phone's rows (its sizes properties of
+  the device).
+- **The agent's choices**, for the owner to confirm: a level-up's rows stay on the results plate, under the EXP line (the
+  plate grows; LB3r's note spoke of "a level-up's page after it", which would make the player tap twice for one key
+  wait); our narration panel and a fall's box dim the scene and the board as the results plate does ("the same way"); the
+  damages in the brush face as LB3r drew them (the PC's are Cinzel); Maris's comment, which LB3s did not draw, at the foot
+  right beside Rance's answer, her portrait in the corner; the card menu's rows 5.9 mm (nine items fit the height), not the
+  rails' 7.0.
+- **The gallery**: the PC and touch passes same (110 and 111 entries); the phone pass's `opening`, `scout-report`,
+  `strategy`, `strategy-enemy`, `info-results`, `info-level-up`, `info-panel`, `info-defence`, `battle-speech…` and `menu`,
+  `menu-orders` match their mock-ups, and LB3o1, LB3s, LB3c, LB3r and LB3b left `GALLERY_ENTRIES_LAND`.
 - **Unattended play**: `--phone landscape` headless from the week-18 save to round 2 of the battle on Oaks (6) runs as
   before.
 

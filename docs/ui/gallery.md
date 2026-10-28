@@ -429,4 +429,9 @@ and LM1c left the mock-up tab. Step L3 (2026-10-28) built the battle's turn: on 
 the scene at 70% with the taller cards, the rails in the sides (`battle-turn`, `menu`, `order-toggles`, `banners-E1`),
 the battle's Skip on the left rail's top (the entries add it, as the game's `TouchPill`), the retreat question beside
 Retreat (`retreat`) and the exchange's counters in the scene's blurred sides (`exchange-counters`); LB2, LB2r1 and LB2x
-left the mock-up tab. The battle's other states (the opening, the lines, the info boxes) wait for L4.
+left the mock-up tab. Step L4 (2026-10-28) built the battle's other states: the opening at the lower scene band (`opening`),
+the scout report across the whole width (`scout-report`), the cut-in's band on across the sides (`strategy`,
+`strategy-enemy`), the results plate and our panel in the frame's middle over the dimmed board (`info-results`,
+`info-level-up`, `info-panel`), the ribbon and the caption at the phone's type (`info-defence`), the balloon over the
+scene's foot (`battle-speech…`) and the cards' menu at a finger's size (`menu`, `menu-orders`); LB3o1, LB3s, LB3c, LB3r
+and LB3b left the mock-up tab.

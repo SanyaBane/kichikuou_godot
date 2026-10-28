@@ -1,6 +1,7 @@
 using Godot;
 using Kichikuou.Game.Strategy;
 using Kichikuou.Original.Content.Battles;
+using Kichikuou.Original.Content.Devices;
 
 namespace Kichikuou.Game.Battles;
 
@@ -70,25 +71,61 @@ internal sealed partial class SpeechBalloon : Control
         if (_speech is not { } speech || _font is null)
             return;
         float s = _scale;
+        bool left = speech.Side == BattleSide.Player;
+        if (Device.Layout == DeviceLayout.PhoneLandscape)
+        {
+            DrawPhone(speech, left, s);
+            return;
+        }
         int size = Math.Max(8, (int)Math.Round(TextSize * s));
         _bold.SetSpacing(TextServer.SpacingType.Bottom, (int)Math.Round(LineGap * s));
         float textWidth = (Width - 2 * Pad) * s;
         var text = _bold.GetMultilineStringSize(speech.Text, HorizontalAlignment.Left, textWidth, size, -1, Breaks);
         float height = Math.Max(MinHeight * s, text.Y + 2 * Pad * s);
-        bool left = speech.Side == BattleSide.Player;
         float x = (left ? Side : 1280 - Side - Width) * s;
         var box = new Rect2(x, Bottom * s - height, Width * s, height);
         var ink = DrawBalloon(this, box, left, s, speech.Thought);
+        DrawSaying(speech, box, ink, size, textWidth, Pad * s, Pad * s - 4 * s, s);
+    }
 
-        var origin = box.Position + new Vector2(Pad * s, Pad * s - 4 * s + _bold.GetAscent(size));
+    /// <summary>
+    /// The phone's (docs/ui/phone-build.md, step L4; LB3b): the balloon over the scene's foot beside the speaker's portrait
+    /// in the blurred side, at the phone's type, smaller down to <see cref="PhoneBattleStates.LineMin"/> to keep it to two lines.
+    /// </summary>
+    private void DrawPhone(BattleSpeech speech, bool left, float s)
+    {
+        static float L(float reference) => PhoneBattle.Layout(reference);
+        float textWidth = (L(PhoneBattleStates.BalloonWidth) - 2 * L(PhoneBattleStates.BalloonSide)) * s;
+        int size = 8;
+        Vector2 text = default;
+        for (float em = PhoneBattleStates.LineText; em >= PhoneBattleStates.LineMin; em -= 2)
+        {
+            size = Math.Max(8, (int)Math.Round(L(em) * s));
+            _bold.SetSpacing(TextServer.SpacingType.Bottom, (int)Math.Round(L(PhoneBattleStates.LineGap) * s));
+            text = _bold.GetMultilineStringSize(speech.Text, HorizontalAlignment.Left, textWidth, size, -1, Breaks);
+            if (text.Y <= PhoneBattleStates.MaxLines * (_bold.GetHeight(size) + (int)Math.Round(L(PhoneBattleStates.LineGap) * s)) + 1)
+                break;
+        }
+        var b = PhoneBattleStates.Balloon(left, text.Y / s);
+        var box = new Rect2(b.X * s, b.Y * s, b.W * s, b.H * s);
+        var ink = DrawBalloon(this, box, left, L(PhoneBattleStates.TailDepth) / TailDepth * s, speech.Thought,
+            L(PhoneBattleStates.TailFromTop) * s);
+        DrawSaying(speech, box, ink, size, textWidth, L(PhoneBattleStates.BalloonSide) * s, L(PhoneBattleStates.BalloonTop) * s - 4 * s,
+            L(PhoneBattleStates.LineText) / TextSize * s);
+    }
+
+    /// <summary>The line in the balloon from (<paramref name="side"/>, <paramref name="top"/>) in, the marker bobbing in its corner (<paramref name="k"/> its scale).</summary>
+    private void DrawSaying(BattleSpeech speech, Rect2 box, Color ink, int size, float textWidth, float side, float top, float k)
+    {
+        var origin = box.Position + new Vector2(side, top + _bold.GetAscent(size));
         DrawMultilineString(_bold, origin, speech.Text, HorizontalAlignment.Left, textWidth, size, -1, InkOf(speech, ink), Breaks);
 
-        float bob = BobPixels * s * Mathf.Sin((float)(UiClock.Msec / 1000.0 * Mathf.Tau / BobSeconds));
-        var tip = new Vector2(box.End.X - 26 * s, box.End.Y - 17 * s + bob);
+        float bob = BobPixels * k * Mathf.Sin((float)(UiClock.Msec / 1000.0 * Mathf.Tau / BobSeconds));
+        var tip = new Vector2(box.End.X - 26 * k, box.End.Y - 17 * k + bob);
         DrawColoredPolygon(
         [
-            tip + new Vector2(-MarkerSize, -MarkerSize * 1.1f) * s,
-            tip + new Vector2(MarkerSize, -MarkerSize * 1.1f) * s,
+            tip + new Vector2(-MarkerSize, -MarkerSize * 1.1f) * k,
+            tip + new Vector2(MarkerSize, -MarkerSize * 1.1f) * k,
             tip,
         ], Ui.HoverLine);
     }
@@ -109,12 +146,13 @@ internal sealed partial class SpeechBalloon : Control
     /// <summary>
     /// The balloon's shape on <paramref name="canvas"/> at <paramref name="box"/> (window pixels, <paramref name="s"/> to a
     /// layout pixel): rounded, a soft shadow, the tail out of its left or right side <see cref="TailFromTop"/> below its
-    /// top; white for talk, dark for a thought. Returns the colour of the text on it. The scout report's balloon is one too.
+    /// top (or <paramref name="tailFromTop"/> canvas units); white for talk, dark for a thought. Returns the colour of the text
+    /// on it. The scout report's balloon is one too.
     /// </summary>
-    internal static Color DrawBalloon(CanvasItem canvas, Rect2 box, bool tailLeft, float s, bool thought = false)
+    internal static Color DrawBalloon(CanvasItem canvas, Rect2 box, bool tailLeft, float s, bool thought = false, float tailFromTop = -1)
     {
         var (fill, edge, ink) = thought ? (ThinkFill, ThinkEdge, ThinkInk) : (TalkFill, TalkEdge, TalkInk);
-        float tailY = box.Position.Y + TailFromTop * s;
+        float tailY = box.Position.Y + (tailFromTop >= 0 ? tailFromTop : TailFromTop * s);
         float rim = tailLeft ? box.Position.X : box.End.X, outward = tailLeft ? -1 : 1;
         Vector2[] tail =
         [

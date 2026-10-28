@@ -347,7 +347,7 @@ GALLERY_ENTRIES = {
 }
 # The gallery's landscape phone tab (phone-land): the owner's chosen landscape base versions (round P8 on), those not
 # built yet; a built one leaves for the real pass "Smartphone, landscape" (docs/ui/phone-build.md: L1 took LS1, LS1b,
-# LS1m, LW1, LEd, LN3 and LR2; L2 LM1a, LM1b and LM1c; L3 LB2, LB2r1 and LB2x).
+# LS1m, LW1, LEd, LN3 and LR2; L2 LM1a, LM1b and LM1c; L3 LB2, LB2r1 and LB2x; L4 LB3o1, LB3s, LB3c, LB3r and LB3b).
 GALLERY_ENTRIES_LAND = {
     'LD2': ('ld2-deployment', 'Deployment — LD2', 'The deployment table', 'the ledger at the left, the party two a '
                                                                            'row at the right'),
@@ -365,13 +365,6 @@ GALLERY_ENTRIES_LAND = {
     'LO1': ('lo1-options', 'Options — LO1', 'The options window', 'the paper sheet across the width, its tabs on top'),
     'LF2': ('lf2-ladder', 'Dungeon — LF2', 'The floor ladder', 'the tablet\'s rail kept in the frame'),
     'LF2e': ('lf2-entry', 'Dungeon — LF2', 'Before a search', 'Return over Start Search, both in one line'),
-    # Round P13's choices (owner, 2026-10-28; docs/ui/phone.md, §17).
-    'LB3o1': ('lb3-opening', 'Battle — LB2', 'The opening', 'at the scene\'s place, laid out at the frame\'s width'),
-    'LB3s': ('lb3-scout', 'Battle — LB2', 'The scout report', 'Kanami\'s report across the whole width, one tap'),
-    'LB3c': ('lb3-strategy', 'Battle — LB2', 'A strategy\'s cut-in', 'the PC\'s fitted to the frame, the band to the '
-                                                                     'edges'),
-    'LB3r': ('lb3-results', 'Battle — LB2', 'The results plate', 'in the frame\'s middle over the dimmed board'),
-    'LB3b': ('lb3-line', 'Battle — LB2', 'A fighter\'s line', 'the portrait in the scene\'s blurred side, our balloon'),
     # Round P19's choices (owner, 2026-10-28; docs/ui/phone.md, §23): All Data, the title, the import.
     'LG2m': ('lg2-data', 'All Data — LG2', 'The menu of graphs', 'the frame kept, the graphs in the left side'),
     'LG2': ('lg2-funds', 'All Data — LG2', 'A graph', 'its figures at the phone\'s type; the scales in the right side'),

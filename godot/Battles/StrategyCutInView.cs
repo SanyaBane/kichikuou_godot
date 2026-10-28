@@ -102,6 +102,7 @@ internal sealed partial class StrategyCutInView : Control
         _scale = scale;
         _sheet.Position = _backdrop.Position = origin;
         _sheet.Size = _backdrop.Size = new Vector2(1280, 800) * scale;
+        _sheet.ClipContents = Device.Landscape(this) is null;        // the phone's band runs on across the black sides (LB3c)
         _sheet.QueueRedraw();
     }
 
@@ -161,6 +162,23 @@ internal sealed partial class StrategyCutInView : Control
         var edge = Ui.HoverLine with { A = a };
         _sheet.DrawLine(band[0], band[1], edge, Math.Max(1, EdgeWidth * s), true);
         _sheet.DrawLine(band[3], band[2], edge, Math.Max(1, EdgeWidth * s), true);
+        if (!_sheet.ClipContents)
+        {
+            // The phone (docs/ui/phone-build.md, step L4; LB3c): on across the black sides to the screen's edges, at its slant —
+            // strong on through the strategist's side, its edges alone on the other.
+            float Y(float x, float y) => y + BandSlant - x * 2 * BandSlant / 1280;
+            float left = -_sheet.Position.X / s, right = (Size.X - _sheet.Position.X) / s;
+            foreach (var (x0, x1, strongHere) in new[] { (left, 0f, player), (1280f, right, !player) })
+            {
+                if (x1 <= x0)
+                    continue;
+                Vector2[] part = [P(x0, Y(x0, BandTop)), P(x1, Y(x1, BandTop)), P(x1, Y(x1, BandBottom)), P(x0, Y(x0, BandBottom))];
+                if (strongHere)
+                    _sheet.DrawColoredPolygon(part, strong);
+                _sheet.DrawLine(part[0], part[1], edge, Math.Max(1, EdgeWidth * s), true);
+                _sheet.DrawLine(part[3], part[2], edge, Math.Max(1, EdgeWidth * s), true);
+            }
+        }
 
         // The portrait slides in from its side.
         var area = player ? PlayerPortrait : EnemyPortrait;
