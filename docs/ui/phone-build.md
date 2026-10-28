@@ -486,6 +486,37 @@ on Oaks (6), the debug build):
 - **Unattended play**: `--phone landscape --turn-end --scout` headless from the week-18 save to its deployment picker runs
   as before (Ninja Scout on Ys (5), Back from the deployment screen, the interception).
 
+**Step L7, where it stands (2026-10-28):** split in two. **L7a (Harem and Treasure) is built, awaiting the owner's look on
+the phone**; L7b (Save/Load as LL1 and the comment's editing as LY1) is next.
+
+- **The model** (`Original.Content/Devices/PhonePickers`, tested in `PhonePickersTests`): the places at the mock-ups'
+  figures (`lh2`, `lt2`, `folded_grid`, `column_title`, `girl_details`, `item_details`, `harem_cell`, `treasure_cell_two`)
+  in the canvas's units — the column at the left (1104 wide from the hole's strip + 6) with the title band (the divider at
+  110), the picture at the column's width in the PC's shape (666 × 416; the mock's dump crop was 663 × 412), the details 12
+  under it; the harem's End (320) | Summon 140 high 10 over the gesture zone; the treasure's Characters | Items and End
+  (320) 130 high, its touch mode button (440 × 150) beside the details, a first pick's prompt and Back (220) in the tabs'
+  place, a callout's room left of the button; the grid from 40 right of the column to the hole's strip over the whole
+  height, folded after its ninth row (the halves 40 apart, the cells 8 and 6, the rows as high as nine fill the grid — the
+  mock's whole-pixel rows left 7 at its foot), `CellAt`, the gold rule between the halves. A longer screen widens the grid.
+- **The views**, keyed by the live device: `HaremView.Phone.cs` and `TreasureView.Phone.cs` (their `Place` switches to the
+  phone's layout over the whole screen on the wave backdrop; the hit tests at `PhonePickers`' places), the parts they share
+  in `PhonePickerParts` (the title band, an empty cell, the rule, a plain button); `TreasureView.ShowCallout` places the
+  script's questions and refusals for the game and the screen gallery alike — on the phone in `TreasureCallout.PlacePhone`'s
+  layout beside the button, standing on its foot.
+- **The agent's choices**, for the owner to confirm: the girls' names in their cells in Cinzel as LH2 drew them (the PC's
+  are the brush face), a visit's mark (NEW, ???) at her cell's top right; "This visit" as the details' third column as on
+  the PC (LH2 drew two), the values shrunk so the three fit; the treasure's subtitle ("Equippable") after the name as on
+  the PC (LT2 put it before the figure's label, "EQUIPPABLE · HELD BY"), a unit's three figures in columns, the values shrunk
+  to the room; the button's word in the PC's Cinzel (LT2's brush), greyed with the refusal under it; a first pick's prompt
+  (the unit's face, "Rance is equipping —" over "Which item?") and Back in the tabs' place while it waits (the tabs drop the
+  pick as Back does), which LT2 did not draw; a callout over the picture's foot and the details, left of the button; a held
+  item's name over its holder, an item in stock and a unit in one line (a unit's diamond, Chaos and Nikkou's padlock as on
+  the PC); with nothing selected the PC's hint in the details' place.
+- **The gallery**: the PC and touch passes same (110 and 111 entries); the phone pass's `harem` and `treasure…` entries
+  match LH2 and LT2 (docs/ui/gallery.md, §9), which left `GALLERY_ENTRIES_LAND`.
+- **Unattended play**: `--phone landscape` headless from the week-18 save to its deployment picker with `--treasure` (our
+  Treasure screen clicked through) and with `--harem 6` runs as before.
+
 ### Upright (steps P0-P9)
 
 | Step | What | Base versions (phone.md) |

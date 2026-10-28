@@ -15,7 +15,8 @@ namespace Kichikuou.Game.Strategy;
 /// Summon summons. The marks (owner's decision 30, docs/ui/talk-marks.md §6, H): a tablet's right slot NEW in green or
 /// ??? in amber, nothing when her visit is read (her visits stay in the panel); the panel's "This visit" in words; Summon's
 /// pill at its top right, none when read. Drawn by hand in the 1280×800 screen's pixels (<see cref="Lacquer"/>). It decides nothing: the
-/// presses go to <see cref="GameScreen"/>, which clicks the picker's cell or its End (<see cref="HaremRoster"/>).
+/// presses go to <see cref="GameScreen"/>, which clicks the picker's cell or its End (<see cref="HaremRoster"/>). On the phone
+/// held landscape the screen takes the whole screen, its grid folded after its ninth row (docs/ui/phone-build.md, step L7, LH2).
 /// </summary>
 internal sealed partial class HaremView : Control
 {
@@ -62,7 +63,7 @@ internal sealed partial class HaremView : Control
         _backdrop = new Layer(c =>
         {
             c.DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
-            Ui.DrawWaveBackdrop(c, _k);
+            Ui.DrawWaveBackdrop(c, _k, _phone is null ? null : c.Size / _k);      // the phone's: the whole screen
         }) { ClipContents = true };
         AddChild(_backdrop);
         _face = new Layer(DrawScreen);
@@ -82,17 +83,24 @@ internal sealed partial class HaremView : Control
         _face.QueueRedraw();
     }
 
-    /// <summary>Covers the screen whose script pixel (0, 0) is at <paramref name="origin"/>, <paramref name="pixelsPerScript"/> screen pixels to a script pixel.</summary>
+    /// <summary>
+    /// Covers the screen whose script pixel (0, 0) is at <paramref name="origin"/>, <paramref name="pixelsPerScript"/> screen
+    /// pixels to a script pixel; on the phone held landscape the whole screen in its frame's layout pixels (LH2).
+    /// </summary>
     public void Place(Vector2 origin, float pixelsPerScript)
     {
         Position = Vector2.Zero;
         Size = GetParentAreaSize();
-        float k = pixelsPerScript / 2;
-        var area = new Vector2(1280, 800) * k;
-        if (origin == _origin && Math.Abs(k - _k) < 0.0001f && _backdrop.Size == area)
+        var phone = Device.Landscape(this);
+        float k = phone?.Scale ?? pixelsPerScript / 2;
+        if (phone is not null)
+            origin = Vector2.Zero;
+        var area = phone is not null ? Size : new Vector2(1280, 800) * k;
+        if (origin == _origin && Math.Abs(k - _k) < 0.0001f && _backdrop.Size == area && phone == _phone)
             return;
         _origin = origin;
         _k = k;
+        _phone = phone;
         foreach (var layer in new[] { _backdrop, _face })
         {
             layer.Position = origin;
@@ -137,6 +145,8 @@ internal sealed partial class HaremView : Control
 
     private int ButtonAt(Vector2 local)
     {
+        if (_phone is { } phone)
+            return PhoneButtonAt(phone, local);
         var at = (local - _origin) / _k;
         if (SummonArea.HasPoint(at))
             return SummonButton;
@@ -212,8 +222,13 @@ internal sealed partial class HaremView : Control
     private void DrawScreen(Control c)
     {
         c.DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
+        if (_phone is { } phone)
+        {
+            DrawPhone(c, new PhoneUnits(phone));
+            return;
+        }
         DrawTitle(c);
-        DrawPicture(c);
+        DrawPicture(c, PictureArea);
         DrawInfo(c);
         DrawGrid(c);
     }
@@ -229,9 +244,8 @@ internal sealed partial class HaremView : Control
     }
 
     /// <summary>Her picture as the picker's panel shows it (the gold frame is the original's), with a shadow.</summary>
-    private void DrawPicture(Control c)
+    private void DrawPicture(Control c, Rect2 p)
     {
-        var p = PictureArea;
         for (int i = 10; i >= 1; i--)
             c.DrawRect(new Rect2(p.Position.X - i + 3, p.Position.Y - i + 8, p.Size.X + 2 * i, p.Size.Y + 2 * i), new Color(0, 0, 0, 0.06f));
         if (_picture is not null)

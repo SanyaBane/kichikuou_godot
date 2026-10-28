@@ -441,3 +441,7 @@ button (`subordinates…`, `subordinates-question`); LD2, LU1 and LU1q left the 
 the enemy attack: across the whole width, the province and the army at the left, the column with the news, Maris's
 question and the answers at the right thumb (`enemy-attack`, `enemy-attack-scouted`), Ninja Scout's list above its button
 (`enemy-attack-ninjas`), Abandon City's question above its (`enemy-attack-abandon`); LA2 and LA2n left the mock-up tab.
+Step L7a (2026-10-28) built Harem and Treasure: across the whole width, the title, the picture and the details at the left
+with the buttons at the left thumb, the grid folded after its ninth row at the right thumb (`harem`, `treasure…`), the
+treasure's questions and refusals in the callout left of its button (`treasure-question`, `treasure-replace`), a first
+pick's prompt and Back in the tabs' place (`treasure-which-item`); LH2 and LT2 left the mock-up tab.

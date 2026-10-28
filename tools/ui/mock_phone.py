@@ -348,11 +348,9 @@ GALLERY_ENTRIES = {
 # The gallery's landscape phone tab (phone-land): the owner's chosen landscape base versions (round P8 on), those not
 # built yet; a built one leaves for the real pass "Smartphone, landscape" (docs/ui/phone-build.md: L1 took LS1, LS1b,
 # LS1m, LW1, LEd, LN3 and LR2; L2 LM1a, LM1b and LM1c; L3 LB2, LB2r1 and LB2x; L4 LB3o1, LB3s, LB3c, LB3r and LB3b;
-# L5 LD2, LU1 and LU1q; L6 LA2 and LA2n).
+# L5 LD2, LU1 and LU1q; L6 LA2 and LA2n; L7a LH2 and LT2).
 GALLERY_ENTRIES_LAND = {
-    # Round P11's choices (owner, 2026-10-28; docs/ui/phone.md, §15).
-    'LH2': ('lh2-harem', 'Harem — LH2', 'The harem', 'the grid folded in two, every girl in view'),
-    'LT2': ('lt2-treasure', 'Treasure — LT2', 'The treasure', 'the grid folded in two, every item in view'),
+    # Round P11's choices (owner, 2026-10-28; docs/ui/phone.md, §15); LH2 and LT2 built (step L7a).
     'LL1': ('ll1-saves', 'Save/Load — LL1', 'Load', 'the PC\'s split: the list left, the save\'s page right'),
     # Round P12's choices (owner, 2026-10-28; docs/ui/phone.md, §16).
     'LO1': ('lo1-options', 'Options — LO1', 'The options window', 'the paper sheet across the width, its tabs on top'),

@@ -1,5 +1,6 @@
 using Godot;
 using Kichikuou.Game.Battles;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.Content.Strategy;
 using Kichikuou.Original.State;
 
@@ -17,7 +18,8 @@ namespace Kichikuou.Game.Strategy;
 /// In the touch mode (docs/ui/pickers.md, §6, the owner's round X) there is no hover: a tap on a cell only selects it — lit
 /// as the PC's hover, its picture and line in the panel — and a red button at the info panel's right acts on it
 /// (<see cref="TreasureButton"/>: Choose an item, Choose a character, Equip, Take off), greyed with its reason where the
-/// picker would refuse the click.
+/// picker would refuse the click. On the phone held landscape the screen takes the whole screen, its grid folded after its
+/// ninth row (docs/ui/phone-build.md, step L7, LT2).
 /// </summary>
 internal sealed partial class TreasureView : Control
 {
@@ -81,7 +83,7 @@ internal sealed partial class TreasureView : Control
         _backdrop = new Layer(c =>
         {
             c.DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
-            Ui.DrawWaveBackdrop(c, _k);
+            Ui.DrawWaveBackdrop(c, _k, _phone is null ? null : c.Size / _k);      // the phone's: the whole screen
         }) { ClipContents = true };
         AddChild(_backdrop);
         _face = new Layer(DrawScreen);
@@ -121,17 +123,24 @@ internal sealed partial class TreasureView : Control
         _face.QueueRedraw();
     }
 
-    /// <summary>Covers the screen whose script pixel (0, 0) is at <paramref name="origin"/>, <paramref name="pixelsPerScript"/> screen pixels to a script pixel.</summary>
+    /// <summary>
+    /// Covers the screen whose script pixel (0, 0) is at <paramref name="origin"/>, <paramref name="pixelsPerScript"/> screen
+    /// pixels to a script pixel; on the phone held landscape the whole screen in its frame's layout pixels (LT2).
+    /// </summary>
     public void Place(Vector2 origin, float pixelsPerScript)
     {
         Position = Vector2.Zero;
         Size = GetParentAreaSize();
-        float k = pixelsPerScript / 2;
-        var area = new Vector2(1280, 800) * k;
-        if (origin == _origin && Math.Abs(k - _k) < 0.0001f && _backdrop.Size == area)
+        var phone = Device.Landscape(this);
+        float k = phone?.Scale ?? pixelsPerScript / 2;
+        if (phone is not null)
+            origin = Vector2.Zero;
+        var area = phone is not null ? Size : new Vector2(1280, 800) * k;
+        if (origin == _origin && Math.Abs(k - _k) < 0.0001f && _backdrop.Size == area && phone == _phone)
             return;
         _origin = origin;
         _k = k;
+        _phone = phone;
         foreach (var layer in new[] { _backdrop, _face })
         {
             layer.Position = origin;
@@ -224,8 +233,35 @@ internal sealed partial class TreasureView : Control
 
     private static Rect2 TabRect(int view) => new(TabX + view * TabStep, TabY, TabW, TabH);
 
+    /// <summary>
+    /// Shows <paramref name="lines"/> in <paramref name="callout"/> about cell <paramref name="cell"/> as the device lays the
+    /// screen out over <paramref name="picture"/> (the picture's area, the callout's parent's coordinates): under the cell on
+    /// the PC, beside the button in the touch mode (the owner's X4), on the phone held landscape beside the button at the
+    /// phone's sizes, left of it (step L7). The game's and the screen gallery's.
+    /// </summary>
+    internal void ShowCallout(TreasureCallout callout, IReadOnlyList<string> lines, int cell, bool waiting, Rect2 picture)
+    {
+        if (_phone is { } phone)
+        {
+            callout.PlacePhone(phone);
+            callout.Show(lines, callout.FromGlobal(Global(PhonePickers.Action(phone))), waiting,
+                callout.FromGlobal(Global(PhonePickers.BesideAction(phone))));
+            return;
+        }
+        if (TouchMode.On)
+            callout.Show(lines, ActionRect, waiting, BesideAction);
+        else
+            callout.Show(lines, CellRect(cell), waiting);
+        callout.Place(picture);
+    }
+
+    /// <summary>A box of the phone's screen in global coordinates (the screen's units start at the view's corner).</summary>
+    private Rect2 Global(PhoneFrame.Box box) => new(GlobalPosition + new Vector2(box.X, box.Y), new Vector2(box.W, box.H));
+
     private int ButtonAt(Vector2 local)
     {
+        if (_phone is { } phone)
+            return PhoneButtonAt(phone, local);
         var at = (local - _origin) / _k;
         if (EndArea.HasPoint(at))
             return EndButton;
@@ -328,8 +364,13 @@ internal sealed partial class TreasureView : Control
     private void DrawScreen(Control c)
     {
         c.DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
+        if (_phone is { } phone)
+        {
+            DrawPhone(c, new PhoneUnits(phone));
+            return;
+        }
         DrawTitle(c);
-        DrawPicture(c);
+        DrawPicture(c, PictureArea);
         DrawInfo(c);
         DrawGrid(c);
     }
@@ -344,13 +385,13 @@ internal sealed partial class TreasureView : Control
     }
 
     /// <summary>The picture panel as the picker shows it (the gold frame is the original's), with a shadow.</summary>
-    private void DrawPicture(Control c)
+    private void DrawPicture(Control c, Rect2 area)
     {
-        Shadowed(c, PictureArea);
+        Shadowed(c, area);
         if (_picture is not null)
-            c.DrawTextureRect(_picture, PictureArea, false);
+            c.DrawTextureRect(_picture, area, false);
         else
-            c.DrawRect(PictureArea, Colors.Black);
+            c.DrawRect(area, Colors.Black);
     }
 
     /// <summary>The original's line as a name, a subtitle and figures; under it the first pick's prompt, or how to pick.</summary>
@@ -539,11 +580,11 @@ internal sealed partial class TreasureView : Control
             c.DrawRect(new Rect2(p.Position.X - i + 3, p.Position.Y - i + 8, p.Size.X + 2 * i, p.Size.Y + 2 * i), new Color(0, 0, 0, 0.06f));
     }
 
-    /// <summary>A small padlock: a shackle over a body.</summary>
-    private void DrawLock(Control c, Vector2 at, Color colour)
+    /// <summary>A small padlock: a shackle over a body, <paramref name="s"/> times the PC's size.</summary>
+    private void DrawLock(Control c, Vector2 at, Color colour, float s = 1)
     {
-        c.DrawArc(at + new Vector2(0, -4), 3.5f, Mathf.Pi, Mathf.Tau, 12, colour, Line(1.6f));
-        c.DrawRect(new Rect2(at.X - 5, at.Y - 4, 10, 8), colour);
+        c.DrawArc(at + new Vector2(0, -4 * s), 3.5f * s, Mathf.Pi, Mathf.Tau, 12, colour, Line(1.6f * s));
+        c.DrawRect(new Rect2(at.X - 5 * s, at.Y - 4 * s, 10 * s, 8 * s), colour);
     }
 
     private static void Centred(Control c, Font font, string text, int size, Color colour, float centre, float baseline)

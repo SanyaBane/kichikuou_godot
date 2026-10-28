@@ -339,6 +339,11 @@ across the whole width — the province and the army at the left, the news, Mari
 the right thumb, Ninja Scout's list above its button two ninjas a row, Abandon City's question above its
 (`Original.Content/Devices/PhoneAttack`; `EnemyAttackView.Phone.cs`, `Battles/PhoneCommanderCard`, shared with the scout
 report).
+Step L7 is split: L7a is built, awaiting the owner's look on the phone (phone-build.md, "Step L7, where it stands"): Harem
+and Treasure across the whole width — the title, the picture and the details at the left, the buttons at the left thumb,
+the pickers' grid folded after its ninth row at the right thumb, every cell at its number's place, an item's name over its
+holder (`Original.Content/Devices/PhonePickers`; `HaremView.Phone.cs`, `TreasureView.Phone.cs`, `PhonePickerParts`; the
+callout's placement `TreasureView.ShowCallout`, the game's and the gallery's); L7b (Save/Load, the comment's editing) next.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

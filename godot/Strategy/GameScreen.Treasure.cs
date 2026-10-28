@@ -117,16 +117,10 @@ public partial class GameScreen
 
     /// <summary>
     /// The callout at the cell clicked last — in the touch mode beside the screen's button, the last tap (docs/ui/pickers.md,
-    /// §6, the owner's X4).
+    /// §6, the owner's X4); on the phone held landscape beside it at the phone's sizes.
     /// </summary>
-    private void ShowTreasureCallout(IReadOnlyList<string> lines, bool waiting)
-    {
-        if (TouchMode.On)
-            _treasureCallout.Show(lines, TreasureView.ActionRect, waiting, TreasureView.BesideAction);
-        else
-            _treasureCallout.Show(lines, TreasureView.CellRect(_treasureAsked), waiting);
-        _treasureCallout.Place(PictureArea());
-    }
+    private void ShowTreasureCallout(IReadOnlyList<string> lines, bool waiting) =>
+        _treasure.ShowCallout(_treasureCallout, lines, _treasureAsked, waiting, PictureArea());
 
     /// <summary>Whether <paramref name="window"/> shows as the callout: over our Treasure screen, after a cell's click.</summary>
     private bool TreasureCalloutFor(MessageWindow? window) => window is not null && _treasure.Visible && _treasureAsked > 0;

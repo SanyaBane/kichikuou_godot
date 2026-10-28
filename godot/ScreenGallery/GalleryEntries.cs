@@ -141,11 +141,7 @@ internal static partial class GalleryEntries
             view.Refresh(s);
             if (asked is not var (lines, cell, waiting))
                 return;
-            if (TouchMode.On)
-                callout.Show(lines, TreasureView.ActionRect, waiting, TreasureView.BesideAction);
-            else
-                callout.Show(lines, TreasureView.CellRect(cell), waiting);
-            callout.Place(area);
+            view.ShowCallout(callout, lines, cell, waiting, area);
             view.Asked = cell;
         };
     }
