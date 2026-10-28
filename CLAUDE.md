@@ -296,8 +296,8 @@ Menu, Skip and Log in the left side, a dialogue menu's rows at the right thumb).
 screen, the last three, were drawn over their screen gallery entries (`all-data…`, `title…`, `import…`; docs/ui/gallery.md,
 §7 step 7) as rounds P18 (upright) and P19 (landscape), docs/ui/phone.md, §22-§23; the owner chose All Data PG2 and LG2
 (the graphs as tabs, the scales as chips), the title PE2 (the buttons' words in rows under the picture) and LE1 (the PC's
-alone), the import screen PI and LI as drawn — so every screen of ours has a base version in both orientations. The
-agent's own choices still to confirm are its §5, questions 33 and 37. The gallery shows both orientations'
+alone), the import screen PI and LI as drawn — so every screen of ours has a base version in both orientations, and
+the owner confirmed every choice of the agent's in the rounds (its §5, questions 33 and 37). The gallery shows both orientations'
 choices on tabs of their own (`gallery.ps1 -PhoneOnly`; the scenes' picture from the week-18 look's frames copied into
 `screen-gallery/phone-look`, docs/ui/gallery.md, §9).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game

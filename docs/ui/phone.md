@@ -181,18 +181,20 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
     rows), 14 (Subordinates' End), 5 (the bar's cells) and 6 (turning the phone); 1 (the line breaks) looks answered by
     PS2, which keeps the script's breaks, for the owner to confirm.~~ Drawn as rounds P16 (§20: 12, 13, 14) and P17
     (§21: 5, 6, 1).
-33. **The agent's own choices in rounds P16-P17**, for the owner to confirm: each ledger tab keeps its own sideways
-    scroll, which glides (the columns are not stepped); the phone's Back gesture ends Subordinates wherever End stands.
+33. ~~**The agent's own choices in rounds P16-P17**, for the owner to confirm: each ledger tab keeps its own sideways
+    scroll, which glides (the columns are not stepped); the phone's Back gesture ends Subordinates wherever End stands.~~
+    Confirmed by the owner (2026-10-28).
 34. ~~**All Data** (rounds P18-P19, §22-§23): PG1 or PG2 upright, LG1 or LG2 landscape.~~ PG2 and LG2.
 35. ~~**The title** (rounds P18-P19): PE1 or PE2 upright, LE1 or LE2 landscape; the description (PEd, LEd) and the
     requests slip (PEr) as drawn?~~ PE2 with the buttons' words alone, LE1; PEd, PEr and LEd as drawn.
 36. ~~**The import screen** (rounds P18-P19): PI, PIp, PIr and LI, LIp, LIr as drawn?~~ As drawn.
-37. **The agent's own choices in rounds P18-P19**: the graphs as tabs and the scales as chips (PG2, LG2), the folder
-    named by its place on Android. The owner asked for a list of all the agent's own choices (2026-10-28), with 33.
+37. ~~**The agent's own choices in rounds P18-P19**: the graphs as tabs and the scales as chips (PG2, LG2), the folder
+    named by its place on Android.~~ Confirmed by the owner (2026-10-28), with every other choice of the agent's still
+    open in the earlier rounds (§5's own list, §6, §7, §12).
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
-zoom).
+zoom). **Confirmed by the owner (2026-10-28)** (the bar and the menu's place already by PK1 and PS2m).
 
 ## 6. Round P2: the battle on PB1 (owner, 2026-10-27)
 
@@ -212,7 +214,7 @@ are PB1's.
   empty while the exchange plays, as the tablet's rails are; Skip in its place.
 
 The agent's choice, for the owner to confirm: Skip at its strip's left, the tablet's corner (the strip has room for
-more beside it).
+more beside it). **Confirmed by the owner (2026-10-28).**
 
 ## 7. Round P3: the deployment table and Subordinates (2026-10-27)
 
@@ -278,6 +280,7 @@ two-line rows scrolled sideways, End at the thumb with the budget beside it; PD2
 
 The agent's own choices, for the owner to confirm: our full screens upright have no Menu / Log / Skip bar (their own
 buttons take the foot; the map's bar is back when they close); the picture panel only on a long press.
+**Confirmed by the owner (2026-10-28).**
 
 ## 8. Round P4: the enemy attack and the week report (2026-10-27)
 
@@ -488,6 +491,7 @@ and the toggles.
 
 The agent's own choices, for the owner to confirm: the hole's 6.3 mm kept free on both sides (either may hold it); Menu
 as a cell on the map (the menu bar is 2 mm high here); the battle's Skip on the left rail's top.
+**Confirmed by the owner (2026-10-28).**
 
 **The owner's choice (2026-10-27): LM1 and LB2.** So in landscape the frame keeps the layout's 16:10 and our controls
 live in the black sides wherever they fit (the map), and the battle trades some of the scene's height for the cards.
