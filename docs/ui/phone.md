@@ -173,6 +173,9 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 30. ~~**The scenes upright** (round P14, §18): PS2, PS2l, PS2b and PS2m as drawn?~~ As drawn, the agent's choices with
     them.
 31. ~~**The scenes landscape** (round P15, §19): LS1 or LS2.~~ LS1, with LS1b and LS1m.
+32. **What comes next** (the owner, 2026-10-28): the open questions upright — 12 (the opening), 13 (the ledger's rows),
+    14 (Subordinates' End), 5 (the bar's cells) and 6 (turning the phone); 1 (the line breaks) looks answered by PS2,
+    which keeps the script's breaks, for the owner to confirm.
 
 The agent's own choices in the mock-ups, for the owner to confirm: Menu, Log and Skip in one bar at the foot; a `]`
 menu taking the bar's place; the map's plates drawn larger than the map's scale (their text 1.7-2 mm whatever the
