@@ -1,5 +1,6 @@
 using Godot;
 using Kichikuou.Game.Battles;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.Content.Strategy;
 
 namespace Kichikuou.Game.Strategy;
@@ -15,7 +16,8 @@ namespace Kichikuou.Game.Strategy;
 /// right thumb's reach: Retreat at its top, furthest from the resting thumb, then Ascend, the floor and a larger Descend
 /// in the corner. The touch mode's rail also holds the dungeon's menu before a search (<see cref="OpenEntry"/>; §6, the
 /// owner's B): Start Search where Descend stands once the search begins, Return on top as Retreat, the other items
-/// between them, the rail growing upwards.
+/// between them, the rail growing upwards. On the phone held landscape the tablet's rail stays in the frame at the phone's
+/// sizes (LF2, LF2e; <c>FloorLadderView.Phone.cs</c>).
 /// </summary>
 internal sealed partial class FloorLadderView : Control
 {
@@ -91,19 +93,27 @@ internal sealed partial class FloorLadderView : Control
         Visible = false;
     }
 
-    /// <summary>Lays the layer over the screen's picture (<paramref name="area"/>, in its parent's coordinates).</summary>
+    /// <summary>
+    /// Lays the layer over the screen's picture (<paramref name="area"/>, in its parent's coordinates); on the phone held
+    /// landscape over the whole screen in its frame's layout pixels, the rail at the phone's sizes (LF2, <see cref="PhoneLadder"/>).
+    /// </summary>
     public void Place(Rect2 area)
     {
-        float k = area.Size.X / 1280f;
-        if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f)
+        var phone = Device.Landscape(this);
+        if (phone is not null)
+            area = new Rect2(Vector2.Zero, GetParentAreaSize());
+        float k = phone?.Scale ?? area.Size.X / 1280f;
+        if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f && phone == _phone)
             return;
         Position = area.Position;
         Size = area.Size;
         _k = k;
+        _phone = phone;
         QueueRedraw();
     }
 
-    private Rect2 PanelRect => _entry is not null ? new Rect2(TouchX, EntryTop, TouchW, TouchY + TouchH - EntryTop)
+    private Rect2 PanelRect => _phone is { } f ? PhonePanelRect(f)
+        : _entry is not null ? new Rect2(TouchX, EntryTop, TouchW, TouchY + TouchH - EntryTop)
         : Touch ? new Rect2(TouchX, TouchY, TouchW, TouchH) : new Rect2(X, Y, W, H);
 
     /// <summary>The entry rail's top: over Start Search the other items, then Return.</summary>
@@ -114,6 +124,8 @@ internal sealed partial class FloorLadderView : Control
 
     private Rect2 RectOf(Part part)
     {
+        if (_phone is { } f)
+            return PhoneRectOf(f, part);
         if (_entry is not null)
         {
             float x = TouchX + TouchInset, w = TouchW - 2 * TouchInset, top = EntryTop;
@@ -217,6 +229,11 @@ internal sealed partial class FloorLadderView : Control
     public override void _Draw()
     {
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
+        if (_phone is { } phone)
+        {
+            DrawPhone(new PhoneUnits(phone));
+            return;
+        }
         if (_entry is { } entry)
         {
             DrawEntry(entry);

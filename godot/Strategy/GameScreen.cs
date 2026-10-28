@@ -457,6 +457,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _sceneMenuView.Place(PictureArea());
         if (_ladderView.Visible)
             _ladderView.Place(PictureArea());
+        _optionsView?.Place(PictureArea());                         // a phone turned lays it out again
         if (_provinceView.Visible)
             _provinceView.Place(PictureArea());
         if (_weekView.Visible)

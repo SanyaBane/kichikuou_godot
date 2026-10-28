@@ -351,10 +351,7 @@ GALLERY_ENTRIES = {
 # L5 LD2, LU1 and LU1q; L6 LA2 and LA2n; L7a LH2 and LT2; L7b LL1 and LY1).
 GALLERY_ENTRIES_LAND = {
     # Round P11's choices (owner, 2026-10-28; docs/ui/phone.md, §15): LH2 and LT2 built (step L7a), LL1 (step L7b).
-    # Round P12's choices (owner, 2026-10-28; docs/ui/phone.md, §16).
-    'LO1': ('lo1-options', 'Options — LO1', 'The options window', 'the paper sheet across the width, its tabs on top'),
-    'LF2': ('lf2-ladder', 'Dungeon — LF2', 'The floor ladder', 'the tablet\'s rail kept in the frame'),
-    'LF2e': ('lf2-entry', 'Dungeon — LF2', 'Before a search', 'Return over Start Search, both in one line'),
+    # Round P12's choices (owner, 2026-10-28; docs/ui/phone.md, §16): LO1, LF2 and LF2e built (step L8).
     # Round P19's choices (owner, 2026-10-28; docs/ui/phone.md, §23): All Data, the title, the import.
     'LG2m': ('lg2-data', 'All Data — LG2', 'The menu of graphs', 'the frame kept, the graphs in the left side'),
     'LG2': ('lg2-funds', 'All Data — LG2', 'A graph', 'its figures at the phone\'s type; the scales in the right side'),

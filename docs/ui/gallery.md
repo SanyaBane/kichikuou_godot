@@ -448,4 +448,6 @@ pick's prompt and Back in the tabs' place (`treasure-which-item`); LH2 and LT2 l
 built Save/Load: the list at the left in one-line rows, the chosen save's page at the right with the map cut lower, Back
 | the red button at its foot (`save-load…`), Delete's and the sweep's questions at them (`save-load-delete`,
 `save-load-sweep`), the comment's own card where LY1 has it over the keyboard (`save-load-comment`); LL1 and LY1 left the
-mock-up tab.
+mock-up tab. Step L8 (2026-10-28) built the options window and the dungeon's menus: the paper sheet across the whole width,
+its tabs on top, each tab in two columns, Defaults | Close at the right column's foot (`options-…`); the tablet's rail
+kept in the frame at the phone's sizes (`floor-ladder…`, `dungeon-entry…`); LO1, LF2 and LF2e left the mock-up tab.

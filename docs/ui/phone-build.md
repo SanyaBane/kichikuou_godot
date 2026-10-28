@@ -561,6 +561,47 @@ L7b:
   canvas 1778 × 800 as the gallery's phone pass): before, the headless window was square and a phone layout's places fell
   off the canvas, which only clicks at a view's places (as `--saveload`'s) notice.
 
+**Step L8, where it stands (2026-10-28):** built, **awaiting the owner's look on the phone**.
+
+- **The models** (tested in `PhoneOptionsTests`): `Original.Content/Devices/PhoneOptions` — the places at the mock-up's
+  figures (`lo1`, `messages_columns`, `paper_button`) in the canvas's units: the five tabs (330 × 110, 10 apart, from the
+  hole's strip + 6; one not chosen 12 lower), the title's right at the sheet's less 4, the sheet from 126 to 10 over the
+  gesture zone, its two columns 40 in from its sides and 30 either side of its middle from 36 under its top, the rule
+  between them 40 in from its top and foot, Defaults (380) | Close (to the right column's end) 130 high 30 over the
+  sheet's foot; the question's box the PC's at the parts' scale over the sheet's middle; `PartScale` (2.32 reference pixels
+  a unit of the PC's parts: their names 17 → 40, their explanations 13 → 30, their boxes 20 → 46, PO1's type). A longer
+  screen widens the sheet and its columns. `Original.Content/Devices/PhoneLadder` — the rail 356 wide 16 in from the
+  frame's right, from 10 over the gesture zone up: Descend (150), the floor's block (110), Ascend, Retreat, 14 apart; before
+  a search Start Search in Descend's place, the other items over it, Return on top; the panel 14 round them.
+- **The views**, keyed by the live device: `OptionsView.Phone.cs` lays the window over the whole screen on the wave
+  backdrop (a layer behind it), the PC's parts drawn at `PartScale` — their geometry by the drawing's scale, their text
+  through `Text` at the canvas's own size, so it stays sharp (on the PC `Text` is `DrawString` as before) — at the
+  columns' places; the tabs, the title, Defaults (a paper button, deaf on Game) and Close (red, the brush face) at
+  `PhoneOptions`' places. The PC's tabs share their parts with the phone's (`SpeedSlider`, `MessageSkipColumn`,
+  `FontSection`, `PaletteSection`, `ThousandsSection`, `RowsSection`, `EffectsSection`, `TimingRow`, `GameSection`,
+  `ForecastBox`, `ReachRadio`, `NewScenesBox`); a check box's hint wraps into a column on the phone. `GameScreen` places
+  the open window every frame, so a phone turned lays it out again. `FloorLadderView.Phone.cs` draws the rail at
+  `PhoneLadder`'s places, the hit tests the same boxes.
+- **The agent's choices**, for the owner to confirm: Messages' preview is the game's 121 at the reference's own pixels (its
+  text at PO1's 2.7 mm), centred in the column (LO1 drew a box of the column's width, its text at the left); the read
+  text's two explanations wrapped in the column as one paragraph (LO1 drew the first); the other tabs, which LO1 did not
+  draw — Display: the font left, the palette right, the thousands and the unit tables' row heights across the sheet (their
+  five tiles need its width); Battle: the effects across, the timings in the two columns (five left, four right, over
+  Defaults); Game: the folder across; Tweaks: the line on what they are across, Battle left with "Chaos and Nikkou reach
+  demons"' three choices one under another (a column has no room for them side by side), Scenes right; the rule between
+  the columns only where a tab has two; the PC's parts' look kept (Cinzel tabs, the chosen one in bold, the slider and
+  boxes as the PC's, lines at the parts' scale); a question (Forget, the game folder) the PC's box at the parts' scale
+  over the sheet's middle, the screen dimmed. On the ladder the way back's arrow and sub-line quiet, the way deeper's
+  gold, as on the PC and the tablet (LF2 drew both arrows gold); Start Search framed in gold as on the tablet; the
+  dungeon's other items (Merim, God's Door) as rows the rungs' height with their words centred between Return and Start
+  Search (LF2e drew none).
+- **The gallery**: the PC and touch passes same; the phone pass's `options-…`, `floor-ladder…` and `dungeon-entry…`
+  entries match LO1, LF2 and LF2e (docs/ui/gallery.md, §9), which left `GALLERY_ENTRIES_LAND`. The gallery's entries draw
+  no Menu cell in the left side (the game's, LF2's "the left as LF1's").
+- **Unattended play**: `--phone landscape --dungeon` headless from the week-18 save runs as before (the menu before the
+  search, the battle on the Monsters' Cave's (dungeon 2) first floor); unattended play answers the dungeon's menus
+  without the rail's places, so step L10's runs are its check.
+
 ### Upright (steps P0-P9)
 
 | Step | What | Base versions (phone.md) |

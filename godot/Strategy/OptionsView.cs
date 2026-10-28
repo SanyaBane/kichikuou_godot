@@ -3,6 +3,7 @@ using Kichikuou.Engine.Script;
 using Kichikuou.Game.Battles;
 using Kichikuou.Original.Combat;
 using Kichikuou.Original.Content;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.Content.Strategy;
 
 namespace Kichikuou.Game.Strategy;
@@ -18,7 +19,8 @@ namespace Kichikuou.Game.Strategy;
 /// game folder), Tweaks (what changes the original's play: the damage forecast, "Chaos and Nikkou reach demons",
 /// <see cref="DemonReachChoice"/>, "New scenes first", <see cref="NewScenesChoice"/>; owner, 2026-10-27). Every change applies
 /// and is kept at once; Defaults resets the tab shown (Game has none: the game folder has no default); Close, Esc or a right click shut it. Forget and the game folder ask first, in a box over the sheet. Laid out
-/// in the 1280×800 screen's pixels, scaled with the picture.
+/// in the 1280×800 screen's pixels, scaled with the picture; on the phone held landscape across the whole screen, each tab
+/// in two columns (LO1, <c>OptionsView.Phone.cs</c>).
 /// </summary>
 internal sealed partial class OptionsView : Control
 {
@@ -64,8 +66,9 @@ internal sealed partial class OptionsView : Control
 
     private const float SpeedColumn = 470;
 
-    /// <summary>Where the preview's 121 sits on the Messages tab: under the speed's slider, as wide as its column.</summary>
-    private Rect2 PreviewRect => new(ContentX, ContentY + 96, SpeedColumn, SpeedColumn * _sample.Panel.H / _sample.Panel.W);
+    /// <summary>Where the preview's 121 sits on the Messages tab: under the speed's slider, as wide as its column (the phone's, <see cref="PhonePreviewRect"/>).</summary>
+    private Rect2 PreviewRect => _phone is { } f ? PhonePreviewRect(f)
+        : new(ContentX, ContentY + 96, SpeedColumn, SpeedColumn * _sample.Panel.H / _sample.Panel.W);
 
     private sealed record Question(string Title, string Text, string Confirm, Action Confirmed);
 
@@ -104,6 +107,13 @@ internal sealed partial class OptionsView : Control
         _gothic = DeploymentTableView.LoadFont(GodotGlyphRenderer.Chosen);
         MouseFilter = MouseFilterEnum.Stop;
         ZIndex = 1000;                                      // over everything, the battle screen's layers (up to 20) included; Godot's limit is 4096
+        _backdrop = new Layer(c =>
+        {
+            float k = _phone?.Scale ?? 1;
+            c.DrawSetTransform(Vector2.Zero, 0, new Vector2(k, k));
+            Ui.DrawWaveBackdrop(c, k, c.Size / k);
+        }) { ShowBehindParent = true, Visible = false };
+        AddChild(_backdrop);
         _preview = new MessageWindowView(GodotGlyphRenderer.Chosen) { Tail = false, MouseFilter = MouseFilterEnum.Ignore };
         AddChild(_preview);
         _preview.Show(_sample, true, null, null);
@@ -113,15 +123,25 @@ internal sealed partial class OptionsView : Control
 
     public Tab Current => _tab;
 
-    /// <summary>Lays the window over the screen's picture (<paramref name="area"/>, in its parent's coordinates).</summary>
+    /// <summary>
+    /// Lays the window over the screen's picture (<paramref name="area"/>, in its parent's coordinates); on the phone held
+    /// landscape over the whole screen, the parts at PO1's type (LO1, <see cref="PhoneOptions"/>).
+    /// </summary>
     public void Place(Rect2 area)
     {
-        float k = area.Size.X / 1280f;
-        if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f)
+        var phone = Device.Landscape(this);
+        if (phone is not null)
+            area = new Rect2(Vector2.Zero, GetParentAreaSize());
+        float k = phone is not null ? phone.Px(PhoneOptions.PartScale) : area.Size.X / 1280f;
+        if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f && phone == _phone)
             return;
         Position = area.Position;
         Size = area.Size;
         _k = k;
+        _phone = phone;
+        _backdrop.Visible = phone is not null;
+        _backdrop.Size = area.Size;
+        _backdrop.QueueRedraw();
         PlaceChildren();
         QueueRedraw();
     }
@@ -357,10 +377,15 @@ internal sealed partial class OptionsView : Control
     {
         _spots.Clear();
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
+        if (_phone is { } phone)
+        {
+            DrawPhone(phone);
+            return;
+        }
         DrawRect(new Rect2(0, 0, 1280, 800), new Color(0, 0, 0, 0.55f));
         Ui.DrawPanel(this, Frame, _k);
         DrawTabs();
-        DrawString(_brush, new Vector2(1150 - _brush.GetStringSize("Options", fontSize: 28).X, 116), "Options", fontSize: 28,
+        Text(_brush, new Vector2(1150 - _brush.GetStringSize("Options", fontSize: 28).X, 116), "Options", fontSize: 28,
             modulate: Ui.Name);
         switch (_tab)
         {
@@ -383,7 +408,7 @@ internal sealed partial class OptionsView : Control
         DrawLink("defaults", "Defaults", new Vector2(150, 706), Defaults, enabled: _tab != Tab.Game);   // the game folder has no default
         bool closeLit = _hover == "close";
         Ui.DrawRedButton(this, CloseButton, closeLit, closeLit && _pressed == "close", _k);
-        DrawString(_cinzelBold, new Vector2(CloseButton.Position.X, Lacquer.Baseline(CloseButton, _cinzelBold, 17)), "Close",
+        Text(_cinzelBold, new Vector2(CloseButton.Position.X, Lacquer.Baseline(CloseButton, _cinzelBold, 17)), "Close",
             HorizontalAlignment.Center, CloseButton.Size.X, 17, Ui.SealText);
         _spots.Add(new Spot("close", CloseButton, Close));
         if (_question is not null)
@@ -405,7 +430,7 @@ internal sealed partial class OptionsView : Control
             DrawRect(rect, on ? Ui.PaperHead : Ui.InkGrey, false, Line(1));
             if (on)
                 current = rect;
-            DrawString(on ? _cinzelBold : _cinzel, new Vector2(x, Lacquer.Baseline(rect, _cinzelBold, 18)), name,
+            Text(on ? _cinzelBold : _cinzel, new Vector2(x, Lacquer.Baseline(rect, _cinzelBold, 18)), name,
                 HorizontalAlignment.Center, w, 18, on ? Ui.HeadInk : Ui.InkQuiet);
             _spots.Add(new Spot("tab-" + name, rect, () => ShowTab(tab)));
             x += w + 6;
@@ -420,20 +445,52 @@ internal sealed partial class OptionsView : Control
     {
         float x = ContentX, y = ContentY, lw = SpeedColumn;
         SectionHead(x, y, "Text speed", lw);
-        int step = TextSpeedChoice.Step;
-        DrawSlider(x + 60, x + lw - 70, y + 66, (step - 1) / (float)(TextSpeedChoice.Steps - 1), step.ToString(),
-            new Slider("speed", x + 60, x + lw - 70, 1, TextSpeedChoice.Steps, 1,
-                v => { if ((int)v != TextSpeedChoice.Step) SetTextSpeed((int)v); }));
-        DrawString(_gothic, new Vector2(x, y + 71), "Slow", fontSize: 14, modulate: Ui.InkQuiet);
-        DrawString(_gothic, new Vector2(x, y + 71), "Instant", HorizontalAlignment.Right, lw, 14, Ui.InkQuiet);
+        SpeedSlider(x, y + 66, lw);
+        MessageSkipColumn(x + lw + 50, y, ContentW - lw - 50);
 
-        float rx = x + lw + 50, rw = ContentW - lw - 50;
+        int chosen = ReadTextChoice.Index;
+        Text(_gothic, new Vector2(x + 14, y + 281), chosen == ReadTextChoice.None ? "Read text keeps the window's colour."
+            : "The preview counts as read.", fontSize: 13, modulate: Ui.InkQuiet);
+        y += 330;
+        SectionHead(x, y, "Already-read text", ContentW);
+        float tx = x;
+        ReadTile("read-none", new Rect2(tx, y + 40, 150, 44), chosen == ReadTextChoice.None, null, ReadTextChoice.None);
+        tx += 160;
+        for (int i = 0; i < ReadTextChoice.Colours.Length; i++, tx += 54)
+            ReadTile("read-" + i, new Rect2(tx, y + 40, 44, 44), chosen == i, ReadTextChoice.Colours[i].Colour, i);
+        Text(_gothic, new Vector2(x, y + 128), chosen == ReadTextChoice.None ? "Don't change" : ReadTextChoice.Colours[chosen].Name,
+            fontSize: 17, modulate: Ui.Ink);
+        Text(_gothic, new Vector2(x, y + 150), ReadTextLines[0], fontSize: 13, modulate: Ui.InkQuiet);
+        Text(_gothic, new Vector2(x, y + 170), ReadTextLines[1], fontSize: 13, modulate: Ui.InkQuiet);
+    }
+
+    /// <summary>What the already-read text's colour does, in two lines.</summary>
+    private static readonly string[] ReadTextLines =
+    [
+        "A message window you have read before, in any game, shows its text in this colour.",
+        "The battle's balloons too, darker on white; menus and our screens keep theirs. Forget them… counts them unread.",
+    ];
+
+    /// <summary>The text speed's slider at <paramref name="y"/>, "Slow" and "Instant" at its ends, across <paramref name="width"/>.</summary>
+    private void SpeedSlider(float x, float y, float width)
+    {
+        int step = TextSpeedChoice.Step;
+        DrawSlider(x + 60, x + width - 70, y, (step - 1) / (float)(TextSpeedChoice.Steps - 1), step.ToString(),
+            new Slider("speed", x + 60, x + width - 70, 1, TextSpeedChoice.Steps, 1,
+                v => { if ((int)v != TextSpeedChoice.Step) SetTextSpeed((int)v); }));
+        Text(_gothic, new Vector2(x, y + 5), "Slow", fontSize: 14, modulate: Ui.InkQuiet);
+        Text(_gothic, new Vector2(x, y + 5), "Instant", HorizontalAlignment.Right, width, 14, Ui.InkQuiet);
+    }
+
+    /// <summary>Messages' second column: the message skip's switches, the seen messages and Forget, the mouse (not in the touch mode).</summary>
+    private void MessageSkipColumn(float rx, float y, float rw)
+    {
         SectionHead(rx, y, "Message skip", rw);
         CheckBox("skip-unseen", rx, y + 38, _skip.SkipUnseen, "Skip unseen text", "MsgSkip and Ctrl skip unread ones too.",
             () => _skip.SkipUnseen = !_skip.SkipUnseen);
         CheckBox("fast-fades", rx, y + 92, _skip.FastFades, "MsgSkip speeds up fades", "Fades and waits run fast.",
             () => _skip.FastFades = !_skip.FastFades);
-        DrawString(_gothic, new Vector2(rx, y + 165), $"{_skip.SeenCount} messages seen.", fontSize: 14, modulate: Ui.InkQuiet);
+        Text(_gothic, new Vector2(rx, y + 165), $"{_skip.SeenCount} messages seen.", fontSize: 14, modulate: Ui.InkQuiet);
         DrawLink("forget", "Forget them…", new Vector2(rx + rw, y + 160),
             () => Ask("Forget seen messages?", $"All {_skip.SeenCount} messages seen so far will count as unseen again.", "Forget",
                 () => _skip.ForgetSeen()), right: true, enabled: _skip.SeenCount > 0);
@@ -443,23 +500,6 @@ internal sealed partial class OptionsView : Control
             CheckBox("mouse", rx, y + 258, MouseMovementChoice.On, "Mouse movement", "After a menu, the pointer glides back where it was.",
                 () => MouseMovementChoice.On = !MouseMovementChoice.On);
         }
-
-        int chosen = ReadTextChoice.Index;
-        DrawString(_gothic, new Vector2(x + 14, y + 281), chosen == ReadTextChoice.None ? "Read text keeps the window's colour."
-            : "The preview counts as read.", fontSize: 13, modulate: Ui.InkQuiet);
-        y += 330;
-        SectionHead(x, y, "Already-read text", ContentW);
-        float tx = x;
-        ReadTile("read-none", new Rect2(tx, y + 40, 150, 44), chosen == ReadTextChoice.None, null, ReadTextChoice.None);
-        tx += 160;
-        for (int i = 0; i < ReadTextChoice.Colours.Length; i++, tx += 54)
-            ReadTile("read-" + i, new Rect2(tx, y + 40, 44, 44), chosen == i, ReadTextChoice.Colours[i].Colour, i);
-        DrawString(_gothic, new Vector2(x, y + 128), chosen == ReadTextChoice.None ? "Don't change" : ReadTextChoice.Colours[chosen].Name,
-            fontSize: 17, modulate: Ui.Ink);
-        DrawString(_gothic, new Vector2(x, y + 150), "A message window you have read before, in any game, shows its text in this colour.",
-            fontSize: 13, modulate: Ui.InkQuiet);
-        DrawString(_gothic, new Vector2(x, y + 170), "The battle's balloons too, darker on white; menus and our screens keep theirs. Forget them… counts them unread.",
-            fontSize: 13, modulate: Ui.InkQuiet);
     }
 
     /// <summary>
@@ -474,7 +514,7 @@ internal sealed partial class OptionsView : Control
         if (colour is { } c)
             DrawRect(rect.Grow(-8), c);
         else
-            DrawString(_gothic, new Vector2(rect.Position.X, Lacquer.Baseline(rect, _gothic, 16)), "Don't change",
+            Text(_gothic, new Vector2(rect.Position.X, Lacquer.Baseline(rect, _gothic, 16)), "Don't change",
                 HorizontalAlignment.Center, rect.Size.X, 16, Ui.Text);
         if (on)
             DrawRect(rect.Grow(3), Ui.Vermilion, false, Line(3));
@@ -486,17 +526,34 @@ internal sealed partial class OptionsView : Control
     private void DrawDisplay()
     {
         float x = ContentX, y = ContentY, w = ContentW;
+        FontSection(x, y, w);
+        y += 132;
+        PaletteSection(x, y, w);
+        y += 132;
+        ThousandsSection(x, y, w);
+        y += 104;
+        RowsSection(x, y, w);
+    }
+
+    private void FontSection(float x, float y, float w)
+    {
         SectionHead(x, y, "Font", w);
         Radio("font-ms", x, y + 38, GodotGlyphRenderer.Chosen == GameFont.MsGothic,
             _msSample is null ? "MS Gothic — not installed" : "MS Gothic — 鬼畜王ランス, Rance", _msSample ?? _gothic,
             () => SetFont(GameFont.MsGothic), enabled: _msSample is not null);
         Radio("font-biz", x, y + 74, GodotGlyphRenderer.Chosen == GameFont.BizUdGothic, "BIZ UDGothic — 鬼畜王ランス, Rance",
             _bizSample, () => SetFont(GameFont.BizUdGothic));
-        y += 132;
+    }
+
+    private void PaletteSection(float x, float y, float w)
+    {
         SectionHead(x, y, "Palette", w);
         for (int i = 0; i < UiPalette.All.Count; i++)
             Swatch(x + i * 90, y + 40, UiPalette.All[i], UiPalettes.Chosen, SetPalette);
-        y += 132;
+    }
+
+    private void ThousandsSection(float x, float y, float w)
+    {
         SectionHead(x, y, "Thousands in gold, troops and damage", w);
         for (int i = 0; i < ThousandsChoice.All.Length; i++)
         {
@@ -504,9 +561,13 @@ internal sealed partial class OptionsView : Control
             Radio("thousands-" + separator, x + i * (w / ThousandsChoice.All.Length), y + 38, ThousandsChoice.Chosen == separator,
                 ThousandsChoice.Sample(separator), _gothic, () => SetThousands(separator));
         }
-        y += 104;
+    }
+
+    /// <summary>The unit tables' row heights: a tile each across <paramref name="w"/>, the tiles from 58 under the head.</summary>
+    private void RowsSection(float x, float y, float w)
+    {
         SectionHead(x, y, "Unit tables: row height", w);
-        DrawString(_gothic, new Vector2(x, y + 14), "Subordinates and deployment. Each device keeps its own.",
+        Text(_gothic, new Vector2(x, y + 14), "Subordinates and deployment. Each device keeps its own.",
             HorizontalAlignment.Right, w, 13, Ui.InkQuiet);
         int count = LedgerRowsChoice.Heights.Length;
         float tile = (w - (count - 1) * RowTileGap) / count;
@@ -540,9 +601,9 @@ internal sealed partial class OptionsView : Control
             }
             DrawLine(new Vector2(row.Position.X, row.End.Y - 0.5f), new Vector2(row.End.X, row.End.Y - 0.5f), table.PaperRule, Line(1));
             float baseline = mid + (_gothic.GetAscent(17) - _gothic.GetDescent(17)) / 2;
-            DrawString(_gothic, new Vector2(x, baseline), rows[i].Number, HorizontalAlignment.Right, 58, 17, table.Ink);
-            DrawString(_gothic, new Vector2(x + 64, baseline), rows[i].Name, fontSize: 17, modulate: table.Ink);
-            DrawString(_gothic, new Vector2(x, baseline), rows[i].Cost, HorizontalAlignment.Right, w - 9, 17, table.Ink);
+            Text(_gothic, new Vector2(x, baseline), rows[i].Number, HorizontalAlignment.Right, 58, 17, table.Ink);
+            Text(_gothic, new Vector2(x + 64, baseline), rows[i].Name, fontSize: 17, modulate: table.Ink);
+            Text(_gothic, new Vector2(x, baseline), rows[i].Cost, HorizontalAlignment.Right, w - 9, 17, table.Ink);
         }
         DrawRect(rect, Ui.InkGrey, false, Line(1));
         if (on)
@@ -550,7 +611,7 @@ internal sealed partial class OptionsView : Control
         else if (lit)
             DrawRect(rect.Grow(2), Ui.HeadInk, false, Line(2));
         string label = height == LedgerRowsChoice.Default ? $"{height} px — default" : $"{height} px";
-        DrawString(_gothic, new Vector2(x, y - 10), label, HorizontalAlignment.Center, w, 14, on ? Ui.Ink : Ui.InkQuiet);
+        Text(_gothic, new Vector2(x, y - 10), label, HorizontalAlignment.Center, w, 14, on ? Ui.Ink : Ui.InkQuiet);
         int tallest = LedgerRowsChoice.Heights.Max();
         _spots.Add(new Spot(id, new Rect2(x - 4, y - 28, w + 8, 2 * tallest + 34), () => { SetLedgerRows(height); QueueRedraw(); }));
     }
@@ -558,31 +619,45 @@ internal sealed partial class OptionsView : Control
     private void DrawBattle()
     {
         float x = ContentX, y = ContentY, w = ContentW;
-        SectionHead(x, y, "Effects", w);
-        var effects = BattleScreenSettings.Effects;
-        CheckBox("effects", x, y + 36, BattleScreenSettings.Get(effects) >= 0.5, "Exchange effects", effects.Hint,
-            () => BattleScreenSettings.Set(effects, BattleScreenSettings.Get(effects) >= 0.5 ? 0 : 1));
+        EffectsSection(x, y, w);
         y += 96;
         SectionHead(x, y, "Timings", w);
         y += 36;
         float colW = (w - 40) / 2;
         int i = 0;
-        foreach (var setting in BattleScreenSettings.All.Where(s => s.Unit != BattleScreenSettings.Toggle))
+        foreach (var setting in Timings)
         {
-            float cx = x + i % 2 * (colW + 40), cy = y + i / 2 * 46;
-            double value = BattleScreenSettings.Get(setting);
-            DrawString(_gothic, new Vector2(cx, cy + 13), setting.Label, fontSize: 14, modulate: Ui.Ink);
-            DrawSlider(cx, cx + colW - 80, cy + 29, (float)((value - setting.Min) / (setting.Max - setting.Min)), null,
-                new Slider("battle-" + setting.Key, cx, cx + colW - 80, setting.Min, setting.Max, setting.Step,
-                    v => BattleScreenSettings.Set(setting, v)));
-            DrawString(_gothic, new Vector2(cx, cy + 34), Format(setting, value), HorizontalAlignment.Right, colW, 14, Ui.Ink);
+            TimingRow(setting, x + i % 2 * (colW + 40), y + i / 2 * 46, colW);
             i++;
         }
     }
 
-    private void DrawGame()
+    private static IEnumerable<BattleScreenSettings.Setting> Timings =>
+        BattleScreenSettings.All.Where(s => s.Unit != BattleScreenSettings.Toggle);
+
+    private void EffectsSection(float x, float y, float w)
     {
-        float x = ContentX, y = ContentY, w = ContentW;
+        SectionHead(x, y, "Effects", w);
+        var effects = BattleScreenSettings.Effects;
+        CheckBox("effects", x, y + 36, BattleScreenSettings.Get(effects) >= 0.5, "Exchange effects", effects.Hint,
+            () => BattleScreenSettings.Set(effects, BattleScreenSettings.Get(effects) >= 0.5 ? 0 : 1));
+    }
+
+    /// <summary>A battle timing: its label over its slider, its value at the column's right, 46 high.</summary>
+    private void TimingRow(BattleScreenSettings.Setting setting, float cx, float cy, float colW)
+    {
+        double value = BattleScreenSettings.Get(setting);
+        Text(_gothic, new Vector2(cx, cy + 13), setting.Label, fontSize: 14, modulate: Ui.Ink);
+        DrawSlider(cx, cx + colW - 80, cy + 29, (float)((value - setting.Min) / (setting.Max - setting.Min)), null,
+            new Slider("battle-" + setting.Key, cx, cx + colW - 80, setting.Min, setting.Max, setting.Step,
+                v => BattleScreenSettings.Set(setting, v)));
+        Text(_gothic, new Vector2(cx, cy + 34), Format(setting, value), HorizontalAlignment.Right, colW, 14, Ui.Ink);
+    }
+
+    private void DrawGame() => GameSection(ContentX, ContentY, ContentW);
+
+    private void GameSection(float x, float y, float w)
+    {
         SectionHead(x, y, "Game folder", w);
         var field = new Rect2(x, y + 36, w, 40);
         bool lit = !_folderLocked && _hover == "folder";
@@ -592,8 +667,8 @@ internal sealed partial class OptionsView : Control
         DrawPolyline([icon + new Vector2(0, 2), icon + new Vector2(7, 2), icon + new Vector2(9, 5), icon + new Vector2(20, 5),
             icon + new Vector2(20, 16), icon + new Vector2(0, 16), icon + new Vector2(0, 2)], Ui.InkQuiet, Line(2));
         string folder = GameData.GameDirectory is { Length: > 0 } dir ? dir : "not chosen";
-        DrawString(_gothic, new Vector2(x + 44, y + 62), Ellipsis(folder, w - 190, 17), fontSize: 17, modulate: Ui.Ink);
-        DrawString(_gothic, new Vector2(x, y + 61), "Change…", HorizontalAlignment.Right, w - 14, 15,
+        Text(_gothic, new Vector2(x + 44, y + 62), Ellipsis(folder, w - 190, 17), fontSize: 17, modulate: Ui.Ink);
+        Text(_gothic, new Vector2(x, y + 61), "Change…", HorizontalAlignment.Right, w - 14, 15,
             _folderLocked ? Ui.InkGrey : lit ? Ui.Vermilion : Ui.VermilionInk);
         if (!_folderLocked)
             _spots.Add(new Spot("folder", field, () => Ask("Change the game folder?",
@@ -611,45 +686,63 @@ internal sealed partial class OptionsView : Control
     private void DrawTweaks()
     {
         float x = ContentX, y = ContentY, w = ContentW;
-        Wrap("Each setting here changes how the original game plays. Everything else keeps the original's rules.", x, y + 14, w,
-            14, Ui.InkQuiet);
+        Wrap(TweaksIntro, x, y + 14, w, 14, Ui.InkQuiet);
         y += 44;
         SectionHead(x, y, "Battle", w);
-        var forecast = BattleScreenSettings.Forecast;
-        CheckBox("forecast", x, y + 38, BattleScreenSettings.Get(forecast) >= 0.5, "Damage forecast", forecast.Hint,
-            () => BattleScreenSettings.Set(forecast, BattleScreenSettings.Get(forecast) >= 0.5 ? 0 : 1));
+        ForecastBox(x, y + 38);
         float tx = x + 32, tw = w - 32;
-        DrawString(_gothic, new Vector2(tx, y + 120), "Chaos and Nikkou reach demons", fontSize: 17, modulate: Ui.Ink);
-        DrawString(_gothic, new Vector2(tx, y + 139),
-            "Against a demon commander, Chaos's or Nikkou's holder fights in person even when his troops exceed the battle's limit.",
-            fontSize: 13, modulate: Ui.InkQuiet);
-        (DemonReach Reach, string Label)[] reaches =
-            [(DemonReach.Original, "Off — as the original"), (DemonReach.OnField, "On the field"), (DemonReach.OutOfReach, "Out of reach")];
-        for (int i = 0; i < reaches.Length; i++)
-        {
-            var reach = reaches[i].Reach;
-            Radio("reach-" + reach, tx + i * (tw / reaches.Length), y + 154, DemonReachChoice.Chosen == reach, reaches[i].Label, _gothic,
-                () => SetDemonReach(reach));
-        }
-        DrawString(_gothic, new Vector2(tx, y + 200),
-            "On the field: the demon's troops may shoot at him, as at any commander in the fight. Out of reach: they never do.",
-            fontSize: 13, modulate: Ui.InkQuiet);
+        Text(_gothic, new Vector2(tx, y + 120), "Chaos and Nikkou reach demons", fontSize: 17, modulate: Ui.Ink);
+        Text(_gothic, new Vector2(tx, y + 139), ReachHint, fontSize: 13, modulate: Ui.InkQuiet);
+        for (int i = 0; i < Reaches.Length; i++)
+            ReachRadio(i, tx + i * (tw / Reaches.Length), y + 154);
+        Text(_gothic, new Vector2(tx, y + 200), ReachNote, fontSize: 13, modulate: Ui.InkQuiet);
         y += 240;
         SectionHead(x, y, "Scenes", w);
-        CheckBox("new-scenes", x, y + 38, NewScenesChoice.On, "New scenes first",
-            "Talks and harem visits play unread scenes first, with a few hints and a choice of ours.",
-            () => SetNewScenesFirst(!NewScenesChoice.On));
+        NewScenesBox(x, y + 38);
     }
+
+    private const string TweaksIntro = "Each setting here changes how the original game plays. Everything else keeps the original's rules.";
+
+    private const string ReachHint =
+        "Against a demon commander, Chaos's or Nikkou's holder fights in person even when his troops exceed the battle's limit.";
+
+    private const string ReachNote =
+        "On the field: the demon's troops may shoot at him, as at any commander in the fight. Out of reach: they never do.";
+
+    private static readonly (DemonReach Reach, string Label)[] Reaches =
+        [(DemonReach.Original, "Off — as the original"), (DemonReach.OnField, "On the field"), (DemonReach.OutOfReach, "Out of reach")];
+
+    private float ForecastBox(float x, float y, float width = 0)
+    {
+        var forecast = BattleScreenSettings.Forecast;
+        return CheckBox("forecast", x, y, BattleScreenSettings.Get(forecast) >= 0.5, "Damage forecast", forecast.Hint,
+            () => BattleScreenSettings.Set(forecast, BattleScreenSettings.Get(forecast) >= 0.5 ? 0 : 1), width);
+    }
+
+    private void ReachRadio(int index, float x, float y)
+    {
+        var reach = Reaches[index].Reach;
+        Radio("reach-" + reach, x, y, DemonReachChoice.Chosen == reach, Reaches[index].Label, _gothic, () => SetDemonReach(reach));
+    }
+
+    private float NewScenesBox(float x, float y, float width = 0) =>
+        CheckBox("new-scenes", x, y, NewScenesChoice.On, "New scenes first",
+            "Talks and harem visits play unread scenes first, with a few hints and a choice of ours.",
+            () => SetNewScenesFirst(!NewScenesChoice.On), width);
 
     // ---------------------------------------------------------------- the parts
 
     private void SectionHead(float x, float y, string title, float width)
     {
-        DrawString(_cinzelBold, new Vector2(x, y + 14), title.ToUpperInvariant(), fontSize: 13, modulate: Ui.HeadInk);
+        Text(_cinzelBold, new Vector2(x, y + 14), title.ToUpperInvariant(), fontSize: 13, modulate: Ui.HeadInk);
         DrawLine(new Vector2(x, y + 22), new Vector2(x + width, y + 22), Ui.PaperRule, Line(1));
     }
 
-    private void CheckBox(string id, float x, float y, bool on, string label, string? hint, Action toggle)
+    /// <summary>
+    /// A check box with its label and the hint under it, the whole row its target; with <paramref name="width"/> (the
+    /// phone's column) the hint wraps into it and the row takes the column. Returns the row's foot.
+    /// </summary>
+    private float CheckBox(string id, float x, float y, bool on, string label, string? hint, Action toggle, float width = 0)
     {
         bool lit = _hover == id;
         var box = new Rect2(x, y, 20, 20);
@@ -657,14 +750,21 @@ internal sealed partial class OptionsView : Control
         DrawRect(box, lit ? Ui.Vermilion : Ui.InkGrey, false, Line(lit ? 2 : 1.5f));
         if (on)
             DrawPolyline([new Vector2(x + 4, y + 10), new Vector2(x + 8.5f, y + 15), new Vector2(x + 16, y + 5)], Ui.VermilionInk, Line(3), true);
-        DrawString(_gothic, new Vector2(x + 32, y + 16), label, fontSize: 17, modulate: Ui.Ink);
-        float w = _gothic.GetStringSize(label, fontSize: 17).X + 32;
-        if (hint is not null)
+        Text(_gothic, new Vector2(x + 32, y + 16), label, fontSize: 17, modulate: Ui.Ink);
+        float w = _gothic.GetStringSize(label, fontSize: 17).X + 32, h = hint is null ? 28 : 46;
+        if (hint is not null && width > 0)
         {
-            DrawString(_gothic, new Vector2(x + 32, y + 35), hint, fontSize: 13, modulate: Ui.InkQuiet);
+            int lines = Wrap(hint, x + 32, y + 35, width - 32, 13, Ui.InkQuiet);
+            w = width;
+            h += (lines - 1) * WrapPitch(13);
+        }
+        else if (hint is not null)
+        {
+            Text(_gothic, new Vector2(x + 32, y + 35), hint, fontSize: 13, modulate: Ui.InkQuiet);
             w = Math.Max(w, _gothic.GetStringSize(hint, fontSize: 13).X + 32);
         }
-        _spots.Add(new Spot(id, new Rect2(x - 4, y - 4, w + 8, hint is null ? 28 : 46), () => { toggle(); QueueRedraw(); }));
+        _spots.Add(new Spot(id, new Rect2(x - 4, y - 4, w + 8, h), () => { toggle(); QueueRedraw(); }));
+        return y - 4 + h;
     }
 
     private void Radio(string id, float x, float y, bool on, string label, Font font, Action choose, bool enabled = true)
@@ -675,7 +775,7 @@ internal sealed partial class OptionsView : Control
         DrawArc(centre, 10, 0, Mathf.Tau, 32, lit ? Ui.Vermilion : Ui.InkGrey, Line(lit ? 2 : 1.5f), true);
         if (on)
             DrawCircle(centre, 5, Ui.VermilionInk);
-        DrawString(font, new Vector2(x + 30, y + 17), label, fontSize: 18, modulate: enabled ? Ui.Ink : Ui.InkGrey);
+        Text(font, new Vector2(x + 30, y + 17), label, fontSize: 18, modulate: enabled ? Ui.Ink : Ui.InkGrey);
         if (enabled)
             _spots.Add(new Spot(id, new Rect2(x - 4, y - 6, font.GetStringSize(label, fontSize: 18).X + 40, 32), () => { choose(); QueueRedraw(); }));
     }
@@ -692,7 +792,7 @@ internal sealed partial class OptionsView : Control
         DrawCircle(new Vector2(kx, y), lit ? 10 : 9, Ui.Vermilion);
         DrawArc(new Vector2(kx, y), lit ? 10 : 9, 0, Mathf.Tau, 32, Ui.Ink, Line(1.5f), true);
         if (label is not null)
-            DrawString(_gothic, new Vector2(kx - 30, y - 16), label, HorizontalAlignment.Center, 60, 13, Ui.Ink);
+            Text(_gothic, new Vector2(kx - 30, y - 16), label, HorizontalAlignment.Center, 60, 13, Ui.Ink);
         _spots.Add(new Spot(id, new Rect2(x0 - 12, y - 14, x1 - x0 + 24, 28), () => { }, slider));
     }
 
@@ -702,7 +802,7 @@ internal sealed partial class OptionsView : Control
         float w = _gothic.GetStringSize(text, fontSize: 15).X;
         float x = right ? at.X - w : at.X;
         var colour = !enabled ? Ui.InkGrey : lit ? Ui.Vermilion : Ui.VermilionInk;
-        DrawString(_gothic, new Vector2(x, at.Y + 5), text, fontSize: 15, modulate: colour);
+        Text(_gothic, new Vector2(x, at.Y + 5), text, fontSize: 15, modulate: colour);
         if (lit)
             DrawLine(new Vector2(x, at.Y + 8), new Vector2(x + w, at.Y + 8), colour, Line(1));
         if (enabled)
@@ -718,7 +818,7 @@ internal sealed partial class OptionsView : Control
         DrawRect(rect, palette.Panel with { A = 1 });
         DrawRect(new Rect2(x + 8, y + 26, 48, 5), palette.Gold);
         DrawRect(rect, on ? Ui.Vermilion : lit ? Ui.VermilionInk : Ui.InkGrey, false, Line(on ? 3 : lit ? 2 : 1));
-        DrawString(_gothic, new Vector2(x - 13, y + 60), palette.Title, HorizontalAlignment.Center, 90, 13,
+        Text(_gothic, new Vector2(x - 13, y + 60), palette.Title, HorizontalAlignment.Center, 90, 13,
             on ? Ui.Ink : Ui.InkQuiet);
         _spots.Add(new Spot(id, new Rect2(x - 4, y - 4, 72, 70), () => { choose(palette); QueueRedraw(); }));
     }
@@ -727,10 +827,10 @@ internal sealed partial class OptionsView : Control
     private void DrawQuestion(Question question)
     {
         _spots.Clear();
-        DrawRect(Frame, new Color(0, 0, 0, 0.35f));
-        var box = new Rect2(390, 300, 500, 200);
+        DrawRect(_phone is null ? Frame : new Rect2(Vector2.Zero, Size / _k), new Color(0, 0, 0, 0.35f));
+        var box = _phone is { } f ? Part(PhoneOptions.Question(f)) : new Rect2(390, 300, 500, 200);
         Ui.DrawPanel(this, box, _k);
-        DrawString(_cinzelBold, new Vector2(box.Position.X, box.Position.Y + 48), question.Title, HorizontalAlignment.Center,
+        Text(_cinzelBold, new Vector2(box.Position.X, box.Position.Y + 48), question.Title, HorizontalAlignment.Center,
             box.Size.X, 20, Ui.Name);
         Ui.DrawDivider(this, box.Position.X + 40, box.End.X - 40, box.Position.Y + 66, _k);
         Wrap(question.Text, box.Position.X + 40, box.Position.Y + 96, box.Size.X - 80, 15, Ui.Value);
@@ -738,10 +838,10 @@ internal sealed partial class OptionsView : Control
         var cancel = new Rect2(box.End.X - 150, box.End.Y - 58, 110, 38);
         bool confirmLit = _hover == "confirm";
         Ui.DrawRedButton(this, confirm, confirmLit, confirmLit && _pressed == "confirm", _k);
-        DrawString(_cinzelBold, new Vector2(confirm.Position.X, Lacquer.Baseline(confirm, _cinzelBold, 16)), question.Confirm,
+        Text(_cinzelBold, new Vector2(confirm.Position.X, Lacquer.Baseline(confirm, _cinzelBold, 16)), question.Confirm,
             HorizontalAlignment.Center, confirm.Size.X, 16, Ui.SealText);
         Ui.DrawRowBox(this, cancel, _hover == "cancel", _k);
-        DrawString(_gothic, new Vector2(cancel.Position.X, Lacquer.Baseline(cancel, _gothic, 16)), "Cancel", HorizontalAlignment.Center,
+        Text(_gothic, new Vector2(cancel.Position.X, Lacquer.Baseline(cancel, _gothic, 16)), "Cancel", HorizontalAlignment.Center,
             cancel.Size.X, 16, _hover == "cancel" ? Ui.Name : Ui.Text);
         _spots.Add(new Spot("confirm", confirm, () =>
         {
@@ -755,17 +855,19 @@ internal sealed partial class OptionsView : Control
     private static string Format(BattleScreenSettings.Setting setting, double value) =>
         setting.Unit == "%" ? $"{value * 100:F0} %" : $"{value:F2} {setting.Unit}";
 
-    /// <summary>Text wrapped at spaces into <paramref name="width"/>.</summary>
-    private void Wrap(string text, float x, float baseline, float width, int size, Color colour)
+    /// <summary>Text wrapped at spaces into <paramref name="width"/>, <see cref="WrapPitch"/> apart; returns the lines drawn.</summary>
+    private int Wrap(string text, float x, float baseline, float width, int size, Color colour)
     {
         string line = "";
+        int lines = 0;
         foreach (string word in text.Split(' '))
         {
             string tried = line.Length == 0 ? word : line + " " + word;
             if (line.Length > 0 && _gothic.GetStringSize(tried, fontSize: size).X > width)
             {
-                DrawString(_gothic, new Vector2(x, baseline), line, fontSize: size, modulate: colour);
-                baseline += size * 1.45f;
+                Text(_gothic, new Vector2(x, baseline), line, fontSize: size, modulate: colour);
+                baseline += WrapPitch(size);
+                lines++;
                 line = word;
             }
             else
@@ -774,8 +876,14 @@ internal sealed partial class OptionsView : Control
             }
         }
         if (line.Length > 0)
-            DrawString(_gothic, new Vector2(x, baseline), line, fontSize: size, modulate: colour);
+        {
+            Text(_gothic, new Vector2(x, baseline), line, fontSize: size, modulate: colour);
+            lines++;
+        }
+        return lines;
     }
+
+    private static float WrapPitch(int size) => size * 1.45f;
 
     /// <summary>A path cut at its start to fit, as "…\Kichikuou Rance".</summary>
     private string Ellipsis(string text, float width, int size)

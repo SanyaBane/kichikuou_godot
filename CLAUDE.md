@@ -348,6 +348,11 @@ the phone: Save/Load as the PC's split across the whole width — the list at th
 page at the right with the map cut lower, Back | the red button at its foot — and the comment's own card over Android's
 keyboard (LY1; Godot's field asks for no full-screen editor, the card follows the height Godot reports, Back cancels)
 (`Original.Content/Devices/PhoneSaves`; `SaveLoadView.Phone.cs`; headless `--phone landscape` now on a phone-shaped canvas).
+Step L8 is built, awaiting the owner's look on the phone (phone-build.md, "Step L8, where it stands"): the options window
+across the whole width as LO1 — its tabs on top, each tab in two columns, Defaults | Close at the right thumb, the PC's
+parts drawn at PO1's type, their text at the canvas's size — and the dungeon's ladder and entry menu as the tablet's rail
+in the frame at the phone's sizes (LF2, LF2e) (`Original.Content/Devices/PhoneOptions`, `PhoneLadder`;
+`OptionsView.Phone.cs`, `FloorLadderView.Phone.cs`).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
