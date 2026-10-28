@@ -20,6 +20,9 @@ public sealed record PhoneFrame
 
         /// <summary>The bottom edge.</summary>
         public float Bottom => Y + H;
+
+        /// <summary>Whether (<paramref name="x"/>, <paramref name="y"/>) is in the box.</summary>
+        public bool Contains(float x, float y) => x >= X && x < Right && y >= Y && y < Bottom;
     }
 
     /// <summary>How much of each edge is kept free, in the canvas's units.</summary>

@@ -1,5 +1,6 @@
 using Godot;
 using Kichikuou.Game.Battles;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.Content.Strategy;
 
 namespace Kichikuou.Game.Strategy;
@@ -8,8 +9,9 @@ namespace Kichikuou.Game.Strategy;
 /// Our <c>]</c> menu (docs/ui/messages.md, §5 step 3; the owner's mock-up M1, 2026-10-18): a scene's menu as a lacquer
 /// panel of rows where the original's selection box opens — the rows as the command panel's, the hovered one lit; the
 /// marks ○ a gold ring, × a dim cross, △ a gold triangle, the text in the game's font. A row's click answers the
-/// script's menu with its item (1-based); a right click cancels (0), as the original's box. Laid out in the 1280×800
-/// screen's pixels, scaled with the picture.
+/// script's menu with its item (1-based); a right click cancels (0), as the original's box. On the phone held landscape
+/// the rows stand at the frame's right foot, at the right thumb, in finger rows (docs/ui/phone.md, §19, LS1m). Laid out
+/// in the 1280×800 screen's pixels, scaled with the picture.
 /// </summary>
 internal sealed partial class SceneMenuView : Control
 {
@@ -35,6 +37,10 @@ internal sealed partial class SceneMenuView : Control
     private Rect2 _box;                             // the original's box (screen pixels): our panel starts at its corner
     private float _width;
     private float _k = 1;                           // window pixels to a screen pixel
+    private PhoneFrame? _phone;                     // the phone held landscape: the rows at the frame's right foot
+    private Rect2[]? _phoneRows;                    // and where they stand (screen pixels)
+    private Rect2 _phonePanel;
+    private int _phoneText;
     private int _hovered = -1, _pressed = -1;
     private TaskCompletionSource<int>? _answer;
 
@@ -60,7 +66,27 @@ internal sealed partial class SceneMenuView : Control
     {
         if (_menu is not null)
             _width = PanelWidth(_menu);
+        PhoneLayout();
         QueueRedraw();
+    }
+
+    /// <summary>
+    /// On the phone held landscape (docs/ui/phone.md, §19, LS1m) the rows at the frame's right foot, at the right thumb, in
+    /// finger rows (<see cref="PhoneScenes.SceneMenu"/>), in the screen's pixels; elsewhere none (the original box's place).
+    /// </summary>
+    private void PhoneLayout()
+    {
+        _phoneRows = null;
+        if (_phone is not { } f || _menu is not { } menu)
+            return;
+        float k = f.Scale;                                              // the canvas's units a screen pixel
+        int size = (int)Math.Round(PhoneScenes.ItemTextSize(f) / k);
+        float widest = menu.Items.Max(i => _gothic.GetStringSize(i.Text, fontSize: size).X + (i.Mark is null ? 0 : 34 * size / 30f)) * k;
+        var rows = PhoneScenes.SceneMenu(f, menu.Items.Count, widest);
+        Rect2 Screen(PhoneFrame.Box b) => new((b.X - f.Frame.X) / k, (b.Y - f.Frame.Y) / k, b.W / k, b.H / k);
+        _phoneRows = [.. rows.Rows.Select(Screen)];
+        _phonePanel = Screen(rows.Panel);
+        _phoneText = Math.Max(8, (int)Math.Round(rows.TextSize / k));
     }
 
     /// <summary>Shows <paramref name="menu"/> at the original box's place (<paramref name="box"/>, screen pixels).</summary>
@@ -71,6 +97,7 @@ internal sealed partial class SceneMenuView : Control
         _width = PanelWidth(menu);
         _hovered = _pressed = -1;
         Visible = true;
+        PhoneLayout();
         QueueRedraw();
     }
 
@@ -93,11 +120,14 @@ internal sealed partial class SceneMenuView : Control
     public void Place(Rect2 area)
     {
         float k = area.Size.X / 1280f;
-        if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f)
+        var phone = Device.Landscape(this);
+        if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f && phone == _phone)
             return;
         Position = area.Position;
         Size = area.Size;
         _k = k;
+        _phone = phone;
+        PhoneLayout();
         QueueRedraw();
     }
 
@@ -114,6 +144,8 @@ internal sealed partial class SceneMenuView : Control
     {
         get
         {
+            if (_phoneRows is not null)
+                return _phonePanel;
             float h = 2 * Pad + Rows * RowPitch - (RowPitch - RowH);
             float x = Math.Clamp(_box.Position.X - Pad, 8, 1280 - 8 - _width);
             float y = Math.Clamp(_box.Position.Y - Pad, 8, Math.Max(8, 800 - 8 - h));
@@ -123,6 +155,8 @@ internal sealed partial class SceneMenuView : Control
 
     private Rect2 RowRect(int row)
     {
+        if (_phoneRows is { } rows)
+            return rows[row];
         var p = Panel;
         return new Rect2(p.Position.X + Pad, p.Position.Y + Pad + row * RowPitch, p.Size.X - 2 * Pad, RowH);
     }
@@ -191,10 +225,11 @@ internal sealed partial class SceneMenuView : Control
         var rect = RowRect(r);
         bool hover = r == _hovered;
         Ui.DrawRowBox(this, rect, hover, _k);
-        float x = rect.Position.X + 14;
+        int size = _phoneRows is null ? TextSize : _phoneText;
+        float s = _phoneRows is null ? RowScale : size / 30f;       // the marks with the type
+        float x = rect.Position.X + (_phoneRows is null ? 14 : 24 * size / 48f);
         if (item.Mark is { } mark)
         {
-            float s = RowScale;
             var at = new Vector2(rect.Position.X + 20 * s, rect.GetCenter().Y);
             switch (mark)
             {
@@ -210,9 +245,9 @@ internal sealed partial class SceneMenuView : Control
                         Ui.Gold, Line(2), true);
                     break;
             }
-            x = rect.Position.X + MarkRoom + 4;
+            x = rect.Position.X + MathF.Round(34 * s) + 4;
         }
-        DrawString(_gothic, new Vector2(x, Lacquer.Baseline(rect, _gothic, (int)TextSize)), item.Text, fontSize: TextSize,
+        DrawString(_gothic, new Vector2(x, Lacquer.Baseline(rect, _gothic, size)), item.Text, fontSize: size,
             modulate: hover ? Ui.Name : Ui.Text);
     }
 }

@@ -311,7 +311,11 @@ choices on tabs of their own (`gallery.ps1 -PhoneOnly`; the scenes' picture from
 picture stands in the phone's frame (`GameScreen.UpdateDevice`); `--phone landscape` plays one on the PC; the gallery's
 real pass `-PhoneLand`; `FrameTimes` logs the frame times on Android. The battle's exchanges run at ~100 frames a second
 on the Poco since 2026-10-28 (phone-build.md, step F, "The battle's speed"; the export builds compile our libraries
-optimized, `Directory.Build.props`).
+optimized, `Directory.Build.props`). Step L1 is built, awaiting the owner's look on the phone (phone-build.md, "Step L1,
+where it stands"): the left side's Menu cell and the Menu sheet LN3 (`godot/Strategy/MenuSheetView`,
+`GameScreen.Phone.cs`, on `Original.Content/Devices/PhoneMenu`), Skip and Log in the side, a `]` menu's rows at the
+frame's right foot, the log LR2 and the week report LW1 (on `Original.Content/Devices/PhoneScenes`), each view's phone
+branch keyed by `Device.Landscape(view)`.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

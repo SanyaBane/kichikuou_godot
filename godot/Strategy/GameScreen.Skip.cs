@@ -45,13 +45,15 @@ public partial class GameScreen
     /// Shows the buttons in the touch mode: in the scenes the drawer while a message window or a key wait is up — and
     /// while MsgSkip is on, to turn it off again —, and on <c>COMMAND</c>'s waiting map (<see cref="MapLogWait"/>; the
     /// owner's L1), never under a menu or over our own screens; on our battle screen Skip alone, the whole battle. A window
-    /// that would cover the drawer (131) is drawn smaller beside it (<see cref="SkipButtons"/>).
+    /// that would cover the drawer (131) is drawn smaller beside it (<see cref="SkipButtons"/>). On the phone held
+    /// landscape the drawer stands in the left side, out of the frame, and shows at the week report too (LW1).
     /// </summary>
     private void UpdateSkipButtons()
     {
         bool battle = BattleScreenShown;
         bool scene = !battle && _presenter.Menu is null
-            && (_keyWaiting || _messageView.Window is not null || _presenter.MessageWindowShown || _skip.Activated || MapLogWait);
+            && (_keyWaiting || _messageView.Window is not null || _presenter.MessageWindowShown || _skip.Activated || MapLogWait
+                || PhoneWeekReport);
         bool show = TouchMode.On && _presenter.State is not null && !_modal && !ViewHidden && !EnemyAttackShown
             && !_commandView.Visible && !_provinceView.Visible && !_saveView.Visible && !_sceneMenuView.Visible && !_ladderView.Visible
             && (battle || scene);
@@ -80,8 +82,8 @@ public partial class GameScreen
     /// Unattended play in the touch mode, once a launch (in a window), at a key wait of a scene with our message window
     /// once something is logged (the week-18 save's harem scene, <c>--harem</c>): the buttons (dump "touch-skip"), a tap on
     /// Log opens the message log ("touch-log"), a tap off its frame closes it; a tap on Skip turns MsgSkip on ("touch-skip-on"), another
-    /// off — the presses and releases through Godot's input, at the drawer's cells.
-    /// Anything else is an error.
+    /// off — the presses and releases through Godot's input, at the drawer's cells; on the phone held landscape then the
+    /// Menu sheet's taps (<see cref="AutoPhoneMenuAsync"/>). Anything else is an error.
     /// </summary>
     private async Task AutoSkipTouchAsync()
     {
@@ -98,8 +100,7 @@ public partial class GameScreen
             await FrameAsync();                                         // the log in place
         Shot("touch-log");
         await FrameAsync();
-        var area = PictureArea();
-        await TapAsync(area.Position + new Vector2(100, 400) * (area.Size.X / 1280));     // left of the log's frame
+        await TapAsync(_logView!.OutsidePoint);                                   // left of the log's frame (on the phone, its paper)
         if (_logView is not null)
             throw new InvalidOperationException("--auto's tap off the message log's frame did not close it.");
         await NextFrameAsync();
@@ -112,6 +113,12 @@ public partial class GameScreen
         await TapAsync(_drawer.SkipCentre);
         if (_skip.Activated)
             throw new InvalidOperationException("--auto's second tap on Skip did not turn MsgSkip off.");
+        if (Device.Layout == Original.Content.Devices.DeviceLayout.PhoneLandscape)
+        {
+            UpdatePhone();
+            await FrameAsync();
+            await AutoPhoneMenuAsync(TapAsync);
+        }
         if (_input.PeekInput() != 0)
             throw new InvalidOperationException("--auto's taps on Skip and Log reached the script's input.");
         GD.Print("Kichikuou: --auto taps the touch mode's Log and Skip buttons.");

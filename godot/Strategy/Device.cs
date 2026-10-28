@@ -63,6 +63,12 @@ internal static class Device
     public static PhoneFrame Frame(Vector2 size) => PhoneFrame.Landscape(size.X, size.Y, _insets);
 
     /// <summary>
+    /// The phone's frame held landscape over <paramref name="view"/>'s parent — the screen's room (the game's content, the
+    /// gallery's stage), its corner at the parent's — for a view with a phone layout of its own; null on any other device.
+    /// </summary>
+    public static PhoneFrame? Landscape(Control view) => _layout == DeviceLayout.PhoneLandscape ? Frame(view.GetParentAreaSize()) : null;
+
+    /// <summary>
     /// <c>--phone landscape</c> on a PC: the window at the reference phone's shape (2712 × 1220), as large as the monitor's
     /// usable area allows with the window's frame round it, at most the reference's size, centred. Upright comes with
     /// step P0. False when the switch asks for something else.

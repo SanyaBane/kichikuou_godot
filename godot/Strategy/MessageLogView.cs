@@ -1,5 +1,6 @@
 using Godot;
 using Kichikuou.Game.Battles;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.Content.Strategy;
 
 namespace Kichikuou.Game.Strategy;
@@ -10,17 +11,45 @@ namespace Kichikuou.Game.Strategy;
 /// run's first line, narration in a quieter ink, a place's title as a heading, a menu's answer under "CHOICE" — in the game's
 /// font (Option → Display) at the script's own breaks. It opens at the newest line; the wheel scrolls, a right click, Escape or
 /// the wheel down at the newest line closes it; in the touch mode a finger's drag scrolls and a tap off the frame closes it.
-/// Laid out in the 1280×800 screen's pixels, scaled with the picture.
+/// Laid out in the 1280×800 screen's pixels, scaled with the picture. On the phone held landscape (docs/ui/phone.md, §26,
+/// the owner's LR2) the paper runs across the width at the scenes' type, from the frame's left edge to the right side's
+/// room (<see cref="PhoneScenes.LogPaper"/>), over the whole screen dimmed, with Close in the Menu cell's place.
 /// </summary>
 internal sealed partial class MessageLogView : Control
 {
     private static UiPalette Ui => UiPalettes.For(UiPart.Messages);
 
-    private static readonly Rect2 Frame = new(190, 28, 900, 744);
     private static readonly Color Dim = new(0, 0, 0, 0.55f);
     private static Color Rule => Ui.PaperRule with { A = 45 / 255f };   // paler than the ledger's (owner, 2026-10-19)
-    private const float Pitch = 34, TextSize = 28, MarginX = 200, HeadHeight = 58, Inset = 18;
     private const int Step = 3;                                             // lines a wheel notch scrolls
+
+    /// <summary>
+    /// The chronicle's figures in screen pixels: its lacquer frame (none on the phone: the paper alone) and paper, the
+    /// head's height, the speakers' column's width, a line's pitch, and the type of the lines, the speakers, a choice's
+    /// label, the head's title, its hint and a place's heading; <see cref="R"/> scales the PC's small offsets with them.
+    /// </summary>
+    private readonly record struct Metrics(Rect2 Frame, Rect2 Paper, float Head, float Margin, float Pitch, float Text,
+        float Label, float Choice, float Title, float Hint, float Place, bool Framed)
+    {
+        /// <summary>The PC's: the frame in the picture's middle.</summary>
+        public static Metrics Pc { get; } = new(new Rect2(190, 28, 900, 744), new Rect2(208, 46, 864, 708), 58, 200, 34, 28, 18,
+            15, 26, 14, 18, true);
+
+        /// <summary>The phone's held landscape (LR2), in the reference phone's pixels made screen pixels.</summary>
+        public static Metrics Phone(PhoneUnits u)
+        {
+            var paper = u.Rect(PhoneScenes.LogPaper(u.Frame));
+            return new(paper, paper, u.Px(100), u.Px(420), u.Px(84), u.Px(58), u.Px(36), u.Px(30), u.Px(46), u.Px(24), u.Px(40), false);
+        }
+
+        /// <summary>The PC's small offsets scaled with the pitch.</summary>
+        public float R => Pitch / 34;
+
+        public float BodyTop => Paper.Position.Y + Head + 12 * R;
+
+        /// <summary>The ruled lines the page holds.</summary>
+        public int Rows => (int)((Paper.End.Y - BodyTop) / Pitch);
+    }
 
     private readonly FontVariation _gothic;
     private readonly FontVariation _plain;
@@ -28,6 +57,8 @@ internal sealed partial class MessageLogView : Control
     private readonly FontVariation _label = Lacquer.Cinzel(700);
     private readonly FontVariation _hint = Lacquer.Cinzel(600);
     private readonly IReadOnlyList<LogLine> _lines;
+    private Metrics _m = Metrics.Pc;
+    private PhoneUnits? _phone;
     private int _top;
     private float _k = 1;
 
@@ -42,24 +73,44 @@ internal sealed partial class MessageLogView : Control
         _gothic = new FontVariation { BaseFont = file, VariationEmbolden = 0.6f };
         _plain = new FontVariation { BaseFont = file };
         _lines = log.Lines();
-        _top = Math.Max(0, _lines.Count - Rows);
+        _top = Last;
     }
 
-    private static Rect2 Paper => new(Frame.Position + new Vector2(Inset, Inset), Frame.Size - new Vector2(2 * Inset, 2 * Inset));
+    private int Last => Math.Max(0, _lines.Count - _m.Rows);
 
-    private static float BodyTop => Paper.Position.Y + HeadHeight + 12;
+    /// <summary>
+    /// A point off the paper a tap closes the log at (global coordinates): left of the PC's frame, or in the phone's left
+    /// side under its Close.
+    /// </summary>
+    public Vector2 OutsidePoint => GetGlobalTransformWithCanvas() * (_phone is { } u
+        ? new Vector2(u.Rect(u.Frame.LeftRoom).GetCenter().X, _m.Paper.GetCenter().Y) * _k
+        : new Vector2(100, 400) * _k);
 
-    /// <summary>The ruled lines the page holds.</summary>
-    private static int Rows => (int)((Paper.End.Y - BodyTop) / Pitch);
-
-    private int Last => Math.Max(0, _lines.Count - Rows);
-
-    /// <summary>Lays the log over the picture (<paramref name="area"/>, in its parent's coordinates).</summary>
+    /// <summary>
+    /// Lays the log over the picture (<paramref name="area"/>, in its parent's coordinates); on the phone held landscape
+    /// over the whole screen, its parent's area.
+    /// </summary>
     public void Place(Rect2 area)
     {
-        Position = area.Position;
-        Size = area.Size;
-        _k = area.Size.X / 1280f;
+        bool newest = _top >= Last;
+        if (Device.Landscape(this) is { } phone)
+        {
+            var u = new PhoneUnits(phone);
+            _phone = u;
+            _m = Metrics.Phone(u);
+            Position = Vector2.Zero;
+            Size = GetParentAreaSize();
+            _k = u.K;
+        }
+        else
+        {
+            _phone = null;
+            _m = Metrics.Pc;
+            Position = area.Position;
+            Size = area.Size;
+            _k = area.Size.X / 1280f;
+        }
+        _top = newest ? Last : Math.Min(_top, Last);
         QueueRedraw();
     }
 
@@ -102,7 +153,8 @@ internal sealed partial class MessageLogView : Control
 
     /// <summary>
     /// The touch mode (docs/ui/touch.md, "The Skip and Log buttons"): a finger dragged over the page scrolls it, a tap off
-    /// the frame closes it; the wheel and the right click (Android's Back) as before. Returns whether the event was taken.
+    /// the frame closes it (on the phone off the paper: its Close among them); the wheel and the right click (Android's
+    /// Back) as before. Returns whether the event was taken.
     /// </summary>
     private bool Touch(InputEvent e)
     {
@@ -117,11 +169,11 @@ internal sealed partial class MessageLogView : Control
                 float dy = (start.Y - motion.Position.Y) / _k;
                 _dragged |= Math.Abs(dy) > 12;
                 if (_dragged)
-                    Scroll(_fingerTop + (int)Math.Round(dy / Pitch) - _top);
+                    Scroll(_fingerTop + (int)Math.Round(dy / _m.Pitch) - _top);
                 return true;
             case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false } release when _finger is not null:
                 _finger = null;
-                if (!_dragged && !Frame.HasPoint(release.Position / _k))
+                if (!_dragged && !_m.Frame.HasPoint(release.Position / _k))
                     Close();
                 return true;
         }
@@ -140,42 +192,48 @@ internal sealed partial class MessageLogView : Control
     public override void _Draw()
     {
         float k = _k;
+        var m = _m;
+        float r = m.R;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(k, k));
         DrawRect(new Rect2(Vector2.Zero, Size / k), Dim);
-        Ui.DrawPanel(this, Frame, k);
-        var paper = Paper;
+        if (m.Framed)
+            Ui.DrawPanel(this, m.Frame, k);
+        var paper = m.Paper;
         DrawRect(paper, Ui.Paper);
-        DrawRect(new Rect2(paper.Position, paper.Size.X, HeadHeight), Ui.PaperHead);
-        Text(_head, "CHRONICLE", 26, paper.Position.X + 24, paper.Position.Y + 39, Ui.HeadInk);
-        string hint = TouchMode.On ? "DRAG SCROLLS   ·   TAP OUTSIDE CLOSES" : "WHEEL SCROLLS   ·   RIGHT CLICK CLOSES";
-        Text(_hint, hint, 14, paper.End.X - 24 - Width(_hint, hint, 14), paper.Position.Y + 34, Ui.InkQuiet);
+        DrawRect(new Rect2(paper.Position, paper.Size.X, m.Head), Ui.PaperHead);
+        if (!m.Framed)
+            DrawRect(paper, Ui.Gold, false, Lacquer.Line(2.5f * r, k));
+        Text(_head, "CHRONICLE", m.Title, paper.Position.X + 24 * r, paper.Position.Y + m.Head * 39 / 58, Ui.HeadInk);
+        string hint = _phone is not null ? "DRAG SCROLLS   ·   CLOSE SHUTS IT"
+            : TouchMode.On ? "DRAG SCROLLS   ·   TAP OUTSIDE CLOSES" : "WHEEL SCROLLS   ·   RIGHT CLICK CLOSES";
+        Text(_hint, hint, m.Hint, paper.End.X - 24 * r - Width(_hint, hint, m.Hint), paper.Position.Y + m.Head * 34 / 58, Ui.InkQuiet);
 
-        float margin = paper.Position.X + MarginX;
-        DrawLine(new Vector2(margin, paper.Position.Y + HeadHeight), new Vector2(margin, paper.End.Y), Ui.VermilionInk with { A = 110 / 255f },
+        float margin = paper.Position.X + m.Margin;
+        DrawLine(new Vector2(margin, paper.Position.Y + m.Head), new Vector2(margin, paper.End.Y), Ui.VermilionInk with { A = 110 / 255f },
             Lacquer.Line(1, k));
-        for (float y = BodyTop + Pitch - 4; y < paper.End.Y; y += Pitch)
-            DrawLine(new Vector2(paper.Position.X + 8, y), new Vector2(paper.End.X - 8, y), Rule, Lacquer.Line(1, k));
+        for (float y = m.BodyTop + m.Pitch - 4 * r; y < paper.End.Y; y += m.Pitch)
+            DrawLine(new Vector2(paper.Position.X + 8 * r, y), new Vector2(paper.End.X - 8 * r, y), Rule, Lacquer.Line(1, k));
 
-        float column = margin + 18, right = paper.End.X - 24;
-        for (int i = 0; i < Rows && _top + i < _lines.Count; i++)
+        float column = margin + 18 * r, right = paper.End.X - 24 * r;
+        for (int i = 0; i < m.Rows && _top + i < _lines.Count; i++)
         {
             var line = _lines[_top + i];
-            float top = BodyTop + i * Pitch;
+            float top = m.BodyTop + i * m.Pitch;
             if (line.Kind == LogKind.Place)
             {
                 string place = line.Text.ToUpperInvariant();
-                float size = Fit(_head, place, 18, right - column);
-                Text(_head, place, size, (column + right - Width(_head, place, size)) / 2, top + 24, Ui.HeadInk);
+                float size = Fit(_head, place, m.Place, right - column);
+                Text(_head, place, size, (column + right - Width(_head, place, size)) / 2, top + 24 * r, Ui.HeadInk);
                 continue;
             }
             if (line.Label.Length > 0)
             {
                 bool choice = line.Kind == LogKind.Choice;
                 string label = line.Label.ToUpperInvariant();
-                float size = Fit(_label, label, choice ? 15 : 18, MarginX - 32);
+                float size = Fit(_label, label, choice ? m.Choice : m.Label, m.Margin - 32 * r);
                 var colour = choice ? Ui.InkQuiet
                     : line.Kind == LogKind.Thought ? Ui.VermilionInk with { A = 0.6f } : Ui.VermilionInk;
-                Text(_label, label, size, margin - 16 - Width(_label, label, size), top + 26, colour);
+                Text(_label, label, size, margin - 16 * r - Width(_label, label, size), top + 26 * r, colour);
             }
             var (font, text, ink) = line.Kind switch
             {
@@ -185,19 +243,21 @@ internal sealed partial class MessageLogView : Control
                 LogKind.Thought => (_gothic, line.Text, Ui.InkQuiet),
                 _ => (_gothic, line.Text, Ui.Ink),
             };
-            float textSize = Fit(font, text, TextSize, right - column);            // 131's lines run up to 52 cells
-            Text(font, text, textSize, column, top + 2 + font.GetAscent((int)textSize), ink);
+            float textSize = Fit(font, text, m.Text, right - column);            // 131's lines run up to 52 cells
+            Text(font, text, textSize, column, top + 2 * r + font.GetAscent((int)textSize), ink);
         }
 
         // the scroll bar: the track at the paper's right edge, the thumb the part shown
-        var track = new Rect2(paper.End.X - 10, BodyTop, 4, paper.End.Y - 8 - BodyTop);
+        var track = new Rect2(paper.End.X - 10 * r, m.BodyTop, 4 * r, paper.End.Y - 8 * r - m.BodyTop);
         DrawRect(track, Ui.PaperHead);
-        if (_lines.Count > Rows)
+        if (_lines.Count > m.Rows)
         {
-            float h = Math.Max(24, track.Size.Y * Rows / _lines.Count);
+            float h = Math.Max(24 * r, track.Size.Y * m.Rows / _lines.Count);
             float y = track.Position.Y + (track.Size.Y - h) * _top / Last;
-            DrawRect(new Rect2(track.Position.X - 1, y, 6, h), Ui.VermilionInk with { A = 0.7f });
+            DrawRect(new Rect2(track.Position.X - r, y, 6 * r, h), Ui.VermilionInk with { A = 0.7f });
         }
+        if (_phone is { } u)
+            SideCells.Draw(this, u, u.Rect(PhoneScenes.MenuCell(u.Frame)), SideCells.Icon.Close, "Close", lit: true);
     }
 
     private static float Width(Font font, string text, float size) =>

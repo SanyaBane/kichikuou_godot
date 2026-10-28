@@ -416,4 +416,9 @@ The phone's real pass (step F, 2026-10-28; docs/ui/phone-build.md, "Step F, wher
 dumps every entry as the phone held landscape (`--phone landscape --window 1808x813`) into `phone-landscape/current`,
 the tab **Smartphone, landscape** — the whole window at two thirds of the reference phone's pixels, its black sides
 with it, not cut to the picture. Until a screen's phone layout is built its entry shows the tablet's layout in the
-phone's frame; the mock-up tabs stay as they are, and a built screen's mock-up leaves them.
+phone's frame; the mock-up tabs stay as they are, and a built screen's mock-up leaves them. Step L1 (2026-10-28) built
+the scenes' layouts: the entries of the message windows, the scene menu, the week report, the message log, the map's
+wait, All Data and the title show the left side's Menu cell (`GalleryEntries.MenuCell`) and the drawer in it, and the
+pass alone has three Messages entries of its own, the Menu sheet open (`menu-sheet`), Restart's question
+(`menu-sheet-restart`) and Debug's page (`menu-sheet-debug`; `GalleryEntries.Phone.cs`); LS1, LS1b, LS1m, LW1, LEd,
+LN3 and LR2 left the mock-up tab.

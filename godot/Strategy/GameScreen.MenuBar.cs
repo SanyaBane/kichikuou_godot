@@ -7,6 +7,7 @@ using Kichikuou.Content.Graphics;
 using Kichikuou.Content.Screen;
 using Kichikuou.Game.Battles;
 using Kichikuou.Game.Battles.Effects;
+using Kichikuou.Original.Content.Devices;
 
 namespace Kichikuou.Game.Strategy;
 
@@ -73,23 +74,17 @@ public partial class GameScreen
         BarItem(options);
         options.Pressed += () => OpenOptions();
         row.AddChild(options);
-        var sound = new Button();
-        BarItem(sound);
-        sound.Pressed += () =>
-        {
-            SoundChoice.On = !SoundChoice.On;
-            UpdateSoundItem();
-        };
-        row.AddChild(sound);
+        _soundItem = new Button();
+        BarItem(_soundItem);
+        _soundItem.Pressed += ToggleSound;
+        row.AddChild(_soundItem);
         UpdateSoundItem();
-        void UpdateSoundItem() => sound.Text = SoundChoice.On ? "Sound[on]" : "Sound[off]";
         _skipItem = new Button();
         BarItem(_skipItem);
         _skipItem.Pressed += _skip.Toggle;
         row.AddChild(_skipItem);
         _skip.Changed += UpdateSkipItem;
         UpdateSkipItem();
-        PopupMenu debug = null!;
         var debugMenu = Menu("Debug",
             ("Battle Captures...", ConfirmCaptures),
             ("Portraits...", OpenPortraits),
@@ -97,17 +92,30 @@ public partial class GameScreen
             ("Screen Gallery...", ConfirmScreenGallery),
             ("Hide Dimmed Map Names", ToggleDimmedNames),
             ("Menu Row Height...", OpenMenuRows));
-        debug = debugMenu.GetPopup();
-        debug.SetItemAsCheckable(DimmedNamesItem, true);
-        debug.SetItemChecked(DimmedNamesItem, MapNamesChoice.HideDimmed);
+        _debugPopup = debugMenu.GetPopup();
+        _debugPopup.SetItemAsCheckable(DimmedNamesItem, true);
+        _debugPopup.SetItemChecked(DimmedNamesItem, MapNamesChoice.HideDimmed);
         row.AddChild(debugMenu);
-        // Saved for later launches; the map's plates follow at once.
-        void ToggleDimmedNames()
-        {
-            MapNamesChoice.HideDimmed = !MapNamesChoice.HideDimmed;
-            debug.SetItemChecked(DimmedNamesItem, MapNamesChoice.HideDimmed);
-            _markers.SetHideDimmed(MapNamesChoice.HideDimmed);
-        }
+    }
+
+    private Button _soundItem = null!;
+    private PopupMenu _debugPopup = null!;
+
+    /// <summary>Sound on or off (ours, <see cref="SoundChoice"/>; saved for later launches).</summary>
+    private void ToggleSound()
+    {
+        SoundChoice.On = !SoundChoice.On;
+        UpdateSoundItem();
+    }
+
+    private void UpdateSoundItem() => _soundItem.Text = SoundChoice.On ? "Sound[on]" : "Sound[off]";
+
+    /// <summary>Debug → Hide Dimmed Map Names: saved for later launches; the map's plates follow at once.</summary>
+    private void ToggleDimmedNames()
+    {
+        MapNamesChoice.HideDimmed = !MapNamesChoice.HideDimmed;
+        _debugPopup.SetItemChecked(DimmedNamesItem, MapNamesChoice.HideDimmed);
+        _markers.SetHideDimmed(MapNamesChoice.HideDimmed);
     }
 
     private static MenuButton Menu(string title, params (string Text, Action Run)[] items)
@@ -209,10 +217,12 @@ public partial class GameScreen
     /// starts on a fresh state, with the random generator and the message skip as they are
     /// (<see cref="EngineState"/>).
     /// </summary>
-    private void ConfirmRestart() => Confirm("Restart game?", "Restart", () => Screens.ToTitle(this));
+    private void ConfirmRestart() => Confirm(PhoneMenu.Command.Restart, Restart);
+
+    private void Restart() => Screens.ToTitle(this);
 
     /// <summary>Exit (<c>menu_quitmenu_open</c>): after the confirmation, the program ends.</summary>
-    private void ConfirmExit() => Confirm("Quit game?", "Quit", () => _tree.Quit());
+    private void ConfirmExit() => Confirm(PhoneMenu.Command.Exit, () => _tree.Quit());
 
     private MenuRowsWindow? _menuRows;
 
@@ -230,7 +240,9 @@ public partial class GameScreen
     }
 
     /// <summary>Debug → Battle Captures (ours, development): after the confirmation, the capture viewer, which comes back to the title.</summary>
-    private void ConfirmCaptures() => Confirm("Open the battle captures?", "Open", () => Screens.Open(this, new CaptureList()));
+    private void ConfirmCaptures() => Confirm(PhoneMenu.Command.BattleCaptures, OpenCaptures);
+
+    private void OpenCaptures() => Screens.Open(this, new CaptureList());
 
     /// <summary>The Debug menu's checkable Hide Dimmed Map Names.</summary>
     private const int DimmedNamesItem = 4;
@@ -240,7 +252,9 @@ public partial class GameScreen
     /// which comes back to the title.
     /// </summary>
     private void ConfirmScreenGallery() =>
-        Confirm("Open the screen gallery?", "Open", () => Screens.Open(this, new ScreenGallery.GalleryScreen()));
+        Confirm(PhoneMenu.Command.ScreenGallery, OpenScreenGallery);
+
+    private void OpenScreenGallery() => Screens.Open(this, new ScreenGallery.GalleryScreen());
 
     /// <summary>Debug → Portraits (ours, development): the faces our screens cut, over the game, which waits while it is open.</summary>
     private void OpenPortraits()
@@ -368,16 +382,19 @@ public partial class GameScreen
             RedrawAll(child);
     }
 
-    /// <summary><c>confirm_lose_progress</c>: a modal box; the game waits while it is open.</summary>
-    private void Confirm(string title, string confirm, Action confirmed, string text = "Any unsaved progress will be lost.")
+    /// <summary>
+    /// <c>confirm_lose_progress</c>: a modal box asking <paramref name="command"/>'s question (<see cref="PhoneMenu.QuestionOf"/>,
+    /// which the phone's Menu sheet asks in its callout); the game waits while it is open.
+    /// </summary>
+    private void Confirm(PhoneMenu.Command command, Action confirmed)
     {
-        if (_modal)
+        if (_modal || PhoneMenu.QuestionOf(command) is not { } question)
             return;
         var dialog = new ConfirmationDialog
         {
-            Title = title,
-            DialogText = text,
-            OkButtonText = confirm,
+            Title = question.Title,
+            DialogText = question.Line,
+            OkButtonText = question.Confirm,
         };
         _modal = true;
         _input.Clear();

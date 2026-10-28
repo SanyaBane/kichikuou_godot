@@ -137,11 +137,13 @@ internal static partial class GalleryEntries
         var drawer = TouchMode.On && moment.AtKey
             ? g.Add(new SkipDrawer { Visible = true, LogDisabled = p.Log.Pages.Count == 0 })
             : null;
+        var menu = MenuCell(g);                                 // the phone held landscape: Menu in the left side (LE1)
         return area =>
         {
             GalleryStage.Fill(picture, area);
             window?.Place(area);
             drawer?.Place(area);
+            menu?.Place();
         };
     }
 }

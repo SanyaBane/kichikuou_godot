@@ -345,7 +345,9 @@ GALLERY_ENTRIES = {
     'PXr': ('px-report', 'The original\'s screens', 'An ending\'s Completion Report', 'as it is (ending 11); Log and '
                                                                                  'Skip at its key waits'),
 }
-# The gallery's landscape phone tab (phone-land): the owner's chosen landscape base versions (round P8 on).
+# The gallery's landscape phone tab (phone-land): the owner's chosen landscape base versions (round P8 on), those not
+# built yet; a built one leaves for the real pass "Smartphone, landscape" (docs/ui/phone-build.md: L1 took LS1, LS1b,
+# LS1m, LW1, LEd, LN3 and LR2).
 GALLERY_ENTRIES_LAND = {
     'LM1a': ('lm1-map', 'Map — LM1', 'The map wait', 'the frame kept, the black sides as rails'),
     'LM1b': ('lm1-commands', 'Map — LM1', 'The command panel', 'in the sides, two-line rows; Close where Commands was'),
@@ -359,7 +361,6 @@ GALLERY_ENTRIES_LAND = {
     'LA2': ('la2-attack', 'Enemy attack — LA2', 'The attack on Ys', 'across the whole width, the answers in a column '
                                                                       'at the right thumb'),
     'LA2n': ('la2-ninjas', 'Enemy attack — LA2', 'Ninja Scout\'s list', 'five ninjas in two columns (made up)'),
-    'LW1': ('lw1-report', 'Week report — LW1', 'The week report', 'the card in the middle over the dimmed map'),
     # Round P11's choices (owner, 2026-10-28; docs/ui/phone.md, §15).
     'LH2': ('lh2-harem', 'Harem — LH2', 'The harem', 'the grid folded in two, every girl in view'),
     'LT2': ('lt2-treasure', 'Treasure — LT2', 'The treasure', 'the grid folded in two, every item in view'),
@@ -378,22 +379,15 @@ GALLERY_ENTRIES_LAND = {
                                                                      'edges'),
     'LB3r': ('lb3-results', 'Battle — LB2', 'The results plate', 'in the frame\'s middle over the dimmed board'),
     'LB3b': ('lb3-line', 'Battle — LB2', 'A fighter\'s line', 'the portrait in the scene\'s blurred side, our balloon'),
-    # Round P15's choice (owner, 2026-10-28; docs/ui/phone.md, §19).
-    'LS1': ('ls1-speech', 'Scenes — LS1', 'A speech', 'the frame as on the PC, Menu, Skip and Log in the left side'),
-    'LS1b': ('ls1-cg', 'Scenes — LS1', 'Window 131 over its CG', 'the CG (masked) the frame\'s height'),
-    'LS1m': ('ls1-menu', 'Scenes — LS1', 'A dialogue menu', 'the rows at the frame\'s right foot (made up)'),
     # Round P19's choices (owner, 2026-10-28; docs/ui/phone.md, §23): All Data, the title, the import.
     'LG2m': ('lg2-data', 'All Data — LG2', 'The menu of graphs', 'the frame kept, the graphs in the left side'),
     'LG2': ('lg2-funds', 'All Data — LG2', 'A graph', 'its figures at the phone\'s type; the scales in the right side'),
     'LE1': ('le1-title', 'Title — LE1', 'The title', 'the frame as on the PC, after a clear; a tap on a character'),
-    'LEd': ('le1-description', 'Title — LE1', 'A button\'s description', 'window 113 at its place, LS1\'s side'),
     'LI': ('li-import', 'Import — LI', 'A folder chosen', 'the paper sheet in the frame, the steps in two columns'),
     'LIp': ('li-progress', 'Import — LI', 'Importing', 'the decompile\'s bar (made up: 45%)'),
     'LIr': ('li-refused', 'Import — LI', 'Another version\'s file', 'the hashes in two lines across the sheet (made '
                                                                     'up)'),
     # Round P21's choices (owner, 2026-10-28; docs/ui/phone.md, §26).
-    'LN3': ('ln3-menu', 'Menu — LN3', 'The Menu sheet', 'tiles in the frame\'s middle, Close in the left side'),
-    'LR2': ('lr2-log', 'Log — LR2', 'The message log', 'the chronicle across the width at the scenes\' type'),
     'LY1': ('ly1-comment', 'Save/Load — LL1', 'Editing a comment', 'the comment\'s own card over Android\'s keyboard'),
     'LXf': ('lx-fortune', 'The original\'s screens', 'Fortune Check', 'as it is in the frame (made up: three fates '
                                                                      'seen)'),

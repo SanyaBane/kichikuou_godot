@@ -71,10 +71,12 @@ internal static partial class GalleryEntries
             menuView.Open(menu, box);
         }
         var picture = g.Picture(p);
+        var cell = MenuCell(g);                                 // the phone held landscape: Menu in the left side (LG2m)
         return area =>
         {
             GalleryStage.Fill(picture, area);
             menuView?.Place(area);
+            cell?.Place();
         };
     }
 }

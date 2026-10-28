@@ -289,6 +289,39 @@ on Oaks (6), the debug build):
   Both are in docs/backlog.md, "Android". Note on the figures: a frame's interval is Godot's `delta`, so the script's
   work at a frame's start (`process_frame`) is counted in the next frame's interval; a period's figures are the same.
 
+**Step L1, where it stands (2026-10-28):** built, **awaiting the owner's look on the phone**.
+
+- **The models** (`Original.Content/Devices`, tested in `PhoneScenesTests`): `PhoneScenes` — the left side's cells, the
+  mock-ups' rail from the hole's strip + 6 to the frame − 10 (Menu 110 high on top, Skip and Log 118 high at the foot,
+  Log lowest); a `]` menu's rows at the frame's right foot (123 high, 12 apart, at least 500 wide and wider for a long
+  item up to half the frame, lower with their type when a long menu would not fit the height); the log's paper (LR2);
+  the week report's scale (LW1's card 1320 wide unless it would then leave less than 60 over and under it). `PhoneMenu`
+  — the Menu sheet's pages of tiles (the menu bar's commands; Debug's own page), the questions in the PC's dialogs'
+  words, the panel, the tiles four a row, a question's callout above its tile or, near the top, under it.
+  `PhoneFrame.Box.Contains`.
+- **The views**, each keyed by `Device.Landscape(view)` (the phone's frame over the view's parent; null on any other
+  device, whose code paths are as they were): `SkipDrawer` draws Skip and Log as cells in the left side (`SideCells`:
+  a plate, the icon left, the word right; Skip lit gold reading "ON" while the skip runs); `MessageWindowView` no
+  longer docks 131 there; `SceneMenuView` puts the rows at the frame's right foot (LS1m); `MessageLogView` lays the
+  paper across the width with Close at the Menu cell's place (LR2; its figures a `Metrics` record whose PC values are
+  the former constants); `WeekReportView` draws the card ×1.44 over the map dimmed (LW1).
+- **The Menu** (LN3): `MenuSheetView` — the cell, and the sheet it opens over the whole screen, modal as the PC's
+  boxes — and `GameScreen.Phone.cs`: the cell shows on the phone wherever a game is shown and no screen of ours takes
+  the side or waits on its own (`MenuCellShown`); the tiles act as the menu bar's items (`PhoneMenuChosen`); the PC's
+  confirmation boxes now take their words from `PhoneMenu.QuestionOf`. On the phone the drawer and Log also show at the
+  week report (`PhoneWeekReport`), as LW1 has them.
+- **The agent's choices**, for the owner to confirm: Debug's tiles on a page of their own, ‹ Menu first, the Debug tile
+  in a development build only (`OS.IsDebugBuild`; the PC's bar keeps its Debug always); Battle Captures and Screen
+  Gallery ask in the callout too, as the PC's boxes do; the Menu cell also on the map's wait, over the province menu and
+  over All Data (the steps that lay those out decide their side), not over our battle and full screens, the command
+  panel and the enemy attack; All Data's `]` menu takes LS1m's rows until L9 gives it LG2m's cells.
+- **The gallery**: the PC and touch passes same (110 and 111 entries); the phone pass's L1 entries match their
+  mock-ups, three entries of its own show the sheet (docs/ui/gallery.md, §9), and LS1, LS1b, LS1m, LW1, LEd, LN3 and
+  LR2 left `GALLERY_ENTRIES_LAND`.
+- **Unattended play**: `--phone landscape` headless from the week-18 save to its deployment picker runs as before. The
+  touch exercise in a window (`--harem` from the week-18 save) now also taps the Menu cell, Sound twice, Restart and its
+  Cancel, then Close (`AutoPhoneMenuAsync`); not run — it needs a window, where a hand on the mouse can break it.
+
 ### Upright (steps P0-P9)
 
 | Step | What | Base versions (phone.md) |

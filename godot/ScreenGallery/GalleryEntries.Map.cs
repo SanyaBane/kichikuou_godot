@@ -103,6 +103,7 @@ internal static partial class GalleryEntries
         var bar = Strip(g, p);
         var button = TouchCommandsButton(g, closes: false);
         var drawer = TouchMode.On ? g.Add(new SkipDrawer { Visible = true }) : null;  // Skip and Log on the waiting map (the owner's L1)
+        var menu = MenuCell(g);                                 // the phone held landscape: Menu in the left side (LM1)
         return area =>
         {
             GalleryStage.Fill(backdrop, area);
@@ -110,6 +111,7 @@ internal static partial class GalleryEntries
             bar.Place(StripArea(area));
             button?.Place(area);
             drawer?.Place(area);
+            menu?.Place();
             if (hover is { } province)
                 view.ShowHover(markers.FirstOrDefault(m => m is { Kind: MapHitKind.Province } && m.Id == province));
         };

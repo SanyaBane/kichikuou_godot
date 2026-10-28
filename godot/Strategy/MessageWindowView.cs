@@ -1,5 +1,6 @@
 using Godot;
 using Kichikuou.Game.Battles;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.Content.Strategy;
 
 namespace Kichikuou.Game.Strategy;
@@ -61,7 +62,8 @@ internal sealed partial class MessageWindowView : Control
 
     /// <summary>
     /// The touch mode's Skip and Log at the screen's left edge (<see cref="SkipDrawer"/>): a window that would cover them
-    /// (131) is drawn smaller right of them (the owner's B3b, docs/ui/touch.md).
+    /// (131) is drawn smaller right of them (the owner's B3b, docs/ui/touch.md). Not on the phone held landscape, where they
+    /// stand in the black side (docs/ui/phone.md, §19, LS1b).
     /// </summary>
     public bool Docks { get; init; }
 
@@ -168,7 +170,7 @@ internal sealed partial class MessageWindowView : Control
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         var (x, y, width, height) = w.Panel;
         var box = new Rect2(x, y, width, height);
-        float shrink = Docks ? SkipButtons.WindowScale(w.Panel) : 1;
+        float shrink = Docks && Device.Layout != DeviceLayout.PhoneLandscape ? SkipButtons.WindowScale(w.Panel) : 1;
         if (shrink < 1)
         {
             // The original's window stays drawn under ours (GamePresenter.LeaveWindowOnStage): a dark band hides it where

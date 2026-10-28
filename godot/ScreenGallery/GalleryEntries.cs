@@ -40,6 +40,7 @@ internal static partial class GalleryEntries
         .. Messages(),
         .. MapScreens(),
         .. SceneScreens(),
+        .. PhoneScreens(),
         .. Controls(),
         .. BattleScreens(),
         .. BoardScreens(),
@@ -242,7 +243,8 @@ internal static partial class GalleryEntries
 
     /// <summary>
     /// <paramref name="sample"/>'s window at a key wait and, in the touch mode, Skip and Log at the screen's left edge, a
-    /// window that would cover them drawn smaller (131), as <c>GameScreen.UpdateSkipButtons</c> shows them.
+    /// window that would cover them drawn smaller (131), as <c>GameScreen.UpdateSkipButtons</c> shows them; on the phone
+    /// held landscape in the left side, the Menu cell over them.
     /// </summary>
     private static Action<Rect2>? MessageWindowOf(GalleryStage g, MessageSample sample, bool skipOn)
     {
@@ -253,10 +255,12 @@ internal static partial class GalleryEntries
         if (!TouchMode.On)
             return view.Place;
         var drawer = g.Add(new SkipDrawer { Visible = true, SkipOn = skipOn });
+        var menu = MenuCell(g);
         return area =>
         {
             view.Place(area);
             drawer.Place(area);
+            menu?.Place();
         };
     }
 }

@@ -1,5 +1,6 @@
 using Godot;
 using Kichikuou.Original.Content;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.Content.Strategy;
 
 namespace Kichikuou.Game.Strategy;
@@ -9,7 +10,8 @@ namespace Kichikuou.Game.Strategy;
 /// banner, the budget as an account (last week's, plus the revenue, minus each expense, the new one), the troops
 /// replenished, in the lacquer and gold of our map panels; an animated triangle at the bottom right asks for the
 /// click (no caption, owner). The thieves' week has the banner alone. It takes no input: the screen's own click
-/// answers it (<see cref="GameScreen"/>). Laid out in the 1280×800 screen's pixels, scaled with the picture.
+/// answers it (<see cref="GameScreen"/>). On the phone held landscape the card is drawn larger over the map dimmed
+/// (docs/ui/phone.md, §14, LW1). Laid out in the 1280×800 screen's pixels, scaled with the picture.
 /// </summary>
 internal sealed partial class WeekReportView : Control
 {
@@ -22,7 +24,7 @@ internal sealed partial class WeekReportView : Control
     /// <summary>Leazas's flag (the map's markers' CG 820).</summary>
     private const int LeazasFlag = 820;
 
-    private static readonly Color Gain = Color.Color8(159, 201, 138), Loss = Color.Color8(217, 118, 94);
+    private static readonly Color Gain = Color.Color8(159, 201, 138), Loss = Color.Color8(217, 118, 94), Dim = new(0, 0, 0, 0.43f);
 
     private readonly FacePictures _pictures;
     private readonly FontFile _brush = Lacquer.Brush();
@@ -89,6 +91,13 @@ internal sealed partial class WeekReportView : Control
             return;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         float height = CardHeight(r);
+        if (Device.Landscape(this) is { } phone)
+        {
+            // The phone held landscape (docs/ui/phone.md, §14, LW1): the card larger in the frame's middle, the map dimmed.
+            DrawRect(new Rect2(0, 0, 1280, 800), Dim);
+            float s = PhoneScenes.ReportScale(phone, CardWidth, height);
+            DrawSetTransform(new Vector2(640, 400) * _k * (1 - s), 0, new Vector2(_k * s, _k * s));
+        }
         var card = new Rect2((1280 - CardWidth) / 2, (800 - height) / 2, CardWidth, height);
         Ui.DrawPanel(this, card, _k);
         float x0 = card.Position.X + Pad, x1 = card.End.X - Pad, y = card.Position.Y + Top;

@@ -372,6 +372,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         ReadyHarem(faces);
         ReadyTreasure(faces);
         ReadySkipButtons();
+        ReadyPhone();
         _overlay =OutlinedLabel(VerticalAlignment.Center, 32);
         _notice = OutlinedLabel(VerticalAlignment.Top, 18);
 
@@ -469,6 +470,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         UpdateMessageWindow();
         UpdateSkipButtons();
+        UpdatePhone();
         UpdateScoutReport();
         UpdateEnemyAttack();
         UpdateStrategyCutIn();
@@ -1834,9 +1836,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     /// <summary>
     /// Whether the message log is there to open (the touch mode's Log lit): the player's key is awaited or the map waits
-    /// (<see cref="MapLogWait"/>), something logged.
+    /// (<see cref="MapLogWait"/>), and on the phone held landscape the week report (<see cref="PhoneWeekReport"/>, LW1),
+    /// something logged.
     /// </summary>
-    private bool LogReachable => (_keyWaiting || MapLogWait) && !_modal && _logView is null && _presenter.Log.Pages.Count > 0;
+    private bool LogReachable => (_keyWaiting || MapLogWait || PhoneWeekReport) && !_modal && _logView is null && _presenter.Log.Pages.Count > 0;
 
     /// <summary><c>COMMAND</c>'s map loop waits for the player with nothing over the map: no menu, window, plate's click or troop order under way.</summary>
     private bool MapLogWait => _presenter.MapWaiting && _presenter.Menu is null && !_presenter.MessageWindowShown
@@ -1942,7 +1945,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         Shot("message-log-map");
         await FrameAsync();
         if (TouchMode.On)
-            await ClickAsync(_content.GlobalPosition + area.Position + new Vector2(100, 400) * (area.Size.X / 1280), Godot.MouseButton.Left);
+            await ClickAsync(_logView!.OutsidePoint, Godot.MouseButton.Left);
         else
             await ClickAsync(middle, Godot.MouseButton.Right);
         if (_logView is not null || _modal)

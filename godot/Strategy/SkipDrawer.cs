@@ -1,4 +1,5 @@
 using Godot;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.Content.Strategy;
 
 namespace Kichikuou.Game.Strategy;
@@ -11,7 +12,8 @@ namespace Kichikuou.Game.Strategy;
 /// smaller beside them. Skip is lit gold, "ON", while the skip runs; a greyed cell is deaf. A tap on a cell (its release
 /// over the cell pressed) is <see cref="SkipTapped"/> or <see cref="LogTapped"/>; a tap elsewhere on the drawer, the room
 /// between the plates included, is its own and does nothing (a near miss never advances the text); its other events go on
-/// to the screen through <see cref="Forwarded"/>.
+/// to the screen through <see cref="Forwarded"/>. On the phone held landscape (docs/ui/phone.md, §19, LS1) the two are
+/// cells of their own in the black side at the left thumb, out of the frame (<see cref="PhoneScenes"/>), Log at the foot.
 /// </summary>
 internal sealed partial class SkipDrawer : Control
 {
@@ -25,6 +27,7 @@ internal sealed partial class SkipDrawer : Control
     private static readonly SkipButtons.Box Box = SkipButtons.Drawer;
 
     private float _k = 1;
+    private PhoneFrame? _phone;                         // the phone held landscape: the cells in the left side
     private bool _skipOn, _skipDisabled, _logDisabled;
     private int _held = -1;                              // the cell pressed (0 Skip, 1 Log), -1 none
 
@@ -54,14 +57,32 @@ internal sealed partial class SkipDrawer : Control
     public bool LogDisabled { get => _logDisabled; set => Set(ref _logDisabled, value); }
 
     /// <summary>The Skip cell's centre (global coordinates).</summary>
-    public Vector2 SkipCentre => CellCentre(SkipButtons.SkipCell);
+    public Vector2 SkipCentre => _phone is { } f ? PhoneCentre(PhoneScenes.SkipCell(f)) : CellCentre(SkipButtons.SkipCell);
 
     /// <summary>The Log cell's centre (global coordinates).</summary>
-    public Vector2 LogCentre => CellCentre(SkipButtons.LogCell);
+    public Vector2 LogCentre => _phone is { } f ? PhoneCentre(PhoneScenes.LogCell(f)) : CellCentre(SkipButtons.LogCell);
 
-    /// <summary>Places the plates on the picture <paramref name="area"/> (its parent's coordinates).</summary>
+    /// <summary>Places the plates on the picture <paramref name="area"/> (its parent's coordinates); on the phone in the left side.</summary>
     public void Place(Rect2 area)
     {
+        var phone = Device.Landscape(this);
+        if (phone is { } f)
+        {
+            var (skip, log) = (PhoneScenes.SkipCell(f), PhoneScenes.LogCell(f));
+            var at = new Vector2(skip.X, skip.Y);
+            if (f == _phone && Position == at)
+                return;
+            _phone = f;
+            Position = at;
+            Size = new Vector2(skip.W, log.Bottom - skip.Y);
+            QueueRedraw();
+            return;
+        }
+        if (_phone is not null)
+        {
+            _phone = null;
+            _k = 0;                                     // placed again below
+        }
         float k = area.Size.X / 1280;
         var position = area.Position + new Vector2(Box.X, Box.Y) * k;
         if (Math.Abs(k - _k) < 0.001f && Position == position)
@@ -99,11 +120,20 @@ internal sealed partial class SkipDrawer : Control
     /// <summary>The cell at <paramref name="local"/> (the control's coordinates): 0 Skip, 1 Log, -1 neither.</summary>
     private int CellAt(Vector2 local)
     {
+        if (_phone is { } f)
+        {
+            var at = local + Position;
+            return PhoneScenes.SkipCell(f).Contains(at.X, at.Y) ? 0
+                : PhoneScenes.LogCell(f).Contains(at.X, at.Y) ? 1 : -1;
+        }
         var p = local / _k + new Vector2(Box.X, Box.Y);
         return Contains(SkipButtons.SkipCell, p) ? 0 : Contains(SkipButtons.LogCell, p) ? 1 : -1;
 
         static bool Contains(SkipButtons.Box b, Vector2 p) => p.X >= b.X && p.X < b.X + b.W && p.Y >= b.Y && p.Y < b.Y + b.H;
     }
+
+    /// <summary>A phone cell's centre (global coordinates): its box is in the parent's.</summary>
+    private Vector2 PhoneCentre(PhoneFrame.Box cell) => GlobalPosition - Position + new Vector2(cell.X + cell.W / 2, cell.Y + cell.H / 2);
 
     private Vector2 CellCentre(SkipButtons.Box cell) =>
         GlobalPosition + (new Vector2(cell.X + cell.W / 2f, cell.Y + cell.H / 2f) - new Vector2(Box.X, Box.Y)) * _k;
@@ -126,6 +156,17 @@ internal sealed partial class SkipDrawer : Control
 
     public override void _Draw()
     {
+        if (_phone is { } phone)
+        {
+            // In the frame's layout pixels from the screen's corner (the parent's).
+            var u = new PhoneUnits(phone);
+            DrawSetTransform(-Position, 0, new Vector2(u.K, u.K));
+            SideCells.Draw(this, u, u.Rect(PhoneScenes.SkipCell(phone)), SideCells.Icon.Skip, _skipOn ? "ON" : "Skip",
+                lit: _skipOn, disabled: _skipDisabled, held: _held == 0);
+            SideCells.Draw(this, u, u.Rect(PhoneScenes.LogCell(phone)), SideCells.Icon.Log, "Log", disabled: _logDisabled,
+                held: _held == 1);
+            return;
+        }
         // In the screen's pixels, the drawer's corner at the control's origin.
         DrawSetTransform(-new Vector2(Box.X, Box.Y) * _k, 0, new Vector2(_k, _k));
         DrawPlate(Rect(SkipButtons.SkipPlate));
