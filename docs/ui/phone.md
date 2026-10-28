@@ -1023,3 +1023,12 @@ With these two rounds every screen of ours has a base version in both orientatio
 **The owner's choices (2026-10-28): LG2 and LE1, and LEd, LI, LIp, LIr as drawn** — in landscape the title is the
 PC's alone, its characters the targets (a tap, a long press for the description), Menu in the left side. LG1 and LE2
 stay in the round's sheets only. The chosen ones are on the gallery's landscape tab (`lg2-…`, `le1-…`, `li-…`).
+
+## 24. The build (owner, 2026-10-28)
+
+The build's plan is **docs/ui/phone-build.md**. The owner's answers that set it: the landscape phone first, then
+upright; the reference phone (20:9) and longer screens, shorter ones put off (docs/backlog.md); the tablet stays
+landscape, the orientation choice is a phone's only; and three screens of ours with no base version yet — the Menu
+sheet, the message log and the comment's editing on Save/Load — drawn before any build, as rounds P20 (upright) and P21
+(landscape), with the original's own screens (Fortune Check, the CG gallery, the music room, an ending's report) shown
+as they are for the owner to confirm.

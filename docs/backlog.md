@@ -38,9 +38,10 @@ The owner aims at a public release (decision 28, 2026-10-20).
 - **Android** — *agent* (the owner wants it, 2026-10-11): our own `.apk`, not Google Play; the tablet first,
   phones put off (owner, 2026-10-24: their mock-ups B1, B3, M1, M2 and the open questions are in
   [ui/touch.md](ui/touch.md), "Phones (put off)") and taken up again (owner, 2026-10-27): both orientations, the
-  Xiaomi Poco X6 Pro the reference, upright first — survey and mock-up rounds in [ui/phone.md](ui/phone.md): the map
-  PM1 and the battle PB3 (PB1, our army on top) chosen, the scenes left open; next the base versions of our full
-  screens upright, then the landscape phone; nothing built until the mock-ups are done (owner, 2026-10-27). Built and played on a Galaxy Tab S7 FE since 2026-10-24: the
+  Xiaomi Poco X6 Pro the reference — survey and mock-up rounds in [ui/phone.md](ui/phone.md): every screen's base
+  version chosen in both orientations (rounds P1-P19, 2026-10-27/28); the build's plan is
+  [ui/phone-build.md](ui/phone-build.md) (owner, 2026-10-28: the three missing base versions first, rounds P20-P21;
+  then the landscape phone, then upright; the tablet stays landscape). Built and played on a Galaxy Tab S7 FE since 2026-10-24: the
   preset "Android" and `tools/export-android.ps1` (`run-android.cmd`); the game folder copied into the app's own
   external folder and imported at the first start (`GameData.AndroidGameFolder`: no permission, where the native
   folder dialog would give a `content://` URI that `System.IO` cannot open); the saves beside it
@@ -119,10 +120,10 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   SHA-256s on one small line under the message, not wrapped, so it runs past the paper and the frame
   (`ImportScreen.DrawRefused`). Wrapping it pushes the folder field down; shortening the hashes loses what a player
   would report.
-- **The title's other screens in the screen gallery** — *agent*, when a phone mock-up needs them (put off 2026-10-28,
-  [ui/gallery.md](ui/gallery.md), §7 step 7): what the title's buttons run from the player's files — Fortune Check
-  (`HAPPY_C`), the music room (`MMODE`), the CG gallery (`CG`), Alice's Mansion (`Iｱﾘｽ`), Saitou (`Gｻｲﾄｳ`) — and the
-  debug starts' menu; `GalleryTitle` can run to them with a click on their button.
+- **Phones shorter than 19.5:9** — *owner* (mock-ups), then *agent* (put off 2026-10-28,
+  [ui/phone-build.md](ui/phone-build.md), §1): the phone's layouts are the reference's (20:9) and fit longer screens;
+  on an 18:9 phone held landscape the black sides are ~7.6 mm, too narrow for LM1's rails, and upright 272 px less
+  height is left for the scenes' windows and the bars — both need mock-ups of their own.
 - **Optional fixes** — *owner* (which), then *agent*: the quirks register ([quirks.md](quirks.md),
   decision 5) lists every reproduced bug; some can become options. The first is BRS-24 (decision 32, Option →
   Tweaks → "Chaos and Nikkou reach demons"; [tweaks.md](tweaks.md)).

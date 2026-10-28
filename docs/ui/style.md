@@ -172,10 +172,10 @@ narration, place title, 131) in docs/ui/messages.md.
 
 ## 6. Touch
 
-docs/ui/touch.md. The tablet first, phones put off (2026-10-24) and taken up again in both orientations, upright first
-(2026-10-27; docs/ui/phone.md: the map PM1, the battle PB3 and the full screens of rounds P3-P7 chosen, the scenes
-open). Touch mode is Android or `--touch`; the PC's mouse
-interface does not change.
+docs/ui/touch.md. The tablet first, phones put off (2026-10-24) and taken up again in both orientations (2026-10-27;
+docs/ui/phone.md: every screen's base version chosen in both, rounds P1-P19; the build docs/ui/phone-build.md, landscape
+first). The tablet stays landscape: the orientation choice is a phone's only (owner, 2026-10-28). Touch mode is Android
+or `--touch`; the PC's mouse interface does not change.
 
 - A finger needs 7-9 mm: rows 46 px with 8 between; secondary items get a row box too, since no hover shows they can
   be tapped. A ledger's rows, which touch each other, are 36 px by default (7.3 mm on the tablet; the owner's E2,
