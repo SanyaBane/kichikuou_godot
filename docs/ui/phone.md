@@ -131,17 +131,18 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 
 ## 5. Open questions
 
-1. **The line breaks upright.** Kept (each window kind's type as large as its longest line: 3.6 mm and 2.6 mm), or
+1. ~~**The line breaks upright.** Kept (each window kind's type as large as its longest line: 3.6 mm and 2.6 mm), or
    rewrapped at one size for every window (e.g. 3.2 mm), as the battle's balloons already are? Rewrapping touches
-   no rule; it changes how a page looks. PS2 (round P14) keeps them; for the owner to confirm (round P17, §21).
+   no rule; it changes how a page looks.~~ Kept, as PS2 draws them (the owner, 2026-10-28; round P17, §21).
 2. ~~**The scenes:** PS1, PS2 or PS3.~~ None (owner, 2026-10-27); then PS2, changed (owner, 2026-10-28): round P14,
    §18.
 3. ~~**The map:** PM1 or PM2.~~ PM1.
 4. ~~**The battle:** PB1 or PB2.~~ PB1, changed: round P2 (§6).
-5. **The bar's cells** (Menu, Log, Skip): at the left, as the tablet's drawer, or at the right under the right thumb?
-   Drawn as round P17 (§21): PK1 or PK2.
-6. **Turning the phone:** the game turns with the phone at any moment (the sensor), or the player chooses upright,
-   landscape or "turns with the phone" in Option → Display? Sketched as round P17's PO1o (§21).
+5. ~~**The bar's cells** (Menu, Log, Skip): at the left, as the tablet's drawer, or at the right under the right
+   thumb?~~ At the left, PK1 (round P17, §21).
+6. ~~**Turning the phone:** the game turns with the phone at any moment (the sensor), or the player chooses upright,
+   landscape or "turns with the phone" in Option → Display?~~ The choice in Option → Display, four ways: System,
+   Upright, Landscape 1, Landscape 2 (the owner, 2026-10-28; PO1o, §21).
 7. **What comes next**: our full screens upright — the deployment table and Subordinates (round P3, §7), the enemy
    attack and the week report, Harem, Treasure, Save/Load, All Data, the options window, the title and the import
    screen, the dungeon's ladder and entry menu, the battle's other states —, then the landscape phone.
@@ -151,12 +152,13 @@ the battle's Skip between the cards and the deck.** Drawn as round P2 (§6).
 10. ~~**Harem, Treasure, Save/Load** (round P5): PH1 or PH2, PT1 or PT2, PL1 or PL2.~~ PH2, PT2 and PL2, PL2 changed
     (§9).
 11. ~~**The options window and the dungeon's menus** (round P6): PO1 or PO2; PF1 or PF2.~~ PO1 and PF1.
-12. **The battle's opening** (round P7): PB4o1 or PB4o2 — not answered yet (2026-10-27). The other states (PB4s, PB4c,
-    PB4r, PB4b) as drawn. Round P16 (§20) adds PB4o3, PB4o1's place laid out again as landscape's LB3o1.
-13. **The unit ledger's rows upright** (the owner, 2026-10-27, thinking): PD2's layout holds, but the ledger is still
-    to be thought over — most likely it will scroll sideways too. Drawn as round P16 (§20): PD2s1 or PD2s2.
-14. **Subordinates' End** (the owner, 2026-10-27, thinking): where End goes now that Talk has left the bar. Drawn as
-    round P16 (§20): PU1e1, PU1e2 or PU1e3.
+12. ~~**The battle's opening** (round P7): PB4o1 or PB4o2.~~ PB4o3, round P16's: PB4o1's place laid out again as
+    landscape's LB3o1 (§20). The other states (PB4s, PB4c, PB4r, PB4b) as drawn.
+13. ~~**The unit ledger's rows upright** (the owner, 2026-10-27, thinking): PD2's layout holds, but the ledger is
+    still to be thought over — most likely it will scroll sideways too.~~ Scrolled sideways in two-line rows, PD2s2
+    (round P16, §20).
+14. ~~**Subordinates' End** (the owner, 2026-10-27, thinking): where End goes now that Talk has left the bar.~~ Where
+    it is, at the thumb, the budget beside it at the bar's left: PU1e3 (round P16, §20).
 15. ~~**The landscape map** (round P8, §12): LM1 or LM2.~~ LM1.
 16. ~~**The landscape battle** (round P8, §12): LB1 or LB2.~~ LB2.
 17. ~~**The landscape deployment table** (round P9, §13): LD1 or LD2.~~ LD2, changed.
@@ -265,7 +267,8 @@ instead, since there the ledger is what is tapped.
 **The owner's choice (2026-10-27): PD2 and PU1.** PD2's layout as drawn, its ledger still to be thought over (most
 likely it scrolls sideways too; §5, question 13). PU1 changed: **Replenish and Talk on one row**, Replenish left and
 Talk (with the unit's face) right, where Replenish alone stood (each 33 × 7.7 mm); End alone in the bar for now — where
-it goes is the owner's open question (§5, 14). Redrawn as PU1 and PU1q.
+it goes is the owner's open question (§5, 14). Redrawn as PU1 and PU1q. Round P16 (§20) answered both: the ledger in
+two-line rows scrolled sideways, End at the thumb with the budget beside it; PD2, PD2d, PU1 and PU1q redrawn so.
 
 The agent's own choices, for the owner to confirm: our full screens upright have no Menu / Log / Skip bar (their own
 buttons take the foot; the map's bar is back when they close); the picture panel only on a long press.
@@ -402,7 +405,8 @@ state is one base version, the opening two.
 With this round every screen of ours has an upright base version but All Data, the title and the import screen, which
 wait for screen gallery entries to draw over (§9, §10), and the scenes (§2, open).
 
-**The owner (2026-10-27):** PB4s, PB4c, PB4r and PB4b as drawn; the opening (PB4o1 or PB4o2) not answered yet.
+**The owner (2026-10-27):** PB4s, PB4c, PB4r and PB4b as drawn; the opening (PB4o1 or PB4o2) not answered yet — then
+PB4o3, round P16's (§20).
 
 The chosen base versions of rounds P3-P7 are on the gallery's phone tab (docs/ui/gallery.md, §9): PD2 (and PD2d), PU1
 (and PU1q), PA1 (and PA1n), PW1, PH2, PT2, PL2, PO1, PF1 (and PF1e), and PB4s, PB4c, PB4r, PB4b with the battle.
@@ -845,6 +849,17 @@ Subordinates' End (question 14; PU1 as the owner changed it, Replenish and Talk 
 **Recommendation: PU1e2** — End stays where the thumb learned the screen's exit (Stop, Defaults, Back stand in the bar on
 our other screens), and alone in the bar it takes the bar's width rather than leave half of it empty.
 
+**The owner's choices (2026-10-28):**
+
+- **The opening: PB4o3.** On the gallery's upright tab with the battle.
+- **The ledger: PD2s2, two-line rows scrolled sideways** — № and name over the unit's type fixed at the left, the tab's
+  other columns beside it at 2.6 mm. PD2, PD2d, PU1 and PU1q are redrawn in place with it (PD2 now shows the Overview
+  tab).
+- **Subordinates' End: PU1e3** — End where it is, at the right thumb; the budget leaves the orders' heading for the
+  bar's left, as text. PU1 and PU1q are redrawn in place with it.
+
+The other variants (PB4o1, PB4o2, PD2s1, PU1e1, PU1e2) stay in the round's sheets only.
+
 ## 21. Round P17: the bar's cells, turning the phone and the line breaks upright (2026-10-28)
 
 Drawn by `mock_phone.py --round P17` over the week-18 look's key waits (Ex's scene, as PS2) and PM1's map.
@@ -873,3 +888,11 @@ covers most needs, and the two fixed choices cover a player who reads lying down
 The line breaks (question 1): PS2 (round P14, §18) keeps the script's breaks — the speech and thought windows' 32 cells
 at 3.6 mm, 131's and the narration's 49 at 2.6 mm (PS2b) — for the owner to confirm; rewrapping at one size stays the
 alternative.
+
+**The owner's choices (2026-10-28): PK1, the choice in Option → Display with four ways, and the line breaks kept.**
+
+- **The bar's cells at the left, PK1** — as every upright mock-up has them, so nothing is redrawn.
+- **Turning the phone: the choice in Option → Display**, the owner's four ways: **System** (the default: as the phone is
+  held, unless its own rotation lock holds it), **Upright**, **Landscape 1** (the phone's top at the left) and
+  **Landscape 2** (at the right). PO1o is redrawn in place with them and is on the gallery's upright tab with PO1.
+- **The line breaks: the script's, kept**, as PS2 draws them.

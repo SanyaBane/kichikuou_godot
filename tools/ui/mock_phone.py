@@ -291,12 +291,14 @@ GALLERY_ENTRIES = {
     'PB4c': ('pb4-strategy', 'Battle — PB3', 'A strategy\'s cut-in', 'Barres (unit 6), his line under the band'),
     'PB4r': ('pb4-results', 'Battle — PB3', 'The results plate', 'over the dimmed board at the screen\'s width'),
     'PB4b': ('pb4-line', 'Battle — PB3', 'A fighter\'s line', 'our balloon over the scene\'s foot, rewrapped'),
+    # Round P16's choices (owner, 2026-10-28; docs/ui/phone.md, §20): the opening; PD2's and PU1's ledger, PU1's End.
+    'PB4o3': ('pb4-opening', 'Battle — PB3', 'The opening', 'at the scene\'s place, laid out at the phone\'s type'),
     # Round P3-P7's choices (owner, 2026-10-27; docs/ui/phone.md, §5).
     'PD2': ('pd2-deployment', 'Deployment — PD2', 'The deployment table', 'the party on top, the ledger at the thumb '
-                                                                           '(how the ledger scrolls is still open)'),
+                                                                           'in two-line rows, scrolled sideways'),
     'PD2d': ('pd2-picture', 'Deployment — PD2', 'A unit\'s picture', 'a long press on a row'),
-    'PU1': ('pu1-subordinates', 'Subordinates — PU1', 'The orders', 'Replenish and Talk on one row, End alone (its '
-                                                                    'place still open)'),
+    'PU1': ('pu1-subordinates', 'Subordinates — PU1', 'The orders', 'Replenish and Talk on one row; End at the thumb, '
+                                                                    'the budget beside it'),
     'PU1q': ('pu1-question', 'Subordinates — PU1', 'Replenish asks first', 'a callout under its button (Haurein)'),
     'PA1': ('pa1-attack', 'Enemy attack — PA1', 'The attack on Ys', 'a screen of its own; Abandon City narrower'),
     'PA1n': ('pa1-ninjas', 'Enemy attack — PA1', 'Ninja Scout\'s list', 'above its button'),
@@ -305,6 +307,8 @@ GALLERY_ENTRIES = {
     'PT2': ('pt2-treasure', 'Treasure — PT2', 'The treasure', 'the item\'s picture on top, the grid scrolled'),
     'PL2': ('pl2-saves', 'Save/Load — PL2', 'Load', 'one page: the list down to the save\'s page on the bar'),
     'PO1': ('po1-options', 'Options — PO1', 'The options window', 'the paper sheet, its tabs on top'),
+    'PO1o': ('po1-display', 'Options — PO1', 'The Display tab', 'the screen\'s orientation on top: System, Upright, '
+                                                               'Landscape 1, Landscape 2 (round P17)'),
     'PF1': ('pf1-ladder', 'Dungeon — PF1', 'The floor ladder', 'the tablet\'s rail at the right thumb'),
     'PF1e': ('pf1-entry', 'Dungeon — PF1', 'Before a search', 'Start Search in Descend\'s corner'),
 }
@@ -1620,20 +1624,21 @@ def pd2_base(img, d, tab=1, sideways=None):
 
 def pd2():
     img, d = phone()
-    d, top, row_h = pd2_base(img, d)
+    d, top, row_h = pd2_base(img, d, 0, sideways=PD2_CHOSEN)
     reach(img, label=False, shade=False)
     d = ImageDraw.Draw(img)
     save(img, 'PD2', 'the party on top, the ledger at the thumb', 'deployment', side=[
         'The party on top as the battle\nshows our army (PB3): the back\nrow, then the front row, facing\ndown.',
         'The ledger under it at the thumb,\nas the enemy\'s cards are in PB3:\nwhat is tapped most is nearest\n'
         'the thumb.',
-        f'Shown: the Troops tab — line 2\nholds its ten figures; rows\n{mm(row_h)}, figures {mm(38)}.',
+        f'The ledger in two-line rows\nscrolled sideways (the owner\'s\nPD2s2): № and name over the\ntype fixed, '
+        f'the figures {mm(46)};\nrows {mm(row_h)}.',
         'Cards 33 × 9.7 mm; the cross and\ndrag as PD1\'s, out of the\nthumb\'s reach.'])
 
 
 def pd2d():
     img, d = phone()
-    d, top, row_h = pd2_base(img, d)
+    d, top, row_h = pd2_base(img, d, 0, sideways=PD2_CHOSEN)
     veil = Image.new('RGB', (PW, PH - top), (0, 0, 0))
     img.paste(Image.blend(img.crop((0, top, PW, PH)), veil, 0.55), (0, top))
     d = ImageDraw.Draw(img)
@@ -1792,15 +1797,31 @@ def talk_button(img, box, n):
 
 
 def end_alone(d, right='End'):
-    """The bar with End alone at the right thumb; where End goes is the owner's open question (2026-10-27)."""
+    """The bar with End at the right thumb."""
     y0, y1 = BAR
     panel(d, (PW - 16 - 420, y0, PW - 16, y1))
     d.text((PW - 16 - 210, (y0 + y1) / 2), right, font=BRUSH(52), fill=NAME, anchor='mm')
 
 
+def bar_budget(d):
+    """The budget at the bar's left, as text with no frame (the owner's PU1e3, round P16)."""
+    y0 = BAR[0]
+    d.text((40, y0 + 42), 'BUDGET', font=CINZEL(26, 600), fill=SUBTITLE, anchor='lm')
+    d.text((40, y0 + 102), f'{BUDGET:,}', font=BRUSH(56), fill=NAME, anchor='lm')
+    d.text((40 + d.textlength(f'{BUDGET:,}', font=BRUSH(56)) + 14, y0 + 108), 'K GOLD', font=CINZEL(26, 600),
+           fill=SUBTITLE, anchor='lm')
+
+
+# PU1 as the owner chose it in round P16 (2026-10-28): the ledger in two-line rows scrolled sideways (PD2s2), End at
+# the thumb with the budget beside it (PU1e3).
+PU1_CHOSEN = dict(sideways=dict(row_h=150, two=True), end='budget')
+PD2_CHOSEN = dict(row_h=150, two=True)
+
+
 def pu1_base(img, d, n, figures, sideways=None, end='bar', orders=1868, foot=BAR[0] - 16, heading_budget=True):
     """`sideways`: the ledger scrolled sideways (round P16, as `pd2_base`'s); `end` where End stands — 'bar' alone in
-    the bar, 'title' at the title's right, None drawn by the caller (round P16's PU1e…)."""
+    the bar, 'budget' there with the budget at the bar's left (the orders' heading then without it), 'title' at the
+    title's right, None drawn by the caller (round P16's PU1e…)."""
     backdrop(img, (0, 0, PW, PH))
     y = title_band(d, 'Subordinates', '9 units ready', end=end == 'title')
     y = paper_tabs(d, y + 6, 0)
@@ -1815,36 +1836,39 @@ def pu1_base(img, d, n, figures, sideways=None, end='bar', orders=1868, foot=BAR
     d.text((32, orders + 50), 'Orders', font=BRUSH(46), fill=NAME, anchor='lm')
     d.text((32 + d.textlength('Orders', font=BRUSH(46)) + 20, orders + 54), '· ' + UNIT[n][1].upper(),
            font=CINZEL(30, 700), fill=TEXT, anchor='lm')
-    if heading_budget:
+    if heading_budget and end != 'budget':
         budget(d, PW - 32, orders + 50)
     rep = (24, orders + 100, PW // 2 - 10, orders + 236)       # Replenish and Talk on one row (owner, 2026-10-27)
     replenish(d, rep, figures)
     talk_button(img, (PW // 2 + 10, rep[1], PW - 24, rep[3]), n)
     d = ImageDraw.Draw(img)
     add_new_grid(d, 24, orders + 258, PW - 24, n)
-    if end == 'bar':
+    if end == 'budget':
+        bar_budget(d)
+    if end in ('bar', 'budget'):
         end_alone(d)
     return orders, row_h, rep
 
 
 def pu1():
     img, d = phone()
-    orders, row_h, _ = pu1_base(img, d, 1, None)
+    orders, row_h, _ = pu1_base(img, d, 1, None, **PU1_CHOSEN)
     reach(img, label=False, shade=False)
     d = ImageDraw.Draw(img)
     save(img, 'PU1', 'the ledger on top, the orders at the thumb', 'subordinates', side=[
-        'The ledger as the deployment\ntable\'s (PD1): the same rows\nand tabs, the chosen unit\'s\nrow vermilion.',
+        'The ledger as the deployment\ntable\'s (PD2): two-line rows\nscrolled sideways, the chosen\nunit\'s row '
+        'vermilion.',
         'A tap chooses the unit; its\norders below always show it.',
         f'The orders at the thumb:\nReplenish and Talk (with the\nunit\'s face) on one row, {mm(136)}\n'
         '(the owner\'s change); Add New\n'
         f'Troops ({mm(128)} buttons; greyed\nabove the budget, its reason\non a long press).',
-        'End alone in the bar, at the\nright thumb; where End goes is\nstill the owner\'s question.',
+        'End at the right thumb, the\nbudget beside it at the bar\'s\nleft (the owner\'s PU1e3).',
         'Rance is full: Replenish greyed,\n"full" as on the PC.'])
 
 
 def pu1q():
     img, d = phone()
-    orders, row_h, rep = pu1_base(img, d, 12, '+1,191 troops · 2,300K')
+    orders, row_h, rep = pu1_base(img, d, 12, '+1,191 troops · 2,300K', **PU1_CHOSEN)
     cw, chh = 760, 316
     box = (rep[0] + 40, rep[3] + 26, rep[0] + 40 + cw, rep[3] + 26 + chh)
     panel(d, box, fill=(30, 22, 16))
@@ -5582,20 +5606,14 @@ def pu1e(kind):
     img, d = phone()
     if kind == 'title':                         # End at the title's right; the bar's room goes to the orders
         orders, row_h, _ = pu1_base(img, d, 1, None, end='title', orders=1868 + 164, foot=BAR[1])
-    else:
-        orders, row_h, _ = pu1_base(img, d, 1, None, end=None, heading_budget=kind != 'budget')
+    else:                                       # 'budget': the budget leaves the orders' heading for the bar's left
+        orders, row_h, _ = pu1_base(img, d, 1, None, end=None if kind == 'wide' else 'budget')
     d = ImageDraw.Draw(img)
     y0, y1 = BAR
     if kind == 'wide':
         panel(d, (16, y0, PW - 16, y1))
         icon(d, 'close', PW // 2 - 110, (y0 + y1) // 2)
         d.text((PW / 2 + 30, (y0 + y1) / 2), 'End', font=BRUSH(56), fill=NAME, anchor='mm')
-    elif kind == 'budget':                      # the budget leaves the orders' heading for the bar's left
-        d.text((40, y0 + 42), 'BUDGET', font=CINZEL(26, 600), fill=SUBTITLE, anchor='lm')
-        d.text((40, y0 + 102), f'{BUDGET:,}', font=BRUSH(56), fill=NAME, anchor='lm')
-        d.text((40 + d.textlength(f'{BUDGET:,}', font=BRUSH(56)) + 14, y0 + 108), 'K GOLD', font=CINZEL(26, 600),
-               fill=SUBTITLE, anchor='lm')
-        end_alone(d)
     reach(img, label=False, shade=False)
     d = ImageDraw.Draw(img)
     name, title, side = {
@@ -5681,9 +5699,11 @@ def po1o():
     d.rectangle((sx0, sy0, sx1, sy1), fill=PAPER)
     x, y, x1 = sx0 + 30, sy0 + 40, sx1 - 30
     y = section(d, x, y, x1, 'SCREEN ORIENTATION')
-    for i, (label, sub) in enumerate([('Turns with the phone', 'As the phone is held; its rotation lock holds it.'),
+    # The owner's four (2026-10-28): the system's, upright, and either landscape.
+    for i, (label, sub) in enumerate([('System', 'As the phone is held, unless its rotation lock holds it.'),
                                       ('Upright', 'Always, however the phone is held.'),
-                                      ('Landscape', 'Always, either side up.')]):
+                                      ('Landscape 1', 'Always, the phone\'s top at the left.'),
+                                      ('Landscape 2', 'Always, the phone\'s top at the right.')]):
         r = (x, y, x1, y + 140)
         d.rectangle(r, fill=(232, 220, 190) if i == 0 else PAPER, outline=PAPER_LINE, width=2)
         radio(d, x + 24, y + 30, i == 0)
@@ -5709,11 +5729,12 @@ def po1o():
     d.text((x, y + 6), '…', font=GOTHIC(38), fill=INK_QUIET)
     defaults_close(d)
     reach(img, label=False, shade=False)
-    save(img, 'PO1o', 'Option → Display: the orientation (a sketch)', 'turning', side=[
-        'A sketch for the question how\nthe phone turns: the choice on\ntop of Option → Display, PO1\'s\nsheet.',
-        '"Turns with the phone" (the\ndefault): the game takes the\nphone\'s orientation at any\nmoment — '
-        'PS2 ↔ LS1, PB3 ↔\nLB2 — unless the phone\'s own\nrotation lock is on.',
-        '"Upright" or "Landscape": the\ngame stays so however the\nphone is held (reading lying\ndown).',
+    save(img, 'PO1o', 'Option → Display: the orientation', 'turning', side=[
+        'The orientation on top of\nOption → Display, PO1\'s sheet;\nthe owner\'s four choices.',
+        '"System" (the default): the\ngame takes the phone\'s\norientation at any moment —\n'
+        'PS2 ↔ LS1, PB3 ↔ LB2 —, as\nthe phone\'s own rotation\nsetting allows.',
+        '"Upright", "Landscape 1" or\n"Landscape 2": the game stays\nso however the phone is held\n(reading lying '
+        'down); the two\nlandscapes are the two ways\nround.',
         'The tab\'s other settings as on\nthe PC (the palette, the\nthousands, …).'])
 
 
@@ -5741,8 +5762,8 @@ def main():
         d2b(); d2m()
         ls1b(); ls1m()
         m1()
-        pb3(); pb3r(); pb3x()
-        p3(); p4(); p5(); p6(); p7()
+        pb3(); pb3r(); pb3x(); pb4o3()
+        p3(); p4(); p5(); p6(); po1o(); p7()
         lm1(); lb2()
         lb2r1(); lb2x(); lb3o1(); lb3s(); lb3c(); lb3r(); lb3b()
         ld2(); lu1()

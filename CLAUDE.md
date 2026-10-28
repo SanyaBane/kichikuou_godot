@@ -282,7 +282,10 @@ open; then, round P14, PS2 changed — the picture in the screen's middle, the u
 lower one's under it, no name plate — with PS2l, PS2b, PS2m, 2026-10-28). Base versions of every screen's mock-ups first,
 nothing built meanwhile (owner, 2026-10-27). Rounds P3-P7 drew
 our full screens upright; the owner chose PD2, PU1, PA1, PW1, PH2, PT2, PL2, PO1, PF1 (some changed) and the battle's
-other states, the opening still open (docs/ui/phone.md, §5). The landscape phone (round P8 on, the L… variants): the
+other states (docs/ui/phone.md, §5). The open questions upright (rounds P16-P17, 2026-10-28; its §20-§21): the opening
+PB4o3 at the scene's place, the unit ledger in two-line rows scrolled sideways (PD2s2: № and name over the type fixed),
+Subordinates' End at the thumb with the budget beside it (PU1e3), the bar's cells at the left (PK1), the orientation a
+choice in Option → Display (System, Upright, Landscape 1, Landscape 2; PO1o), the script's line breaks kept. The landscape phone (round P8 on, the L… variants): the
 frame keeps the layout, our controls go to the black sides; the owner chose the map LM1, the battle LB2, the deployment
 table LD2 and Subordinates LU1 (both changed), the enemy attack LA2 (changed), the week report LW1, Harem LH2 and Treasure LT2
 (the pickers' grid folded in two after its ninth row, every cell in view), Save/Load LL1 (the PC's split), the options

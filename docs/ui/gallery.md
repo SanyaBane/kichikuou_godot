@@ -342,9 +342,10 @@ marked as not built. `gallery.ps1 -Phone` adds the tab **Smartphone, upright (mo
 index alone, with no build and no game pass (the other tabs left as they were, not marked old). They are not dumps:
 `tools/ui/mock_phone.py --gallery <gallery dir> <extract dir>` draws the owner's chosen base versions — the map PM1 (its
 wait, the command panel, a province), the battle PB3 (the player's turn, the retreat question, an exchange, and round
-P7's scout report, strategy, results plate and fighter's line) and rounds P3-P6's choices (2026-10-27: the deployment
-table PD2, Subordinates PU1, the enemy attack PA1, the week report PW1, Harem PH2, Treasure PT2, Save/Load PL2, the
-options PO1, the dungeon's ladder PF1) — from
+P7's scout report, strategy, results plate and fighter's line, round P16's opening PB4o3) and rounds P3-P6's choices
+(2026-10-27: the deployment table PD2, Subordinates PU1 — both since round P16 with its ledger and End —, the enemy
+attack PA1, the week report PW1, Harem PH2, Treasure PT2, Save/Load PL2, the options PO1 with round P17's Display tab
+PO1o, the dungeon's ladder PF1) — from
 the touch and lacquer passes' current pictures and the map's own pictures, without the mock-ups' pink notes, each in a
 phone's body, into `phone/current` with a `manifest.json` as a pass writes it (`"mockup": true`). Each drawing is compared
 with the former one as a dump is (`GalleryScreen.Compare`: a channel more than 8 apart, changed past 600 pixels), so a
