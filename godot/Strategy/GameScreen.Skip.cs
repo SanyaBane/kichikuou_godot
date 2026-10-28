@@ -1,4 +1,5 @@
 using Godot;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.Content.Strategy;
 using MouseButton = Godot.MouseButton;
 
@@ -68,6 +69,13 @@ public partial class GameScreen
             _skipButton.Disabled = !_skip.Enabled;
             _skipButton.Label = _skip.Activated ? "Skip: ON" : "Skip";
             float k = area.Size.X / 1280;
+            _skipButton.Phone = Device.Landscape(_skipButton);
+            if (_skipButton.Phone is { } phone)                             // on the left rail's top, the whole battle (LB2)
+            {
+                var cell = PhoneBattle.SkipCell(phone);
+                _skipButton.Place(new Rect2(cell.X, cell.Y, cell.W, cell.H), k, 20);
+                return;
+            }
             var b = SkipButtons.Battle;
             _skipButton.Place(new Rect2(area.Position + new Vector2(b.X, b.Y) * k, new Vector2(b.W, b.H) * k), k, 20);
             return;

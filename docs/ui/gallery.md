@@ -425,4 +425,8 @@ LN3 and LR2 left the mock-up tab. Step L2 (2026-10-28) built the map's: on the p
 status in the sides (`StatusStripView` in the mode of what is open: the map's wait, a province, the command panel) and no
 room under a strip (`map-north` shows the map's top edge as it is), the province and cells entries the Menu cell, and
 `command-menu-building-tip` shows the tooltip on the map's wait, where the right side holds the week's tags; LM1a, LM1b
-and LM1c left the mock-up tab.
+and LM1c left the mock-up tab. Step L3 (2026-10-28) built the battle's turn: on the phone pass the battle's entries show
+the scene at 70% with the taller cards, the rails in the sides (`battle-turn`, `menu`, `order-toggles`, `banners-E1`),
+the battle's Skip on the left rail's top (the entries add it, as the game's `TouchPill`), the retreat question beside
+Retreat (`retreat`) and the exchange's counters in the scene's blurred sides (`exchange-counters`); LB2, LB2r1 and LB2x
+left the mock-up tab. The battle's other states (the opening, the lines, the info boxes) wait for L4.

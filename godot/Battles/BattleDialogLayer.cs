@@ -3,6 +3,7 @@ using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Game.Strategy;
 using Kichikuou.Original.Content.Battles;
+using Kichikuou.Original.Content.Devices;
 
 namespace Kichikuou.Game.Battles;
 
@@ -66,17 +67,20 @@ internal sealed partial class BattleDialogLayer : Control
         QueueRedraw();
     }
 
-    public void Layout(float scale)
+    public void Layout(float scale, PhoneFrame? phone = null)
     {
         _scale = scale;
+        _phone = phone;
         QueueRedraw();
     }
 
-    /// <summary>The box: centred over the scene; in the touch mode beside the left rail's top.</summary>
+    /// <summary>The box: centred over the scene; in the touch mode beside the left rail's top; on the phone beside Retreat.</summary>
     private Rect2 Box
     {
         get
         {
+            if (_phone is { } f)
+                return L(PhoneQuestion(f));
             if (Touch)
                 return new Rect2(TouchCorner, new Vector2(TouchWidth, TouchPad * 2 + QuestionLine * 2 + Rule + TouchGap + TouchButton));
             float height = Pad * 2 + QuestionLine * 2 + Rule + (_dialog?.Items.Count ?? 0) * RowHeight;
@@ -90,6 +94,8 @@ internal sealed partial class BattleDialogLayer : Control
     /// <summary>Item <paramref name="item"/>'s place: a row, or in the touch mode a button in the row of them.</summary>
     private Rect2 ItemRect(int item)
     {
+        if (_phone is { } f)
+            return L(PhoneBattle.RetreatAnswers(f, PhoneQuestion(f), _dialog?.Items.Count ?? 1)[TouchColumn(item)]);
         var box = Box;
         if (!Touch)
             return new Rect2(box.Position.X + Pad - 4, ItemsTop + item * RowHeight, box.Size.X - (Pad - 4) * 2, RowHeight);
@@ -178,6 +184,11 @@ internal sealed partial class BattleDialogLayer : Control
         if (_dialog is null)
             return;
         float s = _scale;
+        if (_phone is { } phone)
+        {
+            DrawPhone(phone);
+            return;
+        }
         DrawRect(new Rect2(Vector2.Zero, new Vector2(1280, 800) * s), Dim);
         if (Touch)
         {

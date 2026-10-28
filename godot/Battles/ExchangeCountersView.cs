@@ -1,5 +1,6 @@
 using Godot;
 using Kichikuou.Original.Content.Battles;
+using Kichikuou.Original.Content.Devices;
 
 namespace Kichikuou.Game.Battles;
 
@@ -59,6 +60,12 @@ internal sealed partial class ExchangeCountersView : Control
     private readonly ShaderMaterial _material;
     private float _scale = 1;
 
+    // The phone held landscape (docs/ui/phone.md, §17, LB2x): the counters leave the scene's picture for its blurred sides,
+    // each beside its army — ours right-aligned left of the picture, the enemy's left of its right edge —, their figures
+    // 5.9 mm high, smaller together when a side's would not fit its room.
+    private (float Left, float Right)? _sharp;  // the picture's edges in the band (layout pixels); null off the phone
+    private float _k = 1, _labelK = 1;          // the digits' and the labels' sizes over the PC's
+
     private ExchangeCounters? _values;
     private int _seen = -1;
     private double _time;                       // seconds since the shots started
@@ -108,10 +115,16 @@ internal sealed partial class ExchangeCountersView : Control
         };
     }
 
-    /// <summary>Lays the counters over the scene, <paramref name="scale"/> window pixels to a layout pixel.</summary>
-    public void Layout(Vector2 size, float scale)
+    /// <summary>
+    /// Lays the counters over the scene, <paramref name="scale"/> window pixels to a layout pixel; on the phone over the
+    /// scene's whole band with the picture's edges <paramref name="sharp"/> in it (layout pixels).
+    /// </summary>
+    public void Layout(Vector2 size, float scale, (float Left, float Right)? sharp = null)
     {
         _scale = scale;
+        _sharp = sharp;
+        if (sharp is null)
+            (_k, _labelK) = (1, 1);
         Size = size;
         _labels.Size = size;
         _port.Size = new Vector2I(Math.Max(1, (int)Math.Ceiling(size.X)), Math.Max(1, (int)Math.Ceiling(size.Y)));
@@ -130,6 +143,8 @@ internal sealed partial class ExchangeCountersView : Control
         if (counters is not null && started != _seen)
         {
             (_values, _seen, _time, _sinking, _instant) = (counters, started, 0, -1, instant);
+            if (_sharp is not null)
+                FitPhone(counters);
             _shown.Clear();
             _flyers.Clear();
             Visible = true;
@@ -199,20 +214,56 @@ internal sealed partial class ExchangeCountersView : Control
 
     private static int Digits(int value) => Math.Max(1, value.ToString().Length);
 
+    /// <summary>The counters' baseline in the band, before they rise (layout pixels).</summary>
+    private float Baseline => _sharp is null ? 410 - Foot - 10 : Size.Y / _scale - PhoneBattle.Layout(PhoneBattle.CounterFoot);
+
+    /// <summary>A side's counters' width at the sizes now.</summary>
+    private float Content(bool player, ExchangeCounters c)
+    {
+        var (troops, hp) = player ? (c.PlayerTroops, c.PlayerHp) : (c.EnemyTroops, c.EnemyHp);
+        bool hasTroops = player ? c.PlayerHasTroops : c.EnemyHasTroops;
+        float hpLabel = _labelFont.GetStringSize("HP", HorizontalAlignment.Left, -1, (int)Math.Round(LabelSize * _labelK)).X + 4;
+        return (hasTroops ? Digits(troops.From) * TroopCell * _k + Gap * _k : 0) + hpLabel + Digits(hp.From) * HpCell * _k;
+    }
+
+    /// <summary>The phone's sizes for <paramref name="c"/>: LB2x's, smaller together when a side would not fit its room.</summary>
+    private void FitPhone(ExchangeCounters c)
+    {
+        float left = _sharp!.Value.Left;
+        _k = PhoneBattle.Layout(PhoneBattle.CounterTroops) / TroopSize;
+        _labelK = PhoneBattle.Layout(PhoneBattle.CounterLabel) / LabelSize;
+        float room = left - PhoneBattle.Layout(PhoneBattle.CounterGap + PhoneBattle.CounterEdge);
+        float widest = Math.Max(Content(true, c), Content(false, c));
+        if (widest > room)
+            _k *= room / widest;
+    }
+
     private SideLayout LayoutSide(bool player, ExchangeCounters c, float offset)
     {
         var (troops, hp) = player ? (c.PlayerTroops, c.PlayerHp) : (c.EnemyTroops, c.EnemyHp);
         bool hasTroops = player ? c.PlayerHasTroops : c.EnemyHasTroops;
         int troopCells = hasTroops ? Digits(troops.From) : 0, hpCells = Digits(hp.From);
-        float hpLabel = _labelFont.GetStringSize("HP", HorizontalAlignment.Left, -1, LabelSize).X + 4;
-        float troopsW = troopCells * TroopCell, hpW = hpLabel + hpCells * HpCell;
-        float content = troopsW + (hasTroops ? Gap : 0) + hpW;
+        float hpLabel = _labelFont.GetStringSize("HP", HorizontalAlignment.Left, -1, (int)Math.Round(LabelSize * _labelK)).X + 4;
+        float troopsW = troopCells * TroopCell * _k, hpW = hpLabel + hpCells * HpCell * _k;
+        float content = troopsW + (hasTroops ? Gap * _k : 0) + hpW;
         float w = Size.X / _scale;
-        float baseline = 410 - Foot - 10 + offset;
+        float baseline = Baseline + offset;
+        if (_sharp is var (sharpLeft, sharpRight) && sharpRight > sharpLeft)
+        {
+            float gap = PhoneBattle.Layout(PhoneBattle.CounterGap);
+            if (player)                                                 // the troops, then the HP, ending left of the picture
+            {
+                float x = sharpLeft - gap - content;
+                float hpX = x + troopsW + (hasTroops ? Gap * _k : 0);
+                return new SideLayout(x, troopCells, hpX, hpX + hpLabel, hpCells, baseline);
+            }
+            float start = sharpRight + gap;                             // the HP, then the troops, right of the picture
+            return new SideLayout(start + content - troopsW, troopCells, start, start + hpLabel, hpCells, baseline);
+        }
         if (player)
         {
             float x = Edge + Pad;
-            float hpX = x + troopsW + (hasTroops ? Gap : 0);
+            float hpX = x + troopsW + (hasTroops ? Gap * _k : 0);
             return new SideLayout(x, troopCells, hpX, hpX + hpLabel, hpCells, baseline);
         }
         float right = w - Edge - Pad;
@@ -228,9 +279,9 @@ internal sealed partial class ExchangeCountersView : Control
             return;
         float offset = (1 - Up()) * 130;
         float s = _scale, h = Math.Max(1, _port.Size.Y);
-        float baseline = (410 - Foot - 10 + offset) * s;
-        _material.SetShaderParameter("troops_band", new Vector2((baseline - TroopCap * s) / h, baseline / h));
-        _material.SetShaderParameter("hp_band", new Vector2((baseline - HpCap * s) / h, baseline / h));
+        float baseline = (Baseline + offset) * s;
+        _material.SetShaderParameter("troops_band", new Vector2((baseline - TroopCap * _k * s) / h, baseline / h));
+        _material.SetShaderParameter("hp_band", new Vector2((baseline - HpCap * _k * s) / h, baseline / h));
     }
 
     private void DrawLabels()
@@ -241,11 +292,11 @@ internal sealed partial class ExchangeCountersView : Control
         foreach (bool player in new[] { true, false })
         {
             var l = LayoutSide(player, c, offset);
-            int ls = (int)Math.Round(LabelSize * s);
+            int ls = (int)Math.Round(LabelSize * _labelK * s);
             if (l.TroopCells > 0)
             {
-                float labelY = (l.Baseline - TroopCap - LabelGap) * s;
-                float width = l.TroopCells * TroopCell * s;
+                float labelY = (l.Baseline - (TroopCap + LabelGap) * _k) * s;
+                float width = l.TroopCells * TroopCell * _k * s;
                 Label(new Vector2(l.TroopsX * s, labelY), "TROOPS", player ? HorizontalAlignment.Left : HorizontalAlignment.Right,
                     width, ls, LabelGold);
             }
@@ -271,15 +322,15 @@ internal sealed partial class ExchangeCountersView : Control
             var l = LayoutSide(player, c, offset);
             var (troops, hp) = player ? (c.PlayerTroops, c.PlayerHp) : (c.EnemyTroops, c.EnemyHp);
             if (l.TroopCells > 0)
-                Number(player, true, Value(troops), l.TroopsX, l.TroopCells, TroopCell, TroopSize, l.Baseline, offset, falling);
-            Number(player, false, Value(hp), l.HpX, l.HpCells, HpCell, HpSize, l.Baseline, offset, falling);
+                Number(player, true, Value(troops), l.TroopsX, l.TroopCells, TroopCell * _k, TroopSize * _k, l.Baseline, offset, falling);
+            Number(player, false, Value(hp), l.HpX, l.HpCells, HpCell * _k, HpSize * _k, l.Baseline, offset, falling);
         }
         // The digits falling away (Sengoku Rance's: 68 px down, ±20 out, half a turn, 0.2 s; ease in).
         _flyers.RemoveAll(f => _time - f.Born >= Step);
         foreach (var f in _flyers)
         {
             float p = (float)((_time - f.Born) / Step), e = p * p;
-            float size = f.Troops ? TroopSize : HpSize, cap = f.Troops ? TroopCap : HpCap;
+            float size = (f.Troops ? TroopSize : HpSize) * _k, cap = (f.Troops ? TroopCap : HpCap) * _k;
             var centre = (f.At + new Vector2(f.Outward * f.Drift * e, FlyDrop * cap * e + offset - cap / 2)) * s;
             _digits.DrawSetTransform(centre, f.Outward * Mathf.Pi * e);
             Digit(new Vector2(0, cap / 2 * s), f.Digit, (int)Math.Round(size * s), f.Troops ? TroopInk : HpInk, 1 - p);
@@ -288,7 +339,7 @@ internal sealed partial class ExchangeCountersView : Control
     }
 
     /// <summary>A counter's digits right-aligned in its cells; each digit that changes on the way down falls away.</summary>
-    private void Number(bool player, bool troops, int value, float x, int cells, float cell, int size, float baseline, float offset,
+    private void Number(bool player, bool troops, int value, float x, int cells, float cell, float size, float baseline, float offset,
         bool falling)
     {
         string text = value.ToString();

@@ -319,6 +319,10 @@ branch keyed by `Device.Landscape(view)`. Step L2 is built, awaiting the owner's
 "Step L2, where it stands"): the map's status and week's tags in the sides, Commands at the right thumb, the command panel
 and a province's commands as the sides' rails, its card beside it, 2 mm plates, no room under a strip
 (`Original.Content/Devices/PhoneMap`; `StatusStripView.Phone.cs`, `CommandMenuView.Phone.cs`, `ProvinceMenuView.Phone.cs`).
+Step L3 is built, awaiting the owner's look on the phone (phone-build.md, "Step L3, where it stands"): the battle's turn
+— the scene at 70%, the taller cards, the rails in the sides, the battle's Skip on the left rail's top, the retreat
+question beside Retreat, the exchange's counters in the scene's blurred sides (`Original.Content/Devices/PhoneBattle`;
+`BattleBoardView`'s phone places, `BattleCommandLayer.Phone.cs`, `BattleDialogLayer.Phone.cs`, `TouchPill.Phone`).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

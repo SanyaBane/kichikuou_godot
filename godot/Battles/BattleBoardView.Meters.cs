@@ -91,6 +91,13 @@ internal sealed partial class BattleBoardView
         meter.Apply();
     }
 
+    /// <summary>The widest line <paramref name="gauge"/>'s counter on <paramref name="card"/> shows: its maximum over its maximum.</summary>
+    private static string Widest(BattleCard card, Gauge gauge)
+    {
+        int max = gauge == Gauge.Troops ? card.MaxTroops : card.MaxHp;
+        return $"{(gauge == Gauge.Troops ? "Trp." : "HP")} {Figures.Number(max)}/{Figures.Number(max)}";
+    }
+
     /// <summary>The counters that run go on; while skipping they reach their values at once.</summary>
     private void StepMeters()
     {

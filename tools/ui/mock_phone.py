@@ -347,9 +347,8 @@ GALLERY_ENTRIES = {
 }
 # The gallery's landscape phone tab (phone-land): the owner's chosen landscape base versions (round P8 on), those not
 # built yet; a built one leaves for the real pass "Smartphone, landscape" (docs/ui/phone-build.md: L1 took LS1, LS1b,
-# LS1m, LW1, LEd, LN3 and LR2; L2 LM1a, LM1b and LM1c).
+# LS1m, LW1, LEd, LN3 and LR2; L2 LM1a, LM1b and LM1c; L3 LB2, LB2r1 and LB2x).
 GALLERY_ENTRIES_LAND = {
-    'LB2': ('lb2-turn', 'Battle — LB2', 'The player\'s turn', 'the scene lower, the cards taller; the rails in the sides'),
     'LD2': ('ld2-deployment', 'Deployment — LD2', 'The deployment table', 'the ledger at the left, the party two a '
                                                                            'row at the right'),
     'LU1': ('lu1-subordinates', 'Subordinates — LU1', 'The orders', 'Add New Troops left; Talk, Replenish, End right'),
@@ -367,9 +366,6 @@ GALLERY_ENTRIES_LAND = {
     'LF2': ('lf2-ladder', 'Dungeon — LF2', 'The floor ladder', 'the tablet\'s rail kept in the frame'),
     'LF2e': ('lf2-entry', 'Dungeon — LF2', 'Before a search', 'Return over Start Search, both in one line'),
     # Round P13's choices (owner, 2026-10-28; docs/ui/phone.md, §17).
-    'LB2r1': ('lb2-retreat', 'Battle — LB2', 'The retreat question', 'a callout beside Retreat, in the frame'),
-    'LB2x': ('lb2-exchange', 'Battle — LB2', 'An exchange', 'Ex (commander 1) on Rance (unit 1); the counters in the '
-                                                           'scene\'s blurred sides'),
     'LB3o1': ('lb3-opening', 'Battle — LB2', 'The opening', 'at the scene\'s place, laid out at the frame\'s width'),
     'LB3s': ('lb3-scout', 'Battle — LB2', 'The scout report', 'Kanami\'s report across the whole width, one tap'),
     'LB3c': ('lb3-strategy', 'Battle — LB2', 'A strategy\'s cut-in', 'the PC\'s fitted to the frame, the band to the '

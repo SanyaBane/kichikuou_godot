@@ -165,15 +165,24 @@ public static class PhoneMap
     }
 
     /// <summary>The rows from <paramref name="foot"/> up, index 0 lowest, lower than a row's height when they would reach over <paramref name="top"/>.</summary>
-    private static IReadOnlyList<PhoneFrame.Box> Stack(PhoneFrame f, PhoneFrame.Box column, float foot, float top, int count)
+    private static IReadOnlyList<PhoneFrame.Box> Stack(PhoneFrame f, PhoneFrame.Box column, float foot, float top, int count) =>
+        Stack(f, column.X, column.W, foot, top, count, RowHeight, RowGap);
+
+    /// <summary>
+    /// <paramref name="count"/> rows <paramref name="width"/> wide from <paramref name="x"/>, from <paramref name="foot"/> up,
+    /// index 0 lowest: <paramref name="height"/> reference pixels high and <paramref name="gap"/> apart, both lower in
+    /// proportion when the rows would reach over <paramref name="top"/> (a side's rails: the map's, the battle's).
+    /// </summary>
+    internal static IReadOnlyList<PhoneFrame.Box> Stack(PhoneFrame f, float x, float width, float foot, float top, int count,
+        float height, float gap)
     {
         if (count <= 0)
             return [];
-        float h = f.Px(RowHeight), gap = f.Px(RowGap);
-        float scale = Math.Min(1, Math.Max(0, foot - top) / (count * h + (count - 1) * gap));
+        float h = f.Px(height), g = f.Px(gap);
+        float scale = Math.Min(1, Math.Max(0, foot - top) / (count * h + (count - 1) * g));
         h *= scale;
-        gap *= scale;
-        return [.. Enumerable.Range(0, count).Select(i => new PhoneFrame.Box(column.X, foot - (i + 1) * h - i * gap, column.W, h))];
+        g *= scale;
+        return [.. Enumerable.Range(0, count).Select(i => new PhoneFrame.Box(x, foot - (i + 1) * h - i * g, width, h))];
     }
 
     private static PhoneFrame.Box FootOf(PhoneFrame f, float height)

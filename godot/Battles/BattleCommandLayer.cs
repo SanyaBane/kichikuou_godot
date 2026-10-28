@@ -201,11 +201,15 @@ internal sealed partial class BattleCommandLayer : Control
         QueueRedraw();
     }
 
-    /// <summary>The layout: <paramref name="cardArea"/> gives a card's rectangle, <paramref name="scale"/> screen pixels to a layout pixel.</summary>
-    public void Layout(Func<BattlePlace, Rect2> cardArea, float scale)
+    /// <summary>
+    /// The layout: <paramref name="cardArea"/> gives a card's rectangle, <paramref name="scale"/> screen pixels to a layout
+    /// pixel; <paramref name="phone"/> the phone's frame held landscape (the rails in its sides), else null.
+    /// </summary>
+    public void Layout(Func<BattlePlace, Rect2> cardArea, float scale, Original.Content.Devices.PhoneFrame? phone = null)
     {
         _cardArea = cardArea;
         _scale = scale;
+        _phone = phone;
         QueueRedraw();
     }
 

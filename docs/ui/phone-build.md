@@ -354,6 +354,40 @@ on Oaks (6), the debug build):
 - **Unattended play**: `--phone landscape` headless from the week-18 save to its deployment picker runs as before (its
   map waits, the replenish through Subordinates, the attack on Oaks (6)); the touch exercise in a window not run.
 
+**Step L3, where it stands (2026-10-28):** built, **awaiting the owner's look on the phone**.
+
+- **The model** (`Original.Content/Devices/PhoneBattle`, tested in `PhoneBattleTests`): the frame's places in its layout
+  pixels (the mock-ups' figures over the reference's 1.525) — the scene's band 438 high (70%), its own picture as much
+  smaller in the middle, the names' line, the cards 447 × 334 from 50 under the scene, 12 apart, the gauge 90 wide between
+  the front rows, a card's insides (the face 160, the figures' row 52 at 32, the name 45, the troops and HP 40, the quiet
+  lines 36, the toggles 80 high across the foot), the counters' sizes (124, 70, 26) —; the sides' places in the canvas's
+  units — the rails' panels the sides' height, the battle's Skip on the left's top (100 high), the acting unit's name at
+  180 and its rule at 222, TARGET at 60, the target at 122 and the rule at 172, the commands from the foot up (123 high,
+  12 apart, Retreat on top), the attacks from the foot up (260 high), lower when a rail has too many; the retreat question
+  (660 × 350 at the frame's left + 44, level with Retreat, kept over the gesture zone) and its answers in a row.
+  `PhoneMap.Stack` is shared with it (the rows' height and gap its parameters).
+- **The views**, each keyed by the live device: `BattleBoardView` lays the board out at `PhoneBattle`'s places on the
+  phone (the scene, its windows' layer and the exchange's effect at the scene's 70%, the strip and the limit at the
+  scene's foot and top at the PC's size, the stones from the scene's foot, `BoardStones` now made for an area; the gauge
+  1.2 times the PC's and as high as both rows; the cards' insides at the phone's type, the troop type and the troops'
+  line shrunk to fit as the mock-up's; the toggles across the card's foot; the action's pill 1.6 times; the speaker's
+  portrait in the scene's blurred side, LB3b's place); `CardPortrait` the PC's face again; `ExchangeCountersView` in the
+  scene's blurred sides beside their army (LB2x; smaller together when a four-digit side would not fit its room);
+  `BattleCommandLayer.Phone.cs` the rails in the sides (the tablet's buttons, the attack's name and forecast at the
+  button's height); `BattleDialogLayer.Phone.cs` the retreat question (LB2r1); `TouchPill` the battle's Skip as the
+  scenes' Skip cell on the left rail's top (`GameScreen.Skip.cs`).
+- **The agent's choices**, for the owner to confirm: the enemy's cards keep their face at the right, as on every device
+  (the mock-up drew every face at the left); the attack button's forecast is the tablet's two lines (the owner's D2) at the
+  button's size, where the mock-up had both figures on one line; the order strip and the limit's plate keep the PC's size
+  at the scene's foot and top (the mock-up showed them at the scene's 70%); while the retreat question asks, the left
+  rail shows Retreat alone, lit (the other commands are gone once Retreat is chosen), the screen dimmed under the callout.
+- **Left for L4**: the cards' long-press menu keeps the tablet's rows (2.6 mm on the phone; a finger's size with L4), the
+  balloon and the info boxes at their PC places in the frame (L4's LB3b, LB3r), the opening (LB3o1).
+- **The gallery**: the PC and touch passes same (110 and 111 entries); the phone pass's battle entries match LB2, LB2r1
+  and LB2x (docs/ui/gallery.md, §9), which left `GALLERY_ENTRIES_LAND`.
+- **Unattended play**: `--phone landscape` headless from the week-18 save to round 2 of the battle on Oaks (6) runs as
+  before.
+
 ### Upright (steps P0-P9)
 
 | Step | What | Base versions (phone.md) |

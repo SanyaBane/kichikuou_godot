@@ -194,6 +194,12 @@ internal sealed partial class BattleCommandLayer
     /// <summary>Every rail button: its rectangle, its label, its choice, which rail and its place there.</summary>
     private IEnumerable<(Rect2 Rect, string Text, FigtSelChoice Choice, (bool Right, int Index) Place)> RailButtons()
     {
+        if (_phone is { } phone)
+        {
+            foreach (var button in PhoneRailButtons(phone))
+                yield return button;
+            yield break;
+        }
         var left = Column(LeftRail, LeftTop, LeftButton, LeftGap, LeftWidth, _railCommands.Count);
         for (int i = 0; i < _railCommands.Count; i++)
             yield return (left[i], _railCommands[i].Text, _railCommands[i].Choice, (false, i));
@@ -260,6 +266,11 @@ internal sealed partial class BattleCommandLayer
 
     private void DrawRails(Font? font)
     {
+        if (_phone is { } phone)
+        {
+            DrawPhoneRails(phone, font);
+            return;
+        }
         float s = _scale;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(s, s));               // in layout pixels below
         foreach (var rail in (Rect2[])[LeftRail, RightRail])
@@ -376,12 +387,12 @@ internal sealed partial class BattleCommandLayer
         DrawPolygon([r.Position, new(r.End.X, r.Position.Y), r.End, new(r.Position.X, r.End.Y)], [top, top, bottom, bottom]);
         DrawRect(r, AttackEdge, false, Lacquer.Line(2, k));
         DrawRect(r.Grow(-4), AttackLine, false, Lacquer.Line(1, k));
+        float q = r.Size.Y / RightButton;                               // a lower button, its forecast as much smaller
         if (!_forecastShown)
         {
-            Centred(_brush, text, AttackText, r, AttackInk);
+            Centred(_brush, text, _phone is null ? AttackText : AttackText * q, r, AttackInk);   // the phone's at its size
             return;
         }
-        float q = r.Size.Y / RightButton;                               // a lower button, its forecast as much smaller
         Centred(_brush, text, ForecastName * q, new Rect2(r.Position.X, r.Position.Y, r.Size.X, 2 * ForecastNameMiddle * q), AttackInk);
         var strip = new Rect2(r.Position.X + StripSide, r.Position.Y + StripTop * q,
             r.Size.X - 2 * StripSide, r.Size.Y - (StripTop + StripFoot) * q);

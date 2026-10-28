@@ -1,4 +1,5 @@
 using Godot;
+using Kichikuou.Original.Content.Devices;
 
 namespace Kichikuou.Game.Strategy;
 
@@ -73,6 +74,25 @@ internal sealed partial class TouchPill : Control
         }
     }
 
+    /// <summary>
+    /// The phone held landscape's frame when the button is a cell of its black side (the battle's Skip on the left rail's
+    /// top, docs/ui/phone.md, §12, LB2: the scenes' Skip cell, "ON" while lit), else null.
+    /// </summary>
+    public PhoneFrame? Phone
+    {
+        get => _phone;
+        set
+        {
+            if (_phone == value)
+                return;
+            _phone = value;
+            ZIndex = value is null ? 0 : 12;                            // over the rails' panel and the retreat question
+            QueueRedraw();
+        }
+    }
+
+    private PhoneFrame? _phone;
+
     /// <summary>The button's centre (its parent's coordinates).</summary>
     public Vector2 Centre => Position + Size / 2;
 
@@ -130,6 +150,14 @@ internal sealed partial class TouchPill : Control
     {
         float s = _scale;
         bool pressed = _down && _inside && !_disabled;
+        if (_phone is { } phone)
+        {
+            var u = new PhoneUnits(phone);
+            DrawSetTransform(Vector2.Zero, 0, new Vector2(u.K, u.K));
+            SideCells.Draw(this, u, new Rect2(Vector2.Zero, Size / u.K), SideCells.Icon.Skip, _on ? "ON" : "Skip", _on, _disabled, pressed);
+            DrawSetTransform(Vector2.Zero, 0, Vector2.One);
+            return;
+        }
         var box = new StyleBoxFlat
         {
             BgColor = _on ? (pressed ? LitFill.Darkened(0.15f) : LitFill)
