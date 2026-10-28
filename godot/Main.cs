@@ -1,6 +1,7 @@
 using Godot;
 using Kichikuou.Content;
 using Kichikuou.Game.Battles;
+using Kichikuou.Game.Battles.Effects;
 using Kichikuou.Game.Strategy;
 
 namespace Kichikuou.Game;
@@ -36,6 +37,7 @@ public partial class Main : Control
         if (!_commandLineRead)
         {
             _commandLineRead = true;
+            EffectTextures.Prepare();               // the exchange effects' masks, ahead of a battle (docs/backlog.md, "Android")
             if (TouchMode.NoHover)
                 NoHoverFilter.Install(GetTree().Root);
             ImportFromCommandLine();

@@ -5,180 +5,271 @@ namespace Kichikuou.Game.Battles.Effects;
 /// <summary>
 /// The pictures our exchange effects are made of, drawn by code (docs/ui/battle-screen.md, "The exchange's
 /// effects": none of Sengoku Rance's art). Each is white with the shape in its alpha, so a draw tints it, but the
-/// crescent's two parts, which are tinted apart. Made once, on first use.
+/// crescent's two parts, which are tinted apart. Each one's mask is drawn once, ahead of play by <see cref="Prepare"/> or
+/// on first use; the texture is made from it on first use.
 /// </summary>
 internal static class EffectTextures
 {
+    /// <summary>Every mask below (each adds itself; declared first, so it is there before them).</summary>
+    private static readonly List<Mask> All = [];
+
+    private static int _prepared;
+
+    /// <summary>
+    /// Draws every texture's mask on a worker thread, once a launch (<c>Main</c> starts it): drawn per pixel in C#, an
+    /// effect's masks cost its first play in a launch ~130 ms on the phone otherwise (docs/backlog.md, "Android"). The
+    /// textures are still made from them on first use, on the main thread; a use before its mask is drawn waits for it.
+    /// </summary>
+    public static void Prepare()
+    {
+        if (Interlocked.Exchange(ref _prepared, 1) == 0)
+            Task.Run(() =>
+            {
+                var clock = System.Diagnostics.Stopwatch.StartNew();
+                foreach (var mask in All)
+                    mask.Prepare();
+                GD.Print($"Kichikuou: the exchange effects' {All.Count} masks drawn ahead in {clock.ElapsedMilliseconds} ms.");
+            });
+    }
+
+    /// <summary>A texture's mask (its image, drawn once, whichever thread asks first) and the texture made from it on first use.</summary>
+    private sealed class Mask
+    {
+        private readonly Lazy<Image> _image;
+        private Texture2D? _texture;
+
+        public Mask(int size, Func<float, float, float> alpha, int height = 0)
+        {
+            _image = new Lazy<Image>(() => Draw(size, alpha, height));
+            All.Add(this);
+        }
+
+        public void Prepare() => _ = _image.Value;
+
+        public Texture2D Texture => _texture ??= ImageTexture.CreateFromImage(_image.Value);
+    }
+
     /// <summary>A soft round puff of dust: a noisy disc fading to its edge, with a fine grain of bright specks.</summary>
-    public static Texture2D Puff => _puff ??= Make(128, PuffShape);
+    public static Texture2D Puff => PuffMask.Texture;
+
+    private static readonly Mask PuffMask = new(128, PuffShape);
 
     /// <summary>A crescent's body: a disc less an offset disc, a thin blade with its hollow facing left (−x), the upper tip a fading tail.</summary>
-    public static Texture2D CrescentBody => _crescentBody ??= Make(256, CrescentBodyShape);
+    public static Texture2D CrescentBody => CrescentBodyMask.Texture;
+
+    private static readonly Mask CrescentBodyMask = new(256, CrescentBodyShape);
 
     /// <summary>The crescent's inner edge: a bright rim along its hollow and a few thin arcs trailing inside it.</summary>
-    public static Texture2D CrescentEdge => _crescentEdge ??= Make(256, CrescentEdgeShape);
+    public static Texture2D CrescentEdge => CrescentEdgeMask.Texture;
+
+    private static readonly Mask CrescentEdgeMask = new(256, CrescentEdgeShape);
 
     /// <summary>An "urchin": a soft ring with fine radial spikes around an empty middle.</summary>
-    public static Texture2D Urchin => _urchin ??= Make(128, UrchinShape);
+    public static Texture2D Urchin => UrchinMask.Texture;
+
+    private static readonly Mask UrchinMask = new(128, UrchinShape);
 
     /// <summary>A four-point sparkle: two thin crossed rays tapering from a small bright core.</summary>
-    public static Texture2D Sparkle => _sparkle ??= Make(128, SparkleShape);
+    public static Texture2D Sparkle => SparkleMask.Texture;
+
+    private static readonly Mask SparkleMask = new(128, SparkleShape);
 
     /// <summary>A small thin ring.</summary>
-    public static Texture2D Ring => _ring ??= Make(64, RingShape);
+    public static Texture2D Ring => RingMask.Texture;
+
+    private static readonly Mask RingMask = new(64, RingShape);
 
     /// <summary>A short thin streak along x, tapered at both ends.</summary>
-    public static Texture2D Dash => _dash ??= Make(64, DashShape);
+    public static Texture2D Dash => DashMask.Texture;
+
+    private static readonly Mask DashMask = new(64, DashShape);
 
     /// <summary>A soft dot (a speck of the dust's grain).</summary>
-    public static Texture2D Dot => _dot ??= Make(16, DotShape);
+    public static Texture2D Dot => DotMask.Texture;
+
+    private static readonly Mask DotMask = new(16, DotShape);
 
     /// <summary>An arrow along x, its head at +x: a thin shaft, a pointed head and a V of fletching at the back (8:1).</summary>
-    public static Texture2D Arrow => _arrow ??= Make(256, ArrowShape, 32);
+    public static Texture2D Arrow => ArrowMask.Texture;
+
+    private static readonly Mask ArrowMask = new(256, ArrowShape, 32);
 
     /// <summary>A bow's release: thin spikes of every length bursting from a small bright core.</summary>
-    public static Texture2D Burst => _burst ??= Make(128, BurstShape);
+    public static Texture2D Burst => BurstMask.Texture;
+
+    private static readonly Mask BurstMask = new(128, BurstShape);
 
     /// <summary>A bow: a thin arc bulging toward +x, ±60° about it, its ends tapering.</summary>
-    public static Texture2D BowArc => _bowArc ??= Make(128, BowArcShape);
+    public static Texture2D BowArc => BowArcMask.Texture;
+
+    private static readonly Mask BowArcMask = new(128, BowArcShape);
 
     /// <summary>An arrow's hit: a "crown", the upper half of a ring with jagged points outward, and a glow.</summary>
-    public static Texture2D Splat => _splat ??= Make(128, SplatShape);
+    public static Texture2D Splat => SplatMask.Texture;
+
+    private static readonly Mask SplatMask = new(128, SplatShape);
 
     /// <summary>A bokeh disc: flat inside, a slightly brighter rim, a soft edge.</summary>
-    public static Texture2D Bokeh => _bokeh ??= Make(64, BokehShape);
+    public static Texture2D Bokeh => BokehMask.Texture;
 
-    private static Texture2D? _puff, _crescentBody, _crescentEdge, _urchin, _sparkle, _ring, _dash, _dot;
+    private static readonly Mask BokehMask = new(64, BokehShape);
     /// <summary>A soft glow: a bright core in a wide falling halo.</summary>
-    public static Texture2D Glow => _glow ??= Make(128, GlowShape);
+    public static Texture2D Glow => GlowMask.Texture;
+
+    private static readonly Mask GlowMask = new(128, GlowShape);
 
     /// <summary>A flare's rays: many fine lines from the centre, fading outward.</summary>
-    public static Texture2D Rays => _rays ??= Make(256, RaysShape);
+    public static Texture2D Rays => RaysMask.Texture;
+
+    private static readonly Mask RaysMask = new(256, RaysShape);
 
     /// <summary>A shockwave: a soft wide band on an arc bulging toward +x, ±70° about it, a faint glassy fill inside.</summary>
-    public static Texture2D Shock => _shock ??= Make(128, ShockShape);
+    public static Texture2D Shock => ShockMask.Texture;
 
-    private static Texture2D? _arrow, _burst, _bowArc, _splat, _bokeh, _glow, _rays, _shock;
+    private static readonly Mask ShockMask = new(128, ShockShape);
 
     /// <summary>A spike along x, its point at +x: a long thin wedge, widest near its foot (−x), with a bright spine.</summary>
-    public static Texture2D Spike => _spike ??= Make(256, SpikeShape, 32);
+    public static Texture2D Spike => SpikeMask.Texture;
+
+    private static readonly Mask SpikeMask = new(256, SpikeShape, 32);
 
     /// <summary>A flame's tongue: a filled blade rising from a wide foot (+y) to a point leaning right at the top, its left edge brightest.</summary>
-    public static Texture2D Tongue => _tongue ??= Make(128, TongueShape);
+    public static Texture2D Tongue => TongueMask.Texture;
+
+    private static readonly Mask TongueMask = new(128, TongueShape);
 
     /// <summary>A billow of a bright mass: a soft noisy disc, like the puff without its grain.</summary>
-    public static Texture2D Billow => _billow ??= Make(128, BillowShape);
+    public static Texture2D Billow => BillowMask.Texture;
 
-    private static Texture2D? _spike, _tongue, _billow;
+    private static readonly Mask BillowMask = new(128, BillowShape);
 
     /// <summary>A sphere of light: a faint mottled disc with a bright rim.</summary>
-    public static Texture2D Sphere => _sphere ??= Make(256, SphereShape);
+    public static Texture2D Sphere => SphereMask.Texture;
+
+    private static readonly Mask SphereMask = new(256, SphereShape);
 
     /// <summary>A swirl: a thin glowing spiral of two turns round a bright eye.</summary>
-    public static Texture2D Swirl => _swirl ??= Make(128, SwirlShape);
+    public static Texture2D Swirl => SwirlMask.Texture;
+
+    private static readonly Mask SwirlMask = new(128, SwirlShape);
 
     /// <summary>A streak along x: a long thin needle, its tail (−x) longer than its head, brightest past the middle.</summary>
-    public static Texture2D Streak => _streak ??= Make(256, StreakShape, 16);
+    public static Texture2D Streak => StreakMask.Texture;
+
+    private static readonly Mask StreakMask = new(256, StreakShape, 16);
 
     /// <summary>A haze: a broad soft glow, far flatter than <see cref="Glow"/>, fading to nothing at its edge.</summary>
-    public static Texture2D Haze => _haze ??= Make(128, HazeShape);
+    public static Texture2D Haze => HazeMask.Texture;
 
-    private static Texture2D? _sphere, _swirl, _streak, _haze;
+    private static readonly Mask HazeMask = new(128, HazeShape);
 
     /// <summary>A lens: a tall arc bulging toward −x, a bright rim on its outer (−x) side and a glassy fill fading toward +x, its ends soft.</summary>
-    public static Texture2D Lens => _lens ??= Make(128, LensShape, 256);
+    public static Texture2D Lens => LensMask.Texture;
 
-    private static Texture2D? _lens;
+    private static readonly Mask LensMask = new(128, LensShape, 256);
 
     /// <summary>A bar along x: even along its length, soft across it, its ends fading.</summary>
-    public static Texture2D Bar => _bar ??= Make(256, BarShape, 32);
+    public static Texture2D Bar => BarMask.Texture;
+
+    private static readonly Mask BarMask = new(256, BarShape, 32);
 
     /// <summary>A petal: a soft filled ellipse (stretched along x), brighter in its middle.</summary>
-    public static Texture2D Petal => _petal ??= Make(64, PetalShape);
+    public static Texture2D Petal => PetalMask.Texture;
+
+    private static readonly Mask PetalMask = new(64, PetalShape);
 
     /// <summary>A half-moon: a disc less a larger disc offset to −x, its hollow facing left, thickest at +x, its tips tapering; brighter at its outer edge.</summary>
-    public static Texture2D Moon => _moon ??= Make(128, MoonShape);
+    public static Texture2D Moon => MoonMask.Texture;
 
-    private static Texture2D? _bar, _petal, _moon;
+    private static readonly Mask MoonMask = new(128, MoonShape);
 
     /// <summary>A shuriken: a four-point star with concave sides and sharp tips on the axes, a round hole a little off its middle, its edges a little brighter.</summary>
-    public static Texture2D Shuriken => _shuriken ??= Make(128, ShurikenShape);
+    public static Texture2D Shuriken => ShurikenMask.Texture;
+
+    private static readonly Mask ShurikenMask = new(128, ShurikenShape);
 
     /// <summary>A shuriken's glint: a crescent bulging toward −x, its outer edge bitten into three points, in a soft glow.</summary>
-    public static Texture2D Wing => _wing ??= Make(128, WingShape);
+    public static Texture2D Wing => WingMask.Texture;
 
-    private static Texture2D? _shuriken, _wing;
+    private static readonly Mask WingMask = new(128, WingShape);
 
     /// <summary>A blast's rim: a ring with a sharp inner edge (radius 0.8) and a frayed outer one fading by 0.97.</summary>
-    public static Texture2D Rim => _rim ??= Make(256, RimShape);
+    public static Texture2D Rim => RimMask.Texture;
 
-    private static Texture2D? _rim;
+    private static readonly Mask RimMask = new(256, RimShape);
 
     /// <summary>A sickle: a crescent filled evenly with sharp edges, a disc less a disc of nearly its size offset to −x, its hollow facing left and its horns pointed.</summary>
-    public static Texture2D Sickle => _sickle ??= Make(256, SickleShape);
+    public static Texture2D Sickle => SickleMask.Texture;
 
-    private static Texture2D? _sickle;
+    private static readonly Mask SickleMask = new(256, SickleShape);
 
     /// <summary>A blade's hook: a thin arc bulging toward +x, ±60° about it, faint at its foot (+y) and thickening to a bright head near its top (−y).</summary>
-    public static Texture2D Hook => _hook ??= Make(256, HookShape);
+    public static Texture2D Hook => HookMask.Texture;
+
+    private static readonly Mask HookMask = new(256, HookShape);
 
     /// <summary>A kite: a soft diamond, longer along x, its points rounded off by the blur.</summary>
-    public static Texture2D Kite => _kite ??= Make(64, KiteShape);
+    public static Texture2D Kite => KiteMask.Texture;
 
-    private static Texture2D? _hook, _kite;
+    private static readonly Mask KiteMask = new(64, KiteShape);
 
     /// <summary>A claw: a solid blade along x from a thin root (−x) to a sharp point (+x), widest three quarters along, bowed a little toward −y, in a soft glow (4:1).</summary>
-    public static Texture2D Claw => _claw ??= Make(256, ClawShape, 64);
+    public static Texture2D Claw => ClawMask.Texture;
 
-    private static Texture2D? _claw;
+    private static readonly Mask ClawMask = new(256, ClawShape, 64);
 
     /// <summary>
     /// A wave standing on the ground: a quarter arc rising from its foot at the right (+x, +y) up and back to a thin
     /// tip at the top left, its hollow facing left and down, thickest near the foot; faintly streaked across.
     /// </summary>
-    public static Texture2D SurgeBody => _surgeBody ??= Make(256, SurgeBodyShape);
+    public static Texture2D SurgeBody => SurgeBodyMask.Texture;
+
+    private static readonly Mask SurgeBodyMask = new(256, SurgeBodyShape);
 
     /// <summary>The wave's crest: a bright rim along its outer (+x, −y) edge, fading toward the tip.</summary>
-    public static Texture2D SurgeEdge => _surgeEdge ??= Make(256, SurgeEdgeShape);
+    public static Texture2D SurgeEdge => SurgeEdgeMask.Texture;
 
-    private static Texture2D? _surgeBody, _surgeEdge;
+    private static readonly Mask SurgeEdgeMask = new(256, SurgeEdgeShape);
 
     /// <summary>A snowflake: six thin arms from a small bright core, each with two pairs of short side branches, in a soft glow.</summary>
-    public static Texture2D Flake => _flake ??= Make(128, FlakeShape);
+    public static Texture2D Flake => FlakeMask.Texture;
 
-    private static Texture2D? _flake;
+    private static readonly Mask FlakeMask = new(128, FlakeShape);
 
     /// <summary>A tile: a flat rectangle, its edges a little soft (the mosaic a barrier breaks up into).</summary>
-    public static Texture2D Tile => _tile ??= Make(64, TileShape);
+    public static Texture2D Tile => TileMask.Texture;
 
-    private static Texture2D? _tile;
+    private static readonly Mask TileMask = new(64, TileShape);
 
     /// <summary>
     /// A light blade's body: a crescent bulging toward +x, its hollow behind it (−x), filled faintly at the hollow and
     /// brightening toward its outer edge, its horns sweeping back and dissolving into wisps.
     /// </summary>
-    public static Texture2D BladeBody => _bladeBody ??= Make(128, BladeBodyShape);
+    public static Texture2D BladeBody => BladeBodyMask.Texture;
+
+    private static readonly Mask BladeBodyMask = new(128, BladeBodyShape);
 
     /// <summary>The blade's cutting edge: a thin bright rim along its outer (+x) edge in a soft halo, the horns fading.</summary>
-    public static Texture2D BladeEdge => _bladeEdge ??= Make(128, BladeEdgeShape);
+    public static Texture2D BladeEdge => BladeEdgeMask.Texture;
 
-    private static Texture2D? _bladeBody, _bladeEdge;
+    private static readonly Mask BladeEdgeMask = new(128, BladeEdgeShape);
 
     /// <summary>
     /// A clump of poison gas, one of <see cref="GasVariants"/>: a lumpy blob, its outline frayed, its body marbled with
     /// dark creases between brighter folds, a few highlights on the folds.
     /// </summary>
-    public static Texture2D Gas(int variant) => _gas[variant] ??= Make(256, (x, y) => GasShape(x, y, variant));
+    public static Texture2D Gas(int variant) => GasMasks[variant].Texture;
 
     public const int GasVariants = 3;
 
-    private static readonly Texture2D?[] _gas = new Texture2D?[GasVariants];
+    private static readonly Mask[] GasMasks =
+        [.. Enumerable.Range(0, GasVariants).Select(variant => new Mask(256, (x, y) => GasShape(x, y, variant)))];
 
     /// <summary>
-    /// A size ×<paramref name="height"/> texture (square by default) whose alpha at each pixel is <paramref name="alpha"/>
-    /// of (x, y) in [−1, 1] — both axes, whatever the shape.
+    /// A size ×<paramref name="height"/> image (square by default) whose alpha at each pixel is <paramref name="alpha"/>
+    /// of (x, y) in [−1, 1] — both axes, whatever the shape —, its mipmaps made.
     /// </summary>
-    private static Texture2D Make(int size, Func<float, float, float> alpha, int height = 0)
+    private static Image Draw(int size, Func<float, float, float> alpha, int height)
     {
         int width = size;
         height = height > 0 ? height : size;
@@ -195,7 +286,7 @@ internal static class EffectTextures
         }
         var image = Image.CreateFromData(width, height, false, Image.Format.Rgba8, data);
         image.GenerateMipmaps();
-        return ImageTexture.CreateFromImage(image);
+        return image;
     }
 
     private static float PuffShape(float x, float y)
