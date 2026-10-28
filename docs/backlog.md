@@ -114,6 +114,15 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   the slider may go. Its second slider, the scenes' `]` menus (`SceneMenuView`), is settled at 40 px by default
   (owner, 2026-10-25) but still there. Our other questions (the callouts, the battle's dialog) do not follow them
   ([ui/command-screen.md](ui/command-screen.md), "The province menu", "The rows' height on a slider").
+- **The import screen's hash line** — *owner* (how), then *agent* (found 2026-10-28 by the screen gallery's
+  `import-refused-version`, [ui/gallery.md](ui/gallery.md), §7 step 7): a refusal of another version's file shows both
+  SHA-256s on one small line under the message, not wrapped, so it runs past the paper and the frame
+  (`ImportScreen.DrawRefused`). Wrapping it pushes the folder field down; shortening the hashes loses what a player
+  would report.
+- **The title's other screens in the screen gallery** — *agent*, when a phone mock-up needs them (put off 2026-10-28,
+  [ui/gallery.md](ui/gallery.md), §7 step 7): what the title's buttons run from the player's files — Fortune Check
+  (`HAPPY_C`), the music room (`MMODE`), the CG gallery (`CG`), Alice's Mansion (`Iｱﾘｽ`), Saitou (`Gｻｲﾄｳ`) — and the
+  debug starts' menu; `GalleryTitle` can run to them with a click on their button.
 - **Optional fixes** — *owner* (which), then *agent*: the quirks register ([quirks.md](quirks.md),
   decision 5) lists every reproduced bug; some can become options. The first is BRS-24 (decision 32, Option →
   Tweaks → "Chaos and Nikkou reach demons"; [tweaks.md](tweaks.md)).

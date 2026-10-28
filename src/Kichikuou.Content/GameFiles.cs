@@ -77,15 +77,14 @@ public static class GameFiles
             {
                 if (!present.TryGetValue(file, out var path))
                 {
-                    problem = $"The folder {directory} has no {file}. Choose the folder of {version.Name}, the one with system39.exe.";
+                    problem = MissingFile(directory, version, file);
                     break;
                 }
                 if (!hashes.TryGetValue(file, out var hash))
                     hashes[file] = hash = Sha256(path);
                 if (hash != sha256)
                 {
-                    problem = $"{file} in {directory} is not the file of {version.Name}, the version this game reads "
-                        + $"(its SHA-256 is {hash}, {sha256} is expected).";
+                    problem = OtherFile(directory, version, file, hash, sha256);
                     break;
                 }
                 paths[file] = path;
@@ -96,6 +95,21 @@ public static class GameFiles
         }
         throw new GameFolderException(firstProblem ?? "No game version is known.");
     }
+
+    /// <summary>
+    /// The refusal of a folder without <paramref name="file"/> of <paramref name="version"/> (the wrong folder chosen). Also
+    /// the screen gallery's, which shows the import screen's refusals for a folder of its own (docs/ui/gallery.md).
+    /// </summary>
+    public static string MissingFile(string directory, GameVersion version, string file) =>
+        $"The folder {directory} has no {file}. Choose the folder of {version.Name}, the one with system39.exe.";
+
+    /// <summary>
+    /// The refusal of a folder whose <paramref name="file"/> is not <paramref name="version"/>'s: its SHA-256
+    /// <paramref name="hash"/>, <paramref name="expected"/> expected (another version, or a damaged copy).
+    /// </summary>
+    public static string OtherFile(string directory, GameVersion version, string file, string hash, string expected) =>
+        $"{file} in {directory} is not the file of {version.Name}, the version this game reads "
+        + $"(its SHA-256 is {hash}, {expected} is expected).";
 
     /// <summary>A file's SHA-256, lower-case hex.</summary>
     public static string Sha256(string path)

@@ -35,7 +35,7 @@ public partial class ImportScreen : Control
     private readonly FontFile _brush = Lacquer.Brush();
     private readonly FontVariation _cinzel = Lacquer.Cinzel(600);
     private readonly FontVariation _cinzelBold = Lacquer.Cinzel(800);
-    private readonly FontFile _gothic = DeploymentTableView.LoadFont(GodotGlyphRenderer.Chosen);
+    private readonly FontFile _gothic;
     private readonly Func<Node> _next;
     private readonly Func<Node>? _back;
     private readonly string? _unattended;
@@ -59,17 +59,20 @@ public partial class ImportScreen : Control
     private Vector2 _origin;
     private int _shot;
     private bool _progressShot;
+    private bool _held;                            // the screen gallery's: one phase drawn, nothing run (Held)
 
     /// <summary>
     /// The screen for the saved game folder <paramref name="folder"/> (empty: none yet); with <paramref name="start"/>
     /// it imports that folder at once. <paramref name="next"/> makes the screen that follows the import.
     /// <paramref name="unattended"/> (the development switch <c>--import-screen DIR</c>) imports DIR without the dialog,
     /// saving the screen at each phase into <paramref name="shots"/>, and quits at the end with <paramref name="quit"/>.
-    /// <paramref name="back"/>, when given, makes the screen that a way back without an import opens.
+    /// <paramref name="back"/>, when given, makes the screen that a way back without an import opens. Its text is in
+    /// <paramref name="font"/>, the player's choice unless given.
     /// </summary>
     public ImportScreen(string folder, bool start, Func<Node> next, string? unattended = null, string? shots = null, bool quit = false,
-        Func<Node>? back = null)
+        Func<Node>? back = null, GameFont? font = null)
     {
+        _gothic = DeploymentTableView.LoadFont(font ?? GodotGlyphRenderer.Chosen);
         _folder = unattended ?? folder;
         _next = next;
         _back = back;
@@ -80,6 +83,40 @@ public partial class ImportScreen : Control
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         if (start && _folder.Length > 0 && unattended is null)
             Callable.From(StartImport).CallDeferred();
+    }
+
+    /// <summary>
+    /// The screen held in one phase for the screen gallery (docs/ui/gallery.md): <paramref name="folder"/> chosen (empty:
+    /// none yet), importing at <paramref name="importing"/>, imported (<paramref name="done"/>) or refused with
+    /// <paramref name="refusal"/> (a <see cref="GameFolderException"/>'s message, its hashes on the small line), with the
+    /// way back of Option → Game (<paramref name="back"/>) — drawn as an import draws that phase, in <paramref name="font"/>.
+    /// No import runs, it takes no input and opens nothing; the gallery places it (anchored at the top left, not the full rect).
+    /// </summary>
+    internal static ImportScreen Held(GameFont font, string folder, ImportProgress? importing = null, bool done = false,
+        string? refusal = null, bool back = false)
+    {
+        static Node Never() => throw new InvalidOperationException("The gallery's import screen opens nothing.");
+        var screen = new ImportScreen(folder, start: false, next: Never, back: back ? Never : null, font: font)
+        {
+            _held = true,
+            MouseFilter = MouseFilterEnum.Ignore,
+        };
+        screen.SetAnchorsPreset(LayoutPreset.TopLeft);
+        if (refusal is not null)
+        {
+            screen._phase = Phase.Refused;
+            (screen._refusal, screen._hashes) = SplitHashes(refusal);
+        }
+        else if (done)
+        {
+            screen._phase = Phase.Done;
+        }
+        else if (importing is { } progress)
+        {
+            screen._phase = Phase.Importing;
+            screen._progress = progress;
+        }
+        return screen;
     }
 
     public override void _Ready()
@@ -146,6 +183,8 @@ public partial class ImportScreen : Control
 
     public override void _Process(double delta)
     {
+        if (_held)
+            return;
         if (_phase == Phase.Done)
         {
             _doneFor += delta;
@@ -259,6 +298,8 @@ public partial class ImportScreen : Control
 
     public override void _UnhandledKeyInput(InputEvent e)
     {
+        if (_held)
+            return;
         if (e is InputEventKey { Pressed: true, Keycode: Key.Escape } && BackLive)
         {
             GetViewport().SetInputAsHandled();
@@ -278,6 +319,8 @@ public partial class ImportScreen : Control
 
     public override void _GuiInput(InputEvent e)
     {
+        if (_held)
+            return;
         switch (e)
         {
             case InputEventMouseMotion motion:

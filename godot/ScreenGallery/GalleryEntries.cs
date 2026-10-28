@@ -16,7 +16,11 @@ namespace Kichikuou.Game.ScreenGallery;
 internal sealed record GalleryEntry(string Id, string Section, string Title, string? Save, string Note,
     Func<GalleryStage, Action<Rect2>?> Build, double Settle = 0);
 
-/// <summary>The screen gallery's entries (docs/ui/gallery.md, §7: step 1 Treasure, Harem, Subordinates, the message windows; step 2 the map, GalleryEntries.Map.cs).</summary>
+/// <summary>
+/// The screen gallery's entries (docs/ui/gallery.md, §7: step 1 Treasure, Harem, Subordinates, the message windows; step 2
+/// the map, GalleryEntries.Map.cs; later All Data, GalleryEntries.Data.cs, and the title and the import screen,
+/// GalleryEntries.Title.cs).
+/// </summary>
 internal static partial class GalleryEntries
 {
     /// <summary>
@@ -32,12 +36,14 @@ internal static partial class GalleryEntries
         .. Subordinates(),
         .. DeploymentScreens(),
         .. SaveLoadScreens(),
+        .. AllDataScreens(),
         .. Messages(),
         .. MapScreens(),
         .. SceneScreens(),
         .. Controls(),
         .. BattleScreens(),
         .. BoardScreens(),
+        .. TitleScreens(),
     ];
 
     /// <summary>Script pixels a screen pixel of the picture's area: the 640×400 script screen fitted into it.</summary>

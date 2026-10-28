@@ -293,8 +293,8 @@ window LO1 and the dungeon's menus LF2 (the tablet's rail kept in the frame), an
 P13: the retreat question LB2r1 beside Retreat, the opening LB3o1 at the scene's place, the rest as drawn — the exchange's
 counters and a speaker's portrait in the scene's blurred sides), and the scenes LS1 (round P15: the frame as on the PC,
 Menu, Skip and Log in the left side, a dialogue menu's rows at the right thumb). Every screen of ours has a base version
-in both orientations but All Data, the title and the import screen (no gallery entries to draw over; docs/ui/phone.md,
-§19). The gallery shows both orientations'
+in both orientations but All Data, the title and the import screen (docs/ui/phone.md, §19), whose screen gallery
+entries came on 2026-10-28 (`all-data…`, `title…`, `import…`; docs/ui/gallery.md, §7 step 7). The gallery shows both orientations'
 choices on tabs of their own (`gallery.ps1 -PhoneOnly`; the scenes' picture from the week-18 look's frames copied into
 `screen-gallery/phone-look`, docs/ui/gallery.md, §9).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
@@ -687,7 +687,8 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   window — the pointer is not moved: `<Godot console exe> --path godot -- --effects --shots <dir> --quit`. Sengoku
   Rance's reference frames come from `tools/sengoku/effect_frames.py`, into a folder outside the repository.
 - **The screen gallery** (docs/ui/gallery.md): our screens in their states from the kept saves, no playing to them, the
-  battle board from a golden capture replayed into a presenter and held at a moment (`ScreenGallery/GalleryBattle`) —
+  battle board from a golden capture replayed into a presenter and held at a moment (`ScreenGallery/GalleryBattle`), the
+  title run from the player's files after a fresh boot and held the same way (`GalleryTitle`), the import screen held in each phase —
   `powershell -ExecutionPolicy Bypass -File tools/ui/gallery.ps1 [-Steel] [-Touch] [-Phone] [-Only id,…]` builds, dumps every
   entry (`-Only`: those, into the passes as they are) into `screen-gallery/` at the root (git ignores it; `KICHIKUOU_UI_GALLERY_DIR` elsewhere) in a window, ~33 s a
   pass, nothing moves the pointer, and writes its `index.html`, every screen in its place, a changed one badged with a link to its former picture (two dumps of

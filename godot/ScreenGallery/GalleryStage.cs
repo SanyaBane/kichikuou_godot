@@ -99,7 +99,7 @@ internal sealed class GalleryStage(Control host, GameFont font, FacePictures fac
     /// The map as <c>COMMAND</c> shows it for <paramref name="state"/>, then <paramref name="over"/> drawn on it (a city's
     /// or a dungeon's picture, <c>WAO_SUB</c> 331), composed by the presenter and laid at the stage's bottom (docs/ui/
     /// gallery.md, §2): <c>M</c> 3 marks the markers changed, so <c>M</c> 0 draws the tiles and shows the view at the
-    /// camera. Placed with the picture by <see cref="Fill"/>.
+    /// camera (<see cref="Picture"/>).
     /// </summary>
     public TextureRect Backdrop(GameState state, params ScriptEvent[] over)
     {
@@ -108,19 +108,28 @@ internal sealed class GalleryStage(Control host, GameFont font, FacePictures fac
         p.Show(new MapEvent(0));
         foreach (var e in over)
             p.Show(e);
+        return Picture(p);
+    }
+
+    /// <summary>
+    /// <paramref name="p"/>'s screen as it composes it now (the original's drawing and what the presenter draws by hand
+    /// over it, as the game's view shows it), laid at the stage's bottom; placed with the picture by <see cref="Fill"/>.
+    /// </summary>
+    public TextureRect Picture(GamePresenter p)
+    {
         p.Compose();
         var image = Image.CreateFromData(Surface.ScreenWidth * Surface.Scale, Surface.ScreenHeight * Surface.Scale,
             false, Image.Format.Rgba8, p.Screen.ReadScreen());
-        var backdrop = new TextureRect
+        var picture = new TextureRect
         {
             Texture = ImageTexture.CreateFromImage(image),
             ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
             StretchMode = TextureRect.StretchModeEnum.Scale,
             MouseFilter = Control.MouseFilterEnum.Ignore,
         };
-        host.AddChild(backdrop);
-        host.MoveChild(backdrop, 0);
-        return backdrop;
+        host.AddChild(picture);
+        host.MoveChild(picture, 0);
+        return picture;
     }
 
     private static ScenarioText? _texts;

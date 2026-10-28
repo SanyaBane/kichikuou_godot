@@ -1,3 +1,4 @@
+using Kichikuou.Content;
 using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Content.ScreenGallery;
@@ -265,5 +266,36 @@ public class ScreenGalleryTests
         Assert.Equal([null, .. library.Manuals.Select(id => (SaveId?)id)], LoadSaveScreen.Items(library, save: true));
         Assert.Equal(2 * ISaveLibrary.AutoCount + 4, LoadSaveScreen.Items(library, save: false).Count);
         Assert.Equal(library.Autos[0], LoadSaveScreen.Items(library, save: false)[0]);
+    }
+
+    [Fact]
+    public void All_Data_opens_its_graphs_at_16x_unless_a_visit_set_their_scales()
+    {
+        var s = new GameState();
+        GalleryStates.AllDataOpened(s);
+        Assert.Equal((13, 16, 13, 16),
+            (s.Ui_MoneyGraphDiv.Value, s.Ui_MoneyGraphScale.Value, s.Ui_DamageGraphDiv.Value, s.Ui_DamageGraphScale.Value));
+        s.Ui_MoneyGraphDiv = 1;
+        s.Ui_MoneyGraphScale = 128;
+        GalleryStates.AllDataOpened(s);
+        Assert.Equal((1, 128), (s.Ui_MoneyGraphDiv.Value, s.Ui_MoneyGraphScale.Value));
+    }
+
+    [ScenarioFact]
+    public void All_Datas_menus_are_its_files_items()
+    {
+        var texts = new ScenarioText(LocalData.ScenarioDirectory);
+        string Text(SceneMenuItem item) => texts.Read(Assert.Single(item.Texts).Text).Format().Trim('　', ' ');
+        Assert.Equal(["All Funds", "Sundry Expenses", "Military Spending", "All Casualties", "Return"],
+            GalleryStates.AllDataMenu.Select(Text));
+        Assert.Equal(["1x", "2x", "4x", "8x", "16x", "32x", "64x", "128x"], GalleryStates.AllDataScaleMenu.Select(Text));
+    }
+
+    [Fact]
+    public void A_cleared_game_has_page_4s_clear()
+    {
+        var s = new GameState();
+        GalleryStates.Cleared(s);
+        Assert.Equal(1, s.Fates[79].Fate.Value);
     }
 }

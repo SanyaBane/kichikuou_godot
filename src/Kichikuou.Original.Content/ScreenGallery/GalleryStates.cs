@@ -293,6 +293,43 @@ public static class GalleryStates
         yield return new WindowEvent(0, s.CallArg);
     }
 
+    private const string AllDataFile = "各種DATA.ADV";
+
+    /// <summary>A menu item of <c>各種DATA</c> registered at <paramref name="line"/>, its text on the next line, as <c>AllDataCommand</c> registers it.</summary>
+    private static SceneMenuItem AllDataItem(int line) =>
+        new(new ScriptRef(AllDataFile, line), [new CapturedText(new ScriptRef(AllDataFile, line + 1), [], [])]);
+
+    /// <summary>All Data's menu over the map in miniature (<c>各種DATA.ADV:28-47</c>): All Funds, Sundry Expenses, Military Spending, All Casualties, Return.</summary>
+    public static IReadOnlyList<SceneMenuItem> AllDataMenu { get; } = [.. new[] { 28, 32, 36, 40, 44 }.Select(AllDataItem)];
+
+    /// <summary>The scale menu a right click on a graph opens (<c>各種DATA.ADV:316-347</c>): 1x to 128x.</summary>
+    public static IReadOnlyList<SceneMenuItem> AllDataScaleMenu { get; } = [.. Enumerable.Range(0, 8).Select(i => AllDataItem(316 + 4 * i))];
+
+    /// <summary>
+    /// All Data opened (<c>各種DATA.ADV:12-19</c>): the money graphs' and the casualties' scales at 16x, a divisor of
+    /// 4095 / 300, unless a visit set them before.
+    /// </summary>
+    public static void AllDataOpened(GameState s)
+    {
+        if (s.Ui_MoneyGraphDiv == 0)
+        {
+            s.Ui_MoneyGraphDiv = (Sys3Int)4095 / 300;
+            s.Ui_MoneyGraphScale = 16;
+        }
+        if (s.Ui_DamageGraphDiv == 0)
+        {
+            s.Ui_DamageGraphDiv = (Sys3Int)4095 / 300;
+            s.Ui_DamageGraphScale = 16;
+        }
+    }
+
+    /// <summary>
+    /// A game cleared once: page 4's clear count (<c>Glob_Fate[79]</c>, which <c>OVER</c> records), so the title unlocks
+    /// Fortune Check, the music room and the gallery and rolls for the requests slip and Saitou
+    /// (<c>ｽﾀMENU.ADV:53-83</c>; docs/strategy/survey-w4.md, §3.2).
+    /// </summary>
+    public static void Cleared(GameState s) => s.Fates[79].Fate = 1;
+
     /// <summary>The boot's selection window (<c>ｽﾀｰﾄ.ADV:860</c>, <c>B1 1, 250, 50, 150, 100, 1</c>), where the scenes' menus open.</summary>
     public static ScriptEvent SelectionWindow { get; } =
         new EngineEvent("B1", [(Sys3Int)1, (Sys3Int)250, (Sys3Int)50, (Sys3Int)150, (Sys3Int)100, (Sys3Int)1]);

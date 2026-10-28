@@ -1,4 +1,4 @@
-# The screen gallery — our screens without playing to them (plan and build, 2026-10-25; steps 1-5 built)
+# The screen gallery — our screens without playing to them (plan and build, 2026-10-25; steps 1-5 and 7 built)
 
 Our Storybook: a development mode that shows each of our screens on its own, in its states, fed from the kept saves,
 and dumps them all as pictures in seconds. In code and commands it is the *screen* gallery (`ScreenGallery`,
@@ -58,6 +58,9 @@ pull out first (named); **heavy** — needs a battle replayed (§6).
 | `BattleDialogLayer`, `BattleCommandLayer` | `Begin(…)` | records by hand (`BattleDialog`, `FigtSelMenu`); input forwarded by `GameScreen` | small: forward the input |
 | `BattleOpeningLayer` | `Refresh(opening, instant)` | `BattleOpening.Of(header, state)` on the `Bt_*` variables | small |
 | `BattleBoardView` | `Refresh(presenter, …)` | the presenter's `Scene`, `Order`, `Battle` — event-driven | heavy |
+| All Data (`各種DATA`) | the presenter's own drawing (`DataScreenEvent`) and `SceneMenuView` | the state; the menus' items by the file's lines | ready (step 7) |
+| `ImportScreen` | `ImportScreen.Held(font, folder, …)` | none: a phase, a folder, a refusal's message (`GameFiles.MissingFile`, `OtherFile`) | small (step 7) |
+| the title (`ｽﾀMENU`) | the presenter's screen; `MessageWindowView` at a key wait | the boot and the title run from the player's files (`GalleryTitle`) | heavy (step 7) |
 
 ## 2. The data
 
@@ -88,7 +91,7 @@ pull out first (named); **heavy** — needs a battle replayed (§6).
 
 ## 3. Entries
 
-An entry is one screen in one state: an id, a section (Map, Messages, Screens, Battle, Settings), the save, the
+An entry is one screen in one state: an id, a section (Map, Messages, Screens, Battle, Settings, Title), the save, the
 state variation (§4) and how its view is fed. Ids follow the looks' dump names where they exist (`treasure-question`,
 `message-thought-right`, `week-report`), so the gallery's picture and the look's compare by name.
 
@@ -319,6 +322,42 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
    - The drawer shows on the waiting map too (2026-10-26, the owner's L1; docs/ui/touch.md, round L): the Touch tab's
      `map-markers`, `-hover` and `-active` draw it beside the Commands button, Log lit as with something logged
      (`GalleryEntries.Markers`).
+7. **All Data, the title and the import screen** (owner, 2026-10-28: the three screens with no entry, so that the
+   phone's mock-ups can be drawn over them; docs/ui/phone.md, §19). **Built (2026-10-28)**, 18 entries in every pass
+   (the Lacquer pass 107, the Touch pass 108); two dumps of the same build differ by 0 pixels. Not yet looked at by the
+   owner.
+   - **All Data** (`GalleryEntries.Data.cs`, section Screens, the week-18 `COMMAND` save): a presenter of the entry's
+     own draws the screen by hand as in a game (`DataScreenEvent` over the map `COMMAND` left on the stage, `M` 3 and
+     0 first), the scales as the file's first visit sets them (`GalleryStates.AllDataOpened`, `各種DATA.ADV:12-19`),
+     our `]` menu at the boot's selection box. Entries `all-data` (the map in miniature and the menu of the four
+     graphs), `all-data-funds`, `-sundry`, `-military`, `-casualties` (each graph at 16x) and `all-data-scale` (the
+     scale menu a right click opens over All Funds). The menus' items are the file's registered at its lines
+     (`GalleryStates.AllDataMenu`, `AllDataScaleMenu`; `ScreenGalleryTests` reads their texts), not pulled out of
+     `AllDataCommand`, so no rule code changed. The save's history is the game's own: every week before this one holds
+     last week's figures (STR-01), so those bars are level.
+   - **The import screen** (`GalleryEntries.Title.cs`, section Title, no save): `ImportScreen.Held` draws one phase
+     as an import draws it, in the gallery's font, with no import run, no input taken and nothing opened after it; the
+     folder is the gallery's own (`C:\Games\Kichikuou Rance`), never the player's, and nothing reads a disk. Entries
+     `import-none` (the first launch, no folder chosen), `import-choose` (a folder chosen; the unattended look's
+     `--import-screen DIR` dumps the same name), `import-back` (from Option → Game, its way back), `import-progress`
+     (made up: the bar held at 45% of the decompile), `import-done`, `import-refused` (the wrong folder) and
+     `import-refused-version` (made up: an empty KICHIKUSA.ALD, its hashes on the small line). The refusals' wording is
+     `GameFiles`' own, pulled out as `GameFiles.MissingFile` and `OtherFile` (the check calls them), so the entries
+     show the check's messages for a folder that is not there. Found by `import-refused-version`: the hashes' line is
+     not wrapped and runs past the paper and the frame (docs/backlog.md, "Interface").
+   - **The title** (`GalleryTitle`, `GalleryEntries.Title.cs`, section Title, no save): a fresh launch's boot and
+     `ｽﾀMENU` run from the player's files through `GameSession` into a presenter of the entry's own, as the game opens
+     the title — the logo's pauses answered at once, the pointer a `PointerScript`, the draws given — and held where an
+     input is never answered: at the title's mouse poll once the pointer has rested a few reads (its hover drawn), or at
+     the key wait after a gesture. The presenter masks the event CGs as the agent's dumps do (nothing is masked on the
+     title) and leaves the windows to ours; in the touch pass a key wait shows the Skip and Log drawer, Log off (nothing
+     is logged at the title). Entries `title` (a first launch: Alice's Mansion, Load, Start), `title-hover` (Start
+     hovered), `title-clears` (made up: a clear and both rolls at their top at once, every button drawn),
+     `title-description` (a right click on Start: its description in our window 113) and `title-requests` (the
+     requests slip after a clear, its second request of the first five, at its `IK 0`). The title's load list is
+     `save-load-title` (step 3). Left out (docs/backlog.md, "Interface"): the screens the title's buttons run from the
+     player's files — Fortune Check (`HAPPY_C`), the music room (`MMODE`), the CG gallery (`CG`, its sheets masked),
+     Alice's Mansion (`Iｱﾘｽ`), Saitou (`Gｻｲﾄｳ`) — and the debug starts' menu (Alice's secret only).
 
 ## 8. Questions for the owner
 
