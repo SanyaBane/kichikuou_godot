@@ -18,35 +18,55 @@ internal static class EffectTextures
     /// <summary>
     /// Draws every texture's mask on a worker thread, once a launch (<c>Main</c> starts it): drawn per pixel in C#, an
     /// effect's masks cost its first play in a launch ~130 ms on the phone otherwise (docs/backlog.md, "Android"). The
-    /// textures are still made from them on first use, on the main thread; a use before its mask is drawn waits for it.
+    /// worker draws their pixels alone and calls nothing of Godot's, since a launch that quits before it is done tears
+    /// the engine down under it (a crash at the quit, 2026-10-29); the images, their mipmaps and the textures are made
+    /// from the pixels on first use, on the main thread, and a use before its mask is drawn waits for it. The time is
+    /// logged back on the main thread, which a launch that has quit no longer runs.
     /// </summary>
     public static void Prepare()
     {
         if (Interlocked.Exchange(ref _prepared, 1) == 0)
-            Task.Run(() =>
-            {
-                var clock = System.Diagnostics.Stopwatch.StartNew();
-                foreach (var mask in All)
-                    mask.Prepare();
-                GD.Print($"Kichikuou: the exchange effects' {All.Count} masks drawn ahead in {clock.ElapsedMilliseconds} ms.");
-            });
+            _ = PrepareAsync();
     }
 
-    /// <summary>A texture's mask (its image, drawn once, whichever thread asks first) and the texture made from it on first use.</summary>
+    private static async Task PrepareAsync()
+    {
+        long milliseconds = await Task.Run(() =>
+        {
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            foreach (var mask in All)
+                mask.Prepare();
+            return clock.ElapsedMilliseconds;
+        });
+        GD.Print($"Kichikuou: the exchange effects' {All.Count} masks drawn ahead in {milliseconds} ms.");
+    }
+
+    /// <summary>A texture's mask (its pixels, drawn once, whichever thread asks first) and the texture made from them on first use.</summary>
     private sealed class Mask
     {
-        private readonly Lazy<Image> _image;
+        private readonly int _width, _height;
+        private readonly Lazy<byte[]> _pixels;
         private Texture2D? _texture;
 
         public Mask(int size, Func<float, float, float> alpha, int height = 0)
         {
-            _image = new Lazy<Image>(() => Draw(size, alpha, height));
+            int width = size;
+            height = height > 0 ? height : size;
+            (_width, _height) = (width, height);
+            _pixels = new Lazy<byte[]>(() => Draw(width, height, alpha));
             All.Add(this);
         }
 
-        public void Prepare() => _ = _image.Value;
+        public void Prepare() => _ = _pixels.Value;
 
-        public Texture2D Texture => _texture ??= ImageTexture.CreateFromImage(_image.Value);
+        public Texture2D Texture => _texture ??= MakeTexture();
+
+        private Texture2D MakeTexture()
+        {
+            var image = Image.CreateFromData(_width, _height, false, Image.Format.Rgba8, _pixels.Value);
+            image.GenerateMipmaps();
+            return ImageTexture.CreateFromImage(image);
+        }
     }
 
     /// <summary>A soft round puff of dust: a noisy disc fading to its edge, with a fine grain of bright specks.</summary>
@@ -266,13 +286,12 @@ internal static class EffectTextures
         [.. Enumerable.Range(0, GasVariants).Select(variant => new Mask(256, (x, y) => GasShape(x, y, variant)))];
 
     /// <summary>
-    /// A size ×<paramref name="height"/> image (square by default) whose alpha at each pixel is <paramref name="alpha"/>
-    /// of (x, y) in [−1, 1] — both axes, whatever the shape —, its mipmaps made.
+    /// The RGBA pixels of a <paramref name="width"/>×<paramref name="height"/> mask, white, whose alpha at each pixel is
+    /// <paramref name="alpha"/> of (x, y) in [−1, 1] — both axes, whatever the shape. Plain C#, nothing of Godot's: the
+    /// worker of <see cref="Prepare"/> runs it.
     /// </summary>
-    private static Image Draw(int size, Func<float, float, float> alpha, int height)
+    private static byte[] Draw(int width, int height, Func<float, float, float> alpha)
     {
-        int width = size;
-        height = height > 0 ? height : size;
         var data = new byte[width * height * 4];
         for (int py = 0; py < height; py++)
         {
@@ -284,9 +303,7 @@ internal static class EffectTextures
                 data[at + 3] = (byte)Math.Round(Math.Clamp(alpha(x, y), 0, 1) * 255);
             }
         }
-        var image = Image.CreateFromData(width, height, false, Image.Format.Rgba8, data);
-        image.GenerateMipmaps();
-        return image;
+        return data;
     }
 
     private static float PuffShape(float x, float y)
