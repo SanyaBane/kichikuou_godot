@@ -760,8 +760,10 @@ and System's rotation lock).
   (`--load --auto --fast --quit --seed 2 --saves user://saves-look-phone-up --slots-from user://saves-week18 --until
   deployment`): the replenish on our Subordinates screen, the attack on Oaks (6), the party built in our deployment table
   and its first two places swapped and back, exit 0 in 5 s.
-- **Left open**: System's rotation lock on the Poco (the owner's turn of the phone with the lock on and off; the
-  requested orientation read with `adb shell dumpsys activity activities` after the install, below).
+- **On the Poco** (the install of 2026-10-29): `adb shell dumpsys activity activities` reads the game's activity as
+  `requestedOrientation=SCREEN_ORIENTATION_FULL_USER` (from the manifest's `USER_LANDSCAPE`) with System chosen, and the
+  game's log "the orientation System, the screen's Sensor".
+- **Left open**: System's rotation lock on the Poco — the owner's turn of the phone with the lock on and off.
 
 ## 6. The agent's own choices, for the owner to confirm
 
