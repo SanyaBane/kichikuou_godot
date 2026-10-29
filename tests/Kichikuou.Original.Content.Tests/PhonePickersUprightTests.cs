@@ -79,6 +79,23 @@ public class PhonePickersUprightTests
     }
 
     [Fact]
+    public void The_treasure_s_tabs_and_grid_stand_under_its_details()
+    {
+        // pt2: the tabs 180 under the details' top, (16, y, PW - 16, y + 110) halved 12 apart; the grid 14 under them to
+        // BAR[0] - 20 in rows of 118: nine of 17 rows in view.
+        float details = 232 + 1188 * 416f / 666 + 14, tabs = details + 180;
+        Equal(new(16, tabs, 588, 110), PhonePickersUpright.Tab(Reference, 0));
+        Equal(new(616, tabs, 588, 110), PhonePickersUpright.Tab(Reference, 1));
+        Equal(new(16, tabs, 956, 110), PhonePickersUpright.Prompt(Reference));
+        Equal(new(984, tabs, 220, 110), PhonePickersUpright.Back(Reference));
+        var grid = PhonePickersUpright.TreasureGrid(Reference);
+        Equal(new(16, tabs + 124, 1188, 2484 - tabs - 124), grid.Area);
+        Assert.Equal(124, grid.Pitch, Close);
+        Assert.Equal(9, grid.Shown);
+        Equal(new(16, 232, 1188, 2504 - 40 - 232), PhonePickersUpright.BesideAction(Reference));
+    }
+
+    [Fact]
     public void End_and_the_red_button_share_the_bar()
     {
         // end_and: End (16, BAR[0], PW - 32 - 760, BAR[1]), the red button (PW - 16 - 760, BAR[0], PW - 16, BAR[1]).

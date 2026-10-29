@@ -61,8 +61,13 @@ internal sealed partial class TreasureView
     private void PhoneDetails(Control c, PhoneUnits u)
     {
         var (dx, dy) = PhonePickers.Details(u.Frame);
-        float x = dx / u.K, y = dy / u.K;
-        float room = (PhonePickers.Column(u.Frame).Right - u.Frame.Px(PhonePickers.ItemDetailsRight)) / u.K - x;
+        float x = dx / u.K;
+        DrawDetails(c, u, x, dy / u.K, (PhonePickers.Column(u.Frame).Right - u.Frame.Px(PhonePickers.ItemDetailsRight)) / u.K - x);
+    }
+
+    /// <summary>The details at (<paramref name="x"/>, <paramref name="y"/>), <paramref name="room"/> wide (layout pixels).</summary>
+    private void DrawDetails(Control c, PhoneUnits u, float x, float y, float room)
+    {
         int label = u.Size(PhonePickers.LabelText);
         if (_details is not { } d)
         {
@@ -99,9 +104,11 @@ internal sealed partial class TreasureView
     }
 
     /// <summary>The touch mode's button beside the details: red lacquer with its word, or greyed with the picker's refusal under it.</summary>
-    private void PhoneAction(Control c, PhoneUnits u, TreasureButton b)
+    private void PhoneAction(Control c, PhoneUnits u, TreasureButton b) => DrawAction(c, u, b, u.Rect(PhonePickers.Action(u.Frame)));
+
+    /// <summary>The touch mode's button in <paramref name="r"/>.</summary>
+    private void DrawAction(Control c, PhoneUnits u, TreasureButton b, Rect2 r)
     {
-        var r = u.Rect(PhonePickers.Action(u.Frame));
         float cx = r.GetCenter().X, room = r.Size.X - u.Px(30);
         if (b.Refusal is null)
         {
@@ -120,9 +127,11 @@ internal sealed partial class TreasureView
     }
 
     /// <summary>A first pick's prompt in the tabs' place: the unit's face, "Rance is equipping —" over "Which item?" (an item's the other way round).</summary>
-    private void PhonePrompt(Control c, PhoneUnits u, TreasurePrompt p)
+    private void PhonePrompt(Control c, PhoneUnits u, TreasurePrompt p) => DrawPrompt(c, u, p, u.Rect(PhonePickers.Prompt(u.Frame)));
+
+    /// <summary>A first pick's prompt in <paramref name="box"/>.</summary>
+    private void DrawPrompt(Control c, PhoneUnits u, TreasurePrompt p, Rect2 box)
     {
-        var box = u.Rect(PhonePickers.Prompt(u.Frame));
         Ui.DrawPanel(c, box, _k);
         float inset = u.Px(PhonePickers.PromptFaceIn), side = box.Size.Y - 2 * inset;
         float tx = box.Position.X + u.Px(28);
@@ -151,12 +160,15 @@ internal sealed partial class TreasureView
     }
 
     /// <summary>Characters | Items: the view shown lit, the other one turns it.</summary>
-    private void PhoneTabs(Control c, PhoneUnits u)
+    private void PhoneTabs(Control c, PhoneUnits u) => DrawTabs(c, u, view => u.Rect(PhonePickers.Tab(u.Frame, view)));
+
+    /// <summary>Characters | Items at the places <paramref name="tab"/> gives.</summary>
+    private void DrawTabs(Control c, PhoneUnits u, Func<int, Rect2> tab)
     {
         int size = u.Size(PhonePickers.TabText);
         for (int view = 0; view < 2; view++)
         {
-            var r = u.Rect(PhonePickers.Tab(u.Frame, view));
+            var r = tab(view);
             bool on = view == _view, hover = !on && !Busy && _hovered == (view == 0 ? TabCharacters : TabItems);
             c.DrawRect(r, on ? Ui.ChosenFill : hover ? Ui.RowHover : Ui.Row);
             c.DrawRect(r, on ? Ui.Gold : hover ? Ui.HoverLine : Ui.DimGold, false, Line(on || hover ? 2 : 1));
@@ -173,62 +185,86 @@ internal sealed partial class TreasureView
     private void PhoneGrid(Control c, PhoneUnits u)
     {
         var listed = _entries.ToDictionary(e => e.Number);
-        float s = u.Px(PhonePickers.ItemCellText) / 14;                    // the PC's marks at the type's size (its names 14)
         for (int n = 1; n <= TreasureRoster.Cells; n++)
         {
             var r = u.Rect(PhonePickers.Cell(u.Frame, n));
-            if (!listed.TryGetValue(n, out var entry))
-            {
-                PhonePickerParts.DrawEmptyCell(c, r, _k);
-                continue;
-            }
-            bool hover = TouchMode.On ? n == _selected : n == _hovered && !Busy;
-            if (n == _asked)
-            {
-                c.DrawRect(r, Ui.ChosenFill);
-                c.DrawRect(r, Ui.Vermilion, false, Line(2));
-            }
+            if (listed.TryGetValue(n, out var entry))
+                DrawEntryCell(c, u, r, entry, n, upright: false);
             else
-            {
-                c.DrawRect(r, hover ? Ui.RowHover : Ui.Row);
-                c.DrawRect(r, hover ? Ui.HoverLine : Ui.DimGold, false, Line(hover ? 2 : 1));
-            }
-            Color ink = entry.Ink switch
-            {
-                TreasureInk.Off => Ui.OffText,
-                TreasureInk.Held => Ui.Name,
-                _ => hover ? Ui.Name : Ui.Text,
-            };
-            float x = r.Position.X + u.Px(PhonePickers.ItemCellIn), right = r.End.X - u.Px(PhonePickers.CellRight);
-            bool locked = entry.Fixed && _view == 1;
-            int nameSize;
-            if (entry.Holder != "")
-            {
-                int holder = u.Size(PhonePickers.HolderText);
-                float hw = _gothic.GetStringSize(entry.Holder, fontSize: holder).X, below = r.Position.Y + r.Size.Y * PhonePickers.HolderMiddleShare;
-                float hx = r.End.X - u.Px(PhonePickers.ItemCellIn) - hw;
-                c.DrawString(_gothic, new Vector2(hx, PhonePickerParts.Middle(_gothic, holder, below)), entry.Holder, fontSize: holder, modulate: Ui.Quiet);
-                if (locked)
-                    DrawLock(c, new Vector2(hx - 12 * s, below + s), Ui.Quiet, s);
-                float above = r.Position.Y + r.Size.Y * PhonePickers.ItemNameMiddleShare;
-                nameSize = SideCells.Fit(_gothic, entry.Name, u.Size(PhonePickers.ItemCellText), right - x);
-                c.DrawString(_gothic, new Vector2(x, PhonePickerParts.Middle(_gothic, nameSize, above)), entry.Name, fontSize: nameSize, modulate: ink);
-                continue;
-            }
-            float mid = r.GetCenter().Y;
-            if (locked)
-            {
-                DrawLock(c, new Vector2(right - 6 * s, mid + s), Ui.Quiet, s);
-                right -= 16 * s;
-            }
-            if (entry.HoldsItem)
-            {
-                Lacquer.DrawDiamond(c, new Vector2(right - 4 * s, mid), 4 * s, entry.Fixed ? Ui.OffLine : Ui.Gold);
-                right -= 12 * s;
-            }
-            nameSize = SideCells.Fit(_gothic, entry.Name, u.Size(PhonePickers.ItemCellText), right - x);
-            c.DrawString(_gothic, new Vector2(x, PhonePickerParts.Middle(_gothic, nameSize, mid)), entry.Name, fontSize: nameSize, modulate: ink);
+                PhonePickerParts.DrawEmptyCell(c, r, _k);
         }
         PhonePickerParts.DrawRule(c, u);
+    }
+
+    /// <summary>
+    /// <paramref name="entry"/>'s cell <paramref name="r"/> at the phone's sizes: held landscape a held item's name over its
+    /// holder (the cells being narrow), upright in one line with the holder at the right (PT2's wide cells).
+    /// </summary>
+    private void DrawEntryCell(Control c, PhoneUnits u, Rect2 r, TreasureEntry entry, int n, bool upright)
+    {
+        float s = u.Px(PhonePickers.ItemCellText) / 14;                    // the PC's marks at the type's size (its names 14)
+        bool hover = TouchMode.On ? n == _selected : n == _hovered && !Busy;
+        if (n == _asked)
+        {
+            c.DrawRect(r, Ui.ChosenFill);
+            c.DrawRect(r, Ui.Vermilion, false, Line(2));
+        }
+        else
+        {
+            c.DrawRect(r, hover ? Ui.RowHover : Ui.Row);
+            c.DrawRect(r, hover ? Ui.HoverLine : Ui.DimGold, false, Line(hover ? 2 : 1));
+        }
+        Color ink = entry.Ink switch
+        {
+            TreasureInk.Off => Ui.OffText,
+            TreasureInk.Held => Ui.Name,
+            _ => hover ? Ui.Name : Ui.Text,
+        };
+        float x = r.Position.X + u.Px(upright ? PhonePickersUpright.ItemCellIn : PhonePickers.ItemCellIn), right = r.End.X - u.Px(PhonePickers.CellRight);
+        bool locked = entry.Fixed && _view == 1;
+        int nameSize;
+        if (entry.Holder != "" && upright)
+        {
+            // PT2: the holder at the right, a little under the middle; the name left of it.
+            int holder = u.Size(PhonePickersUpright.HolderText);
+            float hw = _gothic.GetStringSize(entry.Holder, fontSize: holder).X, at = r.GetCenter().Y + u.Px(PhonePickersUpright.HolderDown);
+            float hx = r.End.X - u.Px(PhonePickersUpright.HolderRight) - hw;
+            c.DrawString(_gothic, new Vector2(hx, PhonePickerParts.Middle(_gothic, holder, at)), entry.Holder, fontSize: holder, modulate: Ui.Quiet);
+            if (locked)
+            {
+                DrawLock(c, new Vector2(hx - 12 * s, at + s), Ui.Quiet, s);
+                hx -= 16 * s;
+            }
+            nameSize = SideCells.Fit(_gothic, entry.Name, u.Size(PhonePickersUpright.ItemCellText), hx - u.Px(16) - x);
+            c.DrawString(_gothic, new Vector2(x, PhonePickerParts.Middle(_gothic, nameSize, r.GetCenter().Y)), entry.Name, fontSize: nameSize,
+                modulate: ink);
+            return;
+        }
+        if (entry.Holder != "")
+        {
+            int holder = u.Size(PhonePickers.HolderText);
+            float hw = _gothic.GetStringSize(entry.Holder, fontSize: holder).X, below = r.Position.Y + r.Size.Y * PhonePickers.HolderMiddleShare;
+            float hx = r.End.X - u.Px(PhonePickers.ItemCellIn) - hw;
+            c.DrawString(_gothic, new Vector2(hx, PhonePickerParts.Middle(_gothic, holder, below)), entry.Holder, fontSize: holder, modulate: Ui.Quiet);
+            if (locked)
+                DrawLock(c, new Vector2(hx - 12 * s, below + s), Ui.Quiet, s);
+            float above = r.Position.Y + r.Size.Y * PhonePickers.ItemNameMiddleShare;
+            nameSize = SideCells.Fit(_gothic, entry.Name, u.Size(PhonePickers.ItemCellText), right - x);
+            c.DrawString(_gothic, new Vector2(x, PhonePickerParts.Middle(_gothic, nameSize, above)), entry.Name, fontSize: nameSize, modulate: ink);
+            return;
+        }
+        float mid = r.GetCenter().Y;
+        if (locked)
+        {
+            DrawLock(c, new Vector2(right - 6 * s, mid + s), Ui.Quiet, s);
+            right -= 16 * s;
+        }
+        if (entry.HoldsItem)
+        {
+            Lacquer.DrawDiamond(c, new Vector2(right - 4 * s, mid), 4 * s, entry.Fixed ? Ui.OffLine : Ui.Gold);
+            right -= 12 * s;
+        }
+        nameSize = SideCells.Fit(_gothic, entry.Name, u.Size(PhonePickers.ItemCellText), right - x);
+        c.DrawString(_gothic, new Vector2(x, PhonePickerParts.Middle(_gothic, nameSize, mid)), entry.Name, fontSize: nameSize, modulate: ink);
     }
 }

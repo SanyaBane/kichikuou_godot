@@ -284,10 +284,9 @@ SHEETS = {}
 # The gallery's phone tab: the owner's chosen base versions (docs/ui/phone.md), by mock-up name, those not built yet; a
 # built one leaves for the real pass "Smartphone, upright" (docs/ui/phone-build.md: P1 took PS2, PS2l, PS2b, PS2m, PW1,
 # PEd, PEr, PN1, PN1q and PR2; P2 PM1a, PM1b and PM1c; P3 PB3, PB3r and PB3x; P4 PB4o3, PB4s, PB4c, PB4r and PB4b; P5
-# PD2, PD2d, PU1 and PU1q; P6 PA1 and PA1n; P7a PH2).
+# PD2, PD2d, PU1 and PU1q; P6 PA1 and PA1n; P7a PH2 and PT2).
 GALLERY_ENTRIES = {
     # Round P3-P7's choices (owner, 2026-10-27; docs/ui/phone.md, §5).
-    'PT2': ('pt2-treasure', 'Treasure — PT2', 'The treasure', 'the item\'s picture on top, the grid scrolled'),
     'PL2': ('pl2-saves', 'Save/Load — PL2', 'Load', 'one page: the list down to the save\'s page on the bar'),
     'PO1': ('po1-options', 'Options — PO1', 'The options window', 'the paper sheet, its tabs on top'),
     'PO1o': ('po1-display', 'Options — PO1', 'The Display tab', 'the screen\'s orientation on top: System, Upright, '

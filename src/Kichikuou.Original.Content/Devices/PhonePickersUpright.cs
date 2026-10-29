@@ -123,6 +123,60 @@ public static class PhonePickersUpright
     /// <summary>A harem cell's insides in a wide cell (<c>harem_cell</c>): the heart's middle in from the left, the name's left.</summary>
     public const float CellHeartIn = 34, CellNameIn = 62;
 
+    // ------------------------------------------------------------------ the treasure's tabs and grid (pt2, lacquer_tabs, treasure_cell)
+
+    /// <summary>The treasure's tabs: 180 under the details' top, 110 high, 12 apart; Back's width in their row while a first pick waits; the grid 14 under them in rows of 118 (6.7 mm).</summary>
+    private const float TabsUnder = 180, TabsHeight = 110, TabsGap = 12, BackWidth = 220, TreasureGridUnder = 14, TreasureRow = 118;
+
+    private static PhoneFrame.Box TabsRow(PhoneFrame f) =>
+        new(f.Room.X + f.Px(SideIn), Details(f).Y + f.Px(TabsUnder), f.Room.W - f.Px(2 * SideIn), f.Px(TabsHeight));
+
+    /// <summary>The view's tab <paramref name="view"/> under the details: 0 Characters, 1 Items.</summary>
+    public static PhoneFrame.Box Tab(PhoneFrame f, int view)
+    {
+        var row = TabsRow(f);
+        float w = (row.W - f.Px(TabsGap)) / 2;
+        return new PhoneFrame.Box(row.X + view * (w + f.Px(TabsGap)), row.Y, w, row.H);
+    }
+
+    /// <summary>A first pick's prompt in the tabs' place, Back right of it.</summary>
+    public static PhoneFrame.Box Prompt(PhoneFrame f)
+    {
+        var row = TabsRow(f);
+        return new PhoneFrame.Box(row.X, row.Y, row.W - f.Px(BackWidth + TabsGap), row.H);
+    }
+
+    /// <summary>Back at the tabs' row's right: the pick dropped (the original's right click).</summary>
+    public static PhoneFrame.Box Back(PhoneFrame f)
+    {
+        var row = TabsRow(f);
+        return new PhoneFrame.Box(row.Right - f.Px(BackWidth), row.Y, f.Px(BackWidth), row.H);
+    }
+
+    /// <summary>The treasure's grid under its tabs.</summary>
+    public static ScrolledGrid TreasureGrid(PhoneFrame f)
+    {
+        float top = TabsRow(f).Bottom + f.Px(TreasureGridUnder), foot = f.Bar.Y - f.Px(GridFoot);
+        var area = new PhoneFrame.Box(f.Room.X + f.Px(SideIn), top, f.Room.W - f.Px(2 * SideIn), Math.Max(0, foot - top));
+        return new ScrolledGrid(area, f.Px(TreasureRow), f.Px(RowGap), f.Px(CellGap));
+    }
+
+    /// <summary>
+    /// A treasure cell's insides in a wide cell (<c>treasure_cell</c>): the name 18 in, its type; a holder at the right, 14
+    /// in, 4 under the middle, its type; a unit's diamond's middle in from the right.
+    /// </summary>
+    public const float ItemCellIn = 18, ItemCellText = 34, HolderRight = 14, HolderDown = 4, HolderText = 24, DiamondRight = 30;
+
+    /// <summary>The room a callout about the red button stands in (the script's questions, ours, a refusal): the room's width from the picture's top down to 40 over the bar, the callout standing on its foot.</summary>
+    private const float BesideFoot = 40;
+
+    /// <summary>Where a callout about the red button stands: across the room, on the grid's foot, its tail down to the button.</summary>
+    public static PhoneFrame.Box BesideAction(PhoneFrame f)
+    {
+        float top = Picture(f).Y;
+        return new PhoneFrame.Box(f.Room.X + f.Px(SideIn), top, f.Room.W - f.Px(2 * SideIn), f.Bar.Y - f.Px(BesideFoot) - top);
+    }
+
     /// <summary>The scroll bar: as wide as this in the room's right margin, this far in from the room's right; the thumb at least this long.</summary>
     private const float BarWidth = 6, BarIn = 11, ThumbLeast = 60;
 

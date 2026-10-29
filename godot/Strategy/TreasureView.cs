@@ -125,13 +125,13 @@ internal sealed partial class TreasureView : Control
 
     /// <summary>
     /// Covers the screen whose script pixel (0, 0) is at <paramref name="origin"/>, <paramref name="pixelsPerScript"/> screen
-    /// pixels to a script pixel; on the phone held landscape the whole screen in its frame's layout pixels (LT2).
+    /// pixels to a script pixel; on the phone, held either way, the whole screen in its frame's layout pixels (LT2, PT2).
     /// </summary>
     public void Place(Vector2 origin, float pixelsPerScript)
     {
         Position = Vector2.Zero;
         Size = GetParentAreaSize();
-        var phone = Device.Landscape(this);
+        var phone = Device.Held(this);
         float k = phone?.Scale ?? pixelsPerScript / 2;
         if (phone is not null)
             origin = Vector2.Zero;
@@ -237,15 +237,18 @@ internal sealed partial class TreasureView : Control
     /// Shows <paramref name="lines"/> in <paramref name="callout"/> about cell <paramref name="cell"/> as the device lays the
     /// screen out over <paramref name="picture"/> (the picture's area, the callout's parent's coordinates): under the cell on
     /// the PC, beside the button in the touch mode (the owner's X4), on the phone held landscape beside the button at the
-    /// phone's sizes, left of it (step L7). The game's and the screen gallery's.
+    /// phone's sizes, left of it (step L7), held upright across the room over the button in the bar (step P7). The game's
+    /// and the screen gallery's.
     /// </summary>
     internal void ShowCallout(TreasureCallout callout, IReadOnlyList<string> lines, int cell, bool waiting, Rect2 picture)
     {
         if (_phone is { } phone)
         {
             callout.PlacePhone(phone);
-            callout.Show(lines, callout.FromGlobal(Global(PhonePickers.Action(phone))), waiting,
-                callout.FromGlobal(Global(PhonePickers.BesideAction(phone))));
+            var (action, beside) = phone.IsUpright
+                ? (PhonePickersUpright.Action(phone), PhonePickersUpright.BesideAction(phone))
+                : (PhonePickers.Action(phone), PhonePickers.BesideAction(phone));
+            callout.Show(lines, callout.FromGlobal(Global(action)), waiting, callout.FromGlobal(Global(beside)));
             return;
         }
         if (TouchMode.On)
@@ -261,7 +264,7 @@ internal sealed partial class TreasureView : Control
     private int ButtonAt(Vector2 local)
     {
         if (_phone is { } phone)
-            return PhoneButtonAt(phone, local);
+            return phone.IsUpright ? UprightButtonAt(phone, local) : PhoneButtonAt(phone, local);
         var at = (local - _origin) / _k;
         if (EndArea.HasPoint(at))
             return EndButton;
@@ -289,6 +292,11 @@ internal sealed partial class TreasureView : Control
 
     public override void _GuiInput(InputEvent e)
     {
+        if (_phone is { IsUpright: true } && GridTouch(e))
+        {
+            AcceptEvent();
+            return;
+        }
         switch (e)
         {
             case InputEventMouseMotion motion:
@@ -366,7 +374,10 @@ internal sealed partial class TreasureView : Control
         c.DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         if (_phone is { } phone)
         {
-            DrawPhone(c, new PhoneUnits(phone));
+            if (phone.IsUpright)
+                DrawUpright(c, new PhoneUnits(phone));
+            else
+                DrawPhone(c, new PhoneUnits(phone));
             return;
         }
         DrawTitle(c);

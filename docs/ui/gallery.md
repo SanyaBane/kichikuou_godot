@@ -517,9 +517,11 @@ news, Ys's picture with its figures beside it, "VS", the rebels' cards two a row
 question, Abandon City | Ninja Scout over Intercept in the bar —, `-scouted` the places filled, `-ninjas` the list above
 Ninja Scout, `-abandon` the question above Abandon City. PA1 and PA1n left `GALLERY_ENTRIES`.
 
-Step P7a (2026-10-29) built the Harem first: on this pass `harem` shows the title band, Anasel's picture at the width, her
-details, the grid in rows of 7.3 mm (nine of 17 in view, a thin scroll bar at the right) and End | Summon in the bar. PH2
-left `GALLERY_ENTRIES`; PT2 stays until Treasure is built.
+Step P7a (2026-10-29) built Harem and Treasure: on this pass `harem` shows the title band, Anasel's picture at the width,
+her details, the grid in rows of 7.3 mm (nine of 17 in view, a thin scroll bar at the right) and End | Summon in the bar;
+`treasure…` the item's or the character's picture at the width, its details, Characters | Items (`-which-item` Rance's
+prompt and Back in their place), the grid in rows of 6.7 mm, End | the red button (`-refusal` greyed with its reason),
+`-question` and `-replace` the questions across the room over the button. PH2 and PT2 left `GALLERY_ENTRIES`.
 
 ## 10. The copy for a website (owner, 2026-10-29)
 

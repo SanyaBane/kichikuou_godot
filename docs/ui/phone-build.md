@@ -1016,7 +1016,7 @@ and System's rotation lock).
   alone; the owner's look on the Poco is its first run by a finger.
 
 **Step P7, where it stands (2026-10-29):** split as L7 was — P7a Harem and Treasure (PH2, PT2), P7b Save/Load (PL2) with
-the comment's editing (PY2). **P7a's Harem is built, awaiting the owner's look on the Poco; Treasure is next, then P7b.**
+the comment's editing (PY2). **P7a is built, awaiting the owner's look on the Poco; P7b is next.** P7a:
 
 - **The model** (`Original.Content/Devices/PhonePickersUpright`, tested in `PhonePickersUprightTests`), for both pickers:
   the places at the mock-ups' figures (`plain_title`, `ph2`, `girl_details`, `picker_grid`, `harem_cell`, `end_and`) from
@@ -1026,23 +1026,33 @@ the comment's editing (PY2). **P7a's Harem is built, awaiting the owner's look o
   rows 6 apart, scrolled by whole rows — `Shown`, `MaxScroll`, `Cell` at a scroll or null out of view, `CellAt`, `Reveal`
   the least scroll that shows a cell), the harem's 190 under the details' top down to 20 over the bar in rows of 128
   (7.3 mm): nine of the 17 rows in view on the reference; a thin scroll bar (6 wide) in the room's right margin; End (412)
-  | the red button (760) in the bar. Treasure's tabs and grid (PT2: the tabs 110 high 180 under the details' top, the grid
-  14 under them in rows of 118) are to come with its view.
+  | the red button (760) in the bar; the treasure's tabs (`pt2`, `lacquer_tabs`, `treasure_cell`) 180 under the details'
+  top, 110 high, 12 apart, a first pick's prompt and Back (220) in their place, its grid 14 under them in rows of 118
+  (6.7 mm), nine rows in view too; a wide cell's insides (an item's name 18 in, its holder at the right in one line); a
+  callout about the red button standing across the room on 40 over the bar (`BesideAction`).
 - **The views**, keyed by the live device (`Device.Held`; the PC's, the tablet's and the landscape phone's paths
   unchanged): `HaremView.Upright.cs` draws the band, her picture, her details, the grid in view and its bar, End | Summon;
-  her details, her cells and Summon are held landscape's, drawn at the places given (`DrawDetails`, `DrawGirlCell`,
-  `DrawSummon` in `HaremView.Phone.cs`); the band and the scroll bar are `PhonePickerParts`'. A finger's drag over the grid
-  scrolls it a row a row's pitch, a quick release flicks it on, a press during a flick stops it (`FingerScroll`, as the
-  save list's); the wheel scrolls a row a notch; a girl chosen out of view (the screen opening on her) scrolls the grid the
-  least that shows her.
+  `TreasureView.Upright.cs` the band, the entry's picture, its details at the room's width, Characters | Items or the
+  prompt and Back, the grid, End | the touch mode's red button (greyed with the refusal under its word). The details,
+  the cells, Summon, the red button, the prompt and the tabs are held landscape's, drawn at the places given
+  (`DrawDetails`, `DrawGirlCell`, `DrawSummon` in `HaremView.Phone.cs`; `DrawDetails`, `DrawAction`, `DrawPrompt`,
+  `DrawTabs`, `DrawEntryCell` in `TreasureView.Phone.cs`); the band and the scroll bar are `PhonePickerParts`'. The grid's
+  scroll is `PickerGridScroll`, both views': a finger's drag over the grid scrolls it a row a row's pitch, a quick release
+  flicks it on, a press during a flick stops it (`FingerScroll`, as the save list's); the wheel scrolls a row a notch; an
+  entry chosen out of view (the screen opening on it) scrolls the grid the least that shows it; Treasure's other view
+  starts from its first row. `TreasureView.ShowCallout` puts the script's questions and ours across the room over the red
+  button, the game's and the gallery's alike.
 - **The agent's choices**, for the owner to confirm: the grid scrolled by whole rows (no row cut at the grid's edges); a
   thin scroll bar in the room's right margin (PH2 drew none); the empty cells dimmed as on the PC and held landscape (PH2
   drew them plain); her details' three columns as held landscape's ("This visit" too); Summon's word at held landscape's
-  type.
-- **The gallery**: the PC, touch and landscape passes same (110, 111 and 114 entries); the upright pass's `harem`
-  changed. PH2 left `GALLERY_ENTRIES`; the phone tab keeps 17 mock-ups (PT2, PL2, PY2 and P8's).
-- **Unattended play**: headless with `--phone upright --harem 6` from the week-18 save (Kanami's visit) to its deployment
-  picker, exit 0.
+  type; the treasure's subtitle after the name, its figures in columns, the red button's word in Cinzel and the
+  Characters | Items colours as held landscape's; a callout about the red button across the room over the grid's foot,
+  its tail down to the button (PT2 drew none); a unit holding an item marked by held landscape's diamond.
+- **The gallery**: the PC, touch and landscape passes same (110, 111 and 114 entries); the upright pass's `harem` and
+  seven `treasure…` entries changed. PH2 and PT2 left `GALLERY_ENTRIES`; the phone tab keeps 16 mock-ups (PL2, PY2 and
+  P8's).
+- **Unattended play**: headless with `--phone upright` from the week-18 save to its deployment picker with `--harem 6`
+  (Kanami's visit) and with `--treasure` (our Treasure screen clicked through), exit 0 both.
 
 ## 6. The agent's own choices, for the owner to confirm
 
