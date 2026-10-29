@@ -422,7 +422,7 @@ picture, the slot panels) is not shown. How it is built:
   "Results: hold" (1.2 s by default — the counters' run and the damage trail; `--result-seconds x` for a launch) and
   goes on as by a click: the key lands in RetVal (BTX-03) as `KeyReturn`, after the release wait; a key or a click
   ends the hold sooner and is the key, as `IK 0` returns it; at once with `--fast`, and under the message skip at
-  once with 0, as `IK 0`. With ANNIHILATED or UNABLE TO FIGHT (`:235-246`) the player's click stays (owner). The
+  once with 0, as `IK 0` (a tick while the skip steps the exchange's effect, "The exchange's effects"). With ANNIHILATED or UNABLE TO FIGHT (`:235-246`) the player's click stays (owner). The
   presenter tells them apart (`BattlePresenter.ExchangeResultWaits`, `ExchangeResultWipedOut`); `BattleResultWaitTests`:
   in the captured battles only the result screen's key wait is one, wiped out exactly when a mark is shown. Kichikuou
   has no troops' animation and no effects but the shots' numbers crossing the scene: the exchange's effects are next
@@ -558,7 +558,18 @@ picture, the slot panels) is not shown. How it is built:
     dumps each side's once a launch, at the wall's height (`effect-guard-player`, `effect-guard-enemy`, 400 ms after its
     start).
   - **A setting**: Option → Battle Screen… → "Effects: on/off", on by default (Sengoku Rance's Combat Effect Display);
-    none while skipping (MsgSkip) or with `--fast`.
+    none with `--fast`.
+  - **Under the message skip** (owner, 2026-10-29): the exchange takes a frame a wait, so an effect playing on its
+    clock would hang over the exchanges after it. Instead the skip's waits step it: from the shots' first frame
+    through the result's wait (`FIGTATTK`'s ten `Y 3, 1`, its `Y 3, 40` and its `IK 0`; `BattlePresenter.Strike` is
+    on) each skipped wait moves the effect on two of its frames, so the exchange shows frames 0, 2 … 22 of 30 — the
+    part before its tail, enough to tell which attack it is — and the effect goes with the blow
+    (`BattleBoardView.EffectStepped`, `StepSkippedEffect`). Each of those waits lasts a tick of `Y 3` at least (16 ms
+    less a millisecond for the frames' jitter, `GameScreen.SkippedTickSeconds`: one frame at 60 Hz, two at 100 or
+    120 Hz, three at 144 Hz), so the exchange takes ~0.2-0.25 s on any screen; the skip's other waits keep their one
+    frame. The skip turned off during the exchange (a click), the effect plays on from where it stands. A defence's
+    Guard has no skipped wait of its own and still does not play under the skip. Checked headless with the skip
+    turned on at each exchange of the week-18 battle (a temporary line): twelve steps of ~20 ms an exchange.
   **Wired in**: the presenter takes the effect at the shots' first frame (`ExchangeEffect.Of` on the state,
   `BattlePresenter.Effect`, counted by `EffectsStarted`); `BattleBoardView` plays each start once in its scene, an
   `EffectPlayer` between the armies' layers and the front (the overlay and the numbers), at the scene's foot, scaled

@@ -307,11 +307,21 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     /// The exchange's effect (docs/ui/battle-screen.md, "The exchange's effects"): from the shots' first frame, the
     /// firing side's (<see cref="BattlePresenter.Effect"/>), mirrored for the enemy's, over the armies and under the
     /// numbers. Each start plays once; none with Option → Battle → "Effects" off, or when it would be at once
-    /// (<paramref name="instant"/>: skipping, <c>--fast</c>). It plays out by itself, nothing waits for it.
+    /// (<paramref name="instant"/>: <c>--fast</c>, a screen held at a moment). It plays out by itself, nothing waits for
+    /// it — but <paramref name="stepped"/> (the message skip; owner, 2026-10-29) the exchange's waits step it instead
+    /// (<see cref="StepSkippedEffect"/>) while its blow is on (<see cref="BattlePresenter.Strike"/>); the skip turned
+    /// off, it plays on from there.
     /// </summary>
-    private void PlayEffect(GamePresenter presenter, bool instant)
+    private void PlayEffect(GamePresenter presenter, bool instant, bool stepped)
     {
         var battle = presenter.Battle;
+        if (EffectStepped && battle.Strike is null)
+            StopSteppedEffect();                                        // the blow is over: what is left of its effect goes
+        else if (EffectStepped && !stepped)
+        {
+            EffectStepped = false;                                      // the skip turned off: the effect plays on from where it stands
+            _effect.Playing = true;
+        }
         if (battle.EffectsStarted == _effectsSeen)
             return;
         _effectsSeen = battle.EffectsStarted;
@@ -351,7 +361,37 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
             ExchangeEffectKind.SoaringWave => SoaringWaveEffect.Build(_effectsSeen),
             _ => MeleeEffect.Build(_effectsSeen),
         });
-        _effect.Playing = true;
+        EffectStepped = stepped;
+        _effect.Playing = !stepped;
+    }
+
+    /// <summary>
+    /// Whether the message skip's waits step the exchange's effect (<see cref="StepSkippedEffect"/>): from its start under
+    /// the skip until its blow is over, the skip is turned off or the effect has run out.
+    /// </summary>
+    public bool EffectStepped { get; private set; }
+
+    /// <summary>How many of its frames (<see cref="EffectCanvas.FrameSeconds"/>) the effect moves on at each skipped wait.</summary>
+    private const int SkippedWaitFrames = 2;
+
+    /// <summary>
+    /// One of the exchange's waits passed under the message skip (<c>GameScreen.KeyWaitAsync</c>): a stepped effect moves
+    /// on <see cref="SkippedWaitFrames"/> of its frames — its ten shots' waits, the pause after them and the result's wait
+    /// show frames 0, 2 … 22 of 30, the part before its tail (owner, 2026-10-29); it goes when it runs out.
+    /// </summary>
+    public void StepSkippedEffect()
+    {
+        if (!EffectStepped)
+            return;
+        _effect.Frame += SkippedWaitFrames;
+        if (_effect.Frame >= EffectCanvas.Frames)
+            StopSteppedEffect();
+    }
+
+    private void StopSteppedEffect()
+    {
+        EffectStepped = false;
+        _effect.Visible = false;
     }
 
     private int _guards;
@@ -367,6 +407,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     {
         if (_armiesInstant || BattleScreenSettings.Get(BattleScreenSettings.Effects) < 0.5)
             return false;
+        EffectStepped = false;
         _effect.Mirrored = side == BattleSide.Enemy;
         _effect.Dark = false;
         _effect.Start(GuardEffect.Build(++_guards));
@@ -531,10 +572,11 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     /// Fills the screen from the presenter: the scene's picture when it changed, the windows' layer when
     /// <paramref name="screenChanged"/> (with the input screen's own windows, <paramref name="inputWindows"/>),
     /// the cards (<paramref name="hovered"/> lit), the strip, the gauge and the speaker when what they show changed.
-    /// <paramref name="instant"/>: the gauge's spent round does not flash; <paramref name="slidesInstant"/>: the armies and the cards' counters stand at once.
+    /// <paramref name="instant"/>: the gauge's spent round does not flash; <paramref name="slidesInstant"/>: the armies and the cards' counters stand at once,
+    /// and no exchange's effect plays unless <paramref name="effectStepped"/>, the message skip's (<see cref="StepSkippedEffect"/>).
     /// </summary>
     public void Refresh(GamePresenter presenter, IEnumerable<WindowShape> inputWindows, bool screenChanged, BattlePlace? hovered,
-        bool instant, bool slidesInstant)
+        bool instant, bool slidesInstant, bool effectStepped = false)
     {
         if (presenter.State is not { } s)
             return;
@@ -545,7 +587,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
             _sceneVersion = presenter.Scene.Version;
             UploadScene(presenter.Scene);
         }
-        PlayEffect(presenter, slidesInstant);
+        PlayEffect(presenter, slidesInstant && !effectStepped, effectStepped);
         _counters.Show(presenter.Battle.ExchangeCounters, presenter.Battle.EffectsStarted, slidesInstant);
         if (screenChanged || _windowsTexture is null)
         {

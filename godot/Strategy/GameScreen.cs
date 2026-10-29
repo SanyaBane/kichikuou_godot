@@ -1136,7 +1136,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// passed (at least once); <paramref name="cancelable"/> ends it at the first poll that finds
     /// anything held. Returns the last poll. A <paramref name="skippable"/> wait ends as soon as
     /// the message skip is on: while it is, it takes one frame and returns what is held, which
-    /// turns the skip off (<c>STOP_ON_CLICK</c>).
+    /// turns the skip off (<c>STOP_ON_CLICK</c>). Ours (owner, 2026-10-29): while the skip steps the
+    /// exchange's effect (<see cref="SkippedEffectOn"/>), each of its waits lasts a tick at least, whatever the
+    /// screen's rate, and steps it (<see cref="BattleBoardView.StepSkippedEffect"/>).
     /// </summary>
     private async Task<ushort> KeyWaitAsync(double seconds, bool cancelable, bool skippable = false)
     {
@@ -1148,7 +1150,12 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         if (skippable && _skip.IsSkipping)
         {
-            await NextFrameAsync();
+            var tick = Stopwatch.StartNew();
+            do
+                await NextFrameAsync();
+            while (SkippedEffectOn && tick.Elapsed.TotalSeconds < SkippedTickSeconds);
+            if (SkippedEffectOn)
+                _battleView.StepSkippedEffect();
             key = _input.ReadInput();
             if (key != 0)
                 _skip.Activate(false);
@@ -1167,6 +1174,18 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         while (watch.Elapsed.TotalSeconds < seconds);
         return key;
     }
+
+    /// <summary>
+    /// Whether the message skip steps our battle screen's exchange effect now (<see cref="BattleBoardView.EffectStepped"/>):
+    /// from the shots' first frame through the result's wait, FIGTATTK's twelve waits.
+    /// </summary>
+    private bool SkippedEffectOn => BattleScreenShown && _battleView.EffectStepped && _presenter.Battle.Strike is not null;
+
+    /// <summary>
+    /// The least a skipped wait of the exchange lasts while its effect is stepped: a tick of <c>Y 3</c> (16 ms) less a
+    /// millisecond for the frames' jitter — one frame at 60 Hz, two at 100 or 120 Hz, three at 144 Hz.
+    /// </summary>
+    private const double SkippedTickSeconds = 0.015;
 
     // ---------------------------------------------------------------- input: keys, pauses, menus
 
@@ -2371,7 +2390,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             : _sel is null ? null : _battleView.PlaceAt(TouchMode.LocalPointer(this) - _content.Position, _presenter.State!);
         _battleView.Refresh(_presenter, input, screenChanged, hovered,
             instant: _skip.IsSkipping,                                         // MsgSkip: no flash on the rounds gauge
-            slidesInstant: _skip.IsSkipping || _options.Fast);                 // the armies and the counters at once (--fast: no runs)
+            slidesInstant: _skip.IsSkipping || _options.Fast,                  // the armies and the counters at once (--fast: no runs)
+            effectStepped: _skip.IsSkipping && !_options.Fast);                // MsgSkip: the exchange's waits step its effect
         UpdateInfoBox();
     }
 
