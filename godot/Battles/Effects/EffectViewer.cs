@@ -11,14 +11,18 @@ namespace Kichikuou.Game.Battles.Effects;
 /// armies, a special's the sprite its user shows while using it); or plain black, as Sengoku Rance's frames are. The
 /// effect and its user, Play, Loop, a frame slider (30 frames of 50 ms), the enemy acting (mirrored; on for the poison,
 /// which only the enemy casts), the blend, the speed, the seed and an offset to try the effect at another place (X and Y
-/// in the design space, 800 × 314; owner, 2026-10-15). <see cref="SaveFramesAsync"/> writes every frame for a
-/// side-by-side sheet.
+/// in the design space, 800 × 314; owner, 2026-10-15). The window fills the game's screen but a margin, the picture
+/// scaled to its width (owner, 2026-10-29). <see cref="SaveFramesAsync"/> writes every frame for a side-by-side sheet.
 /// </summary>
 internal sealed partial class EffectViewer : Window
 {
     private const int StageWidth = EffectStage.StageWidth, StageHeight = EffectStage.StageHeight;
 
+    /// <summary>The gap between the window and the game screen's edges, and around the window's contents.</summary>
+    private const int Margin = 16, Pad = 12;
+
     private readonly CgLibrary _cgs;
+    private VBoxContainer _root = null!;
     private EffectStage _stage = null!;
     private TextureRect _field = null!;
     private EffectPlayer _player = null!;
@@ -36,7 +40,6 @@ internal sealed partial class EffectViewer : Window
     {
         _cgs = cgs;
         Title = "Effects (debug)";
-        Size = new Vector2I(StageWidth + 24, StageHeight + 160);
         Exclusive = true;
         Transient = true;
     }
@@ -46,8 +49,8 @@ internal sealed partial class EffectViewer : Window
         var background = new Panel();
         background.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
         AddChild(background);
-        var root = new VBoxContainer();
-        root.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect, Control.LayoutPresetMode.KeepSize, 12);
+        var root = _root = new VBoxContainer();
+        root.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect, Control.LayoutPresetMode.KeepSize, Pad);
         AddChild(root);
 
         _stage = new EffectStage();
@@ -55,8 +58,16 @@ internal sealed partial class EffectViewer : Window
         _player = _stage.Player;
         _player.Loop = true;
         AddChild(_stage);
-        root.AddChild(new TextureRect { Texture = _stage.GetTexture(), CustomMinimumSize = new Vector2(StageWidth, StageHeight) });
+        root.AddChild(new TextureRect
+        {
+            Texture = _stage.GetTexture(),
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,     // as large as the window lets it (Fit)
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+            TextureFilter = CanvasItem.TextureFilterEnum.Linear,
+            SizeFlagsVertical = Control.SizeFlags.ExpandFill,
+        });
 
+        // The effect and how it plays; the second row how it is shown and where.
         var row = new HBoxContainer();
         row.AddThemeConstantOverride("separation", 10);
         _effect = new OptionButton();
@@ -86,30 +97,32 @@ internal sealed partial class EffectViewer : Window
         _mirrored = new CheckBox { Text = "Enemy acts", FocusMode = Control.FocusModeEnum.None };
         _mirrored.Toggled += on => _player.Mirrored = on;
         row.AddChild(_mirrored);
-        var blend = new OptionButton();
-        blend.AddItem("Screen");
-        blend.AddItem("Add");
-        blend.ItemSelected += i => _player.Blend = (EffectBlend)(int)i;
-        row.AddChild(blend);
-        var ground = new OptionButton();
-        ground.AddItem("Battlefield");
-        ground.AddItem("Black");
-        ground.ItemSelected += i => _field.Visible = i == 0;
-        row.AddChild(ground);
-        var speed = new OptionButton();
-        foreach (var s in new[] { "1×", "½×", "¼×" })
-            speed.AddItem(s);
-        speed.ItemSelected += i => _player.Speed = 1f / (1 << (int)i);
-        row.AddChild(speed);
         row.AddChild(new Label { Text = "Seed" });
         _seed = new SpinBox { MinValue = 1, MaxValue = 99999, Value = 1 };
         _seed.ValueChanged += _ => Restart();
         row.AddChild(_seed);
         root.AddChild(row);
 
-        // Where the effect is drawn, moved from its own place (design units, 800 × 314: +x toward the target, +y down).
         var place = new HBoxContainer();
         place.AddThemeConstantOverride("separation", 10);
+        var blend = new OptionButton();
+        blend.AddItem("Screen");
+        blend.AddItem("Add");
+        blend.ItemSelected += i => _player.Blend = (EffectBlend)(int)i;
+        place.AddChild(blend);
+        var ground = new OptionButton();
+        ground.AddItem("Battlefield");
+        ground.AddItem("Black");
+        ground.ItemSelected += i => _field.Visible = i == 0;
+        place.AddChild(ground);
+        var speed = new OptionButton();
+        foreach (var s in new[] { "1×", "½×", "¼×" })
+            speed.AddItem(s);
+        speed.ItemSelected += i => _player.Speed = 1f / (1 << (int)i);
+        place.AddChild(speed);
+        place.AddChild(new VSeparator());
+
+        // Where the effect is drawn, moved from its own place (design units, 800 × 314: +x toward the target, +y down).
         place.AddChild(new Label { Text = "Offset (of 800 × 314)  X" });
         var offsetX = new SpinBox { MinValue = -800, MaxValue = 800, Step = 1, Value = 0 };
         place.AddChild(offsetX);
@@ -152,6 +165,25 @@ internal sealed partial class EffectViewer : Window
         FillUsers();
         Restart();
         _player.Playing = true;
+        Fit();
+        GetTree().Root.SizeChanged += Fit;
+    }
+
+    public override void _ExitTree() => GetTree().Root.SizeChanged -= Fit;
+
+    /// <summary>
+    /// The window over the game's whole screen (the root, where it is embedded) but <see cref="Margin"/>, its title bar
+    /// included, and no taller than its picture at the window's width needs.
+    /// </summary>
+    private void Fit()
+    {
+        var screen = GetTree().Root.GetVisibleRect();
+        int title = GetThemeConstant("title_height");
+        float controls = _root.GetCombinedMinimumSize().Y + 2 * Pad;     // the picture's own minimum is nothing
+        float width = screen.Size.X - 2 * Margin;
+        float picture = Math.Min((width - 2 * Pad) * StageHeight / StageWidth, screen.Size.Y - 2 * Margin - title - controls);
+        Size = new Vector2I((int)width, (int)(picture + controls));
+        Position = (Vector2I)(screen.Position + new Vector2(Margin, title + (screen.Size.Y - title - Size.Y) / 2));
     }
 
     public override void _Process(double delta)
@@ -192,12 +224,16 @@ internal sealed partial class EffectViewer : Window
     /// <summary>
     /// Development (<c>--effects --shots DIR</c>): every frame of each effect with seed 1, the effect alone on black
     /// (<c>melee-NN.png</c>, <c>bow-NN.png</c>, 1024×402) and over the battlefield (<c>melee-scene-NN.png</c>, 1024×410), as
-    /// the player is and the enemy acting (<c>melee-enemy-scene-NN.png</c>); a dark one over the battlefield only. Needs a
-    /// window (a headless run draws nothing). <paramref name="only"/> names the prefixes saved (null: all).
+    /// the player is and the enemy acting (<c>melee-enemy-scene-NN.png</c>); a dark one over the battlefield only; first the
+    /// viewer itself over the game (<c>effects-viewer.png</c>). Needs a window (a headless run draws nothing).
+    /// <paramref name="only"/> names the prefixes saved (null: all).
     /// </summary>
     public async Task SaveFramesAsync(string dir, IReadOnlyCollection<string>? only = null)
     {
         System.IO.Directory.CreateDirectory(dir);
+        for (int i = 0; i < 3; i++)
+            await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+        GetTree().Root.GetTexture().GetImage().SavePng(System.IO.Path.Combine(dir, "effects-viewer.png"));
         _player.Playing = false;
         foreach (var effect in Effects)
         {

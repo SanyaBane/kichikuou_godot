@@ -832,8 +832,10 @@ picture, the slot panels) is not shown. How it is built:
   battlefield the curtain runs through the defender's ranks and the wall stands at their front, faint under screen
   blending but for the wall's peak (frames 9-11).
   **Debug → Effects** (`EffectViewer`) plays them over our scene's battlefield (CG 900 and its overlay, with Ex's
-  (commander 1) army, CG 1131) or black: the effect and its user, Play, Loop, the enemy acting, the
-  blend, the speed, the seed, a frame slider and an offset (owner, 2026-10-15): X and Y move the effect from its own
+  (commander 1) army, CG 1131) or black, in a window over the game's whole screen with the scene scaled to its width
+  (owner, 2026-10-29; until then the scene at its own 1024×410, the controls' right end cut off): the effect and its
+  user, Play, Loop, the enemy acting, the seed; under them the
+  blend, the battlefield or black, the speed, a frame slider and an offset (owner, 2026-10-15): X and Y move the effect from its own
   place, in the design space (800 × 314, +x toward the target, +y down; `EffectPlayer.Offset`), to try another place
   before it is built in — Reset puts it back; the effect stands at the scene's foot (y 8). On the player's side
   stands Rance's (unit 1) army with Leazas Knights (CG 1100, as the rebellion makes it, `Iﾊﾝﾗﾝ.ADV:27`) for melee and
@@ -855,7 +857,7 @@ picture, the slot panels) is not shown. How it is built:
   `poison-magic-NN.png`, `rance-attack-NN.png`, `kentarou-slash-NN.png`, `white-beam-shizuka-NN.png`, `white-beam-magic-NN.png`, `epo-light-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `kanami-NN.png`, `freya-NN.png`, `kaoru-NN.png`, `wichita-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`, `chuhai-NN.png`, `goliath-NN.png`, `soaring-wave-NN.png`, `guard-NN.png`; the black beams' (`black-beam-chizuko`,
   `black-beam-nagi`) and the dark magic's (`dark-magic`) picture is its light, so they are saved over the battlefield only) and over the battlefield with the effect's first user, the
   player acting and the enemy (`melee-scene-NN.png`, `melee-enemy-scene-NN.png`, …) — for a sheet next to the reference's frames, made outside the
-  repository.
+  repository; first the viewer itself over the game (`effects-viewer.png`).
 - **The windows over it** ("vs", the results, the info boxes, the
   prompt, the popups, the script menus) are the stage's screen as the original draws it, shown only
   inside the windows' own shapes (their frame CGs, the selection boxes): the 640×400 screen fitted to

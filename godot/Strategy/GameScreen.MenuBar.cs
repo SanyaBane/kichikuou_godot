@@ -289,7 +289,7 @@ public partial class GameScreen
         var viewer = new EffectViewer(GameData.Cgs());
         viewer.TreeExiting += () => _modal = false;
         AddChild(viewer);
-        viewer.PopupCentered();
+        viewer.Popup();     // where the viewer fits itself
         if (_options.Effects && _options.ScreenshotDirectory is { } shots)
             _ = SaveEffectsAsync(viewer, shots);
     }
