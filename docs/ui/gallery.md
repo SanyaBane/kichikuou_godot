@@ -531,6 +531,12 @@ auto-save's two lines under the comment, the map cut lower; `-delete` the questi
 under the sweep; `-comment` the comment's own card where PY2 has it (the keyboard not drawn), its words wrapped in the
 field two lines high. PL2 and PY2 left `GALLERY_ENTRIES`.
 
+Step P8a (2026-10-30) built the options window: on this pass `options-…` show the title under the hole, the five paper
+tabs across the room, the sheet down to the bar with the tab's settings in one column at PO1's type and Defaults | Close
+in the bar; `-display` the screen's orientation on top as PO1o's rows, then the font, the palette, the thousands one under
+another and the unit tables' row heights two a row, cut at the sheet's foot with the thin scroll bar at its right (the
+column scrolls by a finger). PO1 and PO1o left `GALLERY_ENTRIES`.
+
 ## 10. The copy for a website (owner, 2026-10-29)
 
 The owner's request: the gallery on the owner's website, its pictures in a light format and the current ones alone, the

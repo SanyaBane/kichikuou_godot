@@ -418,7 +418,13 @@ above the page (nine in view, a drag for the rest), the chosen save's page stand
 the figures in two columns, the comment with Edit), Back | the red button in the bar; the comment's own card over
 Android's keyboard as PY2, its words wrapped in a field two lines high and drawn by the view, the line edit taking the keys
 unseen (`Original.Content/Devices/PhoneSavesUpright`; `SaveLoadView.Upright.cs`, held landscape's drawing shared through
-its `Places`). P8 is next.
+its `Places`).
+Step P8 is split as L9 was (phone-build.md, "Step P8, where it stands"): P8a is built, awaiting the owner's look on the
+Poco — the options window upright as PO1 with PO1o: the title under the hole, the five paper tabs across the room, the
+sheet down to the bar with each tab's settings in one column at PO1's type (Display's orientation on top as PO1o's
+rows), scrolled by a finger with a thin bar, cut at the sheet's margins (the canvas item's clip, the frame drawn with it
+ignored), Defaults | Close in the bar (`Original.Content/Devices/PhoneOptionsUpright`; `OptionsView.Upright.cs`). P8b
+(the dungeon's ladder) is next.
 **Owner's decision 33** (2026-10-29), the fifth rule change: the ninja follow-up's chance (BRS-11, R14's `RND(3)` = 1) —
 Tweaks → "Ninja follow-up", 33% (the original, the default), 67% or 100%, read off the same draw, built
 (`Combat/NinjaChance` on `OriginalScriptContext.NinjaChance`, `Battle.NinjaRolled`; `godot/Battles/NinjaChanceChoice`;

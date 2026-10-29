@@ -1090,6 +1090,48 @@ P7b:
 - **Unattended play**: headless with `--phone upright` from the week-18 save to its deployment picker, and with
   `--saveload --interface new` (our Save/Load screen clicked through at upright's places), exit 0 both.
 
+**Step P8, where it stands (2026-10-30):** split as L9 was — P8a the options window (PO1 with PO1o), P8b the dungeon's
+ladder (PF1, PF1e), P8c All Data (PG2m, PG2), P8d the title, the import screen and the original's own screens (PE2, PI,
+PIp, PIr, PXf, PXc, PXm, PXr). **P8a is built, awaiting the owner's look on the Poco.**
+
+- **The model** (`Original.Content/Devices/PhoneOptionsUpright`, tested in `PhoneOptionsUprightTests`): the places at the
+  mock-ups' figures (`po1`, `po1o`, `defaults_close`) from the room's top and the bar — the title (the brush face, 62) 30
+  in, 4 under the room's top; the five tabs 112 under it across the room less 24 each side, 8 apart, 110 high (one not
+  chosen 12 lower); the sheet from their foot to 20 over the bar, 24 in; the column 30 in from the sheet's sides from 40
+  under its top, seen between 12-pixel margins of the sheet (`View`), scrolled until its foot stands 30 over the sheet's
+  (`ColumnTop`, `MaxScroll`); the thin bar (6 wide, 12 in from the sheet's right) along the view while the column scrolls,
+  its thumb as long as the share in view (`ScrollBar`); PO1o's rows (140 high, 150 apart: the radio's centre 46 in, the
+  name 96 in at 52 down, the hint at 104); Defaults (404) | Close in the bar; a question the PC's box at the parts' scale
+  as wide as the sheet allows (less 20 a side) over its middle. A longer screen gives the column more room. The parts'
+  scale is held landscape's (`PhoneOptions.PartScale`, PO1's type).
+- **The view** (`OptionsView.Upright.cs`; `OptionsView` is keyed by `Device.Held`, held landscape's drawing untouched):
+  each tab in one column — Messages: the text speed, its preview centred under it, the message skip, the read text (held
+  landscape's part, `ReadTextSection`); Display: the orientation's rows, the font, the palette, the thousands one under
+  another, the unit tables' row heights two a row (`RowsUpright`); Battle: the effects (the hint wrapped), the nine timings
+  one under another; Game: the folder; Tweaks: held landscape's two columns one after the other. **What scrolls past the
+  sheet's margins is cut there**: the view's canvas item is clipped to the column's view
+  (`RenderingServer.CanvasItemSetClip` with a custom rect, set in its `_Draw` after the Control's own) and the backdrop,
+  the title, the tabs, the bar, the scroll bar and a question are drawn with the clip ignored
+  (`CanvasItemAddClipIgnore`); the preview's 121, a child, is cut with the column. The wave backdrop is drawn by the view
+  upright (the backdrop layer, a child, would be cut). The column's spots are cut to the view (`ClipSpots`). A finger's
+  drag past the slop scrolls the column, a quick release flicks it on, a press during a flick stops it (`FingerScroll`); a
+  press on a slider drags the slider; the wheel scrolls 120 reference pixels a notch; a tab opens at its column's top.
+  Defaults and Close are drawn at the frame's layout pixels as the bar's other buttons.
+- **The agent's choices**, for the owner to confirm: Display's sections after the orientation in the PC's order (the font
+  first; PO1o drew the palette and the thousands under it, "…" for the rest); the thousands one under another as PO1o, the
+  row heights' tiles two a row (three would crowd their figures), each row of tiles as tall as its taller tile; Defaults a
+  lacquer plate in the bar (PO1 drew it so; held landscape's is a paper button on the sheet), its word Cinzel, deaf on
+  Game; the chosen orientation's row in the field's paper, the others plain with a rule round them (PO1o); the text
+  speed's preview the game's 121 centred, as held landscape's (PO1 drew a box of the column's width); Tweaks' radios
+  ("Chaos and Nikkou reach demons" one under another, the ninja follow-up's chances in a row) as held landscape's (PO2's
+  finger rows were the other round's); the column cut at the sheet's margins (no fade); the scroll bar in the paper's
+  colours.
+- **The gallery**: the PC, touch and landscape passes same; the upright pass's five `options-…` entries changed. PO1 and
+  PO1o left `GALLERY_ENTRIES`; the phone tab keeps 12 mock-ups. A probe (a temporary scroll to 60%) showed the column cut
+  at the view's top with Display scrolled.
+- **Unattended play**: headless with `--phone upright` from the week-18 save to its deployment picker, exit 0 (the bot
+  never opens Options).
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.

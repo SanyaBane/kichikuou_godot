@@ -22,7 +22,8 @@ namespace Kichikuou.Game.Strategy;
 /// <see cref="NewScenesChoice"/>; owner, 2026-10-27). Every change applies
 /// and is kept at once; Defaults resets the tab shown (Game has none: the game folder has no default); Close, Esc or a right click shut it. Forget and the game folder ask first, in a box over the sheet. Laid out
 /// in the 1280×800 screen's pixels, scaled with the picture; on the phone held landscape across the whole screen, each tab
-/// in two columns (LO1, <c>OptionsView.Phone.cs</c>).
+/// in two columns (LO1, <c>OptionsView.Phone.cs</c>); held upright in one column scrolled by a finger (PO1 with PO1o,
+/// <c>OptionsView.Upright.cs</c>).
 /// </summary>
 internal sealed partial class OptionsView : Control
 {
@@ -129,12 +130,13 @@ internal sealed partial class OptionsView : Control
     public Tab Current => _tab;
 
     /// <summary>
-    /// Lays the window over the screen's picture (<paramref name="area"/>, in its parent's coordinates); on the phone held
-    /// landscape over the whole screen, the parts at PO1's type (LO1, <see cref="PhoneOptions"/>).
+    /// Lays the window over the screen's picture (<paramref name="area"/>, in its parent's coordinates); on the phone over
+    /// the whole screen, the parts at PO1's type (held landscape LO1, <see cref="PhoneOptions"/>; upright PO1,
+    /// <see cref="PhoneOptionsUpright"/>).
     /// </summary>
     public void Place(Rect2 area)
     {
-        var phone = Device.Landscape(this);
+        var phone = Device.Held(this);
         if (phone is not null)
             area = new Rect2(Vector2.Zero, GetParentAreaSize());
         float k = phone is not null ? phone.Px(PhoneOptions.PartScale) : area.Size.X / 1280f;
@@ -144,7 +146,7 @@ internal sealed partial class OptionsView : Control
         Size = area.Size;
         _k = k;
         _phone = phone;
-        _backdrop.Visible = phone is not null;
+        _backdrop.Visible = phone is { IsUpright: false };        // upright the view draws it, out of its column's clip
         _backdrop.Size = area.Size;
         _backdrop.QueueRedraw();
         PlaceChildren();
@@ -156,6 +158,8 @@ internal sealed partial class OptionsView : Control
         _tab = tab;
         _question = null;
         _dragging = null;
+        _scroll = 0;                                        // held upright each tab's column from its top
+        _finger.Cancel();
         _preview.Visible = tab == Tab.Messages;
         if (tab == Tab.Messages)
             _preview.Restart();
@@ -175,6 +179,8 @@ internal sealed partial class OptionsView : Control
 
     public override void _Process(double delta)
     {
+        if (_finger.Flinging)
+            Fling(delta);
         if (_tab != Tab.Messages || _preview.Typing || double.IsPositiveInfinity(_preview.LettersPerSecond))
             return;
         _held += delta;
@@ -298,6 +304,11 @@ internal sealed partial class OptionsView : Control
 
     public override void _GuiInput(InputEvent e)
     {
+        if (_phone is { IsUpright: true } upright && _question is null && FingerTouch(e, upright))
+        {
+            AcceptEvent();
+            return;
+        }
         switch (e)
         {
             case InputEventMouseMotion motion:
@@ -540,15 +551,7 @@ internal sealed partial class OptionsView : Control
     private void DrawDisplay()
     {
         float x = ContentX, y = ContentY, w = ContentW;
-        if (Device.Phone)           // a phone in the tablet's layout (upright until step P8): the orientation beside the font
-        {
-            FontSection(x, y, w / 2 - 20);
-            OrientationSection(x + w / 2 + 20, y, w / 2 - 20);
-        }
-        else
-        {
-            FontSection(x, y, w);
-        }
+        FontSection(x, y, w);
         y += 132;
         PaletteSection(x, y, w);
         y += 132;
@@ -675,12 +678,13 @@ internal sealed partial class OptionsView : Control
     private static IEnumerable<BattleScreenSettings.Setting> Timings =>
         BattleScreenSettings.All.Where(s => s.Unit != BattleScreenSettings.Toggle);
 
-    private void EffectsSection(float x, float y, float w)
+    /// <summary>The effects' switch; with <paramref name="wrap"/> (upright's column) its hint wraps into the width. Returns its foot.</summary>
+    private float EffectsSection(float x, float y, float w, bool wrap = false)
     {
         SectionHead(x, y, "Effects", w);
         var effects = BattleScreenSettings.Effects;
-        CheckBox("effects", x, y + 36, BattleScreenSettings.Get(effects) >= 0.5, "Exchange effects", effects.Hint,
-            () => BattleScreenSettings.Set(effects, BattleScreenSettings.Get(effects) >= 0.5 ? 0 : 1));
+        return CheckBox("effects", x, y + 36, BattleScreenSettings.Get(effects) >= 0.5, "Exchange effects", effects.Hint,
+            () => BattleScreenSettings.Set(effects, BattleScreenSettings.Get(effects) >= 0.5 ? 0 : 1), wrap ? w : 0);
     }
 
     /// <summary>A battle timing: its label over its slider, its value at the column's right, 46 high.</summary>
@@ -696,7 +700,8 @@ internal sealed partial class OptionsView : Control
 
     private void DrawGame() => GameSection(ContentX, ContentY, ContentW);
 
-    private void GameSection(float x, float y, float w)
+    /// <summary>The game folder's field and its note; returns the note's last baseline.</summary>
+    private float GameSection(float x, float y, float w)
     {
         SectionHead(x, y, "Game folder", w);
         var field = new Rect2(x, y + 36, w, 40);
@@ -716,7 +721,8 @@ internal sealed partial class OptionsView : Control
         string note = _folderLocked
             ? "The developer's extract is the data (local.env or settings.cfg): a game folder would change nothing. --import turns this on."
             : "Another copy of the game: the import screen checks it and reads its scenario, then the title opens.";
-        Wrap(note, x, y + 104, w, 14, Ui.InkQuiet);
+        int lines = Wrap(note, x, y + 104, w, 14, Ui.InkQuiet);
+        return y + 104 + (lines - 1) * WrapPitch(14);
     }
 
     /// <summary>
@@ -832,14 +838,19 @@ internal sealed partial class OptionsView : Control
     private void Radio(string id, float x, float y, bool on, string label, Font font, Action choose, bool enabled = true)
     {
         bool lit = enabled && _hover == id;
-        var centre = new Vector2(x + 10, y + 10);
+        RadioMark(new Vector2(x + 10, y + 10), on, lit);
+        Text(font, new Vector2(x + 30, y + 17), label, fontSize: 18, modulate: enabled ? Ui.Ink : Ui.InkGrey);
+        if (enabled)
+            _spots.Add(new Spot(id, new Rect2(x - 4, y - 6, font.GetStringSize(label, fontSize: 18).X + 40, 32), () => { choose(); QueueRedraw(); }));
+    }
+
+    /// <summary>A radio's circle at <paramref name="centre"/>, its dot when chosen.</summary>
+    private void RadioMark(Vector2 centre, bool on, bool lit)
+    {
         DrawCircle(centre, 10, Field);
         DrawArc(centre, 10, 0, Mathf.Tau, 32, lit ? Ui.Vermilion : Ui.InkGrey, Line(lit ? 2 : 1.5f), true);
         if (on)
             DrawCircle(centre, 5, Ui.VermilionInk);
-        Text(font, new Vector2(x + 30, y + 17), label, fontSize: 18, modulate: enabled ? Ui.Ink : Ui.InkGrey);
-        if (enabled)
-            _spots.Add(new Spot(id, new Rect2(x - 4, y - 6, font.GetStringSize(label, fontSize: 18).X + 40, 32), () => { choose(); QueueRedraw(); }));
     }
 
     /// <summary>A track filled up to the knob (a vermilion disc), the value over it when given; dragging or clicking the track sets it.</summary>
@@ -890,7 +901,8 @@ internal sealed partial class OptionsView : Control
     {
         _spots.Clear();
         DrawRect(_phone is null ? Frame : new Rect2(Vector2.Zero, Size / _k), new Color(0, 0, 0, 0.35f));
-        var box = _phone is { } f ? Part(PhoneOptions.Question(f)) : new Rect2(390, 300, 500, 200);
+        var box = _phone is { } f ? Part(f.IsUpright ? PhoneOptionsUpright.Question(f) : PhoneOptions.Question(f))
+            : new Rect2(390, 300, 500, 200);
         Ui.DrawPanel(this, box, _k);
         Text(_cinzelBold, new Vector2(box.Position.X, box.Position.Y + 48), question.Title, HorizontalAlignment.Center,
             box.Size.X, 20, Ui.Name);

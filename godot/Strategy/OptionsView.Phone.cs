@@ -57,7 +57,7 @@ internal sealed partial class OptionsView
     /// </summary>
     private Rect2 PhonePreviewRect(PhoneFrame f)
     {
-        var column = Part(PhoneOptions.Column(f, 0));
+        var column = f.IsUpright ? UprightColumn(f) : Part(PhoneOptions.Column(f, 0));
         var panel = _sample.Panel;
         float w = P(panel.W), h = P(panel.H);
         return new Rect2(column.Position.X + (column.Size.X - w) / 2, column.Position.Y + PhonePreviewTop, w, h);
@@ -65,6 +65,11 @@ internal sealed partial class OptionsView
 
     private void DrawPhone(PhoneFrame f)
     {
+        if (f.IsUpright)
+        {
+            DrawUpright(f);
+            return;
+        }
         DrawPhoneTabs(f);
         int titleSize = Ref(PhoneOptions.TitleText);
         float titleWidth = _brush.GetStringSize("Options", fontSize: titleSize).X;
@@ -94,32 +99,37 @@ internal sealed partial class OptionsView
             DrawQuestion(_question);
     }
 
-    /// <summary>The paper tabs at the mock-up's places, the chosen one joined to the sheet with its vermilion edge.</summary>
+    /// <summary>The paper tabs at the mock-up's places (held landscape's or upright's), the chosen one joined to the sheet with its vermilion edge.</summary>
     private void DrawPhoneTabs(PhoneFrame f)
     {
+        bool upright = f.IsUpright;
+        PhoneFrame.Box Place(int i, bool chosen) => upright ? PhoneOptionsUpright.Tab(f, i, chosen) : PhoneOptions.Tab(f, i, chosen);
         Rect2 current = default;
         for (int i = 0; i < Tabs.Length; i++)
         {
             var tab = Tabs[i];
             string name = tab.ToString();
             bool on = tab == _tab;
-            var rect = Part(PhoneOptions.Tab(f, i, on));
+            var rect = Part(Place(i, on));
             DrawRect(rect, on ? Ui.Paper : _hover == "tab-" + name ? Field : Ui.PaperHead);
             DrawRect(rect, on ? Ui.PaperHead : Ui.InkGrey, false, Line(1));
             if (on)
                 current = rect;
             var font = on ? _cinzelBold : _cinzel;
-            int size = SideCells.Fit(font, name, Ref(PhoneOptions.TabText), rect.Size.X - P(PhoneOptions.TabTextRoom));
-            float middle = Part(PhoneOptions.Tab(f, i, chosen: true)).GetCenter().Y + P(6);    // the words level on every tab
+            int size = upright
+                ? SideCells.Fit(font, name, Ref(PhoneOptionsUpright.TabText), rect.Size.X - P(PhoneOptionsUpright.TabTextRoom))
+                : SideCells.Fit(font, name, Ref(PhoneOptions.TabText), rect.Size.X - P(PhoneOptions.TabTextRoom));
+            float middle = Part(Place(i, chosen: true)).GetCenter().Y + P(6);    // the words level on every tab
             Text(font, new Vector2(rect.Position.X, middle + (font.GetAscent(size) - font.GetDescent(size)) / 2), name,
                 HorizontalAlignment.Center, rect.Size.X, size, on ? Ui.HeadInk : Ui.InkQuiet);
             _spots.Add(new Spot("tab-" + name, rect, () => ShowTab(tab)));
         }
-        var sheet = Part(PhoneOptions.Sheet(f));
+        var sheet = Part(upright ? PhoneOptionsUpright.Sheet(f) : PhoneOptions.Sheet(f));
         DrawRect(sheet, Ui.Paper);
         DrawRect(sheet, Ui.PaperHead, false, Line(1));
         DrawRect(new Rect2(current.Position.X + 1, sheet.Position.Y - 4, current.Size.X - 2, 8), Ui.Paper);
-        DrawRect(new Rect2(current.Position.X, current.Position.Y, current.Size.X, P(PhoneOptions.TabEdge)), Ui.Vermilion);
+        DrawRect(new Rect2(current.Position.X, current.Position.Y, current.Size.X,
+            P(upright ? PhoneOptionsUpright.TabEdge : PhoneOptions.TabEdge)), Ui.Vermilion);
     }
 
     /// <summary>The rule between the columns from <paramref name="top"/> (the parts' units) to its foot, at most <paramref name="bottom"/>.</summary>
@@ -166,7 +176,16 @@ internal sealed partial class OptionsView
         y = PreviewRect.End.Y + PhoneNoteUnder;
         Text(_gothic, new Vector2(x, y), chosen == ReadTextChoice.None ? "Read text keeps the window's colour." : "The preview counts as read.",
             fontSize: 13, modulate: Ui.InkQuiet);
-        y = PreviewRect.End.Y + PhoneReadUnder;
+        ReadTextSection(x, PreviewRect.End.Y + PhoneReadUnder, w);
+    }
+
+    /// <summary>
+    /// The read text's head at <paramref name="y"/>, its tiles in two rows ("Don't change" and four colours, then five), the
+    /// chosen one's name and its words wrapped into <paramref name="w"/>; returns their last baseline.
+    /// </summary>
+    private float ReadTextSection(float x, float y, float w)
+    {
+        int chosen = ReadTextChoice.Index;
         SectionHead(x, y, "Already-read text", w);
         // read_text: "Don't change" 300 wide, the colours from 320 in, 14 apart, 100 high, the second row 16 under the first.
         float tileH = P(100), gap = P(14), first = P(300), after = P(320), rowGap = P(16);
@@ -182,7 +201,8 @@ internal sealed partial class OptionsView
         y = top + rows * tileH + (rows - 1) * rowGap + 23;
         Text(_gothic, new Vector2(x, y), chosen == ReadTextChoice.None ? "Don't change" : ReadTextChoice.Colours[chosen].Name,
             fontSize: 17, modulate: Ui.Ink);
-        Wrap(string.Join(" ", ReadTextLines), x, y + 20, w, 13, Ui.InkQuiet);
+        int lines = Wrap(string.Join(" ", ReadTextLines), x, y + 20, w, 13, Ui.InkQuiet);
+        return y + 20 + (lines - 1) * WrapPitch(13);
     }
 
     /// <summary>
