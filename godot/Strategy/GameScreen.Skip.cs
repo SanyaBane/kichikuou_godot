@@ -69,10 +69,10 @@ public partial class GameScreen
             _skipButton.Disabled = !_skip.Enabled;
             _skipButton.Label = _skip.Activated ? "Skip: ON" : "Skip";
             float k = area.Size.X / 1280;
-            _skipButton.Phone = Device.Landscape(_skipButton);
-            if (_skipButton.Phone is { } phone)                             // on the left rail's top, the whole battle (LB2)
+            _skipButton.Phone = Device.Held(_skipButton);
+            if (_skipButton.Phone is { } phone)                             // on the left rail's top, the whole battle (LB2); upright on its strip (PB3)
             {
-                var cell = PhoneBattle.SkipCell(phone);
+                var cell = phone.IsUpright ? PhoneBattleUpright.OnScreen(phone, PhoneBattleUpright.Skip) : PhoneBattle.SkipCell(phone);
                 _skipButton.Place(new Rect2(cell.X, cell.Y, cell.W, cell.H), k, 20);
                 return;
             }

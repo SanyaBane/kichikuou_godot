@@ -67,10 +67,12 @@ internal sealed partial class BattleDialogLayer : Control
         QueueRedraw();
     }
 
-    public void Layout(float scale, PhoneFrame? phone = null)
+    /// <summary>The layout: <paramref name="phone"/> the phone's frame held either way, upright the board <paramref name="height"/> layout pixels high.</summary>
+    public void Layout(float scale, PhoneFrame? phone = null, float height = 800)
     {
         _scale = scale;
         _phone = phone;
+        _height = height;
         QueueRedraw();
     }
 
@@ -80,7 +82,7 @@ internal sealed partial class BattleDialogLayer : Control
         get
         {
             if (_phone is { } f)
-                return L(PhoneQuestion(f));
+                return f.IsUpright ? B(UprightQuestion()) : L(PhoneQuestion(f));
             if (Touch)
                 return new Rect2(TouchCorner, new Vector2(TouchWidth, TouchPad * 2 + QuestionLine * 2 + Rule + TouchGap + TouchButton));
             float height = Pad * 2 + QuestionLine * 2 + Rule + (_dialog?.Items.Count ?? 0) * RowHeight;
@@ -95,7 +97,9 @@ internal sealed partial class BattleDialogLayer : Control
     private Rect2 ItemRect(int item)
     {
         if (_phone is { } f)
-            return L(PhoneBattle.RetreatAnswers(f, PhoneQuestion(f), _dialog?.Items.Count ?? 1)[TouchColumn(item)]);
+            return f.IsUpright
+                ? B(PhoneBattleUpright.RetreatAnswers(UprightQuestion(), _dialog?.Items.Count ?? 1)[TouchColumn(item)])
+                : L(PhoneBattle.RetreatAnswers(f, PhoneQuestion(f), _dialog?.Items.Count ?? 1)[TouchColumn(item)]);
         var box = Box;
         if (!Touch)
             return new Rect2(box.Position.X + Pad - 4, ItemsTop + item * RowHeight, box.Size.X - (Pad - 4) * 2, RowHeight);

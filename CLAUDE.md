@@ -382,6 +382,12 @@ state's tiles and markers, scrolled sideways by our own camera), Commands at the
 province's card and commands as sheets over the map's foot, the map lifted under a province's sheet
 (`Original.Content/Devices/PhoneMapUpright`; `GameScreen.UprightMap.cs`); a tap on a marker the script's view does not
 show is the drag a player would make to bring it there, then the still click (`MapMarkers.PressAnywhere`).
+Step P3 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P3, where it stands"): the battle's turn
+upright — the board 1280 layout pixels wide over the whole room, the scene at the width on top, our rows under it, the
+gauge across between the front rows, the enemy's rows at the thumb, Skip on its strip, the deck at the foot (the commands
+from the foot up, the attacks at the right thumb), the retreat question over the deck's right column
+(`Original.Content/Devices/PhoneBattleUpright`; `BattleBoardView`'s upright places, `BattleCommandLayer.Upright.cs`,
+`BattleDialogLayer.Phone.cs`).
 **Owner's decision 33** (2026-10-29), the fifth rule change: the ninja follow-up's chance (BRS-11, R14's `RND(3)` = 1) —
 Tweaks → "Ninja follow-up", 33% (the original, the default), 67% or 100%, read off the same draw, built
 (`Combat/NinjaChance` on `OriginalScriptContext.NinjaChance`, `Battle.NinjaRolled`; `godot/Battles/NinjaChanceChoice`;

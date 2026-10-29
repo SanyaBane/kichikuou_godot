@@ -283,12 +283,8 @@ def phone():
 SHEETS = {}
 # The gallery's phone tab: the owner's chosen base versions (docs/ui/phone.md), by mock-up name, those not built yet; a
 # built one leaves for the real pass "Smartphone, upright" (docs/ui/phone-build.md: P1 took PS2, PS2l, PS2b, PS2m, PW1,
-# PEd, PEr, PN1, PN1q and PR2; P2 PM1a, PM1b and PM1c).
+# PEd, PEr, PN1, PN1q and PR2; P2 PM1a, PM1b and PM1c; P3 PB3, PB3r and PB3x).
 GALLERY_ENTRIES = {
-    'PB3': ('pb3-turn', 'Battle — PB3', 'The player\'s turn', 'our army on top, the enemy\'s at the thumb, Skip over '
-                                                               'the deck'),
-    'PB3r': ('pb3-retreat', 'Battle — PB3', 'The retreat question', 'at Retreat, over the deck\'s right column'),
-    'PB3x': ('pb3-exchange', 'Battle — PB3', 'An exchange', 'Ex (commander 1) on Rance (unit 1); the deck empty'),
     'PB4s': ('pb4-scout', 'Battle — PB3', 'The scout report', 'Kanami\'s report before the field, one tap'),
     'PB4c': ('pb4-strategy', 'Battle — PB3', 'A strategy\'s cut-in', 'Barres (unit 6), his line under the band'),
     'PB4r': ('pb4-results', 'Battle — PB3', 'The results plate', 'over the dimmed board at the screen\'s width'),

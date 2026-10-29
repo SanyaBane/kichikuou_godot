@@ -859,6 +859,45 @@ and System's rotation lock).
   script's own gestures, so a tap on the upright map (the drag, then the click) has run in the tests alone; the owner's
   look on the Poco is its first run.
 
+**Step P3, where it stands (2026-10-29):** built, **awaiting the owner's look on the Poco**.
+
+- **The model** (`Original.Content/Devices/PhoneBattleUpright`, tested in `PhoneBattleUprightTests`): the board is laid out
+  1280 layout pixels wide over the room's width (the frame's own scale, 1.049 layout pixels a reference pixel), its corner
+  the room's, as high as the room (`Height`; `OnScreen` turns a board box into the canvas's units). From the top: the
+  scene at the width (1280 × 512.5, 1.25 of the PC's; no blurred sides); our army's name 6 under it; the cards 586 × 230
+  from 52 under the scene, 16 in and 16 apart, an army's rows 10 apart — our back row on top, then our front row —; the
+  gauge's band 72 high between the front rows; the enemy's front row, its back row and its name under it; Skip 300 × 120
+  on its strip; the deck from 186 under the enemy's back row to the board's foot: its heading (the acting unit's name in the
+  brush face at 44, TARGET at 26 and the target's name at 44) over a rule, the commands in the left column from the foot up
+  (at most 132 high, 12 apart, 20 over the foot, under 110 of heading — 123 on the reference with five), the attacks in the
+  right one (250 high, Melee at the thumb); the retreat question 592 × 330 over the right column, its top level with
+  Retreat's, its tip at it, the answers 270 × 138 side by side. A card's insides (PB3's slim card): padding 8, the face 174
+  with its figures' row 40 at 28 under it, the name 36, the troop type and the state 28, the troops and HP 32, an own card's
+  toggles 38 high across the text column's foot (their words 24), the exchange's pill 42 high.
+- **The views**, keyed by the live device (`DeviceLayout.PhoneUpright`; the PC's, the tablet's and the landscape phone's
+  paths unchanged): `BattleBoardView` places itself over the room whatever origin it is given (the game's `Frame()` and
+  the gallery's picture both), the board's height its own (`_height`; the panel, the spotlight and the layers over it), the
+  cards in rows (`CardArea`: the landscape's columns are the rows), the enemy's name at the left with its advantage after
+  it, the gauge drawn across (`DrawGaugeAcross`: the tube, the spent rounds dark from the left, "4 TURNS LEFT" on one line),
+  the stones down to the deck, the deck's panel its own (`_deck`, empty while an exchange plays, PB3x), the counters the
+  PC's over the scene at its scale; `CardPortrait` the slim card's face; `BattleCommandLayer.Upright.cs` the deck (the
+  tablet's buttons, the forecast on the attack's strip); `BattleDialogLayer.Phone.cs` the retreat question (PB3r: the
+  screen dimmed, Retreat lit, the callout's type its own); `TouchPill` the battle's Skip as the side's cell on its strip
+  (`GameScreen.Skip.cs`, the gallery's board).
+- **The agent's choices**, for the owner to confirm: the enemy's cards keep their face at the right, as on every device
+  (PB3 drew every face at the left; as at L3); the order strip and the limit's plate at the scene's foot and top at the
+  landscape phone's size (1.6 of the PC's layout pixels, the same millimetres either way; PB3 showed them at the scene's
+  1.25); the enemy's advantage right after its name, as ours (PB3 put it at the line's right end); the gauge's tube drawn
+  across with its caption beside it (PB3 drew the segments alone); a card's type a little under PB3's (the name 36, the
+  lines 32 and 28, where PB3 had 38, 34 and 30) so that the state line and an own card's toggles both fit its 230 — the
+  toggles stay PB3's 38 high (2.2 mm), small for a finger; while the retreat question asks, the left column shows Retreat
+  alone, lit, as held landscape.
+- **Left for P4**: the cards' long-press menu, the opening, the balloon and the speaker's portrait, the info boxes, the
+  scout report and the strategy's cut-in at the phone's type — the gallery's upright entries of those show the PC's layout
+  at the board's scale for now.
+- **The gallery**: the PC, touch and landscape passes same (110, 111 and 114 entries); the upright pass's 16 battle entries
+  changed (the board's six of P3 and the ten states P4 lays out). PB3, PB3r and PB3x left `GALLERY_ENTRIES`.
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.

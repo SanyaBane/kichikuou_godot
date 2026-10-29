@@ -212,13 +212,15 @@ internal sealed partial class BattleCommandLayer : Control
 
     /// <summary>
     /// The layout: <paramref name="cardArea"/> gives a card's rectangle, <paramref name="scale"/> screen pixels to a layout
-    /// pixel; <paramref name="phone"/> the phone's frame held landscape (the rails in its sides), else null.
+    /// pixel; <paramref name="phone"/> the phone's frame held landscape (the rails in its sides) or upright (the deck at the
+    /// board's foot, <paramref name="height"/> layout pixels down), else null.
     /// </summary>
-    public void Layout(Func<BattlePlace, Rect2> cardArea, float scale, Original.Content.Devices.PhoneFrame? phone = null)
+    public void Layout(Func<BattlePlace, Rect2> cardArea, float scale, Original.Content.Devices.PhoneFrame? phone = null, float height = 800)
     {
         _cardArea = cardArea;
         _scale = scale;
         _phone = phone;
+        _height = height;
         QueueRedraw();
     }
 
@@ -340,7 +342,7 @@ internal sealed partial class BattleCommandLayer : Control
                 width = Math.Max(width, font.GetStringSize(text, HorizontalAlignment.Left, -1, (int)Math.Round(MenuText * _scale)).X / _scale + MarkWidth + MenuPad * 2);
         }
         var size = new Vector2(width, items.Count * RowHeight + MenuPad * 2);
-        var box = new Rect2(new Vector2(Math.Clamp(at.X, 0, 1280 - size.X), Math.Clamp(at.Y, 0, 800 - size.Y)), size);
+        var box = new Rect2(new Vector2(Math.Clamp(at.X, 0, 1280 - size.X), Math.Clamp(at.Y, 0, _height - size.Y)), size);
         _menu = (place, box, items);
         _hotItem = ItemAt(_menu.Value, at);
         _hotToggle = _pressedToggle = -1;                           // a long press on an order toggle opens the menu instead

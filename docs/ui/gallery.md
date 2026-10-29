@@ -490,6 +490,12 @@ Step P2 (2026-10-29) built the map: on this pass the map's entries (`map-markers
 script's view as the game centres it), the command panel and a province's menu as sheets over its foot; `map` stays the
 engine's picture alone, for mock-ups. PM1a, PM1b and PM1c left `GALLERY_ENTRIES`.
 
+Step P3 (2026-10-29) built the battle's turn: on this pass the board's entries (`battle-turn`, `menu…`, `order-toggles`,
+`banners-E1`, `retreat`, `exchange-counters`) show the scene at the width on top, our rows under it, the gauge across,
+the enemy's rows at the thumb, Skip on its strip and the deck at the foot; the board's other states (`opening`,
+`battle-speech…`, `info-…`) changed with it and stand there as the PC's at the board's scale until step P4 lays them out.
+PB3, PB3r and PB3x left `GALLERY_ENTRIES`.
+
 ## 10. The copy for a website (owner, 2026-10-29)
 
 The owner's request: the gallery on the owner's website, its pictures in a light format and the current ones alone, the

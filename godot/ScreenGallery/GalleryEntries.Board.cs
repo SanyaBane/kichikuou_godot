@@ -168,7 +168,8 @@ internal static partial class GalleryEntries
         var s = p.State ?? throw new InvalidOperationException("The replay bound no state.");
         var board = g.Add(new BattleBoardView(g.Font, g.Faces) { Visible = true });
         board.LoadCrops();
-        var skip = PhoneLandscape ? g.Add(new TouchPill(TouchPill.Icon.Skip, "Skip") { Visible = true }) : null;   // the left rail's top (LB2)
+        var skip = PhoneLandscape || Device.Layout == DeviceLayout.PhoneUpright
+            ? g.Add(new TouchPill(TouchPill.Icon.Skip, "Skip") { Visible = true }) : null;   // the left rail's top (LB2); upright its strip (PB3)
         board.Commands.Forecast = forecast;
         if (then is not null && moment.Menu is { } menu)
         {
@@ -196,9 +197,9 @@ internal static partial class GalleryEntries
         return area =>
         {
             board.Place(area.Position, area.Size.X / 1280f);
-            if (skip is not null && Device.Landscape(skip) is { } phone)
+            if (skip is not null && Device.Held(skip) is { } phone)
             {
-                var cell = PhoneBattle.SkipCell(phone);
+                var cell = phone.IsUpright ? PhoneBattleUpright.OnScreen(phone, PhoneBattleUpright.Skip) : PhoneBattle.SkipCell(phone);
                 skip.Phone = phone;
                 skip.Place(new Rect2(cell.X, cell.Y, cell.W, cell.H), area.Size.X / 1280f, 20);
             }
