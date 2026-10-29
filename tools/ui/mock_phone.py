@@ -283,15 +283,10 @@ def phone():
 SHEETS = {}
 # The gallery's phone tab: the owner's chosen base versions (docs/ui/phone.md), by mock-up name, those not built yet; a
 # built one leaves for the real pass "Smartphone, upright" (docs/ui/phone-build.md: P1 took PS2, PS2l, PS2b, PS2m, PW1,
-# PEd, PEr, PN1, PN1q and PR2; P2 PM1a, PM1b and PM1c; P3 PB3, PB3r and PB3x).
+# PEd, PEr, PN1, PN1q and PR2; P2 PM1a, PM1b and PM1c; P3 PB3, PB3r and PB3x; P4 PB4o3, PB4s, PB4c, PB4r and PB4b).
 GALLERY_ENTRIES = {
-    'PB4s': ('pb4-scout', 'Battle — PB3', 'The scout report', 'Kanami\'s report before the field, one tap'),
-    'PB4c': ('pb4-strategy', 'Battle — PB3', 'A strategy\'s cut-in', 'Barres (unit 6), his line under the band'),
-    'PB4r': ('pb4-results', 'Battle — PB3', 'The results plate', 'over the dimmed board at the screen\'s width'),
-    'PB4b': ('pb4-line', 'Battle — PB3', 'A fighter\'s line', 'our balloon over the scene\'s foot, rewrapped'),
-    # Round P16's choices (owner, 2026-10-28; docs/ui/phone.md, §20): the opening; PD2's and PU1's ledger, PU1's End.
-    'PB4o3': ('pb4-opening', 'Battle — PB3', 'The opening', 'at the scene\'s place, laid out at the phone\'s type'),
-    # Round P3-P7's choices (owner, 2026-10-27; docs/ui/phone.md, §5).
+    # Round P3-P7's choices (owner, 2026-10-27; docs/ui/phone.md, §5), PD2's and PU1's ledger and PU1's End as round P16
+    # changed them (2026-10-28, §20).
     'PD2': ('pd2-deployment', 'Deployment — PD2', 'The deployment table', 'the party on top, the ledger at the thumb '
                                                                            'in two-line rows, scrolled sideways'),
     'PD2d': ('pd2-picture', 'Deployment — PD2', 'A unit\'s picture', 'a long press on a row'),

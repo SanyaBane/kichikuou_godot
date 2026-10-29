@@ -892,11 +892,51 @@ and System's rotation lock).
   lines 32 and 28, where PB3 had 38, 34 and 30) so that the state line and an own card's toggles both fit its 230 — the
   toggles stay PB3's 38 high (2.2 mm), small for a finger; while the retreat question asks, the left column shows Retreat
   alone, lit, as held landscape.
-- **Left for P4**: the cards' long-press menu, the opening, the balloon and the speaker's portrait, the info boxes, the
-  scout report and the strategy's cut-in at the phone's type — the gallery's upright entries of those show the PC's layout
-  at the board's scale for now.
+- **Left for P4** (laid out there, below): the cards' long-press menu, the opening, the balloon and the speaker's portrait,
+  the info boxes, the scout report and the strategy's cut-in at the phone's type.
 - **The gallery**: the PC, touch and landscape passes same (110, 111 and 114 entries); the upright pass's 16 battle entries
   changed (the board's six of P3 and the ten states P4 lays out). PB3, PB3r and PB3x left `GALLERY_ENTRIES`.
+
+**Step P4, where it stands (2026-10-29):** built, **awaiting the owner's look on the Poco**.
+
+- **The model** (`Original.Content/Devices/PhoneBattleStatesUpright`, tested in `PhoneBattleStatesUprightTests`): the board's
+  places in its layout pixels at the mock-ups' figures — the opening's plate (840 × 176 from 16, the place 2.6 mm, the
+  limit 2.1 mm, the turns 1.9 mm), the names' rooms at its sides (centred on 230 from their edge, 420 wide, their lines on
+  304, at most 4.1 mm), the advantage's and VS's middles, the seam 50 off the middle; the results plate (24 in from the
+  sides, 720 high, its top 890 under the board's — over our front row, the gauge and the enemy's rows), a level-up's rows on
+  it as held landscape, the plate growing up so that its foot stays over the battle's Skip; our panel (2.6 mm) where the
+  plate stands; the speaker's portrait at the scene's top corner (the PC's at the width, 286 × 379) and the balloon beside
+  it to 16 short of the edge, its foot 440 down (3.5 mm, smaller down to 46 to keep two lines); a defence's caption over
+  the scene's foot; the ribbon and the caption's shield at held landscape's millimetres (`Larger`, 1.6); the cards' menu
+  rows (5.9 mm) — and the scout report's and the cut-in's places in the canvas's units: Kanami and her balloon on top, the
+  cards two a row (the front row first) with the rows' captions, Rance at the foot on the bar with his answer beside him;
+  the cut-in round the middle between the room's top and the bar (the announcement, the title, the band across the screen,
+  the strategist's portrait, what it does beside it, the line's balloon under it).
+- **The views**, keyed by the live device (`DeviceLayout.PhoneUpright`; the PC's, the tablet's and the landscape phone's
+  paths unchanged): `BattleOpeningLayer` covers the board's scene, its plate, VS and the names at the phone's type
+  (`DrawUprightText`); `BattleInfoLayer.Upright.cs` the results plate and the panel over the whole board dimmed, the ribbon
+  and the caption in `DrawDefence`; `SpeechBalloon.DrawUpright` the balloon, `BattleBoardView` the speaker's portrait at the
+  model's place; `ScoutReportView.Upright.cs` the report over the whole screen (`Device.Held`, the cards
+  `PhoneCommanderCard` as held landscape); `StrategyCutInView.Upright.cs` the cut-in over the whole screen, the backdrop
+  left at the picture's place under it, the line's balloon with its tail up (`SpeechBalloon.DrawBalloonTailUp`);
+  `BattleCommandLayer`'s card menu at the upright rows.
+- **The agent's choices**, for the owner to confirm: a level-up's rows stay on the results plate (as held landscape), the
+  plate growing up rather than down, so that the battle's Skip under the enemy's rows is never covered; our panel and a
+  fall's box dim the board as the plate does, the panel where the plate stands; the balloons keep their tails (PB4b, PB4s
+  and PB4c drew none): the fighter's at the portrait, so the balloon begins 46 right of it (PB4b's 300 → 340), Kanami's
+  begins at 400 (PB4s's 380), Rance's at 300 (290), the strategist's line points up at him; Kanami's report in three
+  lines (PB4s's), the heading and the army's name bold; Maris's comment, which PB4s did not draw, at the foot right
+  with her portrait, Rance's row then a row higher; the cut-in's band fades across to 45% (PB4c's solid, the PC's fading
+  to nothing) and keeps its gold edges, the strategist's portrait framed in dim gold, the backdrop left at the picture's
+  place under it (PB4c drew none); the ribbon at held landscape's millimetres (4.5 mm high, a third of the slim card).
+- **The gallery**: the PC, touch and landscape passes same (110, 111 and 114 entries); the upright pass's 14 entries P4
+  lays out changed (`opening`, `scout-report`, `strategy`, `strategy-enemy`, `info-results`, `info-level-up`,
+  `info-panel`, `info-defence`, `battle-speech…`, `menu`, `menu-orders`). PB4o3, PB4s, PB4c, PB4r and PB4b left
+  `GALLERY_ENTRIES`; the phone tab keeps 24 mock-ups (P5-P8's).
+- **Unattended play**: headless with `--phone upright` from the week-18 save through the battle on Oaks (6) to its end,
+  and with `--turn-end --scout` through the enemy attack on Ys (5) to the deployment picker, exit 0 both. Headless play
+  draws none of our overlays, so the report and the cut-in have run in the gallery alone; the owner's look on the Poco is
+  their first run in play.
 
 ## 6. The agent's own choices, for the owner to confirm
 

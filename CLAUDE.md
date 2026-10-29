@@ -388,6 +388,13 @@ gauge across between the front rows, the enemy's rows at the thumb, Skip on its 
 from the foot up, the attacks at the right thumb), the retreat question over the deck's right column
 (`Original.Content/Devices/PhoneBattleUpright`; `BattleBoardView`'s upright places, `BattleCommandLayer.Upright.cs`,
 `BattleDialogLayer.Phone.cs`).
+Step P4 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P4, where it stands"): the battle's other
+states upright — the opening's plate on top of the scene and the names at its sides, the results plate over the dimmed
+board at the width (growing up over Skip), our panel where it stands, the speaker's portrait at the scene's top corner and
+our balloon beside it, a defence's ribbon and caption at held landscape's millimetres, the cards' menu at a finger's rows,
+the scout report and the strategy's cut-in as screens of their own (`Original.Content/Devices/PhoneBattleStatesUpright`;
+the upright branches of `BattleOpeningLayer`, `SpeechBalloon`, `BattleCommandLayer`, `BattleInfoLayer.Upright.cs`,
+`ScoutReportView.Upright.cs`, `StrategyCutInView.Upright.cs`).
 **Owner's decision 33** (2026-10-29), the fifth rule change: the ninja follow-up's chance (BRS-11, R14's `RND(3)` = 1) —
 Tweaks → "Ninja follow-up", 33% (the original, the default), 67% or 100%, read off the same draw, built
 (`Combat/NinjaChance` on `OriginalScriptContext.NinjaChance`, `Battle.NinjaRolled`; `godot/Battles/NinjaChanceChoice`;

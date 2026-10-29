@@ -65,10 +65,11 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     private static Rect2 GaugeArea => Upright ? R(PhoneBattleUpright.Gauge) : Phone ? R(PhoneBattle.Gauge)
         : Narrow ? new(612, 450, 56, 324) : new(608, 450, 64, 324);             // the caption a word a line (owner, 2026-10-24)
     // The speaker's portrait beside the balloon; on the phone in the scene's blurred side, so that no sprite is covered
-    // (docs/ui/phone.md, §17, LB3b); upright over the scene at its scale, as on the PC (its own place is step P4's).
-    private static Rect2 SpeakerLeft => Upright ? new(10, 8, 375, SceneFoot - 16)
+    // (docs/ui/phone.md, §17, LB3b); upright at the scene's top corner as the PC's at the width, the balloon beside it (§11,
+    // PB4b; docs/ui/phone-build.md, step P4).
+    private static Rect2 SpeakerLeft => Upright ? R(PhoneBattleStatesUpright.Speaker(player: true))
         : Phone ? new(8, 4, SceneArea.Position.X - 16, SceneFoot - 8) : new(8, 6, 300, 398);
-    private static Rect2 SpeakerRight => Upright ? new(1280 - 10 - 375, 8, 375, SceneFoot - 16)
+    private static Rect2 SpeakerRight => Upright ? R(PhoneBattleStatesUpright.Speaker(player: false))
         : Phone ? new(SceneArea.End.X + 8, 4, SceneArea.Position.X - 16, SceneFoot - 8) : new(972, 6, 300, 398);
     private static Vector2 CardSize => Upright ? R(PhoneBattleUpright.Card(0, 0)).Size : Phone ? R(PhoneBattle.Card(0, 0)).Size
         : Narrow ? new(223, 150) : new(282, 150);

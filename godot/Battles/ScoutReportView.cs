@@ -102,11 +102,11 @@ internal sealed partial class ScoutReportView : Control
     /// <summary>Lays the overlay out over the area whose layout pixel (0, 0) is at <paramref name="origin"/>, <paramref name="scale"/> window pixels to a layout pixel.</summary>
     public void Place(Vector2 origin, float scale)
     {
-        var phone = Device.Landscape(this);
+        var phone = Device.Held(this);
         if (origin == _origin && scale == _scale && phone == _phone)
             return;
         (_origin, _scale, _phone) = (origin, scale, phone);
-        _sheet.Position = phone is null ? origin : Vector2.Zero;          // the phone's across the whole screen (LB3s)
+        _sheet.Position = phone is null ? origin : Vector2.Zero;          // the phone's across the whole screen (LB3s, PB4s)
         _sheet.Size = phone is null ? new Vector2(1280, 800) * scale : Size;
         _sheet.QueueRedraw();
     }
@@ -133,7 +133,10 @@ internal sealed partial class ScoutReportView : Control
             return;
         if (_phone is { } phone)
         {
-            DrawPhone(report, phone);
+            if (phone.IsUpright)
+                DrawUpright(report, phone);
+            else
+                DrawPhone(report, phone);
             return;
         }
         float s = _scale;

@@ -97,11 +97,15 @@ internal sealed partial class StrategyCutInView : Control
     /// <summary>Lays the cut-in out over the area whose layout pixel (0, 0) is at <paramref name="origin"/>, <paramref name="scale"/> window pixels to a layout pixel.</summary>
     public void Place(Vector2 origin, float scale)
     {
-        if (origin == _sheet.Position && scale == _scale && _sheet.Size != Vector2.Zero)
+        var upright = Device.Upright(this);
+        if (origin == _backdrop.Position && scale == _scale && upright == _upright && _sheet.Size != Vector2.Zero)
             return;
         _scale = scale;
-        _sheet.Position = _backdrop.Position = origin;
-        _sheet.Size = _backdrop.Size = new Vector2(1280, 800) * scale;
+        _upright = upright;
+        _backdrop.Position = origin;
+        _backdrop.Size = new Vector2(1280, 800) * scale;
+        _sheet.Position = upright is null ? origin : Vector2.Zero;      // held upright stacked over the whole screen (PB4c)
+        _sheet.Size = upright is null ? _backdrop.Size : new Vector2(upright.Screen.W, upright.Screen.H);
         _sheet.ClipContents = Device.Landscape(this) is null;        // the phone's band runs on across the black sides (LB3c)
         _sheet.QueueRedraw();
     }
@@ -147,6 +151,11 @@ internal sealed partial class StrategyCutInView : Control
     {
         if (_strategy is not { } strategy || _bold.BaseFont is null)
             return;
+        if (_upright is { } upright)
+        {
+            DrawUpright(strategy, upright);
+            return;
+        }
         float s = _scale;
         float t = Math.Clamp((float)(_appearing / AppearSeconds), 0, 1);
         float a = 1 - (1 - t) * (1 - t) * (1 - t);                      // eased out

@@ -77,6 +77,11 @@ internal sealed partial class SpeechBalloon : Control
             DrawPhone(speech, left, s);
             return;
         }
+        if (Device.Layout == DeviceLayout.PhoneUpright)
+        {
+            DrawUpright(speech, left, s);
+            return;
+        }
         int size = Math.Max(8, (int)Math.Round(TextSize * s));
         _bold.SetSpacing(TextServer.SpacingType.Bottom, (int)Math.Round(LineGap * s));
         float textWidth = (Width - 2 * Pad) * s;
@@ -112,6 +117,33 @@ internal sealed partial class SpeechBalloon : Control
             L(PhoneBattleStates.TailFromTop) * s);
         DrawSaying(speech, box, ink, size, textWidth, L(PhoneBattleStates.BalloonSide) * s, L(PhoneBattleStates.BalloonTop) * s - 4 * s,
             L(PhoneBattleStates.LineText) / TextSize * s);
+    }
+
+    /// <summary>
+    /// Held upright (docs/ui/phone-build.md, step P4; PB4b): the balloon over the scene's foot beside the speaker's portrait at
+    /// the scene's top corner, at the phone's type, smaller down to <see cref="PhoneBattleStatesUpright.LineMin"/> to keep it
+    /// to two lines; in the board's layout pixels.
+    /// </summary>
+    private void DrawUpright(BattleSpeech speech, bool left, float s)
+    {
+        static float L(float reference) => PhoneBattleUpright.Layout(reference);
+        float textWidth = (L(PhoneBattleStatesUpright.BalloonWidth) - 2 * L(PhoneBattleStatesUpright.BalloonSide)) * s;
+        int size = 8;
+        Vector2 text = default;
+        for (float em = PhoneBattleStatesUpright.LineText; em >= PhoneBattleStatesUpright.LineMin; em -= 2)
+        {
+            size = Math.Max(8, (int)Math.Round(L(em) * s));
+            _bold.SetSpacing(TextServer.SpacingType.Bottom, (int)Math.Round(L(PhoneBattleStatesUpright.LineGap) * s));
+            text = _bold.GetMultilineStringSize(speech.Text, HorizontalAlignment.Left, textWidth, size, -1, Breaks);
+            if (text.Y <= PhoneBattleStatesUpright.MaxLines * (_bold.GetHeight(size) + (int)Math.Round(L(PhoneBattleStatesUpright.LineGap) * s)) + 1)
+                break;
+        }
+        var b = PhoneBattleStatesUpright.Balloon(left, text.Y / s);
+        var box = new Rect2(b.X * s, b.Y * s, b.W * s, b.H * s);
+        var ink = DrawBalloon(this, box, left, L(PhoneBattleStatesUpright.TailDepth) / TailDepth * s, speech.Thought,
+            L(PhoneBattleStatesUpright.TailFromTop) * s);
+        DrawSaying(speech, box, ink, size, textWidth, L(PhoneBattleStatesUpright.BalloonSide) * s,
+            L(PhoneBattleStatesUpright.BalloonTop) * s - 4 * s, L(PhoneBattleStatesUpright.LineText) / TextSize * s);
     }
 
     /// <summary>The line in the balloon from (<paramref name="side"/>, <paramref name="top"/>) in, the marker bobbing in its corner (<paramref name="k"/> its scale).</summary>
@@ -160,6 +192,36 @@ internal sealed partial class SpeechBalloon : Control
             new(rim + outward * TailDepth * s, tailY),
             new(rim - outward * 2 * s, tailY + TailHalf * s),
         ];
+        canvas.DrawColoredPolygon([.. tail.Select(p => p + new Vector2(0, 4 * s))], new Color(Shadow, Shadow.A * 0.5f));
+        canvas.DrawStyleBox(Style(fill, edge, s), box);
+        canvas.DrawColoredPolygon(tail, fill);
+        canvas.DrawPolyline([tail[0], tail[1], tail[2]], edge, Math.Max(1, 2 * s), antialiased: true);
+        return ink;
+    }
+
+    /// <summary>
+    /// The balloon as <see cref="DrawBalloon"/> draws it, its tail out of its top at <paramref name="tailX"/>, pointing up at
+    /// the speaker over it (the strategy's cut-in held upright, docs/ui/phone.md, §11, PB4c). Returns the colour of the text on it.
+    /// </summary>
+    internal static Color DrawBalloonTailUp(CanvasItem canvas, Rect2 box, float tailX, float s, bool thought = false)
+    {
+        var (fill, edge, ink) = thought ? (ThinkFill, ThinkEdge, ThinkInk) : (TalkFill, TalkEdge, TalkInk);
+        float rim = box.Position.Y;
+        Vector2[] tail =
+        [
+            new(tailX - TailHalf * s, rim + 2 * s),
+            new(tailX, rim - TailDepth * s),
+            new(tailX + TailHalf * s, rim + 2 * s),
+        ];
+        canvas.DrawStyleBox(Style(fill, edge, s), box);
+        canvas.DrawColoredPolygon(tail, fill);
+        canvas.DrawPolyline([tail[0], tail[1], tail[2]], edge, Math.Max(1, 2 * s), antialiased: true);
+        return ink;
+    }
+
+    /// <summary>The balloon's box: rounded, its rim, a soft shadow (<paramref name="s"/> window pixels to a layout pixel).</summary>
+    private static StyleBoxFlat Style(Color fill, Color edge, float s)
+    {
         var style = new StyleBoxFlat
         {
             BgColor = fill,
@@ -171,10 +233,6 @@ internal sealed partial class SpeechBalloon : Control
         };
         style.SetCornerRadiusAll((int)Math.Round(Radius * s));
         style.SetBorderWidthAll(Math.Max(1, (int)Math.Round(2 * s)));
-        canvas.DrawColoredPolygon([.. tail.Select(p => p + new Vector2(0, 4 * s))], new Color(Shadow, Shadow.A * 0.5f));
-        canvas.DrawStyleBox(style, box);
-        canvas.DrawColoredPolygon(tail, fill);
-        canvas.DrawPolyline([tail[0], tail[1], tail[2]], edge, Math.Max(1, 2 * s), antialiased: true);
-        return ink;
+        return style;
     }
 }

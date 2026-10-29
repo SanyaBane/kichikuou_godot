@@ -496,6 +496,13 @@ the enemy's rows at the thumb, Skip on its strip and the deck at the foot; the b
 `battle-speech…`, `info-…`) changed with it and stand there as the PC's at the board's scale until step P4 lays them out.
 PB3, PB3r and PB3x left `GALLERY_ENTRIES`.
 
+Step P4 (2026-10-29) built the battle's other states: on this pass `opening` shows the plate on top of the scene and the
+armies' names at its sides, `scout-report` Kanami's report as a screen of its own, `strategy` and `strategy-enemy` the
+cut-in stacked round the room's middle, `info-results` and `info-level-up` the results plate over the dimmed board at the
+screen's width, `info-panel` our panel where the plate stands, `info-defence` the ribbon and the caption at held
+landscape's millimetres, `battle-speech…` the portrait at the scene's top corner and our balloon beside it, and `menu`,
+`menu-orders` the cards' menu at a finger's rows. PB4o3, PB4s, PB4c, PB4r and PB4b left `GALLERY_ENTRIES`.
+
 ## 10. The copy for a website (owner, 2026-10-29)
 
 The owner's request: the gallery on the owner's website, its pictures in a light format and the current ones alone, the

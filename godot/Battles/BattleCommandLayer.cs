@@ -58,9 +58,10 @@ internal sealed partial class BattleCommandLayer : Control
     // The context menu: rows of the cards' text size, a column for the current order's mark.
     private const float PcRowHeight = 30, PcMenuPad = 8, PcMarkWidth = 18, PcMenuMinWidth = 130, PcMenuText = 17;
 
-    // The cards' menu: the PC's, or on the phone at a finger's size (docs/ui/phone-build.md, step L4).
+    // The cards' menu: the PC's, or on the phone at a finger's size (docs/ui/phone-build.md, steps L4 and P4).
     private int _menuCount = 1;
-    private float RowHeight => _phone is null ? PcRowHeight : PhoneBattleStates.MenuRowHeight(_menuCount);
+    private float RowHeight => _phone is null ? PcRowHeight
+        : _phone.IsUpright ? PhoneBattleStatesUpright.MenuRowHeight(_menuCount, _height) : PhoneBattleStates.MenuRowHeight(_menuCount);
     private float MenuPad => _phone is null ? PcMenuPad : P(PhoneBattleStates.MenuPad);
     private float MarkWidth => _phone is null ? PcMarkWidth : P(PhoneBattleStates.MenuMark);
     private float MenuMinWidth => _phone is null ? PcMenuMinWidth : P(PhoneBattleStates.MenuMinWidth);
