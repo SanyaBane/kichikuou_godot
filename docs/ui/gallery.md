@@ -133,7 +133,7 @@ state, or is tagged "made up". The first ones are the states the docs record as 
   rises into place waits `Settle` seconds of frames first (the exchange's counters). While it dumps, the window takes
   no input (`GuiDisableInput`; the entries' clicks go to the views directly): the real pointer over it dropped the
   hover of `treasure-hover` and `treasure-items` once (2026-10-25).
-- `tools/ui/gallery.ps1 [-Steel] [-Touch] [-Vfx | -VfxOnly] [-Only id,…] [-Out dir] [-NoBuild]` builds the game; for each pass
+- `tools/ui/gallery.ps1 [-Steel] [-Touch] [-Vfx | -VfxOnly] [-Only id,…] [-Out dir] [-NoBuild] [-IndexOnly]` builds the game; for each pass
   (Lacquer; `-Steel`, `-Touch` add theirs; `-Vfx` the Combat VFX tab, only when asked for, §11) it moves `<dir>\<pass>\current` to `previous`, dumps into `current`
   compared with it, and writes `<dir>\index.html`: a tab for each pass dumped so far, one shown at a time (the owner,
   2026-10-25; `#steel` or an entry's `#steel-treasure` opens its pass), a pass not dumped this time marked old on its
@@ -151,6 +151,20 @@ state, or is tagged "made up". The first ones are the states the docs record as 
   former picture. A change in a
   shared place (a palette, the message windows, the drawing every screen uses) still takes a full run: only it shows
   what changed where it was not meant to.
+- **The page** (the owner, 2026-10-29: items 1-4 of the agent's proposals, the remarks left out). Its style and script
+  are `tools/ui/gallery-index.css` and `gallery-index.js`, inlined into `index.html` (the page also works as a data:
+  URL; nothing it needs lies beside it). The pictures load as they scroll into view, each `<img>` with its size from
+  the PNG's header so the grid keeps their places (before: all ~490 pictures of every tab at once, the hidden tabs'
+  too). A bar under the tabs: a find over the entries' ids, titles and notes (`/` focuses it, Esc clears it),
+  "Changed and new" (offered when some tab has them), the shown tab's sections to jump to (a section the find leaves
+  empty greyed), and the pictures' size (half to double, kept in the browser). A picture's click opens the viewer, a
+  changed badge's click opens it on the former picture: ←/→ the tab's entries the find leaves, ↑/↓ or the tabs' buttons
+  the same entry in the other tabs, Space the former picture and back (a BEFORE label on it), B the box round what
+  changed (the manifest's `box`, dashed, the rest dimmed a little), Esc or a click beside the picture closes it at the
+  entry last shown. The address follows the entry (`#touch-treasure-replace`); opened with one, the page scrolls to it
+  under the bar. A click with a key held, or the middle button, still opens the picture alone.
+  `gallery.ps1 -IndexOnly` writes the page alone from the pictures and manifests as they are (no build, no pass), the
+  tabs' "old" marks as the last run that dumped left them (`stale-passes.txt` beside the index).
 - After a change to a screen: update its entries, run the script, look at what changed — what was meant and what was
   not.
 
@@ -475,8 +489,10 @@ ones, whose lossy copy came out larger than the PNG (the title, Fortune Check, t
 
 The page is the gallery's own, written again: the pictures in WebP, loaded as they scroll into view (each `<img>` with
 its size, so the grid keeps their places), and nothing of the former pictures — `previous` is not copied, the changed
-and new badges, the tabs' counts and the passes' "old" marks are left out; a link to a picture the script did not copy
-fails the run. The manifests and `phone-look` are not copied either. The pictures hold the original's CGs as the
+and new badges, the tabs' counts, the passes' "old" marks and the viewer's data on what changed (`data-since`, `-box`)
+are left out, so its viewer pages and finds but offers no former picture and its bar no filter of changes; a link to a
+picture the script did not copy fails the run (the page's script holds no double quote, so the check never reads it).
+A page older than the viewer (§5) is refused: `gallery.ps1 -IndexOnly` writes it again. The manifests and `phone-look` are not copied either. The pictures hold the original's CGs as the
 gallery's do (no event CG, §3).
 
 ## 11. Combat VFX (owner, 2026-10-29)

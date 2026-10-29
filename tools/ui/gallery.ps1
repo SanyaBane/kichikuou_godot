@@ -12,11 +12,15 @@ With -Only the pass stays whole: only the chosen entries' former pictures are co
 them in current, and the manifest keeps the other entries as they were; the changes of several partial runs stay
 marked until a full run (each compared with its picture before the first of them).
 Last it writes index.html in the gallery's folder: a tab for each pass dumped so far (one shown at a time; one not dumped
-this time marked old), its sections, each entry's picture in its own place at full size; a changed one carries a small
-badge that opens the former picture, a new one a badge alone. The folder is -Out, else KICHIKUOU_UI_GALLERY_DIR (its environment variable,
-else its line in local.env), else screen-gallery at the repository's root, which git ignores; one inside the repository
-must be ignored by git (the pictures hold the player's CGs). Nothing moves the system pointer; a window opens for each
-pass.
+this time marked old), its sections, each entry's picture in its own place at full size, loaded as it scrolls into view;
+a changed one carries a small badge, a new one a badge alone. A bar finds entries by id, title and note, keeps the
+changed and new ones alone, jumps to a section and sizes the pictures; a picture's click opens the viewer (←/→ the
+entries, ↑/↓ the same entry in the other passes, Space the former picture with the box round what changed; a badge's
+click opens it on the former picture). Its style and script are tools/ui/gallery-index.css and gallery-index.js,
+inlined. -IndexOnly writes the index alone, the passes' "old" marks as the last run left them.
+The folder is -Out, else KICHIKUOU_UI_GALLERY_DIR (its environment variable, else its line in local.env), else
+screen-gallery at the repository's root, which git ignores; one inside the repository must be ignored by git (the
+pictures hold the player's CGs). Nothing moves the system pointer; a window opens for each pass.
 -Phone adds two tabs of mock-ups, not dumps: the phone held upright and held landscape as docs/ui/phone.md's chosen
 base versions, drawn by tools/ui/mock_phone.py from the touch and lacquer passes' pictures, compared with their former
 drawings the same way; -PhoneOnly draws those tabs and the index alone, with no build and no game pass.
@@ -32,6 +36,9 @@ powershell -ExecutionPolicy Bypass -File tools\ui\gallery.ps1 -Steel -Only treas
 
 .EXAMPLE
 powershell -ExecutionPolicy Bypass -File tools\ui\gallery.ps1 -PhoneOnly
+
+.EXAMPLE
+powershell -ExecutionPolicy Bypass -File tools\ui\gallery.ps1 -IndexOnly
 #>
 param(
     # The gallery's folder; default KICHIKUOU_UI_GALLERY_DIR, else screen-gallery at the repository's root.
@@ -51,6 +58,8 @@ param(
     [switch]$Vfx,
     # Only the Combat VFX tab and the index.
     [switch]$VfxOnly,
+    # Only the index, from the pictures and manifests as they are: no build, no pass.
+    [switch]$IndexOnly,
     # Only these entries (their ids, comma-separated).
     [string[]]$Only = @(),
     # Skip the build.
@@ -81,8 +90,9 @@ function Get-LocalPath([string]$Key) {
 
 if ($PhoneOnly) { $Phone = $true; $NoBuild = $true }
 if ($VfxOnly) { $Vfx = $true }
+if ($IndexOnly) { $NoBuild = $true; $Phone = $false; $Vfx = $false }
 $exe = Get-LocalPath 'KICHIKUOU_GODOT_EXE'
-if (-not $PhoneOnly -and (-not $exe -or -not (Test-Path $exe))) {
+if (-not $PhoneOnly -and -not $IndexOnly -and (-not $exe -or -not (Test-Path $exe))) {
     throw "Godot not found: set KICHIKUOU_GODOT_EXE in local.env (see local.env.example)."
 }
 if (-not $Out) { $Out = Get-LocalPath 'KICHIKUOU_UI_GALLERY_DIR' }
@@ -114,7 +124,7 @@ $allPasses = @(
        Size = '2712&times;1220' },
     @{ Name = 'combat-vfx'; Title = 'Combat VFX'; Args = @('--combat-vfx'); Switch = 'Vfx'; OnRequest = $true })
 $passes = @($allPasses | Where-Object { ($_.Mockup -and $Phone) -or ($_.Name -eq 'combat-vfx' -and $Vfx) -or
-    (-not $PhoneOnly -and -not $VfxOnly -and
+    (-not $PhoneOnly -and -not $VfxOnly -and -not $IndexOnly -and
     ($_.Name -eq 'lacquer' -or ($_.Name -eq 'steel' -and $Steel) -or ($_.Name -eq 'touch' -and $Touch) -or
      ($_.Name -eq 'phone-landscape' -and $PhoneLand))) })
 
@@ -184,6 +194,23 @@ if ($Phone) {
 
 function Html([string]$text) { return [System.Net.WebUtility]::HtmlEncode($text) }
 
+# A PNG's width and height from its header, so that the grid keeps each picture's place before it loads; none for a
+# picture that is not there.
+function Get-PngSize([string]$path) {
+    if (-not (Test-Path -LiteralPath $path)) { return $null }
+    $bytes = New-Object byte[] 24
+    $stream = [System.IO.File]::OpenRead($path)
+    try { [void]$stream.Read($bytes, 0, 24) } finally { $stream.Dispose() }
+    $width = ([int]$bytes[16] -shl 24) -bor ([int]$bytes[17] -shl 16) -bor ([int]$bytes[18] -shl 8) -bor [int]$bytes[19]
+    $height = ([int]$bytes[20] -shl 24) -bor ([int]$bytes[21] -shl 16) -bor ([int]$bytes[22] -shl 8) -bor [int]$bytes[23]
+    return @($width, $height)
+}
+
+# The passes marked old by the last run that dumped, which -IndexOnly keeps.
+$stalePath = Join-Path $Out 'stale-passes.txt'
+$keptStale = @(if ($IndexOnly -and (Test-Path $stalePath)) { Get-Content -Encoding UTF8 $stalePath })
+$staleNames = @()
+
 # One tab a pass, one pass shown at a time; a pass not dumped this time says so on its tab and above its pictures.
 $tabs = New-Object System.Text.StringBuilder
 $body = New-Object System.Text.StringBuilder
@@ -194,11 +221,13 @@ foreach ($pass in $allPasses) {
     $entries = @($manifest.entries)
     $changed = @($entries | Where-Object { $_.since -eq 'changed' -or $_.since -eq 'new' })
     # A run of the mock-ups alone dumps no game pass, so it leaves them unmarked; nor is a pass dumped only on request.
-    $isStale = $passes.Name -notcontains $pass.Name -and -not ($PhoneOnly -and -not $pass.Mockup) -and -not $pass.OnRequest
+    $isStale = if ($IndexOnly) { $keptStale -contains $pass.Name } else {
+        $passes.Name -notcontains $pass.Name -and -not ($PhoneOnly -and -not $pass.Mockup) -and -not $pass.OnRequest }
+    if ($isStale) { $staleNames += $pass.Name }
     $mark = if ($isStale) { ' <b class=stale>old</b>' } elseif ($changed.Count) { " <b class=changed>$($changed.Count)</b>" } else { '' }
     [void]$tabs.Append("<a class=tab href=`"#$($pass.Name)`" data-pass=`"$($pass.Name)`">$(Html $pass.Title)$mark</a>")
     $class = if ($pass.Mockup) { "pass mockup $($pass.Held)" } else { "pass $($pass.Held)" }
-    [void]$body.Append("<section class=`"$class`" id=`"$($pass.Name)`"><h2>$(Html $pass.Title) <small>$(Html $manifest.written) &middot; " +
+    [void]$body.Append("<section class=`"$class`" id=`"$($pass.Name)`" data-title=`"$(Html $pass.Title)`"><h2>$(Html $pass.Title) <small>$(Html $manifest.written) &middot; " +
         "font $(Html $manifest.font) &middot; $($entries.Count) entries, $($changed.Count) changed or new</small></h2>")
     if ($pass.Mockup) {
         [void]$body.Append("<p class=mockup><b>Not built yet.</b> Mock-ups of the phone held $($pass.Held) (Xiaomi Poco X6 Pro, " +
@@ -214,7 +243,8 @@ foreach ($pass in $allPasses) {
             "out of date (<code>gallery.ps1 -$(if ($pass.Mockup) { 'Phone' } elseif ($pass.Switch) { $pass.Switch } else { $pass.Name.Substring(0, 1).ToUpper() + $pass.Name.Substring(1) })</code> dumps them again).</p>")
     }
     # The sections in the order they first come, each entry in its own place at full size whatever changed (the owner,
-    # 2026-10-26): a changed one's badge opens the former picture, a new one's is a badge alone.
+    # 2026-10-26): a changed one's badge opens the former picture, a new one's is a badge alone. The figure's data are
+    # the viewer's: the entry's id across the passes, since and the box round what changed (the website's copy drops them).
     $sections = New-Object System.Collections.Generic.List[string]
     foreach ($entry in $entries) { if (-not $sections.Contains($entry.section)) { $sections.Add($entry.section) } }
     foreach ($name in $sections) {
@@ -226,13 +256,18 @@ foreach ($pass in $allPasses) {
                 'new' { '<b class=new>new</b>' }
                 default { '' }
             }
-            [void]$body.Append("<figure id=`"$($pass.Name)-$(Html $entry.id)`"><figcaption>$(Html $entry.title) $badge<br><code>$(Html $entry.id)</code>")
-            if ($entry.note) { [void]$body.Append(" &mdash; $(Html $entry.note)") }
+            $data = "data-id=`"$(Html $entry.id)`""
+            if ($entry.since) { $data += " data-since=`"$($entry.since)`" data-differing=`"$($entry.differing)`"" }
+            if ($entry.since -eq 'changed' -and $entry.box) { $data += " data-box=`"$($entry.box -join ',')`"" }
+            [void]$body.Append("<figure id=`"$($pass.Name)-$(Html $entry.id)`" $data><figcaption><span class=title>$(Html $entry.title)</span> $badge<br><code>$(Html $entry.id)</code>")
+            if ($entry.note) { [void]$body.Append("<span class=note> &mdash; $(Html $entry.note)</span>") }
             if ($entry.error) { [void]$body.Append("<br><b class=error>$(Html $entry.error)</b>") }
             [void]$body.Append('</figcaption>')
             if ($entry.file) {
                 $now = "$($pass.Name)/current/$($entry.file)"
-                [void]$body.Append("<a href=`"$now`"><img src=`"$now`" alt=`"$(Html $entry.id)`"></a>")
+                $size = Get-PngSize (Join-Path $Out "$($pass.Name)\current\$($entry.file)")
+                $sizes = if ($size) { " width=$($size[0]) height=$($size[1])" } else { '' }
+                [void]$body.Append("<a href=`"$now`"><img loading=lazy src=`"$now`"$sizes alt=`"$(Html $entry.id)`"></a>")
             }
             [void]$body.Append('</figure>')
         }
@@ -241,6 +276,8 @@ foreach ($pass in $allPasses) {
     [void]$body.Append('</section>')
 }
 
+$css = Get-Content -Raw -Encoding UTF8 (Join-Path $PSScriptRoot 'gallery-index.css')
+$js = Get-Content -Raw -Encoding UTF8 (Join-Path $PSScriptRoot 'gallery-index.js')
 $html = @"
 <!doctype html>
 <html lang=en>
@@ -248,46 +285,16 @@ $html = @"
 <meta name=viewport content="width=device-width, initial-scale=1">
 <title>Screen Gallery</title>
 <style>
-  body { background: #141110; color: #e8dcc0; font: 14px/1.4 system-ui, sans-serif; margin: 16px; }
-  h1 { font-weight: 600; } h2 { border-bottom: 1px solid #8a7040; padding-bottom: 4px; } small { color: #a89878; font-weight: 400; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 16px; }
-  figure { margin: 0; background: #1e1a17; border: 1px solid #3a3128; padding: 8px; }
-  figure img { width: 100%; display: block; }
-  code { color: #c8b080; } .changed { color: #ff9a6a; } .new { color: #8fd18f; } .error { color: #ff6a6a; }
-  figcaption .changed, figcaption .new { font-size: 11px; font-weight: 600; margin-left: 4px; }
-  a.changed { text-decoration: underline dotted; }
-  nav { position: sticky; top: 0; background: #141110; padding: 8px 0; display: flex; gap: 8px; z-index: 1; }
-  .tab { color: #e8dcc0; text-decoration: none; border: 1px solid #5a4a30; padding: 6px 14px; background: #1e1a17; }
-  .tab.on { border-color: #d8b060; background: #3a2c1c; color: #f0d890; }
-  .stale { color: #e0b050; } p.stale { border: 1px solid #806020; background: #2a2010; padding: 8px; }
-  .mockup .grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
-  .landscape .grid { grid-template-columns: repeat(auto-fill, minmax(640px, 1fr)); }
-  p.mockup { border: 1px solid #7a5a9a; background: #221a2a; color: #e4d4f0; padding: 8px; }
-</style>
+$css</style>
 <h1>Screen gallery</h1>
-<p>Our screens from the kept saves (docs/ui/gallery.md). Each in its place; a changed one's badge opens the former picture.</p>
-<nav>$($tabs.ToString())</nav>
+<p>Our screens from the kept saves (docs/ui/gallery.md). Each in its place; a click opens it in the viewer, a changed one&rsquo;s badge on its former picture.</p>
+<nav><div class=tabs>$($tabs.ToString())</div></nav>
 $($body.ToString())
 <script>
-  // One pass at a time: the one the address names (#steel, or an entry's #steel-treasure), else the first.
-  const tabs = [...document.querySelectorAll('.tab')], panes = [...document.querySelectorAll('.pass')];
-  function show(id) {
-    const pane = panes.find(p => p.id === id) || panes.find(p => id.startsWith(p.id + '-')) || panes[0];
-    panes.forEach(p => p.hidden = p !== pane);
-    tabs.forEach(t => t.classList.toggle('on', t.dataset.pass === pane.id));
-    if (id && id !== pane.id) document.getElementById(id)?.scrollIntoView();
-  }
-  // A tab switches by itself, the address following where it can (a page shown as a data: URL has no hash to set).
-  tabs.forEach(t => t.addEventListener('click', e => {
-    e.preventDefault();
-    show(t.dataset.pass);
-    try { history.replaceState(null, '', '#' + t.dataset.pass); } catch { }
-  }));
-  addEventListener('hashchange', () => show(location.hash.slice(1)));
-  show(location.hash.slice(1));
-</script>
+$js</script>
 </html>
 "@
 Set-Content -Encoding UTF8 -Path (Join-Path $Out 'index.html') -Value $html
+if (-not $IndexOnly) { [System.IO.File]::WriteAllLines($stalePath, [string[]]$staleNames) }
 Write-Host "The index: $(Join-Path $Out 'index.html')"
 if ($failed) { exit 1 }

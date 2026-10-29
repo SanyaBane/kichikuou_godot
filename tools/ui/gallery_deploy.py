@@ -2,9 +2,9 @@
 
 The gallery (tools/ui/gallery.ps1, docs/ui/gallery.md) is read, never written. Its index.html names every picture it
 shows, <pass>/current/<id>.png; each becomes <pass>/<id>.webp in the output folder — lossy at the quality given or
-lossless, whichever is smaller — and the page is written again for them: the pictures in WebP, loaded as they scroll
-into view, and nothing of the former pictures, which are not copied (the changed and new badges, the passes' "old"
-marks). tools/ui/gallery-deploy.ps1 runs it.
+lossless, whichever is smaller — and the page is written again for them: the pictures in WebP (the page already loads
+them as they scroll into view, its own sizes theirs), and nothing of the former pictures, which are not copied (the
+changed and new badges, the viewer's data on what changed, the passes' "old" marks). tools/ui/gallery-deploy.ps1 runs it.
 
 Usage: gallery_deploy.py <gallery> <out> [--quality 85]
 """
@@ -20,16 +20,15 @@ from PIL import Image
 
 # A picture of the gallery's page: an <img>'s src or the link around it.
 PICTURE = re.compile(r'(src|href)="([\w-]+)/current/([^"/]+)\.png"')
-IMG = re.compile(r'<img src="([\w-]+)/current/([^"/]+)\.png"')
+IMG = '<img loading=lazy src='
 INTRO = re.compile(r'(<h1>Screen gallery</h1>\s*)<p>.*?</p>', re.S)
 
 
 def encode(job):
-    """Writes one picture as WebP; returns its size in pixels, both files' sizes in bytes and whether it is lossless."""
+    """Writes one picture as WebP; returns both files' sizes in bytes and whether it is lossless."""
     source, target, quality = job
     with Image.open(source) as image:
         image.load()
-        size = image.size
         alpha = image.mode in ('RGBA', 'LA', 'PA') or 'transparency' in image.info
         image = image.convert('RGBA' if alpha else 'RGB')
         # The dumps are opaque: an alpha channel of 255 alone would only cost bytes.
@@ -42,26 +41,22 @@ def encode(job):
         image.save(exact, format='WEBP', lossless=True, quality=50, method=4)
     best = min(lossy, exact, key=lambda data: data.tell())
     target.write_bytes(best.getvalue())
-    return size, os.path.getsize(source), best.tell(), best is exact
+    return os.path.getsize(source), best.tell(), best is exact
 
 
-def rewrite(html, sizes):
-    """The gallery's page for the WebP copy: lazily loaded pictures, no trace of the former ones."""
-    def img(match):
-        width, height = sizes[(match[1], match[2])]
-        return f'<img loading=lazy decoding=async width={width} height={height} src="{match[1]}/{match[2]}.webp"'
-
-    html = IMG.sub(img, html)
+def rewrite(html):
+    """The gallery's page for the WebP copy: the pictures decoded off the page's thread, no trace of the former ones."""
+    html = html.replace(IMG, '<img loading=lazy decoding=async src=')
     html = PICTURE.sub(lambda m: f'{m[1]}="{m[2]}/{m[3]}.webp"', html)
     # A changed entry's badge links its former picture; a new one's, a tab's count and a pass's "old" mark are text.
     html = re.sub(r' ?<a class=changed href="[^"]*"[^>]*>.*?</a>', '', html)
     html = re.sub(r' ?<b class=(?:changed|new|stale)>[^<]*</b>', '', html)
     html = re.sub(r'<p class=stale>.*?</p>', '', html, flags=re.S)
     html = re.sub(r', \d+ changed or new</small>', '</small>', html)
-    html = INTRO.sub(r'\1<p>The port&rsquo;s own screens, shown from kept saves. A click opens a picture at full size.</p>',
-                     html, count=1)
-    # Width and height reserve each picture's place before it loads; the width the grid gives sets the height.
-    return html.replace('</style>', '  figure img { height: auto; }\n</style>', 1)
+    # The viewer's data on what changed: without them it offers no former picture and the bar no filter of changes.
+    html = re.sub(r' data-(?:since|differing|box)="[^"]*"', '', html)
+    return INTRO.sub(r'\1<p>The port&rsquo;s own screens, shown from kept saves. A click opens a picture in the viewer: '
+                     r'&larr;/&rarr; the screens, &uarr;/&darr; the same screen in the other tabs.</p>', html, count=1)
 
 
 def main():
@@ -78,6 +73,8 @@ def main():
     pictures = sorted({(m[2], m[3]) for m in PICTURE.finditer(html)})
     if not pictures:
         sys.exit(f'{index} shows no picture.')
+    if IMG not in html:
+        sys.exit(f'{index} is older than this script: tools/ui/gallery.ps1 -IndexOnly writes it again.')
     sources = {key: args.gallery / key[0] / 'current' / f'{key[1]}.png' for key in pictures}
     missing = [str(path) for path in sources.values() if not path.is_file()]
     if missing:
@@ -92,16 +89,16 @@ def main():
     with ProcessPoolExecutor() as pool:
         results = list(pool.map(encode, jobs, chunksize=4))
 
-    page = rewrite(html, {key: result[0] for key, result in zip(pictures, results)})
+    page = rewrite(html)
     # Every picture must now be a copied one: a form of the page this script does not know would leave a PNG behind.
     left = sorted(set(re.findall(r'"[^"]*(?:/current/|/previous/)[^"]*"|"[^"]*\.png"', page)))
     if left:
         sys.exit('The gallery page links pictures this script did not copy:\n  ' + '\n  '.join(left[:10]))
     (args.out / 'index.html').write_text(page, encoding='utf-8')
 
-    png = sum(result[1] for result in results)
-    webp = sum(result[2] for result in results)
-    exact = sum(result[3] for result in results)
+    png = sum(result[0] for result in results)
+    webp = sum(result[1] for result in results)
+    exact = sum(result[2] for result in results)
     print(f'{png / 2**20:.0f} MB of PNG, {webp / 2**20:.0f} MB of WebP ({100 * webp / png:.0f}%; {exact} lossless): {args.out}')
 
 

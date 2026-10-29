@@ -1,0 +1,51 @@
+/* The screen gallery's page (tools/ui/gallery.ps1 inlines it; docs/ui/gallery.md, §5). */
+:root { --scale: 1; --nav: 96px; }
+[hidden] { display: none !important; }
+body { background: #141110; color: #e8dcc0; font: 14px/1.4 system-ui, sans-serif; margin: 16px; }
+body.viewing { overflow: hidden; }
+h1 { font-weight: 600; } h2 { border-bottom: 1px solid #8a7040; padding-bottom: 4px; } small { color: #a89878; font-weight: 400; }
+.pass, h3, figure { scroll-margin-top: calc(var(--nav) + 8px); }
+.grid { --base: 420px; display: grid; gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(var(--base) * var(--scale))), 1fr)); }
+figure { margin: 0; background: #1e1a17; border: 1px solid #3a3128; padding: 8px; }
+figure.flash { outline: 2px solid #f0d890; outline-offset: 2px; }
+figure img { width: 100%; height: auto; display: block; cursor: zoom-in; }
+code { color: #c8b080; } .changed { color: #ff9a6a; } .new { color: #8fd18f; } .error { color: #ff6a6a; }
+figcaption .changed, figcaption .new { font-size: 11px; font-weight: 600; margin-left: 4px; }
+a.changed { text-decoration: underline dotted; }
+nav { position: sticky; top: 0; background: #141110; padding: 8px 0; z-index: 1; }
+nav .tabs, nav .tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+nav .tools { margin-top: 8px; }
+.tab { color: #e8dcc0; text-decoration: none; border: 1px solid #5a4a30; padding: 6px 14px; background: #1e1a17; }
+.tab.on { border-color: #d8b060; background: #3a2c1c; color: #f0d890; }
+.tools input[type=search] { width: 260px; background: #1e1a17; color: #e8dcc0; border: 1px solid #5a4a30; padding: 5px 8px; }
+.tools label { display: inline-flex; gap: 6px; align-items: center; color: #c8b890; }
+.tools .sections { display: flex; flex-wrap: wrap; gap: 4px; }
+.tools .count { color: #a89878; margin-left: auto; }
+button { font: inherit; color: #e8dcc0; background: #1e1a17; border: 1px solid #5a4a30; padding: 3px 10px; cursor: pointer; }
+button:hover { border-color: #d8b060; }
+button.on { border-color: #d8b060; background: #3a2c1c; color: #f0d890; }
+button:disabled { opacity: 0.35; cursor: default; }
+.stale { color: #e0b050; } p.stale { border: 1px solid #806020; background: #2a2010; padding: 8px; }
+.mockup .grid { --base: 300px; }
+.landscape .grid { --base: 640px; }
+p.mockup { border: 1px solid #7a5a9a; background: #221a2a; color: #e4d4f0; padding: 8px; }
+p.empty { color: #a89878; font-style: italic; }
+
+/* The viewer: one picture over the page, the bar above it, the note and the keys below. */
+#viewer { position: fixed; inset: 0; z-index: 2; background: #0c0a09; display: flex; flex-direction: column; }
+#viewer .bar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 8px 16px; border-bottom: 1px solid #3a3128; }
+#viewer .head { flex: 1 1 320px; }
+#viewer .head b { font-weight: 600; }
+#viewer .passes, #viewer .actions { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+#viewer .actions a { color: #c8b080; padding: 0 6px; }
+#viewer .stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 8px; }
+#viewer .frame { position: relative; overflow: hidden; }
+#viewer .frame img { display: block; width: 100%; height: 100%; }
+#viewer .box { position: absolute; outline: 2px dashed #ff9a6a; outline-offset: 3px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.25);
+  pointer-events: none; }
+#viewer .label { position: absolute; top: 8px; left: 8px; background: #ff9a6a; color: #141110; padding: 2px 10px; font-weight: 700;
+  letter-spacing: 0.08em; }
+#viewer .foot { padding: 6px 16px 10px; color: #a89878; border-top: 1px solid #3a3128; }
+#viewer .foot .note { color: #e8dcc0; }
+#viewer .foot kbd { color: #f0d890; font: 12px ui-monospace, monospace; border: 1px solid #5a4a30; padding: 0 4px; }

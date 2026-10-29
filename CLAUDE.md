@@ -770,7 +770,8 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   (`-Vfx`: the Combat VFX tab, each exchange effect as six frames, `--combat-vfx`; **only when the owner asks for it or the
   tab itself changes**, owner 2026-10-29; docs/ui/gallery.md, §11) builds, dumps every
   entry (`-Only`: those, into the passes as they are) into `screen-gallery/` at the root (git ignores it; `KICHIKUOU_UI_GALLERY_DIR` elsewhere) in a window, ~33 s a
-  pass, nothing moves the pointer, and writes its `index.html`, every screen in its place, a changed one badged with a link to its former picture (two dumps of
+  pass, nothing moves the pointer, and writes its `index.html`, every screen in its place, a changed one badged with a link to its former picture, a
+  find, a filter of the changes and a viewer (before/now, the box round what changed; `-IndexOnly` writes the page alone; docs/ui/gallery.md, §5) (two dumps of
   the same build are identical: our views animate by `Strategy/UiClock`, which the dump steps a frame at a time); the game alone:
   `<Godot console exe> --path godot -- --screen-gallery [id,…] --shots <dir> [--previous <dir>] --quit`. After a change
   to a screen in it, run it and look at what changed; a screen's look starts there before a kept save's run. Its
