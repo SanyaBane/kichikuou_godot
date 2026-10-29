@@ -121,7 +121,7 @@ public partial class GameScreen
         await TapAsync(_drawer.SkipCentre);
         if (_skip.Activated)
             throw new InvalidOperationException("--auto's second tap on Skip did not turn MsgSkip off.");
-        if (Device.Layout == Original.Content.Devices.DeviceLayout.PhoneLandscape)
+        if (Device.Layout is Original.Content.Devices.DeviceLayout.PhoneLandscape or Original.Content.Devices.DeviceLayout.PhoneUpright)
         {
             UpdatePhone();
             await FrameAsync();

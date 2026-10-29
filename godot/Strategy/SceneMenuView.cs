@@ -83,7 +83,8 @@ internal sealed partial class SceneMenuView : Control
         int size = (int)Math.Round(PhoneScenes.ItemTextSize(f) / k);
         float widest = menu.Items.Max(i => _gothic.GetStringSize(i.Text, fontSize: size).X + (i.Mark is null ? 0 : 34 * size / 30f)) * k;
         var rows = PhoneScenes.SceneMenu(f, menu.Items.Count, widest);
-        Rect2 Screen(PhoneFrame.Box b) => new((b.X - f.Frame.X) / k, (b.Y - f.Frame.Y) / k, b.W / k, b.H / k);
+        var (x0, y0) = f.IsUpright ? (0f, 0f) : (f.Frame.X, f.Frame.Y);  // upright the layer covers the screen
+        Rect2 Screen(PhoneFrame.Box b) => new((b.X - x0) / k, (b.Y - y0) / k, b.W / k, b.H / k);
         _phoneRows = [.. rows.Rows.Select(Screen)];
         _phonePanel = Screen(rows.Panel);
         _phoneText = Math.Max(8, (int)Math.Round(rows.TextSize / k));
@@ -119,8 +120,10 @@ internal sealed partial class SceneMenuView : Control
     /// <summary>Lays the layer over the screen's picture (<paramref name="area"/>, in its parent's coordinates).</summary>
     public void Place(Rect2 area)
     {
-        float k = area.Size.X / 1280f;
-        var phone = Device.Landscape(this);
+        var phone = Device.Held(this);
+        if (phone is { IsUpright: true })
+            area = new Rect2(Vector2.Zero, GetParentAreaSize());        // the rows under the picture, in the bar's place (PS2m)
+        float k = phone is { IsUpright: true } up ? up.Scale : area.Size.X / 1280f;
         if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f && phone == _phone)
             return;
         Position = area.Position;

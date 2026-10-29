@@ -75,6 +75,12 @@ internal static class Device
     public static PhoneFrame? Upright(Control view) => _layout == DeviceLayout.PhoneUpright ? Frame(view.GetParentAreaSize()) : null;
 
     /// <summary>
+    /// The phone's frame held either way over <paramref name="view"/>'s parent, as <see cref="Landscape"/>, for a view whose
+    /// phone layout serves both (its model's figures follow <see cref="PhoneFrame.IsUpright"/>); null on any other device.
+    /// </summary>
+    public static PhoneFrame? Held(Control view) => Landscape(view) ?? Upright(view);
+
+    /// <summary>
     /// <c>--phone landscape</c> or <c>--phone upright</c> on a PC: the window at the reference phone's shape held so
     /// (<see cref="TurnWindow"/>). False when the switch asks for something else.
     /// </summary>

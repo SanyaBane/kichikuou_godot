@@ -281,14 +281,10 @@ def phone():
 
 
 SHEETS = {}
-# The gallery's phone tab: the owner's chosen base versions (docs/ui/phone.md), by mock-up name.
+# The gallery's phone tab: the owner's chosen base versions (docs/ui/phone.md), by mock-up name, those not built yet; a
+# built one leaves for the real pass "Smartphone, upright" (docs/ui/phone-build.md: P1 took PS2, PS2l, PS2b, PS2m, PW1,
+# PEd, PEr, PN1, PN1q and PR2).
 GALLERY_ENTRIES = {
-    # Round P14's choice (owner, 2026-10-28; docs/ui/phone.md, §18): the scenes, PS2 changed.
-    'PS2': ('ps2-upper', 'Scenes — PS2', 'The upper speaker', 'the picture in the middle, Ex\'s window above it'),
-    'PS2l': ('ps2-lower', 'Scenes — PS2', 'The lower speaker', 'the Leazas White Knight\'s window under the picture'),
-    'PS2b': ('ps2-cg', 'Scenes — PS2', 'Window 131 under its CG', 'the CG (masked) in the middle, the speaker on a '
-                                                                  'plate'),
-    'PS2m': ('ps2-menu', 'Scenes — PS2', 'A dialogue menu', 'the rows at the thumb (made up)'),
     'PM1a': ('pm1-map', 'Map — PM1', 'The map wait', 'the map\'s whole height, the status on top, Commands at the thumb'),
     'PM1b': ('pm1-commands', 'Map — PM1', 'The command panel', 'a sheet over the map\'s foot, Close where Commands was'),
     'PM1c': ('pm1-province', 'Map — PM1', 'A province', 'Oaks (6) ringed, its card and commands as a sheet; the map '
@@ -312,7 +308,6 @@ GALLERY_ENTRIES = {
     'PU1q': ('pu1-question', 'Subordinates — PU1', 'Replenish asks first', 'a callout under its button (Haurein)'),
     'PA1': ('pa1-attack', 'Enemy attack — PA1', 'The attack on Ys', 'a screen of its own; Abandon City narrower'),
     'PA1n': ('pa1-ninjas', 'Enemy attack — PA1', 'Ninja Scout\'s list', 'above its button'),
-    'PW1': ('pw1-report', 'Week report — PW1', 'The week report', 'the card in the middle over the dimmed map'),
     'PH2': ('ph2-harem', 'Harem — PH2', 'The harem', 'the picture on top, the grid scrolled'),
     'PT2': ('pt2-treasure', 'Treasure — PT2', 'The treasure', 'the item\'s picture on top, the grid scrolled'),
     'PL2': ('pl2-saves', 'Save/Load — PL2', 'Load', 'one page: the list down to the save\'s page on the bar'),
@@ -327,17 +322,11 @@ GALLERY_ENTRIES = {
     'PG2': ('pg2-funds', 'All Data — PG2', 'A graph', 'All Funds at the phone\'s type; the graphs as tabs, the scales '
                                                       'as chips'),
     'PE2': ('pe2-title', 'Title — PE2', 'The title', 'after a clear: a row for each button, its word alone'),
-    'PEd': ('pe2-description', 'Title — PE2', 'A button\'s description', 'a long press on Start: window 113 under the '
-                                                                         'picture'),
-    'PEr': ('pe2-requests', 'Title — PE2', 'The requests slip', 'the slip in the middle; a tap goes on'),
     'PI': ('pi-import', 'Import — PI', 'A folder chosen', 'the paper card in the middle, Back | Import in the bar'),
     'PIp': ('pi-progress', 'Import — PI', 'Importing', 'the decompile\'s bar (made up: 45%)'),
     'PIr': ('pi-refused', 'Import — PI', 'Another version\'s file', 'the hashes each on a line of their own (made up)'),
     # Round P20's choices (owner, 2026-10-28; docs/ui/phone.md, §25): the Menu sheet, the log, the comment's editing,
     # the original's own screens as they are.
-    'PN1': ('pn1-menu', 'Menu — PN1', 'The Menu sheet', 'a sheet from the foot: the menu bar\'s commands as finger rows'),
-    'PN1q': ('pn1-restart', 'Menu — PN1', 'Restart asks first', 'a callout at its row, in the PC\'s dialog\'s words'),
-    'PR2': ('pr2-log', 'Log — PR2', 'The message log', 'the speaker over his lines, at the scenes\' type'),
     'PY2': ('py2-comment', 'Save/Load — PL2', 'Editing a comment', 'the comment\'s own card over Android\'s keyboard'),
     'PXf': ('px-fortune', 'The original\'s screens', 'Fortune Check', 'as it is (made up: three fates seen)'),
     'PXc': ('px-gallery', 'The original\'s screens', 'The CG gallery', 'as it is (masked in the agents\' dumps)'),

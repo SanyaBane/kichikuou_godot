@@ -13,7 +13,9 @@ namespace Kichikuou.Game.Strategy;
 /// the wheel down at the newest line closes it; in the touch mode a finger's drag scrolls and a tap off the frame closes it.
 /// Laid out in the 1280×800 screen's pixels, scaled with the picture. On the phone held landscape (docs/ui/phone.md, §26,
 /// the owner's LR2) the paper runs across the width at the scenes' type, from the frame's left edge to the right side's
-/// room (<see cref="PhoneScenes.LogPaper"/>), over the whole screen dimmed, with Close in the Menu cell's place.
+/// room (<see cref="PhoneScenes.LogPaper"/>), over the whole screen dimmed, with Close in the Menu cell's place. Held upright
+/// (§25, PR2) the paper covers the screen over the bar, each speaker's name on a line of its own over his lines
+/// (<see cref="PhoneScenes.NamesOver"/>), the narration in smaller type, Close in Log's place in the bar.
 /// </summary>
 internal sealed partial class MessageLogView : Control
 {
@@ -29,7 +31,7 @@ internal sealed partial class MessageLogView : Control
     /// label, the head's title, its hint and a place's heading; <see cref="R"/> scales the PC's small offsets with them.
     /// </summary>
     private readonly record struct Metrics(Rect2 Frame, Rect2 Paper, float Head, float Margin, float Pitch, float Text,
-        float Label, float Choice, float Title, float Hint, float Place, bool Framed)
+        float Label, float Choice, float Title, float Hint, float Place, bool Framed, bool Stacked = false)
     {
         /// <summary>The PC's: the frame in the picture's middle.</summary>
         public static Metrics Pc { get; } = new(new Rect2(190, 28, 900, 744), new Rect2(208, 46, 864, 708), 58, 200, 34, 28, 18,
@@ -39,8 +41,13 @@ internal sealed partial class MessageLogView : Control
         public static Metrics Phone(PhoneUnits u)
         {
             var paper = u.Rect(PhoneScenes.LogPaper(u.Frame));
+            if (u.Frame.IsUpright)
+                return new(paper, paper, u.Px(100), 0, u.Px(76), u.Px(58), u.Px(32), u.Px(30), u.Px(46), u.Px(24), u.Px(40), false, true);
             return new(paper, paper, u.Px(100), u.Px(420), u.Px(84), u.Px(58), u.Px(36), u.Px(30), u.Px(46), u.Px(24), u.Px(40), false);
         }
+
+        /// <summary>The narration's type: upright smaller than a speech's (PR2: 2.5 mm against 3.3), else the same.</summary>
+        public float Narration => Stacked ? Text * 44 / 58 : Text;
 
         /// <summary>The PC's small offsets scaled with the pitch.</summary>
         public float R => Pitch / 34;
@@ -56,7 +63,8 @@ internal sealed partial class MessageLogView : Control
     private readonly FontVariation _head = Lacquer.Cinzel(700);
     private readonly FontVariation _label = Lacquer.Cinzel(700);
     private readonly FontVariation _hint = Lacquer.Cinzel(600);
-    private readonly IReadOnlyList<LogLine> _lines;
+    private readonly IReadOnlyList<LogLine> _all;
+    private IReadOnlyList<LogLine> _lines;
     private Metrics _m = Metrics.Pc;
     private PhoneUnits? _phone;
     private int _top;
@@ -72,7 +80,7 @@ internal sealed partial class MessageLogView : Control
         var file = DeploymentTableView.LoadFont(font);
         _gothic = new FontVariation { BaseFont = file, VariationEmbolden = 0.6f };
         _plain = new FontVariation { BaseFont = file };
-        _lines = log.Lines();
+        _lines = _all = log.Lines();
         _top = Last;
     }
 
@@ -83,7 +91,8 @@ internal sealed partial class MessageLogView : Control
     /// side under its Close.
     /// </summary>
     public Vector2 OutsidePoint => GetGlobalTransformWithCanvas() * (_phone is { } u
-        ? new Vector2(u.Rect(u.Frame.LeftRoom).GetCenter().X, _m.Paper.GetCenter().Y) * _k
+        ? u.Frame.IsUpright ? u.Rect(PhoneScenes.LogClose(u.Frame)).GetCenter() * _k
+            : new Vector2(u.Rect(u.Frame.LeftRoom).GetCenter().X, _m.Paper.GetCenter().Y) * _k
         : new Vector2(100, 400) * _k);
 
     /// <summary>
@@ -93,11 +102,12 @@ internal sealed partial class MessageLogView : Control
     public void Place(Rect2 area)
     {
         bool newest = _top >= Last;
-        if (Device.Landscape(this) is { } phone)
+        if (Device.Held(this) is { } phone)
         {
             var u = new PhoneUnits(phone);
             _phone = u;
             _m = Metrics.Phone(u);
+            _lines = _m.Stacked ? PhoneScenes.NamesOver(_all) : _all;
             Position = Vector2.Zero;
             Size = GetParentAreaSize();
             _k = u.K;
@@ -106,6 +116,7 @@ internal sealed partial class MessageLogView : Control
         {
             _phone = null;
             _m = Metrics.Pc;
+            _lines = _all;
             Position = area.Position;
             Size = area.Size;
             _k = area.Size.X / 1280f;
@@ -209,8 +220,9 @@ internal sealed partial class MessageLogView : Control
         Text(_hint, hint, m.Hint, paper.End.X - 24 * r - Width(_hint, hint, m.Hint), paper.Position.Y + m.Head * 34 / 58, Ui.InkQuiet);
 
         float margin = paper.Position.X + m.Margin;
-        DrawLine(new Vector2(margin, paper.Position.Y + m.Head), new Vector2(margin, paper.End.Y), Ui.VermilionInk with { A = 110 / 255f },
-            Lacquer.Line(1, k));
+        if (!m.Stacked)
+            DrawLine(new Vector2(margin, paper.Position.Y + m.Head), new Vector2(margin, paper.End.Y), Ui.VermilionInk with { A = 110 / 255f },
+                Lacquer.Line(1, k));
         for (float y = m.BodyTop + m.Pitch - 4 * r; y < paper.End.Y; y += m.Pitch)
             DrawLine(new Vector2(paper.Position.X + 8 * r, y), new Vector2(paper.End.X - 8 * r, y), Rule, Lacquer.Line(1, k));
 
@@ -230,9 +242,17 @@ internal sealed partial class MessageLogView : Control
             {
                 bool choice = line.Kind == LogKind.Choice;
                 string label = line.Label.ToUpperInvariant();
-                float size = Fit(_label, label, choice ? m.Choice : m.Label, m.Margin - 32 * r);
                 var colour = choice ? Ui.InkQuiet
                     : line.Kind == LogKind.Thought ? Ui.VermilionInk with { A = 0.6f } : Ui.VermilionInk;
+                if (m.Stacked)
+                {
+                    // Upright the name on a line of its own over the lines it heads (PR2), at their left edge.
+                    string over = choice ? "YOUR CHOICE" : label;
+                    float at = Fit(_label, over, choice ? m.Choice : m.Label, right - column);
+                    Text(_label, over, at, column, top + m.Pitch * 0.62f, colour);
+                    continue;
+                }
+                float size = Fit(_label, label, choice ? m.Choice : m.Label, m.Margin - 32 * r);
                 Text(_label, label, size, margin - 16 * r - Width(_label, label, size), top + 26 * r, colour);
             }
             var (font, text, ink) = line.Kind switch
@@ -243,7 +263,7 @@ internal sealed partial class MessageLogView : Control
                 LogKind.Thought => (_gothic, line.Text, Ui.InkQuiet),
                 _ => (_gothic, line.Text, Ui.Ink),
             };
-            float textSize = Fit(font, text, m.Text, right - column);            // 131's lines run up to 52 cells
+            float textSize = Fit(font, text, line.Kind == LogKind.Narration ? m.Narration : m.Text, right - column);   // 131's lines run up to 52 cells
             Text(font, text, textSize, column, top + 2 * r + font.GetAscent((int)textSize), ink);
         }
 
@@ -257,7 +277,8 @@ internal sealed partial class MessageLogView : Control
             DrawRect(new Rect2(track.Position.X - r, y, 6 * r, h), Ui.VermilionInk with { A = 0.7f });
         }
         if (_phone is { } u)
-            SideCells.Draw(this, u, u.Rect(PhoneScenes.MenuCell(u.Frame)), SideCells.Icon.Close, "Close", lit: true);
+            SideCells.Draw(this, u, u.Rect(PhoneScenes.LogClose(u.Frame)), SideCells.Icon.Close, "Close", lit: true);
+
     }
 
     private static float Width(Font font, string text, float size) =>

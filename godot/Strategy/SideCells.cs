@@ -27,7 +27,7 @@ internal readonly record struct PhoneUnits(PhoneFrame Frame)
 
 /// <summary>
 /// A cell in the phone's black side (docs/ui/phone.md, §19 and §26): a lacquer plate framed in gold, its icon at the left,
-/// its word right of it — Menu, Close, Skip, Log. Lit gold (Skip while the skip runs, Close while what it closes is up); a
+/// its word right of it — Menu, Close, Skip, Log; in the bar held upright (§21, PK1), a taller cell, the icon over the word. Lit gold (Skip while the skip runs, Close while what it closes is up); a
 /// greyed cell is deaf; a held one shows the press. Drawn in a <see cref="PhoneUnits"/> drawing.
 /// </summary>
 internal static class SideCells
@@ -121,9 +121,21 @@ internal static class SideCells
         if (held && !disabled)
             c.DrawRect(box.Grow(-u.Px(6)), Held);
         var ink = disabled ? Ui.OffText : lit ? Ui.Name : Ui.Gold;
+        var font = Font;
+        if (box.Size.Y > box.Size.X * 0.6f)
+        {
+            // The bar's cell upright (PK1): the icon over the word, as the mock-ups' bottom_bar.
+            float cx = box.GetCenter().X;
+            DrawIcon(c, u, icon, new Vector2(cx, box.Position.Y + u.Px(58)), ink);
+            int small = Fit(font, word, u.Size(28), box.Size.X - u.Px(16));
+            float w = font.GetStringSize(word, fontSize: small).X;
+            var line = new Rect2(box.Position.X, box.Position.Y + u.Px(96), box.Size.X, u.Px(40));
+            c.DrawString(font, new Vector2(cx - w / 2, Lacquer.Baseline(line, font, small)), word, fontSize: small,
+                modulate: disabled ? Ui.OffText : Ui.Text);
+            return;
+        }
         DrawIcon(c, u, icon, new Vector2(box.Position.X + u.Px(60), box.GetCenter().Y), ink);
         int size = u.Size(36);
-        var font = Font;
         float width = font.GetStringSize(word, fontSize: size).X;
         c.DrawString(font, new Vector2(box.Position.X + u.Px(150) - width / 2, Lacquer.Baseline(box, font, size)), word,
             fontSize: size, modulate: disabled ? Ui.OffText : Ui.Text);

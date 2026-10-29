@@ -1,6 +1,7 @@
 using Godot;
 using Kichikuou.Engine.Script;
 using Kichikuou.Game.Strategy;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.Content.ScreenGallery;
 using Kichikuou.Original.Content.Strategy;
 using Kichikuou.Original.Script;
@@ -82,7 +83,8 @@ internal static partial class GalleryEntries
             else
                 sides.OpenMenu(view == DataView.Map ? AllDataView.Mode.Menu : AllDataView.Mode.Scale, AllDataView.Sides.Of(p));
         }
-        var cell = MenuCell(g);                                 // the phone held landscape: Menu in the left side (LG2m)
+        var cell = menuView is not null && Device.Layout == DeviceLayout.PhoneUpright ? null      // upright the rows take the bar (PS2m)
+            : MenuCell(g);                                      // the phone held landscape: Menu in the left side (LG2m)
         return area =>
         {
             GalleryStage.Fill(picture, area);

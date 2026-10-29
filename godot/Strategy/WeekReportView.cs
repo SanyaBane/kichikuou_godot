@@ -91,9 +91,9 @@ internal sealed partial class WeekReportView : Control
             return;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         float height = CardHeight(r);
-        if (Device.Landscape(this) is { } phone)
+        if (Device.Held(this) is { } phone)
         {
-            // The phone held landscape (docs/ui/phone.md, §14, LW1): the card larger in the frame's middle, the map dimmed.
+            // The phone (docs/ui/phone.md, §14, LW1; upright §8, PW1): the card larger in the frame's middle, the map dimmed.
             DrawRect(new Rect2(0, 0, 1280, 800), Dim);
             float s = PhoneScenes.ReportScale(phone, CardWidth, height);
             DrawSetTransform(new Vector2(640, 400) * _k * (1 - s), 0, new Vector2(_k * s, _k * s));

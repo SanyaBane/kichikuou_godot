@@ -5,7 +5,8 @@ namespace Kichikuou.Original.Content.Devices;
 /// engine's 1280×800 picture — and our layouts in it — is fitted to the screen's height and centred, the black sides left
 /// and right of it ours to draw in. Held upright (<see cref="Upright"/>; step P0) the picture stands at the screen's width
 /// wherever a screen puts it (<see cref="PictureAt"/>; <see cref="Frame"/> is its default place, the middle of the room),
-/// and the layout area is apart from it: the whole <see cref="Room"/>, over and under the picture. A phone layout is
+/// and the layout area is apart from it: the whole <see cref="Room"/>, over and under the picture, the <see cref="Bar"/>
+/// at its foot (step P1). A phone layout is
 /// written in the reference phone's pixels (the Xiaomi Poco X6 Pro, <see cref="ReferenceLong"/> ×
 /// <see cref="ReferenceShort"/>, 17.6 a millimetre: phone.md's and the mock-ups' figures), which <see cref="Unit"/> turns
 /// into the canvas's; the short side sets the scale — landscape the screen's height, upright its width — and the long one
@@ -41,6 +42,12 @@ public sealed record PhoneFrame
     /// <summary>The gesture bar's zone at the foot, where a swipe up is the system's: no button in it (3 mm).</summary>
     public const int GestureZone = 50;
 
+    /// <summary>
+    /// The bar upright (docs/ui/phone.md, §21, PK1): its height (8.4 mm), its foot's distance from the gesture zone, its
+    /// sides' from the room's.
+    /// </summary>
+    private const float BarHeight = 148, BarFoot = 10, BarSide = 16;
+
     /// <summary>The layout's own size: the engine's picture at 2×.</summary>
     private const float LayoutWidth = 1280, LayoutHeight = 800;
 
@@ -61,7 +68,8 @@ public sealed record PhoneFrame
 
     /// <summary>
     /// The engine's picture and the 1280×800 layout over it: landscape between the sides; upright at the room's width in
-    /// the room's middle, where a screen with no upright layout of its own shows the tablet's (until step P8).
+    /// the middle between the room's top and the <see cref="Bar"/> (the scenes' place, docs/ui/phone.md, §18, PS2), where
+    /// a screen with no upright layout of its own shows the tablet's (until step P8).
     /// </summary>
     public Box Frame { get; }
 
@@ -71,6 +79,14 @@ public sealed record PhoneFrame
     /// <summary>What our layouts may take of the screen: all of it less the safe insets.</summary>
     public Box Room => new(Safe.Left, Safe.Top, Math.Max(0, Screen.W - Safe.Left - Safe.Right),
         Math.Max(0, Screen.H - Safe.Top - Safe.Bottom));
+
+    /// <summary>
+    /// The bar at the foot of the room held upright (docs/ui/phone.md, §21, PK1): the scenes' Menu, Log and Skip at its
+    /// left, a screen's main button at its right; empty held landscape, where the sides hold them.
+    /// </summary>
+    public Box Bar => IsUpright
+        ? new(Room.X + Px(BarSide), Room.Bottom - Px(BarFoot + BarHeight), Math.Max(0, Room.W - 2 * Px(BarSide)), Px(BarHeight))
+        : default;
 
     /// <summary>The engine's picture at the room's width, its top at <paramref name="top"/>: where an upright screen puts it.</summary>
     public Box PictureAt(float top) => new(Room.X, top, Room.W, Room.W * LayoutHeight / LayoutWidth);
@@ -117,7 +133,7 @@ public sealed record PhoneFrame
     /// The frame of a screen of <paramref name="width"/> × <paramref name="height"/> held upright. Its safe insets are
     /// <paramref name="reported"/>, the system's, else the reference phone's (the camera's hole at the top, nothing at the
     /// sides), and at least the gesture zone at the foot. The picture's default place, <see cref="Frame"/>, is at the room's
-    /// width in the room's middle.
+    /// width in the middle between the room's top and the bar.
     /// </summary>
     public static PhoneFrame Upright(float width, float height, Insets? reported = null)
     {
@@ -127,7 +143,7 @@ public sealed record PhoneFrame
         var phone = new PhoneFrame(unit, new Box(0, 0, width, height), default, safe, upright: true);
         var room = phone.Room;
         float h = room.W * LayoutHeight / LayoutWidth;
-        return new PhoneFrame(unit, phone.Screen, phone.PictureAt(room.Y + (room.H - h) / 2), safe, upright: true);
+        return new PhoneFrame(unit, phone.Screen, phone.PictureAt((room.Y + phone.Bar.Y - h) / 2), safe, upright: true);
     }
 
     /// <summary>The frame of a screen of <paramref name="width"/> × <paramref name="height"/> as it is held: a square one is landscape.</summary>

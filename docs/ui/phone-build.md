@@ -765,6 +765,56 @@ and System's rotation lock).
   game's log "the orientation System, the screen's Sensor".
 - **Left open**: System's rotation lock on the Poco — the owner's turn of the phone with the lock on and off.
 
+**Step P1, where it stands (2026-10-29):** built, **awaiting the owner's look on the Poco**.
+
+- **Which window is upper — the survey** (`WAO_SUB`, `Original/Script/OriginalScriptContext.Wao.cs`; docs/ui/messages.md,
+  §1). The script leaves no choice: every window is told by its op, and each op belongs to a portrait's place. The left
+  portrait (`311`, `Ui_PortraitL`) stands at the picture's top left (384×512 at (0, 0)), the right one (`321`,
+  `Ui_PortraitR`) at its foot right ((896, 288)); 111 (speech) and 112 (thought) are the left one's, their frames at the
+  picture's top (807/808 at (400, 6)); 121 and 122 the right one's, at its foot (810/811 at (64, 518)); 113/123 (the
+  narration, a place's title at `ZM 32`, the status windows) sit at the foot (809 at (256, 542)); 131 is the bar under
+  the event CGs (815 at (0, 588)), which clears every picture. So the **upper speaker is 111/112 while the left portrait
+  shows**; 111 opens far more often than `311` (12,664 against 1,982 scenes — mostly Rance's lines, who has no portrait),
+  and such a window has no portrait to stand by: it goes under the picture with the rest, as the owner's rule for a
+  speaker with no portrait says (phone.md, §18). A tail or a thought's bubbles point at a portrait only while it shows.
+- **The frame** (`PhoneFrame`, tested): `Bar`, the bar at the room's foot (PK1: 148 high, 16 from the sides, 10 over the
+  gesture zone; reference 16, 2504, 1188 × 148), and the picture's default place `Frame` now in the middle between the
+  room's top and the bar (mock_phone.py's `SCENE_Y`, 925.75) — every upright screen not built yet moves up with it.
+- **The model** (`PhoneScenes`, `PhoneMenu`, tested in `PhoneScenesUprightTests`): Menu, Log and Skip are the bar's cells
+  at its left (170 wide, 14 apart); `Window` places a message window — across the screen (16 from the sides), 64 from the
+  picture, 420 high (five of the script's lines at their type, so the picture never moves; 131 330), above the picture for
+  the left portrait's while it shows, else under it; the glyphs at their cells from the text box's corner (the window's
+  new `TextRect`) at a speech's 3.6 mm at most (131's 2.6), smaller when the text box would not fit (131: 2.5 mm), the
+  rows 1.08 times the cells' pitch apart (the script's size + 2 read too close); `SceneMenu` upright — rows across the
+  screen (130 high, 14 apart) from the bar's foot up under the lower window, lower for a long menu down to 0.6 of their
+  height, then rising over the window's foot; `LogPaper` over the screen from the hole to the bar, `LogClose` in Log's
+  place, `NamesOver` (each speaker's name on a line of its own over his lines, PR2); `ReportScale` at the bar's width;
+  the Menu sheet's rows (`PhoneMenu.Tiles(f, tiles)`: 130 high, 12 apart, ending 40 over the bar, the first page from the
+  thumb up — Options lowest, a rule between Save Screenshot and the switches, Debug on top —, Debug's page top down with
+  ‹ Menu on top; the panel round them with "Menu" over them; a question's callout across the screen over its row).
+- **The views**, keyed by the new `Device.Held(view)` (the phone's frame held either way; the landscape paths unchanged):
+  `SkipDrawer` (the two cells together), `SideCells.Draw` (a tall cell: the icon over the word), `MenuSheetView` (rows:
+  the word at the left, "…" after a command that asks, a switch's pill reading On or Off, a page's ›), `SceneMenuView`
+  (upright over the whole screen, the rows in the bar's place), `MessageLogView` (PR2: the paper, the names over the
+  lines, the narration at 2.5 mm, Close in Log's place), `WeekReportView` (PW1: the card at the bar's width in the
+  frame's middle). `MessageWindowView` (keyed by `Device.Upright`) draws the window over or under the picture with its
+  tail or bubbles at the portrait (`Portraits`, from `Ui_PortraitL`/`R`, set by `GameScreen`), 131's plate larger and the
+  original's bar at the picture's foot hidden, a place's title scaled into the panel; Option → Messages's preview stays
+  in its sheet (`Leaves = false`). `GameScreen.Phone.cs`: the Menu cell and the drawer show upright as held landscape
+  (the cell hidden while a scene's menu takes the bar).
+- **The title's description and the requests slip** (PEd, PEr) need nothing of their own: window 113 is the narration's
+  (under the picture), the slip is the script's own picture in the frame.
+- **The agent's choices**, for the owner to confirm: a left window with no left portrait goes under the picture; the
+  rows of a long scene menu shrink to 0.6 of their height before they cover the question's window; the lines 1.08 times
+  the script's pitch apart; 131's type 2.5 mm (its text box, 52 cells, at the width) instead of the mock-up's 2.6.
+- **The gallery**: the PC, touch and landscape passes same (110, 111 and 114 entries); the upright pass 111 changed (the
+  picture moved up to its place over the bar, the Menu cell in the bar) and 3 new (the Menu sheet's); the gallery's Menu
+  cell hidden under an upright `]` menu as the game hides it (`scene-menu`, `all-data`).
+- **Unattended play**: headless with `--phone upright` from the week-18 save (`--harem 6`, then the replenish, the
+  attack on Oaks (6), the deployment table) to its deployment picker, exit 0 (its dumps are the engine's picture only;
+  the layout was looked at in the gallery). No real scene with portraits is dumped upright — the gallery's samples show
+  both portraits' places; the owner's look on the Poco will be the first.
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.

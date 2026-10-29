@@ -28,6 +28,7 @@ public class PhoneFrameTests
         Equal(new(0, 0, 380, 1220), phone.LeftSide);
         Equal(new(2332, 0, 380, 1220), phone.RightSide);
         Assert.Equal(new PhoneFrame.Insets(110, 0, 110, 50), phone.Safe);
+        Assert.Equal(default, phone.Bar);                                       // the sides hold the bar's cells
         Equal(new(110, 0, 270, 1170), phone.LeftRoom);          // the hole's strip and the gesture zone left out
         Equal(new(2332, 0, 270, 1170), phone.RightRoom);
     }
@@ -82,14 +83,15 @@ public class PhoneFrameTests
     }
 
     [Fact]
-    public void Upright_at_the_reference_phones_own_pixels_the_picture_is_at_the_width_in_the_rooms_middle()
+    public void Upright_at_the_reference_phones_own_pixels_the_picture_is_at_the_width_between_the_hole_and_the_bar()
     {
         var phone = PhoneFrame.Upright(1220, 2712);
         Assert.True(phone.IsUpright);
         Assert.Equal(1, phone.Unit, Close);
         Assert.Equal(new PhoneFrame.Insets(0, 110, 0, 50), phone.Safe);       // the hole at the top, the gesture zone at the foot
         Equal(new(0, 110, 1220, 2552), phone.Room);
-        Equal(new(0, 110 + (2552 - 762.5f) / 2, 1220, 762.5f), phone.Frame); // 0.953 phone pixels a layout pixel (phone.md, §1)
+        Equal(new(16, 2504, 1188, 148), phone.Bar);                           // mock_phone.py's BAR (PK1)
+        Equal(new(0, (110 + 2504 - 762.5f) / 2, 1220, 762.5f), phone.Frame);  // its SCENE_Y; 0.953 phone pixels a layout pixel (phone.md, §1)
         Assert.Equal(0.953125f, phone.Scale, Close);
         Equal(new(0, 600, 1220, 762.5f), phone.PictureAt(600));
     }
@@ -106,7 +108,7 @@ public class PhoneFrameTests
         Assert.Equal(800, phone.Frame.H, Close);
         Assert.Equal(110 * phone.Unit, phone.Room.Y, Close);
         Assert.Equal(height - 50 * phone.Unit, phone.Room.Bottom, Close);
-        Assert.Equal(phone.Frame.Y - phone.Room.Y, phone.Room.Bottom - phone.Frame.Bottom, Close);
+        Assert.Equal(phone.Frame.Y - phone.Room.Y, phone.Bar.Y - phone.Frame.Bottom, Close);
     }
 
     [Fact]

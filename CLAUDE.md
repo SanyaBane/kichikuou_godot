@@ -370,7 +370,12 @@ upright (P0-P9) is next. Step P0 is built, awaiting the owner's look on the Poco
 stands"): `PhoneFrame.Upright` (the picture at the width wherever a screen puts it, `PictureAt`; the room apart from it),
 Option → Display's orientation on a phone (`godot/Strategy/OrientationChoice`: System — Android's `fullUser` —, Upright,
 Landscape 1, Landscape 2), `--phone upright`, the gallery's `-PhoneUp` pass; a screen without an upright layout yet
-shows the tablet's at the width; no Menu upright until P1.
+shows the tablet's at the width between the hole and the bar. Step P1 is built, awaiting the owner's look on the Poco
+(phone-build.md, "Step P1, where it stands"): the scenes upright — `PhoneFrame.Bar` at the foot with Menu, Log and Skip at
+its left (PK1), the picture between the hole and it, the left portrait's window above the picture while it shows and every
+other under it, the script's breaks at the phone's type (`PhoneScenes.Window`, `MessageWindow.TextRect`), a `]` menu's
+rows in the bar's place, the Menu sheet in rows from the thumb up (PN1, PN1q), the log with the names over the lines
+(PR2), the week report at the width (PW1); the views keyed by `Device.Held(view)` (either way) or `Device.Upright(view)`.
 **Owner's decision 33** (2026-10-29), the fifth rule change: the ninja follow-up's chance (BRS-11, R14's `RND(3)` = 1) —
 Tweaks → "Ninja follow-up", 33% (the original, the default), 67% or 100%, read off the same draw, built
 (`Combat/NinjaChance` on `OriginalScriptContext.NinjaChance`, `Battle.NinjaRolled`; `godot/Battles/NinjaChanceChoice`;

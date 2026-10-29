@@ -11,7 +11,8 @@ namespace Kichikuou.Game.Strategy;
 /// tile, Cancel | the confirming red button inside; Debug opens its own tiles. A tap off the panel or on Close closes the
 /// sheet, Back (the right click) too — an open question first. Closed it takes the cell's box alone; open the whole screen
 /// (its parent's area), and the game waits from <see cref="Opened"/> to <see cref="Closed"/>. Drawn in the frame's layout
-/// pixels (<see cref="PhoneUnits"/>); placed only on a phone held landscape.
+/// pixels (<see cref="PhoneUnits"/>); placed only on a phone. Held upright (step P1; §25, PN1, PN1q) the cell is the bar's
+/// first and the sheet rises from the bar, its tiles rows across the screen from the thumb up, a question over its row.
 /// </summary>
 internal sealed partial class MenuSheetView : Control
 {
@@ -68,7 +69,7 @@ internal sealed partial class MenuSheetView : Control
     {
         int i = _tiles.ToList().FindIndex(t => t.Command == command);
         return i < 0 ? throw new InvalidOperationException($"No {command} tile on the Menu's page.")
-            : Centre(PhoneMenu.Tiles(Frame, _tiles.Count)[i]);
+            : Centre(PhoneMenu.Tiles(Frame, _tiles)[i]);
     }
 
     /// <summary>The question's Cancel's centre, global coordinates.</summary>
@@ -110,7 +111,7 @@ internal sealed partial class MenuSheetView : Control
     /// <summary>Over its parent's area: the Menu cell alone while closed, the whole area while open.</summary>
     public void Place()
     {
-        var phone = Device.Landscape(this);
+        var phone = Device.Held(this);
         if (phone is null)
             return;
         var cell = PhoneScenes.MenuCell(phone);
@@ -128,7 +129,7 @@ internal sealed partial class MenuSheetView : Control
     private PhoneFrame Frame => _phone ?? throw new InvalidOperationException("The Menu is placed on a phone only.");
 
     private PhoneMenu.Callout Question(PhoneMenu.Tile tile) =>
-        PhoneMenu.QuestionAt(Frame, PhoneMenu.Tiles(Frame, _tiles.Count)[_tiles.ToList().IndexOf(tile)]);
+        PhoneMenu.QuestionAt(Frame, PhoneMenu.Tiles(Frame, _tiles)[_tiles.ToList().IndexOf(tile)]);
 
     private Vector2 Centre(PhoneFrame.Box box) => GlobalPosition - Position + new Vector2(box.X + box.W / 2, box.Y + box.H / 2);
 
@@ -179,8 +180,8 @@ internal sealed partial class MenuSheetView : Control
             return q.Cancel.Contains(p.X, p.Y) ? Cancel : q.Confirm.Contains(p.X, p.Y) ? Confirm
                 : q.Box.Contains(p.X, p.Y) ? Inside : Outside;
         }
-        int tile = PhoneMenu.TileAt(f, _tiles.Count, p.X, p.Y);
-        return tile >= 0 ? tile : PhoneMenu.Panel(f).Contains(p.X, p.Y) ? Inside : Outside;
+        int tile = PhoneMenu.TileAt(f, _tiles, p.X, p.Y);
+        return tile >= 0 ? tile : PhoneMenu.Panel(f, _tiles).Contains(p.X, p.Y) ? Inside : Outside;
     }
 
     private void Tap(int target)
@@ -261,21 +262,80 @@ internal sealed partial class MenuSheetView : Control
             return;
         }
         DrawRect(new Rect2(Vector2.Zero, f.Screen.W / u.K, f.Screen.H / u.K), Veil);
-        var panel = u.Rect(PhoneMenu.Panel(f));
+        var panel = u.Rect(PhoneMenu.Panel(f, _tiles));
         Ui.DrawPanel(this, panel, u.K);
-        var (tx, ty) = PhoneMenu.Title(f);
+        var (tx, ty) = PhoneMenu.Title(f, _tiles);
         int title = u.Size(56);
         DrawString(_brush, new Vector2(tx / u.K, ty / u.K + (_brush.GetAscent(title) - _brush.GetDescent(title)) / 2), "Menu",
             fontSize: title, modulate: Ui.Name);
-        var boxes = PhoneMenu.Tiles(f, _tiles.Count);
+        var boxes = PhoneMenu.Tiles(f, _tiles);
         for (int i = 0; i < _tiles.Count; i++)
-            DrawTile(u, u.Rect(boxes[i]), _tiles[i], _held == i && _asking is null);
+        {
+            if (f.IsUpright)
+                DrawRow(u, u.Rect(boxes[i]), _tiles[i], _held == i && _asking is null);
+            else
+                DrawTile(u, u.Rect(boxes[i]), _tiles[i], _held == i && _asking is null);
+        }
+        int sound = _tiles.ToList().FindIndex(t => t.Command == PhoneMenu.Command.Sound);
+        if (f.IsUpright && sound >= 0 && sound + 1 < _tiles.Count && _tiles[sound + 1].Command == PhoneMenu.Command.Screenshot)
+        {
+            // The rule between Save Screenshot and the switches (PN1).
+            float y = (boxes[sound].Y + boxes[sound + 1].Bottom) / 2 / u.K;
+            DrawLine(new Vector2(boxes[sound].X / u.K + u.Px(20), y), new Vector2(boxes[sound].Right / u.K - u.Px(20), y), Ui.DimGold,
+                Lacquer.Line(2, u.K));
+        }
         SideCells.Draw(this, u, cell, SideCells.Icon.Close, "Close", lit: true, held: _held == Cell);
         if (_asking is { } asking)
             DrawQuestion(u, Question(asking), PhoneMenu.QuestionOf(asking.Command)!);
     }
 
+    /// <summary>
+    /// A row of the sheet held upright (docs/ui/phone.md, §25, PN1): its word at the left (a command that asks first with
+    /// "…"), a switch's pill at the right reading On or Off, a page's ›; a greyed one dim.
+    /// </summary>
+    private void DrawRow(PhoneUnits u, Rect2 box, PhoneMenu.Tile tile, bool held)
+    {
+        DrawRect(box, Ui.Row);
+        DrawRect(box, Ui.DimGold, false, Lacquer.Line(2, u.K));
+        if (held && !tile.Disabled)
+            DrawRect(box.Grow(-u.Px(4)), Held);
+        var font = SideCells.Font;
+        string word = tile.Kind == PhoneMenu.Kind.Asks ? tile.Label + "…" : tile.Label;
+        int size = SideCells.Fit(font, word, u.Size(46), box.Size.X - u.Px(300));
+        float cy = box.GetCenter().Y, right = box.End.X - u.Px(28);
+        DrawString(font, new Vector2(box.Position.X + u.Px(36), cy + (font.GetAscent(size) - font.GetDescent(size)) / 2), word,
+            fontSize: size, modulate: tile.Disabled ? Ui.OffText : Ui.Text);
+        if (tile.Kind == PhoneMenu.Kind.Switch)
+        {
+            float w = u.Px(150), h = u.Px(72);
+            var pill = new Rect2(right - w, cy - h / 2, w, h);
+            var style = new StyleBoxFlat
+            {
+                BgColor = tile.On ? Color.Color8(150, 116, 52) : Color.Color8(40, 32, 26),
+                BorderColor = tile.On && !tile.Disabled ? Ui.Gold : Ui.DimGold,
+                AntiAliasing = true,
+            };
+            style.SetCornerRadiusAll((int)(h / 2));
+            style.SetBorderWidthAll(Math.Max(1, (int)Math.Round(Lacquer.Line(2, u.K))));
+            DrawStyleBox(style, pill);
+            float knob = tile.On ? pill.End.X - h / 2 : pill.Position.X + h / 2;
+            DrawCircle(new Vector2(knob, cy), h / 2 - u.Px(9), tile.Disabled ? Ui.OffText : tile.On ? Ui.Name : Ui.Quiet);
+            string state = tile.On ? "On" : "Off";
+            int small = u.Size(34);
+            DrawString(font, new Vector2(pill.Position.X - u.Px(18) - Width(font, state, small),
+                cy + (font.GetAscent(small) - font.GetDescent(small)) / 2), state, fontSize: small,
+                modulate: tile.Disabled ? Ui.OffText : tile.On ? Ui.Text : Ui.Quiet);
+        }
+        else if (tile is { Kind: PhoneMenu.Kind.Page, Command: not PhoneMenu.Command.Back })
+        {
+            int arrow = u.Size(72);
+            DrawString(font, new Vector2(right - u.Px(12) - Width(font, "›", arrow),
+                cy + (font.GetAscent(arrow) - font.GetDescent(arrow)) / 2), "›", fontSize: arrow, modulate: Ui.Gold);
+        }
+    }
+
     /// <summary>A tile: its word over its small line; a switch's lit while on, a greyed one dim.</summary>
+
     private void DrawTile(PhoneUnits u, Rect2 box, PhoneMenu.Tile tile, bool held)
     {
         bool lit = tile is { Kind: PhoneMenu.Kind.Switch, On: true };

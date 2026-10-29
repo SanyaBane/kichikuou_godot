@@ -119,7 +119,7 @@ internal sealed partial class OptionsView : Control
             Ui.DrawWaveBackdrop(c, k, c.Size / k);
         }) { ShowBehindParent = true, Visible = false };
         AddChild(_backdrop);
-        _preview = new MessageWindowView(GodotGlyphRenderer.Chosen) { Tail = false, MouseFilter = MouseFilterEnum.Ignore };
+        _preview = new MessageWindowView(GodotGlyphRenderer.Chosen) { Tail = false, Leaves = false, MouseFilter = MouseFilterEnum.Ignore };
         AddChild(_preview);
         _preview.Show(_sample, true, null, null);
         _preview.LettersPerSecond = TextSpeedChoice.LettersPerSecond(TextSpeedChoice.Step);

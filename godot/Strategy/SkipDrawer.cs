@@ -13,7 +13,8 @@ namespace Kichikuou.Game.Strategy;
 /// over the cell pressed) is <see cref="SkipTapped"/> or <see cref="LogTapped"/>; a tap elsewhere on the drawer, the room
 /// between the plates included, is its own and does nothing (a near miss never advances the text); its other events go on
 /// to the screen through <see cref="Forwarded"/>. On the phone held landscape (docs/ui/phone.md, §19, LS1) the two are
-/// cells of their own in the black side at the left thumb, out of the frame (<see cref="PhoneScenes"/>), Log at the foot.
+/// cells of their own in the black side at the left thumb, out of the frame (<see cref="PhoneScenes"/>), Log at the foot;
+/// held upright (§21, PK1) the bar's second and third cells, right of Menu.
 /// </summary>
 internal sealed partial class SkipDrawer : Control
 {
@@ -65,16 +66,17 @@ internal sealed partial class SkipDrawer : Control
     /// <summary>Places the plates on the picture <paramref name="area"/> (its parent's coordinates); on the phone in the left side.</summary>
     public void Place(Rect2 area)
     {
-        var phone = Device.Landscape(this);
+        var phone = Device.Held(this);
         if (phone is { } f)
         {
+            // Skip over Log in the left side held landscape, Log left of Skip in the bar upright (PK1): the two together.
             var (skip, log) = (PhoneScenes.SkipCell(f), PhoneScenes.LogCell(f));
-            var at = new Vector2(skip.X, skip.Y);
+            var at = new Vector2(Math.Min(skip.X, log.X), Math.Min(skip.Y, log.Y));
             if (f == _phone && Position == at)
                 return;
             _phone = f;
             Position = at;
-            Size = new Vector2(skip.W, log.Bottom - skip.Y);
+            Size = new Vector2(Math.Max(skip.Right, log.Right), Math.Max(skip.Bottom, log.Bottom)) - at;
             QueueRedraw();
             return;
         }

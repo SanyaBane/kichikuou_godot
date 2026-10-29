@@ -15,7 +15,10 @@ namespace Kichikuou.Game.Strategy;
 /// is shown again on top, cut from the screen's picture. It takes no input: the screen's own key wait answers it.
 /// The text types letter by letter at <see cref="LettersPerSecond"/> (step 4, the owner's mock-up T1: the letters
 /// cut off at the next cell, the triangle once the text is whole); text the script adds to a window goes on from where it
-/// was. Laid out in the 1280×800 screen's pixels, scaled with the picture.
+/// was. Laid out in the 1280×800 screen's pixels, scaled with the picture. On the phone held upright (docs/ui/phone.md,
+/// §18, PS2, PS2l, PS2b; docs/ui/phone-build.md, step P1) the window leaves the picture: across the screen above it (the
+/// left portrait's speech or thought) or under it (every other), no name plate but 131's, the script's lines at their
+/// breaks in larger type (<see cref="PhoneScenes.Window"/>), the tail or the bubbles at the portrait.
 /// </summary>
 internal sealed partial class MessageWindowView : Control
 {
@@ -38,6 +41,7 @@ internal sealed partial class MessageWindowView : Control
     private Texture2D? _screen;
     private (int X, int Y, int W, int H)? _menu;
     private float _k = 1;                           // window pixels to a screen pixel
+    private PhoneFrame? _upright;                   // the phone held upright: the window over or under the picture
     private double _typed;                          // the glyphs typed so far, a fraction of the next one included
 
     public MessageWindowView(GameFont font)
@@ -59,6 +63,25 @@ internal sealed partial class MessageWindowView : Control
 
     /// <summary>Whether a speech's tail is drawn (not in Option → Messages's preview, which has no portrait).</summary>
     public bool Tail { get; init; } = true;
+
+    /// <summary>Whether held upright the window leaves the picture (not Option → Messages's preview, which stays in its sheet).</summary>
+    public bool Leaves { get; init; } = true;
+
+    /// <summary>
+    /// Whether the left and the right portrait show (<c>Ui_PortraitL</c>, <c>Ui_PortraitR</c>): held upright the left one's
+    /// window stands above the picture only while it shows, and a tail points only at a portrait that does.
+    /// </summary>
+    public (bool Left, bool Right) Portraits
+    {
+        get;
+        set
+        {
+            if (field == value)
+                return;
+            field = value;
+            QueueRedraw();
+        }
+    } = (true, true);
 
     /// <summary>
     /// The touch mode's Skip and Log at the screen's left edge (<see cref="SkipDrawer"/>): a window that would cover them
@@ -120,8 +143,13 @@ internal sealed partial class MessageWindowView : Control
     /// <summary>Lays the window over the picture (<paramref name="area"/>, in its parent's coordinates).</summary>
     public void Place(Rect2 area)
     {
-        float k = area.Size.X / 1280f;
-        if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f)
+        var upright = Leaves ? Device.Upright(this) : null;
+        if (upright is { } f)
+            area = new Rect2(Vector2.Zero, GetParentAreaSize());        // over the whole screen: the window leaves the picture
+        float k = upright?.Scale ?? area.Size.X / 1280f;
+        bool turned = upright != _upright;
+        _upright = upright;
+        if (!turned && Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f)
             return;
         Position = area.Position;
         Size = area.Size;
@@ -167,6 +195,11 @@ internal sealed partial class MessageWindowView : Control
     {
         if (_window is not { } w)
             return;
+        if (_upright is { } phone)
+        {
+            DrawUpright(phone, w);
+            return;
+        }
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         var (x, y, width, height) = w.Panel;
         var box = new Rect2(x, y, width, height);
@@ -221,6 +254,113 @@ internal sealed partial class MessageWindowView : Control
     }
 
     /// <summary>
+    /// The window held upright (PS2, PS2l, PS2b): its panel across the screen over or under the picture, in the frame's
+    /// layout pixels; the speech's tail or the thought's bubbles out of the edge nearest the picture, at the portrait; 131's
+    /// speaker on its plate, larger; the glyphs at their cells from the text box's corner at the window's own type; the
+    /// triangle; a menu over the picture at its place. 131's band at the picture's foot, which our panel no longer covers,
+    /// is hidden.
+    /// </summary>
+    private void DrawUpright(PhoneFrame f, MessageWindow w)
+    {
+        var u = new PhoneUnits(f);
+        var place = PhoneScenes.Window(f, w.Kind, w.TextRect, Portraits);
+        DrawSetTransform(Vector2.Zero, 0, new Vector2(u.K, u.K));
+        if (w.Kind == MessageKind.CgBar)
+        {
+            var (bx, by, bw, bh) = w.Panel;                             // the original's bar, left over the picture
+            DrawRect(new Rect2(f.Frame.X / u.K + bx, f.Frame.Y / u.K + by, bw, bh), Colors.Black);
+        }
+        var box = u.Rect(place.Panel);
+        float? pointer = Tail && place.PointerX is { } px ? px / u.K : null;
+        Color text = Ui.Text;
+        switch (w.Kind)
+        {
+            case MessageKind.SpeechLeft or MessageKind.SpeechRight:
+                Ui.DrawPanel(this, box, u.K, SpeechFill);
+                if (pointer is { } sx)
+                    UprightTail(u, box, sx, place.Above);
+                break;
+            case MessageKind.ThoughtLeft or MessageKind.ThoughtRight:
+                ThoughtPanel(box, w.AtLeft, sideBubbles: false);
+                if (pointer is { } tx)
+                    UprightBubbles(u, box, tx, place.Above);
+                text = Ui.Quiet;
+                break;
+            case MessageKind.CgBar:
+                Ui.DrawPanel(this, box, u.K, SpeechFill);
+                text = w.Speaker.Length == 0 ? NarrationText : w.Thinks ? Ui.Quiet : Ui.Text;
+                break;
+            default:
+                Ui.DrawPanel(this, box, u.K, NarrationFill);
+                text = NarrationText;
+                break;
+        }
+        if (w.Read && ReadTextChoice.Colour is { } read)
+            text = ReadTextChoice.Of(read, text);
+        if (w.Kind == MessageKind.CgBar && w.Speaker.Length > 0)
+        {
+            const float plate = 1.35f;                                  // the mock-up's plate (PS2b), larger than the PC's
+            var at = new Vector2(box.Position.X + u.Px(40), box.Position.Y - u.Px(34));
+            DrawSetTransform(at * u.K, 0, new Vector2(u.K * plate, u.K * plate));
+            NameTab(Vector2.Zero, w.Speaker, w.Thinks);
+        }
+        if (w.Kind == MessageKind.PlaceTitle)
+        {
+            // The PC's title box (784 × 258) scaled into the panel, centred.
+            float t = Math.Min(box.Size.X / 784, box.Size.Y / 258);
+            var origin = box.GetCenter() - new Vector2(784, 258) * t / 2;
+            DrawSetTransform(origin * u.K, 0, new Vector2(u.K * t, u.K * t));
+            PlaceTitle(new Rect2(0, 0, 784, 258), w.Title, w.Subtitle);
+        }
+        else
+        {
+            // The glyphs at their cells, from the text box's corner, at the window's type: drawn at that size, unscaled.
+            DrawSetTransform(Vector2.Zero, 0, Vector2.One);
+            var (rx, ry, _, _) = w.TextRect;
+            foreach (var g in w.Glyphs.Take((int)_typed))
+            {
+                int size = Math.Max(1, (int)Math.Round(g.Size * place.Scale));
+                var at = new Vector2(place.TextX + (g.X - rx) * place.Scale, place.TextY + (g.Y - ry) * place.RowScale);
+                DrawString(_gothic, at + new Vector2(0, _gothic.GetAscent(size)), g.C.ToString(), fontSize: size,
+                    modulate: g.Colour is { } c ? Color.Color8(c.R, c.G, c.B) : text);
+            }
+        }
+        DrawSetTransform(Vector2.Zero, 0, new Vector2(u.K, u.K));
+        if (_waiting && !Typing)
+            Ui.DrawTriangle(this, new Vector2(box.End.X - u.Px(50), box.End.Y - u.Px(44)), u.K);
+        if (_menu is { } m && _screen is not null)
+        {
+            DrawSetTransform(new Vector2(f.Frame.X, f.Frame.Y), 0, new Vector2(f.Scale, f.Scale));   // the menu at its place in the picture
+            var area = new Rect2(m.X, m.Y, m.W, m.H);
+            DrawTextureRectRegion(_screen, area, area);
+        }
+    }
+
+    /// <summary>A speech's tail held upright: out of the panel's edge nearest the picture, at <paramref name="x"/> (layout pixels), down or up to the portrait.</summary>
+    private void UprightTail(PhoneUnits u, Rect2 box, float x, bool above)
+    {
+        float edge = above ? box.End.Y : box.Position.Y, way = above ? 1 : -1, inward = -way * u.Px(7);
+        var tip = new Vector2(x - u.Px(10), edge + way * u.Px(44));
+        float x0 = x - u.Px(30), x1 = x + u.Px(30);
+        DrawColoredPolygon([new(x0 + 2, edge + inward), new(x1 - 2, edge + inward), tip], SpeechFill);
+        DrawColoredPolygon([new(x0, edge), new(x1, edge), tip], SpeechFill);
+        DrawLine(new Vector2(x0, edge), tip, Ui.Gold, Lacquer.Line(2, u.K), true);
+        DrawLine(new Vector2(x1, edge), tip, Ui.Gold, Lacquer.Line(2, u.K), true);
+    }
+
+    /// <summary>A thought's bubbles held upright: out of the panel's edge nearest the picture, towards the thinker at <paramref name="x"/>.</summary>
+    private void UprightBubbles(PhoneUnits u, Rect2 box, float x, bool above)
+    {
+        float edge = above ? box.End.Y : box.Position.Y, way = above ? 1 : -1, line = Lacquer.Line(2, u.K);
+        foreach (var (dx, dy, r) in new[] { (0f, 22f, 17f), (-16f, 54f, 11f), (-28f, 78f, 7f) })
+        {
+            var c = new Vector2(x + u.Px(dx), edge + way * u.Px(dy));
+            DrawCircle(c, u.Px(r), ThoughtFill with { A = 240 / 255f });
+            DrawArc(c, u.Px(r), 0, Mathf.Tau, 24, Ui.Gold, line, true);
+        }
+    }
+
+    /// <summary>
     /// A speech's tail out of the panel's side towards its portrait: lacquer over the frame where it leaves the panel, gold
     /// along its two edges (the mock-ups' numbers: 111 between y+96 and y+142, its point at (x−30, y+104); 121 between y+150
     /// and y+196, its point at (x+w+30, y+188)).
@@ -241,7 +381,7 @@ internal sealed partial class MessageWindowView : Control
     /// A thought: corners rounded 18, a dimmer lacquer, the frame gold dashes 14 on 8 without the corners' diamonds, bubbles of
     /// radius 12, 8 and 5 towards the thinker (down to the left portrait from 112, up to the right one from 122).
     /// </summary>
-    private void ThoughtPanel(Rect2 box, bool left)
+    private void ThoughtPanel(Rect2 box, bool left, bool sideBubbles = true)
     {
         const float r = 18;
         var style = new StyleBoxFlat
@@ -261,9 +401,12 @@ internal sealed partial class MessageWindowView : Control
         Dashes(new(x + w - 1, y + r), new(x + w - 1, y + h - r), line);
         foreach (var (cx, cy, from) in new[] { (x + r, y + r, Math.PI), (x + w - r, y + r, Math.PI * 1.5), (x + w - r, y + h - r, 0.0), (x + r, y + h - r, Math.PI * 0.5) })
             DrawArc(new Vector2(cx, cy), r - 1, (float)from, (float)(from + Math.PI / 2), 12, Ui.Gold, line, true);
+        if (!sideBubbles)
+            return;
         var bubbles = left
             ? new[] { (x - 12, y + 128, 12f), (x - 34, y + 150, 8f), (x - 50, y + 166, 5f) }
             : new[] { (x + w + 12, y + 150, 12f), (x + w + 34, y + 128, 8f), (x + w + 50, y + 112, 5f) };
+
         foreach (var (bx, by, br) in bubbles)
         {
             DrawCircle(new Vector2(bx, by), br, ThoughtFill with { A = 240 / 255f });

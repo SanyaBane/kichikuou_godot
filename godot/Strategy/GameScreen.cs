@@ -1449,6 +1449,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         var window = InterfaceChoice.New && !SkippingScene ? _presenter.MessageWindow : null;
         if (UpdateTreasureCallout(window))
             window = null;                              // at the clicked cell over our Treasure screen instead
+        if (_presenter.State is { } s)
+            _messageView.Portraits = (s.Ui_PortraitL != 0, s.Ui_PortraitR != 0);   // held upright, over or under the picture (PS2)
         _messageView.Show(window, _keyWaiting, _texture, window is null ? null : _presenter.MenuArea);
         if (window is null)
             return;

@@ -9,7 +9,9 @@ namespace Kichikuou.Original.Content.Devices;
 /// the left side's Menu cell, which opened it, reads Close. Screen (Window | Fullscreen) is left out — a phone is always
 /// full screen. A tile acts and the sheet closes; a switch's tile (Message skip, Sound) changes and the sheet stays; Restart
 /// and Exit ask first in a callout at their tile, in the PC's dialogs' words; Debug (a development build's) opens its own
-/// tiles, ‹ Menu first. The figures are the mock-up's in the reference phone's pixels (<see cref="PhoneFrame.Px"/>), the
+/// tiles, ‹ Menu first. Held upright (step P1; phone.md, §25, PN1, PN1q) the sheet rises from the bar, the bar's Menu cell
+/// reading Close: the tiles are rows across the screen from the thumb up, a question's callout over its row. The figures
+/// are the mock-up's in the reference phone's pixels (<see cref="PhoneFrame.Px"/>), the
 /// boxes in the canvas's units. Interface only. Engine-independent.
 /// </summary>
 public static class PhoneMenu
@@ -138,6 +140,76 @@ public static class PhoneMenu
     /// <summary>The panel's title ("Menu"): its left edge and the middle of its line.</summary>
     public static (float X, float Y) Title(PhoneFrame f) => (Panel(f).X + f.Px(40), Panel(f).Y + f.Px(70));
 
+    /// <summary>
+    /// Upright (docs/ui/phone.md, §25, PN1): the rows' height (7.4 mm) and the room between them, the rule's room, the rows'
+    /// sides' distance from the screen's, the title's room over them, their foot's room over the bar, the panel's foot over
+    /// the bar; the title's place in the panel.
+    /// </summary>
+    private const float UpRowHeight = 130, UpRowGap = 12, UpRule = 40, UpRowSide = 40, UpTitle = 130, UpOverBar = 40, UpPanelFoot = 14,
+        UpTitleX = 32, UpTitleY = 66, UpQuestionSide = 60, UpQuestionGap = 44;
+
+    /// <summary>The sheet's panel for <paramref name="tiles"/>: held landscape over the frame's middle, upright from the bar up round its rows (PN1).</summary>
+    public static PhoneFrame.Box Panel(PhoneFrame f, IReadOnlyList<Tile> tiles)
+    {
+        if (!f.IsUpright)
+            return Panel(f);
+        float top = RowsTop(f, tiles) - f.Px(UpTitle);
+        return new PhoneFrame.Box(f.Bar.X, top, f.Bar.W, f.Bar.Y - f.Px(UpPanelFoot) - top);
+    }
+
+    /// <summary>The panel's title for <paramref name="tiles"/>: its left edge and the middle of its line.</summary>
+    public static (float X, float Y) Title(PhoneFrame f, IReadOnlyList<Tile> tiles) =>
+        f.IsUpright ? (Panel(f, tiles).X + f.Px(UpTitleX), Panel(f, tiles).Y + f.Px(UpTitleY)) : Title(f);
+
+    /// <summary>
+    /// The boxes of <paramref name="tiles"/>: held landscape <see cref="Columns"/> a row (<see cref="Tiles(PhoneFrame, int)"/>);
+    /// upright rows across the screen ending over the bar (PN1) — the first page's from the thumb up (Options lowest), a
+    /// rule between Save Screenshot and the switches, Debug on top; Debug's page top down, ‹ Menu on top.
+    /// </summary>
+    public static IReadOnlyList<PhoneFrame.Box> Tiles(PhoneFrame f, IReadOnlyList<Tile> tiles)
+    {
+        if (!f.IsUpright)
+            return Tiles(f, tiles.Count);
+        var boxes = new PhoneFrame.Box[tiles.Count];
+        float y = RowsTop(f, tiles), x = f.Room.X + f.Px(UpRowSide), w = f.Room.W - 2 * f.Px(UpRowSide);
+        foreach (int i in TopDown(tiles))
+        {
+            if (RuleOver(tiles, i))
+                y += f.Px(UpRule);
+            boxes[i] = new PhoneFrame.Box(x, y, w, f.Px(UpRowHeight));
+            y += f.Px(UpRowHeight + UpRowGap);
+        }
+        return boxes;
+    }
+
+    /// <summary>The tile of <paramref name="tiles"/> under (<paramref name="x"/>, <paramref name="y"/>), or -1 (a gap, off the tiles).</summary>
+    public static int TileAt(PhoneFrame f, IReadOnlyList<Tile> tiles, float x, float y)
+    {
+        var boxes = Tiles(f, tiles);
+        for (int i = 0; i < boxes.Count; i++)
+            if (boxes[i].Contains(x, y))
+                return i;
+        return -1;
+    }
+
+    /// <summary>Whether a page is the first one, laid from the thumb up: not Debug's (‹ Menu first).</summary>
+    private static bool FromThumb(IReadOnlyList<Tile> tiles) => tiles.Count == 0 || tiles[0].Command != Command.Back;
+
+    private static IEnumerable<int> TopDown(IReadOnlyList<Tile> tiles) =>
+        FromThumb(tiles) ? Enumerable.Range(0, tiles.Count).Reverse() : Enumerable.Range(0, tiles.Count);
+
+    /// <summary>Whether the rule stands over row <paramref name="i"/>, top down: the first page's switches under Save Screenshot.</summary>
+    private static bool RuleOver(IReadOnlyList<Tile> tiles, int i) =>
+        FromThumb(tiles) && tiles[i].Command == Command.Sound && i + 1 < tiles.Count && tiles[i + 1].Command == Command.Screenshot;
+
+    /// <summary>The rows' top held upright: their stack ends over the bar.</summary>
+    private static float RowsTop(PhoneFrame f, IReadOnlyList<Tile> tiles)
+    {
+        int rules = Enumerable.Range(0, tiles.Count).Count(i => RuleOver(tiles, i));
+        float stack = tiles.Count * f.Px(UpRowHeight + UpRowGap) - f.Px(UpRowGap) + rules * f.Px(UpRule);
+        return f.Bar.Y - f.Px(UpOverBar) - stack;
+    }
+
     /// <summary>The boxes of <paramref name="count"/> tiles, <see cref="Columns"/> a row, left to right and top down, filling the panel under its title.</summary>
     public static IReadOnlyList<PhoneFrame.Box> Tiles(PhoneFrame f, int count)
     {
@@ -169,6 +241,8 @@ public static class PhoneMenu
     /// </summary>
     public static Callout QuestionAt(PhoneFrame f, PhoneFrame.Box tile)
     {
+        if (f.IsUpright)
+            return UprightQuestion(f, tile);
         var p = Panel(f);
         float margin = f.Px(TilesMargin);
         float w = Math.Min(f.Px(QuestionWidth), p.W - 2 * margin), h = f.Px(QuestionHeight), gap = f.Px(QuestionGap);
@@ -181,4 +255,16 @@ public static class PhoneMenu
         return new Callout(box, tile.X + tile.W / 2, below ? tile.Bottom : tile.Y, below,
             new PhoneFrame.Box(x + bm, by, mid - bg - (x + bm), bh), new PhoneFrame.Box(mid + bg, by, box.Right - bm - (mid + bg), bh));
     }
+
+    /// <summary>A question's callout held upright (PN1q): across the screen over its row, pointing down at it; under it when the top leaves no room.</summary>
+    private static Callout UprightQuestion(PhoneFrame f, PhoneFrame.Box tile)
+    {
+        float x = f.Room.X + f.Px(UpQuestionSide), w = f.Room.W - 2 * f.Px(UpQuestionSide), h = f.Px(QuestionHeight), gap = f.Px(UpQuestionGap);
+        bool below = tile.Y - gap - h < f.Room.Y + f.Px(10);
+        var box = new PhoneFrame.Box(x, below ? tile.Bottom + gap : tile.Y - gap - h, w, h);
+        float bm = f.Px(ButtonMargin), bh = f.Px(ButtonHeight), bg = f.Px(ButtonGap), mid = x + w / 2, by = box.Bottom - bm - bh;
+        return new Callout(box, tile.X + tile.W / 2, below ? tile.Bottom : tile.Y, below,
+            new PhoneFrame.Box(x + bm, by, mid - bg - (x + bm), bh), new PhoneFrame.Box(mid + bg, by, box.Right - bm - (mid + bg), bh));
+    }
+
 }

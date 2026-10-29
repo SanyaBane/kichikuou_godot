@@ -6,6 +6,8 @@ namespace Kichikuou.Game.Strategy;
 // The phone held landscape (docs/ui/phone-build.md, step L1): the menu bar is gone, its commands are the Menu cell's on
 // top of the left side, which opens the Menu sheet (the owner's LN3, MenuSheetView); the drawer's Skip and Log stand at
 // the left thumb (SkipDrawer), and the week report, the scenes' menus and the message log have layouts of their own.
+// Held upright (step P1) the same parts serve it: Menu, Log and Skip in the bar at the foot (PK1), the sheet rising from
+// it (PN1), the message windows over or under the picture (PS2).
 public partial class GameScreen
 {
     private MenuSheetView _menuSheet = null!;
@@ -31,17 +33,21 @@ public partial class GameScreen
     /// <summary>The phone held landscape: our screens with layouts of their own lay themselves out in its frame and sides.</summary>
     private static bool PhoneLandscape => Device.Layout == DeviceLayout.PhoneLandscape;
 
+    /// <summary>The phone held upright: the scenes' parts (step P1) in the bar at the foot and over or under the picture.</summary>
+    private static bool PhoneUpright => Device.Layout == DeviceLayout.PhoneUpright;
+
     private PhoneMenu.Settings PhoneMenuSettings() =>
         new(_skip.Activated, _skip.Enabled, SoundChoice.On, OS.IsDebugBuild(), MapNamesChoice.HideDimmed);
 
     /// <summary>
-    /// The Menu cell on the phone held landscape, each frame: on top of the left side wherever a game is shown and no
-    /// screen of ours takes the side or waits on its own (a box, the log, the options, our battle and full screens, the
-    /// command panel); the sheet, once open, until it closes.
+    /// The Menu cell on the phone, each frame: on top of the left side held landscape, in the bar's left upright, wherever
+    /// a game is shown and no screen of ours takes the side or waits on its own (a box, the log, the options, our battle
+    /// and full screens, the command panel; upright a scene's menu too, whose rows take the bar's place); the sheet, once
+    /// open, until it closes.
     /// </summary>
     private void UpdatePhone()
     {
-        _menuSheet.Visible = PhoneLandscape && (_menuSheet.IsOpen || MenuCellShown);
+        _menuSheet.Visible = (PhoneLandscape || PhoneUpright) && (_menuSheet.IsOpen || MenuCellShown && !(PhoneUpright && _sceneMenuView.Visible));
         if (_menuSheet.Visible)
             _menuSheet.Place();
     }
@@ -49,8 +55,9 @@ public partial class GameScreen
     private bool MenuCellShown => _presenter.State is not null && !_modal && !ViewHidden && !BattleScreenShown && !EnemyAttackShown
         && !ScoutReportShown && !StrategyCutInShown && !_saveView.Visible && !_commandView.Visible;
 
-    /// <summary>The week report on the phone held landscape: the left side as in the scenes (LW1), Skip and Log with it.</summary>
-    private bool PhoneWeekReport => _weekView.Visible && PhoneLandscape;
+    /// <summary>The week report on the phone: the left side, or the bar, as in the scenes (LW1, PW1), Skip and Log with it.</summary>
+    private bool PhoneWeekReport => _weekView.Visible && (PhoneLandscape || PhoneUpright);
+
 
     /// <summary>A tile of the Menu sheet acted (Restart's and Exit's questions answered already), as the menu bar's item.</summary>
     private void PhoneMenuChosen(PhoneMenu.Command command)

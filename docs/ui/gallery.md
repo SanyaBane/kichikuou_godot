@@ -478,8 +478,12 @@ The phone held upright's real pass (step P0, 2026-10-29; docs/ui/phone-build.md,
 `gallery.ps1 -PhoneUp` dumps every entry as the phone held upright (`--phone upright --window 610x1356`) into
 `phone-upright/current`, the tab **Smartphone, upright** — the whole window at **half** the reference phone's pixels
 (two thirds would be 1808 high, more than a 1440-pixel monitor holds), its grid as narrow as the upright mock-ups'. Until
-a screen's upright layout is built (P1-P8) its entry shows the tablet's layout at the picture's width in the room's
-middle; each built screen's mock-up then leaves `GALLERY_ENTRIES` as the landscape ones left `GALLERY_ENTRIES_LAND`.
+a screen's upright layout is built (P1-P8) its entry shows the tablet's layout at the picture's width between the hole
+and the bar; each built screen's mock-up then leaves `GALLERY_ENTRIES` as the landscape ones left `GALLERY_ENTRIES_LAND`.
+Step P1 (2026-10-29) built the scenes: the message windows over or under the picture (`message-…`, the samples with both
+portraits shown, so the left ones stand above it), `scene-menu`, `message-log`, `week-report`, `title-description`, and
+the Menu cell in the bar on the entries that show it; the Menu sheet's three entries (`menu-sheet…`) are on this pass
+too. PS2, PS2l, PS2b, PS2m, PW1, PEd, PEr, PN1, PN1q and PR2 left `GALLERY_ENTRIES`.
 
 ## 10. The copy for a website (owner, 2026-10-29)
 

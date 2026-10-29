@@ -19,13 +19,16 @@ internal static partial class GalleryEntries
 
     private static bool PhoneLandscape => Device.Layout == DeviceLayout.PhoneLandscape;
 
+    /// <summary>The phone held either way: the scenes' parts (the Menu cell, the drawer, the Menu sheet) serve both (step P1).</summary>
+    private static bool PhoneHeld => Device.Layout is DeviceLayout.PhoneLandscape or DeviceLayout.PhoneUpright;
+
     /// <summary>On the phone held landscape the Menu cell, closed, as <c>GameScreen.UpdatePhone</c> shows it; else null.</summary>
     private static MenuSheetView? MenuCell(GalleryStage g) =>
-        PhoneLandscape ? g.Add(new MenuSheetView(() => SampleMenu) { Visible = true }) : null;
+        PhoneHeld ? g.Add(new MenuSheetView(() => SampleMenu) { Visible = true }) : null;
 
     private static IEnumerable<GalleryEntry> PhoneScreens()
     {
-        if (!PhoneLandscape)
+        if (!PhoneHeld)
             yield break;
         const string Note = "Over a speech at its key wait on the map (the gallery's own lines); the switches are the gallery's own.";
         yield return new("menu-sheet", "Messages", "Phone: the Menu sheet", Week18, Note, g => MenuSheet(g, null));

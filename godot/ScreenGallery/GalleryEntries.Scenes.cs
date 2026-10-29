@@ -1,6 +1,7 @@
 using Godot;
 using Kichikuou.Engine.Script;
 using Kichikuou.Game.Strategy;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.Content.ScreenGallery;
 using Kichikuou.Original.Content.Strategy;
 
@@ -63,7 +64,7 @@ internal static partial class GalleryEntries
         var view = g.Add(new WeekReportView(g.Faces));
         view.Open(report);
         // The phone held landscape: the left side as in the scenes (LW1), Log lit as a week's start has pages logged.
-        var drawer = PhoneLandscape ? g.Add(new SkipDrawer { Visible = true }) : null;
+        var drawer = PhoneHeld ? g.Add(new SkipDrawer { Visible = true }) : null;
         var menu = MenuCell(g);
         return area =>
         {
@@ -98,7 +99,7 @@ internal static partial class GalleryEntries
         window.Complete();
         var view = g.Add(new SceneMenuView(g.Font));
         view.Open(menu, box);
-        var cell = MenuCell(g);                                 // the drawer hides under a menu, Menu stays (LS1m)
+        var cell = Device.Layout == DeviceLayout.PhoneUpright ? null : MenuCell(g);   // the drawer hides under a menu, Menu stays (LS1m); upright the rows take the bar (PS2m)
         return area =>
         {
             window.Place(area);

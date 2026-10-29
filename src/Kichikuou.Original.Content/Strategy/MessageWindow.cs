@@ -118,6 +118,13 @@ public sealed class MessageWindow
     /// <summary>The panel's rectangle (screen pixels), without its tail.</summary>
     public (int X, int Y, int W, int H) Panel { get; }
 
+    /// <summary>
+    /// The text box the script printed into (screen pixels; <c>B3</c>): the glyphs' cells lie in it, from its left edge, and
+    /// a layout that moves the window (the phone held upright, docs/ui/phone-build.md, step P1) moves them with it.
+    /// </summary>
+    public (int X, int Y, int W, int H) TextRect { get; private init; }
+
+
     /// <summary>The text's characters at their cells, in the order printed (no spaces).</summary>
     public IReadOnlyList<MessageGlyph> Glyphs { get; }
 
@@ -174,8 +181,9 @@ public sealed class MessageWindow
                 return null;
             glyphs.Add(glyph);
         }
+        var textRect = (text.Rect.X * k, text.Rect.Y * k, text.Rect.W * k, text.Rect.H * k);
         if (kind == MessageKind.CgBar)
-            return CgBar(panel, glyphs, text.Rect.X * k, continuing, text.ReadBefore);
+            return CgBar(panel, glyphs, textRect, continuing, text.ReadBefore);
         var rows = text.Chars.GroupBy(c => c.Y).OrderBy(row => row.Key).ToArray();
         var lines = rows.Select(row => Line(row, text.Rect.X)).ToArray();
         string title = "", subtitle = "";
@@ -186,7 +194,7 @@ public sealed class MessageWindow
             title = lines[0].Trim();
             subtitle = lines.Length > 1 ? lines[1].Trim() : "";
         }
-        return new MessageWindow(kind, panel, glyphs, lines, title, subtitle) { Read = text.ReadBefore };
+        return new MessageWindow(kind, panel, glyphs, lines, title, subtitle) { Read = text.ReadBefore, TextRect = textRect };
     }
 
     /// <summary>
@@ -233,9 +241,10 @@ public sealed class MessageWindow
     /// move left by their indent, up to the name's cells; the closing bracket at the end dropped. A window without a name
     /// whose first line is indented to <paramref name="continuing"/>'s speech, which was not closed, goes on with it.
     /// </summary>
-    private static MessageWindow CgBar((int X, int Y, int W, int H) panel, List<MessageGlyph> glyphs, int left, MessageWindow? continuing,
-        bool read)
+    private static MessageWindow CgBar((int X, int Y, int W, int H) panel, List<MessageGlyph> glyphs, (int X, int Y, int W, int H) textRect,
+        MessageWindow? continuing, bool read)
     {
+        int left = textRect.X;
         var rows = glyphs.GroupBy(g => g.Y).OrderBy(row => row.Key).Select(row => row.OrderBy(g => g.X).ToList()).ToList();
         var lines = rows.Select(row => LineOf(row, left)).ToList();
         string? name = null;
@@ -270,7 +279,7 @@ public sealed class MessageWindow
             lines = [.. rows.Select(row => LineOf(row, left))];
         }
         return new MessageWindow(MessageKind.CgBar, panel, [.. rows.SelectMany(row => row)], lines, "", "",
-            new Speech(name, thinks, unclosed, prefix)) { Read = read };
+            new Speech(name, thinks, unclosed, prefix)) { Read = read, TextRect = textRect };
     }
 
     /// <summary>A row of glyphs (screen pixels) from <paramref name="left"/>, a half-width space for each half cell between them.</summary>
