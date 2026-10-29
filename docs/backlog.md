@@ -42,7 +42,7 @@ The owner aims at a public release (decision 28, 2026-10-20).
   version chosen in both orientations (rounds P1-P19, 2026-10-27/28); the build's plan is
   [ui/phone-build.md](ui/phone-build.md) (owner, 2026-10-28: the three missing base versions first, rounds P20-P21;
   then the landscape phone, then upright; the tablet stays landscape) — the landscape phone built (2026-10-28, steps F
-  and L1-L10), awaiting the owner's look on the Poco, upright next (steps P0-P9); the Poco's keyboard height (step L7b)
+  and L1-L10), awaiting the owner's look on the Poco, upright under way (steps P0-P9; P0 built, 2026-10-29); the Poco's keyboard height (step L7b)
   read from its log once the owner has tried Edit on Save/Load. Built and played on a Galaxy Tab S7 FE since 2026-10-24: the
   preset "Android" and `tools/export-android.ps1` (`run-android.cmd`); the game folder copied into the app's own
   external folder and imported at the first start (`GameData.AndroidGameFolder`: no permission, where the native

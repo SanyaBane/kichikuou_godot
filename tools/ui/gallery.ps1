@@ -6,8 +6,10 @@ Dumps the screen gallery (our screens from the kept saves) and writes an index m
 Builds godot/Kichikuou.csproj, then runs the game's screen gallery (docs/ui/gallery.md) in a window for each pass
 asked for: Lacquer always, -Steel and -Touch add theirs, -PhoneLand the phone held landscape (--phone landscape: the
 whole window dumped at two thirds of the reference phone's 2712×1220, 1808×813, its black sides with it;
-docs/ui/phone-build.md). A pass's former pictures move from <pass>\current to <pass>\previous first, and the gallery
-compares every new picture with them (manifest.json says new, changed or same).
+-PhoneUp the phone held upright (--phone upright: the whole window at half the reference's 1220×2712, 610×1356, as two
+thirds would not fit a common monitor's height; docs/ui/phone-build.md). A pass's former pictures move from
+<pass>\current to <pass>\previous first, and the gallery compares every new picture with them (manifest.json says new,
+changed or same).
 With -Only the pass stays whole: only the chosen entries' former pictures are copied to previous, their new ones replace
 them in current, and the manifest keeps the other entries as they were; the changes of several partial runs stay
 marked until a full run (each compared with its picture before the first of them).
@@ -49,6 +51,8 @@ param(
     [switch]$Touch,
     # Also dump every entry on the phone held landscape (--phone landscape, the window 1808×813).
     [switch]$PhoneLand,
+    # Also dump every entry on the phone held upright (--phone upright, the window 610×1356).
+    [switch]$PhoneUp,
     # Also draw the phone's mock-ups, not built yet (tools/ui/mock_phone.py --gallery: the owner's chosen base versions
     # of docs/ui/phone.md, from this gallery's touch and lacquer dumps; a Python with Pillow and numpy, KICHIKUOU_PYTHON).
     [switch]$Phone,
@@ -119,6 +123,8 @@ $allPasses = @(
     @{ Name = 'touch'; Title = 'Touch (Lacquer)'; Args = @('--touch') },
     @{ Name = 'phone-landscape'; Title = 'Smartphone, landscape'; Args = @('--phone', 'landscape', '--window', '1808x813');
        Held = 'landscape'; Switch = 'PhoneLand' },
+    @{ Name = 'phone-upright'; Title = 'Smartphone, upright'; Args = @('--phone', 'upright', '--window', '610x1356');
+       Held = 'upright'; Switch = 'PhoneUp' },
     @{ Name = 'phone'; Title = 'Smartphone, upright (mock-ups)'; Mockup = $true; Held = 'upright'; Size = '1220&times;2712' },
     @{ Name = 'phone-land'; Title = 'Smartphone, landscape (mock-ups)'; Mockup = $true; Held = 'landscape';
        Size = '2712&times;1220' },
@@ -126,7 +132,7 @@ $allPasses = @(
 $passes = @($allPasses | Where-Object { ($_.Mockup -and $Phone) -or ($_.Name -eq 'combat-vfx' -and $Vfx) -or
     (-not $PhoneOnly -and -not $VfxOnly -and -not $IndexOnly -and
     ($_.Name -eq 'lacquer' -or ($_.Name -eq 'steel' -and $Steel) -or ($_.Name -eq 'touch' -and $Touch) -or
-     ($_.Name -eq 'phone-landscape' -and $PhoneLand))) })
+     ($_.Name -eq 'phone-landscape' -and $PhoneLand) -or ($_.Name -eq 'phone-upright' -and $PhoneUp))) })
 
 $failed = $false
 foreach ($pass in $passes) {

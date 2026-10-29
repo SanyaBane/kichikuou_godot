@@ -29,25 +29,22 @@ public partial class GameScreen
     /// <summary>
     /// The screen laid out for the device (docs/ui/phone-build.md, §3), each frame, so a phone turned or a window resized
     /// is followed: on a phone the menu bar is gone and <c>_content</c> takes the whole screen, its black sides ours to
-    /// draw in; held landscape the picture stands in the phone's frame (<see cref="ScreenFrame.In"/>). On a PC and a
-    /// tablet the bar stays and the picture fills the room under it, fitted.
+    /// draw in; the picture stands in the phone's frame (<see cref="ScreenFrame.In"/>: held landscape between the sides,
+    /// upright at the width in the room's middle). On a PC and a tablet the bar stays and the picture fills the room under
+    /// it, fitted.
     /// </summary>
     private void UpdateDevice()
     {
         bool phone = Device.Phone;
         _menuBar.Visible = !phone;
         _content.OffsetTop = phone ? 0 : MenuBarHeight;
-        if (Device.Layout == Original.Content.Devices.DeviceLayout.PhoneLandscape)
+        if (phone)
         {
             var frame = ScreenFrame.In(new Rect2(Vector2.Zero, _content.Size)).Area;
             _view.OffsetLeft = frame.Position.X;
             _view.OffsetTop = frame.Position.Y;
             _view.OffsetRight = frame.End.X - _content.Size.X;
             _view.OffsetBottom = frame.End.Y - _content.Size.Y;
-        }
-        else if (phone)
-        {
-            _view.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);    // upright: the picture at the width (step P0)
         }
     }
 

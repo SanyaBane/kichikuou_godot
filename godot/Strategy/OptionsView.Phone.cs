@@ -6,8 +6,9 @@ namespace Kichikuou.Game.Strategy;
 // The options window on the phone held landscape (docs/ui/phone-build.md, step L8; docs/ui/phone.md, §16, LO1): the paper
 // sheet across the whole width between the hole's strips over the wave backdrop, its five paper tabs on top as on the PC,
 // the title at their right; each tab in two columns — Messages: the text speed (its preview the game's 121 at 2.7 mm) and
-// the read text's colours left, the message skip right; Display: the font left, the palette right, the thousands and the
-// unit tables' row heights across (their tiles need the width); Battle: the effects across, the timings in the two
+// the read text's colours left, the message skip right; Display: the font left, the palette and the screen's orientation
+// (step P0) right, the thousands and the unit tables' row heights across (their tiles need the width); Battle: the effects
+// across, the timings in the two
 // columns; Game: the folder across; Tweaks: the line on what they are across, Battle left, Scenes right —, Defaults |
 // Close at the right column's foot, Close at the right thumb. The settings are the PC's parts drawn at PO1's type
 // (PhoneOptions.PartScale: the drawing's scale, _k), their text at the canvas's own size (Text) so it stays sharp; the
@@ -20,6 +21,9 @@ internal sealed partial class OptionsView
     // Messages' left column on the phone, in the parts' units from its top: the speed's slider, the preview under it; the
     // note 17 under the preview, the read text's head 31 under the preview, its tiles 30 under the head.
     private const float PhoneSpeedSlider = 48, PhonePreviewTop = 66, PhoneNoteUnder = 17, PhoneReadUnder = 31, PhoneTilesUnder = 30;
+
+    // Display's right column on the phone, in the parts' units: the orientation this far in, right of the palette's two swatches.
+    private const float PhoneOrientationIn = 200;
 
     /// <summary>A box of the canvas's units in the parts' units.</summary>
     private Rect2 Part(PhoneFrame.Box box) => new(box.X / _k, box.Y / _k, box.W / _k, box.H / _k);
@@ -181,12 +185,16 @@ internal sealed partial class OptionsView
         Wrap(string.Join(" ", ReadTextLines), x, y + 20, w, 13, Ui.InkQuiet);
     }
 
-    /// <summary>Display: the font left, the palette right; the thousands and the unit tables' row heights across.</summary>
+    /// <summary>
+    /// Display: the font left, the palette right and the screen's orientation right of it (step P0, the owner's PO1o, two
+    /// ways a row); the thousands and the unit tables' row heights across.
+    /// </summary>
     private void DrawDisplayPhone(PhoneFrame f, Rect2 left, Rect2 right, Rect2 across)
     {
         float y = left.Position.Y;
         FontSection(left.Position.X, y, left.Size.X);
-        PaletteSection(right.Position.X, y, right.Size.X);
+        PaletteSection(right.Position.X, y, PhoneOrientationIn - 30);
+        OrientationSection(right.Position.X + PhoneOrientationIn, y, right.Size.X - PhoneOrientationIn);
         DrawColumnRule(f, Part(PhoneOptions.Sheet(f)).Position.Y + P(40), y + 106);
         ThousandsSection(across.Position.X, y + 116, across.Size.X);
         RowsSection(across.Position.X, y + 196, across.Size.X);

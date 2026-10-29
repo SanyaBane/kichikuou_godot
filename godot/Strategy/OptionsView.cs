@@ -14,7 +14,8 @@ namespace Kichikuou.Game.Strategy;
 /// (the text speed with the game's 121 typing as its preview, the message skip's switches, Forget, the mouse
 /// (<see cref="MouseMovementChoice"/>, not in the touch mode), the
 /// already-read text's colour, <see cref="ReadTextChoice"/>, docs/ui/read-text.md), Display
-/// (the font, the palette, the thousands, the unit tables' row height, <see cref="LedgerRowsChoice"/>), Battle (our
+/// (the font, the palette, the thousands, the unit tables' row height, <see cref="LedgerRowsChoice"/>; on a phone its
+/// orientation, <see cref="OrientationChoice"/>), Battle (our
 /// battle screen's effects and timings, <see cref="BattleScreenSettings"/>), Game (the
 /// game folder), Tweaks (what changes the original's play: the damage forecast, "Chaos and Nikkou reach demons",
 /// <see cref="DemonReachChoice"/>, "Ninja follow-up", <see cref="NinjaChanceChoice"/>, "New scenes first",
@@ -260,6 +261,8 @@ internal sealed partial class OptionsView : Control
                 SetPalette(UiPalette.Lacquer);
                 SetThousands(ThousandsSeparator.Comma);
                 SetLedgerRows(LedgerRowsChoice.Default);     // the PC's or the touch mode's own
+                if (Device.Phone)
+                    OrientationChoice.Chosen = OrientationChoice.Way.System;
                 break;
             case Tab.Battle:
                 foreach (var setting in BattleScreenSettings.All.Where(s => s != BattleScreenSettings.Forecast))
@@ -537,7 +540,15 @@ internal sealed partial class OptionsView : Control
     private void DrawDisplay()
     {
         float x = ContentX, y = ContentY, w = ContentW;
-        FontSection(x, y, w);
+        if (Device.Phone)           // a phone in the tablet's layout (upright until step P8): the orientation beside the font
+        {
+            FontSection(x, y, w / 2 - 20);
+            OrientationSection(x + w / 2 + 20, y, w / 2 - 20);
+        }
+        else
+        {
+            FontSection(x, y, w);
+        }
         y += 132;
         PaletteSection(x, y, w);
         y += 132;
@@ -554,6 +565,24 @@ internal sealed partial class OptionsView : Control
             () => SetFont(GameFont.MsGothic), enabled: _msSample is not null);
         Radio("font-biz", x, y + 74, GodotGlyphRenderer.Chosen == GameFont.BizUdGothic, "BIZ UDGothic — 鬼畜王ランス, Rance",
             _bizSample, () => SetFont(GameFont.BizUdGothic));
+    }
+
+    /// <summary>
+    /// The phone's screen orientation (the owner's PO1o, <see cref="OrientationChoice"/>), a phone's only: its four ways as
+    /// radios two a row from 38 under the head, the chosen way's line under them, shrunk to <paramref name="w"/>.
+    /// </summary>
+    private void OrientationSection(float x, float y, float w)
+    {
+        SectionHead(x, y, "Screen orientation", w);
+        var all = OrientationChoice.All;
+        for (int i = 0; i < all.Length; i++)
+        {
+            var way = all[i].Way;
+            Radio("orientation-" + way, x + i % 2 * (w / 2), y + 38 + i / 2 * 36, OrientationChoice.Chosen == way, all[i].Name,
+                _gothic, () => OrientationChoice.Chosen = way);
+        }
+        string hint = Array.Find(all, o => o.Way == OrientationChoice.Chosen).Hint;
+        Text(_gothic, new Vector2(x, y + 106), hint, fontSize: SideCells.Fit(_gothic, hint, 13, w), modulate: Ui.InkQuiet);
     }
 
     private void PaletteSection(float x, float y, float w)

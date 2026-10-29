@@ -81,6 +81,65 @@ public class PhoneFrameTests
         Assert.Equal(0, phone.LeftRoom.W, Close);
     }
 
+    [Fact]
+    public void Upright_at_the_reference_phones_own_pixels_the_picture_is_at_the_width_in_the_rooms_middle()
+    {
+        var phone = PhoneFrame.Upright(1220, 2712);
+        Assert.True(phone.IsUpright);
+        Assert.Equal(1, phone.Unit, Close);
+        Assert.Equal(new PhoneFrame.Insets(0, 110, 0, 50), phone.Safe);       // the hole at the top, the gesture zone at the foot
+        Equal(new(0, 110, 1220, 2552), phone.Room);
+        Equal(new(0, 110 + (2552 - 762.5f) / 2, 1220, 762.5f), phone.Frame); // 0.953 phone pixels a layout pixel (phone.md, §1)
+        Assert.Equal(0.953125f, phone.Scale, Close);
+        Equal(new(0, 600, 1220, 762.5f), phone.PictureAt(600));
+    }
+
+    [Fact]
+    public void Upright_on_the_canvas_the_reference_pixel_is_scaled_by_the_screens_width()
+    {
+        // The project's canvas (1280×800, aspect "expand") on the reference phone held upright: 1280 wide, 2712 / 0.953 high.
+        float height = 2712 * 1280f / 1220;
+        var phone = PhoneFrame.Upright(1280, height);
+        Assert.Equal(1280f / 1220, phone.Unit, Close);
+        Assert.Equal(1, phone.Scale, Close);
+        Assert.Equal(1280, phone.Frame.W, Close);
+        Assert.Equal(800, phone.Frame.H, Close);
+        Assert.Equal(110 * phone.Unit, phone.Room.Y, Close);
+        Assert.Equal(height - 50 * phone.Unit, phone.Room.Bottom, Close);
+        Assert.Equal(phone.Frame.Y - phone.Room.Y, phone.Room.Bottom - phone.Frame.Bottom, Close);
+    }
+
+    [Fact]
+    public void Upright_a_longer_screen_has_more_free_height_and_the_same_picture()
+    {
+        var phone = PhoneFrame.Upright(1220, 2520 * 1220f / 1080);              // 21:9 at the reference's width
+        Assert.Equal(1220, phone.Frame.W, Close);
+        Assert.Equal(762.5f, phone.Frame.H, Close);
+        Assert.True(phone.Room.H > 2552);
+    }
+
+    [Fact]
+    public void Upright_the_systems_insets_are_read_and_the_gesture_zone_kept()
+    {
+        var phone = PhoneFrame.Upright(1220, 2712, new PhoneFrame.Insets(0, 120, 0, 0));   // the Poco's hole, no gesture zone
+        Assert.Equal(new PhoneFrame.Insets(0, 120, 0, 50), phone.Safe);
+        Equal(new(0, 120, 1220, 2542), phone.Room);
+
+        var sides = PhoneFrame.Upright(1220, 2712, new PhoneFrame.Insets(20, 0, 20, 80));
+        Equal(new(20, 0, 1180, 2632), sides.Room);
+        Assert.Equal(1180, sides.Frame.W, Close);                              // the picture at the room's width
+        Assert.Equal(20, sides.Frame.X, Close);
+    }
+
+    [Fact]
+    public void A_frame_for_a_screen_is_held_as_its_shape_says()
+    {
+        Assert.False(PhoneFrame.For(2712, 1220).IsUpright);
+        Assert.True(PhoneFrame.For(1220, 2712).IsUpright);
+        Assert.False(PhoneFrame.For(1000, 1000).IsUpright);
+        Equal(PhoneFrame.Upright(1220, 2712).Frame, PhoneFrame.For(1220, 2712).Frame);
+    }
+
     [Theory]
     [InlineData(1220, 446, true)]           // the Poco X6 Pro: 69.5 mm
     [InlineData(1220, 480, true)]           // the same at Android's density bucket

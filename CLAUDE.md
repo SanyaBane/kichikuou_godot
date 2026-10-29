@@ -366,7 +366,11 @@ Step L10 is done but the owner's play (phone-build.md, "Step L10, where it stand
 `--phone landscape` from the week-18 save through every exercise (the deployment and the battle, `--treasure`,
 `--saveload`, `--scout`, `--refill`, `--harem`, `--dungeon` to the cave's way out, weeks 18-21), all as before; the docs
 (phone.md, touch.md, style.md §6, backlog). **The landscape phone is built, awaiting the owner's play on the Poco**;
-upright (P0-P9) is next.
+upright (P0-P9) is next. Step P0 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P0, where it
+stands"): `PhoneFrame.Upright` (the picture at the width wherever a screen puts it, `PictureAt`; the room apart from it),
+Option → Display's orientation on a phone (`godot/Strategy/OrientationChoice`: System — Android's `fullUser` —, Upright,
+Landscape 1, Landscape 2), `--phone upright`, the gallery's `-PhoneUp` pass; a screen without an upright layout yet
+shows the tablet's at the width; no Menu upright until P1.
 **Owner's decision 33** (2026-10-29), the fifth rule change: the ninja follow-up's chance (BRS-11, R14's `RND(3)` = 1) —
 Tweaks → "Ninja follow-up", 33% (the original, the default), 67% or 100%, read off the same draw, built
 (`Combat/NinjaChance` on `OriginalScriptContext.NinjaChance`, `Battle.NinjaRolled`; `godot/Battles/NinjaChanceChoice`;
@@ -622,7 +626,8 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   passing the rest after `--`. `run-game-touch.cmd` does the same with `--touch`: the Android interface on PC, the mouse
   playing a finger (no hover; docs/ui/touch.md). `--phone landscape` (any launch; implies `--touch`) plays a phone held
   landscape: the window at the reference phone's shape fitted to the monitor, no menu bar, the picture in the phone's
-  frame (docs/ui/phone-build.md, §3). `--frame-times` logs the frame times every 10 s, as the Android build always does.
+  frame (docs/ui/phone-build.md, §3); `--phone upright` one held upright (Option → Display's orientation then turns the
+  window). `--frame-times` logs the frame times every 10 s, as the Android build always does.
 - Export the Windows release build (the export templates 4.7.2 mono installed):
   `powershell -ExecutionPolicy Bypass -File tools/export-release.ps1 -Out <folder outside the repository>` — the
   preset `godot/export_presets.cfg`, the licenses copied next to the exe. The build keeps its data in
@@ -781,7 +786,8 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   mock-ups, not built (docs/ui/gallery.md, §9; `-PhoneOnly` draws that tab and the index alone, no build, no window;
   its Python `KICHIKUOU_PYTHON` in local.env). `-PhoneLand` is the real pass of the phone held landscape (`--phone
   landscape --window 1808x813`, the whole window dumped at two thirds of the reference's pixels; the dump's window is
-  `--window WxH`, else 1280×800). For the owner's website, `tools/ui/gallery-deploy.ps1` copies the current pictures as
+  `--window WxH`, else 1280×800), `-PhoneUp` the phone held upright's (`--phone upright --window 610x1356`, half the
+  reference's pixels). For the owner's website, `tools/ui/gallery-deploy.ps1` copies the current pictures as
   WebP with the page into a new `screen-gallery-deploy/<time>/` at the root (git ignores it), the gallery unchanged
   (docs/ui/gallery.md, §10).
 

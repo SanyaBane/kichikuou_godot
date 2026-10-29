@@ -7,8 +7,10 @@ namespace Kichikuou.Game.Strategy;
 /// <summary>
 /// Where the engine's 1280×800 picture — and our layouts over it — stands in a screen, and the factors our views take
 /// from it (docs/ui/phone-build.md, §3, "One frame helper"): fitted into the screen's room and centred on a PC and a
-/// tablet, the phone's frame (<see cref="PhoneFrame"/>) on a phone held landscape. <see cref="Area"/> is in the room's
-/// coordinates; <see cref="Scale"/> is its units a pixel of the 1280×800 picture, <see cref="Pixels"/> a script pixel.
+/// tablet, the phone's frame (<see cref="PhoneFrame"/>) on a phone — held landscape between its sides, upright at the
+/// width in the room's middle (where a screen with no upright layout of its own shows the tablet's). <see cref="Area"/> is
+/// in the room's coordinates; <see cref="Scale"/> is its units a pixel of the 1280×800 picture, <see cref="Pixels"/> a
+/// script pixel.
 /// </summary>
 internal readonly record struct ScreenFrame(Rect2 Area, float Scale)
 {
@@ -21,10 +23,10 @@ internal readonly record struct ScreenFrame(Rect2 Area, float Scale)
     /// <summary>The picture's top left corner.</summary>
     public Vector2 Origin => Area.Position;
 
-    /// <summary>The picture in <paramref name="room"/> for the device: the phone's frame held landscape, else fitted.</summary>
+    /// <summary>The picture in <paramref name="room"/> for the device: the phone's frame held either way, else fitted.</summary>
     public static ScreenFrame In(Rect2 room)
     {
-        if (Device.Layout != DeviceLayout.PhoneLandscape)
+        if (Device.Layout is not (DeviceLayout.PhoneLandscape or DeviceLayout.PhoneUpright))
             return Fit(room);
         var frame = Device.Frame(room.Size).Frame;
         return Fit(new Rect2(room.Position + new Vector2(frame.X, frame.Y), frame.W, frame.H));

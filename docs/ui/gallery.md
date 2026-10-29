@@ -474,6 +474,13 @@ LG2m, LG2, LE1, LXf, LXc and LXm left the mock-up tab (LXr stays: the ending's r
 button at the right thumb, Back at the sheet's left foot or, refused, left of the red button, on a folder in Android's
 storage (`import-…`); LI, LIp and LIr left the mock-up tab.
 
+The phone held upright's real pass (step P0, 2026-10-29; docs/ui/phone-build.md, "Step P0, where it stands"):
+`gallery.ps1 -PhoneUp` dumps every entry as the phone held upright (`--phone upright --window 610x1356`) into
+`phone-upright/current`, the tab **Smartphone, upright** — the whole window at **half** the reference phone's pixels
+(two thirds would be 1808 high, more than a 1440-pixel monitor holds), its grid as narrow as the upright mock-ups'. Until
+a screen's upright layout is built (P1-P8) its entry shows the tablet's layout at the picture's width in the room's
+middle; each built screen's mock-up then leaves `GALLERY_ENTRIES` as the landscape ones left `GALLERY_ENTRIES_LAND`.
+
 ## 10. The copy for a website (owner, 2026-10-29)
 
 The owner's request: the gallery on the owner's website, its pictures in a light format and the current ones alone, the

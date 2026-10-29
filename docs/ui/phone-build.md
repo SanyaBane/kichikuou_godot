@@ -93,8 +93,11 @@ Built in step F (landscape) and completed in step P0 (upright).
   today).
 - **The orientation** (step P0): Option → Display's four ways on a phone (PO1o) through
   `DisplayServer.ScreenSetOrientation`; System is "as the phone is held, unless its own rotation lock holds it" —
-  which Godot constant maps to Android's `fullUser`/`user` is to be checked on the Poco. `handheld/orientation` lets the
-  activity turn; a turn at any moment lays every open view out again (the game waits on nothing for it).
+  Android's `fullUser`, which Godot 4.7.2's Android library asks for on `ScreenOrientation.Sensor` (read in the export
+  template's `GodotIO.setScreenOrientation`: `Landscape` → `landscape`, `Portrait` → `portrait`, `ReverseLandscape` →
+  `reverseLandscape`, `SensorLandscape` → `userLandscape`, `Sensor` → `fullUser`). `handheld/orientation` stays sensor
+  landscape (`userLandscape`), the tablet's, and a phone asks for its choice at the launch; a turn at any moment lays
+  every open view out again (the game waits on nothing for it).
 - **The screen gallery's phone passes.** `gallery.ps1` gains real passes `phone-land` and `phone` (`--phone …`, the
   window's size an argument instead of `GalleryScreen.cs:261`, the whole window dumped, not `PictureArea()`); dumps at
   the reference's pixels if Windows lets a window be that large, else at a fixed fraction (decided in step F). As each
@@ -721,12 +724,52 @@ Poco** (every step's look above, the agent's choices with them), and the tablet'
 | **P8** | The options window (the paper sheet, its tabs on top) and the dungeon's ladder at the right thumb; All Data (the miniature on top, the graphs as tabs, the scales as chips); the title with a row for each button; the import screen. | PO1, PF1, PF1e (§10); PG2m, PG2, PE2, PI, PIp, PIr (§22) |
 | **P9** | The phone whole: unattended play with `--phone upright`, turning the phone in every screen (each laid out again, nothing lost: a drag, a question open, a scroll), the owner's play on the Poco, the docs. | — |
 
+**Step P0, where it stands (2026-10-29):** built, awaiting the owner's look on the Poco (the orientation's four ways
+and System's rotation lock).
+
+- **The frame upright**: `PhoneFrame.Upright` (tested, `PhoneFrameTests`): the safe insets — the system's when it reports
+  them, else the reference's hole of 110 px at the top and nothing at the sides — and at least the gesture zone's 50 px
+  at the foot; the `Room` our layouts may take (the screen less the insets); `PictureAt(top)`, the engine's picture at
+  the room's width wherever a screen puts it (0.953 reference pixels a layout pixel, 762.5 high); `Frame`, its default
+  place in the room's middle; `Unit` the screen's width over 1220, so the free height flexes with a longer screen.
+  `PhoneFrame.For` picks the way by the shape (a square one landscape). `Device.Frame` hands out either,
+  `Device.Upright(view)` the upright one as `Device.Landscape(view)` the landscape one; `ScreenFrame.In` puts the
+  picture at the upright `Frame`, and `GameScreen.UpdateDevice` the view there.
+- **Until P8 a screen not built yet shows the tablet's layout fitted to the width**: every view whose phone branch is
+  keyed by `PhoneLandscape` falls through to the tablet's path upright and lays itself over the picture, as on the
+  tablet. Until P1 the upright phone has **no Menu** (the menu bar is gone on a phone and the bar with Menu, Log and Skip
+  comes with P1): Option is reached held landscape (System turns the game with the phone).
+- **The orientation** (§3; PO1o): `godot/Strategy/OrientationChoice` — System (the default), Upright, Landscape 1 (the
+  phone's top at the left), Landscape 2 (at the right), kept in `[display] orientation`, applied on an Android phone at
+  the launch and at each change (`DisplayServer.ScreenSetOrientation`: Sensor, Portrait, Landscape, ReverseLandscape —
+  `fullUser`, `portrait`, `landscape`, `reverseLandscape` to Android). The tablet keeps the project's sensor landscape
+  and is never offered it. On a PC playing a phone a choice turns the window (`Device.TurnWindow`), so a turn can be
+  tried without the device; System leaves it. Option → Display shows the section on a phone only: held landscape (LO1)
+  right of the palette, its four ways two a row, the chosen way's line under them; upright, in the tablet's layout until
+  P8, beside the font. Defaults sets System.
+- **`--phone upright`** on the PC: the window at the reference's upright shape fitted to the monitor's usable area
+  (608 × 1352 on the owner's 2560 × 1440 monitor), headless the canvas at half the reference (610 × 1356). `Device`
+  reads the root window's size (headless has no window to ask) and logs each change of the layout on the PC.
+- **The gallery's pass** `phone-upright` ("Smartphone, upright"; `gallery.ps1 -PhoneUp`), beside the mock-up tab `phone`,
+  which stays as it is: every entry dumped with `--phone upright --window 610x1356` — the whole window at **half the
+  reference's pixels** (two thirds, 813 × 1808, would not fit a 1440-pixel-tall monitor). At P0 it shows the tablet's
+  layout at the width in the room's middle (111 entries): the baseline P1-P8 change entry by entry. The Lacquer and
+  Touch passes were "same" (110 and 111 entries), the landscape pass "same" but `options-display`, which shows the
+  orientation (113 of 114).
+- **Unattended play** headless with `--phone upright` from the week-18 save to its deployment picker
+  (`--load --auto --fast --quit --seed 2 --saves user://saves-look-phone-up --slots-from user://saves-week18 --until
+  deployment`): the replenish on our Subordinates screen, the attack on Oaks (6), the party built in our deployment table
+  and its first two places swapped and back, exit 0 in 5 s.
+- **Left open**: System's rotation lock on the Poco (the owner's turn of the phone with the lock on and off; the
+  requested orientation read with `adb shell dumpsys activity activities` after the install, below).
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.
 - On a phone the menu bar is gone; its commands are the Menu sheet's.
 - The development screens get no phone layout (they show as on the tablet, in the frame).
-- Until the upright phase the phone is held to landscape, both ways round by the sensor.
+- Until the upright phase the phone is held to landscape, both ways round by the sensor (since step P0 it turns as
+  Option → Display says, System by default).
 - In landscape the status lives in the sides, so the map's headroom under the strip stays off on the phone.
 - The phone's layouts are written in the reference phone's pixels, so phone.md's figures are the code's.
 
@@ -740,7 +783,8 @@ Poco** (every step's look above, the agent's choices with them), and the tablet'
 - **The keyboard**: Android shows it for the comment's `LineEdit` (`SaveLoadView`); no full-screen editor (Godot's field
   asks for none), the card over the height Godot reports (step L7, "Where it stands", L7b); the Poco's height is read
   from the log line at the owner's look.
-- **System's rotation lock** (§3): checked on the Poco in P0.
+- **System's rotation lock** (§3): System asks Android for `fullUser` (step P0, read in Godot's Android library); the
+  Poco's behaviour with the lock on and off is the owner's look.
 - **A tap's move before its press** (found in round P20, phone.md §25): Fortune Check and the CG gallery act on a click
   on what the read before it lit, so a tap whose move and press reach the script in one poll would act on the cell lit
   before; the touch mode now holds such a press back until a read has taken its move (`TouchPress`; step L9a), on the
