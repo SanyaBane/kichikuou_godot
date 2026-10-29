@@ -774,7 +774,9 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   mock-ups, not built (docs/ui/gallery.md, §9; `-PhoneOnly` draws that tab and the index alone, no build, no window;
   its Python `KICHIKUOU_PYTHON` in local.env). `-PhoneLand` is the real pass of the phone held landscape (`--phone
   landscape --window 1808x813`, the whole window dumped at two thirds of the reference's pixels; the dump's window is
-  `--window WxH`, else 1280×800).
+  `--window WxH`, else 1280×800). For the owner's website, `tools/ui/gallery-deploy.ps1` copies the current pictures as
+  WebP with the page into a new `screen-gallery-deploy/<time>/` at the root (git ignores it), the gallery unchanged
+  (docs/ui/gallery.md, §10).
 
 ## Rules
 

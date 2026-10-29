@@ -3,6 +3,8 @@
 
 # The screen gallery's pictures (tools/ui/gallery.ps1): they hold the player's CGs
 /screen-gallery/
+# Its copies for a website (tools/ui/gallery-deploy.ps1): the same CGs
+/screen-gallery-deploy/
 
 # Godot
 .godot/

@@ -459,3 +459,22 @@ LG2m, LG2, LE1, LXf, LXc and LXm left the mock-up tab (LXr stays: the ending's r
 (2026-10-28) built the import screen: the paper sheet in the frame at the phone's type, the steps in two columns, the red
 button at the right thumb, Back at the sheet's left foot or, refused, left of the red button, on a folder in Android's
 storage (`import-…`); LI, LIp and LIr left the mock-up tab.
+
+## 10. The copy for a website (owner, 2026-10-29)
+
+The owner's request: the gallery on the owner's website, its pictures in a light format and the current ones alone, the
+gallery itself unchanged. `powershell -ExecutionPolicy Bypass -File tools\ui\gallery-deploy.ps1 [-From <gallery>] [-Out <folder>] [-Quality n]`
+reads the gallery (found as `gallery.ps1` finds it) and never writes it: it makes a new folder named by the time,
+`screen-gallery-deploy\yyyy-MM-dd_HH-mm-ss` at the root (git ignores it; `-Out` gives another parent), with the page and
+`<pass>\<id>.webp` for every picture the gallery's `index.html` shows. Each picture is the smaller of lossy WebP at
+quality 85 and lossless WebP (`tools/ui/gallery_deploy.py`, Pillow on `KICHIKUOU_PYTHON`). The owner chose WebP over
+JPEG (artefacts round small type, larger than the PNG on the flat screens) and AVIF (small type softened at a low
+quality, no Safari before 16); lossless wins on the screens drawn on the original's 256-colour pictures and the flat
+ones, whose lossy copy came out larger than the PNG (the title, Fortune Check, the music room). Measured (2026-10-29):
+458 pictures, 242 MB of PNG to 55 MB of WebP (138 lossless) in ~35 s.
+
+The page is the gallery's own, written again: the pictures in WebP, loaded as they scroll into view (each `<img>` with
+its size, so the grid keeps their places), and nothing of the former pictures — `previous` is not copied, the changed
+and new badges, the tabs' counts and the passes' "old" marks are left out; a link to a picture the script did not copy
+fails the run. The manifests and `phone-look` are not copied either. The pictures hold the original's CGs as the
+gallery's do (no event CG, §3).
