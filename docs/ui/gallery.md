@@ -485,6 +485,11 @@ portraits shown, so the left ones stand above it), `scene-menu`, `message-log`, 
 the Menu cell in the bar on the entries that show it; the Menu sheet's three entries (`menu-sheet…`) are on this pass
 too. PS2, PS2l, PS2b, PS2m, PW1, PEd, PEr, PN1, PN1q and PR2 left `GALLERY_ENTRIES`.
 
+Step P2 (2026-10-29) built the map: on this pass the map's entries (`map-markers…`, `map-north`, `command-menu…`,
+`province-menu…`) show the status band on top and the map's whole height under it (`UprightMapView`, centred on the
+script's view as the game centres it), the command panel and a province's menu as sheets over its foot; `map` stays the
+engine's picture alone, for mock-ups. PM1a, PM1b and PM1c left `GALLERY_ENTRIES`.
+
 ## 10. The copy for a website (owner, 2026-10-29)
 
 The owner's request: the gallery on the owner's website, its pictures in a light format and the current ones alone, the

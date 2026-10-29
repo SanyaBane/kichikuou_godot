@@ -168,6 +168,36 @@ public class MapMarkersTests
         Assert.Empty(Gestures(p => Assert.False(MapMarkers.Press(s, markers.Single(m => m.Kind == MapHitKind.Province && m.Id == 4), p))));
     }
 
+    [Fact]
+    public void A_tap_on_a_marker_out_of_the_scripts_view_drags_it_to_the_middle_first()
+    {
+        // The phone held upright shows the map's whole height (docs/ui/phone-build.md, step P2).
+        var s = World();
+        var markers = MapMarkers.All(s, Literal);
+        var north = markers.Single(m => m.Kind == MapHitKind.Province && m.Id == 2);
+        var outside = markers.Single(m => m.Kind == MapHitKind.Province && m.Id == 4);
+        // In view: the still click alone, the corner as it is.
+        Assert.Equal([(16, 200, 100), (0, 200, 100)], Gestures(p =>
+        {
+            Assert.True(MapMarkers.PressAnywhere(s, north, p, out var corner));
+            Assert.Equal((0, 0), corner);
+        }));
+        // Out (4) at (700, 100) right of the view: the corner dragged 380 right (the drag's start less its end), Out then at
+        // the view's middle column.
+        Assert.Equal([(16, 380, 0), (16, 0, 0), (16, 0, 0), (0, 0, 0), (16, 320, 100), (0, 320, 100)], Gestures(p =>
+        {
+            Assert.True(MapMarkers.PressAnywhere(s, outside, p, out var corner));
+            Assert.Equal((380, 0), corner);
+        }));
+        Assert.Equal(new MapHit(MapHitKind.Province, 4), GesturePoints.MapAt(s, (380, 0), 320, 100));
+        // North left of a view at 600: dragged back 600 to the map's left edge.
+        s.MapCamX = 600;
+        Assert.Equal([(16, 0, 0), (16, 600, 0), (16, 600, 0), (0, 600, 0), (16, 200, 100), (0, 200, 100)], Gestures(p =>
+            Assert.True(MapMarkers.PressAnywhere(s, north, p, out _))));
+        // The Thieves' Cave (dungeon 3) inside the castle's square: the script would open the castle, so nothing at all.
+        Assert.Empty(Gestures(p => Assert.False(MapMarkers.PressAnywhere(s, markers.Single(m => m.Kind == MapHitKind.Dungeon && m.Id == 3), p, out _))));
+    }
+
     /// <summary>
     /// A province's card: ours with its figures and what they do, one not ours "??" until it is known —
     /// ours at a map wait once, or scouted (<see cref="GameState.KnownProvinces"/>) — and then its figures

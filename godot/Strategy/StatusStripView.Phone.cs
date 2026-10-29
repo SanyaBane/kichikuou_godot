@@ -8,6 +8,8 @@ namespace Kichikuou.Game.Strategy;
 // but in the black sides — the date, the budget and the troops stacked under the Menu cell, the week's uses by group in
 // the right side; while the command panel is open only the figures on the left side's top, while a province's menu is
 // open the status alone. Drawn over the whole screen in the frame's layout pixels (PhoneUnits), at the mock-ups' type.
+// Held upright (step P2; phone.md, §3, PM1) the status is a band on top, over the map, whatever is open: the date and the
+// budget on its first line, the troops under them, the week's uses as tags in rows (PhoneMapUpright).
 internal sealed partial class StatusStripView
 {
     /// <summary>What the sides hold besides the status: what is open over the map.</summary>
@@ -40,10 +42,10 @@ internal sealed partial class StatusStripView
         }
     }
 
-    /// <summary>On the phone held landscape, the strip over its parent's whole area, drawn in the sides; false elsewhere.</summary>
+    /// <summary>On the phone, the strip over its parent's whole area, drawn in the sides or the band on top; false elsewhere.</summary>
     private bool PlacePhone()
     {
-        var phone = Device.Landscape(this);
+        var phone = Device.Held(this);
         if (phone is not { } f)
         {
             if (_phone is not null)
@@ -61,6 +63,8 @@ internal sealed partial class StatusStripView
     /// <summary>Whether a point (the control's coordinates, the screen's) is on what the sides show and take: the status, the week's uses.</summary>
     private bool SideHasPoint(PhoneFrame f, Vector2 point)
     {
+        if (f.IsUpright)
+            return UprightBand(f).Contains(point.X, point.Y);
         if (_mode == SideMode.Commands)
             return false;
         if (PhoneMap.StatusBox(f).Contains(point.X, point.Y))
@@ -79,6 +83,11 @@ internal sealed partial class StatusStripView
     {
         var u = new PhoneUnits(f);
         DrawSetTransform(Vector2.Zero, 0, new Vector2(u.K, u.K));
+        if (f.IsUpright)
+        {
+            DrawBand(f, u, s);
+            return;
+        }
         int dot = s.Date.IndexOf(" · ", StringComparison.Ordinal);
         string year = dot < 0 ? s.Date : s.Date[..dot], month = dot < 0 ? "" : s.Date[(dot + 3)..];
         var (_, budget) = s.Status.Count > 0 ? s.Status[0] : ("", "");
@@ -135,6 +144,89 @@ internal sealed partial class StatusStripView
         }
         if (_tip && _site is var (at, building))
             DrawSideTip(u, at, building);
+    }
+
+    /// <summary>The tags' type upright (1.6 mm) and their room round the word.</summary>
+    private const float UpTagText = 28, UpTagPad = 26;
+
+    /// <summary>
+    /// The status band on top held upright (PM1a), in the canvas's units: as tall as the week's uses need at the phone's
+    /// type (<see cref="PhoneMapUpright.StatusBand"/>); the map lies under it.
+    /// </summary>
+    public PhoneFrame.Box UprightBand(PhoneFrame f) => PhoneMapUpright.StatusBand(f, PhoneMapUpright.TagRows(UprightTags(f))).Band;
+
+    /// <summary>The week's uses' tags across the band, each group's in order (the canvas's units).</summary>
+    private IReadOnlyList<IReadOnlyList<PhoneFrame.Box>> UprightTags(PhoneFrame f)
+    {
+        if (_strip is not { } s)
+            return [];
+        var u = new PhoneUnits(f);
+        int size = u.Size(UpTagText);
+        return PhoneMapUpright.Tags(f, [.. s.Groups.Select(g => (IReadOnlyList<float>)[.. g.Uses.Select(use =>
+            (_gothic.GetStringSize(use.Text, fontSize: size).X + u.Px(UpTagPad)
+                + (use.UnderWay is { } site ? UiPalette.ChipWidth(_gothic, site.WeeksLeft, size) : 0)) * u.K)])]);
+    }
+
+    /// <summary>The band (PM1a): the lacquer across, the date and the budget, the troops, the week's uses in rows.</summary>
+    private void DrawBand(PhoneFrame f, PhoneUnits u, StatusStrip s)
+    {
+        var status = PhoneMapUpright.StatusBand(f, PhoneMapUpright.TagRows(UprightTags(f)));
+        Ui.DrawPanel(this, u.Rect(status.Band), u.K);
+        float left = status.Left / u.K, right = status.Right / u.K;
+        var (_, budget) = s.Status.Count > 0 ? s.Status[0] : ("", "");
+        int budgetSize = u.Size(38);
+        float bw = _gothic.GetStringSize(budget, fontSize: budgetSize).X;
+        Line(_gothic, budget, right - bw, status.BudgetTop / u.K, budgetSize, Ui.Text);
+        Line(_date, s.Date, left, status.DateTop / u.K, SideCells.Fit(_date, s.Date, u.Size(38), right - bw - u.Px(30) - left), Ui.Name);
+        if (s.Status.Count > 1)
+        {
+            string troops = $"{s.Status[1].Label} {s.Status[1].Value}".Trim();
+            Line(_gothic, troops, left, status.TroopsTop / u.K, SideCells.Fit(_gothic, troops, u.Size(34), right - left), Ui.Quiet);
+        }
+        var tags = UprightTags(f);
+        int size = u.Size(UpTagText);
+        _site = null;
+        for (int g = 0; g < tags.Count; g++)
+            for (int t = 0; t < tags[g].Count; t++)
+            {
+                var use = s.Groups[g].Uses[t];
+                var tag = u.Rect(tags[g][t]);
+                if (use.UnderWay is { } site)
+                {
+                    _site = (tag, site);
+                    Ui.DrawBusyTag(this, _gothic, tag, use.Text, ColourOf(use.Action), u.K, size, site.WeeksLeft);
+                }
+                else
+                {
+                    Ui.DrawTag(this, _gothic, tag, use.Text, ColourOf(use.Action), use.Free, u.K, size);
+                }
+            }
+        if (_tip && _site is var (at, building))
+            DrawBandTip(u, at, building, status.Band.Right / u.K);
+    }
+
+    /// <summary>The building under way's tooltip held upright: under its tag, over the map, kept on the screen.</summary>
+    private void DrawBandTip(PhoneUnits u, Rect2 tag, BuildingUnderWay building, float right)
+    {
+        string? name = building.Name;
+        string weeks = building.WeeksText;
+        int nameSize = u.Size(34), weeksSize = u.Size(30);
+        float pad = u.Px(20);
+        float w = Math.Max(name is null ? 0 : _gothic.GetStringSize(name, fontSize: nameSize).X,
+            _gothic.GetStringSize(weeks, fontSize: weeksSize).X) + 2 * pad;
+        float h = (name is null ? 0 : u.Px(46)) + u.Px(42) + 2 * pad - u.Px(8);
+        var box = new Rect2(Math.Min(tag.Position.X, right - u.Px(16) - w), tag.End.Y + u.Px(70), w, h);
+        DrawRect(new Rect2(box.Position + new Vector2(3, 4), box.Size), new Color(0, 0, 0, 0.3f));
+        DrawRect(box, Ui.CalloutFill);
+        DrawRect(box, Ui.Gold, false, Lacquer.Line(1, u.K));
+        DrawRect(box.Grow(-3), Ui.DimGold, false, Lacquer.Line(1, u.K));
+        float y = box.Position.Y + pad - u.Px(4);
+        if (name is not null)
+        {
+            Line(_gothic, name, box.Position.X + pad, y, nameSize, Ui.Name);
+            y += u.Px(46);
+        }
+        Line(_gothic, weeks, box.Position.X + pad, y, weeksSize, Ui.Quiet);
     }
 
     /// <summary>A line of text whose top is at <paramref name="y"/> (the mock-ups' anchor).</summary>

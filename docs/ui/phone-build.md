@@ -815,6 +815,50 @@ and System's rotation lock).
   the layout was looked at in the gallery). No real scene with portraits is dumped upright — the gallery's samples show
   both portraits' places; the owner's look on the Poco will be the first.
 
+**Step P2, where it stands (2026-10-29):** built, **awaiting the owner's look on the Poco**.
+
+- **The map's view** (`godot/Strategy/UprightMapView`): while the screen shows `COMMAND`'s map (the map's room,
+  `_mapStrip`) the map's whole height lies at the screen's width under the status band, down to 12 over the bar (2.63
+  reference pixels a map pixel on the Poco's shape: 464 of the map's 1920 columns), drawn by us from the state's six tiles
+  and its markers as `WAO_MAP.ADV` op 3 draws the script's tile area (a CG over 10000 less 10000, 18 higher), cached by
+  them. A finger's drag scrolls it sideways, whole columns: our own camera. The script's camera stays its own; ours
+  centres on it when the script moves it (the map wait's start, its own scrolls), never after our own tap's drag.
+- **A tap** on a plate (upright the plates take no input, the map under them does: `MapMarkersView.PlateAt`) or within
+  4 mm of a marker's point, the nearest (PM1a's note; `PhoneMapUpright.MarkerAt`), is the marker's still click. The
+  script adds the pressed point to its view's corner unbounded (`COMMAND.ADV:94-158`), so a marker its own 640 × 400 view
+  does not show is reached as a player reaches it: first the drag that brings it to the view's middle (the corner moves
+  by the drag's start less its end, `WAO_MAP.ADV:20-51`; one step, no coasting), then the still click there
+  (`MapMarkers.PressAnywhere`, tested in `MapMarkersTests`; `GesturePoints.MapAt` takes a corner). The script's camera
+  so moves as the player's drag would move it; no rule changes.
+- **The model** (`Original.Content/Devices/PhoneMapUpright`, tested in `PhoneMapUprightTests`): the status band from 10
+  over the room's top, 290 high at least (two rows of tags), the date and the budget on its first line, the troops under
+  them, the week's uses as tags across it in rows (48 high, 58 apart, 22 more between groups); the map's box; Commands at
+  the bar's right (440 wide), Close and Return in its place; the command panel's sheet (PM1b: two columns 586 wide from the
+  foot up, rows 124 high 14 apart, "This week" and Turn END over them, as tall as the longer column, lower rows when it
+  would come within 240 of the band); a province's sheet (PM1c: the city's picture 420 wide at its top left, the name,
+  the army and the figures beside it, the commands across it 128 high, the dungeon's place's caption over them); the
+  lift that keeps a ringed province's ring over the sheet (whole map rows, at most the sheet's height) and off the sides.
+- **The views**, keyed by `Device.Held` or `Device.Upright` (the landscape paths unchanged): `StatusStripView` draws the
+  band (`UprightBand`, which the map and the sheets take; the building's tooltip under its tag by a long press);
+  `CommandsButton` at the bar's right, its icon beside its word (`SideCells.DrawBarButton`); `CommandMenuView` the sheet,
+  the map over it dimmed, its rows on one line (`SideCells.DrawLineRow`); `ProvinceMenuView` the sheet, the ring on the
+  map as drawn, Return at the bar's right, the map lifted while it is open (`Map`, `MapPointOf`); `MapMarkersView` takes
+  the view's size (the whole height). `GameScreen.UprightMap.cs` lays them out each frame; the map's room under the PC's
+  strip stays off on the phone either way. Menu, Log and Skip stay at the bar's left on the map's wait; over the command
+  panel and a province's sheet the bar holds Close or Return alone (PM1b, PM1c).
+- **The agent's choices**, for the owner to confirm: a province's sheet only as tall as its card and rows (PM1c's 120
+  reference pixels of room under the figures gone, so more of the map shows); the command sheet's height follows its
+  longer column; our camera centres on the script's view when the screen comes to the map; the plates are not shown
+  under the sheets (as held landscape: they belong to the map's wait); a marker's tap reach is a circle 8 mm across.
+- **The gallery**: the PC, touch and landscape passes same (110, 111 and 114 entries); the upright pass's 13 map entries
+  changed (`map-markers…`, `map-north`, `command-menu…`, `province-menu…`) and `all-data-scale` (P1's own: the Menu cell
+  no longer over the scale menu's rows; its former picture was older). PM1a, PM1b and PM1c left `GALLERY_ENTRIES`. A
+  first upright run hung after `info-level-up` (the title's entries, 2 GB); the title alone and the pass again ran whole.
+- **Unattended play**: headless with `--phone upright` from the week-18 save to its deployment picker (the replenish on
+  our Subordinates screen, the attack on Oaks (6), the deployment table), exit 0. Headless play clicks through the
+  script's own gestures, so a tap on the upright map (the drag, then the click) has run in the tests alone; the owner's
+  look on the Poco is its first run.
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.

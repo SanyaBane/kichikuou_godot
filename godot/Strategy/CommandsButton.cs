@@ -12,7 +12,8 @@ namespace Kichikuou.Game.Strategy;
 /// Drawn in lacquer and gold as our panels (owner's A, 2026-10-24; "The map's and the battle's buttons, round 1"): the
 /// double gold frame and its studs, an icon, the brush face of Turn END. On the phone held landscape it stands in the
 /// right side at the thumb, its icon over its word (docs/ui/phone.md, §12, LM1; <see cref="PhoneMap.CommandsCell"/>), and
-/// as Close a row's height where it stood (<see cref="PhoneMap.FootCell"/>).
+/// as Close a row's height where it stood (<see cref="PhoneMap.FootCell"/>); held upright at the bar's right, its icon
+/// beside its word, Close in its place (§3, PM1; <see cref="PhoneMapUpright.CommandsCell"/>).
 /// </summary>
 internal sealed partial class CommandsButton : Control
 {
@@ -61,9 +62,9 @@ internal sealed partial class CommandsButton : Control
     /// <summary>Places the button on the picture <paramref name="area"/> (its parent's coordinates).</summary>
     public void Place(Rect2 area)
     {
-        if (Device.Landscape(this) is { } f)
+        if (Device.Held(this) is { } f)
         {
-            var cell = _closes ? PhoneMap.FootCell(f) : PhoneMap.CommandsCell(f);
+            var cell = f.IsUpright ? PhoneMapUpright.CommandsCell(f) : _closes ? PhoneMap.FootCell(f) : PhoneMap.CommandsCell(f);
             (_phone, Position, Size) = (f, new Vector2(cell.X, cell.Y), new Vector2(cell.W, cell.H));
             QueueRedraw();
             return;
@@ -108,8 +109,13 @@ internal sealed partial class CommandsButton : Control
         {
             var u = new PhoneUnits(phone);
             DrawSetTransform(-Position, 0, new Vector2(u.K, u.K));
-            SideCells.DrawButton(this, u, new Rect2(Position / u.K, Size / u.K), _closes ? SideCells.Icon.Close : SideCells.Icon.Menu,
-                _closes ? "Close" : "Commands", _down && _inside, Ui);
+            var cell = new Rect2(Position / u.K, Size / u.K);
+            var glyph = _closes ? SideCells.Icon.Close : SideCells.Icon.Menu;
+            string word = _closes ? "Close" : "Commands";
+            if (phone.IsUpright)
+                SideCells.DrawBarButton(this, u, cell, glyph, word, _down && _inside, Ui);
+            else
+                SideCells.DrawButton(this, u, cell, glyph, word, _down && _inside, Ui);
             return;
         }
         float k = _scale;

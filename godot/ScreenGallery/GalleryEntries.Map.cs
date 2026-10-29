@@ -2,6 +2,7 @@ using Godot;
 using Kichikuou.Content.Screen;
 using Kichikuou.Engine.Script;
 using Kichikuou.Game.Strategy;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.Content.ScreenGallery;
 using Kichikuou.Original.Content.Strategy;
 using Kichikuou.Original.Script;
@@ -51,7 +52,7 @@ internal static partial class GalleryEntries
         yield return new("command-menu-building-tip", Map, "Status strip: the building's tooltip", Week18,
             "Made up: the Military Academy under way, 5 weeks left; the tooltip as the pointer over Construction's tag shows it "
             + "(on the phone held landscape on the map's wait, where the right side shows the tags).",
-            g => PhoneLandscape ? Markers(g, hideDimmed: true, hover: null, GalleryStates.AcademyUnderWay, tip: true)
+            g => PhoneHeld ? Markers(g, hideDimmed: true, hover: null, GalleryStates.AcademyUnderWay, tip: true)
                 : CommandPanel(g, GalleryStates.AcademyUnderWay, tip: true));
         yield return new("province-menu", Map, "Province menu: an enemy's, Oaks (6)", Week18, "",
             g => Province(g, Oaks));
@@ -99,8 +100,9 @@ internal static partial class GalleryEntries
         var p = g.Bound(s);
         var corner = Room(backdrop, p);
         var markers = p.MapMarkers();
+        var map = UprightMap(g, s, p);
         var view = g.Add(new MapMarkersView(g.Font) { Visible = true });
-        view.SetCoveredTop(PhoneLandscape ? 0 : MapHeadroom.Strip);         // the phone's status is in the sides
+        view.SetCoveredTop(PhoneHeld ? 0 : MapHeadroom.Strip);              // the phone's status is in the sides or on top
         view.SetHideDimmed(hideDimmed);
         view.Load(markers);
         var bar = Strip(g, p);
@@ -112,8 +114,11 @@ internal static partial class GalleryEntries
         return area =>
         {
             GalleryStage.Fill(backdrop, area);
-            view.Place(area, area.Size.X / Surface.ScreenWidth, corner);
             bar.Place(StripArea(area));
+            if (map is not null && PlaceUpright(map, bar) is var (box, scale, width))
+                view.Place(box, scale, map.Corner, (width, PhoneMapUpright.MapHeight));
+            else
+                view.Place(area, area.Size.X / Surface.ScreenWidth, corner);
             button?.Place(area);
             drawer?.Place(area);
             menu?.Place();
@@ -123,14 +128,40 @@ internal static partial class GalleryEntries
     }
 
     /// <summary>
+    /// The phone held upright (docs/ui/phone-build.md, step P2): the map's whole height under the status band, our own view
+    /// of it centred on the script's, as <c>GameScreen</c> shows it under its plates and menus; null elsewhere.
+    /// </summary>
+    private static UprightMapView? UprightMap(GalleryStage g, GameState s, GamePresenter p)
+    {
+        if (Device.Layout != DeviceLayout.PhoneUpright)
+            return null;
+        var map = g.Add(new UprightMapView(g.Faces));
+        map.Show(s, p.MapViewShown ?? throw new InvalidOperationException("The map was not shown."));
+        return map;
+    }
+
+    /// <summary>
+    /// The upright map laid under <paramref name="bar"/>'s band (placed already); returns the map's box, its scale and the
+    /// columns it shows, where the plates go; null off an upright phone.
+    /// </summary>
+    private static (Rect2 Box, float Scale, int Width)? PlaceUpright(UprightMapView map, StatusStripView bar)
+    {
+        if (Device.Upright(map) is not { } f)
+            return null;
+        map.Place(bar.UprightBand(f));
+        var view = map.View;
+        return (new Rect2(view.Box.X, view.Box.Y, view.Box.W, view.Box.H), view.Scale, (int)MathF.Ceiling(view.Width));
+    }
+
+    /// <summary>
     /// The map's room under the strip as <c>GameScreen</c> gives it: the backdrop drawn lower by the view's
-    /// <see cref="MapHeadroom.Shift"/> (none on the phone held landscape, its status in the sides); returns the corner the
+    /// <see cref="MapHeadroom.Shift"/> (none on the phone, its status in the sides or on top); returns the corner the
     /// picture is drawn at, which our plates and menus are placed from.
     /// </summary>
     private static (int X, int Y) Room(TextureRect backdrop, GamePresenter p)
     {
         var (x, y) = p.MapViewShown ?? throw new InvalidOperationException("The map was not shown.");
-        int shift = PhoneLandscape ? 0 : MapHeadroom.Shift(y);
+        int shift = PhoneHeld ? 0 : MapHeadroom.Shift(y);
         var material = MapRoomPicture.Material();
         MapRoomPicture.SetShift(material, shift);
         backdrop.Material = material;
@@ -199,6 +230,7 @@ internal static partial class GalleryEntries
         var p = g.Bound(s);
         Room(backdrop, p);
         var menu = Opened(p, CommandPhase.MenuItems(s), q => q.CommandMenu, "COMMAND's menu");
+        var map = UprightMap(g, s, p);
         var panel = g.Add(new CommandMenuView(g.Font));
         panel.Open(menu);
         var button = TouchCommandsButton(g, closes: true);
@@ -208,9 +240,11 @@ internal static partial class GalleryEntries
         return area =>
         {
             GalleryStage.Fill(backdrop, area);
+            bar.Place(StripArea(area));
+            if (map is not null && PlaceUpright(map, bar) is not null && Device.Upright(map) is { } f)
+                panel.UprightBand = bar.UprightBand(f);
             panel.Place(area);
             button?.Place(area);
-            bar.Place(StripArea(area));
         };
     }
 
@@ -225,15 +259,18 @@ internal static partial class GalleryEntries
         var p = g.Bound(s);
         var corner = Room(backdrop, p);
         var menu = Opened(p, items, q => q.ProvinceMenu, "a city's first menu");
-        var view = g.Add(new ProvinceMenuView(g.Font, g.Faces));
-        view.Open(menu, ProvinceMenuView.PointOf(s, province, corner));
+        var map = UprightMap(g, s, p);
+        var view = g.Add(new ProvinceMenuView(g.Font, g.Faces) { Map = map });
+        view.Open(menu, ProvinceMenuView.PointOf(s, province, corner), ProvinceMenuView.MapPointOf(s, province));
         var bar = Strip(g, p, StatusStripView.SideMode.Province);
-        var cell = MenuCell(g);                                 // the phone held landscape: Menu in the left side (LM1c)
+        var cell = map is null ? MenuCell(g) : null;            // the phone held landscape: Menu in the left side (LM1c); upright none (PM1c)
         return area =>
         {
             GalleryStage.Fill(backdrop, area);
-            view.Place(area);
             bar.Place(StripArea(area));
+            if (map is not null && PlaceUpright(map, bar) is not null && Device.Upright(map) is { } f)
+                view.UprightBand = bar.UprightBand(f);
+            view.Place(area);
             cell?.Place();
         };
     }
@@ -248,15 +285,18 @@ internal static partial class GalleryEntries
         var p = g.Bound(s);
         Room(backdrop, p);
         var menu = Opened(p, GalleryStates.CellsMenuItems(s), q => q.ProvinceMenu, "the cells' menu");
-        var view = g.Add(new ProvinceMenuView(g.Font, g.Faces));
+        var map = UprightMap(g, s, p);
+        var view = g.Add(new ProvinceMenuView(g.Font, g.Faces) { Map = map });
         view.Open(menu);
         var bar = Strip(g, p, StatusStripView.SideMode.Province);
-        var cell = MenuCell(g);                                 // the phone held landscape: Menu in the left side (LM1c)
+        var cell = map is null ? MenuCell(g) : null;            // the phone held landscape: Menu in the left side (LM1c); upright none (PM1c)
         return area =>
         {
             GalleryStage.Fill(backdrop, area);
-            view.Place(area);
             bar.Place(StripArea(area));
+            if (map is not null && PlaceUpright(map, bar) is not null && Device.Upright(map) is { } f)
+                view.UprightBand = bar.UprightBand(f);
+            view.Place(area);
             cell?.Place();
         };
     }

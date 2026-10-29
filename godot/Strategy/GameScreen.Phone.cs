@@ -47,7 +47,8 @@ public partial class GameScreen
     /// </summary>
     private void UpdatePhone()
     {
-        _menuSheet.Visible = (PhoneLandscape || PhoneUpright) && (_menuSheet.IsOpen || MenuCellShown && !(PhoneUpright && _sceneMenuView.Visible));
+        _menuSheet.Visible = (PhoneLandscape || PhoneUpright) && (_menuSheet.IsOpen
+            || MenuCellShown && !(PhoneUpright && (_sceneMenuView.Visible || _provinceView.Visible)));  // PM1c: the sheet's bar holds Return alone
         if (_menuSheet.Visible)
             _menuSheet.Place();
     }

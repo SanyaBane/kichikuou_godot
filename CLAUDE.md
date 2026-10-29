@@ -376,6 +376,12 @@ its left (PK1), the picture between the hole and it, the left portrait's window 
 other under it, the script's breaks at the phone's type (`PhoneScenes.Window`, `MessageWindow.TextRect`), a `]` menu's
 rows in the bar's place, the Menu sheet in rows from the thumb up (PN1, PN1q), the log with the names over the lines
 (PR2), the week report at the width (PW1); the views keyed by `Device.Held(view)` (either way) or `Device.Upright(view)`.
+Step P2 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P2, where it stands"): the map upright —
+the status a band on top, the map's whole height at the width under it (`godot/Strategy/UprightMapView`, drawn from the
+state's tiles and markers, scrolled sideways by our own camera), Commands at the bar's right, the command panel and a
+province's card and commands as sheets over the map's foot, the map lifted under a province's sheet
+(`Original.Content/Devices/PhoneMapUpright`; `GameScreen.UprightMap.cs`); a tap on a marker the script's view does not
+show is the drag a player would make to bring it there, then the still click (`MapMarkers.PressAnywhere`).
 **Owner's decision 33** (2026-10-29), the fifth rule change: the ninja follow-up's chance (BRS-11, R14's `RND(3)` = 1) —
 Tweaks → "Ninja follow-up", 33% (the original, the default), 67% or 100%, read off the same draw, built
 (`Combat/NinjaChance` on `OriginalScriptContext.NinjaChance`, `Battle.NinjaRolled`; `godot/Battles/NinjaChanceChoice`;

@@ -100,9 +100,16 @@ public static class GesturePoints
     /// the player may enter — in an own province or in none; null when the click opens nothing. A
     /// dungeon hit the player may not enter opens nothing, though the script moves <c>Prov_Cur</c> (STR-19).
     /// </summary>
-    public static MapHit? MapAt(GameState state, int x, int y, bool centred = true)
+    public static MapHit? MapAt(GameState state, int x, int y, bool centred = true) => MapAt(state, ViewCorner(state, centred), x, y);
+
+    /// <summary>
+    /// What a still click at screen point (<paramref name="x"/>, <paramref name="y"/>) opens with the view's corner at
+    /// <paramref name="corner"/> on the map, as <see cref="MapAt(GameState, int, int, bool)"/>: the script adds the point to
+    /// the corner unbounded, so a point past the screen's 640 × 400 hits as the same map point would in view.
+    /// </summary>
+    public static MapHit? MapAt(GameState state, (int X, int Y) corner, int x, int y)
     {
-        var (left, top) = ViewCorner(state, centred);
+        var (left, top) = corner;
         Sys3Int pressX = (Sys3Int)left + (Sys3Int)x;
         Sys3Int pressY = (Sys3Int)top + (Sys3Int)y;
         for (int p = 0; p <= state.Prov_Count.Value; p++)
@@ -122,7 +129,7 @@ public static class GesturePoints
     }
 }
 
-/// <summary>What a click on the map opens: a province or a dungeon (<see cref="GesturePoints.MapAt"/>).</summary>
+/// <summary>What a click on the map opens: a province or a dungeon (<see cref="GesturePoints.MapAt(GameState, int, int, bool)"/>).</summary>
 public readonly record struct MapHit(MapHitKind Kind, int Id);
 
 /// <summary>The kind of <see cref="MapHit"/>.</summary>

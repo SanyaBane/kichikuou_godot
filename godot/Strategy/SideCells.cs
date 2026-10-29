@@ -72,6 +72,55 @@ internal static class SideCells
     }
 
     /// <summary>
+    /// The map's button at the bar's right held upright (docs/ui/phone.md, §3, PM1): wide, its icon at its left and its word
+    /// in the brush face right of it — Commands, and Close or Return in its place.
+    /// </summary>
+    public static void DrawBarButton(CanvasItem c, PhoneUnits u, Rect2 box, Icon icon, string word, bool held = false,
+        UiPalette? palette = null)
+    {
+        var ui = palette ?? Ui;
+        ui.DrawPanel(c, box, u.K, held ? ui.RowHover : null);
+        float cy = box.GetCenter().Y, iconX = box.Position.X + u.Px(70);
+        DrawIcon(c, u, icon, new Vector2(iconX, cy), ui.Gold);
+        var brush = Brush;
+        float x0 = iconX + u.Px(50), x1 = box.End.X - u.Px(20);
+        int size = Fit(brush, word, u.Size(48), x1 - x0);
+        float width = brush.GetStringSize(word, fontSize: size).X;
+        c.DrawString(brush, new Vector2((x0 + x1 - width) / 2, cy + (brush.GetAscent(size) - brush.GetDescent(size)) / 2), word,
+            fontSize: size, modulate: ui.Name);
+    }
+
+    /// <summary>
+    /// A row across a sheet held upright (docs/ui/phone.md, §3, PM1b, PM1c): with a tag, the tag's band at its left (150
+    /// wide, a building under way's weeks on its chip) and the name after it on one line; without one, the name at the left.
+    /// Dimmed when off, lit while held. <paramref name="font"/> is the game's.
+    /// </summary>
+    public static void DrawLineRow(CanvasItem c, PhoneUnits u, Rect2 box, Font font, string name, bool on = true, bool held = false,
+        (string Word, Color Colour)? tag = null, int? weeks = null, UiPalette? palette = null)
+    {
+        var ui = palette ?? Ui;
+        ui.DrawRowBox(c, box, held && on, u.K);
+        var ink = on ? ui.Text : ui.OffText;
+        float s = Math.Min(1, box.Size.Y / u.Px(124));
+        float x = box.Position.X + u.Px(24);
+        if (tag is var (word, colour))
+        {
+            int tagSize = u.Size(30 * s);
+            float tagWidth = Math.Max(u.Px(150), font.GetStringSize(word, fontSize: tagSize).X + u.Px(24))
+                + (weeks is { } left ? UiPalette.ChipWidth(font, left, tagSize) : 0);
+            var band = new Rect2(box.Position.X + u.Px(14), box.Position.Y + u.Px(16 * s), tagWidth, box.Size.Y - 2 * u.Px(16 * s));
+            if (weeks is not null)
+                ui.DrawBusyTag(c, font, band, word, colour, u.K, tagSize, weeks);
+            else
+                ui.DrawTag(c, font, band, word, colour, on, u.K, tagSize);
+            x = band.End.X + u.Px(22);
+        }
+        int size = Fit(font, name, u.Size(40 * s), box.End.X - x - u.Px(16));
+        c.DrawString(font, new Vector2(x, Lacquer.Baseline(box, font, size)), name, fontSize: size,
+            modulate: weeks is not null ? ui.Quiet : ink);
+    }
+
+    /// <summary>
     /// A rail's row in a side (docs/ui/phone.md, §12, LM1b, LM1c): with a tag, the tag over the name in two lines (a side has
     /// no room for both in one), a building under way's weeks on its chip; without one, the name centred. Dimmed when off,
     /// lit while held. <paramref name="font"/> is the game's.

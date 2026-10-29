@@ -14,8 +14,9 @@ namespace Kichikuou.Game.Strategy;
 /// script's menu), a press anywhere else on the map stays the script's (its clicks and drags). A
 /// hovered province's card (<see cref="MapMarker.Card"/>) shows right of its plate, over the plates.
 /// Their colours are the steel palette's, kept here since the plates' own choice was dropped (owner, 2026-10-24).
-/// On the phone held landscape the plates' type is 2 mm (docs/ui/phone.md, §12, LM1; <see cref="PhoneMap.PlateText"/>),
-/// the plates as tight round it as the mock-up's.
+/// On the phone the plates' type is 2 mm (docs/ui/phone.md, §12, LM1, and §3, PM1; <see cref="PhoneMap.PlateText"/>), the
+/// plates as tight round it as the mock-up's; held upright they show the map's whole height and take no input — the map
+/// under them does (<see cref="UprightMapView"/>, <see cref="PlateAt"/>), so a finger's drag may start on one.
 /// </summary>
 internal sealed partial class MapMarkersView : Control
 {
@@ -32,6 +33,10 @@ internal sealed partial class MapMarkersView : Control
     private float _plateScale = 1;                      // the plates' size against the map's: larger on the phone
     private bool _phonePlates;                          // the phone's tighter plates
     private (int X, int Y) _corner;
+    private (int W, int H) _view = (640, 400);         // the map's part shown, in its pixels
+
+    /// <summary>A plate's input: its own, but on the upright phone's map, which takes it (<see cref="Place"/>'s view).</summary>
+    private MouseFilterEnum PlateFilter => _view == (640, 400) ? MouseFilterEnum.Pass : MouseFilterEnum.Ignore;
     private Plate? _shownHover;
     private bool _hideDimmed = MapNamesChoice.HideDimmed;
     private int _coveredTop;                            // the screen's top rows under our status strip, in script pixels
@@ -56,6 +61,12 @@ internal sealed partial class MapMarkersView : Control
 
     /// <summary>The marker the pointer is over, or null.</summary>
     public MapMarker? Hovered => _plates.FirstOrDefault(p => p.Hover)?.Marker;
+
+    /// <summary>The markers whose plates are shown: in view, and not dimmed ones hidden.</summary>
+    public IEnumerable<MapMarker> Shown => _plates.Where(p => p.Visible).Select(p => p.Marker);
+
+    /// <summary>The marker whose shown plate is under the viewport's point <paramref name="global"/>, or null.</summary>
+    public MapMarker? PlateAt(Vector2 global) => _plates.LastOrDefault(p => p.Visible && p.GetGlobalRect().HasPoint(global))?.Marker;
 
     public void SetFont(GameFont font)
     {
@@ -102,13 +113,20 @@ internal sealed partial class MapMarkersView : Control
     /// <summary>
     /// Lays the layer over the map's picture (<paramref name="area"/>, in its parent's coordinates, at
     /// <paramref name="pixels"/> window pixels to a script pixel) with the view's corner on the map at
-    /// <paramref name="corner"/>: each plate under its town, the ones whose town is out of view hidden.
+    /// <paramref name="corner"/>: each plate under its town, the ones whose town is out of view hidden. The view is the
+    /// script's 640 × 400 unless <paramref name="view"/> says otherwise (the phone held upright: the map's whole height).
     /// </summary>
-    public void Place(Rect2 area, float pixels, (int X, int Y) corner)
+    public void Place(Rect2 area, float pixels, (int X, int Y) corner, (int W, int H)? view = null)
     {
         Position = area.Position;
         Size = area.Size;
-        var phone = Device.Landscape(this);
+        var shown = view ?? (640, 400);
+        bool resized = shown != _view;
+        _view = shown;
+        if (resized)
+            foreach (var plate in _plates)
+                plate.MouseFilter = PlateFilter;
+        var phone = Device.Held(this);
         float plateScale = phone is { } f ? f.Px(PhoneMap.PlateText) / (7.5f * pixels) : 1;
         bool rescaled = Math.Abs(pixels - _pixels) > 0.001f || Math.Abs(plateScale - _plateScale) > 0.001f
             || (phone is not null) != _phonePlates;
@@ -117,7 +135,7 @@ internal sealed partial class MapMarkersView : Control
         _phonePlates = phone is not null;
         if (rescaled)
             Relayout();
-        if (corner == _corner && !rescaled)
+        if (corner == _corner && !rescaled && !resized)
             return;
         _corner = corner;
         foreach (var plate in _plates)
@@ -177,7 +195,7 @@ internal sealed partial class MapMarkersView : Control
     {
         var m = plate.Marker;
         int x = m.MapX - _corner.X, y = m.MapY - _corner.Y;
-        plate.Visible = x is >= 0 and < 640 && y is >= 0 and < 400 && !(_hideDimmed && plate.Dimmed);
+        plate.Visible = x >= 0 && x < _view.W && y >= 0 && y < _view.H && !(_hideDimmed && plate.Dimmed);
         // Under the town: 7 script pixels below its point, 20 under the big castles, 5 under a dungeon's mouth.
         float below = m.Kind == MapHitKind.Dungeon ? 5 : m.Big ? 20 : 7;
         plate.Position = new Vector2(x * _pixels - plate.Size.X / 2, (y + below) * _pixels);
@@ -276,7 +294,7 @@ internal sealed partial class MapMarkersView : Control
         {
             _layer = layer;
             Marker = marker;
-            MouseFilter = MouseFilterEnum.Pass;
+            MouseFilter = layer.PlateFilter;
             MouseDefaultCursorShape = marker.Open ? CursorShape.PointingHand : CursorShape.Forbidden;
             MouseEntered += () => { Hover = true; Redraw(); _layer.UpdateCard(); };
             MouseExited += () => { Hover = false; _down = false; Redraw(); _layer.UpdateCard(); };

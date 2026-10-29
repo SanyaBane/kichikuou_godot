@@ -78,11 +78,13 @@ internal sealed partial class ProvinceMenuView : Control
     /// <summary>
     /// Shows <paramref name="menu"/>; <see cref="ChooseAsync"/> waits for its answer. <paramref name="at"/> is the province's
     /// point on the screen (1280×800), where the touch mode's card points; null for none (out of view, the dungeon's menu).
+    /// <paramref name="mapAt"/> is its point on the map, which the phone held upright rings (<see cref="Map"/>).
     /// </summary>
-    public void Open(ProvinceMenu menu, Vector2? at = null)
+    public void Open(ProvinceMenu menu, Vector2? at = null, (int X, int Y)? mapAt = null)
     {
         _menu = menu;
         _at = menu.Place is null ? at : null;
+        _mapAt = menu.Place is null ? mapAt : null;
         _picture = _pictures.Picture(menu.Picture) is { } image ? ImageTexture.CreateFromImage(image) : null;
         _hovered = _pressed = -1;
         Visible = true;
@@ -97,6 +99,15 @@ internal sealed partial class ProvinceMenuView : Control
     public static Vector2? PointOf(GameState state, int province, (int X, int Y)? shown) =>
         MapMarkers.PointOnView(state, province, shown ?? GesturePoints.ViewCorner(state, centred: false)) is { } p
             ? new Vector2(p.X, p.Y) * 2 : null;
+
+    /// <summary><paramref name="province"/>'s point on the map, which the phone held upright rings; null when it has none.</summary>
+    public static (int X, int Y)? MapPointOf(GameState state, int province)
+    {
+        if (province < 1 || province > state.Prov_Count.Value)
+            return null;
+        var prov = state.Provs[province];
+        return prov.MapX == 0 && prov.MapY == 0 ? null : (prov.MapX.Value, prov.MapY.Value);
+    }
 
     /// <summary>The script's answer: a row's choice, or 0 for a cancel.</summary>
     public Task<int> ChooseAsync()
@@ -127,6 +138,8 @@ internal sealed partial class ProvinceMenuView : Control
         _menu = null;
         _picture = null;
         _at = null;
+        _mapAt = null;
+        Map?.Unlift();
         Visible = false;
     }
 

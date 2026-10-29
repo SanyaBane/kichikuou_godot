@@ -195,6 +195,32 @@ public static class MapMarkers
         return true;
     }
 
+    /// <summary>
+    /// A tap on a marker anywhere on the map, though the script's view (640 × 400) may not show it — the phone held upright
+    /// shows the map's whole height (docs/ui/phone-build.md, step P2): the still click at its point when the view shows it
+    /// (<see cref="Press"/>); else first the drag a player would make to bring it to the view's middle (the camera as the
+    /// view's corner, which the drag moves by its start less its end, <c>WAO_MAP.ADV:20-51</c>; both points kept at or
+    /// past 0, as the script's pointer is, so the corner may be far off the screen's own points), then the still click at
+    /// its point in that view. <paramref name="corner"/> is the view's corner the click is read in. False when the script
+    /// would read the click as another marker's (<see cref="ClickPoint"/>).
+    /// </summary>
+    public static bool PressAnywhere(GameState state, MapMarker marker, PointerScript pointer, out (int X, int Y) corner)
+    {
+        corner = GesturePoints.ViewCorner(state, centred: false);
+        if (GesturePoints.OnScreen(state, (Sys3Int)marker.MapX, (Sys3Int)marker.MapY, centred: false) is not null)
+            return Press(state, marker, pointer);
+        var target = (X: Math.Clamp(marker.MapX - 320, 0, 1280), Y: Math.Clamp(marker.MapY - 200, 0, 400));
+        int x = marker.MapX - target.X, y = marker.MapY - target.Y;
+        var hit = GesturePoints.MapAt(state, target, x, y);
+        if (!(marker.Open ? hit == new MapHit(marker.Kind, marker.Id) : hit is null))
+            return false;
+        int dx = target.X - corner.X, dy = target.Y - corner.Y;
+        pointer.Drag(Math.Max(dx, 0), Math.Max(dy, 0), Math.Max(-dx, 0), Math.Max(-dy, 0));
+        pointer.Click(x, y);
+        corner = target;
+        return true;
+    }
+
     /// <summary>The scenario's <c>’</c> as <c>'</c>: the Japanese font draws it full width ("Monsters’  Cave").</summary>
     private static string Plain(string name) => name.Replace('’', '\'');
 }
