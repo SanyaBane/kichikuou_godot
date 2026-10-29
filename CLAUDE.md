@@ -402,6 +402,12 @@ tab its own scroll), Stop | the sends in the bar; Subordinates' orders under the
 budget at the bar's left and End at the right thumb, a question under its button; a unit's picture on a long press as a
 sheet over the foot (`Original.Content/Devices/PhoneLedgerUpright`; `DeploymentTableView.Upright.cs`,
 `DeploymentPanels.Upright.cs`, `SubordinatesView.Upright.cs`, `UnitPictureView`, `OrderResultPlate`).
+Step P6 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P6, where it stands"): the enemy attack
+upright — the PC's screen stacked, the head with the news, the province's picture with its figures beside it, "VS", the
+army's cards two a row with the front row on top facing up at the province, Maris's question, Abandon City | Ninja Scout
+over Intercept in the bar; Ninja Scout's list and Abandon City's question above their buttons
+(`Original.Content/Devices/PhoneAttackUpright`; `EnemyAttackView.Upright.cs`, the answers, the list, the cards and the
+totals shared with `EnemyAttackView.Phone.cs`).
 **Owner's decision 33** (2026-10-29), the fifth rule change: the ninja follow-up's chance (BRS-11, R14's `RND(3)` = 1) —
 Tweaks → "Ninja follow-up", 33% (the original, the default), 67% or 100%, read off the same draw, built
 (`Combat/NinjaChance` on `OriginalScriptContext.NinjaChance`, `Battle.NinjaRolled`; `godot/Battles/NinjaChanceChoice`;

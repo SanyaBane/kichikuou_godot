@@ -983,6 +983,38 @@ and System's rotation lock).
   script's gestures, so the fixed part's taps and the sideways scroll have run in the gallery alone; the owner's look on
   the Poco is their first run by a finger.
 
+**Step P6, where it stands (2026-10-29):** built, **awaiting the owner's look on the Poco**.
+
+- **The model** (`Original.Content/Devices/PhoneAttackUpright`, tested in `PhoneAttackUprightTests`): the places at the
+  mock-ups' figures (`attack_head`, `pa1_base`, `pa1n`, `attacker_card`, `maris`, `attack_answers`) from the room's top and
+  the bar — the head under the hole (186 high: the flag 78 wide, the title, the date at the right, the news in one line, the
+  divider at 172); the province's panel (540 high: the picture 600 wide at the left, the PC's 3:2, its four figures beside
+  it from 654 in, each a label over its value at the right, 88 apart); "VS" in the 80 under it; the army's panel down to
+  20 over Maris's question (the cards 571 × 270, two a row, 14 apart, the front row (1, 2) on top, each row's caption in
+  the 40 over it, the totals 16 under the cards; the block in the panel's middle; a screen shorter than the Poco's takes
+  the height from the cards, an 18:9 phone's 224); Maris's question (330 high, 20 over the answers, her face 170, her
+  lines 2.4 mm); Abandon City (527 × 128, 10 under Ninja Scout's top) | Ninja Scout (586 × 148, 168 over the bar),
+  Intercept the bar; Ninja Scout's list 30 over its button, its rows 150 high (8.5 mm) — one ninja from 440 in, as PA1n
+  drew, more across the room two a row.
+- **The views**, keyed by the live device (`Device.Held`: the screen's `Place` now lays it out held either way; the PC's,
+  the tablet's and the landscape phone's paths unchanged): `EnemyAttackView.Upright.cs` draws the head, the province's
+  panel, "VS", the army's panel and Maris's question over the whole screen on the wave backdrop; the answers, the list, the
+  cards (`PhoneCommanderCard`, the unknown and empty places) and the totals are held landscape's
+  (`EnemyAttackView.Phone.cs`; Intercept's two lines placed as Ninja Scout's when the button is as high as the bar);
+  Abandon City's question is the callout above its button (`TreasureCallout.PlacePhone`, laid out again with the screen).
+- **The agent's choices**, for the owner to confirm: the army's cards and totals in the panel's middle (the owner's change
+  to LA2; PA1 drew them from the panel's top); the attacker's flag at the PC's shape (PA1 a square cut of it); a place
+  not scouted yet and an empty one drawn as held landscape draws them (PA1 drew the places scouted); two or more ninjas'
+  list across the room two a row, over the army's totals (PA1n drew Kanami alone); Ninja Scout lit while its list is open;
+  Abandon City's question the PC's words in the callout above its button, as wide as its lines, Abandon at the right; the
+  province's figures shrunk to their column when a label or a value is longer than it.
+- **The gallery**: the PC, touch and landscape passes same (110, 111 and 114 entries); the upright pass's four
+  `enemy-attack…` entries changed. PA1 and PA1n left `GALLERY_ENTRIES`; the phone tab keeps 18 mock-ups (P7-P8's).
+- **Unattended play**: headless with `--phone upright` from the week-18 save to its deployment picker, and with
+  `--turn-end --scout` through the enemy attack on Ys (5) (Ninja Scout, Back from the deployment screen, the interception)
+  to the deployment picker, exit 0 both. Headless play draws none of our overlays, so the screen has run in the gallery
+  alone; the owner's look on the Poco is its first run by a finger.
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.

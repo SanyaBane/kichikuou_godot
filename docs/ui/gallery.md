@@ -512,6 +512,11 @@ over the orders (Replenish and Talk on one row, Add New Troops three a row), the
 right thumb, `-question` Replenish's question under its button, `-result` the plate at the screen's width. PD2, PD2d, PU1
 and PU1q left `GALLERY_ENTRIES`; the long press's picture (PD2d) has no entry, as held landscape's has none.
 
+Step P6 (2026-10-29) built the enemy attack: on this pass `enemy-attack…` show the PC's screen stacked — the head with the
+news, Ys's picture with its figures beside it, "VS", the rebels' cards two a row with the front row on top, Maris's
+question, Abandon City | Ninja Scout over Intercept in the bar —, `-scouted` the places filled, `-ninjas` the list above
+Ninja Scout, `-abandon` the question above Abandon City. PA1 and PA1n left `GALLERY_ENTRIES`.
+
 ## 10. The copy for a website (owner, 2026-10-29)
 
 The owner's request: the gallery on the owner's website, its pictures in a light format and the current ones alone, the

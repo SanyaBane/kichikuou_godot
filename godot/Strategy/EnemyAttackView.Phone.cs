@@ -12,7 +12,8 @@ namespace Kichikuou.Game.Strategy;
 // panel and the army's at the left, their content in their middle, the army's cards as the scout report's; at the right
 // thumb a column of its own: the title, the date and the news, Maris's question, Abandon City | Ninja Scout, Intercept at
 // the thumb. Ninja Scout's list opens above its button, two ninjas a row; Abandon City asks in the callout above its button.
-// Drawn in the frame's layout pixels over the whole screen (PhoneUnits), the places PhoneAttack's.
+// Drawn in the frame's layout pixels over the whole screen (PhoneUnits), the places PhoneAttack's. The answers, the list,
+// the cards and the totals serve the phone held upright too (EnemyAttackView.Upright.cs).
 internal sealed partial class EnemyAttackView
 {
     private PhoneFrame? _phone;
@@ -103,6 +104,13 @@ internal sealed partial class EnemyAttackView
         Lacquer.DrawSmoothPolygon(_sheet, [new(tx, ty), new(tx + d, ty - h), new(tx + d, ty + h)], Ui.Gold, _k);
 
         var (x0, x1, top) = PhoneAttack.Totals(f);
+        PhoneTotals(u, x0, x1, top, attack);
+    }
+
+    /// <summary>The army's totals from <paramref name="x0"/> to <paramref name="x1"/> under <paramref name="top"/> (the canvas's units), the report's source under them.</summary>
+    private void PhoneTotals(PhoneUnits u, float x0, float x1, float top, EnemyAttack attack)
+    {
+        var report = attack.Report;
         float left = x0 / u.K, right = x1 / u.K, y = top / u.K, mid = y + u.Px(PhoneAttack.TotalsMiddle);
         int label = u.Size(PhoneAttack.TotalsLabel), text = u.Size(PhoneAttack.TotalsText);
         _sheet.DrawString(_cinzel, new Vector2(left, Middle(_cinzel, label, mid)), "COMMANDERS", fontSize: label, modulate: Ui.Subtitle);
@@ -126,19 +134,19 @@ internal sealed partial class EnemyAttackView
             modulate: Ui.Quiet);
     }
 
-    /// <summary>The face's square of a card at the phone's sizes: at its right, 12 in, at most <see cref="PhoneAttack.CardFace"/>.</summary>
-    private static Rect2 PhoneFace(PhoneUnits u, Rect2 card)
+    /// <summary>The face's square of a card at the phone's sizes: at its right, 12 in, at most <paramref name="faceMax"/> reference pixels.</summary>
+    private static Rect2 PhoneFace(PhoneUnits u, Rect2 card, float faceMax)
     {
-        float inset = u.Px(PhoneBattleStates.FaceIn), size = Math.Min(card.Size.Y - 2 * inset, u.Px(PhoneAttack.CardFace));
+        float inset = u.Px(PhoneBattleStates.FaceIn), size = Math.Min(card.Size.Y - 2 * inset, u.Px(faceMax));
         return new Rect2(card.End.X - inset - size, card.Position.Y + inset, size, size);
     }
 
     /// <summary>A place not scouted yet, as the PC's: dashed, a "?" where the face goes, "Unknown", its troops "??".</summary>
-    private void PhoneUnknownCard(PhoneUnits u, Rect2 card, int slot)
+    private void PhoneUnknownCard(PhoneUnits u, Rect2 card, int slot, float faceMax = PhoneAttack.CardFace)
     {
         _sheet.DrawRect(card, Ui.Row with { A = 0.6f });
         Lacquer.DrawDashed(_sheet, card, Ui.DimGold, _k);
-        var face = PhoneFace(u, card);
+        var face = PhoneFace(u, card, faceMax);
         Lacquer.DrawDashed(_sheet, face, Ui.OffLine, _k, 4, 8);
         int mark = u.Size(60);
         CentredAt(_brush, "?", mark, face.GetCenter().X, Middle(_brush, mark, face.GetCenter().Y), Ui.DimGold);
@@ -251,14 +259,16 @@ internal sealed partial class EnemyAttackView
         int subSize = SideCells.Fit(_font!, sub, u.Size(PhoneAttack.ScoutNote), scout.Size.X - u.Px(24));
         CentredAt(_font!, sub, subSize, scout.GetCenter().X, Middle(_font!, subSize, scout.End.Y - u.Px(38)), canScout ? Ui.Quiet : Ui.OffText);
 
-        // Intercept, half as high as first drawn: its two lines closer (the mock-ups' low button).
+        // Intercept: held landscape half as high as first drawn, its two lines closer (the mock-ups' low button); upright
+        // the bar, its lines as Ninja Scout's.
         var intercept = InterceptRect;
         Ui.DrawRedButton(_sheet, intercept, Hovered(Spot.Intercept), Down(Spot.Intercept), _k);
-        int interceptSize = u.Size(PhoneAttack.InterceptText), noteSize = u.Size(PhoneAttack.InterceptNote);
+        bool low = intercept.Size.Y < u.Px(140);
+        int interceptSize = u.Size(PhoneAttack.InterceptText), noteSize = u.Size(low ? PhoneAttack.InterceptNote : PhoneAttack.ScoutNote);
         CentredAt(_brush, "Intercept", interceptSize, intercept.GetCenter().X,
-            Middle(_brush, interceptSize, intercept.Position.Y + intercept.Size.Y * 0.36f), Ui.Name);
+            Middle(_brush, interceptSize, low ? intercept.Position.Y + intercept.Size.Y * 0.36f : intercept.Position.Y + u.Px(56)), Ui.Name);
         CentredAt(_font!, "choose the units", noteSize, intercept.GetCenter().X,
-            Middle(_font!, noteSize, intercept.End.Y - intercept.Size.Y * 0.2f), Color.Color8(236, 206, 160));
+            Middle(_font!, noteSize, low ? intercept.End.Y - intercept.Size.Y * 0.2f : intercept.End.Y - u.Px(38)), Color.Color8(236, 206, 160));
     }
 
     /// <summary>Ninja Scout's list above its button, the column's width, two ninjas a row; the spent ones dimmed.</summary>
@@ -290,7 +300,8 @@ internal sealed partial class EnemyAttackView
             if (_faces.SquareTexture(ninja.Portrait, _faces.CropOf(ninja.Portrait, _crops), (int)Math.Round(size * _k)) is { } square)
                 _sheet.DrawTextureRect(square, face, false, ninja.Free ? Colors.White : new Color(0.45f, 0.42f, 0.4f));
             _sheet.DrawRect(face, Ui.DimGold, false, Lacquer.Line(1, _k));
-            float tx = row.Position.X + row.Size.Y + u.Px(PhoneAttack.RowTextGap), room = row.End.X - inset - tx;
+            float gap = u.Frame.IsUpright ? PhoneAttackUpright.RowTextGap : PhoneAttack.RowTextGap;
+            float tx = row.Position.X + row.Size.Y + u.Px(gap), room = row.End.X - inset - tx;
             string name = ninja.Name.ToUpperInvariant();
             int nameSize = SideCells.Fit(_cinzelBold, name, u.Size(PhoneAttack.RowName), room);
             _sheet.DrawString(_cinzelBold, new Vector2(tx, Middle(_cinzelBold, nameSize, row.Position.Y + row.Size.Y * PhoneAttack.RowNameMiddle)),
