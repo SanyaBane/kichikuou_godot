@@ -427,7 +427,12 @@ ignored), Defaults | Close in the bar (`Original.Content/Devices/PhoneOptionsUpr
 built, awaiting the owner's look on the Poco — the dungeon's menus upright as PF1 and PF1e: the screen black, the floor's
 picture cut from the engine's texture at the room's width, window 113's lines left of the rail (the view takes the window,
 `FloorLadderView.TakeWindow`), the rail at the right thumb on the bar's foot (`Original.Content/Devices/PhoneLadderUpright`;
-`FloorLadderView.Upright.cs`). P8c (All Data) is next.
+`FloorLadderView.Upright.cs`). P8c is built, awaiting the owner's look on the Poco — All Data upright as PG2m and PG2:
+the title band, the map in miniature cut from the engine's texture at the room's width (the presenter leaves the graph
+off it, `GamePresenter.DataGraphCovered`), a sheet with the graphs as finger rows or, over a graph, as tabs over the plot
+laid out again from the presenter's bars (`GamePresenter.DataBars`) and the scale as eight chips in a row, Back in the bar
+(`Original.Content/Devices/PhoneDataUpright`; `AllDataView.Upright.cs`). P8d (the title, the import screen and the
+original's own screens) is next.
 **Owner's decision 33** (2026-10-29), the fifth rule change: the ninja follow-up's chance (BRS-11, R14's `RND(3)` = 1) —
 Tweaks → "Ninja follow-up", 33% (the original, the default), 67% or 100%, read off the same draw, built
 (`Combat/NinjaChance` on `OriginalScriptContext.NinjaChance`, `Battle.NinjaRolled`; `godot/Battles/NinjaChanceChoice`;

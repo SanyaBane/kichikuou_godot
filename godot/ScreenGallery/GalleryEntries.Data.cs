@@ -53,10 +53,12 @@ internal static partial class GalleryEntries
         p.Show(new MapEvent(0));
         p.Show(GalleryStates.SelectionWindow);
         p.Show(new DataScreenEvent(view));
-        // The phone held landscape: our sides answer the menus and draw a graph's figures again (LG2m, LG2).
+        // The phone held landscape: our sides answer the menus and draw a graph's figures again (LG2m, LG2); held upright
+        // our page lays the graph out again under the miniature, which the presenter keeps whole (PG2m, PG2).
         p.DataFiguresCovered = PhoneLandscape && view != DataView.Map;
+        p.DataGraphCovered = Device.Layout == DeviceLayout.PhoneUpright;
         SceneMenuView? menuView = null;
-        if (items is not null && !PhoneLandscape)
+        if (items is not null && !PhoneHeld)
         {
             p.OpenMenu(items);
             MenuView menu;
@@ -75,16 +77,15 @@ internal static partial class GalleryEntries
         }
         var picture = g.Picture(p);
         AllDataView? sides = null;
-        if (PhoneLandscape)
+        if (PhoneHeld)
         {
-            sides = g.Add(new AllDataView(g.Font));
+            sides = g.Add(new AllDataView(g.Font) { Screen = picture.Texture });
             if (items is null)
                 sides.ShowGraph(AllDataView.Sides.Of(p));
             else
                 sides.OpenMenu(view == DataView.Map ? AllDataView.Mode.Menu : AllDataView.Mode.Scale, AllDataView.Sides.Of(p));
         }
-        var cell = menuView is not null && Device.Layout == DeviceLayout.PhoneUpright ? null      // upright the rows take the bar (PS2m)
-            : MenuCell(g);                                      // the phone held landscape: Menu in the left side (LG2m)
+        var cell = MenuCell(g);             // the phone: Menu in the left side held landscape (LG2m), at the bar's left upright
         return area =>
         {
             GalleryStage.Fill(picture, area);

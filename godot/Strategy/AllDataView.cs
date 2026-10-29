@@ -17,8 +17,9 @@ namespace Kichikuou.Game.Strategy;
 /// graph's cell keeps it at its scale. While a graph waits for the click a tap is told the screen (<see cref="Tapped"/>),
 /// which queues the original's clicks: Back the left click that leaves the graph, a chip the right click and the scale menu
 /// answered with it, another graph's cell the left click and the menu answered with that graph; a tap on the frame stays the
-/// original's. Only on the phone held landscape (elsewhere it never shows). Drawn in the frame's layout pixels over the whole
-/// screen (<see cref="PhoneUnits"/>), the places <see cref="PhoneData"/>'s.
+/// original's. Held upright the same menus and taps on our own page (PG2m, PG2; <c>AllDataView.Upright.cs</c>); on no other
+/// device it shows. Drawn in the frame's layout pixels over the whole screen (<see cref="PhoneUnits"/>), the places
+/// <see cref="PhoneData"/>'s.
 /// </summary>
 internal sealed partial class AllDataView : Control
 {
@@ -27,10 +28,13 @@ internal sealed partial class AllDataView : Control
 
     /// <summary>
     /// What the sides show, read from the presenter (<see cref="Of"/>): the graphs' names, Back's, the scales', the shown
-    /// graph (-1 over the map), the shown scale's chip (-1 when the scale is none of them, CMD-25) and the bars' figures.
+    /// graph (-1 over the map), the shown scale's chip (-1 when the scale is none of them, CMD-25) and the bars' figures;
+    /// for the page held upright the bars themselves, the graph's title and caption, the date and the palette's colours
+    /// the bars and the plot are drawn in.
     /// </summary>
     public sealed record Sides(IReadOnlyList<string> Graphs, IReadOnlyList<string> Scales, int Shown, int Scale,
-        IReadOnlyList<DataFigure> Figures)
+        IReadOnlyList<DataFigure> Figures, IReadOnlyList<DataBar> Bars, string Title, string Caption, string Date,
+        IReadOnlyDictionary<int, Color> Inks)
     {
         private static readonly int[] ScaleValues = [1, 2, 4, 8, 16, 32, 64, 128];
 
@@ -41,10 +45,24 @@ internal sealed partial class AllDataView : Control
             DataView.MilitarySpending => 2,
             DataView.Casualties => 3,
             _ => -1,
-        }, Array.IndexOf(ScaleValues, p.DataScale), p.DataFigures);
+        }, Array.IndexOf(ScaleValues, p.DataScale), p.DataFigures, [.. p.DataBars], p.DataTitle, p.DataCaption,
+            HaremRoster.DateText(p.State?.Week.Value ?? 0) ?? "", InksOf(p));
+
+        private static Dictionary<int, Color> InksOf(GamePresenter p)
+        {
+            var inks = new Dictionary<int, Color>();
+            foreach (int entry in p.DataBars.SelectMany(b => b.Stack.Select(part => part.Color).Prepend(b.Color))
+                         .Append(GamePresenter.DataPlotColor).Append(GamePresenter.DataFrameColor))
+            {
+                var (r, g, b) = p.Screen.Palette[entry];
+                inks[entry] = Color.Color8(r, g, b);
+            }
+            return inks;
+        }
 
         /// <summary>What the drawing depends on, to draw again only on a change.</summary>
-        public string Key => $"{Shown}|{Scale}|{string.Join(",", Figures)}";
+        public string Key => $"{Shown}|{Scale}|{string.Join(",", Figures)}|{Title}|{Date}|"
+            + string.Join(",", Bars.Select(b => $"{b.Height}/{string.Join("/", b.Stack.Select(part => part.Height))}"));
     }
 
     private const string BackWord = "Back";
@@ -131,10 +149,10 @@ internal sealed partial class AllDataView : Control
         Visible = true;
     }
 
-    /// <summary>Lays the view over the whole screen in the phone's frame; on any other device it never shows.</summary>
+    /// <summary>Lays the view over the whole screen in the phone's frame, held either way; on any other device it never shows.</summary>
     public void Place()
     {
-        var phone = Device.Landscape(this);
+        var phone = Device.Held(this);
         if (phone is null)
         {
             Visible = false;
@@ -150,8 +168,9 @@ internal sealed partial class AllDataView : Control
     }
 
     /// <summary>A part's box in layout pixels.</summary>
-    private Rect2 RectOf(PhoneUnits u, int part) => u.Rect(part < ChipBase ? PhoneData.Graph(u.Frame, part)
-        : part < BackPart ? PhoneData.Chip(u.Frame, part - ChipBase) : PhoneData.Back(u.Frame));
+    private Rect2 RectOf(PhoneUnits u, int part) => u.Frame.IsUpright ? UprightRectOf(u, part)
+        : u.Rect(part < ChipBase ? PhoneData.Graph(u.Frame, part)
+            : part < BackPart ? PhoneData.Chip(u.Frame, part - ChipBase) : PhoneData.Back(u.Frame));
 
     private IEnumerable<int> Parts => _mode == Mode.Menu
         ? [.. Enumerable.Range(0, PhoneData.Graphs), BackPart]
@@ -169,8 +188,12 @@ internal sealed partial class AllDataView : Control
         return -1;
     }
 
-    /// <summary>A menu takes every press over the screen; a graph only those on our parts, the frame's being the original's.</summary>
-    public override bool _HasPoint(Vector2 point) => Visible && (_answer is not null || PartAt(point) >= 0);
+    /// <summary>
+    /// A menu takes every press over the screen; a graph held landscape only those on our parts, the frame's being the
+    /// original's; held upright our page every press.
+    /// </summary>
+    public override bool _HasPoint(Vector2 point) =>
+        Visible && (_answer is not null || _phone is { IsUpright: true } || PartAt(point) >= 0);
 
     public override void _GuiInput(InputEvent e)
     {
@@ -240,6 +263,11 @@ internal sealed partial class AllDataView : Control
             return;
         var u = new PhoneUnits(f);
         DrawSetTransform(Vector2.Zero, 0, new Vector2(u.K, u.K));
+        if (f.IsUpright)
+        {
+            DrawUpright(u, s);
+            return;
+        }
         var (gx, gy) = PhoneData.GraphsHeading(f);
         Heading(u, "GRAPHS", gx, gy);
         for (int i = 0; i < PhoneData.Graphs && i < s.Graphs.Count; i++)
@@ -266,9 +294,9 @@ internal sealed partial class AllDataView : Control
     }
 
     /// <summary>A side's heading (GRAPHS, SCALE): Cinzel at its left, its middle given.</summary>
-    private void Heading(PhoneUnits u, string text, float x, float middle)
+    private void Heading(PhoneUnits u, string text, float x, float middle, float type = PhoneData.HeadingText)
     {
-        int size = u.Size(PhoneData.HeadingText);
+        int size = u.Size(type);
         DrawString(_cinzel, new Vector2(x / u.K, PhonePickerParts.Middle(_cinzel, size, middle / u.K)), text, fontSize: size,
             modulate: Ui.Subtitle);
     }
@@ -292,11 +320,11 @@ internal sealed partial class AllDataView : Control
     }
 
     /// <summary>A scale's chip: vermilion framed in gold while it is the shown scale.</summary>
-    private void Chip(PhoneUnits u, Rect2 box, string word, bool lit, bool held)
+    private void Chip(PhoneUnits u, Rect2 box, string word, bool lit, bool held, float type = PhoneData.ChipText)
     {
         DrawRect(box, lit ? Ui.Vermilion : held ? Ui.RowHover : Ui.Row);
         DrawRect(box, lit ? Ui.Gold : held ? Ui.HoverLine : Ui.DimGold, false, Lacquer.Line(u.Px(lit ? 3 : 2), u.K));
-        int size = SideCells.Fit(_gothic, word, u.Size(PhoneData.ChipText), box.Size.X - u.Px(16));
+        int size = SideCells.Fit(_gothic, word, u.Size(type), box.Size.X - u.Px(16));
         Centred(_gothic, size, box.GetCenter(), word, lit ? Ui.Name : Ui.Text);
     }
 

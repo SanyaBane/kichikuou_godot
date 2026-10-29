@@ -542,6 +542,11 @@ at the room's width in a gold frame, window 113's lines left of the rail and the
 (Retreat, Ascend, the floor, Descend); `dungeon-entry…` the same before a search, Return over Start Search (`-more` with
 Bring Merim and God's Door between them, the picture higher). PF1 and PF1e left `GALLERY_ENTRIES`.
 
+Step P8c (2026-10-30) built All Data: on this pass `all-data…` show the title band, the map in miniature at the room's
+width and the sheet under it — `all-data` the four graphs as finger rows, the graphs' entries the four as tabs over the
+plot laid out again at the phone's type (a figure over each bar), the caption and the scale's eight chips in a row, the
+shown one lit; Back in the bar. PG2m and PG2 left `GALLERY_ENTRIES`.
+
 ## 10. The copy for a website (owner, 2026-10-29)
 
 The owner's request: the gallery on the owner's website, its pictures in a light format and the current ones alone, the

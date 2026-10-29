@@ -284,14 +284,12 @@ SHEETS = {}
 # The gallery's phone tab: the owner's chosen base versions (docs/ui/phone.md), by mock-up name, those not built yet; a
 # built one leaves for the real pass "Smartphone, upright" (docs/ui/phone-build.md: P1 took PS2, PS2l, PS2b, PS2m, PW1,
 # PEd, PEr, PN1, PN1q and PR2; P2 PM1a, PM1b and PM1c; P3 PB3, PB3r and PB3x; P4 PB4o3, PB4s, PB4c, PB4r and PB4b; P5
-# PD2, PD2d, PU1 and PU1q; P6 PA1 and PA1n; P7a PH2 and PT2; P7b PL2 and PY2; P8a PO1 and PO1o; P8b PF1 and PF1e).
+# PD2, PD2d, PU1 and PU1q; P6 PA1 and PA1n; P7a PH2 and PT2; P7b PL2 and PY2; P8a PO1 and PO1o; P8b PF1 and PF1e; P8c
+# PG2m and PG2).
 GALLERY_ENTRIES = {
     # Round P3-P7's choices (owner, 2026-10-27; docs/ui/phone.md, §5): PO1 and PO1o built (step P8a), PF1 and PF1e (P8b).
-    # Round P18's choices (owner, 2026-10-28; docs/ui/phone.md, §22): All Data, the title (PE2 changed), the import.
-    'PG2m': ('pg2-data', 'All Data — PG2', 'The menu of graphs', 'the map in miniature on top, the graphs as finger '
-                                                                 'rows'),
-    'PG2': ('pg2-funds', 'All Data — PG2', 'A graph', 'All Funds at the phone\'s type; the graphs as tabs, the scales '
-                                                      'as chips'),
+    # Round P18's choices (owner, 2026-10-28; docs/ui/phone.md, §22): the title (PE2 changed), the import; All Data's PG2m
+    # and PG2 built (step P8c).
     'PE2': ('pe2-title', 'Title — PE2', 'The title', 'after a clear: a row for each button, its word alone'),
     'PI': ('pi-import', 'Import — PI', 'A folder chosen', 'the paper card in the middle, Back | Import in the bar'),
     'PIp': ('pi-progress', 'Import — PI', 'Importing', 'the decompile\'s bar (made up: 45%)'),

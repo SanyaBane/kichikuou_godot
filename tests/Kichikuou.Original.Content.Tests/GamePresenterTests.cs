@@ -358,6 +358,57 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// The phone held upright (docs/ui/phone.md, §22, PG2) lays a graph out again under the map in miniature: the presenter
+    /// keeps every bar as drawn — its height, colour, the spending stacked in a funds' bar, its figure and "OV" when cut —
+    /// with the graph's title and caption, and while <see cref="GamePresenter.DataGraphCovered"/> leaves the whole graph off
+    /// the screen (the plot's grey under the miniature not drawn).
+    /// </summary>
+    [ScenarioFact]
+    public async Task All_data_keeps_the_bars_and_leaves_the_graph_off_for_the_phone_upright()
+    {
+        var run = await RunAsync(stopAtWeek: 0);
+        var s = run.Session.State;
+        for (int k = 0; k < 16; k++)
+            s.History[(Sys3Int)k].Funds = (Sys3Int)(k == 0 ? 5000 : 100 * k);
+        s.History[(Sys3Int)1].MilitaryExp = (Sys3Int)26;
+        s.History[(Sys3Int)1].SundryExp = (Sys3Int)39;
+        var player = run.Player;
+        player.Answers["各種DATA.ADV"] = new([1, 5]);                      // Funds, Return
+        player.DataPresses.Enqueue(16);
+        var p = run.Presenter;
+        var seen = new List<(IReadOnlyList<DataBar> Bars, string Title, string Caption, bool Plot)>();
+        bool covered = false;
+        player.OnRead = () =>
+        {
+            if (p.Data != DataView.Funds)
+                return;
+            p.DataGraphCovered = covered;
+            p.Compose();
+            // Left of the first bar under the miniature: the plot's grey, or the cleared screen's black.
+            bool plot = p.Screen.PixelAt(60, 345) is var (r, g, b, _) && (r, g, b) == p.Screen.Color(GamePresenter.DataPlotColor);
+            seen.Add(([.. p.DataBars], p.DataTitle, p.DataCaption, plot));
+            covered = !covered;
+        };
+
+        await run.Session.Script.CallFileAsync("各種DATA.ADV");
+
+        Assert.Equal([true, false], seen.Select(x => x.Plot).Take(2));
+        foreach (var (bars, title, caption, _) in seen.Take(2))
+        {
+            Assert.Equal(16, bars.Count);
+            Assert.Equal(new DataBar(72, 300, 207, bars[0].Stack, "50", "OV"), bars[0]);        // 5000 / 13 cut at 300
+            Assert.Equal([new DataSpan(0, 0, 249), new DataSpan(0, 0, 252)], bars[0].Stack);
+            Assert.Equal((104, 100 / 13, 207, "1"), (bars[1].X, bars[1].Height, bars[1].Color, bars[1].Figure));
+            Assert.Equal([new DataSpan(0, 26 / 13, 249), new DataSpan(26 / 13, 39 / 13, 252)], bars[1].Stack);
+            Assert.Null(bars[1].Over);
+            Assert.Equal((552, 1500 / 13, "15"), (bars[15].X, bars[15].Height, bars[15].Figure));
+            Assert.StartsWith("【All Funds】", title);
+            Assert.EndsWith("16x", title);
+            Assert.StartsWith("New", caption);
+        }
+    }
+
+    /// <summary>
     /// A search of the Monsters' Cave (<c>Cﾒｲｷｭｳ</c>, dungeon 2) at stage 1 on the booted world,
     /// through the router: Start Search, Bound picked in the deployment picker drawn by hand, the
     /// arrival over the cave's picture, a floor down with a battle (every draw is 1: monsters on

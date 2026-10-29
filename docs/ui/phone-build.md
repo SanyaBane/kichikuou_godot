@@ -1092,7 +1092,7 @@ P7b:
 
 **Step P8, where it stands (2026-10-30):** split as L9 was — P8a the options window (PO1 with PO1o), P8b the dungeon's
 ladder (PF1, PF1e), P8c All Data (PG2m, PG2), P8d the title, the import screen and the original's own screens (PE2, PI,
-PIp, PIr, PXf, PXc, PXm, PXr). **P8a and P8b are built, awaiting the owner's look on the Poco.** P8a:
+PIp, PIr, PXf, PXc, PXm, PXr). **P8a, P8b and P8c are built, awaiting the owner's look on the Poco.** P8a:
 
 - **The model** (`Original.Content/Devices/PhoneOptionsUpright`, tested in `PhoneOptionsUprightTests`): the places at the
   mock-ups' figures (`po1`, `po1o`, `defaults_close`) from the room's top and the bar — the title (the brush face, 62) 30
@@ -1166,6 +1166,43 @@ P8b:
 - **Unattended play**: headless with `--phone upright` from the week-18 save with `--dungeon` (the Monsters' Cave
   (dungeon 2) searched by Rance (unit 1), the battle with Sergeant Hanny on its first floor), and to its deployment
   picker, exit 0 both.
+
+P8c:
+
+- **The model** (`Original.Content/Devices/PhoneDataUpright`, tested in `PhoneDataUprightTests`): the places at the
+  mock-ups' figures (`pg2_top`, `pg2m`, `pg2`, `graph_tabs`, `scale_chips`, `funds_plot`, `end_alone`) from the room's
+  sides, its top and the bar — the title band the pickers' (`PhonePickersUpright.Band`); the map in miniature (the
+  engine's layout (0, 134)-(1280, 666), `各種DATA.ADV:1-11`) 12 under it at the room's width less 16 a side, in its shape;
+  the sheet 20 under it to 24 over the bar; over the menu of graphs the four rows (150 high, 18 apart, 48 in; the names
+  52 at 24 in) in the sheet's middle; over a graph the tabs 26 under the sheet's top (124 high, 12 apart, 40 in; two
+  lines at 36, 44 apart), the script's title 52 under them (48, fitted to the room less 100), the eight chips in one row
+  64 over the bar (120 high, 12 apart; 40), SCALE 30 over them (Cinzel 28), the plot from 150 under the tabs to 130 over
+  the chips (64.6 mm on the reference; a longer screen gives it more), the caption 44 under it (40); the bars in sixteen
+  slots, each 0.62 of its slot and centred, a height of 300 reaching 4 under the plot's top (`Column`, `Level`), a bar's
+  figure 10 over its top (40, fitted to its slot), "OV" 22 under a cut bar's top (28); Back 420 wide at the bar's right.
+- **The presenter** keeps the shown graph as drawn — `GamePresenter.DataBars` (each bar's left, height and palette
+  entry, the spending stacked in a funds' bar, its figure and its "OV"), `DataTitle`, `DataCaption` — and leaves the
+  whole graph off the screen while `DataGraphCovered`, which keeps the miniature under it whole (tested in
+  `GamePresenterTests.All_data_keeps_the_bars_and_leaves_the_graph_off_for_the_phone_upright`).
+- **The view** (`AllDataView.Upright.cs`; `AllDataView` is keyed by `Device.Held`, the parts' places dispatched by the
+  orientation, held landscape's drawing untouched): over the whole screen the wave backdrop, the title band with the
+  date, the miniature cut from the engine's texture (`Screen`, which `GameScreen` hands it each frame; the gallery hands
+  it the composed picture) in a thin frame, a lacquer sheet; over the menu of graphs the rows (a row answers it with its
+  graph, Back with Return, as held landscape's cells); over a graph the tabs, its title, the plot drawn from the
+  presenter's bars in the palette's colours (the plot 190, the frames 255, the spending stacked over a bar as the file
+  draws it), the caption, SCALE and the chips; a tab, a chip and Back queue the original's clicks as held landscape's
+  (`GameScreen.Data.cs`, now on either phone). Over the map's view with no menu open the page shows the menu's rows,
+  deaf (`ShowMap`). Every press over the page is the view's.
+- **The agent's choices**, for the owner to confirm: the bars framed in the file's white and the military spending
+  stacked under the sundry in red, as the file draws them (PG2 drew bare bars, the sundry's thin line alone); "OV" white
+  with a dark outline inside a cut bar's top; the tabs' names in two lines split at the first space, the ones not shown
+  quiet; a tap off our parts does nothing (held landscape's frame takes it as the original's click, back to the menu);
+  the scale menu never shows (a chip is the right click and its item); Menu at the bar's left as at every mouse poll
+  (PG2 drew none).
+- **The gallery**: the PC, touch and landscape passes same; the upright pass's six `all-data…` entries changed. PG2m and
+  PG2 left `GALLERY_ENTRIES`; the phone tab keeps 8 mock-ups.
+- **Unattended play**: headless with `--phone upright` from the week-18 save to its deployment picker, exit 0 (the bot
+  visits All Data only from the prologue).
 
 ## 6. The agent's own choices, for the owner to confirm
 

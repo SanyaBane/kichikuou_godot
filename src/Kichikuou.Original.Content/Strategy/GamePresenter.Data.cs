@@ -25,11 +25,41 @@ public sealed partial class GamePresenter
     /// </summary>
     public DataView Data { get; private set; }
 
+    /// <summary>The palette's entries of a graph's plot and of its frames (<c>各種DATA.ADV:388-396</c>, <c>L_00937</c>).</summary>
+    public const int DataPlotColor = 190, DataFrameColor = 255;
+
     private readonly List<DataFigure> _dataFigures = [];
-    private bool _dataFiguresCovered;
+    private readonly List<DataBar> _dataBars = [];
+    private bool _dataFiguresCovered, _dataGraphCovered;
 
     /// <summary>The shown graph's figures over its bars as last drawn, newest left; empty over the map's view.</summary>
     public IReadOnlyList<DataFigure> DataFigures => _dataFigures;
+
+    /// <summary>The shown graph's bars as last drawn, newest left; empty over the map's view.</summary>
+    public IReadOnlyList<DataBar> DataBars => _dataBars;
+
+    /// <summary>The shown graph's title with its scale, as the file prints it over the plot; empty over the map's view.</summary>
+    public string DataTitle { get; private set; } = "";
+
+    /// <summary>The shown graph's caption under the plot (<c>:395</c>); empty over the map's view.</summary>
+    public string DataCaption { get; private set; } = "";
+
+    /// <summary>
+    /// The phone held upright lays a graph out again at its own type under the map in miniature (docs/ui/phone.md, §22,
+    /// PG2): while set the graph — its plot, bars, figures, title and caption — is left off the screen, which keeps the
+    /// miniature whole; <see cref="DataBars"/> and the rest still describe it.
+    /// </summary>
+    public bool DataGraphCovered
+    {
+        get => _dataGraphCovered;
+        set
+        {
+            if (value == _dataGraphCovered)
+                return;
+            _dataGraphCovered = value;
+            Invalidate();
+        }
+    }
 
     /// <summary>
     /// The phone held landscape draws a graph's figures again at its own type over the picture (docs/ui/phone.md, §23,
@@ -81,6 +111,8 @@ public sealed partial class GamePresenter
     private void DrawData(GameState s)
     {
         _dataFigures.Clear();
+        _dataBars.Clear();
+        DataTitle = DataCaption = "";
         Screen.Fill(0, 0, Surface.ScreenWidth, Surface.ScreenHeight, 0);
         EnsureTiles();
         Screen.ScaledCopyFrom(Stage, TileArea, 0, 1920, 800, 0, 67, 640, 266, 0);
@@ -105,14 +137,21 @@ public sealed partial class GamePresenter
     /// the caption at (72, 352); the title with the scale at (64, 18)) and its 16 bars, history
     /// record k at x = 72 + 32k, newest left, standing on y 350 (<see cref="DrawFundsBar"/>,
     /// <see cref="DrawBar"/>). The file draws the graph again after a new scale; here it is drawn
-    /// from the scale and divisor GameState holds.
+    /// from the scale and divisor GameState holds; it is kept (<see cref="DataBars"/>) and left off the screen while
+    /// <see cref="DataGraphCovered"/>.
     /// </summary>
     private void DrawGraph(GameState s, int title, Sys3Int scale, Sys3Int divisor, DataGraph? graph)
     {
-        Screen.DrawBox(64 - 8 - 1, 50 - 1, 512 + 8 * 2 + 2, 300 + 2, 255);
-        Screen.Fill(64 - 8, 50, 512 + 8 * 2, 300, 190);
-        DataText(ReadText(new ScriptRef(DataFile, 395)), 64 + 8, 352, 16);
-        DataText(ReadText(new ScriptRef(DataFile, title), scale), 64, 18, 20);
+        string caption = ReadText(new ScriptRef(DataFile, 395)), heading = ReadText(new ScriptRef(DataFile, title), scale);
+        DataTitle = heading.Replace("\n", "").Trim();
+        DataCaption = caption.Replace("\n", "").Trim();
+        if (!_dataGraphCovered)
+        {
+            Screen.DrawBox(64 - 8 - 1, 50 - 1, 512 + 8 * 2 + 2, 300 + 2, DataFrameColor);
+            Screen.Fill(64 - 8, 50, 512 + 8 * 2, 300, DataPlotColor);
+            DataText(caption, 64 + 8, 352, 16);
+            DataText(heading, 64, 18, 20);
+        }
         for (int k = 0; k < 16; k++)
         {
             var record = s.History[(Sys3Int)k];
@@ -163,9 +202,14 @@ public sealed partial class GamePresenter
             sundry = n;
         }
         Bar(x, funds, 207);
-        Screen.Fill(x, ((Sys3Int)350 - military).Value, 16, military.Value, 249);
-        Screen.Fill(x, ((Sys3Int)350 - military - sundry).Value, 16, sundry.Value, 252);
-        Label(x, 24, funds, ReadText(new ScriptRef(DataFile, 117), record.Funds / 100), over ? 124 : null);
+        if (!_dataGraphCovered)
+        {
+            Screen.Fill(x, ((Sys3Int)350 - military).Value, 16, military.Value, 249);
+            Screen.Fill(x, ((Sys3Int)350 - military - sundry).Value, 16, sundry.Value, 252);
+        }
+        string figure = Label(x, 24, funds, ReadText(new ScriptRef(DataFile, 117), record.Funds / 100), over ? 124 : null);
+        _dataBars.Add(new DataBar(x, funds.Value, 207, [new(0, military.Value, 249), new(military.Value, sundry.Value, 252)],
+            figure, over ? Over(124) : null));
     }
 
     /// <summary><c>:154-187</c> and the like: one field's bar, cut at 300 with "OV", its value over it (in hundreds; the casualties in tens).</summary>
@@ -176,12 +220,18 @@ public sealed partial class GamePresenter
         if (over)
             height = 300;
         Bar(x, height, graph.Color);
-        Label(x, graph.LabelDx, height, ReadText(new ScriptRef(DataFile, graph.Label), value / (Sys3Int)graph.LabelDivisor), over ? graph.Over : null);
+        string figure = Label(x, graph.LabelDx, height, ReadText(new ScriptRef(DataFile, graph.Label), value / (Sys3Int)graph.LabelDivisor),
+            over ? graph.Over : null);
+        _dataBars.Add(new DataBar(x, height.Value, graph.Color, [], figure, over ? Over(graph.Over) : null));
     }
+
+    private string Over(int line) => ReadText(new ScriptRef(DataFile, line)).Replace("\n", "").Trim();
 
     /// <summary>A bar of <paramref name="height"/> on y 350, framed in 255 when it has a height.</summary>
     private void Bar(int x, Sys3Int height, int color)
     {
+        if (_dataGraphCovered)
+            return;
         int h = height.Value;
         Screen.Fill(x, 350 - h, 16, h, color);
         if (h != 0)
@@ -190,16 +240,19 @@ public sealed partial class GamePresenter
 
     /// <summary>
     /// The number at (x − dx, 350 − h − 11) and "OV" at (x, 350 − h + 1), size 8 (the file sets bold, <c>ZB 1</c>); the
-    /// number kept in <see cref="DataFigures"/>, left off the screen while <see cref="DataFiguresCovered"/>.
+    /// number kept in <see cref="DataFigures"/> and returned, left off the screen while <see cref="DataFiguresCovered"/>
+    /// (both while <see cref="DataGraphCovered"/>).
     /// </summary>
-    private void Label(int x, int dx, Sys3Int height, string number, int? over)
+    private string Label(int x, int dx, Sys3Int height, string number, int? over)
     {
         int h = height.Value;
-        _dataFigures.Add(new DataFigure(x, 350 - h, number.Replace("\n", "").Trim()));
-        if (!_dataFiguresCovered)
+        string figure = number.Replace("\n", "").Trim();
+        _dataFigures.Add(new DataFigure(x, 350 - h, figure));
+        if (!_dataFiguresCovered && !_dataGraphCovered)
             DataText(number, x - dx, 350 - h - 11, 8);
-        if (over is int line)
+        if (over is int line && !_dataGraphCovered)
             DataText(ReadText(new ScriptRef(DataFile, line)), x, 350 - h + 1, 8);
+        return figure;
     }
 
     private void DataText(string text, int x, int y, int size) =>
@@ -208,3 +261,14 @@ public sealed partial class GamePresenter
 
 /// <summary>A bar's figure over a graph of All Data: the bar's left and top on the screen (script pixels) and its number, unpadded.</summary>
 public sealed record DataFigure(int X, int Top, string Text);
+
+/// <summary>
+/// A bar of a graph of All Data as drawn: its left on the screen (script pixels, 16 wide), its height over the plot's foot
+/// (y 350; at most 300) in the palette's entry <paramref name="Color"/>, framed in 255 when it has a height; the spending
+/// stacked over it from the foot (the funds' graph: the military, then the sundry; empty on the others), its figure, and
+/// its "OV" when it is cut at the plot's top.
+/// </summary>
+public sealed record DataBar(int X, int Height, int Color, IReadOnlyList<DataSpan> Stack, string Figure, string? Over);
+
+/// <summary>A part stacked over a funds' bar: its foot and height over the plot's foot (script pixels), its palette entry.</summary>
+public readonly record struct DataSpan(int Foot, int Height, int Color);
