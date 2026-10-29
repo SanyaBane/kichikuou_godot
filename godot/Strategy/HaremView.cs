@@ -16,7 +16,8 @@ namespace Kichikuou.Game.Strategy;
 /// ??? in amber, nothing when her visit is read (her visits stay in the panel); the panel's "This visit" in words; Summon's
 /// pill at its top right, none when read. Drawn by hand in the 1280×800 screen's pixels (<see cref="Lacquer"/>). It decides nothing: the
 /// presses go to <see cref="GameScreen"/>, which clicks the picker's cell or its End (<see cref="HaremRoster"/>). On the phone
-/// held landscape the screen takes the whole screen, its grid folded after its ninth row (docs/ui/phone-build.md, step L7, LH2).
+/// held landscape the screen takes the whole screen, its grid folded after its ninth row (docs/ui/phone-build.md, step L7, LH2);
+/// held upright her picture stands at the width over the grid scrolled by a finger (step P7, PH2).
 /// </summary>
 internal sealed partial class HaremView : Control
 {
@@ -85,13 +86,13 @@ internal sealed partial class HaremView : Control
 
     /// <summary>
     /// Covers the screen whose script pixel (0, 0) is at <paramref name="origin"/>, <paramref name="pixelsPerScript"/> screen
-    /// pixels to a script pixel; on the phone held landscape the whole screen in its frame's layout pixels (LH2).
+    /// pixels to a script pixel; on the phone, held either way, the whole screen in its frame's layout pixels (LH2, PH2).
     /// </summary>
     public void Place(Vector2 origin, float pixelsPerScript)
     {
         Position = Vector2.Zero;
         Size = GetParentAreaSize();
-        var phone = Device.Landscape(this);
+        var phone = Device.Held(this);
         float k = phone?.Scale ?? pixelsPerScript / 2;
         if (phone is not null)
             origin = Vector2.Zero;
@@ -146,7 +147,7 @@ internal sealed partial class HaremView : Control
     private int ButtonAt(Vector2 local)
     {
         if (_phone is { } phone)
-            return PhoneButtonAt(phone, local);
+            return phone.IsUpright ? UprightButtonAt(phone, local) : PhoneButtonAt(phone, local);
         var at = (local - _origin) / _k;
         if (SummonArea.HasPoint(at))
             return SummonButton;
@@ -162,6 +163,11 @@ internal sealed partial class HaremView : Control
 
     public override void _GuiInput(InputEvent e)
     {
+        if (_phone is { IsUpright: true } && GridTouch(e))
+        {
+            AcceptEvent();
+            return;
+        }
         switch (e)
         {
             case InputEventMouseMotion motion:
@@ -224,7 +230,10 @@ internal sealed partial class HaremView : Control
         c.DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         if (_phone is { } phone)
         {
-            DrawPhone(c, new PhoneUnits(phone));
+            if (phone.IsUpright)
+                DrawUpright(c, new PhoneUnits(phone));
+            else
+                DrawPhone(c, new PhoneUnits(phone));
             return;
         }
         DrawTitle(c);

@@ -36,13 +36,20 @@ internal sealed partial class HaremView
         PhoneSummon(c, u);
     }
 
-    /// <summary>Her name by a heart, then her visits, the last summons and what this visit may bring in columns at their widest values.</summary>
     private void PhoneDetails(Control c, PhoneUnits u)
+    {
+        var (dx, dy) = PhonePickers.Details(u.Frame);
+        DrawDetails(c, u, dx / u.K, dy / u.K, u.Rect(PhonePickers.Column(u.Frame)).End.X);
+    }
+
+    /// <summary>
+    /// Her name by a heart at (<paramref name="x"/>, <paramref name="y"/>), then her visits, the last summons and what this
+    /// visit may bring in columns at their widest values, up to <paramref name="right"/> (layout pixels).
+    /// </summary>
+    private void DrawDetails(Control c, PhoneUnits u, float x, float y, float right)
     {
         if (_girls.FirstOrDefault(g => g.Number == _chosen) is not { } girl)
             return;
-        var (dx, dy) = PhonePickers.Details(u.Frame);
-        float x = dx / u.K, y = dy / u.K;
         float heart = u.Px(PhonePickers.HeartSize);
         DrawHeart(c, new Vector2(x + u.Px(PhonePickers.HeartAt), y + u.Px(PhonePickers.HeartMiddle) - heart * 0.22f), heart, Plum);
         int name = u.Size(PhonePickers.NameText);
@@ -53,7 +60,7 @@ internal sealed partial class HaremView
         // values as much smaller as the column's width needs.
         (string Label, string Widest)[] stats = [("Visits", "None yet"), ("Last summoned", "LP 9 · Month 12 · Week 4"), ("This visit", "Something may happen")];
         int label = u.Size(PhonePickers.LabelText), value = u.Size(PhonePickers.ValueText);
-        float room = u.Rect(PhonePickers.Column(u.Frame)).End.X - x, gap = u.Px(PhonePickers.StatGap);
+        float room = right - x, gap = u.Px(PhonePickers.StatGap);
         float Width(int i, int size) => Math.Max(_cinzel.GetStringSize(stats[i].Label, fontSize: label).X, _gothic.GetStringSize(stats[i].Widest, fontSize: size).X);
         while (value > 8 && stats.Select((_, i) => Width(i, value)).Sum() + 2 * gap > room)
             value--;
@@ -72,12 +79,13 @@ internal sealed partial class HaremView
         }
     }
 
-    /// <summary>Summon in red lacquer with her name, her mark's pill at its top right.</summary>
-    private void PhoneSummon(Control c, PhoneUnits u)
+    private void PhoneSummon(Control c, PhoneUnits u) => DrawSummon(c, u, u.Rect(PhonePickers.Summon(u.Frame)));
+
+    /// <summary>Summon in red lacquer in <paramref name="box"/> with her name, her mark's pill at its top right.</summary>
+    private void DrawSummon(Control c, PhoneUnits u, Rect2 box)
     {
         if (_girls.FirstOrDefault(g => g.Number == _chosen) is not { } girl)
             return;
-        var box = u.Rect(PhonePickers.Summon(u.Frame));
         bool hover = Enabled(SummonButton) && _hovered == SummonButton;
         Ui.DrawRedButton(c, box, hover, hover && _pressed == SummonButton, _k);
         string word = $"Summon {girl.Name}";
@@ -102,24 +110,33 @@ internal sealed partial class HaremView
                 PhonePickerParts.DrawEmptyCell(c, r, _k);
                 continue;
             }
-            bool chosen = n == _chosen, hover = n == _hovered;
-            c.DrawRect(r, chosen || hover ? Ui.RowHover : Ui.Row);
-            c.DrawRect(r, chosen ? Ui.HoverLine : hover ? Ui.Gold : Ui.DimGold, false, Line(chosen ? 2 : 1));
-            float mid = r.GetCenter().Y, heart = u.Px(PhonePickers.CellHeart);
-            DrawHeart(c, new Vector2(r.Position.X + u.Px(PhonePickers.CellHeartIn), mid - heart * 0.22f), heart, girl.Visits > 0 ? Plum : PlumDim);
-            float nx = r.Position.X + u.Px(PhonePickers.CellNameIn);
-            int size = SideCells.Fit(_cinzel, girl.Name, u.Size(PhonePickers.CellNameText), r.End.X - u.Px(PhonePickers.CellRight) - nx);
-            c.DrawString(_cinzel, new Vector2(nx, PhonePickerParts.Middle(_cinzel, size, mid)), girl.Name, fontSize: size,
-                modulate: chosen || hover ? Ui.Name : Ui.Text);
-            if (PickerMarks.Label(girl.Mark) is { } mark)
-            {
-                int markSize = u.Size(PhonePickers.CellMarkText);
-                float mw = _cinzel.GetStringSize(mark, fontSize: markSize).X;
-                c.DrawString(_cinzel, new Vector2(r.End.X - u.Px(PhonePickers.CellMarkIn) - mw,
-                    PhonePickerParts.Middle(_cinzel, markSize, r.Position.Y + u.Px(PhonePickers.CellMarkMiddle))), mark, fontSize: markSize,
-                    modulate: MarkColour(girl.Mark)!.Value);
-            }
+            DrawGirlCell(c, u, r, girl, PhonePickers.CellHeartIn, PhonePickers.CellNameIn);
         }
         PhonePickerParts.DrawRule(c, u);
+    }
+
+    /// <summary>
+    /// A girl's cell at the phone's sizes: her heart <paramref name="heartIn"/> and her name <paramref name="nameIn"/>
+    /// reference pixels in from its left (Cinzel, shrunk where long), her visit's mark at its top right, lit in gold when chosen.
+    /// </summary>
+    private void DrawGirlCell(Control c, PhoneUnits u, Rect2 r, HaremGirl girl, float heartIn, float nameIn)
+    {
+        bool chosen = girl.Number == _chosen, hover = girl.Number == _hovered;
+        c.DrawRect(r, chosen || hover ? Ui.RowHover : Ui.Row);
+        c.DrawRect(r, chosen ? Ui.HoverLine : hover ? Ui.Gold : Ui.DimGold, false, Line(chosen ? 2 : 1));
+        float mid = r.GetCenter().Y, heart = u.Px(PhonePickers.CellHeart);
+        DrawHeart(c, new Vector2(r.Position.X + u.Px(heartIn), mid - heart * 0.22f), heart, girl.Visits > 0 ? Plum : PlumDim);
+        float nx = r.Position.X + u.Px(nameIn);
+        int size = SideCells.Fit(_cinzel, girl.Name, u.Size(PhonePickers.CellNameText), r.End.X - u.Px(PhonePickers.CellRight) - nx);
+        c.DrawString(_cinzel, new Vector2(nx, PhonePickerParts.Middle(_cinzel, size, mid)), girl.Name, fontSize: size,
+            modulate: chosen || hover ? Ui.Name : Ui.Text);
+        if (PickerMarks.Label(girl.Mark) is { } mark)
+        {
+            int markSize = u.Size(PhonePickers.CellMarkText);
+            float mw = _cinzel.GetStringSize(mark, fontSize: markSize).X;
+            c.DrawString(_cinzel, new Vector2(r.End.X - u.Px(PhonePickers.CellMarkIn) - mw,
+                PhonePickerParts.Middle(_cinzel, markSize, r.Position.Y + u.Px(PhonePickers.CellMarkMiddle))), mark, fontSize: markSize,
+                modulate: MarkColour(girl.Mark)!.Value);
+        }
     }
 }

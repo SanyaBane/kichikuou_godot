@@ -408,6 +408,10 @@ army's cards two a row with the front row on top facing up at the province, Mari
 over Intercept in the bar; Ninja Scout's list and Abandon City's question above their buttons
 (`Original.Content/Devices/PhoneAttackUpright`; `EnemyAttackView.Upright.cs`, the answers, the list, the cards and the
 totals shared with `EnemyAttackView.Phone.cs`).
+Step P7 is split as L7 was (phone-build.md, "Step P7, where it stands"): P7a's Harem is built, awaiting the owner's look
+on the Poco — the title band, her picture at the width, her details, the picker's grid in rows of 7.3 mm scrolled by a
+finger with a thin bar, End | Summon in the bar (`Original.Content/Devices/PhonePickersUpright`, its `ScrolledGrid` for
+Treasure too; `HaremView.Upright.cs`); Treasure (PT2) is next, then P7b (Save/Load PL2, the comment's editing PY2).
 **Owner's decision 33** (2026-10-29), the fifth rule change: the ninja follow-up's chance (BRS-11, R14's `RND(3)` = 1) —
 Tweaks → "Ninja follow-up", 33% (the original, the default), 67% or 100%, read off the same draw, built
 (`Combat/NinjaChance` on `OriginalScriptContext.NinjaChance`, `Battle.NinjaRolled`; `godot/Battles/NinjaChanceChoice`;

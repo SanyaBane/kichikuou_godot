@@ -28,6 +28,31 @@ internal static class PhonePickerParts
         Ui.DrawDivider(c, column.Position.X, column.End.X, u.Px(PhonePickers.Divider), u.K);
     }
 
+    /// <summary>Held upright (PH2, PT2): the screen's name at the band's left (the brush face), the date at its right, the divider under them.</summary>
+    public static void DrawUprightTitle(CanvasItem c, PhoneUnits u, Font brush, Font cinzel, string title, string date)
+    {
+        var band = u.Rect(PhonePickersUpright.Band(u.Frame));
+        float y = band.Position.Y;
+        int size = u.Size(PhonePickersUpright.TitleText);
+        c.DrawString(brush, new Vector2(band.Position.X + u.Px(PhonePickersUpright.TitleIn), y + brush.GetAscent(size)), title, fontSize: size,
+            modulate: Ui.Name);
+        int dateSize = u.Size(PhonePickersUpright.DateText);
+        c.DrawString(cinzel, new Vector2(band.End.X - u.Px(PhonePickersUpright.DateRight) - cinzel.GetStringSize(date, fontSize: dateSize).X,
+            y + u.Px(PhonePickersUpright.DateTop) + cinzel.GetAscent(dateSize)), date, fontSize: dateSize, modulate: Ui.Name);
+        Ui.DrawDivider(c, band.Position.X + u.Px(PhonePickersUpright.DividerIn), band.End.X - u.Px(PhonePickersUpright.DividerIn),
+            y + u.Px(PhonePickersUpright.Divider), u.K);
+    }
+
+    /// <summary>Held upright: the grid's thin scroll bar in the room's right margin, while the grid scrolls.</summary>
+    public static void DrawScrollBar(CanvasItem c, PhoneUnits u, PhonePickersUpright.ScrolledGrid grid, int scroll)
+    {
+        if (grid.MaxScroll == 0)
+            return;
+        var (track, thumb) = PhonePickersUpright.ScrollBar(u.Frame, grid, scroll);
+        c.DrawRect(u.Rect(track), new Color(Ui.OffLine, 0.5f));
+        c.DrawRect(u.Rect(thumb), Ui.DimGold);
+    }
+
     /// <summary>A cell no entry holds: dimmed, as the PC's.</summary>
     public static void DrawEmptyCell(CanvasItem c, Rect2 cell, float k)
     {
