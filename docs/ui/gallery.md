@@ -547,6 +547,12 @@ width and the sheet under it — `all-data` the four graphs as finger rows, the 
 plot laid out again at the phone's type (a figure over each bar), the caption and the scale's eight chips in a row, the
 shown one lit; Back in the bar. PG2m and PG2 left `GALLERY_ENTRIES`.
 
+Step P8d (2026-10-30) built the title and the import screen: on this pass `title…` show the picture over a finger row for
+each button it draws (Start red at the thumb; `title-description` and `title-requests` the picture where the rows put it,
+the rows hidden), `import-…` the paper card in the room's middle with the steps one under another and Back | the red
+button in the bar; `fortune-check`, `cg-gallery` and `music-room` stay as they are. PE2, PI, PIp, PIr, PXf, PXc and PXm
+left `GALLERY_ENTRIES`; PXr stays (no entry of the game's gallery).
+
 ## 10. The copy for a website (owner, 2026-10-29)
 
 The owner's request: the gallery on the owner's website, its pictures in a light format and the current ones alone, the

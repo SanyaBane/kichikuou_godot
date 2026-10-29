@@ -30,8 +30,8 @@ public partial class GameScreen
     /// The screen laid out for the device (docs/ui/phone-build.md, §3), each frame, so a phone turned or a window resized
     /// is followed: on a phone the menu bar is gone and <c>_content</c> takes the whole screen, its black sides ours to
     /// draw in; the picture stands in the phone's frame (<see cref="ScreenFrame.In"/>: held landscape between the sides,
-    /// upright at the width in the room's middle). On a PC and a tablet the bar stays and the picture fills the room under
-    /// it, fitted.
+    /// upright at the width in the room's middle, the title's over its rows, <see cref="TitlePictureTop"/>). On a PC and a
+    /// tablet the bar stays and the picture fills the room under it, fitted.
     /// </summary>
     private void UpdateDevice()
     {
@@ -40,6 +40,7 @@ public partial class GameScreen
         _content.OffsetTop = phone ? 0 : MenuBarHeight;
         if (phone)
         {
+            Device.PictureTop = TitlePictureTop(TitleButtons());
             var frame = ScreenFrame.In(new Rect2(Vector2.Zero, _content.Size)).Area;
             _view.OffsetLeft = frame.Position.X;
             _view.OffsetTop = frame.Position.Y;

@@ -381,6 +381,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _ladderView = new FloorLadderView(GodotGlyphRenderer.Chosen);
         _content.AddChild(_ladderView);
         ReadyData();
+        ReadyTitleRows();
         _saveView = new SaveLoadView(GodotGlyphRenderer.Chosen, faces);
         _content.AddChild(_saveView);                           // over the message windows: they are not drawn under it
         ReadySubordinates(faces);
@@ -467,6 +468,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _ladderView.Place(PictureArea());
         }
         UpdateDataView();
+        UpdateTitleRows();
         _optionsView?.Place(PictureArea());                         // a phone turned lays it out again
         if (_provinceView.Visible)
             _provinceView.Place(PictureArea());
@@ -2069,6 +2071,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _subPointer.Interrupt();
         _treasurePointer.Interrupt();
         _dataPointer.Interrupt();
+        _titlePointer.Interrupt();
     }
 
     public async Task<MouseState> GetMouseAsync()
@@ -2126,6 +2129,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             return Read(_markerPointer.Next(out _));    // a plate's still click
         if (_dataPointer.Pending > 0)
             return Read(_dataPointer.Next(out _));      // a tap of All Data's sides on the phone
+        if (_titlePointer.Pending > 0)
+            return Read(_titlePointer.Next(out _));     // a title's row held upright
         return Read(PlayerRead());
     }
 

@@ -91,6 +91,13 @@ public sealed record PhoneFrame
     /// <summary>The engine's picture at the room's width, its top at <paramref name="top"/>: where an upright screen puts it.</summary>
     public Box PictureAt(float top) => new(Room.X, top, Room.W, Room.W * LayoutHeight / LayoutWidth);
 
+    /// <summary>
+    /// Held upright, this frame with the engine's picture moved to <paramref name="top"/> (<see cref="PictureAt"/>): a screen
+    /// that stands the picture elsewhere than the room's middle (the title over its rows, PE2), so that what is placed by
+    /// the picture follows it; held landscape this frame.
+    /// </summary>
+    public PhoneFrame WithPictureAt(float top) => IsUpright ? new(Unit, Screen, PictureAt(top), Safe, upright: true) : this;
+
     /// <summary>The canvas's units a layout pixel (of the 1280×800 frame).</summary>
     public float Scale => Frame.W / LayoutWidth;
 

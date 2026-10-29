@@ -61,9 +61,21 @@ internal static class Device
 
     /// <summary>
     /// The phone's frame as it is held over a room of <paramref name="size"/> (the canvas's units, its corner at the
-    /// screen's), with the system's safe area on Android and the reference phone's elsewhere.
+    /// screen's), with the system's safe area on Android and the reference phone's elsewhere; held upright the picture
+    /// where <see cref="PictureTop"/> puts it.
     /// </summary>
-    public static PhoneFrame Frame(Vector2 size) => PhoneFrame.For(size.X, size.Y, _insets);
+    public static PhoneFrame Frame(Vector2 size)
+    {
+        var frame = PhoneFrame.For(size.X, size.Y, _insets);
+        return frame.IsUpright && PictureTop?.Invoke(frame) is float top ? frame.WithPictureAt(top) : frame;
+    }
+
+    /// <summary>
+    /// Held upright, where the screen shown now stands the engine's picture (its top, the canvas's units, from the frame as
+    /// it would be), when not in the room's middle: the title over its rows (PE2, <c>GameScreen.Title.cs</c>); null, or a
+    /// null top, the middle.
+    /// </summary>
+    public static Func<PhoneFrame, float?>? PictureTop { get; set; }
 
     /// <summary>
     /// The phone's frame held landscape over <paramref name="view"/>'s parent — the screen's room (the game's content, the

@@ -1092,7 +1092,8 @@ P7b:
 
 **Step P8, where it stands (2026-10-30):** split as L9 was — P8a the options window (PO1 with PO1o), P8b the dungeon's
 ladder (PF1, PF1e), P8c All Data (PG2m, PG2), P8d the title, the import screen and the original's own screens (PE2, PI,
-PIp, PIr, PXf, PXc, PXm, PXr). **P8a, P8b and P8c are built, awaiting the owner's look on the Poco.** P8a:
+PIp, PIr, PXf, PXc, PXm, PXr). **P8a-P8d are built, awaiting the owner's look on the Poco** (P8c and P8d not installed
+yet: the Poco was not connected at their builds). P8a:
 
 - **The model** (`Original.Content/Devices/PhoneOptionsUpright`, tested in `PhoneOptionsUprightTests`): the places at the
   mock-ups' figures (`po1`, `po1o`, `defaults_close`) from the room's top and the bar — the title (the brush face, 62) 30
@@ -1203,6 +1204,42 @@ P8c:
   PG2 left `GALLERY_ENTRIES`; the phone tab keeps 8 mock-ups.
 - **Unattended play**: headless with `--phone upright` from the week-18 save to its deployment picker, exit 0 (the bot
   visits All Data only from the prologue).
+
+P8d:
+
+- **The title** (PE2 as the owner changed it): the model `Original.Content/Devices/PhoneTitleUpright` (tested in
+  `PhoneTitleUprightTests`) — a row for each button the title draws (`MenuItems[n].MenuItem` 1, `ｽﾀMENU.ADV:87-96`: a
+  first launch Alice, Load and Start; a clear Destiny, B.G.M and C.G; the rolls Please and Spy), top down Spy, Please,
+  Destiny, B.G.M, C.G, Alice, Load, Start (`TITLE_ORDER`), each the picture's own word alone (the brush face, 52) in a row
+  130 high, 12 apart, 40 in, the last 20 over the bar, in a lacquer panel 28 over the first and 6 over the bar; the picture
+  at the room's width in the middle between the room's top and the rows less 30 (`pe2`). The picture is moved, not
+  redrawn: `PhoneFrame.WithPictureAt` and `Device.PictureTop`, which `GameScreen.UpdateDevice` sets each frame while
+  `ｽﾀMENU` runs with its boxes loaded (`GameScreen.Title.cs`), so the picture keeps its own targets and a button's
+  description (window 113, PEd) and the requests slip (PEr) stand by it as the scenes' do. The rows
+  (`godot/Strategy/TitleRowsView`) show while it polls the mouse (not at a key wait, under a window or a menu); a row is a
+  click in the middle of its button's box as the title loaded it (`PhoneTitleUpright.Centre`, through `_titlePointer` in
+  the title's own reads).
+- **The import screen** (PI, PIp, PIr as drawn): the model `Original.Content/Devices/PhoneImportUpright` (tested in
+  `PhoneImportUprightTests`) — the card 1560 high in the middle between the room's top and the bar (less on a shorter
+  screen), 16 in, the paper 26 in, its head as held landscape's (90, 166, the rule 206, the steps 262), the steps one
+  under another (the seal 76 in, the words 140 in to 40 from the paper's right), the field under the first, the next step
+  70 under the field, Play 30 under the check or 180 under the decompile's bar, the tick 20 and the words 60 from the
+  right, the stamp 140 from the right and 360 under the field's top; Back | the red button in the bar as Save/Load's. The
+  view `godot/ImportScreen.Upright.cs` (keyed by `Device.Held`; held landscape's steps, field, bar, hashes and stamp shared,
+  their places dispatched by the orientation), the wave backdrop round the card.
+- **The original's own screens** (PXf, PXc, PXm, PXr): as they are in the room's middle since P0/P1, Menu at the bar's left
+  (Log and Skip at the report's key waits); a long press is now the right click upright too
+  (`GameScreen.OriginalScreens.cs`: the title's descriptions, as held landscape's).
+- **The agent's choices**, for the owner to confirm: the screen black round the title's picture as round every original
+  screen (PE2 drew the wave backdrop); the picture stays over the rows while the title shows a description or the slip
+  (no jump), the rows hidden then; the rows' words the mock-up's (the picture's own, not the script's text); Back on the
+  import screen a lacquer plate in the bar ("Back" whatever the way back), left out at a first launch.
+- **The gallery**: the PC, touch and landscape passes same; on the upright pass `title`, `title-hover`, `title-clears`,
+  `title-description`, `title-requests` and the seven `import-…` entries changed (`fortune-check`, `cg-gallery` and
+  `music-room` same). PE2, PI, PIp, PIr, PXf, PXc and PXm left `GALLERY_ENTRIES`; the phone tab keeps PXr alone (the
+  ending's report has no entry of the game's gallery).
+- **Unattended play**: headless with `--phone upright` from the week-18 save to its deployment picker (through the title's
+  load) and `--phone upright --import-screen DIR --quit`, exit 0 both.
 
 ## 6. The agent's own choices, for the owner to confirm
 

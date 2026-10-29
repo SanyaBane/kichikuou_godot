@@ -12,7 +12,7 @@ namespace Kichikuou.Game;
 // at the right; refused, GameFiles' message across the sheet, its hashes in two lines under it, the field at the left,
 // the stamp at the right, Choose another folder at the right thumb with Back left of it. A folder is its name over its
 // place, a path its folders with Android's storage named (PhoneImport.FolderLines, Readable). Drawn in the frame's layout
-// pixels over the whole screen (PhoneUnits), the places PhoneImport's.
+// pixels over the whole screen (PhoneUnits), the places PhoneImport's; held upright as PI, PIp, PIr (ImportScreen.Upright.cs).
 public partial class ImportScreen
 {
     private PhoneFrame? _phone;
@@ -20,12 +20,12 @@ public partial class ImportScreen
     private PhoneUnits Phone => new(_phone!);
 
     /// <summary>
-    /// On the phone held landscape: the screen over its parent's whole area (the screen's room, the gallery's stage), drawn
+    /// On the phone held either way: the screen over its parent's whole area (the screen's room, the gallery's stage), drawn
     /// from its corner in the frame's layout pixels; false on any other device.
     /// </summary>
     private bool PlacePhone()
     {
-        _phone = Device.Landscape(this);
+        _phone = Device.Held(this);
         if (_phone is not { } phone)
             return false;
         Position = Vector2.Zero;
@@ -44,6 +44,11 @@ public partial class ImportScreen
     private void DrawPhone(PhoneUnits u)
     {
         var f = u.Frame;
+        if (f.IsUpright)
+        {
+            DrawUpright(u);
+            return;
+        }
         DrawSetTransform(Vector2.Zero, 0, new Vector2(u.K, u.K));
         Ui.DrawPanel(this, u.Rect(PhoneImport.Panel(f)), u.K);
         var paper = u.Rect(PhoneImport.Paper(f));
@@ -100,18 +105,23 @@ public partial class ImportScreen
         float x = L(PhoneImport.TextLeft(f, 1)), right = L(PhoneImport.Column(f, 1).Right);
         float y = PhoneStep(u, 1, 1, top, done ? L(PhoneImport.TickedRight(f, 1)) : right, done ? "The scenario is read" : progress.Stage,
             null, done ? StepState.Done : StepState.Now);
+        ImportBar(u, x, y, right, done ? 1 : (float)Math.Clamp(progress.Fraction, 0, 1));
+        PhoneStep(u, 1, 2, y + u.Px(PhoneImport.PlayUnderBar), right, "Play", null, done ? StepState.Now : StepState.Next);
+        ProgressShot(progress, done);
+    }
+
+    /// <summary>The decompile's bar from (<paramref name="x"/>, <paramref name="y"/>) to <paramref name="right"/>, its share under its right end.</summary>
+    private void ImportBar(PhoneUnits u, float x, float y, float right, float fraction)
+    {
         var bar = new Rect2(x, y, right - x, u.Px(PhoneImport.BarHeight));
         DrawRect(bar, FieldFill);
         DrawRect(bar, Ui.InkGrey, false, u.Px(2));
-        float fraction = done ? 1 : (float)Math.Clamp(progress.Fraction, 0, 1);
         float inset = u.Px(3);
         DrawRect(new Rect2(bar.Position + new Vector2(inset, inset), new Vector2((bar.Size.X - 2 * inset) * fraction, bar.Size.Y - 2 * inset)),
             Ui.VermilionInk);
         int share = u.Size(PhoneImport.ShareText);
         string percent = $"{Math.Round(fraction * 100)}%";
         Middle(_gothic, percent, share, right - _gothic.GetStringSize(percent, fontSize: share).X, y + u.Px(PhoneImport.ShareDown), Ui.Ink);
-        PhoneStep(u, 1, 2, y + u.Px(PhoneImport.PlayUnderBar), right, "Play", null, done ? StepState.Now : StepState.Next);
-        ProgressShot(progress, done);
     }
 
     /// <summary>LIr: the refusal across the sheet, its hashes in two lines, the field at the left and the stamp at the right.</summary>
@@ -120,6 +130,15 @@ public partial class ImportScreen
         var f = u.Frame;
         float top = L(PhoneImport.StepsTop(f)), x = L(PhoneImport.TextLeft(f, 0)), right = L(PhoneImport.Column(f, 1).Right);
         float y = PhoneStep(u, 0, 0, top, right, "Game folder", PhoneImport.Readable(_refusal, _folder), StepState.Failed);
+        y = HashLines(u, x, y, right);
+        var field = PhoneField(u, y);
+        Stamp(u, new Vector2(L(PhoneImport.StampX(f)), field.GetCenter().Y));
+        PhoneButton(u, "Choose another folder", PhoneImport.ChooseText);
+    }
+
+    /// <summary>The refusal's hashes from <paramref name="y"/>, each line shrunk to the room; returns where the field starts.</summary>
+    private float HashLines(PhoneUnits u, float x, float y, float right)
+    {
         var hashes = PhoneImport.HashLines(_hashes);
         foreach (string line in hashes)
         {
@@ -128,13 +147,16 @@ public partial class ImportScreen
         }
         if (hashes.Count > 0)
             y += u.Px(PhoneImport.HashGap);
-        var field = PhoneField(u, y);
-        var centre = new Vector2(L(PhoneImport.StampX(f)), field.GetCenter().Y);
+        return y;
+    }
+
+    /// <summary>The stamp "NOT v1.0" round <paramref name="centre"/>.</summary>
+    private void Stamp(PhoneUnits u, Vector2 centre)
+    {
         DrawArc(centre, u.Px(PhoneImport.StampRadius), 0, Mathf.Tau, 96, Ui.Vermilion, u.Px(PhoneImport.StampLine), true);
         float r = u.Px(PhoneImport.StampRadius);
         Middle(_cinzelBold, "NOT", u.Size(PhoneImport.StampRadius * 0.46f), centre.X - r, centre.Y - u.Px(18), Ui.Vermilion, 2 * r);
         Middle(_cinzelBold, "v1.0", u.Size(PhoneImport.StampRadius * 0.3f), centre.X - r, centre.Y + u.Px(40), Ui.Vermilion, 2 * r);
-        PhoneButton(u, "Choose another folder", PhoneImport.ChooseText);
     }
 
     /// <summary>
@@ -146,7 +168,7 @@ public partial class ImportScreen
     {
         var f = u.Frame;
         var colour = StepColour(state);
-        var seal = new Vector2(L(PhoneImport.MarkX(f, column)), middle);
+        var seal = new Vector2(L(MarkX(f, column)), middle);
         float radius = u.Px(PhoneImport.MarkRadius);
         bool sealed_ = state is StepState.Now or StepState.Failed;
         if (sealed_)
@@ -157,11 +179,11 @@ public partial class ImportScreen
         Middle(_gothic, "一二三"[numeral].ToString(), mark, seal.X - radius, seal.Y, sealed_ ? Ui.SealText : colour, 2 * radius);
         if (state == StepState.Done)
         {
-            var tick = new Vector2(L(PhoneImport.TickX(f, column)), middle);
+            var tick = new Vector2(L(TickX(f, column)), middle);
             DrawPolyline([tick + new Vector2(-u.Px(26), 0), tick + new Vector2(-u.Px(8), u.Px(18)), tick + new Vector2(u.Px(24), -u.Px(20))],
                 Good, u.Px(7), true);
         }
-        float x = L(PhoneImport.TextLeft(f, column)), y = middle;
+        float x = L(TextLeft(f, column)), y = middle;
         int titleSize = u.Size(PhoneImport.TitleText);
         foreach (string line in Lines(title, titleSize, right - x))
         {
@@ -184,7 +206,7 @@ public partial class ImportScreen
     /// <summary>The folder's field from <paramref name="top"/> in the left column: its icon, the folder's name over its place, "Choose…".</summary>
     private Rect2 PhoneField(PhoneUnits u, float top)
     {
-        var box = u.Rect(PhoneImport.Field(u.Frame, 0));
+        var box = u.Rect(FieldBox(u.Frame));
         box.Position = new Vector2(box.Position.X, top);
         _field = box;
         bool live = FieldLive;

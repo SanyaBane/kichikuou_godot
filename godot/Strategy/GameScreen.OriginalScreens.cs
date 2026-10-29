@@ -5,6 +5,7 @@ namespace Kichikuou.Game.Strategy;
 // The original's own screens on the phone held landscape (docs/ui/phone-build.md, step L9; docs/ui/phone.md, §23 LE1 and
 // §26 LXf, LXc, LXm, LXr): the title and the screens it opens, and an ending's report, shown as they are in the frame with
 // Menu on top of the left side (Skip and Log at the report's key waits); a tap is the click, a long press the right click.
+// Held upright the same (step P8d; §22 PEd, §25 PXf, PXc, PXm, PXr), Menu at the bar's left.
 public partial class GameScreen
 {
     /// <summary>The title (<c>ｽﾀMENU</c>), its Fortune Check, gallery and music room, and the endings (<c>OVER</c>).</summary>
@@ -38,7 +39,7 @@ public partial class GameScreen
             ReleaseScreenTouch();
             return false;
         }
-        if (!PhoneLandscape || !OriginalScreenShown)
+        if (!(PhoneLandscape || PhoneUpright) || !OriginalScreenShown)
             return false;
         _screenTouch = button.Position;
         int touch = ++_screenTouches;

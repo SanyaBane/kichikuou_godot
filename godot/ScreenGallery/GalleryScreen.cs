@@ -166,6 +166,7 @@ public partial class GalleryScreen : Control
         _stage = new GalleryStage(_host, _font, _faces, _presenter, () => new GamePresenter(
             new ScenarioText(GameData.ScenarioDirectory), GameData.Cgs(), _glyphs, new ScenarioScripts(GameData.ScenarioDirectory)));
         string note = entry.Note;
+        Device.PictureTop = null;                       // the picture in the room's middle unless the entry stands it elsewhere
         try
         {
             _place = entry.Build(_stage);

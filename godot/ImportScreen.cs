@@ -279,12 +279,15 @@ public partial class ImportScreen : Control
 
     // ---------------------------------------------------------------- input
 
-    /// <summary>The red button: Import (narrow) or Choose another folder (wide); on the phone at the right thumb.</summary>
-    private Rect2 Button => _phone is { } f ? Phone.Rect(PhoneImport.Button(f, _phase == Phase.Refused))
+    /// <summary>The red button: Import (narrow) or Choose another folder (wide); on the phone at the right thumb (upright in the bar).</summary>
+    private Rect2 Button => _phone is { } f
+        ? Phone.Rect(f.IsUpright ? PhoneImportUpright.Button(f) : PhoneImport.Button(f, _phase == Phase.Refused))
         : _phase == Phase.Refused ? WideButton : NarrowButton;
 
-    /// <summary>The way back's link; on the phone level with the red button.</summary>
-    private Rect2 BackBox => _phone is { } f ? Phone.Rect(PhoneImport.Back(f, _phase == Phase.Refused)) : BackLink;
+    /// <summary>The way back's link; on the phone level with the red button (upright in the bar left of it).</summary>
+    private Rect2 BackBox => _phone is { } f
+        ? Phone.Rect(f.IsUpright ? PhoneImportUpright.Back(f) : PhoneImport.Back(f, _phase == Phase.Refused))
+        : BackLink;
 
     private bool ButtonLive => !_dialogOpen && _phase switch
     {

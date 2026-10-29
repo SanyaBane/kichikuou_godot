@@ -285,20 +285,10 @@ SHEETS = {}
 # built one leaves for the real pass "Smartphone, upright" (docs/ui/phone-build.md: P1 took PS2, PS2l, PS2b, PS2m, PW1,
 # PEd, PEr, PN1, PN1q and PR2; P2 PM1a, PM1b and PM1c; P3 PB3, PB3r and PB3x; P4 PB4o3, PB4s, PB4c, PB4r and PB4b; P5
 # PD2, PD2d, PU1 and PU1q; P6 PA1 and PA1n; P7a PH2 and PT2; P7b PL2 and PY2; P8a PO1 and PO1o; P8b PF1 and PF1e; P8c
-# PG2m and PG2).
+# PG2m and PG2; P8d PE2, PI, PIp, PIr, PXf, PXc and PXm).
 GALLERY_ENTRIES = {
-    # Round P3-P7's choices (owner, 2026-10-27; docs/ui/phone.md, §5): PO1 and PO1o built (step P8a), PF1 and PF1e (P8b).
-    # Round P18's choices (owner, 2026-10-28; docs/ui/phone.md, §22): the title (PE2 changed), the import; All Data's PG2m
-    # and PG2 built (step P8c).
-    'PE2': ('pe2-title', 'Title — PE2', 'The title', 'after a clear: a row for each button, its word alone'),
-    'PI': ('pi-import', 'Import — PI', 'A folder chosen', 'the paper card in the middle, Back | Import in the bar'),
-    'PIp': ('pi-progress', 'Import — PI', 'Importing', 'the decompile\'s bar (made up: 45%)'),
-    'PIr': ('pi-refused', 'Import — PI', 'Another version\'s file', 'the hashes each on a line of their own (made up)'),
-    # Round P20's choices (owner, 2026-10-28; docs/ui/phone.md, §25): the Menu sheet, the log, the comment's editing,
-    # the original's own screens as they are.
-    'PXf': ('px-fortune', 'The original\'s screens', 'Fortune Check', 'as it is (made up: three fates seen)'),
-    'PXc': ('px-gallery', 'The original\'s screens', 'The CG gallery', 'as it is (masked in the agents\' dumps)'),
-    'PXm': ('px-music', 'The original\'s screens', 'The music room', 'as it is, no track playing'),
+    # Round P20's choices (owner, 2026-10-28; docs/ui/phone.md, §25): the original's own screens as they are — PXf, PXc
+    # and PXm built (step P8d); the ending's report has no entry of the game's gallery.
     'PXr': ('px-report', 'The original\'s screens', 'An ending\'s Completion Report', 'as it is (ending 11); Log and '
                                                                                  'Skip at its key waits'),
 }

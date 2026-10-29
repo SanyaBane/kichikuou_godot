@@ -2,6 +2,7 @@ using Godot;
 using Kichikuou.Content;
 using Kichikuou.Engine.Script;
 using Kichikuou.Game.Strategy;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.Content.ScreenGallery;
 using Kichikuou.Original.State;
 
@@ -18,9 +19,9 @@ internal static partial class GalleryEntries
 
     /// <summary>
     /// The game folder the import screen's entries show: the gallery's own, not the player's — on the phone one in Android's
-    /// storage, as LI's.
+    /// storage, as LI's and PI's.
     /// </summary>
-    private static string SampleFolder => PhoneLandscape
+    private static string SampleFolder => PhoneHeld
         ? "/storage/emulated/0/Games/Kichikuou Rance"
         : @"C:\Games\Kichikuou Rance";
 
@@ -85,15 +86,15 @@ internal static partial class GalleryEntries
         yield return new("fortune-check", TitleSection, "Fortune Check", null,
             "Made up: a clear and three fates seen (GalleryStates.FatesSeen). A click on the title's Fortune Check (button 0) "
             + "runs HAPPY_C from the player's files, held at its mouse poll on its first page with the stamps, the pointer off its cells.",
-            g => Title(g, new TitleMoment(GalleryStates.FatesSeen, Gesture: ClickOn(GalleryTitle.FortuneCheck, (610, 200)))));
+            g => Title(g, new TitleMoment(GalleryStates.FatesSeen, Gesture: ClickOn(GalleryTitle.FortuneCheck, (610, 200))), title: false));
         yield return new("cg-gallery", TitleSection, "The CG gallery", null,
             "After a clear: a click on the title's C.G (button 7) runs CG from the player's files, held at its mouse poll on "
             + "page 1. Its sheets are masked as every agent's dump masks them (GamePresenter.MaskEventCgs).",
-            g => Title(g, new TitleMoment(GalleryStates.Cleared, Gesture: ClickOn(GalleryTitle.CgGallery, (600, 395)))));
+            g => Title(g, new TitleMoment(GalleryStates.Cleared, Gesture: ClickOn(GalleryTitle.CgGallery, (600, 395))), title: false));
         yield return new("music-room", TitleSection, "The music room", null,
             "After a clear: a click on the title's B.G.M (button 1) runs MMODE from the player's files, held at its mouse "
             + "poll with no track playing, the pointer off its grid.",
-            g => Title(g, new TitleMoment(GalleryStates.Cleared, Gesture: ClickOn(GalleryTitle.MusicRoom, (160, 100)))));
+            g => Title(g, new TitleMoment(GalleryStates.Cleared, Gesture: ClickOn(GalleryTitle.MusicRoom, (160, 100))), title: false));
     }
 
     /// <summary>
@@ -126,12 +127,25 @@ internal static partial class GalleryEntries
     /// <summary>
     /// The title held at <paramref name="moment"/>: the presenter's screen, and at a key wait our message window if one is
     /// up and, in the touch mode, the Skip and Log drawer as <c>GameScreen.UpdateSkipButtons</c> shows it there (Log off:
-    /// nothing is logged at the title).
+    /// nothing is logged at the title). Held upright the title's own (<paramref name="title"/>: not a screen it opens)
+    /// stands its picture over a row for each button it draws, the rows shown at its mouse poll (PE2, as
+    /// <c>GameScreen.Title.cs</c>).
     /// </summary>
-    private static Action<Rect2> Title(GalleryStage g, TitleMoment moment)
+    private static Action<Rect2> Title(GalleryStage g, TitleMoment moment, bool title = true)
     {
         var p = GalleryTitle.HeldAt(g.Fresh, moment);
         var picture = g.Picture(p);
+        TitleRowsView? rows = null;
+        if (title && Device.Layout == DeviceLayout.PhoneUpright && p.State is { } s)
+        {
+            var buttons = PhoneTitleUpright.Buttons(s);
+            Device.PictureTop = f => PhoneTitleUpright.PictureTop(f, buttons.Count);
+            if (!moment.AtKey && p.MessageWindow is null)
+            {
+                rows = g.Add(new TitleRowsView());
+                rows.ShowRows(buttons);
+            }
+        }
         MessageWindowView? window = null;
         if (moment.AtKey && p.MessageWindow is { } shown)
         {
@@ -148,6 +162,7 @@ internal static partial class GalleryEntries
             GalleryStage.Fill(picture, area);
             window?.Place(area);
             drawer?.Place(area);
+            rows?.Place();
             menu?.Place();
         };
     }
