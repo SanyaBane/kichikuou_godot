@@ -211,18 +211,19 @@ internal sealed partial class OptionsView
     }
 
     /// <summary>
-    /// Tweaks: what they are across; Battle at the left — the damage forecast, "Chaos and Nikkou reach demons" with its
-    /// three choices one under another (a row has no room for them side by side) —, Scenes at the right; the hints wrapped
-    /// into their column.
+    /// Tweaks: what they are across; Battle across both columns — at the left the damage forecast and "Chaos and Nikkou
+    /// reach demons" with its three choices one under another (a row has no room for them side by side), at the right the
+    /// ninja follow-up's chances in a row in short words, in thirds of the column (the owner's NP) —, Scenes at the right
+    /// under it; the hints wrapped into their column.
     /// </summary>
     private void DrawTweaksPhone(PhoneFrame f, Rect2 left, Rect2 right, Rect2 across)
     {
         float y = across.Position.Y;
         Wrap(TweaksIntro, across.Position.X, y + 14, across.Size.X, 14, Ui.InkQuiet);
         y += 44;
-        DrawColumnRule(f, y);
+        SectionHead(across.Position.X, y, "Battle", across.Size.X);
+        DrawColumnRule(f, y + 30);
         float x = left.Position.X, w = left.Size.X;
-        SectionHead(x, y, "Battle", w);
         float foot = ForecastBox(x, y + 38, w);
         float tx = x + 32, tw = w - 32;
         Text(_gothic, new Vector2(tx, foot + 24), "Chaos and Nikkou reach demons", fontSize: 17, modulate: Ui.Ink);
@@ -231,8 +232,17 @@ internal sealed partial class OptionsView
         for (int i = 0; i < Reaches.Length; i++)
             ReachRadio(i, tx, ry + i * 36);
         Wrap(ReachNote, tx, ry + Reaches.Length * 36 + 14, tw, 13, Ui.InkQuiet);
-        SectionHead(right.Position.X, y, "Scenes", right.Size.X);
-        NewScenesBox(right.Position.X, y + 38, right.Size.X);
+
+        float nx = right.Position.X + 32, nw = right.Size.X - 32;
+        Text(_gothic, new Vector2(nx, y + 54), "Ninja follow-up", fontSize: 17, modulate: Ui.Ink);
+        lines = Wrap(NinjaHint, nx, y + 73, nw, 13, Ui.InkQuiet);
+        ry = y + 73 + (lines - 1) * WrapPitch(13) + 14;
+        for (int i = 0; i < PhoneNinjas.Length; i++)
+            NinjaRadio(PhoneNinjas[i], nx + i * (nw / PhoneNinjas.Length), ry);
+        Text(_gothic, new Vector2(nx, ry + 50), "33% is the original's.", fontSize: 13, modulate: Ui.InkQuiet);
+        float scenes = ry + 50 + 32;
+        SectionHead(right.Position.X, scenes, "Scenes", right.Size.X);
+        NewScenesBox(right.Position.X, scenes + 38, right.Size.X);
     }
 
     /// <summary>A layer of the window drawn by its view (the phone's wave backdrop behind it).</summary>

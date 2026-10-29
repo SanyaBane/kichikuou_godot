@@ -142,6 +142,12 @@ their commander is off the field (his troops over the battle's limit).
 - **Chaos and Nikkou reach demons** (decision 32, docs/tweaks.md): under the forecast in Tweaks' Battle section, its
   name and hint in the check boxes' column, three radios — Off — as the original (the default), On the field, Out of
   reach — and a line telling the two apart; `[tweaks] demon_reach`, Defaults turns it off.
+- **Ninja follow-up** (decision 33, 2026-10-29, docs/tweaks.md; mock-ups N1 and NP, `tools/ui/mock_ninja_chance.py`,
+  Never left out after them): under "Chaos and Nikkou reach demons", its name and hint ("… Ninja never kills.", the
+  owner's words), three radios in the reach radios' columns — 33% — as the original (the default), 67%, 100% — and no
+  note; Scenes moves down. On the phone held landscape Battle's head runs across both columns and the row tops the right
+  column, the radios' words short with "33% is the original's." under them, Scenes below it. `[tweaks] ninja_chance`,
+  Defaults sets it back to 33%.
 - The Battle tab's first section is "Effects" again; `--options` and the screen gallery dump the new tab as
   `options-tweaks`.
 - The tweaks, each with its doc, and the survey of the next one (BRS-24, a demon's commander out of reach) are listed in

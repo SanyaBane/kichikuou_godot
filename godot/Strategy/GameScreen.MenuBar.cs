@@ -333,6 +333,11 @@ public partial class GameScreen
             if (_script is not null)
                 _script.DemonReach = reach;     // at once: the next exchange (decision 32)
         };
+        view.NinjaChanceChosen += chance =>
+        {
+            if (_script is not null)
+                _script.NinjaChance = chance;   // at once: the next exchange (decision 33)
+        };
         view.GameFolderChosen += () => Screens.Open(this,
             new ImportScreen(GameData.SavedGameDirectory, start: false, next: Main.Title, back: Main.Title));
         view.Closed += () =>

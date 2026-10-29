@@ -595,6 +595,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             session.Script.Library = library;
             session.Script.NewScenesFirst = NewScenesChoice.On;     // Option → Tweaks (decision 30); the options window keeps it current
             session.Script.DemonReach = DemonReachChoice.Chosen;    // Option → Tweaks (decision 32), the same way
+            session.Script.NinjaChance = NinjaChanceChoice.Chosen;  // and decision 33's
             _scenes = session.Scenes;
             _script = session.Script;
             _pickerMarks = new PickerMarks(session.Marks);          // our screens' marks (decision 30)

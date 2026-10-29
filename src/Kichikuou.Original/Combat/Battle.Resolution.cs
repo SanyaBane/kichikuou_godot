@@ -1480,7 +1480,7 @@ public sealed partial class Battle
 
         Rnd(3); // 1915 [R14]
         // QUIRK: 02 Q14 — the ninja never kills (Cmdr_HP > 1) and follows only player-initiated exchanges.
-        if (Unit.HP != 0 && Cmdr.HP > 1 && State.RetVal == 1 && State.Bt_MsgMode != 4 && State.Bt_MsgMode != 2)
+        if (Unit.HP != 0 && Cmdr.HP > 1 && NinjaRolled() && State.Bt_MsgMode != 4 && State.Bt_MsgMode != 2)
         {
             if (SetUpNinja())
             {
@@ -1489,6 +1489,18 @@ public sealed partial class Battle
             }
         }
     }
+
+    /// <summary>
+    /// The <c>RetVal = 1</c> of <c>FIGT.ADV:1916</c>, R14's 1 in 3 — or the player's chance read off the same draw (ours,
+    /// owner's decision 33, <see cref="Script.OriginalScriptContext.NinjaChance"/>): 2 of its 3, or always. R14 is drawn
+    /// whatever the choice, so the generator and <c>RetVal</c> stay where the original leaves them.
+    /// </summary>
+    internal bool NinjaRolled() => Script.NinjaChance switch
+    {
+        NinjaChance.TwoInThree => State.RetVal <= 2,
+        NinjaChance.Always => true,
+        _ => State.RetVal == 1,
+    };
 
     /// <summary>
     /// The four ninja tests of <c>FIGT.ADV:1917-1969</c> (state part before each

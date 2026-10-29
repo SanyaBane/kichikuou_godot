@@ -9,6 +9,7 @@ than the original. Everything else keeps the original's rules. A tweak that fixe
 | Damage forecast | Battle | off | [ui/damage-forecast.md](ui/damage-forecast.md) |
 | New scenes first | Scenes | on | [ui/talk-marks.md](ui/talk-marks.md) (owner's decision 30) |
 | Chaos and Nikkou reach demons | Battle | off | below (BRS-24, owner's decision 32) |
+| Ninja follow-up | Battle | 33% (the original) | below (BRS-11, owner's decision 33) |
 
 ## Chaos and Nikkou reach demons (BRS-24) — the survey, 2026-10-27
 
@@ -87,3 +88,45 @@ section Battle, **"Chaos and Nikkou reach demons"** — radios **Off — as the 
   the context at the session's start, `OptionsView.DemonReachChosen` at once; Defaults on Tweaks turns it off.
 - **Tests**: `Kichikuou.Original.Tests/Combat/DemonReachTests` (the streams each choice runs, only the two swords
   against a demon, Medusa's troops shooting only on the field, the scene's sprite, the forecast).
+
+## Ninja follow-up (BRS-11) — 2026-10-29
+
+Owner's request: the chance of the ninjas' follow-up in battle, a setting in Tweaks.
+
+### What the original does
+
+- **The roll** (`FIGT.ADV:1915-1986`; 01 §9.5, 02 §7.1, §7.3; BRS-11): after every exchange the enemy commander survives,
+  whoever acted, the script draws R14, `RND(3)` (`Y 4, 3`), and the ninja follows when it is 1 — 1 in 3 (a hair under:
+  xsystem35's `genrand()` can give 4, ENG-02).
+- **The other conditions**: the exchange was the player's (`Bt_MsgMode` 1 or 3: an attack or magic, by a command or a
+  standing order — not an enemy's exchange, 4, nor the player's magic met by the enemy's, 2), the player's unit lives,
+  the enemy commander has more than 1 HP, the acting unit is Menad (unit 10), Hubert (unit 21), Gandhi (unit 37) or
+  Magic (unit 39), and their ninja — Kanami, Freya, Kaoru, Wichita — is free this week (`F_*_NinjaUsed` 0: serving, not
+  spent on a mission or a scouting, `COM.ADV:11-29`). Saitou has no follow-up.
+- **What she does**: a nested exchange of unit record 51 as special 3 — exactly 1 HP to the commander (0 to a demon),
+  never a kill; it never chains, and it does not spend the weekly flag (BRS-12): she may follow every exchange of the
+  week.
+- **A story counter**: each of Freya's follow-ups adds 1 to `N_Hubert_FreyaUses`; at 6 to 48, Hubert in the forces and
+  Freya serving, `COM` plays `Gﾋｭｰﾊﾞｰﾄ` 1 (`COM.ADV:654-658`). A higher chance brings it sooner.
+
+### The owner's answers and the build (2026-10-29, decision 33)
+
+The owner took R14's own thirds (not a percentage on a draw of ours), then left Never out and named the thirds as
+percentages: Option → Tweaks, section Battle, **"Ninja follow-up"** — radios **33% — as the original** (the default),
+**67%** and **100%**. The mock-ups were N1 (low to high) and NP (the phone held landscape), with Never and a note that
+it would keep Hubert's event away (`tools/ui/mock_ninja_chance.py`). Built:
+
+- **The rule**: `Combat/NinjaChance` (`Original`, `TwoInThree`, `Always`) on the game's context,
+  `OriginalScriptContext.NinjaChance`, the original's on a context built by hand. `Battle.NinjaRolled`
+  (`Battle.Resolution.cs`, in `ApplyExchangeAsync`) reads R14: 1 (the original), 1 or 2, or any value. R14 is drawn
+  whatever the choice, so the generator and `RetVal` move as in the original, and a battle parts from the original's
+  only where the ninja comes when she would not have. The other conditions are unchanged.
+- **The option**: `godot/Battles/NinjaChanceChoice` — `[tweaks] ninja_chance` in `settings.cfg` (`original`,
+  `two_in_three`, `always`), `--ninja-chance original|two-in-three|always` for a launch; `GameScreen` copies it onto the
+  context at the session's start, `OptionsView.NinjaChanceChosen` at once; Defaults on Tweaks resets it. On the PC the
+  three radios stand in the reach radios' columns under "Chaos and Nikkou reach demons"; on the phone held landscape
+  Battle's head runs across both columns, the row tops the right column in short words ("33%", "67%", "100%") with
+  "33% is the original's." under them, Scenes below it.
+- **The forecast** is unchanged: it never forecasts the follow-up (`ExchangeForecast`).
+- **Tests**: `Kichikuou.Original.Tests/Combat/NinjaChanceTests` (each choice against each R14, 4 included; the draws
+  the same whatever the choice; the other conditions kept at 100%).

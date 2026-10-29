@@ -367,6 +367,10 @@ Step L10 is done but the owner's play (phone-build.md, "Step L10, where it stand
 `--saveload`, `--scout`, `--refill`, `--harem`, `--dungeon` to the cave's way out, weeks 18-21), all as before; the docs
 (phone.md, touch.md, style.md §6, backlog). **The landscape phone is built, awaiting the owner's play on the Poco**;
 upright (P0-P9) is next.
+**Owner's decision 33** (2026-10-29), the fifth rule change: the ninja follow-up's chance (BRS-11, R14's `RND(3)` = 1) —
+Tweaks → "Ninja follow-up", 33% (the original, the default), 67% or 100%, read off the same draw, built
+(`Combat/NinjaChance` on `OriginalScriptContext.NinjaChance`, `Battle.NinjaRolled`; `godot/Battles/NinjaChanceChoice`;
+docs/tweaks.md).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

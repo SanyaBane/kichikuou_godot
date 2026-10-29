@@ -335,6 +335,14 @@ Each part is one agent's spec + port, ≈2-4k script lines, following
     do. Only the holders of the two swords (not the player's own demons); the enemy's side unchanged. The scene shows
     him with his troops (`CgPartial`). The flag `Bt_PlayerAllEngaged` keeps the original's value; the damage forecast
     runs with the same choice. Off on a context built by hand, so the differential and golden tests run the original.
+33. **Ninja follow-up** (2026-10-29, the owner's request and answers; [docs/tweaks.md](../tweaks.md)): the seventh change
+    on purpose, the fifth to the rules of play. After a player's exchange of Menad (unit 10), Hubert (unit 21), Gandhi
+    (unit 37) or Magic (unit 39) their ninja strikes the enemy commander for 1 HP when R14, `RND(3)`, is 1 (BRS-11). An
+    option in Option → Tweaks, the player's choice: **33% — as the original** (the default), **67%** (R14 1 or 2) or
+    **100%**, read off the same draw, which is made whatever the choice, so the generator moves as in the original. No
+    lower chance (the owner left Never out). The other conditions stay the original's: the four masters, the ninja free
+    this week, the enemy commander over 1 HP, a player's exchange; 1 HP, never a kill. The original's on a context built
+    by hand, so the differential and golden tests run the original.
 
 ## Milestone 1 — the prologue
 

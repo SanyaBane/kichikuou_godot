@@ -17,7 +17,8 @@ namespace Kichikuou.Game.Strategy;
 /// (the font, the palette, the thousands, the unit tables' row height, <see cref="LedgerRowsChoice"/>), Battle (our
 /// battle screen's effects and timings, <see cref="BattleScreenSettings"/>), Game (the
 /// game folder), Tweaks (what changes the original's play: the damage forecast, "Chaos and Nikkou reach demons",
-/// <see cref="DemonReachChoice"/>, "New scenes first", <see cref="NewScenesChoice"/>; owner, 2026-10-27). Every change applies
+/// <see cref="DemonReachChoice"/>, "Ninja follow-up", <see cref="NinjaChanceChoice"/>, "New scenes first",
+/// <see cref="NewScenesChoice"/>; owner, 2026-10-27). Every change applies
 /// and is kept at once; Defaults resets the tab shown (Game has none: the game folder has no default); Close, Esc or a right click shut it. Forget and the game folder ask first, in a box over the sheet. Laid out
 /// in the 1280×800 screen's pixels, scaled with the picture; on the phone held landscape across the whole screen, each tab
 /// in two columns (LO1, <c>OptionsView.Phone.cs</c>).
@@ -92,6 +93,9 @@ internal sealed partial class OptionsView : Control
 
     /// <summary>"Chaos and Nikkou reach demons" was chosen (it is kept already, <see cref="DemonReachChoice"/>).</summary>
     public event Action<DemonReach>? DemonReachChosen;
+
+    /// <summary>The ninja follow-up's chance was chosen (it is kept already, <see cref="NinjaChanceChoice"/>).</summary>
+    public event Action<NinjaChance>? NinjaChanceChosen;
 
     /// <summary>The player asked for another game folder and confirmed it: the import screen follows.</summary>
     public event Action? GameFolderChosen;
@@ -232,6 +236,12 @@ internal sealed partial class OptionsView : Control
         DemonReachChosen?.Invoke(reach);
     }
 
+    private void SetNinjaChance(NinjaChance chance)
+    {
+        NinjaChanceChoice.Chosen = chance;
+        NinjaChanceChosen?.Invoke(chance);
+    }
+
     /// <summary>Defaults: the tab shown back to its settings' defaults.</summary>
     private void Defaults()
     {
@@ -258,6 +268,7 @@ internal sealed partial class OptionsView : Control
             case Tab.Tweaks:
                 BattleScreenSettings.Set(BattleScreenSettings.Forecast, BattleScreenSettings.Forecast.Default);
                 SetDemonReach(DemonReach.Original);
+                SetNinjaChance(NinjaChance.Original);
                 SetNewScenesFirst(true);
                 break;
         }
@@ -680,8 +691,9 @@ internal sealed partial class OptionsView : Control
     }
 
     /// <summary>
-    /// What changes the original's play (owner, 2026-10-27; docs/tweaks.md): the battle's damage forecast and BRS-24's fix
-    /// (decision 32: off, the owner's A or B, as radios), the scenes' order.
+    /// What changes the original's play (owner, 2026-10-27; docs/tweaks.md): the battle's damage forecast, BRS-24's fix
+    /// (decision 32: off, the owner's A or B, as radios) and the ninja follow-up's chance (decision 33, the owner's N1
+    /// without Never: the thirds from low to high, in the reach radios' columns), the scenes' order.
     /// </summary>
     private void DrawTweaks()
     {
@@ -696,7 +708,11 @@ internal sealed partial class OptionsView : Control
         for (int i = 0; i < Reaches.Length; i++)
             ReachRadio(i, tx + i * (tw / Reaches.Length), y + 154);
         Text(_gothic, new Vector2(tx, y + 200), ReachNote, fontSize: 13, modulate: Ui.InkQuiet);
-        y += 240;
+        Text(_gothic, new Vector2(tx, y + 247), "Ninja follow-up", fontSize: 17, modulate: Ui.Ink);
+        Text(_gothic, new Vector2(tx, y + 266), NinjaHint, fontSize: 13, modulate: Ui.InkQuiet);
+        for (int i = 0; i < Ninjas.Length; i++)
+            NinjaRadio(Ninjas[i], tx + i * (tw / Ninjas.Length), y + 281);
+        y += 338;
         SectionHead(x, y, "Scenes", w);
         NewScenesBox(x, y + 38);
     }
@@ -711,6 +727,23 @@ internal sealed partial class OptionsView : Control
 
     private static readonly (DemonReach Reach, string Label)[] Reaches =
         [(DemonReach.Original, "Off — as the original"), (DemonReach.OnField, "On the field"), (DemonReach.OutOfReach, "Out of reach")];
+
+    private const string NinjaHint =
+        "After Menad, Hubert, Gandhi or Magic attacks, their ninja may strike the enemy commander for 1 HP. Ninja never kills.";
+
+    /// <summary>
+    /// The ninja follow-up's chances, low to high (the owner's N1, Never left out), R14's thirds named as percentages (the
+    /// owner, 2026-10-29); the phone's words are short (NP).
+    /// </summary>
+    private static readonly (NinjaChance Chance, string Label)[] Ninjas =
+        [(NinjaChance.Original, "33% — as the original"), (NinjaChance.TwoInThree, "67%"), (NinjaChance.Always, "100%")];
+
+    private static readonly (NinjaChance Chance, string Label)[] PhoneNinjas =
+        [(NinjaChance.Original, "33%"), (NinjaChance.TwoInThree, "67%"), (NinjaChance.Always, "100%")];
+
+    private void NinjaRadio((NinjaChance Chance, string Label) radio, float x, float y) =>
+        Radio("ninja-" + radio.Chance, x, y, NinjaChanceChoice.Chosen == radio.Chance, radio.Label, _gothic,
+            () => SetNinjaChance(radio.Chance));
 
     private float ForecastBox(float x, float y, float width = 0)
     {

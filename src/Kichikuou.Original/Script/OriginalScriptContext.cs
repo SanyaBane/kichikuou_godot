@@ -53,6 +53,13 @@ public sealed partial class OriginalScriptContext(
     public Combat.DemonReach DemonReach { get; set; }
 
     /// <summary>
+    /// Ours (owner's decision 33, the fifth rule change on purpose; docs/tweaks.md): the ninja follow-up's chance, the
+    /// player's option (Option → Tweaks, "Ninja follow-up", the original's 1 in 3 by default; copied here by the UI). The
+    /// original's on a context built by hand (the differential tests).
+    /// </summary>
+    public Combat.NinjaChance NinjaChance { get; set; }
+
+    /// <summary>
     /// Ours (owner's decision 30): the marks over the game's scenes, whose dry run "New scenes first" runs at a draw of a
     /// talk or a visit (<c>GameSession.Marks</c>); without them the rule does not act.
     /// </summary>
