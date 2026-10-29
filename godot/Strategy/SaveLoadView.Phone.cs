@@ -34,9 +34,11 @@ internal sealed partial class SaveLoadView
     private int CardHitAt(Vector2 at)
     {
         var f = _phone!;
-        if (Phone.Rect(PhoneSaves.Keep(f, _keyboard)).HasPoint(at))
+        if (Phone.Rect(Places.Keep(f, _keyboard)).HasPoint(at))
             return KeepHit;
-        return Phone.Rect(PhoneSaves.Cancel(f, _keyboard)).HasPoint(at) ? CancelHit : 0;
+        if (Phone.Rect(Places.Cancel(f, _keyboard)).HasPoint(at))
+            return CancelHit;
+        return f.IsUpright && Phone.Rect(PhoneSavesUpright.Field(f, _keyboard)).HasPoint(at) ? FieldHit : 0;
     }
 
     private void WatchKeyboard()
@@ -63,6 +65,7 @@ internal sealed partial class SaveLoadView
     {
         if (!_editing || _phone is null)
             return;
+        FollowField();
         float height = KeyboardHeight();
         if (height <= 0)
         {
@@ -85,19 +88,19 @@ internal sealed partial class SaveLoadView
         QueueRedraw();
     }
 
-    /// <summary>The comment's field in the card's: its words 26 in, at the card's type.</summary>
+    /// <summary>The comment's field in the card's: its words 26 in, at the card's type (held upright unseen, the card drawing them).</summary>
     private void PlacePhoneEdit(PhoneFrame f)
     {
-        var field = PhoneSaves.Field(f, _keyboard);
+        var field = f.IsUpright ? PhoneSavesUpright.Field(f, _keyboard) : PhoneSaves.Field(f, _keyboard);
         float inset = f.Px(26);
         _edit.Position = new Vector2(field.X + inset, field.Y);
         _edit.Size = new Vector2(field.W - 2 * inset, field.H);
         _edit.AddThemeFontOverride("font", _gothic);
-        _edit.AddThemeFontSizeOverride("font_size", Math.Max(8, (int)Math.Round(f.Px(PhoneSaves.FieldText))));
+        _edit.AddThemeFontSizeOverride("font_size", Math.Max(8, (int)Math.Round(f.Px(f.IsUpright ? PhoneSavesUpright.FieldText : PhoneSaves.FieldText))));
     }
 
     /// <summary>The finger's rows' pitch in layout pixels.</summary>
-    private float Pitch => _phone is { } f ? PhoneSaves.Pitch(f) / f.Scale : RowPitch;
+    private float Pitch => _phone is { } f ? Places.Pitch(f) / f.Scale : RowPitch;
 
     // ---------------------------------------------------------------- drawing
 
@@ -105,24 +108,36 @@ internal sealed partial class SaveLoadView
     {
         var f = u.Frame;
         bool save = list == SaveList.Save;
-        var column = u.Rect(PhoneSaves.List(f));
-        int title = u.Size(PhoneSaves.TitleText);
-        DrawString(_brush, new Vector2(column.Position.X + u.Px(PhoneSaves.TitleIn), u.Px(PhoneSaves.TitleTop) + _brush.GetAscent(title)),
-            save ? "Save" : "Load", fontSize: title, modulate: Ui.Name);
-        if (_tabs)
-            foreach (var tab in (SaveList[])[SaveList.Load, SaveList.Save])
-                PhoneChip(TabBox(tab), tab.ToString(), tab == _list, _hovered == TabHit + (int)tab, u.Size(PhoneSaves.ChipText), u);
-        Ui.DrawDivider(this, column.Position.X, column.End.X, u.Px(PhoneSaves.Divider), _k);
+        if (f.IsUpright)
+            DrawUprightBand(u, save);
+        else
+        {
+            var column = u.Rect(Places.List(f));
+            int title = u.Size(PhoneSaves.TitleText);
+            DrawString(_brush, new Vector2(column.Position.X + u.Px(PhoneSaves.TitleIn), u.Px(PhoneSaves.TitleTop) + _brush.GetAscent(title)),
+                save ? "Save" : "Load", fontSize: title, modulate: Ui.Name);
+            if (_tabs)
+                foreach (var tab in (SaveList[])[SaveList.Load, SaveList.Save])
+                    PhoneChip(TabBox(tab), tab.ToString(), tab == _list, _hovered == TabHit + (int)tab, u.Size(PhoneSaves.ChipText), u);
+            Ui.DrawDivider(this, column.Position.X, column.End.X, u.Px(PhoneSaves.Divider), _k);
+        }
         PhoneChip(SideBox(false), $"Manual saves · {_shelf.Manuals.Count}", !_autoSide, _hovered == SideHit, u.Size(PhoneSaves.TabText), u);
         PhoneChip(SideBox(true), $"Auto-saves · {_shelf.Autos.Count}", _autoSide, _hovered == SideHit + 1, u.Size(PhoneSaves.TabText), u);
         PhoneList(u);
+        if (f.IsUpright)
+            DrawUprightPageDivider(u);
         PhonePage(u, save);
         if (_confirm)
             PhoneDeleteQuestion(u);
         if (_sweep)
             PhoneSweepQuestion(u);
         if (_editing)
-            PhoneCard(u);
+        {
+            if (f.IsUpright)
+                UprightCard(u);
+            else
+                PhoneCard(u);
+        }
     }
 
     /// <summary>Load | Save and the lists' tabs: the chosen one in vermilion, as the PC's.</summary>
@@ -143,8 +158,8 @@ internal sealed partial class SaveLoadView
     private void PhoneList(PhoneUnits u)
     {
         var f = u.Frame;
-        var column = u.Rect(PhoneSaves.List(f));
-        float middle = PhoneSaves.HeadMiddle(f) / u.K;
+        var column = u.Rect(Places.List(f));
+        float middle = Places.HeadMiddle(f) / u.K;
         int head = u.Size(PhoneSaves.HeadText);
         Text(_cinzelLight, head, column.Position.X + u.Px(PhoneSaves.HeadIn), middle, "NEWEST FIRST", Ui.Subtitle);
         if (_autoSide)
@@ -158,9 +173,9 @@ internal sealed partial class SaveLoadView
                 PhoneRow(u, rect, slot);
         if (Shown.Count == 0)
             TextCentred(_cinzelLight, u.Size(PhoneSaves.EmptyText), column.GetCenter().X,
-                PhoneSaves.Row(f, 0, NewRowShown).Y / u.K + u.Px(PhoneSaves.EmptyDown),
+                Places.Row(f, 0, NewRowShown).Y / u.K + u.Px(PhoneSaves.EmptyDown),
                 _autoSide ? "No auto-saves yet." : "No manual saves yet.", Ui.OffText);
-        var groove = u.Rect(PhoneSaves.ScrollBar(f, NewRowShown));
+        var groove = u.Rect(Places.ScrollBar(f, NewRowShown));
         DrawRect(groove, Ui.Groove);                                    // it stays when every save fits, as the PC's
         int count = Shown.Count;
         if (count > RowsShown)
@@ -277,8 +292,8 @@ internal sealed partial class SaveLoadView
         var shown = _chosenNew ? _now : held;
         bool lines = PageLines;
         PhoneBack(u);
-        var page = u.Rect(PhoneSaves.Page(f));
-        var mapRect = u.Rect(PhoneSaves.Map(f, lines));
+        var page = u.Rect(Places.Page(f));
+        var mapRect = u.Rect(Places.Map(f, lines));
         if (shown is null)
         {
             string none = _autoSide ? "No auto-save chosen." : save ? "Choose New save or a save to save over." : "No saved games.";
@@ -302,16 +317,16 @@ internal sealed partial class SaveLoadView
         int label = u.Size(PhoneSaves.LabelText);
         for (int i = 0; i < stats.Length; i++)
         {
-            var (fx, fy, fw) = PhoneSaves.Figure(f, i, lines);
+            var (fx, fy, fw) = Places.Figure(f, i, lines);
             float x = fx / u.K, y = fy / u.K;
             DrawString(_cinzelLight, new Vector2(x, y + _cinzelLight.GetAscent(label)), stats[i].Item1.ToUpperInvariant(), fontSize: label,
                 modulate: Ui.Subtitle);
-            int value = SideCells.Fit(_gothic, stats[i].Item2, u.Size(PhoneSaves.ValueText), (fw - f.Px(PhoneSaves.ValueRoom)) / u.K);
-            DrawString(_gothic, new Vector2(x, y + u.Px(PhoneSaves.ValueDown) + _gothic.GetAscent(value)), stats[i].Item2, fontSize: value,
+            int value = SideCells.Fit(_gothic, stats[i].Item2, u.Size(PhoneSaves.ValueText), (fw - f.Px(Places.ValueRoom(f))) / u.K);
+            DrawString(_gothic, new Vector2(x, y + u.Px(Places.ValueDown(f)) + _gothic.GetAscent(value)), stats[i].Item2, fontSize: value,
                 modulate: Ui.Value);
         }
         if (_chosenNew)
-            Text(_gothic, u.Size(30), page.Position.X + u.Px(PhoneSaves.FigureIn), u.Rect(PhoneSaves.Comment(f, false)).GetCenter().Y,
+            Text(_gothic, u.Size(30), page.Position.X + u.Px(PhoneSaves.FigureIn), u.Rect(Places.Comment(f, false)).GetCenter().Y,
                 "A new manual save. Its comment can be written once it is saved.", Ui.Text);
         else
         {
@@ -320,8 +335,8 @@ internal sealed partial class SaveLoadView
             {
                 var (first, second) = LoadLines(held!);
                 int size = u.Size(PhoneSaves.LineText);
-                Text(_gothic, size, page.Position.X, PhoneSaves.LineMiddle(f, 0) / u.K, Fit(first, size, page.Size.X), Ui.Quiet);
-                Text(_gothic, size, page.Position.X, PhoneSaves.LineMiddle(f, 1) / u.K, Fit(second, size, page.Size.X), Ui.Quiet);
+                Text(_gothic, size, page.Position.X, Places.LineMiddle(f, 0) / u.K, Fit(first, size, page.Size.X), Ui.Quiet);
+                Text(_gothic, size, page.Position.X, Places.LineMiddle(f, 1) / u.K, Fit(second, size, page.Size.X), Ui.Quiet);
             }
         }
         string? saving = save && _now is { } now ? $"Saving: {now.DateText} · {now.BudgetText} · {now.RealmText} · {Figures.Number(now.Troops)} troops" : null;
@@ -337,14 +352,14 @@ internal sealed partial class SaveLoadView
     private void PhonePageTitle(PhoneUnits u, Rect2 page, SaveSlot? held, SaveSlot shown)
     {
         string title = _chosenNew ? $"New save · {shown.DateText}" : held!.Id?.Kind == SaveKind.Auto ? shown.DateText : $"{held.Label} · {shown.DateText}";
-        float x = page.Position.X + u.Px(4), middle = PhoneSaves.TitleMiddle(u.Frame) / u.K;
+        float x = page.Position.X + u.Px(4), middle = Places.TitleMiddle(u.Frame) / u.K;
         float room = (held is not null ? DeleteBox.Position.X : page.End.X) - u.Px(24) - x;
         bool auto = held?.Id?.Kind == SaveKind.Auto;
         int tag = u.Size(PhoneSaves.TagText);
         float badge = auto ? _gothic.GetStringSize("Auto", fontSize: tag).X + u.Px(40) : 0;
         float ring = auto ? _gothic.GetStringSize(held!.RingText, fontSize: tag).X + u.Px(28) : 0;
         float tags = auto ? u.Px(24) + badge + u.Px(16) + ring : 0;
-        int size = SideCells.Fit(_cinzel, title, u.Size(PhoneSaves.PageTitleText), room - tags);
+        int size = SideCells.Fit(_cinzel, title, u.Size(Places.PageTitleText(u.Frame)), room - tags);
         Text(_cinzel, size, x, middle, title, Ui.Name);
         if (!auto)
             return;
@@ -359,9 +374,9 @@ internal sealed partial class SaveLoadView
     {
         var f = u.Frame;
         int label = u.Size(PhoneSaves.LabelText);
-        DrawString(_cinzelLight, new Vector2(u.Rect(PhoneSaves.Page(f)).Position.X + u.Px(PhoneSaves.FigureIn),
-            PhoneSaves.CommentLabel(f, lines) / u.K + _cinzelLight.GetAscent(label)), "COMMENT", fontSize: label, modulate: Ui.Subtitle);
-        var box = u.Rect(PhoneSaves.Comment(f, lines));
+        DrawString(_cinzelLight, new Vector2(u.Rect(Places.Page(f)).Position.X + u.Px(PhoneSaves.FigureIn),
+            Places.CommentLabel(f, lines) / u.K + _cinzelLight.GetAscent(label)), "COMMENT", fontSize: label, modulate: Ui.Subtitle);
+        var box = u.Rect(Places.Comment(f, lines));
         DrawRect(box, Ui.Row);
         DrawRect(box, Ui.DimGold, false, Line(1));
         bool any = held.Comment.Length > 0;
@@ -396,10 +411,10 @@ internal sealed partial class SaveLoadView
         float cx = r.GetCenter().X, room = r.Size.X - u.Px(60);
         if (saving is null)
         {
-            TextCentred(_brush, SideCells.Fit(_brush, word, u.Size(PhoneSaves.ButtonText), room), cx, r.GetCenter().Y, word, Ui.Name);
+            TextCentred(_brush, SideCells.Fit(_brush, word, u.Size(Places.ButtonText(u.Frame)), room), cx, r.GetCenter().Y, word, Ui.Name);
             return;
         }
-        TextCentred(_brush, SideCells.Fit(_brush, word, u.Size(PhoneSaves.ButtonText * 0.86f), room), cx, r.Position.Y + r.Size.Y * 0.4f, word, Ui.Name);
+        TextCentred(_brush, SideCells.Fit(_brush, word, u.Size(Places.ButtonText(u.Frame) * 0.86f), room), cx, r.Position.Y + r.Size.Y * 0.4f, word, Ui.Name);
         int line = SideCells.Fit(_gothic, saving, u.Size(PhoneSaves.ButtonLineText), room);
         TextCentred(_gothic, line, cx, r.Position.Y + r.Size.Y * 0.77f, saving, Ui.Name with { A = 0.85f });
     }
@@ -410,7 +425,7 @@ internal sealed partial class SaveLoadView
         var r = ButtonBox;
         DrawRect(r, Ui.OffButton);
         DrawRect(r, Ui.OffLine, false, Line(2));
-        TextCentred(_brush, u.Size(PhoneSaves.ButtonText * 0.86f), r.GetCenter().X, r.Position.Y + r.Size.Y * 0.4f, "Save", Ui.OffText);
+        TextCentred(_brush, u.Size(Places.ButtonText(u.Frame) * 0.86f), r.GetCenter().X, r.Position.Y + r.Size.Y * 0.4f, "Save", Ui.OffText);
         TextCentred(_gothic, u.Size(PhoneSaves.ButtonLineText), r.GetCenter().X, r.Position.Y + r.Size.Y * 0.77f, "auto-saves are the game's own", Ui.OffText);
     }
 
@@ -431,7 +446,7 @@ internal sealed partial class SaveLoadView
     {
         if (ChosenSave is not { } held)
             return;
-        var box = u.Rect(PhoneSaves.DeleteQuestion(u.Frame));
+        var box = u.Rect(Places.DeleteQuestion(u.Frame));
         Ui.DrawPanel(this, box, _k);
         float tip = DeleteBox.GetCenter().X, top = box.Position.Y, t = u.Px(PhoneSaves.Tip);
         DrawColoredPolygon([new(tip - t, top + 2), new(tip + t, top + 2), new(tip, top - t)], Ui.Gold);
@@ -445,10 +460,15 @@ internal sealed partial class SaveLoadView
     {
         var shelf = _shelf.Manuals;
         int gone = SaveSlots.Uncommented(shelf).Count, kept = shelf.Count - gone;
-        var box = u.Rect(PhoneSaves.SweepQuestion(u.Frame));
+        var box = u.Rect(Places.SweepQuestion(u.Frame));
         Ui.DrawPanel(this, box, _k);
-        float left = box.Position.X, tip = SweepBox.GetCenter().Y, t = u.Px(PhoneSaves.Tip);
-        DrawColoredPolygon([new(left + 2, tip - t), new(left + 2, tip + t), new(left - t, tip)], Ui.Gold);
+        if (u.Frame.IsUpright)
+            DrawUprightSweepTip(u, box);                                // held upright it hangs under the sweep
+        else
+        {
+            float left = box.Position.X, tip = SweepBox.GetCenter().Y, t = u.Px(PhoneSaves.Tip);
+            DrawColoredPolygon([new(left + 2, tip - t), new(left + 2, tip + t), new(left - t, tip)], Ui.Gold);
+        }
         string stay = kept == 0 ? "That is every manual save." : kept == 1 ? "The one with a comment (★) stays." : $"The {kept} with one (★) stay.";
         PhoneQuestionLines(u, box, gone == 1 ? "Delete the manual save without a comment?" : $"Delete the {gone} manual saves without a comment?",
             stay + " It cannot be undone.");

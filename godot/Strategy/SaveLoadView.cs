@@ -116,11 +116,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
     }
 
     /// <summary>Option → Display: the comment's field in the palette's ink.</summary>
-    public void ApplyPalette()
-    {
-        _edit.AddThemeColorOverride("font_color", Ui.Ink);
-        _edit.AddThemeColorOverride("caret_color", Ui.Ink);
-    }
+    public void ApplyPalette() => ColourEdit();
 
     public void SetFont(GameFont font)
     {
@@ -203,12 +199,12 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
     }
 
     /// <summary>
-    /// Lays the layer over the screen's picture (<paramref name="area"/>, in its parent's coordinates); on the phone held
-    /// landscape over the whole screen in its frame's layout pixels (LL1).
+    /// Lays the layer over the screen's picture (<paramref name="area"/>, in its parent's coordinates); on the phone over
+    /// the whole screen in its frame's layout pixels (held landscape LL1, upright PL2).
     /// </summary>
     public void Place(Rect2 area)
     {
-        var phone = Device.Landscape(this);
+        var phone = Device.Held(this);
         if (phone is not null)
             area = new Rect2(Vector2.Zero, GetParentAreaSize());
         float k = phone?.Scale ?? area.Size.X / 1280f;
@@ -330,7 +326,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
     /// <summary>The list shown, top to bottom: the auto-saves or the manual saves, newest first.</summary>
     private IReadOnlyList<SaveSlot> Shown => _autoSide ? _shelf.Autos : _manuals;
 
-    private int RowsShown => _phone is { } f ? PhoneSaves.RowsShown(f, NewRowShown) : (int)((ListBottom - RowsTop) / RowPitch);
+    private int RowsShown => _phone is { } f ? Places.RowsShown(f, NewRowShown) : (int)((ListBottom - RowsTop) / RowPitch);
 
     /// <summary>Whether New save heads the rows: the save list's manual saves.</summary>
     private bool NewRowShown => !_autoSide && _list == SaveList.Save;
@@ -369,7 +365,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
     {
         var shown = Shown;
         for (int i = _scroll, place = 0; i < shown.Count && place < RowsShown; i++, place++)
-            yield return (shown[i].Id, _phone is { } f ? Phone.Rect(PhoneSaves.Row(f, place, NewRowShown))
+            yield return (shown[i].Id, _phone is { } f ? Phone.Rect(Places.Row(f, place, NewRowShown))
                 : new Rect2(ListX, RowsTop + place * RowPitch, RowW, RowH));
     }
 
@@ -383,29 +379,29 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
 
     private PhoneUnits Phone => new(_phone!);
 
-    private Rect2 NewBox => _phone is { } f ? Phone.Rect(PhoneSaves.New(f)) : NewRect;
+    private Rect2 NewBox => _phone is { } f ? Phone.Rect(Places.New(f)) : NewRect;
 
-    private Rect2 TabBox(SaveList list) => _phone is { } f ? Phone.Rect(PhoneSaves.Chip(f, list == SaveList.Save)) : TabRect(list);
+    private Rect2 TabBox(SaveList list) => _phone is { } f ? Phone.Rect(Places.Chip(f, list == SaveList.Save)) : TabRect(list);
 
-    private Rect2 SideBox(bool auto) => _phone is { } f ? Phone.Rect(PhoneSaves.Tab(f, auto)) : SideRect(auto);
+    private Rect2 SideBox(bool auto) => _phone is { } f ? Phone.Rect(Places.Tab(f, auto)) : SideRect(auto);
 
-    private Rect2 ButtonBox => _phone is { } f ? Phone.Rect(PhoneSaves.Button(f)) : ButtonRect;
+    private Rect2 ButtonBox => _phone is { } f ? Phone.Rect(Places.Button(f)) : ButtonRect;
 
-    private Rect2 BackBox => _phone is { } f ? Phone.Rect(PhoneSaves.Back(f)) : BackRect;
+    private Rect2 BackBox => _phone is { } f ? Phone.Rect(Places.Back(f)) : BackRect;
 
-    private Rect2 DeleteBox => _phone is { } f ? Phone.Rect(PhoneSaves.Delete(f)) : DeleteRect;
+    private Rect2 DeleteBox => _phone is { } f ? Phone.Rect(Places.Delete(f)) : DeleteRect;
 
-    private Rect2 EditBox => _phone is { } f ? Phone.Rect(PhoneSaves.Edit(f, PageLines)) : EditRect;
+    private Rect2 EditBox => _phone is { } f ? Phone.Rect(Places.Edit(f, PageLines)) : EditRect;
 
-    private Rect2 SweepBox => _phone is { } f ? Phone.Rect(PhoneSaves.Sweep(f)) : SweepRect;
+    private Rect2 SweepBox => _phone is { } f ? Phone.Rect(Places.Sweep(f)) : SweepRect;
 
-    private Rect2 YesBox => _phone is { } f ? Phone.Rect(PhoneSaves.Answer(f, PhoneSaves.DeleteQuestion(f), yes: true)) : YesRect;
+    private Rect2 YesBox => _phone is { } f ? Phone.Rect(Places.Answer(f, Places.DeleteQuestion(f), yes: true)) : YesRect;
 
-    private Rect2 NoBox => _phone is { } f ? Phone.Rect(PhoneSaves.Answer(f, PhoneSaves.DeleteQuestion(f), yes: false)) : NoRect;
+    private Rect2 NoBox => _phone is { } f ? Phone.Rect(Places.Answer(f, Places.DeleteQuestion(f), yes: false)) : NoRect;
 
-    private Rect2 SweepYesBox => _phone is { } f ? Phone.Rect(PhoneSaves.Answer(f, PhoneSaves.SweepQuestion(f), yes: true)) : SweepYesRect;
+    private Rect2 SweepYesBox => _phone is { } f ? Phone.Rect(Places.Answer(f, Places.SweepQuestion(f), yes: true)) : SweepYesRect;
 
-    private Rect2 SweepNoBox => _phone is { } f ? Phone.Rect(PhoneSaves.Answer(f, PhoneSaves.SweepQuestion(f), yes: false)) : SweepNoRect;
+    private Rect2 SweepNoBox => _phone is { } f ? Phone.Rect(Places.Answer(f, Places.SweepQuestion(f), yes: false)) : SweepNoRect;
 
     /// <summary>The chosen save's item in the script's menu, or 0 when the menu has none for it (an auto-save in Save).</summary>
     private int ItemOfChosen
@@ -510,6 +506,8 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
                 if (button.Pressed)
                 {
                     _pressed = at;
+                    if (at == FieldHit)
+                        PlaceCaret(button.Position / _k);                   // the card's field held upright: its caret moved
                     if (_editing && _phone is null)
                         EndEdit(keep: true);                            // a click off the field keeps what is written
                 }
@@ -575,6 +573,8 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
             case KeepHit:
                 EndEdit(keep: true);
                 break;
+            case FieldHit:
+                break;                                                  // its caret moved at the press
             case NewHit:
                 _chosen = null;
                 _chosenNew = true;
@@ -687,6 +687,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
 
     private void PlaceEdit()
     {
+        ColourEdit();
         if (_phone is { } phone)
         {
             PlacePhoneEdit(phone);

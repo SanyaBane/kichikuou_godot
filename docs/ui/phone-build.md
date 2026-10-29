@@ -1015,8 +1015,8 @@ and System's rotation lock).
   to the deployment picker, exit 0 both. Headless play draws none of our overlays, so the screen has run in the gallery
   alone; the owner's look on the Poco is its first run by a finger.
 
-**Step P7, where it stands (2026-10-29):** split as L7 was — P7a Harem and Treasure (PH2, PT2), P7b Save/Load (PL2) with
-the comment's editing (PY2). **P7a is built, awaiting the owner's look on the Poco; P7b is next.** P7a:
+**Step P7, where it stands (2026-10-30):** split as L7 was — P7a Harem and Treasure (PH2, PT2), P7b Save/Load (PL2) with
+the comment's editing (PY2). **Both are built, awaiting the owner's look on the Poco.** P7a:
 
 - **The model** (`Original.Content/Devices/PhonePickersUpright`, tested in `PhonePickersUprightTests`), for both pickers:
   the places at the mock-ups' figures (`plain_title`, `ph2`, `girl_details`, `picker_grid`, `harem_cell`, `end_and`) from
@@ -1053,6 +1053,42 @@ the comment's editing (PY2). **P7a is built, awaiting the owner's look on the Po
   P8's).
 - **Unattended play**: headless with `--phone upright` from the week-18 save to its deployment picker with `--harem 6`
   (Kanami's visit) and with `--treasure` (our Treasure screen clicked through), exit 0 both.
+
+P7b:
+
+- **The model** (`Original.Content/Devices/PhoneSavesUpright`, tested in `PhoneSavesUprightTests`): the places at the
+  mock-ups' figures (`save_title`, `save_list`, `save_row`, `save_page` compact, `back_and`, `pl2`, `comment_card`, `py2`)
+  from the room's top and the bar — the title band (the title, Load | Save 210 × 88 at its right, the divider at 116), the
+  lists' tabs (104 high from 134), the heading with the sweep (470 × 64) and the rows (104 high, 10 apart, from 340 down
+  to 36 over the page: nine in view on the reference, eight under New save in Save), the scroll bar's groove 18 in from
+  the right; the page standing 24 over the bar across the room — its title band (100, Delete 230 × 84 at its right), the
+  map at the room's width less 32 showing its top 80% (an auto-save's two lines on its load under the comment cut it 94
+  lower, the page and the list staying where they are), the figures in two columns of three rows 96 apart, the comment
+  (its box 104 high, Edit 204 wide); Back (384) | the red button in the bar; Delete's question (900 × 250) hanging 28 under
+  Delete, the sweep's (1000 × 250) 28 under the sweep; the comment's card (560 high) 24 over the keyboard Android reports,
+  else over the mock-up's 1000 of the 2712 — the field two lines high (200), the count under its right, Cancel | Keep
+  (130 high) at its foot. The field's words wrap after a space, a word wider than the field between its letters (`Wrap`);
+  the caret's line and place, and a tap's letter (`CaretAt`, `ColumnAt`). A longer screen gives the list more rows.
+- **The views**: `SaveLoadView` is keyed by `Device.Held`; the places a press, unattended play and the finger's scroll
+  look at are the orientation's (`Places` in `SaveLoadView.Upright.cs` picks `PhoneSaves`' or `PhoneSavesUpright`'), and
+  held landscape's drawing of the tabs, the list, the rows, the page, the questions and the bar serves both
+  (`SaveLoadView.Phone.cs`, the landscape pass same). Upright's own: the title band, the divider over the page, the
+  sweep's tip pointing up, and the comment's card (`UprightCard`). In the card the line edit takes the keys and Android's
+  keyboard as held landscape's (its ✓ Done keeps, Back cancels) but draws nothing: its words are drawn wrapped by the
+  view at the largest type that keeps them to two lines (down to two thirds), the caret a bar at its column; a tap in the
+  field puts the caret at the letter nearest it.
+- **The agent's choices**, for the owner to confirm: the rows, the chosen row's and the tabs' colours, New save over the
+  rows in Save, the auto-saves' tags and lines, Delete's and the sweep's questions in the PC's words — all as held
+  landscape's (PL2 drew the chosen row and tab gold, no New save, no auto-save, no questions); the groove stays when every
+  save fits; the figures' second column at the map's half (PL2 at 600); the sweep's question hanging under it over the
+  list's first rows (the rows it deletes struck through below it); the card's title at its right (PY2) shrunk to the room
+  after "COMMENT"; the caret a steady bar (as the PC's line edit: Godot's caret does not blink by default); a comment too
+  long for two lines at 2.6 mm shrinks its type.
+- **The gallery**: the PC, touch and landscape passes same; the upright pass's eight `save-load…` entries changed. PL2 and
+  PY2 left `GALLERY_ENTRIES`; the phone tab keeps 14 mock-ups (P8's and the original's screens). The landscape pass hung
+  once after `info-level-up` (no new dump for ten minutes, 1.6 GB): killed and run again alone, it dumped all 114, same.
+- **Unattended play**: headless with `--phone upright` from the week-18 save to its deployment picker, and with
+  `--saveload --interface new` (our Save/Load screen clicked through at upright's places), exit 0 both.
 
 ## 6. The agent's own choices, for the owner to confirm
 

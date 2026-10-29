@@ -34,8 +34,8 @@ internal sealed partial class SaveLoadView
     /// <summary>The phone's rows in layout pixels, below New save: the first row's top left, the groove's foot at the row's right.</summary>
     private (Vector2, Vector2) PhoneRowsArea(PhoneFrame f)
     {
-        var row = Phone.Rect(PhoneSaves.Row(f, 0, NewRowShown));
-        var groove = Phone.Rect(PhoneSaves.ScrollBar(f, NewRowShown));
+        var row = Phone.Rect(Places.Row(f, 0, NewRowShown));
+        var groove = Phone.Rect(Places.ScrollBar(f, NewRowShown));
         return (row.Position, new Vector2(row.End.X, groove.End.Y));
     }
 
@@ -43,7 +43,7 @@ internal sealed partial class SaveLoadView
     private bool ListScrolls => !_confirm && !_sweep && !(_editing && _phone is not null);
 
     /// <summary>The list's column in layout pixels: New save and the rows.</summary>
-    private Rect2 ListArea => _phone is { } f ? Phone.Rect(PhoneSaves.Scrolled(f, NewRowShown))
+    private Rect2 ListArea => _phone is { } f ? Phone.Rect(Places.Scrolled(f, NewRowShown))
         : new(ListX, ListTop, ListW, ListBottom - ListTop);
 
     /// <summary>

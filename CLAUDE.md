@@ -412,8 +412,13 @@ Step P7 is split as L7 was (phone-build.md, "Step P7, where it stands"): P7a is 
 Poco — Harem and Treasure upright: the title band, the picture at the width, the details, (Treasure's tabs or a first
 pick's prompt and Back,) the picker's grid in rows of 7.3 / 6.7 mm scrolled by a finger with a thin bar, End | the red
 button in the bar, Treasure's questions across the room over it (`Original.Content/Devices/PhonePickersUpright` with its
-`ScrolledGrid`; `HaremView.Upright.cs`, `TreasureView.Upright.cs`, `PickerGridScroll`); P7b (Save/Load PL2, the
-comment's editing PY2) is next.
+`ScrolledGrid`; `HaremView.Upright.cs`, `TreasureView.Upright.cs`, `PickerGridScroll`); P7b is built, awaiting the
+owner's look on the Poco — Save/Load upright as PL2: the title band with Load | Save, the tabs, the list in one-line rows
+above the page (nine in view, a drag for the rest), the chosen save's page standing on the bar (the map cut at its foot,
+the figures in two columns, the comment with Edit), Back | the red button in the bar; the comment's own card over
+Android's keyboard as PY2, its words wrapped in a field two lines high and drawn by the view, the line edit taking the keys
+unseen (`Original.Content/Devices/PhoneSavesUpright`; `SaveLoadView.Upright.cs`, held landscape's drawing shared through
+its `Places`). P8 is next.
 **Owner's decision 33** (2026-10-29), the fifth rule change: the ninja follow-up's chance (BRS-11, R14's `RND(3)` = 1) —
 Tweaks → "Ninja follow-up", 33% (the original, the default), 67% or 100%, read off the same draw, built
 (`Combat/NinjaChance` on `OriginalScriptContext.NinjaChance`, `Battle.NinjaRolled`; `godot/Battles/NinjaChanceChoice`;

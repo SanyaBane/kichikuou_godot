@@ -523,6 +523,14 @@ her details, the grid in rows of 7.3 mm (nine of 17 in view, a thin scroll bar a
 prompt and Back in their place), the grid in rows of 6.7 mm, End | the red button (`-refusal` greyed with its reason),
 `-question` and `-replace` the questions across the room over the button. PH2 and PT2 left `GALLERY_ENTRIES`.
 
+Step P7b (2026-10-30) built Save/Load: on this pass `save-load…` show the title band with Load | Save at its right
+(`-title` without them), the lists' tabs, the heading with the sweep, the list in one-line rows above the page (nine in
+view, the scroll bar at the right), the chosen save's page standing on the bar (its title with Delete, the map cut at its
+foot, the figures in two columns, the comment with Edit) and Back | the red button in the bar; `-auto` and `-auto-end` an
+auto-save's two lines under the comment, the map cut lower; `-delete` the question under Delete, `-sweep` the sweep's
+under the sweep; `-comment` the comment's own card where PY2 has it (the keyboard not drawn), its words wrapped in the
+field two lines high. PL2 and PY2 left `GALLERY_ENTRIES`.
+
 ## 10. The copy for a website (owner, 2026-10-29)
 
 The owner's request: the gallery on the owner's website, its pictures in a light format and the current ones alone, the

@@ -284,10 +284,9 @@ SHEETS = {}
 # The gallery's phone tab: the owner's chosen base versions (docs/ui/phone.md), by mock-up name, those not built yet; a
 # built one leaves for the real pass "Smartphone, upright" (docs/ui/phone-build.md: P1 took PS2, PS2l, PS2b, PS2m, PW1,
 # PEd, PEr, PN1, PN1q and PR2; P2 PM1a, PM1b and PM1c; P3 PB3, PB3r and PB3x; P4 PB4o3, PB4s, PB4c, PB4r and PB4b; P5
-# PD2, PD2d, PU1 and PU1q; P6 PA1 and PA1n; P7a PH2 and PT2).
+# PD2, PD2d, PU1 and PU1q; P6 PA1 and PA1n; P7a PH2 and PT2; P7b PL2 and PY2).
 GALLERY_ENTRIES = {
     # Round P3-P7's choices (owner, 2026-10-27; docs/ui/phone.md, §5).
-    'PL2': ('pl2-saves', 'Save/Load — PL2', 'Load', 'one page: the list down to the save\'s page on the bar'),
     'PO1': ('po1-options', 'Options — PO1', 'The options window', 'the paper sheet, its tabs on top'),
     'PO1o': ('po1-display', 'Options — PO1', 'The Display tab', 'the screen\'s orientation on top: System, Upright, '
                                                                'Landscape 1, Landscape 2 (round P17)'),
@@ -304,7 +303,6 @@ GALLERY_ENTRIES = {
     'PIr': ('pi-refused', 'Import — PI', 'Another version\'s file', 'the hashes each on a line of their own (made up)'),
     # Round P20's choices (owner, 2026-10-28; docs/ui/phone.md, §25): the Menu sheet, the log, the comment's editing,
     # the original's own screens as they are.
-    'PY2': ('py2-comment', 'Save/Load — PL2', 'Editing a comment', 'the comment\'s own card over Android\'s keyboard'),
     'PXf': ('px-fortune', 'The original\'s screens', 'Fortune Check', 'as it is (made up: three fates seen)'),
     'PXc': ('px-gallery', 'The original\'s screens', 'The CG gallery', 'as it is (masked in the agents\' dumps)'),
     'PXm': ('px-music', 'The original\'s screens', 'The music room', 'as it is, no track playing'),
